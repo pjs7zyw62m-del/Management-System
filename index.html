@@ -6,295 +6,877 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>NEXUS Management System</title>
 <style>
-:root{--bg:#090c12;--panel:#171c25;--line:#3b4555;--red:#e12d4c;--text:#f5f6f9;--muted:#aab3c3}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font:14px Arial,sans-serif}
-button,input,select,textarea{font:inherit}
-button{cursor:pointer}
-.hidden{display:none!important}
-.logo{font-size:34px;font-weight:900;letter-spacing:4px}
-.logo b{color:var(--red)}
-.muted{color:var(--muted)}
-.small{font-size:12px}
-.btn{border:0;border-radius:8px;padding:12px 16px;background:var(--red);color:white;font-weight:bold}
-.alt{background:#303b4d}
-.warn{background:#83283d}
-.auth{min-height:100dvh;display:grid;place-items:center;padding:20px;background:radial-gradient(circle at top,#35101d,#090c12 65%)}
-.auth-card{width:min(430px,100%);padding:32px 24px;background:var(--panel);border:1px solid #713148;border-radius:16px;text-align:center}
-.auth input{width:100%;padding:15px;margin:8px 0;background:#0a0e15;border:1px solid var(--line);border-radius:8px;color:white}
-.auth .btn{width:100%;margin-top:15px}
-.shell{display:flex;min-height:100dvh}
-.sidebar{width:230px;flex-shrink:0;background:#10141c;border-right:1px solid var(--line);padding:20px 12px}
-.sidebar .logo{font-size:27px}
-.nav{display:block;width:100%;padding:12px;text-align:left;background:none;border:0;border-radius:7px;color:var(--muted)}
-.nav.active,.nav:hover{background:#421b2b;color:white}
-.main{flex:1;min-width:0;padding:22px}
-.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:15px}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:17px;margin:15px 0}
-.notice{background:#311b25;border-left:3px solid var(--red);padding:12px;margin:15px 0}
-.stats,.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px}
-.stat strong{display:block;font-size:32px;margin-top:10px}
-.toolbar{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
-.field{display:flex;flex-direction:column;gap:5px;min-width:0}
-.field label{font-size:11px;color:#cbd4e3;font-weight:bold;text-transform:uppercase}
-.field input,.field select,.field textarea,.search{width:100%;min-width:0;padding:11px;background:#0b1019;color:white;border:1px solid #495567;border-radius:6px}
-.field textarea{min-height:85px}
-.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-.section-title{background:#193b81;padding:11px;text-align:center;font-weight:bold;margin-top:16px;letter-spacing:.4px}
-.section{border:1px solid var(--line);padding:12px;background:#131925}
-.identity{display:grid;grid-template-columns:190px 1fr;gap:15px}
-.photo-box{height:220px;background:#222b38;border:1px solid #586578;display:grid;place-items:center;overflow:hidden;color:#9ca9bb}
-.photo-box img{width:100%;height:100%;object-fit:cover}
-.photo-placeholder{text-align:center;font-size:54px}
-.photo-placeholder small{display:block;font-size:11px}
-.photo-column{display:flex;flex-direction:column;gap:9px}
-.id-field input{border-color:var(--red)}
-.table-scroll{overflow-x:auto}
-table{width:100%;min-width:650px;border-collapse:collapse}
-th,td{border:1px solid #4d5869;padding:8px;text-align:left;font-size:12px}
-th{background:#303b4d}
-td input{width:100%;min-width:90px;background:#0b1019;color:white;border:1px solid #4d5869;border-radius:4px;padding:8px}
-.table-actions{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:10px}
-.profile{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
-.profile img,.avatar{width:100%;height:165px;object-fit:cover}
-.avatar{display:grid;place-items:center;background:#222b38;font-size:55px;color:#aab3c3}
-.profile-body{padding:14px}
-.profile-body h3{margin:0 0 8px}
-.detail{padding:9px;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
-.actions{display:flex;gap:10px;flex-wrap:wrap;margin:15px 0}
-.footer{position:sticky;bottom:0;padding:12px;background:#111722f2;border:1px solid var(--line);border-radius:9px;display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
-@media(max-width:760px){
-.shell{display:block}
-.sidebar{width:100%;border-right:0;border-bottom:1px solid var(--line)}
-.navwrap{display:flex;overflow-x:auto}
-.nav{white-space:nowrap;width:auto}
-.main{padding:12px}
-.grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-.identity{grid-template-columns:135px minmax(0,1fr)}
-.photo-box{height:165px}
+:root {
+  --bg:#090c12;
+  --panel:#171c25;
+  --line:#3b4555;
+  --red:#e12d4c;
+  --muted:#aab3c3;
 }
-@media(max-width:420px){
-.grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-.identity{gap:10px}
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  background:var(--bg);
+  color:#f5f6f9;
+  font:14px Arial,sans-serif;
+}
+button,input,textarea,select { font:inherit; }
+button { cursor:pointer; }
+.hidden { display:none!important; }
+.logo {
+  font-size:34px;
+  font-weight:900;
+  letter-spacing:4px;
+}
+.logo b { color:var(--red); }
+.muted { color:var(--muted); }
+.small { font-size:12px; }
+.btn {
+  border:0;
+  border-radius:8px;
+  background:var(--red);
+  color:white;
+  padding:12px 16px;
+  font-weight:bold;
+}
+.alt { background:#303b4d; }
+.danger { background:#80243a; }
+
+/* ACCESS SCREENS */
+.auth {
+  min-height:100dvh;
+  display:grid;
+  place-items:center;
+  padding:20px;
+  background:radial-gradient(
+    circle at top,#35101d,#090c12 65%
+  );
+}
+.auth-card {
+  width:min(430px,100%);
+  padding:32px 24px;
+  background:var(--panel);
+  border:1px solid #713148;
+  border-radius:16px;
+  text-align:center;
+}
+.auth input {
+  display:block;
+  width:100%;
+  padding:15px;
+  margin:12px 0;
+  background:#0a0e15;
+  border:1px solid var(--line);
+  border-radius:8px;
+  color:white;
+}
+.auth .btn { width:100%; }
+
+/* MAIN WEBSITE */
+.shell { display:flex;min-height:100dvh; }
+.sidebar {
+  width:230px;
+  flex-shrink:0;
+  background:#10141c;
+  border-right:1px solid var(--line);
+  padding:20px 12px;
+}
+.sidebar .logo { font-size:27px; }
+.nav {
+  display:block;
+  width:100%;
+  padding:12px;
+  text-align:left;
+  background:transparent;
+  color:var(--muted);
+  border:0;
+  border-radius:7px;
+}
+.nav.active,.nav:hover {
+  background:#421b2b;
+  color:white;
+}
+.main { flex:1;min-width:0;padding:22px; }
+.topbar {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  border-bottom:1px solid var(--line);
+  padding-bottom:15px;
+}
+.panel {
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:17px;
+  margin:15px 0;
+}
+.notice {
+  background:#311b25;
+  border-left:3px solid var(--red);
+  padding:12px;
+  margin:15px 0;
+}
+.stats,.cards {
+  display:grid;
+  grid-template-columns:repeat(
+    auto-fit,minmax(175px,1fr)
+  );
+  gap:12px;
+}
+.stat strong {
+  display:block;
+  font-size:32px;
+  margin-top:10px;
+}
+.actions {
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:15px 0;
+}
+
+/* REGISTRATION */
+.section-title {
+  background:#193b81;
+  padding:12px;
+  text-align:center;
+  font-weight:bold;
+  margin-top:17px;
+}
+.section {
+  padding:13px;
+  background:#131925;
+  border:1px solid var(--line);
+  min-width:0;
+}
+.field {
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  min-width:0;
+}
+.field label {
+  color:#cbd4e3;
+  font-size:11px;
+  font-weight:bold;
+  text-transform:uppercase;
+}
+.field input,.field select,
+.field textarea,.search {
+  display:block;
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  padding:11px;
+  background:#0b1019;
+  border:1px solid #495567;
+  border-radius:6px;
+  color:white;
+}
+.field textarea { min-height:90px; }
+.grid {
+  display:grid;
+  grid-template-columns:repeat(
+    3,minmax(0,1fr)
+  );
+  gap:12px;
+}
+.identity {
+  display:grid;
+  grid-template-columns:190px minmax(0,1fr);
+  gap:16px;
+}
+.photo-column {
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  min-width:0;
+}
+.photo-box {
+  height:220px;
+  background:#222b38;
+  border:1px solid #586578;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+}
+.photo-box img {
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.photo-placeholder {
+  text-align:center;
+  color:#aab3c3;
+  font-size:55px;
+}
+.photo-placeholder small {
+  display:block;
+  font-size:11px;
+}
+.id-field input { border-color:var(--red); }
+
+/* TABLES */
+.table-scroll {
+  width:100%;
+  overflow-x:auto;
+}
+table {
+  width:100%;
+  min-width:650px;
+  border-collapse:collapse;
+}
+th,td {
+  padding:9px;
+  border:1px solid #4d5869;
+  text-align:left;
+  font-size:12px;
+}
+th { background:#303b4d; }
+td input {
+  width:100%;
+  min-width:90px;
+  padding:9px;
+  background:#0b1019;
+  border:1px solid #4d5869;
+  border-radius:4px;
+  color:white;
+}
+.table-actions {
+  display:flex;
+  justify-content:flex-end;
+  margin-top:10px;
+}
+
+/* PROFILE CARDS */
+.profile {
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:10px;
+  overflow:hidden;
+}
+.profile img,.avatar {
+  width:100%;
+  height:165px;
+  object-fit:cover;
+}
+.avatar {
+  display:grid;
+  place-items:center;
+  background:#222b38;
+  color:#aab3c3;
+  font-size:55px;
+}
+.profile-body { padding:14px; }
+.profile-body h3 { margin:0 0 8px; }
+
+/* MASTER RECORD */
+.master-identity {
+  display:grid;
+  grid-template-columns:240px minmax(0,1fr);
+  gap:18px;
+}
+.master-photo {
+  height:260px;
+  background:#242d3a;
+  display:grid;
+  place-items:center;
+  border-radius:8px;
+  overflow:hidden;
+  color:#aab3c3;
+  font-size:65px;
+}
+.master-photo img {
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.detail-grid {
+  display:grid;
+  grid-template-columns:repeat(
+    auto-fit,minmax(min(100%,175px),1fr)
+  );
+  gap:12px;
+}
+.detail-item {
+  background:#0b1019;
+  border:1px solid #394557;
+  border-radius:7px;
+  padding:12px;
+  min-width:0;
+}
+.detail-label {
+  color:var(--muted);
+  font-size:11px;
+  font-weight:bold;
+  margin-bottom:7px;
+  text-transform:uppercase;
+}
+.detail-value {
+  font-size:15px;
+  overflow-wrap:anywhere;
+  white-space:pre-wrap;
+}
+.footer {
+  position:sticky;
+  bottom:0;
+  padding:12px;
+  background:#111722f2;
+  border:1px solid var(--line);
+  border-radius:9px;
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  margin-top:18px;
+}
+@media(max-width:1050px) {
+  .grid {
+    grid-template-columns:repeat(
+      2,minmax(0,1fr)
+    );
+  }
+}
+@media(max-width:760px) {
+  .shell { display:block; }
+  .sidebar {
+    width:100%;
+    border-right:0;
+    border-bottom:1px solid var(--line);
+  }
+  .navwrap { display:flex;overflow-x:auto; }
+  .nav { width:auto;white-space:nowrap; }
+  .main { padding:12px; }
+  .identity {
+    grid-template-columns:145px minmax(0,1fr);
+  }
+  .photo-box { height:175px; }
+  .master-identity {
+    grid-template-columns:170px minmax(0,1fr);
+  }
+  .master-photo { height:210px; }
+}
+@media(max-width:520px) {
+  .grid { grid-template-columns:1fr; }
+  .identity,.master-identity {
+    grid-template-columns:1fr;
+  }
+  .photo-column { max-width:200px; }
+  .master-identity > div:first-child {
+    max-width:230px;
+  }
 }
 </style>
 </head>
+
 <body>
 
 <section id="gateway" class="auth">
-<div class="auth-card">
-<div class="logo">NE<b>X</b>US</div>
-<p class="muted small">SECURE ACCESS SYSTEM — DEMO</p>
-<h2>SECURITY GATEWAY</h2>
-<p class="muted">Enter your demonstration credentials.</p>
-<form id="gateForm">
-<input type="password" placeholder="Security Key" aria-label="Security Key" required>
-<input type="password" placeholder="Access Code" aria-label="Access Code" required>
-<button class="btn">VERIFY ACCESS</button>
-</form>
-<p class="muted small">VISUAL DEMONSTRATION ONLY</p>
-</div>
+  <div class="auth-card">
+    <div class="logo">NE<b>X</b>US</div>
+    <p class="muted small">
+      SECURITY ACCESS SYSTEM — DEMO
+    </p>
+    <h2>SECURITY GATEWAY</h2>
+    <p class="muted">
+      Enter your demonstration credentials.
+    </p>
+    <form id="gateForm">
+      <input type="password"
+        placeholder="Security Key"
+        aria-label="Security Key" required>
+      <input type="password"
+        placeholder="Access Code"
+        aria-label="Access Code" required>
+      <button class="btn" type="submit">
+        VERIFY ACCESS
+      </button>
+    </form>
+    <p class="muted small">
+      VISUAL DEMONSTRATION ONLY
+    </p>
+  </div>
 </section>
 
 <section id="login" class="auth hidden">
-<div class="auth-card">
-<div class="logo">NE<b>X</b>US</div>
-<p class="muted small">ADMINISTRATOR AUTHORIZATION</p>
-<h2>ADMINISTRATOR LOGIN</h2>
-<form id="loginForm">
-<input placeholder="Username" aria-label="Username" required>
-<input type="password" placeholder="Password" aria-label="Password" required>
-<button class="btn">LOGIN</button>
-</form>
-<p class="muted small">ANY NONEMPTY TEST VALUES WORK</p>
-</div>
+  <div class="auth-card">
+    <div class="logo">NE<b>X</b>US</div>
+    <p class="muted small">
+      ADMINISTRATOR AUTHORIZATION
+    </p>
+    <h2>ADMINISTRATOR LOGIN</h2>
+    <form id="loginForm">
+      <input type="text"
+        placeholder="Username"
+        aria-label="Username" required>
+      <input type="password"
+        placeholder="Password"
+        aria-label="Password" required>
+      <button class="btn" type="submit">
+        LOGIN
+      </button>
+    </form>
+    <p class="muted small">
+      ANY NONEMPTY TEST VALUES WORK
+    </p>
+  </div>
 </section>
 
 <div id="shell" class="shell hidden">
-<aside class="sidebar">
-<div class="logo">NE<b>X</b>US</div>
-<p class="muted small">MANAGEMENT SYSTEM</p>
-<nav class="navwrap">
-<button class="nav active" data-view="dashboard">Dashboard</button>
-<button class="nav" data-view="register">Inmate Registration</button>
-<button class="nav" data-view="profiles">Inmate Profiles</button>
-<button class="nav" data-view="gallery">Photo Gallery</button>
-<button class="nav" data-view="facilities">Facilities</button>
-<button class="nav" data-view="records">Records</button>
-<button class="nav" data-view="search">Search</button>
-<button class="nav" data-view="reports">Reports</button>
-<button class="nav" data-view="settings">Settings</button>
-</nav>
-</aside>
-<main class="main">
-<header class="topbar">
-<div>
-<h1 id="pageTitle">Dashboard</h1>
-<p class="muted small">NEXUS ADMINISTRATOR WORKSPACE</p>
-</div>
-<button id="lock" class="btn alt">Lock Demo</button>
-</header>
-<div class="notice small">FICTIONAL TEST DATA ONLY. This public website has no real authentication or secure database.</div>
-<div id="content"></div>
-</main>
+  <aside class="sidebar">
+    <div class="logo">NE<b>X</b>US</div>
+    <p class="muted small">MANAGEMENT SYSTEM</p>
+    <nav class="navwrap">
+      <button class="nav active"
+        data-view="dashboard">Dashboard</button>
+      <button class="nav"
+        data-view="register">Inmate Registration</button>
+      <button class="nav"
+        data-view="profiles">Inmate Profiles</button>
+      <button class="nav"
+        data-view="gallery">Photo Gallery</button>
+      <button class="nav"
+        data-view="facilities">Facilities</button>
+      <button class="nav"
+        data-view="records">Records</button>
+      <button class="nav"
+        data-view="search">Search</button>
+      <button class="nav"
+        data-view="reports">Reports</button>
+      <button class="nav"
+        data-view="settings">Settings</button>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1 id="pageTitle">Dashboard</h1>
+        <p class="muted small">
+          NEXUS ADMINISTRATOR WORKSPACE
+        </p>
+      </div>
+      <button id="lock" class="btn alt">
+        Lock Demo
+      </button>
+    </header>
+    <div class="notice small">
+      FICTIONAL TEST DATA ONLY.
+      This public website has no real authentication
+      or secure database.
+    </div>
+    <div id="content"></div>
+  </main>
 </div>
 
 <script>
-(()=>{
+(function () {
 "use strict";
-const $=id=>document.getElementById(id);
-const KEY="nexus_demo_profiles_v2";
-const tables=[
-{key:"sentences",title:"COMMITMENT AND SENTENCE INFORMATION",cols:["Commit #","Sentence Length","Sentence County","Court Cause #","Offense Date","Sentence Date","Sentence Status","Crime"]},
-{key:"infractions",title:"DISCIPLINARY INFRACTIONS",cols:["Violation Date","Infraction","Verdict Date","Verdict"]},
-{key:"appeals",title:"DISCIPLINARY APPEALS",cols:["Appeal Date","Outcome Description","As Of Date"]},
-{key:"classifications",title:"PROFILE CLASSIFICATION",cols:["Complete Date","Classification Type","Custody Risk","Internal Risk"]},
-{key:"parole",title:"PAROLE ACTION",cols:["Action Date","Action","Outcome","As Of Date"]},
-{key:"work",title:"WORK PROGRAM",cols:["Assigned Date","Completed Date","Work Assignment"]},
-{key:"detainers",title:"NOTIFICATION REQUESTS, DETAINERS AND WARRANTS",cols:["Detainer Date","Detainer Type","Charges","Authority","Agreement Date"]}
+
+const $ = id => document.getElementById(id);
+const KEY = "nexus_demo_profiles_v2";
+
+const tables = [
+  {
+    key:"sentences",
+    title:"COMMITMENT AND SENTENCE INFORMATION",
+    cols:[
+      "Commit #","Sentence Length",
+      "Sentence County","Court Cause #",
+      "Offense Date","Sentence Date",
+      "Sentence Status","Crime"
+    ]
+  },
+  {
+    key:"infractions",
+    title:"DISCIPLINARY INFRACTIONS",
+    cols:[
+      "Violation Date","Infraction",
+      "Verdict Date","Verdict"
+    ]
+  },
+  {
+    key:"appeals",
+    title:"DISCIPLINARY APPEALS",
+    cols:[
+      "Appeal Date","Outcome Description",
+      "As Of Date"
+    ]
+  },
+  {
+    key:"classifications",
+    title:"PROFILE CLASSIFICATION",
+    cols:[
+      "Complete Date","Classification Type",
+      "Custody Risk","Internal Risk"
+    ]
+  },
+  {
+    key:"parole",
+    title:"PAROLE ACTION",
+    cols:[
+      "Action Date","Action","Outcome",
+      "As Of Date"
+    ]
+  },
+  {
+    key:"work",
+    title:"WORK PROGRAM",
+    cols:[
+      "Assigned Date","Completed Date",
+      "Work Assignment"
+    ]
+  },
+  {
+    key:"detainers",
+    title:"NOTIFICATION REQUESTS, DETAINERS AND WARRANTS",
+    cols:[
+      "Detainer Date","Detainer Type",
+      "Charges","Authority","Agreement Date"
+    ]
+  }
 ];
-let profiles=[];
-try{
-const saved=JSON.parse(localStorage.getItem(KEY)||"[]");
-if(Array.isArray(saved))profiles=saved;
-}catch(e){}
-let view="dashboard",editId=null,detailId=null,photoData="",rows={};
-const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const fullName=p=>[p.first,p.middle,p.last].filter(Boolean).join(" ");
-function save(){
-try{localStorage.setItem(KEY,JSON.stringify(profiles));return true}
-catch(e){alert("Browser storage is full. Use smaller photos.");return false}
-}
-function image(p){
-if(/^data:image\/(png|jpeg|webp);base64,/i.test(p.photo||""))
-return '<img alt="Fictional inmate photograph" src="'+p.photo+'">';
-return '<div class="avatar">♙</div>';
-}
-function field(label,key,val="",type="text"){
-return `<div class="field"><label for="f_${key}">${esc(label)}</label><input id="f_${key}" name="${key}" type="${type}" value="${esc(val)}"></div>`;
-}
-function textarea(label,key,val=""){
-return `<div class="field"><label for="f_${key}">${esc(label)}</label><textarea id="f_${key}" name="${key}">${esc(val)}</textarea></div>`;
-}
-function section(title,body){
-return `<div class="section-title">${title}</div><div class="section">${body}</div>`;
-}
-function card(p){
-return `<article class="profile">${image(p)}<div class="profile-body"><h3>${esc(fullName(p))}</h3><p class="muted">${esc(p.id)}</p><p>${esc(p.facility||"No facility")} · ${esc(p.status||"Active")}</p><button class="btn alt" data-open="${encodeURIComponent(p.id)}">View Record</button></div></article>`;
-}
-function cards(list){
-return list.length?`<div class="cards">${list.map(card).join("")}</div>`:'<div class="panel muted">No fictional records found.</div>';
-}
-function tableEditor(t){
-const data=rows[t.key]||[];
-return section(t.title+` — ${data.length} RECORDS`,
-`<div class="table-scroll"><table><thead><tr>${t.cols.map(c=>`<th>${c}</th>`).join("")}<th>Remove</th></tr></thead><tbody>${data.length?data.map((r,i)=>`<tr>${t.cols.map((c,j)=>`<td><input data-table="${t.key}" data-row="${i}" data-col="${j}" aria-label="${esc(c)}" value="${esc(r[j]||"")}"></td>`).join("")}<td><button type="button" class="btn warn" data-remove="${t.key}" data-index="${i}">X</button></td></tr>`).join(""):`<tr><td colspan="${t.cols.length+1}" class="muted">No entries yet</td></tr>`}</tbody></table></div><div class="table-actions"><span class="muted small">Add as many fictional entries as needed.</span><button type="button" class="btn alt" data-add="${t.key}">+ Add Record</button></div>`);
-}
-function registration(){
-const p=editId?profiles.find(x=>x.id===editId)||{}:{};
-rows={};
-tables.forEach(t=>{
-rows[t.key]=Array.isArray(p[t.key])?JSON.parse(JSON.stringify(p[t.key])):[];
-});
-photoData=p.photo||"";
-const preview=/^data:image\/(png|jpeg|webp);base64,/i.test(photoData)?
-`<img src="${photoData}" alt="Fictional profile photo">`:
-'<div class="photo-placeholder">♙<small>INMATE PHOTO</small></div>';
-return `<div class="panel"><h2>${editId?"Edit Inmate Record":"New Inmate Registration"}</h2><form id="recordForm">
-${section("INMATE IDENTITY INFORMATION",
-`<div class="identity">
-<div class="photo-column">
-<div id="photoPreview" class="photo-box">${preview}</div>
-<div class="field"><label for="photoInput">Upload Photo</label><input id="photoInput" type="file" accept="image/png,image/jpeg,image/webp"></div>
-<div class="id-field">${field("INMATE ID","id",p.id)}</div>
-</div>
-<div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr))">
-${field("Last Name","last",p.last)}
-${field("First Name","first",p.first)}
-${field("Middle Initial","middle",p.middle)}
-${field("Age","age",p.age,"number")}
-${field("Gender","gender",p.gender)}
-${field("Height (Inches)","height",p.height,"number")}
-${field("Weight","weight",p.weight)}
-${field("Hair Color","hair",p.hair)}
-${field("Eye Color","eyes",p.eyes)}
-${field("Ethnic Origin","ethnicOrigin",p.ethnicOrigin)}
-${field("Custody Class","custodyClass",p.custodyClass)}
-${field("Admission Date","admission",p.admission,"date")}
-</div></div>`)}
-${section("RELEASE INFORMATION",`<div class="grid">${field("Projected Eligible Release Date","projectedRelease",p.projectedRelease,"date")}${field("Prison Release Date","releaseDate",p.releaseDate,"date")}${field("Release Type","releaseType",p.releaseType)}</div>`)}
-${section("MOST RECENT LOCATION / AS OF DATE",`<div class="grid">${field("Complex","complex",p.complex)}${field("Unit","unit",p.unit)}${field("Last Movement","lastMovement",p.lastMovement)}${field("Status","status",p.status||"Active")}${field("As Of Date","locationAsOf",p.locationAsOf,"date")}${field("Facility","facility",p.facility)}${field("State","state",p.state)}</div>`)}
-${section("INMATE MAILING ADDRESS",textarea("Mailing Address","mailingAddress",p.mailingAddress))}
-${section("ADDITIONAL INMATE INFORMATION",textarea("Notes","notes",p.notes))}
-<div id="recordTables">${tables.map(tableEditor).join("")}</div>
-<div class="footer"><button type="button" class="btn alt" data-go="profiles">Cancel</button><button type="submit" class="btn">${editId?"SAVE CHANGES":"SAVE INMATE RECORD"}</button></div>
-</form></div>`;
+
+let profiles = [];
+try {
+  const saved = JSON.parse(
+    localStorage.getItem(KEY) || "[]"
+  );
+  if (Array.isArray(saved)) profiles = saved;
+} catch (e) {
+  console.warn("Could not load demo profiles.");
 }
 
-function detail(){
-  const p = profiles.find(x => x.id === detailId);
+let view = "dashboard";
+let editId = null;
+let detailId = null;
+let photoData = "";
+let photoPending = null;
+let rows = {};
+
+function esc(value) {
+  return String(value ?? "").replace(
+    /[&<>"']/g,
+    c => ({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#39;"
+    })[c]
+  );
+}
+
+function fullName(p) {
+  return [p.first,p.middle,p.last]
+    .filter(Boolean).join(" ");
+}
+
+function save() {
+  try {
+    localStorage.setItem(
+      KEY,JSON.stringify(profiles)
+    );
+    return true;
+  } catch (e) {
+    alert(
+      "Could not save. Browser storage may be full."
+    );
+    return false;
+  }
+}
+
+function validPhoto(p) {
+  return /^data:image\/(png|jpeg|webp);base64,/i
+    .test(p.photo || "");
+}
+
+function profileImage(p) {
+  return validPhoto(p)
+    ? `<img src="${p.photo}" alt="Demo profile photo">`
+    : `<div class="avatar">♙</div>`;
+}
+
+function field(label,key,value="",type="text") {
+  return `
+    <div class="field">
+      <label for="f_${key}">${esc(label)}</label>
+      <input id="f_${key}" name="${key}"
+        type="${type}" value="${esc(value)}">
+    </div>
+  `;
+}
+
+function textarea(label,key,value="") {
+  return `
+    <div class="field">
+      <label for="f_${key}">${esc(label)}</label>
+      <textarea id="f_${key}" name="${key}">${esc(value)}</textarea>
+    </div>
+  `;
+}
+
+function section(title,body) {
+  return `
+    <div class="section-title">${title}</div>
+    <div class="section">${body}</div>
+  `;
+}
+
+function card(p) {
+  return `
+    <article class="profile">
+      ${profileImage(p)}
+      <div class="profile-body">
+        <h3>${esc(fullName(p))}</h3>
+        <p class="muted">${esc(p.id)}</p>
+        <p>${esc(p.facility || "No facility")}</p>
+        <p>${esc(p.status || "Active")}</p>
+        <button class="btn alt"
+          data-open="${encodeURIComponent(p.id)}">
+          View Record
+        </button>
+      </div>
+    </article>
+  `;
+}
+
+function cards(list) {
+  return list.length
+    ? `<div class="cards">${list.map(card).join("")}</div>`
+    : `<div class="panel muted">No fictional profiles found.</div>`;
+}
+
+function tableEditor(t) {
+  const data = rows[t.key] || [];
+  const head = t.cols.map(
+    c => `<th>${esc(c)}</th>`
+  ).join("");
+
+  const body = data.length
+    ? data.map((r,i) => `
+      <tr>
+        ${t.cols.map((c,j) => `
+          <td>
+            <input
+              data-table="${t.key}"
+              data-row="${i}"
+              data-col="${j}"
+              aria-label="${esc(c)}"
+              value="${esc(r[j] || "")}">
+          </td>
+        `).join("")}
+        <td>
+          <button type="button" class="btn danger"
+            data-remove="${t.key}"
+            data-index="${i}">X</button>
+        </td>
+      </tr>
+    `).join("")
+    : `<tr>
+        <td colspan="${t.cols.length + 1}">
+          No entries yet
+        </td>
+      </tr>`;
+
+  return section(t.title,`
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>${head}<th>Remove</th></tr>
+        </thead>
+        <tbody>${body}</tbody>
+      </table>
+    </div>
+    <div class="table-actions">
+      <button type="button" class="btn alt"
+        data-add="${t.key}">
+        + Add Record
+      </button>
+    </div>
+  `);
+}
+
+function registration() {
+  const p = editId
+    ? profiles.find(x => x.id === editId) || {}
+    : {};
+
+  rows = {};
+  tables.forEach(t => {
+    rows[t.key] = Array.isArray(p[t.key])
+      ? JSON.parse(JSON.stringify(p[t.key]))
+      : [];
+  });
+
+  photoData = p.photo || "";
+  photoPending = null;
+
+  const preview = validPhoto(p)
+    ? `<img src="${p.photo}" alt="Demo photo">`
+    : `<div class="photo-placeholder">
+         ♙<small>INMATE PHOTO</small>
+       </div>`;
+
+  return `
+    <div class="panel">
+      <h2>${editId ? "Edit Inmate Record" : "New Inmate Registration"}</h2>
+
+      <form id="recordForm">
+
+        ${section("INMATE IDENTITY INFORMATION",`
+          <div class="identity">
+            <div class="photo-column">
+              <div id="photoPreview" class="photo-box">
+                ${preview}
+              </div>
+              <div class="field">
+                <label for="photoInput">
+                  Upload Photo (500 KB Max)
+                </label>
+                <input id="photoInput" type="file"
+                  accept="image/png,image/jpeg,image/webp">
+              </div>
+              <div class="id-field">
+                ${field("Inmate ID","id",p.id)}
+              </div>
+            </div>
+
+            <div class="grid">
+              ${field("Last Name","last",p.last)}
+              ${field("First Name","first",p.first)}
+              ${field("Middle Initial","middle",p.middle)}
+              ${field("Age","age",p.age,"number")}
+              ${field("Gender","gender",p.gender)}
+              ${field("Height (Inches)","height",p.height,"number")}
+              ${field("Weight","weight",p.weight)}
+              ${field("Hair Color","hair",p.hair)}
+              ${field("Eye Color","eyes",p.eyes)}
+              ${field("Ethnic Origin","ethnicOrigin",p.ethnicOrigin)}
+              ${field("Custody Class","custodyClass",p.custodyClass)}
+              ${field("Admission Date","admission",p.admission,"date")}
+            </div>
+          </div>
+        `)}
+
+        ${section("RELEASE INFORMATION",`
+          <div class="grid">
+            ${field("Projected Eligible Release Date","projectedRelease",p.projectedRelease,"date")}
+            ${field("Prison Release Date","releaseDate",p.releaseDate,"date")}
+            ${field("Release Type","releaseType",p.releaseType)}
+          </div>
+        `)}
+
+        ${section("MOST RECENT LOCATION / AS OF DATE",`
+          <div class="grid">
+            ${field("Complex","complex",p.complex)}
+            ${field("Unit","unit",p.unit)}
+            ${field("Last Movement","lastMovement",p.lastMovement)}
+            ${field("Status","status",p.status || "Active")}
+            ${field("As Of Date","locationAsOf",p.locationAsOf,"date")}
+            ${field("Facility","facility",p.facility)}
+            ${field("State","state",p.state)}
+          </div>
+        `)}
+
+        ${section(
+          "INMATE MAILING ADDRESS",
+          textarea("Mailing Address","mailingAddress",p.mailingAddress)
+        )}
+
+        ${section(
+          "ADDITIONAL INMATE INFORMATION",
+          textarea("Notes","notes",p.notes)
+        )}
+
+        <div id="recordTables">
+          ${tables.map(tableEditor).join("")}
+        </div>
+
+        <div class="footer">
+          <button type="button" class="btn alt"
+            data-go="profiles">Cancel</button>
+          <button type="submit" class="btn">
+            ${editId ? "SAVE CHANGES" : "SAVE INMATE RECORD"}
+          </button>
+        </div>
+
+      </form>
+    </div>
+  `;
+}
+
+function detailItem(label,value) {
+  return `
+    <div class="detail-item">
+      <div class="detail-label">${esc(label)}</div>
+      <div class="detail-value">${esc(value || "—")}</div>
+    </div>
+  `;
+}
+
+function detailGrid(p,fields) {
+  return `
+    <div class="detail-grid">
+      ${fields.map(([label,key]) =>
+        detailItem(label,p[key])
+      ).join("")}
+    </div>
+  `;
+}
+
+function recordTable(p,t) {
+  const data = Array.isArray(p[t.key])
+    ? p[t.key] : [];
+
+  return section(t.title,`
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            ${t.cols.map(c =>
+              `<th>${esc(c)}</th>`
+            ).join("")}
+          </tr>
+        </thead>
+        <tbody>
+          ${data.length
+            ? data.map(r => `
+              <tr>
+                ${t.cols.map((c,j) =>
+                  `<td>${esc(r[j] || "—")}</td>`
+                ).join("")}
+              </tr>
+            `).join("")
+            : `<tr>
+                <td colspan="${t.cols.length}">
+                  No records
+                </td>
+              </tr>`
+          }
+        </tbody>
+      </table>
+    </div>
+  `);
+}
+
+function detail() {
+  const p = profiles.find(
+    x => x.id === detailId
+  );
+
   if (!p) {
     return '<div class="panel">Record not found.</div>';
   }
 
-  const item = (label, value) => `
-    <div style="
-      background:#0b1019;
-      border:1px solid #394557;
-      border-radius:7px;
-      padding:12px;
-      min-width:0;
-    ">
-      <div style="
-        color:#aab3c3;
-        font-size:11px;
-        font-weight:bold;
-        margin-bottom:7px;
-        text-transform:uppercase;
-      ">${esc(label)}</div>
-      <div style="
-        color:white;
-        font-size:15px;
-        overflow-wrap:anywhere;
-      ">${esc(value || "—")}</div>
-    </div>
-  `;
-
-  const grid = fields => `
-    <div style="
-      display:grid;
-      grid-template-columns:repeat(
-        auto-fit,minmax(min(100%,180px),1fr)
-      );
-      gap:12px;
-    ">
-      ${fields.map(f => item(f[0], p[f[1]])).join("")}
-    </div>
-  `;
-
-  const photo = /^data:image\/(png|jpeg|webp);base64,/i
-    .test(p.photo || "")
-    ? `<img src="${p.photo}"
-        alt="Fictional inmate photo"
-        style="
-          width:100%;
-          height:230px;
-          object-fit:cover;
-          border-radius:8px;
-        ">`
-    : `<div style="
-        height:230px;
-        display:grid;
-        place-items:center;
-        background:#242d3a;
-        border-radius:8px;
-        color:#aab3c3;
-        font-size:60px;
-      ">♙</div>`;
+  const photo = validPhoto(p)
+    ? `<img src="${p.photo}" alt="Demo inmate photo">`
+    : "♙";
 
   return `
     <div class="panel">
-
       <div class="actions">
         <button class="btn alt" data-go="profiles">
           Back
@@ -303,37 +885,27 @@ function detail(){
           data-edit="${encodeURIComponent(p.id)}">
           Edit Record
         </button>
-        <button class="btn warn"
+        <button class="btn danger"
           data-delete="${encodeURIComponent(p.id)}">
           Delete Record
         </button>
       </div>
 
-      <div class="section-title">
-        INMATE IDENTITY INFORMATION
-      </div>
+      ${section("INMATE IDENTITY INFORMATION",`
+        <div class="master-identity">
 
-      <div class="section">
-        <div style="
-          display:grid;
-          grid-template-columns:
-            repeat(auto-fit,minmax(min(100%,230px),1fr));
-          gap:18px;
-        ">
-
-          <div style="max-width:260px">
-            ${photo}
+          <div>
+            <div class="master-photo">
+              ${photo}
+            </div>
             <div style="margin-top:12px">
-              ${item("INMATE ID",p.id)}
+              ${detailItem("INMATE ID",p.id)}
             </div>
           </div>
 
           <div>
-            <h2 style="margin-top:0">
-              ${esc(fullName(p))}
-            </h2>
-
-            ${grid([
+            <h2>${esc(fullName(p))}</h2>
+            ${detailGrid(p,[
               ["Last Name","last"],
               ["First Name","first"],
               ["Middle Initial","middle"],
@@ -348,21 +920,20 @@ function detail(){
               ["Admission Date","admission"]
             ])}
           </div>
-        </div>
-      </div>
 
-      ${section(
-        "RELEASE INFORMATION",
-        grid([
+        </div>
+      `)}
+
+      ${section("RELEASE INFORMATION",
+        detailGrid(p,[
           ["Projected Eligible Release Date","projectedRelease"],
           ["Prison Release Date","releaseDate"],
           ["Release Type","releaseType"]
         ])
       )}
 
-      ${section(
-        "MOST RECENT LOCATION / AS OF DATE",
-        grid([
+      ${section("MOST RECENT LOCATION / AS OF DATE",
+        detailGrid(p,[
           ["Complex","complex"],
           ["Unit","unit"],
           ["Last Movement","lastMovement"],
@@ -373,248 +944,463 @@ function detail(){
         ])
       )}
 
-      ${section(
-        "INMATE MAILING ADDRESS",
-        item("Mailing Address",p.mailingAddress)
+      ${section("INMATE MAILING ADDRESS",
+        detailItem("Mailing Address",p.mailingAddress)
       )}
 
-      ${section(
-        "ADDITIONAL INMATE INFORMATION",
-        item("Notes",p.notes)
+      ${section("ADDITIONAL INMATE INFORMATION",
+        detailItem("Notes",p.notes)
       )}
 
-      ${tables.map(t => section(
-        t.title,
-        `<div class="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                ${t.cols.map(c =>
-                  `<th>${esc(c)}</th>`
-                ).join("")}
-              </tr>
-            </thead>
-            <tbody>
-              ${
-                Array.isArray(p[t.key]) && p[t.key].length
-                  ? p[t.key].map(r => `
-                    <tr>
-                      ${t.cols.map((c,j) =>
-                        `<td>${esc(r[j] || "—")}</td>`
-                      ).join("")}
-                    </tr>
-                  `).join("")
-                  : `<tr>
-                      <td colspan="${t.cols.length}">
-                        No records
-                      </td>
-                    </tr>`
-              }
-            </tbody>
-          </table>
-        </div>`
-      )).join("")}
+      ${tables.map(t => recordTable(p,t)).join("")}
 
     </div>
   `;
 }
 
-const titles={dashboard:"Command Dashboard",register:"Inmate Registration",profiles:"Inmate Profiles",gallery:"Photo Gallery",facilities:"Facilities",records:"Records",search:"Search",reports:"Reports",settings:"Settings",detail:"Inmate Master Record"};
-$("pageTitle").textContent=titles[view]||"NEXUS";
-document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===view));
-let html="";
-if(view==="dashboard"){
-const facilities=new Set(profiles.map(p=>p.facility).filter(Boolean));
-html=`<div class="stats"><div class="panel stat">TOTAL PROFILES<strong>${profiles.length}</strong></div><div class="panel stat">ACTIVE RECORDS<strong>${profiles.filter(p=>p.status==="Active").length}</strong></div><div class="panel stat">FACILITIES<strong>${facilities.size}</strong></div><div class="panel stat">PHOTOS<strong>${profiles.filter(p=>p.photo).length}</strong></div></div><div class="panel"><h2>Quick Actions</h2><div class="actions"><button class="btn" data-go="register">+ Register Inmate</button><button class="btn alt" data-go="search">Search Records</button><button class="btn alt" data-go="gallery">Photo Gallery</button></div></div><h2>Recent Fictional Profiles</h2>${cards(profiles.slice(-6).reverse())}`;
-}
-if(view==="register")html=registration();
-if(["profiles","gallery","records"].includes(view))html=`<div class="panel"><button class="btn" data-go="register">+ New Registration</button></div>${cards(profiles)}`;
-if(view==="search")html=`<div class="panel"><h2>Search Records</h2><input id="query" class="search" placeholder="Name, ID, state, facility or status"></div><div id="results">${cards(profiles)}</div>`;
-if(view==="facilities"){
-const names=[...new Set(profiles.map(p=>p.facility).filter(Boolean))];
-html=`<div class="panel"><h2>Facilities</h2>${names.length?names.map(n=>`<p>${esc(n)} — ${profiles.filter(p=>p.facility===n).length} profiles</p>`).join(""):"No facilities entered."}</div>`;
-}
-if(view==="reports")html=`<div class="panel"><h2>Demo Summary Report</h2><p>Total Profiles: ${profiles.length}</p><p>Active: ${profiles.filter(p=>p.status==="Active").length}</p><p>Sentence Entries: ${profiles.reduce((n,p)=>n+(p.sentences?.length||0),0)}</p></div>`;
-if(view==="settings")html='<div class="panel"><h2>Demo Settings</h2><p>Data is stored only in this browser. There is no secure backend.</p><button id="clear" class="btn warn">Delete All Fictional Profiles</button></div>';
-if(view==="detail")html=detail();
-$("content").innerHTML=html;
-if(view==="register"){
-$("recordForm").addEventListener("submit",saveRecord);
-$("photoInput").addEventListener("change",loadPhoto);
-}
-if(view==="search")$("query").addEventListener("input",e=>{
-const q=e.target.value.toLowerCase();
-$("results").innerHTML=cards(profiles.filter(p=>[p.id,fullName(p),p.state,p.facility,p.status].some(v=>String(v||"").toLowerCase().includes(q))));
-});
-if(view==="settings")$("clear").addEventListener("click",()=>{
-if(confirm("Delete all fictional profiles?")){
-const old=profiles;profiles=[];
-if(!save())profiles=old;
-render();
-}
-});
-}
-function go(v){view=v;render()}
-let photoPending=null;
-function loadPhoto(e){
-const file=e.target.files[0];
-if(!file)return;
-if(file.size>500*1024||!["image/jpeg","image/png","image/webp"].includes(file.type)){
-alert("Use a JPG, PNG or WebP photo under 500 KB.");
-e.target.value="";
-return;
-}
-photoPending=new Promise((resolve,reject)=>{
-const reader=new FileReader();
-reader.onload=()=>resolve(reader.result);
-reader.onerror=reject;
-reader.readAsDataURL(file);
-});
-photoPending.then(data=>{
-photoData=data;
-$("photoPreview").innerHTML='<img alt="Selected photo" src="'+data+'">';
-}).catch(()=>alert("Photo could not be loaded."));
-}
-async function saveRecord(e){
-e.preventDefault();
-if(photoPending){
-try{await photoPending}catch(err){alert("Photo error");return}
-}
-const fd=new FormData(e.currentTarget),p={};
-for(const [key,value] of fd.entries())p[key]=String(value).trim();
-if(!p.id||!p.first||!p.last){
-alert("Inmate ID, first name and last name are required.");
-return;
-}
-if(profiles.some(x=>x.id.toLowerCase()===p.id.toLowerCase()&&x.id!==editId)){
-alert("This Inmate ID already exists.");
-return;
-}
-p.photo=photoData;
-tables.forEach(t=>p[t.key]=(rows[t.key]||[]).filter(r=>r.some(v=>String(v||"").trim())));
-const old=profiles.slice();
-if(editId){
-const index=profiles.findIndex(x=>x.id===editId);
-if(index>=0)profiles[index]=p;
-else profiles.push(p);
-}else profiles.push(p);
-if(!save()){profiles=old;return}
-editId=null;detailId=p.id;photoPending=null;
-go("detail");
-alert("Fictional record saved in this browser.");
-}
-$("content").addEventListener("input",e=>{
-const el=e.target;
-if(el.dataset.table){
-const row=rows[el.dataset.table]?.[Number(el.dataset.row)];
-if(row)row[Number(el.dataset.col)]=el.value;
-}
-});
-$("content").addEventListener("click",e=>{
-const b=e.target.closest("button");
-if(!b)return;
-if(b.dataset.add){
-rows[b.dataset.add].push([]);
-refreshTables();
-return;
-}
-if(b.dataset.remove){
-rows[b.dataset.remove].splice(Number(b.dataset.index),1);
-refreshTables();
-return;
-}
-if(b.dataset.go){editId=null;go(b.dataset.go)}
-if(b.dataset.open){detailId=decodeURIComponent(b.dataset.open);go("detail")}
-if(b.dataset.edit){editId=decodeURIComponent(b.dataset.edit);go("register")}
-if(b.dataset.delete){
-const id=decodeURIComponent(b.dataset.delete);
-if(confirm("Delete this fictional profile?")){
-const old=profiles.slice();
-profiles=profiles.filter(p=>p.id!==id);
-if(!save())profiles=old;
-go("profiles");
-}
-}
-});
-function refreshTables(){
-$("recordTables").innerHTML=tables.map(tableEditor).join("");
-}
-document.querySelectorAll(".nav").forEach(b=>b.addEventListener("click",()=>{
-editId=null;go(b.dataset.view);
-}));
-$("gateForm").addEventListener("submit",e=>{
-e.preventDefault();
-$("gateway").classList.add("hidden");
-$("login").classList.remove("hidden");
-});
-$("loginForm").addEventListener("submit",e=>{
-e.preventDefault();
-$("login").classList.add("hidden");
-$("shell").classList.remove("hidden");
-render();
-});
-$("lock").addEventListener("click",()=>{
-$("shell").classList.add("hidden");
-$("login").classList.add("hidden");
-$("gateway").classList.remove("hidden");
-$("gateForm").reset();
-$("loginForm").reset();
-});
-})();
-  
-<style>
-/* NEXUS FIELD OVERLAP FIX */
+function render() {
+  const titles = {
+    dashboard:"Command Dashboard",
+    register:"Inmate Registration",
+    profiles:"Inmate Profiles",
+    gallery:"Photo Gallery",
+    facilities:"Facilities",
+    records:"Records",
+    search:"Search",
+    reports:"Reports",
+    settings:"Settings",
+    detail:"Inmate Master Record"
+  };
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(
-    4, minmax(0, 1fr)
+  $("pageTitle").textContent =
+    titles[view] || "NEXUS";
+
+  document.querySelectorAll(".nav").forEach(
+    b => b.classList.toggle(
+      "active",b.dataset.view === view
+    )
   );
-  gap: 14px;
-  width: 100%;
-}
 
-.grid > *,
-.field {
-  min-width: 0;
-  max-width: 100%;
-}
+  let html = "";
 
-.field input,
-.field select,
-.field textarea {
-  display: block;
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  box-sizing: border-box;
-}
+  if (view === "dashboard") {
+    const facilities = new Set(
+      profiles.map(p => p.facility).filter(Boolean)
+    );
 
-/* Tablet screens */
-@media (max-width: 1100px) {
-  .grid {
-    grid-template-columns: repeat(
-      2, minmax(0, 1fr)
+    html = `
+      <div class="stats">
+        <div class="panel stat">
+          TOTAL PROFILES
+          <strong>${profiles.length}</strong>
+        </div>
+        <div class="panel stat">
+          ACTIVE RECORDS
+          <strong>${profiles.filter(
+            p => p.status === "Active"
+          ).length}</strong>
+        </div>
+        <div class="panel stat">
+          FACILITIES
+          <strong>${facilities.size}</strong>
+        </div>
+        <div class="panel stat">
+          PHOTOS
+          <strong>${profiles.filter(
+            p => validPhoto(p)
+          ).length}</strong>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Quick Actions</h2>
+        <div class="actions">
+          <button class="btn" data-go="register">
+            + Register Inmate
+          </button>
+          <button class="btn alt" data-go="search">
+            Search Records
+          </button>
+          <button class="btn alt" data-go="gallery">
+            Photo Gallery
+          </button>
+        </div>
+      </div>
+
+      <h2>Recent Fictional Profiles</h2>
+      ${cards(profiles.slice(-6).reverse())}
+    `;
+  }
+
+  if (view === "register") {
+    html = registration();
+  }
+
+  if (["profiles","gallery","records"].includes(view)) {
+    const list = view === "gallery"
+      ? profiles.filter(validPhoto)
+      : profiles;
+
+    html = `
+      <div class="panel">
+        <button class="btn" data-go="register">
+          + New Registration
+        </button>
+      </div>
+      ${cards(list)}
+    `;
+  }
+
+  if (view === "search") {
+    html = `
+      <div class="panel">
+        <h2>Search Records</h2>
+        <input id="query" class="search"
+          placeholder="Name, ID, facility, state or status">
+      </div>
+      <div id="results">
+        ${cards(profiles)}
+      </div>
+    `;
+  }
+
+  if (view === "facilities") {
+    const names = [
+      ...new Set(
+        profiles.map(p => p.facility).filter(Boolean)
+      )
+    ];
+
+    html = `
+      <div class="panel">
+        <h2>Facilities</h2>
+        ${names.length
+          ? names.map(n => `
+            <p>${esc(n)} —
+              ${profiles.filter(
+                p => p.facility === n
+              ).length} profiles
+            </p>
+          `).join("")
+          : "No facilities entered."
+        }
+      </div>
+    `;
+  }
+
+  if (view === "reports") {
+    html = `
+      <div class="panel">
+        <h2>Demo Summary Report</h2>
+        <p>Total Profiles: ${profiles.length}</p>
+        <p>Active Records:
+          ${profiles.filter(
+            p => p.status === "Active"
+          ).length}
+        </p>
+        <p>Sentence Entries:
+          ${profiles.reduce(
+            (n,p) => n +
+            (p.sentences?.length || 0),0
+          )}
+        </p>
+      </div>
+    `;
+  }
+
+  if (view === "settings") {
+    html = `
+      <div class="panel">
+        <h2>Demo Settings</h2>
+        <p>
+          Records are stored only in this browser.
+          This is not a secure database.
+        </p>
+        <button id="clear" class="btn danger">
+          Delete All Fictional Profiles
+        </button>
+      </div>
+    `;
+  }
+
+  if (view === "detail") {
+    html = detail();
+  }
+
+  $("content").innerHTML = html;
+
+  if (view === "register") {
+    $("recordForm").addEventListener(
+      "submit",saveRecord
+    );
+    $("photoInput").addEventListener(
+      "change",loadPhoto
     );
   }
+
+  if (view === "search") {
+    $("query").addEventListener("input",e => {
+      const q = e.target.value.toLowerCase();
+
+      const results = profiles.filter(p =>
+        [
+          p.id,fullName(p),p.state,
+          p.facility,p.status
+        ].some(v =>
+          String(v || "")
+            .toLowerCase()
+            .includes(q)
+        )
+      );
+
+      $("results").innerHTML = cards(results);
+    });
+  }
+
+  if (view === "settings") {
+    $("clear").addEventListener("click",() => {
+      if (!confirm(
+        "Delete all fictional profiles?"
+      )) return;
+
+      const previous = profiles;
+      profiles = [];
+
+      if (!save()) profiles = previous;
+      render();
+    });
+  }
 }
 
-/* Smaller phone screens */
-@media (max-width: 520px) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
-
-  .identity {
-    grid-template-columns: 1fr;
-  }
-
-  .photo-column {
-    max-width: 190px;
-  }
+function go(nextView) {
+  view = nextView;
+  render();
 }
-</style>
 
+function loadPhoto(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  if (
+    file.size > 500 * 1024 ||
+    ![
+      "image/jpeg",
+      "image/png",
+      "image/webp"
+    ].includes(file.type)
+  ) {
+    alert(
+      "Choose a JPG, PNG or WebP photo under 500 KB."
+    );
+    e.target.value = "";
+    return;
+  }
+
+  photoPending = new Promise((resolve,reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
+  photoPending.then(data => {
+    photoData = data;
+    $("photoPreview").innerHTML =
+      `<img src="${data}" alt="Selected photo">`;
+  }).catch(() => {
+    alert("Photo could not be loaded.");
+  });
+}
+
+async function saveRecord(e) {
+  e.preventDefault();
+
+  if (photoPending) {
+    try {
+      photoData = await photoPending;
+    } catch (error) {
+      alert("Photo could not be loaded.");
+      return;
+    }
+  }
+
+  const fd = new FormData(e.currentTarget);
+  const p = {};
+
+  for (const [key,value] of fd.entries()) {
+    p[key] = String(value).trim();
+  }
+
+  if (!p.id || !p.first || !p.last) {
+    alert(
+      "Inmate ID, First Name and Last Name are required."
+    );
+    return;
+  }
+
+  if (profiles.some(x =>
+    x.id.toLowerCase() === p.id.toLowerCase() &&
+    x.id !== editId
+  )) {
+    alert("This Inmate ID already exists.");
+    return;
+  }
+
+  p.photo = photoData;
+
+  tables.forEach(t => {
+    p[t.key] = (rows[t.key] || []).filter(
+      r => r.some(v => String(v || "").trim())
+    );
+  });
+
+  const previous = profiles.slice();
+
+  if (editId) {
+    const index = profiles.findIndex(
+      x => x.id === editId
+    );
+    if (index >= 0) {
+      profiles[index] = p;
+    } else {
+      profiles.push(p);
+    }
+  } else {
+    profiles.push(p);
+  }
+
+  if (!save()) {
+    profiles = previous;
+    return;
+  }
+
+  editId = null;
+  detailId = p.id;
+  photoPending = null;
+
+  go("detail");
+  alert("Fictional record saved in this browser.");
+}
+
+function refreshTables() {
+  $("recordTables").innerHTML =
+    tables.map(tableEditor).join("");
+}
+
+$("content").addEventListener("input",e => {
+  const el = e.target;
+
+  if (!el.dataset.table) return;
+
+  const row = rows[el.dataset.table]?.[
+    Number(el.dataset.row)
+  ];
+
+  if (row) {
+    row[Number(el.dataset.col)] = el.value;
+  }
+});
+
+$("content").addEventListener("click",e => {
+  const b = e.target.closest("button");
+  if (!b) return;
+
+  if (b.dataset.add) {
+    rows[b.dataset.add].push([]);
+    refreshTables();
+    return;
+  }
+
+  if (b.dataset.remove) {
+    rows[b.dataset.remove].splice(
+      Number(b.dataset.index),1
+    );
+    refreshTables();
+    return;
+  }
+
+  if (b.dataset.go) {
+    editId = null;
+    go(b.dataset.go);
+    return;
+  }
+
+  if (b.dataset.open) {
+    detailId = decodeURIComponent(
+      b.dataset.open
+    );
+    go("detail");
+    return;
+  }
+
+  if (b.dataset.edit) {
+    editId = decodeURIComponent(
+      b.dataset.edit
+    );
+    go("register");
+    return;
+  }
+
+  if (b.dataset.delete) {
+    const id = decodeURIComponent(
+      b.dataset.delete
+    );
+
+    if (!confirm(
+      "Delete this fictional profile?"
+    )) return;
+
+    const previous = profiles.slice();
+    profiles = profiles.filter(
+      p => p.id !== id
+    );
+
+    if (!save()) profiles = previous;
+    go("profiles");
+  }
+});
+
+document.querySelectorAll(".nav").forEach(
+  b => b.addEventListener("click",() => {
+    editId = null;
+    go(b.dataset.view);
+  })
+);
+
+/* REPAIRED SECURITY GATEWAY */
+$("gateForm").addEventListener(
+  "submit",function(e) {
+    e.preventDefault();
+
+    $("gateway").classList.add("hidden");
+    $("login").classList.remove("hidden");
+  }
+);
+
+/* REPAIRED ADMINISTRATOR LOGIN */
+$("loginForm").addEventListener(
+  "submit",function(e) {
+    e.preventDefault();
+
+    $("login").classList.add("hidden");
+    $("shell").classList.remove("hidden");
+
+    go("dashboard");
+  }
+);
+
+/* LOCK DEMO */
+$("lock").addEventListener("click",() => {
+  $("shell").classList.add("hidden");
+  $("login").classList.add("hidden");
+  $("gateway").classList.remove("hidden");
+
+  $("gateForm").reset();
+  $("loginForm").reset();
+});
+
+})();
 </script>
+
 </body>
 </html>
