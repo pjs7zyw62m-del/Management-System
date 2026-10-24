@@ -2,101 +2,773 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>NEXUS | Management System</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #edf2f7;
-      color: #172b46;
-    }
-    header {
-      background: #10243d;
-      color: white;
-      padding: 25px;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 32px;
-    }
-    nav {
-      background: #1d4268;
-      padding: 18px;
-      color: white;
-    }
-    main {
-      padding: 25px;
-    }
-    .cards {
-      display: grid;
-      grid-template-columns:
-        repeat(auto-fit, minmax(200px, 1fr));
-      gap: 18px;
-    }
-    .card {
-      background: white;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px #00000015;
-    }
-    .card h2 {
-      font-size: 17px;
-    }
-    .number {
-      font-size: 32px;
-      font-weight: bold;
-    }
-    .notice {
-      background: #fff3cd;
-      padding: 15px;
-      border-radius: 8px;
-      margin-top: 25px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEXUS | Inmate Management System</title>
+<style>
+:root {
+  --red:#f00020;
+  --dark:#050505;
+  --panel:#0d0d0f;
+  --line:#471017;
+  --text:#e7e7e7;
+  --muted:#929292;
+}
+* {box-sizing:border-box}
+body {
+  margin:0;
+  background:#000;
+  color:var(--text);
+  font-family:Arial,Helvetica,sans-serif;
+}
+button,input,select,textarea {
+  font:inherit;
+}
+button {cursor:pointer}
+.shell {
+  display:grid;
+  grid-template-columns:270px minmax(0,1fr);
+  min-height:100vh;
+}
+.sidebar {
+  background:#050505;
+  border-right:1px solid var(--red);
+  padding:210px 10px 22px;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
+.nav {
+  width:100%;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  background:#050505;
+  border:1px solid transparent;
+  border-bottom-color:#39070d;
+  color:#ccc;
+  text-align:left;
+  padding:17px 15px;
+  font-size:14px;
+  font-weight:bold;
+  text-transform:uppercase;
+}
+.nav:hover,.nav.active {
+  background:linear-gradient(90deg,#a90015,#2b0005);
+  border-color:var(--red);
+  color:white;
+  box-shadow:0 0 15px #e000243b;
+}
+.nav-icon {
+  font-size:23px;
+  width:30px;
+  text-align:center;
+}
+.restricted {
+  margin-top:auto;
+  border:1px solid var(--red);
+  padding:18px 12px;
+  color:var(--red);
+  font-weight:bold;
+  font-size:13px;
+}
+.restricted small {
+  display:block;
+  margin-top:7px;
+  color:#999;
+  font-size:10px;
+}
+.main {
+  min-width:0;
+  padding:25px 20px 35px;
+}
+.brand {
+  text-align:center;
+  padding:4px 0 24px;
+}
+.logo {
+  font-size:clamp(55px,9vw,110px);
+  font-weight:900;
+  letter-spacing:5px;
+  line-height:1;
+  background:linear-gradient(#fff,#858585,#eee);
+  background-clip:text;
+  -webkit-background-clip:text;
+  color:transparent;
+}
+.logo .x {
+  color:var(--red);
+  -webkit-text-fill-color:var(--red);
+  text-shadow:0 0 18px #f0002045;
+}
+.subtitle {
+  margin-top:10px;
+  font-size:clamp(11px,1.6vw,22px);
+  letter-spacing:7px;
+}
+.motto {
+  color:#aaa;
+  letter-spacing:4px;
+  margin-top:20px;
+  font-size:11px;
+}
+.motto b {color:var(--red);margin:0 9px}
+.stats {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+}
+.panel {
+  background:linear-gradient(145deg,#101013,#030303 70%);
+  border:1px solid var(--red);
+  box-shadow:inset 0 0 14px #390009,0 0 7px #b000171e;
+  padding:16px;
+  min-width:0;
+}
+.stat {
+  min-height:172px;
+  position:relative;
+}
+.stat .symbol {
+  color:var(--red);
+  font-size:32px;
+}
+.stat h3 {
+  margin:10px 0;
+  font-size:13px;
+  text-transform:uppercase;
+}
+.stat strong {
+  display:block;
+  font-size:52px;
+  color:#eee;
+}
+.stat small {
+  color:var(--red);
+  font-size:11px;
+  text-transform:uppercase;
+}
+.panels {
+  display:grid;
+  grid-template-columns:1.15fr 1fr 1fr;
+  gap:10px;
+  margin-top:22px;
+}
+.panel-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  border-bottom:1px solid var(--red);
+  padding-bottom:12px;
+  margin-bottom:12px;
+}
+.panel-header h2 {
+  margin:0;
+  font-size:16px;
+  text-transform:uppercase;
+}
+.outline {
+  background:transparent;
+  border:1px solid var(--red);
+  color:var(--red);
+  padding:8px 12px;
+  font-size:12px;
+  font-weight:bold;
+}
+.outline:hover {
+  background:var(--red);
+  color:white;
+}
+table {
+  width:100%;
+  border-collapse:collapse;
+  font-size:12px;
+}
+th {
+  text-align:left;
+  color:#aaa;
+  font-weight:normal;
+}
+td,th {
+  padding:11px 6px;
+  border-bottom:1px solid #292929;
+}
+.status {
+  display:inline-block;
+  color:#12d89c;
+  border:1px solid #008e66;
+  border-radius:6px;
+  padding:6px 9px;
+  font-size:11px;
+}
+.gallery {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+}
+.photo-card {
+  background:#111;
+  border:1px solid #6c111d;
+  text-align:center;
+  padding:5px;
+  cursor:pointer;
+}
+.photo-card:hover {
+  border-color:var(--red);
+  box-shadow:0 0 12px #ed002755;
+}
+.photo-card span {
+  display:block;
+  font-size:11px;
+  margin:7px 0 3px;
+}
+.silhouette {
+  width:100%;
+  aspect-ratio:4/5;
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(ellipse at 50% 32%,#777 0%,#292929 45%,#080808 85%);
+}
+.silhouette:before {
+  content:"";
+  position:absolute;
+  width:30%;
+  height:29%;
+  background:#070707;
+  border-radius:48%;
+  left:35%;
+  top:18%;
+}
+.silhouette:after {
+  content:"";
+  position:absolute;
+  width:74%;
+  height:55%;
+  background:#070707;
+  border-radius:46% 46% 0 0;
+  left:13%;
+  bottom:-23%;
+}
+.bars {
+  position:absolute;
+  inset:0;
+  z-index:2;
+  background:repeating-linear-gradient(
+    90deg,
+    transparent 0,
+    transparent 18%,
+    #060606 19%,
+    #555 20%,
+    #090909 22%,
+    transparent 23%,
+    transparent 33%
+  );
+}
+.page {display:none}
+.page.active {display:block}
+.page-title {
+  font-size:25px;
+  color:#eee;
+  margin:0 0 20px;
+  border-bottom:1px solid var(--red);
+  padding-bottom:14px;
+}
+.form-grid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:16px;
+}
+.field label {
+  display:block;
+  color:#aaa;
+  font-size:12px;
+  margin-bottom:7px;
+  text-transform:uppercase;
+}
+.field input,.field select,.field textarea {
+  width:100%;
+  padding:13px;
+  background:#101010;
+  color:white;
+  border:1px solid #65111c;
+  border-radius:3px;
+}
+.field textarea {min-height:90px}
+.wide {grid-column:1/-1}
+.primary {
+  background:linear-gradient(90deg,#ad0019,#f00020);
+  color:white;
+  border:1px solid #ff3045;
+  padding:13px 22px;
+  font-weight:bold;
+  margin-top:20px;
+}
+.note {
+  color:#aaa;
+  font-size:12px;
+  margin:16px 0;
+  line-height:1.6;
+}
+.empty {
+  padding:35px 15px;
+  text-align:center;
+  color:#aaa;
+}
+.search {
+  width:100%;
+  max-width:540px;
+  background:#111;
+  color:white;
+  border:1px solid var(--red);
+  padding:13px;
+  margin-bottom:20px;
+}
+.footer {
+  color:#777;
+  border-top:1px solid #7e0010;
+  margin-top:30px;
+  padding-top:15px;
+  letter-spacing:2px;
+  font-size:10px;
+}
+@media(max-width:1100px) {
+  .stats {grid-template-columns:repeat(2,1fr)}
+  .panels {grid-template-columns:1fr 1fr}
+  .panels .panel:last-child {grid-column:1/-1}
+}
+@media(max-width:700px) {
+  .shell {display:block}
+  .sidebar {
+    padding:10px;
+    flex-direction:row;
+    flex-wrap:wrap;
+  }
+  .nav {
+    width:auto;
+    flex:1 1 135px;
+    padding:10px;
+    font-size:11px;
+  }
+  .nav-icon {font-size:16px;width:20px}
+  .restricted {display:none}
+  .main {padding:15px}
+  .panels {grid-template-columns:1fr}
+  .panels .panel:last-child {grid-column:auto}
+  .form-grid {grid-template-columns:1fr}
+  .logo {letter-spacing:0}
+  .subtitle {letter-spacing:2px}
+  .motto {letter-spacing:1px}
+}
+</style>
 </head>
+
 <body>
-  <header>
-    <h1>NEXUS</h1>
-    <p>Inmate Management System</p>
-  </header>
+<div class="shell">
 
-  <nav>
-    Dashboard | Registration | Gallery |
-    Profiles | Records | Search
-  </nav>
+<aside class="sidebar">
+  <button class="nav active" data-page="dashboard">
+    <span class="nav-icon">⌂</span> Dashboard
+  </button>
+  <button class="nav" data-page="registration">
+    <span class="nav-icon">✚</span> Inmate Registration
+  </button>
+  <button class="nav" data-page="profiles">
+    <span class="nav-icon">♙</span> Inmate Profiles
+  </button>
+  <button class="nav" data-page="gallery">
+    <span class="nav-icon">▣</span> Photo Gallery
+  </button>
+  <button class="nav" data-page="facilities">
+    <span class="nav-icon">▦</span> Facilities
+  </button>
+  <button class="nav" data-page="records">
+    <span class="nav-icon">▤</span> Records
+  </button>
+  <button class="nav" data-page="search">
+    <span class="nav-icon">⌕</span> Search
+  </button>
+  <button class="nav" data-page="reports">
+    <span class="nav-icon">▥</span> Reports
+  </button>
+  <button class="nav" data-page="settings">
+    <span class="nav-icon">⚙</span> Settings
+  </button>
 
-  <main>
-    <h2>Administrative Dashboard</h2>
+  <div class="restricted">
+    🔒 RESTRICTED ACCESS
+    <small>AUTHORIZED PERSONNEL ONLY</small>
+  </div>
+</aside>
 
-    <div class="cards">
-      <div class="card">
-        <h2>Registered Inmates</h2>
-        <div class="number">0</div>
+<main class="main">
+
+<header class="brand">
+  <div class="logo">NE<span class="x">X</span>US</div>
+  <div class="subtitle">INMATE MANAGEMENT SYSTEM</div>
+  <div class="motto">
+    SECURE <b>|</b> MANAGE <b>|</b>
+    ORGANIZE <b>|</b> CONTROL <b>|</b> RESULTS
+  </div>
+</header>
+
+<section id="dashboard" class="page active">
+
+<div class="stats">
+  <div class="panel stat">
+    <div class="symbol">♟</div>
+    <h3>Registered Inmates</h3>
+    <strong>0</strong>
+    <small>Total Inmates</small>
+  </div>
+  <div class="panel stat">
+    <div class="symbol">▦</div>
+    <h3>Facilities</h3>
+    <strong>0</strong>
+    <small>Active Facilities</small>
+  </div>
+  <div class="panel stat">
+    <div class="symbol">▤</div>
+    <h3>Records</h3>
+    <strong>0</strong>
+    <small>Total Records</small>
+  </div>
+  <div class="panel stat">
+    <div class="symbol">▣</div>
+    <h3>Photo Gallery</h3>
+    <strong>0</strong>
+    <small>Total Profiles</small>
+  </div>
+</div>
+
+<div class="panels">
+
+<div class="panel">
+  <div class="panel-header">
+    <h2>Recent Registrations</h2>
+    <button class="outline" data-go="profiles">VIEW ALL</button>
+  </div>
+  <table>
+    <thead><tr><th>ID</th><th>NAME</th><th>DATE</th></tr></thead>
+    <tbody>
+      <tr><td>INM-0001</td><td>John Doe</td><td>10/21/2026</td></tr>
+      <tr><td>INM-0002</td><td>Michael Smith</td><td>10/20/2026</td></tr>
+      <tr><td>INM-0003</td><td>Robert Johnson</td><td>10/19/2026</td></tr>
+      <tr><td>INM-0004</td><td>David Williams</td><td>10/19/2026</td></tr>
+      <tr><td>INM-0005</td><td>James Brown</td><td>10/18/2026</td></tr>
+    </tbody>
+  </table>
+  <p class="note">Demonstration entries only.</p>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    <h2>Facility Overview</h2>
+    <button class="outline" data-go="facilities">VIEW ALL</button>
+  </div>
+  <table>
+    <thead><tr><th>FACILITY</th><th>INMATES</th><th>STATUS</th></tr></thead>
+    <tbody>
+      <tr><td>Facility A</td><td>0</td><td><span class="status">Demo</span></td></tr>
+      <tr><td>Facility B</td><td>0</td><td><span class="status">Demo</span></td></tr>
+      <tr><td>Facility C</td><td>0</td><td><span class="status">Demo</span></td></tr>
+      <tr><td>Facility D</td><td>0</td><td><span class="status">Demo</span></td></tr>
+      <tr><td>Facility E</td><td>0</td><td><span class="status">Demo</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    <h2>Profile Gallery</h2>
+    <button class="outline" data-go="gallery">VIEW ALL</button>
+  </div>
+  <div class="gallery" id="dashboard-gallery"></div>
+  <p class="note">Sample profile placeholders.</p>
+</div>
+
+</div>
+</section>
+
+<section id="registration" class="page">
+  <h1 class="page-title">New Inmate Registration</h1>
+  <div class="panel">
+    <p class="note">
+      Registration form preview. Entries are not saved.
+      Do not enter real personal information.
+    </p>
+    <form id="registration-form">
+      <div class="form-grid">
+        <div class="field">
+          <label>Inmate ID</label>
+          <input placeholder="INM-0001" required>
+        </div>
+        <div class="field">
+          <label>First Name</label>
+          <input placeholder="First name" required>
+        </div>
+        <div class="field">
+          <label>Middle Initial</label>
+          <input maxlength="1">
+        </div>
+        <div class="field">
+          <label>Last Name</label>
+          <input placeholder="Last name" required>
+        </div>
+        <div class="field">
+          <label>State</label>
+          <input placeholder="State">
+        </div>
+        <div class="field">
+          <label>Facility</label>
+          <input placeholder="Facility">
+        </div>
+        <div class="field">
+          <label>Custody Classification</label>
+          <select>
+            <option value="">Select classification</option>
+            <option>Minimum</option>
+            <option>Medium</option>
+            <option>Maximum</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Status</label>
+          <select>
+            <option>Active</option>
+            <option>Inactive</option>
+          </select>
+        </div>
+        <div class="field wide">
+          <label>Profile Photo (Demo Preview)</label>
+          <input type="file" accept="image/*">
+        </div>
+        <div class="field wide">
+          <label>Notes</label>
+          <textarea placeholder="Demonstration notes"></textarea>
+        </div>
       </div>
+      <button class="primary" type="submit">
+        PREVIEW REGISTRATION
+      </button>
+    </form>
+  </div>
+</section>
 
-      <div class="card">
-        <h2>Facilities</h2>
-        <div class="number">0</div>
-      </div>
+<section id="profiles" class="page">
+  <h1 class="page-title">Inmate Profiles</h1>
+  <div class="panel">
+    <p class="note">
+      Profile directory preview. Real profiles will
+      be connected to the private database later.
+    </p>
+    <div class="gallery" id="profiles-gallery"></div>
+  </div>
+</section>
 
-      <div class="card">
-        <h2>Records</h2>
-        <div class="number">0</div>
-      </div>
+<section id="gallery" class="page">
+  <h1 class="page-title">Inmate Photo Gallery</h1>
+  <div class="panel">
+    <p class="note">
+      Male silhouette placeholders behind prison bars.
+      Uploaded inmate photographs will replace these
+      placeholders once secure storage is configured.
+    </p>
+    <div class="gallery" id="full-gallery"></div>
+  </div>
+</section>
 
-      <div class="card">
-        <h2>Profile Gallery</h2>
-        <p>Coming Soon</p>
-      </div>
+<section id="facilities" class="page">
+  <h1 class="page-title">Facility Management</h1>
+  <div class="panel">
+    <p class="note">
+      Facility management will include facility
+      names, state, status, inmate counts and
+      assigned inmate profiles.
+    </p>
+    <div class="empty">No facilities registered.</div>
+  </div>
+</section>
+
+<section id="records" class="page">
+  <h1 class="page-title">Inmate Records</h1>
+  <div class="panel">
+    <p class="note">
+      Future record categories:
+    </p>
+    <table>
+      <tbody>
+        <tr><td>01</td><td>Sentence & Commitment</td></tr>
+        <tr><td>02</td><td>Disciplinary Infraction</td></tr>
+        <tr><td>03</td><td>Profile Classification</td></tr>
+        <tr><td>04</td><td>Parole Action</td></tr>
+        <tr><td>05</td><td>Work Program</td></tr>
+        <tr><td>06</td><td>Notification Request</td></tr>
+        <tr><td>07</td><td>Detainer</td></tr>
+        <tr><td>08</td><td>Warrant</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="search" class="page">
+  <h1 class="page-title">Advanced Inmate Search</h1>
+  <div class="panel">
+    <input class="search" id="search-input"
+      placeholder="Search demonstration profile IDs...">
+    <div id="search-results" class="note">
+      Enter an inmate ID to search the sample profiles.
     </div>
+  </div>
+</section>
 
-    <div class="notice">
-      NEXUS prototype. Do not enter real inmate
-      information until secure authentication
-      and database storage are configured.
+<section id="reports" class="page">
+  <h1 class="page-title">Reports</h1>
+  <div class="panel">
+    <div class="empty">
+      Reporting tools will be available
+      after database integration.
     </div>
-  </main>
+  </div>
+</section>
+
+<section id="settings" class="page">
+  <h1 class="page-title">System Settings</h1>
+  <div class="panel">
+    <p>System: NEXUS</p>
+    <p>Theme: Black / Red</p>
+    <p>Version: 1.0 Prototype</p>
+    <p class="note">
+      Authentication, permissions, database storage,
+      audit logs and backups are not configured.
+      This prototype is not suitable for real inmate records.
+    </p>
+  </div>
+</section>
+
+<footer class="footer">
+  NEXUS v1.0 — INMATE MANAGEMENT SYSTEM
+  | SECURITY | INTEGRITY | CONTROL | RESULTS
+</footer>
+
+</main>
+</div>
+
+<script>
+"use strict";
+
+// Fictional demonstration identifiers only.
+const demoIds = [
+  "INM-0001","INM-0002","INM-0003",
+  "INM-0004","INM-0005","INM-0006"
+];
+
+function showPage(id) {
+  document.querySelectorAll(".page").forEach(page => {
+    page.classList.toggle("active",page.id === id);
+  });
+
+  document.querySelectorAll(".nav").forEach(button => {
+    button.classList.toggle(
+      "active",
+      button.dataset.page === id
+    );
+  });
+
+  window.scrollTo(0,0);
+}
+
+document.querySelectorAll("[data-page]").forEach(button => {
+  button.addEventListener("click",() => {
+    showPage(button.dataset.page);
+  });
+});
+
+document.querySelectorAll("[data-go]").forEach(button => {
+  button.addEventListener("click",() => {
+    showPage(button.dataset.go);
+  });
+});
+
+function makePhotoCard(id) {
+  const card = document.createElement("div");
+  card.className = "photo-card";
+  card.setAttribute("role","button");
+  card.setAttribute("tabindex","0");
+  card.setAttribute("aria-label","View demo profile " + id);
+
+  card.innerHTML =
+    '<div class="silhouette">' +
+      '<div class="bars"></div>' +
+    '</div>';
+
+  const label = document.createElement("span");
+  label.textContent = id;
+  card.appendChild(label);
+
+  const open = () => {
+    alert(
+      "Demo profile: " + id +
+      "\n\nFull inmate profiles will be added " +
+      "when the database is connected."
+    );
+  };
+
+  card.addEventListener("click",open);
+  card.addEventListener("keydown",event => {
+    if(event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      open();
+    }
+  });
+
+  return card;
+}
+
+[
+  "dashboard-gallery",
+  "profiles-gallery",
+  "full-gallery"
+].forEach(containerId => {
+  const container = document.getElementById(containerId);
+
+  demoIds.forEach(id => {
+    container.appendChild(makePhotoCard(id));
+  });
+});
+
+document.getElementById("registration-form")
+  .addEventListener("submit",event => {
+    event.preventDefault();
+
+    alert(
+      "Registration preview only.\n\n" +
+      "No inmate information has been saved.\n" +
+      "Database integration is the next development phase."
+    );
+  });
+
+document.getElementById("search-input")
+  .addEventListener("input",event => {
+    const query = event.target.value.trim().toLowerCase();
+    const resultBox = document.getElementById("search-results");
+
+    if(!query) {
+      resultBox.textContent =
+        "Enter an inmate ID to search the sample profiles.";
+      return;
+    }
+
+    const matches = demoIds.filter(id =>
+      id.toLowerCase().includes(query)
+    );
+
+    resultBox.textContent = matches.length
+      ? "Demo matches: " + matches.join(", ")
+      : "No matching demonstration profiles.";
+  });
+</script>
 </body>
 </html>
