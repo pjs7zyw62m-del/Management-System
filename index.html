@@ -7,20 +7,22 @@
 <title>NEXUS Management System</title>
 <style>
 :root {
-  --bg:#090c12;
-  --panel:#171c25;
-  --line:#3b4555;
-  --red:#e12d4c;
-  --muted:#aab3c3;
+  --bg:#080c13;
+  --panel:#141b26;
+  --line:#354153;
+  --red:#e5294c;
+  --maroon:#4b142a;
+  --muted:#aab8cb;
+  --blue:#183b82;
 }
 * { box-sizing:border-box; }
 body {
   margin:0;
   background:var(--bg);
-  color:#f5f6f9;
+  color:#f5f7fc;
   font:14px Arial,sans-serif;
 }
-button,input,textarea,select { font:inherit; }
+button,input,select,textarea { font:inherit; }
 button { cursor:pointer; }
 .hidden { display:none!important; }
 .logo {
@@ -34,78 +36,79 @@ button { cursor:pointer; }
 .btn {
   border:0;
   border-radius:8px;
+  padding:12px 17px;
   background:var(--red);
   color:white;
-  padding:12px 16px;
   font-weight:bold;
 }
-.alt { background:#303b4d; }
-.danger { background:#80243a; }
+.alt { background:#303d51; }
+.danger { background:#86263d; }
 
-/* ACCESS SCREENS */
+/* LOGIN */
 .auth {
   min-height:100dvh;
   display:grid;
   place-items:center;
   padding:20px;
   background:radial-gradient(
-    circle at top,#35101d,#090c12 65%
+    circle at top,#34121f,#080c13 65%
   );
 }
 .auth-card {
-  width:min(430px,100%);
-  padding:32px 24px;
-  background:var(--panel);
-  border:1px solid #713148;
-  border-radius:16px;
+  width:min(440px,100%);
+  padding:32px 25px;
   text-align:center;
+  background:var(--panel);
+  border:1px solid #743248;
+  border-radius:16px;
 }
 .auth input {
-  display:block;
   width:100%;
   padding:15px;
-  margin:12px 0;
-  background:#0a0e15;
+  margin:9px 0;
+  color:white;
+  background:#0b111a;
   border:1px solid var(--line);
   border-radius:8px;
-  color:white;
 }
-.auth .btn { width:100%; }
+.auth .btn { width:100%;margin-top:12px; }
 
-/* MAIN WEBSITE */
+/* APP */
 .shell { display:flex;min-height:100dvh; }
 .sidebar {
-  width:230px;
+  width:245px;
   flex-shrink:0;
-  background:#10141c;
+  padding:22px 12px;
+  background:#0e141d;
   border-right:1px solid var(--line);
-  padding:20px 12px;
 }
-.sidebar .logo { font-size:27px; }
+.sidebar .logo { font-size:31px; }
 .nav {
   display:block;
   width:100%;
-  padding:12px;
   text-align:left;
-  background:transparent;
+  padding:13px;
   color:var(--muted);
+  background:transparent;
   border:0;
-  border-radius:7px;
+  border-radius:9px;
+  margin:3px 0;
 }
-.nav.active,.nav:hover {
-  background:#421b2b;
+.nav:hover,.nav.active {
+  background:var(--maroon);
   color:white;
 }
-.main { flex:1;min-width:0;padding:22px; }
+.main { flex:1;min-width:0;padding:24px; }
 .topbar {
   display:flex;
   justify-content:space-between;
   align-items:center;
-  gap:12px;
+  gap:15px;
   flex-wrap:wrap;
+  padding-bottom:17px;
   border-bottom:1px solid var(--line);
-  padding-bottom:15px;
 }
+.topbar h1 { margin:0 0 10px; }
 .panel {
   background:var(--panel);
   border:1px solid var(--line);
@@ -116,41 +119,149 @@ button { cursor:pointer; }
 .notice {
   background:#311b25;
   border-left:3px solid var(--red);
-  padding:12px;
+  padding:11px;
   margin:15px 0;
 }
-.stats,.cards {
+.actions {
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin:14px 0;
+}
+.stats {
   display:grid;
   grid-template-columns:repeat(
-    auto-fit,minmax(175px,1fr)
+    auto-fit,minmax(170px,1fr)
   );
   gap:12px;
 }
 .stat strong {
   display:block;
-  font-size:32px;
+  font-size:34px;
   margin-top:10px;
 }
-.actions {
-  display:flex;
+
+/* NEW PROFILE GALLERY */
+.toolbar {
+  display:grid;
+  grid-template-columns:
+    minmax(200px,2fr)
+    repeat(3,minmax(120px,1fr));
   gap:10px;
-  flex-wrap:wrap;
-  margin:15px 0;
+  margin:17px 0;
+}
+.toolbar input,.toolbar select {
+  width:100%;
+  min-width:0;
+  padding:13px;
+  border:1px solid var(--line);
+  border-radius:9px;
+  color:white;
+  background:#18212e;
+}
+.gallery-grid {
+  display:grid;
+  grid-template-columns:repeat(
+    auto-fill,minmax(210px,1fr)
+  );
+  gap:20px;
+  align-items:start;
+}
+.person-card {
+  border:1px solid var(--line);
+  background:#101721;
+  border-radius:12px;
+  overflow:hidden;
+  text-align:center;
+  cursor:pointer;
+  transition:transform .15s,border-color .15s;
+}
+.person-card:hover {
+  transform:translateY(-3px);
+  border-color:#a04b66;
+}
+.person-photo {
+  height:260px;
+  width:100%;
+  background:#26303c;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+.person-photo img {
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  object-position:center;
+}
+.person-photo .placeholder {
+  color:#b2bdce;
+  font-size:64px;
+}
+.id-strip {
+  background:linear-gradient(
+    90deg,#321020,#5a1730,#321020
+  );
+  color:white;
+  font-size:15px;
+  font-weight:bold;
+  padding:9px;
+}
+.person-info { padding:14px 8px 16px; }
+.person-name {
+  font-size:19px;
+  font-weight:bold;
+  margin-bottom:8px;
+  overflow-wrap:anywhere;
+}
+.person-state {
+  color:var(--muted);
+  letter-spacing:3px;
+  font-size:12px;
+  text-transform:uppercase;
+  margin-bottom:10px;
+}
+.status {
+  display:inline-block;
+  background:#26983c;
+  color:white;
+  padding:7px 15px;
+  border-radius:25px;
+  font-weight:bold;
+}
+.status.inactive { background:#d52c3b; }
+.card-button {
+  display:block;
+  width:100%;
+  border:0;
+  background:transparent;
+  color:inherit;
+  padding:0;
+  text-align:inherit;
 }
 
 /* REGISTRATION */
 .section-title {
-  background:#193b81;
+  background:var(--blue);
   padding:12px;
   text-align:center;
   font-weight:bold;
   margin-top:17px;
 }
 .section {
-  padding:13px;
-  background:#131925;
   border:1px solid var(--line);
+  padding:14px;
+  background:#121925;
   min-width:0;
+}
+.grid {
+  display:grid;
+  grid-template-columns:repeat(
+    3,minmax(0,1fr)
+  );
+  gap:12px;
 }
 .field {
   display:flex;
@@ -164,26 +275,16 @@ button { cursor:pointer; }
   font-weight:bold;
   text-transform:uppercase;
 }
-.field input,.field select,
-.field textarea,.search {
-  display:block;
+.field input,.field textarea {
   width:100%;
   min-width:0;
-  max-width:100%;
   padding:11px;
-  background:#0b1019;
-  border:1px solid #495567;
-  border-radius:6px;
   color:white;
+  background:#0b111a;
+  border:1px solid #4b586b;
+  border-radius:6px;
 }
 .field textarea { min-height:90px; }
-.grid {
-  display:grid;
-  grid-template-columns:repeat(
-    3,minmax(0,1fr)
-  );
-  gap:12px;
-}
 .identity {
   display:grid;
   grid-template-columns:190px minmax(0,1fr);
@@ -196,8 +297,8 @@ button { cursor:pointer; }
   min-width:0;
 }
 .photo-box {
-  height:220px;
-  background:#222b38;
+  height:230px;
+  background:#27303c;
   border:1px solid #586578;
   display:grid;
   place-items:center;
@@ -206,23 +307,21 @@ button { cursor:pointer; }
 .photo-box img {
   width:100%;
   height:100%;
-  object-fit:cover;
+  object-fit:contain;
 }
 .photo-placeholder {
-  text-align:center;
-  color:#aab3c3;
   font-size:55px;
+  color:#aab3c3;
 }
 .photo-placeholder small {
   display:block;
   font-size:11px;
 }
-.id-field input { border-color:var(--red); }
 
-/* TABLES */
+/* RECORD TABLES */
 .table-scroll {
-  width:100%;
   overflow-x:auto;
+  width:100%;
 }
 table {
   width:100%;
@@ -230,48 +329,21 @@ table {
   border-collapse:collapse;
 }
 th,td {
-  padding:9px;
   border:1px solid #4d5869;
+  padding:9px;
   text-align:left;
   font-size:12px;
 }
-th { background:#303b4d; }
+th { background:#303d51; }
 td input {
   width:100%;
   min-width:90px;
-  padding:9px;
-  background:#0b1019;
+  padding:8px;
+  color:white;
+  background:#0b111a;
   border:1px solid #4d5869;
   border-radius:4px;
-  color:white;
 }
-.table-actions {
-  display:flex;
-  justify-content:flex-end;
-  margin-top:10px;
-}
-
-/* PROFILE CARDS */
-.profile {
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:10px;
-  overflow:hidden;
-}
-.profile img,.avatar {
-  width:100%;
-  height:165px;
-  object-fit:cover;
-}
-.avatar {
-  display:grid;
-  place-items:center;
-  background:#222b38;
-  color:#aab3c3;
-  font-size:55px;
-}
-.profile-body { padding:14px; }
-.profile-body h3 { margin:0 0 8px; }
 
 /* MASTER RECORD */
 .master-identity {
@@ -280,19 +352,20 @@ td input {
   gap:18px;
 }
 .master-photo {
-  height:260px;
-  background:#242d3a;
-  display:grid;
-  place-items:center;
+  width:100%;
+  height:270px;
+  background:#27303c;
   border-radius:8px;
   overflow:hidden;
+  display:grid;
+  place-items:center;
   color:#aab3c3;
   font-size:65px;
 }
 .master-photo img {
   width:100%;
   height:100%;
-  object-fit:cover;
+  object-fit:contain;
 }
 .detail-grid {
   display:grid;
@@ -302,18 +375,18 @@ td input {
   gap:12px;
 }
 .detail-item {
-  background:#0b1019;
+  padding:12px;
+  background:#0b111a;
   border:1px solid #394557;
   border-radius:7px;
-  padding:12px;
   min-width:0;
 }
 .detail-label {
-  color:var(--muted);
   font-size:11px;
   font-weight:bold;
-  margin-bottom:7px;
+  color:var(--muted);
   text-transform:uppercase;
+  margin-bottom:7px;
 }
 .detail-value {
   font-size:15px;
@@ -323,21 +396,18 @@ td input {
 .footer {
   position:sticky;
   bottom:0;
-  padding:12px;
   background:#111722f2;
   border:1px solid var(--line);
   border-radius:9px;
+  padding:12px;
   display:flex;
   justify-content:flex-end;
   gap:10px;
   margin-top:18px;
 }
-@media(max-width:1050px) {
-  .grid {
-    grid-template-columns:repeat(
-      2,minmax(0,1fr)
-    );
-  }
+@media(max-width:1100px) {
+  .toolbar { grid-template-columns:repeat(2,1fr); }
+  .grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
 @media(max-width:760px) {
   .shell { display:block; }
@@ -349,40 +419,36 @@ td input {
   .navwrap { display:flex;overflow-x:auto; }
   .nav { width:auto;white-space:nowrap; }
   .main { padding:12px; }
-  .identity {
-    grid-template-columns:145px minmax(0,1fr);
-  }
-  .photo-box { height:175px; }
+  .identity { grid-template-columns:150px minmax(0,1fr); }
   .master-identity {
     grid-template-columns:170px minmax(0,1fr);
   }
-  .master-photo { height:210px; }
 }
 @media(max-width:520px) {
-  .grid { grid-template-columns:1fr; }
+  .toolbar,.grid { grid-template-columns:1fr; }
   .identity,.master-identity {
     grid-template-columns:1fr;
   }
   .photo-column { max-width:200px; }
-  .master-identity > div:first-child {
-    max-width:230px;
+  .master-identity > div:first-child { max-width:230px; }
+  .gallery-grid {
+    grid-template-columns:repeat(
+      2,minmax(0,1fr)
+    );
+    gap:10px;
   }
+  .person-photo { height:190px; }
+  .person-name { font-size:15px; }
 }
 </style>
 </head>
-
 <body>
 
 <section id="gateway" class="auth">
   <div class="auth-card">
     <div class="logo">NE<b>X</b>US</div>
-    <p class="muted small">
-      SECURITY ACCESS SYSTEM — DEMO
-    </p>
+    <p class="muted small">SECURITY ACCESS — DEMO</p>
     <h2>SECURITY GATEWAY</h2>
-    <p class="muted">
-      Enter your demonstration credentials.
-    </p>
     <form id="gateForm">
       <input type="password"
         placeholder="Security Key"
@@ -403,9 +469,6 @@ td input {
 <section id="login" class="auth hidden">
   <div class="auth-card">
     <div class="logo">NE<b>X</b>US</div>
-    <p class="muted small">
-      ADMINISTRATOR AUTHORIZATION
-    </p>
     <h2>ADMINISTRATOR LOGIN</h2>
     <form id="loginForm">
       <input type="text"
@@ -429,24 +492,33 @@ td input {
     <div class="logo">NE<b>X</b>US</div>
     <p class="muted small">MANAGEMENT SYSTEM</p>
     <nav class="navwrap">
-      <button class="nav active"
-        data-view="dashboard">Dashboard</button>
-      <button class="nav"
-        data-view="register">Inmate Registration</button>
-      <button class="nav"
-        data-view="profiles">Inmate Profiles</button>
-      <button class="nav"
-        data-view="gallery">Photo Gallery</button>
-      <button class="nav"
-        data-view="facilities">Facilities</button>
-      <button class="nav"
-        data-view="records">Records</button>
-      <button class="nav"
-        data-view="search">Search</button>
-      <button class="nav"
-        data-view="reports">Reports</button>
-      <button class="nav"
-        data-view="settings">Settings</button>
+      <button class="nav active" data-view="dashboard">
+        Dashboard
+      </button>
+      <button class="nav" data-view="register">
+        Inmate Registration
+      </button>
+      <button class="nav" data-view="profiles">
+        Inmate Profiles
+      </button>
+      <button class="nav" data-view="gallery">
+        Photo Gallery
+      </button>
+      <button class="nav" data-view="facilities">
+        Facilities
+      </button>
+      <button class="nav" data-view="records">
+        Records
+      </button>
+      <button class="nav" data-view="search">
+        Search
+      </button>
+      <button class="nav" data-view="reports">
+        Reports
+      </button>
+      <button class="nav" data-view="settings">
+        Settings
+      </button>
     </nav>
   </aside>
 
@@ -464,8 +536,8 @@ td input {
     </header>
     <div class="notice small">
       FICTIONAL TEST DATA ONLY.
-      This public website has no real authentication
-      or secure database.
+      This public site does not have real
+      authentication or secure data storage.
     </div>
     <div id="content"></div>
   </main>
@@ -517,8 +589,8 @@ const tables = [
     key:"parole",
     title:"PAROLE ACTION",
     cols:[
-      "Action Date","Action","Outcome",
-      "As Of Date"
+      "Action Date","Action",
+      "Outcome","As Of Date"
     ]
   },
   {
@@ -534,19 +606,21 @@ const tables = [
     title:"NOTIFICATION REQUESTS, DETAINERS AND WARRANTS",
     cols:[
       "Detainer Date","Detainer Type",
-      "Charges","Authority","Agreement Date"
+      "Charges","Authority",
+      "Agreement Date"
     ]
   }
 ];
 
 let profiles = [];
+
 try {
-  const saved = JSON.parse(
+  const data = JSON.parse(
     localStorage.getItem(KEY) || "[]"
   );
-  if (Array.isArray(saved)) profiles = saved;
-} catch (e) {
-  console.warn("Could not load demo profiles.");
+  if (Array.isArray(data)) profiles = data;
+} catch (error) {
+  console.warn("Unable to read saved demo records.");
 }
 
 let view = "dashboard";
@@ -574,16 +648,19 @@ function fullName(p) {
     .filter(Boolean).join(" ");
 }
 
+function displayName(p) {
+  return [p.first,p.last]
+    .filter(Boolean).join(" ");
+}
+
 function save() {
   try {
     localStorage.setItem(
       KEY,JSON.stringify(profiles)
     );
     return true;
-  } catch (e) {
-    alert(
-      "Could not save. Browser storage may be full."
-    );
+  } catch (error) {
+    alert("Unable to save. Browser storage may be full.");
     return false;
   }
 }
@@ -593,10 +670,11 @@ function validPhoto(p) {
     .test(p.photo || "");
 }
 
-function profileImage(p) {
-  return validPhoto(p)
-    ? `<img src="${p.photo}" alt="Demo profile photo">`
-    : `<div class="avatar">♙</div>`;
+function section(title,body) {
+  return `
+    <div class="section-title">${title}</div>
+    <div class="section">${body}</div>
+  `;
 }
 
 function field(label,key,value="",type="text") {
@@ -618,79 +696,164 @@ function textarea(label,key,value="") {
   `;
 }
 
-function section(title,body) {
-  return `
-    <div class="section-title">${title}</div>
-    <div class="section">${body}</div>
-  `;
-}
+function personCard(p) {
+  const photo = validPhoto(p)
+    ? `<img src="${p.photo}" alt="Fictional profile photo">`
+    : `<span class="placeholder">♙</span>`;
 
-function card(p) {
+  const inactive =
+    /^(inactive|released|closed)$/i.test(p.status || "");
+
   return `
-    <article class="profile">
-      ${profileImage(p)}
-      <div class="profile-body">
-        <h3>${esc(fullName(p))}</h3>
-        <p class="muted">${esc(p.id)}</p>
-        <p>${esc(p.facility || "No facility")}</p>
-        <p>${esc(p.status || "Active")}</p>
-        <button class="btn alt"
-          data-open="${encodeURIComponent(p.id)}">
-          View Record
-        </button>
-      </div>
+    <article class="person-card">
+      <button class="card-button"
+        data-open="${encodeURIComponent(p.id)}">
+        <div class="person-photo">${photo}</div>
+        <div class="id-strip">ID: ${esc(p.id)}</div>
+        <div class="person-info">
+          <div class="person-name">
+            ${esc(displayName(p))}
+          </div>
+          <div class="person-state">
+            ${esc(p.state || "STATE NOT ENTERED")}
+          </div>
+          <span class="status ${inactive ? "inactive" : ""}">
+            ${esc(p.status || "Active")}
+          </span>
+        </div>
+      </button>
     </article>
   `;
 }
 
-function cards(list) {
+function gallery(list) {
   return list.length
-    ? `<div class="cards">${list.map(card).join("")}</div>`
-    : `<div class="panel muted">No fictional profiles found.</div>`;
+    ? `<div class="gallery-grid">
+        ${list.map(personCard).join("")}
+       </div>`
+    : `<div class="panel muted">
+        No fictional profiles found.
+       </div>`;
+}
+
+function profileToolbar() {
+  return `
+    <div class="toolbar">
+      <input id="profileQuery"
+        placeholder="Search by Name, ID or State"
+        aria-label="Search profiles">
+
+      <select id="profileSort">
+        <option value="last">Last Name A–Z</option>
+        <option value="first">First Name A–Z</option>
+        <option value="recent">Recently Added</option>
+        <option value="id">Inmate ID</option>
+      </select>
+
+      <select id="profileState">
+        <option value="">All States</option>
+        ${[...new Set(
+          profiles.map(p => p.state).filter(Boolean)
+        )].sort().map(s =>
+          `<option value="${esc(s)}">${esc(s)}</option>`
+        ).join("")}
+      </select>
+
+      <select id="profileStatus">
+        <option value="">All Statuses</option>
+        ${[...new Set(
+          profiles.map(p => p.status || "Active")
+        )].sort().map(s =>
+          `<option value="${esc(s)}">${esc(s)}</option>`
+        ).join("")}
+      </select>
+    </div>
+    <div id="profileResults"></div>
+  `;
+}
+
+function filterProfiles() {
+  const q = $("profileQuery").value
+    .trim().toLowerCase();
+  const sort = $("profileSort").value;
+  const state = $("profileState").value;
+  const status = $("profileStatus").value;
+
+  let list = profiles.filter(p => {
+    const text = [
+      p.id,p.first,p.middle,p.last,
+      p.state,p.facility
+    ].join(" ").toLowerCase();
+
+    return text.includes(q) &&
+      (!state || p.state === state) &&
+      (!status || (p.status || "Active") === status);
+  });
+
+  if (sort === "recent") {
+    list = list.slice().reverse();
+  } else {
+    list = list.slice().sort((a,b) => {
+      const value = p => {
+        if (sort === "first") return p.first || "";
+        if (sort === "id") return p.id || "";
+        return p.last || "";
+      };
+      return value(a).localeCompare(
+        value(b),undefined,{numeric:true}
+      );
+    });
+  }
+
+  $("profileResults").innerHTML = gallery(list);
 }
 
 function tableEditor(t) {
   const data = rows[t.key] || [];
-  const head = t.cols.map(
-    c => `<th>${esc(c)}</th>`
-  ).join("");
-
-  const body = data.length
-    ? data.map((r,i) => `
-      <tr>
-        ${t.cols.map((c,j) => `
-          <td>
-            <input
-              data-table="${t.key}"
-              data-row="${i}"
-              data-col="${j}"
-              aria-label="${esc(c)}"
-              value="${esc(r[j] || "")}">
-          </td>
-        `).join("")}
-        <td>
-          <button type="button" class="btn danger"
-            data-remove="${t.key}"
-            data-index="${i}">X</button>
-        </td>
-      </tr>
-    `).join("")
-    : `<tr>
-        <td colspan="${t.cols.length + 1}">
-          No entries yet
-        </td>
-      </tr>`;
 
   return section(t.title,`
     <div class="table-scroll">
       <table>
         <thead>
-          <tr>${head}<th>Remove</th></tr>
+          <tr>
+            ${t.cols.map(c =>
+              `<th>${esc(c)}</th>`
+            ).join("")}
+            <th>Remove</th>
+          </tr>
         </thead>
-        <tbody>${body}</tbody>
+        <tbody>
+          ${data.length
+            ? data.map((r,i) => `
+              <tr>
+                ${t.cols.map((c,j) => `
+                  <td>
+                    <input
+                      data-table="${t.key}"
+                      data-row="${i}"
+                      data-col="${j}"
+                      aria-label="${esc(c)}"
+                      value="${esc(r[j] || "")}">
+                  </td>
+                `).join("")}
+                <td>
+                  <button type="button"
+                    class="btn danger"
+                    data-remove="${t.key}"
+                    data-index="${i}">X</button>
+                </td>
+              </tr>
+            `).join("")
+            : `<tr>
+                <td colspan="${t.cols.length + 1}">
+                  No entries yet
+                </td>
+              </tr>`
+          }
+        </tbody>
       </table>
     </div>
-    <div class="table-actions">
+    <div class="actions">
       <button type="button" class="btn alt"
         data-add="${t.key}">
         + Add Record
@@ -722,7 +885,9 @@ function registration() {
 
   return `
     <div class="panel">
-      <h2>${editId ? "Edit Inmate Record" : "New Inmate Registration"}</h2>
+      <h2>${editId
+        ? "Edit Inmate Record"
+        : "New Inmate Registration"}</h2>
 
       <form id="recordForm">
 
@@ -739,9 +904,7 @@ function registration() {
                 <input id="photoInput" type="file"
                   accept="image/png,image/jpeg,image/webp">
               </div>
-              <div class="id-field">
-                ${field("Inmate ID","id",p.id)}
-              </div>
+              ${field("Inmate ID","id",p.id)}
             </div>
 
             <div class="grid">
@@ -781,13 +944,11 @@ function registration() {
           </div>
         `)}
 
-        ${section(
-          "INMATE MAILING ADDRESS",
+        ${section("INMATE MAILING ADDRESS",
           textarea("Mailing Address","mailingAddress",p.mailingAddress)
         )}
 
-        ${section(
-          "ADDITIONAL INMATE INFORMATION",
+        ${section("ADDITIONAL INMATE INFORMATION",
           textarea("Notes","notes",p.notes)
         )}
 
@@ -812,7 +973,9 @@ function detailItem(label,value) {
   return `
     <div class="detail-item">
       <div class="detail-label">${esc(label)}</div>
-      <div class="detail-value">${esc(value || "—")}</div>
+      <div class="detail-value">
+        ${esc(value || "—")}
+      </div>
     </div>
   `;
 }
@@ -872,7 +1035,7 @@ function detail() {
   }
 
   const photo = validPhoto(p)
-    ? `<img src="${p.photo}" alt="Demo inmate photo">`
+    ? `<img src="${p.photo}" alt="Demo photo">`
     : "♙";
 
   return `
@@ -893,7 +1056,6 @@ function detail() {
 
       ${section("INMATE IDENTITY INFORMATION",`
         <div class="master-identity">
-
           <div>
             <div class="master-photo">
               ${photo}
@@ -920,7 +1082,6 @@ function detail() {
               ["Admission Date","admission"]
             ])}
           </div>
-
         </div>
       `)}
 
@@ -953,7 +1114,6 @@ function detail() {
       )}
 
       ${tables.map(t => recordTable(p,t)).join("")}
-
     </div>
   `;
 }
@@ -997,7 +1157,7 @@ function render() {
         <div class="panel stat">
           ACTIVE RECORDS
           <strong>${profiles.filter(
-            p => p.status === "Active"
+            p => (p.status || "Active") === "Active"
           ).length}</strong>
         </div>
         <div class="panel stat">
@@ -1007,7 +1167,7 @@ function render() {
         <div class="panel stat">
           PHOTOS
           <strong>${profiles.filter(
-            p => validPhoto(p)
+            validPhoto
           ).length}</strong>
         </div>
       </div>
@@ -1016,19 +1176,16 @@ function render() {
         <h2>Quick Actions</h2>
         <div class="actions">
           <button class="btn" data-go="register">
-            + Register Inmate
+            + New Registration
           </button>
-          <button class="btn alt" data-go="search">
-            Search Records
-          </button>
-          <button class="btn alt" data-go="gallery">
-            Photo Gallery
+          <button class="btn alt" data-go="profiles">
+            View Profiles
           </button>
         </div>
       </div>
 
       <h2>Recent Fictional Profiles</h2>
-      ${cards(profiles.slice(-6).reverse())}
+      ${gallery(profiles.slice(-4).reverse())}
     `;
   }
 
@@ -1036,40 +1193,22 @@ function render() {
     html = registration();
   }
 
-  if (["profiles","gallery","records"].includes(view)) {
-    const list = view === "gallery"
-      ? profiles.filter(validPhoto)
-      : profiles;
-
+  if (["profiles","gallery","records","search"]
+    .includes(view)) {
     html = `
-      <div class="panel">
+      <div class="actions">
         <button class="btn" data-go="register">
           + New Registration
         </button>
       </div>
-      ${cards(list)}
-    `;
-  }
-
-  if (view === "search") {
-    html = `
-      <div class="panel">
-        <h2>Search Records</h2>
-        <input id="query" class="search"
-          placeholder="Name, ID, facility, state or status">
-      </div>
-      <div id="results">
-        ${cards(profiles)}
-      </div>
+      ${profileToolbar()}
     `;
   }
 
   if (view === "facilities") {
-    const names = [
-      ...new Set(
-        profiles.map(p => p.facility).filter(Boolean)
-      )
-    ];
+    const names = [...new Set(
+      profiles.map(p => p.facility).filter(Boolean)
+    )];
 
     html = `
       <div class="panel">
@@ -1095,7 +1234,7 @@ function render() {
         <p>Total Profiles: ${profiles.length}</p>
         <p>Active Records:
           ${profiles.filter(
-            p => p.status === "Active"
+            p => (p.status || "Active") === "Active"
           ).length}
         </p>
         <p>Sentence Entries:
@@ -1138,23 +1277,17 @@ function render() {
     );
   }
 
-  if (view === "search") {
-    $("query").addEventListener("input",e => {
-      const q = e.target.value.toLowerCase();
-
-      const results = profiles.filter(p =>
-        [
-          p.id,fullName(p),p.state,
-          p.facility,p.status
-        ].some(v =>
-          String(v || "")
-            .toLowerCase()
-            .includes(q)
-        )
+  if (["profiles","gallery","records","search"]
+    .includes(view)) {
+    [
+      "profileQuery","profileSort",
+      "profileState","profileStatus"
+    ].forEach(id => {
+      $(id).addEventListener(
+        "input",filterProfiles
       );
-
-      $("results").innerHTML = cards(results);
     });
+    filterProfiles();
   }
 
   if (view === "settings") {
@@ -1165,15 +1298,14 @@ function render() {
 
       const previous = profiles;
       profiles = [];
-
       if (!save()) profiles = previous;
       render();
     });
   }
 }
 
-function go(nextView) {
-  view = nextView;
+function go(next) {
+  view = next;
   render();
 }
 
@@ -1184,9 +1316,7 @@ function loadPhoto(e) {
   if (
     file.size > 500 * 1024 ||
     ![
-      "image/jpeg",
-      "image/png",
-      "image/webp"
+      "image/jpeg","image/png","image/webp"
     ].includes(file.type)
   ) {
     alert(
@@ -1277,8 +1407,8 @@ async function saveRecord(e) {
   editId = null;
   detailId = p.id;
   photoPending = null;
-
   go("detail");
+
   alert("Fictional record saved in this browser.");
 }
 
@@ -1367,40 +1497,32 @@ document.querySelectorAll(".nav").forEach(
   })
 );
 
-/* REPAIRED SECURITY GATEWAY */
 $("gateForm").addEventListener(
-  "submit",function(e) {
+  "submit",e => {
     e.preventDefault();
-
     $("gateway").classList.add("hidden");
     $("login").classList.remove("hidden");
   }
 );
 
-/* REPAIRED ADMINISTRATOR LOGIN */
 $("loginForm").addEventListener(
-  "submit",function(e) {
+  "submit",e => {
     e.preventDefault();
-
     $("login").classList.add("hidden");
     $("shell").classList.remove("hidden");
-
     go("dashboard");
   }
 );
 
-/* LOCK DEMO */
 $("lock").addEventListener("click",() => {
   $("shell").classList.add("hidden");
   $("login").classList.add("hidden");
   $("gateway").classList.remove("hidden");
-
   $("gateForm").reset();
   $("loginForm").reset();
 });
 
 })();
 </script>
-
 </body>
 </html>
