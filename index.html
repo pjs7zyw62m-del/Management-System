@@ -230,13 +230,195 @@ ${section("ADDITIONAL INMATE INFORMATION",textarea("Notes","notes",p.notes))}
 <div class="footer"><button type="button" class="btn alt" data-go="profiles">Cancel</button><button type="submit" class="btn">${editId?"SAVE CHANGES":"SAVE INMATE RECORD"}</button></div>
 </form></div>`;
 }
+
 function detail(){
-const p=profiles.find(x=>x.id===detailId);
-if(!p)return '<div class="panel">Record not found.</div>';
-const keys=[["Inmate ID","id"],["Last Name","last"],["First Name","first"],["Middle Initial","middle"],["Age","age"],["Gender","gender"],["Height","height"],["Weight","weight"],["Hair Color","hair"],["Eye Color","eyes"],["Ethnic Origin","ethnicOrigin"],["Custody Class","custodyClass"],["Admission Date","admission"],["Projected Release","projectedRelease"],["Prison Release Date","releaseDate"],["Release Type","releaseType"],["Complex","complex"],["Unit","unit"],["Last Movement","lastMovement"],["Status","status"],["As Of Date","locationAsOf"],["Facility","facility"],["State","state"],["Mailing Address","mailingAddress"],["Notes","notes"]];
-return `<div class="panel"><div class="actions"><button class="btn alt" data-go="profiles">Back</button><button class="btn" data-edit="${encodeURIComponent(p.id)}">Edit Record</button><button class="btn warn" data-delete="${encodeURIComponent(p.id)}">Delete Record</button></div><h2>${esc(fullName(p))}</h2><div style="max-width:190px">${image(p)}</div>${keys.map(([label,key])=>`<div class="detail"><b>${label}:</b> ${esc(p[key]||"—")}</div>`).join("")}${tables.map(t=>section(t.title,`<div class="table-scroll"><table><thead><tr>${t.cols.map(c=>`<th>${c}</th>`).join("")}</tr></thead><tbody>${Array.isArray(p[t.key])&&p[t.key].length?p[t.key].map(r=>`<tr>${t.cols.map((c,j)=>`<td>${esc(r[j]||"—")}</td>`).join("")}</tr>`).join(""):`<tr><td colspan="${t.cols.length}">No records</td></tr>`}</tbody></table></div>`)).join("")}</div>`;
+  const p = profiles.find(x => x.id === detailId);
+  if (!p) {
+    return '<div class="panel">Record not found.</div>';
+  }
+
+  const item = (label, value) => `
+    <div style="
+      background:#0b1019;
+      border:1px solid #394557;
+      border-radius:7px;
+      padding:12px;
+      min-width:0;
+    ">
+      <div style="
+        color:#aab3c3;
+        font-size:11px;
+        font-weight:bold;
+        margin-bottom:7px;
+        text-transform:uppercase;
+      ">${esc(label)}</div>
+      <div style="
+        color:white;
+        font-size:15px;
+        overflow-wrap:anywhere;
+      ">${esc(value || "—")}</div>
+    </div>
+  `;
+
+  const grid = fields => `
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(
+        auto-fit,minmax(min(100%,180px),1fr)
+      );
+      gap:12px;
+    ">
+      ${fields.map(f => item(f[0], p[f[1]])).join("")}
+    </div>
+  `;
+
+  const photo = /^data:image\/(png|jpeg|webp);base64,/i
+    .test(p.photo || "")
+    ? `<img src="${p.photo}"
+        alt="Fictional inmate photo"
+        style="
+          width:100%;
+          height:230px;
+          object-fit:cover;
+          border-radius:8px;
+        ">`
+    : `<div style="
+        height:230px;
+        display:grid;
+        place-items:center;
+        background:#242d3a;
+        border-radius:8px;
+        color:#aab3c3;
+        font-size:60px;
+      ">♙</div>`;
+
+  return `
+    <div class="panel">
+
+      <div class="actions">
+        <button class="btn alt" data-go="profiles">
+          Back
+        </button>
+        <button class="btn"
+          data-edit="${encodeURIComponent(p.id)}">
+          Edit Record
+        </button>
+        <button class="btn warn"
+          data-delete="${encodeURIComponent(p.id)}">
+          Delete Record
+        </button>
+      </div>
+
+      <div class="section-title">
+        INMATE IDENTITY INFORMATION
+      </div>
+
+      <div class="section">
+        <div style="
+          display:grid;
+          grid-template-columns:
+            repeat(auto-fit,minmax(min(100%,230px),1fr));
+          gap:18px;
+        ">
+
+          <div style="max-width:260px">
+            ${photo}
+            <div style="margin-top:12px">
+              ${item("INMATE ID",p.id)}
+            </div>
+          </div>
+
+          <div>
+            <h2 style="margin-top:0">
+              ${esc(fullName(p))}
+            </h2>
+
+            ${grid([
+              ["Last Name","last"],
+              ["First Name","first"],
+              ["Middle Initial","middle"],
+              ["Age","age"],
+              ["Gender","gender"],
+              ["Height (Inches)","height"],
+              ["Weight","weight"],
+              ["Hair Color","hair"],
+              ["Eye Color","eyes"],
+              ["Ethnic Origin","ethnicOrigin"],
+              ["Custody Class","custodyClass"],
+              ["Admission Date","admission"]
+            ])}
+          </div>
+        </div>
+      </div>
+
+      ${section(
+        "RELEASE INFORMATION",
+        grid([
+          ["Projected Eligible Release Date","projectedRelease"],
+          ["Prison Release Date","releaseDate"],
+          ["Release Type","releaseType"]
+        ])
+      )}
+
+      ${section(
+        "MOST RECENT LOCATION / AS OF DATE",
+        grid([
+          ["Complex","complex"],
+          ["Unit","unit"],
+          ["Last Movement","lastMovement"],
+          ["Status","status"],
+          ["As Of Date","locationAsOf"],
+          ["Facility","facility"],
+          ["State","state"]
+        ])
+      )}
+
+      ${section(
+        "INMATE MAILING ADDRESS",
+        item("Mailing Address",p.mailingAddress)
+      )}
+
+      ${section(
+        "ADDITIONAL INMATE INFORMATION",
+        item("Notes",p.notes)
+      )}
+
+      ${tables.map(t => section(
+        t.title,
+        `<div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                ${t.cols.map(c =>
+                  `<th>${esc(c)}</th>`
+                ).join("")}
+              </tr>
+            </thead>
+            <tbody>
+              ${
+                Array.isArray(p[t.key]) && p[t.key].length
+                  ? p[t.key].map(r => `
+                    <tr>
+                      ${t.cols.map((c,j) =>
+                        `<td>${esc(r[j] || "—")}</td>`
+                      ).join("")}
+                    </tr>
+                  `).join("")
+                  : `<tr>
+                      <td colspan="${t.cols.length}">
+                        No records
+                      </td>
+                    </tr>`
+              }
+            </tbody>
+          </table>
+        </div>`
+      )).join("")}
+
+    </div>
+  `;
 }
-function render(){
+
 const titles={dashboard:"Command Dashboard",register:"Inmate Registration",profiles:"Inmate Profiles",gallery:"Photo Gallery",facilities:"Facilities",records:"Records",search:"Search",reports:"Reports",settings:"Settings",detail:"Inmate Master Record"};
 $("pageTitle").textContent=titles[view]||"NEXUS";
 document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===view));
