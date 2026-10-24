@@ -1,0 +1,102 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NEXUS | Management System</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #edf2f7;
+      color: #172b46;
+    }
+    header {
+      background: #10243d;
+      color: white;
+      padding: 25px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 32px;
+    }
+    nav {
+      background: #1d4268;
+      padding: 18px;
+      color: white;
+    }
+    main {
+      padding: 25px;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns:
+        repeat(auto-fit, minmax(200px, 1fr));
+      gap: 18px;
+    }
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px #00000015;
+    }
+    .card h2 {
+      font-size: 17px;
+    }
+    .number {
+      font-size: 32px;
+      font-weight: bold;
+    }
+    .notice {
+      background: #fff3cd;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 25px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>NEXUS</h1>
+    <p>Inmate Management System</p>
+  </header>
+
+  <nav>
+    Dashboard | Registration | Gallery |
+    Profiles | Records | Search
+  </nav>
+
+  <main>
+    <h2>Administrative Dashboard</h2>
+
+    <div class="cards">
+      <div class="card">
+        <h2>Registered Inmates</h2>
+        <div class="number">0</div>
+      </div>
+
+      <div class="card">
+        <h2>Facilities</h2>
+        <div class="number">0</div>
+      </div>
+
+      <div class="card">
+        <h2>Records</h2>
+        <div class="number">0</div>
+      </div>
+
+      <div class="card">
+        <h2>Profile Gallery</h2>
+        <p>Coming Soon</p>
+      </div>
+    </div>
+
+    <div class="notice">
+      NEXUS prototype. Do not enter real inmate
+      information until secure authentication
+      and database storage are configured.
+    </div>
+  </main>
+</body>
+</html>
