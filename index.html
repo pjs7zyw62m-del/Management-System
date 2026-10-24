@@ -4,986 +4,861 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NEXUS | Inmate Management System</title>
+<title>NEXUS Management System</title>
+
 <style>
 :root {
-  --red:#ed0026;
-  --bg:#000;
-  --panel:#0d0d0f;
-  --text:#eaeaea;
-  --muted:#999;
+  --red: #dc2441;
+  --bg: #080a0e;
+  --panel: #12151c;
+  --line: #353944;
+  --muted: #a1a1aa;
 }
-* {box-sizing:border-box}
+* { box-sizing: border-box; }
 body {
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  font-family:Arial,Helvetica,sans-serif;
+  margin: 0;
+  background: var(--bg);
+  color: #f4f4f5;
+  font-family: Arial, sans-serif;
 }
-button,input,select,textarea {font:inherit}
-button {cursor:pointer}
-.layout {
-  display:grid;
-  grid-template-columns:245px minmax(0,1fr);
-  min-height:100vh;
+button, input, select, textarea {
+  font: inherit;
 }
-.sidebar {
-  background:#050505;
-  border-right:1px solid var(--red);
-  padding:205px 10px 20px;
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-}
-.nav {
-  width:100%;
-  text-align:left;
-  padding:16px 12px;
-  color:#ccc;
-  background:#090909;
-  border:1px solid #3a0b12;
-  font-size:13px;
-  font-weight:bold;
-  text-transform:uppercase;
-}
-.nav.active,.nav:hover {
-  color:white;
-  background:linear-gradient(90deg,#ba001e,#290006);
-  border-color:var(--red);
-}
-.restricted {
-  margin-top:auto;
-  border:1px solid var(--red);
-  padding:15px;
-  color:var(--red);
-  font-size:12px;
-  font-weight:bold;
-}
-.restricted small {
-  display:block;
-  margin-top:8px;
-  color:#999;
-}
-main {
-  padding:24px 18px;
-  min-width:0;
-}
-header {
-  text-align:center;
-  margin-bottom:28px;
-}
+button { cursor: pointer; }
+.hidden { display: none !important; }
 .logo {
-  font-size:clamp(55px,9vw,105px);
-  font-weight:900;
-  letter-spacing:5px;
-  background:linear-gradient(#fff,#777,#eee);
-  background-clip:text;
-  -webkit-background-clip:text;
-  color:transparent;
+  font-size: 38px;
+  font-weight: 900;
+  letter-spacing: 5px;
 }
-.logo span {
-  color:var(--red);
-  -webkit-text-fill-color:var(--red);
-  text-shadow:0 0 20px #ed002655;
-}
-.subtitle {
-  letter-spacing:5px;
-  font-size:clamp(12px,2vw,21px);
-}
-.motto {
-  margin-top:18px;
-  font-size:11px;
-  letter-spacing:2px;
-  color:#aaa;
-}
-.motto b {color:var(--red)}
-.panel {
-  background:linear-gradient(140deg,#131315,#050505);
-  border:1px solid var(--red);
-  box-shadow:inset 0 0 12px #350008;
-  padding:17px;
-  min-width:0;
-}
-.stats {
-  display:grid;
-  grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:10px;
-}
-.stat {
-  min-height:155px;
-}
-.stat .symbol {
-  color:var(--red);
-  font-size:30px;
-}
-.stat h3 {
-  font-size:13px;
-  text-transform:uppercase;
-}
-.stat strong {
-  font-size:48px;
-  display:block;
-}
-.stat small {
-  color:var(--red);
-  font-size:11px;
-}
-.panels {
-  display:grid;
-  grid-template-columns:1.1fr 1fr 1fr;
-  gap:10px;
-  margin-top:20px;
-}
-.panel-header {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:8px;
-  padding-bottom:12px;
-  border-bottom:1px solid var(--red);
-  margin-bottom:12px;
-}
-.panel-header h2 {
-  margin:0;
-  font-size:15px;
-  text-transform:uppercase;
-}
-.outline,.primary,.danger {
-  padding:10px 14px;
-  font-size:12px;
-  font-weight:bold;
-  border:1px solid var(--red);
-}
-.outline {
-  background:transparent;
-  color:var(--red);
-}
-.primary {
-  background:var(--red);
-  color:white;
-  margin-top:12px;
-}
-.danger {
-  background:#360009;
-  color:white;
-}
-table {
-  width:100%;
-  border-collapse:collapse;
-  font-size:12px;
-}
-td,th {
-  padding:10px 5px;
-  text-align:left;
-  border-bottom:1px solid #292929;
-}
-th {color:#aaa}
-.gallery {
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:10px;
-}
-.photo-card {
-  background:#111;
-  border:1px solid #71111d;
-  padding:5px;
-  text-align:center;
-  cursor:pointer;
-  min-width:0;
-}
-.photo-card:hover {border-color:var(--red)}
-.photo-card span {
-  display:block;
-  font-size:11px;
-  padding:6px 0;
-  overflow-wrap:anywhere;
-}
-.silhouette {
-  width:100%;
-  aspect-ratio:4/5;
-  position:relative;
-  overflow:hidden;
-  background:radial-gradient(ellipse at 50% 30%,#777,#252525 55%,#080808);
-}
-.silhouette:before {
-  content:"";
-  position:absolute;
-  width:30%;
-  height:28%;
-  left:35%;
-  top:17%;
-  border-radius:50%;
-  background:#050505;
-}
-.silhouette:after {
-  content:"";
-  position:absolute;
-  width:75%;
-  height:60%;
-  left:12.5%;
-  bottom:-25%;
-  border-radius:45% 45% 0 0;
-  background:#050505;
-}
-.bars {
-  position:absolute;
-  inset:0;
-  z-index:2;
-  background:repeating-linear-gradient(
-    90deg,
-    transparent 0%,
-    transparent 17%,
-    #111 18%,
-    #777 20%,
-    #111 22%,
-    transparent 23%,
-    transparent 33%
+.logo span { color: var(--red); }
+.muted { color: var(--muted); }
+.small { font-size: 12px; color: var(--muted); }
+
+/* SECURITY SCREENS */
+.security-screen {
+  min-height: 100dvh;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(
+    circle at top, #300a15, #080a0e 65%
   );
 }
-.photo {
-  width:100%;
-  aspect-ratio:4/5;
-  object-fit:cover;
-  display:block;
+.security-card {
+  width: 100%;
+  max-width: 430px;
+  background: #11141b;
+  border: 1px solid #72233a;
+  border-radius: 18px;
+  padding: 35px 25px;
+  text-align: center;
+  box-shadow: 0 20px 60px #0009;
 }
-.page {display:none}
-.page.active {display:block}
-.page-title {
-  font-size:24px;
-  border-bottom:1px solid var(--red);
-  padding-bottom:13px;
+.security-card h2 {
+  margin-top: 32px;
+  font-size: 21px;
 }
-.form-grid {
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:15px;
+.security-card input {
+  width: 100%;
+  margin-top: 14px;
+  padding: 15px;
+  border: 1px solid #484c56;
+  border-radius: 9px;
+  background: #080a0f;
+  color: white;
 }
+.primary {
+  background: var(--red);
+  color: white;
+  border: none;
+  border-radius: 9px;
+  padding: 13px 17px;
+  font-weight: bold;
+}
+.security-card .primary {
+  width: 100%;
+  margin-top: 20px;
+  padding: 16px;
+}
+.secondary {
+  background: #252b36;
+  border: 1px solid #434a55;
+  color: white;
+  border-radius: 9px;
+  padding: 11px 14px;
+}
+.danger {
+  background: #651b2d;
+  border: 1px solid #a33249;
+  color: white;
+  border-radius: 9px;
+  padding: 11px 14px;
+}
+
+/* DASHBOARD */
+.app {
+  display: flex;
+  min-height: 100dvh;
+}
+.sidebar {
+  width: 245px;
+  flex-shrink: 0;
+  background: #0e1117;
+  border-right: 1px solid var(--line);
+  padding: 22px 14px;
+}
+.sidebar .logo { font-size: 29px; }
+.nav {
+  width: 100%;
+  text-align: left;
+  display: block;
+  background: transparent;
+  color: #cbd0d8;
+  border: none;
+  border-radius: 8px;
+  padding: 13px;
+  margin-top: 5px;
+}
+.nav.active, .nav:hover {
+  background: #38121e;
+  color: white;
+}
+.main {
+  flex: 1;
+  min-width: 0;
+  padding: 25px;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 18px;
+}
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 20px;
+  margin: 16px 0;
+}
+.notice {
+  border-left: 3px solid var(--red);
+  background: #26131b;
+  padding: 12px;
+  margin-top: 20px;
+  font-size: 12px;
+  color: #f1c6ce;
+}
+.stats, .cards, .form-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit, minmax(190px, 1fr)
+  );
+  gap: 14px;
+}
+.metric {
+  font-size: 34px;
+  font-weight: bold;
+  margin-top: 12px;
+}
+.field { margin-bottom: 14px; }
 .field label {
-  display:block;
-  font-size:12px;
-  color:#aaa;
-  text-transform:uppercase;
-  margin-bottom:6px;
+  display: block;
+  font-size: 13px;
+  color: #cbd0d8;
+  margin-bottom: 7px;
 }
-.field input,.field select,.field textarea {
-  width:100%;
-  padding:12px;
-  color:white;
-  background:#101010;
-  border:1px solid #69101b;
-  border-radius:3px;
+.field input, .field select,
+.field textarea, .search-input {
+  width: 100%;
+  background: #090c11;
+  border: 1px solid #464b55;
+  border-radius: 8px;
+  color: white;
+  padding: 12px;
 }
-.field textarea {min-height:95px}
-.wide {grid-column:1/-1}
-.note {
-  color:#aaa;
-  font-size:12px;
-  line-height:1.7;
+.field textarea {
+  min-height: 100px;
 }
-.search {
-  width:100%;
-  max-width:600px;
-  padding:13px;
-  color:white;
-  background:#111;
-  border:1px solid var(--red);
-  margin-bottom:18px;
+.profile {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  overflow: hidden;
 }
-.profile-detail {
-  line-height:1.9;
-  overflow-wrap:anywhere;
+.profile img, .placeholder {
+  width: 100%;
+  height: 170px;
+  object-fit: cover;
 }
-.profile-detail strong {color:#aaa}
-.empty {
-  color:#999;
-  padding:25px 10px;
-  text-align:center;
+.placeholder {
+  display: grid;
+  place-items: center;
+  background: #1b202a;
+  color: #626b79;
+  font-size: 64px;
 }
-footer {
-  border-top:1px solid var(--red);
-  margin-top:30px;
-  padding-top:16px;
-  color:#777;
-  font-size:10px;
-  letter-spacing:2px;
+.profile-body { padding: 15px; }
+.profile-body h3 { margin: 0 0 8px; }
+.profile-body button { margin-top: 12px; }
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 18px;
 }
-@media(max-width:1100px) {
-  .stats {grid-template-columns:repeat(2,1fr)}
-  .panels {grid-template-columns:1fr 1fr}
-  .panels>.panel:last-child {grid-column:1/-1}
-}
-@media(max-width:700px) {
-  .layout {display:block}
+@media (max-width: 760px) {
+  .app { display: block; }
   .sidebar {
-    padding:10px;
-    flex-direction:row;
-    flex-wrap:wrap;
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
   }
-  .nav {flex:1 1 130px;font-size:11px;padding:11px}
-  .restricted {display:none}
-  main {padding:14px}
-  .panels {grid-template-columns:1fr}
-  .panels>.panel:last-child {grid-column:auto}
-  .form-grid {grid-template-columns:1fr}
-  .stats {grid-template-columns:repeat(2,1fr)}
-  .logo {letter-spacing:0}
-  .subtitle {letter-spacing:2px}
-  .motto {letter-spacing:0}
+  .nav-list {
+    display: flex;
+    overflow-x: auto;
+    gap: 5px;
+    margin-top: 12px;
+  }
+  .nav {
+    width: auto;
+    white-space: nowrap;
+    font-size: 12px;
+    padding: 10px;
+  }
+  .main { padding: 15px; }
 }
 </style>
 </head>
+
 <body>
 
-<div class="layout">
-<aside class="sidebar">
-  <button class="nav active" data-page="dashboard">⌂ Dashboard</button>
-  <button class="nav" data-page="registration">✚ Inmate Registration</button>
-  <button class="nav" data-page="profiles">▣ Inmate Profiles</button>
-  <button class="nav" data-page="gallery">▧ Photo Gallery</button>
-  <button class="nav" data-page="facilities">▦ Facilities</button>
-  <button class="nav" data-page="records">▤ Records</button>
-  <button class="nav" data-page="search">⌕ Search</button>
-  <button class="nav" data-page="reports">▥ Reports</button>
-  <button class="nav" data-page="settings">⚙ Settings</button>
+<!-- FIRST SECURITY SCREEN -->
+<section id="gateway" class="security-screen">
+  <div class="security-card">
+    <div class="logo">NE<span>X</span>US</div>
+    <p class="small">SECURE ACCESS SYSTEM</p>
 
-  <div class="restricted">
-    🔒 RESTRICTED ACCESS
-    <small>DESIGN NOTICE ONLY — NO LOGIN SECURITY</small>
-  </div>
-</aside>
-
-<main>
-<header>
-  <div class="logo">NE<span>X</span>US</div>
-  <div class="subtitle">INMATE MANAGEMENT SYSTEM</div>
-  <div class="motto">
-    SECURE <b>|</b> MANAGE <b>|</b>
-    ORGANIZE <b>|</b> CONTROL <b>|</b> RESULTS
-  </div>
-</header>
-
-<section class="page active" id="dashboard">
-  <div class="stats">
-    <div class="panel stat">
-      <div class="symbol">♟</div>
-      <h3>Registered Inmates</h3>
-      <strong id="count-inmates">0</strong>
-      <small>Total Test Profiles</small>
-    </div>
-    <div class="panel stat">
-      <div class="symbol">▦</div>
-      <h3>Facilities</h3>
-      <strong id="count-facilities">0</strong>
-      <small>Facilities In Test Data</small>
-    </div>
-    <div class="panel stat">
-      <div class="symbol">▤</div>
-      <h3>Records</h3>
-      <strong>0</strong>
-      <small>Record Module Coming Later</small>
-    </div>
-    <div class="panel stat">
-      <div class="symbol">▣</div>
-      <h3>Photo Gallery</h3>
-      <strong id="count-gallery">0</strong>
-      <small>Test Profiles</small>
-    </div>
-  </div>
-
-  <div class="panels">
-    <div class="panel">
-      <div class="panel-header">
-        <h2>Recent Registrations</h2>
-        <button class="outline" data-go="profiles">VIEW ALL</button>
-      </div>
-      <table>
-        <thead>
-          <tr><th>ID</th><th>NAME</th><th>DATE</th></tr>
-        </thead>
-        <tbody id="recent-list"></tbody>
-      </table>
-    </div>
-
-    <div class="panel">
-      <div class="panel-header">
-        <h2>Facility Overview</h2>
-        <button class="outline" data-go="facilities">VIEW ALL</button>
-      </div>
-      <table>
-        <thead>
-          <tr><th>FACILITY</th><th>INMATES</th></tr>
-        </thead>
-        <tbody id="facility-list"></tbody>
-      </table>
-    </div>
-
-    <div class="panel">
-      <div class="panel-header">
-        <h2>Profile Gallery</h2>
-        <button class="outline" data-go="gallery">VIEW ALL</button>
-      </div>
-      <div class="gallery" id="dashboard-gallery"></div>
-    </div>
-  </div>
-</section>
-
-<section class="page" id="registration">
-  <h1 class="page-title">New Inmate Registration</h1>
-  <div class="panel">
-    <p class="note">
-      WORKING FICTIONAL-DATA DEMO.
-      Information is saved only in this browser's
-      local storage. Do not enter real inmate information.
+    <h2>SECURITY GATEWAY</h2>
+    <p class="muted">
+      Enter your security credentials to continue.
     </p>
 
-    <form id="registration-form">
-      <div class="form-grid">
-        <div class="field">
-          <label for="inmate-id">Inmate ID *</label>
-          <input id="inmate-id" required placeholder="INM-0001">
-        </div>
-        <div class="field">
-          <label for="first-name">First Name *</label>
-          <input id="first-name" required>
-        </div>
-        <div class="field">
-          <label for="middle-name">Middle Initial</label>
-          <input id="middle-name" maxlength="1">
-        </div>
-        <div class="field">
-          <label for="last-name">Last Name *</label>
-          <input id="last-name" required>
-        </div>
-        <div class="field">
-          <label for="state">State</label>
-          <input id="state" placeholder="Arizona">
-        </div>
-        <div class="field">
-          <label for="facility">Facility</label>
-          <input id="facility" placeholder="Facility A">
-        </div>
-        <div class="field">
-          <label for="classification">Custody Classification</label>
-          <select id="classification">
-            <option value="">Select Classification</option>
-            <option>Minimum</option>
-            <option>Medium</option>
-            <option>Maximum</option>
-            <option>Other</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="status">Status</label>
-          <select id="status">
-            <option>Active</option>
-            <option>Inactive</option>
-          </select>
-        </div>
-        <div class="field wide">
-          <label for="photo">Test Profile Photo (Optional)</label>
-          <input id="photo" type="file" accept="image/*">
-        </div>
-        <div class="field wide">
-          <label for="notes">Notes</label>
-          <textarea id="notes"></textarea>
-        </div>
-      </div>
+    <form id="gatewayForm">
+      <input type="password"
+        placeholder="Security Key"
+        aria-label="Security Key" required>
+
+      <input type="password"
+        placeholder="Access Code"
+        aria-label="Access Code" required>
+
       <button class="primary" type="submit">
-        SAVE FICTIONAL PROFILE
+        VERIFY ACCESS
       </button>
     </form>
-    <p class="note" id="save-message"></p>
-  </div>
-</section>
 
-<section class="page" id="profiles">
-  <h1 class="page-title">Inmate Profiles</h1>
-  <div class="panel">
-    <p class="note">Select a fictional profile to view its details.</p>
-    <div class="gallery" id="profiles-gallery"></div>
-  </div>
-</section>
-
-<section class="page" id="gallery">
-  <h1 class="page-title">Inmate Photo Gallery</h1>
-  <div class="panel">
-    <p class="note">
-      Profiles without a test photo show a black
-      male silhouette behind bars.
-    </p>
-    <div class="gallery" id="full-gallery"></div>
-  </div>
-</section>
-
-<section class="page" id="facilities">
-  <h1 class="page-title">Facility Management</h1>
-  <div class="panel">
-    <p class="note">Facilities from your fictional test profiles.</p>
-    <div id="facilities-content"></div>
-  </div>
-</section>
-
-<section class="page" id="records">
-  <h1 class="page-title">Inmate Records</h1>
-  <div class="panel">
-    <p class="note">Record categories planned for a future version:</p>
-    <table>
-      <tbody>
-        <tr><td>01</td><td>Sentence & Commitment</td></tr>
-        <tr><td>02</td><td>Disciplinary Infraction</td></tr>
-        <tr><td>03</td><td>Profile Classification</td></tr>
-        <tr><td>04</td><td>Parole Action</td></tr>
-        <tr><td>05</td><td>Work Program</td></tr>
-        <tr><td>06</td><td>Notification Request</td></tr>
-        <tr><td>07</td><td>Detainer</td></tr>
-        <tr><td>08</td><td>Warrant</td></tr>
-      </tbody>
-    </table>
-  </div>
-</section>
-
-<section class="page" id="search">
-  <h1 class="page-title">Advanced Inmate Search</h1>
-  <div class="panel">
-    <input
-      class="search"
-      id="search-input"
-      placeholder="Search ID, name, facility, state, status..."
-    >
-    <div id="search-results"></div>
-  </div>
-</section>
-
-<section class="page" id="detail">
-  <h1 class="page-title">Inmate Profile Details</h1>
-  <div class="panel">
-    <div id="detail-content" class="profile-detail"></div>
-    <button class="outline" data-go="profiles">
-      BACK TO PROFILES
-    </button>
-    <button class="danger" id="delete-profile">
-      DELETE TEST PROFILE
-    </button>
-  </div>
-</section>
-
-<section class="page" id="reports">
-  <h1 class="page-title">Reports</h1>
-  <div class="panel">
-    <p class="note">
-      Reporting features will be added in a future version.
+    <p class="small">
+      VISUAL DEMONSTRATION ONLY
     </p>
   </div>
 </section>
 
-<section class="page" id="settings">
-  <h1 class="page-title">System Settings</h1>
-  <div class="panel">
-    <p>NEXUS Version 2 — Local Demo</p>
-    <p>Theme: Black & Red</p>
-    <p>Registration: Enabled for fictional test data</p>
-    <p>Storage: Browser localStorage</p>
-    <p class="note">
-      No authentication, secure database, private
-      photo storage, or server backups are configured.
-      Do not use this prototype for real records.
+<!-- SECOND SECURITY SCREEN -->
+<section id="login" class="security-screen hidden">
+  <div class="security-card">
+    <div class="logo">NE<span>X</span>US</div>
+    <p class="small">ADMINISTRATOR AUTHORIZATION</p>
+
+    <h2>ADMINISTRATOR LOGIN</h2>
+    <p class="muted">
+      Enter your administrator login details.
+    </p>
+
+    <form id="loginForm">
+      <input type="text"
+        placeholder="Username"
+        aria-label="Username" required>
+
+      <input type="password"
+        placeholder="Password"
+        aria-label="Password" required>
+
+      <button class="primary" type="submit">
+        LOGIN
+      </button>
+    </form>
+
+    <p class="small">
+      DEMO MODE — ANY NONEMPTY VALUES WORK
     </p>
   </div>
 </section>
 
-<footer>
-  NEXUS v2.0 | INMATE MANAGEMENT SYSTEM |
-  FICTIONAL DATA DEMONSTRATION
-</footer>
-</main>
+<!-- NEXUS MAIN WEBSITE -->
+<div id="app" class="app hidden">
+
+  <aside class="sidebar">
+    <div class="logo">NE<span>X</span>US</div>
+    <p class="small">MANAGEMENT SYSTEM</p>
+
+    <nav class="nav-list">
+      <button class="nav active" data-view="dashboard">
+        Dashboard
+      </button>
+      <button class="nav" data-view="register">
+        Inmate Registration
+      </button>
+      <button class="nav" data-view="profiles">
+        Inmate Profiles
+      </button>
+      <button class="nav" data-view="gallery">
+        Photo Gallery
+      </button>
+      <button class="nav" data-view="facilities">
+        Facilities
+      </button>
+      <button class="nav" data-view="records">
+        Records
+      </button>
+      <button class="nav" data-view="search">
+        Search
+      </button>
+      <button class="nav" data-view="reports">
+        Reports
+      </button>
+      <button class="nav" data-view="settings">
+        Settings
+      </button>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="header">
+      <div>
+        <h1 id="pageTitle">Dashboard</h1>
+        <p class="small">NEXUS ADMINISTRATOR CONTROL</p>
+      </div>
+      <button id="lockBtn" class="secondary">
+        Lock Demo
+      </button>
+    </div>
+
+    <div class="notice">
+      DEMO ONLY: This public website does not
+      provide real password protection.
+      Use fictional records only.
+    </div>
+
+    <div id="content"></div>
+  </main>
 </div>
 
 <script>
-"use strict";
+(function () {
+  "use strict";
 
-const KEY = "nexus_demo_profiles_v2";
-let profiles = [];
-let selectedId = null;
+  const $ = id => document.getElementById(id);
+  const STORAGE_KEY = "nexus_demo_profiles_v2";
 
-function loadProfiles() {
+  let profiles = [];
+  let currentView = "dashboard";
+  let selectedId = null;
+
   try {
-    const saved = JSON.parse(localStorage.getItem(KEY) || "[]");
-    profiles = Array.isArray(saved) ? saved : [];
+    const saved = JSON.parse(
+      localStorage.getItem(STORAGE_KEY) || "[]"
+    );
+    if (Array.isArray(saved)) profiles = saved;
   } catch (error) {
-    profiles = [];
-  }
-}
-
-function showPage(id) {
-  document.querySelectorAll(".page").forEach(page => {
-    page.classList.toggle("active", page.id === id);
-  });
-
-  document.querySelectorAll(".nav").forEach(button => {
-    button.classList.toggle(
-      "active",
-      button.dataset.page === id
-    );
-  });
-
-  window.scrollTo(0,0);
-}
-
-document.querySelectorAll("[data-page]").forEach(button => {
-  button.addEventListener("click", () => {
-    showPage(button.dataset.page);
-  });
-});
-
-document.querySelectorAll("[data-go]").forEach(button => {
-  button.addEventListener("click", () => {
-    showPage(button.dataset.go);
-  });
-});
-
-function fullName(p) {
-  return [
-    p.first,
-    p.middle,
-    p.last
-  ].filter(Boolean).join(" ");
-}
-
-function textElement(tag, value) {
-  const el = document.createElement(tag);
-  el.textContent = value;
-  return el;
-}
-
-function placeholder() {
-  const figure = document.createElement("div");
-  figure.className = "silhouette";
-  const bars = document.createElement("div");
-  bars.className = "bars";
-  figure.appendChild(bars);
-  return figure;
-}
-
-function profileCard(p) {
-  const card = document.createElement("div");
-  card.className = "photo-card";
-  card.setAttribute("role","button");
-  card.tabIndex = 0;
-
-  if(p.photo) {
-    const img = document.createElement("img");
-    img.className = "photo";
-    img.src = p.photo;
-    img.alt = "Fictional test profile photo";
-    card.appendChild(img);
-  } else {
-    card.appendChild(placeholder());
+    console.warn("Could not load profiles", error);
   }
 
-  card.appendChild(textElement("span", p.id));
-  card.appendChild(textElement("span", fullName(p)));
-
-  function open() {
-    selectedId = p.id;
-    showDetail();
-    showPage("detail");
-  }
-
-  card.addEventListener("click", open);
-  card.addEventListener("keydown", event => {
-    if(event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      open();
+  function saveProfiles() {
+    try {
+      localStorage.setItem(
+        STORAGE_KEY, JSON.stringify(profiles)
+      );
+      return true;
+    } catch (error) {
+      alert("Could not save. Browser storage may be full.");
+      return false;
     }
-  });
-
-  return card;
-}
-
-function fillGallery(id, items) {
-  const container = document.getElementById(id);
-  container.replaceChildren();
-
-  if(items.length === 0) {
-    container.appendChild(
-      textElement("p", "No fictional profiles registered yet.")
-    );
-    return;
   }
 
-  items.forEach(p => {
-    container.appendChild(profileCard(p));
-  });
-}
+  function safe(value) {
+    return String(value ?? "").replace(
+      /[&<>"']/g,
+      char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      })[char]
+    );
+  }
 
-function facilityCounts() {
-  const counts = new Map();
+  function nameOf(p) {
+    return [
+      p.first, p.middle, p.last
+    ].filter(Boolean).join(" ");
+  }
 
-  profiles.forEach(p => {
-    if(p.facility) {
-      counts.set(
-        p.facility,
-        (counts.get(p.facility) || 0) + 1
+  function photoOf(p) {
+    if (
+      p.photo &&
+      /^data:image\/(png|jpeg|webp);base64,/i.test(p.photo)
+    ) {
+      return '<img src="' + p.photo +
+        '" alt="Profile photo">';
+    }
+    return '<div class="placeholder">♟</div>';
+  }
+
+  function profileCard(p) {
+    return `
+      <article class="profile">
+        ${photoOf(p)}
+        <div class="profile-body">
+          <h3>${safe(nameOf(p))}</h3>
+          <p class="small">${safe(p.id)}</p>
+          <p>${safe(p.status || "Active")}</p>
+          <p class="small">
+            ${safe(p.facility || "No facility")}
+          </p>
+          <button class="secondary"
+            data-open="${encodeURIComponent(p.id)}">
+            View Profile
+          </button>
+        </div>
+      </article>
+    `;
+  }
+
+  function showCards(list) {
+    if (!list.length) {
+      return '<div class="panel muted">No profiles found.</div>';
+    }
+    return '<div class="cards">' +
+      list.map(profileCard).join("") + '</div>';
+  }
+
+  function goTo(view) {
+    currentView = view;
+    selectedId = null;
+    render();
+  }
+
+  function render() {
+    document.querySelectorAll("[data-view]")
+      .forEach(button => {
+        button.classList.toggle(
+          "active",
+          button.dataset.view === currentView
+        );
+      });
+
+    const titles = {
+      dashboard: "Dashboard",
+      register: "Inmate Registration",
+      profiles: "Inmate Profiles",
+      gallery: "Photo Gallery",
+      facilities: "Facilities",
+      records: "Records",
+      search: "Search",
+      reports: "Reports",
+      settings: "Settings",
+      detail: "Profile Details"
+    };
+
+    $("pageTitle").textContent =
+      titles[currentView] || "NEXUS";
+
+    let html = "";
+
+    if (currentView === "dashboard") {
+      const active = profiles.filter(
+        p => p.status === "Active"
+      ).length;
+
+      const facilities = new Set(
+        profiles.map(p => p.facility).filter(Boolean)
+      ).size;
+
+      html = `
+        <div class="stats">
+          <div class="panel">
+            <div class="small">TOTAL PROFILES</div>
+            <div class="metric">${profiles.length}</div>
+          </div>
+          <div class="panel">
+            <div class="small">ACTIVE PROFILES</div>
+            <div class="metric">${active}</div>
+          </div>
+          <div class="panel">
+            <div class="small">FACILITIES</div>
+            <div class="metric">${facilities}</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Welcome to NEXUS</h2>
+          <p class="muted">
+            Your management dashboard is ready.
+          </p>
+          <button class="primary" data-go="register">
+            Register Demo Profile
+          </button>
+        </div>
+
+        <h2>Recent Profiles</h2>
+        ${showCards(profiles.slice(-6).reverse())}
+      `;
+    }
+
+    if (currentView === "register") {
+      const fields = [
+        ["id", "Inmate ID", true],
+        ["first", "First Name", true],
+        ["middle", "Middle Name", false],
+        ["last", "Last Name", true],
+        ["state", "State", false],
+        ["facility", "Facility", false]
+      ];
+
+      html = `
+        <div class="panel">
+          <h2>Register Fictional Profile</h2>
+          <form id="registration">
+            <div class="form-grid">
+              ${fields.map(([id, label, required]) => `
+                <div class="field">
+                  <label for="f-${id}">${label}</label>
+                  <input id="f-${id}" name="${id}"
+                    ${required ? "required" : ""}>
+                </div>
+              `).join("")}
+
+              <div class="field">
+                <label>Classification</label>
+                <select name="classification">
+                  <option>General Population</option>
+                  <option>Minimum</option>
+                  <option>Medium</option>
+                  <option>Maximum</option>
+                  <option>Other</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label>Status</label>
+                <select name="status">
+                  <option>Active</option>
+                  <option>Inactive</option>
+                  <option>Transferred</option>
+                  <option>Released</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label>Photo (500 KB maximum)</label>
+                <input id="f-photo" type="file"
+                  accept="image/jpeg,image/png,image/webp">
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Notes</label>
+              <textarea name="notes"></textarea>
+            </div>
+
+            <button class="primary" type="submit">
+              Save Demo Profile
+            </button>
+          </form>
+        </div>
+      `;
+    }
+
+    if (
+      currentView === "profiles" ||
+      currentView === "gallery" ||
+      currentView === "records"
+    ) {
+      html = `<p class="muted">
+        ${profiles.length} demo profiles
+      </p>` + showCards(profiles);
+    }
+
+    if (currentView === "search") {
+      html = `
+        <div class="panel">
+          <label>Search Profiles</label>
+          <input id="searchInput"
+            class="search-input"
+            placeholder="Name, ID, state or facility">
+        </div>
+        <div id="searchResults">
+          ${showCards(profiles)}
+        </div>
+      `;
+    }
+
+    if (currentView === "facilities") {
+      const names = [
+        ...new Set(
+          profiles.map(p => p.facility).filter(Boolean)
+        )
+      ];
+
+      html = '<div class="panel"><h2>Facilities</h2>' +
+        (names.length
+          ? names.map(f => `
+              <p>${safe(f)}:
+              ${profiles.filter(p => p.facility === f).length}
+              profiles</p>
+            `).join("")
+          : '<p class="muted">No facilities found.</p>'
+        ) + '</div>';
+    }
+
+    if (currentView === "reports") {
+      html = `
+        <div class="panel">
+          <h2>Summary Report</h2>
+          <p>Total profiles: ${profiles.length}</p>
+          <p>Active profiles:
+            ${profiles.filter(p => p.status === "Active").length}
+          </p>
+        </div>
+      `;
+    }
+
+    if (currentView === "settings") {
+      html = `
+        <div class="panel">
+          <h2>Demo Settings</h2>
+          <p class="muted">
+            Real security and device approval
+            will require a secure server.
+          </p>
+          <button id="clearProfiles" class="danger">
+            Delete All Demo Profiles
+          </button>
+        </div>
+      `;
+    }
+
+    if (currentView === "detail") {
+      const p = profiles.find(
+        item => item.id === selectedId
+      );
+
+      if (!p) {
+        goTo("profiles");
+        return;
+      }
+
+      const details = [
+        ["Inmate ID", p.id],
+        ["State", p.state],
+        ["Facility", p.facility],
+        ["Classification", p.classification],
+        ["Status", p.status],
+        ["Notes", p.notes]
+      ];
+
+      html = `
+        <div class="panel">
+          <div class="actions">
+            <button class="secondary" data-go="profiles">
+              Back to Profiles
+            </button>
+            <button id="deleteProfile" class="danger">
+              Delete Demo Profile
+            </button>
+          </div>
+
+          <h2>${safe(nameOf(p))}</h2>
+          <div style="max-width:220px">
+            ${photoOf(p)}
+          </div>
+
+          ${details.map(([label, value]) => `
+            <p><strong>${label}:</strong>
+            ${safe(value || "—")}</p>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    $("content").innerHTML = html;
+
+    if (currentView === "register") {
+      $("registration").addEventListener(
+        "submit", registerProfile
       );
     }
-  });
 
-  return counts;
-}
+    if (currentView === "search") {
+      $("searchInput").addEventListener(
+        "input", event => {
+          const query =
+            event.target.value.toLowerCase().trim();
 
-function render() {
-  document.getElementById("count-inmates").textContent =
-    profiles.length;
+          const results = profiles.filter(p =>
+            [p.id, nameOf(p), p.state, p.facility]
+              .some(value =>
+                String(value || "")
+                  .toLowerCase()
+                  .includes(query)
+              )
+          );
 
-  document.getElementById("count-gallery").textContent =
-    profiles.length;
-
-  const facilities = facilityCounts();
-
-  document.getElementById("count-facilities").textContent =
-    facilities.size;
-
-  fillGallery(
-    "dashboard-gallery",
-    profiles.slice(-6).reverse()
-  );
-
-  fillGallery("profiles-gallery", profiles);
-  fillGallery("full-gallery", profiles);
-
-  const recent = document.getElementById("recent-list");
-  recent.replaceChildren();
-
-  profiles.slice(-5).reverse().forEach(p => {
-    const row = document.createElement("tr");
-    [p.id, fullName(p), p.date].forEach(value => {
-      row.appendChild(textElement("td", value));
-    });
-    recent.appendChild(row);
-  });
-
-  const facilityList = document.getElementById("facility-list");
-  facilityList.replaceChildren();
-
-  const facilityContent =
-    document.getElementById("facilities-content");
-  facilityContent.replaceChildren();
-
-  facilities.forEach((count,name) => {
-    const row = document.createElement("tr");
-    row.appendChild(textElement("td",name));
-    row.appendChild(textElement("td",String(count)));
-    facilityList.appendChild(row);
-
-    facilityContent.appendChild(
-      textElement("p", name + " — " + count + " test profiles")
-    );
-  });
-
-  if(facilities.size === 0) {
-    facilityContent.textContent = "No facilities registered yet.";
-  }
-
-  searchProfiles();
-}
-
-function showDetail() {
-  const p = profiles.find(item => item.id === selectedId);
-  const box = document.getElementById("detail-content");
-  box.replaceChildren();
-
-  if(!p) {
-    box.textContent = "Profile not found.";
-    return;
-  }
-
-  if(p.photo) {
-    const img = document.createElement("img");
-    img.src = p.photo;
-    img.alt = "Fictional profile photo";
-    img.style.maxWidth = "180px";
-    img.style.width = "100%";
-    box.appendChild(img);
-  }
-
-  const fields = [
-    ["Inmate ID",p.id],
-    ["Name",fullName(p)],
-    ["State",p.state],
-    ["Facility",p.facility],
-    ["Classification",p.classification],
-    ["Status",p.status],
-    ["Registration Date",p.date],
-    ["Notes",p.notes]
-  ];
-
-  fields.forEach(([label,value]) => {
-    const line = document.createElement("p");
-    const heading = document.createElement("strong");
-    heading.textContent = label + ": ";
-    line.appendChild(heading);
-    line.appendChild(document.createTextNode(value || "—"));
-    box.appendChild(line);
-  });
-}
-
-function searchProfiles() {
-  const input = document.getElementById("search-input");
-  const query = input.value.trim().toLowerCase();
-  const results = document.getElementById("search-results");
-  results.replaceChildren();
-
-  if(!query) {
-    results.textContent =
-      "Enter a name, ID, facility, state, or status.";
-    return;
-  }
-
-  const matches = profiles.filter(p => {
-    return [
-      p.id,fullName(p),p.facility,p.state,p.status
-    ].join(" ").toLowerCase().includes(query);
-  });
-
-  if(matches.length === 0) {
-    results.textContent = "No matching fictional profiles.";
-    return;
-  }
-
-  const gallery = document.createElement("div");
-  gallery.className = "gallery";
-
-  matches.forEach(p => {
-    gallery.appendChild(profileCard(p));
-  });
-
-  results.appendChild(gallery);
-}
-
-document.getElementById("search-input")
-  .addEventListener("input",searchProfiles);
-
-function readPhoto(file) {
-  return new Promise((resolve,reject) => {
-    if(!file) {
-      resolve("");
-      return;
+          $("searchResults").innerHTML =
+            showCards(results);
+        }
+      );
     }
 
-    if(!file.type.startsWith("image/")) {
-      reject(new Error("Choose an image file."));
-      return;
+    if (currentView === "detail") {
+      $("deleteProfile").addEventListener(
+        "click", () => {
+          if (confirm("Delete this demo profile?")) {
+            profiles = profiles.filter(
+              p => p.id !== selectedId
+            );
+            saveProfiles();
+            goTo("profiles");
+          }
+        }
+      );
     }
 
-    if(file.size > 500000) {
-      reject(new Error(
-        "For this demo, choose an image under 500 KB."
-      ));
-      return;
+    if (currentView === "settings") {
+      $("clearProfiles").addEventListener(
+        "click", () => {
+          if (confirm("Delete all demo profiles?")) {
+            profiles = [];
+            saveProfiles();
+            render();
+          }
+        }
+      );
     }
+  }
 
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(
-      new Error("Unable to read the photo.")
-    );
-    reader.readAsDataURL(file);
-  });
-}
-
-document.getElementById("registration-form")
-  .addEventListener("submit", async event => {
+  async function registerProfile(event) {
     event.preventDefault();
 
-    const get = id =>
-      document.getElementById(id).value.trim();
+    const data = new FormData(event.currentTarget);
+    const p = {};
 
-    const id = get("inmate-id");
+    for (const key of [
+      "id", "first", "middle", "last",
+      "state", "facility", "classification",
+      "status", "notes"
+    ]) {
+      p[key] = String(data.get(key) || "").trim();
+    }
 
-    if(profiles.some(p =>
-      p.id.toLowerCase() === id.toLowerCase()
+    if (profiles.some(item =>
+      item.id.toLowerCase() === p.id.toLowerCase()
     )) {
-      alert("That inmate ID already exists.");
+      alert("That Inmate ID already exists.");
       return;
     }
 
-    const message = document.getElementById("save-message");
+    const file = $("f-photo").files[0];
 
-    try {
-      const photo = await readPhoto(
-        document.getElementById("photo").files[0]
-      );
+    if (file) {
+      if (file.size > 500 * 1024) {
+        alert("Photo must be smaller than 500 KB.");
+        return;
+      }
 
-      const p = {
-        id,
-        first:get("first-name"),
-        middle:get("middle-name"),
-        last:get("last-name"),
-        state:get("state"),
-        facility:get("facility"),
-        classification:get("classification"),
-        status:get("status"),
-        notes:get("notes"),
-        photo,
-        date:new Date().toLocaleDateString()
-      };
+      if (![
+        "image/jpeg", "image/png", "image/webp"
+      ].includes(file.type)) {
+        alert("Choose a JPG, PNG or WebP photo.");
+        return;
+      }
 
-      const updated = [...profiles,p];
-
-      localStorage.setItem(
-        KEY,
-        JSON.stringify(updated)
-      );
-
-      profiles = updated;
-
-      document.getElementById("registration-form").reset();
-
-      message.textContent =
-        "Fictional profile saved successfully.";
-
-      render();
-      showPage("profiles");
-
-    } catch(error) {
-      alert(
-        "Could not save the test profile: " +
-        error.message +
-        ". Try a smaller photo or no photo."
-      );
+      p.photo = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
     }
+
+    profiles.push(p);
+
+    if (saveProfiles()) {
+      alert("Demo profile saved.");
+      goTo("profiles");
+    } else {
+      profiles.pop();
+    }
+  }
+
+  // SECURITY GATEWAY — DEMONSTRATION ONLY
+  $("gatewayForm").addEventListener(
+    "submit", event => {
+      event.preventDefault();
+      $("gateway").classList.add("hidden");
+      $("login").classList.remove("hidden");
+    }
+  );
+
+  // ADMINISTRATOR LOGIN — DEMONSTRATION ONLY
+  $("loginForm").addEventListener(
+    "submit", event => {
+      event.preventDefault();
+      $("login").classList.add("hidden");
+      $("app").classList.remove("hidden");
+      render();
+    }
+  );
+
+  $("lockBtn").addEventListener("click", () => {
+    $("app").classList.add("hidden");
+    $("login").classList.add("hidden");
+    $("gateway").classList.remove("hidden");
+    $("gatewayForm").reset();
+    $("loginForm").reset();
   });
 
-document.getElementById("delete-profile")
-  .addEventListener("click",() => {
-    if(!selectedId) return;
+  document.querySelectorAll("[data-view]")
+    .forEach(button => {
+      button.addEventListener("click", () => {
+        goTo(button.dataset.view);
+      });
+    });
 
-    if(!confirm(
-      "Delete this fictional test profile?"
-    )) return;
-
-    const updated = profiles.filter(p =>
-      p.id !== selectedId
-    );
-
-    try {
-      localStorage.setItem(
-        KEY,
-        JSON.stringify(updated)
+  $("content").addEventListener("click", event => {
+    const open = event.target.closest("[data-open]");
+    if (open) {
+      selectedId = decodeURIComponent(
+        open.dataset.open
       );
-
-      profiles = updated;
-      selectedId = null;
+      currentView = "detail";
       render();
-      showPage("profiles");
-
-    } catch(error) {
-      alert("Could not delete the test profile.");
+      return;
     }
+
+    const go = event.target.closest("[data-go]");
+    if (go) goTo(go.dataset.go);
   });
 
-loadProfiles();
-render();
+})();
 </script>
+
 </body>
 </html>
