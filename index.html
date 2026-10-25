@@ -134,26 +134,22 @@ const saveProfiles=()=>store(KEY,profiles),savePersonal=()=>store(PERSONAL_KEY,p
       });
     });
   }
-     const {error: deleteError} = await nexusDB
-    .from('nexus_master_sections')
-    .delete()
-    .eq('profile_id', data.id);
 
-  if(deleteError){
-    throw new Error('Could not update Master Record sections: ' + deleteError.message);
+  const { error: sectionError } = await nexusDB
+    .rpc('nexus_replace_master_sections', {
+      p_profile_id: data.id,
+      p_rows: sectionRows
+    });
+
+  if (sectionError) {
+    throw new Error(
+      'Could not save Master Record sections: ' + sectionError.message
+    );
   }
 
-  if(sectionRows.length > 0){
-    const {error: sectionError} = await nexusDB
-      .from('nexus_master_sections')
-      .insert(sectionRows);
-
-    if(sectionError){
-      throw new Error('Could not save Master Record sections: ' + sectionError.message);
-    }
-  }           
   return data;
 }
+
 
 function store(key,data){try{localStorage.setItem(key,JSON.stringify(data));return true}catch(e){alert('Could not save to browser storage. Try using a smaller photo or exporting a backup.');return false}}
 
