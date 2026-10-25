@@ -119,7 +119,39 @@ const saveProfiles=()=>store(KEY,profiles),savePersonal=()=>store(PERSONAL_KEY,p
   if(saveError){
     throw new Error('Supabase save failed: ' + saveError.message);
   }
+  const sectionRows = [];
 
+  for (const section of tableDefs) {
+    const rows = p[section.key] || [];
+
+    rows.forEach((row, index) => {
+      sectionRows.push({
+        owner_id: user.id,
+        profile_id: data.id,
+        section_type: section.key,
+        row_position: index,
+        row_data: { cells: row }
+      });
+    });
+  }
+     const {error: deleteError} = await nexusDB
+    .from('nexus_master_sections')
+    .delete()
+    .eq('profile_id', data.id);
+
+  if(deleteError){
+    throw new Error('Could not update Master Record sections: ' + deleteError.message);
+  }
+
+  if(sectionRows.length > 0){
+    const {error: sectionError} = await nexusDB
+      .from('nexus_master_sections')
+      .insert(sectionRows);
+
+    if(sectionError){
+      throw new Error('Could not save Master Record sections: ' + sectionError.message);
+    }
+  }           
   return data;
 }
 
