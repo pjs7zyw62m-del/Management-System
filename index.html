@@ -302,7 +302,10 @@ $('content').addEventListener('change',e=>{
     r.readAsDataURL(f);
   }
 });
-$('content').addEventListener('submit',async e=>{e.preventDefault();const form=e.target,fd=new FormData(form);if(form.id==='recordForm'){captureRows();const id=String(fd.get('id')||'').trim();if(!id){alert('Inmate ID is required.');return}if(profiles.some(p=>p.id===id&&p.id!==editId)){alert('This Inmate ID already exists.');return}const old=editId?find(editId):null;const p={...(old||{})};for(const [k,v] of fd.entries())if(k!=='photo')p[k]=String(v);p.id=id;p.photo=photoData||old?.photo||'';for(const t of tableDefs)p[t.key]=(tableRows[t.key]||old?.[t.key]||[]).filter(r=>Array.isArray(r)?r.some(x=>String(x||'').trim()):Object.values(r||{}).some(x=>String(x||'').trim()));try {
+$('content').addEventListener('submit',async e=>{e.preventDefault();const form=e.target,fd=new FormData(form);if(form.id==='recordForm'){captureRows();const id=String(fd.get('id')||'').trim();if(!id){alert('Inmate ID is required.');return}if(profiles.some(p=>p.id===id&&p.id!==editId)){alert('This Inmate ID already exists.');return}const old=editId?find(editId):null;if(old && id!==editId){
+  alert('Changing an existing Inmate ID is temporarily disabled while we finish Supabase synchronization.');
+  return;
+}const p={...(old||{})};for(const [k,v] of fd.entries())if(k!=='photo')p[k]=String(v);p.id=id;p.photo=photoData||old?.photo||'';for(const t of tableDefs)p[t.key]=(tableRows[t.key]||old?.[t.key]||[]).filter(r=>Array.isArray(r)?r.some(x=>String(x||'').trim()):Object.values(r||{}).some(x=>String(x||'').trim()));try {
   await saveMasterToSupabase(p);
 } catch (err) {
   alert('Master Record was not saved to Supabase: ' + err.message);
