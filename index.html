@@ -57,6 +57,39 @@
 #recordSaveStatus{margin-bottom:16px}
 #recordSaveStatus.error{background:#381c29;border-color:#d14a5d;color:#ffe0e6}
 @media(max-width:700px){.registration-layout{grid-template-columns:1fr}.registration-photo{position:static;flex-direction:row;flex-wrap:wrap;align-items:center}.registration-photo .photo{width:115px;height:135px}.registration-savebar{position:static}}
+
+/* NEXUS Five-Color Communication Indicator */
+.five-segment:nth-child(1) {
+  background: #475569;
+  color: white;
+}
+
+.five-segment:nth-child(2) {
+  background: #7C3AED;
+  color: white;
+}
+
+.five-segment:nth-child(3) {
+  background: #2563EB;
+  color: white;
+}
+
+.five-segment:nth-child(4) {
+  background: #EAB308;
+  color: #111827;
+}
+
+.five-segment:nth-child(5) {
+  background: #DC2626;
+  color: white;
+}
+
+.five-segment.selected {
+  outline: 3px solid white;
+  outline-offset: 2px;
+  font-weight: 900;
+}
+
 </style></head><body>
  
 <div id="gateway" class="gate"><form id="gateForm" class="panel"><div class="logo">NE<span>X</span>US</div><h2>Security Gateway</h2><p class="muted">Demonstration access only</p><div class="field"><label>Security Key</label><input required autocomplete="off"></div><div class="field"><label>Access Code</label><input required type="password"></div><button class="btn" type="submit">CONTINUE</button></form></div>
