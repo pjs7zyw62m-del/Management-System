@@ -352,7 +352,7 @@ $('content').addEventListener('submit',async e=>{e.preventDefault();const form=e
   return;
 }if(old){const idx=profiles.indexOf(old);profiles[idx]=p;if(editId!==id&&personal[editId]){personal[id]=personal[editId];delete personal[editId];savePersonal()}}else profiles.push(p);if(saveProfiles()){const verified=read(KEY,[]).find(record=>record.id===id);if(!verified){alert('Save verification failed. Please export a backup and retry.');return;}detailId=id;editId=null;photoData='';selectedPhotoFile=null;tableRows={};go('detail');alert('Master Record saved successfully, including all entered section rows.')}}else if(form.id==='personalForm'||form.id==='notesForm'){const f=file();f.details={...(f.details||{})};for(const [k,v] of fd.entries())f.details[k]=String(v);f.updated=new Date().toISOString();if(savePersonal()){alert('Personal file saved.');render()}}else if(form.id==='entryForm'){const date=String(fd.get('date')||''),message=String(fd.get('message')||'').trim(),type=String(fd.get('type')||'');if(!date||!message){alert('Enter a date and message or summary.');return}if(date>today()){alert('Communication date cannot be in the future.');return}file().entries.push({uid:Date.now().toString(36)+Math.random().toString(36).slice(2),date,type,message,rateAtEntry:rateFor(financeFile(),type)});analysisVisible=false;if(savePersonal())render()}else if(form.id==='ratesForm'){const f=financeFile();for(const [k] of activityTypes){const v=Number(fd.get(k));if(!Number.isFinite(v)||v<0){alert('Prices must be zero or greater.');return}f.rates[k]=Math.round(v*100)/100}savePersonal();render()}else if(form.id==='sexualForm'){const date=String(fd.get('date')||''),message=String(fd.get('message')||'').trim(),reason=String(fd.get('reason')||'').trim();if(!date||date>today()||!reason){alert('Enter a valid date and select a reason.');return}const f=financeFile();f.sexualEntries.push({uid:Date.now().toString(36)+Math.random().toString(36).slice(2),date,message,reason,rateAtEntry:rateFor(f,'Sexual')});savePersonal();render()}else if(form.id==='interestsForm'){const f=financeFile();f.details={...(f.details||{}),interests:String(fd.get('interests')||''),boundaries:String(fd.get('boundaries')||'')};f.updated=new Date().toISOString();if(savePersonal()){render();alert('Interests and boundaries saved to this inmate personal file.')} }else if(form.id==='maleForm'){const f=financeFile();f.maleReports.push({date:String(fd.get('date')||''),category:String(fd.get('category')||''),evidence:String(fd.get('evidence')||''),interpretation:String(fd.get('interpretation')||'')});savePersonal();render()}});
 
-$('content').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.id==='toggleArchive'){showArchive=!showArchive;render();return}if(b.id==='addCustomFacility'){const state=$('registrationState')?.value,name=$('customFacilityName')?.value.trim();if(!state){alert('Select a state first.');return}if(!name){alert('Enter a facility name.');return}const data=read(FACILITY_CUSTOM_KEY,{});data[state]=[...new Set([...(data[state]||[]),name])];if(store(FACILITY_CUSTOM_KEY,data)){const sel=$('registrationFacility');sel.insertAdjacentHTML('beforeend',`<option value="${esc(name)}">${esc(name)}</option>`);sel.value=name;$('customFacilityName').value='';alert('Facility added for '+state+'.')}return}if(b.id==='addReason'){const name=$('newReason')?.value.trim();if(!name){alert('Enter a reason first.');return}const data=reasonChoices();if(!data.some(x=>x.toLowerCase()===name.toLowerCase()))data.push(name);if(store(REASONS_KEY,data)){const sel=$('sexualReason');if(![...sel.options].some(x=>x.value===name))sel.insertAdjacentHTML('beforeend',`<option value="${esc(name)}">${esc(name)}</option>`);sel.value=name;$('newReason').value='';alert('Reason saved for reuse.')}return}if(b.dataset.exportFinancial){financialCSV();return}if(b.dataset.finOpen){detailId=decodeURIComponent(b.dataset.finOpen);personalTab='financial';go('personal');return}if(b.dataset.view){
+$('content').addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;if(b.id==='toggleArchive'){showArchive=!showArchive;render();return}if(b.id==='addCustomFacility'){const state=$('registrationState')?.value,name=$('customFacilityName')?.value.trim();if(!state){alert('Select a state first.');return}if(!name){alert('Enter a facility name.');return}const data=read(FACILITY_CUSTOM_KEY,{});data[state]=[...new Set([...(data[state]||[]),name])];if(store(FACILITY_CUSTOM_KEY,data)){const sel=$('registrationFacility');sel.insertAdjacentHTML('beforeend',`<option value="${esc(name)}">${esc(name)}</option>`);sel.value=name;$('customFacilityName').value='';alert('Facility added for '+state+'.')}return}if(b.id==='addReason'){const name=$('newReason')?.value.trim();if(!name){alert('Enter a reason first.');return}const data=reasonChoices();if(!data.some(x=>x.toLowerCase()===name.toLowerCase()))data.push(name);if(store(REASONS_KEY,data)){const sel=$('sexualReason');if(![...sel.options].some(x=>x.value===name))sel.insertAdjacentHTML('beforeend',`<option value="${esc(name)}">${esc(name)}</option>`);sel.value=name;$('newReason').value='';alert('Reason saved for reuse.')}return}if(b.dataset.exportFinancial){financialCSV();return}if(b.dataset.finOpen){detailId=decodeURIComponent(b.dataset.finOpen);personalTab='financial';go('personal');return}if(b.dataset.view){
   if(b.dataset.view==='register'){
     editId=null;
     photoData='';
@@ -368,7 +368,47 @@ $('content').addEventListener('click',e=>{const b=e.target.closest('button');if(
   tableRows={};
   go('register');
   return;
-}if(b.dataset.delete){const id=decodeURIComponent(b.dataset.delete);if(confirm('Permanently delete this demo master record and its personal file from this browser?')){profiles=profiles.filter(p=>p.id!==id);delete personal[id];saveProfiles();savePersonal();go('profiles')}return}if(b.dataset.tab){personalTab=b.dataset.tab;render();return}if(b.dataset.window){windowDays=Number(b.dataset.window);analysisVisible=false;render();return}if(b.id==='analyze'){analysisVisible=true;render();return}if(b.dataset.deposit){const f=financeFile(),d=balanceData();if(!d.pending.length||d.outstanding<=0){alert('There is no positive outstanding balance to record.');return}if(!confirm('Confirm you have made a deposit of '+money(d.outstanding)+'? This records the deposit and clears the pending balance.'))return;f.deposits.push({id:'DEP-'+Date.now(),date:new Date().toLocaleString(),amount:Math.round(d.outstanding*100)/100,entryIds:d.pending.map(x=>x.uid),recordedAt:new Date().toISOString(),breakdown:Object.fromEntries(activityTypes.map(([k])=>[k,d.subtotal(k)]))});savePersonal();render();return}if(b.dataset.sexDelete){const f=financeFile();if(f.deposits.some(d=>d.entryIds.includes(b.dataset.sexDelete))){alert('This activity is linked to a recorded deposit and cannot be deleted.');return}if(confirm('Delete this sexual activity entry?')){f.sexualEntries=f.sexualEntries.filter(x=>x.uid!==b.dataset.sexDelete);savePersonal();render()}return}if(b.dataset.entryDelete){if(financeFile().deposits.some(d=>d.entryIds.includes(b.dataset.entryDelete))){alert('This entry is linked to a recorded deposit and cannot be deleted.');return}if(confirm('Delete this communication entry?')){file().entries=file().entries.filter(x=>x.uid!==b.dataset.entryDelete);savePersonal();analysisVisible=false;render()}return}if(b.dataset.add){captureRows();const t=tableDefs.find(x=>x.key===b.dataset.add);tableRows[t.key]??=[];tableRows[t.key].push(t.cols.map(() => ''));preserveRegistrationAndRender();return}if(b.dataset.remove){captureRows();tableRows[b.dataset.remove]?.splice(Number(b.dataset.index),1);preserveRegistrationAndRender();return}if(b.id==='backup'){const data={masterRecords:profiles,personalFiles:personal,exportedAt:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='nexus-demo-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}});
+}
+if(b.dataset.delete){
+  const id=decodeURIComponent(b.dataset.delete);
+
+  if(!confirm('Permanently delete this Master Record and its associated sections?')){
+    return;
+  }
+
+  const {data:{user},error: authError} = await nexusDB.auth.getUser();
+
+  if(authError || !user){
+    alert('Please sign in before deleting a Master Record.');
+    return;
+  }
+
+  const {data: deletedRows,error: deleteError} = await nexusDB
+    .from('nexus_profiles')
+    .delete()
+    .eq('owner_id',user.id)
+    .eq('inmate_id',id)
+    .select('id');
+
+  if(deleteError){
+    alert('Supabase deletion failed: '+deleteError.message);
+    return;
+  }
+
+  if(!deletedRows || deletedRows.length===0){
+    alert('No matching Master Record was deleted from Supabase. Local data was left unchanged.');
+    return;
+  }
+
+  profiles=profiles.filter(p=>p.id!==id);
+  delete personal[id];
+  saveProfiles();
+  savePersonal();
+  go('profiles');
+  alert('Master Record deleted from Supabase and this browser.');
+  return;
+}
+if(b.dataset.tab){personalTab=b.dataset.tab;render();return}if(b.dataset.window){windowDays=Number(b.dataset.window);analysisVisible=false;render();return}if(b.id==='analyze'){analysisVisible=true;render();return}if(b.dataset.deposit){const f=financeFile(),d=balanceData();if(!d.pending.length||d.outstanding<=0){alert('There is no positive outstanding balance to record.');return}if(!confirm('Confirm you have made a deposit of '+money(d.outstanding)+'? This records the deposit and clears the pending balance.'))return;f.deposits.push({id:'DEP-'+Date.now(),date:new Date().toLocaleString(),amount:Math.round(d.outstanding*100)/100,entryIds:d.pending.map(x=>x.uid),recordedAt:new Date().toISOString(),breakdown:Object.fromEntries(activityTypes.map(([k])=>[k,d.subtotal(k)]))});savePersonal();render();return}if(b.dataset.sexDelete){const f=financeFile();if(f.deposits.some(d=>d.entryIds.includes(b.dataset.sexDelete))){alert('This activity is linked to a recorded deposit and cannot be deleted.');return}if(confirm('Delete this sexual activity entry?')){f.sexualEntries=f.sexualEntries.filter(x=>x.uid!==b.dataset.sexDelete);savePersonal();render()}return}if(b.dataset.entryDelete){if(financeFile().deposits.some(d=>d.entryIds.includes(b.dataset.entryDelete))){alert('This entry is linked to a recorded deposit and cannot be deleted.');return}if(confirm('Delete this communication entry?')){file().entries=file().entries.filter(x=>x.uid!==b.dataset.entryDelete);savePersonal();analysisVisible=false;render()}return}if(b.dataset.add){captureRows();const t=tableDefs.find(x=>x.key===b.dataset.add);tableRows[t.key]??=[];tableRows[t.key].push(t.cols.map(() => ''));preserveRegistrationAndRender();return}if(b.dataset.remove){captureRows();tableRows[b.dataset.remove]?.splice(Number(b.dataset.index),1);preserveRegistrationAndRender();return}if(b.id==='backup'){const data={masterRecords:profiles,personalFiles:personal,exportedAt:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='nexus-demo-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}});
 
 
 document.querySelectorAll('.nav').forEach(b=>{
