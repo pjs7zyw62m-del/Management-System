@@ -1,0 +1,677 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEXUS | Facilities Center — Black Edition</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #07090d;
+  --sidebar: #090f1b;
+  --panel: #111720;
+  --panel2: #171f2b;
+  --border: #293344;
+  --text: #f5f7fc;
+  --muted: #a5b1c3;
+  --blue: #2878f0;
+  --radius: 15px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, Segoe UI, Arial, sans-serif;
+  font-size: 14px;
+}
+button, select, input { font: inherit; }
+button { cursor: pointer; }
+button:focus-visible, select:focus-visible, input:focus-visible {
+  outline: 2px solid #75adff;
+  outline-offset: 2px;
+}
+.shell {
+  display: grid;
+  grid-template-columns: 244px minmax(0,1fr);
+  min-height: 100vh;
+}
+.sidebar {
+  background: linear-gradient(180deg,#0d192b,#080e19);
+  border-right: 1px solid #1f2b3d;
+  padding: 22px 13px;
+}
+.brand {
+  font-size: 36px;
+  letter-spacing: 6px;
+  font-weight: 900;
+  padding: 0 12px;
+}
+.subbrand {
+  letter-spacing: 2.4px;
+  font-size: 10px;
+  color: #b7c6dc;
+  padding: 0 12px 22px;
+  border-bottom: 1px solid #2b3a4d;
+}
+.nav { display: grid; gap: 7px; margin-top: 22px; }
+.nav button {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 0;
+  background: transparent;
+  color: #dce6f4;
+  text-align: left;
+  border-radius: 10px;
+  padding: 15px 14px;
+  width: 100%;
+}
+.nav button.active { background: #1b54a4; color: white; font-weight: 700; }
+.nav button:hover { background: #1c2b42; }
+.nav .ico { font-size: 21px; width: 24px; text-align: center; }
+.main {
+  min-width: 0;
+  padding: 22px 20px 34px;
+  max-width: 1700px;
+  width: 100%;
+  margin: auto;
+}
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.top h1 { margin: 0; font-size: 31px; }
+.top p { margin: 5px 0 0; color: #91a8cd; }
+.topright { display: flex; gap: 12px; align-items: center; }
+.search {
+  background: #151e2b;
+  color: white;
+  border: 1px solid var(--border);
+  padding: 13px 15px;
+  border-radius: 10px;
+  width: min(340px,36vw);
+}
+.avatar {
+  background: #1e2c41;
+  border-radius: 50%;
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+}
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0,1.9fr) minmax(320px,1fr);
+  gap: 15px;
+}
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.filterbar {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 18px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.filterbar label { display: block; font-weight: 700; margin-bottom: 8px; }
+.filterbar select {
+  background: #1b2534;
+  border: 1px solid #35435a;
+  color: white;
+  border-radius: 8px;
+  padding: 11px 10px;
+  width: 100%;
+}
+.hero {
+  position: relative;
+  min-height: 365px;
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+  background: #1b2738;
+  overflow: hidden;
+}
+.hero .art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.hero:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,rgba(0,0,0,.02) 18%,rgba(5,12,22,.4) 47%,rgba(4,10,20,.98) 80%);
+}
+.flag {
+  position: absolute;
+  top: 14px;
+  left: 15px;
+  z-index: 1;
+  background: #0b1628d9;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-weight: 800;
+  font-size: 19px;
+}
+.flag small {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: #d3dce9;
+  margin-top: 3px;
+}
+.hero-bottom { position: relative; z-index: 1; padding: 19px 21px; }
+.hero-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.hero h2 { font-size: 25px; margin: 0 0 6px; }
+.hero p { margin: 0; color: #d5dfed; }
+.primary {
+  background: linear-gradient(180deg,#2379ef,#1051b5);
+  border: 1px solid #388afc;
+  color: white;
+  padding: 12px 18px;
+  border-radius: 9px;
+  font-weight: 700;
+}
+.primary:hover { filter: brightness(1.15); }
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(5,minmax(0,1fr));
+  gap: 5px;
+  margin-top: 18px;
+  border-top: 1px solid #3c4657;
+  padding-top: 13px;
+}
+.metric { border-right: 1px solid #334052; padding: 0 10px; }
+.metric:first-child { padding-left: 0; }
+.metric:last-child { border: 0; }
+.metric small { display: block; color: #aab9cb; margin-bottom: 5px; }
+.metric strong { font-size: 13px; }
+.panelhead {
+  padding: 17px 18px;
+  font-weight: 800;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.panelhead a { font-size: 12px; font-weight: 600; color: #69a6ff; text-decoration: none; }
+.info { padding: 0 16px 16px; }
+.info dl {
+  display: grid;
+  grid-template-columns: 36% 64%;
+  margin: 0;
+  border: 1px solid #2e3a4c;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.info dt,.info dd {
+  padding: 10px 12px;
+  margin: 0;
+  border-bottom: 1px solid #293648;
+  min-width: 0;
+}
+.info dt { background: #1b2534; color: #c6d0e0; }
+.info dd { overflow-wrap: anywhere; }
+.info dt:nth-last-of-type(1),.info dd:last-child { border-bottom: 0; }
+.map {
+  margin: 0 16px 16px;
+  height: 173px;
+  border-radius: 10px;
+  background:
+    linear-gradient(40deg,transparent 48%,#9e8963 49%,#9e8963 51%,transparent 52%),
+    linear-gradient(130deg,transparent 42%,#8c7654 43%,#8c7654 45%,transparent 46%),
+    repeating-linear-gradient(20deg,#3b4d37 0 18px,#455c41 18px 24px,#b8a47c 24px 52px);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #57614f;
+}
+.map:before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg,transparent 0 70px,#c5b48b88 70px 73px,transparent 73px 145px);
+}
+.pin { position: absolute; top: 40%; left: 43%; font-size: 35px; }
+.maplabel {
+  position: absolute;
+  top: 42%;
+  left: 55%;
+  background: #101c25dc;
+  padding: 6px 9px;
+  border-radius: 5px;
+  font-weight: 700;
+}
+.lower { margin-top: 14px; }
+.facilities {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 11px;
+  padding: 0 13px 15px;
+}
+.facility {
+  border: 1px solid #354357;
+  border-radius: 9px;
+  overflow: hidden;
+  background: #182335;
+  text-align: left;
+  color: white;
+  padding: 0;
+}
+.facility:hover,.facility.active {
+  border-color: #4d9aff;
+  box-shadow: 0 0 0 1px #4d9aff;
+}
+.facility .thumb { height: 112px; overflow: hidden; }
+.facility .thumb svg { width: 100%; height: 100%; display: block; }
+.facility .caption { padding: 10px 11px; background: #111d2e; }
+.facility b { display: block; margin-bottom: 4px; }
+.facility small { color: #b8c7db; }
+.inmates { padding: 0 11px 13px; }
+.inmate {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 7px;
+  border: 1px solid #29384b;
+  border-radius: 10px;
+  margin-bottom: 7px;
+  background: #161f2d;
+}
+.person {
+  width: 48px;
+  height: 52px;
+  flex: 0 0 auto;
+  background: linear-gradient(145deg,#53647c,#28384f);
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  font-size: 25px;
+}
+.inmate .who { flex: 1; min-width: 0; }
+.who b { display: block; font-size: 12px; }
+.who small { display: block; color: #afc0d4; font-size: 11px; margin-top: 4px; }
+.outline {
+  border: 1px solid #3b8fff;
+  background: #132846;
+  color: #9bc7ff;
+  border-radius: 8px;
+  padding: 8px 9px;
+  white-space: nowrap;
+  font-size: 12px;
+}
+.notice { color: #9aaec8; font-size: 12px; margin: 0 15px 12px; }
+.empty { color: #b6c6da; padding: 24px; }
+.toast {
+  position: fixed;
+  bottom: 22px;
+  right: 22px;
+  max-width: 360px;
+  background: #1c3557;
+  border: 1px solid #4a8eea;
+  color: white;
+  padding: 15px 18px;
+  border-radius: 10px;
+  display: none;
+  z-index: 10;
+}
+.toast.show { display: block; }
+.demo { font-size: 11px; color: #8fa2bd; padding: 8px 2px 0; }
+@media(max-width:1200px) {
+  .columns { grid-template-columns: 1fr; }
+  .right { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+}
+@media(max-width:760px) {
+  .shell { display: block; }
+  .sidebar { padding: 10px; }
+  .brand { font-size: 22px; }
+  .subbrand { padding-bottom: 8px; }
+  .nav { display: flex; overflow: auto; margin-top: 8px; }
+  .nav button { min-width: max-content; padding: 10px; }
+  .main { padding: 15px 10px; }
+  .top { align-items: start; flex-direction: column; }
+  .top h1 { font-size: 25px; }
+  .search { width: 100%; }
+  .topright { width: 100%; }
+  .filterbar { grid-template-columns: 1fr; gap: 10px; }
+  .hero { min-height: 340px; }
+  .hero h2 { font-size: 20px; }
+  .metrics { grid-template-columns: repeat(3,1fr); row-gap: 13px; }
+  .facilities { grid-template-columns: repeat(2,1fr); }
+  .right { display: block; }
+  .right .card { margin-bottom: 14px; }
+}
+@media(max-width:410px) {
+  .facilities { grid-template-columns: 1fr; }
+  .hero-row { align-items: start; flex-direction: column; }
+  .inmate { flex-wrap: wrap; }
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">NEXUS</div>
+    <div class="subbrand">MANAGEMENT SYSTEM</div>
+    <nav class="nav" aria-label="Main navigation">
+      <button data-nav="Dashboard"><span class="ico">⌂</span>Dashboard</button>
+      <button data-nav="Inmate Profiles"><span class="ico">♟</span>Inmate Profiles</button>
+      <button class="active" data-nav="Facilities Center"><span class="ico">▦</span>Facilities Center</button>
+      <button data-nav="Financial Center"><span class="ico">＄</span>Financial Center</button>
+      <button data-nav="Communication"><span class="ico">▤</span>Communication</button>
+      <button data-nav="Reports"><span class="ico">▥</span>Reports</button>
+      <button data-nav="Settings"><span class="ico">⚙</span>Settings</button>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <header class="top">
+      <div>
+        <h1>▥ &nbsp;Facilities Center</h1>
+        <p>Correctional Facility Directory • Organized by State, Prison, and Facility</p>
+      </div>
+      <div class="topright">
+        <input class="search" id="search" placeholder="⌕ Search facilities or state..." aria-label="Search facilities">
+        <div class="avatar">●</div>
+      </div>
+    </header>
+
+    <div class="columns">
+      <section>
+        <div class="card filterbar">
+          <div>
+            <label for="state">1. Select State</label>
+            <select id="state"></select>
+          </div>
+          <div>
+            <label for="prison">2. Select Prison</label>
+            <select id="prison"></select>
+          </div>
+          <div>
+            <label for="facility">3. Select Facility</label>
+            <select id="facility"></select>
+          </div>
+        </div>
+
+        <div class="card hero" id="hero">
+          <svg class="art" viewBox="0 0 960 490" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <defs>
+              <linearGradient id="sky" x2="0" y2="1">
+                <stop stop-color="#30628c"/>
+                <stop offset="1" stop-color="#d7a36f"/>
+              </linearGradient>
+            </defs>
+            <rect width="960" height="490" fill="url(#sky)"/>
+            <path d="M0 245 L120 204 250 242 350 186 450 241 560 193 710 250 860 197 960 235 V490 H0Z" fill="#816e61"/>
+            <rect y="326" width="960" height="164" fill="#8c785d"/>
+            <rect x="90" y="220" width="660" height="145" fill="#b3a18c" stroke="#5c5d5a" stroke-width="4"/>
+            <rect x="135" y="242" width="200" height="70" fill="#74818a"/>
+            <rect x="355" y="242" width="190" height="70" fill="#657786"/>
+            <rect x="565" y="242" width="120" height="70" fill="#697d8a"/>
+            <rect x="735" y="150" width="112" height="220" fill="#988b7a"/>
+            <rect x="718" y="143" width="146" height="20" fill="#3c4955"/>
+            <rect x="748" y="167" width="86" height="42" fill="#435969"/>
+            <g stroke="#424a51" stroke-width="3">
+              <path d="M0 350H960M0 380H960M0 410H960"/>
+              <path d="M30 340V420M90 340V420M150 340V420M210 340V420M270 340V420M330 340V420M390 340V420M450 340V420M510 340V420M570 340V420M630 340V420M690 340V420M750 340V420M810 340V420M870 340V420M930 340V420"/>
+            </g>
+            <rect x="85" y="345" width="530" height="64" fill="#a88e70"/>
+            <text x="103" y="378" fill="#2d2a27" font-size="23" font-weight="bold" font-family="Arial">CORRECTIONAL FACILITY</text>
+          </svg>
+
+          <div class="flag" id="flag">Arizona <small>Facility directory preview</small></div>
+          <div class="hero-bottom">
+            <div class="hero-row">
+              <div>
+                <h2 id="heroTitle">Arizona State Prison Complex — Lewis</h2>
+                <p id="heroPlace">⌖ Buckeye, Arizona</p>
+              </div>
+              <button class="primary" id="viewInmates">View Inmates →</button>
+            </div>
+            <div class="metrics">
+              <div class="metric"><small>State</small><strong id="mState">Arizona</strong></div>
+              <div class="metric"><small>Prison</small><strong id="mPrison">ASPC</strong></div>
+              <div class="metric"><small>Facility</small><strong id="mFacility">Lewis</strong></div>
+              <div class="metric"><small>Profiles</small><strong id="mInmates">3 demo</strong></div>
+              <div class="metric"><small>Location</small><strong id="mLocation">Buckeye</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card lower">
+          <div class="panelhead">▦ &nbsp;Browse Facilities</div>
+          <div class="facilities" id="facilityCards"></div>
+          <p class="notice">Facility illustrations and inmate profiles shown here are demonstration content, not real photographs or live records.</p>
+        </div>
+      </section>
+
+      <section class="right">
+        <div class="card">
+          <div class="panelhead">▥ &nbsp;Facility Information</div>
+          <div class="info">
+            <dl>
+              <dt>State</dt><dd id="iState"></dd>
+              <dt>Prison</dt><dd id="iPrison"></dd>
+              <dt>Facility</dt><dd id="iFacility"></dd>
+              <dt>City</dt><dd id="iCity"></dd>
+              <dt>Facility type</dt><dd id="iType"></dd>
+              <dt>Records</dt><dd id="iCount"></dd>
+              <dt>Source</dt><dd>Sample directory — connect your own verified data</dd>
+            </dl>
+          </div>
+          <div class="map" aria-label="Decorative location illustration, not a real map">
+            <span class="pin">📍</span>
+            <span class="maplabel" id="maplabel"></span>
+          </div>
+        </div>
+
+        <div class="card" id="inmatePanel">
+          <div class="panelhead">
+            <span>♟ &nbsp;Inmates at <span id="listTitle">Lewis</span></span>
+            <a href="#inmatePanel" id="allLink">View all</a>
+          </div>
+          <div class="inmates" id="inmates"></div>
+          <p class="notice">Demo names and IDs. No Supabase data is accessed by this standalone preview.</p>
+        </div>
+      </section>
+    </div>
+
+    <div class="demo">NEXUS dark facilities prototype • Standalone preview • Does not change the existing NEXUS website or database.</div>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+'use strict';
+
+const places = [
+  {state:'Arizona',prison:'Arizona State Prison Complex',facility:'Lewis',city:'Buckeye',type:'State prison',people:[['SAMPLE, ALEX','DEMO001'],['EXAMPLE, JORDAN','DEMO002'],['TEST, MORGAN','DEMO003']]},
+  {state:'Arizona',prison:'Arizona State Prison Complex',facility:'Perryville',city:'Goodyear',type:'State prison',people:[['DEMO, TAYLOR','DEMO004']]},
+  {state:'Arizona',prison:'Arizona State Prison Complex',facility:'Tucson',city:'Tucson',type:'State prison',people:[['EXAMPLE, CASEY','DEMO005']]},
+  {state:'Arizona',prison:'Arizona State Prison Complex',facility:'Eyman',city:'Florence',type:'State prison',people:[]},
+  {state:'Arizona',prison:'Arizona State Prison Complex',facility:'Douglas',city:'Douglas',type:'State prison',people:[]},
+  {state:'Arizona',prison:'Arizona State Prison Complex',facility:'Florence',city:'Florence',type:'State prison',people:[]},
+  {state:'Nevada',prison:'Nevada Department of Corrections',facility:'High Desert State Prison',city:'Indian Springs',type:'State prison',people:[]},
+  {state:'Nevada',prison:'Nevada Department of Corrections',facility:'Southern Desert Correctional Center',city:'Indian Springs',type:'State prison',people:[]},
+  {state:'California',prison:'California Department of Corrections',facility:'California State Prison — Sacramento',city:'Represa',type:'State prison',people:[]}
+];
+
+const $ = id => document.getElementById(id);
+let chosen = places[0];
+let query = '';
+
+function opts(el,items,selected) {
+  el.replaceChildren(...items.map(s => {
+    const o = document.createElement('option');
+    o.value = s;
+    o.textContent = s;
+    o.selected = s === selected;
+    return o;
+  }));
+}
+function unique(arr) {
+  return [...new Set(arr)];
+}
+function syncSelectors() {
+  const states = unique(places.map(p => p.state));
+  opts($('state'),states,chosen.state);
+  let ps = places.filter(p => p.state === chosen.state);
+  opts($('prison'),unique(ps.map(p => p.prison)),chosen.prison);
+  ps = ps.filter(p => p.prison === chosen.prison);
+  opts($('facility'),ps.map(p => p.facility),chosen.facility);
+}
+function illustration(seed) {
+  const shades = [
+    ['#43678b','#a99a82','#546c7d'],
+    ['#587c9e','#ad977b','#48576a'],
+    ['#425a78','#9c8872','#647d8b']
+  ][seed % 3];
+
+  return `<svg viewBox="0 0 300 135" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <rect width="300" height="135" fill="${shades[0]}"/>
+    <path d="M0 83L50 62 98 82 164 61 221 85 300 60V135H0" fill="#6f6a62"/>
+    <rect x="25" y="60" width="240" height="65" fill="${shades[1]}"/>
+    <rect x="47" y="73" width="85" height="29" fill="${shades[2]}"/>
+    <rect x="143" y="73" width="66" height="29" fill="${shades[2]}"/>
+    <rect x="235" y="38" width="33" height="87" fill="#8e8378"/>
+    <rect x="229" y="35" width="45" height="9" fill="#35495a"/>
+    <path d="M0 116H300M0 125H300" stroke="#353d44" stroke-width="2"/>
+    <path d="M10 110V135M30 110V135M50 110V135M70 110V135M90 110V135M110 110V135M130 110V135M150 110V135M170 110V135M190 110V135M210 110V135M230 110V135M250 110V135M270 110V135M290 110V135" stroke="#3a4148" stroke-width="2"/>
+  </svg>`;
+}
+function escapeHTML(s) {
+  return String(s).replace(/[&<>"']/g,c => ({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#39;'
+  }[c]));
+}
+function toast(msg) {
+  $('toast').textContent = msg;
+  $('toast').classList.add('show');
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => $('toast').classList.remove('show'),4500);
+}
+function render() {
+  syncSelectors();
+
+  $('flag').firstChild.textContent = chosen.state + ' ';
+  $('heroTitle').textContent = chosen.prison + ' — ' + chosen.facility;
+  $('heroPlace').textContent = '⌖ ' + chosen.city + ', ' + chosen.state;
+  $('mState').textContent = chosen.state;
+  $('mPrison').textContent = chosen.prison.includes('Arizona') ? 'ASPC' : chosen.prison.split(' ').slice(0,2).join(' ');
+  $('mFacility').textContent = chosen.facility;
+  $('mInmates').textContent = chosen.people.length + ' demo';
+  $('mLocation').textContent = chosen.city;
+
+  $('iState').textContent = chosen.state;
+  $('iPrison').textContent = chosen.prison;
+  $('iFacility').textContent = chosen.facility;
+  $('iCity').textContent = chosen.city;
+  $('iType').textContent = chosen.type;
+  $('iCount').textContent = chosen.people.length + ' demonstration profiles';
+  $('maplabel').textContent = chosen.city + ', ' + chosen.state;
+  $('listTitle').textContent = chosen.facility;
+
+  const matches = places.filter(p =>
+    (p.state + ' ' + p.prison + ' ' + p.facility + ' ' + p.city)
+    .toLowerCase().includes(query)
+  );
+
+  $('facilityCards').innerHTML = matches.length
+    ? matches.map(p => {
+        const i = places.indexOf(p);
+        return `<button class="facility ${p === chosen ? 'active' : ''}" data-place="${i}">
+          <div class="thumb">${illustration(i)}</div>
+          <div class="caption">
+            <b>${escapeHTML(p.facility)}</b>
+            <small>${escapeHTML(p.city)}, ${escapeHTML(p.state)} →</small>
+          </div>
+        </button>`;
+      }).join('')
+    : '<p class="empty">No facilities match your search.</p>';
+
+  $('inmates').innerHTML = chosen.people.length
+    ? chosen.people.map(([name,id]) => `
+      <div class="inmate">
+        <div class="person" aria-hidden="true">♟</div>
+        <div class="who">
+          <b>${escapeHTML(name)}</b>
+          <small>Inmate ID: ${escapeHTML(id)}</small>
+          <small>Facility: ${escapeHTML(chosen.facility)}</small>
+        </div>
+        <button class="outline" data-profile="${escapeHTML(id)}">View Profile</button>
+      </div>
+    `).join('')
+    : '<div class="empty">No demo profiles for this facility.</div>';
+}
+
+$('state').addEventListener('change',e => {
+  chosen = places.find(p => p.state === e.target.value);
+  render();
+});
+$('prison').addEventListener('change',e => {
+  chosen = places.find(p => p.state === chosen.state && p.prison === e.target.value);
+  render();
+});
+$('facility').addEventListener('change',e => {
+  chosen = places.find(p =>
+    p.state === chosen.state &&
+    p.prison === chosen.prison &&
+    p.facility === e.target.value
+  );
+  render();
+});
+$('search').addEventListener('input',e => {
+  query = e.target.value.trim().toLowerCase();
+  render();
+});
+$('facilityCards').addEventListener('click',e => {
+  const b = e.target.closest('[data-place]');
+  if (b) {
+    chosen = places[Number(b.dataset.place)];
+    render();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+});
+$('inmates').addEventListener('click',e => {
+  const b = e.target.closest('[data-profile]');
+  if (b) {
+    toast('Sample profile ' + b.dataset.profile + '. Connect your NEXUS database to open real profiles.');
+  }
+});
+$('viewInmates').addEventListener('click',() => {
+  $('inmatePanel').scrollIntoView({behavior:'smooth',block:'start'});
+});
+$('allLink').addEventListener('click',e => {
+  e.preventDefault();
+  toast('Showing ' + chosen.people.length + ' sample profiles. Live inmate directory integration is not yet connected.');
+});
+document.querySelectorAll('[data-nav]').forEach(b => {
+  b.addEventListener('click',() => {
+    if (b.dataset.nav !== 'Facilities Center') {
+      toast(b.dataset.nav + ' belongs to your existing NEXUS website. This is a standalone Facilities Center preview.');
+    }
+  });
+});
+
+render();
+</script>
+</body>
+</html>
