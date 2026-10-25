@@ -46,7 +46,18 @@
 
 .report-static{background:#101d2d;border:1px solid #38516b;border-radius:9px;margin:0 0 18px;overflow:hidden}.report-static-title{background:#064783;color:white;padding:15px;font-weight:bold}.report-static-body{padding:16px}.report-static-body>.panel{margin-top:0}.five-level{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}.five-segment{padding:12px 4px;text-align:center;border-radius:6px;background:#22354c;color:#b8cce3;font-weight:bold}.five-segment.selected{background:#176cdd;color:#fff;outline:2px solid #93c5fd}.report-static-body .heading{margin-top:0}
 
-.header-assessment{margin-top:18px;max-width:550px;padding:12px;border:1px solid #365578;border-radius:8px;background:#0b1726}.header-assessment .five-level{margin:8px 0}.header-assessment .notice{font-size:12px}textarea[name="mailing"]{min-height:130px;width:100%}</style></head><body>
+.header-assessment{margin-top:18px;max-width:550px;padding:12px;border:1px solid #365578;border-radius:8px;background:#0b1726}.header-assessment .five-level{margin:8px 0}.header-assessment .notice{font-size:12px}textarea[name="mailing"]{min-height:130px;width:100%}
+/* Registration layout and visible save feedback */
+.registration-layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:22px;align-items:start}
+.registration-photo{display:flex;flex-direction:column;gap:10px;align-items:flex-start;position:sticky;top:12px}
+.registration-photo .photo,.registration-photo .profile-photo{width:185px;height:215px;max-width:100%;object-fit:contain}
+.registration-photo input{max-width:205px}
+.registration-fields{min-width:0}
+.registration-savebar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;position:sticky;bottom:0;z-index:5;box-shadow:0 -4px 18px #080f1bcc}
+#recordSaveStatus{margin-bottom:16px}
+#recordSaveStatus.error{background:#381c29;border-color:#d14a5d;color:#ffe0e6}
+@media(max-width:700px){.registration-layout{grid-template-columns:1fr}.registration-photo{position:static;flex-direction:row;flex-wrap:wrap;align-items:center}.registration-photo .photo{width:115px;height:135px}.registration-savebar{position:static}}
+</style></head><body>
 
 <div id="gateway" class="gate"><form id="gateForm" class="panel"><div class="logo">NE<span>X</span>US</div><h2>Security Gateway</h2><p class="muted">Demonstration access only</p><div class="field"><label>Security Key</label><input required autocomplete="off"></div><div class="field"><label>Access Code</label><input required type="password"></div><button class="btn" type="submit">CONTINUE</button></form></div>
 
@@ -273,7 +284,30 @@ function profileCard(p){return `<article class="profile"><div>${photo(p).replace
 
 function profileCards(list){return list.length?`<div class="cards">${list.map(profileCard).join('')}</div>`:'<div class="panel muted">No demo profiles found. Select Registration to create one.</div>'}
 
-function registration(){const p=editId?find(editId):null;return `<div class="actions"><button class="btn alt" data-view="profiles">Back to Profiles</button></div><form id="recordForm"><div class="panel"><div class="heading">${p?'EDIT INMATE MASTER RECORD':'INMATE REGISTRATION'}</div><div class="hero"><div>${photo(p)}<div class="muted">INMATE ID BELOW PHOTO</div><div style="font-weight:bold">${esc(p?.id||'New record')}</div><input type="file" id="photoInput" accept="image/png,image/jpeg,image/webp" style="max-width:185px;margin-top:8px"></div><div style="flex:1;min-width:240px"><div class="grid">${field('Inmate ID','id',p?.id||'')}${field('First Name','first',p?.first||'')}${field('Middle Name / Initial','middle',p?.middle||'')}${field('Last Name','last',p?.last||'')}${stateSelect(p?.state||'')}${facilitySelect(p?.state||'',p?.facility||'')}${field('Age','age',p?.age||'','number')}${field('Admission Date','admission',p?.admission||'','date')}${field('Earliest Release Date','earliestRelease',p?.earliestRelease||'','date')}${field('Projected Release Date','release',p?.release||'','date')}${field('Custody Classification','custody',p?.custody||'')}${field('Most Recent Location','location',p?.location||'')}</div><div class="field"><label>Status</label><select name="status">${['Active','Inactive','Active blocked','Inactive blocked','Archive'].map(v=>`<option value="${v}" ${((p?.status||'Active')===v)?'selected':''}>${v}</option>`).join('')}</select></div>${area('Mailing Address','mailing',p?.mailing||'')}${area('Master Record Notes','notes',p?.notes||'')}</div></div></div>${tableDefs.map(t=>tableEditor(t,p)).join('')}<button class="btn" type="submit">SAVE MASTER RECORD</button></form>`}
+function registration(){
+  const p=editId?find(editId):null;
+  return `<div class="actions"><button class="btn alt" type="button" data-view="profiles">← Back to Profiles</button></div>
+  <form id="recordForm" novalidate>
+    <div class="panel"><div class="heading">${p?'EDIT INMATE MASTER RECORD':'NEW INMATE REGISTRATION'}</div>
+      <p class="muted">Fields marked * are required. Save will show a clear success or error message.</p>
+      <div id="recordSaveStatus" class="notice hidden" role="status" aria-live="polite"></div>
+      <div class="registration-layout">
+        <div class="registration-photo"><div id="registrationPhotoPreview">${photo(p)}</div>
+          <strong>PROFILE PHOTOGRAPH</strong><div class="muted">JPEG, PNG, WebP · Max 1.5 MB</div>
+          <input type="file" id="photoInput" accept="image/png,image/jpeg,image/webp" aria-label="Profile photograph">
+          <div class="muted">ID: ${esc(p?.id||'New registration')}</div>
+        </div>
+        <div class="registration-fields">
+          <div class="grid">${field('Inmate ID *','id',p?.id||'')}${field('First Name','first',p?.first||'')}${field('Middle Name / Initial','middle',p?.middle||'')}${field('Last Name','last',p?.last||'')}${stateSelect(p?.state||'')}${facilitySelect(p?.state||'',p?.facility||'')}${field('Age','age',p?.age||'','number')}${field('Admission Date','admission',p?.admission||'','date')}${field('Earliest Release Date','earliestRelease',p?.earliestRelease||'','date')}${field('Projected Release Date','release',p?.release||'','date')}${field('Custody Classification','custody',p?.custody||'')}${field('Most Recent Location','location',p?.location||'')}</div>
+          <div class="field"><label>Status</label><select name="status">${['Active','Inactive','Active blocked','Inactive blocked','Archive'].map(v=>`<option value="${v}" ${((p?.status||'Active')===v)?'selected':''}>${v}</option>`).join('')}</select></div>
+          ${area('Mailing Address','mailing',p?.mailing||'')}${area('Master Record Notes','notes',p?.notes||'')}
+        </div>
+      </div>
+    </div>
+    ${tableDefs.map(t=>tableEditor(t,p)).join('')}
+    <div class="panel registration-savebar"><div id="recordSaveBottom" class="muted">Your record will be saved to Supabase.</div><button id="saveMasterButton" class="btn" type="submit">SAVE MASTER RECORD</button></div>
+  </form>`;
+}
 
 function tableDisplay(p,t){const rows=Array.isArray(p[t.key])?p[t.key]:[];return section(t.title,rows.length?`<div class="tablewrap"><table><thead><tr>${t.cols.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${t.cols.map((c,i)=>`<td>${esc(Array.isArray(r)?r[i]:(r?.[c]??Object.values(r||{})[i]??''))}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`:'<p class="muted">No entries recorded.</p>')}
 
@@ -344,7 +378,7 @@ function captureRows(){for(const t of tableDefs){const body=$('tb-'+t.key);if(!b
 
 // Preserve registration fields when adding or removing table rows. Re-rendering otherwise clears unsaved edits.
 
-function preserveRegistrationAndRender(){const form=$('recordForm');const values={};if(form){for(const element of form.elements){if(element.name&&element.type!=='file')values[element.name]=element.value;}}render();const preview=$('recordForm .photo');if(preview&&photoData){const img=document.createElement('img');img.className='photo';img.alt='Profile photograph';img.src=photoData;preview.replaceWith(img)}const restored=$('recordForm');if(restored){for(const element of restored.elements){if(element.name&&Object.prototype.hasOwnProperty.call(values,element.name)&&element.type!=='file')element.value=values[element.name];}}}
+function preserveRegistrationAndRender(){const form=$('recordForm');const values={};if(form){for(const element of form.elements){if(element.name&&element.type!=='file')values[element.name]=element.value;}}render();const preview=$('registrationPhotoPreview .photo');if(preview&&photoData){const img=document.createElement('img');img.className='photo';img.alt='Profile photograph';img.src=photoData;preview.replaceWith(img)}const restored=$('recordForm');if(restored){for(const element of restored.elements){if(element.name&&Object.prototype.hasOwnProperty.call(values,element.name)&&element.type!=='file')element.value=values[element.name];}}}
 
 
 $('content').addEventListener('change',e=>{if(e.target.id==='registrationState'){const state=e.target.value,sel=$('registrationFacility');if(!sel)return;sel.innerHTML=`<option value="">${state?'Select a facility...':'Select a state first'}</option>`+facilityOptions(state).map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');sel.disabled=!state;}});
@@ -372,7 +406,7 @@ $('content').addEventListener('change',e=>{
     const r=new FileReader();
     r.onload=()=>{
       photoData=String(r.result);
-      const img=document.querySelector('#recordForm .photo');
+      const img=document.querySelector('#registrationPhotoPreview .photo');
 
       if(img){
         const el=document.createElement('img');
@@ -386,15 +420,42 @@ $('content').addEventListener('change',e=>{
     r.readAsDataURL(f);
   }
 });
-$('content').addEventListener('submit',async e=>{e.preventDefault();const form=e.target,fd=new FormData(form);if(form.id==='recordForm'){captureRows();const id=String(fd.get('id')||'').trim();if(!id){alert('Inmate ID is required.');return}if(profiles.some(p=>p.id===id&&p.id!==editId)){alert('This Inmate ID already exists.');return}const old=editId?find(editId):null;if(old && id!==editId){
+
+function showMasterSaveError(message){
+  const status=$('recordSaveStatus');
+  if(status){status.textContent=message;status.classList.remove('hidden');status.classList.add('error')}
+  alert(message);
+}
+async function submitMasterRecord(form,fd){
+  const idInput=form.elements.namedItem('id');
+  const stateInput=form.elements.namedItem('state');
+  const facilityInput=form.elements.namedItem('facility');
+  if(!String(idInput?.value||'').trim()){showMasterSaveError('Enter an Inmate ID.');idInput?.focus();return}
+  if(!String(stateInput?.value||'').trim()){showMasterSaveError('Select a state.');stateInput?.focus();return}
+  if(!String(facilityInput?.value||'').trim()){showMasterSaveError('Select a correctional facility.');facilityInput?.focus();return}
+  const ageInput=form.elements.namedItem('age');
+  if(ageInput?.value && (!Number.isInteger(Number(ageInput.value)) || Number(ageInput.value)<0 || Number(ageInput.value)>130)){
+    showMasterSaveError('Age must be a whole number between 0 and 130.');ageInput.focus();return;
+  }
+  const button=$('saveMasterButton');
+  const status=$('recordSaveStatus');
+  if(button){button.disabled=true;button.textContent='SAVING...'}
+  if(status){status.textContent='Saving to Supabase...';status.classList.remove('hidden','error')}
+  try{
+captureRows();const id=String(fd.get('id')||'').trim();if(!id){alert('Inmate ID is required.');return}if(profiles.some(p=>p.id===id&&p.id!==editId)){alert('This Inmate ID already exists.');return}const old=editId?find(editId):null;if(old && id!==editId){
   alert('Changing an existing Inmate ID is temporarily disabled while we finish Supabase synchronization.');
   return;
 }const p={...(old||{})};p.previous_photo_path=old?.photo_path||null;for(const [k,v] of fd.entries())if(k!=='photo')p[k]=String(v);p.id=id;p.photo=old?.photo||'';for(const t of tableDefs)p[t.key]=(tableRows[t.key]||old?.[t.key]||[]).filter(r=>Array.isArray(r)?r.some(x=>String(x||'').trim()):Object.values(r||{}).some(x=>String(x||'').trim()));try {
   await saveMasterToSupabase(p);
 } catch (err) {
-  alert('Master Record was not saved to Supabase: ' + err.message);
+  showMasterSaveError('Master Record was not saved to Supabase: ' + err.message);
   return;
-}if(old){const idx=profiles.indexOf(old);profiles[idx]=p;if(editId!==id&&personal[editId]){personal[id]=personal[editId];delete personal[editId];savePersonal()}}else profiles.push(p);if(saveProfiles()){detailId=id;editId=null;photoData='';selectedPhotoFile=null;tableRows={};go('detail');alert('Master Record saved successfully, including all entered section rows.')}}else if(form.id==='personalForm'||form.id==='notesForm'){const f=file();f.details={...(f.details||{})};for(const [k,v] of fd.entries())f.details[k]=String(v);f.updated=new Date().toISOString();if(savePersonal()){alert('Personal file saved.');render()}}else if(form.id==='entryForm'){const date=String(fd.get('date')||''),message=String(fd.get('message')||'').trim(),type=String(fd.get('type')||'');if(!date||!message){alert('Enter a date and message or summary.');return}if(date>today()){alert('Communication date cannot be in the future.');return}file().entries.push({uid:Date.now().toString(36)+Math.random().toString(36).slice(2),date,type,message,rateAtEntry:rateFor(financeFile(),type)});analysisVisible=false;if(savePersonal())render()}else if(form.id==='ratesForm'){const f=financeFile();for(const [k] of activityTypes){const v=Number(fd.get(k));if(!Number.isFinite(v)||v<0){alert('Prices must be zero or greater.');return}f.rates[k]=Math.round(v*100)/100}savePersonal();render()}else if(form.id==='sexualForm'){const date=String(fd.get('date')||''),message=String(fd.get('message')||'').trim(),reason=String(fd.get('reason')||'').trim();if(!date||date>today()||!reason){alert('Enter a valid date and select a reason.');return}const f=financeFile();f.sexualEntries.push({uid:Date.now().toString(36)+Math.random().toString(36).slice(2),date,message,reason,rateAtEntry:rateFor(f,'Sexual')});savePersonal();render()}else if(form.id==='interestsForm'){const f=financeFile();f.details={...(f.details||{}),interests:String(fd.get('interests')||''),boundaries:String(fd.get('boundaries')||'')};f.updated=new Date().toISOString();if(savePersonal()){render();alert('Interests and boundaries saved to this inmate personal file.')} }else if(form.id==='maleForm'){const f=financeFile();f.maleReports.push({date:String(fd.get('date')||''),category:String(fd.get('category')||''),evidence:String(fd.get('evidence')||''),interpretation:String(fd.get('interpretation')||'')});savePersonal();render()}});
+}if(old){const idx=profiles.indexOf(old);profiles[idx]=p;if(editId!==id&&personal[editId]){personal[id]=personal[editId];delete personal[editId];savePersonal()}}else profiles.push(p);if(saveProfiles()){detailId=id;editId=null;photoData='';selectedPhotoFile=null;tableRows={};go('detail');alert('Master Record saved successfully, including all entered section rows.')}
+  }catch(error){showMasterSaveError('Unexpected save error: '+(error?.message||String(error)))}
+  finally{if(button?.isConnected){button.disabled=false;button.textContent='SAVE MASTER RECORD'}}
+}
+
+$('content').addEventListener('submit',async e=>{e.preventDefault();const form=e.target,fd=new FormData(form);if(form.id==='recordForm'){await submitMasterRecord(form,fd);return;}else if(form.id==='personalForm'||form.id==='notesForm'){const f=file();f.details={...(f.details||{})};for(const [k,v] of fd.entries())f.details[k]=String(v);f.updated=new Date().toISOString();if(savePersonal()){alert('Personal file saved.');render()}}else if(form.id==='entryForm'){const date=String(fd.get('date')||''),message=String(fd.get('message')||'').trim(),type=String(fd.get('type')||'');if(!date||!message){alert('Enter a date and message or summary.');return}if(date>today()){alert('Communication date cannot be in the future.');return}file().entries.push({uid:Date.now().toString(36)+Math.random().toString(36).slice(2),date,type,message,rateAtEntry:rateFor(financeFile(),type)});analysisVisible=false;if(savePersonal())render()}else if(form.id==='ratesForm'){const f=financeFile();for(const [k] of activityTypes){const v=Number(fd.get(k));if(!Number.isFinite(v)||v<0){alert('Prices must be zero or greater.');return}f.rates[k]=Math.round(v*100)/100}savePersonal();render()}else if(form.id==='sexualForm'){const date=String(fd.get('date')||''),message=String(fd.get('message')||'').trim(),reason=String(fd.get('reason')||'').trim();if(!date||date>today()||!reason){alert('Enter a valid date and select a reason.');return}const f=financeFile();f.sexualEntries.push({uid:Date.now().toString(36)+Math.random().toString(36).slice(2),date,message,reason,rateAtEntry:rateFor(f,'Sexual')});savePersonal();render()}else if(form.id==='interestsForm'){const f=financeFile();f.details={...(f.details||{}),interests:String(fd.get('interests')||''),boundaries:String(fd.get('boundaries')||'')};f.updated=new Date().toISOString();if(savePersonal()){render();alert('Interests and boundaries saved to this inmate personal file.')} }else if(form.id==='maleForm'){const f=financeFile();f.maleReports.push({date:String(fd.get('date')||''),category:String(fd.get('category')||''),evidence:String(fd.get('evidence')||''),interpretation:String(fd.get('interpretation')||'')});savePersonal();render()}});
 
 $('content').addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;if(b.id==='toggleArchive'){showArchive=!showArchive;render();return}if(b.id==='addCustomFacility'){const state=$('registrationState')?.value,name=$('customFacilityName')?.value.trim();if(!state){alert('Select a state first.');return}if(!name){alert('Enter a facility name.');return}const data=read(FACILITY_CUSTOM_KEY,{});data[state]=[...new Set([...(data[state]||[]),name])];if(store(FACILITY_CUSTOM_KEY,data)){const sel=$('registrationFacility');sel.insertAdjacentHTML('beforeend',`<option value="${esc(name)}">${esc(name)}</option>`);sel.value=name;$('customFacilityName').value='';alert('Facility added for '+state+'.')}return}if(b.id==='addReason'){const name=$('newReason')?.value.trim();if(!name){alert('Enter a reason first.');return}const data=reasonChoices();if(!data.some(x=>x.toLowerCase()===name.toLowerCase()))data.push(name);if(store(REASONS_KEY,data)){const sel=$('sexualReason');if(![...sel.options].some(x=>x.value===name))sel.insertAdjacentHTML('beforeend',`<option value="${esc(name)}">${esc(name)}</option>`);sel.value=name;$('newReason').value='';alert('Reason saved for reuse.')}return}if(b.dataset.exportFinancial){financialCSV();return}if(b.dataset.finOpen){detailId=decodeURIComponent(b.dataset.finOpen);personalTab='financial';go('personal');return}if(b.dataset.view){
   if(b.dataset.view==='register'){
