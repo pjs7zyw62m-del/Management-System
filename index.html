@@ -64,6 +64,7 @@ const nexusDB = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_PUBLISHABLE_KEY
 );
+  const NEXUS_PHOTO_BUCKET = 'nexus-IDB-photos';
 (function(){'use strict';
 
 const $=id=>document.getElementById(id),KEY='nexus_demo_profiles_v2',PERSONAL_KEY='nexus_personal_files_v1';
@@ -83,6 +84,34 @@ const fullName=p=>[p.first,p.middle,p.last].filter(Boolean).join(' '),displayNam
 const photo=p=>p&&/^data:image\/(png|jpeg|webp);base64,/i.test(p.photo||'')?`<img class="photo" src="${p.photo}" alt="Profile photograph">`:'<div class="photo placeholder">♙</div>';
 
 const saveProfiles=()=>store(KEY,profiles),savePersonal=()=>store(PERSONAL_KEY,personal);
+            async function saveMasterToSupabase(p){
+  const {data:{user},error} = await nexusDB.auth.getUser();
+
+  if(error || !user){
+    throw new Error('Please sign in to save a Master Record.');
+  }
+
+    const record = {
+    owner_id: user.id,
+    inmate_id: p.id,
+    first_name: p.first || null,
+    middle_name: p.middle || null,
+    last_name: p.last || null,
+    age: p.age === '' ? null : Number(p.age) || null,
+    state: p.state || null,
+    facility: p.facility || null,
+    status: p.status || 'Active',
+    admission_date: p.admission || null,
+    earliest_release_date: p.earliestRelease || null,
+    projected_release_date: p.release || null,
+    custody_classification: p.custody || null,
+    most_recent_location: p.location || null,
+    mailing_address: p.mailing || null,
+    notes: p.notes || null
+  };
+
+  return record;
+}
 
 function store(key,data){try{localStorage.setItem(key,JSON.stringify(data));return true}catch(e){alert('Could not save to browser storage. Try using a smaller photo or exporting a backup.');return false}}
 
