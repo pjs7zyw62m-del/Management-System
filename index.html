@@ -51,13 +51,13 @@
 <div id="gateway" class="gate"><form id="gateForm" class="panel"><div class="logo">NE<span>X</span>US</div><h2>Security Gateway</h2><p class="muted">Demonstration access only</p><div class="field"><label>Security Key</label><input required autocomplete="off"></div><div class="field"><label>Access Code</label><input required type="password"></div><button class="btn" type="submit">CONTINUE</button></form></div>
 
 <div id="login" class="gate hidden"><form id="loginForm" class="panel"><div class="logo">NE<span>X</span>US</div><h2>Administrator Login</h2><div class="field">
-<label>Email Address</label><input required type="email" autocomplete="username">
+<label>Email Address</label><input required type="email" autocomplete="username"></div><div class="field"><label>Password</label><input required type="password" autocomplete="current-password"></div><button class="btn" type="submit">SIGN IN</button></form></div>
 
 <div id="shell" class="shell hidden"><aside class="sidebar"><div class="logo">NE<span>X</span>US</div><button class="nav active" data-view="dashboard">▦ Dashboard</button><button class="nav" data-view="profiles">♙ Inmate Profiles</button><button class="nav" data-view="facilities">▤ Facilities</button><button class="nav" data-view="records">▤ Records</button><button class="nav" data-view="search">⌕ Search</button><button class="nav" data-view="financialHub">＄ Financial Center</button><button class="nav" data-view="reports">▥ Reports</button><button class="nav" data-view="settings">⚙ Settings</button></aside><main class="main"><header class="topbar"><h1 id="pageTitle">Command Dashboard</h1><div class="right"><button class="bell" id="bell" title="Notifications (coming soon)" aria-label="Notifications">🔔</button><button class="btn alt small" id="lock">Log Out</button></div></header><div class="content" id="content"></div></main></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-const SUPABASE_URL = 'https://eeddazzwqokqlzvzjlxz.supabase.co/rest/v1/';
+const SUPABASE_URL = 'https://eeddazzwqokqlzvzjlxz.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_QKh-RY2C0Ycu2G29fX7Xgw_W72OLu2-';
 
 const nexusDB = window.supabase.createClient(
@@ -73,7 +73,7 @@ const tableDefs=[{key:'sentences',title:'COMMITMENT AND SENTENCE INFORMATION',co
 
 function read(k,fallback){try{return JSON.parse(localStorage.getItem(k)||'null')??fallback}catch{return fallback}}
 
-let profiles=read(KEY,[]),personal=read(PERSONAL_KEY,{}),view='dashboard',detailId=null,editId=null,personalTab='details',photoData='',tableRows={},filter='',windowDays=30,analysisVisible=false,showArchive=false;
+let profiles=[],personal={},view='dashboard',detailId=null,editId=null,personalTab='details',photoData='',tableRows={},filter='',windowDays=30,analysisVisible=false,showArchive=false;
 let selectedPhotoFile=null;async function uploadNexusPhoto(file, inmateId) {
   const { data: { user }, error: authError } =
     await nexusDB.auth.getUser();
@@ -117,9 +117,44 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 
 const fullName=p=>[p.first,p.middle,p.last].filter(Boolean).join(' '),displayName=p=>[p.last,p.first].filter(Boolean).join(', ').toUpperCase(),find=id=>profiles.find(p=>p.id===id);
 
-const photo=p=>p&&/^data:image\/(png|jpeg|webp);base64,/i.test(p.photo||'')?`<img class="photo" src="${p.photo}" alt="Profile photograph">`:'<div class="photo placeholder">♙</div>';
+const photo=p=>{const url=p?.photo||'';return (/^data:image\/(png|jpeg|webp);base64,/i.test(url)||/^https:\/\/[^\s"'<>]+$/i.test(url))?`<img class="photo" src="${esc(url)}" alt="Profile photograph">`:'<div class="photo placeholder">♙</div>'};
 
-const saveProfiles=()=>store(KEY,profiles),savePersonal=()=>store(PERSONAL_KEY,personal);
+const saveProfiles=()=>true,savePersonal=()=>store(PERSONAL_KEY+'_'+currentUserId,personal);
+let currentUserId='';
+async function signedPhotoUrl(path){
+ if(!path)return '';
+ const {data,error}=await nexusDB.storage.from(NEXUS_PHOTO_BUCKET).createSignedUrl(path,3600);
+ if(error)throw new Error('Could not load a photograph: '+error.message);
+ return data.signedUrl;
+}
+async function loadMasterRecords(){
+ const {data:{user},error:authError}=await nexusDB.auth.getUser();
+ if(authError||!user)throw new Error('Please sign in to load Master Records.');
+ const {data:records,error}=await nexusDB.from('nexus_profiles').select('*').eq('owner_id',user.id).order('created_at',{ascending:false}).limit(1000);
+ if(error)throw new Error('Could not load Master Records: '+error.message);
+ const {data:sections,error:sectionError}=await nexusDB.from('nexus_master_sections').select('profile_id,section_type,row_position,row_data').eq('owner_id',user.id).order('row_position',{ascending:true}).limit(10000);
+ if(sectionError)throw new Error('Could not load Master Record sections: '+sectionError.message);
+ const byId=new Map();
+ const loaded=(records||[]).map(r=>{
+  const p={id:r.inmate_id,first:r.first_name||'',middle:r.middle_name||'',last:r.last_name||'',age:r.age??'',state:r.state||'',facility:r.facility||'',status:r.status||'Active',admission:r.admission_date||'',earliestRelease:r.earliest_release_date||'',release:r.projected_release_date||'',custody:r.custody_classification||'',location:r.most_recent_location||'',mailing:r.mailing_address||'',notes:r.notes||'',photo_path:r.photo_path||'',photo:''};
+  for(const t of tableDefs)p[t.key]=[];
+  byId.set(r.id,p);return p;
+ });
+ for(const row of sections||[]){
+  const p=byId.get(row.profile_id);
+  if(p&&tableDefs.some(t=>t.key===row.section_type))p[row.section_type].push(Array.isArray(row.row_data?.cells)?row.row_data.cells:[]);
+ }
+ await Promise.all(loaded.map(async p=>{
+  if(p.photo_path){try{p.photo=await signedPhotoUrl(p.photo_path)}catch(err){console.warn(err.message)}}
+ }));
+ profiles=loaded;
+ // Personal files remain local to this browser and are scoped to the authenticated user.
+ currentUserId=user.id;
+ personal=read(PERSONAL_KEY+'_'+user.id,{});
+ if(!personal||typeof personal!=='object'||Array.isArray(personal))personal={};
+ return loaded.length;
+}
+
             async function saveMasterToSupabase(p){
   const {data:{user},error} = await nexusDB.auth.getUser();
 
@@ -190,7 +225,16 @@ const saveProfiles=()=>store(KEY,profiles),savePersonal=()=>store(PERSONAL_KEY,p
       'Could not save Master Record sections: ' + sectionError.message
     );
   }
+  const previousPhotoPath=p.previous_photo_path;
   p.photo_path = data.photo_path;
+  delete p.previous_photo_path;
+  if(p.photo_path){
+    try{p.photo=await signedPhotoUrl(p.photo_path)}catch(err){console.warn(err.message);p.photo=''}
+  }
+  if(uploadedPhotoPath && previousPhotoPath && previousPhotoPath!==uploadedPhotoPath){
+    const {error:cleanupError}=await nexusDB.storage.from(NEXUS_PHOTO_BUCKET).remove([previousPhotoPath]);
+    if(cleanupError)console.warn('Old photo cleanup failed:',cleanupError.message);
+  }
   return data;
 }
 
@@ -292,7 +336,7 @@ function financialPage(){const f=financeFile(),b=balanceData();return `<div clas
 
 function personalPage(){const p=find(detailId);if(!p)return '<p>Record not found.</p>';const tabs=[['details','Personal Details'],['communication','Communication'],['financial','Financial'],['advisor','AI Advisor'],['photos','Photos'],['documents','Documents'],['notes','Personal Notes']];return `<div class="actions"><button class="btn alt" data-master="${encodeURIComponent(detailId)}">← BACK TO MASTER RECORD</button></div>${identity(p,true)}<div class="tabs">${tabs.map(([id,name])=>`<button class="tab ${personalTab===id?'active':''}" data-tab="${id}">${name}</button>`).join('')}</div>${personalTab==='details'?personalDetails():personalTab==='communication'?communicationCenter():personalTab==='financial'?financialPage():personalTab==='advisor'?advisor():personalTab==='notes'?`<div class="panel"><div class="heading">PERSONAL NOTES</div><form id="notesForm">${area('Personal Notes','personalNotes',file().details?.personalNotes||'')}<button class="btn">SAVE NOTES</button></form></div>`:`<div class="panel"><div class="heading">${personalTab==='photos'?'PERSONAL PHOTOS':'PERSONAL DOCUMENTS'}</div><p class="muted">Reserved for a future update. No uploads are enabled yet.</p></div>`}`}
 
-function render(){const names={financialHub:'Financial Center',dashboard:'Command Dashboard',profiles:'Inmate Profiles',register:'Inmate Registration',detail:'Inmate Master Record',personal:'Inmate Personal File',facilities:'Facilities',records:'Records',search:'Search',reports:'Reports',settings:'Settings'};$('pageTitle').textContent=names[view]||'NEXUS';document.querySelectorAll('.nav').forEach(b=>b.classList.toggle('active',b.dataset.view===view));let html='';if(view==='dashboard'){html=`<div class="grid"><div class="panel"><h3>Registered Profiles</h3><h1>${profiles.length}</h1></div><div class="panel"><h3>Active Records</h3><h1>${profiles.filter(p=>p.status==='Active'||p.status==='Active blocked').length}</h1></div><div class="panel"><h3>Personal Files</h3><h1>${Object.keys(personal).filter(id=>find(id)).length}</h1></div></div><div class="actions"><button class="btn" data-view="register">+ New Registration</button><button class="btn alt" data-view="profiles">View Profiles</button></div>${profileCards(profiles.filter(p=>p.status!=='Archive').slice(0,8))}`;}else if(view==='profiles'||view==='search'){html=`<div class="actions"><button class="btn" data-view="register">+ New Registration</button><button class="btn alt" id="toggleArchive">${showArchive?'Show Current Inmates':'View Archive'}</button></div><div class="panel"><div class="field"><label>Search by name, ID, state, or facility</label><input id="searchBox" placeholder="Search profiles..." value="${esc(filter)}"></div></div><div id="profileResults">${profileCards(profiles.filter(p=>(showArchive?p.status==='Archive':p.status!=='Archive')&&[p.id,p.first,p.last,p.state,p.facility].join(' ').toLowerCase().includes(filter.toLowerCase())).sort((a,b)=>(a.last||'').localeCompare(b.last||'')))}</div>`;}else if(view==='register')html=registration();else if(view==='detail')html=detail();else if(view==='personal')html=personalPage();else if(view==='financialHub')html=financialHub();else if(view==='facilities'){const fs=[...new Set(profiles.map(p=>p.facility).filter(Boolean))];html=section('FACILITIES',fs.length?fs.map(f=>`<p>${esc(f)} — ${profiles.filter(p=>p.facility===f).length} records</p>`).join(''):'No facilities recorded.')}else if(view==='records')html=profileCards(profiles);else if(view==='reports')html=section('REPORTS',`<p>Total profiles: ${profiles.length}</p><p>Active: ${profiles.filter(p=>p.status==='Active'||p.status==='Active blocked').length}</p>`);else if(view==='settings')html=section('DEMO SETTINGS',`<p class="notice">This public GitHub Pages demo has no real authentication or server security. Do not enter real inmate information, private correspondence, medical information, or other sensitive personal data.</p><p>Data is saved only in this browser.</p><button class="btn" id="backup">EXPORT BACKUP JSON</button>`);$('content').innerHTML=html}
+function render(){const names={financialHub:'Financial Center',dashboard:'Command Dashboard',profiles:'Inmate Profiles',register:'Inmate Registration',detail:'Inmate Master Record',personal:'Inmate Personal File',facilities:'Facilities',records:'Records',search:'Search',reports:'Reports',settings:'Settings'};$('pageTitle').textContent=names[view]||'NEXUS';document.querySelectorAll('.nav').forEach(b=>b.classList.toggle('active',b.dataset.view===view));let html='';if(view==='dashboard'){html=`<div class="grid"><div class="panel"><h3>Registered Profiles</h3><h1>${profiles.length}</h1></div><div class="panel"><h3>Active Records</h3><h1>${profiles.filter(p=>p.status==='Active'||p.status==='Active blocked').length}</h1></div><div class="panel"><h3>Personal Files</h3><h1>${Object.keys(personal).filter(id=>find(id)).length}</h1></div></div><div class="actions"><button class="btn" data-view="register">+ New Registration</button><button class="btn alt" data-view="profiles">View Profiles</button></div>${profileCards(profiles.filter(p=>p.status!=='Archive').slice(0,8))}`;}else if(view==='profiles'||view==='search'){html=`<div class="actions"><button class="btn" data-view="register">+ New Registration</button><button class="btn alt" id="toggleArchive">${showArchive?'Show Current Inmates':'View Archive'}</button></div><div class="panel"><div class="field"><label>Search by name, ID, state, or facility</label><input id="searchBox" placeholder="Search profiles..." value="${esc(filter)}"></div></div><div id="profileResults">${profileCards(profiles.filter(p=>(showArchive?p.status==='Archive':p.status!=='Archive')&&[p.id,p.first,p.last,p.state,p.facility].join(' ').toLowerCase().includes(filter.toLowerCase())).sort((a,b)=>(a.last||'').localeCompare(b.last||'')))}</div>`;}else if(view==='register')html=registration();else if(view==='detail')html=detail();else if(view==='personal')html=personalPage();else if(view==='financialHub')html=financialHub();else if(view==='facilities'){const fs=[...new Set(profiles.map(p=>p.facility).filter(Boolean))];html=section('FACILITIES',fs.length?fs.map(f=>`<p>${esc(f)} — ${profiles.filter(p=>p.facility===f).length} records</p>`).join(''):'No facilities recorded.')}else if(view==='records')html=profileCards(profiles);else if(view==='reports')html=section('REPORTS',`<p>Total profiles: ${profiles.length}</p><p>Active: ${profiles.filter(p=>p.status==='Active'||p.status==='Active blocked').length}</p>`);else if(view==='settings')html=section('DEMO SETTINGS',`<p class="notice">Authentication and row-level access are handled by Supabase. This implementation has not completed a security audit; do not enter real inmate or other sensitive personal information.</p><p>Master Records and section rows are saved in Supabase. Personal Files are saved only in this browser and do not sync across devices.</p><button class="btn" id="backup">EXPORT BACKUP JSON</button>`);$('content').innerHTML=html}
 
 function go(v){view=v;render();window.scrollTo(0,0)}
 
@@ -300,7 +344,7 @@ function captureRows(){for(const t of tableDefs){const body=$('tb-'+t.key);if(!b
 
 // Preserve registration fields when adding or removing table rows. Re-rendering otherwise clears unsaved edits.
 
-function preserveRegistrationAndRender(){const form=$('recordForm');const values={};if(form){for(const element of form.elements){if(element.name&&element.type!=='file')values[element.name]=element.value;}}render();const restored=$('recordForm');if(restored){for(const element of restored.elements){if(element.name&&Object.prototype.hasOwnProperty.call(values,element.name)&&element.type!=='file')element.value=values[element.name];}}}
+function preserveRegistrationAndRender(){const form=$('recordForm');const values={};if(form){for(const element of form.elements){if(element.name&&element.type!=='file')values[element.name]=element.value;}}render();const preview=$('recordForm .photo');if(preview&&photoData){const img=document.createElement('img');img.className='photo';img.alt='Profile photograph';img.src=photoData;preview.replaceWith(img)}const restored=$('recordForm');if(restored){for(const element of restored.elements){if(element.name&&Object.prototype.hasOwnProperty.call(values,element.name)&&element.type!=='file')element.value=values[element.name];}}}
 
 
 $('content').addEventListener('change',e=>{if(e.target.id==='registrationState'){const state=e.target.value,sel=$('registrationFacility');if(!sel)return;sel.innerHTML=`<option value="">${state?'Select a facility...':'Select a state first'}</option>`+facilityOptions(state).map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');sel.disabled=!state;}});
@@ -345,12 +389,12 @@ $('content').addEventListener('change',e=>{
 $('content').addEventListener('submit',async e=>{e.preventDefault();const form=e.target,fd=new FormData(form);if(form.id==='recordForm'){captureRows();const id=String(fd.get('id')||'').trim();if(!id){alert('Inmate ID is required.');return}if(profiles.some(p=>p.id===id&&p.id!==editId)){alert('This Inmate ID already exists.');return}const old=editId?find(editId):null;if(old && id!==editId){
   alert('Changing an existing Inmate ID is temporarily disabled while we finish Supabase synchronization.');
   return;
-}const p={...(old||{})};for(const [k,v] of fd.entries())if(k!=='photo')p[k]=String(v);p.id=id;p.photo=photoData||old?.photo||'';for(const t of tableDefs)p[t.key]=(tableRows[t.key]||old?.[t.key]||[]).filter(r=>Array.isArray(r)?r.some(x=>String(x||'').trim()):Object.values(r||{}).some(x=>String(x||'').trim()));try {
+}const p={...(old||{})};p.previous_photo_path=old?.photo_path||null;for(const [k,v] of fd.entries())if(k!=='photo')p[k]=String(v);p.id=id;p.photo=old?.photo||'';for(const t of tableDefs)p[t.key]=(tableRows[t.key]||old?.[t.key]||[]).filter(r=>Array.isArray(r)?r.some(x=>String(x||'').trim()):Object.values(r||{}).some(x=>String(x||'').trim()));try {
   await saveMasterToSupabase(p);
 } catch (err) {
   alert('Master Record was not saved to Supabase: ' + err.message);
   return;
-}if(old){const idx=profiles.indexOf(old);profiles[idx]=p;if(editId!==id&&personal[editId]){personal[id]=personal[editId];delete personal[editId];savePersonal()}}else profiles.push(p);if(saveProfiles()){const verified=read(KEY,[]).find(record=>record.id===id);if(!verified){alert('Save verification failed. Please export a backup and retry.');return;}detailId=id;editId=null;photoData='';selectedPhotoFile=null;tableRows={};go('detail');alert('Master Record saved successfully, including all entered section rows.')}}else if(form.id==='personalForm'||form.id==='notesForm'){const f=file();f.details={...(f.details||{})};for(const [k,v] of fd.entries())f.details[k]=String(v);f.updated=new Date().toISOString();if(savePersonal()){alert('Personal file saved.');render()}}else if(form.id==='entryForm'){const date=String(fd.get('date')||''),message=String(fd.get('message')||'').trim(),type=String(fd.get('type')||'');if(!date||!message){alert('Enter a date and message or summary.');return}if(date>today()){alert('Communication date cannot be in the future.');return}file().entries.push({uid:Date.now().toString(36)+Math.random().toString(36).slice(2),date,type,message,rateAtEntry:rateFor(financeFile(),type)});analysisVisible=false;if(savePersonal())render()}else if(form.id==='ratesForm'){const f=financeFile();for(const [k] of activityTypes){const v=Number(fd.get(k));if(!Number.isFinite(v)||v<0){alert('Prices must be zero or greater.');return}f.rates[k]=Math.round(v*100)/100}savePersonal();render()}else if(form.id==='sexualForm'){const date=String(fd.get('date')||''),message=String(fd.get('message')||'').trim(),reason=String(fd.get('reason')||'').trim();if(!date||date>today()||!reason){alert('Enter a valid date and select a reason.');return}const f=financeFile();f.sexualEntries.push({uid:Date.now().toString(36)+Math.random().toString(36).slice(2),date,message,reason,rateAtEntry:rateFor(f,'Sexual')});savePersonal();render()}else if(form.id==='interestsForm'){const f=financeFile();f.details={...(f.details||{}),interests:String(fd.get('interests')||''),boundaries:String(fd.get('boundaries')||'')};f.updated=new Date().toISOString();if(savePersonal()){render();alert('Interests and boundaries saved to this inmate personal file.')} }else if(form.id==='maleForm'){const f=financeFile();f.maleReports.push({date:String(fd.get('date')||''),category:String(fd.get('category')||''),evidence:String(fd.get('evidence')||''),interpretation:String(fd.get('interpretation')||'')});savePersonal();render()}});
+}if(old){const idx=profiles.indexOf(old);profiles[idx]=p;if(editId!==id&&personal[editId]){personal[id]=personal[editId];delete personal[editId];savePersonal()}}else profiles.push(p);if(saveProfiles()){detailId=id;editId=null;photoData='';selectedPhotoFile=null;tableRows={};go('detail');alert('Master Record saved successfully, including all entered section rows.')}}else if(form.id==='personalForm'||form.id==='notesForm'){const f=file();f.details={...(f.details||{})};for(const [k,v] of fd.entries())f.details[k]=String(v);f.updated=new Date().toISOString();if(savePersonal()){alert('Personal file saved.');render()}}else if(form.id==='entryForm'){const date=String(fd.get('date')||''),message=String(fd.get('message')||'').trim(),type=String(fd.get('type')||'');if(!date||!message){alert('Enter a date and message or summary.');return}if(date>today()){alert('Communication date cannot be in the future.');return}file().entries.push({uid:Date.now().toString(36)+Math.random().toString(36).slice(2),date,type,message,rateAtEntry:rateFor(financeFile(),type)});analysisVisible=false;if(savePersonal())render()}else if(form.id==='ratesForm'){const f=financeFile();for(const [k] of activityTypes){const v=Number(fd.get(k));if(!Number.isFinite(v)||v<0){alert('Prices must be zero or greater.');return}f.rates[k]=Math.round(v*100)/100}savePersonal();render()}else if(form.id==='sexualForm'){const date=String(fd.get('date')||''),message=String(fd.get('message')||'').trim(),reason=String(fd.get('reason')||'').trim();if(!date||date>today()||!reason){alert('Enter a valid date and select a reason.');return}const f=financeFile();f.sexualEntries.push({uid:Date.now().toString(36)+Math.random().toString(36).slice(2),date,message,reason,rateAtEntry:rateFor(f,'Sexual')});savePersonal();render()}else if(form.id==='interestsForm'){const f=financeFile();f.details={...(f.details||{}),interests:String(fd.get('interests')||''),boundaries:String(fd.get('boundaries')||'')};f.updated=new Date().toISOString();if(savePersonal()){render();alert('Interests and boundaries saved to this inmate personal file.')} }else if(form.id==='maleForm'){const f=financeFile();f.maleReports.push({date:String(fd.get('date')||''),category:String(fd.get('category')||''),evidence:String(fd.get('evidence')||''),interpretation:String(fd.get('interpretation')||'')});savePersonal();render()}});
 
 $('content').addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;if(b.id==='toggleArchive'){showArchive=!showArchive;render();return}if(b.id==='addCustomFacility'){const state=$('registrationState')?.value,name=$('customFacilityName')?.value.trim();if(!state){alert('Select a state first.');return}if(!name){alert('Enter a facility name.');return}const data=read(FACILITY_CUSTOM_KEY,{});data[state]=[...new Set([...(data[state]||[]),name])];if(store(FACILITY_CUSTOM_KEY,data)){const sel=$('registrationFacility');sel.insertAdjacentHTML('beforeend',`<option value="${esc(name)}">${esc(name)}</option>`);sel.value=name;$('customFacilityName').value='';alert('Facility added for '+state+'.')}return}if(b.id==='addReason'){const name=$('newReason')?.value.trim();if(!name){alert('Enter a reason first.');return}const data=reasonChoices();if(!data.some(x=>x.toLowerCase()===name.toLowerCase()))data.push(name);if(store(REASONS_KEY,data)){const sel=$('sexualReason');if(![...sel.options].some(x=>x.value===name))sel.insertAdjacentHTML('beforeend',`<option value="${esc(name)}">${esc(name)}</option>`);sel.value=name;$('newReason').value='';alert('Reason saved for reuse.')}return}if(b.dataset.exportFinancial){financialCSV();return}if(b.dataset.finOpen){detailId=decodeURIComponent(b.dataset.finOpen);personalTab='financial';go('personal');return}if(b.dataset.view){
   if(b.dataset.view==='register'){
@@ -400,6 +444,11 @@ if(b.dataset.delete){
     return;
   }
 
+  const removedProfile=find(id);
+  if(removedProfile?.photo_path){
+    const {error:photoDeleteError}=await nexusDB.storage.from(NEXUS_PHOTO_BUCKET).remove([removedProfile.photo_path]);
+    if(photoDeleteError)alert('Record deleted, but its stored photograph could not be removed: '+photoDeleteError.message);
+  }
   profiles=profiles.filter(p=>p.id!==id);
   delete personal[id];
   saveProfiles();
@@ -448,6 +497,13 @@ $('loginForm').addEventListener('submit', async e => {
     return;
   }
 
+  try{
+    await loadMasterRecords();
+  }catch(err){
+    alert('Signed in, but records could not be loaded: '+err.message);
+    await nexusDB.auth.signOut();
+    return;
+  }
   $('login').classList.add('hidden');
   $('shell').classList.remove('hidden');
   go('dashboard');
@@ -461,6 +517,7 @@ $('lock').addEventListener('click', async () => {
     return;
   }
 
+  profiles=[];personal={};currentUserId='';detailId=null;editId=null;selectedPhotoFile=null;photoData='';tableRows={};
   $('shell').classList.add('hidden');
   $('login').classList.add('hidden');
   $('gateway').classList.remove('hidden');
