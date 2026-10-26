@@ -57,6 +57,10 @@
 #recordSaveStatus{margin-bottom:16px}
 #recordSaveStatus.error{background:#381c29;border-color:#d14a5d;color:#ffe0e6}
 @media(max-width:700px){.registration-layout{grid-template-columns:1fr}.registration-photo{position:static;flex-direction:row;flex-wrap:wrap;align-items:center}.registration-photo .photo{width:115px;height:135px}.registration-savebar{position:static}}
+
+/* Integrated NEXUS Facilities Center — Black Edition */
+.fcx{color:#edf3fc}.fcx *{box-sizing:border-box}.fcx .fcx-filter{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;padding:17px;margin-bottom:15px;background:#0c111a;border:1px solid #2a3545;border-radius:14px}.fcx label{display:block;font-size:12px;font-weight:800;margin-bottom:8px;color:#c9d6e9}.fcx select,.fcx input[type=search]{width:100%;background:#192333;color:#eef5ff;border:1px solid #35455b;padding:12px;border-radius:9px}.fcx .fcx-hero{position:relative;min-height:310px;border:1px solid #303e52;border-radius:16px;background:linear-gradient(0deg,#080d16 1%,transparent 95%),linear-gradient(130deg,#1c3752,#6b6b68 53%,#292e3d);overflow:hidden;display:flex;align-items:end}.fcx .fcx-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.fcx .fcx-hero:before{content:'';position:absolute;inset:0;background:linear-gradient(0deg,#050a12 0%,#07111da6 40%,transparent 88%);z-index:1;pointer-events:none}.fcx .fcx-art{position:absolute;left:8%;right:8%;top:23%;height:52%;background:repeating-linear-gradient(90deg,#718092 0 9%,#5b697a 9% 10%,#8290a1 10% 19%);border:10px solid #455365;box-shadow:0 15px 0 #26384c,0 30px 0 #172b3a;opacity:.76}.fcx .fcx-art:after{content:'';display:block;position:absolute;left:-10%;right:-10%;bottom:-50px;height:48px;background:repeating-linear-gradient(90deg,transparent 0 6%,#c0cad3 6% 6.4%,transparent 6.4% 12%);border-top:3px solid #c0cad3}.fcx .fcx-hero-content{position:relative;z-index:2;padding:24px;width:100%}.fcx .fcx-hero-content h2{margin:0 0 8px;font-size:clamp(20px,2.5vw,29px);color:#fff}.fcx .fcx-muted{color:#a9bdd4;font-size:13px}.fcx .fcx-cols{display:grid;grid-template-columns:1.5fr 1fr;gap:15px;margin-top:15px}.fcx .fcx-panel{border:1px solid #293a50;background:#0e1622;border-radius:14px;padding:17px;min-width:0}.fcx .fcx-panel h3{margin:0 0 13px;color:#f5f8ff}.fcx .fcx-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:11px}.fcx .fcx-card{background:#182335;border:1px solid #384a60;border-radius:11px;color:#fff;padding:0;overflow:hidden;text-align:left}.fcx .fcx-card.selected{border-color:#519dff;box-shadow:0 0 0 1px #519dff}.fcx .fcx-thumb{height:90px;background:linear-gradient(145deg,#4b6580,#977f66 62%,#253e50);position:relative;overflow:hidden}.fcx .fcx-thumb:after{content:'';position:absolute;inset:40% 12% 0;background:repeating-linear-gradient(90deg,#677989 0 16%,#34495a 16% 18%);border-top:7px solid #2a3c4f}.fcx .fcx-thumb img{width:100%;height:100%;object-fit:cover;position:relative;z-index:1}.fcx .fcx-card-copy{padding:12px}.fcx .fcx-card-copy strong{display:block;margin-bottom:5px}.fcx .fcx-card-copy small{color:#aec1d7}.fcx .fcx-person{display:flex;align-items:center;gap:10px;border-bottom:1px solid #283649;padding:10px 0}.fcx .fcx-person img,.fcx .fcx-avatar{height:50px;width:45px;flex:0 0 auto;object-fit:cover;background:#27384b;border-radius:7px;display:grid;place-items:center;color:#b6cde6}.fcx .fcx-person .info{flex:1;min-width:0;padding:0}.fcx .fcx-person strong{display:block}.fcx .fcx-person small{display:block;color:#b5c7d9;margin-top:5px}.fcx .fcx-action{background:#1554af;color:white;border:1px solid #417dca;border-radius:8px;padding:9px 12px}.fcx .fcx-tools{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:10px 0}.fcx .fcx-tools input{max-width:260px}.fcx .fcx-info{display:grid;grid-template-columns:110px 1fr;gap:12px;font-size:13px}.fcx .fcx-info dt{color:#a6bdd5}.fcx .fcx-info dd{margin:0;overflow-wrap:anywhere}.fcx .fcx-note{color:#9fb0c5;font-size:12px;line-height:1.5}.five-segment:nth-child(1){background:#475569;color:#fff}.five-segment:nth-child(2){background:#7c3aed;color:#fff}.five-segment:nth-child(3){background:#2563eb;color:#fff}.five-segment:nth-child(4){background:#eab308;color:#111827}.five-segment:nth-child(5){background:#dc2626;color:#fff}.five-segment.selected{outline:3px solid #fff;outline-offset:2px;filter:brightness(1.18)}
+@media(max-width:850px){.fcx .fcx-cols{grid-template-columns:1fr}.fcx .fcx-filter{grid-template-columns:1fr}.fcx .fcx-hero{min-height:270px}}
 </style></head><body>
 
 <div id="gateway" class="gate"><form id="gateForm" class="panel"><div class="logo">NE<span>X</span>US</div><h2>Security Gateway</h2><p class="muted">Demonstration access only</p><div class="field"><label>Security Key</label><input required autocomplete="off"></div><div class="field"><label>Access Code</label><input required type="password"></div><button class="btn" type="submit">CONTINUE</button></form></div>
@@ -370,7 +374,55 @@ function financialPage(){const f=financeFile(),b=balanceData();return `<div clas
 
 function personalPage(){const p=find(detailId);if(!p)return '<p>Record not found.</p>';const tabs=[['details','Personal Details'],['communication','Communication'],['financial','Financial'],['advisor','AI Advisor'],['photos','Photos'],['documents','Documents'],['notes','Personal Notes']];return `<div class="actions"><button class="btn alt" data-master="${encodeURIComponent(detailId)}">← BACK TO MASTER RECORD</button></div>${identity(p,true)}<div class="tabs">${tabs.map(([id,name])=>`<button class="tab ${personalTab===id?'active':''}" data-tab="${id}">${name}</button>`).join('')}</div>${personalTab==='details'?personalDetails():personalTab==='communication'?communicationCenter():personalTab==='financial'?financialPage():personalTab==='advisor'?advisor():personalTab==='notes'?`<div class="panel"><div class="heading">PERSONAL NOTES</div><form id="notesForm">${area('Personal Notes','personalNotes',file().details?.personalNotes||'')}<button class="btn">SAVE NOTES</button></form></div>`:`<div class="panel"><div class="heading">${personalTab==='photos'?'PERSONAL PHOTOS':'PERSONAL DOCUMENTS'}</div><p class="muted">Reserved for a future update. No uploads are enabled yet.</p></div>`}`}
 
-function render(){const names={financialHub:'Financial Center',dashboard:'Command Dashboard',profiles:'Inmate Profiles',register:'Inmate Registration',detail:'Inmate Master Record',personal:'Inmate Personal File',facilities:'Facilities',records:'Records',search:'Search',reports:'Reports',settings:'Settings'};$('pageTitle').textContent=names[view]||'NEXUS';document.querySelectorAll('.nav').forEach(b=>b.classList.toggle('active',b.dataset.view===view));let html='';if(view==='dashboard'){html=`<div class="grid"><div class="panel"><h3>Registered Profiles</h3><h1>${profiles.length}</h1></div><div class="panel"><h3>Active Records</h3><h1>${profiles.filter(p=>p.status==='Active'||p.status==='Active blocked').length}</h1></div><div class="panel"><h3>Personal Files</h3><h1>${Object.keys(personal).filter(id=>find(id)).length}</h1></div></div><div class="actions"><button class="btn" data-view="register">+ New Registration</button><button class="btn alt" data-view="profiles">View Profiles</button></div>${profileCards(profiles.filter(p=>p.status!=='Archive').slice(0,8))}`;}else if(view==='profiles'||view==='search'){html=`<div class="actions"><button class="btn" data-view="register">+ New Registration</button><button class="btn alt" id="toggleArchive">${showArchive?'Show Current Inmates':'View Archive'}</button></div><div class="panel"><div class="field"><label>Search by name, ID, state, or facility</label><input id="searchBox" placeholder="Search profiles..." value="${esc(filter)}"></div></div><div id="profileResults">${profileCards(profiles.filter(p=>(showArchive?p.status==='Archive':p.status!=='Archive')&&[p.id,p.first,p.last,p.state,p.facility].join(' ').toLowerCase().includes(filter.toLowerCase())).sort((a,b)=>(a.last||'').localeCompare(b.last||'')))}</div>`;}else if(view==='register')html=registration();else if(view==='detail')html=detail();else if(view==='personal')html=personalPage();else if(view==='financialHub')html=financialHub();else if(view==='facilities'){const fs=[...new Set(profiles.map(p=>p.facility).filter(Boolean))];html=section('FACILITIES',fs.length?fs.map(f=>`<p>${esc(f)} — ${profiles.filter(p=>p.facility===f).length} records</p>`).join(''):'No facilities recorded.')}else if(view==='records')html=profileCards(profiles);else if(view==='reports')html=section('REPORTS',`<p>Total profiles: ${profiles.length}</p><p>Active: ${profiles.filter(p=>p.status==='Active'||p.status==='Active blocked').length}</p>`);else if(view==='settings')html=section('DEMO SETTINGS',`<p class="notice">Authentication and row-level access are handled by Supabase. This implementation has not completed a security audit; do not enter real inmate or other sensitive personal information.</p><p>Master Records and section rows are saved in Supabase. Personal Files are saved only in this browser and do not sync across devices.</p><button class="btn" id="backup">EXPORT BACKUP JSON</button>`);$('content').innerHTML=html}
+
+/* Facilities read the same authenticated profile collection as the rest of NEXUS.
+   Exterior photos are optional and saved on this browser only until a secure
+   Supabase facility-image table/bucket is set up. */
+let facState='',facPrison='',facFacility='',facQuery='';
+const FAC_PHOTO_KEY='nexus_facility_photos_local_v1';
+function facEntries(){
+  const map=new Map();
+  profiles.forEach(p=>{
+    const state=String(p.state||'Unspecified state').trim();
+    const facility=String(p.facility||'Unassigned facility').trim();
+    const prison=facility; // Existing records store facility but not a separate prison field.
+    const key=JSON.stringify([state,prison,facility]);
+    if(!map.has(key))map.set(key,{state,prison,facility,people:[]});
+    map.get(key).people.push(p);
+  });
+  return [...map.values()].sort((a,b)=>(a.state+a.facility).localeCompare(b.state+b.facility));
+}
+function facKey(e){return JSON.stringify([e.state,e.prison,e.facility])}
+function facChoice(entries){
+  let selected=entries.find(e=>e.state===facState&&e.prison===facPrison&&e.facility===facFacility);
+  if(!selected){selected=entries[0]||null;if(selected){facState=selected.state;facPrison=selected.prison;facFacility=selected.facility}}
+  return selected;
+}
+function facOptions(values,current){return values.map(v=>`<option value="${esc(v)}" ${v===current?'selected':''}>${esc(v)}</option>`).join('')}
+function facilitiesPage(){
+ const all=facEntries();if(!all.length)return `<div class="fcx"><div class="fcx-panel"><h2>Facilities Center</h2><p class="fcx-muted">No inmate facilities are recorded yet. Assign a state and facility to a profile to populate this directory.</p><button class="btn" data-view="profiles">Open Inmate Profiles</button></div></div>`;
+ const chosen=facChoice(all),states=[...new Set(all.map(e=>e.state))],inState=all.filter(e=>e.state===facState),prisons=[...new Set(inState.map(e=>e.prison))],inPrison=inState.filter(e=>e.prison===facPrison),facilities=[...new Set(inPrison.map(e=>e.facility))],photos=read(FAC_PHOTO_KEY,{}),photo=photos[facKey(chosen)]||'';
+ const matching=all.filter(e=>[e.state,e.prison,e.facility].join(' ').toLowerCase().includes(facQuery.toLowerCase()));
+ const pic=e=>photos[facKey(e)]||'';
+ return `<div class="fcx">
+  <div class="fcx-filter">
+   <div><label for="facState">1. Select State</label><select id="facState">${facOptions(states,facState)}</select></div>
+   <div><label for="facPrison">2. Select Prison</label><select id="facPrison">${facOptions(prisons,facPrison)}</select></div>
+   <div><label for="facFacility">3. Select Facility</label><select id="facFacility">${facOptions(facilities,facFacility)}</select></div>
+  </div>
+  <div class="fcx-hero">${photo?`<img class="fcx-photo" alt="Saved exterior photo of ${esc(chosen.facility)}" src="${esc(photo)}">`:'<div class="fcx-art" aria-hidden="true"></div>'}
+   <div class="fcx-hero-content"><span class="fcx-muted">NEXUS / FACILITIES CENTER</span><h2>${esc(chosen.facility)}</h2><div>${esc(chosen.state)} · ${chosen.people.length} linked inmate profile${chosen.people.length===1?'':'s'}</div></div>
+  </div>
+  <div class="fcx-tools"><label for="facUpload">Facility exterior image (optional)</label><input id="facUpload" type="file" accept="image/jpeg,image/png,image/webp"><button class="btn alt small" id="facRemovePhoto" ${!photo?'disabled':''}>Remove photo</button></div>
+  <p class="fcx-note">Photos you add here are stored in this browser only. They will not sync to other devices. Current profiles have State and Facility fields but no separate Prison field, so the prison selector uses facility names until we add that database field.</p>
+  <div class="fcx-cols"><div class="fcx-panel"><h3>Browse Facilities</h3><div class="field"><label for="facSearch">Find a state or facility</label><input id="facSearch" type="search" placeholder="Search facilities..." value="${esc(facQuery)}"></div><div class="fcx-cards">${matching.map(e=>`<button class="fcx-card ${e===chosen?'selected':''}" data-facpick="${encodeURIComponent(facKey(e))}"><div class="fcx-thumb">${pic(e)?`<img alt="${esc(e.facility)} exterior" src="${esc(pic(e))}">`:''}</div><div class="fcx-card-copy"><strong>${esc(e.facility)}</strong><small>${esc(e.state)} · ${e.people.length} profiles</small></div></button>`).join('')||'<p class="fcx-note">No matches.</p>'}</div></div>
+   <div><div class="fcx-panel"><h3>Facility Information</h3><dl class="fcx-info"><dt>State</dt><dd>${esc(chosen.state)}</dd><dt>Prison</dt><dd>${esc(chosen.prison)}</dd><dt>Facility</dt><dd>${esc(chosen.facility)}</dd><dt>Inmate profiles</dt><dd>${chosen.people.length}</dd></dl></div>
+    <div class="fcx-panel" style="margin-top:15px"><h3>Inmates at ${esc(chosen.facility)}</h3>${chosen.people.map(p=>`<div class="fcx-person">${p.photo?`<img src="${esc(p.photo)}" alt="Profile photo">`:'<div class="fcx-avatar">♙</div>'}<div class="info"><strong>${esc(displayName(p))}</strong><small>ID: ${esc(p.id)} · ${esc(p.status||'Status not set')}</small></div><button class="fcx-action" data-facopen="${encodeURIComponent(p.id)}">View</button></div>`).join('')}</div>
+   </div></div>
+ </div>`;
+}
+
+function render(){const names={financialHub:'Financial Center',dashboard:'Command Dashboard',profiles:'Inmate Profiles',register:'Inmate Registration',detail:'Inmate Master Record',personal:'Inmate Personal File',facilities:'Facilities',records:'Records',search:'Search',reports:'Reports',settings:'Settings'};$('pageTitle').textContent=names[view]||'NEXUS';document.querySelectorAll('.nav').forEach(b=>b.classList.toggle('active',b.dataset.view===view));let html='';if(view==='dashboard'){html=`<div class="grid"><div class="panel"><h3>Registered Profiles</h3><h1>${profiles.length}</h1></div><div class="panel"><h3>Active Records</h3><h1>${profiles.filter(p=>p.status==='Active'||p.status==='Active blocked').length}</h1></div><div class="panel"><h3>Personal Files</h3><h1>${Object.keys(personal).filter(id=>find(id)).length}</h1></div></div><div class="actions"><button class="btn" data-view="register">+ New Registration</button><button class="btn alt" data-view="profiles">View Profiles</button></div>${profileCards(profiles.filter(p=>p.status!=='Archive').slice(0,8))}`;}else if(view==='profiles'||view==='search'){html=`<div class="actions"><button class="btn" data-view="register">+ New Registration</button><button class="btn alt" id="toggleArchive">${showArchive?'Show Current Inmates':'View Archive'}</button></div><div class="panel"><div class="field"><label>Search by name, ID, state, or facility</label><input id="searchBox" placeholder="Search profiles..." value="${esc(filter)}"></div></div><div id="profileResults">${profileCards(profiles.filter(p=>(showArchive?p.status==='Archive':p.status!=='Archive')&&[p.id,p.first,p.last,p.state,p.facility].join(' ').toLowerCase().includes(filter.toLowerCase())).sort((a,b)=>(a.last||'').localeCompare(b.last||'')))}</div>`;}else if(view==='register')html=registration();else if(view==='detail')html=detail();else if(view==='personal')html=personalPage();else if(view==='financialHub')html=financialHub();else if(view==='facilities')html=facilitiesPage();else if(view==='records')html=profileCards(profiles);else if(view==='reports')html=section('REPORTS',`<p>Total profiles: ${profiles.length}</p><p>Active: ${profiles.filter(p=>p.status==='Active'||p.status==='Active blocked').length}</p>`);else if(view==='settings')html=section('DEMO SETTINGS',`<p class="notice">Authentication and row-level access are handled by Supabase. This implementation has not completed a security audit; do not enter real inmate or other sensitive personal information.</p><p>Master Records and section rows are saved in Supabase. Personal Files are saved only in this browser and do not sync across devices.</p><button class="btn" id="backup">EXPORT BACKUP JSON</button>`);$('content').innerHTML=html}
 
 function go(v){view=v;render();window.scrollTo(0,0)}
 
@@ -380,6 +432,34 @@ function captureRows(){for(const t of tableDefs){const body=$('tb-'+t.key);if(!b
 
 function preserveRegistrationAndRender(){const form=$('recordForm');const values={};if(form){for(const element of form.elements){if(element.name&&element.type!=='file')values[element.name]=element.value;}}render();const preview=$('registrationPhotoPreview .photo');if(preview&&photoData){const img=document.createElement('img');img.className='photo';img.alt='Profile photograph';img.src=photoData;preview.replaceWith(img)}const restored=$('recordForm');if(restored){for(const element of restored.elements){if(element.name&&Object.prototype.hasOwnProperty.call(values,element.name)&&element.type!=='file')element.value=values[element.name];}}}
 
+
+
+$('content').addEventListener('change',async e=>{
+ if(e.target.id==='facState'){facState=e.target.value;const x=facEntries().find(p=>p.state===facState);if(x){facPrison=x.prison;facFacility=x.facility}render();return}
+ if(e.target.id==='facPrison'){facPrison=e.target.value;const x=facEntries().find(p=>p.state===facState&&p.prison===facPrison);if(x)facFacility=x.facility;render();return}
+ if(e.target.id==='facFacility'){facFacility=e.target.value;render();return}
+ if(e.target.id==='facUpload'){
+   const file=e.target.files&&e.target.files[0];if(!file)return;
+   if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>600000){alert('Choose a JPEG, PNG, or WebP image smaller than 600 KB.');return}
+   const chosen=facChoice(facEntries());if(!chosen)return;
+   const reader=new FileReader();reader.onload=()=>{
+     const photos=read(FAC_PHOTO_KEY,{});photos[facKey(chosen)]=String(reader.result);
+     if(store(FAC_PHOTO_KEY,photos))render();else alert('Browser storage is full. Try a smaller image.');
+   };reader.readAsDataURL(file);return;
+ }
+});
+$('content').addEventListener('input',e=>{
+ if(e.target.id==='facSearch'){
+  const q=e.target.value;const cursor=e.target.selectionStart;facQuery=q;render();
+  const box=$('facSearch');if(box){box.focus();box.setSelectionRange(cursor,cursor)}
+ }
+});
+$('content').addEventListener('click',e=>{
+ const btn=e.target.closest('button');if(!btn)return;
+ if(btn.dataset.facpick){e.preventDefault();const key=decodeURIComponent(btn.dataset.facpick),selected=facEntries().find(x=>facKey(x)===key);if(selected){facState=selected.state;facPrison=selected.prison;facFacility=selected.facility;render()}return}
+ if(btn.dataset.facopen){e.preventDefault();detailId=decodeURIComponent(btn.dataset.facopen);go('detail');return}
+ if(btn.id==='facRemovePhoto'){e.preventDefault();const chosen=facChoice(facEntries());if(!chosen)return;const photos=read(FAC_PHOTO_KEY,{});delete photos[facKey(chosen)];store(FAC_PHOTO_KEY,photos);render()}
+},true);
 
 $('content').addEventListener('change',e=>{if(e.target.id==='registrationState'){const state=e.target.value,sel=$('registrationFacility');if(!sel)return;sel.innerHTML=`<option value="">${state?'Select a facility...':'Select a state first'}</option>`+facilityOptions(state).map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');sel.disabled=!state;}});
 
