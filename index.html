@@ -135,7 +135,7 @@
 
 
 /* Larger, lower personal-profile metrics: side-by-side on iPad and desktop. */
-.nexus-profile-metrics{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:14px;margin-top:30px;align-items:stretch;width:100%;max-width:850px}
+.nexus-profile-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:30px;align-items:stretch;width:100%;max-width:850px}
 .nexus-metric-card{min-width:0;border:1px solid #365778;background:#0b1726;border-radius:11px;padding:16px 16px 13px}
 .nexus-metric-heading{font-weight:800;color:#c1d6ee;font-size:13px;letter-spacing:.5px;margin-bottom:15px}
 .nexus-masculinity-card .nexus-indicator-bands{gap:7px}
@@ -166,6 +166,22 @@
 /* Scroll saved communications separately from the page. */
 .communication-activity-feed{max-height:300px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding-right:6px}
 .communication-activity-feed .entry p{margin:7px 0 4px}
+
+/* Compact raw point counts and a separate combined communication indicator. */
+.nexus-overall-score{display:flex;align-items:baseline;flex-wrap:wrap;column-gap:10px;row-gap:3px;margin:10px 0;color:#b9cce0}
+.nexus-overall-score>span{font-size:11px;font-weight:800;letter-spacing:.06em}
+.nexus-overall-score>strong{font-size:28px;line-height:1.1;color:#fff;font-variant-numeric:tabular-nums}
+.nexus-overall-score>small{flex-basis:100%;font-size:11px;color:#9fb5cc}
+
+.nexus-combined-panel{grid-column:1/-1;border:1px solid #486889;background:#0c1b2c;border-radius:11px;padding:18px;display:grid;grid-template-columns:165px 1fr;gap:16px;align-items:center}
+.nexus-combined-title{font-size:14px;font-weight:900;color:#e5f2ff;letter-spacing:.6px}
+.nexus-combined-number{font-size:37px;font-weight:900;color:#fff;line-height:1.15;font-variant-numeric:tabular-nums;margin:8px 0}
+.nexus-combined-breakdown{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0;color:#c1d2e7;font-size:12px}
+.nexus-combined-breakdown span{border:1px solid #324960;border-radius:6px;padding:6px 9px}
+.nexus-combined-note{font-size:11px;line-height:1.5;color:#a8bed6;margin:8px 0 0}
+.nexus-combined-five{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+.nexus-combined-five .five-segment{font-size:18px;font-weight:800;padding:14px 3px;border-radius:7px}
+@media(max-width:710px){.nexus-combined-panel{grid-template-columns:1fr}.nexus-combined-number{font-size:32px}}
 </style></head><body>
 
 <div id="gateway" class="gate"><form id="gateForm" class="panel"><div class="logo">NE<span>X</span>US</div><h2>Security Gateway</h2><p class="muted">Demonstration access only</p><div class="field"><label>Security Key</label><input required autocomplete="off"></div><div class="field"><label>Access Code</label><input required type="password"></div><button class="btn" type="submit">CONTINUE</button></form></div>
@@ -465,33 +481,16 @@ function nexusSexualLanguageScore(){
 }
 function nexusSexualLanguagePanel(){
  const score=nexusSexualLanguageScore();
+ const level=score.total===0?1:score.total<5?2:score.total<10?3:score.total<20?4:5;
  return `<div class="nexus-sexual-language">
-  <div class="nexus-sexual-language-title">SEXUAL LANGUAGE — POINTS</div>
-  <div class="nexus-sexual-language-score"><strong>${score.total}</strong><span>keyword points from saved communication</span></div>
-  <div class="nexus-sexual-five-level" role="img" aria-label="Sexual-language keyword score level ${score.total===0?1:score.total<5?2:score.total<10?3:score.total<20?4:5} of 5">
-   ${[1,2,3,4,5].map(i=>`<span class="five-segment ${(score.total===0?1:score.total<5?2:score.total<10?3:score.total<20?4:5)===i?'selected':''}">${i}</span>`).join('')}
+  <div class="nexus-sexual-language-title">SEXUAL</div>
+  <div class="nexus-sexual-language-score"><span>Score</span><strong>${score.total>0?'+':''}${score.total}</strong></div>
+  <div class="nexus-sexual-five-level" role="img" aria-label="Sexual-language keyword level ${level} of 5">
+   ${[1,2,3,4,5].map(i=>`<span class="five-segment ${level===i?'selected':''}">${i}</span>`).join('')}
   </div>
-  <details class="nexus-cue-dropdown nexus-sexual-dropdown">
-   <summary>SEXUAL WORD DETAILS ▾</summary>
-   <div class="nexus-cue-popup">
-    <h3>Sexual words, phrases &amp; sentences</h3>
-    <p class="nexus-cue-help">A count of specific expressions in saved emails, texts and call summaries. This does not prove any sexual activity, intentions, consent, orientation or identity. Quoted words, jokes and health discussions can match.</p>
-    ${score.rules.map((r,i)=>score.totals[i]?`<div class="nexus-cue-row"><span>${esc(r.label)}</span><strong>+${score.totals[i]}</strong></div>`:'').join('')}
-    <div class="nexus-cue-row nexus-cue-total"><span>Total</span><strong>${score.total}</strong></div>
-    <h4>Matched expressions (${score.results.length})</h4>
-    <div class="nexus-match-list">${score.results.length?score.results.slice(-100).reverse().map(h=>`<div class="nexus-match"><strong>${esc(h.phrase)}</strong> · ${esc(h.label)} (+${h.points})<small>${esc(h.type||'Entry')} · ${esc(h.date||'')}</small><button type="button" class="btn alt small" data-sexual-cue-ignore="${encodeURIComponent(h.key)}">Dismiss false match</button></div>`).join(''):'<p class="muted">No matched expressions in saved communication.</p>'}</div>
-    <h4>Add your own expression</h4>
-    <form id="nexusSexualCueForm" class="nexus-custom-form">
-     <input name="term" maxlength="80" required placeholder="Word or phrase" aria-label="Custom sexual word or phrase">
-     <label class="muted">Points (1–5)<input type="number" name="points" min="1" max="5" step="1" value="2" required></label>
-     <button type="submit" class="btn small">ADD EXPRESSION</button>
-    </form>
-    <div class="nexus-cue-custom">${nexusSexualCustomTerms().map(x=>`<div class="nexus-cue-row"><span>${esc(x.term)} (+${x.points})</span><button type="button" class="btn danger small" data-sexual-cue-remove="${esc(x.id)}">Remove</button></div>`).join('')}</div>
-    <p class="nexus-cue-help">Custom expressions and dismissed matches are stored in this browser. No external AI analysis is used.</p>
-   </div>
-  </details>
  </div>`;
 }
+
 function nexusRefreshSexualPopup(){render();const d=document.querySelector('.nexus-sexual-dropdown');if(d)d.open=true;}
 $('content').addEventListener('submit',e=>{
  if(e.target.id!=='nexusSexualCueForm')return;
@@ -541,13 +540,12 @@ function identity(p,personalMode=false){
     <section class="nexus-metric-card nexus-masculinity-card" aria-label="Masculinity keyword indicator">
      <div class="nexus-metric-heading">MASCULINITY</div>
      ${masculinityCommunicationAssessment()}
-     <div class="nexus-metric-footer">${masculinityCueMenu()}</div>
+
     </section>
-    <section class="nexus-metric-card nexus-sexual-card" aria-label="Sexual activity report summary">
-     <div class="nexus-metric-heading">SEXUAL ACTIVITY REPORT</div>
-     ${sexualActivityHeaderSummary()}
+    <section class="nexus-metric-card nexus-sexual-card" aria-label="Sexual keyword indicator">
      ${nexusSexualLanguagePanel()}
     </section>
+    ${nexusCombinedCommunicationScore()}
    </div>`:''}
   </div>
  </div>`;
@@ -615,7 +613,7 @@ function activity(){
 
 function communication(){const e=nexusChronologicalEntries();return `<div class="cols"><div>${activity()}<div class="panel"><div class="heading">ADD COMMUNICATION ENTRY</div><form id="entryForm"><div class="field"><label>Communication Type</label><select name="type"><option value="Text">Text Message</option><option value="Email">Email</option><option value="Call">Phone Call</option></select></div>${field('Communication Date','date',today(),'date')}${area('Message or Call Summary','message')}<button class="btn" type="submit">SAVE ENTRY</button></form></div></div><div><div class="panel communication-history-panel"><div class="heading">COMMUNICATION HISTORY ↕ SCROLL TO VIEW</div><div class="communication-history-list" tabindex="0" role="region" aria-label="Scrollable communication history">${e.length?e.map(x=>`<div class="entry"><strong>${esc(x.type)} · ${esc(x.date)}</strong><p>${esc(x.message)}</p><button class="btn danger small" data-entry-delete="${esc(x.uid)}">Delete Entry</button></div>`).join(''):'<p class="muted">No communication entries yet.</p>'}</div></div></div></div>`}
 
-function communicationCenter(){return `<div class="panel"><div class="heading">COMMUNICATION & ACTIVITY CENTER</div><p class="muted">All reports are visible below. Saved entries remain separate for each inmate.</p></div><div class="report-static"><div class="report-static-title">COMMUNICATION ACTIVITY — TEXTS, EMAILS & CALLS</div><div class="report-static-body">${communication()}</div></div><div class="report-static"><div class="report-static-title">SEXUAL ACTIVITY REPORT</div><div class="report-static-body">${sexualPage()}</div></div><div class="report-static"><div class="report-static-title">MALE ACTIVITY REPORT</div><div class="report-static-body">${malePage()}</div></div>`}
+function communicationCenter(){return `<div class="panel"><div class="heading">COMMUNICATION & ACTIVITY CENTER</div><p class="muted">All reports are visible below. Saved entries remain separate for each inmate.</p></div><div class="report-static"><div class="report-static-title">COMMUNICATION ACTIVITY — TEXTS, EMAILS & CALLS</div><div class="report-static-body">${communication()}</div></div><div class="report-static"><div class="report-static-title">MALE ACTIVITY REPORT</div><div class="report-static-body">${malePage()}</div></div>`}
 
 function sexualLevel(){const entries=financeFile().sexualEntries||[],now=Date.now();const recent=entries.filter(e=>{const d=new Date(e.date+'T12:00:00').getTime();return Number.isFinite(d)&&d<=now&&d>now-30*86400000});const n=recent.length;return {n,level:n<5?'LOW':n<15?'MEDIUM':'HIGH',cls:n<5?'low':n<15?'medium':'high'}}
 
@@ -708,6 +706,34 @@ function nexusCueScore(){
  const level=entries.length?Math.min(5,Math.max(1,Math.ceil(Math.max(0,total)/8)||1)):0;
  return {entries:entries.length,rules,counts,scores,hits,total,level};
 }
+function nexusMasculinityOverallScore(){
+ const score=nexusCueScore();
+ return `<div class="nexus-overall-score">
+  <span>OVERALL SCORE</span>
+  <strong>${score.total>0?'+':''}${score.total}</strong>
+  <small>${score.hits.length} matched expressions · ${score.entries} analyzed entries</small>
+ </div>`;
+}
+function nexusCombinedCommunicationScore(){
+ const m=nexusCueScore();
+ const sexual=nexusSexualLanguageScore();
+ const hasMessages=m.entries>0;
+ // A descriptive index from two keyword bands; it does not assess a person's masculinity or libido.
+ const mBand=hasMessages?Math.max(1,m.level):0;
+ const sexualBand=hasMessages?(sexual.total===0?1:sexual.total<5?2:sexual.total<10?3:sexual.total<20?4:5):0;
+ const level=hasMessages?Math.max(1,Math.min(5,Math.round((mBand+sexualBand)/2))):0;
+ const score=hasMessages?Math.round((((mBand-1)/4+(sexualBand-1)/4)/2)*100):null;
+ return `<section class="nexus-combined-panel" aria-label="Overall Man Score, calculated from communication keywords">
+  <div>
+   <div class="nexus-combined-title">OVERALL MAN SCORE</div>
+   <div class="nexus-combined-number">${score===null?'—':score+'/100'}</div>
+  </div>
+  <div class="nexus-combined-five" role="img" aria-label="${hasMessages?'Combined language level '+level+' of 5':'No score yet'}">
+   ${[1,2,3,4,5].map(i=>`<span class="five-segment ${level===i?'selected':''}">${i}</span>`).join('')}
+  </div>
+ </section>`;
+}
+
 function masculinityCommunicationAssessment(){
  const s=nexusCueScore();
  return `<div class="nexus-indicator-bands" role="img" aria-label="${s.entries?`Keyword score band ${s.level} of 5`:'No entries yet'}">${[1,2,3,4,5].map(i=>`<span class="five-segment ${s.level===i?'selected':''}">${i}</span>`).join('')}</div>`;
@@ -794,7 +820,7 @@ function financialCSV(){const quote=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
 function sexualPage(){const f=financeFile(),e=f.sexualEntries.slice().sort((a,b)=>b.date.localeCompare(a.date)),s=sexualLevel();return `<div class="panel"><div class="heading">SEXUAL ACTIVITY LEVEL — LAST 30 DAYS</div><div class="indicator ${s.cls}"><span class="dot ${s.cls}"></span>${s.level}</div><div class="bar"><div class="fill" style="width:${Math.min(100,s.n/15*100)}%;background:${s.cls==='low'?'#ff575e':s.cls==='medium'?'#ffd12b':'#3bd88b'}"></div></div><p class="muted">${s.n} voluntarily reported entries in the last 30 days. LOW 0–4, MEDIUM 5–14, HIGH 15+. This reflects recorded frequency only.</p></div><div class="cols"><div>${section('REPORTED SEXUAL ACTIVITY',`<p class="muted">Record only voluntarily disclosed information. Do not infer orientation or activity from communications.</p><div class="stats"><div class="stat"><strong>${e.length}</strong><small>Saved activity entries</small></div></div><form id="sexualForm">${field('Date','date',today(),'date')}${reasonControl()}${area('Voluntary report / context','message')}<button class="btn" type="submit">SAVE ACTIVITY ENTRY</button></form>`)}</div><div>${section('SEXUAL INTERESTS & BOUNDARIES',`<form id="interestsForm">${area('Voluntarily disclosed interests / turn-ons','interests',f.details?.interests||'')}${area('Stated boundaries','boundaries',f.details?.boundaries||'')}<button class="btn">SAVE INTERESTS</button></form>`)}${section('SEXUAL ACTIVITY HISTORY',e.length?e.map(x=>`<div class="entry"><strong>${esc(x.date)} · ${esc(x.reason||'Reason not recorded')} · ${money(amountFor({...x,billType:'Sexual'}))}</strong><p>${esc(x.message)}</p><button class="btn danger small" data-sex-delete="${esc(x.uid)}">Delete</button></div>`).join(''):'<p class="muted">No activity entries.</p>')}</div></div>`}
 
 
-function malePage(){const f=financeFile();return `<div class="panel"><div class="heading">AUTOMATED FIVE-LEVEL COMMUNICATION EXPRESSION</div>${masculinityCommunicationAssessment()}</div><div class="cols"><div>${section('MALE ACTIVITY REPORT',`<p class="muted">Document specific observed or self-reported actions; separate facts from interpretations. This is not a diagnosis or personality score.</p><form id="maleForm"><div class="field"><label>Category</label><select name="category"><option>Follow-through</option><option>Boundaries</option><option>Initiative</option><option>Emotional Expression</option><option>Relationship Dynamics</option><option>Personal Routine</option></select></div>${field('Date','date',today(),'date')}${area('Evidence / observed statement','evidence')}${area('Interpretation and alternative explanations','interpretation')}<button class="btn">SAVE REPORT ENTRY</button></form>`)}</div><div>${section('OBSERVATION HISTORY',f.maleReports.length?f.maleReports.slice().reverse().map(x=>`<div class="entry"><strong>${esc(x.category)} · ${esc(x.date)}</strong><p>${esc(x.evidence)}</p><p class="muted">Interpretation: ${esc(x.interpretation)}</p></div>`).join(''):'<p class="muted">No reports yet.</p>')}</div></div>`}
+function malePage(){const f=financeFile();return `<div class="cols"><div>${section('MALE ACTIVITY REPORT',`<p class="muted">Document specific observed or self-reported actions; separate facts from interpretations. This is not a diagnosis or personality score.</p><form id="maleForm"><div class="field"><label>Category</label><select name="category"><option>Follow-through</option><option>Boundaries</option><option>Initiative</option><option>Emotional Expression</option><option>Relationship Dynamics</option><option>Personal Routine</option></select></div>${field('Date','date',today(),'date')}${area('Evidence / observed statement','evidence')}${area('Interpretation and alternative explanations','interpretation')}<button class="btn">SAVE REPORT ENTRY</button></form>`)}</div><div>${section('OBSERVATION HISTORY',f.maleReports.length?f.maleReports.slice().reverse().map(x=>`<div class="entry"><strong>${esc(x.category)} · ${esc(x.date)}</strong><p>${esc(x.evidence)}</p><p class="muted">Interpretation: ${esc(x.interpretation)}</p></div>`).join(''):'<p class="muted">No reports yet.</p>')}</div></div>`}
 
 function financialPage(){const f=financeFile(),b=balanceData();return `<div class="panel finance-panel"><div class="heading">AUTOMATED FINANCIAL MANAGEMENT</div><p class="muted">Each inmate has individual rates. Unsettled activity entries use the current saved prices; recorded deposits preserve their original amounts. Recording a deposit logs it and clears the pending balance; it does not transfer money.</p><div class="stats"><div class="stat"><small>OUTSTANDING</small><strong style="color:#3bd88b">${money(b.outstanding)}</strong></div><div class="stat"><small>LIFETIME DEPOSITED</small><strong>${money(b.deposited)}</strong></div><div class="stat"><small>ACTIVITY ENTRIES</small><strong>${b.all.length}</strong></div></div><form id="ratesForm"><div class="heading">INDIVIDUAL PRICES</div><div class="grid">${activityTypes.map(([k,label])=>`<div class="field"><label>${esc(label)} ($ per entry / occurrence)</label><div class="currency-input"><span class="currency-symbol" aria-hidden="true">$</span><input name="${esc(k)}" type="number" min="0" step="0.01" value="${(Number(f.rates[k])||0).toFixed(2)}" aria-label="${esc(label)} rate in US dollars"></div></div>`).join('')}</div><button class="btn alt">SAVE PRICES</button></form><div class="heading pending-heading">PENDING ACTIVITY</div><div class="grid">${activityTypes.map(([k,label])=>item(label,`${b.pending.filter(x=>x.billType===k).reduce((a,x)=>a+1,0)} occurrences / entries · ${money(b.subtotal(k))}`)).join('')}</div><div class="actions"><button class="btn" data-deposit="1" ${b.pending.length===0?'disabled':''}>RECORD DEPOSIT — ${money(b.outstanding)}</button></div><p class="muted">Confirm only after actually making the deposit. A confirmation prompt will appear.</p></div>${section('FINANCIAL DEPOSIT LOG',f.deposits.length?f.deposits.slice().reverse().map(d=>`<div class="entry"><strong>${esc(d.date)} · ${money(d.amount)}</strong><p>Transaction: ${esc(d.id)} · ${d.entryIds.length} activity entries settled</p></div>`).join(''):'<p class="muted">No deposits recorded yet.</p>')}`}
 
