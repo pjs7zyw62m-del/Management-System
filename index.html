@@ -1834,6 +1834,45 @@ function nexusCollectGatewayCodes() {
   });
 }
    
+async function nexusVerifyGatewayCodes(codes) {
+  if (
+    !codes ||
+    typeof codes.accessCode !== 'string' ||
+    typeof codes.securityCode !== 'string' ||
+    !codes.accessCode ||
+    !codes.securityCode
+  ) {
+    throw new Error('Both security codes are required.');
+  }
+
+  try {
+    const { data, error } = await nexusDB.functions.invoke(
+      'nexus-gateway-verify',
+      {
+        body: {
+          accessCode: codes.accessCode,
+          securityCode: codes.securityCode
+        }
+      }
+    );
+
+    if (error || data?.verified !== true) {
+      throw new Error(
+        'NEXUS gateway verification failed.'
+      );
+    }
+
+    // The database must recognize this verified login.
+    await nexusRequireGatewayGrant();
+
+    return true;
+  } finally {
+    // Clear references to the entered codes.
+    codes.accessCode = '';
+    codes.securityCode = '';
+  }
+}
+
 async function nexusRequireGatewayGrant(){
   const {data, error} = await nexusDB.rpc(
     'nexus_gateway_session_valid'
