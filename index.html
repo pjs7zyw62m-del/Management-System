@@ -1729,6 +1729,27 @@ function nexusShowSignedOut(message='Sign in with your authorized administrator 
   $('nexusAuthStatus').textContent=message;
   $('nexusSignInBtn').disabled=false;
 }
+       
+async function nexusRequireGatewayGrant(){
+  const {data, error} = await nexusDB.rpc(
+    'nexus_gateway_session_valid'
+  );
+
+  if(error){
+    throw new Error(
+      'Unable to check NEXUS gateway authorization.'
+    );
+  }
+
+  if(data !== true){
+    throw new Error(
+      'NEXUS security codes must be verified before accessing records.'
+    );
+  }
+
+  return true;
+}
+     
 async function nexusOpenAuthorizedSession(){
   // getUser checks the token against Supabase Auth, not just a cached local session.
   const {data:{user},error}=await nexusDB.auth.getUser();
