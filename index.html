@@ -133,6 +133,39 @@
 .nexus-custom-form button{justify-self:start}
 .nexus-cue-custom{max-height:150px;overflow-y:auto}
 
+
+/* Larger, lower personal-profile metrics: side-by-side on iPad and desktop. */
+.nexus-profile-metrics{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:14px;margin-top:30px;align-items:stretch;width:100%;max-width:850px}
+.nexus-metric-card{min-width:0;border:1px solid #365778;background:#0b1726;border-radius:11px;padding:16px 16px 13px}
+.nexus-metric-heading{font-weight:800;color:#c1d6ee;font-size:13px;letter-spacing:.5px;margin-bottom:15px}
+.nexus-masculinity-card .nexus-indicator-bands{gap:7px}
+.nexus-masculinity-card .nexus-indicator-bands .five-segment{font-size:18px;font-weight:800;padding:14px 3px;border-radius:7px}
+.nexus-metric-footer{margin-top:15px;display:flex;justify-content:flex-start}
+.nexus-metric-footer .nexus-cue-dropdown>summary{padding:10px 14px;font-size:12px}
+.nexus-sexual-count{display:flex;gap:12px;align-items:center;margin:8px 0 17px}
+.nexus-sexual-count strong{font-size:34px;font-variant-numeric:tabular-nums;color:#f0f6ff}
+.nexus-sexual-count span{font-size:12px;color:#b4c9de}
+.nexus-sexual-meter{height:12px;background:#293a50;border-radius:12px;overflow:hidden}
+.nexus-sexual-fill{height:100%;background:#eab308;border-radius:12px}
+.nexus-sexual-footer{display:flex;justify-content:space-between;align-items:center;gap:9px;margin-top:15px;font-size:12px;color:#b4c9de;flex-wrap:wrap}
+@media(max-width:710px){.nexus-profile-metrics{grid-template-columns:1fr;max-width:530px;margin-top:24px}.nexus-masculinity-card .nexus-indicator-bands .five-segment{padding:12px 3px}.nexus-metric-card{padding:14px}}
+
+
+/* Separate reviewable sexual-language score; popup overlays rather than shifting layout. */
+.nexus-sexual-language{margin:13px 0 12px;padding:12px;background:#101f31;border:1px solid #334f70;border-radius:9px}
+.nexus-sexual-language-title{font-size:12px;font-weight:800;letter-spacing:.3px;color:#cae4ff;margin-bottom:7px}
+.nexus-sexual-language-score{display:flex;align-items:baseline;gap:9px;font-size:12px;color:#b9cce0}
+.nexus-sexual-language-score strong{font-size:22px;color:#fff}
+.nexus-sexual-five-level{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin:12px 0 0}
+.nexus-sexual-five-level .five-segment{font-size:18px;font-weight:800;padding:14px 3px;border-radius:7px;min-width:0}
+@media(max-width:710px){.nexus-sexual-five-level .five-segment{padding:12px 3px}}
+.nexus-sexual-language .nexus-cue-dropdown{margin-top:10px}
+.nexus-sexual-language .nexus-cue-popup{z-index:60}
+.nexus-sexual-language .nexus-cue-popup .nexus-match-list{max-height:180px;overflow-y:auto}
+
+/* Scroll saved communications separately from the page. */
+.communication-activity-feed{max-height:300px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding-right:6px}
+.communication-activity-feed .entry p{margin:7px 0 4px}
 </style></head><body>
 
 <div id="gateway" class="gate"><form id="gateForm" class="panel"><div class="logo">NE<span>X</span>US</div><h2>Security Gateway</h2><p class="muted">Demonstration access only</p><div class="field"><label>Security Key</label><input required autocomplete="off"></div><div class="field"><label>Access Code</label><input required type="password"></div><button class="btn" type="submit">CONTINUE</button></form></div>
@@ -387,6 +420,104 @@ function registration(){
 
 function tableDisplay(p,t){const rows=Array.isArray(p[t.key])?p[t.key]:[];return section(t.title,rows.length?`<div class="tablewrap"><table><thead><tr>${t.cols.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${t.cols.map((c,i)=>`<td>${esc(Array.isArray(r)?r[i]:(r?.[c]??Object.values(r||{})[i]??''))}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`:'<p class="muted">No entries recorded.</p>')}
 
+// This summary displays voluntary reporting frequency, not an inferred personal trait.
+function sexualActivityHeaderSummary(){
+ const s=sexualLevel();
+ return `<div class="nexus-sexual-count"><strong>${s.n}</strong><span>reported entries · last 30 days</span></div>
+  <div class="nexus-sexual-meter" aria-label="${s.level} reported activity frequency">
+   <div class="nexus-sexual-fill" style="width:${Math.min(100,s.n/15*100)}%"></div>
+  </div>
+  <div class="nexus-sexual-footer"><span>${s.level} frequency</span><button type="button" class="btn alt small" data-tab="communication">OPEN REPORT</button></div>`;
+}
+
+
+/* Sexual-language points are distinct from self-reported sexual activity.
+   Matches indicate text patterns only: NOT evidence of actual conduct, desire,
+   consent, sexual orientation, or identity. Browser-local overrides. */
+const NEXUS_SEXUAL_TERMS_KEY='nexus_sexual_phrase_rules_v1';
+const NEXUS_SEXUAL_RULES=[
+ {label:'Suggestive / innuendo',points:1,terms:['sexy','hot for you','turn me on','turns me on','turned on','horny','flirting with you','naughty','dirty talk','thirsty for you','dtf','nsfw','spicy pics','body count']},
+ {label:'Explicit sexual terms',points:2,terms:['fuck me','fucking you','fuck you tonight','sex with you','have sex','make love','oral sex','blowjob','blow job','handjob','hand job','jerk off','masturbate','orgasm','cum','cumming','pussy','dick pic','cock','clit','nudes','naked pics','sexting']},
+ {label:'Sexual requests / propositions',points:3,terms:['send nudes','send me nudes','send me a nude','show me your body','show me your tits','send a dick pic','send me a sexy pic','lets hook up','wanna hook up','want to have sex','i want to sleep with you','can we sext','send me pics naked']},
+ {label:'Sexual pressure / boundary concerns',points:4,terms:['you owe me sex','prove you love me with sex','if you loved me you would','dont say no to me','you cant refuse me','you cannot refuse me','i will share your nudes','ill share your nudes','send nudes or else','i wont take no for an answer']}
+];
+function nexusSexualCustomTerms(){
+ const a=read(NEXUS_SEXUAL_TERMS_KEY+'_'+currentUserId,[]);
+ return Array.isArray(a)?a.filter(x=>x&&typeof x.term==='string'&&x.term.length<=80&&Number.isInteger(x.points)&&x.points>=1&&x.points<=5).slice(0,100):[];
+}
+function nexusSexualLanguageScore(){
+ const f=file(),ignored=f.sexualCueIgnored||{};
+ const rules=[...NEXUS_SEXUAL_RULES,...nexusSexualCustomTerms().map(x=>({label:'Custom: '+x.term,points:x.points,terms:[x.term],id:x.id}))];
+ const results=[],totals=rules.map(()=>0);
+ for(const entry of f.entries||[]){
+  if(!String(entry.message||'').trim())continue;
+  rules.forEach((rule,i)=>{
+   const found=[...new Set(nexusPhraseCount(String(entry.message),rule.terms))].slice(0,8);
+   for(const phrase of found){
+    const key=String(entry.uid||entry.date)+':sex:'+i+':'+phrase;
+    if(ignored[key])continue;
+    totals[i]+=rule.points;
+    results.push({key,phrase,label:rule.label,points:rule.points,date:entry.date,type:entry.type});
+   }
+  });
+ }
+ return {total:totals.reduce((a,b)=>a+b,0),rules,totals,results,entries:(f.entries||[]).length};
+}
+function nexusSexualLanguagePanel(){
+ const score=nexusSexualLanguageScore();
+ return `<div class="nexus-sexual-language">
+  <div class="nexus-sexual-language-title">SEXUAL LANGUAGE — POINTS</div>
+  <div class="nexus-sexual-language-score"><strong>${score.total}</strong><span>keyword points from saved communication</span></div>
+  <div class="nexus-sexual-five-level" role="img" aria-label="Sexual-language keyword score level ${score.total===0?1:score.total<5?2:score.total<10?3:score.total<20?4:5} of 5">
+   ${[1,2,3,4,5].map(i=>`<span class="five-segment ${(score.total===0?1:score.total<5?2:score.total<10?3:score.total<20?4:5)===i?'selected':''}">${i}</span>`).join('')}
+  </div>
+  <details class="nexus-cue-dropdown nexus-sexual-dropdown">
+   <summary>SEXUAL WORD DETAILS ▾</summary>
+   <div class="nexus-cue-popup">
+    <h3>Sexual words, phrases &amp; sentences</h3>
+    <p class="nexus-cue-help">A count of specific expressions in saved emails, texts and call summaries. This does not prove any sexual activity, intentions, consent, orientation or identity. Quoted words, jokes and health discussions can match.</p>
+    ${score.rules.map((r,i)=>score.totals[i]?`<div class="nexus-cue-row"><span>${esc(r.label)}</span><strong>+${score.totals[i]}</strong></div>`:'').join('')}
+    <div class="nexus-cue-row nexus-cue-total"><span>Total</span><strong>${score.total}</strong></div>
+    <h4>Matched expressions (${score.results.length})</h4>
+    <div class="nexus-match-list">${score.results.length?score.results.slice(-100).reverse().map(h=>`<div class="nexus-match"><strong>${esc(h.phrase)}</strong> · ${esc(h.label)} (+${h.points})<small>${esc(h.type||'Entry')} · ${esc(h.date||'')}</small><button type="button" class="btn alt small" data-sexual-cue-ignore="${encodeURIComponent(h.key)}">Dismiss false match</button></div>`).join(''):'<p class="muted">No matched expressions in saved communication.</p>'}</div>
+    <h4>Add your own expression</h4>
+    <form id="nexusSexualCueForm" class="nexus-custom-form">
+     <input name="term" maxlength="80" required placeholder="Word or phrase" aria-label="Custom sexual word or phrase">
+     <label class="muted">Points (1–5)<input type="number" name="points" min="1" max="5" step="1" value="2" required></label>
+     <button type="submit" class="btn small">ADD EXPRESSION</button>
+    </form>
+    <div class="nexus-cue-custom">${nexusSexualCustomTerms().map(x=>`<div class="nexus-cue-row"><span>${esc(x.term)} (+${x.points})</span><button type="button" class="btn danger small" data-sexual-cue-remove="${esc(x.id)}">Remove</button></div>`).join('')}</div>
+    <p class="nexus-cue-help">Custom expressions and dismissed matches are stored in this browser. No external AI analysis is used.</p>
+   </div>
+  </details>
+ </div>`;
+}
+function nexusRefreshSexualPopup(){render();const d=document.querySelector('.nexus-sexual-dropdown');if(d)d.open=true;}
+$('content').addEventListener('submit',e=>{
+ if(e.target.id!=='nexusSexualCueForm')return;
+ e.preventDefault();e.stopImmediatePropagation();
+ const fd=new FormData(e.target),term=String(fd.get('term')||'').trim(),points=Number(fd.get('points'));
+ if(term.length<2||term.length>80||!Number.isInteger(points)||points<1||points>5){alert('Enter a phrase and 1–5 whole points.');return;}
+ const all=nexusSexualCustomTerms();
+ if(all.some(x=>x.term.toLowerCase()===term.toLowerCase())){alert('That expression is already in your custom dictionary.');return;}
+ if(all.length>=100){alert('Custom dictionary limit reached.');return;}
+ all.push({id:crypto.randomUUID(),term,points});
+ if(store(NEXUS_SEXUAL_TERMS_KEY+'_'+currentUserId,all))nexusRefreshSexualPopup();
+},true);
+$('content').addEventListener('click',e=>{
+ const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.sexualCueRemove){
+  const all=nexusSexualCustomTerms().filter(x=>x.id!==b.dataset.sexualCueRemove);
+  if(store(NEXUS_SEXUAL_TERMS_KEY+'_'+currentUserId,all))nexusRefreshSexualPopup();
+  return;
+ }
+ if(b.dataset.sexualCueIgnore){
+  const key=decodeURIComponent(b.dataset.sexualCueIgnore),f=file();
+  f.sexualCueIgnored={...(f.sexualCueIgnored||{}),[key]:true};
+  if(savePersonal())nexusRefreshSexualPopup();
+ }
+},true);
+
 function identity(p,personalMode=false){
  const d=personal[p.id]?.details||{};
  return `<div class="panel hero nexus-profile-header">
@@ -406,12 +537,17 @@ function identity(p,personalMode=false){
     ${personalMode?`<div class="fact"><small>Orientation</small><strong>${esc(d.orientation||'Not provided')}</strong></div>`:''}
     <div class="fact nexus-facility-fact"><small>Facility</small><strong>${esc(p.facility||'—')}</strong></div>
    </div>
-   ${personalMode?`<div class="nexus-assessment-line">
-    <div class="nexus-assessment-mini">
-     <div class="nexus-assessment-label">MASCULINITY</div>
+   ${personalMode?`<div class="nexus-profile-metrics">
+    <section class="nexus-metric-card nexus-masculinity-card" aria-label="Masculinity keyword indicator">
+     <div class="nexus-metric-heading">MASCULINITY</div>
      ${masculinityCommunicationAssessment()}
-    </div>
-    ${masculinityCueMenu()}
+     <div class="nexus-metric-footer">${masculinityCueMenu()}</div>
+    </section>
+    <section class="nexus-metric-card nexus-sexual-card" aria-label="Sexual activity report summary">
+     <div class="nexus-metric-heading">SEXUAL ACTIVITY REPORT</div>
+     ${sexualActivityHeaderSummary()}
+     ${nexusSexualLanguagePanel()}
+    </section>
    </div>`:''}
   </div>
  </div>`;
@@ -423,11 +559,61 @@ function personalDetails(){const d=file().details||{};const fields=[['Preferred 
 
 const today=()=>new Date().toISOString().slice(0,10);
 
-function stats(){const entries=file().entries,now=Date.now(),ms=86400000;const inWindow=(days,offset=0)=>entries.filter(e=>{const t=new Date(e.date+'T12:00:00').getTime();return t<=now-offset*ms&&t>now-(days+offset)*ms});const recent=inWindow(windowDays),previous=inWindow(windowDays,windowDays),rate=recent.length*30/windowDays,prevRate=previous.length*30/windowDays;const level=rate<5?'LOW':rate<15?'MEDIUM':'HIGH',cls=level.toLowerCase(),change=prevRate?Math.round((rate-prevRate)/prevRate*100):null;const last=entries.map(e=>new Date(e.date+'T12:00:00').getTime()).filter(t=>t<=now).sort((a,b)=>b-a)[0];return {recent,previous,level,cls,change,rate,days:last?Math.floor((now-last)/ms):null,counts:{Text:recent.filter(e=>e.type==='Text').length,Email:recent.filter(e=>e.type==='Email').length,Call:recent.filter(e=>e.type==='Call').length}}}
+function stats(){
+ const entries=file().entries;
+ const now=Date.now(),ms=86400000;
+ const valid=entries.filter(e=>{const t=new Date(String(e.date||'')+'T12:00:00').getTime();return Number.isFinite(t)&&t<=now;});
+ const inWindow=(days,offset=0)=>valid.filter(e=>{const t=new Date(e.date+'T12:00:00').getTime();return t<=now-offset*ms&&t>now-(days+offset)*ms;});
+ const allTime=windowDays===0;
+ const recent=allTime?entries.slice():inWindow(windowDays);
+ const previous=allTime?[]:inWindow(windowDays,windowDays);
+ const earliest=valid.length?Math.min(...valid.map(e=>new Date(e.date+'T12:00:00').getTime())):now;
+ const elapsedDays=Math.max(1,Math.ceil((now-earliest)/ms)+1);
+ const rate=recent.length*30/(allTime?elapsedDays:windowDays);
+ const prevRate=allTime?0:previous.length*30/windowDays;
+ const level=rate<5?'LOW':rate<15?'MEDIUM':'HIGH',cls=level.toLowerCase();
+ const change=allTime?null:(prevRate?Math.round((rate-prevRate)/prevRate*100):null);
+ const last=valid.map(e=>new Date(e.date+'T12:00:00').getTime()).sort((a,b)=>b-a)[0];
+ return {recent,previous,level,cls,change,rate,days:last?Math.floor((now-last)/ms):null,allTime,elapsedDays,counts:{Text:recent.filter(e=>e.type==='Text').length,Email:recent.filter(e=>e.type==='Email').length,Call:recent.filter(e=>e.type==='Call').length}};
+}
 
-function activity(){const s=stats();return `<div class="panel"><div class="heading">COMMUNICATION ACTIVITY <span style="float:right;font-weight:normal">${windowDays} DAYS</span></div><div class="actions">${[7,30,90].map(d=>`<button class="btn small ${windowDays===d?'':'alt'}" data-window="${d}">${d} Days</button>`).join('')}</div><div class="indicator ${s.cls}"><span class="dot ${s.cls}"></span>${s.level}</div><p class="muted">${s.recent.length} entries in the last ${windowDays} days ${s.change===null?'· No prior-period baseline':`· ${s.change>=0?'+':''}${s.change}% compared with previous ${windowDays} days`}</p><div class="bar"><div class="fill" style="width:${Math.min(100,s.rate/15*100)}%;background:${s.cls==='low'?'#ff575e':s.cls==='medium'?'#ffd12b':'#3bd88b'}"></div></div><div class="stats" style="margin-top:15px"><div class="stat">💬<strong>${s.counts.Text}</strong><small>Texts</small></div><div class="stat">✉<strong>${s.counts.Email}</strong><small>Emails</small></div><div class="stat">☎<strong>${s.counts.Call}</strong><small>Calls</small></div></div><p class="muted">Days since last recorded communication: <strong>${s.days===null?'No entries':s.days}</strong></p><p class="muted">Thresholds per 30 days: LOW 0–4, MEDIUM 5–14, HIGH 15+. These measure recorded activity, not mental health or trustworthiness.</p></div>`}
+function nexusChronologicalEntries(){
+  // Dates may be identical. Within the same date, newest saved entry wins.
+  return file().entries.map((entry,index)=>({entry,index}))
+    .sort((a,b)=>{
+      const dateOrder=String(b.entry.date||'').localeCompare(String(a.entry.date||''));
+      return dateOrder || b.index-a.index;
+    }).map(x=>x.entry);
+}
 
-function communication(){const e=file().entries.slice().sort((a,b)=>b.date.localeCompare(a.date));return `<div class="cols"><div>${activity()}<div class="panel"><div class="heading">ADD COMMUNICATION ENTRY</div><form id="entryForm"><div class="field"><label>Communication Type</label><select name="type"><option value="Text">Text Message</option><option value="Email">Email</option><option value="Call">Phone Call</option></select></div>${field('Communication Date','date',today(),'date')}${area('Message or Call Summary','message')}<button class="btn" type="submit">SAVE ENTRY</button></form></div></div><div><div class="panel communication-history-panel"><div class="heading">COMMUNICATION HISTORY ↕ SCROLL TO VIEW</div><div class="communication-history-list" tabindex="0" role="region" aria-label="Scrollable communication history">${e.length?e.map(x=>`<div class="entry"><strong>${esc(x.type)} · ${esc(x.date)}</strong><p>${esc(x.message)}</p><button class="btn danger small" data-entry-delete="${esc(x.uid)}">Delete Entry</button></div>`).join(''):'<p class="muted">No communication entries yet.</p>'}</div></div></div></div>`}
+function activity(){
+  const s=stats();
+  const all=nexusChronologicalEntries();
+  const allCounts={
+    Text:all.filter(x=>String(x.type||'').toLowerCase()==='text').length,
+    Email:all.filter(x=>String(x.type||'').toLowerCase()==='email').length,
+    Call:all.filter(x=>String(x.type||'').toLowerCase()==='call').length
+  };
+  const preview=windowDays===0?all:all.slice(0,12);
+  return `<div class="panel communication-activity-panel">
+    <div class="heading">COMMUNICATION ACTIVITY <span style="float:right;font-weight:normal">${windowDays===0?'ALL TIME':windowDays+' DAYS'}</span></div>
+    <div class="actions">${[7,30,90,0].map(d=>`<button class="btn small ${windowDays===d?'':'alt'}" data-window="${d}">${d===0?'All Time':d+' Days'}</button>`).join('')}</div>
+    <div class="indicator ${s.cls}"><span class="dot ${s.cls}"></span>${s.level}</div>
+    <p class="muted">${s.allTime?`${s.recent.length} saved entries across the full recorded history (approximately ${s.elapsedDays} days). The activity level uses the average entries per 30 days.`:`${s.recent.length} entries in the selected ${windowDays}-day period ${s.change===null?'· No prior-period baseline':`· ${s.change>=0?'+':''}${s.change}% compared with the previous ${windowDays} days`}`}</p>
+    <div class="bar"><div class="fill" style="width:${Math.min(100,s.rate/15*100)}%;background:${s.cls==='low'?'#ff575e':s.cls==='medium'?'#ffd12b':'#3bd88b'}"></div></div>
+    <p class="muted" style="margin-top:12px">ALL SAVED COMMUNICATIONS — ${all.length} entries</p>
+    <div class="stats"><div class="stat">💬<strong>${allCounts.Text}</strong><small>Texts</small></div><div class="stat">✉<strong>${allCounts.Email}</strong><small>Emails</small></div><div class="stat">☎<strong>${allCounts.Call}</strong><small>Calls</small></div></div>
+    <h3 style="margin:18px 0 8px;font-size:14px;color:#a9d7ff">${windowDays===0?'ALL SAVED TEXTS, EMAILS & CALLS':'LATEST SAVED TEXTS, EMAILS & CALLS'}</h3>
+    <div class="communication-activity-feed" tabindex="0" role="region" aria-label="Latest saved communications">
+      ${preview.length?preview.map(x=>`<div class="entry"><strong>${esc(x.type||'Communication')} · ${esc(x.date||'Undated')}</strong><p>${esc(x.message||'(No message content)')}</p></div>`).join(''):'<p class="muted">No saved communications for this inmate.</p>'}
+    </div>
+    <p class="muted">Newest saved messages appear first. All Time displays the complete saved history in the scrollable list; other periods show the latest 12 entries. Totals always include all saved entries.</p>
+    <p class="muted">Days since last recorded communication: <strong>${s.days===null?'No entries':s.days}</strong></p>
+    <p class="muted">Frequency levels describe recorded activity only, not intent or psychological traits.</p>
+  </div>`;
+}
+
+function communication(){const e=nexusChronologicalEntries();return `<div class="cols"><div>${activity()}<div class="panel"><div class="heading">ADD COMMUNICATION ENTRY</div><form id="entryForm"><div class="field"><label>Communication Type</label><select name="type"><option value="Text">Text Message</option><option value="Email">Email</option><option value="Call">Phone Call</option></select></div>${field('Communication Date','date',today(),'date')}${area('Message or Call Summary','message')}<button class="btn" type="submit">SAVE ENTRY</button></form></div></div><div><div class="panel communication-history-panel"><div class="heading">COMMUNICATION HISTORY ↕ SCROLL TO VIEW</div><div class="communication-history-list" tabindex="0" role="region" aria-label="Scrollable communication history">${e.length?e.map(x=>`<div class="entry"><strong>${esc(x.type)} · ${esc(x.date)}</strong><p>${esc(x.message)}</p><button class="btn danger small" data-entry-delete="${esc(x.uid)}">Delete Entry</button></div>`).join(''):'<p class="muted">No communication entries yet.</p>'}</div></div></div></div>`}
 
 function communicationCenter(){return `<div class="panel"><div class="heading">COMMUNICATION & ACTIVITY CENTER</div><p class="muted">All reports are visible below. Saved entries remain separate for each inmate.</p></div><div class="report-static"><div class="report-static-title">COMMUNICATION ACTIVITY — TEXTS, EMAILS & CALLS</div><div class="report-static-body">${communication()}</div></div><div class="report-static"><div class="report-static-title">SEXUAL ACTIVITY REPORT</div><div class="report-static-body">${sexualPage()}</div></div><div class="report-static"><div class="report-static-title">MALE ACTIVITY REPORT</div><div class="report-static-body">${malePage()}</div></div>`}
 
@@ -576,7 +762,7 @@ $('content').addEventListener('click',e=>{
  }
 },true);
 
-function advisor(){const s=stats(),declining=s.change!==null&&s.change<0;return `<div class="cols"><div>${activity()}<div class="panel"><div class="heading">COMMUNICATION REVIEW</div><p class="muted">The AI Advisor is a preview. No messages are sent to OpenAI, and this site does not perform a psychological evaluation.</p><button class="btn purple" id="analyze">✦ ANALYZE COMMUNICATION</button></div></div><div><div class="panel"><div class="heading">NEXUS AI COMMUNICATION ADVISOR</div>${analysisVisible?`<h3 class="${s.cls}">Current Activity: ${s.level}</h3><p>${s.recent.length} entries recorded in the last ${windowDays} days.</p>${declining?'<div class="alertbox">↘ Trend: Declining compared with the previous observation period.</div>':`<div class="notice">Trend: ${s.change===null?'Insufficient previous-period data':s.change>0?'Increasing':'Stable'}.</div>`}<h3 style="color:#54aaff">Suggested Next Steps</h3><p>Review the dates of recent messages and stated communication preferences. If communication has slowed, consider a friendly, low-pressure check-in. Avoid assuming the reason for a change in activity.</p><h3 style="color:#54aaff">Example Message</h3><p>“Hey, just checking in. Hope everything is going well. No pressure to reply right away.”</p><p class="muted">Activity counts cannot determine someone's motives, sincerity, emotions, or psychological condition. A qualified professional is needed for a clinical evaluation.</p>`:'<p class="muted">Select Analyze Communication to display a sample rule-based summary of the saved entry counts.</p>'}</div></div></div>`}
+function advisor(){const s=stats(),declining=s.change!==null&&s.change<0;return `<div class="cols"><div>${activity()}<div class="panel"><div class="heading">COMMUNICATION REVIEW</div><p class="muted">The AI Advisor is a preview. No messages are sent to OpenAI, and this site does not perform a psychological evaluation.</p><button class="btn purple" id="analyze">✦ ANALYZE COMMUNICATION</button></div></div><div><div class="panel"><div class="heading">NEXUS AI COMMUNICATION ADVISOR</div>${analysisVisible?`<h3 class="${s.cls}">Current Activity: ${s.level}</h3><p>${s.recent.length} entries recorded ${windowDays===0?'across all saved history':'in the last '+windowDays+' days'}.</p>${declining?'<div class="alertbox">↘ Trend: Declining compared with the previous observation period.</div>':`<div class="notice">Trend: ${s.change===null?'Insufficient previous-period data':s.change>0?'Increasing':'Stable'}.</div>`}<h3 style="color:#54aaff">Suggested Next Steps</h3><p>Review the dates of recent messages and stated communication preferences. If communication has slowed, consider a friendly, low-pressure check-in. Avoid assuming the reason for a change in activity.</p><h3 style="color:#54aaff">Example Message</h3><p>“Hey, just checking in. Hope everything is going well. No pressure to reply right away.”</p><p class="muted">Activity counts cannot determine someone's motives, sincerity, emotions, or psychological condition. A qualified professional is needed for a clinical evaluation.</p>`:'<p class="muted">Select Analyze Communication to display a sample rule-based summary of the saved entry counts.</p>'}</div></div></div>`}
 
 
 const REASONS_KEY='nexus_sexual_reasons_v1';
