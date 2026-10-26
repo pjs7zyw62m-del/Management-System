@@ -261,6 +261,162 @@
   .nexus-profile-metrics>.nexus-combined-panel{grid-column:auto}
 }
 
+
+/* Compact score tiles — tighten the top and bottom borders around the indicators. */
+.nexus-profile-header .nexus-profile-metrics {
+  margin-top: 10px;
+  gap: 9px;
+  align-items: stretch;
+}
+.nexus-profile-metrics > .nexus-metric-card,
+.nexus-profile-metrics > .nexus-combined-panel {
+  min-height: 96px;
+  height: auto;
+  padding: 9px 10px;
+  justify-content: center;
+  gap: 5px;
+}
+.nexus-profile-metrics .nexus-metric-heading,
+.nexus-profile-metrics .nexus-sexual-language-title,
+.nexus-profile-metrics .nexus-combined-title {
+  margin: 0 0 5px;
+  line-height: 1.15;
+  font-size: 11px;
+}
+.nexus-profile-metrics .five-segment,
+.nexus-profile-metrics .nexus-masculinity-card .nexus-indicator-bands .five-segment,
+.nexus-profile-metrics .nexus-sexual-five-level .five-segment,
+.nexus-profile-metrics .nexus-combined-five .five-segment {
+  padding: 7px 1px;
+  font-size: 12px;
+  line-height: 1.1;
+}
+.nexus-profile-metrics .nexus-combined-panel .nexus-combined-number {
+  font-size: 23px;
+  line-height: 1;
+  margin: 0 0 3px;
+}
+@media (max-width:740px){
+  .nexus-profile-metrics > .nexus-combined-panel{min-height:96px}
+}
+
+
+/* Profile metrics: two compact indicators stacked left, expandable overall panel right. */
+.nexus-profile-header .nexus-profile-metrics{
+ display:grid;
+ grid-template-columns:minmax(0,1fr) minmax(0,1.45fr);
+ grid-template-rows:auto auto;
+ gap:10px;
+ align-items:stretch;
+ max-width:980px;
+ width:100%;
+ margin-top:12px;
+}
+.nexus-profile-metrics > .nexus-masculinity-card{
+ grid-column:1;
+ grid-row:1;
+}
+.nexus-profile-metrics > .nexus-sexual-card{
+ grid-column:1;
+ grid-row:2;
+}
+.nexus-profile-metrics > .nexus-combined-panel{
+ grid-column:2;
+ grid-row:1 / span 2;
+ min-height:0;
+ height:100%;
+ padding:20px 22px;
+ justify-content:flex-start;
+ gap:16px;
+ border:1px solid #53799e;
+ background:#10243b;
+}
+.nexus-profile-metrics > .nexus-metric-card{
+ min-height:78px;
+ height:auto;
+ padding:11px 13px;
+ gap:5px;
+ justify-content:center;
+}
+.nexus-profile-metrics .nexus-combined-title{
+ font-size:14px;
+ margin:0 0 12px;
+}
+.nexus-profile-metrics .nexus-combined-number{
+ font-size:clamp(28px,3vw,43px);
+ margin:0 0 17px;
+ font-weight:900;
+}
+.nexus-profile-metrics .nexus-combined-five .five-segment{
+ padding:14px 2px;
+ font-size:17px;
+}
+@media(max-width:660px){
+ .nexus-profile-header .nexus-profile-metrics{
+  grid-template-columns:1fr;
+  grid-template-rows:auto;
+ }
+ .nexus-profile-metrics > .nexus-masculinity-card,
+ .nexus-profile-metrics > .nexus-sexual-card,
+ .nexus-profile-metrics > .nexus-combined-panel{
+  grid-column:1;
+  grid-row:auto;
+ }
+ .nexus-profile-metrics > .nexus-combined-panel{min-height:175px;}
+}
+
+
+/* Credit-style communication summary: compact indicators left, expandable review right. */
+.nexus-profile-metrics > .nexus-credit-panel{
+  display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;
+  gap:12px;min-height:258px;padding:18px 20px;background:#0e2236;
+}
+.nexus-credit-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.nexus-profile-metrics .nexus-credit-top .nexus-combined-title{margin:0;font-size:13px}
+.nexus-credit-type{font-size:10px;font-weight:700;letter-spacing:.08em;color:#86bff3}
+.nexus-credit-level{font-weight:900;font-size:clamp(19px,2.2vw,31px);line-height:1.1;letter-spacing:.015em;color:#f1f7ff;overflow-wrap:anywhere}
+.nexus-credit-scale{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin-top:3px}
+.nexus-credit-tick{height:18px;border-radius:5px;opacity:.67}
+.nexus-credit-tick:nth-child(1){background:#dc3545}.nexus-credit-tick:nth-child(2){background:#ef8a39}.nexus-credit-tick:nth-child(3){background:#eab308}.nexus-credit-tick:nth-child(4){background:#2db7b0}.nexus-credit-tick:nth-child(5){background:#36c682}
+.nexus-credit-tick.active{opacity:1;box-shadow:0 0 0 2px #f1f7ff;transform:scaleY(1.25)}
+.nexus-credit-labels{display:flex;justify-content:space-between;gap:8px;color:#99b5d2;font-size:10px}
+.nexus-credit-analysis{display:grid;gap:8px;margin-top:2px}
+.nexus-credit-finding{display:grid;grid-template-columns:120px 1fr;gap:10px;padding:8px 10px;border:1px solid #304b65;border-radius:7px;background:#0a1828;font-size:12px;line-height:1.35}
+.nexus-credit-finding strong{color:#b9d9f7}.nexus-credit-finding span{color:#e4edf9;overflow-wrap:anywhere}
+.nexus-credit-note{font-size:10px;line-height:1.4;color:#8fa6bc;margin:0}
+@media(max-width:980px){.nexus-credit-finding{grid-template-columns:1fr;gap:3px}}
+@media(max-width:660px){.nexus-profile-metrics > .nexus-credit-panel{min-height:0}}
+
+/* Semicircular dominance-language frequency gauge */
+.nexus-half-ring{width:min(100%,310px);margin:0 auto;position:relative;text-align:center}
+.nexus-half-ring svg{display:block;width:100%;height:auto;overflow:visible}
+.nexus-half-ring .gauge-track{fill:none;stroke:#34465d;stroke-width:15;stroke-linecap:round}
+.nexus-half-ring .gauge-fill{fill:none;stroke-width:15;stroke-linecap:round;transition:stroke-dasharray .3s ease}
+.nexus-gauge-caption{margin:-5px 0 0;font-size:11px;color:#b8cde2;font-weight:700}
+.nexus-credit-panel .nexus-credit-level{text-align:center}
+@media(max-width:660px){.nexus-half-ring{width:min(100%,260px)}}
+
+
+
+/* Overall Man Score: five numbered levels below the half-ring, plus independent mini-meters. */
+.nexus-overall-five{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:8px 0 3px}
+.nexus-overall-five .five-segment{padding:9px 3px;border-radius:6px;font-size:15px;font-weight:800;text-align:center}
+.nexus-overall-five .five-segment.selected{outline:2px solid #fff;outline-offset:1px}
+.nexus-mini-meters{display:grid;gap:12px;margin:6px 0}
+.nexus-mini-header{display:flex;justify-content:space-between;gap:8px;align-items:baseline;color:#d9e9fa;font-size:12px;font-weight:700}
+.nexus-mini-header small{color:#a4bdd6;font-size:11px;font-weight:600;white-space:nowrap}
+.nexus-mini-track{height:10px;background:#27394f;border-radius:20px;overflow:hidden;margin-top:6px}
+.nexus-mini-fill{height:100%;border-radius:20px;transition:width .25s ease}
+.nexus-mini-fill.dominance{background:linear-gradient(90deg,#eab308,#dc2626)}
+.nexus-mini-fill.respect{background:linear-gradient(90deg,#2563eb,#2dd4bf)}
+@media(max-width:500px){.nexus-mini-header{font-size:11px}.nexus-overall-five .five-segment{padding:8px 2px;font-size:13px}}
+/* Compact contextual coaching under the mini indicators. */
+.nexus-ai-opinion{border:1px solid #36516c;background:#101f31;border-radius:10px;padding:12px 14px;margin-top:12px}
+.nexus-ai-opinion h4{margin:0 0 8px;color:#e5f0fc;font-size:13px;letter-spacing:.04em}
+.nexus-ai-opinion p{margin:6px 0;font-size:12px;line-height:1.55;color:#c8d9ee}
+.nexus-ai-opinion .nexus-ai-note{font-size:11px;color:#9fb5cc;margin-top:9px}
+
+
 </style></head><body>
 
 <div id="gateway" class="gate"><form id="gateForm" class="panel"><div class="logo">NE<span>X</span>US</div><h2>Security Gateway</h2><p class="muted">Demonstration access only</p><div class="field"><label>Security Key</label><input required autocomplete="off"></div><div class="field"><label>Access Code</label><input required type="password"></div><button class="btn" type="submit">CONTINUE</button></form></div>
@@ -724,6 +880,8 @@ const NEXUS_EXTRA_CUES=[
  {label:'Pressuring / intimidation',points:3,terms:['or else','you better watch it','do not test me','dont test me','i dare you','i will expose you','ill expose you','i will ruin you','ill ruin you','watch what happens','youll be sorry','you are going to pay','i will find you','ill find you']},
  {label:'Belittling / humiliation',points:3,terms:['nobody cares about you','youre worthless','you are worthless','you are nothing','youre nothing','you will never be enough','no one will believe you','stop being so sensitive','you are overreacting','youre overreacting','shut up and listen','cry harder','stay mad','cope harder']},
  {label:'Online hostility / shorthand',points:1,terms:['kys','unalive yourself','ratio','l take','l bozo','touch grass','sit down','shut it','get lost','get wrecked','skill issue','get bent']},
+ {label:'Emotional dismissal / detachment',points:2,terms:['i do not care how you feel','i dont care how you feel','your feelings do not matter','your feelings dont matter','i have no empathy for you','i dont care if you cry','i do not care if you cry','stop having feelings','your pain is not my problem','i feel nothing for you','i will never apologize','i dont owe you empathy','your emotions are irrelevant']},
+ {label:'Aggressive demands',points:3,terms:['do it now or else','you will obey me','you have no choice','you dont get a say','you do not get a say','you better listen to me','you will do what i say','i demand obedience']},
  {label:'Respectful / supportive language',points:-1,terms:['i hear you','i understand','i respect that','i respect you','take your time','no pressure','your choice','your decision','you decide','i appreciate you','i was wrong','i apologize','you deserve respect','i care about you','i wont pressure you','i will not pressure you','thank you for telling me','i respect your boundaries']}
 ];
 function nexusNormalize(str){
@@ -796,20 +954,85 @@ function nexusMasculinityOverallScore(){
 function nexusCombinedCommunicationScore(){
  const m=nexusCueScore();
  const sexual=nexusSexualLanguageScore();
- const hasMessages=m.entries>0;
- // A descriptive index from two keyword bands; it does not assess a person's masculinity or libido.
- const mBand=hasMessages?Math.max(1,m.level):0;
- const sexualBand=hasMessages?(sexual.total===0?1:sexual.total<5?2:sexual.total<10?3:sexual.total<20?4:5):0;
- const level=hasMessages?Math.max(1,Math.min(5,Math.round((mBand+sexualBand)/2))):0;
- const score=hasMessages?Math.round((((mBand-1)/4+(sexualBand-1)/4)/2)*100):null;
- return `<section class="nexus-combined-panel" aria-label="Overall Man Score, calculated from communication keywords">
-  <div>
-   <div class="nexus-combined-title">OVERALL MAN SCORE</div>
-   <div class="nexus-combined-number">${score===null?'—':score+'/100'}</div>
-  </div>
-  <div class="nexus-combined-five" role="img" aria-label="${hasMessages?'Combined language level '+level+' of 5':'No score yet'}">
-   ${[1,2,3,4,5].map(i=>`<span class="five-segment ${level===i?'selected':''}">${i}</span>`).join('')}
-  </div>
+ const messages=m.entries;
+ // Custom dominance-language index: observed phrases only, not a measure of manhood,
+ // competence, healthy relationships, sexual drive, or actual sexual activity.
+ const respect=m.hits.filter(h=>h.points<0);
+ // Higher index = more matched dominance, coercion, intimidation and dismissal;
+ // courtesy/boundary acknowledgments are shown independently and never penalized.
+ // Ordinary swearing and ambiguous online slang remain visible in phrase details,
+ // but are excluded from the main dominance/pressure gauge.
+ const dominance=m.hits.filter(h=>h.points>0 && !/^(Profanity \/ swearing|Online hostility \/ shorthand)$/i.test(h.rule));
+ const pressure=sexual.results.filter(h=>/pressure|boundary concerns/i.test(h.label));
+ const tracked=new Map();
+ for(const h of dominance)tracked.set(h.rule,(tracked.get(h.rule)||0)+1);
+ if(pressure.length)tracked.set('Sexual pressure / boundary concerns',pressure.length);
+ const ranked=[...tracked].sort((a,b)=>b[1]-a[1]);
+ const respectTypes=[...new Set(respect.map(h=>h.rule))];
+ const rate=messages?Math.max(0,Math.min(1,(dominance.length+pressure.length)/Math.max(messages,1)/2.5)):null;
+ const band=rate===null?0:rate<0.1?1:rate<0.25?2:rate<0.45?3:rate<0.7?4:5;
+ const labels=['','VERY LOW','LOW','MODERATE','HIGH','VERY HIGH'];
+ const label=messages<5?'INSUFFICIENT DATA':labels[band];
+ const focusText=ranked.length?ranked.slice(0,3).map(([name,n])=>`${name} (${n})`).join(' · '):'No configured dominance, aggression, dismissal, or sexual-pressure phrases detected';
+ const reviewText=respectTypes.length?respectTypes.join(' · '):'No explicit respect or boundary-acknowledgment phrases detected';
+ const sexualText=pressure.length?`${pressure.length} sexual-pressure expression${pressure.length===1?'':'s'} flagged for contextual review`:'No sexual-pressure phrases detected';
+ // Mini-meters show rates of matched expressions per saved entry, capped at 100%.
+ // They are descriptive visualizations of keyword matches, not personality assessments.
+ const dominanceCount=dominance.length+pressure.length;
+ const respectCount=respect.length;
+ const dominancePct=messages?Math.min(100,Math.round(dominanceCount/messages*100)):0;
+ const respectPct=messages?Math.min(100,Math.round(respectCount/messages*100)):0;
+ // Rule-based analysis of dominance and harmful communication patterns; not a live AI service.
+ const opinion=messages<5
+   ? [
+       'Not enough saved communication entries to identify recurring dominance patterns. Add at least five dated entries.',
+       'Watch for repeated demands, humiliation, intimidation, possessiveness, and attempts to override stated boundaries.'
+     ]
+   : [
+       dominanceCount>messages
+         ? 'Dominance-focused wording appears frequently. Review repeated demands, power plays, belittling remarks, and threats in their original context.'
+         : 'Dominance-focused wording is less frequent in the saved entries. Watch for patterns of possessiveness, imposed rules, or repeated ultimatums.',
+       pressure.length
+         ? 'Sexual pressure was flagged. Review whether the messages push past a refusal, demand access, or frame compliance as an obligation.'
+         : 'No configured sexual-pressure phrases were matched. This does not rule out pressure expressed indirectly.',
+       respectCount===0
+         ? 'Few explicit acknowledgments of boundaries were detected. Review whether the speaker allows disagreement and accepts “no.”'
+         : 'Respect and boundary acknowledgments were also detected. Compare these with controlling language; an isolated phrase cannot establish behavior.'
+     ];
+ return `<section class="nexus-combined-panel nexus-credit-panel" aria-label="Overall Man Score language pattern overview">
+   <div class="nexus-credit-top"><span class="nexus-combined-title">OVERALL MAN SCORE</span><span class="nexus-credit-type">DOMINANCE & PRESSURE LANGUAGE INDEX</span></div>
+   <div class="nexus-credit-level">${label}</div>
+   <div class="nexus-half-ring" role="img" aria-label="${messages<5?'Insufficient message data for gauge':'Dominance, aggression, dismissal, and sexual-pressure language indicator: '+label}">
+     <svg viewBox="0 0 200 112" aria-hidden="true" focusable="false">
+       <path class="gauge-track" pathLength="100" d="M 18 95 A 82 82 0 0 1 182 95"/>
+       <path class="gauge-fill" pathLength="100" d="M 18 95 A 82 82 0 0 1 182 95" stroke="${messages<5?'#70839a':(['','#64748b','#7c3aed','#2563eb','#eab308','#dc2626'][band])}" stroke-dasharray="${messages<5?0:Math.round(rate*100)} 100"/>
+     </svg>
+     <div class="nexus-gauge-caption">${messages<5?'MORE MESSAGES NEEDED':label+' · LEVEL '+band+' / 5'}</div>
+   </div>
+   <div class="nexus-overall-five" role="img" aria-label="${messages<5?'Not enough saved messages to determine a level':'Overall keyword level '+band+' of 5'}">
+     ${[1,2,3,4,5].map(i=>`<span class="five-segment ${messages>=5&&band===i?'selected':''}">${i}</span>`).join('')}
+   </div>
+   <div class="nexus-mini-meters" aria-label="Communication pattern mini indicators">
+     <div>
+       <div class="nexus-mini-header"><span>DOMINANCE / PRESSURE</span><small>${dominanceCount} matches · ${dominancePct}%</small></div>
+       <div class="nexus-mini-track" role="progressbar" aria-label="Dominance and pressure expression match rate" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${dominancePct}"><div class="nexus-mini-fill dominance" style="width:${dominancePct}%"></div></div>
+     </div>
+     <div>
+       <div class="nexus-mini-header"><span>RESPECT / BOUNDARIES</span><small>${respectCount} matches · ${respectPct}%</small></div>
+       <div class="nexus-mini-track" role="progressbar" aria-label="Respectful and boundary-acknowledging expression match rate" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${respectPct}"><div class="nexus-mini-fill respect" style="width:${respectPct}%"></div></div>
+     </div>
+   </div>
+   <div class="nexus-ai-opinion" aria-label="Automated communication suggestions">
+     <h4>AI OPINION · DOMINANCE & TOXICITY REVIEW</h4>
+     ${opinion.map(line=>`<p>• ${esc(line)}</p>`).join('')}
+     <p class="nexus-ai-note">Automated keyword-based observations, not a clinical diagnosis or proof of behavior. Review original messages before drawing conclusions.</p>
+   </div>
+   <div class="nexus-credit-analysis">
+     <div class="nexus-credit-finding"><strong>Dominance / pressure indicators</strong><span>${esc(focusText)}</span></div>
+     <div class="nexus-credit-finding"><strong>Respect / boundary indicators</strong><span>${esc(reviewText)}</span></div>
+     <div class="nexus-credit-finding"><strong>Sexual communication</strong><span>${esc(sexualText)}</span></div>
+   </div>
+   <p class="nexus-credit-note">${messages} saved communication ${messages===1?'entry':'entries'} reviewed. Higher levels indicate more matched concerning language, not greater manhood. Respectful language is reported separately without being treated as a negative score. This does not measure actual sexual drive or personal worth. Quotes and slang can generate misleading matches.</p>
  </section>`;
 }
 
