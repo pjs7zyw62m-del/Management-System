@@ -118,6 +118,21 @@
 .nexus-cue-popup .muted{line-height:1.5;font-size:11px;margin:12px 0 0}
 @media(max-width:650px){.nexus-cue-popup{left:auto;right:0}.nexus-assessment-line{gap:8px}}
 
+
+/* Comprehensive communication review: floating, internal scrolling, no layout shift */
+.nexus-cue-popup{width:min(430px,calc(100vw - 42px));max-height:min(75vh,620px);overscroll-behavior:contain}
+.nexus-cue-popup h4{margin:16px 0 9px;font-size:12px;color:#a9cfff}
+.nexus-cue-help{font-size:11px;line-height:1.55;color:#acbfd5;margin:10px 0}
+.nexus-match-list{max-height:200px;overflow-y:auto;border:1px solid #2c4057;border-radius:7px;padding:7px}
+.nexus-match{padding:9px 3px;border-bottom:1px solid #31445b;font-size:11px;overflow-wrap:anywhere}
+.nexus-match:last-child{border:0}
+.nexus-match small{display:block;color:#a3b8cf;margin:4px 0}
+.nexus-match button{margin-top:5px}
+.nexus-custom-form{display:grid;gap:8px}
+.nexus-custom-form input,.nexus-custom-form select{padding:8px;font-size:12px}
+.nexus-custom-form button{justify-self:start}
+.nexus-cue-custom{max-height:150px;overflow-y:auto}
+
 </style></head><body>
 
 <div id="gateway" class="gate"><form id="gateForm" class="panel"><div class="logo">NE<span>X</span>US</div><h2>Security Gateway</h2><p class="muted">Demonstration access only</p><div class="field"><label>Security Key</label><input required autocomplete="off"></div><div class="field"><label>Access Code</label><input required type="password"></div><button class="btn" type="submit">CONTINUE</button></form></div>
@@ -418,55 +433,148 @@ function communicationCenter(){return `<div class="panel"><div class="heading">C
 
 function sexualLevel(){const entries=financeFile().sexualEntries||[],now=Date.now();const recent=entries.filter(e=>{const d=new Date(e.date+'T12:00:00').getTime();return Number.isFinite(d)&&d<=now&&d>now-30*86400000});const n=recent.length;return {n,level:n<5?'LOW':n<15?'MEDIUM':'HIGH',cls:n<5?'low':n<15?'medium':'high'}}
 
-/* Transparent, limited keyword flags. The values describe matched wording,
-   never masculinity, intent, identity, dangerousness or personality. */
+/* Transparent keyword-based message flags. Matches are prompts for review,
+   not assessments of masculinity, intent, character or danger. */
 const NEXUS_CUE_RULES=[
- {label:'Toughness',terms:[/\bnever show weakness\b/gi,/\bman up\b/gi,/\bno weakness\b/gi]},
- {label:'Anti-femininity',terms:[/\bdo not act like a girl\b/gi,/\btoo feminine\b/gi,/\bacting like a girl\b/gi]},
- {label:'Power and dominance',terms:[/\bi am in charge\b/gi,/\bknow your place\b/gi,/\bdo as i say\b/gi]},
- {label:'Coercive control',terms:[/\byou are not allowed to\b/gi,/\bi decide who you see\b/gi,/\byou need my permission\b/gi]},
- {label:'Power struggle',terms:[/\byou will not win\b/gi,/\bi always have the last word\b/gi,/\bi have to win\b/gi]},
- {label:'Emotional double standard',terms:[/\bi can but you cannot\b/gi,/\bonly i can be angry\b/gi,/\bmy feelings matter more\b/gi]},
- {label:'Confusing dominance with leadership',terms:[/\ba leader must control\b/gi,/\bleadership means obedience\b/gi,/\bfollow without question\b/gi]},
- {label:'Fragile self-worth',terms:[/\byou make me look weak\b/gi,/\bi cannot handle rejection\b/gi,/\byou embarrassed me\b/gi]}
+ {label:'Toughness',points:2,terms:[/\bnever show weakness\b/gi,/\bman up\b/gi,/\bno weakness\b/gi]},
+ {label:'Anti-femininity',points:2,terms:[/\bdo not act like a girl\b/gi,/\btoo feminine\b/gi,/\bacting like a girl\b/gi]},
+ {label:'Power and dominance',points:2,terms:[/\bi am in charge\b/gi,/\bknow your place\b/gi,/\bdo as i say\b/gi]},
+ {label:'Coercive control',points:2,terms:[/\byou are not allowed to\b/gi,/\bi decide who you see\b/gi,/\byou need my permission\b/gi]},
+ {label:'Power struggle',points:2,terms:[/\byou will not win\b/gi,/\bi always have the last word\b/gi,/\bi have to win\b/gi]},
+ {label:'Emotional double standard',points:2,terms:[/\bi can but you cannot\b/gi,/\bonly i can be angry\b/gi,/\bmy feelings matter more\b/gi]},
+ {label:'Confusing dominance with leadership',points:2,terms:[/\ba leader must control\b/gi,/\bleadership means obedience\b/gi,/\bfollow without question\b/gi]},
+ {label:'Fragile self-worth',points:2,terms:[/\byou make me look weak\b/gi,/\bi cannot handle rejection\b/gi,/\byou embarrassed me\b/gi]},
+ {label:'Profanity / swearing',points:1,terms:[/\bfuck(?:ing|ed|er|s)?\b/gi,/\bshit(?:ty|s)?\b/gi,/\b(?:damn|hell|crap|bullshit|piss(?:ed|ing)?|ass|arse)\b/gi,/\b(?:wtf|stfu|fck|fuk)\b/gi]},
+ {label:'Direct insults / name-calling',points:2,terms:[/\b(?:idiot|moron|stupid|dumbass|jackass|asshole|jerk|loser|pathetic|trash|scumbag|creep)\b/gi,/\b(?:you(?:'re| are) (?:stupid|useless|an idiot|worthless|pathetic|a loser))\b/gi]},
+ {label:'Belittling / humiliation',points:3,terms:[/\b(?:you(?:'re| are) nothing|nobody wants you|you mean nothing|you are worthless|you disgust me|you should be ashamed|shut your mouth|worthless piece of)\b/gi]},
+ {label:'Gender-based derogatory language',points:3,terms:[/\b(?:bitch(?:es)?|slut(?:s)?|whore(?:s)?|cunt(?:s)?|sissy|pussy|fag(?:got|s)?|dyke(?:s)?)\b/gi,/\b(?:women are inferior|men are superior|girls are useless)\b/gi]},
+ {label:'Identity-targeted derogatory language',points:3,terms:[/\b(?:go back to your country|your kind (?:doesn\x27t|does not) belong|people like you are inferior|you people are disgusting)\b/gi]},
+ {label:'Threats / intimidation',points:4,terms:[/\b(?:i(?:'ll| will) (?:hurt|hit|kill|beat|destroy) you|you(?:'ll| will) regret this|watch your back|i know where you live|i(?:'m| am) coming for you|do it or else|i(?:'ll| will) make you pay)\b/gi]}
 ];
-const NEXUS_RESPECT_TERMS=[/\bthank you\b/gi,/\bi appreciate\b/gi,/\bi respect your decision\b/gi,/\byou can say no\b/gi,/\bi am sorry\b/gi,/\bi understand your boundary\b/gi];
+const NEXUS_RESPECT_TERMS=[/\bthank you\b/gi,/\bi appreciate\b/gi,/\bi respect your decision\b/gi,/\byou can say no\b/gi,/\bi am sorry\b/gi,/\bi understand your boundary\b/gi,/\bplease\b/gi,/\bi respect your boundaries\b/gi];
+/* Extended reviewable phrase matching; local-only; no external AI or sync. */
+const NEXUS_CUSTOM_CUES='nexus_custom_cues_v3';
+const NEXUS_EXTRA_CUES=[
+ {label:'Profanity / swearing',points:1,terms:['wtf','wtaf','tf','stfu','gtfo','idgaf','dgaf','fml','ffs','fck','fuk','fuq','fuxk','f*ck','sh*t','sh1t','bullsh*t','bs','mf','mfer','motherfucker','motherfucking','fuck off','fuck you','pissed off','screw you','what the hell','what the fuck','holy shit']},
+ {label:'Insults / put-downs',points:2,terms:['clown','douche','douchebag','tool','bozo','lame ass','dumb af','dumbass','fuckface','dipshit','shithead','trash human','piece of shit','pos','you suck','you are trash','ur trash','youre trash','cringe loser','goofy ass','delulu','mid','NPC','pick me']},
+ {label:'Controlling / possessive language',points:2,terms:['you belong to me','i own you','you cannot leave','you cant leave','you better obey','dont talk to them','you have to ask me','send me your location','show me your phone','i control you','i make the rules','my way or the highway','you do what i tell you','you are mine']},
+ {label:'Pressuring / intimidation',points:3,terms:['or else','you better watch it','do not test me','dont test me','i dare you','i will expose you','ill expose you','i will ruin you','ill ruin you','watch what happens','youll be sorry','you are going to pay','i will find you','ill find you']},
+ {label:'Belittling / humiliation',points:3,terms:['nobody cares about you','youre worthless','you are worthless','you are nothing','youre nothing','you will never be enough','no one will believe you','stop being so sensitive','you are overreacting','youre overreacting','shut up and listen','cry harder','stay mad','cope harder']},
+ {label:'Online hostility / shorthand',points:1,terms:['kys','unalive yourself','ratio','l take','l bozo','touch grass','sit down','shut it','get lost','get wrecked','skill issue','get bent']},
+ {label:'Respectful / supportive language',points:-1,terms:['i hear you','i understand','i respect that','i respect you','take your time','no pressure','your choice','your decision','you decide','i appreciate you','i was wrong','i apologize','you deserve respect','i care about you','i wont pressure you','i will not pressure you','thank you for telling me','i respect your boundaries']}
+];
+function nexusNormalize(str){
+ return String(str||'').normalize('NFKC').toLowerCase()
+   .replace(/[’‘]/g,"'")
+   .replace(/[\u200b-\u200d\ufeff]/g,'')
+   .replace(/[@]/g,'a').replace(/0/g,'o').replace(/3/g,'e')
+   .replace(/[$]/g,'s').replace(/[!1]/g,'i')
+   .replace(/([a-z])\1{3,}/g,'$1$1')
+   .replace(/[^a-z0-9'*\s]+/g,' ')
+   .replace(/\s+/g,' ').trim();
+}
+function nexusCustomTerms(){
+ const v=read(NEXUS_CUSTOM_CUES+'_'+currentUserId,[]);
+ return Array.isArray(v)?v.filter(x=>x&&typeof x.term==='string'&&x.term.length<=80&&Number.isInteger(x.points)&&Math.abs(x.points)<=5).slice(0,100):[];
+}
+function nexusAllRules(){
+ const old=NEXUS_CUE_RULES.map((r,i)=>({key:'base'+i,label:r.label,points:r.points,regex:r.terms}));
+ const extra=NEXUS_EXTRA_CUES.map((r,i)=>({key:'extra'+i,label:r.label,points:r.points,terms:r.terms}));
+ const custom=nexusCustomTerms().map(x=>({key:'custom'+x.id,label:x.category||'Custom phrases',points:x.points,terms:[x.term],custom:true}));
+ return [...old,...extra,...custom,{key:'respectOriginal',label:'Respectful / considerate language',points:-1,regex:NEXUS_RESPECT_TERMS}];
+}
+function nexusPhraseCount(text,terms){
+ const txt=nexusNormalize(text),matches=[];
+ for(const term of terms){
+  const phrase=nexusNormalize(term);
+  if(!phrase)continue;
+  const escaped=phrase.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  const re=new RegExp('(?:^|[^a-z0-9])('+escaped+')(?![a-z0-9])','gi');
+  let m;
+  while((m=re.exec(txt))!==null){matches.push(m[1]);if(matches.length>=8)break;}
+ }
+ return matches;
+}
 function nexusCueScore(){
  const entries=(file().entries||[]).filter(e=>String(e.message||'').trim());
- const counts=NEXUS_CUE_RULES.map(()=>0);
- let positive=0,negative=0;
- for(const e of entries){
-  const txt=String(e.message||'');
-  NEXUS_CUE_RULES.forEach((rule,i)=>{
-   const hits=Math.min(2,rule.terms.reduce((sum,re)=>sum+(txt.match(re)||[]).length,0));
-   counts[i]+=hits;positive+=hits*2;
+ const rules=nexusAllRules(),ignored=file().cueIgnored||{};
+ const counts=rules.map(()=>0),hits=[],scores=rules.map(()=>0);
+ for(const entry of entries){
+  const txt=String(entry.message||'');
+  rules.forEach((rule,i)=>{
+   const matches=[];
+   for(const re of rule.regex||[]){
+    const found=txt.match(re)||[];
+    matches.push(...found.slice(0,3));
+   }
+   if(rule.terms)matches.push(...nexusPhraseCount(txt,rule.terms));
+   const seen=[...new Set(matches.map(x=>String(x).toLowerCase()))].slice(0,2);
+   for(const phrase of seen){
+    const key=String(entry.uid||entry.date)+':'+rule.key+':'+phrase;
+    if(ignored[key])continue;
+    hits.push({key,rule:rule.label,phrase,points:rule.points,date:entry.date,type:entry.type,uid:entry.uid});
+    counts[i]++;
+    scores[i]+=rule.points;
+   }
   });
-  negative+=Math.min(2,NEXUS_RESPECT_TERMS.reduce((sum,re)=>sum+(txt.match(re)||[]).length,0));
  }
- const total=positive-negative;
- // Five display bands indicate textual match density, not a psychological level.
- const level=entries.length?Math.max(1,Math.min(5,Math.ceil(Math.max(0,total)/8)||1)):0;
- return {entries:entries.length,counts,positive,negative,total,level};
+ const total=scores.reduce((a,b)=>a+b,0);
+ const level=entries.length?Math.min(5,Math.max(1,Math.ceil(Math.max(0,total)/8)||1)):0;
+ return {entries:entries.length,rules,counts,scores,hits,total,level};
 }
 function masculinityCommunicationAssessment(){
  const s=nexusCueScore();
- return `<div class="nexus-indicator-bands" role="img" aria-label="${s.entries?`Masculinity indicator band ${s.level} of 5`:'Not assessed yet'}">${[1,2,3,4,5].map(i=>`<span class="five-segment ${s.level===i?'selected':''}">${i}</span>`).join('')}</div>`;
+ return `<div class="nexus-indicator-bands" role="img" aria-label="${s.entries?`Keyword score band ${s.level} of 5`:'No entries yet'}">${[1,2,3,4,5].map(i=>`<span class="five-segment ${s.level===i?'selected':''}">${i}</span>`).join('')}</div>`;
 }
 function masculinityCueMenu(){
  const s=nexusCueScore();
  return `<details class="nexus-cue-dropdown">
-  <summary aria-label="Open masculinity point breakdown">POINT DETAILS ▾</summary>
-  <div class="nexus-cue-popup">
-   <h3>Masculinity — point breakdown</h3>
-   <div class="nexus-cue-score"><strong>${s.total>0?'+':''}${s.total} points</strong><span>${s.entries} saved messages reviewed</span></div>
-   ${NEXUS_CUE_RULES.map((r,i)=>`<div class="nexus-cue-row"><span>${esc(r.label)}</span><strong>+${s.counts[i]*2}</strong></div>`).join('')}
-   <div class="nexus-cue-row"><span>Respectful / considerate language</span><strong>−${s.negative}</strong></div>
-   <div class="nexus-cue-row nexus-cue-total"><span>Total</span><strong>${s.total>0?'+':''}${s.total}</strong></div>
-   <p class="muted">Keyword matches update when saved emails and texts are added or removed. +2 per matched controlling phrase; −1 per matched courteous phrase (up to two of each category per message). Examples may quote, reject, or joke about a phrase. Review messages before interpreting the score. This is not a measurement of masculinity, intent, or risk.</p>
-  </div>
- </details>`;
+ <summary aria-label="Open point breakdown">POINT DETAILS ▾</summary>
+ <div class="nexus-cue-popup">
+  <h3>Masculinity — point breakdown</h3>
+  <div class="nexus-cue-score"><strong>${s.total>0?'+':''}${s.total} points</strong><span>${s.entries} saved messages</span></div>
+  <p class="nexus-cue-help">Reviewable keyword flags, not a measure of someone's masculinity, character, intent, or danger. Quoting, sarcasm, negations, and slang can produce mistakes.</p>
+  ${s.rules.map((r,i)=>s.counts[i]?`<div class="nexus-cue-row"><span>${esc(r.label)} (${s.counts[i]})</span><strong>${s.scores[i]>0?'+':''}${s.scores[i]}</strong></div>`:'').join('')}
+  <div class="nexus-cue-row nexus-cue-total"><span>Total</span><strong>${s.total>0?'+':''}${s.total}</strong></div>
+  <h4>Matched phrases (${s.hits.length})</h4>
+  <div class="nexus-match-list">${s.hits.length?s.hits.slice(-100).reverse().map(h=>`<div class="nexus-match"><strong>${esc(h.phrase)}</strong> · ${esc(h.rule)} (${h.points>0?'+':''}${h.points})<small>${esc(h.type||'Entry')} · ${esc(h.date||'Unknown date')}</small><button type="button" class="btn alt small" data-nexus-ignore="${encodeURIComponent(h.key)}">Dismiss false match</button></div>`).join(''):'<p class="muted">No active phrase matches.</p>'}</div>
+  <h4>Teach NEXUS a phrase</h4>
+  <form id="nexusCustomCueForm" class="nexus-custom-form">
+   <input name="cueTerm" maxlength="80" required placeholder="Word or phrase" aria-label="Custom word or phrase">
+   <select name="cueCategory" aria-label="Category"><option>Profanity / swearing</option><option>Insults / put-downs</option><option>Controlling / possessive language</option><option>Threats / intimidation</option><option>Belittling / humiliation</option><option>Power and dominance</option><option>Respectful / supportive language</option><option>Custom phrases</option></select>
+   <label class="muted">Points (−5 through +5)<input name="cuePoints" type="number" min="-5" max="5" step="1" value="2" required></label>
+   <button type="submit" class="btn small">ADD PHRASE</button>
+  </form>
+  <div class="nexus-cue-custom">${nexusCustomTerms().map(x=>`<div class="nexus-cue-row"><span>${esc(x.term)} (${x.points>0?'+':''}${x.points})</span><button type="button" class="btn danger small" data-nexus-remove="${esc(x.id)}">Remove</button></div>`).join('')}</div>
+  <p class="nexus-cue-help">Custom phrases are stored only in this browser for the signed-in user. Dismissed flags are stored in this inmate's local Personal File. No messages are sent to an AI service. Coverage and accuracy have not been benchmarked.</p>
+ </div></details>`;
 }
-
+function nexusRefreshPopup(){
+ render();const popup=document.querySelector('.nexus-cue-dropdown');if(popup)popup.open=true;
+}
+$('content').addEventListener('submit',e=>{
+ if(e.target.id!=='nexusCustomCueForm')return;
+ e.preventDefault();e.stopImmediatePropagation();
+ const fd=new FormData(e.target),term=String(fd.get('cueTerm')||'').trim().slice(0,80),category=String(fd.get('cueCategory')||''),points=Number(fd.get('cuePoints'));
+ if(term.length<2||!Number.isInteger(points)||points< -5||points>5){alert('Enter a phrase and a whole point value from -5 to +5.');return;}
+ const cues=nexusCustomTerms();if(cues.length>=100){alert('100 custom phrases maximum.');return;}
+ if(cues.some(x=>nexusNormalize(x.term)===nexusNormalize(term))){alert('This custom phrase already exists.');return;}
+ cues.push({id:crypto.randomUUID(),term,category,points});
+ if(store(NEXUS_CUSTOM_CUES+'_'+currentUserId,cues))nexusRefreshPopup();
+},true);
+$('content').addEventListener('click',e=>{
+ const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.nexusRemove){
+  e.preventDefault();e.stopImmediatePropagation();
+  const cues=nexusCustomTerms().filter(x=>x.id!==b.dataset.nexusRemove);
+  if(store(NEXUS_CUSTOM_CUES+'_'+currentUserId,cues))nexusRefreshPopup();
+ }else if(b.dataset.nexusIgnore){
+  e.preventDefault();e.stopImmediatePropagation();
+  const key=decodeURIComponent(b.dataset.nexusIgnore),f=file();
+  f.cueIgnored={...(f.cueIgnored||{}),[key]:true};
+  if(savePersonal())nexusRefreshPopup();
+ }
+},true);
 
 function advisor(){const s=stats(),declining=s.change!==null&&s.change<0;return `<div class="cols"><div>${activity()}<div class="panel"><div class="heading">COMMUNICATION REVIEW</div><p class="muted">The AI Advisor is a preview. No messages are sent to OpenAI, and this site does not perform a psychological evaluation.</p><button class="btn purple" id="analyze">✦ ANALYZE COMMUNICATION</button></div></div><div><div class="panel"><div class="heading">NEXUS AI COMMUNICATION ADVISOR</div>${analysisVisible?`<h3 class="${s.cls}">Current Activity: ${s.level}</h3><p>${s.recent.length} entries recorded in the last ${windowDays} days.</p>${declining?'<div class="alertbox">↘ Trend: Declining compared with the previous observation period.</div>':`<div class="notice">Trend: ${s.change===null?'Insufficient previous-period data':s.change>0?'Increasing':'Stable'}.</div>`}<h3 style="color:#54aaff">Suggested Next Steps</h3><p>Review the dates of recent messages and stated communication preferences. If communication has slowed, consider a friendly, low-pressure check-in. Avoid assuming the reason for a change in activity.</p><h3 style="color:#54aaff">Example Message</h3><p>“Hey, just checking in. Hope everything is going well. No pressure to reply right away.”</p><p class="muted">Activity counts cannot determine someone's motives, sincerity, emotions, or psychological condition. A qualified professional is needed for a clinical evaluation.</p>`:'<p class="muted">Select Analyze Communication to display a sample rule-based summary of the saved entry counts.</p>'}</div></div></div>`}
 
