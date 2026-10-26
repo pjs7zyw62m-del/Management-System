@@ -550,10 +550,8 @@
 <style id="nxv-record-photo-style">.nxv-record-photo{display:block;width:54px;height:66px;object-fit:cover;object-position:center;background:#1b2d43;border:1px solid #3c5875;border-radius:7px}.nxv-record-avatar{display:grid;place-items:center;color:#9fb9d4;font-size:28px}.nxv-table td:first-child{width:70px}.nxv-table td{vertical-align:middle}</style>
 </head><body>
 
-<div id="gateway" class="gate"><form id="gateForm" class="panel"><div class="logo">NE<span>X</span>US</div><h2>Security Gateway</h2><p class="muted">Demonstration access only</p><div class="field"><label>Security Key</label><input required autocomplete="off"></div><div class="field"><label>Access Code</label><input required type="password"></div><button class="btn" type="submit">CONTINUE</button></form></div>
-
-<div id="login" class="gate hidden"><form id="loginForm" class="panel"><div class="logo">NE<span>X</span>US</div><h2>Administrator Login</h2><div class="field">
-<label>Email Address</label><input required type="email" autocomplete="username"></div><div class="field"><label>Password</label><input required type="password" autocomplete="current-password"></div><button class="btn" type="submit">SIGN IN</button></form></div>
+<div id="login" class="gate"><form id="loginForm" class="panel"><div class="logo">NE<span>X</span>US</div><h2>Administrator Login</h2><p class="muted" id="nexusAuthStatus" role="status">Checking your secure session…</p><div class="field">
+<label>Email Address</label><input required type="email" autocomplete="username"></div><div class="field"><label>Password</label><input required type="password" autocomplete="current-password"></div><button class="btn" type="submit" id="nexusSignInBtn" disabled>SIGN IN</button></form></div>
 
 <div id="shell" class="shell hidden"><aside class="sidebar"><div class="logo">NE<span>X</span>US</div><button class="nav active" data-view="dashboard">▦ Dashboard</button><button class="nav" data-view="profiles">♙ Inmate Profiles</button><button class="nav" data-view="facilities">▤ Facilities</button><button class="nav" data-view="records">▤ Records</button><button class="nav" data-view="search">⌕ Search</button><button class="nav" data-view="financialHub">＄ Financial Center</button><button class="nav" data-view="reports">▥ Reports</button><button class="nav" data-view="settings">⚙ Settings</button></aside><main class="main"><header class="topbar"><h1 id="pageTitle">Command Dashboard</h1><div class="right"><button class="bell" id="bell" title="Notifications (coming soon)" aria-label="Notifications">🔔</button><button class="btn alt small" id="lock">Log Out</button></div></header><div class="content" id="content"></div></main></div>
 
@@ -564,7 +562,8 @@ const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_QKh-RY2C0Ycu2G29fX7Xgw_W72OLu2-
 
 const nexusDB = window.supabase.createClient(
   SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY
+  SUPABASE_PUBLISHABLE_KEY,
+  {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}
 );
   const NEXUS_PHOTO_BUCKET = 'nexus-IDB-photos';
 (function(){'use strict';
@@ -1685,56 +1684,62 @@ document.querySelectorAll('.nav').forEach(b=>{
 });
 
 
-$('gateForm').addEventListener('submit',e=>{e.preventDefault();$('gateway').classList.add('hidden');$('login').classList.remove('hidden')});
-$('loginForm').addEventListener('submit', async e => {
-  e.preventDefault();
-
-  const inputs = $('loginForm').querySelectorAll('input');
-  const email = inputs[0].value.trim();
-  const password = inputs[1].value;
-
-  const { data, error } = await nexusDB.auth.signInWithPassword({
-    email: email,
-    password: password
-  });
-
-  if (error) {
-    alert('Login failed: ' + error.message);
-    return;
-  }
-
-  if (!data.user) {
-    alert('Administrator account could not be verified.');
-    return;
-  }
-
+// Authentication is enforced by Supabase Auth. Do not embed PINs or secrets in this public file.
+let nexusSigningIn=false;
+function nexusShowSignedOut(message='Sign in with your authorized administrator account.'){
+  profiles=[];personal={};currentUserId='';detailId=null;editId=null;
+  selectedPhotoFile=null;photoData='';tableRows={};
+  $('shell').classList.add('hidden');
+  $('login').classList.remove('hidden');
+  $('nexusAuthStatus').textContent=message;
+  $('nexusSignInBtn').disabled=false;
+}
+async function nexusOpenAuthorizedSession(){
+  // getUser checks the token against Supabase Auth, not just a cached local session.
+  const {data:{user},error}=await nexusDB.auth.getUser();
+  if(error || !user){nexusShowSignedOut();return false;}
   try{
     await loadMasterRecords();
   }catch(err){
-    alert('Signed in, but records could not be loaded: '+err.message);
-    await nexusDB.auth.signOut();
-    return;
+    // A valid session is not proof of access to database records.
+    nexusShowSignedOut('Unable to access records: '+err.message);
+    return false;
   }
   $('login').classList.add('hidden');
   $('shell').classList.remove('hidden');
   go('dashboard');
+  return true;
+}
+$('loginForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(nexusSigningIn)return;
+  nexusSigningIn=true;
+  $('nexusSignInBtn').disabled=true;
+  $('nexusAuthStatus').textContent='Verifying your account…';
+  try{
+    const inputs=$('loginForm').querySelectorAll('input');
+    const {data,error}=await nexusDB.auth.signInWithPassword({
+      email:inputs[0].value.trim(), password:inputs[1].value
+    });
+    inputs[1].value='';
+    if(error || !data.user){nexusShowSignedOut('Sign in failed. Check your email and password.');return;}
+    await nexusOpenAuthorizedSession();
+  }catch(err){nexusShowSignedOut('Could not complete sign in. Check your connection and try again.');}
+  finally{nexusSigningIn=false;$('nexusSignInBtn').disabled=false;}
 });
-;
-$('lock').addEventListener('click', async () => {
-  const { error } = await nexusDB.auth.signOut();
-
-  if (error) {
-    alert('Logout failed: ' + error.message);
-    return;
-  }
-
-  profiles=[];personal={};currentUserId='';detailId=null;editId=null;selectedPhotoFile=null;photoData='';tableRows={};
+$('lock').addEventListener('click',async()=>{
   $('shell').classList.add('hidden');
-  $('login').classList.add('hidden');
-  $('gateway').classList.remove('hidden');
-  $('gateForm').reset();
+  const {error}=await nexusDB.auth.signOut();
+  if(error){$('shell').classList.remove('hidden');alert('Logout failed: '+error.message);return;}
   $('loginForm').reset();
+  nexusShowSignedOut('You have signed out.');
 });
+// Keep separate tabs synchronized when a session is explicitly signed out.
+nexusDB.auth.onAuthStateChange((event)=>{
+  if(event==='SIGNED_OUT')nexusShowSignedOut('You have signed out.');
+});
+// Restore a previously authenticated session on refresh. Records stay hidden until verified.
+nexusOpenAuthorizedSession().catch(()=>nexusShowSignedOut('Unable to verify your session. Please sign in.'));
 $('bell').addEventListener('click',()=>alert('NEXUS Notification Center: bell icon added. We will design its alert functions later.'));
 
 })();
