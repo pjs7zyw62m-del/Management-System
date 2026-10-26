@@ -553,7 +553,7 @@
 <div id="login" class="gate"><form id="loginForm" class="panel"><div class="logo">NE<span>X</span>US</div><h2>Administrator Login</h2><p class="muted" id="nexusAuthStatus" role="status">Checking your secure session…</p><div class="field">
 <label>Email Address</label><input required type="email" autocomplete="username"></div><div class="field"><label>Password</label><input required type="password" autocomplete="current-password"></div><button class="btn" type="submit" id="nexusSignInBtn" disabled>SIGN IN</button></form></div>
 
-<div id="shell" class="shell hidden"><aside class="sidebar"><div class="logo">NE<span>X</span>US</div><button class="nav active" data-view="dashboard">▦ Dashboard</button><button class="nav" data-view="profiles">♙ Inmate Profiles</button><button class="nav" data-view="facilities">▤ Facilities</button><button class="nav" data-view="records">▤ Records</button><button class="nav" data-view="search">⌕ Search</button><button class="nav" data-view="financialHub">＄ Financial Center</button><button class="nav" data-view="reports">▥ Reports</button><button class="nav" data-view="settings">⚙ Settings</button></aside><main class="main"><header class="topbar"><h1 id="pageTitle">Command Dashboard</h1><div class="right"><button class="bell" id="bell" title="Notifications (coming soon)" aria-label="Notifications">🔔</button><button class="btn alt small" id="lock">Log Out</button></div></header><div class="content" id="content"></div></main></div>
+<div id="shell" class="shell hidden"><aside class="sidebar"><div class="logo">NE<span>X</span>US</div><button class="nav active" data-view="dashboard">▦ Dashboard</button><button class="nav" data-view="profiles">♙ Inmate Profiles</button><button class="nav" data-view="facilities">▤ Facilities</button><button class="nav" data-view="records">▤ Records</button><button class="nav" data-view="search">⌕ Search</button><button class="nav" data-view="financialHub">＄ Financial Center</button><button class="nav" data-view="reports">▥ Reports</button><button class="nav" data-view="settings">⚙ Settings</button></aside><main class="main"><header class="topbar"><h1 id="pageTitle">Command Dashboard</h1><div class="right"><span id="nexusCloudStatus" style="font-size:11px;max-width:190px;color:#a5e7bd">Checking cloud…</span><button class="bell" id="bell" title="Notifications (coming soon)" aria-label="Notifications">🔔</button><button class="btn alt small" id="lock">Log Out</button></div></header><div class="content" id="content"></div></main></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
@@ -572,7 +572,42 @@ const $=id=>document.getElementById(id),KEY='nexus_demo_profiles_v2',PERSONAL_KE
 
 const tableDefs=[{key:'sentences',title:'COMMITMENT AND SENTENCE INFORMATION',cols:['Commit #','Sentence Length','Sentence County','Court Cause #','Offense Date','Sentence Date','Sentence Status','Crime']},{key:'infractions',title:'DISCIPLINARY INFRACTIONS',cols:['Violation Date','Infraction','Verdict Date','Verdict']},{key:'appeals',title:'DISCIPLINARY APPEALS',cols:['Appeal Date','Outcome Description','As Of Date']},{key:'classifications',title:'PROFILE CLASSIFICATION',cols:['Complete Date','Classification Type','Custody Risk','Internal Risk']},{key:'parole',title:'PAROLE ACTION',cols:['Action Date','Action','Outcome','As Of Date']},{key:'work',title:'WORK PROGRAM',cols:['Assigned Date','Completed Date','Work Assignment']},{key:'detainers',title:'NOTIFICATION REQUESTS, DETAINERS AND WARRANTS',cols:['Detainer Date','Detainer Type','Charges','Authority','Agreement Date']}];
 
-function read(k,fallback){try{return JSON.parse(localStorage.getItem(k)||'null')??fallback}catch{return fallback}}
+// NEXUS cloud-first: no application records or settings are written to localStorage.
+const nexusCloudPrefs={};
+function read(k,fallback){return Object.prototype.hasOwnProperty.call(nexusCloudPrefs,k)?structuredClone(nexusCloudPrefs[k]):fallback;}
+let nexusCloudReady=false, nexusCloudWriteQueue=Promise.resolve(), nexusCloudDirty=false, nexusCloudWriteFailed=false;
+function nexusCloudStatus(message, failed=false){
+ const el=document.getElementById('nexusCloudStatus');
+ if(el){el.textContent=message;el.style.color=failed?'#ff919f':'#a5e7bd';}
+ nexusCloudWriteFailed=failed;
+}
+function nexusCloudCommit(){
+ if(!currentUserId||!nexusCloudReady){nexusCloudStatus('Not connected. Changes have NOT been saved.',true);return false;}
+ // Take a snapshot at the moment of the edit, then serialize writes to avoid out-of-order saves.
+ const snapshot={owner_id:currentUserId,personal_files:structuredClone(personal),preferences:structuredClone(nexusCloudPrefs),updated_at:new Date().toISOString()};
+ nexusCloudDirty=true;
+ nexusCloudStatus('Saving changes to cloud…');
+ nexusCloudWriteQueue=nexusCloudWriteQueue.catch(()=>{}).then(async()=>{
+   const {error}=await nexusDB.from('nexus_private_state').upsert(snapshot,{onConflict:'owner_id'});
+   if(error)throw new Error(error.message);
+   nexusCloudDirty=false;
+   nexusCloudStatus('Saved securely to Supabase cloud');
+ }).catch(err=>{nexusCloudDirty=true;nexusCloudStatus('CLOUD SAVE FAILED: '+err.message,true);console.error('NEXUS cloud save failed',err);alert('Cloud save failed. Your change may only exist until this page closes. Do not refresh. '+err.message);throw err;});
+ return true;
+}
+function store(key,data){nexusCloudPrefs[key]=structuredClone(data);return nexusCloudCommit();}
+async function nexusLoadPrivateCloudState(userId){
+ nexusCloudReady=false;
+ const {data,error}=await nexusDB.from('nexus_private_state').select('personal_files,preferences').eq('owner_id',userId).maybeSingle();
+ if(error)throw new Error('Private cloud data unavailable: '+error.message);
+ personal=data?.personal_files&&typeof data.personal_files==='object'&&!Array.isArray(data.personal_files)?data.personal_files:{};
+ for(const k of Object.keys(nexusCloudPrefs))delete nexusCloudPrefs[k];
+ const prefs=data?.preferences&&typeof data.preferences==='object'&&!Array.isArray(data.preferences)?data.preferences:{};
+ Object.assign(nexusCloudPrefs,prefs);
+ nexusCloudReady=true;nexusCloudDirty=false;
+ nexusCloudStatus('Connected to Supabase cloud');
+}
+
 
 let profiles=[],personal={},view='dashboard',detailId=null,editId=null,personalTab='details',photoData='',tableRows={},filter='',windowDays=30,analysisVisible=false,showArchive=false;
 let selectedPhotoFile=null;async function uploadNexusPhoto(file, inmateId) {
@@ -620,7 +655,7 @@ const fullName=p=>[p.first,p.middle,p.last].filter(Boolean).join(' '),displayNam
 
 const photo=p=>{const url=p?.photo||'';return (/^data:image\/(png|jpeg|webp);base64,/i.test(url)||/^https:\/\/[^\s"'<>]+$/i.test(url))?`<img class="photo" src="${esc(url)}" alt="Profile photograph">`:'<div class="photo placeholder">♙</div>'};
 
-const saveProfiles=()=>true,savePersonal=()=>store(PERSONAL_KEY+'_'+currentUserId,personal);
+const saveProfiles=()=>true,savePersonal=()=>nexusCloudCommit();
 let currentUserId='';
 async function signedPhotoUrl(path){
  if(!path)return '';
@@ -631,6 +666,8 @@ async function signedPhotoUrl(path){
 async function loadMasterRecords(){
  const {data:{user},error:authError}=await nexusDB.auth.getUser();
  if(authError||!user)throw new Error('Please sign in to load Master Records.');
+ const {data:admin,error:adminError}=await nexusDB.from('nexus_admins').select('user_id').eq('user_id',user.id).maybeSingle();
+ if(adminError||!admin)throw new Error('This account is not authorized as the NEXUS administrator.');
  const {data:records,error}=await nexusDB.from('nexus_profiles').select('*').eq('owner_id',user.id).order('created_at',{ascending:false}).limit(1000);
  if(error)throw new Error('Could not load Master Records: '+error.message);
  const {data:sections,error:sectionError}=await nexusDB.from('nexus_master_sections').select('profile_id,section_type,row_position,row_data').eq('owner_id',user.id).order('row_position',{ascending:true}).limit(10000);
@@ -649,10 +686,8 @@ async function loadMasterRecords(){
   if(p.photo_path){try{p.photo=await signedPhotoUrl(p.photo_path)}catch(err){console.warn(err.message)}}
  }));
  profiles=loaded;
- // Personal files remain local to this browser and are scoped to the authenticated user.
  currentUserId=user.id;
- personal=read(PERSONAL_KEY+'_'+user.id,{});
- if(!personal||typeof personal!=='object'||Array.isArray(personal))personal={};
+ await nexusLoadPrivateCloudState(user.id);
  return loaded.length;
 }
 
@@ -740,7 +775,7 @@ async function loadMasterRecords(){
 }
 
 
-function store(key,data){try{localStorage.setItem(key,JSON.stringify(data));return true}catch(e){alert('Could not save to browser storage. Try using a smaller photo or exporting a backup.');return false}}
+
 
 function file(){if(!personal[detailId])personal[detailId]={details:{},entries:[],created:new Date().toISOString()};if(!Array.isArray(personal[detailId].entries))personal[detailId].entries=[];return personal[detailId]}
 
@@ -1474,7 +1509,7 @@ function nxvRecords(){const sorted=profiles.slice().sort((a,b)=>displayName(a).l
 function nxvReportBars(items){const max=Math.max(1,...items.map(x=>x[1]));return `<div class="nxv-bars">${items.length?items.map(([name,n])=>`<div class="nxv-bar"><span>${esc(name)}</span><div class="nxv-track"><div class="nxv-fill" style="width:${Math.round(100*n/max)}%"></div></div><strong>${n}</strong></div>`).join(''):'<p class="nxv-empty">No data to report yet.</p>'}</div>`}
 function nxvReports(){const c=nxvComm(),types=['Text','Email','Call'].map(t=>[t,c.filter(e=>String(e.type||'').toLowerCase()===t.toLowerCase()).length]);const by=key=>Object.entries(profiles.reduce((a,p)=>{const v=String(p[key]||'Unknown').trim()||'Unknown';a[v]=(a[v]||0)+1;return a},{})).sort((a,b)=>b[1]-a[1]);return `<div class="nxv-panel"><h2>NEXUS REPORTING CENTER</h2><p class="nxv-sub">Live summaries based on currently loaded Master Records and communications saved in this browser.</p><div class="nxv-stats"><div class="nxv-stat"><small>Registered profiles</small><strong>${profiles.length}</strong></div><div class="nxv-stat"><small>Active records</small><strong>${profiles.filter(p=>/active/i.test(String(p.status||''))&&!/inactive/i.test(String(p.status||''))).length}</strong></div><div class="nxv-stat"><small>Saved communications</small><strong>${c.length}</strong></div><div class="nxv-stat"><small>Facilities</small><strong>${new Set(profiles.map(p=>p.facility).filter(Boolean)).size}</strong></div></div><div class="nxv-tools"><button class="btn alt" id="nxv-export-report">Export Summary CSV</button></div></div><div class="nxv-panel"><h3>Communication by Channel</h3>${nxvReportBars(types)}</div><div class="nxv-panel"><h3>Profiles by State</h3>${nxvReportBars(by('state'))}</div><div class="nxv-panel"><h3>Profiles by Facility</h3>${nxvReportBars(by('facility'))}</div><div class="nxv-panel"><h3>Profiles by Status</h3>${nxvReportBars(by('status'))}</div><p class="muted">Reports reflect the current device's locally saved communications; they do not include entries from other devices unless separately transferred.</p>`}
 function nxvExportReport(){const comm=nxvComm();const rows=[['Metric','Category','Count'],['Profiles','Total',profiles.length],['Communications','Total',comm.length]];for(const key of ['state','facility','status'])for(const [name,count] of Object.entries(profiles.reduce((a,p)=>{const n=String(p[key]||'Unknown');a[n]=(a[n]||0)+1;return a},{})))rows.push(['Profiles by '+key,name,count]);for(const type of ['Text','Email','Call'])rows.push(['Communication by channel',type,comm.filter(e=>String(e.type||'').toLowerCase()===type.toLowerCase()).length]);const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='nexus-report-summary.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
-function render(){const names={financialHub:'Financial Center',dashboard:'Command Dashboard',profiles:'Inmate Profiles',register:'Inmate Registration',detail:'Inmate Master Record',personal:'Inmate Personal File',facilities:'Facilities',records:'Records',search:'Search',reports:'Reports',settings:'Settings'};$('pageTitle').textContent=names[view]||'NEXUS';document.querySelectorAll('.nav').forEach(b=>b.classList.toggle('active',b.dataset.view===view));let html='';if(view==='dashboard'){html=nexusDashboard();}else if(view==='profiles'){html=`<div class="actions"><button class="btn" data-view="register">+ New Registration</button><button class="btn alt" id="toggleArchive">${showArchive?'Show Current Inmates':'View Archive'}</button></div><div class="panel"><div class="field"><label>Search by name, ID, state, or facility</label><input id="searchBox" placeholder="Search profiles..." value="${esc(filter)}"></div></div><div id="profileResults">${profileCards(profiles.filter(p=>(showArchive?p.status==='Archive':p.status!=='Archive')&&[p.id,p.first,p.last,p.state,p.facility].join(' ').toLowerCase().includes(filter.toLowerCase())).sort((a,b)=>(a.last||'').localeCompare(b.last||'')))}</div>`;}else if(view==='register')html=registration();else if(view==='detail')html=detail();else if(view==='personal')html=personalPage();else if(view==='financialHub')html=financialHub();else if(view==='facilities')html=facilitiesPage();else if(view==='search')html=nxvSearch();else if(view==='records')html=nxvRecords();else if(view==='reports')html=nxvReports();else if(view==='settings')html=section('DEMO SETTINGS',`<p class="notice">Authentication and row-level access are handled by Supabase. This implementation has not completed a security audit; do not enter real inmate or other sensitive personal information.</p><p>Master Records and section rows are saved in Supabase. Personal Files are saved only in this browser and do not sync across devices.</p><button class="btn" id="backup">EXPORT BACKUP JSON</button>`);$('content').innerHTML=html;if(view==='search')nxvApplySearch();if(view==='facilities'){const current=facChoice(facEntries());if(current&&!read(FAC_PHOTO_KEY,{})[facKey(current)])facUpdateAutomaticPhoto(current)}}
+function render(){const names={financialHub:'Financial Center',dashboard:'Command Dashboard',profiles:'Inmate Profiles',register:'Inmate Registration',detail:'Inmate Master Record',personal:'Inmate Personal File',facilities:'Facilities',records:'Records',search:'Search',reports:'Reports',settings:'Settings'};$('pageTitle').textContent=names[view]||'NEXUS';document.querySelectorAll('.nav').forEach(b=>b.classList.toggle('active',b.dataset.view===view));let html='';if(view==='dashboard'){html=nexusDashboard();}else if(view==='profiles'){html=`<div class="actions"><button class="btn" data-view="register">+ New Registration</button><button class="btn alt" id="toggleArchive">${showArchive?'Show Current Inmates':'View Archive'}</button></div><div class="panel"><div class="field"><label>Search by name, ID, state, or facility</label><input id="searchBox" placeholder="Search profiles..." value="${esc(filter)}"></div></div><div id="profileResults">${profileCards(profiles.filter(p=>(showArchive?p.status==='Archive':p.status!=='Archive')&&[p.id,p.first,p.last,p.state,p.facility].join(' ').toLowerCase().includes(filter.toLowerCase())).sort((a,b)=>(a.last||'').localeCompare(b.last||'')))}</div>`;}else if(view==='register')html=registration();else if(view==='detail')html=detail();else if(view==='personal')html=personalPage();else if(view==='financialHub')html=financialHub();else if(view==='facilities')html=facilitiesPage();else if(view==='search')html=nxvSearch();else if(view==='records')html=nxvRecords();else if(view==='reports')html=nxvReports();else if(view==='settings')html=section('DEMO SETTINGS',`<p class="notice">Authentication and row-level access are handled by Supabase. This implementation has not completed a security audit; do not enter real inmate or other sensitive personal information.</p><p>Master Records, Personal Files, communications, financial data, custom rules and settings are saved in Supabase. Verify cloud-save status before leaving the page.</p><button class="btn" id="backup">EXPORT BACKUP JSON</button>`);$('content').innerHTML=html;if(view==='search')nxvApplySearch();if(view==='facilities'){const current=facChoice(facEntries());if(current&&!read(FAC_PHOTO_KEY,{})[facKey(current)])facUpdateAutomaticPhoto(current)}}
 
 $('content').addEventListener('input',e=>{if(e.target.id?.startsWith('nxv-'))nxvApplySearch()});$('content').addEventListener('change',e=>{if(e.target.id?.startsWith('nxv-'))nxvApplySearch()});$('content').addEventListener('click',e=>{if(e.target.closest('#nxv-clear')){e.preventDefault();['nxv-q','nxv-state','nxv-facility','nxv-min-age','nxv-max-age','nxv-status'].forEach(id=>{const x=document.getElementById(id);if(x)x.value=''});nxvApplySearch()}if(e.target.closest('#nxv-export-report')){e.preventDefault();nxvExportReport()}});
 function go(v){view=v;render();window.scrollTo(0,0)}
@@ -1664,7 +1699,7 @@ if(b.dataset.delete){
   saveProfiles();
   savePersonal();
   go('profiles');
-  alert('Master Record deleted from Supabase and this browser.');
+  alert('Master Record deleted; verify cloud save status before leaving.');
   return;
 }
 if(b.dataset.tab){personalTab=b.dataset.tab;render();return}if(b.dataset.window){windowDays=Number(b.dataset.window);analysisVisible=false;render();return}if(b.id==='analyze'){analysisVisible=true;render();return}if(b.dataset.deposit){const f=financeFile(),d=balanceData();if(!d.pending.length||d.outstanding<=0){alert('There is no positive outstanding balance to record.');return}if(!confirm('Confirm you have made a deposit of '+money(d.outstanding)+'? This records the deposit and clears the pending balance.'))return;f.deposits.push({id:'DEP-'+Date.now(),date:new Date().toLocaleString(),amount:Math.round(d.outstanding*100)/100,entryIds:d.pending.map(x=>x.uid),recordedAt:new Date().toISOString(),breakdown:Object.fromEntries(activityTypes.map(([k])=>[k,d.subtotal(k)]))});savePersonal();render();return}if(b.dataset.sexDelete){const f=financeFile();if(f.deposits.some(d=>d.entryIds.includes(b.dataset.sexDelete))){alert('This activity is linked to a recorded deposit and cannot be deleted.');return}if(confirm('Delete this sexual activity entry?')){f.sexualEntries=f.sexualEntries.filter(x=>x.uid!==b.dataset.sexDelete);savePersonal();render()}return}if(b.dataset.entryDelete){if(financeFile().deposits.some(d=>d.entryIds.includes(b.dataset.entryDelete))){alert('This entry is linked to a recorded deposit and cannot be deleted.');return}if(confirm('Delete this communication entry?')){file().entries=file().entries.filter(x=>x.uid!==b.dataset.entryDelete);savePersonal();analysisVisible=false;render()}return}if(b.dataset.add){captureRows();const t=tableDefs.find(x=>x.key===b.dataset.add);tableRows[t.key]??=[];tableRows[t.key].push(t.cols.map(() => ''));preserveRegistrationAndRender();return}if(b.dataset.remove){captureRows();tableRows[b.dataset.remove]?.splice(Number(b.dataset.index),1);preserveRegistrationAndRender();return}if(b.id==='backup'){const data={masterRecords:profiles,personalFiles:personal,exportedAt:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='nexus-demo-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}});
@@ -1687,7 +1722,7 @@ document.querySelectorAll('.nav').forEach(b=>{
 // Authentication is enforced by Supabase Auth. Do not embed PINs or secrets in this public file.
 let nexusSigningIn=false;
 function nexusShowSignedOut(message='Sign in with your authorized administrator account.'){
-  profiles=[];personal={};currentUserId='';detailId=null;editId=null;
+  profiles=[];personal={};currentUserId='';nexusCloudReady=false;detailId=null;editId=null;
   selectedPhotoFile=null;photoData='';tableRows={};
   $('shell').classList.add('hidden');
   $('login').classList.remove('hidden');
@@ -1728,6 +1763,8 @@ $('loginForm').addEventListener('submit',async e=>{
   finally{nexusSigningIn=false;$('nexusSignInBtn').disabled=false;}
 });
 $('lock').addEventListener('click',async()=>{
+  if(nexusCloudDirty||nexusCloudWriteFailed){alert('There are unconfirmed cloud changes. Confirm the save status before logging out.');return;}
+  await nexusCloudWriteQueue.catch(()=>{});
   $('shell').classList.add('hidden');
   const {error}=await nexusDB.auth.signOut();
   if(error){$('shell').classList.remove('hidden');alert('Logout failed: '+error.message);return;}
@@ -1739,6 +1776,7 @@ nexusDB.auth.onAuthStateChange((event)=>{
   if(event==='SIGNED_OUT')nexusShowSignedOut('You have signed out.');
 });
 // Restore a previously authenticated session on refresh. Records stay hidden until verified.
+window.addEventListener('beforeunload',e=>{if(nexusCloudDirty||nexusCloudWriteFailed){e.preventDefault();e.returnValue='';}});
 nexusOpenAuthorizedSession().catch(()=>nexusShowSignedOut('Unable to verify your session. Please sign in.'));
 $('bell').addEventListener('click',()=>alert('NEXUS Notification Center: bell icon added. We will design its alert functions later.'));
 
