@@ -505,6 +505,11 @@
 .nexus-subscore-review p{font-size:13px;color:#c2d2e3;line-height:1.5;margin:8px 0}
 @media(max-width:700px){.nexus-subscore-grid{grid-template-columns:1fr}.nexus-subscore-card{padding:14px}}
 
+/* Both score detail menus float over the content rather than expand their cards. */
+.nexus-subscore-card{overflow:visible;position:relative}
+.nexus-subscore-card .nexus-cue-dropdown{align-self:flex-start;z-index:50}
+.nexus-subscore-card .nexus-cue-popup{width:min(430px,calc(100vw - 44px))}
+@media(max-width:700px){.nexus-subscore-card .nexus-cue-popup{left:0;right:auto}}
 </style></head><body>
 
 <div id="gateway" class="gate"><form id="gateForm" class="panel"><div class="logo">NE<span>X</span>US</div><h2>Security Gateway</h2><p class="muted">Demonstration access only</p><div class="field"><label>Security Key</label><input required autocomplete="off"></div><div class="field"><label>Access Code</label><input required type="password"></div><button class="btn" type="submit">CONTINUE</button></form></div>
@@ -814,6 +819,28 @@ function nexusSexualLanguagePanel(){
  </div>`;
 }
 
+function nexusSexualCueMenu(){
+ const s=nexusSexualLanguageScore();
+ return `<details class="nexus-cue-dropdown nexus-sexual-dropdown">
+ <summary aria-label="Show Sexual point breakdown and add expressions">POINT DETAILS ▾</summary>
+ <div class="nexus-cue-popup">
+  <h3>Sexual — point breakdown</h3>
+  <div class="nexus-cue-score"><strong>+${s.total} points</strong><span>${s.entries} saved messages</span></div>
+  ${s.rules.map((r,i)=>`<div class="nexus-cue-row"><span>${esc(r.label)}</span><strong>+${s.totals[i]}</strong></div>`).join('')}
+  <h4>Matched words and phrases (${s.results.length})</h4>
+  <div class="nexus-match-list">${s.results.length?s.results.slice(-100).reverse().map(h=>`<div class="nexus-match"><strong>${esc(h.phrase)}</strong> · ${esc(h.label)} (+${h.points})<small>${esc(h.type||'Entry')} · ${esc(h.date||'Unknown date')}</small><button type="button" class="btn alt small" data-sexual-cue-ignore="${encodeURIComponent(h.key)}">Dismiss false match</button></div>`).join(''):'<p class="muted">No matches detected.</p>'}</div>
+  <h4>Add a word, phrase or sentence</h4>
+  <form id="nexusSexualCueForm" class="nexus-custom-form">
+   <input name="term" maxlength="80" required placeholder="Word, phrase, or short sentence" aria-label="Custom sexual expression">
+   <label class="muted">Points per match (1–5)<input name="points" type="number" min="1" max="5" step="1" value="2" required></label>
+   <button type="submit" class="btn small">ADD EXPRESSION</button>
+  </form>
+  <h4>Your custom expressions</h4>
+  <div class="nexus-cue-custom">${nexusSexualCustomTerms().map(x=>`<div class="nexus-cue-row"><span>${esc(x.term)} (+${x.points})</span><button type="button" class="btn danger small" data-sexual-cue-remove="${esc(x.id)}">Remove</button></div>`).join('')||'<p class="muted">No custom expressions yet.</p>'}</div>
+  <p class="nexus-cue-help">These are keyword matches, not evidence of actual sexual activity or intent. Custom expressions are stored only in this browser for the signed-in user.</p>
+ </div></details>`;
+}
+
 function nexusRefreshSexualPopup(){render();const d=document.querySelector('.nexus-sexual-dropdown');if(d)d.open=true;}
 $('content').addEventListener('submit',e=>{
  if(e.target.id!=='nexusSexualCueForm')return;
@@ -956,11 +983,13 @@ function nexusCommunicationSubscores(){
    <section class="nexus-subscore-card" aria-label="Masculinity language indicator">
      <h3>MASCULINITY</h3>
      ${masculinityCommunicationAssessment()}
+     ${masculinityCueMenu()}
      ${review('MASCULINITY',mObservations)}
    </section>
    <section class="nexus-subscore-card" aria-label="Sexual language indicator">
      <h3>SEXUAL</h3>
      ${nexusSexualLanguagePanel()}
+     ${nexusSexualCueMenu()}
      ${review('SEXUAL',sObservations)}
    </section>
  </div>`;
