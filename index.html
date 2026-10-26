@@ -1729,7 +1729,111 @@ function nexusShowSignedOut(message='Sign in with your authorized administrator 
   $('nexusAuthStatus').textContent=message;
   $('nexusSignInBtn').disabled=false;
 }
-       
+    
+function nexusCollectGatewayCodes() {
+  return new Promise((resolve, reject) => {
+    const overlay = document.createElement('div');
+    overlay.id = 'nexusGatewayEntry';
+    overlay.style.cssText = `
+      position:fixed;inset:0;z-index:999999;
+      background:#07101df2;
+      display:flex;align-items:center;
+      justify-content:center;padding:20px;
+    `;
+
+    const panel = document.createElement('form');
+    panel.style.cssText = `
+      width:100%;max-width:390px;
+      padding:30px;box-sizing:border-box;
+      background:#142238;color:white;
+      border:1px solid #607a99;
+      border-radius:14px;
+      font-family:Arial,sans-serif;
+    `;
+
+    const title = document.createElement('h2');
+    title.textContent = 'BLACKCELL CORPORATION';
+
+    const subtitle = document.createElement('p');
+    subtitle.textContent =
+      'NEXUS Management System — Security Gateway';
+
+    const access = document.createElement('input');
+    access.type = 'password';
+    access.placeholder = 'Access Code';
+    access.autocomplete = 'off';
+    access.required = true;
+    access.maxLength = 256;
+
+    const security = document.createElement('input');
+    security.type = 'password';
+    security.placeholder = 'Security Code';
+    security.autocomplete = 'off';
+    security.required = true;
+    security.maxLength = 256;
+
+    for (const field of [access, security]) {
+      field.style.cssText = `
+        display:block;width:100%;
+        box-sizing:border-box;
+        margin:14px 0;padding:12px;
+        border-radius:7px;
+        border:1px solid #71829b;
+      `;
+    }
+
+    const continueButton = document.createElement('button');
+    continueButton.type = 'submit';
+    continueButton.textContent = 'Continue to Sign In';
+    continueButton.style.cssText = `
+      width:100%;padding:13px;
+      background:#3277c5;color:white;
+      border:0;border-radius:7px;
+      cursor:pointer;
+    `;
+
+    const cancel = document.createElement('button');
+    cancel.type = 'button';
+    cancel.textContent = 'Cancel';
+    cancel.style.cssText = `
+      margin-top:12px;width:100%;
+      padding:10px;cursor:pointer;
+    `;
+
+    const close = () => {
+      access.value = '';
+      security.value = '';
+      overlay.remove();
+    };
+
+    cancel.onclick = () => {
+      close();
+      reject(new Error('Gateway entry cancelled'));
+    };
+
+    panel.onsubmit = event => {
+      event.preventDefault();
+
+      const codes = {
+        accessCode: access.value,
+        securityCode: security.value
+      };
+
+      close();
+      resolve(codes);
+    };
+
+    panel.append(
+      title, subtitle, access, security,
+      continueButton, cancel
+    );
+
+    overlay.appendChild(panel);
+    document.body.appendChild(overlay);
+    access.focus();
+  });
+}
+   
 async function nexusRequireGatewayGrant(){
   const {data, error} = await nexusDB.rpc(
     'nexus_gateway_session_valid'
