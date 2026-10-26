@@ -94,6 +94,30 @@
 @media(max-width:850px){.nexus-personal-facts{flex-basis:100%}.nexus-side-assessment{flex-basis:345px;max-width:100%}}
 @media(max-width:550px){.nexus-personal-facts{grid-template-columns:repeat(2,minmax(0,1fr))}.nexus-personal-facts .fact:nth-child(2){border-right:0}}
 
+
+/* NEXUS compact indicator under profile ID; overlay does not push page down. */
+.nexus-revised-facts{display:flex;align-items:start;flex-wrap:wrap;gap:10px 16px}
+.nexus-revised-facts .fact{min-width:70px;max-width:300px}
+.nexus-revised-facts .nexus-facility-fact{border-right:0}
+.nexus-assessment-line{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:11px;position:relative;isolation:isolate}
+.nexus-assessment-mini{width:min(265px,100%);flex:0 1 265px}
+.nexus-assessment-label{color:#acc7e8;font-size:10px;font-weight:800;letter-spacing:.2px;margin-bottom:6px}
+.nexus-indicator-bands{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+.nexus-indicator-bands .five-segment{font-size:12px;padding:7px 2px;text-align:center;border-radius:5px}
+.nexus-cue-dropdown{position:relative;flex:0 0 auto;z-index:15}
+.nexus-cue-dropdown>summary{list-style:none;cursor:pointer;padding:9px 12px;border:1px solid #456590;background:#182c47;color:#e7f2ff;border-radius:7px;font-weight:800;font-size:11px}
+.nexus-cue-dropdown>summary::-webkit-details-marker{display:none}
+.nexus-cue-dropdown[open]>summary{background:#245b9c}
+.nexus-cue-popup{position:absolute;z-index:100;top:calc(100% + 6px);left:0;width:min(360px,calc(100vw - 55px));max-height:min(70vh,500px);overflow-y:auto;background:#0d1829;border:1px solid #5a7395;border-radius:11px;box-shadow:0 20px 50px #000b;padding:15px}
+.nexus-cue-popup h3{margin:0 0 12px;font-size:15px}
+.nexus-cue-score{display:flex;justify-content:space-between;gap:8px;margin-bottom:12px;font-size:12px;color:#b1c7df}
+.nexus-cue-score strong{font-size:17px;color:#fff}
+.nexus-cue-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #263a50;font-size:12px}
+.nexus-cue-row strong{font-variant-numeric:tabular-nums;white-space:nowrap}
+.nexus-cue-total{font-weight:800;color:#fff}
+.nexus-cue-popup .muted{line-height:1.5;font-size:11px;margin:12px 0 0}
+@media(max-width:650px){.nexus-cue-popup{left:auto;right:0}.nexus-assessment-line{gap:8px}}
+
 </style></head><body>
 
 <div id="gateway" class="gate"><form id="gateForm" class="panel"><div class="logo">NE<span>X</span>US</div><h2>Security Gateway</h2><p class="muted">Demonstration access only</p><div class="field"><label>Security Key</label><input required autocomplete="off"></div><div class="field"><label>Access Code</label><input required type="password"></div><button class="btn" type="submit">CONTINUE</button></form></div>
@@ -361,15 +385,19 @@ function identity(p,personalMode=false){
   <div class="nexus-identity-main">
    <h2>${esc(displayName(p))}</h2>
    <div class="state">${esc((p.state||'STATE NOT SET').toUpperCase())}</div>
-   <div class="nexus-info-and-assessment">
-    <div class="facts nexus-identity-facts ${personalMode?'nexus-personal-facts':''}">
-     <div class="fact"><small>Inmate ID</small><strong>${esc(p.id)}</strong></div>
-     <div class="fact"><small>Age</small><strong>${esc(p.age||'—')}</strong></div>
-     ${personalMode?`<div class="fact"><small>Orientation</small><strong>${esc(d.orientation||'Not provided')}</strong></div>`:''}
-     <div class="fact nexus-facility-fact"><small>Facility</small><strong>${esc(p.facility||'—')}</strong></div>
-    </div>
-    ${personalMode?`<div class="header-assessment nexus-side-assessment"><div class="muted" style="margin-bottom:8px;font-weight:bold">MASCULINITY EXPRESSION — COMMUNICATION INDICATOR</div>${masculinityCommunicationAssessment()}</div>`:''}
+   <div class="facts nexus-revised-facts">
+    <div class="fact"><small>Inmate ID</small><strong>${esc(p.id)}</strong></div>
+    <div class="fact"><small>Age</small><strong>${esc(p.age||'—')}</strong></div>
+    ${personalMode?`<div class="fact"><small>Orientation</small><strong>${esc(d.orientation||'Not provided')}</strong></div>`:''}
+    <div class="fact nexus-facility-fact"><small>Facility</small><strong>${esc(p.facility||'—')}</strong></div>
    </div>
+   ${personalMode?`<div class="nexus-assessment-line">
+    <div class="nexus-assessment-mini">
+     <div class="nexus-assessment-label">MASCULINITY</div>
+     ${masculinityCommunicationAssessment()}
+    </div>
+    ${masculinityCueMenu()}
+   </div>`:''}
   </div>
  </div>`;
 }
@@ -390,7 +418,54 @@ function communicationCenter(){return `<div class="panel"><div class="heading">C
 
 function sexualLevel(){const entries=financeFile().sexualEntries||[],now=Date.now();const recent=entries.filter(e=>{const d=new Date(e.date+'T12:00:00').getTime();return Number.isFinite(d)&&d<=now&&d>now-30*86400000});const n=recent.length;return {n,level:n<5?'LOW':n<15?'MEDIUM':'HIGH',cls:n<5?'low':n<15?'medium':'high'}}
 
-function masculinityCommunicationAssessment(){const entries=(file().entries||[]).filter(e=>String(e.message||'').trim());if(entries.length<5)return `<div class="notice">INSUFFICIENT EVIDENCE — Save at least 5 communication entries with message content to display a provisional communication-style indicator.</div>`;const content=entries.map(e=>String(e.message||'')).join(' ').toLowerCase();const markers=[/\b(i will|i can|i plan|let me|i'll)\b/g,/\b(no|cannot|can't|won't|boundary|limit)\b/g,/\b(please|thank you|appreciate|respect)\b/g,/\b(i feel|i think|i believe|i want)\b/g,/\b(when|where|how|what|why)\b/g];const matched=markers.map(re=>(content.match(re)||[]).length);const dimensions=matched.filter(n=>n>0).length;const level=Math.max(1,Math.min(5,dimensions));return `<div class="five-level">${[1,2,3,4,5].map(i=>`<span class="five-segment ${i===level?'selected':''}">${i}</span>`).join('')}</div><p><strong>Level ${level} of 5 — provisional communication expression indicator</strong></p><p class="muted">Based on ${entries.length} saved communication entries. This rule-based demo checks for initiative, boundaries, courtesy, self-expression, and questions. It does NOT determine actual masculinity, gender identity, personality, or psychological traits. No AI service is connected.</p>`}
+/* Transparent, limited keyword flags. The values describe matched wording,
+   never masculinity, intent, identity, dangerousness or personality. */
+const NEXUS_CUE_RULES=[
+ {label:'Toughness',terms:[/\bnever show weakness\b/gi,/\bman up\b/gi,/\bno weakness\b/gi]},
+ {label:'Anti-femininity',terms:[/\bdo not act like a girl\b/gi,/\btoo feminine\b/gi,/\bacting like a girl\b/gi]},
+ {label:'Power and dominance',terms:[/\bi am in charge\b/gi,/\bknow your place\b/gi,/\bdo as i say\b/gi]},
+ {label:'Coercive control',terms:[/\byou are not allowed to\b/gi,/\bi decide who you see\b/gi,/\byou need my permission\b/gi]},
+ {label:'Power struggle',terms:[/\byou will not win\b/gi,/\bi always have the last word\b/gi,/\bi have to win\b/gi]},
+ {label:'Emotional double standard',terms:[/\bi can but you cannot\b/gi,/\bonly i can be angry\b/gi,/\bmy feelings matter more\b/gi]},
+ {label:'Confusing dominance with leadership',terms:[/\ba leader must control\b/gi,/\bleadership means obedience\b/gi,/\bfollow without question\b/gi]},
+ {label:'Fragile self-worth',terms:[/\byou make me look weak\b/gi,/\bi cannot handle rejection\b/gi,/\byou embarrassed me\b/gi]}
+];
+const NEXUS_RESPECT_TERMS=[/\bthank you\b/gi,/\bi appreciate\b/gi,/\bi respect your decision\b/gi,/\byou can say no\b/gi,/\bi am sorry\b/gi,/\bi understand your boundary\b/gi];
+function nexusCueScore(){
+ const entries=(file().entries||[]).filter(e=>String(e.message||'').trim());
+ const counts=NEXUS_CUE_RULES.map(()=>0);
+ let positive=0,negative=0;
+ for(const e of entries){
+  const txt=String(e.message||'');
+  NEXUS_CUE_RULES.forEach((rule,i)=>{
+   const hits=Math.min(2,rule.terms.reduce((sum,re)=>sum+(txt.match(re)||[]).length,0));
+   counts[i]+=hits;positive+=hits*2;
+  });
+  negative+=Math.min(2,NEXUS_RESPECT_TERMS.reduce((sum,re)=>sum+(txt.match(re)||[]).length,0));
+ }
+ const total=positive-negative;
+ // Five display bands indicate textual match density, not a psychological level.
+ const level=entries.length?Math.max(1,Math.min(5,Math.ceil(Math.max(0,total)/8)||1)):0;
+ return {entries:entries.length,counts,positive,negative,total,level};
+}
+function masculinityCommunicationAssessment(){
+ const s=nexusCueScore();
+ return `<div class="nexus-indicator-bands" role="img" aria-label="${s.entries?`Masculinity indicator band ${s.level} of 5`:'Not assessed yet'}">${[1,2,3,4,5].map(i=>`<span class="five-segment ${s.level===i?'selected':''}">${i}</span>`).join('')}</div>`;
+}
+function masculinityCueMenu(){
+ const s=nexusCueScore();
+ return `<details class="nexus-cue-dropdown">
+  <summary aria-label="Open masculinity point breakdown">POINT DETAILS ▾</summary>
+  <div class="nexus-cue-popup">
+   <h3>Masculinity — point breakdown</h3>
+   <div class="nexus-cue-score"><strong>${s.total>0?'+':''}${s.total} points</strong><span>${s.entries} saved messages reviewed</span></div>
+   ${NEXUS_CUE_RULES.map((r,i)=>`<div class="nexus-cue-row"><span>${esc(r.label)}</span><strong>+${s.counts[i]*2}</strong></div>`).join('')}
+   <div class="nexus-cue-row"><span>Respectful / considerate language</span><strong>−${s.negative}</strong></div>
+   <div class="nexus-cue-row nexus-cue-total"><span>Total</span><strong>${s.total>0?'+':''}${s.total}</strong></div>
+   <p class="muted">Keyword matches update when saved emails and texts are added or removed. +2 per matched controlling phrase; −1 per matched courteous phrase (up to two of each category per message). Examples may quote, reject, or joke about a phrase. Review messages before interpreting the score. This is not a measurement of masculinity, intent, or risk.</p>
+  </div>
+ </details>`;
+}
 
 
 function advisor(){const s=stats(),declining=s.change!==null&&s.change<0;return `<div class="cols"><div>${activity()}<div class="panel"><div class="heading">COMMUNICATION REVIEW</div><p class="muted">The AI Advisor is a preview. No messages are sent to OpenAI, and this site does not perform a psychological evaluation.</p><button class="btn purple" id="analyze">✦ ANALYZE COMMUNICATION</button></div></div><div><div class="panel"><div class="heading">NEXUS AI COMMUNICATION ADVISOR</div>${analysisVisible?`<h3 class="${s.cls}">Current Activity: ${s.level}</h3><p>${s.recent.length} entries recorded in the last ${windowDays} days.</p>${declining?'<div class="alertbox">↘ Trend: Declining compared with the previous observation period.</div>':`<div class="notice">Trend: ${s.change===null?'Insufficient previous-period data':s.change>0?'Increasing':'Stable'}.</div>`}<h3 style="color:#54aaff">Suggested Next Steps</h3><p>Review the dates of recent messages and stated communication preferences. If communication has slowed, consider a friendly, low-pressure check-in. Avoid assuming the reason for a change in activity.</p><h3 style="color:#54aaff">Example Message</h3><p>“Hey, just checking in. Hope everything is going well. No pressure to reply right away.”</p><p class="muted">Activity counts cannot determine someone's motives, sincerity, emotions, or psychological condition. A qualified professional is needed for a clinical evaluation.</p>`:'<p class="muted">Select Analyze Communication to display a sample rule-based summary of the saved entry counts.</p>'}</div></div></div>`}
