@@ -67,6 +67,20 @@
 .fcx .fcx-source{padding:9px 15px;background:#0e1622;border:1px solid #293a50;border-radius:8px;margin-top:8px;font-size:12px;color:#adc5e0}
 .fcx .fcx-source a{color:#8fc4ff;text-decoration:underline}
 @media(max-width:700px){.communication-history-list{max-height:320px}}
+/* Profile header: badges below photograph; indicator beside facility information */
+.nexus-profile-header{align-items:flex-start}
+.nexus-photo-column{display:flex;flex-direction:column;align-items:center;gap:10px;flex:0 0 auto}
+.nexus-photo-badges{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;max-width:185px}
+.nexus-file-badge{background:#195fa9}
+.nexus-identity-main{flex:1;min-width:0}
+.nexus-identity-main h2{margin:0 0 6px}
+.nexus-info-and-assessment{display:flex;align-items:flex-start;gap:18px;flex-wrap:wrap}
+.nexus-identity-facts{flex:1 1 280px;gap:14px}
+.nexus-side-assessment{flex:1 1 270px;margin-top:0;max-width:480px;min-width:0}
+.nexus-side-assessment .five-level{gap:5px}
+.nexus-side-assessment .five-segment{padding:10px 3px}
+@media(max-width:700px){.nexus-photo-badges{max-width:140px}.nexus-info-and-assessment{flex-direction:column}.nexus-side-assessment{width:100%;max-width:none}}
+
 </style></head><body>
 
 <div id="gateway" class="gate"><form id="gateForm" class="panel"><div class="logo">NE<span>X</span>US</div><h2>Security Gateway</h2><p class="muted">Demonstration access only</p><div class="field"><label>Security Key</label><input required autocomplete="off"></div><div class="field"><label>Access Code</label><input required type="password"></div><button class="btn" type="submit">CONTINUE</button></form></div>
@@ -321,7 +335,32 @@ function registration(){
 
 function tableDisplay(p,t){const rows=Array.isArray(p[t.key])?p[t.key]:[];return section(t.title,rows.length?`<div class="tablewrap"><table><thead><tr>${t.cols.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${t.cols.map((c,i)=>`<td>${esc(Array.isArray(r)?r[i]:(r?.[c]??Object.values(r||{})[i]??''))}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`:'<p class="muted">No entries recorded.</p>')}
 
-function identity(p,personalMode=false){const d=personal[p.id]?.details||{};return `<div class="panel hero">${photo(p)}<div style="flex:1;min-width:230px"><h2>${esc(displayName(p))}</h2><div class="state">${esc((p.state||'STATE NOT SET').toUpperCase())}</div><div class="facts"><div class="fact"><small>Inmate ID</small><strong>${esc(p.id)}</strong></div>${personalMode?'':`<div class="fact"><small>Date of Birth</small><strong>${esc(p.dob||'—')}</strong></div>`}<div class="fact"><small>Age</small><strong>${esc(p.age||'—')}</strong></div>${personalMode?`<div class="fact"><small>Orientation</small><strong>${esc(d.orientation||'Not provided')}</strong></div>`:''}<div class="fact"><small>Facility</small><strong>${esc(p.facility||'—')}</strong></div></div>${personalMode?`<div class="header-assessment"><div class="muted" style="margin-bottom:8px;font-weight:bold">MASCULINITY EXPRESSION — COMMUNICATION INDICATOR</div>${masculinityCommunicationAssessment()}</div>`:''}</div><div><span class="status">${personalMode?'PERSONAL FILE':esc(p.status||'Active')}</span><p class="muted">${personalMode?'Separate from Master Record':'Official Master Record'}</p></div></div>`}
+function identity(p,personalMode=false){
+ const d=personal[p.id]?.details||{};
+ return `<div class="panel hero nexus-profile-header">
+  <div class="nexus-photo-column">
+   ${photo(p)}
+   <div class="nexus-photo-badges">
+    ${personalMode?'<span class="status nexus-file-badge">PERSONAL FILE</span>':''}
+    <span class="status ${(p.status||'').toLowerCase().includes('inactive')||(p.status||'').toLowerCase().includes('blocked')?'inactive':''}">${esc(p.status||'Active')}</span>
+   </div>
+  </div>
+  <div class="nexus-identity-main">
+   <h2>${esc(displayName(p))}</h2>
+   <div class="state">${esc((p.state||'STATE NOT SET').toUpperCase())}</div>
+   <div class="nexus-info-and-assessment">
+    <div class="facts nexus-identity-facts">
+     <div class="fact"><small>Inmate ID</small><strong>${esc(p.id)}</strong></div>
+     ${personalMode?'':`<div class="fact"><small>Date of Birth</small><strong>${esc(p.dob||'—')}</strong></div>`}
+     <div class="fact"><small>Age</small><strong>${esc(p.age||'—')}</strong></div>
+     ${personalMode?`<div class="fact"><small>Orientation</small><strong>${esc(d.orientation||'Not provided')}</strong></div>`:''}
+     <div class="fact nexus-facility-fact"><small>Facility</small><strong>${esc(p.facility||'—')}</strong></div>
+    </div>
+    ${personalMode?`<div class="header-assessment nexus-side-assessment"><div class="muted" style="margin-bottom:8px;font-weight:bold">MASCULINITY EXPRESSION — COMMUNICATION INDICATOR</div>${masculinityCommunicationAssessment()}</div>`:''}
+   </div>
+  </div>
+ </div>`;
+}
 
 function detail(){const p=find(detailId);if(!p)return '<p>Record not found.</p>';return `<div class="actions"><button class="btn alt" data-view="profiles">BACK</button><button class="btn" data-edit="${encodeURIComponent(p.id)}">EDIT RECORD</button><button class="btn purple" data-personal="${encodeURIComponent(p.id)}">INMATE PERSONAL</button><button class="btn danger" data-delete="${encodeURIComponent(p.id)}">DELETE RECORD</button></div>${identity(p)}${section('PERSONAL / CUSTODY DETAILS',`<div class="grid">${[['First Name',p.first],['Middle Name',p.middle],['Last Name',p.last],['State',p.state],['Date of Birth',p.dob],['Age',p.age],['Facility',p.facility],['Custody Classification',p.custody],['Admission Date',p.admission],['Earliest Release',p.earliestRelease],['Projected Release',p.release],['Most Recent Location',p.location],['Mailing Address',p.mailing],['Notes',p.notes]].map(([a,b])=>item(a,b)).join('')}</div>`)}${tableDefs.map(t=>tableDisplay(p,t)).join('')}`}
 
