@@ -182,6 +182,85 @@
 .nexus-combined-five{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
 .nexus-combined-five .five-segment{font-size:18px;font-weight:800;padding:14px 3px;border-radius:7px}
 @media(max-width:710px){.nexus-combined-panel{grid-template-columns:1fr}.nexus-combined-number{font-size:32px}}
+
+/* Three balanced metric tiles, one row below the identity fields. */
+.nexus-profile-header .nexus-profile-metrics{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  margin-top:14px;
+  width:100%;
+  max-width:980px;
+  align-items:stretch;
+}
+.nexus-profile-metrics>.nexus-metric-card,
+.nexus-profile-metrics>.nexus-combined-panel{
+  grid-column:auto;
+  min-width:0;
+  min-height:132px;
+  height:100%;
+  border-radius:9px;
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.nexus-profile-metrics .nexus-metric-heading,
+.nexus-profile-metrics .nexus-sexual-language-title,
+.nexus-profile-metrics .nexus-combined-title{
+  font-size:12px;
+  line-height:1.2;
+  margin:0 0 12px;
+}
+.nexus-profile-metrics .nexus-sexual-language{
+  margin:0;
+  padding:0;
+  border:0;
+  background:transparent;
+}
+.nexus-profile-metrics .nexus-sexual-language-score{display:none}
+.nexus-profile-metrics .nexus-indicator-bands,
+.nexus-profile-metrics .nexus-sexual-five-level,
+.nexus-profile-metrics .nexus-combined-five{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:4px;
+  margin:0;
+  width:100%;
+}
+.nexus-profile-metrics .five-segment,
+.nexus-masculinity-card .nexus-indicator-bands .five-segment,
+.nexus-sexual-five-level .five-segment,
+.nexus-combined-five .five-segment{
+  min-width:0;
+  font-size:13px;
+  padding:10px 1px;
+  border-radius:5px;
+}
+.nexus-profile-metrics .nexus-combined-panel{
+  background:#0c1b2c;
+  gap:8px;
+  align-items:stretch;
+}
+.nexus-combined-panel .nexus-combined-number{
+  font-size:27px;
+  line-height:1;
+  margin:0 0 10px;
+}
+@media(max-width:740px){
+  .nexus-profile-header .nexus-profile-metrics{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .nexus-profile-metrics>.nexus-combined-panel{
+    grid-column:1/-1;
+    min-height:110px;
+  }
+}
+@media(max-width:440px){
+  .nexus-profile-header .nexus-profile-metrics{grid-template-columns:1fr}
+  .nexus-profile-metrics>.nexus-combined-panel{grid-column:auto}
+}
+
 </style></head><body>
 
 <div id="gateway" class="gate"><form id="gateForm" class="panel"><div class="logo">NE<span>X</span>US</div><h2>Security Gateway</h2><p class="muted">Demonstration access only</p><div class="field"><label>Security Key</label><input required autocomplete="off"></div><div class="field"><label>Access Code</label><input required type="password"></div><button class="btn" type="submit">CONTINUE</button></form></div>
@@ -484,7 +563,7 @@ function nexusSexualLanguagePanel(){
  const level=score.total===0?1:score.total<5?2:score.total<10?3:score.total<20?4:5;
  return `<div class="nexus-sexual-language">
   <div class="nexus-sexual-language-title">SEXUAL</div>
-  <div class="nexus-sexual-language-score"><span>Score</span><strong>${score.total>0?'+':''}${score.total}</strong></div>
+  
   <div class="nexus-sexual-five-level" role="img" aria-label="Sexual-language keyword level ${level} of 5">
    ${[1,2,3,4,5].map(i=>`<span class="five-segment ${level===i?'selected':''}">${i}</span>`).join('')}
   </div>
