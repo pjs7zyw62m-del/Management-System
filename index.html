@@ -1859,7 +1859,9 @@ async function nexusOpenAuthorizedSession(){
   const {data:{user},error}=await nexusDB.auth.getUser();
   if(error || !user){nexusShowSignedOut();return false;}
   try{
+    await nexusRequireGatewayGrant();
     await loadMasterRecords();
+
   }catch(err){
     // A valid session is not proof of access to database records.
     nexusShowSignedOut('Unable to access records: '+err.message);
@@ -1870,7 +1872,86 @@ async function nexusOpenAuthorizedSession(){
   go('dashboard');
   return true;
 }
-$('loginForm').addEventListener('submit',async e=>{
+
+$('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (nexusSigningIn) return;
+
+  nexusSigningIn = true;
+  $('nexusSignInBtn').disabled = true;
+
+  let codes = null;
+  let signedIn = false;
+
+  const inputs = $('loginForm').querySelectorAll('input');
+
+  try {
+    // Collect both codes in temporary memory.
+    codes = await nexusCollectGatewayCodes();
+
+    $('nexusAuthStatus').textContent =
+      'Verifying your account...';
+
+    const { data, error } =
+      await nexusDB.auth.signInWithPassword({
+        email: inputs[0].value.trim(),
+        password: inputs[1].value
+      });
+
+    inputs[1].value = '';
+
+    if (error || !data?.user) {
+      throw new Error('Sign in failed.');
+    }
+
+    signedIn = true;
+
+    $('nexusAuthStatus').textContent =
+      'Verifying security gateway...';
+
+    // Verify codes against the authenticated session.
+    await nexusVerifyGatewayCodes(codes);
+
+    // Also checks the gateway grant before loading records.
+    const opened = await nexusOpenAuthorizedSession();
+
+    if (!opened) {
+      throw new Error('Dashboard authorization failed.');
+    }
+
+  } catch (err) {
+    inputs[1].value = '';
+
+    // A failed gateway check must not leave this
+    // newly authenticated browser signed in.
+    if (signedIn) {
+      const { error: signOutError } =
+        await nexusDB.auth.signOut();
+
+      if (signOutError) {
+        console.error(
+          'NEXUS sign-out cleanup failed:',
+          signOutError.code
+        );
+      }
+    }
+
+    nexusShowSignedOut(
+      'Login or gateway verification was not completed.'
+    );
+
+  } finally {
+    if (codes) {
+      codes.accessCode = '';
+      codes.securityCode = '';
+      codes = null;
+    }
+
+    nexusSigningIn = false;
+    $('nexusSignInBtn').disabled = false;
+  }
+});
+
   e.preventDefault();
   if(nexusSigningIn)return;
   nexusSigningIn=true;
