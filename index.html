@@ -1,10 +1,19 @@
 <!DOCTYPE html>
 
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Blackcell Corporation — NEXUS Management System</title>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>NEXUS Management System — Registration Repair</title>
 
 <style>
 
-:root{font-family:Arial,Helvetica,sans-serif;color:#e9effa;background:#080f1b}*{box-sizing:border-box}body{margin:0}button,input,textarea,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}.hidden{display:none!important}.gate{min-height:100vh;display:grid;place-items:center;background:radial-gradient(circle at top,#18315b,#080f1b 70%)}.gate .panel{width:min(430px,92vw)}.logo{font-size:30px;font-weight:900;letter-spacing:2px}.logo span{color:#f0445f}.shell{display:grid;grid-template-columns:215px 1fr;min-height:100vh}.sidebar{background:#0b1729;border-right:1px solid #263c59;padding:18px 12px}.sidebar .logo{margin:0 10px 26px}.nav{display:block;width:100%;text-align:left;background:transparent;border:0;color:#bdcce1;padding:13px 12px;border-radius:7px;margin:3px 0}.nav:hover,.nav.active{background:#125cce;color:#fff}.main{min-width:0}.topbar{padding:15px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #27364b;gap:10px}.topbar h1{margin:0;font-size:20px}.bell{border:1px solid #3c536e;background:#17253b;color:#fff;border-radius:50%;font-size:23px;width:43px;height:43px}.content{padding:20px;max-width:1600px;margin:auto}.panel{background:#101d2d;border:1px solid #28415e;border-radius:10px;padding:16px;margin-bottom:14px;min-width:0}.heading{background:#064783;color:#fff;padding:10px 12px;font-size:13px;font-weight:bold;border-radius:5px;margin:-16px -16px 14px}.btn{background:#176cdd;color:#fff;border:0;border-radius:6px;padding:10px 13px;font-weight:700}.btn.alt{background:#283a51}.btn.danger{background:#9f2639}.btn.purple{background:#7140d4}.btn.small{padding:7px 9px;font-size:12px}.actions{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:16px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}.field{display:flex;flex-direction:column;gap:5px;margin-bottom:11px;min-width:0}.field label{color:#a5bad4;font-size:12px}.finance-panel #ratesForm{margin-top:28px;padding-top:10px}.finance-panel #ratesForm>.heading{margin:0 0 18px}.finance-panel .pending-heading{margin:30px 0 18px}.finance-panel .actions{margin-top:22px}.report-fold{border:1px solid #38516b;border-radius:9px;margin:0 0 14px;background:#101d2d}.report-fold>summary{cursor:pointer;background:#064783;color:white;padding:15px;font-weight:bold;border-radius:8px}.fold-body{padding:15px}.report-fold[open]>summary{border-radius:8px 8px 0 0}.currency-input{position:relative}.currency-input .currency-symbol{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#e9effa;font-weight:700;pointer-events:none}.currency-input input{padding-left:28px;font-variant-numeric:tabular-nums}input,select,textarea{width:100%;background:#0a1423;color:#fff;border:1px solid #3b5675;border-radius:6px;padding:10px}textarea{resize:vertical;min-height:85px}.muted{color:#9eb2ca;font-size:13px}.photo{width:185px;height:215px;object-fit:contain;background:#202c3c;border-radius:7px}.photo.placeholder{display:grid;place-items:center;color:#9bacc1;font-size:52px}.hero{display:flex;align-items:center;gap:22px;flex-wrap:wrap}.hero h2{font-size:34px;margin:0 0 6px}.state{color:#31a5ff;font-size:22px;font-weight:800;margin-bottom:15px}.facts{display:flex;flex-wrap:wrap;gap:22px}.fact{min-width:95px;border-right:1px solid #30425b;padding-right:16px}.fact small{display:block;color:#9eb2ca;margin-bottom:7px}.fact strong{font-size:15px}.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:15px}.tab{background:#1b2b40;border:1px solid #30445d;color:#e2ecfa;border-radius:5px;padding:11px 13px}.tab.active{background:#176cdd;border-color:#176cdd}.info{background:#0b1726;border:1px solid #263d56;border-radius:6px;padding:12px;min-width:0}.info small{display:block;color:#9db3d0;margin-bottom:7px}.info strong{overflow-wrap:anywhere}.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:16px}.profile{background:#101d2d;border:1px solid #294360;border-radius:9px;overflow:hidden}.profile-photo{width:100%;height:250px;object-fit:contain;background:#1b2635;display:block}.idbar{background:#6b1d32;text-align:center;padding:8px;font-weight:bold}.profile-body{text-align:center;padding:13px}.profile-body h3{margin:0 0 7px}.profile-body .state{font-size:14px;margin:0 0 10px;letter-spacing:2px}.status{display:inline-block;background:#167e4a;padding:5px 10px;border-radius:20px;font-size:12px}.status.inactive{background:#842c40}.indicator{display:flex;align-items:center;gap:13px;font-size:30px;font-weight:900}.dot{width:23px;height:23px;border-radius:50%;flex-shrink:0}.low{color:#ff575e}.medium{color:#ffd12b}.high{color:#3bd88b}.dot.low{background:#ff575e}.dot.medium{background:#ffd12b}.dot.high{background:#3bd88b}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.stat{background:#0b1726;border:1px solid #30445b;padding:13px;border-radius:7px;text-align:center}.stat strong{display:block;font-size:26px;margin:7px}.entry{border-bottom:1px solid #2c3c52;padding:11px 0}.entry:last-child{border:0}.entry p{white-space:pre-wrap;overflow-wrap:anywhere}.section-title{color:#51b2ff;font-size:16px;font-weight:800;margin:22px 0 10px}.tablewrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:9px;border:1px solid #30435c;text-align:left;vertical-align:top}th{background:#173453}td input{min-width:135px}.bar{height:9px;background:#293a50;border-radius:10px;overflow:hidden;margin-top:10px}.fill{height:100%;background:#ffd12b}.notice{padding:11px;border:1px solid #395779;border-radius:6px;background:#122842;color:#b8d5ff}.alertbox{background:#381c29;border:1px solid #7e3248;border-radius:7px;padding:11px}.chart{display:flex;align-items:end;gap:14px;height:140px;border-bottom:1px solid #54708e;padding:10px}.chart-col{flex:1;text-align:center;min-width:0}.chart-bar{width:70%;max-width:45px;margin:auto;background:#2187e9;border-radius:4px 4px 0 0;min-height:2px}.chart-label{font-size:11px;color:#9db3cd;margin-top:5px}.right{display:flex;align-items:center;gap:10px}.right button{white-space:nowrap}@media(max-width:850px){.shell{grid-template-columns:1fr}.sidebar{display:flex;overflow-x:auto;align-items:center;padding:9px;gap:5px}.sidebar .logo{font-size:20px;margin:0 10px}.nav{width:auto;white-space:nowrap;font-size:12px}.cols{grid-template-columns:1fr}.hero h2{font-size:26px}.content{padding:12px}.topbar{padding:12px}.photo{width:140px;height:170px}}@media(max-width:480px){.stats{gap:5px}.stat{padding:8px}.stat strong{font-size:20px}.hero{gap:12px}.facts{gap:10px}.fact{padding-right:9px}.cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.profile-photo{height:195px}.profile-body{padding:8px}.profile-body h3{font-size:13px}}
+:root{font-family:Arial,Helvetica,sans-serif;color:#e9effa;background:#080f1b}*{box-sizing:border-box}body{margin:0}button,input,textarea,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}.hidden{display:none!important}.gate{min-height:100vh;display:grid;place-items:center;background:radial-gradient(circle at top,#18315b,#080f1b 70%)}.gate .panel{width:min(430px,92vw)}.logo 
+<div class="logo" style="font-size:clamp(12px,3.5vw,20px);letter-spacing:0;white-space:nowrap;">
+  BLACKCELL CORPORATION
+</div>
+ {
+  font-size: 2.3rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}{font-size:30px;font-weight:900;letter-spacing:2px}.logo span{color:#f0445f}.shell{display:grid;grid-template-columns:215px 1fr;min-height:100vh}.sidebar{background:#0b1729;border-right:1px solid #263c59;padding:18px 12px}.sidebar .logo{margin:0 10px 26px}.nav{display:block;width:100%;text-align:left;background:transparent;border:0;color:#bdcce1;padding:13px 12px;border-radius:7px;margin:3px 0}.nav:hover,.nav.active{background:#125cce;color:#fff}.main{min-width:0}.topbar{padding:15px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #27364b;gap:10px}.topbar h1{margin:0;font-size:20px}.bell{border:1px solid #3c536e;background:#17253b;color:#fff;border-radius:50%;font-size:23px;width:43px;height:43px}.content{padding:20px;max-width:1600px;margin:auto}.panel{background:#101d2d;border:1px solid #28415e;border-radius:10px;padding:16px;margin-bottom:14px;min-width:0}.heading{background:#064783;color:#fff;padding:10px 12px;font-size:13px;font-weight:bold;border-radius:5px;margin:-16px -16px 14px}.btn{background:#176cdd;color:#fff;border:0;border-radius:6px;padding:10px 13px;font-weight:700}.btn.alt{background:#283a51}.btn.danger{background:#9f2639}.btn.purple{background:#7140d4}.btn.small{padding:7px 9px;font-size:12px}.actions{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:16px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}.field{display:flex;flex-direction:column;gap:5px;margin-bottom:11px;min-width:0}.field label{color:#a5bad4;font-size:12px}.finance-panel #ratesForm{margin-top:28px;padding-top:10px}.finance-panel #ratesForm>.heading{margin:0 0 18px}.finance-panel .pending-heading{margin:30px 0 18px}.finance-panel .actions{margin-top:22px}.report-fold{border:1px solid #38516b;border-radius:9px;margin:0 0 14px;background:#101d2d}.report-fold>summary{cursor:pointer;background:#064783;color:white;padding:15px;font-weight:bold;border-radius:8px}.fold-body{padding:15px}.report-fold[open]>summary{border-radius:8px 8px 0 0}.currency-input{position:relative}.currency-input .currency-symbol{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#e9effa;font-weight:700;pointer-events:none}.currency-input input{padding-left:28px;font-variant-numeric:tabular-nums}input,select,textarea{width:100%;background:#0a1423;color:#fff;border:1px solid #3b5675;border-radius:6px;padding:10px}textarea{resize:vertical;min-height:85px}.muted{color:#9eb2ca;font-size:13px}.photo{width:185px;height:215px;object-fit:contain;background:#202c3c;border-radius:7px}.photo.placeholder{display:grid;place-items:center;color:#9bacc1;font-size:52px}.hero{display:flex;align-items:center;gap:22px;flex-wrap:wrap}.hero h2{font-size:34px;margin:0 0 6px}.state{color:#31a5ff;font-size:22px;font-weight:800;margin-bottom:15px}.facts{display:flex;flex-wrap:wrap;gap:22px}.fact{min-width:95px;border-right:1px solid #30425b;padding-right:16px}.fact small{display:block;color:#9eb2ca;margin-bottom:7px}.fact strong{font-size:15px}.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:15px}.tab{background:#1b2b40;border:1px solid #30445d;color:#e2ecfa;border-radius:5px;padding:11px 13px}.tab.active{background:#176cdd;border-color:#176cdd}.info{background:#0b1726;border:1px solid #263d56;border-radius:6px;padding:12px;min-width:0}.info small{display:block;color:#9db3d0;margin-bottom:7px}.info strong{overflow-wrap:anywhere}.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:16px}.profile{background:#101d2d;border:1px solid #294360;border-radius:9px;overflow:hidden}.profile-photo{width:100%;height:250px;object-fit:contain;background:#1b2635;display:block}.idbar{background:#6b1d32;text-align:center;padding:8px;font-weight:bold}.profile-body{text-align:center;padding:13px}.profile-body h3{margin:0 0 7px}.profile-body .state{font-size:14px;margin:0 0 10px;letter-spacing:2px}.status{display:inline-block;background:#167e4a;padding:5px 10px;border-radius:20px;font-size:12px}.status.inactive{background:#842c40}.indicator{display:flex;align-items:center;gap:13px;font-size:30px;font-weight:900}.dot{width:23px;height:23px;border-radius:50%;flex-shrink:0}.low{color:#ff575e}.medium{color:#ffd12b}.high{color:#3bd88b}.dot.low{background:#ff575e}.dot.medium{background:#ffd12b}.dot.high{background:#3bd88b}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.stat{background:#0b1726;border:1px solid #30445b;padding:13px;border-radius:7px;text-align:center}.stat strong{display:block;font-size:26px;margin:7px}.entry{border-bottom:1px solid #2c3c52;padding:11px 0}.entry:last-child{border:0}.entry p{white-space:pre-wrap;overflow-wrap:anywhere}.section-title{color:#51b2ff;font-size:16px;font-weight:800;margin:22px 0 10px}.tablewrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:9px;border:1px solid #30435c;text-align:left;vertical-align:top}th{background:#173453}td input{min-width:135px}.bar{height:9px;background:#293a50;border-radius:10px;overflow:hidden;margin-top:10px}.fill{height:100%;background:#ffd12b}.notice{padding:11px;border:1px solid #395779;border-radius:6px;background:#122842;color:#b8d5ff}.alertbox{background:#381c29;border:1px solid #7e3248;border-radius:7px;padding:11px}.chart{display:flex;align-items:end;gap:14px;height:140px;border-bottom:1px solid #54708e;padding:10px}.chart-col{flex:1;text-align:center;min-width:0}.chart-bar{width:70%;max-width:45px;margin:auto;background:#2187e9;border-radius:4px 4px 0 0;min-height:2px}.chart-label{font-size:11px;color:#9db3cd;margin-top:5px}.right{display:flex;align-items:center;gap:10px}.right button{white-space:nowrap}@media(max-width:850px){.shell{grid-template-columns:1fr}.sidebar{display:flex;overflow-x:auto;align-items:center;padding:9px;gap:5px}.sidebar .logo{font-size:20px;margin:0 10px}.nav{width:auto;white-space:nowrap;font-size:12px}.cols{grid-template-columns:1fr}.hero h2{font-size:26px}.content{padding:12px}.topbar{padding:12px}.photo{width:140px;height:170px}}@media(max-width:480px){.stats{gap:5px}.stat{padding:8px}.stat strong{font-size:20px}.hero{gap:12px}.facts{gap:10px}.fact{padding-right:9px}.cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.profile-photo{height:195px}.profile-body{padding:8px}.profile-body h3{font-size:13px}}
 
 
 /* Clear separation of financial sections, avoiding the global negative heading margins. */
@@ -544,18 +553,13 @@
 .nxcc-rank-item{grid-template-columns:30px minmax(0,1fr) auto}
 .nxcc-rank-person .nxcc-portrait{width:56px;height:64px;flex-basis:56px}
 @media(max-width:580px){.nxcc-person{gap:8px}.nxcc-portrait{width:42px;height:48px;flex-basis:42px}.nxcc-rank-person .nxcc-portrait{width:44px;height:52px;flex-basis:44px}.nxcc-rank-person{gap:7px}.nxcc-id{font-size:10px}}
-/* Blackcell Corporation: login-only branding. Leaves the dashboard logo unchanged. */
-.gate .panel{width:min(480px,94vw)}
-.blackcell-login-heading{font-size:clamp(15px,4.1vw,25px);font-weight:900;letter-spacing:0;line-height:1.25;white-space:nowrap;color:#f3f7ff;margin:0 0 7px}
-.blackcell-login-subtitle{font-size:clamp(13px,3vw,16px);font-weight:600;line-height:1.35;margin:0 0 16px;color:#c5d5e9}
-@media(max-width:380px){.gate .panel{padding:12px}.blackcell-login-heading{font-size:clamp(13px,4.2vw,16px)}}
 </style><style id="nexus-final-upgrade">
 .nxv-panel{background:#101b2b;border:1px solid #2c4058;border-radius:15px;padding:20px;margin-bottom:16px;color:#e8f2ff}.nxv-panel h2,.nxv-panel h3{margin:0 0 12px;color:#f2f7ff}.nxv-sub{font-size:13px;color:#afc4dc;margin-bottom:18px}.nxv-filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.nxv-filters label{font-size:12px;color:#afc4dc;display:block;margin-bottom:5px}.nxv-filters input,.nxv-filters select{width:100%;padding:10px;background:#19283b;border:1px solid #415571;border-radius:8px;color:#f7fbff}.nxv-table-wrap{overflow:auto;max-height:520px}.nxv-table{border-collapse:collapse;width:100%;min-width:650px}.nxv-table th,.nxv-table td{text-align:left;border-bottom:1px solid #314257;padding:12px 9px;font-size:13px}.nxv-table th{color:#a9c8e9;position:sticky;top:0;background:#142339}.nxv-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px}.nxv-stat{padding:17px;background:#1a2a40;border-radius:11px}.nxv-stat strong{font-size:25px;display:block;color:#fff}.nxv-stat small{color:#a9bdd5}.nxv-bars{display:grid;gap:12px}.nxv-bar{display:grid;grid-template-columns:minmax(80px,150px) 1fr 48px;gap:10px;align-items:center;font-size:13px}.nxv-track{height:9px;background:#263c56;border-radius:9px;overflow:hidden}.nxv-fill{height:100%;background:#5aaefa;border-radius:9px}.nxv-empty{color:#a8b9cd;padding:20px}.nxv-tools{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0}.nxv-person{display:flex;align-items:center;gap:10px}.nxv-thumb{width:34px;height:38px;object-fit:cover;border-radius:6px;background:#293e55}
 </style>
 <style id="nxv-record-photo-style">.nxv-record-photo{display:block;width:54px;height:66px;object-fit:cover;object-position:center;background:#1b2d43;border:1px solid #3c5875;border-radius:7px}.nxv-record-avatar{display:grid;place-items:center;color:#9fb9d4;font-size:28px}.nxv-table td:first-child{width:70px}.nxv-table td{vertical-align:middle}</style>
 </head><body>
 
-<div id="login" class="gate"><form id="loginForm" class="panel"><div class="blackcell-login-heading">BLACKCELL CORPORATION</div><h2 class="blackcell-login-subtitle">NEXUS Management System</h2><p class="muted" id="nexusAuthStatus" role="status">Checking your secure session…</p><div class="field">
+<div id="login" class="gate"><form id="loginForm" class="panel"><div class="logo">BLACKCELL CORPORATION</div><h2>NEXUS Management System</h2><p class="muted" id="nexusAuthStatus" role="status">Checking your secure session…</p><div class="field">
 <label>Email Address</label><input required type="email" autocomplete="username"></div><div class="field"><label>Password</label><input required type="password" autocomplete="current-password"></div><button class="btn" type="submit" id="nexusSignInBtn" disabled>SIGN IN</button></form></div>
 
 <div id="shell" class="shell hidden"><aside class="sidebar"><div class="logo">NE<span>X</span>US</div><button class="nav active" data-view="dashboard">▦ Dashboard</button><button class="nav" data-view="profiles">♙ Inmate Profiles</button><button class="nav" data-view="facilities">▤ Facilities</button><button class="nav" data-view="records">▤ Records</button><button class="nav" data-view="search">⌕ Search</button><button class="nav" data-view="financialHub">＄ Financial Center</button><button class="nav" data-view="reports">▥ Reports</button><button class="nav" data-view="settings">⚙ Settings</button></aside><main class="main"><header class="topbar"><h1 id="pageTitle">Command Dashboard</h1><div class="right"><span id="nexusCloudStatus" style="font-size:11px;max-width:190px;color:#a5e7bd">Checking cloud…</span><button class="bell" id="bell" title="Notifications (coming soon)" aria-label="Notifications">🔔</button><button class="btn alt small" id="lock">Log Out</button></div></header><div class="content" id="content"></div></main></div>
@@ -1734,14 +1738,150 @@ function nexusShowSignedOut(message='Sign in with your authorized administrator 
   $('nexusAuthStatus').textContent=message;
   $('nexusSignInBtn').disabled=false;
 }
+function nexusCollectGatewayCodes() {
+  return new Promise((resolve, reject) => {
+    const overlay = document.createElement('div');
+    overlay.id = 'nexusGatewayEntry';
+    overlay.style.cssText = `
+      position:fixed;inset:0;z-index:999999;
+      background:#07101df2;
+      display:flex;align-items:center;
+      justify-content:center;padding:20px;
+    `;
+
+    const panel = document.createElement('form');
+    panel.style.cssText = `
+      width:100%;max-width:390px;
+      padding:30px;box-sizing:border-box;
+      background:#142238;color:white;
+      border:1px solid #607a99;
+      border-radius:14px;
+      font-family:Arial,sans-serif;
+    `;
+
+    const title = document.createElement('h2');
+    title.textContent = 'BLACKCELL CORPORATION';
+
+    const subtitle = document.createElement('p');
+    subtitle.textContent = 'NEXUS Management System — Security Gateway';
+
+    const access = document.createElement('input');
+    access.type = 'password';
+    access.placeholder = 'Access Code';
+    access.autocomplete = 'off';
+    access.required = true;
+    access.maxLength = 256;
+
+    const security = document.createElement('input');
+    security.type = 'password';
+    security.placeholder = 'Security Code';
+    security.autocomplete = 'off';
+    security.required = true;
+    security.maxLength = 256;
+
+    for (const field of [access, security]) {
+      field.style.cssText = `
+        display:block;width:100%;box-sizing:border-box;
+        margin:14px 0;padding:12px;border-radius:7px;
+        border:1px solid #71829b;
+      `;
+    }
+
+    const continueButton = document.createElement('button');
+    continueButton.type = 'submit';
+    continueButton.textContent = 'Continue to Sign In';
+    continueButton.style.cssText = `
+      width:100%;padding:13px;background:#3277c5;
+      color:white;border:0;border-radius:7px;cursor:pointer;
+    `;
+
+    const cancel = document.createElement('button');
+    cancel.type = 'button';
+    cancel.textContent = 'Cancel';
+    cancel.style.cssText = `
+      margin-top:12px;width:100%;padding:10px;cursor:pointer;
+    `;
+
+    const close = () => {
+      access.value = '';
+      security.value = '';
+      overlay.remove();
+    };
+
+    cancel.onclick = () => {
+      close();
+      reject(new Error('Gateway entry cancelled'));
+    };
+
+    panel.onsubmit = event => {
+      event.preventDefault();
+      const codes = {
+        accessCode: access.value,
+        securityCode: security.value
+      };
+      close();
+      resolve(codes);
+    };
+
+    panel.append(title, subtitle, access, security, continueButton, cancel);
+    overlay.appendChild(panel);
+    document.body.appendChild(overlay);
+    access.focus();
+  });
+}
+
+async function nexusVerifyGatewayCodes(codes) {
+  if (
+    !codes ||
+    typeof codes.accessCode !== 'string' ||
+    typeof codes.securityCode !== 'string' ||
+    !codes.accessCode ||
+    !codes.securityCode
+  ) {
+    throw new Error('Both security codes are required.');
+  }
+
+  try {
+    const { data, error } = await nexusDB.functions.invoke(
+      'nexus-gateway-verify',
+      {
+        body: {
+          accessCode: codes.accessCode,
+          securityCode: codes.securityCode
+        }
+      }
+    );
+    if (error || data?.verified !== true) {
+      throw new Error('NEXUS gateway verification failed.');
+    }
+    await nexusRequireGatewayGrant();
+    return true;
+  } finally {
+    codes.accessCode = '';
+    codes.securityCode = '';
+  }
+}
+
+async function nexusRequireGatewayGrant(){
+  const {data, error} = await nexusDB.rpc(
+    'nexus_gateway_session_valid'
+  );
+  if(error){
+    throw new Error('Unable to check NEXUS gateway authorization.');
+  }
+  if(data !== true){
+    throw new Error('NEXUS security codes must be verified before accessing records.');
+  }
+  return true;
+}
+
 async function nexusOpenAuthorizedSession(){
-  // getUser checks the token against Supabase Auth, not just a cached local session.
   const {data:{user},error}=await nexusDB.auth.getUser();
   if(error || !user){nexusShowSignedOut();return false;}
   try{
+    await nexusRequireGatewayGrant();
     await loadMasterRecords();
   }catch(err){
-    // A valid session is not proof of access to database records.
     nexusShowSignedOut('Unable to access records: '+err.message);
     return false;
   }
@@ -1750,23 +1890,49 @@ async function nexusOpenAuthorizedSession(){
   go('dashboard');
   return true;
 }
-$('loginForm').addEventListener('submit',async e=>{
+
+$('loginForm').addEventListener('submit', async e => {
   e.preventDefault();
-  if(nexusSigningIn)return;
-  nexusSigningIn=true;
-  $('nexusSignInBtn').disabled=true;
-  $('nexusAuthStatus').textContent='Verifying your account…';
-  try{
-    const inputs=$('loginForm').querySelectorAll('input');
-    const {data,error}=await nexusDB.auth.signInWithPassword({
-      email:inputs[0].value.trim(), password:inputs[1].value
+  if (nexusSigningIn) return;
+
+  nexusSigningIn = true;
+  $('nexusSignInBtn').disabled = true;
+  let codes = null;
+  let signedIn = false;
+  const inputs = $('loginForm').querySelectorAll('input');
+
+  try {
+    codes = await nexusCollectGatewayCodes();
+    $('nexusAuthStatus').textContent = 'Verifying your account...';
+    const { data, error } = await nexusDB.auth.signInWithPassword({
+      email: inputs[0].value.trim(),
+      password: inputs[1].value
     });
-    inputs[1].value='';
-    if(error || !data.user){nexusShowSignedOut('Sign in failed. Check your email and password.');return;}
-    await nexusOpenAuthorizedSession();
-  }catch(err){nexusShowSignedOut('Could not complete sign in. Check your connection and try again.');}
-  finally{nexusSigningIn=false;$('nexusSignInBtn').disabled=false;}
+    inputs[1].value = '';
+    if (error || !data?.user) throw new Error('Sign in failed.');
+    signedIn = true;
+    $('nexusAuthStatus').textContent = 'Verifying security gateway...';
+    await nexusVerifyGatewayCodes(codes);
+    const opened = await nexusOpenAuthorizedSession();
+    if (!opened) throw new Error('Dashboard authorization failed.');
+  } catch (err) {
+    inputs[1].value = '';
+    if (signedIn) {
+      const { error: signOutError } = await nexusDB.auth.signOut();
+      if (signOutError) console.error('NEXUS sign-out cleanup failed:',signOutError.code);
+    }
+    nexusShowSignedOut('Login or gateway verification was not completed.');
+  } finally {
+    if (codes) {
+      codes.accessCode = '';
+      codes.securityCode = '';
+      codes = null;
+    }
+    nexusSigningIn = false;
+    $('nexusSignInBtn').disabled = false;
+  }
 });
+
 $('lock').addEventListener('click',async()=>{
   if(nexusCloudDirty||nexusCloudWriteFailed){alert('There are unconfirmed cloud changes. Confirm the save status before logging out.');return;}
   await nexusCloudWriteQueue.catch(()=>{});
