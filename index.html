@@ -668,7 +668,7 @@ const saveProfiles=()=>true,savePersonal=()=>nexusCloudCommit();
 let currentUserId='';
 async function signedPhotoUrl(path){
  if(!path)return '';
- const {data,error}=await nexusDB.storage.from(NEXUS_PHOTO_BUCKET).createSignedUrl(path,3600);
+ const {data,error}=await nexusDB.storage.from(NEXUS_PHOTO_BUCKET).createSignedUrl(path,300);
  if(error)throw new Error('Could not load a photograph: '+error.message);
  return data.signedUrl;
 }
