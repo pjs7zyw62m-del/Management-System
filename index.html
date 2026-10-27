@@ -559,6 +559,34 @@
 .nexus-mailing-info strong{display:block;white-space:pre-wrap;overflow-wrap:break-word;word-break:normal;line-height:1.65;font-size:15px;font-weight:600;max-width:100%}
 textarea[name="mailing"]{min-height:170px;line-height:1.55;white-space:pre-wrap}
 
+
+/* Phase 2: compact institutional registration design */
+.nx-reg-head{background:#174f9b;color:#fff;font-weight:800;font-size:12px;text-align:center;padding:11px 8px;letter-spacing:.6px;margin:13px 0 8px}
+.nx-reg-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.nx-reg-grid .field{min-width:0;margin:0}.nx-reg-grid .field label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.25px;display:block;margin-bottom:5px}
+.nx-reg-grid .field input,.nx-reg-grid .field select{min-width:0;width:100%;box-sizing:border-box}
+.nx-reg-span2{grid-column:span 2}.nx-reg-span4{grid-column:span 4}
+.nx-reg-photo-layout{display:grid;grid-template-columns:205px minmax(0,1fr);gap:16px;align-items:start}
+.nx-reg-photo-layout .registration-photo{position:static;background:#122239;border:1px solid #324965;padding:12px;border-radius:9px}
+.nx-reg-release{background:#153d85;color:#fff;text-align:center;padding:9px;font-weight:800;font-size:12px;letter-spacing:.6px;margin-top:14px}
+.nx-reg-note{color:#a9bbd3;font-size:12px;margin:8px 0 12px}
+.nx-reg-address textarea{width:100%;min-height:150px;white-space:pre-wrap;box-sizing:border-box}
+@media(max-width:920px){.nx-reg-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.nx-reg-span4{grid-column:span 2}.nx-reg-photo-layout{grid-template-columns:1fr}.nx-reg-photo-layout .registration-photo{flex-direction:row;flex-wrap:wrap}}
+@media(max-width:560px){.nx-reg-grid{grid-template-columns:1fr}.nx-reg-span2,.nx-reg-span4{grid-column:auto}}
+
+
+/* NEXUS THE EIGHT | tester-only persona interface */
+.nexus-eight-panel{border-color:#6b5363;background:linear-gradient(145deg,#142235,#111822)}
+.nexus-eight-banner{background:#272c39;border-left:3px solid #d9b778;color:#ead6ae;padding:12px;margin:15px 0;font-size:13px;font-weight:700}
+.nexus-eight-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:16px 0}
+.nexus-eight-persona{border:1px solid #3b4a5d;border-radius:8px;background:#1e2b3c;color:#e6edf8;min-height:92px;padding:12px;text-align:left;display:flex;flex-direction:column;gap:7px}
+.nexus-eight-persona .number{color:#dabb81;font-size:12px;font-weight:800}
+.nexus-eight-persona small{color:#b8c6d6;line-height:1.35}
+.nexus-eight-persona.selected{outline:2px solid #dabb81;background:#28374a}
+.nexus-eight-results{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:12px;margin:15px 0}
+.nexus-eight-result{background:#15273a;border:1px solid #364c65;border-radius:9px;padding:15px;min-width:0}
+.nexus-eight-heading{display:flex;flex-direction:column;gap:4px;color:#e0bd84}.nexus-eight-heading small{color:#bacbe0}
+.nexus-eight-evidence{background:#0d1a28;border-left:2px solid #7295bd;margin:8px 0;padding:9px;white-space:pre-wrap;overflow-wrap:anywhere}.nexus-eight-evidence small{color:#a9c0d9}.nexus-eight-evidence p{margin:7px 0 0}
 </style><style id="nexus-final-upgrade">
 .nxv-panel{background:#101b2b;border:1px solid #2c4058;border-radius:15px;padding:20px;margin-bottom:16px;color:#e8f2ff}.nxv-panel h2,.nxv-panel h3{margin:0 0 12px;color:#f2f7ff}.nxv-sub{font-size:13px;color:#afc4dc;margin-bottom:18px}.nxv-filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.nxv-filters label{font-size:12px;color:#afc4dc;display:block;margin-bottom:5px}.nxv-filters input,.nxv-filters select{width:100%;padding:10px;background:#19283b;border:1px solid #415571;border-radius:8px;color:#f7fbff}.nxv-table-wrap{overflow:auto;max-height:520px}.nxv-table{border-collapse:collapse;width:100%;min-width:650px}.nxv-table th,.nxv-table td{text-align:left;border-bottom:1px solid #314257;padding:12px 9px;font-size:13px}.nxv-table th{color:#a9c8e9;position:sticky;top:0;background:#142339}.nxv-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px}.nxv-stat{padding:17px;background:#1a2a40;border-radius:11px}.nxv-stat strong{font-size:25px;display:block;color:#fff}.nxv-stat small{color:#a9bdd5}.nxv-bars{display:grid;gap:12px}.nxv-bar{display:grid;grid-template-columns:minmax(80px,150px) 1fr 48px;gap:10px;align-items:center;font-size:13px}.nxv-track{height:9px;background:#263c56;border-radius:9px;overflow:hidden}.nxv-fill{height:100%;background:#5aaefa;border-radius:9px}.nxv-empty{color:#a8b9cd;padding:20px}.nxv-tools{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0}.nxv-person{display:flex;align-items:center;gap:10px}.nxv-thumb{width:34px;height:38px;object-fit:cover;border-radius:6px;background:#293e55}
 </style>
@@ -689,7 +717,7 @@ async function loadMasterRecords(){
  if(sectionError)throw new Error('Could not load Master Record sections: '+sectionError.message);
  const byId=new Map();
  const loaded=(records||[]).map(r=>{
-  const p={id:r.inmate_id,first:r.first_name||'',middle:r.middle_name||'',last:r.last_name||'',age:r.age??'',state:r.state||'',facility:r.facility||'',unit:r.housing_unit||'',sentenceType:r.sentence_type||'Unknown',paroleEligibility:r.parole_eligibility_date||'',status:r.status||'Active',admission:r.admission_date||'',earliestRelease:r.earliest_release_date||'',release:r.projected_release_date||'',custody:r.custody_classification||'',location:r.most_recent_location||'',mailing:r.mailing_address||'',notes:r.notes||'',photo_path:r.photo_path||'',photo:''};
+  const p={id:r.inmate_id,first:r.first_name||'',middle:r.middle_name||'',last:r.last_name||'',age:r.age??'',state:r.state||'',facility:r.facility||'',unit:r.housing_unit||'',sentenceType:r.sentence_type||'Unknown',paroleEligibility:r.parole_eligibility_date||'',status:r.status||'Active',admission:r.admission_date||'',earliestRelease:r.earliest_release_date||'',release:r.projected_release_date||'',custody:r.custody_classification||'',location:r.most_recent_location||'',mailing:r.mailing_address||'',gender:r.gender||'',heightInches:r.height_inches??'',weight:r.weight??'',hairColor:r.hair_color||'',eyeColor:r.eye_color||'',ethnicOrigin:r.ethnic_origin||'',prisonReleaseText:r.prison_release_text||'',releaseTypeText:r.release_type_text||'',locationAsOf:r.location_as_of||'',lastMovement:r.last_movement||'',notes:r.notes||'',photo_path:r.photo_path||'',photo:''};
   for(const t of tableDefs)p[t.key]=[];
   byId.set(r.id,p);return p;
  });
@@ -740,6 +768,16 @@ async function loadMasterRecords(){
     custody_classification: p.custody || null,
     most_recent_location: p.location || null,
     mailing_address: p.mailing || null,
+    gender: p.gender || null,
+    height_inches: p.heightInches === '' ? null : Number(p.heightInches),
+    weight: p.weight === '' ? null : Number(p.weight),
+    hair_color: p.hairColor || null,
+    eye_color: p.eyeColor || null,
+    ethnic_origin: p.ethnicOrigin || null,
+    prison_release_text: p.prisonReleaseText || null,
+    release_type_text: p.releaseTypeText || null,
+    location_as_of: p.locationAsOf || null,
+    last_movement: p.lastMovement || null,
     notes: p.notes || null
   };
 
@@ -836,28 +874,47 @@ function releaseDisplay(p,key){
  return p[key]||'Not recorded';
 }
 function registration(){
-  const p=editId?find(editId):null;
-  return `<div class="actions"><button class="btn alt" type="button" data-view="profiles">← Back to Profiles</button></div>
-  <form id="recordForm" novalidate>
-    <div class="panel"><div class="heading">${p?'EDIT INMATE MASTER RECORD':'NEW INMATE REGISTRATION'}</div>
-      <p class="muted">Fields marked * are required. Save will show a clear success or error message.</p>
-      <div id="recordSaveStatus" class="notice hidden" role="status" aria-live="polite"></div>
-      <div class="registration-layout">
-        <div class="registration-photo"><div id="registrationPhotoPreview">${photo(p)}</div>
-          <strong>PROFILE PHOTOGRAPH</strong><div class="muted">JPEG, PNG, WebP · Max 1.5 MB</div>
-          <input type="file" id="photoInput" accept="image/png,image/jpeg,image/webp" aria-label="Profile photograph">
-          <div class="muted">ID: ${esc(p?.id||'New registration')}</div>
-        </div>
-        <div class="registration-fields">
-          <div class="grid">${field('Inmate ID *','id',p?.id||'')}${field('First Name','first',p?.first||'')}${field('Middle Name / Initial','middle',p?.middle||'')}${field('Last Name','last',p?.last||'')}${stateSelect(p?.state||'')}${facilitySelect(p?.state||'',p?.facility||'')}${field('Unit','unit',p?.unit||'')}${field('Age','age',p?.age||'','number')}${field('Admission Date','admission',p?.admission||'','date')}${sentenceTypeSelect(p?.sentenceType)}${field('Parole Eligibility Date','paroleEligibility',p?.paroleEligibility||'','date')}${field('Earliest Release Date','earliestRelease',p?.earliestRelease||'','date')}${field('Projected Release Date','release',p?.release||'','date')}${field('Custody Classification','custody',p?.custody||'')}${field('Most Recent Location','location',p?.location||'')}</div>
-          <div class="field"><label>Status</label><select name="status">${['Active','Inactive','Active blocked','Inactive blocked','Archive'].map(v=>`<option value="${v}" ${((p?.status||'Active')===v)?'selected':''}>${v}</option>`).join('')}</select></div>
-          ${area('Mailing Address','mailing',p?.mailing||'')}${area('Master Record Notes','notes',p?.notes||'')}
-        </div>
-      </div>
-    </div>
-    ${tableDefs.map(t=>tableEditor(t,p)).join('')}
-    <div class="panel registration-savebar"><div id="recordSaveBottom" class="muted">Your record will be saved to Supabase.</div><button id="saveMasterButton" class="btn" type="submit">SAVE MASTER RECORD</button></div>
-  </form>`;
+ const p=editId?find(editId):null;
+ const F=(label,key,type='text')=>field(label,key,p?.[key]||'',type);
+ return `<div class="actions"><button class="btn alt" type="button" data-view="profiles">← Back to Profiles</button></div>
+ <form id="recordForm" novalidate>
+ <div class="panel"><div class="heading">${p?'EDIT INMATE MASTER RECORD':'NEW INMATE REGISTRATION'}</div>
+ <p class="muted">NEXUS master registration. Inmate ID, State and Facility are required. Other fields may remain blank until verified.</p>
+ <div id="recordSaveStatus" class="notice hidden" role="status" aria-live="polite"></div>
+ <div class="nx-reg-head">INMATE IDENTIFICATION</div>
+ <div class="nx-reg-photo-layout">
+   <div class="registration-photo"><div id="registrationPhotoPreview">${photo(p)}</div><strong>INMATE PHOTO</strong><span class="muted">JPEG / PNG / WebP · Maximum 1.5 MB</span><input type="file" id="photoInput" accept="image/png,image/jpeg,image/webp" aria-label="Inmate photograph"></div>
+   <div class="nx-reg-grid">
+    ${F('LAST NAME','last')}${F('FIRST NAME','first')}${F('MIDDLE INITIAL','middle')}${F('INMATE ID *','id')}
+    ${F('AGE','age','number')}${F('GENDER','gender')}${F('HEIGHT (INCHES)','heightInches','number')}${F('WEIGHT','weight','number')}
+    ${F('HAIR COLOR','hairColor')}${F('EYE COLOR','eyeColor')}${F('ETHNIC ORIGIN','ethnicOrigin')}${F('CUSTODY CLASS','custody')}
+    ${F('ADMISSION','admission','date')}
+   </div>
+ </div>
+ <div class="nx-reg-release">PROJECTED ELIGIBLE RELEASE DATE</div>
+ <div class="nx-reg-grid">
+  ${F('PROJECTED ELIGIBLE RELEASE DATE','earliestRelease','date')}
+  ${F('PRISON RELEASE DATE — DATE / LIFE / NATURAL LIFE / YEARS TO LIFE / DEATH','prisonReleaseText')}
+  ${F('RELEASE TYPE — FREE TEXT','releaseTypeText')}
+  ${F('PROJECTED RELEASE DATE (STRUCTURED / OPTIONAL)','release','date')}
+ </div>
+ <p class="nx-reg-note">Prison Release Date and Release Type are free text. Dates for searching remain separate optional date fields. Never type LIFE into a date input.</p>
+ <div class="nx-reg-release">MOST RECENT LOCATION · AS OF DATE</div>
+ <div class="nx-reg-grid">
+  ${stateSelect(p?.state||'')}${facilitySelect(p?.state||'',p?.facility||'')}${F('UNIT','unit')}${F('AS OF DATE','locationAsOf','date')}
+  ${F('COMPLEX / MOST RECENT LOCATION','location')}${F('LAST MOVEMENT','lastMovement')}
+  <div class="field nx-reg-span2"><label>STATUS</label><select name="status">${['Active','Inactive','Active blocked','Inactive blocked','Transferred','Released','Archive'].map(v=>`<option value="${v}" ${((p?.status||'Active')===v)?'selected':''}>${v}</option>`).join('')}</select></div>
+ </div>
+ <div class="nx-reg-head">INMATE MAILING ADDRESS</div>
+ <div class="nx-reg-address">${area('FULL NAME, INMATE ID, FACILITY, UNIT AND ADDRESS — ONE LINE EACH','mailing',p?.mailing||'')}</div>
+ <div class="nx-reg-head">ADDITIONAL SENTENCING INFORMATION</div>
+ <div class="nx-reg-grid">${sentenceTypeSelect(p?.sentenceType)}${F('PAROLE ELIGIBILITY DATE','paroleEligibility','date')}</div>
+ ${area('MASTER RECORD NOTES','notes',p?.notes||'')}
+ </div></div>
+ <div class="nx-reg-head">INMATE INFORMATION · HISTORICAL RECORDS</div>
+ ${tableDefs.map(t=>tableEditor(t,p)).join('')}
+ <div class="panel registration-savebar"><div id="recordSaveBottom" class="muted">Save the profile and all section rows to Supabase.</div><button id="saveMasterButton" class="btn" type="submit">SAVE MASTER RECORD</button></div>
+ </form>`;
 }
 
 function tableDisplay(p,t){const rows=Array.isArray(p[t.key])?p[t.key]:[];return section(t.title,rows.length?`<div class="tablewrap"><table><thead><tr>${t.cols.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${t.cols.map((c,i)=>`<td>${esc(Array.isArray(r)?r[i]:(r?.[c]??Object.values(r||{})[i]??''))}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`:'<p class="muted">No entries recorded.</p>')}
@@ -989,7 +1046,7 @@ function identity(p,personalMode=false){
  </div>`;
 }
 
-function detail(){const p=find(detailId);if(!p)return '<p>Record not found.</p>';return `<div class="actions"><button class="btn alt" data-view="profiles">BACK</button><button class="btn" data-edit="${encodeURIComponent(p.id)}">EDIT RECORD</button><button class="btn purple" data-personal="${encodeURIComponent(p.id)}">INMATE PERSONAL</button><button class="btn danger" data-delete="${encodeURIComponent(p.id)}">DELETE RECORD</button></div>${identity(p)}${section('PERSONAL / CUSTODY DETAILS',`<div class="grid">${[['First Name',p.first],['Middle Name',p.middle],['Last Name',p.last],['State',p.state],['Age',p.age],['Facility',p.facility],['Unit',p.unit],['Sentence Type',p.sentenceType||'Unknown'],['Parole Eligibility',p.paroleEligibility],['Custody Classification',p.custody],['Admission Date',p.admission],['Earliest Release',releaseDisplay(p,'earliestRelease')],['Projected Release',releaseDisplay(p,'release')],['Most Recent Location',p.location],['Mailing Address',p.mailing],['Notes',p.notes]].map(([a,b])=>a==='Mailing Address'?`<div class="info nexus-mailing-info"><small>Mailing Address</small><strong>${esc(b||'—')}</strong></div>`:item(a,b)).join('')}</div>`)}${tableDefs.map(t=>tableDisplay(p,t)).join('')}`}
+function detail(){const p=find(detailId);if(!p)return '<p>Record not found.</p>';return `<div class="actions"><button class="btn alt" data-view="profiles">BACK</button><button class="btn" data-edit="${encodeURIComponent(p.id)}">EDIT RECORD</button><button class="btn purple" data-personal="${encodeURIComponent(p.id)}">INMATE PERSONAL</button><button class="btn danger" data-delete="${encodeURIComponent(p.id)}">DELETE RECORD</button></div>${identity(p)}${section('PERSONAL / CUSTODY DETAILS',`<div class="grid">${[['First Name',p.first],['Middle Name',p.middle],['Last Name',p.last],['State',p.state],['Age',p.age],['Facility',p.facility],['Unit',p.unit],['Gender',p.gender],['Height (inches)',p.heightInches],['Weight',p.weight],['Hair Color',p.hairColor],['Eye Color',p.eyeColor],['Ethnic Origin',p.ethnicOrigin],['Prison Release Date',p.prisonReleaseText],['Release Type',p.releaseTypeText],['Location As Of',p.locationAsOf],['Last Movement',p.lastMovement],['Sentence Type',p.sentenceType||'Unknown'],['Parole Eligibility',p.paroleEligibility],['Custody Classification',p.custody],['Admission Date',p.admission],['Earliest Release',releaseDisplay(p,'earliestRelease')],['Projected Release',releaseDisplay(p,'release')],['Most Recent Location',p.location],['Mailing Address',p.mailing],['Notes',p.notes]].map(([a,b])=>a==='Mailing Address'?`<div class="info nexus-mailing-info"><small>Mailing Address</small><strong>${esc(b||'—')}</strong></div>`:item(a,b)).join('')}</div>`)}${tableDefs.map(t=>tableDisplay(p,t)).join('')}`}
 
 function personalDetails(){const d=file().details||{};const fields=[['Preferred Name / Nickname','nickname'],['Hometown','hometown'],['Orientation (optional; self-reported)','orientation'],['Pronouns (optional)','pronouns'],['Marital Status','marital'],['Children','children'],['Languages','languages'],['Education Level','education'],['Religion (optional)','religion']];return `<form id="personalForm"><div class="cols"><div>${section('BASIC INFORMATION',`<div class="grid">${fields.map(([a,b])=>field(a,b,d[b]||'')).join('')}</div>`)}</div><div>${section('ABOUT ME / BIOGRAPHY',area('Biography','bio',d.bio||''))}${section('INTERESTS & HOBBIES',area('Interests and Activities','hobbies',d.hobbies||''))}${section('PERSONAL GOALS',area('Goals','goals',d.goals||''))}${section('ADDITIONAL INFORMATION',area('Personal Notes','additional',d.additional||''))}</div></div><button class="btn" type="submit">SAVE PERSONAL DETAILS</button></form>`}
 
@@ -1336,7 +1393,34 @@ $('content').addEventListener('click',e=>{
  }
 },true);
 
-function advisor(){const s=stats(),declining=s.change!==null&&s.change<0;const allEntries=(file().entries||[]).filter(e=>['text','email','call'].includes(String(e.type||'').toLowerCase()));const ordered=allEntries.map(e=>e.date).filter(Boolean).sort();const audit=`<div class="notice"><strong>Available communication data:</strong> ${allEntries.length} saved text/email/call entries in this personal file. ${ordered.length?'Date range: '+esc(ordered[0])+' through '+esc(ordered[ordered.length-1])+'.':'No dated entries available.'} Analysis looks at saved entry dates, not every message in external email or phone apps. Zero recent entries does not mean zero overall history.</div>`;return `<div class="cols"><div>${activity()}<div class="panel"><div class="heading">COMMUNICATION REVIEW</div><p class="muted">The AI Advisor is a preview. No messages are sent to OpenAI, and this site does not perform a psychological evaluation.</p><button class="btn purple" id="analyze">✦ ANALYZE COMMUNICATION</button></div></div><div><div class="panel"><div class="heading">NEXUS AI COMMUNICATION ADVISOR</div>${audit}${analysisVisible?`<h3 class="${s.cls}">Current Activity: ${s.level}</h3><p>${s.recent.length} entries recorded ${windowDays===0?'across all saved history':'in the last '+windowDays+' days'}.</p>${declining?'<div class="alertbox">↘ Trend: Declining compared with the previous observation period.</div>':`<div class="notice">Trend: ${s.change===null?'Insufficient previous-period data':s.change>0?'Increasing':'Stable'}.</div>`}<h3 style="color:#54aaff">Suggested Next Steps</h3><p>Review the dates of recent messages and stated communication preferences. If communication has slowed, consider a friendly, low-pressure check-in. Avoid assuming the reason for a change in activity.</p><h3 style="color:#54aaff">Example Message</h3><p>“Hey, just checking in. Hope everything is going well. No pressure to reply right away.”</p><p class="muted">Activity counts cannot determine someone's motives, sincerity, emotions, or psychological condition. A qualified professional is needed for a clinical evaluation.</p>`:'<p class="muted">Select Analyze Communication to display a sample rule-based summary of the saved entry counts.</p>'}</div></div></div>`}
+const NEXUS_EIGHT_PERSONAS=[
+ {id:'alpha',name:'THE ALPHA',tag:'Respect · Confidence · Boundaries',focus:'assertiveness, respect, control, directness',terms:['respect','strong','control','power','lead','boss','stand'],question:'Where does his wording show confidence or a demand for respect?'},
+ {id:'savage',name:'THE SAVAGE',tag:'Contradictions · No Excuses',focus:'differences between claims and observable statements',terms:['never','always','promise','lie','truth','honest','said'],question:'What can the messages actually prove, and what is still only a claim?'},
+ {id:'player',name:'THE PLAYER',tag:'Flirting · Teasing · Signals',focus:'teasing, flirting, mixed messages',terms:['flirt','cute','sexy','handsome','kiss','date','tease','baby'],question:'Is the language flirtatious, playful, or being misread?'},
+ {id:'wolf',name:'THE WOLF',tag:'Loyalty · Trust · Protection',focus:'loyalty, trust, protection, consent and limits',terms:['loyal','trust','friend','bro','protect','betray','boundary'],question:'Does this show an established boundary or a request for loyalty?'},
+ {id:'kingpin',name:'THE KINGPIN',tag:'Money · Leverage · Reciprocity',focus:'financial requests and exchange expectations',terms:['money','cash','dollar','send','pay','owe','deposit','fund','favor'],question:'Is any financial request accompanied by pressure or clear expectations?'},
+ {id:'outlaw',name:'THE OUTLAW',tag:'Independence · Pride · Defiance',focus:'expressions of self-direction or defiance',terms:['free','freedom','rules','independent','rebel','authority','prison','locked'],question:'What appears to be a statement of independence versus frustration?'},
+ {id:'deviant',name:'THE DEVIANT',tag:'Sexual Language · Innuendo · Boundaries',focus:'sexual references, innuendo and expressed boundaries',terms:['sex','sexual','naked','horny','turn on','fantasy','strip','bed'],question:'What is explicitly sexual, and what could instead be humor or ambiguity?'},
+ {id:'convict',name:'THE CONVICT',tag:'Prison Context · Patterns · Adaptation',focus:'recurring expressions, prison context and changes over time',terms:['yard','cell','unit','visit','lockdown','prison','time','inside'],question:'How does this compare with earlier messages from the same inmate?'}
+];
+let nexusEightChoice='all';
+function nexusEightAssessment(persona,entries){
+ const matches=[];
+ for(const e of entries){
+  const body=String(e.message||'');
+  const low=body.toLowerCase();
+  if(persona.terms.some(t=>low.includes(t)))matches.push(e);
+ }
+ const recent=matches.slice(-3);
+ const evidence=recent.map(e=>`<div class="nexus-eight-evidence"><small>${esc(e.date||'Undated')} · ${esc(e.type||'Message')}</small><p>${esc(String(e.message||'').slice(0,360))}${String(e.message||'').length>360?'…':''}</p></div>`).join('');
+ return `<article class="nexus-eight-result"><div class="nexus-eight-heading"><strong>${persona.name}</strong><small>${persona.tag}</small></div><p><b>Analytical lens:</b> ${esc(persona.focus)}.</p><p><b>Question:</b> ${esc(persona.question)}</p><p><b>Local text matches:</b> ${matches.length} of ${entries.length} entries. ${matches.length?'These excerpts are possible cues, not proof of intent.':'Insufficient relevant evidence for this lens.'}</p>${evidence||'<p class="muted">No supporting excerpts found in saved text.</p>'}<p class="muted">Not an AI conclusion. Phrase matching is a limited local preview; it cannot determine intentions, sexuality, identity, or psychological traits.</p></article>`;
+}
+function advisor(){
+ const entries=(file().entries||[]).filter(e=>['text','email','call'].includes(String(e.type||'').toLowerCase()));
+ const options=NEXUS_EIGHT_PERSONAS.map(p=>`<option value="${p.id}" ${nexusEightChoice===p.id?'selected':''}>${p.name} — ${p.tag}</option>`).join('');
+ const chosen=nexusEightChoice==='all'?NEXUS_EIGHT_PERSONAS:NEXUS_EIGHT_PERSONAS.filter(p=>p.id===nexusEightChoice);
+ return `<div class="panel nexus-eight-panel"><div class="heading">NEXUS AI ADVISOR · THE EIGHT</div><p class="muted">Eight independent analysis perspectives, with a rugged, direct voice. Every view uses the saved text under this inmate profile. <b>Tester mode:</b> the previews below use local phrase matching, not OpenAI. No text is sent to an external AI service.</p><div class="nexus-eight-banner">8 distinct lenses · 1 shared evidence record · independent conclusions in the future AI release</div><div class="field"><label for="nexusEightChoice">CHOOSE AN ADVISOR</label><select id="nexusEightChoice"><option value="all" ${nexusEightChoice==='all'?'selected':''}>ALL EIGHT — Compare Every Perspective</option>${options}</select></div><div class="nexus-eight-grid">${NEXUS_EIGHT_PERSONAS.map((p,i)=>`<button type="button" class="nexus-eight-persona ${nexusEightChoice===p.id?'selected':''}" data-eight-persona="${p.id}"><span class="number">0${i+1}</span><strong>${p.name}</strong><small>${p.tag}</small></button>`).join('')}</div><div class="actions"><button class="btn purple" id="analyze" type="button">✦ RUN ${nexusEightChoice==='all'?'ALL EIGHT':'SELECTED'} TESTER PREVIEW</button><button class="btn alt" type="button" data-eight-persona="all">ALL EIGHT</button></div><div class="notice"><b>Communication entries available:</b> ${entries.length}. Screenshot OCR, external AI calls and independently stored AI reports are not enabled in this build. AI analysis will require a secured server function, privacy authorization and testing.</div>${analysisVisible?`<div class="nexus-eight-results">${chosen.map(p=>nexusEightAssessment(p,entries)).join('')}</div>`:'<p class="muted">Choose one advisor or ALL EIGHT, then run the local preview. The results show only grounded keyword cues from saved entries.</p>'}</div>`;
+}
 
 
 const REASONS_KEY='nexus_sexual_reasons_v1';
@@ -1538,6 +1622,7 @@ function nxvReports(){const c=nxvComm(),types=['Text','Email','Call'].map(t=>[t,
 function nxvExportReport(){const comm=nxvComm();const rows=[['Metric','Category','Count'],['Profiles','Total',profiles.length],['Communications','Total',comm.length]];for(const key of ['state','facility','status'])for(const [name,count] of Object.entries(profiles.reduce((a,p)=>{const n=String(p[key]||'Unknown');a[n]=(a[n]||0)+1;return a},{})))rows.push(['Profiles by '+key,name,count]);for(const type of ['Text','Email','Call'])rows.push(['Communication by channel',type,comm.filter(e=>String(e.type||'').toLowerCase()===type.toLowerCase()).length]);const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='nexus-report-summary.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 function render(){const names={financialHub:'Financial Center',dashboard:'Command Dashboard',profiles:'Inmate Profiles',register:'Inmate Registration',detail:'Inmate Master Record',personal:'Inmate Personal File',facilities:'Facilities',records:'Records',search:'Search',reports:'Reports',settings:'Settings'};$('pageTitle').textContent=names[view]||'NEXUS';document.querySelectorAll('.nav').forEach(b=>b.classList.toggle('active',b.dataset.view===view));let html='';if(view==='dashboard'){html=nexusDashboard();}else if(view==='profiles'){html=`<div class="actions"><button class="btn" data-view="register">+ New Registration</button><button class="btn alt" id="toggleArchive">${showArchive?'Show Current Inmates':'View Archive'}</button></div><div class="panel"><div class="field"><label>Search by name, ID, state, facility, or unit</label><input id="searchBox" placeholder="Search profiles..." value="${esc(filter)}"></div></div><div id="profileResults">${profileCards(profiles.filter(p=>(showArchive?p.status==='Archive':p.status!=='Archive')&&[p.id,p.first,p.last,p.state,p.facility,p.unit].join(' ').toLowerCase().includes(filter.toLowerCase())).sort((a,b)=>(a.last||'').localeCompare(b.last||'')))}</div>`;}else if(view==='register')html=registration();else if(view==='detail')html=detail();else if(view==='personal')html=personalPage();else if(view==='financialHub')html=financialHub();else if(view==='facilities')html=facilitiesPage();else if(view==='search')html=nxvSearch();else if(view==='records')html=nxvRecords();else if(view==='reports')html=nxvReports();else if(view==='settings')html=section('DEMO SETTINGS',`<p class="notice">Authentication and row-level access are handled by Supabase. This implementation has not completed a security audit; do not enter real inmate or other sensitive personal information.</p><p>Master Records, Personal Files, communications, financial data, custom rules and settings are saved in Supabase. Verify cloud-save status before leaving the page.</p><button class="btn" id="backup">EXPORT BACKUP JSON</button>`);$('content').innerHTML=html;if(view==='search')nxvApplySearch();if(view==='facilities'){const current=facChoice(facEntries());if(current&&!read(FAC_PHOTO_KEY,{})[facKey(current)])facUpdateAutomaticPhoto(current)}}
 
+$('content').addEventListener('change',e=>{if(e.target.id==='nexusEightChoice'){nexusEightChoice=e.target.value;analysisVisible=false;render()}});
 $('content').addEventListener('input',e=>{if(e.target.id?.startsWith('nxv-'))nxvApplySearch()});$('content').addEventListener('change',e=>{if(e.target.id?.startsWith('nxv-'))nxvApplySearch()});$('content').addEventListener('click',e=>{if(e.target.closest('#nxv-clear')){e.preventDefault();['nxv-q','nxv-state','nxv-facility','nxv-min-age','nxv-max-age','nxv-status'].forEach(id=>{const x=document.getElementById(id);if(x)x.value=''});nxvApplySearch()}if(e.target.closest('#nxv-export-report')){e.preventDefault();nxvExportReport()}});
 function go(v){view=v;render();window.scrollTo(0,0)}
 
@@ -1637,6 +1722,12 @@ async function submitMasterRecord(form,fd){
   if(ageInput?.value && (!Number.isInteger(Number(ageInput.value)) || Number(ageInput.value)<0 || Number(ageInput.value)>130)){
     showMasterSaveError('Age must be a whole number between 0 and 130.');ageInput.focus();return;
   }
+  for(const key of ['heightInches','weight']){
+    const el=form.elements.namedItem(key);
+    if(el?.value && (!Number.isFinite(Number(el.value)) || Number(el.value)<0)){
+      showMasterSaveError('Height and Weight must be nonnegative numbers.');el.focus();return;
+    }
+  }
   const button=$('saveMasterButton');
   const status=$('recordSaveStatus');
   if(button){button.disabled=true;button.textContent='SAVING...'}
@@ -1734,7 +1825,7 @@ if(b.dataset.delete){
   alert('Master Record deleted; verify cloud save status before leaving.');
   return;
 }
-if(b.dataset.tab){personalTab=b.dataset.tab;render();return}if(b.dataset.window){windowDays=Number(b.dataset.window);analysisVisible=false;render();return}if(b.id==='analyze'){analysisVisible=true;render();return}if(b.dataset.deposit){const f=financeFile(),d=balanceData();if(!d.pending.length||d.outstanding<=0){alert('There is no positive outstanding balance to record.');return}if(!confirm('Confirm you have made a deposit of '+money(d.outstanding)+'? This records the deposit and clears the pending balance.'))return;f.deposits.push({id:'DEP-'+Date.now(),date:new Date().toLocaleString(),amount:Math.round(d.outstanding*100)/100,entryIds:d.pending.map(x=>x.uid),recordedAt:new Date().toISOString(),breakdown:Object.fromEntries(activityTypes.map(([k])=>[k,d.subtotal(k)]))});savePersonal();render();return}if(b.dataset.sexDelete){const f=financeFile();if(f.deposits.some(d=>d.entryIds.includes(b.dataset.sexDelete))){alert('This activity is linked to a recorded deposit and cannot be deleted.');return}if(confirm('Delete this sexual activity entry?')){f.sexualEntries=f.sexualEntries.filter(x=>x.uid!==b.dataset.sexDelete);savePersonal();render()}return}if(b.dataset.entryDelete){if(financeFile().deposits.some(d=>d.entryIds.includes(b.dataset.entryDelete))){alert('This entry is linked to a recorded deposit and cannot be deleted.');return}if(confirm('Delete this communication entry?')){file().entries=file().entries.filter(x=>x.uid!==b.dataset.entryDelete);savePersonal();analysisVisible=false;render()}return}if(b.dataset.add){captureRows();const t=tableDefs.find(x=>x.key===b.dataset.add);tableRows[t.key]??=[];tableRows[t.key].push(t.cols.map(() => ''));preserveRegistrationAndRender();return}if(b.dataset.remove){captureRows();tableRows[b.dataset.remove]?.splice(Number(b.dataset.index),1);preserveRegistrationAndRender();return}if(b.id==='backup'){const data={masterRecords:profiles,personalFiles:personal,exportedAt:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='nexus-demo-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}});
+if(b.dataset.tab){personalTab=b.dataset.tab;analysisVisible=false;render();return}if(b.dataset.eightPersona){nexusEightChoice=b.dataset.eightPersona;analysisVisible=false;render();return}if(b.dataset.window){windowDays=Number(b.dataset.window);analysisVisible=false;render();return}if(b.id==='analyze'){analysisVisible=true;render();return}if(b.dataset.deposit){const f=financeFile(),d=balanceData();if(!d.pending.length||d.outstanding<=0){alert('There is no positive outstanding balance to record.');return}if(!confirm('Confirm you have made a deposit of '+money(d.outstanding)+'? This records the deposit and clears the pending balance.'))return;f.deposits.push({id:'DEP-'+Date.now(),date:new Date().toLocaleString(),amount:Math.round(d.outstanding*100)/100,entryIds:d.pending.map(x=>x.uid),recordedAt:new Date().toISOString(),breakdown:Object.fromEntries(activityTypes.map(([k])=>[k,d.subtotal(k)]))});savePersonal();render();return}if(b.dataset.sexDelete){const f=financeFile();if(f.deposits.some(d=>d.entryIds.includes(b.dataset.sexDelete))){alert('This activity is linked to a recorded deposit and cannot be deleted.');return}if(confirm('Delete this sexual activity entry?')){f.sexualEntries=f.sexualEntries.filter(x=>x.uid!==b.dataset.sexDelete);savePersonal();render()}return}if(b.dataset.entryDelete){if(financeFile().deposits.some(d=>d.entryIds.includes(b.dataset.entryDelete))){alert('This entry is linked to a recorded deposit and cannot be deleted.');return}if(confirm('Delete this communication entry?')){file().entries=file().entries.filter(x=>x.uid!==b.dataset.entryDelete);savePersonal();analysisVisible=false;render()}return}if(b.dataset.add){captureRows();const t=tableDefs.find(x=>x.key===b.dataset.add);tableRows[t.key]??=[];tableRows[t.key].push(t.cols.map(() => ''));preserveRegistrationAndRender();return}if(b.dataset.remove){captureRows();tableRows[b.dataset.remove]?.splice(Number(b.dataset.index),1);preserveRegistrationAndRender();return}if(b.id==='backup'){const data={masterRecords:profiles,personalFiles:personal,exportedAt:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='nexus-demo-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}});
 
 
 document.querySelectorAll('.nav').forEach(b=>{
