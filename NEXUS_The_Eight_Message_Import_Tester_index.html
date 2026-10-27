@@ -1,0 +1,2114 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>NEXUS Management System — Registration Repair</title>
+
+<style>
+
+:root{font-family:Arial,Helvetica,sans-serif;color:#e9effa;background:#080f1b}*{box-sizing:border-box}body{margin:0}button,input,textarea,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}.hidden{display:none!important}.gate{min-height:100vh;display:grid;place-items:center;background:radial-gradient(circle at top,#18315b,#080f1b 70%)}.gate .panel{width:min(430px,92vw)}.logo 
+<div class="logo" style="font-size:clamp(12px,3.5vw,20px);letter-spacing:0;white-space:nowrap;">
+  BLACKCELL CORPORATION
+</div>
+ {
+  font-size: 2.3rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}{font-size:30px;font-weight:900;letter-spacing:2px}.logo span{color:#f0445f}.shell{display:grid;grid-template-columns:215px 1fr;min-height:100vh}.sidebar{background:#0b1729;border-right:1px solid #263c59;padding:18px 12px}.sidebar .logo{margin:0 10px 26px}.nav{display:block;width:100%;text-align:left;background:transparent;border:0;color:#bdcce1;padding:13px 12px;border-radius:7px;margin:3px 0}.nav:hover,.nav.active{background:#125cce;color:#fff}.main{min-width:0}.topbar{padding:15px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #27364b;gap:10px}.topbar h1{margin:0;font-size:20px}.bell{border:1px solid #3c536e;background:#17253b;color:#fff;border-radius:50%;font-size:23px;width:43px;height:43px}.content{padding:20px;max-width:1600px;margin:auto}.panel{background:#101d2d;border:1px solid #28415e;border-radius:10px;padding:16px;margin-bottom:14px;min-width:0}.heading{background:#064783;color:#fff;padding:10px 12px;font-size:13px;font-weight:bold;border-radius:5px;margin:-16px -16px 14px}.btn{background:#176cdd;color:#fff;border:0;border-radius:6px;padding:10px 13px;font-weight:700}.btn.alt{background:#283a51}.btn.danger{background:#9f2639}.btn.purple{background:#7140d4}.btn.small{padding:7px 9px;font-size:12px}.actions{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:16px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}.field{display:flex;flex-direction:column;gap:5px;margin-bottom:11px;min-width:0}.field label{color:#a5bad4;font-size:12px}.finance-panel #ratesForm{margin-top:28px;padding-top:10px}.finance-panel #ratesForm>.heading{margin:0 0 18px}.finance-panel .pending-heading{margin:30px 0 18px}.finance-panel .actions{margin-top:22px}.report-fold{border:1px solid #38516b;border-radius:9px;margin:0 0 14px;background:#101d2d}.report-fold>summary{cursor:pointer;background:#064783;color:white;padding:15px;font-weight:bold;border-radius:8px}.fold-body{padding:15px}.report-fold[open]>summary{border-radius:8px 8px 0 0}.currency-input{position:relative}.currency-input .currency-symbol{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#e9effa;font-weight:700;pointer-events:none}.currency-input input{padding-left:28px;font-variant-numeric:tabular-nums}input,select,textarea{width:100%;background:#0a1423;color:#fff;border:1px solid #3b5675;border-radius:6px;padding:10px}textarea{resize:vertical;min-height:85px}.muted{color:#9eb2ca;font-size:13px}.photo{width:185px;height:215px;object-fit:contain;background:#202c3c;border-radius:7px}.photo.placeholder{display:grid;place-items:center;color:#9bacc1;font-size:52px}.hero{display:flex;align-items:center;gap:22px;flex-wrap:wrap}.hero h2{font-size:34px;margin:0 0 6px}.state{color:#31a5ff;font-size:22px;font-weight:800;margin-bottom:15px}.facts{display:flex;flex-wrap:wrap;gap:22px}.fact{min-width:95px;border-right:1px solid #30425b;padding-right:16px}.fact small{display:block;color:#9eb2ca;margin-bottom:7px}.fact strong{font-size:15px}.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:15px}.tab{background:#1b2b40;border:1px solid #30445d;color:#e2ecfa;border-radius:5px;padding:11px 13px}.tab.active{background:#176cdd;border-color:#176cdd}.info{background:#0b1726;border:1px solid #263d56;border-radius:6px;padding:12px;min-width:0}.info small{display:block;color:#9db3d0;margin-bottom:7px}.info strong{overflow-wrap:anywhere}.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:16px}.profile{background:#101d2d;border:1px solid #294360;border-radius:9px;overflow:hidden}.profile-photo{width:100%;height:250px;object-fit:contain;background:#1b2635;display:block}.idbar{background:#6b1d32;text-align:center;padding:8px;font-weight:bold}.profile-body{text-align:center;padding:13px}.profile-body h3{margin:0 0 7px}.profile-body .state{font-size:14px;margin:0 0 10px;letter-spacing:2px}.status{display:inline-block;background:#167e4a;padding:5px 10px;border-radius:20px;font-size:12px}.status.inactive{background:#842c40}.indicator{display:flex;align-items:center;gap:13px;font-size:30px;font-weight:900}.dot{width:23px;height:23px;border-radius:50%;flex-shrink:0}.low{color:#ff575e}.medium{color:#ffd12b}.high{color:#3bd88b}.dot.low{background:#ff575e}.dot.medium{background:#ffd12b}.dot.high{background:#3bd88b}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.stat{background:#0b1726;border:1px solid #30445b;padding:13px;border-radius:7px;text-align:center}.stat strong{display:block;font-size:26px;margin:7px}.entry{border-bottom:1px solid #2c3c52;padding:11px 0}.entry:last-child{border:0}.entry p{white-space:pre-wrap;overflow-wrap:anywhere}.section-title{color:#51b2ff;font-size:16px;font-weight:800;margin:22px 0 10px}.tablewrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:9px;border:1px solid #30435c;text-align:left;vertical-align:top}th{background:#173453}td input{min-width:135px}.bar{height:9px;background:#293a50;border-radius:10px;overflow:hidden;margin-top:10px}.fill{height:100%;background:#ffd12b}.notice{padding:11px;border:1px solid #395779;border-radius:6px;background:#122842;color:#b8d5ff}.alertbox{background:#381c29;border:1px solid #7e3248;border-radius:7px;padding:11px}.chart{display:flex;align-items:end;gap:14px;height:140px;border-bottom:1px solid #54708e;padding:10px}.chart-col{flex:1;text-align:center;min-width:0}.chart-bar{width:70%;max-width:45px;margin:auto;background:#2187e9;border-radius:4px 4px 0 0;min-height:2px}.chart-label{font-size:11px;color:#9db3cd;margin-top:5px}.right{display:flex;align-items:center;gap:10px}.right button{white-space:nowrap}@media(max-width:850px){.shell{grid-template-columns:1fr}.sidebar{display:flex;overflow-x:auto;align-items:center;padding:9px;gap:5px}.sidebar .logo{font-size:20px;margin:0 10px}.nav{width:auto;white-space:nowrap;font-size:12px}.cols{grid-template-columns:1fr}.hero h2{font-size:26px}.content{padding:12px}.topbar{padding:12px}.photo{width:140px;height:170px}}@media(max-width:480px){.stats{gap:5px}.stat{padding:8px}.stat strong{font-size:20px}.hero{gap:12px}.facts{gap:10px}.fact{padding-right:9px}.cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.profile-photo{height:195px}.profile-body{padding:8px}.profile-body h3{font-size:13px}}
+
+
+/* Clear separation of financial sections, avoiding the global negative heading margins. */
+
+.finance-panel{padding:18px;}
+
+.finance-panel>.heading{margin:-18px -18px 18px;}
+
+.finance-panel .stats{margin:18px 0 24px;gap:12px;}
+
+.finance-panel #ratesForm{margin-top:18px;padding-top:8px;}
+
+.finance-panel #ratesForm>.heading,.finance-panel>.heading:not(:first-child){margin:14px 0 16px;border-radius:6px;padding:12px 14px;}
+
+.finance-panel #ratesForm>.grid{margin-bottom:14px;}
+
+.finance-panel #ratesForm+.heading{margin-top:28px!important;}
+
+.finance-panel #ratesForm+.heading+.grid{margin-top:14px;margin-bottom:16px;}
+
+.finance-panel .actions{margin-top:16px;}
+
+.sex-disclosure{background:#101d2d;border:1px solid #28415e;border-radius:10px;margin-bottom:16px;overflow:hidden;}
+
+.sex-disclosure>summary{cursor:pointer;padding:15px 17px;background:#15324e;color:#8fcbff;font-weight:800;list-style:none;}
+
+.sex-disclosure>summary::-webkit-details-marker{display:none;}
+
+.sex-disclosure>summary::after{content:'▾';float:right;}
+
+.sex-disclosure[open]>summary::after{content:'▴';}
+
+.sex-disclosure .disclosure-body{padding:16px;}
+
+.sex-disclosure .panel{margin:0;border:0;background:transparent;padding:0;}
+
+.sex-disclosure .section-title{display:none;}
+
+
+.report-static{background:#101d2d;border:1px solid #38516b;border-radius:9px;margin:0 0 18px;overflow:hidden}.report-static-title{background:#064783;color:white;padding:15px;font-weight:bold}.report-static-body{padding:16px}.report-static-body>.panel{margin-top:0}.five-level{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}.five-segment{padding:12px 4px;text-align:center;border-radius:6px;background:#22354c;color:#b8cce3;font-weight:bold}.five-segment.selected{background:#176cdd;color:#fff;outline:2px solid #93c5fd}.report-static-body .heading{margin-top:0}
+
+.header-assessment{margin-top:18px;max-width:550px;padding:12px;border:1px solid #365578;border-radius:8px;background:#0b1726}.header-assessment .five-level{margin:8px 0}.header-assessment .notice{font-size:12px}textarea[name="mailing"]{min-height:130px;width:100%}
+/* Registration layout and visible save feedback */
+.registration-layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:22px;align-items:start}
+.registration-photo{display:flex;flex-direction:column;gap:10px;align-items:flex-start;position:sticky;top:12px}
+.registration-photo .photo,.registration-photo .profile-photo{width:185px;height:215px;max-width:100%;object-fit:contain}
+.registration-photo input{max-width:205px}
+.registration-fields{min-width:0}
+.registration-savebar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;position:sticky;bottom:0;z-index:5;box-shadow:0 -4px 18px #080f1bcc}
+#recordSaveStatus{margin-bottom:16px}
+#recordSaveStatus.error{background:#381c29;border-color:#d14a5d;color:#ffe0e6}
+@media(max-width:700px){.registration-layout{grid-template-columns:1fr}.registration-photo{position:static;flex-direction:row;flex-wrap:wrap;align-items:center}.registration-photo .photo{width:115px;height:135px}.registration-savebar{position:static}}
+
+/* Integrated NEXUS Facilities Center — Black Edition */
+.fcx{color:#edf3fc}.fcx *{box-sizing:border-box}.fcx .fcx-filter{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;padding:17px;margin-bottom:15px;background:#0c111a;border:1px solid #2a3545;border-radius:14px}.fcx label{display:block;font-size:12px;font-weight:800;margin-bottom:8px;color:#c9d6e9}.fcx select,.fcx input[type=search]{width:100%;background:#192333;color:#eef5ff;border:1px solid #35455b;padding:12px;border-radius:9px}.fcx .fcx-hero{position:relative;min-height:310px;border:1px solid #303e52;border-radius:16px;background:linear-gradient(0deg,#080d16 1%,transparent 95%),linear-gradient(130deg,#1c3752,#6b6b68 53%,#292e3d);overflow:hidden;display:flex;align-items:end}.fcx .fcx-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.fcx .fcx-hero:before{content:'';position:absolute;inset:0;background:linear-gradient(0deg,#050a12 0%,#07111da6 40%,transparent 88%);z-index:1;pointer-events:none}.fcx .fcx-art{position:absolute;left:8%;right:8%;top:23%;height:52%;background:repeating-linear-gradient(90deg,#718092 0 9%,#5b697a 9% 10%,#8290a1 10% 19%);border:10px solid #455365;box-shadow:0 15px 0 #26384c,0 30px 0 #172b3a;opacity:.76}.fcx .fcx-art:after{content:'';display:block;position:absolute;left:-10%;right:-10%;bottom:-50px;height:48px;background:repeating-linear-gradient(90deg,transparent 0 6%,#c0cad3 6% 6.4%,transparent 6.4% 12%);border-top:3px solid #c0cad3}.fcx .fcx-hero-content{position:relative;z-index:2;padding:24px;width:100%}.fcx .fcx-hero-content h2{margin:0 0 8px;font-size:clamp(20px,2.5vw,29px);color:#fff}.fcx .fcx-muted{color:#a9bdd4;font-size:13px}.fcx .fcx-cols{display:grid;grid-template-columns:1.5fr 1fr;gap:15px;margin-top:15px}.fcx .fcx-panel{border:1px solid #293a50;background:#0e1622;border-radius:14px;padding:17px;min-width:0}.fcx .fcx-panel h3{margin:0 0 13px;color:#f5f8ff}.fcx .fcx-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:11px}.fcx .fcx-card{background:#182335;border:1px solid #384a60;border-radius:11px;color:#fff;padding:0;overflow:hidden;text-align:left}.fcx .fcx-card.selected{border-color:#519dff;box-shadow:0 0 0 1px #519dff}.fcx .fcx-thumb{height:90px;background:linear-gradient(145deg,#4b6580,#977f66 62%,#253e50);position:relative;overflow:hidden}.fcx .fcx-thumb:after{content:'';position:absolute;inset:40% 12% 0;background:repeating-linear-gradient(90deg,#677989 0 16%,#34495a 16% 18%);border-top:7px solid #2a3c4f}.fcx .fcx-thumb img{width:100%;height:100%;object-fit:cover;position:relative;z-index:1}.fcx .fcx-card-copy{padding:12px}.fcx .fcx-card-copy strong{display:block;margin-bottom:5px}.fcx .fcx-card-copy small{color:#aec1d7}.fcx .fcx-person{display:flex;align-items:center;gap:10px;border-bottom:1px solid #283649;padding:10px 0}.fcx .fcx-person img,.fcx .fcx-avatar{height:50px;width:45px;flex:0 0 auto;object-fit:cover;background:#27384b;border-radius:7px;display:grid;place-items:center;color:#b6cde6}.fcx .fcx-person .info{flex:1;min-width:0;padding:0}.fcx .fcx-person strong{display:block}.fcx .fcx-person small{display:block;color:#b5c7d9;margin-top:5px}.fcx .fcx-action{background:#1554af;color:white;border:1px solid #417dca;border-radius:8px;padding:9px 12px}.fcx .fcx-tools{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:10px 0}.fcx .fcx-tools input{max-width:260px}.fcx .fcx-info{display:grid;grid-template-columns:110px 1fr;gap:12px;font-size:13px}.fcx .fcx-info dt{color:#a6bdd5}.fcx .fcx-info dd{margin:0;overflow-wrap:anywhere}.fcx .fcx-note{color:#9fb0c5;font-size:12px;line-height:1.5}.five-segment:nth-child(1){background:#475569;color:#fff}.five-segment:nth-child(2){background:#7c3aed;color:#fff}.five-segment:nth-child(3){background:#2563eb;color:#fff}.five-segment:nth-child(4){background:#eab308;color:#111827}.five-segment:nth-child(5){background:#dc2626;color:#fff}.five-segment.selected{outline:3px solid #fff;outline-offset:2px;filter:brightness(1.18)}
+@media(max-width:850px){.fcx .fcx-cols{grid-template-columns:1fr}.fcx .fcx-filter{grid-template-columns:1fr}.fcx .fcx-hero{min-height:270px}}
+/* Communication history scrolls within a fixed-height panel. */
+.communication-history-list{max-height:420px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding-right:6px}
+.communication-history-panel{min-width:0}
+.fcx .fcx-source{padding:9px 15px;background:#0e1622;border:1px solid #293a50;border-radius:8px;margin-top:8px;font-size:12px;color:#adc5e0}
+.fcx .fcx-source a{color:#8fc4ff;text-decoration:underline}
+@media(max-width:700px){.communication-history-list{max-height:320px}}
+/* Profile header: badges below photograph; indicator beside facility information */
+.nexus-profile-header{align-items:flex-start}
+.nexus-photo-column{display:flex;flex-direction:column;align-items:center;gap:10px;flex:0 0 auto}
+.nexus-photo-badges{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;max-width:185px}
+.nexus-file-badge{background:#195fa9}
+.nexus-identity-main{flex:1;min-width:0}
+.nexus-identity-main h2{margin:0 0 6px}
+.nexus-info-and-assessment{display:flex;align-items:flex-start;gap:18px;flex-wrap:wrap}
+.nexus-identity-facts{flex:1 1 280px;gap:14px}
+.nexus-side-assessment{flex:1 1 270px;margin-top:0;max-width:480px;min-width:0}
+.nexus-side-assessment .five-level{gap:5px}
+.nexus-side-assessment .five-segment{padding:10px 3px}
+@media(max-width:700px){.nexus-photo-badges{max-width:140px}.nexus-info-and-assessment{flex-direction:column}.nexus-side-assessment{width:100%;max-width:none}}
+
+
+/* Compact Personal File header: four details in one row, indicator 12% smaller. */
+.nexus-personal-facts{display:grid;grid-template-columns:minmax(75px,.85fr) minmax(55px,.55fr) minmax(95px,1fr) minmax(170px,2.1fr);gap:8px 10px;flex:1 1 490px;min-width:0;align-items:start}
+.nexus-personal-facts .fact{min-width:0;padding-right:9px;overflow-wrap:anywhere}
+.nexus-personal-facts .nexus-facility-fact{border-right:0}
+.nexus-side-assessment{flex:0 1 345px;max-width:345px;padding:10px;font-size:.88em;line-height:1.35}
+.nexus-side-assessment .muted{font-size:11px}
+.nexus-side-assessment .five-level{gap:4px}
+.nexus-side-assessment .five-segment{padding:8px 2px}
+.nexus-side-assessment p{margin:8px 0;font-size:12px}
+@media(max-width:850px){.nexus-personal-facts{flex-basis:100%}.nexus-side-assessment{flex-basis:345px;max-width:100%}}
+@media(max-width:550px){.nexus-personal-facts{grid-template-columns:repeat(2,minmax(0,1fr))}.nexus-personal-facts .fact:nth-child(2){border-right:0}}
+
+
+/* NEXUS compact indicator under profile ID; overlay does not push page down. */
+.nexus-revised-facts{display:flex;align-items:start;flex-wrap:wrap;gap:10px 16px}
+.nexus-revised-facts .fact{min-width:70px;max-width:300px}
+.nexus-revised-facts .nexus-facility-fact{border-right:0}
+.nexus-assessment-line{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:11px;position:relative;isolation:isolate}
+.nexus-assessment-mini{width:min(265px,100%);flex:0 1 265px}
+.nexus-assessment-label{color:#acc7e8;font-size:10px;font-weight:800;letter-spacing:.2px;margin-bottom:6px}
+.nexus-indicator-bands{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+.nexus-indicator-bands .five-segment{font-size:12px;padding:7px 2px;text-align:center;border-radius:5px}
+.nexus-cue-dropdown{position:relative;flex:0 0 auto;z-index:15}
+.nexus-cue-dropdown>summary{list-style:none;cursor:pointer;padding:9px 12px;border:1px solid #456590;background:#182c47;color:#e7f2ff;border-radius:7px;font-weight:800;font-size:11px}
+.nexus-cue-dropdown>summary::-webkit-details-marker{display:none}
+.nexus-cue-dropdown[open]>summary{background:#245b9c}
+.nexus-cue-popup{position:absolute;z-index:100;top:calc(100% + 6px);left:0;width:min(360px,calc(100vw - 55px));max-height:min(70vh,500px);overflow-y:auto;background:#0d1829;border:1px solid #5a7395;border-radius:11px;box-shadow:0 20px 50px #000b;padding:15px}
+.nexus-cue-popup h3{margin:0 0 12px;font-size:15px}
+.nexus-cue-score{display:flex;justify-content:space-between;gap:8px;margin-bottom:12px;font-size:12px;color:#b1c7df}
+.nexus-cue-score strong{font-size:17px;color:#fff}
+.nexus-cue-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #263a50;font-size:12px}
+.nexus-cue-row strong{font-variant-numeric:tabular-nums;white-space:nowrap}
+.nexus-cue-total{font-weight:800;color:#fff}
+.nexus-cue-popup .muted{line-height:1.5;font-size:11px;margin:12px 0 0}
+@media(max-width:650px){.nexus-cue-popup{left:auto;right:0}.nexus-assessment-line{gap:8px}}
+
+
+/* Comprehensive communication review: floating, internal scrolling, no layout shift */
+.nexus-cue-popup{width:min(430px,calc(100vw - 42px));max-height:min(75vh,620px);overscroll-behavior:contain}
+.nexus-cue-popup h4{margin:16px 0 9px;font-size:12px;color:#a9cfff}
+.nexus-cue-help{font-size:11px;line-height:1.55;color:#acbfd5;margin:10px 0}
+.nexus-match-list{max-height:200px;overflow-y:auto;border:1px solid #2c4057;border-radius:7px;padding:7px}
+.nexus-match{padding:9px 3px;border-bottom:1px solid #31445b;font-size:11px;overflow-wrap:anywhere}
+.nexus-match:last-child{border:0}
+.nexus-match small{display:block;color:#a3b8cf;margin:4px 0}
+.nexus-match button{margin-top:5px}
+.nexus-custom-form{display:grid;gap:8px}
+.nexus-custom-form input,.nexus-custom-form select{padding:8px;font-size:12px}
+.nexus-custom-form button{justify-self:start}
+.nexus-cue-custom{max-height:150px;overflow-y:auto}
+
+
+/* Larger, lower personal-profile metrics: side-by-side on iPad and desktop. */
+.nexus-profile-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:30px;align-items:stretch;width:100%;max-width:850px}
+.nexus-metric-card{min-width:0;border:1px solid #365778;background:#0b1726;border-radius:11px;padding:16px 16px 13px}
+.nexus-metric-heading{font-weight:800;color:#c1d6ee;font-size:13px;letter-spacing:.5px;margin-bottom:15px}
+.nexus-masculinity-card .nexus-indicator-bands{gap:7px}
+.nexus-masculinity-card .nexus-indicator-bands .five-segment{font-size:18px;font-weight:800;padding:14px 3px;border-radius:7px}
+.nexus-metric-footer{margin-top:15px;display:flex;justify-content:flex-start}
+.nexus-metric-footer .nexus-cue-dropdown>summary{padding:10px 14px;font-size:12px}
+.nexus-sexual-count{display:flex;gap:12px;align-items:center;margin:8px 0 17px}
+.nexus-sexual-count strong{font-size:34px;font-variant-numeric:tabular-nums;color:#f0f6ff}
+.nexus-sexual-count span{font-size:12px;color:#b4c9de}
+.nexus-sexual-meter{height:12px;background:#293a50;border-radius:12px;overflow:hidden}
+.nexus-sexual-fill{height:100%;background:#eab308;border-radius:12px}
+.nexus-sexual-footer{display:flex;justify-content:space-between;align-items:center;gap:9px;margin-top:15px;font-size:12px;color:#b4c9de;flex-wrap:wrap}
+@media(max-width:710px){.nexus-profile-metrics{grid-template-columns:1fr;max-width:530px;margin-top:24px}.nexus-masculinity-card .nexus-indicator-bands .five-segment{padding:12px 3px}.nexus-metric-card{padding:14px}}
+
+
+/* Separate reviewable sexual-language score; popup overlays rather than shifting layout. */
+.nexus-sexual-language{margin:13px 0 12px;padding:12px;background:#101f31;border:1px solid #334f70;border-radius:9px}
+.nexus-sexual-language-title{font-size:12px;font-weight:800;letter-spacing:.3px;color:#cae4ff;margin-bottom:7px}
+.nexus-sexual-language-score{display:flex;align-items:baseline;gap:9px;font-size:12px;color:#b9cce0}
+.nexus-sexual-language-score strong{font-size:22px;color:#fff}
+.nexus-sexual-five-level{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin:12px 0 0}
+.nexus-sexual-five-level .five-segment{font-size:18px;font-weight:800;padding:14px 3px;border-radius:7px;min-width:0}
+@media(max-width:710px){.nexus-sexual-five-level .five-segment{padding:12px 3px}}
+.nexus-sexual-language .nexus-cue-dropdown{margin-top:10px}
+.nexus-sexual-language .nexus-cue-popup{z-index:60}
+.nexus-sexual-language .nexus-cue-popup .nexus-match-list{max-height:180px;overflow-y:auto}
+
+/* Scroll saved communications separately from the page. */
+.communication-activity-feed{max-height:300px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding-right:6px}
+.communication-activity-feed .entry p{margin:7px 0 4px}
+
+/* Compact raw point counts and a separate combined communication indicator. */
+.nexus-overall-score{display:flex;align-items:baseline;flex-wrap:wrap;column-gap:10px;row-gap:3px;margin:10px 0;color:#b9cce0}
+.nexus-overall-score>span{font-size:11px;font-weight:800;letter-spacing:.06em}
+.nexus-overall-score>strong{font-size:28px;line-height:1.1;color:#fff;font-variant-numeric:tabular-nums}
+.nexus-overall-score>small{flex-basis:100%;font-size:11px;color:#9fb5cc}
+
+.nexus-combined-panel{grid-column:1/-1;border:1px solid #486889;background:#0c1b2c;border-radius:11px;padding:18px;display:grid;grid-template-columns:165px 1fr;gap:16px;align-items:center}
+.nexus-combined-title{font-size:14px;font-weight:900;color:#e5f2ff;letter-spacing:.6px}
+.nexus-combined-number{font-size:37px;font-weight:900;color:#fff;line-height:1.15;font-variant-numeric:tabular-nums;margin:8px 0}
+.nexus-combined-breakdown{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0;color:#c1d2e7;font-size:12px}
+.nexus-combined-breakdown span{border:1px solid #324960;border-radius:6px;padding:6px 9px}
+.nexus-combined-note{font-size:11px;line-height:1.5;color:#a8bed6;margin:8px 0 0}
+.nexus-combined-five{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+.nexus-combined-five .five-segment{font-size:18px;font-weight:800;padding:14px 3px;border-radius:7px}
+@media(max-width:710px){.nexus-combined-panel{grid-template-columns:1fr}.nexus-combined-number{font-size:32px}}
+
+/* Three balanced metric tiles, one row below the identity fields. */
+.nexus-profile-header .nexus-profile-metrics{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  margin-top:14px;
+  width:100%;
+  max-width:980px;
+  align-items:stretch;
+}
+.nexus-profile-metrics>.nexus-metric-card,
+.nexus-profile-metrics>.nexus-combined-panel{
+  grid-column:auto;
+  min-width:0;
+  min-height:132px;
+  height:100%;
+  border-radius:9px;
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.nexus-profile-metrics .nexus-metric-heading,
+.nexus-profile-metrics .nexus-sexual-language-title,
+.nexus-profile-metrics .nexus-combined-title{
+  font-size:12px;
+  line-height:1.2;
+  margin:0 0 12px;
+}
+.nexus-profile-metrics .nexus-sexual-language{
+  margin:0;
+  padding:0;
+  border:0;
+  background:transparent;
+}
+.nexus-profile-metrics .nexus-sexual-language-score{display:none}
+.nexus-profile-metrics .nexus-indicator-bands,
+.nexus-profile-metrics .nexus-sexual-five-level,
+.nexus-profile-metrics .nexus-combined-five{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:4px;
+  margin:0;
+  width:100%;
+}
+.nexus-profile-metrics .five-segment,
+.nexus-masculinity-card .nexus-indicator-bands .five-segment,
+.nexus-sexual-five-level .five-segment,
+.nexus-combined-five .five-segment{
+  min-width:0;
+  font-size:13px;
+  padding:10px 1px;
+  border-radius:5px;
+}
+.nexus-profile-metrics .nexus-combined-panel{
+  background:#0c1b2c;
+  gap:8px;
+  align-items:stretch;
+}
+.nexus-combined-panel .nexus-combined-number{
+  font-size:27px;
+  line-height:1;
+  margin:0 0 10px;
+}
+@media(max-width:740px){
+  .nexus-profile-header .nexus-profile-metrics{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .nexus-profile-metrics>.nexus-combined-panel{
+    grid-column:1/-1;
+    min-height:110px;
+  }
+}
+@media(max-width:440px){
+  .nexus-profile-header .nexus-profile-metrics{grid-template-columns:1fr}
+  .nexus-profile-metrics>.nexus-combined-panel{grid-column:auto}
+}
+
+
+/* Compact score tiles — tighten the top and bottom borders around the indicators. */
+.nexus-profile-header .nexus-profile-metrics {
+  margin-top: 10px;
+  gap: 9px;
+  align-items: stretch;
+}
+.nexus-profile-metrics > .nexus-metric-card,
+.nexus-profile-metrics > .nexus-combined-panel {
+  min-height: 96px;
+  height: auto;
+  padding: 9px 10px;
+  justify-content: center;
+  gap: 5px;
+}
+.nexus-profile-metrics .nexus-metric-heading,
+.nexus-profile-metrics .nexus-sexual-language-title,
+.nexus-profile-metrics .nexus-combined-title {
+  margin: 0 0 5px;
+  line-height: 1.15;
+  font-size: 11px;
+}
+.nexus-profile-metrics .five-segment,
+.nexus-profile-metrics .nexus-masculinity-card .nexus-indicator-bands .five-segment,
+.nexus-profile-metrics .nexus-sexual-five-level .five-segment,
+.nexus-profile-metrics .nexus-combined-five .five-segment {
+  padding: 7px 1px;
+  font-size: 12px;
+  line-height: 1.1;
+}
+.nexus-profile-metrics .nexus-combined-panel .nexus-combined-number {
+  font-size: 23px;
+  line-height: 1;
+  margin: 0 0 3px;
+}
+@media (max-width:740px){
+  .nexus-profile-metrics > .nexus-combined-panel{min-height:96px}
+}
+
+
+/* Profile metrics: two compact indicators stacked left, expandable overall panel right. */
+.nexus-profile-header .nexus-profile-metrics{
+ display:grid;
+ grid-template-columns:minmax(0,1fr) minmax(0,1.45fr);
+ grid-template-rows:auto auto;
+ gap:10px;
+ align-items:stretch;
+ max-width:980px;
+ width:100%;
+ margin-top:12px;
+}
+.nexus-profile-metrics > .nexus-masculinity-card{
+ grid-column:1;
+ grid-row:1;
+}
+.nexus-profile-metrics > .nexus-sexual-card{
+ grid-column:1;
+ grid-row:2;
+}
+.nexus-profile-metrics > .nexus-combined-panel{
+ grid-column:2;
+ grid-row:1 / span 2;
+ min-height:0;
+ height:100%;
+ padding:20px 22px;
+ justify-content:flex-start;
+ gap:16px;
+ border:1px solid #53799e;
+ background:#10243b;
+}
+.nexus-profile-metrics > .nexus-metric-card{
+ min-height:78px;
+ height:auto;
+ padding:11px 13px;
+ gap:5px;
+ justify-content:center;
+}
+.nexus-profile-metrics .nexus-combined-title{
+ font-size:14px;
+ margin:0 0 12px;
+}
+.nexus-profile-metrics .nexus-combined-number{
+ font-size:clamp(28px,3vw,43px);
+ margin:0 0 17px;
+ font-weight:900;
+}
+.nexus-profile-metrics .nexus-combined-five .five-segment{
+ padding:14px 2px;
+ font-size:17px;
+}
+@media(max-width:660px){
+ .nexus-profile-header .nexus-profile-metrics{
+  grid-template-columns:1fr;
+  grid-template-rows:auto;
+ }
+ .nexus-profile-metrics > .nexus-masculinity-card,
+ .nexus-profile-metrics > .nexus-sexual-card,
+ .nexus-profile-metrics > .nexus-combined-panel{
+  grid-column:1;
+  grid-row:auto;
+ }
+ .nexus-profile-metrics > .nexus-combined-panel{min-height:175px;}
+}
+
+
+/* Credit-style communication summary: compact indicators left, expandable review right. */
+.nexus-profile-metrics > .nexus-credit-panel{
+  display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;
+  gap:12px;min-height:258px;padding:18px 20px;background:#0e2236;
+}
+.nexus-credit-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.nexus-profile-metrics .nexus-credit-top .nexus-combined-title{margin:0;font-size:13px}
+.nexus-credit-type{font-size:10px;font-weight:700;letter-spacing:.08em;color:#86bff3}
+.nexus-credit-level{font-weight:900;font-size:clamp(19px,2.2vw,31px);line-height:1.1;letter-spacing:.015em;color:#f1f7ff;overflow-wrap:anywhere}
+.nexus-credit-scale{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin-top:3px}
+.nexus-credit-tick{height:18px;border-radius:5px;opacity:.67}
+.nexus-credit-tick:nth-child(1){background:#dc3545}.nexus-credit-tick:nth-child(2){background:#ef8a39}.nexus-credit-tick:nth-child(3){background:#eab308}.nexus-credit-tick:nth-child(4){background:#2db7b0}.nexus-credit-tick:nth-child(5){background:#36c682}
+.nexus-credit-tick.active{opacity:1;box-shadow:0 0 0 2px #f1f7ff;transform:scaleY(1.25)}
+.nexus-credit-labels{display:flex;justify-content:space-between;gap:8px;color:#99b5d2;font-size:10px}
+.nexus-credit-analysis{display:grid;gap:8px;margin-top:2px}
+.nexus-credit-finding{display:grid;grid-template-columns:120px 1fr;gap:10px;padding:8px 10px;border:1px solid #304b65;border-radius:7px;background:#0a1828;font-size:12px;line-height:1.35}
+.nexus-credit-finding strong{color:#b9d9f7}.nexus-credit-finding span{color:#e4edf9;overflow-wrap:anywhere}
+.nexus-credit-note{font-size:10px;line-height:1.4;color:#8fa6bc;margin:0}
+@media(max-width:980px){.nexus-credit-finding{grid-template-columns:1fr;gap:3px}}
+@media(max-width:660px){.nexus-profile-metrics > .nexus-credit-panel{min-height:0}}
+
+/* Semicircular dominance-language frequency gauge */
+.nexus-half-ring{width:min(100%,310px);margin:0 auto;position:relative;text-align:center}
+.nexus-half-ring svg{display:block;width:100%;height:auto;overflow:visible}
+.nexus-half-ring .gauge-track{fill:none;stroke:#34465d;stroke-width:15;stroke-linecap:round}
+.nexus-half-ring .gauge-fill{fill:none;stroke-width:15;stroke-linecap:round;transition:stroke-dasharray .3s ease}
+.nexus-gauge-caption{margin:-5px 0 0;font-size:11px;color:#b8cde2;font-weight:700}
+.nexus-credit-panel .nexus-credit-level{text-align:center}
+@media(max-width:660px){.nexus-half-ring{width:min(100%,260px)}}
+
+
+
+/* Overall Man Score: five numbered levels below the half-ring, plus independent mini-meters. */
+.nexus-overall-five{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:8px 0 3px}
+.nexus-overall-five .five-segment{padding:9px 3px;border-radius:6px;font-size:15px;font-weight:800;text-align:center}
+.nexus-overall-five .five-segment.selected{outline:2px solid #fff;outline-offset:1px}
+.nexus-mini-meters{display:grid;gap:12px;margin:6px 0}
+.nexus-mini-header{display:flex;justify-content:space-between;gap:8px;align-items:baseline;color:#d9e9fa;font-size:12px;font-weight:700}
+.nexus-mini-header small{color:#a4bdd6;font-size:11px;font-weight:600;white-space:nowrap}
+.nexus-mini-track{height:10px;background:#27394f;border-radius:20px;overflow:hidden;margin-top:6px}
+.nexus-mini-fill{height:100%;border-radius:20px;transition:width .25s ease}
+.nexus-mini-fill.dominance{background:linear-gradient(90deg,#eab308,#dc2626)}
+.nexus-mini-fill.respect{background:linear-gradient(90deg,#2563eb,#2dd4bf)}
+@media(max-width:500px){.nexus-mini-header{font-size:11px}.nexus-overall-five .five-segment{padding:8px 2px;font-size:13px}}
+/* Compact contextual coaching under the mini indicators. */
+.nexus-ai-opinion{border:1px solid #36516c;background:#101f31;border-radius:10px;padding:12px 14px;margin-top:12px}
+.nexus-ai-opinion h4{margin:0 0 8px;color:#e5f0fc;font-size:13px;letter-spacing:.04em}
+.nexus-ai-opinion p{margin:6px 0;font-size:12px;line-height:1.55;color:#c8d9ee}
+.nexus-ai-opinion .nexus-ai-note{font-size:11px;color:#9fb5cc;margin-top:9px}
+
+
+
+/* Independent scoring window: keep header indicators compact, not stretched. */
+.nexus-profile-header .nexus-profile-metrics{
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:10px;
+  width:min(100%,370px);
+  max-width:370px;
+  margin:15px 0 0;
+}
+.nexus-profile-header .nexus-profile-metrics>.nexus-metric-card{
+  width:100%;
+  height:auto;
+  min-height:0;
+  padding:12px 14px;
+  flex:none;
+  display:block;
+}
+.nexus-profile-header .nexus-metric-heading,
+.nexus-profile-header .nexus-sexual-language-title{margin:0 0 9px;font-size:12px}
+.nexus-profile-header .nexus-profile-metrics .five-segment{
+  padding:9px 3px;
+  font-size:14px;
+}
+.nexus-overall-window{
+  display:block;
+  width:100%;
+  max-width:100%;
+  margin:0 0 18px;
+}
+.nexus-overall-window>.nexus-combined-panel{
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  width:100%;
+  max-width:none;
+  height:auto;
+  min-height:0;
+  padding:20px;
+  gap:14px;
+  border:1px solid #486889;
+  background:#0c1b2c;
+  border-radius:12px;
+}
+.nexus-overall-window .nexus-half-ring{max-width:340px;}
+.nexus-overall-window .nexus-overall-five{width:100%;max-width:580px;margin:8px auto;}
+.nexus-overall-window .nexus-mini-meters,
+.nexus-overall-window .nexus-ai-opinion,
+.nexus-overall-window .nexus-credit-analysis{width:100%;}
+@media(min-width:950px){
+  .nexus-overall-window>.nexus-combined-panel{
+    display:grid;
+    grid-template-columns:minmax(230px,360px) minmax(0,1fr);
+    column-gap:26px;
+  }
+  .nexus-overall-window .nexus-credit-top,
+  .nexus-overall-window .nexus-credit-level,
+  .nexus-overall-window .nexus-half-ring,
+  .nexus-overall-window .nexus-overall-five{grid-column:1;}
+  .nexus-overall-window .nexus-mini-meters,
+  .nexus-overall-window .nexus-ai-opinion,
+  .nexus-overall-window .nexus-credit-analysis,
+  .nexus-overall-window .nexus-credit-note{grid-column:2;}
+  .nexus-overall-window .nexus-mini-meters{grid-row:1 / span 2;align-self:center;}
+  .nexus-overall-window .nexus-ai-opinion{grid-row:3 / span 2;align-self:start;}
+  .nexus-overall-window .nexus-credit-analysis{grid-row:5;}
+  .nexus-overall-window .nexus-credit-note{grid-row:6;}
+}
+@media(max-width:710px){
+  .nexus-profile-header .nexus-profile-metrics{width:min(100%,370px);margin-top:14px;}
+  .nexus-overall-window>.nexus-combined-panel{padding:15px;}
+}
+
+
+/* Subscores beneath the Overall Man Score inside Communication. */
+.nexus-subscore-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:0 0 20px;align-items:stretch}
+.nexus-subscore-card{min-width:0;background:#101d2d;border:1px solid #365778;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:14px}
+.nexus-subscore-card>h3{font-size:14px;letter-spacing:.6px;color:#c1d6ee;margin:0;font-weight:800}
+.nexus-subscore-card .nexus-indicator-bands,.nexus-subscore-card .nexus-sexual-five-level{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin:0}
+.nexus-subscore-card .five-segment{font-size:17px;font-weight:800;padding:12px 2px;min-width:0;text-align:center}
+.nexus-subscore-card .nexus-sexual-language{border:0;background:none;margin:0;padding:0}
+.nexus-subscore-card .nexus-sexual-language-title{display:none}
+.nexus-subscore-review{margin-top:2px;padding:12px;background:#0b1726;border:1px solid #29415a;border-radius:9px;flex:1}
+.nexus-subscore-review h4{font-size:12px;color:#91c9ff;margin:0 0 10px;letter-spacing:.25px}
+.nexus-subscore-review p{font-size:13px;color:#c2d2e3;line-height:1.5;margin:8px 0}
+@media(max-width:700px){.nexus-subscore-grid{grid-template-columns:1fr}.nexus-subscore-card{padding:14px}}
+
+/* Both score detail menus float over the content rather than expand their cards. */
+.nexus-subscore-card{overflow:visible;position:relative}
+.nexus-subscore-card .nexus-cue-dropdown{align-self:flex-start;z-index:50}
+.nexus-subscore-card .nexus-cue-popup{width:min(430px,calc(100vw - 44px))}
+@media(max-width:700px){.nexus-subscore-card .nexus-cue-popup{left:0;right:auto}}
+
+/* NEXUS Command Center dashboard: responsive, data-driven, no new storage */
+.nxcc-rank-list{max-height:390px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding-right:4px}
+.nxcc-rank-item{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:11px;align-items:center;padding:12px;border:1px solid #2b4867;border-radius:12px;background:#14273c}
+.nxcc-rank-num{font-weight:800;color:#8dcafb;text-align:center;font-size:16px}
+.nxcc-rank-name{font-size:13px;font-weight:750;color:#f0f6ff;overflow-wrap:anywhere}
+.nxcc-rank-meta{font-size:11px;color:#abc1d8;margin-top:5px}
+.nxcc-rank-track{height:5px;background:#2a4058;border-radius:12px;overflow:hidden;margin-top:8px}
+.nxcc-rank-fill{height:100%;background:linear-gradient(90deg,#187bd0,#71cbfb);border-radius:12px}
+.nxcc-rank-right{text-align:right;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.nxcc-rank-count{font-size:18px;color:#fff;font-weight:800;line-height:1}
+.nxcc-rank-right .btn{white-space:nowrap}
+.nxcc-rank-select{background:#19324b;color:#ecf5ff;border:1px solid #496985;border-radius:8px;padding:7px 9px;font-size:12px}
+@media(max-width:580px){.nxcc-rank-item{grid-template-columns:23px minmax(0,1fr) auto;padding:9px;gap:7px}.nxcc-rank-meta{font-size:10px}.nxcc-rank-right .btn{padding:5px 7px}}
+
+.nxcc{display:grid;gap:18px}.nxcc-hero{position:relative;overflow:hidden;background:radial-gradient(circle at 88% 12%,#1667a755,transparent 40%),linear-gradient(118deg,#0c1627,#122f4e 55%,#102338);border:1px solid #406286;border-radius:18px;padding:26px;display:flex;justify-content:space-between;gap:16px;align-items:center}
+.nxcc-kicker{font-size:11px;letter-spacing:2px;font-weight:800;color:#7bbcff}.nxcc-hero h2{font-size:clamp(24px,3.2vw,38px);margin:9px 0;color:#fff;letter-spacing:.3px}.nxcc-hero p{color:#c1d3e8;margin:0;max-width:580px;font-size:14px;line-height:1.55}.nxcc-hero-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:18px}.nxcc-mark{font-size:58px;color:#65bcff80;flex:0 0 auto}
+.nxcc-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.nxcc-metric{min-width:0;background:linear-gradient(145deg,#14273f,#0e1b2b);border:1px solid #2e4b6b;border-radius:14px;padding:17px}.nxcc-metric label{color:#a7c3df;font-size:11px;text-transform:uppercase;letter-spacing:.65px;font-weight:750;display:block}.nxcc-metric strong{display:block;font-size:clamp(27px,3vw,38px);color:white;margin:10px 0 4px}.nxcc-metric small{color:#83afda;font-size:11px}
+.nxcc-two{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px}.nxcc-box{min-width:0;border-radius:15px;border:1px solid #2e4968;background:#0f1c2d;padding:19px}.nxcc-box h3{font-size:16px;color:#e4f1ff;margin:0 0 5px}.nxcc-subtitle{color:#a7bbd0;font-size:12px;margin:0 0 17px;line-height:1.5}.nxcc-bars{display:flex;flex-direction:column;gap:13px}.nxcc-bar-row{display:grid;grid-template-columns:72px 1fr 34px;gap:10px;align-items:center;color:#d6e6f7;font-size:13px}.nxcc-track{height:12px;background:#24384f;border-radius:12px;overflow:hidden}.nxcc-fill{height:100%;border-radius:12px;background:linear-gradient(90deg,#1c70bd,#72c4ff)}.nxcc-feed{display:flex;flex-direction:column;max-height:290px;overflow:auto}.nxcc-feed-item{display:flex;gap:12px;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #293f56;min-width:0}.nxcc-feed-item:last-child{border-bottom:0}.nxcc-feed-item strong{display:block;color:#e9f4ff;font-size:13px;overflow-wrap:anywhere}.nxcc-feed-item small{display:block;color:#9db7d0;font-size:11px;margin-top:4px}.nxcc-feed-item button{flex:0 0 auto}.nxcc-chips{display:flex;gap:8px;flex-wrap:wrap}.nxcc-chip{border-radius:20px;background:#1b3550;border:1px solid #365e81;padding:7px 11px;font-size:12px;color:#dcecff}.nxcc-empty{color:#9eb7d0;font-size:13px;line-height:1.5;padding:16px 0}.nxcc-footer{color:#89a6c1;font-size:11px;line-height:1.5}
+@media(max-width:1020px){.nxcc-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.nxcc-two{grid-template-columns:1fr}}
+@media(max-width:580px){.nxcc-hero{padding:18px}.nxcc-mark{display:none}.nxcc-metrics{gap:9px}.nxcc-metric{padding:13px}.nxcc-box{padding:14px}.nxcc-bar-row{grid-template-columns:58px 1fr 26px;gap:7px}.nxcc-hero-actions .btn{font-size:12px}}
+
+.nxcc-portrait-shell{position:relative;display:block;width:52px;height:58px;flex:0 0 52px}.nxcc-portrait-shell .nxcc-portrait{position:absolute;inset:0;width:100%;height:100%}.nxcc-portrait-photo{z-index:1}
+.nxcc-rank-person .nxcc-portrait-shell{width:56px;height:64px;flex-basis:56px}
+@media(max-width:580px){.nxcc-portrait-shell{width:42px;height:48px;flex-basis:42px}.nxcc-rank-person .nxcc-portrait-shell{width:44px;height:52px;flex-basis:44px}}
+/* Dashboard inmate portraits / IDs: cards remain compact on phone and tablet */
+.nxcc-person{display:flex;align-items:center;gap:11px;min-width:0;flex:1}
+.nxcc-portrait{width:52px;height:58px;flex:0 0 52px;object-fit:cover;object-position:center top;border-radius:10px;border:1px solid #416285;background:#1b3550;color:#a8d4fa;display:flex;align-items:center;justify-content:center;font-size:23px}
+.nxcc-identity{min-width:0;flex:1}
+.nxcc-id{font-size:11px;color:#8ec8f4;font-weight:700;letter-spacing:.3px;margin-top:4px;overflow-wrap:anywhere}
+.nxcc-rank-person{display:flex;align-items:center;gap:11px;min-width:0}
+.nxcc-rank-item{grid-template-columns:30px minmax(0,1fr) auto}
+.nxcc-rank-person .nxcc-portrait{width:56px;height:64px;flex-basis:56px}
+@media(max-width:580px){.nxcc-person{gap:8px}.nxcc-portrait{width:42px;height:48px;flex-basis:42px}.nxcc-rank-person .nxcc-portrait{width:44px;height:52px;flex-basis:44px}.nxcc-rank-person{gap:7px}.nxcc-id{font-size:10px}}
+
+/* NEXUS: full-width, readable inmate mailing address. */
+.nexus-mailing-info{grid-column:1 / -1;width:100%;min-width:0}
+.nexus-mailing-info strong{display:block;white-space:pre-wrap;overflow-wrap:break-word;word-break:normal;line-height:1.65;font-size:15px;font-weight:600;max-width:100%}
+textarea[name="mailing"]{min-height:170px;line-height:1.55;white-space:pre-wrap}
+
+
+/* Phase 2: compact institutional registration design */
+.nx-reg-head{background:#174f9b;color:#fff;font-weight:800;font-size:12px;text-align:center;padding:11px 8px;letter-spacing:.6px;margin:13px 0 8px}
+.nx-reg-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.nx-reg-grid .field{min-width:0;margin:0}.nx-reg-grid .field label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.25px;display:block;margin-bottom:5px}
+.nx-reg-grid .field input,.nx-reg-grid .field select{min-width:0;width:100%;box-sizing:border-box}
+.nx-reg-span2{grid-column:span 2}.nx-reg-span4{grid-column:span 4}
+.nx-reg-photo-layout{display:grid;grid-template-columns:205px minmax(0,1fr);gap:16px;align-items:start}
+.nx-reg-photo-layout .registration-photo{position:static;background:#122239;border:1px solid #324965;padding:12px;border-radius:9px}
+.nx-reg-release{background:#153d85;color:#fff;text-align:center;padding:9px;font-weight:800;font-size:12px;letter-spacing:.6px;margin-top:14px}
+.nx-reg-note{color:#a9bbd3;font-size:12px;margin:8px 0 12px}
+.nx-reg-address textarea{width:100%;min-height:150px;white-space:pre-wrap;box-sizing:border-box}
+@media(max-width:920px){.nx-reg-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.nx-reg-span4{grid-column:span 2}.nx-reg-photo-layout{grid-template-columns:1fr}.nx-reg-photo-layout .registration-photo{flex-direction:row;flex-wrap:wrap}}
+@media(max-width:560px){.nx-reg-grid{grid-template-columns:1fr}.nx-reg-span2,.nx-reg-span4{grid-column:auto}}
+
+
+/* NEXUS THE EIGHT | tester-only persona interface */
+.nexus-eight-panel{border-color:#6b5363;background:linear-gradient(145deg,#142235,#111822)}
+.nexus-eight-banner{background:#272c39;border-left:3px solid #d9b778;color:#ead6ae;padding:12px;margin:15px 0;font-size:13px;font-weight:700}
+.nexus-eight-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:16px 0}
+.nexus-eight-persona{border:1px solid #3b4a5d;border-radius:8px;background:#1e2b3c;color:#e6edf8;min-height:92px;padding:12px;text-align:left;display:flex;flex-direction:column;gap:7px}
+.nexus-eight-persona .number{color:#dabb81;font-size:12px;font-weight:800}
+.nexus-eight-persona small{color:#b8c6d6;line-height:1.35}
+.nexus-eight-persona.selected{outline:2px solid #dabb81;background:#28374a}
+.nexus-eight-results{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:12px;margin:15px 0}
+.nexus-eight-result{background:#15273a;border:1px solid #364c65;border-radius:9px;padding:15px;min-width:0}
+.nexus-eight-heading{display:flex;flex-direction:column;gap:4px;color:#e0bd84}.nexus-eight-heading small{color:#bacbe0}
+.nexus-eight-evidence{background:#0d1a28;border-left:2px solid #7295bd;margin:8px 0;padding:9px;white-space:pre-wrap;overflow-wrap:anywhere}.nexus-eight-evidence small{color:#a9c0d9}.nexus-eight-evidence p{margin:7px 0 0}
+</style><style id="nexus-final-upgrade">
+.nxv-panel{background:#101b2b;border:1px solid #2c4058;border-radius:15px;padding:20px;margin-bottom:16px;color:#e8f2ff}.nxv-panel h2,.nxv-panel h3{margin:0 0 12px;color:#f2f7ff}.nxv-sub{font-size:13px;color:#afc4dc;margin-bottom:18px}.nxv-filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.nxv-filters label{font-size:12px;color:#afc4dc;display:block;margin-bottom:5px}.nxv-filters input,.nxv-filters select{width:100%;padding:10px;background:#19283b;border:1px solid #415571;border-radius:8px;color:#f7fbff}.nxv-table-wrap{overflow:auto;max-height:520px}.nxv-table{border-collapse:collapse;width:100%;min-width:650px}.nxv-table th,.nxv-table td{text-align:left;border-bottom:1px solid #314257;padding:12px 9px;font-size:13px}.nxv-table th{color:#a9c8e9;position:sticky;top:0;background:#142339}.nxv-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px}.nxv-stat{padding:17px;background:#1a2a40;border-radius:11px}.nxv-stat strong{font-size:25px;display:block;color:#fff}.nxv-stat small{color:#a9bdd5}.nxv-bars{display:grid;gap:12px}.nxv-bar{display:grid;grid-template-columns:minmax(80px,150px) 1fr 48px;gap:10px;align-items:center;font-size:13px}.nxv-track{height:9px;background:#263c56;border-radius:9px;overflow:hidden}.nxv-fill{height:100%;background:#5aaefa;border-radius:9px}.nxv-empty{color:#a8b9cd;padding:20px}.nxv-tools{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0}.nxv-person{display:flex;align-items:center;gap:10px}.nxv-thumb{width:34px;height:38px;object-fit:cover;border-radius:6px;background:#293e55}
+</style>
+<style id="nxv-record-photo-style">.nxv-record-photo{display:block;width:54px;height:66px;object-fit:cover;object-position:center;background:#1b2d43;border:1px solid #3c5875;border-radius:7px}.nxv-record-avatar{display:grid;place-items:center;color:#9fb9d4;font-size:28px}.nxv-table td:first-child{width:70px}.nxv-table td{vertical-align:middle}</style>
+</head><body>
+
+<div id="login" class="gate"><form id="loginForm" class="panel"><div class="logo">BLACKCELL CORPORATION</div><h2>NEXUS Management System</h2><p class="muted" id="nexusAuthStatus" role="status">Checking your secure session…</p><div class="field">
+<label>Email Address</label><input required type="email" autocomplete="username"></div><div class="field"><label>Password</label><input required type="password" autocomplete="current-password"></div><button class="btn" type="submit" id="nexusSignInBtn" disabled>SIGN IN</button></form></div>
+
+<div id="shell" class="shell hidden"><aside class="sidebar"><div class="logo">NE<span>X</span>US</div><button class="nav active" data-view="dashboard">▦ Dashboard</button><button class="nav" data-view="profiles">♙ Inmate Profiles</button><button class="nav" data-view="facilities">▤ Facilities</button><button class="nav" data-view="records">▤ Records</button><button class="nav" data-view="search">⌕ Search</button><button class="nav" data-view="financialHub">＄ Financial Center</button><button class="nav" data-view="reports">▥ Reports</button><button class="nav" data-view="settings">⚙ Settings</button></aside><main class="main"><header class="topbar"><h1 id="pageTitle">Command Dashboard</h1><div class="right"><span id="nexusCloudStatus" style="font-size:11px;max-width:190px;color:#a5e7bd">Checking cloud…</span><button class="bell" id="bell" title="Notifications (coming soon)" aria-label="Notifications">🔔</button><button class="btn alt small" id="lock">Log Out</button></div></header><div class="content" id="content"></div></main></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SUPABASE_URL = 'https://eeddazzwqokqlzvzjlxz.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_QKh-RY2C0Ycu2G29fX7Xgw_W72OLu2-';
+
+const nexusDB = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY,
+  {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}
+);
+  const NEXUS_PHOTO_BUCKET = 'nexus-IDB-photos';
+(function(){'use strict';
+
+const $=id=>document.getElementById(id),KEY='nexus_demo_profiles_v2',PERSONAL_KEY='nexus_personal_files_v1';
+
+const tableDefs=[{key:'sentences',title:'COMMITMENT AND SENTENCE INFORMATION',cols:['Commit #','Sentence Length','Sentence County','Court Cause #','Offense Date','Sentence Date','Sentence Status','Crime']},{key:'infractions',title:'DISCIPLINARY INFRACTIONS',cols:['Violation Date','Infraction','Verdict Date','Verdict']},{key:'appeals',title:'DISCIPLINARY APPEALS',cols:['Appeal Date','Outcome Description','As Of Date']},{key:'classifications',title:'PROFILE CLASSIFICATION',cols:['Complete Date','Classification Type','Custody Risk','Internal Risk']},{key:'parole',title:'PAROLE ACTION',cols:['Action Date','Action','Outcome','As Of Date']},{key:'work',title:'WORK PROGRAM',cols:['Assigned Date','Completed Date','Work Assignment']},{key:'detainers',title:'NOTIFICATION REQUESTS, DETAINERS AND WARRANTS',cols:['Detainer Date','Detainer Type','Charges','Authority','Agreement Date']}];
+
+// NEXUS cloud-first: no application records or settings are written to localStorage.
+const nexusCloudPrefs={};
+function read(k,fallback){return Object.prototype.hasOwnProperty.call(nexusCloudPrefs,k)?structuredClone(nexusCloudPrefs[k]):fallback;}
+let nexusCloudReady=false, nexusCloudWriteQueue=Promise.resolve(), nexusCloudDirty=false, nexusCloudWriteFailed=false;
+function nexusCloudStatus(message, failed=false){
+ const el=document.getElementById('nexusCloudStatus');
+ if(el){el.textContent=message;el.style.color=failed?'#ff919f':'#a5e7bd';}
+ nexusCloudWriteFailed=failed;
+}
+function nexusCloudCommit(){
+ if(!currentUserId||!nexusCloudReady){nexusCloudStatus('Not connected. Changes have NOT been saved.',true);return false;}
+ // Take a snapshot at the moment of the edit, then serialize writes to avoid out-of-order saves.
+ const snapshot={owner_id:currentUserId,personal_files:structuredClone(personal),preferences:structuredClone(nexusCloudPrefs),updated_at:new Date().toISOString()};
+ nexusCloudDirty=true;
+ nexusCloudStatus('Saving changes to cloud…');
+ nexusCloudWriteQueue=nexusCloudWriteQueue.catch(()=>{}).then(async()=>{
+   const {error}=await nexusDB.from('nexus_private_state').upsert(snapshot,{onConflict:'owner_id'});
+   if(error)throw new Error(error.message);
+   nexusCloudDirty=false;
+   nexusCloudStatus('Saved securely to Supabase cloud');
+ }).catch(err=>{nexusCloudDirty=true;nexusCloudStatus('CLOUD SAVE FAILED: '+err.message,true);console.error('NEXUS cloud save failed',err);alert('Cloud save failed. Your change may only exist until this page closes. Do not refresh. '+err.message);throw err;});
+ return true;
+}
+function store(key,data){nexusCloudPrefs[key]=structuredClone(data);return nexusCloudCommit();}
+async function nexusLoadPrivateCloudState(userId){
+ nexusCloudReady=false;
+ const {data,error}=await nexusDB.from('nexus_private_state').select('personal_files,preferences').eq('owner_id',userId).maybeSingle();
+ if(error)throw new Error('Private cloud data unavailable: '+error.message);
+ personal=data?.personal_files&&typeof data.personal_files==='object'&&!Array.isArray(data.personal_files)?data.personal_files:{};
+ for(const k of Object.keys(nexusCloudPrefs))delete nexusCloudPrefs[k];
+ const prefs=data?.preferences&&typeof data.preferences==='object'&&!Array.isArray(data.preferences)?data.preferences:{};
+ Object.assign(nexusCloudPrefs,prefs);
+ nexusCloudReady=true;nexusCloudDirty=false;
+ nexusCloudStatus('Connected to Supabase cloud');
+}
+
+
+let profiles=[],personal={},view='dashboard',detailId=null,editId=null,personalTab='details',photoData='',tableRows={},filter='',windowDays=30,analysisVisible=false,showArchive=false;
+let selectedPhotoFile=null;async function uploadNexusPhoto(file, inmateId) {
+  const { data: { user }, error: authError } =
+    await nexusDB.auth.getUser();
+
+  if (authError || !user) {
+    throw new Error('Please sign in before uploading a photo.');
+  }
+
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+    throw new Error('Only JPEG, PNG, and WebP photos are allowed.');
+  }
+
+  if (file.size > 1500000) {
+    throw new Error('Photo must be smaller than 1.5 MB.');
+  }
+
+  const extension = {
+    'image/jpeg': 'jpg',
+    'image/png': 'png',
+    'image/webp': 'webp'
+  }[file.type];
+
+  const path = user.id + '/' + crypto.randomUUID() + '.' + extension;
+
+  const { data, error } = await nexusDB.storage
+    .from(NEXUS_PHOTO_BUCKET)
+    .upload(path, file, {
+      contentType: file.type,
+      upsert: false
+    });
+
+  if (error) {
+    throw new Error('Photo upload failed: ' + error.message);
+  }
+
+  return data.path;
+}
+if(!Array.isArray(profiles))profiles=[];if(!personal||typeof personal!=='object'||Array.isArray(personal))personal={};
+
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const fullName=p=>[p.first,p.middle,p.last].filter(Boolean).join(' '),displayName=p=>[p.last,p.first].filter(Boolean).join(', ').toUpperCase(),find=id=>profiles.find(p=>p.id===id);
+
+const photo=p=>{const url=p?.photo||'';return (/^data:image\/(png|jpeg|webp);base64,/i.test(url)||/^https:\/\/[^\s"'<>]+$/i.test(url))?`<img class="photo" src="${esc(url)}" alt="Profile photograph">`:'<div class="photo placeholder">♙</div>'};
+
+const saveProfiles=()=>true,savePersonal=()=>nexusCloudCommit();
+let currentUserId='';
+async function signedPhotoUrl(path){
+ if(!path)return '';
+ const {data,error}=await nexusDB.storage.from(NEXUS_PHOTO_BUCKET).createSignedUrl(path,300);
+ if(error)throw new Error('Could not load a photograph: '+error.message);
+ return data.signedUrl;
+}
+async function loadMasterRecords(){
+ const {data:{user},error:authError}=await nexusDB.auth.getUser();
+ if(authError||!user)throw new Error('Please sign in to load Master Records.');
+ const {data:admin,error:adminError}=await nexusDB.from('nexus_admins').select('user_id').eq('user_id',user.id).maybeSingle();
+ if(adminError||!admin)throw new Error('This account is not authorized as the NEXUS administrator.');
+ const {data:records,error}=await nexusDB.from('nexus_profiles').select('*').eq('owner_id',user.id).order('created_at',{ascending:false}).limit(1000);
+ if(error)throw new Error('Could not load Master Records: '+error.message);
+ const {data:sections,error:sectionError}=await nexusDB.from('nexus_master_sections').select('profile_id,section_type,row_position,row_data').eq('owner_id',user.id).order('row_position',{ascending:true}).limit(10000);
+ if(sectionError)throw new Error('Could not load Master Record sections: '+sectionError.message);
+ const byId=new Map();
+ const loaded=(records||[]).map(r=>{
+  const p={id:r.inmate_id,first:r.first_name||'',middle:r.middle_name||'',last:r.last_name||'',age:r.age??'',state:r.state||'',facility:r.facility||'',unit:r.housing_unit||'',sentenceType:r.sentence_type||'Unknown',paroleEligibility:r.parole_eligibility_date||'',status:r.status||'Active',admission:r.admission_date||'',earliestRelease:r.earliest_release_date||'',release:r.projected_release_date||'',custody:r.custody_classification||'',location:r.most_recent_location||'',mailing:r.mailing_address||'',gender:r.gender||'',heightInches:r.height_inches??'',weight:r.weight??'',hairColor:r.hair_color||'',eyeColor:r.eye_color||'',ethnicOrigin:r.ethnic_origin||'',prisonReleaseText:r.prison_release_text||'',releaseTypeText:r.release_type_text||'',locationAsOf:r.location_as_of||'',lastMovement:r.last_movement||'',notes:r.notes||'',photo_path:r.photo_path||'',photo:''};
+  for(const t of tableDefs)p[t.key]=[];
+  byId.set(r.id,p);return p;
+ });
+ for(const row of sections||[]){
+  const p=byId.get(row.profile_id);
+  if(p&&tableDefs.some(t=>t.key===row.section_type))p[row.section_type].push(Array.isArray(row.row_data?.cells)?row.row_data.cells:[]);
+ }
+ await Promise.all(loaded.map(async p=>{
+  if(p.photo_path){try{p.photo=await signedPhotoUrl(p.photo_path)}catch(err){console.warn(err.message)}}
+ }));
+ profiles=loaded;
+ currentUserId=user.id;
+ await nexusLoadPrivateCloudState(user.id);
+ return loaded.length;
+}
+
+            async function saveMasterToSupabase(p){
+  const {data:{user},error} = await nexusDB.auth.getUser();
+
+  if(error || !user){
+    throw new Error('Please sign in to save a Master Record.');
+  }
+  let uploadedPhotoPath = null;
+
+  if (selectedPhotoFile) {
+    uploadedPhotoPath = await uploadNexusPhoto(
+      selectedPhotoFile,
+      p.id
+    );
+  }
+    const record = {
+    owner_id: user.id,
+    inmate_id: p.id,
+    photo_path: uploadedPhotoPath || p.photo_path || null,
+    first_name: p.first || null,
+    middle_name: p.middle || null,
+    last_name: p.last || null,
+    age: p.age === '' ? null : Number(p.age) || null,
+    state: p.state || null,
+    facility: p.facility || null,
+    housing_unit: p.unit || null,
+    sentence_type: p.sentenceType || 'Unknown',
+    parole_eligibility_date: p.paroleEligibility || null,
+    status: p.status || 'Active',
+    admission_date: p.admission || null,
+    earliest_release_date: p.earliestRelease || null,
+    projected_release_date: p.release || null,
+    custody_classification: p.custody || null,
+    most_recent_location: p.location || null,
+    mailing_address: p.mailing || null,
+    gender: p.gender || null,
+    height_inches: p.heightInches === '' ? null : Number(p.heightInches),
+    weight: p.weight === '' ? null : Number(p.weight),
+    hair_color: p.hairColor || null,
+    eye_color: p.eyeColor || null,
+    ethnic_origin: p.ethnicOrigin || null,
+    prison_release_text: p.prisonReleaseText || null,
+    release_type_text: p.releaseTypeText || null,
+    location_as_of: p.locationAsOf || null,
+    last_movement: p.lastMovement || null,
+    notes: p.notes || null
+  };
+
+  const {data, error: saveError} = await nexusDB
+    .from('nexus_profiles')
+    .upsert(record, {onConflict: 'owner_id,inmate_id'})
+    .select()
+    .single();
+
+  if(saveError){
+    throw new Error('Supabase save failed: ' + saveError.message);
+  }
+  const sectionRows = [];
+
+  for (const section of tableDefs) {
+    const rows = p[section.key] || [];
+
+    rows.forEach((row, index) => {
+      sectionRows.push({
+        owner_id: user.id,
+        profile_id: data.id,
+        section_type: section.key,
+        row_position: index,
+        row_data: { cells: row }
+      });
+    });
+  }
+
+  const { error: sectionError } = await nexusDB
+    .rpc('nexus_replace_master_sections', {
+      p_profile_id: data.id,
+      p_rows: sectionRows
+    });
+
+  if (sectionError) {
+    throw new Error(
+      'Could not save Master Record sections: ' + sectionError.message
+    );
+  }
+  const previousPhotoPath=p.previous_photo_path;
+  p.photo_path = data.photo_path;
+  delete p.previous_photo_path;
+  if(p.photo_path){
+    try{p.photo=await signedPhotoUrl(p.photo_path)}catch(err){console.warn(err.message);p.photo=''}
+  }
+  if(uploadedPhotoPath && previousPhotoPath && previousPhotoPath!==uploadedPhotoPath){
+    const {error:cleanupError}=await nexusDB.storage.from(NEXUS_PHOTO_BUCKET).remove([previousPhotoPath]);
+    if(cleanupError)console.warn('Old photo cleanup failed:',cleanupError.message);
+  }
+  return data;
+}
+
+
+
+
+function file(){if(!personal[detailId])personal[detailId]={details:{},entries:[],created:new Date().toISOString()};if(!Array.isArray(personal[detailId].entries))personal[detailId].entries=[];return personal[detailId]}
+
+
+const US_STATES=["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"];
+
+const FACILITY_STARTER={"Arizona": ["Arizona State Prison Complex – Eyman", "Arizona State Prison Complex – Lewis", "Arizona State Prison Complex – Florence", "FCI Phoenix"], "California": ["California State Prison, Sacramento", "San Quentin Rehabilitation Center", "California Institution for Men", "FCI Mendota"], "Nevada": ["High Desert State Prison", "Southern Desert Correctional Center", "Northern Nevada Correctional Center", "Ely State Prison"], "Texas": ["Huntsville Unit", "Polunsky Unit", "Coffield Unit", "Allred Unit"], "Utah": ["Utah State Correctional Facility", "Central Utah Correctional Facility"], "Florida": ["Florida State Prison", "Union Correctional Institution", "Lowell Correctional Institution"], "New York": ["Attica Correctional Facility", "Sing Sing Correctional Facility", "Clinton Correctional Facility"], "Colorado": ["Colorado State Penitentiary", "Sterling Correctional Facility"], "Washington": ["Washington State Penitentiary", "Monroe Correctional Complex"], "Oregon": ["Oregon State Penitentiary", "Coffee Creek Correctional Facility"], "Georgia": ["Georgia State Prison", "Lee State Prison"], "Illinois": ["Stateville Correctional Center", "Pontiac Correctional Center"], "Ohio": ["Ohio State Penitentiary", "Lebanon Correctional Institution"], "Pennsylvania": ["SCI Phoenix", "SCI Camp Hill"], "New Mexico": ["Penitentiary of New Mexico", "Central New Mexico Correctional Facility"], "Idaho": ["Idaho State Correctional Institution", "Idaho Maximum Security Institution"], "Alabama": ["Holman Correctional Facility", "St. Clair Correctional Facility"], "Alaska": ["Goose Creek Correctional Center", "Spring Creek Correctional Center"], "Arkansas": ["Varner Unit", "Cummins Unit"], "Connecticut": ["MacDougall-Walker Correctional Institution"], "Delaware": ["James T. Vaughn Correctional Center"], "District of Columbia": ["Central Detention Facility"], "Hawaii": ["Halawa Correctional Facility"], "Indiana": ["Indiana State Prison", "New Castle Correctional Facility"], "Iowa": ["Iowa State Penitentiary"], "Kansas": ["Lansing Correctional Facility"], "Kentucky": ["Kentucky State Penitentiary"], "Louisiana": ["Louisiana State Penitentiary"], "Maine": ["Maine State Prison"], "Maryland": ["North Branch Correctional Institution"], "Massachusetts": ["MCI-Shirley"], "Michigan": ["Ionia Correctional Facility"], "Minnesota": ["Minnesota Correctional Facility – Stillwater"], "Mississippi": ["Mississippi State Penitentiary"], "Missouri": ["Potosi Correctional Center"], "Montana": ["Montana State Prison"], "Nebraska": ["Nebraska State Penitentiary"], "New Hampshire": ["New Hampshire State Prison for Men"], "New Jersey": ["New Jersey State Prison"], "North Carolina": ["Central Prison"], "North Dakota": ["North Dakota State Penitentiary"], "Oklahoma": ["Oklahoma State Penitentiary"], "Rhode Island": ["Adult Correctional Institutions"], "South Carolina": ["Broad River Correctional Institution"], "South Dakota": ["South Dakota State Penitentiary"], "Tennessee": ["Riverbend Maximum Security Institution"], "Vermont": ["Southern State Correctional Facility"], "Virginia": ["Red Onion State Prison"], "West Virginia": ["Mount Olive Correctional Complex"], "Wisconsin": ["Waupun Correctional Institution"], "Wyoming": ["Wyoming State Penitentiary"]};
+
+const FACILITY_CUSTOM_KEY="nexus_custom_facilities_v1";
+
+function facilityOptions(state){const custom=read(FACILITY_CUSTOM_KEY,{});return [...new Set([...(FACILITY_STARTER[state]||[]),...(custom[state]||[])])].sort((a,b)=>a.localeCompare(b))}
+
+function stateSelect(selected){return `<div class="field"><label>State</label><select name="state" id="registrationState" required><option value="">Select a state...</option>${US_STATES.map(v=>`<option value="${esc(v)}" ${v===selected?"selected":""}>${esc(v)}</option>`).join("")}</select></div>`}
+
+function facilitySelect(state,selected){const list=facilityOptions(state);if(selected&&!list.includes(selected))list.unshift(selected);return `<div class="field"><label>Correctional Facility</label><select name="facility" id="registrationFacility" required ${state?"":"disabled"}><option value="">${state?"Select a facility...":"Select a state first"}</option>${list.map(v=>`<option value="${esc(v)}" ${v===selected?"selected":""}>${esc(v)}</option>`).join("")}</select><small class="muted">Starter directory only. Add any missing institution below.</small></div><div class="field"><label>Add facility for selected state</label><div class="actions"><input id="customFacilityName" placeholder="Facility name" aria-label="New facility name"><button class="btn alt" type="button" id="addCustomFacility">ADD FACILITY</button></div></div>`}
+
+
+function field(label,key,value='',type='text'){return `<div class="field"><label>${esc(label)}</label><input name="${esc(key)}" type="${type}" value="${esc(value)}"></div>`}
+
+function area(label,key,value=''){return `<div class="field"><label>${esc(label)}</label><textarea name="${esc(key)}">${esc(value)}</textarea></div>`}
+
+function item(label,value){return `<div class="info"><small>${esc(label)}</small><strong>${esc(value||'—')}</strong></div>`}
+
+function section(title,body){return `<div class="section-title">${esc(title)}</div><div class="panel">${body}</div>`}
+
+function tableEditor(t,p){const raw=p&&Array.isArray(p[t.key])?p[t.key]:[];const rows=tableRows[t.key]||raw;return `<div class="section-title">${t.title}</div><div class="panel"><div class="tablewrap"><table><thead><tr>${t.cols.map(c=>`<th>${esc(c)}</th>`).join('')}<th></th></tr></thead><tbody id="tb-${t.key}">${rows.map((r,i)=>tableRow(t,r,i)).join('')}</tbody></table></div><button type="button" class="btn alt small" data-add="${t.key}" style="margin-top:10px">+ Add Row</button></div>`}
+
+function tableRow(t,row,i){return `<tr>${t.cols.map((c,j)=>`<td><input data-table="${t.key}" data-row="${i}" data-col="${j}" value="${esc(Array.isArray(row)?row[j]:row&&typeof row==='object'?(row[c]??Object.values(row)[j]):'')}"></td>`).join('')}<td><button type="button" class="btn danger small" data-remove="${t.key}" data-index="${i}">×</button></td></tr>`}
+
+function profileCard(p){return `<article class="profile"><div>${photo(p).replace('class="photo"','class="profile-photo"').replace('class="photo placeholder"','class="profile-photo placeholder"')}</div><div class="idbar">ID: ${esc(p.id)}</div><div class="profile-body"><h3>${esc(displayName(p))}</h3><div class="state">${esc((p.state||'STATE NOT SET').toUpperCase())}</div><div class="status ${(p.status||'').toLowerCase().includes('inactive')||(p.status||'').toLowerCase().includes('blocked')?'inactive':''}">${esc(p.status||'Active')}</div><p><button class="btn small" data-open="${encodeURIComponent(p.id)}">VIEW MASTER RECORD</button></p></div></article>`}
+
+function profileCards(list){return list.length?`<div class="cards">${list.map(profileCard).join('')}</div>`:'<div class="panel muted">No demo profiles found. Select Registration to create one.</div>'}
+
+function sentenceTypeSelect(value){
+ const choices=['Unknown','Fixed Term','Life With Parole','Life Without Parole','Other'];
+ return `<div class="field"><label>Sentence Type</label><select name="sentenceType" id="registrationSentenceType">${choices.map(v=>`<option value="${esc(v)}" ${v===(value||'Unknown')?'selected':''}>${esc(v)}</option>`).join('')}</select></div>`;
+}
+function releaseDisplay(p,key){
+ if(p.sentenceType==='Life Without Parole')return 'Not applicable — life without parole';
+ return p[key]||'Not recorded';
+}
+function registration(){
+ const p=editId?find(editId):null;
+ const F=(label,key,type='text')=>field(label,key,p?.[key]||'',type);
+ return `<div class="actions"><button class="btn alt" type="button" data-view="profiles">← Back to Profiles</button></div>
+ <form id="recordForm" novalidate>
+ <div class="panel"><div class="heading">${p?'EDIT INMATE MASTER RECORD':'NEW INMATE REGISTRATION'}</div>
+ <p class="muted">NEXUS master registration. Inmate ID, State and Facility are required. Other fields may remain blank until verified.</p>
+ <div id="recordSaveStatus" class="notice hidden" role="status" aria-live="polite"></div>
+ <div class="nx-reg-head">INMATE IDENTIFICATION</div>
+ <div class="nx-reg-photo-layout">
+   <div class="registration-photo"><div id="registrationPhotoPreview">${photo(p)}</div><strong>INMATE PHOTO</strong><span class="muted">JPEG / PNG / WebP · Maximum 1.5 MB</span><input type="file" id="photoInput" accept="image/png,image/jpeg,image/webp" aria-label="Inmate photograph"></div>
+   <div class="nx-reg-grid">
+    ${F('LAST NAME','last')}${F('FIRST NAME','first')}${F('MIDDLE INITIAL','middle')}${F('INMATE ID *','id')}
+    ${F('AGE','age','number')}${F('GENDER','gender')}${F('HEIGHT (INCHES)','heightInches','number')}${F('WEIGHT','weight','number')}
+    ${F('HAIR COLOR','hairColor')}${F('EYE COLOR','eyeColor')}${F('ETHNIC ORIGIN','ethnicOrigin')}${F('CUSTODY CLASS','custody')}
+    ${F('ADMISSION','admission','date')}
+   </div>
+ </div>
+ <div class="nx-reg-release">PROJECTED ELIGIBLE RELEASE DATE</div>
+ <div class="nx-reg-grid">
+  ${F('PROJECTED ELIGIBLE RELEASE DATE','earliestRelease','date')}
+  ${F('PRISON RELEASE DATE — DATE / LIFE / NATURAL LIFE / YEARS TO LIFE / DEATH','prisonReleaseText')}
+  ${F('RELEASE TYPE — FREE TEXT','releaseTypeText')}
+  ${F('PROJECTED RELEASE DATE (STRUCTURED / OPTIONAL)','release','date')}
+ </div>
+ <p class="nx-reg-note">Prison Release Date and Release Type are free text. Dates for searching remain separate optional date fields. Never type LIFE into a date input.</p>
+ <div class="nx-reg-release">MOST RECENT LOCATION · AS OF DATE</div>
+ <div class="nx-reg-grid">
+  ${stateSelect(p?.state||'')}${facilitySelect(p?.state||'',p?.facility||'')}${F('UNIT','unit')}${F('AS OF DATE','locationAsOf','date')}
+  ${F('COMPLEX / MOST RECENT LOCATION','location')}${F('LAST MOVEMENT','lastMovement')}
+  <div class="field nx-reg-span2"><label>STATUS</label><select name="status">${['Active','Inactive','Active blocked','Inactive blocked','Transferred','Released','Archive'].map(v=>`<option value="${v}" ${((p?.status||'Active')===v)?'selected':''}>${v}</option>`).join('')}</select></div>
+ </div>
+ <div class="nx-reg-head">INMATE MAILING ADDRESS</div>
+ <div class="nx-reg-address">${area('FULL NAME, INMATE ID, FACILITY, UNIT AND ADDRESS — ONE LINE EACH','mailing',p?.mailing||'')}</div>
+ <div class="nx-reg-head">ADDITIONAL SENTENCING INFORMATION</div>
+ <div class="nx-reg-grid">${sentenceTypeSelect(p?.sentenceType)}${F('PAROLE ELIGIBILITY DATE','paroleEligibility','date')}</div>
+ ${area('MASTER RECORD NOTES','notes',p?.notes||'')}
+ </div></div>
+ <div class="nx-reg-head">INMATE INFORMATION · HISTORICAL RECORDS</div>
+ ${tableDefs.map(t=>tableEditor(t,p)).join('')}
+ <div class="panel registration-savebar"><div id="recordSaveBottom" class="muted">Save the profile and all section rows to Supabase.</div><button id="saveMasterButton" class="btn" type="submit">SAVE MASTER RECORD</button></div>
+ </form>`;
+}
+
+function tableDisplay(p,t){const rows=Array.isArray(p[t.key])?p[t.key]:[];return section(t.title,rows.length?`<div class="tablewrap"><table><thead><tr>${t.cols.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${t.cols.map((c,i)=>`<td>${esc(Array.isArray(r)?r[i]:(r?.[c]??Object.values(r||{})[i]??''))}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`:'<p class="muted">No entries recorded.</p>')}
+
+// This summary displays voluntary reporting frequency, not an inferred personal trait.
+function sexualActivityHeaderSummary(){
+ const s=sexualLevel();
+ return `<div class="nexus-sexual-count"><strong>${s.n}</strong><span>reported entries · last 30 days</span></div>
+  <div class="nexus-sexual-meter" aria-label="${s.level} reported activity frequency">
+   <div class="nexus-sexual-fill" style="width:${Math.min(100,s.n/15*100)}%"></div>
+  </div>
+  <div class="nexus-sexual-footer"><span>${s.level} frequency</span><button type="button" class="btn alt small" data-tab="communication">OPEN REPORT</button></div>`;
+}
+
+
+/* Sexual-language points are distinct from self-reported sexual activity.
+   Matches indicate text patterns only: NOT evidence of actual conduct, desire,
+   consent, sexual orientation, or identity. Browser-local overrides. */
+const NEXUS_SEXUAL_TERMS_KEY='nexus_sexual_phrase_rules_v1';
+const NEXUS_SEXUAL_RULES=[
+ {label:'Suggestive / innuendo',points:1,terms:['sexy','hot for you','turn me on','turns me on','turned on','horny','flirting with you','naughty','dirty talk','thirsty for you','dtf','nsfw','spicy pics','body count']},
+ {label:'Explicit sexual terms',points:2,terms:['fuck me','fucking you','fuck you tonight','sex with you','have sex','make love','oral sex','blowjob','blow job','handjob','hand job','jerk off','masturbate','orgasm','cum','cumming','pussy','dick pic','cock','clit','nudes','naked pics','sexting']},
+ {label:'Sexual requests / propositions',points:3,terms:['send nudes','send me nudes','send me a nude','show me your body','show me your tits','send a dick pic','send me a sexy pic','lets hook up','wanna hook up','want to have sex','i want to sleep with you','can we sext','send me pics naked']},
+ {label:'Sexual pressure / boundary concerns',points:4,terms:['you owe me sex','prove you love me with sex','if you loved me you would','dont say no to me','you cant refuse me','you cannot refuse me','i will share your nudes','ill share your nudes','send nudes or else','i wont take no for an answer']}
+];
+function nexusSexualCustomTerms(){
+ const a=read(NEXUS_SEXUAL_TERMS_KEY+'_'+currentUserId,[]);
+ return Array.isArray(a)?a.filter(x=>x&&typeof x.term==='string'&&x.term.length<=80&&Number.isInteger(x.points)&&x.points>=1&&x.points<=5).slice(0,100):[];
+}
+function nexusSexualLanguageScore(){
+ const f=file(),ignored=f.sexualCueIgnored||{};
+ const rules=[...NEXUS_SEXUAL_RULES,...nexusSexualCustomTerms().map(x=>({label:'Custom: '+x.term,points:x.points,terms:[x.term],id:x.id}))];
+ const results=[],totals=rules.map(()=>0);
+ for(const entry of f.entries||[]){
+  if(!String(entry.message||'').trim())continue;
+  rules.forEach((rule,i)=>{
+   const found=[...new Set(nexusPhraseCount(String(entry.message),rule.terms))].slice(0,8);
+   for(const phrase of found){
+    const key=String(entry.uid||entry.date)+':sex:'+i+':'+phrase;
+    if(ignored[key])continue;
+    totals[i]+=rule.points;
+    results.push({key,phrase,label:rule.label,points:rule.points,date:entry.date,type:entry.type});
+   }
+  });
+ }
+ return {total:totals.reduce((a,b)=>a+b,0),rules,totals,results,entries:(f.entries||[]).length};
+}
+function nexusSexualLanguagePanel(){
+ const score=nexusSexualLanguageScore();
+ const level=score.total===0?1:score.total<5?2:score.total<10?3:score.total<20?4:5;
+ return `<div class="nexus-sexual-language">
+  <div class="nexus-sexual-language-title">SEXUAL</div>
+  
+  <div class="nexus-sexual-five-level" role="img" aria-label="Sexual-language keyword level ${level} of 5">
+   ${[1,2,3,4,5].map(i=>`<span class="five-segment ${level===i?'selected':''}">${i}</span>`).join('')}
+  </div>
+ </div>`;
+}
+
+function nexusSexualCueMenu(){
+ const s=nexusSexualLanguageScore();
+ return `<details class="nexus-cue-dropdown nexus-sexual-dropdown">
+ <summary aria-label="Show Sexual point breakdown and add expressions">POINT DETAILS ▾</summary>
+ <div class="nexus-cue-popup">
+  <h3>Sexual — point breakdown</h3>
+  <div class="nexus-cue-score"><strong>+${s.total} points</strong><span>${s.entries} saved messages</span></div>
+  ${s.rules.map((r,i)=>`<div class="nexus-cue-row"><span>${esc(r.label)}</span><strong>+${s.totals[i]}</strong></div>`).join('')}
+  <h4>Matched words and phrases (${s.results.length})</h4>
+  <div class="nexus-match-list">${s.results.length?s.results.slice(-100).reverse().map(h=>`<div class="nexus-match"><strong>${esc(h.phrase)}</strong> · ${esc(h.label)} (+${h.points})<small>${esc(h.type||'Entry')} · ${esc(h.date||'Unknown date')}</small><button type="button" class="btn alt small" data-sexual-cue-ignore="${encodeURIComponent(h.key)}">Dismiss false match</button></div>`).join(''):'<p class="muted">No matches detected.</p>'}</div>
+  <h4>Add a word, phrase or sentence</h4>
+  <form id="nexusSexualCueForm" class="nexus-custom-form">
+   <input name="term" maxlength="80" required placeholder="Word, phrase, or short sentence" aria-label="Custom sexual expression">
+   <label class="muted">Points per match (1–5)<input name="points" type="number" min="1" max="5" step="1" value="2" required></label>
+   <button type="submit" class="btn small">ADD EXPRESSION</button>
+  </form>
+  <h4>Your custom expressions</h4>
+  <div class="nexus-cue-custom">${nexusSexualCustomTerms().map(x=>`<div class="nexus-cue-row"><span>${esc(x.term)} (+${x.points})</span><button type="button" class="btn danger small" data-sexual-cue-remove="${esc(x.id)}">Remove</button></div>`).join('')||'<p class="muted">No custom expressions yet.</p>'}</div>
+  <p class="nexus-cue-help">These are keyword matches, not evidence of actual sexual activity or intent. Custom expressions are stored only in this browser for the signed-in user.</p>
+ </div></details>`;
+}
+
+function nexusRefreshSexualPopup(){render();const d=document.querySelector('.nexus-sexual-dropdown');if(d)d.open=true;}
+$('content').addEventListener('submit',e=>{
+ if(e.target.id!=='nexusSexualCueForm')return;
+ e.preventDefault();e.stopImmediatePropagation();
+ const fd=new FormData(e.target),term=String(fd.get('term')||'').trim(),points=Number(fd.get('points'));
+ if(term.length<2||term.length>80||!Number.isInteger(points)||points<1||points>5){alert('Enter a phrase and 1–5 whole points.');return;}
+ const all=nexusSexualCustomTerms();
+ if(all.some(x=>x.term.toLowerCase()===term.toLowerCase())){alert('That expression is already in your custom dictionary.');return;}
+ if(all.length>=100){alert('Custom dictionary limit reached.');return;}
+ all.push({id:crypto.randomUUID(),term,points});
+ if(store(NEXUS_SEXUAL_TERMS_KEY+'_'+currentUserId,all))nexusRefreshSexualPopup();
+},true);
+$('content').addEventListener('click',e=>{
+ const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.sexualCueRemove){
+  const all=nexusSexualCustomTerms().filter(x=>x.id!==b.dataset.sexualCueRemove);
+  if(store(NEXUS_SEXUAL_TERMS_KEY+'_'+currentUserId,all))nexusRefreshSexualPopup();
+  return;
+ }
+ if(b.dataset.sexualCueIgnore){
+  const key=decodeURIComponent(b.dataset.sexualCueIgnore),f=file();
+  f.sexualCueIgnored={...(f.sexualCueIgnored||{}),[key]:true};
+  if(savePersonal())nexusRefreshSexualPopup();
+ }
+},true);
+
+function identity(p,personalMode=false){
+ const d=personal[p.id]?.details||{};
+ return `<div class="panel hero nexus-profile-header">
+  <div class="nexus-photo-column">
+   ${photo(p)}
+   <div class="nexus-photo-badges">
+    ${personalMode?'<span class="status nexus-file-badge">PERSONAL FILE</span>':''}
+    <span class="status ${(p.status||'').toLowerCase().includes('inactive')||(p.status||'').toLowerCase().includes('blocked')?'inactive':''}">${esc(p.status||'Active')}</span>
+   </div>
+  </div>
+  <div class="nexus-identity-main">
+   <h2>${esc(displayName(p))}</h2>
+   <div class="state">${esc((p.state||'STATE NOT SET').toUpperCase())}</div>
+   <div class="facts nexus-revised-facts">
+    <div class="fact"><small>Inmate ID</small><strong>${esc(p.id)}</strong></div>
+    <div class="fact"><small>Age</small><strong>${esc(p.age||'—')}</strong></div>
+    ${personalMode?`<div class="fact"><small>Orientation</small><strong>${esc(d.orientation||'Not provided')}</strong></div>`:''}
+    <div class="fact nexus-facility-fact"><small>Facility</small><strong>${esc(p.facility||'—')}</strong></div>
+    <div class="fact"><small>Unit</small><strong>${esc(p.unit||'Not recorded')}</strong></div>
+   </div>
+  </div>
+ </div>`;
+}
+
+function detail(){const p=find(detailId);if(!p)return '<p>Record not found.</p>';return `<div class="actions"><button class="btn alt" data-view="profiles">BACK</button><button class="btn" data-edit="${encodeURIComponent(p.id)}">EDIT RECORD</button><button class="btn purple" data-personal="${encodeURIComponent(p.id)}">INMATE PERSONAL</button><button class="btn danger" data-delete="${encodeURIComponent(p.id)}">DELETE RECORD</button></div>${identity(p)}${section('PERSONAL / CUSTODY DETAILS',`<div class="grid">${[['First Name',p.first],['Middle Name',p.middle],['Last Name',p.last],['State',p.state],['Age',p.age],['Facility',p.facility],['Unit',p.unit],['Gender',p.gender],['Height (inches)',p.heightInches],['Weight',p.weight],['Hair Color',p.hairColor],['Eye Color',p.eyeColor],['Ethnic Origin',p.ethnicOrigin],['Prison Release Date',p.prisonReleaseText],['Release Type',p.releaseTypeText],['Location As Of',p.locationAsOf],['Last Movement',p.lastMovement],['Sentence Type',p.sentenceType||'Unknown'],['Parole Eligibility',p.paroleEligibility],['Custody Classification',p.custody],['Admission Date',p.admission],['Earliest Release',releaseDisplay(p,'earliestRelease')],['Projected Release',releaseDisplay(p,'release')],['Most Recent Location',p.location],['Mailing Address',p.mailing],['Notes',p.notes]].map(([a,b])=>a==='Mailing Address'?`<div class="info nexus-mailing-info"><small>Mailing Address</small><strong>${esc(b||'—')}</strong></div>`:item(a,b)).join('')}</div>`)}${tableDefs.map(t=>tableDisplay(p,t)).join('')}`}
+
+function personalDetails(){const d=file().details||{};const fields=[['Preferred Name / Nickname','nickname'],['Hometown','hometown'],['Orientation (optional; self-reported)','orientation'],['Pronouns (optional)','pronouns'],['Marital Status','marital'],['Children','children'],['Languages','languages'],['Education Level','education'],['Religion (optional)','religion']];return `<form id="personalForm"><div class="cols"><div>${section('BASIC INFORMATION',`<div class="grid">${fields.map(([a,b])=>field(a,b,d[b]||'')).join('')}</div>`)}</div><div>${section('ABOUT ME / BIOGRAPHY',area('Biography','bio',d.bio||''))}${section('INTERESTS & HOBBIES',area('Interests and Activities','hobbies',d.hobbies||''))}${section('PERSONAL GOALS',area('Goals','goals',d.goals||''))}${section('ADDITIONAL INFORMATION',area('Personal Notes','additional',d.additional||''))}</div></div><button class="btn" type="submit">SAVE PERSONAL DETAILS</button></form>`}
+
+const today=()=>new Date().toISOString().slice(0,10);
+
+function stats(){
+ const entries=file().entries;
+ const now=Date.now(),ms=86400000;
+ const valid=entries.filter(e=>{const t=new Date(String(e.date||'')+'T12:00:00').getTime();return Number.isFinite(t)&&t<=now;});
+ const inWindow=(days,offset=0)=>valid.filter(e=>{const t=new Date(e.date+'T12:00:00').getTime();return t<=now-offset*ms&&t>now-(days+offset)*ms;});
+ const allTime=windowDays===0;
+ const recent=allTime?entries.slice():inWindow(windowDays);
+ const previous=allTime?[]:inWindow(windowDays,windowDays);
+ const earliest=valid.length?Math.min(...valid.map(e=>new Date(e.date+'T12:00:00').getTime())):now;
+ const elapsedDays=Math.max(1,Math.ceil((now-earliest)/ms)+1);
+ const rate=recent.length*30/(allTime?elapsedDays:windowDays);
+ const prevRate=allTime?0:previous.length*30/windowDays;
+ const level=rate<5?'LOW':rate<15?'MEDIUM':'HIGH',cls=level.toLowerCase();
+ const change=allTime?null:(prevRate?Math.round((rate-prevRate)/prevRate*100):null);
+ const last=valid.map(e=>new Date(e.date+'T12:00:00').getTime()).sort((a,b)=>b-a)[0];
+ return {recent,previous,level,cls,change,rate,days:last?Math.floor((now-last)/ms):null,allTime,elapsedDays,counts:{Text:recent.filter(e=>e.type==='Text').length,Email:recent.filter(e=>e.type==='Email').length,Call:recent.filter(e=>e.type==='Call').length}};
+}
+
+function nexusChronologicalEntries(){
+  // Dates may be identical. Within the same date, newest saved entry wins.
+  return file().entries.map((entry,index)=>({entry,index}))
+    .sort((a,b)=>{
+      const dateOrder=String(b.entry.date||'').localeCompare(String(a.entry.date||''));
+      return dateOrder || b.index-a.index;
+    }).map(x=>x.entry);
+}
+
+function activity(){
+  const s=stats();
+  const all=nexusChronologicalEntries();
+  const allCounts={
+    Text:all.filter(x=>String(x.type||'').toLowerCase()==='text').length,
+    Email:all.filter(x=>String(x.type||'').toLowerCase()==='email').length,
+    Call:all.filter(x=>String(x.type||'').toLowerCase()==='call').length
+  };
+  const preview=windowDays===0?all:all.slice(0,12);
+  return `<div class="panel communication-activity-panel">
+    <div class="heading">COMMUNICATION ACTIVITY <span style="float:right;font-weight:normal">${windowDays===0?'ALL TIME':windowDays+' DAYS'}</span></div>
+    <div class="actions">${[7,30,90,0].map(d=>`<button class="btn small ${windowDays===d?'':'alt'}" data-window="${d}">${d===0?'All Time':d+' Days'}</button>`).join('')}</div>
+    <div class="indicator ${s.cls}"><span class="dot ${s.cls}"></span>${s.level}</div>
+    <p class="muted">${s.allTime?`${s.recent.length} saved entries across the full recorded history (approximately ${s.elapsedDays} days). The activity level uses the average entries per 30 days.`:`${s.recent.length} entries in the selected ${windowDays}-day period ${s.change===null?'· No prior-period baseline':`· ${s.change>=0?'+':''}${s.change}% compared with the previous ${windowDays} days`}`}</p>
+    <div class="bar"><div class="fill" style="width:${Math.min(100,s.rate/15*100)}%;background:${s.cls==='low'?'#ff575e':s.cls==='medium'?'#ffd12b':'#3bd88b'}"></div></div>
+    <p class="muted" style="margin-top:12px">ALL SAVED COMMUNICATIONS — ${all.length} entries</p>
+    <div class="stats"><div class="stat">💬<strong>${allCounts.Text}</strong><small>Texts</small></div><div class="stat">✉<strong>${allCounts.Email}</strong><small>Emails</small></div><div class="stat">☎<strong>${allCounts.Call}</strong><small>Calls</small></div></div>
+    <h3 style="margin:18px 0 8px;font-size:14px;color:#a9d7ff">${windowDays===0?'ALL SAVED TEXTS, EMAILS & CALLS':'LATEST SAVED TEXTS, EMAILS & CALLS'}</h3>
+    <div class="communication-activity-feed" tabindex="0" role="region" aria-label="Latest saved communications">
+      ${preview.length?preview.map(x=>`<div class="entry"><strong>${esc(x.type||'Communication')} · ${esc(x.date||'Undated')}</strong><p>${esc(x.message||'(No message content)')}</p></div>`).join(''):'<p class="muted">No saved communications for this inmate.</p>'}
+    </div>
+    <p class="muted">Newest saved messages appear first. All Time displays the complete saved history in the scrollable list; other periods show the latest 12 entries. Totals always include all saved entries.</p>
+    <p class="muted">Days since last recorded communication: <strong>${s.days===null?'No entries':s.days}</strong></p>
+    <p class="muted">Frequency levels describe recorded activity only, not intent or psychological traits.</p>
+  </div>`;
+}
+
+function nexusImportPanel(){return `<div class="panel"><div class="heading">IMPORT EMAILS & TEXT MESSAGES · TESTER</div>
+<p class="muted">Choose the inmate first. Upload .txt files (one complete message per file), or a .csv with date, type, direction, source, message columns. For screenshots, select an image and manually transcribe/review the original message before saving. No OCR runs in this build; the original screenshot is NOT uploaded or saved.</p>
+<div class="field"><label>1 · Select .txt / .csv messages, or screenshots to review</label><input type="file" id="nexusImportFiles" accept=".txt,.csv,image/png,image/jpeg,image/webp" multiple></div>
+<div class="field"><label>2 · Source</label><select id="nexusImportSource"><option>JPay</option><option>Securus</option><option>Other</option></select></div>
+<div class="field"><label>3 · Message direction</label><select id="nexusImportDirection"><option value="Incoming">Incoming (inmate)</option><option value="Outgoing">Outgoing (mine)</option></select></div>
+<div class="field"><label>4 · Date for TXT/manual entry</label><input id="nexusImportDate" type="date" value="${today()}"></div>
+<div class="actions"><button type="button" class="btn alt" id="nexusPrepareImport">PREVIEW SELECTED FILES</button></div>
+<div id="nexusImportPreview" class="notice">Nothing imported yet. Preview and verify the exact message text before saving.</div>
+<div class="field"><label>Manual message / screenshot transcription</label><textarea id="nexusImportManual" rows="7" placeholder="Paste or transcribe the complete message here. An image file alone cannot be analyzed yet."></textarea></div>
+<div class="actions"><button type="button" class="btn" id="nexusSaveImport">SAVE REVIEWED MESSAGES TO THIS INMATE</button></div>
+<p class="muted">Existing communication scales and THE EIGHT tester use saved entries. Imported outgoing messages are saved for context but will need direction-aware filtering before production analysis. Use fictional messages on this tester; private correspondence requires a verified backup and privacy review.</p></div>`}
+let nexusPendingImports=[];
+function nexusCsvRows(raw){
+ const rows=[];let row=[],v='',quoted=false;
+ for(let i=0;i<raw.length;i++){const ch=raw[i];if(ch==='"'){if(quoted&&raw[i+1]==='"'){v+='"';i++}else quoted=!quoted}else if(ch===','&&!quoted){row.push(v);v=''}else if((ch==='\n'||ch==='\r')&&!quoted){if(ch==='\r'&&raw[i+1]==='\n')i++;row.push(v);if(row.some(x=>x.trim()))rows.push(row);row=[];v=''}else v+=ch;}
+ row.push(v);if(row.some(x=>x.trim()))rows.push(row);return rows;
+}
+async function nexusPrepareMessageFiles(){
+ const input=$('nexusImportFiles'),files=Array.from(input?.files||[]),result=[],source=$('nexusImportSource')?.value||'Other',direction=$('nexusImportDirection')?.value||'Incoming',date=$('nexusImportDate')?.value||today();
+ if(files.length>30){alert('Select up to 30 files per batch.');return;}
+ for(const f of files){if(f.size>2_000_000){alert('File too large: '+f.name);return;}
+ const ext=f.name.split('.').pop().toLowerCase();
+ if(ext==='txt'){const message=(await f.text()).trim();if(message)result.push({date,type:'Email',direction,source,message});}
+ else if(ext==='csv'){const rows=nexusCsvRows(await f.text());if(!rows.length)continue;const head=rows.shift().map(v=>v.trim().toLowerCase());const idx=k=>head.indexOf(k);if(idx('message')<0){alert('CSV must contain a message column.');return;}
+ for(const r of rows){const message=(r[idx('message')]||'').trim();if(!message)continue;result.push({date:r[idx('date')]||date,type:r[idx('type')]||'Email',direction:r[idx('direction')]||direction,source:r[idx('source')]||source,message});}}
+ else if(['png','jpg','jpeg','webp'].includes(ext)){result.push({imageOnly:true,name:f.name});}
+ else{alert('Unsupported file: '+f.name);return;}
+ }
+ nexusPendingImports=result.filter(x=>!x.imageOnly);
+ const imgCount=result.filter(x=>x.imageOnly).length;
+ $('nexusImportPreview').innerHTML=`<strong>${nexusPendingImports.length} text messages ready for review; ${imgCount} screenshot(s) selected (manual transcription required).</strong>`+nexusPendingImports.slice(0,30).map((x,i)=>`<div class="entry"><b>${i+1}. ${esc(x.date)} · ${esc(x.type)} · ${esc(x.direction)} · ${esc(x.source)}</b><p>${esc(x.message.slice(0,1500))}</p></div>`).join('');
+}
+function nexusSaveImportedMessages(){
+ const manual=String($('nexusImportManual')?.value||'').trim();const source=$('nexusImportSource')?.value||'Other',direction=$('nexusImportDirection')?.value||'Incoming',date=$('nexusImportDate')?.value||today();
+ const rows=[...nexusPendingImports];if(manual)rows.push({date,type:'Email',direction,source,message:manual});
+ if(!rows.length){alert('No reviewed text messages to save. Screenshots alone cannot be saved as text.');return;}
+ if(rows.length>100){alert('Limit to 100 entries per batch.');return;}
+ if(rows.some(x=>!/^\d{4}-\d{2}-\d{2}$/.test(x.date)||x.date>today()||!x.message.trim()||!['Incoming','Outgoing'].includes(x.direction))){alert('Fix dates, direction or empty messages before saving.');return;}
+ if(!confirm('Save '+rows.length+' reviewed message(s) to the currently selected inmate?'))return;
+ const f=file();f.entries=f.entries||[];const existing=new Set(f.entries.map(x=>[x.date,x.message.trim()].join('|')));
+ let added=0;for(const x of rows){const key=[x.date,x.message.trim()].join('|');if(existing.has(key))continue;existing.add(key);f.entries.push({uid:crypto.randomUUID(),date:x.date,type:x.type==='Text'?'Text':'Email',message:x.message,source:x.source,direction:x.direction,rateAtEntry:0,importedAt:new Date().toISOString()});added++;}
+ if(!added){alert('No new messages; all were duplicates.');return;}
+ analysisVisible=false;if(savePersonal()){nexusPendingImports=[];render();alert('Submitted '+added+' messages to NEXUS cloud-save queue. Verify cloud sync before leaving.');}
+}
+function communication(){const e=nexusChronologicalEntries();return `${nexusImportPanel()}<div class="cols"><div>${activity()}</div><div><div class="panel"><div class="heading">ADD COMMUNICATION ENTRY</div><form id="entryForm"><div class="field"><label>Communication Type</label><select name="type"><option value="Text">Text Message</option><option value="Email">Email</option><option value="Call">Phone Call</option></select></div>${field('Communication Date','date',today(),'date')}${area('Message or Call Summary','message')}<button class="btn" type="submit">SAVE ENTRY</button></form></div><div class="panel communication-history-panel"><div class="heading">COMMUNICATION HISTORY ↕ SCROLL TO VIEW</div><div class="communication-history-list" tabindex="0" role="region" aria-label="Scrollable communication history">${e.length?e.map(x=>`<div class="entry"><strong>${esc(x.type)} · ${esc(x.date)}</strong><p>${esc(x.message)}</p><button class="btn danger small" data-entry-delete="${esc(x.uid)}">Delete Entry</button></div>`).join(''):'<p class="muted">No communication entries yet.</p>'}</div></div></div></div>`}
+
+
+/* Two independent communication indicators and their contextual, rule-based reviews.
+   The analysis is descriptive and is not a live AI model or clinical assessment. */
+function nexusCommunicationSubscores(){
+ const m=nexusCueScore(), sx=nexusSexualLanguageScore();
+ const mPos=m.hits.filter(h=>h.points>0);
+ const mNeg=m.hits.filter(h=>h.points<0);
+ const coercive=mPos.filter(h=>/control|dominance|power|intimid|threat|humiliat|aggress|dismiss|pressure/i.test(h.rule));
+ const sexualPressure=sx.results.filter(h=>/pressure|boundar/i.test(h.label));
+ const sexualExplicit=sx.results.filter(h=>!/pressure|boundar/i.test(h.label));
+ const mObservations=m.entries===0
+  ? ['No communications saved yet. Add messages to see keyword observations.']
+  : [
+    coercive.length?`${coercive.length} possible control or pressure expressions flagged. Review their full context.`:'No configured controlling or intimidating expressions detected.',
+    mNeg.length?`${mNeg.length} respect or boundary-acknowledging expressions detected.`:'No configured explicit respect or boundary acknowledgments detected.',
+    'A keyword match does not establish personality, gender expression, or intent.'
+   ];
+ const sObservations=sx.entries===0
+  ? ['No communications saved yet. Add messages to see keyword observations.']
+  : [
+    sexualExplicit.length?`${sexualExplicit.length} potentially sexual expressions detected in saved communications.`:'No configured sexually explicit expressions detected.',
+    sexualPressure.length?`${sexualPressure.length} expressions potentially involving sexual pressure; review the original messages.`:'No configured sexual pressure expressions detected.',
+    'Sexual wording does not establish sexual drive, consent, or actual activity.'
+   ];
+ function review(title,items){
+  return `<div class="nexus-subscore-review"><h4>${esc(title)} · AUTOMATED REVIEW</h4>${items.map(t=>`<p>${esc(t)}</p>`).join('')}</div>`;
+ }
+ return `<div class="nexus-subscore-grid" aria-label="Separate communication indicators">
+   <section class="nexus-subscore-card" aria-label="Masculinity language indicator">
+     <h3>MASCULINITY</h3>
+     ${masculinityCommunicationAssessment()}
+     ${masculinityCueMenu()}
+     ${review('MASCULINITY',mObservations)}
+   </section>
+   <section class="nexus-subscore-card" aria-label="Sexual language indicator">
+     <h3>SEXUAL</h3>
+     ${nexusSexualLanguagePanel()}
+     ${nexusSexualCueMenu()}
+     ${review('SEXUAL',sObservations)}
+   </section>
+ </div>`;
+}
+
+function communicationCenter(){return `<div class="nexus-overall-window">${nexusCombinedCommunicationScore()}${nexusCommunicationSubscores()}</div><div class="report-static"><div class="report-static-title">COMMUNICATION ACTIVITY — TEXTS, EMAILS & CALLS</div><div class="report-static-body">${communication()}</div></div>`}
+
+function sexualLevel(){const entries=financeFile().sexualEntries||[],now=Date.now();const recent=entries.filter(e=>{const d=new Date(e.date+'T12:00:00').getTime();return Number.isFinite(d)&&d<=now&&d>now-30*86400000});const n=recent.length;return {n,level:n<5?'LOW':n<15?'MEDIUM':'HIGH',cls:n<5?'low':n<15?'medium':'high'}}
+
+/* Transparent keyword-based message flags. Matches are prompts for review,
+   not assessments of masculinity, intent, character or danger. */
+const NEXUS_CUE_RULES=[
+ {label:'Toughness',points:2,terms:[/\bnever show weakness\b/gi,/\bman up\b/gi,/\bno weakness\b/gi]},
+ {label:'Anti-femininity',points:2,terms:[/\bdo not act like a girl\b/gi,/\btoo feminine\b/gi,/\bacting like a girl\b/gi]},
+ {label:'Power and dominance',points:2,terms:[/\bi am in charge\b/gi,/\bknow your place\b/gi,/\bdo as i say\b/gi]},
+ {label:'Coercive control',points:2,terms:[/\byou are not allowed to\b/gi,/\bi decide who you see\b/gi,/\byou need my permission\b/gi]},
+ {label:'Power struggle',points:2,terms:[/\byou will not win\b/gi,/\bi always have the last word\b/gi,/\bi have to win\b/gi]},
+ {label:'Emotional double standard',points:2,terms:[/\bi can but you cannot\b/gi,/\bonly i can be angry\b/gi,/\bmy feelings matter more\b/gi]},
+ {label:'Confusing dominance with leadership',points:2,terms:[/\ba leader must control\b/gi,/\bleadership means obedience\b/gi,/\bfollow without question\b/gi]},
+ {label:'Fragile self-worth',points:2,terms:[/\byou make me look weak\b/gi,/\bi cannot handle rejection\b/gi,/\byou embarrassed me\b/gi]},
+ {label:'Profanity / swearing',points:1,terms:[/\bfuck(?:ing|ed|er|s)?\b/gi,/\bshit(?:ty|s)?\b/gi,/\b(?:damn|hell|crap|bullshit|piss(?:ed|ing)?|ass|arse)\b/gi,/\b(?:wtf|stfu|fck|fuk)\b/gi]},
+ {label:'Direct insults / name-calling',points:2,terms:[/\b(?:idiot|moron|stupid|dumbass|jackass|asshole|jerk|loser|pathetic|trash|scumbag|creep)\b/gi,/\b(?:you(?:'re| are) (?:stupid|useless|an idiot|worthless|pathetic|a loser))\b/gi]},
+ {label:'Belittling / humiliation',points:3,terms:[/\b(?:you(?:'re| are) nothing|nobody wants you|you mean nothing|you are worthless|you disgust me|you should be ashamed|shut your mouth|worthless piece of)\b/gi]},
+ {label:'Gender-based derogatory language',points:3,terms:[/\b(?:bitch(?:es)?|slut(?:s)?|whore(?:s)?|cunt(?:s)?|sissy|pussy|fag(?:got|s)?|dyke(?:s)?)\b/gi,/\b(?:women are inferior|men are superior|girls are useless)\b/gi]},
+ {label:'Identity-targeted derogatory language',points:3,terms:[/\b(?:go back to your country|your kind (?:doesn\x27t|does not) belong|people like you are inferior|you people are disgusting)\b/gi]},
+ {label:'Threats / intimidation',points:4,terms:[/\b(?:i(?:'ll| will) (?:hurt|hit|kill|beat|destroy) you|you(?:'ll| will) regret this|watch your back|i know where you live|i(?:'m| am) coming for you|do it or else|i(?:'ll| will) make you pay)\b/gi]}
+];
+const NEXUS_RESPECT_TERMS=[/\bthank you\b/gi,/\bi appreciate\b/gi,/\bi respect your decision\b/gi,/\byou can say no\b/gi,/\bi am sorry\b/gi,/\bi understand your boundary\b/gi,/\bplease\b/gi,/\bi respect your boundaries\b/gi];
+/* Extended reviewable phrase matching; local-only; no external AI or sync. */
+const NEXUS_CUSTOM_CUES='nexus_custom_cues_v3';
+const NEXUS_EXTRA_CUES=[
+ {label:'Profanity / swearing',points:1,terms:['wtf','wtaf','tf','stfu','gtfo','idgaf','dgaf','fml','ffs','fck','fuk','fuq','fuxk','f*ck','sh*t','sh1t','bullsh*t','bs','mf','mfer','motherfucker','motherfucking','fuck off','fuck you','pissed off','screw you','what the hell','what the fuck','holy shit']},
+ {label:'Insults / put-downs',points:2,terms:['clown','douche','douchebag','tool','bozo','lame ass','dumb af','dumbass','fuckface','dipshit','shithead','trash human','piece of shit','pos','you suck','you are trash','ur trash','youre trash','cringe loser','goofy ass','delulu','mid','NPC','pick me']},
+ {label:'Controlling / possessive language',points:2,terms:['you belong to me','i own you','you cannot leave','you cant leave','you better obey','dont talk to them','you have to ask me','send me your location','show me your phone','i control you','i make the rules','my way or the highway','you do what i tell you','you are mine']},
+ {label:'Pressuring / intimidation',points:3,terms:['or else','you better watch it','do not test me','dont test me','i dare you','i will expose you','ill expose you','i will ruin you','ill ruin you','watch what happens','youll be sorry','you are going to pay','i will find you','ill find you']},
+ {label:'Belittling / humiliation',points:3,terms:['nobody cares about you','youre worthless','you are worthless','you are nothing','youre nothing','you will never be enough','no one will believe you','stop being so sensitive','you are overreacting','youre overreacting','shut up and listen','cry harder','stay mad','cope harder']},
+ {label:'Online hostility / shorthand',points:1,terms:['kys','unalive yourself','ratio','l take','l bozo','touch grass','sit down','shut it','get lost','get wrecked','skill issue','get bent']},
+ {label:'Emotional dismissal / detachment',points:2,terms:['i do not care how you feel','i dont care how you feel','your feelings do not matter','your feelings dont matter','i have no empathy for you','i dont care if you cry','i do not care if you cry','stop having feelings','your pain is not my problem','i feel nothing for you','i will never apologize','i dont owe you empathy','your emotions are irrelevant']},
+ {label:'Aggressive demands',points:3,terms:['do it now or else','you will obey me','you have no choice','you dont get a say','you do not get a say','you better listen to me','you will do what i say','i demand obedience']},
+ {label:'Respectful / supportive language',points:-1,terms:['i hear you','i understand','i respect that','i respect you','take your time','no pressure','your choice','your decision','you decide','i appreciate you','i was wrong','i apologize','you deserve respect','i care about you','i wont pressure you','i will not pressure you','thank you for telling me','i respect your boundaries']}
+];
+function nexusNormalize(str){
+ return String(str||'').normalize('NFKC').toLowerCase()
+   .replace(/[’‘]/g,"'")
+   .replace(/[\u200b-\u200d\ufeff]/g,'')
+   .replace(/[@]/g,'a').replace(/0/g,'o').replace(/3/g,'e')
+   .replace(/[$]/g,'s').replace(/[!1]/g,'i')
+   .replace(/([a-z])\1{3,}/g,'$1$1')
+   .replace(/[^a-z0-9'*\s]+/g,' ')
+   .replace(/\s+/g,' ').trim();
+}
+function nexusCustomTerms(){
+ const v=read(NEXUS_CUSTOM_CUES+'_'+currentUserId,[]);
+ return Array.isArray(v)?v.filter(x=>x&&typeof x.term==='string'&&x.term.length<=80&&Number.isInteger(x.points)&&Math.abs(x.points)<=5).slice(0,100):[];
+}
+function nexusAllRules(){
+ const old=NEXUS_CUE_RULES.map((r,i)=>({key:'base'+i,label:r.label,points:r.points,regex:r.terms}));
+ const extra=NEXUS_EXTRA_CUES.map((r,i)=>({key:'extra'+i,label:r.label,points:r.points,terms:r.terms}));
+ const custom=nexusCustomTerms().map(x=>({key:'custom'+x.id,label:x.category||'Custom phrases',points:x.points,terms:[x.term],custom:true}));
+ return [...old,...extra,...custom,{key:'respectOriginal',label:'Respectful / considerate language',points:-1,regex:NEXUS_RESPECT_TERMS}];
+}
+function nexusPhraseCount(text,terms){
+ const txt=nexusNormalize(text),matches=[];
+ for(const term of terms){
+  const phrase=nexusNormalize(term);
+  if(!phrase)continue;
+  const escaped=phrase.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  const re=new RegExp('(?:^|[^a-z0-9])('+escaped+')(?![a-z0-9])','gi');
+  let m;
+  while((m=re.exec(txt))!==null){matches.push(m[1]);if(matches.length>=8)break;}
+ }
+ return matches;
+}
+function nexusCueScore(){
+ const entries=(file().entries||[]).filter(e=>String(e.message||'').trim());
+ const rules=nexusAllRules(),ignored=file().cueIgnored||{};
+ const counts=rules.map(()=>0),hits=[],scores=rules.map(()=>0);
+ for(const entry of entries){
+  const txt=String(entry.message||'');
+  rules.forEach((rule,i)=>{
+   const matches=[];
+   for(const re of rule.regex||[]){
+    const found=txt.match(re)||[];
+    matches.push(...found.slice(0,3));
+   }
+   if(rule.terms)matches.push(...nexusPhraseCount(txt,rule.terms));
+   const seen=[...new Set(matches.map(x=>String(x).toLowerCase()))].slice(0,2);
+   for(const phrase of seen){
+    const key=String(entry.uid||entry.date)+':'+rule.key+':'+phrase;
+    if(ignored[key])continue;
+    hits.push({key,rule:rule.label,phrase,points:rule.points,date:entry.date,type:entry.type,uid:entry.uid});
+    counts[i]++;
+    scores[i]+=rule.points;
+   }
+  });
+ }
+ const total=scores.reduce((a,b)=>a+b,0);
+ const level=entries.length?Math.min(5,Math.max(1,Math.ceil(Math.max(0,total)/8)||1)):0;
+ return {entries:entries.length,rules,counts,scores,hits,total,level};
+}
+function nexusMasculinityOverallScore(){
+ const score=nexusCueScore();
+ return `<div class="nexus-overall-score">
+  <span>OVERALL SCORE</span>
+  <strong>${score.total>0?'+':''}${score.total}</strong>
+  <small>${score.hits.length} matched expressions · ${score.entries} analyzed entries</small>
+ </div>`;
+}
+function nexusCombinedCommunicationScore(){
+ const m=nexusCueScore();
+ const sexual=nexusSexualLanguageScore();
+ const messages=m.entries;
+ // Custom dominance-language index: observed phrases only, not a measure of manhood,
+ // competence, healthy relationships, sexual drive, or actual sexual activity.
+ const respect=m.hits.filter(h=>h.points<0);
+ // Higher index = more matched dominance, coercion, intimidation and dismissal;
+ // courtesy/boundary acknowledgments are shown independently and never penalized.
+ // Ordinary swearing and ambiguous online slang remain visible in phrase details,
+ // but are excluded from the main dominance/pressure gauge.
+ const dominance=m.hits.filter(h=>h.points>0 && !/^(Profanity \/ swearing|Online hostility \/ shorthand)$/i.test(h.rule));
+ const pressure=sexual.results.filter(h=>/pressure|boundary concerns/i.test(h.label));
+ const tracked=new Map();
+ for(const h of dominance)tracked.set(h.rule,(tracked.get(h.rule)||0)+1);
+ if(pressure.length)tracked.set('Sexual pressure / boundary concerns',pressure.length);
+ const ranked=[...tracked].sort((a,b)=>b[1]-a[1]);
+ const respectTypes=[...new Set(respect.map(h=>h.rule))];
+ const rate=messages?Math.max(0,Math.min(1,(dominance.length+pressure.length)/Math.max(messages,1)/2.5)):null;
+ const band=rate===null?0:rate<0.1?1:rate<0.25?2:rate<0.45?3:rate<0.7?4:5;
+ const labels=['','VERY LOW','LOW','MODERATE','HIGH','VERY HIGH'];
+ const label=messages<5?'INSUFFICIENT DATA':labels[band];
+ const focusText=ranked.length?ranked.slice(0,3).map(([name,n])=>`${name} (${n})`).join(' · '):'No configured dominance, aggression, dismissal, or sexual-pressure phrases detected';
+ const reviewText=respectTypes.length?respectTypes.join(' · '):'No explicit respect or boundary-acknowledgment phrases detected';
+ const sexualText=pressure.length?`${pressure.length} sexual-pressure expression${pressure.length===1?'':'s'} flagged for contextual review`:'No sexual-pressure phrases detected';
+ // Mini-meters show rates of matched expressions per saved entry, capped at 100%.
+ // They are descriptive visualizations of keyword matches, not personality assessments.
+ const dominanceCount=dominance.length+pressure.length;
+ const respectCount=respect.length;
+ const dominancePct=messages?Math.min(100,Math.round(dominanceCount/messages*100)):0;
+ const respectPct=messages?Math.min(100,Math.round(respectCount/messages*100)):0;
+ // Rule-based analysis of dominance and harmful communication patterns; not a live AI service.
+ const opinion=messages<5
+   ? [
+       'Not enough saved communication entries to identify recurring dominance patterns. Add at least five dated entries.',
+       'Watch for repeated demands, humiliation, intimidation, possessiveness, and attempts to override stated boundaries.'
+     ]
+   : [
+       dominanceCount>messages
+         ? 'Dominance-focused wording appears frequently. Review repeated demands, power plays, belittling remarks, and threats in their original context.'
+         : 'Dominance-focused wording is less frequent in the saved entries. Watch for patterns of possessiveness, imposed rules, or repeated ultimatums.',
+       pressure.length
+         ? 'Sexual pressure was flagged. Review whether the messages push past a refusal, demand access, or frame compliance as an obligation.'
+         : 'No configured sexual-pressure phrases were matched. This does not rule out pressure expressed indirectly.',
+       respectCount===0
+         ? 'Few explicit acknowledgments of boundaries were detected. Review whether the speaker allows disagreement and accepts “no.”'
+         : 'Respect and boundary acknowledgments were also detected. Compare these with controlling language; an isolated phrase cannot establish behavior.'
+     ];
+ return `<section class="nexus-combined-panel nexus-credit-panel" aria-label="Overall Man Score language pattern overview">
+   <div class="nexus-credit-top"><span class="nexus-combined-title">OVERALL MAN SCORE</span><span class="nexus-credit-type">DOMINANCE & PRESSURE LANGUAGE INDEX</span></div>
+   <div class="nexus-credit-level">${label}</div>
+   <div class="nexus-half-ring" role="img" aria-label="${messages<5?'Insufficient message data for gauge':'Dominance, aggression, dismissal, and sexual-pressure language indicator: '+label}">
+     <svg viewBox="0 0 200 112" aria-hidden="true" focusable="false">
+       <path class="gauge-track" pathLength="100" d="M 18 95 A 82 82 0 0 1 182 95"/>
+       <path class="gauge-fill" pathLength="100" d="M 18 95 A 82 82 0 0 1 182 95" stroke="${messages<5?'#70839a':(['','#64748b','#7c3aed','#2563eb','#eab308','#dc2626'][band])}" stroke-dasharray="${messages<5?0:Math.round(rate*100)} 100"/>
+     </svg>
+     <div class="nexus-gauge-caption">${messages<5?'MORE MESSAGES NEEDED':label+' · LEVEL '+band+' / 5'}</div>
+   </div>
+   <div class="nexus-overall-five" role="img" aria-label="${messages<5?'Not enough saved messages to determine a level':'Overall keyword level '+band+' of 5'}">
+     ${[1,2,3,4,5].map(i=>`<span class="five-segment ${messages>=5&&band===i?'selected':''}">${i}</span>`).join('')}
+   </div>
+   <div class="nexus-mini-meters" aria-label="Communication pattern mini indicators">
+     <div>
+       <div class="nexus-mini-header"><span>DOMINANCE / PRESSURE</span><small>${dominanceCount} matches · ${dominancePct}%</small></div>
+       <div class="nexus-mini-track" role="progressbar" aria-label="Dominance and pressure expression match rate" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${dominancePct}"><div class="nexus-mini-fill dominance" style="width:${dominancePct}%"></div></div>
+     </div>
+     <div>
+       <div class="nexus-mini-header"><span>RESPECT / BOUNDARIES</span><small>${respectCount} matches · ${respectPct}%</small></div>
+       <div class="nexus-mini-track" role="progressbar" aria-label="Respectful and boundary-acknowledging expression match rate" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${respectPct}"><div class="nexus-mini-fill respect" style="width:${respectPct}%"></div></div>
+     </div>
+   </div>
+   <div class="nexus-ai-opinion" aria-label="Automated communication suggestions">
+     <h4>AI OPINION · DOMINANCE & TOXICITY REVIEW</h4>
+     ${opinion.map(line=>`<p>• ${esc(line)}</p>`).join('')}
+     <p class="nexus-ai-note">Automated keyword-based observations, not a clinical diagnosis or proof of behavior. Review original messages before drawing conclusions.</p>
+   </div>
+   <div class="nexus-credit-analysis">
+     <div class="nexus-credit-finding"><strong>Dominance / pressure indicators</strong><span>${esc(focusText)}</span></div>
+     <div class="nexus-credit-finding"><strong>Respect / boundary indicators</strong><span>${esc(reviewText)}</span></div>
+     <div class="nexus-credit-finding"><strong>Sexual communication</strong><span>${esc(sexualText)}</span></div>
+   </div>
+   <p class="nexus-credit-note">${messages} saved communication ${messages===1?'entry':'entries'} reviewed. Higher levels indicate more matched concerning language, not greater manhood. Respectful language is reported separately without being treated as a negative score. This does not measure actual sexual drive or personal worth. Quotes and slang can generate misleading matches.</p>
+ </section>`;
+}
+
+function masculinityCommunicationAssessment(){
+ const s=nexusCueScore();
+ return `<div class="nexus-indicator-bands" role="img" aria-label="${s.entries?`Keyword score band ${s.level} of 5`:'No entries yet'}">${[1,2,3,4,5].map(i=>`<span class="five-segment ${s.level===i?'selected':''}">${i}</span>`).join('')}</div>`;
+}
+function masculinityCueMenu(){
+ const s=nexusCueScore();
+ return `<details class="nexus-cue-dropdown">
+ <summary aria-label="Open point breakdown">POINT DETAILS ▾</summary>
+ <div class="nexus-cue-popup">
+  <h3>Masculinity — point breakdown</h3>
+  <div class="nexus-cue-score"><strong>${s.total>0?'+':''}${s.total} points</strong><span>${s.entries} saved messages</span></div>
+  <p class="nexus-cue-help">Reviewable keyword flags, not a measure of someone's masculinity, character, intent, or danger. Quoting, sarcasm, negations, and slang can produce mistakes.</p>
+  ${s.rules.map((r,i)=>s.counts[i]?`<div class="nexus-cue-row"><span>${esc(r.label)} (${s.counts[i]})</span><strong>${s.scores[i]>0?'+':''}${s.scores[i]}</strong></div>`:'').join('')}
+  <div class="nexus-cue-row nexus-cue-total"><span>Total</span><strong>${s.total>0?'+':''}${s.total}</strong></div>
+  <h4>Matched phrases (${s.hits.length})</h4>
+  <div class="nexus-match-list">${s.hits.length?s.hits.slice(-100).reverse().map(h=>`<div class="nexus-match"><strong>${esc(h.phrase)}</strong> · ${esc(h.rule)} (${h.points>0?'+':''}${h.points})<small>${esc(h.type||'Entry')} · ${esc(h.date||'Unknown date')}</small><button type="button" class="btn alt small" data-nexus-ignore="${encodeURIComponent(h.key)}">Dismiss false match</button></div>`).join(''):'<p class="muted">No active phrase matches.</p>'}</div>
+  <h4>Teach NEXUS a phrase</h4>
+  <form id="nexusCustomCueForm" class="nexus-custom-form">
+   <input name="cueTerm" maxlength="80" required placeholder="Word or phrase" aria-label="Custom word or phrase">
+   <select name="cueCategory" aria-label="Category"><option>Profanity / swearing</option><option>Insults / put-downs</option><option>Controlling / possessive language</option><option>Threats / intimidation</option><option>Belittling / humiliation</option><option>Power and dominance</option><option>Respectful / supportive language</option><option>Custom phrases</option></select>
+   <label class="muted">Points (−5 through +5)<input name="cuePoints" type="number" min="-5" max="5" step="1" value="2" required></label>
+   <button type="submit" class="btn small">ADD PHRASE</button>
+  </form>
+  <div class="nexus-cue-custom">${nexusCustomTerms().map(x=>`<div class="nexus-cue-row"><span>${esc(x.term)} (${x.points>0?'+':''}${x.points})</span><button type="button" class="btn danger small" data-nexus-remove="${esc(x.id)}">Remove</button></div>`).join('')}</div>
+  <p class="nexus-cue-help">Custom phrases are stored only in this browser for the signed-in user. Dismissed flags are stored in this inmate's local Personal File. No messages are sent to an AI service. Coverage and accuracy have not been benchmarked.</p>
+ </div></details>`;
+}
+function nexusRefreshPopup(){
+ render();const popup=document.querySelector('.nexus-cue-dropdown');if(popup)popup.open=true;
+}
+$('content').addEventListener('submit',e=>{
+ if(e.target.id!=='nexusCustomCueForm')return;
+ e.preventDefault();e.stopImmediatePropagation();
+ const fd=new FormData(e.target),term=String(fd.get('cueTerm')||'').trim().slice(0,80),category=String(fd.get('cueCategory')||''),points=Number(fd.get('cuePoints'));
+ if(term.length<2||!Number.isInteger(points)||points< -5||points>5){alert('Enter a phrase and a whole point value from -5 to +5.');return;}
+ const cues=nexusCustomTerms();if(cues.length>=100){alert('100 custom phrases maximum.');return;}
+ if(cues.some(x=>nexusNormalize(x.term)===nexusNormalize(term))){alert('This custom phrase already exists.');return;}
+ cues.push({id:crypto.randomUUID(),term,category,points});
+ if(store(NEXUS_CUSTOM_CUES+'_'+currentUserId,cues))nexusRefreshPopup();
+},true);
+$('content').addEventListener('click',e=>{
+ const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.nexusRemove){
+  e.preventDefault();e.stopImmediatePropagation();
+  const cues=nexusCustomTerms().filter(x=>x.id!==b.dataset.nexusRemove);
+  if(store(NEXUS_CUSTOM_CUES+'_'+currentUserId,cues))nexusRefreshPopup();
+ }else if(b.dataset.nexusIgnore){
+  e.preventDefault();e.stopImmediatePropagation();
+  const key=decodeURIComponent(b.dataset.nexusIgnore),f=file();
+  f.cueIgnored={...(f.cueIgnored||{}),[key]:true};
+  if(savePersonal())nexusRefreshPopup();
+ }
+},true);
+
+const NEXUS_EIGHT_PERSONAS=[
+ {id:'alpha',name:'THE ALPHA',tag:'Respect · Confidence · Boundaries',focus:'assertiveness, respect, control, directness',terms:['respect','strong','control','power','lead','boss','stand'],question:'Where does his wording show confidence or a demand for respect?'},
+ {id:'savage',name:'THE SAVAGE',tag:'Contradictions · No Excuses',focus:'differences between claims and observable statements',terms:['never','always','promise','lie','truth','honest','said'],question:'What can the messages actually prove, and what is still only a claim?'},
+ {id:'player',name:'THE PLAYER',tag:'Flirting · Teasing · Signals',focus:'teasing, flirting, mixed messages',terms:['flirt','cute','sexy','handsome','kiss','date','tease','baby'],question:'Is the language flirtatious, playful, or being misread?'},
+ {id:'wolf',name:'THE WOLF',tag:'Loyalty · Trust · Protection',focus:'loyalty, trust, protection, consent and limits',terms:['loyal','trust','friend','bro','protect','betray','boundary'],question:'Does this show an established boundary or a request for loyalty?'},
+ {id:'kingpin',name:'THE KINGPIN',tag:'Money · Leverage · Reciprocity',focus:'financial requests and exchange expectations',terms:['money','cash','dollar','send','pay','owe','deposit','fund','favor'],question:'Is any financial request accompanied by pressure or clear expectations?'},
+ {id:'outlaw',name:'THE OUTLAW',tag:'Independence · Pride · Defiance',focus:'expressions of self-direction or defiance',terms:['free','freedom','rules','independent','rebel','authority','prison','locked'],question:'What appears to be a statement of independence versus frustration?'},
+ {id:'deviant',name:'THE DEVIANT',tag:'Sexual Language · Innuendo · Boundaries',focus:'sexual references, innuendo and expressed boundaries',terms:['sex','sexual','naked','horny','turn on','fantasy','strip','bed'],question:'What is explicitly sexual, and what could instead be humor or ambiguity?'},
+ {id:'convict',name:'THE CONVICT',tag:'Prison Context · Patterns · Adaptation',focus:'recurring expressions, prison context and changes over time',terms:['yard','cell','unit','visit','lockdown','prison','time','inside'],question:'How does this compare with earlier messages from the same inmate?'}
+];
+let nexusEightChoice='all';
+function nexusEightAssessment(persona,entries){
+ const matches=[];
+ for(const e of entries){
+  const body=String(e.message||'');
+  const low=body.toLowerCase();
+  if(persona.terms.some(t=>low.includes(t)))matches.push(e);
+ }
+ const recent=matches.slice(-3);
+ const evidence=recent.map(e=>`<div class="nexus-eight-evidence"><small>${esc(e.date||'Undated')} · ${esc(e.type||'Message')}</small><p>${esc(String(e.message||'').slice(0,360))}${String(e.message||'').length>360?'…':''}</p></div>`).join('');
+ return `<article class="nexus-eight-result"><div class="nexus-eight-heading"><strong>${persona.name}</strong><small>${persona.tag}</small></div><p><b>Analytical lens:</b> ${esc(persona.focus)}.</p><p><b>Question:</b> ${esc(persona.question)}</p><p><b>Local text matches:</b> ${matches.length} of ${entries.length} entries. ${matches.length?'These excerpts are possible cues, not proof of intent.':'Insufficient relevant evidence for this lens.'}</p>${evidence||'<p class="muted">No supporting excerpts found in saved text.</p>'}<p class="muted">Not an AI conclusion. Phrase matching is a limited local preview; it cannot determine intentions, sexuality, identity, or psychological traits.</p></article>`;
+}
+function advisor(){
+ const entries=(file().entries||[]).filter(e=>['text','email','call'].includes(String(e.type||'').toLowerCase()));
+ const options=NEXUS_EIGHT_PERSONAS.map(p=>`<option value="${p.id}" ${nexusEightChoice===p.id?'selected':''}>${p.name} — ${p.tag}</option>`).join('');
+ const chosen=nexusEightChoice==='all'?NEXUS_EIGHT_PERSONAS:NEXUS_EIGHT_PERSONAS.filter(p=>p.id===nexusEightChoice);
+ return `<div class="panel nexus-eight-panel"><div class="heading">NEXUS AI ADVISOR · THE EIGHT</div><p class="muted">Eight independent analysis perspectives, with a rugged, direct voice. Every view uses the saved text under this inmate profile. <b>Tester mode:</b> the previews below use local phrase matching, not OpenAI. No text is sent to an external AI service.</p><div class="nexus-eight-banner">8 distinct lenses · 1 shared evidence record · independent conclusions in the future AI release</div><div class="field"><label for="nexusEightChoice">CHOOSE AN ADVISOR</label><select id="nexusEightChoice"><option value="all" ${nexusEightChoice==='all'?'selected':''}>ALL EIGHT — Compare Every Perspective</option>${options}</select></div><div class="nexus-eight-grid">${NEXUS_EIGHT_PERSONAS.map((p,i)=>`<button type="button" class="nexus-eight-persona ${nexusEightChoice===p.id?'selected':''}" data-eight-persona="${p.id}"><span class="number">0${i+1}</span><strong>${p.name}</strong><small>${p.tag}</small></button>`).join('')}</div><div class="actions"><button class="btn purple" id="analyze" type="button">✦ RUN ${nexusEightChoice==='all'?'ALL EIGHT':'SELECTED'} TESTER PREVIEW</button><button class="btn alt" type="button" data-eight-persona="all">ALL EIGHT</button></div><div class="notice"><b>Communication entries available:</b> ${entries.length}. Screenshot OCR, external AI calls and independently stored AI reports are not enabled in this build. AI analysis will require a secured server function, privacy authorization and testing.</div>${analysisVisible?`<div class="nexus-eight-results">${chosen.map(p=>nexusEightAssessment(p,entries)).join('')}</div>`:'<p class="muted">Choose one advisor or ALL EIGHT, then run the local preview. The results show only grounded keyword cues from saved entries.</p>'}</div>`;
+}
+
+
+const REASONS_KEY='nexus_sexual_reasons_v1';
+
+function reasonChoices(){const v=read(REASONS_KEY,[]);return Array.isArray(v)?v:[]}
+
+function reasonControl(){return `<div class="field"><label>Reason for Sexual Activity (voluntarily disclosed)</label><select name="reason" id="sexualReason" required><option value="">Select a reason...</option>${reasonChoices().map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('')}</select></div><div class="field"><label>Create a reusable reason</label><div class="actions"><input id="newReason" placeholder="Your custom reason" aria-label="New reason"><button class="btn alt" type="button" id="addReason">ADD REASON</button></div></div>`}
+
+const money=n=>'$'+(Math.round((Number(n)||0)*100)/100).toFixed(2);
+
+const activityTypes=[['Text','Text Message'],['Email','Email'],['Call','Phone Call'],['Sexual','Reported Sexual Activity']];
+
+function financeFile(){const f=file();if(!f.rates)f.rates={Text:0,Email:0,Call:0,Sexual:0};if(!Array.isArray(f.sexualEntries))f.sexualEntries=[];if(!Array.isArray(f.deposits))f.deposits=[];if(!Array.isArray(f.maleReports))f.maleReports=[];return f}
+
+function billable(){const f=financeFile();return [...f.entries.map(x=>({...x,billType:x.type})),...f.sexualEntries.map(x=>({...x,billType:'Sexual'}))]}
+
+function rateFor(f,type){return Math.max(0,Number(f.rates?.[type])||0)}
+
+function amountFor(x,f=financeFile()){const qty=1;return Math.round(qty*rateFor(f,x.billType)*100)/100}
+
+function balanceFor(id){const f=personal[id]||{},rates=f.rates||{},entries=Array.isArray(f.entries)?f.entries:[],sexual=Array.isArray(f.sexualEntries)?f.sexualEntries:[],deposits=Array.isArray(f.deposits)?f.deposits:[];const all=[...entries.map(x=>({...x,billType:x.type})),...sexual.map(x=>({...x,billType:'Sexual'}))];const settled=new Set(deposits.flatMap(d=>d.entryIds||[]));const pending=all.filter(x=>!settled.has(x.uid));const subtotal=t=>pending.filter(x=>x.billType===t).reduce((sum,x)=>sum+amountFor(x,f),0);const outstanding=pending.reduce((sum,x)=>sum+amountFor(x,f),0);return {all,pending,subtotal,outstanding:Math.round(outstanding*100)/100,deposited:deposits.reduce((a,d)=>a+Number(d.amount||0),0),deposits,rates}}
+
+function balanceData(){return balanceFor(detailId)}
+
+function financialHub(){const rows=profiles.map(p=>({p,b:balanceFor(p.id)}));const due=rows.reduce((s,x)=>s+x.b.outstanding,0),paid=rows.reduce((s,x)=>s+x.b.deposited,0);return `<div class="panel"><div class="heading">CENTRAL FINANCIAL MANAGEMENT</div><p class="muted">All inmate balances are calculated from saved communication and voluntarily reported sexual activity. Rates are set separately in each Personal File. Deposits are recorded, not transferred.</p><div class="stats"><div class="stat"><small>TOTAL OUTSTANDING</small><strong style="color:#3bd88b">${money(due)}</strong></div><div class="stat"><small>TOTAL RECORDED DEPOSITS</small><strong>${money(paid)}</strong></div><div class="stat"><small>INMATES WITH BALANCES</small><strong>${rows.filter(x=>x.b.outstanding>0).length}</strong></div></div><div class="actions"><button class="btn alt" data-export-financial="1">EXPORT FINANCIAL CSV</button></div><div class="tablewrap"><table><thead><tr><th>INMATE</th><th>ID</th><th>TEXT</th><th>EMAIL</th><th>PHONE</th><th>SEXUAL ACTIVITY</th><th>OUTSTANDING</th><th>DEPOSITED</th><th>DETAILS</th></tr></thead><tbody>${rows.length?rows.map(({p,b})=>`<tr><td>${esc(displayName(p))}</td><td>${esc(p.id)}</td>${['Text','Email','Call','Sexual'].map(t=>`<td>${b.pending.filter(x=>x.billType===t).reduce((a,x)=>a+1,0)}<br><strong>${money(b.subtotal(t))}</strong></td>`).join('')}<td><strong style="color:#3bd88b">${money(b.outstanding)}</strong></td><td>${money(b.deposited)}</td><td><button class="btn small" data-fin-open="${encodeURIComponent(p.id)}">OPEN FILE</button></td></tr>`).join(''):'<tr><td colspan="9">No inmate profiles registered.</td></tr>'}</tbody></table></div></div>${section('ALL DEPOSIT TRANSACTIONS',rows.flatMap(({p,b})=>b.deposits.map(d=>({p,d}))).sort((a,b)=>String(b.d.recordedAt||b.d.date).localeCompare(String(a.d.recordedAt||a.d.date))).map(({p,d})=>`<div class="entry"><strong>${esc(displayName(p))} · ${money(d.amount)}</strong><p>${esc(d.date)} · ${esc(d.id)} · ${(d.entryIds||[]).length} settled entries</p></div>`).join('')||'<p class="muted">No deposits recorded.</p>')}`}
+
+function financialCSV(){const quote=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const rows=[['Inmate','Inmate ID','Text Pending','Email Pending','Phone Pending','Sexual Pending','Outstanding','Deposited']];for(const p of profiles){const b=balanceFor(p.id);rows.push([displayName(p),p.id,...['Text','Email','Call','Sexual'].map(t=>b.subtotal(t).toFixed(2)),b.outstanding.toFixed(2),b.deposited.toFixed(2)])}const blob=new Blob([rows.map(r=>r.map(quote).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='NEXUS_Financial_Summary.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+
+function sexualPage(){const f=financeFile(),e=f.sexualEntries.slice().sort((a,b)=>b.date.localeCompare(a.date)),s=sexualLevel();return `<div class="panel"><div class="heading">SEXUAL ACTIVITY LEVEL — LAST 30 DAYS</div><div class="indicator ${s.cls}"><span class="dot ${s.cls}"></span>${s.level}</div><div class="bar"><div class="fill" style="width:${Math.min(100,s.n/15*100)}%;background:${s.cls==='low'?'#ff575e':s.cls==='medium'?'#ffd12b':'#3bd88b'}"></div></div><p class="muted">${s.n} voluntarily reported entries in the last 30 days. LOW 0–4, MEDIUM 5–14, HIGH 15+. This reflects recorded frequency only.</p></div><div class="cols"><div>${section('REPORTED SEXUAL ACTIVITY',`<p class="muted">Record only voluntarily disclosed information. Do not infer orientation or activity from communications.</p><div class="stats"><div class="stat"><strong>${e.length}</strong><small>Saved activity entries</small></div></div><form id="sexualForm">${field('Date','date',today(),'date')}${reasonControl()}${area('Voluntary report / context','message')}<button class="btn" type="submit">SAVE ACTIVITY ENTRY</button></form>`)}</div><div>${section('SEXUAL INTERESTS & BOUNDARIES',`<form id="interestsForm">${area('Voluntarily disclosed interests / turn-ons','interests',f.details?.interests||'')}${area('Stated boundaries','boundaries',f.details?.boundaries||'')}<button class="btn">SAVE INTERESTS</button></form>`)}${section('SEXUAL ACTIVITY HISTORY',e.length?e.map(x=>`<div class="entry"><strong>${esc(x.date)} · ${esc(x.reason||'Reason not recorded')} · ${money(amountFor({...x,billType:'Sexual'}))}</strong><p>${esc(x.message)}</p><button class="btn danger small" data-sex-delete="${esc(x.uid)}">Delete</button></div>`).join(''):'<p class="muted">No activity entries.</p>')}</div></div>`}
+
+
+function malePage(){const f=financeFile();return `<div class="cols"><div>${section('MALE ACTIVITY REPORT',`<p class="muted">Document specific observed or self-reported actions; separate facts from interpretations. This is not a diagnosis or personality score.</p><form id="maleForm"><div class="field"><label>Category</label><select name="category"><option>Follow-through</option><option>Boundaries</option><option>Initiative</option><option>Emotional Expression</option><option>Relationship Dynamics</option><option>Personal Routine</option></select></div>${field('Date','date',today(),'date')}${area('Evidence / observed statement','evidence')}${area('Interpretation and alternative explanations','interpretation')}<button class="btn">SAVE REPORT ENTRY</button></form>`)}</div><div>${section('OBSERVATION HISTORY',f.maleReports.length?f.maleReports.slice().reverse().map(x=>`<div class="entry"><strong>${esc(x.category)} · ${esc(x.date)}</strong><p>${esc(x.evidence)}</p><p class="muted">Interpretation: ${esc(x.interpretation)}</p></div>`).join(''):'<p class="muted">No reports yet.</p>')}</div></div>`}
+
+function financialPage(){const f=financeFile(),b=balanceData();return `<div class="panel finance-panel"><div class="heading">AUTOMATED FINANCIAL MANAGEMENT</div><p class="muted">Each inmate has individual rates. Unsettled activity entries use the current saved prices; recorded deposits preserve their original amounts. Recording a deposit logs it and clears the pending balance; it does not transfer money.</p><div class="stats"><div class="stat"><small>OUTSTANDING</small><strong style="color:#3bd88b">${money(b.outstanding)}</strong></div><div class="stat"><small>LIFETIME DEPOSITED</small><strong>${money(b.deposited)}</strong></div><div class="stat"><small>ACTIVITY ENTRIES</small><strong>${b.all.length}</strong></div></div><form id="ratesForm"><div class="heading">INDIVIDUAL PRICES</div><div class="grid">${activityTypes.map(([k,label])=>`<div class="field"><label>${esc(label)} ($ per entry / occurrence)</label><div class="currency-input"><span class="currency-symbol" aria-hidden="true">$</span><input name="${esc(k)}" type="number" min="0" step="0.01" value="${(Number(f.rates[k])||0).toFixed(2)}" aria-label="${esc(label)} rate in US dollars"></div></div>`).join('')}</div><button class="btn alt">SAVE PRICES</button></form><div class="heading pending-heading">PENDING ACTIVITY</div><div class="grid">${activityTypes.map(([k,label])=>item(label,`${b.pending.filter(x=>x.billType===k).reduce((a,x)=>a+1,0)} occurrences / entries · ${money(b.subtotal(k))}`)).join('')}</div><div class="actions"><button class="btn" data-deposit="1" ${b.pending.length===0?'disabled':''}>RECORD DEPOSIT — ${money(b.outstanding)}</button></div><p class="muted">Confirm only after actually making the deposit. A confirmation prompt will appear.</p></div>${section('FINANCIAL DEPOSIT LOG',f.deposits.length?f.deposits.slice().reverse().map(d=>`<div class="entry"><strong>${esc(d.date)} · ${money(d.amount)}</strong><p>Transaction: ${esc(d.id)} · ${d.entryIds.length} activity entries settled</p></div>`).join(''):'<p class="muted">No deposits recorded yet.</p>')}`}
+
+function personalPage(){const p=find(detailId);if(!p)return '<p>Record not found.</p>';const tabs=[['details','Personal Details'],['communication','Communication'],['financial','Financial'],['advisor','AI Advisor'],['documents','Documents'],['notes','Personal Notes']];return `<div class="actions"><button class="btn alt" data-master="${encodeURIComponent(detailId)}">← BACK TO MASTER RECORD</button></div>${identity(p,true)}<div class="tabs">${tabs.map(([id,name])=>`<button class="tab ${personalTab===id?'active':''}" data-tab="${id}">${name}</button>`).join('')}</div>${personalTab==='details'?personalDetails():personalTab==='communication'?communicationCenter():personalTab==='financial'?financialPage():personalTab==='advisor'?advisor():personalTab==='notes'?`<div class="panel"><div class="heading">PERSONAL NOTES</div><form id="notesForm">${area('Personal Notes','personalNotes',file().details?.personalNotes||'')}<button class="btn">SAVE NOTES</button></form></div>`:`<div class="panel"><div class="heading">${personalTab==='photos'?'PERSONAL PHOTOS':'PERSONAL DOCUMENTS'}</div><p class="muted">Reserved for a future update. No uploads are enabled yet.</p></div>`}`}
+
+
+/* Facilities read the same authenticated profile collection as the rest of NEXUS.
+   Exterior photos are optional and saved on this browser only until a secure
+   Supabase facility-image table/bucket is set up. */
+let facState='',facPrison='',facFacility='',facQuery='';
+const FAC_PHOTO_KEY='nexus_facility_photos_local_v1';
+function facEntries(){
+  const map=new Map();
+  profiles.forEach(p=>{
+    const state=String(p.state||'Unspecified state').trim();
+    const facility=String(p.facility||'Unassigned facility').trim();
+    const prison=facility; // Existing records store facility but not a separate prison field.
+    const key=JSON.stringify([state,prison,facility]);
+    if(!map.has(key))map.set(key,{state,prison,facility,people:[]});
+    map.get(key).people.push(p);
+  });
+  return [...map.values()].sort((a,b)=>(a.state+a.facility).localeCompare(b.state+b.facility));
+}
+function facKey(e){return JSON.stringify([e.state,e.prison,e.facility])}
+function facChoice(entries){
+  let selected=entries.find(e=>e.state===facState&&e.prison===facPrison&&e.facility===facFacility);
+  if(!selected){selected=entries[0]||null;if(selected){facState=selected.state;facPrison=selected.prison;facFacility=selected.facility}}
+  return selected;
+}
+function facOptions(values,current){return values.map(v=>`<option value="${esc(v)}" ${v===current?'selected':''}>${esc(v)}</option>`).join('')}
+// Wikimedia Commons images are public, and may not exist for every institution.
+// Manual exterior photos always take precedence over automatic results.
+const FAC_AUTO_CACHE=new Map();
+function facNameTokens(s){
+ return String(s||'').toLowerCase().normalize('NFKD').replace(/[^a-z0-9 ]/g,' ').split(/\s+/)
+  .filter(t=>t.length>2&&!['the','and','state','prison','correctional','facility','complex','center','institution','federal','unit','rehabilitation'].includes(t));
+}
+async function facFindPublicPhoto(e){
+ const k=facKey(e);
+ if(FAC_AUTO_CACHE.has(k))return FAC_AUTO_CACHE.get(k);
+ const query='"'+e.facility+'"';
+ const params=new URLSearchParams({action:'query',format:'json',origin:'*',generator:'search',gsrsearch:query,gsrnamespace:'6',gsrlimit:'15',prop:'imageinfo',iiprop:'url|mime',iiurlwidth:'1200'});
+ try{
+  const response=await fetch('https://commons.wikimedia.org/w/api.php?'+params.toString(),{mode:'cors',credentials:'omit'});
+  if(!response.ok)throw new Error('Image service unavailable');
+  const data=await response.json();
+  const pages=Object.values(data.query?.pages||{});
+  const signature=facNameTokens(e.facility);
+  const matches=pages.map(page=>{
+   const info=page.imageinfo?.[0];
+   if(!info||!/^image\/(jpeg|png|webp)$/.test(info.mime||''))return null;
+   const title=String(page.title||'').replace(/^File:/i,'');
+   const tokens=facNameTokens(title);
+   const hits=signature.filter(t=>tokens.includes(t)).length;
+   // No guessing from generic 'prison' or state names alone.
+   const required=Math.max(1,Math.ceil(signature.length*0.8));
+   if(!signature.length||hits<required)return null;
+   return {url:info.thumburl||info.url,source:info.descriptionurl,score:hits,title};
+  }).filter(Boolean).sort((a,b)=>b.score-a.score);
+  const result=matches[0]||null;
+  FAC_AUTO_CACHE.set(k,result);
+  return result;
+ }catch(err){console.warn('Public facility photo lookup failed:',err);return null;}
+}
+async function facUpdateAutomaticPhoto(e){
+ const k=facKey(e);
+ const hero=$('facAutoHero');
+ if(!hero||hero.dataset.key!==k)return;
+ const found=await facFindPublicPhoto(e);
+ const current=$('facAutoHero');
+ if(!current||current.dataset.key!==k||view!=='facilities')return;
+ if(read(FAC_PHOTO_KEY,{})[k])return; // Never overwrite a manual photo.
+ const status=$('facAutoStatus');
+ if(!found){if(status)status.textContent='No confidently matched public photo found. You may upload your own.';return;}
+ const img=document.createElement('img');
+ img.className='fcx-photo';img.alt='Public image potentially showing '+e.facility;
+ img.referrerPolicy='no-referrer';img.loading='lazy';img.src=found.url;
+ img.onerror=()=>{img.remove();if(status)status.textContent='Public image could not be loaded. Upload your own photo.';};
+ const art=current.querySelector('.fcx-art');if(art)art.remove();
+ current.prepend(img);
+ if(status){status.textContent='Public photo suggestion: verify the institution before relying on this image. Source: ';
+   if(found.source){const link=document.createElement('a');link.href=found.source;link.target='_blank';link.rel='noopener noreferrer';link.textContent='Wikimedia Commons file and license';status.append(link);}}
+}
+function facilitiesPage(){
+ const all=facEntries();if(!all.length)return `<div class="fcx"><div class="fcx-panel"><h2>Facilities Center</h2><p class="fcx-muted">No inmate facilities are recorded yet. Assign a state and facility to a profile to populate this directory.</p><button class="btn" data-view="profiles">Open Inmate Profiles</button></div></div>`;
+ const chosen=facChoice(all),states=[...new Set(all.map(e=>e.state))],inState=all.filter(e=>e.state===facState),prisons=[...new Set(inState.map(e=>e.prison))],inPrison=inState.filter(e=>e.prison===facPrison),facilities=[...new Set(inPrison.map(e=>e.facility))],photos=read(FAC_PHOTO_KEY,{}),photo=photos[facKey(chosen)]||'';
+ const matching=all.filter(e=>[e.state,e.prison,e.facility].join(' ').toLowerCase().includes(facQuery.toLowerCase()));
+ const pic=e=>photos[facKey(e)]||'';
+ return `<div class="fcx">
+  <div class="fcx-filter">
+   <div><label for="facState">1. Select State</label><select id="facState">${facOptions(states,facState)}</select></div>
+   <div><label for="facPrison">2. Select Prison</label><select id="facPrison">${facOptions(prisons,facPrison)}</select></div>
+   <div><label for="facFacility">3. Select Facility</label><select id="facFacility">${facOptions(facilities,facFacility)}</select></div>
+  </div>
+  <div class="fcx-hero" id="facAutoHero" data-key="${esc(facKey(chosen))}">${photo?`<img class="fcx-photo" alt="Saved exterior photo of ${esc(chosen.facility)}" src="${esc(photo)}">`:'<div class="fcx-art" aria-hidden="true"></div>'}
+   <div class="fcx-hero-content"><span class="fcx-muted">NEXUS / FACILITIES CENTER</span><h2>${esc(chosen.facility)}</h2><div>${esc(chosen.state)} · ${chosen.people.length} linked inmate profile${chosen.people.length===1?'':'s'}</div></div>
+  </div>
+  <div class="fcx-source" id="facAutoStatus">${photo?'Manual facility photo saved on this device.':'Searching public Wikimedia Commons photographs (if a reliable match exists)...'}</div>
+  <div class="fcx-tools"><label for="facUpload">Facility exterior image (optional)</label><input id="facUpload" type="file" accept="image/jpeg,image/png,image/webp"><button class="btn alt small" id="facRemovePhoto" ${!photo?'disabled':''}>Remove photo</button></div>
+  <p class="fcx-note">Photos you add here are stored in this browser only. They will not sync to other devices. Current profiles have State and Facility fields but no separate Prison field, so the prison selector uses facility names until we add that database field.</p>
+  <div class="fcx-cols"><div class="fcx-panel"><h3>Browse Facilities</h3><div class="field"><label for="facSearch">Find a state or facility</label><input id="facSearch" type="search" placeholder="Search facilities..." value="${esc(facQuery)}"></div><div class="fcx-cards">${matching.map(e=>`<button class="fcx-card ${e===chosen?'selected':''}" data-facpick="${encodeURIComponent(facKey(e))}"><div class="fcx-thumb">${pic(e)?`<img alt="${esc(e.facility)} exterior" src="${esc(pic(e))}">`:''}</div><div class="fcx-card-copy"><strong>${esc(e.facility)}</strong><small>${esc(e.state)} · ${e.people.length} profiles</small></div></button>`).join('')||'<p class="fcx-note">No matches.</p>'}</div></div>
+   <div><div class="fcx-panel"><h3>Facility Information</h3><dl class="fcx-info"><dt>State</dt><dd>${esc(chosen.state)}</dd><dt>Prison</dt><dd>${esc(chosen.prison)}</dd><dt>Facility</dt><dd>${esc(chosen.facility)}</dd><dt>Inmate profiles</dt><dd>${chosen.people.length}</dd></dl></div>
+    <div class="fcx-panel" style="margin-top:15px"><h3>Inmates at ${esc(chosen.facility)}</h3>${chosen.people.map(p=>`<div class="fcx-person">${p.photo?`<img src="${esc(p.photo)}" alt="Profile photo">`:'<div class="fcx-avatar">♙</div>'}<div class="info"><strong>${esc(displayName(p))}</strong><small>ID: ${esc(p.id)} · ${esc(p.status||'Status not set')}</small></div><button class="fcx-action" data-facopen="${encodeURIComponent(p.id)}">View</button></div>`).join('')}</div>
+   </div></div>
+ </div>`;
+}
+
+
+function nexusDashboardPortrait(p){
+ const photo=p&&typeof p.photo==='string'?p.photo.trim():'';
+ return `<span class="nxcc-portrait-shell"><span class="nxcc-portrait" role="img" aria-label="No photo available">♙</span>${photo?`<img class="nxcc-portrait nxcc-portrait-photo" src="${esc(photo)}" alt="Inmate profile photo" loading="lazy" onerror="this.style.display='none'">`:''}</span>`;
+}
+
+function nexusDashboard(){
+ const active=profiles.filter(p=>/active/i.test(String(p.status||'')) && !/inactive/i.test(String(p.status||''))).length;
+ const states=[...new Set(profiles.map(p=>String(p.state||'').trim()).filter(Boolean))].length;
+ const facilities=[...new Set(profiles.map(p=>String(p.facility||'').trim()).filter(Boolean))].length;
+ const saved=Object.entries(personal).filter(([id])=>profiles.some(p=>String(p.id)===String(id)));
+ const all=saved.flatMap(([id,f])=>(Array.isArray(f.entries)?f.entries:[]).map(e=>({...e,profileId:id}))).filter(e=>['Text','Email','Call'].some(t=>String(e.type||'').toLowerCase()===t.toLowerCase()));
+ const recent=all.slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+ const typeCounts=['Text','Email','Call'].map(type=>({type,n:all.filter(e=>String(e.type||'').toLowerCase()===type.toLowerCase()).length}));
+ const maxType=Math.max(1,...typeCounts.map(x=>x.n));
+ const recentProfiles=profiles.filter(p=>p.status!=='Archive').slice().sort((a,b)=>String(a.last||'').localeCompare(String(b.last||''))).slice(0,5);
+ const topStates=Object.entries(profiles.reduce((map,p)=>{const k=String(p.state||'').trim();if(k)map[k]=(map[k]||0)+1;return map},{})).sort((a,b)=>b[1]-a[1]).slice(0,6);
+ // Rank existing records using their saved text, email and call entries only.
+ // All Time is used so older, saved communication still counts.
+ const communicationRanking=profiles.map(p=>{
+   const entryList=all.filter(e=>String(e.profileId)===String(p.id));
+   const texts=entryList.filter(e=>String(e.type||'').toLowerCase()==='text').length;
+   const emails=entryList.filter(e=>String(e.type||'').toLowerCase()==='email').length;
+   const calls=entryList.filter(e=>String(e.type||'').toLowerCase()==='call').length;
+   return {p,texts,emails,calls,total:texts+emails+calls};
+ }).sort((a,b)=>b.total-a.total||displayName(a.p).localeCompare(displayName(b.p)));
+ const highestCommunication=Math.max(1,...communicationRanking.map(r=>r.total));
+ return `<div class="nxcc">
+ <div class="nxcc-hero"><div><span class="nxcc-kicker">NEXUS / MANAGEMENT OVERVIEW</span><h2>COMMAND CENTER</h2><p>A live overview of registered profiles, facilities, and communications saved in this browser.</p><div class="nxcc-hero-actions"><button class="btn" data-view="search">⌕ Search Records</button><button class="btn alt" data-view="profiles">View Profiles</button><button class="btn alt" data-view="register">+ New Registration</button></div></div><div class="nxcc-mark" aria-hidden="true">◈</div></div>
+ <div class="nxcc-metrics">
+ <div class="nxcc-metric"><label>Total Profiles</label><strong>${profiles.length}</strong><small>Registered records</small></div>
+ <div class="nxcc-metric"><label>Active Records</label><strong>${active}</strong><small>Active-status profiles</small></div>
+ <div class="nxcc-metric"><label>States / Facilities</label><strong>${states} / ${facilities}</strong><small>Unique recorded locations</small></div>
+ <div class="nxcc-metric"><label>Saved Communications</label><strong>${all.length}</strong><small>Texts, emails and calls on this device</small></div>
+ </div>
+ <div class="nxcc-two">
+ <section class="nxcc-box"><h3>Communication Overview</h3><p class="nxcc-subtitle">Counts from your saved personal files · all available dates</p><div class="nxcc-bars">${typeCounts.map(x=>`<div class="nxcc-bar-row"><span>${x.type}s</span><div class="nxcc-track"><div class="nxcc-fill" style="width:${Math.round(x.n/maxType*100)}%"></div></div><strong>${x.n}</strong></div>`).join('')}</div><p class="nxcc-footer" style="margin-top:18px">Communication records stored only on this browser may not appear on another device.</p></section>
+ <section class="nxcc-box"><h3>Recent Communication</h3><p class="nxcc-subtitle">Newest saved entries · message contents stay inside the personal file</p><div class="nxcc-feed">${recent.length?recent.slice(0,6).map(e=>{const p=profiles.find(p=>String(p.id)===String(e.profileId));return `<div class="nxcc-feed-item"><div class="nxcc-person">${nexusDashboardPortrait(p)}<div class="nxcc-identity"><strong>${esc(p?displayName(p):'Profile '+e.profileId)}</strong><div class="nxcc-id">Inmate ID: ${esc(p?p.id:e.profileId)}</div><small>${esc(e.type||'Entry')} · ${esc(e.date||'No date')}</small></div></div><button class="btn alt small" data-open="${encodeURIComponent(String(e.profileId))}">View</button></div>`}).join(''):'<div class="nxcc-empty">No saved communications to display yet.</div>'}</div></section>
+ </div>
+ <section class="nxcc-box"><h3>Most Communicated Inmates</h3><p class="nxcc-subtitle">Ranked from most to least saved communications · All Time · includes texts, emails and calls. A count is not a recommendation about a person.</p>
+ <div class="nxcc-rank-list">${communicationRanking.length?communicationRanking.map((r,i)=>`<div class="nxcc-rank-item"><div class="nxcc-rank-num">${i+1}</div><div><div class="nxcc-rank-person">${nexusDashboardPortrait(r.p)}<div class="nxcc-identity"><div class="nxcc-rank-name">${esc(displayName(r.p))}</div><div class="nxcc-id">Inmate ID: ${esc(r.p.id)}</div><div class="nxcc-rank-meta">${r.texts} texts · ${r.emails} emails · ${r.calls} calls</div></div></div><div class="nxcc-rank-track"><div class="nxcc-rank-fill" style="width:${Math.round(100*r.total/highestCommunication)}%"></div></div></div><div class="nxcc-rank-right"><span class="nxcc-rank-count">${r.total}</span><button class="btn alt small" data-open="${encodeURIComponent(String(r.p.id))}">View</button></div></div>`).join(''):'<div class="nxcc-empty">Register profiles and save communications to see a ranking.</div>'}</div>
+ <p class="nxcc-footer" style="margin-top:12px">Ranking uses saved entries on this device only. Deleted entries do not count, and older entries remain included.</p></section>
+ <div class="nxcc-two">
+ <section class="nxcc-box"><h3>Profiles by State</h3><p class="nxcc-subtitle">Distribution of registered Master Records</p>${topStates.length?`<div class="nxcc-chips">${topStates.map(([state,count])=>`<span class="nxcc-chip">${esc(state)} · ${count}</span>`).join('')}</div>`:'<div class="nxcc-empty">State totals will appear once profiles are registered.</div>'}</section>
+ <section class="nxcc-box"><h3>Quick Access</h3><p class="nxcc-subtitle">Browse existing records without scrolling through the entire directory</p><div class="nxcc-feed">${recentProfiles.length?recentProfiles.map(p=>`<div class="nxcc-feed-item"><div><strong>${esc(displayName(p))}</strong><small>${esc(p.state||'State not set')} · ${esc(p.facility||'Facility not set')}</small></div><button class="btn alt small" data-open="${encodeURIComponent(p.id)}">Open</button></div>`).join(''):'<div class="nxcc-empty">Registered profiles will appear here.</div>'}</div></section>
+ </div>
+ <p class="nxcc-footer">Dashboard totals reflect currently loaded Master Records and locally saved Personal Files. No new database fields or external AI services are required.</p>
+ </div>`;
+}
+
+function nxvAge(p){const raw=p.age??p.age_years??p.details?.age;const n=Number(raw);return raw!==undefined&&raw!==null&&String(raw).trim()!==''&&Number.isFinite(n)?n:null}
+function nxvComm(){return profiles.flatMap(p=>{const f=personal[p.id]||{};return (Array.isArray(f.entries)?f.entries:[]).filter(e=>['text','email','call'].includes(String(e.type||'').toLowerCase())).map(e=>({...e,profileId:p.id}))})}
+function nxvOptions(list,first){return `<option value="">${first}</option>`+[...new Set(list.map(x=>String(x||'').trim()).filter(Boolean))].sort().map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('')}
+function nxvSearch(){return `<div class="nxv-panel"><h2>ADVANCED INMATE SEARCH</h2><p class="nxv-sub">Filter the currently loaded Master Records. No registration is required to search.</p><div class="nxv-filters"><div><label>Name or inmate ID</label><input id="nxv-q" type="search" placeholder="Type a name or ID"></div><div><label>State</label><select id="nxv-state">${nxvOptions(profiles.map(p=>p.state),'All States')}</select></div><div><label>Facility</label><select id="nxv-facility">${nxvOptions(profiles.map(p=>p.facility),'All Facilities')}</select></div><div><label>Age from</label><input id="nxv-min-age" type="number" min="0" max="130" placeholder="Any"></div><div><label>Age to</label><input id="nxv-max-age" type="number" min="0" max="130" placeholder="Any"></div><div><label>Status</label><select id="nxv-status">${nxvOptions(profiles.map(p=>p.status),'All Statuses')}</select></div></div><div class="nxv-tools"><button class="btn alt" id="nxv-clear">Clear filters</button></div></div><div class="nxv-panel"><h3 id="nxv-results-title">Search Results</h3><div id="nxv-results"></div></div>`}
+function nxvResultTable(items){if(!items.length)return '<p class="nxv-empty">No matching records. Try changing the filters.</p>';return `<div class="nxv-table-wrap"><table class="nxv-table"><thead><tr><th>Photo</th><th>Inmate ID</th><th>Name</th><th>Age</th><th>State</th><th>Facility</th><th>Status</th><th>Record</th></tr></thead><tbody>${items.map(p=>`<tr><td>${p.photo?`<img class="nxv-record-photo" src="${esc(p.photo)}" alt="Photo of ${esc(displayName(p))}" loading="lazy">`:'<div class="nxv-record-photo nxv-record-avatar" aria-label="No photo available">♙</div>'}</td><td>${esc(p.id||'—')}</td><td>${esc(displayName(p))}</td><td>${nxvAge(p)??'—'}</td><td>${esc(p.state||'—')}</td><td>${esc(p.facility||'—')}</td><td>${esc(p.status||'—')}</td><td><button class="btn alt small" data-open="${encodeURIComponent(String(p.id))}">View</button></td></tr>`).join('')}</tbody></table></div>`}
+function nxvApplySearch(){const el=id=>document.getElementById(id);if(!el('nxv-results'))return;const q=String(el('nxv-q')?.value||'').trim().toLowerCase(),state=el('nxv-state')?.value||'',facility=el('nxv-facility')?.value||'',status=el('nxv-status')?.value||'',min=el('nxv-min-age')?.value,max=el('nxv-max-age')?.value;const found=profiles.filter(p=>{const age=nxvAge(p);return (!q||[p.id,p.first,p.last,displayName(p)].join(' ').toLowerCase().includes(q))&&(!state||p.state===state)&&(!facility||p.facility===facility)&&(!status||p.status===status)&&(min===''||(age!==null&&age>=Number(min)))&&(max===''||(age!==null&&age<=Number(max)))}).sort((a,b)=>displayName(a).localeCompare(displayName(b)));el('nxv-results-title').textContent=`Search Results · ${found.length} record${found.length===1?'':'s'}`;el('nxv-results').innerHTML=nxvResultTable(found)}
+function nxvRecords(){const sorted=profiles.slice().sort((a,b)=>displayName(a).localeCompare(displayName(b)));return `<div class="nxv-panel"><h2>MASTER RECORDS DIRECTORY</h2><p class="nxv-sub">Compact access to registered inmate Master Records. Open any row for the full record.</p><div class="nxv-tools"><button class="btn alt" data-view="search">Advanced Search</button><button class="btn alt" data-view="profiles">Profile Gallery</button></div>${nxvResultTable(sorted)}</div>`}
+function nxvReportBars(items){const max=Math.max(1,...items.map(x=>x[1]));return `<div class="nxv-bars">${items.length?items.map(([name,n])=>`<div class="nxv-bar"><span>${esc(name)}</span><div class="nxv-track"><div class="nxv-fill" style="width:${Math.round(100*n/max)}%"></div></div><strong>${n}</strong></div>`).join(''):'<p class="nxv-empty">No data to report yet.</p>'}</div>`}
+function nxvReports(){const c=nxvComm(),types=['Text','Email','Call'].map(t=>[t,c.filter(e=>String(e.type||'').toLowerCase()===t.toLowerCase()).length]);const by=key=>Object.entries(profiles.reduce((a,p)=>{const v=String(p[key]||'Unknown').trim()||'Unknown';a[v]=(a[v]||0)+1;return a},{})).sort((a,b)=>b[1]-a[1]);return `<div class="nxv-panel"><h2>NEXUS REPORTING CENTER</h2><p class="nxv-sub">Live summaries based on currently loaded Master Records and communications saved in this browser.</p><div class="nxv-stats"><div class="nxv-stat"><small>Registered profiles</small><strong>${profiles.length}</strong></div><div class="nxv-stat"><small>Active records</small><strong>${profiles.filter(p=>/active/i.test(String(p.status||''))&&!/inactive/i.test(String(p.status||''))).length}</strong></div><div class="nxv-stat"><small>Saved communications</small><strong>${c.length}</strong></div><div class="nxv-stat"><small>Facilities</small><strong>${new Set(profiles.map(p=>p.facility).filter(Boolean)).size}</strong></div></div><div class="nxv-tools"><button class="btn alt" id="nxv-export-report">Export Summary CSV</button></div></div><div class="nxv-panel"><h3>Communication by Channel</h3>${nxvReportBars(types)}</div><div class="nxv-panel"><h3>Profiles by State</h3>${nxvReportBars(by('state'))}</div><div class="nxv-panel"><h3>Profiles by Facility</h3>${nxvReportBars(by('facility'))}</div><div class="nxv-panel"><h3>Profiles by Status</h3>${nxvReportBars(by('status'))}</div><p class="muted">Reports reflect the current device's locally saved communications; they do not include entries from other devices unless separately transferred.</p>`}
+function nxvExportReport(){const comm=nxvComm();const rows=[['Metric','Category','Count'],['Profiles','Total',profiles.length],['Communications','Total',comm.length]];for(const key of ['state','facility','status'])for(const [name,count] of Object.entries(profiles.reduce((a,p)=>{const n=String(p[key]||'Unknown');a[n]=(a[n]||0)+1;return a},{})))rows.push(['Profiles by '+key,name,count]);for(const type of ['Text','Email','Call'])rows.push(['Communication by channel',type,comm.filter(e=>String(e.type||'').toLowerCase()===type.toLowerCase()).length]);const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='nexus-report-summary.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+function render(){const names={financialHub:'Financial Center',dashboard:'Command Dashboard',profiles:'Inmate Profiles',register:'Inmate Registration',detail:'Inmate Master Record',personal:'Inmate Personal File',facilities:'Facilities',records:'Records',search:'Search',reports:'Reports',settings:'Settings'};$('pageTitle').textContent=names[view]||'NEXUS';document.querySelectorAll('.nav').forEach(b=>b.classList.toggle('active',b.dataset.view===view));let html='';if(view==='dashboard'){html=nexusDashboard();}else if(view==='profiles'){html=`<div class="actions"><button class="btn" data-view="register">+ New Registration</button><button class="btn alt" id="toggleArchive">${showArchive?'Show Current Inmates':'View Archive'}</button></div><div class="panel"><div class="field"><label>Search by name, ID, state, facility, or unit</label><input id="searchBox" placeholder="Search profiles..." value="${esc(filter)}"></div></div><div id="profileResults">${profileCards(profiles.filter(p=>(showArchive?p.status==='Archive':p.status!=='Archive')&&[p.id,p.first,p.last,p.state,p.facility,p.unit].join(' ').toLowerCase().includes(filter.toLowerCase())).sort((a,b)=>(a.last||'').localeCompare(b.last||'')))}</div>`;}else if(view==='register')html=registration();else if(view==='detail')html=detail();else if(view==='personal')html=personalPage();else if(view==='financialHub')html=financialHub();else if(view==='facilities')html=facilitiesPage();else if(view==='search')html=nxvSearch();else if(view==='records')html=nxvRecords();else if(view==='reports')html=nxvReports();else if(view==='settings')html=section('DEMO SETTINGS',`<p class="notice">Authentication and row-level access are handled by Supabase. This implementation has not completed a security audit; do not enter real inmate or other sensitive personal information.</p><p>Master Records, Personal Files, communications, financial data, custom rules and settings are saved in Supabase. Verify cloud-save status before leaving the page.</p><button class="btn" id="backup">EXPORT BACKUP JSON</button>`);$('content').innerHTML=html;if(view==='search')nxvApplySearch();if(view==='facilities'){const current=facChoice(facEntries());if(current&&!read(FAC_PHOTO_KEY,{})[facKey(current)])facUpdateAutomaticPhoto(current)}}
+
+$('content').addEventListener('change',e=>{if(e.target.id==='nexusEightChoice'){nexusEightChoice=e.target.value;analysisVisible=false;render()}});
+$('content').addEventListener('input',e=>{if(e.target.id?.startsWith('nxv-'))nxvApplySearch()});$('content').addEventListener('change',e=>{if(e.target.id?.startsWith('nxv-'))nxvApplySearch()});$('content').addEventListener('click',e=>{if(e.target.closest('#nxv-clear')){e.preventDefault();['nxv-q','nxv-state','nxv-facility','nxv-min-age','nxv-max-age','nxv-status'].forEach(id=>{const x=document.getElementById(id);if(x)x.value=''});nxvApplySearch()}if(e.target.closest('#nxv-export-report')){e.preventDefault();nxvExportReport()}});
+function go(v){view=v;render();window.scrollTo(0,0)}
+
+function captureRows(){for(const t of tableDefs){const body=$('tb-'+t.key);if(!body)continue;tableRows[t.key]=[...body.querySelectorAll('tr')].map(tr=>[...tr.querySelectorAll('input[data-table]')].map(input=>input.value));}}
+
+// Preserve registration fields when adding or removing table rows. Re-rendering otherwise clears unsaved edits.
+
+function preserveRegistrationAndRender(){const form=$('recordForm');const values={};if(form){for(const element of form.elements){if(element.name&&element.type!=='file')values[element.name]=element.value;}}render();const preview=$('registrationPhotoPreview .photo');if(preview&&photoData){const img=document.createElement('img');img.className='photo';img.alt='Profile photograph';img.src=photoData;preview.replaceWith(img)}const restored=$('recordForm');if(restored){for(const element of restored.elements){if(element.name&&Object.prototype.hasOwnProperty.call(values,element.name)&&element.type!=='file')element.value=values[element.name];}}}
+
+
+
+$('content').addEventListener('change',async e=>{
+ if(e.target.id==='facState'){facState=e.target.value;const x=facEntries().find(p=>p.state===facState);if(x){facPrison=x.prison;facFacility=x.facility}render();return}
+ if(e.target.id==='facPrison'){facPrison=e.target.value;const x=facEntries().find(p=>p.state===facState&&p.prison===facPrison);if(x)facFacility=x.facility;render();return}
+ if(e.target.id==='facFacility'){facFacility=e.target.value;render();return}
+ if(e.target.id==='facUpload'){
+   const file=e.target.files&&e.target.files[0];if(!file)return;
+   if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>600000){alert('Choose a JPEG, PNG, or WebP image smaller than 600 KB.');return}
+   const chosen=facChoice(facEntries());if(!chosen)return;
+   const reader=new FileReader();reader.onload=()=>{
+     const photos=read(FAC_PHOTO_KEY,{});photos[facKey(chosen)]=String(reader.result);
+     if(store(FAC_PHOTO_KEY,photos))render();else alert('Browser storage is full. Try a smaller image.');
+   };reader.readAsDataURL(file);return;
+ }
+});
+$('content').addEventListener('input',e=>{
+ if(e.target.id==='facSearch'){
+  const q=e.target.value;const cursor=e.target.selectionStart;facQuery=q;render();
+  const box=$('facSearch');if(box){box.focus();box.setSelectionRange(cursor,cursor)}
+ }
+});
+$('content').addEventListener('click',e=>{
+ const btn=e.target.closest('button');if(!btn)return;
+ if(btn.dataset.facpick){e.preventDefault();const key=decodeURIComponent(btn.dataset.facpick),selected=facEntries().find(x=>facKey(x)===key);if(selected){facState=selected.state;facPrison=selected.prison;facFacility=selected.facility;render()}return}
+ if(btn.dataset.facopen){e.preventDefault();detailId=decodeURIComponent(btn.dataset.facopen);go('detail');return}
+ if(btn.id==='facRemovePhoto'){e.preventDefault();const chosen=facChoice(facEntries());if(!chosen)return;const photos=read(FAC_PHOTO_KEY,{});delete photos[facKey(chosen)];store(FAC_PHOTO_KEY,photos);render()}
+},true);
+
+$('content').addEventListener('change',e=>{if(e.target.id==='registrationState'){const state=e.target.value,sel=$('registrationFacility');if(!sel)return;sel.innerHTML=`<option value="">${state?'Select a facility...':'Select a state first'}</option>`+facilityOptions(state).map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');sel.disabled=!state;}});
+
+$('content').addEventListener('input',e=>{if(e.target.id==='searchBox'){filter=e.target.value;$('profileResults').innerHTML=profileCards(profiles.filter(p=>(showArchive?p.status==='Archive':p.status!=='Archive')&&[p.id,p.first,p.last,p.state,p.facility,p.unit].join(' ').toLowerCase().includes(filter.toLowerCase())).sort((a,b)=>(a.last||'').localeCompare(b.last||'')))} });
+
+
+$('content').addEventListener('change',e=>{
+  if(e.target.id==='photoInput'){
+    const f=e.target.files[0];
+    if(!f)return;
+
+    if(!['image/jpeg','image/png','image/webp'].includes(f.type)){
+      alert('Use JPEG, PNG or WebP.');
+      return;
+    }
+
+    if(f.size>1500000){
+      alert('Choose a photo smaller than 1.5 MB.');
+      return;
+    }
+
+    selectedPhotoFile=f;
+
+    const r=new FileReader();
+    r.onload=()=>{
+      photoData=String(r.result);
+      const img=document.querySelector('#registrationPhotoPreview .photo');
+
+      if(img){
+        const el=document.createElement('img');
+        el.className='photo';
+        el.alt='Profile photograph';
+        el.src=photoData;
+        img.replaceWith(el);
+    }
+    };
+
+    r.readAsDataURL(f);
+  }
+});
+
+function showMasterSaveError(message){
+  const status=$('recordSaveStatus');
+  if(status){status.textContent=message;status.classList.remove('hidden');status.classList.add('error')}
+  alert(message);
+}
+async function submitMasterRecord(form,fd){
+  const idInput=form.elements.namedItem('id');
+  const stateInput=form.elements.namedItem('state');
+  const facilityInput=form.elements.namedItem('facility');
+  if(!String(idInput?.value||'').trim()){showMasterSaveError('Enter an Inmate ID.');idInput?.focus();return}
+  if(!String(stateInput?.value||'').trim()){showMasterSaveError('Select a state.');stateInput?.focus();return}
+  if(!String(facilityInput?.value||'').trim()){showMasterSaveError('Select a correctional facility.');facilityInput?.focus();return}
+  const sentenceType=form.elements.namedItem('sentenceType')?.value;
+  if(sentenceType==='Life Without Parole' && (form.elements.namedItem('earliestRelease')?.value || form.elements.namedItem('release')?.value || form.elements.namedItem('paroleEligibility')?.value)){
+    showMasterSaveError('Life Without Parole: clear the release and parole eligibility dates, or select a different sentence type.');
+    return;
+  }
+  const ageInput=form.elements.namedItem('age');
+  if(ageInput?.value && (!Number.isInteger(Number(ageInput.value)) || Number(ageInput.value)<0 || Number(ageInput.value)>130)){
+    showMasterSaveError('Age must be a whole number between 0 and 130.');ageInput.focus();return;
+  }
+  for(const key of ['heightInches','weight']){
+    const el=form.elements.namedItem(key);
+    if(el?.value && (!Number.isFinite(Number(el.value)) || Number(el.value)<0)){
+      showMasterSaveError('Height and Weight must be nonnegative numbers.');el.focus();return;
+    }
+  }
+  const button=$('saveMasterButton');
+  const status=$('recordSaveStatus');
+  if(button){button.disabled=true;button.textContent='SAVING...'}
+  if(status){status.textContent='Saving to Supabase...';status.classList.remove('hidden','error')}
+  try{
+captureRows();const id=String(fd.get('id')||'').trim();if(!id){alert('Inmate ID is required.');return}if(profiles.some(p=>p.id===id&&p.id!==editId)){alert('This Inmate ID already exists.');return}const old=editId?find(editId):null;if(old && id!==editId){
+  alert('Changing an existing Inmate ID is temporarily disabled while we finish Supabase synchronization.');
+  return;
+}const p={...(old||{})};p.previous_photo_path=old?.photo_path||null;for(const [k,v] of fd.entries())if(k!=='photo')p[k]=String(v);p.id=id;p.photo=old?.photo||'';for(const t of tableDefs)p[t.key]=(tableRows[t.key]||old?.[t.key]||[]).filter(r=>Array.isArray(r)?r.some(x=>String(x||'').trim()):Object.values(r||{}).some(x=>String(x||'').trim()));try {
+  await saveMasterToSupabase(p);
+} catch (err) {
+  showMasterSaveError('Master Record was not saved to Supabase: ' + err.message);
+  return;
+}if(old){const idx=profiles.indexOf(old);profiles[idx]=p;if(editId!==id&&personal[editId]){personal[id]=personal[editId];delete personal[editId];savePersonal()}}else profiles.push(p);if(saveProfiles()){detailId=id;editId=null;photoData='';selectedPhotoFile=null;tableRows={};go('detail');alert('Master Record saved successfully, including all entered section rows.')}
+  }catch(error){showMasterSaveError('Unexpected save error: '+(error?.message||String(error)))}
+  finally{if(button?.isConnected){button.disabled=false;button.textContent='SAVE MASTER RECORD'}}
+}
+
+// Direct registration save: handles the button independently of native form submission.
+// This also makes errors visible if the delegated submit event does not fire.
+$('content').addEventListener('click',async function(e){
+  const button=e.target.closest('#saveMasterButton');
+  if(!button)return;
+  e.preventDefault();
+  e.stopImmediatePropagation();
+  const form=$('recordForm');
+  if(!form){alert('Registration form was not found. Please refresh and try again.');return;}
+  try{
+    await submitMasterRecord(form,new FormData(form));
+  }catch(error){
+    showMasterSaveError('Registration save failed: '+(error?.message||String(error)));
+  }
+},true);
+
+$('content').addEventListener('submit',async e=>{e.preventDefault();const form=e.target,fd=new FormData(form);if(form.id==='recordForm'){await submitMasterRecord(form,fd);return;}else if(form.id==='personalForm'||form.id==='notesForm'){const f=file();f.details={...(f.details||{})};for(const [k,v] of fd.entries())f.details[k]=String(v);f.updated=new Date().toISOString();if(savePersonal()){alert('Personal file saved.');render()}}else if(form.id==='entryForm'){const date=String(fd.get('date')||''),message=String(fd.get('message')||'').trim(),type=String(fd.get('type')||'');if(!date||!message){alert('Enter a date and message or summary.');return}if(date>today()){alert('Communication date cannot be in the future.');return}file().entries.push({uid:Date.now().toString(36)+Math.random().toString(36).slice(2),date,type,message,rateAtEntry:rateFor(financeFile(),type)});analysisVisible=false;if(savePersonal())render()}else if(form.id==='ratesForm'){const f=financeFile();for(const [k] of activityTypes){const v=Number(fd.get(k));if(!Number.isFinite(v)||v<0){alert('Prices must be zero or greater.');return}f.rates[k]=Math.round(v*100)/100}savePersonal();render()}else if(form.id==='sexualForm'){const date=String(fd.get('date')||''),message=String(fd.get('message')||'').trim(),reason=String(fd.get('reason')||'').trim();if(!date||date>today()||!reason){alert('Enter a valid date and select a reason.');return}const f=financeFile();f.sexualEntries.push({uid:Date.now().toString(36)+Math.random().toString(36).slice(2),date,message,reason,rateAtEntry:rateFor(f,'Sexual')});savePersonal();render()}else if(form.id==='interestsForm'){const f=financeFile();f.details={...(f.details||{}),interests:String(fd.get('interests')||''),boundaries:String(fd.get('boundaries')||'')};f.updated=new Date().toISOString();if(savePersonal()){render();alert('Interests and boundaries saved to this inmate personal file.')} }else if(form.id==='maleForm'){const f=financeFile();f.maleReports.push({date:String(fd.get('date')||''),category:String(fd.get('category')||''),evidence:String(fd.get('evidence')||''),interpretation:String(fd.get('interpretation')||'')});savePersonal();render()}});
+
+$('content').addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;if(b.id==='nexusPrepareImport'){await nexusPrepareMessageFiles();return;}if(b.id==='nexusSaveImport'){nexusSaveImportedMessages();return;}if(b.id==='toggleArchive'){showArchive=!showArchive;render();return}if(b.id==='addCustomFacility'){const state=$('registrationState')?.value,name=$('customFacilityName')?.value.trim();if(!state){alert('Select a state first.');return}if(!name){alert('Enter a facility name.');return}const data=read(FACILITY_CUSTOM_KEY,{});data[state]=[...new Set([...(data[state]||[]),name])];if(store(FACILITY_CUSTOM_KEY,data)){const sel=$('registrationFacility');sel.insertAdjacentHTML('beforeend',`<option value="${esc(name)}">${esc(name)}</option>`);sel.value=name;$('customFacilityName').value='';alert('Facility added for '+state+'.')}return}if(b.id==='addReason'){const name=$('newReason')?.value.trim();if(!name){alert('Enter a reason first.');return}const data=reasonChoices();if(!data.some(x=>x.toLowerCase()===name.toLowerCase()))data.push(name);if(store(REASONS_KEY,data)){const sel=$('sexualReason');if(![...sel.options].some(x=>x.value===name))sel.insertAdjacentHTML('beforeend',`<option value="${esc(name)}">${esc(name)}</option>`);sel.value=name;$('newReason').value='';alert('Reason saved for reuse.')}return}if(b.dataset.exportFinancial){financialCSV();return}if(b.dataset.finOpen){detailId=decodeURIComponent(b.dataset.finOpen);personalTab='financial';go('personal');return}if(b.dataset.view){
+  if(b.dataset.view==='register'){
+    editId=null;
+    photoData='';
+    selectedPhotoFile=null;
+    tableRows={};
+  }
+  go(b.dataset.view);
+  return;
+}if(b.dataset.open){detailId=decodeURIComponent(b.dataset.open);go('detail');return}if(b.dataset.personal){detailId=decodeURIComponent(b.dataset.personal);personalTab='details';go('personal');return}if(b.dataset.master){go('detail');return}if(b.dataset.edit){
+  editId=decodeURIComponent(b.dataset.edit);
+  photoData='';
+  selectedPhotoFile=null;
+  tableRows={};
+  go('register');
+  return;
+}
+if(b.dataset.delete){
+  const id=decodeURIComponent(b.dataset.delete);
+
+  if(!confirm('Permanently delete this Master Record and its associated sections?')){
+    return;
+  }
+
+  const {data:{user},error: authError} = await nexusDB.auth.getUser();
+
+  if(authError || !user){
+    alert('Please sign in before deleting a Master Record.');
+    return;
+  }
+
+  const {data: deletedRows,error: deleteError} = await nexusDB
+    .from('nexus_profiles')
+    .delete()
+    .eq('owner_id',user.id)
+    .eq('inmate_id',id)
+    .select('id');
+
+  if(deleteError){
+    alert('Supabase deletion failed: '+deleteError.message);
+    return;
+  }
+
+  if(!deletedRows || deletedRows.length===0){
+    alert('No matching Master Record was deleted from Supabase. Local data was left unchanged.');
+    return;
+  }
+
+  const removedProfile=find(id);
+  if(removedProfile?.photo_path){
+    const {error:photoDeleteError}=await nexusDB.storage.from(NEXUS_PHOTO_BUCKET).remove([removedProfile.photo_path]);
+    if(photoDeleteError)alert('Record deleted, but its stored photograph could not be removed: '+photoDeleteError.message);
+  }
+  profiles=profiles.filter(p=>p.id!==id);
+  delete personal[id];
+  saveProfiles();
+  savePersonal();
+  go('profiles');
+  alert('Master Record deleted; verify cloud save status before leaving.');
+  return;
+}
+if(b.dataset.tab){personalTab=b.dataset.tab;analysisVisible=false;render();return}if(b.dataset.eightPersona){nexusEightChoice=b.dataset.eightPersona;analysisVisible=false;render();return}if(b.dataset.window){windowDays=Number(b.dataset.window);analysisVisible=false;render();return}if(b.id==='analyze'){analysisVisible=true;render();return}if(b.dataset.deposit){const f=financeFile(),d=balanceData();if(!d.pending.length||d.outstanding<=0){alert('There is no positive outstanding balance to record.');return}if(!confirm('Confirm you have made a deposit of '+money(d.outstanding)+'? This records the deposit and clears the pending balance.'))return;f.deposits.push({id:'DEP-'+Date.now(),date:new Date().toLocaleString(),amount:Math.round(d.outstanding*100)/100,entryIds:d.pending.map(x=>x.uid),recordedAt:new Date().toISOString(),breakdown:Object.fromEntries(activityTypes.map(([k])=>[k,d.subtotal(k)]))});savePersonal();render();return}if(b.dataset.sexDelete){const f=financeFile();if(f.deposits.some(d=>d.entryIds.includes(b.dataset.sexDelete))){alert('This activity is linked to a recorded deposit and cannot be deleted.');return}if(confirm('Delete this sexual activity entry?')){f.sexualEntries=f.sexualEntries.filter(x=>x.uid!==b.dataset.sexDelete);savePersonal();render()}return}if(b.dataset.entryDelete){if(financeFile().deposits.some(d=>d.entryIds.includes(b.dataset.entryDelete))){alert('This entry is linked to a recorded deposit and cannot be deleted.');return}if(confirm('Delete this communication entry?')){file().entries=file().entries.filter(x=>x.uid!==b.dataset.entryDelete);savePersonal();analysisVisible=false;render()}return}if(b.dataset.add){captureRows();const t=tableDefs.find(x=>x.key===b.dataset.add);tableRows[t.key]??=[];tableRows[t.key].push(t.cols.map(() => ''));preserveRegistrationAndRender();return}if(b.dataset.remove){captureRows();tableRows[b.dataset.remove]?.splice(Number(b.dataset.index),1);preserveRegistrationAndRender();return}if(b.id==='backup'){const data={masterRecords:profiles,personalFiles:personal,exportedAt:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='nexus-demo-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}});
+
+
+document.querySelectorAll('.nav').forEach(b=>{
+  b.addEventListener('click',()=>{
+    if(b.dataset.view==='register'){
+      editId=null;
+      photoData='';
+      selectedPhotoFile=null;
+      tableRows={};
+    }
+
+    go(b.dataset.view);
+  });
+});
+
+
+// Authentication is enforced by Supabase Auth. Do not embed PINs or secrets in this public file.
+let nexusSigningIn=false;
+function nexusShowSignedOut(message='Sign in with your authorized administrator account.'){
+  profiles=[];personal={};currentUserId='';nexusCloudReady=false;detailId=null;editId=null;
+  selectedPhotoFile=null;photoData='';tableRows={};
+  $('shell').classList.add('hidden');
+  $('login').classList.remove('hidden');
+  $('nexusAuthStatus').textContent=message;
+  $('nexusSignInBtn').disabled=false;
+}
+function nexusCollectGatewayCodes() {
+  return new Promise((resolve, reject) => {
+    const overlay = document.createElement('div');
+    overlay.id = 'nexusGatewayEntry';
+    overlay.style.cssText = `
+      position:fixed;inset:0;z-index:999999;
+      background:#07101df2;
+      display:flex;align-items:center;
+      justify-content:center;padding:20px;
+    `;
+
+    const panel = document.createElement('form');
+    panel.style.cssText = `
+      width:100%;max-width:390px;
+      padding:30px;box-sizing:border-box;
+      background:#142238;color:white;
+      border:1px solid #607a99;
+      border-radius:14px;
+      font-family:Arial,sans-serif;
+    `;
+
+    const title = document.createElement('h2');
+    title.textContent = 'BLACKCELL CORPORATION';
+
+    const subtitle = document.createElement('p');
+    subtitle.textContent = 'NEXUS Management System — Security Gateway';
+
+    const access = document.createElement('input');
+    access.type = 'password';
+    access.placeholder = 'Access Code';
+    access.autocomplete = 'off';
+    access.required = true;
+    access.maxLength = 256;
+
+    const security = document.createElement('input');
+    security.type = 'password';
+    security.placeholder = 'Security Code';
+    security.autocomplete = 'off';
+    security.required = true;
+    security.maxLength = 256;
+
+    for (const field of [access, security]) {
+      field.style.cssText = `
+        display:block;width:100%;box-sizing:border-box;
+        margin:14px 0;padding:12px;border-radius:7px;
+        border:1px solid #71829b;
+      `;
+    }
+
+    const continueButton = document.createElement('button');
+    continueButton.type = 'submit';
+    continueButton.textContent = 'Continue to Sign In';
+    continueButton.style.cssText = `
+      width:100%;padding:13px;background:#3277c5;
+      color:white;border:0;border-radius:7px;cursor:pointer;
+    `;
+
+    const cancel = document.createElement('button');
+    cancel.type = 'button';
+    cancel.textContent = 'Cancel';
+    cancel.style.cssText = `
+      margin-top:12px;width:100%;padding:10px;cursor:pointer;
+    `;
+
+    const close = () => {
+      access.value = '';
+      security.value = '';
+      overlay.remove();
+    };
+
+    cancel.onclick = () => {
+      close();
+      reject(new Error('Gateway entry cancelled'));
+    };
+
+    panel.onsubmit = event => {
+      event.preventDefault();
+      const codes = {
+        accessCode: access.value,
+        securityCode: security.value
+      };
+      close();
+      resolve(codes);
+    };
+
+    panel.append(title, subtitle, access, security, continueButton, cancel);
+    overlay.appendChild(panel);
+    document.body.appendChild(overlay);
+    access.focus();
+  });
+}
+
+async function nexusVerifyGatewayCodes(codes) {
+  if (
+    !codes ||
+    typeof codes.accessCode !== 'string' ||
+    typeof codes.securityCode !== 'string' ||
+    !codes.accessCode ||
+    !codes.securityCode
+  ) {
+    throw new Error('Both security codes are required.');
+  }
+
+  try {
+    const { data, error } = await nexusDB.functions.invoke(
+      'nexus-gateway-verify',
+      {
+        body: {
+          accessCode: codes.accessCode,
+          securityCode: codes.securityCode
+        }
+      }
+    );
+    if (error || data?.verified !== true) {
+      throw new Error('NEXUS gateway verification failed.');
+    }
+    await nexusRequireGatewayGrant();
+    return true;
+  } finally {
+    codes.accessCode = '';
+    codes.securityCode = '';
+  }
+}
+
+async function nexusRequireGatewayGrant(){
+  const {data, error} = await nexusDB.rpc(
+    'nexus_gateway_session_valid'
+  );
+  if(error){
+    throw new Error('Unable to check NEXUS gateway authorization.');
+  }
+  if(data !== true){
+    throw new Error('NEXUS security codes must be verified before accessing records.');
+  }
+  return true;
+}
+
+async function nexusOpenAuthorizedSession(){
+  const {data:{user},error}=await nexusDB.auth.getUser();
+  if(error || !user){nexusShowSignedOut();return false;}
+  try{
+    await nexusRequireGatewayGrant();
+    await loadMasterRecords();
+  }catch(err){
+    nexusShowSignedOut('Unable to access records: '+err.message);
+    return false;
+  }
+  $('login').classList.add('hidden');
+  $('shell').classList.remove('hidden');
+  go('dashboard');
+  return true;
+}
+
+$('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (nexusSigningIn) return;
+
+  nexusSigningIn = true;
+  $('nexusSignInBtn').disabled = true;
+  let codes = null;
+  let signedIn = false;
+  const inputs = $('loginForm').querySelectorAll('input');
+
+  try {
+    codes = await nexusCollectGatewayCodes();
+    $('nexusAuthStatus').textContent = 'Verifying your account...';
+    const { data, error } = await nexusDB.auth.signInWithPassword({
+      email: inputs[0].value.trim(),
+      password: inputs[1].value
+    });
+    inputs[1].value = '';
+    if (error || !data?.user) throw new Error('Sign in failed.');
+    signedIn = true;
+    $('nexusAuthStatus').textContent = 'Verifying security gateway...';
+    await nexusVerifyGatewayCodes(codes);
+    const opened = await nexusOpenAuthorizedSession();
+    if (!opened) throw new Error('Dashboard authorization failed.');
+  } catch (err) {
+    inputs[1].value = '';
+    if (signedIn) {
+      const { error: signOutError } = await nexusDB.auth.signOut();
+      if (signOutError) console.error('NEXUS sign-out cleanup failed:',signOutError.code);
+    }
+    nexusShowSignedOut('Login or gateway verification was not completed.');
+  } finally {
+    if (codes) {
+      codes.accessCode = '';
+      codes.securityCode = '';
+      codes = null;
+    }
+    nexusSigningIn = false;
+    $('nexusSignInBtn').disabled = false;
+  }
+});
+
+$('lock').addEventListener('click',async()=>{
+  if(nexusCloudDirty||nexusCloudWriteFailed){alert('There are unconfirmed cloud changes. Confirm the save status before logging out.');return;}
+  await nexusCloudWriteQueue.catch(()=>{});
+  $('shell').classList.add('hidden');
+  const {error}=await nexusDB.auth.signOut();
+  if(error){$('shell').classList.remove('hidden');alert('Logout failed: '+error.message);return;}
+  $('loginForm').reset();
+  nexusShowSignedOut('You have signed out.');
+});
+// Keep separate tabs synchronized when a session is explicitly signed out.
+nexusDB.auth.onAuthStateChange((event)=>{
+  if(event==='SIGNED_OUT')nexusShowSignedOut('You have signed out.');
+});
+// Restore a previously authenticated session on refresh. Records stay hidden until verified.
+window.addEventListener('beforeunload',e=>{if(nexusCloudDirty||nexusCloudWriteFailed){e.preventDefault();e.returnValue='';}});
+nexusOpenAuthorizedSession().catch(()=>nexusShowSignedOut('Unable to verify your session. Please sign in.'));
+$('bell').addEventListener('click',()=>alert('NEXUS Notification Center: bell icon added. We will design its alert functions later.'));
+
+})();
+
+</script></body></html>
