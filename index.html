@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>NEXUS Management System — Registration Repair</title>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BLACKCELL CORPORATION | NEXUS</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="512x512" href="blackcell-icon.png">
 
 <style>
 
@@ -679,12 +681,51 @@ textarea[name="mailing"]{min-height:170px;line-height:1.55;white-space:pre-wrap}
 .nx-sheet{width:956px!important;min-width:956px!important;table-layout:fixed}
 .nx-sheet th,.nx-sheet td{overflow-wrap:break-word}
 @media(max-width:1000px){.nx-sheet-scroll{overflow-x:auto}}
-</style></head><body>
 
-<div id="login" class="gate"><form id="loginForm" class="panel"><div class="logo">BLACKCELL CORPORATION</div><h2>NEXUS Management System</h2><p class="muted" id="nexusAuthStatus" role="status">Checking your secure session…</p><div class="field">
+/* BLACKCELL branding: independent of inmate data and authentication. */
+.nexus-brand{display:flex;flex-direction:column;align-items:center;gap:7px;margin:0 0 22px;padding:6px 2px 16px;border-bottom:1px solid #31435b}
+.nexus-brand-image{width:100%;max-width:180px;aspect-ratio:16/9;object-fit:contain;border-radius:9px;display:block}
+.nexus-brand-name{font-weight:900;letter-spacing:3px;font-size:17px;color:#ecf4ff}
+.nxcc-hero-brand{flex:0 0 clamp(125px,19%,210px);align-self:center;order:2}
+.nxcc-hero-brand img{width:100%;border-radius:11px;display:block;object-fit:contain}
+@media(max-width:850px){.nexus-brand{flex-direction:row;border:0;margin:0 8px 0 0;padding:0;flex:0 0 auto}.nexus-brand-image{width:88px;max-width:88px}.nexus-brand-name{font-size:11px;letter-spacing:1px}.nxcc-hero-brand{flex-basis:130px}}
+@media(max-width:590px){.nxcc-hero-brand{display:none}.nexus-brand-image{width:65px}.nexus-brand-name{display:none}}
+</style><style id="blackcell-login-branding">
+/* Full corporate artwork is reserved for the sign-in screen. */
+#login.gate{padding:24px 12px;min-height:100vh;}
+#login.gate #loginForm.panel{width:min(580px,96vw);max-width:580px;padding:18px 22px 24px;text-align:left;}
+#login .blackcell-login-visual{display:block;width:100%;height:auto;max-height:min(56vh,390px);object-fit:contain;object-position:center;margin:0 auto 12px;border-radius:8px;}
+#login h2{text-align:center;margin:12px 0 14px;font-size:clamp(19px,3vw,25px);}
+#login #nexusAuthStatus{text-align:center;}
+#shell .nexus-brand{justify-content:center;}
+#shell .nexus-brand-name{display:block;}
+@media(max-width:520px){#login.gate #loginForm.panel{padding:12px 13px 19px}#login .blackcell-login-visual{max-height:40vh}}
+</style>
+<style id="blackcell-cinematic-login">
+/* Presentation only: existing authentication and form handlers remain unchanged. */
+#login.gate {background:radial-gradient(ellipse at 50% 24%,#344457 0%,#121c2a 44%,#070b12 100%);}
+#login.gate #loginForm.panel {background:linear-gradient(180deg,#101b2bf2,#0a1423f5);border:1px solid #3c4a60;box-shadow:0 30px 90px #0009;padding:22px 25px 26px;overflow:hidden;}
+#login .blackcell-intro {width:100%;height:306px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:0;overflow:hidden;position:relative;}
+#login .blackcell-intro-emblem {display:block;flex:none;width:205px;height:205px;max-width:65%;object-fit:contain;filter:drop-shadow(0 15px 17px #0009);animation:bc-emblem-rise 2.45s cubic-bezier(.18,.78,.24,1) both;}
+#login .blackcell-intro-name {display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;letter-spacing:.035em;color:#f4f5f7;text-shadow:0 3px 5px #000b,0 0 18px #ffffff20;animation:bc-name-fall 2.4s cubic-bezier(.2,.8,.25,1) both;}
+#login .blackcell-intro-name strong {font-weight:900;font-size:clamp(28px,5.6vw,45px);letter-spacing:.015em;}
+#login .blackcell-intro-name span {font-weight:900;font-size:clamp(16px,3.5vw,25px);letter-spacing:.025em;margin-top:3px;}
+#login #loginForm > h2,#login #loginForm > p,#login #loginForm > .field,#login #loginForm > button {animation:bc-login-appear .75s ease-out 2.1s both;}
+@keyframes bc-emblem-rise {0%{transform:translateY(76px) scale(1.14);opacity:0} 45%{opacity:1}100%{transform:translateY(0) scale(1);opacity:1}}
+@keyframes bc-name-fall {0%,30%{transform:translateY(-58px);opacity:0}100%{transform:translateY(0);opacity:1}}
+@keyframes bc-login-appear {from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:520px){#login.gate #loginForm.panel{padding:16px 14px 22px;}#login .blackcell-intro{height:249px;}#login .blackcell-intro-emblem{width:159px;height:159px;}#login .blackcell-intro-name strong{font-size:31px;}#login .blackcell-intro-name span{font-size:18px;}}
+@media(prefers-reduced-motion:reduce){#login .blackcell-intro-emblem,#login .blackcell-intro-name,#login #loginForm > h2,#login #loginForm > p,#login #loginForm > .field,#login #loginForm > button{animation:none!important;opacity:1!important;transform:none!important;}}
+</style>
+</head><body>
+
+<div id="login" class="gate"><form id="loginForm" class="panel"><div class="blackcell-intro" aria-label="Blackcell Corporation">
+  <img class="blackcell-intro-emblem" src="blackcell-icon.png" alt="Blackcell Corporation emblem">
+  <div class="blackcell-intro-name" aria-hidden="true"><strong>BLACKCELL</strong><span>CORPORATION</span></div>
+</div><h2>NEXUS Management System</h2><p class="muted" id="nexusAuthStatus" role="status">Checking your secure session…</p><div class="field">
 <label>Email Address</label><input required type="email" autocomplete="username"></div><div class="field"><label>Password</label><input required type="password" autocomplete="current-password"></div><button class="btn" type="submit" id="nexusSignInBtn" disabled>SIGN IN</button></form></div>
 
-<div id="shell" class="shell hidden"><aside class="sidebar"><div class="logo">NE<span>X</span>US</div><button class="nav active" data-view="dashboard">▦ Dashboard</button><button class="nav" data-view="profiles">♙ Inmate Profiles</button><button class="nav" data-view="facilities">▤ Facilities</button><button class="nav" data-view="records">▤ Records</button><button class="nav" data-view="search">⌕ Search</button><button class="nav" data-view="financialHub">＄ Financial Center</button><button class="nav" data-view="bulkIntake">⇧ Bulk Registration</button><button class="nav" data-view="reports">▥ Reports</button><button class="nav" data-view="settings">⚙ Settings</button></aside><main class="main"><header class="topbar"><h1 id="pageTitle">Command Dashboard</h1><div class="right"><span id="nexusCloudStatus" style="font-size:11px;max-width:190px;color:#a5e7bd">Checking cloud…</span><button class="bell" id="bell" title="Notifications (coming soon)" aria-label="Notifications">🔔</button><button class="btn alt small" id="lock">Log Out</button></div></header><div class="content" id="content"></div></main></div>
+<div id="shell" class="shell hidden"><aside class="sidebar"><div class="nexus-brand"><div class="nexus-brand-name">NEXUS</div></div><button class="nav active" data-view="dashboard">▦ Dashboard</button><button class="nav" data-view="profiles">♙ Inmate Profiles</button><button class="nav" data-view="facilities">▤ Facilities</button><button class="nav" data-view="records">▤ Records</button><button class="nav" data-view="search">⌕ Search</button><button class="nav" data-view="financialHub">＄ Financial Center</button><button class="nav" data-view="bulkIntake">⇧ Bulk Registration</button><button class="nav" data-view="reports">▥ Reports</button><button class="nav" data-view="settings">⚙ Settings</button></aside><main class="main"><header class="topbar"><h1 id="pageTitle">Command Dashboard</h1><div class="right"><span id="nexusCloudStatus" style="font-size:11px;max-width:190px;color:#a5e7bd">Checking cloud…</span><button class="bell" id="bell" title="Notifications (coming soon)" aria-label="Notifications">🔔</button><button class="btn alt small" id="lock">Log Out</button></div></header><div class="content" id="content"></div></main></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
