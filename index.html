@@ -981,10 +981,10 @@ function nxInstitutionalSheet(p,mode='view'){
  <tr>${H('EYE COLOR',2)}${H('ETHNIC ORIGIN',3)}${H('CUSTODY CLASS',2)}${H('ADMISSION',2)}</tr>
  <tr>${V('eyeColor',2)}${V('ethnicOrigin',3)}${V('custody',2)}${V('admission',2,'date')}</tr>
  <tr><th colspan="9" class="nx-blue">PROJECTED ELIGIBLE RELEASE DATE</th></tr>
- <tr><td colspan="9">${F('earliestRelease','date')}</td></tr>
+
  <tr>${H('PRISON RELEASE DATE',5)}${H('RELEASE TYPE',4)}</tr>
  <tr>${V('prisonReleaseText',5)}${V('releaseTypeText',4)}</tr>
- <tr><th class="nx-blue" colspan="6">MOST RECENT LOCATION</th><th class="nx-blue" colspan="3">AS OF DATE ${edit?`<span class="nx-asof-edit">${F('locationAsOf','date')}</span>`:`<span class="nx-asof-read">${esc(p?.locationAsOf||'—')}</span>`}</th></tr>
+ <tr><th class="nx-blue" colspan="4">MOST RECENT LOCATION</th><th class="nx-blue" colspan="5">AS OF DATE</th></tr>
  <tr>${H('COMPLEX',2)}${H('UNIT',2)}${H('LAST MOVEMENT',3)}${H('STATUS',2)}</tr>
  <tr>${V('location',2)}${V('unit',2)}${V('lastMovement',3)}<td colspan="2">${status}</td></tr>
  <tr><td colspan="3" class="nx-photo-spacer"></td><th class="nx-subheading" colspan="9">INMATE MAILING ADDRESS</th></tr><tr><td colspan="3" class="nx-photo-spacer"></td><td colspan="9">${nxSheetTextarea(p,'mailing',mode)}</td></tr>
