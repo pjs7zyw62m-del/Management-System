@@ -753,6 +753,18 @@ textarea[name="mailing"]{min-height:170px;line-height:1.55;white-space:pre-wrap}
 .ncc-financefoot strong{color:#f2f8ff}
 @media(max-width:950px){.ncc-financegrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:550px){.ncc-financegrid{grid-template-columns:1fr 1fr}.ncc-financegrid>div{padding:10px}.ncc-financegrid strong{font-size:19px}}
+
+/* Dashboard communication message viewer: read-only, protected by existing auth shell. */
+.ncc-message-actions{display:flex;gap:6px;align-items:center;flex-shrink:0}
+.ncc-message-overlay[hidden]{display:none!important}
+.ncc-message-overlay{position:fixed;inset:0;z-index:11000;background:rgba(2,8,17,.85);display:flex;align-items:center;justify-content:center;padding:18px}
+.ncc-message-dialog{background:#101f31;border:1px solid #45617d;border-radius:16px;color:#e9f3ff;width:min(700px,100%);max-height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 85px #000b}
+.ncc-message-head{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;padding:20px 22px;border-bottom:1px solid #31475f}
+.ncc-message-head h2{margin:4px 0 0;font-size:22px}
+.ncc-message-meta{font-size:12px;color:#a7bfd9;padding:14px 22px;border-bottom:1px solid #2f4257}
+.ncc-message-body{padding:20px 22px;overflow-y:auto;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.65;font-size:14px;min-height:95px}
+.ncc-message-footer{display:flex;justify-content:flex-end;gap:8px;padding:13px 22px;border-top:1px solid #31475f}
+@media(max-width:650px){.ncc-message-actions{flex-direction:column}.ncc-message-head{padding:15px}.ncc-message-meta,.ncc-message-body{padding:14px}}
 </style><style id="blackcell-login-branding">
 /* Full corporate artwork is reserved for the sign-in screen. */
 #login.gate{padding:24px 12px;min-height:100vh;}
@@ -1955,7 +1967,7 @@ function nexusDashboard(){
  <div class="ncc-layout ncc-bottom">
   <section class="ncc-panel"><div class="ncc-panelhead"><div><span class="ncc-eyebrow">ACTIVITY CENTER</span><h3>Saved Communications</h3></div><strong class="ncc-bignumber">${communications}</strong></div>
   <p class="ncc-helper">Texts, emails, and calls in currently loaded personal files. This is not an audit log.</p>
-  ${activities.length?`<div class="ncc-events">${activities.slice(0,5).map(e=>`<div><span><b>${esc(displayName(e.person))}</b><small>${esc(e.type||'Entry')} · ${esc(e.date||'No date')}</small></span><button class="btn alt small" data-open="${encodeURIComponent(e.profileId)}">Open</button></div>`).join('')}</div>`:'<p class="ncc-empty">No saved communications in the currently loaded data.</p>'}</section>
+  ${activities.length?`<div class="ncc-events">${activities.slice(0,5).map(e=>`<div><span><b>${esc(displayName(e.person))}</b><small>${esc(e.type||'Entry')} · ${esc(e.date||'No date')}</small></span><div class="ncc-message-actions"><button type="button" class="btn alt small" data-ncc-message-profile="${encodeURIComponent(e.profileId)}" data-ncc-message-uid="${encodeURIComponent(String(e.uid||''))}" data-ncc-message-index="${personal[e.profileId]?.entries?.findIndex(x=>x.uid===e.uid&&x.message===e.message&&x.date===e.date)??-1}">View Message</button><button type="button" class="btn alt small" data-open="${encodeURIComponent(e.profileId)}">Profile</button></div></div>`).join('')}</div>`:'<p class="ncc-empty">No saved communications in the currently loaded data.</p>'}</section>
   <section class="ncc-panel"><div class="ncc-panelhead"><div><span class="ncc-eyebrow">OPERATIONS</span><h3>Quick Navigation</h3></div></div>
   <div class="ncc-tiles"><button data-view="register"><span>＋</span><strong>Register Inmate</strong><small>State-specific entry</small></button><button data-view="records"><span>▤</span><strong>Master Records</strong><small>Open existing records</small></button><button data-view="reports"><span>▥</span><strong>Reports</strong><small>Record summaries</small></button><button data-view="bulkIntake"><span>⇧</span><strong>Bulk Intake</strong><small>Review imported records</small></button></div>
   </section>
@@ -2549,4 +2561,41 @@ document.addEventListener('click',event=>{
 });
 document.addEventListener('keydown',event=>{if(event.key==='Escape')nxClosePhotoModal()});
 
+
+/* NEXUS dashboard read-only saved communication popup. Never copies messages into URLs or persistent storage. */
+(function(){
+ let lastFocus=null;
+ const overlay=document.createElement('div');
+ overlay.className='ncc-message-overlay';overlay.hidden=true;
+ overlay.innerHTML='<div class="ncc-message-dialog" role="dialog" aria-modal="true" aria-labelledby="ncc-message-title"><div class="ncc-message-head"><div><span class="ncc-eyebrow">SAVED COMMUNICATION</span><h2 id="ncc-message-title">View Message</h2></div><button type="button" class="btn alt small" data-ncc-close aria-label="Close message">✕ Close</button></div><div class="ncc-message-meta" id="ncc-message-meta"></div><div class="ncc-message-body" id="ncc-message-body"></div><div class="ncc-message-footer"><button type="button" class="btn alt" data-ncc-close>Close</button></div></div>';
+ document.body.appendChild(overlay);
+ function close(){if(overlay.hidden)return;overlay.hidden=true;overlay.querySelector('#ncc-message-body').textContent='';lastFocus?.focus?.();lastFocus=null}
+ document.addEventListener('click',function(event){
+  const closeButton=event.target.closest('[data-ncc-close]');
+  if(closeButton||event.target===overlay){close();return}
+  const button=event.target.closest('button[data-ncc-message-profile]');
+  if(!button)return;
+  if(document.getElementById('shell')?.classList.contains('hidden'))return;
+  const id=decodeURIComponent(button.dataset.nccMessageProfile||'');
+  const uid=decodeURIComponent(button.dataset.nccMessageUid||'');
+  const index=Number(button.dataset.nccMessageIndex);
+  const p=profiles.find(x=>String(x.id)===id);
+  const entries=personal[id]?.entries;
+  if(!p||!Array.isArray(entries)){alert('This saved communication is no longer available.');return}
+  let entry=Number.isInteger(index)&&index>=0?entries[index]:null;
+  if(uid && (!entry||String(entry.uid||'')!==uid))entry=entries.find(x=>String(x.uid||'')===uid);
+  if(!entry){alert('This saved communication is no longer available.');return}
+  lastFocus=button;
+  overlay.querySelector('#ncc-message-title').textContent=String(entry.type||'Communication')+' Message';
+  overlay.querySelector('#ncc-message-meta').textContent='Inmate: '+displayName(p)+' · ID: '+p.id+' · Date: '+(entry.date||'Not recorded');
+  overlay.querySelector('#ncc-message-body').textContent=String(entry.message||'No message text was saved for this entry.');
+  overlay.hidden=false;
+  overlay.querySelector('[data-ncc-close]').focus();
+ });
+ document.addEventListener('keydown',event=>{if(overlay.hidden)return;if(event.key==='Escape')close();
+  if(event.key==='Tab'){const focusables=[...overlay.querySelectorAll('button')];const first=focusables[0],last=focusables[focusables.length-1];if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}}});
+ // Dismiss message if shell becomes locked on sign-out, without exposing it to new sessions.
+ const shell=document.getElementById('shell');
+ if(shell)new MutationObserver(()=>{if(shell.classList.contains('hidden'))close()}).observe(shell,{attributes:true,attributeFilter:['class']});
+})();
 </script><div id="nxPhotoModal" class="nx-photo-modal" role="dialog" aria-modal="true" aria-label="Enlarged inmate photograph" hidden><button type="button" class="nx-photo-modal-close" aria-label="Close photograph">× Close</button><img id="nxPhotoModalImage" alt=""></div></body></html>
