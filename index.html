@@ -803,6 +803,14 @@ textarea[name="mailing"]{min-height:170px;line-height:1.55;white-space:pre-wrap}
 .nx-pending-actions .btn{font-size:11px!important;padding:8px 7px!important;min-height:34px!important;width:100%}
 @media(max-width:1000px){.nx-pending-layout{grid-template-columns:1fr;max-width:760px;margin-inline:auto}}
 @media(max-width:580px){.nx-pending-card{grid-template-columns:66px minmax(0,1fr);gap:11px!important;padding:12px!important}.nx-pending-avatar{width:66px!important;height:77px!important}.nx-pending-actions{grid-column:1/-1;flex-direction:row!important;width:100%!important;justify-content:flex-start}.nx-pending-actions .btn{width:auto!important;flex:1 1 auto}.nx-pending-info strong{font-size:14px!important}}
+
+/* Pending Intake: clickable full-size photos (reuses the existing authorized photo modal). */
+.nxp-photo-zoom{display:flex;align-items:center;justify-content:center;background:transparent;border:0;padding:0;margin:0;width:100%;height:100%;min-height:0;cursor:zoom-in;border-radius:8px;overflow:hidden}
+.nxp-photo-zoom img{width:100%;height:100%;object-fit:cover;display:block}
+.nxp-photoitem .nxp-photo-zoom{min-height:125px;max-height:205px;background:#0b1624}
+.nxp-photoitem .nxp-photo-zoom img{object-fit:contain;max-height:205px}
+.nxp-photo-zoom:focus-visible{outline:3px solid #83c9ff;outline-offset:2px}
+.nxp-photo-zoom:hover img{filter:brightness(1.1)}
 </style><style id="blackcell-login-branding">
 /* Full corporate artwork is reserved for the sign-in screen. */
 #login.gate{padding:24px 12px;min-height:100vh;}
@@ -2006,7 +2014,8 @@ async function nxPendingGalleryImages(){
   const target=document.querySelector(`[data-pending-gallery-img="${i}"]`);if(!target)return;
   try{const url=await signedPhotoUrl(path);if(nxPendingOpenId!==uid||!target.isConnected)return;
    const img=document.createElement('img');img.src=url;img.alt='Pending intake photograph '+(i+1);img.referrerPolicy='no-referrer';
-   target.replaceChildren(img);
+   const zoom=document.createElement('button');zoom.type='button';zoom.className='nx-photo-enlarge nxp-photo-zoom';zoom.setAttribute('aria-label','Enlarge photograph '+(i+1));zoom.appendChild(img);
+   target.replaceChildren(zoom);
   }catch(err){target.textContent='Photograph unavailable';}
  }));
 }
@@ -2042,7 +2051,7 @@ async function nxPendingImages(){
  if(view!=='pendingIntake')return;
  const list=nexusPendingItems().filter(r=>r.photoPath||nxPendingPhotoPaths(r).length);
  for(const r of list){const slot=[...document.querySelectorAll('[data-pending-img]')].find(el=>el.dataset.pendingImg===r.uid);if(!slot)continue;
- try{const url=await signedPhotoUrl(r.photoPath||nxPendingPhotoPaths(r)[0]);if(view!=='pendingIntake'||!slot.isConnected)continue;const img=document.createElement('img');img.src=url;img.alt='Pending inmate photograph';img.referrerPolicy='no-referrer';slot.replaceChildren(img)}catch(err){console.warn('Pending photograph unavailable',err)} }
+ try{const url=await signedPhotoUrl(r.photoPath||nxPendingPhotoPaths(r)[0]);if(view!=='pendingIntake'||!slot.isConnected)continue;const img=document.createElement('img');img.src=url;img.alt='Enlarge pending inmate photograph';img.referrerPolicy='no-referrer';const zoom=document.createElement('button');zoom.type='button';zoom.className='nx-photo-enlarge nxp-photo-zoom';zoom.setAttribute('aria-label','View full-size pending inmate photograph');zoom.appendChild(img);slot.replaceChildren(zoom)}catch(err){console.warn('Pending photograph unavailable',err)} }
 }
 async function nxPendingSave(form){
  if(!nexusCloudReady||!currentUserId){alert('Cloud session not ready. Nothing saved.');return}
