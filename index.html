@@ -1695,7 +1695,59 @@ $('content').addEventListener('input',e=>{const input=e.target;if(input.dataset.
 $('content').addEventListener('change',e=>{const input=e.target;if(input.dataset.bulkApprove!==undefined){const r=nxBulkDrafts[Number(input.dataset.bulkApprove)];if(r)r.approved=input.checked;}});
 $('content').addEventListener('change',e=>{if(e.target.id==='nexusEightChoice'){nexusEightChoice=e.target.value;analysisVisible=false;render()}});
 $('content').addEventListener('input',e=>{if(e.target.id?.startsWith('nxv-'))nxvApplySearch()});$('content').addEventListener('change',e=>{if(e.target.id?.startsWith('nxv-'))nxvApplySearch()});$('content').addEventListener('click',e=>{if(e.target.closest('#nxv-clear')){e.preventDefault();['nxv-q','nxv-state','nxv-facility','nxv-min-age','nxv-max-age','nxv-status'].forEach(id=>{const x=document.getElementById(id);if(x)x.value=''});nxvApplySearch()}if(e.target.closest('#nxv-export-report')){e.preventDefault();nxvExportReport()}});
-function go(v){view=v;render();window.scrollTo(0,0)}
+
+
+function go(v){
+  if($('shell').classList.contains('hidden'))return;
+
+  if((v==='detail'||v==='personal')&&!detailId){
+    v='profiles';
+  }
+
+  const targetHash='#/'+v;
+
+  if(window.location.hash===targetHash){
+    view=v;
+    render();
+    window.scrollTo(0,0);
+  }else{
+    window.location.hash=targetHash;
+  }
+}
+
+
+window.addEventListener('hashchange',()=>{
+  // Never render protected pages while the application is locked.
+  if($('shell').classList.contains('hidden'))return;
+
+  const route=window.location.hash.slice(2);
+  const allowed=[
+    'dashboard',
+    'profiles',
+    'register',
+    'detail',
+    'personal',
+    'financialHub',
+    'bulkIntake',
+    'facilities',
+    'records',
+    'search',
+    'reports',
+    'settings'
+  ];
+
+  if(!allowed.includes(route))return;
+
+  // Inmate-specific pages require a selected profile.
+  if((route==='detail'||route==='personal')&&!detailId){
+    go('profiles');
+    return;
+  }
+
+  view=route;
+  render();
+  window.scrollTo(0,0);
+});
 
 function captureRows(){for(const t of tableDefs){const body=$('tb-'+t.key);if(!body)continue;tableRows[t.key]=[...body.querySelectorAll('tr')].map(tr=>[...tr.querySelectorAll('input[data-table]')].map(input=>input.value));}}
 
@@ -2070,10 +2122,24 @@ async function nexusOpenAuthorizedSession(){
     nexusShowSignedOut('Unable to access records: '+err.message);
     return false;
   }
+
   $('login').classList.add('hidden');
   $('shell').classList.remove('hidden');
-  go('dashboard');
+
+  const requestedRoute=window.location.hash.slice(2);
+  const allowedRoutes=[
+    'dashboard','profiles','register','detail',
+    'personal','financialHub','bulkIntake',
+    'facilities','records','search','reports','settings'
+  ];
+
+  const safeRoute=allowedRoutes.includes(requestedRoute)
+    ? requestedRoute
+    : 'dashboard';
+
+  go(safeRoute);
   return true;
+
 }
 
 $('loginForm').addEventListener('submit', async e => {
