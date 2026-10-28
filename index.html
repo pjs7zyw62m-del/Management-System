@@ -741,6 +741,18 @@ textarea[name="mailing"]{min-height:170px;line-height:1.55;white-space:pre-wrap}
 .ncc-tiles strong{font-size:12px}.ncc-tiles small{font-size:10px;color:#a5bad0}
 @media(max-width:1000px){.ncc-statgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.ncc-layout,.ncc-bottom{grid-template-columns:1fr}}
 @media(max-width:550px){.ncc-header{padding:18px}.ncc-header-symbol{display:none}.ncc-cloud{font-size:10px}.ncc-panel{padding:15px}.ncc-tiles{gap:8px}.ncc-stat{padding:14px}.ncc-stat strong{font-size:28px}}
+
+.ncc-finance{background:linear-gradient(135deg,#111f33,#102a3b);border-color:#2b5466}
+.ncc-financegrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:17px 0}
+.ncc-financegrid>div{border:1px solid #31506a;background:#0c1b2b;border-radius:11px;padding:15px;display:flex;flex-direction:column;gap:9px;min-width:0}
+.ncc-financegrid small{font-size:10px;letter-spacing:.8px;color:#a7c4db;font-weight:800}
+.ncc-financegrid strong{font-size:clamp(19px,2vw,27px);color:#f4fbff;overflow-wrap:anywhere}
+.ncc-financeinactive{padding:17px;background:#14263a;border-radius:10px;display:flex;flex-direction:column;gap:5px;font-size:12px;color:#a9c5da}
+.ncc-financeinactive strong{color:#f0f7ff}
+.ncc-financefoot{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;border-top:1px solid #2b455a;padding-top:13px;font-size:11px;color:#a8bbce}
+.ncc-financefoot strong{color:#f2f8ff}
+@media(max-width:950px){.ncc-financegrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:550px){.ncc-financegrid{grid-template-columns:1fr 1fr}.ncc-financegrid>div{padding:10px}.ncc-financegrid strong{font-size:19px}}
 </style><style id="blackcell-login-branding">
 /* Full corporate artwork is reserved for the sign-in screen. */
 #login.gate{padding:24px 12px;min-height:100vh;}
@@ -1905,6 +1917,10 @@ function nexusDashboard(){
  const recentProfiles=profiles.slice().sort((a,b)=>String(b.admission||'').localeCompare(String(a.admission||''))).slice(0,6);
  const statuses=[['Active',active],['Archived',archived],['Other',Math.max(0,profiles.length-active-archived)]];
  const maxState=Math.max(1,...states.map(x=>x[1]));
+ const budget=nxBudget(),finance=nxTotals(budget);
+ const pendingCommunications=profiles.reduce((sum,p)=>sum+balanceFor(p.id).outstanding,0);
+ const totalDeposits=budget.items.filter(x=>x.kind==='deposit').reduce((sum,x)=>sum+Number(x.cents||0),0);
+ const financeActive=!!budget.activeAt;
  const cloudStatus=nexusCloudReady?'Authorized cloud records loaded':'Cloud status not verified';
  return `<div class="ncc">
  <header class="ncc-header">
@@ -1917,6 +1933,17 @@ function nexusDashboard(){
   <div class="ncc-stat"><span class="ncc-stat-label">ACTIVE PROFILES</span><strong>${active}</strong><small>Marked Active</small></div>
   <div class="ncc-stat"><span class="ncc-stat-label">STATES TRACKED</span><strong>${states.length}</strong><small>Jurisdictions in loaded records</small></div>
   <div class="ncc-stat"><span class="ncc-stat-label">RECORDED FACILITIES</span><strong>${complexes}</strong><small>State and facility combinations</small></div>
+ </section>
+ <section class="ncc-finance ncc-panel" aria-label="Financial Center overview">
+  <div class="ncc-panelhead"><div><span class="ncc-eyebrow">PRIVATE FINANCIAL MANAGEMENT</span><h3>Financial Center Overview</h3></div><button class="btn alt small" data-view="financialHub">Open Financial Center</button></div>
+  <p class="ncc-helper">Recorded personal budget transactions only. These figures are not live bank balances or payments.</p>
+  ${financeActive?`<div class="ncc-financegrid">
+    <div><small>AVAILABLE BUDGET</small><strong>${nxCash(finance.available)}</strong></div>
+    <div><small>PROMISED / OWED</small><strong>${nxCash(finance.owed)}</strong></div>
+    <div><small>AVAILABLE AFTER PROMISES</small><strong>${nxCash(finance.available-finance.owed)}</strong></div>
+    <div><small>RECORDED INMATE DEPOSITS</small><strong>${nxCash(totalDeposits)}</strong></div>
+   </div>`:`<div class="ncc-financeinactive"><strong>Financial ledger is not activated.</strong><span>Open Financial Center to activate your budget and begin recording transactions.</span></div>`}
+  <div class="ncc-financefoot"><span>Communication charges outstanding: <strong>${money(pendingCommunications)}</strong></span><span>Tracked separately from the budget ledger · Avoid counting the same transaction twice</span></div>
  </section>
  <div class="ncc-layout">
   <section class="ncc-panel ncc-roster"><div class="ncc-panelhead"><div><span class="ncc-eyebrow">DIRECTORY ACCESS</span><h3>Inmate Profiles</h3></div><button class="btn alt small" data-view="profiles">All Profiles</button></div>
