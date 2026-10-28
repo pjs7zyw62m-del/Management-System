@@ -588,6 +588,27 @@ textarea[name="mailing"]{min-height:170px;line-height:1.55;white-space:pre-wrap}
 .nexus-eight-heading{display:flex;flex-direction:column;gap:4px;color:#e0bd84}.nexus-eight-heading small{color:#bacbe0}
 .nexus-eight-evidence{background:#0d1a28;border-left:2px solid #7295bd;margin:8px 0;padding:9px;white-space:pre-wrap;overflow-wrap:anywhere}.nexus-eight-evidence small{color:#a9c0d9}.nexus-eight-evidence p{margin:7px 0 0}
 
+/* NEXUS-005A Arizona: fixed-width original table, scaled only by horizontal scrolling. */
+.nx-sheet-scroll{width:100%;max-width:960px;margin:12px auto 18px;overflow-x:auto;overscroll-behavior-x:contain;background:#fff}
+.nx-sheet{width:956px!important;min-width:956px!important;max-width:956px;table-layout:fixed;font-size:10px;line-height:1.12}
+.nx-sheet th,.nx-sheet td{padding:2px 3px;height:24px}
+.nx-sheet .nx-head,.nx-sheet .nx-subheading{font-size:10px}
+.nx-sheet .nx-photo-cell{min-width:0!important;width:auto;vertical-align:middle}
+.nx-sheet input,.nx-sheet select,.nx-sheet textarea{border:0!important;box-shadow:none!important;min-height:22px!important;height:23px;padding:2px 3px!important;font-size:11px!important;outline-offset:-2px}
+.nx-sheet .nx-photo-cell input[type=file]{height:auto;min-height:0!important;max-width:170px;font-size:9px!important}
+.nx-sheet .nx-photo-cell .photo{max-width:100%;width:170px;height:205px;object-fit:contain}
+.nx-sheet .nx-history-edit .panel{margin:0;padding:4px;border:0;background:#fff}
+.nx-sheet .nx-history-edit .tablewrap{margin:0}
+.nx-sheet .nx-history-edit table{width:100%;min-width:0}
+.nx-sheet .nx-history-edit input{min-width:0!important}
+.nx-sheet .nx-history-edit .btn{margin:5px;font-size:10px}
+.nx-photo-enlarge{border:0;background:transparent;cursor:zoom-in;padding:0;display:inline-block;max-width:100%;color:inherit}
+.nx-photo-enlarge:focus-visible{outline:3px solid #2d81e9;outline-offset:3px}
+.nx-photo-modal{position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.92);display:flex;justify-content:center;align-items:center;padding:55px 20px 20px}
+.nx-photo-modal[hidden]{display:none!important}
+.nx-photo-modal img{display:block;max-width:min(92vw,1000px);max-height:calc(100vh - 90px);width:auto;height:auto;object-fit:contain;background:#101927}
+.nx-photo-modal-close{position:absolute;top:14px;right:18px;background:#14243a;color:white;border:1px solid #8a9fb6;border-radius:7px;padding:7px 13px;font-size:19px}
+
 /* NEXUS-005: screenshot-matched institutional master sheet, shared by registration and read-only profiles. */
 .nx-sheet-scroll{width:100%;overflow-x:auto;overscroll-behavior-x:contain;margin:12px 0 18px}
 .nx-sheet{border-collapse:collapse;table-layout:fixed;width:100%;min-width:920px;background:#fff;color:#151515;font-family:Arial,sans-serif;font-size:11px;line-height:1.25}
@@ -631,7 +652,17 @@ textarea[name="mailing"]{min-height:170px;line-height:1.55;white-space:pre-wrap}
 .nxv-panel{background:#101b2b;border:1px solid #2c4058;border-radius:15px;padding:20px;margin-bottom:16px;color:#e8f2ff}.nxv-panel h2,.nxv-panel h3{margin:0 0 12px;color:#f2f7ff}.nxv-sub{font-size:13px;color:#afc4dc;margin-bottom:18px}.nxv-filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.nxv-filters label{font-size:12px;color:#afc4dc;display:block;margin-bottom:5px}.nxv-filters input,.nxv-filters select{width:100%;padding:10px;background:#19283b;border:1px solid #415571;border-radius:8px;color:#f7fbff}.nxv-table-wrap{overflow:auto;max-height:520px}.nxv-table{border-collapse:collapse;width:100%;min-width:650px}.nxv-table th,.nxv-table td{text-align:left;border-bottom:1px solid #314257;padding:12px 9px;font-size:13px}.nxv-table th{color:#a9c8e9;position:sticky;top:0;background:#142339}.nxv-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px}.nxv-stat{padding:17px;background:#1a2a40;border-radius:11px}.nxv-stat strong{font-size:25px;display:block;color:#fff}.nxv-stat small{color:#a9bdd5}.nxv-bars{display:grid;gap:12px}.nxv-bar{display:grid;grid-template-columns:minmax(80px,150px) 1fr 48px;gap:10px;align-items:center;font-size:13px}.nxv-track{height:9px;background:#263c56;border-radius:9px;overflow:hidden}.nxv-fill{height:100%;background:#5aaefa;border-radius:9px}.nxv-empty{color:#a8b9cd;padding:20px}.nxv-tools{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0}.nxv-person{display:flex;align-items:center;gap:10px}.nxv-thumb{width:34px;height:38px;object-fit:cover;border-radius:6px;background:#293e55}
 </style>
 <style id="nxv-record-photo-style">.nxv-record-photo{display:block;width:54px;height:66px;object-fit:cover;object-position:center;background:#1b2d43;border:1px solid #3c5875;border-radius:7px}.nxv-record-avatar{display:grid;place-items:center;color:#9fb9d4;font-size:28px}.nxv-table td:first-child{width:70px}.nxv-table td{vertical-align:middle}</style>
-</head><body>
+<style id="nexus-005-state-chooser">
+.nx-state-entry{max-width:650px;margin:25px auto;padding:22px}
+.nx-state-entry .field{max-width:470px;margin:20px 0 14px}
+.nx-state-entry select{width:100%;min-height:44px}
+.nx-state-entry .notice{margin:0 0 20px}
+.nx-state-fixed{display:block;font-weight:800;padding:7px;color:#dcecff;background:#142c47;border:1px solid #416080;border-radius:4px}
+.nx-sheet-scroll{max-width:956px!important;width:100%;margin-left:auto;margin-right:auto}
+.nx-sheet{width:956px!important;min-width:956px!important;table-layout:fixed}
+.nx-sheet th,.nx-sheet td{overflow-wrap:break-word}
+@media(max-width:1000px){.nx-sheet-scroll{overflow-x:auto}}
+</style></head><body>
 
 <div id="login" class="gate"><form id="loginForm" class="panel"><div class="logo">BLACKCELL CORPORATION</div><h2>NEXUS Management System</h2><p class="muted" id="nexusAuthStatus" role="status">Checking your secure session…</p><div class="field">
 <label>Email Address</label><input required type="email" autocomplete="username"></div><div class="field"><label>Password</label><input required type="password" autocomplete="current-password"></div><button class="btn" type="submit" id="nexusSignInBtn" disabled>SIGN IN</button></form></div>
@@ -901,7 +932,7 @@ function tableEditor(t,p){const raw=p&&Array.isArray(p[t.key])?p[t.key]:[];const
 
 function tableRow(t,row,i){return `<tr>${t.cols.map((c,j)=>`<td><input data-table="${t.key}" data-row="${i}" data-col="${j}" value="${esc(Array.isArray(row)?row[j]:row&&typeof row==='object'?(row[c]??Object.values(row)[j]):'')}"></td>`).join('')}<td><button type="button" class="btn danger small" data-remove="${t.key}" data-index="${i}">×</button></td></tr>`}
 
-function profileCard(p){return `<article class="profile"><div>${photo(p).replace('class="photo"','class="profile-photo"').replace('class="photo placeholder"','class="profile-photo placeholder"')}</div><div class="idbar">ID: ${esc(p.id)}</div><div class="profile-body"><h3>${esc(displayName(p))}</h3><div class="state">${esc((p.state||'STATE NOT SET').toUpperCase())}</div><div class="status ${(p.status||'').toLowerCase().includes('inactive')||(p.status||'').toLowerCase().includes('blocked')?'inactive':''}">${esc(p.status||'Active')}</div><p><button class="btn small" data-open="${encodeURIComponent(p.id)}">VIEW MASTER RECORD</button></p></div></article>`}
+function profileCard(p){return `<article class="profile"><div><button type="button" class="nx-photo-enlarge" aria-label="Enlarge inmate photograph">${photo(p).replace('class="photo"','class="profile-photo"').replace('class="photo placeholder"','class="profile-photo placeholder"')}</button></div><div class="idbar">ID: ${esc(p.id)}</div><div class="profile-body"><h3>${esc(displayName(p))}</h3><div class="state">${esc((p.state||'STATE NOT SET').toUpperCase())}</div><div class="status ${(p.status||'').toLowerCase().includes('inactive')||(p.status||'').toLowerCase().includes('blocked')?'inactive':''}">${esc(p.status||'Active')}</div><p><button class="btn small" data-open="${encodeURIComponent(p.id)}">VIEW MASTER RECORD</button></p></div></article>`}
 
 function profileCards(list){return list.length?`<div class="cards">${list.map(profileCard).join('')}</div>`:'<div class="panel muted">No demo profiles found. Select Registration to create one.</div>'}
 
@@ -928,9 +959,9 @@ function nxSheetHistory(t,p,mode){
 }
 function nxInstitutionalSheet(p,mode='view'){
  const edit=mode==='edit',F=(key,type='text')=>nxSheetField(p,key,mode,type),H=(label,span)=>`<th class="nx-head" colspan="${span}">${label}</th>`,V=(key,span,type='text')=>`<td colspan="${span}">${F(key,type)}</td>`;
- const stateFacility=edit?`${stateSelect(p?.state||'')}${facilitySelect(p?.state||'',p?.facility||'')}`:`<div class="nx-value">State: ${esc(p?.state||'—')} · Facility: ${esc(p?.facility||'—')}</div>`;
+ const stateFacility=edit?`<div class="field"><label>State</label><strong class="nx-state-fixed">Arizona</strong><input type="hidden" name="state" value="Arizona"></div>${facilitySelect('Arizona',p?.facility||'')}`:`<div class="nx-value">State: ${esc(p?.state||'—')} · Facility: ${esc(p?.facility||'—')}</div>`;
  const status=edit?`<select name="status" aria-label="Status">${['Active','Inactive','Active blocked','Inactive blocked','Transferred','Released','Archive'].map(v=>`<option value="${v}" ${(p?.status||'Active')===v?'selected':''}>${v}</option>`).join('')}</select>`:`<div class="nx-value">${esc(p?.status||'Active')}</div>`;
- const photoContent=`<div id="registrationPhotoPreview">${photo(p||{})}</div>${edit?'<input type="file" id="photoInput" accept="image/png,image/jpeg,image/webp" aria-label="Inmate photograph">':''}`;
+ const photoContent=`<div id="registrationPhotoPreview" class="nx-sheet-photo-preview"><button type="button" class="nx-photo-enlarge" aria-label="Enlarge inmate photograph" title="Enlarge photograph">${photo(p||{})}</button></div>${edit?'<input type="file" id="photoInput" accept="image/png,image/jpeg,image/webp" aria-label="Inmate photograph">':''}`;
  return `<div class="nx-sheet-scroll"><table class="nx-sheet" aria-label="NEXUS inmate information and registration sheet"><colgroup>${Array.from({length:12},(_,i)=>`<col style="width:${i<3?7.5:8.611}%">`).join('')}</colgroup><tbody>
  <tr>${H('INMATES PHOTO',3)}${H('LAST NAME',3)}${H('FIRST NAME',3)}${H('MIDDLE INITIAL',1)}${H('INMATE ID',2)}</tr>
  <tr><td class="nx-photo-cell" rowspan="11" colspan="3">${photoContent}</td>${V('last',3)}${V('first',3)}${V('middle',1)}${V('id',2)}</tr>
@@ -942,24 +973,87 @@ function nxInstitutionalSheet(p,mode='view'){
  <tr><td colspan="9">${F('earliestRelease','date')}</td></tr>
  <tr>${H('PRISON RELEASE DATE',5)}${H('RELEASE TYPE',4)}</tr>
  <tr>${V('prisonReleaseText',5)}${V('releaseTypeText',4)}</tr>
- <tr><th class="nx-blue" colspan="5">MOST RECENT LOCATION</th><th class="nx-blue" colspan="4">AS OF DATE</th></tr>
- <tr>${H('COMPLEX',2)}${H('UNIT',2)}${H('LAST MOVEMENT',2)}${H('STATUS',2)}${H('AS OF',1)}</tr>
- <tr>${V('location',2)}${V('unit',2)}${V('lastMovement',2)}<td colspan="2">${status}</td>${V('locationAsOf',1,'date')}</tr>
+ <tr><th class="nx-blue" colspan="6">MOST RECENT LOCATION</th><th class="nx-blue" colspan="3">AS OF DATE</th></tr>
+ <tr>${H('COMPLEX',2)}${H('UNIT',2)}${H('LAST MOVEMENT',3)}${H('STATUS',2)}</tr>
+ <tr>${V('location',2)}${V('unit',2)}${V('lastMovement',3)}<td colspan="2">${status}</td></tr>
  <tr><th class="nx-subheading" colspan="12">INMATE MAILING ADDRESS</th></tr><tr><td colspan="12">${nxSheetTextarea(p,'mailing',mode)}</td></tr>
  <tr><th class="nx-subheading" colspan="12">INMATE INFORMATION</th></tr><tr><td colspan="12" class="nx-extra">${stateFacility}</td></tr>
  ${tableDefs.map(t=>nxSheetHistory(t,p,mode)).join('')}
  </tbody></table></div>`;
 }
+// NEXUS-005: state-first registration; other jurisdictions retain their earlier display until templates arrive.
+let nexusRegistrationState='';
+let nexusRegistrationStage='select';
+function nexusRegistrationChooser(){
+ const options=US_STATES.map(st=>`<option value="${esc(st)}" ${st===nexusRegistrationState?'selected':''}>${esc(st)}${st==='Arizona'?' — Available':' — Template pending'}</option>`).join('');
+ const ready=nexusRegistrationState==='Arizona';
+ return `<section class="nx-state-entry panel" aria-labelledby="nxStateTitle">
+ <div class="heading" id="nxStateTitle">INMATE REGISTRATION — SELECT STATE</div>
+ <p class="muted">Choose the correctional jurisdiction. Each state has its own registration template. Arizona is available now.</p>
+ <div class="field"><label for="nxRegistrationJurisdiction">STATE / JURISDICTION</label>
+ <select id="nxRegistrationJurisdiction"><option value="">Select a state...</option>${options}</select></div>
+ <div id="nxRegistrationAvailability" class="notice" role="status">${ready?'Arizona registration form ready.':nexusRegistrationState?`${esc(nexusRegistrationState)} registration template is pending. No registration form is available yet.`:'Select Arizona to continue.'}</div>
+ <div class="actions"><button class="btn" type="button" id="nxViewRegistration" ${ready?'':'disabled'}>VIEW REGISTRATION FORM</button><button class="btn alt" type="button" data-view="profiles">BACK TO PROFILES</button></div>
+ </section>`;
+}
+function nexusLegacyRegistration(){
+ const p=editId?find(editId):null;
+ const F=(label,key,type='text')=>field(label,key,p?.[key]||'',type);
+ return `<div class="actions"><button class="btn alt" type="button" ${p?'data-view="profiles"':'id="nxBackStateSelection"'}>← ${p?'Back to Profiles':'Select Another State'}</button></div>
+ <form id="recordForm" novalidate>
+ <div class="panel"><div class="heading">${p?'EDIT INMATE MASTER RECORD':'NEW INMATE REGISTRATION'}</div>
+ <p class="muted">NEXUS master registration. Inmate ID, State and Facility are required. Other fields may remain blank until verified.</p>
+ <div id="recordSaveStatus" class="notice hidden" role="status" aria-live="polite"></div>
+ <div class="nx-reg-head">INMATE IDENTIFICATION</div>
+ <div class="nx-reg-photo-layout">
+   <div class="registration-photo"><div id="registrationPhotoPreview">${photo(p)}</div><strong>INMATE PHOTO</strong><span class="muted">JPEG / PNG / WebP · Maximum 1.5 MB</span><input type="file" id="photoInput" accept="image/png,image/jpeg,image/webp" aria-label="Inmate photograph"></div>
+   <div class="nx-reg-grid">
+    ${F('LAST NAME','last')}${F('FIRST NAME','first')}${F('MIDDLE INITIAL','middle')}${F('INMATE ID *','id')}
+    ${F('AGE','age','number')}${F('GENDER','gender')}${F('HEIGHT (INCHES)','heightInches','number')}${F('WEIGHT','weight','number')}
+    ${F('HAIR COLOR','hairColor')}${F('EYE COLOR','eyeColor')}${F('ETHNIC ORIGIN','ethnicOrigin')}${F('CUSTODY CLASS','custody')}
+    ${F('ADMISSION','admission','date')}
+   </div>
+ </div>
+ <div class="nx-reg-release">PROJECTED ELIGIBLE RELEASE DATE</div>
+ <div class="nx-reg-grid">
+  ${F('PROJECTED ELIGIBLE RELEASE DATE','earliestRelease','date')}
+  ${F('PRISON RELEASE DATE — DATE / LIFE / NATURAL LIFE / YEARS TO LIFE / DEATH','prisonReleaseText')}
+  ${F('RELEASE TYPE — FREE TEXT','releaseTypeText')}
+  ${F('PROJECTED RELEASE DATE (STRUCTURED / OPTIONAL)','release','date')}
+ </div>
+ <p class="nx-reg-note">Prison Release Date and Release Type are free text. Dates for searching remain separate optional date fields. Never type LIFE into a date input.</p>
+ <div class="nx-reg-release">MOST RECENT LOCATION · AS OF DATE</div>
+ <div class="nx-reg-grid">
+  ${stateSelect(p?.state||'')}${facilitySelect(p?.state||'',p?.facility||'')}${F('UNIT','unit')}${F('AS OF DATE','locationAsOf','date')}
+  ${F('COMPLEX / MOST RECENT LOCATION','location')}${F('LAST MOVEMENT','lastMovement')}
+  <div class="field nx-reg-span2"><label>STATUS</label><select name="status">${['Active','Inactive','Active blocked','Inactive blocked','Transferred','Released','Archive'].map(v=>`<option value="${v}" ${((p?.status||'Active')===v)?'selected':''}>${v}</option>`).join('')}</select></div>
+ </div>
+ <div class="nx-reg-head">INMATE MAILING ADDRESS</div>
+ <div class="nx-reg-address">${area('FULL NAME, INMATE ID, FACILITY, UNIT AND ADDRESS — ONE LINE EACH','mailing',p?.mailing||'')}</div>
+ <div class="nx-reg-head">ADDITIONAL SENTENCING INFORMATION</div>
+ <div class="nx-reg-grid">${sentenceTypeSelect(p?.sentenceType)}${F('PAROLE ELIGIBILITY DATE','paroleEligibility','date')}</div>
+ ${area('MASTER RECORD NOTES','notes',p?.notes||'')}
+ </div></div>
+ <div class="nx-reg-head">INMATE INFORMATION · HISTORICAL RECORDS</div>
+ ${tableDefs.map(t=>tableEditor(t,p)).join('')}
+ <div class="panel registration-savebar"><div id="recordSaveBottom" class="muted">Save the profile and all section rows to Supabase.</div><button id="saveMasterButton" class="btn" type="submit">SAVE MASTER RECORD</button></div>
+ </form>`;
+}
+
+function nexusLegacyDetail(){const p=find(detailId);if(!p)return '<p>Record not found.</p>';return `<div class="actions"><button class="btn alt" data-view="profiles">BACK</button><button class="btn" data-edit="${encodeURIComponent(p.id)}">EDIT RECORD</button><button class="btn purple" data-personal="${encodeURIComponent(p.id)}">INMATE PERSONAL</button><button class="btn danger" data-delete="${encodeURIComponent(p.id)}">DELETE RECORD</button></div>${identity(p)}${section('PERSONAL / CUSTODY DETAILS',`<div class="grid">${[['First Name',p.first],['Middle Name',p.middle],['Last Name',p.last],['State',p.state],['Age',p.age],['Facility',p.facility],['Unit',p.unit],['Gender',p.gender],['Height (inches)',p.heightInches],['Weight',p.weight],['Hair Color',p.hairColor],['Eye Color',p.eyeColor],['Ethnic Origin',p.ethnicOrigin],['Prison Release Date',p.prisonReleaseText],['Release Type',p.releaseTypeText],['Location As Of',p.locationAsOf],['Last Movement',p.lastMovement],['Sentence Type',p.sentenceType||'Unknown'],['Parole Eligibility',p.paroleEligibility],['Custody Classification',p.custody],['Admission Date',p.admission],['Earliest Release',releaseDisplay(p,'earliestRelease')],['Projected Release',releaseDisplay(p,'release')],['Most Recent Location',p.location],['Mailing Address',p.mailing],['Notes',p.notes]].map(([a,b])=>a==='Mailing Address'?`<div class="info nexus-mailing-info"><small>Mailing Address</small><strong>${esc(b||'—')}</strong></div>`:item(a,b)).join('')}</div>`)}${tableDefs.map(t=>tableDisplay(p,t)).join('')}`}
+
 function registration(){
  const p=editId?find(editId):null;
+ if(p && p.state!=='Arizona')return nexusLegacyRegistration();
+ if(!p && nexusRegistrationStage!=='form')return nexusRegistrationChooser();
  return `<div class="actions"><button class="btn alt" type="button" data-view="profiles">← Back to Profiles</button></div>
  <form id="recordForm" novalidate>
  <div class="panel"><div class="heading">${p?'EDIT INMATE MASTER RECORD':'NEW INMATE REGISTRATION'}</div><div id="recordSaveStatus" class="notice hidden" role="status" aria-live="polite"></div>
- <p class="muted">Official-format table. Enter the inmate details and save using the existing secure Supabase workflow. State, facility, and inmate ID are required. Record tables permit multiple entries.</p>
+ <p class="muted">Arizona registration template. Enter the inmate details and save using the existing secure Supabase workflow. State, facility, and inmate ID are required. Record tables permit multiple entries.</p>
  ${nxInstitutionalSheet(p,'edit')}
  <details class="nx-sheet-aux"><summary>ADDITIONAL NEXUS FIELDS (not displayed on the reference form)</summary><div class="nx-reg-grid">
  ${sentenceTypeSelect(p?.sentenceType)}${field('Parole Eligibility Date','paroleEligibility',p?.paroleEligibility||'','date')}
- ${field('Projected Release Date (structured)','release',p?.release||'','date')}
+ ${field('Projected Release Date (structured)','release',p?.release||'','date')}${field('Most Recent Location — As Of Date','locationAsOf',p?.locationAsOf||'','date')}
 
  </div>${area('Master Record Notes','notes',p?.notes||'')}</details>
  </div><div class="panel registration-savebar"><div id="recordSaveBottom" class="muted">Save inmate profile and section rows to Supabase.</div><button id="saveMasterButton" class="btn" type="submit">SAVE MASTER RECORD</button></div></form>`;
@@ -1094,7 +1188,7 @@ function identity(p,personalMode=false){
  </div>`;
 }
 
-function detail(){const p=find(detailId);if(!p)return '<p>Record not found.</p>';return `<div class="actions"><button class="btn alt" data-view="profiles">BACK</button><button class="btn" data-edit="${encodeURIComponent(p.id)}">EDIT RECORD</button><button class="btn purple" data-personal="${encodeURIComponent(p.id)}">INMATE PERSONAL</button><button class="btn danger" data-delete="${encodeURIComponent(p.id)}">DELETE RECORD</button></div>${nxInstitutionalSheet(p,'view')}<details class="nx-sheet-aux"><summary>ADDITIONAL NEXUS PROFILE INFORMATION</summary><div class="grid">${[['Sentence Type',p.sentenceType],['Parole Eligibility',p.paroleEligibility],['Projected Release',releaseDisplay(p,'release')],['Notes',p.notes]].map(([k,v])=>item(k,v)).join('')}</div></details>`;}
+function detail(){const p=find(detailId);if(!p)return '<p>Record not found.</p>';if(p.state!=='Arizona')return nexusLegacyDetail();return `<div class="actions"><button class="btn alt" data-view="profiles">BACK</button><button class="btn" data-edit="${encodeURIComponent(p.id)}">EDIT RECORD</button><button class="btn purple" data-personal="${encodeURIComponent(p.id)}">INMATE PERSONAL</button><button class="btn danger" data-delete="${encodeURIComponent(p.id)}">DELETE RECORD</button></div>${nxInstitutionalSheet(p,'view')}<details class="nx-sheet-aux"><summary>ADDITIONAL NEXUS PROFILE INFORMATION</summary><div class="grid">${[['Sentence Type',p.sentenceType],['Parole Eligibility',p.paroleEligibility],['Projected Release',releaseDisplay(p,'release')],['Notes',p.notes]].map(([k,v])=>item(k,v)).join('')}</div></details>`;}
 
 
 function personalDetails(){const d=file().details||{};const fields=[['Preferred Name / Nickname','nickname'],['Hometown','hometown'],['Orientation (optional; self-reported)','orientation'],['Pronouns (optional)','pronouns'],['Marital Status','marital'],['Children','children'],['Languages','languages'],['Education Level','education'],['Religion (optional)','religion']];return `<form id="personalForm"><div class="cols"><div>${section('BASIC INFORMATION',`<div class="grid">${fields.map(([a,b])=>field(a,b,d[b]||'')).join('')}</div>`)}</div><div>${section('ABOUT ME / BIOGRAPHY',area('Biography','bio',d.bio||''))}${section('INTERESTS & HOBBIES',area('Interests and Activities','hobbies',d.hobbies||''))}${section('PERSONAL GOALS',area('Goals','goals',d.goals||''))}${section('ADDITIONAL INFORMATION',area('Personal Notes','additional',d.additional||''))}</div></div><button class="btn" type="submit">SAVE PERSONAL DETAILS</button></form>`}
@@ -1850,6 +1944,24 @@ $('content').addEventListener('click',e=>{
  if(btn.id==='facRemovePhoto'){e.preventDefault();const chosen=facChoice(facEntries());if(!chosen)return;const photos=read(FAC_PHOTO_KEY,{});delete photos[facKey(chosen)];store(FAC_PHOTO_KEY,photos);render()}
 },true);
 
+$('content').addEventListener('change',e=>{
+ if(e.target.id==='nxRegistrationJurisdiction'){
+  nexusRegistrationState=e.target.value;
+  nexusRegistrationStage='select';
+  render();
+ }
+});
+$('content').addEventListener('click',e=>{
+ if(e.target.closest('#nxViewRegistration')){
+  if(nexusRegistrationState!=='Arizona')return;
+  editId=null;photoData='';selectedPhotoFile=null;tableRows={};
+  nexusRegistrationStage='form';render();window.scrollTo(0,0);
+ }
+ if(e.target.closest('#nxBackStateSelection')){
+  nexusRegistrationStage='select';render();window.scrollTo(0,0);
+ }
+});
+
 $('content').addEventListener('change',e=>{if(e.target.id==='registrationState'){const state=e.target.value,sel=$('registrationFacility');if(!sel)return;sel.innerHTML=`<option value="">${state?'Select a facility...':'Select a state first'}</option>`+facilityOptions(state).map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');sel.disabled=!state;}});
 
 $('content').addEventListener('input',e=>{if(e.target.id==='searchBox'){filter=e.target.value;$('profileResults').innerHTML=profileCards(profiles.filter(p=>(showArchive?p.status==='Archive':p.status!=='Archive')&&[p.id,p.first,p.last,p.state,p.facility,p.unit].join(' ').toLowerCase().includes(filter.toLowerCase())).sort((a,b)=>(a.last||'').localeCompare(b.last||'')))} });
@@ -1955,6 +2067,7 @@ $('content').addEventListener('submit',async e=>{e.preventDefault();const form=e
 
 $('content').addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.nxPromise){const a=nxBudget(),r=a.requests.find(x=>x.id===b.dataset.nxPromise&&x.inmateId===detailId);if(r&&r.status==='requested'&&confirm('Mark this money request as promised / owed?')){r.status='owed';if(store(NX_BUDGET_KEY,a))render()}return;}if(b.id==='nxActivate'){const a=nxBudget();if(!a.activeAt&&confirm('Activate the monthly NEXUS personal budgeting ledger?')){a.activeAt=new Date().toISOString();if(store(NX_BUDGET_KEY,a))render()}return;}if(b.id==='nxBulkPreview'){nxBulkPreview();return;}if(b.id==='nxBulkRecheck'){nxBulkRender();return;}if(b.id==='nxBulkCreate'){await nxBulkCreate();return;}if(b.id==='nexusPrepareImport'){await nexusPrepareMessageFiles();return;}if(b.id==='nexusSaveImport'){nexusSaveImportedMessages();return;}if(b.id==='toggleArchive'){showArchive=!showArchive;render();return}if(b.id==='addCustomFacility'){const state=$('registrationState')?.value,name=$('customFacilityName')?.value.trim();if(!state){alert('Select a state first.');return}if(!name){alert('Enter a facility name.');return}const data=read(FACILITY_CUSTOM_KEY,{});data[state]=[...new Set([...(data[state]||[]),name])];if(store(FACILITY_CUSTOM_KEY,data)){const sel=$('registrationFacility');sel.insertAdjacentHTML('beforeend',`<option value="${esc(name)}">${esc(name)}</option>`);sel.value=name;$('customFacilityName').value='';alert('Facility added for '+state+'.')}return}if(b.id==='addReason'){const name=$('newReason')?.value.trim();if(!name){alert('Enter a reason first.');return}const data=reasonChoices();if(!data.some(x=>x.toLowerCase()===name.toLowerCase()))data.push(name);if(store(REASONS_KEY,data)){const sel=$('sexualReason');if(![...sel.options].some(x=>x.value===name))sel.insertAdjacentHTML('beforeend',`<option value="${esc(name)}">${esc(name)}</option>`);sel.value=name;$('newReason').value='';alert('Reason saved for reuse.')}return}if(b.dataset.exportFinancial){financialCSV();return}if(b.dataset.finOpen){detailId=decodeURIComponent(b.dataset.finOpen);personalTab='financial';go('personal');return}if(b.dataset.view){
   if(b.dataset.view==='register'){
+    nexusRegistrationStage='select';nexusRegistrationState='';
     editId=null;
     photoData='';
     selectedPhotoFile=null;
@@ -2020,6 +2133,7 @@ if(b.dataset.tab){personalTab=b.dataset.tab;analysisVisible=false;render();retur
 document.querySelectorAll('.nav').forEach(b=>{
   b.addEventListener('click',()=>{
     if(b.dataset.view==='register'){
+      nexusRegistrationStage='select';nexusRegistrationState='';
       editId=null;
       photoData='';
       selectedPhotoFile=null;
@@ -2260,4 +2374,33 @@ $('bell').addEventListener('click',()=>alert('NEXUS Notification Center: bell ic
 
 })();
 
-</script></body></html>
+
+// NEXUS-005A: enlarge an already-authorized photo URL. No public URL or new storage access.
+let nxPhotoReturnFocus=null;
+document.addEventListener('click',event=>{
+ const button=event.target.closest('.nx-photo-enlarge');
+ if(!button)return;
+ const image=button.querySelector('img');
+ if(!image||!image.currentSrc&&!image.src)return;
+ nxPhotoReturnFocus=button;
+ const modal=document.getElementById('nxPhotoModal');
+ const target=document.getElementById('nxPhotoModalImage');
+ target.src=image.currentSrc||image.src;
+ target.alt=image.alt||'Enlarged inmate photograph';
+ modal.hidden=false;
+ modal.querySelector('.nx-photo-modal-close').focus();
+});
+function nxClosePhotoModal(){
+ const modal=document.getElementById('nxPhotoModal');
+ if(!modal||modal.hidden)return;
+ modal.hidden=true;
+ document.getElementById('nxPhotoModalImage').removeAttribute('src');
+ if(nxPhotoReturnFocus?.isConnected)nxPhotoReturnFocus.focus();
+ nxPhotoReturnFocus=null;
+}
+document.addEventListener('click',event=>{
+ if(event.target.id==='nxPhotoModal'||event.target.closest('.nx-photo-modal-close'))nxClosePhotoModal();
+});
+document.addEventListener('keydown',event=>{if(event.key==='Escape')nxClosePhotoModal()});
+
+</script><div id="nxPhotoModal" class="nx-photo-modal" role="dialog" aria-modal="true" aria-label="Enlarged inmate photograph" hidden><button type="button" class="nx-photo-modal-close" aria-label="Close photograph">× Close</button><img id="nxPhotoModalImage" alt=""></div></body></html>
