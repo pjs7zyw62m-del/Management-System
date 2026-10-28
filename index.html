@@ -659,6 +659,12 @@ textarea[name="mailing"]{min-height:170px;line-height:1.55;white-space:pre-wrap}
 .nx-sheet .nx-asof-edit input{width:100%!important;min-width:0!important;background:#fff!important;color:#151515!important;font-size:11px!important;padding:2px!important}
 .nx-sheet .nx-asof-read{display:block;font-size:10px;color:#fff}
 .nx-sheet textarea[name=mailing]{width:100%!important;min-height:48px!important;box-sizing:border-box!important}
+
+/* NEXUS-005A: Align mailing header and field to the same nine table columns. */
+.nx-sheet .nx-mail-header,.nx-sheet .nx-mail-cell{box-sizing:border-box;width:auto;min-width:0}
+.nx-sheet .nx-mail-cell{padding:0!important;vertical-align:top;background:#fff}
+.nx-sheet .nx-mail-cell textarea[name="mailing"]{display:block;width:100%!important;max-width:100%!important;min-width:0!important;margin:0!important;box-sizing:border-box!important;border:0!important;border-radius:0!important;padding:6px!important;resize:vertical}
+.nx-sheet .nx-mail-cell .nx-sheet-address{display:block;box-sizing:border-box;width:100%;max-width:100%;margin:0;padding:6px!important;min-height:44px}
 </style><style id="nexus-final-upgrade">
 .nxv-panel{background:#101b2b;border:1px solid #2c4058;border-radius:15px;padding:20px;margin-bottom:16px;color:#e8f2ff}.nxv-panel h2,.nxv-panel h3{margin:0 0 12px;color:#f2f7ff}.nxv-sub{font-size:13px;color:#afc4dc;margin-bottom:18px}.nxv-filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.nxv-filters label{font-size:12px;color:#afc4dc;display:block;margin-bottom:5px}.nxv-filters input,.nxv-filters select{width:100%;padding:10px;background:#19283b;border:1px solid #415571;border-radius:8px;color:#f7fbff}.nxv-table-wrap{overflow:auto;max-height:520px}.nxv-table{border-collapse:collapse;width:100%;min-width:650px}.nxv-table th,.nxv-table td{text-align:left;border-bottom:1px solid #314257;padding:12px 9px;font-size:13px}.nxv-table th{color:#a9c8e9;position:sticky;top:0;background:#142339}.nxv-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px}.nxv-stat{padding:17px;background:#1a2a40;border-radius:11px}.nxv-stat strong{font-size:25px;display:block;color:#fff}.nxv-stat small{color:#a9bdd5}.nxv-bars{display:grid;gap:12px}.nxv-bar{display:grid;grid-template-columns:minmax(80px,150px) 1fr 48px;gap:10px;align-items:center;font-size:13px}.nxv-track{height:9px;background:#263c56;border-radius:9px;overflow:hidden}.nxv-fill{height:100%;background:#5aaefa;border-radius:9px}.nxv-empty{color:#a8b9cd;padding:20px}.nxv-tools{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0}.nxv-person{display:flex;align-items:center;gap:10px}.nxv-thumb{width:34px;height:38px;object-fit:cover;border-radius:6px;background:#293e55}
 </style>
@@ -975,7 +981,7 @@ function nxInstitutionalSheet(p,mode='view'){
  const photoContent=`<div id="registrationPhotoPreview" class="nx-sheet-photo-preview"><button type="button" class="nx-photo-enlarge" aria-label="Enlarge inmate photograph" title="Enlarge photograph">${photo(p||{})}</button></div>${edit?'<input type="file" id="photoInput" accept="image/png,image/jpeg,image/webp" aria-label="Inmate photograph">':''}`;
  return `<div class="nx-sheet-scroll"><table class="nx-sheet" aria-label="NEXUS inmate information and registration sheet"><colgroup>${Array.from({length:12},(_,i)=>`<col style="width:${i<3?7.5:8.611}%">`).join('')}</colgroup><tbody>
  <tr>${H('INMATES PHOTO',3)}${H('LAST NAME',3)}${H('FIRST NAME',3)}${H('MIDDLE INITIAL',1)}${H('INMATE ID',2)}</tr>
- <tr><td class="nx-photo-cell" rowspan="12" colspan="3">${photoContent}</td>${V('last',3)}${V('first',3)}${V('middle',1)}${V('id',2)}</tr>
+ <tr><td class="nx-photo-cell" rowspan="13" colspan="3">${photoContent}</td>${V('last',3)}${V('first',3)}${V('middle',1)}${V('id',2)}</tr>
  <tr>${H('AGE',2)}${H('GENDER',2)}${H('HEIGHT (INCHES)',2)}${H('WEIGHT',2)}${H('HAIR COLOR',1)}</tr>
  <tr>${V('age',2,'number')}${V('gender',2)}${V('heightInches',2,'number')}${V('weight',2,'number')}${V('hairColor',1)}</tr>
  <tr>${H('EYE COLOR',2)}${H('ETHNIC ORIGIN',3)}${H('CUSTODY CLASS',2)}${H('ADMISSION',2)}</tr>
@@ -987,7 +993,8 @@ function nxInstitutionalSheet(p,mode='view'){
  <tr><th class="nx-blue" colspan="4">MOST RECENT LOCATION</th><th class="nx-blue" colspan="5">AS OF DATE</th></tr>
  <tr>${H('COMPLEX',2)}${H('UNIT',2)}${H('LAST MOVEMENT',3)}${H('STATUS',2)}</tr>
  <tr>${V('location',2)}${V('unit',2)}${V('lastMovement',3)}<td colspan="2">${status}</td></tr>
- <tr><td colspan="3" class="nx-photo-spacer"></td><th class="nx-subheading" colspan="9">INMATE MAILING ADDRESS</th></tr><tr><td colspan="3" class="nx-photo-spacer"></td><td colspan="9">${nxSheetTextarea(p,'mailing',mode)}</td></tr>
+ <tr><th class="nx-subheading nx-mail-header" colspan="9">INMATE MAILING ADDRESS</th></tr>
+ <tr><td class="nx-mail-cell" colspan="9">${nxSheetTextarea(p,'mailing',mode)}</td></tr>
  
  ${tableDefs.map(t=>nxSheetHistory(t,p,mode)).join('')}
  </tbody></table></div>`;
