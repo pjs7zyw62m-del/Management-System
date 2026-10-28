@@ -648,6 +648,17 @@ textarea[name="mailing"]{min-height:170px;line-height:1.55;white-space:pre-wrap}
 .nx-sheet-aux .nx-reg-grid{margin-top:14px}
 .nx-sheet-aux .field{margin-bottom:10px}
 
+
+/* NEXUS-005A Arizona layout: narrow document table and strict cells */
+.nx-sheet-scroll{width:min(100%,956px)!important;max-width:956px!important;margin:12px auto 18px!important;overflow-x:auto!important}
+.nx-sheet{width:956px!important;max-width:956px!important;min-width:956px!important;table-layout:fixed!important}
+.nx-sheet td,.nx-sheet th{box-sizing:border-box;padding:2px 3px!important}
+.nx-sheet td input,.nx-sheet td select{width:100%!important;min-width:0!important;box-sizing:border-box!important;height:25px!important;border-radius:0!important}
+.nx-sheet .nx-photo-spacer{background:#fff}
+.nx-sheet .nx-asof-edit{display:block;margin:3px auto 0;max-width:180px}
+.nx-sheet .nx-asof-edit input{width:100%!important;min-width:0!important;background:#fff!important;color:#151515!important;font-size:11px!important;padding:2px!important}
+.nx-sheet .nx-asof-read{display:block;font-size:10px;color:#fff}
+.nx-sheet textarea[name=mailing]{width:100%!important;min-height:48px!important;box-sizing:border-box!important}
 </style><style id="nexus-final-upgrade">
 .nxv-panel{background:#101b2b;border:1px solid #2c4058;border-radius:15px;padding:20px;margin-bottom:16px;color:#e8f2ff}.nxv-panel h2,.nxv-panel h3{margin:0 0 12px;color:#f2f7ff}.nxv-sub{font-size:13px;color:#afc4dc;margin-bottom:18px}.nxv-filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.nxv-filters label{font-size:12px;color:#afc4dc;display:block;margin-bottom:5px}.nxv-filters input,.nxv-filters select{width:100%;padding:10px;background:#19283b;border:1px solid #415571;border-radius:8px;color:#f7fbff}.nxv-table-wrap{overflow:auto;max-height:520px}.nxv-table{border-collapse:collapse;width:100%;min-width:650px}.nxv-table th,.nxv-table td{text-align:left;border-bottom:1px solid #314257;padding:12px 9px;font-size:13px}.nxv-table th{color:#a9c8e9;position:sticky;top:0;background:#142339}.nxv-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px}.nxv-stat{padding:17px;background:#1a2a40;border-radius:11px}.nxv-stat strong{font-size:25px;display:block;color:#fff}.nxv-stat small{color:#a9bdd5}.nxv-bars{display:grid;gap:12px}.nxv-bar{display:grid;grid-template-columns:minmax(80px,150px) 1fr 48px;gap:10px;align-items:center;font-size:13px}.nxv-track{height:9px;background:#263c56;border-radius:9px;overflow:hidden}.nxv-fill{height:100%;background:#5aaefa;border-radius:9px}.nxv-empty{color:#a8b9cd;padding:20px}.nxv-tools{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0}.nxv-person{display:flex;align-items:center;gap:10px}.nxv-thumb{width:34px;height:38px;object-fit:cover;border-radius:6px;background:#293e55}
 </style>
@@ -959,12 +970,12 @@ function nxSheetHistory(t,p,mode){
 }
 function nxInstitutionalSheet(p,mode='view'){
  const edit=mode==='edit',F=(key,type='text')=>nxSheetField(p,key,mode,type),H=(label,span)=>`<th class="nx-head" colspan="${span}">${label}</th>`,V=(key,span,type='text')=>`<td colspan="${span}">${F(key,type)}</td>`;
- const stateFacility=edit?`<div class="field"><label>State</label><strong class="nx-state-fixed">Arizona</strong><input type="hidden" name="state" value="Arizona"></div>${facilitySelect('Arizona',p?.facility||'')}`:`<div class="nx-value">State: ${esc(p?.state||'—')} · Facility: ${esc(p?.facility||'—')}</div>`;
+ const stateFacility=''; // Arizona state is set through the state selector; facility is derived from Complex.
  const status=edit?`<select name="status" aria-label="Status">${['Active','Inactive','Active blocked','Inactive blocked','Transferred','Released','Archive'].map(v=>`<option value="${v}" ${(p?.status||'Active')===v?'selected':''}>${v}</option>`).join('')}</select>`:`<div class="nx-value">${esc(p?.status||'Active')}</div>`;
  const photoContent=`<div id="registrationPhotoPreview" class="nx-sheet-photo-preview"><button type="button" class="nx-photo-enlarge" aria-label="Enlarge inmate photograph" title="Enlarge photograph">${photo(p||{})}</button></div>${edit?'<input type="file" id="photoInput" accept="image/png,image/jpeg,image/webp" aria-label="Inmate photograph">':''}`;
  return `<div class="nx-sheet-scroll"><table class="nx-sheet" aria-label="NEXUS inmate information and registration sheet"><colgroup>${Array.from({length:12},(_,i)=>`<col style="width:${i<3?7.5:8.611}%">`).join('')}</colgroup><tbody>
  <tr>${H('INMATES PHOTO',3)}${H('LAST NAME',3)}${H('FIRST NAME',3)}${H('MIDDLE INITIAL',1)}${H('INMATE ID',2)}</tr>
- <tr><td class="nx-photo-cell" rowspan="11" colspan="3">${photoContent}</td>${V('last',3)}${V('first',3)}${V('middle',1)}${V('id',2)}</tr>
+ <tr><td class="nx-photo-cell" rowspan="12" colspan="3">${photoContent}</td>${V('last',3)}${V('first',3)}${V('middle',1)}${V('id',2)}</tr>
  <tr>${H('AGE',2)}${H('GENDER',2)}${H('HEIGHT (INCHES)',2)}${H('WEIGHT',2)}${H('HAIR COLOR',1)}</tr>
  <tr>${V('age',2,'number')}${V('gender',2)}${V('heightInches',2,'number')}${V('weight',2,'number')}${V('hairColor',1)}</tr>
  <tr>${H('EYE COLOR',2)}${H('ETHNIC ORIGIN',3)}${H('CUSTODY CLASS',2)}${H('ADMISSION',2)}</tr>
@@ -973,17 +984,18 @@ function nxInstitutionalSheet(p,mode='view'){
  <tr><td colspan="9">${F('earliestRelease','date')}</td></tr>
  <tr>${H('PRISON RELEASE DATE',5)}${H('RELEASE TYPE',4)}</tr>
  <tr>${V('prisonReleaseText',5)}${V('releaseTypeText',4)}</tr>
- <tr><th class="nx-blue" colspan="6">MOST RECENT LOCATION</th><th class="nx-blue" colspan="3">AS OF DATE</th></tr>
+ <tr><th class="nx-blue" colspan="6">MOST RECENT LOCATION</th><th class="nx-blue" colspan="3">AS OF DATE ${edit?`<span class="nx-asof-edit">${F('locationAsOf','date')}</span>`:`<span class="nx-asof-read">${esc(p?.locationAsOf||'—')}</span>`}</th></tr>
  <tr>${H('COMPLEX',2)}${H('UNIT',2)}${H('LAST MOVEMENT',3)}${H('STATUS',2)}</tr>
  <tr>${V('location',2)}${V('unit',2)}${V('lastMovement',3)}<td colspan="2">${status}</td></tr>
- <tr><th class="nx-subheading" colspan="12">INMATE MAILING ADDRESS</th></tr><tr><td colspan="12">${nxSheetTextarea(p,'mailing',mode)}</td></tr>
- <tr><th class="nx-subheading" colspan="12">INMATE INFORMATION</th></tr><tr><td colspan="12" class="nx-extra">${stateFacility}</td></tr>
+ <tr><td colspan="3" class="nx-photo-spacer"></td><th class="nx-subheading" colspan="9">INMATE MAILING ADDRESS</th></tr><tr><td colspan="3" class="nx-photo-spacer"></td><td colspan="9">${nxSheetTextarea(p,'mailing',mode)}</td></tr>
+ 
  ${tableDefs.map(t=>nxSheetHistory(t,p,mode)).join('')}
  </tbody></table></div>`;
 }
 // NEXUS-005: state-first registration; other jurisdictions retain their earlier display until templates arrive.
 let nexusRegistrationState='';
 let nexusRegistrationStage='select';
+let nexusBlankReregId=null;
 function nexusRegistrationChooser(){
  const options=US_STATES.map(st=>`<option value="${esc(st)}" ${st===nexusRegistrationState?'selected':''}>${esc(st)}${st==='Arizona'?' — Available':' — Template pending'}</option>`).join('');
  const ready=nexusRegistrationState==='Arizona';
@@ -1040,22 +1052,19 @@ function nexusLegacyRegistration(){
  </form>`;
 }
 
-function nexusLegacyDetail(){const p=find(detailId);if(!p)return '<p>Record not found.</p>';return `<div class="actions"><button class="btn alt" data-view="profiles">BACK</button><button class="btn" data-edit="${encodeURIComponent(p.id)}">EDIT RECORD</button><button class="btn purple" data-personal="${encodeURIComponent(p.id)}">INMATE PERSONAL</button><button class="btn danger" data-delete="${encodeURIComponent(p.id)}">DELETE RECORD</button></div>${identity(p)}${section('PERSONAL / CUSTODY DETAILS',`<div class="grid">${[['First Name',p.first],['Middle Name',p.middle],['Last Name',p.last],['State',p.state],['Age',p.age],['Facility',p.facility],['Unit',p.unit],['Gender',p.gender],['Height (inches)',p.heightInches],['Weight',p.weight],['Hair Color',p.hairColor],['Eye Color',p.eyeColor],['Ethnic Origin',p.ethnicOrigin],['Prison Release Date',p.prisonReleaseText],['Release Type',p.releaseTypeText],['Location As Of',p.locationAsOf],['Last Movement',p.lastMovement],['Sentence Type',p.sentenceType||'Unknown'],['Parole Eligibility',p.paroleEligibility],['Custody Classification',p.custody],['Admission Date',p.admission],['Earliest Release',releaseDisplay(p,'earliestRelease')],['Projected Release',releaseDisplay(p,'release')],['Most Recent Location',p.location],['Mailing Address',p.mailing],['Notes',p.notes]].map(([a,b])=>a==='Mailing Address'?`<div class="info nexus-mailing-info"><small>Mailing Address</small><strong>${esc(b||'—')}</strong></div>`:item(a,b)).join('')}</div>`)}${tableDefs.map(t=>tableDisplay(p,t)).join('')}`}
+function nexusLegacyDetail(){const p=find(detailId);if(!p)return '<p>Record not found.</p>';return `<div class="actions"><button class="btn alt" data-view="profiles">BACK</button><button class="btn" data-edit="${encodeURIComponent(p.id)}">EDIT RECORD</button>${p.state==='Arizona'?`<button class="btn alt" data-reregister="${encodeURIComponent(p.id)}">RE-REGISTER (BLANK FORM)</button>`:''}<button class="btn purple" data-personal="${encodeURIComponent(p.id)}">INMATE PERSONAL</button><button class="btn danger" data-delete="${encodeURIComponent(p.id)}">DELETE RECORD</button></div>${identity(p)}${section('PERSONAL / CUSTODY DETAILS',`<div class="grid">${[['First Name',p.first],['Middle Name',p.middle],['Last Name',p.last],['State',p.state],['Age',p.age],['Facility',p.facility],['Unit',p.unit],['Gender',p.gender],['Height (inches)',p.heightInches],['Weight',p.weight],['Hair Color',p.hairColor],['Eye Color',p.eyeColor],['Ethnic Origin',p.ethnicOrigin],['Prison Release Date',p.prisonReleaseText],['Release Type',p.releaseTypeText],['Location As Of',p.locationAsOf],['Last Movement',p.lastMovement],['Sentence Type',p.sentenceType||'Unknown'],['Parole Eligibility',p.paroleEligibility],['Custody Classification',p.custody],['Admission Date',p.admission],['Earliest Release',releaseDisplay(p,'earliestRelease')],['Projected Release',releaseDisplay(p,'release')],['Most Recent Location',p.location],['Mailing Address',p.mailing],['Notes',p.notes]].map(([a,b])=>a==='Mailing Address'?`<div class="info nexus-mailing-info"><small>Mailing Address</small><strong>${esc(b||'—')}</strong></div>`:item(a,b)).join('')}</div>`)}${tableDefs.map(t=>tableDisplay(p,t)).join('')}`}
 
 function registration(){
- const p=editId?find(editId):null;
- if(p && p.state!=='Arizona')return nexusLegacyRegistration();
+ const stored=editId?find(editId):null;
+ const p=nexusBlankReregId&&editId===nexusBlankReregId?null:stored;
+ if(stored && stored.state!=='Arizona')return nexusLegacyRegistration();
  if(!p && nexusRegistrationStage!=='form')return nexusRegistrationChooser();
  return `<div class="actions"><button class="btn alt" type="button" data-view="profiles">← Back to Profiles</button></div>
  <form id="recordForm" novalidate>
- <div class="panel"><div class="heading">${p?'EDIT INMATE MASTER RECORD':'NEW INMATE REGISTRATION'}</div><div id="recordSaveStatus" class="notice hidden" role="status" aria-live="polite"></div>
- <p class="muted">Arizona registration template. Enter the inmate details and save using the existing secure Supabase workflow. State, facility, and inmate ID are required. Record tables permit multiple entries.</p>
+ <div class="panel"><div class="heading">${nexusBlankReregId?'ARIZONA INMATE RE-REGISTRATION — BLANK FORM':p?'EDIT INMATE MASTER RECORD':'NEW INMATE REGISTRATION'}</div><div id="recordSaveStatus" class="notice hidden" role="status" aria-live="polite"></div>
+ <p class="muted">Arizona official-style registration. State is Arizona; enter the current Complex and Unit under Most Recent Location. Inmate ID and Complex are required. Previously saved record history is retained when re-registering an existing inmate.</p>
+ <input type="hidden" name="state" value="Arizona">
  ${nxInstitutionalSheet(p,'edit')}
- <details class="nx-sheet-aux"><summary>ADDITIONAL NEXUS FIELDS (not displayed on the reference form)</summary><div class="nx-reg-grid">
- ${sentenceTypeSelect(p?.sentenceType)}${field('Parole Eligibility Date','paroleEligibility',p?.paroleEligibility||'','date')}
- ${field('Projected Release Date (structured)','release',p?.release||'','date')}${field('Most Recent Location — As Of Date','locationAsOf',p?.locationAsOf||'','date')}
-
- </div>${area('Master Record Notes','notes',p?.notes||'')}</details>
  </div><div class="panel registration-savebar"><div id="recordSaveBottom" class="muted">Save inmate profile and section rows to Supabase.</div><button id="saveMasterButton" class="btn" type="submit">SAVE MASTER RECORD</button></div></form>`;
 }
 
@@ -1188,7 +1197,7 @@ function identity(p,personalMode=false){
  </div>`;
 }
 
-function detail(){const p=find(detailId);if(!p)return '<p>Record not found.</p>';if(p.state!=='Arizona')return nexusLegacyDetail();return `<div class="actions"><button class="btn alt" data-view="profiles">BACK</button><button class="btn" data-edit="${encodeURIComponent(p.id)}">EDIT RECORD</button><button class="btn purple" data-personal="${encodeURIComponent(p.id)}">INMATE PERSONAL</button><button class="btn danger" data-delete="${encodeURIComponent(p.id)}">DELETE RECORD</button></div>${nxInstitutionalSheet(p,'view')}<details class="nx-sheet-aux"><summary>ADDITIONAL NEXUS PROFILE INFORMATION</summary><div class="grid">${[['Sentence Type',p.sentenceType],['Parole Eligibility',p.paroleEligibility],['Projected Release',releaseDisplay(p,'release')],['Notes',p.notes]].map(([k,v])=>item(k,v)).join('')}</div></details>`;}
+function detail(){const p=find(detailId);if(!p)return '<p>Record not found.</p>';if(p.state!=='Arizona')return nexusLegacyDetail();return `<div class="actions"><button class="btn alt" data-view="profiles">BACK</button><button class="btn" data-edit="${encodeURIComponent(p.id)}">EDIT RECORD</button>${p.state==='Arizona'?`<button class="btn alt" data-reregister="${encodeURIComponent(p.id)}">RE-REGISTER (BLANK FORM)</button>`:''}<button class="btn purple" data-personal="${encodeURIComponent(p.id)}">INMATE PERSONAL</button><button class="btn danger" data-delete="${encodeURIComponent(p.id)}">DELETE RECORD</button></div>${nxInstitutionalSheet(p,'view')}<details class="nx-sheet-aux"><summary>ADDITIONAL NEXUS PROFILE INFORMATION</summary><div class="grid">${[['Sentence Type',p.sentenceType],['Parole Eligibility',p.paroleEligibility],['Projected Release',releaseDisplay(p,'release')],['Notes',p.notes]].map(([k,v])=>item(k,v)).join('')}</div></details>`;}
 
 
 function personalDetails(){const d=file().details||{};const fields=[['Preferred Name / Nickname','nickname'],['Hometown','hometown'],['Orientation (optional; self-reported)','orientation'],['Pronouns (optional)','pronouns'],['Marital Status','marital'],['Children','children'],['Languages','languages'],['Education Level','education'],['Religion (optional)','religion']];return `<form id="personalForm"><div class="cols"><div>${section('BASIC INFORMATION',`<div class="grid">${fields.map(([a,b])=>field(a,b,d[b]||'')).join('')}</div>`)}</div><div>${section('ABOUT ME / BIOGRAPHY',area('Biography','bio',d.bio||''))}${section('INTERESTS & HOBBIES',area('Interests and Activities','hobbies',d.hobbies||''))}${section('PERSONAL GOALS',area('Goals','goals',d.goals||''))}${section('ADDITIONAL INFORMATION',area('Personal Notes','additional',d.additional||''))}</div></div><button class="btn" type="submit">SAVE PERSONAL DETAILS</button></form>`}
@@ -1954,7 +1963,7 @@ $('content').addEventListener('change',e=>{
 $('content').addEventListener('click',e=>{
  if(e.target.closest('#nxViewRegistration')){
   if(nexusRegistrationState!=='Arizona')return;
-  editId=null;photoData='';selectedPhotoFile=null;tableRows={};
+  editId=null;nexusBlankReregId=null;photoData='';selectedPhotoFile=null;tableRows={};
   nexusRegistrationStage='form';render();window.scrollTo(0,0);
  }
  if(e.target.closest('#nxBackStateSelection')){
@@ -2013,7 +2022,7 @@ async function submitMasterRecord(form,fd){
   const facilityInput=form.elements.namedItem('facility');
   if(!String(idInput?.value||'').trim()){showMasterSaveError('Enter an Inmate ID.');idInput?.focus();return}
   if(!String(stateInput?.value||'').trim()){showMasterSaveError('Select a state.');stateInput?.focus();return}
-  if(!String(facilityInput?.value||'').trim()){showMasterSaveError('Select a correctional facility.');facilityInput?.focus();return}
+  if(String(stateInput?.value||'')==='Arizona'){const complex=form.elements.namedItem('location');if(!String(complex?.value||'').trim()){showMasterSaveError('Enter the Arizona Complex under Most Recent Location.');complex?.focus();return}}else if(!String(facilityInput?.value||'').trim()){showMasterSaveError('Select a correctional facility.');facilityInput?.focus();return}
   const sentenceType=form.elements.namedItem('sentenceType')?.value;
   if(sentenceType==='Life Without Parole' && (form.elements.namedItem('earliestRelease')?.value || form.elements.namedItem('release')?.value || form.elements.namedItem('paroleEligibility')?.value)){
     showMasterSaveError('Life Without Parole: clear the release and parole eligibility dates, or select a different sentence type.');
@@ -2034,15 +2043,15 @@ async function submitMasterRecord(form,fd){
   if(button){button.disabled=true;button.textContent='SAVING...'}
   if(status){status.textContent='Saving to Supabase...';status.classList.remove('hidden','error')}
   try{
-captureRows();const id=String(fd.get('id')||'').trim();if(!id){alert('Inmate ID is required.');return}if(profiles.some(p=>p.id===id&&p.id!==editId)){alert('This Inmate ID already exists.');return}const old=editId?find(editId):null;if(old && id!==editId){
+captureRows();const id=String(fd.get('id')||'').trim();if(!id){alert('Inmate ID is required.');return}if(nexusBlankReregId && id!==nexusBlankReregId){showMasterSaveError('For re-registration, use the original inmate ID: '+nexusBlankReregId);return}if(profiles.some(p=>p.id===id&&p.id!==editId)){alert('This Inmate ID already exists. Open its Master Record and choose RE-REGISTER (BLANK FORM).');return}const old=editId?find(editId):null;if(nexusBlankReregId && !confirm('Re-register this Arizona inmate using the new entries? The previous profile details will be replaced, but existing history and personal records will be retained. Make sure you have a backup.'))return;if(old && id!==editId){
   alert('Changing an existing Inmate ID is temporarily disabled while we finish Supabase synchronization.');
   return;
-}const p={...(old||{})};p.previous_photo_path=old?.photo_path||null;for(const [k,v] of fd.entries())if(k!=='photo')p[k]=String(v);p.id=id;p.photo=old?.photo||'';for(const t of tableDefs)p[t.key]=(tableRows[t.key]||old?.[t.key]||[]).filter(r=>Array.isArray(r)?r.some(x=>String(x||'').trim()):Object.values(r||{}).some(x=>String(x||'').trim()));try {
+}const p={...(old||{})};p.previous_photo_path=old?.photo_path||null;for(const [k,v] of fd.entries())if(k!=='photo')p[k]=String(v);p.id=id;if(p.state==='Arizona')p.facility=String(fd.get('location')||'').trim();p.photo=old?.photo||'';for(const t of tableDefs)p[t.key]=((nexusBlankReregId && !(tableRows[t.key]||[]).some(r=>Array.isArray(r)?r.some(v=>String(v||'').trim()):false))?old?.[t.key]||[]:(tableRows[t.key]||old?.[t.key]||[])).filter(r=>Array.isArray(r)?r.some(x=>String(x||'').trim()):Object.values(r||{}).some(x=>String(x||'').trim()));try {
   await saveMasterToSupabase(p);
 } catch (err) {
   showMasterSaveError('Master Record was not saved to Supabase: ' + err.message);
   return;
-}if(old){const idx=profiles.indexOf(old);profiles[idx]=p;if(editId!==id&&personal[editId]){personal[id]=personal[editId];delete personal[editId];savePersonal()}}else profiles.push(p);if(saveProfiles()){detailId=id;editId=null;photoData='';selectedPhotoFile=null;tableRows={};go('detail');alert('Master Record saved successfully, including all entered section rows.')}
+}if(old){const idx=profiles.indexOf(old);profiles[idx]=p;if(editId!==id&&personal[editId]){personal[id]=personal[editId];delete personal[editId];savePersonal()}}else profiles.push(p);if(saveProfiles()){detailId=id;editId=null;nexusBlankReregId=null;photoData='';selectedPhotoFile=null;tableRows={};go('detail');alert('Master Record saved successfully, including all entered section rows.')}
   }catch(error){showMasterSaveError('Unexpected save error: '+(error?.message||String(error)))}
   finally{if(button?.isConnected){button.disabled=false;button.textContent='SAVE MASTER RECORD'}}
 }
@@ -2075,8 +2084,8 @@ $('content').addEventListener('click',async e=>{const b=e.target.closest('button
   }
   go(b.dataset.view);
   return;
-}if(b.dataset.open){detailId=decodeURIComponent(b.dataset.open);go('detail');return}if(b.dataset.personal){detailId=decodeURIComponent(b.dataset.personal);personalTab='details';go('personal');return}if(b.dataset.master){go('detail');return}if(b.dataset.edit){
-  editId=decodeURIComponent(b.dataset.edit);
+}if(b.dataset.open){detailId=decodeURIComponent(b.dataset.open);go('detail');return}if(b.dataset.personal){detailId=decodeURIComponent(b.dataset.personal);personalTab='details';go('personal');return}if(b.dataset.master){go('detail');return}if(b.dataset.reregister){const inmateId=decodeURIComponent(b.dataset.reregister);const existing=find(inmateId);if(!existing||existing.state!=='Arizona')return;editId=inmateId;nexusBlankReregId=inmateId;nexusRegistrationStage='form';photoData='';selectedPhotoFile=null;tableRows={};go('register');return;}if(b.dataset.edit){
+  nexusBlankReregId=null;editId=decodeURIComponent(b.dataset.edit);
   photoData='';
   selectedPhotoFile=null;
   tableRows={};
