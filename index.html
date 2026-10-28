@@ -790,6 +790,19 @@ textarea[name="mailing"]{min-height:170px;line-height:1.55;white-space:pre-wrap}
 .nxp-label{display:block;margin:14px 0}.nxp-label input{display:block;width:100%;margin:6px 0}
 .nxp-fullnotes{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}
 @media(max-width:950px){.nx-pending-card{flex-wrap:wrap}.nx-pending-actions{width:100%}}
+
+/* NEXUS-007 layout refinement: readable, moderately sized intake cards. */
+.nx-pending-page{max-width:1180px;margin-inline:auto}
+.nx-pending-layout{grid-template-columns:minmax(280px,350px) minmax(0,720px);justify-content:center;align-items:start;gap:16px}
+.nx-pending-card{display:grid!important;grid-template-columns:70px minmax(0,1fr) 124px;gap:13px!important;align-items:center!important;padding:15px 12px!important;min-height:108px;border:1px solid #2c435d;border-radius:11px;margin:9px 0;background:#132338}
+.nx-pending-avatar{width:70px!important;height:82px!important;border-radius:8px!important;overflow:hidden}
+.nx-pending-info strong{font-size:15px!important;line-height:1.4}
+.nx-pending-info small{font-size:12px!important;line-height:1.4;margin-top:4px!important}
+.nx-pending-info p{font-size:12px!important;line-height:1.45!important;margin-top:7px!important;-webkit-line-clamp:2!important}
+.nx-pending-actions{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:7px!important;width:124px!important}
+.nx-pending-actions .btn{font-size:11px!important;padding:8px 7px!important;min-height:34px!important;width:100%}
+@media(max-width:1000px){.nx-pending-layout{grid-template-columns:1fr;max-width:760px;margin-inline:auto}}
+@media(max-width:580px){.nx-pending-card{grid-template-columns:66px minmax(0,1fr);gap:11px!important;padding:12px!important}.nx-pending-avatar{width:66px!important;height:77px!important}.nx-pending-actions{grid-column:1/-1;flex-direction:row!important;width:100%!important;justify-content:flex-start}.nx-pending-actions .btn{width:auto!important;flex:1 1 auto}.nx-pending-info strong{font-size:14px!important}}
 </style><style id="blackcell-login-branding">
 /* Full corporate artwork is reserved for the sign-in screen. */
 #login.gate{padding:24px 12px;min-height:100vh;}
