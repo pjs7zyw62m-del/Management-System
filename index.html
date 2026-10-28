@@ -666,6 +666,18 @@ textarea[name="mailing"]{min-height:170px;line-height:1.55;white-space:pre-wrap}
 .nx-sheet .nx-mail-cell{padding:0!important;vertical-align:top;background:#fff}
 .nx-sheet .nx-mail-cell textarea[name="mailing"]{display:block;width:100%!important;max-width:100%!important;min-width:0!important;margin:0!important;box-sizing:border-box!important;border:0!important;border-radius:0!important;padding:6px!important;resize:vertical}
 .nx-sheet .nx-mail-cell .nx-sheet-address{display:block;box-sizing:border-box;width:100%;max-width:100%;margin:0;padding:6px!important;min-height:44px}
+
+/* NEXUS-006 facilities directory layout corrections */
+.fcx .fcx-filter{grid-template-columns:repeat(2,minmax(0,1fr))}
+.fcx .fcx-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;max-height:420px;overflow:auto;align-content:start}
+.fcx button.fcx-item{appearance:none;display:flex;flex-direction:column;gap:8px;width:100%;min-width:0;text-align:left;background:#17273b;color:#f5f9ff;border:1px solid #38516d;border-radius:10px;padding:13px 14px;line-height:1.35;cursor:pointer;box-shadow:none;white-space:normal;font:inherit}
+.fcx button.fcx-item strong{font-size:14px;font-weight:750;overflow-wrap:anywhere}
+.fcx button.fcx-item small{font-size:12px;color:#b4cce7}
+.fcx button.fcx-item:hover,.fcx button.fcx-item:focus-visible{background:#213e5d;border-color:#6eaeef;outline:2px solid transparent}
+.fcx button.fcx-item[aria-current="true"]{border-color:#66aeff;background:#194171}
+.fcx .fcx-hero-content h2{max-width:960px;line-height:1.15}
+.fcx .fcx-person .info{overflow-wrap:anywhere}
+@media(max-width:850px){.fcx .fcx-filter{grid-template-columns:1fr}}
 </style><style id="nexus-final-upgrade">
 .nxv-panel{background:#101b2b;border:1px solid #2c4058;border-radius:15px;padding:20px;margin-bottom:16px;color:#e8f2ff}.nxv-panel h2,.nxv-panel h3{margin:0 0 12px;color:#f2f7ff}.nxv-sub{font-size:13px;color:#afc4dc;margin-bottom:18px}.nxv-filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.nxv-filters label{font-size:12px;color:#afc4dc;display:block;margin-bottom:5px}.nxv-filters input,.nxv-filters select{width:100%;padding:10px;background:#19283b;border:1px solid #415571;border-radius:8px;color:#f7fbff}.nxv-table-wrap{overflow:auto;max-height:520px}.nxv-table{border-collapse:collapse;width:100%;min-width:650px}.nxv-table th,.nxv-table td{text-align:left;border-bottom:1px solid #314257;padding:12px 9px;font-size:13px}.nxv-table th{color:#a9c8e9;position:sticky;top:0;background:#142339}.nxv-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px}.nxv-stat{padding:17px;background:#1a2a40;border-radius:11px}.nxv-stat strong{font-size:25px;display:block;color:#fff}.nxv-stat small{color:#a9bdd5}.nxv-bars{display:grid;gap:12px}.nxv-bar{display:grid;grid-template-columns:minmax(80px,150px) 1fr 48px;gap:10px;align-items:center;font-size:13px}.nxv-track{height:9px;background:#263c56;border-radius:9px;overflow:hidden}.nxv-fill{height:100%;background:#5aaefa;border-radius:9px}.nxv-empty{color:#a8b9cd;padding:20px}.nxv-tools{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0}.nxv-person{display:flex;align-items:center;gap:10px}.nxv-thumb{width:34px;height:38px;object-fit:cover;border-radius:6px;background:#293e55}
 </style>
@@ -1727,10 +1739,16 @@ const FAC_OFFICIAL_URLS={
 };
 function facComplexFromFacility(state,name){
  const raw=String(name||'').trim();
- if(state==='Arizona'){
-  const found=(FAC_COMPLEX_NAMES.Arizona||[]).find(n=>
-   new RegExp('(?:^|[^a-z])'+n+'(?:$|[^a-z])','i').test(raw));
-  if(found)return found;
+ if(String(state).trim().toLowerCase()==='arizona'){
+  // A saved facility value can include the unit, e.g. "ASPC - Safford Tonto".
+  // Match canonical complexes by complete words, including common spelling variants.
+  const aliases={safford:['safford','stafford'],douglas:['douglas'],eyman:['eyman'],
+   lewis:['lewis'],perryville:['perryville'],phoenix:['phoenix'],tucson:['tucson'],
+   winslow:['winslow'],yuma:['yuma']};
+  const tokens=raw.toLowerCase().replace(/[^a-z]+/g,' ').trim().split(/\s+/);
+  for(const [name,spellings] of Object.entries(aliases)){
+   if(spellings.some(term=>tokens.includes(term)))return name[0].toUpperCase()+name.slice(1);
+  }
  }
  return raw||'Unassigned complex';
 }
@@ -1791,7 +1809,7 @@ async function facUpdateAutomaticPhoto(e){
  const target=document.getElementById('facAutoHero');
  if(!target||target.dataset.key!==key||view!=='facilities')return;
  const status=document.getElementById('facAutoStatus');
- if(!photo){if(status)status.textContent='No independently matched public photograph available for this complex.';return;}
+ if(!photo){if(status)status.textContent='No verified photo found automatically. Use the official corrections directory to view the complex photograph.';return;}
  const img=document.createElement('img');
  img.className='fcx-photo';img.alt='Public photo associated with '+e.prison+' complex';
  img.loading='lazy';img.referrerPolicy='no-referrer';img.src=photo.url;
@@ -1818,10 +1836,10 @@ function facilitiesPage(){
  <div class="fcx-hero-content"><span class="fcx-muted">NEXUS / PRISON COMPLEX DIRECTORY</span>
  <h2>${esc(selected.prison)}</h2><div>${esc(selected.state)} · ${selected.people.length} linked inmate profile${selected.people.length===1?'':'s'}</div></div></div>
  <div class="fcx-source" id="facAutoStatus">Looking for a reliably identified public complex photograph…</div>
- <div class="fcx-panel" style="margin-top:12px">${sourceLink}<p class="fcx-note">Photographs load automatically when a reliably named public image exists. Otherwise no photo is shown. NEXUS does not request photo uploads.</p></div>
+ <div class="fcx-panel" style="margin-top:12px">${sourceLink}<p class="fcx-note">Complex photographs are displayed only when reliably matched. For official photographs, open the state corrections directory. No uploads required.</p></div>
  <div class="fcx-cols"><div class="fcx-panel"><h3>Browse Complexes</h3>
  <div class="field"><label for="facSearch">Search complexes</label><input id="facSearch" type="search" value="${esc(facQuery)}" placeholder="Search complex name"></div>
- <div class="fcx-list">${matches.map(e=>`<button type="button" class="fcx-item" data-facpick="${encodeURIComponent(facKey(e))}"><strong>${esc(e.prison)}</strong><small>${e.people.length} inmate profiles</small></button>`).join('')||'No complexes found.'}</div></div>
+ <div class="fcx-list">${matches.map(e=>`<button type="button" class="fcx-item" aria-current="${e.prison===facPrison?'true':'false'}" data-facpick="${encodeURIComponent(facKey(e))}"><strong>${esc(e.prison)}</strong><small>${e.people.length} inmate profiles</small></button>`).join('')||'No complexes found.'}</div></div>
  <div><div class="fcx-panel"><h3>Complex Information</h3><dl class="fcx-info"><dt>State</dt><dd>${esc(selected.state)}</dd>
  <dt>Prison Complex</dt><dd>${esc(selected.prison)}</dd><dt>Linked inmates</dt><dd>${selected.people.length}</dd></dl></div>
  <div class="fcx-panel" style="margin-top:15px"><h3>Inmates — ${esc(selected.prison)}</h3>${selected.people.length?
