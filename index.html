@@ -773,6 +773,23 @@ textarea[name="mailing"]{min-height:170px;line-height:1.55;white-space:pre-wrap}
 .nx-pending-layout{display:grid;grid-template-columns:minmax(280px,380px) minmax(0,1fr);gap:16px}.nx-pending-panel{background:#101e30;border:1px solid #2b415a;border-radius:14px;padding:18px}.nx-pending-panel h3{margin:0 0 15px}.nx-pending-panel form{display:flex;flex-direction:column;gap:7px}.nx-pending-panel input,.nx-pending-panel select,.nx-pending-panel textarea{width:100%;background:#0a1627;color:#eef5ff;border:1px solid #415a75;border-radius:6px;padding:10px}.nx-pending-panel label{font-size:12px;color:#b0c7dd;margin-top:6px}.nx-pending-disclaimer{font-size:11px;color:#9aadc1}.nx-count{display:inline-block;background:#233d58;border-radius:12px;padding:3px 10px;font-size:12px}
 .nx-pending-card{display:flex;gap:12px;align-items:center;border-top:1px solid #2b4156;padding:13px 0}.nx-pending-avatar{width:57px;height:67px;border:1px solid #365675;border-radius:8px;background:#192e44;display:flex;align-items:center;justify-content:center;flex:none}.nx-pending-avatar img{width:100%;height:100%;object-fit:cover;border-radius:8px}.nx-pending-info{flex:1;min-width:0}.nx-pending-info strong{display:block}.nx-pending-info small{display:block;color:#9fb9d1;margin-top:4px}.nx-pending-info p{font-size:11px;color:#b6cadb;overflow-wrap:anywhere}.nx-pending-actions{display:flex;flex-direction:column;gap:6px}
 @media(max-width:800px){.nx-pending-layout{grid-template-columns:1fr}.nx-pending-card{flex-wrap:wrap}.nx-pending-actions{width:100%;flex-direction:row;flex-wrap:wrap}}
+
+/* NEXUS Pending Queue compact rows / multi-photo gallery */
+.nx-pending-card{padding:7px 0!important;gap:9px!important;align-items:center}
+.nx-pending-avatar{width:46px!important;height:52px!important}
+.nx-pending-info strong{font-size:13px}.nx-pending-info small{font-size:10px;margin-top:2px!important}
+.nx-pending-info p{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;white-space:normal;margin:3px 0 0;font-size:10px}
+.nx-pending-actions{flex-direction:row!important;align-items:center;flex-wrap:wrap;gap:5px!important}
+.nx-pending-actions .btn{font-size:10px;padding:6px 8px;min-height:30px}
+.nxp-overlay{position:fixed;inset:0;background:#020711dc;z-index:2000;display:flex;align-items:center;justify-content:center;padding:16px}
+.nxp-dialog{max-width:850px;width:100%;max-height:89vh;overflow:auto;background:#101e30;color:#f1f6ff;border:1px solid #53708c;border-radius:15px;padding:22px;box-shadow:0 30px 80px #0009}
+.nxp-dialog header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.nxp-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin:14px 0}
+.nxp-photoitem{background:#1a3048;border:1px solid #38516b;border-radius:9px;padding:8px;display:flex;flex-direction:column;gap:6px}
+.nxp-photoitem img{display:block;max-width:100%;max-height:200px;object-fit:contain;margin:auto}
+.nxp-label{display:block;margin:14px 0}.nxp-label input{display:block;width:100%;margin:6px 0}
+.nxp-fullnotes{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}
+@media(max-width:950px){.nx-pending-card{flex-wrap:wrap}.nx-pending-actions{width:100%}}
 </style><style id="blackcell-login-branding">
 /* Full corporate artwork is reserved for the sign-in screen. */
 #login.gate{padding:24px 12px;min-height:100vh;}
@@ -1933,6 +1950,14 @@ let nxPendingTransferId=null;
 let nexusPendingRegistrationDraft=null;
 function nexusPendingItems(){const rows=read(NX_PENDING_KEY,[]);return Array.isArray(rows)?rows:[]}
 function nxPendingLabel(r){return [r.last,r.first].filter(Boolean).join(', ')||'Unnamed intake'}
+function nxPendingPhotoPaths(r){return [...new Set([...(Array.isArray(r.photoPaths)?r.photoPaths:[]),r.photoPath].filter(Boolean))]}
+let nxPendingOpenId=null;
+async function nxPendingCommit(items){
+ if(!store(NX_PENDING_KEY,items))throw new Error('Cloud save did not start');
+ await nexusCloudWriteQueue;
+ if(nexusCloudWriteFailed)throw new Error('Cloud save failed');
+}
+
 function nexusPendingPage(){
  const queue=nexusPendingItems();
  return `<div class="nx-pending-page"><header class="nx-pending-head"><span>PENDING PROCESSING / NEXUS</span><h2>PENDING INTAKE CENTER</h2><p>Collect an inmate name and photograph for any U.S. state. Registration transfer is available only after that state’s registration template is configured. Pending intakes are not completed Master Records.</p></header>
@@ -1941,28 +1966,80 @@ function nexusPendingPage(){
  <label>First Name</label><input name="first" maxlength="120" required placeholder="First name">
  <label>Last Name</label><input name="last" maxlength="120" required placeholder="Last name">
  <label>Inmate ID (optional)</label><input name="inmateId" maxlength="120" placeholder="Known inmate ID">
- <label>Photograph (optional; private cloud storage)</label><input type="file" name="photo" accept="image/png,image/jpeg,image/webp">
+ <label>Photograph (optional; private cloud storage)</label><input type="file" name="photos" accept="image/png,image/jpeg,image/webp" multiple><small>Choose several photos at once. Additional photos may be added later.</small>
  <label>Intake Notes (optional)</label><textarea name="notes" rows="3" maxlength="2000" placeholder="Details still needed for registration"></textarea>
  <button class="btn" type="submit" id="nxPendingSave">SAVE PENDING INTAKE</button><p class="nx-pending-disclaimer">Cloud access and gateway authorization are required. No registration occurs until you complete the state form.</p>
  </form></section><section class="nx-pending-panel"><h3>Pending Queue <span class="nx-count">${queue.length}</span></h3>
- ${queue.length?queue.map(r=>`<div class="nx-pending-card" data-pending-card="${esc(r.uid)}"><div class="nx-pending-avatar" data-pending-img="${esc(r.uid)}">♙</div><div class="nx-pending-info"><strong>${esc(nxPendingLabel(r))}</strong><small>${esc(r.state)} · ${esc(r.inmateId||'ID not provided')}</small><small>Pending since ${esc((r.createdAt||'').slice(0,10))}</small>${r.notes?`<p>${esc(r.notes)}</p>`:''}</div><div class="nx-pending-actions"><button class="btn small" data-pending-transfer="${esc(r.uid)}">TRANSFER TO REGISTRATION</button><button class="btn alt small" data-pending-remove="${esc(r.uid)}">REMOVE</button></div></div>`).join(''):'<p class="muted">No pending intakes. Add one using the form.</p>'}
+ ${queue.length?queue.map(r=>`<div class="nx-pending-card" data-pending-card="${esc(r.uid)}"><div class="nx-pending-avatar" data-pending-img="${esc(r.uid)}">♙</div><div class="nx-pending-info"><strong>${esc(nxPendingLabel(r))}</strong><small>${esc(r.state)} · ${esc(r.inmateId||'ID not provided')} · ${esc((r.createdAt||'').slice(0,10))} · ${nxPendingPhotoPaths(r).length} photo(s)</small>${r.notes?`<p title="${esc(r.notes)}">${esc(r.notes)}</p>`:''}</div><div class="nx-pending-actions"><button class="btn alt small" data-pending-view="${esc(r.uid)}">VIEW / PHOTOS</button><button class="btn small" data-pending-transfer="${esc(r.uid)}">TRANSFER</button><button class="btn alt small" data-pending-remove="${esc(r.uid)}">REMOVE</button></div></div>`).join(''):'<p class="muted">No pending intakes. Add one using the form.</p>'}
+ ${nxPendingOpenId?nxPendingGalleryMarkup(nxPendingOpenId):''}
  </section></div></div>`;
+}
+function nxPendingGalleryMarkup(uid){
+ const r=nexusPendingItems().find(x=>x.uid===uid);if(!r)return '';
+ const paths=nxPendingPhotoPaths(r);
+ return `<div class="nxp-overlay" data-pending-close-overlay><section class="nxp-dialog" role="dialog" aria-modal="true" aria-label="Pending intake details">
+ <header><h3>${esc(nxPendingLabel(r))}</h3><button class="btn alt small" data-pending-close>✕ Close</button></header>
+ <p>${esc(r.state)} · ${esc(r.inmateId||'No inmate ID')} · ${paths.length} photos</p>
+ <div class="nxp-gallery">${paths.length?paths.map((path,i)=>`<div class="nxp-photoitem"><div data-pending-gallery-img="${i}">Loading photo…</div><button class="btn alt small" data-pending-primary="${i}" ${path===r.photoPath?'disabled':''}>${path===r.photoPath?'PRIMARY PHOTO':'Make Primary'}</button><button class="btn alt small" data-pending-delete-photo="${i}">Remove Photo</button></div>`).join(''):'No photos uploaded yet.'}</div>
+ <label class="nxp-label">Add more photos <input id="nxpAdditionalPhotos" type="file" accept="image/png,image/jpeg,image/webp" multiple></label>
+ <button class="btn" data-pending-add-photos="${esc(uid)}">UPLOAD MORE PHOTOS</button>
+ <h4>Full intake notes</h4><p class="nxp-fullnotes">${esc(r.notes||'No notes')}</p></section></div>`;
+}
+async function nxPendingGalleryImages(){
+ const uid=nxPendingOpenId;if(!uid)return;
+ const r=nexusPendingItems().find(x=>x.uid===uid);if(!r)return;
+ const paths=nxPendingPhotoPaths(r);
+ await Promise.all(paths.map(async (path,i)=>{
+  const target=document.querySelector(`[data-pending-gallery-img="${i}"]`);if(!target)return;
+  try{const url=await signedPhotoUrl(path);if(nxPendingOpenId!==uid||!target.isConnected)return;
+   const img=document.createElement('img');img.src=url;img.alt='Pending intake photograph '+(i+1);img.referrerPolicy='no-referrer';
+   target.replaceChildren(img);
+  }catch(err){target.textContent='Photograph unavailable';}
+ }));
+}
+async function nxPendingAddPhotos(uid,files){
+ const r=nexusPendingItems().find(x=>x.uid===uid);if(!r||!files.length)return;
+ if(!nexusCloudReady){alert('Cloud session not ready');return}
+ const saved=[];
+ try{
+  for(const f of files){saved.push(await uploadNexusPhoto(f,r.inmateId||'pending'));}
+  const rows=nexusPendingItems(),current=rows.find(x=>x.uid===uid);
+  if(!current)throw new Error('Intake no longer available');
+  const combined=[...nxPendingPhotoPaths(current),...saved];
+  current.photoPaths=combined;current.photoPath=current.photoPath||combined[0]||null;
+  await nxPendingCommit(rows);render();await nxPendingGalleryImages();
+ }catch(err){alert('Some photos may have uploaded but intake update failed: '+err.message)}
+}
+async function nxPendingSetPrimary(uid,index){
+ const rows=nexusPendingItems(),r=rows.find(x=>x.uid===uid);if(!r)return;
+ const path=nxPendingPhotoPaths(r)[index];if(!path)return;
+ r.photoPath=path;r.photoPaths=nxPendingPhotoPaths(r);
+ try{await nxPendingCommit(rows);render()}catch(err){alert('Could not save primary photo: '+err.message)}
+}
+async function nxPendingDeletePhoto(uid,index){
+ const rows=nexusPendingItems(),r=rows.find(x=>x.uid===uid);if(!r)return;
+ const paths=nxPendingPhotoPaths(r),path=paths[index];if(!path)return;
+ if(!confirm('Remove this photograph from the pending intake?'))return;
+ const remaining=paths.filter((_,i)=>i!==index);
+ r.photoPaths=remaining;r.photoPath=r.photoPath===path?(remaining[0]||null):r.photoPath;
+ try{await nxPendingCommit(rows);render()}catch(err){alert('Could not save photo removal: '+err.message)}
+ // This removes the reference only; existing storage object is preserved to avoid deleting shared assets.
 }
 async function nxPendingImages(){
  if(view!=='pendingIntake')return;
- const list=nexusPendingItems().filter(r=>r.photoPath);
+ const list=nexusPendingItems().filter(r=>r.photoPath||nxPendingPhotoPaths(r).length);
  for(const r of list){const slot=[...document.querySelectorAll('[data-pending-img]')].find(el=>el.dataset.pendingImg===r.uid);if(!slot)continue;
- try{const url=await signedPhotoUrl(r.photoPath);if(view!=='pendingIntake'||!slot.isConnected)continue;const img=document.createElement('img');img.src=url;img.alt='Pending inmate photograph';img.referrerPolicy='no-referrer';slot.replaceChildren(img)}catch(err){console.warn('Pending photograph unavailable',err)} }
+ try{const url=await signedPhotoUrl(r.photoPath||nxPendingPhotoPaths(r)[0]);if(view!=='pendingIntake'||!slot.isConnected)continue;const img=document.createElement('img');img.src=url;img.alt='Pending inmate photograph';img.referrerPolicy='no-referrer';slot.replaceChildren(img)}catch(err){console.warn('Pending photograph unavailable',err)} }
 }
 async function nxPendingSave(form){
  if(!nexusCloudReady||!currentUserId){alert('Cloud session not ready. Nothing saved.');return}
  const fd=new FormData(form),first=String(fd.get('first')||'').trim(),last=String(fd.get('last')||'').trim(),state=String(fd.get('state')||'').trim(),inmateId=String(fd.get('inmateId')||'').trim();
  if(!first||!last||!state){alert('State, first name and last name are required.');return}
  if(inmateId&&profiles.some(p=>String(p.id)===inmateId)){alert('This inmate ID already belongs to a registered profile. Open that profile instead.');return}
- const file=fd.get('photo');const button=$('nxPendingSave');if(button){button.disabled=true;button.textContent='SAVING…'}
- try{let photoPath=null;if(file instanceof File&&file.size)photoPath=await uploadNexusPhoto(file,inmateId||'pending');
- const rows=nexusPendingItems();rows.push({uid:crypto.randomUUID(),first,last,state,inmateId,notes:String(fd.get('notes')||'').slice(0,2000),photoPath,createdAt:new Date().toISOString()});
- if(!store(NX_PENDING_KEY,rows))throw new Error('Cloud save did not start');await nexusCloudWriteQueue;render();alert('Pending intake saved to private cloud state.')
+ const files=[...form.querySelector('[name=photos]').files];const button=$('nxPendingSave');if(button){button.disabled=true;button.textContent='SAVING…'}
+ try{const photoPaths=[];for(const file of files)photoPaths.push(await uploadNexusPhoto(file,inmateId||'pending'));const photoPath=photoPaths[0]||null;
+ const rows=nexusPendingItems();rows.push({uid:crypto.randomUUID(),first,last,state,inmateId,notes:String(fd.get('notes')||'').slice(0,2000),photoPath,photoPaths,createdAt:new Date().toISOString()});
+ await nxPendingCommit(rows);render();alert('Pending intake saved to private cloud state.')
  }catch(err){alert('Pending intake could not be saved: '+err.message)}finally{if(button?.isConnected){button.disabled=false;button.textContent='SAVE PENDING INTAKE'}}
 }
 async function nxPendingTransfer(uid){
@@ -1970,7 +2047,7 @@ async function nxPendingTransfer(uid){
  if(r.state!=='Arizona'){alert(r.state+' registration template is not yet available. The pending intake remains saved.');return}
  if(r.inmateId&&profiles.some(p=>String(p.id)===r.inmateId)){alert('This inmate ID is already registered. Resolve the duplicate before transfer.');return}
  let pendingPhoto=null;
- try{if(r.photoPath){const url=await signedPhotoUrl(r.photoPath);const result=await fetch(url);if(!result.ok)throw Error('Could not retrieve intake photograph');const blob=await result.blob();const type=blob.type||'image/jpeg';pendingPhoto=new File([blob],'pending-intake-photo.'+(type==='image/png'?'png':type==='image/webp'?'webp':'jpg'),{type});}}
+ try{if(r.photoPath||nxPendingPhotoPaths(r).length){const url=await signedPhotoUrl(r.photoPath||nxPendingPhotoPaths(r)[0]);const result=await fetch(url);if(!result.ok)throw Error('Could not retrieve intake photograph');const blob=await result.blob();const type=blob.type||'image/jpeg';pendingPhoto=new File([blob],'pending-intake-photo.'+(type==='image/png'?'png':type==='image/webp'?'webp':'jpg'),{type});}}
  catch(err){alert('The pending photo could not be loaded. Transfer stopped so it will not be lost: '+err.message);return}
  nxPendingTransferId=r.uid;nexusPendingRegistrationDraft={first:r.first,last:r.last,id:r.inmateId||'',state:'Arizona'};
  editId=null;nexusBlankReregId=null;nexusRegistrationStage='form';tableRows={};selectedPhotoFile=pendingPhoto;photoData='';go('register');
@@ -2061,11 +2138,20 @@ function nxBulkStatus(r,i){const key=String(r.state||'').trim().toLowerCase()+'|
 function nxBulkRender(){const target=$('nxBulkResults');if(!target)return;const safe=r=>esc(String(r||''));target.innerHTML=`<p><b>${nxBulkDrafts.length} draft rows.</b> Only manually approved, complete, nonduplicate profiles can be created. All extracted fields may contain errors.</p><div class="tablewrap"><table><thead><tr><th>Approve</th><th>Source</th><th>DOC ID</th><th>First</th><th>Last</th><th>State</th><th>Facility</th><th>Status</th></tr></thead><tbody>${nxBulkDrafts.map((r,i)=>{const status=nxBulkStatus(r,i);return `<tr><td><input type="checkbox" data-bulk-approve="${i}" ${r.approved?'checked':''} ${status==='ALREADY EXISTS'||status==='DUPLICATE IN BATCH'?'disabled':''}></td><td>${safe(r.source)}</td>${['id','first','last','state','facility'].map(k=>`<td><input style="min-width:115px;max-width:180px" data-bulk-index="${i}" data-bulk-field="${k}" value="${safe(r[k])}"></td>`).join('')}<td>${safe(status)}</td></tr>`}).join('')}</tbody></table></div><div class="actions"><button class="btn alt" id="nxBulkRecheck">RECHECK DUPLICATES & FIELDS</button><button class="btn" id="nxBulkCreate">CREATE APPROVED PROFILES IN SUPABASE</button></div><p class="muted">Approval is explicit; existing profiles will never be overwritten. Document attachments and extracted photos are not saved in this version.</p>`}
 async function nxBulkPreview(){const files=Array.from($('nxBulkFiles')?.files||[]);if(!files.length){alert('Select files first.');return}if(files.length>20){alert('Choose 20 or fewer files per batch.');return}const ocr=Boolean($('nxBulkOCR')?.checked);const status=$('nxBulkResults');status.textContent='Extracting files. Verify everything before approval…';nxBulkDrafts=[];const errors=[];for(const f of files){try{if(f.size>5_000_000)throw Error('Maximum 5 MB per file');const rows=await nxBulkExtract(f,ocr);for(const r of rows){nxBulkDrafts.push({...r,approved:false});if(nxBulkDrafts.length>500)throw Error('Limit 500 draft profiles per batch')}}catch(e){errors.push(f.name+': '+e.message)}}nxBulkRender();if(errors.length)status.insertAdjacentHTML('afterbegin',`<div class="notice">${errors.map(esc).join(' | ')}</div>`)}
 async function nxBulkCreate(){const approved=nxBulkDrafts.map((r,i)=>({r,i})).filter(x=>x.r.approved);if(!approved.length){alert('Select profiles to approve.');return}const bad=approved.filter(({r,i})=>nxBulkStatus(r,i)!=='READY'&&nxBulkStatus(r,i)!=='REVIEW EXTRACTION');if(bad.length){alert('Resolve incomplete or duplicate records, then click RECHECK.');return}if(!confirm('Create '+approved.length+' approved profiles in Supabase? These are actual cloud records.'))return;const button=$('nxBulkCreate');button.disabled=true;let count=0;const failures=[];try{for(const {r,i} of approved){try{if(profiles.some(p=>String(p.id).trim().toLowerCase()===String(r.id).trim().toLowerCase()))throw Error('Profile already exists');const p={id:r.id,first:r.first,last:r.last,state:r.state,facility:r.facility,status:'Active',notes:'Bulk import source: '+r.source};for(const t of tableDefs)p[t.key]=[];selectedPhotoFile=null;await saveMasterToSupabase(p);profiles.push(p);r.approved=false;count++}catch(e){failures.push(r.id+': '+e.message)}}nxBulkRender();$('nxBulkResults')?.insertAdjacentHTML('afterbegin',`<div class="notice">Created ${count} cloud profile(s). ${failures.length?esc(failures.join(' | ')):'No errors reported.'} Refresh the directory and confirm cloud persistence.</div>`)}finally{if(button.isConnected)button.disabled=false}}
-function render(){const names={financialHub:'Financial Center',bulkIntake:'Bulk Registration',pendingIntake:'Pending Intake',dashboard:'Command Dashboard',profiles:'Inmate Profiles',register:'Inmate Registration',detail:'Inmate Master Record',personal:'Inmate Personal File',facilities:'Facilities',records:'Records',search:'Search',reports:'Reports',settings:'Settings'};$('pageTitle').textContent=names[view]||'NEXUS';document.querySelectorAll('.nav').forEach(b=>b.classList.toggle('active',b.dataset.view===view));let html='';if(view==='dashboard'){html=nexusDashboard();}else if(view==='profiles'){html=`<div class="actions"><button class="btn alt" id="toggleArchive">${showArchive?'Show Current Inmates':'View Archive'}</button></div><div class="panel"><div class="field"><label>Search by name, ID, state, facility, or unit</label><input id="searchBox" placeholder="Search profiles..." value="${esc(filter)}"></div></div><div id="profileResults">${profileCards(profiles.filter(p=>(showArchive?p.status==='Archive':p.status!=='Archive')&&[p.id,p.first,p.last,p.state,p.facility,p.unit].join(' ').toLowerCase().includes(filter.toLowerCase())).sort((a,b)=>(a.last||'').localeCompare(b.last||'')))}</div>`;}else if(view==='register')html=registration();else if(view==='detail'){html=detail();const rec=find(detailId);if(rec&&String(rec.status||'').toLowerCase()==='blocked')html='<div class="nx-blocked-alert"><div class="nx-hazard-bar"></div><strong>BLOCKED PROFILE — Restricted record</strong><p>Review the block reason before taking further action. Viewing this record does not authorize contact or processing.</p></div>'+html;}else if(view==='personal')html=personalPage();else if(view==='financialHub')html=financialHub();else if(view==='bulkIntake')html=nxBulkPage();else if(view==='pendingIntake')html=nexusPendingPage();else if(view==='facilities')html=facilitiesPage();else if(view==='search')html=nxvSearch();else if(view==='records')html=nxvRecords();else if(view==='reports')html=nxvReports();else if(view==='settings')html=section('DEMO SETTINGS',`<p class="notice">Authentication and row-level access are handled by Supabase. This implementation has not completed a security audit; do not enter real inmate or other sensitive personal information.</p><p>Master Records, Personal Files, communications, financial data, custom rules and settings are saved in Supabase. Verify cloud-save status before leaving the page.</p><button class="btn" id="backup">EXPORT BACKUP JSON</button>`);$('content').innerHTML=html;if(view==='search')nxvApplySearch();if(view==='facilities'){const current=facChoice(facEntries());if(current)facUpdateAutomaticPhoto(current)}if(view==='pendingIntake')nxPendingImages()}
+function render(){const names={financialHub:'Financial Center',bulkIntake:'Bulk Registration',pendingIntake:'Pending Intake',dashboard:'Command Dashboard',profiles:'Inmate Profiles',register:'Inmate Registration',detail:'Inmate Master Record',personal:'Inmate Personal File',facilities:'Facilities',records:'Records',search:'Search',reports:'Reports',settings:'Settings'};$('pageTitle').textContent=names[view]||'NEXUS';document.querySelectorAll('.nav').forEach(b=>b.classList.toggle('active',b.dataset.view===view));let html='';if(view==='dashboard'){html=nexusDashboard();}else if(view==='profiles'){html=`<div class="actions"><button class="btn alt" id="toggleArchive">${showArchive?'Show Current Inmates':'View Archive'}</button></div><div class="panel"><div class="field"><label>Search by name, ID, state, facility, or unit</label><input id="searchBox" placeholder="Search profiles..." value="${esc(filter)}"></div></div><div id="profileResults">${profileCards(profiles.filter(p=>(showArchive?p.status==='Archive':p.status!=='Archive')&&[p.id,p.first,p.last,p.state,p.facility,p.unit].join(' ').toLowerCase().includes(filter.toLowerCase())).sort((a,b)=>(a.last||'').localeCompare(b.last||'')))}</div>`;}else if(view==='register')html=registration();else if(view==='detail'){html=detail();const rec=find(detailId);if(rec&&String(rec.status||'').toLowerCase()==='blocked')html='<div class="nx-blocked-alert"><div class="nx-hazard-bar"></div><strong>BLOCKED PROFILE — Restricted record</strong><p>Review the block reason before taking further action. Viewing this record does not authorize contact or processing.</p></div>'+html;}else if(view==='personal')html=personalPage();else if(view==='financialHub')html=financialHub();else if(view==='bulkIntake')html=nxBulkPage();else if(view==='pendingIntake')html=nexusPendingPage();else if(view==='facilities')html=facilitiesPage();else if(view==='search')html=nxvSearch();else if(view==='records')html=nxvRecords();else if(view==='reports')html=nxvReports();else if(view==='settings')html=section('DEMO SETTINGS',`<p class="notice">Authentication and row-level access are handled by Supabase. This implementation has not completed a security audit; do not enter real inmate or other sensitive personal information.</p><p>Master Records, Personal Files, communications, financial data, custom rules and settings are saved in Supabase. Verify cloud-save status before leaving the page.</p><button class="btn" id="backup">EXPORT BACKUP JSON</button>`);$('content').innerHTML=html;if(view==='search')nxvApplySearch();if(view==='facilities'){const current=facChoice(facEntries());if(current)facUpdateAutomaticPhoto(current)}if(view==='pendingIntake'){nxPendingImages();nxPendingGalleryImages()}}
 
 
 $('content').addEventListener('submit',e=>{if(e.target.id!=='nxPendingForm')return;e.preventDefault();e.stopImmediatePropagation();nxPendingSave(e.target)},true);
-$('content').addEventListener('click',e=>{const transfer=e.target.closest('[data-pending-transfer]');if(transfer){e.preventDefault();nxPendingTransfer(transfer.dataset.pendingTransfer);return;}const remove=e.target.closest('[data-pending-remove]');if(remove){e.preventDefault();nxPendingRemove(remove.dataset.pendingRemove);}},true);
+$('content').addEventListener('click',e=>{const viewBtn=e.target.closest('[data-pending-view]');
+ if(viewBtn){e.preventDefault();nxPendingOpenId=viewBtn.dataset.pendingView;render();return;}
+ if(e.target.closest('[data-pending-close]')||(e.target.hasAttribute('data-pending-close-overlay')&&e.target===e.target.closest('[data-pending-close-overlay]'))){nxPendingOpenId=null;render();return;}
+ const addBtn=e.target.closest('[data-pending-add-photos]');
+ if(addBtn){e.preventDefault();nxPendingAddPhotos(addBtn.dataset.pendingAddPhotos,[...($('nxpAdditionalPhotos')?.files||[])]);return;}
+ const primary=e.target.closest('[data-pending-primary]');
+ if(primary){e.preventDefault();nxPendingSetPrimary(nxPendingOpenId,Number(primary.dataset.pendingPrimary));return;}
+ const delphoto=e.target.closest('[data-pending-delete-photo]');
+ if(delphoto){e.preventDefault();nxPendingDeletePhoto(nxPendingOpenId,Number(delphoto.dataset.pendingDeletePhoto));return;}
+ const transfer=e.target.closest('[data-pending-transfer]');if(transfer){e.preventDefault();nxPendingTransfer(transfer.dataset.pendingTransfer);return;}const remove=e.target.closest('[data-pending-remove]');if(remove){e.preventDefault();nxPendingRemove(remove.dataset.pendingRemove);}},true);
 $('content').addEventListener('input',e=>{const input=e.target;if(input.dataset.bulkField!==undefined){const r=nxBulkDrafts[Number(input.dataset.bulkIndex)];if(r){r[input.dataset.bulkField]=input.value;r.approved=false;}}});
 $('content').addEventListener('change',e=>{const input=e.target;if(input.dataset.bulkApprove!==undefined){const r=nxBulkDrafts[Number(input.dataset.bulkApprove)];if(r)r.approved=input.checked;}});
 $('content').addEventListener('change',e=>{if(e.target.id==='nexusEightChoice'){nexusEightChoice=e.target.value;analysisVisible=false;render()}});
