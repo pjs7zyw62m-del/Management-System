@@ -2530,6 +2530,45 @@ window.addEventListener('beforeunload',e=>{if(nexusCloudDirty||nexusCloudWriteFa
 nexusOpenAuthorizedSession().catch(()=>nexusShowSignedOut('Unable to verify your session. Please sign in.'));
 $('bell').addEventListener('click',()=>alert('NEXUS Notification Center: bell icon added. We will design its alert functions later.'));
 
+/* NEXUS dashboard read-only saved communication popup. Never copies messages into URLs or persistent storage. */
+(function(){
+ let lastFocus=null;
+ const overlay=document.createElement('div');
+ overlay.className='ncc-message-overlay';overlay.hidden=true;
+ overlay.innerHTML='<div class="ncc-message-dialog" role="dialog" aria-modal="true" aria-labelledby="ncc-message-title"><div class="ncc-message-head"><div><span class="ncc-eyebrow">SAVED COMMUNICATION</span><h2 id="ncc-message-title">View Message</h2></div><button type="button" class="btn alt small" data-ncc-close aria-label="Close message">✕ Close</button></div><div class="ncc-message-meta" id="ncc-message-meta"></div><div class="ncc-message-body" id="ncc-message-body"></div><div class="ncc-message-footer"><button type="button" class="btn alt" data-ncc-close>Close</button></div></div>';
+ document.body.appendChild(overlay);
+ function close(){if(overlay.hidden)return;overlay.hidden=true;overlay.querySelector('#ncc-message-body').textContent='';lastFocus?.focus?.();lastFocus=null}
+ document.addEventListener('click',function(event){
+  const closeButton=event.target.closest('[data-ncc-close]');
+  if(closeButton||event.target===overlay){close();return}
+  const button=event.target.closest('button[data-ncc-message-profile]');
+  if(!button)return;
+  event.preventDefault();
+  event.stopPropagation();
+  if(document.getElementById('shell')?.classList.contains('hidden'))return;
+  const id=decodeURIComponent(button.dataset.nccMessageProfile||'');
+  const uid=decodeURIComponent(button.dataset.nccMessageUid||'');
+  const index=Number(button.dataset.nccMessageIndex);
+  const p=profiles.find(x=>String(x.id)===id);
+  const entries=personal[id]?.entries;
+  if(!p||!Array.isArray(entries)){alert('This saved communication is no longer available.');return}
+  let entry=Number.isInteger(index)&&index>=0?entries[index]:null;
+  if(uid && (!entry||String(entry.uid||'')!==uid))entry=entries.find(x=>String(x.uid||'')===uid);
+  if(!entry){alert('This saved communication is no longer available.');return}
+  lastFocus=button;
+  overlay.querySelector('#ncc-message-title').textContent=String(entry.type||'Communication')+' Message';
+  overlay.querySelector('#ncc-message-meta').textContent='Inmate: '+displayName(p)+' · ID: '+p.id+' · Date: '+(entry.date||'Not recorded');
+  overlay.querySelector('#ncc-message-body').textContent=String(entry.message||'No message text was saved for this entry.');
+  overlay.hidden=false;
+  overlay.querySelector('[data-ncc-close]').focus();
+ },true);
+ document.addEventListener('keydown',event=>{if(overlay.hidden)return;if(event.key==='Escape')close();
+  if(event.key==='Tab'){const focusables=[...overlay.querySelectorAll('button')];const first=focusables[0],last=focusables[focusables.length-1];if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}}});
+ // Dismiss message if shell becomes locked on sign-out, without exposing it to new sessions.
+ const shell=document.getElementById('shell');
+ if(shell)new MutationObserver(()=>{if(shell.classList.contains('hidden'))close()}).observe(shell,{attributes:true,attributeFilter:['class']});
+})();
+
 })();
 
 
@@ -2562,40 +2601,5 @@ document.addEventListener('click',event=>{
 document.addEventListener('keydown',event=>{if(event.key==='Escape')nxClosePhotoModal()});
 
 
-/* NEXUS dashboard read-only saved communication popup. Never copies messages into URLs or persistent storage. */
-(function(){
- let lastFocus=null;
- const overlay=document.createElement('div');
- overlay.className='ncc-message-overlay';overlay.hidden=true;
- overlay.innerHTML='<div class="ncc-message-dialog" role="dialog" aria-modal="true" aria-labelledby="ncc-message-title"><div class="ncc-message-head"><div><span class="ncc-eyebrow">SAVED COMMUNICATION</span><h2 id="ncc-message-title">View Message</h2></div><button type="button" class="btn alt small" data-ncc-close aria-label="Close message">✕ Close</button></div><div class="ncc-message-meta" id="ncc-message-meta"></div><div class="ncc-message-body" id="ncc-message-body"></div><div class="ncc-message-footer"><button type="button" class="btn alt" data-ncc-close>Close</button></div></div>';
- document.body.appendChild(overlay);
- function close(){if(overlay.hidden)return;overlay.hidden=true;overlay.querySelector('#ncc-message-body').textContent='';lastFocus?.focus?.();lastFocus=null}
- document.addEventListener('click',function(event){
-  const closeButton=event.target.closest('[data-ncc-close]');
-  if(closeButton||event.target===overlay){close();return}
-  const button=event.target.closest('button[data-ncc-message-profile]');
-  if(!button)return;
-  if(document.getElementById('shell')?.classList.contains('hidden'))return;
-  const id=decodeURIComponent(button.dataset.nccMessageProfile||'');
-  const uid=decodeURIComponent(button.dataset.nccMessageUid||'');
-  const index=Number(button.dataset.nccMessageIndex);
-  const p=profiles.find(x=>String(x.id)===id);
-  const entries=personal[id]?.entries;
-  if(!p||!Array.isArray(entries)){alert('This saved communication is no longer available.');return}
-  let entry=Number.isInteger(index)&&index>=0?entries[index]:null;
-  if(uid && (!entry||String(entry.uid||'')!==uid))entry=entries.find(x=>String(x.uid||'')===uid);
-  if(!entry){alert('This saved communication is no longer available.');return}
-  lastFocus=button;
-  overlay.querySelector('#ncc-message-title').textContent=String(entry.type||'Communication')+' Message';
-  overlay.querySelector('#ncc-message-meta').textContent='Inmate: '+displayName(p)+' · ID: '+p.id+' · Date: '+(entry.date||'Not recorded');
-  overlay.querySelector('#ncc-message-body').textContent=String(entry.message||'No message text was saved for this entry.');
-  overlay.hidden=false;
-  overlay.querySelector('[data-ncc-close]').focus();
- });
- document.addEventListener('keydown',event=>{if(overlay.hidden)return;if(event.key==='Escape')close();
-  if(event.key==='Tab'){const focusables=[...overlay.querySelectorAll('button')];const first=focusables[0],last=focusables[focusables.length-1];if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}}});
- // Dismiss message if shell becomes locked on sign-out, without exposing it to new sessions.
- const shell=document.getElementById('shell');
- if(shell)new MutationObserver(()=>{if(shell.classList.contains('hidden'))close()}).observe(shell,{attributes:true,attributeFilter:['class']});
-})();
+
 </script><div id="nxPhotoModal" class="nx-photo-modal" role="dialog" aria-modal="true" aria-label="Enlarged inmate photograph" hidden><button type="button" class="nx-photo-modal-close" aria-label="Close photograph">× Close</button><img id="nxPhotoModalImage" alt=""></div></body></html>
