@@ -701,6 +701,46 @@ textarea[name="mailing"]{min-height:170px;line-height:1.55;white-space:pre-wrap}
 .nxcc-hero-brand img{width:100%;border-radius:11px;display:block;object-fit:contain}
 @media(max-width:850px){.nexus-brand{flex-direction:row;border:0;margin:0 8px 0 0;padding:0;flex:0 0 auto}.nexus-brand-image{width:88px;max-width:88px}.nexus-brand-name{font-size:11px;letter-spacing:1px}.nxcc-hero-brand{flex-basis:130px}}
 @media(max-width:590px){.nxcc-hero-brand{display:none}.nexus-brand-image{width:65px}.nexus-brand-name{display:none}}
+
+/* NEXUS Command Center — integrated dashboard refresh */
+.ncc{display:flex;flex-direction:column;gap:17px;color:#eaf2ff}
+.ncc-header{border:1px solid #284760;border-radius:18px;padding:25px;background:radial-gradient(circle at 92% 5%,#124a6a55,transparent 35%),linear-gradient(112deg,#101c2e,#102b43 70%,#111e30);box-shadow:0 12px 35px #0002}
+.ncc-headerline,.ncc-lead,.ncc-panelhead{display:flex;align-items:center;justify-content:space-between;gap:15px}
+.ncc-eyebrow{color:#73b6fa;letter-spacing:1.9px;font-weight:800;font-size:10px}
+.ncc-slash{color:#627c97;margin:0 7px}.ncc-cloud{font-size:11px;color:#9ab6c9;display:flex;align-items:center;gap:7px}
+.ncc-cloud-dot{height:8px;width:8px;border-radius:50%;background:#53bc8b;display:inline-block}
+.ncc-lead{margin-top:18px}.ncc-lead h2{font-size:clamp(26px,3.3vw,42px);letter-spacing:.4px;color:#fff;margin:0 0 9px}
+.ncc-lead p{margin:0;color:#b0c5d8;max-width:620px;font-size:13px;line-height:1.6}
+.ncc-header-symbol{color:#e3edfa;font-weight:900;font-size:42px;letter-spacing:-6px;opacity:.33;border:1px solid #80aece55;border-radius:15px;padding:8px 22px 8px 12px}
+.ncc-header-symbol span{color:#5eb0ff}
+.ncc-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:23px}.ncc-actions .btn{min-height:39px}.ncc-primary{background:#126ddd}
+.ncc-statgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.ncc-stat,.ncc-panel{border:1px solid #2a4059;background:#0f1b2c;border-radius:15px}
+.ncc-stat{padding:19px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.ncc-stat-label{font-size:10px;letter-spacing:1px;color:#8daac7;font-weight:900}.ncc-stat strong{font-size:34px;line-height:1;color:#fff}.ncc-stat small{color:#93a9bf;font-size:11px;line-height:1.5}
+.ncc-layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,1fr);gap:14px}
+.ncc-bottom{grid-template-columns:1fr 1fr}
+.ncc-panel{padding:20px;min-width:0}.ncc-panelhead{align-items:flex-start;margin-bottom:15px}
+.ncc-panel h3{font-size:20px;margin:5px 0 0;color:#f7fbff}.ncc-panel h4{margin:0 0 10px;color:#bdcfe4;font-size:12px}
+.ncc-person{display:flex;align-items:center;gap:11px;padding:11px 0;border-top:1px solid #23384d}
+.ncc-person .nxcc-portrait-shell{width:47px;min-width:47px;height:49px}
+.ncc-person-meta{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.ncc-person-meta strong{font-size:13px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.ncc-person-meta small{font-size:11px;color:#99b1c7;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.ncc-states{display:flex;flex-direction:column;gap:13px}.ncc-state>div:first-child{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px}
+.ncc-state b{color:#edf6ff}.ncc-state-track{height:7px;border-radius:8px;background:#22364c;overflow:hidden}
+.ncc-state-track>div{height:100%;background:linear-gradient(90deg,#1379df,#45b1fa);border-radius:8px}
+.ncc-statuslist{margin-top:20px;padding-top:16px;border-top:1px solid #2a4057}.ncc-statuslist>div{display:flex;justify-content:space-between;padding:6px 0;color:#a4bcd5;font-size:12px}
+.ncc-statuslist strong{color:#f5f9ff}.ncc-bignumber{font-size:31px;color:#fff}.ncc-helper,.ncc-footer{color:#92a9bf;font-size:11px;line-height:1.6}
+.ncc-empty{color:#9db3c8;font-size:12px;padding:12px 0}
+.ncc-events>div{border-top:1px solid #243950;display:flex;align-items:center;justify-content:space-between;padding:12px 0;gap:10px}
+.ncc-events span{display:flex;flex-direction:column;gap:4px;font-size:12px}.ncc-events small{color:#9bb3ca}
+.ncc-tiles{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.ncc-tiles button{background:#142840;border:1px solid #35516a;border-radius:11px;color:#e9f3ff;text-align:left;padding:14px;cursor:pointer;display:flex;flex-direction:column;gap:6px}
+.ncc-tiles button:hover{background:#193858;border-color:#6ca3d3}.ncc-tiles span{font-size:22px;color:#6cbdff}
+.ncc-tiles strong{font-size:12px}.ncc-tiles small{font-size:10px;color:#a5bad0}
+@media(max-width:1000px){.ncc-statgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.ncc-layout,.ncc-bottom{grid-template-columns:1fr}}
+@media(max-width:550px){.ncc-header{padding:18px}.ncc-header-symbol{display:none}.ncc-cloud{font-size:10px}.ncc-panel{padding:15px}.ncc-tiles{gap:8px}.ncc-stat{padding:14px}.ncc-stat strong{font-size:28px}}
 </style><style id="blackcell-login-branding">
 /* Full corporate artwork is reserved for the sign-in screen. */
 #login.gate{padding:24px 12px;min-height:100vh;}
@@ -1853,46 +1893,47 @@ function nexusDashboardPortrait(p){
 }
 
 function nexusDashboard(){
- const active=profiles.filter(p=>/active/i.test(String(p.status||'')) && !/inactive/i.test(String(p.status||''))).length;
- const states=[...new Set(profiles.map(p=>String(p.state||'').trim()).filter(Boolean))].length;
- const facilities=[...new Set(profiles.map(p=>String(p.facility||'').trim()).filter(Boolean))].length;
- const saved=Object.entries(personal).filter(([id])=>profiles.some(p=>String(p.id)===String(id)));
- const all=saved.flatMap(([id,f])=>(Array.isArray(f.entries)?f.entries:[]).map(e=>({...e,profileId:id}))).filter(e=>['Text','Email','Call'].some(t=>String(e.type||'').toLowerCase()===t.toLowerCase()));
- const recent=all.slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
- const typeCounts=['Text','Email','Call'].map(type=>({type,n:all.filter(e=>String(e.type||'').toLowerCase()===type.toLowerCase()).length}));
- const maxType=Math.max(1,...typeCounts.map(x=>x.n));
- const recentProfiles=profiles.filter(p=>p.status!=='Archive').slice().sort((a,b)=>String(a.last||'').localeCompare(String(b.last||''))).slice(0,5);
- const topStates=Object.entries(profiles.reduce((map,p)=>{const k=String(p.state||'').trim();if(k)map[k]=(map[k]||0)+1;return map},{})).sort((a,b)=>b[1]-a[1]).slice(0,6);
- // Rank existing records using their saved text, email and call entries only.
- // All Time is used so older, saved communication still counts.
- const communicationRanking=profiles.map(p=>{
-   const entryList=all.filter(e=>String(e.profileId)===String(p.id));
-   const texts=entryList.filter(e=>String(e.type||'').toLowerCase()==='text').length;
-   const emails=entryList.filter(e=>String(e.type||'').toLowerCase()==='email').length;
-   const calls=entryList.filter(e=>String(e.type||'').toLowerCase()==='call').length;
-   return {p,texts,emails,calls,total:texts+emails+calls};
- }).sort((a,b)=>b.total-a.total||displayName(a.p).localeCompare(displayName(b.p)));
- const highestCommunication=Math.max(1,...communicationRanking.map(r=>r.total));
- return `<div class="nxcc">
- <div class="nxcc-hero"><div><span class="nxcc-kicker">NEXUS / MANAGEMENT OVERVIEW</span><h2>COMMAND CENTER</h2><p>A live overview of registered profiles, facilities, and communications saved in this browser.</p><div class="nxcc-hero-actions"><button class="btn" data-view="search">⌕ Search Records</button><button class="btn alt" data-view="profiles">View Profiles</button><button class="btn alt" data-view="register">+ New Registration</button></div></div><div class="nxcc-mark" aria-hidden="true">◈</div></div>
- <div class="nxcc-metrics">
- <div class="nxcc-metric"><label>Total Profiles</label><strong>${profiles.length}</strong><small>Registered records</small></div>
- <div class="nxcc-metric"><label>Active Records</label><strong>${active}</strong><small>Active-status profiles</small></div>
- <div class="nxcc-metric"><label>States / Facilities</label><strong>${states} / ${facilities}</strong><small>Unique recorded locations</small></div>
- <div class="nxcc-metric"><label>Saved Communications</label><strong>${all.length}</strong><small>Texts, emails and calls on this device</small></div>
+ const active=profiles.filter(p=>String(p.status||'').toLowerCase()==='active').length;
+ const archived=profiles.filter(p=>String(p.status||'').toLowerCase()==='archive').length;
+ const states=Object.entries(profiles.reduce((m,p)=>{const k=String(p.state||'Unspecified').trim();m[k]=(m[k]||0)+1;return m},{})).sort((a,b)=>b[1]-a[1]);
+ const complexes=new Set(profiles.filter(p=>p.facility).map(p=>[p.state,p.facility].join(' / '))).size;
+ const activities=profiles.flatMap(p=>((personal[p.id]&&Array.isArray(personal[p.id].entries))?personal[p.id].entries:[])
+   .filter(e=>['text','email','call'].includes(String(e.type||'').toLowerCase()))
+   .map(e=>({...e,profileId:p.id,person:p})));
+ activities.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+ const communications=activities.length;
+ const recentProfiles=profiles.slice().sort((a,b)=>String(b.admission||'').localeCompare(String(a.admission||''))).slice(0,6);
+ const statuses=[['Active',active],['Archived',archived],['Other',Math.max(0,profiles.length-active-archived)]];
+ const maxState=Math.max(1,...states.map(x=>x[1]));
+ const cloudStatus=nexusCloudReady?'Authorized cloud records loaded':'Cloud status not verified';
+ return `<div class="ncc">
+ <header class="ncc-header">
+  <div class="ncc-headerline"><span class="ncc-eyebrow">BLACKCELL CORPORATION <span class="ncc-slash">/</span> NEXUS</span><span class="ncc-cloud"><span class="ncc-cloud-dot"></span>${esc(cloudStatus)}</span></div>
+  <div class="ncc-lead"><div><h2>COMMAND CENTER</h2><p>Central workspace for authorized inmate records, registration, and facility operations.</p></div><div class="ncc-header-symbol" aria-hidden="true">N<span>X</span></div></div>
+  <div class="ncc-actions"><button class="btn ncc-primary" data-view="register">＋ New Registration</button><button class="btn alt" data-view="search">⌕ Search Records</button><button class="btn alt" data-view="profiles">View All Profiles</button><button class="btn alt" data-view="facilities">Facilities Directory</button></div>
+ </header>
+ <section class="ncc-statgrid" aria-label="Record summary">
+  <div class="ncc-stat"><span class="ncc-stat-label">TOTAL PROFILES</span><strong>${profiles.length}</strong><small>Authenticated records currently loaded</small></div>
+  <div class="ncc-stat"><span class="ncc-stat-label">ACTIVE PROFILES</span><strong>${active}</strong><small>Marked Active</small></div>
+  <div class="ncc-stat"><span class="ncc-stat-label">STATES TRACKED</span><strong>${states.length}</strong><small>Jurisdictions in loaded records</small></div>
+  <div class="ncc-stat"><span class="ncc-stat-label">RECORDED FACILITIES</span><strong>${complexes}</strong><small>State and facility combinations</small></div>
+ </section>
+ <div class="ncc-layout">
+  <section class="ncc-panel ncc-roster"><div class="ncc-panelhead"><div><span class="ncc-eyebrow">DIRECTORY ACCESS</span><h3>Inmate Profiles</h3></div><button class="btn alt small" data-view="profiles">All Profiles</button></div>
+  ${recentProfiles.length?`<div class="ncc-rosterlist">${recentProfiles.map(p=>`<div class="ncc-person">${nexusDashboardPortrait(p)}<div class="ncc-person-meta"><strong>${esc(displayName(p))}</strong><small>Inmate ID: ${esc(p.id)} · ${esc(p.state||'State unknown')}</small><small>${esc(p.facility||'Facility not recorded')}</small></div><button class="btn alt small" data-open="${encodeURIComponent(p.id)}">Open</button></div>`).join('')}</div>`:'<p class="ncc-empty">No profiles have been loaded. Use New Registration to add one.</p>'}</section>
+  <section class="ncc-panel"><div class="ncc-panelhead"><div><span class="ncc-eyebrow">GEOGRAPHIC OVERVIEW</span><h3>Profiles by State</h3></div><button class="btn alt small" data-view="facilities">Facilities</button></div>
+  ${states.length?`<div class="ncc-states">${states.slice(0,8).map(([name,count])=>`<div class="ncc-state"><div><span>${esc(name)}</span><b>${count}</b></div><div class="ncc-state-track"><div style="width:${Math.round(count/maxState*100)}%"></div></div></div>`).join('')}</div>`:'<p class="ncc-empty">State totals will appear when records are loaded.</p>'}
+  <div class="ncc-statuslist"><h4>Record Status</h4>${statuses.map(([name,count])=>`<div><span>${name}</span><strong>${count}</strong></div>`).join('')}</div></section>
  </div>
- <div class="nxcc-two">
- <section class="nxcc-box"><h3>Communication Overview</h3><p class="nxcc-subtitle">Counts from your saved personal files · all available dates</p><div class="nxcc-bars">${typeCounts.map(x=>`<div class="nxcc-bar-row"><span>${x.type}s</span><div class="nxcc-track"><div class="nxcc-fill" style="width:${Math.round(x.n/maxType*100)}%"></div></div><strong>${x.n}</strong></div>`).join('')}</div><p class="nxcc-footer" style="margin-top:18px">Communication records stored only on this browser may not appear on another device.</p></section>
- <section class="nxcc-box"><h3>Recent Communication</h3><p class="nxcc-subtitle">Newest saved entries · message contents stay inside the personal file</p><div class="nxcc-feed">${recent.length?recent.slice(0,6).map(e=>{const p=profiles.find(p=>String(p.id)===String(e.profileId));return `<div class="nxcc-feed-item"><div class="nxcc-person">${nexusDashboardPortrait(p)}<div class="nxcc-identity"><strong>${esc(p?displayName(p):'Profile '+e.profileId)}</strong><div class="nxcc-id">Inmate ID: ${esc(p?p.id:e.profileId)}</div><small>${esc(e.type||'Entry')} · ${esc(e.date||'No date')}</small></div></div><button class="btn alt small" data-open="${encodeURIComponent(String(e.profileId))}">View</button></div>`}).join(''):'<div class="nxcc-empty">No saved communications to display yet.</div>'}</div></section>
+ <div class="ncc-layout ncc-bottom">
+  <section class="ncc-panel"><div class="ncc-panelhead"><div><span class="ncc-eyebrow">ACTIVITY CENTER</span><h3>Saved Communications</h3></div><strong class="ncc-bignumber">${communications}</strong></div>
+  <p class="ncc-helper">Texts, emails, and calls in currently loaded personal files. This is not an audit log.</p>
+  ${activities.length?`<div class="ncc-events">${activities.slice(0,5).map(e=>`<div><span><b>${esc(displayName(e.person))}</b><small>${esc(e.type||'Entry')} · ${esc(e.date||'No date')}</small></span><button class="btn alt small" data-open="${encodeURIComponent(e.profileId)}">Open</button></div>`).join('')}</div>`:'<p class="ncc-empty">No saved communications in the currently loaded data.</p>'}</section>
+  <section class="ncc-panel"><div class="ncc-panelhead"><div><span class="ncc-eyebrow">OPERATIONS</span><h3>Quick Navigation</h3></div></div>
+  <div class="ncc-tiles"><button data-view="register"><span>＋</span><strong>Register Inmate</strong><small>State-specific entry</small></button><button data-view="records"><span>▤</span><strong>Master Records</strong><small>Open existing records</small></button><button data-view="reports"><span>▥</span><strong>Reports</strong><small>Record summaries</small></button><button data-view="bulkIntake"><span>⇧</span><strong>Bulk Intake</strong><small>Review imported records</small></button></div>
+  </section>
  </div>
- <section class="nxcc-box"><h3>Most Communicated Inmates</h3><p class="nxcc-subtitle">Ranked from most to least saved communications · All Time · includes texts, emails and calls. A count is not a recommendation about a person.</p>
- <div class="nxcc-rank-list">${communicationRanking.length?communicationRanking.map((r,i)=>`<div class="nxcc-rank-item"><div class="nxcc-rank-num">${i+1}</div><div><div class="nxcc-rank-person">${nexusDashboardPortrait(r.p)}<div class="nxcc-identity"><div class="nxcc-rank-name">${esc(displayName(r.p))}</div><div class="nxcc-id">Inmate ID: ${esc(r.p.id)}</div><div class="nxcc-rank-meta">${r.texts} texts · ${r.emails} emails · ${r.calls} calls</div></div></div><div class="nxcc-rank-track"><div class="nxcc-rank-fill" style="width:${Math.round(100*r.total/highestCommunication)}%"></div></div></div><div class="nxcc-rank-right"><span class="nxcc-rank-count">${r.total}</span><button class="btn alt small" data-open="${encodeURIComponent(String(r.p.id))}">View</button></div></div>`).join(''):'<div class="nxcc-empty">Register profiles and save communications to see a ranking.</div>'}</div>
- <p class="nxcc-footer" style="margin-top:12px">Ranking uses saved entries on this device only. Deleted entries do not count, and older entries remain included.</p></section>
- <div class="nxcc-two">
- <section class="nxcc-box"><h3>Profiles by State</h3><p class="nxcc-subtitle">Distribution of registered Master Records</p>${topStates.length?`<div class="nxcc-chips">${topStates.map(([state,count])=>`<span class="nxcc-chip">${esc(state)} · ${count}</span>`).join('')}</div>`:'<div class="nxcc-empty">State totals will appear once profiles are registered.</div>'}</section>
- <section class="nxcc-box"><h3>Quick Access</h3><p class="nxcc-subtitle">Browse existing records without scrolling through the entire directory</p><div class="nxcc-feed">${recentProfiles.length?recentProfiles.map(p=>`<div class="nxcc-feed-item"><div><strong>${esc(displayName(p))}</strong><small>${esc(p.state||'State not set')} · ${esc(p.facility||'Facility not set')}</small></div><button class="btn alt small" data-open="${encodeURIComponent(p.id)}">Open</button></div>`).join(''):'<div class="nxcc-empty">Registered profiles will appear here.</div>'}</div></section>
- </div>
- <p class="nxcc-footer">Dashboard totals reflect currently loaded Master Records and locally saved Personal Files. No new database fields or external AI services are required.</p>
+ <footer class="ncc-footer">Data shown reflects currently loaded authorized NEXUS records. Counts update after records are reloaded. Facility photographs and availability are managed separately.</footer>
  </div>`;
 }
 
@@ -1918,7 +1959,7 @@ function nxBulkStatus(r,i){const key=String(r.state||'').trim().toLowerCase()+'|
 function nxBulkRender(){const target=$('nxBulkResults');if(!target)return;const safe=r=>esc(String(r||''));target.innerHTML=`<p><b>${nxBulkDrafts.length} draft rows.</b> Only manually approved, complete, nonduplicate profiles can be created. All extracted fields may contain errors.</p><div class="tablewrap"><table><thead><tr><th>Approve</th><th>Source</th><th>DOC ID</th><th>First</th><th>Last</th><th>State</th><th>Facility</th><th>Status</th></tr></thead><tbody>${nxBulkDrafts.map((r,i)=>{const status=nxBulkStatus(r,i);return `<tr><td><input type="checkbox" data-bulk-approve="${i}" ${r.approved?'checked':''} ${status==='ALREADY EXISTS'||status==='DUPLICATE IN BATCH'?'disabled':''}></td><td>${safe(r.source)}</td>${['id','first','last','state','facility'].map(k=>`<td><input style="min-width:115px;max-width:180px" data-bulk-index="${i}" data-bulk-field="${k}" value="${safe(r[k])}"></td>`).join('')}<td>${safe(status)}</td></tr>`}).join('')}</tbody></table></div><div class="actions"><button class="btn alt" id="nxBulkRecheck">RECHECK DUPLICATES & FIELDS</button><button class="btn" id="nxBulkCreate">CREATE APPROVED PROFILES IN SUPABASE</button></div><p class="muted">Approval is explicit; existing profiles will never be overwritten. Document attachments and extracted photos are not saved in this version.</p>`}
 async function nxBulkPreview(){const files=Array.from($('nxBulkFiles')?.files||[]);if(!files.length){alert('Select files first.');return}if(files.length>20){alert('Choose 20 or fewer files per batch.');return}const ocr=Boolean($('nxBulkOCR')?.checked);const status=$('nxBulkResults');status.textContent='Extracting files. Verify everything before approval…';nxBulkDrafts=[];const errors=[];for(const f of files){try{if(f.size>5_000_000)throw Error('Maximum 5 MB per file');const rows=await nxBulkExtract(f,ocr);for(const r of rows){nxBulkDrafts.push({...r,approved:false});if(nxBulkDrafts.length>500)throw Error('Limit 500 draft profiles per batch')}}catch(e){errors.push(f.name+': '+e.message)}}nxBulkRender();if(errors.length)status.insertAdjacentHTML('afterbegin',`<div class="notice">${errors.map(esc).join(' | ')}</div>`)}
 async function nxBulkCreate(){const approved=nxBulkDrafts.map((r,i)=>({r,i})).filter(x=>x.r.approved);if(!approved.length){alert('Select profiles to approve.');return}const bad=approved.filter(({r,i})=>nxBulkStatus(r,i)!=='READY'&&nxBulkStatus(r,i)!=='REVIEW EXTRACTION');if(bad.length){alert('Resolve incomplete or duplicate records, then click RECHECK.');return}if(!confirm('Create '+approved.length+' approved profiles in Supabase? These are actual cloud records.'))return;const button=$('nxBulkCreate');button.disabled=true;let count=0;const failures=[];try{for(const {r,i} of approved){try{if(profiles.some(p=>String(p.id).trim().toLowerCase()===String(r.id).trim().toLowerCase()))throw Error('Profile already exists');const p={id:r.id,first:r.first,last:r.last,state:r.state,facility:r.facility,status:'Active',notes:'Bulk import source: '+r.source};for(const t of tableDefs)p[t.key]=[];selectedPhotoFile=null;await saveMasterToSupabase(p);profiles.push(p);r.approved=false;count++}catch(e){failures.push(r.id+': '+e.message)}}nxBulkRender();$('nxBulkResults')?.insertAdjacentHTML('afterbegin',`<div class="notice">Created ${count} cloud profile(s). ${failures.length?esc(failures.join(' | ')):'No errors reported.'} Refresh the directory and confirm cloud persistence.</div>`)}finally{if(button.isConnected)button.disabled=false}}
-function render(){const names={financialHub:'Financial Center',bulkIntake:'Bulk Registration',dashboard:'Command Dashboard',profiles:'Inmate Profiles',register:'Inmate Registration',detail:'Inmate Master Record',personal:'Inmate Personal File',facilities:'Facilities',records:'Records',search:'Search',reports:'Reports',settings:'Settings'};$('pageTitle').textContent=names[view]||'NEXUS';document.querySelectorAll('.nav').forEach(b=>b.classList.toggle('active',b.dataset.view===view));let html='';if(view==='dashboard'){html=nexusDashboard();}else if(view==='profiles'){html=`<div class="actions"><button class="btn" data-view="register">+ New Registration</button><button class="btn alt" id="toggleArchive">${showArchive?'Show Current Inmates':'View Archive'}</button></div><div class="panel"><div class="field"><label>Search by name, ID, state, facility, or unit</label><input id="searchBox" placeholder="Search profiles..." value="${esc(filter)}"></div></div><div id="profileResults">${profileCards(profiles.filter(p=>(showArchive?p.status==='Archive':p.status!=='Archive')&&[p.id,p.first,p.last,p.state,p.facility,p.unit].join(' ').toLowerCase().includes(filter.toLowerCase())).sort((a,b)=>(a.last||'').localeCompare(b.last||'')))}</div>`;}else if(view==='register')html=registration();else if(view==='detail')html=detail();else if(view==='personal')html=personalPage();else if(view==='financialHub')html=financialHub();else if(view==='bulkIntake')html=nxBulkPage();else if(view==='facilities')html=facilitiesPage();else if(view==='search')html=nxvSearch();else if(view==='records')html=nxvRecords();else if(view==='reports')html=nxvReports();else if(view==='settings')html=section('DEMO SETTINGS',`<p class="notice">Authentication and row-level access are handled by Supabase. This implementation has not completed a security audit; do not enter real inmate or other sensitive personal information.</p><p>Master Records, Personal Files, communications, financial data, custom rules and settings are saved in Supabase. Verify cloud-save status before leaving the page.</p><button class="btn" id="backup">EXPORT BACKUP JSON</button>`);$('content').innerHTML=html;if(view==='search')nxvApplySearch();if(view==='facilities'){const current=facChoice(facEntries());if(current)facUpdateAutomaticPhoto(current)}}
+function render(){const names={financialHub:'Financial Center',bulkIntake:'Bulk Registration',dashboard:'Command Dashboard',profiles:'Inmate Profiles',register:'Inmate Registration',detail:'Inmate Master Record',personal:'Inmate Personal File',facilities:'Facilities',records:'Records',search:'Search',reports:'Reports',settings:'Settings'};$('pageTitle').textContent=names[view]||'NEXUS';document.querySelectorAll('.nav').forEach(b=>b.classList.toggle('active',b.dataset.view===view));let html='';if(view==='dashboard'){html=nexusDashboard();}else if(view==='profiles'){html=`<div class="actions"><button class="btn alt" id="toggleArchive">${showArchive?'Show Current Inmates':'View Archive'}</button></div><div class="panel"><div class="field"><label>Search by name, ID, state, facility, or unit</label><input id="searchBox" placeholder="Search profiles..." value="${esc(filter)}"></div></div><div id="profileResults">${profileCards(profiles.filter(p=>(showArchive?p.status==='Archive':p.status!=='Archive')&&[p.id,p.first,p.last,p.state,p.facility,p.unit].join(' ').toLowerCase().includes(filter.toLowerCase())).sort((a,b)=>(a.last||'').localeCompare(b.last||'')))}</div>`;}else if(view==='register')html=registration();else if(view==='detail')html=detail();else if(view==='personal')html=personalPage();else if(view==='financialHub')html=financialHub();else if(view==='bulkIntake')html=nxBulkPage();else if(view==='facilities')html=facilitiesPage();else if(view==='search')html=nxvSearch();else if(view==='records')html=nxvRecords();else if(view==='reports')html=nxvReports();else if(view==='settings')html=section('DEMO SETTINGS',`<p class="notice">Authentication and row-level access are handled by Supabase. This implementation has not completed a security audit; do not enter real inmate or other sensitive personal information.</p><p>Master Records, Personal Files, communications, financial data, custom rules and settings are saved in Supabase. Verify cloud-save status before leaving the page.</p><button class="btn" id="backup">EXPORT BACKUP JSON</button>`);$('content').innerHTML=html;if(view==='search')nxvApplySearch();if(view==='facilities'){const current=facChoice(facEntries());if(current)facUpdateAutomaticPhoto(current)}}
 
 $('content').addEventListener('input',e=>{const input=e.target;if(input.dataset.bulkField!==undefined){const r=nxBulkDrafts[Number(input.dataset.bulkIndex)];if(r){r[input.dataset.bulkField]=input.value;r.approved=false;}}});
 $('content').addEventListener('change',e=>{const input=e.target;if(input.dataset.bulkApprove!==undefined){const r=nxBulkDrafts[Number(input.dataset.bulkApprove)];if(r)r.approved=input.checked;}});
