@@ -958,7 +958,7 @@ body.nexus-session-checking #login{visibility:hidden!important;pointer-events:no
 #nexusBootOverlay .bc-welcome-sub{text-align:center;font-size:10px;letter-spacing:.16em;color:#e04458;margin-top:4px;margin-bottom:14px}
 #nexusBootOverlay .bc-welcome-active{width:min(420px,calc(100vw - 32px));max-width:420px;text-align:center}
 #nexusBootOverlay .bc-welcome-active .nexus-boot-kicker{color:#cc4a5c;margin-bottom:10px}
-#nexusBootOverlay .bc-welcome-active .nexus-boot-status{color:#f4f5f7;font-weight:750;letter-spacing:.03em;line-height:1.5;min-height:42px}
+#nexusBootOverlay .bc-welcome-active .nexus-boot-status{color:#f4f5f7;font-weight:800;font-size:clamp(17px,3.5vw,22px);text-align:center;letter-spacing:.025em;line-height:1.45;min-height:56px}
 #nexusBootOverlay .bc-welcome-active .nexus-boot-foot{letter-spacing:.15em}
 @media(prefers-reduced-motion:reduce){#nexusBootOverlay .nexus-boot-progress{transition:none!important}}
 </style></head><body class="nexus-session-checking"><div id="nexusBootOverlay" class="nexus-boot-overlay" aria-live="polite" aria-label="Checking NEXUS session"><div class="nexus-boot-box"><div class="nexus-boot-kicker">BLACKCELL / NEXUS</div><div id="nexusBootStatus" class="nexus-boot-status">CHECKING SESSION…</div><div class="nexus-boot-track"><div id="nexusBootProgress" class="nexus-boot-progress"></div></div><div id="nexusBootPercent" class="nexus-boot-percent">SECURE TERMINAL</div><div class="nexus-boot-foot">AUTHORIZED ACCESS REQUIRED</div></div></div>
@@ -2614,6 +2614,8 @@ document.querySelectorAll('.nav').forEach(b=>{
 
 // Authentication is enforced by Supabase Auth. Do not embed PINs or secrets in this public file.
 let nexusSigningIn=false;
+let nexusInitialRestoreFinished=false;
+let nexusInitialRestorePromise=Promise.resolve();
 // On startup, this overlay only protects the session check. The animated
 // welcome sequence runs AFTER all credentials AND record access are verified.
 function nexusStartLoginBoot(){
@@ -2645,6 +2647,8 @@ async function nexusProgressSuccess(){
   const overlay=$('nexusBootOverlay');
   const box=overlay?.querySelector('.nexus-boot-box');
   if(!overlay||!box)return;
+  overlay.hidden=false;
+  document.body.classList.add('nexus-session-checking');
   box.classList.add('bc-welcome-active');
   let heading=box.querySelector('.bc-welcome-heading');
   if(!heading){
@@ -2661,7 +2665,8 @@ async function nexusProgressSuccess(){
   try{
     for(const [value,message] of phases){
       nexusProgressUpdate(value,message);
-      if(!reduced)await new Promise(resolve=>setTimeout(resolve,value===100?1100:480));
+      if(!reduced)await new Promise(resolve=>setTimeout(resolve,value===100?2200:480));
+      else if(value===100)await new Promise(resolve=>setTimeout(resolve,1500));
     }
   }finally{box.classList.remove('bc-welcome-active');}
 }
@@ -2782,6 +2787,7 @@ $('loginForm').addEventListener('submit', async e => {
   if(nexusSigningIn)return;
   nexusSigningIn=true;
   $('nexusSignInBtn').disabled=true;
+  await nexusInitialRestorePromise;
   let codes=null;
   let signedIn=false;
   const inputs=$('loginForm').querySelectorAll('input');
@@ -2832,7 +2838,7 @@ nexusDB.auth.onAuthStateChange((event)=>{
 });
 // Restore a previously authenticated session on refresh. Records stay hidden until verified.
 window.addEventListener('beforeunload',e=>{if(nexusCloudDirty||nexusCloudWriteFailed){e.preventDefault();e.returnValue='';}});
-nexusOpenAuthorizedSession().catch(()=>nexusShowSignedOut('Unable to verify your session. Please sign in.'));
+nexusInitialRestorePromise=nexusOpenAuthorizedSession().catch(()=>nexusShowSignedOut('Unable to verify your session. Please sign in.')).finally(()=>{nexusInitialRestoreFinished=true;});
 $('bell').addEventListener('click',()=>alert('NEXUS Notification Center: bell icon added. We will design its alert functions later.'));
 
 /* NEXUS dashboard read-only saved communication popup. Never copies messages into URLs or persistent storage. */
