@@ -2604,30 +2604,27 @@ document.querySelectorAll('.nav').forEach(b=>{
 
 // Authentication is enforced by Supabase Auth. Do not embed PINs or secrets in this public file.
 let nexusSigningIn=false;
-let nexusBootPlayed=false;
+// On startup, this overlay only protects the session check. The animated
+// progress sequence runs AFTER email, password and BOTH gateway codes.
 function nexusStartLoginBoot(){
-  const overlay=document.getElementById('nexusBootOverlay');
+  const overlay=$('nexusBootOverlay');
+  if(overlay)overlay.hidden=true;
+  document.body.classList.remove('nexus-session-checking');
+}
+function nexusProgressUpdate(value,message){
+  const overlay=$('nexusBootOverlay');
   if(!overlay)return;
-  if(nexusBootPlayed){overlay.hidden=true;document.body.classList.remove('nexus-session-checking');return;}
-  nexusBootPlayed=true;
-  const status=document.getElementById('nexusBootStatus');
-  const bar=document.getElementById('nexusBootProgress');
-  const percent=document.getElementById('nexusBootPercent');
-  const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const stages=['INITIALIZING SECURE TERMINAL…','PREPARING CONNECTION…','LOADING SECURITY GATEWAY…','LOGIN INTERFACE READY'];
-  if(reduce){overlay.hidden=true;document.body.classList.remove('nexus-session-checking');return;}
-  let progress=0;
-  const timer=setInterval(()=>{
-    // Visual intro progress only. Never indicate that credentials are verified.
-    if(document.getElementById('shell')&&!document.getElementById('shell').classList.contains('hidden')){clearInterval(timer);overlay.hidden=true;document.body.classList.remove('nexus-session-checking');return;}
-    progress=Math.min(progress+4,100);
-    bar.style.width=progress+'%';percent.textContent=progress+'% · AUTHORIZED ACCESS REQUIRED';
-    status.textContent=stages[Math.min(3,Math.floor(progress/28))];
-    if(progress===100){clearInterval(timer);overlay.hidden=true;document.body.classList.remove('nexus-session-checking');
-      const login=document.getElementById('login');login.classList.add('nexus-intro-reveal');
-      setTimeout(()=>login.classList.remove('nexus-intro-reveal'),1200);
-    }
-  },75);
+  overlay.hidden=false;
+  document.body.classList.add('nexus-session-checking');
+  $('nexusBootStatus').textContent=message;
+  $('nexusBootProgress').style.width=Math.max(0,Math.min(100,value))+'%';
+  $('nexusBootPercent').textContent= value===100?'100% · SESSION VERIFIED':'SECURE CONNECTION · VERIFYING';
+}
+async function nexusProgressSuccess(){
+  nexusProgressUpdate(100,'NEXUS INTERFACE READY');
+  if(!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)){
+    await new Promise(resolve=>setTimeout(resolve,550));
+  }
 }
 function nexusFinishSessionCheck(){
   const overlay=document.getElementById('nexusBootOverlay');if(overlay)overlay.hidden=true;
@@ -2719,7 +2716,7 @@ async function nexusRequireGatewayGrant(){
   return true;
 }
 
-async function nexusOpenAuthorizedSession(){
+async function nexusOpenAuthorizedSession(showProgress=false){
   const {data:{user},error}=await nexusDB.auth.getUser();
   if(error || !user){nexusShowSignedOut();return false;}
   try{
@@ -2730,6 +2727,7 @@ async function nexusOpenAuthorizedSession(){
     return false;
   }
 
+  if(showProgress)await nexusProgressSuccess();
   $('login').classList.add('hidden');
   $('shell').classList.remove('hidden');
   nexusFinishSessionCheck();
@@ -2742,43 +2740,42 @@ async function nexusOpenAuthorizedSession(){
 
 $('loginForm').addEventListener('submit', async e => {
   e.preventDefault();
-  if (nexusSigningIn) return;
-
-  nexusSigningIn = true;
-  $('nexusSignInBtn').disabled = true;
-  let codes = null;
-  let signedIn = false;
-  const inputs = $('loginForm').querySelectorAll('input');
-
-  try {
-    codes = await nexusCollectGatewayCodes();
-    $('nexusAuthStatus').textContent = 'Verifying your account...';
-    const { data, error } = await nexusDB.auth.signInWithPassword({
-      email: inputs[0].value.trim(),
-      password: inputs[1].value
+  if(nexusSigningIn)return;
+  nexusSigningIn=true;
+  $('nexusSignInBtn').disabled=true;
+  let codes=null;
+  let signedIn=false;
+  const inputs=$('loginForm').querySelectorAll('input');
+  try{
+    // STEP 1: authenticate email and password FIRST.
+    $('nexusAuthStatus').textContent='Checking your email and password…';
+    const {data,error}=await nexusDB.auth.signInWithPassword({
+      email:inputs[0].value.trim(),password:inputs[1].value
     });
-    inputs[1].value = '';
-    if (error || !data?.user) throw new Error('Sign in failed.');
-    signedIn = true;
-    $('nexusAuthStatus').textContent = 'Verifying security gateway...';
+    inputs[1].value='';
+    if(error||!data?.user)throw new Error('Email or password was not accepted.');
+    signedIn=true;
+    // STEP 2: collect both gateway codes (never store them in persistent storage).
+    $('nexusAuthStatus').textContent='Account verified. Enter both security codes.';
+    codes=await nexusCollectGatewayCodes();
+    // STEP 3: only NOW start the AOL-inspired verification sequence.
+    nexusProgressUpdate(12,'INITIALIZING SECURE TERMINAL…');
+    nexusProgressUpdate(30,'ESTABLISHING SECURE CONNECTION…');
     await nexusVerifyGatewayCodes(codes);
-    const opened = await nexusOpenAuthorizedSession();
-    if (!opened) throw new Error('Dashboard authorization failed.');
-  } catch (err) {
-    inputs[1].value = '';
-    if (signedIn) {
-      const { error: signOutError } = await nexusDB.auth.signOut();
-      if (signOutError) console.error('NEXUS sign-out cleanup failed:',signOutError.code);
+    nexusProgressUpdate(72,'SECURITY GATEWAY VERIFIED · LOADING RECORDS…');
+    const opened=await nexusOpenAuthorizedSession(true);
+    if(!opened)throw new Error('Unable to authorize the Command Center.');
+  }catch(err){
+    inputs[1].value='';
+    if(signedIn){
+      const {error:signOutError}=await nexusDB.auth.signOut();
+      if(signOutError)console.error('NEXUS sign-out cleanup failed:',signOutError.code);
     }
-    nexusShowSignedOut('Login or gateway verification was not completed.');
-  } finally {
-    if (codes) {
-      codes.accessCode = '';
-      codes.securityCode = '';
-      codes = null;
-    }
-    nexusSigningIn = false;
-    $('nexusSignInBtn').disabled = false;
+    nexusShowSignedOut(err?.message||'Sign in or gateway verification failed.');
+  }finally{
+    if(codes){codes.accessCode='';codes.securityCode='';codes=null;}
+    nexusSigningIn=false;
+    $('nexusSignInBtn').disabled=false;
   }
 });
 
