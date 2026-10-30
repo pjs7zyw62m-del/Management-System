@@ -1021,6 +1021,72 @@ body{background:radial-gradient(ellipse at 55% -15%,#29303c 0%,transparent 55%),
 #login.gate{background:radial-gradient(ellipse at 50% 0%,#27303b 0%,transparent 55%),#07090e!important}
 #login #loginForm{background:rgba(25,30,39,.86)!important;border:1px solid var(--blk-edge)!important;border-radius:22px!important;box-shadow:0 25px 70px #0008!important;backdrop-filter:blur(25px)}
 @media(max-width:760px){.blk-masthead{padding:17px 9px}.blk-corporation{letter-spacing:0;font-size:clamp(20px,5vw,30px)}.blk-system{letter-spacing:.03em}.blk-command{letter-spacing:.08em}}
+</style><style id="blackcell-dashboard-redesign">
+/* BLACKCELL COMMAND CENTER — actual dashboard redesign, not a separate preview */
+#shell .content:has(.ncc){max-width:1600px;margin:0 auto;width:100%}
+#shell .ncc{gap:16px;color:#e9edf5}
+#shell .ncc-header{padding:25px 28px;border-radius:22px;border:1px solid rgba(221,229,244,.16);background:radial-gradient(ellipse at 92% 0%,rgba(147,32,53,.21),transparent 48%),linear-gradient(115deg,#202630,#10151d 72%);box-shadow:0 20px 44px #0004;position:relative;overflow:hidden}
+#shell .ncc-header:after{content:"";pointer-events:none;position:absolute;width:240px;height:240px;right:-95px;top:-115px;border:1px solid rgba(224,59,83,.19);border-radius:50%;box-shadow:0 0 0 36px rgba(224,59,83,.035),0 0 0 72px rgba(224,59,83,.025)}
+#shell .ncc-eyebrow{color:#d992a0;letter-spacing:.17em;font-size:10px}
+#shell .ncc-slash{color:#b84a5c}
+#shell .ncc-cloud{color:#b7c3d0}
+#shell .ncc-lead{margin-top:21px;position:relative;z-index:1}
+#shell .ncc-lead h2{font-size:clamp(27px,3vw,42px);font-weight:750;letter-spacing:.035em}
+#shell .ncc-lead p{color:#a9b3c1}
+#shell .ncc-header-symbol{color:#e9eaf0;border-color:#ad4b5b55;background:#a72c4115;opacity:.65}
+#shell .ncc-header-symbol span{color:#ec5268}
+#shell .ncc-actions{margin-top:23px;position:relative;z-index:1}
+#shell .ncc-actions .btn{min-height:40px;border-radius:11px}
+#shell .ncc-primary{background:linear-gradient(125deg,#b62d45,#7d1e30)!important;border:1px solid #e2587080!important;color:#fff!important}
+#shell .ncc-statgrid{gap:13px}
+#shell .ncc-stat,#shell .ncc-panel{background:linear-gradient(160deg,rgba(33,40,51,.88),rgba(17,22,31,.88))!important;border:1px solid rgba(221,229,244,.14)!important;box-shadow:inset 0 1px rgba(255,255,255,.05),0 10px 25px #0003;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+#shell .ncc-stat{padding:22px 20px;border-radius:17px;gap:9px}
+#shell .ncc-stat-label{color:#a6aebb;letter-spacing:.14em}
+#shell .ncc-stat strong{font-size:clamp(29px,2.8vw,40px);font-weight:720}
+#shell .ncc-stat small{color:#8794a5}
+#shell .ncc-panel{padding:23px;border-radius:19px}
+#shell .ncc-panel h3{font-size:18px;letter-spacing:.005em;color:#f1f3f7}
+#shell .ncc-panel h4{color:#a9b4c4}
+#shell .ncc-panelhead{padding-bottom:14px;border-bottom:1px solid rgba(220,230,245,.09)}
+#shell .ncc-layout{gap:15px;grid-template-columns:minmax(0,1.45fr) minmax(280px,1fr)}
+#shell .ncc-bottom{grid-template-columns:1fr 1fr}
+#shell .ncc-finance{background:linear-gradient(140deg,rgba(38,42,53,.9),rgba(28,23,33,.9))!important}
+#shell .ncc-financegrid>div{background:#0c111a99!important;border-color:#ffffff20!important;border-radius:12px!important}
+#shell .ncc-financegrid small{color:#9da8b7!important}
+#shell .ncc-person{border-top-color:#ffffff15;transition:background .18s;padding:12px 7px;border-radius:9px}
+#shell .ncc-person:hover{background:#ffffff0a}
+#shell .ncc-person-meta small,#shell .ncc-events small{color:#95a2b3}
+#shell .ncc-state-track{background:#ffffff12}
+#shell .ncc-state-track>div{background:linear-gradient(90deg,#9a2940,#e35168)}
+#shell .ncc-statuslist{border-top-color:#ffffff18}
+#shell .ncc-statuslist>div{color:#9eaab9}
+#shell .ncc-tiles{gap:11px}
+#shell .ncc-tiles button{background:#111923bb;border:1px solid #ffffff1e;border-radius:13px;padding:17px;transition:background .2s,border-color .2s,transform .2s}
+#shell .ncc-tiles button:hover{background:#222b38;border-color:#c84a6380;transform:translateY(-1px)}
+#shell .ncc-tiles span{color:#e36a7d}
+#shell .ncc-tiles small{color:#96a4b5}
+#shell .ncc-events>div{border-top-color:#ffffff16}
+#shell .ncc-helper,#shell .ncc-footer{color:#97a3b1}
+#shell .ncc .btn.alt{background:rgba(255,255,255,.08);border:1px solid rgba(221,229,244,.16);color:#edf0f6}
+#shell .ncc .btn.alt:hover{background:rgba(255,255,255,.14)}
+@media(max-width:1100px){#shell .ncc-layout,#shell .ncc-bottom{grid-template-columns:1fr}}
+@media(max-width:760px){#shell .ncc-header{padding:19px}#shell .ncc-panel{padding:17px}#shell .ncc-stat{padding:16px}#shell .ncc-statgrid{grid-template-columns:repeat(2,minmax(0,1fr))}#shell .ncc-financegrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:390px){#shell .ncc-headerline{align-items:flex-start;flex-direction:column}#shell .ncc-stat{padding:13px}#shell .ncc-stat-label{font-size:9px}}
+</style><style id="blk-real-dashboard-layout">
+/* Integrated command center layout: the actual dashboard renderer, not Blk preview */
+@media(min-width:1120px){
+ #shell .ncc{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,1.25fr);gap:16px;align-items:start}
+ #shell .ncc>.ncc-header,#shell .ncc>.ncc-statgrid,#shell .ncc>.ncc-bottom,#shell .ncc>.ncc-footer{grid-column:1/-1}
+ #shell .ncc>.ncc-finance{grid-column:1;grid-row:3}
+ #shell .ncc>.ncc-layout:not(.ncc-bottom){grid-column:2;grid-row:3;display:grid;grid-template-columns:1fr;gap:16px}
+ #shell .ncc>.ncc-bottom{display:grid;grid-template-columns:1fr 1fr}
+ #shell .ncc>.ncc-header{padding:30px 36px}
+ #shell .ncc>.ncc-statgrid{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+#shell .ncc .ncc-header{border-top:2px solid rgba(219,49,71,.58)!important}
+#shell .ncc .ncc-stat{border-top:2px solid rgba(219,49,71,.24)!important}
+#shell .ncc .ncc-panel{overflow:hidden}
+#shell .ncc .ncc-financegrid{gap:10px}
 </style></head><body class="nexus-session-checking"><div id="nexusBootOverlay" class="nexus-boot-overlay" aria-live="polite" aria-label="Checking NEXUS session"><div class="nexus-boot-box"><div class="nexus-boot-kicker">BLACKCELL / NEXUS</div><div id="nexusBootStatus" class="nexus-boot-status">CHECKING SESSION…</div><div class="nexus-boot-track"><div id="nexusBootProgress" class="nexus-boot-progress"></div></div><div id="nexusBootPercent" class="nexus-boot-percent">SECURE TERMINAL</div><div class="nexus-boot-foot">AUTHORIZED ACCESS REQUIRED</div></div></div>
 
 <div id="login" class="gate"><form id="loginForm" class="panel">
