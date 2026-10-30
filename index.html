@@ -987,6 +987,40 @@ body.nexus-session-checking #login{visibility:hidden!important;pointer-events:no
 }
 #nexusBootOverlay .bc-granted-active .bc-outcome-title{color:#48e987}
 #nexusBootOverlay .bc-denied-active .bc-outcome-title{color:#ff425b}
+</style><style id="blk-command-center-integration">
+/* BLACKCELL + BLK visual integration. Presentation only: original app/auth/data logic retained. */
+:root{--blk-bg:#07090e;--blk-panel:rgba(29,35,45,.69);--blk-edge:rgba(220,230,245,.14);--blk-red:#db3147}
+body{background:radial-gradient(ellipse at 55% -15%,#29303c 0%,transparent 55%),radial-gradient(ellipse at 85% 80%,#24111a 0%,transparent 42%),var(--blk-bg)!important;color:#f1f3f7}
+#shell.shell{background:transparent!important}
+#shell .sidebar{background:rgba(18,22,30,.86)!important;backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);border-right:1px solid var(--blk-edge)!important}
+#shell .sidebar .nexus-brand{padding-top:14px;padding-bottom:18px}
+#shell .sidebar .nexus-brand-name{color:#e6e9ef!important;letter-spacing:.12em;font-weight:800}
+#shell .sidebar .blk-x,.blk-masthead .blk-system span{color:var(--blk-red)}
+#shell .sidebar .blk-brand-sub{font-size:10px;letter-spacing:.2em;color:#8690a1;margin-top:9px}
+#shell .sidebar .nav{border-radius:11px!important;color:#abb5c5!important;transition:background .18s,color .18s}
+#shell .sidebar .nav:hover{background:rgba(255,255,255,.09)!important;color:#fff!important}
+#shell .sidebar .nav.active{color:#fff!important;background:linear-gradient(90deg,rgba(185,35,55,.26),rgba(255,255,255,.05))!important;box-shadow:inset 3px 0 var(--blk-red)}
+#shell .main{background:transparent!important}
+.blk-masthead{text-align:center;padding:22px 15px 20px;background:linear-gradient(180deg,rgba(20,23,31,.85),rgba(8,10,15,.46));border-bottom:1px solid var(--blk-edge)}
+.blk-corporation{font-size:clamp(22px,3vw,44px);font-weight:780;letter-spacing:.065em;line-height:1.16;background:linear-gradient(#fff,#aab0bb);color:transparent;background-clip:text;-webkit-background-clip:text}
+.blk-system{font-size:clamp(12px,1.25vw,18px);color:#b8bfcb;letter-spacing:.1em;margin:8px 0 12px}
+.blk-command{display:inline-block;border-top:1px solid rgba(255,255,255,.15);padding-top:11px;font-size:clamp(15px,1.9vw,24px);font-weight:650;letter-spacing:.16em;color:#e9edf4}
+#shell .topbar{background:rgba(12,16,24,.5)!important;border-bottom:1px solid var(--blk-edge)!important}
+#shell .content .card,#shell .content .panel,#shell .content .nxcc-metric,#shell .content .nxcc-box{background:var(--blk-panel)!important;border:1px solid var(--blk-edge)!important;border-radius:18px!important;box-shadow:inset 0 1px rgba(255,255,255,.05),0 12px 32px rgba(0,0,0,.24);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px)}
+#shell .content .nxcc-hero{background:linear-gradient(115deg,rgba(27,34,45,.9),rgba(32,18,27,.73))!important;border:1px solid var(--blk-edge)!important;border-radius:18px!important}
+#shell .content .nxcc-kicker{color:#e9a2ae!important}
+#shell .content .nxcc-mark{color:rgba(219,49,71,.5)!important}
+#shell .content .nxcc-metric label{color:#a7afbe!important}
+#shell .content .nxcc-metric small{color:#929aa9!important}
+#shell .content .nxcc-rank-fill{background:linear-gradient(90deg,#852336,#db3147)!important}
+#shell .content .nxcc-rank-item{background:rgba(7,10,16,.56)!important;border-color:var(--blk-edge)!important}
+#shell .content .nxcc-rank-num{color:#e67c8a!important}
+#shell .content .nxcc-rank-meta{color:#aeb5c1!important}
+#shell .content .nxcc-rank-select{background:#1d232d!important;border-color:#434b57!important;color:#f1f3f7!important}
+#shell .content button,#shell .topbar button{border-radius:11px}
+#login.gate{background:radial-gradient(ellipse at 50% 0%,#27303b 0%,transparent 55%),#07090e!important}
+#login #loginForm{background:rgba(25,30,39,.86)!important;border:1px solid var(--blk-edge)!important;border-radius:22px!important;box-shadow:0 25px 70px #0008!important;backdrop-filter:blur(25px)}
+@media(max-width:760px){.blk-masthead{padding:17px 9px}.blk-corporation{letter-spacing:0;font-size:clamp(20px,5vw,30px)}.blk-system{letter-spacing:.03em}.blk-command{letter-spacing:.08em}}
 </style></head><body class="nexus-session-checking"><div id="nexusBootOverlay" class="nexus-boot-overlay" aria-live="polite" aria-label="Checking NEXUS session"><div class="nexus-boot-box"><div class="nexus-boot-kicker">BLACKCELL / NEXUS</div><div id="nexusBootStatus" class="nexus-boot-status">CHECKING SESSION…</div><div class="nexus-boot-track"><div id="nexusBootProgress" class="nexus-boot-progress"></div></div><div id="nexusBootPercent" class="nexus-boot-percent">SECURE TERMINAL</div><div class="nexus-boot-foot">AUTHORIZED ACCESS REQUIRED</div></div></div>
 
 <div id="login" class="gate"><form id="loginForm" class="panel">
@@ -999,7 +1033,12 @@ body.nexus-session-checking #login{visibility:hidden!important;pointer-events:no
   <div class="bc-secure-footer">AUTHORIZED PERSONNEL ONLY</div>
  </form></div>
 
-<div id="shell" class="shell hidden"><aside class="sidebar"><div class="nexus-brand"><div class="nexus-brand-name">NEXUS</div></div><button class="nav active" data-view="dashboard">▦ Dashboard</button><button class="nav" data-view="profiles">♙ Inmate Profiles</button><button class="nav" data-view="pendingIntake">◷ Pending Intake</button><button class="nav" data-view="facilities">▤ Facilities</button><button class="nav" data-view="records">▤ Records</button><button class="nav" data-view="search">⌕ Search</button><button class="nav" data-view="financialHub">＄ Financial Center</button><button class="nav" data-view="bulkIntake">⇧ Bulk Registration</button><button class="nav" data-view="reports">▥ Reports</button><button class="nav" data-view="settings">⚙ Settings</button></aside><main class="main"><header class="topbar"><h1 id="pageTitle">Command Dashboard</h1><div class="right"><span id="nexusCloudStatus" style="font-size:11px;max-width:190px;color:#a5e7bd">Checking cloud…</span><button class="bell" id="bell" title="Notifications (coming soon)" aria-label="Notifications">🔔</button><button class="btn alt small" id="lock">Log Out</button></div></header><div class="content" id="content"></div></main></div>
+<div id="shell" class="shell hidden"><aside class="sidebar"><div class="nexus-brand"><div class="nexus-brand-name">NE<span class="blk-x">X</span>US</div><div class="blk-brand-sub">WORKSPACE</div></div><button class="nav active" data-view="dashboard">▦ Command Center</button><button class="nav" data-view="profiles">♙ Inmate Profiles</button><button class="nav" data-view="pendingIntake">◷ Pending Intake</button><button class="nav" data-view="facilities">▤ Facilities</button><button class="nav" data-view="records">▤ Records</button><button class="nav" data-view="search">⌕ Search</button><button class="nav" data-view="financialHub">＄ Financial Center</button><button class="nav" data-view="bulkIntake">⇧ Bulk Registration</button><button class="nav" data-view="reports">▥ Reports</button><button class="nav" data-view="settings">⚙ Settings</button></aside><main class="main"><div class="blk-masthead" aria-label="Blackcell Corporation NEXUS Management System Command Center">
+<div class="blk-corporation">BLACKCELL CORPORATION</div>
+<div class="blk-system">NE<span>X</span>US MANAGEMENT SYSTEM</div>
+<div class="blk-command">COMMAND CENTER</div>
+</div>
+<header class="topbar"><h1 id="pageTitle">Command Dashboard</h1><div class="right"><span id="nexusCloudStatus" style="font-size:11px;max-width:190px;color:#a5e7bd">Checking cloud…</span><button class="bell" id="bell" title="Notifications (coming soon)" aria-label="Notifications">🔔</button><button class="btn alt small" id="lock">Log Out</button></div></header><div class="content" id="content"></div></main></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
