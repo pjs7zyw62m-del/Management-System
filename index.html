@@ -971,6 +971,22 @@ body.nexus-session-checking #login{visibility:hidden!important;pointer-events:no
 #nexusBootOverlay .bc-denied-active .nexus-boot-progress{background:linear-gradient(90deg,#8b1628,#ff425b)!important;box-shadow:0 0 14px rgba(240,43,70,.3)!important}
 #nexusBootOverlay .bc-denied-active .nexus-boot-foot{color:#f18c98!important}
 #nexusBootOverlay .bc-denied-active .nexus-boot-kicker{color:#b8bec8!important}
+
+/* Centered two-line results: approved BLACKCELL auth outcome layout */
+#nexusBootOverlay .bc-welcome-active .nexus-boot-status:has(.bc-outcome-title){
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;width:100%;text-align:center;padding:8px 0;
+}
+#nexusBootOverlay .bc-outcome-title{
+  font:800 clamp(22px,5.8vw,30px)/1.2 ui-monospace,SFMono-Regular,Consolas,monospace;
+  letter-spacing:.06em;text-align:center;
+}
+#nexusBootOverlay .bc-outcome-subtitle{
+  font:700 clamp(14px,4.1vw,21px)/1.35 ui-monospace,SFMono-Regular,Consolas,monospace;
+  letter-spacing:.025em;color:#f4f5f7!important;text-align:center;max-width:100%;overflow-wrap:break-word;
+}
+#nexusBootOverlay .bc-granted-active .bc-outcome-title{color:#48e987}
+#nexusBootOverlay .bc-denied-active .bc-outcome-title{color:#ff425b}
 </style></head><body class="nexus-session-checking"><div id="nexusBootOverlay" class="nexus-boot-overlay" aria-live="polite" aria-label="Checking NEXUS session"><div class="nexus-boot-box"><div class="nexus-boot-kicker">BLACKCELL / NEXUS</div><div id="nexusBootStatus" class="nexus-boot-status">CHECKING SESSION…</div><div class="nexus-boot-track"><div id="nexusBootProgress" class="nexus-boot-progress"></div></div><div id="nexusBootPercent" class="nexus-boot-percent">SECURE TERMINAL</div><div class="nexus-boot-foot">AUTHORIZED ACCESS REQUIRED</div></div></div>
 
 <div id="login" class="gate"><form id="loginForm" class="panel">
@@ -2644,6 +2660,13 @@ function nexusProgressUpdate(value,message,kind='success'){
   $('nexusBootProgress').style.width=Math.max(0,Math.min(100,value))+'%';
   $('nexusBootPercent').textContent=Math.round(value)+'% · '+(kind==='denied'?'VERIFICATION FAILED':'WELCOME SEQUENCE');
 }
+function nexusSetFinalOutcome(heading,subheading){
+  const status=$('nexusBootStatus');
+  if(!status)return;
+  const first=document.createElement('div');first.className='bc-outcome-title';first.textContent=heading;
+  const second=document.createElement('div');second.className='bc-outcome-subtitle';second.textContent=subheading;
+  status.replaceChildren(first,second);
+}
 const nexusPause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 function nexusWelcomeElements(){
   const overlay=$('nexusBootOverlay');
@@ -2678,8 +2701,8 @@ async function nexusProgressSuccess(){
         await nexusPause(55);
       }
     }else nexusProgressUpdate(100,'SECURE SESSION ESTABLISHED');
-    const message='ACCESS GRANTED — WELCOME TO BLACKCELL CORPORATION';
-    nexusProgressUpdate(100,message);
+    nexusProgressUpdate(100,'ACCESS GRANTED');
+    nexusSetFinalOutcome('ACCESS GRANTED','WELCOME TO BLACKCELL CORPORATION');
     if(foot)foot.textContent='OPENING COMMAND CENTER…';
     await nexusPause(reduced?1000:10000);
   }finally{
@@ -2703,7 +2726,8 @@ async function nexusProgressDenied(reason='Authentication failed.'){
         await nexusPause(50);
       }
     }
-    nexusProgressUpdate(65,'ACCESS DENIED — AUTHENTICATION FAILED','denied');
+    nexusProgressUpdate(65,'ACCESS DENIED','denied');
+    nexusSetFinalOutcome('ACCESS DENIED','AUTHENTICATION FAILED');
     if(foot)foot.textContent='UNABLE TO VERIFY CREDENTIALS · RETURNING TO SIGN IN';
     await nexusPause(reduced?700:3000);
   }finally{
