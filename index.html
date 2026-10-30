@@ -961,6 +961,16 @@ body.nexus-session-checking #login{visibility:hidden!important;pointer-events:no
 #nexusBootOverlay .bc-welcome-active .nexus-boot-status{color:#f4f5f7;font-weight:800;font-size:clamp(17px,3.5vw,22px);text-align:center;letter-spacing:.025em;line-height:1.45;min-height:56px}
 #nexusBootOverlay .bc-welcome-active .nexus-boot-foot{letter-spacing:.15em}
 @media(prefers-reduced-motion:reduce){#nexusBootOverlay .nexus-boot-progress{transition:none!important}}
+
+/* BLACKCELL authorization results: keep red branding, green only for verified success. */
+#nexusBootOverlay .bc-granted-active .nexus-boot-status{color:#48e987!important;text-shadow:0 0 12px rgba(42,210,109,.25)}
+#nexusBootOverlay .bc-granted-active .nexus-boot-progress{background:linear-gradient(90deg,#16833d,#46e985)!important;box-shadow:0 0 14px rgba(40,225,116,.4)!important}
+#nexusBootOverlay .bc-granted-active .nexus-boot-kicker{color:#a9b6bf!important}
+#nexusBootOverlay .bc-granted-active .nexus-boot-foot{color:#a9b6bf!important}
+#nexusBootOverlay .bc-denied-active .nexus-boot-status{color:#ff425b!important;text-shadow:0 0 12px rgba(245,45,72,.25)}
+#nexusBootOverlay .bc-denied-active .nexus-boot-progress{background:linear-gradient(90deg,#8b1628,#ff425b)!important;box-shadow:0 0 14px rgba(240,43,70,.3)!important}
+#nexusBootOverlay .bc-denied-active .nexus-boot-foot{color:#f18c98!important}
+#nexusBootOverlay .bc-denied-active .nexus-boot-kicker{color:#b8bec8!important}
 </style></head><body class="nexus-session-checking"><div id="nexusBootOverlay" class="nexus-boot-overlay" aria-live="polite" aria-label="Checking NEXUS session"><div class="nexus-boot-box"><div class="nexus-boot-kicker">BLACKCELL / NEXUS</div><div id="nexusBootStatus" class="nexus-boot-status">CHECKING SESSION…</div><div class="nexus-boot-track"><div id="nexusBootProgress" class="nexus-boot-progress"></div></div><div id="nexusBootPercent" class="nexus-boot-percent">SECURE TERMINAL</div><div class="nexus-boot-foot">AUTHORIZED ACCESS REQUIRED</div></div></div>
 
 <div id="login" class="gate"><form id="loginForm" class="panel">
@@ -2623,52 +2633,83 @@ function nexusStartLoginBoot(){
   if(overlay)overlay.hidden=true;
   document.body.classList.remove('nexus-session-checking');
 }
-function nexusProgressUpdate(value,message){
+function nexusProgressUpdate(value,message,kind='success'){
   const overlay=$('nexusBootOverlay');
   if(!overlay)return;
   overlay.hidden=false;
   document.body.classList.add('nexus-session-checking');
+  const box=overlay.querySelector('.nexus-boot-box');
+  box?.classList.toggle('bc-denied-active',kind==='denied');
   $('nexusBootStatus').textContent=message;
   $('nexusBootProgress').style.width=Math.max(0,Math.min(100,value))+'%';
-  $('nexusBootPercent').textContent=Math.round(value)+'% · WELCOME SEQUENCE';
+  $('nexusBootPercent').textContent=Math.round(value)+'% · '+(kind==='denied'?'VERIFICATION FAILED':'WELCOME SEQUENCE');
 }
-async function nexusProgressSuccess(){
-  // This runs ONLY after successful Supabase authentication, server-side gateway
-  // grant verification, and authorized record loading. The percentage is cinematic
-  // playback progress, NOT a live measurement of server health or elapsed work.
-  const phases=[
-    [0,'AUTHORIZED SESSION ESTABLISHED'],
-    [20,'EMAIL AND PASSWORD VERIFIED'],
-    [40,'ACCESS AND SECURITY CODES VERIFIED'],
-    [60,'AUTHORIZED CLOUD RECORDS LOADED'],
-    [80,'PREPARING NEXUS COMMAND CENTER'],
-    [100,'ACCESS GRANTED — WELCOME TO BLACKCELL CORPORATION']
-  ];
+const nexusPause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+function nexusWelcomeElements(){
   const overlay=$('nexusBootOverlay');
   const box=overlay?.querySelector('.nexus-boot-box');
-  if(!overlay||!box)return;
-  overlay.hidden=false;
-  document.body.classList.add('nexus-session-checking');
-  box.classList.add('bc-welcome-active');
-  let heading=box.querySelector('.bc-welcome-heading');
-  if(!heading){
-    heading=document.createElement('div');heading.className='bc-welcome-heading';
-    heading.textContent='BLACKCELL CORPORATION';
-    const sub=document.createElement('div');sub.className='bc-welcome-sub';
-    sub.textContent='NEXUS MANAGEMENT SYSTEM';
+  if(!box)return null;
+  if(!box.querySelector('.bc-welcome-heading')){
+    const heading=document.createElement('div');heading.className='bc-welcome-heading';heading.textContent='BLACKCELL CORPORATION';
+    const sub=document.createElement('div');sub.className='bc-welcome-sub';sub.textContent='NEXUS MANAGEMENT SYSTEM';
     const emblem=document.querySelector('#login .bc-minimal-emblem');
-    if(emblem){const img=document.createElement('img');img.src=emblem.src;img.alt='Blackcell Corporation emblem';img.className='bc-welcome-emblem';box.prepend(img);}
-    box.insertBefore(heading,box.querySelector('.nexus-boot-kicker'));
-    heading.after(sub);
+    if(emblem?.src){const img=document.createElement('img');img.src=emblem.src;img.alt='Blackcell Corporation emblem';img.className='bc-welcome-emblem';box.prepend(img);}
+    box.insertBefore(heading,box.querySelector('.nexus-boot-kicker'));heading.after(sub);
   }
-  const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  return box;
+}
+async function nexusProgressSuccess(){
+  // Authorization and authorized-record loading have already succeeded.
+  // The progress indicator is a cinematic welcome, not a server-health measurement.
+  const box=nexusWelcomeElements();if(!box)return;
+  box.classList.remove('bc-denied-active');box.classList.add('bc-welcome-active','bc-granted-active');
+  const foot=box.querySelector('.nexus-boot-foot');if(foot)foot.textContent='OPENING COMMAND CENTER…';
+  const kicker=box.querySelector('.nexus-boot-kicker');if(kicker)kicker.textContent='BLACKCELL / NEXUS';
+  const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   try{
-    for(const [value,message] of phases){
-      nexusProgressUpdate(value,message);
-      if(!reduced)await new Promise(resolve=>setTimeout(resolve,value===100?10000:480));
-      else if(value===100)await new Promise(resolve=>setTimeout(resolve,1500));
+    if(!reduced){
+      const duration=5500,started=performance.now();
+      while(true){
+        const ratio=Math.min(1,(performance.now()-started)/duration);
+        const pct=Math.round(ratio*100);
+        const status=ratio<0.35?'SECURE SESSION ESTABLISHED':ratio<0.75?'PREPARING COMMAND CENTER':'INITIALIZING NEXUS';
+        nexusProgressUpdate(pct,status);
+        if(ratio>=1)break;
+        await nexusPause(55);
+      }
+    }else nexusProgressUpdate(100,'SECURE SESSION ESTABLISHED');
+    const message='ACCESS GRANTED — WELCOME TO BLACKCELL CORPORATION';
+    nexusProgressUpdate(100,message);
+    if(foot)foot.textContent='OPENING COMMAND CENTER…';
+    await nexusPause(reduced?1000:10000);
+  }finally{
+    box.classList.remove('bc-welcome-active','bc-granted-active');
+  }
+}
+async function nexusProgressDenied(reason='Authentication failed.'){
+  // Only show this for a genuine authentication/gateway failure. No secret values are displayed.
+  const box=nexusWelcomeElements();if(!box)return;
+  box.classList.remove('bc-granted-active');box.classList.add('bc-welcome-active','bc-denied-active');
+  const foot=box.querySelector('.nexus-boot-foot');if(foot)foot.textContent='RETURNING TO SIGN IN…';
+  const kicker=box.querySelector('.nexus-boot-kicker');if(kicker)kicker.textContent='BLACKCELL / NEXUS';
+  const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  try{
+    if(!reduced){
+      const start=performance.now();
+      while(true){
+        const ratio=Math.min(1,(performance.now()-start)/1300);
+        nexusProgressUpdate(Math.round(65*ratio),'SECURITY VERIFICATION UNSUCCESSFUL','denied');
+        if(ratio>=1)break;
+        await nexusPause(50);
+      }
     }
-  }finally{box.classList.remove('bc-welcome-active');}
+    nexusProgressUpdate(65,'ACCESS DENIED — AUTHENTICATION FAILED','denied');
+    if(foot)foot.textContent='UNABLE TO VERIFY CREDENTIALS · RETURNING TO SIGN IN';
+    await nexusPause(reduced?700:3000);
+  }finally{
+    box.classList.remove('bc-welcome-active','bc-denied-active');
+    nexusFinishSessionCheck();
+  }
 }
 function nexusFinishSessionCheck(){
   const overlay=document.getElementById('nexusBootOverlay');if(overlay)overlay.hidden=true;
@@ -2790,6 +2831,7 @@ $('loginForm').addEventListener('submit', async e => {
   await nexusInitialRestorePromise;
   let codes=null;
   let signedIn=false;
+  let authStage='password';
   const inputs=$('loginForm').querySelectorAll('input');
   try{
     // STEP 1: authenticate email and password FIRST.
@@ -2800,11 +2842,13 @@ $('loginForm').addEventListener('submit', async e => {
     inputs[1].value='';
     if(error||!data?.user)throw new Error('Email or password was not accepted.');
     signedIn=true;
+    authStage='gateway';
     // STEP 2: collect both gateway codes (never store them in persistent storage).
     $('nexusAuthStatus').textContent='Account verified. Enter both security codes.';
     codes=await nexusCollectGatewayCodes();
     // STEP 3: confirm both gateway codes and the server-side session grant.
     await nexusVerifyGatewayCodes(codes);
+    authStage='cloud';
     // STEP 4: confirm the authenticated user and load authorized cloud records.
     // Only after those checks succeed will the post-login welcome animation play.
     const opened=await nexusOpenAuthorizedSession(true);
@@ -2815,7 +2859,12 @@ $('loginForm').addEventListener('submit', async e => {
       const {error:signOutError}=await nexusDB.auth.signOut();
       if(signOutError)console.error('NEXUS sign-out cleanup failed:',signOutError.code);
     }
-    nexusShowSignedOut(err?.message||'Sign in or gateway verification failed.');
+    const failureMessage=err?.message||'Sign in or gateway verification failed.';
+    nexusShowSignedOut(failureMessage);
+    // Cancelling the code form isn't a denied credential attempt.
+    if(authStage!=='cloud' && !/Gateway entry cancelled/i.test(failureMessage)){
+      await nexusProgressDenied(failureMessage);
+    }
   }finally{
     if(codes){codes.accessCode='';codes.securityCode='';codes=null;}
     nexusSigningIn=false;
