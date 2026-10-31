@@ -3234,12 +3234,31 @@ async function nxPendingTransfer(uid){
  const r=nexusPendingItems().find(x=>x.uid===uid);if(!r)return;
  if(r.state!=='Arizona'){alert(r.state+' registration template is not yet available. The pending intake remains saved.');return}
  if(r.inmateId&&profiles.some(p=>String(p.id)===r.inmateId)){alert('This inmate ID is already registered. Resolve the duplicate before transfer.');return}
- let pendingPhotoPath=r.photoPath||nxPendingPhotoPaths(r)[0]||null;
- try{if(pendingPhotoPath){const url=await signedPhotoUrl(pendingPhotoPath);const response=await fetch(url,{cache:'no-store'});if(!response.ok)throw new Error('Photograph is unavailable ('+response.status+')');const blob=await response.blob();if(!blob.size||!blob.type.startsWith('image/'))throw new Error('Photograph is empty or not an image');}}
- catch(err){alert('Photo verification failed. Intake was kept and no profile was created: '+err.message);return}
- nxPendingTransferId=r.uid;window.nxPendingPhotoTransferRequired=!!pendingPhotoPath;window.nxPendingOriginalPhotoPath=pendingPhotoPath;window.nxPendingPreviewPhotoPath=pendingPhotoPath;
- nexusPendingRegistrationDraft={first:r.first,last:r.last,id:r.inmateId||'',state:'Arizona'};
+ const pendingPhotoPath=r.photoPath||nxPendingPhotoPaths(r)[0]||null;
+ let pendingPhotoUrl='';
+ try{
+  if(pendingPhotoPath){
+   pendingPhotoUrl=await signedPhotoUrl(pendingPhotoPath);
+   const response=await fetch(pendingPhotoUrl,{cache:'no-store'});
+   if(!response.ok)throw new Error('Photograph is unavailable ('+response.status+')');
+   const blob=await response.blob();
+   if(!blob.size||!blob.type.startsWith('image/'))throw new Error('Photograph is empty or not an image');
+  }
+ }catch(err){alert('Photo verification failed. Intake was kept and no profile was created: '+err.message);return}
+ nxPendingTransferId=r.uid;
+ window.nxPendingPhotoTransferRequired=!!pendingPhotoPath;
+ window.nxPendingOriginalPhotoPath=pendingPhotoPath;
+ window.nxPendingPreviewPhotoPath=pendingPhotoPath;
+ // Registration renders photo(p), not photo_path. Include the signed image URL in the draft.
+ // Keep the storage path separately so saving the Master Record persists the real private object.
+ nexusPendingRegistrationDraft={first:r.first,last:r.last,id:r.inmateId||'',state:'Arizona',photo_path:pendingPhotoPath,photo:pendingPhotoUrl};
  editId=null;nexusBlankReregId=null;nexusRegistrationStage='form';tableRows={};selectedPhotoFile=null;photoData='';go('register');
+ if(pendingPhotoPath){
+  const preview=document.querySelector('#registrationPhotoPreview .photo');
+  if(!preview || preview.tagName!=='IMG' || !preview.getAttribute('src')){
+   alert('The intake photograph did not appear in registration. Transfer is still pending; do not save until the image is visible.');
+  }
+ }
 }
 async function nxPendingRemove(uid){const rows=nexusPendingItems();const item=rows.find(x=>x.uid===uid);if(!item)return;
  if(!confirm('Remove this pending intake from the queue? This does not delete a completed inmate record.'))return;
@@ -3556,10 +3575,11 @@ async function submitMasterRecord(form,fd){
   if(status){status.textContent='Saving to Supabase...';status.classList.remove('hidden','error')}
   try{
 if(nxPendingTransferId && window.nxPendingPhotoTransferRequired && !window.nxPendingOriginalPhotoPath && !selectedPhotoFile){showMasterSaveError('Intake photograph is missing. Transfer stopped; intake retained.');return;}
+if(nxPendingTransferId && window.nxPendingPhotoTransferRequired && !selectedPhotoFile && !document.querySelector('#registrationPhotoPreview img.photo')){showMasterSaveError('Intake photograph is not visible in registration. Save stopped; pending intake retained.');return;}
 captureRows();const id=String(fd.get('id')||'').trim();if(!id){alert('Inmate ID is required.');return}if(nexusBlankReregId && id!==nexusBlankReregId){showMasterSaveError('For re-registration, use the original inmate ID: '+nexusBlankReregId);return}if(profiles.some(p=>p.id===id&&p.id!==editId)){alert('This Inmate ID already exists. Open its Master Record and choose RE-REGISTER (BLANK FORM).');return}const old=editId?find(editId):null;if(nexusBlankReregId && !confirm('Re-register this Arizona inmate using the new entries? The previous profile details will be replaced, but existing history and personal records will be retained. Make sure you have a backup.'))return;if(old && id!==editId){
   alert('Changing an existing Inmate ID is temporarily disabled while we finish Supabase synchronization.');
   return;
-}const p={...(old||{})};p.previous_photo_path=old?.photo_path||null;for(const [k,v] of fd.entries())if(k!=='photo')p[k]=String(v);p.id=id;if(p.state==='Arizona')p.facility=String(fd.get('location')||'').trim();p.photo=old?.photo||'';if(nxPendingTransferId && window.nxPendingOriginalPhotoPath && !selectedPhotoFile)p.photo_path=window.nxPendingOriginalPhotoPath;for(const t of tableDefs)p[t.key]=((nexusBlankReregId && !(tableRows[t.key]||[]).some(r=>Array.isArray(r)?r.some(v=>String(v||'').trim()):false))?old?.[t.key]||[]:(tableRows[t.key]||old?.[t.key]||[])).filter(r=>Array.isArray(r)?r.some(x=>String(x||'').trim()):Object.values(r||{}).some(x=>String(x||'').trim()));try {
+}const p={...(old||{})};p.previous_photo_path=old?.photo_path||null;for(const [k,v] of fd.entries())if(k!=='photo')p[k]=String(v);p.id=id;if(p.state==='Arizona')p.facility=String(fd.get('location')||'').trim();p.photo=old?.photo||nexusPendingRegistrationDraft?.photo||'';if(nxPendingTransferId && window.nxPendingOriginalPhotoPath && !selectedPhotoFile){p.photo_path=window.nxPendingOriginalPhotoPath;p.photo=nexusPendingRegistrationDraft?.photo||p.photo;}for(const t of tableDefs)p[t.key]=((nexusBlankReregId && !(tableRows[t.key]||[]).some(r=>Array.isArray(r)?r.some(v=>String(v||'').trim()):false))?old?.[t.key]||[]:(tableRows[t.key]||old?.[t.key]||[])).filter(r=>Array.isArray(r)?r.some(x=>String(x||'').trim()):Object.values(r||{}).some(x=>String(x||'').trim()));try {
   await saveMasterToSupabase(p);
   if(nxPendingTransferId && window.nxPendingPhotoTransferRequired){
     if(!p.photo_path)throw new Error('The transferred photograph has no saved cloud path. Intake was retained.');
