@@ -1696,6 +1696,59 @@ body :is(.nexus-boot-progress,.nx-refresh-dot){background:#cbd0d9!important}
 #shell .ncc :is(.ncc-panel,.nxcc-box){min-width:0!important}
 @media(max-width:800px){#shell .sidebar{border-radius:18px!important;background:#15171c!important}}
 </style>
+
+<style id="nx-final-charcoal-comprehensive">
+:root{--nx-surface:#181b20;--nx-raised:#20242a;--nx-border:#3a4049;--nx-muted:#a5abb5;--nx-silver:#dce0e6;--nx-ink:#f3f4f6}
+html,body{background:#0c0e11!important;color:var(--nx-ink)!important}
+body{background-image:radial-gradient(ellipse at 55% -20%,#2b3038 0%,transparent 60%)!important}
+#shell,.main,#content,.content{color:var(--nx-ink)}
+#shell .sidebar{position:sticky!important;top:16px!important;align-self:flex-start!important;margin:16px 0 16px 16px!important;height:calc(100dvh - 32px)!important;max-height:calc(100dvh - 32px)!important;background:linear-gradient(160deg,#22262c,#14171b 65%)!important;border:1px solid #454b54!important;border-radius:23px!important;box-shadow:0 16px 48px #0009,0 1px 1px #ffffff12 inset!important;overflow:auto!important}
+#shell .sidebar .nav.active{background:linear-gradient(180deg,#42474f,#30353c)!important;border:1px solid #5b626c!important;color:white!important;box-shadow:inset 0 1px #ffffff1b!important}
+#shell .sidebar .nav,#shell .sidebar button{border-radius:12px!important}
+#shell .nx-side-bottom{margin-top:auto!important;padding-top:14px!important;border-top:1px solid #424750!important}
+#shell #lock{display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;min-height:42px!important;background:#2d3239!important;border:1px solid #59606a!important;color:#f2f3f5!important;box-shadow:inset 0 1px #ffffff18!important}
+#shell .main{min-width:0!important;flex:1!important}
+#shell .content{max-width:none!important;width:100%!important;margin:0 auto!important;padding:20px clamp(14px,3vw,36px)!important}
+#shell .ncc,#shell .nxcc{width:min(100%,1500px)!important;margin-inline:auto!important}
+#shell .ncc-statgrid,#shell .ncc-grid,#shell .nxcc-grid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(215px,1fr))!important;gap:16px!important}
+#shell .ncc :is(.ncc-panel,.ncc-stat,.ncc-header,.ncc-finance),#shell .nxcc :is(.nxcc-box,.nxcc-card){background:linear-gradient(145deg,#20242a,#16191e)!important;border:1px solid #3c424b!important;border-radius:20px!important;box-shadow:0 10px 28px #0004!important}
+#shell :is(.panel,.card,.report-static,.nx-apple-intake,.fcx,.record-center,.nexus-overall-window,.nx-apple-directory,.nx-apple-toolbar,.nx-apple-stats,.nx-apple-heading){border-color:#3d434b!important;color:#eef0f3!important}
+#shell :is(.panel,.card,.report-static,.nx-apple-toolbar,.nx-apple-stats,.nx-apple-heading){background:#1b1e23!important}
+#shell :is(.tabs,.actions,.nx-apple-segment){gap:8px!important}
+#shell :is(.tab,.btn,button,select,input,textarea){font-family:inherit}
+#shell :is(.tabs .tab,.btn,.nx-apple-segment button){border-radius:12px!important;transition:background .16s,border-color .16s,transform .16s!important}
+#shell :is(.tabs .tab,.btn.alt,.nx-apple-segment button){background:#292d34!important;color:#dce0e6!important;border:1px solid #4b515b!important}
+#shell :is(.tabs .tab.active,.nx-apple-segment button.selected,.btn:not(.alt)){background:linear-gradient(180deg,#d9dde3,#adb4bf)!important;color:#14171b!important;border:1px solid #e5e7eb!important;font-weight:650!important}
+#shell :is(input,select,textarea){background:#111418!important;border:1px solid #474d56!important;color:#f1f2f4!important;border-radius:11px!important;box-shadow:none!important}
+#shell :is(input,select,textarea):focus{outline:2px solid #9da5b2!important;outline-offset:1px!important}
+#shell :is(.heading,.report-static-title,h1,h2,h3,h4){color:#f2f3f6!important}
+#shell :is(.muted,small,.hint){color:#aab0ba!important}
+#shell :is(.nx-pending-avatar,.nx-pending-card img,.nxp-photoitem img){min-width:112px!important;min-height:112px!important;object-fit:cover!important;border-radius:15px!important}
+#shell .nx-pending-card{background:#1c2025!important;border:1px solid #454b55!important;border-radius:18px!important;gap:20px!important}
+#shell .nxp-dialog{background:#1b1f25!important;border:1px solid #5a6069!important;border-radius:24px!important;box-shadow:0 25px 80px #000c!important}
+#shell :is(table thead,table thead tr,table thead th){background:#2c3139!important;color:#f0f2f5!important;opacity:1!important;backdrop-filter:none!important}
+#shell table thead th{position:sticky!important;top:0;z-index:3;border-bottom:1px solid #5b616b!important}
+#shell :is(table tbody tr,table tbody td){border-color:#373c44!important}
+#shell .nx-comm-workspace{width:100%;max-width:1400px;margin:auto;display:grid;gap:16px}
+#shell .nx-comm-heading,#shell .nx-comm-panel{padding:22px;border:1px solid #454b54;border-radius:20px;background:linear-gradient(145deg,#22262c,#171a1f)}
+#shell .nx-comm-heading>span{font-size:11px;letter-spacing:.16em;color:#adb4bf}
+#shell .nx-comm-heading h2{margin:8px 0;font-size:25px}
+#shell .nx-comm-heading p{color:#b2b8c1}
+#shell .nx-comm-selector{display:flex;flex-wrap:wrap;gap:10px}
+#shell .nx-comm-selector button{padding:12px 19px;border-radius:12px;border:1px solid #515861;background:#282d34;color:#dce0e6;font-weight:600;cursor:pointer}
+#shell .nx-comm-selector button.active{background:#d5d9df;color:#15181d;border-color:#e9ebef}
+#shell .nx-comm-title{font-size:12px;font-weight:750;letter-spacing:.14em;color:#dce0e6;margin-bottom:14px}
+#shell .nx-comm-records{max-height:650px;overflow:auto}
+#shell .nx-comm-message{border:1px solid #454b54;background:#20242a;border-radius:14px;padding:16px;margin:10px 0;overflow-wrap:anywhere}
+#shell .nx-comm-message>div{display:flex;justify-content:space-between;gap:12px;color:#c7cdd6}
+#shell .nx-comm-message p{white-space:pre-wrap;line-height:1.6;color:#e8eaf0}
+#shell .nx-comm-empty{padding:35px;text-align:center;color:#b5bbc5}
+#shell .report-static,#shell .nexus-overall-window{background:#1b1f25!important;border:1px solid #454b54!important;border-radius:20px!important}
+#shell :is([class*="financial"],[class*="bulk"],[class*="record"],[class*="search"],[class*="facilit"]):is(section,article,div.panel,div.card){border-color:#424852}
+#shell :is(.bell,.nx-alert-count){color:#e4e7eb!important}
+@media(max-width:900px){#shell .sidebar{position:fixed!important;margin:0!important;top:8px!important;left:8px!important;height:calc(100dvh - 16px)!important;max-height:calc(100dvh - 16px)!important;z-index:1000!important}#shell .content{padding:14px!important}}
+@media(prefers-reduced-motion:reduce){#shell *{transition:none!important;animation-duration:.01ms!important}}
+</style>
 </head><body class="nexus-session-checking"><div id="nexusBootOverlay" class="nexus-boot-overlay nx-refresh-active" aria-live="polite" aria-label="Refreshing NEXUS"><div class="nexus-boot-box"><div class="nx-refresh-brand">BLACKCELL CORPORATION</div><div class="nx-refresh-sub">NEXUS MANAGEMENT SYSTEM</div><div class="nx-refresh-rule"></div><div id="nexusBootStatus" class="nexus-boot-status">Refreshing NEXUS</div><div class="nx-refresh-description">Restoring your secure session and preparing your workspace.</div><div class="nexus-boot-kicker" hidden>BLACKCELL / NEXUS</div><div class="nexus-boot-track"><div id="nexusBootProgress" class="nexus-boot-progress"></div></div><div class="nx-refresh-stats"><span id="nxRefreshStage">Initializing NEXUS</span><span id="nexusBootPercent" class="nexus-boot-percent">0%</span></div><div class="nexus-boot-foot"><span id="nxRefreshDot" class="nx-refresh-dot"></span><span id="nxRefreshSecurity">SECURE SYSTEM INITIALIZATION</span></div></div></div>
 
 <div id="login" class="gate"><form id="loginForm" class="panel">
@@ -2449,7 +2502,10 @@ function nexusCommunicationSubscores(){
  </div>`;
 }
 
-function communicationCenter(){return `<div class="nexus-overall-window">${nexusCombinedCommunicationScore()}${nexusCommunicationSubscores()}</div><div class="report-static"><div class="report-static-title">COMMUNICATION ACTIVITY — TEXTS, EMAILS & CALLS</div><div class="report-static-body">${communication()}</div></div>`}
+let nxCommView='all';
+function communicationCenter(){return `<div class="nx-comm-workspace"><div class="nx-comm-heading"><span>PERSONAL FILE / COMMUNICATIONS</span><h2>Communication Activity</h2><p>Choose a message type to review the saved history.</p></div><div class="nx-comm-selector" role="group" aria-label="Communication type">${[['all','All Activity'],['text','Texts'],['email','Emails'],['call','Calls']].map(([key,label])=>`<button type="button" class="${nxCommView===key?'active':''}" data-nx-comm-filter="${key}" aria-pressed="${nxCommView===key}">${label}</button>`).join('')}</div><div class="nx-comm-panel"><div class="nx-comm-title">${nxCommView==='all'?'ALL COMMUNICATIONS':nxCommView==='text'?'TEXT MESSAGES':nxCommView==='email'?'EMAIL MESSAGES':'CALL RECORDS'}</div><div class="nx-comm-records">${nxCommView==='all'?communication():nxFilteredCommunication()}</div></div>${nxCommView==='all'?`<div class="nexus-overall-window">${nexusCombinedCommunicationScore()}${nexusCommunicationSubscores()}</div>`:''}</div>`}
+function nxFilteredCommunication(){const entries=(file().entries||[]).filter(e=>String(e.type||'').toLowerCase()===nxCommView);if(!entries.length)return '<div class="nx-comm-empty">No saved '+(nxCommView==='text'?'text messages':nxCommView==='email'?'emails':'calls')+' for this profile.</div>';return entries.slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))).map(e=>`<article class="nx-comm-message"><div><strong>${esc(e.date||'Undated')}</strong><span>${esc(e.direction||e.sender||e.author||nxCommView)}</span></div><p>${esc(e.text||e.body||e.message||e.details||e.notes||'Saved activity')}</p></article>`).join('')}
+
 
 function sexualLevel(){const entries=financeFile().sexualEntries||[],now=Date.now();const recent=entries.filter(e=>{const d=new Date(e.date+'T12:00:00').getTime();return Number.isFinite(d)&&d<=now&&d>now-30*86400000});const n=recent.length;return {n,level:n<5?'LOW':n<15?'MEDIUM':'HIGH',cls:n<5?'low':n<15?'medium':'high'}}
 
@@ -3066,11 +3122,12 @@ async function nxPendingTransfer(uid){
  const r=nexusPendingItems().find(x=>x.uid===uid);if(!r)return;
  if(r.state!=='Arizona'){alert(r.state+' registration template is not yet available. The pending intake remains saved.');return}
  if(r.inmateId&&profiles.some(p=>String(p.id)===r.inmateId)){alert('This inmate ID is already registered. Resolve the duplicate before transfer.');return}
- let pendingPhoto=null;
- try{if(r.photoPath||nxPendingPhotoPaths(r).length){const url=await signedPhotoUrl(r.photoPath||nxPendingPhotoPaths(r)[0]);const result=await fetch(url);if(!result.ok)throw Error('Could not retrieve intake photograph');const blob=await result.blob();if(!blob.size)throw Error('Intake photograph was empty');const type=blob.type||'image/jpeg';pendingPhoto=new File([blob],'pending-intake-photo.'+(type==='image/png'?'png':type==='image/webp'?'webp':'jpg'),{type});if(pendingPhoto.size>1500000)throw Error('Intake photograph exceeds the 1.5 MB upload limit. Compress the image before transfer.');}}
- catch(err){alert('The pending photo could not be loaded. Transfer stopped so it will not be lost: '+err.message);return}
- nxPendingTransferId=r.uid;window.nxPendingPhotoTransferRequired=!!pendingPhoto;nexusPendingRegistrationDraft={first:r.first,last:r.last,id:r.inmateId||'',state:'Arizona'};
- editId=null;nexusBlankReregId=null;nexusRegistrationStage='form';tableRows={};selectedPhotoFile=pendingPhoto;photoData='';go('register');
+ let pendingPhotoPath=r.photoPath||nxPendingPhotoPaths(r)[0]||null;
+ try{if(pendingPhotoPath){const url=await signedPhotoUrl(pendingPhotoPath);const response=await fetch(url,{cache:'no-store'});if(!response.ok)throw new Error('Photograph is unavailable ('+response.status+')');const blob=await response.blob();if(!blob.size||!blob.type.startsWith('image/'))throw new Error('Photograph is empty or not an image');}}
+ catch(err){alert('Photo verification failed. Intake was kept and no profile was created: '+err.message);return}
+ nxPendingTransferId=r.uid;window.nxPendingPhotoTransferRequired=!!pendingPhotoPath;window.nxPendingOriginalPhotoPath=pendingPhotoPath;
+ nexusPendingRegistrationDraft={first:r.first,last:r.last,id:r.inmateId||'',state:'Arizona'};
+ editId=null;nexusBlankReregId=null;nexusRegistrationStage='form';tableRows={};selectedPhotoFile=null;photoData='';go('register');
 }
 async function nxPendingRemove(uid){const rows=nexusPendingItems();const item=rows.find(x=>x.uid===uid);if(!item)return;
  if(!confirm('Remove this pending intake from the queue? This does not delete a completed inmate record.'))return;
@@ -3276,6 +3333,7 @@ function preserveRegistrationAndRender(){const form=$('recordForm');const values
 
 
 
+$('content').addEventListener('click',e=>{const b=e.target.closest('[data-nx-comm-filter]');if(!b)return;nxCommView=b.dataset.nxCommFilter;render();});
 $('content').addEventListener('change',async e=>{
  if(e.target.id==='facState'){facState=e.target.value;const x=facEntries().find(p=>p.state===facState);if(x){facPrison=x.prison;facFacility=x.facility}render();return}
  if(e.target.id==='facPrison'){facPrison=e.target.value;const x=facEntries().find(p=>p.state===facState&&p.prison===facPrison);if(x)facFacility=x.facility;render();return}
@@ -3385,11 +3443,11 @@ async function submitMasterRecord(form,fd){
   if(button){button.disabled=true;button.textContent='SAVING...'}
   if(status){status.textContent='Saving to Supabase...';status.classList.remove('hidden','error')}
   try{
-if(nxPendingTransferId && window.nxPendingPhotoTransferRequired && !selectedPhotoFile){showMasterSaveError('Intake photograph is missing from the registration form. Transfer stopped; the intake remains saved.');return;}
+if(nxPendingTransferId && window.nxPendingPhotoTransferRequired && !window.nxPendingOriginalPhotoPath && !selectedPhotoFile){showMasterSaveError('Intake photograph is missing. Transfer stopped; intake retained.');return;}
 captureRows();const id=String(fd.get('id')||'').trim();if(!id){alert('Inmate ID is required.');return}if(nexusBlankReregId && id!==nexusBlankReregId){showMasterSaveError('For re-registration, use the original inmate ID: '+nexusBlankReregId);return}if(profiles.some(p=>p.id===id&&p.id!==editId)){alert('This Inmate ID already exists. Open its Master Record and choose RE-REGISTER (BLANK FORM).');return}const old=editId?find(editId):null;if(nexusBlankReregId && !confirm('Re-register this Arizona inmate using the new entries? The previous profile details will be replaced, but existing history and personal records will be retained. Make sure you have a backup.'))return;if(old && id!==editId){
   alert('Changing an existing Inmate ID is temporarily disabled while we finish Supabase synchronization.');
   return;
-}const p={...(old||{})};p.previous_photo_path=old?.photo_path||null;for(const [k,v] of fd.entries())if(k!=='photo')p[k]=String(v);p.id=id;if(p.state==='Arizona')p.facility=String(fd.get('location')||'').trim();p.photo=old?.photo||'';for(const t of tableDefs)p[t.key]=((nexusBlankReregId && !(tableRows[t.key]||[]).some(r=>Array.isArray(r)?r.some(v=>String(v||'').trim()):false))?old?.[t.key]||[]:(tableRows[t.key]||old?.[t.key]||[])).filter(r=>Array.isArray(r)?r.some(x=>String(x||'').trim()):Object.values(r||{}).some(x=>String(x||'').trim()));try {
+}const p={...(old||{})};p.previous_photo_path=old?.photo_path||null;for(const [k,v] of fd.entries())if(k!=='photo')p[k]=String(v);p.id=id;if(p.state==='Arizona')p.facility=String(fd.get('location')||'').trim();p.photo=old?.photo||'';if(nxPendingTransferId && window.nxPendingOriginalPhotoPath && !selectedPhotoFile)p.photo_path=window.nxPendingOriginalPhotoPath;for(const t of tableDefs)p[t.key]=((nexusBlankReregId && !(tableRows[t.key]||[]).some(r=>Array.isArray(r)?r.some(v=>String(v||'').trim()):false))?old?.[t.key]||[]:(tableRows[t.key]||old?.[t.key]||[])).filter(r=>Array.isArray(r)?r.some(x=>String(x||'').trim()):Object.values(r||{}).some(x=>String(x||'').trim()));try {
   await saveMasterToSupabase(p);
   if(nxPendingTransferId && window.nxPendingPhotoTransferRequired){
     if(!p.photo_path)throw new Error('The transferred photograph has no saved cloud path. Intake was retained.');
@@ -3399,7 +3457,7 @@ captureRows();const id=String(fd.get('id')||'').trim();if(!id){alert('Inmate ID 
 } catch (err) {
   showMasterSaveError('Master Record was not saved to Supabase: ' + err.message);
   return;
-}if(old){const idx=profiles.indexOf(old);profiles[idx]=p;if(editId!==id&&personal[editId]){personal[id]=personal[editId];delete personal[editId];savePersonal()}}else profiles.push(p);if(saveProfiles()){if(nxPendingTransferId){const remaining=nexusPendingItems().filter(x=>x.uid!==nxPendingTransferId);store(NX_PENDING_KEY,remaining);nxPendingTransferId=null;nexusPendingRegistrationDraft=null;window.nxPendingPhotoTransferRequired=false;}detailId=id;editId=null;nexusBlankReregId=null;photoData='';selectedPhotoFile=null;tableRows={};go('detail');alert('Master Record saved successfully, including all entered section rows.')}
+}if(old){const idx=profiles.indexOf(old);profiles[idx]=p;if(editId!==id&&personal[editId]){personal[id]=personal[editId];delete personal[editId];savePersonal()}}else profiles.push(p);if(saveProfiles()){if(nxPendingTransferId){const remaining=nexusPendingItems().filter(x=>x.uid!==nxPendingTransferId);if(!store(NX_PENDING_KEY,remaining))console.warn('Intake queue cleanup did not persist; profile saved, intake retained for reconciliation');nxPendingTransferId=null;nexusPendingRegistrationDraft=null;window.nxPendingPhotoTransferRequired=false;window.nxPendingOriginalPhotoPath=null;}detailId=id;editId=null;nexusBlankReregId=null;photoData='';selectedPhotoFile=null;tableRows={};go('detail');alert('Master Record saved successfully, including all entered section rows.')}
   }catch(error){showMasterSaveError('Unexpected save error: '+(error?.message||String(error)))}
   finally{if(button?.isConnected){button.disabled=false;button.textContent='SAVE MASTER RECORD'}}
 }
