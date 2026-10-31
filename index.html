@@ -1367,6 +1367,90 @@ body{background:radial-gradient(ellipse 72% 35% at 82% -12%,rgba(119,12,35,.19),
 .nexus-comms-suite .btn{border-radius:11px!important}
 @media(max-width:680px){.nexus-comms-header{padding:14px;align-items:flex-start;flex-direction:column}.nexus-comms-new{align-self:stretch}.nexus-comms-tabs button{flex:0 0 auto}.nexus-comms-suite .panel{padding:13px!important}}
 </style>
+
+<style id="nexus-apple-glass-boot-2026">
+/* Visual-only boot/welcome refinement. Authentication, progress and OCR logic unchanged. */
+#nexusBootOverlay{
+  background:radial-gradient(ellipse 48% 45% at 50% 42%,rgba(104,34,57,.15),transparent 80%),#05060a!important;
+  padding:20px!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Arial,sans-serif!important;
+  -webkit-font-smoothing:antialiased;
+}
+#nexusBootOverlay .nexus-boot-box,
+#nexusBootOverlay.nx-refresh-active .nexus-boot-box{
+  box-sizing:border-box!important;
+  width:min(100%,440px)!important;max-width:440px!important;min-height:0!important;
+  padding:36px 32px 30px!important;gap:0!important;
+  background:linear-gradient(145deg,rgba(34,35,44,.83),rgba(12,13,20,.94))!important;
+  border:1px solid rgba(255,255,255,.12)!important;border-radius:27px!important;
+  box-shadow:0 28px 90px #000a,inset 0 1px rgba(255,255,255,.08)!important;
+  backdrop-filter:blur(30px) saturate(135%);-webkit-backdrop-filter:blur(30px) saturate(135%);
+  text-align:center!important;align-items:stretch!important;justify-content:center!important;
+}
+#nexusBootOverlay .nx-refresh-brand,
+#nexusBootOverlay .bc-welcome-heading{
+  font:650 16px/1.25 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
+  letter-spacing:.055em!important;color:#f7f6f9!important;text-align:center!important;
+}
+#nexusBootOverlay .nx-refresh-sub,
+#nexusBootOverlay .bc-welcome-sub{
+  font:500 10px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
+  letter-spacing:.22em!important;color:#b1a9b4!important;text-align:center!important;margin:8px 0 0!important;
+}
+#nexusBootOverlay .nx-refresh-rule{width:56px!important;height:1px!important;margin:25px auto 22px!important;background:linear-gradient(90deg,transparent,#a95b75,transparent)!important}
+#nexusBootOverlay .nexus-boot-status,
+#nexusBootOverlay.nx-refresh-active .nexus-boot-status{
+  font:650 clamp(19px,4vw,24px)/1.25 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
+  letter-spacing:-.6px!important;color:#f5f4f7!important;text-align:center!important;
+  min-height:0!important;margin:0!important;
+}
+#nexusBootOverlay .nx-refresh-description{
+  font:400 12px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
+  color:#a6a5b1!important;text-align:center!important;margin:13px auto 26px!important;max-width:305px;
+}
+#nexusBootOverlay .nexus-boot-track{
+  width:100%!important;height:4px!important;border:0!important;border-radius:99px!important;
+  background:rgba(255,255,255,.11)!important;overflow:hidden!important;margin:0!important;
+}
+#nexusBootOverlay .nexus-boot-progress{
+  height:100%!important;border-radius:99px!important;
+  background:linear-gradient(90deg,#7f344c,#d17991)!important;
+  box-shadow:0 0 15px rgba(211,100,133,.35)!important;
+}
+#nexusBootOverlay .nx-refresh-stats{
+  margin:13px 0 0!important;display:flex!important;justify-content:space-between!important;
+  font:500 10px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
+  letter-spacing:.02em!important;color:#9d9ba9!important;
+}
+#nexusBootOverlay .nexus-boot-percent{font:inherit!important;color:#c3a8b5!important}
+#nexusBootOverlay .nexus-boot-foot{
+  margin:25px 0 0!important;color:#878895!important;font:500 10px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
+  letter-spacing:.12em!important;text-align:center!important;justify-content:center!important;
+}
+#nexusBootOverlay .nx-refresh-dot{background:#ba7188!important;box-shadow:0 0 10px #ba71884a!important}
+#nexusBootOverlay .bc-welcome-emblem{
+  display:block!important;width:68px!important;height:68px!important;object-fit:contain!important;
+  margin:0 auto 20px!important;filter:drop-shadow(0 6px 15px rgba(0,0,0,.4));
+}
+/* The legacy boot box contains a second brand block. Only one is displayed. */
+#nexusBootOverlay .nexus-boot-box.bc-welcome-active .nx-refresh-brand,
+#nexusBootOverlay .nexus-boot-box.bc-welcome-active .nx-refresh-sub,
+#nexusBootOverlay .nexus-boot-box.bc-welcome-active .nx-refresh-rule,
+#nexusBootOverlay .nexus-boot-box.bc-welcome-active .nx-refresh-description{display:none!important}
+#nexusBootOverlay .nexus-boot-box.bc-welcome-active .bc-welcome-heading{margin:0!important}
+#nexusBootOverlay .nexus-boot-box.bc-welcome-active .bc-welcome-sub{margin:7px 0 24px!important}
+#nexusBootOverlay .nexus-boot-box.bc-welcome-active .nexus-boot-kicker{display:none!important}
+#nexusBootOverlay .nexus-boot-box.bc-welcome-active .nexus-boot-status{margin:0 0 14px!important;min-height:0!important}
+#nexusBootOverlay .nexus-boot-box.bc-welcome-active .nexus-boot-status:has(.bc-outcome-title){margin:0 0 14px!important}
+#nexusBootOverlay .nexus-boot-box.bc-welcome-active .nx-refresh-stats{margin-top:12px!important}
+#nexusBootOverlay .nexus-boot-box.bc-welcome-active .nexus-boot-foot{margin-top:21px!important}
+#nexusBootOverlay .nexus-boot-box.bc-welcome-active .nexus-boot-foot::first-letter{color:#b7b4c0}
+@media(max-width:480px){
+  #nexusBootOverlay .nexus-boot-box,#nexusBootOverlay.nx-refresh-active .nexus-boot-box{
+    padding:30px 22px 25px!important;border-radius:23px!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){#nexusBootOverlay *,#nexusBootOverlay *::before,#nexusBootOverlay *::after{animation:none!important;transition:none!important}}
+</style>
 </head><body class="nexus-session-checking"><div id="nexusBootOverlay" class="nexus-boot-overlay nx-refresh-active" aria-live="polite" aria-label="Refreshing NEXUS"><div class="nexus-boot-box"><div class="nx-refresh-brand">BLACKCELL CORPORATION</div><div class="nx-refresh-sub">NEXUS MANAGEMENT SYSTEM</div><div class="nx-refresh-rule"></div><div id="nexusBootStatus" class="nexus-boot-status">Refreshing NEXUS</div><div class="nx-refresh-description">Restoring your secure session and preparing your workspace.</div><div class="nexus-boot-kicker" hidden>BLACKCELL / NEXUS</div><div class="nexus-boot-track"><div id="nexusBootProgress" class="nexus-boot-progress"></div></div><div class="nx-refresh-stats"><span id="nxRefreshStage">Initializing NEXUS</span><span id="nexusBootPercent" class="nexus-boot-percent">0%</span></div><div class="nexus-boot-foot"><span id="nxRefreshDot" class="nx-refresh-dot"></span><span id="nxRefreshSecurity">SECURE SYSTEM INITIALIZATION</span></div></div></div>
 
 <div id="login" class="gate"><form id="loginForm" class="panel">
