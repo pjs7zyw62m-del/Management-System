@@ -2113,9 +2113,26 @@ async function nexusPrepareMessageFiles(){
 }
 function nexusSaveImportedMessages(){
  const manual=String($('nexusImportManual')?.value||'').trim(),source=$('nexusImportSource')?.value||'Other',date=$('nexusImportDate')?.value||today();
+ // Read approval state directly from the visible review controls at save time.
+ // This avoids lost change events when the checkbox is checked immediately before saving.
+ const approvalBoxes=Array.from(document.querySelectorAll('#nexusImportPreview [data-nx-ocr-approve]'));
+ for(const box of approvalBoxes){
+   const index=Number(box.getAttribute('data-nx-ocr-approve'));
+   if(Number.isInteger(index)&&nexusPendingImports[index]){
+     nexusPendingImports[index].approved=box.checked;
+   }
+ }
+ // Synchronize edits too, even when a field's input/change event has not fired.
+ for(const control of document.querySelectorAll('#nexusImportPreview [data-nx-ocr-index]')){
+   const index=Number(control.getAttribute('data-nx-ocr-index'));
+   const field=control.getAttribute('data-nx-ocr-field');
+   if(Number.isInteger(index)&&nexusPendingImports[index]&&['date','time','message'].includes(field)){
+     nexusPendingImports[index][field]=control.value;
+   }
+ }
  const rows=nexusPendingImports.filter(x=>x.approved).map(x=>({...x}));
  if(manual)rows.push({date,time:'',type:'Text',direction:'Incoming',source,message:manual});
- if(!rows.length){alert('Approve at least one reviewed gray message before saving.');return}
+ if(!rows.length){alert('No approved messages found. Check the box beside each gray message you want to save, then try again.');return}
  if(rows.length>100){alert('Limit to 100 messages per batch.');return}
  if(rows.some(x=>!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(x.date)||x.date>today()||!x.message.trim()||x.direction!=='Incoming')){alert('Check message dates, text, and direction before saving.');return}
  if(!confirm('Save '+rows.length+' approved INCOMING message(s) to the selected inmate?'))return;
