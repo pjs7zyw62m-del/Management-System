@@ -2198,19 +2198,45 @@ let nexusRegistrationState='';
 let nexusRegistrationStage='select';
 let nexusBlankReregId=null;
 function nexusRegistrationChooser(){
- const options=US_STATES.map(st=>`<option value="${esc(st)}" ${st===nexusRegistrationState?'selected':''}>${esc(st)}${st==='Arizona'?' — Available':' — Template pending'}</option>`).join('');
- const ready=nexusRegistrationState==='Arizona';
+ const options=US_STATES.map(st=>`<option value="${esc(st)}" ${st===nexusRegistrationState?'selected':''}>${esc(st)}${NX_ENABLED_STATES.includes(st)?' — Available':' — Template pending'}</option>`).join('');
+ const ready=NX_ENABLED_STATES.includes(nexusRegistrationState);
  return `<section class="nx-state-entry panel" aria-labelledby="nxStateTitle">
  <div class="heading" id="nxStateTitle">INMATE REGISTRATION — SELECT STATE</div>
- <p class="muted">Choose the correctional jurisdiction. Each state has its own registration template. Arizona is available now.</p>
+ <p class="muted">Choose the correctional jurisdiction. Each state has its own registration template. Arizona, Texas, Oregon, Colorado, and Florida are available.</p>
  <div class="field"><label for="nxRegistrationJurisdiction">STATE / JURISDICTION</label>
  <select id="nxRegistrationJurisdiction"><option value="">Select a state...</option>${options}</select></div>
  <div id="nxRegistrationAvailability" class="notice" role="status">${ready?'Arizona registration form ready.':nexusRegistrationState?`${esc(nexusRegistrationState)} registration template is pending. No registration form is available yet.`:'Select Arizona to continue.'}</div>
  <div class="actions"><button class="btn" type="button" id="nxViewRegistration" ${ready?'':'disabled'}>VIEW REGISTRATION FORM</button><button class="btn alt" type="button" data-view="profiles">BACK TO PROFILES</button></div>
  </section>`;
 }
+const NX_ENABLED_STATES=['Arizona','Texas','Oregon','Colorado','Florida'];
+const NX_STATE_FIELDS={
+ Texas:[['SID','sid'],['TDCJ Number','tdcj'],['Maximum Sentence Date','maximumSentence'],['Projected Release Date','projectedRelease'],['Parole Eligibility','paroleDate'],['Visitation Eligibility','visitation'],['Special Scheduled Release Information','specialRelease']],
+ Oregon:[['SID','sid'],['Date of Birth','dob'],['Race','race'],['Caseload','caseload'],['Institution','institution'],['Aliases / Names Used','aliases'],['Offense History / Dockets','offenses']],
+ Colorado:[['DOC Number','docNumber'],['Ethnicity','ethnicity'],['Estimated Parole Eligibility','estimatedParole'],['Next Parole Hearing','nextHearing'],['Estimated Mandatory Release','mandatoryRelease'],['Sentence Discharge','discharge'],['Parole Board Notes','paroleNotes'],['Current Convictions','convictions']],
+ Florida:[['DC Number','dcNumber'],['Race','race'],['Birth Date','birthDate'],['Initial Receipt Date','receiptDate'],['Confinement Status','confinement'],['Visitation Status','visitation'],['Aliases','aliases'],['Current Prison Sentence History','sentences'],['Incarceration History','incarceration']]
+};
+function nxReadStateExtra(notes){const match=String(notes||'').match(/\n\[NEXUS_STATE_DATA:([A-Za-z0-9+/=]+)\]$/);if(!match)return {};try{return JSON.parse(decodeURIComponent(escape(atob(match[1]))))}catch{return {}}}
+function nxCleanStateNotes(notes){return String(notes||'').replace(/\n\[NEXUS_STATE_DATA:[A-Za-z0-9+/=]+\]$/,'')}
+function nxPackStateNotes(notes,data){const clean=nxCleanStateNotes(notes);const nonempty=Object.fromEntries(Object.entries(data).filter(([,v])=>String(v||'').trim()));return Object.keys(nonempty).length?clean+'\n[NEXUS_STATE_DATA:'+btoa(unescape(encodeURIComponent(JSON.stringify(nonempty))))+']':clean}
+function nxStateRegistration(p){
+ const st=p?.state||nexusRegistrationState;
+ const original=nxReadStateExtra(p?.notes);
+ const draft={...(p||{}),state:st,notes:nxCleanStateNotes(p?.notes)};
+ const originalEdit=editId;editId=null;
+ let html=nexusLegacyRegistration();editId=originalEdit;
+ html=html.replace('NEW INMATE REGISTRATION',st.toUpperCase()+' INMATE REGISTRATION');
+ html=html.replace(/<select name="state" id="registrationState" required>[\s\S]*?<\/select>/,`<select name="state" id="registrationState" required><option value="${esc(st)}" selected>${esc(st)}</option></select>`);
+ // The existing NEXUS form remains the authoritative cloud-save form; extra jurisdiction fields are carried in the cloud notes field.
+ const fields=(NX_STATE_FIELDS[st]||[]).map(([label,key])=>`<div class="field"><label>${esc(label)}</label><textarea rows="2" data-nx-state-key="${esc(key)}" aria-label="${esc(label)}">${esc(original[key]||'')}</textarea></div>`).join('');
+ const panel=`<div class="panel nx-jurisdiction-panel"><div class="heading">${esc(st.toUpperCase())} — STATE-SPECIFIC INFORMATION</div><p class="muted">Additional DOC information. Saved with this inmate's private cloud Master Record notes; review before saving.</p><div class="nx-reg-grid">${fields}</div></div>`;
+ html=html.replace('<div class="panel registration-savebar">',panel+'<div class="panel registration-savebar">');
+ // In intake transfers, preserve the original signed photo and private object path.
+ if(p?.photo_path && p?.photo) html=html.replace('id="registrationPhotoPreview">','id="registrationPhotoPreview">');
+ return html;
+}
 function nexusLegacyRegistration(){
- const p=editId?find(editId):null;
+ const p=editId?find(editId):(nexusPendingRegistrationDraft||null);
  const F=(label,key,type='text')=>field(label,key,p?.[key]||'',type);
  return `<div class="actions"><button class="btn alt" type="button" ${p?'data-view="profiles"':'id="nxBackStateSelection"'}>← ${p?'Back to Profiles':'Select Another State'}</button></div>
  <form id="recordForm" novalidate>
@@ -2254,12 +2280,13 @@ function nexusLegacyRegistration(){
 }
 
 function nxBlockedWarning(p){return String(p.status||'').toLowerCase().includes('blocked')?`<div class="nx-blocked-alert" role="status"><div class="nx-hazard-bar"></div><strong>BLOCKED PROFILE</strong><p>${esc(p.status)} — Review this profile before further action.</p></div>`:''}
-function nexusLegacyDetail(){const p=find(detailId);if(!p)return '<p>Record not found.</p>';return `${nxBlockedWarning(p)}<div class="actions"><button class="btn alt" data-view="profiles">BACK</button><button class="btn" data-edit="${encodeURIComponent(p.id)}">EDIT RECORD</button>${p.state==='Arizona'?`<button class="btn alt" data-reregister="${encodeURIComponent(p.id)}">RE-REGISTER (BLANK FORM)</button>`:''}<button class="btn purple" data-personal="${encodeURIComponent(p.id)}">INMATE PERSONAL</button><button class="btn danger" data-delete="${encodeURIComponent(p.id)}">DELETE RECORD</button></div>${identity(p)}${section('PERSONAL / CUSTODY DETAILS',`<div class="grid">${[['First Name',p.first],['Middle Name',p.middle],['Last Name',p.last],['State',p.state],['Age',p.age],['Facility',p.facility],['Unit',p.unit],['Gender',p.gender],['Height (inches)',p.heightInches],['Weight',p.weight],['Hair Color',p.hairColor],['Eye Color',p.eyeColor],['Ethnic Origin',p.ethnicOrigin],['Prison Release Date',p.prisonReleaseText],['Release Type',p.releaseTypeText],['Location As Of',p.locationAsOf],['Last Movement',p.lastMovement],['Sentence Type',p.sentenceType||'Unknown'],['Parole Eligibility',p.paroleEligibility],['Custody Classification',p.custody],['Admission Date',p.admission],['Earliest Release',releaseDisplay(p,'earliestRelease')],['Projected Release',releaseDisplay(p,'release')],['Most Recent Location',p.location],['Mailing Address',p.mailing],['Notes',p.notes]].map(([a,b])=>a==='Mailing Address'?`<div class="info nexus-mailing-info"><small>Mailing Address</small><strong>${esc(b||'—')}</strong></div>`:item(a,b)).join('')}</div>`)}${tableDefs.map(t=>tableDisplay(p,t)).join('')}`}
+function nexusLegacyDetail(){const p=find(detailId);if(!p)return '<p>Record not found.</p>';return `${nxBlockedWarning(p)}<div class="actions"><button class="btn alt" data-view="profiles">BACK</button><button class="btn" data-edit="${encodeURIComponent(p.id)}">EDIT RECORD</button>${p.state==='Arizona'?`<button class="btn alt" data-reregister="${encodeURIComponent(p.id)}">RE-REGISTER (BLANK FORM)</button>`:''}<button class="btn purple" data-personal="${encodeURIComponent(p.id)}">INMATE PERSONAL</button><button class="btn danger" data-delete="${encodeURIComponent(p.id)}">DELETE RECORD</button></div>${identity(p)}${section('PERSONAL / CUSTODY DETAILS',`<div class="grid">${[['First Name',p.first],['Middle Name',p.middle],['Last Name',p.last],['State',p.state],['Age',p.age],['Facility',p.facility],['Unit',p.unit],['Gender',p.gender],['Height (inches)',p.heightInches],['Weight',p.weight],['Hair Color',p.hairColor],['Eye Color',p.eyeColor],['Ethnic Origin',p.ethnicOrigin],['Prison Release Date',p.prisonReleaseText],['Release Type',p.releaseTypeText],['Location As Of',p.locationAsOf],['Last Movement',p.lastMovement],['Sentence Type',p.sentenceType||'Unknown'],['Parole Eligibility',p.paroleEligibility],['Custody Classification',p.custody],['Admission Date',p.admission],['Earliest Release',releaseDisplay(p,'earliestRelease')],['Projected Release',releaseDisplay(p,'release')],['Most Recent Location',p.location],['Mailing Address',p.mailing],['Notes',nxCleanStateNotes(p.notes)]].map(([a,b])=>a==='Mailing Address'?`<div class="info nexus-mailing-info"><small>Mailing Address</small><strong>${esc(b||'—')}</strong></div>`:item(a,b)).join('')}</div>`)}${tableDefs.map(t=>tableDisplay(p,t)).join('')}`}
 
 function registration(){
  const stored=editId?find(editId):null;
  const p=nexusBlankReregId&&editId===nexusBlankReregId?null:(stored||nexusPendingRegistrationDraft);
- if(stored && stored.state!=='Arizona')return nexusLegacyRegistration();
+ if(stored && stored.state!=='Arizona')return nxStateRegistration(stored);
+ if(!stored && NX_ENABLED_STATES.includes(p?.state||nexusRegistrationState) && (p?.state||nexusRegistrationState)!=='Arizona')return nxStateRegistration(p);
  if(!p && nexusRegistrationStage!=='form')return nexusRegistrationChooser();
  return `<div class="actions"><button class="btn alt" type="button" data-view="profiles">← Back to Profiles</button></div>
  <form id="recordForm" novalidate>
@@ -2403,7 +2430,7 @@ function nxAppleMasterHero(p){
  const status=String(p.status||'Active'),inactive=/inactive|blocked|archive|released/i.test(status);
  return `<section class="nxam-hero"><div class="nxam-kicker">BLACKCELL CORPORATION <span>/</span> NEXUS MASTER RECORD</div><div class="nxam-main"><div class="nxam-portrait"><button type="button" class="nx-photo-enlarge" aria-label="Enlarge inmate photograph">${photo(p)}</button></div><div class="nxam-identity"><div class="nxam-label">INSTITUTIONAL MASTER PROFILE</div><h1>${esc(displayName(p))}</h1><div class="nxam-id">INMATE ID <strong>${esc(p.id)}</strong></div><div class="nxam-status ${inactive?'nxam-inactive':''}"><i></i>${esc(status)}</div><div class="nxam-facts"><div><small>STATE</small><strong>${esc(p.state||'—')}</strong></div><div><small>FACILITY</small><strong>${esc(p.facility||'—')}</strong></div><div><small>HOUSING UNIT</small><strong>${esc(p.unit||'—')}</strong></div><div><small>CUSTODY</small><strong>${esc(p.custody||'—')}</strong></div></div></div></div></section><div class="nxam-nav"><a href="#nxam-institutional">Institutional Record</a><a href="#nxam-actions">Record Actions</a><button type="button" class="btn alt" data-personal="${encodeURIComponent(p.id)}">Personal File ↗</button></div>`;
 }
-function detail(){const p=find(detailId);if(!p)return '<p>Record not found.</p>';if(p.state!=='Arizona')return nxAppleMasterHero(p)+'<div id="nxam-institutional">'+nexusLegacyDetail()+'</div>';return `${nxBlockedWarning(p)}${nxAppleMasterHero(p)}<div class="actions" id="nxam-actions"><button class="btn alt" data-view="profiles">BACK</button><button class="btn" data-edit="${encodeURIComponent(p.id)}">EDIT RECORD</button>${p.state==='Arizona'?`<button class="btn alt" data-reregister="${encodeURIComponent(p.id)}">RE-REGISTER (BLANK FORM)</button>`:''}<button class="btn purple" data-personal="${encodeURIComponent(p.id)}">INMATE PERSONAL</button><button class="btn danger" data-delete="${encodeURIComponent(p.id)}">DELETE RECORD</button></div><div id="nxam-institutional" class="nxam-institutional"><div class="nxam-section-heading"><small>SECURE INSTITUTIONAL FILE</small><h2>Institutional Record</h2><p>Complete original NEXUS record and historical entries</p></div>${nxInstitutionalSheet(p,'view')}</div><details class="nx-sheet-aux"><summary>ADDITIONAL NEXUS PROFILE INFORMATION</summary><div class="grid">${[['Sentence Type',p.sentenceType],['Parole Eligibility',p.paroleEligibility],['Projected Release',releaseDisplay(p,'release')],['Notes',p.notes]].map(([k,v])=>item(k,v)).join('')}</div></details>`;}
+function detail(){const p=find(detailId);if(!p)return '<p>Record not found.</p>';if(p.state!=='Arizona')return nxAppleMasterHero(p)+'<div id="nxam-institutional">'+nexusLegacyDetail()+'</div>';return `${nxBlockedWarning(p)}${nxAppleMasterHero(p)}<div class="actions" id="nxam-actions"><button class="btn alt" data-view="profiles">BACK</button><button class="btn" data-edit="${encodeURIComponent(p.id)}">EDIT RECORD</button>${p.state==='Arizona'?`<button class="btn alt" data-reregister="${encodeURIComponent(p.id)}">RE-REGISTER (BLANK FORM)</button>`:''}<button class="btn purple" data-personal="${encodeURIComponent(p.id)}">INMATE PERSONAL</button><button class="btn danger" data-delete="${encodeURIComponent(p.id)}">DELETE RECORD</button></div><div id="nxam-institutional" class="nxam-institutional"><div class="nxam-section-heading"><small>SECURE INSTITUTIONAL FILE</small><h2>Institutional Record</h2><p>Complete original NEXUS record and historical entries</p></div>${nxInstitutionalSheet(p,'view')}</div><details class="nx-sheet-aux"><summary>ADDITIONAL NEXUS PROFILE INFORMATION</summary><div class="grid">${[['Sentence Type',p.sentenceType],['Parole Eligibility',p.paroleEligibility],['Projected Release',releaseDisplay(p,'release')],['Notes',nxCleanStateNotes(p.notes)]].map(([k,v])=>item(k,v)).join('')}</div></details>`;}
 
 
 function personalDetails(){const d=file().details||{};const fields=[['Preferred Name / Nickname','nickname'],['Hometown','hometown'],['Orientation (optional; self-reported)','orientation'],['Pronouns (optional)','pronouns'],['Marital Status','marital'],['Children','children'],['Languages','languages'],['Education Level','education'],['Religion (optional)','religion']];return `<form id="personalForm"><div class="cols"><div>${section('BASIC INFORMATION',`<div class="grid">${fields.map(([a,b])=>field(a,b,d[b]||'')).join('')}</div>`)}</div><div>${section('ABOUT ME / BIOGRAPHY',area('Biography','bio',d.bio||''))}${section('INTERESTS & HOBBIES',area('Interests and Activities','hobbies',d.hobbies||''))}${section('PERSONAL GOALS',area('Goals','goals',d.goals||''))}${section('ADDITIONAL INFORMATION',area('Personal Notes','additional',d.additional||''))}</div></div><button class="btn" type="submit">SAVE PERSONAL DETAILS</button></form>`}
@@ -3232,7 +3259,7 @@ async function nxPendingSave(form){
 }
 async function nxPendingTransfer(uid){
  const r=nexusPendingItems().find(x=>x.uid===uid);if(!r)return;
- if(r.state!=='Arizona'){alert(r.state+' registration template is not yet available. The pending intake remains saved.');return}
+ if(!NX_ENABLED_STATES.includes(r.state)){alert(r.state+' registration template is not yet available. The pending intake remains saved.');return}
  if(r.inmateId&&profiles.some(p=>String(p.id)===r.inmateId)){alert('This inmate ID is already registered. Resolve the duplicate before transfer.');return}
  const pendingPhotoPath=r.photoPath||nxPendingPhotoPaths(r)[0]||null;
  let pendingPhotoUrl='';
@@ -3251,7 +3278,7 @@ async function nxPendingTransfer(uid){
  window.nxPendingPreviewPhotoPath=pendingPhotoPath;
  // Registration renders photo(p), not photo_path. Include the signed image URL in the draft.
  // Keep the storage path separately so saving the Master Record persists the real private object.
- nexusPendingRegistrationDraft={first:r.first,last:r.last,id:r.inmateId||'',state:'Arizona',photo_path:pendingPhotoPath,photo:pendingPhotoUrl};
+ nexusPendingRegistrationDraft={first:r.first,last:r.last,id:r.inmateId||'',state:r.state,photo_path:pendingPhotoPath,photo:pendingPhotoUrl};
  editId=null;nexusBlankReregId=null;nexusRegistrationStage='form';tableRows={};selectedPhotoFile=null;photoData='';go('register');
  if(pendingPhotoPath){
   const preview=document.querySelector('#registrationPhotoPreview .photo');
@@ -3493,7 +3520,7 @@ $('content').addEventListener('change',e=>{
 });
 $('content').addEventListener('click',e=>{
  if(e.target.closest('#nxViewRegistration')){
-  if(nexusRegistrationState!=='Arizona')return;
+  if(!NX_ENABLED_STATES.includes(nexusRegistrationState))return;
   editId=null;nexusBlankReregId=null;photoData='';selectedPhotoFile=null;tableRows={};
   nexusRegistrationStage='form';render();window.scrollTo(0,0);
  }
@@ -3575,7 +3602,8 @@ async function submitMasterRecord(form,fd){
   if(status){status.textContent='Saving to Supabase...';status.classList.remove('hidden','error')}
   try{
 if(nxPendingTransferId && window.nxPendingPhotoTransferRequired && !window.nxPendingOriginalPhotoPath && !selectedPhotoFile){showMasterSaveError('Intake photograph is missing. Transfer stopped; intake retained.');return;}
-if(nxPendingTransferId && window.nxPendingPhotoTransferRequired && !selectedPhotoFile && !document.querySelector('#registrationPhotoPreview img.photo')){showMasterSaveError('Intake photograph is not visible in registration. Save stopped; pending intake retained.');return;}
+if(nxPendingTransferId && window.nxPendingPhotoTransferRequired && !selectedPhotoFile && !document.querySelector('#registrationPhotoPreview img')){showMasterSaveError('Intake photograph is not visible in registration. Save stopped; pending intake retained.');return;}
+const stateExtraFields=document.querySelectorAll('[data-nx-state-key]');if(stateExtraFields.length){const extra={};stateExtraFields.forEach(el=>extra[el.dataset.nxStateKey]=el.value);fd.set('notes',nxPackStateNotes(fd.get('notes'),extra));}
 captureRows();const id=String(fd.get('id')||'').trim();if(!id){alert('Inmate ID is required.');return}if(nexusBlankReregId && id!==nexusBlankReregId){showMasterSaveError('For re-registration, use the original inmate ID: '+nexusBlankReregId);return}if(profiles.some(p=>p.id===id&&p.id!==editId)){alert('This Inmate ID already exists. Open its Master Record and choose RE-REGISTER (BLANK FORM).');return}const old=editId?find(editId):null;if(nexusBlankReregId && !confirm('Re-register this Arizona inmate using the new entries? The previous profile details will be replaced, but existing history and personal records will be retained. Make sure you have a backup.'))return;if(old && id!==editId){
   alert('Changing an existing Inmate ID is temporarily disabled while we finish Supabase synchronization.');
   return;
