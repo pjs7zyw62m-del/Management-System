@@ -1970,49 +1970,75 @@ function activity(){
   </div>`;
 }
 
-function nexusImportPanel(){return `<div class="panel"><div class="heading">IMPORT EMAILS & TEXT MESSAGES · TESTER</div>
-<p class="muted">Choose the inmate first. Upload .txt files (one complete message per file), or a .csv with date, type, direction, source, message columns. For screenshots, select an image and manually transcribe/review the original message before saving. No OCR runs in this build; the original screenshot is NOT uploaded or saved.</p>
-<div class="field"><label>1 · Select .txt / .csv messages, or screenshots to review</label><input type="file" id="nexusImportFiles" accept=".txt,.csv,image/png,image/jpeg,image/webp" multiple></div>
-<div class="field"><label>2 · Source</label><select id="nexusImportSource"><option>JPay</option><option>Securus</option><option>Other</option></select></div>
-<div class="field"><label>3 · Message direction</label><select id="nexusImportDirection"><option value="Incoming">Incoming (inmate)</option><option value="Outgoing">Outgoing (mine)</option></select></div>
-<div class="field"><label>4 · Date for TXT/manual entry</label><input id="nexusImportDate" type="date" value="${today()}"></div>
-<div class="actions"><button type="button" class="btn alt" id="nexusPrepareImport">PREVIEW SELECTED FILES</button></div>
-<div id="nexusImportPreview" class="notice">Nothing imported yet. Preview and verify the exact message text before saving.</div>
-<div class="field"><label>Manual message / screenshot transcription</label><textarea id="nexusImportManual" rows="7" placeholder="Paste or transcribe the complete message here. An image file alone cannot be analyzed yet."></textarea></div>
-<div class="actions"><button type="button" class="btn" id="nexusSaveImport">SAVE REVIEWED MESSAGES TO THIS INMATE</button></div>
-<p class="muted">Existing communication scales and THE EIGHT tester use saved entries. Imported outgoing messages are saved for context but will need direction-aware filtering before production analysis. Use fictional messages on this tester; private correspondence requires a verified backup and privacy review.</p></div>`}
+function nexusImportPanel(){return `<div class="panel nx-ocr-panel"><div class="heading">IMPORT EMAILS & INCOMING TEXTS · APPLE GLASS</div>
+<p class="muted">Screenshots: extract ONLY left-aligned gray incoming message bubbles. Blue outgoing messages and the message composer are ignored. Text recognition runs in your browser; review every result before saving.</p>
+<div class="field"><label>1 · Select screenshots (JPG / PNG / WEBP), TXT or CSV</label><input type="file" id="nexusImportFiles" accept=".txt,.csv,image/png,image/jpeg,image/webp" multiple></div>
+<div class="nx-ocr-grid"><div class="field"><label>2 · Source</label><select id="nexusImportSource"><option>Securus</option><option>JPay</option><option>Other</option></select></div>
+<div class="field"><label>3 · Confirm message date (screenshots may show times only)</label><input id="nexusImportDate" type="date" value="${today()}"></div></div>
+<div class="actions"><button type="button" class="btn alt" id="nexusPrepareImport">EXTRACT GRAY MESSAGES & REVIEW</button></div>
+<div id="nexusImportPreview" class="notice" aria-live="polite">Select a screenshot and extract. No messages are saved until you review and approve them.</div>
+<div class="field"><label>Optional manually pasted incoming message</label><textarea id="nexusImportManual" rows="3" placeholder="Paste a single incoming message here, if needed."></textarea></div>
+<div class="actions"><button type="button" class="btn" id="nexusSaveImport">SAVE APPROVED INCOMING MESSAGES</button></div>
+<p class="muted">OCR requires an internet connection on first use to load the recognition library. Screenshots are processed locally and are not stored by this importer. Extraction is experimental; correct all timestamps and wording before saving. Use a test inmate until cloud persistence is verified.</p></div>`}
 let nexusPendingImports=[];
-function nexusCsvRows(raw){
- const rows=[];let row=[],v='',quoted=false;
- for(let i=0;i<raw.length;i++){const ch=raw[i];if(ch==='"'){if(quoted&&raw[i+1]==='"'){v+='"';i++}else quoted=!quoted}else if(ch===','&&!quoted){row.push(v);v=''}else if((ch==='\n'||ch==='\r')&&!quoted){if(ch==='\r'&&raw[i+1]==='\n')i++;row.push(v);if(row.some(x=>x.trim()))rows.push(row);row=[];v=''}else v+=ch;}
- row.push(v);if(row.some(x=>x.trim()))rows.push(row);return rows;
+function nexusCsvRows(raw){const rows=[];let row=[],v='',quoted=false;for(let i=0;i<raw.length;i++){const ch=raw[i];if(ch==='"'){if(quoted&&raw[i+1]==='"'){v+='"';i++}else quoted=!quoted}else if(ch===','&&!quoted){row.push(v);v=''}else if((ch==='\n'||ch==='\r')&&!quoted){if(ch==='\r'&&raw[i+1]==='\n')i++;row.push(v);if(row.some(x=>x.trim()))rows.push(row);row=[];v=''}else v+=ch;}row.push(v);if(row.some(x=>x.trim()))rows.push(row);return rows;}
+function nxOcrReviewRender(extra=''){
+ const target=$('nexusImportPreview');if(!target)return;
+ target.innerHTML=`<div class="nx-ocr-status"><strong>${nexusPendingImports.length} incoming message(s) ready for review</strong><span>Nothing saved yet</span></div>${extra}<div class="nx-ocr-reviews">`+nexusPendingImports.map((x,i)=>`<div class="nx-ocr-item"><div class="nx-ocr-itemtop"><label><input type="checkbox" data-nx-ocr-approve="${i}" ${x.approved?'checked':''}> Approve message ${i+1}</label><span>${esc(x.filename||x.source||'Incoming')}</span></div><div class="nx-ocr-fields"><label>Date<input type="date" data-nx-ocr-index="${i}" data-nx-ocr-field="date" value="${esc(x.date)}"></label><label>Time (verify)<input type="time" step="1" data-nx-ocr-index="${i}" data-nx-ocr-field="time" value="${esc(x.time||'')}"></label></div><label>Gray incoming bubble<textarea rows="4" data-nx-ocr-index="${i}" data-nx-ocr-field="message">${esc(x.message)}</textarea></label></div>`).join('')+'</div>';
+}
+function nxOcrTime(s){const m=String(s||'').match(/\b(1[0-2]|0?[1-9]):([0-5]\d)(?::([0-5]\d))?\s*([AP]M)\b/i);if(!m)return '';let h=+m[1]%12;if(m[4].toUpperCase()==='PM')h+=12;return String(h).padStart(2,'0')+':'+m[2]+':'+(m[3]||'00')}
+async function nxExtractGrayMessages(file,date,source,update){
+ await nxLoadLibrary('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js','OCR');
+ const bitmap=await createImageBitmap(file),w=bitmap.width,h=bitmap.height;
+ if(w*h>24000000){bitmap.close();throw Error('Screenshot exceeds 24 megapixels')}
+ const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(bitmap,0,0);bitmap.close();
+ const pixels=ctx.getImageData(0,0,w,h).data;
+ // Detect wide medium-gray bands on the left. This excludes the light page, cyan outgoing bubbles and composer.
+ const step=Math.max(2,Math.floor(w/260)),start=Math.floor(w*.05),end=Math.floor(w*.76),flags=[];
+ for(let y=0;y<h;y+=3){let gray=0,seen=0;for(let x=start;x<end;x+=step){const k=(y*w+x)*4,r=pixels[k],g=pixels[k+1],b=pixels[k+2];if(r>85&&r<190&&Math.abs(r-g)<13&&Math.abs(g-b)<13)gray++;seen++}flags.push(gray/Math.max(1,seen)>.46)}
+ const runs=[];let begin=-1;for(let i=0;i<=flags.length;i++){if(i<flags.length&&flags[i]){if(begin<0)begin=i*3}else if(begin>=0){const endY=i*3;if(endY-begin>Math.max(26,h*.018))runs.push([begin,endY]);begin=-1}}
+ // Join rows split by a small antialiased gap.
+ const merged=[];for(const r of runs){const prev=merged[merged.length-1];if(prev&&r[0]-prev[1]<13)prev[1]=r[1];else merged.push(r.slice())}
+ const results=[];for(let i=0;i<merged.length;i++){
+  const [top,bottom]=merged[i];if(bottom-top<34||top>h*.87)continue;
+  update('Reading gray bubble '+(i+1)+' of '+merged.length+'…');
+  const x=Math.max(0,Math.floor(w*.02)),right=Math.min(w,Math.floor(w*.85)),y=Math.max(0,top-2),height=Math.min(h-y,bottom-top+5);
+  const crop=document.createElement('canvas');crop.width=right-x;crop.height=height;crop.getContext('2d').drawImage(canvas,x,y,right-x,height,0,0,right-x,height);
+  const ocr=await Tesseract.recognize(crop,'eng');const message=String(ocr.data.text||'').replace(/\s*\n\s*/g,' ').replace(/\s+/g,' ').trim();if(message.length<5)continue;
+  // Time sits directly ABOVE the gray bubble. OCR only the left-side strip, not outgoing time labels.
+  const ty=Math.max(0,top-Math.max(35,Math.floor(h*.045))),th=top-ty;
+  let time='';if(th>8){const t=document.createElement('canvas');t.width=Math.floor(w*.55);t.height=th;t.getContext('2d').drawImage(canvas,0,ty,t.width,th,0,0,t.width,th);const tr=await Tesseract.recognize(t,'eng');time=nxOcrTime(tr.data.text)}
+  results.push({date,time,type:'Text',direction:'Incoming',source,message,filename:file.name,approved:false});
+ }
+ return results;
 }
 async function nexusPrepareMessageFiles(){
- const input=$('nexusImportFiles'),files=Array.from(input?.files||[]),result=[],source=$('nexusImportSource')?.value||'Other',direction=$('nexusImportDirection')?.value||'Incoming',date=$('nexusImportDate')?.value||today();
- if(files.length>30){alert('Select up to 30 files per batch.');return;}
- for(const f of files){if(f.size>2_000_000){alert('File too large: '+f.name);return;}
- const ext=f.name.split('.').pop().toLowerCase();
- if(ext==='txt'){const message=(await f.text()).trim();if(message)result.push({date,type:'Email',direction,source,message});}
- else if(ext==='csv'){const rows=nexusCsvRows(await f.text());if(!rows.length)continue;const head=rows.shift().map(v=>v.trim().toLowerCase());const idx=k=>head.indexOf(k);if(idx('message')<0){alert('CSV must contain a message column.');return;}
- for(const r of rows){const message=(r[idx('message')]||'').trim();if(!message)continue;result.push({date:r[idx('date')]||date,type:r[idx('type')]||'Email',direction:r[idx('direction')]||direction,source:r[idx('source')]||source,message});}}
- else if(['png','jpg','jpeg','webp'].includes(ext)){result.push({imageOnly:true,name:f.name});}
- else{alert('Unsupported file: '+f.name);return;}
- }
- nexusPendingImports=result.filter(x=>!x.imageOnly);
- const imgCount=result.filter(x=>x.imageOnly).length;
- $('nexusImportPreview').innerHTML=`<strong>${nexusPendingImports.length} text messages ready for review; ${imgCount} screenshot(s) selected (manual transcription required).</strong>`+nexusPendingImports.slice(0,30).map((x,i)=>`<div class="entry"><b>${i+1}. ${esc(x.date)} · ${esc(x.type)} · ${esc(x.direction)} · ${esc(x.source)}</b><p>${esc(x.message.slice(0,1500))}</p></div>`).join('');
+ const input=$('nexusImportFiles'),files=Array.from(input?.files||[]),source=$('nexusImportSource')?.value||'Other',date=$('nexusImportDate')?.value||today(),status=$('nexusImportPreview');
+ if(!files.length){alert('Select at least one screenshot, TXT, or CSV file.');return}
+ if(files.length>20){alert('Select 20 or fewer files per batch.');return}
+ nexusPendingImports=[];const errors=[];const button=$('nexusPrepareImport');button.disabled=true;
+ try{for(const f of files){try{
+ if(f.size>8_000_000)throw Error('Maximum 8 MB per file');const ext=f.name.split('.').pop().toLowerCase();
+ if(['png','jpg','jpeg','webp'].includes(ext)){status.textContent='Finding gray incoming bubbles in '+f.name+'…';nexusPendingImports.push(...await nxExtractGrayMessages(f,date,source,msg=>{status.textContent=msg}));}
+ else if(ext==='txt'){const message=(await f.text()).trim();if(message)nexusPendingImports.push({date,time:'',type:'Text',direction:'Incoming',source,message,filename:f.name,approved:false})}
+ else if(ext==='csv'){const rows=nexusCsvRows(await f.text());if(!rows.length)continue;const head=rows.shift().map(v=>v.trim().toLowerCase());const idx=k=>head.indexOf(k);if(idx('message')<0)throw Error('CSV needs message column');for(const r of rows){if(idx('direction')>=0&&!/incoming|inmate/i.test(r[idx('direction')]||''))continue;const message=(r[idx('message')]||'').trim();if(message)nexusPendingImports.push({date:idx('date')>=0?r[idx('date')]||date:date,time:'',type:'Text',direction:'Incoming',source,message,filename:f.name,approved:false})}}
+ else throw Error('Unsupported file type');
+ }catch(err){errors.push(f.name+': '+(err.message||err))}}
+ nxOcrReviewRender(errors.length?'<p class="nx-ocr-warning">'+esc(errors.join(' | '))+'</p>':'');
+ }finally{button.disabled=false}
 }
 function nexusSaveImportedMessages(){
- const manual=String($('nexusImportManual')?.value||'').trim();const source=$('nexusImportSource')?.value||'Other',direction=$('nexusImportDirection')?.value||'Incoming',date=$('nexusImportDate')?.value||today();
- const rows=[...nexusPendingImports];if(manual)rows.push({date,type:'Email',direction,source,message:manual});
- if(!rows.length){alert('No reviewed text messages to save. Screenshots alone cannot be saved as text.');return;}
- if(rows.length>100){alert('Limit to 100 entries per batch.');return;}
- if(rows.some(x=>!/^\d{4}-\d{2}-\d{2}$/.test(x.date)||x.date>today()||!x.message.trim()||!['Incoming','Outgoing'].includes(x.direction))){alert('Fix dates, direction or empty messages before saving.');return;}
- if(!confirm('Save '+rows.length+' reviewed message(s) to the currently selected inmate?'))return;
- const f=file();f.entries=f.entries||[];const existing=new Set(f.entries.map(x=>[x.date,x.message.trim()].join('|')));
- let added=0;for(const x of rows){const key=[x.date,x.message.trim()].join('|');if(existing.has(key))continue;existing.add(key);f.entries.push({uid:crypto.randomUUID(),date:x.date,type:x.type==='Text'?'Text':'Email',message:x.message,source:x.source,direction:x.direction,rateAtEntry:0,importedAt:new Date().toISOString()});added++;}
- if(!added){alert('No new messages; all were duplicates.');return;}
- analysisVisible=false;if(savePersonal()){nexusPendingImports=[];render();alert('Submitted '+added+' messages to NEXUS cloud-save queue. Verify cloud sync before leaving.');}
+ const manual=String($('nexusImportManual')?.value||'').trim(),source=$('nexusImportSource')?.value||'Other',date=$('nexusImportDate')?.value||today();
+ const rows=nexusPendingImports.filter(x=>x.approved).map(x=>({...x}));
+ if(manual)rows.push({date,time:'',type:'Text',direction:'Incoming',source,message:manual});
+ if(!rows.length){alert('Approve at least one reviewed gray message before saving.');return}
+ if(rows.length>100){alert('Limit to 100 messages per batch.');return}
+ if(rows.some(x=>!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(x.date)||x.date>today()||!x.message.trim()||x.direction!=='Incoming')){alert('Check message dates, text, and direction before saving.');return}
+ if(!confirm('Save '+rows.length+' approved INCOMING message(s) to the selected inmate?'))return;
+ const f=file();f.entries=f.entries||[];const existing=new Set(f.entries.map(x=>[x.date,x.time||'',String(x.message||'').trim()].join('|')));
+ let added=0;for(const x of rows){const key=[x.date,x.time||'',x.message.trim()].join('|');if(existing.has(key))continue;existing.add(key);f.entries.push({uid:crypto.randomUUID(),date:x.date,time:x.time||'',type:'Text',message:x.message,source:x.source,direction:'Incoming',rateAtEntry:0,importedAt:new Date().toISOString()});added++}
+ if(!added){alert('No new messages. All approved entries match existing records.');return}
+ analysisVisible=false;if(savePersonal()){nexusPendingImports=[];render();alert('Submitted '+added+' incoming message(s) to the NEXUS save process. Refresh and verify cloud persistence before relying on these records.');}
 }
 function communication(){const e=nexusChronologicalEntries();return `<section class="nexus-comms-suite">
 <div class="nexus-comms-header"><div><div class="nexus-comms-eyebrow">BLACKCELL CORPORATION / PERSONAL FILE</div><h2>Communications <span class="nexus-comms-count">${e.length} records</span></h2><p>Correspondence, imports, and activity — all in one place.</p></div><button type="button" class="btn nexus-comms-new" data-comms-tab="entry">＋ New Entry</button></div>
@@ -3565,4 +3591,5 @@ document.addEventListener('click',function(ev){
  });
 });
 </script>
-</body></html>
+<style id="nx-ocr-glass-style">.nx-ocr-panel .nx-ocr-grid,.nx-ocr-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.nx-ocr-status{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;color:#e7d5dc}.nx-ocr-status span{font-size:12px;color:#a5a4b1}.nx-ocr-reviews{display:grid;gap:12px;margin-top:12px}.nx-ocr-item{padding:14px;border:1px solid rgba(255,255,255,.11);background:rgba(30,31,39,.88);border-radius:15px}.nx-ocr-itemtop{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:10px}.nx-ocr-itemtop span{font-size:11px;color:#a3a4b1}.nx-ocr-item label{display:block;font-size:12px;color:#d6d4dd}.nx-ocr-item textarea{width:100%;margin-top:5px;resize:vertical}.nx-ocr-warning{color:#ffbdc9}@media(max-width:640px){.nx-ocr-panel .nx-ocr-grid,.nx-ocr-fields{grid-template-columns:1fr}}</style>
+<script id="nx-ocr-review-events">document.addEventListener('input',e=>{const t=e.target;if(!t.matches('[data-nx-ocr-index]'))return;const row=nexusPendingImports[+t.dataset.nxOcrIndex];if(row)row[t.dataset.nxOcrField]=t.value});document.addEventListener('change',e=>{const t=e.target;if(!t.matches('[data-nx-ocr-approve]'))return;const row=nexusPendingImports[+t.dataset.nxOcrApprove];if(row)row.approved=t.checked});</script></body></html>
