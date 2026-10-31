@@ -1314,6 +1314,59 @@ body{background:radial-gradient(ellipse 72% 35% at 82% -12%,rgba(119,12,35,.19),
 }
 @media(prefers-reduced-motion:reduce){#shell,#shell .sidebar,#shell .nav,#shell .btn{transition:none!important}}
 </style>
+
+<style id="nug-premium-menu-refinement">
+/* Small, floating, glass navigation control, integrated with the NEXUS topbar */
+#shell .nug-sidebar-toggle{
+  width:34px!important;height:34px!important;min-width:34px!important;
+  border-radius:11px!important;
+  border:1px solid rgba(255,255,255,.075)!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.018))!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.07)!important;
+  color:#b6b7c1!important;
+  margin-right:2px!important;
+}
+#shell .nug-sidebar-toggle:hover{
+  color:#fff!important;
+  background:rgba(165,34,60,.19)!important;
+  border-color:rgba(210,65,90,.35)!important;
+}
+#shell .nug-menu-lines{width:15px;height:13px;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start}
+#shell .nug-menu-lines i{height:1.5px;width:15px;border-radius:2px;background:currentColor;display:block;transition:width .2s}
+#shell .nug-menu-lines i:nth-child(2){width:11px}
+#shell .nug-menu-lines i:nth-child(3){width:13px}
+#shell .nug-sidebar-toggle:hover .nug-menu-lines i{width:15px}
+#shell .nug-menu-close{font-family:Arial,sans-serif;font-size:24px;font-weight:200;line-height:1}
+@media (hover:hover) and (min-width:801px){
+ #shell .nug-sidebar-toggle{opacity:.45;transition:opacity .2s,background .2s!important}
+ #shell .topbar:hover .nug-sidebar-toggle,#shell .nug-sidebar-toggle:focus-visible{opacity:1}
+}
+@media(max-width:800px){#shell .nug-sidebar-toggle{opacity:1!important}}
+</style>
+
+<style id="nexus-unified-comms-apple-glass">
+.nexus-comms-suite{--nexus-surface:rgba(23,24,31,.78);color:#f5f5f7;padding:4px 0 12px}
+.nexus-comms-header{display:flex;justify-content:space-between;align-items:center;gap:18px;margin:0 0 18px;padding:16px 20px;border:1px solid rgba(255,255,255,.09);border-radius:22px;background:linear-gradient(125deg,rgba(51,27,37,.7),rgba(20,21,28,.86));box-shadow:0 18px 44px rgba(0,0,0,.18)}
+.nexus-comms-eyebrow{font-size:10px;letter-spacing:1.8px;color:#b4a6b0;font-weight:650}
+.nexus-comms-header h2{font-size:clamp(23px,2.5vw,32px);font-weight:670;letter-spacing:-.9px;margin:7px 0 4px;color:#f8f8fa}
+.nexus-comms-header p{color:#999ba8;font-size:12px;margin:0}
+.nexus-comms-count{font-size:11px;font-weight:550;letter-spacing:0;color:#c8aab5;background:rgba(196,93,118,.13);padding:5px 9px;border-radius:30px;vertical-align:middle}
+.nexus-comms-new{white-space:nowrap!important;background:linear-gradient(120deg,#642b3d,#45202f)!important;border:1px solid rgba(245,153,173,.22)!important;border-radius:13px!important;min-height:38px}
+.nexus-comms-tabs{display:flex;gap:5px;align-items:center;overflow-x:auto;padding:5px;margin:0 0 15px;background:rgba(25,26,34,.84);border:1px solid rgba(255,255,255,.075);border-radius:16px;scrollbar-width:thin}
+.nexus-comms-tabs button{flex:1;min-width:max-content;border:0;border-radius:11px;background:transparent;color:#a9abb7;font-size:12px;font-weight:590;letter-spacing:.05px;padding:11px 13px;cursor:pointer;transition:background .2s,color .2s}
+.nexus-comms-tabs button:hover{color:#fff;background:rgba(255,255,255,.07)}
+.nexus-comms-tabs button.active{background:linear-gradient(135deg,rgba(116,57,77,.6),rgba(60,46,58,.85));color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.085)}
+.nexus-comms-pane[hidden]{display:none!important}
+.nexus-comms-suite .panel{border:1px solid rgba(255,255,255,.09)!important;background:linear-gradient(145deg,rgba(29,30,39,.94),rgba(17,18,25,.93))!important;border-radius:20px!important;padding:18px!important;box-shadow:0 12px 36px rgba(0,0,0,.12)!important}
+.nexus-comms-suite .heading{font-size:12px!important;letter-spacing:.8px!important;color:#e9e7ed!important}
+.nexus-comms-suite .entry{background:rgba(255,255,255,.025)!important;border:1px solid rgba(255,255,255,.065)!important;border-radius:13px!important;padding:12px 14px!important;margin-bottom:8px!important}
+.nexus-comms-suite .entry strong{color:#eac6cf!important;font-size:12px!important}
+.nexus-comms-suite .entry p{font-size:13px!important;line-height:1.5!important;margin:7px 0!important;white-space:pre-wrap;overflow-wrap:anywhere}
+.nexus-comms-suite .communication-history-list,.nexus-comms-suite .communication-activity-feed{max-height:430px;overflow-y:auto;scrollbar-width:thin}
+.nexus-comms-suite input,.nexus-comms-suite textarea,.nexus-comms-suite select{border-radius:11px!important}
+.nexus-comms-suite .btn{border-radius:11px!important}
+@media(max-width:680px){.nexus-comms-header{padding:14px;align-items:flex-start;flex-direction:column}.nexus-comms-new{align-self:stretch}.nexus-comms-tabs button{flex:0 0 auto}.nexus-comms-suite .panel{padding:13px!important}}
+</style>
 </head><body class="nexus-session-checking"><div id="nexusBootOverlay" class="nexus-boot-overlay nx-refresh-active" aria-live="polite" aria-label="Refreshing NEXUS"><div class="nexus-boot-box"><div class="nx-refresh-brand">BLACKCELL CORPORATION</div><div class="nx-refresh-sub">NEXUS MANAGEMENT SYSTEM</div><div class="nx-refresh-rule"></div><div id="nexusBootStatus" class="nexus-boot-status">Refreshing NEXUS</div><div class="nx-refresh-description">Restoring your secure session and preparing your workspace.</div><div class="nexus-boot-kicker" hidden>BLACKCELL / NEXUS</div><div class="nexus-boot-track"><div id="nexusBootProgress" class="nexus-boot-progress"></div></div><div class="nx-refresh-stats"><span id="nxRefreshStage">Initializing NEXUS</span><span id="nexusBootPercent" class="nexus-boot-percent">0%</span></div><div class="nexus-boot-foot"><span id="nxRefreshDot" class="nx-refresh-dot"></span><span id="nxRefreshSecurity">SECURE SYSTEM INITIALIZATION</span></div></div></div>
 
 <div id="login" class="gate"><form id="loginForm" class="panel">
@@ -1331,7 +1384,7 @@ body{background:radial-gradient(ellipse 72% 35% at 82% -12%,rgba(119,12,35,.19),
 <div class="blk-system">NE<span>X</span>US MANAGEMENT SYSTEM</div>
 <div class="blk-command">COMMAND CENTER</div>
 </div>
-<header class="topbar"><button type="button" id="nugSidebarToggle" class="nug-sidebar-toggle" aria-label="Open navigation" aria-expanded="false" title="Toggle navigation">☰</button><h1 id="pageTitle">Command Dashboard</h1><div class="right"><span id="nexusCloudStatus" style="font-size:11px;max-width:190px;color:#a5e7bd">Checking cloud…</span><button class="bell" id="bell" title="Notifications (coming soon)" aria-label="Notifications">🔔</button><button class="btn alt small" id="lock">Log Out</button></div></header><div class="content" id="content"></div></main></div>
+<header class="topbar"><button type="button" id="nugSidebarToggle" class="nug-sidebar-toggle" aria-label="Open navigation" aria-expanded="false" title="Toggle navigation"><span class="nug-menu-lines" aria-hidden="true"><i></i><i></i><i></i></span></button><h1 id="pageTitle">Command Dashboard</h1><div class="right"><span id="nexusCloudStatus" style="font-size:11px;max-width:190px;color:#a5e7bd">Checking cloud…</span><button class="bell" id="bell" title="Notifications (coming soon)" aria-label="Notifications">🔔</button><button class="btn alt small" id="lock">Log Out</button></div></header><div class="content" id="content"></div></main></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
@@ -1961,7 +2014,18 @@ function nexusSaveImportedMessages(){
  if(!added){alert('No new messages; all were duplicates.');return;}
  analysisVisible=false;if(savePersonal()){nexusPendingImports=[];render();alert('Submitted '+added+' messages to NEXUS cloud-save queue. Verify cloud sync before leaving.');}
 }
-function communication(){const e=nexusChronologicalEntries();return `${nexusImportPanel()}<div class="cols"><div>${activity()}</div><div><div class="panel"><div class="heading">ADD COMMUNICATION ENTRY</div><form id="entryForm"><div class="field"><label>Communication Type</label><select name="type"><option value="Text">Text Message</option><option value="Email">Email</option><option value="Call">Phone Call</option></select></div>${field('Communication Date','date',today(),'date')}${area('Message or Call Summary','message')}<button class="btn" type="submit">SAVE ENTRY</button></form></div><div class="panel communication-history-panel"><div class="heading">COMMUNICATION HISTORY ↕ SCROLL TO VIEW</div><div class="communication-history-list" tabindex="0" role="region" aria-label="Scrollable communication history">${e.length?e.map(x=>`<div class="entry"><strong>${esc(x.type)} · ${esc(x.date)}</strong><p>${esc(x.message)}</p><button class="btn danger small" data-entry-delete="${esc(x.uid)}">Delete Entry</button></div>`).join(''):'<p class="muted">No communication entries yet.</p>'}</div></div></div></div>`}
+function communication(){const e=nexusChronologicalEntries();return `<section class="nexus-comms-suite">
+<div class="nexus-comms-header"><div><div class="nexus-comms-eyebrow">BLACKCELL CORPORATION / PERSONAL FILE</div><h2>Communications <span class="nexus-comms-count">${e.length} records</span></h2><p>Correspondence, imports, and activity — all in one place.</p></div><button type="button" class="btn nexus-comms-new" data-comms-tab="entry">＋ New Entry</button></div>
+<nav class="nexus-comms-tabs" aria-label="Communication sections">
+<button type="button" class="active" data-comms-tab="activity">◷ &nbsp; Activity</button>
+<button type="button" data-comms-tab="messages">▤ &nbsp; Messages</button>
+<button type="button" data-comms-tab="import">⇧ &nbsp; Import Emails & Texts</button>
+<button type="button" data-comms-tab="entry">＋ &nbsp; Add Entry</button></nav>
+<div class="nexus-comms-pane" data-comms-pane="activity">${activity()}</div>
+<div class="nexus-comms-pane" data-comms-pane="messages" hidden><div class="panel communication-history-panel"><div class="heading">SAVED CORRESPONDENCE · ${e.length} RECORDS</div><div class="communication-history-list" tabindex="0" role="region" aria-label="Saved communication history">${e.length?e.map(x=>`<div class="entry"><strong>${esc(x.type)} · ${esc(x.date)}</strong><p>${esc(x.message)}</p><button class="btn danger small" data-entry-delete="${esc(x.uid)}">Delete Entry</button></div>`).join(''):'<p class="muted">No communication entries yet.</p>'}</div></div></div>
+<div class="nexus-comms-pane" data-comms-pane="import" hidden>${nexusImportPanel()}</div>
+<div class="nexus-comms-pane" data-comms-pane="entry" hidden><div class="panel"><div class="heading">ADD COMMUNICATION ENTRY</div><form id="entryForm"><div class="field"><label>Communication Type</label><select name="type"><option value="Text">Text Message</option><option value="Email">Email</option><option value="Call">Phone Call</option></select></div>${field('Communication Date','date',today(),'date')}${area('Message or Call Summary','message')}<button class="btn" type="submit">SAVE ENTRY</button></form></div></div>
+</section>`}
 
 
 /* Two independent communication indicators and their contextual, rule-based reviews.
@@ -3469,7 +3533,7 @@ document.addEventListener('keydown',event=>{if(event.key==='Escape')nxClosePhoto
     toggle.setAttribute('aria-expanded',String(expanded));
     toggle.setAttribute('aria-label',expanded?'Hide navigation':'Show navigation');
     toggle.title=expanded?'Hide navigation':'Show navigation';
-    toggle.textContent=expanded?'✕':'☰';
+    toggle.innerHTML=expanded?'<span class="nug-menu-close" aria-hidden="true">×</span>':'<span class="nug-menu-lines" aria-hidden="true"><i></i><i></i><i></i></span>';
   };
   const close=()=>{shell.classList.remove('nug-expanded');shell.classList.remove('nug-pinned');sync()};
   toggle.addEventListener('click',()=>{
@@ -3484,5 +3548,21 @@ document.addEventListener('keydown',event=>{if(event.key==='Escape')nxClosePhoto
   window.addEventListener('resize',()=>{if(mobile())close()});
   sync();
 })();
+</script>
+
+<script id="nexus-unified-comms-navigation">
+document.addEventListener('click',function(ev){
+ const btn=ev.target.closest('[data-comms-tab]');
+ if(!btn)return;
+ const suite=btn.closest('.nexus-comms-suite');
+ if(!suite)return;
+ const tab=btn.getAttribute('data-comms-tab');
+ suite.querySelectorAll('[data-comms-pane]').forEach(p=>{p.hidden=p.getAttribute('data-comms-pane')!==tab});
+ suite.querySelectorAll('.nexus-comms-tabs [data-comms-tab]').forEach(b=>{
+ const active=b.getAttribute('data-comms-tab')===tab;
+ b.classList.toggle('active',active);
+ b.setAttribute('aria-selected',String(active));
+ });
+});
 </script>
 </body></html>
