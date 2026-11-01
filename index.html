@@ -3144,6 +3144,7 @@ function nxBankAccount(){
  <header class="nxbf-heading"><span class="nxbf-eyebrow">BLACKCELL CORPORATION · NEXUS</span><h2>Financial Center</h2><p>Shared Main Account · Secure financial recordkeeping</p></header>
  <section class="nxbf-account"><div class="nxbf-topline"><span>MAIN FINANCIAL ACCOUNT</span><span>◈ PRIVATE LEDGER</span></div><small>Available Funds</small><div class="nxbf-balance">${nxBankFmt(t.available)}</div><p>One shared budget for all inmate profiles</p></section>
  <section class="nxbf-grid4">${[['Available Funds',t.available],['Monthly Expenses',spent],['Inmate Deposits',transferred],['Outstanding Requests',t.owed]].map(([label,n])=>`<div class="nxbf-stat"><small>${label}</small><strong>${nxBankFmt(n)}</strong></div>`).join('')}</section>
+ <section class="nxbf-panel" aria-label="Outstanding request management"><div class="nxbf-panelhead"><div><span class="nxbf-eyebrow">REQUEST MANAGEMENT</span><h3>Outstanding Requests</h3><p>Cancel an unpaid request without recording a payment or deducting funds.</p></div><button type="button" class="nxbf-primary" data-nx-manage-requests>Manage Requests</button></div></section>
  <section class="nxbf-actions"><button type="button" data-bank-action="fund"><b>＋</b>Add Funds</button><button type="button" data-bank-action="transfer"><b>↗</b>Transfer to Inmate</button><button type="button" data-bank-action="expense"><b>−</b>Record Expense</button><button type="button" data-bank-action="history"><b>◷</b>History</button></section>
  <section class="nxbf-panel"><div class="nxbf-panelhead"><div><span class="nxbf-eyebrow">ACCOUNT ACTIVITY</span><h3>Transactions</h3></div><select id="nxBankMonth" aria-label="Choose financial month">${options.map(m=>`<option value="${esc(m)}" ${m===month?'selected':''}>${esc(m)}</option>`).join('')}</select></div>
  <div class="nxbf-filter">${[['all','All'],['fund','Deposits'],['transfer','Inmate Transfers'],['expense','Expenses']].map(([val,label])=>`<button type="button" data-bank-filter="${val}" class="${nxBankFilter===val?'selected':''}">${label}</button>`).join('')}</div>
@@ -3156,6 +3157,26 @@ function nxBankAccount(){
 }
 function nxBankProfileCard({p,lifetime,pending}){
  return `<article class="nxbf-profile" data-search="${esc((nxBankName(p)+' '+p.id+' '+p.state).toLowerCase())}"><div class="nxbf-photo">${nxBankPhoto(p)}</div><div class="nxbf-profile-body"><h4>${esc(nxBankName(p))}</h4><p>ID ${esc(p.id||'—')} · ${esc(p.state||'—')}</p><small>LIFETIME EARNED</small><strong>${nxBankFmt(lifetime)}</strong><div class="nxbf-pending"><span>Pending Earnings</span><b>${nxBankFmt(pending)}</b></div><button type="button" class="nxbf-profile-action" data-bank-profile="${esc(p.id)}">Financial Activity ↗</button></div></article>`;
+}
+function nxBankManageRequests(){
+ const a=nxBudget(),outstanding=a.requests.filter(r=>r.status==='owed'&&Math.max(0,Number(r.cents||0)-Number(r.paid||0))>0);
+ const rows=outstanding.map(r=>{
+  const p=profiles.find(x=>String(x.id)===String(r.inmateId));
+  return `<div class="nxbf-review" style="margin:10px 0"><div><span>${esc(p?nxBankName(p):'Inmate '+String(r.inmateId||'—'))} · ${esc(p?.state||'')}</span><strong>${nxBankFmt(Math.max(0,Number(r.cents||0)-Number(r.paid||0)))}</strong></div><div><span>${esc(r.memo||'Unpaid request')} · ${esc(r.due||'No due date')}</span><button type="button" class="nxbf-primary" data-nx-cancel-request="${esc(r.id)}">Cancel Request</button></div></div>`;
+ }).join('');
+ nxBankOpen(`<div class="nxbf-modalhead"><div><span class="nxbf-eyebrow">NEXUS / FINANCIAL CENTER</span><h3>Outstanding Requests</h3></div><button type="button" data-bank-close aria-label="Close">×</button></div><p class="muted">Cancelling an unpaid request removes its remaining amount from Outstanding Requests. It does not delete historical information or change financial balances.</p>${rows||'<p>No outstanding requests.</p>'}<button type="button" class="nxbf-primary" data-bank-close>Close</button>`);
+}
+async function nxBankCancelRequest(id){
+ const a=nxBudget(),r=a.requests.find(x=>String(x.id)===String(id));
+ if(!r||r.status!=='owed'){alert('This request is no longer outstanding.');return;}
+ const p=profiles.find(x=>String(x.id)===String(r.inmateId));
+ const remaining=Math.max(0,Number(r.cents||0)-Number(r.paid||0));
+ if(!confirm(`Cancel the unpaid ${nxBankFmt(remaining)} request for ${p?nxBankName(p):'inmate '+r.inmateId}?\n\nNo payment will be recorded. Existing deposits and lifetime earnings will remain unchanged.`))return;
+ if(!currentUserId||!nexusCloudReady){alert('Cloud is not connected. Sign in before making changes.');return;}
+ r.status='cancelled';r.cancelledAt=new Date().toISOString();r.cancelledReason='Cancelled by administrator';
+ if(!store(NX_BUDGET_KEY,a)){alert('Cloud save could not start.');return;}
+ try{await nexusCloudWriteQueue; nxBankClose();render();alert('Request cancelled and saved to NEXUS. Outstanding Requests has been updated.');}
+ catch(e){alert('Cloud save failed. Do not refresh; verify the request before retrying.');}
 }
 function financialHub(){return nxBankAccount()}
 function nxBankOpen(html){
@@ -3203,6 +3224,8 @@ async function nxBankCommit(){
  }catch(err){console.error('NEXUS finance save:',err);const b=document.querySelector('[data-bank-confirm]');if(b){b.disabled=false;b.textContent='Retry Save'}alert('Payment not confirmed as saved to cloud. Check connection before retrying.');}
 }
 document.addEventListener('click',e=>{
+ const requestManager=e.target.closest('[data-nx-manage-requests]');if(requestManager){nxBankManageRequests();return}
+ const cancelRequest=e.target.closest('[data-nx-cancel-request]');if(cancelRequest){nxBankCancelRequest(cancelRequest.dataset.nxCancelRequest);return}
  const action=e.target.closest('[data-bank-action]');if(action){nxBankStart(action.dataset.bankAction);return}
  if(e.target.closest('[data-bank-close]')){nxBankClose();return}
  if(e.target.closest('[data-bank-confirm]')){nxBankCommit();return}
