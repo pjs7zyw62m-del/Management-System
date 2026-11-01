@@ -1866,6 +1866,11 @@ body{background-image:radial-gradient(ellipse at 55% -20%,#2b3038 0%,transparent
 .nx-state-profile-row{display:grid;grid-template-columns:minmax(150px,35%) 1fr;gap:12px;padding:9px 0;border-bottom:1px solid #394350;overflow-wrap:anywhere}
 .nx-state-profile-row span{color:#9baec2}.nx-state-profile-row strong{color:#e7eef7;font-weight:600}
 @media(max-width:640px){.nx-state-profile-row{grid-template-columns:1fr;gap:3px}}
+</style><style id="nx-reg-unified-final">
+.nx-reg-state-group{border-top:1px solid #455362;padding-top:14px;margin:16px 0}
+.nx-reg-state-group .nx-reg-head{color:#c5d5e6;letter-spacing:.09em}
+.nx-reg-state-group .nx-reg-grid{padding-top:8px}
+.nx-state-special textarea{width:100%;box-sizing:border-box;min-height:55px}
 </style></head><body class="nexus-session-checking"><div id="nexusBootOverlay" class="nexus-boot-overlay nx-refresh-active" aria-live="polite" aria-label="Refreshing NEXUS"><div class="nexus-boot-box"><div class="nx-refresh-brand">BLACKCELL CORPORATION</div><div class="nx-refresh-sub">NEXUS MANAGEMENT SYSTEM</div><div class="nx-refresh-rule"></div><div id="nexusBootStatus" class="nexus-boot-status">Refreshing NEXUS</div><div class="nx-refresh-description">Restoring your secure session and preparing your workspace.</div><div class="nexus-boot-kicker" hidden>BLACKCELL / NEXUS</div><div class="nexus-boot-track"><div id="nexusBootProgress" class="nexus-boot-progress"></div></div><div class="nx-refresh-stats"><span id="nxRefreshStage">Initializing NEXUS</span><span id="nexusBootPercent" class="nexus-boot-percent">0%</span></div><div class="nexus-boot-foot"><span id="nxRefreshDot" class="nx-refresh-dot"></span><span id="nxRefreshSecurity">SECURE SYSTEM INITIALIZATION</span></div></div></div>
 
 <div id="login" class="gate"><form id="loginForm" class="panel">
@@ -2259,16 +2264,49 @@ function nxStateRegistration(p){
  const st=p?.state||nexusRegistrationState;
  const original=nxReadStateExtra(p?.notes);
  const draft={...(p||{}),state:st,notes:nxCleanStateNotes(p?.notes)};
- // Pass the selected saved profile directly to the state form; never clear editId.
  let html=nexusLegacyRegistration(draft);
  html=html.replace('NEW INMATE REGISTRATION',st.toUpperCase()+' INMATE REGISTRATION');
  html=html.replace(/<select name="state" id="registrationState" required>[\s\S]*?<\/select>/,`<select name="state" id="registrationState" required><option value="${esc(st)}" selected>${esc(st)}</option></select>`);
- // The existing NEXUS form remains the authoritative cloud-save form; extra jurisdiction fields are carried in the cloud notes field.
- const fields=(NX_STATE_FIELDS[st]||[]).map(([label,key])=>`<div class="field"><label>${esc(label)}</label><textarea rows="2" data-nx-state-key="${esc(key)}" aria-label="${esc(label)}">${esc(original[key]||'')}</textarea></div>`).join('');
- const panel=`<div class="panel nx-jurisdiction-panel"><div class="heading">${esc(st.toUpperCase())} — STATE-SPECIFIC INFORMATION</div><p class="muted">Additional DOC information. Saved with this inmate's private cloud Master Record notes; review before saving.</p><div class="nx-reg-grid">${fields}</div></div>`;
- html=html.replace('<div class="panel registration-savebar">',panel+'<div class="panel registration-savebar">');
- // In intake transfers, preserve the original signed photo and private object path.
- if(p?.photo_path && p?.photo) html=html.replace('id="registrationPhotoPreview">','id="registrationPhotoPreview">');
+ // A single record form: jurisdiction-only fields are positioned inside the
+ // main identity, custody, release and sentencing sections. Existing shared
+ // controls remain authoritative for Supabase columns, avoiding duplicates.
+ const shared={
+  'ais':'id','mdoc number':'id','tdoc id':'id','doc number':'id','inmate number':'id','inmate id':'id','offender number':'id','dc number':'id',
+  'inmate name':'name','name':'name','race':'ethnicOrigin','racial identification':'ethnicOrigin','ethnicity':'ethnicOrigin','ethnic origin':'ethnicOrigin',
+  'sex':'gender','gender':'gender','hair':'hairColor','hair color':'hairColor','eyes':'eyeColor','eye color':'eyeColor',
+  'height':'heightInches','weight':'weight','custody':'custody','custody class':'custody','custody classification':'custody',
+  'institution':'facility','assigned location':'facility','facility':'facility','current facility':'facility',
+  'earliest release date':'earliestRelease','projected release date':'release',
+  'parole eligibility date':'paroleEligibility','parole eligibility':'paroleEligibility'
+ };
+ const specialized=[];
+ for(const [label,key] of NX_STATE_FIELDS[st]||[]){
+  const norm=String(label).toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+  if(Object.prototype.hasOwnProperty.call(shared,norm)){
+   // Preserve prior values that were saved as supplemental notes, so edit
+   // and resave do not silently delete them.
+   if(String(original[key]||'').trim()) specialized.push([label,key]);
+   continue;
+  }
+  specialized.push([label,key]);
+ }
+ const group=(label)=>{
+  const x=label.toLowerCase();
+  if(/release|discharge|parole|eligib|sentence end|expiration|term date|hearing/.test(x))return 'release';
+  if(/sentence|conviction|offense|court|crime|charge|disciplin|detainer|incarceration|program|legal record|warrant|history|supervision condition/.test(x))return 'records';
+  if(/status|location|security|classification|custody|unit|admission|receipt|institution|facility|movement/.test(x))return 'custody';
+  return 'identity';
+ };
+ const by={identity:[],custody:[],release:[],records:[]};
+ for(const [label,key] of specialized){
+  by[group(label)].push(`<div class="field nx-state-special"><label for="nxsf_${esc(key)}">${esc(label)}</label><textarea id="nxsf_${esc(key)}" rows="2" data-nx-state-key="${esc(key)}" aria-label="${esc(label)}">${esc(original[key]||'')}</textarea></div>`);
+ }
+ const section=(name,heading)=>by[name].length?`<div class="nx-reg-state-group"><div class="nx-reg-head">${esc(st.toUpperCase())} · ${heading}</div><div class="nx-reg-grid">${by[name].join('')}</div></div>`:'';
+ // Insert within existing panels, not below them and not in a second form.
+ html=html.replace('<div class="nx-reg-release">PROJECTED ELIGIBLE RELEASE DATE</div>',section('identity','ADDITIONAL IDENTIFICATION')+'<div class="nx-reg-release">PROJECTED ELIGIBLE RELEASE DATE</div>');
+ html=html.replace('<div class="nx-reg-release">MOST RECENT LOCATION · AS OF DATE</div>',section('release','RELEASE & PAROLE')+'<div class="nx-reg-release">MOST RECENT LOCATION · AS OF DATE</div>');
+ html=html.replace('<div class="nx-reg-head">INMATE MAILING ADDRESS</div>',section('custody','CUSTODY & FACILITY')+'<div class="nx-reg-head">INMATE MAILING ADDRESS</div>');
+ html=html.replace('<div class="nx-reg-head">ADDITIONAL SENTENCING INFORMATION</div>',section('records','SENTENCING & HISTORY')+'<div class="nx-reg-head">ADDITIONAL SENTENCING INFORMATION</div>');
  return html;
 }
 function nexusLegacyRegistration(profileOverride){
@@ -2478,7 +2516,7 @@ function nxStateProfilePanel(p){
  }).join('');
  return `<section class="panel nx-state-profile-panel"><div class="heading">${esc(p.state||'STATE')} — STATE-SPECIFIC PROFILE</div><p class="muted">Jurisdiction fields saved with this inmate's private master record. Only recorded values appear below.</p>${fields||'<p class="muted">No state-specific values entered yet. Use EDIT RECORD to add them.</p>'}</section>`;
 }
-function detail(){const p=find(detailId);if(!p)return '<p>Record not found.</p>';if(p.state!=='Arizona')return nxAppleMasterHero(p)+nxStateProfilePanel(p)+'<div id="nxam-institutional">'+nexusLegacyDetail()+'</div>';return `${nxBlockedWarning(p)}${nxAppleMasterHero(p)}<div class="actions" id="nxam-actions"><button class="btn alt" data-view="profiles">BACK</button><button class="btn" data-edit="${encodeURIComponent(p.id)}">EDIT RECORD</button>${p.state==='Arizona'?`<button class="btn alt" data-reregister="${encodeURIComponent(p.id)}">RE-REGISTER (BLANK FORM)</button>`:''}<button class="btn purple" data-personal="${encodeURIComponent(p.id)}">INMATE PERSONAL</button><button class="btn danger" data-delete="${encodeURIComponent(p.id)}">DELETE RECORD</button></div><div id="nxam-institutional" class="nxam-institutional"><div class="nxam-section-heading"><small>SECURE INSTITUTIONAL FILE</small><h2>Institutional Record</h2><p>Complete original NEXUS record and historical entries</p></div>${nxInstitutionalSheet(p,'view')}</div>${nxStateProfilePanel(p)}<details class="nx-sheet-aux"><summary>ADDITIONAL NEXUS PROFILE INFORMATION</summary><div class="grid">${[['Sentence Type',p.sentenceType],['Parole Eligibility',p.paroleEligibility],['Projected Release',releaseDisplay(p,'release')],['Notes',nxCleanStateNotes(p.notes)]].map(([k,v])=>item(k,v)).join('')}</div></details>`;}
+function detail(){const p=find(detailId);if(!p)return '<p>Record not found.</p>';if(p.state!=='Arizona')return nxAppleMasterHero(p)+'<div id="nxam-institutional">'+nexusLegacyDetail()+nxStateProfilePanel(p)+'</div>';return `${nxBlockedWarning(p)}${nxAppleMasterHero(p)}<div class="actions" id="nxam-actions"><button class="btn alt" data-view="profiles">BACK</button><button class="btn" data-edit="${encodeURIComponent(p.id)}">EDIT RECORD</button>${p.state==='Arizona'?`<button class="btn alt" data-reregister="${encodeURIComponent(p.id)}">RE-REGISTER (BLANK FORM)</button>`:''}<button class="btn purple" data-personal="${encodeURIComponent(p.id)}">INMATE PERSONAL</button><button class="btn danger" data-delete="${encodeURIComponent(p.id)}">DELETE RECORD</button></div><div id="nxam-institutional" class="nxam-institutional"><div class="nxam-section-heading"><small>SECURE INSTITUTIONAL FILE</small><h2>Institutional Record</h2><p>Complete original NEXUS record and historical entries</p></div>${nxInstitutionalSheet(p,'view')}</div>${nxStateProfilePanel(p)}<details class="nx-sheet-aux"><summary>ADDITIONAL NEXUS PROFILE INFORMATION</summary><div class="grid">${[['Sentence Type',p.sentenceType],['Parole Eligibility',p.paroleEligibility],['Projected Release',releaseDisplay(p,'release')],['Notes',nxCleanStateNotes(p.notes)]].map(([k,v])=>item(k,v)).join('')}</div></details>`;}
 
 
 function personalDetails(){const d=file().details||{};const fields=[['Preferred Name / Nickname','nickname'],['Hometown','hometown'],['Orientation (optional; self-reported)','orientation'],['Pronouns (optional)','pronouns'],['Marital Status','marital'],['Children','children'],['Languages','languages'],['Education Level','education'],['Religion (optional)','religion']];return `<form id="personalForm"><div class="cols"><div>${section('BASIC INFORMATION',`<div class="grid">${fields.map(([a,b])=>field(a,b,d[b]||'')).join('')}</div>`)}</div><div>${section('ABOUT ME / BIOGRAPHY',area('Biography','bio',d.bio||''))}${section('INTERESTS & HOBBIES',area('Interests and Activities','hobbies',d.hobbies||''))}${section('PERSONAL GOALS',area('Goals','goals',d.goals||''))}${section('ADDITIONAL INFORMATION',area('Personal Notes','additional',d.additional||''))}</div></div><button class="btn" type="submit">SAVE PERSONAL DETAILS</button></form>`}
