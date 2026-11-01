@@ -2223,8 +2223,8 @@ function nxStateRegistration(p){
  const st=p?.state||nexusRegistrationState;
  const original=nxReadStateExtra(p?.notes);
  const draft={...(p||{}),state:st,notes:nxCleanStateNotes(p?.notes)};
- const originalEdit=editId;editId=null;
- let html=nexusLegacyRegistration();editId=originalEdit;
+ // Pass the selected saved profile directly to the state form; never clear editId.
+ let html=nexusLegacyRegistration(draft);
  html=html.replace('NEW INMATE REGISTRATION',st.toUpperCase()+' INMATE REGISTRATION');
  html=html.replace(/<select name="state" id="registrationState" required>[\s\S]*?<\/select>/,`<select name="state" id="registrationState" required><option value="${esc(st)}" selected>${esc(st)}</option></select>`);
  // The existing NEXUS form remains the authoritative cloud-save form; extra jurisdiction fields are carried in the cloud notes field.
@@ -2235,8 +2235,8 @@ function nxStateRegistration(p){
  if(p?.photo_path && p?.photo) html=html.replace('id="registrationPhotoPreview">','id="registrationPhotoPreview">');
  return html;
 }
-function nexusLegacyRegistration(){
- const p=editId?find(editId):(nexusPendingRegistrationDraft||null);
+function nexusLegacyRegistration(profileOverride){
+ const p=profileOverride|| (editId?find(editId):(nexusPendingRegistrationDraft||null));
  const F=(label,key,type='text')=>field(label,key,p?.[key]||'',type);
  return `<div class="actions"><button class="btn alt" type="button" ${p?'data-view="profiles"':'id="nxBackStateSelection"'}>← ${p?'Back to Profiles':'Select Another State'}</button></div>
  <form id="recordForm" novalidate>
