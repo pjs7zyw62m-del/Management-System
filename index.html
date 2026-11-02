@@ -678,6 +678,7 @@ textarea[name="mailing"]{min-height:170px;line-height:1.55;white-space:pre-wrap}
 .fcx .fcx-hero-content h2{max-width:960px;line-height:1.15}
 .fcx .fcx-person .info{overflow-wrap:anywhere}
 @media(max-width:850px){.fcx .fcx-filter{grid-template-columns:1fr}}
+.nxc-evidence{font-size:10px;color:#b5d9bc;font-weight:700}.nxc-evidence-detail{font-size:11px;color:#bac3ce}.nxc-msg-controls input[type="date"],.nxc-msg-controls input[type="time"]{width:auto;max-width:180px}
 </style><style id="nexus-final-upgrade">
 .nxv-panel{background:#101b2b;border:1px solid #2c4058;border-radius:15px;padding:20px;margin-bottom:16px;color:#e8f2ff}.nxv-panel h2,.nxv-panel h3{margin:0 0 12px;color:#f2f7ff}.nxv-sub{font-size:13px;color:#afc4dc;margin-bottom:18px}.nxv-filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.nxv-filters label{font-size:12px;color:#afc4dc;display:block;margin-bottom:5px}.nxv-filters input,.nxv-filters select{width:100%;padding:10px;background:#19283b;border:1px solid #415571;border-radius:8px;color:#f7fbff}.nxv-table-wrap{overflow:auto;max-height:520px}.nxv-table{border-collapse:collapse;width:100%;min-width:650px}.nxv-table th,.nxv-table td{text-align:left;border-bottom:1px solid #314257;padding:12px 9px;font-size:13px}.nxv-table th{color:#a9c8e9;position:sticky;top:0;background:#142339}.nxv-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px}.nxv-stat{padding:17px;background:#1a2a40;border-radius:11px}.nxv-stat strong{font-size:25px;display:block;color:#fff}.nxv-stat small{color:#a9bdd5}.nxv-bars{display:grid;gap:12px}.nxv-bar{display:grid;grid-template-columns:minmax(80px,150px) 1fr 48px;gap:10px;align-items:center;font-size:13px}.nxv-track{height:9px;background:#263c56;border-radius:9px;overflow:hidden}.nxv-fill{height:100%;background:#5aaefa;border-radius:9px}.nxv-empty{color:#a8b9cd;padding:20px}.nxv-tools{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0}.nxv-person{display:flex;align-items:center;gap:10px}.nxv-thumb{width:34px;height:38px;object-fit:cover;border-radius:6px;background:#293e55}
 </style>
@@ -2091,19 +2092,19 @@ function nxcPanel(){
  <div class="nxc-top"><div><span class="nxc-eyebrow">BLACKCELL CORPORATION / NEXUS / PRIVATE COMMUNICATIONS</span><h2>Import Text Conversation</h2><p>Upload an entire chat · Review 25 messages per page · Count verified incoming messages only</p></div><div class="nxc-tag">REVIEW BEFORE SAVE</div></div>
  <div class="nxc-grid"><section class="nxc-box"><div class="nxc-box-title">01 · Upload conversation</div>
  <label class="nxc-label" for="nxcInmate">Assign to inmate</label><select id="nxcInmate" aria-label="Choose inmate" required><option value="">Select inmate</option>${options}</select>
- <label class="nxc-label" for="nxcFile">Chat document</label><input id="nxcFile" type="file" accept=".pages,.docx,.txt,.csv" aria-label="Upload conversation document">
- <p class="nxc-tip">Apple Pages (.pages), Word (.docx), TXT or CSV · Up to 25 MB. Documents are parsed in this browser; they are not uploaded to a conversion service.</p>
+ <label class="nxc-label" for="nxcFile">Chat document</label><input id="nxcFile" type="file" accept=".pages,.docx,.pdf,.png,.jpg,.jpeg,.webp,.txt,.csv" aria-label="Upload conversation document">
+ <p class="nxc-tip">Color-preserving PDF, Word (.docx), screenshots (PNG/JPG/WEBP), Apple Pages (.pages), TXT or CSV · 25 MB maximum. Only verified gray message bubbles can be saved. Plain text and CSV cannot prove original colors and are review-only. PDFs/images use browser-based visual detection + OCR; recognition libraries load online.</p>
  <div class="nxc-half"><div><label class="nxc-label" for="nxcYear">Original message year</label><input id="nxcYear" type="number" min="1990" max="2100" placeholder="e.g. 2026" value="${esc(nxConversationDraft?.year||'')}"></div><div><label class="nxc-label" for="nxcSource">Message source</label><select id="nxcSource"><option>Securus</option><option>JPay</option><option>Other</option></select></div></div>
  <label class="nxc-confirm"><input id="nxcConfirmYear" type="checkbox"> I confirm the selected inmate and message year.</label>
  <button type="button" class="nxc-btn nxc-primary" id="nxcAnalyze">Analyze Document & Prepare Review</button>
  <div id="nxcStatus" class="nxc-status" role="status" aria-live="polite">Select an inmate and a document. Nothing is saved until you approve it. If Supabase reports a save error, check for partial imports before retrying.</div>
  </section><section class="nxc-box"><div class="nxc-box-title">02 · Financial counting rules</div>
  <div class="nxc-rule"><span>Global text rate</span><strong>${nxcMoney(rate)} per eligible text</strong></div>
- <div class="nxc-rule"><span>Incoming texts</span><strong>Eligible after approval</strong></div>
- <div class="nxc-rule"><span>Outgoing replies</span><strong>Not counted</strong></div>
- <div class="nxc-rule"><span>Unclear sender</span><strong>Needs manual classification</strong></div>
+ <div class="nxc-rule"><span>Verified gray bubbles</span><strong>Eligible after manual review</strong></div>
+ <div class="nxc-rule"><span>Blue outgoing bubbles</span><strong>Never saved</strong></div>
+ <div class="nxc-rule"><span>Color missing or uncertain</span><strong>Blocked from saving</strong></div>
  <div class="nxc-rule"><span>Duplicate messages</span><strong>Excluded</strong></div>
- <p class="nxc-tip">For the most reliable automatic gray/blue sender identification, use <b>Pages → Export To → Word</b>. Native .pages files may need sender review. For a color-filtered conversation, upload the cleaned incoming-only CSV for the most reliable import. Imported earnings remain pending until separately reconciled; no budget funds are transferred.</p>
+ <p class="nxc-tip">For Pages, use <b>Export → PDF</b> or <b>Word</b> with the original gray/blue bubble backgrounds intact. The importer will not guess the sender for TXT, CSV or formats without color information. Review extracted text and dates before approving. Earnings remain pending; no deposits are created.</p>
  </section></div>
  <div id="nxcReview"></div>
  </section>`;
@@ -2189,10 +2190,11 @@ async function nxcFromPages(file,year){
 }
 function nxcDocText(p){return [...p.getElementsByTagName('*')].filter(n=>n.localName==='t'||n.localName==='tab'||n.localName==='br').map(n=>n.localName==='t'?n.textContent:n.localName==='tab'?'\t':'\n').join('');}
 function nxcDocColor(p){
- const shades=[...p.getElementsByTagName('*')].filter(n=>n.localName==='shd').map(n=>String(n.getAttribute('w:fill')||n.getAttribute('fill')||'').toUpperCase());
- if(shades.some(s=>s==='DDDDDD'||s==='D9D9D9'||s==='DADADA'))return 'incoming';
- if(shades.some(s=>s==='B7EFFE'||s==='B7EFFF'||s==='C6EEFF'||s==='BDEEFF'))return 'outgoing';
- return 'unknown';
+ const shades=[...p.getElementsByTagName('*')].filter(n=>n.localName==='shd').map(n=>String(n.getAttribute('w:fill')||n.getAttribute('fill')||'').replace(/^#/,'').toUpperCase());
+  // Require actual Word paragraph/cell shading, not font color or sender text.
+  if(shades.some(x=>{if(!/^[0-9A-F]{6}$/.test(x))return false;const rgb=[0,2,4].map(i=>parseInt(x.slice(i,i+2),16));const lo=Math.min(...rgb),hi=Math.max(...rgb);return lo>=75&&hi<=238&&hi-lo<=15;}))return 'incoming';
+  if(shades.some(x=>{if(!/^[0-9A-F]{6}$/.test(x))return false;const r=parseInt(x.slice(0,2),16),g=parseInt(x.slice(2,4),16),b=parseInt(x.slice(4,6),16);return b>r+18&&b>=g-15&&r<230;}))return 'outgoing';
+  return 'unknown';
 }
 async function nxcFromDocx(file,year){
  const zip=await nxcLoadZip(file),entry=zip.file('word/document.xml');if(!entry)throw Error('Invalid Word document');
@@ -2207,7 +2209,8 @@ async function nxcFromDocx(file,year){
    const parsed=nxcTranscriptBlocks(line+'\nplaceholder',year,'Word');
    current=parsed[0]||null;if(current)current.text='';
   }else if(current){current.text+=(current.text?'\n':'')+line;
-   if(current.direction==='unknown'){const dir=nxcDocColor(p);if(dir!=='unknown')current.direction=dir;}
+   {const dir=nxcDocColor(p);if(dir==='outgoing'){current.direction='outgoing';current.colorVerified=false;current.colorEvidence='blue Word shading';}
+     else if(dir==='incoming'&&current.direction!=='outgoing'){current.direction='incoming';current.colorVerified=true;current.colorEvidence='gray Word shading';}}
   }
  }
  if(current&&current.text.trim())messages.push(current);
@@ -2224,6 +2227,42 @@ async function nxcFromText(file,year){
  const dir=get(r,'direction','sender').toLowerCase();parsed.direction=/incoming|inmate|received/.test(dir)?'incoming':/outgoing|me|sent/.test(dir)?'outgoing':'unknown';list.push(parsed);
  }if(!list.length)throw Error('CSV needs dated message rows');return list;
 }
+function nxcGrayVerified(x){return x?.colorVerified===true && x?.direction==='incoming' && !x?.duplicate;}
+
+// Color-preserving PDF and screenshot ingestion. PDF.js rasterizes each page locally;
+// Tesseract reads only candidates detected inside neutral-gray left-side bubbles.
+async function nxcFromVisual(file,year,source,onProgress){
+ const ext=file.name.toLowerCase().split('.').pop();
+ if(['png','jpg','jpeg','webp'].includes(ext)){
+  const rows=await nxExtractGrayMessages(file,'',source,onProgress);
+  return rows.map(x=>({date:x.date||'',time:x.time||'',text:x.message,direction:'incoming',approved:false,duplicate:false,origin:'Image',colorVerified:true,colorEvidence:x.colorEvidence||'gray screenshot bubble'}));
+ }
+ if(ext!=='pdf')throw Error('Not a visual document');
+ await nxLoadLibrary('https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js','pdfjs-gray-import');
+ const pdfjs=window.pdfjsLib;if(!pdfjs)throw Error('PDF reader failed to initialize');
+ pdfjs.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+ const bytes=new Uint8Array(await file.arrayBuffer());
+ const task=pdfjs.getDocument({data:bytes});const doc=await task.promise;
+ try{
+  if(doc.numPages>30)throw Error('PDF has over 30 pages. Split it into smaller imports.');
+  const result=[];
+  for(let i=1;i<=doc.numPages;i++){
+   onProgress('Examining gray bubbles on PDF page '+i+' of '+doc.numPages+'…');
+   const page=await doc.getPage(i);const raw=page.getViewport({scale:1});
+   const scale=Math.min(2.3,1800/raw.width,2600/raw.height);
+   const viewport=page.getViewport({scale:Math.max(.8,scale)});
+   const canvas=document.createElement('canvas');canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);
+   await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise;
+   const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('Unable to render PDF page')),'image/png'));
+   const screenshot=new File([blob],file.name+' · page '+i+'.png',{type:'image/png'});
+   const rows=await nxExtractGrayMessages(screenshot,'',source,onProgress);
+   for(const x of rows)result.push({date:x.date||'',time:x.time||'',text:x.message,direction:'incoming',approved:false,duplicate:false,origin:'PDF page '+i,colorVerified:true,colorEvidence:'gray PDF bubble · page '+i});
+   page.cleanup();canvas.width=0;canvas.height=0;
+  }
+  return result;
+ }finally{await doc.destroy();}
+}
+
 function nxcKey(x){return [String(x.date||''),String(x.time||''),String(x.text||'').trim().replace(/\s+/g,' ').toLowerCase()].join('|');}
 function nxcDeduplicate(rows,inmateId){
  const existing=new Set((personal[inmateId]?.entries||[]).filter(x=>String(x.type).toLowerCase()==='text').map(x=>nxcKey({date:x.date,time:x.time,text:x.message})));
@@ -2236,26 +2275,26 @@ async function nxcAnalyze(){
  const source=document.getElementById('nxcSource')?.value||'Other';
  const status=document.getElementById('nxcStatus');
  if(!profiles.some(p=>String(p.id)===String(inmateId))){alert('Choose the inmate who owns this conversation.');return;}
- if(!file){alert('Choose the Pages, Word, TXT or CSV document.');return;}
+ if(!file){alert('Choose a PDF, Word, Pages, screenshot, TXT or CSV document.');return;}
  if(!Number.isInteger(year)||year<1990||year>2100||!confirmed){alert('Confirm the original message year before analyzing.');return;}
  if(file.size>25_000_000){alert('Maximum document size is 25 MB.');return;}
  const ext=file.name.toLowerCase().split('.').pop();
- if(!['pages','docx','txt','csv'].includes(ext)){alert('Use .pages, .docx, .txt or .csv');return;}
+ if(!['pages','docx','pdf','png','jpg','jpeg','webp','txt','csv'].includes(ext)){alert('Use PDF, Word, Pages, PNG, JPG, WEBP, TXT or CSV.');return;}
  nxConversationBusy=true;let button=document.getElementById('nxcAnalyze');if(button)button.disabled=true;
  status.textContent='Reading '+file.name+' locally. Your data is not sent to a conversion service…';
  try{
-  const parsed=ext==='pages'?await nxcFromPages(file,year):ext==='docx'?await nxcFromDocx(file,year):await nxcFromText(file,year);
+  const parsed=['pdf','png','jpg','jpeg','webp'].includes(ext)?await nxcFromVisual(file,year,source,text=>{status.textContent=text;}):ext==='pages'?await nxcFromPages(file,year):ext==='docx'?await nxcFromDocx(file,year):await nxcFromText(file,year);
   if(parsed.length>10000)throw Error('More than 10,000 messages. Split the document into smaller imports.');
   nxcDeduplicate(parsed,inmateId);
   nxConversationDraft={inmateId,year,source,fileName:file.name,kind:ext,messages:parsed};
   nxConversationPage=1;nxConversationFilter='all';
-  status.textContent=`Extracted ${parsed.length.toLocaleString()} dated messages. Review sender directions before saving. Nothing has been saved.`;
+  status.textContent=`Analyzed ${parsed.length.toLocaleString()} message(s); ${parsed.filter(nxcGrayVerified).length} have visual gray-bubble evidence. Review text and dates before saving. If none are verified, export a PDF or image preserving the original colors. Nothing saved.`;
   nxcReviewRender();
  }catch(e){nxConversationDraft=null;document.getElementById('nxcReview').innerHTML='';status.textContent='Import could not be read: '+(e.message||String(e));}
  finally{nxConversationBusy=false;if(button)button.disabled=false;}
 }
 function nxcShown(){const list=nxConversationDraft?.messages||[];return list.map((row,index)=>({...row,index})).filter(x=>nxConversationFilter==='all'||nxConversationFilter==='unknown'&&x.direction==='unknown'||nxConversationFilter==='incoming'&&x.direction==='incoming'||nxConversationFilter==='outgoing'&&x.direction==='outgoing'||nxConversationFilter==='duplicates'&&x.duplicate);}
-function nxcTotals(){const rows=nxConversationDraft?.messages||[],incoming=rows.filter(x=>x.direction==='incoming'&&!x.duplicate),selected=incoming.filter(x=>x.approved);
+function nxcTotals(){const rows=nxConversationDraft?.messages||[],incoming=rows.filter(x=>nxcGrayVerified(x)),selected=incoming.filter(x=>x.approved);
  return {total:rows.length,incoming:incoming.length,approved:selected.length,outgoing:rows.filter(x=>x.direction==='outgoing').length,unknown:rows.filter(x=>x.direction==='unknown').length,duplicates:rows.filter(x=>x.duplicate).length,cents:selected.length*(Number(nxBankRates().text)||0)};
 }
 function nxcReviewRender(){
@@ -2266,13 +2305,13 @@ function nxcReviewRender(){
  host.innerHTML=`<section class="nxc-box nxc-result">
  <div class="nxc-review-head"><div><span class="nxc-eyebrow">03 · MESSAGE REVIEW</span><h3>${esc(nxcName(p))} · ${esc(nxConversationDraft.fileName)}</h3><p>${esc(p?.id||'')} · ${esc(p?.state||'')} · Original year ${nxConversationDraft.year}</p></div><span class="nxc-tag">NOT SAVED</span></div>
  <div class="nxc-stats"><div><small>Extracted</small><strong>${totals.total}</strong></div><div><small>Incoming</small><strong>${totals.incoming}</strong></div><div><small>Outgoing</small><strong>${totals.outgoing}</strong></div><div><small>Unclassified</small><strong>${totals.unknown}</strong></div><div><small>Duplicates</small><strong>${totals.duplicates}</strong></div><div><small>Selected earnings</small><strong>${nxcMoney(totals.cents)}</strong></div></div>
- <div class="nxc-help">Only <b>approved incoming</b> texts count. Dates stay with the original messages. Unknown directions and duplicates never count. Rate: ${nxcMoney(Number(nxBankRates().text)||0)} per text. The import will not touch your bank budget or verified deposit records.</div>
- <div class="nxc-toolbar"><label class="nxc-label" for="nxcFilter">Show</label><select id="nxcFilter"><option value="all" ${nxConversationFilter==='all'?'selected':''}>All messages</option><option value="incoming" ${nxConversationFilter==='incoming'?'selected':''}>Incoming</option><option value="outgoing" ${nxConversationFilter==='outgoing'?'selected':''}>Outgoing</option><option value="unknown" ${nxConversationFilter==='unknown'?'selected':''}>Needs sender review</option><option value="duplicates" ${nxConversationFilter==='duplicates'?'selected':''}>Duplicates</option></select><button type="button" class="nxc-btn" data-nxc-bulk="incoming">Mark this page Incoming</button><button type="button" class="nxc-btn" data-nxc-bulk="outgoing">Mark this page Outgoing</button><button type="button" class="nxc-btn" data-nxc-bulk="approve">Approve incoming on page</button>${nxConversationDraft.kind==='docx'?'<button type="button" class="nxc-btn" data-nxc-bulk="approveAll">Approve all color-detected incoming</button>':''}</div>
+ <div class="nxc-help">Only <b>color-verified gray bubbles</b> can be selected and saved. Blue, uncertain, text-only, and duplicate messages are blocked even if sender is manually changed. Check all dates before saving. Rate: ${nxcMoney(Number(nxBankRates().text)||0)} per text. The import will not touch your bank budget or verified deposit records.</div>
+ <div class="nxc-toolbar"><label class="nxc-label" for="nxcFilter">Show</label><select id="nxcFilter"><option value="all" ${nxConversationFilter==='all'?'selected':''}>All messages</option><option value="incoming" ${nxConversationFilter==='incoming'?'selected':''}>Incoming</option><option value="outgoing" ${nxConversationFilter==='outgoing'?'selected':''}>Outgoing</option><option value="unknown" ${nxConversationFilter==='unknown'?'selected':''}>Needs sender review</option><option value="duplicates" ${nxConversationFilter==='duplicates'?'selected':''}>Duplicates</option></select><button type="button" class="nxc-btn" data-nxc-bulk="approve">Approve verified gray on page</button><button type="button" class="nxc-btn" data-nxc-bulk="approveAll">Approve all verified gray</button></div>
  <div class="nxc-pages"><strong>Page ${nxConversationPage} of ${pages}</strong><span>Showing ${window.length} of ${list.length} filtered messages · 25 per page</span><div><button type="button" data-nxc-nav="prev" ${nxConversationPage===1?'disabled':''}>‹ Previous</button><button type="button" data-nxc-nav="next" ${nxConversationPage===pages?'disabled':''}>Next ›</button></div></div>
  <div class="nxc-messages">${window.map(row=>`<article class="nxc-message ${row.direction}" data-nxc-row="${row.index}">
- <div class="nxc-msg-top"><span class="nxc-msg-number">#${row.index+1}</span><span>${esc(row.date)} · ${esc(row.time||'Time not supplied')}</span>${row.duplicate?'<span class="nxc-duplicate">DUPLICATE · EXCLUDED</span>':''}</div>
+ <div class="nxc-msg-top"><span class="nxc-msg-number">#${row.index+1}</span><span>${esc(row.date)} · ${esc(row.time||'Time not supplied')}</span>${row.duplicate?'<span class="nxc-duplicate">DUPLICATE · EXCLUDED</span>':''}<span class="nxc-evidence">${row.colorVerified&&row.direction==='incoming'?'✓ GRAY VERIFIED':row.direction==='outgoing'?'BLUE · EXCLUDED':'COLOR NOT VERIFIED · BLOCKED'}</span></div>
  <div class="nxc-msg-content">${esc(row.text)}</div>
- <div class="nxc-msg-controls"><label>Sender <select data-nxc-direction="${row.index}" aria-label="Sender for message ${row.index+1}"><option value="unknown" ${row.direction==='unknown'?'selected':''}>Needs review</option><option value="incoming" ${row.direction==='incoming'?'selected':''}>Incoming · inmate</option><option value="outgoing" ${row.direction==='outgoing'?'selected':''}>Outgoing · me</option></select></label><label class="nxc-approve"><input type="checkbox" data-nxc-approve="${row.index}" ${row.approved?'checked':''} ${row.direction!=='incoming'||row.duplicate?'disabled':''}> Count as eligible incoming text</label></div>
+ <div class="nxc-msg-controls"><span class="nxc-evidence-detail">${esc(row.colorEvidence||'No color evidence in this file')}</span><label class="nxc-approve"><input type="checkbox" data-nxc-approve="${row.index}" ${row.approved?'checked':''} ${!nxcGrayVerified(row)?'disabled':''}> Save verified gray message</label></div><div class="nxc-msg-controls"><label>Date <input type="date" data-nxc-date="${row.index}" value="${esc(row.date||'')}"></label><label>Time <input type="time" data-nxc-time="${row.index}" value="${esc((row.time||'').slice(0,5))}"></label></div>
  </article>`).join('')||'<p class="nxc-help">No messages in this filter.</p>'}</div>
  <div class="nxc-pages nxc-pages-bottom"><strong>Page ${nxConversationPage} of ${pages}</strong><div><button type="button" data-nxc-nav="prev" ${nxConversationPage===1?'disabled':''}>‹ Previous</button><button type="button" data-nxc-nav="next" ${nxConversationPage===pages?'disabled':''}>Next ›</button></div></div>
  <div class="nxc-footer"><p><b>${totals.approved} approved incoming messages · ${nxcMoney(totals.cents)} pending earnings.</b> No earnings will be verified or deposited by this import. These are communication entries only.</p><button type="button" class="nxc-btn nxc-primary" id="nxcSave" ${totals.approved?'':'disabled'}>Approve & Save ${totals.approved} Incoming Texts to NEXUS</button><div class="nxc-save-status" id="nxcSaveStatus" role="status" aria-live="polite"></div></div>
@@ -2280,8 +2319,7 @@ function nxcReviewRender(){
 }
 async function nxcBulk(action){
  if(action==='approveAll'){
-  if(nxConversationDraft.kind!=='docx')return;
-  const eligible=nxConversationDraft.messages.filter(x=>x.direction==='incoming'&&!x.duplicate);
+  const eligible=nxConversationDraft.messages.filter(nxcGrayVerified);
   if(!eligible.length)return;
   if(!await nexusGlassConfirm('Approve '+eligible.length+' color-detected incoming messages for counting? Review dates and messages before saving. No data will be saved yet.'))return;
   for(const x of eligible)x.approved=true;
@@ -2289,9 +2327,7 @@ async function nxcBulk(action){
  }
  const rows=nxcShown().slice((nxConversationPage-1)*25,nxConversationPage*25);
  for(const row of rows){const original=nxConversationDraft.messages[row.index];if(original.duplicate)continue;
-  if(action==='incoming'){original.direction='incoming';original.approved=false;}
-  else if(action==='outgoing'){original.direction='outgoing';original.approved=false;}
-  else if(action==='approve'&&original.direction==='incoming')original.approved=true;
+  if(action==='approve'&&nxcGrayVerified(original))original.approved=true;
  }
  nxcReviewRender();
 }
@@ -2303,8 +2339,8 @@ async function nxcSave(){
  const draft=nxConversationDraft;
  const inmate=profiles.find(p=>String(p.id)===String(draft.inmateId));
  if(!inmate){alert('The selected inmate is not available.');return;}
- const selected=draft.messages.filter(x=>x.approved&&x.direction==='incoming'&&!x.duplicate);
- if(!selected.length){alert('Approve incoming texts before saving.');return;}
+ const selected=draft.messages.filter(x=>x.approved&&nxcGrayVerified(x));
+ if(!selected.length){alert('No color-verified gray bubbles selected. Blue or color-unknown text cannot be saved. Export a color-preserving PDF or DOCX.');return;}
  const rate=Number(nxBankRates().text)||0;
  if(!Number.isSafeInteger(rate)||rate<0){alert('Your shared text rate is invalid.');return;}
  nxConversationBusy=true;
@@ -2337,7 +2373,7 @@ async function nxcSave(){
    if(existing.has(key))continue;
    if(!/^\d{4}-\d{2}-\d{2}$/.test(row.date)||row.date>nxDate())throw Error('At least one selected message has an invalid or future date. Check the message year.');
    existing.add(key);
-   pending.push({uid:crypto.randomUUID(),date:row.date,time:row.time,type:'Text',message:row.text,direction:'Incoming',source:draft.source,importedAt:new Date().toISOString(),nxcImported:true,nxcStatus:'pending',nxcRateCents:rate,rateAtEntry:rate/100,importSource:draft.fileName});
+   pending.push({uid:crypto.randomUUID(),date:row.date,time:row.time,type:'Text',message:row.text,direction:'Incoming',source:draft.source,importedAt:new Date().toISOString(),nxcImported:true,nxcStatus:'pending',nxcRateCents:rate,rateAtEntry:rate/100,importSource:draft.fileName,colorVerified:true,colorEvidence:row.colorEvidence||'gray bubble proof'});
   }
   if(!pending.length){feedback('Every approved message is already recorded for this inmate. No new earnings were added.');return;}
   estimated=pending.length*rate;
@@ -2393,8 +2429,9 @@ document.addEventListener('click',async e=>{
 document.addEventListener('change',e=>{
  if(e.target.id==='nxcFilter'){nxConversationFilter=e.target.value;nxConversationPage=1;nxcReviewRender();return;}
  if(!nxConversationDraft)return;
- if(e.target.dataset.nxcDirection!==undefined){const item=nxConversationDraft.messages[Number(e.target.dataset.nxcDirection)];if(item){item.direction=e.target.value;item.approved=false;nxcReviewRender();}return;}
- if(e.target.dataset.nxcApprove!==undefined){const item=nxConversationDraft.messages[Number(e.target.dataset.nxcApprove)];if(item&&!item.duplicate&&item.direction==='incoming'){item.approved=e.target.checked;nxcReviewRender();}return;}
+ if(e.target.dataset.nxcDate!==undefined){const item=nxConversationDraft.messages[Number(e.target.dataset.nxcDate)];if(item)item.date=e.target.value;return;}
+ if(e.target.dataset.nxcTime!==undefined){const item=nxConversationDraft.messages[Number(e.target.dataset.nxcTime)];if(item)item.time=e.target.value;return;}
+ if(e.target.dataset.nxcApprove!==undefined){const item=nxConversationDraft.messages[Number(e.target.dataset.nxcApprove)];if(item&&nxcGrayVerified(item)){item.approved=e.target.checked;nxcReviewRender();}return;}
 });
 
 /* End integrated importer. */
@@ -3032,64 +3069,109 @@ function activity(){
 }
 
 function nexusImportPanel(){return `<div class="panel nx-ocr-panel"><div class="heading">IMPORT EMAILS & INCOMING TEXTS · APPLE GLASS</div>
-<p class="muted">Screenshots: extract ONLY left-aligned gray incoming message bubbles. Blue outgoing messages and the message composer are ignored. Text recognition runs in your browser; review every result before saving.</p>
-<div class="field"><label>1 · Select screenshots (JPG / PNG / WEBP), TXT or CSV</label><input type="file" id="nexusImportFiles" accept=".txt,.csv,image/png,image/jpeg,image/webp" multiple></div>
+<p class="muted">Only visually confirmed gray message bubbles may be saved from PDFs, screenshots or Word shading. Blue outgoing bubbles, missing colors and message composers are excluded. Text recognition runs in your browser; review every result before saving.</p>
+<div class="field"><label>1 · Select color-preserving PDFs, screenshots, Word, Pages, TXT or CSV</label><input type="file" id="nexusImportFiles" accept=".pdf,.docx,.pages,.txt,.csv,image/png,image/jpeg,image/webp" multiple></div>
 <div class="nx-ocr-grid"><div class="field"><label>2 · Source</label><select id="nexusImportSource"><option>Securus</option><option>JPay</option><option>Other</option></select></div>
 <div class="field"><label>3 · Confirm message date (screenshots may show times only)</label><input id="nexusImportDate" type="date" value="${today()}"></div></div>
 <div class="actions"><button type="button" class="btn alt" id="nexusPrepareImport">EXTRACT GRAY MESSAGES & REVIEW</button></div>
 <div id="nexusImportPreview" class="notice" aria-live="polite">Select a screenshot and extract. No messages are saved until you review and approve them.</div>
-<div class="field"><label>Optional manually pasted incoming message</label><textarea id="nexusImportManual" rows="3" placeholder="Paste a single incoming message here, if needed."></textarea></div>
+<p class="muted">Manual pasting, TXT and CSV cannot prove bubble color and are not eligible to save. Export a color-preserving PDF, Word document, or screenshot instead.</p>
 <div class="actions"><button type="button" class="btn" id="nexusSaveImport">SAVE APPROVED INCOMING MESSAGES</button></div>
 <p class="muted">OCR requires an internet connection on first use to load the recognition library. Screenshots are processed locally and are not stored by this importer. Extraction is experimental; correct all timestamps and wording before saving. Use a test inmate until cloud persistence is verified.</p></div>`}
 let nexusPendingImports=[];
 function nexusCsvRows(raw){const rows=[];let row=[],v='',quoted=false;for(let i=0;i<raw.length;i++){const ch=raw[i];if(ch==='"'){if(quoted&&raw[i+1]==='"'){v+='"';i++}else quoted=!quoted}else if(ch===','&&!quoted){row.push(v);v=''}else if((ch==='\n'||ch==='\r')&&!quoted){if(ch==='\r'&&raw[i+1]==='\n')i++;row.push(v);if(row.some(x=>x.trim()))rows.push(row);row=[];v=''}else v+=ch;}row.push(v);if(row.some(x=>x.trim()))rows.push(row);return rows;}
 function nxOcrReviewRender(extra=''){
  const target=$('nexusImportPreview');if(!target)return;
- target.innerHTML=`<div class="nx-ocr-status"><strong>${nexusPendingImports.length} incoming message(s) ready for review</strong><span>Nothing saved yet</span></div>${extra}<div class="nx-ocr-reviews">`+nexusPendingImports.map((x,i)=>`<div class="nx-ocr-item"><div class="nx-ocr-itemtop"><label><input type="checkbox" data-nx-ocr-approve="${i}" ${x.approved?'checked':''}> Approve message ${i+1}</label><span>${esc(x.filename||x.source||'Incoming')}</span></div><div class="nx-ocr-fields"><label>Date<input type="date" data-nx-ocr-index="${i}" data-nx-ocr-field="date" value="${esc(x.date)}"></label><label>Time (verify)<input type="time" step="1" data-nx-ocr-index="${i}" data-nx-ocr-field="time" value="${esc(x.time||'')}"></label></div><label>Gray incoming bubble<textarea rows="4" data-nx-ocr-index="${i}" data-nx-ocr-field="message">${esc(x.message)}</textarea></label></div>`).join('')+'</div>';
+ target.innerHTML=`<div class="nx-ocr-status"><strong>${nexusPendingImports.filter(x=>x.colorVerified).length} gray-verified candidate(s) ready for review</strong><span>Nothing saved yet</span></div>${extra}<div class="nx-ocr-reviews">`+nexusPendingImports.map((x,i)=>`<div class="nx-ocr-item"><div class="nx-ocr-itemtop"><label><input type="checkbox" data-nx-ocr-approve="${i}" ${x.approved?'checked':''} ${!x.colorVerified?'disabled':''}> ${x.colorVerified?'Approve verified gray':'COLOR UNKNOWN · BLOCKED'} message ${i+1}</label><span>${esc(x.filename||x.source||'Incoming')}</span></div><div class="nx-ocr-fields"><label>Date<input type="date" data-nx-ocr-index="${i}" data-nx-ocr-field="date" value="${esc(x.date)}"></label><label>Time (verify)<input type="time" step="1" data-nx-ocr-index="${i}" data-nx-ocr-field="time" value="${esc(x.time||'')}"></label></div><label>Gray incoming bubble<textarea rows="4" data-nx-ocr-index="${i}" data-nx-ocr-field="message">${esc(x.message)}</textarea></label></div>`).join('')+'</div>';
 }
 function nxOcrTime(s){const m=String(s||'').match(/\b(1[0-2]|0?[1-9]):([0-5]\d)(?::([0-5]\d))?\s*([AP]M)\b/i);if(!m)return '';let h=+m[1]%12;if(m[4].toUpperCase()==='PM')h+=12;return String(h).padStart(2,'0')+':'+m[2]+':'+(m[3]||'00')}
 async function nxExtractGrayMessages(file,date,source,update){
  await nxLoadLibrary('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js','OCR');
  const bitmap=await createImageBitmap(file),w=bitmap.width,h=bitmap.height;
- if(w*h>24000000){bitmap.close();throw Error('Screenshot exceeds 24 megapixels')}
- const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(bitmap,0,0);bitmap.close();
- const pixels=ctx.getImageData(0,0,w,h).data;
- // Detect wide medium-gray bands on the left. This excludes the light page, cyan outgoing bubbles and composer.
- const step=Math.max(2,Math.floor(w/260)),start=Math.floor(w*.05),end=Math.floor(w*.76),flags=[];
- for(let y=0;y<h;y+=3){let gray=0,seen=0;for(let x=start;x<end;x+=step){const k=(y*w+x)*4,r=pixels[k],g=pixels[k+1],b=pixels[k+2];if(r>85&&r<190&&Math.abs(r-g)<13&&Math.abs(g-b)<13)gray++;seen++}flags.push(gray/Math.max(1,seen)>.46)}
- const runs=[];let begin=-1;for(let i=0;i<=flags.length;i++){if(i<flags.length&&flags[i]){if(begin<0)begin=i*3}else if(begin>=0){const endY=i*3;if(endY-begin>Math.max(26,h*.018))runs.push([begin,endY]);begin=-1}}
- // Join rows split by a small antialiased gap.
- const merged=[];for(const r of runs){const prev=merged[merged.length-1];if(prev&&r[0]-prev[1]<13)prev[1]=r[1];else merged.push(r.slice())}
- const results=[];for(let i=0;i<merged.length;i++){
-  const [top,bottom]=merged[i];if(bottom-top<34||top>h*.87)continue;
-  update('Reading gray bubble '+(i+1)+' of '+merged.length+'…');
-  const x=Math.max(0,Math.floor(w*.02)),right=Math.min(w,Math.floor(w*.85)),y=Math.max(0,top-2),height=Math.min(h-y,bottom-top+5);
-  const crop=document.createElement('canvas');crop.width=right-x;crop.height=height;crop.getContext('2d').drawImage(canvas,x,y,right-x,height,0,0,right-x,height);
-  const ocr=await Tesseract.recognize(crop,'eng');const message=String(ocr.data.text||'').replace(/\s*\n\s*/g,' ').replace(/\s+/g,' ').trim();if(message.length<5)continue;
-  // Time sits directly ABOVE the gray bubble. OCR only the left-side strip, not outgoing time labels.
-  const ty=Math.max(0,top-Math.max(35,Math.floor(h*.045))),th=top-ty;
-  let time='';if(th>8){const t=document.createElement('canvas');t.width=Math.floor(w*.55);t.height=th;t.getContext('2d').drawImage(canvas,0,ty,t.width,th,0,0,t.width,th);const tr=await Tesseract.recognize(t,'eng');time=nxOcrTime(tr.data.text)}
-  results.push({date,time,type:'Text',direction:'Incoming',source,message,filename:file.name,approved:false});
+ if(w*h>24_000_000){bitmap.close();throw Error('Image exceeds 24 megapixels. Reduce PDF rendering resolution.');}
+ const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+ const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(bitmap,0,0);bitmap.close();
+ const pix=ctx.getImageData(0,0,w,h).data;
+ const isGray=(r,g,b)=>r>=43&&r<=238&&Math.max(r,g,b)-Math.min(r,g,b)<=17;
+ const isBlue=(r,g,b)=>(b-r>24&&b>g+2)||(b-r>26&&g-r>18);
+ const stride=Math.max(2,Math.floor(w/480)),yStride=3;
+ const minWidth=Math.max(52,Math.floor(w*.085)),maxWidth=w*.78;
+ // Find *local* neutral-gray runs, not large page backgrounds or the blue outgoing side.
+ const regions=[];
+ for(let y=0;y<h;y+=yStride){
+  const candidates=[];let start=-1,last=-1;
+  const flush=()=>{if(start>=0){const left=start,right=last+stride,width=right-left;
+   if(width>=minWidth&&width<=maxWidth&&left<w*.72)candidates.push({left,right,top:y,bottom:y+yStride,lastY:y});start=-1;last=-1;}};
+  for(let x=0;x<w;x+=stride){const i=(y*w+x)*4,ok=isGray(pix[i],pix[i+1],pix[i+2]);
+   if(ok){if(start<0)start=x;last=x;}
+   else if(start>=0&&x-last>stride*5)flush();
+  }flush();
+  for(const c of candidates){let match=null,score=0;
+   for(let j=regions.length-1;j>=0;j--){const old=regions[j];if(y-old.lastY>12)break;
+    const overlap=Math.min(old.right,c.right)-Math.max(old.left,c.left);
+    const fraction=overlap/Math.max(1,Math.min(old.right-old.left,c.right-c.left));
+    if(fraction>.47&&fraction>score){match=old;score=fraction;}
+   }
+   if(match){match.left=Math.min(match.left,c.left);match.right=Math.max(match.right,c.right);match.bottom=y+yStride;match.lastY=y;}
+   else regions.push(c);
+  }
+ }
+ // OCR only well-defined neutral-gray regions; don't OCR a large mixed chat strip.
+ const candidates=regions.filter(r=>{const width=r.right-r.left,height=r.bottom-r.top;
+  if(width<minWidth||height<Math.max(23,h*.009)||height>h*.43||r.top>h*.96)return false;
+  let neutral=0,blue=0,all=0;
+  const dx=Math.max(3,Math.floor(width/55)),dy=Math.max(3,Math.floor(height/25));
+  for(let y=r.top+3;y<r.bottom-3;y+=dy)for(let x=r.left+3;x<r.right-3;x+=dx){const i=(y*w+x)*4;
+   if(isGray(pix[i],pix[i+1],pix[i+2]))neutral++;
+   if(isBlue(pix[i],pix[i+1],pix[i+2]))blue++;
+   all++;
+  }
+  return all>24&&neutral/all>=.37&&blue/all<.045;
+ }).sort((a,b)=>a.top-b.top);
+ // Avoid accidental duplicate extraction from overlapping detections.
+ const groups=[];
+ for(const c of candidates){const last=groups[groups.length-1];
+  if(last&&c.top<last.bottom&&Math.min(c.right,last.right)-Math.max(c.left,last.left)>Math.min(c.right-c.left,last.right-last.left)*.58){
+   last.left=Math.min(last.left,c.left);last.right=Math.max(last.right,c.right);last.bottom=Math.max(last.bottom,c.bottom);
+  }else groups.push({...c});
+ }
+ const results=[];
+ for(let i=0;i<groups.length;i++){
+  const r=groups[i];update('Reading verified gray bubble '+(i+1)+' of '+groups.length+'…');
+  const left=Math.max(0,r.left-5),top=Math.max(0,r.top-3),width=Math.min(w-left,r.right-left+9),height=Math.min(h-top,r.bottom-top+6);
+  const crop=document.createElement('canvas');crop.width=width;crop.height=height;
+  crop.getContext('2d').drawImage(canvas,left,top,width,height,0,0,width,height);
+  const ocr=await Tesseract.recognize(crop,'eng');
+  const message=String(ocr.data.text||'').replace(/\s*\n\s*/g,' ').replace(/\s+/g,' ').trim();
+  if(message.length<4)continue;
+  let time='';const ty=Math.max(0,r.top-Math.max(35,Math.floor(h*.045))),th=r.top-ty;
+  if(th>8){const t=document.createElement('canvas');t.width=width;t.height=th;
+   t.getContext('2d').drawImage(canvas,left,ty,width,th,0,0,width,th);
+   const stamp=await Tesseract.recognize(t,'eng');time=nxOcrTime(stamp.data.text);
+  }
+  results.push({date,time,type:'Text',direction:'Incoming',source,message,filename:file.name,approved:false,colorVerified:true,colorEvidence:'gray bubble verified from image pixels'});
  }
  return results;
 }
 async function nexusPrepareMessageFiles(){
  const input=$('nexusImportFiles'),files=Array.from(input?.files||[]),source=$('nexusImportSource')?.value||'Other',date=$('nexusImportDate')?.value||today(),status=$('nexusImportPreview');
- if(!files.length){alert('Select at least one screenshot, TXT, or CSV file.');return}
+ if(!files.length){alert('Select a PDF, screenshot, Word, Pages, TXT or CSV file.');return}
  if(files.length>20){alert('Select 20 or fewer files per batch.');return}
  nexusPendingImports=[];const errors=[];const button=$('nexusPrepareImport');button.disabled=true;
  try{for(const f of files){try{
- if(f.size>8_000_000)throw Error('Maximum 8 MB per file');const ext=f.name.split('.').pop().toLowerCase();
- if(['png','jpg','jpeg','webp'].includes(ext)){status.textContent='Finding gray incoming bubbles in '+f.name+'…';nexusPendingImports.push(...await nxExtractGrayMessages(f,date,source,msg=>{status.textContent=msg}));}
- else if(ext==='txt'){const message=(await f.text()).trim();if(message)nexusPendingImports.push({date,time:'',type:'Text',direction:'Incoming',source,message,filename:f.name,approved:false})}
- else if(ext==='csv'){const rows=nexusCsvRows(await f.text());if(!rows.length)continue;const head=rows.shift().map(v=>v.trim().toLowerCase());const idx=k=>head.indexOf(k);if(idx('message')<0)throw Error('CSV needs message column');for(const r of rows){if(idx('direction')>=0&&!/incoming|inmate/i.test(r[idx('direction')]||''))continue;const message=(r[idx('message')]||'').trim();if(message)nexusPendingImports.push({date:idx('date')>=0?r[idx('date')]||date:date,time:'',type:'Text',direction:'Incoming',source,message,filename:f.name,approved:false})}}
+ if(f.size>25_000_000)throw Error('Maximum 25 MB per file');const ext=f.name.split('.').pop().toLowerCase();
+ if(['png','jpg','jpeg','webp','pdf'].includes(ext)){status.textContent='Finding gray incoming bubbles in '+f.name+'…';const rows=ext==='pdf'?await nxcFromVisual(f,new Date(date).getFullYear(),source,msg=>{status.textContent=msg}):await nxExtractGrayMessages(f,date,source,msg=>{status.textContent=msg});nexusPendingImports.push(...rows.map(x=>({date:x.date||date,time:x.time||'',type:'Text',direction:'Incoming',source,message:x.message||x.text,filename:f.name,approved:false,colorVerified:true,colorEvidence:x.colorEvidence||'gray original bubble'})));}
+ else if(ext==='docx'){const rows=await nxcFromDocx(f,new Date(date).getFullYear());nexusPendingImports.push(...rows.map(x=>({date:x.date||date,time:x.time||'',type:'Text',direction:x.direction==='incoming'?'Incoming':x.direction,source,message:x.text,filename:f.name,approved:false,colorVerified:x.colorVerified===true,colorEvidence:x.colorEvidence||''})));}
+  else if(ext==='pages'){const rows=await nxcFromPages(f,new Date(date).getFullYear());nexusPendingImports.push(...rows.map(x=>({date:x.date||date,time:x.time||'',type:'Text',direction:'unknown',source,message:x.text,filename:f.name,approved:false,colorVerified:false})));}
+  else if(ext==='txt'){const message=(await f.text()).trim();if(message)nexusPendingImports.push({date,time:'',type:'Text',direction:'unknown',source,message,filename:f.name,approved:false,colorVerified:false})}
+ else if(ext==='csv'){const rows=nexusCsvRows(await f.text());if(!rows.length)continue;const head=rows.shift().map(v=>v.trim().toLowerCase());const idx=k=>head.indexOf(k);if(idx('message')<0)throw Error('CSV needs message column');for(const r of rows){if(idx('direction')>=0&&!/incoming|inmate/i.test(r[idx('direction')]||''))continue;const message=(r[idx('message')]||'').trim();if(message)nexusPendingImports.push({date:idx('date')>=0?r[idx('date')]||date:date,time:'',type:'Text',direction:'unknown',source,message,filename:f.name,approved:false,colorVerified:false})}}
  else throw Error('Unsupported file type');
  }catch(err){errors.push(f.name+': '+(err.message||err))}}
  nxOcrReviewRender(errors.length?'<p class="nx-ocr-warning">'+esc(errors.join(' | '))+'</p>':'');
  }finally{button.disabled=false}
 }
 async function nexusSaveImportedMessages(){
- const manual=String($('nexusImportManual')?.value||'').trim(),source=$('nexusImportSource')?.value||'Other',date=$('nexusImportDate')?.value||today();
+ const source=$('nexusImportSource')?.value||'Other',date=$('nexusImportDate')?.value||today();
  // Read approval state directly from the visible review controls at save time.
  // This avoids lost change events when the checkbox is checked immediately before saving.
  const approvalBoxes=Array.from(document.querySelectorAll('#nexusImportPreview [data-nx-ocr-approve]'));
@@ -3107,14 +3189,13 @@ async function nexusSaveImportedMessages(){
      nexusPendingImports[index][field]=control.value;
    }
  }
- const rows=nexusPendingImports.filter(x=>x.approved).map(x=>({...x}));
- if(manual)rows.push({date,time:'',type:'Text',direction:'Incoming',source,message:manual});
- if(!rows.length){alert('No approved messages found. Check the box beside each gray message you want to save, then try again.');return}
+ const rows=nexusPendingImports.filter(x=>x.approved&&x.colorVerified===true&&x.direction==='Incoming').map(x=>({...x}));
+ if(!rows.length){alert('No verified gray messages approved. Blue, TXT, CSV and unknown-color messages cannot be saved.');return}
  if(rows.length>100){alert('Limit to 100 messages per batch.');return}
  if(rows.some(x=>!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(x.date)||x.date>today()||!x.message.trim()||x.direction!=='Incoming')){alert('Check message dates, text, and direction before saving.');return}
  if(!await nexusGlassConfirm('Save '+rows.length+' approved INCOMING message(s) to the selected inmate?'))return;
  const f=file();f.entries=f.entries||[];const existing=new Set(f.entries.map(x=>[x.date,x.time||'',String(x.message||'').trim()].join('|')));
- let added=0;for(const x of rows){const key=[x.date,x.time||'',x.message.trim()].join('|');if(existing.has(key))continue;existing.add(key);f.entries.push({uid:crypto.randomUUID(),date:x.date,time:x.time||'',type:'Text',message:x.message,source:x.source,direction:'Incoming',rateAtEntry:0,importedAt:new Date().toISOString()});added++}
+ let added=0;for(const x of rows){const key=[x.date,x.time||'',x.message.trim()].join('|');if(existing.has(key))continue;existing.add(key);f.entries.push({uid:crypto.randomUUID(),date:x.date,time:x.time||'',type:'Text',message:x.message,source:x.source,direction:'Incoming',rateAtEntry:0,importedAt:new Date().toISOString(),colorVerified:true,colorEvidence:x.colorEvidence||'gray original bubble'});added++}
  if(!added){alert('No new messages. All approved entries match existing records.');return}
  analysisVisible=false;if(savePersonal()){nexusPendingImports=[];render();alert('Submitted '+added+' incoming message(s) to the NEXUS save process. Refresh and verify cloud persistence before relying on these records.');}
 }
