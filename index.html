@@ -1938,6 +1938,50 @@ body{background-image:radial-gradient(ellipse at 55% -20%,#2b3038 0%,transparent
 @media(max-width:600px){.nxc-box{padding:14px}.nxc-top h2{font-size:24px}.nxc-stats{grid-template-columns:repeat(2,1fr)}.nxc-toolbar .nxc-btn{flex:1}.nxc-half{grid-template-columns:1fr}.nxc-msg-controls{align-items:flex-start;flex-direction:column;gap:7px}}
 
 </style>
+<style id="nexus-monthly-correspondence-apple-glass">
+/* Monthly saved message archive: only presentation is changed; existing Supabase records remain intact. */
+.nx-month-intro{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:14px 0 20px}
+.nx-month-intro strong{font-size:17px;color:#f0f4f8}
+.nx-month-intro p{color:#b0bbc9;line-height:1.5;font-size:13px;max-width:640px;margin:7px 0 0}
+.nx-month-pill{white-space:nowrap;border:1px solid #526172;background:#27313e;color:#d1dce8;border-radius:999px;padding:7px 11px;font-size:11px;letter-spacing:.1em}
+.nx-month-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px}
+.nx-month-card{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;gap:14px;align-items:center;width:100%;min-height:96px;padding:19px;text-align:left;cursor:pointer;border-radius:19px;border:1px solid #536071;background:linear-gradient(150deg,#343e4b,#202a36);color:#f5f8fc;box-shadow:inset 0 1px #ffffff18,0 10px 30px #0002;transition:transform .12s ease,border-color .12s ease}
+.nx-month-card:hover{transform:translateY(-2px);border-color:#c2d1e1}
+.nx-month-card:focus-visible{outline:3px solid #a4caed;outline-offset:3px}
+.nx-month-icon{font-size:25px;color:#c4d5e5;background:#4b5969;width:43px;height:43px;flex-shrink:0;display:grid;place-items:center;border-radius:13px}
+.nx-month-detail{display:grid;gap:7px;flex:1;min-width:0}
+.nx-month-detail strong{font-size:16px;font-weight:650}
+.nx-month-detail small{color:#b8c5d3;font-size:12px}
+.nx-month-chevron{font-size:27px;line-height:1;color:#b5c8db}
+body.nx-month-open{overflow:hidden!important}
+.nx-month-overlay[hidden]{display:none!important}
+.nx-month-overlay{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;position:fixed;inset:0;z-index:2147483645;display:flex;align-items:center;justify-content:center;background:rgba(3,6,11,.81);backdrop-filter:blur(17px);-webkit-backdrop-filter:blur(17px);padding:clamp(10px,3vw,28px);color:#f5f7fa;box-sizing:border-box}
+.nx-month-dialog{display:flex;flex-direction:column;overflow:hidden;box-sizing:border-box;width:min(930px,100%);max-height:min(92dvh,940px);border-radius:25px;border:1px solid #7c8b9a;background:linear-gradient(155deg,#303a46 0%,#1d2732 58%,#151e28 100%);box-shadow:0 38px 115px #000d,inset 0 1px #ffffff2a}
+.nx-month-dialog-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding:25px 28px 17px;border-bottom:1px solid #ffffff1b}
+.nx-month-eyebrow{font-size:10px;font-weight:650;letter-spacing:.17em;color:#bbc9d8}
+.nx-month-dialog-head h2{color:#fff;margin:7px 0 6px;font-size:clamp(21px,3.4vw,29px);letter-spacing:-.035em}
+.nx-month-subtitle{color:#b8c5d3;font-size:12px;line-height:1.55;margin:0}
+.nx-month-close{flex-shrink:0;border-radius:50%;border:1px solid #73869b;background:#465564;color:#ffb5b5;font-size:28px;line-height:1;width:43px;height:43px;cursor:pointer}
+.nx-month-toolbar{display:grid;grid-template-columns:1fr 1.4fr;gap:14px;padding:18px 28px 8px}
+.nx-month-toolbar label{display:grid;gap:7px;color:#b6c3d2;font-size:10px;letter-spacing:.12em;font-weight:650}
+.nx-month-toolbar select,.nx-month-toolbar input{box-sizing:border-box;width:100%;font:inherit;font-size:14px;letter-spacing:normal;min-height:43px;padding:10px 12px;border-radius:11px;background:#111a24;border:1px solid #5d6d7c;color:#f0f5fa}
+.nx-month-toolbar select:focus-visible,.nx-month-toolbar input:focus-visible,.nx-month-dialog button:focus-visible{outline:3px solid #accdec;outline-offset:2px}
+.nx-month-summary{font-size:12px;color:#c0ccda;padding:8px 28px 13px;border-bottom:1px solid #ffffff15}
+.nx-month-reader{overflow-y:auto;overscroll-behavior:contain;padding:18px 28px;min-height:90px;scrollbar-color:#667b92 #1c2530;flex:1}
+.nx-month-message{border-radius:15px;padding:17px 19px;margin-bottom:12px;border:1px solid #ffffff1a;background:#202d3a;box-shadow:inset 0 1px #ffffff0a}
+.nx-month-message-meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;color:#b9c8d8;font-size:12px}
+.nx-month-message-meta strong{color:#f4f8fd;font-weight:700}
+.nx-month-message-meta small{border-radius:50px;background:#354658;padding:5px 9px;color:#d5e3f2}
+.nx-month-full-text{font-size:14px;line-height:1.7;color:#e8eef6;white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal;margin:12px 0 0;user-select:text}
+.nx-month-empty{text-align:center;padding:34px 15px;color:#c7d3df}
+.nx-month-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 28px;border-top:1px solid #ffffff1e;background:#1a2430}
+.nx-month-pages{display:flex;align-items:center;gap:13px;flex-wrap:wrap;font-size:12px;color:#c9d3df}
+.nx-month-pages button,.nx-month-done{cursor:pointer;padding:9px 13px;border:1px solid #73879d;border-radius:10px;background:#3d4c5e;color:#f7faff;font-size:13px;font-weight:600}
+.nx-month-done{background:linear-gradient(160deg,#dbe6f1,#b4c7db);color:#12202c}
+.nx-month-pages button:disabled{opacity:.35;cursor:default}
+@media(max-width:650px){.nx-month-intro{align-items:flex-start;flex-direction:column}.nx-month-dialog{border-radius:19px;max-height:94dvh}.nx-month-dialog-head{padding:19px 17px 13px}.nx-month-toolbar{grid-template-columns:1fr;padding:13px 17px 8px;gap:9px}.nx-month-summary{padding:7px 17px 11px}.nx-month-reader{padding:11px 13px}.nx-month-message{padding:13px 14px}.nx-month-footer{padding:12px 13px;flex-wrap:wrap}.nx-month-pages{gap:7px}.nx-month-pages button{padding:8px 10px}}
+@media(prefers-reduced-motion:reduce){.nx-month-card{transition:none!important}}
+</style>
 </head><body class="nexus-session-checking"><div id="nexusBootOverlay" class="nexus-boot-overlay nx-refresh-active" aria-live="polite" aria-label="Refreshing NEXUS"><div class="nexus-boot-box"><div class="nx-refresh-brand">BLACKCELL CORPORATION</div><div class="nx-refresh-sub">NEXUS MANAGEMENT SYSTEM</div><div class="nx-refresh-rule"></div><div id="nexusBootStatus" class="nexus-boot-status">Refreshing NEXUS</div><div class="nx-refresh-description">Restoring your secure session and preparing your workspace.</div><div class="nexus-boot-kicker" hidden>BLACKCELL / NEXUS</div><div class="nexus-boot-track"><div id="nexusBootProgress" class="nexus-boot-progress"></div></div><div class="nx-refresh-stats"><span id="nxRefreshStage">Initializing NEXUS</span><span id="nexusBootPercent" class="nexus-boot-percent">0%</span></div><div class="nexus-boot-foot"><span id="nxRefreshDot" class="nx-refresh-dot"></span><span id="nxRefreshSecurity">SECURE SYSTEM INITIALIZATION</span></div></div></div>
 
 <div id="login" class="gate"><form id="loginForm" class="panel">
@@ -3074,6 +3118,40 @@ async function nexusSaveImportedMessages(){
  if(!added){alert('No new messages. All approved entries match existing records.');return}
  analysisVisible=false;if(savePersonal()){nexusPendingImports=[];render();alert('Submitted '+added+' incoming message(s) to the NEXUS save process. Refresh and verify cloud persistence before relying on these records.');}
 }
+/* Saved history: group records by their original month without modifying the data. */
+function nxSavedMessageMonth(date){
+ const raw=String(date||'').trim();
+ let m=raw.match(/^(\d{4})-(\d{1,2})(?:-\d{1,2})?/);
+ if(m){const mo=Number(m[2]);return mo>=1&&mo<=12?m[1]+'-'+String(mo).padStart(2,'0'):'undated';}
+ m=raw.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})(?:\D|$)/);
+ if(m){const mo=Number(m[1]),yr=m[3].length===2?'20'+m[3]:m[3];return mo>=1&&mo<=12?yr+'-'+String(mo).padStart(2,'0'):'undated';}
+ return 'undated';
+}
+function nxSavedMonthLabel(key){
+ if(!/^\d{4}-\d{2}$/.test(key))return 'Undated messages';
+ const [year,month]=key.split('-').map(Number);
+ return new Intl.DateTimeFormat('en-US',{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(Date.UTC(year,month-1,1)));
+}
+function nxSavedMonthTiles(entries,filter='all'){
+ const groups=new Map();
+ for(const e of entries){
+  const type=String(e.type||'').toLowerCase();
+  if(filter!=='all'&&type!==filter)continue;
+  const key=nxSavedMessageMonth(e.date);
+  if(!groups.has(key))groups.set(key,[]);
+  groups.get(key).push(e);
+ }
+ const total=[...groups.values()].reduce((n,a)=>n+a.length,0);
+ if(!total)return '<p class="muted">No saved messages in this section.</p>';
+ const keys=[...groups.keys()].sort((a,b)=>a==='undated'?1:b==='undated'?-1:b.localeCompare(a));
+ return `<div class="nx-month-intro"><div><strong>${total.toLocaleString()} saved records</strong><p>Choose a month to read every message in a centered Apple-style window. Nothing is changed or imported.</p></div><span class="nx-month-pill">${keys.length} ${keys.length===1?'MONTH':'MONTHS'}</span></div>
+ <div class="nx-month-grid">${keys.map(key=>{
+   const entries=groups.get(key),textCount=entries.filter(e=>String(e.type||'').toLowerCase()==='text').length;
+   return `<button type="button" class="nx-month-card" data-nxm-month="${esc(key)}" data-nxm-filter="${esc(filter)}" aria-label="Open ${esc(nxSavedMonthLabel(key))}, ${entries.length} messages">
+      <span class="nx-month-icon">▦</span><span class="nx-month-detail"><strong>${esc(nxSavedMonthLabel(key))}</strong><small>${entries.length.toLocaleString()} ${entries.length===1?'message':'messages'}${filter==='all'?' · '+textCount.toLocaleString()+' texts':''}</small></span><span class="nx-month-chevron" aria-hidden="true">›</span>
+   </button>`;}).join('')}</div>`;
+}
+
 function communication(){const e=nexusChronologicalEntries();return `<section class="nexus-comms-suite">
 <div class="nexus-comms-header"><div><div class="nexus-comms-eyebrow">BLACKCELL CORPORATION / PERSONAL FILE</div><h2>Communications <span class="nexus-comms-count">${e.length} records</span></h2><p>Correspondence, imports, and activity — all in one place.</p></div><button type="button" class="btn nexus-comms-new" data-comms-tab="entry">＋ New Entry</button></div>
 <nav class="nexus-comms-tabs" aria-label="Communication sections">
@@ -3083,7 +3161,7 @@ function communication(){const e=nexusChronologicalEntries();return `<section cl
 <button type="button" data-comms-tab="webcapture">◎ &nbsp; Web Capture</button>
 <button type="button" data-comms-tab="entry">＋ &nbsp; Add Entry</button></nav>
 <div class="nexus-comms-pane" data-comms-pane="activity">${activity()}</div>
-<div class="nexus-comms-pane" data-comms-pane="messages" hidden><div class="panel communication-history-panel"><div class="heading">SAVED CORRESPONDENCE · ${e.length} RECORDS</div><div class="communication-history-list" tabindex="0" role="region" aria-label="Saved communication history">${e.length?e.map(x=>`<div class="entry"><strong>${esc(x.type)} · ${esc(x.date)}</strong><p>${esc(x.message)}</p><button class="btn danger small" data-entry-delete="${esc(x.uid)}">Delete Entry</button></div>`).join(''):'<p class="muted">No communication entries yet.</p>'}</div></div></div>
+<div class="nexus-comms-pane" data-comms-pane="messages" hidden><div class="panel communication-history-panel"><div class="heading">SAVED CORRESPONDENCE · BY MONTH</div>${nxSavedMonthTiles(e)}</div></div>
 <div class="nexus-comms-pane" data-comms-pane="import" hidden>${nexusImportPanel()}</div>
 <div class="nexus-comms-pane" data-comms-pane="pages" hidden>${nxcPanel()}</div>
 <div class="nexus-comms-pane" data-comms-pane="webcapture" hidden>
@@ -3140,7 +3218,7 @@ function nexusCommunicationSubscores(){
 
 let nxCommView='all';
 function communicationCenter(){return `<div class="nx-comm-workspace"><div class="nx-comm-heading"><span>PERSONAL FILE / COMMUNICATIONS</span><h2>Communication Activity</h2><p>Choose a message type to review the saved history.</p></div><div class="nx-comm-selector" role="group" aria-label="Communication type">${[['all','All Activity'],['text','Texts'],['email','Emails'],['call','Calls']].map(([key,label])=>`<button type="button" class="${nxCommView===key?'active':''}" data-nx-comm-filter="${key}" aria-pressed="${nxCommView===key}">${label}</button>`).join('')}</div><div class="nx-comm-panel"><div class="nx-comm-title">${nxCommView==='all'?'ALL COMMUNICATIONS':nxCommView==='text'?'TEXT MESSAGES':nxCommView==='email'?'EMAIL MESSAGES':'CALL RECORDS'}</div><div class="nx-comm-records">${nxCommView==='all'?communication():nxFilteredCommunication()}</div></div>${nxCommView==='all'?`<div class="nexus-overall-window">${nexusCombinedCommunicationScore()}${nexusCommunicationSubscores()}</div>`:''}</div>`}
-function nxFilteredCommunication(){const entries=(file().entries||[]).filter(e=>String(e.type||'').toLowerCase()===nxCommView);if(!entries.length)return '<div class="nx-comm-empty">No saved '+(nxCommView==='text'?'text messages':nxCommView==='email'?'emails':'calls')+' for this profile.</div>';return entries.slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))).map(e=>`<article class="nx-comm-message"><div><strong>${esc(e.date||'Undated')}</strong><span>${esc(e.direction||e.sender||e.author||nxCommView)}</span></div><p>${esc(e.text||e.body||e.message||e.details||e.notes||'Saved activity')}</p></article>`).join('')}
+function nxFilteredCommunication(){return nxSavedMonthTiles(file().entries||[],nxCommView)}
 
 
 function sexualLevel(){const entries=financeFile().sexualEntries||[],now=Date.now();const recent=entries.filter(e=>{const d=new Date(e.date+'T12:00:00').getTime();return Number.isFinite(d)&&d<=now&&d>now-30*86400000});const n=recent.length;return {n,level:n<5?'LOW':n<15?'MEDIUM':'HIGH',cls:n<5?'low':n<15?'medium':'high'}}
@@ -4733,6 +4811,101 @@ nexusDB.auth.onAuthStateChange((event)=>{
 window.addEventListener('beforeunload',e=>{if(nexusCloudDirty||nexusCloudWriteFailed){e.preventDefault();e.returnValue='';}});
 nexusInitialRestorePromise=nexusOpenAuthorizedSession(false,true).catch(()=>nexusShowSignedOut('Unable to verify your session. Please sign in.')).finally(()=>{nexusInitialRestoreFinished=true;});
 $('bell').addEventListener('click',()=>alert('NEXUS Notification Center: bell icon added. We will design its alert functions later.'));
+
+ /* Monthly read-only saved correspondence viewer — no financial mutations and no cloud writes. */
+ (function(){
+  const layer=document.createElement('div');
+  layer.className='nx-month-overlay';layer.hidden=true;
+  layer.innerHTML=`<section class="nx-month-dialog" role="dialog" aria-modal="true" aria-labelledby="nxmTitle">
+   <header class="nx-month-dialog-head"><div><span class="nx-month-eyebrow">BLACKCELL CORPORATION · NEXUS</span><h2 id="nxmTitle">Saved Correspondence</h2><p id="nxmProfile" class="nx-month-subtitle"></p></div><button type="button" class="nx-month-close" data-nxm-close aria-label="Close monthly messages">×</button></header>
+   <div class="nx-month-toolbar"><label>MONTH<select id="nxmSelect" aria-label="Select message month"></select></label><label>FIND TEXT<input type="search" id="nxmSearch" placeholder="Search messages in this month" autocomplete="off" aria-label="Search full messages in this month"></label></div>
+   <div class="nx-month-summary" id="nxmSummary" aria-live="polite"></div>
+   <div class="nx-month-reader" id="nxmList" role="region" aria-label="Full messages for selected month" tabindex="0"></div>
+   <footer class="nx-month-footer"><div class="nx-month-pages" id="nxmPages"></div><button type="button" class="nx-month-done" data-nxm-close>Close</button></footer>
+  </section>`;
+  document.body.appendChild(layer);
+  let state=null,lastFocus=null;
+  const PER_PAGE=25;
+  function profileEntries(){
+   if(!state||document.getElementById('shell')?.classList.contains('hidden'))return [];
+   const entries=personal[state.id]?.entries;
+   if(!Array.isArray(entries))return [];
+   return entries.map((e,index)=>({e,index})).filter(({e})=>state.filter==='all'||String(e.type||'').toLowerCase()===state.filter);
+  }
+  function availableMonths(){
+   return [...new Set(profileEntries().map(({e})=>nxSavedMessageMonth(e.date)))].sort((a,b)=>a==='undated'?1:b==='undated'?-1:b.localeCompare(a));
+  }
+  function renderMonthOptions(){
+   const select=layer.querySelector('#nxmSelect');
+   const months=availableMonths();
+   select.innerHTML='';
+   for(const key of months){const opt=document.createElement('option');opt.value=key;opt.textContent=nxSavedMonthLabel(key);select.appendChild(opt)}
+   if(months.includes(state.month))select.value=state.month;
+   else{state.month=months[0]||'undated';select.value=state.month}
+  }
+  function renderMessages(){
+   if(!state)return;
+   const filtered=profileEntries().filter(({e})=>nxSavedMessageMonth(e.date)===state.month)
+     .sort((a,b)=>String(b.e.date||'').localeCompare(String(a.e.date||''))||String(b.e.time||'').localeCompare(String(a.e.time||''))||b.index-a.index);
+   const search=state.search.trim().toLocaleLowerCase();
+   const matched=search?filtered.filter(({e})=>[e.message,e.text,e.body,e.details,e.notes,e.date,e.time,e.source,e.type].some(v=>String(v||'').toLocaleLowerCase().includes(search))):filtered;
+   const pages=Math.max(1,Math.ceil(matched.length/PER_PAGE));
+   state.page=Math.max(1,Math.min(state.page,pages));
+   const start=(state.page-1)*PER_PAGE;
+   const batch=matched.slice(start,start+PER_PAGE);
+   layer.querySelector('#nxmTitle').textContent=nxSavedMonthLabel(state.month);
+   layer.querySelector('#nxmSummary').textContent=`${filtered.length.toLocaleString()} saved messages in this month${search?' · '+matched.length.toLocaleString()+' matching search':''} · Showing ${matched.length?start+1:0}–${start+batch.length}`;
+   layer.querySelector('#nxmList').innerHTML=batch.length?batch.map(({e})=>{
+    const msg=String(e.message??e.text??e.body??e.details??e.notes??'');
+    const from=String(e.direction||e.sender||e.author||'Saved communication');
+    return `<article class="nx-month-message"><div class="nx-month-message-meta"><strong>${esc(e.type||'Message')}</strong><span>${esc(e.date||'Date not recorded')}${e.time?' · '+esc(e.time):''}</span><small>${esc(from)}</small></div><p class="nx-month-full-text">${esc(msg||'(No message text saved)')}</p></article>`;
+   }).join(''):'<div class="nx-month-empty">No messages match this month and search.</div>';
+   layer.querySelector('#nxmPages').innerHTML=`<button type="button" data-nxm-page="prev" ${state.page===1?'disabled':''}>← Previous</button><span>Page ${state.page} of ${pages}</span><button type="button" data-nxm-page="next" ${state.page>=pages?'disabled':''}>Next →</button>`;
+  }
+  function open(button){
+   if(document.getElementById('shell')?.classList.contains('hidden'))return;
+   if(detailId==null||!profiles.some(p=>String(p.id)===String(detailId)))return;
+   const filter=button.dataset.nxmFilter||'all';
+   state={id:String(detailId),month:button.dataset.nxmMonth,filter,page:1,search:''};
+   lastFocus=button;
+   layer.querySelector('#nxmSearch').value='';
+   const p=profiles.find(p=>String(p.id)===state.id);
+   layer.querySelector('#nxmProfile').textContent=displayName(p)+' · Inmate ID '+String(p.id)+' · Read-only message history';
+   renderMonthOptions();renderMessages();
+   layer.hidden=false;
+   document.body.classList.add('nx-month-open');
+   layer.querySelector('[data-nxm-close]').focus();
+  }
+  function close(){
+   if(layer.hidden)return;
+   layer.hidden=true;state=null;
+   layer.querySelector('#nxmList').replaceChildren();
+   document.body.classList.remove('nx-month-open');
+   if(lastFocus?.isConnected)lastFocus.focus();lastFocus=null;
+  }
+  document.addEventListener('click',ev=>{
+   const b=ev.target.closest('[data-nxm-month]');
+   if(b){ev.preventDefault();open(b);return;}
+   if(layer.hidden)return;
+   if(ev.target===layer||ev.target.closest('[data-nxm-close]')){close();return;}
+   const page=ev.target.closest('[data-nxm-page]');
+   if(page&&state){const direction=page.dataset.nxmPage;state.page+=direction==='next'?1:-1;renderMessages();layer.querySelector('#nxmList').scrollTop=0;}
+  });
+  layer.querySelector('#nxmSelect').addEventListener('change',ev=>{if(!state)return;state.month=ev.target.value;state.page=1;state.search='';layer.querySelector('#nxmSearch').value='';renderMessages();layer.querySelector('#nxmList').scrollTop=0;});
+  layer.querySelector('#nxmSearch').addEventListener('input',ev=>{if(!state)return;state.search=ev.target.value;state.page=1;renderMessages();});
+  document.addEventListener('keydown',ev=>{
+   if(layer.hidden)return;
+   if(ev.key==='Escape'){ev.preventDefault();close();return;}
+   if(ev.key!=='Tab')return;
+   const focusable=[...layer.querySelectorAll('button:not([disabled]),select,input')];
+   if(!focusable.length)return;
+   const first=focusable[0],last=focusable[focusable.length-1];
+   if(ev.shiftKey&&document.activeElement===first){ev.preventDefault();last.focus();}
+   else if(!ev.shiftKey&&document.activeElement===last){ev.preventDefault();first.focus();}
+  });
+  const shell=document.getElementById('shell');
+  if(shell)new MutationObserver(()=>{if(shell.classList.contains('hidden'))close()}).observe(shell,{attributes:true,attributeFilter:['class']});
+ })();
 
 /* NEXUS dashboard read-only saved communication popup. Never copies messages into URLs or persistent storage. */
 (function(){
