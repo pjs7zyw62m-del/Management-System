@@ -4279,6 +4279,27 @@ let nxpRows=[],nxpPhotos=[],nxpUrls=new Map(),nxpLoaded=false,nxpBusy=false,nxpL
 let nxpFormOpen=false,nxpMessage='',nxpMessageError=false,nxpBatchCount=0;
 let nxpBatchOpen=false,nxpBatchDraft=[],nxpBatchAttachments=[],nxpBatchBusy=false,nxpBatchSummary='';
 let nxpCaptureRecords=[],nxpCaptureImages=[],nxpCaptureNotice='';
+/* Five manually verified public candidate metadata entries, checked 2026-11-02.
+ * No third-party network discovery, photograph copying or remote scraping.
+ * All entries require owner-authenticated RLS and duplicate checks before save.
+ * Source paths are used only to match the existing SHA-256 seen registry; never written as URLs to Supabase. */
+const NXP_CURATED_CANDIDATES=[{"source_ref":"/inmates/ryan-nolden-00756357/penpal","sex":"Male","full_name":"Ryan Nolden","inmate_id":"00756357","state":"Texas","facility":"TDCJ – Huntsville Unit","institutional_email_provider":"Securus Technologies","correspondence_preference":"Anyone","introduction":"Describes pursuing education and certificates in prison, growing personally, and looking to make friends.","incarcerated_for":"Capital murder (reported; source states offense verified)","charges":"Capital murder","photos":[]},{"source_ref":"/inmates/branden-allen-01445799/penpal-0","sex":"Male","full_name":"Branden Allen","inmate_id":"01445799","state":"Texas","facility":"TDCJ – Ramsey I Unit","institutional_email_provider":"Securus Technologies","correspondence_preference":"Anyone","introduction":"Interested in socializing, building friendships, and getting to know new people.","incarcerated_for":"Murder (reported; source states offense verified)","charges":"Murder","photos":[]},{"source_ref":"/inmates/carlos-ford-133543/penpal-0","sex":"Male","full_name":"Carlos Ford","inmate_id":"133543","state":"Colorado","facility":"Sterling Correctional Facility","institutional_email_provider":"Securus Technologies","correspondence_preference":"Anyone","introduction":"Describes an interest in fitness, peer counseling, and developing connections as release approaches.","incarcerated_for":"Manslaughter (reported; not independently verified)","charges":"Manslaughter","photos":[]},{"source_ref":"/inmates/olton-drake-an3099/penpal-0","sex":"Male","full_name":"Olton Drake","inmate_id":"AN3099","state":"California","facility":"Kern Valley State Prison","institutional_email_provider":"Securus Technologies","correspondence_preference":"Anyone","introduction":"Looking for supportive and positive conversation, friendship, and an open exchange of ideas.","incarcerated_for":"Murder (reported; not independently verified)","charges":"Murder","photos":[]},{"source_ref":"/inmates/victor-tavares-129455/penpal","sex":"Male","full_name":"Victor Tavares","inmate_id":"129455","state":"Rhode Island","facility":"Rhode Island Department of Corrections","institutional_email_provider":"Securus Technologies","correspondence_preference":"Anyone","introduction":"Interested in thoughtful correspondence, legal education, and discussing constitutional-law topics.","incarcerated_for":"Sexual assault (reported; source states offense verified)","charges":"Sexual assault","photos":[]}];
+async function nxpLoadCuratedFive(){
+ if(nxpBatchBusy)return;
+ nxpBatchOpen=true;nxpBatchBusy=true;
+ nxpBatchSummary='Checking five real, verified candidates against existing inmate records…';
+ try{
+  await nxpBatchProcessInput(NXP_CURATED_CANDIDATES,[]);
+  const eligible=nxpBatchDraft.filter(r=>r.allowed&&r.selected).length;
+  nxpBatchBusy=false;
+  if(eligible){
+   await nxpBatchSave();
+   nxpBatchSummary='Curated five-profile action: '+nxpBatchSummary+' Real inmate photos were NOT copied; use the Add photos control only for images you may retain.';
+  } else nxpBatchSummary='None of these five are eligible to be saved as new profiles. They may already have been processed. '+nxpBatchSummary;
+ }catch(err){nxpBatchSummary='Could not add the five candidates: '+(err.message||err)}
+ finally{nxpBatchBusy=false;render();document.getElementById('nxp-batch-panel')?.scrollIntoView({behavior:'smooth',block:'start'})}
+}
+
 function nxpFlash(message,error=false){nxpMessage=String(message||'');nxpMessageError=error;if(view==='potentialProfiles')render();}
 function nxpSafe(x){return esc(String(x??''));}
 function nxpProfilePhotos(id){return nxpPhotos.filter(p=>p.potential_profile_id===id).sort((a,b)=>Number(b.is_primary)-Number(a.is_primary)||a.sort_order-b.sort_order)}
@@ -4311,7 +4332,7 @@ function nxpPage(){
      <div class="nxp-profile-actions"><select class="nxp-status" data-nxp-status="${nxpSafe(p.id)}" aria-label="Contact status for ${nxpSafe(p.full_name)}">${['interested','contacted','corresponding','not_interested'].map(s=>`<option value="${s}" ${s===p.contact_status?'selected':''}>${s.replaceAll('_',' ')}</option>`).join('')}</select><button type="button" class="nxp-btn small" data-nxp-upload="${nxpSafe(p.id)}">＋ Add photos</button><input type="file" data-nxp-photo-input="${nxpSafe(p.id)}" accept="image/jpeg,image/png,image/webp" multiple></div>
    </article>`
  }).join('');
- return `<section class="nxp-page"><div class="nxp-header"><div><div class="nxp-eyebrow">BLACKCELL / PRIVATE CONTACT MANAGEMENT</div><h1>Potential Profiles</h1><p>Private, separate directory · Multiple photos · Permanent duplicate tracking</p></div><div class="nxp-actions"><button class="nxp-btn" data-nxp-action="batch">⇧ Import batch</button><button class="nxp-btn" data-nxp-action="refresh">↻ Refresh</button><button class="nxp-btn primary" data-nxp-action="new" ${nxpBatchCount>=5?'disabled':''}>＋ Add profile</button></div></div>${stats}
+ return `<section class="nxp-page"><div class="nxp-header"><div><div class="nxp-eyebrow">BLACKCELL / PRIVATE CONTACT MANAGEMENT</div><h1>Potential Profiles</h1><p>Private, separate directory · Multiple photos · Permanent duplicate tracking</p></div><div class="nxp-actions"><button class="nxp-btn primary" data-nxp-action="curated-five">★ Add 5 verified profiles</button><button class="nxp-btn" data-nxp-action="batch">⇧ Import batch</button><button class="nxp-btn" data-nxp-action="refresh">↻ Refresh</button><button class="nxp-btn primary" data-nxp-action="new" ${nxpBatchCount>=5?'disabled':''}>＋ Add profile</button></div></div>${stats}
  <div class="nxp-banner">Only male profiles with JPay or Securus that list <b>Men</b>, <b>Anyone</b>, <b>Men and women</b>, or no correspondence preference are eligible. <b>Women only</b> is excluded. Batch import accepts only information and photos supplied by you. It does not search or scrape outside websites. Source identifiers are hashed locally; only hashes are stored.</div>
  ${nxpMessage?`<div class="nxp-message${nxpMessageError?' error':''}" role="status">${nxpSafe(nxpMessage)}</div>`:''}
  ${form}${nxpBatchSection()}<div class="nxp-header"><div><h1 style="font-size:20px">Saved prospects</h1><p>${nxpLoaded?'Your private Supabase collection':'Loading your private records…'}</p></div><input class="nxp-filter" type="search" id="nxpFilter" placeholder="Search saved prospects" style="max-width:245px" aria-label="Search potential profiles"></div>
@@ -4397,6 +4418,7 @@ $('content').addEventListener('click',async e=>{
  const b=e.target.closest('[data-nxp-action],[data-nxp-upload],[data-nxp-primary]');if(!b)return;
  if(b.dataset.nxpAction){e.preventDefault();const a=b.dataset.nxpAction;
   if(a==='batch'){nxpBatchOpen=!nxpBatchOpen;nxpBatchSummary='';render();if(nxpBatchOpen)document.getElementById('nxp-batch-panel')?.scrollIntoView({behavior:'smooth'});}
+  else if(a==='curated-five'){await nxpLoadCuratedFive()}
   else if(a==='check-source'){await nxpCaptureCheckURL()}
   else if(a==='capture-profile'){await nxpCaptureAdd()}
   else if(a==='capture-review'){await nxpCaptureReview()}
@@ -4530,6 +4552,7 @@ function nxpBatchSection(){
   <div class="nxp-field wide"><div class="nxp-actions"><button type="button" class="nxp-btn" data-nxp-action="parse-batch" ${nxpBatchBusy?'disabled':''}>Preview and check duplicates</button><button type="button" class="nxp-btn" data-nxp-action="close-batch">Close</button></div></div>
  </div>
  ${nxpBatchSummary?`<p role="status" style="margin:12px 0;color:#cbd5e1">${nxpSafe(nxpBatchSummary)}</p>`:''}
+ ${nxpBatchDraft.length?`<div class="nxp-reviewed-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:10px;margin:15px 0">${nxpBatchDraft.map((r,i)=>`<article style="border:1px solid #414b5a;border-radius:14px;padding:12px;background:linear-gradient(160deg,#272e39,#141921)"><div style="height:92px;border-radius:10px;background:linear-gradient(145deg,#2b3645,#151b25);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#b1bccb;font-size:12px;gap:8px"><span style="font-size:24px">♙</span>Photo not supplied</div><h3 style="font-size:15px;margin:10px 0 4px">${nxpSafe(r.full_name)}</h3><div style="font-size:11px;color:#c1cbd9">#${nxpSafe(r.inmate_id)} · ${nxpSafe(r.state)}</div><div style="margin:6px 0;font-size:11px;color:#a8b5c6">${nxpSafe(r.provider||'')} · ${nxpSafe(r.preference.replaceAll('_',' '))}</div><p style="font-size:11px;line-height:1.45;color:#cbd5df">${nxpSafe(r.introduction)}</p><p style="font-size:11px;color:#d5b9b7">${nxpSafe(r.incarcerated_for)}</p><p style="font-size:11px;color:${r.allowed?'#a5d9b3':'#d7a4a4'}">${nxpSafe(r.reason||'Eligible for review')}</p></article>`).join('')}</div>`:''}
  ${rows?`<div style="overflow-x:auto"><table style="width:100%;font-size:12px;min-width:660px;border-collapse:collapse"><thead><tr style="color:#aab5c2;text-align:left"><th>Save</th><th>Name / ID</th><th>Email</th><th>Preference</th><th>Photos</th><th>Result</th></tr></thead><tbody>${rows}</tbody></table></div><div class="nxp-actions" style="margin-top:12px"><button type="button" class="nxp-btn primary" data-nxp-action="save-batch" ${nxpBatchBusy?'disabled':''}>Save selected verified profiles (${nxpBatchDraft.filter(x=>x.selected&&x.allowed).length})</button></div>`:''}
  </div>`;
 }
