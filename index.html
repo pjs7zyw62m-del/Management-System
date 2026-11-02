@@ -4810,7 +4810,7 @@ nexusDB.auth.onAuthStateChange((event)=>{
 // Restore a previously authenticated session on refresh. Records stay hidden until verified.
 window.addEventListener('beforeunload',e=>{if(nexusCloudDirty||nexusCloudWriteFailed){e.preventDefault();e.returnValue='';}});
 nexusInitialRestorePromise=nexusOpenAuthorizedSession(false,true).catch(()=>nexusShowSignedOut('Unable to verify your session. Please sign in.')).finally(()=>{nexusInitialRestoreFinished=true;});
-$('bell').addEventListener('click',()=>alert('NEXUS Notification Center: bell icon added. We will design its alert functions later.'));
+/* Legacy placeholder bell handler removed: cloud notification center owns the bell. */
 
  /* Monthly read-only saved correspondence viewer — no financial mutations and no cloud writes. */
  (function(){
