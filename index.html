@@ -4278,6 +4278,7 @@ const NXP_BUCKET='nexus-potential-photos';
 let nxpRows=[],nxpPhotos=[],nxpUrls=new Map(),nxpLoaded=false,nxpBusy=false,nxpLoading=false;
 let nxpFormOpen=false,nxpMessage='',nxpMessageError=false,nxpBatchCount=0;
 let nxpBatchOpen=false,nxpBatchDraft=[],nxpBatchAttachments=[],nxpBatchBusy=false,nxpBatchSummary='';
+let nxpCaptureRecords=[],nxpCaptureImages=[],nxpCaptureNotice='';
 function nxpFlash(message,error=false){nxpMessage=String(message||'');nxpMessageError=error;if(view==='potentialProfiles')render();}
 function nxpSafe(x){return esc(String(x??''));}
 function nxpProfilePhotos(id){return nxpPhotos.filter(p=>p.potential_profile_id===id).sort((a,b)=>Number(b.is_primary)-Number(a.is_primary)||a.sort_order-b.sort_order)}
@@ -4396,6 +4397,10 @@ $('content').addEventListener('click',async e=>{
  const b=e.target.closest('[data-nxp-action],[data-nxp-upload],[data-nxp-primary]');if(!b)return;
  if(b.dataset.nxpAction){e.preventDefault();const a=b.dataset.nxpAction;
   if(a==='batch'){nxpBatchOpen=!nxpBatchOpen;nxpBatchSummary='';render();if(nxpBatchOpen)document.getElementById('nxp-batch-panel')?.scrollIntoView({behavior:'smooth'});}
+  else if(a==='check-source'){await nxpCaptureCheckURL()}
+  else if(a==='capture-profile'){await nxpCaptureAdd()}
+  else if(a==='capture-review'){await nxpCaptureReview()}
+  else if(a==='capture-clear'){nxpCaptureRecords=[];nxpCaptureImages=[];nxpCaptureNotice='Capture list cleared.';render()}
   else if(a==='parse-batch'){await nxpBatchPreview()}
   else if(a==='save-batch'){await nxpBatchSave()}
   else if(a==='close-batch'){nxpBatchOpen=false;nxpBatchDraft=[];render()}
@@ -4501,7 +4506,23 @@ function nxpBatchSection(){
   return `<tr><td><input type="checkbox" data-nxp-select="${i}" ${r.selected?'checked':''} ${r.allowed?'':'disabled'} aria-label="Include ${nxpSafe(r.full_name)}"></td><td>${nxpSafe(r.full_name||'(missing)')}<small style="display:block;color:#9da7b8">${nxpSafe(r.inmate_id||'No inmate ID')} · ${nxpSafe(r.state||'No state')}</small></td><td>${nxpSafe(r.provider||'Unrecognized')}</td><td>${nxpSafe(r.preference.replaceAll('_',' '))}</td><td>${r.photos.length?nxpSafe(r.photos.join(', ')):'None listed'}</td><td>${label}</td></tr>`;
  }).join('');
  return `<div class="nxp-card" id="nxp-batch-panel" style="margin-bottom:18px">
- <h2>Import reviewed profiles · Up to 5</h2>
+ <h2>Potential Profile Discovery · Review 5</h2>
+ <p>This working capture assistant accepts profiles you open and copy yourself. Paste the original profile text and its See Crime details. It checks rules, duplicate IDs and private Supabase records before saving. It does not automatically fetch or scrape a third-party website.</p>
+ <div class="nxp-card" style="background:linear-gradient(145deg,#262d38,#11151d);margin:12px 0;border-color:#565e6c">
+ <h2 style="margin:0 0 7px">Capture a selected profile</h2>
+ <div class="nxp-form">
+  <div class="nxp-field wide"><label for="nxpCaptureUrl">Original profile URL (used for duplicate fingerprint only)</label><input id="nxpCaptureUrl" type="url" placeholder="https://writeaprisoner.com/inmates/.../penpal" autocomplete="off"></div>
+  <div class="nxp-field wide"><button type="button" class="nxp-btn" data-nxp-action="check-source">Check URL against previously processed profiles</button></div>
+  <div class="nxp-field wide"><label for="nxpCaptureProfile">Copy and paste the entire selected profile page</label><textarea id="nxpCaptureProfile" rows="7" style="min-height:118px" placeholder="Meet ... / About ... / Sex: Male / Institutional Email: ... / Interested In Corresponding With: ..."></textarea></div>
+  <div class="nxp-field wide"><label for="nxpCaptureCrime">Copy the See Crime page content</label><textarea id="nxpCaptureCrime" rows="4" style="min-height:88px" placeholder="Incarcerated for: ... / Search for more information: ... / You will need inmate's name and number to conduct a search: ..."></textarea></div>
+  <div class="nxp-field"><label for="nxpCaptureState">State correction (only if missing)</label><input id="nxpCaptureState" placeholder="e.g. Arizona" autocomplete="off"></div>
+  <div class="nxp-field"><label for="nxpCapturePhotos">Photographs you are authorized to retain (optional)</label><input id="nxpCapturePhotos" type="file" multiple accept="image/jpeg,image/png,image/webp"><span class="nxp-file-note">Select images saved to your device. Original photos are never fetched from the third-party URL.</span></div>
+  <div class="nxp-field wide"><div class="nxp-actions"><button type="button" class="nxp-btn" data-nxp-action="capture-profile">＋ Add candidate to review</button><button type="button" class="nxp-btn primary" data-nxp-action="capture-review">Check captured candidates (${nxpCaptureRecords.length})</button><button type="button" class="nxp-btn" data-nxp-action="capture-clear">Clear captured list</button></div></div>
+ </div>
+ <p data-nxp-capture-status role="status" style="color:#d6deea">${nxpSafe(nxpCaptureNotice)}</p>
+ ${nxpCaptureRecords.length?`<p style="color:#b9c4d4">Candidates ready for checks: ${nxpCaptureRecords.map((r,i)=>`${i+1}. ${nxpSafe(r.full_name||'Name not detected')} (${nxpSafe(r.inmate_id||'ID unknown')})`).join(' · ')}</p>`:''}
+ </div>
+ <h2 style="margin-top:18px">Alternative: Import CSV or JSON</h2>
  <p>Upload a CSV or JSON list of profiles you selected, plus any authorized photographs. NEXUS checks male sex, JPay/Securus, correspondence preferences, existing inmate IDs, and the permanent seen registry. No third-party site is accessed.</p>
  <div class="nxp-form">
   <div class="nxp-field wide"><label for="nxpBatchFile">Profile list (.csv or .json)</label><input type="file" id="nxpBatchFile" accept=".csv,.json,text/csv,application/json" style="display:block;padding-top:6px"></div>
@@ -4512,19 +4533,101 @@ function nxpBatchSection(){
  ${rows?`<div style="overflow-x:auto"><table style="width:100%;font-size:12px;min-width:660px;border-collapse:collapse"><thead><tr style="color:#aab5c2;text-align:left"><th>Save</th><th>Name / ID</th><th>Email</th><th>Preference</th><th>Photos</th><th>Result</th></tr></thead><tbody>${rows}</tbody></table></div><div class="nxp-actions" style="margin-top:12px"><button type="button" class="nxp-btn primary" data-nxp-action="save-batch" ${nxpBatchBusy?'disabled':''}>Save selected verified profiles (${nxpBatchDraft.filter(x=>x.selected&&x.allowed).length})</button></div>`:''}
  </div>`;
 }
-async function nxpBatchPreview(){
- if(nxpBatchBusy)return;nxpBatchBusy=true;
- const file=document.getElementById('nxpBatchFile')?.files?.[0];
- const images=[...(document.getElementById('nxpBatchPhotos')?.files||[])];
+
+/* USER-SELECTED PROFILE CAPTURE. No remote requests; only user-pasted content. */
+function nxpCapturePlain(raw){
+ let t=String(raw||'');
+ if(/<\/?[a-z][^>]*>/i.test(t)){
+  const doc=new DOMParser().parseFromString(t,'text/html');
+  doc.querySelectorAll('script,style,noscript,iframe').forEach(x=>x.remove());
+  doc.querySelectorAll('br,p,div,li,h1,h2,h3,section,article,dt,dd,tr,td').forEach(x=>x.append('\n'));
+  t=doc.body?.textContent||'';
+ }
+ return t.replace(/\r/g,'\n').replace(/\u00a0/g,' ').replace(/[ \t]+/g,' ').replace(/\n[ \t]+/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
+}
+function nxpCaptureLabel(text,label){
+ const safe=label.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+ const m=String(text||'').match(new RegExp(safe+'\\s*:\\s*([^\\n|]{1,280})','i'));
+ return (m?.[1]||'').trim().replace(/^(?:\||-|:|\s)+/,'').trim();
+}
+function nxpCaptureStateValue(text){
+ const states=['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'];
+ const area=String(text||'').match(/(?:search for more information\s*:|this person is incarcerated in the)([\s\S]{0,135})/i)?.[1]||'';
+ return states.find(s=>new RegExp('\\b'+s+'\\b','i').test(area))||'';
+}
+function nxpCaptureExtract(url,profileRaw,crimeRaw,stateOverride,photoNames){
+ let source;
+ try{const u=new URL(String(url).trim());if(u.protocol!=='https:'||!/(^|\.)writeaprisoner\.com$/i.test(u.hostname)||!/^\/inmates\//.test(u.pathname))throw Error();source=u.pathname.replace(/\/$/,'').toLowerCase();}
+ catch{throw Error('Use a selected WriteAPrisoner inmate profile URL starting with https://writeaprisoner.com/inmates/.');}
+ const profile=nxpCapturePlain(profileRaw),crime=nxpCapturePlain(crimeRaw);
+ if(profile.length<80)throw Error('Paste the full selected inmate profile. Text is too short to verify.');
+ let nameno=crime.match(/you will need inmate['’]s name and number to conduct a search\s*:\s*([^\n#]{3,110})\s*#\s*([a-z0-9-]{2,30})/i);
+ if(!nameno)nameno=profile.match(/(?:^|\n)\s*([a-z][\w'’.\-]*(?:\s+[a-z][\w'’.\-]*){1,4})\s*#\s*([a-z0-9-]{2,30})/im);
+ const name=nameno?.[1]?.trim()||'', inmateId=nameno?.[2]?.trim()||'';
+ const meet=profile.match(/\bMeet\s+[A-Za-z][\w'’-]*\s*:/i), about=profile.match(/\bAbout\s+[A-Za-z][\w'’-]*\s*:/i);
+ const introduction=meet&&about&&about.index>meet.index?profile.slice(meet.index+meet[0].length,about.index).trim():'';
+ const gender=nxpCaptureLabel(profile,'Sex').split(/\s{2,}|\bMarital Status\b/i)[0].trim();
+ const provider=nxpCaptureLabel(profile,'Institutional Email').replace(/log\s*in.*$/i,'').trim();
+ const preference=nxpCaptureLabel(profile,'Interested In Corresponding With').replace(/\b(?:Profile Started|Seeking|Photo was verified).*$/i,'').trim();
+ const offense=nxpCaptureLabel(crime,'Incarcerated for');
+ const state=String(stateOverride||'').trim()||nxpCaptureStateValue(crime)||nxpCaptureStateValue(profile);
+ let facility='';
+ const fm=profile.match(/\n([^\n]+\b(?:Correctional Facility|Correctional Institution|State Prison|Penitentiary|Correctional Complex)\b[^\n]*)/i);
+ if(fm)facility=fm[1].trim().slice(0,180);
+ return {source_ref:source,sex:gender,full_name:name,inmate_id:inmateId,state,facility,institutional_email_provider:provider,correspondence_preference:preference,introduction,incarcerated_for:offense,charges:offense,photos:photoNames};
+}
+function nxpCaptureClearFields(){
+ ['nxpCaptureUrl','nxpCaptureProfile','nxpCaptureCrime','nxpCaptureState'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+ const f=document.getElementById('nxpCapturePhotos');if(f)f.value='';
+}
+async function nxpCaptureCheckURL(){
  try{
-  if(!file)throw Error('Select a CSV or JSON profile list first.');
-  if(file.size>2_000_000)throw Error('Profile list is too large (2 MB limit).');
-  const text=await file.text();
-  let input;
-  if(file.name.toLowerCase().endsWith('.json')){
-   const json=JSON.parse(text);input=Array.isArray(json)?json:json?.profiles;
-  }else if(file.name.toLowerCase().endsWith('.csv'))input=nxpBatchCsv(text);
-  else throw Error('Select .json or .csv.');
+  const url=document.getElementById('nxpCaptureUrl')?.value||'';
+  let u;try{u=new URL(url)}catch{throw Error('Enter a valid profile URL first.')}
+  if(u.protocol!=='https:'||!/(^|\.)writeaprisoner\.com$/i.test(u.hostname)||!/^\/inmates\//.test(u.pathname))throw Error('Enter a WriteAPrisoner inmate profile URL.');
+  const path=u.pathname.replace(/\/$/,'').toLowerCase();
+  if(nxpCaptureRecords.some(r=>r.source_ref===path))throw Error('Already captured in this batch.');
+  const {data:{user},error:authError}=await nexusDB.auth.getUser();
+  if(authError||!user||user.id!==currentUserId)throw Error('Sign in to NEXUS first.');
+  const hash=await nxpHash('writeaprisoner:'+path);
+  const {data:seen,error}=await nexusDB.from('nexus_potential_seen').select('review_status').eq('owner_id',user.id).eq('source_ref_hash',hash).maybeSingle();
+  if(error)throw error;
+  if(seen)nxpCaptureNotice='Already processed previously: '+seen.review_status+'. Skip this candidate.';
+  else{
+   const {data:profile,error:profileError}=await nexusDB.from('nexus_potential_profiles').select('id').eq('owner_id',user.id).eq('source_ref_hash',hash).maybeSingle();
+   if(profileError)throw profileError;
+   nxpCaptureNotice=profile?'Already saved. Skip this profile.':'This source URL has not previously been processed. You can copy the profile details.';
+  }
+ }catch(err){nxpCaptureNotice='URL check: '+(err.message||err)}
+ const el=document.querySelector('[data-nxp-capture-status]');if(el)el.textContent=nxpCaptureNotice;
+}
+async function nxpCaptureAdd(){
+ try{
+  if(nxpCaptureRecords.length>=100)throw Error('Maximum 100 candidates per review.');
+  const url=document.getElementById('nxpCaptureUrl')?.value||'';
+  const p=document.getElementById('nxpCaptureProfile')?.value||'';
+  const c=document.getElementById('nxpCaptureCrime')?.value||'';
+  const state=document.getElementById('nxpCaptureState')?.value||'';
+  const images=[...(document.getElementById('nxpCapturePhotos')?.files||[])];
+  const tagged=images.map((file,i)=>{
+   if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>10485760)throw Error('Photo must be JPG, PNG, or WEBP and no larger than 10MB.');
+   return new File([file],`candidate_${nxpCaptureRecords.length+1}_${i+1}_${file.name}`,{type:file.type});
+  });
+  const rec=nxpCaptureExtract(url,p,c,state,tagged.map(f=>f.name));
+  if(nxpCaptureRecords.some(r=>r.source_ref===rec.source_ref))throw Error('This source profile is already in your current capture list.');
+  nxpCaptureRecords.push(rec);nxpCaptureImages.push(...tagged);
+  nxpCaptureNotice='Added '+(rec.full_name||'profile with missing name')+'. Review will block incomplete or ineligible records.';
+  nxpCaptureClearFields();render();
+ }catch(err){nxpCaptureNotice='Capture failed: '+(err.message||err);const info=document.getElementById('nxp-batch-panel');const status=info?.querySelector('[data-nxp-capture-status]');if(status)status.textContent=nxpCaptureNotice;else alert(nxpCaptureNotice)}
+}
+async function nxpCaptureReview(){
+ if(nxpBatchBusy)return;nxpBatchBusy=true;
+ try{if(!nxpCaptureRecords.length)throw Error('Capture a selected profile first.');await nxpBatchProcessInput(nxpCaptureRecords,nxpCaptureImages);nxpBatchSummary='Captured pages: '+nxpBatchSummary;}
+ catch(err){nxpBatchDraft=[];nxpBatchSummary='Review failed: '+(err.message||err)}
+ finally{nxpBatchBusy=false;render()}
+}
+
+async function nxpBatchProcessInput(input,images){
   if(!Array.isArray(input)||!input.length||input.length>100)throw Error('Include 1 to 100 candidate rows.');
   const {data:{user},error:authError}=await nexusDB.auth.getUser();
   if(authError||!user||user.id!==currentUserId)throw Error('Sign in to NEXUS first.');
@@ -4568,6 +4671,22 @@ async function nxpBatchPreview(){
   }
   nxpBatchDraft=drafts;nxpBatchAttachments=images;
   nxpBatchSummary=`Reviewed ${drafts.length} entries: ${drafts.filter(r=>r.allowed).length} eligible and new; ${excludedRegistered} women-only exclusions permanently remembered; ${drafts.filter(r=>r.reason&&r.reason!=='Women only').length} other exclusions. Up to ${5-nxpBatchCount} can be saved this session.`;
+
+}
+async function nxpBatchPreview(){
+ if(nxpBatchBusy)return;nxpBatchBusy=true;
+ const file=document.getElementById('nxpBatchFile')?.files?.[0];
+ const images=[...(document.getElementById('nxpBatchPhotos')?.files||[])];
+ try{
+  if(!file)throw Error('Select a CSV or JSON profile list first.');
+  if(file.size>2_000_000)throw Error('Profile list is too large (2 MB limit).');
+  const text=await file.text();
+  let input;
+  if(file.name.toLowerCase().endsWith('.json')){
+   const json=JSON.parse(text);input=Array.isArray(json)?json:json?.profiles;
+  }else if(file.name.toLowerCase().endsWith('.csv'))input=nxpBatchCsv(text);
+  else throw Error('Select .json or .csv.');
+  await nxpBatchProcessInput(input,images);
  }catch(err){nxpBatchDraft=[];nxpBatchAttachments=[];nxpBatchSummary='Import check failed: '+(err.message||err)}
  finally{nxpBatchBusy=false;render()}
 }
