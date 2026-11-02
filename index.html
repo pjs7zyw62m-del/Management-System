@@ -4276,7 +4276,7 @@ async function nxBulkCreate(){const approved=nxBulkDrafts.map((r,i)=>({r,i})).fi
    No automated scraping/discovery is implemented in this release. */
 const NXP_BUCKET='nexus-potential-photos';
 let nxpRows=[],nxpPhotos=[],nxpUrls=new Map(),nxpLoaded=false,nxpBusy=false,nxpLoading=false;
-let nxpFormOpen=false,nxpMessage='',nxpMessageError=false,nxpBatchCount=0;
+let nxpFormOpen=false,nxpMessage='',nxpMessageError=false,nxpBatchCount=0,nxpEditingIntroId=null;
 let nxpBatchOpen=false,nxpBatchDraft=[],nxpBatchAttachments=[],nxpBatchBusy=false,nxpBatchSummary='';
 let nxpCaptureRecords=[],nxpCaptureImages=[],nxpCaptureNotice='';
 /* Five manually verified public candidate metadata entries, checked 2026-11-02.
@@ -4303,6 +4303,48 @@ async function nxpLoadCuratedFive(){
 function nxpFlash(message,error=false){nxpMessage=String(message||'');nxpMessageError=error;if(view==='potentialProfiles')render();}
 function nxpSafe(x){return esc(String(x??''));}
 function nxpProfilePhotos(id){return nxpPhotos.filter(p=>p.potential_profile_id===id).sort((a,b)=>Number(b.is_primary)-Number(a.is_primary)||a.sort_order-b.sort_order)}
+// For user-provided content only: extract the inmate-written portion, not headings, biography widgets or 'About' data.
+function nxpMeetIntroduction(raw){
+ const text=nxpCapturePlain(raw).trim();
+ const meet=/(?:^|\n)\s*Meet\s+[A-Za-z][\w'’.-]*(?:\s+[A-Za-z][\w'’.-]*){0,3}\s*:\s*/i.exec(text);
+ let introduction=text;
+ if(meet){
+  introduction=text.slice(meet.index+meet[0].length);
+  const about=/(?:^|\n)\s*About\s+[A-Za-z][\w'’.-]*(?:\s+[A-Za-z][\w'’.-]*){0,3}\s*:/i.exec(introduction);
+  if(about)introduction=introduction.slice(0,about.index);
+ } else if(/(?:^|\n)\s*About\s+[A-Za-z][\w'’.-]*\s*:/i.test(text)){
+  throw Error('The pasted page has an About section but no Meet section. Please paste the Meet introduction itself.');
+ }
+ introduction=introduction.replace(/^\s*Meet\s+[^\n:]{1,70}:\s*/i,'').trim();
+ if(!introduction)throw Error('No inmate-written introduction detected.');
+ if(introduction.length>30000)throw Error('Introduction exceeds 30,000 characters.');
+ return introduction;
+}
+async function nxpSaveIntroduction(form){
+ if(nxpBusy)return;
+ const id=form.dataset.nxpIntroForm;
+ if(!nxpRows.some(p=>p.id===id)){nxpFlash('Saved profile not found. Refresh and retry.',true);return;}
+ let introduction;
+ try{introduction=nxpMeetIntroduction(form.elements.introduction.value);}
+ catch(err){nxpFlash('Introduction not saved: '+err.message,true);return;}
+ nxpBusy=true;
+ const button=form.querySelector('[type="submit"]');if(button)button.disabled=true;
+ try{
+  const {data:{user},error:authErr}=await nexusDB.auth.getUser();
+  if(authErr||!user||user.id!==currentUserId)throw Error('Sign in again.');
+  const {data,error}=await nexusDB.from('nexus_potential_profiles')
+   .update({introduction,updated_at:new Date().toISOString()})
+   .eq('owner_id',user.id).eq('id',id).select('id').single();
+  if(error)throw error;
+  if(!data?.id)throw Error('No matching profile was updated.');
+  nxpEditingIntroId=null;
+  nxpMessage='Full introduction saved. Existing crime information and photographs were not changed.';
+  nxpMessageError=false;
+  await nxpLoad();
+ }catch(err){nxpFlash('Introduction save failed: '+(err.message||err),true)}
+ finally{nxpBusy=false;if(button&&button.isConnected)button.disabled=false;}
+}
+
 function nxpPage(){
  const count=nxpRows.length, photos=nxpPhotos.length;
  const stats=`<div class="nxp-overview"><div class="nxp-metric"><strong>${count}</strong><span>Saved prospects</span></div><div class="nxp-metric"><strong>${photos}</strong><span>Stored photos</span></div><div class="nxp-metric"><strong>${nxpBatchCount} / 5</strong><span>Current batch</span></div></div>`;
@@ -4320,6 +4362,11 @@ function nxpPage(){
  <div class="nxp-field wide"><label>Photos (optional — JPEG, PNG, WEBP, up to 10 MB each)</label><input type="file" id="nxpNewPhotos" accept="image/jpeg,image/png,image/webp" multiple style="display:block;padding-top:7px"><span class="nxp-file-note">Only upload images you are authorized to keep. The first uploaded image becomes the cover.</span></div>
  <div class="nxp-field wide"><div class="nxp-actions"><button type="submit" class="nxp-btn primary" ${nxpBusy?'disabled':''}>Review eligibility and save</button><button type="button" data-nxp-action="cancel" class="nxp-btn">Cancel</button></div></div></form></div>`:'';
  const items=nxpRows.map(p=>{
+   const isCuratedSummary=NXP_CURATED_CANDIDATES.some(c=>c.inmate_id===p.inmate_id&&c.state===p.state&&c.introduction===p.introduction);
+   const originalIntroMissing=isCuratedSummary||!String(p.introduction||'').trim();
+   const introTitle=originalIntroMissing?'INTRODUCTION — ORIGINAL TEXT NOT IMPORTED':'INTRODUCTION';
+   const introText=originalIntroMissing?(isCuratedSummary?'Summary only: '+p.introduction:'No introduction available.'):(p.introduction||'');
+   const introForm=nxpEditingIntroId===p.id?`<form class="nxp-intro-edit" data-nxp-intro-form="${nxpSafe(p.id)}" style="margin:12px 0;padding:14px;border-radius:13px;border:1px solid #515d6e;background:#1a202b"><label style="font-weight:650;color:#d5deea;display:block;margin-bottom:8px">Paste the inmate's own Meet introduction</label><p style="color:#9baabd;font-size:11px;margin:0 0 9px">Paste the Meet section, or the whole page. NEXUS will remove the Meet heading and everything after the About heading. This corrects this saved profile only; crime fields remain unchanged.</p><textarea name="introduction" maxlength="30000" required style="width:100%;min-height:135px;resize:vertical;border-radius:10px;padding:11px;background:#0e131b;color:#ecf1f7;border:1px solid #586478" placeholder="Paste Meet … About … text here">${nxpSafe(isCuratedSummary?'':(p.introduction||''))}</textarea><div class="nxp-actions" style="margin-top:10px"><button type="submit" class="nxp-btn primary">Save introduction</button><button type="button" data-nxp-cancel-intro="${nxpSafe(p.id)}" class="nxp-btn">Cancel</button></div></form>`:'';
    const photos=nxpProfilePhotos(p.id),cover=photos[0],url=cover?nxpUrls.get(cover.storage_path):null;
    const coverMarkup=url?`<img class="nxp-cover" src="${nxpSafe(url)}" alt="Primary profile photograph">`:'<div class="nxp-cover nxp-cover-empty" aria-label="No photograph">♙</div>';
    const strip=photos.length?`<div class="nxp-photo-strip">${photos.map((photo,i)=>{
@@ -4327,9 +4374,9 @@ function nxpPage(){
    }).join('')}</div>`:'';
    return `<article class="nxp-profile" data-nxp-name="${nxpSafe(p.full_name.toLowerCase())}" data-nxp-search="${nxpSafe([p.full_name,p.inmate_id,p.state,p.facility].join(' ').toLowerCase())}">
      <div class="nxp-top">${coverMarkup}<div class="nxp-ident"><h3>${nxpSafe(p.full_name)}</h3><small>${nxpSafe(p.state||'State not listed')}${p.facility?' · '+nxpSafe(p.facility):''}</small><small>Inmate ID: ${nxpSafe(p.inmate_id||'Not listed')}</small><small>${nxpSafe(p.institutional_email_provider)}</small><span class="nxp-pill">${nxpSafe(p.correspondence_preference.replaceAll('_',' '))}</span></div></div>
-     <div class="nxp-section-title">INTRODUCTION</div><div class="nxp-intro">${nxpSafe(p.introduction||'No introduction available.')}</div>
+     <div class="nxp-section-title">${introTitle}</div><div class="nxp-intro">${nxpSafe(introText)}</div>${introForm}
      <div class="nxp-section-title">INCARCERATION</div><div class="nxp-intro">${nxpSafe(p.incarcerated_for||'Not provided')}</div>${strip}
-     <div class="nxp-profile-actions"><select class="nxp-status" data-nxp-status="${nxpSafe(p.id)}" aria-label="Contact status for ${nxpSafe(p.full_name)}">${['interested','contacted','corresponding','not_interested'].map(s=>`<option value="${s}" ${s===p.contact_status?'selected':''}>${s.replaceAll('_',' ')}</option>`).join('')}</select><button type="button" class="nxp-btn small" data-nxp-upload="${nxpSafe(p.id)}">＋ Add photos</button><input type="file" data-nxp-photo-input="${nxpSafe(p.id)}" accept="image/jpeg,image/png,image/webp" multiple></div>
+     <div class="nxp-profile-actions"><button type="button" class="nxp-btn small" data-nxp-edit-intro="${nxpSafe(p.id)}">✎ ${originalIntroMissing?'Add full introduction':'Edit introduction'}</button><select class="nxp-status" data-nxp-status="${nxpSafe(p.id)}" aria-label="Contact status for ${nxpSafe(p.full_name)}">${['interested','contacted','corresponding','not_interested'].map(s=>`<option value="${s}" ${s===p.contact_status?'selected':''}>${s.replaceAll('_',' ')}</option>`).join('')}</select><button type="button" class="nxp-btn small" data-nxp-upload="${nxpSafe(p.id)}">＋ Add photos</button><input type="file" data-nxp-photo-input="${nxpSafe(p.id)}" accept="image/jpeg,image/png,image/webp" multiple></div>
    </article>`
  }).join('');
  return `<section class="nxp-page"><div class="nxp-header"><div><div class="nxp-eyebrow">BLACKCELL / PRIVATE CONTACT MANAGEMENT</div><h1>Potential Profiles</h1><p>Private, separate directory · Multiple photos · Permanent duplicate tracking</p></div><div class="nxp-actions"><button class="nxp-btn primary" data-nxp-action="curated-five">★ Add 5 verified profiles</button><button class="nxp-btn" data-nxp-action="batch">⇧ Import batch</button><button class="nxp-btn" data-nxp-action="refresh">↻ Refresh</button><button class="nxp-btn primary" data-nxp-action="new" ${nxpBatchCount>=5?'disabled':''}>＋ Add profile</button></div></div>${stats}
@@ -4413,9 +4460,9 @@ async function nxpSaveForm(form){
  }catch(err){nxpMessage='Could not save: '+(err.message||err);nxpMessageError=true;const messageNode=document.querySelector('.nxp-message');if(messageNode)messageNode.textContent=nxpMessage;else alert(nxpMessage)}
  finally{nxpBusy=false;if(button&&button.isConnected)button.disabled=false;if(view==='potentialProfiles'&&!nxpFormOpen)render()}
 }
-$('content').addEventListener('submit',e=>{if(e.target.id==='nxpNewForm'){e.preventDefault();e.stopImmediatePropagation();nxpSaveForm(e.target)}},true);
+$('content').addEventListener('submit',e=>{if(e.target.id==='nxpNewForm'){e.preventDefault();e.stopImmediatePropagation();nxpSaveForm(e.target)}else if(e.target.matches('[data-nxp-intro-form]')){e.preventDefault();e.stopImmediatePropagation();nxpSaveIntroduction(e.target)}},true);
 $('content').addEventListener('click',async e=>{
- const b=e.target.closest('[data-nxp-action],[data-nxp-upload],[data-nxp-primary]');if(!b)return;
+ const b=e.target.closest('[data-nxp-action],[data-nxp-upload],[data-nxp-primary],[data-nxp-edit-intro],[data-nxp-cancel-intro]');if(!b)return;
  if(b.dataset.nxpAction){e.preventDefault();const a=b.dataset.nxpAction;
   if(a==='batch'){nxpBatchOpen=!nxpBatchOpen;nxpBatchSummary='';render();if(nxpBatchOpen)document.getElementById('nxp-batch-panel')?.scrollIntoView({behavior:'smooth'});}
   else if(a==='curated-five'){await nxpLoadCuratedFive()}
@@ -4431,6 +4478,8 @@ $('content').addEventListener('click',async e=>{
   else if(a==='refresh'){nxpMessage='';await nxpLoad()}
   return;
  }
+ if(b.dataset.nxpEditIntro){nxpEditingIntroId=b.dataset.nxpEditIntro;render();document.querySelector('[data-nxp-intro-form="'+nxpEditingIntroId+'"]')?.scrollIntoView({behavior:'smooth',block:'center'});return}
+ if(b.dataset.nxpCancelIntro){nxpEditingIntroId=null;render();return}
  if(b.dataset.nxpUpload){const input=[...document.querySelectorAll('[data-nxp-photo-input]')].find(x=>x.dataset.nxpPhotoInput===b.dataset.nxpUpload);input?.click();return}
  if(b.dataset.nxpPrimary){if(nxpBusy)return;nxpBusy=true;
   try{const photo=nxpPhotos.find(x=>x.id===b.dataset.nxpPrimary);if(!photo)throw Error('Photo not found');
@@ -4587,8 +4636,7 @@ function nxpCaptureExtract(url,profileRaw,crimeRaw,stateOverride,photoNames){
  let nameno=crime.match(/you will need inmate['’]s name and number to conduct a search\s*:\s*([^\n#]{3,110})\s*#\s*([a-z0-9-]{2,30})/i);
  if(!nameno)nameno=profile.match(/(?:^|\n)\s*([a-z][\w'’.\-]*(?:\s+[a-z][\w'’.\-]*){1,4})\s*#\s*([a-z0-9-]{2,30})/im);
  const name=nameno?.[1]?.trim()||'', inmateId=nameno?.[2]?.trim()||'';
- const meet=profile.match(/\bMeet\s+[A-Za-z][\w'’-]*\s*:/i), about=profile.match(/\bAbout\s+[A-Za-z][\w'’-]*\s*:/i);
- const introduction=meet&&about&&about.index>meet.index?profile.slice(meet.index+meet[0].length,about.index).trim():'';
+ const introduction=/(?:^|\n)\s*Meet\s+[A-Za-z]/i.test(profile)?nxpMeetIntroduction(profile):'';
  const gender=nxpCaptureLabel(profile,'Sex').split(/\s{2,}|\bMarital Status\b/i)[0].trim();
  const provider=nxpCaptureLabel(profile,'Institutional Email').replace(/log\s*in.*$/i,'').trim();
  const preference=nxpCaptureLabel(profile,'Interested In Corresponding With').replace(/\b(?:Profile Started|Seeking|Photo was verified).*$/i,'').trim();
