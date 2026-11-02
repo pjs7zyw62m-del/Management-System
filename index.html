@@ -5111,6 +5111,55 @@ document.getElementById('nexusAppleNotice').addEventListener('click',function(e)
 document.addEventListener('keydown',function(e){const root=document.getElementById('nexusAppleNotice');if(!root.classList.contains('nx-visible'))return;if(e.key==='Escape'){e.preventDefault();closeNotice()}else if(e.key==='Tab'){e.preventDefault();document.getElementById('nxNoticeClose').focus()}});
 })();
 </script>
+<style id="nx-liquid-apple-notification-design">
+/* NEXUS Apple Glass - focused overrides for notification center only */
+.nx-alert-layer{justify-content:flex-end!important;align-items:stretch!important;padding:0!important}
+.nx-alert-backdrop{background:rgba(2,4,9,.48)!important;backdrop-filter:blur(20px) saturate(120%)!important;-webkit-backdrop-filter:blur(20px) saturate(120%)!important}
+.nx-alert-panel{width:min(490px,100vw)!important;height:100dvh!important;max-height:100dvh!important;overflow-y:auto!important;border-radius:28px 0 0 28px!important;border:1px solid rgba(255,255,255,.17)!important;border-right:0!important;padding:34px 25px 24px!important;color:#f6f8fc!important;background:linear-gradient(148deg,rgba(46,53,67,.96),rgba(24,29,40,.98) 53%,rgba(12,17,27,.98))!important;box-shadow:-30px 0 100px rgba(0,0,0,.45),inset 1px 0 rgba(255,255,255,.11)!important;animation:nxLiquidEnter .29s cubic-bezier(.2,.8,.2,1) both}
+@keyframes nxLiquidEnter{from{opacity:.65;transform:translateX(32px)}to{opacity:1;transform:translateX(0)}}
+.nx-alert-head{border:0!important;align-items:center!important;padding-bottom:27px!important}
+.nx-alert-head small{font-size:10px!important;letter-spacing:.14em!important;font-weight:600!important;color:#a8b1c0!important}
+.nx-alert-head h2{font-size:32px!important;letter-spacing:-.055em!important;font-weight:680!important;margin:7px 0 0!important;line-height:1.14!important;color:#f9faff!important}
+.nx-alert-x{width:36px!important;height:36px!important;min-width:36px!important;padding:0!important;border:1px solid rgba(255,255,255,.13)!important;background:rgba(255,255,255,.12)!important;color:#ecf0f8!important;border-radius:50%!important;font-size:23px!important;font-weight:300!important;cursor:pointer}
+.nx-alert-x:hover,.nx-liquid-read-all:hover{background:rgba(255,255,255,.2)!important}
+.nx-liquid-summary{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 0 23px}
+.nx-liquid-num{font-size:40px;font-weight:660;line-height:1;color:#fff;letter-spacing:-.045em;font-variant-numeric:tabular-nums}
+.nx-liquid-muted{color:#aab6c5;font-size:12px;margin-top:7px}
+.nx-liquid-summary-actions{display:flex;align-items:flex-end;flex-direction:column;gap:9px}
+.nx-liquid-priority{font-size:11px;color:#ffd1d2;background:rgba(199,56,71,.19);padding:5px 10px;border-radius:20px}
+.nx-liquid-read-all{border:0!important;border-radius:30px!important;padding:10px 14px!important;background:rgba(255,255,255,.13)!important;color:#f3f5fa!important;cursor:pointer;font-size:12px;font-weight:600}
+.nx-liquid-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:4px;margin-bottom:20px;border-radius:16px;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.06)}
+.nx-liquid-tabs button{background:transparent!important;border:0!important;color:#acb7c6!important;border-radius:12px!important;padding:11px 7px!important;font-weight:570;font-size:12px;cursor:pointer}
+.nx-liquid-tabs .nx-liquid-tab-active{background:rgba(255,255,255,.17)!important;color:#fff!important;box-shadow:0 2px 7px rgba(0,0,0,.18)}
+.nx-liquid-feed{display:grid;gap:11px}
+.nx-liquid-card{display:flex;align-items:flex-start;gap:14px;background:rgba(238,244,255,.073);border:1px solid rgba(255,255,255,.085);border-radius:21px;padding:18px 16px;cursor:pointer;transition:background .2s,transform .2s,border-color .2s;min-width:0}
+.nx-liquid-card:hover,.nx-liquid-card:focus-visible{background:rgba(238,244,255,.125);transform:translateY(-1px);border-color:rgba(255,255,255,.18);outline:none}
+.nx-liquid-card.nx-liquid-read{opacity:.76}
+.nx-liquid-card.nx-liquid-urgent{border-color:rgba(235,112,121,.38)}
+.nx-liquid-icon{display:grid;place-items:center;border-radius:15px;background:rgba(233,238,250,.14);width:43px;height:43px;flex:none;color:#e8effb;font-size:21px;font-weight:350}
+.nx-liquid-body{flex:1;min-width:0}
+.nx-liquid-name{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.nx-liquid-name strong{font-size:14px;font-weight:640;color:#f7f9fd;line-height:1.35}
+.nx-liquid-dot{height:8px;width:8px;flex:none;background:#86b8ff;border-radius:50%;box-shadow:0 0 10px rgba(134,184,255,.35)}
+.nx-liquid-body>small{display:block;color:#a9b5c3;font-size:10px;margin-top:5px}
+.nx-liquid-body>p{font-size:13px;line-height:1.55;color:#d8e0eb;margin:12px 0 13px}
+.nx-liquid-card-foot{display:flex;justify-content:space-between;gap:10px;align-items:center;color:#c6d4e8;font-weight:570;font-size:11px}
+.nx-liquid-card-foot span span{font-size:14px}
+.nx-liquid-read-button{font-size:11px!important;border:0!important;background:rgba(255,255,255,.10)!important;color:#e2e9f3!important;padding:7px 10px!important;border-radius:20px!important;cursor:pointer}
+.nx-liquid-divider-title{font-size:11px;color:#a8b3c4;text-transform:uppercase;letter-spacing:.12em;margin:25px 2px 12px;font-weight:650}
+.nx-liquid-quick{width:100%;text-align:left;display:flex;align-items:center;gap:13px;padding:15px;border-radius:18px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.065);color:#e9eef6;cursor:pointer}
+.nx-liquid-quick-icon{background:rgba(255,255,255,.13);border-radius:12px;display:grid;place-items:center;width:38px;height:38px;font-size:18px}
+.nx-liquid-quick span:nth-child(2){display:flex;flex:1;flex-direction:column;gap:4px}.nx-liquid-quick strong{font-size:13px}.nx-liquid-quick small{color:#aeb9c8;font-size:11px}.nx-liquid-quick span:last-child{font-size:22px;color:#aeb9c8}
+.nx-liquid-reminders{margin-top:12px;padding:14px 16px;border-radius:18px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.045);font-size:12px;color:#cad3e0}
+.nx-liquid-reminders summary{cursor:pointer;display:flex;justify-content:space-between;font-weight:600;list-style:none}.nx-liquid-reminders summary::-webkit-details-marker{display:none}
+.nx-liquid-reminders label{display:flex;justify-content:space-between;align-items:center;margin:16px 0 1px;gap:12px}.nx-liquid-reminders input{accent-color:#95bdff}
+.nx-liquid-empty{border:1px solid rgba(255,255,255,.07);border-radius:20px;padding:35px 14px;display:flex;flex-direction:column;align-items:center;gap:8px;color:#f1f5fb}.nx-liquid-empty span{font-size:26px;color:#bed4f5}.nx-liquid-empty small{color:#aeb8c8;text-align:center}
+.nx-liquid-error{border-radius:13px;background:rgba(170,50,63,.19);color:#ffc9ce;padding:12px;font-size:12px}
+.nx-alert-foot{font-size:10px!important;text-align:center!important;color:#8594a6!important;line-height:1.65!important;margin-top:22px!important}
+@media(max-width:620px){.nx-alert-panel{width:100vw!important;border-radius:24px 24px 0 0!important;height:94dvh!important;max-height:94dvh!important;align-self:flex-end!important;padding:25px 19px 24px!important}.nx-alert-layer{align-items:flex-end!important}.nx-alert-head h2{font-size:29px!important}}
+@media(prefers-reduced-motion:reduce){.nx-alert-panel{animation:none!important}.nx-liquid-card{transition:none!important}}
+</style>
+
 <script id="nx-apple-notification-center">
 (()=>{'use strict';
 const storageKey='nx-apple-reminders-v1';
@@ -5119,17 +5168,27 @@ try{reminders={...reminders,...JSON.parse(localStorage.getItem(storageKey)||'{}'
 const bell=document.getElementById('bell');if(!bell)return;
 const escapeHTML=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pendingCount=()=>{try{const c=document.querySelector('.nx-pending-page .nxa-stat strong');if(c)return Number(c.textContent)||0;let n=0;for(const key of Object.keys(localStorage)){if(/pending.*intake/i.test(key)){const data=JSON.parse(localStorage.getItem(key));if(Array.isArray(data))n=Math.max(n,data.length)}}return n}catch(e){return 0}};
-let rows=[],userId=null,channel=null,working=false,loadGeneration=0,loadError='',lastFocus=null;
+let rows=[],userId=null,channel=null,working=false,loadGeneration=0,loadError='',lastFocus=null,activeFilter='all';
 const layer=document.createElement('div');layer.className='nx-alert-layer';layer.hidden=true;
-layer.innerHTML='<div class="nx-alert-backdrop" data-nx-alert-close></div><section class="nx-alert-panel" role="dialog" aria-modal="true" aria-labelledby="nxAlertTitle" tabindex="-1"><div class="nx-alert-head"><div><small>BLACKCELL · NEXUS</small><h2 id="nxAlertTitle">Notification Center</h2></div><button type="button" class="nx-alert-x" data-nx-alert-close aria-label="Close">×</button></div><div id="nxAlertRows"></div><p class="nx-alert-foot">Cloud notifications sync across your signed-in devices. Deposit and communication reminders below are manual, device-local checklists.</p></section>';
+layer.innerHTML='<div class="nx-alert-backdrop" data-nx-alert-close></div><section class="nx-alert-panel" role="dialog" aria-modal="true" aria-labelledby="nxAlertTitle" tabindex="-1"><div class="nx-alert-head"><div><small>BLACKCELL CORPORATION</small><h2 id="nxAlertTitle">Notifications</h2></div><button type="button" class="nx-alert-x" data-nx-alert-close aria-label="Close notifications">×</button></div><div id="nxAlertRows"></div><p class="nx-alert-foot">Cloud alerts sync across signed-in devices. Manual reminders are saved only on this device.</p></section>';
 document.body.appendChild(layer);
 const host=document.getElementById('nxAlertRows');
 const shellVisible=()=>!document.getElementById('shell')?.classList.contains('hidden');
 function update(){const n=rows.filter(r=>!r.is_read).length+pendingCount()+Number(reminders.deposit)+Number(reminders.communications);const badge=document.getElementById('nxAlertCount');if(badge){badge.hidden=!n;badge.textContent=n>99?'99+':String(n)}bell.setAttribute('aria-label',n+' outstanding NEXUS alerts')}
 function draw(){
  const unread=rows.filter(r=>!r.is_read).length;
- const items=rows.map(r=>`<div class="nx-alert-item" style="border-left:3px solid ${r.is_read?'#555':'#d74452'};padding-left:13px"><span class="nx-alert-symbol">${r.priority==='critical'?'!':'•'}</span><div><strong>${escapeHTML(r.title)}</strong><p>${escapeHTML(r.message)}</p><small style="color:#aab0bb">${escapeHTML(r.category)} · ${new Date(r.created_at).toLocaleString()}</small><button type="button" data-nx-open="${escapeHTML(r.id)}">Open</button>${!r.is_read?`<button type="button" data-nx-read="${escapeHTML(r.id)}">Mark read</button>`:''}</div></div>`).join('');
- host.innerHTML=`<div class="nx-alert-item"><div style="width:100%"><strong>Cloud Notifications (${unread} unread)</strong>${unread?'<button type="button" data-nx-read-all style="margin-left:12px">Mark all read</button>':''}${loadError?`<p role="alert">${escapeHTML(loadError)}</p>`:''}${rows.length?'':'<p>No cloud notifications yet.</p>'}</div></div>${items}<div class="nx-alert-item"><span class="nx-alert-symbol">▤</span><div><strong>Pending Intake</strong><p>${pendingCount()?pendingCount()+' item(s) may need review.':'Review pending intake records.'}</p><button type="button" data-nx-go="pendingIntake">Open Intake Queue</button></div></div><div class="nx-alert-item"><span class="nx-alert-symbol">＄</span><div><strong>Deposit Funds Reminder</strong><p>Manual review reminder.</p><label><input type="checkbox" data-nx-remind="deposit" ${reminders.deposit?'checked':''}> Reminder active</label></div></div><div class="nx-alert-item"><span class="nx-alert-symbol">☷</span><div><strong>Communications Update Reminder</strong><p>Review and import correspondence when available.</p><label><input type="checkbox" data-nx-remind="communications" ${reminders.communications?'checked':''}> Reminder active</label></div></div>`;
+ const urgent=rows.filter(r=>!r.is_read&&['high','critical'].includes(String(r.priority||'').toLowerCase())).length;
+ const visible=rows.filter(r=>activeFilter==='unread'?!r.is_read:activeFilter==='activity'?r.is_read:true);
+ const symbols={intake:'▤',financial:'$',communications:'✉',profile:'♙',registration:'♙',security:'◇',system:'◇',records:'▦'};
+ const items=visible.map(r=>{
+   const category=String(r.category||'system').toLowerCase(),priority=String(r.priority||'normal').toLowerCase();
+   const elevated=priority==='critical'||priority==='high',ico=symbols[category]||'✧';
+   const date=r.created_at?new Date(r.created_at).toLocaleString():'';
+   return `<article class="nx-liquid-card ${r.is_read?'nx-liquid-read':'nx-liquid-unread'} ${elevated?'nx-liquid-urgent':''}" data-nx-open="${escapeHTML(r.id)}" role="button" tabindex="0" aria-label="Open ${escapeHTML(r.title)}"><div class="nx-liquid-icon" aria-hidden="true">${ico}</div><div class="nx-liquid-body"><div class="nx-liquid-name"><strong>${escapeHTML(r.title)}</strong>${!r.is_read?'<span class="nx-liquid-dot" aria-label="Unread"></span>':''}</div><small>${escapeHTML(r.category||'System')} · ${escapeHTML(date)}</small><p>${escapeHTML(r.message)}</p><div class="nx-liquid-card-foot"><span>View details <span aria-hidden="true">↗</span></span>${!r.is_read?`<button type="button" class="nx-liquid-read-button" data-nx-read="${escapeHTML(r.id)}" aria-label="Mark ${escapeHTML(r.title)} as read">Mark read</button>`:''}</div></div></article>`;
+ }).join('');
+ const empty=activeFilter==='unread'?'You’re all caught up.':activeFilter==='activity'?'No read notifications yet.':'No cloud notifications yet.';
+ const tabs=[['all','All'],['unread','Unread'],['activity','Activity']].map(([id,title])=>`<button type="button" data-nx-filter="${id}" class="${activeFilter===id?'nx-liquid-tab-active':''}" aria-pressed="${activeFilter===id}">${title}</button>`).join('');
+ host.innerHTML=`<div class="nx-liquid-summary"><div><span class="nx-liquid-num">${unread}</span><div class="nx-liquid-muted">Unread notifications</div></div><div class="nx-liquid-summary-actions">${urgent?`<span class="nx-liquid-priority">${urgent} priority</span>`:''}${unread?'<button type="button" data-nx-read-all class="nx-liquid-read-all">Mark all as read</button>':''}</div></div><div class="nx-liquid-tabs" role="group" aria-label="Filter notifications">${tabs}</div>${loadError?`<p role="alert" class="nx-liquid-error">${escapeHTML(loadError)}</p>`:''}<div class="nx-liquid-feed">${items||`<div class="nx-liquid-empty"><span aria-hidden="true">✓</span><strong>${empty}</strong><small>New alerts will appear here automatically.</small></div>`}</div><div class="nx-liquid-divider-title">Quick access</div><button type="button" class="nx-liquid-quick" data-nx-go="pendingIntake"><span class="nx-liquid-quick-icon">▤</span><span><strong>Pending Intakes</strong><small>${pendingCount()?pendingCount()+' records awaiting attention':'Open intake queue'}</small></span><span aria-hidden="true">›</span></button><details class="nx-liquid-reminders"><summary>Manual reminders <span aria-hidden="true">⌄</span></summary><label><span>Deposit funds review</span><input type="checkbox" data-nx-remind="deposit" ${reminders.deposit?'checked':''}></label><label><span>Communications review</span><input type="checkbox" data-nx-remind="communications" ${reminders.communications?'checked':''}></label></details>`;
 }
 async function reset(){loadGeneration++;userId=null;rows=[];loadError='';update();if(channel){const c=channel;channel=null;try{await nexusDB.removeChannel(c)}catch(e){console.warn('NEXUS notification channel cleanup',e)}}if(!layer.hidden)close()}
 async function refresh(){if(!userId||!shellVisible())return;const g=loadGeneration,id=userId;
@@ -5170,7 +5229,8 @@ async function openNotification(id){
 }
 function close(){layer.hidden=true;(lastFocus?.isConnected?lastFocus:bell).focus()}
 bell.addEventListener('click',async()=>{if(!shellVisible())return;lastFocus=document.activeElement;layer.hidden=false;draw();layer.querySelector('.nx-alert-x').focus();await start();await refresh()});
-layer.addEventListener('click',e=>{if(e.target.closest('[data-nx-alert-close]')){close();return}const open=e.target.closest('[data-nx-open]');if(open){openNotification(open.dataset.nxOpen);return}const read=e.target.closest('[data-nx-read]');if(read){markRead([read.dataset.nxRead]);return}if(e.target.closest('[data-nx-read-all]')){markRead(rows.filter(r=>!r.is_read).map(r=>r.id));return}const go=e.target.closest('[data-nx-go]');if(go){const nav=document.querySelector(`.sidebar .nav[data-view="${go.dataset.nxGo}"]`);if(nav){close();nav.click()}}});
+layer.addEventListener('click',e=>{if(e.target.closest('[data-nx-alert-close]')){close();return}const open=e.target.closest('[data-nx-open]');if(open){openNotification(open.dataset.nxOpen);return}const read=e.target.closest('[data-nx-read]');if(read){markRead([read.dataset.nxRead]);return}if(e.target.closest('[data-nx-read-all]')){markRead(rows.filter(r=>!r.is_read).map(r=>r.id));return}const filter=e.target.closest('[data-nx-filter]');if(filter){activeFilter=filter.dataset.nxFilter;draw();return}const go=e.target.closest('[data-nx-go]');if(go){const nav=document.querySelector(`.sidebar .nav[data-view="${go.dataset.nxGo}"]`);if(nav){close();nav.click()}}});
+layer.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-nx-open]')){e.preventDefault();openNotification(e.target.dataset.nxOpen)}});
 layer.addEventListener('change',e=>{const k=e.target.dataset.nxRemind;if(k){reminders[k]=e.target.checked;try{localStorage.setItem(storageKey,JSON.stringify(reminders))}catch(e){}update()}});
 document.addEventListener('keydown',e=>{if(layer.hidden)return;if(e.key==='Escape'){e.preventDefault();close()}if(e.key==='Tab'){const focusables=[...layer.querySelectorAll('button,input')].filter(el=>!el.disabled);if(!focusables.length)return;const first=focusables[0],last=focusables[focusables.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}});
 new MutationObserver(()=>{update();if(shellVisible())start();else if(userId)reset()}).observe(document.getElementById('shell'),{attributes:true,attributeFilter:['class']});
