@@ -1650,7 +1650,7 @@ color:#edf0f5!important;border-radius:20px!important}
 body :is(#gate,.gate,.bc-auth-card,.bc-login-card,.bc-gateway-card,.access-granted,.access-denied,.loading-screen){color:#edf0f5!important;background:linear-gradient(145deg,#343740,#171920)!important;border-color:#ffffff2b!important;border-radius:22px!important}
 body :is(.bc-auth-card,.bc-login-card,.bc-gateway-card) :is(input,button){border-radius:12px!important}
 /* Notification center */
-.nx-alert-layer[hidden]{display:none!important}.nx-alert-layer{position:fixed;inset:0;z-index:2147483000;display:flex;justify-content:center;align-items:flex-start;padding:clamp(22px,9vh,100px) 16px 20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#f0f2f5}
+.nx-alert-layer[hidden]{display:none!important}.nx-alert-layer{position:fixed;inset:0;z-index:2147483000;display:flex;justify-content:center;align-items:center;padding:16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#f0f2f5}
 .nx-alert-backdrop{position:absolute;inset:0;background:#040509ba;backdrop-filter:blur(17px);-webkit-backdrop-filter:blur(17px)}
 .nx-alert-panel{position:relative;width:min(490px,100%);max-height:85vh;overflow:auto;padding:23px;border:1px solid #ffffff35;border-radius:26px;background:linear-gradient(145deg,#3b3e49,#20232b 55%,#15171d);box-shadow:0 30px 100px #000a,inset 0 1px #ffffff20}
 .nx-alert-head{display:flex;justify-content:space-between;align-items:start;gap:12px;padding-bottom:16px;border-bottom:1px solid #ffffff25}.nx-alert-head small{color:#aeb5c1;font-size:10px;letter-spacing:.16em}.nx-alert-head h2{font-size:22px;letter-spacing:-.035em;margin:7px 0 0}.nx-alert-x{background:#424650;color:white;border:1px solid #ffffff2b;border-radius:11px;width:35px;height:35px;font-size:23px;cursor:pointer}
@@ -1883,10 +1883,14 @@ body{background-image:radial-gradient(ellipse at 55% -20%,#2b3038 0%,transparent
 .nxbf-profile.nx-identity-earnings{background:linear-gradient(145deg,#273340,#151b23);border:1px solid #687a8c88;border-radius:21px;box-shadow:0 15px 35px #0007;display:flex;flex-direction:column;transition:transform .18s ease,border-color .18s ease}
 .nxbf-profile.nx-identity-earnings:hover{transform:translateY(-2px);border-color:#a3b5c6aa}
 .nxbf-profile.nx-identity-earnings[hidden]{display:none}
-.nx-identity-earnings .nxbf-photo{height:238px;flex:none;position:relative;overflow:hidden;background:linear-gradient(130deg,#425061,#202b36)}
-.nx-identity-earnings .nxbf-photo img{width:100%;height:100%;object-fit:cover;object-position:center 27%;display:block;filter:saturate(.91) contrast(1.02)}
-.nx-identity-earnings .nxbf-photo:after{content:'';position:absolute;inset:60% 0 0;background:linear-gradient(to top,#0c121bac,transparent);pointer-events:none}
-.nx-identity-photo-tag{position:absolute;bottom:13px;left:15px;z-index:1;border-radius:7px;border:1px solid #ffffff44;background:#131d27d4;color:#edf3f9;font:700 9px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;letter-spacing:.07em;padding:6px 9px}
+.nx-identity-earnings .nxbf-photo{height:290px;flex:none;position:relative;overflow:hidden;background:linear-gradient(130deg,#344150,#161e28);isolation:isolate}
+/* Cover is used ONLY for the diffuse backdrop. The real photograph always stays uncropped. */
+.nx-identity-earnings .nxbf-photo img.nx-gallery-backdrop{position:absolute;inset:-18px;width:calc(100% + 36px);height:calc(100% + 36px);object-fit:cover;object-position:center center;filter:blur(24px) brightness(.38) saturate(.7);transform:scale(1.06);opacity:.86}
+.nx-identity-earnings .nxbf-photo img.nx-gallery-main-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center center;display:block;filter:saturate(.96) contrast(1.02);z-index:1}
+.nx-identity-earnings .nxbf-photo .nxbf-placeholder{position:absolute;inset:0;display:grid;place-items:center;color:#b8c8da;font-size:60px}
+
+.nx-identity-earnings .nxbf-photo:after{content:'';position:absolute;inset:72% 0 0;background:linear-gradient(to top,#0c121b96,transparent);pointer-events:none;z-index:2}
+.nx-identity-photo-tag{position:absolute;bottom:13px;left:15px;z-index:3;border-radius:7px;border:1px solid #ffffff44;background:#131d27d4;color:#edf3f9;font:700 9px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;letter-spacing:.07em;padding:6px 9px}
 .nx-identity-earnings .nxbf-profile-body{flex:1;display:flex;flex-direction:column;padding:17px;gap:14px}
 .nx-identity-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
 .nx-identity-heading h4{font-size:17px;line-height:1.3;color:#f3f7fc;letter-spacing:-.025em;margin:0;overflow-wrap:anywhere}
@@ -1901,13 +1905,15 @@ body{background-image:radial-gradient(ellipse at 55% -20%,#2b3038 0%,transparent
 .nx-identity-dot{width:7px;height:7px;background:#b0becd;border-radius:50%;flex:none}
 .nx-identity-earnings .nxbf-profile-action{display:flex;align-items:center;justify-content:center;gap:10px;margin:auto 0 0;width:100%;background:linear-gradient(115deg,#ecf2f8,#bac9d8);color:#1a2734;border:0;border-radius:11px;min-height:45px;font-size:12px;font-weight:760;box-shadow:inset 0 1px #fff6,0 5px 15px #0004}
 .nx-identity-earnings .nxbf-profile-action:hover{background:#fff}
+.nxbf-overdraft-alert{margin-top:14px;padding:13px 15px;border:1px solid #b6a47d;border-radius:12px;background:linear-gradient(135deg,#514631,#302d29);color:#fff1d5;font:500 13px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.nxbf-overdraft-alert strong{display:block;color:#fff7e7;margin-bottom:3px;font-weight:750}
 .nx-request-settings{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
 .nx-request-settings strong{font-size:15px}
 .nx-request-settings p{max-width:620px;font-size:13px;color:var(--muted,#a9bacc);line-height:1.6}
 .nx-request-settings .nx-request-summary{color:#e3ebf5;font-weight:600}
 .nx-request-settings .nx-request-summary b{font-variant-numeric:tabular-nums}
 @media(max-width:980px){.nxbf-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:580px){.nxbf-gallery{grid-template-columns:1fr}.nx-identity-earnings .nxbf-photo{height:260px}.nx-identity-metric strong{font-size:24px}.nx-request-settings .btn{width:100%}}
+@media(max-width:580px){.nxbf-gallery{grid-template-columns:1fr}.nx-identity-earnings .nxbf-photo{height:300px}.nx-identity-metric strong{font-size:24px}.nx-request-settings .btn{width:100%}}
 </style>
 <style id="nxc-import-style">
 /* Apple graphite conversation import workspace */
@@ -2000,7 +2006,7 @@ function nexusCloudCommit(){
  nexusCloudStatus('Saving changes to cloud…');
  nexusCloudWriteQueue=nexusCloudWriteQueue.catch(()=>{}).then(async()=>{
    const {error}=await nexusDB.from('nexus_private_state').upsert(snapshot,{onConflict:'owner_id'});
-   if(error)throw new Error(error.message);
+   if(error)throw new Error([error.code||error.status||'',error.message||'Supabase rejected the update',error.hint||''].filter(Boolean).join(' · '));
    nexusCloudDirty=false;
    nexusCloudStatus('Saved securely to Supabase cloud');
  }).catch(err=>{nexusCloudDirty=true;nexusCloudStatus('CLOUD SAVE FAILED: '+err.message,true);console.error('NEXUS cloud save failed',err);alert('Cloud save failed. Your change may only exist until this page closes. Do not refresh. '+err.message);throw err;});
@@ -2046,14 +2052,14 @@ function nxcPanel(){
  <div class="nxc-half"><div><label class="nxc-label" for="nxcYear">Original message year</label><input id="nxcYear" type="number" min="1990" max="2100" placeholder="e.g. 2026" value="${esc(nxConversationDraft?.year||'')}"></div><div><label class="nxc-label" for="nxcSource">Message source</label><select id="nxcSource"><option>Securus</option><option>JPay</option><option>Other</option></select></div></div>
  <label class="nxc-confirm"><input id="nxcConfirmYear" type="checkbox"> I confirm the selected inmate and message year.</label>
  <button type="button" class="nxc-btn nxc-primary" id="nxcAnalyze">Analyze Document & Prepare Review</button>
- <div id="nxcStatus" class="nxc-status" role="status" aria-live="polite">Select an inmate and a document. Nothing is saved until you approve it.</div>
+ <div id="nxcStatus" class="nxc-status" role="status" aria-live="polite">Select an inmate and a document. Nothing is saved until you approve it. If Supabase reports a save error, check for partial imports before retrying.</div>
  </section><section class="nxc-box"><div class="nxc-box-title">02 · Financial counting rules</div>
  <div class="nxc-rule"><span>Global text rate</span><strong>${nxcMoney(rate)} per eligible text</strong></div>
  <div class="nxc-rule"><span>Incoming texts</span><strong>Eligible after approval</strong></div>
  <div class="nxc-rule"><span>Outgoing replies</span><strong>Not counted</strong></div>
  <div class="nxc-rule"><span>Unclear sender</span><strong>Needs manual classification</strong></div>
  <div class="nxc-rule"><span>Duplicate messages</span><strong>Excluded</strong></div>
- <p class="nxc-tip">For the most reliable automatic gray/blue sender identification, use <b>Pages → Export To → Word</b>. Native .pages files can be read here, but their color-based sender direction requires manual review. Imported earnings remain pending until separately reconciled; no budget funds are transferred.</p>
+ <p class="nxc-tip">For the most reliable automatic gray/blue sender identification, use <b>Pages → Export To → Word</b>. Native .pages files may need sender review. For a color-filtered conversation, upload the cleaned incoming-only CSV for the most reliable import. Imported earnings remain pending until separately reconciled; no budget funds are transferred.</p>
  </section></div>
  <div id="nxcReview"></div>
  </section>`;
@@ -2228,12 +2234,12 @@ function nxcReviewRender(){
  <div class="nxc-footer"><p><b>${totals.approved} approved incoming messages · ${nxcMoney(totals.cents)} pending earnings.</b> No earnings will be verified or deposited by this import. These are communication entries only.</p><button type="button" class="nxc-btn nxc-primary" id="nxcSave" ${totals.approved?'':'disabled'}>Approve & Save ${totals.approved} Incoming Texts to NEXUS</button><div class="nxc-save-status" id="nxcSaveStatus" role="status" aria-live="polite"></div></div>
  </section>`;
 }
-function nxcBulk(action){
+async function nxcBulk(action){
  if(action==='approveAll'){
   if(nxConversationDraft.kind!=='docx')return;
   const eligible=nxConversationDraft.messages.filter(x=>x.direction==='incoming'&&!x.duplicate);
   if(!eligible.length)return;
-  if(!confirm('Approve '+eligible.length+' color-detected incoming messages for counting? Review dates and messages before saving. No data will be saved yet.'))return;
+  if(!await nexusGlassConfirm('Approve '+eligible.length+' color-detected incoming messages for counting? Review dates and messages before saving. No data will be saved yet.'))return;
   for(const x of eligible)x.approved=true;
   nxcReviewRender();return;
  }
@@ -2249,43 +2255,89 @@ function nxcPendingForInmate(id){return (personal[id]?.entries||[]).filter(e=>e.
 function nxcPendingForMonth(id,month){return (personal[id]?.entries||[]).filter(e=>e.type==='Text'&&e.nxcImported===true&&e.direction==='Incoming'&&e.nxcStatus==='pending'&&String(e.date||'').startsWith(month)).reduce((n,e)=>n+Number(e.nxcRateCents||0),0);}
 async function nxcSave(){
  if(nxConversationBusy||!nxConversationDraft)return;
- if(!nexusCloudReady||!currentUserId){alert('Sign in and wait for your cloud records to load before saving.');return;}
- const d=nxConversationDraft;
- if(!profiles.some(p=>String(p.id)===String(d.inmateId))){alert('The selected inmate is not available.');return;}
- const selected=d.messages.filter(x=>x.approved&&x.direction==='incoming'&&!x.duplicate);
- if(!selected.length){alert('Approve incoming messages first.');return;}
+ if(!nexusCloudReady||!currentUserId){alert('Sign in and wait for Supabase cloud records to finish loading.');return;}
+ const draft=nxConversationDraft;
+ const inmate=profiles.find(p=>String(p.id)===String(draft.inmateId));
+ if(!inmate){alert('The selected inmate is not available.');return;}
+ const selected=draft.messages.filter(x=>x.approved&&x.direction==='incoming'&&!x.duplicate);
+ if(!selected.length){alert('Approve incoming texts before saving.');return;}
  const rate=Number(nxBankRates().text)||0;
- if(!Number.isSafeInteger(rate)||rate<0){alert('Global text rate is invalid.');return;}
- const f=personal[d.inmateId]||(personal[d.inmateId]={details:{},entries:[]});
- const original=Array.isArray(f.entries)?f.entries.slice():[];
- const existing=new Set(original.filter(x=>x.type==='Text').map(x=>nxcKey({date:x.date,time:x.time,text:x.message})));
- const additions=[];
- for(const x of selected){const k=nxcKey(x);if(existing.has(k))continue;existing.add(k);
-  if(x.date>nxDate()){alert('One or more messages are dated in the future. Verify the message year.');return;}
-  additions.push({uid:crypto.randomUUID(),date:x.date,time:x.time,type:'Text',message:x.text,direction:'Incoming',source:d.source,importedAt:new Date().toISOString(),nxcImported:true,nxcStatus:'pending',nxcRateCents:rate,rateAtEntry:rate/100,importSource:d.fileName});
- }
- if(!additions.length){alert('No new eligible messages remain after checking the selected inmate’s saved history.');return;}
- const estimated=additions.length*rate;
- const inmate=profiles.find(p=>String(p.id)===String(d.inmateId));
- if(!confirm(`Save ${additions.length} incoming text messages to ${nxcName(inmate)} (${d.inmateId})?\nOriginal dates: ${d.year}\nPending earnings: ${nxcMoney(estimated)}\n\nOnly approved incoming messages will be stored. No deposits or funds will be created.`))return;
+ if(!Number.isSafeInteger(rate)||rate<0){alert('Your shared text rate is invalid.');return;}
  nxConversationBusy=true;
+ const status=()=>document.getElementById('nxcSaveStatus');
  const btn=document.getElementById('nxcSave');if(btn)btn.disabled=true;
- const status=document.getElementById('nxcSaveStatus');if(status)status.textContent='Saving approved texts securely to Supabase…';
+ const feedback=t=>{const el=status();if(el)el.textContent=t;};
+ let savedCount=0, estimated=0;
  try{
-  f.entries=original.concat(additions);
-  if(!savePersonal())throw Error('The NEXUS cloud is not ready');
-  await nexusCloudWriteQueue;
-  if(nexusCloudWriteFailed||nexusCloudDirty)throw Error('Cloud saving could not be verified');
-  const appended=new Set(additions.map(x=>nxcKey({date:x.date,time:x.time,text:x.message})));
-  for(const row of d.messages){if(appended.has(nxcKey(row)))row.duplicate=true;row.approved=false;}
+  feedback('Checking Supabase for any texts already saved to this inmate…');
+  // Do not submit if a previous cloud update is still pending or failed.
+  await nexusCloudWriteQueue.catch(()=>{});
+  if(nexusCloudWriteFailed||nexusCloudDirty)throw Error('An earlier cloud save has not been confirmed. Check the red cloud status, then sign in again before importing.');
+  // Check actual cloud state before writing to avoid double credit for previous partial imports.
+  const check=await nexusDB.from('nexus_private_state').select('personal_files').eq('owner_id',currentUserId).maybeSingle();
+  if(check.error)throw Error('Supabase preflight check: '+check.error.message);
+  const cloudFiles=check.data?.personal_files||{};
+  const remoteRows=Array.isArray(cloudFiles[draft.inmateId]?.entries)?cloudFiles[draft.inmateId].entries:[];
+  const f=personal[draft.inmateId]||(personal[draft.inmateId]={details:{},entries:[]});
+  if(!Array.isArray(f.entries))f.entries=[];
+  // Use the server's version of the inmate history; never discard records made by a prior partial save.
+  const localRows=f.entries.slice();
+  const remoteSet=new Set(remoteRows.map(x=>x.uid||nxcKey({date:x.date,time:x.time,text:x.message})));
+  const localOnly=localRows.filter(x=>!remoteSet.has(x.uid||nxcKey({date:x.date,time:x.time,text:x.message})));
+  if(localOnly.length)throw Error('Some local inmate records are not present in Supabase. Import halted to protect those records. Export a backup and investigate cloud sync before retrying.');
+  f.entries=remoteRows.slice();
+  const existing=new Set(remoteRows.filter(x=>String(x.type).toLowerCase()==='text').map(x=>nxcKey({date:x.date,time:x.time,text:x.message})));
+  const pending=[];
+  for(const row of selected){
+   const key=nxcKey(row);
+   if(existing.has(key))continue;
+   if(!/^\d{4}-\d{2}-\d{2}$/.test(row.date)||row.date>nxDate())throw Error('At least one selected message has an invalid or future date. Check the message year.');
+   existing.add(key);
+   pending.push({uid:crypto.randomUUID(),date:row.date,time:row.time,type:'Text',message:row.text,direction:'Incoming',source:draft.source,importedAt:new Date().toISOString(),nxcImported:true,nxcStatus:'pending',nxcRateCents:rate,rateAtEntry:rate/100,importSource:draft.fileName});
+  }
+  if(!pending.length){feedback('Every approved message is already recorded for this inmate. No new earnings were added.');return;}
+  estimated=pending.length*rate;
+  if(!await nexusGlassConfirm(`Record ${pending.length} incoming text messages for ${nxcName(inmate)}?\nPending earnings: ${nxcMoney(estimated)}\n\nThe import will save in small cloud batches. If any batch fails, texts already saved remain recorded. Check the result before trying again. No deposits are created.`)){
+   feedback('Import cancelled. Nothing was added.');return;
+  }
+  const BATCH=20;
+  for(let i=0;i<pending.length;i+=BATCH){
+   const chunk=pending.slice(i,i+BATCH),before=f.entries.slice();
+   feedback(`Saving batch ${Math.floor(i/BATCH)+1} of ${Math.ceil(pending.length/BATCH)} to Supabase… (${savedCount}/${pending.length} saved)`);
+   f.entries=before.concat(chunk);
+   try{
+    if(!savePersonal())throw Error('NEXUS cloud is not connected');
+    await nexusCloudWriteQueue;
+    if(nexusCloudWriteFailed||nexusCloudDirty)throw Error('Supabase did not confirm this batch');
+   }catch(err){
+    f.entries=before;
+    throw Error(`Batch ${Math.floor(i/BATCH)+1} failed after ${savedCount} confirmed text(s): ${err.message||err}`);
+   }
+   savedCount+=chunk.length;
+   const keys=new Set(chunk.map(x=>nxcKey({date:x.date,time:x.time,text:x.message})));
+   for(const row of draft.messages){if(keys.has(nxcKey(row))){row.approved=false;row.duplicate=true;}}
+  }
+  // Verify the final saved count by reading the actual database record, not just a success alert.
+  feedback('Checking the saved messages against Supabase…');
+  const verified=await nexusDB.from('nexus_private_state').select('personal_files').eq('owner_id',currentUserId).maybeSingle();
+  if(verified.error)throw Error('Messages were submitted, but verification failed: '+verified.error.message);
+  const rows=verified.data?.personal_files?.[draft.inmateId]?.entries||[];
+  const written=new Set(rows.filter(x=>x.type==='Text'&&x.nxcImported===true).map(x=>x.uid));
+  const notConfirmed=pending.filter(x=>!written.has(x.uid));
+  if(notConfirmed.length)throw Error(`Supabase does not yet show ${notConfirmed.length} submitted message(s). Do not import them again until you refresh the cloud status.`);
   nxcReviewRender();
-  document.getElementById('nxcStatus').textContent=`Saved ${additions.length} incoming texts for ${nxcName(inmate)}. Pending earnings: ${nxcMoney(estimated)}. Other messages remain in review only.`;
-  alert(`Saved ${additions.length} incoming messages to ${nxcName(inmate)}. Check the cloud status before leaving.`);
+  const msg=`Saved and verified ${savedCount} incoming texts for ${nxcName(inmate)}. New pending earnings: ${nxcMoney(savedCount*rate)}. No payment or deposit was created.`;
+  const title=document.getElementById('nxcStatus');if(title)title.textContent=msg;
+  feedback(msg);alert(msg);
  }catch(err){
-  f.entries=original;
-  const node=document.getElementById('nxcSaveStatus');if(node)node.textContent='Cloud save could not be confirmed. Changes have not been marked saved. '+(err.message||err);
-  alert('NEXUS cloud save could not be confirmed. Do not treat the import as saved. '+(err.message||err));
- }finally{nxConversationBusy=false;const el=document.getElementById('nxcSave');if(el)el.disabled=false;}
+  const detail=String(err?.message||err);
+  const msg=`Supabase import not completed. ${savedCount} text(s) confirmed saved. ${detail} Do not resubmit blindly—check the cloud record first. If this is a size/timeout error, your current single-row Supabase storage may need a dedicated per-message table.`;
+  feedback(msg);alert(msg);
+  console.error('NEXUS conversation import cloud error:',err);
+ }finally{
+  nxConversationBusy=false;
+  const el=document.getElementById('nxcSave');if(el)el.disabled=false;
+ }
 }
 document.addEventListener('click',async e=>{
  const b=e.target.closest('button');if(!b)return;
@@ -2992,7 +3044,7 @@ async function nexusPrepareMessageFiles(){
  nxOcrReviewRender(errors.length?'<p class="nx-ocr-warning">'+esc(errors.join(' | '))+'</p>':'');
  }finally{button.disabled=false}
 }
-function nexusSaveImportedMessages(){
+async function nexusSaveImportedMessages(){
  const manual=String($('nexusImportManual')?.value||'').trim(),source=$('nexusImportSource')?.value||'Other',date=$('nexusImportDate')?.value||today();
  // Read approval state directly from the visible review controls at save time.
  // This avoids lost change events when the checkbox is checked immediately before saving.
@@ -3016,7 +3068,7 @@ function nexusSaveImportedMessages(){
  if(!rows.length){alert('No approved messages found. Check the box beside each gray message you want to save, then try again.');return}
  if(rows.length>100){alert('Limit to 100 messages per batch.');return}
  if(rows.some(x=>!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(x.date)||x.date>today()||!x.message.trim()||x.direction!=='Incoming')){alert('Check message dates, text, and direction before saving.');return}
- if(!confirm('Save '+rows.length+' approved INCOMING message(s) to the selected inmate?'))return;
+ if(!await nexusGlassConfirm('Save '+rows.length+' approved INCOMING message(s) to the selected inmate?'))return;
  const f=file();f.entries=f.entries||[];const existing=new Set(f.entries.map(x=>[x.date,x.time||'',String(x.message||'').trim()].join('|')));
  let added=0;for(const x of rows){const key=[x.date,x.time||'',x.message.trim()].join('|');if(existing.has(key))continue;existing.add(key);f.entries.push({uid:crypto.randomUUID(),date:x.date,time:x.time||'',type:'Text',message:x.message,source:x.source,direction:'Incoming',rateAtEntry:0,importedAt:new Date().toISOString()});added++}
  if(!added){alert('No new messages. All approved entries match existing records.');return}
@@ -3392,7 +3444,7 @@ function nxInmateFinance(){
  <p class="nx-apple-finance-foot">Read-only summary from the shared NEXUS budget. No individual inmate balance is created.</p>
  </div>`;
 }
-function nxProcessFinancialForm(form){const fd=new FormData(form),a=nxBudget(),cents=nxAmount(fd.get('amount'));if(cents===null){alert('Enter a valid amount greater than zero.');return;}if(!a.activeAt){alert('Activate the budget ledger in Financial Center first.');return;}const now=new Date().toISOString(),id=crypto.randomUUID();if(form.id==='nxBudgetForm'){const kind=String(fd.get('kind'));if(kind==='expense'&&cents>nxTotals(a).available){alert('Not enough available funds.');return;}a.items.push({id,kind,cents,date:String(fd.get('date')),category:String(fd.get('category')),memo:String(fd.get('memo')),at:now});}else if(form.id==='nxRequestForm'){a.requests.push({id,inmateId:detailId,cents,paid:0,status:String(fd.get('status')),due:String(fd.get('due')),memo:String(fd.get('memo')),at:now});}else if(form.id==='nxDepositForm'){if(cents>nxTotals(a).available){alert('Not enough funds in central budget.');return;}const requestId=String(fd.get('requestId')),req=requestId?a.requests.find(r=>r.id===requestId&&r.inmateId===detailId&&r.status==='owed'):null;if(requestId&&(!req||cents>req.cents-req.paid)){alert('Amount exceeds linked outstanding request.');return;}if(req){req.paid+=cents;if(req.paid===req.cents)req.status='paid';}a.items.push({id,kind:'deposit',cents,date:String(fd.get('date')),inmateId:detailId,requestId:requestId||null,category:'Inmate deposit',memo:String(fd.get('memo')),at:now});}if(store(NX_BUDGET_KEY,a))render();}
+async function nxProcessFinancialForm(form){const fd=new FormData(form),a=nxBudget(),cents=nxAmount(fd.get('amount'));if(cents===null){alert('Enter a valid amount greater than zero.');return;}if(!a.activeAt){alert('Activate the budget ledger in Financial Center first.');return;}const now=new Date().toISOString(),id=crypto.randomUUID();if(form.id==='nxBudgetForm'){const kind=String(fd.get('kind'));if(kind==='expense'&&cents>nxTotals(a).available&&!await nexusGlassConfirm(`This expense will make your budget ${nxCash(nxTotals(a).available-cents)}. Please make a deposit to keep your account current. Record anyway?`))return;a.items.push({id,kind,cents,date:String(fd.get('date')),category:String(fd.get('category')),memo:String(fd.get('memo')),at:now});}else if(form.id==='nxRequestForm'){a.requests.push({id,inmateId:detailId,cents,paid:0,status:String(fd.get('status')),due:String(fd.get('due')),memo:String(fd.get('memo')),at:now});}else if(form.id==='nxDepositForm'){if(cents>nxTotals(a).available&&!await nexusGlassConfirm(`This inmate deposit will make your budget ${nxCash(nxTotals(a).available-cents)}. Please make a deposit to keep your account current. Record the verified transfer anyway?`))return;const requestId=String(fd.get('requestId')),req=requestId?a.requests.find(r=>r.id===requestId&&r.inmateId===detailId&&r.status==='owed'):null;if(requestId&&(!req||cents>req.cents-req.paid)){alert('Amount exceeds linked outstanding request.');return;}if(req){req.paid+=cents;if(req.paid===req.cents)req.status='paid';}a.items.push({id,kind:'deposit',cents,date:String(fd.get('date')),inmateId:detailId,requestId:requestId||null,category:'Inmate deposit',memo:String(fd.get('memo')),at:now});}if(store(NX_BUDGET_KEY,a))render();}
 /* NEXUS Financial Center staging bridge: read-only, no migration or writes. */
 const nxFinTables=['nexus_fin_accounts','nexus_fin_categories','nexus_fin_transactions','nexus_fin_inmate_deposits','nexus_fin_requests','nexus_fin_bills','nexus_fin_goals','nexus_fin_receipts','nexus_fin_audit'];
 let nxFinStage={state:'not_checked',results:[],checkedAt:null};
@@ -3468,6 +3520,9 @@ const nxBankDate=(d)=>String(d||'').slice(0,7);
 const nxBankAllItems=(a=nxBudget())=>[...a.items,...a.archives.flatMap(x=>Array.isArray(x.items)?x.items:[])].filter(x=>x&&x.kind);
 const nxBankName=p=>[p.first,p.middle,p.last].filter(Boolean).join(' ').trim()||p.name||p.id||'Unnamed inmate';
 const nxBankPhoto=p=>p?.photo?`<img src="${esc(p.photo)}" alt="Inmate profile photograph" loading="lazy" referrerpolicy="no-referrer">`:'<span class="nxbf-placeholder" aria-label="No profile photograph">♙</span>';
+// Show the entire original picture on Financial Profile cards, with a soft backdrop in any unused space.
+// The smaller recipient identity/transfer photo remains unchanged.
+const nxBankGalleryPhoto=p=>p?.photo?`<img class="nx-gallery-backdrop" src="${esc(p.photo)}" alt="" aria-hidden="true" loading="lazy" referrerpolicy="no-referrer"><img class="nx-gallery-main-photo" src="${esc(p.photo)}" alt="Photograph of ${esc(nxBankName(p))}" loading="lazy" referrerpolicy="no-referrer">`:'<span class="nxbf-placeholder" aria-label="No profile photograph available">♙</span>';
 const nxBankRates=()=>read(NX_FIN_RATE_KEY,{text:0,email:0,call:0});
 const nxBankFmt=(c)=>nxCash(Number(c)||0);
 function nxBankProfiles(a=nxBudget()){
@@ -3496,7 +3551,7 @@ function nxBankAccount(){
  const rate=nxBankRates();
  return `<div class="nxbf" id="nxbfRoot">
  <header class="nxbf-heading"><span class="nxbf-eyebrow">BLACKCELL CORPORATION · NEXUS</span><h2>Financial Center</h2><p>Shared Main Account · Secure financial recordkeeping</p></header>
- <section class="nxbf-account"><div class="nxbf-topline"><span>MAIN FINANCIAL ACCOUNT</span><span>◈ PRIVATE LEDGER</span></div><small>Available Funds</small><div class="nxbf-balance">${nxBankFmt(t.available)}</div><p>One shared budget for all inmate profiles</p></section>
+ <section class="nxbf-account"><div class="nxbf-topline"><span>MAIN FINANCIAL ACCOUNT</span><span>◈ PRIVATE LEDGER</span></div><small>Available Funds</small><div class="nxbf-balance">${nxBankFmt(t.available)}</div><p>One shared budget for all inmate profiles</p>${t.available<0?`<div class="nxbf-overdraft-alert" role="alert"><strong>Account below $0 by ${nxBankFmt(-t.available)}.</strong> Please make a deposit to keep your account current.</div>`:''}</section>
  <section class="nxbf-grid4">${[['Available Funds',t.available],['Monthly Expenses',spent],['Inmate Deposits',transferred],['Outstanding Requests',t.owed]].map(([label,n])=>`<div class="nxbf-stat"><small>${label}</small><strong>${nxBankFmt(n)}</strong></div>`).join('')}</section>
  <section class="nxbf-actions"><button type="button" data-bank-action="fund"><b>＋</b>Add Funds</button><button type="button" data-bank-action="transfer"><b>↗</b>Transfer to Inmate</button><button type="button" data-bank-action="expense"><b>−</b>Record Expense</button><button type="button" data-bank-action="history"><b>◷</b>History</button></section>
  <section class="nxbf-panel"><div class="nxbf-panelhead"><div><span class="nxbf-eyebrow">ACCOUNT ACTIVITY</span><h3>Transactions</h3></div><select id="nxBankMonth" aria-label="Choose financial month">${options.map(m=>`<option value="${esc(m)}" ${m===month?'selected':''}>${esc(m)}</option>`).join('')}</select></div>
@@ -3511,7 +3566,7 @@ function nxBankAccount(){
 function nxBankProfileCard({p,lifetime,pending}){
  const hasActivity=Number(lifetime)>0||Number(pending)>0;
  return `<article class="nxbf-profile nx-identity-earnings" data-search="${esc((nxBankName(p)+' '+p.id+' '+p.state).toLowerCase())}">
-  <div class="nxbf-photo">${nxBankPhoto(p)}<span class="nx-identity-photo-tag">NEXUS FINANCIAL PROFILE</span></div>
+  <div class="nxbf-photo">${nxBankGalleryPhoto(p)}<span class="nx-identity-photo-tag">NEXUS FINANCIAL PROFILE</span></div>
   <div class="nxbf-profile-body">
    <div class="nx-identity-heading"><div><h4>${esc(nxBankName(p))}</h4><p>Inmate ID ${esc(p.id||'—')} · ${esc(p.state||'—')}</p></div><span class="nx-identity-mark" title="NEXUS private ledger" aria-hidden="true">◈</span></div>
    <div class="nx-identity-metrics"><div class="nx-identity-metric"><span>LIFETIME EARNED</span><strong>${nxBankFmt(lifetime)}</strong><small>Verified deposits</small></div><div class="nx-identity-metric"><span>PENDING EARNINGS</span><strong>${nxBankFmt(pending)}</strong><small>Requests & approved incoming texts</small></div></div>
@@ -3533,7 +3588,7 @@ async function nxBankCancelRequest(id){
  if(!r||r.status!=='owed'){alert('This request is no longer outstanding.');return;}
  const p=profiles.find(x=>String(x.id)===String(r.inmateId));
  const remaining=Math.max(0,Number(r.cents||0)-Number(r.paid||0));
- if(!confirm(`Cancel the unpaid ${nxBankFmt(remaining)} request for ${p?nxBankName(p):'inmate '+r.inmateId}?\n\nNo payment will be recorded. Existing deposits and lifetime earnings will remain unchanged.`))return;
+ if(!await nexusGlassConfirm(`Cancel the unpaid ${nxBankFmt(remaining)} request for ${p?nxBankName(p):'inmate '+r.inmateId}?\n\nNo payment will be recorded. Existing deposits and lifetime earnings will remain unchanged.`))return;
  if(!currentUserId||!nexusCloudReady){alert('Cloud is not connected. Sign in before making changes.');return;}
  r.status='cancelled';r.cancelledAt=new Date().toISOString();r.cancelledReason='Cancelled by administrator';
  if(!store(NX_BUDGET_KEY,a)){alert('Cloud save could not start.');return;}
@@ -3564,13 +3619,18 @@ function nxBankStart(type){
 }
 function nxBankReview(data){nxBankDialog={...data};const inmate=profiles.find(p=>String(p.id)===String(data.inmateId));const transfer=data.type==='transfer';
  const title=transfer?'Review Inmate Transfer':data.type==='fund'?'Review Deposit':'Review Expense';
- nxBankOpen(`<div class="nxbf-modalhead"><div><span class="nxbf-eyebrow">NEXUS · REVIEW ENTRY</span><h3>${title}</h3></div><button type="button" data-bank-close aria-label="Close">×</button></div>${transfer?nxBankPersonRow(inmate):''}<div class="nxbf-review"><div><span>Amount</span><strong>${nxBankFmt(data.cents)}</strong></div><div><span>${transfer?'Provider':'Type'}</span><strong>${esc(data.provider||data.type)}</strong></div><div><span>Reference</span><strong>${esc(data.reference||'Not provided')}</strong></div><div><span>Note</span><strong>${esc(data.memo||'—')}</strong></div></div><p class="nxbf-helper">${transfer?'Confirm only after the external provider payment is complete. Saving here records the transfer; it does not send money.':'Confirm to save this entry in your NEXUS private ledger.'}</p><div class="nxbf-modalactions"><button type="button" class="nxbf-primary" data-bank-confirm>Confirm &amp; Record</button><button type="button" data-bank-close>Cancel</button></div>`);
+ const projected=nxTotals(nxBudget()).available-(data.type==='fund'?0:data.cents);
+ const overdraft=(data.type!=='fund'&&projected<0)?`<div class="nxbf-overdraft-alert" role="alert"><strong>Projected available funds: ${nxBankFmt(projected)}.</strong> Please make a deposit to keep your account current. You can still record this verified expense or transfer.</div>`:'';
+ nxBankOpen(`<div class="nxbf-modalhead"><div><span class="nxbf-eyebrow">NEXUS · REVIEW ENTRY</span><h3>${title}</h3></div><button type="button" data-bank-close aria-label="Close">×</button></div>${transfer?nxBankPersonRow(inmate):''}<div class="nxbf-review"><div><span>Amount</span><strong>${nxBankFmt(data.cents)}</strong></div><div><span>${transfer?'Provider':'Type'}</span><strong>${esc(data.provider||data.type)}</strong></div><div><span>Reference</span><strong>${esc(data.reference||'Not provided')}</strong></div><div><span>Note</span><strong>${esc(data.memo||'—')}</strong></div></div>${overdraft}<p class="nxbf-helper">${transfer?'Confirm only after the external provider payment is complete. Saving here records the transfer; it does not send money.':'Confirm to save this entry in your NEXUS private ledger.'}</p><div class="nxbf-modalactions"><button type="button" class="nxbf-primary" data-bank-confirm>Confirm &amp; Record</button><button type="button" data-bank-close>Cancel</button></div>`);
 }
 async function nxBankCommit(){
  if(!nxBankDialog)return;
  const d=nxBankDialog, a=nxBudget(),t=nxTotals(a);
  if(!nexusCloudReady){alert('Cloud data is not ready. No entry was saved.');return}
- if(d.type!=='fund'&&d.cents>t.available){alert('Insufficient available funds; no transaction was recorded.');return}
+ if(d.type!=='fund'&&t.available-d.cents<0){
+  const after=t.available-d.cents;
+  if(!await nexusGlassConfirm(`This entry will put your shared budget at ${nxBankFmt(after)}.\n\nPlease make a deposit to keep your account current.\n\nConfirm only if the expense or external transfer actually occurred.\n\nRecord this entry anyway?`))return;
+ }
  const btn=document.querySelector('[data-bank-confirm]');if(btn){btn.disabled=true;btn.textContent='Saving…'}
  const item={id:crypto.randomUUID(),kind:d.type==='transfer'?'deposit':d.type==='fund'?'fund':'expense',cents:d.cents,date:d.date||nxDate(),category:d.type==='transfer'?'Inmate deposit':d.type==='fund'?'Main account deposit':'Monthly expense',memo:d.memo||'',at:new Date().toISOString()};
  if(d.type==='transfer'){item.inmateId=d.inmateId;item.provider=d.provider;item.reference=d.reference||'';item.verified=true;}
@@ -3583,7 +3643,7 @@ async function nxBankCommit(){
   const p=profiles.find(x=>String(x.id)===String(d.inmateId));
   nxBankDialog=null;
   nxBankOpen(`<div class="nxbf-success"><div class="nxbf-success-icon">✓</div><h3>${d.type==='transfer'?'Payment Recorded':'Entry Recorded'}</h3><p>Saved to the NEXUS financial ledger</p>${p?nxBankPersonRow(p):''}<div class="nxbf-review"><div><span>Amount</span><strong>${nxBankFmt(d.cents)}</strong></div><div><span>Reference</span><strong>${esc(d.reference||item.id.slice(0,8).toUpperCase())}</strong></div><div><span>Status</span><strong>Recorded in NEXUS</strong></div></div><p class="nxbf-helper">This records a manual transaction. It is not proof that the external provider completed the payment.</p><button type="button" class="nxbf-primary" data-bank-done>Done</button></div>`);
- }catch(err){console.error('NEXUS finance save:',err);const b=document.querySelector('[data-bank-confirm]');if(b){b.disabled=false;b.textContent='Retry Save'}alert('Payment not confirmed as saved to cloud. Check connection before retrying.');}
+ }catch(err){console.error('NEXUS finance save:',err);const b=document.querySelector('[data-bank-confirm]');if(b){b.disabled=false;b.textContent='Retry Save'}alert('Entry not confirmed in Supabase. Do not click Retry or submit the same payment again until you check Financial Center history. Error: '+String(err?.message||err));}
 }
 document.addEventListener('click',e=>{
  const requestManager=e.target.closest('[data-nx-manage-requests]');if(requestManager){nxBankManageRequests();return}
@@ -3857,7 +3917,7 @@ async function nxPendingSetPrimary(uid,index){
 async function nxPendingDeletePhoto(uid,index){
  const rows=nexusPendingItems(),r=rows.find(x=>x.uid===uid);if(!r)return;
  const paths=nxPendingPhotoPaths(r),path=paths[index];if(!path)return;
- if(!confirm('Remove this photograph from the pending intake?'))return;
+ if(!await nexusGlassConfirm('Remove this photograph from the pending intake?'))return;
  const remaining=paths.filter((_,i)=>i!==index);
  r.photoPaths=remaining;r.photoPath=r.photoPath===path?(remaining[0]||null):r.photoPath;
  try{await nxPendingCommit(rows);render()}catch(err){alert('Could not save photo removal: '+err.message)}
@@ -3915,7 +3975,7 @@ async function nxPendingTransfer(uid){
  }
 }
 async function nxPendingRemove(uid){const rows=nexusPendingItems();const item=rows.find(x=>x.uid===uid);if(!item)return;
- if(!confirm('Remove this pending intake from the queue? This does not delete a completed inmate record.'))return;
+ if(!await nexusGlassConfirm('Remove this pending intake from the queue? This does not delete a completed inmate record.'))return;
  const next=rows.filter(x=>x.uid!==uid);store(NX_PENDING_KEY,next);try{await nexusCloudWriteQueue;render()}catch(err){alert('Cloud removal failed: '+err.message)}
 }
 function nexusDashboard(){
@@ -3999,7 +4059,7 @@ async function nxBulkExtract(f,ocr){const ext=f.name.toLowerCase().split('.').po
 function nxBulkStatus(r,i){const key=String(r.state||'').trim().toLowerCase()+'|'+String(r.id||'').trim().toLowerCase();if(!r.id||!r.first||!r.last||!r.state||!r.facility)return 'MISSING REQUIRED DETAILS';if(profiles.some(p=>String(p.id||'').trim().toLowerCase()===String(r.id).trim().toLowerCase()))return 'ALREADY EXISTS';if(nxBulkDrafts.some((o,j)=>j<i&&String(o.state||'').trim().toLowerCase()+'|'+String(o.id||'').trim().toLowerCase()===key))return 'DUPLICATE IN BATCH';return r.review?'REVIEW EXTRACTION':'READY'}
 function nxBulkRender(){const target=$('nxBulkResults');if(!target)return;const safe=r=>esc(String(r||''));target.innerHTML=`<p><b>${nxBulkDrafts.length} draft rows.</b> Only manually approved, complete, nonduplicate profiles can be created. All extracted fields may contain errors.</p><div class="tablewrap"><table><thead><tr><th>Approve</th><th>Source</th><th>DOC ID</th><th>First</th><th>Last</th><th>State</th><th>Facility</th><th>Status</th></tr></thead><tbody>${nxBulkDrafts.map((r,i)=>{const status=nxBulkStatus(r,i);return `<tr><td><input type="checkbox" data-bulk-approve="${i}" ${r.approved?'checked':''} ${status==='ALREADY EXISTS'||status==='DUPLICATE IN BATCH'?'disabled':''}></td><td>${safe(r.source)}</td>${['id','first','last','state','facility'].map(k=>`<td><input style="min-width:115px;max-width:180px" data-bulk-index="${i}" data-bulk-field="${k}" value="${safe(r[k])}"></td>`).join('')}<td>${safe(status)}</td></tr>`}).join('')}</tbody></table></div><div class="actions"><button class="btn alt" id="nxBulkRecheck">RECHECK DUPLICATES & FIELDS</button><button class="btn" id="nxBulkCreate">CREATE APPROVED PROFILES IN SUPABASE</button></div><p class="muted">Approval is explicit; existing profiles will never be overwritten. Document attachments and extracted photos are not saved in this version.</p>`}
 async function nxBulkPreview(){const files=Array.from($('nxBulkFiles')?.files||[]);if(!files.length){alert('Select files first.');return}if(files.length>20){alert('Choose 20 or fewer files per batch.');return}const ocr=Boolean($('nxBulkOCR')?.checked);const status=$('nxBulkResults');status.textContent='Extracting files. Verify everything before approval…';nxBulkDrafts=[];const errors=[];for(const f of files){try{if(f.size>5_000_000)throw Error('Maximum 5 MB per file');const rows=await nxBulkExtract(f,ocr);for(const r of rows){nxBulkDrafts.push({...r,approved:false});if(nxBulkDrafts.length>500)throw Error('Limit 500 draft profiles per batch')}}catch(e){errors.push(f.name+': '+e.message)}}nxBulkRender();if(errors.length)status.insertAdjacentHTML('afterbegin',`<div class="notice">${errors.map(esc).join(' | ')}</div>`)}
-async function nxBulkCreate(){const approved=nxBulkDrafts.map((r,i)=>({r,i})).filter(x=>x.r.approved);if(!approved.length){alert('Select profiles to approve.');return}const bad=approved.filter(({r,i})=>nxBulkStatus(r,i)!=='READY'&&nxBulkStatus(r,i)!=='REVIEW EXTRACTION');if(bad.length){alert('Resolve incomplete or duplicate records, then click RECHECK.');return}if(!confirm('Create '+approved.length+' approved profiles in Supabase? These are actual cloud records.'))return;const button=$('nxBulkCreate');button.disabled=true;let count=0;const failures=[];try{for(const {r,i} of approved){try{if(profiles.some(p=>String(p.id).trim().toLowerCase()===String(r.id).trim().toLowerCase()))throw Error('Profile already exists');const p={id:r.id,first:r.first,last:r.last,state:r.state,facility:r.facility,status:'Active',notes:'Bulk import source: '+r.source};for(const t of tableDefs)p[t.key]=[];selectedPhotoFile=null;await saveMasterToSupabase(p);profiles.push(p);r.approved=false;count++}catch(e){failures.push(r.id+': '+e.message)}}nxBulkRender();$('nxBulkResults')?.insertAdjacentHTML('afterbegin',`<div class="notice">Created ${count} cloud profile(s). ${failures.length?esc(failures.join(' | ')):'No errors reported.'} Refresh the directory and confirm cloud persistence.</div>`)}finally{if(button.isConnected)button.disabled=false}}
+async function nxBulkCreate(){const approved=nxBulkDrafts.map((r,i)=>({r,i})).filter(x=>x.r.approved);if(!approved.length){alert('Select profiles to approve.');return}const bad=approved.filter(({r,i})=>nxBulkStatus(r,i)!=='READY'&&nxBulkStatus(r,i)!=='REVIEW EXTRACTION');if(bad.length){alert('Resolve incomplete or duplicate records, then click RECHECK.');return}if(!await nexusGlassConfirm('Create '+approved.length+' approved profiles in Supabase? These are actual cloud records.'))return;const button=$('nxBulkCreate');button.disabled=true;let count=0;const failures=[];try{for(const {r,i} of approved){try{if(profiles.some(p=>String(p.id).trim().toLowerCase()===String(r.id).trim().toLowerCase()))throw Error('Profile already exists');const p={id:r.id,first:r.first,last:r.last,state:r.state,facility:r.facility,status:'Active',notes:'Bulk import source: '+r.source};for(const t of tableDefs)p[t.key]=[];selectedPhotoFile=null;await saveMasterToSupabase(p);profiles.push(p);r.approved=false;count++}catch(e){failures.push(r.id+': '+e.message)}}nxBulkRender();$('nxBulkResults')?.insertAdjacentHTML('afterbegin',`<div class="notice">Created ${count} cloud profile(s). ${failures.length?esc(failures.join(' | ')):'No errors reported.'} Refresh the directory and confirm cloud persistence.</div>`)}finally{if(button.isConnected)button.disabled=false}}
 function render(){const names={financialHub:'Financial Center',conversationImport:'Import Text Conversation',bulkIntake:'Bulk Registration',pendingIntake:'Pending Intake',dashboard:'Command Dashboard',profiles:'Inmate Profiles',register:'Inmate Registration',detail:'Inmate Master Record',personal:'Inmate Personal File',facilities:'Facilities',records:'Records',search:'Search',reports:'Reports',settings:'Settings'};$('pageTitle').textContent=names[view]||'NEXUS';const currentSection=document.getElementById('nxCurrentSection');if(currentSection)currentSection.textContent=(names[view]||'NEXUS').toUpperCase();document.querySelectorAll('.nav').forEach(b=>b.classList.toggle('active',b.dataset.view===view));let html='';if(view==='dashboard'){html=nexusDashboard();}else if(view==='profiles'){html=`<section class="nx-apple-directory"><div class="nx-apple-heading"><div><div class="nx-apple-eyebrow">WORKSPACE / INSTITUTIONAL RECORDS</div><h1>Inmate Profiles</h1><p>Secure directory · BLACKCELL corporate records</p></div><button class="btn nx-apple-new" data-view="register">＋ New Profile</button></div><div class="nx-apple-stats"><div><span>TOTAL PROFILES</span><strong>${profiles.length}</strong><small>Registered records</small></div><div><span>ACTIVE RECORDS</span><strong>${profiles.filter(p=>String(p.status||'').toLowerCase()==='active').length}</strong><small>Currently active</small></div><div><span>STATES</span><strong>${new Set(profiles.map(p=>p.state).filter(Boolean)).size}</strong><small>Represented</small></div></div><div class="nx-apple-toolbar"><input id="searchBox" placeholder="Search name, inmate ID, state, facility, or unit…" aria-label="Search inmate profiles" value="${esc(filter)}"><div class="nx-apple-segment"><button type="button" data-nx-directory-mode="grid" class="selected">▦ Grid</button><button type="button" data-nx-directory-mode="list">☷ List</button></div><button class="btn alt" id="toggleArchive">${showArchive?'Show Current Inmates':'View Archive'}</button></div><div class="nx-apple-section-title">${showArchive?'Archived Profiles':'All Profiles'}</div><div id="profileResults">${profileCards(profiles.filter(p=>(showArchive?p.status==='Archive':p.status!=='Archive')&&[p.id,p.first,p.last,p.state,p.facility,p.unit].join(' ').toLowerCase().includes(filter.toLowerCase())).sort((a,b)=>(a.last||'').localeCompare(b.last||'')))}</div></section>`;}else if(view==='register')html=registration();else if(view==='detail'){html=detail();const rec=find(detailId);if(rec&&String(rec.status||'').toLowerCase()==='blocked')html='<div class="nx-blocked-alert"><div class="nx-hazard-bar"></div><strong>BLOCKED PROFILE — Restricted record</strong><p>Review the block reason before taking further action. Viewing this record does not authorize contact or processing.</p></div>'+html;}else if(view==='personal')html=personalPage();else if(view==='financialHub'){
  try{html=financialHub();}
  catch(err){console.error('NEXUS Financial Center render failed',err);html='<div class="panel"><div class="heading">FINANCIAL CENTER UNAVAILABLE</div><p class="muted">This section could not be displayed. Your financial records have not been changed. Please use the corrected HTML or contact the administrator.</p></div>';}
@@ -4237,7 +4297,7 @@ async function submitMasterRecord(form,fd){
 if(nxPendingTransferId && window.nxPendingPhotoTransferRequired && !window.nxPendingOriginalPhotoPath && !selectedPhotoFile){showMasterSaveError('Intake photograph is missing. Transfer stopped; intake retained.');return;}
 if(nxPendingTransferId && window.nxPendingPhotoTransferRequired && !selectedPhotoFile && !document.querySelector('#registrationPhotoPreview img')){showMasterSaveError('Intake photograph is not visible in registration. Save stopped; pending intake retained.');return;}
 const stateExtraFields=document.querySelectorAll('[data-nx-state-key]');if(stateExtraFields.length){const extra={};stateExtraFields.forEach(el=>extra[el.dataset.nxStateKey]=el.value);fd.set('notes',nxPackStateNotes(fd.get('notes'),extra));}
-captureRows();const id=String(fd.get('id')||'').trim();if(!id){alert('Inmate ID is required.');return}if(nexusBlankReregId && id!==nexusBlankReregId){showMasterSaveError('For re-registration, use the original inmate ID: '+nexusBlankReregId);return}if(profiles.some(p=>p.id===id&&p.id!==editId)){alert('This Inmate ID already exists. Open its Master Record and choose RE-REGISTER (BLANK FORM).');return}const old=editId?find(editId):null;if(nexusBlankReregId && !confirm('Re-register this Arizona inmate using the new entries? The previous profile details will be replaced, but existing history and personal records will be retained. Make sure you have a backup.'))return;if(old && id!==editId){
+captureRows();const id=String(fd.get('id')||'').trim();if(!id){alert('Inmate ID is required.');return}if(nexusBlankReregId && id!==nexusBlankReregId){showMasterSaveError('For re-registration, use the original inmate ID: '+nexusBlankReregId);return}if(profiles.some(p=>p.id===id&&p.id!==editId)){alert('This Inmate ID already exists. Open its Master Record and choose RE-REGISTER (BLANK FORM).');return}const old=editId?find(editId):null;if(nexusBlankReregId && !await nexusGlassConfirm('Re-register this Arizona inmate using the new entries? The previous profile details will be replaced, but existing history and personal records will be retained. Make sure you have a backup.'))return;if(old && id!==editId){
   alert('Changing an existing Inmate ID is temporarily disabled while we finish Supabase synchronization.');
   return;
 }const p={...(old||{})};p.previous_photo_path=old?.photo_path||null;for(const [k,v] of fd.entries())if(k!=='photo')p[k]=String(v);p.id=id;if(p.state==='Arizona')p.facility=String(fd.get('location')||'').trim();p.photo=old?.photo||nexusPendingRegistrationDraft?.photo||'';if(nxPendingTransferId && window.nxPendingOriginalPhotoPath && !selectedPhotoFile){p.photo_path=window.nxPendingOriginalPhotoPath;p.photo=nexusPendingRegistrationDraft?.photo||p.photo;}for(const t of tableDefs)p[t.key]=((nexusBlankReregId && !(tableRows[t.key]||[]).some(r=>Array.isArray(r)?r.some(v=>String(v||'').trim()):false))?old?.[t.key]||[]:(tableRows[t.key]||old?.[t.key]||[])).filter(r=>Array.isArray(r)?r.some(x=>String(x||'').trim()):Object.values(r||{}).some(x=>String(x||'').trim()));try {
@@ -4275,9 +4335,9 @@ $('content').addEventListener('click',async function(e){
   }
 },true);
 
-$('content').addEventListener('submit',async e=>{e.preventDefault();const form=e.target,fd=new FormData(form);if(['nxBudgetForm','nxRequestForm','nxDepositForm'].includes(form.id)){nxProcessFinancialForm(form);return;}if(form.id==='recordForm'){await submitMasterRecord(form,fd);return;}else if(form.id==='personalForm'||form.id==='notesForm'){const f=file();f.details={...(f.details||{})};for(const [k,v] of fd.entries())f.details[k]=String(v);f.updated=new Date().toISOString();if(savePersonal()){nexusAppleNotice('Personal file saved.','Saved successfully');render()}}else if(form.id==='entryForm'){const date=String(fd.get('date')||''),message=String(fd.get('message')||'').trim(),type=String(fd.get('type')||'');if(!date||!message){alert('Enter a date and message or summary.');return}if(date>today()){alert('Communication date cannot be in the future.');return}file().entries.push({uid:Date.now().toString(36)+Math.random().toString(36).slice(2),date,type,message,rateAtEntry:rateFor(financeFile(),type)});analysisVisible=false;if(savePersonal())render()}else if(form.id==='ratesForm'){const f=financeFile();for(const [k] of activityTypes){const v=Number(fd.get(k));if(!Number.isFinite(v)||v<0){alert('Prices must be zero or greater.');return}f.rates[k]=Math.round(v*100)/100}savePersonal();render()}else if(form.id==='sexualForm'){const date=String(fd.get('date')||''),message=String(fd.get('message')||'').trim(),reason=String(fd.get('reason')||'').trim();if(!date||date>today()||!reason){alert('Enter a valid date and select a reason.');return}const f=financeFile();f.sexualEntries.push({uid:Date.now().toString(36)+Math.random().toString(36).slice(2),date,message,reason,rateAtEntry:rateFor(f,'Sexual')});savePersonal();render()}else if(form.id==='interestsForm'){const f=financeFile();f.details={...(f.details||{}),interests:String(fd.get('interests')||''),boundaries:String(fd.get('boundaries')||'')};f.updated=new Date().toISOString();if(savePersonal()){render();alert('Interests and boundaries saved to this inmate personal file.')} }else if(form.id==='maleForm'){const f=financeFile();f.maleReports.push({date:String(fd.get('date')||''),category:String(fd.get('category')||''),evidence:String(fd.get('evidence')||''),interpretation:String(fd.get('interpretation')||'')});savePersonal();render()}});
+$('content').addEventListener('submit',async e=>{e.preventDefault();const form=e.target,fd=new FormData(form);if(['nxBudgetForm','nxRequestForm','nxDepositForm'].includes(form.id)){await nxProcessFinancialForm(form);return;}if(form.id==='recordForm'){await submitMasterRecord(form,fd);return;}else if(form.id==='personalForm'||form.id==='notesForm'){const f=file();f.details={...(f.details||{})};for(const [k,v] of fd.entries())f.details[k]=String(v);f.updated=new Date().toISOString();if(savePersonal()){nexusAppleNotice('Personal file saved.','Saved successfully');render()}}else if(form.id==='entryForm'){const date=String(fd.get('date')||''),message=String(fd.get('message')||'').trim(),type=String(fd.get('type')||'');if(!date||!message){alert('Enter a date and message or summary.');return}if(date>today()){alert('Communication date cannot be in the future.');return}file().entries.push({uid:Date.now().toString(36)+Math.random().toString(36).slice(2),date,type,message,rateAtEntry:rateFor(financeFile(),type)});analysisVisible=false;if(savePersonal())render()}else if(form.id==='ratesForm'){const f=financeFile();for(const [k] of activityTypes){const v=Number(fd.get(k));if(!Number.isFinite(v)||v<0){alert('Prices must be zero or greater.');return}f.rates[k]=Math.round(v*100)/100}savePersonal();render()}else if(form.id==='sexualForm'){const date=String(fd.get('date')||''),message=String(fd.get('message')||'').trim(),reason=String(fd.get('reason')||'').trim();if(!date||date>today()||!reason){alert('Enter a valid date and select a reason.');return}const f=financeFile();f.sexualEntries.push({uid:Date.now().toString(36)+Math.random().toString(36).slice(2),date,message,reason,rateAtEntry:rateFor(f,'Sexual')});savePersonal();render()}else if(form.id==='interestsForm'){const f=financeFile();f.details={...(f.details||{}),interests:String(fd.get('interests')||''),boundaries:String(fd.get('boundaries')||'')};f.updated=new Date().toISOString();if(savePersonal()){render();alert('Interests and boundaries saved to this inmate personal file.')} }else if(form.id==='maleForm'){const f=financeFile();f.maleReports.push({date:String(fd.get('date')||''),category:String(fd.get('category')||''),evidence:String(fd.get('evidence')||''),interpretation:String(fd.get('interpretation')||'')});savePersonal();render()}});
 
-$('content').addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.nxPromise){const a=nxBudget(),r=a.requests.find(x=>x.id===b.dataset.nxPromise&&x.inmateId===detailId);if(r&&r.status==='requested'&&confirm('Mark this money request as promised / owed?')){r.status='owed';if(store(NX_BUDGET_KEY,a))render()}return;}if(b.id==='nxStartNewBudgetMonth'){
+$('content').addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.nxPromise){const a=nxBudget(),r=a.requests.find(x=>x.id===b.dataset.nxPromise&&x.inmateId===detailId);if(r&&r.status==='requested'&&await nexusGlassConfirm('Mark this money request as promised / owed?')){r.status='owed';if(store(NX_BUDGET_KEY,a))render()}return;}if(b.id==='nxStartNewBudgetMonth'){
  if(!nexusCloudReady||!currentUserId){alert('Cloud session is not ready. No reset performed.');return;}
  const a=nxBudget(),now=new Date().toISOString(),month=nxDate().slice(0,7);
  if(a.monthStarted&&a.monthStarted.slice(0,7)===month&&!a.items.length){alert('This month is already a fresh budget. No reset needed.');return;}
@@ -4285,14 +4345,14 @@ $('content').addEventListener('click',async e=>{const b=e.target.closest('button
  const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
  const url=URL.createObjectURL(blob),anchor=document.createElement('a');
  anchor.href=url;anchor.download='NEXUS_Financial_Backup_'+month+'_'+now.slice(0,10)+'.json';document.body.appendChild(anchor);anchor.click();anchor.remove();setTimeout(()=>URL.revokeObjectURL(url),15000);
- if(!confirm('A budget backup download was started. Confirm it was saved before continuing.\n\nSTART A NEW '+month+' PERSONAL BUDGET?\n\nThis archives '+a.items.length+' existing budget transactions and sets active budget funds and expenses to $0.00. Existing inmate deposits, bills, profile records and outstanding promises remain unchanged.'))return;
+ if(!await nexusGlassConfirm('A budget backup download was started. Confirm it was saved before continuing.\n\nSTART A NEW '+month+' PERSONAL BUDGET?\n\nThis archives '+a.items.length+' existing budget transactions and sets active budget funds and expenses to $0.00. Existing inmate deposits, bills, profile records and outstanding promises remain unchanged.'))return;
  a.archives.push({archivedAt:now,month,items:structuredClone(a.items),note:'Manual monthly budget reset; previous budget transactions preserved'});
  a.items=[];a.monthStarted=now;
  if(store(NX_BUDGET_KEY,a)){
   alert('Monthly budget reset queued for secure cloud saving. Check the cloud save status before closing NEXUS. Previous budget entries are archived and were included in the backup.');render();
  }else alert('Reset was not saved. Check your cloud connection and restore from your downloaded backup if necessary.');
  return;
- }if(b.id==='nxActivate'){const a=nxBudget();if(!a.activeAt&&confirm('Activate the monthly NEXUS personal budgeting ledger?')){a.activeAt=new Date().toISOString();if(store(NX_BUDGET_KEY,a))render()}return;}if(b.id==='nxBulkPreview'){nxBulkPreview();return;}if(b.id==='nxBulkRecheck'){nxBulkRender();return;}if(b.id==='nxBulkCreate'){await nxBulkCreate();return;}if(b.id==='nexusPrepareImport'){await nexusPrepareMessageFiles();return;}if(b.id==='nexusSaveImport'){nexusSaveImportedMessages();return;}if(b.id==='toggleArchive'){showArchive=!showArchive;render();return}if(b.id==='addCustomFacility'){const state=$('registrationState')?.value,name=$('customFacilityName')?.value.trim();if(!state){alert('Select a state first.');return}if(!name){alert('Enter a facility name.');return}const data=read(FACILITY_CUSTOM_KEY,{});data[state]=[...new Set([...(data[state]||[]),name])];if(store(FACILITY_CUSTOM_KEY,data)){const sel=$('registrationFacility');sel.insertAdjacentHTML('beforeend',`<option value="${esc(name)}">${esc(name)}</option>`);sel.value=name;$('customFacilityName').value='';alert('Facility added for '+state+'.')}return}if(b.id==='addReason'){const name=$('newReason')?.value.trim();if(!name){alert('Enter a reason first.');return}const data=reasonChoices();if(!data.some(x=>x.toLowerCase()===name.toLowerCase()))data.push(name);if(store(REASONS_KEY,data)){const sel=$('sexualReason');if(![...sel.options].some(x=>x.value===name))sel.insertAdjacentHTML('beforeend',`<option value="${esc(name)}">${esc(name)}</option>`);sel.value=name;$('newReason').value='';alert('Reason saved for reuse.')}return}if(b.dataset.exportFinancial){financialCSV();return}if(b.dataset.finOpen){detailId=decodeURIComponent(b.dataset.finOpen);personalTab='financial';go('personal');return}if(b.dataset.view){
+ }if(b.id==='nxActivate'){const a=nxBudget();if(!a.activeAt&&await nexusGlassConfirm('Activate the monthly NEXUS personal budgeting ledger?')){a.activeAt=new Date().toISOString();if(store(NX_BUDGET_KEY,a))render()}return;}if(b.id==='nxBulkPreview'){nxBulkPreview();return;}if(b.id==='nxBulkRecheck'){nxBulkRender();return;}if(b.id==='nxBulkCreate'){await nxBulkCreate();return;}if(b.id==='nexusPrepareImport'){await nexusPrepareMessageFiles();return;}if(b.id==='nexusSaveImport'){nexusSaveImportedMessages();return;}if(b.id==='toggleArchive'){showArchive=!showArchive;render();return}if(b.id==='addCustomFacility'){const state=$('registrationState')?.value,name=$('customFacilityName')?.value.trim();if(!state){alert('Select a state first.');return}if(!name){alert('Enter a facility name.');return}const data=read(FACILITY_CUSTOM_KEY,{});data[state]=[...new Set([...(data[state]||[]),name])];if(store(FACILITY_CUSTOM_KEY,data)){const sel=$('registrationFacility');sel.insertAdjacentHTML('beforeend',`<option value="${esc(name)}">${esc(name)}</option>`);sel.value=name;$('customFacilityName').value='';alert('Facility added for '+state+'.')}return}if(b.id==='addReason'){const name=$('newReason')?.value.trim();if(!name){alert('Enter a reason first.');return}const data=reasonChoices();if(!data.some(x=>x.toLowerCase()===name.toLowerCase()))data.push(name);if(store(REASONS_KEY,data)){const sel=$('sexualReason');if(![...sel.options].some(x=>x.value===name))sel.insertAdjacentHTML('beforeend',`<option value="${esc(name)}">${esc(name)}</option>`);sel.value=name;$('newReason').value='';alert('Reason saved for reuse.')}return}if(b.dataset.exportFinancial){financialCSV();return}if(b.dataset.finOpen){detailId=decodeURIComponent(b.dataset.finOpen);personalTab='financial';go('personal');return}if(b.dataset.view){
   if(b.dataset.view==='register'){nxPendingTransferId=null;nexusPendingRegistrationDraft=null;
     nexusRegistrationStage='select';nexusRegistrationState='';
     editId=null;
@@ -4313,7 +4373,7 @@ $('content').addEventListener('click',async e=>{const b=e.target.closest('button
 if(b.dataset.delete){
   const id=decodeURIComponent(b.dataset.delete);
 
-  if(!confirm('Permanently delete this Master Record and its associated sections?')){
+  if(!await nexusGlassConfirm('Permanently delete this Master Record and its associated sections?')){
     return;
   }
 
@@ -4354,7 +4414,7 @@ if(b.dataset.delete){
   alert('Master Record deleted; verify cloud save status before leaving.');
   return;
 }
-if(b.dataset.tab){personalTab=b.dataset.tab;analysisVisible=false;render();return}if(b.dataset.eightPersona){nexusEightChoice=b.dataset.eightPersona;analysisVisible=false;render();return}if(b.dataset.window){windowDays=Number(b.dataset.window);analysisVisible=false;render();return}if(b.id==='analyze'){analysisVisible=true;render();return}if(b.dataset.deposit){const f=financeFile(),d=balanceData();if(!d.pending.length||d.outstanding<=0){alert('There is no positive outstanding balance to record.');return}if(!confirm('Confirm you have made a deposit of '+money(d.outstanding)+'? This records the deposit and clears the pending balance.'))return;f.deposits.push({id:'DEP-'+Date.now(),date:new Date().toLocaleString(),amount:Math.round(d.outstanding*100)/100,entryIds:d.pending.map(x=>x.uid),recordedAt:new Date().toISOString(),breakdown:Object.fromEntries(activityTypes.map(([k])=>[k,d.subtotal(k)]))});savePersonal();render();return}if(b.dataset.sexDelete){const f=financeFile();if(f.deposits.some(d=>d.entryIds.includes(b.dataset.sexDelete))){alert('This activity is linked to a recorded deposit and cannot be deleted.');return}if(confirm('Delete this sexual activity entry?')){f.sexualEntries=f.sexualEntries.filter(x=>x.uid!==b.dataset.sexDelete);savePersonal();render()}return}if(b.dataset.entryDelete){if(financeFile().deposits.some(d=>d.entryIds.includes(b.dataset.entryDelete))){alert('This entry is linked to a recorded deposit and cannot be deleted.');return}if(confirm('Delete this communication entry?')){file().entries=file().entries.filter(x=>x.uid!==b.dataset.entryDelete);savePersonal();analysisVisible=false;render()}return}if(b.dataset.add){captureRows();const t=tableDefs.find(x=>x.key===b.dataset.add);tableRows[t.key]??=[];tableRows[t.key].push(t.cols.map(() => ''));preserveRegistrationAndRender();return}if(b.dataset.remove){captureRows();tableRows[b.dataset.remove]?.splice(Number(b.dataset.index),1);preserveRegistrationAndRender();return}if(b.id==='backup'){const data={masterRecords:profiles,personalFiles:personal,exportedAt:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='nexus-demo-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}});
+if(b.dataset.tab){personalTab=b.dataset.tab;analysisVisible=false;render();return}if(b.dataset.eightPersona){nexusEightChoice=b.dataset.eightPersona;analysisVisible=false;render();return}if(b.dataset.window){windowDays=Number(b.dataset.window);analysisVisible=false;render();return}if(b.id==='analyze'){analysisVisible=true;render();return}if(b.dataset.deposit){const f=financeFile(),d=balanceData();if(!d.pending.length||d.outstanding<=0){alert('There is no positive outstanding balance to record.');return}if(!await nexusGlassConfirm('Confirm you have made a deposit of '+money(d.outstanding)+'? This records the deposit and clears the pending balance.'))return;f.deposits.push({id:'DEP-'+Date.now(),date:new Date().toLocaleString(),amount:Math.round(d.outstanding*100)/100,entryIds:d.pending.map(x=>x.uid),recordedAt:new Date().toISOString(),breakdown:Object.fromEntries(activityTypes.map(([k])=>[k,d.subtotal(k)]))});savePersonal();render();return}if(b.dataset.sexDelete){const f=financeFile();if(f.deposits.some(d=>d.entryIds.includes(b.dataset.sexDelete))){alert('This activity is linked to a recorded deposit and cannot be deleted.');return}if(await nexusGlassConfirm('Delete this sexual activity entry?')){f.sexualEntries=f.sexualEntries.filter(x=>x.uid!==b.dataset.sexDelete);savePersonal();render()}return}if(b.dataset.entryDelete){if(financeFile().deposits.some(d=>d.entryIds.includes(b.dataset.entryDelete))){alert('This entry is linked to a recorded deposit and cannot be deleted.');return}if(await nexusGlassConfirm('Delete this communication entry?')){file().entries=file().entries.filter(x=>x.uid!==b.dataset.entryDelete);savePersonal();analysisVisible=false;render()}return}if(b.dataset.add){captureRows();const t=tableDefs.find(x=>x.key===b.dataset.add);tableRows[t.key]??=[];tableRows[t.key].push(t.cols.map(() => ''));preserveRegistrationAndRender();return}if(b.dataset.remove){captureRows();tableRows[b.dataset.remove]?.splice(Number(b.dataset.index),1);preserveRegistrationAndRender();return}if(b.id==='backup'){const data={masterRecords:profiles,personalFiles:personal,exportedAt:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='nexus-demo-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}});
 
 
 document.querySelectorAll('.nav').forEach(b=>{
@@ -4924,4 +4984,74 @@ new MutationObserver(update).observe(document.getElementById('content'),{childLi
 })();
 </script>
 
+
+<style id="nexus-unified-glass-dialog-style">
+/* One centered, Apple-style modal system for NEXUS confirmations and notifications. */
+.nx-glass-dialog-layer{position:fixed;inset:0;z-index:2147483646;display:flex;align-items:center;justify-content:center;padding:clamp(12px,3vw,24px);background:rgba(4,7,12,.76);backdrop-filter:blur(16px) saturate(.8);-webkit-backdrop-filter:blur(16px) saturate(.8);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#f5f7fb}
+.nx-glass-dialog-layer[hidden]{display:none!important}
+.nx-glass-dialog{box-sizing:border-box;width:min(460px,100%);max-height:min(88dvh,730px);overflow:auto;overscroll-behavior:contain;border:1px solid rgba(220,234,250,.28);border-radius:24px;background:linear-gradient(155deg,#313c49 0%,#1c252e 58%,#141b22 100%);box-shadow:0 35px 110px #000b,inset 0 1px #ffffff22;padding:clamp(20px,4vw,30px);text-align:center;animation:nxGlassAppear .18s ease-out}
+@keyframes nxGlassAppear{from{transform:translateY(8px) scale(.986);opacity:.5}to{transform:none;opacity:1}}
+.nx-glass-symbol{margin:0 auto 16px;display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:#3e4b59;border:1px solid #66798a;font-size:23px;color:#eff7ff}
+.nx-glass-dialog h2{font-size:23px;line-height:1.2;font-weight:700;letter-spacing:-.035em;margin:0 0 12px;color:#fff}
+.nx-glass-message{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;line-height:1.65;color:#cfdae6;margin:0 0 23px;text-align:left}
+.nx-glass-actions{display:grid;grid-template-columns:1fr;gap:10px}
+.nx-glass-actions.two{grid-template-columns:1fr 1fr}
+.nx-glass-actions button{font-family:inherit;cursor:pointer;padding:12px 13px;font-size:14px;font-weight:650;min-height:44px;border-radius:12px}
+.nx-glass-secondary{background:#34414e;border:1px solid #657384;color:#f0f5fb}
+.nx-glass-primary{background:linear-gradient(160deg,#dfe6ee,#b7c6d7);border:1px solid #e7eef5;color:#14212d}
+.nx-glass-actions button:focus-visible{outline:3px solid #b4d7ff;outline-offset:3px}
+/* Existing app surfaces: consistently center every independently rendered overlay. */
+.nxbf-backdrop,.nxp-overlay,.ncc-message-overlay,.nx-photo-modal,.nx-alert-layer{display:flex!important;align-items:center!important;justify-content:center!important;padding:clamp(12px,3vw,24px)!important;box-sizing:border-box}
+.nx-alert-layer[hidden]{display:none!important}
+.nxbf-backdrop{background:rgba(5,8,12,.76)!important;backdrop-filter:blur(16px)!important;-webkit-backdrop-filter:blur(16px)!important}
+.nxbf-modal,.nxp-dialog,.ncc-message-dialog,.nx-alert-panel,.nxg-dialog{box-sizing:border-box;max-height:min(90dvh,850px)!important;overflow-y:auto!important;border-radius:24px!important;box-shadow:0 28px 100px #000b!important}
+.ncc-message-dialog,.nxp-dialog,.nx-alert-panel{background:linear-gradient(155deg,#303946,#1a222d)!important;border:1px solid #7b8b9f!important;color:#f4f7fb!important}
+.nx-photo-modal{background:rgba(5,8,12,.87)!important;backdrop-filter:blur(12px)!important}
+.nx-photo-modal img{max-height:88dvh;max-width:94vw;object-fit:contain}
+@media(max-width:600px){.nx-glass-dialog{border-radius:20px}.nx-glass-actions.two{grid-template-columns:1fr}.nxbf-modal{padding:18px!important}}
+@media(prefers-reduced-motion:reduce){.nx-glass-dialog{animation:none!important}}
+</style>
+<div id="nxGlassDialogLayer" class="nx-glass-dialog-layer" hidden role="presentation">
+  <section class="nx-glass-dialog" role="alertdialog" aria-modal="true" aria-labelledby="nxGlassTitle" aria-describedby="nxGlassText">
+    <div class="nx-glass-symbol" aria-hidden="true" id="nxGlassSymbol">◇</div>
+    <h2 id="nxGlassTitle">NEXUS</h2>
+    <p id="nxGlassText" class="nx-glass-message"></p>
+    <div id="nxGlassActions" class="nx-glass-actions"></div>
+  </section>
+</div>
+<script id="nexus-unified-glass-dialog-script">
+(function(){
+ const nativeAlert=window.alert.bind(window), nativeConfirm=window.confirm.bind(window);
+ const queue=[];let active=null;
+ const $=id=>document.getElementById(id);
+ function start(){
+  if(active||!queue.length)return;
+  const item=queue.shift();active=item;
+  const layer=$('nxGlassDialogLayer');if(!layer){active=null;item.resolve(item.kind==='confirm'?nativeConfirm(item.text):nativeAlert(item.text));start();return;}
+  const focus=document.activeElement;item.focus=focus;
+  const title=$('nxGlassTitle'),symbol=$('nxGlassSymbol'),message=$('nxGlassText'),buttons=$('nxGlassActions');
+  title.textContent=item.kind==='confirm'?'Confirm Action':'NEXUS Notification';
+  symbol.textContent=item.kind==='confirm'?'?':'i';
+  message.textContent=item.text;
+  buttons.replaceChildren();buttons.classList.toggle('two',item.kind==='confirm');
+  function add(text,klass,val){const btn=document.createElement('button');btn.type='button';btn.className=klass;btn.textContent=text;btn.addEventListener('click',()=>finish(val),{once:true});buttons.appendChild(btn);return btn;}
+  if(item.kind==='confirm')add('Cancel','nx-glass-secondary',false);
+  const main=add(item.kind==='confirm'?'Confirm':'OK','nx-glass-primary',true);
+  layer.hidden=false;document.body.classList.add('nx-glass-dialog-active');main.focus();
+  function finish(result){if(active!==item)return;active=null;layer.hidden=true;document.body.classList.remove('nx-glass-dialog-active');if(item.focus?.isConnected&&typeof item.focus.focus==='function')item.focus.focus();item.resolve(result);start();}
+  item.finish=finish;
+ }
+ function enqueue(text,kind){return new Promise(resolve=>{queue.push({text:String(text??''),kind,resolve});start()});}
+ window.nexusGlassConfirm=function(text){return enqueue(text,'confirm')};
+ window.nexusGlassAlert=function(text){return enqueue(text,'alert')};
+ // Alerts become centered Apple-style notices; they don't block JavaScript execution.
+ window.alert=function(message){void enqueue(message,'alert')};
+ document.addEventListener('keydown',function(e){if(!active)return;
+  if(e.key==='Escape'){e.preventDefault();active.finish(false);return;}
+  if(e.key==='Enter'&&e.target.closest('#nxGlassDialogLayer')){const btn=$('nxGlassActions')?.querySelector('.nx-glass-primary');if(btn){e.preventDefault();btn.click();}}
+  if(e.key==='Tab'){const buttons=[...$('nxGlassActions').querySelectorAll('button')];if(!buttons.length)return;e.preventDefault();const current=buttons.indexOf(document.activeElement);buttons[(current+(e.shiftKey?-1:1)+buttons.length)%buttons.length].focus();}
+ },true);
+ // Never silently confirm by clicking the background. Closing is explicit.
+})();
+</script>
 </body></html>
