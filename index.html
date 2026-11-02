@@ -4277,6 +4277,7 @@ async function nxBulkCreate(){const approved=nxBulkDrafts.map((r,i)=>({r,i})).fi
 const NXP_BUCKET='nexus-potential-photos';
 let nxpRows=[],nxpPhotos=[],nxpUrls=new Map(),nxpLoaded=false,nxpBusy=false,nxpLoading=false;
 let nxpFormOpen=false,nxpMessage='',nxpMessageError=false,nxpBatchCount=0;
+let nxpBatchOpen=false,nxpBatchDraft=[],nxpBatchAttachments=[],nxpBatchBusy=false,nxpBatchSummary='';
 function nxpFlash(message,error=false){nxpMessage=String(message||'');nxpMessageError=error;if(view==='potentialProfiles')render();}
 function nxpSafe(x){return esc(String(x??''));}
 function nxpProfilePhotos(id){return nxpPhotos.filter(p=>p.potential_profile_id===id).sort((a,b)=>Number(b.is_primary)-Number(a.is_primary)||a.sort_order-b.sort_order)}
@@ -4309,10 +4310,10 @@ function nxpPage(){
      <div class="nxp-profile-actions"><select class="nxp-status" data-nxp-status="${nxpSafe(p.id)}" aria-label="Contact status for ${nxpSafe(p.full_name)}">${['interested','contacted','corresponding','not_interested'].map(s=>`<option value="${s}" ${s===p.contact_status?'selected':''}>${s.replaceAll('_',' ')}</option>`).join('')}</select><button type="button" class="nxp-btn small" data-nxp-upload="${nxpSafe(p.id)}">＋ Add photos</button><input type="file" data-nxp-photo-input="${nxpSafe(p.id)}" accept="image/jpeg,image/png,image/webp" multiple></div>
    </article>`
  }).join('');
- return `<section class="nxp-page"><div class="nxp-header"><div><div class="nxp-eyebrow">BLACKCELL / PRIVATE CONTACT MANAGEMENT</div><h1>Potential Profiles</h1><p>Private, separate directory · Multiple photos · Permanent duplicate tracking</p></div><div class="nxp-actions"><button class="nxp-btn" data-nxp-action="refresh">↻ Refresh</button><button class="nxp-btn primary" data-nxp-action="new" ${nxpBatchCount>=5?'disabled':''}>＋ Add profile</button></div></div>${stats}
- <div class="nxp-banner">Only male profiles with JPay or Securus that list <b>Men</b>, <b>Anyone</b>, <b>Men and women</b>, or no correspondence preference are eligible. <b>Women only</b> is excluded. Automatic third-party profile discovery is not included in this release. Source identifiers are fingerprinted locally and only hashes are stored.</div>
+ return `<section class="nxp-page"><div class="nxp-header"><div><div class="nxp-eyebrow">BLACKCELL / PRIVATE CONTACT MANAGEMENT</div><h1>Potential Profiles</h1><p>Private, separate directory · Multiple photos · Permanent duplicate tracking</p></div><div class="nxp-actions"><button class="nxp-btn" data-nxp-action="batch">⇧ Import batch</button><button class="nxp-btn" data-nxp-action="refresh">↻ Refresh</button><button class="nxp-btn primary" data-nxp-action="new" ${nxpBatchCount>=5?'disabled':''}>＋ Add profile</button></div></div>${stats}
+ <div class="nxp-banner">Only male profiles with JPay or Securus that list <b>Men</b>, <b>Anyone</b>, <b>Men and women</b>, or no correspondence preference are eligible. <b>Women only</b> is excluded. Batch import accepts only information and photos supplied by you. It does not search or scrape outside websites. Source identifiers are hashed locally; only hashes are stored.</div>
  ${nxpMessage?`<div class="nxp-message${nxpMessageError?' error':''}" role="status">${nxpSafe(nxpMessage)}</div>`:''}
- ${form}<div class="nxp-header"><div><h1 style="font-size:20px">Saved prospects</h1><p>${nxpLoaded?'Your private Supabase collection':'Loading your private records…'}</p></div><input class="nxp-filter" type="search" id="nxpFilter" placeholder="Search saved prospects" style="max-width:245px" aria-label="Search potential profiles"></div>
+ ${form}${nxpBatchSection()}<div class="nxp-header"><div><h1 style="font-size:20px">Saved prospects</h1><p>${nxpLoaded?'Your private Supabase collection':'Loading your private records…'}</p></div><input class="nxp-filter" type="search" id="nxpFilter" placeholder="Search saved prospects" style="max-width:245px" aria-label="Search potential profiles"></div>
  <div class="nxp-queue" id="nxpCards">${items}</div>${nxpLoaded&&!items?'<div class="nxp-empty">No potential profiles saved. Add a reviewed male profile to start the private gallery.</div>':''}</section>`;
 }
 async function nxpLoad(){
@@ -4375,7 +4376,7 @@ async function nxpSaveForm(form){
   const {data:prior,error:priorError}=await nexusDB.from('nexus_potential_seen').select('id,review_status').eq('owner_id',user.id).eq('source_ref_hash',h).maybeSingle();
   if(priorError)throw priorError;if(prior)throw Error('This source profile was already reviewed ('+prior.review_status+'). It will not be saved again.');
   if(id&&state){
-   if(profiles.some(x=>String(x.id||'').trim().toLowerCase()===id.toLowerCase()&&String(x.state||'').trim().toLowerCase()===state.toLowerCase()))throw Error('This inmate ID and state already exist in your main NEXUS inmate directory.');
+   if(profiles.some(x=>String(x.inmate_id||'').trim().toLowerCase()===id.toLowerCase()&&String(x.state||'').trim().toLowerCase()===state.toLowerCase()))throw Error('This inmate ID and state already exist in your main NEXUS inmate directory.');
    if(nxpRows.some(x=>String(x.inmate_id||'').trim().toLowerCase()===id.toLowerCase()&&String(x.state||'').trim().toLowerCase()===state.toLowerCase()))throw Error('This inmate ID and state already exist in your Potential Profiles gallery.');
   }
   const obj={owner_id:user.id,source_ref_hash:h,full_name:fullName,inmate_id:id||null,state:state||null,facility:String(d.get('facility')||'').trim()||null,sex:'Male',institutional_email_provider:String(d.get('institutional_email_provider')),correspondence_preference:pref,introduction:String(d.get('introduction')||'').trim()||null,incarcerated_for:String(d.get('incarcerated_for')||'').trim()||null,notes:String(d.get('notes')||'').trim()||null};
@@ -4394,7 +4395,11 @@ $('content').addEventListener('submit',e=>{if(e.target.id==='nxpNewForm'){e.prev
 $('content').addEventListener('click',async e=>{
  const b=e.target.closest('[data-nxp-action],[data-nxp-upload],[data-nxp-primary]');if(!b)return;
  if(b.dataset.nxpAction){e.preventDefault();const a=b.dataset.nxpAction;
-  if(a==='new'){nxpFormOpen=true;nxpMessage='';render();document.getElementById('nxp-new-panel')?.scrollIntoView({behavior:'smooth'});}
+  if(a==='batch'){nxpBatchOpen=!nxpBatchOpen;nxpBatchSummary='';render();if(nxpBatchOpen)document.getElementById('nxp-batch-panel')?.scrollIntoView({behavior:'smooth'});}
+  else if(a==='parse-batch'){await nxpBatchPreview()}
+  else if(a==='save-batch'){await nxpBatchSave()}
+  else if(a==='close-batch'){nxpBatchOpen=false;nxpBatchDraft=[];render()}
+  else if(a==='new'){nxpFormOpen=true;nxpMessage='';render();document.getElementById('nxp-new-panel')?.scrollIntoView({behavior:'smooth'});}
   else if(a==='cancel'){nxpFormOpen=false;render()}
   else if(a==='refresh'){nxpMessage='';await nxpLoad()}
   return;
@@ -4410,6 +4415,7 @@ $('content').addEventListener('click',async e=>{
 });
 $('content').addEventListener('change',async e=>{
  const t=e.target;
+ if(t.matches('[data-nxp-select]')){const row=nxpBatchDraft[Number(t.dataset.nxpSelect)];if(row?.allowed)row.selected=t.checked;const b=document.querySelector('[data-nxp-action="save-batch"]');if(b)b.textContent='Save selected verified profiles ('+nxpBatchDraft.filter(x=>x.selected&&x.allowed).length+')';return;}
  if(t.matches('[data-nxp-photo-input]')){
   if(nxpBusy)return;nxpBusy=true;
   try{const {data:{user},error}=await nexusDB.auth.getUser();if(error||!user||user.id!==currentUserId)throw Error('Sign in again.');
@@ -4426,6 +4432,180 @@ $('content').addEventListener('change',async e=>{
 $('content').addEventListener('input',e=>{
  if(e.target.id==='nxpFilter'){const q=e.target.value.trim().toLowerCase();document.querySelectorAll('#nxpCards .nxp-profile').forEach(card=>{card.hidden=!card.dataset.nxpSearch.includes(q)})}
 });
+
+
+/* REVIEW-FIRST FIVE-PROFILE BATCH IMPORT
+   Reads user-provided CSV/JSON; never fetches an external site. Each record
+   is inspected against the permanent seen registry before a Supabase insert.
+*/
+function nxpBatchCsv(text){
+ const rows=[],record=[];let cell='',inQuotes=false;
+ for(let i=0;i<text.length;i++){
+  const c=text[i];
+  if(c==='"'){
+   if(inQuotes&&text[i+1]==='"'){cell+='"';i++}else inQuotes=!inQuotes;
+  }else if(c===','&&!inQuotes){record.push(cell);cell=''}
+  else if((c==='\n'||c==='\r')&&!inQuotes){
+   if(c==='\r'&&text[i+1]==='\n')i++;
+   record.push(cell);cell='';if(record.some(x=>String(x).trim()))rows.push(record.splice(0));else record.length=0;
+  }else cell+=c;
+ }
+ if(inQuotes)throw Error('CSV has an unclosed quoted field.');
+ if(cell||record.length){record.push(cell);rows.push(record)}
+ if(rows.length<2)return [];
+ const headers=rows.shift().map(h=>String(h).replace(/^\uFEFF/,'').trim());
+ return rows.map(row=>Object.fromEntries(headers.map((key,i)=>[key,row[i]??''])));
+}
+function nxpBatchAttr(obj,...names){
+ const lowered={};Object.entries(obj||{}).forEach(([k,v])=>{lowered[k.toLowerCase().replace(/[^a-z0-9]/g,'')]=v});
+ for(const n of names){const v=lowered[n.toLowerCase().replace(/[^a-z0-9]/g,'')];if(v!==undefined&&v!==null&&String(v).trim())return String(v).trim()}
+ return '';
+}
+function nxpBatchParsePreference(raw){
+ const p=String(raw||'').trim().toLowerCase().replace(/[\s-]+/g,'_');
+ if(!p||p==='not_specified'||p==='unknown'||p==='n/a'||p==='not_listed')return 'not_specified';
+ if(['women','woman','female','women_only','females_only'].includes(p))return 'women_only';
+ if(['men','man','male','men_only','males_only'].includes(p))return 'men';
+ if(p==='anyone'||p==='everyone'||p==='all')return 'anyone';
+ if(['men_and_women','men_&_women','women_and_men','both','male_and_female'].includes(p))return 'men_and_women';
+ return 'unknown';
+}
+function nxpBatchParsePhotos(raw){
+ if(Array.isArray(raw))return raw.map(x=>String(x).trim()).filter(Boolean);
+ return String(raw||'').split(/[|;]/).map(x=>x.trim()).filter(Boolean);
+}
+function nxpBatchNormalize(raw){
+ const r={
+  source: nxpBatchAttr(raw,'source_ref','source_id','source_identifier','profile_source','source'),
+  sex: nxpBatchAttr(raw,'sex','gender'),
+  full_name: nxpBatchAttr(raw,'full_name','name','legal_name'),
+  inmate_id: nxpBatchAttr(raw,'inmate_id','doc_number','inmate_number','number'),
+  state: nxpBatchAttr(raw,'state','incarcerated_state'),
+  facility: nxpBatchAttr(raw,'facility','prison'),
+  institutional_email_provider: nxpBatchAttr(raw,'institutional_email_provider','email_provider','institutional_email'),
+  preference: nxpBatchParsePreference(nxpBatchAttr(raw,'correspondence_preference','interested_in_corresponding_with','preference')),
+  introduction: nxpBatchAttr(raw,'introduction','description','about','message'),
+  incarcerated_for: nxpBatchAttr(raw,'incarcerated_for','crime','incarceration'),
+  charges: nxpBatchAttr(raw,'charges','charge'),
+  photos: nxpBatchParsePhotos(raw.photos??raw.photo_files??raw.photo_filenames??raw.photo??''),
+ };
+ const prov=r.institutional_email_provider.toLowerCase();
+ r.provider=prov.includes('jpay')?'JPay':prov.includes('securus')?'Securus':'';
+ r.hash='';r.reason='';r.allowed=false;r.selected=false;
+ return r;
+}
+function nxpBatchSection(){
+ if(!nxpBatchOpen)return '';
+ const rows=nxpBatchDraft.map((r,i)=>{
+  const label=r.reason?`<span style="color:${r.reason==='Women only'?'#db9ca2':'#edc1a0'}">${nxpSafe(r.reason)}</span>`:'<span style="color:#93d4b8">Eligible</span>';
+  return `<tr><td><input type="checkbox" data-nxp-select="${i}" ${r.selected?'checked':''} ${r.allowed?'':'disabled'} aria-label="Include ${nxpSafe(r.full_name)}"></td><td>${nxpSafe(r.full_name||'(missing)')}<small style="display:block;color:#9da7b8">${nxpSafe(r.inmate_id||'No inmate ID')} · ${nxpSafe(r.state||'No state')}</small></td><td>${nxpSafe(r.provider||'Unrecognized')}</td><td>${nxpSafe(r.preference.replaceAll('_',' '))}</td><td>${r.photos.length?nxpSafe(r.photos.join(', ')):'None listed'}</td><td>${label}</td></tr>`;
+ }).join('');
+ return `<div class="nxp-card" id="nxp-batch-panel" style="margin-bottom:18px">
+ <h2>Import reviewed profiles · Up to 5</h2>
+ <p>Upload a CSV or JSON list of profiles you selected, plus any authorized photographs. NEXUS checks male sex, JPay/Securus, correspondence preferences, existing inmate IDs, and the permanent seen registry. No third-party site is accessed.</p>
+ <div class="nxp-form">
+  <div class="nxp-field wide"><label for="nxpBatchFile">Profile list (.csv or .json)</label><input type="file" id="nxpBatchFile" accept=".csv,.json,text/csv,application/json" style="display:block;padding-top:6px"></div>
+  <div class="nxp-field wide"><label for="nxpBatchPhotos">Photos named in the list (optional; JPEG, PNG, WEBP)</label><input type="file" id="nxpBatchPhotos" accept="image/png,image/jpeg,image/webp" multiple style="display:block;padding-top:6px"><span class="nxp-file-note">Use exact filenames from the photos column, separated by |, or a JSON photo array. Files marked on a profile must be supplied before it can be saved.</span></div>
+  <div class="nxp-field wide"><div class="nxp-actions"><button type="button" class="nxp-btn" data-nxp-action="parse-batch" ${nxpBatchBusy?'disabled':''}>Preview and check duplicates</button><button type="button" class="nxp-btn" data-nxp-action="close-batch">Close</button></div></div>
+ </div>
+ ${nxpBatchSummary?`<p role="status" style="margin:12px 0;color:#cbd5e1">${nxpSafe(nxpBatchSummary)}</p>`:''}
+ ${rows?`<div style="overflow-x:auto"><table style="width:100%;font-size:12px;min-width:660px;border-collapse:collapse"><thead><tr style="color:#aab5c2;text-align:left"><th>Save</th><th>Name / ID</th><th>Email</th><th>Preference</th><th>Photos</th><th>Result</th></tr></thead><tbody>${rows}</tbody></table></div><div class="nxp-actions" style="margin-top:12px"><button type="button" class="nxp-btn primary" data-nxp-action="save-batch" ${nxpBatchBusy?'disabled':''}>Save selected verified profiles (${nxpBatchDraft.filter(x=>x.selected&&x.allowed).length})</button></div>`:''}
+ </div>`;
+}
+async function nxpBatchPreview(){
+ if(nxpBatchBusy)return;nxpBatchBusy=true;
+ const file=document.getElementById('nxpBatchFile')?.files?.[0];
+ const images=[...(document.getElementById('nxpBatchPhotos')?.files||[])];
+ try{
+  if(!file)throw Error('Select a CSV or JSON profile list first.');
+  if(file.size>2_000_000)throw Error('Profile list is too large (2 MB limit).');
+  const text=await file.text();
+  let input;
+  if(file.name.toLowerCase().endsWith('.json')){
+   const json=JSON.parse(text);input=Array.isArray(json)?json:json?.profiles;
+  }else if(file.name.toLowerCase().endsWith('.csv'))input=nxpBatchCsv(text);
+  else throw Error('Select .json or .csv.');
+  if(!Array.isArray(input)||!input.length||input.length>100)throw Error('Include 1 to 100 candidate rows.');
+  const {data:{user},error:authError}=await nexusDB.auth.getUser();
+  if(authError||!user||user.id!==currentUserId)throw Error('Sign in to NEXUS first.');
+  if(!nxpLoaded)await nxpLoad();
+  const drafts=input.map(nxpBatchNormalize);
+  const seenSourceHashes=new Set(),seenInmateKeys=new Set();
+  const fileMap=new Map(images.map(f=>[f.name.trim().toLowerCase(),f]));
+  for(const r of drafts){
+   if(!r.source){r.reason='Missing source ID';continue}
+   r.hash=await nxpHash('writeaprisoner:'+r.source);
+   if(seenSourceHashes.has(r.hash)){r.reason='Repeated in this file';continue}
+   seenSourceHashes.add(r.hash);
+   if(r.sex.toLowerCase()!=='male'){r.reason='Not verified male';continue}
+   if(!r.provider){r.reason='Not JPay/Securus';continue}
+   if(r.preference==='women_only'){r.reason='Women only';continue}
+   if(r.preference==='unknown'){r.reason='Unclear preference — review';continue}
+   if(!r.full_name||!r.inmate_id||!r.state){r.reason='Missing name, ID, or state';continue}
+   const key=r.state.trim().toLowerCase()+'|'+r.inmate_id.trim().toLowerCase();
+   if(seenInmateKeys.has(key)){r.reason='Repeated inmate ID in this file';continue}
+   seenInmateKeys.add(key);
+   if(profiles.some(p=>String(p.inmate_id||'').toLowerCase()===r.inmate_id.toLowerCase()&&String(p.state||'').toLowerCase()===r.state.toLowerCase())){r.reason='Already in main NEXUS';continue}
+   if(nxpRows.some(p=>String(p.inmate_id||'').toLowerCase()===r.inmate_id.toLowerCase()&&String(p.state||'').toLowerCase()===r.state.toLowerCase())){r.reason='Already in Potential Profiles';continue}
+   if(r.photos.some(name=>!fileMap.has(name.toLowerCase()))){r.reason='Listed photo file missing';continue}
+   if(r.photos.some(name=>!['image/png','image/jpeg','image/webp'].includes(fileMap.get(name.toLowerCase())?.type)||fileMap.get(name.toLowerCase()).size>10485760)){r.reason='Invalid photo (type/size)';continue}
+   r.allowed=true;r.selected=true;
+  }
+  const hashes=drafts.map(r=>r.hash).filter(Boolean);
+  for(let i=0;i<hashes.length;i+=75){
+   const {data,error}=await nexusDB.from('nexus_potential_seen').select('source_ref_hash,review_status').eq('owner_id',user.id).in('source_ref_hash',hashes.slice(i,i+75));
+   if(error)throw error;
+   const processed=new Map((data||[]).map(x=>[x.source_ref_hash,x.review_status]));
+   drafts.forEach(r=>{if(processed.has(r.hash)){r.reason='Already processed: '+processed.get(r.hash);r.allowed=false;r.selected=false}});
+  }
+  // Make Women-only exclusions permanent as soon as they are reviewed.
+  // This stores only an anonymous source fingerprint, not the inmate's content.
+  let excludedRegistered=0;
+  for(const r of drafts.filter(r=>r.reason==='Women only'&&r.hash)){
+   const {error}=await nexusDB.from('nexus_potential_seen').upsert({owner_id:user.id,source_ref_hash:r.hash,review_status:'skipped_women_only',reviewed_at:new Date().toISOString()},{onConflict:'owner_id,source_ref_hash',ignoreDuplicates:true});
+   if(error)throw Error('Unable to permanently track a Women-only exclusion: '+error.message);
+   excludedRegistered++;
+  }
+  nxpBatchDraft=drafts;nxpBatchAttachments=images;
+  nxpBatchSummary=`Reviewed ${drafts.length} entries: ${drafts.filter(r=>r.allowed).length} eligible and new; ${excludedRegistered} women-only exclusions permanently remembered; ${drafts.filter(r=>r.reason&&r.reason!=='Women only').length} other exclusions. Up to ${5-nxpBatchCount} can be saved this session.`;
+ }catch(err){nxpBatchDraft=[];nxpBatchAttachments=[];nxpBatchSummary='Import check failed: '+(err.message||err)}
+ finally{nxpBatchBusy=false;render()}
+}
+async function nxpBatchSave(){
+ if(nxpBatchBusy)return;
+ nxpBatchBusy=true;let saved=0,photos=0,failures=[];
+ try{
+  const {data:{user},error:authError}=await nexusDB.auth.getUser();
+  if(authError||!user||user.id!==currentUserId)throw Error('Sign in again.');
+  const remaining=Math.max(0,5-nxpBatchCount);
+  const selected=nxpBatchDraft.filter(r=>r.allowed&&r.selected).slice(0,remaining);
+  if(!selected.length)throw Error('No eligible profiles selected or this session has already saved five.');
+  const fileMap=new Map(nxpBatchAttachments.map(f=>[f.name.toLowerCase(),f]));
+  for(const r of selected){
+   try{
+    // Re-check permanent registry just before writing.
+    const {data:existing,error:existError}=await nexusDB.from('nexus_potential_seen').select('id').eq('owner_id',user.id).eq('source_ref_hash',r.hash).maybeSingle();
+    if(existError)throw existError;if(existing)throw Error('Previously processed source');
+    // The database enforces the state+inmate unique index to cover concurrent edits.
+    const obj={owner_id:user.id,source_ref_hash:r.hash,full_name:r.full_name,inmate_id:r.inmate_id,state:r.state,facility:r.facility||null,sex:'Male',institutional_email_provider:r.provider,correspondence_preference:r.preference,introduction:r.introduction||null,incarcerated_for:r.incarcerated_for||null,charges:r.charges||null};
+    const {data:profile,error}=await nexusDB.from('nexus_potential_profiles').insert(obj).select('id').single();
+    if(error)throw error;
+    nxpBatchCount++;saved++;
+    const {error:seenError}=await nexusDB.from('nexus_potential_seen').insert({owner_id:user.id,source_ref_hash:r.hash,review_status:'saved'});
+    if(seenError)failures.push(r.full_name+': seen registry not updated ('+seenError.message+')');
+    const attach=r.photos.map(name=>fileMap.get(name.toLowerCase())).filter(Boolean);
+    if(attach.length){
+     try{const result=await nxpUploadPhotos(user.id,profile.id,attach);photos+=result.added}
+     catch(photoErr){failures.push(r.full_name+': photo upload incomplete ('+photoErr.message+'). Use Add photos in the gallery.')}
+    }
+    r.allowed=false;r.selected=false;r.reason='Saved to NEXUS';
+   }catch(err){failures.push(r.full_name+': '+(err.message||err));r.allowed=false;r.selected=false;r.reason='Save failed — review';}
+  }
+  nxpBatchSummary=`Saved ${saved} new profile(s) with ${photos} photograph(s). Women-only exclusions were recorded during preview. ${failures.length?failures.join(' | '):'No errors.'}`;
+  await nxpLoad();
+ }catch(err){nxpBatchSummary='Could not save batch: '+(err.message||err)}
+ finally{nxpBatchBusy=false;render()}
+}
 
 function render(){const names={potentialProfiles:'Potential Profiles',financialHub:'Financial Center',conversationImport:'Import Text Conversation',bulkIntake:'Bulk Registration',pendingIntake:'Pending Intake',dashboard:'Command Dashboard',profiles:'Inmate Profiles',register:'Inmate Registration',detail:'Inmate Master Record',personal:'Inmate Personal File',facilities:'Facilities',records:'Records',search:'Search',reports:'Reports',settings:'Settings'};$('pageTitle').textContent=names[view]||'NEXUS';const currentSection=document.getElementById('nxCurrentSection');if(currentSection)currentSection.textContent=(names[view]||'NEXUS').toUpperCase();document.querySelectorAll('.nav').forEach(b=>b.classList.toggle('active',b.dataset.view===view));let html='';if(view==='potentialProfiles'){html=nxpPage();}else if(view==='dashboard'){html=nexusDashboard();}else if(view==='profiles'){html=`<section class="nx-apple-directory"><div class="nx-apple-heading"><div><div class="nx-apple-eyebrow">WORKSPACE / INSTITUTIONAL RECORDS</div><h1>Inmate Profiles</h1><p>Secure directory · BLACKCELL corporate records</p></div><button class="btn nx-apple-new" data-view="register">＋ New Profile</button></div><div class="nx-apple-stats"><div><span>TOTAL PROFILES</span><strong>${profiles.length}</strong><small>Registered records</small></div><div><span>ACTIVE RECORDS</span><strong>${profiles.filter(p=>String(p.status||'').toLowerCase()==='active').length}</strong><small>Currently active</small></div><div><span>STATES</span><strong>${new Set(profiles.map(p=>p.state).filter(Boolean)).size}</strong><small>Represented</small></div></div><div class="nx-apple-toolbar"><input id="searchBox" placeholder="Search name, inmate ID, state, facility, or unit…" aria-label="Search inmate profiles" value="${esc(filter)}"><div class="nx-apple-segment"><button type="button" data-nx-directory-mode="grid" class="selected">▦ Grid</button><button type="button" data-nx-directory-mode="list">☷ List</button></div><button class="btn alt" id="toggleArchive">${showArchive?'Show Current Inmates':'View Archive'}</button></div><div class="nx-apple-section-title">${showArchive?'Archived Profiles':'All Profiles'}</div><div id="profileResults">${profileCards(profiles.filter(p=>(showArchive?p.status==='Archive':p.status!=='Archive')&&[p.id,p.first,p.last,p.state,p.facility,p.unit].join(' ').toLowerCase().includes(filter.toLowerCase())).sort((a,b)=>(a.last||'').localeCompare(b.last||'')))}</div></section>`;}else if(view==='register')html=registration();else if(view==='detail'){html=detail();const rec=find(detailId);if(rec&&String(rec.status||'').toLowerCase()==='blocked')html='<div class="nx-blocked-alert"><div class="nx-hazard-bar"></div><strong>BLOCKED PROFILE — Restricted record</strong><p>Review the block reason before taking further action. Viewing this record does not authorize contact or processing.</p></div>'+html;}else if(view==='personal')html=personalPage();else if(view==='financialHub'){
  try{html=financialHub();}
