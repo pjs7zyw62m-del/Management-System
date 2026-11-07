@@ -5240,7 +5240,7 @@ captureRows();const id=String(fd.get('id')||'').trim();if(!id){alert('Inmate ID 
 } catch (err) {
   showMasterSaveError('Master Record was not saved to Supabase: ' + err.message);
   return;
-}if(old){const idx=profiles.indexOf(old);profiles[idx]=p;if(editId!==id&&personal[editId]){personal[id]=personal[editId];delete personal[editId];savePersonal()}}else profiles.push(p);if(saveProfiles()){if(nxPendingTransferId){const remaining=nexusPendingItems().filter(x=>x.uid!==nxPendingTransferId);if(!store(NX_PENDING_KEY,remaining))console.warn('Intake queue cleanup did not persist; profile saved, intake retained for reconciliation');nxPendingTransferId=null;nexusPendingRegistrationDraft=null;window.nxPendingPhotoTransferRequired=false;window.nxPendingOriginalPhotoPath=null;}detailId=id;editId=null;nexusBlankReregId=null;photoData='';selectedPhotoFile=null;tableRows={};go('detail');alert('Master Record saved successfully, including all entered section rows.')}
+}if(old){const idx=profiles.indexOf(old);profiles[idx]=p;if(editId!==id&&personal[editId]){personal[id]=personal[editId];delete personal[editId];savePersonal()}}else profiles.push(p);if(saveProfiles()){if(nxPendingTransferId){const confirmedIntakeUid=nxPendingTransferId;const remaining=nexusPendingItems().filter(x=>x.uid!==nxPendingTransferId);const cleaned=store(NX_PENDING_KEY,remaining);if(!cleaned)console.warn('Intake queue cleanup did not persist; profile saved, intake retained for reconciliation');if(cleaned){Promise.resolve(nexusCloudWriteQueue).then(()=>{if(!nexusCloudWriteFailed && typeof window.nxUpdateIntakeNotificationStage==='function')window.nxUpdateIntakeNotificationStage(confirmedIntakeUid,'completed','Registered profile saved and cloud queue completed')}).catch(err=>{if(typeof window.nxUpdateIntakeNotificationStage==='function')window.nxUpdateIntakeNotificationStage(confirmedIntakeUid,'failed','Cloud sync unsuccessful: '+String(err.message||err))})}nxPendingTransferId=null;nexusPendingRegistrationDraft=null;window.nxPendingPhotoTransferRequired=false;window.nxPendingOriginalPhotoPath=null;}detailId=id;editId=null;nexusBlankReregId=null;photoData='';selectedPhotoFile=null;tableRows={};go('detail');alert('Master Record saved successfully, including all entered section rows.')}
   }catch(error){showMasterSaveError('Unexpected save error: '+(error?.message||String(error)))}
   finally{if(button?.isConnected){button.disabled=false;button.textContent='SAVE MASTER RECORD'}}
 }
@@ -6134,19 +6134,77 @@ document.addEventListener('keydown',function(e){const root=document.getElementBy
 
 <script id="nx-apple-notification-center">
 (()=>{'use strict';
-const storageKey='nx-apple-reminders-v1';
-let reminders={deposit:false,communications:false};
-try{reminders={...reminders,...JSON.parse(localStorage.getItem(storageKey)||'{}')}}catch(e){}
+const intakeStages=new Map();
+let activeIntake=null;
+const dateTime=t=>t?new Date(t).toLocaleString():'';
 const bell=document.getElementById('bell');if(!bell)return;
 const escapeHTML=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pendingCount=()=>{try{const c=document.querySelector('.nx-pending-page .nxa-stat strong');if(c)return Number(c.textContent)||0;let n=0;for(const key of Object.keys(localStorage)){if(/pending.*intake/i.test(key)){const data=JSON.parse(localStorage.getItem(key));if(Array.isArray(data))n=Math.max(n,data.length)}}return n}catch(e){return 0}};
 let rows=[],userId=null,channel=null,working=false,loadGeneration=0,loadError='',lastFocus=null,activeFilter='all';
 const layer=document.createElement('div');layer.className='nx-alert-layer';layer.hidden=true;
-layer.innerHTML='<div class="nx-alert-backdrop" data-nx-alert-close></div><section class="nx-alert-panel" role="dialog" aria-modal="true" aria-labelledby="nxAlertTitle" tabindex="-1"><div class="nx-alert-head"><div><small>BLACKCELL CORPORATION</small><h2 id="nxAlertTitle">Notifications</h2></div><button type="button" class="nx-alert-x" data-nx-alert-close aria-label="Close notifications">×</button></div><div id="nxAlertRows"></div><p class="nx-alert-foot">Cloud alerts sync across signed-in devices. Manual reminders are saved only on this device.</p></section>';
+layer.innerHTML='<div class="nx-alert-backdrop" data-nx-alert-close></div><section class="nx-alert-panel" role="dialog" aria-modal="true" aria-labelledby="nxAlertTitle" tabindex="-1"><div class="nx-alert-head"><div><small>BLACKCELL CORPORATION</small><h2 id="nxAlertTitle">Notifications</h2></div><button type="button" class="nx-alert-x" data-nx-alert-close aria-label="Close notifications">×</button></div><div id="nxAlertRows"></div><p class="nx-alert-foot">Core intake, communications and financial alerts are always enabled. Cloud notification history is retained under your account.</p></section>';
 document.body.appendChild(layer);
 const host=document.getElementById('nxAlertRows');
 const shellVisible=()=>!document.getElementById('shell')?.classList.contains('hidden');
-function update(){const n=rows.filter(r=>!r.is_read).length+pendingCount()+Number(reminders.deposit)+Number(reminders.communications);const badge=document.getElementById('nxAlertCount');if(badge){badge.hidden=!n;badge.textContent=n>99?'99+':String(n)}bell.setAttribute('aria-label',n+' outstanding NEXUS alerts')}
+function update(){const n=rows.filter(r=>!r.is_read).length;const badge=document.getElementById('nxAlertCount');if(badge){badge.hidden=!n;badge.textContent=n>99?'99+':String(n)}bell.setAttribute('aria-label',n+' outstanding NEXUS alerts')}
+function intakeCandidates(r){
+ const m=r.metadata&&typeof r.metadata==='object'?r.metadata:{};
+ const list=typeof nexusPendingItems==='function'?nexusPendingItems():[];
+ const exact=[m.pending_intake_uid,m.pending_intake_id,m.intake_uid,m.uid,r.source_id].filter(Boolean).map(String);
+ let found=list.filter(p=>exact.includes(String(p.uid)));
+ if(found.length===1)return found;
+ const ids=[m.inmate_id,m.inmateId,m.inmate_number].filter(Boolean).map(String);
+ if(ids.length){found=list.filter(p=>ids.includes(String(p.inmateId)));if(found.length===1)return found;}
+ // A name by itself is not a safe identity join; do not open the wrong intake.
+ return [];
+}
+function linkedIntake(r){const matches=intakeCandidates(r);return matches.length===1?matches[0]:null;}
+async function renderIntakeImages(){
+ for(const img of layer.querySelectorAll('img[data-nx-intake-photo]')){
+  const path=img.dataset.nxIntakePhoto;if(!path||typeof signedPhotoUrl!=='function')continue;
+  try{const url=await signedPhotoUrl(path);if(img.isConnected&&img.dataset.nxIntakePhoto===path)img.src=url;}
+  catch(e){img.hidden=true;img.nextElementSibling?.removeAttribute('hidden')}
+ }
+}
+function intakeStatus(r,p){
+ const id=String(p?.uid||r.source_id||r.id);
+ const st=intakeStages.get(id);
+ if(st)return st;
+ if(p)return {stage:'received',events:[['Intake received','Pending review']]};
+ const m=r.metadata&&typeof r.metadata==='object'?r.metadata:{};
+ const inmateId=m.inmate_id||m.inmateId;
+ if(inmateId&&typeof profiles!=='undefined'&&Array.isArray(profiles)&&profiles.some(x=>String(x.id)===String(inmateId)))
+   return {stage:'completed',events:[['Intake received','Previously received'],['Transfer completed','Registered inmate record found']]};
+ return {stage:'unknown',events:[['Notification received','Source intake could not be matched safely']]};
+}
+function setIntakeStage(id,stage,description){
+ const old=intakeStages.get(String(id))||{stage:'received',events:[['Intake received','Pending review']]};
+ const names={reviewed:'Intake reviewed',processing:'Transfer processing',completed:'Transfer completed',failed:'Transfer failed'};
+ old.stage=stage;old.events.push([names[stage]||stage,description+' · '+dateTime(Date.now())]);intakeStages.set(String(id),old);
+ if(activeIntake?.uid===String(id))showIntake(activeIntake.notice,activeIntake.record);
+ else if(!layer.hidden)draw();
+}
+window.nxUpdateIntakeNotificationStage=setIntakeStage;
+function showIntake(r,p){
+ activeIntake={notice:r,record:p,uid:String(p?.uid||r.source_id||r.id)};
+ const st=intakeStatus(r,p),name=p?[p.first,p.last].filter(Boolean).join(' '):r.title||'Pending intake';
+ const photo=p?(p.photoPath||(Array.isArray(p.photoPaths)?p.photoPaths[0]:null)):null;
+ const stages=['received','reviewed','processing','completed'];
+ const current=stages.indexOf(st.stage);
+ const timeline=st.events.map(([title,detail])=>`<li><strong>${escapeHTML(title)}</strong><small>${escapeHTML(detail)}</small></li>`).join('');
+ const completed=st.stage==='completed',processing=st.stage==='processing';
+ const transfer=p&&!completed&&!processing;
+ const detail=`<div class="nx-intake-head"><div class="nx-intake-photo">${photo?`<img data-nx-intake-photo="${escapeHTML(photo)}" alt="Intake photograph"/><span hidden>Photo unavailable</span>`:'<span>Photo not available</span>'}</div><div><h3>${escapeHTML(name)}</h3><p>${escapeHTML(p?.inmateId||'ID not supplied')} · ${escapeHTML(p?.state||'State unavailable')}</p><span class="nx-intake-status ${escapeHTML(st.stage)}">${escapeHTML(st.stage==='unknown'?'Needs verification':st.stage==='completed'?'Transfer completed':st.stage==='processing'?'Processing':st.stage==='failed'?'Transfer failed':st.stage==='reviewed'?'Reviewed':'Pending intake')}</span></div></div>
+ <div class="nx-intake-progress">${stages.map((x,i)=>`<span class="${i<=current?'done':''}">${escapeHTML(x)}</span>`).join('')}</div>
+ <h4>Intake activity timeline</h4><ol class="nx-intake-timeline">${timeline}</ol>
+ ${p?`<div class="nx-intake-notes"><b>Intake notes</b><p>${escapeHTML(p.notes||'No notes recorded.')}</p></div>`:'<p class="nx-intake-warning">This alert is not safely linked to an intake record. Open the intake queue to locate the correct person; no record will be guessed.</p>'}
+ <div class="nx-intake-actions">${p&&!completed&&st.stage==='received'?'<button type="button" data-nx-intake-review>Mark Reviewed</button>':''}${transfer?'<button type="button" class="nx-intake-primary" data-nx-intake-transfer>Transfer to Registered Inmates</button>':''}${completed?'<span class="nx-intake-success">✓ Registered inmate record confirmed</span>':''}<button type="button" data-nx-intake-back>Back to Notifications</button></div>`;
+ let modal=layer.querySelector('.nx-intake-detail');
+ if(!modal){modal=document.createElement('section');modal.className='nx-intake-detail';modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');modal.setAttribute('aria-label','Intake details');layer.appendChild(modal)}
+ modal.innerHTML=`<div class="nx-intake-detail-top"><div><small>BLACKCELL CORPORATION / NEXUS</small><h2>Pending Intake Details</h2></div><button type="button" aria-label="Close intake details" data-nx-intake-back>×</button></div>${detail}`;
+ modal.hidden=false;renderIntakeImages();modal.querySelector('button')?.focus();
+}
+function closeIntake(){const modal=layer.querySelector('.nx-intake-detail');if(modal)modal.hidden=true;activeIntake=null;layer.querySelector('.nx-alert-x')?.focus()}
 function draw(){
  const unread=rows.filter(r=>!r.is_read).length;
  const urgent=rows.filter(r=>!r.is_read&&['high','critical'].includes(String(r.priority||'').toLowerCase())).length;
@@ -6156,11 +6214,13 @@ function draw(){
    const category=String(r.category||'system').toLowerCase(),priority=String(r.priority||'normal').toLowerCase();
    const elevated=priority==='critical'||priority==='high',ico=symbols[category]||'✧';
    const date=r.created_at?new Date(r.created_at).toLocaleString():'';
-   return `<article class="nx-liquid-card ${r.is_read?'nx-liquid-read':'nx-liquid-unread'} ${elevated?'nx-liquid-urgent':''}" data-nx-open="${escapeHTML(r.id)}" role="button" tabindex="0" aria-label="Open ${escapeHTML(r.title)}"><div class="nx-liquid-icon" aria-hidden="true">${ico}</div><div class="nx-liquid-body"><div class="nx-liquid-name"><strong>${escapeHTML(r.title)}</strong>${!r.is_read?'<span class="nx-liquid-dot" aria-label="Unread"></span>':''}</div><small>${escapeHTML(r.category||'System')} · ${escapeHTML(date)}</small><p>${escapeHTML(r.message)}</p><div class="nx-liquid-card-foot"><span>View details <span aria-hidden="true">↗</span></span>${!r.is_read?`<button type="button" class="nx-liquid-read-button" data-nx-read="${escapeHTML(r.id)}" aria-label="Mark ${escapeHTML(r.title)} as read">Mark read</button>`:''}</div></div></article>`;
+   const linked=category==='intake'?linkedIntake(r):null;const path=linked?(linked.photoPath||(Array.isArray(linked.photoPaths)?linked.photoPaths[0]:null)):null;const status=category==='intake'?intakeStatus(r,linked):null;
+   return `<article class="nx-liquid-card ${r.is_read?'nx-liquid-read':'nx-liquid-unread'} ${elevated?'nx-liquid-urgent':''}" data-nx-open="${escapeHTML(r.id)}" role="button" tabindex="0" aria-label="Open ${escapeHTML(r.title)}"><div class="nx-liquid-icon" aria-hidden="true">${path?`<img data-nx-intake-photo="${escapeHTML(path)}" alt="${escapeHTML([linked.first,linked.last].filter(Boolean).join(' '))} photo"><span hidden>Photo unavailable</span>`:ico}</div><div class="nx-liquid-body"><div class="nx-liquid-name"><strong>${escapeHTML(linked?[linked.first,linked.last].filter(Boolean).join(' ')||r.title:r.title)}</strong>${!r.is_read?'<span class="nx-liquid-dot" aria-label="Unread"></span>':''}</div><small>${escapeHTML(r.category||'System')} · ${escapeHTML(date)}</small><p>${escapeHTML(r.message)}</p>${status?`<span class="nx-intake-mini-status">${escapeHTML(status.stage==='completed'?'Transfer completed':status.stage==='processing'?'Transfer processing':status.stage==='failed'?'Transfer failed':status.stage==='reviewed'?'Reviewed — awaiting registration':status.stage==='unknown'?'Intake record needs verification':'Awaiting review')}</span>`:''}<div class="nx-liquid-card-foot"><span>View details <span aria-hidden="true">↗</span></span>${!r.is_read?`<button type="button" class="nx-liquid-read-button" data-nx-read="${escapeHTML(r.id)}" aria-label="Mark ${escapeHTML(r.title)} as read">Mark read</button>`:''}</div></div></article>`;
  }).join('');
  const empty=activeFilter==='unread'?'You’re all caught up.':activeFilter==='activity'?'No read notifications yet.':'No cloud notifications yet.';
  const tabs=[['all','All'],['unread','Unread'],['activity','Activity']].map(([id,title])=>`<button type="button" data-nx-filter="${id}" class="${activeFilter===id?'nx-liquid-tab-active':''}" aria-pressed="${activeFilter===id}">${title}</button>`).join('');
- host.innerHTML=`<div class="nx-liquid-summary"><div><span class="nx-liquid-num">${unread}</span><div class="nx-liquid-muted">Unread notifications</div></div><div class="nx-liquid-summary-actions">${urgent?`<span class="nx-liquid-priority">${urgent} priority</span>`:''}${unread?'<button type="button" data-nx-read-all class="nx-liquid-read-all">Mark all as read</button>':''}</div></div><div class="nx-liquid-tabs" role="group" aria-label="Filter notifications">${tabs}</div>${loadError?`<p role="alert" class="nx-liquid-error">${escapeHTML(loadError)}</p>`:''}<div class="nx-liquid-feed">${items||`<div class="nx-liquid-empty"><span aria-hidden="true">✓</span><strong>${empty}</strong><small>New alerts will appear here automatically.</small></div>`}</div><div class="nx-liquid-divider-title">Quick access</div><button type="button" class="nx-liquid-quick" data-nx-go="pendingIntake"><span class="nx-liquid-quick-icon">▤</span><span><strong>Pending Intakes</strong><small>${pendingCount()?pendingCount()+' records awaiting attention':'Open intake queue'}</small></span><span aria-hidden="true">›</span></button><details class="nx-liquid-reminders"><summary>Manual reminders <span aria-hidden="true">⌄</span></summary><label><span>Deposit funds review</span><input type="checkbox" data-nx-remind="deposit" ${reminders.deposit?'checked':''}></label><label><span>Communications review</span><input type="checkbox" data-nx-remind="communications" ${reminders.communications?'checked':''}></label></details>`;
+ host.innerHTML=`<div class="nx-liquid-summary"><div><span class="nx-liquid-num">${unread}</span><div class="nx-liquid-muted">Unread notifications</div></div><div class="nx-liquid-summary-actions">${urgent?`<span class="nx-liquid-priority">${urgent} priority</span>`:''}${unread?'<button type="button" data-nx-read-all class="nx-liquid-read-all">Mark all as read</button>':''}</div></div><div class="nx-liquid-tabs" role="group" aria-label="Filter notifications">${tabs}</div>${loadError?`<p role="alert" class="nx-liquid-error">${escapeHTML(loadError)}</p>`:''}<div class="nx-liquid-feed">${items||`<div class="nx-liquid-empty"><span aria-hidden="true">✓</span><strong>${empty}</strong><small>New alerts will appear here automatically.</small></div>`}</div><div class="nx-liquid-divider-title">Quick access</div><button type="button" class="nx-liquid-quick" data-nx-go="pendingIntake"><span class="nx-liquid-quick-icon">▤</span><span><strong>Pending Intakes</strong><small>${pendingCount()?pendingCount()+' records awaiting attention':'Open intake queue'}</small></span><span aria-hidden="true">›</span></button><div class="nx-required-alerts">Always enabled: Pending Intake Follow-ups · Communications · Financial Requests</div>`;
+ renderIntakeImages();
 }
 async function reset(){loadGeneration++;userId=null;rows=[];loadError='';update();if(channel){const c=channel;channel=null;try{await nexusDB.removeChannel(c)}catch(e){console.warn('NEXUS notification channel cleanup',e)}}if(!layer.hidden)close()}
 async function refresh(){if(!userId||!shellVisible())return;const g=loadGeneration,id=userId;
@@ -6178,7 +6238,7 @@ async function openNotification(id){
  const cat=String(r.category||'').toLowerCase(),source=String(r.source_type||'').toLowerCase();
  const meta=r.metadata&&typeof r.metadata==='object'?r.metadata:{};
  let target='dashboard',inmateId=null;
- if(cat==='intake'){target='pendingIntake'}
+ if(cat==='intake'){if(!r.is_read)markRead([r.id]);showIntake(r,linkedIntake(r));return}
  else if(cat==='financial'||source.startsWith('nexus_fin_')){target='financialHub'}
  else if(cat==='communications'){
    target='profiles';if(meta.inmate_id!=null)inmateId=String(meta.inmate_id);
@@ -6199,12 +6259,12 @@ async function openNotification(id){
  if(window.location.hash===destination){window.dispatchEvent(new HashChangeEvent('hashchange'))}
  else window.location.hash=destination;
 }
-function close(){layer.hidden=true;(lastFocus?.isConnected?lastFocus:bell).focus()}
+function close(){closeIntake();layer.hidden=true;(lastFocus?.isConnected?lastFocus:bell).focus()}
 bell.addEventListener('click',async()=>{if(!shellVisible())return;lastFocus=document.activeElement;layer.hidden=false;draw();layer.querySelector('.nx-alert-x').focus();await start();await refresh()});
-layer.addEventListener('click',e=>{if(e.target.closest('[data-nx-alert-close]')){close();return}const open=e.target.closest('[data-nx-open]');if(open){openNotification(open.dataset.nxOpen);return}const read=e.target.closest('[data-nx-read]');if(read){markRead([read.dataset.nxRead]);return}if(e.target.closest('[data-nx-read-all]')){markRead(rows.filter(r=>!r.is_read).map(r=>r.id));return}const filter=e.target.closest('[data-nx-filter]');if(filter){activeFilter=filter.dataset.nxFilter;draw();return}const go=e.target.closest('[data-nx-go]');if(go){const nav=document.querySelector(`.sidebar .nav[data-view="${go.dataset.nxGo}"]`);if(nav){close();nav.click()}}});
+layer.addEventListener('click',e=>{if(e.target.closest('[data-nx-intake-back]')){closeIntake();return}if(e.target.closest('[data-nx-intake-review]')&&activeIntake?.record){setIntakeStage(activeIntake.uid,'reviewed','Intake reviewed; registration still pending');return}if(e.target.closest('[data-nx-intake-transfer]')&&activeIntake?.record){const record=activeIntake.record;close();Promise.resolve(nxPendingTransfer(record.uid)).then(()=>{if(typeof nxPendingTransferId!=='undefined'&&String(nxPendingTransferId)===String(record.uid)){setIntakeStage(record.uid,'processing','Registration form opened; awaiting successful save')}else{setIntakeStage(record.uid,'failed','Transfer could not begin. Intake remains pending')}}).catch(err=>{setIntakeStage(record.uid,'failed',String(err.message||err))});return}if(e.target.closest('[data-nx-alert-close]')){close();return}const open=e.target.closest('[data-nx-open]');if(open){openNotification(open.dataset.nxOpen);return}const read=e.target.closest('[data-nx-read]');if(read){markRead([read.dataset.nxRead]);return}if(e.target.closest('[data-nx-read-all]')){markRead(rows.filter(r=>!r.is_read).map(r=>r.id));return}const filter=e.target.closest('[data-nx-filter]');if(filter){activeFilter=filter.dataset.nxFilter;draw();return}const go=e.target.closest('[data-nx-go]');if(go){const nav=document.querySelector(`.sidebar .nav[data-view="${go.dataset.nxGo}"]`);if(nav){close();nav.click()}}});
 layer.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-nx-open]')){e.preventDefault();openNotification(e.target.dataset.nxOpen)}});
-layer.addEventListener('change',e=>{const k=e.target.dataset.nxRemind;if(k){reminders[k]=e.target.checked;try{localStorage.setItem(storageKey,JSON.stringify(reminders))}catch(e){}update()}});
-document.addEventListener('keydown',e=>{if(layer.hidden)return;if(e.key==='Escape'){e.preventDefault();close()}if(e.key==='Tab'){const focusables=[...layer.querySelectorAll('button,input')].filter(el=>!el.disabled);if(!focusables.length)return;const first=focusables[0],last=focusables[focusables.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}});
+
+document.addEventListener('keydown',e=>{if(layer.hidden)return;if(e.key==='Escape'){e.preventDefault();if(activeIntake)closeIntake();else close()}if(e.key==='Tab'){const focusRoot=activeIntake?layer.querySelector('.nx-intake-detail'):layer.querySelector('.nx-alert-panel');const focusables=[...focusRoot.querySelectorAll('button,input')].filter(el=>!el.disabled);if(!focusables.length)return;const first=focusables[0],last=focusables[focusables.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}});
 new MutationObserver(()=>{update();if(shellVisible())start();else if(userId)reset()}).observe(document.getElementById('shell'),{attributes:true,attributeFilter:['class']});
 new MutationObserver(update).observe(document.getElementById('content'),{childList:true,subtree:false});
 nexusDB.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT')queueMicrotask(()=>reset())});
@@ -6392,5 +6452,30 @@ if(shellVisible())start();update();
 #nx26-overlay .nx26-confirm{background:#121923ed;border:1px solid #cbd3df55;border-radius:16px;box-shadow:0 18px 65px #000a;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(420px,90vw);padding:23px;z-index:5}
 @media(max-width:900px){#shell #content .nx26-grid,#shell #content .nx26-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}#shell #content .nx26-split{grid-template-columns:1fr}}
 @media(max-width:560px){#shell #content .nx26-spot{grid-template-columns:102px 1fr;gap:12px}#shell #content .nx26-spot h3{font-size:19px}#nx26-overlay .nx26-fields,#nx26-overlay .nx26-cols{grid-template-columns:1fr}#nx26-overlay .nx26-dialog-body{padding:13px}#nx26-overlay .nx26-dialog-head{padding:14px}#nx26-overlay .nx26-dossier-tabs{padding:8px}#nx26-overlay .nx26-tab{font-size:10px;padding:9px}}
+</style>
+
+<style id="nexus-approved-notification-modal-patch">
+.nx-alert-layer{justify-content:center!important;align-items:center!important;padding:20px!important}
+.nx-alert-panel{width:min(930px,96vw)!important;max-width:930px!important;height:min(790px,90dvh)!important;max-height:90dvh!important;overflow:auto!important;border-radius:26px!important;border:1px solid #ffffff34!important;padding:28px!important;box-shadow:0 35px 110px #000c!important;animation:nxCenteredAlert .24s ease-out both!important}
+@keyframes nxCenteredAlert{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+@media(max-width:620px){.nx-alert-layer{padding:10px!important;align-items:center!important}.nx-alert-panel{height:min(94dvh,850px)!important;max-height:94dvh!important;border-radius:20px!important;padding:19px!important}}
+.nx-liquid-icon img{height:100%;width:100%;object-fit:cover;border-radius:13px}
+.nx-intake-mini-status{display:inline-block;font-size:11px;color:#cbd9eb;background:#ffffff13;padding:6px 10px;border-radius:999px;margin-top:3px}
+.nx-required-alerts{font-size:11px;color:#aeb9c9;padding:14px 10px;line-height:1.6}
+.nx-intake-detail[hidden]{display:none!important}
+.nx-alert-layer:has(.nx-intake-detail:not([hidden])) .nx-alert-panel{filter:brightness(.6);pointer-events:none}
+.nx-intake-detail{position:absolute;z-index:10;top:50%;left:50%;transform:translate(-50%,-50%);width:min(680px,calc(100% - 28px));max-height:86dvh;overflow:auto;border-radius:25px;background:linear-gradient(150deg,#333844,#1b202a 55%,#11151d);border:1px solid #ffffff40;box-shadow:0 22px 100px #000e;padding:26px;color:#f4f5fa}
+.nx-intake-detail:before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none}
+.nx-intake-detail-top{display:flex;justify-content:space-between;align-items:start;gap:12px;margin-bottom:20px}
+.nx-intake-detail-top small{font-size:10px;letter-spacing:2px;color:#b4bbc9}.nx-intake-detail-top h2{font-size:24px;margin:7px 0}
+.nx-intake-detail-top button{width:35px;height:35px;flex:none;border-radius:50%;background:#ffffff15;border:1px solid #ffffff29;color:white;font-size:22px}
+.nx-intake-head{display:flex;gap:17px;align-items:center}.nx-intake-head h3{margin:0;font-size:23px}.nx-intake-head p{color:#a9b5c4;font-size:13px}
+.nx-intake-photo{width:112px;height:132px;flex:none;display:flex;justify-content:center;align-items:center;text-align:center;border:1px solid #ffffff35;border-radius:15px;background:#202833;color:#9ea9ba;font-size:12px;overflow:hidden}.nx-intake-photo img{width:100%;height:100%;object-fit:cover}
+.nx-intake-status{display:inline-block;background:#47556a;padding:7px 11px;border-radius:100px;font-size:11px}.nx-intake-status.completed{background:#1b684a}.nx-intake-status.failed{background:#7e303b}.nx-intake-status.processing{background:#315b7c}
+.nx-intake-progress{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:23px 0 20px}.nx-intake-progress span{padding:9px 4px;font-size:10px;text-align:center;border-radius:9px;border:1px solid #ffffff26;color:#9ba6b5;text-transform:capitalize}.nx-intake-progress .done{border-color:#94a2b4;background:#ffffff18;color:#fff}
+.nx-intake-detail h4{font-size:14px;margin:15px 0}.nx-intake-timeline{padding-left:22px;display:grid;gap:13px;border-left:1px solid #ffffff25;margin-left:9px;list-style:none}.nx-intake-timeline li{position:relative}.nx-intake-timeline li:before{content:'';position:absolute;left:-27px;top:4px;width:9px;height:9px;border-radius:100%;background:#99b6d7}.nx-intake-timeline strong,.nx-intake-timeline small{display:block}.nx-intake-timeline strong{font-size:13px}.nx-intake-timeline small{color:#aab5c4;font-size:11px;margin-top:4px}
+.nx-intake-notes{background:#ffffff08;border:1px solid #ffffff20;border-radius:12px;padding:12px;margin-top:15px}.nx-intake-notes p{font-size:12px;line-height:1.6;color:#c0cad8;white-space:pre-wrap}.nx-intake-warning{color:#eac0c0;font-size:12px}
+.nx-intake-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:20px}.nx-intake-actions button{padding:11px 13px;border-radius:11px;border:1px solid #ffffff37;color:#eff2f8;background:#ffffff13;cursor:pointer}.nx-intake-actions .nx-intake-primary{background:linear-gradient(125deg,#d9dde6,#929cad);color:#111820;font-weight:700}.nx-intake-success{font-size:12px;color:#9bd6b6;align-self:center}
+@media(max-width:550px){.nx-intake-detail{padding:17px;width:calc(100% - 18px)}.nx-intake-photo{width:84px;height:102px}.nx-intake-head h3{font-size:18px}.nx-intake-progress span{font-size:9px}}
 </style>
 </body></html>
