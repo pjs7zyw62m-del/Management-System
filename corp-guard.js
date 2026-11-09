@@ -128,11 +128,36 @@ try {
         });
         if(valid)interacted();
       });
+      // The previous admin.js URL briefly served invalid JavaScript.
+      // A new version query forces browsers/CDNs to fetch the repaired file.
+      window.BLACKCELL_ADMIN_READY=false;
       const script=document.createElement('script');
-      script.src='admin.js?v=20261109-animatedcards4';
+      script.src='admin.js?v=20261109-controls-recovery5';
+      script.defer=true;
+      const showAdminLoadError=()=>{
+        if(document.getElementById('adminControlsReload'))return;
+        const bar=document.createElement('div');
+        bar.id='adminControlsReload';
+        bar.setAttribute('role','alert');
+        bar.style.cssText='position:fixed;left:16px;right:16px;top:74px;z-index:900000;background:#25151d;color:#fae7ec;border:1px solid #b76683;border-radius:13px;padding:14px 17px;font:12px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;box-shadow:0 15px 50px #000b;display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap';
+        const explanation=document.createElement('span');
+        explanation.textContent='Administration controls did not finish loading. Reload to fetch the corrected page.';
+        const retry=document.createElement('button');
+        retry.type='button';retry.textContent='RELOAD ADMINISTRATION';
+        retry.style.cssText='border:1px solid #c8879b;color:#fff;background:#643145;border-radius:9px;padding:9px 13px;cursor:pointer';
+        retry.addEventListener('click',()=>location.reload());
+        bar.append(explanation,retry);document.body.append(bar);
+      };
+      script.addEventListener('error',showAdminLoadError);
+      script.addEventListener('load',()=>{
+        if(window.BLACKCELL_ADMIN_READY!==true)showAdminLoadError();
+      });
       document.body.append(script);
       const dockScript=document.createElement('script');
-      dockScript.src='corporate-chat-dock.js?v=20261109-floating2';
+      dockScript.src='corporate-chat-dock.js?v=20261109-controls-recovery5';
+      dockScript.addEventListener('error',()=>{
+        // Keep all ordinary Administration controls working even if chat fails.
+      });
       document.body.append(dockScript);
     }
   }
