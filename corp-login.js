@@ -1,4 +1,4 @@
-import {corporateClient,corporateAuthorize} from './corp-auth.js';
+import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-clearance5';
 
 const stage=document.getElementById('stageWindow');
 const loginPanel=document.getElementById('loginPanel');
