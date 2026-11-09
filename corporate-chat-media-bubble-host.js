@@ -12,7 +12,51 @@
     root.hidden=true;
     root.setAttribute('aria-label','Blackcell independent media bubbles');
     document.body.append(root);
+    const tabs=document.createElement('div');
+    tabs.className='bc-media-bubble-tabs';
+    tabs.setAttribute('role','tablist');
+    tabs.setAttribute('aria-label','Switch between media bubbles');
+    root.append(tabs);
     const panes=new Map();
+    function updateBubbleTabs(){
+      tabs.replaceChildren();
+      const both=panes.size===2;
+      tabs.hidden=!both;
+      if(!both)return;
+      for(const [type,entry] of panes){
+        const button=document.createElement('button');
+        button.type='button';
+        button.textContent=type==='share'?'＋ Media Share':'▧ Shared Media';
+        button.dataset.panel=type;
+        button.setAttribute('role','tab');
+        button.setAttribute('aria-controls',entry.card.id);
+        button.addEventListener('click',()=>{
+          const x=entry.card.offsetLeft;
+          root.scrollTo({left:x,behavior:'smooth'});
+          for(const tab of tabs.querySelectorAll('button')){
+            const selected=tab.dataset.panel===type;
+            tab.classList.toggle('selected',selected);
+            tab.setAttribute('aria-selected',String(selected));
+          }
+        });
+        tabs.append(button);
+      }
+      updateSelectedTab();
+    }
+    function updateSelectedTab(){
+      if(panes.size!==2)return;
+      let nearest=null,distance=Infinity;
+      for(const [type,entry] of panes){
+        const next=Math.abs(root.scrollLeft-entry.card.offsetLeft);
+        if(next<distance){nearest=type;distance=next}
+      }
+      for(const tab of tabs.querySelectorAll('button')){
+        const selected=tab.dataset.panel===nearest;
+        tab.classList.toggle('selected',selected);
+        tab.setAttribute('aria-selected',String(selected));
+      }
+    }
+    root.addEventListener('scroll',updateSelectedTab,{passive:true});
     function safePeer(value){
       return typeof value==='string'&&UUID.test(value)?value:null;
     }
@@ -32,6 +76,7 @@
        }
       }
       root.style.setProperty('--bc-media-panels',String(count));
+      updateBubbleTabs();
     }
     function close(type){
       if(!['share','library'].includes(type))return;
@@ -57,6 +102,7 @@
       if(existing)close(type);
       const card=document.createElement('section');
       card.className='bc-media-bubble-card bc-media-bubble-'+type;
+      card.id='bc-media-panel-'+type;
       card.setAttribute('role','region');
       card.setAttribute('aria-label',type==='share'?'Media Share bubble':'Shared Media bubble');
       const head=document.createElement('header');head.className='bc-media-bubble-heading';
@@ -92,6 +138,14 @@
       panes.set(type,{card,iframe:frame,peerId,batchId:batch||null,pick});
       sync();
       if(type==='share'&&pick)card.dataset.pick=pick;
+      // On phone portrait, newly opened media is shown as a separate swipeable
+      // card below the pinned messenger, with accessible Share/Library tabs.
+      if(window.matchMedia('(max-width:699px) and (orientation:portrait)').matches){
+        requestAnimationFrame(()=>{
+          root.scrollTo({left:card.offsetLeft,behavior:'smooth'});
+          updateSelectedTab();
+        });
+      }
     }
     function allowedSource(event){
       if(event.origin!==location.origin)return false;
