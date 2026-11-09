@@ -100,6 +100,7 @@
   orb.addEventListener('click',()=>openChat());
   people.addEventListener('click',()=>openChat());
   imessage.addEventListener('click',()=>openChat());
+  window.addEventListener('blackcell-open-imessage',()=>openChat());
   toast.addEventListener('click',()=>{
     const target=toast.dataset.peerId||undefined;
     closeToast();openChat(target);
