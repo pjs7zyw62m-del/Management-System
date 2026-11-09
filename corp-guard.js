@@ -129,7 +129,7 @@ try {
         if(valid)interacted();
       });
       const script=document.createElement('script');
-      script.src='admin.js?v=20261109-darkinvite3';
+      script.src='admin.js?v=20261109-animatedcards4';
       document.body.append(script);
       const dockScript=document.createElement('script');
       dockScript.src='corporate-chat-dock.js?v=20261109-floating2';
