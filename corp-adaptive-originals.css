@@ -1,0 +1,35 @@
+/* BLACKCELL / Original-resolution photo and video viewer across devices.
+   Never crops originals; handles safe areas and landscape orientation. */
+html{ -webkit-text-size-adjust:100% }
+body{overflow-x:hidden}
+.stage{min-width:0;min-height:0;overscroll-behavior:contain}
+.stage :is(img,video){
+ display:block;max-width:100%;width:auto;height:auto;
+ object-fit:contain;object-position:center;background:#000
+}
+@media(min-width:768px) and (max-width:1180px){
+ header,.toolbar,.footer{padding-inline:clamp(18px,3vw,35px)}
+ .stage :is(img,video){max-height:calc(100dvh - 210px)}
+}
+@media(max-width:767px){
+ header{padding:calc(12px + env(safe-area-inset-top,0px)) 13px 12px;flex-wrap:wrap;gap:12px}
+ header strong{font-size:10px;letter-spacing:.10em}
+ header small{font-size:8px;letter-spacing:.1em}
+ header a{min-height:42px;display:inline-flex;align-items:center;justify-content:center}
+ .toolbar{padding:9px 12px;display:flex;flex-direction:column;align-items:stretch;gap:8px}
+ .toolbar strong{font-size:12px;overflow-wrap:anywhere}
+ .toolbar-actions{display:flex;align-items:center;gap:6px}
+ .toolbar-actions :is(a,button){flex:1;min-height:43px;padding:9px;white-space:normal;text-align:center;font-size:10px}
+ .stage{min-height:0;flex:1 1 0;overflow:auto}
+ .stage :is(img,video){max-height:calc(100dvh - 250px);max-width:100%;width:auto;height:auto}
+ .footer{padding:12px 13px calc(14px + env(safe-area-inset-bottom,0px));flex-wrap:wrap;gap:9px}
+ .footer :is(a,button){min-height:43px}
+ .caption,#caption,#imageDetails{padding:9px 12px;font-size:10px;line-height:1.5}
+}
+@media(max-width:767px) and (orientation:landscape){
+ header{padding:8px 12px}
+ .toolbar{padding:7px 12px}
+ .stage{min-height:0}
+ .stage :is(img,video){max-height:calc(100dvh - 175px)}
+ .footer{padding:6px 12px}
+}
