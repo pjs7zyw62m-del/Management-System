@@ -104,3 +104,22 @@ html.bc-compact-chat,html.bc-compact-chat body{width:100%;height:100%;min-width:
 @media(prefers-reduced-motion:reduce){
  .bc-chat-pane,.bc-chat-orb,.bc-media-bubble-card{animation:none!important}
 }
+
+
+/* Same physical device fallback for floating chat when Safari requests a
+   desktop site, independent of the CSS viewport width. */
+html.bc-device-phone .bc-chat-pane:not(.bc-chat-split){
+ position:fixed!important;
+ top:calc(6px + env(safe-area-inset-top,0px))!important;
+ bottom:calc(6px + env(safe-area-inset-bottom,0px))!important;
+ left:6px!important;right:6px!important;
+ width:calc(100% - 12px)!important;height:auto!important;
+ max-width:none!important;max-height:none!important;
+ min-width:0!important;min-height:0!important;resize:none!important;
+}
+html.bc-device-phone .bc-chat-orb{
+ right:calc(13px + env(safe-area-inset-right,0px))!important;
+ bottom:calc(14px + env(safe-area-inset-bottom,0px))!important;
+}
+html.bc-device-phone .bc-chat-pane .bc-chat-pane-controls button{min-height:32px;min-width:32px}
+html.bc-device-phone .bc-compact-chat .composer-input-wrap textarea{font-size:16px!important}
