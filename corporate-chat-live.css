@@ -1,0 +1,55 @@
+/* BLACKCELL / Secure iMessage read receipts + live typing bubble */
+.typing-indicator{
+ display:flex;align-items:center;gap:9px;flex:none;
+ padding:8px 20px 7px;
+ background:linear-gradient(105deg,#16131c,#0d0d12);
+ border-top:1px solid #ffffff12;
+ color:#bdb0bf;font-size:10px;letter-spacing:.01em;
+ min-height:37px;line-height:1.3;
+}
+.typing-indicator[hidden]{display:none!important}
+.typing-dots{
+ display:flex;align-items:center;justify-content:center;gap:4px;
+ width:42px;min-width:42px;height:22px;
+ border:1px solid #66505e;
+ background:linear-gradient(135deg,#33303c,#1e1a24);
+ border-radius:14px 14px 14px 5px;
+}
+.typing-dots span{
+ display:block;width:5px;height:5px;border-radius:50%;
+ background:#dcbdcf;
+ animation:bcTypingPulse 1.25s ease-in-out infinite;
+}
+.typing-dots span:nth-child(2){animation-delay:.18s}
+.typing-dots span:nth-child(3){animation-delay:.36s}
+@keyframes bcTypingPulse{
+ 0%,65%,100%{transform:translateY(0);opacity:.48}
+ 30%{transform:translateY(-3px);opacity:1}
+}
+.message .message-receipt{
+ display:flex;align-items:center;justify-content:flex-end;gap:5px;
+ color:#9894a1;font-size:9px;letter-spacing:.015em;
+ line-height:1.4;min-height:14px;padding:0 5px;
+ margin-top:1px;font-weight:600;
+}
+.message.mine .message-receipt.read{color:#d39db2}
+.message .message-receipt .receipt-ticks{
+ font-size:11px;line-height:1;color:#b7adb9;
+ font-weight:800;letter-spacing:-2px;margin-right:3px;
+}
+.message .message-receipt.read .receipt-ticks{color:#d99db5}
+.message.mine .message-receipt time{
+ margin:0;padding:0;max-height:none;opacity:1;overflow:visible;
+ color:inherit;font-size:9px;
+}
+.bc-embedded .typing-indicator{padding:5px 12px;font-size:9px;min-height:30px}
+.bc-embedded .typing-dots{width:36px;min-width:36px;height:19px}
+.bc-embedded .typing-dots span{width:4px;height:4px}
+.bc-embedded .message .message-receipt{font-size:8px}
+@media(max-width:650px){
+ .typing-indicator{padding:6px 12px;font-size:9px;min-height:30px}
+ .message .message-receipt{font-size:8px}
+}
+@media(prefers-reduced-motion:reduce){
+ .typing-dots span{animation:none;opacity:.75}
+}
