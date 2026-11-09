@@ -75,13 +75,15 @@ try {
     } else if (authorized.reason === 'verification-error') {
       locked('Corporate authorization is unavailable.');
     } else {
-      location.replace('login.html');
+      locked('Sign in is required to enter the Blackcell Corporate Dashboard.');
     }
   } else {
     const {data:status,error} = await client.rpc('corp_code_status');
     if (error || status?.ok !== true || status?.verified !== true) {
       if (!error && status?.expired) await client.auth.signOut({scope:'local'});
-      location.replace('login.html');
+      locked(error ? 'Could not confirm your security session. Access blocked.' :
+        (status?.expired ? 'Your session expired after inactivity. Sign in again.' :
+         'Your security codes must be verified before entering the dashboard.'));
     } else {
       document.documentElement.classList.add('corp-ok');
       lock.hidden = true;
@@ -106,6 +108,11 @@ try {
       setInterval(() => {
         if (expiredLocally()) void leave('Signed out after 60 minutes of inactivity.');
       }, 15000);
+      // Recheck session expiry even without a browser focus event. Never
+      // extend a server-side session merely because this timer fires.
+      setInterval(() => {
+        if (!exiting && !document.hidden) void checkOnReturn();
+      }, 60000);
       const script=document.createElement('script');
       script.src='admin.js';
       document.body.append(script);
