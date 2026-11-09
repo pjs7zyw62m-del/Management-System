@@ -93,7 +93,10 @@ function showLogin(){
   passPanel.setAttribute('aria-hidden','true');
   loginCard.classList.remove('signed-in');
   loginHeading.textContent='Sign In';
-  executivePass.classList.remove('authorized');
+  executivePass.classList.remove('authorized','pass-verified','pass-condensed','merge-source');
+  loginCard.classList.remove('merge-source');
+  document.getElementById('accessMergeScene')?.classList.remove('active','converging','approved');
+  changeAccount.disabled=false;
   approvalPending=false;
   emailInput.disabled=false;
   password.disabled=false;
@@ -110,15 +113,89 @@ function showLogin(){
 }
 
 function approvalAndLaunch(){
+  // This visual sequence only runs after server-side second-factor
+  // verification and Corporate Session authorization both succeeded.
   if(approvalPending)return;
   approvalPending=true;
   access.value='';
   security.value='';
-  executivePass.classList.add('authorized');
   authButton.disabled=true;
   continueVerified.disabled=true;
+  changeAccount.disabled=true;
   clearMessage(codeStatus);
-  window.setTimeout(displayLaunch,1600);
+  executivePass.classList.add('pass-verified');
+  window.setTimeout(()=>{
+    executivePass.classList.add('pass-condensed');
+    window.setTimeout(mergeVerifiedBubbles,890);
+  },630);
+}
+
+function mergeVerifiedBubbles(){
+  const scene=document.getElementById('accessMergeScene');
+  const identity=document.getElementById('mergeIdentity');
+  const pass=document.getElementById('mergePass');
+  const passLevel=document.getElementById('mergePassLevel');
+  const leftBeam=document.getElementById('mergeBeamIdentity');
+  const rightBeam=document.getElementById('mergeBeamPass');
+  if(!scene||!identity||!pass||!leftBeam||!rightBeam){
+    // Do not strand an authorized user if an optional animation element
+    // fails to load. The protected dashboard still checks authorization.
+    displayLaunch();
+    return;
+  }
+  passLevel.textContent=clearanceLevel.textContent;
+  const w=window.innerWidth,h=window.innerHeight;
+  const compact=w<=950;
+  const midX=w/2,midY=h/2;
+  const makeRect=(left,top,width,height)=>({left,top,width,height,
+    cx:left+width/2,cy:top+height/2});
+  function fromElement(element){
+    const r=element.getBoundingClientRect();
+    return makeRect(r.left,r.top,r.width,r.height);
+  }
+  let identityRect=fromElement(loginCard);
+  let passRect=fromElement(executivePass);
+  if(compact){
+    // On small screens the verified identity is hidden behind the card;
+    // position both compact summaries visibly before they converge.
+    const pw=Math.min(175,Math.max(130,(w-42)/2));
+    const ph=154;
+    identityRect=makeRect(12,midY-ph/2,pw,ph);
+    passRect=makeRect(w-pw-12,midY-ph/2,pw,ph);
+  }
+  for(const [element,r] of [[identity,identityRect],[pass,passRect]]){
+    element.style.left=r.left+'px';
+    element.style.top=r.top+'px';
+    element.style.width=r.width+'px';
+    element.style.height=r.height+'px';
+    element.style.transform='translate(0,0) scale(1)';
+    element.classList.remove('merging');
+  }
+  // Luminous paths show the two verified credentials converging.
+  const trail=(r)=>'M '+r.cx+' '+r.cy+
+    ' C '+(r.cx+(midX-r.cx)*.46)+' '+(r.cy-40)+
+    ' '+(midX+(r.cx-midX)*.20)+' '+(midY-65)+
+    ' '+midX+' '+midY;
+  leftBeam.setAttribute('d',trail(identityRect));
+  rightBeam.setAttribute('d',trail(passRect));
+  scene.classList.remove('converging','approved');
+  scene.classList.add('active');
+  requestAnimationFrame(()=>{
+    // Replace the source surfaces only after the identical green bubbles
+    // are drawn over their original positions.
+    requestAnimationFrame(()=>{
+      loginCard.classList.add('merge-source');
+      executivePass.classList.add('merge-source');
+      scene.classList.add('converging');
+      for(const [element,r] of [[identity,identityRect],[pass,passRect]]){
+        element.style.transform=
+          'translate('+(midX-r.cx)+'px,'+(midY-r.cy)+'px) scale(.42)';
+        element.classList.add('merging');
+      }
+    });
+  });
+  window.setTimeout(()=>scene.classList.add('approved'),850);
+  window.setTimeout(displayLaunch,2420);
 }
 
 function displayLaunch(){
