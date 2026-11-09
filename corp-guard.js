@@ -1,4 +1,4 @@
-import { corporateClient, corporateAuthorize } from './corp-auth.js';
+import { corporateClient, corporateAuthorize } from './corp-auth.js?v=20261109-clearance5';
 
 const lock = document.getElementById('corp-lock');
 const message = document.getElementById('corp-lock-msg');
@@ -77,6 +77,9 @@ try {
     } else {
       locked('Sign in is required to enter the Blackcell Corporate Dashboard.');
     }
+  } else if (authorized.member?.role !== 'owner' ||
+             Number(authorized.member?.clearance_level) !== 7) {
+    locked('This account does not have Level 7 access to Command & Administration.');
   } else {
     const {data:status,error} = await client.rpc('corp_code_status');
     if (error || status?.ok !== true || status?.verified !== true) {
@@ -113,8 +116,9 @@ try {
       setInterval(() => {
         if (!exiting && !document.hidden) void checkOnReturn();
       }, 60000);
+      window.BLACKCELL_CORPORATE_ADMIN_API=Object.freeze({client});
       const script=document.createElement('script');
-      script.src='admin.js';
+      script.src='admin.js?v=20261109-clearance5';
       document.body.append(script);
     }
   }
