@@ -609,7 +609,7 @@ async function boot(){
   if(auth.member.role==='owner'||auth.member.can_chat===true){
    window.BLACKCELL_CORPORATE_NETWORK_CLIENT=client;
    const chatScript=document.createElement('script');
-   chatScript.src='corporate-chat-dock.js?v=20261109-floating-network3';
+   chatScript.src='corporate-chat-dock.js?v=20261109-floating-network-bubbles4';
    chatScript.defer=true;
    document.body.append(chatScript);
   }
