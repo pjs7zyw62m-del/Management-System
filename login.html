@@ -82,7 +82,7 @@ footer{text-align:center;color:#85818d;font-size:9px;letter-spacing:.12em;paddin
 .stage-window{width:min(1010px,100%);min-height:675px;perspective:1200px}
 .login-panel,.pass-panel{position:absolute;inset:auto;top:50%;transition:left .78s cubic-bezier(.2,.79,.2,1),right .78s cubic-bezier(.2,.79,.2,1),transform .78s cubic-bezier(.2,.79,.2,1),opacity .65s ease;will-change:transform,opacity}
 .login-panel{left:50%;width:min(445px,100%);transform:translate(-50%,-50%);opacity:1;z-index:3;pointer-events:auto}
-.pass-panel{right:0;width:min(430px,100%);transform:translate(-130%,-50%) scale(.96);opacity:0;pointer-events:none;z-index:2}
+.pass-panel{right:0;width:min(430px,100%);transform:translate(115%,-50%) scale(.96);opacity:0;pointer-events:none;z-index:2}
 .stage-window.show-pass .login-panel{left:0;transform:translate(0,-50%);opacity:1;pointer-events:auto;z-index:2}
 .stage-window.show-pass .pass-panel{transform:translate(0,-50%) scale(1);opacity:1;pointer-events:auto;z-index:3}
 .login-card{width:100%}
@@ -131,7 +131,7 @@ footer{text-align:center;color:#85818d;font-size:9px;letter-spacing:.12em;paddin
  .stage-window,.stage-window:not(.show-pass){min-height:640px}
  .stage-window.show-pass{min-height:1260px}
  .login-panel{top:8px;left:50%;width:min(445px,100%);transform:translateX(-50%);align-items:flex-start}
- .pass-panel{top:610px;left:50%;right:auto;width:min(410px,100%);transform:translate(-135%,0) scale(.97);align-items:flex-start}
+ .pass-panel{top:610px;left:50%;right:auto;width:min(410px,100%);transform:translate(115%,0) scale(.97);align-items:flex-start}
  .stage-window.show-pass .login-panel{top:8px;left:50%;transform:translateX(-50%)}
  .stage-window.show-pass .pass-panel{top:610px;left:50%;right:auto;transform:translate(-50%,0) scale(1)}
  .executive-pass{height:610px}
@@ -159,7 +159,7 @@ footer{text-align:center;color:#85818d;font-size:9px;letter-spacing:.12em;paddin
 
 </style>
 <script src="corp-config.js" defer></script>
-<script type="module" src="corp-login.js?v=20261109-access-card-inline1"></script>
+<script type="module" src="corp-login.js?v=20261109-signin-repair2"></script>
 </head>
 <body>
 <header>
@@ -233,4 +233,24 @@ footer{text-align:center;color:#85818d;font-size:9px;letter-spacing:.12em;paddin
 <div class="track"><div id="launchFill" class="fill"></div></div>
 <div id="launchPercent" class="percent">0%</div>
 </section>
+<script>
+(function(){
+  var form=document.getElementById('login');
+  var status=document.getElementById('status');
+  var button=document.getElementById('submit');
+  if(!form||!status||!button)return;
+  form.addEventListener('submit',function(ev){
+    if(window.BLACKCELL_LOGIN_BOOTED)return;
+    ev.preventDefault();
+    status.hidden=false;
+    status.textContent='Secure login is still loading. If this persists, refresh the page and check your connection.';
+  });
+  window.setTimeout(function(){
+    if(!window.BLACKCELL_LOGIN_BOOTED && !document.hidden){
+      status.hidden=false;
+      status.textContent='The secure login script did not load. Please refresh the page. If the problem continues, check whether a privacy or network blocker is interfering.';
+    }
+  },9000);
+})();
+</script>
 </body></html>
