@@ -65,6 +65,7 @@
   toast.type='button';toast.hidden=true;
   toast.setAttribute('aria-label','New private iMessage notification');
   document.body.append(dock,orb,pane,toast);
+  const mediaBubbles=window.BlackcellMediaBubbleHost?.({mode:'dock',mainFrame:frame,mainPane:pane});
   let state='minimized',unread=0,peerWanted=null;
   let peers=new Map(),toastQueue=[],toastTimer=null,toastOpen=false;
   let frameLoaded=false;
