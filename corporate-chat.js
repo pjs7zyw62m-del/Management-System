@@ -5,7 +5,11 @@ const client=corporateClient(),$=id=>document.getElementById(id);
 const embedParams=new URLSearchParams(location.search);
 const mediaPanelMode=['share','library'].includes(embedParams.get('mediaPanel'))?embedParams.get('mediaPanel'):null;
 if(embedParams.get('embed')==='1')document.documentElement.classList.add('bc-embedded');
-const compactChat=embedParams.get('embed')==='1'&&!mediaPanelMode;
+const physicallySmallPhone=/iPhone|iPod/i.test(navigator.userAgent||'')||
+ (navigator.maxTouchPoints>0&&Math.min(screen.width||Infinity,screen.height||Infinity)<=650);
+const compactChat=!mediaPanelMode&&(
+ embedParams.get('embed')==='1'||physicallySmallPhone||window.matchMedia('(max-width:680px)').matches
+);
 if(compactChat)document.documentElement.classList.add('bc-compact-chat');
 if(mediaPanelMode)document.documentElement.classList.add('bc-media-panel','bc-media-'+mediaPanelMode);
 if(!mediaPanelMode&&window.parent===window&&window.BlackcellMediaBubbleHost)
