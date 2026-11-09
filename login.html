@@ -363,6 +363,62 @@ footer{height:36px;line-height:36px;padding:0;align-self:stretch;margin:0;white-
  .login-card,.executive-pass,.approval-overlay{transition:none}
 }
 
+
+/* ANCHORED SIGN-IN: the portal is positioned at the viewport's own center.
+   It never shifts when the Level 7 pass slides out. */
+.stage-window,.stage-window.show-pass,.stage-window:not(.show-pass){
+  width:100%!important;
+  flex:0 0 100%!important;
+  height:660px!important;
+  transform:scale(var(--blackcell-stage-scale,1));
+  transform-origin:center center
+}
+.login-panel,.stage-window.show-pass .login-panel{
+  position:absolute!important;left:50%!important;right:auto!important;top:50%!important;
+  width:445px!important;max-width:none;
+  transform:translate(-50%,-50%)!important;
+  opacity:1;pointer-events:auto;z-index:3
+}
+.login-card.signed-in{
+  margin-left:auto!important;
+  margin-right:auto!important
+}
+/* After collapse the verified panel is 270px wide; place the
+   430px access pass 10px to its right. */
+.pass-panel{
+  position:absolute!important;left:calc(50% + 145px)!important;
+  right:auto!important;top:50%!important;width:430px!important;
+  transform:translate(-280px,-50%) scale(.985)!important;
+  opacity:0;pointer-events:none;z-index:1
+}
+.stage-window.show-pass .pass-panel{
+  left:calc(50% + 145px)!important;right:auto!important;top:50%!important;
+  width:430px!important;transform:translate(0,-50%) scale(1)!important;
+  opacity:1;pointer-events:auto;z-index:2
+}
+@media(max-width:950px){
+  .stage-window,.stage-window.show-pass,.stage-window:not(.show-pass){
+    width:100%!important;flex:0 0 100%!important
+  }
+  .login-panel,.stage-window.show-pass .login-panel{
+    left:50%!important;top:50%!important;
+    width:445px!important;
+    transform:translate(-50%,-50%)!important
+  }
+  .pass-panel{
+    left:50%!important;top:50%!important;
+    width:430px!important;
+    transform:translate(60%,-50%) scale(.98)!important;
+    opacity:0;pointer-events:none
+  }
+  .stage-window.show-pass .pass-panel{
+    left:50%!important;top:50%!important;
+    transform:translate(-50%,-50%) scale(1)!important;
+    opacity:1;pointer-events:auto;z-index:5
+  }
+  .stage-window.show-pass .login-panel{opacity:0;pointer-events:none}
+}
+
 </style>
 <script src="corp-config.js" defer></script>
 <script type="module" src="corp-login.js?v=20261109-card-approved5"></script>
@@ -454,8 +510,11 @@ footer{height:36px;line-height:36px;padding:0;align-self:stretch;margin:0;white-
     var availableHeight=Math.max(1,window.innerHeight-(header?header.offsetHeight:76)-(footer?footer.offsetHeight:36)-12);
     var availableWidth=Math.max(1,window.innerWidth-32);
     var compact=window.matchMedia('(max-width: 950px)').matches;
-    var baseWidth=compact?445:885;
-    var scale=Math.min(1,availableWidth/baseWidth,availableHeight/660);
+    // Keep the sign-in center fixed. On wide screens scale only enough
+    // to fit the Level 7 pass to the right of the collapsed sign-in card.
+    var scale=compact
+      ?Math.min(1,availableWidth/445,availableHeight/660)
+      :Math.min(1,availableHeight/660,(window.innerWidth/2-16)/575);
     stage.style.setProperty('--blackcell-stage-scale',String(Math.max(.35,scale)));
   }
   window.addEventListener('resize',fit,{passive:true});
