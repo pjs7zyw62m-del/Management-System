@@ -154,7 +154,7 @@ try {
       });
       document.body.append(script);
       const dockScript=document.createElement('script');
-      dockScript.src='corporate-chat-dock.js?v=20261109-premium-messages1';
+      dockScript.src='corporate-chat-dock.js?v=20261109-read-typing2';
       dockScript.addEventListener('error',()=>{
         // Keep all ordinary Administration controls working even if chat fails.
       });
