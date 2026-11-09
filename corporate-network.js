@@ -1,0 +1,566 @@
+import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-staff1';
+const client=corporateClient(),bucket=client.storage.from('corp-social-media');
+const $=id=>document.getElementById(id);
+const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const allowedTypes=new Set(['image/jpeg','image/png','image/webp','image/gif','image/heic','video/mp4','video/webm','video/quicktime','video/x-m4v']);
+const state={
+ user:null,member:null,profiles:[],posts:[],assets:[],likes:[],comments:[],follows:[],
+ assetUrls:new Map(),view:'feed',feedFilter:'latest',profileUserId:null,profileTab:'posts',
+ attached:[],openComments:new Set(),busy:false,sort:'newest',deepPost:null
+};
+const fields=['feedView','profileView','discoverView','videosView'];
+function el(tag,cls='',content=null){
+ const n=document.createElement(tag);
+ if(cls)n.className=cls;
+ if(content!==null)n.textContent=String(content);
+ return n;
+}
+function btn(title,fn,cls=''){
+ const b=el('button',cls,title);b.type='button';b.addEventListener('click',fn);return b;
+}
+function date(t){try{return new Date(t).toLocaleDateString([],{month:'short',day:'numeric',year:'numeric'})}catch(_){return ''}}
+function stamp(t){try{return new Date(t).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}catch(_){return ''}}
+function prettyBytes(n){return n>=1048576?(n/1048576).toFixed(1)+' MB':Math.round(n/1024)+' KB'}
+function fail(e){return String(e?.message||e||'Unknown error').slice(0,220)}
+let toastTimeout=0;
+function toast(s){
+ clearTimeout(toastTimeout);$('toast').textContent=s;$('toast').hidden=false;
+ toastTimeout=setTimeout(()=>$('toast').hidden=true,6000);
+}
+function profile(id){return state.profiles.find(p=>p.user_id===id)||null}
+function personName(p){return p?.display_name||'Blackcell Member'}
+function personHandle(p){return '@'+(p?.username||'network')}
+function asset(id){return state.assets.find(a=>a.id===id)}
+function mediaUrl(a){return state.assetUrls.get(typeof a==='string'?a:a?.id)||''}
+function avatar(p,size='med'){
+ const v=el('div','avatar '+size,(personName(p).trim()[0]||'B').toUpperCase());
+ const a=asset(p?.avatar_asset_id),src=mediaUrl(a);
+ if(src){const i=el('img');i.src=src;i.alt=personName(p)+' profile photo';i.loading='lazy';v.replaceChildren(i)}
+ return v;
+}
+function cover(node,p){
+ node.style.backgroundImage='';
+ const src=mediaUrl(asset(p?.cover_asset_id));
+ if(src)node.style.backgroundImage='linear-gradient(to top,#0d090e88,transparent 65%),url("'+src.replace(/["\\]/g,'')+'")';
+}
+function myProfile(){return profile(state.user?.id)}
+function following(id){return state.follows.some(f=>f.follower_id===state.user.id&&f.following_id===id)}
+function liking(id){return state.likes.some(l=>l.post_id===id&&l.user_id===state.user.id)}
+function postedAssets(id){return state.assets.filter(a=>a.post_id===id&&a.purpose==='post')}
+function countPosts(id){return state.posts.filter(p=>p.author_id===id).length}
+function countVideos(id){return state.assets.filter(a=>a.owner_id===id&&a.kind==='video'&&a.purpose==='post').length}
+function switchView(view,{who=null,tab=null}={}){
+ if(!fields.includes(view+'View'))view='feed';
+ state.view=view;
+ if(view==='profile'){
+  state.profileUserId=who||state.user.id;
+  if(tab)state.profileTab=tab;
+ }
+ for(const f of fields)$(f).hidden=f!==view+'View';
+ document.querySelectorAll('[data-view]').forEach(n=>{
+  n.classList.toggle('nav-active',n.dataset.view===view&&n.closest('.mainnav')!==null);
+  n.classList.toggle('selected',n.dataset.view===view&&n.closest('.nav-panel')!==null);
+ });
+ if(view==='feed')renderFeed();
+ if(view==='profile')renderProfile();
+ if(view==='discover')renderDirectory();
+ if(view==='videos')renderVideos();
+ const params=new URLSearchParams();
+ if(view==='profile'&&state.profileUserId!==state.user.id)params.set('user',state.profileUserId);
+ if(view==='videos'||view==='discover')params.set('view',view);
+ history.replaceState(null,'',location.pathname+(params.toString()?'?'+params.toString():''));
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+function openProfile(uid,tab='posts'){
+ switchView('profile',{who:uid,tab});
+}
+async function loadAll({show=true}={}){
+ const [pr,po,as,fo]=await Promise.all([
+  client.from('corp_social_profiles').select('*').order('display_name',{ascending:true}).limit(500),
+  client.from('corp_social_posts').select('*').order('created_at',{ascending:false}).limit(120),
+  client.from('corp_social_assets').select('*').order('created_at',{ascending:false}).limit(300),
+  client.from('corp_social_follows').select('follower_id,following_id').limit(2000)
+ ]);
+ for(const r of [pr,po,as,fo])if(r.error)throw Error('Network data could not be read: '+r.error.message);
+ state.profiles=pr.data||[];state.posts=po.data||[];
+ state.assets=as.data||[];state.follows=fo.data||[];
+ if(!profile(state.user.id)){
+  const {error}=await client.from('corp_social_profiles').insert({user_id:state.user.id,display_name:state.member.display_name,username:state.member.username||'network'});
+  if(error)throw Error('Could not create your verified network profile: '+error.message);
+  const {data,error:rerun}=await client.from('corp_social_profiles').select('*').order('display_name');
+  if(rerun)throw Error(rerun.message);
+  state.profiles=data||[];
+ }
+ const postIds=state.posts.map(p=>p.id);
+ if(postIds.length){
+  const [lr,cr]=await Promise.all([
+   client.from('corp_social_likes').select('post_id,user_id').in('post_id',postIds).limit(1500),
+   client.from('corp_social_comments').select('id,post_id,user_id,body,created_at').in('post_id',postIds).order('created_at',{ascending:true}).limit(1500)
+  ]);
+  if(lr.error||cr.error)throw Error('Could not load network interactions.');
+  state.likes=lr.data||[];state.comments=cr.data||[];
+ }else{state.likes=[];state.comments=[]}
+ await loadSigned();
+ if(show)renderAll();
+}
+async function loadSigned(){
+ const all=state.assets.filter(a=>!state.assetUrls.has(a.id));
+ for(let i=0;i<all.length;i+=30){
+  const group=all.slice(i,i+30);
+  const {data,error}=await bucket.createSignedUrls(group.map(a=>a.storage_path),1800);
+  if(error)continue;
+  for(let j=0;j<group.length;j++)if(data?.[j]?.signedUrl)state.assetUrls.set(group[j].id,data[j].signedUrl);
+ }
+}
+function renderAll(){
+ renderMini();renderSuggestions();
+ if(state.view==='profile')renderProfile();
+ if(state.view==='feed')renderFeed();
+ if(state.view==='discover')renderDirectory();
+ if(state.view==='videos')renderVideos();
+}
+function renderMini(){
+ const p=myProfile(),node=$('myMini');
+ node.replaceChildren();
+ node.append(avatar(p,'med'));
+ const d=el('div');
+ d.append(el('strong','',personName(p)),el('small','',personHandle(p)));
+ d.append(btn('OPEN MY PROFILE ↗',()=>openProfile(state.user.id)));
+ node.append(d);
+ $('composerName').textContent=personName(p);
+ $('composerAvatar').replaceWith(avatar(p,'med'));
+ $('composerAvatar')?.removeAttribute('id');
+ const a=document.querySelector('.composer-top .avatar');if(a)a.id='composerAvatar';
+}
+function renderSuggestions(){
+ const node=$('suggestedPeople');node.replaceChildren();
+ const suggestions=state.profiles.filter(p=>p.user_id!==state.user.id)
+  .sort((a,b)=>Number(following(a.user_id))-Number(following(b.user_id))).slice(0,5);
+ if(!suggestions.length){node.append(el('p','empty-state','No other network profiles yet.'));return}
+ for(const p of suggestions){
+  const row=el('div','suggested-person');
+  const small=avatar(p,'small');small.style.cursor='pointer';
+  small.addEventListener('click',()=>openProfile(p.user_id));
+  const info=el('div');info.append(el('strong','',personName(p)),el('small','',personHandle(p)));
+  const f=btn(following(p.user_id)?'✓':'＋',()=>void toggleFollow(p.user_id));
+  f.setAttribute('aria-label',following(p.user_id)?'Unfollow '+personName(p):'Follow '+personName(p));
+  row.append(small,info,f);node.append(row);
+ }
+}
+function renderDirectory(){
+ const box=$('peopleDirectory');
+ const query=$('peopleSearch').value.trim().toLowerCase();
+ const people=state.profiles.filter(p=>(personName(p)+' '+p.username+' '+p.headline).toLowerCase().includes(query));
+ box.replaceChildren();
+ if(!people.length){box.append(empty('No matching members','Try searching by another name or username.'));return}
+ for(const p of people){
+  const card=el('article','panel person');
+  const banner=el('div','person-banner');cover(banner,p);
+  const body=el('div','person-body');
+  body.append(avatar(p,'med'),el('h3','',personName(p)),el('small','',personHandle(p)),
+    el('p','',p.headline||'Verified Blackcell Network member.'));
+  const actions=el('div','person-actions');
+  actions.append(btn('VIEW PROFILE',()=>openProfile(p.user_id),'person-open'));
+  if(p.user_id!==state.user.id)actions.append(btn(following(p.user_id)?'FOLLOWING':'＋ FOLLOW',()=>void toggleFollow(p.user_id)));
+  body.append(actions);card.append(banner,body);box.append(card);
+ }
+}
+function empty(title,detail){
+ const n=el('div','panel empty-state');
+ n.append(el('strong','',title),el('span','',detail));return n;
+}
+function renderProfile(){
+ const p=profile(state.profileUserId)||myProfile();
+ if(!p)return;
+ state.profileUserId=p.user_id;
+ cover($('profileCover'),p);
+ const av=avatar(p,'gigantic');av.id='profileAvatar';
+ $('profileAvatar').replaceWith(av);
+ $('profileName').textContent=personName(p);
+ $('profileHandle').textContent=personHandle(p);
+ $('profileHeadline').textContent=p.headline||'Verified Blackcell Network member';
+ $('profileLevel').textContent=p.user_id===state.user.id
+   ?'MY ACCOUNT · LEVEL '+state.member.clearance_level
+   :'VERIFIED NETWORK MEMBER';
+ $('profileJoined').textContent='JOINED '+date(p.created_at).toUpperCase();
+ $('profilePostCount').textContent=countPosts(p.user_id);
+ $('profileFollowerCount').textContent=state.follows.filter(f=>f.following_id===p.user_id).length;
+ $('profileFollowingCount').textContent=state.follows.filter(f=>f.follower_id===p.user_id).length;
+ $('profileVideoCount').textContent=countVideos(p.user_id);
+ const actions=$('profileActions');actions.replaceChildren();
+ if(p.user_id===state.user.id)actions.append(btn('EDIT PROFILE ↗',openEdit));
+ else{
+  actions.append(btn(following(p.user_id)?'✓ FOLLOWING':'+ FOLLOW',()=>void toggleFollow(p.user_id)));
+  const directChat=btn('OPEN CHAT ↗',()=>{location.href='corporate-chat.html?peer='+encodeURIComponent(p.user_id)},'secondary');
+  if(state.member.role==='owner'||p.user_id!==state.user.id&&state.member.role==='employee'&&p.user_id===state.profiles.find(x=>x.user_id!==state.user.id)?.user_id){
+   actions.append(directChat);
+  }
+ }
+ document.querySelectorAll('#profileTabs [data-tab]').forEach(b=>b.classList.toggle('selected',b.dataset.tab===state.profileTab));
+ const box=$('profileContent');box.replaceChildren();
+ if(state.profileTab==='about'){
+  const about=el('div','panel about-content');
+  about.append(el('h3','','About '+personName(p)),el('p','',p.bio||'This member has not added a biography yet.'));
+  about.append(el('h3','','Network Identity'),el('p','',personHandle(p)+'\n'+(p.headline||'Blackcell Corporation')));
+  box.append(about);return;
+ }
+ if(state.profileTab==='posts'){
+  const posts=state.posts.filter(x=>x.author_id===p.user_id);
+  if(!posts.length)box.append(empty('No posts yet','Updates shared by this member will appear here.'));
+  else for(const post of posts)box.append(renderPost(post));
+  return;
+ }
+ const media=state.assets.filter(a=>a.owner_id===p.user_id&&a.purpose==='post'&&
+    a.kind===(state.profileTab==='videos'?'video':'photo'));
+ const grid=el('div',state.profileTab==='videos'?'video-grid':'directory-grid');
+ if(!media.length){box.append(empty('Nothing here yet',state.profileTab==='videos'?'This member has not shared any videos.':'This member has not shared photos.'));return}
+ for(const a of media){
+  if(a.kind==='video')grid.append(videoTile(a));
+  else{
+   const card=el('div','panel person');const url=mediaUrl(a);
+   if(url){
+    const b=btn('',()=>window.open(url,'_blank','noopener'));
+    b.style.cssText='display:block;width:100%;height:180px;border:0;background:#09080b;padding:0;overflow:hidden';
+    const img=el('img');img.src=url;img.alt=a.filename;img.style.cssText='width:100%;height:100%;object-fit:cover';
+    b.append(img);card.append(b);
+   }
+   const cap=el('div','video-card-footer');
+   cap.append(el('strong','',a.filename),btn('VIEW ORIGINAL ↗',()=>openMedia(a)));
+   card.append(cap);grid.append(card);
+  }
+ }
+ box.append(grid);
+}
+function postType(p){
+ if(p.kind==='video')return 'VIDEO';
+ if(p.kind==='photo')return 'PHOTO';
+ return 'UPDATE';
+}
+function renderPost(p){
+ const node=el('article','panel post');node.id='post-'+p.id;
+ const person=profile(p.author_id);
+ const head=el('div','post-head');
+ const pic=avatar(person,'small');
+ pic.style.cursor='pointer';pic.addEventListener('click',()=>openProfile(p.author_id));
+ const title=el('div','post-author');
+ const name=btn(personName(person),()=>openProfile(p.author_id));
+ title.append(name,el('small','',personHandle(person)+' · '+stamp(p.created_at)));
+ head.append(pic,title,el('span','post-label',postType(p)));
+ node.append(head);
+ if(p.body)node.append(el('div','post-body',p.body));
+ const files=postedAssets(p.id);
+ if(files.length){
+  const wrap=el('div','post-media'+(files.length===2?' two':files.length>=3?' three':''));
+  for(const f of files.slice(0,6)){
+   const src=mediaUrl(f);if(!src)continue;
+   if(f.kind==='video'){
+    const v=el('video');v.src=src;v.controls=true;v.preload='metadata';v.playsInline=true;
+    v.setAttribute('aria-label',f.filename);
+    wrap.append(v);
+   }else{
+    const link=btn('',()=>openMedia(f));
+    const img=el('img');img.src=src;img.alt=f.filename;img.loading='lazy';
+    link.title='View original photo in a separate tab';
+    link.append(img);wrap.append(link);
+   }
+  }
+  node.append(wrap);
+ }
+ const actions=el('div','post-actions');
+ const likeCount=state.likes.filter(l=>l.post_id===p.id).length;
+ const like=btn((liking(p.id)?'♥':'♡')+' '+likeCount,()=>void toggleLike(p.id));
+ like.classList.toggle('liked',liking(p.id));
+ like.setAttribute('aria-label',liking(p.id)?'Unlike post':'Like post');
+ const replies=btn('◌  '+state.comments.filter(c=>c.post_id===p.id).length+' COMMENTS',()=>{
+  if(state.openComments.has(p.id))state.openComments.delete(p.id);
+  else state.openComments.add(p.id);
+  renderAll();
+ });
+ const share=btn('↗  COPY LINK',()=>void copyPostLink(p.id));
+ actions.append(like,replies,share);
+ if(p.author_id===state.user.id)actions.append(btn('DELETE',()=>void deletePost(p),'post-delete'));
+ node.append(actions);
+ if(state.openComments.has(p.id)){
+  const zone=el('div','comment-zone');
+  for(const c of state.comments.filter(c=>c.post_id===p.id).slice(-25)){
+   const user=profile(c.user_id);
+   const row=el('div','comment');row.append(avatar(user,'small'));
+   const main=el('div','comment-main');
+   main.append(el('strong','',personName(user)),el('small','',stamp(c.created_at)),el('p','',c.body));
+   row.append(main);zone.append(row);
+  }
+  const form=el('form','comment-compose');
+  const field=el('input');field.type='text';field.maxLength=1000;field.required=true;field.placeholder='Write a reply…';
+  const submit=el('button','','REPLY');submit.type='submit';
+  form.append(field,submit);
+  form.addEventListener('submit',async event=>{
+   event.preventDefault();const content=field.value.trim();
+   if(!content)return;submit.disabled=true;
+   const {error}=await client.from('corp_social_comments').insert({
+    post_id:p.id,user_id:state.user.id,body:content
+   });
+   if(error){toast('Could not publish reply: '+error.message);submit.disabled=false;return}
+   const {data}=await client.from('corp_social_comments').select('id,post_id,user_id,body,created_at').eq('post_id',p.id).order('created_at');
+   state.comments=state.comments.filter(c=>c.post_id!==p.id).concat(data||[]);
+   renderAll();toast('Reply published.');
+  });
+  zone.append(form);node.append(zone);
+ }
+ return node;
+}
+function renderFeed(){
+ const box=$('feedPosts');box.replaceChildren();
+ const followingIds=new Set(state.follows.filter(f=>f.follower_id===state.user.id).map(f=>f.following_id));
+ let posts=state.posts;
+ if(state.feedFilter==='following')posts=posts.filter(p=>followingIds.has(p.author_id)||p.author_id===state.user.id);
+ if(state.feedFilter==='videos')posts=posts.filter(p=>p.kind==='video');
+ if(state.deepPost)posts=posts.filter(p=>p.id===state.deepPost);
+ if(!posts.length){
+  box.append(empty(state.feedFilter==='following'?'No following updates yet':'No network posts yet',
+   'Publish the first update or discover a coworker to follow.'));
+  return;
+ }
+ for(const p of posts)box.append(renderPost(p));
+}
+function videoTile(a){
+ const p=state.posts.find(p=>p.id===a.post_id),person=profile(a.owner_id);
+ const card=el('article','panel video-card');
+ const url=mediaUrl(a);
+ if(url){
+  const vid=el('video');vid.src=url;vid.controls=true;vid.playsInline=true;vid.preload='metadata';vid.setAttribute('aria-label',a.filename);
+  card.append(vid);
+ }else card.append(el('div','empty-state','Preview temporarily unavailable.'));
+ const footer=el('div','video-card-footer');
+ footer.append(el('strong','',p?.body||a.filename),el('small','',personName(person)+' · '+stamp(a.created_at)),
+  btn('OPEN AUTHOR PROFILE ↗',()=>openProfile(a.owner_id,'videos')));
+ card.append(footer);return card;
+}
+function renderVideos(){
+ const node=$('videoGrid');node.replaceChildren();
+ const media=state.assets.filter(a=>a.kind==='video'&&a.purpose==='post');
+ if(!media.length){node.append(empty('Your network channel is ready','Video uploads from authorized Blackcell members will appear here.'));return}
+ for(const a of media)node.append(videoTile(a));
+}
+async function toggleFollow(id){
+ if(id===state.user.id)return;
+ try{
+  const follows=following(id);
+  const op=follows
+   ?client.from('corp_social_follows').delete().eq('follower_id',state.user.id).eq('following_id',id)
+   :client.from('corp_social_follows').insert({follower_id:state.user.id,following_id:id});
+  const {error}=await op;if(error)throw error;
+  if(follows)state.follows=state.follows.filter(f=>!(f.follower_id===state.user.id&&f.following_id===id));
+  else state.follows.push({follower_id:state.user.id,following_id:id});
+  renderAll();toast(follows?'Unfollowed.':'Now following '+personName(profile(id))+'.');
+ }catch(e){toast('Follow could not be updated: '+fail(e))}
+}
+async function toggleLike(id){
+ const liked=liking(id);
+ try{
+  const {error}=await(liked
+   ?client.from('corp_social_likes').delete().eq('post_id',id).eq('user_id',state.user.id)
+   :client.from('corp_social_likes').insert({post_id:id,user_id:state.user.id}));
+  if(error)throw error;
+  if(liked)state.likes=state.likes.filter(l=>!(l.post_id===id&&l.user_id===state.user.id));
+  else state.likes.push({post_id:id,user_id:state.user.id});
+  renderAll();
+ }catch(e){toast('Reaction could not be saved: '+fail(e))}
+}
+async function copyPostLink(id){
+ const url=location.origin+location.pathname+'?post='+id;
+ try{await navigator.clipboard.writeText(url);toast('Private post link copied. It only opens for verified Blackcell members.')}
+ catch(_){toast('Copy the URL from this page to share internally.')}
+}
+async function deletePost(p){
+ if(!confirm('Delete this post from Blackcell Network? This cannot be undone.'))return;
+ try{
+  const files=postedAssets(p.id);
+  const {error}=await client.from('corp_social_posts').delete().eq('id',p.id).eq('author_id',state.user.id);
+  if(error)throw error;
+  if(files.length){
+   // Object deletion is best effort; records were removed through ON DELETE CASCADE.
+   await bucket.remove(files.map(a=>a.storage_path));
+  }
+  await refresh();toast('Post deleted.');
+ }catch(e){toast('Could not delete post: '+fail(e))}
+}
+async function uploadAsset(file,purpose,postId=null){
+ if(!allowedTypes.has(file.type))throw Error('Unsupported format. Use JPG, PNG, WEBP, GIF, HEIC, MP4, MOV, or WEBM.');
+ if(file.size<=0||file.size>45*1048576)throw Error('File must be smaller than 45 MB.');
+ if(purpose!=='post' && (!file.type.startsWith('image/')||file.size>12*1048576))
+  throw Error('Profile and cover images must be smaller than 12 MB.');
+ const id=crypto.randomUUID();
+ const ext=(file.name.split('.').pop()||'bin').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,8)||'bin';
+ const path=state.user.id+'/'+id+'.'+ext;
+ const {error:upError}=await bucket.upload(path,file,{
+  contentType:file.type,cacheControl:'1800',upsert:false
+ });
+ if(upError)throw Error('Media upload rejected: '+upError.message);
+ const record={id,owner_id:state.user.id,post_id:postId,purpose,
+  kind:file.type.startsWith('image/')?'photo':'video',
+  mime_type:file.type,filename:file.name.slice(0,180),storage_path:path,bytes:file.size};
+ const {error}=await client.from('corp_social_assets').insert(record);
+ if(error)throw Error('Media storage saved, but registration failed: '+error.message);
+ return record;
+}
+let formFiles=[];
+function renderAttachments(){
+ const box=$('attachmentPreview');box.replaceChildren();
+ box.hidden=!formFiles.length;
+ formFiles.forEach((f,i)=>{
+  const chip=el('div','attachment-chip');
+  chip.append(el('span','',f.name+' · '+prettyBytes(f.size)),btn('✕',()=>{
+   formFiles.splice(i,1);renderAttachments()
+  }));
+  box.append(chip);
+ });
+}
+function selectFiles(input){
+ const files=Array.from(input.files||[]);
+ input.value='';
+ if(!files.length)return;
+ if(files.some(f=>!allowedTypes.has(f.type)||f.size>45*1048576)){
+  toast('Unsupported media. Choose images or videos up to 45 MB each.');return;
+ }
+ const all=formFiles.concat(files);
+ if(all.some(f=>f.type.startsWith('video/')) && all.length>1){
+  toast('Post one video at a time, or create a separate photo post.');return;
+ }
+ if(all.length>6){toast('Maximum 6 photos in one post.');return}
+ formFiles=all;renderAttachments();
+}
+async function publish(){
+ if(state.busy)return;
+ const body=$('postBody').value.trim();
+ if(!body&&!formFiles.length){toast('Write an update or attach media before publishing.');return}
+ const hasVideo=formFiles.some(f=>f.type.startsWith('video/'));
+ const kind=hasVideo?'video':formFiles.length?'photo':'update';
+ state.busy=true;const publishBtn=$('publishPost');
+ publishBtn.disabled=true;publishBtn.textContent='PUBLISHING…';
+ const progress=$('uploadProgress');
+ if(formFiles.length){progress.hidden=false;$('uploadFill').style.width='0%'}
+ let postId=null;
+ try{
+  const {data,error}=await client.from('corp_social_posts').insert({
+   author_id:state.user.id,body,kind
+  }).select('id').single();
+  if(error||!data?.id)throw Error(error?.message||'Could not create post.');
+  postId=data.id;
+  for(const [i,f] of formFiles.entries()){
+   $('uploadFill').style.width=Math.round(i*100/formFiles.length)+'%';
+   $('uploadText').textContent='Uploading '+(i+1)+' of '+formFiles.length+': '+f.name;
+   await uploadAsset(f,'post',postId);
+   $('uploadFill').style.width=Math.round((i+1)*100/formFiles.length)+'%';
+  }
+  $('uploadText').textContent='Upload complete.';
+  $('postBody').value='';formFiles=[];renderAttachments();updateCounter();
+  await refresh();
+  switchView('feed');toast('Post published to your private Blackcell Network.');
+ }catch(e){
+  // Remove incomplete post (metadata cascades), keeping the feed consistent.
+  if(postId)await client.from('corp_social_posts').delete().eq('id',postId).eq('author_id',state.user.id);
+  toast('Could not publish: '+fail(e));
+ }finally{
+  state.busy=false;publishBtn.disabled=false;publishBtn.textContent='PUBLISH POST ↗';
+  progress.hidden=true;
+ }
+}
+function updateCounter(){$('charCount').textContent=$('postBody').value.length+' / 1,000'}
+function openMedia(a){
+ const url=mediaUrl(a);
+ if(!url){toast('Original file is unavailable. Refresh and try again.');return}
+ const open=window.open(url,'_blank','noopener');
+ if(!open)toast('Your browser blocked the new tab. Allow pop-ups or open the photo from the feed.');
+}
+function openEdit(){
+ const p=myProfile();if(!p)return;
+ $('editHeadline').value=p.headline||'';
+ $('editBio').value=p.bio||'';
+ $('editAvatar').value='';$('editCover').value='';
+ $('editFeedback').hidden=true;$('editOverlay').hidden=false;
+}
+function closeEdit(){$('editOverlay').hidden=true}
+async function saveProfile(){
+ const p=myProfile();if(!p||state.busy)return;
+ state.busy=true;
+ const b=$('saveProfile');b.disabled=true;b.textContent='SAVING…';
+ $('editFeedback').hidden=false;$('editFeedback').textContent='Saving profile to Blackcell Network…';
+ try{
+  const changes={headline:$('editHeadline').value.trim().slice(0,140),
+   bio:$('editBio').value.trim().slice(0,1000)};
+  const ava=$('editAvatar').files?.[0],cov=$('editCover').files?.[0];
+  if(ava){const img=await uploadAsset(ava,'avatar');changes.avatar_asset_id=img.id}
+  if(cov){const img=await uploadAsset(cov,'cover');changes.cover_asset_id=img.id}
+  const {error}=await client.from('corp_social_profiles').update(changes).eq('user_id',state.user.id);
+  if(error)throw error;
+  closeEdit();await refresh();openProfile(state.user.id);toast('Your corporate social profile was updated.');
+ }catch(e){$('editFeedback').textContent='Could not save profile: '+fail(e)}
+ finally{state.busy=false;b.disabled=false;b.textContent='SAVE PROFILE ↗'}
+}
+async function refresh(){
+ await loadAll({show:true});
+}
+function setupEvents(){
+ document.querySelectorAll('[data-view]').forEach(n=>n.addEventListener('click',()=>switchView(n.dataset.view)));
+ $('viewAllPeople').addEventListener('click',()=>switchView('discover'));
+ $('peopleSearch').addEventListener('input',renderDirectory);
+ document.querySelectorAll('#feedFilter [data-filter]').forEach(n=>n.addEventListener('click',()=>{
+  state.feedFilter=n.dataset.filter;state.deepPost=null;
+  document.querySelectorAll('#feedFilter [data-filter]').forEach(x=>x.classList.toggle('selected',x===n));
+  renderFeed();
+ }));
+ document.querySelectorAll('#profileTabs [data-tab]').forEach(n=>n.addEventListener('click',()=>{
+  state.profileTab=n.dataset.tab;
+  renderProfile();
+ }));
+ $('postBody').addEventListener('input',updateCounter);
+ $('attachPhotos').addEventListener('click',()=>{$('postFiles').accept='image/*';$('postFiles').multiple=true;$('postFiles').click()});
+ $('attachVideo').addEventListener('click',()=>{$('postFiles').accept='video/*';$('postFiles').multiple=false;$('postFiles').click()});
+ $('postFiles').addEventListener('change',()=>selectFiles($('postFiles')));
+ $('publishPost').addEventListener('click',()=>void publish());
+ $('closeEdit').addEventListener('click',closeEdit);
+ $('cancelEdit').addEventListener('click',closeEdit);
+ $('editOverlay').addEventListener('click',e=>{if(e.target===$('editOverlay'))closeEdit()});
+ $('saveProfile').addEventListener('click',()=>void saveProfile());
+}
+async function boot(){
+ try{
+  const {data:{session}}=await client.auth.getSession();
+  if(!session)throw Error('Sign in to your employee account to open Blackcell Network.');
+  const auth=await corporateAuthorize(client);
+  if(!auth.ok)throw Error('Your corporate session is no longer authorized. Sign in again.');
+  state.user=auth.user;state.member=auth.member;
+  $('portalLink').href=auth.member.role==='owner'?'dashboard.html':'employee.html';
+  $('gateBack').href=$('portalLink').href;
+  let verified=false;
+  if(auth.member.role==='owner'){
+   const {data,error}=await client.rpc('corp_code_status');
+   verified=!error&&data?.ok===true&&data.verified===true;
+  }else if(auth.member.role==='employee'){
+   const {data,error}=await client.rpc('corp_employee_code_status');
+   verified=!error&&data?.ok===true&&data.verified===true;
+  }
+  if(!verified)throw Error('Your Blackcell Access Pass must be verified before entering the social network.');
+  await loadAll({show:false});
+  $('gate').hidden=true;$('app').hidden=false;
+  setupEvents();
+  const params=new URLSearchParams(location.search);
+  const uid=params.get('user');
+  const post=params.get('post');
+  if(post&&UUID.test(post)){
+   state.deepPost=post;
+   if(!state.posts.some(p=>p.id===post)){
+    const {data}=await client.from('corp_social_posts').select('*').eq('id',post).maybeSingle();
+    if(data)state.posts.unshift(data);
+   }
+  }
+  if(uid&&UUID.test(uid)&&profile(uid))switchView('profile',{who:uid});
+  else if(['discover','videos'].includes(params.get('view')))switchView(params.get('view'));
+  else switchView('feed');
+  renderMini();renderSuggestions();
+ }catch(e){
+  $('gateText').textContent=fail(e);
+  $('gateBack').hidden=false;
+ }
+}
+void boot();
