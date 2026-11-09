@@ -92,7 +92,11 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const mediaLibrary=button('SHARED MEDIA',()=>void openLibrary());
  controls.append(choosePhotos,chooseVideos,mediaShare,mediaLibrary);
  const fileInput=el('input');fileInput.type='file';fileInput.multiple=true;
- fileInput.accept='image/*,video/*';fileInput.hidden=true;
+ fileInput.accept='image/*,video/*';
+ fileInput.setAttribute('aria-label','Select photos or videos for this chat');
+ // Visually hidden, not display:none: improves iOS Safari's native media picker.
+ fileInput.tabIndex=-1;
+ Object.assign(fileInput.style,{position:'fixed',left:'-9999px',top:'0',width:'1px',height:'1px',opacity:'0',pointerEvents:'none'});
  document.body.append(fileInput);
  const progress=el('div','media-progress-wrap');
  const progressHead=el('div','media-progress-head');
@@ -103,7 +107,43 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const progressFill=el('div','media-progress-fill');
  progressTrack.append(progressFill);progress.append(progressHead,progressTrack);
  messageForm.before(controls,progress);
-
+ const inlineUpload=el('div','message mine bc-inline-upload');
+ const inlineBubble=el('div','bubble bc-inline-upload-bubble');
+ const inlineTitle=el('div','bc-inline-upload-title','PREPARING MEDIA…');
+ const inlineTrack=el('div','bc-inline-upload-track');
+ const inlineFill=el('div','bc-inline-upload-fill');
+ const inlinePercent=el('span','bc-inline-upload-percent','0%');
+ const inlineActions=el('div','bc-inline-upload-actions');
+ const inlineRetry=button('TRY AGAIN',()=>void sendSelection());
+ const inlineDismiss=button('DISMISS',()=>hideInlineUpload());
+ inlineActions.append(inlineRetry,inlineDismiss);inlineActions.hidden=true;
+ inlineTrack.append(inlineFill);
+ inlineBubble.append(inlineTitle,inlineTrack,inlinePercent,inlineActions);
+ inlineUpload.append(inlineBubble);
+ let inlineUploadVisible=false;
+ function syncInlineUpload(){
+  if(!compactMedia()||!inlineUploadVisible)return;
+  const list=document.getElementById('messages');
+  if(list&&inlineUpload.parentElement!==list){
+   list.append(inlineUpload);
+   list.scrollTop=list.scrollHeight;
+  }
+ }
+ function hideInlineUpload(){
+  if(busy)return;
+  inlineUploadVisible=false;inlineUpload.remove();
+ }
+ function updateInlineUpload(percent,label,failed=false){
+  if(!compactMedia())return;
+  inlineUploadVisible=true;
+  inlineTitle.textContent=label||'SENDING PHOTOS AND VIDEOS';
+  inlineFill.style.width=Math.max(0,Math.min(100,percent))+'%';
+  inlinePercent.textContent=failed?'UPLOAD FAILED':percent+'%';
+  inlineActions.hidden=!failed;
+  syncInlineUpload();
+  const list=document.getElementById('messages');
+  if(list)list.scrollTop=list.scrollHeight;
+ }
  const wing=el('aside','media-viewer');
  wing.id='blackcellMediaViewer';wing.setAttribute('aria-label','Shared Media viewer');
  wing.setAttribute('aria-hidden','true');
@@ -203,8 +243,19 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  }
  function chooseFiles(accept){
   if(!requirePeer()||busy)return;
+  if(compactMedia()){
+   closeMediaTray();
+   fileInput.value='';
+   fileInput.accept='image/*,video/*';
+   fileInput.click();
+   return;
+  }
   if(routeBubble('share',{pick:accept}))return;
   fileInput.value='';fileInput.accept=accept;fileInput.click();
+ }
+ function pickMobileFiles(){
+  if(!compactMedia())return;
+  chooseFiles('image/*,video/*');
  }
  fileInput.addEventListener('change',()=>{
   if(!fileInput.files?.length)return;
@@ -218,6 +269,11 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
    status('Some files were skipped. Use JPG, PNG, WEBP, GIF, HEIC, MP4, MOV, or WEBM, maximum 50 MB each.');
   }
   if(!accepted.length)return;
+  if(compactMedia()){
+   selection=accepted;
+   void sendSelection(); // One tap -> native picker -> direct in-chat upload
+   return;
+  }
   const seen=new Set(selection.map(f=>[f.name,f.size,f.lastModified,f.type].join('|')));
   for(const f of accepted){
    const key=[f.name,f.size,f.lastModified,f.type].join('|');
@@ -280,6 +336,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   }
  }
  function updateProgress(n,label){
+  updateInlineUpload(n,label);
   progress.classList.add('active');
   progressLabel.textContent=label||'BLACKCELL / SECURE MEDIA TRANSFER';
   progressNumber.textContent=Math.max(0,Math.min(100,n))+'%';
@@ -323,9 +380,9 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   const batchId=crypto.randomUUID();
   let transferred=0;
   updateProgress(0,'UPLOADING '+files.length+' MEDIA FILE'+(files.length===1?'':'S'));
-  if((standalonePanel&&mediaPanel==='share')||compactMedia()){
+  if(standalonePanel&&mediaPanel==='share'){
    overlay.hidden=false;
-   pickInfo.textContent='Uploading '+files.length+' items securely. Keep this view open until 100%.';
+   pickInfo.textContent='Uploading '+files.length+' items securely. Keep this window open until 100%.';
    footer.hidden=true;
   }else overlay.hidden=true;
   const receiver=c.peer.user_id;
@@ -367,29 +424,30 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
    updateProgress(100,'TRANSFER COMPLETE · MEDIA READY');
    selection=[];renderSelection();
    await reloadMessages();
+   if(compactMedia()){
+    inlineUploadVisible=false;
+    inlineUpload.remove();
+   }
    await new Promise(r=>setTimeout(r,350));
    progress.classList.remove('active');
    if(context()?.peer?.user_id===receiver){
     if(standalonePanel&&mediaPanel==='share'&&window.parent!==window){
      window.parent.postMessage({type:'blackcell-media-upload-finished',
       peerId:receiver,batchId},location.origin);
-    }else{
-     if(compactMedia()){
-      overlay.classList.add('bc-mobile-media-flip');
-      await new Promise(r=>setTimeout(r,220));
-      overlay.classList.remove('bc-mobile-media-flip');
-      overlay.hidden=true;
-     }
+    }else if(!compactMedia()){
      await openBatch(batchId);
     }
    }
   }catch(e){
    progress.classList.remove('active');
-   if((standalonePanel&&mediaPanel==='share')||compactMedia()){
+   if(standalonePanel&&mediaPanel==='share'){
     overlay.hidden=false;
     pickInfo.textContent='Upload failed: '+safeErr(e)+'. You can try sharing these files again.';
    }
-   status('Media share failed: '+safeErr(e)+'. Please check your connection and try again.');
+   if(compactMedia()){
+    updateInlineUpload(0,'UPLOAD FAILED · '+safeErr(e),true);
+   }
+   status('Media upload failed: '+safeErr(e)+'. Check your connection and retry.');
   }finally{
    footer.hidden=false;
    toggleBusy(false);
@@ -588,7 +646,8 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   chat.classList.remove('media-open');
   wing.setAttribute('aria-hidden','true');
   stageInner.querySelector('video')?.pause();
-  overlay.hidden=true;selection=[];renderSelection();
+  overlay.hidden=true;
+  if(!busy){selection=[];renderSelection();hideInlineUpload()}
  }
- return {renderMediaBubble,onPeerChange,openShare,openLibrary,openBatch,closeWing};
+ return {renderMediaBubble,onPeerChange,openShare,openLibrary,openBatch,closeWing,pickMobileFiles,syncInlineUpload};
 }
