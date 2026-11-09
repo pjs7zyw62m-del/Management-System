@@ -55,10 +55,11 @@ const mediaControls=document.querySelector('.media-actions');
 const mediaToggle=$('mediaToggleButton');
 const canShowFullMedia=()=>window.BlackcellChatMedia?.enabled()===true;
 function syncMediaUI(){
- const allowed=canShowFullMedia();
- mediaToggle.hidden=!allowed;
- mediaControls.hidden=!allowed;
- if(!allowed){
+ // On smaller devices, only the *large floating media player* is disabled.
+ // The compact + button must remain available for sending and receiving.
+ mediaToggle.hidden=false;
+ mediaControls.hidden=false;
+ if(!canShowFullMedia()){
   mediaControls.classList.add('is-collapsed');
   mediaToggle.classList.remove('open');
   mediaToggle.setAttribute('aria-expanded','false');
@@ -67,7 +68,6 @@ function syncMediaUI(){
 syncMediaUI();
 window.addEventListener('blackcell-chat-media-capability-change',syncMediaUI);
 mediaToggle.addEventListener('click',()=>{
- if(!canShowFullMedia())return;
  const collapsed=mediaControls.classList.toggle('is-collapsed');
  mediaToggle.setAttribute('aria-expanded',String(!collapsed));
  mediaToggle.classList.toggle('open',!collapsed);
