@@ -139,9 +139,9 @@ function users(){
         receipt.style.cssText='border:1px solid #648774;border-radius:14px;padding:16px;margin-top:15px';
         receipt.append(el('h3','','EMPLOYEE CREDENTIALS · COPY ONCE'));
         const textReceipt='Blackcell Employee: '+name.value.trim()+
-          '\\nUsername: '+uniqueUser.value+'\\nAccess Code (4 digits): '+accessCode.value+
-          '\\nSecurity Code (12 digits): '+securityCode.value+
-          '\\nEmployee activation: https://blackcellcorp.com/employee.html';
+          '\nUsername: '+uniqueUser.value+'\nAccess Code (4 digits): '+accessCode.value+
+          '\nSecurity Code (12 digits): '+securityCode.value+
+          '\nEmployee activation: https://blackcellcorp.com/employee.html';
         const pre=el('pre','',textReceipt);
         pre.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px';
         const copyReceipt=action('COPY CREDENTIALS',()=>{
