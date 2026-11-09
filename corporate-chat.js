@@ -18,6 +18,11 @@ async function boot(){
    const {data,error}=await client.rpc('corp_chat_peers');
    if(error||data?.ok!==true||!Array.isArray(data.peers)){status('Contacts cannot be loaded. Contact your corporate administrator.');return}
    contacts=data.peers;ready=true;status('');
+   client.channel('blackcell-chat-'+self)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'corp_chat_messages'},payload=>{
+      const m=payload.new;
+      if(m&&(m.sender_id===self||m.recipient_id===self))void loadMessages();
+    }).subscribe();
    renderPeers();
    if(contacts.length)choose(contacts[0].user_id);
    else $('messages').replaceChildren(text('p','empty',m.role==='owner'?'No employees yet. Invite your first employee from User Management → Accounts.':'Your administrator is not available for chat.'));
@@ -74,6 +79,13 @@ $('sendForm').addEventListener('submit',async e=>{
  }catch(_){status('Message not sent. Check your connection.')}
  finally{btn.disabled=false;$('messageInput').focus()}
 });
+// Chat interactions in the embedded window count as owner activity.
+function notifyParentActivity(){
+  if(window.parent!==window)window.parent.postMessage({type:'blackcell-chat-activity'},location.origin);
+}
+for(const evt of ['pointerdown','keydown','wheel']){
+  document.addEventListener(evt,notifyParentActivity,{passive:true});
+}
 setInterval(()=>{if(ready)void loadMessages()},6000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&ready)void loadMessages()});
 void boot();
