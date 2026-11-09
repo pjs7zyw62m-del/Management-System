@@ -43,6 +43,22 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   }
   return false;
  }
+ function requestFlip(panel='library'){
+  const c=context();
+  if(!c?.ready||!c.peer?.user_id||busy)return false;
+  if(panel==='library'&&selection.length>0&&
+      !window.confirm('Switch to Shared Media? Your unshared file selections will be cleared.'))return false;
+  const message={type:'blackcell-media-bubble-flip',panel,peerId:c.peer.user_id};
+  if(window.parent!==window){window.parent.postMessage(message,location.origin);return true}
+  const api=window.BlackcellMediaBubbleHostController;
+  if(api?.flip){api.flip(panel,c.peer.user_id);return true}
+  return false;
+ }
+ function notifyUploadState(uploading){
+  if(window.parent!==window && standalonePanel && mediaPanel==='share')
+   window.parent.postMessage({type:'blackcell-media-upload-state',
+    peerId:context()?.peer?.user_id,uploading:!!uploading},location.origin);
+ }
  function requestPanelClose(panel){
   if(!standalonePanel)return false;
   if(window.parent!==window){
@@ -51,7 +67,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   }
   return false;
  }
- let peerId=null,library=[],visible=[],active=0,batchFocus=null,viewMode='standard';
+ let peerId=null,library=[],visible=[],active=0,batchFocus=null,viewMode='standard',focused=false;
  let selection=[],busy=false,filter='all',search='',sort='newest',autoNext=false,mediaReady=false;
  let signed=new Map(),urlsTime=0,drawToken=0;
  const controls=el('div','media-actions');
@@ -84,8 +100,11 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const expanded=button('Expanded',()=>setSize('expanded'));
  const custom=button('Custom',()=>setSize('custom'));
  const add=button('＋ Add Media',()=>openShare());
+ const focus=button('FOCUS VIEW ↗',()=>setFocus(!focused),'media-focus-toggle');
+ focus.setAttribute('aria-pressed','false');
+ focus.title='Collapse the media library and enlarge the photo or video';
  const close=button('✕ Close',()=>closeWing());
- actions.append(standard,expanded,custom,add,close);
+ actions.append(standard,expanded,custom,focus,add,close);
  head.append(brand,actions);
  const sizing=el('div','media-custom-range');sizing.hidden=true;
  const sizeLabel=el('span','','Viewer size');
@@ -144,6 +163,15 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
    b.classList.toggle('active',value===k);
  }
  setSize('standard');
+ function setFocus(value){
+  focused=!!value;
+  document.documentElement.classList.toggle('bc-media-focus',focused);
+  wing.classList.toggle('media-focused',focused);
+  focus.textContent=focused?'SHOW LIBRARY ▧':'FOCUS VIEW ↗';
+  focus.title=focused?'Show thumbnails, search and album history':'Hide thumbnails to enlarge the photo or video';
+  focus.setAttribute('aria-pressed',String(focused));
+  focus.setAttribute('aria-label',focused?'Expand library controls':'Collapse library to focus on photo or video');
+ }
  function toggleBusy(v){
   busy=v;for(const b of [choosePhotos,chooseVideos,mediaShare,add])b.disabled=v;
  }
@@ -179,7 +207,11 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const dialogHead=el('div','media-dialog-head');
  const dialogTitle=el('div');
  dialogTitle.append(el('strong','','BLACKCELL / MEDIA SHARE'),el('small','','Review files before sharing to this conversation'));
- dialogHead.append(dialogTitle,button('✕',()=>closeShare()));
+ const shareHeadActions=el('div','bc-media-share-head-actions');
+ const flipButton=button('↻ SHARED MEDIA',()=>requestFlip('library'),'bc-media-flip-button');
+ flipButton.title='Flip the card over to browse Shared Media';
+ shareHeadActions.append(flipButton,button('✕',()=>closeShare()));
+ dialogHead.append(dialogTitle,shareHeadActions);
  const body=el('div','media-dialog-body');
  const pickInfo=el('div','media-dialog-selection','Select photos or videos to share securely with this contact.');
  const itemsBox=el('div','media-selected-items');
@@ -260,7 +292,8 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   const c=requirePeer();if(!c||!selection.length||busy)return;
   const files=selection.slice();
   if(files.some(f=>f.size>MAX_BYTES||!ALLOWED.has(f.type)))return;
-  toggleBusy(true);sendButton.disabled=true;
+  toggleBusy(true);sendButton.disabled=true;flipButton.disabled=true;
+  notifyUploadState(true);
   const total=files.reduce((n,f)=>n+f.size,0);
   const batchId=crypto.randomUUID();
   let transferred=0;
@@ -327,6 +360,8 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   }finally{
    footer.hidden=false;
    toggleBusy(false);
+   flipButton.disabled=false;
+   notifyUploadState(false);
    sendButton.disabled=selection.length===0;
   }
  }
@@ -487,6 +522,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   peerId=newPeerId;
   library=[];visible=[];active=0;batchFocus=null;mediaReady=false;
   signed.clear();
+  setFocus(false);
   // Reset the previous conversation without sending a close request to the bubble host.
   chat.classList.remove('media-open');
   wing.setAttribute('aria-hidden','true');
