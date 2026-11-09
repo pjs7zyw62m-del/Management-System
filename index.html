@@ -16,6 +16,10 @@ main{position:relative;z-index:1;min-height:calc(100vh - 94px);display:grid;grid
 
 /* Small-screen legibility correction; approved desktop/iPad visual design unchanged. */
 @media(max-width:520px){.hero h1{font-size:clamp(38px,10.4vw,54px)}}
+
+/* Keep the Blackcell interface free of visible browser scrollbars; content remains reachable on long pages. */
+html,body,*{scrollbar-width:none;-ms-overflow-style:none}
+*::-webkit-scrollbar{width:0!important;height:0!important;display:none!important}
 </style></head>
 <body>
 <div class="atmos"><div class="arch"></div></div><div class="lines"></div>
