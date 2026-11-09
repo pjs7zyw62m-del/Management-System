@@ -34,6 +34,21 @@ function chatActivity(){
 
 function status(text){$('systemStatus').textContent=text;$('systemStatus').hidden=!text}
 const sharedMedia=setupCorporateMedia({client,context:()=>({self,peer,ready}),reloadMessages:loadMessages,status});
+const mediaControls=document.querySelector('.media-actions');
+const mediaToggle=$('mediaToggleButton');
+mediaToggle.addEventListener('click',()=>{
+ const collapsed=mediaControls.classList.toggle('is-collapsed');
+ mediaToggle.setAttribute('aria-expanded',String(!collapsed));
+ mediaToggle.classList.toggle('open',!collapsed);
+});
+mediaToggle.classList.add('open');
+$('peerSearch').addEventListener('input',renderPeers);
+const composerText=$('messageInput');
+function resizeComposer(){composerText.style.height='auto';composerText.style.height=Math.min(composerText.scrollHeight,112)+'px'}
+composerText.addEventListener('input',resizeComposer);
+composerText.addEventListener('keydown',e=>{
+ if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();if(!composerText.disabled)$('sendForm').requestSubmit()}
+});
 function text(tag,cls,value){const el=document.createElement(tag);if(cls)el.className=cls;el.textContent=value;return el}
 async function boot(){
  try{
@@ -72,11 +87,29 @@ async function boot(){
    else $('messages').replaceChildren(text('p','empty',m.role==='owner'?'No employees yet. Invite your first employee from User Management → Accounts.':'Your administrator is not available for chat.'));
  }catch(_){status('Could not connect to secure chat. Check your connection.')}
 }
+function formatChatDay(date){
+ const today=new Date(),yesterday=new Date();
+ yesterday.setDate(today.getDate()-1);
+ if(date.toDateString()===today.toDateString())return 'TODAY';
+ if(date.toDateString()===yesterday.toDateString())return 'YESTERDAY';
+ return date.toLocaleDateString([],{weekday:'long',month:'short',day:'numeric'});
+}
+function isBubbleNeighbor(first,second){
+ if(!first||!second)return false;
+ if(first.sender_id!==second.sender_id||first.media_batch_id||second.media_batch_id)return false;
+ const a=new Date(first.created_at),b=new Date(second.created_at);
+ return a.toDateString()===b.toDateString()&&(b.getTime()-a.getTime())<=5*60*1000;
+}
 function renderPeers(){
  const box=$('peers');box.replaceChildren();
- for(const c of contacts){
+ const query=$('peerSearch').value.trim().toLowerCase();
+ const visible=contacts.filter(c=>(String(c.display_name||'')+' '+String(c.role||'')).toLowerCase().includes(query));
+ $('contactCount').textContent=String(contacts.length);
+ if(!visible.length){box.append(text('p','empty',query?'No matching contacts.':'No authorized contacts.'));return}
+ for(const c of visible){
    const button=document.createElement('button');button.type='button';button.className='peer'+(peer?.user_id===c.user_id?' active':'');
-   button.append(text('span','avatar','B'));
+   const initial=String(c.display_name||'B').trim().slice(0,1).toUpperCase();
+   button.append(text('span','avatar',initial));
    const wrap=document.createElement('span');wrap.append(text('strong','',c.display_name||'Employee'),text('small','',c.role==='owner'?'CORPORATE OWNER':'LEVEL '+c.clearance_level));
    button.append(wrap);button.onclick=()=>choose(c.user_id);box.append(button);
  }
@@ -99,15 +132,37 @@ async function loadMessages(){
   if(error){status('Messages could not be loaded.');return}
   const box=$('messages'),atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<80;
   const ordered=(data||[]).slice().reverse();
-  const newest=ordered.at(-1)?.id||'empty';
-  if(box.dataset.newest===newest && !firstLoad)return;
+  const newest=ordered.at(-1)?.id||'empty',oldNewest=box.dataset.newest;
+  if(oldNewest===newest && !firstLoad)return;
   box.dataset.newest=newest;box.replaceChildren();
-  for(const m of ordered){
-   const own=m.sender_id===self;
-   const item=document.createElement('div');item.className='message'+(own?' mine':'')+(m.media_batch_id?' message-media':'');
-   item.append(m.media_batch_id?sharedMedia.renderMediaBubble(m,own):text('div','bubble',m.body));
-   const t=document.createElement('time');t.dateTime=m.created_at;
-   t.textContent=new Date(m.created_at).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+  let currentDay='';
+  for(let i=0;i<ordered.length;i++){
+   const m=ordered[i],previous=ordered[i-1],next=ordered[i+1];
+   const own=m.sender_id===self,when=new Date(m.created_at);
+   const day=when.toDateString();
+   if(day!==currentDay){
+    currentDay=day;
+    const separator=text('div','chat-day-separator',formatChatDay(when));
+    separator.setAttribute('role','separator');box.append(separator);
+   }
+   const pairedBefore=isBubbleNeighbor(previous,m),pairedAfter=isBubbleNeighbor(m,next);
+   const group=pairedBefore?(pairedAfter?'group-middle':'group-end'):(pairedAfter?'group-start':'group-single');
+   const item=document.createElement('div');
+   item.className='message '+group+(own?' mine':'')+(m.media_batch_id?' message-media':'');
+   if(!firstLoad&&oldNewest!==newest&&m.id===newest)item.classList.add('message-fresh');
+   const bubble=m.media_batch_id?sharedMedia.renderMediaBubble(m,own):text('div','bubble',m.body);
+   if(!m.media_batch_id){
+    bubble.tabIndex=0;
+    bubble.title='Sent '+when.toLocaleString()+' · Tap to show the time';
+    const reveal=()=>item.classList.toggle('show-time');
+    bubble.addEventListener('click',reveal);
+    bubble.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();reveal()}});
+   }
+   item.append(bubble);
+   const t=document.createElement('time');
+   t.dateTime=m.created_at;t.textContent=when.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+   t.title=when.toLocaleString();
+   if(pairedAfter&&!m.media_batch_id)t.classList.add('group-time');
    item.append(t);box.append(item);
   }
   if(!ordered.length)box.append(text('p','empty','Private conversation started. Send the first message.'));
@@ -122,7 +177,7 @@ $('sendForm').addEventListener('submit',async e=>{
  try{
   const {error}=await client.from('corp_chat_messages').insert({sender_id:self,recipient_id:peer.user_id,body});
   if(error){status('Message not sent. Check your permissions.');return}
-  $('messageInput').value='';await loadMessages();
+  $('messageInput').value='';resizeComposer();await loadMessages();
  }catch(_){status('Message not sent. Check your connection.')}
  finally{btn.disabled=false;$('messageInput').focus()}
 });
