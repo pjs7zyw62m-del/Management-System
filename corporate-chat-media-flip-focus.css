@@ -1,0 +1,196 @@
+/* BLACKCELL / Media card flip + immersive focus viewer v1
+   Loaded AFTER responsive media styles on every authorized Chat host page. */
+.bc-media-bubble-host,.bc-media-bubble-track{perspective:1250px}
+.bc-media-bubble-card{transform-style:preserve-3d;backface-visibility:hidden}
+.bc-media-bubble-card.bc-media-card-turn-out{
+ animation:bcTurnCardOut .21s cubic-bezier(.45,.03,.79,.45) both!important;
+ pointer-events:none!important;
+}
+.bc-media-bubble-card.bc-media-card-turn-in{
+ animation:bcTurnCardIn .33s cubic-bezier(.12,.75,.18,1) both!important;
+}
+@keyframes bcTurnCardOut{
+ from{transform:perspective(1100px) rotateY(0deg) scale(1);opacity:1}
+ to{transform:perspective(1100px) rotateY(87deg) scale(.985);opacity:.15}
+}
+@keyframes bcTurnCardIn{
+ from{transform:perspective(1100px) rotateY(-88deg) scale(.985);opacity:.2}
+ to{transform:perspective(1100px) rotateY(0deg) scale(1);opacity:1}
+}
+.bc-media-bubble-heading-actions{display:flex;align-items:center;gap:6px}
+.bc-media-bubble-heading-actions .bc-media-bubble-flip{
+ display:grid;place-items:center;flex:none;
+ width:32px;height:32px;padding:0;
+ border-radius:50%;border:1px solid #8b6179;
+ background:linear-gradient(145deg,#533349,#281d2a);
+ color:#f1d1e0;font-size:21px;line-height:1;cursor:pointer;
+ transition:background .18s,border-color .18s,transform .2s;
+}
+.bc-media-bubble-heading-actions .bc-media-bubble-flip:hover{
+ transform:rotate(45deg);border-color:#dd9ab7;background:#754563;
+}
+.bc-media-bubble-heading-actions .bc-media-bubble-flip:disabled{
+ opacity:.4;cursor:not-allowed;transform:none;
+}
+.bc-media-panel .bc-media-share-head-actions{display:flex;align-items:center;gap:7px}
+.bc-media-panel .bc-media-flip-button{
+ color:#e8c0d4;background:#422539;border:1px solid #996d82;
+ border-radius:10px;padding:9px 11px;font-size:10px;letter-spacing:.06em;
+ cursor:pointer;white-space:nowrap;
+}
+.bc-media-panel .bc-media-flip-button:hover{background:#674059;border-color:#d397b4}
+.bc-media-panel .bc-media-flip-button:disabled{opacity:.35}
+.bc-media-panel .media-viewer-actions .media-focus-toggle{
+ display:inline-flex!important;align-items:center;justify-content:center;
+ background:linear-gradient(140deg,#543249,#301f32)!important;
+ border:1px solid #9d6a86!important;color:#f7deea!important;
+ font-size:9px!important;letter-spacing:.045em;white-space:nowrap;
+ border-radius:10px!important;
+}
+.bc-media-panel .media-viewer-actions .media-focus-toggle:hover{
+ background:#714562!important;border-color:#d299b6!important;
+}
+.bc-media-panel.bc-media-focus .media-viewer{
+ display:flex!important;flex-direction:column!important;
+ overflow:hidden!important;
+}
+.bc-media-panel.bc-media-focus .media-viewer-tools,
+.bc-media-panel.bc-media-focus .media-viewer-status,
+.bc-media-panel.bc-media-focus .media-library,
+.bc-media-panel.bc-media-focus .media-custom-range{display:none!important}
+.bc-media-panel.bc-media-focus .media-viewer-stage,
+.bc-media-panel.bc-media-focus .media-viewer-stage.standard,
+.bc-media-panel.bc-media-focus .media-viewer-stage.expanded,
+.bc-media-panel.bc-media-focus .media-viewer-stage.custom{
+ display:flex!important;align-items:center;justify-content:center;
+ flex:1 1 0!important;min-height:0!important;max-height:none!important;
+ width:100%!important;height:100%!important;
+ aspect-ratio:auto!important;
+ background:#000!important;
+ margin:0!important;padding:0!important;
+ border:0!important;overflow:hidden!important;
+}
+.bc-media-panel.bc-media-focus .media-viewer-stage .media-stage-inner{
+ position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+ display:flex!important;align-items:center;justify-content:center;overflow:hidden;
+}
+.bc-media-panel.bc-media-focus .media-viewer-stage img,
+.bc-media-panel.bc-media-focus .media-viewer-stage video{
+ display:block!important;width:100%!important;height:100%!important;
+ max-width:100%!important;max-height:100%!important;
+ object-fit:contain!important;object-position:center!important;background:#000;
+}
+.bc-media-panel.bc-media-focus .media-viewer-meta{
+ flex:0 0 auto!important;border-top:1px solid #ffffff16;padding:7px 11px!important;
+}
+.bc-media-panel.bc-media-focus .media-viewer-head{flex:0 0 auto!important}
+.bc-media-panel.bc-media-focus .media-viewer-stage .media-nav{z-index:3}
+.bc-media-panel .media-viewer-actions{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+/* A physical portrait phone must not receive the side-by-side desktop split
+   even when Safari chooses a wide layout viewport (Request Desktop Website). */
+body.bc-handset-portrait.bc-has-media-bubbles{
+ --bc-chat-pinned-height:39dvh;
+ --bc-handset-gap:6px;
+}
+body.bc-handset-portrait.bc-has-media-bubbles.bc-media-spotlight{
+ --bc-chat-pinned-height:25dvh;
+}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-chat-pane.bc-chat-split{
+ position:fixed!important;top:6px!important;bottom:auto!important;
+ left:6px!important;right:6px!important;
+ width:calc(100vw - 12px)!important;
+ height:var(--bc-chat-pinned-height)!important;
+ max-height:var(--bc-chat-pinned-height)!important;
+ min-width:0!important;min-height:0!important;
+ border-radius:17px!important;resize:none!important;
+ transform:none!important;z-index:200004!important;
+}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock{
+ position:fixed!important;
+ left:6px!important;right:6px!important;
+ top:calc(var(--bc-chat-pinned-height) + 12px)!important;bottom:6px!important;
+ width:calc(100vw - 12px)!important;height:auto!important;
+ min-width:0!important;min-height:0!important;max-height:none!important;
+ display:flex!important;flex-direction:column!important;gap:0!important;
+ padding:0!important;overflow:hidden!important;
+ scroll-snap-type:none!important;z-index:200003!important;
+}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock .bc-media-bubble-tabs:not([hidden]){
+ display:flex!important;position:relative!important;flex:0 0 35px!important;
+ min-height:35px!important;width:100%!important;gap:5px!important;
+ background:#17111a!important;padding:4px 5px!important;
+}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock .bc-media-bubble-track{
+ position:relative!important;
+ display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;
+ flex:1 1 0!important;min-height:0!important;min-width:0!important;
+ width:100%!important;
+ overflow-x:auto!important;overflow-y:hidden!important;
+ gap:7px!important;padding:0!important;
+ scroll-snap-type:x mandatory!important;
+ scroll-padding-inline:0!important;overscroll-behavior-inline:contain;
+ scrollbar-width:none;
+}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock .bc-media-bubble-card{
+ display:flex!important;flex:0 0 100%!important;width:100%!important;
+ height:100%!important;min-width:0!important;min-height:0!important;
+ border-radius:15px!important;scroll-snap-align:start!important;
+}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock .bc-media-bubble-heading{
+ min-height:43px!important;height:auto!important;padding:5px 9px!important;
+}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-icon{
+ width:28px!important;height:28px!important;font-size:17px!important;
+}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-name small{display:none!important}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-heading-actions button{
+ width:29px!important;height:29px!important;font-size:16px!important;
+}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-tabs button{
+ flex:1;background:#291c2a;border:1px solid #755268;color:#cbb6c4;
+ border-radius:8px;font:700 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-tabs button.selected{
+ background:#58324a;border-color:#c28ca5;color:#fff;
+}
+/* Same fallback on the standalone Chat route without its floating dock. */
+body.bc-handset-portrait.bc-has-media-bubbles:has(.bc-bubble-host-standalone)>.chat{
+ position:fixed!important;
+ top:58px!important;bottom:auto!important;
+ left:6px!important;right:6px!important;
+ width:calc(100vw - 12px)!important;height:34dvh!important;
+ margin:0!important;min-height:0!important;
+ border:1px solid #765c70;border-radius:15px;overflow:hidden!important;
+}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-standalone{
+ position:fixed!important;
+ top:calc(58px + 34dvh + 6px)!important;bottom:6px!important;
+ left:6px!important;right:6px!important;
+ width:calc(100vw - 12px)!important;height:auto!important;
+ display:flex!important;flex-direction:column!important;
+ overflow:hidden!important;
+}
+body.bc-handset-portrait.bc-has-media-bubbles.bc-media-spotlight:has(.bc-bubble-host-standalone)>.chat{
+ height:24dvh!important;
+}
+body.bc-handset-portrait.bc-has-media-bubbles.bc-media-spotlight .bc-media-bubble-host.bc-bubble-host-standalone{
+ top:calc(58px + 24dvh + 6px)!important;
+}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-standalone .bc-media-bubble-track{
+ display:flex!important;flex:1 1 0!important;min-height:0!important;
+ overflow-x:auto!important;overflow-y:hidden!important;
+ scroll-snap-type:x mandatory!important;gap:7px!important;
+}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-standalone .bc-media-bubble-card{
+ display:flex!important;flex:0 0 100%!important;width:100%!important;min-height:0!important;
+}
+/* Small iPhone: keep viewer controls reachable while maximizing 16:9 content. */
+@media(max-width:700px){
+ .bc-media-panel .media-viewer-actions .media-focus-toggle{font-size:9px!important;padding:7px 9px!important}
+ .bc-media-panel.bc-media-focus .media-viewer-meta{min-height:30px!important}
+ .bc-media-panel .bc-media-flip-button{font-size:9px;padding:7px}
+}
+@media(prefers-reduced-motion:reduce){
+ .bc-media-bubble-card.bc-media-card-turn-out,
+ .bc-media-bubble-card.bc-media-card-turn-in{animation:none!important}
+}
