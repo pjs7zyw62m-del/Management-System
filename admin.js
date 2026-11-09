@@ -388,11 +388,64 @@ function users(){
     previewCodes.type='button';
     previewCodes.style.cssText='width:100%;min-height:44px';
     form.append(previewCodes);
+    const testConnection=action('CHECK CONNECTION — NO EMAIL',null,false);
+    testConnection.type='button';
+    testConnection.style.cssText='width:100%;min-height:44px;border-color:#7c6470';
+    form.append(testConnection);
     const submit=action('SEND EMPLOYEE INVITATION',null,false,true);
     submit.type='submit';submit.style.cssText='width:100%;min-height:44px';
     form.append(submit);
     const feedback=el('p','muted','');
     feedback.setAttribute('role','status');
+    feedback.setAttribute('aria-live','polite');
+    const inviteReasons={
+      verified_level7_owner_required:'Your Level 7 owner verification has expired. Sign in and verify your master codes again.',
+      sign_in_required:'Sign in to the corporate network again.',
+      username_check_unavailable:'Supabase could not check existing usernames. The invitation was not sent.',
+      invite_limit_check_failed:'Supabase could not check the hourly invitation limit.',
+      invitation_backend_not_ready:'The secure Supabase invitation backend is not ready.',
+      invitation_service_not_configured:'Supabase employee invitation configuration is incomplete.',
+      invitation_service_unavailable:'The employee invitation service is unavailable.',
+      invalid_employee_credentials:'Check the email, name, username, 4-digit Access Code, and 12-digit Security Code.',
+      username_already_used:'This username is already in use. Generate a different one.',
+      cannot_invite_owner:'You cannot invite your own owner email as an employee.',
+      invitation_failed:'Supabase rejected the invitation email. Check the SMTP and Auth invitation settings.',
+      registration_not_completed:'The account could not be provisioned; employee access was not activated.',
+      hourly_invitation_limit:'The hourly employee invitation limit has been reached.'
+    };
+    async function inviteOutcome(data,error){
+      let detail=data;
+      let status=Number(error?.context?.status)||0;
+      if(error?.context && typeof error.context.clone==='function'){
+        try{
+          const raw=await error.context.clone().text();
+          if(raw)detail=JSON.parse(raw);
+        }catch(_){}
+      }
+      if(!error && detail?.ok===true)return {ok:true,detail,status};
+      const reason=typeof detail?.reason==='string'?detail.reason:'request_error';
+      const message=inviteReasons[reason]||(typeof detail?.detail==='string'&&detail.detail)||error?.message||'The request was rejected.';
+      return {ok:false,detail,status,reason,message:(status?'HTTP '+status+' — ':'')+message+' ['+reason+']'};
+    }
+    testConnection.addEventListener('click',async()=>{
+      const api=window.BLACKCELL_CORPORATE_ADMIN_API?.client;
+      if(!api){feedback.textContent='Corporate owner authentication is not available. Please sign in again.';return;}
+      testConnection.disabled=true;
+      testConnection.textContent='CHECKING SECURE CONNECTION…';
+      feedback.textContent='Checking Level 7 authorization, employee database access, and invitation administration. No email will be sent.';
+      try{
+        const {data,error}=await api.functions.invoke('blackcell-invite-employee',{body:{action:'check'}});
+        const result=await inviteOutcome(data,error);
+        if(!result.ok){feedback.textContent='Connection check failed: '+result.message;return;}
+        if(result.detail?.status!=='backend_ready'){feedback.textContent='Connection check returned an unexpected result. No email was sent.';return;}
+        feedback.textContent='✓ CONNECTION VERIFIED — owner authorization, employee database, and Auth administration are reachable. No invitation was sent.';
+      }catch(err){
+        feedback.textContent='Connection check failed: '+String(err?.message||'Network unavailable');
+      }finally{
+        testConnection.disabled=false;
+        testConnection.textContent='CHECK CONNECTION — NO EMAIL';
+      }
+    });
     form.addEventListener('submit',async e=>{
       e.preventDefault();
       if(!name.value.trim()||!email.value.trim())return;
@@ -411,8 +464,9 @@ function users(){
           body:{email:email.value.trim(),display_name:name.value.trim(),clearance_level:Number(level.value),
             username:uniqueUser.value,access_code:accessCode.value,security_code:securityCode.value}
         });
-        if(error||data?.ok!==true){
-          feedback.textContent=data?.detail||('Invitation not sent: '+(data?.reason||error?.message||'service unavailable'));
+        const outcome=await inviteOutcome(data,error);
+        if(!outcome.ok){
+          feedback.textContent='Invitation not sent: '+outcome.message;
           return;
         }
         feedback.textContent='Invitation created. The email activates the employee account, not the codes. Share these generated codes separately through a trusted channel; they cannot be retrieved later.';
@@ -441,7 +495,7 @@ function users(){
         feedback.after(receipt);
         name.value='';email.value='';accessCode.value='';securityCode.value='';uniqueUser.value='';
         void displayCorporateAccounts(list);
-      }catch(err){feedback.textContent='Invitation not sent. Check the network and email service.'}
+      }catch(err){feedback.textContent='Invitation not sent: '+String(err?.message||'Check the network and email service.')}
       finally{submit.disabled=false;submit.textContent='SEND EMPLOYEE INVITATION';}
     });
     section.append(form,feedback);
