@@ -1,6 +1,34 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-staff1';
 const client=corporateClient(),$=id=>document.getElementById(id);
 let self=null,peer=null,contacts=[],isLoading=false,firstLoad=true,ready=false;
+let employeeSession=false,sessionEnded=false,lastActivity=Date.now(),lastTouch=Date.now();
+const IDLE_LIMIT_MS=60*60*1000;
+async function endChatAccess(reason){
+ if(sessionEnded)return;
+ sessionEnded=true;ready=false;employeeSession=false;
+ $('messageInput').disabled=true;$('sendButton').disabled=true;
+ status(reason);
+ try{await client.rpc('corp_employee_end_session')}catch(_){}
+ try{await client.auth.signOut({scope:'local'})}catch(_){}
+ $('returnLink').href='employee.html';$('returnLink').textContent='SIGN IN AGAIN';
+}
+function chatActivity(){
+ if(sessionEnded)return;
+ if(window.parent!==window)
+  window.parent.postMessage({type:'blackcell-chat-activity'},location.origin);
+ if(!employeeSession)return;
+ if(Date.now()-lastActivity>=IDLE_LIMIT_MS){
+  void endChatAccess('Signed out after 60 minutes of inactivity.');return;
+ }
+ lastActivity=Date.now();
+ if(Date.now()-lastTouch>60000){
+  lastTouch=Date.now();
+  void client.rpc('corp_employee_touch_session').then(({data,error})=>{
+   if(error||data?.ok!==true)void endChatAccess('Your employee session expired. Sign in again.');
+  }).catch(()=>void endChatAccess('Security session could not be checked.'));
+ }
+}
+
 function status(text){$('systemStatus').textContent=text;$('systemStatus').hidden=!text}
 function text(tag,cls,value){const el=document.createElement(tag);if(cls)el.className=cls;el.textContent=value;return el}
 async function boot(){
@@ -14,7 +42,16 @@ async function boot(){
      $('returnLink').href='dashboard.html';$('returnLink').textContent='ADMINISTRATION';
      const {data,error}=await client.rpc('corp_code_status');
      if(error||data?.ok!==true||data.verified!==true){status('Level 7 security verification required. Return to Administration and authenticate.');return}
-   }else if(m.can_chat!==true){status('Chat has not been enabled for this employee account.');return}
+   }else if(m.role==='employee'){
+     if(m.can_chat!==true){status('Chat is not enabled for your employee account.');return}
+     const {data:employeeStatus,error:employeeError}=await client.rpc('corp_employee_code_status');
+     if(employeeError||employeeStatus?.ok!==true||employeeStatus?.verified!==true){
+       $('returnLink').href='employee.html';$('returnLink').textContent='VERIFY EMPLOYEE CARD';
+       status('Verify your 4-digit Access Code and Security Code on your employee card first.');
+       return;
+     }
+     employeeSession=true;lastActivity=Date.now();lastTouch=Date.now();
+   }else{status('This account cannot access Employee Chat.');return}
    const {data,error}=await client.rpc('corp_chat_peers');
    if(error||data?.ok!==true||!Array.isArray(data.peers)){status('Contacts cannot be loaded. Contact your corporate administrator.');return}
    contacts=data.peers;ready=true;status('');
@@ -79,13 +116,23 @@ $('sendForm').addEventListener('submit',async e=>{
  }catch(_){status('Message not sent. Check your connection.')}
  finally{btn.disabled=false;$('messageInput').focus()}
 });
-// Chat interactions in the embedded window count as owner activity.
-function notifyParentActivity(){
-  if(window.parent!==window)window.parent.postMessage({type:'blackcell-chat-activity'},location.origin);
-}
-for(const evt of ['pointerdown','keydown','wheel']){
-  document.addEventListener(evt,notifyParentActivity,{passive:true});
+// Only actual user input extends security sessions. Polling does not.
+for(const evt of ['pointerdown','keydown','wheel','touchstart']){
+ document.addEventListener(evt,chatActivity,{passive:true});
 }
 setInterval(()=>{if(ready)void loadMessages()},6000);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&ready)void loadMessages()});
+setInterval(()=>{
+ if(employeeSession&&!sessionEnded&&Date.now()-lastActivity>=IDLE_LIMIT_MS)
+  void endChatAccess('Signed out after 60 minutes of inactivity.');
+},15000);
+document.addEventListener('visibilitychange',()=>{
+ if(document.hidden||!ready)return;
+ if(employeeSession){
+  if(Date.now()-lastActivity>=IDLE_LIMIT_MS){void endChatAccess('Signed out after 60 minutes of inactivity.');return}
+  void client.rpc('corp_employee_code_status').then(({data,error})=>{
+   if(error||data?.verified!==true)void endChatAccess('Employee code verification expired.');
+   else void loadMessages();
+  }).catch(()=>void endChatAccess('Employee session check failed.'));
+ }else void loadMessages();
+});
 void boot();
