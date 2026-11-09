@@ -120,9 +120,9 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  inlineTrack.append(inlineFill);
  inlineBubble.append(inlineTitle,inlineTrack,inlinePercent,inlineActions);
  inlineUpload.append(inlineBubble);
- let inlineUploadVisible=false;
+ let inlineUploadVisible=false,uploadingForPeer=null;
  function syncInlineUpload(){
-  if(!compactMedia()||!inlineUploadVisible)return;
+  if(!compactMedia()||!inlineUploadVisible||context()?.peer?.user_id!==uploadingForPeer)return;
   const list=document.getElementById('messages');
   if(list&&inlineUpload.parentElement!==list){
    list.append(inlineUpload);
@@ -374,6 +374,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   const c=requirePeer();if(!c||!selection.length||busy)return;
   const files=selection.slice();
   if(files.some(f=>f.size>MAX_BYTES||!ALLOWED.has(f.type)))return;
+  uploadingForPeer=c.peer.user_id;
   toggleBusy(true);sendButton.disabled=true;flipButton.disabled=true;
   notifyUploadState(true);
   const total=files.reduce((n,f)=>n+f.size,0);
@@ -619,16 +620,78 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   for(const [i,tile] of Array.from(libraryList.querySelectorAll('button.media-library-item')).entries())
    tile.classList.toggle('selected',i===active);
  }
+ const previewCache=new Map(),previewPending=new Map();
+ async function loadInlineItems(message){
+  const batchId=message.media_batch_id;
+  const existing=previewCache.get(batchId);
+  if(existing&&existing.expires>Date.now())return existing.items;
+  if(previewPending.has(batchId))return previewPending.get(batchId);
+  const work=(async()=>{
+   // Authorized pair and media batch are checked by existing Supabase RLS.
+   const {data,error}=await client.from('corp_chat_media_items')
+    .select('id,kind,filename,storage_path,item_order')
+    .eq('batch_id',batchId)
+    .order('item_order',{ascending:true}).limit(4);
+   if(error)throw error;
+   if(!data?.length)return [];
+   const {data:links,error:linkError}=await bucket.createSignedUrls(data.map(i=>i.storage_path),300);
+   if(linkError)throw linkError;
+   const items=data.map((item,i)=>({
+    kind:item.kind,
+    filename:item.filename,
+    url:links?.[i]?.signedUrl||null
+   }));
+   previewCache.set(batchId,{items,expires:Date.now()+240000});
+   return items;
+  })();
+  previewPending.set(batchId,work);
+  try{return await work}finally{previewPending.delete(batchId)}
+ }
  function renderMediaBubble(message,own){
   const cell=el('div','bubble');
-  const heading=el('strong','','BLACKCELL / SHARED MEDIA');
+  const heading=el('strong','',own?'SHARED PHOTOS & VIDEOS':'PHOTOS & VIDEOS');
   const content=el('span','',String(message.body||'Photos and videos available to view'));
-  cell.append(heading,content);
+  cell.append(heading);
+  if(compactMedia()){
+   const gallery=el('div','bc-chat-inline-media-grid');
+   gallery.setAttribute('aria-label','Photos and videos in this message');
+   gallery.append(el('span','bc-chat-inline-loading','Loading shared media…'));
+   cell.append(gallery);
+   const originalPeer=context()?.peer?.user_id;
+   void loadInlineItems(message).then(items=>{
+    if(!cell.isConnected||context()?.peer?.user_id!==originalPeer)return;
+    gallery.replaceChildren();
+    if(!items.length){gallery.append(el('span','bc-chat-inline-loading','Tap to open shared media'));return}
+    gallery.classList.toggle('single',items.length===1);
+    for(const item of items){
+     const tile=el('div','bc-chat-inline-media-tile');
+     if(!item.url){
+      tile.append(el('span','bc-chat-inline-loading','Preview unavailable'));
+     }else if(item.kind==='video'){
+      const v=el('video');v.src=item.url;v.preload='metadata';v.controls=true;v.playsInline=true;
+      v.setAttribute('aria-label',item.filename||'Shared video');
+      v.addEventListener('click',event=>event.stopPropagation());
+      v.addEventListener('pointerdown',event=>event.stopPropagation());
+      tile.append(v);
+     }else{
+      const img=el('img');img.src=item.url;img.alt=item.filename||'Shared photograph';
+      img.loading='lazy';img.decoding='async';tile.append(img);
+     }
+     gallery.append(tile);
+    }
+   }).catch(()=>{
+    if(cell.isConnected)gallery.replaceChildren(el('span','bc-chat-inline-loading','Tap to open shared media'));
+   });
+  }
+  cell.append(content);
   const open=()=>void openBatch(message.media_batch_id);
-  cell.addEventListener('click',open);
+  cell.addEventListener('click',event=>{
+   if(event.target.closest('video'))return;
+   open();
+  });
   cell.setAttribute('role','button');cell.tabIndex=0;
   cell.setAttribute('aria-label',content.textContent+'. Open Shared Media.');
-  cell.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}});
+  cell.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&!e.target.closest('video')){e.preventDefault();open()}});
   return cell;
  }
  function onPeerChange(newPeerId){
@@ -641,6 +704,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   library=[];visible=[];active=0;batchFocus=null;mediaReady=false;
   libraryOffset=0;hasMoreMedia=false;loadMoreButton.hidden=true;
   signed.clear();
+  previewCache.clear();previewPending.clear();
   setFocus(false);
   // Reset the previous conversation without sending a close request to the bubble host.
   chat.classList.remove('media-open');
