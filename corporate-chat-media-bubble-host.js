@@ -38,7 +38,7 @@
       if(!['share','library'].includes(type)||!safePeer(peerId))return;
       const batch=safePeer(batchId);
       const existing=panes.get(type);
-      if(existing&&existing.peerId===peerId&&(!batch||existing.batchId===batch)){
+      if(existing&&existing.peerId===peerId&&existing.batchId===(batch||null)){
         existing.card.classList.remove('bc-media-bubble-highlight');
         void existing.card.offsetWidth;
         existing.card.classList.add('bc-media-bubble-highlight');
