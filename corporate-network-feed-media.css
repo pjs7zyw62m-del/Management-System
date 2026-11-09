@@ -54,7 +54,7 @@ body.bc-network .post-media:not(.two):not(.three) > button > img{
  width:100%!important;
  height:auto!important;
  max-width:100%!important;
- max-height:min(75dvh,780px);
+ max-height:none!important;
  object-fit:contain!important;
  object-position:center;
  transform:none!important;
@@ -71,15 +71,15 @@ body.bc-network .post-media.two > button,
 body.bc-network .post-media.three > button{
  height:auto!important;
  min-height:0!important;
- aspect-ratio:4 / 3;
+ aspect-ratio:auto!important;
 }
 body.bc-network .post-media.two > button > img,
 body.bc-network .post-media.three > button > img{
  display:block;
  width:100%!important;
- height:100%!important;
+ height:auto!important;
  max-width:100%!important;
- max-height:100%!important;
+ max-height:none!important;
  object-fit:contain!important;
  object-position:center;
  transform:none!important;
@@ -91,7 +91,7 @@ body.bc-network .post-media > video{
  width:100%;
  height:auto;
  max-width:100%;
- max-height:min(75dvh,780px);
+ max-height:none!important;
  min-width:0;
  object-fit:contain!important;
  object-position:center;
@@ -103,7 +103,7 @@ body.bc-network .post-media > video{
  body.bc-network .post-media{gap:8px}
  body.bc-network .post-media:not(.two):not(.three) > button > img,
  body.bc-network .post-media > video{
-  max-height:min(72dvh,740px);
+  max-height:none!important;
  }
 }
 /* iPhone: even multi-image posts have a generous full-width image.
@@ -127,12 +127,12 @@ body.bc-network .post-media > video{
  body.bc-network .post-media.three > button > img{
   width:100%!important;
   height:auto!important;
-  max-height:min(68dvh,590px)!important;
+  max-height:none!important;
   object-fit:contain!important;
  }
  body.bc-network .post-media:not(.two):not(.three) > button > img,
  body.bc-network .post-media > video{
-  max-height:min(68dvh,590px);
+  max-height:none!important;
  }
 }
 /* Safari's "Request Desktop Website" can report a wide CSS viewport on
@@ -148,11 +148,11 @@ html.bc-device-phone body.bc-network .post-media > button{
 html.bc-device-phone body.bc-network .post-media > button > img{
  width:100%!important;
  height:auto!important;
- max-height:min(68dvh,590px)!important;
+ max-height:none!important;
  object-fit:contain!important;
  transform:none!important;
 }
 html.bc-device-phone body.bc-network .post-media > video{
- max-height:min(68dvh,590px)!important;
+ max-height:none!important;
  object-fit:contain!important;
 }

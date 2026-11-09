@@ -266,17 +266,37 @@ function renderPost(p){
  if(p.body)node.append(el('div','post-body',p.body));
  const files=postedAssets(p.id);
  if(files.length){
-  const wrap=el('div','post-media'+(files.length===2?' two':files.length>=3?' three':''));
+  const wrap=el('div','post-media post-media-original'+(files.length===2?' two':files.length>=3?' three':''));
   for(const f of files.slice(0,6)){
    const src=mediaUrl(f);if(!src)continue;
    if(f.kind==='video'){
     const v=el('video');v.src=src;v.controls=true;v.preload='metadata';v.playsInline=true;
+    v.classList.add('post-media-original-video');
     v.setAttribute('aria-label',f.filename);
+    // No fixed-height poster: render the entire original video frame.
+    v.style.setProperty('width','100%','important');
+    v.style.setProperty('height','auto','important');
+    v.style.setProperty('max-height','none','important');
+    v.style.setProperty('object-fit','contain','important');
     wrap.append(v);
    }else{
     const link=btn('',()=>void photos.openAsset(f));
+    link.classList.add('post-media-original-open');
+    // The old feed set a fixed 150–220px button height and cropped images.
+    // Force natural image proportions at the element level on all devices.
+    link.style.setProperty('height','auto','important');
+    link.style.setProperty('min-height','0','important');
+    link.style.setProperty('aspect-ratio','auto','important');
     const img=el('img');img.src=src;img.alt=f.filename;img.loading='lazy';
-    link.title='View original photo in a separate tab';
+    img.classList.add('post-media-original-photo');
+    img.style.setProperty('display','block','important');
+    img.style.setProperty('width','100%','important');
+    img.style.setProperty('height','auto','important');
+    img.style.setProperty('max-height','none','important');
+    img.style.setProperty('object-fit','contain','important');
+    img.style.setProperty('object-position','center','important');
+    img.style.setProperty('transform','none','important');
+    link.title='Open the full original photo';
     link.append(img);wrap.append(link);
    }
   }
