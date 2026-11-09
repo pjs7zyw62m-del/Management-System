@@ -23,10 +23,59 @@ const launch=document.getElementById('launchScreen');
 const continueVerified=document.getElementById('continueVerified');
 const codeSupport=document.getElementById('codeSupport');
 const originalSupport=codeSupport.textContent;
+const adminLoginTab=document.getElementById('adminLoginTab');
+const employeeLoginTab=document.getElementById('employeeLoginTab');
+const loginRoleDescription=document.getElementById('loginRoleDescription');
 window.BLACKCELL_LOGIN_BOOTED=true;
 const LOGIN_DEADLINE_MS=16000;
 let loginInProgress=false;
 let approvalPending=false;
+let selectedPortal=new URLSearchParams(location.search).get('portal')==='employee'?'employee':'admin';
+
+function choosePortal(portal,{quiet=false,force=false}={}){
+  if((loginInProgress||approvalPending||stage.classList.contains('show-pass'))&&!force)return;
+  selectedPortal=portal==='employee'?'employee':'admin';
+  adminLoginTab.setAttribute('aria-selected',String(selectedPortal==='admin'));
+  employeeLoginTab.setAttribute('aria-selected',String(selectedPortal==='employee'));
+  adminLoginTab.tabIndex=selectedPortal==='admin'?0:-1;
+  employeeLoginTab.tabIndex=selectedPortal==='employee'?0:-1;
+  loginRoleDescription.textContent=selectedPortal==='admin'
+    ?'Level 7 Executive Administration access.'
+    :'Employee Network · Your name, profile, messages and employee access card.';
+  loginButton.textContent=selectedPortal==='admin'
+    ?'SIGN IN TO ADMINISTRATION ↗':'SIGN IN TO EMPLOYEE NETWORK ↗';
+  if(!quiet)clearMessage(status);
+}
+function handleAuthorizedRole(member){
+  if(member?.role==='employee'){
+    message(status,'Employee account recognized. Opening your Network access card…');
+    // The employee page enforces its own security-code verification and
+    // activation checks; no access is granted by this redirect.
+    location.replace('employee.html');
+    return true;
+  }
+  if(member?.role==='owner'&&Number(member?.clearance_level)===7){
+    if(selectedPortal==='employee'){
+      choosePortal('admin',{quiet:true,force:true});
+      message(status,'Level 7 administrator account recognized. Opening executive verification.');
+    }
+    return false;
+  }
+  message(status,'This account is not authorized for either Blackcell sign-in portal. Contact your administrator.');
+  return true;
+}
+for(const [tab,portal] of [[adminLoginTab,'admin'],[employeeLoginTab,'employee']]){
+  tab.addEventListener('click',()=>choosePortal(portal));
+  tab.addEventListener('keydown',event=>{
+    if(event.key==='ArrowLeft'||event.key==='ArrowRight'){
+      event.preventDefault();
+      const target=portal==='admin'?'employee':'admin';
+      choosePortal(target);
+      (target==='admin'?adminLoginTab:employeeLoginTab).focus();
+    }
+  });
+}
+choosePortal(selectedPortal,{quiet:true});
 
 function timed(promise, description, timeout=LOGIN_DEADLINE_MS){
   let timer;
@@ -102,7 +151,8 @@ function showLogin(){
   password.disabled=false;
   passwordToggle.disabled=false;
   loginButton.disabled=false;
-  loginButton.textContent='SIGN IN TO BLACKCELL ↗';
+  loginButton.textContent=selectedPortal==='employee'
+    ?'SIGN IN TO EMPLOYEE NETWORK ↗':'SIGN IN TO ADMINISTRATION ↗';
   changeAccount.hidden=true;
   access.value='';
   security.value='';
@@ -233,8 +283,9 @@ async function initialState(){
     }
     return;
   }
-  if(state.member?.role!=='owner'||Number(state.member?.clearance_level)!==7||!applyClearance(state.member)){
-    message(status,'This account does not have Level 7 administrator clearance.');
+  if(handleAuthorizedRole(state.member))return;
+  if(!applyClearance(state.member)){
+    message(status,'Administrator clearance cannot be verified.');
     return;
   }
   emailInput.value=state.user?.email||emailInput.value;
@@ -280,8 +331,9 @@ form.addEventListener('submit',async event=>{
       message(status,member.reason==='verification-error'?'Cannot verify access right now.':'This account is not approved for Corporate Access.');
       return;
     }
-    if(member.member?.role!=='owner'||Number(member.member?.clearance_level)!==7||!applyClearance(member.member)){
-      message(status,'This account does not have Level 7 administrator clearance.');
+    if(handleAuthorizedRole(member.member))return;
+    if(!applyClearance(member.member)){
+      message(status,'Administrator clearance cannot be verified.');
       return;
     }
     const {data, error:checkError}=await timed(client.rpc('corp_code_status'),'Corporate code status check');
@@ -296,7 +348,8 @@ form.addEventListener('submit',async event=>{
     loginInProgress=false;
     if(!stage.classList.contains('show-pass')){
       loginButton.disabled=false;
-      loginButton.textContent='SIGN IN TO BLACKCELL ↗';
+      loginButton.textContent=selectedPortal==='employee'
+        ?'SIGN IN TO EMPLOYEE NETWORK ↗':'SIGN IN TO ADMINISTRATION ↗';
     }
   }
 });
@@ -358,7 +411,9 @@ document.getElementById('reset').addEventListener('click',async()=>{
   const email=document.getElementById('email').value.trim();
   if(!email){message(status,'Enter your email address first.');return;}
   try{
-    await client?.auth.resetPasswordForEmail(email,{redirectTo:new URL('login.html',location.href).href});
+    await client?.auth.resetPasswordForEmail(email,{
+      redirectTo:new URL(selectedPortal==='employee'?'employee.html':'login.html',location.href).href
+    });
     message(status,'If this email has an account, password reset instructions were requested.');
   }catch(_){message(status,'Password reset is unavailable.');}
 });
