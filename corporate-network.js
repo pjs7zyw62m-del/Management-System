@@ -6,7 +6,8 @@ const allowedTypes=new Set(['image/jpeg','image/png','image/webp','image/gif','i
 const state={
  user:null,member:null,profiles:[],posts:[],assets:[],likes:[],comments:[],follows:[],
  assetUrls:new Map(),view:'feed',feedFilter:'latest',profileUserId:null,profileTab:'posts',
- attached:[],openComments:new Set(),busy:false,sort:'newest',deepPost:null
+ attached:[],openComments:new Set(),busy:false,sort:'newest',deepPost:null,
+ chatPeers:[],signedAt:0
 };
 const fields=['feedView','profileView','discoverView','videosView'];
 function el(tag,cls='',content=null){
@@ -49,8 +50,12 @@ function liking(id){return state.likes.some(l=>l.post_id===id&&l.user_id===state
 function postedAssets(id){return state.assets.filter(a=>a.post_id===id&&a.purpose==='post')}
 function countPosts(id){return state.posts.filter(p=>p.author_id===id).length}
 function countVideos(id){return state.assets.filter(a=>a.owner_id===id&&a.kind==='video'&&a.purpose==='post').length}
-function switchView(view,{who=null,tab=null}={}){
+function switchView(view,{who=null,tab=null,keepPost=false}={}){
  if(!fields.includes(view+'View'))view='feed';
+ if(!keepPost)state.deepPost=null;
+ if(Date.now()-state.signedAt>25*60*1000){
+  state.assetUrls.clear();void loadSigned().then(renderAll).catch(()=>{});
+ }
  state.view=view;
  if(view==='profile'){
   state.profileUserId=who||state.user.id;
@@ -104,6 +109,7 @@ async function loadAll({show=true}={}){
  if(show)renderAll();
 }
 async function loadSigned(){
+ if(Date.now()-state.signedAt>25*60*1000){state.assetUrls.clear();state.signedAt=Date.now()}
  const all=state.assets.filter(a=>!state.assetUrls.has(a.id));
  for(let i=0;i<all.length;i+=30){
   const group=all.slice(i,i+30);
@@ -191,8 +197,8 @@ function renderProfile(){
  if(p.user_id===state.user.id)actions.append(btn('EDIT PROFILE ↗',openEdit));
  else{
   actions.append(btn(following(p.user_id)?'✓ FOLLOWING':'+ FOLLOW',()=>void toggleFollow(p.user_id)));
-  const directChat=btn('OPEN CHAT ↗',()=>{location.href='corporate-chat.html?peer='+encodeURIComponent(p.user_id)},'secondary');
-  if(state.member.role==='owner'||p.user_id!==state.user.id&&state.member.role==='employee'&&p.user_id===state.profiles.find(x=>x.user_id!==state.user.id)?.user_id){
+  if(state.chatPeers.some(x=>x.user_id===p.user_id)){
+   const directChat=btn('OPEN CHAT ↗',()=>{location.href='corporate-chat.html?peer='+encodeURIComponent(p.user_id)},'secondary');
    actions.append(directChat);
   }
  }
@@ -469,8 +475,8 @@ function updateCounter(){$('charCount').textContent=$('postBody').value.length+'
 function openMedia(a){
  const url=mediaUrl(a);
  if(!url){toast('Original file is unavailable. Refresh and try again.');return}
- const open=window.open(url,'_blank','noopener');
- if(!open)toast('Your browser blocked the new tab. Allow pop-ups or open the photo from the feed.');
+ const link=document.createElement('a');link.href=url;link.target='_blank';link.rel='noopener';
+ document.body.append(link);link.click();link.remove();
 }
 function openEdit(){
  const p=myProfile();if(!p)return;
@@ -542,6 +548,10 @@ async function boot(){
   }
   if(!verified)throw Error('Your Blackcell Access Pass must be verified before entering the social network.');
   await loadAll({show:false});
+  if(auth.member.role==='owner'||auth.member.can_chat===true){
+   const {data}=await client.rpc('corp_chat_peers');
+   if(data?.ok===true&&Array.isArray(data.peers))state.chatPeers=data.peers;
+  }
   $('gate').hidden=true;$('app').hidden=false;
   setupEvents();
   const params=new URLSearchParams(location.search);
@@ -551,12 +561,17 @@ async function boot(){
    state.deepPost=post;
    if(!state.posts.some(p=>p.id===post)){
     const {data}=await client.from('corp_social_posts').select('*').eq('id',post).maybeSingle();
-    if(data)state.posts.unshift(data);
+    if(data){
+     state.posts.unshift(data);
+     const {data:more}=await client.from('corp_social_assets').select('*').eq('post_id',post);
+     for(const a of more||[])if(!state.assets.some(x=>x.id===a.id))state.assets.unshift(a);
+     await loadSigned();
+    }
    }
   }
   if(uid&&UUID.test(uid)&&profile(uid))switchView('profile',{who:uid});
   else if(['discover','videos'].includes(params.get('view')))switchView(params.get('view'));
-  else switchView('feed');
+  else switchView('feed',{keepPost:!!state.deepPost});
   renderMini();renderSuggestions();
  }catch(e){
   $('gateText').textContent=fail(e);
