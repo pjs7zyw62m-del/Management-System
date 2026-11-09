@@ -79,7 +79,7 @@ footer{text-align:center;color:#85818d;font-size:9px;letter-spacing:.12em;paddin
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition-duration:.01ms!important}}
 </style>
 <script src="corp-config.js" defer></script>
-<script type="module" src="corp-login.js"></script>
+<script type="module" src="corp-login.js?v=20261109-loopfix1"></script>
 </head>
 <body>
 <header>
@@ -128,7 +128,7 @@ footer{text-align:center;color:#85818d;font-size:9px;letter-spacing:.12em;paddin
 <section class="code-card">
 <div class="eyebrow">BLACKCELL / SECURITY CLEARANCE</div>
 <h2>Verify Access</h2>
-<p class="support">Enter your existing <strong>NEXUS Access Code</strong> and <strong>Security Code</strong> to authorize this corporate session.</p>
+<p class="support" id="codeSupport">Enter your existing <strong>NEXUS Access Code</strong> and <strong>Security Code</strong> to authorize this corporate session.</p>
 <form id="codeForm">
 <label for="accessCode">ACCESS CODE</label>
 <input id="accessCode" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" required maxlength="256">
@@ -136,7 +136,7 @@ footer{text-align:center;color:#85818d;font-size:9px;letter-spacing:.12em;paddin
 <input id="securityCode" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" required maxlength="256">
 <button id="authenticate" type="submit" class="primary">AUTHENTICATE ↗</button>
 </form>
-<p id="codeStatus" class="message" role="status" aria-live="polite" hidden></p>
+<button id="continueVerified" type="button" class="primary" hidden>CONTINUE TO ADMINISTRATION ↗</button><p id="codeStatus" class="message" role="status" aria-live="polite" hidden></p>
 <button class="back" type="button" id="backToSignIn">← Sign in with another account</button>
 </section>
 </div>
