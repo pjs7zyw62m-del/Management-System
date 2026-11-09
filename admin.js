@@ -6,7 +6,7 @@ const state={appearance:'glass',animations:true,notify:true,confirm:true,securit
 const systems=[{id:'nexus',name:'NEXUS Management',kind:'Corporate application',provider:'GitHub Pages · Supabase',desc:'Inmate profiles, financial management, records, communications and analysis.',href:'https://www.blackcellcorp.com',icon:'▦'},{id:'maf',name:'MansArmedForces',kind:'Media collection',provider:'GitHub Pages · Browser storage',desc:'Uniforms photo library, albums, folders, ratings and collections.',href:'https://pjs7zyw62m-del.github.io/Gunner-Collection-Portal/uniforms.html',icon:'◇'},{id:'gunner',name:'Gunner Thompson AI',kind:'AI application',provider:'AI inference services',desc:'Character AI service; account-level connectivity not monitored.',href:null,icon:'✳'},{id:'corporate',name:'Blackcell Corporate Portal',kind:'Administrative interface',provider:'GitHub Pages',desc:'Corporate dashboard and administration preview.',href:null,icon:'▤'}];
 const demoEvents=[{id:'EX-01',type:'security',title:'Example: Unrecognized sign-in attempt',description:'Fictional sample alert; no actual sign-in event was retrieved.',date:'2026-11-08',display:'Nov 8, 2026 · 9:42 AM'},{id:'EX-02',type:'admin',title:'Example: Corporate settings updated',description:'Fictional sample administrative change.',date:'2026-11-08',display:'Nov 8, 2026 · 8:15 AM'},{id:'EX-03',type:'access',title:'Example: Administrator signed in',description:'Fictional sample access event.',date:'2026-11-07',display:'Nov 7, 2026 · 7:30 PM'},{id:'EX-04',type:'admin',title:'Example: Division configuration viewed',description:'Fictional sample division activity.',date:'2026-11-07',display:'Nov 7, 2026 · 6:05 PM'},{id:'EX-05',type:'security',title:'Example: Password verification failed',description:'Fictional sample credential event.',date:'2026-11-06',display:'Nov 6, 2026 · 4:20 PM'}];
 const names={nexus:'NEXUS Management',mans:'MansArmedForces',users:'User Management',chat:'Employee Chat',security:'Security Center',settings:'System Settings',logs:'Activity Logs',backups:'Backup & Recovery',systems:'Corporate Systems',account:'My Account',notifications:'Corporate Notifications',signout:'Global Secure Sign Out',restricted:'Restricted Infrastructure'};
-const tabs={users:[['accounts','Accounts'],['roles','Roles'],['access','Access']],security:[['overview','Overview'],['sessions','Sessions'],['settings','Settings']],settings:[['general','General'],['appearance','Appearance'],['divisions','Divisions'],['preferences','Preferences']],logs:[['all','All'],['admin','Admin'],['security','Security'],['access','Access']],backups:[['overview','Overview'],['history','History'],['settings','Settings']],systems:[['systems','Systems'],['infrastructure','Infrastructure'],['monitoring','Monitoring']]};
+const tabs={users:[['accounts','Accounts'],['profiles','Profiles'],['roles','Roles'],['access','Access']],security:[['overview','Overview'],['sessions','Sessions'],['settings','Settings']],settings:[['general','General'],['appearance','Appearance'],['divisions','Divisions'],['preferences','Preferences']],logs:[['all','All'],['admin','Admin'],['security','Security'],['access','Access']],backups:[['overview','Overview'],['history','History'],['settings','Settings']],systems:[['systems','Systems'],['infrastructure','Infrastructure'],['monitoring','Monitoring']]};
 const el=(tag,cls='',txt)=>{let n=document.createElement(tag);if(cls)n.className=cls;if(txt!==undefined)n.textContent=txt;return n};
 const add=(parent,...children)=>{children.forEach(c=>parent.append(c));return parent};
 const p=(s)=>el('p','muted',s);
@@ -47,6 +47,124 @@ function corporateUsername(name){
  const cleaned=String(name||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'')
   .toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
  return ('bc_'+(cleaned||'employee').slice(0,17)+'_'+corporateRandomDigits(5)).slice(0,32);
+}
+
+function employeeCardView(member,sample=false){
+  const blockEl=el('div','employee-profile-layout');
+  const card=el('article','employee-profile-pass');
+  card.setAttribute('aria-label',sample?'Sample employee card':'Employee card for '+(member.display_name||'employee'));
+  card.append(el('div','employee-profile-crest','B'),
+    el('div','employee-profile-corporate','BLACKCELL'),
+    el('div','employee-profile-corporate','CORPORATION'),
+    el('div','employee-profile-network','EMPLOYEE NETWORK'),
+    el('div','employee-profile-stripe',''));
+  const pass=el('div','employee-profile-clearance');
+  pass.append(el('strong','','LEVEL '+(member.clearance_level||1)),el('span','','ACCESS PASS'));
+  card.append(pass,el('div','employee-profile-name',member.display_name||'Sample Employee'),
+    el('div','employee-profile-username',(member.username||'USERNAME NOT ASSIGNED').toUpperCase()));
+  if(sample)card.append(el('div','employee-profile-watermark','PREVIEW ONLY'));
+  const details=el('section','employee-profile-fields');
+  details.append(el('div','employee-profile-fields-heading','CORPORATE ACCOUNT PROFILE'));
+  function field(title,value){
+    const item=el('div','employee-profile-field');
+    item.append(el('small','',title),el('strong','',String(value)));
+    details.append(item);
+  }
+  field('FULL NAME',member.display_name||'Sample Employee');
+  field('USERNAME',member.username||'Not assigned');
+  field('EMAIL',member.email||'Not assigned');
+  field('ACCOUNT TYPE',member.role==='owner'?'Corporate Owner':'Employee');
+  field('CLEARANCE LEVEL','Level '+(member.clearance_level||1));
+  field('ACCOUNT STATUS',sample?'Preview / not registered':
+    !member.active?'Disabled':member.role==='owner'?'Owner account':
+    member.password_activated?'Activated':'Pending employee activation');
+  field('EMPLOYEE CHAT',sample?'Not activated':member.can_chat?'Enabled':'Disabled');
+  field('ACCESS CODE','4 digits — never displayed');
+  field('SECURITY CODE','12 digits — never displayed');
+  const noteEl=p(sample?
+    'This is a visual demonstration. No account or invitation has been created.':
+    'This is an administrative profile preview, not a sign-in as this employee. Secrets and passwords cannot be viewed here.');
+  details.append(noteEl);
+  blockEl.append(card,details);
+  return blockEl;
+}
+function showEmployeeProfile(member,sample=false){
+  $('modalTitle').textContent=sample?'Sample Employee Profile':'Employee Profile';
+  $('modalEyebrow').textContent='BLACKCELL CORPORATION / USER MANAGEMENT';
+  content.replaceChildren();
+  const back=action('← BACK TO PROFILES',()=>{activeTab='profiles';render();});
+  back.classList.add('profile-back-button');
+  content.append(back,employeeCardView(member,sample));
+  if(!sample && member.role!=='owner'){
+    const side=el('div','disabled-callout','Profile details are read-only here. Use the Roles and Access tabs to update clearance and account permissions.');
+    content.append(side);
+  }
+}
+async function employeeProfiles(){
+  const container=block('Employee Profiles & Access Passes');
+  container.append(p('Review any registered Blackcell employee account and its digital credential. Access and Security Codes are never shown.'));
+  const preview=action('PREVIEW SAMPLE EMPLOYEE CARD',()=>{
+    showEmployeeProfile({display_name:'Sample Employee',username:'bc_sample_48271',
+      email:'sample@example.com',clearance_level:3,role:'employee',
+      active:false,can_chat:false,password_activated:false},true);
+  });
+  preview.classList.add('profile-demo-button');
+  container.append(preview);
+  const list=el('div','employee-profile-list');
+  list.append(p('Loading profiles…'));
+  container.append(list);
+  content.append(container);
+  const api=window.BLACKCELL_CORPORATE_ADMIN_API?.client;
+  if(!api){list.replaceChildren(p('Unable to verify your administrative session.'));return;}
+  try{
+    const {data,error}=await api.rpc('corp_admin_members');
+    if(!list.isConnected)return;
+    if(error||data?.ok!==true||!Array.isArray(data.members)){
+      list.replaceChildren(p('Could not load authorized employee profiles.'));return;
+    }
+    list.replaceChildren();
+    for(const member of data.members){
+      const item=el('div','employee-profile-listitem');
+      const info=el('div');
+      info.append(el('strong','',member.display_name||'Employee'),
+        el('small','',String(member.username||'No username')+
+          ' · Level '+member.clearance_level+' · '+(member.role==='owner'?'Corporate Owner':'Employee')));
+      const show=action('VIEW PROFILE / CARD',()=>showEmployeeProfile(member));
+      info.classList.add('employee-profile-listcopy');
+      item.append(info,show);
+      list.append(item);
+    }
+  }catch(_){if(list.isConnected)list.replaceChildren(p('Unable to load employee profile list.'))}
+}
+function showInvitationPreview(form,inputs){
+  const {name,email,username,level}=inputs;
+  const old=form.parentElement.querySelector('.invitation-preview');
+  if(old)old.remove();
+  const wrapper=el('section','invitation-preview');
+  wrapper.setAttribute('aria-label','Invitation email visual preview — not sent');
+  const header=el('div','invitation-preview-top');
+  header.append(el('strong','','INVITATION PREVIEW'),el('span','','NOT SENT'));
+  wrapper.append(header);
+  const detail=el('div','invitation-preview-address');
+  detail.append(el('div','','To: '+(email.value.trim()||'employee@example.com')),
+    el('div','','Subject: Blackcell Corporation Employee Invitation (concept preview)'));
+  wrapper.append(detail);
+  const paper=el('div','invitation-preview-paper');
+  paper.append(el('div','invitation-preview-mark','B'),
+    el('div','invitation-preview-brand','BLACKCELL CORPORATION'),
+    el('div','invitation-preview-kicker','EMPLOYEE ACCESS INVITATION'),
+    el('h3','','You are invited to Blackcell.'));
+  paper.append(el('p','','Hello '+(name.value.trim()||'Employee')+','));
+  paper.append(el('p','','You have been invited to activate a private Blackcell Corporation employee account. Your employee username will be '+(username.value.trim()||'generated when registered')+' and your assigned clearance will be Level '+level.value+'.'));
+  paper.append(el('p','','Use the invitation activation link from your email to verify your email address and create your own password. Your digital employee access card will be revealed after activation.'));
+  const button=el('div','invitation-preview-button','ACTIVATE EMPLOYEE ACCESS');
+  paper.append(button,el('p','invitation-preview-foot','Your Access Code and Security Code are issued separately. Never share them by replying to this email.'));
+  wrapper.append(paper);
+  wrapper.append(p('Concept preview only. Supabase currently sends its configured invitation email template, which may have different text or styling. Nothing is sent until you click Send Employee Invitation.'));
+  const dismiss=action('CLOSE PREVIEW',()=>wrapper.remove());
+  wrapper.append(dismiss);
+  form.after(wrapper);
+  wrapper.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 function users(){
   if(activeTab==='accounts'){
@@ -107,6 +225,21 @@ function users(){
     levelLabel.append(el('span','','CLEARANCE'));
     const level=el('select');for(let i=1;i<=6;i++)level.add(new Option('Level '+i,i));
     level.value='1';levelLabel.append(level);form.append(levelLabel);
+    const previewInvite=action('PREVIEW INVITATION',()=>{
+      showInvitationPreview(form,{name,email,username:uniqueUser,level});
+    });
+    previewInvite.type='button';
+    previewInvite.style.cssText='width:100%;min-height:44px';
+    form.append(previewInvite);
+    const previewCard=action('PREVIEW EMPLOYEE CARD',()=>{
+      showEmployeeProfile({display_name:name.value.trim()||'Sample Employee',
+        username:uniqueUser.value.trim()||'bc_sample_48271',
+        email:email.value.trim()||'sample@example.com',
+        clearance_level:Number(level.value),role:'employee',active:false,
+        can_chat:true,password_activated:false},true);
+    });
+    previewCard.type='button';previewCard.style.cssText='width:100%;min-height:44px';
+    form.append(previewCard);
     const submit=action('SEND EMPLOYEE INVITATION',null,false,true);
     submit.type='submit';submit.style.cssText='width:100%;min-height:44px';
     form.append(submit);
@@ -168,6 +301,8 @@ function users(){
     list.append(p('Loading corporate accounts…'));
     content.append(section,list);
     void displayCorporateAccounts(list);
+  }else if(activeTab==='profiles'){
+    void employeeProfiles();
   }else if(activeTab==='roles'){
     const section=block('Security Clearance Levels');
     section.append(p('Level 7 is reserved for the corporate owner. Levels 1–6 are for employees. An employee clearance level alone does not grant access to this Administration dashboard or NEXUS.'));
@@ -193,8 +328,11 @@ async function displayCorporateAccounts(container){
     for(const member of data.members){
       const right=member.role==='owner'?'LEVEL 7 · OWNER':
         (member.active?(member.activated?'ACTIVE':'INVITED'):'DISABLED');
+      const view=el('div','employee-profile-actions');
+      view.append(el('span','mock-state',right),
+        action('VIEW PROFILE',()=>showEmployeeProfile(member)));
       container.append(row(member.display_name||'Employee',
-        (member.email||'')+' · '+(member.username||'No username')+' · Level '+member.clearance_level,right));
+        (member.email||'')+' · '+(member.username||'No username')+' · Level '+member.clearance_level,view));
     }
   }catch(_){if(container.isConnected)container.append(p('Unable to load accounts.'))}
 }
