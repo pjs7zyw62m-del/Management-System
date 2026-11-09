@@ -27,9 +27,15 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const bucket=client.storage.from(BUCKET);
  const mediaPanel=new URLSearchParams(location.search).get('mediaPanel');
  const standalonePanel=mediaPanel==='share'||mediaPanel==='library';
- const canUseMedia=()=>window.BlackcellChatMedia?.enabled()===true;
+ const useLargePanels=()=>window.BlackcellChatMedia?.enabled()===true;
+ const compactMedia=()=>!useLargePanels();
+ function closeMediaTray(){
+  const menu=document.querySelector('.media-actions'),toggle=document.getElementById('mediaToggleButton');
+  menu?.classList.add('is-collapsed');
+  if(toggle){toggle.classList.remove('open');toggle.setAttribute('aria-expanded','false')}
+ }
  function routeBubble(panel,{batchId=null,pick=null}={}){
-  if(!canUseMedia())return true;
+  if(!useLargePanels())return false;
   const c=context();
   if(!c?.ready||!c?.peer?.user_id||!c?.self)return false;
   if(standalonePanel&&mediaPanel===panel)return false;
@@ -50,6 +56,11 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   if(!c?.ready||!c.peer?.user_id||busy)return false;
   if(panel==='library'&&selection.length>0&&
       !window.confirm('Switch to Shared Media? Your unshared file selections will be cleared.'))return false;
+  if(compactMedia()){
+   overlay.hidden=true;
+   void openLibrary();
+   return true;
+  }
   const message={type:'blackcell-media-bubble-flip',panel,peerId:c.peer.user_id};
   if(window.parent!==window){window.parent.postMessage(message,location.origin);return true}
   const api=window.BlackcellMediaBubbleHostController;
@@ -187,7 +198,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   return c;
  }
  function chooseFiles(accept){
-  if(!canUseMedia()||!requirePeer()||busy)return;
+  if(!requirePeer()||busy)return;
   if(routeBubble('share',{pick:accept}))return;
   fileInput.value='';fileInput.accept=accept;fileInput.click();
  }
@@ -203,8 +214,11 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
    status('Some files were skipped. Use JPG, PNG, WEBP, GIF, HEIC, MP4, MOV, or WEBM, maximum 50 MB each.');
   }
   if(!accepted.length)return;
-  selection=accepted.slice(0,30);
-  if(accepted.length>30)status('Maximum 30 files in one media share. Choose another batch for more.');
+  const seen=new Set(selection.map(f=>[f.name,f.size,f.lastModified,f.type].join('|')));
+  for(const f of accepted){
+   const key=[f.name,f.size,f.lastModified,f.type].join('|');
+   if(!seen.has(key)){seen.add(key);selection.push(f)}
+  }
   openShare();
  }
  const overlay=el('div','media-dialog-backdrop');overlay.hidden=true;
@@ -222,7 +236,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const pickInfo=el('div','media-dialog-selection','Select photos or videos to share securely with this contact.');
  const itemsBox=el('div','media-selected-items');
  body.append(pickInfo,itemsBox);
- if(standalonePanel&&mediaPanel==='share'){
+ if((standalonePanel&&mediaPanel==='share')||compactMedia()){
   body.append(progress);
   progress.setAttribute('aria-live','polite');
   progress.setAttribute('role','status');
@@ -235,8 +249,9 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  document.body.append(overlay);
  overlay.addEventListener('click',e=>{if(e.target===overlay&&!busy)closeShare()});
  function openShare(){
-  if(!canUseMedia()||!requirePeer()||busy)return;
+  if(!requirePeer()||busy)return;
   if(routeBubble('share'))return;
+  closeMediaTray();
   overlay.hidden=false;renderSelection();
  }
  function closeShare(){
@@ -304,9 +319,9 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   const batchId=crypto.randomUUID();
   let transferred=0;
   updateProgress(0,'UPLOADING '+files.length+' MEDIA FILE'+(files.length===1?'':'S'));
-  if(standalonePanel&&mediaPanel==='share'){
+  if((standalonePanel&&mediaPanel==='share')||compactMedia()){
    overlay.hidden=false;
-   pickInfo.textContent='Sending media securely. Keep this bubble open until the transfer reaches 100%.';
+   pickInfo.textContent='Uploading '+files.length+' items securely. Keep this view open until 100%.';
    footer.hidden=true;
   }else overlay.hidden=true;
   const receiver=c.peer.user_id;
@@ -336,8 +351,10 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
     });
    }
    updateProgress(98,'SAVING PRIVATE SHARED MEDIA');
-   const {error:itemError}=await client.from('corp_chat_media_items').insert(records);
-   if(itemError)throw Error('Media uploaded but could not be indexed: '+itemError.message);
+   for(let i=0;i<records.length;i+=100){
+    const {error:itemError}=await client.from('corp_chat_media_items').insert(records.slice(i,i+100));
+    if(itemError)throw Error('Media uploaded but could not be indexed: '+itemError.message);
+   }
    const summary=caption(records)+' available to view';
    const {error:messageError}=await client.from('corp_chat_messages').insert({
      sender_id:c.self,recipient_id:receiver,body:summary,media_batch_id:batchId
@@ -353,12 +370,18 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
      window.parent.postMessage({type:'blackcell-media-upload-finished',
       peerId:receiver,batchId},location.origin);
     }else{
+     if(compactMedia()){
+      overlay.classList.add('bc-mobile-media-flip');
+      await new Promise(r=>setTimeout(r,220));
+      overlay.classList.remove('bc-mobile-media-flip');
+      overlay.hidden=true;
+     }
      await openBatch(batchId);
     }
    }
   }catch(e){
    progress.classList.remove('active');
-   if(standalonePanel&&mediaPanel==='share'){
+   if((standalonePanel&&mediaPanel==='share')||compactMedia()){
     overlay.hidden=false;
     pickInfo.textContent='Upload failed: '+safeErr(e)+'. You can try sharing these files again.';
    }
@@ -378,18 +401,19 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   stageInner.querySelector('video')?.pause();
  }
  async function openLibrary(){
-  if(!canUseMedia()||!requirePeer())return;
+  if(!requirePeer())return;
   if(routeBubble('library'))return;
   batchFocus=null;
   await loadLibrary();
   openWing();
  }
  function openWing(){
+  closeMediaTray();
   chat.classList.add('media-open');
   wing.setAttribute('aria-hidden','false');
  }
  async function openBatch(id){
-  if(!canUseMedia()||!requirePeer())return;
+  if(!requirePeer())return;
   if(routeBubble('library',{batchId:id}))return;
   batchFocus=id;
   await loadLibrary();
@@ -512,12 +536,6 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   const heading=el('strong','','BLACKCELL / SHARED MEDIA');
   const content=el('span','',String(message.body||'Photos and videos available to view'));
   cell.append(heading,content);
-  if(!canUseMedia()){
-   cell.classList.add('bc-media-compact-notice');
-   cell.append(el('small','bc-media-on-large-screen',
-    'Media viewer available on a 12.9-inch or larger iPad, or a computer.'));
-   return cell;
-  }
   const open=()=>void openBatch(message.media_batch_id);
   cell.addEventListener('click',open);
   cell.setAttribute('role','button');cell.tabIndex=0;
