@@ -358,6 +358,10 @@ button:focus-visible, select:focus-visible, input:focus-visible {
   .hero-row { align-items: start; flex-direction: column; }
   .inmate { flex-wrap: wrap; }
 }
+
+/* Keep the Blackcell interface free of visible browser scrollbars; content remains reachable on long pages. */
+html,body,*{scrollbar-width:none;-ms-overflow-style:none}
+*::-webkit-scrollbar{width:0!important;height:0!important;display:none!important}
 </style>
 </head>
 <body>
