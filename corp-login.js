@@ -13,18 +13,31 @@ const password=document.getElementById('password');
 const access=document.getElementById('accessCode');
 const security=document.getElementById('securityCode');
 const launch=document.getElementById('launchScreen');
+const continueVerified=document.getElementById('continueVerified');
+const codeSupport=document.getElementById('codeSupport');
+const originalSupport=codeSupport.textContent;
 let client;
 
 function message(element,text){element.hidden=false;element.textContent=text;}
 function clearMessage(element){element.hidden=true;element.textContent='';}
 
 function showPass(){
+  formCode.hidden=false;
+  continueVerified.hidden=true;
+  codeSupport.textContent=originalSupport;
   clearMessage(status);
   stage.classList.add('show-pass');
   loginPanel.setAttribute('aria-hidden','true');
   passPanel.setAttribute('aria-hidden','false');
   password.value='';
   setTimeout(()=>access.focus(),730);
+}
+
+function verifiedResume(){
+  showPass();
+  formCode.hidden=true;
+  continueVerified.hidden=false;
+  codeSupport.textContent='Your corporate security session is already verified. Continue when you are ready.';
 }
 
 function showLogin(){
@@ -77,7 +90,7 @@ async function initialState(){
     message(status,'Unable to verify the security session. Please try again.');
     return;
   }
-  if(data.verified===true){location.replace('dashboard.html');return;}
+  if(data.verified===true){verifiedResume();return;}
   if(data.expired===true){
     await client.auth.signOut({scope:'local'});
     message(status,'Signed out after 60 minutes of inactivity. Please sign in again.');
@@ -126,6 +139,25 @@ form.addEventListener('submit',async event=>{
   }catch(_){
     message(status,'Sign in could not be completed. Check your connection.');
   }finally{loginButton.disabled=false;}
+});
+
+continueVerified.addEventListener('click',async()=>{
+  continueVerified.disabled=true;
+  clearMessage(codeStatus);
+  try{
+    const {data,error}=await client.rpc('corp_code_status');
+    if(error || data?.ok!==true || data?.verified!==true){
+      showPass();
+      message(codeStatus,'Your previous authorization has expired. Re-enter both security codes.');
+      return;
+    }
+    displayLaunch();
+  }catch(_){
+    showPass();
+    message(codeStatus,'Could not recheck your authorization. Enter both security codes.');
+  }finally{
+    continueVerified.disabled=false;
+  }
 });
 
 formCode.addEventListener('submit',async event=>{
