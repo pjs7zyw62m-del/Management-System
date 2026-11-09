@@ -1,5 +1,7 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-staff1';
 const client=corporateClient(),$=id=>document.getElementById(id);
+const embedParams=new URLSearchParams(location.search);
+if(embedParams.get('embed')==='1')document.documentElement.classList.add('bc-embedded');
 let self=null,peer=null,contacts=[],isLoading=false,firstLoad=true,ready=false;
 let employeeSession=false,sessionEnded=false,lastActivity=Date.now(),lastTouch=Date.now();
 const IDLE_LIMIT_MS=60*60*1000;
@@ -61,7 +63,10 @@ async function boot(){
       if(m&&(m.sender_id===self||m.recipient_id===self))void loadMessages();
     }).subscribe();
    renderPeers();
-   if(contacts.length)choose(contacts[0].user_id);
+   if(contacts.length){
+     const requested=embedParams.get('peer');
+     choose(contacts.some(x=>x.user_id===requested)?requested:contacts[0].user_id);
+   }
    else $('messages').replaceChildren(text('p','empty',m.role==='owner'?'No employees yet. Invite your first employee from User Management → Accounts.':'Your administrator is not available for chat.'));
  }catch(_){status('Could not connect to secure chat. Check your connection.')}
 }
@@ -134,5 +139,13 @@ document.addEventListener('visibilitychange',()=>{
    else void loadMessages();
   }).catch(()=>void endChatAccess('Employee session check failed.'));
  }else void loadMessages();
+});
+
+window.addEventListener('message',event=>{
+ if(event.origin!==location.origin||event.source!==window.parent)return;
+ if(event.data?.type==='blackcell-select-peer'&&ready){
+  const id=event.data.peerId;
+  if(typeof id==='string'&&contacts.some(x=>x.user_id===id))choose(id);
+ }
 });
 void boot();
