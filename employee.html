@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#030305">
+<title>BLACKCELL | Employee Access</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#030305;color:#f1edf2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{min-height:100dvh;display:grid;grid-template-rows:auto 1fr auto;background:radial-gradient(ellipse at 50% 38%,#54152924,transparent 55%),#030305}
+header{padding:22px clamp(18px,4vw,62px);border-bottom:1px solid #ffffff17;display:flex;justify-content:space-between;align-items:center}
+header strong{font-size:12px;letter-spacing:.18em}header span{font-size:10px;letter-spacing:.15em;color:#b0abb3}
+main{display:grid;place-items:center;padding:24px 16px;min-height:0}
+.panel{width:min(460px,100%);border:1px solid #b9b0bc66;border-radius:24px;padding:clamp(25px,4vw,42px);background:linear-gradient(145deg,#29242bb0,#0b0a0cf0);box-shadow:0 22px 90px #000b}
+.logo{width:64px;height:64px;display:grid;place-items:center;font-size:36px;font-weight:900;border-radius:18px;border:1px solid #b752694a;margin-bottom:18px}
+.eyebrow{font-size:10px;letter-spacing:.23em;color:#b85b70;font-weight:750}
+h1{font-size:27px;margin:12px 0 14px;letter-spacing:-.035em}
+p{font-size:12px;line-height:1.7;color:#aaa5af}
+label{display:block;margin:15px 0 7px;color:#c9c3cf;font-size:10px;letter-spacing:.1em;font-weight:700}
+input{width:100%;padding:14px 12px;min-height:46px;border:1px solid #4d4652;border-radius:10px;background:#08070b;color:white;font-size:14px}
+button{cursor:pointer;font:inherit}
+.primary{width:100%;border:1px solid #a95569;border-radius:11px;padding:15px;background:linear-gradient(110deg,#681f32,#9e364d);font-size:12px;font-weight:800;letter-spacing:.12em;color:white;margin-top:22px}
+.primary:disabled{opacity:.6}
+.outline{display:inline-block;border:1px solid #6c5964;padding:11px 17px;border-radius:10px;background:#141217;color:#ece5ed;font-size:11px;text-decoration:none;margin-top:13px}
+.notice{padding:11px 12px;background:#261820;border:1px solid #804253;border-radius:10px;font-size:11px;color:#f1c3d0;margin-top:15px}
+.notice[hidden],.panel[hidden],section[hidden]{display:none}
+.access-card{border:3px solid #bfb5c4;border-radius:17px;background:#101015;padding:8px;box-shadow:0 0 50px #000b;margin:20px 0}
+.card-interior{border:1px solid #716873;padding:20px 16px;background:linear-gradient(140deg,#231e25,#07070b);border-radius:10px}
+.card-top{font-size:23px;font-weight:900;letter-spacing:-.05em;line-height:1.05}
+.card-top small{display:block;color:#aba6b0;font-size:9px;letter-spacing:.19em;font-weight:550;margin:9px 0 12px}
+.stripe{height:8px;margin:18px 0 10px;background:repeating-linear-gradient(110deg,#a44459 0 4px,#101014 4px 12px)}
+.clearance{display:flex;min-height:48px;align-items:center}
+.clearance strong{width:43%;background:#e0d8e1;color:#16131a;padding:15px 8px;text-align:center;font-size:16px}
+.clearance span{flex:1;background:#351421;padding:15px 8px;text-align:center;font-size:12px;font-weight:850;letter-spacing:.1em}
+.card-owner{font-size:18px;font-weight:750;margin:10px 0 0}
+.action-row{display:flex;gap:9px;flex-wrap:wrap}
+.action-row .primary{width:auto;flex:1}
+.status{color:#bde8c9;font-size:11px;letter-spacing:.07em}
+footer{text-align:center;padding:15px;color:#75717e;font-size:9px;letter-spacing:.11em}
+@media(max-width:520px){header span{display:none}.card-top{font-size:21px}}
+</style>
+<script src="corp-config.js" defer></script><script type="module" src="employee.js?v=20261109-staff1"></script>
+</head><body>
+<header><strong>BLACKCELL CORPORATION</strong><span>EMPLOYEE ACCESS</span></header>
+<main>
+<section class="panel" id="employeeLogin">
+<div class="logo">B</div><div class="eyebrow">BLACKCELL / EMPLOYEE NETWORK</div>
+<h1>Employee Sign In</h1><p>Use your assigned employee email and your own password. Your corporate owner account uses a separate Administration sign-in.</p>
+<form id="signin"><label for="email">EMPLOYEE EMAIL</label><input id="email" type="email" autocomplete="username" required>
+<label for="password">PASSWORD</label><input id="password" type="password" autocomplete="current-password" required>
+<button id="signinButton" class="primary">SIGN IN ↗</button></form>
+<p id="loginError" class="notice" hidden role="status"></p>
+</section>
+<section class="panel" id="employeeHome" hidden>
+<div class="eyebrow">PRIVATE CORPORATE CREDENTIAL</div><h1>Your Employee Card</h1>
+<div class="access-card"><div class="card-interior">
+<div class="logo" style="margin-bottom:12px;width:50px;height:50px;font-size:29px">B</div>
+<div class="card-top">BLACKCELL<br>CORPORATION<small>EMPLOYEE NETWORK</small></div>
+<div class="stripe"></div>
+<div class="clearance"><strong id="employeeLevel">LEVEL —</strong><span>ACCESS PASS</span></div>
+<div class="card-owner" id="employeeName">Employee</div>
+<p class="status" id="employeeAccess">AUTHORIZED EMPLOYEE</p>
+</div></div>
+<p>Your card identifies your assigned clearance. It does not provide access to the Level 7 Administration dashboard or NEXUS records.</p>
+<section id="passwordSetup"><label for="newPassword">SET / CHANGE YOUR PASSWORD</label><input id="newPassword" type="password" minlength="12" autocomplete="new-password" placeholder="At least 12 characters"><button id="savePassword" class="primary">SAVE MY PASSWORD</button></section>
+<p id="employeeStatus" class="notice" hidden role="status"></p>
+<div class="action-row"><a class="outline" id="chatLink" href="corporate-chat.html">OPEN EMPLOYEE CHAT ↗</a><button id="signout" class="outline">SIGN OUT</button></div>
+</section>
+</main><footer>BLACKCELL CORPORATION · SECURE EMPLOYEE ACCESS</footer></body></html>
