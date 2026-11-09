@@ -2,6 +2,7 @@
 export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadAsset,refresh,profile,openProfile,ensureSigned,switchView}){
  const $=id=>document.getElementById(id);
  const meta={albums:[],albumItems:[],favorites:[],activeAlbum:null,filter:'all',sort:'newest',query:'',
+   scope:'mine',branch:'',category:'',era:'',editingAsset:null,
    viewerItems:[],viewerIndex:0,editingAlbum:null,uploading:false,renderCount:0};
  const fileMax=45*1024*1024;
  const photoFormats=new Set(['image/jpeg','image/png','image/webp','image/gif','image/heic']);
@@ -12,6 +13,31 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  const favorited=id=>meta.favorites.some(x=>x.asset_id===id&&x.user_id===ownId());
  const byId=id=>state.assets.find(a=>a.id===id);
  const allAlbums=()=>meta.albums;
+ const militaryCategories=['Unsorted','Personnel','Uniforms','Insignia','Equipment','Ground Vehicles','Aircraft','Naval Vessels','Facilities','Training','Operations','Ceremonies','Historical','Other'];
+ const categoryIcons={'Unsorted':'▧','Personnel':'♟','Uniforms':'◈','Insignia':'✦','Equipment':'◩',
+   'Ground Vehicles':'▰','Aircraft':'✈','Naval Vessels':'⚓','Facilities':'▦',
+   'Training':'◎','Operations':'◇','Ceremonies':'✧','Historical':'◷','Other':'◌'};
+ const cat=a=>a?.military_category||'Unsorted';
+ const branch=a=>a?.military_branch||'Unspecified';
+ const isAdmin=()=>state.member?.role==='owner';
+ function parseTags(value){return Array.from(new Set(String(value||'').split(',')
+  .map(t=>t.trim().slice(0,40)).filter(Boolean))).slice(0,15)}
+ function albumClassification(album){
+  return {military_category:cat(album),military_branch:branch(album),
+   military_era:album?.military_era||'',military_unit:album?.military_unit||'',
+   military_tags:Array.isArray(album?.military_tags)?album.military_tags:[]};
+ }
+ function uploadClassification(){
+  const album=albumFor(meta.activeAlbum);
+  const classification=album&&album.owner_id===ownId()?albumClassification(album):{
+   military_category:$('militaryUploadCategory').value,
+   military_branch:$('militaryUploadBranch').value,
+   military_era:$('militaryUploadEra').value,
+   military_unit:$('militaryUploadUnit').value.trim(),
+   military_tags:parseTags($('militaryUploadTags').value)
+  };
+  return classification;
+ }
  const albumMedia=album=>meta.albumItems.filter(x=>x.album_id===album.id).map(x=>byId(x.asset_id))
    .filter(a=>a&&['post','library'].includes(a.purpose));
  const make=(tag,cls='',text=null)=>{
@@ -54,23 +80,38 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   return arr;
  }
  function selectedAssets(){
-  let assets=meta.activeAlbum?albumMedia(albumFor(meta.activeAlbum)||{id:''}):archiveAssets();
+  let assets=meta.activeAlbum?albumMedia(albumFor(meta.activeAlbum)||{id:''})
+   :archiveAssets().filter(x=>meta.scope==='network'||own(x));
   if(meta.filter==='photo')assets=assets.filter(x=>x.kind==='photo');
   if(meta.filter==='video')assets=assets.filter(x=>x.kind==='video');
   if(meta.filter==='mine')assets=assets.filter(x=>own(x));
   if(meta.filter==='favorites')assets=assets.filter(x=>favorited(x.id));
-  if(meta.query)assets=assets.filter(x=>(x.filename+' '+(x.caption||'')+' '+nameOf(x)).toLowerCase().includes(meta.query));
+  if(meta.branch)assets=assets.filter(x=>branch(x)===meta.branch);
+  if(meta.category)assets=assets.filter(x=>cat(x)===meta.category);
+  if(meta.era)assets=assets.filter(x=>(x.military_era||'')===meta.era);
+  if(meta.query)assets=assets.filter(x=>(
+   x.filename+' '+(x.caption||'')+' '+nameOf(x)+' '+cat(x)+' '+branch(x)+
+   ' '+(x.military_era||'')+' '+(x.military_unit||'')+' '+
+   (x.military_location||'')+' '+(x.military_year||'')+' '+
+   (Array.isArray(x.military_tags)?x.military_tags.join(' '):'')
+  ).toLowerCase().includes(meta.query));
   return sortAssets(assets);
  }
  function selectAlbum(albumId){
   meta.activeAlbum=albumId||null;
+  if(meta.activeAlbum){
+   const album=albumFor(meta.activeAlbum);
+   if(album&&album.owner_id!==ownId())meta.scope='network';
+   meta.category='';meta.branch='';meta.era='';
+   $('militaryFilterCategory').value='';$('militaryFilterBranch').value='';$('militaryFilterEra').value='';
+  }
   meta.filter='all';render();
   const gallery=$('applePhotosGallery');
   gallery?.scrollIntoView({behavior:'smooth',block:'start'});
  }
  function renderAlbums(){
   const root=$('appleAlbumStrip');root.replaceChildren();
-  const albums=allAlbums();
+  const albums=allAlbums().filter(a=>meta.scope==='network'||a.owner_id===ownId());
   if(!albums.length){
    root.append(empty('Your album gallery is ready','Create an album to collect your best photographs and videos.'));
    return;
@@ -91,7 +132,10 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
    }
    card.append(cover,make('strong','',album.title),
      make('small','',listCount(album)+' items · '+(profile(album.owner_id)?.display_name||'Network member')));
-   node.append(card);
+   const tags=make('div','military-album-meta');
+   tags.append(make('span','',cat(album)),make('span','',branch(album)));
+   if(album.military_era)tags.append(make('span','',album.military_era));
+   node.append(card,tags);
    if(album.owner_id===ownId()){
     const actions=make('div','apple-album-tools');
     actions.append(
@@ -115,8 +159,9 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
    img.alt=a.caption||a.filename;img.loading='lazy';open.append(img);
   }else open.append(make('span','apple-photo-video','▧'));
   open.append(make('span','apple-photo-label',a.caption||a.filename));
-  open.title=(a.caption||a.filename)+' · '+nameOf(a);
+  open.title=(a.caption||a.filename)+' · '+cat(a)+' · '+branch(a)+' · '+nameOf(a);
   tile.append(open);
+  if(cat(a)!=='Unsorted')tile.append(make('span','military-photo-tag',cat(a)));
   if(a.kind==='video')tile.append(make('span','apple-photo-kind','VIDEO'));
   const heart=press(favorited(a.id)?'♥':'♡',event=>{
    event.stopPropagation();void toggleFavorite(a.id);
@@ -128,7 +173,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  function renderGallery(){
   const node=$('applePhotosGallery');node.replaceChildren();
   const list=selectedAssets(),album=albumFor(meta.activeAlbum);
-  $('photosGalleryTitle').textContent=album?album.title:'All Media';
+  $('photosGalleryTitle').textContent=album?album.title:(meta.scope==='mine'?'My Military Media':'Network Military Media');
   $('photosClearAlbum').hidden=!meta.activeAlbum;
   for(const b of document.querySelectorAll('#photosFilters [data-photo-filter]'))
    b.classList.toggle('selected',b.dataset.photoFilter===meta.filter);
@@ -153,13 +198,36 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
    section.append(grid);node.append(section);
   }
  }
+ function renderCategoryTiles(){
+  const root=$('militaryCategoryTiles');root.replaceChildren();
+  const assets=archiveAssets().filter(a=>meta.scope==='network'||own(a));
+  const features=['Unsorted','Uniforms','Equipment','Ground Vehicles','Aircraft','Naval Vessels','Training','Historical'];
+  const extras=militaryCategories.filter(x=>!features.includes(x)&&assets.some(a=>cat(a)===x));
+  for(const category of [...features,...extras]){
+   const count=assets.filter(a=>cat(a)===category).length;
+   const card=press('',()=>{
+    meta.category=meta.category===category?'':category;
+    meta.activeAlbum=null;
+    $('militaryFilterCategory').value=meta.category;
+    render();
+    $('applePhotosGallery')?.scrollIntoView({behavior:'smooth',block:'start'})
+   },'military-category-card'+(meta.category===category?' selected':''));
+   card.setAttribute('aria-label',category+' · '+count+' media items');
+   const description=make('div');
+   description.append(make('strong','',category),make('small','',count+' media item'+(count===1?'':'s')));
+   card.append(make('span','military-category-icon',categoryIcons[category]||'▧'),description);
+   root.append(card);
+  }
+ }
  function render(){
-  const all=archiveAssets();
+  const all=archiveAssets().filter(a=>meta.scope==='network'||own(a));
   $('photoCountMetric').textContent=all.filter(a=>a.kind==='photo').length;
   $('videoCountMetric').textContent=all.filter(a=>a.kind==='video').length;
-  $('albumCountMetric').textContent=allAlbums().length;
-  $('favoriteCountMetric').textContent=meta.favorites.length;
-  renderAlbums();renderGallery();
+  $('albumCountMetric').textContent=allAlbums().filter(a=>meta.scope==='network'||a.owner_id===ownId()).length;
+  $('favoriteCountMetric').textContent=all.filter(a=>favorited(a.id)).length;
+  for(const b of document.querySelectorAll('#militaryScope [data-military-scope]'))
+   b.classList.toggle('selected',b.dataset.militaryScope===meta.scope);
+  renderCategoryTiles();renderAlbums();renderGallery();
  }
  async function toggleFavorite(id){
   const was=favorited(id);
@@ -181,6 +249,11 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   $('appleAlbumTitle').textContent=a?'Edit Album':'Create Album';
   $('appleAlbumName').value=a?.title||'';
   $('appleAlbumDescription').value=a?.description||'';
+  $('appleAlbumCategory').value=cat(a);
+  $('appleAlbumBranch').value=branch(a);
+  $('appleAlbumEra').value=a?.military_era||'';
+  $('appleAlbumUnit').value=a?.military_unit||'';
+  $('appleAlbumTags').value=(a?.military_tags||[]).join(', ');
   $('appleAlbumOverlay').hidden=false;
   $('appleAlbumName').focus();
  }
@@ -188,13 +261,20 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  async function saveAlbum(){
   const title=$('appleAlbumName').value.trim();
   const description=$('appleAlbumDescription').value.trim();
+  const classification={
+   military_category:$('appleAlbumCategory').value,
+   military_branch:$('appleAlbumBranch').value,
+   military_era:$('appleAlbumEra').value,
+   military_unit:$('appleAlbumUnit').value.trim(),
+   military_tags:parseTags($('appleAlbumTags').value)
+  };
   if(!title||title.length>100){toast('Enter an album name between 1 and 100 characters.');return}
   const btn=$('albumModalSave');btn.disabled=true;btn.textContent='SAVING…';
   try{
    const editing=albumFor(meta.editingAlbum);
    const query=editing
-    ?client.from('corp_social_albums').update({title,description}).eq('id',editing.id).eq('owner_id',ownId())
-    :client.from('corp_social_albums').insert({owner_id:ownId(),title,description});
+    ?client.from('corp_social_albums').update({title,description,...classification}).eq('id',editing.id).eq('owner_id',ownId())
+    :client.from('corp_social_albums').insert({owner_id:ownId(),title,description,...classification});
    const {error}=await query;
    if(error)throw error;
    closeAlbumDialog();await refresh();render();toast(editing?'Album updated.':'Album created. Add media from the photo viewer.');
@@ -211,8 +291,8 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  async function addToAlbum(asset){
   const id=$('appleViewerAlbumSelect').value;
   const album=albumFor(id);
-  if(!album||album.owner_id!==ownId()||asset.owner_id!==ownId()){
-   toast('You can only organize your own photos into your own albums.');return;
+  if(!album||album.owner_id!==ownId()||(asset.owner_id!==ownId()&&!isAdmin())){
+   toast('You can only add to your own albums; employee collections cannot be edited by other members.');return;
   }
   const {error}=await client.from('corp_social_album_items').upsert({
    album_id:id,asset_id:asset.id,added_by:ownId()
@@ -241,6 +321,10 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
     label.textContent='Uploading '+(completed+1)+' of '+supported.length+' · '+f.name.slice(0,36);
     try{
      const asset=await uploadAsset(f,'library');
+     const classification=uploadClassification();
+     const {error:tagError}=await client.from('corp_social_assets')
+      .update(classification).eq('id',asset.id).eq('owner_id',ownId());
+     if(tagError)toast('Upload saved; classification could not be applied: '+tagError.message);
      if(album&&album.owner_id===ownId()){
       const {error}=await client.from('corp_social_album_items').insert({
        album_id:album.id,asset_id:asset.id,added_by:ownId()
@@ -281,7 +365,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   const frame=$('appleViewerStage');frame.replaceChildren();
   const u=mediaUrl(a);
   $('appleViewerFilename').textContent=a.filename;
-  $('appleViewerMeta').textContent=nameOf(a)+' · '+size(a.bytes)+' · '+new Date(a.created_at).toLocaleDateString();
+  $('appleViewerMeta').textContent=nameOf(a)+' · '+size(a.bytes)+' · '+cat(a)+' · '+branch(a);
   $('appleViewerCaption').textContent=a.caption||'';
   $('appleViewerPosition').textContent=(meta.viewerIndex+1)+' / '+meta.viewerItems.length;
   const star=$('appleViewerFavorite');
@@ -292,13 +376,13 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
    if(a.kind==='video'){
     const vid=make('video');vid.src=u;vid.controls=true;vid.playsInline=true;vid.preload='metadata';
     vid.addEventListener('loadedmetadata',()=>{
-     $('appleViewerMeta').textContent=nameOf(a)+' · '+vid.videoWidth+' × '+vid.videoHeight+' · '+size(a.bytes)
+     $('appleViewerMeta').textContent=nameOf(a)+' · '+vid.videoWidth+' × '+vid.videoHeight+' · '+cat(a)+' · '+branch(a)
     });
     frame.append(vid);
    }else{
     const img=make('img');img.src=u;img.alt=a.caption||a.filename;
     img.addEventListener('load',()=>{
-     $('appleViewerMeta').textContent=nameOf(a)+' · '+img.naturalWidth+' × '+img.naturalHeight+' · '+size(a.bytes)
+     $('appleViewerMeta').textContent=nameOf(a)+' · '+img.naturalWidth+' × '+img.naturalHeight+' · '+cat(a)+' · '+branch(a)
     });
     frame.append(img);
    }
@@ -310,6 +394,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   for(const album of owned)select.add(new Option(album.title,album.id));
   $('appleViewerAddAlbum').disabled=!owned.length;
   $('appleViewerEditCaption').hidden=!own(a);
+  $('appleViewerEditMilitary').hidden=!own(a);
   $('appleViewerDelete').hidden=!(own(a)&&a.purpose==='library');
   const film=$('appleViewerFilmstrip');film.replaceChildren();
   for(const [i,item] of meta.viewerItems.slice(0,70).entries()){
@@ -391,7 +476,72 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   }
   return grid;
  }
+
+ function openMilitaryAssetDialog(){
+  const a=viewerCurrent();if(!a||!own(a))return;
+  meta.editingAsset=a.id;
+  $('militaryAssetTitle').textContent='Classify · '+a.filename.slice(0,45);
+  $('militaryAssetCategory').value=cat(a);
+  $('militaryAssetBranch').value=branch(a);
+  $('militaryAssetEra').value=a.military_era||'';
+  $('militaryAssetUnit').value=a.military_unit||'';
+  $('militaryAssetLocation').value=a.military_location||'';
+  $('militaryAssetYear').value=a.military_year||'';
+  $('militaryAssetTags').value=(a.military_tags||[]).join(', ');
+  $('militaryAssetOverlay').hidden=false;
+ }
+ function closeMilitaryAssetDialog(){
+  $('militaryAssetOverlay').hidden=true;meta.editingAsset=null;
+ }
+ async function saveMilitaryAsset(){
+  const id=meta.editingAsset,a=byId(id);
+  if(!id||!a||!own(a))return;
+  const rawYear=$('militaryAssetYear').value.trim();
+  const year=rawYear?Number(rawYear):null;
+  if(rawYear&&(!Number.isInteger(year)||year<1800||year>2100)){
+   toast('Enter a year from 1800 to 2100 or leave it blank.');return;
+  }
+  const values={
+   military_category:$('militaryAssetCategory').value,
+   military_branch:$('militaryAssetBranch').value,
+   military_era:$('militaryAssetEra').value,
+   military_unit:$('militaryAssetUnit').value.trim(),
+   military_location:$('militaryAssetLocation').value.trim(),
+   military_year:year,
+   military_tags:parseTags($('militaryAssetTags').value)
+  };
+  const button=$('militaryAssetSave');button.disabled=true;button.textContent='SAVING…';
+  try{
+   const {error}=await client.from('corp_social_assets').update(values)
+    .eq('id',id).eq('owner_id',ownId());
+   if(error)throw error;
+   Object.assign(a,values);
+   closeMilitaryAssetDialog();renderViewer();render();
+   toast('Military classification saved to your media.');
+  }catch(e){toast('Could not save classification: '+(e.message||'Connection error'))}
+  finally{button.disabled=false;button.textContent='SAVE CLASSIFICATION ↗'}
+ }
  function setup(){
+  for(const b of document.querySelectorAll('#militaryScope [data-military-scope]')){
+   b.addEventListener('click',()=>{
+    meta.scope=b.dataset.militaryScope;meta.activeAlbum=null;meta.filter='all';render()
+   });
+  }
+  for(const [id,key] of [['militaryFilterBranch','branch'],['militaryFilterCategory','category'],['militaryFilterEra','era']]){
+   $(id).addEventListener('change',e=>{meta[key]=e.target.value;meta.activeAlbum=null;render()});
+  }
+  $('militaryFiltersReset').addEventListener('click',()=>{
+   meta.branch='';meta.category='';meta.era='';meta.query='';meta.filter='all';meta.activeAlbum=null;
+   $('militaryFilterBranch').value='';$('militaryFilterCategory').value='';
+   $('militaryFilterEra').value='';$('photosSearch').value='';render()
+  });
+  $('militaryAssetClose').addEventListener('click',closeMilitaryAssetDialog);
+  $('militaryAssetCancel').addEventListener('click',closeMilitaryAssetDialog);
+  $('militaryAssetSave').addEventListener('click',()=>void saveMilitaryAsset());
+  $('appleViewerEditMilitary').addEventListener('click',openMilitaryAssetDialog);
+  $('militaryAssetOverlay').addEventListener('click',e=>{
+   if(e.target===$('militaryAssetOverlay'))closeMilitaryAssetDialog()
+  });
   $('newAlbumButton').addEventListener('click',()=>openAlbumDialog());
   $('photosUploadButton').addEventListener('click',()=>{
    $('applePhotoFiles').value='';$('applePhotoFiles').click()
@@ -421,7 +571,8 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
     if(e.key==='Escape')closeViewer();
     if(e.key==='ArrowLeft')changeViewer(-1);
     if(e.key==='ArrowRight')changeViewer(1);
-   }else if(e.key==='Escape'&&!$('appleAlbumOverlay').hidden)closeAlbumDialog();
+   }else if(e.key==='Escape'&&!$('militaryAssetOverlay').hidden)closeMilitaryAssetDialog();
+   else if(e.key==='Escape'&&!$('appleAlbumOverlay').hidden)closeAlbumDialog();
   });
   let touchStart=0;
   $('appleViewerStage').addEventListener('touchstart',e=>{touchStart=e.touches[0]?.clientX||0},{passive:true});
