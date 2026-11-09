@@ -1,0 +1,1 @@
+window.BLACKCELL_CORP_CONFIG=Object.freeze({url:"https://eeddazzwqokqlzvzjlxz.supabase.co",publishableKey:"sb_publishable_QKh-RY2C0Ycu2G29fX7Xgw_W72OLu2-"});
