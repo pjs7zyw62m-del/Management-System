@@ -55,11 +55,13 @@ const mediaControls=document.querySelector('.media-actions');
 const mediaToggle=$('mediaToggleButton');
 const canShowFullMedia=()=>window.BlackcellChatMedia?.enabled()===true;
 function syncMediaUI(){
- // On smaller devices, only the *large floating media player* is disabled.
- // The compact + button must remain available for sending and receiving.
+ // One attachment button on iPhone/smaller iPad; large media tools are desktop-only.
+ const large=canShowFullMedia();
  mediaToggle.hidden=false;
- mediaControls.hidden=false;
- if(!canShowFullMedia()){
+ mediaControls.hidden=!large;
+ mediaToggle.setAttribute('aria-label',large?'Show or hide media tools':'Attach photos or videos');
+ mediaToggle.title=large?'Media tools':'Attach photo or video';
+ if(!large){
   mediaControls.classList.add('is-collapsed');
   mediaToggle.classList.remove('open');
   mediaToggle.setAttribute('aria-expanded','false');
@@ -68,6 +70,10 @@ function syncMediaUI(){
 syncMediaUI();
 window.addEventListener('blackcell-chat-media-capability-change',syncMediaUI);
 mediaToggle.addEventListener('click',()=>{
+ if(!canShowFullMedia()){
+  sharedMedia.pickMobileFiles();
+  return;
+ }
  const collapsed=mediaControls.classList.toggle('is-collapsed');
  mediaToggle.setAttribute('aria-expanded',String(!collapsed));
  mediaToggle.classList.toggle('open',!collapsed);
@@ -289,6 +295,7 @@ async function loadMessages(){
    box.append(item);
   }
   if(!ordered.length)box.append(text('p','empty','Private conversation started. Send the first message.'));
+  sharedMedia.syncInlineUpload();
   if(atBottom||firstLoad)box.scrollTop=box.scrollHeight;
   firstLoad=false;status('');
   void live.markRead(ordered);
