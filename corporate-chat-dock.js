@@ -139,7 +139,8 @@
   const clamp=(n,min,max)=>Math.min(Math.max(n,min),max);
   let drag=null;
   header.addEventListener('pointerdown',ev=>{
-    if(ev.target.closest('button')||window.innerWidth<=620)return;
+    if(ev.target.closest('button')||window.innerWidth<=620||
+      document.body.classList.contains('bc-has-media-bubbles'))return;
     ev.preventDefault();
     const r=pane.getBoundingClientRect();
     pane.style.left=r.left+'px';pane.style.top=r.top+'px';
