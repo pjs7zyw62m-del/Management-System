@@ -21,7 +21,16 @@
       root.hidden=!count;
       root.dataset.count=String(count);
       document.body.classList.toggle('bc-has-media-bubbles',count>0);
-      if(mainPane)mainPane.classList.toggle('bc-chat-split',count>0);
+      if(mainPane){
+       mainPane.classList.toggle('bc-chat-split',count>0);
+       // Keep the messenger anchored on the right while media bubbles are open.
+       if(count>0){
+        mainPane.style.left='';
+        mainPane.style.top='';
+        mainPane.style.right='';
+        mainPane.style.bottom='';
+       }
+      }
       root.style.setProperty('--bc-media-panels',String(count));
     }
     function close(type){
