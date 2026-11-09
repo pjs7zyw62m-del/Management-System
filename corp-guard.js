@@ -79,7 +79,7 @@ try {
     }
   } else if (authorized.member?.role !== 'owner' ||
              Number(authorized.member?.clearance_level) !== 7) {
-    locked('This account does not have Level 7 access to Command & Administration.');
+    locked('This account does not have Level 7 access to Administration.');
   } else {
     const {data:status,error} = await client.rpc('corp_code_status');
     if (error || status?.ok !== true || status?.verified !== true) {
@@ -117,8 +117,13 @@ try {
         if (!exiting && !document.hidden) void checkOnReturn();
       }, 60000);
       window.BLACKCELL_CORPORATE_ADMIN_API=Object.freeze({client});
+      window.addEventListener('message',event=>{
+        if(event.origin!==location.origin || event.data?.type!=='blackcell-chat-activity')return;
+        if(event.source!==document.querySelector('iframe[src^="corporate-chat.html"]')?.contentWindow)return;
+        interacted();
+      });
       const script=document.createElement('script');
-      script.src='admin.js?v=20261109-clearance5';
+      script.src='admin.js?v=20261109-employeechat1';
       document.body.append(script);
     }
   }
