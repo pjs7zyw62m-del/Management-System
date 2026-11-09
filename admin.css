@@ -26,18 +26,142 @@
 .employee-profile-listcopy strong{display:block;font-size:13px}
 .employee-profile-listcopy small{display:block;color:#9d97a3;margin-top:6px;font-size:11px;overflow-wrap:anywhere}
 .employee-profile-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
-.invitation-preview{margin:17px 0;padding:18px;background:#131116;border:1px solid #66606b;border-radius:19px}
-.invitation-preview-top{display:flex;justify-content:space-between;gap:10px;align-items:center;color:#eee8ee;letter-spacing:.14em;font-size:11px}
-.invitation-preview-top span{color:#c3a2ae;border:1px solid #715364;border-radius:8px;padding:7px;font-size:10px}
-.invitation-preview-address{color:#a6a0ad;font-size:11px;line-height:1.7;margin:17px 0;overflow-wrap:anywhere}
-.invitation-preview-paper{background:linear-gradient(145deg,#f2eff3,#e6e1e8);color:#231d26;border:1px solid #dad4dd;border-radius:15px;padding:clamp(19px,4vw,34px);max-width:570px;margin:0 auto 16px}
-.invitation-preview-mark{width:52px;height:52px;background:#151119;color:#f5eff5;border:1px solid #a4475f;border-radius:15px;display:grid;place-items:center;font-size:33px;font-weight:900;margin-bottom:13px}
-.invitation-preview-brand{font-weight:900;font-size:14px;letter-spacing:.13em}
-.invitation-preview-kicker{color:#8f3950;font-size:9px;letter-spacing:.15em;margin-top:9px;font-weight:750}
-.invitation-preview-paper h3{font-size:24px;color:#19151b;margin:24px 0 18px}
-.invitation-preview-paper p{font-size:13px;color:#4c4552;line-height:1.75;margin:10px 0}
-.invitation-preview-button{display:inline-block;margin:22px 0;padding:14px 23px;background:linear-gradient(120deg,#5c1b2d,#a34259);border-radius:11px;color:white;font-size:11px;font-weight:800;letter-spacing:.1em}
-.invitation-preview-paper .invitation-preview-foot{font-size:11px;color:#786a77}
+
+/* BLACKCELL INVITATION PREVIEW / Ultra-Dark Apple Glass */
+.invitation-preview{
+  position:relative;margin:19px 0;padding:clamp(13px,2.3vw,22px);
+  background:radial-gradient(ellipse at 6% 0%,rgba(132,28,57,.17),transparent 42%),
+             linear-gradient(145deg,#141318ed,#050507fa 78%);
+  border:1px solid #605563;border-radius:22px;
+  box-shadow:0 23px 70px #000a,inset 0 1px #eee2ef15;
+  color:#ece8ef;backdrop-filter:blur(18px);
+}
+.invitation-preview-top{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 17px}
+.invitation-preview-eyebrow{
+  color:#e7dfe8;font-size:10px;letter-spacing:.16em;
+  font-weight:800;line-height:1.6
+}
+.invitation-preview-status{
+  color:#f4bccb;background:#3f182555;border:1px solid #895165;
+  border-radius:99px;padding:8px 11px;font-size:9px;
+  letter-spacing:.1em;font-weight:850
+}
+.invitation-preview-address{
+  padding:12px 15px;margin:0 0 16px;
+  border:1px solid #413b46;border-radius:12px;
+  background:#0b0a0e;color:#a9a2af;
+  font-size:10px;letter-spacing:.055em;line-height:1.8;
+  overflow-wrap:anywhere
+}
+.invitation-preview-card{
+  overflow:hidden;max-width:660px;margin:0 auto;
+  border:1px solid #76707b;border-radius:22px;
+  background:linear-gradient(160deg,#211d25,#08080b 57%,#110b11);
+  box-shadow:0 19px 55px #000b,inset 0 1px #ffffff18
+}
+.invitation-preview-brand{
+  display:flex;align-items:center;gap:13px;padding:19px 22px;
+  border-bottom:1px solid #594753;
+  background:linear-gradient(108deg,#461c2a52,transparent 49%),#151218;
+  position:relative
+}
+.invitation-preview-brand:after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:4px;
+  background:repeating-linear-gradient(108deg,#a2475e 0 4px,#11090e 4px 12px)
+}
+.invitation-preview-mark{
+  width:54px;height:54px;flex:none;display:grid;place-items:center;
+  border-radius:15px;border:1px solid #82717e;
+  background:linear-gradient(145deg,#302631,#08070b);
+  color:#f1edf2;font-size:34px;font-weight:900;
+  box-shadow:inset 0 1px #ffffff2a
+}
+.invitation-preview-brandtext strong{
+  display:block;color:#f4eef4;font-size:clamp(12px,2.2vw,16px);
+  font-weight:900;letter-spacing:.095em;line-height:1.4
+}
+.invitation-preview-brandtext span{
+  display:block;margin-top:5px;color:#b9aab7;
+  font-size:9px;font-weight:700;letter-spacing:.17em
+}
+.invitation-preview-body{padding:clamp(17px,3.3vw,27px)}
+.invitation-preview-kicker{
+  color:#c97f94;font-size:9px;letter-spacing:.17em;
+  font-weight:800;margin-bottom:11px
+}
+.admin-modal .invitation-preview-body h3{
+  margin:0 0 12px;color:#f4eef4;font-size:clamp(23px,3.7vw,30px);
+  font-weight:850;letter-spacing:-.045em;line-height:1.15
+}
+.admin-modal .invitation-preview-body p{
+  color:#bcb2be;font-size:12px;line-height:1.7;margin:0
+}
+.invitation-preview-grid{
+  margin:19px 0;display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));gap:10px
+}
+.invitation-preview-item{
+  padding:14px 14px 12px;
+  background:linear-gradient(145deg,#27222a,#141218);
+  border:1px solid #48404a;border-radius:14px;
+  min-width:0
+}
+.invitation-preview-item small{
+  display:block;color:#9c93a1;font-size:9px;
+  letter-spacing:.13em;font-weight:800;margin-bottom:8px
+}
+.invitation-preview-item strong{
+  display:block;color:#efeaf0;font-size:12px;
+  line-height:1.5;font-weight:700;overflow-wrap:anywhere
+}
+.invitation-preview-summary{
+  border:1px solid #49414b;border-radius:16px;
+  background:linear-gradient(150deg,#1c1920,#0c0b0f);
+  padding:16px 19px
+}
+.invitation-preview-summary-title{
+  display:block;color:#dfc9d4;font-size:10px;
+  letter-spacing:.15em;font-weight:850;margin-bottom:11px
+}
+.invitation-preview-steps{
+  color:#c9c0cc;font-size:12px;line-height:1.75;
+  margin:0;padding-left:20px
+}
+.invitation-preview-steps li{padding:2px 0 2px 3px}
+.invitation-preview-steps li::marker{color:#bc5874;font-weight:750}
+.invitation-preview-actionrow{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:14px 19px;margin:20px 0 16px;
+  border:1px solid #b45d76;border-radius:12px;
+  color:#fff1f6;background:linear-gradient(120deg,#541b30,#992f50);
+  box-shadow:0 12px 31px #6c153331;
+  font-size:10px;font-weight:850;letter-spacing:.13em;
+  cursor:default;user-select:none
+}
+.invitation-preview-warning{
+  border:1px solid #74465a;border-radius:14px;
+  background:linear-gradient(125deg,#421b2a61,#170e16);
+  padding:15px 17px
+}
+.invitation-preview-warning strong{
+  display:block;color:#f3c4d3;
+  font-size:10px;letter-spacing:.15em;margin-bottom:8px
+}
+.admin-modal .invitation-preview-warning p{
+  color:#c0aab7;font-size:11px;line-height:1.7
+}
+.admin-modal .invitation-preview-bottomnote{
+  color:#ada4b1;font-size:11px;line-height:1.7;
+  margin:15px 0 10px
+}
+.admin-modal .invitation-preview-close{display:block;margin-left:auto}
+@media(max-width:610px){
+  .invitation-preview-grid{grid-template-columns:1fr}
+  .invitation-preview-brand{padding:16px}
+  .invitation-preview-brandtext strong{letter-spacing:.04em}
+  .invitation-preview-status{font-size:8px}
+}
+
 @media(max-width:710px){.employee-profile-layout{grid-template-columns:1fr}.employee-profile-pass{min-height:365px}.employee-profile-listitem{align-items:flex-start;flex-direction:column}.employee-profile-actions{justify-content:flex-start}}
 
 .employee-card-inline-preview{margin-top:22px;padding:16px;border:1px solid #685768;border-radius:17px;background:linear-gradient(145deg,#201923,#0c0b0f)}.employee-card-inline-preview>h3{font-size:11px;color:#c6aebe;letter-spacing:.15em;margin:0 0 10px}.employee-card-inline-preview .employee-profile-layout{grid-template-columns:minmax(220px,310px) minmax(230px,1fr)}@media(max-width:710px){.employee-card-inline-preview .employee-profile-layout{grid-template-columns:1fr}}
