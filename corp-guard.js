@@ -123,7 +123,7 @@ try {
         interacted();
       });
       const script=document.createElement('script');
-      script.src='admin.js?v=20261109-employeechat1';
+      script.src='admin.js?v=20261109-fourdigit4';
       document.body.append(script);
     }
   }
