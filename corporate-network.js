@@ -202,7 +202,7 @@ function renderProfile(){
  else{
   actions.append(btn(following(p.user_id)?'✓ FOLLOWING':'+ FOLLOW',()=>void toggleFollow(p.user_id)));
   if(state.chatPeers.some(x=>x.user_id===p.user_id)){
-   const directChat=btn('OPEN CHAT ↗',()=>{location.href='corporate-chat.html?peer='+encodeURIComponent(p.user_id)},'secondary');
+   const directChat=btn('OPEN CHAT ↗',()=>window.dispatchEvent(new CustomEvent('blackcell-open-imessage',{detail:{peerId:p.user_id}})),'secondary');
    actions.append(directChat);
   }
  }
@@ -564,6 +564,11 @@ async function boot(){
   }
   $('gate').hidden=true;$('app').hidden=false;
   setupEvents();
+  window.BLACKCELL_CORPORATE_NETWORK_CLIENT=client;
+  const chatScript=document.createElement('script');
+  chatScript.src='corporate-chat-dock.js?v=20261109-floating-network2';
+  chatScript.defer=true;
+  document.body.append(chatScript);
   const params=new URLSearchParams(location.search);
   const uid=params.get('user');
   const post=params.get('post');
