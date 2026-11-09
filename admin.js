@@ -138,34 +138,95 @@ async function employeeProfiles(){
 }
 function showInvitationPreview(form,inputs){
   const {name,email,username,level}=inputs;
-  const old=form.parentElement.querySelector('.invitation-preview');
-  if(old)old.remove();
+  const existing=form.parentElement.querySelector('.invitation-preview');
+  if(existing)existing.remove();
+
   const wrapper=el('section','invitation-preview');
-  wrapper.setAttribute('aria-label','Invitation email visual preview — not sent');
-  const header=el('div','invitation-preview-top');
-  header.append(el('strong','','INVITATION PREVIEW'),el('span','','NOT SENT'));
-  wrapper.append(header);
-  const detail=el('div','invitation-preview-address');
-  detail.append(el('div','','To: '+(email.value.trim()||'employee@example.com')),
-    el('div','','Subject: Blackcell Corporation Employee Invitation (concept preview)'));
-  wrapper.append(detail);
-  const paper=el('div','invitation-preview-paper');
-  paper.append(el('div','invitation-preview-mark','B'),
-    el('div','invitation-preview-brand','BLACKCELL CORPORATION'),
-    el('div','invitation-preview-kicker','EMPLOYEE ACCESS INVITATION'),
-    el('h3','','You are invited to Blackcell.'));
-  paper.append(el('p','','Hello '+(name.value.trim()||'Employee')+','));
-  paper.append(el('p','','You have been invited to activate a private Blackcell Corporation employee account. Your employee username will be '+(username.value.trim()||'generated when registered')+' and your assigned clearance will be Level '+level.value+'.'));
-  paper.append(el('p','','Use the invitation activation link from your email to verify your email address and create your own password. Your digital employee access card will be revealed after activation.'));
-  const button=el('div','invitation-preview-button','ACTIVATE EMPLOYEE ACCESS');
-  paper.append(button,el('p','invitation-preview-foot','Your Access Code and Security Code are issued separately. Never share them by replying to this email.'));
-  wrapper.append(paper);
-  wrapper.append(p('Concept preview only. Supabase currently sends its configured invitation email template, which may have different text or styling. Nothing is sent until you click Send Employee Invitation.'));
-  const dismiss=action('CLOSE PREVIEW',()=>wrapper.remove());
-  wrapper.append(dismiss);
+  wrapper.setAttribute('aria-label','Blackcell corporate invitation concept preview — not sent');
+
+  const top=el('div','invitation-preview-top');
+  top.append(
+    el('strong','invitation-preview-eyebrow','BLACKCELL CORPORATION / EXECUTIVE NETWORK'),
+    el('span','invitation-preview-status','PREVIEW ONLY · NOT SENT')
+  );
+  wrapper.append(top);
+
+  const address=el('div','invitation-preview-address');
+  address.append(
+    el('div','','TO: '+(email.value.trim()||'employee@example.com')),
+    el('div','','SUBJECT: Blackcell Corporation — Employee Access Invitation (concept)')
+  );
+  wrapper.append(address);
+
+  const card=el('div','invitation-preview-card');
+  const brand=el('div','invitation-preview-brand');
+  brand.append(el('div','invitation-preview-mark','B'));
+  const brandText=el('div','invitation-preview-brandtext');
+  brandText.append(
+    el('strong','','BLACKCELL CORPORATION'),
+    el('span','','EMPLOYEE ACCESS INVITATION')
+  );
+  brand.append(brandText);
+  card.append(brand);
+
+  const body=el('div','invitation-preview-body');
+  body.append(
+    el('div','invitation-preview-kicker','BLACKCELL / CORPORATE ONBOARDING'),
+    el('h3','','Your corporate invitation'),
+    el('p','', 'You are invited to activate a private Blackcell Corporation employee account.')
+  );
+
+  const grid=el('div','invitation-preview-grid');
+  function detail(label,value){
+    const item=el('div','invitation-preview-item');
+    item.append(el('small','',label),el('strong','',value));
+    return item;
+  }
+  grid.append(
+    detail('EMPLOYEE NAME',name.value.trim()||'Sample Employee'),
+    detail('EMAIL RECIPIENT',email.value.trim()||'employee@example.com'),
+    detail('USERNAME',username.value.trim()||'bc_sample_48271'),
+    detail('CLEARANCE LEVEL','LEVEL '+level.value),
+    detail('ACCESS CODE','4 DIGITS · PROVIDED SEPARATELY'),
+    detail('SECURITY CODE','12 DIGITS · PROVIDED SEPARATELY')
+  );
+  body.append(grid);
+
+  const flow=el('div','invitation-preview-summary');
+  flow.append(el('strong','invitation-preview-summary-title','EMPLOYEE ACTIVATION PROCESS'));
+  const steps=el('ol','invitation-preview-steps');
+  for(const message of [
+    'Receive the secure employee invitation.',
+    'Verify your email address and create a private password.',
+    'Reveal your personalized Blackcell employee access card.',
+    'Enter your 4-digit Access Code and 12-digit Security Code.',
+    'Access only the employee features approved for your account.'
+  ])steps.append(el('li','',message));
+  flow.append(steps);
+  body.append(flow);
+
+  body.append(el('div','invitation-preview-actionrow',
+    'ACTIVATE EMPLOYEE ACCESS  ↗'));
+
+  const caution=el('div','invitation-preview-warning');
+  caution.append(
+    el('strong','','SECURITY NOTICE'),
+    el('p','','Access and Security Codes are delivered separately by your administrator. No security codes are included in this invitation.')
+  );
+  body.append(caution);
+  card.append(body);
+  wrapper.append(card);
+
+  wrapper.append(el('p','invitation-preview-bottomnote',
+    'Visual concept preview only. No invitation has been sent. The real invitation is generated using the email template configured in Supabase and may have different wording or styling.'));
+  const closeButton=action('CLOSE PREVIEW',()=>wrapper.remove());
+  closeButton.type='button';
+  closeButton.classList.add('invitation-preview-close');
+  wrapper.append(closeButton);
   form.after(wrapper);
   wrapper.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
+
 function users(){
   if(activeTab==='accounts'){
     const section=block('Register New Employee');
