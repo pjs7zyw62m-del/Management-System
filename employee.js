@@ -5,6 +5,21 @@ const client=corporateClient();
 const $=id=>document.getElementById(id);
 let recoveryFlow=recoveryHint;
 let verified=false, lastActivity=Date.now(),lastTouch=0,logoutRunning=false;
+let employeeDockLoading=false;
+function syncEmployeeMessenger(permitted){
+ if(!permitted){
+  window.dispatchEvent(new Event('blackcell-suspend-imessage'));
+  return;
+ }
+ window.BLACKCELL_CORPORATE_NETWORK_CLIENT=client;
+ if(!employeeDockLoading){
+  employeeDockLoading=true;
+  const script=document.createElement('script');
+  script.src='corporate-chat-dock.js?v=20261109-premium-messages1';
+  script.addEventListener('error',()=>employeeDockLoading=false);
+  document.body.append(script);
+ }else window.dispatchEvent(new Event('blackcell-resume-imessage'));
+}
 const IDLE_MS=60*60*1000;
 function showPanel(id){
  for(const name of ['employeeLogin','employeeActivation','employeeHome'])$(name).hidden=name!==id;
@@ -13,6 +28,7 @@ function showError(id,message){$(id).textContent=message;$(id).hidden=false}
 function clearError(id){$(id).hidden=true;$(id).textContent=''}
 async function expireSession(){
  if(logoutRunning)return;
+ window.dispatchEvent(new Event('blackcell-suspend-imessage'));
  logoutRunning=true;
  if(verified)try{await client.rpc('corp_employee_end_session')}catch(_){}
  try{await client.auth.signOut({scope:'local'})}catch(_){}
@@ -36,6 +52,7 @@ function setVerified(isVerified,m){
  $('employeeCard').classList.toggle('codes-verified',isVerified);
  $('chatLink').hidden=!isVerified||m.can_chat!==true;
  $('networkLink').hidden=!isVerified;
+ syncEmployeeMessenger(isVerified&&m.can_chat===true);
  $('employeeAccess').textContent=isVerified
    ?(m.can_chat?'SECURITY VERIFIED · CHAT AUTHORIZED':'SECURITY VERIFIED · CHAT RESTRICTED')
    :'IDENTITY ACTIVATED · CODE VERIFICATION REQUIRED';
@@ -213,6 +230,17 @@ $('employeeCodeForm').addEventListener('submit',async e=>{
   showError('employeeStatus','Security approved. Your employee chat is now available.');
  }catch(_){showError('employeeStatus','Security verification unavailable. Try again later.')}
  finally{btn.disabled=false;btn.textContent='AUTHENTICATE EMPLOYEE ACCESS ↗'}
+});
+window.addEventListener('message',event=>{
+ if(event.origin!==location.origin||event.data?.type!=='blackcell-chat-activity')return;
+ const valid=Array.from(document.querySelectorAll('iframe')).some(frame=>{
+  try{
+   const url=new URL(frame.src,location.href);
+   return url.origin===location.origin&&url.pathname.endsWith('/corporate-chat.html')
+     &&frame.contentWindow===event.source;
+  }catch(_){return false}
+ });
+ if(valid)noteActivity();
 });
 for(const e of ['pointerdown','keydown','wheel','touchstart'])window.addEventListener(e,noteActivity,{passive:true});
 setInterval(()=>{if(verified&&Date.now()-lastActivity>=IDLE_MS)void expireSession();},15000);
