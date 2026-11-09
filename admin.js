@@ -292,8 +292,8 @@ function showInvitationPreview(form,inputs){
     detail('EMAIL RECIPIENT',email.value.trim()||'employee@example.com'),
     detail('USERNAME',username.value.trim()||'bc_sample_48271'),
     detail('CLEARANCE LEVEL','LEVEL '+level.value),
-    detail('ACCESS CODE','4 DIGITS · PROVIDED SEPARATELY'),
-    detail('SECURITY CODE','12 DIGITS · PROVIDED SEPARATELY')
+    detail('ACCESS CODE','4 DIGITS · EMAILED AFTER ACTIVATION'),
+    detail('SECURITY CODE','12 DIGITS · EMAILED AFTER ACTIVATION')
   );
   body.append(grid);
 
@@ -316,7 +316,7 @@ function showInvitationPreview(form,inputs){
   const caution=el('div','invitation-preview-warning');
   caution.append(
     el('strong','','SECURITY NOTICE'),
-    el('p','','Access and Security Codes are delivered separately by your administrator. No security codes are included in this invitation.')
+    el('p','','Access and Security Codes are automatically emailed after password activation. No security codes are included in the first invitation.')
   );
   body.append(caution);
   card.append(body);
@@ -585,11 +585,11 @@ function users(){
           feedback.textContent='Invitation not sent: '+outcome.message;
           return;
         }
-        feedback.textContent='Invitation created. The email activates the employee account, not the codes. Share these generated codes separately through a trusted channel; they cannot be retrieved later.';
+        feedback.textContent='Invitation created. Codes are encrypted for automatic delivery in a second email after password activation. Keep a backup until the credential email service is verified.';
         const receipt=el('div','content-block');
         receipt.dataset.blackcellReceipt='true';
         receipt.style.cssText='border:1px solid #648774;border-radius:14px;padding:16px;margin-top:15px';
-        receipt.append(el('h3','','EMPLOYEE CREDENTIALS · COPY ONCE'));
+        receipt.append(el('h3','','EMPLOYEE CREDENTIALS · ADMIN BACKUP'));
         const textReceipt='Blackcell Employee: '+name.value.trim()+
           '\nUsername: '+uniqueUser.value+'\nAccess Code (4 digits): '+accessCode.value+
           '\nSecurity Code (12 digits): '+securityCode.value+
