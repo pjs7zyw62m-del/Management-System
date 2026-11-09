@@ -522,7 +522,10 @@ function users(){
       invalid_employee_credentials:'Check the email, name, username, 4-digit Access Code, and 12-digit Security Code.',
       username_already_used:'This username is already in use. Generate a different one.',
       cannot_invite_owner:'You cannot invite your own owner email as an employee.',
-      invitation_failed:'Supabase rejected the invitation email. Check the SMTP and Auth invitation settings.',
+      invitation_failed:'Supabase could not send the invitation. Check Authentication → Email settings.',
+      supabase_email_rate_limit:'Supabase has temporarily reached its built-in email sending limit. The employee was not invited. Try again after the quota resets, or configure custom SMTP for larger volumes.',
+      employee_email_already_registered:'An Auth user with this email already exists. Check User Management → Profiles before creating another invitation.',
+      email_recipient_not_authorized:'Supabase built-in email sending is restricted to authorized recipients. Set up custom SMTP to invite other addresses.',
       registration_not_completed:'The account could not be provisioned; employee access was not activated.',
       hourly_invitation_limit:'The hourly employee invitation limit has been reached.'
     };
