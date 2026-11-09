@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#030305">
+<title>BLACKCELL CORPORATION | Original Shared Media</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:#030305;color:#f1eef2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{min-height:100dvh;display:flex;flex-direction:column;background:radial-gradient(ellipse at 50% 35%,#4114251f,transparent 67%),#030305}
+button,a{font:inherit}button{cursor:pointer}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px clamp(14px,3vw,38px);border-bottom:1px solid #ffffff24;background:#0d0b10}
+header strong{font-size:12px;letter-spacing:.17em}
+header small{display:block;font-size:9px;letter-spacing:.13em;color:#a7a0ae;margin-top:6px}
+header a,.toolbar button,.toolbar a,.footer button,.footer a{display:inline-block;background:#231b25;border:1px solid #65505d;border-radius:9px;padding:11px 14px;color:#e9dfe9;text-decoration:none;font-size:11px}
+header a:hover,.toolbar button:hover,.toolbar a:hover,.footer button:hover,.footer a:hover{border-color:#b36b83}
+#status{font-size:12px;color:#d5adbd;padding:10px 20px;text-align:center}
+.toolbar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:13px clamp(13px,3vw,32px)}
+.toolbar strong{font-size:12px;color:#e5d8e2;overflow-wrap:anywhere}
+.toolbar .toolbar-actions{display:flex;gap:7px;flex-wrap:wrap}
+.stage{flex:1;min-height:55dvh;display:flex;align-items:center;justify-content:center;background:#000;overflow:auto;position:relative}
+.stage img,.stage video{display:block;max-width:100%;max-height:calc(100dvh - 190px);width:auto;height:auto;object-fit:contain}
+.stage video{width:min(100%,1300px);height:auto}
+#caption{padding:10px 22px;color:#ada4ae;font-size:11px;text-align:center}
+.footer{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px clamp(13px,3vw,32px);border-top:1px solid #ffffff23;background:#0e0c10}
+.footer strong{font-size:12px}
+.footer div{display:flex;gap:8px}
+button:disabled{opacity:.42;cursor:default}
+@media(max-width:550px){header strong{font-size:10px}.toolbar{align-items:stretch}.toolbar .toolbar-actions a,.toolbar .toolbar-actions button{flex:1;text-align:center}.footer{flex-wrap:wrap}.stage img,.stage video{max-height:calc(100dvh - 230px)}}
+</style>
+<script src="corp-config.js" defer></script>
+<script type="module" src="corporate-media.js?v=20261109-original1"></script>
+</head><body>
+<header><div><strong>BLACKCELL CORPORATION</strong><small>NETWORK / ORIGINAL-RESOLUTION SHARED MEDIA</small></div><a href="corporate-chat.html">RETURN TO CHAT</a></header>
+<div id="status" role="status">Verifying your corporate access…</div>
+<div class="toolbar"><strong id="filename">Private shared media</strong>
+<div class="toolbar-actions">
+<a id="viewOriginal" href="#" target="_blank" rel="noopener" hidden>VIEW ORIGINAL IN NEW TAB</a>
+<button id="download" type="button" disabled>DOWNLOAD ORIGINAL</button>
+</div></div>
+<main class="stage" id="stage"></main>
+<div id="caption" role="status">Original proportions are preserved.</div>
+<div class="footer"><button type="button" id="previous" disabled>‹ PREVIOUS</button><strong id="counter">0 / 0</strong><div><button type="button" id="next" disabled>NEXT ›</button></div></div>
+</body></html>
