@@ -184,6 +184,11 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const pickInfo=el('div','media-dialog-selection','Select photos or videos to share securely with this contact.');
  const itemsBox=el('div','media-selected-items');
  body.append(pickInfo,itemsBox);
+ if(standalonePanel&&mediaPanel==='share'){
+  body.append(progress);
+  progress.setAttribute('aria-live','polite');
+  progress.setAttribute('role','status');
+ }
  const footer=el('footer','media-dialog-footer');
  const selectButton=button('CHOOSE PHOTOS & VIDEOS',()=>chooseFiles('image/*,video/*'));
  const sendButton=button('SHARE SELECTED MEDIA',()=>void sendSelection(),'media-primary');
@@ -260,7 +265,11 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   const batchId=crypto.randomUUID();
   let transferred=0;
   updateProgress(0,'UPLOADING '+files.length+' MEDIA FILE'+(files.length===1?'':'S'));
-  overlay.hidden=true;
+  if(standalonePanel&&mediaPanel==='share'){
+   overlay.hidden=false;
+   pickInfo.textContent='Sending media securely. Keep this bubble open until the transfer reaches 100%.';
+   footer.hidden=true;
+  }else overlay.hidden=true;
   const receiver=c.peer.user_id;
   try{
    const {error:batchError}=await client.from('corp_chat_media_batches').insert({
@@ -310,8 +319,13 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
    }
   }catch(e){
    progress.classList.remove('active');
+   if(standalonePanel&&mediaPanel==='share')overlay.hidden=false;
    status('Media share failed: '+safeErr(e)+'. Please check your connection and try again.');
-  }finally{toggleBusy(false);sendButton.disabled=selection.length===0}
+  }finally{
+   footer.hidden=false;
+   toggleBusy(false);
+   sendButton.disabled=selection.length===0;
+  }
  }
  function closeWing(){
   if(standalonePanel&&mediaPanel==='library'&&requestPanelClose('library'))return;
