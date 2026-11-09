@@ -529,7 +529,7 @@ async function displayCorporateAccounts(container){
     container.replaceChildren(el('h3','','Approved & Invited Accounts'));
     for(const member of data.members){
       const right=member.role==='owner'?'LEVEL 7 · OWNER':
-        (member.active?(member.activated?'ACTIVE':'INVITED'):'DISABLED');
+        (member.active?(member.password_activated?'ACTIVE':'INVITED · PASSWORD PENDING'):'DISABLED');
       const view=el('div','employee-profile-actions');
       view.append(el('span','mock-state',right),
         action('VIEW PROFILE',()=>showEmployeeProfile(member)));
