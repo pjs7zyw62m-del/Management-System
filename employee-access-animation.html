@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#030305">
+<title>BLACKCELL CORPORATION | Employee Access Animation Preview</title>
+<style>
+:root{color-scheme:dark;--red:#a93251;--red2:#e0607f;--bg:#030305;--steel:#d6d1db;--hold:5.3s}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:#030305;color:#f4edf4;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{background:radial-gradient(ellipse at 57% 34%,#5b172c29,transparent 52%),#030305;min-height:100dvh;display:flex;flex-direction:column}
+body:before{content:"";pointer-events:none;position:fixed;inset:0;opacity:.15;background:repeating-linear-gradient(0deg,transparent 0 22px,#403841 23px,transparent 24px)}
+header{position:relative;z-index:1;min-height:80px;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:15px clamp(17px,4vw,56px);border-bottom:1px solid #403640;background:#07070ad9}
+.brand{display:flex;align-items:center;gap:13px}
+.brand-icon{width:44px;height:44px;display:grid;place-items:center;border:1px solid #84747f;border-radius:13px;background:#1a171e;font-size:30px;font-weight:900}
+.brand strong{display:block;letter-spacing:.16em;font-size:12px}
+.brand small{display:block;margin-top:5px;color:#a69ca9;font-size:10px;letter-spacing:.16em}
+.status-badge{border:1px solid #8a425b;background:#42192b66;color:#f0bacc;border-radius:99px;padding:9px 13px;font-weight:750;font-size:10px;letter-spacing:.12em}
+main{position:relative;z-index:1;flex:1;width:min(1400px,100%);margin:auto;padding:clamp(19px,3vw,36px)}
+.intro .overline{color:#cd7994;font-size:10px;font-weight:800;letter-spacing:.23em}
+.intro h1{margin:11px 0 7px;font-size:clamp(25px,4vw,43px);letter-spacing:-.055em}
+.intro p{color:#a9a2ae;font-size:12px;line-height:1.65;max-width:850px}
+.layout{display:grid;grid-template-columns:260px minmax(0,1fr);gap:22px;margin-top:24px;align-items:stretch}
+.timeline{border:1px solid #473a49;border-radius:20px;padding:20px 12px;background:linear-gradient(145deg,#211a22b3,#0a090ccf);align-self:stretch}
+.timeline-label{font-size:10px;letter-spacing:.17em;color:#be93a6;margin:2px 11px 17px;font-weight:800}
+.step{display:flex;gap:13px;align-items:center;text-align:left;width:100%;padding:15px 12px;color:#a7a0ab;background:transparent;border:1px solid transparent;border-radius:13px;cursor:pointer;transition:.25s;outline-offset:2px}
+.step:hover{color:#eee5ed;background:#28202a}
+.step.active{color:#fff;background:linear-gradient(120deg,#5e25374a,#161017);border-color:#9b5970;box-shadow:inset 2px 0 #df7591}
+.step .number{height:30px;width:30px;flex:0 0 30px;display:grid;place-items:center;border:1px solid #62505c;border-radius:50%;font-size:12px;color:#e7c8d3}
+.step.active .number{background:#b03b5c;border-color:#c97792;color:#fff;box-shadow:0 0 16px #b33d5a72}
+.step strong{display:block;font-size:12px}.step small{display:block;color:#887e8a;font-size:10px;margin-top:6px}.step.active small{color:#c9a5b5}
+.viewport{height:min(660px,75vh);min-height:545px;overflow:hidden;position:relative;border:1px solid #7d6d7a;border-radius:23px;background:radial-gradient(ellipse at 45% 35%,#2a142033,transparent 49%),linear-gradient(120deg,#121016,#050507 64%);box-shadow:inset 0 1px #ffffff21,0 28px 100px #000a;display:grid;place-items:center}
+.viewport:before{content:"";position:absolute;inset:-40%;border-radius:50%;border:1px solid #a72e4b1c;transform:rotate(-21deg);pointer-events:none}
+.viewport:after{content:"";height:1px;position:absolute;inset:auto 8% 15%;background:linear-gradient(90deg,transparent,#d1567770,transparent);pointer-events:none}
+.scene{display:none;position:absolute;inset:0;padding:27px;align-items:center;justify-content:center;flex-direction:column}
+.scene.active{display:flex;animation:sceneEntrance .55s cubic-bezier(.16,.8,.25,1) both}
+@keyframes sceneEntrance{from{opacity:0;transform:translateY(20px) scale(.98);filter:blur(8px)}to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+.stage-tag{font-size:10px;letter-spacing:.2em;color:#b4a3b1;font-weight:800;margin-bottom:22px;text-align:center}
+.screen{width:min(520px,100%);background:linear-gradient(152deg,#28212c,#0b090e 78%);border:1px solid #8b7485;border-radius:22px;box-shadow:0 20px 70px #0009,inset 0 1px #ffffff2a;overflow:hidden;position:relative}
+.screen .screen-top{padding:20px 23px;border-bottom:1px solid #503f4e;background:linear-gradient(100deg,#39152165,#131017)}
+.screen .screen-top strong{display:block;font-size:14px;letter-spacing:.13em}
+.screen .screen-top small{display:block;margin-top:7px;color:#c6a7b5;font-size:10px;letter-spacing:.15em}
+.screen .body{padding:24px}
+.screen h2{font-size:clamp(21px,3vw,28px);letter-spacing:-.04em;margin:0 0 14px}
+.screen p{font-size:12px;color:#c6b9c7;line-height:1.8}
+.screen label{display:block;color:#b7aaba;font-size:9px;letter-spacing:.13em;font-weight:800;margin:15px 0 7px}
+.fake-input{padding:14px;background:#08070a;border:1px solid #534955;border-radius:11px;min-height:45px;color:#ede7ef;font-size:12px}
+.button-visual{margin-top:20px;display:block;padding:15px 19px;border:1px solid #cf597c;border-radius:12px;background:linear-gradient(110deg,#621b32,#ac3458);box-shadow:0 0 20px #a3335539;color:#fff;font-size:11px;font-weight:850;letter-spacing:.13em;text-align:center;position:relative;overflow:hidden}
+.scene.active .button-visual:after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 30%,#ffffff40 50%,transparent 70%);transform:translateX(-120%);animation:shine 2.5s .5s both}
+@keyframes shine{100%{transform:translateX(140%)}}
+.mail-icon{font-size:34px;border:1px solid #8d6679;background:#2c1b2a;border-radius:16px;width:65px;height:65px;display:grid;place-items:center;margin-bottom:19px;box-shadow:0 0 25px #7e27465a}
+.mail-notification{width:min(475px,100%);border:1px solid #9f8092;background:linear-gradient(120deg,#342832ef,#151219f2);box-shadow:0 18px 60px #000c;border-radius:22px;padding:20px;animation:mailArrive .95s .35s both}
+@keyframes mailArrive{from{transform:translateY(-55px);opacity:0}to{transform:translateY(0);opacity:1}}
+.mail-notification strong{font-size:12px;letter-spacing:.1em}.mail-notification small{display:block;color:#ccafbf;margin:9px 0 12px;font-size:11px}
+.mail-notification p{font-size:12px;color:#e5d6e3;line-height:1.65;margin:0}
+.live-label{color:#d4a3b6;font-size:10px;letter-spacing:.14em;margin-top:18px;text-align:center}
+.fake-mail{border:1px solid #5c4654;border-radius:11px;margin-bottom:18px;padding:13px 15px;background:#171219}
+.fake-mail small{display:block;color:#9c8f9f;font-size:9px;letter-spacing:.09em;margin-bottom:5px}
+.fake-mail strong{font-size:13px}
+.progress-check{display:flex;align-items:center;gap:10px;color:#d0f0db;font-size:11px;margin-top:18px}
+.progress-check .check{background:#0b3721;border:1px solid #52ba7d;border-radius:50%;width:25px;height:25px;display:grid;place-items:center}
+.second-notice{display:inline-flex;align-items:center;gap:10px;padding:11px 14px;border:1px solid #95566c;border-radius:12px;background:#3519248a;color:#efd5de;font-size:10px;letter-spacing:.06em}
+.second-notice strong{letter-spacing:.13em}
+.access-card{width:min(460px,100%);padding:11px;border:2px solid #b3a2b2;border-radius:21px;background:linear-gradient(140deg,#4c4650,#17121a 35%,#d0c2d031);box-shadow:0 30px 86px #000c;transform-origin:center;overflow:hidden}
+.scene.active .access-card{animation:cardReveal 2.4s cubic-bezier(.16,.86,.19,1) both}
+@keyframes cardReveal{0%{opacity:0;transform:translateY(85px) rotateX(64deg) scale(.72);filter:blur(17px)}45%{opacity:1}72%{filter:blur(0)}100%{opacity:1;transform:none;filter:none}}
+.card-inner{background:radial-gradient(ellipse at top left,#46364555,transparent 55%),#09090c;border:1px solid #796f7b;border-radius:13px;padding:23px;box-shadow:inset 0 1px #ffffff21}
+.card-crest{font-size:42px;display:grid;place-items:center;width:74px;height:74px;border-radius:19px;border:1px solid #c2aec0;margin-bottom:13px;font-weight:900;background:#151119}
+.card-title{font-size:27px;line-height:1.05;font-weight:900;letter-spacing:-.055em}
+.card-title small{display:block;font-size:11px;letter-spacing:.32em;color:#b9aebb;font-weight:600;margin-top:12px}
+.barcode{height:10px;margin:19px 0;background:repeating-linear-gradient(108deg,#b73f5d 0 5px,#080508 5px 13px)}
+.level-bar{display:flex;min-height:46px;border:1px solid #9f8998}
+.level-bar strong{width:43%;background:#d8d2d8;color:#121016;display:grid;place-items:center}
+.level-bar span{flex:1;background:#4e182c;display:grid;place-items:center;color:#f4e7f0;font-size:12px;font-weight:800;letter-spacing:.08em}
+.card-owner{margin:22px 0 6px;font-weight:850;font-size:18px}.card-user{color:#b3a3b3;font-size:12px}
+.card-caption{font-size:11px;color:#b9e8c8;margin-top:17px;letter-spacing:.1em}
+.code-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.code-pair .fake-input{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.08em}
+.loggedin{width:min(635px,100%);border:1px solid #786a78;border-radius:22px;background:#111015;box-shadow:0 25px 90px #000b;overflow:hidden}
+.loggedin-head{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:18px 23px;border-bottom:1px solid #53414d;background:#19131b}
+.loggedin-head strong{font-size:13px;letter-spacing:.14em}
+.loggedin-head span{color:#e0bdcb;font-size:11px;letter-spacing:.1em}
+.loggedin-body{padding:30px}
+.loggedin-body h2{font-size:30px;letter-spacing:-.05em;margin:0 0 8px}
+.loggedin-body p{font-size:12px;color:#a9a0ae}
+.tile-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-top:23px}
+.tile{background:linear-gradient(160deg,#2a252f,#111016);border:1px solid #594a57;border-radius:16px;min-height:103px;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center}
+.tile span{font-size:25px}.tile strong{font-size:11px;font-weight:700}
+.tile.emphasis{border-color:#af5874;box-shadow:0 0 26px #77334b35}
+.step-footer{position:absolute;bottom:17px;left:25px;right:25px;display:flex;align-items:center;gap:12px;z-index:4}
+.step-footer .counter{font-size:10px;color:#af9eaf;letter-spacing:.09em;white-space:nowrap}
+.progress-track{height:3px;background:#4f3e4c;border-radius:12px;flex:1;overflow:hidden}
+.progress-fill{height:100%;width:0;background:linear-gradient(90deg,#80203e,#ef83a1);box-shadow:0 0 10px #ff749f}
+.viewport.playing .progress-fill{animation:holdStep var(--hold) linear forwards}
+@keyframes holdStep{to{width:100%}}
+.controls{display:flex;align-items:center;gap:12px;margin-top:18px;flex-wrap:wrap}
+.control{border:1px solid #655764;border-radius:11px;background:#211b24;color:#f1e8ee;min-width:110px;padding:12px 17px;font-size:11px;font-weight:750;letter-spacing:.06em;cursor:pointer}
+.control:hover{background:#412a37}
+.control.primary{border-color:#a34d6b;background:#552039}
+.control:focus-visible,.step:focus-visible{outline:2px solid #ecc2d1;outline-offset:3px}
+.disclaimer{margin-left:auto;color:#a79cab;font-size:10px;line-height:1.5;max-width:350px}
+footer{border-top:1px solid #332c35;color:#6f6773;font-size:9px;letter-spacing:.15em;text-align:center;padding:17px}
+@media(max-width:840px){.layout{grid-template-columns:1fr}.timeline{display:flex;overflow-x:auto;gap:6px;padding:9px}.timeline-label{display:none}.step{min-width:155px;padding:9px}.viewport{height:590px;min-height:500px}.disclaimer{margin-left:0}}
+@media(max-width:500px){header{padding:12px}.brand small{font-size:8px}.brand strong{font-size:10px}.status-badge{font-size:8px;padding:7px}.scene{padding:15px}.viewport{height:580px}.screen .body{padding:19px}.tile-grid{gap:7px}.tile{min-height:86px}.tile span{font-size:19px}.tile strong{font-size:9px}.loggedin-body{padding:18px}.card-inner{padding:17px}.card-title{font-size:22px}.code-pair{grid-template-columns:1fr}.controls{gap:7px}.control{min-width:87px;padding:11px}.step-footer{left:14px;right:14px}.disclaimer{width:100%;max-width:unset}}
+@media(prefers-reduced-motion:reduce){.scene.active,.scene.active .access-card,.mail-notification,.button-visual:after{animation:none!important}}
+</style></head>
+<body><header><div class="brand"><div class="brand-icon">B</div><div><strong>BLACKCELL CORPORATION</strong><small>EXECUTIVE NETWORK · EMPLOYEE ACCESS</small></div></div><span class="status-badge">INTERACTIVE CONCEPT · NO REAL ACCOUNTS</span></header>
+<main><div class="intro"><div class="overline">BLACKCELL / EMPLOYEE NETWORK EXPERIENCE</div><h1>Employee Access · Animated Walkthrough</h1><p>Watch a sample employee move from invitation to account activation, card reveal, security verification, and private chat. This preview is simulated; it never emails anyone or signs in to an account.</p></div>
+<div class="layout"><nav class="timeline" aria-label="Employee access preview stages"><div class="timeline-label">THE EMPLOYEE JOURNEY</div>
+<button class="step active" data-step="0"><span class="number">01</span><span><strong>Invitation arrives</strong><small>First email</small></span></button>
+<button class="step" data-step="1"><span class="number">02</span><span><strong>Activate account</strong><small>Email + password</small></span></button>
+<button class="step" data-step="2"><span class="number">03</span><span><strong>Second notice</strong><small>Proposed only</small></span></button>
+<button class="step" data-step="3"><span class="number">04</span><span><strong>Card reveals</strong><small>NETWORK · Level 3</small></span></button>
+<button class="step" data-step="4"><span class="number">05</span><span><strong>Verify login</strong><small>4 + 12 digit codes</small></span></button>
+<button class="step" data-step="5"><span class="number">06</span><span><strong>Network opens</strong><small>Employee chat</small></span></button>
+</nav>
+<div class="viewport playing" id="viewport" aria-live="polite">
+<section class="scene active" data-scene="0"><div class="stage-tag">01 / EMAIL INVITATION RECEIVED</div><div class="mail-icon">✉</div><div class="mail-notification"><strong>BLACKCELL CORPORATION</strong><small>Employee Access Invitation · Received now</small><p>You have been invited to the Blackcell Network. Open your invitation to activate your employee account and create your password.</p><div class="button-visual">VIEW INVITATION ↗</div></div><div class="live-label">Email invitation — this is the currently planned activation method</div></section>
+<section class="scene" data-scene="1"><div class="stage-tag">02 / CONFIRM EMAIL AND CREATE PASSWORD</div><div class="screen"><div class="screen-top"><strong>BLACKCELL CORPORATION</strong><small>ACCOUNT ACTIVATION / VERIFIED LINK</small></div><div class="body"><h2>Activate Your Account</h2><p>Welcome, Jordan Avery. Your invitation is ready for activation.</p><label>VERIFIED EMAIL</label><div class="fake-input">jordan@example.com</div><label>CREATE PASSWORD</label><div class="fake-input">••••••••••••••</div><label>CONFIRM PASSWORD</label><div class="fake-input">••••••••••••••</div><div class="button-visual">ACTIVATE & REVEAL CARD ↗</div><div class="progress-check"><span class="check">✓</span> Email verified · Password created</div></div></div></section>
+<section class="scene" data-scene="2"><div class="stage-tag">03 / PROPOSED SECOND EMAIL · NOT YET IMPLEMENTED</div><div class="screen"><div class="screen-top"><strong>BLACKCELL CORPORATION</strong><small>SECURITY CREDENTIAL NOTIFICATION</small></div><div class="body"><div class="fake-mail"><small>SUBJECT</small><strong>Your Employee Security Credentials Are Ready</strong></div><h2>Security Verification</h2><p>Jordan, your Blackcell employee account has been activated. Your Access Code and Security Code must be obtained separately from your authorized corporate administrator through a trusted channel.</p><div class="second-notice">🔒 &nbsp; NO SECURITY CODES IN THIS EMAIL</div><p style="margin-bottom:0">Use both codes when prompted by the employee sign-in portal. This second email is a proposed feature, not a live message.</p></div></div></section>
+<section class="scene" data-scene="3"><div class="stage-tag">04 / EMPLOYEE CARD REVEAL ANIMATION</div><div class="access-card"><div class="card-inner"><div class="card-crest">B</div><div class="card-title">BLACKCELL<br>CORPORATION<small>N E T W O R K</small></div><div class="barcode"></div><div class="level-bar"><strong>LEVEL 3</strong><span>ACCESS PASS</span></div><div class="card-owner">Jordan Avery</div><div class="card-user">bc_jordan_48271</div><div class="card-caption">IDENTITY ACTIVATED · CODE VERIFICATION REQUIRED</div></div></div><div class="live-label">Sample employee clearance · Level 7 remains owner-only</div></section>
+<section class="scene" data-scene="4"><div class="stage-tag">05 / EMPLOYEE SIGN-IN · SECOND FACTOR</div><div class="screen"><div class="screen-top"><strong>BLACKCELL CORPORATION</strong><small>NETWORK / PRIVATE EMPLOYEE AUTHENTICATION</small></div><div class="body"><h2>Verify Your Access Pass</h2><p>After email/password sign-in, verify both administrator-issued codes.</p><label>EMPLOYEE USERNAME</label><div class="fake-input">bc_jordan_48271</div><div class="code-pair"><div><label>ACCESS CODE · 4 DIGITS</label><div class="fake-input">••••</div></div><div><label>SECURITY CODE · 12 DIGITS</label><div class="fake-input">••••••••••••</div></div></div><div class="button-visual">AUTHENTICATE EMPLOYEE ACCESS ↗</div><div class="progress-check"><span class="check">✓</span> Verification approved · Employee access enabled</div></div></div></section>
+<section class="scene" data-scene="5"><div class="stage-tag">06 / EMPLOYEE NETWORK · CONCEPT HOME SCREEN</div><div class="loggedin"><div class="loggedin-head"><strong>BLACKCELL CORPORATION</strong><span>NETWORK · LEVEL 3</span></div><div class="loggedin-body"><h2>Welcome, Jordan.</h2><p>Employee account verified. Your access is limited to your approved services; Administration and Level 7 controls remain unavailable.</p><div class="tile-grid"><div class="tile emphasis"><span>▤</span><strong>Private Chat</strong></div><div class="tile"><span>◇</span><strong>My Card</strong></div><div class="tile"><span>♙</span><strong>My Profile</strong></div></div><div class="progress-check" style="margin-top:23px"><span class="check">✓</span> ACCESS APPROVED · EMPLOYEE NETWORK</div></div></div></section>
+<div class="step-footer"><span class="counter" id="counter">01 / 06</span><div class="progress-track"><div class="progress-fill" id="progress"></div></div><span class="counter" id="stepLabel">INVITATION</span></div></div></div>
+<div class="controls"><button type="button" id="toggle" class="control primary">Ⅱ PAUSE</button><button type="button" id="restart" class="control">↻ REPLAY</button><button type="button" id="back" class="control">← PREVIOUS</button><button type="button" id="next" class="control">NEXT →</button><span class="disclaimer">The second email and full employee home screen are design concepts. Actual credentials are not sent by email.</span></div>
+</main><footer>BLACKCELL CORPORATION · CONCEPT PREVIEW · NO EMAILS SENT · NO CREDENTIALS STORED</footer>
+<script>
+(()=>{
+const stage=document.getElementById('viewport'),scenes=[...document.querySelectorAll('.scene')],steps=[...document.querySelectorAll('.step')];
+const names=['INVITATION','ACTIVATION','SECOND EMAIL','CARD REVEAL','SECURITY CHECK','EMPLOYEE NETWORK'];
+const HOLD=5300;
+let current=0,playing=true,timer=null;
+const update=()=>{
+ scenes.forEach((node,i)=>{node.classList.toggle('active',i===current);node.setAttribute('aria-hidden',i===current?'false':'true')});
+ steps.forEach((node,i)=>{node.classList.toggle('active',i===current);node.setAttribute('aria-current',i===current?'step':'false')});
+ document.getElementById('counter').textContent=String(current+1).padStart(2,'0')+' / 06';
+ document.getElementById('stepLabel').textContent=names[current];
+ stage.classList.remove('playing');void stage.offsetWidth;
+ if(playing)stage.classList.add('playing');
+};
+function goto(index){
+ clearTimeout(timer);current=(index+scenes.length)%scenes.length;update();
+ if(playing)timer=setTimeout(()=>goto(current+1),HOLD);
+}
+function setPlay(value){
+ playing=value;document.getElementById('toggle').textContent=value?'Ⅱ PAUSE':'▶ PLAY';
+ goto(current);
+}
+steps.forEach((button,i)=>button.addEventListener('click',()=>goto(i)));
+document.getElementById('toggle').addEventListener('click',()=>setPlay(!playing));
+document.getElementById('restart').addEventListener('click',()=>{playing=true;document.getElementById('toggle').textContent='Ⅱ PAUSE';goto(0)});
+document.getElementById('back').addEventListener('click',()=>goto(current-1));
+document.getElementById('next').addEventListener('click',()=>goto(current+1));
+document.addEventListener('visibilitychange',()=>{if(document.hidden)clearTimeout(timer);else if(playing)goto(current)});
+if(window.matchMedia('(prefers-reduced-motion:reduce)').matches)setPlay(false);
+else goto(0);
+})();
+</script></body></html>
