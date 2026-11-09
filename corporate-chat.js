@@ -1,5 +1,5 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-staff1';
-import {setupCorporateMedia} from './corporate-chat-media.js?v=20261109-media-bubbles3';
+import {setupCorporateMedia} from './corporate-chat-media.js?v=20261109-flip-focus4';
 const client=corporateClient(),$=id=>document.getElementById(id);
 const embedParams=new URLSearchParams(location.search);
 const mediaPanelMode=['share','library'].includes(embedParams.get('mediaPanel'))?embedParams.get('mediaPanel'):null;
