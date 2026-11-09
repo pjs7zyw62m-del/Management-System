@@ -548,8 +548,9 @@ footer{height:36px;line-height:36px;padding:0;align-self:stretch;margin:0;white-
 }
 
 </style>
+<link rel="stylesheet" href="corp-login-roles.css?v=20261109-roles1">
 <script src="corp-config.js" defer></script>
-<script type="module" src="corp-login.js?v=20261109-merge6"></script>
+<script type="module" src="corp-login.js?v=20261109-roles1"></script>
 </head>
 <body>
 <header>
@@ -563,6 +564,11 @@ footer{height:36px;line-height:36px;padding:0;align-self:stretch;margin:0;white-
 <div class="brand-crest">B</div>
 <div class="eyebrow">◈ CORPORATE ACCESS GATEWAY</div>
 <h1 id="loginHeading">Sign In</h1>
+<div class="login-role-tabs" id="loginRoleTabs" role="tablist" aria-label="Choose your Blackcell access portal">
+  <button type="button" id="adminLoginTab" role="tab" aria-selected="true" aria-controls="login" tabindex="0"><span>ADMINISTRATION</span><small>LEVEL 7</small></button>
+  <button type="button" id="employeeLoginTab" role="tab" aria-selected="false" aria-controls="login" tabindex="-1"><span>EMPLOYEE NETWORK</span><small>NETWORK ACCESS</small></button>
+</div>
+<p class="login-role-description" id="loginRoleDescription" aria-live="polite">Level 7 Executive Administration access.</p>
 <form id="login">
 <label for="email">EMAIL ADDRESS</label>
 <input id="email" type="email" autocomplete="username" required placeholder="name@example.com">
