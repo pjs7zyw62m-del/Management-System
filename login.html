@@ -263,9 +263,109 @@ footer{height:36px;line-height:36px;padding:0;align-self:stretch;margin:0;white-
   .executive-pass,.stage-window.show-pass .executive-pass{width:430px;height:650px}
 }
 
+
+/* Blackcell card: compact verified identity, clean chrome, server-assigned clearance. */
+.login-card{
+  transition:width .68s cubic-bezier(.22,.78,.25,1),
+    padding .68s cubic-bezier(.22,.78,.25,1),
+    border-color .45s ease,box-shadow .45s ease;
+  margin-left:auto;
+}
+.login-card.signed-in{
+  width:270px;max-width:100%;padding:25px 20px 22px;
+  border-color:#5b7260;
+  background:linear-gradient(150deg,#191e1b,#0b0d0c);
+  box-shadow:0 24px 70px #000b,inset 0 1px #ffffff23;
+}
+.login-card.signed-in .brand-crest{
+  width:56px;height:56px;font-size:31px;border-color:#4e765c;
+  margin:0 auto 12px;transition:all .55s ease
+}
+.login-card.signed-in .eyebrow,.login-card.signed-in #login,
+.login-card.signed-in .links{display:none!important}
+.login-card.signed-in h1{
+  font-size:21px;letter-spacing:-.04em;margin:0 0 7px;
+  color:#d0f3d7;white-space:nowrap
+}
+.login-card.signed-in #status{
+  background:none;border:0;color:#a4cbb1;
+  margin:0 auto;padding:1px 0 12px;font-size:9px;
+  letter-spacing:.12em;text-align:center
+}
+.login-card.signed-in #accountChange{
+  display:block;margin:8px auto 0;
+  color:#a4a9a5;font-size:10px;text-decoration:underline
+}
+.pass-top{
+  clip-path:none!important;
+  border-radius:9px 9px 4px 4px;
+  overflow:hidden;
+  border-top:1px solid #918396;
+  border-right:1px solid #918396;
+}
+.pass-top .pass-corp{position:relative;z-index:2}
+.pass-stripe{margin-top:0;flex:none}
+.pass-credentials{min-height:0}
+.clearance b{font-variant-numeric:tabular-nums}
+.executive-pass{
+  transition:border-color .65s ease,background .65s ease,
+    box-shadow .65s ease;
+  isolation:isolate
+}
+.executive-pass .pass-inner,
+.executive-pass .pass-top,
+.executive-pass .pass-credentials,
+.executive-pass .clearance,
+.executive-pass .clearance span,
+.executive-pass .pass-stripe{
+  transition:background .65s ease,border-color .65s ease,
+  color .65s ease,box-shadow .65s ease
+}
+.approval-overlay{
+  position:absolute;inset:0;z-index:12;
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;background:rgba(3,29,14,.89);
+  color:#ebfff0;opacity:0;visibility:hidden;pointer-events:none;
+  transition:opacity .5s ease,visibility .5s ease;
+  backdrop-filter:blur(5px)
+}
+.approval-mark{
+  border:2px solid #b3ffd0;background:#1a703c;
+  width:80px;height:80px;border-radius:50%;
+  display:grid;place-items:center;
+  font-size:48px;box-shadow:0 0 48px #4ee68d88;
+  margin-bottom:23px
+}
+.approval-title{font-size:23px;font-weight:850;letter-spacing:.17em}
+.approval-subtitle{font-size:10px;letter-spacing:.32em;margin-top:14px;color:#b9f4cc}
+.executive-pass.authorized{
+  border-color:#9effb7;
+  background:linear-gradient(145deg,#b5f9bf,#3b9163 38%,#d4ffe0);
+  box-shadow:0 0 54px #62ed9666,0 27px 110px #000c
+}
+.executive-pass.authorized .pass-inner{
+  background:linear-gradient(160deg,#143821,#071d10 70%,#11371d);
+  border-color:#9be8ac
+}
+.executive-pass.authorized .pass-top,
+.executive-pass.authorized .pass-credentials{
+  border-color:#7bd49a;
+  background:linear-gradient(140deg,#21402a,#081e13)
+}
+.executive-pass.authorized .clearance{background:#b5edc2;border-color:#8af4ad}
+.executive-pass.authorized .clearance span{background:#155b32}
+.executive-pass.authorized .pass-stripe{
+ background:repeating-linear-gradient(110deg,#82f0a6 0 4px,#09200f 4px 12px);
+ border-color:#a1ffc0
+}
+.executive-pass.authorized .approval-overlay{opacity:1;visibility:visible}
+@media(prefers-reduced-motion:reduce){
+ .login-card,.executive-pass,.approval-overlay{transition:none}
+}
+
 </style>
 <script src="corp-config.js" defer></script>
-<script type="module" src="corp-login.js?v=20261109-viewport4"></script>
+<script type="module" src="corp-login.js?v=20261109-card-approved5"></script>
 </head>
 <body>
 <header>
@@ -278,7 +378,7 @@ footer{height:36px;line-height:36px;padding:0;align-self:stretch;margin:0;white-
 <div class="login-card" id="loginCard">
 <div class="brand-crest">B</div>
 <div class="eyebrow">◈ CORPORATE ACCESS GATEWAY</div>
-<h1>Sign In</h1>
+<h1 id="loginHeading">Sign In</h1>
 <form id="login">
 <label for="email">EMAIL ADDRESS</label>
 <input id="email" type="email" autocomplete="username" required placeholder="name@example.com">
@@ -293,10 +393,10 @@ footer{height:36px;line-height:36px;padding:0;align-self:stretch;margin:0;white-
 </section>
 <section class="pass-panel" id="passPanel" aria-label="Executive Level 7 access pass" aria-hidden="true">
 <div class="pass-grid">
-<article class="executive-pass" aria-label="Blackcell executive Level 7 access card with security code inputs">
+<article class="executive-pass" id="executivePass" aria-label="Blackcell executive access card with security code inputs">
 <div class="pass-inner">
 <div class="pass-top">
-<div class="pass-serial">BC / 0001</div>
+
 <svg class="pass-symbol" viewBox="0 0 100 100" fill="none" aria-hidden="true">
 <path d="M50 5 87 25V73L50 94 13 73V25L50 5Z" stroke="#d7d0dc" stroke-width="2"/>
 <path d="M50 14 78 29V68L50 84 22 68V29L50 14Z" stroke="#833c50" stroke-width="1.5"/>
@@ -306,9 +406,9 @@ footer{height:36px;line-height:36px;padding:0;align-self:stretch;margin:0;white-
 <div class="pass-corp">CORPORATION</div>
 <div class="pass-small">EXECUTIVE NETWORK</div>
 </div>
-<div class="pass-id"><div><b>CORPORATE OWNER</b><span>EXECUTIVE ADMINISTRATOR</span></div><span>PERSONNEL AUTHORIZATION</span></div>
+
 <div class="pass-stripe"></div>
-<div class="clearance"><b>LEVEL 7</b><span>ACCESS PASS</span></div>
+<div class="clearance"><b id="clearanceLevel">LEVEL —</b><span>ACCESS PASS</span></div>
 <div class="pass-credentials">
 <div class="eyebrow">BLACKCELL / CLEARANCE VERIFICATION</div>
 <h2>Verify Access</h2>
@@ -323,7 +423,12 @@ footer{height:36px;line-height:36px;padding:0;align-self:stretch;margin:0;white-
 <button id="continueVerified" type="button" class="primary" hidden>CONTINUE TO ADMINISTRATION ↗</button>
 <p id="codeStatus" class="message" role="status" aria-live="polite" hidden></p>
 </div>
-<div class="pass-foot"><span>BC / EXECUTIVE</span><span>SECURE ACCESS</span></div>
+<div class="pass-foot"><span>BLACKCELL CORPORATION</span><span>SECURE ACCESS</span></div>
+<div class="approval-overlay" id="approvalOverlay" role="status" aria-live="polite">
+  <div class="approval-mark" aria-hidden="true">✓</div>
+  <div class="approval-title">ACCESS GRANTED</div>
+  <div class="approval-subtitle">CLEARANCE VERIFIED</div>
+</div>
 </div>
 </article>
 </div>
