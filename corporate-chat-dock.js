@@ -20,7 +20,10 @@
   dock.append(people,imessage,email);
   const orb=make('button','bc-chat-orb');
   orb.type='button';orb.setAttribute('aria-label','Open minimized iMessage chat');
-  orb.textContent='✉';
+  const icon=make('span','bc-orb-chat-icon');
+  icon.setAttribute('aria-hidden','true');
+  icon.append(make('span','bc-orb-chat-dots','•••'));
+  orb.append(icon);
   const dot=make('span','bc-online');
   const counter=make('span','bc-unread');counter.hidden=true;
   orb.append(dot,counter);
@@ -30,7 +33,11 @@
   pane.hidden=true;
   const header=make('div','bc-chat-pane-header');
   const label=make('div','bc-chat-pane-label');
-  label.append(make('strong','','BLACKCELL / iMESSAGE'),make('small','','PRIVATE CORPORATE COMMUNICATIONS'));
+  const labelIcon=make('span','bc-chat-header-bubble','•••');
+  labelIcon.setAttribute('aria-hidden','true');
+  const labelContent=make('span','bc-chat-header-label');
+  labelContent.append(make('strong','','BLACKCELL / iMESSAGE'),make('small','','PRIVATE CORPORATE COMMUNICATIONS'));
+  label.append(labelIcon,labelContent);
   const controls=make('div','bc-chat-pane-controls');
   function button(title,label,klass,fn){
     const b=make('button',klass,label);
@@ -49,7 +56,7 @@
   controls.append(pop,minimizeBtn,closeBtn);
   header.append(label,controls);
   const frame=make('iframe','bc-chat-pane-iframe');
-  frame.title='Blackcell private employee text chat';
+  frame.title='Blackcell private messages, photos, videos, and shared media';
   frame.setAttribute('allow','clipboard-read; clipboard-write');
   const footer=make('div','bc-chat-pane-footer');
   footer.append(make('span','','BLACKCELL COMMUNICATIONS'),make('span','','PRIVATE · AUTHORIZED'));
@@ -66,6 +73,8 @@
     counter.hidden=unread===0;counter.textContent=unread>99?'99+':String(unread);
     orb.setAttribute('aria-label','Open minimized iMessage chat'+(unread?' ('+unread+' unread)':''));
     imessage.textContent='● iMESSAGE'+(unread?' ('+unread+')':'');
+    orb.classList.toggle('has-unread',unread>0);
+    imessage.classList.toggle('has-unread',unread>0);
   }
   function bootFrame(){
     if(frameLoaded)return;
