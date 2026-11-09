@@ -87,6 +87,12 @@
     orb.classList.toggle('has-unread',unread>0);
     imessage.classList.toggle('has-unread',unread>0);
   }
+  function notifyFrameVisibility(show){
+    try{
+      if(frameLoaded&&frame.contentWindow)
+       frame.contentWindow.postMessage({type:'blackcell-chat-visibility',visible:!!show},location.origin);
+    }catch(_){}
+  }
   function bootFrame(){
     if(frameLoaded)return;
     const url=new URL('corporate-chat.html',location.href);
@@ -95,6 +101,7 @@
     frame.src=url.href;
     frameLoaded=true;
     frame.addEventListener('load',()=>{
+      notifyFrameVisibility(state==='open'&&!document.hidden);
       if(peerWanted)selectInFrame(peerWanted);
     });
   }
@@ -109,17 +116,20 @@
     pane.classList.add('bc-chat-window-open');
     labelSubtitle.textContent=peerId&&peers.has(peerId)?peers.get(peerId)+' · PRIVATE':'PRIVATE · VERIFIED NETWORK';
     bootFrame();
+    notifyFrameVisibility(!document.hidden);
     if(peerId)selectInFrame(peerId);
     setUnread(0);saveWindowState();
   }
   function minimize(){
     state='minimized';pane.hidden=true;orb.hidden=false;
+    notifyFrameVisibility(false);
     mediaBubbles?.closeAll();
     pane.classList.remove('bc-chat-window-open');
     saveWindowState();
   }
   function closeChat(){
     state='minimized';pane.hidden=true;orb.hidden=false;
+    notifyFrameVisibility(false);
     pane.classList.remove('bc-chat-window-open');
     mediaBubbles?.closeAll();
     frame.removeAttribute('src');frameLoaded=false;
@@ -134,6 +144,9 @@
   function resumeChat(){
     if(state!=='open')orb.hidden=false;
   }
+  document.addEventListener('visibilitychange',()=>{
+    notifyFrameVisibility(state==='open'&&!document.hidden);
+  });
   window.addEventListener('blackcell-suspend-imessage',suspendChat);
   window.addEventListener('blackcell-resume-imessage',resumeChat);
   orb.addEventListener('click',()=>openChat());
