@@ -202,9 +202,70 @@ footer{text-align:center;color:#85818d;font-size:9px;letter-spacing:.12em;paddin
   .executive-pass{height:580px}
 }
 
+
+/* BLACKCELL / LOCKED-VIEWPORT SIGN-IN
+   Both panels use a single coordinate system, not opposing right edges.
+   The content scales down as needed to fit shorter browser windows. */
+html,body{width:100%;height:100%;overflow:hidden!important;overscroll-behavior:none}
+body{height:100dvh;min-height:0;display:grid;grid-template-rows:76px minmax(0,1fr) 36px}
+header{height:76px;min-height:0}
+main{height:auto;min-height:0;padding:0 16px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+footer{height:36px;line-height:36px;padding:0;align-self:stretch;margin:0;white-space:nowrap}
+.stage-window,.stage-window.show-pass,.stage-window:not(.show-pass){
+  position:relative;width:885px;min-height:0;height:660px;flex:0 0 885px;
+  transform:scale(var(--blackcell-stage-scale,1));transform-origin:center center;
+  overflow:visible
+}
+.login-panel,.stage-window.show-pass .login-panel{
+  position:absolute;inset:auto;left:0;right:auto;top:50%;
+  width:445px;max-width:none;height:auto;
+  transform:translateY(-50%)!important;
+  opacity:1;pointer-events:auto;z-index:3;
+  align-items:center;justify-content:center
+}
+.pass-panel{
+  position:absolute;inset:auto;left:455px;right:auto;top:50%;
+  width:430px;max-width:none;height:auto;
+  transform:translate(-455px,-50%) scale(.985)!important;
+  opacity:0;pointer-events:none;z-index:1;
+  align-items:center;justify-content:center
+}
+.stage-window.show-pass .pass-panel{
+  left:455px;right:auto;top:50%;width:430px;
+  transform:translate(0,-50%) scale(1)!important;
+  opacity:1;pointer-events:auto;z-index:2
+}
+.executive-pass,.stage-window.show-pass .executive-pass{
+  width:430px;height:650px;max-height:none;aspect-ratio:auto
+}
+@media(max-width:950px){
+ .stage-window,.stage-window.show-pass,.stage-window:not(.show-pass){
+   width:445px;flex:0 0 445px;height:660px;min-height:0
+ }
+ .login-panel,.stage-window.show-pass .login-panel{
+   top:50%;left:0;right:auto;width:445px;height:auto;
+   transform:translateY(-50%)!important;z-index:3
+ }
+ .pass-panel{
+   left:0;right:auto;top:50%;width:445px;height:auto;
+   transform:translate(110%,-50%) scale(.98)!important;opacity:0;z-index:1
+ }
+ .stage-window.show-pass .pass-panel{
+   left:0;right:auto;top:50%;width:445px;
+   transform:translate(0,-50%) scale(1)!important;opacity:1;z-index:5
+ }
+ .stage-window.show-pass .login-panel{opacity:0;pointer-events:none}
+ .executive-pass,.stage-window.show-pass .executive-pass{width:430px;height:650px}
+}
+@media(max-width:500px){
+  .stage-window.show-pass{min-height:0}
+  .pass-panel,.stage-window.show-pass .pass-panel{top:50%}
+  .executive-pass,.stage-window.show-pass .executive-pass{width:430px;height:650px}
+}
+
 </style>
 <script src="corp-config.js" defer></script>
-<script type="module" src="corp-login.js?v=20261109-signin-repair2"></script>
+<script type="module" src="corp-login.js?v=20261109-viewport4"></script>
 </head>
 <body>
 <header>
@@ -278,6 +339,25 @@ footer{text-align:center;color:#85818d;font-size:9px;letter-spacing:.12em;paddin
 <div class="track"><div id="launchFill" class="fill"></div></div>
 <div id="launchPercent" class="percent">0%</div>
 </section>
+
+<script id="blackcell-viewport-fit">
+(function(){
+  var stage=document.getElementById('stageWindow');
+  if(!stage)return;
+  function fit(){
+    var header=document.querySelector('header'),footer=document.querySelector('footer');
+    var availableHeight=Math.max(1,window.innerHeight-(header?header.offsetHeight:76)-(footer?footer.offsetHeight:36)-12);
+    var availableWidth=Math.max(1,window.innerWidth-32);
+    var compact=window.matchMedia('(max-width: 950px)').matches;
+    var baseWidth=compact?445:885;
+    var scale=Math.min(1,availableWidth/baseWidth,availableHeight/660);
+    stage.style.setProperty('--blackcell-stage-scale',String(Math.max(.35,scale)));
+  }
+  window.addEventListener('resize',fit,{passive:true});
+  window.addEventListener('orientationchange',fit,{passive:true});
+  fit();
+})();
+</script>
 <script>
 (function(){
   var form=document.getElementById('login');
