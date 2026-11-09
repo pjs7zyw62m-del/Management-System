@@ -22,10 +22,15 @@
     // iPhone Safari can sometimes lay out a page using a desktop-sized
     // CSS viewport. Detect the physical touchscreen, not viewport width alone.
     function syncPhysicalScreen(){
-      const shortest=Math.min(window.screen?.width||Infinity,window.screen?.height||Infinity);
-      const narrowTouch=shortest<=699 &&
-        (navigator.maxTouchPoints>0||window.matchMedia('(pointer:coarse)').matches);
-      const portrait=window.matchMedia('(orientation:portrait)').matches;
+      const sw=window.screen?.width||Infinity,sh=window.screen?.height||Infinity;
+      const shortest=Math.min(sw,sh);
+      const touch=navigator.maxTouchPoints>0||window.matchMedia('(pointer:coarse)').matches;
+      const iphone=/iPhone|iPod/i.test(navigator.userAgent||'');
+      const narrowTouch=iphone||(shortest<=699&&touch);
+      // Respect the physical phone orientation when Safari requests a
+      // desktop layout viewport wider than the actual screen.
+      const portrait=narrowTouch&&sw!==Infinity?sh>=sw:
+       window.matchMedia('(orientation:portrait)').matches;
       document.body.classList.toggle('bc-handset-portrait',narrowTouch&&portrait);
       document.body.classList.toggle('bc-handset-landscape',narrowTouch&&!portrait);
     }
@@ -33,6 +38,7 @@
     window.addEventListener('resize',syncPhysicalScreen,{passive:true});
     window.addEventListener('orientationchange',syncPhysicalScreen,{passive:true});
     const panes=new Map();
+    let flipping=false;
     function updateBubbleTabs(){
       tabs.replaceChildren();
       const both=panes.size===2;
@@ -131,12 +137,19 @@
       subtitle.textContent=type==='share'?'PREPARE & SEND · PRIVATE':'BROWSE & VIEW · PRIVATE';
       words.append(title,subtitle);brand.append(insignia,words);
       const actions=document.createElement('div');actions.className='bc-media-bubble-heading-actions';
+      const flipBtn=document.createElement('button');
+      flipBtn.type='button';
+      flipBtn.className='bc-media-bubble-flip';
+      flipBtn.textContent='↻';
+      flipBtn.title=type==='share'?'Flip to Shared Media':'Flip to Media Share';
+      flipBtn.setAttribute('aria-label',flipBtn.title);
+      flipBtn.addEventListener('click',()=>flip(type==='share'?'library':'share',peerId));
       const closeBtn=document.createElement('button');
       closeBtn.type='button';closeBtn.className='bc-media-bubble-close';
       closeBtn.title='Close '+title.textContent;
       closeBtn.setAttribute('aria-label','Close '+title.textContent+' bubble');
       closeBtn.textContent='✕';closeBtn.addEventListener('click',()=>close(type));
-      actions.append(closeBtn);head.append(brand,actions);
+      actions.append(flipBtn,closeBtn);head.append(brand,actions);
       const frame=document.createElement('iframe');frame.className='bc-media-bubble-iframe';
       frame.title=title.textContent+' · Blackcell private conversation';
       frame.setAttribute('allow','clipboard-read; clipboard-write');
@@ -164,6 +177,30 @@
         });
       }
     }
+    function flip(type,peerId,{batchId=null,force=false}={}){
+      if(!['share','library'].includes(type)||!safePeer(peerId)||flipping)return;
+      const from=type==='library'?'share':'library';
+      const previous=panes.get(from);
+      if(!previous||previous.peerId!==peerId){
+        open(type,peerId,{batchId});
+        return;
+      }
+      if(previous.uploading&&!force)return;
+      flipping=true;
+      const oldCard=previous.card;
+      oldCard.classList.add('bc-media-card-turn-out');
+      // Perform the switch at the edge of the 3D rotation.
+      window.setTimeout(()=>{
+        close(from);
+        open(type,peerId,{batchId});
+        const next=panes.get(type);
+        if(next){
+          next.card.classList.add('bc-media-card-turn-in');
+          window.setTimeout(()=>next.card.classList.remove('bc-media-card-turn-in'),340);
+        }
+        flipping=false;
+      },210);
+    }
     function allowedSource(event){
       if(event.origin!==location.origin)return false;
       if(mainFrame?.contentWindow===event.source)return true;
@@ -176,10 +213,22 @@
         open(data.panel,data.peerId,{batchId:data.batchId,pick:data.pick});
       }else if(data.type==='blackcell-media-bubble-close'){
         close(data.panel);
+      }else if(data.type==='blackcell-media-upload-state'){
+        const share=panes.get('share');
+        if(share&&share.iframe.contentWindow===event.source&&share.peerId===data.peerId){
+          share.uploading=data.uploading===true;
+          const b=share.card.querySelector('.bc-media-bubble-flip');
+          if(b)b.disabled=share.uploading;
+        }
+      }else if(data.type==='blackcell-media-bubble-flip'){
+        const sender=[...panes.values()].find(p=>p.iframe.contentWindow===event.source);
+        if(sender&&sender.peerId===data.peerId)flip(data.panel,data.peerId);
+        else if(mainFrame?.contentWindow===event.source)open(data.panel,data.peerId);
       }else if(data.type==='blackcell-media-upload-finished'){
-        if(safePeer(data.peerId)){
-          open('library',data.peerId,{batchId:data.batchId});
-          close('share');
+        const share=panes.get('share');
+        if(safePeer(data.peerId)&&share&&share.peerId===data.peerId
+          &&share.iframe.contentWindow===event.source){
+          flip('library',data.peerId,{batchId:data.batchId,force:true});
         }
       }else if(data.type==='blackcell-media-bubble-peer-changed'
         &&mainFrame?.contentWindow===event.source){
@@ -188,7 +237,7 @@
     }
     window.addEventListener('message',handleMessage);
     window.addEventListener('pagehide',closeAll);
-    const api={open,close,closeAll,handles:(source)=>[...panes.values()].some(p=>p.iframe.contentWindow===source)};
+    const api={open,flip,close,closeAll,handles:(source)=>[...panes.values()].some(p=>p.iframe.contentWindow===source)};
     if(mode==='standalone')window.BlackcellMediaBubbleHostController=api;
     return api;
   }
