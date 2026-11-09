@@ -261,3 +261,30 @@
  .security-credential-code-grid{grid-template-columns:1fr}
  .security-credential-head{padding:15px}
 }
+
+
+/* User Management / owner-confirmed destructive employee action */
+.admin-modal .delete-employee-button{
+  color:#ffd9e2;background:linear-gradient(135deg,#59202f,#35121c);
+  border:1px solid #ab5d70;box-shadow:inset 0 1px #ffffff10;
+}
+.admin-modal .delete-employee-button:hover:not(:disabled){
+  background:linear-gradient(135deg,#77293e,#4d1827);
+  border-color:#df8194;color:#fff1f4;
+}
+.admin-modal .employee-delete-dialog{
+  border:1px solid #6c404d;border-radius:18px;
+  padding:20px;background:linear-gradient(150deg,#23151e,#0e0c12);
+}
+.admin-modal .employee-delete-warning{background:#21151d;border-color:#734554}
+.admin-modal .employee-delete-warning h3{color:#f5d9e3}
+.admin-modal .employee-delete-dialog .field{display:block;margin:18px 0}
+.admin-modal .employee-delete-dialog .muted{line-height:1.7;font-size:12px}
+.admin-modal .employee-delete-actions{
+  display:flex;gap:10px;justify-content:flex-end;align-items:center;
+  flex-wrap:wrap;margin:16px 0 4px;
+}
+@media(max-width:580px){
+  .admin-modal .employee-delete-actions{justify-content:stretch}
+  .admin-modal .employee-delete-actions button{flex:1 1 100%}
+}
