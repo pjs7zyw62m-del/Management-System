@@ -132,7 +132,7 @@ try {
       // A new version query forces browsers/CDNs to fetch the repaired file.
       window.BLACKCELL_ADMIN_READY=false;
       const script=document.createElement('script');
-      script.src='admin.js?v=20261109-delete-employee10';
+      script.src='admin.js?v=20261109-email-limit11';
       script.defer=true;
       const showAdminLoadError=()=>{
         if(document.getElementById('adminControlsReload'))return;
