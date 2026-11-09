@@ -84,6 +84,9 @@ function renderPeers(){
 function choose(userId){
  const selected=contacts.find(x=>x.user_id===userId);if(!selected||!ready)return;
  peer=selected;sharedMedia.onPeerChange(userId);firstLoad=true;$('peerName').textContent=peer.display_name||'Employee';$('peerDetail').textContent=peer.role==='owner'?'LEVEL 7 · OWNER':'LEVEL '+peer.clearance_level;
+ $('imessagePortrait').textContent=String(peer.display_name||'B').trim().slice(0,1).toUpperCase();
+ $('peerProfileLink').href='corporate-network.html?user='+encodeURIComponent(userId);
+ $('peerProfileLink').hidden=false;
  $('messageInput').disabled=false;$('sendButton').disabled=false;renderPeers();void loadMessages();
 }
 async function loadMessages(){
