@@ -1,0 +1,50 @@
+/* BLACKCELL / Floating iMessage Bubble — Apple Glass styling */
+:root{--bc-bubble-crimson:#ba627e;--bc-bubble-border:#8f7185}
+.bc-chat-dock{right:19px;bottom:15px;left:auto;z-index:200000;border:1px solid #685669;border-radius:20px;padding:5px 6px;background:linear-gradient(145deg,#1b1720f5,#0d0d12f5);box-shadow:0 12px 48px #0009,inset 0 1px 0 #ffffff17;backdrop-filter:blur(28px);gap:5px}
+.bc-chat-dock button{padding:9px 10px;border-radius:13px;font-weight:720;color:#beb1c2;letter-spacing:.08em;font-size:10px;transition:background .2s,color .2s}
+.bc-chat-dock button:hover{background:#3d2836;border-color:#895976;color:#fff}
+.bc-chat-dock .bc-active-chat{color:#f3e3ec;border:1px solid #86556d;background:linear-gradient(145deg,#4e293f,#261922);box-shadow:inset 0 1px 0 #ffffff12}
+.bc-chat-dock .bc-active-chat.has-unread{color:#fff;border-color:#d38da6;box-shadow:0 0 17px #cf5b8428}
+.bc-chat-orb{right:23px;bottom:78px;left:auto;width:70px;height:70px;border-radius:50%;border:1px solid #ac7894;background:radial-gradient(circle at 28% 16%,#614359,#251b2a 62%,#09090e 100%);box-shadow:0 12px 40px #000b,0 0 0 6px #32232d65,inset 0 1px 0 #ffffff4a;display:flex;align-items:center;justify-content:center;transition:transform .24s cubic-bezier(.2,.8,.3,1),box-shadow .24s;overflow:visible;isolation:isolate}
+.bc-chat-orb:hover,.bc-chat-orb:focus-visible{transform:translateY(-4px) scale(1.04);box-shadow:0 14px 49px #000c,0 0 0 8px #58324680,0 0 28px #ad577a42}
+.bc-orb-chat-icon{width:33px;height:26px;position:relative;display:grid;place-items:center;border-radius:11px 11px 11px 5px;background:linear-gradient(140deg,#f8eef5,#d9bccc);color:#321827;font-size:14px;font-weight:900;box-shadow:0 4px 15px #0006;transform:rotate(-7deg)}
+.bc-orb-chat-icon:after{content:"";position:absolute;width:9px;height:10px;left:1px;bottom:-5px;background:#d9bccc;clip-path:polygon(0 0,100% 0,0 100%)}
+.bc-orb-chat-dots{position:relative;top:-3px;letter-spacing:2px;margin-left:2px;font-size:12px;line-height:1}
+.bc-chat-orb .bc-online{width:11px;height:11px;bottom:3px;left:5px;background:#76e2a2;border:2px solid #101018;box-shadow:0 0 12px #75e49a8e}
+.bc-chat-orb .bc-unread{min-width:25px;height:25px;top:-5px;right:-3px;background:linear-gradient(135deg,#c95374,#9e304f);border:2px solid #110b12;box-shadow:0 4px 12px #0009;font-weight:800;font-size:11px}
+.bc-chat-orb.has-unread{border-color:#e29eae;animation:bcBubblePulse 2.7s ease-in-out infinite}
+@keyframes bcBubblePulse{0%,100%{box-shadow:0 12px 40px #000b,0 0 0 6px #51304870,inset 0 1px 0 #ffffff4a}50%{box-shadow:0 12px 43px #000c,0 0 0 11px #b3547940,0 0 30px #9d466560,inset 0 1px 0 #ffffff4a}}
+.bc-chat-pane{right:18px;bottom:87px;width:min(475px,calc(100vw - 36px));height:min(730px,calc(100dvh - 114px));border:1px solid #795d75;border-radius:24px;background:linear-gradient(145deg,#1e1922f5,#08080df8);box-shadow:0 24px 100px #000e,0 0 0 1px #ffffff0d,inset 0 1px 0 #ffffff1e;backdrop-filter:blur(30px)}
+.bc-chat-pane-header{height:75px;min-height:75px;padding:11px 15px;cursor:grab;background:linear-gradient(145deg,#29212c,#101017);border-bottom:1px solid #675063}
+.bc-chat-pane-label{display:flex;align-items:center;gap:11px}
+.bc-chat-header-bubble{position:relative;flex:none;display:grid;place-items:center;width:38px;height:33px;border:1px solid #ad7894;border-radius:13px 13px 13px 5px;background:linear-gradient(140deg,#59394e,#2a1a2c);font-size:12px;font-weight:900;letter-spacing:3px;color:#edd3e0;box-shadow:inset 0 1px 0 #ffffff20}
+.bc-chat-header-bubble:after{content:"";position:absolute;bottom:-5px;left:0;width:9px;height:9px;background:#322035;clip-path:polygon(0 0,100% 0,0 100%)}
+.bc-chat-header-label{display:block;min-width:0}
+.bc-chat-pane-label strong{font-size:10px;letter-spacing:.15em}
+.bc-chat-pane-label small{margin-top:6px;font-size:9px;letter-spacing:.08em;color:#ac9cab}
+.bc-chat-pane-controls{gap:5px}
+.bc-chat-pane-controls button{height:31px;width:31px;border-radius:50%;background:#1b1923;border:1px solid #5d4b5c;color:#d9d1da}
+.bc-chat-pane-controls button:hover{background:#573149;border-color:#ba7b96}
+.bc-chat-pane-controls .bc-chat-close{color:#f1a9bb;border-color:#795068}
+.bc-chat-pane-iframe{background:#08080c}
+.bc-chat-pane-footer{color:#a095a5;background:#111017;border-top-color:#473e4a;font-size:9px;padding:9px 15px;letter-spacing:.07em}
+.bc-chat-toast{top:77px;right:19px;border:1px solid #96647c;border-radius:21px;background:linear-gradient(145deg,#352235f6,#121017fa);padding:17px 18px;box-shadow:0 20px 60px #000c,0 0 0 1px #ffffff0a;backdrop-filter:blur(26px);max-width:340px}
+.bc-chat-toast:before{content:"";position:absolute;bottom:-7px;right:25px;width:16px;height:13px;background:#17111b;clip-path:polygon(0 0,100% 0,100% 100%);border-radius:0 0 5px 0}
+.bc-chat-toast strong{color:#e9bdce;font-weight:800;font-size:10px}
+.bc-chat-toast span{font-size:13px;line-height:1.55}
+.bc-chat-toast small{font-size:10px}
+@media(max-width:620px){
+ .bc-chat-pane{left:6px!important;top:6px!important;right:auto!important;bottom:auto!important;width:calc(100vw - 12px)!important;height:calc(100dvh - 68px)!important;border-radius:19px}
+ .bc-chat-pane-header{min-height:62px;height:62px;padding:9px 11px}
+ .bc-chat-pane-label small{font-size:8px}
+ .bc-chat-dock{left:6px!important;right:6px!important;bottom:5px!important;gap:3px;padding:3px;border-radius:15px}
+ .bc-chat-dock button{font-size:9px;padding:8px 5px}
+ .bc-chat-orb{left:auto!important;right:12px!important;bottom:65px!important;width:60px;height:60px}
+ .bc-orb-chat-icon{width:31px;height:26px}
+ .bc-chat-pane-footer{font-size:8px;padding:8px 10px}
+ .bc-chat-toast{top:68px;right:10px;max-width:calc(100vw - 20px)}
+}
+@media(prefers-reduced-motion:reduce){
+ .bc-chat-orb.has-unread{animation:none}
+ .bc-chat-orb,.bc-chat-dock button{transition:none}
+}
