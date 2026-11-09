@@ -25,6 +25,32 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const main=document.querySelector('.chat-main');
  const messageForm=document.getElementById('sendForm');
  const bucket=client.storage.from(BUCKET);
+ const mediaPanel=new URLSearchParams(location.search).get('mediaPanel');
+ const standalonePanel=mediaPanel==='share'||mediaPanel==='library';
+ function routeBubble(panel,{batchId=null,pick=null}={}){
+  const c=context();
+  if(!c?.ready||!c?.peer?.user_id||!c?.self)return false;
+  if(standalonePanel&&mediaPanel===panel)return false;
+  const message={type:'blackcell-media-bubble-open',panel,peerId:c.peer.user_id,
+   batchId:batchId||null,pick:pick||null};
+  if(window.parent!==window){
+   window.parent.postMessage(message,location.origin);
+   return true;
+  }
+  if(!standalonePanel&&window.BlackcellMediaBubbleHostController){
+   window.BlackcellMediaBubbleHostController.open(panel,c.peer.user_id,{batchId,pick});
+   return true;
+  }
+  return false;
+ }
+ function requestPanelClose(panel){
+  if(!standalonePanel)return false;
+  if(window.parent!==window){
+   window.parent.postMessage({type:'blackcell-media-bubble-close',panel},location.origin);
+   return true;
+  }
+  return false;
+ }
  let peerId=null,library=[],visible=[],active=0,batchFocus=null,viewMode='standard';
  let selection=[],busy=false,filter='all',search='',sort='newest',autoNext=false,mediaReady=false;
  let signed=new Map(),urlsTime=0,drawToken=0;
@@ -128,6 +154,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  }
  function chooseFiles(accept){
   if(!requirePeer()||busy)return;
+  if(routeBubble('share',{pick:accept}))return;
   fileInput.value='';fileInput.accept=accept;fileInput.click();
  }
  fileInput.addEventListener('change',()=>{
@@ -166,9 +193,14 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  overlay.addEventListener('click',e=>{if(e.target===overlay&&!busy)closeShare()});
  function openShare(){
   if(!requirePeer()||busy)return;
+  if(routeBubble('share'))return;
   overlay.hidden=false;renderSelection();
  }
- function closeShare(){if(!busy)overlay.hidden=true}
+ function closeShare(){
+  if(busy)return;
+  overlay.hidden=true;
+  requestPanelClose('share');
+ }
  function renderSelection(){
   itemsBox.replaceChildren();
   pickInfo.textContent=selection.length
@@ -269,7 +301,12 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
    await new Promise(r=>setTimeout(r,350));
    progress.classList.remove('active');
    if(context()?.peer?.user_id===receiver){
-    await openBatch(batchId);
+    if(standalonePanel&&mediaPanel==='share'&&window.parent!==window){
+     window.parent.postMessage({type:'blackcell-media-upload-finished',
+      peerId:receiver,batchId},location.origin);
+    }else{
+     await openBatch(batchId);
+    }
    }
   }catch(e){
    progress.classList.remove('active');
@@ -277,12 +314,14 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   }finally{toggleBusy(false);sendButton.disabled=selection.length===0}
  }
  function closeWing(){
+  if(standalonePanel&&mediaPanel==='library'&&requestPanelClose('library'))return;
   chat.classList.remove('media-open');
   wing.setAttribute('aria-hidden','true');
   stageInner.querySelector('video')?.pause();
  }
  async function openLibrary(){
   if(!requirePeer())return;
+  if(routeBubble('library'))return;
   batchFocus=null;
   await loadLibrary();
   openWing();
@@ -293,6 +332,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  }
  async function openBatch(id){
   if(!requirePeer())return;
+  if(routeBubble('library',{batchId:id}))return;
   batchFocus=id;
   await loadLibrary();
   openWing();
@@ -422,10 +462,15 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   return cell;
  }
  function onPeerChange(newPeerId){
+  if(!standalonePanel&&peerId&&peerId!==newPeerId){
+   if(window.parent!==window)
+    window.parent.postMessage({type:'blackcell-media-bubble-peer-changed',peerId:newPeerId},location.origin);
+   else window.BlackcellMediaBubbleHostController?.closeAll();
+  }
   peerId=newPeerId;
   library=[];visible=[];active=0;batchFocus=null;mediaReady=false;
   signed.clear();closeWing();
   overlay.hidden=true;selection=[];renderSelection();
  }
- return {renderMediaBubble,onPeerChange,openBatch,closeWing};
+ return {renderMediaBubble,onPeerChange,openShare,openLibrary,openBatch,closeWing};
 }
