@@ -4,6 +4,9 @@ const stage=document.getElementById('stageWindow');
 const loginPanel=document.getElementById('loginPanel');
 const passPanel=document.getElementById('passPanel');
 const loginCard=document.getElementById('loginCard');
+const loginHeading=document.getElementById('loginHeading');
+const executivePass=document.getElementById('executivePass');
+const clearanceLevel=document.getElementById('clearanceLevel');
 const changeAccount=document.getElementById('accountChange');
 const emailInput=document.getElementById('email');
 const passwordToggle=document.getElementById('toggle');
@@ -23,6 +26,8 @@ const originalSupport=codeSupport.textContent;
 window.BLACKCELL_LOGIN_BOOTED=true;
 const LOGIN_DEADLINE_MS=16000;
 let loginInProgress=false;
+let approvalPending=false;
+
 function timed(promise, description, timeout=LOGIN_DEADLINE_MS){
   let timer;
   return Promise.race([
@@ -43,6 +48,14 @@ let client;
 function message(element,text){element.hidden=false;element.textContent=text;}
 function clearMessage(element){element.hidden=true;element.textContent='';}
 
+function applyClearance(member){
+  const level=Number(member?.clearance_level);
+  if(!Number.isInteger(level)||level<1||level>7)return false;
+  clearanceLevel.textContent='LEVEL '+String(level);
+  executivePass.setAttribute('aria-label','Blackcell Level '+level+' employee access pass');
+  return true;
+}
+
 function showPass(){
   formCode.hidden=false;
   continueVerified.hidden=true;
@@ -52,6 +65,7 @@ function showPass(){
   loginPanel.setAttribute('aria-hidden','false');
   passPanel.setAttribute('aria-hidden','false');
   loginCard.classList.add('signed-in');
+  loginHeading.textContent='Identity Verified';
   emailInput.disabled=true;
   password.value='';
   password.disabled=true;
@@ -59,7 +73,7 @@ function showPass(){
   loginButton.disabled=true;
   loginButton.textContent='IDENTITY VERIFIED ✓';
   changeAccount.hidden=false;
-  message(status,'Identity verified. Complete the security codes on your access pass →');
+  message(status,'✓ EMAIL & PASSWORD ACCEPTED');
   window.setTimeout(()=>{
     if(stage.classList.contains('show-pass'))access.focus({preventScroll:true});
   },750);
@@ -78,6 +92,9 @@ function showLogin(){
   loginPanel.setAttribute('aria-hidden','false');
   passPanel.setAttribute('aria-hidden','true');
   loginCard.classList.remove('signed-in');
+  loginHeading.textContent='Sign In';
+  executivePass.classList.remove('authorized');
+  approvalPending=false;
   emailInput.disabled=false;
   password.disabled=false;
   passwordToggle.disabled=false;
@@ -90,6 +107,18 @@ function showLogin(){
   clearMessage(status);
   clearMessage(codeStatus);
   window.setTimeout(()=>emailInput.focus({preventScroll:true}),400);
+}
+
+function approvalAndLaunch(){
+  if(approvalPending)return;
+  approvalPending=true;
+  access.value='';
+  security.value='';
+  executivePass.classList.add('authorized');
+  authButton.disabled=true;
+  continueVerified.disabled=true;
+  clearMessage(codeStatus);
+  window.setTimeout(displayLaunch,1600);
 }
 
 function displayLaunch(){
@@ -125,6 +154,10 @@ async function initialState(){
     }else if(state.reason==='verification-error'){
       message(status,'Unable to verify employee authorization.');
     }
+    return;
+  }
+  if(state.member?.role!=='owner'||Number(state.member?.clearance_level)!==7||!applyClearance(state.member)){
+    message(status,'This account does not have Level 7 administrator clearance.');
     return;
   }
   emailInput.value=state.user?.email||emailInput.value;
@@ -170,6 +203,10 @@ form.addEventListener('submit',async event=>{
       message(status,member.reason==='verification-error'?'Cannot verify access right now.':'This account is not approved for Corporate Access.');
       return;
     }
+    if(member.member?.role!=='owner'||Number(member.member?.clearance_level)!==7||!applyClearance(member.member)){
+      message(status,'This account does not have Level 7 administrator clearance.');
+      return;
+    }
     const {data, error:checkError}=await timed(client.rpc('corp_code_status'),'Corporate code status check');
     if(checkError||data?.ok!==true){
       message(status,'Unable to start code verification.');
@@ -197,7 +234,7 @@ continueVerified.addEventListener('click',async()=>{
       message(codeStatus,'Your previous authorization has expired. Re-enter both security codes.');
       return;
     }
-    displayLaunch();
+    approvalAndLaunch();
   }catch(_){
     showPass();
     message(codeStatus,'Could not recheck your authorization. Enter both security codes.');
@@ -226,7 +263,7 @@ formCode.addEventListener('submit',async event=>{
       message(codeStatus,'Security verification succeeded, but Corporate Access could not be finalized. Please try again.');
       return;
     }
-    displayLaunch();
+    approvalAndLaunch();
   }catch(_){
     message(codeStatus,'Authentication is unavailable. Try again later.');
   }finally{
