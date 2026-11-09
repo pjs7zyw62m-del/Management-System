@@ -165,3 +165,99 @@
 @media(max-width:710px){.employee-profile-layout{grid-template-columns:1fr}.employee-profile-pass{min-height:365px}.employee-profile-listitem{align-items:flex-start;flex-direction:column}.employee-profile-actions{justify-content:flex-start}}
 
 .employee-card-inline-preview{margin-top:22px;padding:16px;border:1px solid #685768;border-radius:17px;background:linear-gradient(145deg,#201923,#0c0b0f)}.employee-card-inline-preview>h3{font-size:11px;color:#c6aebe;letter-spacing:.15em;margin:0 0 10px}.employee-card-inline-preview .employee-profile-layout{grid-template-columns:minmax(220px,310px) minmax(230px,1fr)}@media(max-width:710px){.employee-card-inline-preview .employee-profile-layout{grid-template-columns:1fr}}
+
+
+/* ACCESS + SECURITY CODE CARD • Private executive preview */
+.security-credential-preview{
+  margin-top:21px;padding:clamp(13px,2.5vw,21px);
+  border:1px solid #6b5b69;border-radius:23px;
+  background:radial-gradient(ellipse at top left,#641c3742,transparent 50%),linear-gradient(135deg,#161219,#07070a);
+  box-shadow:0 20px 65px #0008,inset 0 1px #ffffff17;color:#eee8ee
+}
+.security-credential-preview-status{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
+  gap:11px;margin-bottom:14px;font-size:10px;letter-spacing:.14em;color:#eadbe5
+}
+.security-credential-preview-status span{
+  color:#eeb4c6;background:#42172870;border:1px solid #8b5063;
+  border-radius:99px;padding:8px 10px;font-size:9px
+}
+.security-credential-card{
+  width:min(650px,100%);margin:0 auto 16px;
+  border:1px solid #a494a4;border-radius:22px;
+  background:linear-gradient(155deg,#2b222c,#08080b 52%,#170b14);
+  box-shadow:0 20px 65px #000c,inset 0 1px #eee3ef24;overflow:hidden
+}
+.security-credential-head{
+  display:flex;align-items:center;gap:14px;padding:20px 22px 18px;
+  background:linear-gradient(110deg,#4b1b3054,transparent 55%);
+}
+.security-credential-mark{
+  display:grid;place-items:center;flex:none;width:56px;height:56px;
+  background:linear-gradient(145deg,#29232b,#08060b);
+  border:1px solid #a28e9c;border-radius:16px;color:#f5eef5;font-size:36px;font-weight:900
+}
+.security-credential-brand strong{
+  display:block;font-size:clamp(12px,2vw,16px);letter-spacing:.1em;color:#f6f0f6;font-weight:900
+}
+.security-credential-brand small{
+  display:block;margin-top:7px;font-size:9px;letter-spacing:.16em;color:#bcb1c0
+}
+.security-credential-stripe{
+  height:8px;background:repeating-linear-gradient(110deg,#b04464 0 4px,#0a060b 4px 12px)
+}
+.security-credential-body{padding:clamp(18px,3vw,26px)}
+.security-credential-kicker{
+  color:#c57f94;font-size:10px;letter-spacing:.16em;font-weight:850;margin-bottom:8px
+}
+.admin-modal .security-credential-body h3{
+  font-size:clamp(21px,3vw,28px);letter-spacing:-.035em;margin:0 0 17px;color:#f3edf2
+}
+.security-credential-fields{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-bottom:18px
+}
+.security-credential-field,.security-credential-code-slot{
+  min-width:0;padding:14px;background:linear-gradient(130deg,#262028,#141018);
+  border:1px solid #554651;border-radius:13px
+}
+.security-credential-field small,.security-credential-code-slot>small{
+  display:block;color:#ae9fae;font-size:9px;letter-spacing:.12em;font-weight:800;margin-bottom:9px
+}
+.security-credential-field strong{
+  display:block;overflow-wrap:anywhere;font-size:12px;color:#f0e8ef
+}
+.security-credential-code-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px
+}
+.security-credential-code-slot{border-color:#88546a;background:linear-gradient(135deg,#251721,#120c12)}
+.security-credential-code-value{
+  display:block;color:#fff0f5;letter-spacing:.08em;
+  font-size:clamp(14px,2.3vw,22px);font-variant-numeric:tabular-nums;
+  min-height:32px;overflow-wrap:anywhere
+}
+.security-credential-code-controls{
+  border-top:1px solid #583f4c;padding-top:11px;margin-top:9px;
+  display:flex;justify-content:space-between;gap:9px;align-items:center;flex-wrap:wrap
+}
+.security-credential-code-controls small{
+  font-size:9px;color:#beacb8;letter-spacing:.07em
+}
+.admin-modal .security-credential-code-controls button{
+  padding:7px 11px;font-size:10px;background:#37202b;border-color:#83516a
+}
+.security-credential-caution{
+  margin-top:17px;padding:15px;border:1px solid #8d455e;
+  background:linear-gradient(135deg,#40172884,#160b13);border-radius:13px
+}
+.security-credential-caution strong{
+  display:block;color:#f0bdcf;letter-spacing:.1em;font-size:10px;margin-bottom:7px
+}
+.admin-modal .security-credential-caution p{
+  color:#c4b0c0;font-size:11px;line-height:1.65;margin:0
+}
+.security-credential-preview>.muted{margin:15px 0 10px}
+@media(max-width:650px){
+ .security-credential-fields{grid-template-columns:1fr}
+ .security-credential-code-grid{grid-template-columns:1fr}
+ .security-credential-head{padding:15px}
+}
