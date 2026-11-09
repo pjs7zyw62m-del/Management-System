@@ -77,9 +77,89 @@ footer{text-align:center;color:#85818d;font-size:9px;letter-spacing:.12em;paddin
 @media(max-width:760px){.stage-window{min-height:980px}.pass-grid{grid-template-columns:minmax(0,375px);gap:20px;align-content:center}.executive-pass{width:min(290px,85vw);justify-self:center}.pass-inner{gap:5px}.pass-top{padding:12px}.pass-symbol{height:74px;width:76px}.pass-corp{font-size:22px}.pass-small{font-size:9px}.pass-id{min-height:75px;padding:12px}.pass-id b{font-size:17px}.pass-id span{font-size:10px}.clearance{height:48px}.code-card{padding:23px}.stage-window:not(.show-pass){min-height:610px}}
 @media(max-width:500px){header{padding:18px}header .restriction{display:none}h1{font-size:27px}.stage-window{min-height:860px}.executive-pass{width:min(245px,75vw)}.pass-top{height:43%}.pass-symbol{height:62px;width:67px}.pass-corp{font-size:19px}.pass-id{min-height:65px}.pass-id b{font-size:15px}.clearance b{font-size:16px}.clearance span{font-size:10px}.pass-foot{height:29px}.login-card{padding:26px}.code-card h2{font-size:26px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition-duration:.01ms!important}}
+
+/* Two-pane corporate credential layout: login stays visible on the left. */
+.stage-window{width:min(1010px,100%);min-height:675px;perspective:1200px}
+.login-panel,.pass-panel{position:absolute;inset:auto;top:50%;transition:left .78s cubic-bezier(.2,.79,.2,1),right .78s cubic-bezier(.2,.79,.2,1),transform .78s cubic-bezier(.2,.79,.2,1),opacity .65s ease;will-change:transform,opacity}
+.login-panel{left:50%;width:min(445px,100%);transform:translate(-50%,-50%);opacity:1;z-index:3;pointer-events:auto}
+.pass-panel{right:0;width:min(430px,100%);transform:translate(-130%,-50%) scale(.96);opacity:0;pointer-events:none;z-index:2}
+.stage-window.show-pass .login-panel{left:0;transform:translate(0,-50%);opacity:1;pointer-events:auto;z-index:2}
+.stage-window.show-pass .pass-panel{transform:translate(0,-50%) scale(1);opacity:1;pointer-events:auto;z-index:3}
+.login-card{width:100%}
+.login-card.signed-in{border-color:#977787a6;box-shadow:0 25px 100px #0009,0 0 34px #86354e17,inset 0 1px #ffffff28}
+.login-card.signed-in #login input{opacity:.55}
+.login-card.signed-in #submit{border-color:#5f6c63;background:linear-gradient(110deg,#19281f,#26362a);color:#c6e0cc}
+.login-card.signed-in #toggle{pointer-events:none;opacity:.65}
+.login-card.signed-in .links{opacity:.55;pointer-events:none}
+#accountChange{display:block;margin:18px auto 0;background:none;border:0;color:#c7b6c3;text-decoration:underline;font-size:11px}
+#accountChange[hidden]{display:none}
+.pass-grid{width:100%;display:block;padding:0}
+.executive-pass{width:100%;height:650px;max-height:none;aspect-ratio:auto;border-radius:20px}
+.executive-pass:before{pointer-events:none}
+.pass-inner{gap:7px;padding:11px}
+.pass-top{height:175px;flex:none;padding:11px 13px 6px}
+.pass-serial{font-size:11px}
+.pass-symbol{height:66px;width:74px;margin:-5px 0 1px}
+.pass-corp{font-size:27px}
+.pass-small{font-size:9px;margin-top:5px}
+.pass-id{min-height:66px;flex:none;padding:10px 13px}
+.pass-id b{font-size:17px}
+.pass-id span{font-size:10px}
+.pass-stripe{height:8px}
+.clearance{height:48px}
+.clearance b{font-size:18px}
+.clearance span{font-size:11px}
+.pass-credentials{flex:1;border:1px solid #665965;border-radius:8px;padding:13px 15px 12px;background:linear-gradient(145deg,#24202a,#08070b)}
+.pass-credentials .eyebrow{text-align:left;letter-spacing:.18em;font-size:9px}
+.pass-credentials h2{font-size:16px;font-weight:800;letter-spacing:.02em;margin:7px 0 4px}
+.pass-credentials .support{font-size:10px;line-height:1.5;color:#afa7b4;margin:0 0 8px}
+.pass-credentials label{font-size:9px;margin:9px 0 5px}
+.pass-credentials input{min-height:39px;height:39px;padding:8px 11px;font-size:13px;border-radius:8px}
+.pass-credentials .primary{padding:9px;min-height:39px;margin-top:13px;border-radius:9px;font-size:10px}
+.pass-credentials .message{margin:8px 0 0;font-size:10px;padding:8px}
+.pass-foot{height:26px;padding:0 8px}
+.pass-foot span{font-size:8px}
+@media(min-width:761px) and (max-width:1020px){
+ .stage-window{width:min(920px,100%)}
+ .login-panel{width:min(43vw,430px)}
+ .pass-panel{width:min(43vw,410px)}
+ .stage-window.show-pass .login-panel{left:0}
+ .stage-window.show-pass .pass-panel{right:0}
+}
+@media(max-width:760px){
+ main{align-items:flex-start}
+ .stage-window,.stage-window:not(.show-pass){min-height:640px}
+ .stage-window.show-pass{min-height:1260px}
+ .login-panel{top:8px;left:50%;width:min(445px,100%);transform:translateX(-50%);align-items:flex-start}
+ .pass-panel{top:610px;left:50%;right:auto;width:min(410px,100%);transform:translate(-135%,0) scale(.97);align-items:flex-start}
+ .stage-window.show-pass .login-panel{top:8px;left:50%;transform:translateX(-50%)}
+ .stage-window.show-pass .pass-panel{top:610px;left:50%;right:auto;transform:translate(-50%,0) scale(1)}
+ .executive-pass{height:610px}
+ .pass-top{height:145px}
+ .pass-symbol{height:51px}
+ .pass-corp{font-size:24px}
+ .pass-id{min-height:60px}
+ .pass-credentials{padding:10px 14px}
+}
+@media(max-width:500px){
+ .stage-window.show-pass{min-height:1195px}
+ .pass-panel,.stage-window.show-pass .pass-panel{top:588px;width:min(380px,100%)}
+ .executive-pass{height:580px;width:100%}
+ .pass-top{height:131px}
+ .pass-symbol{height:43px}
+ .pass-corp{font-size:21px}
+ .pass-id{min-height:56px}
+ .pass-credentials input{min-height:38px;height:38px}
+ .pass-credentials .primary{min-height:36px}
+ .login-card{padding:26px}
+}
+@media(prefers-reduced-motion:reduce){
+ .login-panel,.pass-panel{transition:none}
+}
+
 </style>
 <script src="corp-config.js" defer></script>
-<script type="module" src="corp-login.js?v=20261109-loopfix1"></script>
+<script type="module" src="corp-login.js?v=20261109-access-card-inline1"></script>
 </head>
 <body>
 <header>
@@ -89,7 +169,7 @@ footer{text-align:center;color:#85818d;font-size:9px;letter-spacing:.12em;paddin
 <main>
 <div class="stage-window" id="stageWindow">
 <section class="login-panel" id="loginPanel" aria-label="Corporate sign in">
-<div class="login-card">
+<div class="login-card" id="loginCard">
 <div class="brand-crest">B</div>
 <div class="eyebrow">◈ CORPORATE ACCESS GATEWAY</div>
 <h1>Sign In</h1>
@@ -102,11 +182,12 @@ footer{text-align:center;color:#85818d;font-size:9px;letter-spacing:.12em;paddin
 </form>
 <p id="status" class="message" hidden role="status" aria-live="polite"></p>
 <div class="links"><a href="index.html">← Corporate Access</a><button id="reset" type="button">Forgot password?</button></div>
+<button type="button" id="accountChange" hidden>Sign in with another account</button>
 </div>
 </section>
-<section class="pass-panel" id="passPanel" aria-label="Executive access pass" aria-hidden="true">
+<section class="pass-panel" id="passPanel" aria-label="Executive Level 7 access pass" aria-hidden="true">
 <div class="pass-grid">
-<article class="executive-pass" aria-label="Blackcell executive Level 7 access pass">
+<article class="executive-pass" aria-label="Blackcell executive Level 7 access card with security code inputs">
 <div class="pass-inner">
 <div class="pass-top">
 <div class="pass-serial">BC / 0001</div>
@@ -122,23 +203,23 @@ footer{text-align:center;color:#85818d;font-size:9px;letter-spacing:.12em;paddin
 <div class="pass-id"><div><b>CORPORATE OWNER</b><span>EXECUTIVE ADMINISTRATOR</span></div><span>PERSONNEL AUTHORIZATION</span></div>
 <div class="pass-stripe"></div>
 <div class="clearance"><b>LEVEL 7</b><span>ACCESS PASS</span></div>
+<div class="pass-credentials">
+<div class="eyebrow">BLACKCELL / CLEARANCE VERIFICATION</div>
+<h2>Verify Access</h2>
+<p class="support" id="codeSupport">Enter your existing NEXUS Access Code and Security Code.</p>
+<form id="codeForm">
+<label for="accessCode">ACCESS CODE</label>
+<input id="accessCode" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" required maxlength="256" aria-label="Access Code">
+<label for="securityCode">SECURITY CODE</label>
+<input id="securityCode" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" required maxlength="256" aria-label="Security Code">
+<button id="authenticate" type="submit" class="primary">AUTHENTICATE ↗</button>
+</form>
+<button id="continueVerified" type="button" class="primary" hidden>CONTINUE TO ADMINISTRATION ↗</button>
+<p id="codeStatus" class="message" role="status" aria-live="polite" hidden></p>
+</div>
 <div class="pass-foot"><span>BC / EXECUTIVE</span><span>SECURE ACCESS</span></div>
 </div>
 </article>
-<section class="code-card">
-<div class="eyebrow">BLACKCELL / SECURITY CLEARANCE</div>
-<h2>Verify Access</h2>
-<p class="support" id="codeSupport">Enter your existing <strong>NEXUS Access Code</strong> and <strong>Security Code</strong> to authorize this corporate session.</p>
-<form id="codeForm">
-<label for="accessCode">ACCESS CODE</label>
-<input id="accessCode" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" required maxlength="256">
-<label for="securityCode">SECURITY CODE</label>
-<input id="securityCode" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" required maxlength="256">
-<button id="authenticate" type="submit" class="primary">AUTHENTICATE ↗</button>
-</form>
-<button id="continueVerified" type="button" class="primary" hidden>CONTINUE TO ADMINISTRATION ↗</button><p id="codeStatus" class="message" role="status" aria-live="polite" hidden></p>
-<button class="back" type="button" id="backToSignIn">← Sign in with another account</button>
-</section>
 </div>
 </section>
 </div>
