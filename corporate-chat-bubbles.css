@@ -1,0 +1,127 @@
+/* BLACKCELL / iMESSAGE 2.0 — Bubble-first Apple Glass
+   Scoped to the live chat UI; does not change security, messages, or media storage. */
+:root{--bubble-ink:#f2f2f7;--bubble-navy:#1b3047;--bubble-navy-border:#3a5469;--bubble-black:#1e1a20;--bubble-black-border:#514652;--bubble-rose:#b57590}
+.chat{background:#060609}
+.chat-main{background:
+ radial-gradient(circle at 49% 4%,rgba(99,43,72,.10),transparent 38%),
+ linear-gradient(180deg,#09090d 0%,#07070a 52%,#07070a 100%)}
+.chat-header{background:linear-gradient(110deg,#141216fa,#09090bfa);border-bottom-color:#413741}
+.chat-title{background:linear-gradient(110deg,#17131adf,#0c0b11e8);border-bottom:1px solid #ffffff1d;backdrop-filter:blur(14px);box-shadow:0 6px 20px #0002}
+.imessage-portrait{border-radius:50%;border:1px solid #80596e;box-shadow:inset 0 1px 0 #ffffff28,0 0 0 4px #49273940;background:radial-gradient(circle at 33% 22%,#54344c,#201922 72%);font-weight:750}
+.imessage-secure-indicator{display:flex;align-items:center;gap:7px;color:#b7afba;font-size:9px;font-weight:750;letter-spacing:.11em;white-space:nowrap}
+.imessage-secure-indicator:before{content:"";width:6px;height:6px;border-radius:50%;background:#78bf92;box-shadow:0 0 0 3px #78bf9218}
+.sidebar{background:linear-gradient(145deg,#171319,#0b0b0f 66%);border-right:1px solid #ffffff17;padding:17px 11px}
+.label-with-count{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:5px 9px 13px;font-size:10px;color:#c1a8b9;letter-spacing:.12em}
+.label-with-count span:last-child{color:#cbbdcb;border:1px solid #5d4452;border-radius:50px;padding:3px 8px;background:#322532;font-size:9px}
+.peer-search-wrap{display:flex;align-items:center;gap:7px;margin:0 2px 15px;padding:0 10px;border:1px solid #524451;border-radius:11px;background:#111016;transition:border .2s}
+.peer-search-wrap:focus-within{border-color:#b4708b}
+.peer-search-wrap span{font-size:20px;color:#ae91a2;line-height:1}
+.peer-search-wrap input{height:39px;width:100%;min-width:0;background:none;border:0;outline:0;color:#ece7ed;font-size:11px}
+.peer-search-wrap input::placeholder{color:#817787}
+.peer{border-radius:14px;padding:11px 10px;background:linear-gradient(145deg,#1b1820,#101016);border:1px solid #443b45;gap:10px;box-shadow:0 2px 12px #0002;transition:background .2s ease,transform .2s ease,border .2s ease}
+.peer:hover{background:#27212b;transform:translateX(2px);border-color:#79586d}
+.peer.active{background:linear-gradient(130deg,#422638,#291c2b);border-color:#a16a83;box-shadow:inset 0 0 0 1px #aa799329,0 8px 20px #0004}
+.peer .avatar{height:40px;width:40px;flex:none;display:grid;place-items:center;border-radius:50%;border:1px solid #7e6574;background:linear-gradient(135deg,#4a3446,#17141c);font-size:14px;font-weight:750;color:#f6e8f0}
+.peer small{font-size:9px;letter-spacing:.025em}
+.conversation{gap:9px;padding:28px clamp(15px,3.5vw,44px) 21px;scroll-behavior:smooth;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#403744 transparent}
+.chat-day-separator{align-self:center;max-width:100%;display:flex;gap:10px;align-items:center;justify-content:center;text-align:center;color:#898b97;font-size:9px;font-weight:780;letter-spacing:.16em;margin:14px auto 18px;padding:7px 14px;border:1px solid #ffffff12;border-radius:30px;background:linear-gradient(130deg,#1d1b23dd,#121117c9);box-shadow:0 5px 20px #0003}
+.message{position:relative;max-width:min(80%,560px);gap:2px;transition:transform .12s ease}
+.message.group-start{margin-top:11px}
+.message.group-middle,.message.group-end{margin-top:-6px}
+.message .bubble{position:relative;display:block;min-width:45px;padding:11px 16px;border-radius:20px;line-height:1.58;font-size:13px;font-weight:420;letter-spacing:.004em;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--bubble-ink)!important;background:linear-gradient(146deg,#20364e,#172738)!important;border:1px solid var(--bubble-navy-border)!important;box-shadow:0 6px 20px #0005,inset 0 1px 0 #ffffff11;isolation:isolate;outline-offset:3px}
+.message .bubble:focus-visible{outline:2px solid #cb8dab}
+.message.mine .bubble{background:linear-gradient(146deg,#272128,#161319)!important;border-color:var(--bubble-black-border)!important;color:#f6f0f6!important;box-shadow:0 6px 20px #0006,inset 0 1px 0 #ffffff10}
+.message.group-start:not(.mine) .bubble,.message.group-middle:not(.mine) .bubble{border-bottom-left-radius:8px}
+.message.group-middle:not(.mine) .bubble,.message.group-end:not(.mine) .bubble{border-top-left-radius:8px}
+.message.mine.group-start .bubble,.message.mine.group-middle .bubble{border-bottom-right-radius:8px}
+.message.mine.group-middle .bubble,.message.mine.group-end .bubble{border-top-right-radius:8px}
+.message.group-end:not(.message-media) .bubble:after,.message.group-single:not(.message-media) .bubble:after{content:"";position:absolute;left:-6px;bottom:-1px;width:13px;height:17px;background:#172738;clip-path:polygon(100% 0,100% 100%,0 100%);filter:drop-shadow(-1px 0 0 #36516a);pointer-events:none}
+.message.mine.group-end:not(.message-media) .bubble:after,.message.mine.group-single:not(.message-media) .bubble:after{left:auto;right:-6px;transform:scaleX(-1);background:#171319;filter:drop-shadow(-1px 0 0 #514652)}
+.message time{color:#7f818e;font-size:9px;letter-spacing:.04em;line-height:1.4;padding:5px 7px 0;opacity:1;max-height:22px;transition:opacity .16s,max-height .16s,padding .16s}
+.message .group-time{opacity:0;max-height:0;padding-top:0;overflow:hidden}
+.message.show-time .group-time{opacity:1;max-height:22px;padding-top:5px}
+.message.mine time{color:#a09aa7}
+.message-fresh{animation:imBubbleIn .32s cubic-bezier(.22,.9,.33,1.12) both;transform-origin:90% 100%}
+.message-fresh:not(.mine){transform-origin:10% 100%}
+@keyframes imBubbleIn{0%{transform:translateY(10px) scale(.94);opacity:0;filter:blur(2px)}100%{transform:translateY(0) scale(1);opacity:1;filter:none}}
+.message-media .bubble,.message.mine.message-media .bubble{border-radius:18px!important;padding:13px 15px;background:linear-gradient(150deg,#1c1b25,#0f1017)!important;border:1px solid #605266!important;box-shadow:0 8px 24px #0006!important}
+.message-media .bubble:after{display:none}
+.message-media .bubble strong{color:#e5b9cb;letter-spacing:.12em}
+.message-media .bubble span{color:#f0eaf1;font-size:12px}
+.message-media .bubble:hover{border-color:#aa7b91!important;background:linear-gradient(150deg,#282332,#17151e)!important}
+.composer{display:flex;gap:10px;align-items:flex-end;background:linear-gradient(145deg,#16131b,#0c0b10);border-top:1px solid #59455466;padding:11px clamp(12px,2vw,22px) 13px}
+.composer .composer-add{flex:none;display:grid;place-items:center;width:42px;height:42px;min-width:42px;min-height:42px;padding:0;background:#221c26;border:1px solid #6e5668;border-radius:50%;font-size:23px;line-height:1;color:#d1c1d0;letter-spacing:0;transition:background .2s,transform .2s}
+.composer .composer-add.open{background:#3d2536;border-color:#97637d;color:#f6e1ec;transform:rotate(0)}
+.composer .composer-add:hover{border-color:#d391a9}
+.composer-input-wrap{min-width:0;flex:1;min-height:43px;display:flex;align-items:center;background:#17151d;border:1px solid #655365;border-radius:23px;padding:0 8px 0 6px;box-shadow:inset 0 2px 6px #0003;transition:border .2s}
+.composer-input-wrap:focus-within{border-color:#bb829a;box-shadow:0 0 0 2px #8d586c24}
+.composer .composer-input-wrap textarea{resize:none;width:100%;max-height:112px;min-height:40px;height:40px;border:none!important;outline:none!important;background:transparent!important;box-shadow:none!important;overflow-y:auto;line-height:1.45;padding:11px 13px;font-size:13px;color:#f2ecf2;field-sizing:normal}
+.composer .composer-input-wrap textarea::placeholder{color:#8c8490}
+.composer .composer-send{flex:none;width:43px;min-width:43px;height:43px;min-height:43px;padding:0;background:linear-gradient(135deg,#81364f,#b95b79);border:1px solid #d68fa6;border-radius:50%;display:grid;place-items:center;box-shadow:0 5px 18px #5a182d6b,inset 0 1px 0 #ffffff40;transition:transform .18s,box-shadow .18s;color:white;font-size:24px;line-height:1}
+.composer .composer-send:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 7px 22px #8b375a91}
+.composer .composer-send:disabled{background:#302631;border-color:#534452;box-shadow:none;color:#9e8997;opacity:.8}
+.media-actions{display:flex;align-items:center;justify-content:flex-start;gap:8px;flex-wrap:wrap;padding:11px clamp(12px,2vw,22px);border-top:1px solid #ffffff13;background:#100e14;transition:opacity .18s,transform .18s}
+.media-actions.is-collapsed{display:none}
+.media-actions button{border:1px solid #6b4f61;background:linear-gradient(140deg,#2a1e2b,#1b1721);border-radius:17px;color:#ead7e4;letter-spacing:.07em;padding:9px 13px;font-size:10px;box-shadow:inset 0 1px 0 #ffffff12}
+.media-actions button:last-child{margin-left:0}
+.media-actions button:hover{background:#3e2838;border-color:#ac758c}
+.media-progress-wrap{background:#1d1420;border-color:#725168}
+.media-viewer{border-radius:21px 0 0 21px;box-shadow:-16px 0 55px #0009}
+.bc-embedded .chat{grid-template-columns:110px minmax(0,1fr)}
+.bc-embedded .sidebar{padding:8px 6px}
+.bc-embedded .label-with-count{font-size:8px;letter-spacing:.055em;margin:5px 3px 8px}
+.bc-embedded .peer-search-wrap{padding:0 5px;gap:4px;margin-bottom:9px}
+.bc-embedded .peer-search-wrap input{font-size:9px;height:33px}
+.bc-embedded .peer{display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 4px}
+.bc-embedded .peer .avatar{width:33px;height:33px;font-size:12px}
+.bc-embedded .peer strong{font-size:10px;line-height:1.2;max-width:100px;display:block;overflow:hidden;text-overflow:ellipsis}
+.bc-embedded .peer small{display:none}
+.bc-embedded .conversation{padding:16px 11px;gap:8px}
+.bc-embedded .message{max-width:97%}
+.bc-embedded .bubble{font-size:12px;padding:9px 12px}
+.bc-embedded .chat-day-separator{font-size:8px;margin:7px auto 13px}
+.bc-embedded .chat-title{padding:8px 10px;gap:4px}
+.bc-embedded .imessage-secure-indicator{display:none}
+.bc-embedded .imessage-title-actions a{max-width:80px;font-size:8px;white-space:normal}
+.bc-embedded .media-actions{padding:7px 8px;gap:5px}
+.bc-embedded .media-actions button{font-size:9px;padding:8px}
+.bc-embedded .composer{gap:5px;padding:8px}
+.bc-embedded .composer .composer-add,.bc-embedded .composer .composer-send{width:35px;min-width:35px;height:35px;min-height:35px;font-size:21px}
+.bc-embedded .composer-input-wrap{min-height:38px}
+.bc-embedded .composer .composer-input-wrap textarea{min-height:34px;height:34px;padding:8px}
+@media(max-width:760px){
+ .chat{grid-template-columns:112px minmax(0,1fr)}
+ .sidebar{padding:9px 6px}
+ .peer{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;padding:9px 5px}
+ .peer .avatar{margin:0;width:35px;height:35px}
+ .peer small{display:none}
+ .peer strong{font-size:10px;overflow-wrap:anywhere}
+ .label-with-count{font-size:8px;letter-spacing:.04em;margin:5px 0 9px}
+ .peer-search-wrap{margin:0 0 9px;padding:0 6px}
+ .peer-search-wrap input{font-size:9px}
+ .imessage-secure-indicator{display:none}
+ .chat-title{min-height:60px}
+ .conversation{padding:14px 11px 12px;gap:9px}
+ .message{max-width:96%}
+ .message .bubble{font-size:12px;padding:10px 13px}
+ .composer{gap:6px;padding:8px 10px}
+ .composer .composer-add{width:37px;height:37px;min-width:37px;min-height:37px}
+ .composer .composer-send{width:39px;height:39px;min-width:39px;min-height:39px}
+ .composer .composer-input-wrap textarea{font-size:12px}
+ .media-actions{gap:5px;padding:8px 10px}
+ .media-actions button{font-size:9px;padding:8px 9px}
+}
+@media(max-width:460px){
+ .chat{grid-template-columns:96px minmax(0,1fr)}
+ .peer-search-wrap{display:none}
+ .sidebar{padding:7px 4px}
+ .label-with-count span:last-child{padding:2px 5px}
+ .message .bubble{font-size:11.8px}
+ .conversation{padding:12px 9px 9px}
+ .media-actions button{font-size:8px}
+}
+@media(prefers-reduced-motion:reduce){
+ .message-fresh{animation:none}
+ .conversation{scroll-behavior:auto}
+ .composer .composer-send,.peer{transition:none}
+}
