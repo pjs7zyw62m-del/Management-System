@@ -217,6 +217,8 @@ async function loadMessages(){
   const filter='and(sender_id.eq.'+self+',recipient_id.eq.'+pid+'),and(sender_id.eq.'+pid+',recipient_id.eq.'+self+')';
   const {data,error}=await client.from('corp_chat_messages').select('id,sender_id,recipient_id,body,created_at,media_batch_id,read_at').or(filter).order('created_at',{ascending:false}).limit(100);
   if(error){status('Messages could not be loaded.');return}
+  // Ignore an old request when the user has switched conversations.
+  if(peer?.user_id!==pid)return;
   const box=$('messages'),atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<80;
   const ordered=(data||[]).slice().reverse();
   const newest=ordered.at(-1)?.id||'empty',oldNewest=box.dataset.newest;
