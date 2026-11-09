@@ -1,93 +1,139 @@
-/* BLACKCELL / COMPACT MEDIA ON iPHONE + SMALLER iPADS
-   Full photo/video upload and receiving in a small, temporary overlay;
-   the oversized desktop companion panes remain exclusive to computers
-   and 12.9-inch-plus iPads. Loaded last in corporate-chat.html. */
-html.bc-chat-lite .bc-media-bubble-host{display:none!important}
-html.bc-chat-lite .chat-main{position:relative!important;min-width:0}
+/* BLACKCELL Messages — native one-button mobile photo & video sharing.
+   iPhone and small iPad: native picker -> inline upload bubble -> photos/videos
+   displayed in the thread. Never open the desktop Media Share screen.
+   12.9-inch+ iPads and computers continue using the full companion panels. */
+html.bc-chat-lite .bc-media-bubble-host,
+html.bc-chat-lite .media-actions,
+html.bc-chat-lite .media-dialog-backdrop,
+html.bc-chat-lite .media-progress-wrap{
+ display:none!important;
+}
+html.bc-chat-lite .chat-main{min-width:0;position:relative}
 html.bc-chat-lite .composer{
- gap:8px!important;
- padding:9px 10px max(10px,env(safe-area-inset-bottom,0px))!important
+ display:flex!important;gap:8px!important;align-items:flex-end!important;
+ padding:9px 10px max(10px,env(safe-area-inset-bottom,0px))!important;
 }
 html.bc-chat-lite #mediaToggleButton,
 html.bc-chat-lite .composer .composer-add{
  display:grid!important;place-items:center!important;
- width:39px!important;height:39px!important;
- min-width:39px!important;min-height:39px!important;
- flex:none!important;border-radius:50%!important;font-size:23px!important
+ flex:none!important;
+ width:42px!important;height:42px!important;
+ min-width:42px!important;min-height:42px!important;
+ border-radius:50%!important;font-size:25px!important;
 }
 html.bc-chat-lite .composer-input-wrap{flex:1;min-width:0}
-html.bc-chat-lite .media-actions:not(.is-collapsed){
- position:absolute!important;left:10px!important;right:10px!important;
- bottom:calc(66px + env(safe-area-inset-bottom,0px))!important;
- z-index:83!important;
- display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
- gap:8px!important;padding:12px!important;margin:0!important;
- border:1px solid #856277!important;border-radius:18px!important;
- background:linear-gradient(145deg,#2b202e,#101018)!important;
- box-shadow:0 14px 48px #000d!important;
+html.bc-chat-lite .composer-input-wrap textarea{font-size:16px!important}
+
+/* Upload percentage appears inside an outgoing iMessage bubble.
+   The conversation and recipient remain visible during the transfer. */
+html.bc-chat-lite .bc-inline-upload{
+ align-self:flex-end;max-width:min(87%,370px);width:min(87%,370px);
+ margin-top:9px;
 }
-html.bc-chat-lite .media-actions.is-collapsed{display:none!important}
-html.bc-chat-lite .media-actions button{
- min-width:0!important;min-height:43px!important;
- margin:0!important;border-radius:12px!important;
- font-size:10px!important;padding:11px 7px!important;
+html.bc-chat-lite .bc-inline-upload-bubble{
+ background:linear-gradient(145deg,#332535,#1c1721)!important;
+ border:1px solid #895a78!important;
+ padding:13px 14px!important;border-radius:18px!important;
+ box-shadow:0 7px 18px #0006!important;
 }
-/* Upload progress is inside the sheet so it stays visible during transfer. */
-html.bc-chat-lite .media-progress-wrap{display:none!important}
-html.bc-chat-lite .media-dialog-backdrop:not([hidden]){
- position:fixed!important;inset:0!important;z-index:500!important;
- display:flex!important;align-items:stretch!important;
- padding:6px!important;
- background:#060508f4!important;backdrop-filter:blur(12px)!important
+html.bc-chat-lite .bc-inline-upload-title{
+ color:#f0e1ed;font-size:10px;font-weight:750;
+ line-height:1.5;letter-spacing:.045em;overflow-wrap:anywhere
 }
-html.bc-chat-lite .media-dialog{
- flex:1;display:flex!important;flex-direction:column!important;
- width:100%!important;max-width:none!important;
- min-height:0!important;height:100%!important;max-height:none!important;
- border:1px solid #735b70!important;border-radius:19px!important;
- overflow:hidden!important
+html.bc-chat-lite .bc-inline-upload-track{
+ height:5px;background:#4b384e;border-radius:99px;
+ overflow:hidden;margin-top:11px
 }
-html.bc-chat-lite .media-dialog-head{
- flex:0 0 auto!important;padding:12px 13px!important;gap:7px!important;
- min-height:56px!important
+html.bc-chat-lite .bc-inline-upload-fill{
+ height:100%;width:0;border-radius:inherit;
+ background:linear-gradient(90deg,#ae6689,#f1bad4);
+ transition:width .14s ease
 }
-html.bc-chat-lite .media-dialog-head strong{font-size:11px!important}
-html.bc-chat-lite .media-dialog-head small{font-size:9px!important}
-html.bc-chat-lite .bc-media-share-head-actions{display:flex;align-items:center;gap:5px}
-html.bc-chat-lite .bc-media-flip-button{font-size:9px!important;padding:8px!important}
-html.bc-chat-lite .media-dialog-body{
- flex:1 1 0!important;min-height:0!important;overflow-y:auto!important;
- overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
- padding:11px 13px!important
+html.bc-chat-lite .bc-inline-upload-percent{
+ display:block;margin-top:7px;color:#d6bed0;
+ font-size:10px;font-weight:770;text-align:right
 }
-html.bc-chat-lite .media-dialog-selection{
- min-height:60px!important;margin-bottom:10px!important;padding:9px!important;
- font-size:11px
+html.bc-chat-lite .bc-inline-upload-actions{
+ display:flex;gap:7px;margin-top:10px
 }
-html.bc-chat-lite .media-selected-row{
- align-items:flex-start!important;overflow-wrap:anywhere!important;
- font-size:11px!important;padding:9px!important
+html.bc-chat-lite .bc-inline-upload-actions[hidden]{display:none!important}
+html.bc-chat-lite .bc-inline-upload-actions button{
+ flex:1;min-height:37px;border-radius:10px;
+ background:#342438;border:1px solid #865b73;
+ color:#f3dce8;font-size:10px;font-weight:750
 }
-html.bc-chat-lite .media-selected-row>div{min-width:0;flex:1}
-html.bc-chat-lite .media-selected-row strong{overflow-wrap:anywhere}
-html.bc-chat-lite .media-progress-wrap.active{
- display:block!important;margin:12px 0!important;
- border:1px solid #74536b;border-radius:12px!important;
- padding:12px!important;background:#17121c!important
+
+/* Photos and videos now actually live inside each message bubble. */
+html.bc-chat-lite .message-media{
+ max-width:min(94%,420px)!important;
+ min-width:0!important;
 }
-html.bc-chat-lite .media-progress-head{font-size:9px!important;gap:10px!important}
-html.bc-chat-lite .media-dialog-footer{
- flex:0 0 auto!important;display:flex!important;gap:8px!important;
- flex-wrap:wrap!important;
- padding:11px 13px calc(12px + env(safe-area-inset-bottom,0px))!important
+html.bc-chat-lite .message-media .bubble{
+ min-width:0!important;
+ max-width:100%!important;
+ padding:9px!important;border-radius:18px!important;
+ background:linear-gradient(145deg,#1a1820,#0d0c12)!important;
+ border:1px solid #6c546a!important;
+ cursor:pointer!important;white-space:normal!important;
 }
-html.bc-chat-lite .media-dialog-footer[hidden]{display:none!important}
-html.bc-chat-lite .media-dialog-footer button{
- flex:1 1 135px!important;min-width:0!important;min-height:44px!important
+html.bc-chat-lite .message-media.mine .bubble{
+ background:linear-gradient(145deg,#29202c,#17121b)!important;
 }
-/* The mobile media viewer temporarily takes over the *chat iframe*, not
-   a second dock beside it; close returns directly to the conversation. */
-html.bc-chat-lite .chat.media-open{grid-template-columns:minmax(0,1fr)!important}
+html.bc-chat-lite .message-media .bubble>strong{
+ display:block;font-size:9px!important;
+ color:#d7aabe!important;
+ letter-spacing:.085em;margin:2px 5px 7px!important
+}
+html.bc-chat-lite .message-media .bubble>span{
+ display:block;padding:7px 5px 3px;
+ color:#b7a9ba!important;font-size:10px!important;line-height:1.45
+}
+html.bc-chat-lite .bc-chat-inline-media-grid{
+ width:100%;min-width:0;
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:4px;overflow:hidden;border-radius:12px
+}
+html.bc-chat-lite .bc-chat-inline-media-grid.single{
+ grid-template-columns:minmax(0,1fr)
+}
+html.bc-chat-lite .bc-chat-inline-media-tile{
+ min-width:0;position:relative;
+ display:flex;align-items:center;justify-content:center;
+ background:#050508;border-radius:8px;overflow:hidden
+}
+html.bc-chat-lite .bc-chat-inline-media-grid:not(.single) .bc-chat-inline-media-tile{
+ aspect-ratio:1/1
+}
+html.bc-chat-lite .bc-chat-inline-media-grid.single .bc-chat-inline-media-tile{
+ max-height:300px
+}
+html.bc-chat-lite .bc-chat-inline-media-tile img,
+html.bc-chat-lite .bc-chat-inline-media-tile video{
+ display:block;width:100%;height:100%;
+ max-width:100%;max-height:300px;
+ object-fit:contain!important;object-position:center;
+ background:#000;border-radius:8px
+}
+html.bc-chat-lite .bc-chat-inline-media-grid.single img{
+ height:auto;max-height:300px
+}
+html.bc-chat-lite .bc-chat-inline-media-tile video{
+ min-height:110px;max-height:280px;
+}
+html.bc-chat-lite .bc-chat-inline-loading{
+ display:block;padding:20px 9px!important;
+ font-size:10px!important;color:#c4adbd!important;
+ text-align:center
+}
+html.bc-chat-lite .message-media .message-receipt{
+ margin-top:3px
+}
+
+/* Tapping a media bubble opens a temporary, dismissible viewer INSIDE the
+   conversation window. It is not the giant side-by-side Media Share panel. */
+html.bc-chat-lite .chat.media-open{
+ grid-template-columns:minmax(0,1fr)!important
+}
 html.bc-chat-lite .chat.media-open .sidebar{display:none!important}
 html.bc-chat-lite .chat.media-open .chat-main{transform:none!important}
 html.bc-chat-lite .media-viewer{
@@ -96,100 +142,71 @@ html.bc-chat-lite .media-viewer{
 }
 html.bc-chat-lite .chat.media-open .media-viewer{
  position:absolute!important;inset:0!important;
- left:0!important;right:0!important;top:0!important;bottom:0!important;
- z-index:90!important;
- display:flex!important;flex-direction:column!important;
+ z-index:90!important;display:flex!important;flex-direction:column!important;
  width:100%!important;height:100%!important;max-width:none!important;
  border:0!important;border-radius:0!important;
  visibility:visible!important;opacity:1!important;pointer-events:auto!important;
  transform:none!important;overflow:hidden!important;
- background:linear-gradient(150deg,#1e1822,#060509)!important
+ background:linear-gradient(160deg,#1d1720,#08080c)!important
 }
 html.bc-chat-lite .media-viewer-head{
- flex:0 0 auto!important;padding:9px!important;gap:6px!important;flex-wrap:wrap!important
+ flex:0 0 auto!important;padding:10px!important;
+ gap:6px!important;flex-wrap:wrap!important
 }
 html.bc-chat-lite .media-viewer-brand strong{font-size:10px!important}
 html.bc-chat-lite .media-viewer-brand small{display:none!important}
-html.bc-chat-lite .media-viewer-actions{gap:4px!important}
-html.bc-chat-lite .media-viewer-actions button{
- min-height:34px!important;padding:7px!important;font-size:9px!important
+html.bc-chat-lite .media-viewer-actions button:not(:last-child){display:none!important}
+html.bc-chat-lite .media-viewer-actions button:last-child{
+ min-height:36px!important;padding:9px 12px!important;
+ font-size:10px!important;border-radius:11px!important
 }
-html.bc-chat-lite .media-viewer-actions button:nth-child(-n+3){display:none!important}
-html.bc-chat-lite .media-custom-range{display:none!important}
-html.bc-chat-lite .media-viewer-tools{
- flex:0 0 auto!important;max-height:94px!important;overflow:auto!important;
- padding:7px 9px!important;gap:5px!important
-}
-html.bc-chat-lite .media-viewer-tools input{font-size:16px!important}
-html.bc-chat-lite .media-viewer-tools select{font-size:12px!important}
-html.bc-chat-lite .media-viewer-status{
- flex:0 0 auto!important;min-height:0!important;
- font-size:9px!important;padding:4px 9px!important
-}
+html.bc-chat-lite .media-custom-range,
+html.bc-chat-lite .media-viewer-tools,
+html.bc-chat-lite .media-viewer-status,
+html.bc-chat-lite .media-library-head,
+html.bc-chat-lite .media-history{display:none!important}
 html.bc-chat-lite .media-viewer-stage{
- position:relative!important;flex:0 0 auto!important;
+ position:relative!important;
+ flex:0 0 auto!important;min-height:0!important;
  width:100%!important;height:auto!important;
- min-height:0!important;max-height:42dvh!important;
- aspect-ratio:16 / 9!important;
+ aspect-ratio:16/9!important;max-height:42dvh!important;
  background:#000!important;overflow:hidden!important
 }
 html.bc-chat-lite .media-viewer-stage .media-stage-inner{
  position:absolute!important;inset:0!important;
- width:100%!important;height:100%!important;
- display:flex!important;align-items:center!important;justify-content:center!important
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ width:100%!important;height:100%!important
 }
 html.bc-chat-lite .media-viewer-stage :is(img,video){
  width:100%!important;height:100%!important;max-height:100%!important;
- object-fit:contain!important;object-position:center!important;background:#000!important
+ object-fit:contain!important;background:#000!important
 }
 html.bc-chat-lite .media-viewer-meta{
- flex:0 0 auto!important;min-height:35px!important;
- padding:6px 9px!important;gap:6px!important
+ flex:0 0 auto!important;min-height:35px!important;padding:7px 10px!important
 }
-html.bc-chat-lite .media-full-link{font-size:9px!important;padding:7px!important}
 html.bc-chat-lite .media-library{
  display:flex!important;flex-direction:column!important;
- flex:1 1 0!important;min-height:0!important;max-height:none!important;
- overflow:hidden!important
+ flex:1 1 0!important;min-height:0!important;
+ max-height:none!important;overflow:hidden!important
 }
-html.bc-chat-lite .media-library-head{flex:0 0 auto!important;padding:7px 9px!important}
-html.bc-chat-lite .media-history{flex:0 0 auto!important}
 html.bc-chat-lite .media-library-list{
  flex:1 1 0!important;min-height:0!important;
  overflow-y:auto!important;-webkit-overflow-scrolling:touch;
  padding:7px!important;
- grid-template-columns:repeat(auto-fill,minmax(78px,1fr))!important
+ grid-template-columns:repeat(auto-fill,minmax(79px,1fr))!important
 }
+html.bc-chat-lite .media-library-item{height:88px!important}
+html.bc-chat-lite .media-library-item img{height:68px!important;object-fit:contain!important}
 html.bc-chat-lite .bc-media-load-more{
- flex:0 0 auto!important;width:calc(100% - 16px)!important;
- margin:7px 8px!important;min-height:43px!important;
- font-size:10px!important;border-radius:11px!important
+ flex:0 0 auto!important;margin:7px 9px!important;
+ min-height:42px!important;border-radius:10px!important;
+ font-size:10px!important
 }
 html.bc-chat-lite .bc-media-load-more[hidden]{display:none!important}
-html.bc-chat-lite .media-library-item{height:87px!important}
-html.bc-chat-lite .media-library-item img{height:68px!important;object-fit:contain!important}
-html.bc-chat-lite.bc-media-focus .media-viewer-tools,
-html.bc-chat-lite.bc-media-focus .media-viewer-status,
-html.bc-chat-lite.bc-media-focus .media-library{display:none!important}
-html.bc-chat-lite.bc-media-focus .media-viewer-stage{
- flex:1 1 0!important;max-height:none!important;height:100%!important;aspect-ratio:auto!important
-}
-html.bc-chat-lite .message-media .bubble{
- cursor:pointer!important;padding:10px 13px!important;border-radius:17px!important
-}
-html.bc-chat-lite .message-media .bubble strong{font-size:9px!important}
-html.bc-chat-lite .bc-media-on-large-screen{display:none!important}
-html.bc-chat-lite .media-dialog-backdrop.bc-mobile-media-flip .media-dialog{
- animation:bcMobileCardFlip .22s ease-in both;transform-origin:center
-}
-@keyframes bcMobileCardFlip{
- from{transform:rotateY(0deg);opacity:1}
- to{transform:rotateY(85deg);opacity:.2}
-}
-@media(max-height:640px){
- html.bc-chat-lite .media-viewer-tools{max-height:63px!important}
- html.bc-chat-lite .media-viewer-stage{max-height:34dvh!important}
+@media(max-height:600px){
+ html.bc-chat-lite .media-viewer-stage{max-height:33dvh!important}
+ html.bc-chat-lite .message-media .bubble>span{font-size:9px!important}
 }
 @media(prefers-reduced-motion:reduce){
- html.bc-chat-lite .media-dialog-backdrop.bc-mobile-media-flip .media-dialog{animation:none!important}
+ html.bc-chat-lite .bc-inline-upload-fill{transition:none!important}
 }
