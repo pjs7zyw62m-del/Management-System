@@ -1,7 +1,9 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-employee4';
 
+const recoveryHint=new URLSearchParams(location.hash.replace(/^#/,'' )).get('type')==='recovery';
 const client=corporateClient();
 const $=id=>document.getElementById(id);
+let recoveryFlow=recoveryHint;
 let verified=false, lastActivity=Date.now(),lastTouch=0,logoutRunning=false;
 const IDLE_MS=60*60*1000;
 function showPanel(id){
@@ -49,7 +51,7 @@ async function load(reveal=false){
    showError('loginError','This account is not authorized for Employee Access.');
    return;
   }
-  if(!member.password_activated_at){
+  if(!member.password_activated_at||recoveryFlow){
    verified=false;showPanel('employeeActivation');
    return;
   }
@@ -74,6 +76,40 @@ async function load(reveal=false){
   showError('loginError','Could not check your employee login. Check your connection.');
  }
 }
+
+$('recoverAccessButton').addEventListener('click',async()=>{
+ const address=$('email').value.trim().toLowerCase();
+ clearError('recoveryFeedback');
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address)){
+   showError('recoveryFeedback','Enter your invited email address above first.');
+   return;
+ }
+ const button=$('recoverAccessButton');
+ button.disabled=true;button.textContent='SENDING SECURE LINK…';
+ try{
+   const {error}=await client.auth.resetPasswordForEmail(address,{
+     redirectTo:'https://blackcellcorp.com/employee.html'
+   });
+   if(error){
+     showError('recoveryFeedback','Could not request the email: '+error.message);
+     return;
+   }
+   showError('recoveryFeedback','If this email has a Blackcell account, a secure link has been requested. Check that inbox and follow its link to create your password. No new account was created.');
+ }catch(err){
+   showError('recoveryFeedback','Could not request the link: '+String(err?.message||'Network unavailable.'));
+ }finally{
+   button.disabled=false;
+   button.textContent='RESUME ACTIVATION / RESET PASSWORD';
+ }
+});
+client.auth.onAuthStateChange((event)=>{
+ if(event==='PASSWORD_RECOVERY'){
+   recoveryFlow=true;
+   // Do not make additional Auth requests within the synchronous Auth event.
+   setTimeout(()=>{void load(true)},0);
+ }
+});
+
 $('signin').addEventListener('submit',async e=>{
  e.preventDefault();
  const btn=$('signinButton');
@@ -104,6 +140,7 @@ $('activateButton').addEventListener('click',async()=>{
    return;
   }
   $('activationPassword').value='';$('confirmPassword').value='';
+  recoveryFlow=false;
   await load(true);
  }catch(_){showError('activationError','Activation unavailable. Check your connection.')}
  finally{btn.disabled=false;btn.textContent='ACTIVATE & REVEAL MY EMPLOYEE CARD'}
