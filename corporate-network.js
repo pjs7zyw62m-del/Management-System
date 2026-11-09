@@ -1,5 +1,5 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-staff1';
-import {setupBlackcellPhotos} from './corporate-network-photos.js?v=20261109-photos3';
+import {setupBlackcellPhotos} from './corporate-network-photos.js?v=20261109-military2';
 const client=corporateClient(),bucket=client.storage.from('corp-social-media');
 const $=id=>document.getElementById(id);
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -85,7 +85,7 @@ async function loadAll({show=true}={}){
  const [pr,po,as,fo]=await Promise.all([
   client.from('corp_social_profiles').select('*').order('display_name',{ascending:true}).limit(500),
   client.from('corp_social_posts').select('*').order('created_at',{ascending:false}).limit(120),
-  client.from('corp_social_assets').select('*').order('created_at',{ascending:false}).limit(300),
+  client.from('corp_social_assets').select('*').order('created_at',{ascending:false}).limit(1000),
   client.from('corp_social_follows').select('follower_id,following_id').limit(2000)
  ]);
  for(const r of [pr,po,as,fo])if(r.error)throw Error('Network data could not be read: '+r.error.message);
