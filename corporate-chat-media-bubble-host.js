@@ -16,7 +16,9 @@
     tabs.className='bc-media-bubble-tabs';
     tabs.setAttribute('role','tablist');
     tabs.setAttribute('aria-label','Switch between media bubbles');
-    root.append(tabs);
+    const track=document.createElement('div');
+    track.className='bc-media-bubble-track';
+    root.append(tabs,track);
     const panes=new Map();
     function updateBubbleTabs(){
       tabs.replaceChildren();
@@ -32,7 +34,7 @@
         button.setAttribute('aria-controls',entry.card.id);
         button.addEventListener('click',()=>{
           const x=entry.card.offsetLeft;
-          root.scrollTo({left:x,behavior:'smooth'});
+          track.scrollTo({left:x,behavior:'smooth'});
           for(const tab of tabs.querySelectorAll('button')){
             const selected=tab.dataset.panel===type;
             tab.classList.toggle('selected',selected);
@@ -47,7 +49,7 @@
       if(panes.size!==2)return;
       let nearest=null,distance=Infinity;
       for(const [type,entry] of panes){
-        const next=Math.abs(root.scrollLeft-entry.card.offsetLeft);
+        const next=Math.abs(track.scrollLeft-entry.card.offsetLeft);
         if(next<distance){nearest=type;distance=next}
       }
       for(const tab of tabs.querySelectorAll('button')){
@@ -56,7 +58,7 @@
         tab.setAttribute('aria-selected',String(selected));
       }
     }
-    root.addEventListener('scroll',updateSelectedTab,{passive:true});
+    track.addEventListener('scroll',updateSelectedTab,{passive:true});
     function safePeer(value){
       return typeof value==='string'&&UUID.test(value)?value:null;
     }
@@ -134,7 +136,7 @@
       // No session tokens or sensitive data are put into the URL.
       frame.src=url.href;
       card.append(head,frame);
-      root.append(card);
+      track.append(card);
       panes.set(type,{card,iframe:frame,peerId,batchId:batch||null,pick});
       sync();
       if(type==='share'&&pick)card.dataset.pick=pick;
@@ -142,7 +144,7 @@
       // card below the pinned messenger, with accessible Share/Library tabs.
       if(window.matchMedia('(max-width:699px) and (orientation:portrait)').matches){
         requestAnimationFrame(()=>{
-          root.scrollTo({left:card.offsetLeft,behavior:'smooth'});
+          track.scrollTo({left:card.offsetLeft,behavior:'smooth'});
           updateSelectedTab();
         });
       }
