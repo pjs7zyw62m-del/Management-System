@@ -193,7 +193,7 @@ async function displayCorporateAccounts(container){
       const right=member.role==='owner'?'LEVEL 7 · OWNER':
         (member.active?(member.activated?'ACTIVE':'INVITED'):'DISABLED');
       container.append(row(member.display_name||'Employee',
-        (member.email||'')+' · Level '+member.clearance_level,right));
+        (member.email||'')+' · '+(member.username||'No username')+' · Level '+member.clearance_level,right));
     }
   }catch(_){if(container.isConnected)container.append(p('Unable to load accounts.'))}
 }
