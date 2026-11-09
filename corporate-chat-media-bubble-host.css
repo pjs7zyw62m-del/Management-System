@@ -1,0 +1,134 @@
+/* BLACKCELL / two independently floating Apple Glass media bubbles.
+   The messenger stays in its own pane; media controls render in sibling frames. */
+.bc-media-bubble-host{
+ position:fixed;z-index:200003;top:92px;bottom:85px;
+ right:calc(475px + 33px);width:min(860px,calc(100vw - 528px));
+ display:grid;grid-template-columns:repeat(var(--bc-media-panels,1),minmax(0,1fr));
+ gap:12px;min-height:0;pointer-events:none;align-items:stretch;
+}
+.bc-media-bubble-host[hidden]{display:none!important}
+.bc-media-bubble-card{
+ position:relative;display:flex;flex-direction:column;min-width:0;min-height:0;
+ overflow:hidden;pointer-events:auto;
+ border:1px solid #855e75;border-radius:23px;
+ background:linear-gradient(145deg,#211824e8,#0d0c13ee);
+ box-shadow:0 23px 85px #000c,0 0 0 1px #ffffff0a,inset 0 1px 0 #ffffff24;
+ backdrop-filter:blur(25px);
+ animation:bcBubbleArrive .38s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes bcBubbleArrive{from{opacity:0;transform:translateX(20px) scale(.978)}to{opacity:1;transform:translateX(0) scale(1)}}
+.bc-media-bubble-highlight{animation:bcBubbleFocus .32s ease}
+@keyframes bcBubbleFocus{0%{border-color:#dc9db6;box-shadow:0 0 0 6px #ca688b22}100%{border-color:#855e75;box-shadow:0 23px 85px #000c}}
+.bc-media-bubble-heading{
+ flex:0 0 auto;min-height:67px;display:flex;align-items:center;
+ justify-content:space-between;gap:10px;padding:10px 13px;
+ background:linear-gradient(110deg,#332333,#16121d);border-bottom:1px solid #765269;
+}
+.bc-media-bubble-name{display:flex;gap:11px;align-items:center;min-width:0}
+.bc-media-bubble-icon{flex:none;display:grid;place-items:center;width:39px;height:39px;
+ background:linear-gradient(145deg,#523348,#241825);border:1px solid #9e6b84;
+ border-radius:15px;color:#f5dee9;font-size:23px;
+ box-shadow:inset 0 1px 0 #ffffff24}
+.bc-media-bubble-name>span:last-child{display:block;min-width:0}
+.bc-media-bubble-name strong{font-size:10px;letter-spacing:.14em;font-weight:760;color:#eee3ee;display:block;white-space:nowrap}
+.bc-media-bubble-name small{display:block;font-size:8px;letter-spacing:.09em;color:#b8a5b4;margin-top:6px;white-space:nowrap}
+.bc-media-bubble-heading-actions button{width:32px;height:32px;display:grid;place-items:center;
+ border:1px solid #76536b;border-radius:50%;background:#301b2b;color:#efacc2;
+ font-size:13px;cursor:pointer}
+.bc-media-bubble-heading-actions button:hover{background:#66354e;color:#fff;border-color:#d88bac}
+.bc-media-bubble-iframe{border:0;width:100%;flex:1;min-height:0;background:#0b0b10;display:block}
+.bc-bubble-host-standalone{right:16px;top:82px;bottom:16px;width:min(49vw,840px)}
+body.bc-has-media-bubbles:has(.bc-bubble-host-standalone)>.chat{
+ margin-right:min(49vw,840px);transition:margin-right .4s ease;
+}
+@media(max-width:1250px) and (min-width:901px){
+ .bc-media-bubble-host[data-count="2"]{grid-template-columns:1fr;grid-template-rows:repeat(2,minmax(0,1fr))}
+ .bc-media-bubble-card .bc-media-bubble-heading{min-height:53px;padding:7px 11px}
+ .bc-media-bubble-card .bc-media-bubble-icon{height:31px;width:31px;font-size:18px;border-radius:11px}
+ .bc-media-bubble-card .bc-media-bubble-name small{font-size:7px;margin-top:3px}
+}
+@media(max-width:900px) and (min-width:661px){
+ .bc-media-bubble-host{right:calc(475px + 24px);width:calc(100vw - 506px);top:74px;bottom:75px}
+ .bc-media-bubble-host[data-count="2"]{grid-template-columns:1fr;grid-template-rows:repeat(2,minmax(0,1fr))}
+ .bc-media-bubble-heading{min-height:56px;padding:9px}
+ .bc-media-bubble-name{gap:6px}
+ .bc-media-bubble-icon{width:32px;height:32px;font-size:18px;border-radius:11px}
+ .bc-media-bubble-name strong{font-size:9px}
+ .bc-media-bubble-name small{font-size:7px}
+ .bc-bubble-host-standalone{right:10px;top:74px;bottom:10px;width:50vw}
+ body.bc-has-media-bubbles:has(.bc-bubble-host-standalone)>.chat{margin-right:50vw}
+}
+@media(max-width:660px){
+ .bc-media-bubble-host,.bc-bubble-host-standalone{
+  top:6px;bottom:calc(46dvh + 10px);left:6px;right:6px;width:auto;max-width:none;
+  grid-template-columns:repeat(var(--bc-media-panels,1),minmax(0,1fr));gap:5px;
+ }
+ .bc-media-bubble-host[data-count="2"]{grid-template-columns:1fr;grid-template-rows:repeat(2,minmax(0,1fr))}
+ .bc-media-bubble-card{border-radius:14px}
+ .bc-media-bubble-heading{min-height:41px;padding:5px 8px}
+ .bc-media-bubble-icon{width:28px;height:28px;border-radius:10px;font-size:18px}
+ .bc-media-bubble-name{gap:7px}
+ .bc-media-bubble-name strong{font-size:9px}
+ .bc-media-bubble-name small{display:none}
+ .bc-media-bubble-heading-actions button{width:29px;height:29px}
+ body.bc-has-media-bubbles .bc-chat-pane.bc-chat-split{
+  position:fixed!important;top:auto!important;bottom:62px!important;
+  left:6px!important;right:6px!important;
+  width:calc(100vw - 12px)!important;height:calc(46dvh - 62px)!important;
+  min-height:120px!important;
+ }
+ body.bc-has-media-bubbles:has(.bc-bubble-host-standalone){
+  overflow:hidden;
+ }
+ body.bc-has-media-bubbles:has(.bc-bubble-host-standalone)>.chat{
+  margin:0!important;position:fixed!important;left:6px;right:6px;bottom:6px;
+  top:calc(54dvh + 4px);height:auto!important;width:auto!important;
+  flex:0 0 auto;border:1px solid #5d495a;border-radius:13px;overflow:hidden;
+ }
+ body.bc-has-media-bubbles:has(.bc-bubble-host-standalone)>.chat-header{display:none}
+}
+/* Media-only iframe: render a full-sized upload bubble OR gallery bubble.
+   No messenger content is obscured because it lives in the sibling frame. */
+html.bc-media-panel,html.bc-media-panel body{height:100%;min-height:0;overflow:hidden;background:#08090e}
+.bc-media-panel .chat-header,.bc-media-panel #systemStatus,.bc-media-panel .sidebar,
+.bc-media-panel .chat-main{display:none!important}
+.bc-media-panel .chat{position:fixed;inset:0;min-height:0;height:100%;display:block!important;margin:0!important;overflow:hidden}
+.bc-media-panel .media-viewer{position:absolute!important;inset:0!important;
+ display:flex!important;width:100%!important;height:100%!important;max-width:none!important;
+ transform:none!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;
+ border:0!important;border-radius:0!important;box-shadow:none!important;
+ background:linear-gradient(150deg,#1b1620,#08090e)!important;
+}
+.bc-media-panel .media-viewer-head{padding:10px 12px}
+.bc-media-panel .media-viewer-brand strong{font-size:10px}
+.bc-media-panel .media-dialog-backdrop{position:fixed;inset:0;z-index:20;
+ background:transparent;backdrop-filter:none;padding:0;border-radius:0;overflow:hidden}
+.bc-media-panel .media-dialog{width:100%;height:100%;max-height:100%;max-width:none;
+ border:0;border-radius:0;background:linear-gradient(150deg,#1c1721,#0b0b10);
+ box-shadow:none}
+.bc-media-panel .media-dialog-head{padding:12px 14px}
+.bc-media-panel .media-dialog-head strong{font-size:10px}
+.bc-media-panel .media-dialog-head small{font-size:9px}
+.bc-media-panel .media-dialog-body{padding:11px}
+.bc-media-panel .media-dialog-footer{padding:11px;flex-wrap:wrap}
+.bc-media-panel .media-dialog-footer button{flex:1 1 115px;font-size:10px;white-space:normal;padding:11px 8px}
+.bc-media-panel.bc-media-share .media-viewer{display:none!important}
+.bc-media-panel.bc-media-library .media-dialog-backdrop{display:none!important}
+.bc-media-panel .media-viewer-stage{min-height:70px}
+.bc-media-panel .media-library{min-height:85px}
+.bc-media-panel .media-viewer-actions button{font-size:9px}
+@media(max-width:660px){
+ .bc-media-panel .media-viewer-head{padding:8px}
+ .bc-media-panel .media-viewer-brand small{display:none}
+ .bc-media-panel .media-viewer-actions{gap:3px}
+ .bc-media-panel .media-viewer-actions button{font-size:8px;padding:6px}
+ .bc-media-panel .media-viewer-tools{padding:5px;gap:4px}
+ .bc-media-panel .media-viewer-status{font-size:9px;padding:3px 7px}
+ .bc-media-panel .media-dialog-head{padding:8px}
+ .bc-media-panel .media-dialog-body{padding:7px}
+ .bc-media-panel .media-dialog-selection{min-height:40px;padding:8px;margin-bottom:6px;font-size:10px}
+ .bc-media-panel .media-dialog-footer{padding:7px}
+}
+@media(prefers-reduced-motion:reduce){
+ .bc-media-bubble-card,.bc-media-bubble-highlight{animation:none}
+}
