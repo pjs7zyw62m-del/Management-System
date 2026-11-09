@@ -31,6 +31,23 @@ function chat(){
   frame.style.cssText='width:100%;height:min(67vh,690px);border:1px solid #4a3a47;border-radius:16px;background:#030305;display:block;margin-top:14px';
   content.append(frame);
 }
+// Generate staff credentials locally with browser CSPRNG. Never persist plain-text codes.
+function corporateRandomDigits(n){
+ const out=[];const bytes=new Uint8Array(Math.max(16,n*2));
+ while(out.length<n){
+  crypto.getRandomValues(bytes);
+  for(const b of bytes){
+   if(b<250)out.push(String(b%10));
+   if(out.length===n)break;
+  }
+ }
+ return out.join('');
+}
+function corporateUsername(name){
+ const cleaned=String(name||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'')
+  .toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+ return ('bc_'+(cleaned||'employee').slice(0,17)+'_'+corporateRandomDigits(5)).slice(0,32);
+}
 function users(){
   if(activeTab==='accounts'){
     const section=block('Register New Employee');
@@ -46,6 +63,46 @@ function users(){
     const name=field('EMPLOYEE NAME','text','Full name');
     name.minLength=2;name.maxLength=80;
     const email=field('EMPLOYEE EMAIL','email','name@example.com');
+
+    const uniqueUser=field('GENERATED USERNAME','text','bc_employee_12345');
+    uniqueUser.pattern='[a-z][a-z0-9_]{5,31}';
+    uniqueUser.maxLength=32;uniqueUser.autocapitalize='off';uniqueUser.spellcheck=false;
+    const usernameButton=action('GENERATE USERNAME',()=>{
+      uniqueUser.value=corporateUsername(name.value);
+    },false);
+    usernameButton.type='button';usernameButton.style.cssText='min-height:44px';
+    form.append(usernameButton);
+
+    function codeGenerator(label,count){
+      const wrap=el('div');
+      wrap.style.cssText='display:flex;flex-direction:column;gap:8px';
+      const caption=el('label','',label);
+      caption.style.cssText='font-size:10px;letter-spacing:.12em;color:#bcb2bf';
+      const input=el('input');
+      input.type='password';input.readOnly=true;input.required=true;
+      input.autocomplete='off';input.inputMode='numeric';
+      input.maxLength=count;input.minLength=count;
+      input.placeholder=count+' random digits';input.style.width='100%';
+      const buttons=el('div');buttons.style.cssText='display:flex;gap:6px';
+      const gen=action('GENERATE',()=>{input.value=corporateRandomDigits(count);},false);
+      gen.type='button';
+      const reveal=action('REVEAL',()=>{
+        input.type=input.type==='password'?'text':'password';
+        reveal.textContent=input.type==='text'?'HIDE':'REVEAL';
+      },false);
+      reveal.type='button';
+      const copy=action('COPY',()=>{
+        if(input.value)navigator.clipboard?.writeText(input.value).then(()=>{
+          copy.textContent='COPIED ✓';
+        }).catch(()=>{copy.textContent='SELECT TO COPY';input.type='text';input.select();});
+      },false);
+      copy.type='button';
+      buttons.append(gen,reveal,copy);
+      wrap.append(caption,input,buttons);form.append(wrap);
+      return input;
+    }
+    const accessCode=codeGenerator('ACCESS CODE · 4 DIGITS',4);
+    const securityCode=codeGenerator('SECURITY CODE · 12 DIGITS',12);
     const levelLabel=el('label');levelLabel.style.cssText='display:flex;flex-direction:column;gap:7px;font-size:10px;letter-spacing:.12em;color:#bab0bc';
     levelLabel.append(el('span','','CLEARANCE'));
     const level=el('select');for(let i=1;i<=6;i++)level.add(new Option('Level '+i,i));
@@ -56,21 +113,51 @@ function users(){
     const feedback=el('p','muted','');
     feedback.setAttribute('role','status');
     form.addEventListener('submit',async e=>{
-      e.preventDefault();if(!name.value.trim()||!email.value.trim())return;
+      e.preventDefault();
+      if(!name.value.trim()||!email.value.trim())return;
+      if(!/^[a-z][a-z0-9_]{5,31}$/.test(uniqueUser.value)){
+        feedback.textContent='Generate a valid unique employee username first.';return;
+      }
+      if(!/^[0-9]{4}$/.test(accessCode.value)||!/^[0-9]{12}$/.test(securityCode.value)){
+        feedback.textContent='Generate both codes: 4 digits for Access Code and 12 for Security Code.';return;
+      }
       const api=window.BLACKCELL_CORPORATE_ADMIN_API?.client;
       if(!api){feedback.textContent='Corporate administrator authentication is unavailable.';return}
       submit.disabled=true;submit.textContent='SENDING INVITATION…';
       feedback.textContent='Requesting a secure employee invitation…';
       try{
         const {data,error}=await api.functions.invoke('blackcell-invite-employee',{
-          body:{email:email.value.trim(),display_name:name.value.trim(),clearance_level:Number(level.value)}
+          body:{email:email.value.trim(),display_name:name.value.trim(),clearance_level:Number(level.value),
+            username:uniqueUser.value,access_code:accessCode.value,security_code:securityCode.value}
         });
         if(error||data?.ok!==true){
           feedback.textContent=data?.detail||('Invitation not sent: '+(data?.reason||error?.message||'service unavailable'));
           return;
         }
-        feedback.textContent='Invitation requested for '+name.value.trim()+'. The activation email links to the employee card and chat.';
-        form.reset();
+        feedback.textContent='Invitation created. The email activates the employee account, not the codes. Share these generated codes separately through a trusted channel; they cannot be retrieved later.';
+        const receipt=el('div','content-block');
+        receipt.style.cssText='border:1px solid #648774;border-radius:14px;padding:16px;margin-top:15px';
+        receipt.append(el('h3','','EMPLOYEE CREDENTIALS · COPY ONCE'));
+        const textReceipt='Blackcell Employee: '+name.value.trim()+
+          '\\nUsername: '+uniqueUser.value+'\\nAccess Code (4 digits): '+accessCode.value+
+          '\\nSecurity Code (12 digits): '+securityCode.value+
+          '\\nEmployee activation: https://blackcellcorp.com/employee.html';
+        const pre=el('pre','',textReceipt);
+        pre.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px';
+        const copyReceipt=action('COPY CREDENTIALS',()=>{
+          navigator.clipboard?.writeText(textReceipt).then(()=>{
+            copyReceipt.textContent='COPIED ✓';
+          }).catch(()=>{pre.tabIndex=0;pre.focus();});
+        },false);
+        copyReceipt.type='button';
+        const dismiss=action('HIDE CREDENTIALS',()=>{
+          receipt.remove();
+          accessCode.value='';securityCode.value='';uniqueUser.value='';
+        },false);
+        dismiss.type='button';
+        receipt.append(pre,copyReceipt,dismiss);
+        feedback.after(receipt);
+        name.value='';email.value='';accessCode.value='';securityCode.value='';uniqueUser.value='';
         void displayCorporateAccounts(list);
       }catch(err){feedback.textContent='Invitation not sent. Check the network and email service.'}
       finally{submit.disabled=false;submit.textContent='SEND EMPLOYEE INVITATION';}
