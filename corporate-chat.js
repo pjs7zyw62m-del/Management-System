@@ -2,7 +2,11 @@ import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-staf
 import {setupCorporateMedia} from './corporate-chat-media.js?v=20261109-media1';
 const client=corporateClient(),$=id=>document.getElementById(id);
 const embedParams=new URLSearchParams(location.search);
+const mediaPanelMode=['share','library'].includes(embedParams.get('mediaPanel'))?embedParams.get('mediaPanel'):null;
 if(embedParams.get('embed')==='1')document.documentElement.classList.add('bc-embedded');
+if(mediaPanelMode)document.documentElement.classList.add('bc-media-panel','bc-media-'+mediaPanelMode);
+if(!mediaPanelMode&&window.parent===window&&window.BlackcellMediaBubbleHost)
+ window.BlackcellMediaBubbleHostController=window.BlackcellMediaBubbleHost({mode:'standalone'});
 let self=null,peer=null,contacts=[],isLoading=false,firstLoad=true,ready=false;
 let employeeSession=false,sessionEnded=false,lastActivity=Date.now(),lastTouch=Date.now();
 const IDLE_LIMIT_MS=60*60*1000;
@@ -83,6 +87,13 @@ async function boot(){
    if(contacts.length){
      const requested=embedParams.get('peer');
      choose(contacts.some(x=>x.user_id===requested)?requested:contacts[0].user_id);
+     if(mediaPanelMode==='share')sharedMedia.openShare();
+     else if(mediaPanelMode==='library'){
+       const batch=embedParams.get('batch');
+       if(batch&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(batch))
+        void sharedMedia.openBatch(batch);
+       else void sharedMedia.openLibrary();
+     }
    }
    else $('messages').replaceChildren(text('p','empty',m.role==='owner'?'No employees yet. Invite your first employee from User Management → Accounts.':'Your administrator is not available for chat.'));
  }catch(_){status('Could not connect to secure chat. Check your connection.')}
