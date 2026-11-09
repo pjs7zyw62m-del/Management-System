@@ -1,0 +1,260 @@
+/* BLACKCELL / UNIVERSAL RESPONSIVE SYSTEM
+   Device layout only. Retains approved Ultra-Dark Apple Glass visual design.
+   iPhone <=767px | iPad 768–1180px | computer >=1181px
+   No authentication, data, or media behavior is changed. */
+
+/* All devices — accessible, fluid, safe margins */
+html{scroll-padding-top:calc(18px + env(safe-area-inset-top,0px));-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body.bc-network,body.bc-employee,body[data-page="admin-preview"]{overflow-x:clip}
+body.bc-network :is(img,video,canvas,svg),body.bc-employee :is(img,video,canvas,svg),
+body[data-page="admin-preview"] :is(img,video,canvas,svg){max-width:100%}
+body.bc-network :is(.app,.workspace,.view,.post,.profile-hero,.composer,.panel,.photos-gallery-tools),
+body[data-page="admin-preview"] :is(.dashboard-page,.admin-dashboard,.admin-hero,.admin-modal,.admin-card,.division),
+body.bc-employee :is(main,.panel,.access-card,.card-interior){min-width:0}
+body.bc-network button:focus-visible,body.bc-network a:focus-visible,
+body.bc-employee button:focus-visible,body.bc-employee a:focus-visible,
+body[data-page="admin-preview"] button:focus-visible,
+body[data-page="admin-preview"] a:focus-visible{outline:2px solid #dba3ba;outline-offset:3px}
+body.bc-network :is(button,a,input,textarea,select),
+body.bc-employee :is(button,a,input,textarea,select),
+body[data-page="admin-preview"] :is(button,a,input,textarea,select){
+ -webkit-tap-highlight-color:rgba(210,136,166,.12)
+}
+body.bc-network :is(.profile-cover img,.apple-photo-stage-inner img,.apple-photo-stage-inner video),
+body.bc-employee .access-card img{object-fit:contain}
+/* Keep photos and videos visible in their original aspect ratio in the big viewer */
+body.bc-network .apple-photo-stage-inner :is(img,video){max-height:100%;max-width:100%;width:auto;height:auto;object-fit:contain}
+/* Scrollers stay interactive in Safari; the visual scrollbars can remain hidden. */
+body.bc-network :is(.mainnav,.tabs,.apple-photo-filmstrip,.apple-segmented,.modal-body),
+body[data-page="admin-preview"] :is(.modal-tabbar,.admin-modal,.drawer){
+ -webkit-overflow-scrolling:touch;overscroll-behavior:contain
+}
+
+/* Computer: restore balanced editorial spacing and multi-column dashboards */
+@media(min-width:1181px){
+ body[data-page="admin-preview"] .admin-dashboard.dashboard-page{width:min(1510px,100%);max-width:1510px;padding-inline:clamp(24px,3vw,52px)}
+ body[data-page="admin-preview"] .admin-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+ body[data-page="admin-preview"] .metrics{grid-template-columns:repeat(4,minmax(0,1fr))}
+ body[data-page="admin-preview"] .admin-modal{width:min(970px,calc(100vw - 100px))}
+ body.bc-network .app{width:min(1600px,100%);max-width:1600px;grid-template-columns:minmax(200px,245px) minmax(0,1fr) minmax(205px,255px)}
+ body.bc-network .workspace{min-width:0}
+ body.bc-network .apple-photo-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
+ body.bc-network .apple-album-strip{grid-template-columns:repeat(auto-fill,minmax(166px,1fr))}
+}
+
+/* iPad landscape and portrait: two-column dashboards, one comfortable network stream */
+@media(min-width:768px) and (max-width:1180px){
+ body[data-page="admin-preview"] .admin-dashboard.dashboard-page{max-width:1100px;padding:30px clamp(18px,3vw,35px) 70px}
+ body[data-page="admin-preview"] .admin-hero{min-height:280px}
+ body[data-page="admin-preview"] .admin-hero h1{font-size:clamp(46px,6vw,69px)}
+ body[data-page="admin-preview"] .admin-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+ body[data-page="admin-preview"] .metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body[data-page="admin-preview"] .admin-card{min-height:150px}
+ body[data-page="admin-preview"] .admin-modal{width:min(880px,calc(100vw - 40px));max-height:calc(100dvh - 40px);overflow-y:auto}
+ body[data-page="admin-preview"] .division-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body.bc-network .masthead{height:auto;min-height:78px;flex-wrap:wrap;gap:10px;padding:14px 22px}
+ body.bc-network .mainnav{order:3;width:100%;height:47px;justify-content:flex-start;gap:22px;overflow-x:auto}
+ body.bc-network .mainnav button{min-height:42px}
+ body.bc-network .head-actions{margin-left:auto}
+ body.bc-network .app{display:grid;grid-template-columns:minmax(178px,220px) minmax(0,1fr);padding:22px;gap:16px}
+ body.bc-network .right-rail{display:none}
+ body.bc-network .left-rail{display:flex;position:sticky;top:148px}
+ body.bc-network .left-rail .nav-panel{display:block}
+ body.bc-network .rail-note{display:block}
+ body.bc-network .apple-photo-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+ body.bc-network .apple-album-strip{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
+ body.bc-network .profile-identity-main{min-width:0}
+ body.bc-employee main{padding:clamp(24px,5vh,60px)}
+ body.bc-employee .panel{width:min(550px,100%);padding:clamp(28px,4vw,45px)}
+}
+
+/* iPad portrait: focus on content, not sticky side rails */
+@media(min-width:768px) and (max-width:920px) and (orientation:portrait){
+ body.bc-network .app{grid-template-columns:minmax(0,1fr);max-width:760px;margin:0 auto}
+ body.bc-network .left-rail{position:static;display:block;margin:0 0 12px}
+ body.bc-network .left-rail .nav-panel,body.bc-network .rail-note{display:none}
+ body.bc-network .my-mini{padding:12px 17px}
+ body.bc-network .workspace{width:100%}
+ body.bc-network .apple-photo-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+
+/* iPhone: full-width content, readable modal sheets, touch navigation */
+@media(max-width:767px){
+ body.bc-network,body.bc-employee,body[data-page="admin-preview"]{width:100%;min-height:100dvh}
+ body.bc-network :is(input,textarea,select),body.bc-employee :is(input,textarea,select),
+ body[data-page="admin-preview"] :is(input,textarea,select){font-size:16px!important}
+ body.bc-network :is(.btn,.head-actions a,.file-actions button,.profile-actions button),
+ body.bc-employee :is(.primary,.outline),
+ body[data-page="admin-preview"] :is(.menu-button,.icon-button,.admin-modal button,.drawer nav button){
+  min-height:44px
+ }
+ /* Administration */
+ body[data-page="admin-preview"] .site-header{
+  min-height:70px;height:auto;padding:12px max(12px,env(safe-area-inset-right,0px))
+  12px max(12px,env(safe-area-inset-left,0px));gap:9px
+ }
+ body[data-page="admin-preview"] .site-header .brand{flex:1;min-width:0}
+ body[data-page="admin-preview"] .site-header .brand-copy{min-width:0;overflow:hidden}
+ body[data-page="admin-preview"] .site-header .brand-copy strong{
+  max-width:180px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+ }
+ body[data-page="admin-preview"] .header-end{flex:none;gap:7px}
+ body[data-page="admin-preview"] .admin-dashboard.dashboard-page{
+  padding:14px max(12px,env(safe-area-inset-right,0px)) calc(65px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));
+  width:100%;max-width:100%
+ }
+ body[data-page="admin-preview"] .admin-hero{border-radius:20px;padding:30px 19px 22px;min-height:auto}
+ body[data-page="admin-preview"] .admin-hero h1{font-size:clamp(36px,9.8vw,55px);line-height:1.02;overflow-wrap:break-word}
+ body[data-page="admin-preview"] .hero-bottom{margin-top:26px;gap:12px}
+ body[data-page="admin-preview"] .metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:13px 0 26px}
+ body[data-page="admin-preview"] .metric{min-height:106px;padding:14px 13px;border-radius:17px}
+ body[data-page="admin-preview"] .metric strong{font-size:clamp(22px,6.5vw,31px);margin:8px 0 4px}
+ body[data-page="admin-preview"] .metric .muted-label{font-size:9px;letter-spacing:.06em;overflow-wrap:anywhere}
+ body[data-page="admin-preview"] .division-grid,body[data-page="admin-preview"] .admin-grid{grid-template-columns:minmax(0,1fr);gap:11px}
+ body[data-page="admin-preview"] .division{min-height:270px!important;padding:23px!important}
+ body[data-page="admin-preview"] .admin-card{min-height:116px;padding:18px 19px;border-radius:17px;gap:8px}
+ body[data-page="admin-preview"] .admin-card strong{font-size:15px}
+ body[data-page="admin-preview"] .admin-card small{font-size:11px}
+ body[data-page="admin-preview"] .section-title{align-items:flex-start;flex-direction:column;gap:6px;margin:25px 0 13px}
+ body[data-page="admin-preview"] .admin-footer{margin-top:35px;flex-direction:column;line-height:1.6}
+ body[data-page="admin-preview"] .modal-backdrop{
+  align-items:end;padding:0!important;overscroll-behavior:contain
+ }
+ body[data-page="admin-preview"] .admin-modal{
+  width:100%!important;max-width:none!important;
+  max-height:calc(100dvh - env(safe-area-inset-top,0px) - 8px)!important;
+  border-radius:23px 23px 0 0!important;
+  padding:20px 15px calc(18px + env(safe-area-inset-bottom,0px))!important;
+  overflow-y:auto!important;overscroll-behavior:contain;
+ }
+ body[data-page="admin-preview"] .admin-modal .modal-top{
+  position:sticky;top:-20px;z-index:2;
+  background:linear-gradient(160deg,#211e25f6,#111016f8);
+  margin:-3px -3px 14px;padding:10px 3px;border-radius:12px
+ }
+ body[data-page="admin-preview"] .admin-modal .grid-two,
+ body[data-page="admin-preview"] .admin-modal .employee-profile-layout{grid-template-columns:minmax(0,1fr)}
+ body[data-page="admin-preview"] .admin-modal :is(.modal-tabbar,.actions,.search-row){max-width:100%}
+ body[data-page="admin-preview"] .admin-modal :is(.modal-tabbar,.modal-actions){overflow-x:auto}
+ body[data-page="admin-preview"] .admin-modal .list-row{align-items:flex-start;flex-wrap:wrap}
+ body[data-page="admin-preview"] .admin-modal .content-block{padding:14px}
+ body[data-page="admin-preview"] .drawer{width:min(380px,100vw);padding:calc(18px + env(safe-area-inset-top,0px)) 20px 25px}
+ /* Network */
+ body.bc-network .masthead{
+  position:sticky;top:0;z-index:100;
+  padding:calc(9px + env(safe-area-inset-top,0px)) 12px 8px;
+  min-height:72px;gap:8px;display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  grid-template-rows:auto 46px;
+ }
+ body.bc-network .brand{min-width:0;gap:9px}
+ body.bc-network .brand-mark{flex:none;width:36px;height:36px;font-size:23px;border-radius:11px}
+ body.bc-network .brand strong{font-size:9px;letter-spacing:.07em;white-space:normal}
+ body.bc-network .brand small{font-size:8px;letter-spacing:.08em;margin-top:3px}
+ body.bc-network .head-actions{min-width:0;justify-content:flex-end;gap:6px}
+ body.bc-network .head-actions a{padding:9px;font-size:9px;min-height:39px;display:inline-flex;align-items:center}
+ body.bc-network .head-actions .nav-chat{display:none}
+ body.bc-network .mainnav{
+  order:initial;grid-column:1/-1;grid-row:2;
+  display:flex!important;width:100%;height:46px;min-width:0;
+  gap:7px;justify-content:space-between;overflow-x:auto;overflow-y:hidden;
+  scroll-snap-type:x proximity;scroll-padding-left:5px;padding:0 2px;
+ }
+ body.bc-network .mainnav button{flex:0 0 auto;min-height:42px;padding:0 10px;font-size:10px;scroll-snap-align:start}
+ body.bc-network .app{display:block!important;padding:14px 11px calc(78px + env(safe-area-inset-bottom,0px));width:100%}
+ body.bc-network .left-rail{position:static;margin-bottom:12px}
+ body.bc-network .left-rail .nav-panel,body.bc-network .rail-note{display:none}
+ body.bc-network .my-mini{padding:12px}
+ body.bc-network .workspace{display:block;width:100%;min-width:0}
+ body.bc-network .view{min-width:0}
+ body.bc-network .page-intro{display:block;margin-bottom:18px}
+ body.bc-network .page-intro h1{font-size:clamp(28px,8vw,38px)}
+ body.bc-network .live-dot{display:inline-block;margin-top:9px}
+ body.bc-network .composer{padding:14px;margin-bottom:14px;border-radius:17px}
+ body.bc-network .composer textarea{font-size:16px!important}
+ body.bc-network .composer-footer{gap:10px}
+ body.bc-network .file-actions{gap:6px}
+ body.bc-network .file-actions button{padding:10px}
+ body.bc-network .post{padding:13px;border-radius:15px}
+ body.bc-network .post-media button{height:clamp(160px,45vw,280px)}
+ body.bc-network .comment-compose{min-width:0}
+ body.bc-network .comment-compose input{min-width:0}
+ body.bc-network .comment-compose button{flex:none}
+ body.bc-network .profile-hero{border-radius:18px}
+ body.bc-network .profile-cover{height:clamp(145px,41vw,215px)}
+ body.bc-network .profile-identity{display:block;padding:0 15px 15px}
+ body.bc-network .profile-identity-main{display:flex;align-items:flex-end;gap:12px;min-width:0}
+ body.bc-network .profile-identity-main .gigantic{flex:none;width:82px;height:82px;font-size:34px;margin-top:-27px}
+ body.bc-network .identity-info{min-width:0;padding-top:13px}
+ body.bc-network .identity-info h1{font-size:clamp(22px,6vw,29px);overflow-wrap:anywhere}
+ body.bc-network .profile-actions{justify-content:flex-start;flex-wrap:wrap;margin-top:12px}
+ body.bc-network .profile-actions button{min-height:43px;white-space:normal}
+ body.bc-network .profile-stats{gap:0}
+ body.bc-network .profile-stats>div{padding:13px 5px;min-width:0}
+ body.bc-network .profile-stats strong{font-size:19px}
+ body.bc-network .profile-stats span{font-size:9px}
+ body.bc-network .profile-tabs{width:100%;max-width:100%;overflow-x:auto}
+ body.bc-network .directory-grid,body.bc-network .video-grid{grid-template-columns:minmax(0,1fr)}
+ body.bc-network .photos-header-actions{display:flex;justify-content:flex-start;gap:8px;margin-top:12px}
+ body.bc-network .photos-header-actions .btn{flex:1 1 140px;min-height:44px}
+ body.bc-network .photos-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ body.bc-network .photos-summary .panel{padding:13px 14px}
+ body.bc-network .photos-gallery-tools{flex-direction:column;align-items:stretch;gap:10px}
+ body.bc-network .apple-segmented{width:100%;max-width:100%;overflow-x:auto;scroll-snap-type:x proximity}
+ body.bc-network .apple-segmented button{min-height:40px;flex:none}
+ body.bc-network .photos-gallery-search{width:100%}
+ body.bc-network .photos-gallery-search input{flex:1;min-width:0;width:auto}
+ body.bc-network .photos-gallery-search select{max-width:115px}
+ body.bc-network .apple-photo-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:3px}
+ body.bc-network .apple-album-strip{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+ body.bc-network .modal-backdrop{padding:7px}
+ body.bc-network .modal{width:100%;max-height:calc(100dvh - 14px)}
+ body.bc-network .modal-head{padding:15px}
+ body.bc-network .modal-body{padding:14px}
+ body.bc-network .modal-footer{padding:12px;flex-wrap:wrap}
+ body.bc-network .modal-footer button{min-height:44px;flex:1}
+ body.bc-network .apple-photo-viewer{height:100dvh;inset:0;padding-top:env(safe-area-inset-top,0px)}
+ body.bc-network .apple-photo-viewer-header{padding:10px 11px;gap:8px}
+ body.bc-network .apple-photo-viewer-actions{gap:5px}
+ body.bc-network .apple-photo-viewer-actions button{padding:8px 9px;min-height:36px}
+ body.bc-network .apple-photo-viewer-stage{min-height:0}
+ body.bc-network .apple-photo-filmstrip{padding:7px 9px calc(9px + env(safe-area-inset-bottom,0px))}
+ body.bc-network .apple-photo-viewer-bar{gap:8px;padding:8px 10px}
+ body.bc-network .apple-viewer-owner-controls{width:100%}
+ body.bc-network .apple-viewer-owner-controls select{max-width:150px}
+ /* Employee */
+ body.bc-employee{grid-template-rows:auto minmax(0,1fr) auto}
+ body.bc-employee header{padding:calc(13px + env(safe-area-inset-top,0px)) 16px 13px}
+ body.bc-employee main{display:grid;place-items:center;padding:17px 12px}
+ body.bc-employee .panel{width:100%;max-width:490px;padding:clamp(20px,5vw,30px);border-radius:21px}
+ body.bc-employee .panel h1{font-size:clamp(23px,7vw,29px)}
+ body.bc-employee .panel input{font-size:16px!important;min-height:47px}
+ body.bc-employee .primary{width:100%;padding:13px}
+ body.bc-employee .outline{text-align:center}
+ body.bc-employee .card-interior{padding:17px 13px}
+ body.bc-employee .card-top{font-size:clamp(20px,6vw,27px)}
+ body.bc-employee .clearance{min-width:0}
+ body.bc-employee .clearance strong{width:40%;font-size:clamp(11px,3.6vw,16px);padding:11px 4px}
+ body.bc-employee .clearance span{min-width:0;font-size:clamp(10px,3vw,12px);padding:11px 4px;letter-spacing:.06em}
+ body.bc-employee .action-row{display:flex;flex-direction:column;align-items:stretch;gap:8px}
+ body.bc-employee .action-row :is(a,button){width:100%;text-align:center;white-space:normal}
+ body.bc-employee footer{padding:14px 14px calc(15px + env(safe-area-inset-bottom,0px))}
+}
+
+/* Very compact iPhone SE-sized displays */
+@media(max-width:390px){
+ body[data-page="admin-preview"] .admin-hero{padding:23px 16px}
+ body[data-page="admin-preview"] .admin-hero h1{font-size:35px}
+ body[data-page="admin-preview"] .admin-card{padding:15px}
+ body.bc-network .brand strong{font-size:8px}
+ body.bc-network .mainnav button{font-size:9px;padding-inline:8px}
+ body.bc-network .photos-summary strong{font-size:20px}
+ body.bc-network .apple-photo-viewer-actions button{font-size:9px}
+}
+
+/* Reduced motion preserves functional effects but removes decorative movement. */
+@media(prefers-reduced-motion:reduce){
+ body.bc-network *,body.bc-employee *,body[data-page="admin-preview"] *{
+  scroll-behavior:auto!important;transition-duration:.01ms!important
+ }
+}
