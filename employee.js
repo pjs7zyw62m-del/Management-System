@@ -126,13 +126,13 @@ $('signin').addEventListener('submit',async e=>{
  finally{btn.disabled=false;btn.textContent='SIGN IN ↗'}
 });
 
-async function sendEmployeeSecurityEmail(){
+async function sendEmployeeSecurityEmail({resend=false}={}){
  const btn=$('sendSecurityEmailButton');
  btn.disabled=true;
  btn.textContent='SENDING SECURITY EMAIL…';
  clearError('employeeStatus');
  try{
-  const {data,error}=await client.functions.invoke('blackcell-send-employee-codes',{body:{}});
+  const {data,error}=await client.functions.invoke('blackcell-send-employee-codes',{body:{resend}});
   let detail=data;
   if(error?.context&&typeof error.context.clone==='function'){
    try{detail=await error.context.clone().json()}catch(_){}
@@ -142,7 +142,9 @@ async function sendEmployeeSecurityEmail(){
    const message={
     resend_api_key_not_configured:'Your account is activated. Automatic security-code email delivery is not configured yet. Contact your administrator.',
     email_delivery_processing:'Security email processing is already underway. Check your inbox and try again shortly.',
-    email_delivery_limit_reached:'The code-email request limit has been reached. Contact your administrator.',
+    email_delivery_limit_reached:'Too many email requests. Try again in an hour or contact your administrator.',
+    resend_daily_limit:'You have reached the limit of 3 replacement emails in 24 hours. Contact your administrator if you still cannot receive your codes.',
+    resend_cooldown:'For security, wait 2 minutes between code emails. Check your inbox and Spam folder first.',
     account_not_activated:'Activate your account password before requesting security codes.',
     email_delivery_rejected:'Your account is activated, but the email provider rejected the security-code message. Contact your administrator.',
     email_sent_confirmation_pending:'Your email may have been delivered, but the confirmation is pending. Check your inbox before retrying.'
@@ -151,7 +153,9 @@ async function sendEmployeeSecurityEmail(){
    return false;
   }
   showError('employeeStatus',detail.status==='security_email_already_sent'
-    ?'Your Security Code email was already sent. Check your inbox, including Spam or Promotions.'
+    ?'Your security-code email was already sent. Check your inbox, including Spam or Promotions.'
+    :detail.status==='security_email_resent'
+    ?'A replacement Blackcell security-code email has been sent. Use only the NEW 4-digit and 12-digit codes; earlier codes have been replaced.'
     :'Your Blackcell Network Security Credentials email has been sent. Check your inbox for the 4-digit and 12-digit codes.');
   return true;
  }catch(_){
@@ -159,10 +163,10 @@ async function sendEmployeeSecurityEmail(){
   return false;
  }finally{
   btn.disabled=false;
-  btn.textContent='SEND MY SECURITY CODES';
+  btn.textContent='RESEND MY SECURITY EMAIL';
  }
 }
-$('sendSecurityEmailButton').addEventListener('click',()=>{void sendEmployeeSecurityEmail()});
+$('sendSecurityEmailButton').addEventListener('click',()=>{void sendEmployeeSecurityEmail({resend:true})});
 
 $('activateButton').addEventListener('click',async()=>{
  const pwd=$('activationPassword').value;
@@ -182,7 +186,7 @@ $('activateButton').addEventListener('click',async()=>{
   $('activationPassword').value='';$('confirmPassword').value='';
   recoveryFlow=false;
   await load(true);
-  await sendEmployeeSecurityEmail();
+  await sendEmployeeSecurityEmail({resend:false});
  }catch(_){showError('activationError','Activation unavailable. Check your connection.')}
  finally{btn.disabled=false;btn.textContent='ACTIVATE & REVEAL MY EMPLOYEE CARD'}
 });
