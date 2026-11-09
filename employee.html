@@ -53,7 +53,7 @@ html,body,*{scrollbar-width:none;-ms-overflow-style:none}
 *::-webkit-scrollbar{width:0!important;height:0!important;display:none!important}
 
 </style>
-<script src="corp-config.js" defer></script><script type="module" src="employee.js?v=20261109-activation-resume5"></script>
+<script src="corp-config.js" defer></script><script type="module" src="employee.js?v=20261109-auto-codes6"></script>
 </head><body>
 <header><strong>BLACKCELL CORPORATION</strong><span>EMPLOYEE ACCESS</span></header>
 <main>
@@ -71,7 +71,7 @@ html,body,*{scrollbar-width:none;-ms-overflow-style:none}
 <section class="panel" id="employeeActivation" hidden>
 <div class="logo">B</div><div class="eyebrow">EMPLOYEE CREDENTIAL ACTIVATION</div>
 <h1>Activate Your Account</h1>
-<p>Your corporate email invitation is verified. Create a private password to activate your employee card. Your 4-digit Access Code and 12-digit Security Code are provided separately by the administrator.</p>
+<p>Your corporate email invitation is verified. Create a private password to activate your employee card. Once your password is activated, a second Blackcell corporate email will send your 4-digit Access Code and 12-digit Security Code.</p>
 <label for="activationPassword">CREATE PASSWORD</label>
 <input id="activationPassword" type="password" autocomplete="new-password" minlength="12" placeholder="At least 12 characters">
 <label for="confirmPassword">CONFIRM PASSWORD</label>
@@ -94,7 +94,8 @@ html,body,*{scrollbar-width:none;-ms-overflow-style:none}
 <section id="employeeCodePanel" class="code-verify">
 <div class="eyebrow">BLACKCELL / SECOND FACTOR AUTHENTICATION</div>
 <h2>Verify Your Access Pass</h2>
-<p>Enter the separate codes issued to you by your administrator. These codes are never displayed on the employee card.</p>
+<p>After password activation, Blackcell sends a second corporate email with your 4-digit Access Code and 12-digit Security Code. These private codes are never displayed on the employee card.</p>
+<button id="sendSecurityEmailButton" class="outline" type="button">SEND MY SECURITY CODES</button>
 <form id="employeeCodeForm">
 <label for="employeeAccessCode">ACCESS CODE · 4 DIGITS</label>
 <input id="employeeAccessCode" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" minlength="4" autocomplete="off" required placeholder="••••">
