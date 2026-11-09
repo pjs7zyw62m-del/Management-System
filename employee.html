@@ -53,7 +53,7 @@ html,body,*{scrollbar-width:none;-ms-overflow-style:none}
 *::-webkit-scrollbar{width:0!important;height:0!important;display:none!important}
 
 </style>
-<script src="corp-config.js" defer></script><script type="module" src="employee.js?v=20261109-credentials4"></script>
+<script src="corp-config.js" defer></script><script type="module" src="employee.js?v=20261109-activation-resume5"></script>
 </head><body>
 <header><strong>BLACKCELL CORPORATION</strong><span>EMPLOYEE ACCESS</span></header>
 <main>
@@ -63,6 +63,9 @@ html,body,*{scrollbar-width:none;-ms-overflow-style:none}
 <form id="signin"><label for="email">EMPLOYEE EMAIL</label><input id="email" type="email" autocomplete="username" required>
 <label for="password">PASSWORD</label><input id="password" type="password" autocomplete="current-password" required>
 <button id="signinButton" class="primary">SIGN IN ↗</button></form>
+<button id="recoverAccessButton" type="button" class="outline">RESUME ACTIVATION / RESET PASSWORD</button>
+<p>Already accepted an invitation but the link opened localhost? Enter the invited email above, then request a new secure activation link after your corporate URL settings are corrected.</p>
+<p id="recoveryFeedback" class="notice" hidden role="status" aria-live="polite"></p>
 <p id="loginError" class="notice" hidden role="status"></p>
 </section>
 <section class="panel" id="employeeActivation" hidden>
