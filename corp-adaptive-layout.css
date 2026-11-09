@@ -258,3 +258,67 @@ body[data-page="admin-preview"] :is(.modal-tabbar,.admin-modal,.drawer){
   scroll-behavior:auto!important;transition-duration:.01ms!important
  }
 }
+
+
+/* Physical iPhone fallback if Safari serves a desktop-width CSS viewport.
+   Device class is added by corp-device-layout.js before the page renders. */
+html.bc-device-phone body[data-page="admin-preview"] .admin-dashboard.dashboard-page{
+ width:100%!important;max-width:none!important;
+ padding:14px 12px calc(60px + env(safe-area-inset-bottom,0px))!important;
+}
+html.bc-device-phone body[data-page="admin-preview"] .admin-grid,
+html.bc-device-phone body[data-page="admin-preview"] .division-grid{
+ grid-template-columns:minmax(0,1fr)!important;
+}
+html.bc-device-phone body[data-page="admin-preview"] .metrics{
+ grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;
+}
+html.bc-device-phone body[data-page="admin-preview"] .admin-hero h1{
+ font-size:clamp(35px,8vw,49px)!important;
+}
+html.bc-device-phone body[data-page="admin-preview"] .modal-backdrop{
+ padding:0!important;align-items:end!important;
+}
+html.bc-device-phone body[data-page="admin-preview"] .admin-modal{
+ width:100%!important;max-width:100%!important;
+ max-height:calc(100dvh - 8px)!important;
+ padding:18px 13px calc(17px + env(safe-area-inset-bottom,0px))!important;
+ overflow-y:auto!important;border-radius:20px 20px 0 0!important;
+}
+html.bc-device-phone body.bc-network .masthead{
+ position:sticky!important;top:0!important;
+ display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;
+ grid-template-rows:auto 45px!important;
+ height:auto!important;gap:8px!important;
+ padding:10px 12px 7px!important;
+}
+html.bc-device-phone body.bc-network .mainnav{
+ grid-column:1/-1!important;grid-row:2!important;
+ width:100%!important;height:44px!important;
+ overflow-x:auto!important;justify-content:flex-start!important;gap:9px!important;
+}
+html.bc-device-phone body.bc-network .mainnav button{min-height:40px!important;font-size:10px!important}
+html.bc-device-phone body.bc-network .app{
+ display:block!important;width:100%!important;max-width:100%!important;
+ padding:12px 11px 80px!important;
+}
+html.bc-device-phone body.bc-network .left-rail{
+ position:static!important;margin-bottom:12px!important;
+}
+html.bc-device-phone body.bc-network .left-rail :is(.nav-panel,.rail-note),
+html.bc-device-phone body.bc-network .right-rail{display:none!important}
+html.bc-device-phone body.bc-network .workspace{display:block!important;width:100%!important;min-width:0!important}
+html.bc-device-phone body.bc-network .apple-photo-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+html.bc-device-phone body.bc-network .apple-album-strip{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+html.bc-device-phone body.bc-network .photos-summary{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+html.bc-device-phone body.bc-network .profile-identity{display:block!important}
+html.bc-device-phone body.bc-network .profile-actions{flex-wrap:wrap!important;margin-top:12px!important}
+html.bc-device-phone body.bc-network .photos-gallery-tools{flex-direction:column!important;align-items:stretch!important}
+html.bc-device-phone body.bc-network .photos-gallery-search{width:100%!important}
+html.bc-device-phone body.bc-network .photos-gallery-search input{flex:1!important;min-width:0!important}
+html.bc-device-phone body.bc-employee main{padding:15px 12px!important}
+html.bc-device-phone body.bc-employee .panel{width:100%!important;max-width:480px!important;padding:clamp(20px,4vw,30px)!important}
+html.bc-device-phone body.bc-employee .action-row{flex-direction:column!important}
+html.bc-device-phone body.bc-employee .action-row :is(button,a){width:100%!important}
+html.bc-device-tablet body[data-page="admin-preview"] .admin-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+html.bc-device-tablet body.bc-network .app{max-width:1180px}
