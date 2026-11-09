@@ -1,5 +1,5 @@
 /* BLACKCELL NETWORK / Apple Photos × Flickr private corporate library */
-export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadAsset,refresh,profile,openProfile,ensureSigned}){
+export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadAsset,refresh,profile,openProfile,ensureSigned,switchView}){
  const $=id=>document.getElementById(id);
  const meta={albums:[],albumItems:[],favorites:[],activeAlbum:null,filter:'all',sort:'newest',query:'',
    viewerItems:[],viewerIndex:0,editingAlbum:null,uploading:false,renderCount:0};
@@ -378,10 +378,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   const list=allAlbums().filter(a=>a.owner_id===userId);
   if(!list.length)return empty('No albums yet','Albums created by this member will appear here.');
   for(const a of list){
-   const node=press('',()=>{state.view='photos';selectAlbum(a.id);
-    document.querySelectorAll('.view').forEach(v=>v.hidden=v.id!=='photosView');
-    document.querySelectorAll('[data-view]').forEach(n=>n.classList.toggle('nav-active',n.dataset.view==='photos'));
-   },'apple-album-card');
+   const node=press('',()=>{switchView('photos');selectAlbum(a.id)},'apple-album-card');
    const cover=make('div','apple-album-cover'),files=albumMedia(a).slice(0,4);
    if(!files.length)cover.append(make('span','album-placeholder','▧'));
    for(const f of files){
