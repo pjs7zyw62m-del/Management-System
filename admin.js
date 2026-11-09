@@ -228,387 +228,76 @@ function showInvitationPreview(form,inputs){
 }
 
 function showSecurityCodeCardPreview(form,inputs){
-  const section=form.closest('.content-block');
-  if(!section)return;
-  section.querySelector('.security-credential-preview')?.remove();
-
+  const container=form.closest('.content-block');
+  if(!container)return;
+  container.querySelector('.security-credential-preview')?.remove();
   const {name,username,level,accessCode,securityCode}=inputs;
-  const wrapper=el('section','security-credential-preview');
-  wrapper.setAttribute('aria-label','Access and Security Code card preview — not issued');
-
-  const status=el('div','security-credential-preview-status');
-  status.append(el('strong','','BLACKCELL / CREDENTIAL ISSUANCE'),
+  const panel=el('section','security-credential-preview');
+  panel.setAttribute('aria-label','Private Access and Security Code preview — not issued');
+  const indicator=el('div','security-credential-preview-status');
+  indicator.append(el('strong','','BLACKCELL / CREDENTIAL ISSUANCE'),
     el('span','','PREVIEW ONLY · NOT ISSUED'));
-  wrapper.append(status);
-
+  panel.append(indicator);
   const card=el('article','security-credential-card');
-  const top=el('div','security-credential-head');
-  top.append(el('div','security-credential-mark','B'));
+  const header=el('div','security-credential-head');
+  header.append(el('div','security-credential-mark','B'));
   const brand=el('div','security-credential-brand');
   brand.append(el('strong','','BLACKCELL CORPORATION'),
     el('small','','NETWORK / AUTHORIZED CREDENTIALS'));
-  top.append(brand);
-  card.append(top,el('div','security-credential-stripe',''));
-
+  header.append(brand);
+  card.append(header,el('div','security-credential-stripe',''));
   const body=el('div','security-credential-body');
   body.append(el('div','security-credential-kicker','PERSONAL SECURITY CREDENTIALS'),
     el('h3','','Access & Security Codes'));
   const fields=el('div','security-credential-fields');
-  for(const [label,value] of [
+  for(const item of [
     ['NAME',name.value.trim()||'Sample Employee'],
-    ['USERNAME',username.value.trim()||'Generate a username'],
+    ['USERNAME',username.value.trim()||'Generate username first'],
     ['CLEARANCE','LEVEL '+level.value]
   ]){
-    const item=el('div','security-credential-field');
-    item.append(el('small','',label),el('strong','',value));
-    fields.append(item);
+    const cell=el('div','security-credential-field');
+    cell.append(el('small','',item[0]),el('strong','',item[1]));
+    fields.append(cell);
   }
   body.append(fields);
-
-  const codeGrid=el('div','security-credential-code-grid');
-  for(const config of [
-    {title:'ACCESS CODE',digits:4,input:accessCode},
-    {title:'SECURITY CODE',digits:12,input:securityCode}
+  const codes=el('div','security-credential-code-grid');
+  for(const cfg of [
+    {label:'ACCESS CODE',digits:4,input:accessCode},
+    {label:'SECURITY CODE',digits:12,input:securityCode}
   ]){
-    const secret=String(config.input.value||'');
-    const generated=new RegExp('^[0-9]{'+config.digits+'}
-  if(activeTab==='accounts'){
-    const section=block('Register New Employee');
-    section.append(p('Send a private activation invitation. The employee sets their own password and receives a Blackcell digital access card. New employees cannot enter Level 7 Administration or NEXUS.'));
-    const form=el('form','');
-    form.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:13px;align-items:end;margin-top:15px';
-    const field=(label,type,placeholder)=>{
-      const wrap=el('label');wrap.style.cssText='display:flex;flex-direction:column;gap:7px;font-size:10px;letter-spacing:.12em;color:#bab0bc';
-      wrap.append(el('span','',label));
-      const input=el('input');input.type=type;input.required=true;input.placeholder=placeholder;input.style.width='100%';
-      wrap.append(input);form.append(wrap);return input;
-    };
-    const name=field('NAME','text','Full name');
-    name.minLength=2;name.maxLength=80;
-    const email=field('EMPLOYEE EMAIL','email','name@example.com');
-
-    const uniqueUser=field('GENERATED USERNAME','text','bc_employee_12345');
-    uniqueUser.pattern='[a-z][a-z0-9_]{5,31}';
-    uniqueUser.maxLength=32;uniqueUser.autocapitalize='off';uniqueUser.spellcheck=false;
-    const usernameButton=action('GENERATE USERNAME',()=>{
-      uniqueUser.value=corporateUsername(name.value);
-    },false);
-    usernameButton.type='button';usernameButton.style.cssText='min-height:44px';
-    form.append(usernameButton);
-
-    function codeGenerator(label,count){
-      const wrap=el('div');
-      wrap.style.cssText='display:flex;flex-direction:column;gap:8px';
-      const caption=el('label','',label);
-      caption.style.cssText='font-size:10px;letter-spacing:.12em;color:#bcb2bf';
-      const input=el('input');
-      input.type='password';input.readOnly=true;input.required=true;
-      input.autocomplete='off';input.inputMode='numeric';
-      input.maxLength=count;input.minLength=count;
-      input.placeholder=count+' random digits';input.style.width='100%';
-      const buttons=el('div');buttons.style.cssText='display:flex;gap:6px';
-      const gen=action('GENERATE',()=>{input.value=corporateRandomDigits(count);},false);
-      gen.type='button';
-      const reveal=action('REVEAL',()=>{
-        input.type=input.type==='password'?'text':'password';
-        reveal.textContent=input.type==='text'?'HIDE':'REVEAL';
-      },false);
-      reveal.type='button';
-      const copy=action('COPY',()=>{
-        if(input.value)navigator.clipboard?.writeText(input.value).then(()=>{
-          copy.textContent='COPIED ✓';
-        }).catch(()=>{copy.textContent='SELECT TO COPY';input.type='text';input.select();});
-      },false);
-      copy.type='button';
-      buttons.append(gen,reveal,copy);
-      wrap.append(caption,input,buttons);form.append(wrap);
-      return input;
-    }
-    const accessCode=codeGenerator('ACCESS CODE · 4 DIGITS',4);
-    const securityCode=codeGenerator('SECURITY CODE · 12 DIGITS',12);
-    const levelLabel=el('label');levelLabel.style.cssText='display:flex;flex-direction:column;gap:7px;font-size:10px;letter-spacing:.12em;color:#bab0bc';
-    levelLabel.append(el('span','','CLEARANCE'));
-    const level=el('select');for(let i=1;i<=6;i++)level.add(new Option('Level '+i,i));
-    level.value='1';levelLabel.append(level);form.append(levelLabel);
-    const previewInvite=action('PREVIEW INVITATION',()=>{
-      showInvitationPreview(form,{name,email,username:uniqueUser,level});
-    });
-    previewInvite.type='button';
-    previewInvite.style.cssText='width:100%;min-height:44px';
-    form.append(previewInvite);
-    const previewCard=action('PREVIEW EMPLOYEE CARD',()=>{
-      section.querySelector('.employee-card-inline-preview')?.remove();
-      const preview=el('div','employee-card-inline-preview');
-      preview.append(el('h3','','SAMPLE EMPLOYEE CARD · NOT REGISTERED'));
-      preview.append(employeeCardView({
-        display_name:name.value.trim()||'Sample Employee',
-        username:uniqueUser.value.trim()||'bc_sample_48271',
-        email:email.value.trim()||'sample@example.com',
-        clearance_level:Number(level.value),role:'employee',active:false,
-        can_chat:true,password_activated:false
-      },true));
-      preview.append(action('CLOSE CARD PREVIEW',()=>preview.remove()));
-      section.append(preview);
-      preview.scrollIntoView({behavior:'smooth',block:'nearest'});
-    });
-    previewCard.type='button';previewCard.style.cssText='width:100%;min-height:44px';
-    form.append(previewCard);
-    const previewCodes=action('PREVIEW ACCESS & SECURITY CARD',()=>{
-      showSecurityCodeCardPreview(form,{
-        name,username:uniqueUser,level,accessCode,securityCode
-      });
-    });
-    previewCodes.type='button';
-    previewCodes.style.cssText='width:100%;min-height:44px';
-    form.append(previewCodes);
-    const submit=action('SEND EMPLOYEE INVITATION',null,false,true);
-    submit.type='submit';submit.style.cssText='width:100%;min-height:44px';
-    form.append(submit);
-    const feedback=el('p','muted','');
-    feedback.setAttribute('role','status');
-    form.addEventListener('submit',async e=>{
-      e.preventDefault();
-      if(!name.value.trim()||!email.value.trim())return;
-      if(!/^[a-z][a-z0-9_]{5,31}$/.test(uniqueUser.value)){
-        feedback.textContent='Generate a valid unique employee username first.';return;
-      }
-      if(!/^[0-9]{4}$/.test(accessCode.value)||!/^[0-9]{12}$/.test(securityCode.value)){
-        feedback.textContent='Generate both codes: 4 digits for Access Code and 12 for Security Code.';return;
-      }
-      const api=window.BLACKCELL_CORPORATE_ADMIN_API?.client;
-      if(!api){feedback.textContent='Corporate administrator authentication is unavailable.';return}
-      submit.disabled=true;submit.textContent='SENDING INVITATION…';
-      feedback.textContent='Requesting a secure employee invitation…';
-      try{
-        const {data,error}=await api.functions.invoke('blackcell-invite-employee',{
-          body:{email:email.value.trim(),display_name:name.value.trim(),clearance_level:Number(level.value),
-            username:uniqueUser.value,access_code:accessCode.value,security_code:securityCode.value}
-        });
-        if(error||data?.ok!==true){
-          feedback.textContent=data?.detail||('Invitation not sent: '+(data?.reason||error?.message||'service unavailable'));
-          return;
-        }
-        feedback.textContent='Invitation created. The email activates the employee account, not the codes. Share these generated codes separately through a trusted channel; they cannot be retrieved later.';
-        const receipt=el('div','content-block');
-        receipt.dataset.blackcellReceipt='true';
-        receipt.style.cssText='border:1px solid #648774;border-radius:14px;padding:16px;margin-top:15px';
-        receipt.append(el('h3','','EMPLOYEE CREDENTIALS · COPY ONCE'));
-        const textReceipt='Blackcell Employee: '+name.value.trim()+
-          '\nUsername: '+uniqueUser.value+'\nAccess Code (4 digits): '+accessCode.value+
-          '\nSecurity Code (12 digits): '+securityCode.value+
-          '\nEmployee activation: https://blackcellcorp.com/employee.html';
-        const pre=el('pre','',textReceipt);
-        pre.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px';
-        const copyReceipt=action('COPY CREDENTIALS',()=>{
-          navigator.clipboard?.writeText(textReceipt).then(()=>{
-            copyReceipt.textContent='COPIED ✓';
-          }).catch(()=>{pre.tabIndex=0;pre.focus();});
-        },false);
-        copyReceipt.type='button';
-        const dismiss=action('HIDE CREDENTIALS',()=>{
-          receipt.remove();
-          accessCode.value='';securityCode.value='';uniqueUser.value='';
-        },false);
-        dismiss.type='button';
-        receipt.append(pre,copyReceipt,dismiss);
-        feedback.after(receipt);
-        name.value='';email.value='';accessCode.value='';securityCode.value='';uniqueUser.value='';
-        void displayCorporateAccounts(list);
-      }catch(err){feedback.textContent='Invitation not sent. Check the network and email service.'}
-      finally{submit.disabled=false;submit.textContent='SEND EMPLOYEE INVITATION';}
-    });
-    section.append(form,feedback);
-    const list=block('Approved & Invited Accounts');
-    list.append(p('Loading corporate accounts…'));
-    content.append(section,list);
-    void displayCorporateAccounts(list);
-  }else if(activeTab==='profiles'){
-    void employeeProfiles();
-  }else if(activeTab==='roles'){
-    const section=block('Security Clearance Levels');
-    section.append(p('Level 7 is reserved for the corporate owner. Levels 1–6 are for employees. An employee clearance level alone does not grant access to this Administration dashboard or NEXUS.'));
-    content.append(section);
-    void loadClearanceLevels(section);
-  }else{
-    const section=block('Employee Access Permissions');
-    section.append(p('Enable or disable employee chat and corporate access. Divisions remain separately protected; these controls do not grant NEXUS or MansArmedForces permissions.'));
-    content.append(section);
-    void displayEmployeeAccess(section);
-  }
-}
-async function displayCorporateAccounts(container){
-  const api=window.BLACKCELL_CORPORATE_ADMIN_API?.client;
-  if(!api)return;
-  try{
-    const {data,error}=await api.rpc('corp_admin_members');
-    if(!container.isConnected)return;
-    if(error||data?.ok!==true||!Array.isArray(data.members)){
-      container.append(p('Accounts could not be loaded. Please verify your Level 7 session.'));return;
-    }
-    container.replaceChildren(el('h3','','Approved & Invited Accounts'));
-    for(const member of data.members){
-      const right=member.role==='owner'?'LEVEL 7 · OWNER':
-        (member.active?(member.activated?'ACTIVE':'INVITED'):'DISABLED');
-      const view=el('div','employee-profile-actions');
-      view.append(el('span','mock-state',right),
-        action('VIEW PROFILE',()=>showEmployeeProfile(member)));
-      container.append(row(member.display_name||'Employee',
-        (member.email||'')+' · '+(member.username||'No username')+' · Level '+member.clearance_level,view));
-    }
-  }catch(_){if(container.isConnected)container.append(p('Unable to load accounts.'))}
-}
-async function displayEmployeeAccess(container){
-  const api=window.BLACKCELL_CORPORATE_ADMIN_API?.client;
-  if(!api)return;
-  const status=el('p','muted','Loading employee permissions…');container.append(status);
-  try{
-    const {data,error}=await api.rpc('corp_admin_members');
-    if(!container.isConnected)return;
-    if(error||data?.ok!==true||!Array.isArray(data.members)){
-      status.textContent='Unable to verify permissions.';return;
-    }
-    status.remove();
-    const employees=data.members.filter(m=>m.role!=='owner');
-    if(!employees.length){container.append(p('No employee accounts yet. Start from the Accounts tab.'));return;}
-    for(const member of employees){
-      const section=el('div','content-block');
-      section.append(el('h3','',member.display_name||'Employee'),p(member.email||''));
-      const controls=el('div');controls.style.cssText='display:flex;gap:12px;align-items:center;flex-wrap:wrap';
-      const check=(labelText,checked)=>{
-        const label=el('label');label.style.cssText='display:flex;gap:8px;align-items:center';
-        const input=el('input');input.type='checkbox';input.checked=checked;
-        label.append(input,document.createTextNode(labelText));return {label,input};
-      };
-      const enabled=check('Account enabled',member.active),chat=check('Employee Chat',member.can_chat);
-      controls.append(enabled.label,chat.label);
-      const save=action('SAVE PERMISSIONS',async()=>{
-        save.disabled=true;save.textContent='SAVING…';
-        try{
-          const {data:updated,error:updateError}=await api.rpc('corp_admin_update_employee',{
-            p_user_id:member.user_id,p_level:member.clearance_level,
-            p_can_chat:chat.input.checked,p_active:enabled.input.checked
-          });
-          save.textContent=updateError||updated?.ok!==true?'NOT SAVED':'SAVED ✓';
-        }catch(_){save.textContent='NOT SAVED'}
-        finally{save.disabled=false}
-      },false,true);
-      controls.append(save);section.append(controls);container.append(section);
-    }
-  }catch(_){status.textContent='Could not load employee access permissions.'}
-}
-async function loadClearanceLevels(container){
-  const api=window.BLACKCELL_CORPORATE_ADMIN_API?.client;
-  const status=el('p','muted','Loading approved corporate members…');
-  container.append(status);
-  if(!api){status.textContent='Corporate session is unavailable.';return}
-  try{
-    const {data,error}=await api.rpc('corp_list_clearance');
-    if(!container.isConnected)return;
-    if(error||data?.ok!==true||!Array.isArray(data.members)){
-      status.textContent='Could not verify administrator clearance. No changes are allowed.';
-      return;
-    }
-    status.remove();
-    if(!data.members.length){
-      container.append(p('No approved accounts were found.'));
-      return;
-    }
-    for(const member of data.members){
-      const entry=el('div','list-row');
-      const details=el('div');
-      details.append(el('b','',member.display_name||'Corporate Member'),
-        el('small','',String(member.role||'employee').toUpperCase()+
-          ' · Current Level '+String(member.clearance_level)));
-      entry.append(details);
-      if(member.role==='owner'){
-        entry.append(el('span','mock-state','LEVEL 7 · OWNER'));
-      }else{
-        const controls=el('div');
-        controls.style.cssText='display:flex;gap:7px;align-items:center;flex-wrap:wrap';
-        const dropdown=el('select');
-        dropdown.setAttribute('aria-label','Clearance level for '+(member.display_name||'employee'));
-        for(let level=1;level<=6;level++){
-          const option=new Option('Level '+level,String(level));
-          dropdown.add(option);
-        }
-        dropdown.value=String(member.clearance_level);
-        const save=action('SAVE LEVEL',async()=>{
-          save.disabled=true;
-          save.textContent='SAVING…';
-          try{
-            const {data:changed,error:changeError}=await api.rpc('corp_set_clearance_level',{
-              p_user_id:member.user_id,p_level:Number(dropdown.value)
-            });
-            if(changeError||changed?.ok!==true){
-              save.textContent='NOT SAVED';
-            }else{
-              member.clearance_level=Number(dropdown.value);
-              save.textContent='SAVED ✓';
-              details.querySelector('small').textContent=
-                String(member.role).toUpperCase()+' · Current Level '+member.clearance_level;
-            }
-          }catch(_){save.textContent='NOT SAVED'}
-          finally{save.disabled=false}
-        });
-        controls.append(dropdown,save);
-        entry.append(controls);
-      }
-      container.append(entry);
-    }
-  }catch(_){if(container.isConnected)status.textContent='Clearance levels could not be loaded.'}
-}
-function security(){if(activeTab==='overview'){let g=grid();[['Security status','Not connected'],['Active sessions','—'],['Failed attempts','—'],['Security events','—']].forEach(x=>g.append(card(...x)));content.append(g);let b=block('Recent Security Activity');b.append(p('No real corporate login or security event monitoring is connected.'));content.append(b);}else if(activeTab==='sessions'){let b=block('Authorized Devices & Sessions');b.append(p('Current sessions, device recognition, expiration, and session revocation will appear here after backend integration.'));content.append(b,action('Sign Out Other Sessions — Not Connected',null,true));}else{content.append(el('h3','','Security Preferences'),choice('Security Notifications','Proposed alerts for important corporate events','securityNotify'),choice('New Device Login Alerts','Proposed alerts for unfamiliar sign-ins','deviceAlerts'),note('These are local preview switches and do not activate security monitoring.'));}}
-function field(name,value,readOnly=true){let l=el('label','field',name),i=el('input');i.value=value;i.readOnly=readOnly;l.append(i);return l;}
-function settings(){if(activeTab==='general'){let b=block('Corporate Identity');b.append(field('Corporation Name','Blackcell Corporation'),field('Portal Title','Command & Administration Center'),row('Administrator Access','Protected role; not editable here','Owner'));content.append(b);}else if(activeTab==='appearance'){let b=block('Interface Appearance');b.append(el('label','field','Visual theme'));b.append(select([['glass','Ultra-Dark Apple Glass'],['black','Pure Black — Minimal'],['silver','Charcoal & Silver Glass']],state.appearance,v=>{state.appearance=v;document.body.dataset.appearance=v}));content.append(b,choice('Interface Animations','Smooth popup and navigation transitions','animations'));}else if(activeTab==='divisions'){let b=block('Configured Divisions');b.append(row('NEXUS Management','Management System','Separate application'),row('MansArmedForces','Media Collection','Separate application'));content.append(b,note('Division configuration is illustrative. Changing it here does not change independent applications.'));}else{content.append(choice('Corporate Notifications','Show proposed administrative notifications','notify'),choice('Confirm Important Actions','Proposed confirmation before critical changes','confirm'));}}
-function logRows(container){container.replaceChildren();let data=demoEvents.filter(x=>(activeTab==='all'||x.type===activeTab)&&`${x.title} ${x.description}`.toLowerCase().includes(searchTerm.toLowerCase())&&(period==='all'||(period==='today'&&x.date==='2026-11-08')||(period==='recent'&&x.date>='2026-11-07')));container.append(el('p','muted',`${data.length} fictional demonstration events`));if(!data.length)container.append(el('div','empty-state','No matching events'));for(let e of data){let b=el('button','item-button');b.append(el('strong','',e.title),el('small','',e.display));b.addEventListener('click',()=>{selectedEvent=selectedEvent===e.id?null:e.id;logRows(container)});container.append(b);if(selectedEvent===e.id)container.append(el('div','event-details',`${e.description} · Category: ${e.type} · Event ID: ${e.id}`));}}
-function logs(){let bar=el('div','search-row'),a=el('label','field','Search events'),q=el('input');q.placeholder='Search activity…';q.value=searchTerm;a.append(q);let t=el('label','field','Date range'),picker=select([['all','All Time'],['today','Today (sample)'],['recent','Recent (sample)']],period,v=>{period=v;logRows(list)});t.append(picker);bar.append(a,t);content.append(bar);let list=el('div');content.append(list);q.addEventListener('input',()=>{searchTerm=q.value;logRows(list)});logRows(list);content.append(note('All entries are fictional examples. No corporate audit data is stored or retrieved.'),action('Export Actual Logs — Not Connected',null,true));}
-function backups(){if(activeTab==='overview'){let g=grid();g.append(card('Last Backup','Not connected'),card('Recovery Status','Not verified'));content.append(g);let b=block('Choose Backup Scope');let selector=select([['portal','Corporate Portal Configuration'],['nexus','NEXUS Management — future'],['mans','MansArmedForces — future']],'portal',()=>{});b.append(selector,el('div','actions'));b.querySelector('.actions').append(action('Create Backup — Not Connected',null,true));content.append(b,note('A backup must be written to secured storage and verified before it can be reported as successful. No backup was created.'));}else if(activeTab==='history'){content.append(el('div','empty-state','No connected backup history. Completed, verified backup records will appear here.'),action('Choose Recovery Point — Not Connected',null,true));}else{content.append(choice('Automatic Backups','Future recurring backup scheduling','autoBackup'),choice('Require Restore Confirmation','Additional confirmation before overwriting data','restoreConfirm'),note('These switches are preview-only. Automatic backups are not running.'));}}
-function systemResults(container){container.replaceChildren();let data=systems.filter(x=>(x.name+' '+x.kind+' '+x.provider).toLowerCase().includes(searchTerm.toLowerCase()));container.append(el('p','muted',`${data.length} systems in the design directory`));if(!data.length)container.append(el('div','empty-state','No matching systems'));data.forEach(s=>{let b=el('button','item-button');b.append(el('strong','',`${s.icon}  ${s.name}`),el('small','',s.kind));b.addEventListener('click',()=>{selectedSystem=selectedSystem===s.id?null:s.id;systemResults(container)});container.append(b);if(selectedSystem===s.id){let n=block('Directory Details');n.append(p(s.desc),row('Technology',s.provider,'Not monitored'));if(s.href){let a=el('a','btn outline',`Open ${s.name} ↗`);a.href=s.href;a.target='_blank';a.rel='noopener noreferrer';n.append(a)}container.append(n)}});}
-function corporateSystems(){if(activeTab==='systems'){let a=el('label','field','Search corporate systems'),q=el('input');q.placeholder='Search corporate systems…';q.value=searchTerm;a.append(q);content.append(a);let list=el('div');content.append(list);q.addEventListener('input',()=>{searchTerm=q.value;systemResults(list)});systemResults(list);}else if(activeTab==='infrastructure'){let b=block('Infrastructure Directory');b.append(row('GitHub Pages','Corporate website hosting and deployments','Directory only'),row('Supabase','Authentication, storage, database APIs','Directory only'),row('AI Infrastructure','Inference endpoints and model operations','Directory only'));content.append(b,note('No service credentials, status data, or infrastructure access is exposed.'));}else{let g=grid();[['Website availability','Not monitored'],['API connectivity','Not monitored'],['Database health','Not monitored'],['AI service status','Not monitored']].forEach(x=>g.append(card(...x)));content.append(g,note('Green status will appear only after authenticated and verified health checks are implemented.'),action('Configure Monitoring — Coming Later',null,true));}}
-function division(){let nexus=activeModal==='nexus',name=names[activeModal];let b=block('Division Overview');b.append(p(nexus?'Private management operations, records, communications and financial systems.':'Photo collections, review workflows, album organization, and AI-related projects.'));let g=grid();(nexus?[['Records','Profiles and activity'],['Communications','Messaging and analysis'],['Financial','Budget and transactions'],['System Health','Not connected']]:[['Uniforms','Photo library and albums'],['Collections','Inmate and media collections'],['Gunner AI','Separate AI project'],['System Health','Not connected']]).forEach(x=>{let c=card(x[0],x[1]);g.append(c)});b.append(g);content.append(b);let a=el('a','btn primary full',`Open ${name} Website ↗`);a.href=nexus?'https://www.blackcellcorp.com':'https://pjs7zyw62m-del.github.io/Gunner-Collection-Portal/';a.target='_blank';a.rel='noopener noreferrer';content.append(a,note('This opens the independent website. Existing authentication, permissions, and policies still apply. Corporate preview access does not sign you in.'));}
-function notifications(){let b=block('Notifications');b.append(p('No live corporate notifications are connected. Future authenticated events can include new-device alerts, failed sign-ins, system incidents, and administrator updates.'));content.append(b);}
-function account(){let b=block('Administrator Profile');b.append(row('Corporate role','Proposed primary administrator','Owner'),row('Account identity','No authenticated corporate account','Not connected'));content.append(b,note('The corporate login is a preview; account credentials and roles must be confirmed by a secure backend.'));}
-function signout(){content.append(note('This preview cannot revoke GitHub Pages, Supabase, or other application sessions. Global sign-out requires separately authorized server integrations.'));let b=el('div','actions');b.append(action('Cancel',close));let a=el('a','btn outline','Return to Login Preview');a.href='index.html';b.append(a);content.append(b);}
-function restricted(){content.append(note('Service identifiers are placeholders. A production operator would require server-side authorization before service details could be unlocked.'),action('Verify & Unlock — Not Connected',null,true));}
-const openDrawer=()=>{$('drawer').classList.add('open');$('drawer').setAttribute('aria-hidden','false');$('drawerShade').hidden=false;$('menuButton').setAttribute('aria-expanded','true');};
-const closeDrawer=()=>{$('drawer').classList.remove('open');$('drawer').setAttribute('aria-hidden','true');$('drawerShade').hidden=true;$('menuButton').setAttribute('aria-expanded','false');};
-$('menuButton').addEventListener('click',openDrawer);$('closeDrawer').addEventListener('click',closeDrawer);$('drawerShade').addEventListener('click',closeDrawer);$('navHome').addEventListener('click',()=>{closeDrawer();scrollTo({top:0,behavior:'smooth'})});$('closeModal').addEventListener('click',close);modal.addEventListener('click',e=>{if(e.target===modal)close()});document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!modal.hidden)close();else closeDrawer()}if(e.key==='Tab'&&!modal.hidden){let controls=[...pane.querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),a[href]')].filter(x=>x.getClientRects().length);if(!controls.length)return;let first=controls[0],last=controls[controls.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}});document.querySelectorAll('[data-open]').forEach(btn=>btn.addEventListener('click',()=>{if(btn.dataset.open==='chat'){closeDrawer();window.dispatchEvent(new Event('blackcell-open-imessage'));return}open(btn.dataset.open,btn)}));
-const codes={systems:['BC-SYS-001','BC-SYS-002','BC-SYS-003','BC-SYS-004','BC-SYS-005','BC-SYS-006'],servers:['BC-SRV-001','BC-SRV-002','BC-SRV-003','BC-SRV-004']};for(let [name,target] of [['systems','systemsList'],['servers','serversList']]){codes[name].forEach(code=>{let b=el('button','service-row');let dot=el('i','indicator gray'),c=el('span','service-code',code),s=el('span','service-caption','NOT CHECKED  🔒');b.append(dot,c,s);b.addEventListener('click',()=>open('restricted',b));$(target).append(b)})}
-})();
-).test(secret);
+    const value=String(cfg.input.value||'');
+    const valid=(new RegExp('^[0-9]{'+cfg.digits+'}$')).test(value);
     const slot=el('div','security-credential-code-slot');
-    slot.append(el('small','',config.title+' · '+config.digits+' DIGITS'));
-    const value=el('strong','security-credential-code-value',
-      generated?'•'.repeat(config.digits):'NOT GENERATED');
-    slot.append(value);
+    slot.append(el('small','',cfg.label+' · '+cfg.digits+' DIGITS'));
+    const display=el('strong','security-credential-code-value',valid?'•'.repeat(cfg.digits):'NOT GENERATED');
+    slot.append(display);
     const controls=el('div','security-credential-code-controls');
-    controls.append(el('small','',generated?'HIDDEN UNTIL REVEALED':'GENERATE ABOVE FIRST'));
-    if(generated){
-      let visible=false;
+    controls.append(el('small','',valid?'CODE GENERATED · MASKED':'GENERATE CODE ABOVE'));
+    if(valid){
+      let open=false;
       const reveal=action('REVEAL',()=>{
-        visible=!visible;
-        value.textContent=visible?secret:'•'.repeat(config.digits);
-        reveal.textContent=visible?'HIDE':'REVEAL';
+        open=!open;
+        display.textContent=open?value:'•'.repeat(cfg.digits);
+        reveal.textContent=open?'HIDE':'REVEAL';
       });
       reveal.type='button';
       controls.append(reveal);
     }
     slot.append(controls);
-    codeGrid.append(slot);
+    codes.append(slot);
   }
-  body.append(codeGrid);
-  const caution=el('div','security-credential-caution');
-  caution.append(el('strong','','PRIVATE / DO NOT SEND IN ORDINARY EMAIL'),
-    el('p','','This card is a visual preview for the Level 7 administrator. The Access Code is 4 digits and the Security Code is 12 digits. Codes are provided separately through a trusted channel and stored only as hashes after registration.'));
-  body.append(caution);
+  body.append(codes);
+  const warning=el('div','security-credential-caution');
+  warning.append(el('strong','','PRIVATE / DO NOT SEND IN ORDINARY EMAIL'),
+    el('p','','Only you can preview the generated codes here. Their values are stored as salted hashes after registration and must be delivered to the employee through a trusted separate channel.'));
+  body.append(warning);
   card.append(body);
-  wrapper.append(card,el('p','muted',
-    'Preview only. Nothing has been issued or sent. Real codes remain hidden unless you intentionally reveal them here.'));
-  const closeButton=action('CLOSE CODE CARD',()=>wrapper.remove());
+  panel.append(card,el('p','muted','Preview only. Nothing has been issued or sent. Codes are masked until you choose Reveal.'));
+  const closeButton=action('CLOSE CODE CARD',()=>panel.remove());
   closeButton.type='button';
-  wrapper.append(closeButton);
-  section.append(wrapper);
-  wrapper.scrollIntoView({behavior:'smooth',block:'nearest'});
+  panel.append(closeButton);
+  container.append(panel);
+  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 function users(){
@@ -693,6 +382,12 @@ function users(){
     });
     previewCard.type='button';previewCard.style.cssText='width:100%;min-height:44px';
     form.append(previewCard);
+    const previewCodes=action('PREVIEW ACCESS & SECURITY CARD',()=>{
+      showSecurityCodeCardPreview(form,{name,username:uniqueUser,level,accessCode,securityCode});
+    });
+    previewCodes.type='button';
+    previewCodes.style.cssText='width:100%;min-height:44px';
+    form.append(previewCodes);
     const submit=action('SEND EMPLOYEE INVITATION',null,false,true);
     submit.type='submit';submit.style.cssText='width:100%;min-height:44px';
     form.append(submit);
