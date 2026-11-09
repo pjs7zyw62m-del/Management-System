@@ -1,6 +1,6 @@
 'use strict';
 (()=>{
-  const client=window.BLACKCELL_CORPORATE_ADMIN_API?.client;
+  const client=window.BLACKCELL_CORPORATE_ADMIN_API?.client||window.BLACKCELL_CORPORATE_NETWORK_CLIENT;
   if(!client || document.getElementById('bcChatDock')) return;
   const make=(tag,cls,content)=>{
     const n=document.createElement(tag);
@@ -100,7 +100,7 @@
   orb.addEventListener('click',()=>openChat());
   people.addEventListener('click',()=>openChat());
   imessage.addEventListener('click',()=>openChat());
-  window.addEventListener('blackcell-open-imessage',()=>openChat());
+  window.addEventListener('blackcell-open-imessage',ev=>openChat(ev?.detail?.peerId||undefined));
   toast.addEventListener('click',()=>{
     const target=toast.dataset.peerId||undefined;
     closeToast();openChat(target);
