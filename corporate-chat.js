@@ -1,5 +1,6 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-staff1';
 import {setupCorporateMedia} from './corporate-chat-media.js?v=20261109-flip-focus4';
+import {setupCorporateChatLive} from './corporate-chat-live.js?v=20261109-live1';
 const client=corporateClient(),$=id=>document.getElementById(id);
 const embedParams=new URLSearchParams(location.search);
 const mediaPanelMode=['share','library'].includes(embedParams.get('mediaPanel'))?embedParams.get('mediaPanel'):null;
@@ -18,6 +19,7 @@ async function endChatAccess(reason){
  sessionEnded=true;ready=false;employeeSession=false;
  $('messageInput').disabled=true;$('sendButton').disabled=true;
  status(reason);
+ live.dispose();
  try{await client.rpc('corp_employee_end_session')}catch(_){}
  try{await client.auth.signOut({scope:'local'})}catch(_){}
  $('returnLink').href='employee.html';$('returnLink').textContent='SIGN IN AGAIN';
@@ -41,6 +43,10 @@ function chatActivity(){
 
 function status(text){$('systemStatus').textContent=text;$('systemStatus').hidden=!text}
 const sharedMedia=setupCorporateMedia({client,context:()=>({self,peer,ready}),reloadMessages:loadMessages,status});
+const live=setupCorporateChatLive({
+ client,context:()=>({self,peer,ready}),
+ typingLabel:$('typingIndicator'),typingName:$('typingName')
+});
 const mediaControls=document.querySelector('.media-actions');
 const mediaToggle=$('mediaToggleButton');
 mediaToggle.addEventListener('click',()=>{
@@ -56,6 +62,7 @@ if(compactChat){
 $('peerSearch').addEventListener('input',renderPeers);
 $('backToInbox').addEventListener('click',()=>{
  if(!compactChat)return;
+ live.setThreadOpen(false);
  document.querySelector('.chat').classList.remove('bc-thread-active');
  document.querySelector('.media-actions')?.classList.add('is-collapsed');
  $('mediaToggleButton').setAttribute('aria-expanded','false');
@@ -65,7 +72,11 @@ $('backToInbox').addEventListener('click',()=>{
 });
 const composerText=$('messageInput');
 function resizeComposer(){composerText.style.height='auto';composerText.style.height=Math.min(composerText.scrollHeight,112)+'px'}
-composerText.addEventListener('input',resizeComposer);
+composerText.addEventListener('input',()=>{
+ resizeComposer();
+ live.onInput(composerText.value);
+});
+composerText.addEventListener('blur',()=>live.stopTyping());
 composerText.addEventListener('keydown',e=>{
  if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();if(!composerText.disabled)$('sendForm').requestSubmit()}
 });
@@ -97,8 +108,19 @@ async function boot(){
    client.channel('blackcell-chat-'+self)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'corp_chat_messages'},payload=>{
       const m=payload.new;
-      if(m&&(m.sender_id===self||m.recipient_id===self)){void loadMessages();void refreshInboxSummaries()}
-    }).subscribe();
+      if(m&&(m.sender_id===self||m.recipient_id===self)){
+       void loadMessages();
+       if(compactChat)void refreshInboxSummaries();
+      }
+    })
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'corp_chat_messages'},payload=>{
+      const m=payload.new;
+      if(m&&(m.sender_id===self||m.recipient_id===self))void loadMessages();
+    })
+    .on('postgres_changes',{event:'*',schema:'public',table:'corp_chat_typing'},payload=>{
+      live.onTypingChange(payload);
+    })
+    .subscribe();
    renderPeers();
    void refreshInboxSummaries();
    if(contacts.length){
@@ -176,7 +198,10 @@ function renderPeers(){
 }
 function choose(userId){
  const selected=contacts.find(x=>x.user_id===userId);if(!selected||!ready)return;
+ const previousPeer=peer?.user_id;
+ live.onPeerChange(previousPeer,userId);
  peer=selected;sharedMedia.onPeerChange(userId);firstLoad=true;
+ live.setThreadOpen(!mediaPanelMode);
  if(compactChat)document.querySelector('.chat').classList.add('bc-thread-active');
  if(window.parent!==window)window.parent.postMessage({type:'blackcell-chat-conversation',peerId:userId,name:peer.display_name||'Employee'},location.origin);$('peerName').textContent=peer.display_name||'Employee';$('peerDetail').textContent=peer.role==='owner'?'LEVEL 7 · OWNER':'LEVEL '+peer.clearance_level;
  $('imessagePortrait').textContent=String(peer.display_name||'B').trim().slice(0,1).toUpperCase();
@@ -190,13 +215,17 @@ async function loadMessages(){
  try{
   const pid=peer.user_id;
   const filter='and(sender_id.eq.'+self+',recipient_id.eq.'+pid+'),and(sender_id.eq.'+pid+',recipient_id.eq.'+self+')';
-  const {data,error}=await client.from('corp_chat_messages').select('id,sender_id,recipient_id,body,created_at,media_batch_id').or(filter).order('created_at',{ascending:false}).limit(100);
+  const {data,error}=await client.from('corp_chat_messages').select('id,sender_id,recipient_id,body,created_at,media_batch_id,read_at').or(filter).order('created_at',{ascending:false}).limit(100);
   if(error){status('Messages could not be loaded.');return}
   const box=$('messages'),atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<80;
   const ordered=(data||[]).slice().reverse();
   const newest=ordered.at(-1)?.id||'empty',oldNewest=box.dataset.newest;
-  if(oldNewest===newest && !firstLoad)return;
-  box.dataset.newest=newest;box.replaceChildren();
+  const signature=ordered.map(m=>m.id+':'+(m.read_at||'')).join('|');
+  if(box.dataset.readSignature===signature&&!firstLoad){
+   void live.markRead(ordered);
+   return;
+  }
+  box.dataset.newest=newest;box.dataset.readSignature=signature;box.replaceChildren();
   let currentDay='';
   for(let i=0;i<ordered.length;i++){
    const m=ordered[i],previous=ordered[i-1],next=ordered[i+1];
@@ -225,16 +254,30 @@ async function loadMessages(){
    t.dateTime=m.created_at;t.textContent=when.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
    t.title=when.toLocaleString();
    if(pairedAfter&&!m.media_batch_id)t.classList.add('group-time');
-   item.append(t);box.append(item);
+   item.append(t);
+   if(own&&!pairedAfter){
+    const receipt=text('span','message-receipt'+(m.read_at?' read':''),'');
+    const tick=text('span','receipt-ticks',m.read_at?'✓✓':'✓');
+    tick.setAttribute('aria-hidden','true');
+    const label=text('span','',m.read_at
+      ?'Read '+new Date(m.read_at).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})
+      :'Sent');
+    receipt.setAttribute('aria-label',m.read_at?'Read by recipient':'Message sent');
+    receipt.append(tick,label);
+    item.append(receipt);
+   }
+   box.append(item);
   }
   if(!ordered.length)box.append(text('p','empty','Private conversation started. Send the first message.'));
   if(atBottom||firstLoad)box.scrollTop=box.scrollHeight;
   firstLoad=false;status('');
+  void live.markRead(ordered);
  }catch(_){status('Chat connection interrupted. Retrying…')}
  finally{isLoading=false}
 }
 $('sendForm').addEventListener('submit',async e=>{
  e.preventDefault();const body=$('messageInput').value.trim();if(!ready||!peer||!body)return;
+ live.stopTyping(peer.user_id);
  const btn=$('sendButton');btn.disabled=true;status('');
  try{
   const {error}=await client.from('corp_chat_messages').insert({sender_id:self,recipient_id:peer.user_id,body});
@@ -247,7 +290,8 @@ $('sendForm').addEventListener('submit',async e=>{
 for(const evt of ['pointerdown','keydown','wheel','touchstart']){
  document.addEventListener(evt,chatActivity,{passive:true});
 }
-setInterval(()=>{if(ready){void loadMessages();if(compactChat)void refreshInboxSummaries()}},12000);
+setInterval(()=>{if(ready&&live.visible())void loadMessages()},5000);
+setInterval(()=>{if(ready&&compactChat&&!document.hidden)void refreshInboxSummaries()},13000);
 setInterval(()=>{
  if(employeeSession&&!sessionEnded&&Date.now()-lastActivity>=IDLE_LIMIT_MS)
   void endChatAccess('Signed out after 60 minutes of inactivity.');
@@ -265,7 +309,10 @@ document.addEventListener('visibilitychange',()=>{
 
 window.addEventListener('message',event=>{
  if(event.origin!==location.origin||event.source!==window.parent)return;
- if(event.data?.type==='blackcell-select-peer'&&ready){
+ if(event.data?.type==='blackcell-chat-visibility'){
+  live.setVisible(event.data.visible===true);
+  if(event.data.visible===true&&ready&&peer)void loadMessages();
+ }else if(event.data?.type==='blackcell-select-peer'&&ready){
   const id=event.data.peerId;
   if(typeof id==='string'&&contacts.some(x=>x.user_id===id))choose(id);
  }
