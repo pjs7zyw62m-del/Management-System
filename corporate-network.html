@@ -4,6 +4,7 @@
 <script src="corporate-chat-capabilities.js?v=20261109-large-media1"></script><meta name="theme-color" content="#030305"><title>BLACKCELL NETWORK | Corporate Social</title>
 <link rel="stylesheet" href="corporate-network.css?v=20261109-uncropped2">
 <link rel="stylesheet" href="corporate-network-photos.css?v=20261109-photos3">
+<link rel="stylesheet" href="corporate-network-military.css?v=20261109-military1">
 <link rel="stylesheet" href="corporate-chat-dock.css?v=20261109-floating-right2"><link rel="stylesheet" href="corporate-chat-bubble-dock.css?v=20261109-bubble-dock1"><link rel="stylesheet" href="corporate-chat-premium-dock.css?v=20261109-premium1">
 <link rel="stylesheet" href="corporate-chat-media-bubble-host.css?v=20261109-independent-media1"><link rel="stylesheet" href="corporate-chat-media-responsive.css?v=20261109-sidebyside2"><link rel="stylesheet" href="corporate-chat-media-flip-focus.css?v=20261109-flip-focus1">
 <script src="corporate-chat-media-bubble-host.js?v=20261109-large-media1" defer></script>
@@ -20,7 +21,7 @@
   <button data-view="discover">DISCOVER</button>
   <button data-view="profile">MY PROFILE</button>
   <button data-view="videos">VIDEOS</button>
-  <button data-view="photos">PHOTOS</button>
+  <button data-view="photos">MILITARY LIBRARY</button>
  </nav>
  <div class="head-actions"><a class="nav-chat" href="corporate-chat.html">CHAT <span>↗</span></a><a id="portalLink" href="employee.html" title="Return to portal">PORTAL ↗</a></div>
 </header>
@@ -33,7 +34,7 @@
       <button class="rail-link selected" data-view="feed"><span>▦</span> Network Feed</button>
       <button class="rail-link" data-view="profile"><span>♙</span> My Profile</button>
       <button class="rail-link" data-view="videos"><span>▶</span> Video Channel</button>
-      <button class="rail-link" data-view="photos"><span>▧</span> Photos & Albums</button>
+      <button class="rail-link" data-view="photos"><span>▧</span> Military Library</button>
       <button class="rail-link" data-view="discover"><span>◎</span> People & Following</button>
       <a class="rail-link" href="corporate-chat.html"><span>▧</span> Private Chat</a>
     </div>
@@ -75,19 +76,34 @@
       <div id="videoGrid" class="video-grid"></div>
     </section>
     <section id="photosView" class="view" hidden>
-      <div class="page-intro photo-intro"><div><div class="overline">BLACKCELL / APPLE PHOTOS × FLICKR</div><h1>Photos<span>.</span></h1>
-        <p>One beautiful library of moments, galleries, albums, and videos shared inside Blackcell Network.</p></div>
+      <div class="page-intro photo-intro"><div><div class="overline">BLACKCELL / MANSARMEDFORCES · PRIVATE ARCHIVE</div><h1>Military Media Library<span>.</span></h1>
+        <p>Organize military photographs and videos by branch, subject, era, unit, and personal albums. Browse your archive or authorized network contributions.</p></div>
         <div class="photos-header-actions"><button id="newAlbumButton" type="button" class="btn outline">＋ NEW ALBUM</button><button id="photosUploadButton" type="button" class="btn crimson">＋ UPLOAD MEDIA</button></div>
       </div>
+      <div class="military-scope-bar panel" aria-label="Military library scope"><div class="military-scope-copy"><strong>LIBRARY ACCESS</strong><small>Every original remains under its contributor’s ownership</small></div><div id="militaryScope" class="apple-segmented"><button type="button" data-military-scope="mine" class="selected">MY LIBRARY</button><button type="button" data-military-scope="network">NETWORK ARCHIVE</button></div></div>
       <div class="photos-summary">
         <div class="panel"><strong id="photoCountMetric">0</strong><span>PHOTOS</span></div>
         <div class="panel"><strong id="videoCountMetric">0</strong><span>VIDEOS</span></div>
         <div class="panel"><strong id="albumCountMetric">0</strong><span>ALBUMS</span></div>
         <div class="panel"><strong id="favoriteCountMetric">0</strong><span>FAVORITES</span></div>
       </div>
-      <section class="apple-album-section"><div class="photos-section-head"><div><div class="overline">CURATED COLLECTIONS</div><h2>Albums</h2></div><span>Organized by the people of Blackcell</span></div><div id="appleAlbumStrip" class="apple-album-strip"></div></section>
+      <section class="military-subject-section"><div class="photos-section-head"><div><div class="overline">MILITARY INDEX</div><h2>Browse by Subject</h2></div><span>Only media available within your authorized network</span></div><div id="militaryCategoryTiles" class="military-category-grid"></div></section>
+      <details class="military-upload-settings panel" id="militaryUploadSettings"><summary>CLASSIFY NEW UPLOADS <span>BRANCH · SUBJECT · ERA · UNIT</span></summary><div class="military-upload-fields">
+        <label>BRANCH<select id="militaryUploadBranch"><option value="Unspecified">Unspecified</option><option value="Army">Army</option><option value="Navy">Navy</option><option value="Marine Corps">Marine Corps</option><option value="Air Force">Air Force</option><option value="Space Force">Space Force</option><option value="Coast Guard">Coast Guard</option><option value="National Guard">National Guard</option><option value="Special Operations">Special Operations</option><option value="Joint / Multinational">Joint / Multinational</option><option value="Other">Other</option></select></label>
+        <label>SUBJECT<select id="militaryUploadCategory"><option value="Unsorted">Unsorted</option><option value="Personnel">Personnel</option><option value="Uniforms">Uniforms</option><option value="Insignia">Insignia</option><option value="Equipment">Equipment</option><option value="Ground Vehicles">Ground Vehicles</option><option value="Aircraft">Aircraft</option><option value="Naval Vessels">Naval Vessels</option><option value="Facilities">Facilities</option><option value="Training">Training</option><option value="Operations">Operations</option><option value="Ceremonies">Ceremonies</option><option value="Historical">Historical</option><option value="Other">Other</option></select></label>
+        <label>ERA<select id="militaryUploadEra"><option value="">Unspecified</option><option value="Contemporary">Contemporary</option><option value="2000–Present">2000–Present</option><option value="1990s">1990s</option><option value="1980s">1980s</option><option value="Cold War">Cold War</option><option value="World War II">World War II</option><option value="World War I">World War I</option><option value="Historical">Historical</option><option value="Other">Other</option></select></label>
+        <label>UNIT / FORMATION<input id="militaryUploadUnit" maxlength="120" placeholder="Optional unit or formation"></label>
+        <label>TAGS<input id="militaryUploadTags" maxlength="350" placeholder="Comma-separated searchable tags"></label>
+      </div><p>Optional classification. A selected album’s metadata is used as the default. Do not upload restricted operational material.</p></details>
+      <section class="apple-album-section"><div class="photos-section-head"><div><div class="overline">ORGANIZED MILITARY COLLECTIONS</div><h2>Albums</h2></div><span>Organized by the people of Blackcell</span></div><div id="appleAlbumStrip" class="apple-album-strip"></div></section>
       <section class="apple-gallery-section">
-        <div class="photos-section-head"><div><div class="overline">PRIVATE CORPORATE NETWORK</div><h2 id="photosGalleryTitle">All Media</h2></div><button id="photosClearAlbum" class="photos-clear-album" hidden>VIEW ALL ↗</button></div>
+        <div class="photos-section-head"><div><div class="overline">PRIVATE / SEARCHABLE ARCHIVE</div><h2 id="photosGalleryTitle">My Military Media</h2></div><button id="photosClearAlbum" class="photos-clear-album" hidden>VIEW ALL ↗</button></div>
+        <div class="military-filters" aria-label="Military media filters">
+          <label>BRANCH<select id="militaryFilterBranch"><option value="">All branches</option><option value="Unspecified">Unspecified</option><option value="Army">Army</option><option value="Navy">Navy</option><option value="Marine Corps">Marine Corps</option><option value="Air Force">Air Force</option><option value="Space Force">Space Force</option><option value="Coast Guard">Coast Guard</option><option value="National Guard">National Guard</option><option value="Special Operations">Special Operations</option><option value="Joint / Multinational">Joint / Multinational</option><option value="Other">Other</option></select></label>
+          <label>SUBJECT<select id="militaryFilterCategory"><option value="">All subjects</option><option value="Unsorted">Unsorted</option><option value="Personnel">Personnel</option><option value="Uniforms">Uniforms</option><option value="Insignia">Insignia</option><option value="Equipment">Equipment</option><option value="Ground Vehicles">Ground Vehicles</option><option value="Aircraft">Aircraft</option><option value="Naval Vessels">Naval Vessels</option><option value="Facilities">Facilities</option><option value="Training">Training</option><option value="Operations">Operations</option><option value="Ceremonies">Ceremonies</option><option value="Historical">Historical</option><option value="Other">Other</option></select></label>
+          <label>ERA<select id="militaryFilterEra"><option value="">All eras</option><option value="Contemporary">Contemporary</option><option value="2000–Present">2000–Present</option><option value="1990s">1990s</option><option value="1980s">1980s</option><option value="Cold War">Cold War</option><option value="World War II">World War II</option><option value="World War I">World War I</option><option value="Historical">Historical</option><option value="Other">Other</option></select></label>
+          <button id="militaryFiltersReset" type="button" class="btn outline">RESET FILTERS</button>
+        </div>
         <div class="photos-gallery-tools">
           <div class="apple-segmented" id="photosFilters">
             <button data-photo-filter="all" class="selected">All</button><button data-photo-filter="photo">Photos</button>
@@ -98,7 +114,7 @@
             <select id="photosSort" aria-label="Media sorting"><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="name">Name</option></select></div>
         </div>
         <div id="applePhotosGallery" class="apple-photo-gallery"></div>
-        <p class="photos-privacy-note">Every album is shared with verified Blackcell Network members. Private chat attachments stay in their own Shared Media archive.</p>
+        <p class="photos-privacy-note">Only verified Blackcell Network members can see this archive. Each original belongs to its contributor. Private chat attachments remain separate and are not indexed here.</p>
       </section>
       <input id="applePhotoFiles" type="file" multiple accept="image/*,video/*" hidden>
       <div id="applePhotoProgress" class="panel apple-photo-progress" hidden><span id="appleProgressLabel">Preparing secure upload…</span><div class="apple-photo-meter"><div id="applePhotoMeterFill"></div></div></div>
@@ -120,8 +136,30 @@
     <header class="modal-head"><div><div class="overline">BLACKCELL / CURATED COLLECTION</div><h2 id="appleAlbumTitle">Create Album</h2></div><button id="albumModalClose" class="close-x" type="button">✕</button></header>
     <div class="modal-body"><label for="appleAlbumName">ALBUM NAME</label><input id="appleAlbumName" maxlength="100" placeholder="My Photo Collection">
       <label for="appleAlbumDescription">DESCRIPTION</label><textarea id="appleAlbumDescription" maxlength="500" rows="3" placeholder="Describe this collection…"></textarea>
-      <p class="hint">Albums are visible to verified Blackcell members. Only you can add or remove your own photos.</p></div>
+      <div class="military-modal-fields">
+      <label>BRANCH<select id="appleAlbumBranch"><option value="Unspecified">Unspecified</option><option value="Army">Army</option><option value="Navy">Navy</option><option value="Marine Corps">Marine Corps</option><option value="Air Force">Air Force</option><option value="Space Force">Space Force</option><option value="Coast Guard">Coast Guard</option><option value="National Guard">National Guard</option><option value="Special Operations">Special Operations</option><option value="Joint / Multinational">Joint / Multinational</option><option value="Other">Other</option></select></label>
+      <label>SUBJECT<select id="appleAlbumCategory"><option value="Unsorted">Unsorted</option><option value="Personnel">Personnel</option><option value="Uniforms">Uniforms</option><option value="Insignia">Insignia</option><option value="Equipment">Equipment</option><option value="Ground Vehicles">Ground Vehicles</option><option value="Aircraft">Aircraft</option><option value="Naval Vessels">Naval Vessels</option><option value="Facilities">Facilities</option><option value="Training">Training</option><option value="Operations">Operations</option><option value="Ceremonies">Ceremonies</option><option value="Historical">Historical</option><option value="Other">Other</option></select></label>
+      <label>ERA<select id="appleAlbumEra"><option value="">Unspecified</option><option value="Contemporary">Contemporary</option><option value="2000–Present">2000–Present</option><option value="1990s">1990s</option><option value="1980s">1980s</option><option value="Cold War">Cold War</option><option value="World War II">World War II</option><option value="World War I">World War I</option><option value="Historical">Historical</option><option value="Other">Other</option></select></label>
+      <label>UNIT / FORMATION<input id="appleAlbumUnit" maxlength="120" placeholder="Optional unit or formation"></label>
+      <label>TAGS<input id="appleAlbumTags" maxlength="350" placeholder="Comma-separated tags"></label>
+      </div><p class="hint">Albums are visible to verified members. Owners control their albums; the administrator may curate network contributions into administrator-owned collections.</p></div>
     <footer class="modal-footer"><button id="albumModalCancel" class="btn outline">CANCEL</button><button id="albumModalSave" class="btn crimson">SAVE ALBUM ↗</button></footer>
+  </section>
+</div>
+<div id="militaryAssetOverlay" class="modal-backdrop" hidden>
+  <section class="modal panel" role="dialog" aria-modal="true" aria-labelledby="militaryAssetTitle">
+    <header class="modal-head"><div><div class="overline">BLACKCELL / MILITARY MEDIA</div><h2 id="militaryAssetTitle">Classify Media</h2></div><button id="militaryAssetClose" class="close-x" type="button" aria-label="Close classification">✕</button></header>
+    <div class="modal-body military-modal-fields">
+      <label>BRANCH<select id="militaryAssetBranch"><option value="Unspecified">Unspecified</option><option value="Army">Army</option><option value="Navy">Navy</option><option value="Marine Corps">Marine Corps</option><option value="Air Force">Air Force</option><option value="Space Force">Space Force</option><option value="Coast Guard">Coast Guard</option><option value="National Guard">National Guard</option><option value="Special Operations">Special Operations</option><option value="Joint / Multinational">Joint / Multinational</option><option value="Other">Other</option></select></label>
+      <label>SUBJECT<select id="militaryAssetCategory"><option value="Unsorted">Unsorted</option><option value="Personnel">Personnel</option><option value="Uniforms">Uniforms</option><option value="Insignia">Insignia</option><option value="Equipment">Equipment</option><option value="Ground Vehicles">Ground Vehicles</option><option value="Aircraft">Aircraft</option><option value="Naval Vessels">Naval Vessels</option><option value="Facilities">Facilities</option><option value="Training">Training</option><option value="Operations">Operations</option><option value="Ceremonies">Ceremonies</option><option value="Historical">Historical</option><option value="Other">Other</option></select></label>
+      <label>ERA<select id="militaryAssetEra"><option value="">Unspecified</option><option value="Contemporary">Contemporary</option><option value="2000–Present">2000–Present</option><option value="1990s">1990s</option><option value="1980s">1980s</option><option value="Cold War">Cold War</option><option value="World War II">World War II</option><option value="World War I">World War I</option><option value="Historical">Historical</option><option value="Other">Other</option></select></label>
+      <label>UNIT / FORMATION<input id="militaryAssetUnit" maxlength="120" placeholder="Optional unit or formation"></label>
+      <label>LOCATION (GENERAL)<input id="militaryAssetLocation" maxlength="120" placeholder="Optional general location"></label>
+      <label>YEAR<input id="militaryAssetYear" type="number" min="1800" max="2100" placeholder="Optional year"></label>
+      <label>TAGS<input id="militaryAssetTags" maxlength="350" placeholder="E.g. ceremony, dress uniform, aviation"></label>
+      <p class="hint">Only the contributor can edit the original file's classification. Do not enter restricted operational details.</p>
+    </div>
+    <footer class="modal-footer"><button id="militaryAssetCancel" type="button" class="btn outline">CANCEL</button><button id="militaryAssetSave" type="button" class="btn crimson">SAVE CLASSIFICATION ↗</button></footer>
   </section>
 </div>
 <div id="applePhotoViewer" class="apple-photo-viewer" hidden role="dialog" aria-modal="true" aria-label="Apple Photos style viewer">
@@ -131,7 +169,7 @@
  <div class="apple-photo-viewer-stage"><button id="appleViewerPrevious" class="apple-photo-nav previous" type="button" aria-label="Previous photo">‹</button>
    <div id="appleViewerStage" class="apple-photo-stage-inner"></div><button id="appleViewerNext" class="apple-photo-nav next" type="button" aria-label="Next photo">›</button></div>
  <div class="apple-photo-viewer-bar"><div class="apple-viewer-details"><span id="appleViewerPosition"></span><span id="appleViewerCaption"></span></div>
-  <div id="appleViewerOwnerControls" class="apple-viewer-owner-controls" hidden><select id="appleViewerAlbumSelect" aria-label="Add media to one of your albums"></select><button id="appleViewerAddAlbum" type="button">＋ ADD TO ALBUM</button><button id="appleViewerEditCaption" type="button">EDIT CAPTION</button><button id="appleViewerDelete" type="button">DELETE UPLOAD</button></div></div>
+  <div id="appleViewerOwnerControls" class="apple-viewer-owner-controls" hidden><select id="appleViewerAlbumSelect" aria-label="Add media to one of your albums"></select><button id="appleViewerAddAlbum" type="button">＋ ADD TO ALBUM</button><button id="appleViewerEditCaption" type="button">EDIT CAPTION</button><button id="appleViewerEditMilitary" type="button">CLASSIFY</button><button id="appleViewerDelete" type="button">DELETE UPLOAD</button></div></div>
  <div id="appleViewerFilmstrip" class="apple-photo-filmstrip"></div>
 </div>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
