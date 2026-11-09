@@ -18,8 +18,9 @@
   const email=make('button','','✉ BLACKCELL EMAIL');
   email.type='button';email.disabled=true;email.title='Corporate email is not connected yet';
   dock.append(people,imessage,email);
+  dock.hidden=true; // Bubble-only launcher; avoid a redundant, cluttered bottom toolbar.
   const orb=make('button','bc-chat-orb');
-  orb.type='button';orb.setAttribute('aria-label','Open minimized iMessage chat');
+  orb.type='button';orb.setAttribute('aria-label','Open Blackcell Messages');
   const icon=make('span','bc-orb-chat-icon');
   icon.setAttribute('aria-hidden','true');
   icon.append(make('span','bc-orb-chat-dots','•••'));
@@ -28,7 +29,7 @@
   const counter=make('span','bc-unread');counter.hidden=true;
   orb.append(dot,counter);
   const pane=make('section','bc-chat-pane');
-  pane.setAttribute('role','dialog');pane.setAttribute('aria-label','Blackcell floating iMessage');
+  pane.setAttribute('role','dialog');pane.setAttribute('aria-label','Blackcell Messages floating conversation window');
   pane.id='bcChatPane';
   pane.hidden=true;
   const header=make('div','bc-chat-pane-header');
@@ -36,7 +37,9 @@
   const labelIcon=make('span','bc-chat-header-bubble','•••');
   labelIcon.setAttribute('aria-hidden','true');
   const labelContent=make('span','bc-chat-header-label');
-  labelContent.append(make('strong','','BLACKCELL / iMESSAGE'),make('small','','PRIVATE CORPORATE COMMUNICATIONS'));
+  const labelTitle=make('strong','','BLACKCELL MESSAGES');
+  const labelSubtitle=make('small','','PRIVATE · VERIFIED NETWORK');
+  labelContent.append(labelTitle,labelSubtitle);
   label.append(labelIcon,labelContent);
   const controls=make('div','bc-chat-pane-controls');
   function button(title,label,klass,fn){
@@ -59,14 +62,21 @@
   frame.title='Blackcell private messages, photos, videos, and shared media';
   frame.setAttribute('allow','clipboard-read; clipboard-write');
   const footer=make('div','bc-chat-pane-footer');
-  footer.append(make('span','','BLACKCELL COMMUNICATIONS'),make('span','','PRIVATE · AUTHORIZED'));
+  footer.append(make('span','','BLACKCELL CORPORATION'),make('span','','VERIFIED NETWORK ACCESS'));
   pane.append(header,frame,footer);
   const toast=make('button','bc-chat-toast');
   toast.type='button';toast.hidden=true;
   toast.setAttribute('aria-label','New private iMessage notification');
   document.body.append(dock,orb,pane,toast);
   const mediaBubbles=window.BlackcellMediaBubbleHost?.({mode:'dock',mainFrame:frame,mainPane:pane});
-  let state='minimized',unread=0,peerWanted=null;
+  let state='minimized',unread=0,peerWanted=null,currentUserId=null,contactsLoaded=false;
+  const storageKey=id=>'blackcell-messages-ui-v3:'+id;
+  function saveWindowState(){
+   if(!currentUserId)return;
+   try{sessionStorage.setItem(storageKey(currentUserId),JSON.stringify({
+     open:state==='open',peerId:peerWanted&&peers.has(peerWanted)?peerWanted:null
+   }))}catch(_){}
+  }
   let peers=new Map(),toastQueue=[],toastTimer=null,toastOpen=false;
   let frameLoaded=false;
   function setUnread(number){
@@ -96,21 +106,53 @@
   function openChat(peerId){
     if(peerId)peerWanted=peerId;
     state='open';pane.hidden=false;orb.hidden=true;
+    pane.classList.add('bc-chat-window-open');
+    labelSubtitle.textContent=peerId&&peers.has(peerId)?peers.get(peerId)+' · PRIVATE':'PRIVATE · VERIFIED NETWORK';
     bootFrame();
     if(peerId)selectInFrame(peerId);
-    setUnread(0);
+    setUnread(0);saveWindowState();
   }
   function minimize(){
     state='minimized';pane.hidden=true;orb.hidden=false;
+    mediaBubbles?.closeAll();
+    pane.classList.remove('bc-chat-window-open');
+    saveWindowState();
   }
   function closeChat(){
-    state='closed';pane.hidden=true;orb.hidden=true;
+    state='minimized';pane.hidden=true;orb.hidden=false;
+    pane.classList.remove('bc-chat-window-open');
+    mediaBubbles?.closeAll();
     frame.removeAttribute('src');frameLoaded=false;
+    peerWanted=null;labelSubtitle.textContent='PRIVATE · VERIFIED NETWORK';
+    saveWindowState();
   }
+  function suspendChat(){
+    closeChat();
+    orb.hidden=true;
+    dock.hidden=true;
+  }
+  function resumeChat(){
+    if(state!=='open')orb.hidden=false;
+  }
+  window.addEventListener('blackcell-suspend-imessage',suspendChat);
+  window.addEventListener('blackcell-resume-imessage',resumeChat);
   orb.addEventListener('click',()=>openChat());
   people.addEventListener('click',()=>openChat());
   imessage.addEventListener('click',()=>openChat());
   window.addEventListener('blackcell-open-imessage',ev=>openChat(ev?.detail?.peerId||undefined));
+  window.addEventListener('message',event=>{
+   if(event.origin!==location.origin||event.source!==frame.contentWindow)return;
+   const detail=event.data||{};
+   if(detail.type==='blackcell-chat-conversation'){
+    if(typeof detail.peerId==='string'&&peers.has(detail.peerId)){
+     peerWanted=detail.peerId;
+     labelSubtitle.textContent=peers.get(detail.peerId)+' · PRIVATE';
+     saveWindowState();
+    }
+   }else if(detail.type==='blackcell-chat-inbox-open'){
+    peerWanted=null;labelSubtitle.textContent='PRIVATE · VERIFIED NETWORK';saveWindowState();
+   }
+  });
   toast.addEventListener('click',()=>{
     const target=toast.dataset.peerId||undefined;
     closeToast();openChat(target);
@@ -163,12 +205,25 @@
     pane.style.top=clamp(parseFloat(pane.style.top)||5,5,Math.max(5,innerHeight-pane.offsetHeight-5))+'px';
   });
   void client.rpc('corp_chat_peers').then(({data,error})=>{
-    if(!error&&data?.ok===true&&Array.isArray(data.peers))
+    if(!error&&data?.ok===true&&Array.isArray(data.peers)){
       peers=new Map(data.peers.map(p=>[p.user_id,p.display_name||'Employee']));
+      contactsLoaded=true;
+      if(currentUserId)restoreWindowState();
+    }
   }).catch(()=>{});
+  function restoreWindowState(){
+    if(!currentUserId||!contactsLoaded||state==='open')return;
+    try{
+      const stored=JSON.parse(sessionStorage.getItem(storageKey(currentUserId))||'{}');
+      if(!stored.open)return;
+      const peer=typeof stored.peerId==='string'&&peers.has(stored.peerId)?stored.peerId:null;
+      openChat(peer);
+    }catch(_){}
+  }
   void client.auth.getUser().then(({data})=>{
     const self=data?.user?.id;
     if(!self)return;
+    currentUserId=self;restoreWindowState();
     client.channel('blackcell-admin-imessage-'+self)
       .on('postgres_changes',{event:'INSERT',schema:'public',table:'corp_chat_messages'},payload=>{
         const item=payload.new||{};
