@@ -7,7 +7,7 @@
   function create({mode='standalone',mainFrame=null,mainPane=null}={}){
     if(document.getElementById('bcMediaBubbleHost'))return window.BlackcellMediaBubbleHostController;
     const root=document.createElement('div');
-    root.className='bc-media-bubble-host';
+    root.className='bc-media-bubble-host bc-bubble-host-'+mode;
     root.id='bcMediaBubbleHost';
     root.hidden=true;
     root.setAttribute('aria-label','Blackcell independent media bubbles');
