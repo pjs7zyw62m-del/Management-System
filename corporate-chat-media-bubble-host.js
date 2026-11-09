@@ -105,6 +105,7 @@
       p.iframe.src='about:blank';
       p.card.remove();
       panes.delete(type);
+      if(type==='library')document.body.classList.remove('bc-media-spotlight');
       sync();
       try{mainFrame?.contentWindow?.postMessage({type:'blackcell-media-bubble-state',panel:type,open:false},location.origin)}catch(_){}
     }
@@ -213,6 +214,10 @@
         open(data.panel,data.peerId,{batchId:data.batchId,pick:data.pick});
       }else if(data.type==='blackcell-media-bubble-close'){
         close(data.panel);
+      }else if(data.type==='blackcell-media-focus-state'){
+        const library=panes.get('library');
+        if(library&&library.iframe.contentWindow===event.source&&library.peerId===data.peerId)
+          document.body.classList.toggle('bc-media-spotlight',data.focused===true);
       }else if(data.type==='blackcell-media-upload-state'){
         const share=panes.get('share');
         if(share&&share.iframe.contentWindow===event.source&&share.peerId===data.peerId){
