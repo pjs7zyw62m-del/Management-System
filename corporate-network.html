@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#030305"><title>BLACKCELL NETWORK | Corporate Social</title>
-<link rel="stylesheet" href="corporate-network.css?v=20261109-social1">
-<script src="corp-config.js" defer></script><script type="module" src="corporate-network.js?v=20261109-social1"></script></head>
+<link rel="stylesheet" href="corporate-network.css?v=20261109-social-photos2">
+<script src="corp-config.js" defer></script><script type="module" src="corporate-network.js?v=20261109-social-photos2"></script></head>
 <body>
 <header class="masthead">
  <div class="brand"><span class="brand-mark">B</span><div><strong>BLACKCELL CORPORATION</strong><small>PRIVATE SOCIAL NETWORK</small></div></div>
@@ -10,6 +10,7 @@
   <button data-view="discover">DISCOVER</button>
   <button data-view="profile">MY PROFILE</button>
   <button data-view="videos">VIDEOS</button>
+  <button data-view="photos">PHOTOS</button>
  </nav>
  <div class="head-actions"><a class="nav-chat" href="corporate-chat.html">CHAT <span>↗</span></a><a id="portalLink" href="employee.html" title="Return to portal">PORTAL ↗</a></div>
 </header>
@@ -22,6 +23,7 @@
       <button class="rail-link selected" data-view="feed"><span>▦</span> Network Feed</button>
       <button class="rail-link" data-view="profile"><span>♙</span> My Profile</button>
       <button class="rail-link" data-view="videos"><span>▶</span> Video Channel</button>
+      <button class="rail-link" data-view="photos"><span>▧</span> Photos & Albums</button>
       <button class="rail-link" data-view="discover"><span>◎</span> People & Following</button>
       <a class="rail-link" href="corporate-chat.html"><span>▧</span> Private Chat</a>
     </div>
@@ -50,7 +52,7 @@
         <div class="profile-identity"><div class="profile-identity-main"><div id="profileAvatar" class="avatar gigantic">B</div><div class="identity-info"><div class="overline">VERIFIED CORPORATE PROFILE</div><h1 id="profileName">Network Member</h1><p id="profileHandle">@network</p><p id="profileHeadline">Part of Blackcell Corporation.</p><div class="identity-meta"><span id="profileLevel">NETWORK</span><span id="profileJoined">MEMBER</span></div></div></div><div id="profileActions" class="profile-actions"></div></div>
         <div class="profile-stats"><div><strong id="profilePostCount">0</strong><span>POSTS</span></div><div><strong id="profileFollowerCount">0</strong><span>FOLLOWERS</span></div><div><strong id="profileFollowingCount">0</strong><span>FOLLOWING</span></div><div><strong id="profileVideoCount">0</strong><span>VIDEOS</span></div></div>
       </div>
-      <div class="tabs profile-tabs" id="profileTabs"><button data-tab="posts" class="selected">Posts</button><button data-tab="videos">Videos</button><button data-tab="photos">Photos</button><button data-tab="about">About</button></div>
+      <div class="tabs profile-tabs" id="profileTabs"><button data-tab="posts" class="selected">Posts</button><button data-tab="videos">Videos</button><button data-tab="photos">Photos</button><button data-tab="albums">Albums</button><button data-tab="about">About</button></div>
       <div id="profileContent" class="posts"></div>
     </section>
     <section id="discoverView" class="view" hidden>
@@ -61,6 +63,35 @@
     <section id="videosView" class="view" hidden>
       <div class="page-intro"><div><div class="overline">BLACKCELL / VIDEO CHANNEL</div><h1>Network Videos<span>.</span></h1><p>Every video shared across the private corporate network.</p></div></div>
       <div id="videoGrid" class="video-grid"></div>
+    </section>
+    <section id="photosView" class="view" hidden>
+      <div class="page-intro photo-intro"><div><div class="overline">BLACKCELL / APPLE PHOTOS × FLICKR</div><h1>Photos<span>.</span></h1>
+        <p>One beautiful library of moments, galleries, albums, and videos shared inside Blackcell Network.</p></div>
+        <div class="photos-header-actions"><button id="newAlbumButton" type="button" class="btn outline">＋ NEW ALBUM</button><button id="photosUploadButton" type="button" class="btn crimson">＋ UPLOAD MEDIA</button></div>
+      </div>
+      <div class="photos-summary">
+        <div class="panel"><strong id="photoCountMetric">0</strong><span>PHOTOS</span></div>
+        <div class="panel"><strong id="videoCountMetric">0</strong><span>VIDEOS</span></div>
+        <div class="panel"><strong id="albumCountMetric">0</strong><span>ALBUMS</span></div>
+        <div class="panel"><strong id="favoriteCountMetric">0</strong><span>FAVORITES</span></div>
+      </div>
+      <section class="apple-album-section"><div class="photos-section-head"><div><div class="overline">CURATED COLLECTIONS</div><h2>Albums</h2></div><span>Organized by the people of Blackcell</span></div><div id="appleAlbumStrip" class="apple-album-strip"></div></section>
+      <section class="apple-gallery-section">
+        <div class="photos-section-head"><div><div class="overline">PRIVATE CORPORATE NETWORK</div><h2 id="photosGalleryTitle">All Media</h2></div><button id="photosClearAlbum" class="photos-clear-album" hidden>VIEW ALL ↗</button></div>
+        <div class="photos-gallery-tools">
+          <div class="apple-segmented" id="photosFilters">
+            <button data-photo-filter="all" class="selected">All</button><button data-photo-filter="photo">Photos</button>
+            <button data-photo-filter="video">Videos</button><button data-photo-filter="favorites">♥ Favorites</button>
+            <button data-photo-filter="mine">My Uploads</button>
+          </div>
+          <div class="photos-gallery-search"><input id="photosSearch" type="search" placeholder="Search your collection…" aria-label="Search photos and videos by filename or caption">
+            <select id="photosSort" aria-label="Media sorting"><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="name">Name</option></select></div>
+        </div>
+        <div id="applePhotosGallery" class="apple-photo-gallery"></div>
+        <p class="photos-privacy-note">Every album is shared with verified Blackcell Network members. Private chat attachments stay in their own Shared Media archive.</p>
+      </section>
+      <input id="applePhotoFiles" type="file" multiple accept="image/*,video/*" hidden>
+      <div id="applePhotoProgress" class="panel apple-photo-progress" hidden><span id="appleProgressLabel">Preparing secure upload…</span><div class="apple-photo-meter"><div id="applePhotoMeterFill"></div></div></div>
     </section>
   </main>
   <aside class="rail right-rail">
@@ -74,5 +105,24 @@
     <div class="edit-files"><label>PROFILE PHOTO <input id="editAvatar" type="file" accept="image/*"></label><label>COVER BANNER <input id="editCover" type="file" accept="image/*"></label></div><p class="hint">Images up to 12 MB. Your username and clearance are assigned by Blackcell Administration.</p><p id="editFeedback" class="feedback" hidden></p></div>
   <footer class="modal-footer"><button id="cancelEdit" class="btn outline">CANCEL</button><button id="saveProfile" class="btn crimson">SAVE PROFILE ↗</button></footer>
 </section></div>
+<div id="appleAlbumOverlay" class="modal-backdrop" hidden>
+  <section class="modal panel" role="dialog" aria-modal="true" aria-labelledby="appleAlbumTitle">
+    <header class="modal-head"><div><div class="overline">BLACKCELL / CURATED COLLECTION</div><h2 id="appleAlbumTitle">Create Album</h2></div><button id="albumModalClose" class="close-x" type="button">✕</button></header>
+    <div class="modal-body"><label for="appleAlbumName">ALBUM NAME</label><input id="appleAlbumName" maxlength="100" placeholder="My Photo Collection">
+      <label for="appleAlbumDescription">DESCRIPTION</label><textarea id="appleAlbumDescription" maxlength="500" rows="3" placeholder="Describe this collection…"></textarea>
+      <p class="hint">Albums are visible to verified Blackcell members. Only you can add or remove your own photos.</p></div>
+    <footer class="modal-footer"><button id="albumModalCancel" class="btn outline">CANCEL</button><button id="albumModalSave" class="btn crimson">SAVE ALBUM ↗</button></footer>
+  </section>
+</div>
+<div id="applePhotoViewer" class="apple-photo-viewer" hidden role="dialog" aria-modal="true" aria-label="Apple Photos style viewer">
+ <div class="apple-photo-viewer-header"><div><strong id="appleViewerFilename">Media</strong><small id="appleViewerMeta">ORIGINAL QUALITY</small></div>
+   <div class="apple-photo-viewer-actions"><button id="appleViewerFavorite" title="Favorite this media" type="button">♡</button><button id="appleViewerOriginal" type="button">↗ FULL PHOTO</button>
+    <button id="appleViewerDownload" type="button">↓ DOWNLOAD</button><button id="appleViewerClose" class="close-x" type="button" aria-label="Close viewer">✕</button></div></div>
+ <div class="apple-photo-viewer-stage"><button id="appleViewerPrevious" class="apple-photo-nav previous" type="button" aria-label="Previous photo">‹</button>
+   <div id="appleViewerStage" class="apple-photo-stage-inner"></div><button id="appleViewerNext" class="apple-photo-nav next" type="button" aria-label="Next photo">›</button></div>
+ <div class="apple-photo-viewer-bar"><div class="apple-viewer-details"><span id="appleViewerPosition"></span><span id="appleViewerCaption"></span></div>
+  <div id="appleViewerOwnerControls" class="apple-viewer-owner-controls" hidden><select id="appleViewerAlbumSelect" aria-label="Add media to one of your albums"></select><button id="appleViewerAddAlbum" type="button">＋ ADD TO ALBUM</button><button id="appleViewerEditCaption" type="button">EDIT CAPTION</button><button id="appleViewerDelete" type="button">DELETE UPLOAD</button></div></div>
+ <div id="appleViewerFilmstrip" class="apple-photo-filmstrip"></div>
+</div>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </body></html>
