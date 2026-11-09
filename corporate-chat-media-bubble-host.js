@@ -101,6 +101,9 @@
           open('library',data.peerId,{batchId:data.batchId});
           close('share');
         }
+      }else if(data.type==='blackcell-media-bubble-peer-changed'
+        &&mainFrame?.contentWindow===event.source){
+        closeAll();
       }
     }
     window.addEventListener('message',handleMessage);
