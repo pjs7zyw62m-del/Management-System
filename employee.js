@@ -35,6 +35,7 @@ function setVerified(isVerified,m){
  $('sendSecurityEmailButton').hidden=isVerified;
  $('employeeCard').classList.toggle('codes-verified',isVerified);
  $('chatLink').hidden=!isVerified||m.can_chat!==true;
+ $('networkLink').hidden=!isVerified;
  $('employeeAccess').textContent=isVerified
    ?(m.can_chat?'SECURITY VERIFIED · CHAT AUTHORIZED':'SECURITY VERIFIED · CHAT RESTRICTED')
    :'IDENTITY ACTIVATED · CODE VERIFICATION REQUIRED';
