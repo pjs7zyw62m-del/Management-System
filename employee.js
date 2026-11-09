@@ -32,6 +32,7 @@ function noteActivity(){
 function setVerified(isVerified,m){
  verified=isVerified;
  $('employeeCodePanel').hidden=isVerified;
+ $('sendSecurityEmailButton').hidden=isVerified;
  $('employeeCard').classList.toggle('codes-verified',isVerified);
  $('chatLink').hidden=!isVerified||m.can_chat!==true;
  $('employeeAccess').textContent=isVerified
@@ -124,6 +125,45 @@ $('signin').addEventListener('submit',async e=>{
  }catch(_){showError('loginError','Sign in unavailable. Check your connection.')}
  finally{btn.disabled=false;btn.textContent='SIGN IN ↗'}
 });
+
+async function sendEmployeeSecurityEmail(){
+ const btn=$('sendSecurityEmailButton');
+ btn.disabled=true;
+ btn.textContent='SENDING SECURITY EMAIL…';
+ clearError('employeeStatus');
+ try{
+  const {data,error}=await client.functions.invoke('blackcell-send-employee-codes',{body:{}});
+  let detail=data;
+  if(error?.context&&typeof error.context.clone==='function'){
+   try{detail=await error.context.clone().json()}catch(_){}
+  }
+  if(error||detail?.ok!==true){
+   const reason=detail?.reason||'email_delivery_unavailable';
+   const message={
+    resend_api_key_not_configured:'Your account is activated. Automatic security-code email delivery is not configured yet. Contact your administrator.',
+    email_delivery_processing:'Security email processing is already underway. Check your inbox and try again shortly.',
+    email_delivery_limit_reached:'The code-email request limit has been reached. Contact your administrator.',
+    account_not_activated:'Activate your account password before requesting security codes.',
+    email_delivery_rejected:'Your account is activated, but the email provider rejected the security-code message. Contact your administrator.',
+    email_sent_confirmation_pending:'Your email may have been delivered, but the confirmation is pending. Check your inbox before retrying.'
+   }[reason]||'Your account is activated, but the security-code email could not be sent. Contact your administrator.';
+   showError('employeeStatus',message);
+   return false;
+  }
+  showError('employeeStatus',detail.status==='security_email_already_sent'
+    ?'Your Security Code email was already sent. Check your inbox, including Spam or Promotions.'
+    :'Your Blackcell Network Security Credentials email has been sent. Check your inbox for the 4-digit and 12-digit codes.');
+  return true;
+ }catch(_){
+  showError('employeeStatus','Your account is activated, but the code email could not be requested. Check your connection or contact your administrator.');
+  return false;
+ }finally{
+  btn.disabled=false;
+  btn.textContent='SEND MY SECURITY CODES';
+ }
+}
+$('sendSecurityEmailButton').addEventListener('click',()=>{void sendEmployeeSecurityEmail()});
+
 $('activateButton').addEventListener('click',async()=>{
  const pwd=$('activationPassword').value;
  const confirmation=$('confirmPassword').value;
@@ -142,6 +182,7 @@ $('activateButton').addEventListener('click',async()=>{
   $('activationPassword').value='';$('confirmPassword').value='';
   recoveryFlow=false;
   await load(true);
+  await sendEmployeeSecurityEmail();
  }catch(_){showError('activationError','Activation unavailable. Check your connection.')}
  finally{btn.disabled=false;btn.textContent='ACTIVATE & REVEAL MY EMPLOYEE CARD'}
 });
