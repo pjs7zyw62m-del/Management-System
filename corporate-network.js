@@ -1,4 +1,5 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-staff1';
+import {setupBlackcellPhotos} from './corporate-network-photos.js?v=20261109-photos1';
 const client=corporateClient(),bucket=client.storage.from('corp-social-media');
 const $=id=>document.getElementById(id);
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -9,7 +10,7 @@ const state={
  attached:[],openComments:new Set(),busy:false,sort:'newest',deepPost:null,
  chatPeers:[],signedAt:0
 };
-const fields=['feedView','profileView','discoverView','videosView'];
+const fields=['feedView','profileView','discoverView','videosView','photosView'];
 function el(tag,cls='',content=null){
  const n=document.createElement(tag);
  if(cls)n.className=cls;
@@ -70,9 +71,10 @@ function switchView(view,{who=null,tab=null,keepPost=false}={}){
  if(view==='profile')renderProfile();
  if(view==='discover')renderDirectory();
  if(view==='videos')renderVideos();
+ if(view==='photos')photos.render();
  const params=new URLSearchParams();
  if(view==='profile'&&state.profileUserId!==state.user.id)params.set('user',state.profileUserId);
- if(view==='videos'||view==='discover')params.set('view',view);
+ if(view==='videos'||view==='discover'||view==='photos')params.set('view',view);
  history.replaceState(null,'',location.pathname+(params.toString()?'?'+params.toString():''));
  window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -106,6 +108,7 @@ async function loadAll({show=true}={}){
   state.likes=lr.data||[];state.comments=cr.data||[];
  }else{state.likes=[];state.comments=[]}
  await loadSigned();
+ await photos.loadData();
  if(show)renderAll();
 }
 async function loadSigned(){
@@ -124,6 +127,7 @@ function renderAll(){
  if(state.view==='feed')renderFeed();
  if(state.view==='discover')renderDirectory();
  if(state.view==='videos')renderVideos();
+ if(state.view==='photos')photos.render();
 }
 function renderMini(){
  const p=myProfile(),node=$('myMini');
@@ -216,6 +220,12 @@ function renderProfile(){
   else for(const post of posts)box.append(renderPost(post));
   return;
  }
+ if(state.profileTab==='albums'){
+  box.append(photos.renderProfileAlbums(p.user_id));return;
+ }
+ if(state.profileTab==='photos'||state.profileTab==='videos'){
+  box.append(photos.renderProfilePhotos(p.user_id,state.profileTab==='videos'?'video':'photo'));return;
+ }
  const media=state.assets.filter(a=>a.owner_id===p.user_id&&a.purpose==='post'&&
     a.kind===(state.profileTab==='videos'?'video':'photo'));
  const grid=el('div',state.profileTab==='videos'?'video-grid':'directory-grid');
@@ -264,7 +274,7 @@ function renderPost(p){
     v.setAttribute('aria-label',f.filename);
     wrap.append(v);
    }else{
-    const link=btn('',()=>openMedia(f));
+    const link=btn('',()=>void photos.openAsset(f));
     const img=el('img');img.src=src;img.alt=f.filename;img.loading='lazy';
     link.title='View original photo in a separate tab';
     link.append(img);wrap.append(link);
@@ -570,7 +580,7 @@ async function boot(){
    }
   }
   if(uid&&UUID.test(uid)&&profile(uid))switchView('profile',{who:uid});
-  else if(['discover','videos'].includes(params.get('view')))switchView(params.get('view'));
+  else if(['discover','videos','photos'].includes(params.get('view')))switchView(params.get('view'));
   else switchView('feed',{keepPost:!!state.deepPost});
   renderMini();renderSuggestions();
  }catch(e){
@@ -578,4 +588,6 @@ async function boot(){
   $('gateBack').hidden=false;
  }
 }
+const photos=setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadAsset,refresh,profile,openProfile,
+ ensureSigned:loadSigned,switchView});
 void boot();
