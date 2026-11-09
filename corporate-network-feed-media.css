@@ -1,0 +1,158 @@
+/* BLACKCELL NETWORK / FULL-IMAGE SOCIAL FEED
+   One image is shown in its original aspect ratio; no crop on iPhone, iPad,
+   desktop or Safari's requested desktop viewport. Multiple images stay
+   in a tidy grid, using contain rather than trimming faces or edges.
+   This file must load AFTER corporate-network.css and corp-adaptive-layout.css.
+*/
+body.bc-network .post-media{
+ display:grid;
+ grid-template-columns:minmax(0,1fr);
+ gap:10px;
+ width:100%;
+ max-width:100%;
+ margin:15px 0;
+ padding:0;
+ background:#050508;
+ border:1px solid #302730;
+ border-radius:15px;
+ overflow:hidden;
+ box-sizing:border-box;
+}
+body.bc-network .post-media > button{
+ position:relative;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ min-width:0;
+ width:100%;
+ padding:0;
+ margin:0;
+ overflow:hidden;
+ background:#050508;
+ border:0;
+ color:#f1e7f0;
+ cursor:zoom-in;
+ box-sizing:border-box;
+ -webkit-tap-highlight-color:transparent;
+}
+body.bc-network .post-media > button:focus-visible{
+ outline:2px solid #cf9ab1;
+ outline-offset:-3px;
+}
+body.bc-network .post-media > button:hover img{
+ transform:none; /* avoid zoom cropping on hover */
+}
+/* A SINGLE PHOTO: make the post as tall as needed, rather than cropping
+   the image to the old fixed 220/175/150px preview height. */
+body.bc-network .post-media:not(.two):not(.three) > button{
+ height:auto!important;
+ min-height:0!important;
+ aspect-ratio:auto!important;
+}
+body.bc-network .post-media:not(.two):not(.three) > button > img{
+ display:block;
+ width:100%!important;
+ height:auto!important;
+ max-width:100%!important;
+ max-height:min(75dvh,780px);
+ object-fit:contain!important;
+ object-position:center;
+ transform:none!important;
+ background:#050508;
+}
+/* TWO OR MORE PHOTOS: full images within each tile; empty areas are
+   intentional letterboxing, not image cropping. */
+body.bc-network .post-media.two,
+body.bc-network .post-media.three{
+ grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:8px;
+}
+body.bc-network .post-media.two > button,
+body.bc-network .post-media.three > button{
+ height:auto!important;
+ min-height:0!important;
+ aspect-ratio:4 / 3;
+}
+body.bc-network .post-media.two > button > img,
+body.bc-network .post-media.three > button > img{
+ display:block;
+ width:100%!important;
+ height:100%!important;
+ max-width:100%!important;
+ max-height:100%!important;
+ object-fit:contain!important;
+ object-position:center;
+ transform:none!important;
+ background:#050508;
+}
+/* Videos also show their full natural frame with working native controls. */
+body.bc-network .post-media > video{
+ display:block;
+ width:100%;
+ height:auto;
+ max-width:100%;
+ max-height:min(75dvh,780px);
+ min-width:0;
+ object-fit:contain!important;
+ object-position:center;
+ background:#000;
+ border-radius:10px;
+}
+/* iPad: larger uncropped photographs and comfortable two-up multi-posts. */
+@media(min-width:768px) and (max-width:1180px){
+ body.bc-network .post-media{gap:8px}
+ body.bc-network .post-media:not(.two):not(.three) > button > img,
+ body.bc-network .post-media > video{
+  max-height:min(72dvh,740px);
+ }
+}
+/* iPhone: even multi-image posts have a generous full-width image.
+   This also prevents tiny crops in 320/375px screen layouts. */
+@media(max-width:767px){
+ body.bc-network .post-media{
+  margin:12px 0;
+  gap:7px;
+  border-radius:12px;
+ }
+ body.bc-network .post-media.two,
+ body.bc-network .post-media.three{
+  grid-template-columns:minmax(0,1fr);
+ }
+ body.bc-network .post-media.two > button,
+ body.bc-network .post-media.three > button{
+  height:auto!important;
+  aspect-ratio:auto!important;
+ }
+ body.bc-network .post-media.two > button > img,
+ body.bc-network .post-media.three > button > img{
+  width:100%!important;
+  height:auto!important;
+  max-height:min(68dvh,590px)!important;
+  object-fit:contain!important;
+ }
+ body.bc-network .post-media:not(.two):not(.three) > button > img,
+ body.bc-network .post-media > video{
+  max-height:min(68dvh,590px);
+ }
+}
+/* Safari's "Request Desktop Website" can report a wide CSS viewport on
+   a real iPhone: use the physical-device class as a fallback. */
+html.bc-device-phone body.bc-network .post-media.two,
+html.bc-device-phone body.bc-network .post-media.three{
+ grid-template-columns:minmax(0,1fr)!important;
+}
+html.bc-device-phone body.bc-network .post-media > button{
+ height:auto!important;
+ aspect-ratio:auto!important;
+}
+html.bc-device-phone body.bc-network .post-media > button > img{
+ width:100%!important;
+ height:auto!important;
+ max-height:min(68dvh,590px)!important;
+ object-fit:contain!important;
+ transform:none!important;
+}
+html.bc-device-phone body.bc-network .post-media > video{
+ max-height:min(68dvh,590px)!important;
+ object-fit:contain!important;
+}
