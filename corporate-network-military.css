@@ -115,3 +115,14 @@
  .military-category-card{gap:5px;padding:8px}
  .military-category-icon{width:29px;height:29px;font-size:15px}
 }
+
+/* Classification editor sits above the existing full-photo modal. */
+#militaryAssetOverlay{z-index:240005!important}
+#militaryAssetOverlay .modal{width:min(610px,calc(100vw - 24px))}
+#militaryAssetOverlay .modal-body{overflow-y:auto;overscroll-behavior:contain}
+#militaryAssetOverlay .military-modal-fields input,
+#militaryAssetOverlay .military-modal-fields select{font-size:16px}
+/* Preserve full original proportions in classified album covers and tiles. */
+#photosView .apple-album-cover img{object-fit:contain!important;background:#060507}
+#photosView .apple-photo-thumb{object-fit:contain!important;background:#060507}
+#photosView .apple-photo-grid-item:hover .apple-photo-thumb{transform:none!important}
