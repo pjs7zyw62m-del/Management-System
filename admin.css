@@ -39,3 +39,5 @@
 .invitation-preview-button{display:inline-block;margin:22px 0;padding:14px 23px;background:linear-gradient(120deg,#5c1b2d,#a34259);border-radius:11px;color:white;font-size:11px;font-weight:800;letter-spacing:.1em}
 .invitation-preview-paper .invitation-preview-foot{font-size:11px;color:#786a77}
 @media(max-width:710px){.employee-profile-layout{grid-template-columns:1fr}.employee-profile-pass{min-height:365px}.employee-profile-listitem{align-items:flex-start;flex-direction:column}.employee-profile-actions{justify-content:flex-start}}
+
+.employee-card-inline-preview{margin-top:22px;padding:16px;border:1px solid #685768;border-radius:17px;background:linear-gradient(145deg,#201923,#0c0b0f)}.employee-card-inline-preview>h3{font-size:11px;color:#c6aebe;letter-spacing:.15em;margin:0 0 10px}.employee-card-inline-preview .employee-profile-layout{grid-template-columns:minmax(220px,310px) minmax(230px,1fr)}@media(max-width:710px){.employee-card-inline-preview .employee-profile-layout{grid-template-columns:1fr}}
