@@ -1,0 +1,106 @@
+/* BLACKCELL / Responsive Messages & Media
+   Loaded after existing floating chat and media styles. No data-layer changes. */
+html.bc-compact-chat,html.bc-compact-chat body{width:100%;height:100%;min-width:0}
+.bc-chat-pane,.bc-media-bubble-card,.bc-media-bubble-iframe{box-sizing:border-box}
+.bc-chat-pane iframe{border:0;display:block;min-width:0}
+.bc-chat-pane button,.bc-media-bubble-heading button{touch-action:manipulation}
+
+/* Desktop: a comfortable messaging app, with independent media on the right. */
+@media(min-width:1181px){
+ .bc-chat-pane:not(.bc-chat-split){width:min(540px,calc(100vw - 40px));height:min(790px,calc(100dvh - 36px))}
+ .bc-chat-pane:not(.bc-chat-split) .bc-chat-pane-header{min-height:72px}
+ .bc-chat-orb{right:max(18px,env(safe-area-inset-right,0px))}
+ html:not(.bc-compact-chat):not(.bc-media-panel) .chat{grid-template-columns:minmax(205px,255px) minmax(0,1fr)}
+}
+
+/* iPad: allow a full touch-friendly chat without hiding the main website. */
+@media(min-width:768px) and (max-width:1180px){
+ .bc-chat-pane:not(.bc-chat-split){width:min(500px,calc(100vw - 32px));height:min(760px,calc(100dvh - 30px))}
+ .bc-chat-pane .bc-chat-pane-header{touch-action:pan-y}
+ .bc-chat-pane .bc-chat-pane-controls button{min-width:34px;min-height:34px}
+ .bc-media-bubble-host .bc-media-bubble-heading-actions button{min-width:35px;min-height:35px}
+ .bc-media-panel .media-viewer-stage :is(img,video){object-fit:contain!important}
+ html:not(.bc-compact-chat):not(.bc-media-panel) .chat{grid-template-columns:minmax(175px,220px) minmax(0,1fr)}
+}
+@media(min-width:768px) and (max-width:920px) and (orientation:portrait){
+ .bc-chat-pane:not(.bc-chat-split){width:min(520px,calc(100vw - 30px));height:min(760px,calc(100dvh - 30px))}
+}
+
+/* iPhone / small phone: messaging is the active screen, not a tiny popup. */
+@media(max-width:767px){
+ .bc-chat-orb{
+  right:calc(13px + env(safe-area-inset-right,0px))!important;
+  bottom:calc(12px + env(safe-area-inset-bottom,0px))!important;
+  width:60px;height:60px;
+ }
+ .bc-chat-pane:not(.bc-chat-split){
+  position:fixed!important;
+  inset:calc(5px + env(safe-area-inset-top,0px))
+        calc(5px + env(safe-area-inset-right,0px))
+        calc(5px + env(safe-area-inset-bottom,0px))
+        calc(5px + env(safe-area-inset-left,0px))!important;
+  width:auto!important;height:auto!important;min-width:0!important;min-height:0!important;
+  max-width:none!important;max-height:none!important;resize:none!important;
+  border-radius:18px;
+ }
+ .bc-chat-pane .bc-chat-pane-header{height:59px;min-height:59px;flex-basis:59px;padding:9px 11px;touch-action:pan-y}
+ .bc-chat-pane .bc-chat-pane-label strong{font-size:11px}
+ .bc-chat-pane .bc-chat-pane-label small{font-size:8px;max-width:160px}
+ .bc-chat-pane .bc-chat-pane-controls button{width:34px;height:34px;min-width:34px;min-height:34px}
+ .bc-chat-pane .bc-chat-pane-footer{min-height:24px}
+ html.bc-compact-chat .inbox-intro{margin-bottom:15px}
+ html.bc-compact-chat .peer{min-height:70px}
+ html.bc-compact-chat .chat-title{min-height:62px}
+ html.bc-compact-chat .conversation{min-height:0;overscroll-behavior:contain}
+ html.bc-compact-chat .composer .composer-input-wrap textarea{font-size:16px!important}
+ html.bc-compact-chat .peer-search-wrap input{font-size:16px!important}
+ /* Keep the 16:9 photo stage inside the media card; focus mode may
+    expand it, but it never crops a photo or video. */
+ .bc-media-panel .media-viewer-stage{max-width:100%!important}
+ .bc-media-panel .media-viewer-stage :is(img,video){object-fit:contain!important;object-position:center!important}
+ .bc-media-panel .media-viewer-actions{max-width:100%;overflow-x:auto}
+ .bc-media-panel .media-viewer-actions button{min-height:34px}
+ .bc-media-panel .media-library-list{-webkit-overflow-scrolling:touch}
+}
+
+/* iPhone portrait with both panels: anchored chat above independent media.
+   Apply even if Safari selects a desktop webpage viewport. */
+@media(max-width:767px) and (orientation:portrait){
+ body.bc-has-media-bubbles .bc-chat-pane.bc-chat-split{
+  left:6px!important;right:6px!important;top:calc(5px + env(safe-area-inset-top,0px))!important;
+  bottom:auto!important;
+  width:calc(100vw - 12px)!important;
+  height:clamp(190px,38dvh,380px)!important;
+  max-height:45dvh!important;min-width:0!important;min-height:0!important;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock{
+  left:6px!important;right:6px!important;bottom:calc(5px + env(safe-area-inset-bottom,0px))!important;
+  top:calc(clamp(190px,38dvh,380px) + 12px + env(safe-area-inset-top,0px))!important;
+  height:auto!important;width:auto!important;min-height:0!important;
+ }
+ body.bc-has-media-bubbles.bc-media-spotlight .bc-chat-pane.bc-chat-split{
+  height:clamp(150px,25dvh,245px)!important
+ }
+ body.bc-has-media-bubbles.bc-media-spotlight .bc-media-bubble-host.bc-bubble-host-dock{
+  top:calc(clamp(150px,25dvh,245px) + 12px + env(safe-area-inset-top,0px))!important
+ }
+ /* The physical iPhone fallback in media-flip-focus.css remains authoritative
+    when Safari reports an unusually wide CSS viewport. */
+}
+
+/* iPhone landscape: two usable columns rather than overlapping windows. */
+@media(max-width:767px) and (orientation:landscape){
+ body.bc-has-media-bubbles .bc-chat-pane.bc-chat-split{
+  left:5px!important;top:5px!important;right:auto!important;bottom:5px!important;
+  width:43vw!important;height:calc(100dvh - 10px)!important;min-height:0!important
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock{
+  top:5px!important;bottom:5px!important;left:calc(43vw + 11px)!important;right:5px!important;
+  width:auto!important;height:calc(100dvh - 10px)!important
+ }
+}
+
+/* Accessibility and low-power mode */
+@media(prefers-reduced-motion:reduce){
+ .bc-chat-pane,.bc-chat-orb,.bc-media-bubble-card{animation:none!important}
+}
