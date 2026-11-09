@@ -232,11 +232,19 @@ function users(){
     previewInvite.style.cssText='width:100%;min-height:44px';
     form.append(previewInvite);
     const previewCard=action('PREVIEW EMPLOYEE CARD',()=>{
-      showEmployeeProfile({display_name:name.value.trim()||'Sample Employee',
+      section.querySelector('.employee-card-inline-preview')?.remove();
+      const preview=el('div','employee-card-inline-preview');
+      preview.append(el('h3','','SAMPLE EMPLOYEE CARD · NOT REGISTERED'));
+      preview.append(employeeCardView({
+        display_name:name.value.trim()||'Sample Employee',
         username:uniqueUser.value.trim()||'bc_sample_48271',
         email:email.value.trim()||'sample@example.com',
         clearance_level:Number(level.value),role:'employee',active:false,
-        can_chat:true,password_activated:false},true);
+        can_chat:true,password_activated:false
+      },true));
+      preview.append(action('CLOSE CARD PREVIEW',()=>preview.remove()));
+      section.append(preview);
+      preview.scrollIntoView({behavior:'smooth',block:'nearest'});
     });
     previewCard.type='button';previewCard.style.cssText='width:100%;min-height:44px';
     form.append(previewCard);
