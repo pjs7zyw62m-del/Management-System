@@ -381,12 +381,12 @@ async function deletePost(p){
  if(!confirm('Delete this post from Blackcell Network? This cannot be undone.'))return;
  try{
   const files=postedAssets(p.id);
-  const {error}=await client.from('corp_social_posts').delete().eq('id',p.id).eq('author_id',state.user.id);
-  if(error)throw error;
   if(files.length){
-   // Object deletion is best effort; records were removed through ON DELETE CASCADE.
+   // Remove while the owner's asset records still authorize private object deletion.
    await bucket.remove(files.map(a=>a.storage_path));
   }
+  const {error}=await client.from('corp_social_posts').delete().eq('id',p.id).eq('author_id',state.user.id);
+  if(error)throw error;
   await refresh();toast('Post deleted.');
  }catch(e){toast('Could not delete post: '+fail(e))}
 }
