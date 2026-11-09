@@ -1,7 +1,7 @@
 /* BLACKCELL CORPORATION / Secure private chat photo + video sharing */
 const BUCKET='corp-chat-media';
 const MAX_BYTES=50*1024*1024;
-const ALLOWED=new Set(['image/jpeg','image/png','image/webp','image/gif','image/heic','image/heif','image/heic-sequence','image/heif-sequence','video/mp4','video/webm','video/quicktime','video/x-m4v']);
+const ALLOWED=new Set(['image/jpeg','image/png','image/webp','image/gif','image/heic','image/heif','image/heic-sequence','image/heif-sequence','image/avif','video/mp4','video/webm','video/quicktime','video/x-m4v']);
 function el(tag,cls='',content=null){
  const n=document.createElement(tag);if(cls)n.className=cls;
  if(content!==null)n.textContent=content;return n;
@@ -18,7 +18,18 @@ function caption(items){
  const videos=items.length-photos;
  return [photos?photos+' photo'+(photos===1?'':'s'):'',videos?videos+' video'+(videos===1?'':'s'):''].filter(Boolean).join(' and ')||'Shared Media';
 }
-function kindOf(file){return file.type.startsWith('image/')?'photo':'video'}
+function mediaType(file){
+ const raw=String(file?.type||'').toLowerCase();
+ if(ALLOWED.has(raw))return raw;
+ // iOS Safari sometimes supplies a blank MIME type for photos/videos from Files.
+ const ext=String(file?.name||'').toLowerCase().split('.').at(-1);
+ const map={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',
+  webp:'image/webp',gif:'image/gif',heic:'image/heic',heif:'image/heif',
+  avif:'image/avif',mov:'video/quicktime',mp4:'video/mp4',
+  m4v:'video/x-m4v',webm:'video/webm'};
+ return !raw&&map[ext]||raw;
+}
+function kindOf(file){return mediaType(file).startsWith('image/')?'photo':'video'}
 function safeErr(e){return String(e?.message||e||'Unknown error').slice(0,180)}
 export function setupCorporateMedia({client,context,reloadMessages,status}){
  const chat=document.querySelector('.chat');
@@ -264,7 +275,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  });
  function selectFiles(files){
   if(!requirePeer()||busy)return;
-  const accepted=files.filter(f=>ALLOWED.has(f.type)&&f.size>0&&f.size<=MAX_BYTES);
+  const accepted=files.filter(f=>ALLOWED.has(mediaType(f))&&f.size>0&&f.size<=MAX_BYTES);
   if(accepted.length!==files.length){
    status('Some files were skipped. Use JPG, PNG, WEBP, GIF, HEIC, MP4, MOV, or WEBM, maximum 50 MB each.');
   }
@@ -353,7 +364,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
    xhr.open('POST',base+'/storage/v1/object/'+BUCKET+'/'+path,true);
    xhr.setRequestHeader('Authorization','Bearer '+session.access_token);
    xhr.setRequestHeader('apikey',key);
-   xhr.setRequestHeader('Content-Type',file.type);
+   xhr.setRequestHeader('Content-Type',mediaType(file));
    xhr.setRequestHeader('x-upsert','false');
    xhr.setRequestHeader('cache-control','3600');
    xhr.upload.onprogress=e=>{if(e.lengthComputable)onProgress(Math.min(file.size,e.loaded))};
@@ -373,7 +384,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  async function sendSelection(){
   const c=requirePeer();if(!c||!selection.length||busy)return;
   const files=selection.slice();
-  if(files.some(f=>f.size>MAX_BYTES||!ALLOWED.has(f.type)))return;
+  if(files.some(f=>f.size>MAX_BYTES||!ALLOWED.has(mediaType(f))))return;
   uploadingForPeer=c.peer.user_id;
   toggleBusy(true);sendButton.disabled=true;flipButton.disabled=true;
   notifyUploadState(true);
@@ -408,7 +419,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
     transferred+=f.size;
     records.push({
       id,batch_id:batchId,sender_id:c.self,recipient_id:receiver,
-      kind:kindOf(f),filename:f.name.slice(0,180),mime_type:f.type,
+      kind:kindOf(f),filename:f.name.slice(0,180),mime_type:mediaType(f),
       bytes:f.size,storage_path:path,item_order:i
     });
    }
