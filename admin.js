@@ -2,6 +2,7 @@
 (()=>{
 const $=id=>document.getElementById(id), modal=$('modalBackdrop'), content=$('modalContent'), pane=modal.querySelector('.admin-modal');
 let lastTrigger=null,activeModal='',activeTab='',searchTerm='',period='all',selectedEvent=null,selectedSystem=null;
+let pendingReinvite=null;
 const state={appearance:'glass',animations:true,notify:true,confirm:true,securityNotify:true,deviceAlerts:true,autoBackup:false,restoreConfirm:true};
 const systems=[{id:'nexus',name:'NEXUS Management',kind:'Corporate application',provider:'GitHub Pages · Supabase',desc:'Inmate profiles, financial management, records, communications and analysis.',href:'https://www.blackcellcorp.com',icon:'▦'},{id:'maf',name:'MansArmedForces',kind:'Media collection',provider:'GitHub Pages · Browser storage',desc:'Uniforms photo library, albums, folders, ratings and collections.',href:'https://pjs7zyw62m-del.github.io/Gunner-Collection-Portal/uniforms.html',icon:'◇'},{id:'gunner',name:'Gunner Thompson AI',kind:'AI application',provider:'AI inference services',desc:'Character AI service; account-level connectivity not monitored.',href:null,icon:'✳'},{id:'corporate',name:'Blackcell Corporate Portal',kind:'Administrative interface',provider:'GitHub Pages',desc:'Corporate dashboard and administration preview.',href:null,icon:'▤'}];
 const demoEvents=[{id:'EX-01',type:'security',title:'Example: Unrecognized sign-in attempt',description:'Fictional sample alert; no actual sign-in event was retrieved.',date:'2026-11-08',display:'Nov 8, 2026 · 9:42 AM'},{id:'EX-02',type:'admin',title:'Example: Corporate settings updated',description:'Fictional sample administrative change.',date:'2026-11-08',display:'Nov 8, 2026 · 8:15 AM'},{id:'EX-03',type:'access',title:'Example: Administrator signed in',description:'Fictional sample access event.',date:'2026-11-07',display:'Nov 7, 2026 · 7:30 PM'},{id:'EX-04',type:'admin',title:'Example: Division configuration viewed',description:'Fictional sample division activity.',date:'2026-11-07',display:'Nov 7, 2026 · 6:05 PM'},{id:'EX-05',type:'security',title:'Example: Password verification failed',description:'Fictional sample credential event.',date:'2026-11-06',display:'Nov 6, 2026 · 4:20 PM'}];
@@ -88,6 +89,99 @@ function employeeCardView(member,sample=false){
   blockEl.append(card,details);
   return blockEl;
 }
+
+function confirmEmployeeDelete(member,returnTab='profiles'){
+  if(!member||member.role!=='employee'||!member.user_id||!member.email)return;
+  const targetId=String(member.user_id);
+  const targetEmail=String(member.email).trim().toLowerCase();
+  const targetName=String(member.display_name||'Employee');
+  const container=el('div','employee-delete-dialog');
+  const warning=block('Permanently Delete Employee Profile');
+  warning.classList.add('employee-delete-warning');
+  warning.append(
+    p('This permanently removes the employee account, their access pass, assigned codes, active verification sessions, and associated corporate chat messages. The existing invitation link will no longer work.'),
+    row('NAME',targetName,'EMPLOYEE'),
+    row('EMAIL',targetEmail,'DELETE TARGET')
+  );
+  const label=el('label','field','TYPE EMPLOYEE EMAIL TO CONFIRM');
+  const typed=el('input');
+  typed.type='email';
+  typed.placeholder=targetEmail;
+  typed.autocomplete='off';
+  typed.spellcheck=false;
+  typed.autocapitalize='none';
+  typed.setAttribute('aria-label','Type employee email to confirm permanent deletion');
+  label.append(typed);
+  const status=el('p','muted','This cannot be undone. You can send a completely new invitation to the same email after deletion.');
+  status.setAttribute('role','status');
+  status.setAttribute('aria-live','polite');
+  const buttons=el('div','employee-delete-actions');
+  const cancel=action('CANCEL — KEEP EMPLOYEE',()=>{
+    activeTab=returnTab;render();
+  });
+  const erase=action('PERMANENTLY DELETE PROFILE',null,true);
+  erase.classList.add('delete-employee-button');
+  typed.addEventListener('input',()=>{
+    erase.disabled=typed.value.trim().toLowerCase()!==targetEmail;
+  });
+  erase.addEventListener('click',async()=>{
+    if(typed.value.trim().toLowerCase()!==targetEmail)return;
+    const api=window.BLACKCELL_CORPORATE_ADMIN_API?.client;
+    if(!api){status.textContent='Your Level 7 owner session is unavailable. Sign in again.';return;}
+    erase.disabled=true;cancel.disabled=true;typed.disabled=true;
+    status.textContent='Checking owner authorization and removing employee account…';
+    try{
+      const {data,error}=await api.functions.invoke('blackcell-delete-employee',{
+        body:{action:'delete_employee',employee_id:targetId,confirm_email:typed.value.trim()}
+      });
+      let response=data;
+      if(error?.context && typeof error.context.clone==='function'){
+        try{response=await error.context.clone().json()}catch(_){}
+      }
+      if(error||response?.ok!==true||response?.status!=='employee_deleted'){
+        const reasons={
+          verified_level7_owner_required:'Your Level 7 security verification expired. Reauthorize and try again.',
+          invalid_owner_session:'Your administrator session expired. Sign in again.',
+          cannot_delete_owner:'The corporate owner account is protected from deletion.',
+          employee_email_does_not_match:'The email confirmation did not match the account.',
+          employee_not_found:'This employee record no longer exists. Refresh the directory.',
+          employee_auth_lookup_failed:'Supabase could not locate the employee login. Nothing was deleted.',
+          employee_delete_failed:'Supabase could not permanently remove the user.',
+          employee_lookup_failed:'The employee record lookup failed.',
+          delete_service_unavailable:'The deletion service is currently unavailable.',
+          owner_verification_unavailable:'The owner authorization check is temporarily unavailable.'
+        };
+        const reason=response?.reason||'request_failed';
+        throw new Error((error?.context?.status?'HTTP '+error.context.status+' — ':'')+
+          (reasons[reason]||error?.message||'Deletion was not completed')+' ['+reason+']');
+      }
+      pendingReinvite={name:targetName,email:targetEmail};
+      $('modalTitle').textContent='Employee Profile Deleted';
+      $('modalEyebrow').textContent='BLACKCELL CORPORATION / USER MANAGEMENT';
+      const success=block('Employee Account Removed');
+      success.append(
+        p('The Blackcell corporate employee account was deleted successfully. The old invitation and codes are no longer usable.'),
+        row('EMPLOYEE',targetName,'DELETED'),
+        row('EMAIL',targetEmail,'READY TO INVITE')
+      );
+      const actions=el('div','employee-delete-actions');
+      const reinvite=action('CREATE NEW INVITATION',()=>{activeTab='accounts';render()},false,true);
+      const back=action('VIEW EMPLOYEE PROFILES',()=>{activeTab='profiles';render()});
+      actions.append(reinvite,back);
+      content.replaceChildren(success,actions);
+    }catch(err){
+      status.textContent='Employee was not deleted: '+String(err?.message||err);
+      erase.disabled=false;cancel.disabled=false;typed.disabled=false;
+    }
+  });
+  buttons.append(cancel,erase);
+  container.append(warning,label,status,buttons);
+  $('modalTitle').textContent='Delete Employee Profile';
+  $('modalEyebrow').textContent='BLACKCELL / RESTRICTED ADMINISTRATOR ACTION';
+  content.replaceChildren(container);
+  typed.focus();
+}
+
 function showEmployeeProfile(member,sample=false){
   $('modalTitle').textContent=sample?'Sample Employee Profile':'Employee Profile';
   $('modalEyebrow').textContent='BLACKCELL CORPORATION / USER MANAGEMENT';
@@ -95,9 +189,13 @@ function showEmployeeProfile(member,sample=false){
   const back=action('← BACK TO PROFILES',()=>{activeTab='profiles';render();});
   back.classList.add('profile-back-button');
   content.append(back,employeeCardView(member,sample));
-  if(!sample && member.role!=='owner'){
+  if(!sample && member.role==='employee'){
     const side=el('div','disabled-callout','Profile details are read-only here. Use the Roles and Access tabs to update clearance and account permissions.');
-    content.append(side);
+    const controls=el('div','employee-delete-actions');
+    const deleteButton=action('DELETE EMPLOYEE PROFILE',()=>confirmEmployeeDelete(member,'profiles'));
+    deleteButton.classList.add('delete-employee-button');
+    controls.append(deleteButton);
+    content.append(side,controls);
   }
 }
 async function employeeProfiles(){
@@ -131,7 +229,14 @@ async function employeeProfiles(){
           ' · Level '+member.clearance_level+' · '+(member.role==='owner'?'Corporate Owner':'Employee')));
       const show=action('VIEW PROFILE / CARD',()=>showEmployeeProfile(member));
       info.classList.add('employee-profile-listcopy');
-      item.append(info,show);
+      const actions=el('div','employee-profile-actions');
+      actions.append(show);
+      if(member.role==='employee'){
+        const del=action('DELETE PROFILE',()=>confirmEmployeeDelete(member,'profiles'));
+        del.classList.add('delete-employee-button');
+        actions.append(del);
+      }
+      item.append(info,actions);
       list.append(item);
     }
   }catch(_){if(list.isConnected)list.replaceChildren(p('Unable to load employee profile list.'))}
@@ -355,6 +460,14 @@ function users(){
     }
     const accessCode=codeGenerator('ACCESS CODE · 4 DIGITS',4);
     const securityCode=codeGenerator('SECURITY CODE · 12 DIGITS',12);
+    if(pendingReinvite){
+      name.value=pendingReinvite.name;
+      email.value=pendingReinvite.email;
+      uniqueUser.value=corporateUsername(pendingReinvite.name);
+      accessCode.value=corporateRandomDigits(4);
+      securityCode.value=corporateRandomDigits(12);
+      pendingReinvite=null;
+    }
     const levelLabel=el('label');levelLabel.style.cssText='display:flex;flex-direction:column;gap:7px;font-size:10px;letter-spacing:.12em;color:#bab0bc';
     levelLabel.append(el('span','','CLEARANCE'));
     const level=el('select');for(let i=1;i<=6;i++)level.add(new Option('Level '+i,i));
@@ -533,6 +646,11 @@ async function displayCorporateAccounts(container){
       const view=el('div','employee-profile-actions');
       view.append(el('span','mock-state',right),
         action('VIEW PROFILE',()=>showEmployeeProfile(member)));
+      if(member.role==='employee'){
+        const deleteAction=action('DELETE PROFILE',()=>confirmEmployeeDelete(member,'accounts'));
+        deleteAction.classList.add('delete-employee-button');
+        view.append(deleteAction);
+      }
       container.append(row(member.display_name||'Employee',
         (member.email||'')+' · '+(member.username||'No username')+' · Level '+member.clearance_level,view));
     }
