@@ -19,6 +19,19 @@
     const track=document.createElement('div');
     track.className='bc-media-bubble-track';
     root.append(tabs,track);
+    // iPhone Safari can sometimes lay out a page using a desktop-sized
+    // CSS viewport. Detect the physical touchscreen, not viewport width alone.
+    function syncPhysicalScreen(){
+      const shortest=Math.min(window.screen?.width||Infinity,window.screen?.height||Infinity);
+      const narrowTouch=shortest<=699 &&
+        (navigator.maxTouchPoints>0||window.matchMedia('(pointer:coarse)').matches);
+      const portrait=window.matchMedia('(orientation:portrait)').matches;
+      document.body.classList.toggle('bc-handset-portrait',narrowTouch&&portrait);
+      document.body.classList.toggle('bc-handset-landscape',narrowTouch&&!portrait);
+    }
+    syncPhysicalScreen();
+    window.addEventListener('resize',syncPhysicalScreen,{passive:true});
+    window.addEventListener('orientationchange',syncPhysicalScreen,{passive:true});
     const panes=new Map();
     function updateBubbleTabs(){
       tabs.replaceChildren();
@@ -129,6 +142,8 @@
       frame.setAttribute('allow','clipboard-read; clipboard-write');
       frame.setAttribute('loading','eager');
       const url=new URL('corporate-chat.html',location.href);
+      // A new iframe URL makes Safari reload the latest responsive media CSS.
+      url.searchParams.set('ui','adaptive-media-20261109-v3');
       url.searchParams.set('embed','1');
       url.searchParams.set('mediaPanel',type);
       url.searchParams.set('peer',peerId);
