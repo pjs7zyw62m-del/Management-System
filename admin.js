@@ -19,7 +19,7 @@ const choice=(name,desc,key)=>{const label=el('label','check-row'),copy=el('div'
 const note=(message)=>el('div','disabled-callout',message);
 const select=(options,value,handler)=>{const s=el('select');for(let [v,title] of options){const o=new Option(title,v);s.add(o)}s.value=value;s.addEventListener('change',()=>handler(s.value));return s};
 function open(id,trigger){closeDrawer();lastTrigger=trigger||document.activeElement;activeModal=id;activeTab=(tabs[id]||[['overview']])[0][0];searchTerm='';period='all';selectedEvent=null;selectedSystem=null;modal.hidden=false;document.body.style.overflow='hidden';render();$('closeModal').focus();}
-function close(){modal.hidden=true;document.body.style.overflow='';activeModal='';if(lastTrigger&&lastTrigger.isConnected)lastTrigger.focus();}
+function close(){modal.hidden=true;document.body.style.overflow='';activeModal='';content.replaceChildren();if(lastTrigger&&lastTrigger.isConnected)lastTrigger.focus();}
 function render(){ $('modalTitle').textContent=names[activeModal]||'Corporate System'; $('modalEyebrow').textContent=activeModal==='nexus'||activeModal==='mans'?'BLACKCELL CORPORATION / DIVISION CONTROL':'BLACKCELL CORPORATION / ADMINISTRATION';content.replaceChildren();if(tabs[activeModal]){let bar=el('div','modal-tabbar');for(const [id,label] of tabs[activeModal]){let b=action(label,()=>{activeTab=id;render();});b.className=id===activeTab?'active':'';bar.append(b)}content.append(bar)}switch(activeModal){case 'users':users();break;case 'chat':chat();break;case 'security':security();break;case 'settings':settings();break;case 'logs':logs();break;case 'backups':backups();break;case 'systems':corporateSystems();break;case 'nexus':case 'mans':division();break;case 'notifications':notifications();break;case 'account':account();break;case 'signout':signout();break;case 'restricted':restricted();break;}}
 
 
@@ -136,6 +136,7 @@ function users(){
         }
         feedback.textContent='Invitation created. The email activates the employee account, not the codes. Share these generated codes separately through a trusted channel; they cannot be retrieved later.';
         const receipt=el('div','content-block');
+        receipt.dataset.blackcellReceipt='true';
         receipt.style.cssText='border:1px solid #648774;border-radius:14px;padding:16px;margin-top:15px';
         receipt.append(el('h3','','EMPLOYEE CREDENTIALS · COPY ONCE'));
         const textReceipt='Blackcell Employee: '+name.value.trim()+
