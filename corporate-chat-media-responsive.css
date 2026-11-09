@@ -1,0 +1,297 @@
+/* BLACKCELL / Media beside anchored Messages — responsive v1
+   Load LAST in the parent page and the isolated media iframes.
+   WIDE: chat anchored LEFT, 16:9 media bubbles RIGHT.
+   PHONE PORTRAIT: chat pinned TOP and media collection BELOW (both visible).
+   SMALL LANDSCAPE: side-by-side, with independently scrollable contents. */
+:root{
+ --bc-layout-gap:12px;
+ --bc-layout-inset:12px;
+ --bc-anchored-chat-width:clamp(308px,34vw,470px);
+ --bc-panel-height:min(755px,calc(100dvh - 24px));
+}
+body.bc-has-media-bubbles .bc-chat-pane.bc-chat-split{
+ position:fixed!important;
+ top:auto!important;left:var(--bc-layout-inset)!important;
+ right:auto!important;bottom:var(--bc-layout-inset)!important;
+ width:var(--bc-anchored-chat-width)!important;
+ height:var(--bc-panel-height)!important;
+ max-height:calc(100dvh - 24px)!important;
+ min-height:0!important;min-width:0!important;
+ resize:none!important;
+ transform:none!important;
+ z-index:200004!important;
+}
+body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock{
+ position:fixed!important;z-index:200003!important;
+ left:calc(var(--bc-layout-inset) + var(--bc-anchored-chat-width) + var(--bc-layout-gap))!important;
+ right:var(--bc-layout-inset)!important;
+ top:auto!important;bottom:var(--bc-layout-inset)!important;
+ width:auto!important;
+ height:var(--bc-panel-height)!important;
+ max-width:none!important;min-height:0!important;
+ display:grid!important;gap:var(--bc-layout-gap)!important;
+ grid-template-columns:repeat(var(--bc-media-panels,1),minmax(0,1fr))!important;
+ grid-template-rows:minmax(0,1fr)!important;
+ overflow:hidden!important;
+ pointer-events:none;
+}
+body.bc-has-media-bubbles .bc-media-bubble-card{
+ min-height:0!important;min-width:0!important;height:100%!important;
+ border-radius:20px;
+ overflow:hidden!important;
+ box-shadow:0 24px 80px #000c;
+}
+body.bc-has-media-bubbles .bc-media-bubble-iframe{
+ display:block!important;flex:1 1 0!important;
+ min-height:0!important;min-width:0!important;overflow:hidden;
+}
+body.bc-has-media-bubbles .bc-media-bubble-heading{
+ min-height:55px!important;
+ padding:8px 12px!important;
+}
+body.bc-has-media-bubbles .bc-media-bubble-name strong{font-size:10px}
+body.bc-has-media-bubbles .bc-media-bubble-name small{font-size:8px}
+body.bc-has-media-bubbles .bc-media-bubble-icon{
+ height:33px;width:33px;font-size:19px;border-radius:12px;
+}
+/* On medium-width screens, each of the two media bubbles is independently
+   scrollable above/below the other within the RIGHT column. */
+@media (min-width:700px) and (max-width:1300px){
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock[data-count="2"]{
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:repeat(2,minmax(0,1fr))!important;
+ }
+}
+@media (min-width:700px) and (max-width:1000px){
+ :root{--bc-layout-gap:8px;--bc-layout-inset:8px;--bc-anchored-chat-width:clamp(280px,42vw,390px)}
+ body.bc-has-media-bubbles .bc-media-bubble-name small{display:none}
+}
+@media (min-width:700px) and (max-height:540px){
+ :root{--bc-anchored-chat-width:clamp(268px,40vw,350px)}
+}
+/* iPhone / small tablet portrait: it is not physically possible to put two
+   usable panes side-by-side in ~390px. Keep chat anchored and visible ABOVE
+   the 16:9 media viewer, not hidden behind it as the old screenshot showed. */
+@media (max-width:699px) and (orientation:portrait){
+ :root{--bc-layout-inset:6px;--bc-layout-gap:6px}
+ body.bc-has-media-bubbles .bc-chat-pane.bc-chat-split{
+  left:6px!important;right:6px!important;
+  top:6px!important;bottom:auto!important;
+  width:calc(100vw - 12px)!important;
+  height:39dvh!important;max-height:39dvh!important;
+  min-height:0!important;border-radius:16px!important;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock{
+  left:6px!important;right:6px!important;
+  top:calc(39dvh + 12px)!important;bottom:6px!important;
+  width:calc(100vw - 12px)!important;
+  height:auto!important;max-height:none!important;
+  display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;
+  overflow-x:auto!important;overflow-y:hidden!important;
+  scroll-snap-type:x mandatory;overscroll-behavior-inline:contain;
+  scrollbar-width:none;scroll-padding-inline:0;
+  padding:0!important;gap:7px!important;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock::-webkit-scrollbar{display:none}
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock .bc-media-bubble-card{
+  flex:0 0 100%!important;width:100%!important;height:100%!important;
+  scroll-snap-align:start;scroll-snap-stop:always;
+  border-radius:15px!important;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock[data-count="2"]{
+  /* Each of the two independent bubbles is reached with its own tab. */
+  padding-top:32px!important;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock[data-count="2"] .bc-media-bubble-card{
+  height:100%!important;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock .bc-media-bubble-heading{
+  min-height:43px!important;padding:5px 9px!important;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock .bc-media-bubble-name small{display:none}
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock .bc-media-bubble-icon{
+  width:28px;height:28px;font-size:17px;
+ }
+}
+/* Phones rotated to landscape: use the same LEFT chat + RIGHT media layout
+   as desktops, with controls and gallery scrolling inside each bubble. */
+@media (max-width:699px) and (orientation:landscape){
+ :root{--bc-layout-inset:5px;--bc-layout-gap:6px;--bc-anchored-chat-width:43vw;
+  --bc-panel-height:calc(100dvh - 10px)}
+ body.bc-has-media-bubbles .bc-chat-pane.bc-chat-split{
+  left:5px!important;right:auto!important;top:5px!important;bottom:5px!important;
+  width:43vw!important;height:calc(100dvh - 10px)!important;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock{
+  left:calc(43vw + 11px)!important;right:5px!important;
+  top:5px!important;bottom:5px!important;
+  height:calc(100dvh - 10px)!important;
+  grid-template-columns:minmax(0,1fr)!important;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock[data-count="2"]{
+  grid-template-rows:repeat(2,minmax(0,1fr))!important;
+ }
+}
+/* Full-page chat (not the floating dock): independent media to the RIGHT
+   while the conversation remains available on the LEFT. */
+@media (min-width:700px){
+ body.bc-has-media-bubbles:has(.bc-bubble-host-standalone)>.chat{
+  margin-right:0!important;
+  position:fixed!important;top:72px!important;bottom:8px!important;
+  left:8px!important;right:auto!important;
+  height:auto!important;width:clamp(315px,42vw,520px)!important;
+  min-height:0!important;overflow:hidden;
+  border:1px solid #534457;border-radius:18px;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-standalone{
+  position:fixed!important;
+  left:calc(clamp(315px,42vw,520px) + 17px)!important;
+  right:8px!important;top:72px!important;bottom:8px!important;
+  width:auto!important;height:auto!important;
+  grid-template-columns:repeat(var(--bc-media-panels,1),minmax(0,1fr))!important;
+  grid-template-rows:minmax(0,1fr)!important;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-standalone[data-count="2"]{
+  grid-template-columns:1fr!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;
+ }
+ body.bc-has-media-bubbles:has(.bc-bubble-host-standalone)>.chat .sidebar{width:107px;padding:8px}
+ body.bc-has-media-bubbles:has(.bc-bubble-host-standalone)>.chat .chat-main{min-width:0;transform:none!important}
+ body.bc-has-media-bubbles:has(.bc-bubble-host-standalone)>.chat{grid-template-columns:107px minmax(0,1fr)!important}
+}
+@media (max-width:699px) and (orientation:portrait){
+ body.bc-has-media-bubbles:has(.bc-bubble-host-standalone)>.chat{
+  position:fixed!important;top:66px!important;bottom:auto!important;
+  left:6px!important;right:6px!important;height:35dvh!important;
+  width:calc(100vw - 12px)!important;margin:0!important;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-standalone{
+  position:fixed!important;
+  top:calc(66px + 35dvh + 7px)!important;bottom:6px!important;
+  left:6px!important;right:6px!important;
+  width:calc(100vw - 12px)!important;height:auto!important;
+  display:flex!important;flex-direction:row!important;overflow-x:auto!important;
+  scroll-snap-type:x mandatory;gap:6px!important;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-standalone .bc-media-bubble-card{
+  flex:0 0 100%!important;scroll-snap-align:start;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-standalone[data-count="2"]{padding-top:32px!important}
+}
+/* The media iframe itself: true 16:9 IMAGE/VIDEO STAGE, always containing
+   the entire original photo/video. History and thumbnails scroll BELOW it. */
+html.bc-media-panel,html.bc-media-panel body{height:100%!important;min-height:0!important;overflow:hidden!important}
+.bc-media-panel .media-viewer{
+ display:flex!important;flex-direction:column!important;
+ width:100%!important;height:100%!important;min-height:0!important;
+ overflow:hidden!important;
+}
+.bc-media-panel .media-viewer-head{
+ flex:0 0 auto!important;padding:8px 10px!important;
+ flex-wrap:wrap;gap:6px!important;
+}
+.bc-media-panel .media-viewer-actions{gap:4px!important}
+.bc-media-panel .media-viewer-actions button{
+ padding:6px 8px!important;border-radius:8px!important;font-size:9px!important;
+}
+/* Standard/Expanded/Custom previously distorted the media viewport.
+   The media stage is now consistently responsive 16:9. */
+.bc-media-panel .media-viewer-actions button:nth-child(-n+3),
+.bc-media-panel .media-custom-range{display:none!important}
+.bc-media-panel .media-viewer-tools{
+ flex:0 0 auto!important;display:flex;flex-wrap:wrap;
+ gap:5px!important;padding:7px 9px!important;
+}
+.bc-media-panel .media-viewer-tools input[type="search"]{
+ flex:1 1 115px!important;min-width:80px!important;padding:8px!important;
+}
+.bc-media-panel .media-kind-filters{gap:3px!important}
+.bc-media-panel .media-kind-filters button{font-size:9px!important;padding:7px 8px!important}
+.bc-media-panel .media-viewer-tools select{font-size:9px!important;padding:8px 6px!important}
+.bc-media-panel .media-autoplay-label{font-size:9px!important}
+.bc-media-panel .media-viewer-status{
+ flex:0 0 auto!important;min-height:0!important;padding:5px 9px!important;
+ font-size:9px;line-height:1.35;overflow:hidden;text-overflow:ellipsis;
+}
+.bc-media-panel .media-viewer-stage,
+.bc-media-panel .media-viewer-stage.standard,
+.bc-media-panel .media-viewer-stage.expanded,
+.bc-media-panel .media-viewer-stage.custom{
+ position:relative!important;
+ flex:0 0 auto!important;
+ width:min(100%,85dvh)!important;
+ aspect-ratio:16 / 9!important;
+ height:auto!important;
+ max-height:none!important;
+ min-height:0!important;
+ margin:0 auto!important;
+ background:#000!important;
+ overflow:hidden!important;
+}
+.bc-media-panel .media-viewer-stage .media-stage-inner{
+ position:absolute!important;inset:0!important;
+ width:100%!important;height:100%!important;
+ display:grid!important;place-items:center;
+ overflow:hidden!important;
+}
+.bc-media-panel .media-viewer-stage img,
+.bc-media-panel .media-viewer-stage video{
+ display:block!important;
+ width:100%!important;height:100%!important;
+ max-width:100%!important;max-height:100%!important;
+ object-fit:contain!important;object-position:center!important;
+ background:#000!important;
+}
+.bc-media-panel .media-viewer-stage .media-nav{
+ top:50%!important;z-index:3;
+ border-radius:50%!important;
+ padding:9px 7px!important;font-size:19px!important;
+}
+.bc-media-panel .media-viewer-meta{
+ flex:0 0 auto!important;
+ display:flex!important;min-height:36px!important;
+ padding:5px 9px!important;gap:6px!important;
+}
+.bc-media-panel .media-full-link{padding:7px 8px!important;font-size:9px!important}
+.bc-media-panel .media-library{
+ display:flex!important;flex-direction:column!important;
+ flex:1 1 0!important;
+ min-height:0!important;max-height:none!important;
+ overflow:hidden!important;
+}
+.bc-media-panel .media-library-head{flex:0 0 auto!important;padding:6px 9px!important}
+.bc-media-panel .media-history{flex:0 0 auto!important;padding:6px!important;font-size:10px}
+.bc-media-panel .media-library-list{
+ flex:1 1 0!important;min-height:0!important;
+ overflow-y:auto!important;overscroll-behavior:contain;
+ padding:7px!important;gap:7px!important;
+ grid-template-columns:repeat(auto-fill,minmax(78px,1fr))!important;
+}
+.bc-media-panel .media-library-item{height:86px!important}
+.bc-media-panel .media-library-item img,.bc-media-panel .media-video-thumb{height:67px!important}
+/* Media Share uploads keep their own scroll area and pinned action buttons. */
+.bc-media-panel.bc-media-share .media-dialog{
+ height:100%!important;min-height:0!important;max-height:100%!important;
+ display:flex!important;flex-direction:column!important;
+}
+.bc-media-panel.bc-media-share .media-dialog-body{flex:1 1 0!important;min-height:0!important;overflow-y:auto!important}
+.bc-media-panel.bc-media-share .media-dialog-footer{flex:0 0 auto!important;padding:10px!important}
+.bc-media-panel.bc-media-share .media-dialog-head{flex:0 0 auto!important;padding:10px!important}
+/* Mobile portrait's gallery should still offer thumbnails after the 16:9 stage. */
+@media (max-width:699px) and (orientation:portrait){
+ .bc-media-panel .media-viewer-head{padding:6px!important}
+ .bc-media-panel .media-viewer-tools{padding:5px!important;gap:4px!important}
+ .bc-media-panel .media-viewer-status{padding:3px 7px!important}
+ .bc-media-panel .media-viewer-stage{width:min(100%,75dvh)!important}
+ .bc-media-panel .media-viewer-meta{min-height:30px!important;padding:3px 6px!important}
+ .bc-media-panel .media-library-head{padding:4px 7px!important}
+ .bc-media-panel .media-history{padding:4px!important}
+ .bc-media-panel .media-library-list{grid-template-columns:repeat(auto-fill,minmax(76px,1fr))!important}
+}
+@media (max-height:540px) and (orientation:landscape){
+ .bc-media-panel .media-viewer-head{padding:4px 7px!important}
+ .bc-media-panel .media-viewer-tools{padding:4px!important}
+ .bc-media-panel .media-viewer-stage{width:min(100%,58dvh)!important}
+ .bc-media-panel .media-viewer-meta{min-height:25px!important;padding:3px!important}
+ .bc-media-panel .media-viewer-status{display:none!important}
+ .bc-media-panel .media-library-head{padding:3px 7px!important}
+}
