@@ -1,4 +1,5 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-staff1';
+import {setupCorporateMedia} from './corporate-chat-media.js?v=20261109-media1';
 const client=corporateClient(),$=id=>document.getElementById(id);
 const embedParams=new URLSearchParams(location.search);
 if(embedParams.get('embed')==='1')document.documentElement.classList.add('bc-embedded');
@@ -32,6 +33,7 @@ function chatActivity(){
 }
 
 function status(text){$('systemStatus').textContent=text;$('systemStatus').hidden=!text}
+const sharedMedia=setupCorporateMedia({client,context:()=>({self,peer,ready}),reloadMessages:loadMessages,status});
 function text(tag,cls,value){const el=document.createElement(tag);if(cls)el.className=cls;el.textContent=value;return el}
 async function boot(){
  try{
@@ -81,7 +83,7 @@ function renderPeers(){
 }
 function choose(userId){
  const selected=contacts.find(x=>x.user_id===userId);if(!selected||!ready)return;
- peer=selected;firstLoad=true;$('peerName').textContent=peer.display_name||'Employee';$('peerDetail').textContent=peer.role==='owner'?'LEVEL 7 · OWNER':'LEVEL '+peer.clearance_level;
+ peer=selected;sharedMedia.onPeerChange(userId);firstLoad=true;$('peerName').textContent=peer.display_name||'Employee';$('peerDetail').textContent=peer.role==='owner'?'LEVEL 7 · OWNER':'LEVEL '+peer.clearance_level;
  $('messageInput').disabled=false;$('sendButton').disabled=false;renderPeers();void loadMessages();
 }
 async function loadMessages(){
@@ -90,7 +92,7 @@ async function loadMessages(){
  try{
   const pid=peer.user_id;
   const filter='and(sender_id.eq.'+self+',recipient_id.eq.'+pid+'),and(sender_id.eq.'+pid+',recipient_id.eq.'+self+')';
-  const {data,error}=await client.from('corp_chat_messages').select('id,sender_id,recipient_id,body,created_at').or(filter).order('created_at',{ascending:false}).limit(100);
+  const {data,error}=await client.from('corp_chat_messages').select('id,sender_id,recipient_id,body,created_at,media_batch_id').or(filter).order('created_at',{ascending:false}).limit(100);
   if(error){status('Messages could not be loaded.');return}
   const box=$('messages'),atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<80;
   const ordered=(data||[]).slice().reverse();
@@ -99,8 +101,8 @@ async function loadMessages(){
   box.dataset.newest=newest;box.replaceChildren();
   for(const m of ordered){
    const own=m.sender_id===self;
-   const item=document.createElement('div');item.className='message'+(own?' mine':'');
-   item.append(text('div','bubble',m.body));
+   const item=document.createElement('div');item.className='message'+(own?' mine':'')+(m.media_batch_id?' message-media':'');
+   item.append(m.media_batch_id?sharedMedia.renderMediaBubble(m,own):text('div','bubble',m.body));
    const t=document.createElement('time');t.dateTime=m.created_at;
    t.textContent=new Date(m.created_at).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
    item.append(t);box.append(item);
