@@ -1,3 +1,155 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#030305"><title>BLACKCELL CORPORATION | Employee Login</title><style>
-:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;min-height:100dvh;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#f3f0f4;background:radial-gradient(ellipse at 67% 30%,#4b14201b,transparent 55%),#030305}header{padding:22px clamp(20px,4vw,65px);border-bottom:1px solid #ffffff1a;display:flex;justify-content:space-between;align-items:center;gap:12px}header strong{font-size:12px;letter-spacing:.19em}header small{display:block;color:#92919c;font-size:9px;letter-spacing:.18em;margin-top:5px}header span{font-size:10px;color:#b7b6c0;letter-spacing:.12em}main{min-height:calc(100dvh - 125px);display:grid;place-items:center;padding:32px 16px}.card{width:min(445px,100%);border:1px solid #ffffff30;border-radius:26px;padding:clamp(25px,4vw,43px);background:linear-gradient(145deg,#28232aab,#0b0a0eee);box-shadow:0 25px 100px #0009,inset 0 1px #ffffff28;backdrop-filter:blur(28px)}.crest{width:80px;height:80px;border:1px solid #a043594d;border-radius:24px;margin:0 auto 24px;display:grid;place-items:center;font-weight:800;font-size:45px;color:#e3dce5;background:#151117}.eyebrow{text-align:center;font-size:10px;letter-spacing:.27em;color:#b56374;font-weight:750}h1{text-align:center;font-size:29px;margin:13px 0 8px;letter-spacing:-.035em;margin-bottom:27px}.intro{font-size:12px;color:#a8a4b0;text-align:center;line-height:1.7;margin-bottom:27px}label{display:block;font-size:10px;color:#c4c0ca;font-weight:750;letter-spacing:.09em;margin:18px 0 8px}input{width:100%;background:#0a090d;color:white;border:1px solid #4a4650;border-radius:12px;padding:15px 13px;font-size:14px;min-height:50px}input:focus{outline:2px solid #9e4d65}button{font:inherit;cursor:pointer}.password{display:flex;position:relative}.password input{padding-right:80px}#toggle{position:absolute;right:8px;top:8px;bottom:8px;border:0;background:#242028;color:#cfc6d0;border-radius:8px;padding:0 11px;font-size:11px}#submit{width:100%;border:1px solid #ba566c;color:white;font-size:11px;font-weight:800;letter-spacing:.13em;border-radius:13px;background:linear-gradient(120deg,#6c2133,#a43a50,#762338);padding:17px;margin-top:24px}#submit:disabled{opacity:.5}#status{border:1px solid #734a55;background:#2b1a22;color:#f2cbd2;border-radius:10px;padding:12px;font-size:12px;margin:16px 0 0}#status[hidden]{display:none}.links{display:flex;justify-content:space-between;gap:15px;margin-top:19px}.links a,.links button{background:none;border:0;padding:0;color:#b6aeb9;font-size:11px;text-decoration:underline}footer{text-align:center;color:#85818d;font-size:9px;letter-spacing:.1em;padding:18px}@media(max-width:540px){header{padding:18px}header span{display:none}}
-</style><script src="corp-config.js" defer></script><script type="module" src="corp-login.js"></script></head><body><header><div><strong>BLACKCELL CORPORATION</strong><small>EXECUTIVE SYSTEMS DIVISION</small></div><span>RESTRICTED EMPLOYEE ACCESS</span></header><main><section class="card"><div class="crest">B</div><div class="eyebrow">◈ CORPORATE ACCESS GATEWAY</div><h1>Sign In</h1><form id="login"><label for="email">EMPLOYEE EMAIL</label><input id="email" type="email" autocomplete="username" required placeholder="name@example.com"><label for="password">PASSWORD</label><div class="password"><input id="password" type="password" autocomplete="current-password" required><button id="toggle" type="button">SHOW</button></div><button id="submit" type="submit">SIGN IN TO BLACKCELL ↗</button></form><p id="status" hidden role="status" aria-live="polite"></p><div class="links"><a href="index.html">← Corporate Access</a><button id="reset" type="button">Forgot password?</button></div></section></main><footer>BLACKCELL CORPORATION · AUTHORIZED ACCESS ONLY</footer></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#030305">
+<title>BLACKCELL CORPORATION | Sign In</title>
+<style>
+:root{color-scheme:dark;--silver:#e5e0e7;--dim:#a7a2ad;--red:#a02e44}
+*{box-sizing:border-box}
+html{min-height:100%}
+body{margin:0;min-height:100dvh;background:radial-gradient(ellipse 44% 35% at 77% 47%,#6d1a291c,transparent 83%),linear-gradient(112deg,#09090c,#030305 65%);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#f3f0f4;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.07;background:repeating-linear-gradient(0deg,transparent 0,transparent 3px,#fff 4px,transparent 5px)}
+header{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:23px clamp(19px,4.4vw,64px);border-bottom:1px solid #ffffff16}
+header strong{display:block;letter-spacing:.19em;font-size:12px}
+header small{display:block;color:#92919d;font-size:9px;letter-spacing:.18em;margin-top:5px}
+header .restriction{font-size:10px;color:#aeaab4;letter-spacing:.15em}
+main{min-height:calc(100dvh - 122px);display:flex;align-items:center;justify-content:center;padding:35px 16px 18px;position:relative;z-index:1}
+.stage-window{position:relative;width:min(920px,100%);min-height:610px;perspective:1100px}
+.login-panel,.pass-panel{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;transition:transform .72s cubic-bezier(.2,.79,.2,1),opacity .55s ease;will-change:transform,opacity}
+.login-panel{opacity:1;transform:translateX(0);z-index:2}
+.pass-panel{opacity:0;transform:translateX(115%);z-index:1;pointer-events:none}
+.stage-window.show-pass .login-panel{opacity:0;transform:translateX(-110%);pointer-events:none}
+.stage-window.show-pass .pass-panel{opacity:1;transform:translateX(0);pointer-events:auto;z-index:3}
+.login-card{width:min(445px,100%);border:1px solid #ffffff30;border-radius:26px;padding:clamp(25px,4vw,43px);background:linear-gradient(145deg,#28232aab,#0b0a0eee);box-shadow:0 25px 100px #0009,inset 0 1px #ffffff28;backdrop-filter:blur(28px)}
+.brand-crest{width:80px;height:80px;border:1px solid #a043594d;border-radius:24px;margin:0 auto 24px;display:grid;place-items:center;font-weight:800;font-size:45px;color:#e3dce5;background:#151117}
+.eyebrow{text-align:center;font-size:10px;letter-spacing:.27em;color:#b56374;font-weight:750}
+h1{text-align:center;font-size:29px;letter-spacing:-.035em;margin:13px 0 27px}
+label{display:block;font-size:10px;color:#c4c0ca;font-weight:750;letter-spacing:.11em;margin:18px 0 8px}
+input{width:100%;background:#0a090d;color:white;border:1px solid #4a4650;border-radius:12px;padding:15px 13px;font-size:14px;min-height:50px;outline:none}
+input:focus-visible{outline:2px solid #bb657a;outline-offset:1px}
+button{font:inherit;cursor:pointer}
+.password{display:flex;position:relative}
+.password input{padding-right:82px}
+.show{position:absolute;right:8px;top:8px;bottom:8px;border:0;background:#242028;color:#cfc6d0;border-radius:8px;padding:0 11px;font-size:11px}
+.primary{width:100%;border:1px solid #ba566c;color:white;font-size:11px;font-weight:800;letter-spacing:.13em;border-radius:13px;background:linear-gradient(120deg,#6c2133,#a43a50,#762338);padding:17px;margin-top:24px;min-height:51px}
+.primary:disabled{opacity:.58;cursor:progress}
+.message{border:1px solid #734a55;background:#2b1a22;color:#f2cbd2;border-radius:10px;padding:12px;font-size:12px;line-height:1.55;margin:16px 0 0}
+.message[hidden]{display:none}
+.links{display:flex;justify-content:space-between;gap:15px;margin-top:19px}
+.links a,.links button{background:none;border:0;padding:0;color:#b6aeb9;font-size:11px;text-decoration:underline}
+footer{text-align:center;color:#85818d;font-size:9px;letter-spacing:.12em;padding:14px 16px 23px;position:relative;z-index:1}
+.pass-grid{width:100%;display:grid;grid-template-columns:minmax(295px,355px) minmax(280px,370px);justify-content:center;align-items:center;gap:clamp(22px,4vw,62px);padding:8px 0}
+.executive-pass{width:100%;aspect-ratio:370 / 558;max-height:558px;border:4px solid #b9b1be;border-radius:19px;background:linear-gradient(149deg,#b6b1bd,#554d5b 32%,#a49baa 55%,#372e39);padding:5px;box-shadow:0 32px 110px #000c,0 0 44px #781c3124;position:relative;overflow:hidden}
+.executive-pass:before{content:"";position:absolute;inset:0;pointer-events:none;z-index:4;background:linear-gradient(106deg,transparent 30%,#ffffff0d 51%,transparent 65%);animation:metalShine 6s infinite}
+.pass-inner{width:100%;height:100%;border:1px solid #c6bccb;border-radius:12px;background:linear-gradient(160deg,#24232a,#07070a 59%,#1a1017);padding:11px;display:flex;flex-direction:column;gap:9px;position:relative;overflow:hidden}
+.pass-top{height:45%;padding:18px 17px 10px;border:1px solid #6c5f6c;clip-path:polygon(0 0,82% 0,100% 14%,100% 100%,0 100%);position:relative;background:linear-gradient(145deg,#28262d,#0a0a0d)}
+.pass-serial{font-weight:850;letter-spacing:.2em;color:#eee7f0;font-size:13px;text-align:right}
+.pass-symbol{width:96px;height:104px;display:block;filter:drop-shadow(0 0 13px #a1264233);margin:-5px 0 2px}
+.pass-corp{font-size:clamp(20px,2.4vw,30px);font-weight:900;letter-spacing:-.06em;line-height:1;color:#f5f1f5;white-space:nowrap}
+.pass-small{font-size:10px;letter-spacing:.20em;color:#bbb1bf;margin-top:9px}
+.pass-id{flex:1;min-height:100px;border:1px solid #a69eab;padding:17px 13px;display:flex;flex-direction:column;justify-content:space-between;background:#111115dd}
+.pass-id b{display:block;font-size:21px;font-weight:850;letter-spacing:-.035em}
+.pass-id span{font-size:12px;letter-spacing:.13em;color:#b8b2bd}
+.pass-stripe{height:14px;flex:none;background:repeating-linear-gradient(110deg,#b34a60 0 4px,#100f15 4px 12px);border:1px solid #aba2af}
+.clearance{height:60px;display:grid;grid-template-columns:43% 57%;border:1px solid #b3a8b7;background:#d8d0db;color:#18141a;flex:none}
+.clearance b{display:grid;place-items:center;font-size:20px;font-weight:900}
+.clearance span{display:grid;place-items:center;text-align:center;background:#2f101a;color:#f4eef5;font-size:13px;letter-spacing:.08em;font-weight:850}
+.pass-foot{height:42px;flex:none;border:1px solid #9b8b99;display:flex;align-items:center;justify-content:space-between;padding:0 12px;color:#cfc4d0;font-size:9px;letter-spacing:.15em}
+.code-card{border:1px solid #ffffff2c;border-radius:24px;background:linear-gradient(140deg,#29242b9c,#09090de8);backdrop-filter:blur(22px);padding:30px 25px;box-shadow:0 25px 75px #0009}
+.code-card .eyebrow{text-align:left}
+.code-card h2{font-size:30px;letter-spacing:-.045em;margin:15px 0 10px}
+.code-card .support{font-size:12px;line-height:1.7;color:#a7a3af;margin:0 0 23px}
+.code-card .support strong{color:#e0dce3}
+.code-card .back{background:none;border:0;margin-top:18px;padding:0;color:#a8a3af;font-size:11px;text-decoration:underline}
+.code-card .message{margin:12px 0 0}
+.launch-screen{position:fixed;inset:0;background:#000;z-index:99;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:28px;text-align:center;opacity:0;visibility:hidden;transition:opacity .42s ease,visibility .42s}
+.launch-screen.active{visibility:visible;opacity:1}
+.launch-brand{width:120px;height:120px;border:1px solid #a43f564f;border-radius:100%;display:grid;place-items:center;color:#eee7f1;font-size:62px;font-weight:800;box-shadow:0 0 55px #93263c17}
+.launch-label{font-size:10px;letter-spacing:.38em;color:#aa7080;font-weight:850;margin:36px 0 12px}
+.launch-screen h2{font-size:clamp(28px,4vw,48px);letter-spacing:.12em;font-weight:700;margin:0 0 12px}
+.launch-note{color:#9e99a5;font-size:11px;letter-spacing:.16em;min-height:16px}
+.track{width:min(400px,79vw);height:3px;overflow:hidden;background:#2e2931;border-radius:99px;margin:30px 0 12px}
+.fill{height:100%;width:0;background:linear-gradient(90deg,#612033,#b14a5e,#e1b9c5);box-shadow:0 0 22px #b33c56}
+.percent{font-size:11px;letter-spacing:.21em;color:#c1b9c5;font-variant-numeric:tabular-nums}
+@keyframes metalShine{0%,26%{transform:translateX(-110%)}56%,100%{transform:translateX(105%)}}
+@media(max-width:760px){.stage-window{min-height:980px}.pass-grid{grid-template-columns:minmax(0,375px);gap:20px;align-content:center}.executive-pass{width:min(290px,85vw);justify-self:center}.pass-inner{gap:5px}.pass-top{padding:12px}.pass-symbol{height:74px;width:76px}.pass-corp{font-size:22px}.pass-small{font-size:9px}.pass-id{min-height:75px;padding:12px}.pass-id b{font-size:17px}.pass-id span{font-size:10px}.clearance{height:48px}.code-card{padding:23px}.stage-window:not(.show-pass){min-height:610px}}
+@media(max-width:500px){header{padding:18px}header .restriction{display:none}h1{font-size:27px}.stage-window{min-height:860px}.executive-pass{width:min(245px,75vw)}.pass-top{height:43%}.pass-symbol{height:62px;width:67px}.pass-corp{font-size:19px}.pass-id{min-height:65px}.pass-id b{font-size:15px}.clearance b{font-size:16px}.clearance span{font-size:10px}.pass-foot{height:29px}.login-card{padding:26px}.code-card h2{font-size:26px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition-duration:.01ms!important}}
+</style>
+<script src="corp-config.js" defer></script>
+<script type="module" src="corp-login.js"></script>
+</head>
+<body>
+<header>
+<div><strong>BLACKCELL CORPORATION</strong><small>EXECUTIVE SYSTEMS DIVISION</small></div>
+<span class="restriction">RESTRICTED ACCESS</span>
+</header>
+<main>
+<div class="stage-window" id="stageWindow">
+<section class="login-panel" id="loginPanel" aria-label="Corporate sign in">
+<div class="login-card">
+<div class="brand-crest">B</div>
+<div class="eyebrow">◈ CORPORATE ACCESS GATEWAY</div>
+<h1>Sign In</h1>
+<form id="login">
+<label for="email">EMAIL ADDRESS</label>
+<input id="email" type="email" autocomplete="username" required placeholder="name@example.com">
+<label for="password">PASSWORD</label>
+<div class="password"><input id="password" type="password" autocomplete="current-password" required><button id="toggle" class="show" type="button">SHOW</button></div>
+<button id="submit" class="primary" type="submit">SIGN IN TO BLACKCELL ↗</button>
+</form>
+<p id="status" class="message" hidden role="status" aria-live="polite"></p>
+<div class="links"><a href="index.html">← Corporate Access</a><button id="reset" type="button">Forgot password?</button></div>
+</div>
+</section>
+<section class="pass-panel" id="passPanel" aria-label="Executive access pass" aria-hidden="true">
+<div class="pass-grid">
+<article class="executive-pass" aria-label="Blackcell executive Level 7 access pass">
+<div class="pass-inner">
+<div class="pass-top">
+<div class="pass-serial">BC / 0001</div>
+<svg class="pass-symbol" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+<path d="M50 5 87 25V73L50 94 13 73V25L50 5Z" stroke="#d7d0dc" stroke-width="2"/>
+<path d="M50 14 78 29V68L50 84 22 68V29L50 14Z" stroke="#833c50" stroke-width="1.5"/>
+<path d="M37 29V70H56C72 70 73 53 59 50 69 44 67 29 53 29H37ZM48 38H53C60 38 60 46 54 46H48V38ZM48 55H55C62 55 62 62 55 62H48V55Z" fill="#f4ecf5"/>
+</svg>
+<div class="pass-corp">BLACKCELL</div>
+<div class="pass-corp">CORPORATION</div>
+<div class="pass-small">EXECUTIVE NETWORK</div>
+</div>
+<div class="pass-id"><div><b>CORPORATE OWNER</b><span>EXECUTIVE ADMINISTRATOR</span></div><span>PERSONNEL AUTHORIZATION</span></div>
+<div class="pass-stripe"></div>
+<div class="clearance"><b>LEVEL 7</b><span>ACCESS PASS</span></div>
+<div class="pass-foot"><span>BC / EXECUTIVE</span><span>SECURE ACCESS</span></div>
+</div>
+</article>
+<section class="code-card">
+<div class="eyebrow">BLACKCELL / SECURITY CLEARANCE</div>
+<h2>Verify Access</h2>
+<p class="support">Enter your existing <strong>NEXUS Access Code</strong> and <strong>Security Code</strong> to authorize this corporate session.</p>
+<form id="codeForm">
+<label for="accessCode">ACCESS CODE</label>
+<input id="accessCode" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" required maxlength="256">
+<label for="securityCode">SECURITY CODE</label>
+<input id="securityCode" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" required maxlength="256">
+<button id="authenticate" type="submit" class="primary">AUTHENTICATE ↗</button>
+</form>
+<p id="codeStatus" class="message" role="status" aria-live="polite" hidden></p>
+<button class="back" type="button" id="backToSignIn">← Sign in with another account</button>
+</section>
+</div>
+</section>
+</div>
+</main>
+<footer>BLACKCELL CORPORATION · EXECUTIVE SYSTEMS · AUTHORIZED ACCESS</footer>
+<section id="launchScreen" class="launch-screen" aria-hidden="true" role="status" aria-live="polite">
+<div class="launch-brand">B</div>
+<div class="launch-label">BLACKCELL CORPORATION</div>
+<h2>AUTHORIZATION GRANTED</h2>
+<div id="launchNote" class="launch-note">PREPARING EXECUTIVE SYSTEMS</div>
+<div class="track"><div id="launchFill" class="fill"></div></div>
+<div id="launchPercent" class="percent">0%</div>
+</section>
+</body></html>
