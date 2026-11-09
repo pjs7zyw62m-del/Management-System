@@ -171,6 +171,10 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   focus.title=focused?'Show thumbnails, search and album history':'Hide thumbnails to enlarge the photo or video';
   focus.setAttribute('aria-pressed',String(focused));
   focus.setAttribute('aria-label',focused?'Expand library controls':'Collapse library to focus on photo or video');
+  if(standalonePanel&&mediaPanel==='library'&&window.parent!==window){
+   window.parent.postMessage({type:'blackcell-media-focus-state',
+     peerId:context()?.peer?.user_id,focused},location.origin);
+  }
  }
  function toggleBusy(v){
   busy=v;for(const b of [choosePhotos,chooseVideos,mediaShare,add])b.disabled=v;
