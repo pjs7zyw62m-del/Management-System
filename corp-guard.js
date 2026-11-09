@@ -119,12 +119,21 @@ try {
       window.BLACKCELL_CORPORATE_ADMIN_API=Object.freeze({client});
       window.addEventListener('message',event=>{
         if(event.origin!==location.origin || event.data?.type!=='blackcell-chat-activity')return;
-        if(event.source!==document.querySelector('iframe[src^="corporate-chat.html"]')?.contentWindow)return;
-        interacted();
+        const valid=[...document.querySelectorAll('iframe')].some(frame=>{
+          try{
+            const url=new URL(frame.src,location.href);
+            return url.origin===location.origin&&url.pathname.endsWith('/corporate-chat.html')&&
+              frame.contentWindow===event.source;
+          }catch(_){return false;}
+        });
+        if(valid)interacted();
       });
       const script=document.createElement('script');
-      script.src='admin.js?v=20261109-fourdigit4';
+      script.src='admin.js?v=20261109-profilechat1';
       document.body.append(script);
+      const dockScript=document.createElement('script');
+      dockScript.src='corporate-chat-dock.js?v=20261109-floating1';
+      document.body.append(dockScript);
     }
   }
 } catch (_) {
