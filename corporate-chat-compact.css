@@ -1,0 +1,134 @@
+/* BLACKCELL / MESSAGES — full-width floating iMessage conversation experience
+   This layout is only for the authorized embedded messenger, not media panels. */
+html.bc-compact-chat,html.bc-compact-chat body{height:100%;overflow:hidden;background:#09090c}
+html.bc-compact-chat .chat-header{display:none!important}
+html.bc-compact-chat .chat{display:block!important;height:100%!important;position:relative;min-height:0;width:100%;background:#09090c}
+html.bc-compact-chat .sidebar{
+ width:100%;height:100%;padding:19px 17px 18px;display:flex;flex-direction:column;min-height:0;
+ background:radial-gradient(ellipse at 50% -5%,#4a2d4022,transparent 65%),linear-gradient(160deg,#141117,#09090c);
+ border:0;overflow:hidden
+}
+html.bc-compact-chat .chat-main{display:none}
+html.bc-compact-chat .chat.bc-thread-active .sidebar{display:none!important}
+html.bc-compact-chat .chat.bc-thread-active .chat-main{display:flex!important;height:100%;width:100%;min-height:0}
+html.bc-compact-chat .inbox-intro{display:flex!important;align-items:center;gap:13px;margin:0 0 18px}
+.inbox-intro{display:none}
+.inbox-intro-icon{
+ width:45px;height:45px;display:grid;place-items:center;border-radius:17px;border:1px solid #735a6b;
+ background:linear-gradient(140deg,#3b2c3b,#151019);box-shadow:inset 0 1px 0 #ffffff1b;
+ color:#ebd9e6;font-size:24px;flex:none
+}
+.inbox-intro-label{min-width:0;flex:1}
+.inbox-intro-label strong{font-size:21px;line-height:1.1;font-weight:700;letter-spacing:-.045em;display:block;color:#f1ebf1}
+.inbox-intro-label small{display:block;margin-top:6px;font-size:9px;letter-spacing:.15em;color:#a99baa}
+.inbox-intro-status{width:8px;height:8px;border-radius:100%;background:#73ba8f;box-shadow:0 0 0 4px #73ba8f22;flex:none}
+html.bc-compact-chat .label-with-count{margin:0 1px 10px;padding:0 3px;color:#b9a4b3;font-size:9px;letter-spacing:.15em}
+html.bc-compact-chat .label-with-count span:last-child{background:#241b26;border-color:#614857;color:#c4afc0}
+html.bc-compact-chat .peer-search-wrap{margin:0 0 18px;border:1px solid #50434e;border-radius:13px;background:#1c1921;padding:0 14px;display:flex}
+html.bc-compact-chat .peer-search-wrap input{height:43px;font-size:12px;color:#f1e8f0}
+html.bc-compact-chat .peer-search-wrap span{font-size:22px;color:#b19aab}
+html.bc-compact-chat #peers{min-height:0;overflow-y:auto;flex:1;padding-right:2px;scrollbar-width:thin;scrollbar-color:#4d3d4a transparent}
+html.bc-compact-chat .peer{
+ position:relative;margin:0 0 9px;width:100%;display:flex!important;flex-direction:row!important;
+ align-items:center!important;text-align:left!important;gap:13px!important;
+ min-height:81px;padding:12px 13px!important;border-radius:17px;
+ background:linear-gradient(135deg,#211d26,#131118);border:1px solid #4b3e4b;
+ box-shadow:inset 0 1px 0 #ffffff0a,0 4px 15px #0003;
+ transition:border-color .2s,transform .2s,background .2s
+}
+html.bc-compact-chat .peer:hover,html.bc-compact-chat .peer:focus-visible{
+ transform:translateY(-2px)!important;background:linear-gradient(135deg,#302433,#19141d);
+ border-color:#92647a;outline:none
+}
+html.bc-compact-chat .peer .avatar{
+ width:47px!important;height:47px!important;margin:0!important;
+ border-radius:50%;font-size:16px!important;flex:none;background:linear-gradient(145deg,#594158,#29202e);
+ border:1px solid #a27b93;box-shadow:0 0 0 3px #784d6430
+}
+html.bc-compact-chat .peer>span:nth-child(2){flex:1;min-width:0}
+html.bc-compact-chat .peer strong{font-size:12px!important;color:#f2edf1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+html.bc-compact-chat .peer small{display:block!important;font-size:9px;letter-spacing:.05em;color:#b695a7;margin-top:5px}
+html.bc-compact-chat .peer-preview{
+ color:#9c929f;font-size:10px;line-height:1.4;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;
+ margin-top:6px;max-width:100%
+}
+html.bc-compact-chat .peer-meta{display:block;flex:none;align-self:start;font-size:9px;color:#a38e9d;padding-top:3px}
+.bc-inbox-back{display:none}
+html.bc-compact-chat .chat-title{
+ min-height:73px;padding:11px 13px 11px 12px;flex:none;
+ background:linear-gradient(135deg,#1b1720,#111017);
+ border-bottom:1px solid #5a455633
+}
+html.bc-compact-chat .imessage-identity{gap:10px}
+html.bc-compact-chat .imessage-portrait{
+ width:40px;height:40px;font-size:16px;border:1px solid #a17892;
+ background:linear-gradient(145deg,#5d3d55,#211823)
+}
+html.bc-compact-chat .imessage-names strong{font-size:13px;letter-spacing:.01em}
+html.bc-compact-chat .imessage-names small{font-size:9px;color:#aaa1ae;margin-top:5px}
+html.bc-compact-chat .bc-inbox-back{
+ width:33px;height:33px;min-width:33px;border:1px solid #5d4a5b;border-radius:11px;
+ background:#28202b;color:#eadde8;display:grid;place-items:center;font-size:24px;
+ font-weight:450;line-height:1;margin-right:2px;padding:0;
+ cursor:pointer;transition:background .2s
+}
+html.bc-compact-chat .bc-inbox-back:hover{background:#473044;border-color:#af7f99}
+html.bc-compact-chat .imessage-title-actions{gap:4px}
+html.bc-compact-chat .imessage-title-actions a{
+ max-width:72px;padding:7px 8px;font-size:8px;letter-spacing:.05em;
+ text-align:center;border-radius:9px;white-space:normal
+}
+html.bc-compact-chat .imessage-secure-indicator{display:none}
+html.bc-compact-chat .conversation{
+ flex:1;min-height:0;padding:22px 16px 16px;gap:9px;scrollbar-width:thin;
+ background:radial-gradient(ellipse at 65% 20%,#46304b0a,transparent 55%),#0a0a0d
+}
+html.bc-compact-chat .message{max-width:86%}
+html.bc-compact-chat .message .bubble{font-size:12.4px;line-height:1.6;padding:10px 14px;border-radius:19px}
+html.bc-compact-chat .message.mine .bubble{background:linear-gradient(145deg,#322632,#19141d)!important}
+html.bc-compact-chat .chat-day-separator{font-size:8px;margin:9px auto 12px}
+html.bc-compact-chat .message time{font-size:9px;color:#99919d}
+html.bc-compact-chat .composer{
+ padding:13px 12px 15px;gap:9px;background:linear-gradient(140deg,#17131b,#100e14);
+ border-top:1px solid #514150;flex:none;align-items:flex-end
+}
+html.bc-compact-chat .composer .composer-add{width:39px;height:39px;min-width:39px;min-height:39px}
+html.bc-compact-chat .composer .composer-send{width:41px;height:41px;min-width:41px;min-height:41px}
+html.bc-compact-chat .composer-input-wrap{
+ border-radius:23px;background:#221d27;border:1px solid #695667;min-height:41px
+}
+html.bc-compact-chat .composer .composer-input-wrap textarea{
+ min-height:39px;height:39px;padding:10px 12px;font-size:12px
+}
+html.bc-compact-chat .media-actions{
+ padding:11px 14px;background:#16121a;border-top:1px solid #493849;
+ display:flex;gap:7px;align-items:center;flex-wrap:wrap
+}
+html.bc-compact-chat .media-actions.is-collapsed{display:none!important}
+html.bc-compact-chat .media-actions button{
+ font-size:9px;border-radius:11px;padding:9px 11px;
+ letter-spacing:.07em;background:#28202d;border-color:#745769
+}
+html.bc-compact-chat .media-actions button:hover{background:#443044}
+html.bc-compact-chat #messages .empty{
+ max-width:285px;align-self:center;margin:auto;text-align:center;font-size:12px;
+ color:#9f96a6;line-height:1.8;padding:25px
+}
+html.bc-compact-chat .chat .chat-main{overflow:hidden}
+html.bc-compact-chat .chat .conversation{overscroll-behavior:contain}
+@media(max-width:520px){
+ html.bc-compact-chat .sidebar{padding:13px 10px}
+ html.bc-compact-chat .inbox-intro{margin-bottom:13px}
+ html.bc-compact-chat .peer{min-height:67px;padding:10px!important;border-radius:14px}
+ html.bc-compact-chat .peer .avatar{width:39px!important;height:39px!important;font-size:13px!important}
+ html.bc-compact-chat .peer strong{font-size:11px!important}
+ html.bc-compact-chat .peer-preview{font-size:9px}
+ html.bc-compact-chat .chat-title{min-height:63px;padding:8px}
+ html.bc-compact-chat .imessage-portrait{width:36px;height:36px}
+ html.bc-compact-chat .imessage-title-actions a{font-size:7px;max-width:61px}
+ html.bc-compact-chat .conversation{padding:14px 11px 12px}
+ html.bc-compact-chat .message{max-width:93%}
+ html.bc-compact-chat .message .bubble{font-size:11.7px}
+ html.bc-compact-chat .composer{padding:9px 8px 11px;gap:6px}
+}
