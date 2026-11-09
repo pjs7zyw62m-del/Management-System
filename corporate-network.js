@@ -539,6 +539,47 @@ function setupEvents(){
  $('editOverlay').addEventListener('click',e=>{if(e.target===$('editOverlay'))closeEdit()});
  $('saveProfile').addEventListener('click',()=>void saveProfile());
 }
+
+let networkSecurityChecksInstalled=false,networkSecurityChecking=false;
+function closeNetworkForSecurity(reason){
+ $('app').hidden=true;
+ $('gate').hidden=false;
+ $('gateText').textContent=reason;
+ $('gateBack').hidden=false;
+ $('applePhotoViewer').hidden=true;
+ $('appleAlbumOverlay').hidden=true;
+ $('editOverlay').hidden=true;
+ document.body.style.overflow='';
+ for(const x of document.querySelectorAll('.bc-chat-dock,.bc-chat-orb,.bc-chat-pane,.bc-chat-toast'))
+  x.hidden=true;
+}
+async function verifyNetworkSession(){
+ if(networkSecurityChecking||!state.user||$('app').hidden||document.hidden)return;
+ networkSecurityChecking=true;
+ try{
+  const {data,error}=await client.auth.getUser();
+  if(error||data?.user?.id!==state.user.id)
+   return closeNetworkForSecurity('Your Blackcell session ended. Sign in again to view the private network.');
+  const rpc=state.member?.role==='owner'?'corp_code_status':'corp_employee_code_status';
+  const status=await client.rpc(rpc);
+  if(status.error||status.data?.verified!==true)
+   closeNetworkForSecurity('Your verified access pass has expired. Return to the corporate portal and verify your access again.');
+ }catch(_){
+  closeNetworkForSecurity('Network access could not be verified. Return to the corporate portal to reconnect.');
+ }finally{networkSecurityChecking=false}
+}
+function installNetworkSecurityChecks(){
+ if(networkSecurityChecksInstalled)return;networkSecurityChecksInstalled=true;
+ window.setInterval(()=>void verifyNetworkSession(),60000);
+ document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden)void verifyNetworkSession()
+ });
+ client.auth.onAuthStateChange(event=>{
+  if(event==='SIGNED_OUT'&&state.user)
+   closeNetworkForSecurity('You have signed out. Sign in to re-enter the private network.');
+ });
+}
+
 async function boot(){
  try{
   const {data:{session}}=await client.auth.getSession();
@@ -564,6 +605,7 @@ async function boot(){
   }
   $('gate').hidden=true;$('app').hidden=false;
   setupEvents();
+  installNetworkSecurityChecks();
   window.BLACKCELL_CORPORATE_NETWORK_CLIENT=client;
   const chatScript=document.createElement('script');
   chatScript.src='corporate-chat-dock.js?v=20261109-floating-network2';
