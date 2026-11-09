@@ -419,9 +419,137 @@ footer{height:36px;line-height:36px;padding:0;align-self:stretch;margin:0;white-
   .stage-window.show-pass .login-panel{opacity:0;pointer-events:none}
 }
 
+
+/* AUTHORIZED PASS -> GREEN BUBBLE -> SHARED ACCESS APPROVED */
+.executive-pass.pass-verified .clearance span {
+  background:linear-gradient(110deg,#17522c,#247e45,#10522d)!important;
+  color:#e9fff0!important;
+  border-color:#83e9a2;
+  box-shadow:inset 0 0 24px #3fd97824,0 0 23px #51e38c73;
+}
+.executive-pass.pass-verified .clearance{border-color:#8ee8a8}
+.executive-pass.pass-verified{border-color:#b2c3b5;box-shadow:0 0 34px #40c96e40,0 25px 80px #000b}
+.executive-pass.pass-verified .pass-inner{border-color:#8cb79a}
+.stage-window.show-pass .executive-pass{
+  transition:height .78s cubic-bezier(.19,.84,.19,1),
+    width .78s cubic-bezier(.19,.84,.19,1),
+    border-color .45s ease,box-shadow .5s ease,background .45s ease;
+}
+.executive-pass .pass-credentials,
+.executive-pass .pass-foot{
+  transition:opacity .26s ease,max-height .6s ease;
+}
+.stage-window.show-pass .executive-pass.pass-condensed{
+  width:270px!important;height:222px!important;
+  border:2px solid #81d99b!important;border-radius:26px!important;
+  background:linear-gradient(150deg,#23452e,#08120c)!important;
+  box-shadow:0 0 23px #54cc7a58,0 22px 65px #0009!important;
+}
+.stage-window.show-pass .pass-condensed .pass-inner{
+  padding:10px!important;gap:5px!important;
+  border-radius:20px;border-color:#598c69;
+}
+.stage-window.show-pass .pass-condensed .pass-top{
+  height:125px!important;flex:0 0 125px!important;
+  padding:9px 12px 6px!important;
+  background:linear-gradient(140deg,#19251b,#060b08)!important;
+}
+.stage-window.show-pass .pass-condensed .pass-symbol{
+  height:40px!important;width:48px!important;margin:0 0 1px!important;
+}
+.stage-window.show-pass .pass-condensed .pass-corp{font-size:19px!important;letter-spacing:-.045em!important}
+.stage-window.show-pass .pass-condensed .pass-small{font-size:8px!important;margin-top:4px!important}
+.stage-window.show-pass .pass-condensed .pass-stripe{height:6px!important;flex:0 0 6px!important}
+.stage-window.show-pass .pass-condensed .clearance{height:41px!important;flex:0 0 41px!important}
+.stage-window.show-pass .pass-condensed .clearance b{font-size:14px!important}
+.stage-window.show-pass .pass-condensed .clearance span{font-size:9px!important}
+.stage-window.show-pass .pass-condensed .pass-credentials,
+.stage-window.show-pass .pass-condensed .pass-foot{
+  height:0!important;min-height:0!important;max-height:0!important;
+  flex:0 0 0!important;opacity:0!important;overflow:hidden!important;
+  border:0!important;padding:0!important;margin:0!important;
+  visibility:hidden!important;pointer-events:none!important;
+}
+.stage-window.show-pass .login-card.merge-source,
+.stage-window.show-pass .executive-pass.merge-source{opacity:0!important;pointer-events:none}
+.access-merge-scene{
+  position:fixed;inset:0;z-index:80;pointer-events:none;
+  opacity:0;visibility:hidden;
+  transition:opacity .18s ease,visibility .18s ease;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  color:#eafff0
+}
+.access-merge-scene.active{opacity:1;visibility:visible}
+.access-merge-scene .merge-beams{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.merge-beams path{
+  fill:none;stroke:#80f6a6;stroke-width:2.8;stroke-linecap:round;
+  filter:drop-shadow(0 0 9px #58e784);
+  stroke-dasharray:1400;stroke-dashoffset:1400;opacity:0;
+}
+.access-merge-scene.converging .merge-beams path{
+  opacity:1;animation:merge-line-flow 1.2s cubic-bezier(.2,.7,.2,1) forwards
+}
+@keyframes merge-line-flow{0%{stroke-dashoffset:1400;opacity:0}25%{opacity:1}100%{stroke-dashoffset:0;opacity:.2}}
+.merge-piece{
+  position:absolute;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:10px;
+  border:1.5px solid #83e7a0;border-radius:24px;
+  background:linear-gradient(150deg,#1b3322ee,#050e08f5);
+  box-shadow:0 0 36px #3ada7040,inset 0 1px #c6fbd84b;
+  text-align:center;overflow:hidden;backdrop-filter:blur(10px);
+  transform-origin:center center;
+  transition:transform 1.17s cubic-bezier(.23,.76,.2,1),
+    opacity .45s ease 700ms,filter .8s ease;
+}
+.merge-piece .merge-badge{
+  width:48px;height:48px;display:grid;place-items:center;
+  border:1px solid #8fae96;border-radius:14px;background:#080f0b;
+  font-size:25px;font-weight:900;line-height:1;color:#fbfffc
+}
+.merge-piece .merge-heading{font-size:18px;font-weight:780;letter-spacing:-.045em}
+.merge-piece .merge-desc{font-size:9px;letter-spacing:.12em;color:#b1d9bb}
+.merge-pass-piece .merge-heading{font-size:15px;line-height:1.05}
+.merge-pass-piece .merge-desc{display:flex;gap:10px;align-items:center;justify-content:center}
+.merge-pass-piece .merge-pill{display:inline-flex;align-items:center;gap:7px;padding:5px 9px;background:#15542e;color:#e5fff1;border-radius:6px;font-weight:800;letter-spacing:.06em}
+.merge-piece.merging{opacity:0;filter:blur(3px)}
+.merge-result{
+  position:absolute;left:50%;top:50%;width:min(450px,82vw);
+  transform:translate(-50%,-50%) scale(.55);
+  opacity:0;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;text-align:center;
+  padding:32px 20px 27px;border:1.5px solid #96f6b4;
+  border-radius:27px;
+  color:#e9fff1;background:linear-gradient(145deg,#1e4b2bf2,#041008f9);
+  box-shadow:0 0 45px #59e98663,0 18px 80px #000c;
+  transition:opacity .5s ease,transform .65s cubic-bezier(.15,.8,.2,1)
+}
+.access-merge-scene.approved .merge-result{
+  transform:translate(-50%,-50%) scale(1);opacity:1
+}
+.merge-result .merge-badge{height:64px;width:64px;font-size:37px;border:1px solid #a4f0b7;border-radius:20px;display:grid;place-items:center;background:#071b0d;margin-bottom:14px}
+.merge-result strong{font-size:clamp(24px,4vw,39px);letter-spacing:.025em;white-space:nowrap;text-shadow:0 0 21px #78ee9b78}
+.merge-result small{font-size:10px;letter-spacing:.23em;margin-top:13px;color:#c3e6ce}
+.launch-screen .fill{background:linear-gradient(90deg,#14582b,#44d77e,#b0ffca)!important;box-shadow:0 0 22px #52e98a!important}
+.launch-screen .launch-brand{border-color:#71d99d;box-shadow:0 0 56px #29af592b}
+.launch-screen .launch-label{color:#9de8b3}
+.launch-screen h2{color:#edfff2}
+@keyframes softMergePulse{0%,100%{box-shadow:0 0 18px #54cc7a45}50%{box-shadow:0 0 42px #54ec8d9b}}
+@media(max-width:700px){
+ .merge-piece{border-radius:16px;gap:7px}
+ .merge-piece .merge-badge{width:34px;height:34px;font-size:19px;border-radius:10px}
+ .merge-piece .merge-heading{font-size:13px}
+ .merge-piece .merge-desc{font-size:7px}
+ .merge-pass-piece .merge-heading{font-size:11px}
+ .merge-pass-piece .merge-pill{font-size:8px;gap:3px;padding:4px 6px}
+}
+@media(prefers-reduced-motion:reduce){
+ .merge-piece,.merge-result,.access-merge-scene{transition-duration:.01ms!important}
+ .merge-beams path{animation:none!important}
+}
+
 </style>
 <script src="corp-config.js" defer></script>
-<script type="module" src="corp-login.js?v=20261109-card-approved5"></script>
+<script type="module" src="corp-login.js?v=20261109-merge6"></script>
 </head>
 <body>
 <header>
@@ -480,11 +608,7 @@ footer{height:36px;line-height:36px;padding:0;align-self:stretch;margin:0;white-
 <p id="codeStatus" class="message" role="status" aria-live="polite" hidden></p>
 </div>
 <div class="pass-foot"><span>BLACKCELL CORPORATION</span><span>SECURE ACCESS</span></div>
-<div class="approval-overlay" id="approvalOverlay" role="status" aria-live="polite">
-  <div class="approval-mark" aria-hidden="true">✓</div>
-  <div class="approval-title">ACCESS GRANTED</div>
-  <div class="approval-subtitle">CLEARANCE VERIFIED</div>
-</div>
+
 </div>
 </article>
 </div>
@@ -492,6 +616,26 @@ footer{height:36px;line-height:36px;padding:0;align-self:stretch;margin:0;white-
 </div>
 </main>
 <footer>BLACKCELL CORPORATION · EXECUTIVE SYSTEMS · AUTHORIZED ACCESS</footer>
+<div id="accessMergeScene" class="access-merge-scene" aria-hidden="true">
+ <svg class="merge-beams" id="mergeBeams" preserveAspectRatio="none" aria-hidden="true">
+   <path id="mergeBeamIdentity" d=""></path><path id="mergeBeamPass" d=""></path>
+ </svg>
+ <div id="mergeIdentity" class="merge-piece merge-identity-piece">
+   <span class="merge-badge">B</span>
+   <span class="merge-heading">Identity Verified</span>
+   <span class="merge-desc">EMAIL &amp; PASSWORD ACCEPTED</span>
+ </div>
+ <div id="mergePass" class="merge-piece merge-pass-piece">
+   <span class="merge-badge">B</span>
+   <span class="merge-heading">BLACKCELL CORPORATION</span>
+   <span class="merge-desc"><span id="mergePassLevel">LEVEL 7</span><span class="merge-pill">ACCESS PASS</span></span>
+ </div>
+ <div id="mergeResult" class="merge-result" role="status" aria-live="polite">
+   <span class="merge-badge">B</span>
+   <strong>ACCESS APPROVED</strong>
+   <small>EXECUTIVE ACCESS AUTHORIZED</small>
+ </div>
+</div>
 <section id="launchScreen" class="launch-screen" aria-hidden="true" role="status" aria-live="polite">
 <div class="launch-brand">B</div>
 <div class="launch-label">BLACKCELL CORPORATION</div>
