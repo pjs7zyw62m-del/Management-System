@@ -387,12 +387,15 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
     frame.append(img);
    }
   }else frame.append(make('p','empty-state','Original media is not available. Refresh the library to renew the secure link.'));
-  $('appleViewerOwnerControls').hidden=!own(a);
+  // The Level 7 owner may curate network-shared assets into the owner's
+  // own albums, without being able to edit, classify, or delete the source.
+  $('appleViewerOwnerControls').hidden=!(own(a)||isAdmin());
   const select=$('appleViewerAlbumSelect');select.replaceChildren();
   const owned=allAlbums().filter(x=>x.owner_id===ownId());
   select.add(new Option(owned.length?'CHOOSE ALBUM…':'CREATE AN ALBUM FIRST',''));
   for(const album of owned)select.add(new Option(album.title,album.id));
   $('appleViewerAddAlbum').disabled=!owned.length;
+  $('appleViewerAddAlbum').textContent=own(a)?'＋ ADD TO ALBUM':'＋ CURATE TO MY ALBUM';
   $('appleViewerEditCaption').hidden=!own(a);
   $('appleViewerEditMilitary').hidden=!own(a);
   $('appleViewerDelete').hidden=!(own(a)&&a.purpose==='library');
