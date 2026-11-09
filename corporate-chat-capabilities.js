@@ -1,4 +1,5 @@
-/* Blackcell: full-size chat media on desktop or iPad 12.9-inch and larger.
+/* Blackcell: large floating companion media panels only on desktop or iPad 12.9-inch and larger.
+   Core photo and video sharing/viewing remains available on ALL devices.
    Browser APIs do not expose display inches; supported 12.9/13-inch iPads
    have physical CSS screen dimensions of at least 1000 x 1300.
 */

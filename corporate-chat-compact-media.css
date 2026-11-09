@@ -160,6 +160,12 @@ html.bc-chat-lite .media-library-list{
  padding:7px!important;
  grid-template-columns:repeat(auto-fill,minmax(78px,1fr))!important
 }
+html.bc-chat-lite .bc-media-load-more{
+ flex:0 0 auto!important;width:calc(100% - 16px)!important;
+ margin:7px 8px!important;min-height:43px!important;
+ font-size:10px!important;border-radius:11px!important
+}
+html.bc-chat-lite .bc-media-load-more[hidden]{display:none!important}
 html.bc-chat-lite .media-library-item{height:87px!important}
 html.bc-chat-lite .media-library-item img{height:68px!important;object-fit:contain!important}
 html.bc-chat-lite.bc-media-focus .media-viewer-tools,

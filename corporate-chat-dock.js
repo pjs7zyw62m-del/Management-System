@@ -97,7 +97,7 @@
     if(frameLoaded)return;
     const url=new URL('corporate-chat.html',location.href);
     url.searchParams.set('embed','1');
-    url.searchParams.set('chatUI','large-ipad-media-20261109');
+    url.searchParams.set('chatUI','mobile-photo-video-20261109-v2');
     if(peerWanted)url.searchParams.set('peer',peerWanted);
     frame.src=url.href;
     frameLoaded=true;

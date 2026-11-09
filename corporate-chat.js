@@ -1,5 +1,5 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-staff1';
-import {setupCorporateMedia} from './corporate-chat-media.js?v=20261109-large-media1';
+import {setupCorporateMedia} from './corporate-chat-media.js?v=20261109-mobile-media2';
 import {setupCorporateChatLive} from './corporate-chat-live.js?v=20261109-live1';
 const client=corporateClient(),$=id=>document.getElementById(id);
 const embedParams=new URLSearchParams(location.search);

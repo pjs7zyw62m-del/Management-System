@@ -1,7 +1,7 @@
 /* BLACKCELL CORPORATION / Secure private chat photo + video sharing */
 const BUCKET='corp-chat-media';
 const MAX_BYTES=50*1024*1024;
-const ALLOWED=new Set(['image/jpeg','image/png','image/webp','image/gif','image/heic','video/mp4','video/webm','video/quicktime','video/x-m4v']);
+const ALLOWED=new Set(['image/jpeg','image/png','image/webp','image/gif','image/heic','image/heif','image/heic-sequence','image/heif-sequence','video/mp4','video/webm','video/quicktime','video/x-m4v']);
 function el(tag,cls='',content=null){
  const n=document.createElement(tag);if(cls)n.className=cls;
  if(content!==null)n.textContent=content;return n;
