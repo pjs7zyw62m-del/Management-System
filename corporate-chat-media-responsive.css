@@ -295,3 +295,51 @@ html.bc-media-panel,html.bc-media-panel body{height:100%!important;min-height:0!
  .bc-media-panel .media-viewer-status{display:none!important}
  .bc-media-panel .media-library-head{padding:3px 7px!important}
 }
+
+/* The media host keeps two independent cards but places them in a scrollable
+   track on narrow phones. Tabs remain pinned and never slide off screen. */
+.bc-media-bubble-track{display:contents}
+.bc-media-bubble-tabs{display:none}
+.bc-media-bubble-tabs[hidden]{display:none!important}
+@media (max-width:699px) and (orientation:portrait){
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock,
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-standalone{
+  display:flex!important;flex-direction:column!important;
+  padding:0!important;overflow:hidden!important;
+  scroll-snap-type:none!important;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-tabs:not([hidden]){
+  position:relative;flex:0 0 32px;min-height:32px;
+  display:flex!important;align-items:stretch;gap:5px;
+  z-index:3;overflow:hidden;
+  background:linear-gradient(120deg,#211822,#141018);
+  padding:3px 5px;
+ }
+ .bc-media-bubble-tabs button{
+  flex:1;min-width:0;border:1px solid #6b4c60;border-radius:8px;
+  background:#241b28;color:#b6a7b6;
+  font:700 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+ }
+ .bc-media-bubble-tabs button.selected{
+  color:#f5e9f1;background:#563045;border-color:#b47c96;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-track{
+  position:relative!important;
+  display:flex!important;flex:1 1 0!important;min-height:0!important;
+  width:100%!important;
+  flex-direction:row!important;flex-wrap:nowrap!important;
+  gap:7px!important;
+  overflow-x:auto!important;overflow-y:hidden!important;
+  scroll-snap-type:x mandatory;scroll-padding-inline:0;
+  overscroll-behavior-inline:contain;
+  scrollbar-width:none;
+ }
+ .bc-media-bubble-track::-webkit-scrollbar{display:none}
+ body.bc-has-media-bubbles .bc-media-bubble-track .bc-media-bubble-card{
+  flex:0 0 100%!important;
+  height:100%!important;
+  min-width:0!important;
+  scroll-snap-align:start;
+ }
+}
