@@ -469,7 +469,11 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   }
   peerId=newPeerId;
   library=[];visible=[];active=0;batchFocus=null;mediaReady=false;
-  signed.clear();closeWing();
+  signed.clear();
+  // Reset the previous conversation without sending a close request to the bubble host.
+  chat.classList.remove('media-open');
+  wing.setAttribute('aria-hidden','true');
+  stageInner.querySelector('video')?.pause();
   overlay.hidden=true;selection=[];renderSelection();
  }
  return {renderMediaBubble,onPeerChange,openShare,openLibrary,openBatch,closeWing};
