@@ -157,6 +157,51 @@ footer{text-align:center;color:#85818d;font-size:9px;letter-spacing:.12em;paddin
  .login-panel,.pass-panel{transition:none}
 }
 
+
+/* Layout refinement: keep Sign In anchored and let the access pass
+   emerge from behind it, with only a 12px gap. */
+@media (min-width:951px){
+  .stage-window{width:min(910px,100%);min-height:675px}
+  .login-panel,.stage-window.show-pass .login-panel{
+    left:0;right:auto;top:50%;width:445px;
+    transform:translateY(-50%);opacity:1;pointer-events:auto;z-index:3
+  }
+  .pass-panel{
+    left:457px;right:auto;top:50%;width:430px;
+    transform:translate(-457px,-50%) scale(.985);
+    opacity:0;pointer-events:none;z-index:1
+  }
+  .stage-window.show-pass .pass-panel{
+    left:457px;right:auto;top:50%;width:430px;
+    transform:translate(0,-50%) scale(1);
+    opacity:1;pointer-events:auto;z-index:2
+  }
+}
+@media (max-width:950px){
+  .stage-window,.stage-window:not(.show-pass){width:min(445px,100%);min-height:625px}
+  .stage-window.show-pass{min-height:1265px}
+  .login-panel,.stage-window.show-pass .login-panel{
+    top:0;left:0;right:auto;width:100%;
+    transform:none;opacity:1;pointer-events:auto;align-items:flex-start;z-index:3
+  }
+  .pass-panel{
+    top:600px;left:0;right:auto;width:100%;
+    transform:translateX(105%) scale(.985);
+    opacity:0;pointer-events:none;align-items:flex-start;z-index:1
+  }
+  .stage-window.show-pass .pass-panel{
+    top:600px;left:0;right:auto;width:100%;
+    transform:translateX(0) scale(1);
+    opacity:1;pointer-events:auto;z-index:2
+  }
+  .executive-pass{height:650px;max-height:none}
+}
+@media (max-width:500px){
+  .stage-window.show-pass{min-height:1195px}
+  .pass-panel,.stage-window.show-pass .pass-panel{top:590px}
+  .executive-pass{height:580px}
+}
+
 </style>
 <script src="corp-config.js" defer></script>
 <script type="module" src="corp-login.js?v=20261109-signin-repair2"></script>
