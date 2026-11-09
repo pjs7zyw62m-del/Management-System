@@ -319,7 +319,10 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
    }
   }catch(e){
    progress.classList.remove('active');
-   if(standalonePanel&&mediaPanel==='share')overlay.hidden=false;
+   if(standalonePanel&&mediaPanel==='share'){
+    overlay.hidden=false;
+    pickInfo.textContent='Upload failed: '+safeErr(e)+'. You can try sharing these files again.';
+   }
    status('Media share failed: '+safeErr(e)+'. Please check your connection and try again.');
   }finally{
    footer.hidden=false;
