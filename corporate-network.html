@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#030305"><title>BLACKCELL NETWORK | Corporate Social</title>
+<link rel="stylesheet" href="corporate-network.css?v=20261109-social1">
+<script src="corp-config.js" defer></script><script type="module" src="corporate-network.js?v=20261109-social1"></script></head>
+<body>
+<header class="masthead">
+ <div class="brand"><span class="brand-mark">B</span><div><strong>BLACKCELL CORPORATION</strong><small>PRIVATE SOCIAL NETWORK</small></div></div>
+ <nav class="mainnav" aria-label="Blackcell Network navigation">
+  <button data-view="feed" class="nav-active">NETWORK FEED</button>
+  <button data-view="discover">DISCOVER</button>
+  <button data-view="profile">MY PROFILE</button>
+  <button data-view="videos">VIDEOS</button>
+ </nav>
+ <div class="head-actions"><a class="nav-chat" href="corporate-chat.html">CHAT <span>↗</span></a><a id="portalLink" href="employee.html" title="Return to portal">PORTAL ↗</a></div>
+</header>
+<div id="gate" class="gate" role="status" aria-live="polite"><div class="gate-card"><div class="brand-mark large">B</div><div class="overline">BLACKCELL / IDENTITY NETWORK</div><h1>Verifying Network Access</h1><p id="gateText">Checking your corporate credentials and authorized session.</p><a id="gateBack" href="employee.html" hidden>RETURN TO EMPLOYEE ACCESS ↗</a></div></div>
+<div id="app" class="app" hidden>
+  <aside class="rail left-rail">
+    <div class="panel my-mini" id="myMini"><div class="skeleton" style="height:42px"></div></div>
+    <div class="panel nav-panel">
+      <div class="overline">YOUR NETWORK</div>
+      <button class="rail-link selected" data-view="feed"><span>▦</span> Network Feed</button>
+      <button class="rail-link" data-view="profile"><span>♙</span> My Profile</button>
+      <button class="rail-link" data-view="videos"><span>▶</span> Video Channel</button>
+      <button class="rail-link" data-view="discover"><span>◎</span> People & Following</button>
+      <a class="rail-link" href="corporate-chat.html"><span>▧</span> Private Chat</a>
+    </div>
+    <div class="rail-note">PRIVATE CORPORATE SPACE<span>Verified employees and the Level 7 administrator only. Network posts are visible to authorized members.</span></div>
+  </aside>
+  <main class="workspace">
+    <section id="feedView" class="view">
+      <div class="page-intro"><div><div class="overline">BLACKCELL / CORPORATE SOCIAL</div><h1>Network Feed<span>.</span></h1><p>Updates, conversations, photos, and video from within the network.</p></div><span class="live-dot">PRIVATE NETWORK</span></div>
+      <section class="panel composer" aria-label="Create a network post">
+        <div class="composer-top"><div id="composerAvatar" class="avatar med">B</div><div><strong id="composerName">Your network profile</strong><small>Post to Blackcell Network</small></div></div>
+        <textarea id="postBody" maxlength="1000" rows="3" placeholder="Share an update with the network…"></textarea>
+        <div id="attachmentPreview" class="attachments" hidden></div>
+        <div id="uploadProgress" class="upload-progress" hidden><div class="upload-track"><div id="uploadFill"></div></div><span id="uploadText">Preparing upload…</span></div>
+        <div class="composer-footer">
+          <div class="file-actions"><button id="attachPhotos" type="button">▧ PHOTO</button><button id="attachVideo" type="button">▶ VIDEO</button><span id="charCount">0 / 1,000</span></div>
+          <button id="publishPost" class="btn crimson" type="button">PUBLISH POST ↗</button>
+        </div>
+        <input id="postFiles" type="file" accept="image/*,video/*" multiple hidden>
+      </section>
+      <div class="feed-controls"><h2>Latest Activity</h2><div class="tabs" id="feedFilter"><button data-filter="latest" class="selected">All Posts</button><button data-filter="following">Following</button><button data-filter="videos">Videos</button></div></div>
+      <div id="feedPosts" class="posts"></div>
+    </section>
+    <section id="profileView" class="view" hidden>
+      <div class="profile-hero panel">
+        <div id="profileCover" class="profile-cover"><div class="cover-label">BLACKCELL / IDENTITY NETWORK</div></div>
+        <div class="profile-identity"><div class="profile-identity-main"><div id="profileAvatar" class="avatar gigantic">B</div><div class="identity-info"><div class="overline">VERIFIED CORPORATE PROFILE</div><h1 id="profileName">Network Member</h1><p id="profileHandle">@network</p><p id="profileHeadline">Part of Blackcell Corporation.</p><div class="identity-meta"><span id="profileLevel">NETWORK</span><span id="profileJoined">MEMBER</span></div></div></div><div id="profileActions" class="profile-actions"></div></div>
+        <div class="profile-stats"><div><strong id="profilePostCount">0</strong><span>POSTS</span></div><div><strong id="profileFollowerCount">0</strong><span>FOLLOWERS</span></div><div><strong id="profileFollowingCount">0</strong><span>FOLLOWING</span></div><div><strong id="profileVideoCount">0</strong><span>VIDEOS</span></div></div>
+      </div>
+      <div class="tabs profile-tabs" id="profileTabs"><button data-tab="posts" class="selected">Posts</button><button data-tab="videos">Videos</button><button data-tab="photos">Photos</button><button data-tab="about">About</button></div>
+      <div id="profileContent" class="posts"></div>
+    </section>
+    <section id="discoverView" class="view" hidden>
+      <div class="page-intro"><div><div class="overline">BLACKCELL / PEOPLE</div><h1>Discover<span>.</span></h1><p>Meet the people behind the network and follow their updates.</p></div></div>
+      <div class="panel directory-search"><input id="peopleSearch" type="search" placeholder="Search names and usernames…" aria-label="Search the corporate directory"></div>
+      <div id="peopleDirectory" class="directory-grid"></div>
+    </section>
+    <section id="videosView" class="view" hidden>
+      <div class="page-intro"><div><div class="overline">BLACKCELL / VIDEO CHANNEL</div><h1>Network Videos<span>.</span></h1><p>Every video shared across the private corporate network.</p></div></div>
+      <div id="videoGrid" class="video-grid"></div>
+    </section>
+  </main>
+  <aside class="rail right-rail">
+    <section class="panel"><div class="side-head"><div><div class="overline">CORPORATE DIRECTORY</div><h3>People to Follow</h3></div></div><div id="suggestedPeople"></div><button id="viewAllPeople" class="text-link">VIEW ALL PEOPLE ↗</button></section>
+    <section class="panel network-guide"><div class="overline">NETWORK / 01</div><h3>One identity. Every format.</h3><p>Build your profile, share quick updates, publish videos, and connect with other verified members.</p><div class="guide-stats"><span>01 / SOCIAL</span><span>02 / VIDEO</span><span>03 / UPDATES</span></div></section>
+  </aside>
+</div>
+<div id="editOverlay" class="modal-backdrop" hidden><section class="modal panel" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+  <header class="modal-head"><div><div class="overline">BLACKCELL / PERSONAL IDENTITY</div><h2 id="editTitle">Edit Your Profile</h2></div><button id="closeEdit" class="close-x" aria-label="Close editing">✕</button></header>
+  <div class="modal-body"><label for="editHeadline">HEADLINE <small>MAX 140 CHARACTERS</small></label><input id="editHeadline" maxlength="140" placeholder="Describe your role or interests"><label for="editBio">ABOUT YOU <small>MAX 1,000 CHARACTERS</small></label><textarea id="editBio" maxlength="1000" rows="4" placeholder="Introduce yourself to the Blackcell Network…"></textarea>
+    <div class="edit-files"><label>PROFILE PHOTO <input id="editAvatar" type="file" accept="image/*"></label><label>COVER BANNER <input id="editCover" type="file" accept="image/*"></label></div><p class="hint">Images up to 12 MB. Your username and clearance are assigned by Blackcell Administration.</p><p id="editFeedback" class="feedback" hidden></p></div>
+  <footer class="modal-footer"><button id="cancelEdit" class="btn outline">CANCEL</button><button id="saveProfile" class="btn crimson">SAVE PROFILE ↗</button></footer>
+</section></div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body></html>
