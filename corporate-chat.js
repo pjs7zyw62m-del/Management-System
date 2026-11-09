@@ -4,10 +4,13 @@ const client=corporateClient(),$=id=>document.getElementById(id);
 const embedParams=new URLSearchParams(location.search);
 const mediaPanelMode=['share','library'].includes(embedParams.get('mediaPanel'))?embedParams.get('mediaPanel'):null;
 if(embedParams.get('embed')==='1')document.documentElement.classList.add('bc-embedded');
+const compactChat=embedParams.get('embed')==='1'&&!mediaPanelMode;
+if(compactChat)document.documentElement.classList.add('bc-compact-chat');
 if(mediaPanelMode)document.documentElement.classList.add('bc-media-panel','bc-media-'+mediaPanelMode);
 if(!mediaPanelMode&&window.parent===window&&window.BlackcellMediaBubbleHost)
  window.BlackcellMediaBubbleHostController=window.BlackcellMediaBubbleHost({mode:'standalone'});
 let self=null,peer=null,contacts=[],isLoading=false,firstLoad=true,ready=false;
+let inboxSummaries=new Map();
 let employeeSession=false,sessionEnded=false,lastActivity=Date.now(),lastTouch=Date.now();
 const IDLE_LIMIT_MS=60*60*1000;
 async function endChatAccess(reason){
@@ -45,8 +48,21 @@ mediaToggle.addEventListener('click',()=>{
  mediaToggle.setAttribute('aria-expanded',String(!collapsed));
  mediaToggle.classList.toggle('open',!collapsed);
 });
-mediaToggle.classList.add('open');
+if(compactChat){
+ mediaControls.classList.add('is-collapsed');
+ mediaToggle.setAttribute('aria-expanded','false');
+ mediaToggle.classList.remove('open');
+}else mediaToggle.classList.add('open');
 $('peerSearch').addEventListener('input',renderPeers);
+$('backToInbox').addEventListener('click',()=>{
+ if(!compactChat)return;
+ document.querySelector('.chat').classList.remove('bc-thread-active');
+ document.querySelector('.media-actions')?.classList.add('is-collapsed');
+ $('mediaToggleButton').setAttribute('aria-expanded','false');
+ $('mediaToggleButton').classList.remove('open');
+ if(window.parent!==window)window.parent.postMessage({type:'blackcell-chat-inbox-open'},location.origin);
+ void refreshInboxSummaries();
+});
 const composerText=$('messageInput');
 function resizeComposer(){composerText.style.height='auto';composerText.style.height=Math.min(composerText.scrollHeight,112)+'px'}
 composerText.addEventListener('input',resizeComposer);
@@ -81,12 +97,14 @@ async function boot(){
    client.channel('blackcell-chat-'+self)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'corp_chat_messages'},payload=>{
       const m=payload.new;
-      if(m&&(m.sender_id===self||m.recipient_id===self))void loadMessages();
+      if(m&&(m.sender_id===self||m.recipient_id===self)){void loadMessages();void refreshInboxSummaries()}
     }).subscribe();
    renderPeers();
+   void refreshInboxSummaries();
    if(contacts.length){
      const requested=embedParams.get('peer');
-     choose(contacts.some(x=>x.user_id===requested)?requested:contacts[0].user_id);
+     if(!compactChat||requested&&contacts.some(x=>x.user_id===requested))
+      choose(contacts.some(x=>x.user_id===requested)?requested:contacts[0].user_id);
      if(mediaPanelMode==='share')sharedMedia.openShare();
      else if(mediaPanelMode==='library'){
        const batch=embedParams.get('batch');
@@ -111,23 +129,56 @@ function isBubbleNeighbor(first,second){
  const a=new Date(first.created_at),b=new Date(second.created_at);
  return a.toDateString()===b.toDateString()&&(b.getTime()-a.getTime())<=5*60*1000;
 }
+async function refreshInboxSummaries(){
+ if(!ready||!self)return;
+ try{
+  const {data,error}=await client.from('corp_chat_messages')
+   .select('sender_id,recipient_id,body,media_batch_id,created_at')
+   .or('sender_id.eq.'+self+',recipient_id.eq.'+self)
+   .order('created_at',{ascending:false}).limit(180);
+  if(error)return;
+  const summaries=new Map();
+  for(const message of data||[]){
+   const other=message.sender_id===self?message.recipient_id:message.sender_id;
+   if(other===self||summaries.has(other))continue;
+   summaries.set(other,{
+    preview:message.media_batch_id?'▧ Photo or video collection':String(message.body||'').slice(0,120),
+    when:message.created_at
+   });
+  }
+  inboxSummaries=summaries;renderPeers();
+ }catch(_){}
+}
 function renderPeers(){
  const box=$('peers');box.replaceChildren();
  const query=$('peerSearch').value.trim().toLowerCase();
- const visible=contacts.filter(c=>(String(c.display_name||'')+' '+String(c.role||'')).toLowerCase().includes(query));
+ const visible=contacts.filter(c=>(String(c.display_name||'')+' '+String(c.role||'')).toLowerCase().includes(query))
+  .sort((a,b)=>new Date(inboxSummaries.get(b.user_id)?.when||0)-new Date(inboxSummaries.get(a.user_id)?.when||0));
  $('contactCount').textContent=String(contacts.length);
  if(!visible.length){box.append(text('p','empty',query?'No matching contacts.':'No authorized contacts.'));return}
  for(const c of visible){
    const button=document.createElement('button');button.type='button';button.className='peer'+(peer?.user_id===c.user_id?' active':'');
    const initial=String(c.display_name||'B').trim().slice(0,1).toUpperCase();
    button.append(text('span','avatar',initial));
-   const wrap=document.createElement('span');wrap.append(text('strong','',c.display_name||'Employee'),text('small','',c.role==='owner'?'CORPORATE OWNER':'LEVEL '+c.clearance_level));
-   button.append(wrap);button.onclick=()=>choose(c.user_id);box.append(button);
+   const wrap=document.createElement('span');
+   wrap.append(text('strong','',c.display_name||'Employee'),text('small','',c.role==='owner'?'CORPORATE OWNER':'LEVEL '+c.clearance_level));
+   const summary=inboxSummaries.get(c.user_id);
+   wrap.append(text('span','peer-preview',summary?.preview||'Start a private conversation'));
+   button.append(wrap);
+   if(summary?.when){
+    const time=document.createElement('time');time.className='peer-meta';
+    time.dateTime=summary.when;
+    time.textContent=new Date(summary.when).toLocaleDateString([],{month:'short',day:'numeric'});
+    button.append(time);
+   }
+   button.onclick=()=>choose(c.user_id);box.append(button);
  }
 }
 function choose(userId){
  const selected=contacts.find(x=>x.user_id===userId);if(!selected||!ready)return;
- peer=selected;sharedMedia.onPeerChange(userId);firstLoad=true;$('peerName').textContent=peer.display_name||'Employee';$('peerDetail').textContent=peer.role==='owner'?'LEVEL 7 · OWNER':'LEVEL '+peer.clearance_level;
+ peer=selected;sharedMedia.onPeerChange(userId);firstLoad=true;
+ if(compactChat)document.querySelector('.chat').classList.add('bc-thread-active');
+ if(window.parent!==window)window.parent.postMessage({type:'blackcell-chat-conversation',peerId:userId,name:peer.display_name||'Employee'},location.origin);$('peerName').textContent=peer.display_name||'Employee';$('peerDetail').textContent=peer.role==='owner'?'LEVEL 7 · OWNER':'LEVEL '+peer.clearance_level;
  $('imessagePortrait').textContent=String(peer.display_name||'B').trim().slice(0,1).toUpperCase();
  $('peerProfileLink').href='corporate-network.html?user='+encodeURIComponent(userId);
  $('peerProfileLink').hidden=false;
@@ -196,7 +247,7 @@ $('sendForm').addEventListener('submit',async e=>{
 for(const evt of ['pointerdown','keydown','wheel','touchstart']){
  document.addEventListener(evt,chatActivity,{passive:true});
 }
-setInterval(()=>{if(ready)void loadMessages()},6000);
+setInterval(()=>{if(ready){void loadMessages();if(compactChat)void refreshInboxSummaries()}},12000);
 setInterval(()=>{
  if(employeeSession&&!sessionEnded&&Date.now()-lastActivity>=IDLE_LIMIT_MS)
   void endChatAccess('Signed out after 60 minutes of inactivity.');
