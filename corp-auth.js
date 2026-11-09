@@ -9,7 +9,7 @@ return client=createClient(c.url,c.publishableKey,{auth:{persistSession:true,aut
 export async function corporateAuthorize(s){
 const {data,error}=await s.auth.getUser();
 if(error||!data?.user)return {ok:false,reason:'signed-out'};
-const {data:member,error:memberError}=await s.from('corp_access_members').select('user_id,display_name,role,active,clearance_level').eq('user_id',data.user.id).eq('active',true).maybeSingle();
+const {data:member,error:memberError}=await s.from('corp_access_members').select('user_id,display_name,role,active,clearance_level,can_chat').eq('user_id',data.user.id).eq('active',true).maybeSingle();
 if(memberError)return {ok:false,reason:'verification-error'};
 if(!member)return {ok:false,reason:'not-approved'};
 return {ok:true,user:data.user,member};
