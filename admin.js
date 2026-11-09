@@ -21,7 +21,85 @@ const select=(options,value,handler)=>{const s=el('select');for(let [v,title] of
 function open(id,trigger){closeDrawer();lastTrigger=trigger||document.activeElement;activeModal=id;activeTab=(tabs[id]||[['overview']])[0][0];searchTerm='';period='all';selectedEvent=null;selectedSystem=null;modal.hidden=false;document.body.style.overflow='hidden';render();$('closeModal').focus();}
 function close(){modal.hidden=true;document.body.style.overflow='';activeModal='';if(lastTrigger&&lastTrigger.isConnected)lastTrigger.focus();}
 function render(){ $('modalTitle').textContent=names[activeModal]||'Corporate System'; $('modalEyebrow').textContent=activeModal==='nexus'||activeModal==='mans'?'BLACKCELL CORPORATION / DIVISION CONTROL':'BLACKCELL CORPORATION / ADMINISTRATION';content.replaceChildren();if(tabs[activeModal]){let bar=el('div','modal-tabbar');for(const [id,label] of tabs[activeModal]){let b=action(label,()=>{activeTab=id;render();});b.className=id===activeTab?'active':'';bar.append(b)}content.append(bar)}switch(activeModal){case 'users':users();break;case 'security':security();break;case 'settings':settings();break;case 'logs':logs();break;case 'backups':backups();break;case 'systems':corporateSystems();break;case 'nexus':case 'mans':division();break;case 'notifications':notifications();break;case 'account':account();break;case 'signout':signout();break;case 'restricted':restricted();break;}}
-function users(){if(activeTab==='accounts'){let g=block('Corporate Accounts');g.append(row('Primary Administrator','Owner role proposed · identity not connected','Design preview'));content.append(g,note('Additional users and corporate permissions require secure account management. No accounts can be created here.'),action('Add Administrator — Coming Later',null,true));}else if(activeTab==='roles'){let b=block('Planned Roles');for(let [title,description] of [['Owner','Full corporate control'],['Administrator','Assigned management privileges'],['Viewer','Read-only authorized access']])b.append(row(title,description,'Planned'));content.append(b);}else{let b=block('Division Access');b.append(row('NEXUS Management','Uses its own authentication and permissions','Separate login'),row('MansArmedForces','Requires its own access controls','Separate login'));content.append(b,note('Opening the corporate portal does not grant access to division data or override Supabase policies.'));}}
+
+function users(){
+  if(activeTab==='accounts'){
+    const b=block('Corporate Accounts');
+    b.append(row('Primary Administrator','Authorized corporate owner · Supabase authenticated','Level 7'));
+    content.append(b,note('Employee enrollment and invitations are not active here yet. Clearance assignments for approved employees are managed under Roles.'));
+  }else if(activeTab==='roles'){
+    const b=block('Security Clearance Levels');
+    b.append(p('Level 7 is reserved for the corporate owner. Levels 1–6 can be assigned to approved employee accounts, but do not grant access to this Level 7 Administration Dashboard.'));
+    content.append(b);
+    void loadClearanceLevels(b);
+  }else{
+    const b=block('Division Access');
+    b.append(row('NEXUS Management','Uses its own authentication and permissions','Separate login'),
+      row('MansArmedForces','Requires its own access controls','Separate login'));
+    content.append(b,note('Corporate clearance levels do not override any division-specific security policies.'));
+  }
+}
+async function loadClearanceLevels(container){
+  const api=window.BLACKCELL_CORPORATE_ADMIN_API?.client;
+  const status=el('p','muted','Loading approved corporate members…');
+  container.append(status);
+  if(!api){status.textContent='Corporate session is unavailable.';return}
+  try{
+    const {data,error}=await api.rpc('corp_list_clearance');
+    if(!container.isConnected)return;
+    if(error||data?.ok!==true||!Array.isArray(data.members)){
+      status.textContent='Could not verify administrator clearance. No changes are allowed.';
+      return;
+    }
+    status.remove();
+    if(!data.members.length){
+      container.append(p('No approved accounts were found.'));
+      return;
+    }
+    for(const member of data.members){
+      const entry=el('div','list-row');
+      const details=el('div');
+      details.append(el('b','',member.display_name||'Corporate Member'),
+        el('small','',String(member.role||'employee').toUpperCase()+
+          ' · Current Level '+String(member.clearance_level)));
+      entry.append(details);
+      if(member.role==='owner'){
+        entry.append(el('span','mock-state','LEVEL 7 · OWNER'));
+      }else{
+        const controls=el('div');
+        controls.style.cssText='display:flex;gap:7px;align-items:center;flex-wrap:wrap';
+        const dropdown=el('select');
+        dropdown.setAttribute('aria-label','Clearance level for '+(member.display_name||'employee'));
+        for(let level=1;level<=6;level++){
+          const option=new Option('Level '+level,String(level));
+          dropdown.add(option);
+        }
+        dropdown.value=String(member.clearance_level);
+        const save=action('SAVE LEVEL',async()=>{
+          save.disabled=true;
+          save.textContent='SAVING…';
+          try{
+            const {data:changed,error:changeError}=await api.rpc('corp_set_clearance_level',{
+              p_user_id:member.user_id,p_level:Number(dropdown.value)
+            });
+            if(changeError||changed?.ok!==true){
+              save.textContent='NOT SAVED';
+            }else{
+              member.clearance_level=Number(dropdown.value);
+              save.textContent='SAVED ✓';
+              details.querySelector('small').textContent=
+                String(member.role).toUpperCase()+' · Current Level '+member.clearance_level;
+            }
+          }catch(_){save.textContent='NOT SAVED'}
+          finally{save.disabled=false}
+        });
+        controls.append(dropdown,save);
+        entry.append(controls);
+      }
+      container.append(entry);
+    }
+  }catch(_){if(container.isConnected)status.textContent='Clearance levels could not be loaded.'}
+}
 function security(){if(activeTab==='overview'){let g=grid();[['Security status','Not connected'],['Active sessions','—'],['Failed attempts','—'],['Security events','—']].forEach(x=>g.append(card(...x)));content.append(g);let b=block('Recent Security Activity');b.append(p('No real corporate login or security event monitoring is connected.'));content.append(b);}else if(activeTab==='sessions'){let b=block('Authorized Devices & Sessions');b.append(p('Current sessions, device recognition, expiration, and session revocation will appear here after backend integration.'));content.append(b,action('Sign Out Other Sessions — Not Connected',null,true));}else{content.append(el('h3','','Security Preferences'),choice('Security Notifications','Proposed alerts for important corporate events','securityNotify'),choice('New Device Login Alerts','Proposed alerts for unfamiliar sign-ins','deviceAlerts'),note('These are local preview switches and do not activate security monitoring.'));}}
 function field(name,value,readOnly=true){let l=el('label','field',name),i=el('input');i.value=value;i.readOnly=readOnly;l.append(i);return l;}
 function settings(){if(activeTab==='general'){let b=block('Corporate Identity');b.append(field('Corporation Name','Blackcell Corporation'),field('Portal Title','Command & Administration Center'),row('Administrator Access','Protected role; not editable here','Owner'));content.append(b);}else if(activeTab==='appearance'){let b=block('Interface Appearance');b.append(el('label','field','Visual theme'));b.append(select([['glass','Ultra-Dark Apple Glass'],['black','Pure Black — Minimal'],['silver','Charcoal & Silver Glass']],state.appearance,v=>{state.appearance=v;document.body.dataset.appearance=v}));content.append(b,choice('Interface Animations','Smooth popup and navigation transitions','animations'));}else if(activeTab==='divisions'){let b=block('Configured Divisions');b.append(row('NEXUS Management','Management System','Separate application'),row('MansArmedForces','Media Collection','Separate application'));content.append(b,note('Division configuration is illustrative. Changing it here does not change independent applications.'));}else{content.append(choice('Corporate Notifications','Show proposed administrative notifications','notify'),choice('Confirm Important Actions','Proposed confirmation before critical changes','confirm'));}}
