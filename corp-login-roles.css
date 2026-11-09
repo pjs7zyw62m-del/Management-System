@@ -1,0 +1,39 @@
+/* BLACKCELL / unified administration + employee login tabs.
+   Appends to the approved cinematic login without changing its existing animation. */
+.login-role-tabs{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;
+ padding:5px;margin:0 0 10px;border:1px solid #5c4b5b;
+ background:linear-gradient(120deg,#121016,#19151d);border-radius:15px;
+}
+.login-role-tabs button{
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+ padding:12px 8px;min-height:57px;border:1px solid transparent;border-radius:11px;
+ background:transparent;color:#aca3ae;letter-spacing:.10em;font-size:10px;font-weight:760;
+ line-height:1.25;transition:border-color .2s,background .2s,color .2s,box-shadow .2s;
+}
+.login-role-tabs button span{display:block;white-space:nowrap}
+.login-role-tabs button small{
+ font-size:8px;letter-spacing:.1em;color:#7e7a85;font-weight:650;
+}
+.login-role-tabs button[aria-selected="true"]{
+ background:linear-gradient(135deg,#392432,#241b29);
+ border-color:#9e637c;color:#f7edf4;
+ box-shadow:0 5px 18px #0005,inset 0 1px 0 #ffffff17;
+}
+.login-role-tabs button[aria-selected="true"] small{color:#ce9eb0}
+.login-role-tabs button:hover:not([aria-selected="true"]){background:#302332;color:#f0e5ef}
+.login-role-tabs button:focus-visible{outline:2px solid #d28eaa;outline-offset:2px}
+.login-role-description{
+ color:#b4a5b4;text-align:center;font-size:10px;line-height:1.6;
+ min-height:31px;padding:5px 8px;margin:0 0 8px;
+}
+.login-role-description strong{color:#e5d8e3;font-weight:750}
+.login-card:has(.login-role-tabs) .brand-crest{margin-bottom:19px}
+.login-card:has(.login-role-tabs) h1{margin-bottom:20px}
+.login-role-tabs[aria-hidden="true"]{display:none}
+@media(max-width:420px){
+ .login-role-tabs button{font-size:9px;min-height:53px;padding:10px 5px}
+ .login-role-tabs button small{font-size:7.5px}
+ .login-role-description{font-size:9.5px}
+}
+@media(prefers-reduced-motion:reduce){.login-role-tabs button{transition:none}}
