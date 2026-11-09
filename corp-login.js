@@ -3,6 +3,10 @@ import {corporateClient,corporateAuthorize} from './corp-auth.js';
 const stage=document.getElementById('stageWindow');
 const loginPanel=document.getElementById('loginPanel');
 const passPanel=document.getElementById('passPanel');
+const loginCard=document.getElementById('loginCard');
+const changeAccount=document.getElementById('accountChange');
+const emailInput=document.getElementById('email');
+const passwordToggle=document.getElementById('toggle');
 const form=document.getElementById('login');
 const formCode=document.getElementById('codeForm');
 const status=document.getElementById('status');
@@ -25,29 +29,49 @@ function showPass(){
   formCode.hidden=false;
   continueVerified.hidden=true;
   codeSupport.textContent=originalSupport;
-  clearMessage(status);
+  clearMessage(codeStatus);
   stage.classList.add('show-pass');
-  loginPanel.setAttribute('aria-hidden','true');
+  loginPanel.setAttribute('aria-hidden','false');
   passPanel.setAttribute('aria-hidden','false');
+  loginCard.classList.add('signed-in');
+  emailInput.disabled=true;
   password.value='';
-  setTimeout(()=>access.focus(),730);
+  password.disabled=true;
+  passwordToggle.disabled=true;
+  loginButton.disabled=true;
+  loginButton.textContent='IDENTITY VERIFIED ✓';
+  changeAccount.hidden=false;
+  message(status,'Identity verified. Complete the security codes on your access pass →');
+  window.setTimeout(()=>{
+    if(stage.classList.contains('show-pass'))access.focus({preventScroll:true});
+  },750);
 }
 
 function verifiedResume(){
   showPass();
   formCode.hidden=true;
   continueVerified.hidden=false;
-  codeSupport.textContent='Your corporate security session is already verified. Continue when you are ready.';
+  codeSupport.textContent='Your corporate security session is already verified. Continue to Administration.';
+  window.setTimeout(()=>continueVerified.focus({preventScroll:true}),750);
 }
 
 function showLogin(){
   stage.classList.remove('show-pass');
   loginPanel.setAttribute('aria-hidden','false');
   passPanel.setAttribute('aria-hidden','true');
+  loginCard.classList.remove('signed-in');
+  emailInput.disabled=false;
+  password.disabled=false;
+  passwordToggle.disabled=false;
+  loginButton.disabled=false;
+  loginButton.textContent='SIGN IN TO BLACKCELL ↗';
+  changeAccount.hidden=true;
   access.value='';
   security.value='';
+  password.value='';
+  clearMessage(status);
   clearMessage(codeStatus);
-  setTimeout(()=>document.getElementById('email').focus(),360);
+  window.setTimeout(()=>emailInput.focus({preventScroll:true}),400);
 }
 
 function displayLaunch(){
@@ -85,6 +109,7 @@ async function initialState(){
     }
     return;
   }
+  emailInput.value=state.user?.email||emailInput.value;
   const {data,error}=await client.rpc('corp_code_status');
   if(error||data?.ok!==true){
     message(status,'Unable to verify the security session. Please try again.');
@@ -107,10 +132,10 @@ try{
   loginButton.disabled=true;
 }
 
-document.getElementById('toggle').addEventListener('click',()=>{
+passwordToggle.addEventListener('click',()=>{
   const show=password.type==='password';
   password.type=show?'text':'password';
-  document.getElementById('toggle').textContent=show?'HIDE':'SHOW';
+  passwordToggle.textContent=show?'HIDE':'SHOW';
 });
 
 form.addEventListener('submit',async event=>{
@@ -189,7 +214,7 @@ formCode.addEventListener('submit',async event=>{
   }
 });
 
-document.getElementById('backToSignIn').addEventListener('click',async()=>{
+changeAccount.addEventListener('click',async()=>{
   try{await client?.auth.signOut({scope:'local'});}catch(_){}
   showLogin();
 });
