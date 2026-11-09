@@ -1,0 +1,45 @@
+/* BLACKCELL / Access Screens — iPhone & iPad compatibility layer
+   PRESERVE the approved cinematic visuals, animation and desktop proportions.
+   Only touch target, keyboard, and safe-area corrections. */
+html{ -webkit-text-size-adjust:100%; text-size-adjust:100% }
+@media(hover:none) and (pointer:coarse){
+ a,button{touch-action:manipulation}
+ button,input,select,textarea{font-family:inherit}
+}
+/* iPad */
+@media(min-width:768px) and (max-width:1180px){
+ body{overflow-x:clip}
+ main{max-width:100%}
+ .stage-window{max-width:100%}
+}
+/* iPhone: avoid Safari zoom when focusing password and code inputs. */
+@media(max-width:767px){
+ body{overflow-x:clip}
+ input:not([type=checkbox]):not([type=radio]),
+ textarea,select{font-size:16px!important}
+ .login-role-tabs button{min-height:52px;touch-action:manipulation}
+ .login-card :is(button,a){touch-action:manipulation}
+ header{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+ footer{padding-bottom:max(12px,env(safe-area-inset-bottom,0px))}
+ .stage-window{max-width:100%}
+ .login-panel,.pass-panel{max-width:100%}
+ .login-card{max-width:100%}
+ .login-role-tabs{width:100%;min-width:0}
+ .login-role-tabs button span{white-space:normal;text-align:center}
+ .login-role-description{overflow-wrap:anywhere}
+ .login-card .links{flex-wrap:wrap;gap:9px}
+}
+@media(max-width:380px){
+ .login-role-tabs button{min-height:54px}
+ .login-role-tabs button span{font-size:9px}
+ .login-role-tabs button small{font-size:7px}
+}
+/* Keyboard: the login remains scrollable instead of hiding fields underneath it. */
+@supports(height:100dvh){
+ @media(max-width:767px){
+  body:has(input:focus){min-height:100dvh}
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto}
+}
