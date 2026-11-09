@@ -606,11 +606,13 @@ async function boot(){
   $('gate').hidden=true;$('app').hidden=false;
   setupEvents();
   installNetworkSecurityChecks();
-  window.BLACKCELL_CORPORATE_NETWORK_CLIENT=client;
-  const chatScript=document.createElement('script');
-  chatScript.src='corporate-chat-dock.js?v=20261109-floating-network2';
-  chatScript.defer=true;
-  document.body.append(chatScript);
+  if(auth.member.role==='owner'||auth.member.can_chat===true){
+   window.BLACKCELL_CORPORATE_NETWORK_CLIENT=client;
+   const chatScript=document.createElement('script');
+   chatScript.src='corporate-chat-dock.js?v=20261109-floating-network2';
+   chatScript.defer=true;
+   document.body.append(chatScript);
+  }
   const params=new URLSearchParams(location.search);
   const uid=params.get('user');
   const post=params.get('post');
