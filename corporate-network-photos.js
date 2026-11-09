@@ -567,12 +567,16 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   $('appleViewerEditCaption').addEventListener('click',()=>void editCaption());
   $('appleViewerDelete').addEventListener('click',()=>void deleteLibraryMedia());
   document.addEventListener('keydown',e=>{
+   // Classification is above the photo viewer; close that dialog first.
+   if(!$('militaryAssetOverlay').hidden){
+    if(e.key==='Escape'){e.preventDefault();closeMilitaryAssetDialog()}
+    return;
+   }
    if(!$('applePhotoViewer').hidden){
     if(e.key==='Escape')closeViewer();
     if(e.key==='ArrowLeft')changeViewer(-1);
     if(e.key==='ArrowRight')changeViewer(1);
-   }else if(e.key==='Escape'&&!$('militaryAssetOverlay').hidden)closeMilitaryAssetDialog();
-   else if(e.key==='Escape'&&!$('appleAlbumOverlay').hidden)closeAlbumDialog();
+   }else if(e.key==='Escape'&&!$('appleAlbumOverlay').hidden)closeAlbumDialog();
   });
   let touchStart=0;
   $('appleViewerStage').addEventListener('touchstart',e=>{touchStart=e.touches[0]?.clientX||0},{passive:true});
