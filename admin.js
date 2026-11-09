@@ -5,7 +5,7 @@ let lastTrigger=null,activeModal='',activeTab='',searchTerm='',period='all',sele
 const state={appearance:'glass',animations:true,notify:true,confirm:true,securityNotify:true,deviceAlerts:true,autoBackup:false,restoreConfirm:true};
 const systems=[{id:'nexus',name:'NEXUS Management',kind:'Corporate application',provider:'GitHub Pages · Supabase',desc:'Inmate profiles, financial management, records, communications and analysis.',href:'https://www.blackcellcorp.com',icon:'▦'},{id:'maf',name:'MansArmedForces',kind:'Media collection',provider:'GitHub Pages · Browser storage',desc:'Uniforms photo library, albums, folders, ratings and collections.',href:'https://pjs7zyw62m-del.github.io/Gunner-Collection-Portal/uniforms.html',icon:'◇'},{id:'gunner',name:'Gunner Thompson AI',kind:'AI application',provider:'AI inference services',desc:'Character AI service; account-level connectivity not monitored.',href:null,icon:'✳'},{id:'corporate',name:'Blackcell Corporate Portal',kind:'Administrative interface',provider:'GitHub Pages',desc:'Corporate dashboard and administration preview.',href:null,icon:'▤'}];
 const demoEvents=[{id:'EX-01',type:'security',title:'Example: Unrecognized sign-in attempt',description:'Fictional sample alert; no actual sign-in event was retrieved.',date:'2026-11-08',display:'Nov 8, 2026 · 9:42 AM'},{id:'EX-02',type:'admin',title:'Example: Corporate settings updated',description:'Fictional sample administrative change.',date:'2026-11-08',display:'Nov 8, 2026 · 8:15 AM'},{id:'EX-03',type:'access',title:'Example: Administrator signed in',description:'Fictional sample access event.',date:'2026-11-07',display:'Nov 7, 2026 · 7:30 PM'},{id:'EX-04',type:'admin',title:'Example: Division configuration viewed',description:'Fictional sample division activity.',date:'2026-11-07',display:'Nov 7, 2026 · 6:05 PM'},{id:'EX-05',type:'security',title:'Example: Password verification failed',description:'Fictional sample credential event.',date:'2026-11-06',display:'Nov 6, 2026 · 4:20 PM'}];
-const names={nexus:'NEXUS Management',mans:'MansArmedForces',users:'User Management',security:'Security Center',settings:'System Settings',logs:'Activity Logs',backups:'Backup & Recovery',systems:'Corporate Systems',account:'My Account',notifications:'Corporate Notifications',signout:'Global Secure Sign Out',restricted:'Restricted Infrastructure'};
+const names={nexus:'NEXUS Management',mans:'MansArmedForces',users:'User Management',chat:'Employee Chat',security:'Security Center',settings:'System Settings',logs:'Activity Logs',backups:'Backup & Recovery',systems:'Corporate Systems',account:'My Account',notifications:'Corporate Notifications',signout:'Global Secure Sign Out',restricted:'Restricted Infrastructure'};
 const tabs={users:[['accounts','Accounts'],['roles','Roles'],['access','Access']],security:[['overview','Overview'],['sessions','Sessions'],['settings','Settings']],settings:[['general','General'],['appearance','Appearance'],['divisions','Divisions'],['preferences','Preferences']],logs:[['all','All'],['admin','Admin'],['security','Security'],['access','Access']],backups:[['overview','Overview'],['history','History'],['settings','Settings']],systems:[['systems','Systems'],['infrastructure','Infrastructure'],['monitoring','Monitoring']]};
 const el=(tag,cls='',txt)=>{let n=document.createElement(tag);if(cls)n.className=cls;if(txt!==undefined)n.textContent=txt;return n};
 const add=(parent,...children)=>{children.forEach(c=>parent.append(c));return parent};
@@ -20,24 +20,134 @@ const note=(message)=>el('div','disabled-callout',message);
 const select=(options,value,handler)=>{const s=el('select');for(let [v,title] of options){const o=new Option(title,v);s.add(o)}s.value=value;s.addEventListener('change',()=>handler(s.value));return s};
 function open(id,trigger){closeDrawer();lastTrigger=trigger||document.activeElement;activeModal=id;activeTab=(tabs[id]||[['overview']])[0][0];searchTerm='';period='all';selectedEvent=null;selectedSystem=null;modal.hidden=false;document.body.style.overflow='hidden';render();$('closeModal').focus();}
 function close(){modal.hidden=true;document.body.style.overflow='';activeModal='';if(lastTrigger&&lastTrigger.isConnected)lastTrigger.focus();}
-function render(){ $('modalTitle').textContent=names[activeModal]||'Corporate System'; $('modalEyebrow').textContent=activeModal==='nexus'||activeModal==='mans'?'BLACKCELL CORPORATION / DIVISION CONTROL':'BLACKCELL CORPORATION / ADMINISTRATION';content.replaceChildren();if(tabs[activeModal]){let bar=el('div','modal-tabbar');for(const [id,label] of tabs[activeModal]){let b=action(label,()=>{activeTab=id;render();});b.className=id===activeTab?'active':'';bar.append(b)}content.append(bar)}switch(activeModal){case 'users':users();break;case 'security':security();break;case 'settings':settings();break;case 'logs':logs();break;case 'backups':backups();break;case 'systems':corporateSystems();break;case 'nexus':case 'mans':division();break;case 'notifications':notifications();break;case 'account':account();break;case 'signout':signout();break;case 'restricted':restricted();break;}}
+function render(){ $('modalTitle').textContent=names[activeModal]||'Corporate System'; $('modalEyebrow').textContent=activeModal==='nexus'||activeModal==='mans'?'BLACKCELL CORPORATION / DIVISION CONTROL':'BLACKCELL CORPORATION / ADMINISTRATION';content.replaceChildren();if(tabs[activeModal]){let bar=el('div','modal-tabbar');for(const [id,label] of tabs[activeModal]){let b=action(label,()=>{activeTab=id;render();});b.className=id===activeTab?'active':'';bar.append(b)}content.append(bar)}switch(activeModal){case 'users':users();break;case 'chat':chat();break;case 'security':security();break;case 'settings':settings();break;case 'logs':logs();break;case 'backups':backups();break;case 'systems':corporateSystems();break;case 'nexus':case 'mans':division();break;case 'notifications':notifications();break;case 'account':account();break;case 'signout':signout();break;case 'restricted':restricted();break;}}
 
+
+function chat(){
+  content.append(p('Private Blackcell messaging. Only verified corporate accounts with Chat access can send and receive messages.'));
+  const frame=el('iframe');
+  frame.src='corporate-chat.html';
+  frame.title='Private Blackcell Employee Chat';
+  frame.style.cssText='width:100%;height:min(67vh,690px);border:1px solid #4a3a47;border-radius:16px;background:#030305;display:block;margin-top:14px';
+  content.append(frame);
+}
 function users(){
   if(activeTab==='accounts'){
-    const b=block('Corporate Accounts');
-    b.append(row('Primary Administrator','Authorized corporate owner · Supabase authenticated','Level 7'));
-    content.append(b,note('Employee enrollment and invitations are not active here yet. Clearance assignments for approved employees are managed under Roles.'));
+    const section=block('Register New Employee');
+    section.append(p('Send a private activation invitation. The employee sets their own password and receives a Blackcell digital access card. New employees cannot enter Level 7 Administration or NEXUS.'));
+    const form=el('form','');
+    form.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:13px;align-items:end;margin-top:15px';
+    const field=(label,type,placeholder)=>{
+      const wrap=el('label');wrap.style.cssText='display:flex;flex-direction:column;gap:7px;font-size:10px;letter-spacing:.12em;color:#bab0bc';
+      wrap.append(el('span','',label));
+      const input=el('input');input.type=type;input.required=true;input.placeholder=placeholder;input.style.width='100%';
+      wrap.append(input);form.append(wrap);return input;
+    };
+    const name=field('EMPLOYEE NAME','text','Full name');
+    name.minLength=2;name.maxLength=80;
+    const email=field('EMPLOYEE EMAIL','email','name@example.com');
+    const levelLabel=el('label');levelLabel.style.cssText='display:flex;flex-direction:column;gap:7px;font-size:10px;letter-spacing:.12em;color:#bab0bc';
+    levelLabel.append(el('span','','CLEARANCE'));
+    const level=el('select');for(let i=1;i<=6;i++)level.add(new Option('Level '+i,i));
+    level.value='1';levelLabel.append(level);form.append(levelLabel);
+    const submit=action('SEND EMPLOYEE INVITATION',null,false,true);
+    submit.type='submit';submit.style.cssText='width:100%;min-height:44px';
+    form.append(submit);
+    const feedback=el('p','muted','');
+    feedback.setAttribute('role','status');
+    form.addEventListener('submit',async e=>{
+      e.preventDefault();if(!name.value.trim()||!email.value.trim())return;
+      const api=window.BLACKCELL_CORPORATE_ADMIN_API?.client;
+      if(!api){feedback.textContent='Corporate administrator authentication is unavailable.';return}
+      submit.disabled=true;submit.textContent='SENDING INVITATION…';
+      feedback.textContent='Requesting a secure employee invitation…';
+      try{
+        const {data,error}=await api.functions.invoke('blackcell-invite-employee',{
+          body:{email:email.value.trim(),display_name:name.value.trim(),clearance_level:Number(level.value)}
+        });
+        if(error||data?.ok!==true){
+          feedback.textContent=data?.detail||('Invitation not sent: '+(data?.reason||error?.message||'service unavailable'));
+          return;
+        }
+        feedback.textContent='Invitation requested for '+name.value.trim()+'. The activation email links to the employee card and chat.';
+        form.reset();
+        void displayCorporateAccounts(list);
+      }catch(err){feedback.textContent='Invitation not sent. Check the network and email service.'}
+      finally{submit.disabled=false;submit.textContent='SEND EMPLOYEE INVITATION';}
+    });
+    section.append(form,feedback);
+    const list=block('Approved & Invited Accounts');
+    list.append(p('Loading corporate accounts…'));
+    content.append(section,list);
+    void displayCorporateAccounts(list);
   }else if(activeTab==='roles'){
-    const b=block('Security Clearance Levels');
-    b.append(p('Level 7 is reserved for the corporate owner. Levels 1–6 can be assigned to approved employee accounts, but do not grant access to this Level 7 Administration Dashboard.'));
-    content.append(b);
-    void loadClearanceLevels(b);
+    const section=block('Security Clearance Levels');
+    section.append(p('Level 7 is reserved for the corporate owner. Levels 1–6 are for employees. An employee clearance level alone does not grant access to this Administration dashboard or NEXUS.'));
+    content.append(section);
+    void loadClearanceLevels(section);
   }else{
-    const b=block('Division Access');
-    b.append(row('NEXUS Management','Uses its own authentication and permissions','Separate login'),
-      row('MansArmedForces','Requires its own access controls','Separate login'));
-    content.append(b,note('Corporate clearance levels do not override any division-specific security policies.'));
+    const section=block('Employee Access Permissions');
+    section.append(p('Enable or disable employee chat and corporate access. Divisions remain separately protected; these controls do not grant NEXUS or MansArmedForces permissions.'));
+    content.append(section);
+    void displayEmployeeAccess(section);
   }
+}
+async function displayCorporateAccounts(container){
+  const api=window.BLACKCELL_CORPORATE_ADMIN_API?.client;
+  if(!api)return;
+  try{
+    const {data,error}=await api.rpc('corp_admin_members');
+    if(!container.isConnected)return;
+    if(error||data?.ok!==true||!Array.isArray(data.members)){
+      container.append(p('Accounts could not be loaded. Please verify your Level 7 session.'));return;
+    }
+    container.replaceChildren(el('h3','','Approved & Invited Accounts'));
+    for(const member of data.members){
+      const right=member.role==='owner'?'LEVEL 7 · OWNER':
+        (member.active?(member.activated?'ACTIVE':'INVITED'):'DISABLED');
+      container.append(row(member.display_name||'Employee',
+        (member.email||'')+' · Level '+member.clearance_level,right));
+    }
+  }catch(_){if(container.isConnected)container.append(p('Unable to load accounts.'))}
+}
+async function displayEmployeeAccess(container){
+  const api=window.BLACKCELL_CORPORATE_ADMIN_API?.client;
+  if(!api)return;
+  const status=el('p','muted','Loading employee permissions…');container.append(status);
+  try{
+    const {data,error}=await api.rpc('corp_admin_members');
+    if(!container.isConnected)return;
+    if(error||data?.ok!==true||!Array.isArray(data.members)){
+      status.textContent='Unable to verify permissions.';return;
+    }
+    status.remove();
+    const employees=data.members.filter(m=>m.role!=='owner');
+    if(!employees.length){container.append(p('No employee accounts yet. Start from the Accounts tab.'));return;}
+    for(const member of employees){
+      const section=el('div','content-block');
+      section.append(el('h3','',member.display_name||'Employee'),p(member.email||''));
+      const controls=el('div');controls.style.cssText='display:flex;gap:12px;align-items:center;flex-wrap:wrap';
+      const check=(labelText,checked)=>{
+        const label=el('label');label.style.cssText='display:flex;gap:8px;align-items:center';
+        const input=el('input');input.type='checkbox';input.checked=checked;
+        label.append(input,document.createTextNode(labelText));return {label,input};
+      };
+      const enabled=check('Account enabled',member.active),chat=check('Employee Chat',member.can_chat);
+      controls.append(enabled.label,chat.label);
+      const save=action('SAVE PERMISSIONS',async()=>{
+        save.disabled=true;save.textContent='SAVING…';
+        try{
+          const {data:updated,error:updateError}=await api.rpc('corp_admin_update_employee',{
+            p_user_id:member.user_id,p_level:member.clearance_level,
+            p_can_chat:chat.input.checked,p_active:enabled.input.checked
+          });
+          save.textContent=updateError||updated?.ok!==true?'NOT SAVED':'SAVED ✓';
+        }catch(_){save.textContent='NOT SAVED'}
+        finally{save.disabled=false}
+      },false,true);
+      controls.append(save);section.append(controls);container.append(section);
+    }
+  }catch(_){status.textContent='Could not load employee access permissions.'}
 }
 async function loadClearanceLevels(container){
   const api=window.BLACKCELL_CORPORATE_ADMIN_API?.client;
