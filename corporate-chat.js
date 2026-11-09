@@ -1,5 +1,5 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-staff1';
-import {setupCorporateMedia} from './corporate-chat-media.js?v=20261109-flip-focus4';
+import {setupCorporateMedia} from './corporate-chat-media.js?v=20261109-large-media1';
 import {setupCorporateChatLive} from './corporate-chat-live.js?v=20261109-live1';
 const client=corporateClient(),$=id=>document.getElementById(id);
 const embedParams=new URLSearchParams(location.search);
@@ -53,12 +53,26 @@ const live=setupCorporateChatLive({
 });
 const mediaControls=document.querySelector('.media-actions');
 const mediaToggle=$('mediaToggleButton');
+const canShowFullMedia=()=>window.BlackcellChatMedia?.enabled()===true;
+function syncMediaUI(){
+ const allowed=canShowFullMedia();
+ mediaToggle.hidden=!allowed;
+ mediaControls.hidden=!allowed;
+ if(!allowed){
+  mediaControls.classList.add('is-collapsed');
+  mediaToggle.classList.remove('open');
+  mediaToggle.setAttribute('aria-expanded','false');
+ }
+}
+syncMediaUI();
+window.addEventListener('blackcell-chat-media-capability-change',syncMediaUI);
 mediaToggle.addEventListener('click',()=>{
+ if(!canShowFullMedia())return;
  const collapsed=mediaControls.classList.toggle('is-collapsed');
  mediaToggle.setAttribute('aria-expanded',String(!collapsed));
  mediaToggle.classList.toggle('open',!collapsed);
 });
-if(compactChat){
+if(compactChat||!canShowFullMedia()){
  mediaControls.classList.add('is-collapsed');
  mediaToggle.setAttribute('aria-expanded','false');
  mediaToggle.classList.remove('open');
@@ -131,8 +145,8 @@ async function boot(){
      const requested=embedParams.get('peer');
      if(!compactChat||requested&&contacts.some(x=>x.user_id===requested))
       choose(contacts.some(x=>x.user_id===requested)?requested:contacts[0].user_id);
-     if(mediaPanelMode==='share')sharedMedia.openShare();
-     else if(mediaPanelMode==='library'){
+     if(mediaPanelMode==='share'&&canShowFullMedia())sharedMedia.openShare();
+     else if(mediaPanelMode==='library'&&canShowFullMedia()){
        const batch=embedParams.get('batch');
        if(batch&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(batch))
         void sharedMedia.openBatch(batch);

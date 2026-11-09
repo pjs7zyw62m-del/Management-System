@@ -27,7 +27,9 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const bucket=client.storage.from(BUCKET);
  const mediaPanel=new URLSearchParams(location.search).get('mediaPanel');
  const standalonePanel=mediaPanel==='share'||mediaPanel==='library';
+ const canUseMedia=()=>window.BlackcellChatMedia?.enabled()===true;
  function routeBubble(panel,{batchId=null,pick=null}={}){
+  if(!canUseMedia())return true;
   const c=context();
   if(!c?.ready||!c?.peer?.user_id||!c?.self)return false;
   if(standalonePanel&&mediaPanel===panel)return false;
@@ -185,7 +187,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   return c;
  }
  function chooseFiles(accept){
-  if(!requirePeer()||busy)return;
+  if(!canUseMedia()||!requirePeer()||busy)return;
   if(routeBubble('share',{pick:accept}))return;
   fileInput.value='';fileInput.accept=accept;fileInput.click();
  }
@@ -233,7 +235,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  document.body.append(overlay);
  overlay.addEventListener('click',e=>{if(e.target===overlay&&!busy)closeShare()});
  function openShare(){
-  if(!requirePeer()||busy)return;
+  if(!canUseMedia()||!requirePeer()||busy)return;
   if(routeBubble('share'))return;
   overlay.hidden=false;renderSelection();
  }
@@ -376,7 +378,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   stageInner.querySelector('video')?.pause();
  }
  async function openLibrary(){
-  if(!requirePeer())return;
+  if(!canUseMedia()||!requirePeer())return;
   if(routeBubble('library'))return;
   batchFocus=null;
   await loadLibrary();
@@ -387,7 +389,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   wing.setAttribute('aria-hidden','false');
  }
  async function openBatch(id){
-  if(!requirePeer())return;
+  if(!canUseMedia()||!requirePeer())return;
   if(routeBubble('library',{batchId:id}))return;
   batchFocus=id;
   await loadLibrary();
@@ -510,6 +512,12 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   const heading=el('strong','','BLACKCELL / SHARED MEDIA');
   const content=el('span','',String(message.body||'Photos and videos available to view'));
   cell.append(heading,content);
+  if(!canUseMedia()){
+   cell.classList.add('bc-media-compact-notice');
+   cell.append(el('small','bc-media-on-large-screen',
+    'Media viewer available on a 12.9-inch or larger iPad, or a computer.'));
+   return cell;
+  }
   const open=()=>void openBatch(message.media_batch_id);
   cell.addEventListener('click',open);
   cell.setAttribute('role','button');cell.tabIndex=0;

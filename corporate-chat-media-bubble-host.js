@@ -4,6 +4,7 @@
   'use strict';
   if(window.BlackcellMediaBubbleHost)return;
   const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const canUseMedia=()=>window.BlackcellChatMedia?.enabled()===true;
   function create({mode='standalone',mainFrame=null,mainPane=null}={}){
     if(document.getElementById('bcMediaBubbleHost'))return window.BlackcellMediaBubbleHostController;
     const root=document.createElement('div');
@@ -111,6 +112,7 @@
     }
     function closeAll(){for(const type of Array.from(panes.keys()))close(type)}
     function open(type,peerId,{batchId=null,pick=null}={}){
+      if(!canUseMedia())return;
       if(!['share','library'].includes(type)||!safePeer(peerId))return;
       const batch=safePeer(batchId);
       const existing=panes.get(type);
@@ -179,6 +181,7 @@
       }
     }
     function flip(type,peerId,{batchId=null,force=false}={}){
+      if(!canUseMedia())return;
       if(!['share','library'].includes(type)||!safePeer(peerId)||flipping)return;
       const from=type==='library'?'share':'library';
       const previous=panes.get(from);
@@ -242,6 +245,7 @@
     }
     window.addEventListener('message',handleMessage);
     window.addEventListener('pagehide',closeAll);
+    window.addEventListener('blackcell-chat-media-capability-change',e=>{if(!e.detail?.enabled)closeAll()});
     const api={open,flip,close,closeAll,handles:(source)=>[...panes.values()].some(p=>p.iframe.contentWindow===source)};
     if(mode==='standalone')window.BlackcellMediaBubbleHostController=api;
     return api;

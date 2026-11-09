@@ -1,0 +1,14 @@
+/* Blackcell Messages: chat-first UI on iPhone and iPad smaller than 12.9". */
+html.bc-chat-lite .media-actions,
+html.bc-chat-lite #mediaToggleButton,
+html.bc-chat-lite .composer .composer-add,
+html.bc-chat-lite .media-progress-wrap,
+html.bc-chat-lite .media-viewer,
+html.bc-chat-lite .media-dialog-backdrop,
+html.bc-chat-lite .bc-media-bubble-host{display:none!important}
+html.bc-chat-lite .chat-main{min-width:0}
+html.bc-chat-lite .composer{gap:9px!important;padding-bottom:max(11px,env(safe-area-inset-bottom,0px))!important}
+html.bc-chat-lite .composer-input-wrap{flex:1;min-width:0}
+html.bc-chat-lite .message-media .bubble{cursor:default!important;padding:10px 13px!important;border-radius:17px!important}
+html.bc-chat-lite .message-media .bubble strong{font-size:9px}
+html.bc-chat-lite .bc-media-on-large-screen{display:block;margin-top:7px;font-size:9px;color:#b5a7b6;line-height:1.45}
