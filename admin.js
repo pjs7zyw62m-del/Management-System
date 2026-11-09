@@ -56,7 +56,7 @@ function employeeCardView(member,sample=false){
   card.append(el('div','employee-profile-crest','B'),
     el('div','employee-profile-corporate','BLACKCELL'),
     el('div','employee-profile-corporate','CORPORATION'),
-    el('div','employee-profile-network','EMPLOYEE NETWORK'),
+    el('div','employee-profile-network','NETWORK'),
     el('div','employee-profile-stripe',''));
   const pass=el('div','employee-profile-clearance');
   pass.append(el('strong','','LEVEL '+(member.clearance_level||1)),el('span','','ACCESS PASS'));
@@ -183,7 +183,7 @@ function showInvitationPreview(form,inputs){
     return item;
   }
   grid.append(
-    detail('EMPLOYEE NAME',name.value.trim()||'Sample Employee'),
+    detail('NAME',name.value.trim()||'Sample Employee'),
     detail('EMAIL RECIPIENT',email.value.trim()||'employee@example.com'),
     detail('USERNAME',username.value.trim()||'bc_sample_48271'),
     detail('CLEARANCE LEVEL','LEVEL '+level.value),
@@ -239,7 +239,7 @@ function users(){
       const input=el('input');input.type=type;input.required=true;input.placeholder=placeholder;input.style.width='100%';
       wrap.append(input);form.append(wrap);return input;
     };
-    const name=field('EMPLOYEE NAME','text','Full name');
+    const name=field('NAME','text','Full name');
     name.minLength=2;name.maxLength=80;
     const email=field('EMPLOYEE EMAIL','email','name@example.com');
 
