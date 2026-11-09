@@ -20,6 +20,24 @@ const launch=document.getElementById('launchScreen');
 const continueVerified=document.getElementById('continueVerified');
 const codeSupport=document.getElementById('codeSupport');
 const originalSupport=codeSupport.textContent;
+window.BLACKCELL_LOGIN_BOOTED=true;
+const LOGIN_DEADLINE_MS=16000;
+let loginInProgress=false;
+function timed(promise, description, timeout=LOGIN_DEADLINE_MS){
+  let timer;
+  return Promise.race([
+    promise,
+    new Promise((_,reject)=>{
+      timer=setTimeout(()=>reject(new Error(description+' timed out. Check your connection and try again.')),timeout);
+    })
+  ]).finally(()=>clearTimeout(timer));
+}
+function explain(error, fallback){
+  const text=String(error?.message||'');
+  if(/timed out/i.test(text))return 'The login server is taking too long to respond. Check your internet connection and try again.';
+  return fallback;
+}
+
 let client;
 
 function message(element,text){element.hidden=false;element.textContent=text;}
@@ -99,7 +117,7 @@ function displayLaunch(){
 }
 
 async function initialState(){
-  const state=await corporateAuthorize(client);
+  const state=await timed(corporateAuthorize(client),'Saved session check');
   if(!state.ok){
     if(state.reason==='not-approved'){
       await client.auth.signOut({scope:'local'});
@@ -110,7 +128,7 @@ async function initialState(){
     return;
   }
   emailInput.value=state.user?.email||emailInput.value;
-  const {data,error}=await client.rpc('corp_code_status');
+  const {data,error}=await timed(client.rpc('corp_code_status'),'Saved code status check');
   if(error||data?.ok!==true){
     message(status,'Unable to verify the security session. Please try again.');
     return;
@@ -124,13 +142,6 @@ async function initialState(){
   showPass();
 }
 
-try{
-  client=corporateClient();
-  await initialState();
-}catch(_){
-  message(status,'Corporate sign in is unavailable. Try again later.');
-  loginButton.disabled=true;
-}
 
 passwordToggle.addEventListener('click',()=>{
   const show=password.type==='password';
@@ -140,30 +151,40 @@ passwordToggle.addEventListener('click',()=>{
 
 form.addEventListener('submit',async event=>{
   event.preventDefault();
-  if(!client)return;
+  if(loginInProgress)return;
+  if(!client){message(status,'Secure login is still starting. Please try again.');return;}
+  loginInProgress=true;
   loginButton.disabled=true;
-  clearMessage(status);
+  loginButton.textContent='SIGNING IN…';
+  message(status,'Verifying your email and password…');
   try{
-    const {error}=await client.auth.signInWithPassword({
+    const {error}=await timed(client.auth.signInWithPassword({
       email:document.getElementById('email').value.trim(),
       password:password.value
-    });
-    if(error){message(status,'Invalid email or password.');return;}
-    const member=await corporateAuthorize(client);
+    }), 'Email and password sign-in');
+    if(error){message(status,'Email or password was not accepted.');return;}
+    message(status,'Email and password accepted. Checking corporate authorization…');
+    const member=await timed(corporateAuthorize(client),'Corporate employee check');
     if(!member.ok){
       await client.auth.signOut({scope:'local'});
       message(status,member.reason==='verification-error'?'Cannot verify access right now.':'This account is not approved for Corporate Access.');
       return;
     }
-    const {data, error:checkError}=await client.rpc('corp_code_status');
+    const {data, error:checkError}=await timed(client.rpc('corp_code_status'),'Corporate code status check');
     if(checkError||data?.ok!==true){
       message(status,'Unable to start code verification.');
       return;
     }
     showPass();
-  }catch(_){
-    message(status,'Sign in could not be completed. Check your connection.');
-  }finally{loginButton.disabled=false;}
+  }catch(error){
+    message(status,explain(error,'Sign in could not be completed. Check your connection.'));
+  }finally{
+    loginInProgress=false;
+    if(!stage.classList.contains('show-pass')){
+      loginButton.disabled=false;
+      loginButton.textContent='SIGN IN TO BLACKCELL ↗';
+    }
+  }
 });
 
 continueVerified.addEventListener('click',async()=>{
@@ -227,3 +248,21 @@ document.getElementById('reset').addEventListener('click',async()=>{
     message(status,'If this email has an account, password reset instructions were requested.');
   }catch(_){message(status,'Password reset is unavailable.');}
 });
+
+// The login form's event handlers are installed before any async session lookup.
+// A stalled saved-session request therefore cannot freeze the Sign In button.
+async function initializeLogin(){
+  try{
+    client=corporateClient();
+  }catch(error){
+    message(status,'Secure login cannot initialize. Refresh the page.');
+    return;
+  }
+  try{
+    await timed(initialState(),'Initial security check');
+  }catch(error){
+    if(!loginInProgress && !stage.classList.contains('show-pass'))
+      message(status,explain(error,'Saved session could not be checked. You may still sign in with your email and password.'));
+  }
+}
+void initializeLogin();
