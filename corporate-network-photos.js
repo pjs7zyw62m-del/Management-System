@@ -15,10 +15,10 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  const favorited=id=>meta.favorites.some(x=>x.asset_id===id&&x.user_id===ownId());
  const byId=id=>state.assets.find(a=>a.id===id);
  const allAlbums=()=>meta.albums;
- const militaryCategories=['Unsorted','Personnel','Uniforms','Insignia','Equipment','Ground Vehicles','Aircraft','Naval Vessels','Facilities','Training','Operations','Ceremonies','Historical','Other'];
+ const militaryCategories=['Unsorted','Personnel','Uniforms','Insignia','Equipment','Ground Vehicles','Aircraft','Naval Vessels','Facilities','Training','Fitness / Exercise','Operations','Ceremonies','Historical','Other'];
  const categoryIcons={'Unsorted':'▧','Personnel':'♟','Uniforms':'◈','Insignia':'✦','Equipment':'◩',
    'Ground Vehicles':'▰','Aircraft':'✈','Naval Vessels':'⚓','Facilities':'▦',
-   'Training':'◎','Operations':'◇','Ceremonies':'✧','Historical':'◷','Other':'◌'};
+   'Training':'◎','Fitness / Exercise':'◉','Operations':'◇','Ceremonies':'✧','Historical':'◷','Other':'◌'};
  const cat=a=>a?.military_category||'Unsorted';
  const branch=a=>a?.military_branch||'Unspecified';
  const isAdmin=()=>state.member?.role==='owner';
@@ -217,7 +217,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  function renderCategoryTiles(){
   const root=$('militaryCategoryTiles');root.replaceChildren();
   const assets=archiveAssets().filter(a=>meta.scope==='network'||own(a));
-  const features=['Unsorted','Uniforms','Equipment','Ground Vehicles','Aircraft','Naval Vessels','Training','Historical'];
+  const features=['Unsorted','Uniforms','Equipment','Ground Vehicles','Aircraft','Naval Vessels','Training','Fitness / Exercise','Historical'];
   const extras=militaryCategories.filter(x=>!features.includes(x)&&assets.some(a=>cat(a)===x));
   for(const category of [...features,...extras]){
    const count=assets.filter(a=>cat(a)===category).length;
