@@ -1,11 +1,12 @@
 /* BLACKCELL NETWORK / Apple Photos × Flickr private corporate library */
 import {createWorldForces} from './corporate-world-forces.js?v=20261110-world6';
 import {createMilitaryPhotoAI} from './corporate-military-ai.js?v=20261110-ai4';
+import {createPhotoTaste} from './corporate-photo-taste.js?v=20261110-taste1';
 export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadAsset,refresh,profile,openProfile,ensureSigned,switchView}){
  const $=id=>document.getElementById(id);
  const meta={albums:[],albumItems:[],favorites:[],activeAlbum:null,filter:'all',sort:'newest',query:'',
    scope:'mine',branch:'',category:'',era:'',editingAsset:null,
-   viewerItems:[],viewerIndex:0,editingAlbum:null,uploading:false,renderCount:0};
+   viewerItems:[],viewerIndex:0,editingAlbum:null,uploading:false,renderCount:0,tastes:[]};
  const fileMax=45*1024*1024;
  const photoFormats=new Set(['image/jpeg','image/png','image/webp','image/gif','image/heic']);
  const videoFormats=new Set(['video/mp4','video/webm','video/quicktime','video/x-m4v']);
@@ -58,6 +59,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  const size=n=>n>=1048576?(n/1048576).toFixed(1)+' MB':Math.round(n/1024)+' KB';
  const nameOf=a=>profile(a.owner_id)?.display_name||'Network Member';
  const world=createWorldForces({client,state,meta,toast,archiveAssets,mediaUrl,openViewer,render});
+ const taste=createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl,render});
  const ai=createMilitaryPhotoAI({client,state,toast,getCurrent:viewerCurrent,mediaUrl,
   onApproved:(item,review)=>{
    Object.assign(item,{military_country_code:review.country_code,military_branch:review.military_branch,
@@ -82,6 +84,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   meta.albumItems=b.data||[];
   meta.favorites=c.data||[];
   await world.load();
+  await taste.load();
   if(meta.activeAlbum&&!meta.albums.some(x=>x.id===meta.activeAlbum))meta.activeAlbum=null;
  }
  function albumFor(id){return meta.albums.find(x=>x.id===id)}
@@ -94,7 +97,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   return arr;
  }
  function selectedAssets(){
-  if(meta.filter==='for-you')return world.rank(archiveAssets());
+  if(meta.filter==='for-you')return taste.rank(world.rank(archiveAssets()));
   let assets=meta.activeAlbum?albumMedia(albumFor(meta.activeAlbum)||{id:''})
    :archiveAssets().filter(x=>meta.scope==='network'||own(x));
   if(meta.filter==='photo')assets=assets.filter(x=>x.kind==='photo');
@@ -189,6 +192,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  function renderGallery(){
   const node=$('applePhotosGallery');node.replaceChildren();
   const list=selectedAssets(),album=albumFor(meta.activeAlbum);
+  taste.renderInsights(list[0],meta.filter==='for-you');
   $('photosGalleryTitle').textContent=meta.filter==='for-you'?'For You · Personalized Military Media':world.title()|| (album?album.title:(meta.scope==='mine'?'My Military Media':'Network Military Media'));
   $('photosClearAlbum').hidden=!meta.activeAlbum;
   for(const b of document.querySelectorAll('#photosFilters [data-photo-filter]'))
@@ -404,6 +408,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   $('appleViewerPrevious').disabled=meta.viewerItems.length<=1;
   $('appleViewerNext').disabled=meta.viewerItems.length<=1;
   ai.toggleForAsset(a);
+  taste.forViewer(a);
   if(u){
    if(a.kind==='video'){
     const vid=make('video');vid.src=u;vid.controls=true;vid.playsInline=true;vid.preload='metadata';
@@ -561,6 +566,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  function setup(){
   world.setup();
   ai.setup();
+  taste.setup();
   for(const b of document.querySelectorAll('#militaryScope [data-military-scope]')){
    b.addEventListener('click',()=>{
     meta.scope=b.dataset.militaryScope;meta.activeAlbum=null;meta.filter='all';world.deactivate();render()
