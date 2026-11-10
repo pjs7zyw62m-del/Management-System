@@ -334,13 +334,36 @@
 </div>
 <div id="applePhotoViewer" class="apple-photo-viewer" hidden role="dialog" aria-modal="true" aria-label="Apple Photos style viewer">
  <div class="apple-photo-viewer-header"><div><strong id="appleViewerFilename">Media</strong><small id="appleViewerMeta">ORIGINAL QUALITY</small></div>
-   <div class="apple-photo-viewer-actions"><button id="appleViewerFavorite" title="Favorite this media" type="button">♡</button><button id="appleViewerTaste" type="button" hidden>✦ WHAT CAUGHT YOUR EYE?</button><button id="appleViewerOriginal" type="button">↗ FULL PHOTO</button>
+   <div class="apple-photo-viewer-actions"><button id="appleViewerFavorite" title="Favorite this media" type="button">♡</button><button id="appleViewerTaste" type="button" hidden>✦ WHAT CAUGHT YOUR EYE?</button><button id="appleViewerPredict" type="button" hidden>◎ PREDICT MY INTEREST</button><button id="appleViewerOriginal" type="button">↗ FULL PHOTO</button>
     <button id="appleViewerDownload" type="button">↓ DOWNLOAD</button><button id="appleViewerClose" class="close-x" type="button" aria-label="Close viewer">✕</button></div></div>
  <div class="apple-photo-viewer-stage"><button id="appleViewerPrevious" class="apple-photo-nav previous" type="button" aria-label="Previous photo">‹</button>
    <div id="appleViewerStage" class="apple-photo-stage-inner"></div><button id="appleViewerNext" class="apple-photo-nav next" type="button" aria-label="Next photo">›</button></div>
  <div class="apple-photo-viewer-bar"><div class="apple-viewer-details"><span id="appleViewerPosition"></span><span id="appleViewerCaption"></span></div>
   <div id="appleViewerOwnerControls" class="apple-viewer-owner-controls" hidden><select id="appleViewerAlbumSelect" aria-label="Add media to one of your albums"></select><button id="appleViewerAddAlbum" type="button">＋ ADD TO ALBUM</button><button id="appleViewerEditCaption" type="button">EDIT CAPTION</button><button id="appleViewerEditMilitary" type="button">CLASSIFY</button><button id="appleViewerAnalyze" type="button" hidden>✦ ANALYZE PHOTO</button><button id="appleViewerDelete" type="button">DELETE UPLOAD</button></div></div>
  <div id="appleViewerFilmstrip" class="apple-photo-filmstrip"></div>
+</div>
+<div id="predModal" class="pred-modal" hidden>
+ <section class="pred-dialog" role="dialog" aria-modal="true" aria-labelledby="predTitle">
+ <div class="pred-holo-strip"></div>
+ <header class="pred-header"><div><span>BLACKCELL / VISUAL INTEREST INTELLIGENCE</span><h2 id="predTitle">What might catch your eye?</h2><p id="predFilename">Photograph</p></div>
+ <button id="predClose" type="button" aria-label="Close visual prediction">✕</button></header>
+ <div class="pred-body"><p class="pred-notice">Based on your confirmed likes, Blackcell can make an opt-in visual prediction. The boxes are estimated by AI, not guaranteed. No image is sent for a new prediction until you request it.</p>
+ <div id="predImageFrame" class="pred-frame">
+  <div id="predImageSurface" class="pred-image-surface" hidden>
+   <img id="predImage" alt="Photograph with suggested visual regions">
+   <div id="predOverlayLayer" class="pred-overlay-layer" aria-label="Approximate AI-predicted areas"></div>
+  </div>
+ </div>
+ <div class="pred-brief"><strong>✦ BLACKCELL'S PREDICTION</strong><p id="predSummary">No prediction saved for this photo yet.</p></div>
+ <div id="predRegionList" class="pred-region-list"></div>
+ <p id="predStatus" class="pred-status" role="status" aria-live="polite">Select Run Visual Prediction to check this photo.</p>
+ <div class="pred-footer">
+  <button id="predCorrect" type="button">✎ MARK THE CORRECT AREA</button>
+  <button id="predRun" class="pred-primary" type="button">✦ RUN VISUAL PREDICTION</button>
+ </div>
+ <p class="pred-disclaimer">Opt-in image predictions use OpenAI API credits. Confirming or rejecting highlighted regions costs nothing. Predictions stay private to your verified account and do not identify people.</p>
+ </div>
+ </section>
 </div>
 <div id="tasteOverlay" class="taste-overlay" hidden>
  <section class="taste-dialog" role="dialog" aria-modal="true" aria-labelledby="tasteTitle">
