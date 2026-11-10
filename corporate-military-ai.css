@@ -46,3 +46,17 @@
 body.mx-reduced .ai-photo-dialog .ai-holo,body.mx-paused .ai-photo-dialog .ai-holo{animation:none}
 @media(max-width:600px){.ai-photo-overlay{padding:8px}.ai-photo-dialog{max-height:calc(100dvh - 16px);border-radius:15px}.ai-photo-dialog header{padding:18px 15px 14px}.ai-photo-body{padding:15px}.ai-photo-intro{grid-template-columns:92px 1fr;gap:10px}.ai-photo-preview{height:105px}.ai-photo-actions{flex-direction:column}.ai-photo-form{grid-template-columns:1fr}.ai-photo-form .wide{grid-column:auto}.ai-photo-btn{white-space:normal}}
 @media(prefers-reduced-motion:reduce){.ai-photo-dialog .ai-holo{animation:none}}
+
+/* Opt-in upload intelligence: visible cost/consent control next to Upload Media */
+.photos-header-actions .ai-upload-toggle{
+ display:inline-flex;align-items:center;gap:9px;border:1px solid #834455;
+ background:linear-gradient(115deg,#201319,#14141a);
+ border-radius:11px;padding:8px 12px;color:#f6d7de;min-height:43px;cursor:pointer;
+}
+.ai-upload-toggle input{width:17px;height:17px;accent-color:#e74260;flex:none;cursor:pointer}
+.ai-upload-toggle span{display:flex;flex-direction:column;gap:3px;font-size:10px;font-weight:800;letter-spacing:.045em}
+.ai-upload-toggle small{font-size:9px;font-weight:500;letter-spacing:normal;color:#bd9da8}
+.ai-upload-toggle:focus-within{outline:2px solid #e95778;outline-offset:2px}
+#aiPhotoNextUpload[hidden]{display:none!important}
+#aiPhotoNextUpload{margin-left:auto}
+@media(max-width:650px){.photos-header-actions .ai-upload-toggle{width:100%;justify-content:center;text-align:left}}
