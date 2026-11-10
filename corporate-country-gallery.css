@@ -18,3 +18,12 @@
 .country-personal-empty{color:#ad9baa;font-size:11px}
 .country-personal-summary{color:#e0beca;font-size:11px;padding-top:9px;border-top:1px solid #4d3442;line-height:1.65}
 @media(max-width:600px){.country-personal-panel{padding:15px}.country-personal-hero h3{font-size:23px}.country-personal-actions select{flex:1 1 100%}.country-personal-actions button{flex:1 1 auto}}
+
+.country-photo-label{
+ position:absolute;z-index:2;left:6px;top:6px;
+ display:inline-flex;align-items:center;max-width:calc(100% - 48px);
+ padding:6px 9px;border-radius:7px;border:1px solid #e08aa6;
+ background:#251321db;color:#fff;font-size:9px;font-weight:800;
+ overflow:hidden;text-overflow:ellipsis;white-space:nowrap;pointer-events:none
+}
+@media(max-width:520px){.country-photo-label{left:3px;top:4px;font-size:8px;padding:4px 5px;max-width:calc(100% - 36px)}}
