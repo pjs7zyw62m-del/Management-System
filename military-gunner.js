@@ -14,9 +14,9 @@ export function mountMilitaryGunner({client,getContext,mount=document.body,visib
  launcher.append(badge,label);
  const panel=document.createElement('section');panel.id='bcGunnerPanel';panel.hidden=true;
  panel.setAttribute('aria-label','Gunner Thompson Military Library chat');
- panel.innerHTML='<div class="gunner-head"><div class="gunner-badge">G</div><div><strong>Gunner Thompson</strong><small>ORIGINAL GUNNER / DOLPHIN 3.0</small></div><button type="button" id="bcGunnerClose" aria-label="Close Gunner chat">✕</button></div><div class="gunner-intro">The original Gunner Thompson from your Dolphin/RunPod project. His personality and memory vault are preserved. His thoughts about the Military Library are proposals for your approval, not automatic changes.</div><div id="bcGunnerMessages" class="gunner-messages" role="log" aria-live="polite"></div><form id="bcGunnerForm" class="gunner-input"><textarea id="bcGunnerText" maxlength="1600" placeholder="Ask Gunner something…" aria-label="Message Gunner"></textarea><div class="gunner-actions"><button id="bcGunnerVision" type="button">✦ GUNNER\'S VISION</button><small id="bcGunnerStatus">DOLPHIN 3.0 · READY</small><button id="bcGunnerSend" type="submit">SEND ↗</button></div></form>';
+ panel.innerHTML='<div class="gunner-head"><div class="gunner-badge">G</div><div><strong>Gunner Thompson</strong><small>ORIGINAL GUNNER / DOLPHIN 3.0</small></div><button type="button" id="bcGunnerClose" aria-label="Close Gunner chat">✕</button></div><div class="gunner-intro">The original Gunner Thompson from your Dolphin/RunPod project. His personality and memory vault are preserved. His thoughts about the Military Library are proposals for your approval, not automatic changes.</div><div id="bcGunnerMessages" class="gunner-messages" role="log" aria-live="polite"></div><form id="bcGunnerForm" class="gunner-input"><textarea id="bcGunnerText" maxlength="1600" placeholder="Ask Gunner something…" aria-label="Message Gunner"></textarea><div class="gunner-actions"><button id="bcGunnerVision" type="button">✦ GUNNER\'S VISION</button><button id="bcGunnerCheck" type="button" hidden>↻ CHECK REPLY</button><small id="bcGunnerStatus">DOLPHIN 3.0 · READY</small><button id="bcGunnerSend" type="submit">SEND ↗</button></div></form>';
  root.append(launcher,panel);mount.append(root);
- let loaded=false,busy=false,activeJob=null;
+ let loaded=false,busy=false,activeJob=null,pendingPlaceholder=null;
  const messages=$('bcGunnerMessages'),input=$('bcGunnerText'),status=$('bcGunnerStatus');
  const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
  function append(role,text){
@@ -24,7 +24,7 @@ export function mountMilitaryGunner({client,getContext,mount=document.body,visib
   messages.append(node);messages.scrollTop=messages.scrollHeight;return node;
  }
  function setStatus(text){status.textContent=text}
- function setBusy(next){busy=next;$('bcGunnerSend').disabled=next;$('bcGunnerVision').disabled=next}
+ function setBusy(next){busy=next;$('bcGunnerSend').disabled=next;$('bcGunnerVision').disabled=next;$('bcGunnerCheck').disabled=next}
  function errorText(error){
   return String(error?.message||error||'Dolphin service unavailable').slice(0,300)
  }
@@ -39,35 +39,56 @@ export function mountMilitaryGunner({client,getContext,mount=document.body,visib
   return data;
  }
  async function pollJob(id,placeholder){
-  activeJob=id;setBusy(true);
+  if(busy)return;
+  activeJob=id;pendingPlaceholder=placeholder;
+  $('bcGunnerCheck').hidden=true;
+  setBusy(true);
+  const begun=Date.now();
+  let finished=false,failed=false;
   try{
-   for(let attempt=0;attempt<85;attempt++){
-    await pause(attempt<5?2000:attempt<15?3500:5500);
+   for(let attempt=0;attempt<180;attempt++){
+    // Rapid checking for a warm worker; fewer checks during expensive cold starts.
+    if(attempt>0)await pause(attempt<10?1600:attempt<26?3300:6000);
     const result=await callGunner({action:'status',bridge_job_id:id});
+    const secs=Math.max(0,Math.round((Date.now()-begun)/1000));
     if(result.status==='completed'&&result.answer){
      placeholder.textContent=result.answer;
-     setStatus('ORIGINAL GUNNER · DOLPHIN 3.0');
-     activeJob=null;return;
+     setStatus('✓ ORIGINAL GUNNER · DOLPHIN 3.0');
+     finished=true;activeJob=null;pendingPlaceholder=null;
+     return;
     }
     if(result.status!=='pending')throw Error('Unexpected Dolphin job status');
-    const label=String(result.runpod_status||'STARTING').replace(/_/g,' ');
-    setStatus('DOLPHIN · '+label);
-    placeholder.textContent=label==='IN QUEUE'?'Gunner is in the RunPod queue…':
-     label==='IN PROGRESS'?'Gunner is forming his response…':'Starting the Dolphin worker…';
+    const stage=String(result.runpod_status||'IN_QUEUE').toUpperCase();
+    if(stage==='IN_QUEUE'||stage==='QUEUED'){
+     placeholder.textContent='RunPod is queuing or starting Dolphin. This can take longer when your worker has scaled to zero.';
+     setStatus('DOLPHIN · QUEUED · '+secs+'s');
+    }else if(stage==='IN_PROGRESS'||stage==='RUNNING'){
+     placeholder.textContent='Dolphin is generating Gunner’s reply…';
+     setStatus('DOLPHIN · GENERATING · '+secs+'s');
+    }else{
+     placeholder.textContent='RunPod status: '+stage.replace(/_/g,' ')+' · Checking the same job.';
+     setStatus('DOLPHIN · '+stage.replace(/_/g,' ')+' · '+secs+'s');
+    }
    }
-   placeholder.textContent='Gunner is still processing on RunPod. Reopen this chat to resume checking this same job; do not resend the message.';
-   setStatus('DOLPHIN · REOPEN TO RESUME');
+   placeholder.textContent='Gunner is still processing at RunPod. Use CHECK REPLY to resume this same job; do not send another message.';
+   setStatus('DOLPHIN · CHECK AGAIN WITHOUT PAYING');
   }catch(error){
-   placeholder.textContent='Gunner could not finish: '+errorText(error);
-   setStatus('DOLPHIN · STATUS CHECK FAILED');
+   const message=errorText(error);
+   failed=/job (?:failed|cancelled|timed out)|Dolphin job (?:failed|cancelled|timed out)/i.test(message);
+   placeholder.textContent=failed?
+    'That Dolphin request failed: '+message:
+    'Could not check the pending reply: '+message+'. You can use CHECK REPLY; it does not start a new paid job.';
+   setStatus(failed?'DOLPHIN JOB FAILED':'DOLPHIN · RETRY CHECK');
   }finally{
-   activeJob=null;setBusy(false);messages.scrollTop=messages.scrollHeight;
+   if(finished||failed){activeJob=null;pendingPlaceholder=null;}
+   $('bcGunnerCheck').hidden=!activeJob;
+   setBusy(false);messages.scrollTop=messages.scrollHeight;
   }
  }
  async function loadMessages(){
   if(loaded)return;loaded=true;
   const {data,error}=await client.from('corp_social_gunner_messages')
-   .select('id,role,content,bridge_job_id,created_at').order('id',{ascending:false}).limit(30);
+   .select('id,role,content,bridge_job_id,created_at').not('bridge_job_id','is',null).order('id',{ascending:false}).limit(30);
   if(error){append('system','Private chat history is unavailable: '+error.message);return}
   if(data?.length)for(const row of [...data].reverse())append(row.role,row.content);
   else append('assistant',"Hey. It's Gunner. I'm here on the military side. Ask me what I'd change about this place.");
@@ -83,6 +104,11 @@ export function mountMilitaryGunner({client,getContext,mount=document.body,visib
  function close(){panel.hidden=true}
  launcher.addEventListener('click',()=>panel.hidden?open():close());
  $('bcGunnerClose').addEventListener('click',close);
+ $('bcGunnerCheck').addEventListener('click',()=>{
+  if(busy||!activeJob)return;
+  const placeholder=pendingPlaceholder||append('assistant','Checking Dolphin…');
+  void pollJob(activeJob,placeholder);
+ });
  $('bcGunnerVision').addEventListener('click',()=>{
   const ctx=typeof getContext==='function'?getContext()||{}:{};
   const name=String(ctx.page_title||'Blackcell Military Library');
@@ -93,6 +119,7 @@ export function mountMilitaryGunner({client,getContext,mount=document.body,visib
  $('bcGunnerForm').addEventListener('submit',async event=>{
   event.preventDefault();if(busy)return;
   const value=input.value.trim();if(!value||value.length>1600)return;
+  if(activeJob){setStatus('CHECK THE EXISTING DOLPHIN REPLY FIRST');$('bcGunnerCheck').hidden=false;return}
   setBusy(true);input.value='';
   append('user',value);setStatus('SENDING TO ORIGINAL GUNNER…');
   const placeholder=append('assistant','Sending to Dolphin / RunPod…');
