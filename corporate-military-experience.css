@@ -1,0 +1,93 @@
+/* BLACKCELL / MILITARY MEDIA EXPERIENCE — production visual layer.
+   Isolated to the authenticated corporate-network photos view. */
+body.mx-open .app{width:min(1640px,100%);grid-template-columns:minmax(180px,215px) minmax(0,1fr);gap:24px}
+body.mx-open .right-rail{display:none}
+body.mx-open #photosView{min-width:0}
+#photosView .mx-overline{font-size:10px;letter-spacing:.2em;color:#efb2b9;font-weight:800;text-transform:uppercase}
+#photosView .mx-hero{position:relative;min-height:420px;isolation:isolate;overflow:hidden;display:flex;align-items:flex-end;padding:clamp(20px,4vw,43px);border:1px solid #813746;border-radius:22px;background:#0a0b0d;box-shadow:0 22px 60px #000a}
+#photosView .mx-hero:before{content:"";position:absolute;inset:0;z-index:-2;background:linear-gradient(90deg,#060709f7 0%,#090b0ec2 42%,#100c1392 100%),linear-gradient(0deg,#060708 1%,transparent 80%),url('https://commons.wikimedia.org/wiki/Special:FilePath/Tank_in_Desert_Storm.JPEG');background-size:cover;background-position:50% 45%;filter:saturate(.7) contrast(1.15)}
+#photosView .mx-hero:after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:repeating-linear-gradient(160deg,transparent 0 75px,#ef2c4d11 76px,transparent 78px),radial-gradient(ellipse at 85% 74%,#c416362c,transparent 52%);animation:mx-glimmer 8s linear infinite}
+#photosView .mx-holo{position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#29050b,#fa2e50,#3a0711,#fe4b5e,#210406);background-size:200% 100%;box-shadow:0 0 20px #e7264dbd;animation:mx-scan 5s linear infinite}
+#photosView .mx-hero-content{max-width:800px;position:relative;z-index:2}
+#photosView .mx-eyebrow{display:inline-flex;align-items:center;gap:8px;margin-bottom:13px;color:#ff8e9e;font-size:10px;letter-spacing:.18em;font-weight:850}
+#photosView .mx-eyebrow:before{content:"";width:7px;height:7px;border-radius:50%;background:#fb3a5b;box-shadow:0 0 15px #f13757}
+#photosView .mx-hero h2{font-size:clamp(40px,6.2vw,79px);line-height:.96;margin:0 0 20px;color:#f8f9fb;font-weight:850;letter-spacing:-.057em;text-shadow:0 3px 38px #000a}
+#photosView .mx-hero h2 em{font-style:normal;color:#ff4a64}
+#photosView .mx-hero p{max-width:615px;font-size:14px;line-height:1.8;color:#b9bec7;margin:0 0 24px}
+#photosView .mx-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#photosView .mx-btn{border:1px solid #74565d;background:#15161bd9;color:#f7f7fa;padding:12px 17px;font-size:11px;font-weight:800;letter-spacing:.07em;border-radius:11px;min-height:43px;cursor:pointer;transition:background .2s,transform .2s,border-color .2s}
+#photosView .mx-btn:hover{transform:translateY(-2px);border-color:#ed5e73;background:#26171d}
+#photosView .mx-btn.mx-primary{background:linear-gradient(108deg,#9b1631,#dd2445);border-color:#fa6175;color:#fff;box-shadow:0 6px 27px #bd123b35}
+#photosView .mx-btn:focus-visible,#photosView .mx-card:focus-visible{outline:2px solid #ff7888;outline-offset:3px}
+#photosView .mx-hero-credit{position:absolute;bottom:11px;right:16px;font-size:9px;color:#c5b6ba99}
+#photosView .mx-ticker{display:flex;justify-content:space-between;gap:10px;margin:13px 0 23px;color:#9a9daa;font-size:10px;letter-spacing:.15em;text-transform:uppercase;font-weight:700;flex-wrap:wrap}
+#photosView .mx-ticker strong{color:#f4e9ed}
+#photosView .mx-controls{border:1px solid #422e35;border-radius:18px;background:linear-gradient(140deg,#1c171c,#0d0f13);padding:18px 19px 19px;margin:23px 0 20px}
+#photosView .mx-heading{display:flex;gap:12px;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;margin-bottom:13px}
+#photosView .mx-heading h3{margin:7px 0 0;font-size:24px;letter-spacing:-.04em;color:#f8f8fb}
+#photosView .mx-heading small{font-size:11px;color:#9aa0aa;max-width:350px;line-height:1.5}
+#photosView .mx-modes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+#photosView .mx-mode{min-width:0;padding:15px 14px;border:1px solid #ffffff1c;border-radius:12px;background:#121317;color:#d2d4de;text-align:left;cursor:pointer;font-size:11px}
+#photosView .mx-mode strong{display:block;color:#faf8fb;font-size:13px;margin:4px 0 6px}
+#photosView .mx-mode small{color:#9da3af;font-size:10px;line-height:1.5}
+#photosView .mx-mode[aria-pressed=true]{border-color:#f04a65;background:linear-gradient(140deg,#4a1926,#1b1318);box-shadow:inset 0 0 0 1px #5f202c}
+#photosView .mx-prefs{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
+#photosView .mx-prefs button{border:1px solid #4d4248;border-radius:9px;color:#e1dce1;background:#17151a;font-size:10px;padding:10px 12px;cursor:pointer}
+#photosView .mx-prefs button[aria-pressed=true]{border-color:#cb556b;color:#fff;background:#542333}
+#photosView .mx-section{margin:29px 0}
+#photosView .mx-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}
+#photosView .mx-card{border:1px solid #484148;border-radius:15px;background:linear-gradient(145deg,#20222a,#101217);position:relative;overflow:hidden;min-height:150px;display:flex;flex-direction:column;justify-content:flex-end;padding:17px 15px;gap:6px;text-align:left;color:#fafafa;cursor:pointer;transition:transform .2s,border-color .2s}
+#photosView .mx-card:hover{transform:translateY(-3px);border-color:#ee516a}
+#photosView .mx-card:before{content:"";position:absolute;inset:0;z-index:0;opacity:.52;background:radial-gradient(ellipse at 86% 15%,#c5243a53,transparent 46%),repeating-linear-gradient(145deg,#fff0 0 31px,#b0b8ca0e 32px 34px)}
+#photosView .mx-card>*{position:relative}
+#photosView .mx-card .mx-icon{font-size:36px;margin-bottom:auto;color:#dfbac2;line-height:1}
+#photosView .mx-card strong{font-size:15px;letter-spacing:-.02em}
+#photosView .mx-card small{color:#a9a4ac;font-size:10px}
+#photosView .mx-dark{background:radial-gradient(ellipse at 75% 22%,#51142175,transparent 50%),linear-gradient(130deg,#1b131a,#090a0e);border:1px solid #653040;border-radius:21px;padding:23px;margin:29px 0;position:relative;overflow:hidden}
+#photosView .mx-dark:before{content:"";position:absolute;inset:0;opacity:.4;pointer-events:none;background:repeating-linear-gradient(160deg,transparent 0 70px,#f5445e10 72px,transparent 74px)}
+#photosView .mx-dark>*{position:relative}
+#photosView .mx-dark-title{font-size:clamp(28px,4vw,48px);margin:9px 0 10px;letter-spacing:-.06em;color:#fff}
+#photosView .mx-dark p{font-size:12px;max-width:690px;line-height:1.7;color:#b6aab4;margin:0 0 17px}
+#photosView .mx-dark-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;margin:20px 0}
+#photosView .mx-dark-card{display:flex;flex-direction:column;justify-content:space-between;min-height:205px;padding:18px;position:relative;overflow:hidden;border-radius:15px;border:1px solid #704656;background:radial-gradient(ellipse at 70% 30%,#80334a5a,transparent 55%),linear-gradient(135deg,#2a292f,#0b1013);color:#fff}
+#photosView .mx-dark-card:before{content:"";position:absolute;bottom:-57px;right:5%;width:130px;height:175px;opacity:.4;border-radius:48% 48% 6% 6%;background:linear-gradient(#14161d,#48525b 50%,#1b1a20);filter:drop-shadow(0 0 25px #f43d5544);transform:rotate(-6deg)}
+#photosView .mx-dark-card:nth-child(2):before{transform:rotate(8deg);background:linear-gradient(#161a22,#5b5558 50%,#1b161b)}
+#photosView .mx-dark-card>*{position:relative}
+#photosView .mx-dark-card .mx-num{color:#ec9daa;font-size:11px;font-weight:850;letter-spacing:.19em}
+#photosView .mx-dark-card strong{display:block;font-size:20px;letter-spacing:-.04em;margin-top:5px}
+#photosView .mx-dark-card small{color:#bdb4bb;font-size:11px;line-height:1.5}
+#photosView .mx-dark-card button{align-self:flex-start;margin-top:13px}
+#photosView .mx-dark-lock{font-size:10px;letter-spacing:.12em;color:#f6a7b6;margin-top:10px}
+#photosView .photo-intro{margin-top:32px;padding-top:12px;border-top:1px solid #ffffff20;align-items:flex-end}
+#photosView .photo-intro h1{font-size:26px;margin:4px 0;color:#e9e9ed}
+#photosView .photo-intro p{font-size:11px}
+#photosView .military-category-card{border-color:#3c414c;background:linear-gradient(145deg,#1b2027,#0d1016)}
+#photosView .military-category-card:hover{border-color:#e3475b;background:#281923}
+#photosView .military-category-icon{border-color:#764050;background:#331720;color:#fba6b1}
+#photosView .apple-photo-grid-item{background:#101317;border-radius:12px;border:1px solid #35343e;overflow:hidden}
+#photosView .apple-photo-grid-item:hover{border-color:#ff5973}
+#photosView .apple-photo-thumb{object-fit:contain!important}
+#photosView .mx-modal{position:fixed;inset:0;z-index:240010;background:#000d;backdrop-filter:blur(14px);display:grid;place-items:center;padding:16px}
+#photosView .mx-modal[hidden]{display:none!important}
+#photosView .mx-dialog{width:min(470px,100%);background:linear-gradient(145deg,#241b22,#0b0e12);border:1px solid #ae5364;box-shadow:0 35px 100px #000c;border-radius:21px;padding:27px;position:relative}
+#photosView .mx-dialog h3{margin:8px 0 13px;font-size:29px;letter-spacing:-.05em}
+#photosView .mx-dialog p{color:#b6b9c2;font-size:12px;line-height:1.7}
+#photosView .mx-dialog label{display:flex;gap:9px;align-items:center;font-size:12px;color:#f3e9ed;margin:19px 0}
+#photosView .mx-dialog input{accent-color:#d82d4b;width:18px;height:18px}
+#photosView .mx-dialog .mx-close{position:absolute;right:18px;top:14px;background:none;border:0;color:#ff879a;font-size:24px}
+#photosView .mx-note{font-size:10px;color:#818792;margin:9px 0 0}
+body.mx-open.mx-discreet #photosView .apple-photo-thumb{filter:blur(13px) grayscale(.6)}
+body.mx-open.mx-discreet #photosView .apple-photo-grid-item:hover .apple-photo-thumb,
+body.mx-open.mx-discreet #photosView .apple-photo-grid-item:focus-within .apple-photo-thumb{filter:none}
+body.mx-open.mx-large #photosView{font-size:1.13em}
+body.mx-open.mx-large #photosView .mx-btn,body.mx-open.mx-large #photosView .mx-card small,body.mx-open.mx-large #photosView .mx-prefs button{font-size:13px}
+body.mx-open.mx-unwind #photosView .mx-hero:after,body.mx-open.mx-unwind #photosView .mx-holo{animation:none;opacity:.25}
+body.mx-open.mx-cinematic #photosView .mx-hero:after{animation-duration:2s}
+body.mx-open.mx-reduced #photosView *,body.mx-open.mx-reduced #photosView *:before,body.mx-open.mx-reduced #photosView *:after,
+body.mx-open.mx-paused #photosView *,body.mx-open.mx-paused #photosView *:before,body.mx-open.mx-paused #photosView *:after{animation:none!important;transition:none!important}
+@keyframes mx-scan{from{background-position:0 0}to{background-position:200% 0}}
+@keyframes mx-glimmer{0%,100%{opacity:.38}50%{opacity:.9}}
+@media(max-width:1000px){body.mx-open .app{grid-template-columns:165px minmax(0,1fr);gap:13px}#photosView .mx-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#photosView .mx-hero{min-height:380px}}
+@media(max-width:800px){body.mx-open .app{display:block}#photosView .mx-hero{min-height:360px}#photosView .mx-modes{grid-template-columns:1fr}#photosView .mx-dark-grid{grid-template-columns:1fr}#photosView .mx-dark-card{min-height:148px}#photosView .mx-dark-card:before{right:15%;height:135px}#photosView .mx-hero h2{font-size:clamp(40px,9vw,62px)}}
+@media(max-width:470px){#photosView .mx-hero{padding:24px 17px;min-height:390px}#photosView .mx-hero h2{font-size:40px}#photosView .mx-hero p{font-size:12px}#photosView .mx-grid{gap:8px}#photosView .mx-card{min-height:127px;padding:12px}#photosView .mx-card strong{font-size:13px}#photosView .mx-dark{padding:17px}#photosView .mx-dark-card strong{font-size:18px}#photosView .mx-btn{max-width:100%;white-space:normal}#photosView .photo-intro{display:flex;flex-direction:column;align-items:flex-start}}
+@media(prefers-reduced-motion:reduce){#photosView .mx-hero:after,#photosView .mx-holo{animation:none!important}#photosView .mx-card,#photosView .mx-btn{transition:none}}
