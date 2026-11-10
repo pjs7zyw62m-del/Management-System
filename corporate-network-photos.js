@@ -1,5 +1,5 @@
 /* BLACKCELL NETWORK / Apple Photos × Flickr private corporate library */
-import {createWorldForces} from './corporate-world-forces.js?v=20261110-world6';
+import {createWorldForces} from './corporate-world-forces.js?v=20261110-countries1';
 import {createMilitaryPhotoAI} from './corporate-military-ai.js?v=20261110-learn1';
 import {createPhotoTaste} from './corporate-photo-taste.js?v=20261110-trigger2';
 import {createPhotoPredict} from './corporate-photo-predict.js?v=20261110-pred1';
@@ -202,6 +202,8 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   open.title=(a.caption||a.filename)+' · '+cat(a)+' · '+branch(a)+' · '+nameOf(a);
   tile.append(open);
   if(cat(a)!=='Unsorted')tile.append(make('span','military-photo-tag',cat(a)));
+  if(meta.filter==='countries'&&a.military_country_code)
+   tile.append(make('span','country-photo-label',world.countryName(String(a.military_country_code).toUpperCase())));
   if(a.kind==='video')tile.append(make('span','apple-photo-kind','VIDEO'));
   const heart=press(favorited(a.id)?'♥':'♡',event=>{
    event.stopPropagation();void toggleFavorite(a.id);
@@ -660,6 +662,11 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  }
  function setup(){
   world.setup();
+  $('wfOpenCountryGallery').addEventListener('click',()=>{
+   if(!world.selectedCountryCodes().length)world.updateCountryCollection(['US']);
+   world.deactivate();meta.filter='countries';meta.scope='network';meta.activeAlbum=null;
+   render();$('myCountriesPanel').scrollIntoView({behavior:'smooth',block:'start'});
+  });
   ai.setup();
   taste.setup();
   predict.setup();
