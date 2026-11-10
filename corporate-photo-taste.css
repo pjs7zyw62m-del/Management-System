@@ -54,3 +54,7 @@
  .taste-footer{justify-content:stretch}
  .taste-footer button{flex:1 1 42%}
 }
+
+.taste-match-reason{margin:8px 2px 3px;padding:8px 9px;border-left:2px solid #b94b69;
+ background:#20151e;color:#d9bfca;font-size:10px;line-height:1.5;border-radius:2px 8px 8px 2px}
+.taste-match-reason::before{content:"✦ FOR YOU";display:block;color:#eb8a9e;font-size:8px;font-weight:800;letter-spacing:.1em;margin-bottom:3px}
