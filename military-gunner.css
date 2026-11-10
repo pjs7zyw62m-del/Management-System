@@ -1,0 +1,22 @@
+#bcGunner[hidden],#bcGunnerPanel[hidden]{display:none!important}
+#bcGunner{position:fixed;right:18px;bottom:17px;z-index:100500;color:#f6edf2;font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+#bcGunner button,#bcGunner textarea{font:inherit;box-sizing:border-box}
+#bcGunnerLauncher{display:flex;align-items:center;gap:10px;border-radius:999px;background:linear-gradient(120deg,#1f1620,#681d3b);border:1px solid #b65b7e;color:#fff;box-shadow:0 10px 50px #000b,0 0 22px #a92c5959;padding:11px 18px 11px 12px;cursor:pointer;font-size:11px;font-weight:850;letter-spacing:.03em}
+#bcGunnerLauncher .gunner-avatar{width:32px;height:32px;display:grid;place-items:center;background:#080e19;border:1px solid #f68caa;border-radius:50%;color:#ffaac5;font-size:16px;font-weight:900}
+#bcGunnerPanel{position:absolute;bottom:67px;right:0;width:min(405px,calc(100vw - 25px));height:min(615px,calc(100dvh - 90px));display:flex;flex-direction:column;border-radius:18px;border:1px solid #874660;background:linear-gradient(150deg,#1b1420,#101118 68%,#0a0c12);box-shadow:0 22px 90px #000e;overflow:hidden;backdrop-filter:blur(22px)}
+#bcGunnerPanel:before{content:'';height:3px;background:linear-gradient(90deg,#572138,#f04880,#8f254f,#fa5e8c);box-shadow:0 0 14px #f33d78a0;flex:none}
+.gunner-head{display:flex;align-items:center;gap:12px;padding:16px 16px 13px;border-bottom:1px solid #644055}
+.gunner-badge{width:48px;height:48px;display:grid;place-items:center;border:1px solid #b96b88;background:#27172b;border-radius:13px;color:#ffcbdb;font-size:26px;font-weight:900;flex:none}
+.gunner-head strong{display:block;font-size:16px;letter-spacing:-.04em}.gunner-head small{display:block;color:#d193ab;font-size:9px;letter-spacing:.11em;font-weight:800;margin-top:4px}
+.gunner-head button{margin-left:auto;background:#382230;border:1px solid #985773;border-radius:9px;color:#fff;padding:9px 12px;cursor:pointer}
+.gunner-intro{padding:11px 15px;background:#241724;border-bottom:1px solid #573447;color:#bfb0bc;font-size:10px;line-height:1.6}
+.gunner-messages{flex:1;min-height:0;overflow-y:auto;padding:15px;display:flex;flex-direction:column;gap:10px;overscroll-behavior:contain}
+.gunner-message{max-width:94%;padding:11px 13px;border:1px solid #453543;border-radius:12px 12px 12px 2px;background:#23202a;color:#eee3e9;font-size:12px;line-height:1.7;overflow-wrap:anywhere;white-space:pre-wrap}
+.gunner-message.user{align-self:flex-end;border-color:#a44c6e;border-radius:12px 12px 2px 12px;background:#5b263f;color:#fff}
+.gunner-message.assistant{align-self:flex-start}.gunner-message.system{align-self:stretch;background:#15151c;color:#c9a8b9;border-style:dashed;font-size:11px}
+.gunner-input{display:flex;flex-direction:column;gap:8px;padding:11px;background:#111017;border-top:1px solid #644053}
+.gunner-input textarea{display:block;background:#0c0e15;border:1px solid #644757;color:#fff;border-radius:10px;padding:11px;resize:none;width:100%;height:64px;font-size:12px;line-height:1.5}
+.gunner-actions{display:flex;align-items:center;justify-content:space-between;gap:8px}.gunner-actions small{font-size:9px;color:#a996a4}
+.gunner-actions button{background:linear-gradient(110deg,#8c2b4c,#c2375f);color:#fff;font-weight:800;border-radius:9px;border:1px solid #d97998;padding:10px 15px;cursor:pointer;font-size:10px}
+.gunner-actions button:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:610px){#bcGunner{right:10px;bottom:12px}#bcGunnerPanel{height:min(580px,calc(100dvh - 88px))}#bcGunnerLauncher{padding:9px;font-size:10px}#bcGunnerLauncher .gunner-avatar{width:29px;height:29px}}
