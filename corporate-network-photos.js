@@ -111,6 +111,11 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   return arr;
  }
  function selectedAssets(){
+  if(meta.filter==='countries'){
+   const codes=new Set(world.selectedCountryCodes());
+   return codes.size?archiveAssets().filter(a=>a.kind==='photo'&&codes.has(String(a.military_country_code||'').toUpperCase()))
+    .sort((a,b)=>Date.parse(b.created_at)-Date.parse(a.created_at)):[];
+  }
   if(meta.filter==='for-you')return taste.rank(world.rank(archiveAssets()));
   let assets=meta.activeAlbum?albumMedia(albumFor(meta.activeAlbum)||{id:''})
    :archiveAssets().filter(x=>meta.scope==='network'||own(x));
@@ -211,17 +216,75 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   }
   return tile;
  }
+ function setupMyCountries(){
+  const chooser=$('myCountriesSelect');chooser.replaceChildren(new Option('Choose a country…',''));
+  for(const item of world.browseCountries())chooser.add(new Option(item.flag+' '+item.label,item.code));
+  $('myCountriesUS').addEventListener('click',()=>{
+   world.updateCountryCollection(['US']);meta.filter='countries';renderGallery();
+  });
+  $('myCountriesAdd').addEventListener('click',()=>{
+   const code=chooser.value;if(!code)return;
+   const existing=world.selectedCountryCodes();
+   if(!existing.includes(code)&&existing.length>=12){
+    toast('Select up to twelve countries in one collection.');return;
+   }
+   world.updateCountryCollection([...existing,code]);
+   meta.filter='countries';renderGallery();chooser.value='';
+  });
+  $('myCountriesClear').addEventListener('click',()=>{
+   world.updateCountryCollection([]);renderGallery();
+  });
+  $('myCountriesSave').addEventListener('click',async()=>{
+   const btn=$('myCountriesSave');
+   btn.disabled=true;btn.textContent='SAVING…';
+   try{
+    await world.saveCountryCollection();
+    $('myCountriesSummary').textContent='✓ Saved your '+world.selectedCountryCodes().length+' selected countries to this account. The combined gallery updates automatically.';
+   }finally{btn.disabled=false;btn.textContent='♡ SAVE MY COLLECTION'}
+  });
+ }
+ function renderMyCountries(){
+  const root=$('myCountriesPanel');
+  if(!root)return;
+  root.hidden=meta.filter!=='countries';
+  if(root.hidden)return;
+  const countries=world.selectedCountryCodes(),chips=$('myCountriesChips');
+  chips.replaceChildren();
+  for(const code of countries){
+   const b=document.createElement('button');b.type='button';
+   b.textContent='🌐 '+world.countryName(code)+' ×';
+   b.setAttribute('aria-label','Remove '+world.countryName(code)+' from My Countries');
+   b.addEventListener('click',()=>{
+    world.updateCountryCollection(world.selectedCountryCodes().filter(x=>x!==code));
+    renderGallery();
+   });chips.append(b);
+  }
+  if(!countries.length){
+   const hint=document.createElement('span');hint.className='country-personal-empty';
+   hint.textContent='Choose United States or add a country to build your collection.';chips.append(hint);
+  }
+  const matches=archiveAssets().filter(a=>a.kind==='photo'&&countries.includes(String(a.military_country_code||'').toUpperCase()));
+  $('myCountriesTitle').textContent=countries.length===1?world.countryName(countries[0]).toUpperCase()+'.':
+   countries.length?countries.map(x=>world.countryName(x)).join(' + ').toUpperCase()+'.':'MY COUNTRIES.';
+  $('myCountriesSummary').textContent=countries.length+
+   ' selected · '+matches.length+' matching photo'+(matches.length===1?'':'s')+
+   ' from your authorized library. Select any number of countries up to twelve. Photos without a country label are excluded.';
+ }
  function renderGallery(){
   const node=$('applePhotosGallery');node.replaceChildren();
   const list=selectedAssets(),album=albumFor(meta.activeAlbum);
   taste.renderInsights(list[0],meta.filter==='for-you');
-  $('photosGalleryTitle').textContent=meta.filter==='for-you'?'For You · Personalized Military Media':world.title()|| (album?album.title:(meta.scope==='mine'?'My Military Media':'Network Military Media'));
+  renderMyCountries();
+  $('photosGalleryTitle').textContent=meta.filter==='countries'
+   ?'My Countries · '+(world.selectedCountryCodes().map(c=>world.countryName(c)).join(' + ')||'Select Countries')
+   :meta.filter==='for-you'?'For You · Personalized Military Media'
+   :world.title()||(album?album.title:(meta.scope==='mine'?'My Military Media':'Network Military Media'));
   $('photosClearAlbum').hidden=!meta.activeAlbum;
   for(const b of document.querySelectorAll('#photosFilters [data-photo-filter]'))
    b.classList.toggle('selected',b.dataset.photoFilter===meta.filter);
   if(!list.length){node.append(empty(
-   meta.filter==='favorites'?'No favorites yet':'Your gallery is ready',
-   meta.filter==='favorites'?'Tap a heart on a photo to add it to Favorites.':
+   meta.filter==='countries'?'No photographs for these countries yet':meta.filter==='favorites'?'No favorites yet':'Your gallery is ready',
+   meta.filter==='countries'?'Select countries above. Photographs appear once they have that country saved in their approved classification; unknown-country photos are not guessed.':meta.filter==='favorites'?'Tap a heart on a photo to add it to Favorites.':
    meta.activeAlbum?'Add your own photos and videos to this album, or select another collection.':
    'Upload photographs or videos to start your Apple-style Blackcell photo library.'
   ));return}
@@ -625,8 +688,14 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   $('photosSearch').addEventListener('input',e=>{meta.query=e.target.value.trim().toLowerCase();renderGallery()});
   $('photosSort').addEventListener('change',e=>{meta.sort=e.target.value;renderGallery()});
   for(const b of document.querySelectorAll('#photosFilters [data-photo-filter]'))b.addEventListener('click',()=>{
-   meta.filter=b.dataset.photoFilter;renderGallery()
+   meta.filter=b.dataset.photoFilter;
+   if(meta.filter==='countries'){
+    world.deactivate();meta.scope='network';meta.activeAlbum=null;
+    if(!world.selectedCountryCodes().length)world.updateCountryCollection(['US']);
+   }
+   renderGallery();
   });
+  setupMyCountries();
   $('albumModalClose').addEventListener('click',closeAlbumDialog);
   $('albumModalCancel').addEventListener('click',closeAlbumDialog);
   $('albumModalSave').addEventListener('click',()=>void saveAlbum());
