@@ -83,7 +83,9 @@ export function createWorldForces({client,state,meta,toast,archiveAssets,mediaUr
   root.replaceChildren();
   if(!list.length){
    const e=make('div','wf-empty');e.append(make('strong','',active?'No matching media yet':'No military media uploaded yet'),
-   make('span','','Classify uploaded images with a country and branch. Previously uploaded media is still accessible in your regular library.'));root.append(e);return;
+   make('span','','Classify uploaded images with a country and branch. Previously uploaded media is still accessible in your regular library.'));
+   e.append(button('mx-btn','REVIEW MY UPLOADS ↗',()=>{active=false;meta.scope='mine';meta.filter='mine';render();gotoGallery()}));
+   root.append(e);return;
   }
   list.forEach((a,i)=>{
    const b=button('wf-spotlight','',()=>viewViewer(list,a));
@@ -136,7 +138,7 @@ export function createWorldForces({client,state,meta,toast,archiveAssets,mediaUr
  async function save(){
   const b=$('wfSave');b.disabled=true;b.textContent='SAVING…';
   try{
-   const record={user_id:ownId(),countries:countries.slice(0,30),military_branch:wantedBranch,focus:wantedFocus,updated_at:new Date().toISOString()};
+   const record={user_id:ownId(),countries:[...countries],military_branch:wantedBranch,focus:wantedFocus,updated_at:new Date().toISOString()};
    const {error}=await client.from('corp_social_discovery_preferences').upsert(record,{onConflict:'user_id'});
    if(error)throw error;
    savedCountries=[...record.countries];savedBranch=record.military_branch;savedFocus=record.focus;
