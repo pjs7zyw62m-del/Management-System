@@ -3,7 +3,7 @@ export function mountMilitaryGunner({client,getContext,mount=document.body,visib
  if(!mount)return {open:()=>{},setVisible:()=>{}};
  if(!document.getElementById('militaryGunnerStyle')){
   const tag=document.createElement('link');tag.id='militaryGunnerStyle';
-  tag.rel='stylesheet';tag.href='military-gunner.css?v=20261110-dolphin2';document.head.append(tag);
+  tag.rel='stylesheet';tag.href='military-gunner.css?v=20261110-fast4';document.head.append(tag);
  }
  const $=id=>document.getElementById(id);
  const root=document.createElement('aside');root.id='bcGunner';root.hidden=!visible;
