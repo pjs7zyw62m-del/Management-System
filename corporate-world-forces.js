@@ -45,17 +45,20 @@ export function createWorldForces({client,state,meta,toast,archiveAssets,mediaUr
  const favSet=()=>new Set(meta.favorites.filter(x=>x.user_id===ownId()).map(x=>x.asset_id));
  const applyFilter=arr=>active?arr.filter(a=>(!countries.length||countries.includes(country(a)))&&matchBranch(a,wantedBranch)&&matchFocus(a,wantedFocus)):arr;
  function rank(assets){
-  const favs=favAssets(),isFav=favSet(),types=new Map(),regions=new Map(),subjects=new Map();
+  const favs=favAssets(),isFav=favSet(),types=new Map(),regions=new Map(),subjects=new Map(),visuals=new Map();
   for(const a of favs){
    types.set(branchType(a),(types.get(branchType(a))||0)+1);
    if(country(a))regions.set(country(a),(regions.get(country(a))||0)+1);
    subjects.set(category(a),(subjects.get(category(a))||0)+1);
+   for(const tag of a.military_tags||[]){if(String(tag).startsWith("visual:"))visuals.set(tag,(visuals.get(tag)||0)+1)}
   }
   const score=a=>(savedCountries.includes(country(a))?22:0)
    +(savedBranch!=='All'&&matchBranch(a,savedBranch)?15:0)
    +(savedFocus!=='All'&&matchFocus(a,savedFocus)?10:0)
    +(regions.get(country(a))||0)*4+(types.get(branchType(a))||0)*3
-   +(subjects.get(category(a))||0)*3+(isFav.has(a.id)?6:0);
+   +(subjects.get(category(a))||0)*3
+   +(a.military_tags||[]).filter(tag=>String(tag).startsWith("visual:")).reduce((n,tag)=>n+(visuals.get(tag)||0)*8,0)
+   +(isFav.has(a.id)?6:0);
   return [...assets].sort((a,b)=>score(b)-score(a)||Date.parse(b.created_at)-Date.parse(a.created_at));
  }
  function refreshChips(){
