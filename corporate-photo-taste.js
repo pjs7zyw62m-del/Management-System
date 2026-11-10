@@ -10,6 +10,12 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
   ["pose","Pose / posture"],
   ["exercise","Exercise / activity"],
   ["expression","Face / expression"],
+  ["hair_bald","Bald head"],
+  ["hair_shaved","Shaved head"],
+  ["hair_high_tight","High & tight haircut"],
+  ["hair_buzz","Buzz cut"],
+  ["hair_crew","Crew cut"],
+  ["hair_fade","Fade haircut"],
   ["rear_view_clothed","Clothed rear view"],
   ["front_waist_clothed","Clothed front waist"],
   ["photo_angle","Camera angle"],
@@ -30,6 +36,12 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
   pose:/pose|posing|posture|stance|standing|kneeling|sitting/i,
   exercise:/fitness|exercise|training|pull[\s-]?ups?|push[\s-]?ups?|workout|gym|weightlift|running|squat/i,
   expression:/portrait|face|facial|smil|expression/i,
+  hair_bald:/\bbald(?:ing)?(?: head)?\b|\bbare scalp\b|\bno visible hair\b/i,
+  hair_shaved:/\bshav(?:ed|en)\s*(?:head|scalp|hair)\b|\bhead\s+shav(?:ed|en)\b/i,
+  hair_high_tight:/\bhigh[\s-]*(?:and|&|n)[\s-]*tight\b/i,
+  hair_buzz:/\bbuzz[\s-]*cut\b|\bbuzzed\s+hair\b/i,
+  hair_crew:/\bcrew[\s-]*cut\b/i,
+  hair_fade:/\b(?:skin|taper|high|mid|low)[\s-]*fade\b|\bfade[\s-]*haircut\b/i,
   rear_view_clothed:/visual:rear_view_clothed|rear[\s-]?view|from behind|back[\s-]?view/i,
   front_waist_clothed:/visual:front_waist_clothed|front waist|waistband|beltline|belt\b/i,
   photo_angle:/side[\s-]?view|close[\s-]?up|camera angle|low angle|full[\s-]?body|portrait|rear[\s-]?view/i,
@@ -122,7 +134,8 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
   return r&&typeof r==="object"&&
    ["x","y","w","h"].every(k=>typeof r[k]==="number"&&Number.isFinite(r[k]))&&
    r.x>=0&&r.y>=0&&r.w>=.01&&r.h>=.01&&r.x+r.w<=1.0001&&r.y+r.h<=1.0001&&
-   (r.cue===""||!!LABELS[r.cue]);
+   (r.cue===""||!!LABELS[r.cue])&&
+   (r.detail===undefined||(typeof r.detail==="string"&&r.detail.length<=120));
  }
  function regionOptions(selectedCue=""){
   const options=[new Option("No label yet (saved for later)", "")];
@@ -157,13 +170,28 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
   if(!rect.width||!rect.height)return null;
   return {x:limit((event.clientX-rect.left)/rect.width),y:limit((event.clientY-rect.top)/rect.height)};
  }
+ function regionLabel(rect,i){
+  const feature=rect.cue&&LABELS[rect.cue]?LABELS[rect.cue]:"Area";
+  const detail=String(rect.detail||"").trim();
+  return (i+1)+" · "+feature+(detail?" · "+detail.slice(0,70):"");
+ }
+ function detectHairCue(description){
+  const t=String(description||"").toLowerCase();
+  if(/\bhigh[\s-]*(?:and|&|n)[\s-]*tight\b/.test(t))return "hair_high_tight";
+  if(/\bbuzz[\s-]*cut\b/.test(t))return "hair_buzz";
+  if(/\bcrew[\s-]*cut\b/.test(t))return "hair_crew";
+  if(/\b(?:skin|taper|high|mid|low)[\s-]*fade\b|\bfade[\s-]*haircut\b/.test(t))return "hair_fade";
+  if(/\bshaved\s*(?:head|scalp)?\b/.test(t))return "hair_shaved";
+  if(/\bbald\b/.test(t))return "hair_bald";
+  return "";
+ }
  function drawRegion(rect,i,draft=false){
   const box=document.createElement("div");
   box.className="taste-region-rect"+(draft?" draft":"");
   box.style.left=(rect.x*100)+"%";box.style.top=(rect.y*100)+"%";
   box.style.width=(rect.w*100)+"%";box.style.height=(rect.h*100)+"%";
-  const label=(rect.cue&&LABELS[rect.cue])||"Area";
-  box.dataset.label=draft?"DRAWING":(i+1)+" · "+label;
+  box.dataset.regionIndex=String(i);
+  box.dataset.label=draft?"DRAWING":regionLabel(rect,i);
   $("tasteMarkLayer").append(box);
  }
  function updateRegions(){
@@ -181,11 +209,27 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
     regions[i].cue=label.value;
     updateRegions();
    });
+   const detailInput=document.createElement("input");
+   detailInput.type="text";detailInput.maxLength=120;
+   detailInput.className="taste-region-detail";
+   detailInput.setAttribute("aria-label","Area "+(i+1)+" detail");
+   detailInput.placeholder="Describe what caught your eye…";
+   detailInput.value=String(r.detail||"");
+   detailInput.addEventListener("input",()=>{
+    if(busy)return;
+    regions[i].detail=detailInput.value.slice(0,120);
+    if(!regions[i].cue){
+     const inferred=detectHairCue(detailInput.value);
+     if(inferred){regions[i].cue=inferred;label.value=inferred}
+    }
+    const rect=layer.querySelector('[data-region-index="'+i+'"]');
+    if(rect)rect.dataset.label=regionLabel(regions[i],i);
+   });
    const remove=document.createElement("button");remove.type="button";remove.textContent="REMOVE";
    remove.setAttribute("aria-label","Remove marked area "+(i+1));
    remove.disabled=busy;
    remove.addEventListener("click",()=>{if(!busy){regions.splice(i,1);updateRegions()}});
-   entry.append(number,label,remove);list.append(entry);
+   entry.append(number,label,detailInput,remove);list.append(entry);
   }
   if(drag){
    const x=Math.min(drag.from.x,drag.to.x),y=Math.min(drag.from.y,drag.to.y);
@@ -202,7 +246,7 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
    if(w<.02){const cx=(drag.from.x+drag.to.x)/2;w=.04;x=limit(cx-w/2,0,1-w)}
    if(h<.02){const cy=(drag.from.y+drag.to.y)/2;h=.04;y=limit(cy-h/2,0,1-h)}
   }
-  regions.push({x:round(x),y:round(y),w:round(Math.min(w,1-x)),h:round(Math.min(h,1-y)),cue:$("tasteAreaType").value||""});
+  regions.push({x:round(x),y:round(y),w:round(Math.min(w,1-x)),h:round(Math.min(h,1-y)),cue:$("tasteAreaType").value||"",detail:""});
   drag=null;dragPointer=null;
   updateRegions();
   $("tasteStatus").textContent="Area marked. Add a label if you want recommendations to match its visible features, then save your preferences.";
@@ -296,7 +340,7 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
   setBusy(true);
   $("tasteStatus").textContent="Saving your private photo preferences…";
   const data={user_id:ownId(),asset_id:active.id,rating,reaction,cues:[...selected],
-    regions:regions.map(r=>({x:r.x,y:r.y,w:r.w,h:r.h,cue:r.cue||""})),
+    regions:regions.map(r=>({x:r.x,y:r.y,w:r.w,h:r.h,cue:r.cue||"",detail:String(r.detail||"").trim().slice(0,120)})),
     note:$("tasteNote").value.trim().slice(0,500),updated_at:new Date().toISOString()};
   try{
    const {error}=await client.from("corp_social_photo_tastes")
