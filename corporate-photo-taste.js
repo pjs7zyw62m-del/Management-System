@@ -224,13 +224,22 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
   box.dataset.label=draft?"DRAWING":regionLabel(rect,i);
   $("tasteMarkLayer").append(box);
  }
+ function redrawRegionLayer(){
+  $("tasteMarkLayer").replaceChildren();
+  for(let i=0;i<regions.length;i++)drawRegion(regions[i],i);
+  if(drag){
+   const x=Math.min(drag.from.x,drag.to.x),y=Math.min(drag.from.y,drag.to.y);
+   const w=Math.abs(drag.from.x-drag.to.x),h=Math.abs(drag.from.y-drag.to.y);
+   drawRegion({x,y,w,h},regions.length,true);
+  }
+ }
  function updateRegions(){
   const layer=$("tasteMarkLayer"),list=$("tasteRegionList");
-  layer.replaceChildren();list.replaceChildren();
+  redrawRegionLayer();list.replaceChildren();
   $("tasteAreaCount").textContent=regions.length+" / "+MAX_MARKED_AREAS+" selected";
   $("tasteAreaUndo").disabled=busy||!regions.length;
   for(let i=0;i<regions.length;i++){
-   const r=regions[i];drawRegion(r,i);
+   const r=regions[i];
    const entry=document.createElement("div");entry.className="taste-region-entry";
    const number=document.createElement("strong");number.textContent="AREA "+(i+1);
    const label=document.createElement("select");label.setAttribute("aria-label","Area "+(i+1)+" label");label.append(regionOptions(r.cue));
@@ -282,11 +291,6 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
    remove.addEventListener("click",()=>{if(!busy){regions.splice(i,1);updateRegions()}});
    entry.append(number,label,detailInput,secondary,remove);list.append(entry);
   }
-  if(drag){
-   const x=Math.min(drag.from.x,drag.to.x),y=Math.min(drag.from.y,drag.to.y);
-   const w=Math.abs(drag.from.x-drag.to.x),h=Math.abs(drag.from.y-drag.to.y);
-   drawRegion({x,y,w,h},regions.length,true);
-  }
  }
  function completeRegion(){
   if(!drag)return;
@@ -318,7 +322,7 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
   layer.addEventListener("pointermove",e=>{
    if(!drag||dragPointer!==e.pointerId)return;
    const point=regionPoint(e);if(!point)return;
-   e.preventDefault();drag.to=point;updateRegions();
+   e.preventDefault();drag.to=point;redrawRegionLayer();
   });
   layer.addEventListener("pointerup",e=>{
    if(!drag||dragPointer!==e.pointerId)return;
