@@ -192,5 +192,5 @@ export function createWorldForces({client,state,meta,toast,archiveAssets,mediaUr
   });
   refreshChips();
  }
- return {setup,load,renderWorld,applyFilter,rank,active:()=>active,countryName:name};
+ return {setup,load,renderWorld,applyFilter,rank,active:()=>active,deactivate:()=>{active=false},countryName:name};
 }
