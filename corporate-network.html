@@ -339,7 +339,25 @@
      <p>Help your For You gallery discover similar images. Choose the visible details you appreciate; Blackcell will not guess your sexuality, identity, or interests from appearance.</p>
     </div>
    </div>
-   <div class="taste-section"><div class="taste-section-head"><strong>WHAT DETAILS STAND OUT?</strong><small id="tasteSelectionCount">0 selected</small></div>
+   <div class="taste-section taste-region-section">
+ <div class="taste-section-head"><strong>SELECT THE EXACT AREA YOU LIKE</strong><small id="tasteAreaCount">0 / 5 selected</small></div>
+ <p class="taste-region-instruction">Drag over the photo (or use your finger on mobile) to mark an area. Add up to five. Label each area to help For You match the features you choose.</p>
+ <div id="tasteRegionFrame" class="taste-region-frame">
+  <div id="tasteMarkSurface" class="taste-mark-surface" hidden>
+   <img id="tasteMarkImage" alt="Select the part of the photograph you like" draggable="false">
+   <div id="tasteMarkLayer" class="taste-mark-layer" aria-label="Drag on the image to highlight an area"></div>
+  </div>
+  <span id="tasteRegionLoading">Photo selection loading…</span>
+ </div>
+ <div class="taste-region-tools">
+  <label for="tasteAreaType">NEW AREA LABEL</label>
+  <select id="tasteAreaType"><option value="">Choose a label after selecting (optional)</option></select>
+  <button id="tasteAreaUndo" type="button">↶ UNDO LAST AREA</button>
+ </div>
+ <div id="tasteRegionList" class="taste-region-list" aria-label="Marked areas and their labels"></div>
+ <p class="taste-help">Boxes are saved as private coordinates, not as additional cropped images. Labels improve suggestions; unlabeled boxes are stored for later training but do not identify their contents automatically.</p>
+</div>
+<div class="taste-section"><div class="taste-section-head"><strong>WHAT DETAILS STAND OUT?</strong><small id="tasteSelectionCount">0 selected</small></div>
     <div id="tasteCues" class="taste-cues" role="group" aria-label="Details you appreciate"></div>
    </div>
    <div class="taste-section"><div class="taste-section-head"><strong>RATE THIS PHOTO</strong><small id="tasteRatingText">Rate this photograph (optional)</small></div>
