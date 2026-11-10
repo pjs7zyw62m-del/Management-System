@@ -21,6 +21,7 @@
   n.dispatchEvent(new Event("change",{bubbles:true}));
  };
  function filterCategory(category){
+  document.querySelector("#photosFilters [data-photo-filter=all]")?.click();
   setFilter("militaryFilterCategory",category);
   goTo(gallery());
   hint("Showing your authorized "+category.toLowerCase()+" media.");
@@ -104,10 +105,12 @@
   b.addEventListener("click",()=>requestAdult(b.getAttribute("data-mx-men")));
  });
  $("mxMenFavorites")?.addEventListener("click",()=>{
+  $("militaryFiltersReset")?.click();
   const b=document.querySelector("#photosFilters [data-photo-filter=favorites]");
   b?.click();goTo(gallery());hint("Showing favorites in your authorized media collection.");
  });
  $("mxMenMyUploads")?.addEventListener("click",()=>{
+  $("militaryFiltersReset")?.click();
   const b=document.querySelector("#photosFilters [data-photo-filter=mine]");
   b?.click();goTo(gallery());
  });
