@@ -25,3 +25,13 @@
 body.bc-network #bcGunner{left:16px;right:auto}
 body.bc-network #bcGunnerPanel{left:0;right:auto}
 @media(max-width:610px){body.bc-network #bcGunner{left:10px;right:auto}}
+
+/* Original Dolphin Gunner / owner-approved creative vision */
+#bcGunnerVision{background:linear-gradient(110deg,#27253f,#71304d)!important;
+ border:1px solid #dd7097!important;color:#ffe2ec!important;
+ font-size:9px!important;letter-spacing:.025em!important;
+ padding:9px 11px!important;white-space:nowrap}
+#bcGunnerVision:hover{background:linear-gradient(110deg,#45335d,#ac325a)!important}
+.gunner-actions{flex-wrap:wrap;gap:7px}
+.gunner-actions small{flex:1 1 110px;text-align:center}
+#bcGunnerSend{flex:0 0 auto}
