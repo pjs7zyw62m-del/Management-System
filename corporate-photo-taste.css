@@ -117,3 +117,31 @@
  border-color:#f17f9f!important;box-shadow:0 0 12px #e84c7760
 }
 .taste-region-extra:focus-visible{outline:2px solid #f584a4;outline-offset:2px}
+
+/* Visible trigger discovery and saved-feedback confirmation */
+#tasteSavedNotice[hidden]{display:none!important}
+.taste-insight .taste-saved-notice{
+ padding:12px 14px;margin:0 0 13px;
+ border:1px solid #9e4563;border-radius:10px;
+ background:linear-gradient(110deg,#3b1829,#24151f);
+ color:#ffdde7;line-height:1.65;font-size:11px;font-weight:650
+}
+.apple-photo-grid-item .apple-photo-taste-entry{
+ position:absolute;z-index:3;left:6px;bottom:6px;max-width:calc(100% - 12px);
+ font-size:9px;font-weight:800;line-height:1.15;letter-spacing:.015em;
+ padding:8px 9px;border-radius:8px;border:1px solid #d26c8c;
+ color:#fff;background:linear-gradient(105deg,#732441ec,#311523e8);
+ box-shadow:0 4px 16px #0009;cursor:pointer;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.apple-photo-grid-item .apple-photo-taste-entry:hover,
+.apple-photo-grid-item .apple-photo-taste-entry:focus-visible{
+ border-color:#ff9bb8;background:linear-gradient(105deg,#aa3059,#67223f);
+ outline:2px solid #eb819f;outline-offset:1px;
+}
+@media(max-width:520px){
+ .apple-photo-grid-item .apple-photo-taste-entry{
+  left:3px;bottom:3px;max-width:calc(100% - 6px);
+  font-size:8px;line-height:1.1;padding:6px 5px;border-radius:5px;
+ }
+}
