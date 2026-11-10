@@ -207,6 +207,17 @@ export function createWorldForces({client,state,meta,toast,archiveAssets,mediaUr
   });
   refreshChips();
  }
- return {setup,load,renderWorld,applyFilter,rank,active:()=>active,deactivate:()=>{active=false},countryName:name,
+ function selectedCountryCodes(){return [...countries]}
+ function updateCountryCollection(next){
+  countries=[...new Set((Array.isArray(next)?next:[]).map(x=>String(x).toUpperCase()).filter(x=>codes.includes(x)))].slice(0,12);
+  wantedBranch='All';wantedFocus='All';active=false;
+  if($('wfBranch'))$('wfBranch').value='All';
+  if($('wfFocus'))$('wfFocus').value='All';
+  refreshChips();return [...countries];
+ }
+ function browseCountries(){return [...countryList].map(code=>({code,label:name(code),flag:flag(code)}))}
+ return {setup,load,renderWorld,applyFilter,rank,
+  selectedCountryCodes,updateCountryCollection,browseCountries,saveCountryCollection:save,
+  active:()=>active,deactivate:()=>{active=false},countryName:name,
   title:()=>active?(countries.length?countries.map(name).join(' + '):'Worldwide')+' · '+(wantedBranch==='All'?'All Forces':wantedBranch):null};
 }
