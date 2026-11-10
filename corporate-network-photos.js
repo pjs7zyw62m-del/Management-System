@@ -1,5 +1,5 @@
 /* BLACKCELL NETWORK / Apple Photos × Flickr private corporate library */
-import {createWorldForces} from './corporate-world-forces.js?v=20261110-world3';
+import {createWorldForces} from './corporate-world-forces.js?v=20261110-world4';
 export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadAsset,refresh,profile,openProfile,ensureSigned,switchView}){
  const $=id=>document.getElementById(id);
  const meta={albums:[],albumItems:[],favorites:[],activeAlbum:null,filter:'all',sort:'newest',query:'',
