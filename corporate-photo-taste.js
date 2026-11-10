@@ -14,7 +14,12 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
   ["front_waist_clothed","Clothed front waist"],
   ["photo_angle","Camera angle"],
   ["equipment","Military gear"],
-  ["environment","Background / location"]
+  ["environment","Background / location"],
+  ["arms","Arms / forearms"],
+  ["shoulders","Shoulders"],
+  ["torso","Torso / upper body"],
+  ["legs","Legs"],
+  ["hands","Hands"]
  ];
  const LABELS=Object.fromEntries(CUES);
  const PATTERNS={
@@ -29,9 +34,14 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
   front_waist_clothed:/visual:front_waist_clothed|front waist|waistband|beltline|belt\b/i,
   photo_angle:/side[\s-]?view|close[\s-]?up|camera angle|low angle|full[\s-]?body|portrait|rear[\s-]?view/i,
   equipment:/equipment|vest|helmets?|ruck|rifle|gear|utility|pack/i,
-  environment:/desert|forest|outdoor|indoors|camp|tent|snow|jungle|field|water|background|location/i
+  environment:/desert|forest|outdoor|indoors|camp|tent|snow|jungle|field|water|background|location/i,
+  arms:/\barm(s)?\b|bicep|forearm/i,
+  shoulders:/shoulders?|deltoid|upper body/i,
+  torso:/torso|chest|upper body|shirt/i,
+  legs:/\bleg(s)?\b|calves|thighs|trousers|pants/i,
+  hands:/\bhands?\b|gloves?|grip/i
  };
- let active=null,selected=new Set(),rating=0,busy=false;
+ let active=null,selected=new Set(),rating=0,busy=false,regions=[],drag=null,dragPointer=null;
  const current=()=>meta.tastes||[];
  const ownId=()=>state.user?.id;
  const recordFor=a=>current().find(t=>t.asset_id===(typeof a==="string"?a:a?.id));
@@ -46,7 +56,8 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
    const positive=liked(t),negative=disliked(t);
    const change=positive?(t.rating>=4?2+t.rating-3:3):negative?-3:0;
    if(!change)continue;
-   for(const cue of t.cues||[]){
+   const mentioned=new Set([...(t.cues||[]),...(Array.isArray(t.regions)?t.regions.map(r=>r.cue):[])]);
+   for(const cue of mentioned){
     if(LABELS[cue])counts.set(cue,Math.max(-20,Math.min(20,(counts.get(cue)||0)+change)));
    }
   }
@@ -104,6 +115,133 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
   }
   $("tasteResetAll").disabled=!n||busy;
  }
+
+ const round=(x)=>Math.round(x*10000)/10000;
+ const limit=(x,low=0,high=1)=>Math.max(low,Math.min(high,x));
+ function validRegion(r){
+  return r&&typeof r==="object"&&
+   ["x","y","w","h"].every(k=>typeof r[k]==="number"&&Number.isFinite(r[k]))&&
+   r.x>=0&&r.y>=0&&r.w>=.01&&r.h>=.01&&r.x+r.w<=1.0001&&r.y+r.h<=1.0001&&
+   (r.cue===""||!!LABELS[r.cue]);
+ }
+ function regionOptions(selectedCue=""){
+  const options=[new Option("No label yet (saved for later)", "")];
+  for(const [key,label] of CUES)options.push(new Option(label,key));
+  const frag=document.createDocumentFragment();
+  for(const op of options){op.selected=op.value===selectedCue;frag.append(op)}
+  return frag;
+ }
+ function measureRegionImage(){
+  const frame=$("tasteRegionFrame"),img=$("tasteMarkImage"),surface=$("tasteMarkSurface");
+  if(!img.complete||!img.naturalWidth||!img.naturalHeight||$("tasteOverlay").hidden)return;
+  const w=Math.max(65,Math.min(640,frame.clientWidth-24));
+  const k=Math.min(1,w/img.naturalWidth,380/img.naturalHeight);
+  surface.style.width=Math.max(1,Math.round(img.naturalWidth*k))+"px";
+  surface.style.height=Math.max(1,Math.round(img.naturalHeight*k))+"px";
+  surface.hidden=false;$("tasteRegionLoading").hidden=true;
+  updateRegions();
+ }
+ function openRegionImage(url){
+  const img=$("tasteMarkImage"),surface=$("tasteMarkSurface");
+  surface.hidden=true;img.removeAttribute("src");
+  $("tasteRegionLoading").hidden=false;
+  $("tasteRegionLoading").textContent=url?"Loading full photograph for area selection…":"Photo unavailable for precise selection.";
+  if(!url)return;
+  img.onload=measureRegionImage;
+  img.onerror=()=>{surface.hidden=true;$("tasteRegionLoading").hidden=false;$("tasteRegionLoading").textContent="Unable to load this photograph. Refresh your library and reopen it."};
+  img.src=url;
+  if(img.complete&&img.naturalWidth)measureRegionImage();
+ }
+ function regionPoint(event){
+  const rect=$("tasteMarkSurface").getBoundingClientRect();
+  if(!rect.width||!rect.height)return null;
+  return {x:limit((event.clientX-rect.left)/rect.width),y:limit((event.clientY-rect.top)/rect.height)};
+ }
+ function drawRegion(rect,i,draft=false){
+  const box=document.createElement("div");
+  box.className="taste-region-rect"+(draft?" draft":"");
+  box.style.left=(rect.x*100)+"%";box.style.top=(rect.y*100)+"%";
+  box.style.width=(rect.w*100)+"%";box.style.height=(rect.h*100)+"%";
+  const label=(rect.cue&&LABELS[rect.cue])||"Area";
+  box.dataset.label=draft?"DRAWING":(i+1)+" · "+label;
+  $("tasteMarkLayer").append(box);
+ }
+ function updateRegions(){
+  const layer=$("tasteMarkLayer"),list=$("tasteRegionList");
+  layer.replaceChildren();list.replaceChildren();
+  $("tasteAreaCount").textContent=regions.length+" / 5 selected";
+  $("tasteAreaUndo").disabled=busy||!regions.length;
+  for(let i=0;i<regions.length;i++){
+   const r=regions[i];drawRegion(r,i);
+   const entry=document.createElement("div");entry.className="taste-region-entry";
+   const number=document.createElement("strong");number.textContent="AREA "+(i+1);
+   const label=document.createElement("select");label.setAttribute("aria-label","Area "+(i+1)+" label");label.append(regionOptions(r.cue));
+   label.addEventListener("change",()=>{
+    if(busy)return;
+    regions[i].cue=label.value;
+    updateRegions();
+   });
+   const remove=document.createElement("button");remove.type="button";remove.textContent="REMOVE";
+   remove.setAttribute("aria-label","Remove marked area "+(i+1));
+   remove.disabled=busy;
+   remove.addEventListener("click",()=>{if(!busy){regions.splice(i,1);updateRegions()}});
+   entry.append(number,label,remove);list.append(entry);
+  }
+  if(drag){
+   const x=Math.min(drag.from.x,drag.to.x),y=Math.min(drag.from.y,drag.to.y);
+   const w=Math.abs(drag.from.x-drag.to.x),h=Math.abs(drag.from.y-drag.to.y);
+   drawRegion({x,y,w,h},regions.length,true);
+  }
+ }
+ function completeRegion(){
+  if(!drag)return;
+  let x=Math.min(drag.from.x,drag.to.x),y=Math.min(drag.from.y,drag.to.y);
+  let w=Math.abs(drag.to.x-drag.from.x),h=Math.abs(drag.to.y-drag.from.y);
+  if(w<.02&&h<.02){w=.16;h=.16;x=limit(drag.from.x-w/2,0,1-w);y=limit(drag.from.y-h/2,0,1-h)}
+  else{
+   if(w<.02){const cx=(drag.from.x+drag.to.x)/2;w=.04;x=limit(cx-w/2,0,1-w)}
+   if(h<.02){const cy=(drag.from.y+drag.to.y)/2;h=.04;y=limit(cy-h/2,0,1-h)}
+  }
+  regions.push({x:round(x),y:round(y),w:round(Math.min(w,1-x)),h:round(Math.min(h,1-y)),cue:$("tasteAreaType").value||""});
+  drag=null;dragPointer=null;
+  updateRegions();
+  $("tasteStatus").textContent="Area marked. Add a label if you want recommendations to match its visible features, then save your preferences.";
+ }
+ function setupRegionControls(){
+  const pick=$("tasteAreaType");
+  pick.append(regionOptions(""));
+  const layer=$("tasteMarkLayer");
+  layer.addEventListener("pointerdown",e=>{
+   if(busy||regions.length>=5||!active||$("tasteMarkSurface").hidden)return;
+   if(e.pointerType==="mouse"&&e.button!==0)return;
+   const point=regionPoint(e);if(!point)return;
+   e.preventDefault();dragPointer=e.pointerId;
+   drag={from:point,to:point};
+   try{layer.setPointerCapture(e.pointerId)}catch(_){}
+   updateRegions();
+  });
+  layer.addEventListener("pointermove",e=>{
+   if(!drag||dragPointer!==e.pointerId)return;
+   const point=regionPoint(e);if(!point)return;
+   e.preventDefault();drag.to=point;updateRegions();
+  });
+  layer.addEventListener("pointerup",e=>{
+   if(!drag||dragPointer!==e.pointerId)return;
+   const point=regionPoint(e);if(point)drag.to=point;
+   e.preventDefault();
+   try{layer.releasePointerCapture(e.pointerId)}catch(_){}
+   completeRegion();
+  });
+  layer.addEventListener("pointercancel",e=>{
+   if(dragPointer!==e.pointerId)return;
+   drag=null;dragPointer=null;updateRegions();
+  });
+  $("tasteAreaUndo").addEventListener("click",()=>{if(!busy&&regions.length){regions.pop();updateRegions()}});
+  window.addEventListener("resize",()=>{
+   if(!$("tasteOverlay").hidden)measureRegionImage();
+  });
+ }
+
  function updateRating(){
   for(const btn of document.querySelectorAll("[data-taste-rating]")){
    const v=Number(btn.dataset.tasteRating);
@@ -125,6 +263,8 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
   active=a;
   const saved=recordFor(a);
   selected=new Set((saved?.cues||[]).filter(c=>LABELS[c]));
+  regions=(Array.isArray(saved?.regions)?saved.regions:[]).slice(0,5).filter(validRegion).map(r=>({...r}));
+  drag=null;dragPointer=null;
   rating=Number(saved?.rating||0);
   $("tasteOverlay").hidden=false;
   $("tasteFilename").textContent=a.filename||"Photograph";
@@ -134,10 +274,12 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
   const image=$("tastePreview"),url=mediaUrl(a);
   image.hidden=!url;if(url)image.src=url;else image.removeAttribute("src");
   updateRating();updateCues();
+  openRegionImage(url);
+  updateRegions();
  }
  function close(){
   if(busy)return;
-  $("tasteOverlay").hidden=true;active=null;
+  $("tasteOverlay").hidden=true;active=null;drag=null;dragPointer=null;
  }
  function setBusy(on){
   busy=on;
@@ -147,13 +289,14 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
  }
  async function save(reaction){
   if(!active||busy)return;
-  if(reaction==="neutral"&&!rating&&!selected.size&&!$("tasteNote").value.trim()){
+  if(reaction==="neutral"&&!rating&&!selected.size&&!regions.length&&!$("tasteNote").value.trim()){
    $("tasteStatus").textContent="Choose at least one detail, a rating, or a note.";
    return;
   }
   setBusy(true);
   $("tasteStatus").textContent="Saving your private photo preferences…";
   const data={user_id:ownId(),asset_id:active.id,rating,reaction,cues:[...selected],
+    regions:regions.map(r=>({x:r.x,y:r.y,w:r.w,h:r.h,cue:r.cue||""})),
     note:$("tasteNote").value.trim().slice(0,500),updated_at:new Date().toISOString()};
   try{
    const {error}=await client.from("corp_social_photo_tastes")
@@ -192,7 +335,7 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
  async function load(){
   if(!ownId())return;
   const {data,error}=await client.from("corp_social_photo_tastes")
-   .select("asset_id,rating,reaction,cues,note,updated_at").eq("user_id",ownId()).limit(2000);
+   .select("asset_id,rating,reaction,cues,regions,note,updated_at").eq("user_id",ownId()).limit(2000);
   if(error){console.warn("Private photo tastes not available:",error.message);meta.tastes=[];return}
   meta.tastes=data||[];
  }
@@ -210,6 +353,7 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
    });
    root.append(btn);
   }
+  setupRegionControls();
   const stars=$("tasteRatingButtons");
   for(let i=1;i<=5;i++){
    const btn=document.createElement("button");btn.type="button";
