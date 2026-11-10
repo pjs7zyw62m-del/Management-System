@@ -1,7 +1,7 @@
 /* BLACKCELL NETWORK / Apple Photos × Flickr private corporate library */
 import {createWorldForces} from './corporate-world-forces.js?v=20261110-world6';
 import {createMilitaryPhotoAI} from './corporate-military-ai.js?v=20261110-ai4';
-import {createPhotoTaste} from './corporate-photo-taste.js?v=20261110-taste1';
+import {createPhotoTaste} from './corporate-photo-taste.js?v=20261110-taste2';
 export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadAsset,refresh,profile,openProfile,ensureSigned,switchView}){
  const $=id=>document.getElementById(id);
  const meta={albums:[],albumItems:[],favorites:[],activeAlbum:null,filter:'all',sort:'newest',query:'',
@@ -59,7 +59,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  const size=n=>n>=1048576?(n/1048576).toFixed(1)+' MB':Math.round(n/1024)+' KB';
  const nameOf=a=>profile(a.owner_id)?.display_name||'Network Member';
  const world=createWorldForces({client,state,meta,toast,archiveAssets,mediaUrl,openViewer,render});
- const taste=createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl,render});
+ const taste=createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl,render,archiveAssets});
  const ai=createMilitaryPhotoAI({client,state,toast,getCurrent:viewerCurrent,mediaUrl,
   onApproved:(item,review)=>{
    Object.assign(item,{military_country_code:review.country_code,military_branch:review.military_branch,
