@@ -6,7 +6,7 @@ export function createMilitaryPhotoAI({client,state,toast,getCurrent,mediaUrl,on
  let asset=null,review=null,busy=false,lastBatch=[];
  const own=a=>a&&a.kind==="photo"&&a.owner_id===state.user?.id&&["library","post"].includes(a.purpose);
  const say=(message)=>{if($("aiPhotoStatus"))$("aiPhotoStatus").textContent=message};
- const setBusy=(on)=>{busy=!!on;for(const id of ["aiPhotoAnalyze","aiPhotoApprove","aiPhotoReject","aiPhotoBatchStart"]){if($(id))$(id).disabled=busy}};
+ const setBusy=(on)=>{busy=!!on;for(const id of ["aiPhotoAnalyze","aiPhotoManual","aiPhotoBatchStart"]){if($(id))$(id).disabled=busy}for(const id of ["aiPhotoApprove","aiPhotoReject"]){if($(id))$(id).disabled=busy||review?.status!=="suggested"}};
  const label=(t)=>{if($("aiPhotoAnalyze"))$("aiPhotoAnalyze").textContent=t};
  function fillSelect(id,sourceId){
   const target=$(id),src=$(sourceId);
@@ -21,6 +21,8 @@ export function createMilitaryPhotoAI({client,state,toast,getCurrent,mediaUrl,on
    uniform_type:$("aiPhotoUniform").value.trim().slice(0,160),
    camouflage_pattern:$("aiPhotoCamouflage").value.trim().slice(0,160),
    focus:$("aiPhotoFocus").value,
+   nudity_level:$("aiPhotoNudity").value,
+   visual_focus:$("aiPhotoVisualFocus").value,
    notes:$("aiPhotoNotes").value.trim().slice(0,1200),
    tags:[...new Set($("aiPhotoTags").value.split(",").map(t=>t.trim().slice(0,40)).filter(Boolean))].slice(0,15)
   };
@@ -35,6 +37,8 @@ export function createMilitaryPhotoAI({client,state,toast,getCurrent,mediaUrl,on
   setVal("aiPhotoUniform",record.uniform_type);
   setVal("aiPhotoCamouflage",record.camouflage_pattern);
   setVal("aiPhotoFocus",record.focus);
+  setVal("aiPhotoNudity",record.nudity_level||"unknown");
+  setVal("aiPhotoVisualFocus",record.visual_focus||"unknown");
   setVal("aiPhotoNotes",record.notes);
   setVal("aiPhotoTags",Array.isArray(record.tags)?record.tags.join(", "):"");
   const conf=record.confidence||"low";
@@ -61,7 +65,7 @@ export function createMilitaryPhotoAI({client,state,toast,getCurrent,mediaUrl,on
  }
  async function readExisting(a){
   const {data,error}=await client.from("corp_social_ai_analysis")
-   .select("id,asset_id,status,country_code,military_branch,military_category,uniform_type,camouflage_pattern,focus,confidence,notes,tags,attempts,updated_at")
+   .select("id,asset_id,status,country_code,military_branch,military_category,uniform_type,camouflage_pattern,focus,confidence,nudity_level,visual_focus,notes,tags,attempts,updated_at")
    .eq("asset_id",a.id).eq("owner_id",state.user.id).maybeSingle();
   if(error){say("Could not load previous AI suggestions: "+error.message);return}
   showReview(data);
@@ -99,6 +103,31 @@ export function createMilitaryPhotoAI({client,state,toast,getCurrent,mediaUrl,on
    say("AI suggestions received. Review every field, correct any errors, then select Approve & Save.");
   }catch(e){say(e.message||"Analysis failed");label(review?"↻ RE-ANALYZE":"✦ ANALYZE PHOTO");}
   finally{setBusy(false);if(review?.status!=="suggested")$("aiPhotoApprove").disabled=true}
+ }
+ async function manualReview(){
+  if(!asset||busy)return;
+  const chosen=asset;setBusy(true);say("Opening owner-only manual classification review…");
+  try{
+   const record={
+    owner_id:state.user.id,asset_id:chosen.id,status:"suggested",
+    country_code:chosen.military_country_code||"",
+    military_branch:chosen.military_branch||"Unspecified",
+    military_category:chosen.military_category||"Unsorted",
+    uniform_type:"",camouflage_pattern:"",focus:"All",
+    confidence:"low",nudity_level:"unknown",visual_focus:"unknown",
+    notes:"Manual review — not analyzed by AI.",
+    tags:Array.isArray(chosen.military_tags)?chosen.military_tags.filter(t=>!t.startsWith("visual:")).slice(0,14):[],
+    model:"manual-review",attempts:review?.attempts||0,
+    updated_at:new Date().toISOString()
+   };
+   const {data,error}=await client.from("corp_social_ai_analysis")
+    .upsert(record,{onConflict:"owner_id,asset_id"})
+    .select("id,asset_id,status,country_code,military_branch,military_category,uniform_type,camouflage_pattern,focus,confidence,nudity_level,visual_focus,notes,tags,attempts,updated_at").single();
+   if(error)throw error;
+   if(asset?.id!==chosen.id)return;
+   showReview(data);say("Manual review ready. Enter visible details and approve to save. No image was sent to an AI provider.");
+  }catch(e){say("Could not open manual review: "+(e?.message||"Error"))}
+  finally{setBusy(false)}
  }
  async function approve(){
   if(!asset||!review||review.status!=="suggested"||busy)return;
@@ -170,7 +199,7 @@ export function createMilitaryPhotoAI({client,state,toast,getCurrent,mediaUrl,on
   fillSelect("aiPhotoCategory","militaryAssetCategory");
   const controls={
    aiPhotoClose:close,aiPhotoCancel:close,
-   aiPhotoAnalyze:()=>void analyze(),aiPhotoApprove:()=>void approve(),
+   aiPhotoAnalyze:()=>void analyze(),aiPhotoManual:()=>void manualReview(),aiPhotoApprove:()=>void approve(),
    aiPhotoReject:()=>void reject(),
    aiPhotoBatchStart:()=>void batch(),
    aiLibraryBatchButton:()=>void batch(),
