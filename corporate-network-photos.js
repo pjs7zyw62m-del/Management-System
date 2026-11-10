@@ -214,7 +214,14 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
    const section=make('section','apple-photo-month');
    section.append(make('h3','',month));
    const grid=make('div','apple-photo-grid');
-   for(const a of items)grid.append(drawTile(a,list,list.indexOf(a)));
+   for(const a of items){
+    const index=list.indexOf(a);
+    const tile=drawTile(a,list,index);
+    if(meta.filter==='for-you'&&index<6&&meta.tastes.length){
+     tile.append(make('div','taste-match-reason',taste.reason(a)));
+    }
+    grid.append(tile);
+   }
    section.append(grid);node.append(section);
   }
  }
