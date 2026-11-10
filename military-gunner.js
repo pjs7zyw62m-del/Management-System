@@ -86,7 +86,7 @@ export function mountMilitaryGunner({client,getContext,mount=document.body,visib
  $('bcGunnerVision').addEventListener('click',()=>{
   const ctx=typeof getContext==='function'?getContext()||{}:{};
   const name=String(ctx.page_title||'Blackcell Military Library');
-  input.value=("Gunner, I want YOUR vision for "+name+". How would you personally redesign this military photo library, its USA and hybrid country pages, and the experience of browsing photos? Be specific about the look, atmosphere, interactions, collections, and anything else you would change. Give me your own strong ideas. Nothing gets changed until I approve it.").slice(0,1600);
+  input.value=("Gunner, what\'s the first thing YOU would change about "+name+"? Give me your strongest idea in a couple of sentences, like we\'re talking. No long plans. I\'ll approve changes before anything is built.").slice(0,1600);
   input.focus();
   setStatus("GUNNER'S VISION · READY TO SEND");
  });
