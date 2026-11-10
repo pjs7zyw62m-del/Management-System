@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#05070d">
+<title>BLACKCELL — Military Country Pages</title>
+<script src="corp-config.js" defer></script>
+<link rel="stylesheet" href="military-country.css?v=20261110-country1">
+<script type="module" src="military-country.js?v=20261110-country1"></script>
+</head>
+<body data-page-theme="usa">
+<header class="topbar">
+ <a class="brand" href="corporate-network.html?view=photos" aria-label="Back to military library"><span class="brand-mark">B</span><span><strong>BLACKCELL CORPORATION</strong><small>COUNTRY MILITARY ARCHIVES</small></span></a>
+ <nav class="topnav" aria-label="Military pages"><a href="corporate-network.html?view=photos">← MILITARY LIBRARY</a><a href="military-country.html?country=US" class="nav-usa">🇺🇸 USA</a><a href="corporate-network.html?view=photos">🌍 GLOBAL</a></nav>
+</header>
+<div id="accessGate" class="access-gate" role="status" aria-live="polite"><div class="gate-card"><div class="gate-logo">B</div><strong>BLACKCELL / SECURE COUNTRY ARCHIVES</strong><h2>Authenticating access</h2><p id="accessMessage">Checking corporate credentials and viewing permissions.</p><a href="corporate-network.html?view=photos">BACK TO MILITARY LIBRARY</a></div></div>
+<main id="countryApp" hidden>
+ <div class="page-shell">
+  <section class="country-hero" aria-labelledby="pageTitle">
+   <div class="hero-lines" aria-hidden="true"></div>
+   <div class="hero-text">
+    <div id="heroEyebrow" class="eyebrow">BLACKCELL / UNITED STATES ARMED FORCES</div>
+    <div id="heroFlags" class="hero-flags" aria-label="Countries represented">🇺🇸</div>
+    <h1 id="pageTitle">UNITED STATES <em>MILITARY.</em></h1>
+    <p id="heroDescription">Your dedicated United States military media collection. Photos automatically appear here when their country classification is saved as United States.</p>
+    <div class="hero-metrics"><div><strong id="photoCount">0</strong><small>PHOTOGRAPHS</small></div><div><strong id="countryCount">1</strong><small>COUNTRIES</small></div><div><strong id="branchCount">0</strong><small>BRANCHES CATALOGED</small></div></div>
+   </div>
+   <div class="hero-seal" aria-hidden="true"><span id="heroSeal">US</span><small>BLACKCELL / ARCHIVE</small></div>
+  </section>
+  <div class="main-layout">
+   <section class="directory-area" aria-labelledby="countryDirectoryTitle">
+    <div class="section-heading"><div><span class="eyebrow">AUTOMATIC COUNTRY DISCOVERY</span><h2 id="countryDirectoryTitle">COUNTRY DIRECTORY</h2><p>Each country appears here automatically as its photographs are classified and approved. Select a country to open its own page.</p></div></div>
+    <div id="countryCards" class="country-cards"></div>
+    <div class="hybrid-panel">
+     <div class="hybrid-heading"><div><span class="eyebrow">CUSTOM COUNTRY COMBINATIONS</span><h3>BUILD A HYBRID PAGE</h3><p>Combine USA and China, or any other discovered countries, into one separate page.</p></div></div>
+     <div class="hybrid-controls"><select id="addCountry" aria-label="Select a country to combine"><option value="">Add a country…</option></select><button id="addCountryButton" type="button">+ ADD COUNTRY</button><button id="openHybrid" class="primary" type="button">OPEN HYBRID PAGE ↗</button></div>
+     <div id="selectedCountries" class="selected-countries" aria-label="Hybrid country selection"></div>
+     <p id="hybridStatus" class="helper"></p>
+     <div id="savedHybridPages" class="saved-hybrids"></div>
+    </div>
+   </section>
+   <section class="gallery-area" aria-labelledby="galleryTitle">
+    <div class="gallery-heading"><div><span class="eyebrow">BLACKCELL / DEDICATED MILITARY ARCHIVE</span><h2 id="galleryTitle">UNITED STATES PHOTOGRAPHS</h2><p id="gallerySubtext">Saved military images from your authorized network.</p></div>
+     <div class="gallery-actions"><input id="gallerySearch" type="search" placeholder="Search this country page…" aria-label="Search country photographs"><button id="reloadPhotos" type="button">↻ REFRESH</button></div>
+    </div>
+    <div id="photoGallery" class="photo-gallery" aria-live="polite"></div>
+    <p id="galleryEmpty" class="empty-copy" hidden>No photographs found. Country pages populate automatically once an image is classified and saved.</p>
+   </section>
+  </div>
+ </div>
+</main>
+<div id="photoLightbox" class="photo-lightbox" role="dialog" aria-modal="true" aria-labelledby="lightboxTitle" hidden>
+ <div class="lightbox-dialog"><div class="lightbox-header"><div><span>BLACKCELL / ORIGINAL MEDIA</span><strong id="lightboxTitle">PHOTOGRAPH</strong></div><button id="closeLightbox" type="button" aria-label="Close photograph">✕</button></div>
+ <div class="lightbox-image-wrap"><img id="lightboxImage" alt="Selected military photograph"></div>
+ <div id="lightboxMeta" class="lightbox-meta"></div><div class="lightbox-controls"><button id="askGunnerPhoto" type="button">✦ ASK GUNNER ABOUT THIS PHOTO</button><button id="lightboxPrevious" type="button">‹ PREVIOUS</button><button id="lightboxNext" type="button">NEXT ›</button><a id="openFullPhoto" target="_blank" rel="noopener">VIEW ORIGINAL ↗</a></div></div>
+</div>
+<div id="gunnerMount"></div>
+<div id="siteToast" class="site-toast" role="status" aria-live="polite" hidden></div>
+</body></html>
