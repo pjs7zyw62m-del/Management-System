@@ -4,6 +4,7 @@ export function createMilitaryPhotoAI({client,state,toast,getCurrent,mediaUrl,on
  const $=id=>document.getElementById(id);
  const name="blackcell-military-ai";
  let asset=null,review=null,busy=false,lastBatch=[];
+ let uploadedQueue=[],uploadedIndex=0;
  const own=a=>a&&a.kind==="photo"&&a.owner_id===state.user?.id&&["library","post"].includes(a.purpose);
  const say=(message)=>{if($("aiPhotoStatus"))$("aiPhotoStatus").textContent=message};
  const setBusy=(on)=>{busy=!!on;for(const id of ["aiPhotoAnalyze","aiPhotoManual","aiPhotoBatchStart"]){if($(id))$(id).disabled=busy}for(const id of ["aiPhotoApprove","aiPhotoReject"]){if($(id))$(id).disabled=busy||review?.status!=="suggested"}};
@@ -52,8 +53,9 @@ export function createMilitaryPhotoAI({client,state,toast,getCurrent,mediaUrl,on
  function close(){
   if(busy)return;
   $("aiPhotoOverlay").hidden=true;
-  asset=null;review=null;lastBatch=[];
+  asset=null;review=null;lastBatch=[];uploadedQueue=[];uploadedIndex=0;
   $("aiPhotoBatch").hidden=true;
+  $("aiPhotoNextUpload").hidden=true;
  }
  async function explain(error){
   try{
@@ -75,7 +77,9 @@ export function createMilitaryPhotoAI({client,state,toast,getCurrent,mediaUrl,on
  async function open(a){
   if(!own(a)){toast("Only the photo owner can run AI classification.");return}
   if(busy)return;
+  uploadedQueue=[];uploadedIndex=0;
   asset=a;review=null;
+  $("aiPhotoNextUpload").hidden=true;
   $("aiPhotoOverlay").hidden=false;
   $("aiPhotoReview").hidden=true;
   $("aiPhotoBatch").hidden=true;
@@ -100,6 +104,7 @@ export function createMilitaryPhotoAI({client,state,toast,getCurrent,mediaUrl,on
    const result=await invokeAnalyze(chosen);
    if(asset?.id!==chosen.id)return;
    showReview(result);
+   if(uploadedQueue.length){const entry=uploadedQueue.find(x=>x.asset.id===chosen.id);if(entry){entry.analysis=result;entry.error="";refreshUploadedList()}}
    say("AI suggestions received. Review every field, correct any errors, then select Approve & Save.");
   }catch(e){say(e.message||"Analysis failed");label(review?"↻ RE-ANALYZE":"✦ ANALYZE PHOTO");}
   finally{setBusy(false);if(review?.status!=="suggested")$("aiPhotoApprove").disabled=true}
@@ -125,7 +130,8 @@ export function createMilitaryPhotoAI({client,state,toast,getCurrent,mediaUrl,on
     .select("id,asset_id,status,country_code,military_branch,military_category,uniform_type,camouflage_pattern,focus,confidence,nudity_level,visual_focus,notes,tags,attempts,updated_at").single();
    if(error)throw error;
    if(asset?.id!==chosen.id)return;
-   showReview(data);say("Manual review ready. Enter visible details and approve to save. No image was sent to an AI provider.");
+   showReview(data);if(uploadedQueue.length){const entry=uploadedQueue.find(x=>x.asset.id===chosen.id);if(entry)entry.analysis=data;refreshUploadedList()}
+   say("Manual review ready. Enter visible details and approve to save. No image was sent to an AI provider.");
   }catch(e){say("Could not open manual review: "+(e?.message||"Error"))}
   finally{setBusy(false)}
  }
@@ -142,7 +148,8 @@ export function createMilitaryPhotoAI({client,state,toast,getCurrent,mediaUrl,on
    review.status="approved";
    onApproved(resultAsset,final);
    showReview({...review,...final,status:"approved"});
-   say("Approved and saved. Country, branch, subject and tags now feed World Forces Explorer and For You.");
+   if(uploadedQueue.length){const entry=uploadedQueue.find(x=>x.asset.id===resultAsset.id);if(entry)entry.analysis={...review,...final,status:"approved"};refreshUploadedList()}
+   say("Approved and saved. Country, branch, subject and tags now feed World Forces Explorer and For You."+(uploadedQueue.length&&uploadedIndex<uploadedQueue.length-1?" Select Next Photo to review the following upload.":""));
   }catch(e){say("Couldn't approve: "+(e?.message||"Unknown error"))}
   finally{setBusy(false);if(review?.status!=="suggested"){$("aiPhotoApprove").disabled=true;$("aiPhotoReject").disabled=true}}
  }
@@ -154,9 +161,91 @@ export function createMilitaryPhotoAI({client,state,toast,getCurrent,mediaUrl,on
     .eq("id",review.id).eq("owner_id",state.user.id);
    if(error)throw error;
    review.status="rejected";
-   showReview(review);say("Suggestion rejected. No military labels were changed.");
+   showReview(review);if(uploadedQueue.length){const entry=uploadedQueue.find(x=>x.asset.id===asset?.id);if(entry)entry.analysis=review;refreshUploadedList()}
+   say("Suggestion rejected. No military labels were changed.");
   }catch(e){say("Could not reject suggestion: "+(e?.message||"Error"))}
   finally{setBusy(false);$("aiPhotoApprove").disabled=true;$("aiPhotoReject").disabled=true}
+ }
+
+ function showUploadedItem(index){
+  if(!uploadedQueue.length)return;
+  uploadedIndex=Math.max(0,Math.min(index,uploadedQueue.length-1));
+  const item=uploadedQueue[uploadedIndex],a=item.asset;
+  asset=a;review=null;
+  $("aiPhotoOverlay").hidden=false;
+  $("aiPhotoName").textContent=(uploadedIndex+1)+" / "+uploadedQueue.length+" · "+(a.filename||"Photo");
+  const img=$("aiPhotoPreview"),url=mediaUrl(a);
+  img.hidden=!url;
+  if(url)img.src=url;else img.removeAttribute("src");
+  if(item.analysis){
+   showReview(item.analysis);
+   say("AI suggested labels for this uploaded photo. Review and correct them, then select Approve & Save. The approved metadata determines its Military Library placement.");
+  }else{
+   showReview(null);label("✦ RETRY ANALYSIS");
+   say((item.error||"AI suggestion was not available.")+" You can select Manual Review or retry Analyze Photo.");
+  }
+  const next=$("aiPhotoNextUpload");
+  next.hidden=uploadedIndex>=uploadedQueue.length-1;
+  next.textContent="NEXT PHOTO TO REVIEW ("+(uploadedIndex+2)+" / "+uploadedQueue.length+") →";
+  refreshUploadedList();
+ }
+ function refreshUploadedList(){
+  const list=$("aiPhotoBatchList");
+  if(!list||!uploadedQueue.length)return;
+  list.replaceChildren();
+  for(let i=0;i<uploadedQueue.length;i++){
+   const entry=uploadedQueue[i];
+   const row=document.createElement("div");row.className="ai-photo-batch-entry";
+   const detail=document.createElement("small");
+   const status=entry.analysis?.status==="approved"?"APPROVED":entry.analysis?.status==="rejected"?"REJECTED":entry.analysis?"PENDING REVIEW":entry.error?"NEEDS MANUAL REVIEW":"READY";
+   detail.textContent=(i+1)+". "+(entry.asset.filename||"Photo").slice(0,44)+" · "+status;
+   const btn=document.createElement("button");btn.type="button";
+   btn.textContent=i===uploadedIndex?"VIEWING":"REVIEW ↗";
+   btn.disabled=busy||i===uploadedIndex;
+   btn.addEventListener("click",()=>{if(!busy)showUploadedItem(i)});
+   row.append(detail,btn);list.append(row);
+  }
+ }
+ async function afterUpload(items,onProgress){
+  const ownPhotos=(items||[]).filter(own);
+  if(!ownPhotos.length)return;
+  if(busy){toast("The AI reviewer is busy. You can analyze newly uploaded photos individually.");return}
+  uploadedQueue=ownPhotos.map(a=>({asset:a,analysis:null,error:""}));
+  uploadedIndex=0;asset=null;review=null;
+  $("aiPhotoOverlay").hidden=false;
+  $("aiPhotoReview").hidden=true;
+  $("aiPhotoBatch").hidden=false;
+  $("aiPhotoNextUpload").hidden=true;
+  $("aiPhotoPreview").hidden=true;
+  $("aiPhotoName").textContent="New uploads · AI classification";
+  label("✦ ANALYZE PHOTO");
+  setBusy(true);
+  let completed=0,stopped=false;
+  for(let i=0;i<uploadedQueue.length;i++){
+   const item=uploadedQueue[i];
+   say("Automatically analyzing photograph "+(i+1)+" of "+uploadedQueue.length+". Keep this library open until scanning finishes. Labels will stay pending your approval.");
+   if(typeof onProgress==="function")onProgress(i,uploadedQueue.length,item.asset.filename);
+   try{
+    item.analysis=await invokeAnalyze(item.asset);
+    completed++;
+   }catch(e){
+    item.error=String(e?.message||"AI request failed").slice(0,350);
+    if(/key|configured|provider|rate limit|daily AI test limit/i.test(item.error)){
+     stopped=true;
+     for(let j=i+1;j<uploadedQueue.length;j++){
+      uploadedQueue[j].error="Automatic scanning stopped: "+item.error;
+     }
+     break;
+    }
+   }
+   refreshUploadedList();
+  }
+  setBusy(false);
+  $("aiPhotoBatch").hidden=false;
+  showUploadedItem(0);
+  if(!completed)toast("Photos saved, but AI couldn't finish analyzing them. Manual review remains available.");
+  else toast(completed+" uploaded photograph(s) have AI suggestions pending your approval.");
+  if(stopped&&completed===0)say((uploadedQueue[0]?.error||"AI not configured")+". Your uploads are saved. Use Manual Review or configure the AI service.");
  }
  async function batch(){
   if(busy)return;
@@ -203,11 +292,12 @@ export function createMilitaryPhotoAI({client,state,toast,getCurrent,mediaUrl,on
    aiPhotoReject:()=>void reject(),
    aiPhotoBatchStart:()=>void batch(),
    aiLibraryBatchButton:()=>void batch(),
+   aiPhotoNextUpload:()=>showUploadedItem(uploadedIndex+1),
    appleViewerAnalyze:()=>void open(getCurrent())
   };
   for(const [id,handler] of Object.entries(controls))$(id)?.addEventListener("click",handler);
   $("aiPhotoOverlay")?.addEventListener("click",e=>{if(e.target===$("aiPhotoOverlay"))close()});
   document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("aiPhotoOverlay").hidden){e.stopPropagation();e.preventDefault();close()}},true);
  }
- return {setup,open,batch,toggleForAsset:a=>{if($("appleViewerAnalyze"))$("appleViewerAnalyze").hidden=!own(a)},close};
+ return {setup,open,batch,afterUpload,toggleForAsset:a=>{if($("appleViewerAnalyze"))$("appleViewerAnalyze").hidden=!own(a)},close};
 }
