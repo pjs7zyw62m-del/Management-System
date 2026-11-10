@@ -192,5 +192,6 @@ export function createWorldForces({client,state,meta,toast,archiveAssets,mediaUr
   });
   refreshChips();
  }
- return {setup,load,renderWorld,applyFilter,rank,active:()=>active,deactivate:()=>{active=false},countryName:name};
+ return {setup,load,renderWorld,applyFilter,rank,active:()=>active,deactivate:()=>{active=false},countryName:name,
+  title:()=>active?(countries.length?countries.map(name).join(' + '):'Worldwide')+' · '+(wantedBranch==='All'?'All Forces':wantedBranch):null};
 }
