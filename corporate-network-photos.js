@@ -61,7 +61,9 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  const ai=createMilitaryPhotoAI({client,state,toast,getCurrent:viewerCurrent,mediaUrl,
   onApproved:(item,review)=>{
    Object.assign(item,{military_country_code:review.country_code,military_branch:review.military_branch,
-    military_category:review.military_category,military_tags:review.tags});
+    military_category:review.military_category,
+    military_tags:[...new Set([...(review.tags||[]).filter(t=>!String(t).startsWith("visual:")),
+     ...(!["unknown","other"].includes(review.visual_focus)?["visual:"+review.visual_focus]:[])])].slice(0,15)});
    renderViewer();render();toast('AI tags approved and saved to your Military Library.');
   }});
  const empty=(heading,detail)=>{
