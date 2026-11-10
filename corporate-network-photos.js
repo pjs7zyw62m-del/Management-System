@@ -263,17 +263,10 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   }
  }
  function goToCountryPage(page){
-  if(!page){
-   meta.filter='global';meta.countryPageId=null;meta.scope='network';meta.activeAlbum=null;
-   world.deactivate();$('myCountryPageName').value='';
-   setCountryPageUrl('global');renderGallery();return;
-  }
-  const saved=page.id?meta.countryPages.find(x=>x.id===page.id):null;
-  world.updateCountryCollection(page.country_codes||[]);
-  meta.countryPageId=saved?.id||null;
-  meta.filter='countries';meta.scope='network';meta.activeAlbum=null;
-  world.deactivate();$('myCountryPageName').value=saved?.title||'';
-  setCountryPageUrl(saved?.id||'');renderGallery();
+  if(!page){location.assign('corporate-network.html?view=photos');return}
+  const list=[...new Set((page.country_codes||[]).filter(x=>/^[A-Z]{2}$/.test(x)))];
+  if(!list.length){toast('Select at least one country to open a separate page.');return}
+  location.assign('military-country.html?countries='+encodeURIComponent(list.join(',')));
  }
  async function saveCountryPage(){
   const btn=$('myCountriesSave'),codes=normalizedCountrySet(world.selectedCountryCodes());
@@ -290,7 +283,8 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
    if(error)throw error;
    meta.countryPages=[data,...meta.countryPages];
    meta.countryPageId=data.id;meta.filter='countries';
-   $('myCountryPageName').value=title;setCountryPageUrl(data.id);renderGallery();
+   $('myCountryPageName').value=title;
+   goToCountryPage({country_codes:codes});
    toast('✓ '+title+' saved as a separate military page.');
    $('myCountriesSummary').textContent='✓ SAVED PAGE · '+title+
     '. You can create a new hybrid without replacing this page.';
@@ -820,10 +814,9 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   world.setup();
   $('wfOpenCountryGallery').addEventListener('click',()=>{
    const selection=world.selectedCountryCodes();
-   const page=meta.countryPages.find(x=>identicalSets(x.country_codes,selection.length?selection:['US']));
-   goToCountryPage(page||{country_codes:selection.length?selection:['US']});
-   $('myCountriesPanel').scrollIntoView({behavior:'smooth',block:'start'});
+   goToCountryPage({country_codes:selection.length?selection:['US']});
   });
+  $('mxHeroUSA')?.addEventListener('click',()=>goToCountryPage({country_codes:['US']}));
   ai.setup();
   taste.setup();
   predict.setup();
@@ -856,6 +849,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   $('photosSearch').addEventListener('input',e=>{meta.query=e.target.value.trim().toLowerCase();renderGallery()});
   $('photosSort').addEventListener('change',e=>{meta.sort=e.target.value;renderGallery()});
   for(const b of document.querySelectorAll('#photosFilters [data-photo-filter]'))b.addEventListener('click',()=>{
+   if(b.dataset.photoFilter==='countries'){goToCountryPage({country_codes:world.selectedCountryCodes().length?world.selectedCountryCodes():['US']});return}
    meta.filter=b.dataset.photoFilter;
    if(meta.filter==='countries'||meta.filter==='global'){
     world.deactivate();meta.scope='network';meta.activeAlbum=null;
