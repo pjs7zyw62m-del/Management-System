@@ -25,6 +25,7 @@ export function createPhotoPredict({client,state,mediaUrl,toast,onCorrect}){
    const el=$(id);if(el)el.disabled=next;
   }
   $("predRun").textContent=next?"✦ ANALYZING THE PHOTO…":"✦ RUN VISUAL PREDICTION";
+  if(!next&&result?.attempts>=3)$("predRun").disabled=true;
  }
  function forViewer(a){
   const b=$("appleViewerPredict");if(!b)return;
@@ -171,7 +172,7 @@ export function createPhotoPredict({client,state,mediaUrl,toast,onCorrect}){
    showMessage(choice==="yes"?"✓ That's It saved. This confirmed prediction can guide later analyses.":"✕ Not That saved. The rejected prediction will be counted as incorrect.");
    toast("Prediction feedback saved");
   }catch(e){showMessage("Could not save prediction feedback: "+clean(e.message))}
-  finally{setBusy(false);renderRegions()}
+  finally{setBusy(false);if(result?.attempts>=3)$("predRun").disabled=true;renderRegions()}
  }
  function setup(){
   $("appleViewerPredict").addEventListener("click",()=>{const a=state.assets.find(x=>x.id===$("appleViewerPredict").dataset.assetId);if(a)open(a)});
