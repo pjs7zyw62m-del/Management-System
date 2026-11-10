@@ -187,6 +187,15 @@ export function createWorldForces({client,state,meta,toast,archiveAssets,mediaUr
    $('wfCountrySearch').value='';$('wfBranch').value='All';$('wfFocus').value='All';
    clearExistingFilters();meta.filter='all';render();status('Filters cleared. Saved interests stay in your For You gallery.');
   });
+  document.addEventListener('blackcell:world-men-category',e=>{
+   const c=String(e.detail?.category||'');
+   if(!['Personnel','Uniforms','Training'].includes(c))return;
+   e.preventDefault();
+   clearExistingFilters();
+   active=true;meta.scope='network';meta.filter='all';meta.category=c;
+   $('militaryFilterCategory').value=c;
+   render();gotoGallery();
+  });
   $('wfSurprise').addEventListener('click',()=>{
    const list=applyFilter(avail());
    if(!list.length){status('No matching media to surprise you with yet.');return}
