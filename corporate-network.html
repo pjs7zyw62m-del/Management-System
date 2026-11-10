@@ -282,7 +282,7 @@
     <div class="ai-photo-summary">
      <strong id="aiPhotoName">Photograph</strong>
      <p>Identify visible country clues, branch, uniform, camouflage and military subject. AI makes suggestions, not guaranteed identifications. Your original image stays private in Blackcell storage, but analysis sends it to the external AI provider only when requested.</p>
-     <div class="ai-photo-actions"><button id="aiPhotoAnalyze" type="button" class="ai-photo-btn main">✦ ANALYZE PHOTO</button></div>
+     <div class="ai-photo-actions"><button id="aiPhotoAnalyze" type="button" class="ai-photo-btn main">✦ ANALYZE PHOTO</button><button id="aiPhotoManual" type="button" class="ai-photo-btn outline">MANUAL REVIEW</button></div>
      <p id="aiPhotoStatus" class="ai-photo-status" role="status" aria-live="polite">Select Analyze Photo to begin.</p>
     </div>
    </div>
@@ -295,10 +295,12 @@
      <label>TYPE / STYLE<select id="aiPhotoFocus"><option value="All">General</option><option value="Tactical">Tactical / Combat</option><option value="Dress">Dress Uniform</option><option value="Portraits">Portrait</option><option value="Training">Training</option><option value="Operations">Operations</option></select></label>
      <label>UNIFORM TYPE<input id="aiPhotoUniform" maxlength="160" placeholder="E.g., Marine Corps Combat Utility Uniform"></label>
      <label>CAMOUFLAGE PATTERN<input id="aiPhotoCamouflage" maxlength="160" placeholder="E.g., Woodland MARPAT"></label>
+     <label>VISIBLE NUDITY<select id="aiPhotoNudity"><option value="unknown">Unknown / Not assessed</option><option value="none">None visible</option><option value="partial">Partial nudity</option><option value="genitals_visible">Genitals visible</option></select></label>
+     <label>PHOTO FRAMING<select id="aiPhotoVisualFocus"><option value="unknown">Unknown / Not assessed</option><option value="full_body">Full-body view</option><option value="portrait">Portrait</option><option value="rear_view_clothed">Clothed rear view</option><option value="front_waist_clothed">Clothed front waist area</option><option value="uniform_detail">Uniform details</option><option value="other">Other</option></select></label>
      <label class="wide">TAGS<input id="aiPhotoTags" maxlength="550" placeholder="Marine, combat uniform, woodland, gear"></label>
      <label class="wide">AI EVIDENCE / NOTES<textarea id="aiPhotoNotes" maxlength="1200" rows="3" placeholder="Visible features and any uncertainty"></textarea></label>
     </div>
-    <p class="ai-photo-help">Check the image yourself. Similar uniforms can be worn by different militaries, reenactors, or civilians. Choose Not specified if unsure. Approval updates only your own photograph.</p>
+    <p class="ai-photo-help">Verify every AI suggestion. Visible Nudity is owner-only review metadata. Photo Framing identifies how clothing and uniform details appear, without implying anyone’s sexuality or preferences. Only approve media that you have the right to use. Similar uniforms can be worn by different militaries, reenactors, or civilians. Approval changes your own photograph only.</p>
     <div class="ai-photo-foot"><button id="aiPhotoReject" type="button" class="ai-photo-btn outline">REJECT SUGGESTIONS</button><button id="aiPhotoApprove" type="button" class="ai-photo-btn main">✓ APPROVE &amp; SAVE TO LIBRARY</button></div>
    </div>
    <div id="aiPhotoBatch" class="ai-photo-batch" hidden><h4>MY LIBRARY / UP TO THREE PHOTOS</h4><div id="aiPhotoBatchList"></div></div>
