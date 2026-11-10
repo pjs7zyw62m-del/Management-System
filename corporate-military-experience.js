@@ -71,6 +71,8 @@
   try{sessionStorage.setItem("mx_adult_session","confirmed")}catch(_){}
   $("mxMenLock").hidden=true;
   $("mxMenBrowse").hidden=false;
+  if($("mxMenEnter"))$("mxMenEnter").hidden=true;
+  if($("mxMenMessage"))$("mxMenMessage").hidden=true;
   close("mxAgeModal");
   hint("Men in Uniform collection is ready. Browse categorized authorized media.");
   goTo($("mxMenBrowse"));
@@ -118,5 +120,7 @@
  // Do not expose demo assets as other members' actual uploads.
  if((()=>{try{return sessionStorage.getItem("mx_adult_session")==="confirmed"}catch(_){return false}})()){
   $("mxMenLock").hidden=true;$("mxMenBrowse").hidden=false;
+  if($("mxMenEnter"))$("mxMenEnter").hidden=true;
+  if($("mxMenMessage"))$("mxMenMessage").hidden=true;
  }
 })();
