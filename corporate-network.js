@@ -1,6 +1,6 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-staff1';
 import {setupBlackcellPhotos} from './corporate-network-photos.js?v=20261110-countryroute1';
-import {mountMilitaryGunner} from './military-gunner.js?v=20261110-gunner1';
+import {mountMilitaryGunner} from './military-gunner.js?v=20261110-dolphin2';
 const client=corporateClient(),bucket=client.storage.from('corp-social-media');
 const $=id=>document.getElementById(id);
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
