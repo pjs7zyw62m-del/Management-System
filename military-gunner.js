@@ -50,7 +50,7 @@ export function mountMilitaryGunner({client,getContext,mount=document.body,visib
     // Rapid checking for a warm worker; fewer checks during expensive cold starts.
     if(attempt>0)await pause(attempt<10?1600:attempt<26?3300:6000);
     const result=await callGunner({action:'status',bridge_job_id:id});
-    const secs=Math.max(0,Math.round((Date.now()-begun)/1000));
+    const secs=Number.isFinite(result.elapsed_seconds)?Math.max(0,Math.round(result.elapsed_seconds)):Math.max(0,Math.round((Date.now()-begun)/1000));
     if(result.status==='completed'&&result.answer){
      placeholder.textContent=result.answer;
      setStatus('✓ ORIGINAL GUNNER · DOLPHIN 3.0');
