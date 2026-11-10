@@ -1,0 +1,48 @@
+/* BLACKCELL / MILITARY AI PHOTO INTELLIGENCE
+   Apple Glass review modal, high contrast, responsive, no auto-approval. */
+#photosView .ai-library-btn{border-color:#935064;color:#fce6eb;background:linear-gradient(115deg,#421a2a,#1a121b)}
+#photosView .ai-library-btn:hover{border-color:#fb6881;background:#592338}
+#appleViewerAnalyze{border:1px solid #ed5f76!important;background:linear-gradient(110deg,#7e2038,#ba3654)!important;color:#fff!important;font-weight:800!important;letter-spacing:.035em}
+#appleViewerAnalyze[hidden]{display:none!important}
+.ai-photo-overlay{position:fixed;z-index:240025;inset:0;background:#000e;backdrop-filter:blur(17px);display:flex;align-items:center;justify-content:center;padding:18px;overflow-y:auto;overscroll-behavior:contain}
+.ai-photo-overlay[hidden]{display:none!important}
+.ai-photo-dialog{width:min(760px,100%);max-height:calc(100dvh - 36px);overflow:auto;background:linear-gradient(147deg,#211b25,#101116 60%,#0a0b0e);border:1px solid #7b4454;box-shadow:0 35px 110px #000c;border-radius:21px;color:#f7f3f5;position:relative}
+.ai-photo-dialog .ai-holo{height:3px;background:linear-gradient(90deg,#310812,#fc3f65,#521524,#fa3459,#300711);background-size:240%;box-shadow:0 0 21px #ff426a75;animation:mx-scan 7s linear infinite}
+.ai-photo-dialog header{padding:22px 25px 17px;display:flex;align-items:start;justify-content:space-between;gap:12px;border-bottom:1px solid #ffffff17}
+.ai-photo-dialog header h2{font-size:clamp(23px,4vw,32px);line-height:1.1;letter-spacing:-.055em;margin:9px 0;color:#fff}
+.ai-photo-dialog .ai-overline{font-size:10px;letter-spacing:.19em;color:#e895a6;font-weight:850}
+.ai-photo-close{background:#20141c;border:1px solid #6a4251;color:#f1bfcb;border-radius:9px;padding:8px 12px;font-size:18px;cursor:pointer;flex:none}
+.ai-photo-body{padding:22px 25px}
+.ai-photo-intro{display:grid;grid-template-columns:145px 1fr;gap:17px;align-items:start;margin-bottom:20px}
+.ai-photo-preview{height:160px;border:1px solid #654154;border-radius:13px;background:#090a0d;object-fit:contain;width:100%}
+.ai-photo-summary{min-width:0}
+.ai-photo-summary strong{display:block;overflow-wrap:anywhere;line-height:1.45;font-size:15px}
+.ai-photo-summary p{color:#a9a7b4;font-size:11px;line-height:1.7;margin:10px 0 12px}
+.ai-photo-actions{display:flex;gap:8px;flex-wrap:wrap;margin:13px 0}
+.ai-photo-btn{border:1px solid #66515c;border-radius:10px;background:#211b23;color:#f6edf3;padding:11px 14px;font-size:10px;font-weight:800;letter-spacing:.06em;min-height:43px;cursor:pointer}
+.ai-photo-btn.main{background:linear-gradient(115deg,#af213e,#d62f4e);border-color:#f2748a;color:white}
+.ai-photo-btn.outline{background:#100f13}
+.ai-photo-btn:disabled{opacity:.45;cursor:wait}
+.ai-photo-btn:focus-visible,.ai-photo-close:focus-visible{outline:2px solid #ff8195;outline-offset:2px}
+.ai-photo-status{font-size:11px;line-height:1.65;color:#e2b1be;min-height:22px;white-space:pre-wrap}
+.ai-photo-review{border:1px solid #56414e;border-radius:15px;padding:17px;background:linear-gradient(145deg,#191b22,#101117)}
+.ai-photo-review[hidden]{display:none!important}
+.ai-photo-review-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.ai-photo-review-head h3{margin:0;font-size:17px;letter-spacing:-.03em}
+.ai-photo-chip{font-size:10px;letter-spacing:.07em;border:1px solid #aa5670;border-radius:50px;padding:7px 10px;color:#f6c1cf;background:#4b2634}
+.ai-photo-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.ai-photo-form label{display:flex;flex-direction:column;gap:6px;font-size:9px;color:#cbc0cd;letter-spacing:.09em;font-weight:750}
+.ai-photo-form select,.ai-photo-form input,.ai-photo-form textarea{border:1px solid #584552;background:#0b0d12;color:#fff;border-radius:9px;padding:11px;min-height:42px;font-size:12px;letter-spacing:normal;width:100%;max-width:100%;font-family:inherit}
+.ai-photo-form textarea{min-height:80px;resize:vertical}
+.ai-photo-form .wide{grid-column:1/-1}
+.ai-photo-help{font-size:10px;color:#9e9ca9;line-height:1.6;margin:12px 0}
+.ai-photo-foot{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;border-top:1px solid #ffffff13;margin-top:18px;padding-top:15px}
+.ai-photo-batch{margin:18px 0 0;border:1px solid #46424b;border-radius:12px;padding:12px;background:#111319}
+.ai-photo-batch[hidden]{display:none!important}
+.ai-photo-batch h4{font-size:12px;margin:0 0 10px;color:#fff}
+.ai-photo-batch-entry{display:flex;justify-content:space-between;align-items:center;gap:10px;border-top:1px solid #fff2;padding:9px 0;font-size:11px}
+.ai-photo-batch-entry small{color:#bcb4be}
+.ai-photo-batch-entry button{border:1px solid #b5556c;border-radius:7px;background:#311824;color:#f3c2cb;padding:7px 10px;cursor:pointer}
+body.mx-reduced .ai-photo-dialog .ai-holo,body.mx-paused .ai-photo-dialog .ai-holo{animation:none}
+@media(max-width:600px){.ai-photo-overlay{padding:8px}.ai-photo-dialog{max-height:calc(100dvh - 16px);border-radius:15px}.ai-photo-dialog header{padding:18px 15px 14px}.ai-photo-body{padding:15px}.ai-photo-intro{grid-template-columns:92px 1fr;gap:10px}.ai-photo-preview{height:105px}.ai-photo-actions{flex-direction:column}.ai-photo-form{grid-template-columns:1fr}.ai-photo-form .wide{grid-column:auto}.ai-photo-btn{white-space:normal}}
+@media(prefers-reduced-motion:reduce){.ai-photo-dialog .ai-holo{animation:none}}
