@@ -1,5 +1,5 @@
 import {corporateClient,corporateAuthorize} from "./corp-auth.js?v=20261109-staff1";
-import {mountMilitaryGunner} from "./military-gunner.js?v=20261110-short3";
+import {mountMilitaryGunner} from "./military-gunner.js?v=20261110-fast4";
 const $=id=>document.getElementById(id);
 const client=corporateClient();
 const storage=client.storage.from("corp-social-media");
