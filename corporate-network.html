@@ -197,13 +197,27 @@
         <div class="photos-gallery-tools">
           <div class="apple-segmented" id="photosFilters">
             <button data-photo-filter="all" class="selected">All</button><button data-photo-filter="photo">Photos</button>
-            <button data-photo-filter="video">Videos</button><button data-photo-filter="for-you">✦ For You</button><button data-photo-filter="favorites">♥ Favorites</button>
+            <button data-photo-filter="video">Videos</button><button data-photo-filter="for-you">✦ For You</button><button data-photo-filter="countries">🌐 MY COUNTRIES</button><button data-photo-filter="favorites">♥ Favorites</button>
             <button data-photo-filter="mine">My Uploads</button>
           </div>
           <div class="photos-gallery-search"><input id="photosSearch" type="search" placeholder="Search your collection…" aria-label="Search photos and videos by filename or caption">
             <select id="photosSort" aria-label="Media sorting"><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="name">Name</option></select></div>
         </div>
-        <section id="tasteInsights" class="taste-insight" hidden aria-label="Your photo preferences and suggestions">
+        <section id="myCountriesPanel" class="country-personal-panel" hidden aria-label="My selected countries collection">
+ <div class="country-personal-hero"><span>BLACKCELL / CUSTOM MILITARY COLLECTION</span>
+ <h3 id="myCountriesTitle">MY COUNTRIES.</h3>
+ <p>One military gallery for every country you select. Choose the United States alone or combine two, three, or more countries. Only saved, authorized photographs with confirmed country tags appear.</p></div>
+ <div class="country-personal-actions">
+  <button id="myCountriesUS" type="button">🇺🇸 UNITED STATES ONLY</button>
+  <label for="myCountriesSelect">ADD A COUNTRY</label><select id="myCountriesSelect" aria-label="Choose a country to add"></select>
+  <button id="myCountriesAdd" type="button">+ ADD COUNTRY</button>
+  <button id="myCountriesSave" type="button">♡ SAVE MY COLLECTION</button>
+  <button id="myCountriesClear" type="button">CLEAR</button>
+ </div>
+ <div id="myCountriesChips" class="country-personal-chips" role="group" aria-label="Selected countries"></div>
+ <div id="myCountriesSummary" class="country-personal-summary" role="status" aria-live="polite"></div>
+</section>
+<section id="tasteInsights" class="taste-insight" hidden aria-label="Your photo preferences and suggestions">
  <div><p id="tasteSavedNotice" class="taste-saved-notice" role="status" aria-live="polite" hidden></p><span class="taste-overline">BLACKCELL / FOR YOU <span id="tasteInsightCount">0 PHOTOS REVIEWED</span></span>
   <strong>Learning what catches your eye.</strong>
   <p id="tasteInsightText">Tell us what you like in your favorite photographs.</p>
