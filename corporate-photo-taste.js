@@ -71,6 +71,7 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
   legs:/\bleg(s)?\b|calves|thighs|trousers|pants/i,
   hands:/\bhands?\b|gloves?|grip/i
  };
+ const MAX_MARKED_AREAS=25;
  let active=null,selected=new Set(),rating=0,busy=false,regions=[],drag=null,dragPointer=null;
  const current=()=>meta.tastes||[];
  const ownId=()=>state.user?.id;
@@ -226,7 +227,7 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
  function updateRegions(){
   const layer=$("tasteMarkLayer"),list=$("tasteRegionList");
   layer.replaceChildren();list.replaceChildren();
-  $("tasteAreaCount").textContent=regions.length+" / 5 selected";
+  $("tasteAreaCount").textContent=regions.length+" / "+MAX_MARKED_AREAS+" selected";
   $("tasteAreaUndo").disabled=busy||!regions.length;
   for(let i=0;i<regions.length;i++){
    const r=regions[i];drawRegion(r,i);
@@ -306,7 +307,7 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
   pick.append(regionOptions(""));
   const layer=$("tasteMarkLayer");
   layer.addEventListener("pointerdown",e=>{
-   if(busy||regions.length>=5||!active||$("tasteMarkSurface").hidden)return;
+   if(busy||regions.length>=MAX_MARKED_AREAS||!active||$("tasteMarkSurface").hidden)return;
    if(e.pointerType==="mouse"&&e.button!==0)return;
    const point=regionPoint(e);if(!point)return;
    e.preventDefault();dragPointer=e.pointerId;
@@ -357,7 +358,7 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
   active=a;
   const saved=recordFor(a);
   selected=new Set((saved?.cues||[]).filter(c=>LABELS[c]));
-  regions=(Array.isArray(saved?.regions)?saved.regions:[]).slice(0,5).filter(validRegion).map(r=>({...r}));
+  regions=(Array.isArray(saved?.regions)?saved.regions:[]).slice(0,MAX_MARKED_AREAS).filter(validRegion).map(r=>({...r}));
   drag=null;dragPointer=null;
   rating=Number(saved?.rating||0);
   $("tasteOverlay").hidden=false;
