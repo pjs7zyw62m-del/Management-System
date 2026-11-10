@@ -15,6 +15,7 @@
 <link rel="stylesheet" href="corporate-military-experience.css?v=20261110-1">
 <script src="corporate-military-experience.js?v=20261110-world4" defer></script>
 <link rel="stylesheet" href="corporate-world-forces.css?v=20261110-world1">
+<link rel="stylesheet" href="corporate-military-ai.css?v=20261110-ai1">
 </head>
 <body class="bc-network">
 <header class="masthead">
@@ -138,7 +139,7 @@
 </section>
 <div class="page-intro photo-intro"><div><div class="overline">BLACKCELL / MANSARMEDFORCES · PRIVATE ARCHIVE</div><h1>Military Media Library<span>.</span></h1>
         <p>Organize military photographs and videos by branch, subject, era, unit, and personal albums. Browse your archive or authorized network contributions.</p></div>
-        <div class="photos-header-actions"><button id="newAlbumButton" type="button" class="btn outline">＋ NEW ALBUM</button><button id="photosUploadButton" type="button" class="btn crimson">＋ UPLOAD MEDIA</button></div>
+        <div class="photos-header-actions"><button id="newAlbumButton" type="button" class="btn outline">＋ NEW ALBUM</button><button id="aiLibraryBatchButton" type="button" class="btn outline ai-library-btn">✦ AI ANALYZE 3 PHOTOS</button><button id="photosUploadButton" type="button" class="btn crimson">＋ UPLOAD MEDIA</button></div>
       </div>
       <div class="military-scope-bar panel" aria-label="Military library scope"><div class="military-scope-copy"><strong>LIBRARY ACCESS</strong><small>Every original remains under its contributor’s ownership</small></div><div id="militaryScope" class="apple-segmented"><button type="button" data-military-scope="mine" class="selected">MY LIBRARY</button><button type="button" data-military-scope="network">NETWORK ARCHIVE</button></div></div>
 <section class="mx-section" id="mxDiscovery" aria-label="Explore global military forces">
@@ -271,6 +272,40 @@
     <footer class="modal-footer"><button id="militaryAssetCancel" type="button" class="btn outline">CANCEL</button><button id="militaryAssetSave" type="button" class="btn crimson">SAVE CLASSIFICATION ↗</button></footer>
   </section>
 </div>
+<div id="aiPhotoOverlay" class="ai-photo-overlay" hidden>
+ <section class="ai-photo-dialog" role="dialog" aria-modal="true" aria-labelledby="aiPhotoTitle">
+  <div class="ai-holo" aria-hidden="true"></div>
+  <header><div><span class="ai-overline">BLACKCELL / VISUAL INTELLIGENCE</span><h2 id="aiPhotoTitle">AI Military Photo Analysis</h2></div><button id="aiPhotoClose" type="button" class="ai-photo-close" aria-label="Close AI analysis">✕</button></header>
+  <div class="ai-photo-body">
+   <div class="ai-photo-intro">
+    <img id="aiPhotoPreview" class="ai-photo-preview" alt="Photograph selected for analysis">
+    <div class="ai-photo-summary">
+     <strong id="aiPhotoName">Photograph</strong>
+     <p>Identify visible country clues, branch, uniform, camouflage and military subject. AI makes suggestions, not guaranteed identifications. Your original image stays private in Blackcell storage, but analysis sends it to the external AI provider only when requested.</p>
+     <div class="ai-photo-actions"><button id="aiPhotoAnalyze" type="button" class="ai-photo-btn main">✦ ANALYZE PHOTO</button></div>
+     <p id="aiPhotoStatus" class="ai-photo-status" role="status" aria-live="polite">Select Analyze Photo to begin.</p>
+    </div>
+   </div>
+   <div id="aiPhotoReview" class="ai-photo-review" hidden>
+    <div class="ai-photo-review-head"><h3>Review Suggested Tags</h3><span class="ai-photo-chip" id="aiPhotoConfidence">CONFIDENCE · LOW</span></div>
+    <div class="ai-photo-form">
+     <label>COUNTRY<select id="aiPhotoCountry"></select></label>
+     <label>MILITARY BRANCH<select id="aiPhotoBranch"></select></label>
+     <label>CATEGORY<select id="aiPhotoCategory"></select></label>
+     <label>TYPE / STYLE<select id="aiPhotoFocus"><option value="All">General</option><option value="Tactical">Tactical / Combat</option><option value="Dress">Dress Uniform</option><option value="Portraits">Portrait</option><option value="Training">Training</option><option value="Operations">Operations</option></select></label>
+     <label>UNIFORM TYPE<input id="aiPhotoUniform" maxlength="160" placeholder="E.g., Marine Corps Combat Utility Uniform"></label>
+     <label>CAMOUFLAGE PATTERN<input id="aiPhotoCamouflage" maxlength="160" placeholder="E.g., Woodland MARPAT"></label>
+     <label class="wide">TAGS<input id="aiPhotoTags" maxlength="550" placeholder="Marine, combat uniform, woodland, gear"></label>
+     <label class="wide">AI EVIDENCE / NOTES<textarea id="aiPhotoNotes" maxlength="1200" rows="3" placeholder="Visible features and any uncertainty"></textarea></label>
+    </div>
+    <p class="ai-photo-help">Check the image yourself. Similar uniforms can be worn by different militaries, reenactors, or civilians. Choose Not specified if unsure. Approval updates only your own photograph.</p>
+    <div class="ai-photo-foot"><button id="aiPhotoReject" type="button" class="ai-photo-btn outline">REJECT SUGGESTIONS</button><button id="aiPhotoApprove" type="button" class="ai-photo-btn main">✓ APPROVE &amp; SAVE TO LIBRARY</button></div>
+   </div>
+   <div id="aiPhotoBatch" class="ai-photo-batch" hidden><h4>MY LIBRARY / UP TO THREE PHOTOS</h4><div id="aiPhotoBatchList"></div></div>
+   <div class="ai-photo-foot"><button id="aiPhotoCancel" type="button" class="ai-photo-btn">CLOSE</button></div>
+  </div>
+ </section>
+</div>
 <div id="applePhotoViewer" class="apple-photo-viewer" hidden role="dialog" aria-modal="true" aria-label="Apple Photos style viewer">
  <div class="apple-photo-viewer-header"><div><strong id="appleViewerFilename">Media</strong><small id="appleViewerMeta">ORIGINAL QUALITY</small></div>
    <div class="apple-photo-viewer-actions"><button id="appleViewerFavorite" title="Favorite this media" type="button">♡</button><button id="appleViewerOriginal" type="button">↗ FULL PHOTO</button>
@@ -278,7 +313,7 @@
  <div class="apple-photo-viewer-stage"><button id="appleViewerPrevious" class="apple-photo-nav previous" type="button" aria-label="Previous photo">‹</button>
    <div id="appleViewerStage" class="apple-photo-stage-inner"></div><button id="appleViewerNext" class="apple-photo-nav next" type="button" aria-label="Next photo">›</button></div>
  <div class="apple-photo-viewer-bar"><div class="apple-viewer-details"><span id="appleViewerPosition"></span><span id="appleViewerCaption"></span></div>
-  <div id="appleViewerOwnerControls" class="apple-viewer-owner-controls" hidden><select id="appleViewerAlbumSelect" aria-label="Add media to one of your albums"></select><button id="appleViewerAddAlbum" type="button">＋ ADD TO ALBUM</button><button id="appleViewerEditCaption" type="button">EDIT CAPTION</button><button id="appleViewerEditMilitary" type="button">CLASSIFY</button><button id="appleViewerDelete" type="button">DELETE UPLOAD</button></div></div>
+  <div id="appleViewerOwnerControls" class="apple-viewer-owner-controls" hidden><select id="appleViewerAlbumSelect" aria-label="Add media to one of your albums"></select><button id="appleViewerAddAlbum" type="button">＋ ADD TO ALBUM</button><button id="appleViewerEditCaption" type="button">EDIT CAPTION</button><button id="appleViewerEditMilitary" type="button">CLASSIFY</button><button id="appleViewerAnalyze" type="button" hidden>✦ ANALYZE PHOTO</button><button id="appleViewerDelete" type="button">DELETE UPLOAD</button></div></div>
  <div id="appleViewerFilmstrip" class="apple-photo-filmstrip"></div>
 </div>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
