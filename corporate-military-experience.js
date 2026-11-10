@@ -21,6 +21,8 @@
   n.dispatchEvent(new Event("change",{bubbles:true}));
  };
  function filterCategory(category){
+  const event=new CustomEvent('blackcell:world-men-category',{detail:{category},cancelable:true});
+  if(!document.dispatchEvent(event))return;
   document.querySelector("#photosFilters [data-photo-filter=all]")?.click();
   setFilter("militaryFilterCategory",category);
   goTo(gallery());
