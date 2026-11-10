@@ -209,7 +209,17 @@
  <div class="country-personal-hero"><span>BLACKCELL / CUSTOM MILITARY COLLECTION</span>
  <h3 id="myCountriesTitle">MY COUNTRIES.</h3>
  <p>Global displays all authorized military photos. Save United States as its own page, then save United States + China as a completely separate hybrid page. Each page keeps its own country selection and updates with new classified photos.</p></div>
- <div class="country-pages-head">
+ <div class="country-page-banner" id="countryPageBanner">
+ <div class="country-page-banner-copy">
+  <span id="countryPageIdentity">BLACKCELL WORLD MILITARY LIBRARY</span>
+  <div class="country-page-flags" id="countryPageFlags" aria-label="Selected countries">🌍</div>
+  <strong id="countryPageHeadline">GLOBAL MILITARY ARCHIVE.</strong>
+  <p id="countryPageSubtitle">Every country, every classified military photograph, one global collection.</p>
+  <div id="countryPageMetrics" class="country-page-metrics"></div>
+ </div>
+ <div class="country-page-banner-art" aria-hidden="true"><span>BC</span><small id="countryPageArtCaption">WORLDWIDE</small></div>
+</div>
+<div class="country-pages-head">
  <strong>YOUR SAVED COUNTRY PAGES</strong>
  <span>Each page remains independent. Select Global, USA, or any saved hybrid combination.</span>
 </div>
@@ -219,7 +229,7 @@
  <input id="myCountryPageName" type="text" maxlength="80" placeholder="Example: USA + China" autocomplete="off">
 </div>
 <div class="country-personal-actions">
-  <button id="myCountriesUS" type="button">🇺🇸 UNITED STATES ONLY</button>
+  <button id="myCountriesGlobal" type="button">🌍 GLOBAL PAGE</button><button id="myCountriesUS" type="button">🇺🇸 USA PAGE</button>
   <label for="myCountriesSelect">ADD A COUNTRY</label><select id="myCountriesSelect" aria-label="Choose a country to add"></select>
   <button id="myCountriesAdd" type="button">+ ADD COUNTRY</button>
   <button id="myCountriesSave" type="button">＋ SAVE AS A NEW PAGE</button>
