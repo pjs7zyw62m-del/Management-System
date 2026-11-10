@@ -16,6 +16,7 @@
 <script src="corporate-military-experience.js?v=20261110-world4" defer></script>
 <link rel="stylesheet" href="corporate-world-forces.css?v=20261110-world1">
 <link rel="stylesheet" href="corporate-military-ai.css?v=20261110-ai3">
+<link rel="stylesheet" href="corporate-photo-taste.css?v=20261110-taste1">
 </head>
 <body class="bc-network">
 <header class="masthead">
@@ -202,7 +203,15 @@
           <div class="photos-gallery-search"><input id="photosSearch" type="search" placeholder="Search your collection…" aria-label="Search photos and videos by filename or caption">
             <select id="photosSort" aria-label="Media sorting"><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="name">Name</option></select></div>
         </div>
-        <div id="applePhotosGallery" class="apple-photo-gallery"></div>
+        <section id="tasteInsights" class="taste-insight" hidden aria-label="Your photo preferences and suggestions">
+ <div><span class="taste-overline">BLACKCELL / FOR YOU <span id="tasteInsightCount">0 PHOTOS REVIEWED</span></span>
+  <strong>Learning what catches your eye.</strong>
+  <p id="tasteInsightText">Tell us what you like in your favorite photographs.</p>
+  <div id="tasteInsightSignals" class="taste-insight-signals"></div>
+ </div>
+ <button id="tasteResetAll" type="button">RESET MY PREFERENCES</button>
+</section>
+<div id="applePhotosGallery" class="apple-photo-gallery"></div>
         <p class="photos-privacy-note">Only verified Blackcell Network members can see this archive. Each original belongs to its contributor. Private chat attachments remain separate and are not indexed here.</p>
       </section>
 <div id="mxAgeModal" class="mx-modal" hidden role="dialog" aria-modal="true" aria-labelledby="mxAgeTitle">
@@ -311,13 +320,41 @@
 </div>
 <div id="applePhotoViewer" class="apple-photo-viewer" hidden role="dialog" aria-modal="true" aria-label="Apple Photos style viewer">
  <div class="apple-photo-viewer-header"><div><strong id="appleViewerFilename">Media</strong><small id="appleViewerMeta">ORIGINAL QUALITY</small></div>
-   <div class="apple-photo-viewer-actions"><button id="appleViewerFavorite" title="Favorite this media" type="button">♡</button><button id="appleViewerOriginal" type="button">↗ FULL PHOTO</button>
+   <div class="apple-photo-viewer-actions"><button id="appleViewerFavorite" title="Favorite this media" type="button">♡</button><button id="appleViewerTaste" type="button" hidden>✦ WHAT CAUGHT YOUR EYE?</button><button id="appleViewerOriginal" type="button">↗ FULL PHOTO</button>
     <button id="appleViewerDownload" type="button">↓ DOWNLOAD</button><button id="appleViewerClose" class="close-x" type="button" aria-label="Close viewer">✕</button></div></div>
  <div class="apple-photo-viewer-stage"><button id="appleViewerPrevious" class="apple-photo-nav previous" type="button" aria-label="Previous photo">‹</button>
    <div id="appleViewerStage" class="apple-photo-stage-inner"></div><button id="appleViewerNext" class="apple-photo-nav next" type="button" aria-label="Next photo">›</button></div>
  <div class="apple-photo-viewer-bar"><div class="apple-viewer-details"><span id="appleViewerPosition"></span><span id="appleViewerCaption"></span></div>
   <div id="appleViewerOwnerControls" class="apple-viewer-owner-controls" hidden><select id="appleViewerAlbumSelect" aria-label="Add media to one of your albums"></select><button id="appleViewerAddAlbum" type="button">＋ ADD TO ALBUM</button><button id="appleViewerEditCaption" type="button">EDIT CAPTION</button><button id="appleViewerEditMilitary" type="button">CLASSIFY</button><button id="appleViewerAnalyze" type="button" hidden>✦ ANALYZE PHOTO</button><button id="appleViewerDelete" type="button">DELETE UPLOAD</button></div></div>
  <div id="appleViewerFilmstrip" class="apple-photo-filmstrip"></div>
+</div>
+<div id="tasteOverlay" class="taste-overlay" hidden>
+ <section class="taste-dialog" role="dialog" aria-modal="true" aria-labelledby="tasteTitle">
+  <div class="taste-bar" aria-hidden="true"></div>
+  <header class="taste-header"><div><span class="overline">BLACKCELL / PERSONAL DISCOVERY</span><h2 id="tasteTitle">What caught your eye?</h2></div>
+   <button id="tasteClose" type="button" class="taste-close" aria-label="Close preferences">✕</button></header>
+  <div class="taste-body">
+   <div class="taste-lead"><img id="tastePreview" class="taste-preview" alt="Photo being reviewed">
+    <div><strong id="tasteFilename">Photograph</strong>
+     <p>Help your For You gallery discover similar images. Choose the visible details you appreciate; Blackcell will not guess your sexuality, identity, or interests from appearance.</p>
+    </div>
+   </div>
+   <div class="taste-section"><div class="taste-section-head"><strong>WHAT DETAILS STAND OUT?</strong><small id="tasteSelectionCount">0 selected</small></div>
+    <div id="tasteCues" class="taste-cues" role="group" aria-label="Details you appreciate"></div>
+   </div>
+   <div class="taste-section"><div class="taste-section-head"><strong>RATE THIS PHOTO</strong><small id="tasteRatingText">Rate this photograph (optional)</small></div>
+    <div id="tasteRatingButtons" class="taste-stars" role="group" aria-label="Rate the photograph from one to five stars"></div>
+    <textarea id="tasteNote" class="taste-notes" maxlength="500" placeholder="Optional private note: what do you personally like or dislike?"></textarea>
+    <p class="taste-help">Your selections, rating and note are private to your account. Selections improve recommendations; free-text notes are saved for your reference but aren't automatically interpreted by AI.</p>
+   </div>
+   <p id="tasteStatus" class="taste-status" role="status" aria-live="polite"></p>
+   <footer class="taste-footer"><button id="tasteClear" type="button" class="muted">CLEAR THIS PHOTO</button>
+    <button id="tasteCancel" type="button" class="muted">CANCEL</button>
+    <button id="tasteLess" type="button">SHOW FEWER LIKE THIS</button>
+    <button id="tasteSave" type="button">SAVE PREFERENCE</button>
+    <button id="tasteMore" type="button" class="strong">✦ SHOW MORE LIKE THIS</button></footer>
+  </div>
+ </section>
 </div>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </body></html>
