@@ -28,7 +28,8 @@ export function createWorldForces({client,state,meta,toast,archiveAssets,mediaUr
   const t=[category(a),a.caption,a.filename,...(a.military_tags||[])].filter(Boolean).join(' ').toLowerCase();
   if(f==='Dress')return category(a)==='Uniforms'||/dress|formal|ceremonial|parade/.test(t);
   if(f==='Portraits')return category(a)==='Personnel'||/portrait/.test(t);
-  if(f==='Training')return category(a)==='Training'||/training|fitness|drill|exercise/.test(t);
+  if(f==='Training')return category(a)==='Training'||/military training|drill|field exercise/.test(t);
+  if(f==='Fitness')return category(a)==='Fitness / Exercise'||/pull[- ]?ups?|push[- ]?ups?|workout|weightlift|fitness|exercise|strength training/.test(t);
   if(f==='Operations')return category(a)==='Operations'||/battle|operation|deployment/.test(t);
   if(f==='Tactical')return /tactical|combat|field uniform|battle dress/.test(t);
   return true;
