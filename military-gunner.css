@@ -35,3 +35,7 @@ body.bc-network #bcGunnerPanel{left:0;right:auto}
 .gunner-actions{flex-wrap:wrap;gap:7px}
 .gunner-actions small{flex:1 1 110px;text-align:center}
 #bcGunnerSend{flex:0 0 auto}
+
+#bcGunnerCheck{background:#171d2a!important;border:1px solid #91a1b5!important;color:#e5f1ff!important;font-size:9px!important;white-space:nowrap}
+#bcGunnerCheck:hover{background:#2d3e58!important}
+#bcGunnerCheck[hidden]{display:none!important}
