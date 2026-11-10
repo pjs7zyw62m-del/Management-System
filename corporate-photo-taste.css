@@ -98,3 +98,22 @@
 @media(max-width:560px){
  .taste-region-entry .taste-region-detail{flex:1 1 100%}
 }
+
+/* Multi-label precision feedback for a selected photo area */
+.taste-region-secondaries{
+ display:flex;flex-wrap:wrap;align-items:center;gap:6px;flex:1 1 100%;
+ border-top:1px solid #46313c;padding:9px 0 1px
+}
+.taste-region-secondaries>span{
+ flex:0 0 100%;font-size:9px;font-weight:800;letter-spacing:.12em;color:#b69ba9
+}
+.taste-region-extra{
+ flex:0 0 auto;padding:7px 9px!important;border:1px solid #69505d!important;
+ border-radius:999px!important;background:#1d1922!important;color:#d2c4ce!important;
+ font-size:10px!important;line-height:1.2;cursor:pointer
+}
+.taste-region-extra.selected{
+ color:#fff!important;background:linear-gradient(110deg,#6e233f,#ac315a)!important;
+ border-color:#f17f9f!important;box-shadow:0 0 12px #e84c7760
+}
+.taste-region-extra:focus-visible{outline:2px solid #f584a4;outline-offset:2px}
