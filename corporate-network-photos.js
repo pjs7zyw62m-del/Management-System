@@ -2,6 +2,7 @@
 import {createWorldForces} from './corporate-world-forces.js?v=20261110-world6';
 import {createMilitaryPhotoAI} from './corporate-military-ai.js?v=20261110-learn1';
 import {createPhotoTaste} from './corporate-photo-taste.js?v=20261110-trigger2';
+import {createPhotoPredict} from './corporate-photo-predict.js?v=20261110-pred1';
 export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadAsset,refresh,profile,openProfile,ensureSigned,switchView}){
  const $=id=>document.getElementById(id);
  const meta={albums:[],albumItems:[],favorites:[],activeAlbum:null,filter:'all',sort:'newest',query:'',
@@ -59,6 +60,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  const size=n=>n>=1048576?(n/1048576).toFixed(1)+' MB':Math.round(n/1024)+' KB';
  const nameOf=a=>profile(a.owner_id)?.display_name||'Network Member';
  const world=createWorldForces({client,state,meta,toast,archiveAssets,mediaUrl,openViewer,render});
+ const predict=createPhotoPredict({client,state,mediaUrl,toast,onCorrect:a=>taste.open(a)});
  const taste=createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl,render,archiveAssets,
   onSaved:({reaction,areas,cues,regions})=>{
    meta.filter='for-you';meta.activeAlbum=null;
@@ -501,6 +503,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   $('appleViewerNext').disabled=meta.viewerItems.length<=1;
   ai.toggleForAsset(a);
   taste.forViewer(a);
+  predict.selectViewer(a);
   if(u){
    if(a.kind==='video'){
     const vid=make('video');vid.src=u;vid.controls=true;vid.playsInline=true;vid.preload='metadata';
@@ -659,6 +662,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   world.setup();
   ai.setup();
   taste.setup();
+  predict.setup();
   for(const b of document.querySelectorAll('#militaryScope [data-military-scope]')){
    b.addEventListener('click',()=>{
     meta.scope=b.dataset.militaryScope;meta.activeAlbum=null;meta.filter='all';world.deactivate();render()
