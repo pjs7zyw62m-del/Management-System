@@ -81,3 +81,20 @@
 .taste-region-entry select{flex:1 1 160px}
 #tasteRegionLoading{font-size:11px;color:#b2a2ad}
 @media(max-width:620px){.taste-region-frame{padding:7px}.taste-region-rect::after{font-size:9px;padding:2px 4px}.taste-region-tools{align-items:stretch}}
+
+.taste-region-entry .taste-region-detail{
+ flex:1 1 190px;
+ min-width:145px;
+ min-height:36px;
+ color:#f1eaf0;
+ background:#100f15;
+ border:1px solid #755063;
+ border-radius:8px;
+ padding:8px 10px;
+ font-size:11px;
+ outline-offset:2px;
+}
+.taste-region-entry .taste-region-detail:focus-visible{outline:2px solid #f17a99}
+@media(max-width:560px){
+ .taste-region-entry .taste-region-detail{flex:1 1 100%}
+}
