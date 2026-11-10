@@ -1,6 +1,6 @@
 /* BLACKCELL / PRIVATE PHOTO DISCOVERY
    User-directed preferences. Never infer sexuality, ethnicity, or other sensitive traits. */
-export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl,render,archiveAssets}){
+export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl,render,archiveAssets,onSaved}){
  const $=id=>document.getElementById(id);
  const CUES=[
   ["uniform_fit","Uniform / clothing fit"],
@@ -103,8 +103,9 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
   const order=new Map(items.map((a,i)=>[a.id,i]));
   const score=a=>{
    const own=recordFor(a);
-   let n=own?.reaction==="more"?65:own?.reaction==="less"?-140:0;
-   if(own?.rating)n+=(own.rating-3)*13;
+   // Promote newly recommended photos rather than simply redisplaying reviewed examples.
+   let n=own?.reaction==="less"?-140:own?-18:0;
+   if(own?.rating)n+=(own.rating-3)*2;
    for(const [cue,w] of signal){if(cueMatch(a,cue))n+=w*9}
    // Even if someone just selects "Show more", compare approved metadata.
    // Do not infer the viewer's sexuality or the people pictured.
@@ -402,8 +403,9 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
     .upsert(data,{onConflict:"user_id,asset_id"});
    if(error)throw error;
    meta.tastes=[...current().filter(t=>t.asset_id!==active.id),data];
-   toast(reaction==="less"?"We'll show fewer photos with similar features.":"Your preferences are saved. For You will use this feedback.");
+   toast("✓ Preference saved: "+data.regions.length+" highlighted area"+(data.regions.length===1?"":"s")+". Opening For You recommendations.");
    $("tasteOverlay").hidden=true;active=null;
+   try{if(typeof onSaved==="function")onSaved({reaction,areas:data.regions.length,rating:data.rating,cues:data.cues,regions:data.regions})}catch(e){console.warn("Recommendation navigation unavailable",e)}
    render();
   }catch(e){$("tasteStatus").textContent="Couldn't save preference: "+(e?.message||"Unknown error")}
   finally{setBusy(false)}
