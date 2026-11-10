@@ -896,5 +896,5 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
    const group=sortAssets(archiveAssets().filter(x=>x.owner_id===a.owner_id&&x.kind===a.kind));
    const pos=group.findIndex(x=>x.id===a.id);
    return openViewer(group,pos<0?0:pos)
- },selectAlbum};
+ },selectAlbum,getCurrentPhoto:()=>viewerCurrent(),getCountryCodes:()=>world.selectedCountryCodes()};
 }
