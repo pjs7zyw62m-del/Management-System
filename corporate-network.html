@@ -139,7 +139,7 @@
 </section>
 <div class="page-intro photo-intro"><div><div class="overline">BLACKCELL / MANSARMEDFORCES · PRIVATE ARCHIVE</div><h1>Military Media Library<span>.</span></h1>
         <p>Organize military photographs and videos by branch, subject, era, unit, and personal albums. Browse your archive or authorized network contributions.</p></div>
-        <div class="photos-header-actions"><button id="newAlbumButton" type="button" class="btn outline">＋ NEW ALBUM</button><button id="aiLibraryBatchButton" type="button" class="btn outline ai-library-btn">✦ AI ANALYZE 3 PHOTOS</button><button id="photosUploadButton" type="button" class="btn crimson">＋ UPLOAD MEDIA</button></div>
+        <div class="photos-header-actions"><button id="newAlbumButton" type="button" class="btn outline">＋ NEW ALBUM</button><button id="aiLibraryBatchButton" type="button" class="btn outline ai-library-btn">✦ AI ANALYZE 3 PHOTOS</button><label class="ai-upload-toggle" title="After uploading images, automatically request AI suggestions. Uses your configured AI provider and may incur API usage charges."><input id="aiAnalyzeOnUpload" type="checkbox" checked><span>✦ AUTO ANALYZE PHOTOS<small>AI usage charges may apply · review before filing</small></span></label><button id="photosUploadButton" type="button" class="btn crimson">＋ UPLOAD MEDIA</button></div>
       </div>
       <div class="military-scope-bar panel" aria-label="Military library scope"><div class="military-scope-copy"><strong>LIBRARY ACCESS</strong><small>Every original remains under its contributor’s ownership</small></div><div id="militaryScope" class="apple-segmented"><button type="button" data-military-scope="mine" class="selected">MY LIBRARY</button><button type="button" data-military-scope="network">NETWORK ARCHIVE</button></div></div>
 <section class="mx-section" id="mxDiscovery" aria-label="Explore global military forces">
@@ -303,6 +303,7 @@
     <p class="ai-photo-help">Verify every AI suggestion. Visible Nudity is owner-only review metadata. Photo Framing identifies how clothing and uniform details appear, without implying anyone’s sexuality or preferences. Only classify media you have the right to use. This private review label does not by itself create an adult-only gallery or restrict who can view an already-shared photo. Similar uniforms can be worn by different militaries, reenactors, or civilians. Approval changes your own photograph only.</p>
     <div class="ai-photo-foot"><button id="aiPhotoReject" type="button" class="ai-photo-btn outline">REJECT SUGGESTIONS</button><button id="aiPhotoApprove" type="button" class="ai-photo-btn main">✓ APPROVE &amp; SAVE TO LIBRARY</button></div>
    </div>
+   <div class="ai-photo-foot"><button id="aiPhotoNextUpload" type="button" class="ai-photo-btn main" hidden>NEXT PHOTO TO REVIEW →</button></div>
    <div id="aiPhotoBatch" class="ai-photo-batch" hidden><h4>MY LIBRARY / UP TO THREE PHOTOS</h4><div id="aiPhotoBatchList"></div></div>
    <div class="ai-photo-foot"><button id="aiPhotoCancel" type="button" class="ai-photo-btn">CLOSE</button></div>
   </div>
