@@ -90,8 +90,64 @@ export function createMilitaryPhotoAI({client,state,toast,getCurrent,mediaUrl,on
   say("Loading saved suggestions…");
   await readExisting(a);
  }
- async function invokeAnalyze(a){
-  const {data,error}=await client.functions.invoke(name,{body:{action:"analyze",asset_id:a.id}});
+ const MAX_DIRECT=10*1024*1024;
+ const MAX_ORIGINAL=45*1024*1024;
+ const DIRECT_MIMES=new Set(["image/jpeg","image/png","image/webp","image/gif"]);
+ function needsPreview(a){
+  return Number(a?.bytes||0)>MAX_DIRECT||!DIRECT_MIMES.has(a?.mime_type);
+ }
+ async function imagePreview(a,originalFile){
+  if(Number(a?.bytes||0)>MAX_ORIGINAL)throw Error("The original exceeds this library's 45 MB file limit.");
+  let blob=originalFile;
+  if(!blob){
+   const {data,error}=await client.storage.from("corp-social-media").download(a.storage_path);
+   if(error||!data)throw Error("Couldn't read your private original for AI preview.");
+   blob=data;
+  }
+  if(!blob||!blob.size)throw Error("Image is empty or unavailable.");
+  const url=URL.createObjectURL(blob);
+  const image=new Image();
+  try{
+   image.decoding="async";
+   await new Promise((resolve,reject)=>{
+    image.onload=resolve;
+    image.onerror=()=>reject(Error("This browser couldn't decode the image for AI. Use Manual Review or convert it to JPEG."));
+    image.src=url;
+   });
+   const width=image.naturalWidth,height=image.naturalHeight;
+   if(!width||!height)throw Error("The photo has no readable dimensions.");
+   const edge=Math.max(width,height);
+   const scale=Math.min(1,1800/edge);
+   const canvas=document.createElement("canvas");
+   canvas.width=Math.max(1,Math.round(width*scale));
+   canvas.height=Math.max(1,Math.round(height*scale));
+   const ctx=canvas.getContext("2d",{alpha:false});
+   if(!ctx)throw Error("This browser cannot make a private AI preview.");
+   ctx.drawImage(image,0,0,canvas.width,canvas.height);
+   let output=null;
+   for(const quality of [0.82,0.7,0.55]){
+    output=await new Promise(resolve=>canvas.toBlob(resolve,"image/jpeg",quality));
+    if(output&&output.size<=2.5*1024*1024)break;
+   }
+   canvas.width=1;canvas.height=1;
+   if(!output||output.size>3*1024*1024)throw Error("AI preview couldn't be reduced enough. The original is safely uploaded; choose Manual Review.");
+   return await new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve(String(reader.result||""));
+    reader.onerror=()=>reject(Error("Couldn't prepare the image for AI."));
+    reader.readAsDataURL(output);
+   });
+  }finally{
+   URL.revokeObjectURL(url);
+  }
+ }
+ async function invokeAnalyze(a,originalFile=null){
+  const request={action:"analyze",asset_id:a.id};
+  if(needsPreview(a)){
+   say("Creating a reduced analysis copy of "+(a.filename||"photo")+". Your full-resolution original stays untouched.");
+   request.preview_image=await imagePreview(a,originalFile);
+  }
+  const {data,error}=await client.functions.invoke(name,{body:request});
   if(error)throw Error(await explain(error));
   if(!data?.ok||!data.analysis)throw Error(data?.error||"AI service returned no saved suggestion.");
   return data.analysis;
@@ -101,7 +157,7 @@ export function createMilitaryPhotoAI({client,state,toast,getCurrent,mediaUrl,on
   const chosen=asset;
   setBusy(true);label("ANALYZING…");say("Analyzing visible uniform and equipment details. Your photo is not being added to a public gallery.");
   try{
-   const result=await invokeAnalyze(chosen);
+   const result=await invokeAnalyze(chosen,uploadedQueue.find(x=>x.asset?.id===chosen.id)?.file||null);
    if(asset?.id!==chosen.id)return;
    showReview(result);
    if(uploadedQueue.length){const entry=uploadedQueue.find(x=>x.asset.id===chosen.id);if(entry){entry.analysis=result;entry.error="";refreshUploadedList()}}
@@ -207,10 +263,10 @@ export function createMilitaryPhotoAI({client,state,toast,getCurrent,mediaUrl,on
   }
  }
  async function afterUpload(items,onProgress){
-  const ownPhotos=(items||[]).filter(own);
+  const ownPhotos=(items||[]).map(item=>item?.asset?item:{asset:item,file:null}).filter(item=>own(item.asset));
   if(!ownPhotos.length)return;
   if(busy){toast("The AI reviewer is busy. You can analyze newly uploaded photos individually.");return}
-  uploadedQueue=ownPhotos.map(a=>({asset:a,analysis:null,error:""}));
+  uploadedQueue=ownPhotos.map(item=>({asset:item.asset,file:item.file||null,analysis:null,error:""}));
   uploadedIndex=0;asset=null;review=null;
   $("aiPhotoOverlay").hidden=false;
   $("aiPhotoReview").hidden=true;
@@ -226,7 +282,7 @@ export function createMilitaryPhotoAI({client,state,toast,getCurrent,mediaUrl,on
    say("Automatically analyzing photograph "+(i+1)+" of "+uploadedQueue.length+". Keep this library open until scanning finishes. Labels will stay pending your approval.");
    if(typeof onProgress==="function")onProgress(i,uploadedQueue.length,item.asset.filename);
    try{
-    item.analysis=await invokeAnalyze(item.asset);
+    item.analysis=await invokeAnalyze(item.asset,item.file||null);
     completed++;
    }catch(e){
     item.error=String(e?.message||"AI request failed").slice(0,350);
