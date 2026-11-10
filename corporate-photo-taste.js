@@ -1,6 +1,6 @@
 /* BLACKCELL / PRIVATE PHOTO DISCOVERY
    User-directed preferences. Never infer sexuality, ethnicity, or other sensitive traits. */
-export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl,render}){
+export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl,render,archiveAssets}){
  const $=id=>document.getElementById(id);
  const CUES=[
   ["uniform_fit","Uniform / clothing fit"],
@@ -54,12 +54,26 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
  }
  function rank(items){
   const signal=weights();
+  const source=archiveAssets();
+  const byId=new Map(source.map(a=>[a.id,a]));
+  const samples=current().filter(t=>liked(t)||disliked(t)).map(t=>({taste:t,photo:byId.get(t.asset_id)})).filter(x=>x.photo);
   const order=new Map(items.map((a,i)=>[a.id,i]));
   const score=a=>{
    const own=recordFor(a);
    let n=own?.reaction==="more"?65:own?.reaction==="less"?-140:0;
    if(own?.rating)n+=(own.rating-3)*13;
    for(const [cue,w] of signal){if(cueMatch(a,cue))n+=w*9}
+   // Even if someone just selects "Show more", compare approved metadata.
+   // Do not infer the viewer's sexuality or the people pictured.
+   for(const sample of samples){
+    const sg=liked(sample.taste)?1:-1;
+    const p=sample.photo;
+    if(p.id===a.id)continue;
+    if(p.military_category&&p.military_category!=="Unsorted"&&p.military_category===a.military_category)n+=sg*10;
+    const tags=new Set((p.military_tags||[]).map(t=>String(t).toLowerCase()));
+    const overlap=(a.military_tags||[]).filter(t=>tags.has(String(t).toLowerCase())).length;
+    n+=sg*Math.min(overlap,3)*6;
+   }
    return n;
   };
   return [...items].sort((a,b)=>score(b)-score(a)||(order.get(a.id)-order.get(b.id)));
@@ -67,6 +81,9 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
  function reason(a){
   const matches=[...weights()].filter(([cue,n])=>n>0&&cueMatch(a,cue)).sort((a,b)=>b[1]-a[1]).slice(0,3);
   if(matches.length)return "You might like this for its "+matches.map(([key])=>LABELS[key].toLowerCase()).join(", ")+".";
+  const source=archiveAssets(),related=current().filter(liked).map(t=>source.find(x=>x.id===t.asset_id))
+   .filter(x=>x&&x.id!==a?.id&&x.military_category===a?.military_category&&x.military_category!=="Unsorted");
+  if(related.length)return "You might like this because you liked other "+String(a.military_category).toLowerCase()+" photographs.";
   if(current().length)return "Recommendations also reflect your favorites and military categories. More feedback makes the matching more specific.";
   return "Choose What Caught Your Eye on a photograph to teach your For You gallery which visible details matter to you.";
  }
