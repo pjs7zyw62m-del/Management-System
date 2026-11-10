@@ -1,4 +1,5 @@
 /* BLACKCELL NETWORK / Apple Photos × Flickr private corporate library */
+import {createWorldForces} from './corporate-world-forces.js?v=20261110-world2';
 export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadAsset,refresh,profile,openProfile,ensureSigned,switchView}){
  const $=id=>document.getElementById(id);
  const meta={albums:[],albumItems:[],favorites:[],activeAlbum:null,filter:'all',sort:'newest',query:'',
@@ -24,6 +25,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   .map(t=>t.trim().slice(0,40)).filter(Boolean))).slice(0,15)}
  function albumClassification(album){
   return {military_category:cat(album),military_branch:branch(album),
+   military_country_code:album?.military_country_code||'',
    military_era:album?.military_era||'',military_unit:album?.military_unit||'',
    military_tags:Array.isArray(album?.military_tags)?album.military_tags:[]};
  }
@@ -32,6 +34,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   const classification=album&&album.owner_id===ownId()?albumClassification(album):{
    military_category:$('militaryUploadCategory').value,
    military_branch:$('militaryUploadBranch').value,
+   military_country_code:$('militaryUploadCountry').value,
    military_era:$('militaryUploadEra').value,
    military_unit:$('militaryUploadUnit').value.trim(),
    military_tags:parseTags($('militaryUploadTags').value)
@@ -53,6 +56,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  };
  const size=n=>n>=1048576?(n/1048576).toFixed(1)+' MB':Math.round(n/1024)+' KB';
  const nameOf=a=>profile(a.owner_id)?.display_name||'Network Member';
+ const world=createWorldForces({client,state,meta,toast,archiveAssets,mediaUrl,openViewer,render});
  const empty=(heading,detail)=>{
   const box=make('div','panel empty-state');
   box.append(make('strong','',heading),make('span','',detail));return box;
@@ -68,6 +72,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   meta.albums=a.data||[];
   meta.albumItems=b.data||[];
   meta.favorites=c.data||[];
+  await world.load();
   if(meta.activeAlbum&&!meta.albums.some(x=>x.id===meta.activeAlbum))meta.activeAlbum=null;
  }
  function albumFor(id){return meta.albums.find(x=>x.id===id)}
@@ -80,6 +85,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   return arr;
  }
  function selectedAssets(){
+  if(meta.filter==='for-you')return world.rank(archiveAssets());
   let assets=meta.activeAlbum?albumMedia(albumFor(meta.activeAlbum)||{id:''})
    :archiveAssets().filter(x=>meta.scope==='network'||own(x));
   if(meta.filter==='photo')assets=assets.filter(x=>x.kind==='photo');
@@ -95,9 +101,10 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
    (x.military_location||'')+' '+(x.military_year||'')+' '+
    (Array.isArray(x.military_tags)?x.military_tags.join(' '):'')
   ).toLowerCase().includes(meta.query));
-  return sortAssets(assets);
+  return sortAssets(world.applyFilter(assets));
  }
  function selectAlbum(albumId){
+  world.deactivate();
   meta.activeAlbum=albumId||null;
   if(meta.activeAlbum){
    const album=albumFor(meta.activeAlbum);
@@ -173,7 +180,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  function renderGallery(){
   const node=$('applePhotosGallery');node.replaceChildren();
   const list=selectedAssets(),album=albumFor(meta.activeAlbum);
-  $('photosGalleryTitle').textContent=album?album.title:(meta.scope==='mine'?'My Military Media':'Network Military Media');
+  $('photosGalleryTitle').textContent=meta.filter==='for-you'?'For You · Personalized Military Media':album?album.title:(meta.scope==='mine'?'My Military Media':'Network Military Media');
   $('photosClearAlbum').hidden=!meta.activeAlbum;
   for(const b of document.querySelectorAll('#photosFilters [data-photo-filter]'))
    b.classList.toggle('selected',b.dataset.photoFilter===meta.filter);
@@ -208,6 +215,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
    const card=press('',()=>{
     meta.category=meta.category===category?'':category;
     meta.activeAlbum=null;
+    world.deactivate();
     $('militaryFilterCategory').value=meta.category;
     render();
     $('applePhotosGallery')?.scrollIntoView({behavior:'smooth',block:'start'})
@@ -227,7 +235,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   $('favoriteCountMetric').textContent=all.filter(a=>favorited(a.id)).length;
   for(const b of document.querySelectorAll('#militaryScope [data-military-scope]'))
    b.classList.toggle('selected',b.dataset.militaryScope===meta.scope);
-  renderCategoryTiles();renderAlbums();renderGallery();
+  renderCategoryTiles();renderAlbums();renderGallery();world.renderWorld();
  }
  async function toggleFavorite(id){
   const was=favorited(id);
@@ -251,6 +259,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   $('appleAlbumDescription').value=a?.description||'';
   $('appleAlbumCategory').value=cat(a);
   $('appleAlbumBranch').value=branch(a);
+  $('appleAlbumCountry').value=a?.military_country_code||'';
   $('appleAlbumEra').value=a?.military_era||'';
   $('appleAlbumUnit').value=a?.military_unit||'';
   $('appleAlbumTags').value=(a?.military_tags||[]).join(', ');
@@ -264,6 +273,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   const classification={
    military_category:$('appleAlbumCategory').value,
    military_branch:$('appleAlbumBranch').value,
+   military_country_code:$('appleAlbumCountry').value,
    military_era:$('appleAlbumEra').value,
    military_unit:$('appleAlbumUnit').value.trim(),
    military_tags:parseTags($('appleAlbumTags').value)
@@ -486,6 +496,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   $('militaryAssetTitle').textContent='Classify · '+a.filename.slice(0,45);
   $('militaryAssetCategory').value=cat(a);
   $('militaryAssetBranch').value=branch(a);
+  $('militaryAssetCountry').value=a.military_country_code||'';
   $('militaryAssetEra').value=a.military_era||'';
   $('militaryAssetUnit').value=a.military_unit||'';
   $('militaryAssetLocation').value=a.military_location||'';
@@ -507,6 +518,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   const values={
    military_category:$('militaryAssetCategory').value,
    military_branch:$('militaryAssetBranch').value,
+   military_country_code:$('militaryAssetCountry').value,
    military_era:$('militaryAssetEra').value,
    military_unit:$('militaryAssetUnit').value.trim(),
    military_location:$('militaryAssetLocation').value.trim(),
@@ -525,16 +537,17 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   finally{button.disabled=false;button.textContent='SAVE CLASSIFICATION ↗'}
  }
  function setup(){
+  world.setup();
   for(const b of document.querySelectorAll('#militaryScope [data-military-scope]')){
    b.addEventListener('click',()=>{
-    meta.scope=b.dataset.militaryScope;meta.activeAlbum=null;meta.filter='all';render()
+    meta.scope=b.dataset.militaryScope;meta.activeAlbum=null;meta.filter='all';world.deactivate();render()
    });
   }
   for(const [id,key] of [['militaryFilterBranch','branch'],['militaryFilterCategory','category'],['militaryFilterEra','era']]){
-   $(id).addEventListener('change',e=>{meta[key]=e.target.value;meta.activeAlbum=null;render()});
+   $(id).addEventListener('change',e=>{meta[key]=e.target.value;meta.activeAlbum=null;world.deactivate();render()});
   }
   $('militaryFiltersReset').addEventListener('click',()=>{
-   meta.branch='';meta.category='';meta.era='';meta.query='';meta.filter='all';meta.activeAlbum=null;
+   meta.branch='';meta.category='';meta.era='';meta.query='';meta.filter='all';meta.activeAlbum=null;world.deactivate();
    $('militaryFilterBranch').value='';$('militaryFilterCategory').value='';
    $('militaryFilterEra').value='';$('photosSearch').value='';render()
   });
