@@ -1,7 +1,7 @@
 /* BLACKCELL NETWORK / Apple Photos × Flickr private corporate library */
 import {createWorldForces} from './corporate-world-forces.js?v=20261110-world6';
 import {createMilitaryPhotoAI} from './corporate-military-ai.js?v=20261110-learn1';
-import {createPhotoTaste} from './corporate-photo-taste.js?v=20261110-area1';
+import {createPhotoTaste} from './corporate-photo-taste.js?v=20261110-area25';
 export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadAsset,refresh,profile,openProfile,ensureSigned,switchView}){
  const $=id=>document.getElementById(id);
  const meta={albums:[],albumItems:[],favorites:[],activeAlbum:null,filter:'all',sort:'newest',query:'',
