@@ -43,7 +43,7 @@ export function createMilitaryPhotoAI({client,state,toast,getCurrent,mediaUrl,on
   setVal("aiPhotoNotes",record.notes);
   setVal("aiPhotoTags",Array.isArray(record.tags)?record.tags.join(", "):"");
   const conf=record.confidence||"low";
-  $("aiPhotoConfidence").textContent="CONFIDENCE: "+conf.toUpperCase()+" • "+(record.status||"suggested").toUpperCase();
+  $("aiPhotoConfidence").textContent="CONFIDENCE: "+conf.toUpperCase()+" • "+(record.status||"suggested").toUpperCase()+(record.learned_from_count>0?" • MEMORY "+record.learned_from_count:"");
   const ready=record.status==="suggested";
   $("aiPhotoApprove").disabled=!ready;
   $("aiPhotoReject").disabled=!ready;
@@ -67,11 +67,11 @@ export function createMilitaryPhotoAI({client,state,toast,getCurrent,mediaUrl,on
  }
  async function readExisting(a){
   const {data,error}=await client.from("corp_social_ai_analysis")
-   .select("id,asset_id,status,country_code,military_branch,military_category,uniform_type,camouflage_pattern,focus,confidence,nudity_level,visual_focus,notes,tags,attempts,updated_at")
+   .select("id,asset_id,status,country_code,military_branch,military_category,uniform_type,camouflage_pattern,focus,confidence,nudity_level,visual_focus,notes,tags,attempts,learned_from_count,updated_at")
    .eq("asset_id",a.id).eq("owner_id",state.user.id).maybeSingle();
   if(error){say("Could not load previous AI suggestions: "+error.message);return}
   showReview(data);
-  if(data){say(data.status==="approved"?"This photo has approved AI tags. You can re-analyze it if you want.":data.status==="rejected"?"Previous suggestions were rejected. You can analyze again.":"Previous AI suggestions are ready for review.");}
+  if(data){say((data.status==="approved"?"Approved classifications saved and available as examples for future analyses. Re-analyzing uses additional API credits.":data.status==="rejected"?"Previous suggestions were rejected. You can analyze again.":"Previous AI suggestions are ready for review.")+(data.learned_from_count>0?" Previous analysis used "+data.learned_from_count+" approved examples.":""));}
   else say("Press Analyze Photo to send this photograph to the private vision analysis endpoint. The image is processed only after you request it.");
  }
  async function open(a){
@@ -150,10 +150,11 @@ export function createMilitaryPhotoAI({client,state,toast,getCurrent,mediaUrl,on
   const {data,error}=await client.functions.invoke(name,{body:request});
   if(error)throw Error(await explain(error));
   if(!data?.ok||!data.analysis)throw Error(data?.error||"AI service returned no saved suggestion.");
-  return data.analysis;
+  return {...data.analysis,learned_from_count:Number(data.learning?.examples_consulted??data.analysis.learned_from_count??0)};
  }
  async function analyze(){
   if(!asset||busy)return;
+  if(review?.status==="approved"&&!confirm("This photo is already approved. Re-analyzing uses additional OpenAI API credits. The approved labels stay unchanged until you approve again. Continue?"))return;
   const chosen=asset;
   setBusy(true);label("ANALYZING…");say("Analyzing visible uniform and equipment details. Your photo is not being added to a public gallery.");
   try{
@@ -161,7 +162,7 @@ export function createMilitaryPhotoAI({client,state,toast,getCurrent,mediaUrl,on
    if(asset?.id!==chosen.id)return;
    showReview(result);
    if(uploadedQueue.length){const entry=uploadedQueue.find(x=>x.asset.id===chosen.id);if(entry){entry.analysis=result;entry.error="";refreshUploadedList()}}
-   say("AI suggestions received. Review every field, correct any errors, then select Approve & Save.");
+   say("AI suggestions received. "+(result.learned_from_count>0?"This analysis used "+result.learned_from_count+" previously approved example(s). ":"No earlier approved examples were consulted. ")+"Check and correct the labels before selecting Approve & Save.");
   }catch(e){say(e.message||"Analysis failed");label(review?"↻ RE-ANALYZE":"✦ ANALYZE PHOTO");}
   finally{setBusy(false);if(review?.status!=="suggested")$("aiPhotoApprove").disabled=true}
  }
@@ -205,7 +206,7 @@ export function createMilitaryPhotoAI({client,state,toast,getCurrent,mediaUrl,on
    onApproved(resultAsset,final);
    showReview({...review,...final,status:"approved"});
    if(uploadedQueue.length){const entry=uploadedQueue.find(x=>x.asset.id===resultAsset.id);if(entry)entry.analysis={...review,...final,status:"approved"};refreshUploadedList()}
-   say("Approved and saved. Country, branch, subject and tags now feed World Forces Explorer and For You."+(uploadedQueue.length&&uploadedIndex<uploadedQueue.length-1?" Select Next Photo to review the following upload.":""));
+   say("Approved and saved. These corrected labels can guide future AI analyses and already feed World Forces Explorer and For You."+(uploadedQueue.length&&uploadedIndex<uploadedQueue.length-1?" Select Next Photo to review the following upload.":""));
   }catch(e){say("Couldn't approve: "+(e?.message||"Unknown error"))}
   finally{setBusy(false);if(review?.status!=="suggested"){$("aiPhotoApprove").disabled=true;$("aiPhotoReject").disabled=true}}
  }
