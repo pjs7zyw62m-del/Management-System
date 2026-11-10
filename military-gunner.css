@@ -20,3 +20,8 @@
 .gunner-actions button{background:linear-gradient(110deg,#8c2b4c,#c2375f);color:#fff;font-weight:800;border-radius:9px;border:1px solid #d97998;padding:10px 15px;cursor:pointer;font-size:10px}
 .gunner-actions button:disabled{opacity:.45;cursor:not-allowed}
 @media(max-width:610px){#bcGunner{right:10px;bottom:12px}#bcGunnerPanel{height:min(580px,calc(100dvh - 88px))}#bcGunnerLauncher{padding:9px;font-size:10px}#bcGunnerLauncher .gunner-avatar{width:29px;height:29px}}
+
+/* Network also has its regular chat; Gunner stays separate on the opposite side. */
+body.bc-network #bcGunner{left:16px;right:auto}
+body.bc-network #bcGunnerPanel{left:0;right:auto}
+@media(max-width:610px){body.bc-network #bcGunner{left:10px;right:auto}}
