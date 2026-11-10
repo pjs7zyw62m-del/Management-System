@@ -6,6 +6,15 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
   ["uniform_fit","Uniform / clothing fit"],
   ["camouflage","Camouflage pattern"],
   ["boots","Boots / footwear"],
+  ["belt","Belt / waist belt"],
+  ["belt_buckle","Belt buckle"],
+  ["shirt","Shirt / top"],
+  ["uniform_shirt","Uniform shirt"],
+  ["shirt_fit","Shirt fit / cut"],
+  ["shirt_tucked","Tucked-in shirt"],
+  ["sleeves_rolled","Rolled-up sleeves"],
+  ["sleeves_down","Sleeves down"],
+  ["clothed_backside","Clothed backside / seat of trousers"],
   ["physique","Athletic build"],
   ["pose","Pose / posture"],
   ["exercise","Exercise / activity"],
@@ -32,6 +41,15 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
   uniform_fit:/uniform|shirt|clothing|wearing|fatigue|trousers|pants|mccuu|bdu|tactical|gear|outfit/i,
   camouflage:/camo|camouflage|m arpat|marpat|multicam|woodland|desert|acu|dcu|digital/i,
   boots:/boots?|footwear|shoes?/i,
+  belt:/\bbelts?\b|\bwaist belt\b/i,
+  belt_buckle:/\b(?:belt\s*)?buckles?\b/i,
+  shirt:/\bshirts?\b|\bt[\s-]?shirt\b|\bshirt\s*top\b|\bblouse\b/i,
+  uniform_shirt:/\buniform\s*(?:shirt|top|blouse)\b|\bcombat shirt\b|\bfatigue shirt\b|\butility shirt\b|\bmccuu\b|\bbdu shirt\b|\bacu top\b/i,
+  shirt_fit:/\bfitt?ed shirt\b|\bshirt fit\b|\bslim fit\b|\bloose[-\s]?fitting shirt\b|\bsnug shirt\b/i,
+  shirt_tucked:/\btucked[\s-]?in shirt\b|\bshirt tucked\b|\btucked[\s-]?in\b/i,
+  sleeves_rolled:/\brolled[\s-]?(?:up[\s-]?)?sleeves?\b|\bsleeves?\s*rolled[\s-]?up?\b|\brolled[\s-]?up shirt sleeves?\b/i,
+  sleeves_down:/\bsleeves?\s*down\b|\bfull[\s-]?length sleeves?\b|\bunrolled sleeves?\b/i,
+  clothed_backside:/\bclothed (?:backside|rear|seat)\b|\brear of (?:trousers|pants)\b|\bseat of (?:trousers|pants)\b|\bbackside\b/i,
   physique:/muscl|physique|athletic|fitness|bodybuild|strength|workout|exercise/i,
   pose:/pose|posing|posture|stance|standing|kneeling|sitting/i,
   exercise:/fitness|exercise|training|pull[\s-]?ups?|push[\s-]?ups?|workout|gym|weightlift|running|squat/i,
@@ -68,7 +86,8 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
    const positive=liked(t),negative=disliked(t);
    const change=positive?(t.rating>=4?2+t.rating-3:3):negative?-3:0;
    if(!change)continue;
-   const mentioned=new Set([...(t.cues||[]),...(Array.isArray(t.regions)?t.regions.map(r=>r.cue):[])]);
+   const regional=Array.isArray(t.regions)?t.regions.flatMap(r=>[r.cue,...(Array.isArray(r.features)?r.features:[])]):[];
+   const mentioned=new Set([...(t.cues||[]),...regional]);
    for(const cue of mentioned){
     if(LABELS[cue])counts.set(cue,Math.max(-20,Math.min(20,(counts.get(cue)||0)+change)));
    }
@@ -135,7 +154,8 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
    ["x","y","w","h"].every(k=>typeof r[k]==="number"&&Number.isFinite(r[k]))&&
    r.x>=0&&r.y>=0&&r.w>=.01&&r.h>=.01&&r.x+r.w<=1.0001&&r.y+r.h<=1.0001&&
    (r.cue===""||!!LABELS[r.cue])&&
-   (r.detail===undefined||(typeof r.detail==="string"&&r.detail.length<=120));
+   (r.detail===undefined||(typeof r.detail==="string"&&r.detail.length<=120))&&
+   (r.features===undefined||(Array.isArray(r.features)&&r.features.length<=5&&r.features.every(x=>!!LABELS[x])));
  }
  function regionOptions(selectedCue=""){
   const options=[new Option("No label yet (saved for later)", "")];
@@ -175,7 +195,7 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
   const detail=String(rect.detail||"").trim();
   return (i+1)+" · "+feature+(detail?" · "+detail.slice(0,70):"");
  }
- function detectHairCue(description){
+ function detectDetailCue(description){
   const t=String(description||"").toLowerCase();
   if(/\bhigh[\s-]*(?:and|&|n)[\s-]*tight\b/.test(t))return "hair_high_tight";
   if(/\bbuzz[\s-]*cut\b/.test(t))return "hair_buzz";
@@ -183,6 +203,15 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
   if(/\b(?:skin|taper|high|mid|low)[\s-]*fade\b|\bfade[\s-]*haircut\b/.test(t))return "hair_fade";
   if(/\bshaved\s*(?:head|scalp)?\b/.test(t))return "hair_shaved";
   if(/\bbald\b/.test(t))return "hair_bald";
+  if(/\b(?:rolled[\s-]?(?:up[\s-]?)?sleeves?|sleeves?\s*rolled[\s-]?up)\b/.test(t))return "sleeves_rolled";
+  if(/\b(?:sleeves?\s*down|unrolled sleeves?)\b/.test(t))return "sleeves_down";
+  if(/\b(?:belt\s*buckle|buckles?)\b/.test(t))return "belt_buckle";
+  if(/\b(?:uniform\s*(?:shirt|top)|combat shirt|fatigue shirt|utility shirt)\b/.test(t))return "uniform_shirt";
+  if(/\b(?:shirt fit|fitted shirt|slim fit|snug shirt)\b/.test(t))return "shirt_fit";
+  if(/\b(?:tucked[\s-]?in shirt|shirt tucked)\b/.test(t))return "shirt_tucked";
+  if(/\b(?:belt|waist belt)\b/.test(t))return "belt";
+  if(/\b(?:shirt|t[\s-]?shirt|blouse)\b/.test(t))return "shirt";
+  if(/\b(?:clothed backside|seat of (?:pants|trousers)|backside)\b/.test(t))return "clothed_backside";
   return "";
  }
  function drawRegion(rect,i,draft=false){
@@ -219,17 +248,38 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
     if(busy)return;
     regions[i].detail=detailInput.value.slice(0,120);
     if(!regions[i].cue){
-     const inferred=detectHairCue(detailInput.value);
+     const inferred=detectDetailCue(detailInput.value);
      if(inferred){regions[i].cue=inferred;label.value=inferred}
     }
     const rect=layer.querySelector('[data-region-index="'+i+'"]');
     if(rect)rect.dataset.label=regionLabel(regions[i],i);
    });
+   const secondary=document.createElement("div");secondary.className="taste-region-secondaries";
+   const secondaryTitle=document.createElement("span");secondaryTitle.textContent="ALSO NOTICE";
+   secondary.append(secondaryTitle);
+   const related=["uniform_shirt","shirt_fit","shirt_tucked","sleeves_rolled","sleeves_down","belt","belt_buckle","clothed_backside"];
+   const chosen=new Set(Array.isArray(r.features)?r.features:[]);
+   for(const key of related){
+    const extra=document.createElement("button");extra.type="button";extra.textContent=LABELS[key];
+    extra.className="taste-region-extra"+(chosen.has(key)?" selected":"");
+    extra.setAttribute("aria-pressed",String(chosen.has(key)));extra.setAttribute("aria-label","Area "+(i+1)+" also: "+LABELS[key]);
+    extra.disabled=busy;
+    extra.addEventListener("click",()=>{
+     if(busy)return;
+     const currentFeatures=new Set(Array.isArray(regions[i].features)?regions[i].features:[]);
+     if(currentFeatures.has(key))currentFeatures.delete(key);
+     else if(currentFeatures.size>=5){$("tasteStatus").textContent="Choose up to five additional details for each highlighted area.";return}
+     else currentFeatures.add(key);
+     regions[i].features=[...currentFeatures];
+     updateRegions();
+    });
+    secondary.append(extra);
+   }
    const remove=document.createElement("button");remove.type="button";remove.textContent="REMOVE";
    remove.setAttribute("aria-label","Remove marked area "+(i+1));
    remove.disabled=busy;
    remove.addEventListener("click",()=>{if(!busy){regions.splice(i,1);updateRegions()}});
-   entry.append(number,label,detailInput,remove);list.append(entry);
+   entry.append(number,label,detailInput,secondary,remove);list.append(entry);
   }
   if(drag){
    const x=Math.min(drag.from.x,drag.to.x),y=Math.min(drag.from.y,drag.to.y);
@@ -246,7 +296,7 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
    if(w<.02){const cx=(drag.from.x+drag.to.x)/2;w=.04;x=limit(cx-w/2,0,1-w)}
    if(h<.02){const cy=(drag.from.y+drag.to.y)/2;h=.04;y=limit(cy-h/2,0,1-h)}
   }
-  regions.push({x:round(x),y:round(y),w:round(Math.min(w,1-x)),h:round(Math.min(h,1-y)),cue:$("tasteAreaType").value||"",detail:""});
+  regions.push({x:round(x),y:round(y),w:round(Math.min(w,1-x)),h:round(Math.min(h,1-y)),cue:$("tasteAreaType").value||"",features:[],detail:""});
   drag=null;dragPointer=null;
   updateRegions();
   $("tasteStatus").textContent="Area marked. Add a label if you want recommendations to match its visible features, then save your preferences.";
@@ -340,7 +390,7 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
   setBusy(true);
   $("tasteStatus").textContent="Saving your private photo preferences…";
   const data={user_id:ownId(),asset_id:active.id,rating,reaction,cues:[...selected],
-    regions:regions.map(r=>({x:r.x,y:r.y,w:r.w,h:r.h,cue:r.cue||"",detail:String(r.detail||"").trim().slice(0,120)})),
+    regions:regions.map(r=>({x:r.x,y:r.y,w:r.w,h:r.h,cue:r.cue||"",features:[...new Set(Array.isArray(r.features)?r.features:[])].filter(x=>!!LABELS[x]).slice(0,5),detail:String(r.detail||"").trim().slice(0,120)})),
     note:$("tasteNote").value.trim().slice(0,500),updated_at:new Date().toISOString()};
   try{
    const {error}=await client.from("corp_social_photo_tastes")
