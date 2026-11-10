@@ -342,7 +342,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
     label.textContent='Uploading '+(completed+1)+' of '+supported.length+' · '+f.name.slice(0,36);
     try{
      const asset=await uploadAsset(f,'library');
-     if(asset.kind==='photo')uploadedPhotoIds.push(asset.id);
+     if(asset.kind==='photo')uploadedPhotoIds.push({id:asset.id,file:f});
      const classification=uploadClassification();
      const {error:tagError}=await client.from('corp_social_assets')
       .update(classification).eq('id',asset.id).eq('owner_id',ownId());
@@ -361,7 +361,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
    render();
    toast(failures?supported.length-failures+' saved, '+failures+' unsuccessful.':'Media uploaded to Blackcell Network Photos.');
    if(scanAfterUpload&&uploadedPhotoIds.length){
-    const newest=uploadedPhotoIds.map(id=>byId(id)).filter(Boolean);
+    const newest=uploadedPhotoIds.map(item=>({asset:byId(item.id),file:item.file})).filter(item=>item.asset);
     if(newest.length){
      label.textContent='AI reviewing '+newest.length+' newly uploaded photographs…';
      await ai.afterUpload(newest,(i,total,filename)=>{
