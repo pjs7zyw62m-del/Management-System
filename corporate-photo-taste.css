@@ -1,0 +1,56 @@
+/* BLACKCELL / Personal Photo Discovery – Ultra-Dark Apple Glass */
+#appleViewerTaste{background:linear-gradient(114deg,#401a26,#79233c)!important;border:1px solid #bc4e70!important;color:#fff!important;font-weight:750!important;white-space:nowrap}
+#appleViewerTaste[hidden],#tasteInsights[hidden],#tasteOverlay[hidden]{display:none!important}
+.taste-insight{margin:16px 0 22px;padding:16px 18px;background:linear-gradient(124deg,#17151d,#0c0f13);border:1px solid #513341;border-radius:16px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;color:#ede8ec}
+.taste-insight .taste-overline{display:block;font-size:9px;letter-spacing:.17em;color:#da8b9f;font-weight:800}
+.taste-insight strong{font-size:17px;letter-spacing:-.025em;display:block;margin:5px 0}
+.taste-insight p{font-size:12px;color:#bcaeb8;line-height:1.6;margin:3px 0 8px;max-width:610px}
+.taste-insight-signals{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.taste-insight-signals span{font-size:10px;background:#31202d;color:#f5cad4;border:1px solid #754354;padding:6px 9px;border-radius:100px}
+.taste-insight-signals small{color:#958994;font-size:10px}
+#tasteResetAll{background:transparent;border:1px solid #614452;color:#d4b0bd;border-radius:8px;padding:9px 12px;cursor:pointer;white-space:nowrap;font-size:10px;font-weight:700}
+#tasteResetAll:disabled{opacity:.45;cursor:not-allowed}
+.taste-overlay{position:fixed;inset:0;z-index:240030;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto;background:#010103e9;backdrop-filter:blur(20px);overscroll-behavior:contain;color:#f5eef2}
+.taste-dialog{width:min(680px,100%);max-height:calc(100dvh - 32px);overflow:auto;background:linear-gradient(150deg,#23171e,#121218 53%,#0a0c11);border:1px solid #6e3449;box-shadow:0 32px 100px #000d;border-radius:20px;position:relative}
+.taste-bar{height:3px;background:linear-gradient(90deg,#390b1c,#ff365d,#882644,#e23a59,#290915);background-size:250% 100%;animation:tasteGlow 7s linear infinite;box-shadow:0 0 17px #f63d5966}
+@keyframes tasteGlow{to{background-position:250% 0}}
+.taste-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:22px 25px 16px;border-bottom:1px solid #4c2c39}
+.taste-header .overline{font-size:9px;letter-spacing:.18em;color:#df809d;font-weight:800}
+.taste-header h2{margin:5px 0 0;letter-spacing:-.045em;font-size:26px;color:white;font-weight:800}
+.taste-close{width:40px;height:40px;flex:none;border-radius:11px;border:1px solid #774052;background:#24191f;color:#ffdbe6;font-size:21px;cursor:pointer}
+.taste-body{padding:20px 25px 24px}
+.taste-lead{display:flex;gap:16px;align-items:center;margin-bottom:21px}
+.taste-preview{width:103px;height:117px;object-fit:contain;background:#08080b;border:1px solid #49313c;border-radius:13px;flex:none}
+.taste-lead strong{font-size:15px;display:block;margin-bottom:7px;overflow-wrap:anywhere}
+.taste-lead p{font-size:12px;line-height:1.7;color:#bbaeb7;margin:0}
+.taste-section{border-top:1px solid #392831;padding:17px 0}
+.taste-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:11px}
+.taste-section strong,.taste-section-head strong{font-size:12px;color:#eee2e8}
+.taste-section-head small,#tasteRatingText{font-size:10px;color:#aa9da8}
+.taste-cues{display:flex;flex-wrap:wrap;gap:8px}
+.taste-cue{background:#16171d;color:#d1c6ce;border:1px solid #59404c;border-radius:999px;padding:10px 13px;cursor:pointer;font-size:11px;line-height:1.2;transition:all .16s ease}
+.taste-cue.selected{background:linear-gradient(110deg,#651c35,#a52e50);border-color:#ee6687;color:white;box-shadow:0 0 15px #d52c5366}
+.taste-cue:focus-visible,.taste-footer button:focus-visible,.taste-stars button:focus-visible{outline:2px solid #ff829d;outline-offset:2px}
+.taste-stars{display:flex;gap:7px;align-items:center}
+.taste-stars button{font-size:30px;line-height:1;background:transparent;border:0;color:#62545d;cursor:pointer;padding:3px}
+.taste-stars button.active{color:#f19ba9;text-shadow:0 0 12px #eb42666e}
+.taste-notes{width:100%;min-height:70px;border:1px solid #6b4756;background:#0f1017;border-radius:11px;padding:12px;color:#fff;resize:vertical;font:inherit;font-size:12px;margin-top:11px;box-sizing:border-box}
+.taste-help{color:#8d818c;font-size:10px;line-height:1.65;margin:6px 0 0}
+.taste-status{color:#d5aab9;font-size:11px;min-height:16px;margin:9px 0}
+.taste-footer{display:flex;gap:9px;justify-content:flex-end;flex-wrap:wrap}
+.taste-footer button{font-size:10px;font-weight:800;letter-spacing:.045em;cursor:pointer;padding:12px 14px;border:1px solid #724458;border-radius:10px;background:#241923;color:#f5d4df}
+.taste-footer button.strong{background:linear-gradient(115deg,#9d2748,#c5375a);border-color:#df6780;color:white}
+.taste-footer button.muted{color:#b5a4b0;border-color:#4e3642;background:transparent}
+.taste-footer button:disabled{opacity:.42;cursor:not-allowed}
+@media(max-width:620px){
+ .taste-insight{flex-direction:column;align-items:stretch;padding:14px}
+ #tasteResetAll{align-self:flex-start}
+ .taste-dialog{max-height:calc(100dvh - 18px);border-radius:14px}
+ .taste-overlay{padding:9px}
+ .taste-header{padding:19px 16px 13px}.taste-header h2{font-size:22px}
+ .taste-body{padding:15px 16px 20px}.taste-lead{align-items:flex-start;gap:11px}
+ .taste-preview{width:80px;height:96px}
+ .taste-cue{padding:9px 11px}
+ .taste-footer{justify-content:stretch}
+ .taste-footer button{flex:1 1 42%}
+}
