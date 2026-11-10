@@ -329,6 +329,8 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
    toast('Unsupported file types or files over 45 MB were skipped. Use JPG, PNG, HEIC, GIF, MOV, or MP4.');
   }
   if(!supported.length)return;
+  const scanAfterUpload=$('aiAnalyzeOnUpload')?.checked===true;
+  const uploadedPhotoIds=[];
   meta.uploading=true;
   const bar=$('applePhotoProgress'),fill=$('applePhotoMeterFill'),label=$('appleProgressLabel');
   $('photosUploadButton').disabled=true;
@@ -340,6 +342,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
     label.textContent='Uploading '+(completed+1)+' of '+supported.length+' · '+f.name.slice(0,36);
     try{
      const asset=await uploadAsset(f,'library');
+     if(asset.kind==='photo')uploadedPhotoIds.push(asset.id);
      const classification=uploadClassification();
      const {error:tagError}=await client.from('corp_social_assets')
       .update(classification).eq('id',asset.id).eq('owner_id',ownId());
@@ -357,6 +360,15 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
    await refresh();
    render();
    toast(failures?supported.length-failures+' saved, '+failures+' unsuccessful.':'Media uploaded to Blackcell Network Photos.');
+   if(scanAfterUpload&&uploadedPhotoIds.length){
+    const newest=uploadedPhotoIds.map(id=>byId(id)).filter(Boolean);
+    if(newest.length){
+     label.textContent='AI reviewing '+newest.length+' newly uploaded photographs…';
+     await ai.afterUpload(newest,(i,total,filename)=>{
+      label.textContent='AI scan '+(i+1)+' of '+total+' · '+String(filename||'Photo').slice(0,36);
+     });
+    }else toast('Photos uploaded. Open them to request AI suggestions after refreshing the library.');
+   }
   }finally{
    meta.uploading=false;$('photosUploadButton').disabled=false;
    setTimeout(()=>bar.hidden=true,800);
