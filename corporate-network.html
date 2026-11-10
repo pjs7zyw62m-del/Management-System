@@ -199,7 +199,7 @@
         <div class="photos-gallery-tools">
           <div class="apple-segmented" id="photosFilters">
             <button data-photo-filter="all" class="selected">All</button><button data-photo-filter="photo">Photos</button>
-            <button data-photo-filter="video">Videos</button><button data-photo-filter="for-you">✦ For You</button><button data-photo-filter="countries">🌐 MY COUNTRIES</button><button data-photo-filter="favorites">♥ Favorites</button>
+            <button data-photo-filter="video">Videos</button><button data-photo-filter="for-you">✦ For You</button><button data-photo-filter="global">🌍 GLOBAL</button><button data-photo-filter="countries">🌐 MY COUNTRY PAGES</button><button data-photo-filter="favorites">♥ Favorites</button>
             <button data-photo-filter="mine">My Uploads</button>
           </div>
           <div class="photos-gallery-search"><input id="photosSearch" type="search" placeholder="Search your collection…" aria-label="Search photos and videos by filename or caption">
@@ -208,12 +208,21 @@
         <section id="myCountriesPanel" class="country-personal-panel" hidden aria-label="My selected countries collection">
  <div class="country-personal-hero"><span>BLACKCELL / CUSTOM MILITARY COLLECTION</span>
  <h3 id="myCountriesTitle">MY COUNTRIES.</h3>
- <p>One military gallery for every country you select. Choose the United States alone or combine two, three, or more countries. Only saved, authorized photographs with confirmed country tags appear.</p></div>
- <div class="country-personal-actions">
+ <p>Global displays all authorized military photos. Save United States as its own page, then save United States + China as a completely separate hybrid page. Each page keeps its own country selection and updates with new classified photos.</p></div>
+ <div class="country-pages-head">
+ <strong>YOUR SAVED COUNTRY PAGES</strong>
+ <span>Each page remains independent. Select Global, USA, or any saved hybrid combination.</span>
+</div>
+<div id="myCountryPages" class="country-pages-grid" aria-label="Global and your saved military country pages"></div>
+<div class="country-page-save-form">
+ <label for="myCountryPageName">PAGE NAME <small>(optional)</small></label>
+ <input id="myCountryPageName" type="text" maxlength="80" placeholder="Example: USA + China" autocomplete="off">
+</div>
+<div class="country-personal-actions">
   <button id="myCountriesUS" type="button">🇺🇸 UNITED STATES ONLY</button>
   <label for="myCountriesSelect">ADD A COUNTRY</label><select id="myCountriesSelect" aria-label="Choose a country to add"></select>
   <button id="myCountriesAdd" type="button">+ ADD COUNTRY</button>
-  <button id="myCountriesSave" type="button">♡ SAVE MY COLLECTION</button>
+  <button id="myCountriesSave" type="button">＋ SAVE AS A NEW PAGE</button>
   <button id="myCountriesClear" type="button">CLEAR</button>
  </div>
  <div id="myCountriesChips" class="country-personal-chips" role="group" aria-label="Selected countries"></div>
