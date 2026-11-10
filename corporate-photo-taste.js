@@ -442,7 +442,9 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
    btn.setAttribute("aria-pressed","false");
    btn.addEventListener("click",()=>{
     if(busy)return;
-    if(selected.has(key))selected.delete(key);else selected.add(key);
+    if(selected.has(key))selected.delete(key);
+    else if(selected.size<10)selected.add(key);
+    else $("tasteStatus").textContent="Choose up to ten overall details, plus five highlighted areas.";
     updateCues();
    });
    root.append(btn);
