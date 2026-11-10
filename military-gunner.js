@@ -39,7 +39,7 @@ export function mountMilitaryGunner({client,getContext,mount=document.body,visib
   return data;
  }
  async function pollJob(id,placeholder){
-  if(busy)return;
+  if(busy&&activeJob)return;
   activeJob=id;pendingPlaceholder=placeholder;
   $('bcGunnerCheck').hidden=true;
   setBusy(true);
