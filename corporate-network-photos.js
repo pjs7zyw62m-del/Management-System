@@ -7,7 +7,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  const $=id=>document.getElementById(id);
  const meta={albums:[],albumItems:[],favorites:[],activeAlbum:null,filter:'all',sort:'newest',query:'',
    scope:'mine',branch:'',category:'',era:'',editingAsset:null,
-   viewerItems:[],viewerIndex:0,editingAlbum:null,uploading:false,renderCount:0,tastes:[]};
+   viewerItems:[],viewerIndex:0,editingAlbum:null,uploading:false,renderCount:0,tastes:[],countryPages:[],countryPageId:null};
  const fileMax=45*1024*1024;
  const photoFormats=new Set(['image/jpeg','image/png','image/webp','image/gif','image/heic']);
  const videoFormats=new Set(['video/mp4','video/webm','video/quicktime','video/x-m4v']);
@@ -101,6 +101,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   meta.favorites=c.data||[];
   await world.load();
   await taste.load();
+  await loadCountryPages();
   if(meta.activeAlbum&&!meta.albums.some(x=>x.id===meta.activeAlbum))meta.activeAlbum=null;
  }
  function albumFor(id){return meta.albums.find(x=>x.id===id)}
@@ -113,6 +114,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   return arr;
  }
  function selectedAssets(){
+  if(meta.filter==='global')return [...archiveAssets()].sort((a,b)=>Date.parse(b.created_at)-Date.parse(a.created_at));
   if(meta.filter==='countries'){
    const codes=new Set(world.selectedCountryCodes());
    return codes.size?archiveAssets().filter(a=>a.kind==='photo'&&codes.has(String(a.military_country_code||'').toUpperCase()))
@@ -220,66 +222,220 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   }
   return tile;
  }
+
+ async function loadCountryPages(){
+  const {data,error}=await client.from('corp_social_country_collections')
+   .select('id,user_id,title,country_codes,created_at,updated_at').eq('user_id',ownId())
+   .order('created_at',{ascending:false}).limit(100);
+  if(error){console.warn('Saved country pages unavailable',error.message);meta.countryPages=[];return}
+  meta.countryPages=data||[];
+  if(meta.countryPageId&&!meta.countryPages.some(x=>x.id===meta.countryPageId))meta.countryPageId=null;
+  const desired=new URLSearchParams(location.search).get('collection');
+  if(desired==='global'){meta.filter='global';meta.countryPageId=null;meta.scope='network'}
+  else if(desired){
+   const match=meta.countryPages.find(x=>x.id===desired);
+   if(match){
+    meta.filter='countries';meta.countryPageId=match.id;
+    meta.scope='network';world.updateCountryCollection(match.country_codes);
+    if($('myCountryPageName'))$('myCountryPageName').value=match.title;
+   }
+  }
+ }
+ const normalizedCountrySet=codes=>[...new Set((codes||[]).filter(x=>/^[A-Z]{2}$/.test(x)))].sort();
+ const identicalSets=(a,b)=>normalizedCountrySet(a).join(',')===normalizedCountrySet(b).join(',');
+ const displayCountryCodes=codes=>[...(codes||[])].sort((a,b)=>a==='US'?-1:b==='US'?1:
+  world.countryName(a).localeCompare(world.countryName(b)));
+ const countryShort=c=>c==='US'?'USA':world.countryName(c);
+ const defaultCountryName=codes=>{
+  const list=displayCountryCodes(codes);
+  return list.length===1?(list[0]==='US'?'USA Military':'Military · '+world.countryName(list[0])):
+   list.map(countryShort).join(' + ')+' · Hybrid';
+ };
+ function countryPageUrl(id){
+  const url=new URL(location.href);
+  url.searchParams.set('view','photos');
+  url.searchParams.set('collection',id||'global');
+  return url.pathname+url.search+url.hash;
+ }
+ function setCountryPageUrl(id){
+  if(location.pathname.includes('corporate-network')){
+   history.replaceState(history.state,'',countryPageUrl(id));
+  }
+ }
+ function goToCountryPage(page){
+  if(!page){
+   meta.filter='global';meta.countryPageId=null;meta.scope='network';meta.activeAlbum=null;
+   world.deactivate();$('myCountryPageName').value='';
+   setCountryPageUrl('global');renderGallery();return;
+  }
+  const saved=page.id?meta.countryPages.find(x=>x.id===page.id):null;
+  world.updateCountryCollection(page.country_codes||[]);
+  meta.countryPageId=saved?.id||null;
+  meta.filter='countries';meta.scope='network';meta.activeAlbum=null;
+  world.deactivate();$('myCountryPageName').value=saved?.title||'';
+  setCountryPageUrl(saved?.id||'');renderGallery();
+ }
+ async function saveCountryPage(){
+  const btn=$('myCountriesSave'),codes=normalizedCountrySet(world.selectedCountryCodes());
+  if(!codes.length){toast('Select at least one country to save a separate military page.');return}
+  const match=meta.countryPages.find(p=>identicalSets(p.country_codes,codes));
+  if(match){goToCountryPage(match);toast('That exact country combination is already saved as a page.');return}
+  const raw=$('myCountryPageName').value.trim();
+  const title=(raw||defaultCountryName(codes)).slice(0,80);
+  btn.disabled=true;btn.textContent='SAVING NEW PAGE…';
+  try{
+   const {data,error}=await client.from('corp_social_country_collections')
+    .insert({user_id:ownId(),title,country_codes:codes})
+    .select('id,user_id,title,country_codes,created_at,updated_at').single();
+   if(error)throw error;
+   meta.countryPages=[data,...meta.countryPages];
+   meta.countryPageId=data.id;meta.filter='countries';
+   $('myCountryPageName').value=title;setCountryPageUrl(data.id);renderGallery();
+   toast('✓ '+title+' saved as a separate military page.');
+   $('myCountriesSummary').textContent='✓ SAVED PAGE · '+title+
+    '. You can create a new hybrid without replacing this page.';
+  }catch(error){
+   const msg=String(error?.message||error);
+   toast('Could not save country page: '+msg);
+   $('myCountriesSummary').textContent='Unable to save page: '+msg;
+  }finally{btn.disabled=false;btn.textContent='＋ SAVE AS A NEW PAGE'}
+ }
+ async function deleteCountryPage(id){
+  const page=meta.countryPages.find(x=>x.id===id);if(!page)return;
+  if(!confirm('Delete your saved '+page.title+' page? Original photos and the Global gallery stay unchanged.'))return;
+  const {error}=await client.from('corp_social_country_collections')
+   .delete().eq('user_id',ownId()).eq('id',id);
+  if(error){toast('Could not delete saved page: '+error.message);return}
+  meta.countryPages=meta.countryPages.filter(x=>x.id!==id);
+  if(meta.countryPageId===id){
+   meta.countryPageId=null;$('myCountryPageName').value='';
+   world.updateCountryCollection([]);setCountryPageUrl('');
+  }
+  renderGallery();toast('Saved country page removed. All original photographs remain.');
+ }
  function setupMyCountries(){
   const chooser=$('myCountriesSelect');chooser.replaceChildren(new Option('Choose a country…',''));
   for(const item of world.browseCountries())chooser.add(new Option(item.flag+' '+item.label,item.code));
+  $('myCountriesGlobal').addEventListener('click',()=>goToCountryPage(null));
   $('myCountriesUS').addEventListener('click',()=>{
-   world.updateCountryCollection(['US']);meta.filter='countries';renderGallery();
+   const saved=meta.countryPages.find(x=>identicalSets(x.country_codes,['US']));
+   goToCountryPage(saved||{country_codes:['US']});
   });
   $('myCountriesAdd').addEventListener('click',()=>{
    const code=chooser.value;if(!code)return;
    const existing=world.selectedCountryCodes();
    if(!existing.includes(code)&&existing.length>=12){
-    toast('Select up to twelve countries in one collection.');return;
+    toast('Choose up to twelve countries per hybrid page.');return;
    }
-   world.updateCountryCollection([...existing,code]);
-   meta.filter='countries';renderGallery();chooser.value='';
+   goToCountryPage({country_codes:[...existing,code]});chooser.value='';
   });
   $('myCountriesClear').addEventListener('click',()=>{
-   world.updateCountryCollection([]);renderGallery();
+   world.updateCountryCollection([]);meta.countryPageId=null;
+   meta.filter='countries';$('myCountryPageName').value='';setCountryPageUrl('');renderGallery();
   });
-  $('myCountriesSave').addEventListener('click',async()=>{
-   const btn=$('myCountriesSave');
-   btn.disabled=true;btn.textContent='SAVING…';
-   try{
-    await world.saveCountryCollection();
-    $('myCountriesSummary').textContent='✓ Saved your '+world.selectedCountryCodes().length+' selected countries to this account. The combined gallery updates automatically.';
-   }finally{btn.disabled=false;btn.textContent='♡ SAVE MY COLLECTION'}
-  });
+  $('myCountriesSave').addEventListener('click',()=>void saveCountryPage());
+ }
+ function renderSavedCountryCards(){
+  const host=$('myCountryPages');host.replaceChildren();
+  const items=[
+   {id:null,title:'GLOBAL MILITARY LIBRARY',codes:[],kind:'global'},
+   ...meta.countryPages.map(page=>({
+    id:page.id,title:page.title,codes:page.country_codes||[],
+    kind:page.country_codes.length>1?'hybrid':page.country_codes[0]==='US'?'usa':'nation'
+   }))
+  ];
+  for(const entry of items){
+   const card=document.createElement('article');card.className='country-page-card';card.dataset.theme=entry.kind;
+   if((entry.kind==='global'&&meta.filter==='global')||(entry.id&&entry.id===meta.countryPageId))
+    card.classList.add('active');
+   const open=document.createElement('button');open.type='button';open.className='country-page-open';
+   const flags=document.createElement('div');flags.className='country-page-card-flags';
+   flags.textContent=entry.codes.length?displayCountryCodes(entry.codes).map(c=>{
+    const hit=world.browseCountries().find(x=>x.code===c);return hit?.flag||'🌐'
+   }).join(' '):'🌍';
+   const kind=document.createElement('span');kind.className='country-page-card-type';
+   kind.textContent=entry.kind==='global'?'WORLDWIDE':entry.kind==='hybrid'?'HYBRID / '+entry.codes.length+' COUNTRIES':'SINGLE NATION';
+   const title=document.createElement('strong');title.textContent=entry.title;
+   const count=document.createElement('small');
+   const visible=archiveAssets().filter(a=>entry.kind==='global'||(a.kind==='photo'&&entry.codes.includes(String(a.military_country_code||'').toUpperCase())));
+   count.textContent=visible.length+' MEDIA ITEM'+(visible.length===1?'':'S')+' · OPEN';
+   open.append(flags,kind,title,count);
+   open.addEventListener('click',()=>{
+    goToCountryPage(entry.kind==='global'?null:meta.countryPages.find(x=>x.id===entry.id));
+   });
+   card.append(open);
+   if(entry.id){
+    const remove=document.createElement('button');remove.type='button';remove.className='country-page-delete';
+    remove.textContent='×';remove.title='Delete saved page without deleting photos';
+    remove.setAttribute('aria-label','Delete '+entry.title+' saved page');
+    remove.addEventListener('click',()=>void deleteCountryPage(entry.id));
+    card.append(remove);
+   }
+   host.append(card);
+  }
+ }
+ function renderCountryPageTheme(codes){
+  const panel=$('myCountriesPanel');
+  const global=meta.filter==='global',single=!global&&codes.length===1;
+  const usa=single&&codes[0]==='US';
+  const mode=global?'global':usa?'usa':codes.length>1?'hybrid':'nation';
+  panel.dataset.pageTheme=mode;
+  $('photosView').dataset.countryPageTheme=mode;
+  const flagFor=c=>world.browseCountries().find(x=>x.code===c)?.flag||'🌐';
+  const sorted=displayCountryCodes(codes);
+  const flags=global?'🌍':sorted.map(flagFor).join('  ');
+  const title=global?'GLOBAL MILITARY ARCHIVE':usa?'UNITED STATES MILITARY':codes.length>1?
+   'HYBRID MILITARY COLLECTION':codes.length===1?world.countryName(codes[0]).toUpperCase()+' MILITARY':'CREATE YOUR COUNTRY PAGE';
+  const intro=global?'ALL NATIONS / ALL FORCES':usa?'USA / ARMED FORCES':mode==='hybrid'?
+   sorted.map(countryShort).join(' × ').toUpperCase():'YOUR CUSTOM COUNTRY COLLECTION';
+  const desc=global?'The worldwide Blackcell archive — authorized military photos across every classified country.':
+   usa?'A dedicated American military photo collection with its own navy, silver and crimson presentation.':
+   codes.length>1?'A distinct hybrid page bringing together '+sorted.map(world.countryName).join(', ')+' in one collection.':
+   codes.length?'Your dedicated '+world.countryName(codes[0])+' military collection.':'Choose nations below to build a military page.';
+  $('countryPageIdentity').textContent='BLACKCELL / '+intro;
+  $('countryPageFlags').textContent=flags;
+  $('countryPageHeadline').textContent=title+'.';
+  $('countryPageSubtitle').textContent=desc;
+  $('countryPageArtCaption').textContent=mode==='global'?'WORLDWIDE':usa?'USA / MILITARY':mode==='hybrid'?'HYBRID / '+codes.length+' COUNTRIES':'MILITARY';
+  const visible=archiveAssets().filter(a=>global||codes.includes(String(a.military_country_code||'').toUpperCase()));
+  const named=global?new Set(visible.map(a=>a.military_country_code).filter(Boolean)).size:codes.length;
+  $('countryPageMetrics').textContent=visible.length+' MEDIA ITEMS  /  '+named+' '+(named===1?'COUNTRY':'COUNTRIES');
  }
  function renderMyCountries(){
-  const root=$('myCountriesPanel');
-  if(!root)return;
-  root.hidden=meta.filter!=='countries';
-  if(root.hidden)return;
-  const countries=world.selectedCountryCodes(),chips=$('myCountriesChips');
-  chips.replaceChildren();
-  for(const code of countries){
-   const b=document.createElement('button');b.type='button';
-   b.textContent='🌐 '+world.countryName(code)+' ×';
-   b.setAttribute('aria-label','Remove '+world.countryName(code)+' from My Countries');
+  const panel=$('myCountriesPanel');if(!panel)return;
+  panel.hidden=!['countries','global'].includes(meta.filter);
+  if(panel.hidden){$('photosView').removeAttribute('data-country-page-theme');return}
+  const codes=meta.filter==='global'?[]:world.selectedCountryCodes();
+  renderCountryPageTheme(codes);renderSavedCountryCards();
+  const chips=$('myCountriesChips');chips.replaceChildren();
+  if(!codes.length){
+   const e=document.createElement('span');e.className='country-personal-empty';
+   e.textContent=meta.filter==='global'?'Global shows every authorized country. Choose a saved page or build a new one.':'Select countries to create a new independent page.';
+   chips.append(e);
+  }
+  for(const code of codes){
+   const b=document.createElement('button');b.type='button';b.textContent='🌐 '+world.countryName(code)+' ×';
+   b.setAttribute('aria-label','Remove '+world.countryName(code));
    b.addEventListener('click',()=>{
-    world.updateCountryCollection(world.selectedCountryCodes().filter(x=>x!==code));
-    renderGallery();
-   });chips.append(b);
+    goToCountryPage({country_codes:world.selectedCountryCodes().filter(x=>x!==code)});
+   });
+   chips.append(b);
   }
-  if(!countries.length){
-   const hint=document.createElement('span');hint.className='country-personal-empty';
-   hint.textContent='Choose United States or add a country to build your collection.';chips.append(hint);
-  }
-  const matches=archiveAssets().filter(a=>a.kind==='photo'&&countries.includes(String(a.military_country_code||'').toUpperCase()));
-  $('myCountriesTitle').textContent=countries.length===1?world.countryName(countries[0]).toUpperCase()+'.':
-   countries.length?countries.map(x=>world.countryName(x)).join(' + ').toUpperCase()+'.':'MY COUNTRIES.';
-  $('myCountriesSummary').textContent=countries.length+
-   ' selected · '+matches.length+' matching photo'+(matches.length===1?'':'s')+
-   ' from your authorized library. Select any number of countries up to twelve. Photos without a country label are excluded.';
+  const existing=meta.countryPages.find(x=>identicalSets(x.country_codes,codes));
+  const visible=archiveAssets().filter(a=>a.kind==='photo'&&codes.includes(String(a.military_country_code||'').toUpperCase()));
+  const title=meta.filter==='global'?'GLOBAL MILITARY ARCHIVE':existing?.title||(codes.length?defaultCountryName(codes):'MY COUNTRY PAGES');
+  $('myCountriesTitle').textContent=title.toUpperCase()+'.';
+  $('myCountriesSummary').textContent=meta.filter==='global'?'Global page / all authorized media / select a saved page above':
+   (existing?'SAVED PAGE · ':'UNSAVED COMBINATION · ')+codes.length+' countr'+(codes.length===1?'y':'ies')+
+    ' · '+visible.length+' matching photo'+(visible.length===1?'':'s')+
+    '. Your other saved country pages are preserved.';
  }
  function renderGallery(){
   const node=$('applePhotosGallery');node.replaceChildren();
   const list=selectedAssets(),album=albumFor(meta.activeAlbum);
   taste.renderInsights(list[0],meta.filter==='for-you');
   renderMyCountries();
-  $('photosGalleryTitle').textContent=meta.filter==='countries'
+  $('photosGalleryTitle').textContent=meta.filter==='global'?'Global Military Library · All Countries':meta.filter==='countries'
    ?'My Countries · '+(world.selectedCountryCodes().map(c=>world.countryName(c)).join(' + ')||'Select Countries')
    :meta.filter==='for-you'?'For You · Personalized Military Media'
    :world.title()||(album?album.title:(meta.scope==='mine'?'My Military Media':'Network Military Media'));
@@ -287,8 +443,8 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   for(const b of document.querySelectorAll('#photosFilters [data-photo-filter]'))
    b.classList.toggle('selected',b.dataset.photoFilter===meta.filter);
   if(!list.length){node.append(empty(
-   meta.filter==='countries'?'No photographs for these countries yet':meta.filter==='favorites'?'No favorites yet':'Your gallery is ready',
-   meta.filter==='countries'?'Select countries above. Photographs appear once they have that country saved in their approved classification; unknown-country photos are not guessed.':meta.filter==='favorites'?'Tap a heart on a photo to add it to Favorites.':
+   meta.filter==='global'?'No global military media yet':meta.filter==='countries'?'No photographs for these countries yet':meta.filter==='favorites'?'No favorites yet':'Your gallery is ready',
+   meta.filter==='global'?'All authorized photographs and videos across the Blackcell Network appear here.':meta.filter==='countries'?'Select countries above. Photographs appear once they have that country saved in their approved classification; unknown-country photos are not guessed.':meta.filter==='favorites'?'Tap a heart on a photo to add it to Favorites.':
    meta.activeAlbum?'Add your own photos and videos to this album, or select another collection.':
    'Upload photographs or videos to start your Apple-style Blackcell photo library.'
   ));return}
@@ -663,9 +819,10 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  function setup(){
   world.setup();
   $('wfOpenCountryGallery').addEventListener('click',()=>{
-   if(!world.selectedCountryCodes().length)world.updateCountryCollection(['US']);
-   world.deactivate();meta.filter='countries';meta.scope='network';meta.activeAlbum=null;
-   render();$('myCountriesPanel').scrollIntoView({behavior:'smooth',block:'start'});
+   const selection=world.selectedCountryCodes();
+   const page=meta.countryPages.find(x=>identicalSets(x.country_codes,selection.length?selection:['US']));
+   goToCountryPage(page||{country_codes:selection.length?selection:['US']});
+   $('myCountriesPanel').scrollIntoView({behavior:'smooth',block:'start'});
   });
   ai.setup();
   taste.setup();
@@ -700,9 +857,10 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   $('photosSort').addEventListener('change',e=>{meta.sort=e.target.value;renderGallery()});
   for(const b of document.querySelectorAll('#photosFilters [data-photo-filter]'))b.addEventListener('click',()=>{
    meta.filter=b.dataset.photoFilter;
-   if(meta.filter==='countries'){
+   if(meta.filter==='countries'||meta.filter==='global'){
     world.deactivate();meta.scope='network';meta.activeAlbum=null;
-    if(!world.selectedCountryCodes().length)world.updateCountryCollection(['US']);
+    if(meta.filter==='countries'&&!world.selectedCountryCodes().length)world.updateCountryCollection(['US']);
+    if(meta.filter==='countries')meta.countryPageId=null;
    }
    renderGallery();
   });
