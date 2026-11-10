@@ -12,6 +12,8 @@
 <link rel="stylesheet" href="corp-adaptive-chat.css?v=20261109-device2">
 <link rel="stylesheet" href="corporate-network-feed-media.css?v=20261109-uncropped2">
 <link rel="stylesheet" href="corporate-chat-compact-media.css?v=20261109-mobile-gallery4">
+<link rel="stylesheet" href="corporate-military-experience.css?v=20261110-1">
+<script src="corporate-military-experience.js?v=20261110-1" defer></script>
 </head>
 <body class="bc-network">
 <header class="masthead">
@@ -76,11 +78,69 @@
       <div id="videoGrid" class="video-grid"></div>
     </section>
     <section id="photosView" class="view" hidden>
-      <div class="page-intro photo-intro"><div><div class="overline">BLACKCELL / MANSARMEDFORCES · PRIVATE ARCHIVE</div><h1>Military Media Library<span>.</span></h1>
+      <div class="mx-hero" aria-label="Global Military Media Library opening">
+ <div class="mx-holo" aria-hidden="true"></div>
+ <div class="mx-hero-content">
+  <div class="mx-eyebrow">BLACKCELL / GLOBAL ARMED FORCES ARCHIVE</div>
+  <h2>MILITARY<br>MEDIA <em>LIBRARY.</em></h2>
+  <p>Experience the world's armed forces through powerful photography, military history, aviation, armor, naval operations, personnel, and immersive collections.</p>
+  <div class="mx-row">
+   <button type="button" id="mxHeroExplore" class="mx-btn mx-primary">EXPLORE THE LIBRARY ↗</button>
+   <button type="button" id="mxHeroWatch" class="mx-btn">▷ WATCH CINEMATIC PREVIEW</button>
+   <button type="button" id="mxHeroMen" class="mx-btn">✦ MEN IN UNIFORM</button>
+  </div>
+ </div>
+ <span class="mx-hero-credit">Background: U.S. Department of Defense / public domain</span>
+</div>
+<div class="mx-ticker"><span><strong>WORLD FORCES</strong> / GROUND · AIR · SEA</span><span>GLOBAL MILITARY MEDIA / PRIVATE NETWORK</span><span>IMMERSIVE COLLECTIONS / USER CONTROLLED</span></div>
+<section class="mx-controls" aria-labelledby="mxStudioTitle">
+ <div class="mx-heading"><div><div class="mx-overline">PERSONAL EXPERIENCE</div><h3 id="mxStudioTitle">Choose your atmosphere.</h3></div><small>Set the mood, privacy and motion level. You control your own experience.</small></div>
+ <div class="mx-modes">
+  <button class="mx-mode" data-mx-mode="discover" aria-pressed="true" type="button"><span>✦ 01 / DISCOVER</span><strong>Explore &amp; Discover</strong><small>Discover military subjects and new collections at your pace.</small></button>
+  <button class="mx-mode" data-mx-mode="unwind" aria-pressed="false" type="button"><span>◌ 02 / UNWIND</span><strong>Unwind</strong><small>Softer effects for a calmer browsing experience.</small></button>
+  <button class="mx-mode" data-mx-mode="cinematic" aria-pressed="false" type="button"><span>◈ 03 / CINEMATIC</span><strong>Cinematic</strong><small>Amplified movement and striking holographic light.</small></button>
+ </div>
+ <div class="mx-prefs">
+  <button type="button" id="mxDiscreet" aria-pressed="false">DISCREET VIEW</button>
+  <button type="button" id="mxMotion" aria-pressed="false">REDUCE MOTION</button>
+  <button type="button" id="mxText" aria-pressed="false">LARGER TEXT</button>
+  <button type="button" id="mxPause" aria-pressed="false">PAUSE EFFECTS</button>
+ </div>
+ <p class="mx-note" id="mxLiveMessage" role="status" aria-live="polite">Personal experience controls affect presentation only.</p>
+</section>
+<div class="page-intro photo-intro"><div><div class="overline">BLACKCELL / MANSARMEDFORCES · PRIVATE ARCHIVE</div><h1>Military Media Library<span>.</span></h1>
         <p>Organize military photographs and videos by branch, subject, era, unit, and personal albums. Browse your archive or authorized network contributions.</p></div>
         <div class="photos-header-actions"><button id="newAlbumButton" type="button" class="btn outline">＋ NEW ALBUM</button><button id="photosUploadButton" type="button" class="btn crimson">＋ UPLOAD MEDIA</button></div>
       </div>
       <div class="military-scope-bar panel" aria-label="Military library scope"><div class="military-scope-copy"><strong>LIBRARY ACCESS</strong><small>Every original remains under its contributor’s ownership</small></div><div id="militaryScope" class="apple-segmented"><button type="button" data-military-scope="mine" class="selected">MY LIBRARY</button><button type="button" data-military-scope="network">NETWORK ARCHIVE</button></div></div>
+<section class="mx-section" id="mxDiscovery" aria-label="Explore global military forces">
+ <div class="mx-heading"><div><span class="mx-overline">01 / WORLD FORCES</span><h3>Find your next obsession.</h3></div><button type="button" id="mxSurprise" class="mx-btn">↝ SURPRISE ME</button></div>
+ <div class="mx-grid">
+  <button class="mx-card" type="button" data-mx-cat="Ground Vehicles"><span class="mx-icon">▰</span><span class="mx-overline">01 / GROUND</span><strong>Ground Forces</strong><small>Armor, vehicles &amp; operations ↗</small></button>
+  <button class="mx-card" type="button" data-mx-cat="Aircraft"><span class="mx-icon">✈</span><span class="mx-overline">02 / AVIATION</span><strong>Air Power</strong><small>Aircraft &amp; air forces ↗</small></button>
+  <button class="mx-card" type="button" data-mx-cat="Naval Vessels"><span class="mx-icon">⚓</span><span class="mx-overline">03 / SEA</span><strong>Naval Forces</strong><small>Fleet power &amp; ships ↗</small></button>
+  <button class="mx-card" type="button" data-mx-cat="Personnel"><span class="mx-icon">◈</span><span class="mx-overline">04 / PERSONNEL</span><strong>Military Men</strong><small>Uniforms &amp; personnel ↗</small></button>
+ </div>
+</section>
+<section class="mx-dark" id="mxMen" aria-label="Men in Uniform optional collection">
+ <div class="mx-overline">02 / AN OPTIONAL 18+ COLLECTION · MEN IN UNIFORM</div>
+ <h3 class="mx-dark-title">THE MEN. THE UNIFORMS.<br>THE PRESENCE.</h3>
+ <p>A more expressive, masculine collection for adults. Explore tactical styling, dress uniforms, and training portraits. This section only surfaces media already shared with your authorized Blackcell Network; contributor ownership is unchanged.</p>
+ <div class="mx-dark-grid" id="mxMenLock">
+  <article class="mx-dark-card"><span class="mx-num">01 / TACTICAL</span><div><strong>Tactical &amp; Field</strong><small>Rugged uniforms, personnel &amp; field imagery.</small></div></article>
+  <article class="mx-dark-card"><span class="mx-num">02 / DRESS</span><div><strong>Dress Uniforms</strong><small>Formal presentation, uniforms &amp; insignia.</small></div></article>
+  <article class="mx-dark-card"><span class="mx-num">03 / TRAINING</span><div><strong>Training &amp; Fitness</strong><small>Strength, confidence &amp; military training.</small></div></article>
+ </div>
+ <button type="button" id="mxMenEnter" class="mx-btn mx-primary">✦ ENTER COLLECTION ↗</button>
+ <div class="mx-dark-lock">ADULT ENTRY CONFIRMATION REQUIRED · NON-EXPLICIT MEDIA</div>
+ <div class="mx-dark-grid" id="mxMenBrowse" hidden>
+  <article class="mx-dark-card"><span class="mx-num">01 / TACTICAL</span><div><strong>Tactical &amp; Field</strong><small>Browse personnel media.</small><button type="button" class="mx-btn" data-mx-men="Personnel">OPEN COLLECTION ↗</button></div></article>
+  <article class="mx-dark-card"><span class="mx-num">02 / DRESS</span><div><strong>Dress Uniforms</strong><small>Browse uniform media.</small><button type="button" class="mx-btn" data-mx-men="Uniforms">OPEN COLLECTION ↗</button></div></article>
+  <article class="mx-dark-card"><span class="mx-num">03 / TRAINING</span><div><strong>Training &amp; Fitness</strong><small>Browse training media.</small><button type="button" class="mx-btn" data-mx-men="Training">OPEN COLLECTION ↗</button></div></article>
+ </div>
+ <div class="mx-row" style="margin-top:14px"><button type="button" id="mxMenFavorites" class="mx-btn">♡ MY FAVORITES</button><button type="button" id="mxMenMyUploads" class="mx-btn">▧ MY UPLOADS</button></div>
+ <div class="mx-note">Photos in these collections come from authorized member uploads. No sample portraits are presented as real member media.</div>
+</section>
       <div class="photos-summary">
         <div class="panel"><strong id="photoCountMetric">0</strong><span>PHOTOS</span></div>
         <div class="panel"><strong id="videoCountMetric">0</strong><span>VIDEOS</span></div>
@@ -116,6 +176,27 @@
         <div id="applePhotosGallery" class="apple-photo-gallery"></div>
         <p class="photos-privacy-note">Only verified Blackcell Network members can see this archive. Each original belongs to its contributor. Private chat attachments remain separate and are not indexed here.</p>
       </section>
+<div id="mxAgeModal" class="mx-modal" hidden role="dialog" aria-modal="true" aria-labelledby="mxAgeTitle">
+ <div class="mx-dialog">
+  <button type="button" id="mxAgeClose" class="mx-close" aria-label="Close">×</button>
+  <span class="mx-overline">BLACKCELL / ADULT COLLECTION</span>
+  <h3 id="mxAgeTitle">Men in Uniform</h3>
+  <p>This optional collection is intended for adults. It features non-explicit military portrait and uniform media from the authorized network.</p>
+  <label><input type="checkbox" id="mxAgeCheck"> I confirm that I am at least 18 years old.</label>
+  <div class="mx-row"><button type="button" id="mxAgeCancel" class="mx-btn">NOT NOW</button><button type="button" id="mxAgeConfirm" class="mx-btn mx-primary" disabled>ENTER COLLECTION ↗</button></div>
+  <div class="mx-note">This self-confirmation is not a verified age check. Do not upload material without rights or consent.</div>
+ </div>
+</div>
+<div id="mxCinematicModal" class="mx-modal" hidden role="dialog" aria-modal="true" aria-labelledby="mxCinemaTitle">
+ <div class="mx-dialog mx-cinema-dialog">
+  <button type="button" id="mxCinematicClose" class="mx-close" aria-label="Close">×</button>
+  <span class="mx-overline">BLACKCELL / CINEMATIC ARCHIVE</span>
+  <h3 id="mxCinemaTitle">Battlefield Atmosphere</h3>
+  <div class="mx-cinematic-frame" id="mxCinematicFrame"><div class="mx-cinematic-label">ILLUSTRATIVE MOTION PREVIEW · NOT LIVE COMBAT FOOTAGE</div></div>
+  <div class="mx-row"><button type="button" id="mxCinematicPause" class="mx-btn">PAUSE MOTION</button></div>
+  <p>Animated cinematic atmosphere for the future video archive. Actual video playback continues in the existing Videos and Media Library sections.</p>
+ </div>
+</div>
       <input id="applePhotoFiles" type="file" multiple accept="image/*,video/*" hidden>
       <div id="applePhotoProgress" class="panel apple-photo-progress" hidden><span id="appleProgressLabel">Preparing secure upload…</span><div class="apple-photo-meter"><div id="applePhotoMeterFill"></div></div></div>
     </section>
