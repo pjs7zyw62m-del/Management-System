@@ -1,5 +1,6 @@
 /* BLACKCELL NETWORK / Apple Photos × Flickr private corporate library */
 import {createWorldForces} from './corporate-world-forces.js?v=20261110-world4';
+import {createMilitaryPhotoAI} from './corporate-military-ai.js?v=20261110-ai1';
 export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadAsset,refresh,profile,openProfile,ensureSigned,switchView}){
  const $=id=>document.getElementById(id);
  const meta={albums:[],albumItems:[],favorites:[],activeAlbum:null,filter:'all',sort:'newest',query:'',
@@ -57,6 +58,12 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  const size=n=>n>=1048576?(n/1048576).toFixed(1)+' MB':Math.round(n/1024)+' KB';
  const nameOf=a=>profile(a.owner_id)?.display_name||'Network Member';
  const world=createWorldForces({client,state,meta,toast,archiveAssets,mediaUrl,openViewer,render});
+ const ai=createMilitaryPhotoAI({client,state,toast,getCurrent:viewerCurrent,mediaUrl,
+  onApproved:(item,review)=>{
+   Object.assign(item,{military_country_code:review.country_code,military_branch:review.military_branch,
+    military_category:review.military_category,military_tags:review.tags});
+   renderViewer();render();toast('AI tags approved and saved to your Military Library.');
+  }});
  const empty=(heading,detail)=>{
   const box=make('div','panel empty-state');
   box.append(make('strong','',heading),make('span','',detail));return box;
@@ -382,6 +389,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   star.textContent=favorited(a.id)?'♥':'♡';star.classList.toggle('liked',favorited(a.id));
   $('appleViewerPrevious').disabled=meta.viewerItems.length<=1;
   $('appleViewerNext').disabled=meta.viewerItems.length<=1;
+  ai.toggleForAsset(a);
   if(u){
    if(a.kind==='video'){
     const vid=make('video');vid.src=u;vid.controls=true;vid.playsInline=true;vid.preload='metadata';
@@ -538,6 +546,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  }
  function setup(){
   world.setup();
+  ai.setup();
   for(const b of document.querySelectorAll('#militaryScope [data-military-scope]')){
    b.addEventListener('click',()=>{
     meta.scope=b.dataset.militaryScope;meta.activeAlbum=null;meta.filter='all';world.deactivate();render()
