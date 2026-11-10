@@ -91,3 +91,27 @@ body.mx-open.mx-paused #photosView *,body.mx-open.mx-paused #photosView *:before
 @media(max-width:800px){body.mx-open .app{display:block}#photosView .mx-hero{min-height:360px}#photosView .mx-modes{grid-template-columns:1fr}#photosView .mx-dark-grid{grid-template-columns:1fr}#photosView .mx-dark-card{min-height:148px}#photosView .mx-dark-card:before{right:15%;height:135px}#photosView .mx-hero h2{font-size:clamp(40px,9vw,62px)}}
 @media(max-width:470px){#photosView .mx-hero{padding:24px 17px;min-height:390px}#photosView .mx-hero h2{font-size:40px}#photosView .mx-hero p{font-size:12px}#photosView .mx-grid{gap:8px}#photosView .mx-card{min-height:127px;padding:12px}#photosView .mx-card strong{font-size:13px}#photosView .mx-dark{padding:17px}#photosView .mx-dark-card strong{font-size:18px}#photosView .mx-btn{max-width:100%;white-space:normal}#photosView .photo-intro{display:flex;flex-direction:column;align-items:flex-start}}
 @media(prefers-reduced-motion:reduce){#photosView .mx-hero:after,#photosView .mx-holo{animation:none!important}#photosView .mx-card,#photosView .mx-btn{transition:none}}
+
+/* Live-library visual integration and cinematic motion overlay. */
+#photosView .mx-cinema-dialog{width:min(780px,100%)}
+#photosView .mx-cinematic-frame{height:clamp(220px,38vw,390px);position:relative;overflow:hidden;border-radius:13px;border:1px solid #72303e;margin:16px 0;background:linear-gradient(90deg,#050607db,#100b11a0),url('https://commons.wikimedia.org/wiki/Special:FilePath/Tank_in_Desert_Storm.JPEG') center/cover}
+#photosView .mx-cinematic-frame:before{content:"";position:absolute;inset:-15%;background:radial-gradient(ellipse at 67% 65%,#ed173e60,transparent 34%),repeating-linear-gradient(155deg,transparent 0 55px,#fa2e4b22 57px,transparent 60px);animation:mx-cinematic-sweep 7s ease-in-out infinite alternate}
+#photosView .mx-cinematic-frame:after{content:"";position:absolute;inset:10%;border-radius:50%;border:1px solid #fd6d8344;box-shadow:0 0 70px #d21b3f22;animation:mx-radar 5s linear infinite}
+#photosView .mx-cinematic-label{position:absolute;bottom:13px;left:13px;right:13px;z-index:3;font-size:10px;letter-spacing:.07em;color:#f1d6de;text-shadow:0 2px 6px #000}
+#photosView .mx-cinematic-frame.still:before,#photosView .mx-cinematic-frame.still:after{animation-play-state:paused}
+#photosView .military-scope-bar{border-color:#5c3440;background:linear-gradient(125deg,#1b1a20,#0d1015)}
+#photosView .apple-segmented{background:#14161b;border:1px solid #6b4751}
+#photosView .apple-segmented .selected{background:linear-gradient(120deg,#702034,#a1243e);color:#fff}
+#photosView .photos-summary .panel{background:linear-gradient(150deg,#1b1c23,#0d1015);border:1px solid #41333c}
+#photosView .photos-summary strong{color:#fff}
+#photosView .military-filters{background:linear-gradient(145deg,#17191f,#0b0d12);border-color:#4c3942}
+#photosView .military-upload-settings{background:linear-gradient(145deg,#1b1b20,#0c0e13)}
+#photosView .mx-dark-grid[hidden],#photosView .mx-modal[hidden]{display:none!important}
+#photosView .mx-note{line-height:1.6}
+@keyframes mx-cinematic-sweep{from{transform:translate(-4%,-2%) rotate(-4deg)}to{transform:translate(5%,6%) rotate(5deg)}}
+@keyframes mx-radar{from{transform:scale(.86) rotate(0)}to{transform:scale(1.16) rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){
+ #photosView .mx-cinematic-frame:before,#photosView .mx-cinematic-frame:after{animation:none}
+}
+body.mx-reduced #photosView .mx-cinematic-frame:before,body.mx-reduced #photosView .mx-cinematic-frame:after,
+body.mx-paused #photosView .mx-cinematic-frame:before,body.mx-paused #photosView .mx-cinematic-frame:after{animation:none}
