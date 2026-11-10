@@ -59,7 +59,21 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  const size=n=>n>=1048576?(n/1048576).toFixed(1)+' MB':Math.round(n/1024)+' KB';
  const nameOf=a=>profile(a.owner_id)?.display_name||'Network Member';
  const world=createWorldForces({client,state,meta,toast,archiveAssets,mediaUrl,openViewer,render});
- const taste=createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl,render,archiveAssets});
+ const taste=createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl,render,archiveAssets,
+  onSaved:({reaction,areas,cues,regions})=>{
+   meta.filter='for-you';meta.activeAlbum=null;
+   meta.query='';const search=$('photosSearch');if(search)search.value='';
+   if(!$('applePhotoViewer').hidden)closeViewer();
+   const note=$('tasteSavedNotice');
+   if(note){
+    const labeled=(regions||[]).filter(r=>r.cue||(r.features||[]).length).length;
+    note.textContent='✓ FEEDBACK SAVED · '+areas+' highlighted area'+(areas===1?'':'s')+
+     ' · '+labeled+' labeled · '+cues.length+' overall details. Below are updated For You suggestions based on matching approved photo tags. Selecting areas does not run a separate AI scan.';
+    note.hidden=false;
+   }
+   requestAnimationFrame(()=>{const panel=$('tasteInsights');if(panel&&!panel.hidden)panel.scrollIntoView({behavior:'smooth',block:'center'})});
+  }
+ });
  const ai=createMilitaryPhotoAI({client,state,toast,getCurrent:viewerCurrent,mediaUrl,
   onApproved:(item,review)=>{
    Object.assign(item,{military_country_code:review.country_code,military_branch:review.military_branch,
@@ -187,6 +201,14 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   },'apple-photo-heart'+(favorited(a.id)?' liked':''));
   heart.setAttribute('aria-label',(favorited(a.id)?'Remove favorite':'Add favorite')+' '+a.filename);
   tile.append(heart);
+  if(a.kind==='photo'){
+   const marked=meta.tastes.find(t=>t.asset_id===a.id);
+   const action=press(marked?'✦ EDIT DETAILS':'✦ MARK WHAT I LIKE',event=>{
+    event.stopPropagation();taste.open(a)
+   },'apple-photo-taste-entry');
+   action.title='Highlight areas, label details, and tell Blackcell what catches your eye';
+   tile.append(action);
+  }
   return tile;
  }
  function renderGallery(){
