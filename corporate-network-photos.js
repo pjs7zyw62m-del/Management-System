@@ -180,7 +180,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  function renderGallery(){
   const node=$('applePhotosGallery');node.replaceChildren();
   const list=selectedAssets(),album=albumFor(meta.activeAlbum);
-  $('photosGalleryTitle').textContent=meta.filter==='for-you'?'For You · Personalized Military Media':album?album.title:(meta.scope==='mine'?'My Military Media':'Network Military Media');
+  $('photosGalleryTitle').textContent=meta.filter==='for-you'?'For You · Personalized Military Media':world.title()|| (album?album.title:(meta.scope==='mine'?'My Military Media':'Network Military Media'));
   $('photosClearAlbum').hidden=!meta.activeAlbum;
   for(const b of document.querySelectorAll('#photosFilters [data-photo-filter]'))
    b.classList.toggle('selected',b.dataset.photoFilter===meta.filter);
@@ -375,7 +375,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   const frame=$('appleViewerStage');frame.replaceChildren();
   const u=mediaUrl(a);
   $('appleViewerFilename').textContent=a.filename;
-  $('appleViewerMeta').textContent=nameOf(a)+' · '+size(a.bytes)+' · '+cat(a)+' · '+branch(a);
+  $('appleViewerMeta').textContent=nameOf(a)+' · '+size(a.bytes)+' · '+cat(a)+' · '+branch(a)+(a.military_country_code?' · '+world.countryName(a.military_country_code):'');
   $('appleViewerCaption').textContent=a.caption||'';
   $('appleViewerPosition').textContent=(meta.viewerIndex+1)+' / '+meta.viewerItems.length;
   const star=$('appleViewerFavorite');
@@ -386,13 +386,13 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
    if(a.kind==='video'){
     const vid=make('video');vid.src=u;vid.controls=true;vid.playsInline=true;vid.preload='metadata';
     vid.addEventListener('loadedmetadata',()=>{
-     $('appleViewerMeta').textContent=nameOf(a)+' · '+vid.videoWidth+' × '+vid.videoHeight+' · '+cat(a)+' · '+branch(a)
+     $('appleViewerMeta').textContent=nameOf(a)+' · '+vid.videoWidth+' × '+vid.videoHeight+' · '+cat(a)+' · '+branch(a)+(a.military_country_code?' · '+world.countryName(a.military_country_code):'')
     });
     frame.append(vid);
    }else{
     const img=make('img');img.src=u;img.alt=a.caption||a.filename;
     img.addEventListener('load',()=>{
-     $('appleViewerMeta').textContent=nameOf(a)+' · '+img.naturalWidth+' × '+img.naturalHeight+' · '+cat(a)+' · '+branch(a)
+     $('appleViewerMeta').textContent=nameOf(a)+' · '+img.naturalWidth+' × '+img.naturalHeight+' · '+cat(a)+' · '+branch(a)+(a.military_country_code?' · '+world.countryName(a.military_country_code):'')
     });
     frame.append(img);
    }
