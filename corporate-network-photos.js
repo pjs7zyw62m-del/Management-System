@@ -1,6 +1,6 @@
 /* BLACKCELL NETWORK / Apple Photos × Flickr private corporate library */
 import {createWorldForces} from './corporate-world-forces.js?v=20261110-countries1';
-import {createMilitaryPhotoAI} from './corporate-military-ai.js?v=20261110-learn1';
+import {createMilitaryPhotoAI} from './corporate-military-ai.js?v=20261111-mediareset1';
 import {createPhotoTaste} from './corporate-photo-taste.js?v=20261110-trigger2';
 import {createPhotoPredict} from './corporate-photo-predict.js?v=20261110-pred1';
 import {createPhotoVoting} from './corporate-photo-votes.js?v=20261111-votes2';
