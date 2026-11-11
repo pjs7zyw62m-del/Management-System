@@ -537,12 +537,19 @@
     </div>
     <div class="bc-vd-actions">
      <button id="vdAnalyze" class="bc-vd-primary" type="button" disabled><span>⌖</span> FIND SIMILAR PHOTOS</button>
+     <button id="vdAISearch" type="button" disabled class="bc-vd-ai-search">✦ AI IDENTIFY &amp; MATCH</button>
      <button id="vdQuickPick" type="button">◎ CENTER SELECT</button>
      <button id="vdReset" type="button">CLEAR SELECTION</button>
      <span class="bc-vd-privacy"><span class="bc-vd-led"></span> PRIVATE · IN-BROWSER VISUAL MATCHING</span>
     </div>
     <div class="bc-vd-source-head"><strong>SELECT A PHOTO TO EXPLORE</strong><span id="vdSourceCount"></span></div>
     <div id="vdSourceStrip" class="bc-vd-source-strip" aria-label="Choose a military photograph"></div>
+    <div class="bc-vd-index-actions">
+     <button id="vdDuplicateScan" type="button">◎ SCAN MY EXISTING PHOTOS FOR DUPLICATES · FREE</button>
+     <button id="vdAIIndex" type="button">✦ INDEX 5 MY PHOTOS WITH AI · USES API CREDITS</button>
+    </div>
+    <p id="vdIndexStatus" class="bc-vd-index-status" role="status" aria-live="polite">Exact/near-duplicate scanning is free. AI indexing is optional and may incur provider charges.</p>
+    <div id="vdDuplicateResults" class="bc-vd-duplicate-results" hidden></div>
    </div>
    <aside class="bc-vd-side" aria-label="Visual Discovery analysis and recommendations">
     <div class="bc-vd-step"><span>01 / SELECTION</span><strong>WHAT CAUGHT YOUR EYE?</strong></div>
@@ -561,7 +568,7 @@
     <p id="vdStatus" class="bc-vd-status" role="status" aria-live="polite">Choose a photograph and select the detail you want to explore.</p>
     <div class="bc-vd-results-head"><strong>SIMILAR PHOTOS <span id="vdResultCount"></span></strong><span id="vdResultMethod"></span></div>
     <div id="vdResults" class="bc-vd-results"><div class="bc-vd-empty">Your results will appear here after you select an area.</div></div>
-    <p class="bc-vd-disclaimer">Matches use available visual characteristics and military classifications. This version does not identify objects, people, or clothing items by name. Likes improve private recommendations; they do not cast award votes.</p>
+    <p class="bc-vd-disclaimer">Basic search compares image appearance. The optional AI search identifies visible clothing and equipment details in the selected region and searches photos you explicitly indexed. AI labels and matching boxes are approximate. Likes improve private recommendations; they never cast competition votes.</p>
    </aside>
   </div>
  </section>
