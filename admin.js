@@ -304,7 +304,7 @@ function showInvitationPreview(form,inputs){
     'Receive the secure employee invitation.',
     'Verify your email address and create a private password.',
     'Reveal your personalized Blackcell employee access card.',
-    'Enter your 4-digit Access Code and 12-digit Security Code.',
+    'Sign in securely using your activated email and password.',
     'Access only the employee features approved for your account.'
   ])steps.append(el('li','',message));
   flow.append(steps);
