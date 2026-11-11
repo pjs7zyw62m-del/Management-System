@@ -66,3 +66,19 @@ No automatic country inference from unreliable uniform visuals; owner verificati
 - The old processor/irreversible-reset interface was removed from `corporate-network.html`.
 - Existing pending uploads continue to be gated by database policies and protected Storage URLs.
 - Website deployment must be tested in the owner's authenticated browser before claiming a successful live end-to-end review or reset.
+
+## November 11 — Backblaze connection health check
+
+The owner has created a private Backblaze B2 bucket and a bucket-scoped read/write application key restricted to `blackcell-intake/`. To check connectivity without exposing credentials:
+
+1. In **Supabase → Edge Functions → Secrets**, securely set (values must NEVER be committed or shared in chat):
+   - `BLACKCELL_B2_KEY_ID`: B2 application key ID
+   - `BLACKCELL_B2_APPLICATION_KEY`: B2 application key secret
+   - `BLACKCELL_B2_BUCKET`: `blackcellcorp-media-vault`
+   - `BLACKCELL_B2_ENDPOINT`: `https://s3.us-east-005.backblazeb2.com`
+2. Open BLACKCELL **Administration → Media Import Processor** and select **CHECK CONNECTION** in **Backblaze B2 Storage**.
+3. The Supabase JWT-verified `blackcell-b2-storage` Edge Function verifies the owner role, clearance level 7 and current corporate code session; it makes one AWS SigV4 **ListObjectsV2** request scoped to `blackcell-intake/`, with `max-keys=1`. Only a connection status is returned.
+4. A connected status confirms the secret, region, bucket and read/list permission for the staging prefix. **It does not verify write access**, provision capacity, transfer images, index photos or enable large-video browsing. Keep importing paused until the owner expressly approves the full pipeline.
+5. If not connected, verify values in Supabase Secrets without showing them to another person.
+
+**Security:** No B2 secrets in GitHub, public HTML, site JavaScript, logs or API responses; B2 requests originate on the Edge Function server. Provider written confirmation for the planned lawful adult media and reliable 1 TB+ iCloud-to-B2 cloud-to-cloud processing remain outstanding.
