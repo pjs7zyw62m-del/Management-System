@@ -59,3 +59,65 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100% }
    will-change: auto;
  }
 }
+
+/* BLACKCELL / Administration sign-in to verified access-pass transition.
+   Visual-only treatment: server authentication, clearance and code verification
+   remain in corp-login.js. Keep role tabs, corporate layout and glass finish. */
+@media (min-width: 951px) {
+  /* Step 1: centered Administration / Employee Network selector. */
+  .stage-window:not(.show-pass) .login-panel {
+    left: 50%;
+    transform: translate(-50%, -50%) !important;
+    opacity: 1;
+    pointer-events: auto;
+  }
+  /* Step 2: verified first card slides to the LEFT; security pass to the RIGHT. */
+  .stage-window.show-pass .login-panel {
+    left: 0;
+    transform: translate(0, -50%) !important;
+    opacity: 1;
+  }
+  .stage-window.show-pass .login-card {
+    margin-left: 0;
+  }
+  .stage-window:not(.show-pass) .pass-panel {
+    transform: translate(90%, -50%) scale(.985) !important;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .stage-window.show-pass .pass-panel {
+    transform: translate(0, -50%) scale(1) !important;
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+@media (max-width: 950px) {
+  /* Compact devices: first login exits left as the next stage enters right. */
+  .stage-window:not(.show-pass) .login-panel {
+    transform: translate(0, -50%) !important;
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .stage-window.show-pass .login-panel {
+    transform: translate(-108%, -50%) !important;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .stage-window:not(.show-pass) .pass-panel {
+    transform: translate(108%, -50%) scale(.985) !important;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .stage-window.show-pass .pass-panel {
+    transform: translate(0, -50%) scale(1) !important;
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+/* Reduced-motion users see the exact same secure stages without a long slide. */
+@media (prefers-reduced-motion: reduce) {
+  .stage-window .login-panel,
+  .stage-window .pass-panel {
+    transition-duration: .01ms !important;
+  }
+}
