@@ -282,9 +282,11 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
     // Give mobile members real, labeled partial results while large originals
     // are still being compared, rather than an apparently frozen interface.
     if(mobile&&done%5===0&&matches.length){
-     const partial=[...matches].sort((a,b)=>b.score-a.score).slice(0,12);
-     renderResults(partial);
-     status('Finding matches… '+done+' of '+candidates.length+' photos checked.');
+     const ranked=[...matches].sort((a,b)=>b.score-a.score);
+     const cutoff=mode==='tags'?Math.max(.12,ranked[0].score-.16):Math.max(.67,ranked[0].score-.075);
+     const partial=ranked.filter(item=>item.score>=cutoff).slice(0,6);
+     if(partial.length)renderResults(partial);
+     status('Comparing selected detail… '+done+' of '+candidates.length+' photos checked.');
     }
     if(index%4===0)await new Promise(r=>setTimeout(r,0));
    }
@@ -298,7 +300,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   // Scores describe approximate appearance, NOT semantic object recognition.
   const highest=matches[0]?.score||0;
   const threshold=mode==='tags'?Math.max(.12,highest-.16):Math.max(.67,highest-.075);
-  lastResults=matches.filter(item=>item.score>=threshold).slice(0,8);
+  lastResults=matches.filter(item=>item.score>=threshold).slice(0,6);
   renderResults(lastResults);
   const method=mode==='tags'||!matchedPixels?'Military metadata':'Visual appearance'+(mode==='hybrid'?' + tags':'');
   $('vdResultMethod').textContent=method.toUpperCase();
