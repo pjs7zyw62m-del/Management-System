@@ -16,7 +16,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
  let fullGalleryResults=[],showAllGallery=false,fullGalleryScope=0;
  const webSeen=new Set();
  const onPhone=()=>window.matchMedia('(hover: none) and (pointer: coarse)').matches || window.innerWidth<=600;
- const eligible=()=>state.assets.filter(a=>a.kind==='photo'&&['library','post'].includes(a.purpose)&&mediaUrl(a));
+ const eligible=()=>state.assets.filter(a=>a.kind==='photo'&&['library','post'].includes(a.purpose)&&a.review_status==='approved'&&!a.adult_restricted&&mediaUrl(a));
  const status=s=>{$('vdStatus').textContent=s};
  const element=(tag,cl='',value=null)=>{
   const node=document.createElement(tag);if(cl)node.className=cl;
