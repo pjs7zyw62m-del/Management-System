@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#030305"><title>BLACKCELL CORPORATION | Media Administration</title>
+<link rel="stylesheet" href="corporate-media-processor.css?v=20261111-adminmove1">
+<link rel="stylesheet" href="corporate-media-admin.css?v=20261111-adminmove1">
+<script src="corp-config.js" defer></script>
+<script type="module" src="corporate-media-admin.js?v=20261111-adminmove1"></script>
+</head>
+<body class="bc-network bc-media-admin-page">
+<div id="bcAdminGate" role="status" aria-live="polite">
+ <div class="bc-admin-gate-card"><span class="bc-admin-mark">B</span><div class="bc-admin-overline">BLACKCELL / RESTRICTED EXECUTIVE SYSTEMS</div>
+ <h1 id="bcAdminGateTitle">Verifying Administration Access</h1>
+ <p id="bcAdminGateText">Validating Level 7 owner credentials and current corporate security codes.</p>
+ <a id="bcAdminGateReturn" href="dashboard.html">RETURN TO ADMINISTRATION ↗</a></div>
+</div>
+<div id="bcMediaAdminApp" hidden>
+ <header class="bc-media-admin-header">
+  <a class="bc-media-admin-brand" href="dashboard.html"><span class="bc-admin-mark">B</span><span><strong>BLACKCELL CORPORATION</strong><small>EXECUTIVE SYSTEMS DIVISION</small></span></a>
+  <nav><a href="dashboard.html">← ADMINISTRATION</a><a href="corporate-network.html?view=photos">MILITARY LIBRARY ↗</a></nav>
+ </header>
+ <main class="bc-media-admin-shell">
+  <section class="bc-media-admin-intro">
+   <div class="bc-admin-overline">ADMINISTRATION / PRIVATE MEDIA OPERATIONS</div>
+   <h1>MEDIA IMPORT <span>PROCESSOR.</span></h1>
+   <p>Review, classify and approve every incoming BLACKCELL photograph and video. Employees can upload to the Network, but publication, country assignment and library resets are authorized here.</p>
+   <div class="bc-media-admin-tags"><span><i></i> LEVEL 7 ACCESS</span><span>PHOTO + VIDEO</span><span>OWNER APPROVAL REQUIRED</span></div>
+  </section>
+  <section class="bc-media-admin-summary" aria-label="Import status">
+   <div><span>STORAGE</span><strong id="bcAdminStorageStatus">Private</strong><small>Supabase · existing secure media bucket</small></div>
+   <div><span>MEDIA REGISTERED</span><strong id="bcAdminAssetsCount">—</strong><small>Current BLACKCELL media records</small></div>
+   <div><span>IMPORT QUEUE</span><strong id="bcAdminPendingCount">—</strong><small>Awaiting owner review</small></div>
+  </section>
+  <section class="panel bc-media-processor" id="bcProcessorPanel" hidden aria-label="Media Import Processor">
+        <div class="bc-proc-head">
+          <div><span class="overline">BLACKCELL / CONTROLLED MEDIA INTAKE</span><h2>Media Import Processor</h2><p>Every incoming photo and video enters private review. No publishing until country, military category and approved album placement are verified.</p></div>
+          <strong class="bc-proc-count"><span id="bcProcessCount">0</span><small>PENDING REVIEW</small></strong>
+        </div>
+        <div class="bc-proc-steps"><span>01 · RECEIVE</span><span>02 · DUPLICATES</span><span>03 · CLASSIFY</span><span>04 · APPROVE &amp; FILE</span></div>
+        <div class="bc-proc-toolbar"><button type="button" id="bcProcessRefresh">↻ REFRESH REVIEW QUEUE</button><button type="button" id="bcMediaReset" class="bc-proc-danger">RESET ALL BLACKCELL PHOTO &amp; VIDEO MEDIA</button></div>
+        <p id="bcProcessStatus" role="status" aria-live="polite">Checking import queue…</p>
+        <div id="bcProcessQueue" class="bc-proc-queue"></div>
+        <div class="bc-proc-pagination"><button id="bcQueuePrev" type="button">← PREVIOUS</button><span id="bcQueuePage">1 / 1</span><button id="bcQueueNext" type="button">NEXT →</button></div>
+        <div id="bcReviewEditor" class="bc-review-editor" hidden>
+          <div class="bc-proc-editor-head"><strong id="bcReviewName">MEDIA TO REVIEW</strong><button type="button" id="bcReviewCancel">✕ CLOSE</button></div>
+          <div id="bcReviewPreview" class="bc-review-preview"></div>
+          <div class="bc-review-grid">
+           <label>VERIFIED COUNTRY <select id="bcReviewCountry"></select></label>
+           <label>MILITARY BRANCH <select id="bcReviewBranch"></select></label>
+           <label>SUBJECT CATEGORY <select id="bcReviewCategory"></select></label>
+           <label>ERA <select id="bcReviewEra"></select></label>
+           <label>UNIT / FORMATION <input id="bcReviewUnit" maxlength="120" placeholder="Only when known"></label>
+           <label>TAGS <input id="bcReviewTags" maxlength="350" placeholder="Visible details, comma separated"></label>
+           <label class="bc-review-album">DESTINATION ALBUM <select id="bcReviewAlbum"></select></label>
+          </div>
+          <div class="bc-review-checks">
+           <label><input id="bcReviewAdult" type="checkbox"> ADULT / EXPLICIT — RESTRICT TO OWNER ONLY</label>
+           <label><input id="bcReviewRights" type="checkbox"> I confirm I have the necessary rights and consent to store and display this media.</label>
+           <label><input id="bcReviewAges" type="checkbox"> If explicit: all depicted people are adults, and I have appropriate authority to hold the material.</label>
+          </div>
+          <p class="bc-proc-warning">Country, branch and unit must be supported by evidence. If uncertain, leave pending. Explicit media stays owner-only and is never added to a shared album. AI is optional for verified non-explicit photos only.</p>
+          <div class="bc-proc-toolbar">
+           <button id="bcReviewAI" type="button">✦ OPTIONAL PHOTO AI SUGGESTIONS</button>
+           <button id="bcReviewReject" type="button">HOLD / REJECT</button>
+           <button id="bcReviewApprove" type="button" class="bc-proc-approve">✓ APPROVE &amp; FILE MEDIA</button>
+          </div>
+        </div>
+        <small class="bc-proc-note">The permanent reset requires two confirmations and deletes BLACKCELL Network photo/video originals through Supabase Storage, followed by their gallery records. NEXUS, iCloud originals, and private chat attachments remain untouched. Backblaze cloud import is not yet connected.</small>
+      </section>
+  <section class="bc-media-admin-explainer">
+   <h2>How this operates</h2>
+   <div class="bc-admin-process-steps"><div><strong>01. RECEIVE</strong><p>New photographs and videos are stored privately and queued for review.</p></div><div><strong>02. VERIFY</strong><p>Inspect images or videos, check duplication, rights and adult classification.</p></div><div><strong>03. SORT</strong><p>Confirm country, military branch and subject before selecting an accurate album.</p></div><div><strong>04. AUTHORIZE</strong><p>Only approved non-explicit media enters shared albums; restricted media stays owner-only.</p></div></div>
+   <p class="bc-admin-caution">Cloud-to-cloud iCloud → Backblaze transfer is a separate integration and has not been connected. Reset permanently removes existing BLACKCELL Network media; it never deletes iCloud originals, NEXUS files or private employee chat attachments.</p>
+  </section>
+ </main>
+</div>
+<div class="bc-admin-toast" id="bcMediaAdminToast" hidden role="status" aria-live="polite"></div>
+<div id="bcMediaOptionSources" hidden aria-hidden="true">
+ <select id="militaryUploadCountry"><option value="">Not specified</option></select>
+ <select id="militaryUploadBranch"><option value="Unspecified">Unspecified</option><option value="Army">Army</option><option value="Navy">Navy</option><option value="Marine Corps">Marine Corps</option><option value="Air Force">Air Force</option><option value="Space Force">Space Force</option><option value="Coast Guard">Coast Guard</option><option value="National Guard">National Guard</option><option value="Special Operations">Special Operations</option><option value="Joint / Multinational">Joint / Multinational</option><option value="Other">Other</option><option value="Naval Infantry">Naval Infantry / Marines</option></select>
+ <select id="militaryUploadCategory"><option value="Unsorted">Unsorted</option><option value="Personnel">Personnel</option><option value="Uniforms">Uniforms</option><option value="Insignia">Insignia</option><option value="Equipment">Equipment</option><option value="Ground Vehicles">Ground Vehicles</option><option value="Aircraft">Aircraft</option><option value="Naval Vessels">Naval Vessels</option><option value="Facilities">Facilities</option><option value="Training">Training</option><option value="Fitness / Exercise">Fitness / Exercise</option><option value="Operations">Operations</option><option value="Ceremonies">Ceremonies</option><option value="Historical">Historical</option><option value="Other">Other</option></select>
+ <select id="militaryUploadEra"><option value="">Unspecified</option><option value="Contemporary">Contemporary</option><option value="2000–Present">2000–Present</option><option value="1990s">1990s</option><option value="1980s">1980s</option><option value="Cold War">Cold War</option><option value="World War II">World War II</option><option value="World War I">World War I</option><option value="Historical">Historical</option><option value="Other">Other</option></select>
+</div>
+</body></html>
