@@ -214,11 +214,8 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
    tile.append(make('span','country-photo-label',world.countryName(String(a.military_country_code).toUpperCase())));
   if(a.kind==='video')tile.append(make('span','apple-photo-kind','VIDEO'));
   // Votes belong to the open photo viewer, never over the gallery thumbnail.
-  const heart=press(favorited(a.id)?'♥':'♡',event=>{
-   event.stopPropagation();void toggleFavorite(a.id);
-  },'apple-photo-heart'+(favorited(a.id)?' liked':''));
-  heart.setAttribute('aria-label',(favorited(a.id)?'Remove favorite':'Add favorite')+' '+a.filename);
-  tile.append(heart);
+  // Favorite and voting controls are available only after opening the full-size viewer.
+  // Do not place icons or action buttons over photo thumbnails.
   // Photo preferences are edited only after opening the full-size viewer.
   // Keep thumbnails completely unobstructed (including on mouse hover).
   return tile;
