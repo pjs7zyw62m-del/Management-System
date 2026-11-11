@@ -4,7 +4,7 @@ import {createMilitaryPhotoAI} from './corporate-military-ai.js?v=20261110-learn
 import {createPhotoTaste} from './corporate-photo-taste.js?v=20261110-trigger2';
 import {createPhotoPredict} from './corporate-photo-predict.js?v=20261110-pred1';
 import {createPhotoVoting} from './corporate-photo-votes.js?v=20261111-votes2';
-import {createPhotoZoom} from './corporate-photo-zoom.js?v=20261111-zoom1';
+import {createPhotoZoom} from './corporate-photo-zoom.js?v=20261111-pointer2';
 export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadAsset,refresh,profile,openProfile,ensureSigned,switchView,personalization,rediscovery}){
  const $=id=>document.getElementById(id);
  const meta={albums:[],albumItems:[],favorites:[],activeAlbum:null,filter:'all',sort:'newest',query:'',
