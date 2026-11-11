@@ -48,9 +48,13 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
    if(direct.rating&&direct.rating<=2)score-=12;
   }
   if(favorites.has(asset?.id))score+=19;
-  // Long viewing/zooming are unconfirmed signals; explicit dislikes override them.
-  if(current.rediscovery_enabled&&!['less'].includes(direct?.reaction)&&!(direct?.rating>0&&direct.rating<=2)){
-   const signal=interestSignals.get(asset?.id);
+  // Explicit Rediscovery/Trigger feedback is stronger than passive viewing.
+  const signal=interestSignals.get(asset?.id);
+  if(current.rediscovery_enabled&&signal?.rediscovery_feedback==='dislike')score-=120;
+  else if(current.rediscovery_enabled&&signal?.rediscovery_feedback==='like')score+=30;
+  else if(current.rediscovery_enabled&&signal?.rediscovery_feedback==='more')score+=25;
+  // Long viewing or zooming is a *possible* preference; it is never a vote.
+  if(current.rediscovery_enabled&&signal?.rediscovery_feedback!=='dislike'&&direct?.reaction!=='less'&&!(direct?.rating>0&&direct.rating<=2)){
    if(signal)score+=Math.min(3,signal.engaged_views||0)*8+Math.min(3,signal.zoom_engaged_views||0)*12;
   }
   return score;
@@ -72,7 +76,7 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
   if(current.rediscovery_enabled){
    for(const [id,signal] of interestSignals){
     const match=byId.get(id);
-    if(!match||match.id===asset?.id||(!signal.engaged_views&&!signal.zoom_engaged_views))continue;
+    if(!match||match.id===asset?.id||signal.rediscovery_feedback==='dislike'||(!signal.engaged_views&&!signal.zoom_engaged_views&&!['like','more'].includes(signal.rediscovery_feedback)))continue;
     if(match.military_category&&match.military_category!=='Unsorted'&&match.military_category===asset?.military_category)score+=3;
     if(match.military_branch&&match.military_branch!=='Unspecified'&&match.military_branch===asset?.military_branch)score+=2;
     if(match.military_era&&match.military_era===asset?.military_era)score+=1;
@@ -121,8 +125,8 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
    client.from('corp_social_photo_favorites')
      .select('asset_id').eq('user_id',uid).limit(2000),
    client.from('corp_social_photo_rediscovery')
-     .select('asset_id,engaged_views,zoom_engaged_views')
-     .eq('user_id',uid).eq('not_interested',false).limit(2000)
+     .select('asset_id,engaged_views,zoom_engaged_views,rediscovery_feedback')
+     .eq('user_id',uid).limit(2000)
   ]);
   if(options.error)console.warn('Personalization settings could not be loaded:',options.error.message);
   if(reactions.error)console.warn('Photo feedback unavailable:',reactions.error.message);
