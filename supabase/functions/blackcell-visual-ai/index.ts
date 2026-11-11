@@ -124,7 +124,7 @@ async function metaSegmentPoint(preview,point,dimensions){
  if(!response.ok)throw Error("SAM 3.1 provider unavailable ("+response.status+"). Check the Meta Model API account and key.");
  const events=await response.text();
  // Meta SAM outputs object 1's box as an SSE payload, with coordinates in pixels.
- const match=events.match(/1<\\|box;x1=(\\d+);y1=(\\d+);x2=(\\d+);y2=(\\d+);w=(\\d+);h=(\\d+)(?:;c=[0-9.]+)?\\|>/);
+ const match=events.match(/1<\|box;x1=(\d+);y1=(\d+);x2=(\d+);y2=(\d+);w=(\d+);h=(\d+)(?:;c=[0-9.]+)?\|>/);
  if(!match)return {box:null,uncertain:true};
  const [x1,y1,x2,y2,mw,mh]=match.slice(1).map(Number);
  if(!mw||!mh||x2<=x1||y2<=y1||x1<0||y1<0||x2>mw||y2>mh)return {box:null,uncertain:true};
