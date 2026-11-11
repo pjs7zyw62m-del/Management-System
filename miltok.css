@@ -1,0 +1,51 @@
+:root{color-scheme:dark}*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{margin:0;background:#030507;color:#ecf0f5;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+a{color:inherit;text-decoration:none}button,input{font:inherit}button{cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid #ee5268;outline-offset:3px}
+body{background:radial-gradient(ellipse at 50% -5%,#68152a26,transparent 45%),#030507}
+.mt-head{height:73px;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:10px clamp(16px,3vw,44px);background:#080c10f2;border-bottom:1px solid #303942;position:sticky;top:0;z-index:10;backdrop-filter:blur(19px)}
+.mt-brand{display:flex;gap:12px;align-items:center}.mt-logo,.mt-gate-logo{display:grid;place-items:center;width:41px;height:41px;border-radius:10px;background:linear-gradient(145deg,#26141d,#0d1014);border:1px solid #723547;font-size:27px;font-weight:850}
+.mt-brand strong{display:block;font-size:10px;letter-spacing:.13em}.mt-brand small{display:block;color:#a4afb9;font-size:9px;letter-spacing:.11em;margin-top:4px}
+.mt-head-actions{display:flex;gap:9px;align-items:center}.mt-head-actions a{font-size:10px;letter-spacing:.04em;font-weight:800;border:1px solid #3b4650;border-radius:9px;padding:11px;background:#151c23}
+.mt-head-actions .mt-upload{border-color:#923b4c;background:#421b28}
+.mt-head-actions a:hover{border-color:#d94a60}
+.mt-app{display:grid;grid-template-columns:minmax(200px,260px) minmax(0,1fr) minmax(190px,250px);gap:22px;max-width:1550px;margin:0 auto;padding:17px 24px;align-items:start}
+.mt-sidebar,.mt-info{position:sticky;top:94px;min-width:0}
+.mt-sidebar{padding:26px 17px;border-radius:18px;border:1px solid #323c46;background:linear-gradient(145deg,#151b22,#080c11)}
+.mt-eyebrow{font-size:9px;letter-spacing:.19em;font-weight:850;color:#de7889}
+.mt-sidebar h1{font-size:51px;letter-spacing:-.08em;margin:8px 0 12px;line-height:1}.mt-sidebar h1 span{color:#e63e55}
+.mt-sidebar p,.mt-info-card p{font-size:11px;line-height:1.75;color:#aeb9c5}
+.mt-tabs{display:grid;gap:7px;margin:24px 0}.mt-tabs button{width:100%;padding:12px;text-align:left;border-radius:10px;background:#141b22;color:#b8c2cd;border:1px solid #38404a;font-size:10px;font-weight:820;letter-spacing:.07em}
+.mt-tabs button.selected{color:#f5f3f5;background:#3b1d29;border-color:#b34255}
+.mt-search{font-size:9px;letter-spacing:.13em;font-weight:760;color:#b3bec9}.mt-search input{display:block;width:100%;min-width:0;margin-top:9px;border:1px solid #3c4650;background:#090e14;color:#f2f4f6;border-radius:9px;padding:12px;font-size:11px}
+.mt-sidebar-links{display:grid;gap:4px;margin-top:25px}.mt-sidebar-links a{font-size:10px;color:#bfc8d1;letter-spacing:.045em;padding:11px;border-radius:8px}
+.mt-sidebar-links a:hover{color:#fff;background:#252029}.mt-privacy{border-top:1px solid #353e48;padding-top:18px;margin-top:22px;font-size:9px!important;letter-spacing:.08em!important}
+.mt-stage{min-width:0;position:relative;display:flex;flex-direction:column;align-items:stretch}
+.mt-stage-title{display:flex;justify-content:space-between;align-items:center;font-size:10px;font-weight:800;letter-spacing:.12em;color:#cad2dc;padding:8px 0 12px}
+.mt-stage-title span{color:#8e9eaa}.mt-feed{height:calc(100dvh - 118px);min-height:420px;max-height:880px;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;overscroll-behavior:contain;border:1px solid #323a44;border-radius:18px;background:#080b10;outline-offset:3px}
+.mt-feed::-webkit-scrollbar{display:none}
+.mt-clip{position:relative;height:100%;min-height:420px;scroll-snap-align:start;scroll-snap-stop:always;overflow:hidden;display:flex;justify-content:center;align-items:center;background:#000;border-bottom:1px solid #32313a}
+.mt-clip video{width:100%;height:100%;object-fit:contain;display:block;background:#000;cursor:pointer}
+.mt-clip .mt-shade{pointer-events:none;position:absolute;inset:40% 0 0;background:linear-gradient(0deg,#000d,transparent);z-index:1}
+.mt-clip-details{position:absolute;z-index:3;left:20px;right:92px;bottom:26px;text-shadow:0 2px 12px #000;pointer-events:none}
+.mt-clip-details h2{font-size:18px;margin:0 0 7px;overflow-wrap:anywhere}.mt-clip-details p{font-size:12px;line-height:1.55;max-width:540px;margin:0 0 9px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.mt-clip-details span{font-size:10px;color:#c3cbd3;font-weight:750}.mt-clip-details a{pointer-events:auto;font-size:12px;text-decoration:underline;text-underline-offset:3px}
+.mt-clip-controls{position:absolute;z-index:4;right:13px;bottom:28px;display:grid;gap:14px;justify-items:center}
+.mt-clip-controls button{width:52px;min-height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:1px solid #ffffff44;border-radius:16px;color:#fff;background:#10151dbd;backdrop-filter:blur(10px);font-size:21px}
+.mt-clip-controls button span{font-size:9px;letter-spacing:.03em;font-weight:800}.mt-clip-controls button.liked{border-color:#dd4d62;background:#6d2035}.mt-clip-controls button:hover{border-color:#f06b7d}
+.mt-stepper{position:absolute;right:-45px;top:42%;display:grid;gap:8px}
+.mt-stepper button{width:37px;height:37px;border-radius:50%;background:#171f27;color:#dce4eb;border:1px solid #3a4550;font-size:21px}
+.mt-info{display:grid;gap:13px}.mt-info-card{padding:22px;border-radius:16px;border:1px solid #343c46;background:linear-gradient(150deg,#171d24,#080d13)}
+.mt-info-card>span{color:#d06478;font-size:9px;font-weight:800;letter-spacing:.13em}.mt-info-card h2{font-size:24px;line-height:1.15;letter-spacing:-.035em}
+.mt-info-card a{display:inline-block;padding:12px;border:1px solid #7c3347;background:#25171f;border-radius:9px;font-size:10px;font-weight:850;margin-top:8px}
+.mt-empty{min-height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:14px;padding:45px 20px;text-align:center}
+.mt-empty h2{font-size:35px;letter-spacing:-.04em;margin:0}.mt-empty p{color:#aeb9c5;font-size:13px;line-height:1.7;max-width:430px;margin:0}.mt-empty a,.mt-empty button{background:#371e2b;border:1px solid #ad4055;border-radius:11px;color:#fff;padding:13px 17px;font-size:11px;font-weight:800}
+.mt-toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);padding:13px 17px;max-width:90vw;border-radius:10px;border:1px solid #a54357;background:#161b22;z-index:90;color:#f4f5f6;font-size:12px}
+.mt-gate{position:fixed;inset:0;background:#030507;z-index:100;display:grid;place-items:center;padding:24px}
+.mt-gate-card{padding:32px;border-radius:20px;background:linear-gradient(135deg,#192028,#0d1015);border:1px solid #3b4550;text-align:center;max-width:430px}
+.mt-gate-logo{margin:auto auto 21px}.mt-gate-card>span{font-size:10px;color:#dc7a88;letter-spacing:.13em}.mt-gate-card h2{font-size:25px}.mt-gate-card p{color:#aeb8c3;line-height:1.7;font-size:12px}
+.mt-gate-card a{display:inline-block;padding:11px 15px;border-radius:9px;border:1px solid #923d4f;margin-top:12px}
+@media(max-width:1180px){.mt-app{grid-template-columns:190px minmax(0,1fr)}.mt-info{display:none}}
+@media(max-width:800px){.mt-app{display:block;padding:9px}.mt-sidebar{position:static;padding:12px 15px;margin-bottom:10px}.mt-sidebar h1{font-size:29px;margin:2px 0 4px}.mt-sidebar p,.mt-sidebar-links,.mt-sidebar .mt-privacy{display:none}.mt-tabs{display:flex;margin:9px 0 3px}.mt-tabs button{width:auto;flex:1;text-align:center}.mt-search{display:block}.mt-search input{margin:4px 0 0;padding:9px}.mt-stage-title{padding:5px 8px}.mt-feed{height:calc(100dvh - 255px);min-height:350px;border-radius:12px}.mt-clip{min-height:350px}.mt-stepper{display:none}.mt-clip-details{left:12px;right:74px;bottom:18px}.mt-clip-controls{right:8px;bottom:16px}.mt-clip-controls button{width:46px}.mt-head{height:58px;padding:7px 12px}.mt-head-actions a{padding:9px 7px;font-size:9px}.mt-brand strong{font-size:9px}.mt-brand small{font-size:8px}.mt-logo{width:34px;height:34px;font-size:23px}}
+@media(max-width:430px){.mt-head-actions a:first-child{display:none}.mt-clip-details h2{font-size:15px}.mt-clip-details p{font-size:11px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
