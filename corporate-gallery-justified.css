@@ -1,0 +1,51 @@
+/* Blackcell My Military Media — USA-style flush justified mosaic, photo originals untouched. */
+body.bc-network #applePhotosGallery .apple-photo-month{display:flex;flex-direction:column;gap:8px;min-width:0}
+body.bc-network #applePhotosGallery .apple-justified-wall{display:flex!important;flex-direction:column!important;align-items:stretch!important;width:100%;min-width:0;gap:0!important;grid-template-columns:none!important}
+body.bc-network #applePhotosGallery .apple-justified-row{display:flex!important;width:100%;min-width:0;align-items:stretch!important;gap:0!important;margin:0!important;padding:0!important;border:0!important;overflow:hidden}
+body.bc-network #applePhotosGallery .apple-justified-row .apple-photo-grid-item{
+ box-sizing:border-box;position:relative!important;display:block!important;flex-shrink:0!important;
+ margin:0!important;padding:0!important;border:0!important;border-radius:0!important;
+ min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;
+ aspect-ratio:auto!important;overflow:hidden!important;transform:none!important;background:#06080c!important
+}
+body.bc-network #applePhotosGallery .apple-justified-row .apple-tile-open{
+ box-sizing:border-box;position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+ min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;
+ margin:0!important;padding:0!important;border:0!important;border-radius:0!important;
+ aspect-ratio:auto!important;overflow:hidden!important;display:block!important
+}
+body.bc-network #applePhotosGallery .apple-justified-row .apple-photo-thumb{
+ box-sizing:border-box;display:block!important;position:absolute!important;inset:0!important;
+ width:100%!important;height:100%!important;min-width:0!important;max-width:none!important;max-height:none!important;
+ object-fit:contain!important;object-position:center!important;margin:0!important;padding:0!important;
+ border:0!important;border-radius:0!important;filter:none!important;transform:none!important;background:#06080c!important
+}
+body.bc-network #applePhotosGallery .apple-justified-row .apple-photo-grid-item:hover{
+ border:0!important;box-shadow:none!important;transform:none!important;filter:brightness(1.06)
+}
+body.bc-network #applePhotosGallery .apple-justified-row .apple-tile-open:focus-visible{outline:2px solid #c62e45!important;outline-offset:-2px!important}
+body.bc-network #applePhotosGallery .apple-justified-row .apple-photo-label{opacity:0;pointer-events:none}
+body.bc-network #applePhotosGallery .apple-justified-row .apple-photo-grid-item:hover .apple-photo-label,
+body.bc-network #applePhotosGallery .apple-justified-row .apple-tile-open:focus-visible .apple-photo-label{opacity:1}
+body.bc-network #applePhotosGallery .apple-justified-row .military-photo-tag,
+body.bc-network #applePhotosGallery .apple-justified-row .country-photo-label{display:none!important}
+body.bc-network #applePhotosGallery .apple-justified-row .apple-photo-heart{position:absolute!important;z-index:5!important;right:7px!important;top:7px!important}
+body.bc-network #applePhotosGallery .apple-justified-row .apple-photo-taste-entry{position:absolute!important;z-index:5!important;bottom:5px!important;right:5px!important;max-width:calc(100% - 10px);font-size:8px!important}
+body.bc-network #applePhotosGallery .apple-justified-row .apple-photo-kind{position:absolute!important;z-index:4!important;left:9px;top:9px}
+body.bc-network #photosView .apple-gallery-section .military-filters{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:10px;align-items:end;
+ padding:15px;border-radius:14px;background:#10151b!important;border:1px solid #353e48!important
+}
+body.bc-network #photosView .apple-gallery-section .military-filters label{
+ min-width:0;color:#b5c0cb;font-size:9px;letter-spacing:.12em
+}
+body.bc-network #photosView .apple-gallery-section .military-filters select{
+ min-width:0;min-height:42px;background:#090d12!important;color:#eef1f6!important;
+ border:1px solid #36404b!important;border-radius:9px
+}
+body.bc-network #photosView .apple-gallery-section #militaryFiltersReset{
+ min-height:42px;border:1px solid #7b3343!important;background:#26171d!important;color:#f0eef1!important
+}
+@media(max-width:760px){body.bc-network #photosView .apple-gallery-section .military-filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){body.bc-network #photosView .apple-gallery-section .military-filters{grid-template-columns:1fr}body.bc-network #applePhotosGallery .apple-photo-month h3{font-size:12px}}
+@media(prefers-reduced-motion:reduce){body.bc-network #applePhotosGallery .apple-justified-row .apple-photo-grid-item{transition:none!important}}
