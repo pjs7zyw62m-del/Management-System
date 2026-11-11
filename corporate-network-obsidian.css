@@ -1,0 +1,488 @@
+/* BLACKCELL NETWORK — OBSIDIAN GUNMETAL THEME
+   Color-only cascade generated from current production modules.
+   No layout, photos, video aspect-ratio, auth, data, or modal behavior changed. */
+body.bc-network{
+ --black:#030507;--panel:#10151a;--panel2:#151a21;
+ --border:#3b414a;--silver:#f2f4f7;--muted:#9ca6b2;
+ --crimson:#aa2035;--crimson2:#d53b4f;
+ background:radial-gradient(ellipse 55% 30% at 50% -12%,rgba(122,16,34,.10),transparent 72%),#030507;
+}
+
+/* corporate-network.css */
+:root{--panel:#0c0f13;--panel2:#15191e;--crimson:#b04757;--crimson2:#dc586a}
+body{background:radial-gradient(ellipse at 55% 2%,#262c3317,transparent 45%),#050507}
+.masthead{background:#0c0f13f3}
+.brand-mark{border:1px solid #b04757;background:linear-gradient(140deg,#15191e,#0c0f13)}
+.mainnav button.nav-active,.mainnav button:hover{border-bottom-color:#b04757}
+.head-actions a{border:1px solid #49515a;background:#0c0f13}
+.head-actions a:hover{border-color:#b04757}
+.head-actions .nav-chat{border-color:#67323d}
+.panel{background:linear-gradient(150deg,#15191ebc,#0d0c10eb)}
+.my-mini button{color:#e0e4eb}
+.rail-link span{color:#aeb7c3}
+.rail-link:hover,.rail-link.selected{background:#262c331f}
+.rail-link.selected{border:1px solid #b0475759}
+.rail-note{color:#aeb7c3}
+.overline{color:#b04757}
+.page-intro h1 span{color:#b04757}
+.live-dot{border:1px solid #49515a}
+.live-dot:before{background:#bd293f;box-shadow:0 0 8px #bd293f}
+.avatar{border:1px solid #49515a;background:linear-gradient(140deg,#1b2026,#0c0f13)}
+.avatar.gigantic{border:5px solid #0c0f13;box-shadow:0 0 0 1px #aeb7c3}
+textarea,input[type=search],.modal input:not([type=file]),.modal textarea{border:1px solid #262c33}
+textarea:focus,input:focus{border-color:#aeb7c3;box-shadow:0 0 0 2px #aeb7c323}
+.file-actions button{color:#e0e4eb;background:#15191e;border:1px solid #49515a}
+.file-actions button:hover{border-color:#b04757}
+.btn{border:1px solid #49515a}
+.btn.crimson{background:linear-gradient(110deg,#912237,#bd293f);border-color:#b04757}
+.btn.crimson:hover{background:linear-gradient(110deg,#912237,#b04757)}
+.btn.outline{background:#15191e;border-color:#49515a}
+.attachment-chip{background:#15191e;border:1px solid #49515a}
+.attachment-chip button{color:#e0e4eb}
+.upload-track{background:#1b2026}
+#uploadFill{background:linear-gradient(90deg,#912237,#dc586a)}
+.tabs button.selected,.tabs button:hover{border-color:#49515a;background:#15191e}
+.post-author button:hover{color:#e0e4eb}
+.post-label{color:#aeb7c3}
+.post-actions button:hover{border-color:#49515a;background:#15191e}
+.post-actions button.liked{color:#e0e4eb}
+.post-actions .post-delete{color:#aeb7c3}
+.comment-main{background:#15191e;border:1px solid #262c33}
+.comment-compose input{border:1px solid #49515a}
+.comment-compose button{background:#67323d;border:1px solid #67323d}
+.profile-cover{background:radial-gradient(ellipse at 72% 40%,#91223788,transparent 50%),repeating-linear-gradient(-35deg,#15191e 0px,#0c0f13 13px,#0c0f13 14px,#0c0f13 28px)}
+.profile-cover:after{background:linear-gradient(transparent,#0c0f13)}
+.cover-label{color:#aeb7c3}
+.identity-info #profileHandle{color:#b04757}
+.identity-meta span{border:1px solid #49515a}
+.profile-actions button{border:1px solid #b04757;background:#6b1e2d}
+.profile-actions button.secondary{border-color:#49515a;background:#15191e}
+.directory-search input{background:#0c0f13;border:1px solid #49515a}
+.person-banner{background:linear-gradient(120deg,#15191e,#101016,#1b2026)}
+.person-body .avatar{border:3px solid #0c0f13}
+.person small{color:#aeb7c3}
+.person-actions button{border:1px solid #67323d;background:#262c33}
+.person-actions .person-open{background:#15191e;border-color:#49515a}
+.video-card-footer button{color:#aeb7c3}
+.suggested-person small{color:#aeb7c3}
+.suggested-person button{color:#e0e4eb;background:#1b2026;border:1px solid #67323d}
+.text-link{color:#aeb7c3}
+.guide-stats{color:#aeb7c3}
+.gate-card{background:linear-gradient(145deg,#15191e,#0b090e);border:1px solid #49515a}
+.gate-card a{color:#e0e4eb;border:1px solid #49515a}
+.close-x{color:#dc586a;border:1px solid #67323d;background:#15191e}
+.edit-files label{background:#15191e;border:1px solid #49515a}
+.feedback{color:#e0e4eb;background:#1b2026}
+.toast{background:#15191e;border:1px solid #b04757}
+.skeleton{background:linear-gradient(100deg,#15191e,#1b2026,#15191e)}
+
+/* corporate-network-photos.css */
+.apple-album-cover{background:linear-gradient(155deg,#1b2026,#0c0b0f);border:1px solid #49515a}
+.apple-album-card:hover .apple-album-cover{border-color:#b04757}
+.apple-album-cover .album-placeholder{color:#aeb7c3;background:radial-gradient(ellipse,#262c33,#121017)}
+.apple-album-cover .album-video-icon{background:#15191e;color:#aeb7c3}
+.apple-album-tools button{background:#15191e;border:1px solid #49515a}
+.apple-album-tools button:hover{border-color:#aeb7c3}
+.apple-segmented{background:#0c0f13;border:1px solid #1b2026}
+.apple-segmented button.selected,.apple-segmented button:hover{border-color:#49515a;background:#1b2026}
+.photos-gallery-search input,.photos-gallery-search select{background:#0c0f13;border:1px solid #262c33}
+.photos-clear-album{border:1px solid #67323d;background:#15191e;color:#e0e4eb}
+.apple-tile-open:focus-visible{outline:2px solid #e0e4eb}
+.apple-photo-grid-item .apple-photo-video{background:linear-gradient(135deg,#15191e,#101015);color:#e0e4eb}
+.apple-photo-heart{background:#0c0f13b3}
+.apple-photo-heart.liked{color:#e0e4eb;background:#262c33}
+.apple-photo-heart:hover{background:#67323d}
+.photos-privacy-note{color:#49515a}
+.apple-photo-progress{border-color:#67323d;background:#15191eed}
+.apple-photo-meter{background:#262c33}
+.apple-photo-meter>div{background:linear-gradient(90deg,#912237,#dc586a)}
+.apple-photo-viewer-header{background:#0c0f13e8}
+.apple-photo-viewer-actions button{background:#15191e;border:1px solid #49515a}
+.apple-photo-viewer-actions button:hover{border-color:#aeb7c3}
+.apple-photo-viewer-actions #appleViewerFavorite.liked{color:#e0e4eb}
+.apple-photo-viewer-actions .close-x{color:#dc586a}
+.apple-photo-nav{border:1px solid #49515a80}
+.apple-photo-viewer-bar{background:#0c0f13}
+.apple-viewer-owner-controls select,.apple-viewer-owner-controls button{background:#15191e;border:1px solid #49515a}
+.apple-viewer-owner-controls button:hover{border-color:#aeb7c3}
+.apple-viewer-owner-controls #appleViewerDelete{color:#e0e4eb}
+.apple-photo-filmstrip{background:#0c0f13}
+.apple-photo-filmstrip button{background:#0c0f13}
+.apple-photo-filmstrip button.selected{border-color:#e0e4eb}
+.apple-photo-filmstrip span{color:#e0e4eb}
+
+/* corporate-network-military.css */
+#photosView .military-scope-bar{border:1px solid #49515a;background:linear-gradient(130deg,#15191ede,#0a090ee5)}
+.military-category-card{border:1px solid #262c33;background:linear-gradient(145deg,#15191ec9,#0d0b10e8)}
+.military-category-card:hover{border-color:#49515a;background:#1b2026}
+.military-category-card.selected{border-color:#aeb7c3;background:#1b2026;box-shadow:inset 0 0 0 1px #49515a}
+.military-category-icon{border:1px solid #49515a;background:#15191e;color:#e0e4eb}
+.military-upload-settings summary:before{color:#e0e4eb}
+.military-upload-fields select,.military-upload-fields input,
+.military-modal-fields select,.military-modal-fields input,
+.military-filters select{border:1px solid #49515a;background:#0c0f13}
+.military-filters{border:1px solid #262c33;background:#0c0f13df}
+.military-album-meta span{border:1px solid #49515a;background:#15191e;color:#aeb7c3}
+.apple-photo-grid-item .military-photo-tag{border:1px solid #aeb7c36e;background:#0c0f13c4}
+#appleViewerEditMilitary{border-color:#aeb7c3!important}
+#photosView .apple-album-cover img{background:#0c0f13}
+#photosView .apple-photo-thumb{background:#0c0f13}
+
+/* corporate-chat-dock.css */
+:root{--bc-chat-crimson:#bd293f}
+.bc-chat-dock{border:1px solid #49515a}
+.bc-chat-dock button:hover,.bc-chat-dock button:focus-visible{background:#1b2026;border-color:#49515a}
+.bc-chat-dock .bc-active-chat{border-color:#67323d;color:#e0e4eb;background:#1b2026}
+.bc-chat-orb{border:1px solid #49515a;background:radial-gradient(circle at 42% 23%,#1b2026,#08080c 72%)}
+.bc-chat-orb:hover{box-shadow:0 12px 45px #67323d70}
+.bc-chat-orb .bc-unread{background:#bd293f}
+.bc-chat-pane{box-shadow:0 24px 90px #000e,0 0 38px #262c3322}
+.bc-chat-pane-header{background:linear-gradient(115deg,#15191e,#09090d);border-bottom:1px solid #262c33}
+.bc-chat-pane-controls button{background:#15191e;border:1px solid #262c33}
+.bc-chat-pane-controls button:hover{background:#262c33;border-color:#b04757}
+.bc-chat-pane-controls .bc-chat-close{color:#e0e4eb}
+.bc-chat-pane-footer{background:#0c0f13;border-top:1px solid #1b2026}
+.bc-chat-toast{border:1px solid #49515a;background:linear-gradient(125deg,#15191eee,#08080cf7)}
+
+/* corporate-chat-bubble-dock.css */
+:root{--bc-bubble-crimson:#b04757;--bc-bubble-border:#49515a}
+.bc-chat-dock{border:1px solid #49515a;background:linear-gradient(145deg,#15191ef5,#0d0d12f5)}
+.bc-chat-dock button:hover{background:#1b2026;border-color:#67323d}
+.bc-chat-dock .bc-active-chat{border:1px solid #67323d;background:linear-gradient(145deg,#262c33,#15191e)}
+.bc-chat-dock .bc-active-chat.has-unread{border-color:#e0e4eb;box-shadow:0 0 17px #bd293f28}
+.bc-chat-orb{border:1px solid #aeb7c3;background:radial-gradient(circle at 28% 16%,#49515a,#15191e 62%,#09090e 100%);box-shadow:0 12px 40px #000b,0 0 0 6px #1b202665,inset 0 1px 0 #ffffff4a}
+.bc-chat-orb:hover,.bc-chat-orb:focus-visible{box-shadow:0 14px 49px #000c,0 0 0 8px #67323d80,0 0 28px #b0475742}
+.bc-orb-chat-icon{background:linear-gradient(140deg,#f8eef5,#e0e4eb);color:#1b2026}
+.bc-orb-chat-icon:after{background:#e0e4eb}
+.bc-chat-orb .bc-unread{background:linear-gradient(135deg,#bd293f,#bd293f);border:2px solid #0c0f13}
+.bc-chat-orb.has-unread{border-color:#e0e4eb}
+.bc-chat-pane{border:1px solid #49515a;background:linear-gradient(145deg,#15191ef5,#08080df8)}
+.bc-chat-pane-header{background:linear-gradient(145deg,#1b2026,#101017);border-bottom:1px solid #49515a}
+.bc-chat-header-bubble{border:1px solid #aeb7c3;background:linear-gradient(140deg,#67323d,#1b2026);color:#e0e4eb}
+.bc-chat-header-bubble:after{background:#1b2026}
+.bc-chat-pane-controls button{border:1px solid #49515a}
+.bc-chat-pane-controls button:hover{background:#67323d;border-color:#aeb7c3}
+.bc-chat-pane-controls .bc-chat-close{color:#e0e4eb;border-color:#49515a}
+.bc-chat-pane-footer{border-top-color:#262c33}
+.bc-chat-toast{border:1px solid #aeb7c3;background:linear-gradient(145deg,#1b2026f6,#121017fa)}
+.bc-chat-toast:before{background:#15191e}
+.bc-chat-toast strong{color:#e0e4eb}
+
+/* corporate-chat-premium-dock.css */
+:root{--bc-pm-rose:#aeb7c3}
+.bc-chat-orb{border:1px solid #49515a;background:linear-gradient(148deg,#1b2026 0%,#15191e 38%,#0d0c12 100%);box-shadow:0 10px 36px #000b,0 0 0 5px #15191e70,inset 0 1px 0 #ffffff3d}
+.bc-chat-orb:before{background:linear-gradient(120deg,#1b2026,#131117);border:1px solid #49515a}
+.bc-chat-orb:hover,.bc-chat-orb:focus-visible{border-color:#e0e4eb;box-shadow:0 14px 48px #000c,0 0 0 6px #49515a7d,0 0 20px #aeb7c355,inset 0 1px 0 #ffffff4d}
+.bc-chat-orb:focus-visible{outline:2px solid #e0e4eb}
+.bc-orb-chat-icon{background:linear-gradient(150deg,#f7f1f8,#aeb7c3);color:#15191e}
+.bc-orb-chat-icon:after{background:#aeb7c3}
+.bc-orb-chat-dots{color:#1b2026}
+.bc-chat-orb .bc-unread{background:#bd293f;border:2px solid #0c0f13}
+.bc-chat-pane{border:1px solid #49515a;background:linear-gradient(155deg,#15191ef9,#0b0a0ffb 65%)}
+.bc-chat-pane-header{background:linear-gradient(115deg,#15191e,#15131a 65%,#100f15);border-bottom:1px solid #49515a67}
+.bc-chat-header-bubble{background:linear-gradient(145deg,#262c33,#1b2026);border:1px solid #49515a}
+.bc-chat-header-bubble:after{background:#1b2026}
+.bc-chat-pane-controls button{background:#1b2026;border:1px solid #49515a}
+.bc-chat-pane-controls button:hover{background:#262c33;border-color:#aeb7c3}
+.bc-chat-pane-controls button:focus-visible{outline:2px solid #aeb7c3}
+.bc-chat-pane-controls .bc-chat-close{background:#1b2026;color:#e0e4eb;border-color:#49515a}
+.bc-chat-pane-footer span:last-child{color:#aeb7c3}
+.bc-chat-toast{border:1px solid #49515a;background:linear-gradient(135deg,#1b2026,#121016fa)}
+.bc-chat-toast strong{color:#e0e4eb}
+.bc-chat-toast:hover{border-color:#aeb7c3}
+
+/* corporate-chat-media-bubble-host.css */
+.bc-media-bubble-card{border:1px solid #49515a;background:linear-gradient(145deg,#15191ee8,#0d0c13ee)}
+.bc-media-bubble-heading{background:linear-gradient(110deg,#1b2026,#16121d);border-bottom:1px solid #49515a}
+.bc-media-bubble-icon{background:linear-gradient(145deg,#262c33,#15191e);border:1px solid #aeb7c3}
+.bc-media-bubble-name small{color:#aeb7c3}
+.bc-media-bubble-heading-actions button{border:1px solid #49515a;background:#1b2026;color:#e0e4eb}
+.bc-media-bubble-heading-actions button:hover{background:#67323d;border-color:#dc586a}
+@media(max-width:660px){body.bc-has-media-bubbles:has(.bc-bubble-host-standalone)>.chat{border:1px solid #49515a}
+}
+.bc-media-panel .media-viewer{background:linear-gradient(150deg,#15191e,#08090e)!important}
+.bc-media-panel .media-dialog{background:linear-gradient(150deg,#15191e,#0b0b10)}
+
+/* corporate-chat-media-responsive.css */
+@media (min-width:700px){body.bc-has-media-bubbles:has(.bc-bubble-host-standalone)>.chat{border:1px solid #49515a}
+}
+@media (max-width:699px) and (orientation:portrait){body.bc-has-media-bubbles .bc-media-bubble-tabs:not([hidden]){background:linear-gradient(120deg,#15191e,#0c0f13)}
+.bc-media-bubble-tabs button{border:1px solid #49515a;background:#15191e}
+.bc-media-bubble-tabs button.selected{background:#67323d;border-color:#aeb7c3}
+}
+
+/* corporate-chat-media-flip-focus.css */
+.bc-media-bubble-heading-actions .bc-media-bubble-flip{border:1px solid #49515a;background:linear-gradient(145deg,#262c33,#15191e);color:#e0e4eb}
+.bc-media-bubble-heading-actions .bc-media-bubble-flip:hover{border-color:#e0e4eb;background:#67323d}
+.bc-media-panel .bc-media-flip-button{color:#e0e4eb;background:#262c33;border:1px solid #aeb7c3}
+.bc-media-panel .bc-media-flip-button:hover{background:#67323d;border-color:#e0e4eb}
+.bc-media-panel .media-viewer-actions .media-focus-toggle{background:linear-gradient(140deg,#262c33,#1b2026)!important;border:1px solid #aeb7c3!important;color:#e0e4eb!important}
+.bc-media-panel .media-viewer-actions .media-focus-toggle:hover{background:#67323d!important;border-color:#e0e4eb!important}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock .bc-media-bubble-tabs:not([hidden]){background:#0c0f13!important}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-tabs button{background:#15191e;border:1px solid #49515a;color:#aeb7c3}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-tabs button.selected{background:#67323d;border-color:#aeb7c3}
+body.bc-handset-portrait.bc-has-media-bubbles:has(.bc-bubble-host-standalone)>.chat{border:1px solid #49515a}
+
+/* corp-adaptive-layout.css */
+body.bc-network button:focus-visible,body.bc-network a:focus-visible,
+body.bc-employee button:focus-visible,body.bc-employee a:focus-visible,
+body[data-page="admin-preview"] button:focus-visible,
+body[data-page="admin-preview"] a:focus-visible{outline:2px solid #e0e4eb}
+body.bc-network :is(button,a,input,textarea,select),
+body.bc-employee :is(button,a,input,textarea,select),
+body[data-page="admin-preview"] :is(button,a,input,textarea,select){-webkit-tap-highlight-color:rgba(220,88,106,.12)}
+@media(max-width:767px){body[data-page="admin-preview"] .admin-modal .modal-top{background:linear-gradient(160deg,#15191ef6,#111016f8)}
+}
+
+/* corporate-network-feed-media.css */
+body.bc-network .post-media{border:1px solid #1b2026}
+body.bc-network .post-media > button:focus-visible{outline:2px solid #e0e4eb}
+
+/* corporate-chat-compact-media.css */
+html.bc-chat-lite .bc-inline-upload-bubble{background:linear-gradient(145deg,#1b2026,#15191e)!important;border:1px solid #49515a!important}
+html.bc-chat-lite .bc-inline-upload-track{background:#262c33}
+html.bc-chat-lite .bc-inline-upload-fill{background:linear-gradient(90deg,#b04757,#e0e4eb)}
+html.bc-chat-lite .bc-inline-upload-percent{color:#e0e4eb}
+html.bc-chat-lite .bc-inline-upload-actions button{background:#1b2026;border:1px solid #49515a}
+html.bc-chat-lite .message-media .bubble{border:1px solid #49515a!important}
+html.bc-chat-lite .message-media.mine .bubble{background:linear-gradient(145deg,#1b2026,#15191e)!important}
+html.bc-chat-lite .message-media .bubble>strong{color:#e0e4eb!important}
+html.bc-chat-lite .bc-chat-inline-loading{color:#aeb7c3!important}
+html.bc-chat-lite .chat.media-open .media-viewer{background:linear-gradient(160deg,#15191e,#08080c)!important}
+html.bc-chat-lite .bc-mobile-lightbox-close{border:1px solid #49515a;background:#15191e}
+html.bc-chat-lite .bc-mobile-lightbox-prev,
+html.bc-chat-lite .bc-mobile-lightbox-next{background:#0c0f13bf}
+
+/* corporate-military-experience.css */
+#photosView .mx-overline{color:#e0e4eb}
+#photosView .mx-hero{border:1px solid #912237}
+#photosView .mx-hero:before{background:linear-gradient(90deg,#060709f7 0%,#090b0ec2 42%,#0c0f1392 100%),linear-gradient(0deg,#060708 1%,transparent 80%),url('https://commons.wikimedia.org/wiki/Special:FilePath/Tank_in_Desert_Storm.JPEG')}
+#photosView .mx-hero:after{background:repeating-linear-gradient(160deg,transparent 0 75px,#db304911 76px,transparent 78px),radial-gradient(ellipse at 85% 74%,#bd293f2c,transparent 52%)}
+#photosView .mx-holo{background:linear-gradient(90deg,#15191e,#db3049,#1b2026,#db3049,#15191e);box-shadow:0 0 20px #db3049bd}
+#photosView .mx-eyebrow{color:#dc586a}
+#photosView .mx-eyebrow:before{background:#db3049;box-shadow:0 0 15px #db3049}
+#photosView .mx-hero h2 em{color:#db3049}
+#photosView .mx-btn{border:1px solid #49515a}
+#photosView .mx-btn:hover{border-color:#db3049;background:#15191e}
+#photosView .mx-btn.mx-primary{background:linear-gradient(108deg,#bd293f,#db3049);border-color:#db3049;box-shadow:0 6px 27px #bd293f35}
+#photosView .mx-btn:focus-visible,#photosView .mx-card:focus-visible{outline:2px solid #dc586a}
+#photosView .mx-controls{border:1px solid #262c33;background:linear-gradient(140deg,#15191e,#0d0f13)}
+#photosView .mx-mode[aria-pressed=true]{border-color:#db3049;background:linear-gradient(140deg,#262c33,#15191e);box-shadow:inset 0 0 0 1px #6b1e2d}
+#photosView .mx-prefs button{border:1px solid #262c33;background:#0c0f13}
+#photosView .mx-prefs button[aria-pressed=true]{border-color:#bd293f;background:#262c33}
+#photosView .mx-card{border:1px solid #262c33}
+#photosView .mx-card:hover{border-color:#db3049}
+#photosView .mx-card:before{background:radial-gradient(ellipse at 86% 15%,#bd293f53,transparent 46%),repeating-linear-gradient(145deg,#fff0 0 31px,#b0b8ca0e 32px 34px)}
+#photosView .mx-card .mx-icon{color:#e0e4eb}
+#photosView .mx-dark{background:radial-gradient(ellipse at 75% 22%,#262c3375,transparent 50%),linear-gradient(130deg,#15191e,#090a0e);border:1px solid #67323d}
+#photosView .mx-dark:before{background:repeating-linear-gradient(160deg,transparent 0 70px,#db304910 72px,transparent 74px)}
+#photosView .mx-dark-card{border:1px solid #67323d;background:radial-gradient(ellipse at 70% 30%,#9122375a,transparent 55%),linear-gradient(135deg,#2a292f,#0b1013)}
+#photosView .mx-dark-card:before{filter:drop-shadow(0 0 25px #db304944)}
+#photosView .mx-dark-card:nth-child(2):before{background:linear-gradient(#161a22,#5b5558 50%,#15191e)}
+#photosView .mx-dark-card .mx-num{color:#e0e4eb}
+#photosView .mx-dark-lock{color:#e0e4eb}
+#photosView .military-category-card:hover{border-color:#db3049;background:#15191e}
+#photosView .military-category-icon{border-color:#67323d;background:#1b2026;color:#e0e4eb}
+#photosView .apple-photo-grid-item:hover{border-color:#db3049}
+#photosView .mx-dialog{background:linear-gradient(145deg,#15191e,#0b0e12);border:1px solid #b04757}
+#photosView .mx-dialog input{accent-color:#db3049}
+#photosView .mx-dialog .mx-close{color:#dc586a}
+#photosView .mx-cinematic-frame{border:1px solid #912237;background:linear-gradient(90deg,#050607db,#0c0f13a0),url('https://commons.wikimedia.org/wiki/Special:FilePath/Tank_in_Desert_Storm.JPEG') center/cover}
+#photosView .mx-cinematic-frame:before{background:radial-gradient(ellipse at 67% 65%,#db304960,transparent 34%),repeating-linear-gradient(155deg,transparent 0 55px,#db304922 57px,transparent 60px)}
+#photosView .mx-cinematic-frame:after{border:1px solid #db304944;box-shadow:0 0 70px #bd293f22}
+#photosView .mx-cinematic-label{color:#e0e4eb}
+#photosView .military-scope-bar{border-color:#67323d}
+#photosView .apple-segmented{border:1px solid #49515a}
+#photosView .apple-segmented .selected{background:linear-gradient(120deg,#912237,#bd293f)}
+#photosView .photos-summary .panel{border:1px solid #262c33}
+#photosView .military-filters{border-color:#262c33}
+
+/* corporate-world-forces.css */
+#photosView .wf-intro{border:1px solid #912237;background:radial-gradient(ellipse at 90% 25%,#91223769,transparent 37%),linear-gradient(115deg,#13141bdc,#07090ded),repeating-linear-gradient(146deg,#db30493b 0 2px,#0b0d15 2px 56px)}
+#photosView .wf-intro:before{border:1px solid #bd293f42;box-shadow:0 0 0 33px #bd293f13,0 0 0 70px #bd293f0b,0 0 100px #bd293f36}
+#photosView .wf-intro h2 em{color:#db3049}
+#photosView .wf-combo{border:1px solid #db3049;background:linear-gradient(145deg,#bd293f,#262c33);box-shadow:0 12px 40px #9122374d}
+#photosView .wf-builder{border:1px solid #262c33}
+#photosView .wf-count{color:#e0e4eb;border:1px solid #67323d}
+#photosView .wf-picker-search input,#photosView .wf-configuration select{border:1px solid #262c33}
+#photosView .wf-picker-search input:focus-visible,#photosView .wf-configuration select:focus-visible{border-color:#db3049;box-shadow:0 0 0 2px #db304930}
+#photosView .wf-countries{scrollbar-color:#67323d #16141c}
+#photosView .wf-country:hover{border-color:#b04757;background:#15191e}
+#photosView .wf-country[aria-pressed=true]{border-color:#db3049;background:linear-gradient(130deg,#262c33,#15191e);box-shadow:inset 0 0 0 1px #912237}
+#photosView .wf-country .wf-tick{color:#dc586a}
+#photosView .wf-country:focus-visible,#photosView .wf-combo:focus-visible{outline:2px solid #db3049}
+#photosView .wf-red{color:#db3049}
+#photosView .wf-minibtn{border:1px solid #67323d;color:#e0e4eb}
+#photosView .wf-spotlight{border:1px solid #262c33}
+#photosView .wf-spotlight:hover{border-color:#db3049}
+#photosView .wf-spotlight .wf-spotlight-content .wf-num{color:#dc586a}
+#photosView .wf-empty{border:1px dashed #49515a}
+#photosView .wf-personal{background:linear-gradient(135deg,#15191ee0,#0c0e14);border:1px solid #49515a}
+#photosView .wf-personal-tile{border:1px solid #262c33}
+#photosView .wf-personal-open .wf-play{color:#e0e4eb}
+#photosView .wf-more{border:1px solid #b04757;color:#dc586a;background:#1b2026}
+
+/* corporate-military-ai.css */
+#photosView .ai-library-btn{border-color:#67323d;background:linear-gradient(115deg,#262c33,#15191e)}
+#photosView .ai-library-btn:hover{border-color:#db3049;background:#67323d}
+#appleViewerAnalyze{border:1px solid #db3049!important;background:linear-gradient(110deg,#912237,#bd293f)!important}
+.ai-photo-dialog{background:linear-gradient(147deg,#15191e,#101116 60%,#0a0b0e);border:1px solid #67323d}
+.ai-photo-dialog .ai-holo{background:linear-gradient(90deg,#1b2026,#db3049,#262c33,#db3049,#1b2026);box-shadow:0 0 21px #db304975}
+.ai-photo-dialog .ai-overline{color:#dc586a}
+.ai-photo-close{background:#15191e;border:1px solid #67323d;color:#e0e4eb}
+.ai-photo-preview{border:1px solid #67323d}
+.ai-photo-btn{border:1px solid #49515a;background:#15191e}
+.ai-photo-btn.main{background:linear-gradient(115deg,#bd293f,#bd293f);border-color:#dc586a}
+.ai-photo-btn.outline{background:#0c0f13}
+.ai-photo-btn:focus-visible,.ai-photo-close:focus-visible{outline:2px solid #dc586a}
+.ai-photo-status{color:#e0e4eb}
+.ai-photo-review{border:1px solid #49515a}
+.ai-photo-chip{border:1px solid #b04757;color:#e0e4eb;background:#262c33}
+.ai-photo-form select,.ai-photo-form input,.ai-photo-form textarea{border:1px solid #49515a}
+.ai-photo-batch-entry button{border:1px solid #b04757;background:#1b2026;color:#e0e4eb}
+.photos-header-actions .ai-upload-toggle{border:1px solid #67323d;background:linear-gradient(115deg,#15191e,#14141a);color:#e0e4eb}
+.ai-upload-toggle input{accent-color:#db3049}
+.ai-upload-toggle small{color:#aeb7c3}
+.ai-upload-toggle:focus-within{outline:2px solid #db3049}
+
+/* corporate-photo-taste.css */
+#appleViewerTaste{background:linear-gradient(114deg,#262c33,#912237)!important;border:1px solid #bd293f!important}
+.taste-insight{border:1px solid #262c33}
+.taste-insight .taste-overline{color:#dc586a}
+.taste-insight-signals span{background:#1b2026;color:#e0e4eb;border:1px solid #67323d}
+#tasteResetAll{border:1px solid #49515a;color:#e0e4eb}
+.taste-dialog{background:linear-gradient(150deg,#15191e,#121218 53%,#0a0c11);border:1px solid #67323d}
+.taste-bar{background:linear-gradient(90deg,#1b2026,#db3049,#912237,#db3049,#15191e);box-shadow:0 0 17px #db304966}
+.taste-header{border-bottom:1px solid #262c33}
+.taste-header .overline{color:#dc586a}
+.taste-close{border:1px solid #67323d;background:#15191e;color:#e0e4eb}
+.taste-preview{border:1px solid #262c33}
+.taste-section{border-top:1px solid #1b2026}
+.taste-cue{border:1px solid #49515a}
+.taste-cue.selected{background:linear-gradient(110deg,#912237,#bd293f);border-color:#db3049;box-shadow:0 0 15px #bd293f66}
+.taste-cue:focus-visible,.taste-footer button:focus-visible,.taste-stars button:focus-visible{outline:2px solid #dc586a}
+.taste-stars button{color:#49515a}
+.taste-stars button.active{color:#dc586a;text-shadow:0 0 12px #db30496e}
+.taste-notes{border:1px solid #49515a}
+.taste-status{color:#e0e4eb}
+.taste-footer button{border:1px solid #67323d;background:#15191e;color:#e0e4eb}
+.taste-footer button.strong{background:linear-gradient(115deg,#bd293f,#bd293f);border-color:#dc586a}
+.taste-footer button.muted{border-color:#262c33}
+.taste-match-reason{border-left:2px solid #bd293f;background:#15191e;color:#e0e4eb}
+.taste-match-reason::before{color:#dc586a}
+.taste-region-frame{border:1px solid #49515a}
+.taste-region-rect{border:2px solid #db3049;background:#db304930;box-shadow:0 0 0 1px #0c0f13,0 0 16px #db30498a}
+.taste-region-rect::after{background:#bd293f;border:1px solid #dc586a}
+.taste-region-rect.draft{background:#db30492f}
+.taste-region-tools label{color:#aeb7c3}
+.taste-region-tools select,.taste-region-entry select{border:1px solid #67323d}
+.taste-region-tools button,.taste-region-entry button{background:#1b2026;color:#e0e4eb;border:1px solid #912237}
+.taste-region-entry{background:#15191e;border:1px solid #262c33}
+.taste-region-entry strong{color:#e0e4eb}
+.taste-region-entry .taste-region-detail{border:1px solid #49515a}
+.taste-region-entry .taste-region-detail:focus-visible{outline:2px solid #dc586a}
+.taste-region-secondaries{border-top:1px solid #262c33}
+.taste-region-secondaries>span{color:#aeb7c3}
+.taste-region-extra{border:1px solid #49515a!important;background:#15191e!important}
+.taste-region-extra.selected{background:linear-gradient(110deg,#912237,#bd293f)!important;border-color:#dc586a!important;box-shadow:0 0 12px #db304960}
+.taste-region-extra:focus-visible{outline:2px solid #dc586a}
+.taste-insight .taste-saved-notice{border:1px solid #bd293f;background:linear-gradient(110deg,#1b2026,#15191e);color:#e0e4eb}
+.apple-photo-grid-item .apple-photo-taste-entry{border:1px solid #dc586a;background:linear-gradient(105deg,#912237ec,#1b2026e8)}
+.apple-photo-grid-item .apple-photo-taste-entry:hover,
+.apple-photo-grid-item .apple-photo-taste-entry:focus-visible{border-color:#dc586a;background:linear-gradient(105deg,#bd293f,#912237);outline:2px solid #dc586a}
+
+/* corporate-country-gallery.css */
+.country-personal-panel{border:1px solid #67323d;background:linear-gradient(138deg,#15191e 0%,#111217 64%,#0b0c12 100%)}
+.country-personal-hero span{color:#dc586a}
+.country-personal-actions select{border:1px solid #49515a}
+.country-personal-actions button{border:1px solid #b04757;background:#1b2026}
+.country-personal-actions button:hover,.country-personal-actions button:focus-visible{background:#912237;border-color:#dc586a}
+#myCountriesSave{background:linear-gradient(110deg,#912237,#bd293f);border-color:#dc586a}
+#myCountriesClear{color:#e0e4eb;border-color:#262c33}
+.country-personal-chips button{border:1px solid #b04757;background:#262c33}
+.country-personal-chips button:hover{background:#912237}
+.country-personal-chips button span{color:#e0e4eb}
+.country-personal-empty{color:#aeb7c3}
+.country-personal-summary{color:#e0e4eb;border-top:1px solid #262c33}
+.country-photo-label{border:1px solid #dc586a;background:#15191edb}
+.country-page-metrics{color:#e0e4eb}
+.country-personal-panel[data-page-theme=usa] .country-page-banner{border-color:#aeb7c3;background:linear-gradient(114deg,#050f21 0%,#132640 47%,#262c33 100%)}
+.country-personal-panel[data-page-theme=usa] .country-page-banner::before{background:repeating-linear-gradient(166deg,transparent 0 17px,#eeecf70b 17px 19px),radial-gradient(ellipse at 78% 5%,#db304966,transparent 53%)}
+.country-personal-panel[data-page-theme=usa] .country-page-banner-art>span{border-color:#dc586aa8;box-shadow:0 0 35px #db304952,inset 0 0 35px #db30491a}
+.country-personal-panel[data-page-theme=hybrid] .country-page-banner{border-color:#b04757;background:linear-gradient(112deg,#132840 0%,#1c1725 49%,#912237 50%,#15191e 100%)}
+.country-personal-panel[data-page-theme=hybrid] .country-page-banner::before{background:repeating-linear-gradient(130deg,transparent 0 31px,#ffffff0a 31px 32px),radial-gradient(ellipse at 70% 15%,#db304960,transparent 53%)}
+.country-personal-panel[data-page-theme=hybrid] .country-page-banner-art>span{border-color:#dc586a99;color:#e0e4ebb2;box-shadow:0 0 36px #db304965,inset 0 0 29px #db304930}
+.country-personal-panel[data-page-theme=nation] .country-page-banner{background:linear-gradient(116deg,#12232b,#27302d 58%,#1b2026)}
+.country-pages-head{border-top:1px solid #49515a}
+.country-page-card{border:1px solid #49515a}
+.country-page-card[data-theme=usa]{background:linear-gradient(130deg,#0b2041,#262c33);border-color:#b04757}
+.country-page-card[data-theme=hybrid]{background:linear-gradient(120deg,#142944 0%,#1b1f2e 48%,#912237 52%,#1b2026);border-color:#b04757}
+.country-page-card.active{outline:2px solid #dc586a;box-shadow:0 0 20px #bd293f5a}
+.country-page-card-type{color:#e0e4eb}
+.country-page-delete{color:#e0e4eb;border:1px solid #b04757}
+.country-page-save-form label{color:#e0e4eb}
+.country-page-save-form label small{color:#aeb7c3}
+.country-page-save-form input{border:1px solid #49515a}
+#photosView[data-country-page-theme=usa] #applePhotosGallery{border-top:2px solid #b04757}
+
+/* corporate-photo-predict.css */
+#appleViewerPredict{background:linear-gradient(125deg,#912237,#bd293f)!important;border:1px solid #dc586a!important}
+.pred-dialog{border:1px solid #67323d;background:linear-gradient(135deg,#15191e,#0e0f16 60%,#0b0b11)}
+.pred-holo-strip{background:linear-gradient(90deg,#262c33,#db3049,#912237,#db3049,#1b2026);box-shadow:0 0 18px #db304999}
+.pred-header{border-bottom:1px solid #67323d}
+.pred-header span{color:#dc586a}
+.pred-header p{color:#aeb7c3}
+#predClose{border:1px solid #67323d;color:#e0e4eb;background:#1b2026}
+.pred-frame{border:1px solid #67323d}
+.pred-visual-rect{border:2px solid #db3049;background:#db30492a;box-shadow:0 0 0 1px #0c0f13,0 0 18px #db3049b0}
+.pred-visual-rect::after{background:#bd293f;border:1px solid #dc586a}
+.pred-brief{border:1px solid #67323d;background:#15191e}
+.pred-brief strong{color:#dc586a}
+.pred-row{background:#0c0f13;border:1px solid #67323d}
+.pred-row-main small{color:#aeb7c3}
+.pred-vote{background:#1b2026;border:1px solid #67323d}
+.pred-vote.selected{background:#912237;border-color:#dc586a;box-shadow:0 0 14px #db30494f}
+.pred-status{color:#e0e4eb}
+.pred-empty{border:1px dashed #49515a}
+.pred-footer button{background:#15191e;border:1px solid #67323d}
+.pred-footer button.pred-primary{background:linear-gradient(105deg,#bd293f,#bd293f);border-color:#dc586a}
+
+/* Final obsidian surfaces, applied after all module palettes. */
+body.bc-network .masthead{background:rgba(6,9,13,.97)!important;border-color:#2c343d!important}
+body.bc-network .panel,
+body.bc-network .nav-panel,
+body.bc-network .post,
+body.bc-network .composer{background:linear-gradient(145deg,rgba(23,28,34,.96),rgba(9,12,17,.97))!important;border-color:rgba(151,163,178,.19)!important;box-shadow:0 16px 46px rgba(0,0,0,.38)}
+body.bc-network .rail-note,
+body.bc-network .gate-card{background:linear-gradient(145deg,#171c22,#080b10)!important;border-color:#333a43!important}
+body.bc-network .mainnav button.nav-active,
+body.bc-network .mainnav button:hover{border-bottom-color:#cb273d!important;color:#f7f8fa!important}
+body.bc-network .rail-link.selected,
+body.bc-network .rail-link:hover{background:rgba(115,22,37,.16)!important;color:#f4f6f8!important}
+body.bc-network .military-usa-nav{background:linear-gradient(115deg,#121820,#531522)!important;color:#f3f4f6!important;border-color:#7d2b39!important}
+body.bc-network .military-usa-nav:hover{background:linear-gradient(115deg,#1a1e24,#762237)!important}
+body.bc-network .brand-mark{background:linear-gradient(140deg,#181e23,#080a0d)!important;border-color:#73313d!important;color:#f4f5f7!important}
+body.bc-network .btn.crimson,
+body.bc-network #publishPost{background:linear-gradient(115deg,#8f192d,#bd2d43)!important;border-color:#c34051!important;color:#fff!important}
+body.bc-network .profile-cover{background:radial-gradient(ellipse at 50% 0%,rgba(165,24,48,.19),transparent 65%),linear-gradient(135deg,#11161c,#05080b)!important}
+body.bc-network .page-intro h1,
+body.bc-network .page-intro h2{color:#f6f8fa}
+body.bc-network input:not([type="file"]),body.bc-network textarea,body.bc-network select{
+ color:#f1f3f6;background-color:#090d12;border-color:#3b444e
+}
+body.bc-network input:focus-visible,body.bc-network textarea:focus-visible,body.bc-network select:focus-visible{
+ outline-color:#c13b4d;border-color:#b83348
+}
+body.bc-network #photosView .mx-hero,
+body.bc-network #photosView .wf-intro,
+body.bc-network #photosView .military-scope-bar,
+body.bc-network #photosView .military-category-card,
+body.bc-network #photosView .military-upload-settings{border-color:rgba(138,149,161,.24)!important}
+body.bc-network #photosView .wf-intro{background:radial-gradient(ellipse at 90% 20%,rgba(126,23,42,.18),transparent 45%),linear-gradient(135deg,#151a21,#07090e)!important}
+body.bc-network #photosView .wf-intro:before{box-shadow:0 0 0 30px rgba(143,20,43,.05),0 0 0 70px rgba(143,20,43,.025)!important}
+body.bc-network #photosView .mx-hero h2 em,
+body.bc-network #photosView .wf-intro h2 em{color:#e34658!important}
+body.bc-network #photosView .mx-holo{background:linear-gradient(90deg,#3b0e19,#ec344d,#72152a,#ff3e58,#300812)!important;box-shadow:0 0 22px rgba(202,38,62,.43)!important}
+@media(prefers-reduced-motion:reduce){
+ body.bc-network #photosView .mx-holo{animation:none!important}
+}
