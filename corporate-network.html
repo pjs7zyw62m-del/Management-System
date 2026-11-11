@@ -529,6 +529,13 @@
   </header>
   <div class="bc-vd-layout">
    <div class="bc-vd-workspace">
+    <div class="bc-vd-index-actions bc-vd-top-actions">
+     <button id="vdSystemCheck" type="button">◉ CHECK AI &amp; DUPLICATES</button>
+     <button id="vdDuplicateScan" type="button">◎ SCAN DUPLICATES · FREE</button>
+     <button id="vdAIIndex" type="button">✦ INDEX 5 PHOTOS WITH AI · PAID</button>
+    </div>
+    <p id="vdIndexStatus" class="bc-vd-index-status" role="status" aria-live="polite">Choose Check AI &amp; Duplicates to verify your connection. AI indexing uses API credits.</p>
+    <div id="vdDuplicateResults" class="bc-vd-duplicate-results" hidden></div>
     <div class="bc-vd-bar"><strong id="vdFilename">CHOOSE A PHOTOGRAPH</strong><span id="vdSelectionHint">CLICK A DETAIL OR DRAG TO SELECT AN AREA</span></div>
     <div id="vdStage" class="bc-vd-stage" role="group" aria-label="Select a region of the displayed military photograph" tabindex="0">
      <img id="vdMainPhoto" alt="Selected Military Library photograph" draggable="false">
@@ -544,12 +551,7 @@
     </div>
     <div class="bc-vd-source-head"><strong>SELECT A PHOTO TO EXPLORE</strong><span id="vdSourceCount"></span></div>
     <div id="vdSourceStrip" class="bc-vd-source-strip" aria-label="Choose a military photograph"></div>
-    <div class="bc-vd-index-actions">
-     <button id="vdDuplicateScan" type="button">◎ SCAN MY EXISTING PHOTOS FOR DUPLICATES · FREE</button>
-     <button id="vdAIIndex" type="button">✦ INDEX 5 MY PHOTOS WITH AI · USES API CREDITS</button>
-    </div>
-    <p id="vdIndexStatus" class="bc-vd-index-status" role="status" aria-live="polite">Exact/near-duplicate scanning is free. AI indexing is optional and may incur provider charges.</p>
-    <div id="vdDuplicateResults" class="bc-vd-duplicate-results" hidden></div>
+
    </div>
    <aside class="bc-vd-side" aria-label="Visual Discovery analysis and recommendations">
     <div class="bc-vd-step"><span>01 / SELECTION</span><strong>WHAT CAUGHT YOUR EYE?</strong></div>
