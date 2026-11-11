@@ -1584,3 +1584,102 @@ body.usa-revamp #allBranchCount{
 @media(prefers-reduced-motion:reduce){
  body.usa-revamp .bento-all-tile{transition:none!important}
 }
+
+
+/* PHOTO OF THE DAY · MINIMAL V12
+   Two visible elements only: a simple heading and one large full-color photo.
+   Retain invisible account preference fields for the existing daily selector. */
+body.usa-revamp .usa-hero.hero-v4.hero-v7 .photo-of-day-card.daily-simple{
+ display:block;
+ width:100%;
+ padding:0!important;
+ margin:0!important;
+ background:transparent!important;
+ border:0!important;
+ border-radius:12px!important;
+ box-shadow:none!important;
+ overflow:hidden!important;
+}
+body.usa-revamp .usa-hero.hero-v4.hero-v7 .daily-simple-title{
+ display:flex;
+ align-items:center;
+ width:100%;
+ min-height:47px;
+ padding:12px 16px;
+ background:#1e1b29;
+ color:#f8f4f7;
+ border:0;
+ font-size:13px;
+ font-weight:800;
+ letter-spacing:.14em;
+ line-height:1.4;
+ text-align:left;
+}
+body.usa-revamp .usa-hero.hero-v4.hero-v7 .daily-simple-state,
+body.usa-revamp .usa-hero.hero-v4.hero-v7 .daily-simple-state[hidden]{
+ display:none!important;
+ visibility:hidden!important;
+}
+body.usa-revamp .usa-hero.hero-v4.hero-v7 .daily-simple .viewfinder-shell{
+ position:relative;
+ width:100%;
+ max-width:none;
+ height:auto;
+ aspect-ratio:16/10;
+ min-height:0;
+ padding:0!important;
+ margin:0;
+ border:0!important;
+ border-radius:0!important;
+ box-shadow:none!important;
+ background:#171b24;
+ overflow:hidden;
+}
+body.usa-revamp .usa-hero.hero-v4.hero-v7 .daily-simple .viewfinder-photo{
+ position:absolute;
+ inset:0;
+ width:100%;
+ height:100%;
+ margin:0;
+ padding:0;
+ border:0!important;
+ border-radius:0!important;
+ display:block;
+ overflow:hidden;
+ background:transparent;
+}
+body.usa-revamp .usa-hero.hero-v4.hero-v7 .daily-simple .viewfinder-photo img{
+ position:absolute;
+ inset:0;
+ display:block;
+ width:100%;
+ height:100%;
+ object-fit:cover!important;
+ object-position:center;
+ opacity:1!important;
+ filter:none!important;
+ transform:none!important;
+ transition:none!important;
+}
+body.usa-revamp .usa-hero.hero-v4.hero-v7 .daily-simple .viewfinder-photo:hover img{
+ opacity:1!important;
+ filter:none!important;
+ transform:none!important;
+}
+body.usa-revamp .usa-hero.hero-v4.hero-v7 .daily-simple .viewfinder-placeholder{
+ display:block;
+ width:100%;
+ height:100%;
+ background:transparent;
+ color:transparent;
+}
+@media(max-width:670px){
+ body.usa-revamp .usa-hero.hero-v4.hero-v7 .daily-simple .viewfinder-shell{
+  aspect-ratio:16/10;
+ }
+ body.usa-revamp .usa-hero.hero-v4.hero-v7 .daily-simple-title{
+  min-height:42px;
+  padding:10px 13px;
+  font-size:12px;
+ }
+}
