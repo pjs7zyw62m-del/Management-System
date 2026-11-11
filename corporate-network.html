@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="corporate-chat-dock.css?v=20261109-floating-right2"><link rel="stylesheet" href="corporate-chat-bubble-dock.css?v=20261109-bubble-dock1"><link rel="stylesheet" href="corporate-chat-premium-dock.css?v=20261109-premium1">
 <link rel="stylesheet" href="corporate-chat-media-bubble-host.css?v=20261109-independent-media1"><link rel="stylesheet" href="corporate-chat-media-responsive.css?v=20261109-sidebyside2"><link rel="stylesheet" href="corporate-chat-media-flip-focus.css?v=20261109-flip-focus1">
 <script src="corporate-chat-media-bubble-host.js?v=20261109-large-media1" defer></script>
-<script src="corp-config.js" defer></script><script type="module" src="corporate-network.js?v=20261111-realobject5"></script><link rel="stylesheet" href="corp-adaptive-layout.css?v=20261109-device2">
+<script src="corp-config.js" defer></script><script type="module" src="corporate-network.js?v=20261111-visual4"></script><link rel="stylesheet" href="corp-adaptive-layout.css?v=20261109-device2">
 <link rel="stylesheet" href="corp-adaptive-chat.css?v=20261109-device2">
 <link rel="stylesheet" href="corporate-network-feed-media.css?v=20261109-uncropped2">
 <link rel="stylesheet" href="corporate-chat-compact-media.css?v=20261109-mobile-gallery4">
@@ -27,7 +27,7 @@
 <link rel="stylesheet" href="corporate-network-personalization.css?v=20261111-personal3">
 <link rel="stylesheet" href="corporate-photo-rediscovery.css?v=20261111-card-pointer3">
 <link rel="stylesheet" href="corporate-photo-zoom.css?v=20261111-zoom1">
-<link rel="stylesheet" href="corporate-visual-discovery.css?v=20261111-realobject5">
+<link rel="stylesheet" href="corporate-visual-discovery.css?v=20261111-visual3">
 </head>
 <body class="bc-network">
 <header class="masthead">
@@ -523,7 +523,7 @@
   <header class="bc-vd-head">
    <div><small>BLACKCELL / MILITARY LIBRARY / PRIVATE MEMBER EXPERIENCE</small>
     <h2 id="vdTitle"><span>⌖</span> VISUAL DISCOVERY.</h2>
-    <p id="vdDescription">Select a uniform detail, then use AI Find Same Item. AI matching searches photographs that have been indexed with your approval.</p>
+    <p id="vdDescription">Tap or drag to select a detail. Refine the selection with AI, then verify visually similar items across AI-indexed photographs.</p>
    </div>
    <button type="button" id="vdClose" class="bc-vd-close" aria-label="Close Visual Discovery">✕</button>
   </header>
@@ -543,11 +543,13 @@
      <div id="vdNoPhoto" class="bc-vd-stage-empty" hidden>Upload photographs to Military Library to start Visual Discovery.</div>
     </div>
     <div class="bc-vd-actions">
-     <button id="vdAISearch" type="button" disabled class="bc-vd-ai-search bc-vd-primary">✦ AI FIND SAME ITEM</button>
+     <button id="vdAISearch" type="button" disabled class="bc-vd-ai-search bc-vd-primary">✦ AI FIND SIMILAR DETAIL</button>
+     <button id="vdRefine" type="button" disabled title="Approximate AI object box; uses API credits">⌖ AI REFINE SELECTION</button>
+     <button id="vdWebSearch" type="button" disabled title="Requires a Google Vision API key configured on the server">◎ FIND NEW PHOTOS ONLINE</button>
      <button id="vdAnalyze" class="bc-vd-basic-search" type="button" disabled><span>⌖</span> COMPARE COLORS (BASIC)</button>
      <button id="vdQuickPick" type="button">◎ CENTER SELECT</button>
      <button id="vdReset" type="button">CLEAR SELECTION</button>
-     <span class="bc-vd-privacy"><span class="bc-vd-led"></span> PRIVATE · IN-BROWSER VISUAL MATCHING</span>
+     <span class="bc-vd-privacy"><span class="bc-vd-led"></span> PRIVATE · AUTHORIZED AI-INDEXED MATCHING</span>
     </div>
     <div class="bc-vd-source-head"><strong>SELECT A PHOTO TO EXPLORE</strong><span id="vdSourceCount"></span></div>
     <div id="vdSourceStrip" class="bc-vd-source-strip" aria-label="Choose a military photograph"></div>
@@ -570,7 +572,7 @@
     <p id="vdStatus" class="bc-vd-status" role="status" aria-live="polite">Choose a photograph and select the detail you want to explore.</p>
     <div class="bc-vd-results-head"><strong>SIMILAR PHOTOS <span id="vdResultCount"></span></strong><span id="vdResultMethod"></span></div>
     <div id="vdResults" class="bc-vd-results"><div class="bc-vd-empty">Tap a photo detail, then choose AI Find Same Item. First index your photos with approval.</div></div>
-    <p class="bc-vd-disclaimer">AI Find Same Item recognizes visible clothing or gear details, then searches only your authorized AI-indexed images. Compare Colors is a separate, limited pattern comparison and is NOT object recognition. AI descriptions are approximate; no photograph is deleted or competition vote submitted.</p>
+    <p class="bc-vd-disclaimer">AI searches only authorized, AI-indexed photographs. It visually verifies shortlisted image details after your approval; text similarity alone is not shown as a match. AI Refine estimates a box (not pixel-precise SAM). Basic Color comparison is not object recognition. No photos are deleted. Internet search and GPU-based SAM/DINO matching require separate services.</p>
    </aside>
   </div>
  </section>

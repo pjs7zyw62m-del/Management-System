@@ -11,7 +11,9 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
  const selectionNode=$('vdSelection');
  let current=null,selection=null,dragStart=null,dragging=false,searchId=0,working=false;
  let previousFocus=null,previousOverflow='',reactions=new Map(),lastResults=[],resizeObserver=null;
- let sourceReady=false,looping=false,lastPointerSelectionAt=0,aiBusy=false,scanBusy=false;
+ let sourceReady=false,looping=false,lastPointerSelectionAt=0,aiBusy=false,scanBusy=false,refineBusy=false;
+ let clickPoint=null,votedIds=new Set(),webAvailable=false,webBusy=false,samAvailable=false;
+ const webSeen=new Set();
  const onPhone=()=>window.matchMedia('(hover: none) and (pointer: coarse)').matches || window.innerWidth<=600;
  const eligible=()=>state.assets.filter(a=>a.kind==='photo'&&['library','post'].includes(a.purpose)&&mediaUrl(a));
  const status=s=>{$('vdStatus').textContent=s};
@@ -71,7 +73,9 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
  }
  function selectRect(rect,{auto=false}={}){
   selection=rect;
+  clickPoint={x:Math.max(0,Math.min(1,rect.x+rect.w/2)),y:Math.max(0,Math.min(1,rect.y+rect.h/2))};
   showSelection();preview();
+  $('vdRefine').disabled=!current||working||aiBusy||refineBusy;
   $('vdAnalyze').disabled=!selection||!current||working;
   $('vdAISearch').disabled=!selection||!current||working||aiBusy;
   $('vdSelectionHint').textContent='DETAIL SELECTED · CHOOSE AI FIND SAME ITEM';
@@ -80,8 +84,8 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   // matches that looked like genuine clothing/object recognition.
  }
  function clearSelection(){
-  selection=null;showSelection();preview();
-  $('vdAnalyze').disabled=true;$('vdAISearch').disabled=true;
+  selection=null;clickPoint=null;showSelection();preview();
+  $('vdAnalyze').disabled=true;$('vdAISearch').disabled=true;$('vdRefine').disabled=true;
   $('vdSelectionHint').textContent=onPhone()?'TAP A DETAIL · THEN AI FIND':'CLICK OR DRAG TO SELECT A DETAIL';
   status('Select a detail, then choose AI Find Same Item. The image collection must be AI-indexed first.');
  }
@@ -118,6 +122,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    w=Math.max(w,.08);h=Math.max(h,.08);
    selectRect(normalize(Math.min(x,1-w),Math.min(y,1-h),w,h),{auto:true});
   }
+  clickPoint=currentPoint;
   lastPointerSelectionAt=Date.now();
   dragStart=null;e.preventDefault();
  }
@@ -149,7 +154,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   searchId++;working=false;$('vdProcess').hidden=true;
   $('vdAnalyze').disabled=true;
   const kept=preset?{...preset}:(preserve&&selection?{...selection}:null);
-  current=asset;selection=null;sourceReady=false;
+  current=asset;selection=null;clickPoint=null;sourceReady=false;
   main.alt=safeText(asset);main.removeAttribute('src');main.crossOrigin='anonymous';
   const expected=asset.id;
   main.onload=()=>{
@@ -171,10 +176,14 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
  }
  async function loadReactions(){
   if(!state.user?.id)return;
-  const {data,error}=await client.from('corp_social_photo_tastes')
-   .select('asset_id,reaction').eq('user_id',state.user.id).limit(2500);
-  if(error){console.warn('Visual Discovery preferences unavailable:',error.message);return}
-  reactions=new Map((data||[]).map(r=>[r.asset_id,r.reaction]));
+  const [tastes,votes]=await Promise.all([
+   client.from('corp_social_photo_tastes').select('asset_id,reaction').eq('user_id',state.user.id).limit(2500),
+   client.from('corp_social_photo_votes').select('asset_id').eq('user_id',state.user.id).limit(2500)
+  ]);
+  if(tastes.error)console.warn('Visual Discovery preferences unavailable:',tastes.error.message);
+  else reactions=new Map((tastes.data||[]).map(r=>[r.asset_id,r.reaction]));
+  if(votes.error)console.warn('Visual Discovery votes unavailable:',votes.error.message);
+  else votedIds=new Set((votes.data||[]).map(r=>r.asset_id));
  }
  function open(asset=null){
   if(!state.user?.id){toast('Please sign in to use Visual Discovery.');return}
@@ -359,10 +368,10 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    const body=element('div','bc-vd-match-copy');
    body.append(element('strong','',asset.caption||asset.filename));
    body.append(element('small','',result.ai?
-    'AI-recognized '+result.feature_label+' · '+result.feature_description:
+    'AI visually checked '+result.feature_label+' · '+(result.verification||result.feature_description):
     'BASIC appearance/category comparison only — not an identified matching item'));
    const actions=element('div','bc-vd-match-actions');
-   const liked=button('♡ LIKE',()=>void feedback(asset,'more',liked,less),'');
+   const liked=button('♡ LIKE',()=>void feedback(asset,'more',liked,less,result.region||selection),'');
    const less=button('✕ PASS',()=>void feedback(asset,'less',less,liked),'');
    liked.dataset.feedback='more';less.dataset.feedback='less';
    const sync=()=>{
@@ -376,7 +385,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    body.append(actions);card.append(picture,body);host.append(card);sync();
   }
  }
- async function feedback(asset,reaction,control,other){
+ async function feedback(asset,reaction,control,other,sourceRegion=null){
   if(!state.user?.id)return;
   control.disabled=true;other.disabled=true;
   try{
@@ -390,6 +399,14 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    status(reaction==='more'?'Saved to your private preferences: show more like this.':
     'Saved: show less like this. This is not a competition vote.');
    if(personalization?.load)void personalization.load();
+   // Rated photographs become triggers for a NEW search, never recurring cards.
+   // Another paid API search still requires the normal user confirmation.
+   if(reaction==='more'&&sourceRegion&&inUse()){
+    status('Liked photo saved. Using its selected item to discover NEW photographs.');
+    showAsset(asset,{preset:sourceRegion,autoAI:true});
+   }else if(reaction==='less'){
+    control.closest('.bc-vd-match-card')?.remove();
+   }
   }catch(e){status('Your choice could not be saved: '+(e?.message||'Please try again'))}
   finally{control.disabled=false;other.disabled=false}
  }
@@ -415,7 +432,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   const assets=new Map(eligible().map(a=>[a.id,a]));
   const mapped=(matches||[]).map(row=>{
    const asset=assets.get(row.asset_id);
-   if(!asset)return null;
+   if(!asset||reactions.has(asset.id)||votedIds.has(asset.id))return null;
    const box=row.bbox&&typeof row.bbox==='object'?row.bbox:null;
    const valid=box&&[box.x,box.y,box.w,box.h].every(x=>Number.isFinite(Number(x)))
     &&Number(box.w)>0&&Number(box.h)>0;
@@ -463,18 +480,106 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    if(fingerprints.error)problems.push('Duplicate database: '+fingerprints.error.message);
    if(features.error)problems.push('Photo index: '+features.error.message);
    if(ai.error||!ai.data?.ok)problems.push('AI endpoint: '+await functionError(ai.error,ai.data));
+   webAvailable=!!ai.data?.capabilities?.web_discovery;
+   samAvailable=!!ai.data?.capabilities?.sam_segmentation;
+   $('vdRefine').title=samAvailable?'Meta SAM 3.1 point segmentation · uses API credits':'Approximate AI object selection · uses API credits';
+   $('vdWebSearch').disabled=!webAvailable;
+   $('vdWebSearch').title=webAvailable?'Discover external photos using Google Cloud Vision credits':
+    'Not configured: add GOOGLE_VISION_KEY to Supabase Edge Function secrets';
    if(problems.length)output.textContent='SYSTEM CHECK FAILED · '+problems.join(' · ');
    else{
     const local=eligible().filter(a=>a.owner_id===state.user.id).length;
     output.textContent='DATABASE CONNECTED · '+(fingerprints.count||0)+' photo fingerprints · '+
      (features.count||0)+' AI-indexed photos · '+local+' of your photos available · AI SERVICE '+
      (ai.data.configured?'READY (API credits required for scans)':'NOT CONFIGURED (missing server API key)')+
+     ' · Internet photo discovery '+(webAvailable?'READY (Google API credits required)':'NOT CONFIGURED (Google Vision key missing)')+
      '. To begin, choose Scan Duplicates (free), then Index 5 Photos with AI (paid).';
    }
   }catch(e){output.textContent='SYSTEM CHECK FAILED · '+(e?.message||'Network unavailable')}
   finally{button.disabled=false}
  }
 
+ function renderWebPhotos(photos){
+  const host=$('vdResults');host.replaceChildren();
+  $('vdResultCount').textContent=photos.length?String(photos.length):'';
+  $('vdResultMethod').textContent='GOOGLE VISION WEB RESULTS · EXTERNAL';
+  if(!photos.length){
+   host.append(element('div','bc-vd-empty','No new visually related web images were returned. Try selecting a clearer or larger item crop.'));
+   return;
+  }
+  for(const item of photos){
+   let url;
+   try{url=new URL(item.url)}catch(_){continue}
+   if(url.protocol!=='https:')continue;
+   const card=element('article','bc-vd-match-card');
+   const link=element('a','bc-vd-online-image');
+   link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';link.referrerPolicy='no-referrer';
+   link.title='Open external image at '+url.hostname;
+   const image=element('img');image.src=url.href;image.alt='Visually related external photograph';
+   image.referrerPolicy='no-referrer';image.loading='lazy';
+   link.append(image);
+   const body=element('div','bc-vd-match-copy');
+   body.append(element('strong','','EXTERNAL PHOTO'));
+   body.append(element('small','','Source: '+url.hostname+' · This photo is not stored by BLACKCELL.'));
+   const open=element('a','bc-vd-external-link','VIEW EXTERNAL IMAGE');
+   open.href=url.href;open.target='_blank';open.rel='noopener noreferrer';open.referrerPolicy='no-referrer';
+   body.append(open);
+   card.append(link,body);host.append(card);
+  }
+ }
+ async function findOnline(){
+  if(webBusy||!webAvailable||!sourceReady||!current||!selection||working||aiBusy)return;
+  if(!confirm('Send ONLY your selected photo crop to Google Cloud Vision Web Detection to discover existing images on the internet? This uses paid Google API credits; results may be external/copyrighted and are not saved to BLACKCELL. Continue?'))return;
+  webBusy=true;
+  const req=++searchId;
+  $('vdWebSearch').disabled=true;
+  try{
+   status('Google Vision searching for existing photographs resembling your selected detail…');
+   emptyResults('Searching third-party web image results. The original private photo remains in BLACKCELL.');
+   const {data,error}=await client.functions.invoke('blackcell-visual-ai',{body:{
+    action:'web',asset_id:current.id,preview:jpegPreview(main,selection)
+   }});
+   if(error||!data?.ok)throw Error(await functionError(error,data));
+   if(req!==searchId||!inUse())return;
+   const fresh=[];
+   for(const image of data.results||[]){
+    let key;
+    try{const url=new URL(image.url);key=url.origin+url.pathname;}catch(_){continue}
+    if(webSeen.has(key))continue;
+    webSeen.add(key);fresh.push(image);
+   }
+   renderWebPhotos(fresh);
+   status(fresh.length?
+    'Found '+fresh.length+' NEW external photo URLs. These are visual leads, not verified exact clothing matches; open the originals to inspect.':
+    'No unseen external photos were returned. Try a different region; repeated URLs were filtered.');
+  }catch(e){status('Internet visual search unavailable: '+(e?.message||'Unknown error')+'. Your private photo was not published.')}
+  finally{webBusy=false;$('vdWebSearch').disabled=!webAvailable}
+ }
+ async function refineWithAI(){
+  if(refineBusy||aiBusy||working||!sourceReady||!current||!selection||!clickPoint)return;
+  if(!confirm('Refine the item at your selected point? '+(samAvailable?'Meta SAM 3.1 will segment the item.':'The vision AI will estimate an object box.')+' A resized copy of this photo goes to the configured provider and API credits may apply. Continue?'))return;
+  refineBusy=true;$('vdRefine').disabled=true;$('vdAISearch').disabled=true;
+  try{
+   status('AI identifying the clothing or equipment at your selected point…');
+   const preview=jpegPreview(main);
+   const factor=Math.min(1,750/Math.max(main.naturalWidth,main.naturalHeight));
+   const dimensions={width:Math.max(1,Math.round(main.naturalWidth*factor)),
+    height:Math.max(1,Math.round(main.naturalHeight*factor))};
+   const {data,error}=await client.functions.invoke('blackcell-visual-ai',{body:{
+    action:'refine',asset_id:current.id,preview,point:clickPoint,dimensions
+   }});
+   if(error||!data?.ok)throw Error(await functionError(error,data));
+   if(data.uncertain||!data.bbox){
+    status('AI could not reliably outline that item. Your original selection is unchanged; drag to select a tighter area.');
+    return;
+   }
+   selectRect(data.bbox);
+   status((samAvailable?'SAM point selection: ':'Approximate AI selection: ')+(data.detected_item||'visible item')+
+    '. Check the outlined area, then choose AI Find Similar Detail.');
+  }catch(e){status('AI refine unavailable: '+(e?.message||'Unknown error')+'. Manual selection is still available.')}
+  finally{refineBusy=false;$('vdRefine').disabled=!selection||!sourceReady||working;
+   $('vdAISearch').disabled=!selection||working||aiBusy}
+ }
  async function findWithAI(){
   if(aiBusy||!sourceReady||!current||!selection||working)return;
   aiBusy=true;$('vdAISearch').disabled=true;
@@ -491,8 +596,8 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
     $('vdAIIndex').scrollIntoView({behavior:'smooth',block:'nearest'});
     return;
    }
-   if(!confirm('AI will identify the selected clothing or equipment detail, then search '+count+
-    ' AI-indexed photographs for the SAME TYPE OF ITEM. The configured vision provider uses API credits. Continue?'))return;
+   if(!confirm('AI will identify your selected clothing or equipment, find candidates from '+count+
+    ' indexed photos, then visually COMPARE your selected crop against up to 6 actual candidate images. This uses paid API credits and shares the approved candidates with the vision provider. Continue?'))return;
    status('AI identifying the actual item and searching '+count+' indexed photographs…');
    const cropped=jpegPreview(main,selection);
    const {data,error}=await client.functions.invoke('blackcell-visual-ai',{body:{
@@ -605,6 +710,8 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   });
   $('vdAnalyze').addEventListener('click',()=>void analyze());
   $('vdAISearch').addEventListener('click',()=>void findWithAI());
+  $('vdRefine').addEventListener('click',()=>void refineWithAI());
+  $('vdWebSearch').addEventListener('click',()=>void findOnline());
   $('vdAIIndex').addEventListener('click',()=>void indexWithAI());
   $('vdSystemCheck').addEventListener('click',()=>void systemCheck());
   $('vdDuplicateScan').addEventListener('click',()=>void scanDuplicates());
@@ -613,7 +720,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    selectRect({x:.35,y:.32,w:.30,h:.36},{auto:true});
   });
   $('vdReset').addEventListener('click',clearSelection);
-  $('vdMatchMode').addEventListener('change',()=>{if(selection&&!working)status('Search mode changed. Press Find Similar Photos to update results.')});
+  $('vdMatchMode').addEventListener('change',()=>{if(selection&&!working)status('Basic comparison mode changed. Select Compare Colors (Basic) to update results.')});
   document.addEventListener('keydown',e=>{
    if(e.key==='Escape'&&inUse()){e.stopPropagation();close()}
   },true);
