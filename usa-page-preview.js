@@ -289,6 +289,66 @@ function renderFilterOptions(){
   target.value=state[stateKey];
  }
 }
+/* Justified military archive: form complete rows using the actual image
+   dimensions, without cropping. Last row retains a comfortable natural height.
+   All captions remain in the existing full-size viewer, not under thumbnails. */
+let galleryLayoutPending=false, galleryWidthLast=0;
+function scheduleJustifiedLayout(){
+ if(galleryLayoutPending)return;
+ galleryLayoutPending=true;
+ requestAnimationFrame(()=>{galleryLayoutPending=false;layoutJustifiedGallery()});
+}
+function layoutJustifiedGallery(){
+ const holder=$("photoGallery"),items=state.galleryItems||[];
+ if(!items.length){holder.replaceChildren();return}
+ const width=Math.floor(holder.getBoundingClientRect().width);
+ if(width<90)return; // The gallery may still be hidden during session verification.
+ const gap=width<640?8:width<1000?9:10;
+ const target=width<480?195:width<800?235:width<1150?275:335;
+ const minHeight=target*.68;
+ const rows=[];
+ let current=[],ratioSum=0;
+ const commit=full=>{
+  if(!current.length)return;
+  rows.push({items:current,ratioSum,full});
+  current=[];ratioSum=0;
+ };
+ for(const item of items){
+  const ratio=Math.max(.4,Math.min(4.5,Number(item.ratio)||1.35));
+  const count=current.length+1;
+  const projected=(width-gap*(count-1))/(ratioSum+ratio);
+  // Don't crush portrait photography by cramming an extra item into the row.
+  if(current.length&&projected<minHeight)commit(true);
+  current.push(item);ratioSum+=ratio;
+  const h=(width-gap*(current.length-1))/ratioSum;
+  if(h<=target*1.08)commit(true);
+ }
+ commit(false);
+ const fragment=document.createDocumentFragment();
+ rows.forEach(({items:rowItems,ratioSum:sum,full})=>{
+  const row=document.createElement("div");
+  row.className="justified-row";
+  row.style.gap=gap+"px";
+  const available=width-gap*(rowItems.length-1);
+  const calculated=available/sum;
+  const h=full?calculated:Math.min(target,calculated);
+  row.style.height=h.toFixed(2)+"px";
+  let used=0;
+  rowItems.forEach((item,index)=>{
+   const last=index===rowItems.length-1;
+   const cardWidth=full&&last?Math.max(1,available-used):
+    h*Math.max(.4,Math.min(4.5,Number(item.ratio)||1.35));
+   item.button.style.flex="0 0 "+cardWidth.toFixed(2)+"px";
+   item.button.style.width=cardWidth.toFixed(2)+"px";
+   item.button.style.height=h.toFixed(2)+"px";
+   used+=cardWidth;
+   row.append(item.button);
+  });
+  fragment.append(row);
+ });
+ holder.replaceChildren(fragment);
+ galleryWidthLast=width;
+}
 function renderPhotos(){
  const holder=$("photoGallery");holder.replaceChildren();
  const query=$("gallerySearch").value.toLowerCase().trim();
@@ -301,20 +361,29 @@ function renderPhotos(){
  $("galleryEmpty").hidden=visible.length!==0;
  $("visibleCount").textContent=visible.length+" PHOTOGRAPH"+(visible.length===1?"":"S");
  state.shown=visible;
+ state.galleryItems=[];
  visible.forEach((asset,i)=>{
-  const button=document.createElement("button");button.type="button";button.className="photo-card";
-  const img=document.createElement("img");img.loading="lazy";img.alt=asset.filename||"Military photo";
+  const button=document.createElement("button");
+  button.type="button";button.className="photo-card photo-only";
+  button.setAttribute("aria-label","View full photograph: "+(asset.filename||"Military photo"));
+  button.title=asset.filename||"View full military photograph";
+  const img=document.createElement("img");
+  img.loading="lazy";img.decoding="async";img.alt=asset.filename||"Military photo";
+  const item={button,ratio:1.35};
+  img.addEventListener("load",()=>{
+   if(img.naturalWidth>0&&img.naturalHeight>0){
+    item.ratio=img.naturalWidth/img.naturalHeight;
+    scheduleJustifiedLayout();
+   }
+  });
   const url=state.urls.get(asset.id);
   if(url)img.src=url;
-  const info=document.createElement("span");info.className="photo-info";
-  const label=document.createElement("span");label.className="country-chip";
-  label.textContent=flag(asset.military_country_code)+" "+prettyCountry(asset);
-  const title=document.createElement("strong");title.textContent=asset.filename||"Military photograph";
-  const sub=document.createElement("small");
-  sub.textContent=[asset.military_branch&&asset.military_branch!=="Unspecified"?asset.military_branch:null,asset.military_category].filter(Boolean).join(" / ")||"Country classification saved";
-  info.append(label,title,sub);button.append(img,info);
-  button.addEventListener("click",()=>openPhoto(i));holder.append(button);
+  button.append(img);
+  button.addEventListener("click",()=>openPhoto(i));
+  state.galleryItems.push(item);
+  holder.append(button);
  });
+ scheduleJustifiedLayout();
 }
 function openPhoto(index){
  if(!state.shown?.length)return;
@@ -365,6 +434,13 @@ const dailyPhoto=createUsaPhotoOfDay({
 });
 function installEvents(){
  dailyPhoto.setup();
+ if(typeof ResizeObserver!=="undefined"){
+  const galleryObserver=new ResizeObserver(entries=>{
+   const width=entries[0]?.contentRect?.width||0;
+   if(width>90&&Math.abs(width-galleryWidthLast)>1)scheduleJustifiedLayout();
+  });
+  galleryObserver.observe($("photoGallery"));
+ }else window.addEventListener("resize",scheduleJustifiedLayout);
  document.addEventListener("visibilitychange",()=>{if(!document.hidden)void dailyPhoto.refreshIfNewDay?.()});
  $("gallerySearch").addEventListener("input",renderPhotos);
  $("categoryFilter").addEventListener("change",e=>{state.category=e.target.value;renderPhotos()});
@@ -416,6 +492,7 @@ async function boot(){
   renderHero();renderDirectory();renderTokens();renderSavedHybrids();renderFilterOptions();renderBranchCounters();renderPhotos();
   installEvents();
   $("accessGate").hidden=true;$("countryApp").hidden=false;
+  scheduleJustifiedLayout();
   void dailyPhoto.refresh();
   mountMilitaryGunner({client,getContext:()=>({
    page_title:document.title.replace(/^BLACKCELL — /,""),
