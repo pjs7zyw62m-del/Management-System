@@ -358,9 +358,9 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   const host=$('vdResults');host.replaceChildren();
   $('vdResultCount').textContent=matches.length?String(matches.length):'';
   if(!matches.length){
-   host.append(element('div','bc-vd-empty',fullGalleryScope?
-    'No high-confidence matches were identified. Choose REVIEW OTHER PHOTOS to inspect every photo the AI scanned.':
-    'No close area matches found. Try selecting a larger detail.'));
+   host.append(element('div','bc-vd-empty',fullGalleryResults.length?
+    'No high-confidence matches were identified. Choose REVIEW OTHER PHOTOS to inspect the scanned photographs.':
+    'No visual comparisons are available yet. Choose a detail and start a gallery search.'));
    return;
   }
   for(const result of matches){
@@ -633,11 +633,12 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   $('vdReviewAll').hidden=true;
   fullGalleryResults=[];showAllGallery=false;fullGalleryScope=0;
   const request=++searchId,results=[],unreadable=[];
+  let actuallyCompared=0;
   $('vdProcess').hidden=false;percent(0,total);
   emptyResults('AI scanning the entire accessible gallery. This does not require pre-indexing.');
   try{
    const crop=jpegPreview(main,area);
-   let completed=0,actuallyCompared=0;
+   let completed=0;
    for(let offset=0;offset<photos.length;offset+=5){
     if(request!==searchId||!inUse()||current?.id!==source.id)return;
     const portion=photos.slice(offset,offset+5),items=[];
