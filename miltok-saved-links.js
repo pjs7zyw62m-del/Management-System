@@ -16,6 +16,40 @@ function normalize(raw){
   return url.toString();
  }catch(_){return null}
 }
+
+/* Official TikTok player for canonical /@handle/video/ID references.
+   The iframe remains hosted by TikTok, with attribution and creator controls. */
+function videoIdFromUrl(value){
+ try{
+  const normalized=normalize(value);
+  if(!normalized)return null;
+  const u=new URL(normalized);
+  const found=u.pathname.match(/^\/@[^/]+\/video\/([0-9]{15,25})\/?$/);
+  return found?found[1]:null;
+ }catch(_){return null}
+}
+function inlinePlayer(card,url){
+ const id=videoIdFromUrl(url);
+ if(!id)return false;
+ const previous=card.querySelector('.mt-saved-embed');
+ if(previous){previous.remove();return false}
+ // Limit to one playing reference at a time.
+ document.querySelectorAll('.mt-saved-embed').forEach(frame=>frame.remove());
+ const embed=item('div','mt-saved-embed');
+ const frame=item('iframe','mt-saved-player');
+ frame.src='https://www.tiktok.com/player/v1/'+id+'?autoplay=0&controls=1&music_info=1&description=1';
+ frame.title='TikTok video hosted by its original creator';
+ frame.setAttribute('allow','fullscreen; picture-in-picture; encrypted-media');
+ frame.setAttribute('allowfullscreen','');
+ frame.loading='lazy';
+ frame.referrerPolicy='strict-origin-when-cross-origin';
+ embed.append(frame);
+ const explanation=item('small','','Played through TikTok. The video is not stored on Blackcell; availability and rights stay with its creator.');
+ embed.append(explanation);
+ card.append(embed);
+ return true;
+}
+
 function listFromInput(){
  const text=[$('mtSavedOne').value,$('mtSavedBatch').value].filter(Boolean).join('\n');
  const candidates=text.match(/https:\/\/[^\s<>"']+/gi)||[];
@@ -36,6 +70,7 @@ function item(tag,className,text){
 function close(){
  if(busy)return;
  $('mtSavedOverlay').hidden=true;
+ document.querySelectorAll('.mt-saved-embed').forEach(player=>player.remove());
  if(lastFocus?.isConnected)lastFocus.focus();
  lastFocus=null;
 }
@@ -72,6 +107,18 @@ async function load(){
   const actions=item('div','mt-saved-card-actions');
   const open=item('a','','OPEN IN TIKTOK ↗');
   open.href=row.video_url;open.target='_blank';open.rel='noopener noreferrer';
+  const playId=videoIdFromUrl(row.video_url);
+  if(playId){
+   const play=item('button','','▶ PLAY IN MILTOK');
+   play.type='button';play.className='mt-saved-play';
+   play.setAttribute('aria-expanded','false');
+   play.addEventListener('click',()=>{
+    const opened=inlinePlayer(card,row.video_url);
+    play.textContent=opened?'✕ CLOSE PLAYER':'▶ PLAY IN MILTOK';
+    play.setAttribute('aria-expanded',String(opened));
+   });
+   actions.append(play);
+  }
   const remove=item('button','','REMOVE');
   remove.type='button';remove.setAttribute('aria-label','Remove saved TikTok link '+(row.title||row.video_url));
   remove.addEventListener('click',async()=>{
@@ -120,6 +167,23 @@ function boot(){
  $('mtSavedClose')?.addEventListener('click',close);
  $('mtSavedOverlay')?.addEventListener('click',e=>{if(e.target===$('mtSavedOverlay'))close()});
  $('mtSavedForm')?.addEventListener('submit',e=>void save(e));
+ $('mtSavedPaste')?.addEventListener('click',async()=>{
+  try{
+   const clip=await navigator.clipboard.readText();
+   const u=normalize(clip);
+   if(!u)throw Error('Clipboard does not contain a TikTok link');
+   $('mtSavedOne').value=u;note('TikTok link pasted. Select a branch and Save.');
+  }catch(e){note('Clipboard unavailable. Paste the copied TikTok URL into the field manually (Ctrl+V or long-press Paste).')}
+ });
+ // Safe handoff from a mobile Share shortcut: prefill only, never save silently.
+ const params=new URLSearchParams(location.search);
+ const suggested=normalize(params.get('save')||params.get('tiktok'));
+ if(suggested){
+  $('mtSavedOne').value=suggested;
+  const clean=new URL(location.href);clean.searchParams.delete('save');clean.searchParams.delete('tiktok');
+  history.replaceState(null,'',clean.pathname+(clean.search||'')+(clean.hash||''));
+  requestAnimationFrame(()=>show());
+ }
  document.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&!$('mtSavedOverlay').hidden)close();
  });
