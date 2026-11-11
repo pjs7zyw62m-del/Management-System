@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="corporate-chat-dock.css?v=20261109-floating-right2"><link rel="stylesheet" href="corporate-chat-bubble-dock.css?v=20261109-bubble-dock1"><link rel="stylesheet" href="corporate-chat-premium-dock.css?v=20261109-premium1">
 <link rel="stylesheet" href="corporate-chat-media-bubble-host.css?v=20261109-independent-media1"><link rel="stylesheet" href="corporate-chat-media-responsive.css?v=20261109-sidebyside2"><link rel="stylesheet" href="corporate-chat-media-flip-focus.css?v=20261109-flip-focus1">
 <script src="corporate-chat-media-bubble-host.js?v=20261109-large-media1" defer></script>
-<script src="corp-config.js" defer></script><script type="module" src="corporate-network.js?v=20261111-library-nav1"></script><link rel="stylesheet" href="corp-adaptive-layout.css?v=20261109-device2">
+<script src="corp-config.js" defer></script><script type="module" src="corporate-network.js?v=20261111-personal3"></script><link rel="stylesheet" href="corp-adaptive-layout.css?v=20261109-device2">
 <link rel="stylesheet" href="corp-adaptive-chat.css?v=20261109-device2">
 <link rel="stylesheet" href="corporate-network-feed-media.css?v=20261109-uncropped2">
 <link rel="stylesheet" href="corporate-chat-compact-media.css?v=20261109-mobile-gallery4">
@@ -24,6 +24,7 @@
 <link rel="stylesheet" href="corporate-gallery-justified.css?v=20261111-justified-fix4">
 <link rel="stylesheet" href="corporate-military-resources.css?v=20261111-vote-care-awards1">
 <link rel="stylesheet" href="corporate-library-submenu.css?v=20261111-library-nav1">
+<link rel="stylesheet" href="corporate-network-personalization.css?v=20261111-personal3">
 </head>
 <body class="bc-network">
 <header class="masthead">
@@ -72,6 +73,7 @@
       </div>
       <button class="rail-link" data-view="discover"><span>◎</span> People & Following</button>
       <a class="rail-link" href="corporate-chat.html"><span>▧</span> Private Chat</a>
+      <button class="rail-link bc-personalization-trigger" type="button" data-personalization-open><span>✧</span> My Personalization</button>
     </div>
     <div class="rail-note">PRIVATE CORPORATE SPACE<span>Verified employees and the Level 7 administrator only. Network posts are visible to authorized members.</span></div>
   </aside>
@@ -89,7 +91,7 @@
         </div>
         <input id="postFiles" type="file" accept="image/*,video/*" multiple hidden>
       </section>
-      <div class="feed-controls"><h2>Latest Activity</h2><div class="tabs" id="feedFilter"><button data-filter="latest" class="selected">All Posts</button><button data-filter="following">Following</button><button data-filter="videos">Videos</button></div></div>
+      <div class="feed-controls"><h2>Latest Activity</h2><div class="tabs" id="feedFilter"><button data-filter="latest" class="selected">All Posts</button><button data-filter="following">Following</button><button data-filter="videos">Videos</button><button data-filter="for-you">✦ For You</button></div><button class="bc-personalization-trigger bc-personalize-quick" type="button" data-personalization-open>⚙ MY INTERESTS</button></div>
       <div id="feedPosts" class="posts"></div>
     </section>
     <section id="profileView" class="view" hidden>
@@ -275,6 +277,8 @@
  <div id="myCountriesChips" class="country-personal-chips" role="group" aria-label="Selected countries"></div>
  <div id="myCountriesSummary" class="country-personal-summary" role="status" aria-live="polite"></div>
 </section>
+<div class="bc-personalization-gallery-banner"><div><strong>YOUR FEED. YOUR INTERESTS.</strong><span>Everyone can personalize their Military Library recommendations. Your preferences are private to your account.</span></div><button type="button" data-personalization-open>✦ PERSONALIZATION &amp; TRIGGERS</button><small id="personalizationCurrentStatus">OFF · PRIVATE UNTIL YOU OPT IN</small></div>
+<p id="personalizationGalleryNote" class="bc-personalize-gallery-note" hidden>Personalization is currently off. The For You tab shows the standard archive until you enable your private interests. <button type="button" data-personalization-open>CHOOSE MY INTERESTS ↗</button></p>
 <section id="tasteInsights" class="taste-insight" hidden aria-label="Your photo preferences and suggestions">
  <div><p id="tasteSavedNotice" class="taste-saved-notice" role="status" aria-live="polite" hidden></p><span class="taste-overline">BLACKCELL / FOR YOU <span id="tasteInsightCount">0 PHOTOS REVIEWED</span></span>
   <strong>Learning what catches your eye.</strong>
@@ -467,6 +471,21 @@
     <button id="tasteSave" type="button">SAVE PREFERENCE</button>
     <button id="tasteMore" type="button" class="strong">✦ SHOW MORE LIKE THIS</button></footer>
   </div>
+ </section>
+</div>
+
+<div id="personalizationOverlay" class="bc-personalize-overlay" hidden>
+ <section class="bc-personalize-dialog" role="dialog" aria-modal="true" aria-labelledby="personalizationTitle">
+  <header><div><span class="overline">BLACKCELL / PRIVATE DISCOVERY</span><h2 id="personalizationTitle">PERSONALIZATION &amp; TRIGGERS</h2><p>Choose the military photo subjects you want to see more or less of. Every member gets a separate, private set of preferences.</p></div><button id="personalizationClose" type="button" aria-label="Close personalization">✕</button></header>
+  <div class="bc-personalize-scroll">
+   <div class="bc-personalize-switch"><label><input id="personalizationEnabled" type="checkbox"><span><strong>ENABLE MY PERSONAL RECOMMENDATIONS</strong><small>When off, recommendations stay chronological. Your saved preferences are not used to rank photographs.</small></span></label></div>
+   <div class="bc-personalize-switch"><label><input id="personalizationFeedEnabled" type="checkbox"><span><strong>PERSONALIZE THE NETWORK FEED TOO</strong><small>Use the same subject preferences when you choose For You in the feed. Nothing is hidden or deleted.</small></span></label></div>
+   <div class="bc-personalize-heading"><strong>MY SUBJECT TRIGGERS</strong><small>Choose Show More, Neutral, or Show Less for each military subject.</small></div>
+   <div id="personalizationTopics" class="bc-trigger-topics"></div>
+   <p class="bc-personalize-note">Only your deliberate selections, photo favorites, and saved ratings inform these recommendations. There are no identity, sexuality, or sensitive-trait predictions. Optional paid visual AI scans still require their own confirmation.</p>
+   <p id="personalizationFeedback" role="status" aria-live="polite" class="bc-personalize-feedback"></p>
+  </div>
+  <footer><button id="personalizationReset" type="button" class="bc-personalize-reset">RESET MY INTERESTS</button><div><button id="personalizationCancel" type="button">CANCEL</button><button id="personalizationSave" type="button" class="bc-personalize-save">SAVE MY PREFERENCES</button></div></footer>
  </section>
 </div>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
