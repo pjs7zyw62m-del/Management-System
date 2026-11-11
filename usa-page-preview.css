@@ -533,3 +533,204 @@ body.usa-revamp .usa-hero .hero-buttons .secondary-route:hover{background:#fffff
 @media(prefers-reduced-motion:reduce){
  .usa-revamp .bento-featured,.usa-revamp .bento-small,.usa-revamp .bento-featured-image{transition:none!important}
 }
+
+
+/* COLOR REVAMP · Full-color photography, large Photo of the Day, branch seals.
+   Isolated to the interactive USA preview; original military page unchanged. */
+body.usa-revamp{
+ --potd-indigo:#192b46;--potd-crimson:#c83e4d;--potd-gold:#cda05c;
+ background:
+ radial-gradient(ellipse at 78% 6%,#21335a54,transparent 44%),
+ radial-gradient(ellipse at 11% 18%,#9b283642,transparent 44%),
+ radial-gradient(ellipse at 38% 62%,#245a5140,transparent 45%),#090b12;
+}
+body.usa-revamp .usa-hero{
+ max-width:1440px;min-height:675px;
+ background:
+ radial-gradient(ellipse at 92% 9%,#17486b9c,transparent 45%),
+ radial-gradient(ellipse at 10% 90%,#7c292f70,transparent 58%),
+ linear-gradient(115deg,#161b2a,#131720 50%,#1d1424);
+ border-color:#91a2b147;box-shadow:0 30px 80px #000a,inset 0 1px #ffffff21;
+ padding:clamp(27px,3.6vw,58px);
+}
+body.usa-revamp .usa-hero .hero-glow{
+ background:radial-gradient(circle,#e7545575,transparent 63%);filter:blur(75px);
+ width:700px;height:700px;right:-170px;
+}
+body.usa-revamp .usa-hero-inner{
+ grid-template-columns:minmax(0,.91fr) minmax(0,1.09fr);
+ gap:clamp(24px,3.5vw,58px);align-items:center;
+}
+body.usa-revamp .usa-hero .hero-text h1{font-size:clamp(39px,4.65vw,69px)}
+body.usa-revamp .usa-hero .hero-text h1 em{
+ color:#fa6372!important;text-shadow:0 0 46px #b7425f34;
+}
+body.usa-revamp .usa-hero .hero-text p{color:#cbd0dc}
+body.usa-revamp .hero-featured{
+ align-items:stretch;justify-content:center;
+ gap:9px;min-width:0;
+}
+body.usa-revamp .viewfinder-shell{
+ width:100%;max-width:none;aspect-ratio:auto;height:clamp(335px,33vw,482px);
+ padding:0;border:1px solid #a9b9d06a;border-radius:22px;
+ background:
+ radial-gradient(ellipse at 56% 30%,#4e649a69,transparent 60%),
+ linear-gradient(135deg,#122439,#151725 50%,#552933);
+ box-shadow:0 20px 52px #020611ac,0 0 0 5px #a1b8c414,inset 0 1px #ffffff30;
+ overflow:hidden;
+}
+body.usa-revamp .viewfinder-dashed{display:none}
+body.usa-revamp .potd-accent-line{
+ position:absolute;left:18px;right:18px;top:18px;height:2px;z-index:3;
+ background:linear-gradient(90deg,#e2a45b,#d75471 53%,#2e8ea1);
+ opacity:.82;pointer-events:none;border-radius:999px;
+}
+body.usa-revamp .viewfinder-photo{
+ width:100%;height:100%;border:0;border-radius:21px;background:transparent;
+ align-items:center;justify-content:center;position:relative;
+}
+body.usa-revamp .viewfinder-photo img{
+ object-fit:contain;width:100%;height:100%;
+ filter:none!important;opacity:1!important;
+ transform:none;transition:transform .3s;
+}
+body.usa-revamp .viewfinder-photo:hover:not(:disabled) img{
+ filter:none!important;opacity:1!important;transform:scale(1.018);
+}
+body.usa-revamp .viewfinder-placeholder{font-size:clamp(90px,13vw,180px);color:#fff4}
+body.usa-revamp .viewfinder-shade{
+ background:linear-gradient(to top,#07111ce8 0%,#07111c82 17%,transparent 44%);
+}
+body.usa-revamp .viewfinder-caption{bottom:25px;gap:6px}
+body.usa-revamp .viewfinder-record-type{
+ font-size:13px;letter-spacing:.2em;color:#ffac72;text-shadow:0 2px 10px #000b;
+}
+body.usa-revamp .viewfinder-record-index{font-size:10px;color:#e8edfb}
+body.usa-revamp .viewfinder-motto{color:#d8b6ad}
+body.usa-revamp .daily-photo-info{
+ width:100%;max-width:none;text-align:left;margin-top:5px;
+ display:flex;flex-direction:column;gap:5px;
+}
+body.usa-revamp .daily-photo-tag{justify-content:flex-start;color:#cbd8e4}
+body.usa-revamp #dailyReason{
+ min-height:0;color:#b1bbcd;font-size:12px;margin:0 0 7px;
+}
+body.usa-revamp .daily-feedback{justify-content:flex-start}
+body.usa-revamp .daily-feedback button{
+ border:1px solid #6c749b80;background:#27365396;color:#d6e6f8;
+}
+body.usa-revamp .daily-feedback button:hover:not(:disabled){
+ background:#6f3e63aa;border-color:#e599ad;
+}
+body.usa-revamp .daily-feedback button.selected{
+ background:#8a3e62;border-color:#e399a8;color:white;
+}
+body.usa-revamp .hero-footer-stats{width:100%;max-width:630px;margin-top:34px}
+body.usa-revamp .hero-footer-stats strong{color:#fbf7f5}
+body.usa-revamp .hero-footer-stats small{color:#bec4d1}
+body.usa-revamp .editorial-line .line-index{color:#ed8a97}
+body.usa-revamp .editorial-line .line-rule{
+ background:linear-gradient(90deg,#bd4e6688,#d2a25970,#375f8980);
+}
+body.usa-revamp .branch-section .section-intro h2{color:#f4f2f6}
+body.usa-revamp .branch-section .section-intro p{color:#bbc3ce}
+body.usa-revamp .bento-featured{
+ background:linear-gradient(145deg,#142744,#291c34);
+ border-color:var(--branch-accent,#e65970);
+ box-shadow:0 0 45px color-mix(in srgb,var(--branch-accent,#c83e4d) 25%,transparent);
+}
+body.usa-revamp .bento-featured-image{
+ filter:none!important;opacity:.94!important;
+ object-fit:cover;
+}
+body.usa-revamp .bento-featured:hover .bento-featured-image{filter:none!important;opacity:1!important}
+body.usa-revamp .bento-featured-shade{
+ background:linear-gradient(0deg,#07111df2 0%,#0a1422ab 39%,#1121395c 75%,#0914278a 100%);
+}
+body.usa-revamp .bento-featured .bento-personnel{color:#ffd2a2}
+body.usa-revamp .bento-featured-count{background:var(--branch-accent,#c83e4d);color:#fff}
+body.usa-revamp .bento-topline{align-items:flex-start}
+body.usa-revamp .bento-top-right{display:inline-flex;align-items:center;gap:14px}
+body.usa-revamp .bento-top-right>span{font-size:21px}
+body.usa-revamp .bento-featured-emblem{
+ display:block;width:88px;height:88px;object-fit:contain;
+ filter:drop-shadow(0 4px 12px #000c);opacity:1;
+}
+body.usa-revamp .bento-small{
+ background:
+ radial-gradient(ellipse at 85% 4%,
+ color-mix(in srgb,var(--branch-accent,#4b6b9b) 25%,transparent),transparent 65%),
+ linear-gradient(135deg,#1b2131,#141826 62%,#1c1928);
+ border-color:color-mix(in srgb,var(--branch-accent,#6477a0) 60%,#ffffff26);
+ box-shadow:inset 0 1px #ffffff13;
+}
+body.usa-revamp .bento-small.has-photos{
+ background:
+ radial-gradient(ellipse at 85% 4%,
+ color-mix(in srgb,var(--branch-accent,#bc5064) 33%,transparent),transparent 70%),
+ linear-gradient(135deg,#252031,#161c29);
+ border-color:color-mix(in srgb,var(--branch-accent,#bc5064) 78%,#ffffff2a);
+}
+body.usa-revamp .bento-small:hover{background:#25334b;border-color:var(--branch-accent,#c83e4d)}
+body.usa-revamp .bento-small-top{color:#c6d4e5;align-items:flex-start}
+body.usa-revamp .bento-small-emblem-wrap{
+ display:inline-flex;align-items:start;gap:5px;justify-content:flex-end;
+}
+body.usa-revamp .bento-branch-emblem{
+ display:block;width:56px;height:56px;object-fit:contain;flex:none;
+ filter:drop-shadow(0 3px 7px #0009);
+}
+body.usa-revamp .bento-arrow{color:#c9d1de;font-size:17px}
+body.usa-revamp .bento-small-footer{color:#b3bece}
+body.usa-revamp .bento-small.has-photos .bento-small-count{
+ color:#f4d9eb;border-color:var(--branch-accent,#c83e4d);
+ background:color-mix(in srgb,var(--branch-accent,#c83e4d) 35%,transparent);
+}
+body.usa-revamp .branch-footer .component-link{
+ background:linear-gradient(112deg,#172d36,#222b43);
+ border-color:#678da07a;color:#f5f3f7;
+}
+body.usa-revamp .national-guard-emblem{
+ display:block;width:37px;height:37px;object-fit:contain;
+ filter:drop-shadow(0 3px 7px #0008)
+}
+body.usa-revamp .usa-gallery .photo-card img{
+ filter:none!important;opacity:1!important;
+ object-fit:contain;background:linear-gradient(135deg,#17233b,#171825,#372332);
+}
+body.usa-revamp .usa-gallery .photo-card{
+ background:linear-gradient(132deg,#17253a,#161924);
+ border-color:#6687a04d;
+}
+body.usa-revamp .usa-gallery .photo-card:hover{border-color:#e8a079}
+body.usa-revamp .usa-gallery .photo-card .photo-info{border-color:#7e90a43b}
+body.usa-revamp .usa-gallery .photo-card .country-chip{color:#ecb977}
+body.usa-revamp .usa-gallery .photo-card small{color:#bacbe2}
+body.usa-revamp .usa-gallery .gallery-toolbar{
+ background:linear-gradient(125deg,#1b263b,#1d1829);border-color:#536b83;
+}
+body.usa-revamp .usa-bottom-strip{
+ background:linear-gradient(105deg,#14283a,#211d35 60%,#4c2538);
+ border-color:#8e6d75aa;
+}
+body.usa-revamp .usa-bottom-strip p{color:#c3d0dc}
+@media(max-width:1100px){
+ body.usa-revamp .usa-hero-inner{grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:25px}
+ body.usa-revamp .viewfinder-shell{height:400px}
+}
+@media(max-width:800px){
+ body.usa-revamp .usa-hero{min-height:0;padding:30px}
+ body.usa-revamp .usa-hero-inner{display:flex;flex-direction:column;gap:28px;align-items:stretch}
+ body.usa-revamp .hero-featured{position:relative;inset:auto;opacity:1;width:100%;max-width:none}
+ body.usa-revamp .viewfinder-shell{height:clamp(310px,68vw,460px);max-width:none;width:100%}
+ body.usa-revamp .daily-photo-info{max-width:none}
+}
+@media(max-width:520px){
+ body.usa-revamp .usa-hero{padding:23px 17px}
+ body.usa-revamp .viewfinder-shell{height:clamp(280px,79vw,375px)}
+ body.usa-revamp .bento-featured-emblem{width:63px;height:63px}
+ body.usa-revamp .bento-branch-emblem{width:45px;height:45px}
+ body.usa-revamp .bento-topline{font-size:10px}
+ body.usa-revamp .hero-footer-stats{gap:11px}
+ body.usa-revamp .hero-footer-stats strong{font-size:21px}
+}
