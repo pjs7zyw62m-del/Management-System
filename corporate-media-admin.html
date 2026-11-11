@@ -30,6 +30,17 @@
    <div><span>MEDIA REGISTERED</span><strong id="bcAdminAssetsCount">—</strong><small>Current BLACKCELL media records</small></div>
    <div><span>IMPORT QUEUE</span><strong id="bcAdminPendingCount">—</strong><small>Awaiting owner review</small></div>
   </section>
+  <section class="bc-b2-connection" id="bcB2Connection" aria-label="Backblaze B2 private cloud connection">
+    <div class="bc-b2-connection-title"><span class="bc-admin-overline">BLACKCELL / PRIVATE CLOUD CONNECTION</span><h2>Backblaze B2 Storage</h2>
+     <p>Your restricted 1 TB+ storage destination. Secrets stay in Supabase; nothing is uploaded or published by checking the connection.</p></div>
+    <div class="bc-b2-connection-toolbar">
+      <strong id="bcB2Status" role="status" aria-live="polite">NOT VERIFIED</strong>
+      <button id="bcB2Check" type="button">↻ CHECK CONNECTION</button>
+      <a href="https://supabase.com/dashboard/project/eeddazzwqokqlzvzjlxz/functions/secrets" target="_blank" rel="noopener noreferrer">MANAGE SUPABASE SECRETS ↗</a>
+    </div>
+    <p id="bcB2Message">Add the four private B2 credentials in Supabase Edge Function Secrets, then check the connection.</p>
+    <small>Private bucket: blackcellcorp-media-vault · Region: us-east-005 · Staging prefix: blackcell-intake/ · Existing Supabase media remains unchanged</small>
+  </section>
   <section class="panel bc-media-processor" id="bcProcessorPanel" hidden aria-label="Media Import Processor">
         <div class="bc-proc-head">
           <div><span class="overline">BLACKCELL / CONTROLLED MEDIA INTAKE</span><h2>Media Import Processor</h2><p>Every incoming photo and video enters private review. No publishing until country, military category and approved album placement are verified.</p></div>
