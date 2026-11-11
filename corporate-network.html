@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="corporate-chat-dock.css?v=20261109-floating-right2"><link rel="stylesheet" href="corporate-chat-bubble-dock.css?v=20261109-bubble-dock1"><link rel="stylesheet" href="corporate-chat-premium-dock.css?v=20261109-premium1">
 <link rel="stylesheet" href="corporate-chat-media-bubble-host.css?v=20261109-independent-media1"><link rel="stylesheet" href="corporate-chat-media-responsive.css?v=20261109-sidebyside2"><link rel="stylesheet" href="corporate-chat-media-flip-focus.css?v=20261109-flip-focus1">
 <script src="corporate-chat-media-bubble-host.js?v=20261109-large-media1" defer></script>
-<script src="corp-config.js" defer></script><script type="module" src="corporate-network.js?v=20261111-viewer-actions-only4"></script><link rel="stylesheet" href="corp-adaptive-layout.css?v=20261109-device2">
+<script src="corp-config.js" defer></script><script type="module" src="corporate-network.js?v=20261111-rediscovery1"></script><link rel="stylesheet" href="corp-adaptive-layout.css?v=20261109-device2">
 <link rel="stylesheet" href="corp-adaptive-chat.css?v=20261109-device2">
 <link rel="stylesheet" href="corporate-network-feed-media.css?v=20261109-uncropped2">
 <link rel="stylesheet" href="corporate-chat-compact-media.css?v=20261109-mobile-gallery4">
@@ -25,6 +25,7 @@
 <link rel="stylesheet" href="corporate-military-resources.css?v=20261111-viewer-actions-only4">
 <link rel="stylesheet" href="corporate-library-submenu.css?v=20261111-library-nav1">
 <link rel="stylesheet" href="corporate-network-personalization.css?v=20261111-personal3">
+<link rel="stylesheet" href="corporate-photo-rediscovery.css?v=20261111-rediscovery1">
 </head>
 <body class="bc-network">
 <header class="masthead">
@@ -483,6 +484,18 @@
   <div class="bc-personalize-scroll">
    <div class="bc-personalize-switch"><label><input id="personalizationEnabled" type="checkbox"><span><strong>ENABLE MY PERSONAL RECOMMENDATIONS</strong><small>When off, recommendations stay chronological. Your saved preferences are not used to rank photographs.</small></span></label></div>
    <div class="bc-personalize-switch"><label><input id="personalizationFeedEnabled" type="checkbox"><span><strong>PERSONALIZE THE NETWORK FEED TOO</strong><small>Use the same subject preferences when you choose For You in the feed. Nothing is hidden or deleted.</small></span></label></div>
+   <div class="bc-personalize-switch bc-rediscovery-setting">
+    <label><input id="rediscoveryEnabled" type="checkbox"><span><strong>PHOTO REDISCOVERY — OPTIONAL</strong><small>Occasionally resurface a photo you've opened more than once, and suggest visually related subjects through tags and classification. Revisits are never counted as votes.</small></span></label>
+    <div class="bc-rediscovery-controls">
+      <label for="rediscoveryFrequency">HOW OFTEN</label>
+      <select id="rediscoveryFrequency" aria-label="Frequency of optional photo rediscovery">
+        <option value="rare">RARE — NO MORE THAN ONCE A WEEK</option>
+        <option value="occasional">OCCASIONAL — NO MORE THAN ONCE A DAY</option>
+      </select>
+      <button id="rediscoveryPreview" type="button">PREVIEW A REDISCOVERY CARD ↗</button>
+    </div>
+    <small class="bc-rediscovery-privacy">Only while you're using Blackcell. Dismiss or select Not Interested anytime. Disable this option to stop suggestions and clear saved rediscovery views.</small>
+   </div>
    <div class="bc-personalize-heading"><strong>MY SUBJECT TRIGGERS</strong><small>Choose Show More, Neutral, or Show Less for each military subject.</small></div>
    <div id="personalizationTopics" class="bc-trigger-topics"></div>
    <p class="bc-personalize-note">Only your deliberate selections, photo favorites, and saved ratings inform these recommendations. There are no identity, sexuality, or sensitive-trait predictions. Optional paid visual AI scans still require their own confirmation.</p>
