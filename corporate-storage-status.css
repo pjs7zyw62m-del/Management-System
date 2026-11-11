@@ -1,0 +1,35 @@
+/* BLACKCELL private storage operational panel — Apple Glass / Obsidian */
+body.bc-network .bc-storage-status{
+ margin:18px 0 24px!important;padding:17px 20px!important;
+ border:1px solid #35424f!important;border-radius:17px!important;
+ background:linear-gradient(122deg,#101820,#090d12 75%)!important;
+ box-shadow:0 8px 28px #0005!important;color:#e6eaf0!important
+}
+body.bc-network .bc-storage-heading{display:flex;align-items:center;justify-content:space-between;gap:14px}
+body.bc-network .bc-storage-heading h3{font-size:17px!important;margin:5px 0 0;color:#f2f4f7}
+body.bc-network .bc-storage-heading .overline{font-size:9px;letter-spacing:.13em;color:#b4c0cb}
+body.bc-network #bcStorageBadge{font:800 9px/1.35 -apple-system,system-ui,sans-serif;
+ letter-spacing:.07em;white-space:nowrap;padding:7px 10px;border-radius:99px;
+ background:#28262a;border:1px solid #615160;color:#dbd5dc}
+body.bc-network #bcStorageBadge[data-health="good"]{background:#10261d;border-color:#356a4e;color:#a4e3bc}
+body.bc-network .bc-storage-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:15px 0 12px}
+body.bc-network .bc-storage-stats>div{display:flex;flex-direction:column;gap:5px;
+ background:linear-gradient(150deg,#1b222b,#111821);padding:13px;border-radius:11px;border:1px solid #333e4a}
+body.bc-network .bc-storage-stats strong{font:780 clamp(18px,2.1vw,25px)/1.05 -apple-system,system-ui,sans-serif;
+ color:#f4f6f8;letter-spacing:-.035em}
+body.bc-network .bc-storage-stats small{font-size:9px;line-height:1.4;color:#a7b7c5;letter-spacing:.06em;font-weight:700}
+body.bc-network #bcStorageMessage{font-size:11px;line-height:1.65;color:#bcc7d1;
+ margin:8px 0 12px;min-height:20px}
+body.bc-network .bc-storage-buttons{display:flex;gap:9px;flex-wrap:wrap}
+body.bc-network .bc-storage-buttons button{appearance:none;background:#1c2630;border:1px solid #50606e;
+ border-radius:9px;padding:11px 14px;color:#e7edf2;font-size:10px;font-weight:850;letter-spacing:.07em;cursor:pointer}
+body.bc-network .bc-storage-buttons button:last-child{border-color:#9a354a;background:linear-gradient(115deg,#541e2d,#84283d)}
+body.bc-network .bc-storage-buttons button:disabled{opacity:.5;cursor:wait}
+body.bc-network .bc-storage-buttons button:hover:not(:disabled){border-color:#e15b73}
+body.bc-network .bc-storage-note{display:block;color:#8494a5;font-size:10px;line-height:1.65;margin-top:14px}
+@media(max-width:580px){
+ body.bc-network .bc-storage-status{padding:13px!important}
+ body.bc-network .bc-storage-stats{grid-template-columns:1fr 1fr;gap:7px}
+ body.bc-network .bc-storage-stats>div{padding:10px}
+ body.bc-network .bc-storage-buttons button{flex:1 1 145px}
+}

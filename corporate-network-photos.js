@@ -1010,7 +1010,11 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   });
   $('newAlbumButton').addEventListener('click',()=>openAlbumDialog());
   $('photosUploadButton').addEventListener('click',()=>{
-   $('applePhotoFiles').value='';$('applePhotoFiles').click()
+   const input=$('applePhotoFiles');input.value='';
+   // Direct user gesture works on Safari and iPadOS; showPicker can throw for
+   // hidden inputs, so keep a normal click() fallback.
+   try{if(typeof input.showPicker==='function')input.showPicker();else input.click()}
+   catch(_){input.click()}
   });
   $('applePhotoFiles').addEventListener('change',()=>void uploadFiles($('applePhotoFiles').files));
   $('photosClearAlbum').addEventListener('click',()=>selectAlbum(null));
