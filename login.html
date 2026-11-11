@@ -551,8 +551,8 @@ footer{height:36px;line-height:36px;padding:0;align-self:stretch;margin:0;white-
 </style>
 <link rel="stylesheet" href="corp-login-roles.css?v=20261109-roles1">
 <script src="corp-config.js" defer></script>
-<script type="module" src="corp-login.js?v=20261111-anchored-pass2"></script>
-<link rel="stylesheet" href="corp-adaptive-access.css?v=20261111-anchored-pass2">
+<script type="module" src="corp-login.js?v=20261111-single-card1"></script>
+<link rel="stylesheet" href="corp-adaptive-access.css?v=20261111-single-card1">
 </head>
 <body>
 <header>
@@ -569,6 +569,7 @@ footer{height:36px;line-height:36px;padding:0;align-self:stretch;margin:0;white-
 <div class="login-role-tabs" id="loginRoleTabs" role="tablist" aria-label="Choose your Blackcell access portal">
   <button type="button" id="adminLoginTab" role="tab" aria-selected="true" aria-controls="login" tabindex="0"><span>ADMINISTRATION</span><small>LEVEL 7</small></button>
   <button type="button" id="employeeLoginTab" role="tab" aria-selected="false" aria-controls="login" tabindex="-1"><span>EMPLOYEE NETWORK</span><small>NETWORK ACCESS</small></button>
+  <button type="button" id="accessPassTab" class="access-pass-tab" role="tab" aria-selected="false" aria-controls="inlineAccessStep" tabindex="-1" disabled hidden><span>ACCESS PASS</span><small>SECURITY VERIFICATION</small></button>
 </div>
 <p class="login-role-description" id="loginRoleDescription" aria-live="polite">Level 7 Executive Administration access.</p>
 <form id="login">
@@ -578,30 +579,8 @@ footer{height:36px;line-height:36px;padding:0;align-self:stretch;margin:0;white-
 <div class="password"><input id="password" type="password" autocomplete="current-password" required><button id="toggle" class="show" type="button">SHOW</button></div>
 <button id="submit" class="primary" type="submit">SIGN IN TO BLACKCELL ↗</button>
 </form>
-<p id="status" class="message" hidden role="status" aria-live="polite"></p>
-<div class="links"><a href="index.html">← Corporate Access</a><button id="reset" type="button">Forgot password?</button></div>
-<button type="button" id="accountChange" hidden>Sign in with another account</button>
-</div>
-</section>
-<section class="pass-panel" id="passPanel" aria-label="Executive Level 7 access pass" aria-hidden="true">
-<div class="pass-grid">
-<article class="executive-pass" id="executivePass" aria-label="Blackcell executive access card with security code inputs">
-<div class="pass-inner">
-<div class="pass-top">
+<section id="inlineAccessStep" class="inline-access-step" aria-label="Level 7 access pass verification" hidden>
 
-<svg class="pass-symbol" viewBox="0 0 100 100" fill="none" aria-hidden="true">
-<path d="M50 5 87 25V73L50 94 13 73V25L50 5Z" stroke="#d7d0dc" stroke-width="2"/>
-<path d="M50 14 78 29V68L50 84 22 68V29L50 14Z" stroke="#833c50" stroke-width="1.5"/>
-<path d="M37 29V70H56C72 70 73 53 59 50 69 44 67 29 53 29H37ZM48 38H53C60 38 60 46 54 46H48V38ZM48 55H55C62 55 62 62 55 62H48V55Z" fill="#f4ecf5"/>
-</svg>
-<div class="pass-corp">BLACKCELL</div>
-<div class="pass-corp">CORPORATION</div>
-<div class="pass-small">EXECUTIVE NETWORK</div>
-</div>
-
-<div class="pass-stripe"></div>
-<div class="clearance"><b id="clearanceLevel">LEVEL —</b><span>ACCESS PASS</span></div>
-<div class="pass-credentials">
 <div class="eyebrow">BLACKCELL / CLEARANCE VERIFICATION</div>
 <h2>Verify Access</h2>
 <p class="support" id="codeSupport">Enter your existing NEXUS Access Code and Security Code.</p>
@@ -614,12 +593,17 @@ footer{height:36px;line-height:36px;padding:0;align-self:stretch;margin:0;white-
 </form>
 <button id="continueVerified" type="button" class="primary" hidden>CONTINUE TO ADMINISTRATION ↗</button>
 <p id="codeStatus" class="message" role="status" aria-live="polite" hidden></p>
-</div>
-<div class="pass-foot"><span>BLACKCELL CORPORATION</span><span>SECURE ACCESS</span></div>
+</section>
 
+<p id="status" class="message" hidden role="status" aria-live="polite"></p>
+<div class="links"><a href="index.html">← Corporate Access</a><button id="reset" type="button">Forgot password?</button></div>
+<button type="button" id="accountChange" hidden>Sign in with another account</button>
 </div>
-</article>
-</div>
+</section>
+<section class="pass-panel" id="passPanel" aria-hidden="true" hidden>
+  <article class="executive-pass" id="executivePass" aria-hidden="true" hidden>
+    <b id="clearanceLevel">LEVEL —</b>
+  </article>
 </section>
 </div>
 </main>
@@ -662,11 +646,9 @@ footer{height:36px;line-height:36px;padding:0;align-self:stretch;margin:0;white-
     var availableHeight=Math.max(1,window.innerHeight-(header?header.offsetHeight:76)-(footer?footer.offsetHeight:36)-12);
     var availableWidth=Math.max(1,window.innerWidth-32);
     var compact=window.matchMedia('(max-width: 950px)').matches;
-    // Keep the sign-in center fixed. On wide screens scale only enough
-    // to fit a full-width Level 7 pass RIGHT of the anchored 445px sign-in.
-    var scale=compact
-      ?Math.min(1,availableWidth/445,availableHeight/660)
-      :Math.min(1,availableHeight/660,(window.innerWidth/2-16)/675);
+    // One anchored 445px card for both sign-in and Level 7 verification.
+    // Only shrink if this one card cannot fit the current viewport.
+    var scale=Math.min(1,availableWidth/445,availableHeight/660);
     stage.style.setProperty('--blackcell-stage-scale',String(Math.max(.35,scale)));
   }
   window.addEventListener('resize',fit,{passive:true});
