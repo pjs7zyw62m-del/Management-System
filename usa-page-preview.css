@@ -1365,3 +1365,72 @@ body.usa-revamp .usa-gallery .justified-row .photo-card.photo-only::after{
 @media(prefers-reduced-motion:reduce){
  body.usa-revamp .usa-gallery .justified-row .photo-card.photo-only{transition:none}
 }
+
+
+/* ZERO-GUTTER PHOTO WALL V9
+   True edge-to-edge mosaic. No spacing, frames, rounded corners,
+   inner image letterboxing or hover ring. Overrides older mobile rules. */
+body.usa-revamp .usa-gallery .photo-gallery.justified-gallery{
+ gap:0!important;
+ row-gap:0!important;
+ column-gap:0!important;
+ padding:0!important;
+ border:0!important;
+}
+body.usa-revamp .usa-gallery .justified-row{
+ display:flex!important;
+ gap:0!important;
+ row-gap:0!important;
+ column-gap:0!important;
+ margin:0!important;
+ padding:0!important;
+ border:0!important;
+ border-radius:0!important;
+}
+body.usa-revamp .usa-gallery .justified-row .photo-card.photo-only{
+ box-sizing:border-box;
+ display:block!important;
+ flex-shrink:0!important;
+ margin:0!important;
+ padding:0!important;
+ border:0!important;
+ border-radius:0!important;
+ outline:0;
+ background:transparent!important;
+ box-shadow:none!important;
+ overflow:hidden!important;
+ transform:none!important;
+}
+body.usa-revamp .usa-gallery .justified-row .photo-card.photo-only:hover{
+ margin:0!important;
+ padding:0!important;
+ border:0!important;
+ border-radius:0!important;
+ box-shadow:none!important;
+ transform:none!important;
+ filter:brightness(1.06);
+}
+body.usa-revamp .usa-gallery .justified-row .photo-card.photo-only:focus-visible{
+ outline:2px solid #ff6a79!important;
+ outline-offset:-2px!important;
+}
+body.usa-revamp .usa-gallery .justified-row .photo-card.photo-only img{
+ box-sizing:border-box;
+ display:block!important;
+ width:100%!important;
+ height:100%!important;
+ margin:0!important;
+ padding:0!important;
+ border:0!important;
+ border-radius:0!important;
+ background:transparent!important;
+ object-fit:cover!important;
+ object-position:center!important;
+ filter:none!important;
+ opacity:1!important;
+}
+@media(max-width:620px){
+ body.usa-revamp .usa-gallery .photo-gallery.justified-gallery,
+ body.usa-revamp .usa-gallery .justified-row{gap:0!important}
+ body.usa-revamp .usa-gallery .justified-row .photo-card.photo-only{border-radius:0!important}
+}
