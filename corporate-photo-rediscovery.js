@@ -4,6 +4,7 @@
  * biometric/sensitive inferences or paid AI requests. */
 export function createPhotoRediscovery({client,state,personalization,mediaUrl,openPhoto,toast}){
  let pendingTimer=null,active=false,card=null,lastInteraction=Date.now(),sessionShown=false;
+ let testTurn=0,lastTestPhotoId=null;
  let lastSourceId='',didBind=false,feedbackBusy=false,mode='rediscovery',lastFocus=null;
  let sessionSeen=new Set();
  let dwellTimer=null,dwellSequence=0;
@@ -11,7 +12,11 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
  const opts=()=>personalization.get();
  const on=()=>{const p=opts();return p.enabled===true&&p.rediscovery_enabled===true};
  const rare=()=>opts().rediscovery_frequency==='rare';
- const interval=()=>Math.round(((rare()?35:16)+Math.random()*(rare()?35:22))*60000);
+ // TEMPORARY TESTING ONLY: the Level 7 owner sees a card every 30 seconds
+ // while actively browsing, with no annual/day cooldown. Employees keep their
+ // opted-in standard Rare/Occasional cadence.
+ const testMode=()=>on()&&state.member?.role==='owner'&&Number(state.member?.clearance_level)===7;
+ const interval=()=>testMode()?30000:Math.round(((rare()?35:16)+Math.random()*(rare()?35:22))*60000);
  const elapsed=(value)=>value?Date.now()-new Date(value).getTime():Infinity;
  function allowedMoment(){
   if(document.hidden||!['feed','photos','profile'].includes(state.view))return false;
@@ -24,11 +29,19 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
  }
  function schedule(){
   if(pendingTimer!==null){clearTimeout(pendingTimer);pendingTimer=null}
-  if(!active||!on()||sessionShown)return;
+  if(!active||!on()||(!testMode()&&sessionShown))return;
   pendingTimer=setTimeout(async()=>{
    pendingTimer=null;
-   if(!active||!on()||sessionShown)return;
-   if(allowedMoment())await offer();
+   if(!active||!on()||(!testMode()&&sessionShown))return;
+   // Do not open a new card over an existing card, photo viewer,
+   // settings dialog, or while the member is away from Blackcell.
+   if(!card&&allowedMoment()){
+    if(testMode()){
+     const requestedMode=testTurn%2===0?'rediscovery':'trigger';
+     const shown=await offer({preview:true,test:true,requestedMode});
+     if(shown)testTurn++;
+    }else await offer();
+   }
    schedule();
   },interval());
  }
@@ -238,36 +251,37 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
   close.focus({preventScroll:true});
  }
 
-async function offer({preview=false}={}){
-  if(!on()||!state.user?.id||(sessionShown&&!preview))return;
-  if(!preview&&!allowedMoment())return;
+async function offer({preview=false,test=false,requestedMode='rediscovery'}={}){
+  if(!on()||!state.user?.id||card||(sessionShown&&!preview&&!test))return false;
+  if((!preview||test)&&!allowedMoment())return false;
   const {data,error}=await client.from('corp_social_photo_rediscovery')
     .select('asset_id,view_count,engaged_views,zoom_engaged_views,last_viewed_at,last_suggested_at,not_interested')
     .eq('user_id',state.user.id).eq('not_interested',false)
     .order('engaged_views',{ascending:false}).order('view_count',{ascending:false}).limit(130);
-  if(error){console.warn('Rediscovery suggestions unavailable:',error.message);return}
+  if(error){console.warn('Rediscovery suggestions unavailable:',error.message);return false}
   const candidates=(data||[]).filter(r=>
    (Number(r.zoom_engaged_views||0)>0||Number(r.engaged_views||0)>0||Number(r.view_count||0)>=(preview?1:2)) &&
    possibleSource().some(a=>a.id===r.asset_id) &&
    (preview||elapsed(r.last_viewed_at)>3*60000));
   if(!candidates.length){
-   if(preview)toast('Open a Military Library photo after enabling Rediscovery, then try Preview again.');
-   return;
+   if(preview&&!test)toast('Open a Military Library photo after enabling Rediscovery, then try Preview again.');
+   return false;
   }
   const cooldown=rare()?7*86400000:24*3600000;
-  if(!preview){
+  if(!preview&&!test){
    const newest=Math.min(...(data||[]).map(r=>elapsed(r.last_suggested_at)));
-   if(newest<cooldown)return;
+   if(newest<cooldown)return false;
   }
-  const eligible=candidates.filter(c=>preview||elapsed(c.last_suggested_at)>cooldown);
-  if(!eligible.length)return;
+  const eligible=candidates.filter(c=>preview||test||elapsed(c.last_suggested_at)>cooldown);
+  if(!eligible.length)return false;
   // Longer looks outweigh repeated openings; neither is a confirmed like or vote.
   const strength=row=>Math.min(5,Number(row.zoom_engaged_views||0))*7+Math.min(5,Number(row.engaged_views||0))*5+Math.min(10,Number(row.view_count||0));
   const sorted=eligible.sort((a,b)=>strength(b)-strength(a)).slice(0,12);
-  const choice=sorted[Math.floor(Math.pow(Math.random(),1.5)*sorted.length)];
+  const pool=test&&sorted.length>1?sorted.filter(x=>x.asset_id!==lastTestPhotoId):sorted;
+  const choice=pool[Math.floor(Math.pow(Math.random(),1.5)*pool.length)];
   const seed=possibleSource().find(a=>a.id===choice.asset_id);
-  if(!seed)return;
-  if(!preview){
+  if(!seed)return false;
+  if(!preview&&!test){
    const {data:marked,error:markError}=await client.from('corp_social_photo_rediscovery')
     .update({last_suggested_at:new Date().toISOString()})
     .eq('user_id',state.user.id).eq('asset_id',seed.id).select('asset_id');
@@ -275,9 +289,16 @@ async function offer({preview=false}={}){
    sessionShown=true;
   }
   const qualified=Number(choice.zoom_engaged_views||0)>0||Number(choice.engaged_views||0)>0;
-  const related=qualified?findSimilar(seed):[];
-  const recommended=!preview&&related.length>0&&Math.random()<.4;
-  showSeed(recommended?related[0]:seed,recommended?'trigger':'rediscovery');
+  const related=findSimilar(seed).filter(a=>a.id!==lastTestPhotoId);
+  const wantTrigger=(test&&requestedMode==='trigger')||(!preview&&!test&&qualified&&Math.random()<.4);
+  // Only label it a Trigger Card when actual military metadata gives a match.
+  // Otherwise fall back to Rediscovery rather than claiming false similarity.
+  const suggested=wantTrigger&&related.length?related[0]:seed;
+  const selectedMode=wantTrigger&&related.length?'trigger':'rediscovery';
+  if(test)lastTestPhotoId=suggested.id;
+  sessionSeen.clear();
+  showSeed(suggested,selectedMode);
+  return true;
  }
  function start(){
   if(active)return;active=true;
