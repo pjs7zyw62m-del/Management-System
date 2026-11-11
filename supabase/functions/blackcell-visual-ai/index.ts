@@ -57,6 +57,18 @@ async function embed(input){
   throw Error("Invalid semantic vector returned");
  return vectors;
 }
+async function useQuota(client,userId,assetId,action){
+ const since=new Date(Date.now()-86400000).toISOString();
+ const {count,error}=await client.from("corp_social_visual_ai_requests")
+  .select("id",{count:"exact",head:true}).eq("user_id",userId)
+  .eq("action",action).gte("created_at",since);
+ if(error)throw Error("Cannot check visual AI spending limits");
+ const cap=action==="index"?15:40;
+ if((count||0)>=cap)throw Error("Visual AI "+action+" daily request limit reached ("+cap+")");
+ const {error:saveError}=await client.from("corp_social_visual_ai_requests")
+  .insert({user_id:userId,asset_id:assetId,action});
+ if(saveError)throw Error("Visual AI usage record could not be saved; request stopped");
+}
 Deno.serve(async req=>{
  const origin=req.headers.get("origin")||"";
  if(req.method==="OPTIONS")return new Response(null,{status:204,headers:cors(origin)});
@@ -97,6 +109,7 @@ Deno.serve(async req=>{
     .eq("feature_key","overall").gte("updated_at",new Date(Date.now()-86400000).toISOString());
    if(capError)throw Error("Cannot check daily scan limit");
    if((count||0)>=15)return reply({ok:false,error:"Daily limit: 15 indexed photos per member"},429,origin);
+   await useQuota(client,user.id,assetId,"index");
    const data=await vision(preview,indexPrompt,indexSchema,"blackcell_visual_index");
    const objects=(Array.isArray(data.objects)?data.objects:[]).slice(0,7)
     .map((o,i)=>({key:"detail-"+(i+1),label:cut(o.name,90),description:cut(o.description,600),bbox:safeBox(o.box)}))
@@ -116,6 +129,7 @@ Deno.serve(async req=>{
    .select("asset_id",{count:"exact",head:true}).eq("feature_key","overall");
   if(countErr)throw Error("Index not accessible");
   if(!count)return reply({ok:false,error:"AI photo index is empty. Select Index My Photos first.",code:"INDEX_REQUIRED"},409,origin);
+  await useQuota(client,user.id,assetId,"search");
   const detail=await vision(preview,cropPrompt,cropSchema,"blackcell_visual_detail");
   const queryText=[cut(detail.object,90),cut(detail.description,400)].filter(Boolean).join(". ");
   if(!queryText)return reply({ok:false,error:"No recognizable detail in selected region"},422,origin);
