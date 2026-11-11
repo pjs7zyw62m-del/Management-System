@@ -283,7 +283,8 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
     // are still being compared, rather than an apparently frozen interface.
     if(mobile&&done%5===0&&matches.length){
      const ranked=[...matches].sort((a,b)=>b.score-a.score);
-     const cutoff=mode==='tags'?Math.max(.12,ranked[0].score-.16):Math.max(.67,ranked[0].score-.075);
+     const fallback=mode==='tags'||!matchedPixels;
+     const cutoff=fallback?Math.max(.12,ranked[0].score-.16):Math.max(.67,ranked[0].score-.075);
      const partial=ranked.filter(item=>item.score>=cutoff).slice(0,6);
      if(partial.length)renderResults(partial);
      status('Comparing selected detail… '+done+' of '+candidates.length+' photos checked.');
@@ -299,7 +300,8 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   // Avoid presenting every generic military photo as a specific-area match.
   // Scores describe approximate appearance, NOT semantic object recognition.
   const highest=matches[0]?.score||0;
-  const threshold=mode==='tags'?Math.max(.12,highest-.16):Math.max(.67,highest-.075);
+  const fallback=mode==='tags'||!matchedPixels;
+  const threshold=fallback?Math.max(.12,highest-.16):Math.max(.67,highest-.075);
   lastResults=matches.filter(item=>item.score>=threshold).slice(0,6);
   renderResults(lastResults);
   const method=mode==='tags'||!matchedPixels?'Military metadata':'Visual appearance'+(mode==='hybrid'?' + tags':'');
