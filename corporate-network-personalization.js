@@ -22,7 +22,7 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
  const DEFAULT=()=>({user_id:state.user?.id,enabled:false,personalize_feed:false,
    rediscovery_enabled:false,rediscovery_frequency:'occasional',
    preferred_topics:[],muted_topics:[]});
- let current=DEFAULT(),tastes=[],favorites=new Set(),loaded=false,saving=false;
+ let current=DEFAULT(),tastes=[],favorites=new Set(),interestSignals=new Map(),loaded=false,saving=false;
  const get=()=>({...current,preferred_topics:[...current.preferred_topics],muted_topics:[...current.muted_topics]});
  const enabled=()=>current.enabled===true;
  const feedEnabled=()=>enabled()&&current.personalize_feed===true;
@@ -48,6 +48,11 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
    if(direct.rating&&direct.rating<=2)score-=12;
   }
   if(favorites.has(asset?.id))score+=19;
+  // Long viewing/zooming are unconfirmed signals; explicit dislikes override them.
+  if(current.rediscovery_enabled&&!['less'].includes(direct?.reaction)&&!(direct?.rating>0&&direct.rating<=2)){
+   const signal=interestSignals.get(asset?.id);
+   if(signal)score+=Math.min(3,signal.engaged_views||0)*8+Math.min(3,signal.zoom_engaged_views||0)*12;
+  }
   return score;
  }
  function relatedScore(asset){
@@ -63,6 +68,15 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
       match.military_category===asset?.military_category)score+=2;
    if(match.military_branch && match.military_branch!=='Unspecified' &&
       match.military_branch===asset?.military_branch)score+=1;
+  }
+  if(current.rediscovery_enabled){
+   for(const [id,signal] of interestSignals){
+    const match=byId.get(id);
+    if(!match||match.id===asset?.id||(!signal.engaged_views&&!signal.zoom_engaged_views))continue;
+    if(match.military_category&&match.military_category!=='Unsorted'&&match.military_category===asset?.military_category)score+=3;
+    if(match.military_branch&&match.military_branch!=='Unspecified'&&match.military_branch===asset?.military_branch)score+=2;
+    if(match.military_era&&match.military_era===asset?.military_era)score+=1;
+   }
   }
   return Math.min(score,25);
  }
@@ -98,18 +112,22 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
  async function load(){
   if(!state.user?.id)return;
   const uid=state.user.id;
-  const [options,reactions,liked]=await Promise.all([
+  const [options,reactions,liked,engagements]=await Promise.all([
    client.from('corp_social_personalization_settings')
      .select('user_id,enabled,personalize_feed,rediscovery_enabled,rediscovery_frequency,preferred_topics,muted_topics')
      .eq('user_id',uid).maybeSingle(),
    client.from('corp_social_photo_tastes')
      .select('asset_id,rating,reaction,cues').eq('user_id',uid).limit(2000),
    client.from('corp_social_photo_favorites')
-     .select('asset_id').eq('user_id',uid).limit(2000)
+     .select('asset_id').eq('user_id',uid).limit(2000),
+   client.from('corp_social_photo_rediscovery')
+     .select('asset_id,engaged_views,zoom_engaged_views')
+     .eq('user_id',uid).eq('not_interested',false).limit(2000)
   ]);
   if(options.error)console.warn('Personalization settings could not be loaded:',options.error.message);
   if(reactions.error)console.warn('Photo feedback unavailable:',reactions.error.message);
   if(liked.error)console.warn('Personalized favorites unavailable:',liked.error.message);
+  if(engagements.error)console.warn('Private photo interest signals unavailable:',engagements.error.message);
   current=options.data?{
    ...DEFAULT(),...options.data,
    preferred_topics:Array.isArray(options.data.preferred_topics)?options.data.preferred_topics:[],
@@ -117,6 +135,7 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
   }:DEFAULT();
   tastes=reactions.data||[];
   favorites=new Set((liked.data||[]).map(a=>a.asset_id));
+  interestSignals=new Map((engagements.data||[]).map(row=>[row.asset_id,row]));
   loaded=true;updateButtons();
  }
  function updateButtons(){
