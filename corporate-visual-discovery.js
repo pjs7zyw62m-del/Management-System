@@ -11,7 +11,8 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
  const selectionNode=$('vdSelection');
  let current=null,selection=null,dragStart=null,dragging=false,searchId=0,working=false;
  let previousFocus=null,previousOverflow='',reactions=new Map(),lastResults=[],resizeObserver=null;
- let sourceReady=false,looping=false;
+ let sourceReady=false,looping=false,lastPointerSelectionAt=0;
+ const onPhone=()=>window.matchMedia('(hover: none) and (pointer: coarse)').matches || window.innerWidth<=600;
  const eligible=()=>state.assets.filter(a=>a.kind==='photo'&&['library','post'].includes(a.purpose)&&mediaUrl(a));
  const status=s=>{$('vdStatus').textContent=s};
  const element=(tag,cl='',value=null)=>{
@@ -68,12 +69,14 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    $('vdCropMessage').textContent='Preview unavailable; military tags can still be searched.';
   }
  }
- function selectRect(rect){
+ function selectRect(rect,{auto=false}={}){
   selection=rect;
   showSelection();preview();
   $('vdAnalyze').disabled=!selection||!current||working;
-  $('vdSelectionHint').textContent='AREA SELECTED · SEARCH OR SELECT A NEW DETAIL';
+  $('vdSelectionHint').textContent=auto?'DETAIL SELECTED · FINDING SIMILAR PHOTOS':'AREA SELECTED · SEARCH OR SELECT A NEW DETAIL';
   if(!working)status('Ready. Search by this area’s colors, textures, and available military classification.');
+  // One tap should work on an iPhone. Desktop retains the manual Search button.
+  if(auto&&onPhone()&&sourceReady&&!working)void analyze();
  }
  function clearSelection(){
   selection=null;showSelection();preview();
@@ -109,11 +112,12 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   if(w<.025||h<.025){
    w=.25;h=.30;
    selectRect(normalize(Math.max(0,Math.min(1-w,currentPoint.x-w/2)),
-    Math.max(0,Math.min(1-h,currentPoint.y-h/2)),w,h));
+    Math.max(0,Math.min(1-h,currentPoint.y-h/2)),w,h),{auto:true});
   }else{
    w=Math.max(w,.08);h=Math.max(h,.08);
-   selectRect(normalize(Math.min(x,1-w),Math.min(y,1-h),w,h));
+   selectRect(normalize(Math.min(x,1-w),Math.min(y,1-h),w,h),{auto:true});
   }
+  lastPointerSelectionAt=Date.now();
   dragStart=null;e.preventDefault();
  }
  function emptyResults(message){
@@ -131,7 +135,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    const label=element('span','',asset.filename||'Military photo');
    b.append(img,label);host.append(b);
   }
-  host.querySelector('.active')?.scrollIntoView({behavior:'instant',block:'nearest',inline:'nearest'});
+  host.querySelector('.active')?.scrollIntoView({behavior:'auto',block:'nearest',inline:'nearest'});
  }
  function showAsset(asset,{preserve=false,autoFind=false}={}){
   if(!asset||asset.kind!=='photo'||!mediaUrl(asset))return;
@@ -240,7 +244,9 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
  async function analyze(){
   if(!sourceReady||!current||!selection||working)return;
   const request=++searchId,source=current,region={...selection},mode=$('vdMatchMode').value;
-  const candidates=eligible().filter(a=>a.id!==source.id).slice(0,120);
+  const mobile=onPhone();
+  // Mobile Safari can terminate the tab when many large originals decode at once.
+  const candidates=eligible().filter(a=>a.id!==source.id).slice(0,mobile?45:120);
   if(!candidates.length){status('No other photographs are available to compare.');return}
   working=true;$('vdAnalyze').disabled=true;$('vdProcess').hidden=false;percent(0,candidates.length);
   emptyResults('Comparing this detail with real Military Library photographs…');
@@ -270,7 +276,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    }
   };
   // Workers increment the shared index synchronously, with bounded loads.
-  await Promise.all(Array.from({length:Math.min(4,candidates.length)},()=>process()));
+  await Promise.all(Array.from({length:Math.min(mobile?1:4,candidates.length)},()=>process()));
   if(request!==searchId||!inUse())return;
   working=false;$('vdProcess').hidden=true;$('vdAnalyze').disabled=false;
   matches.sort((a,b)=>b.score-a.score);
@@ -280,6 +286,11 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   $('vdResultMethod').textContent=method.toUpperCase();
   const scope=candidates.length+(eligible().length-1>120?' of '+(eligible().length-1):'');
   const count=lastResults.length;
+  if(onPhone()&&count) {
+   const resultPanel=$('vdResults');
+   // The entire phone dialog scrolls; bring real matched photographs into view.
+   requestAnimationFrame(()=>resultPanel.scrollIntoView({behavior:'smooth',block:'nearest'}));
+  }
   if(pixelBlocked){
    status('Image pixels were unavailable; used existing military tags. '+count+' matches from '+scope+' photos.');
   }else if(!matchedPixels&&mode!=='tags'){
@@ -349,6 +360,14 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   stage.addEventListener('pointermove',move);
   stage.addEventListener('pointerup',up);
   stage.addEventListener('pointercancel',()=>{dragging=false;dragStart=null});
+  // Safari tap fallback if pointer events were interrupted before pointerup.
+  stage.addEventListener('click',e=>{
+   if(!sourceReady||working||Date.now()-lastPointerSelectionAt<800)return;
+   const bounds=imageBounds();if(!bounds)return;
+   const point=at(e,bounds),w=.25,h=.30;
+   selectRect(normalize(Math.max(0,Math.min(1-w,point.x-w/2)),
+    Math.max(0,Math.min(1-h,point.y-h/2)),w,h),{auto:true});
+  });
   stage.addEventListener('keydown',e=>{
    if(e.key==='Enter'||e.key===' '){
     e.preventDefault();selectRect({x:.35,y:.35,w:.30,h:.30});
