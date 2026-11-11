@@ -308,3 +308,34 @@ body.bc-network .bc-vd-ai-identification strong{display:block;letter-spacing:.07
  body.bc-network .bc-vd-index-actions button{flex:1 1 165px;min-height:44px!important}
  body.bc-network .bc-vd-actions .bc-vd-ai-search{flex:1!important;min-height:44px!important}
 }
+
+
+/* 2026-11-11: mobile troubleshooting. Real scan and AI controls remain
+   visible ABOVE the photograph; status is not hidden below results. */
+body.bc-network .bc-vd-top-actions{margin:0 0 7px!important}
+body.bc-network #vdSystemCheck{background:#19302e!important;border-color:#39796a!important;color:#d7fff0!important}
+body.bc-network #vdSystemCheck:hover{background:#24453d!important}
+body.bc-network #vdSystemCheck:disabled{opacity:.5}
+body.bc-network .bc-vd-top-actions ~ .bc-vd-index-status{
+ margin:0 0 9px!important;background:#101922;border:1px solid #344452;
+ padding:9px!important;border-radius:9px;line-height:1.5!important;
+ overflow-wrap:anywhere;
+}
+@media(max-width:900px){
+ body.bc-network .bc-vd-top-actions{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important
+ }
+ body.bc-network .bc-vd-top-actions #vdSystemCheck{
+  grid-column:1 / -1!important;min-height:42px!important
+ }
+ body.bc-network .bc-vd-top-actions button{
+  min-width:0!important;min-height:48px!important;padding:8px!important;
+  font-size:9px!important;line-height:1.4!important
+ }
+ body.bc-network .bc-vd-workspace #vdIndexStatus{
+  margin-bottom:8px!important;white-space:normal!important
+ }
+ body.bc-network .bc-vd-workspace #vdDuplicateResults{
+  max-height:140px!important;flex:none!important;margin-bottom:9px!important
+ }
+}
