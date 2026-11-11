@@ -173,7 +173,7 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
    client.from('corp_social_photo_votes')
     .select('asset_id').eq('user_id',uid).limit(10000),
    client.from('corp_social_photo_rediscovery')
-    .select('asset_id,view_count,engaged_views,zoom_engaged_views,last_viewed_at,last_suggested_at,not_interested,rediscovery_feedback')
+    .select('asset_id,view_count,engaged_views,zoom_engaged_views,last_viewed_at,last_suggested_at,last_feedback_at,not_interested,rediscovery_feedback')
     .eq('user_id',uid).order('view_count',{ascending:false}).limit(10000)
   ]);
   if(votes.error||history.error){
@@ -484,6 +484,9 @@ async function offer({preview=false,test=false,requestedMode='rediscovery'}={}){
   if(wantTrigger&&related.length){
    proposed=related[Math.floor(Math.random()*Math.min(related.length,5))];
    selectedMode='trigger';
+  }else if(requestedMode==='trigger'&&preview&&!test){
+   // Explicit Trigger Preview must not silently show a Rediscovery Card.
+   return false;
   }else if(rediscovery&&(preview||test||newest>=cooldown)){
    proposed=rediscovery;
   }else if(!rediscovery&&related.length){
