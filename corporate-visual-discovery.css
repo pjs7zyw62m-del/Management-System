@@ -187,3 +187,56 @@ body.bc-network #photosView .bc-military-resources>.bc-vd-resource-card>small{
 }
 @media(max-width:1100px){body.bc-network #photosView .bc-military-resources{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(max-width:570px){body.bc-network #photosView .bc-military-resources{grid-template-columns:1fr!important}}
+
+
+/* Mobile-first Visual Discovery: keep image selection and results reachable
+   inside the private overlay instead of hiding action buttons below the fold. */
+body.bc-network #vdCropMessage[hidden]{display:none!important}
+@media(max-width:900px){
+ body.bc-network .bc-vd-overlay{padding:0!important;align-items:stretch!important}
+ body.bc-network .bc-vd-dialog{width:100%!important;height:100dvh!important;
+  max-height:100dvh!important;border-radius:0!important;min-height:0!important}
+ body.bc-network .bc-vd-layout{display:block!important;min-height:0!important;
+  overflow-y:auto!important;overflow-x:hidden!important;
+  overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch}
+ body.bc-network .bc-vd-head{position:relative!important;padding:11px 14px!important}
+ body.bc-network .bc-vd-head p{display:none!important}
+ body.bc-network .bc-vd-head small{font-size:8px!important}
+ body.bc-network .bc-vd-head h2{margin:4px 0 0!important;font-size:24px!important}
+ body.bc-network .bc-vd-workspace{padding:10px!important}
+ body.bc-network .bc-vd-stage{height:35dvh!important;min-height:180px!important;
+  max-height:370px!important;touch-action:none!important;overscroll-behavior:contain!important}
+ body.bc-network .bc-vd-actions{position:sticky!important;bottom:0!important;
+  z-index:7!important;padding:8px 0!important;background:#101720!important}
+ body.bc-network .bc-vd-actions #vdAnalyze{flex:1!important;min-height:44px!important}
+ body.bc-network .bc-vd-actions #vdReset{min-height:44px!important}
+ body.bc-network .bc-vd-privacy{display:none!important}
+ body.bc-network .bc-vd-source-strip{height:78px!important;padding-bottom:4px!important}
+ body.bc-network .bc-vd-source-strip button{height:62px!important;flex-basis:93px!important}
+ body.bc-network .bc-vd-side{padding:11px!important;gap:9px!important}
+ body.bc-network .bc-vd-selection-preview{min-height:92px!important}
+ body.bc-network #vdCropPreview{height:105px!important}
+ body.bc-network .bc-vd-results{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  overflow:visible!important;min-height:100px!important}
+ body.bc-network .bc-vd-match-picture{height:117px!important}
+ body.bc-network .bc-vd-disclaimer{padding-bottom:max(12px,env(safe-area-inset-bottom,12px))}
+ body.bc-network .bc-vd-stage::after{
+  content:'TAP A DETAIL · FIND SIMILAR';
+  position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+  white-space:nowrap;pointer-events:none;z-index:2;
+  padding:6px 12px;border:1px solid #a7475c;border-radius:24px;
+  font-size:9px;letter-spacing:.07em;font-weight:820;color:#f2e8ed;
+  background:#10151be8;box-shadow:0 5px 17px #000b
+ }
+ body.bc-network .bc-vd-stage:has(.bc-vd-selection:not([hidden]))::after{display:none}
+}
+@media(max-width:570px){
+ body.bc-network .bc-vd-stage{height:34dvh!important;min-height:180px!important}
+ body.bc-network .bc-vd-bar{gap:5px;margin-bottom:6px}
+ body.bc-network .bc-vd-bar strong{max-width:100%;font-size:10px}
+ body.bc-network .bc-vd-bar span{font-size:8px}
+ body.bc-network .bc-vd-actions button{padding:10px!important;font-size:9px!important}
+ body.bc-network .bc-vd-head{padding:9px 12px!important}
+ body.bc-network .bc-vd-head h2{font-size:21px!important}
+ body.bc-network .bc-vd-close{min-width:41px;min-height:41px}
+}
