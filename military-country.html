@@ -4,6 +4,14 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#05070d">
 <title>BLACKCELL — Military Country Pages</title>
+<script>
+(function(){
+  const params=new URLSearchParams(window.location.search);
+  const raw=params.get("countries")||params.get("country")||"US";
+  const countries=[...new Set(raw.split(",").map(code=>code.trim().toUpperCase()).filter(Boolean))];
+  if(countries.length===1&&countries[0]==="US")window.location.replace("usa-page.html");
+})();
+</script>
 <script src="corp-config.js" defer></script>
 <link rel="stylesheet" href="military-country.css?v=20261110-country1">
 <script type="module" src="military-country.js?v=20261110-fast4"></script>
@@ -11,7 +19,7 @@
 <body data-page-theme="usa">
 <header class="topbar">
  <a class="brand" href="corporate-network.html?view=photos" aria-label="Back to military library"><span class="brand-mark">B</span><span><strong>BLACKCELL CORPORATION</strong><small>COUNTRY MILITARY ARCHIVES</small></span></a>
- <nav class="topnav" aria-label="Military pages"><a href="corporate-network.html?view=photos">← MILITARY LIBRARY</a><a href="military-country.html?country=US" class="nav-usa">🇺🇸 USA</a><a href="corporate-network.html?view=photos">🌍 GLOBAL</a></nav>
+ <nav class="topnav" aria-label="Military pages"><a href="corporate-network.html?view=photos">← MILITARY LIBRARY</a><a href="usa-page.html" class="nav-usa">🇺🇸 USA</a><a href="corporate-network.html?view=photos">🌍 GLOBAL</a></nav>
 </header>
 <div id="accessGate" class="access-gate" role="status" aria-live="polite"><div class="gate-card"><div class="gate-logo">B</div><strong>BLACKCELL / SECURE COUNTRY ARCHIVES</strong><h2>Authenticating access</h2><p id="accessMessage">Checking corporate credentials and viewing permissions.</p><a href="corporate-network.html?view=photos">BACK TO MILITARY LIBRARY</a></div></div>
 <main id="countryApp" hidden>
