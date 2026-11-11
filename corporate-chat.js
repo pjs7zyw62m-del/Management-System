@@ -120,8 +120,8 @@ async function boot(){
      if(m.can_chat!==true){status('Chat is not enabled for your employee account.');return}
      const {data:employeeStatus,error:employeeError}=await client.rpc('corp_employee_code_status');
      if(employeeError||employeeStatus?.ok!==true||employeeStatus?.verified!==true){
-       $('returnLink').href='employee.html';$('returnLink').textContent='VERIFY EMPLOYEE CARD';
-       status('Verify your 4-digit Access Code and Security Code on your employee card first.');
+       $('returnLink').href='employee.html';$('returnLink').textContent='EMPLOYEE ACCESS';
+       status('Sign in with your activated employee account to use authorized chat.');
        return;
      }
      employeeSession=true;lastActivity=Date.now();lastTouch=Date.now();
@@ -328,7 +328,7 @@ document.addEventListener('visibilitychange',()=>{
  if(employeeSession){
   if(Date.now()-lastActivity>=IDLE_LIMIT_MS){void endChatAccess('Signed out after 60 minutes of inactivity.');return}
   void client.rpc('corp_employee_code_status').then(({data,error})=>{
-   if(error||data?.verified!==true)void endChatAccess('Employee code verification expired.');
+   if(error||data?.verified!==true)void endChatAccess('Employee session authorization expired.');
    else void loadMessages();
   }).catch(()=>void endChatAccess('Employee session check failed.'));
  }else void loadMessages();
