@@ -191,6 +191,7 @@ function showFeaturedService(){
  const service=SERVICES.find(s=>s.id===state.featuredBranch)||SERVICES[0];
  const count=photoCountByService(service.id);
  $("featuredBranch").dataset.branch=service.id;
+ $("featuredBranch").style.setProperty("--branch-accent",({army:"#b6a052",marines:"#d44959",navy:"#3986cf",air:"#6caee6",space:"#8e82db",coast:"#e26455"})[service.id]||"#d44959");
  $("featuredBranchEmblem").src=SERVICE_EMBLEMS[service.id];
  $("featuredBranchEmblem").alt=service.name+" emblem";
  $("featuredBranch").setAttribute("aria-label","View "+service.name+" photo archive");
