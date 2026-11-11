@@ -164,3 +164,25 @@ body.bc-network .bc-vd-submenu-entry{border-color:#7a2c40!important;color:#f1dfe
  body.bc-network .bc-vd-results{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(prefers-reduced-motion:reduce){body.bc-network .bc-vd-progress-track #vdProgressBar{transition:none!important}}
+
+/* Fourth Military Library resource uses the same Apple Glass card system. */
+body.bc-network #photosView .bc-military-resources{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+body.bc-network #photosView .bc-military-resources>.bc-vd-resource-card{
+ display:flex;flex-direction:column;gap:7px;min-width:0;align-items:flex-start;text-align:left;
+ padding:18px 19px;border-radius:13px;border:1px solid #7c3549;cursor:pointer;
+ background:linear-gradient(130deg,#2c1c27,#0b1117);color:#ebf0f5;
+}
+body.bc-network #photosView .bc-military-resources>.bc-vd-resource-card:hover{
+ border-color:#dd5067;background:linear-gradient(130deg,#43212f,#111a23)
+}
+body.bc-network #photosView .bc-military-resources>.bc-vd-resource-card>span{
+ color:#df6177;font-size:9px;letter-spacing:.12em;font-weight:840
+}
+body.bc-network #photosView .bc-military-resources>.bc-vd-resource-card>strong{
+ font-size:clamp(14px,1.5vw,20px);font-weight:850;line-height:1.2;letter-spacing:-.025em
+}
+body.bc-network #photosView .bc-military-resources>.bc-vd-resource-card>small{
+ color:#afbbc9;font-size:10px;line-height:1.55
+}
+@media(max-width:1100px){body.bc-network #photosView .bc-military-resources{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:570px){body.bc-network #photosView .bc-military-resources{grid-template-columns:1fr!important}}
