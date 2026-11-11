@@ -8,8 +8,8 @@
 <title>BLACKCELL — United States Military | Redesign Preview</title>
 <script src="corp-config.js" defer></script>
 <link rel="stylesheet" href="military-country.css?v=20261110-country1">
-<link rel="stylesheet" href="usa-page-preview.css?v=20261111-viewfinder2">
-<script type="module" src="usa-page-preview.js?v=20261111-viewfinder2"></script>
+<link rel="stylesheet" href="usa-page-preview.css?v=20261111-bento3">
+<script type="module" src="usa-page-preview.js?v=20261111-bento3"></script>
 </head>
 <body data-page-theme="usa" class="usa-revamp">
 <header class="topbar usa-topbar">
@@ -75,16 +75,28 @@
    <div class="editorial-line"><span class="line-index">01 / BRANCH DIRECTORY</span><span class="line-rule"></span><span class="line-note">ONE NATION · MULTIPLE SERVICES</span></div>
    <section class="branch-section" id="branches" aria-labelledby="branchTitle">
     <div class="section-intro">
-     <div><div class="eyebrow">DISCOVER THE UNITED STATES MILITARY</div><h2 id="branchTitle">THE SIX SERVICES<span class="red-period">.</span></h2><p>Select a service to see its saved photographs. The counts update from your existing private library.</p></div>
+     <div><div class="eyebrow">DISCOVER THE UNITED STATES MILITARY</div><h2 id="branchTitle">THE SIX SERVICES<span class="red-period">.</span></h2><p>Select a service to preview its archive and filter your saved photographs below.</p></div>
      <button id="clearBranch" type="button" class="clear-filter" hidden>✕ CLEAR BRANCH FILTER</button>
     </div>
-    <div class="branch-grid" id="branchGrid">
-     <button type="button" class="branch-tile" data-branch="army" aria-pressed="false"><span class="branch-index">01 / LAND</span><span class="branch-symbol" aria-hidden="true">★</span><span class="branch-title">U.S. ARMY</span><span class="branch-foot">SOLDIERS <b data-count="army">0 PHOTOS</b></span></button>
-     <button type="button" class="branch-tile" data-branch="marines" aria-pressed="false"><span class="branch-index">02 / EXPEDITIONARY</span><span class="branch-symbol" aria-hidden="true">✦</span><span class="branch-title">MARINE CORPS</span><span class="branch-foot">MARINES <b data-count="marines">0 PHOTOS</b></span></button>
-     <button type="button" class="branch-tile" data-branch="navy" aria-pressed="false"><span class="branch-index">03 / SEA</span><span class="branch-symbol" aria-hidden="true">⚓</span><span class="branch-title">U.S. NAVY</span><span class="branch-foot">SAILORS <b data-count="navy">0 PHOTOS</b></span></button>
-     <button type="button" class="branch-tile" data-branch="air" aria-pressed="false"><span class="branch-index">04 / AIR</span><span class="branch-symbol" aria-hidden="true">⌁</span><span class="branch-title">AIR FORCE</span><span class="branch-foot">AIRMEN <b data-count="air">0 PHOTOS</b></span></button>
-     <button type="button" class="branch-tile" data-branch="space" aria-pressed="false"><span class="branch-index">05 / SPACE</span><span class="branch-symbol" aria-hidden="true">✧</span><span class="branch-title">SPACE FORCE</span><span class="branch-foot">GUARDIANS <b data-count="space">0 PHOTOS</b></span></button>
-     <button type="button" class="branch-tile" data-branch="coast" aria-pressed="false"><span class="branch-index">06 / MARITIME</span><span class="branch-symbol" aria-hidden="true">◈</span><span class="branch-title">COAST GUARD</span><span class="branch-foot">COAST GUARDSMEN <b data-count="coast">0 PHOTOS</b></span></button>
+    <div class="services-bento" id="branchGrid">
+     <!-- Featured branch and smaller branch cards are filled from verified, classified library photos.
+          No third-party placeholder images, hardcoded counts or unauthenticated media. -->
+     <button id="featuredBranch" type="button" class="bento-featured" data-branch="marines" aria-pressed="false" aria-label="Explore featured military branch">
+      <img id="featuredBranchImage" class="bento-featured-image" alt="" hidden>
+      <span class="bento-featured-shade" aria-hidden="true"></span>
+      <span class="bento-topline"><span id="featuredBranchCode">02 / EXPEDITIONARY</span><span aria-hidden="true">↗</span></span>
+      <span class="bento-bottomline">
+       <span class="bento-featured-text">
+        <span class="bento-personnel" id="featuredBranchPersonnel">MARINES</span>
+        <strong id="featuredBranchTitle">MARINE CORPS</strong>
+        <span class="bento-explore">VIEW GALLERY <span aria-hidden="true">→</span></span>
+       </span>
+       <span class="bento-featured-count" id="featuredBranchCount">0 PHOTOS</span>
+      </span>
+     </button>
+     <div class="bento-secondary" id="secondaryBranches" aria-label="Other military services">
+      <!-- Five responsive cards are generated after secure library loading. -->
+     </div>
     </div>
     <div class="branch-footer">
       <button type="button" class="component-link" data-branch="guard" aria-pressed="false">▣ NATIONAL GUARD <small>COMPONENT COLLECTION</small><b data-count="guard">0 PHOTOS</b></button>
