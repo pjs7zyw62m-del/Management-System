@@ -305,25 +305,32 @@ function layoutJustifiedGallery(){
  if(width<90)return; // The gallery may still be hidden during session verification.
  const gap=0; // Pixel-perfect, edge-to-edge justified photographs on every screen.
  const target=width<480?195:width<800?235:width<1150?275:335;
- const minHeight=target*.68;
- const rows=[];
- let current=[],ratioSum=0;
- const commit=full=>{
-  if(!current.length)return;
-  rows.push({items:current,ratioSum,full});
-  current=[];ratioSum=0;
- };
- for(const item of items){
-  const ratio=Math.max(.4,Math.min(4.5,Number(item.ratio)||1.35));
-  const count=current.length+1;
-  const projected=(width-gap*(count-1))/(ratioSum+ratio);
-  // Don't crush portrait photography by cramming an extra item into the row.
-  if(current.length&&projected<minHeight)commit(true);
-  current.push(item);ratioSum+=ratio;
-  const h=(width-gap*(current.length-1))/ratioSum;
-  if(h<=target*1.08)commit(true);
+ const ratios=items.map(item=>Math.max(.4,Math.min(4.5,Number(item.ratio)||1.35)));
+ const prefix=[0];
+ for(const ratio of ratios)prefix.push(prefix[prefix.length-1]+ratio);
+ // Choose row breaks globally, not greedily. This prevents the final image
+ // from becoming a billboard while keeping every multi-photo row flush.
+ const n=items.length,dp=Array(n+1).fill(Infinity),next=Array(n+1).fill(n);
+ dp[n]=0;
+ for(let i=n-1;i>=0;i--){
+  for(let count=1;count<=Math.min(8,n-i);count++){
+   const j=i+count,ratioSum=prefix[j]-prefix[i];
+   const h=width/ratioSum;
+   const deviation=Math.log(h/target);
+   let cost=deviation*deviation;
+   if(h>target*1.55)cost+=14*Math.pow(h/target-1.55,2);
+   if(h<target*.65)cost+=12*Math.pow(.65-h/target,2);
+   if(count===1&&n>1)cost+=50;
+   const total=cost+dp[j];
+   if(total<dp[i]){dp[i]=total;next[i]=j}
+  }
  }
- commit(true); // Justify the final row as well: no empty trailing gutter.
+ const rows=[];
+ for(let i=0;i<n;){
+  const j=next[i]>i?next[i]:i+1;
+  rows.push({items:items.slice(i,j),ratioSum:prefix[j]-prefix[i],full:n>1});
+  i=j;
+ }
  const fragment=document.createDocumentFragment();
  rows.forEach(({items:rowItems,ratioSum:sum,full})=>{
   const row=document.createElement("div");
