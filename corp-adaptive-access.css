@@ -181,6 +181,9 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100% }
   display:flex!important;
   grid-column:1;
   grid-row:1;
+  opacity:1!important;
+  cursor:default!important;
+  pointer-events:none;
   border-color:#9e637c;
   background:linear-gradient(135deg,#392432,#241b29);
   color:#f7edf4;
