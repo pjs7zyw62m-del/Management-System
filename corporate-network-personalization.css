@@ -1,0 +1,85 @@
+/* BLACKCELL / OPT-IN PRIVATE PERSONALIZATION
+   No automated sensitive-trait inference. Original media presentation unchanged. */
+body.bc-network .bc-personalization-trigger{
+ display:inline-flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:7px;
+ border-radius:9px;border:1px solid #794052;background:#1c1820;color:#e6e9ed;
+ padding:9px 12px;font-size:10px;font-weight:770;letter-spacing:.055em;cursor:pointer}
+body.bc-network .rail-link.bc-personalization-trigger{
+ display:flex;justify-content:flex-start;background:transparent;width:100%;
+ border:0;font-size:12px;font-weight:500;padding:12px;white-space:normal}
+body.bc-network .bc-personalization-trigger:hover,
+body.bc-network .bc-personalization-trigger.personalization-active{
+ background:#2d1a25;border-color:#c63c55;color:#fff}
+body.bc-network .bc-personalize-quick{margin-left:auto;white-space:nowrap}
+body.bc-network .feed-controls{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+body.bc-network #photosView .bc-personalization-gallery-banner{
+ display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+ padding:15px 17px;margin:14px 0;
+ border:1px solid #383f49;border-radius:13px;
+ background:linear-gradient(130deg,#171c24,#0b1016)}
+body.bc-network #photosView .bc-personalization-gallery-banner>div{display:flex;flex:1 1 240px;flex-direction:column;gap:5px}
+body.bc-network #photosView .bc-personalization-gallery-banner strong{font-size:11px;color:#f2f4f6;letter-spacing:.075em}
+body.bc-network #photosView .bc-personalization-gallery-banner span{font-size:10px;color:#aeb9c5;line-height:1.6}
+body.bc-network #photosView .bc-personalization-gallery-banner small{font-size:9px;color:#c59fa9}
+body.bc-network .bc-personalization-gallery-banner button,
+body.bc-network .bc-personalize-gallery-note button{
+ border:1px solid #934155;border-radius:9px;color:#ebd9dd;
+ padding:11px 12px;background:#26171e;cursor:pointer;font-size:10px;font-weight:800}
+body.bc-network .bc-personalize-gallery-note{padding:14px 16px;background:#0d141b;border:1px solid #43404b;
+ color:#b8c1ce;line-height:1.65;border-radius:12px;font-size:11px}
+body.bc-network .bc-personalize-overlay[hidden]{display:none!important}
+body.bc-network .bc-personalize-overlay{
+ position:fixed;inset:0;z-index:800;display:grid;place-items:center;
+ padding:16px;background:rgba(1,2,5,.91);backdrop-filter:blur(9px)}
+body.bc-network .bc-personalize-dialog{
+ display:flex;flex-direction:column;width:min(990px,100%);max-height:min(91vh,900px);
+ overflow:hidden;border:1px solid #4a3d4a;border-radius:21px;
+ background:linear-gradient(145deg,#171c24,#080d14);
+ box-shadow:0 32px 110px #000e}
+body.bc-network .bc-personalize-dialog>header{
+ display:flex;justify-content:space-between;align-items:start;gap:12px;padding:23px 26px 19px;
+ border-bottom:1px solid #323b47}
+body.bc-network .bc-personalize-dialog header h2{
+ margin:11px 0 9px;font-size:clamp(22px,3vw,36px);letter-spacing:-.04em;color:#f5f6fa}
+body.bc-network .bc-personalize-dialog header p{max-width:720px;font-size:11px;line-height:1.6;color:#adb7c3;margin:0}
+body.bc-network #personalizationClose{
+ border:1px solid #753747;background:#2a1720;color:#e4c8d0;
+ border-radius:10px;min-width:39px;min-height:39px;font-size:15px}
+body.bc-network .bc-personalize-scroll{padding:22px 26px;overflow-y:auto;overscroll-behavior:contain}
+body.bc-network .bc-personalize-switch{padding:12px 15px;border:1px solid #353e49;background:#10161c;border-radius:12px;margin-bottom:10px}
+body.bc-network .bc-personalize-switch label{display:flex;align-items:center;gap:15px;cursor:pointer}
+body.bc-network .bc-personalize-switch input{width:22px;height:22px;flex:none;accent-color:#c62c49}
+body.bc-network .bc-personalize-switch strong{display:block;font-size:10px;letter-spacing:.09em;color:#e5eaf0}
+body.bc-network .bc-personalize-switch small{display:block;margin-top:5px;line-height:1.65;font-size:10px;color:#adb7c5}
+body.bc-network .bc-personalize-heading{margin:25px 0 11px;display:flex;align-items:end;justify-content:space-between;flex-wrap:wrap;gap:10px}
+body.bc-network .bc-personalize-heading strong{font-size:12px;letter-spacing:.12em}
+body.bc-network .bc-personalize-heading small{font-size:10px;color:#9ca7b5}
+body.bc-network .bc-trigger-topics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+body.bc-network .bc-trigger-topic{display:flex;flex-direction:column;gap:10px;min-width:0;
+ padding:13px 14px;background:#111820;border:1px solid #313c47;border-radius:11px}
+body.bc-network .bc-trigger-topic>span{font-size:11px;color:#e4eaf0;font-weight:730}
+body.bc-network .bc-trigger-choice{display:flex;gap:4px;justify-content:space-between}
+body.bc-network .bc-trigger-choice label{display:flex;align-items:center;justify-content:center;flex:1;
+ cursor:pointer;gap:4px;min-width:0;padding:7px 4px;border:1px solid #35414b;
+ border-radius:7px;color:#b9c2cc;font-size:9px;font-weight:700;text-align:center}
+body.bc-network .bc-trigger-choice input{accent-color:#cf3d54;width:12px;height:12px;margin:0}
+body.bc-network .bc-trigger-choice label:has(input:checked){background:#31202a;border-color:#c54b5e;color:#fff}
+body.bc-network .bc-personalize-note{font-size:10px;line-height:1.75;color:#a6b3c0;border-top:1px solid #323b44;padding-top:15px}
+body.bc-network .bc-personalize-feedback{min-height:17px;color:#e5a4ae;font-size:11px}
+body.bc-network .bc-personalize-dialog>footer{display:flex;justify-content:space-between;align-items:center;gap:12px;
+ padding:17px 24px;border-top:1px solid #323b46;flex-wrap:wrap}
+body.bc-network .bc-personalize-dialog footer>div{display:flex;align-items:center;gap:9px}
+body.bc-network .bc-personalize-dialog footer button{
+ border:1px solid #50515c;background:#171b22;color:#f0f2f4;
+ border-radius:10px;padding:12px 13px;font-size:10px;font-weight:800}
+body.bc-network .bc-personalize-dialog footer button.bc-personalize-save{
+ background:linear-gradient(125deg,#86253a,#c8364e);border-color:#ce4b5c;color:#fff}
+body.bc-network .bc-personalize-dialog footer button.bc-personalize-reset{color:#d5b4bc;border-color:#72404e}
+body.bc-network .bc-personalize-dialog footer button:disabled{opacity:.5;cursor:wait}
+@media(max-width:710px){body.bc-network .bc-trigger-topics{grid-template-columns:1fr}
+ body.bc-network .bc-personalize-dialog>header,body.bc-network .bc-personalize-scroll{padding:16px}
+ body.bc-network .bc-personalize-dialog>footer{padding:12px;gap:8px}
+ body.bc-network .bc-personalize-dialog footer button{padding:10px 9px;font-size:9px}}
+@media(max-width:440px){body.bc-network .bc-personalize-dialog footer{flex-direction:column;align-items:stretch}
+ body.bc-network .bc-personalize-dialog footer>div>button{flex:1}
+ body.bc-network .bc-trigger-choice label{font-size:8px}}
