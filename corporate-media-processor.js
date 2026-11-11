@@ -243,7 +243,7 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
     .select('id',{count:'exact',head:true}).in('kind',['photo','video']);
    if(checkError||remaining!==0)
     throw Error('Final database verification did not reach zero: '+(checkError?.message||remaining+' rows remain'));
-   resetEditor();queue=[];albums=[];
+   resetEditor();queue=[];albums=[];page=0;totalPending=0;
    await refresh();await reload(true);
    document.dispatchEvent(new CustomEvent('bc:media-updated'));
    status('FRESH START COMPLETE · '+removed+' photo/video originals removed from BLACKCELL storage and database. Private chat, NEXUS and iCloud sources unchanged.');
