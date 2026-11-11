@@ -761,12 +761,9 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
      const {error:tagError}=await client.from('corp_social_assets')
       .update(classification).eq('id',asset.id).eq('owner_id',ownId());
      if(tagError)toast('Upload saved; classification could not be applied: '+tagError.message);
-     if(album&&album.owner_id===ownId()){
-      const {error}=await client.from('corp_social_album_items').insert({
-       album_id:album.id,asset_id:asset.id,added_by:ownId()
-      });
-      if(error)toast('Photo uploaded, but adding to album failed: '+error.message);
-     }
+     // Never attach a pending upload to any shared album.
+     // The Media Import Processor will verify the metadata and file it
+     // only after approval. The selected album supplies a draft, not a filing.
     }catch(e){failures++;toast('Media upload failed for '+f.name+': '+(e?.message||'Unknown error'))}
     finally{
      completed++;fill.style.width=Math.round(completed*100/supported.length)+'%';
