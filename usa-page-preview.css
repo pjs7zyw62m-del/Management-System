@@ -1683,3 +1683,8 @@ body.usa-revamp .usa-hero.hero-v4.hero-v7 .daily-simple .viewfinder-placeholder{
   font-size:12px;
  }
 }
+
+body.usa-revamp .usa-hero.hero-v4.hero-v7 .daily-simple .viewfinder-photo img[hidden],
+body.usa-revamp .usa-hero.hero-v4.hero-v7 .daily-simple .viewfinder-placeholder[hidden]{
+ display:none!important;
+}
