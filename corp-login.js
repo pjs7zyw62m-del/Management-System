@@ -114,7 +114,7 @@ function showPass(){
   loginPanel.setAttribute('aria-hidden','false');
   passPanel.setAttribute('aria-hidden','false');
   loginCard.classList.add('signed-in');
-  loginHeading.textContent='Identity Verified';
+  loginHeading.textContent='Sign In'; // Keep the original login card/heading anchored; status + verified button indicate success.
   emailInput.disabled=true;
   password.value='';
   password.disabled=true;
