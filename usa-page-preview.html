@@ -47,12 +47,21 @@
         <span id="featuredPlaceholder" class="viewfinder-placeholder" aria-hidden="true">B</span>
         <span class="viewfinder-shade" aria-hidden="true"></span>
         <span class="viewfinder-caption">
-         <span class="viewfinder-record-type">FEATURED RECORD</span>
-         <span class="viewfinder-record-index" id="featuredRecordId">ARCHIVE // NO MEDIA</span>
+         <span class="viewfinder-record-type">PHOTO OF THE DAY</span>
+         <span class="viewfinder-record-index" id="featuredRecordId">LOOKING FOR TODAY'S PICK…</span>
         </span>
        </button>
       </div>
-      <p class="viewfinder-motto">THE MEN. THE UNIFORMS. THE HISTORY.</p>
+      <p class="viewfinder-motto">CHOSEN FOR YOUR MILITARY PHOTO TASTES.</p>
+      <div class="daily-photo-info" aria-live="polite">
+       <div class="daily-photo-tag"><span class="daily-photo-live"></span> YOUR PHOTO OF THE DAY <span id="dailyDate">TODAY</span></div>
+       <p id="dailyReason">Analyzing your saved ratings, favorites and uniform details to find the best match.</p>
+       <div class="daily-feedback">
+        <button id="dailyLike" type="button" disabled title="Teach Blackcell to show you more like this">♥ MORE LIKE THIS</button>
+        <button id="dailyLess" type="button" disabled title="Teach Blackcell this is not your style">✕ NOT FOR ME</button>
+       </div>
+       <p id="dailyFeedbackStatus" class="daily-feedback-status" role="status" aria-live="polite"></p>
+      </div>
     </div>
    </div>
    <div class="hero-footer-stats">
