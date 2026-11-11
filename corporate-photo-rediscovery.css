@@ -1,0 +1,42 @@
+/* BLACKCELL — private opt-in Photo Rediscovery.
+   A small dismissible recommendation card, never a blocking dialog. */
+body.bc-network .bc-rediscovery-setting{border-color:#55404b;background:linear-gradient(125deg,#191b23,#11161c)}
+body.bc-network .bc-rediscovery-controls{display:flex;align-items:end;gap:9px;flex-wrap:wrap;margin:14px 0 0 37px}
+body.bc-network .bc-rediscovery-controls>label{width:100%;font-size:9px;letter-spacing:.12em;color:#b9c3ce;font-weight:800}
+body.bc-network .bc-rediscovery-controls select{flex:1;min-width:180px;min-height:41px;padding:9px;background:#0b1117;border:1px solid #50505b;border-radius:9px;color:#ecf0f4;font-size:10px}
+body.bc-network .bc-rediscovery-controls button{min-height:41px;padding:9px 12px;border:1px solid #924052;background:#271924;border-radius:9px;color:#efdfe5;font-size:10px;font-weight:850;letter-spacing:.05em}
+body.bc-network .bc-rediscovery-controls button:hover{border-color:#dd4d66;color:#fff}
+body.bc-network .bc-rediscovery-privacy{display:block;margin:11px 0 0 37px;font-size:10px;line-height:1.6;color:#a3b0bd}
+body.bc-network .bc-rediscovery-card{position:fixed;right:18px;bottom:18px;z-index:920;width:min(360px,calc(100vw - 28px));
+ max-height:min(84dvh,730px);overflow-y:auto;overscroll-behavior:contain;
+ border:1px solid #52404b;border-radius:18px;background:linear-gradient(145deg,rgba(26,31,39,.98),rgba(8,12,17,.99));
+ color:#eaf0f5;box-shadow:0 28px 85px #000c;backdrop-filter:blur(20px);padding:14px;animation:bc-rediscovery-appear .28s ease-out}
+@keyframes bc-rediscovery-appear{from{opacity:0;transform:translateY(13px)}to{opacity:1;transform:translateY(0)}}
+body.bc-network .bc-rediscovery-head{display:flex;align-items:start;justify-content:space-between;gap:12px;margin-bottom:10px}
+body.bc-network .bc-rediscovery-head small{display:block;color:#db697d;letter-spacing:.13em;font-size:9px;font-weight:850;margin-bottom:5px}
+body.bc-network .bc-rediscovery-head strong{font-size:13px;letter-spacing:.02em}
+body.bc-network .bc-rediscovery-head button{border:1px solid #603d4a;background:#221921;border-radius:8px;color:#ebccd4;padding:5px 9px;font-size:12px;line-height:1.4;flex:none}
+body.bc-network .bc-rediscovery-image{height:175px;display:grid;place-items:center;background:#030608;border:1px solid #38414c;border-radius:11px;overflow:hidden}
+body.bc-network .bc-rediscovery-image img{max-width:100%;max-height:100%;width:100%;height:100%;object-fit:contain;display:block}
+body.bc-network .bc-rediscovery-photo-title{margin:11px 2px 6px;font-size:12px;line-height:1.4;color:#edf1f5;font-weight:800;overflow-wrap:anywhere}
+body.bc-network .bc-rediscovery-card>p{margin:0 2px 13px;color:#aeb9c5;font-size:11px;line-height:1.65}
+body.bc-network .bc-rediscovery-actions{display:flex;flex-wrap:wrap;gap:7px}
+body.bc-network .bc-rediscovery-actions>button{flex:1 1 125px;min-height:39px;border:1px solid #51505a;background:#1a2129;border-radius:9px;color:#e1e7ed;font-size:9px;font-weight:850;letter-spacing:.045em;padding:10px 9px}
+body.bc-network .bc-rediscovery-actions>button.primary{background:linear-gradient(125deg,#87243b,#b63149);border-color:#ca465d;color:#fff}
+body.bc-network .bc-rediscovery-actions>button:hover{border-color:#e34b63}
+body.bc-network .bc-rediscovery-foot{display:flex;justify-content:space-between;align-items:center;gap:6px;padding-top:11px}
+body.bc-network .bc-rediscovery-foot button{background:transparent;border:0;color:#a9b6c4;padding:7px 4px;font-size:9px;font-weight:800;letter-spacing:.045em}
+body.bc-network .bc-rediscovery-foot button:hover{color:#fff;text-decoration:underline}
+body.bc-network .bc-rediscovery-related{margin-top:12px;padding:12px;background:#0c1219;border-radius:11px;border:1px solid #3a434f;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+body.bc-network .bc-rediscovery-related>small{grid-column:1/-1;color:#b9a8b2;font-size:9px;letter-spacing:.12em;font-weight:800}
+body.bc-network .bc-rediscovery-related>p{grid-column:1/-1;font-size:11px;line-height:1.6;color:#aeb9c5}
+body.bc-network .bc-rediscovery-related-photo{min-width:0;display:flex;flex-direction:column;align-items:stretch;gap:5px;padding:0;
+ border:1px solid #36404b;border-radius:9px;background:#171d24;overflow:hidden;text-align:left;color:#e7edf2}
+body.bc-network .bc-rediscovery-related-photo img{display:block;width:100%;height:98px;object-fit:contain;background:#04080c}
+body.bc-network .bc-rediscovery-related-photo span{padding:5px 8px 8px;font-size:9px;line-height:1.4;overflow-wrap:anywhere}
+body.bc-network .bc-rediscovery-related-photo:hover{border-color:#c53d52}
+@media(max-width:660px){body.bc-network .bc-rediscovery-card{right:9px;bottom:max(9px,env(safe-area-inset-bottom));width:calc(100vw - 18px);max-height:67dvh}
+ body.bc-network .bc-rediscovery-image{height:135px}
+ body.bc-network .bc-rediscovery-controls{margin-left:0}
+ body.bc-network .bc-rediscovery-privacy{margin-left:0}}
+@media(prefers-reduced-motion:reduce){body.bc-network .bc-rediscovery-card{animation:none}}
