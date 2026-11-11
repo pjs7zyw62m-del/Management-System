@@ -5,7 +5,7 @@ import {createPhotoTaste} from './corporate-photo-taste.js?v=20261110-trigger2';
 import {createPhotoPredict} from './corporate-photo-predict.js?v=20261110-pred1';
 import {createPhotoVoting} from './corporate-photo-votes.js?v=20261111-votes2';
 import {createPhotoZoom} from './corporate-photo-zoom.js?v=20261111-pointer2';
-export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadAsset,refresh,profile,openProfile,ensureSigned,switchView,personalization,rediscovery}){
+export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadAsset,refresh,profile,openProfile,ensureSigned,switchView,personalization,rediscovery,dedupe}){
  const $=id=>document.getElementById(id);
  const meta={albums:[],albumItems:[],favorites:[],activeAlbum:null,filter:'all',sort:'newest',query:'',
    scope:'mine',branch:'',category:'',era:'',editingAsset:null,
@@ -720,14 +720,35 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   const bar=$('applePhotoProgress'),fill=$('applePhotoMeterFill'),label=$('appleProgressLabel');
   $('photosUploadButton').disabled=true;
   bar.hidden=false;fill.style.width='0%';
-  let completed=0,failures=0;
+  let completed=0,failures=0,skippedDuplicates=0;
   const album=albumFor(meta.activeAlbum);
   try{
    for(const f of supported){
     label.textContent='Uploading '+(completed+1)+' of '+supported.length+' · '+f.name.slice(0,36);
     try{
+     let fingerprint=null;
+     if(photoFormats.has(f.type)){
+      const check=await dedupe.preflight(f);
+      fingerprint=check.fingerprint;
+      const duplicate=check.matches[0];
+      if(duplicate?.type==='exact'){
+       skippedDuplicates++;
+       toast('Exact duplicate skipped: '+f.name+'. Already saved as '+dedupe.nameOf(duplicate.asset_id)+'.');
+       continue;
+      }
+      if(duplicate?.type==='possible'){
+       const approved=confirm(
+        'POSSIBLE DUPLICATE FOUND\n\n'+f.name+' may match '+dedupe.nameOf(duplicate.asset_id)+
+        '.\n\nUpload this photo anyway? Your original and the existing photo will remain unchanged.'
+       );
+       if(!approved){skippedDuplicates++;continue}
+      }
+     }
      const asset=await uploadAsset(f,'library');
-     if(asset.kind==='photo')uploadedPhotoIds.push({id:asset.id,file:f});
+     if(asset.kind==='photo'){
+      uploadedPhotoIds.push({id:asset.id,file:f});
+      if(fingerprint)await dedupe.record(asset,fingerprint);
+     }
      const classification=uploadClassification();
      const {error:tagError}=await client.from('corp_social_assets')
       .update(classification).eq('id',asset.id).eq('owner_id',ownId());
@@ -744,7 +765,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
    }
    await refresh();
    render();
-   toast(failures?supported.length-failures+' saved, '+failures+' unsuccessful.':'Media uploaded to Blackcell Network Photos.');
+   toast((supported.length-failures-skippedDuplicates)+' uploaded, '+skippedDuplicates+' duplicate'+(skippedDuplicates===1?'':'s')+' skipped'+(failures?', '+failures+' failed':'')+'.');
    if(scanAfterUpload&&uploadedPhotoIds.length){
     const newest=uploadedPhotoIds.map(item=>({asset:byId(item.id),file:item.file})).filter(item=>item.asset);
     if(newest.length){
