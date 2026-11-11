@@ -246,6 +246,7 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
   options('bcReviewCategory','militaryUploadCategory');
   options('bcReviewEra','militaryUploadEra');
   $('bcProcessRefresh').addEventListener('click',()=>void reload());
+  document.addEventListener('bc:media-updated',()=>void reload());
   $('bcMediaReset').addEventListener('click',()=>void resetMedia());
   $('bcReviewApprove').addEventListener('click',()=>void approve());
   $('bcReviewReject').addEventListener('click',()=>void reject());
