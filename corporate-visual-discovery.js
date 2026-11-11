@@ -190,6 +190,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   resizeObserver=new ResizeObserver(()=>{showSelection()});
   resizeObserver.observe(stage);
   void loadReactions();
+  void systemCheck();
   const pool=eligible();
   if(!pool.length){
    current=null;sourceReady=false;main.removeAttribute('src');
@@ -437,6 +438,45 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    ', but found no indexed matches. Index more photographs to improve results.');
   if(onPhone()&&mapped.length)requestAnimationFrame(()=>$('vdResults').scrollIntoView({behavior:'smooth',block:'nearest'}));
  }
+
+ async function functionError(error,data){
+  if(data?.error)return String(data.error).slice(0,270);
+  let extra='';
+  try{
+   if(error?.context?.clone){
+    const payload=await error.context.clone().json();
+    extra=payload?.error||payload?.message||payload?.code||'';
+   }
+  }catch(_){}
+  return String(extra||error?.message||'The server returned an unknown error').slice(0,270);
+ }
+ async function systemCheck(){
+  if(!state.user?.id)return;
+  const output=$('vdIndexStatus'),button=$('vdSystemCheck');
+  button.disabled=true;
+  output.textContent='Checking duplicate scanner and AI service… (no API credits used)';
+  try{
+   const [fingerprints,features,ai]=await Promise.all([
+    client.from('corp_social_photo_fingerprints').select('asset_id',{count:'exact',head:true}),
+    client.from('corp_social_photo_features').select('asset_id',{count:'exact',head:true}).eq('feature_key','overall'),
+    client.functions.invoke('blackcell-visual-ai',{method:'GET'})
+   ]);
+   const problems=[];
+   if(fingerprints.error)problems.push('Duplicate database: '+fingerprints.error.message);
+   if(features.error)problems.push('Photo index: '+features.error.message);
+   if(ai.error||!ai.data?.ok)problems.push('AI endpoint: '+await functionError(ai.error,ai.data));
+   if(problems.length)output.textContent='SYSTEM CHECK FAILED · '+problems.join(' · ');
+   else{
+    const local=eligible().filter(a=>a.owner_id===state.user.id).length;
+    output.textContent='DATABASE CONNECTED · '+(fingerprints.count||0)+' photo fingerprints · '+
+     (features.count||0)+' AI-indexed photos · '+local+' of your photos available · AI SERVICE '+
+     (ai.data.configured?'READY (API credits required for scans)':'NOT CONFIGURED (missing server API key)')+
+     '. To begin, choose Scan Duplicates (free), then Index 5 Photos with AI (paid).';
+   }
+  }catch(e){output.textContent='SYSTEM CHECK FAILED · '+(e?.message||'Network unavailable')}
+  finally{button.disabled=false}
+ }
+
  async function findWithAI(){
   if(aiBusy||!sourceReady||!current||!selection)return;
   if(!confirm('AI visual search sends ONLY your selected photo detail to the configured vision provider and uses API credits. Continue?'))return;
@@ -447,7 +487,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    const {data,error}=await client.functions.invoke('blackcell-visual-ai',{body:{
     action:'search',asset_id:current.id,preview:cropped
    }});
-   if(error||!data?.ok)throw Error(data?.error||error?.message||'AI search was unsuccessful');
+   if(error||!data?.ok)throw Error(await functionError(error,data));
    displayAI(data.results,data);
   }catch(e){status('AI search unavailable: '+(e?.message||'Unknown issue')+
    '. Existing color and military-tag search remains available.')}
@@ -467,6 +507,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   aiBusy=true;
   const btn=$('vdAIIndex');btn.disabled=true;
   let done=0,failed=0;
+  const failureMessages=[];
   try{
    for(const asset of next){
     $('vdIndexStatus').textContent='AI indexing '+(done+failed+1)+' of '+next.length+': '+safeText(asset);
@@ -476,13 +517,19 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
      const {data,error}=await client.functions.invoke('blackcell-visual-ai',{body:{
       action:'index',asset_id:asset.id,preview
      }});
-     if(error||!data?.ok)throw Error(data?.error||error?.message||'AI index rejected');
+     if(error||!data?.ok)throw Error(await functionError(error,data));
      done++;
-    }catch(e){failed++;console.warn('AI photo indexing failed',safeText(asset),e?.message);
-     $('vdIndexStatus').textContent='AI indexing issue: '+(e?.message||'Try later');}
+    }catch(e){
+     failed++;failureMessages.push(safeText(asset)+': '+(e?.message||'Unknown error'));
+     console.warn('AI photo indexing failed',safeText(asset),e?.message);
+     $('vdIndexStatus').textContent='AI indexing issue: '+(e?.message||'Try later');
+     // A missing key, permission problem, or an exhausted account will affect
+     // the entire batch. Stop instead of causing repeated failed API calls.
+     if(/not configured|forbidden|401|403|402|credits|permission|not accessible|service config/i.test(e?.message||''))break;
+    }
    }
    $('vdIndexStatus').textContent=done+' photos indexed with AI'+(failed?', '+failed+' failed':'')+
-    '. Use AI Identify & Match on a selected detail.';
+    (failureMessages.length?' · FIRST ERROR: '+failureMessages[0]:' · Select a photo detail, then AI Identify & Match.');
   }finally{aiBusy=false;btn.disabled=false}
  }
  async function scanDuplicates(){
@@ -506,7 +553,8 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
     host.append(card);
    }
    $('vdIndexStatus').textContent='Fingerprint scan: '+result.saved+' saved, '+result.failed+
-    ' unavailable, '+result.flagged.length+' duplicate candidates. No photos deleted.';
+    ' unavailable, '+result.flagged.length+' duplicate candidates. No photos deleted.'+
+    (result.errors?.length?' FIRST ERROR: '+result.errors[0]:'');
   }catch(e){$('vdIndexStatus').textContent='Could not complete duplicate scan: '+(e?.message||'Unknown error')}
   finally{scanBusy=false;btn.disabled=false}
  }
@@ -539,6 +587,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   $('vdAnalyze').addEventListener('click',()=>void analyze());
   $('vdAISearch').addEventListener('click',()=>void findWithAI());
   $('vdAIIndex').addEventListener('click',()=>void indexWithAI());
+  $('vdSystemCheck').addEventListener('click',()=>void systemCheck());
   $('vdDuplicateScan').addEventListener('click',()=>void scanDuplicates());
   $('vdQuickPick').addEventListener('click',()=>{
    if(!sourceReady||working){status('Choose a loaded photo first.');return}
