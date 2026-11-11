@@ -13,6 +13,17 @@ This is an alternative to the existing iCloud-to-Supabase plan. It leaves your c
 
 Both can receive iCloud Photos data from a private hosted worker running `rclone`. The worker reads iCloud and writes to MEGA; it does not need to route bytes through an iPhone, but transit/caching happens on the worker.
 
+## Explicit-content clarification (2026-11-11)
+
+The source library is **mixed**: alongside ordinary photographs of men in uniform, some photographs depict adult masturbation. Those images constitute **sexually explicit content** and must NOT be treated as a standard non-explicit uniform gallery. This is a change in the classification of the proposed import; it does not establish permission to store the content with MEGA.
+
+Before any transfer of explicit media:
+- Obtain written approval from the chosen storage provider for **lawful, consensual sexually explicit adult photographs in a private archive**, and separately for streaming any such content through BLACKCELL. MEGA General Terms prohibit material classified as "unsuitable" or "obscene"; neither its encryption nor the S4 API is an exemption from those rules. Reference: https://mega.io/terms.
+- Confirm that every depicted individual is age 18+ and there is appropriate authority/consent for storage and display. The 18+ viewer gate alone is not proof of age verification or consent.
+- Keep explicit media separate from ordinary uniform photographs, in an authenticated, restricted adult collection. No public object URLs, public sharing/decryption keys, unauthenticated thumbnails, or automatic discovery indexing.
+- Keep the iCloud original as a backup and do not schedule an actual transfer until provider terms, destination security, and capacity are approved. The prepared script remains dry-run-by-default.
+- If the provider declines explicit content, select a storage provider whose written policy permits the use case rather than concealing its nature.
+
 ## Content-policy warning — verify BEFORE paying or transferring
 
 MEGA's published General Terms prohibit several kinds of unlawful and "unsuitable, offensive, obscene or discriminatory" material. They do not clearly promise that all legal sexually explicit adult content is allowed in private storage. Consumer Cloud Drive and S4 terms/acceptable-use conditions must both be checked; encryption does not mean an exemption from terms. **Get confirmation from MEGA support about your exact lawful adult content category and intended private website use before choosing this provider.**
