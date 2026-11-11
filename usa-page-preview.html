@@ -8,8 +8,8 @@
 <title>BLACKCELL — United States Military | Redesign Preview</title>
 <script src="corp-config.js" defer></script>
 <link rel="stylesheet" href="military-country.css?v=20261110-country1">
-<link rel="stylesheet" href="usa-page-preview.css?v=20261111-branch-cards10">
-<script type="module" src="usa-page-preview.js?v=20261111-branch-cards10"></script>
+<link rel="stylesheet" href="usa-page-preview.css?v=20261111-borderless-tiles11">
+<script type="module" src="usa-page-preview.js?v=20261111-borderless-tiles11"></script>
 </head>
 <body data-page-theme="usa" class="usa-revamp">
 <header class="topbar usa-topbar">
@@ -92,11 +92,11 @@
      <button id="featuredBranch" type="button" class="bento-featured" data-branch="marines" aria-pressed="false" aria-label="Explore featured military branch">
       <img id="featuredBranchImage" class="bento-featured-image" alt="" hidden>
       <span class="bento-featured-shade" aria-hidden="true"></span>
-      <span class="bento-topline bento-headbar"><span id="featuredBranchCode">02 / EXPEDITIONARY</span><span class="bento-top-right"><img id="featuredBranchEmblem" class="bento-featured-emblem" alt="Marine Corps emblem" loading="lazy"><span class="bento-featured-arrow" aria-hidden="true">↗</span></span></span>
+      <span class="bento-topline"><span id="featuredBranchCode">02 / EXPEDITIONARY</span><span class="bento-top-right"><span aria-hidden="true">↗</span></span></span>
       <span class="bento-bottomline">
        <span class="bento-featured-text">
         <span class="bento-personnel" id="featuredBranchPersonnel">MARINES</span>
-        <strong id="featuredBranchTitle">MARINE CORPS</strong>
+        <span class="bento-title-row"><strong id="featuredBranchTitle">MARINE CORPS</strong><img id="featuredBranchEmblem" class="bento-title-emblem" alt="Marine Corps emblem" loading="lazy"></span>
         <span class="bento-explore">VIEW GALLERY <span aria-hidden="true">→</span></span>
        </span>
        <span class="bento-featured-count" id="featuredBranchCount">0 PHOTOS</span>
@@ -108,7 +108,7 @@
     </div>
     <div class="branch-footer">
       <button type="button" class="component-link" data-branch="guard" aria-pressed="false"><img class="national-guard-emblem" alt="National Guard emblem" src="https://commons.wikimedia.org/wiki/Special:FilePath/Seal_of_the_United_States_National_Guard.svg?width=120" loading="lazy" decoding="async"> NATIONAL GUARD <small>COMPONENT COLLECTION</small><b data-count="guard">0 PHOTOS</b></button>
-      <span class="branch-footer-actions"><span class="branch-footer-note">Showing photographs from your private military collection.</span><button type="button" class="view-all-branches" id="viewAllBranches" aria-pressed="true"><span class="view-all-icon" aria-hidden="true">▦</span><span>VIEW ALL BRANCHES</span><span class="view-all-arrow" aria-hidden="true">→</span></button></span>
+      <button type="button" class="bento-all-tile" id="viewAllBranches" aria-pressed="true" aria-label="View photographs from all branches"><span class="all-tile-top"><span>07 / COMPLETE DIRECTORY</span><span class="all-tile-symbol" aria-hidden="true">▦</span></span><span class="all-tile-bottom"><strong>ALL BRANCHES</strong><span class="all-tile-subline"><span>VIEW THE FULL COLLECTION →</span><span id="allBranchCount">0 PHOTOS</span></span></span></button>
     </div>
    </section>
 
