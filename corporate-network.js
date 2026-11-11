@@ -646,6 +646,7 @@ async function publish(){
   $('uploadText').textContent='Upload complete.';
   $('postBody').value='';formFiles=[];renderAttachments();updateCounter();
   await refresh();
+  document.dispatchEvent(new CustomEvent('bc:media-updated'));
   switchView('feed');toast(selected.length?'Post created. Attached photos/videos are PRIVATE until administrator review.':'Text post published.');
  }catch(e){
   // Remove incomplete post (metadata cascades), keeping the feed consistent.
