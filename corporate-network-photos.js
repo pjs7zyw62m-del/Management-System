@@ -3,7 +3,7 @@ import {createWorldForces} from './corporate-world-forces.js?v=20261110-countrie
 import {createMilitaryPhotoAI} from './corporate-military-ai.js?v=20261110-learn1';
 import {createPhotoTaste} from './corporate-photo-taste.js?v=20261110-trigger2';
 import {createPhotoPredict} from './corporate-photo-predict.js?v=20261110-pred1';
-import {createPhotoVoting} from './corporate-photo-votes.js?v=20261111-votes1';
+import {createPhotoVoting} from './corporate-photo-votes.js?v=20261111-votes2';
 export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadAsset,refresh,profile,openProfile,ensureSigned,switchView}){
  const $=id=>document.getElementById(id);
  const meta={albums:[],albumItems:[],favorites:[],activeAlbum:null,filter:'all',sort:'newest',query:'',
