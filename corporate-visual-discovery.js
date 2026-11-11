@@ -74,16 +74,16 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   showSelection();preview();
   $('vdAnalyze').disabled=!selection||!current||working;
   $('vdAISearch').disabled=!selection||!current||working||aiBusy;
-  $('vdSelectionHint').textContent=auto?'DETAIL SELECTED · FINDING SIMILAR PHOTOS':'AREA SELECTED · SEARCH OR SELECT A NEW DETAIL';
-  if(!working)status('Ready. Search by this area’s colors, textures, and available military classification.');
-  // One tap should work on an iPhone. Desktop retains the manual Search button.
-  if(auto&&onPhone()&&sourceReady&&!working)void analyze();
+  $('vdSelectionHint').textContent='DETAIL SELECTED · CHOOSE AI FIND SAME ITEM';
+  if(!working)status('Area selected. For the SAME object, choose AI Find Same Item. Color comparison is optional and cannot identify objects.');
+  // Do not auto-launch weak pixel search after a tap. It was producing false
+  // matches that looked like genuine clothing/object recognition.
  }
  function clearSelection(){
   selection=null;showSelection();preview();
   $('vdAnalyze').disabled=true;$('vdAISearch').disabled=true;
-  $('vdSelectionHint').textContent=onPhone()?'TAP A DETAIL · AUTOMATIC SEARCH':'CLICK A DETAIL OR DRAG TO SELECT AN AREA';
-  status(onPhone()?'Tap a detail in the photo. Similar images will load automatically.':'Click the photograph or drag across a detail to select it.');
+  $('vdSelectionHint').textContent=onPhone()?'TAP A DETAIL · THEN AI FIND':'CLICK OR DRAG TO SELECT A DETAIL';
+  status('Select a detail, then choose AI Find Same Item. The image collection must be AI-indexed first.');
  }
  function down(e){
   if(!main.naturalWidth||working)return;
@@ -166,7 +166,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   };
   main.src=mediaUrl(asset);
   $('vdFilename').textContent=asset.filename||'MILITARY PHOTOGRAPH';
-  clearSelection();emptyResults('Select an area of this photo, then choose Find Similar Photos.');
+  clearSelection();emptyResults('Choose an item on this photo, then press AI Find Same Item. The optional Color comparison is not object recognition.');
   showSourceStrip();
  }
  async function loadReactions(){
@@ -246,10 +246,10 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
     pixel=best;
    }catch(e){pixel=null}
   }
-  if(mode==='tags')return meta>0?{asset,score:meta,meta,pixel:null,region:null}:null;
-  if(mode==='pixels')return pixel!==null?{asset,score:pixel,meta,pixel,region:bestRegion}:null;
-  if(pixel!==null)return {asset,score:.84*pixel+.16*meta,meta,pixel,region:bestRegion};
-  return meta>0?{asset,score:meta*.65,meta,pixel:null,region:null}:null;
+  if(mode==='tags')return meta>=.31?{asset,score:meta,meta,pixel:null,region:null}:null;
+  if(mode==='pixels')return pixel!==null&&pixel>=.94?{asset,score:pixel,meta,pixel,region:null}:null;
+  if(pixel!==null&&pixel>=.89&&meta>=.24)return {asset,score:.84*pixel+.16*meta,meta,pixel,region:null};
+  return null;
  }
  async function analyze(){
   if(!sourceReady||!current||!selection||working)return;
@@ -258,8 +258,9 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   // Mobile Safari can terminate the tab when many large originals decode at once.
   const candidates=eligible().filter(a=>a.id!==source.id).slice(0,mobile?45:120);
   if(!candidates.length){status('No other photographs are available to compare.');return}
-  working=true;$('vdAnalyze').disabled=true;$('vdProcess').hidden=false;percent(0,candidates.length);
-  emptyResults('Comparing this detail with real Military Library photographs…');
+  working=true;$('vdAnalyze').disabled=true;$('vdAISearch').disabled=true;
+  $('vdProcess').hidden=false;percent(0,candidates.length);
+  emptyResults('Comparing colors and patterns only. This cannot confirm matching uniforms or equipment.');
   let sig=null,pixelBlocked=false,matchedPixels=0,done=0;
   if(mode!=='tags'){
    try{
@@ -268,8 +269,9 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    }catch(e){pixelBlocked=true}
   }
   if(mode==='pixels'&&!sig){
-   status('Pixel analysis is blocked by the photo format or storage access. Try Appearance + military tags or Military tags.');
-   $('vdProcess').hidden=true;working=false;$('vdAnalyze').disabled=false;return;
+   status('Pixel analysis is unavailable for this image. Try Military tags or AI Find Same Item.');
+   $('vdProcess').hidden=true;working=false;$('vdAnalyze').disabled=false;
+   $('vdAISearch').disabled=!selection||aiBusy;return;
   }
   const matches=[];
   let nextIndex=0;
@@ -282,15 +284,8 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
     if(request!==searchId||!inUse())return;
     if(score){matches.push(score);if(score.pixel!==null)matchedPixels++}
     percent(++done,candidates.length);
-    // Give mobile members real, labeled partial results while large originals
-    // are still being compared, rather than an apparently frozen interface.
-    if(mobile&&done%5===0&&matches.length){
-     const ranked=[...matches].sort((a,b)=>b.score-a.score);
-     const fallback=mode==='tags'||!matchedPixels;
-     const cutoff=fallback?Math.max(.12,ranked[0].score-.16):Math.max(.67,ranked[0].score-.075);
-     const partial=ranked.filter(item=>item.score>=cutoff).slice(0,6);
-     if(partial.length)renderResults(partial);
-     status('Comparing selected detail… '+done+' of '+candidates.length+' photos checked.');
+    if(mobile&&done%5===0){
+     status('Basic appearance comparison: '+done+' of '+candidates.length+' photos checked. Real item matching requires AI indexing.');
     }
     if(index%4===0)await new Promise(r=>setTimeout(r,0));
    }
@@ -299,15 +294,16 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   await Promise.all(Array.from({length:Math.min(mobile?2:4,candidates.length)},()=>process()));
   if(request!==searchId||!inUse())return;
   working=false;$('vdProcess').hidden=true;$('vdAnalyze').disabled=false;
+  $('vdAISearch').disabled=!selection||aiBusy;
   matches.sort((a,b)=>b.score-a.score);
   // Avoid presenting every generic military photo as a specific-area match.
   // Scores describe approximate appearance, NOT semantic object recognition.
   const highest=matches[0]?.score||0;
   const fallback=mode==='tags'||!matchedPixels;
-  const threshold=fallback?Math.max(.12,highest-.16):Math.max(.67,highest-.075);
+  const threshold=fallback?Math.max(.31,highest-.12):Math.max(.86,highest-.025);
   lastResults=matches.filter(item=>item.score>=threshold).slice(0,6);
   renderResults(lastResults);
-  const method=mode==='tags'||!matchedPixels?'Military metadata':'Visual appearance'+(mode==='hybrid'?' + tags':'');
+  const method=mode==='tags'?'Military metadata only':mode==='pixels'?'Colors/patterns only':'Basic appearance + tags (not AI)';
   $('vdResultMethod').textContent=method.toUpperCase();
   const scope=candidates.length+(eligible().length-1>120?' of '+(eligible().length-1):'');
   const count=lastResults.length;
@@ -317,15 +313,15 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    requestAnimationFrame(()=>resultPanel.scrollIntoView({behavior:'smooth',block:'nearest'}));
   }
   if(pixelBlocked){
-   status('Image pixels were unavailable; used existing military tags. '+count+' matches from '+scope+' photos.');
+   status('Image pixels unavailable; showing '+count+' category-based suggestions, not matching physical items.');
   }else if(!matchedPixels&&mode!=='tags'){
-   status('Visual pixel access was unavailable; ranked existing military classifications. '+count+' matches.');
+   status('Visual pixels unavailable. No object recognition was performed; '+count+' tag-based comparisons.');
   }else{
    status(count?
-    'Compared '+scope+' photographs. Highlighted boxes show the closest visually similar regions. Matches are approximate.':
-    'No strong matches for that detail. Try a wider selection or a different photo.');
+    'Compared '+scope+' photographs by appearance only. '+count+' approximate pattern similarities, NOT verified same-item matches.':
+    'No reliable appearance-only matches. For ties, gear and other actual items, use AI Find Same Item after indexing.');
   }
-  // No automated inference that the clicked detail is a tie, face, or person.
+  // Only the separate AI workflow can identify objects; this routine never claims to.
  }
  function renderResults(matches){
   const host=$('vdResults');host.replaceChildren();
@@ -340,9 +336,9 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    picture.setAttribute('aria-label','Open full photograph '+safeText(asset));
    const img=element('img');img.src=mediaUrl(asset);img.alt=safeText(asset);img.loading='lazy';
    picture.append(img);
-   if(result.region){
-    // Show the actual compared patch on the FULL original photograph.
-    // Do not crop or stretch stored media.
+   if(result.ai&&result.region){
+    // Only AI-detected item locations get a match box. The basic pixel
+    // matcher must NEVER display misleading selected-object outlines.
     const marker=element('span','bc-vd-match-region');
     marker.setAttribute('aria-hidden','true');
     picture.append(marker);
@@ -363,9 +359,8 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    const body=element('div','bc-vd-match-copy');
    body.append(element('strong','',asset.caption||asset.filename));
    body.append(element('small','',result.ai?
-    'AI: '+result.feature_label+' · '+result.feature_description:
-    result.region?'Matched area highlighted · '+labelReasons(current,asset,true):
-    'Military tag resemblance · '+labelReasons(current,asset,false)));
+    'AI-recognized '+result.feature_label+' · '+result.feature_description:
+    'BASIC appearance/category comparison only — not an identified matching item'));
    const actions=element('div','bc-vd-match-actions');
    const liked=button('♡ LIKE',()=>void feedback(asset,'more',liked,less),'');
    const less=button('✕ PASS',()=>void feedback(asset,'less',less,liked),'');
