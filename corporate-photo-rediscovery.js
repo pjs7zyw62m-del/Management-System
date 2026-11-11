@@ -138,6 +138,7 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
  }
  function closeCard(){
   if(card){card.remove();card=null}
+  lastSourceId='';
   const old=lastFocus;lastFocus=null;sessionSeen.clear();mode='rediscovery';
   if(old?.isConnected)old.focus({preventScroll:true});
  }
@@ -199,7 +200,7 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
  }
  function showSeed(seed,nextMode='rediscovery'){
   if(!on()||!seed?.id||!mediaUrl(seed))return;
-  if(!card)lastFocus=document.activeElement;
+  if(!lastFocus)lastFocus=document.activeElement;
   destroyCard();
   mode=nextMode==='trigger'?'trigger':'rediscovery';
   lastSourceId=seed.id;
