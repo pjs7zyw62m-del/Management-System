@@ -211,6 +211,18 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
      throw Error('File metadata cleanup incomplete: '+(rowError?.message||'Unexpected row count'));
     removed+=part.length;
    }
+   // Remove empty media-only social posts whose original attachments were
+   // purged, keeping genuine text posts and other users' records untouched.
+   const {data:oldPosts,error:postsReadError}=await client.from('corp_social_posts')
+    .select('id,kind,body,author_id').eq('author_id',state.user.id)
+    .in('kind',['photo','video']).limit(1000);
+   if(postsReadError)throw postsReadError;
+   const emptyIds=(oldPosts||[]).filter(p=>!String(p.body||'').trim()).map(p=>p.id);
+   if(emptyIds.length){
+    const {error:emptyPostError}=await client.from('corp_social_posts').delete()
+     .in('id',emptyIds).eq('author_id',state.user.id);
+    if(emptyPostError)throw Error('Empty media-post cleanup failed: '+emptyPostError.message);
+   }
    // Album pages and country selections no longer refer to an old library.
    const [albumRes,countryRes]=await Promise.all([
     client.from('corp_social_albums').delete().eq('owner_id',state.user.id),
