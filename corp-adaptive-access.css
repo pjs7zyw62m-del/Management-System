@@ -43,3 +43,22 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100% }
 @media(prefers-reduced-motion:reduce){
  html{scroll-behavior:auto}
 }
+
+/* Mobile text-sharpness correction — cinematic layout and colors unchanged.
+   The existing viewport-fit script still calculates the same scale. On modern
+   Safari, CSS zoom paints glyphs at their final size rather than resizing a
+   cached, transformed texture (which causes fuzzy small text). */
+@supports (zoom: 1) {
+ @media (max-width: 767px) {
+  .stage-window,
+  .stage-window.show-pass,
+  .stage-window:not(.show-pass) {
+    transform: none !important;
+    zoom: var(--blackcell-stage-scale, 1);
+    perspective: none;
+  }
+  .login-panel, .pass-panel {
+    will-change: auto;
+  }
+ }
+}
