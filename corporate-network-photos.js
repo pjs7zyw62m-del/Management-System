@@ -439,10 +439,19 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
    const tiles=[...holder.querySelectorAll('.apple-photo-grid-item')];
    const width=Math.floor(holder.getBoundingClientRect().width);
    if(width<90||!tiles.length)continue;
-   const gap=0, target=width<480?195:width<800?235:width<1150?275:335;
+   // Force a stable vertical flex column even if browser cache serves an older
+   // stylesheet. Using inline styles also prevents legacy grid/masonry rules
+   // from leaking into the justified wall.
+   holder.style.setProperty('display','flex','important');
+   holder.style.setProperty('flex-direction','column','important');
+   holder.style.setProperty('gap','0px','important');
+   holder.style.setProperty('align-items','stretch','important');
+   holder.style.setProperty('width','100%','important');
+   holder.style.setProperty('min-width','0','important');
+   const target=width<480?195:width<800?235:width<1150?275:335;
    const ratios=tiles.map(tile=>{
     const img=tile.querySelector('img.apple-photo-thumb');
-    return img?.naturalWidth&&img?.naturalHeight?
+    return img?.naturalWidth>0&&img?.naturalHeight>0?
      Math.max(.4,Math.min(4.5,img.naturalWidth/img.naturalHeight)):
      (tile.dataset.kind==='video'?16/9:1.35);
    });
@@ -464,19 +473,70 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
    for(let i=0;i<n;){
     const j=next[i]>i?next[i]:i+1,ratioSum=prefix[j]-prefix[i];
     const row=make('div','apple-justified-row');
-    const full=n>1,available=width-gap*(j-i-1),calc=available/ratioSum,h=full?calc:Math.min(target,calc);
-    row.style.height=h.toFixed(2)+'px';
+    const full=n>1,available=width,calc=available/ratioSum;
+    const h=Math.max(1,full?calc:Math.min(target,calc));
+    row.style.setProperty('display','flex','important');
+    row.style.setProperty('flex-direction','row','important');
+    row.style.setProperty('flex-wrap','nowrap','important');
+    row.style.setProperty('align-items','stretch','important');
+    row.style.setProperty('position','relative','important');
+    row.style.setProperty('width','100%','important');
+    row.style.setProperty('min-width','0','important');
+    row.style.setProperty('height',h.toFixed(2)+'px','important');
+    row.style.setProperty('min-height',h.toFixed(2)+'px','important');
+    row.style.setProperty('max-height',h.toFixed(2)+'px','important');
+    row.style.setProperty('overflow','hidden','important');
+    row.style.setProperty('margin','0','important');
+    row.style.setProperty('padding','0','important');
+    row.style.setProperty('gap','0','important');
     let used=0;
     for(let k=i;k<j;k++){
-     const last=k===j-1,cardWidth=full&&last?Math.max(1,available-used):h*ratios[k];
+     const last=k===j-1;
+     const cw=Math.max(1,full&&last?available-used:h*ratios[k]);
      const tile=tiles[k];
-     tile.style.flex='0 0 '+cardWidth.toFixed(2)+'px';
-     tile.style.width=cardWidth.toFixed(2)+'px';
-     tile.style.height=h.toFixed(2)+'px';
+     tile.style.setProperty('position','relative','important');
+     tile.style.setProperty('display','block','important');
+     tile.style.setProperty('box-sizing','border-box','important');
+     tile.style.setProperty('flex','0 0 '+cw.toFixed(2)+'px','important');
+     tile.style.setProperty('width',cw.toFixed(2)+'px','important');
+     tile.style.setProperty('min-width','0','important');
+     tile.style.setProperty('max-width','none','important');
+     tile.style.setProperty('height',h.toFixed(2)+'px','important');
+     tile.style.setProperty('min-height','0','important');
+     tile.style.setProperty('max-height',h.toFixed(2)+'px','important');
+     tile.style.setProperty('aspect-ratio','auto','important');
+     tile.style.setProperty('overflow','hidden','important');
+     tile.style.setProperty('border','0','important');
+     tile.style.setProperty('border-radius','0','important');
+     tile.style.setProperty('margin','0','important');
+     tile.style.setProperty('padding','0','important');
+     const open=tile.querySelector('.apple-tile-open');
+     if(open){
+      open.style.setProperty('position','absolute','important');
+      open.style.setProperty('inset','0','important');
+      open.style.setProperty('display','block','important');
+      open.style.setProperty('width','100%','important');
+      open.style.setProperty('height','100%','important');
+      open.style.setProperty('margin','0','important');
+      open.style.setProperty('padding','0','important');
+      open.style.setProperty('overflow','hidden','important');
+      const img=open.querySelector('img.apple-photo-thumb');
+      if(img){
+       img.style.setProperty('position','absolute','important');
+       img.style.setProperty('inset','0','important');
+       img.style.setProperty('width','100%','important');
+       img.style.setProperty('height','100%','important');
+       img.style.setProperty('max-height','100%','important');
+       img.style.setProperty('object-fit','contain','important');
+       img.style.setProperty('object-position','center','important');
+       img.style.setProperty('transform','none','important');
+      }
+     }
      row.append(tile);
-     used+=cardWidth;
+     used+=cw;
     }
-    fragment.append(row);i=j;
+    fragment.append(row);
+    i=j;
    }
    holder.replaceChildren(fragment);
   }
