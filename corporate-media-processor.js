@@ -4,7 +4,7 @@
  * A cloud-to-cloud worker is a separate integration: this reviews registered assets.
  */
 export function createBlackcellMediaProcessor({client,bucket,state,refresh,mediaUrl,toast,openAIReview}){
- const $=id=>document.getElementById(id),owner=()=>state.member?.role==='owner'&&Number(state.member?.clearance_level)===7;
+ const $=id=>document.getElementById(id),owner=()=>state.member?.role==='owner';
  const active=()=>owner()&&state.user?.id;
  const el=(tag,cls,text)=>{
   const node=document.createElement(tag);if(cls)node.className=cls;
@@ -39,8 +39,8 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
    host.append(btn);
   }
  }
- async function reload(){
-  if(!active()||busy)return;
+ async function reload(force=false){
+  if(!active()||(busy&&!force))return;
   status('Loading pending private photographs and videos…');
   try{
    const [a,b]=await Promise.all([
@@ -166,7 +166,7 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
    const {data,error}=await client.from('corp_social_assets').update(update).eq('id',id)
     .eq('review_status','pending').select('id').single();
    if(error||!data)throw Error('Media approval failed: '+errText(error));
-   resetEditor();await refresh();await reload();
+   resetEditor();await refresh();await reload(true);
    toast(adult?'Approved to OWNER-ONLY private media archive.':'Media approved and filed in the military album.');
   }catch(e){status('Media remains pending: '+errText(e))}
   finally{setBusy(false)}
@@ -179,7 +179,7 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
    const {error}=await client.from('corp_social_assets').update({review_status:'rejected'})
     .eq('id',current.id).eq('review_status','pending');
    if(error)throw error;
-   resetEditor();await refresh();await reload();
+   resetEditor();await refresh();await reload(true);
    status('Media rejected and hidden. It has NOT been physically deleted.');
   }catch(e){status('Could not reject media: '+errText(e))}
   finally{setBusy(false)}
@@ -217,7 +217,7 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
     client.from('corp_social_country_collections').delete().eq('user_id',state.user.id)
    ]);
    if(albumRes.error||countryRes.error)throw albumRes.error||countryRes.error;
-   resetEditor();queue=[];albums=[];await refresh();await reload();
+   resetEditor();queue=[];albums=[];await refresh();await reload(true);
    status('FRESH START COMPLETE · '+removed+' photo/video originals removed from BLACKCELL storage and database. Private chat, NEXUS and iCloud sources unchanged.');
    toast('BLACKCELL photo/video library reset. Ready for new verified imports.');
   }catch(e){
