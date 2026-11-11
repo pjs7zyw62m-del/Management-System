@@ -1,7 +1,7 @@
 /* BLACKCELL VISUAL DISCOVERY
- * Live member gallery + precise area selection + local appearance comparison.
- * Nothing is uploaded to external AI services. No generated or fake results.
- * Does not identify faces, individuals, military objects or clothing by name.
+ * Live member gallery, precise area selection and free local appearance leads.
+ * Only explicitly approved paid actions send resized previews to a provider.
+ * No source photos are published, no photographs are invented or deleted.
  */
 import {signatureFromImage,visualSimilarity,metadataSimilarity,candidateRegions,labelReasons}
  from './corporate-visual-match.js?v=20261111-area3';
@@ -654,7 +654,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
        if(signError||!fresh?.signedUrl)throw initialError;
        image=await loadImage(fresh.signedUrl);
       }
-      items.push({asset_id:asset.id,preview:jpegPreview(image,null,520)});
+      items.push({asset_id:asset.id,preview:jpegPreview(image,null,750)});
      }catch(e){
       unreadable.push(safeText(asset));
       results.push({asset_id:asset.id,found:false,unavailable:true,score:0,
