@@ -184,7 +184,7 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
    if(error)throw error;
    current={...options};
    updateButtons();
-   close();
+   const modal=id('personalizationOverlay');if(modal)modal.hidden=true;
    toast(enabled()?'Your private recommendations have been updated.':'Personalization is off for your account.');
    if(typeof onChanged==='function')onChanged();
   }catch(error){
