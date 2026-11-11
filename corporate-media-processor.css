@@ -57,3 +57,9 @@ body.bc-network #bcAdultFilter[hidden],body.bc-network #bcProcessorPanel[hidden]
  body.bc-network .bc-review-grid{grid-template-columns:1fr}
  body.bc-network .bc-proc-toolbar button{flex:1 1 135px}
 }
+
+body.bc-network .bc-proc-pagination{display:flex;align-items:center;justify-content:center;gap:13px;margin:13px 0 3px}
+body.bc-network .bc-proc-pagination span{font-size:11px;color:#cad3de;font-weight:800}
+body.bc-network .bc-proc-pagination button{background:#131d29;border:1px solid #465666;color:#e1e7ef;
+ border-radius:8px;padding:8px 12px;font-weight:750;font-size:10px;cursor:pointer}
+body.bc-network .bc-proc-pagination button:disabled{opacity:.4;cursor:default}
