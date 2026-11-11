@@ -79,10 +79,15 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   $('vdRefine').disabled=!current||working||aiBusy||refineBusy;
   $('vdAnalyze').disabled=!selection||!current||working;
   $('vdAISearch').disabled=!selection||!current||working||aiBusy;
-  $('vdSelectionHint').textContent='DETAIL SELECTED · CHOOSE AI FIND SAME ITEM';
-  if(!working)status('Area selected. For the SAME object, choose AI Find Same Item. Color comparison is optional and cannot identify objects.');
-  // Do not auto-launch weak pixel search after a tap. It was producing false
-  // matches that looked like genuine clothing/object recognition.
+  $('vdSelectionHint').textContent='DETAIL SELECTED · SEARCHING SIMILAR APPEARANCES';
+  if(!working)status('Area selected. Checking your gallery for free approximate visual leads. Choose AI Find Similar Detail for a paid full-gallery AI comparison.');
+  if(auto&&sourceReady&&!working&&!aiBusy){
+   const selectedSource=current?.id,selectedRegion=selection;
+   requestAnimationFrame(()=>{
+    if(inUse()&&current?.id===selectedSource&&selection===selectedRegion&&!working&&!aiBusy)
+     void analyze();
+   });
+  }
  }
  function clearSelection(){
   selection=null;clickPoint=null;showSelection();preview();
@@ -618,7 +623,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   const source=current,area={...selection},photos=eligible().filter(a=>a.id!==source.id);
   if(!photos.length){status('There are no other accessible gallery photos to compare.');return}
   const total=photos.length,batches=Math.ceil(total/5);
-  if(!confirm('SEARCH ALL '+total+' OTHER GALLERY PHOTOGRAPHS?\\n\\n'+
+  if(!confirm('SEARCH ALL '+total+' OTHER GALLERY PHOTOGRAPHS?\n\n'+
    'The AI will compare the detail you selected against every accessible photo, including UNINDEXED and previously liked/voted photos. '+
    'This makes up to '+batches+' paid comparison requests (5 photos per batch), using API credits. '+
    'Resized copies are sent to the configured vision provider, but nothing is published or saved externally. Continue?'))return;
