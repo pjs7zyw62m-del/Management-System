@@ -4,7 +4,7 @@ import {mountMilitaryGunner} from './military-gunner.js?v=20261110-fast4';
 import {createNetworkPersonalization} from './corporate-network-personalization.js?v=20261111-rediscovery2';
 import {createPhotoRediscovery} from './corporate-photo-rediscovery.js?v=20261111-voted-trigger4';
 import {createVisualDiscovery} from './corporate-visual-discovery.js?v=20261111-phonecheck2';
-import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-dedupe1';
+import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phonecheck2';
 const client=corporateClient(),bucket=client.storage.from('corp-social-media');
 const $=id=>document.getElementById(id);
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
