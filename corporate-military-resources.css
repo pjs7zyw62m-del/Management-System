@@ -69,3 +69,13 @@ body.bc-network #photosView .bc-military-resources>a:focus-visible{
  body.bc-network #photosView .bc-military-resources>a{padding:14px 16px}
  body.bc-network .apple-photo-grid-item>.bc-gallery-photo-vote{min-height:27px!important;padding:4px 6px!important;font-size:8px!important}
 }
+/* All actions appear only in the enlarged media viewer.
+   This is also a safe fallback when a browser holds older gallery JS. */
+body.bc-network #applePhotosGallery .apple-photo-heart,
+body.bc-network #applePhotosGallery .bc-gallery-photo-vote,
+body.bc-network #applePhotosGallery .apple-photo-taste-entry,
+body.bc-network .apple-profile-gallery .apple-photo-heart,
+body.bc-network .apple-profile-gallery .bc-gallery-photo-vote,
+body.bc-network .apple-profile-gallery .apple-photo-taste-entry{
+ display:none!important;visibility:hidden!important;pointer-events:none!important
+}
