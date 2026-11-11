@@ -6,6 +6,7 @@ const ORIGINS=new Set(["https://blackcellcorp.com","https://www.blackcellcorp.co
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
 const KEY=Deno.env.get("OPENAI_API_KEY")||"";
 const GOOGLE_VISION_KEY=Deno.env.get("GOOGLE_VISION_KEY")||"";
+const META_MODEL_API_KEY=Deno.env.get("META_MODEL_API_KEY")||"";
 const MODEL=Deno.env.get("OPENAI_VISION_MODEL")||"gpt-4.1-mini";
 const EMBEDDING_MODEL="text-embedding-3-small";
 const cut=(x,n=180)=>String(x??"").replace(/[<>]/g,"").trim().slice(0,n);
@@ -102,6 +103,36 @@ async function verifyAppearance(sourceCrop, candidates, subject){
 /* Optional Internet visual search. This accepts the USER'S SELECTED CROP,
    not the full private photograph, and never makes the photo public.
    Google Cloud Vision Web Detection is separate from Google Lens. */
+/* True point-based SAM 3.1 segmentation, when a Meta Model API key is configured.
+   The response streams box/mask records; only the selected box is returned.
+   No image or mask is retained by BLACKCELL. */
+async function metaSegmentPoint(preview,point,dimensions){
+ const w=Number(dimensions?.width),h=Number(dimensions?.height);
+ if(!Number.isInteger(w)||!Number.isInteger(h)||w<1||h<1||w>4096||h>4096)
+  throw Error("Missing image dimensions for SAM selection");
+ const x=Math.min(w-1,Math.max(0,Math.floor(point.x*w)));
+ const y=Math.min(h-1,Math.max(0,Math.floor(point.y*h)));
+ const prompt="<0f>1<|point;x="+x+";y="+y+";w="+w+";h="+h+"|>";
+ const response=await fetch("https://api.meta.ai/v1/responses",{
+  method:"POST",signal:AbortSignal.timeout(65000),
+  headers:{"Authorization":"Bearer "+META_MODEL_API_KEY,"Content-Type":"application/json","Accept":"text/event-stream"},
+  body:JSON.stringify({model:"sam-3.1",store:false,stream:true,input:[{
+   type:"message",role:"user",content:[
+    {type:"input_text",text:prompt},{type:"input_image",image_url:preview}
+   ]}]})
+ });
+ if(!response.ok)throw Error("SAM 3.1 provider unavailable ("+response.status+"). Check the Meta Model API account and key.");
+ const events=await response.text();
+ // Meta SAM outputs object 1's box as an SSE payload, with coordinates in pixels.
+ const match=events.match(/1<\\|box;x1=(\\d+);y1=(\\d+);x2=(\\d+);y2=(\\d+);w=(\\d+);h=(\\d+)(?:;c=[0-9.]+)?\\|>/);
+ if(!match)return {box:null,uncertain:true};
+ const [x1,y1,x2,y2,mw,mh]=match.slice(1).map(Number);
+ if(!mw||!mh||x2<=x1||y2<=y1||x1<0||y1<0||x2>mw||y2>mh)return {box:null,uncertain:true};
+ const box=safeBox({x:x1/mw,y:y1/mh,w:(x2-x1)/mw,h:(y2-y1)/mh});
+ const contains=box&&point.x>=box.x-.025&&point.x<=box.x+box.w+.025&&
+  point.y>=box.y-.025&&point.y<=box.y+box.h+.025;
+ return {box:contains?box:null,uncertain:!contains};
+}
 async function searchWebImages(preview){
  const base64=preview.substring("data:image/jpeg;base64,".length);
  const response=await fetch("https://vision.googleapis.com/v1/images:annotate?key="+encodeURIComponent(GOOGLE_VISION_KEY),{
@@ -201,8 +232,8 @@ Deno.serve(async req=>{
  if(req.method==="GET"){
   const {count}=await client.from("corp_social_photo_features").select("asset_id",{count:"exact",head:true}).eq("feature_key","overall");
   return reply({ok:true,configured:!!KEY,indexed_photos:count||0,
-   capabilities:{approximate_point_refine:!!KEY,image_to_image_verification:!!KEY,
-    sam_segmentation:false,web_discovery:!!GOOGLE_VISION_KEY}},200,origin);
+   capabilities:{approximate_point_refine:!!KEY||!!META_MODEL_API_KEY,image_to_image_verification:!!KEY,
+    sam_segmentation:!!META_MODEL_API_KEY,web_discovery:!!GOOGLE_VISION_KEY}},200,origin);
  }
  let body;
  try{body=await req.json()}catch(_){return reply({ok:false,error:"Invalid JSON"},400,origin)}
@@ -214,7 +245,7 @@ Deno.serve(async req=>{
   return reply({ok:false,error:"Photo not authorized"},403,origin);
  if(action==="index"&&asset.owner_id!==user.id)return reply({ok:false,error:"You may index only your own photos"},403,origin);
  if(action==="web"&&!GOOGLE_VISION_KEY)return reply({ok:false,error:"Online photo discovery needs a Google Cloud Vision API key configured on the server",code:"WEB_NOT_CONFIGURED"},503,origin);
- if(action!=="web"&&!KEY)return reply({ok:false,error:"Server vision API key is not configured",code:"NOT_CONFIGURED"},503,origin);
+ if(action!=="web"&&!KEY&&!(action==="refine"&&META_MODEL_API_KEY))return reply({ok:false,error:"Server vision API key is not configured",code:"NOT_CONFIGURED"},503,origin);
  let preview;try{preview=imageUrl(body.preview)}catch(e){return reply({ok:false,error:e.message},422,origin)}
  try{
   if(action==="web"){
@@ -229,6 +260,12 @@ Deno.serve(async req=>{
       point.x<0||point.x>1||point.y<0||point.y>1)
     return reply({ok:false,error:"Choose a point on the photo first"},422,origin);
    await useQuota(client,user.id,assetId,"refine");
+   if(META_MODEL_API_KEY){
+    const segmented=await metaSegmentPoint(preview,point,body?.dimensions);
+    return reply({ok:true,uncertain:segmented.uncertain,
+     detected_item:"Selected object",bbox:segmented.box,
+     method:"Meta SAM 3.1 point-prompt object segmentation"},200,origin);
+   }
    const prompt="Identify the SINGLE visible clothing or equipment item at normalized image "+
     "coordinate x="+point.x.toFixed(3)+", y="+point.y.toFixed(3)+
     " (top-left origin). Return its short object name and APPROXIMATE tight bounding box "+
