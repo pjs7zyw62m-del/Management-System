@@ -128,7 +128,7 @@ export function createUsaPhotoOfDay({client,getUser,getAssets,getSignedUrl,openA
   }
   image.src=url;image.hidden=false;placeholder.hidden=true;button.disabled=false;
   image.alt="Today's personalized U.S. military photo: "+String(a.filename||"Military photograph");
-  $("featuredRecordId").textContent="CHOSEN FOR YOU";
+  $("featuredRecordId").textContent=$("dailyDate").textContent;
   $("dailyReason").textContent=state.reason;
   $("dailyLike").disabled=false;$("dailyLess").disabled=false;
   const t=state.tastes.find(x=>x.asset_id===a.id);
