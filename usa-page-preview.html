@@ -8,8 +8,8 @@
 <title>BLACKCELL — United States Military | Redesign Preview</title>
 <script src="corp-config.js" defer></script>
 <link rel="stylesheet" href="military-country.css?v=20261110-country1">
-<link rel="stylesheet" href="usa-page-preview.css?v=20261111-unified-hero6">
-<script type="module" src="usa-page-preview.js?v=20261111-unified-hero6"></script>
+<link rel="stylesheet" href="usa-page-preview.css?v=20261111-daily-showcase7">
+<script type="module" src="usa-page-preview.js?v=20261111-daily-showcase7"></script>
 </head>
 <body data-page-theme="usa" class="usa-revamp">
 <header class="topbar usa-topbar">
@@ -38,24 +38,35 @@
      </div>
     </div>
 
-    <figure class="hero-featured photo-of-day-card" aria-labelledby="photoDayLabel">
+    <figure class="hero-featured photo-of-day-card daily-showcase" aria-labelledby="photoDayLabel">
+     <header class="daily-showcase-header">
+      <div class="daily-showcase-identity">
+       <span class="daily-header-symbol" aria-hidden="true">✦</span>
+       <div class="daily-header-titles">
+        <strong id="photoDayLabel">PHOTO OF THE DAY</strong>
+        <small>YOUR PERSONALIZED MILITARY ARCHIVE</small>
+       </div>
+      </div>
+      <time class="daily-header-date" id="dailyDate">TODAY</time>
+     </header>
      <div class="viewfinder-shell">
-      <button type="button" id="featuredPhotoButton" class="viewfinder-photo" aria-label="Open today's chosen photograph in the full viewer" disabled>
+      <button type="button" id="featuredPhotoButton" class="viewfinder-photo" aria-label="Open today's chosen photograph at full size" disabled>
        <img id="featuredPhotoImage" alt="Featured United States military photograph" hidden>
-       <span id="featuredPlaceholder" class="viewfinder-placeholder" aria-hidden="true">PHOTO OF THE DAY</span>
-       <span class="viewfinder-shade" aria-hidden="true"></span>
-       <span class="viewfinder-caption">
-        <span class="viewfinder-record-type" id="photoDayLabel">✦ PHOTO OF THE DAY</span>
-        <span class="viewfinder-record-index" id="featuredRecordId">PERSONALIZED FOR YOU</span>
-       </span>
+       <span id="featuredPlaceholder" class="viewfinder-placeholder" aria-hidden="true">YOUR NEXT FAVORITE PHOTO</span>
       </button>
      </div>
-     <figcaption class="daily-photo-info" aria-live="polite">
-      <div class="daily-photo-tag"><span class="daily-photo-live" aria-hidden="true"></span>PICKED FOR YOU <span id="dailyDate">TODAY</span></div>
-      <p id="dailyReason">Matching your saved photo preferences to choose today's photograph.</p>
+     <figcaption class="daily-photo-info">
+      <div class="daily-insight-content" aria-live="polite">
+       <div class="daily-insight-kicker"><span aria-hidden="true">✧</span> WHY THIS PHOTO</div>
+       <p id="dailyReason">Matching your saved interests with photographs from your U.S. military archive.</p>
+       <div id="dailyTags" class="daily-match-tags" aria-label="Matching photo interests"></div>
+      </div>
       <div class="daily-feedback">
-       <button id="dailyLike" type="button" disabled title="Teach Blackcell to recommend more photographs like this">♥ MORE LIKE THIS</button>
-       <button id="dailyLess" type="button" disabled title="Tell Blackcell to recommend fewer photographs like this">✕ NOT FOR ME</button>
+       <span class="daily-feedback-title">SHAPE TOMORROW'S PICKS</span>
+       <div class="daily-feedback-buttons">
+        <button id="dailyLike" type="button" disabled title="Recommend more military photographs like this"><span aria-hidden="true">♥</span> MORE LIKE THIS</button>
+        <button id="dailyLess" type="button" disabled title="Recommend fewer military photographs like this"><span aria-hidden="true">✕</span> NOT FOR ME</button>
+       </div>
       </div>
       <p id="dailyFeedbackStatus" class="daily-feedback-status" role="status" aria-live="polite"></p>
      </figcaption>
