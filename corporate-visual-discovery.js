@@ -143,11 +143,11 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    host.scrollLeft+=delta-(host.clientWidth-active.clientWidth)/2;
   }
  }
- function showAsset(asset,{preserve=false,autoFind=false}={}){
+ function showAsset(asset,{preserve=false,preset=null,autoFind=false}={}){
   if(!asset||asset.kind!=='photo'||!mediaUrl(asset))return;
   searchId++;working=false;$('vdProcess').hidden=true;
   $('vdAnalyze').disabled=true;
-  const kept=preserve&&selection?{...selection}:null;
+  const kept=preset?{...preset}:(preserve&&selection?{...selection}:null);
   current=asset;selection=null;sourceReady=false;
   main.alt=safeText(asset);main.removeAttribute('src');
   const expected=asset.id;
@@ -228,24 +228,25 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    image.src=url;
   });
  }
- async function scoreCandidate(asset,mode,sourceSig,region){
-  const meta=metadataSimilarity(current,asset);
-  let pixel=null;
+ async function scoreCandidate(asset,mode,sourceSig,region,sourceAsset){
+  const meta=metadataSimilarity(sourceAsset,asset);
+  let pixel=null,bestRegion=null;
   if(mode!=='tags'&&sourceSig){
    try{
     const image=await loadImage(mediaUrl(asset));
     let best=0;
     for(const r of candidateRegions(region)){
      const sig=signatureFromImage(image,r);
-     best=Math.max(best,visualSimilarity(sourceSig,sig));
+     const similarity=visualSimilarity(sourceSig,sig);
+     if(similarity>best){best=similarity;bestRegion=r}
     }
     pixel=best;
    }catch(e){pixel=null}
   }
-  if(mode==='tags')return meta>0?{asset,score:meta,meta,pixel:null}:null;
-  if(mode==='pixels')return pixel!==null?{asset,score:pixel,meta,pixel}:null;
-  if(pixel!==null)return {asset,score:.77*pixel+.23*meta,meta,pixel};
-  return meta>0?{asset,score:meta*.65,meta,pixel:null}:null;
+  if(mode==='tags')return meta>0?{asset,score:meta,meta,pixel:null,region:null}:null;
+  if(mode==='pixels')return pixel!==null?{asset,score:pixel,meta,pixel,region:bestRegion}:null;
+  if(pixel!==null)return {asset,score:.84*pixel+.16*meta,meta,pixel,region:bestRegion};
+  return meta>0?{asset,score:meta*.65,meta,pixel:null,region:null}:null;
  }
  async function analyze(){
   if(!sourceReady||!current||!selection||working)return;
@@ -274,7 +275,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
     if(request!==searchId||!inUse())return;
     const index=nextIndex++;if(index>=candidates.length)return;
     const a=candidates[index];
-    const score=await scoreCandidate(a,mode,sig,region);
+    const score=await scoreCandidate(a,mode,sig,region,source);
     if(request!==searchId||!inUse())return;
     if(score){matches.push(score);if(score.pixel!==null)matchedPixels++}
     percent(++done,candidates.length);
@@ -293,7 +294,11 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   if(request!==searchId||!inUse())return;
   working=false;$('vdProcess').hidden=true;$('vdAnalyze').disabled=false;
   matches.sort((a,b)=>b.score-a.score);
-  lastResults=matches.slice(0,12);
+  // Avoid presenting every generic military photo as a specific-area match.
+  // Scores describe approximate appearance, NOT semantic object recognition.
+  const highest=matches[0]?.score||0;
+  const threshold=mode==='tags'?Math.max(.12,highest-.16):Math.max(.67,highest-.075);
+  lastResults=matches.filter(item=>item.score>=threshold).slice(0,8);
   renderResults(lastResults);
   const method=mode==='tags'||!matchedPixels?'Military metadata':'Visual appearance'+(mode==='hybrid'?' + tags':'');
   $('vdResultMethod').textContent=method.toUpperCase();
@@ -309,7 +314,9 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   }else if(!matchedPixels&&mode!=='tags'){
    status('Visual pixel access was unavailable; ranked existing military classifications. '+count+' matches.');
   }else{
-   status('Compared '+scope+' photographs; showing '+count+' closest matches based on available image information.');
+   status(count?
+    'Compared '+scope+' photographs. Highlighted boxes show the closest visually similar regions. Matches are approximate.':
+    'No strong matches for that detail. Try a wider selection or a different photo.');
   }
   // No automated inference that the clicked detail is a tie, face, or person.
  }
@@ -317,7 +324,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   const host=$('vdResults');host.replaceChildren();
   $('vdResultCount').textContent=matches.length?String(matches.length):'';
   if(!matches.length){
-   host.append(element('div','bc-vd-empty','No matches could be calculated. Try another area or choose the military-tag search mode.'));
+   host.append(element('div','bc-vd-empty','No close area matches found in the current collection. Select a larger detail, or search by military tags.'));
    return;
   }
   for(const result of matches){
@@ -326,9 +333,31 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    picture.setAttribute('aria-label','Open full photograph '+safeText(asset));
    const img=element('img');img.src=mediaUrl(asset);img.alt=safeText(asset);img.loading='lazy';
    picture.append(img);
+   if(result.region){
+    // Show the actual compared patch on the FULL original photograph.
+    // Do not crop or stretch stored media.
+    const marker=element('span','bc-vd-match-region');
+    marker.setAttribute('aria-hidden','true');
+    picture.append(marker);
+    const positionMatch=()=>{
+     if(!img.naturalWidth||!img.naturalHeight)return;
+     const box=picture.getBoundingClientRect();
+     const fit=Math.min(box.width/img.naturalWidth,box.height/img.naturalHeight);
+     const w=img.naturalWidth*fit,h=img.naturalHeight*fit;
+     const bounds=result.region;
+     marker.style.left=((box.width-w)/2+bounds.x*w)+'px';
+     marker.style.top=((box.height-h)/2+bounds.y*h)+'px';
+     marker.style.width=(bounds.w*w)+'px';
+     marker.style.height=(bounds.h*h)+'px';
+    };
+    img.addEventListener('load',positionMatch);
+    if(img.complete&&img.naturalWidth)positionMatch();
+   }
    const body=element('div','bc-vd-match-copy');
    body.append(element('strong','',asset.caption||asset.filename));
-   body.append(element('small','',labelReasons(current,asset,result.pixel!==null)));
+   body.append(element('small','',result.region?
+    'Matched area highlighted · '+labelReasons(current,asset,true):
+    'Military tag resemblance · '+labelReasons(current,asset,false)));
    const actions=element('div','bc-vd-match-actions');
    const liked=button('♡ LIKE',()=>void feedback(asset,'more',liked,less),'');
    const less=button('✕ PASS',()=>void feedback(asset,'less',less,liked),'');
@@ -339,7 +368,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
     liked.setAttribute('aria-pressed',String(reactions.get(asset.id)==='more'));
     less.setAttribute('aria-pressed',String(reactions.get(asset.id)==='less'));
    };
-   const more=button('⌖ MORE LIKE THIS',()=>showAsset(asset,{preserve:true,autoFind:true}));
+   const more=button('⌖ MORE LIKE THIS',()=>showAsset(asset,{preset:result.region||selection,autoFind:true}));
    actions.append(liked,less,more);
    body.append(actions);card.append(picture,body);host.append(card);sync();
   }
