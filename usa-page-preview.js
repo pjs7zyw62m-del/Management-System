@@ -216,17 +216,17 @@ function setBranch(id){
  state.branch=id;
  renderBranchCounters();
  renderPhotos();
- $("galleryTitle").scrollIntoView({behavior:window.matchMedia?.("(prefers-reduced-motion: reduce)").matches?"instant":"smooth",block:"start"});
+ if(window.innerWidth<700)$("galleryTitle").scrollIntoView({behavior:window.matchMedia?.("(prefers-reduced-motion: reduce)").matches?"instant":"smooth",block:"start"});
 }
 
 function branchOf(asset){
  const raw=String(asset.military_branch||"").toLowerCase();
- if(/national guard/.test(raw))return "guard";
- if(/coast.guard/.test(raw))return "coast";
- if(/space.force|spaceforce|guardian/.test(raw))return "space";
- if(/marine/.test(raw))return "marines";
- if(/navy|naval|sailor/.test(raw))return "navy";
- if(/air.force|airman|airmen/.test(raw))return "air";
+ if(/national.guard|\b(?:arng|ang)\b/.test(raw))return "guard";
+ if(/coast.guard|\buscg\b/.test(raw))return "coast";
+ if(/space.force|spaceforce|guardian|\bussf\b/.test(raw))return "space";
+ if(/marine|\busmc\b/.test(raw))return "marines";
+ if(/navy|naval|sailor|\busn\b/.test(raw))return "navy";
+ if(/air.force|airman|airmen|\busaf\b/.test(raw))return "air";
  if(/army|soldier/.test(raw))return "army";
  return "unclassified";
 }
