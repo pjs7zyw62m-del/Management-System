@@ -775,6 +775,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
    }
    await refresh();
    render();
+   document.dispatchEvent(new CustomEvent('bc:media-updated'));
    toast((supported.length-failures-skippedDuplicates)+' privately uploaded for review, '+skippedDuplicates+' duplicates skipped'+(failures?', '+failures+' failed':'')+'. Nothing is published before approval.');
    if(scanAfterUpload&&uploadedPhotoIds.length){
     const newest=uploadedPhotoIds.map(item=>({asset:byId(item.id),file:item.file})).filter(item=>item.asset);
