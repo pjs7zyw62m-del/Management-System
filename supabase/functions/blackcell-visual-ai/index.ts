@@ -5,6 +5,7 @@ import {createClient} from "npm:@supabase/supabase-js@2.80.0";
 const ORIGINS=new Set(["https://blackcellcorp.com","https://www.blackcellcorp.com","https://pjs7zyw62m-del.github.io"]);
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
 const KEY=Deno.env.get("OPENAI_API_KEY")||"";
+const GOOGLE_VISION_KEY=Deno.env.get("GOOGLE_VISION_KEY")||"";
 const MODEL=Deno.env.get("OPENAI_VISION_MODEL")||"gpt-4.1-mini";
 const EMBEDDING_MODEL="text-embedding-3-small";
 const cut=(x,n=180)=>String(x??"").replace(/[<>]/g,"").trim().slice(0,n);
@@ -98,6 +99,35 @@ async function verifyAppearance(sourceCrop, candidates, subject){
  }
  return verified.sort((a,b)=>b.score-a.score);
 }
+/* Optional Internet visual search. This accepts the USER'S SELECTED CROP,
+   not the full private photograph, and never makes the photo public.
+   Google Cloud Vision Web Detection is separate from Google Lens. */
+async function searchWebImages(preview){
+ const base64=preview.substring("data:image/jpeg;base64,".length);
+ const response=await fetch("https://vision.googleapis.com/v1/images:annotate?key="+encodeURIComponent(GOOGLE_VISION_KEY),{
+  method:"POST",signal:AbortSignal.timeout(35000),
+  headers:{"Content-Type":"application/json"},
+  body:JSON.stringify({requests:[{image:{content:base64},features:[{type:"WEB_DETECTION",maxResults:25}]}]})
+ });
+ const data=await response.json();
+ if(!response.ok||data.error)throw Error("Internet visual search unavailable ("+response.status+"). Check Google Vision API configuration.");
+ const web=data?.responses?.[0]?.webDetection||{};
+ const pool=[...(web.visuallySimilarImages||[]),...(web.partialMatchingImages||[]),
+  ...(web.fullMatchingImages||[])];
+ const found=[],seen=new Set();
+ for(const row of pool){
+  let url;
+  try{url=new URL(row.url)}catch(_){continue}
+  if(url.protocol!=="https:"||url.username||url.password||url.hostname==="localhost"||
+   url.hostname.endsWith(".local")||url.hostname.endsWith(".internal"))continue;
+  const normalized=url.origin+url.pathname;
+  if(seen.has(normalized))continue;
+  seen.add(normalized);
+  found.push({url:url.toString(),kind:"web-photo"});
+  if(found.length>=18)break;
+ }
+ return found;
+}
 async function embed(input){
  if(!input.length||input.length>8)throw Error("Too many image features");
  const r=await fetch("https://api.openai.com/v1/embeddings",{method:"POST",signal:AbortSignal.timeout(25000),
@@ -115,7 +145,7 @@ async function useQuota(client,userId,assetId,action){
   .select("id",{count:"exact",head:true}).eq("user_id",userId)
   .eq("action",action).gte("created_at",since);
  if(error)throw Error("Cannot check visual AI spending limits");
- const cap=action==="index"?15:action==="refine"?20:40;
+ const cap=action==="index"?15:action==="refine"?20:action==="web"?10:40;
  if((count||0)>=cap)throw Error("Visual AI "+action+" daily request limit reached ("+cap+")");
  const {error:saveError}=await client.from("corp_social_visual_ai_requests")
   .insert({user_id:userId,asset_id:assetId,action});
@@ -172,20 +202,27 @@ Deno.serve(async req=>{
   const {count}=await client.from("corp_social_photo_features").select("asset_id",{count:"exact",head:true}).eq("feature_key","overall");
   return reply({ok:true,configured:!!KEY,indexed_photos:count||0,
    capabilities:{approximate_point_refine:!!KEY,image_to_image_verification:!!KEY,
-    sam_segmentation:false,web_discovery:false}},200,origin);
+    sam_segmentation:false,web_discovery:!!GOOGLE_VISION_KEY}},200,origin);
  }
  let body;
  try{body=await req.json()}catch(_){return reply({ok:false,error:"Invalid JSON"},400,origin)}
  const action=String(body?.action||""),assetId=String(body?.asset_id||"");
- if(!["index","search","refine"].includes(action)||!UUID.test(assetId))return reply({ok:false,error:"Select a valid photo and action"},400,origin);
+ if(!["index","search","refine","web"].includes(action)||!UUID.test(assetId))return reply({ok:false,error:"Select a valid photo and action"},400,origin);
  const {data:asset,error:assetErr}=await client.from("corp_social_assets")
   .select("id,owner_id,kind,purpose").eq("id",assetId).maybeSingle();
  if(assetErr||!asset||asset.kind!=="photo"||!["library","post"].includes(asset.purpose))
   return reply({ok:false,error:"Photo not authorized"},403,origin);
  if(action==="index"&&asset.owner_id!==user.id)return reply({ok:false,error:"You may index only your own photos"},403,origin);
- if(!KEY)return reply({ok:false,error:"Server vision API key is not configured",code:"NOT_CONFIGURED"},503,origin);
+ if(action==="web"&&!GOOGLE_VISION_KEY)return reply({ok:false,error:"Online photo discovery needs a Google Cloud Vision API key configured on the server",code:"WEB_NOT_CONFIGURED"},503,origin);
+ if(action!=="web"&&!KEY)return reply({ok:false,error:"Server vision API key is not configured",code:"NOT_CONFIGURED"},503,origin);
  let preview;try{preview=imageUrl(body.preview)}catch(e){return reply({ok:false,error:e.message},422,origin)}
  try{
+  if(action==="web"){
+   await useQuota(client,user.id,assetId,"web");
+   const results=await searchWebImages(preview);
+   return reply({ok:true,results,method:"Google Cloud Vision Web Detection",note:
+    "External sites and image URLs are not part of BLACKCELL. No external images were uploaded or saved."},200,origin);
+  }
   if(action==="refine"){
    const point=body?.point;
    if(!point||!Number.isFinite(point.x)||!Number.isFinite(point.y)||
