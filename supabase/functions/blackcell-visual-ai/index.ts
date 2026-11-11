@@ -69,6 +69,40 @@ async function useQuota(client,userId,assetId,action){
   .insert({user_id:userId,asset_id:assetId,action});
  if(saveError)throw Error("Visual AI usage record could not be saved; request stopped");
 }
+
+/* Semantic distance alone over-matches generic military scenes.
+   Require the same observable *object category* as the queried detail.
+   Unknown categories must never turn a low-confidence neighbor into a match. */
+const ITEM_GROUPS=[
+ ["tie",/\b(neck[- ]?ties|necktie|ties|tie|cravat)\b/i],
+ ["belt",/\b(belts?|buckles?|waistbands?|waist[- ]?straps?)\b/i],
+ ["boots",/\b(boots?|footwear|combat shoes?)\b/i],
+ ["pants",/\b(pants?|trousers?|cargo[- ]?pants?|shorts?)\b/i],
+ ["shirt",/\b(shirts?|t[- ]?shirts?|blouses?|collars?|sleeves?)\b/i],
+ ["vest",/\b(vests?|body[- ]?armor|plate[- ]?carrier|flak[- ]?jackets?)\b/i],
+ ["backpack",/\b(backpacks?|rucksacks?|rucks?|field[- ]?packs?|duffels?|equipment[- ]?bags?)\b/i],
+ ["helmet",/\b(helmets?|hard[- ]?hats?)\b/i],
+ ["hat",/\b(caps?|hats?|berets?|headgear|boonie)\b/i],
+ ["insignia",/\b(insignia|emblems?|badges?|patches?|chevrons?|rank[- ]?marks?)\b/i],
+ ["gloves",/\b(gloves?|mittens?)\b/i],
+ ["camouflage",/\b(camouflage|m[a-z]*pat|camo[- ]?patterns?|digital[- ]?print)\b/i],
+ ["jacket",/\b(jackets?|coats?|parkas?|outerwear)\b/i],
+ ["uniform",/\b(uniforms?|dress[- ]?blues|fatigues?)\b/i],
+ ["vehicle",/\b(vehicles?|trucks?|aircraft|helicopters?|ships?|tanks?)\b/i]
+];
+function objectGroup(value){
+ const name=cut(value,160);
+ for(const [group,pattern] of ITEM_GROUPS)if(pattern.test(name))return group;
+ return "";
+}
+function matchObjectNames(source,target){
+ const query=objectGroup(source),result=objectGroup(target);
+ if(query&&result)return query===result;
+ // An unknown or generic item is not sufficient evidence of the
+ // same clothing/equipment object, no matter its embedding score.
+ return false;
+}
+
 Deno.serve(async req=>{
  const origin=req.headers.get("origin")||"";
  if(req.method==="OPTIONS")return new Response(null,{status:204,headers:cors(origin)});
@@ -139,7 +173,9 @@ Deno.serve(async req=>{
   if(matchErr)throw Error("Semantic search could not finish: "+matchErr.message);
   const best=new Map();
   for(const row of matches||[]){
-   if(!Number.isFinite(row.score)||row.score<.37)continue;
+   if(!Number.isFinite(row.score)||row.score<.52)continue;
+   if(!matchObjectNames(detail.object,row.feature_label))continue;
+   if(!row.bbox||typeof row.bbox!=="object")continue;
    const old=best.get(row.asset_id);
    if(!old||row.score>old.score)best.set(row.asset_id,{
     asset_id:row.asset_id,feature_label:cut(row.feature_label,90),
@@ -148,7 +184,7 @@ Deno.serve(async req=>{
   return reply({ok:true,detected_item:cut(detail.object,90),
    description:cut(detail.description,400),uncertain:!!detail.uncertain,
    indexed_photos:count,results:[...best.values()].sort((a,b)=>b.score-a.score).slice(0,8),
-   method:"AI vision and semantic embeddings"},200,origin);
+   match_policy:"same-detected-object-type",method:"AI recognized item + same-item semantic search"},200,origin);
  }catch(e){
   console.error("Blackcell visual AI failed",{action,type:e?.name||"Error"});
   return reply({ok:false,error:cut(e?.message||"AI unavailable",260)},502,origin);
