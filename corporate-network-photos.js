@@ -424,6 +424,72 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
     ' · '+visible.length+' matching photo'+(visible.length===1?'':'s')+
     '. Your other saved country pages are preserved.';
  }
+ /* Reuse the USA archive's optimal row-break justified layout. Tiles retain
+    their original image links, ownership controls, favorites and annotations. */
+ let justifiedGalleryPending=false,justifiedGalleryObserver=null;
+ function scheduleJustifiedGallery(){
+  if(justifiedGalleryPending)return;
+  justifiedGalleryPending=true;
+  requestAnimationFrame(()=>{justifiedGalleryPending=false;layoutJustifiedMedia()});
+ }
+ function layoutJustifiedMedia(){
+  const galleries=[...document.querySelectorAll('#applePhotosGallery .apple-justified-wall')];
+  if(!galleries.length)return;
+  for(const holder of galleries){
+   const tiles=[...holder.querySelectorAll('.apple-photo-grid-item')];
+   const width=Math.floor(holder.getBoundingClientRect().width);
+   if(width<90||!tiles.length)continue;
+   const gap=0, target=width<480?195:width<800?235:width<1150?275:335;
+   const ratios=tiles.map(tile=>{
+    const img=tile.querySelector('img.apple-photo-thumb');
+    return img?.naturalWidth&&img?.naturalHeight?
+     Math.max(.4,Math.min(4.5,img.naturalWidth/img.naturalHeight)):
+     (tile.dataset.kind==='video'?16/9:1.35);
+   });
+   const n=tiles.length,prefix=[0],dp=Array(n+1).fill(Infinity),next=Array(n+1).fill(n);
+   for(const ratio of ratios)prefix.push(prefix[prefix.length-1]+ratio);
+   dp[n]=0;
+   for(let i=n-1;i>=0;i--){
+    for(let count=1;count<=Math.min(8,n-i);count++){
+     const j=i+count,sum=prefix[j]-prefix[i],h=width/sum,deviation=Math.log(h/target);
+     let cost=deviation*deviation;
+     if(h>target*1.55)cost+=14*Math.pow(h/target-1.55,2);
+     if(h<target*.65)cost+=12*Math.pow(.65-h/target,2);
+     if(count===1&&n>1)cost+=50;
+     const total=cost+dp[j];
+     if(total<dp[i]){dp[i]=total;next[i]=j}
+    }
+   }
+   const fragment=document.createDocumentFragment();
+   for(let i=0;i<n;){
+    const j=next[i]>i?next[i]:i+1,ratioSum=prefix[j]-prefix[i];
+    const row=make('div','apple-justified-row');
+    const full=n>1,available=width-gap*(j-i-1),calc=available/ratioSum,h=full?calc:Math.min(target,calc);
+    row.style.height=h.toFixed(2)+'px';
+    let used=0;
+    for(let k=i;k<j;k++){
+     const last=k===j-1,cardWidth=full&&last?Math.max(1,available-used):h*ratios[k];
+     const tile=tiles[k];
+     tile.style.flex='0 0 '+cardWidth.toFixed(2)+'px';
+     tile.style.width=cardWidth.toFixed(2)+'px';
+     tile.style.height=h.toFixed(2)+'px';
+     row.append(tile);
+     used+=cardWidth;
+    }
+    fragment.append(row);i=j;
+   }
+   holder.replaceChildren(fragment);
+  }
+ }
+ function observeJustifiedGallery(){
+  const container=$('applePhotosGallery');
+  if(justifiedGalleryObserver)justifiedGalleryObserver.disconnect();
+  if(typeof ResizeObserver==='function'){
+   justifiedGalleryObserver=new ResizeObserver(()=>scheduleJustifiedGallery());
+   justifiedGalleryObserver.observe(container);
+  }else window.addEventListener('resize',scheduleJustifiedGallery,{passive:true});
+ }
+
  function renderGallery(){
   const node=$('applePhotosGallery');node.replaceChildren();
   const list=selectedAssets(),album=albumFor(meta.activeAlbum);
@@ -452,10 +518,16 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   for(const [month,items] of groups.entries()){
    const section=make('section','apple-photo-month');
    section.append(make('h3','',month));
-   const grid=make('div','apple-photo-grid');
+   const grid=make('div','apple-photo-grid apple-justified-wall');
    for(const a of items){
     const index=list.indexOf(a);
     const tile=drawTile(a,list,index);
+    tile.dataset.kind=a.kind;
+    const img=tile.querySelector('img.apple-photo-thumb');
+    if(img){
+      if(img.complete&&img.naturalWidth)queueMicrotask(scheduleJustifiedGallery);
+      else img.addEventListener('load',scheduleJustifiedGallery,{once:true});
+    }
     if(meta.filter==='for-you'&&index<6&&meta.tastes.length){
      tile.append(make('div','taste-match-reason',taste.reason(a)));
     }
@@ -463,6 +535,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
    }
    section.append(grid);node.append(section);
   }
+  scheduleJustifiedGallery();
  }
  function renderCategoryTiles(){
   const root=$('militaryCategoryTiles');root.replaceChildren();
@@ -859,6 +932,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
    renderGallery();
   });
   setupMyCountries();
+  observeJustifiedGallery();
   $('albumModalClose').addEventListener('click',closeAlbumDialog);
   $('albumModalCancel').addEventListener('click',closeAlbumDialog);
   $('albumModalSave').addEventListener('click',()=>void saveAlbum());
