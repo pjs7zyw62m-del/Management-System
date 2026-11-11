@@ -101,19 +101,6 @@ html,body,*{scrollbar-width:none;-ms-overflow-style:none}
 <p class="status" id="employeeAccess">AUTHORIZED EMPLOYEE</p>
 </div></div>
 <p>Your card identifies your assigned clearance. It does not provide access to the Level 7 Administration dashboard or NEXUS records.</p>
-<section id="employeeCodePanel" class="code-verify">
-<div class="eyebrow">BLACKCELL / SECOND FACTOR AUTHENTICATION</div>
-<h2>Verify Your Access Pass</h2>
-<p>After password activation, Blackcell sends a second corporate email with your 4-digit Access Code and 12-digit Security Code. These private codes are never displayed on the employee card.</p>
-<button id="sendSecurityEmailButton" class="outline" type="button">RESEND MY SECURITY EMAIL</button>
-<p style="margin:8px 0 14px">Didn’t receive your security email? Check Spam or Promotions, then request a new one. Available after 2 minutes, up to 3 replacement emails every 24 hours. A new email replaces the previous codes.</p>
-<form id="employeeCodeForm">
-<label for="employeeAccessCode">ACCESS CODE · 4 DIGITS</label>
-<input id="employeeAccessCode" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" minlength="4" autocomplete="off" required placeholder="••••">
-<label for="employeeSecurityCode">SECURITY CODE · 12 DIGITS</label>
-<input id="employeeSecurityCode" type="password" inputmode="numeric" pattern="[0-9]{12}" maxlength="12" minlength="12" autocomplete="off" required placeholder="12 digits">
-<button class="primary" id="verifyCodes" type="submit">AUTHENTICATE EMPLOYEE ACCESS ↗</button>
-</form></section>
 <p id="employeeStatus" class="notice" hidden role="status"></p>
 <div class="action-row"><a class="outline" id="networkLink" href="corporate-network.html" hidden>OPEN BLACKCELL NETWORK ↗</a><a class="outline" id="chatLink" href="corporate-chat.html" hidden>OPEN EMPLOYEE CHAT ↗</a><button id="signout" class="outline">SIGN OUT</button></div>
 </section>
