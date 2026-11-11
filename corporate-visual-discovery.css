@@ -391,3 +391,14 @@ body.bc-network .bc-vd-external-link{display:inline-flex;align-items:center;alig
  border:1px solid #4e535e;border-radius:7px;background:#1d252d;color:#e9edf1!important;
  padding:7px 10px;font-size:9px;font-weight:830;letter-spacing:.055em;text-decoration:none}
 body.bc-network .bc-vd-external-link:hover{border-color:#e44860}
+
+/* Full-gallery manual audit: always allow the user to inspect missed candidates. */
+body.bc-network .bc-vd-review-all{
+ appearance:none;display:block;width:100%;margin:3px 0 8px;
+ padding:11px 12px;border:1px solid #65717c;border-radius:9px;
+ color:#e8ebef;background:linear-gradient(110deg,#202933,#101720);
+ font-size:10px;font-weight:800;letter-spacing:.07em;cursor:pointer
+}
+body.bc-network .bc-vd-review-all:hover{border-color:#da596c}
+body.bc-network .bc-vd-review-all[hidden]{display:none!important}
+body.bc-network .bc-vd-index-actions [hidden]{display:none!important}
