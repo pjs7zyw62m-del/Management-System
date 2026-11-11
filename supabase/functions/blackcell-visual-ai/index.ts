@@ -112,8 +112,13 @@ async function matchGalleryBatch(crop,candidates){
    score:clamp(item.similarity),feature_label:cut(item.label,90),
    feature_description:cut(item.evidence,360),bbox:safeBox(item.box)});
  }
- if(!results.length)throw Error("AI did not provide usable photo comparisons");
- // Missing assessments remain explicit, not silently treated as failures.
+ // If the provider omits a candidate, expose it for human review rather than
+ // silently hiding a potentially similar photo from the results.
+ for(let i=1;i<=candidates.length;i++)if(!seen.has(i)){
+  results.push({asset_id:candidates[i-1].asset_id,found:false,score:0,
+   feature_label:"Not assessed",
+   feature_description:"AI omitted this photo; review the image manually",bbox:null});
+ }
  return results;
 }
 async function verifyAppearance(sourceCrop, candidates, subject){
