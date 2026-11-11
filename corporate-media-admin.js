@@ -90,6 +90,33 @@ async function makePreview(a){
  if(!data?.ok||!data.analysis)throw new Error(data?.error||'No suggestions were produced; use manual classification.');
  return data.analysis;
 }
+async function checkBackblaze(){
+ const button=$('bcB2Check'),badge=$('bcB2Status'),message=$('bcB2Message');
+ if(!button||!badge||!message)return;
+ button.disabled=true;
+ badge.dataset.health='checking';
+ badge.textContent='CHECKING';
+ message.textContent='Verifying your private Backblaze connection through a secured Supabase Edge Function…';
+ try{
+  const {data,error}=await client.functions.invoke('blackcell-b2-storage',{body:{action:'status'}});
+  let body=data;
+  if(error){
+   try{body=await error.context?.json?.()}catch(_){}
+   if(body?.code==='B2_NOT_CONFIGURED'){body={ok:true,connected:false,code:'B2_NOT_CONFIGURED'}}
+   else throw new Error(body?.detail||error.message||'Connection check failed.');
+  }
+  if(body?.connected===true){
+   badge.dataset.health='connected';badge.textContent='CONNECTED';
+   message.textContent='Private Backblaze B2 connection verified. Your bucket is accessible through the restricted staging prefix. The media upload/import pipeline is a separate step.';
+  }else{
+   badge.dataset.health='not-configured';badge.textContent='NOT CONNECTED';
+   message.textContent=body?.detail||'Enter all four BLACKCELL_B2_* secrets in Supabase Edge Function Secrets, then check again.';
+  }
+ }catch(e){
+  badge.dataset.health='error';badge.textContent='CONNECTION ERROR';
+  message.textContent=String(e?.message||e||'Unrecognized error').slice(0,260);
+ }finally{button.disabled=false}
+}
 async function boot(){
  try{
   const auth=await validOwner();
@@ -103,6 +130,8 @@ async function boot(){
   $('bcMediaAdminApp').hidden=false;$('bcAdminGate').hidden=true;
   processor=createBlackcellMediaProcessor({client,bucket,state,refresh:loadAssets,mediaUrl:()=>'',toast,openAIReview:makePreview});
   processor.setup();
+  $('bcB2Check').addEventListener('click',()=>void checkBackblaze());
+  void checkBackblaze();
   document.addEventListener('bc:media-updated',()=>void refreshCounts().catch(()=>{}));
   // Require a valid corporate code session throughout an active admin view.
   const recheck=async()=>{

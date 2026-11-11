@@ -2,9 +2,9 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#030305"><title>BLACKCELL CORPORATION | Media Administration</title>
 <link rel="stylesheet" href="corporate-media-processor.css?v=20261111-adminmove1">
-<link rel="stylesheet" href="corporate-media-admin.css?v=20261111-adminmove1">
+<link rel="stylesheet" href="corporate-media-admin.css?v=20261111-b2ready1">
 <script src="corp-config.js" defer></script>
-<script type="module" src="corporate-media-admin.js?v=20261111-adminmove1"></script>
+<script type="module" src="corporate-media-admin.js?v=20261111-b2ready1"></script>
 </head>
 <body class="bc-network bc-media-admin-page">
 <div id="bcAdminGate" role="status" aria-live="polite">
@@ -29,6 +29,17 @@
    <div><span>STORAGE</span><strong id="bcAdminStorageStatus">Private</strong><small>Supabase · existing secure media bucket</small></div>
    <div><span>MEDIA REGISTERED</span><strong id="bcAdminAssetsCount">—</strong><small>Current BLACKCELL media records</small></div>
    <div><span>IMPORT QUEUE</span><strong id="bcAdminPendingCount">—</strong><small>Awaiting owner review</small></div>
+  </section>
+  <section class="bc-b2-connection" id="bcB2Connection" aria-label="Backblaze B2 private cloud connection">
+    <div class="bc-b2-connection-title"><span class="bc-admin-overline">BLACKCELL / PRIVATE CLOUD CONNECTION</span><h2>Backblaze B2 Storage</h2>
+     <p>Your restricted 1 TB+ storage destination. Secrets stay in Supabase; nothing is uploaded or published by checking the connection.</p></div>
+    <div class="bc-b2-connection-toolbar">
+      <strong id="bcB2Status" role="status" aria-live="polite">NOT VERIFIED</strong>
+      <button id="bcB2Check" type="button">↻ CHECK CONNECTION</button>
+      <a href="https://supabase.com/dashboard/project/eeddazzwqokqlzvzjlxz/functions/secrets" target="_blank" rel="noopener noreferrer">MANAGE SUPABASE SECRETS ↗</a>
+    </div>
+    <p id="bcB2Message">Add the four private B2 credentials in Supabase Edge Function Secrets, then check the connection.</p>
+    <small>Private bucket: blackcellcorp-media-vault · Region: us-east-005 · Staging prefix: blackcell-intake/ · Existing Supabase media remains unchanged</small>
   </section>
   <section class="panel bc-media-processor" id="bcProcessorPanel" hidden aria-label="Media Import Processor">
         <div class="bc-proc-head">
