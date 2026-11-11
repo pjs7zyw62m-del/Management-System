@@ -12,7 +12,8 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
  let current=null,selection=null,dragStart=null,dragging=false,searchId=0,working=false;
  let previousFocus=null,previousOverflow='',reactions=new Map(),lastResults=[],resizeObserver=null;
  let sourceReady=false,looping=false,lastPointerSelectionAt=0,aiBusy=false,scanBusy=false,refineBusy=false;
- let clickPoint=null,votedIds=new Set();
+ let clickPoint=null,votedIds=new Set(),webAvailable=false,webBusy=false;
+ const webSeen=new Set();
  const onPhone=()=>window.matchMedia('(hover: none) and (pointer: coarse)').matches || window.innerWidth<=600;
  const eligible=()=>state.assets.filter(a=>a.kind==='photo'&&['library','post'].includes(a.purpose)&&mediaUrl(a));
  const status=s=>{$('vdStatus').textContent=s};
@@ -479,18 +480,79 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    if(fingerprints.error)problems.push('Duplicate database: '+fingerprints.error.message);
    if(features.error)problems.push('Photo index: '+features.error.message);
    if(ai.error||!ai.data?.ok)problems.push('AI endpoint: '+await functionError(ai.error,ai.data));
+   webAvailable=!!ai.data?.capabilities?.web_discovery;
+   $('vdWebSearch').disabled=!webAvailable;
+   $('vdWebSearch').title=webAvailable?'Discover external photos using Google Cloud Vision credits':
+    'Not configured: add GOOGLE_VISION_KEY to Supabase Edge Function secrets';
    if(problems.length)output.textContent='SYSTEM CHECK FAILED · '+problems.join(' · ');
    else{
     const local=eligible().filter(a=>a.owner_id===state.user.id).length;
     output.textContent='DATABASE CONNECTED · '+(fingerprints.count||0)+' photo fingerprints · '+
      (features.count||0)+' AI-indexed photos · '+local+' of your photos available · AI SERVICE '+
      (ai.data.configured?'READY (API credits required for scans)':'NOT CONFIGURED (missing server API key)')+
+     ' · Internet photo discovery '+(webAvailable?'READY (Google API credits required)':'NOT CONFIGURED (Google Vision key missing)')+
      '. To begin, choose Scan Duplicates (free), then Index 5 Photos with AI (paid).';
    }
   }catch(e){output.textContent='SYSTEM CHECK FAILED · '+(e?.message||'Network unavailable')}
   finally{button.disabled=false}
  }
 
+ function renderWebPhotos(photos){
+  const host=$('vdResults');host.replaceChildren();
+  $('vdResultCount').textContent=photos.length?String(photos.length):'';
+  $('vdResultMethod').textContent='GOOGLE VISION WEB RESULTS · EXTERNAL';
+  if(!photos.length){
+   host.append(element('div','bc-vd-empty','No new visually related web images were returned. Try selecting a clearer or larger item crop.'));
+   return;
+  }
+  for(const item of photos){
+   let url;
+   try{url=new URL(item.url)}catch(_){continue}
+   if(url.protocol!=='https:')continue;
+   const card=element('article','bc-vd-match-card');
+   const link=element('a','bc-vd-online-image');
+   link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';link.referrerPolicy='no-referrer';
+   link.title='Open external image at '+url.hostname;
+   const image=element('img');image.src=url.href;image.alt='Visually related external photograph';
+   image.referrerPolicy='no-referrer';image.loading='lazy';
+   link.append(image);
+   const body=element('div','bc-vd-match-copy');
+   body.append(element('strong','','EXTERNAL PHOTO'));
+   body.append(element('small','','Source: '+url.hostname+' · This photo is not stored by BLACKCELL.'));
+   const open=element('a','bc-vd-external-link','VIEW EXTERNAL IMAGE');
+   open.href=url.href;open.target='_blank';open.rel='noopener noreferrer';open.referrerPolicy='no-referrer';
+   body.append(open);
+   card.append(link,body);host.append(card);
+  }
+ }
+ async function findOnline(){
+  if(webBusy||!webAvailable||!sourceReady||!current||!selection||working||aiBusy)return;
+  if(!confirm('Send ONLY your selected photo crop to Google Cloud Vision Web Detection to discover existing images on the internet? This uses paid Google API credits; results may be external/copyrighted and are not saved to BLACKCELL. Continue?'))return;
+  webBusy=true;
+  const req=++searchId;
+  $('vdWebSearch').disabled=true;
+  try{
+   status('Google Vision searching for existing photographs resembling your selected detail…');
+   emptyResults('Searching third-party web image results. The original private photo remains in BLACKCELL.');
+   const {data,error}=await client.functions.invoke('blackcell-visual-ai',{body:{
+    action:'web',asset_id:current.id,preview:jpegPreview(main,selection)
+   }});
+   if(error||!data?.ok)throw Error(await functionError(error,data));
+   if(req!==searchId||!inUse())return;
+   const fresh=[];
+   for(const image of data.results||[]){
+    let key;
+    try{const url=new URL(image.url);key=url.origin+url.pathname;}catch(_){continue}
+    if(webSeen.has(key))continue;
+    webSeen.add(key);fresh.push(image);
+   }
+   renderWebPhotos(fresh);
+   status(fresh.length?
+    'Found '+fresh.length+' NEW external photo URLs. These are visual leads, not verified exact clothing matches; open the originals to inspect.':
+    'No unseen external photos were returned. Try a different region; repeated URLs were filtered.');
+  }catch(e){status('Internet visual search unavailable: '+(e?.message||'Unknown error')+'. Your private photo was not published.')}
+  finally{webBusy=false;$('vdWebSearch').disabled=!webAvailable}
+ }
  async function refineWithAI(){
   if(refineBusy||aiBusy||working||!sourceReady||!current||!selection||!clickPoint)return;
   if(!confirm('Use AI to refine the object at your selected point? A resized copy of this photo will be processed by the vision provider and API credits may apply. This estimates an object box; it does not yet use SAM segmentation. Continue?'))return;
@@ -644,6 +706,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   $('vdAnalyze').addEventListener('click',()=>void analyze());
   $('vdAISearch').addEventListener('click',()=>void findWithAI());
   $('vdRefine').addEventListener('click',()=>void refineWithAI());
+  $('vdWebSearch').addEventListener('click',()=>void findOnline());
   $('vdAIIndex').addEventListener('click',()=>void indexWithAI());
   $('vdSystemCheck').addEventListener('click',()=>void systemCheck());
   $('vdDuplicateScan').addEventListener('click',()=>void scanDuplicates());
