@@ -8,8 +8,8 @@
 <title>BLACKCELL — United States Military | Redesign Preview</title>
 <script src="corp-config.js" defer></script>
 <link rel="stylesheet" href="military-country.css?v=20261110-country1">
-<link rel="stylesheet" href="usa-page-preview.css?v=20261111-a1">
-<script type="module" src="usa-page-preview.js?v=20261111-a1"></script>
+<link rel="stylesheet" href="usa-page-preview.css?v=20261111-viewfinder2">
+<script type="module" src="usa-page-preview.js?v=20261111-viewfinder2"></script>
 </head>
 <body data-page-theme="usa" class="usa-revamp">
 <header class="topbar usa-topbar">
@@ -31,32 +31,40 @@
    <div class="hero-glow" aria-hidden="true"></div>
    <div class="usa-hero-inner">
     <div class="hero-text">
-     <div class="eyebrow" id="heroEyebrow">BLACKCELL / UNITED STATES MILITARY ARCHIVE</div>
-     <div class="hero-flags" id="heroFlags" aria-label="United States flag">🇺🇸</div>
+     <div class="hero-breadcrumb eyebrow" id="heroEyebrow"><span class="crumb-dot" aria-hidden="true"></span>BLACKCELL // UNITED STATES ARMED FORCES</div>
      <h1 id="pageTitle"><span>UNITED STATES</span><em>ARMED FORCES.</em></h1>
-     <p id="heroDescription">A dedicated visual archive of the uniforms, personnel, training and history of the United States Armed Forces. Every photograph shown comes from your secured Blackcell media library.</p>
+     <p id="heroDescription">Explore the uniforms, personnel, training, and history of the U.S. Armed Forces through your existing private photo collection.</p>
      <div class="hero-buttons">
-      <a href="#branchDirectory" class="primary-route">EXPLORE THE BRANCHES <span>↓</span></a>
-      <a href="#galleryTitle" class="secondary-route">VIEW PHOTOGRAPHS ↗</a>
-     </div>
-     <div class="hero-metrics">
-      <div><strong id="photoCount">0</strong><small>CLASSIFIED PHOTOS</small></div>
-      <div><strong id="branchCount">0</strong><small>BRANCHES REPRESENTED</small></div>
-      <div><strong id="countryCount">1</strong><small>UNITED STATES</small></div>
+      <a href="#branches" class="primary-route">EXPLORE THE BRANCHES <span aria-hidden="true">→</span></a>
+      <a href="#photographs" class="secondary-route">VIEW PHOTOGRAPHS <span aria-hidden="true">↗</span></a>
      </div>
     </div>
-    <div class="hero-insignia">
-     <div class="insignia-orbit orbit-outer"></div><div class="insignia-orbit orbit-inner"></div>
-     <div class="insignia-stars">★ ★ ★ ★ ★</div>
-     <div class="hero-seal"><span id="heroSeal">US</span><small>BLACKCELL / ARCHIVE</small></div>
-     <div class="insignia-caption">THE MEN. THE UNIFORMS. THE HISTORY.</div>
+    <div class="hero-featured">
+      <div class="viewfinder-shell">
+       <div class="viewfinder-dashed" aria-hidden="true"></div>
+       <button type="button" id="featuredPhotoButton" class="viewfinder-photo" aria-label="Open the featured archival photograph" disabled>
+        <img id="featuredPhotoImage" alt="Featured United States military photograph" hidden>
+        <span id="featuredPlaceholder" class="viewfinder-placeholder" aria-hidden="true">B</span>
+        <span class="viewfinder-shade" aria-hidden="true"></span>
+        <span class="viewfinder-caption">
+         <span class="viewfinder-record-type">FEATURED RECORD</span>
+         <span class="viewfinder-record-index" id="featuredRecordId">ARCHIVE // NO MEDIA</span>
+        </span>
+       </button>
+      </div>
+      <p class="viewfinder-motto">THE MEN. THE UNIFORMS. THE HISTORY.</p>
     </div>
+   </div>
+   <div class="hero-footer-stats">
+    <div><strong id="photoCount">—</strong><small>CLASSIFIED PHOTOS</small></div>
+    <div><strong id="branchCount">—</strong><small>BRANCHES REPRESENTED</small></div>
+    <div><strong id="eraSpan">—</strong><small>ARCHIVE ERA SPAN</small></div>
    </div>
   </section>
 
   <section class="usa-body">
    <div class="editorial-line"><span class="line-index">01 / BRANCH DIRECTORY</span><span class="line-rule"></span><span class="line-note">ONE NATION · MULTIPLE SERVICES</span></div>
-   <section class="branch-section" id="branchDirectory" aria-labelledby="branchTitle">
+   <section class="branch-section" id="branches" aria-labelledby="branchTitle">
     <div class="section-intro">
      <div><div class="eyebrow">DISCOVER THE UNITED STATES MILITARY</div><h2 id="branchTitle">THE SIX SERVICES<span class="red-period">.</span></h2><p>Select a service to see its saved photographs. The counts update from your existing private library.</p></div>
      <button id="clearBranch" type="button" class="clear-filter" hidden>✕ CLEAR BRANCH FILTER</button>
@@ -76,7 +84,7 @@
    </section>
 
    <div class="editorial-line second-line"><span class="line-index">02 / PHOTOGRAPH COLLECTION</span><span class="line-rule"></span><span class="line-note">PRIVATE LIBRARY · LIVE</span></div>
-   <section class="gallery-area usa-gallery" aria-labelledby="galleryTitle">
+   <section class="gallery-area usa-gallery" id="photographs" aria-labelledby="galleryTitle">
     <div class="gallery-heading">
      <div><span class="eyebrow">BLACKCELL / UNITED STATES PHOTOGRAPHY</span><h2 id="galleryTitle">MILITARY PHOTO ARCHIVE<span class="red-period">.</span></h2><p id="gallerySubtext">Your protected U.S. military image collection.</p></div>
      <a href="corporate-network.html?view=photos" class="upload-link">OPEN PHOTO LIBRARY ↗</a>
