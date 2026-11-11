@@ -152,6 +152,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
  }
  function showAsset(asset,{preserve=false,preset=null,autoFind=false,autoAI=false}={}){
   if(!asset||asset.kind!=='photo'||!mediaUrl(asset))return;
+  if(aiBusy||working){status('An image comparison is running. Close Visual Discovery to cancel before selecting another photo.');return}
   searchId++;working=false;$('vdProcess').hidden=true;
   $('vdAnalyze').disabled=true;
   const kept=preset?{...preset}:(preserve&&selection?{...selection}:null);
@@ -217,7 +218,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   }
  }
  function close(){
-  searchId++;working=false;dragging=false;dragStart=null;
+  searchId++;working=false;aiBusy=false;dragging=false;dragStart=null;
   resizeObserver?.disconnect();resizeObserver=null;
   overlay.hidden=true;document.body.classList.remove('bc-vd-open');
   document.body.style.overflow=previousOverflow;
@@ -257,10 +258,13 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
     pixel=best;
    }catch(e){pixel=null}
   }
-  if(mode==='tags')return meta>=.31?{asset,score:meta,meta,pixel:null,region:null}:null;
-  if(mode==='pixels')return pixel!==null&&pixel>=.94?{asset,score:pixel,meta,pixel,region:null}:null;
-  if(pixel!==null&&pixel>=.89&&meta>=.24)return {asset,score:.84*pixel+.16*meta,meta,pixel,region:null};
-  return null;
+  // Ranking should not silently hide candidates under rigid thresholds.
+  // These are APPROXIMATE visual leads, not verified object recognition.
+  if(mode==='tags')return meta>0?{asset,score:meta,meta,pixel:null,region:null}:null;
+  if(mode==='pixels')return pixel!==null?{asset,score:pixel,meta,pixel,region:null}:null;
+  return pixel!==null?
+   {asset,score:.88*pixel+.12*meta,meta,pixel,region:null}:
+   (meta>0?{asset,score:meta*.7,meta,pixel:null,region:null}:null);
  }
  async function analyze(){
   if(!sourceReady||!current||!selection||working)return;
@@ -308,12 +312,8 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   working=false;$('vdProcess').hidden=true;$('vdAnalyze').disabled=false;
   $('vdAISearch').disabled=!selection||aiBusy;
   matches.sort((a,b)=>b.score-a.score);
-  // Avoid presenting every generic military photo as a specific-area match.
-  // Scores describe approximate appearance, NOT semantic object recognition.
-  const highest=matches[0]?.score||0;
-  const fallback=mode==='tags'||!matchedPixels;
-  const threshold=fallback?Math.max(.31,highest-.12):Math.max(.86,highest-.025);
-  lastResults=matches.filter(item=>item.score>=threshold).slice(0,6);
+  // Broad recall-first ranking. Only up to 12 approximate leads are shown.
+  lastResults=matches.slice(0,12);
   renderResults(lastResults);
   const method=mode==='tags'?'Military metadata only':mode==='pixels'?'Colors/patterns only':'Basic appearance + tags (not AI)';
   $('vdResultMethod').textContent=method.toUpperCase();
@@ -330,8 +330,8 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    status('Visual pixels unavailable. No object recognition was performed; '+count+' tag-based comparisons.');
   }else{
    status(count?
-    'Compared '+scope+' photographs by appearance only. '+count+' approximate pattern similarities, NOT verified same-item matches.':
-    'No reliable appearance-only matches. For ties, gear and other actual items, use AI Find Same Item after indexing.');
+    'Compared '+scope+' photographs. Showing '+count+' ranked appearance leads (NOT verified object matches). For a true detail search, choose AI Find Similar Detail.':
+    'No readable appearance-only comparisons. Try AI Find Similar Detail, which checks the accessible gallery without pre-indexing.');
   }
   // Only the separate AI workflow can identify objects; this routine never claims to.
  }
