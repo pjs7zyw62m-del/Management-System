@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="corporate-chat-dock.css?v=20261109-floating-right2"><link rel="stylesheet" href="corporate-chat-bubble-dock.css?v=20261109-bubble-dock1"><link rel="stylesheet" href="corporate-chat-premium-dock.css?v=20261109-premium1">
 <link rel="stylesheet" href="corporate-chat-media-bubble-host.css?v=20261109-independent-media1"><link rel="stylesheet" href="corporate-chat-media-responsive.css?v=20261109-sidebyside2"><link rel="stylesheet" href="corporate-chat-media-flip-focus.css?v=20261109-flip-focus1">
 <script src="corporate-chat-media-bubble-host.js?v=20261109-large-media1" defer></script>
-<script src="corp-config.js" defer></script><script type="module" src="corporate-network.js?v=20261111-rediscovery1"></script><link rel="stylesheet" href="corp-adaptive-layout.css?v=20261109-device2">
+<script src="corp-config.js" defer></script><script type="module" src="corporate-network.js?v=20261111-30second-zoom1"></script><link rel="stylesheet" href="corp-adaptive-layout.css?v=20261109-device2">
 <link rel="stylesheet" href="corp-adaptive-chat.css?v=20261109-device2">
 <link rel="stylesheet" href="corporate-network-feed-media.css?v=20261109-uncropped2">
 <link rel="stylesheet" href="corporate-chat-compact-media.css?v=20261109-mobile-gallery4">
@@ -25,7 +25,8 @@
 <link rel="stylesheet" href="corporate-military-resources.css?v=20261111-viewer-actions-only4">
 <link rel="stylesheet" href="corporate-library-submenu.css?v=20261111-library-nav1">
 <link rel="stylesheet" href="corporate-network-personalization.css?v=20261111-personal3">
-<link rel="stylesheet" href="corporate-photo-rediscovery.css?v=20261111-rediscovery1">
+<link rel="stylesheet" href="corporate-photo-rediscovery.css?v=20261111-30second1">
+<link rel="stylesheet" href="corporate-photo-zoom.css?v=20261111-zoom1">
 </head>
 <body class="bc-network">
 <header class="masthead">
@@ -402,7 +403,15 @@
  <div class="apple-photo-viewer-header"><div><strong id="appleViewerFilename">Media</strong><small id="appleViewerMeta">ORIGINAL QUALITY</small></div>
    <div class="apple-photo-viewer-actions"><button id="appleViewerFavorite" title="Favorite this media" type="button">♡</button><span id="appleViewerVoteSlot" class="bc-viewer-vote-slot" aria-label="Photo voting"></span><button id="appleViewerTaste" type="button" hidden>✦ WHAT CAUGHT YOUR EYE?</button><button id="appleViewerPredict" type="button" hidden>◎ PREDICT MY INTEREST</button><button id="appleViewerOriginal" type="button">↗ FULL PHOTO</button>
     <button id="appleViewerDownload" type="button">↓ DOWNLOAD</button><button id="appleViewerClose" class="close-x" type="button" aria-label="Close viewer">✕</button></div></div>
- <div class="apple-photo-viewer-stage"><button id="appleViewerPrevious" class="apple-photo-nav previous" type="button" aria-label="Previous photo">‹</button>
+ <div class="apple-photo-viewer-stage">
+ <div id="appleZoomControls" class="bc-photo-zoom-controls" role="group" aria-label="Full photo zoom controls" hidden>
+  <button id="appleZoomOut" type="button" aria-label="Zoom out">−</button>
+  <output id="appleZoomPercent" aria-live="off">100%</output>
+  <button id="appleZoomIn" type="button" aria-label="Zoom in">＋</button>
+  <button id="appleZoomFit" type="button" aria-label="Fit the entire photo">FIT</button>
+ </div>
+ <aside id="appleZoomRelated" aria-label="Similar military photographs" hidden></aside>
+ <button id="appleViewerPrevious" class="apple-photo-nav previous" type="button" aria-label="Previous photo">‹</button>
    <div id="appleViewerStage" class="apple-photo-stage-inner"></div><button id="appleViewerNext" class="apple-photo-nav next" type="button" aria-label="Next photo">›</button></div>
  <div class="apple-photo-viewer-bar"><div class="apple-viewer-details"><span id="appleViewerPosition"></span><span id="appleViewerCaption"></span></div>
   <div id="appleViewerOwnerControls" class="apple-viewer-owner-controls" hidden><select id="appleViewerAlbumSelect" aria-label="Add media to one of your albums"></select><button id="appleViewerAddAlbum" type="button">＋ ADD TO ALBUM</button><button id="appleViewerEditCaption" type="button">EDIT CAPTION</button><button id="appleViewerEditMilitary" type="button">CLASSIFY</button><button id="appleViewerAnalyze" type="button" hidden>✦ ANALYZE PHOTO</button><button id="appleViewerDelete" type="button">DELETE UPLOAD</button></div></div>
@@ -493,6 +502,7 @@
         <option value="occasional">OCCASIONAL — NO MORE THAN ONCE A DAY</option>
       </select>
       <button id="rediscoveryPreview" type="button">PREVIEW A REDISCOVERY CARD ↗</button>
+      <button id="triggerPreview" type="button">PREVIEW TRIGGER CARD ↗</button>
     </div>
     <small class="bc-rediscovery-privacy">Only while you're using Blackcell. Dismiss or select Not Interested anytime. Disable this option to stop suggestions and clear saved rediscovery views.</small>
    </div>
