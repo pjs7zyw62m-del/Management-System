@@ -3,11 +3,13 @@ import {createWorldForces} from './corporate-world-forces.js?v=20261110-countrie
 import {createMilitaryPhotoAI} from './corporate-military-ai.js?v=20261110-learn1';
 import {createPhotoTaste} from './corporate-photo-taste.js?v=20261110-trigger2';
 import {createPhotoPredict} from './corporate-photo-predict.js?v=20261110-pred1';
+import {createPhotoVoting} from './corporate-photo-votes.js?v=20261111-votes1';
 export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadAsset,refresh,profile,openProfile,ensureSigned,switchView}){
  const $=id=>document.getElementById(id);
  const meta={albums:[],albumItems:[],favorites:[],activeAlbum:null,filter:'all',sort:'newest',query:'',
    scope:'mine',branch:'',category:'',era:'',editingAsset:null,
    viewerItems:[],viewerIndex:0,editingAlbum:null,uploading:false,renderCount:0,tastes:[],countryPages:[],countryPageId:null};
+ const votes=createPhotoVoting({client,userId:()=>state.user.id,toast});
  const fileMax=45*1024*1024;
  const photoFormats=new Set(['image/jpeg','image/png','image/webp','image/gif','image/heic']);
  const videoFormats=new Set(['video/mp4','video/webm','video/quicktime','video/x-m4v']);
@@ -99,6 +101,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   meta.albums=a.data||[];
   meta.albumItems=b.data||[];
   meta.favorites=c.data||[];
+  await votes.load();
   await world.load();
   await taste.load();
   await loadCountryPages();
@@ -207,6 +210,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   if(meta.filter==='countries'&&a.military_country_code)
    tile.append(make('span','country-photo-label',world.countryName(String(a.military_country_code).toUpperCase())));
   if(a.kind==='video')tile.append(make('span','apple-photo-kind','VIDEO'));
+  else tile.append(votes.button(a,'bc-gallery-photo-vote'));
   const heart=press(favorited(a.id)?'♥':'♡',event=>{
    event.stopPropagation();void toggleFavorite(a.id);
   },'apple-photo-heart'+(favorited(a.id)?' liked':''));
@@ -784,6 +788,8 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   $('appleViewerPosition').textContent=(meta.viewerIndex+1)+' / '+meta.viewerItems.length;
   const star=$('appleViewerFavorite');
   star.textContent=favorited(a.id)?'♥':'♡';star.classList.toggle('liked',favorited(a.id));
+  const voteSlot=$('appleViewerVoteSlot');
+  if(voteSlot){voteSlot.replaceChildren();if(a.kind==='photo')voteSlot.append(votes.button(a,'bc-viewer-photo-vote'));}
   $('appleViewerPrevious').disabled=meta.viewerItems.length<=1;
   $('appleViewerNext').disabled=meta.viewerItems.length<=1;
   ai.toggleForAsset(a);
