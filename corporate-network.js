@@ -347,19 +347,82 @@ function renderPost(p){
  }
  return node;
 }
+
+/* Library uploads are separate from social posts. Display authorized, original
+   library files as first-class feed activity, without duplicating or moving them. */
+function renderLibraryActivity(a){
+ const node=el('article','panel post library-feed-post');
+ node.id='library-media-'+a.id;
+ const person=profile(a.owner_id);
+ const head=el('div','post-head');
+ const pic=avatar(person,'small');
+ pic.style.cursor='pointer';
+ pic.addEventListener('click',()=>openProfile(a.owner_id));
+ const title=el('div','post-author');
+ title.append(btn(personName(person),()=>openProfile(a.owner_id)),
+   el('small','',personHandle(person)+' · '+stamp(a.created_at)));
+ head.append(pic,title,el('span','post-label',a.kind==='video'?'VIDEO UPLOADED':'PHOTO UPLOADED'));
+ node.append(head);
+ const caption=String(a.caption||'').trim();
+ node.append(el('div','library-feed-context','MILITARY LIBRARY  /  NEW TO THE ARCHIVE'));
+ if(caption)node.append(el('div','post-body',caption));
+ const tags=[a.military_branch,a.military_category,a.military_era].filter(v=>v&&v!=='Unspecified'&&v!=='Unsorted');
+ if(tags.length)node.append(el('div','library-feed-tags',tags.join('  ·  ')));
+ const src=mediaUrl(a);
+ if(src){
+  const wrap=el('div','post-media post-media-original library-feed-media');
+  if(a.kind==='video'){
+   const v=el('video','post-media-original-video');
+   v.src=src;v.controls=true;v.playsInline=true;v.preload='metadata';
+   v.style.width='100%';v.style.height='auto';v.style.objectFit='contain';
+   wrap.append(v);
+  }else{
+   const link=btn('',()=>void photos.openAsset(a),'post-media-original-open');
+   link.style.setProperty('height','auto','important');
+   link.style.setProperty('min-height','0','important');
+   link.style.setProperty('aspect-ratio','auto','important');
+   const img=el('img','post-media-original-photo');
+   img.src=src;img.alt=caption||a.filename||'Military library photograph';img.loading='lazy';
+   img.style.setProperty('width','100%','important');
+   img.style.setProperty('height','auto','important');
+   img.style.setProperty('object-fit','contain','important');
+   link.append(img);wrap.append(link);
+  }
+  node.append(wrap);
+ }
+ const actions=el('div','post-actions');
+ actions.append(btn('▧  VIEW IN MILITARY LIBRARY',()=>void photos.openAsset(a)));
+ actions.append(btn('◌  VIEW PROFILE',()=>openProfile(a.owner_id)));
+ node.append(actions);
+ return node;
+}
+
 function renderFeed(){
  const box=$('feedPosts');box.replaceChildren();
  const followingIds=new Set(state.follows.filter(f=>f.follower_id===state.user.id).map(f=>f.following_id));
- let posts=state.posts;
- if(state.feedFilter==='following')posts=posts.filter(p=>followingIds.has(p.author_id)||p.author_id===state.user.id);
- if(state.feedFilter==='videos')posts=posts.filter(p=>p.kind==='video');
- if(state.deepPost)posts=posts.filter(p=>p.id===state.deepPost);
- if(!posts.length){
-  box.append(empty(state.feedFilter==='following'?'No following updates yet':'No network posts yet',
-   'Publish the first update or discover a coworker to follow.'));
+ const members=new Set(state.profiles.map(p=>p.user_id));
+ const allowedOwner=id=>members.has(id)||id===state.user.id;
+ const allowedFollow=id=>state.feedFilter!=='following'||followingIds.has(id)||id===state.user.id;
+ let posts=state.posts.filter(p=>allowedFollow(p.author_id));
+ let library=state.assets.filter(a=>
+   a.purpose==='library'&&(a.kind==='photo'||a.kind==='video')&&
+   allowedOwner(a.owner_id)&&allowedFollow(a.owner_id));
+ if(state.feedFilter==='videos'){
+  posts=posts.filter(p=>p.kind==='video');
+  library=library.filter(a=>a.kind==='video');
+ }
+ if(state.deepPost){posts=posts.filter(p=>p.id===state.deepPost);library=[];}
+ // Keep one activity per original upload. Library media are not social-post attachments.
+ const entries=[
+  ...posts.map(p=>({type:'post',item:p})),
+  ...library.map(a=>({type:'library',item:a}))
+ ].sort((a,b)=>Date.parse(b.item.created_at||0)-Date.parse(a.item.created_at||0)).slice(0,160);
+ if(!entries.length){
+  box.append(empty(state.feedFilter==='following'?'No following updates yet':'No network activity yet',
+   'Military Library photo uploads and network posts will appear here automatically.'));
   return;
  }
- for(const p of posts)box.append(renderPost(p));
+ for(const entry of entries)box.append(entry.type==='post'?renderPost(entry.item):renderLibraryActivity(entry.item));
 }
 function videoTile(a){
  const p=state.posts.find(p=>p.id===a.post_id),person=profile(a.owner_id);
@@ -539,6 +602,13 @@ async function saveProfile(){
 async function refresh(){
  await loadAll({show:true});
 }
+let libraryFeedRefreshing=false;
+async function refreshVisibleNetworkFeed(){
+ if(libraryFeedRefreshing||document.hidden||state.view!=='feed'||$('app').hidden||state.busy)return;
+ libraryFeedRefreshing=true;
+ try{await loadAll({show:true})}catch(e){console.warn('Network feed refresh failed:',fail(e))}
+ finally{libraryFeedRefreshing=false}
+}
 function setupEvents(){
  document.querySelectorAll('[data-view]').forEach(n=>n.addEventListener('click',()=>switchView(n.dataset.view)));
  $('viewAllPeople').addEventListener('click',()=>switchView('discover'));
@@ -629,6 +699,9 @@ async function boot(){
   $('gate').hidden=true;$('app').hidden=false;
   setupEvents();
   installNetworkSecurityChecks();
+  // Periodic read-only refresh works even when Realtime publication is disabled.
+  window.setInterval(()=>void refreshVisibleNetworkFeed(),90000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refreshVisibleNetworkFeed()});
   gunnerDock=mountMilitaryGunner({
    client,mount:document.body,visible:false,
    getContext:()=>({
