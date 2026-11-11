@@ -13,6 +13,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
  let previousFocus=null,previousOverflow='',reactions=new Map(),lastResults=[],resizeObserver=null;
  let sourceReady=false,looping=false,lastPointerSelectionAt=0,aiBusy=false,scanBusy=false,refineBusy=false;
  let clickPoint=null,votedIds=new Set(),webAvailable=false,webBusy=false,samAvailable=false;
+ let fullGalleryResults=[],showAllGallery=false,fullGalleryScope=0;
  const webSeen=new Set();
  const onPhone=()=>window.matchMedia('(hover: none) and (pointer: coarse)').matches || window.innerWidth<=600;
  const eligible=()=>state.assets.filter(a=>a.kind==='photo'&&['library','post'].includes(a.purpose)&&mediaUrl(a));
@@ -157,6 +158,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   current=asset;selection=null;clickPoint=null;sourceReady=false;
   main.alt=safeText(asset);main.removeAttribute('src');main.crossOrigin='anonymous';
   const expected=asset.id;
+  fullGalleryResults=[];fullGalleryScope=0;showAllGallery=false;$('vdReviewAll').hidden=true;
   main.onload=()=>{
    if(!inUse()||current?.id!==expected)return;
    sourceReady=true;
@@ -282,6 +284,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    $('vdProcess').hidden=true;working=false;$('vdAnalyze').disabled=false;
    $('vdAISearch').disabled=!selection||aiBusy;return;
   }
+  fullGalleryResults=[];fullGalleryScope=0;showAllGallery=false;$('vdReviewAll').hidden=true;
   const matches=[];
   let nextIndex=0;
   const process=async()=>{
@@ -332,11 +335,27 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   }
   // Only the separate AI workflow can identify objects; this routine never claims to.
  }
+ function updateGalleryReview(){
+  const matches=fullGalleryResults.filter(x=>x.found);
+  const review=fullGalleryResults.filter(x=>!x.found);
+  const shown=showAllGallery?[...matches,...review]:matches;
+  lastResults=shown;
+  renderResults(shown);
+  $('vdResultMethod').textContent='AI CHECKED FULL GALLERY';
+  const button=$('vdReviewAll');
+  button.hidden=!fullGalleryResults.length;
+  button.disabled=!review.length;
+  button.textContent=showAllGallery?'SHOW SIMILAR ONLY ('+matches.length+')':
+   'REVIEW OTHER PHOTOS ('+review.length+')';
+  $('vdResultCount').textContent=String(matches.length)+' / '+fullGalleryScope;
+ }
  function renderResults(matches){
   const host=$('vdResults');host.replaceChildren();
   $('vdResultCount').textContent=matches.length?String(matches.length):'';
   if(!matches.length){
-   host.append(element('div','bc-vd-empty','No close area matches found in the current collection. Select a larger detail, or search by military tags.'));
+   host.append(element('div','bc-vd-empty',fullGalleryScope?
+    'No high-confidence matches were identified. Choose REVIEW OTHER PHOTOS to inspect every photo the AI scanned.':
+    'No close area matches found. Try selecting a larger detail.'));
    return;
   }
   for(const result of matches){
@@ -368,7 +387,9 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    const body=element('div','bc-vd-match-copy');
    body.append(element('strong','',asset.caption||asset.filename));
    body.append(element('small','',result.ai?
-    'AI visually checked '+result.feature_label+' · '+(result.verification||result.feature_description):
+    (result.found===false?'NOT IDENTIFIED AS SIMILAR · review manually · ':
+      result.score>=.7?'VISUALLY SIMILAR · ':'POSSIBLY SIMILAR · ')+
+    result.feature_label+' · '+(result.verification||result.feature_description):
     'BASIC appearance/category comparison only — not an identified matching item'));
    const actions=element('div','bc-vd-match-actions');
    const liked=button('♡ LIKE',()=>void feedback(asset,'more',liked,less,result.region||selection),'');
@@ -411,14 +432,14 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   finally{control.disabled=false;other.disabled=false}
  }
 
- function jpegPreview(image,region=null){
+ function jpegPreview(image,region=null,maxDimension=750){
   const w=image.naturalWidth||image.width,h=image.naturalHeight||image.height;
   if(!w||!h)throw Error('Photo has not loaded');
   const left=region?Math.floor(Math.max(0,region.x)*w):0;
   const top=region?Math.floor(Math.max(0,region.y)*h):0;
   const cw=region?Math.max(1,Math.min(w-left,Math.ceil(region.w*w))):w;
   const ch=region?Math.max(1,Math.min(h-top,Math.ceil(region.h*h))):h;
-  const factor=Math.min(1,750/Math.max(cw,ch));
+  const factor=Math.min(1,Math.max(180,Math.min(750,maxDimension))/Math.max(cw,ch));
   const canvas=document.createElement('canvas');
   canvas.width=Math.max(1,Math.round(cw*factor));
   canvas.height=Math.max(1,Math.round(ch*factor));
@@ -432,15 +453,26 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   const assets=new Map(eligible().map(a=>[a.id,a]));
   const mapped=(matches||[]).map(row=>{
    const asset=assets.get(row.asset_id);
-   if(!asset||reactions.has(asset.id)||votedIds.has(asset.id))return null;
+   // Explicit visual search must include previously liked and voted photos.
+   // Those exclusions belong only in automatic rediscovery, not deliberate searches.
+   if(!asset)return null;
    const box=row.bbox&&typeof row.bbox==='object'?row.bbox:null;
    const valid=box&&[box.x,box.y,box.w,box.h].every(x=>Number.isFinite(Number(x)))
     &&Number(box.w)>0&&Number(box.h)>0;
    return {asset,ai:true,score:Number(row.score||0),
+    found:row.found!==false,
     feature_label:row.feature_label||'Visual detail',
     feature_description:row.feature_description||'',
     pixel:null,region:valid?box:null};
   }).filter(Boolean);
+  if(details?.method==='gallery'){
+   const order=(a,b)=>Number(b.found)-Number(a.found)||b.score-a.score;
+   fullGalleryResults=mapped.sort(order);
+   fullGalleryScope=Number(details.scanned||0);
+   showAllGallery=false;
+   updateGalleryReview();
+   return;
+  }
   lastResults=mapped;
   renderResults(mapped);
   $('vdResultMethod').textContent='AI SAME-ITEM SEARCH';
@@ -582,32 +614,68 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
  }
  async function findWithAI(){
   if(aiBusy||!sourceReady||!current||!selection||working)return;
-  aiBusy=true;$('vdAISearch').disabled=true;
+  const source=current,area={...selection},photos=eligible().filter(a=>a.id!==source.id);
+  if(!photos.length){status('There are no other accessible gallery photos to compare.');return}
+  const total=photos.length,batches=Math.ceil(total/5);
+  if(!confirm('SEARCH ALL '+total+' OTHER GALLERY PHOTOGRAPHS?\\n\\n'+
+   'The AI will compare the detail you selected against every accessible photo, including UNINDEXED and previously liked/voted photos. '+
+   'This makes up to '+batches+' paid comparison requests (5 photos per batch), using API credits. '+
+   'Resized copies are sent to the configured vision provider, but nothing is published or saved externally. Continue?'))return;
+  aiBusy=true;working=true;
+  $('vdAISearch').disabled=true;$('vdAnalyze').disabled=true;
+  $('vdRefine').disabled=true;$('vdAIIndex').disabled=true;
+  $('vdReviewAll').hidden=true;
+  fullGalleryResults=[];showAllGallery=false;fullGalleryScope=0;
+  const request=++searchId,results=[],unreadable=[];
+  $('vdProcess').hidden=false;percent(0,total);
+  emptyResults('AI scanning the entire accessible gallery. This does not require pre-indexing.');
   try{
-   // Do not charge for a search that cannot return anything. First verify
-   // the searchable AI index exists (the old interface made this unclear).
-   const {count,error:countErr}=await client.from('corp_social_photo_features')
-    .select('asset_id',{count:'exact',head:true}).eq('feature_key','overall');
-   if(countErr)throw Error('Unable to read the AI photo index: '+countErr.message);
-   if(!count){
-    status('AI OBJECT SEARCH IS NOT READY: 0 photos indexed. Use INDEX 5 PHOTOS WITH AI at the top, approve the one-time batch, then search again. No AI search charge occurred.');
-    $('vdIndexStatus').textContent='AI INDEX EMPTY: none of the '+eligible().length+
-     ' photographs have been processed by the vision model. Choose INDEX 5 PHOTOS WITH AI (paid) to begin.';
-    $('vdAIIndex').scrollIntoView({behavior:'smooth',block:'nearest'});
-    return;
+   const crop=jpegPreview(main,area);
+   let completed=0;
+   for(let offset=0;offset<photos.length;offset+=5){
+    if(request!==searchId||!inUse()||current?.id!==source.id)return;
+    const portion=photos.slice(offset,offset+5),items=[];
+    status('Preparing photographs '+(offset+1)+'–'+Math.min(offset+5,total)+' of '+total+' for actual image-to-image comparison…');
+    for(const asset of portion){
+     if(request!==searchId||!inUse())return;
+     try{
+      const image=await loadImage(mediaUrl(asset));
+      items.push({asset_id:asset.id,preview:jpegPreview(image,null,520)});
+     }catch(e){unreadable.push(safeText(asset))}
+    }
+    if(items.length){
+     status('Comparing '+items.length+' photographs directly with your selected detail (batch '+(Math.floor(offset/5)+1)+'/'+batches+')…');
+     const {data,error}=await client.functions.invoke('blackcell-visual-ai',{body:{
+      action:'gallery',asset_id:source.id,preview:crop,candidates:items
+     }});
+     if(error||!data?.ok)throw Error(await functionError(error,data));
+     results.push(...(data.results||[]));
+    }
+    completed+=portion.length;
+    percent(completed,total);
+    status('AI checked '+completed+' of '+total+' photographs · '+results.filter(x=>x.found).length+' potentially similar so far.');
    }
-   if(!confirm('AI will identify your selected clothing or equipment, find candidates from '+count+
-    ' indexed photos, then visually COMPARE your selected crop against up to 6 actual candidate images. This uses paid API credits and shares the approved candidates with the vision provider. Continue?'))return;
-   status('AI identifying the actual item and searching '+count+' indexed photographs…');
-   const cropped=jpegPreview(main,selection);
-   const {data,error}=await client.functions.invoke('blackcell-visual-ai',{body:{
-    action:'search',asset_id:current.id,preview:cropped
-   }});
-   if(error||!data?.ok)throw Error(await functionError(error,data));
-   displayAI(data.results,data);
-  }catch(e){status('AI object search could not finish: '+(e?.message||'Unknown issue')+
-   '. No item matches were verified.')}
-  finally{aiBusy=false;$('vdAISearch').disabled=!selection||working||!sourceReady}
+   if(request!==searchId||!inUse())return;
+   const matched=results.filter(x=>x.found).length;
+   displayAI(results,{method:'gallery',scanned:results.length,indexed_photos:results.length});
+   status('FULL GALLERY SCAN: '+results.length+' of '+total+' photographs compared · '+
+    matched+' visually similar · '+(results.length-matched)+' available for manual review'+
+    (unreadable.length?' · '+unreadable.length+' photos could not load':'')+
+    '. Choose REVIEW OTHER PHOTOS if any known match is missing.');
+  }catch(e){
+   if(request!==searchId||!inUse())return;
+   displayAI(results,{method:'gallery',scanned:results.length,indexed_photos:results.length});
+   status('Gallery scan stopped after '+results.length+' of '+total+' photos: '+
+    (e?.message||'Unknown issue')+'. Any completed results are shown; you can retry when ready.');
+  }finally{
+   if(request===searchId){
+    working=false;aiBusy=false;$('vdProcess').hidden=true;
+    $('vdAISearch').disabled=!selection||!sourceReady;
+    $('vdAnalyze').disabled=!selection||!sourceReady;
+    $('vdRefine').disabled=!selection||!sourceReady;
+    $('vdAIIndex').disabled=false;
+   }
+  }
  }
  async function indexWithAI(){
   if(aiBusy||scanBusy||!state.user)return;
@@ -710,6 +778,9 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   });
   $('vdAnalyze').addEventListener('click',()=>void analyze());
   $('vdAISearch').addEventListener('click',()=>void findWithAI());
+  $('vdReviewAll').addEventListener('click',()=>{
+   showAllGallery=!showAllGallery;updateGalleryReview();
+  });
   $('vdRefine').addEventListener('click',()=>void refineWithAI());
   $('vdWebSearch').addEventListener('click',()=>void findOnline());
   $('vdAIIndex').addEventListener('click',()=>void indexWithAI());
