@@ -60,106 +60,144 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100% }
  }
 }
 
-/* BLACKCELL / ANCHORED LOGIN + SLIDING ACCESS PASS
-   Preserve the sign-in card from the initial screen. After an authorized
-   email/password login only the second (Access Pass) card slides to the right.
-   No credential checks or authorization logic are changed by these rules. */
-@media (min-width: 951px) {
-  .stage-window:not(.show-pass) .login-panel,
-  .stage-window.show-pass .login-panel {
-    left: 50% !important;
-    right: auto !important;
-    top: 50%;
-    width: 445px;
-    transform: translate(-50%, -50%) !important;
-    opacity: 1 !important;
-    pointer-events: auto;
-  }
-  .stage-window .pass-panel,
-  .stage-window.show-pass .pass-panel {
-    left: calc(50% + 245px) !important;
-    right: auto !important;
-    top: 50%;
-    width: 430px;
-  }
-  .stage-window:not(.show-pass) .pass-panel {
-    transform: translate(95%, -50%) scale(.985) !important;
-    opacity: 0;
-    pointer-events: none;
-  }
-  .stage-window.show-pass .pass-panel {
-    transform: translate(0, -50%) scale(1) !important;
-    opacity: 1;
-    pointer-events: auto;
-  }
+/* BLACKCELL / ONE-CARD ADMINISTRATION + ACCESS PASS
+   Login stays visually anchored at its original size. Only the two tabs
+   exchange positions; verification fields replace the first form INSIDE.
+   The retired standalone Access Pass panel is permanently hidden. */
+.stage-window,
+.stage-window.show-pass,
+.stage-window:not(.show-pass) {
+  width:445px!important;
+  flex:0 0 445px!important;
+  height:660px!important;
+  min-height:0!important;
 }
-/* Keep the first login EXACTLY its initial size, typography and surface when
-   the verified CSS class appears. The second card alone animates into view. */
-.stage-window.show-pass .login-card.signed-in {
-  width: 445px !important;
-  max-width: 100% !important;
-  padding: clamp(25px,4vw,43px) !important;
-  border: 1px solid #ffffff30 !important;
-  background: linear-gradient(145deg,#28232aab,#0b0a0eee) !important;
-  box-shadow: 0 25px 100px #0009,inset 0 1px #ffffff28 !important;
-}
-.stage-window.show-pass .login-card.signed-in .brand-crest {
-  width:80px!important; height:80px!important;
-  font-size:45px!important;
-  border-color:#a043594d!important;
-  margin:0 auto 24px!important;
-}
-.stage-window.show-pass .login-card.signed-in .eyebrow,
-.stage-window.show-pass .login-card.signed-in #login {
-  display:block!important;
-}
-.stage-window.show-pass .login-card.signed-in h1 {
-  font-size:29px!important;
-  letter-spacing:-.035em!important;
-  margin:13px 0 27px!important;
-  color:#f3f0f4!important;
-  white-space:normal!important;
-}
-.stage-window.show-pass .login-card.signed-in #login input {
+.stage-window .login-panel,
+.stage-window.show-pass .login-panel,
+.stage-window:not(.show-pass) .login-panel {
+  position:absolute!important;
+  left:0!important;
+  right:auto!important;
+  top:50%!important;
+  width:445px!important;
+  max-width:none!important;
+  transform:translateY(-50%)!important;
   opacity:1!important;
+  pointer-events:auto!important;
+  z-index:3!important;
+  align-items:center!important;
+  justify-content:center!important;
 }
-.stage-window.show-pass .login-card.signed-in #submit {
-  border-color:#ba566c!important;
-  background:linear-gradient(120deg,#6c2133,#a43a50,#762338)!important;
-  color:#fff!important;
-  opacity:1!important;
+.stage-window #passPanel {
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
 }
-.stage-window.show-pass .login-card.signed-in #status {
+.stage-window #loginCard {
+  width:445px!important;
+  max-width:100%!important;
+  min-height:648px;
+  margin:0!important;
+}
+.stage-window #inlineAccessStep[hidden],
+.stage-window #login[hidden],
+.stage-window #codeForm[hidden],
+.stage-window #continueVerified[hidden],
+.stage-window #accessPassTab[hidden] {
   display:none!important;
 }
-.stage-window.show-pass .login-card.signed-in #accountChange {
-  display:block;
-  margin:19px auto 0;
+.stage-window.show-pass #login {
+  display:none!important;
 }
-@media (max-width:950px) {
-  /* On smaller screens one panel replaces the other, no overlap. */
-  .stage-window:not(.show-pass) .login-panel {
-    transform:translate(0,-50%)!important;
-    opacity:1;
-  }
-  .stage-window.show-pass .login-panel {
-    transform:translate(-108%,-50%)!important;
-    opacity:0;
-    pointer-events:none;
-  }
-  .stage-window:not(.show-pass) .pass-panel {
-    transform:translate(108%,-50%) scale(.985)!important;
-    opacity:0;
-    pointer-events:none;
-  }
-  .stage-window.show-pass .pass-panel {
-    transform:translate(0,-50%) scale(1)!important;
-    opacity:1;
-    pointer-events:auto;
-  }
+.stage-window.show-pass #inlineAccessStep:not([hidden]) {
+  display:block!important;
+}
+.stage-window.show-pass .links {display:none!important}
+.stage-window.show-pass #status{display:none!important}
+.stage-window.show-pass #loginRoleDescription{
+  color:#a7bfae;
+  margin-bottom:12px;
+}
+.stage-window .inline-access-step{
+  animation:bc-access-reveal .45s cubic-bezier(.22,.78,.25,1) both;
+  text-align:left;
+}
+.stage-window .inline-access-step .eyebrow{
+  font-size:10px;
+  text-align:left;
+  letter-spacing:.14em;
+  margin:9px 0 4px;
+}
+.stage-window .inline-access-step h2{
+  font-size:19px;
+  margin:3px 0 3px;
+  letter-spacing:-.03em;
+}
+.stage-window .inline-access-step .support{
+  color:#a7a3af;
+  font-size:11px;
+  line-height:1.5;
+  margin:0 0 12px;
+}
+.stage-window .inline-access-step label{
+  margin:12px 0 7px;
+}
+.stage-window .inline-access-step input{
+  min-height:50px;
+}
+.stage-window .inline-access-step .primary{
+  margin-top:21px;
+}
+.stage-window .inline-access-step .message{
+  margin-top:12px;
+}
+.stage-window.show-pass #accountChange:not([hidden]){
+  display:block;
+  text-align:center;
+  margin:15px auto 0;
+}
+@keyframes bc-access-reveal {
+  from{opacity:0;transform:translateY(9px)}
+  to{opacity:1;transform:translateY(0)}
+}
+/* The tabs themselves become the two-stage progress indicator.
+   First verified: Administration moves RIGHT and becomes dark green.
+   New Access Pass occupies LEFT in the original crimson active color. */
+.stage-window.show-pass .login-role-tabs #employeeLoginTab {
+  display:none!important;
+}
+.stage-window.show-pass .login-role-tabs #adminLoginTab {
+  grid-column:2;
+  grid-row:1;
+  border-color:#4f9870!important;
+  background:linear-gradient(135deg,#193e2a,#173322)!important;
+  color:#d3f5dc!important;
+  box-shadow:0 0 0 1px #5bbd7620,inset 0 1px #a0fac226;
+}
+.stage-window.show-pass .login-role-tabs #adminLoginTab small {
+  color:#a4e9b5!important;
+}
+.stage-window.show-pass .login-role-tabs #accessPassTab:not([hidden]) {
+  display:flex!important;
+  grid-column:1;
+  grid-row:1;
+  border-color:#9e637c;
+  background:linear-gradient(135deg,#392432,#241b29);
+  color:#f7edf4;
+}
+.stage-window.show-pass .login-role-tabs #accessPassTab small{
+  color:#ce9eb0;
+}
+.stage-window.codes-approved .login-role-tabs #accessPassTab:not([hidden]){
+  border-color:#4f9870!important;
+  background:linear-gradient(135deg,#193e2a,#173322)!important;
+  color:#d3f5dc!important;
+  box-shadow:0 0 0 1px #5bbd7620,inset 0 1px #a0fac226;
+}
+.stage-window.codes-approved .login-role-tabs #accessPassTab small {
+  color:#a4e9b5!important;
 }
 @media (prefers-reduced-motion:reduce){
-  .stage-window .login-panel,.stage-window .pass-panel {
-    transition-duration:.01ms!important;
-  }
+  .stage-window .inline-access-step {animation:none!important}
+  .stage-window .login-role-tabs button {transition:none!important}
 }
