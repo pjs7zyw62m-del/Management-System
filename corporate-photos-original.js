@@ -69,7 +69,7 @@ $('downloadOriginal').addEventListener('click',async()=>{
   }else if(auth.member.role==='employee'){
    const {data,error}=await client.rpc('corp_employee_code_status');approved=!error&&data?.verified===true;
   }
-  if(!approved)throw Error('Verify your corporate access pass to view original media.');
+  if(!approved)throw Error('Your corporate session is not authorized to view original media.');
   const {data:current,error}=await client.from('corp_social_assets').select('*').eq('id',id).maybeSingle();
   if(error||!current)throw Error('This media is unavailable or outside your authorized network.');
   const {data:group,error:groupErr}=await client.from('corp_social_assets')
