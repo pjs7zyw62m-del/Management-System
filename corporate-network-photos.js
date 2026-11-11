@@ -4,7 +4,7 @@ import {createMilitaryPhotoAI} from './corporate-military-ai.js?v=20261110-learn
 import {createPhotoTaste} from './corporate-photo-taste.js?v=20261110-trigger2';
 import {createPhotoPredict} from './corporate-photo-predict.js?v=20261110-pred1';
 import {createPhotoVoting} from './corporate-photo-votes.js?v=20261111-votes2';
-export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadAsset,refresh,profile,openProfile,ensureSigned,switchView,personalization}){
+export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadAsset,refresh,profile,openProfile,ensureSigned,switchView,personalization,rediscovery}){
  const $=id=>document.getElementById(id);
  const meta={albums:[],albumItems:[],favorites:[],activeAlbum:null,filter:'all',sort:'newest',query:'',
    scope:'mine',branch:'',category:'',era:'',editingAsset:null,
@@ -765,6 +765,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   $('applePhotoViewer').hidden=false;
   document.body.style.overflow='hidden';
   renderViewer();
+  void rediscovery.recordView(viewerCurrent());
  }
  function closeViewer(){
   $('applePhotoViewer').hidden=true;document.body.style.overflow='';
@@ -773,6 +774,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  function changeViewer(step){
   const length=meta.viewerItems.length;if(!length)return;
   meta.viewerIndex=(meta.viewerIndex+step+length)%length;renderViewer();
+  void rediscovery.recordView(viewerCurrent());
  }
  function renderViewer(){
   const a=viewerCurrent();if(!a)return;
