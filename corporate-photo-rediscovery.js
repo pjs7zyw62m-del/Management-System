@@ -158,13 +158,48 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
   if(old?.isConnected)old.focus({preventScroll:true});
  }
  function destroyCard(){
+  // Card transitions must also stop the old zoom-hold observer.
+  if(cardZoomCleanup){cardZoomCleanup();cardZoomCleanup=null}
   if(card){card.remove();card=null}
   lastSourceId='';
  }
- function chooseNext(seed,choice='more'){
-  const all=possibleSource().filter(a=>!sessionSeen.has(a.id)&&a.id!==seed.id);
+ // Recheck the authenticated member's actual vote records on each card.
+ // Liked and "More Like This" source photos are kept as recommendation
+ // seeds, but never shown again as Rediscovery suggestions.
+ async function readDecisionState(){
+  const uid=state.user?.id;
+  if(!uid)return null;
+  const [votes,history]=await Promise.all([
+   client.from('corp_social_photo_votes')
+    .select('asset_id').eq('user_id',uid).limit(10000),
+   client.from('corp_social_photo_rediscovery')
+    .select('asset_id,view_count,engaged_views,zoom_engaged_views,last_viewed_at,last_suggested_at,not_interested,rediscovery_feedback')
+    .eq('user_id',uid).order('view_count',{ascending:false}).limit(10000)
+  ]);
+  if(votes.error||history.error){
+   console.warn('Photo preference/vote exclusions unavailable',
+    votes.error?.message||history.error?.message);
+   return null; // Never display a possibly-voted photo when checks fail.
+  }
+  const voted=new Set((votes.data||[]).map(row=>row.asset_id));
+  const historyRows=history.data||[];
+  const decided=new Set(historyRows.filter(row=>
+   row.not_interested===true||['like','more','dislike'].includes(row.rediscovery_feedback)
+  ).map(row=>row.asset_id));
+  return {voted,history:historyRows,
+   suppressed:new Set([...voted,...decided])};
+ }
+ async function isNotVotedNow(id){
+  const {data,error}=await client.from('corp_social_photo_votes')
+   .select('asset_id').eq('user_id',state.user.id).eq('asset_id',id).limit(1);
+  if(error){console.warn('Could not verify current photo vote',error.message);return false}
+  return !data?.length;
+ }
+
+ function chooseNext(seed,choice='more',suppressed=new Set()){
+  const all=possibleSource().filter(a=>!sessionSeen.has(a.id)&&a.id!==seed.id&&!suppressed.has(a.id));
   if(!all.length)return null;
-  const related=findSimilar(seed).filter(a=>!sessionSeen.has(a.id));
+  const related=findSimilar(seed).filter(a=>!sessionSeen.has(a.id)&&!suppressed.has(a.id));
   if(choice!=='dislike'&&related.length)return related[Math.floor(Math.random()*Math.min(4,related.length))];
   const category=x=>[x.military_category,x.military_branch,x.military_era].filter(known).join(':');
   const alternatives=choice==='dislike'?all.filter(a=>category(a)!==category(seed)):all;
@@ -199,8 +234,12 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
   if(card)card.classList.add('bc-rediscovery-busy');
   try{
    if(!await storeFeedback(seed,feedback))return;
-   const next=chooseNext(seed,feedback);
-   if(trigger){
+   const decisions=await readDecisionState();
+   if(!decisions){toast('Could not check which photos you already voted for. Try again.');return}
+   const next=chooseNext(seed,feedback,decisions.suppressed);
+   // A Like means "show me what else might interest me"—not another
+   // rediscovery of the same image and never a competition vote.
+   if(trigger||feedback==='like'||feedback==='more'){
     destroyCard();
     if(!next){closeCard();toast('Your choice is saved. Add more classified photographs to discover similar images.');return}
     showSeed(next,'trigger');
@@ -383,50 +422,91 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
 async function offer({preview=false,test=false,requestedMode='rediscovery'}={}){
   if(!on()||!state.user?.id||card||(sessionShown&&!preview&&!test))return false;
   if((!preview||test)&&!allowedMoment())return false;
-  const {data,error}=await client.from('corp_social_photo_rediscovery')
-    .select('asset_id,view_count,engaged_views,zoom_engaged_views,last_viewed_at,last_suggested_at,not_interested')
-    .eq('user_id',state.user.id).eq('not_interested',false)
-    .order('engaged_views',{ascending:false}).order('view_count',{ascending:false}).limit(130);
-  if(error){console.warn('Rediscovery suggestions unavailable:',error.message);return false}
-  const candidates=(data||[]).filter(r=>
-   (Number(r.zoom_engaged_views||0)>0||Number(r.engaged_views||0)>0||Number(r.view_count||0)>=(preview?1:2)) &&
-   possibleSource().some(a=>a.id===r.asset_id) &&
-   (preview||elapsed(r.last_viewed_at)>3*60000));
-  if(!candidates.length){
-   if(preview&&!test)toast('Open a Military Library photo after enabling Rediscovery, then try Preview again.');
+  const decisions=await readDecisionState();
+  if(!decisions)return false;
+  if(card)return false;
+  const {voted,history,suppressed}=decisions;
+  const photos=possibleSource();
+  const assetsById=new Map(photos.map(asset=>[asset.id,asset]));
+  const score=row=>
+   Math.min(5,Number(row.zoom_engaged_views||0))*7+
+   Math.min(5,Number(row.engaged_views||0))*5+
+   Math.min(10,Number(row.view_count||0));
+  const accepted=row=>['like','more'].includes(row.rediscovery_feedback);
+  const candidates=history.filter(row=>
+   !suppressed.has(row.asset_id)&&row.not_interested!==true&&
+   assetsById.has(row.asset_id)&&
+   (Number(row.zoom_engaged_views||0)>0||Number(row.engaged_views||0)>0||
+    Number(row.view_count||0)>=(preview?1:2))&&
+   (preview||elapsed(row.last_viewed_at)>3*60000));
+  const cooldown=rare()?7*86400000:24*3600000;
+  const newest=Math.min(...candidates.map(row=>elapsed(row.last_suggested_at)));
+  const eligible=candidates.filter(row=>preview||test||elapsed(row.last_suggested_at)>cooldown);
+  const ranked=eligible.sort((x,y)=>score(y)-score(x)).slice(0,12);
+  const unrepeat=test&&ranked.length>1?
+   ranked.filter(row=>row.asset_id!==lastTestPhotoId):ranked;
+  const choice=unrepeat.length?unrepeat[Math.floor(Math.pow(Math.random(),1.5)*unrepeat.length)]:null;
+  const rediscovery=choice?assetsById.get(choice.asset_id):null;
+
+  // Explicit likes and real votes are strong *source* signals for Trigger
+  // Cards. We never redisplay those source photos as cards.
+  const sourceIds=[
+   ...history.filter(accepted).sort((x,y)=>
+    Date.parse(y.last_feedback_at||y.last_viewed_at||0)-
+    Date.parse(x.last_feedback_at||x.last_viewed_at||0)).map(row=>row.asset_id),
+   ...voted,
+   ...history.filter(row=>row.not_interested!==true&&
+    (row.zoom_engaged_views>0||row.engaged_views>0))
+    .sort((x,y)=>score(y)-score(x)).map(row=>row.asset_id)
+  ];
+  const sourceSeen=new Set();
+  const recommendations=[];
+  for(const id of sourceIds){
+   if(sourceSeen.has(id))continue;
+   sourceSeen.add(id);
+   const source=assetsById.get(id);
+   if(!source)continue;
+   for(const suggested of findSimilar(source)){
+    if(suppressed.has(suggested.id)||!assetsById.has(suggested.id))continue;
+    if(!recommendations.some(item=>item.id===suggested.id))recommendations.push(suggested);
+   }
+   if(recommendations.length>=12)break;
+  }
+  const freshSuggestions=recommendations.filter(a=>a.id!==lastTestPhotoId);
+  const related=freshSuggestions.length?freshSuggestions:recommendations;
+  // Prefer Trigger Cards after the member has liked/voted for photos.
+  // An admin's temporary 30s testing still alternates when possible.
+  const wantTrigger=requestedMode==='trigger'||
+    (!rediscovery&&related.length>0)||
+    (!preview&&!test&&related.length>0&&Math.random()<.4);
+
+  let proposed=null,selectedMode='rediscovery';
+  if(wantTrigger&&related.length){
+   proposed=related[Math.floor(Math.random()*Math.min(related.length,5))];
+   selectedMode='trigger';
+  }else if(rediscovery&&(preview||test||newest>=cooldown)){
+   proposed=rediscovery;
+  }else if(!rediscovery&&related.length){
+   proposed=related[0];selectedMode='trigger';
+  }
+  if(!proposed){
+   if(preview&&!test)toast('No unreviewed photos are ready. Explore more photographs or select Trigger Preview.');
    return false;
   }
-  const cooldown=rare()?7*86400000:24*3600000;
-  if(!preview&&!test){
-   const newest=Math.min(...(data||[]).map(r=>elapsed(r.last_suggested_at)));
-   if(newest<cooldown)return false;
-  }
-  const eligible=candidates.filter(c=>preview||test||elapsed(c.last_suggested_at)>cooldown);
-  if(!eligible.length)return false;
-  // Longer looks outweigh repeated openings; neither is a confirmed like or vote.
-  const strength=row=>Math.min(5,Number(row.zoom_engaged_views||0))*7+Math.min(5,Number(row.engaged_views||0))*5+Math.min(10,Number(row.view_count||0));
-  const sorted=eligible.sort((a,b)=>strength(b)-strength(a)).slice(0,12);
-  const pool=test&&sorted.length>1?sorted.filter(x=>x.asset_id!==lastTestPhotoId):sorted;
-  const choice=pool[Math.floor(Math.pow(Math.random(),1.5)*pool.length)];
-  const seed=possibleSource().find(a=>a.id===choice.asset_id);
-  if(!seed)return false;
-  if(!preview&&!test){
+  // Exact targeted query prevents races and protects members with more
+  // historical votes than the initial snapshot's result limit.
+  if(!await isNotVotedNow(proposed.id))return false;
+  if(card)return false;
+  if(!preview&&!test&&selectedMode==='rediscovery'){
    const {data:marked,error:markError}=await client.from('corp_social_photo_rediscovery')
     .update({last_suggested_at:new Date().toISOString()})
-    .eq('user_id',state.user.id).eq('asset_id',seed.id).select('asset_id');
-   if(markError||!marked?.length)return;
-   sessionShown=true;
+    .eq('user_id',state.user.id).eq('asset_id',proposed.id).select('asset_id');
+   if(markError||!marked?.length)return false;
   }
-  const qualified=Number(choice.zoom_engaged_views||0)>0||Number(choice.engaged_views||0)>0;
-  const related=findSimilar(seed).filter(a=>a.id!==lastTestPhotoId);
-  const wantTrigger=(test&&requestedMode==='trigger')||(!preview&&!test&&qualified&&Math.random()<.4);
-  // Only label it a Trigger Card when actual military metadata gives a match.
-  // Otherwise fall back to Rediscovery rather than claiming false similarity.
-  const suggested=wantTrigger&&related.length?related[0]:seed;
-  const selectedMode=wantTrigger&&related.length?'trigger':'rediscovery';
-  if(test)lastTestPhotoId=suggested.id;
+  if(!preview&&!test)sessionShown=true;
+  if(test)lastTestPhotoId=proposed.id;
   sessionSeen.clear();
-  showSeed(suggested,selectedMode);
+  showSeed(proposed,selectedMode);
   return true;
  }
  function start(){
@@ -447,20 +527,8 @@ async function offer({preview=false,test=false,requestedMode='rediscovery'}={}){
    $('triggerPreview')?.addEventListener('click',async()=>{
     if(!on()){toast('Enable and save Photo Rediscovery first.');return}
     if($('personalizationOverlay'))$('personalizationOverlay').hidden=true;
-    const candidates=possibleSource();
-    if(!candidates.length){toast('Upload photos to the Military Library to preview Trigger Cards.');return}
-    const {data}=await client.from('corp_social_photo_rediscovery')
-      .select('asset_id,view_count,engaged_views,zoom_engaged_views,rediscovery_feedback')
-      .eq('user_id',state.user.id).eq('not_interested',false)
-      .order('view_count',{ascending:false}).limit(100);
-    const score=x=>Number(x.zoom_engaged_views||0)*8+Number(x.engaged_views||0)*5+
-      Number(x.view_count||0)+(x.rediscovery_feedback==='like'?20:0)+(x.rediscovery_feedback==='more'?15:0);
-    const rows=(data||[]).sort((a,b)=>score(b)-score(a));
-    const source=rows.map(r=>candidates.find(a=>a.id===r.asset_id)).find(Boolean);
-    const suggested=source?findSimilar(source)[0]:null;
-    if(!suggested){toast('Open and explore more classified photographs so Blackcell can find related Trigger Cards.');return}
-    sessionSeen.clear();
-    showSeed(suggested,'trigger');
+    const shown=await offer({preview:true,requestedMode:'trigger'});
+    if(!shown)toast('No new related photographs are available yet. Explore more classified photos to help Trigger Cards find matches.');
    });
    didBind=true;
   }
