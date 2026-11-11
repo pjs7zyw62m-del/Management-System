@@ -132,10 +132,83 @@ function renderSavedHybrids(){
 }
 /* Branch-specific U.S. browsing. This classifies only existing metadata; no
    new photos are created, imported, or exposed outside the signed-in session. */
-const branches={
- army:"U.S. ARMY",marines:"MARINE CORPS",navy:"U.S. NAVY",
- air:"AIR FORCE",space:"SPACE FORCE",coast:"COAST GUARD",guard:"NATIONAL GUARD"
-};
+const SERVICES=[
+ {id:"army",code:"01 / LAND",name:"U.S. ARMY",personnel:"SOLDIERS"},
+ {id:"marines",code:"02 / EXPEDITIONARY",name:"MARINE CORPS",personnel:"MARINES"},
+ {id:"navy",code:"03 / SEA",name:"U.S. NAVY",personnel:"SAILORS"},
+ {id:"air",code:"04 / AIR",name:"AIR FORCE",personnel:"AIRMEN"},
+ {id:"space",code:"05 / SPACE",name:"SPACE FORCE",personnel:"GUARDIANS"},
+ {id:"coast",code:"06 / MARITIME",name:"COAST GUARD",personnel:"COAST GUARDSMEN"}
+];
+const branches={...Object.fromEntries(SERVICES.map(x=>[x.id,x.name])),guard:"NATIONAL GUARD"};
+const photoCountByService=id=>galleryFor().filter(a=>branchOf(a)===id).length;
+function chooseInitialFeatured(){
+ // Highest real photo count; use archive order to break ties, never placeholder counts.
+ return [...SERVICES].sort((a,b)=>photoCountByService(b.id)-photoCountByService(a.id))[0]?.id||"army";
+}
+function serviceCover(id){
+ return galleryFor().find(a=>branchOf(a)===id&&state.urls.get(a.id))||null;
+}
+function makeElement(tag,className,textValue){
+ const el=document.createElement(tag);
+ if(className)el.className=className;
+ if(textValue!==undefined)el.textContent=textValue;
+ return el;
+}
+function showFeaturedService(){
+ const service=SERVICES.find(s=>s.id===state.featuredBranch)||SERVICES[0];
+ const count=photoCountByService(service.id);
+ $("featuredBranch").dataset.branch=service.id;
+ $("featuredBranch").setAttribute("aria-label","View "+service.name+" photo archive");
+ $("featuredBranch").setAttribute("aria-pressed",String(state.branch===service.id));
+ $("featuredBranch").classList.toggle("active",state.branch===service.id);
+ $("featuredBranchCode").textContent=service.code;
+ $("featuredBranchPersonnel").textContent=service.personnel;
+ $("featuredBranchTitle").textContent=service.name;
+ $("featuredBranchCount").textContent=count+" PHOTO"+(count===1?"":"S");
+ $("featuredBranchCount").classList.toggle("empty",!count);
+ const asset=serviceCover(service.id);
+ const image=$("featuredBranchImage");
+ if(asset){
+  image.src=state.urls.get(asset.id);
+  image.alt=service.name+" military photograph";
+  image.hidden=false;
+ }else{
+  image.hidden=true;image.removeAttribute("src");
+ }
+}
+function renderSecondaryServices(){
+ const host=$("secondaryBranches");
+ host.replaceChildren();
+ for(const item of SERVICES.filter(s=>s.id!==state.featuredBranch)){
+  const count=photoCountByService(item.id);
+  const button=makeElement("button","bento-small");
+  button.type="button";
+  button.dataset.branch=item.id;
+  button.classList.toggle("has-photos",count>0);
+  button.setAttribute("aria-pressed",String(state.branch===item.id));
+  button.setAttribute("aria-label","Show "+item.name+" photo archive, "+count+" photos");
+  const top=makeElement("span","bento-small-top");
+  top.append(makeElement("span","",item.code),makeElement("span","","↗"));
+  const bottom=makeElement("span","bento-small-bottom");
+  bottom.append(makeElement("strong","",item.name));
+  const footer=makeElement("span","bento-small-footer");
+  footer.append(makeElement("span","",item.personnel),makeElement("span","bento-small-count",count+" PHOTO"+(count===1?"":"S")));
+  bottom.append(footer);
+  button.append(top,bottom);
+  button.addEventListener("click",()=>setBranch(item.id));
+  host.append(button);
+ }
+}
+function setBranch(id){
+ if(id!=="guard"&&!SERVICES.some(s=>s.id===id))return;
+ state.featuredBranch=id==="guard"?state.featuredBranch:id;
+ state.branch=id;
+ renderBranchCounters();
+ renderPhotos();
+ $("galleryTitle").scrollIntoView({behavior:window.matchMedia?.("(prefers-reduced-motion: reduce)").matches?"instant":"smooth",block:"start"});
+}
+
 function branchOf(asset){
  const raw=String(asset.military_branch||"").toLowerCase();
  if(/national guard/.test(raw))return "guard";
@@ -148,16 +221,14 @@ function branchOf(asset){
  return "unclassified";
 }
 function renderBranchCounters(){
- const all=galleryFor();
- document.querySelectorAll("[data-count]").forEach(el=>{
-  const key=el.dataset.count;
-  const count=all.filter(a=>branchOf(a)===key).length;
-  el.textContent=count+" PHOTO"+(count===1?"":"S");
- });
- document.querySelectorAll("[data-branch]").forEach(el=>{
-  const selected=el.dataset.branch===state.branch;
-  el.classList.toggle("active",selected);
-  el.setAttribute("aria-pressed",String(selected));
+ showFeaturedService();
+ renderSecondaryServices();
+ const guard=photoCountByService("guard");
+ const guardCount=document.querySelector('[data-count="guard"]');
+ if(guardCount)guardCount.textContent=guard+" PHOTO"+(guard===1?"":"S");
+ document.querySelectorAll('.component-link[data-branch="guard"]').forEach(el=>{
+  el.classList.toggle("active",state.branch==="guard");
+  el.setAttribute("aria-pressed",String(state.branch==="guard"));
  });
  $("clearBranch").hidden=state.branch==="all";
  $("selectedBranchLabel").textContent=state.branch==="all"?"ALL MILITARY BRANCHES":branches[state.branch]||"UNCLASSIFIED";
@@ -242,11 +313,9 @@ function installEvents(){
  $("gallerySearch").addEventListener("input",renderPhotos);
  $("categoryFilter").addEventListener("change",e=>{state.category=e.target.value;renderPhotos()});
  $("eraFilter").addEventListener("change",e=>{state.era=e.target.value;renderPhotos()});
- document.querySelectorAll("[data-branch]").forEach(el=>el.addEventListener("click",()=>{
-  state.branch=el.dataset.branch===state.branch?"all":el.dataset.branch;
-  renderBranchCounters();renderPhotos();
-  if(window.innerWidth<700)$("galleryTitle").scrollIntoView({behavior:"smooth",block:"start"});
- }));
+ $("featuredBranch").addEventListener("click",()=>setBranch(state.featuredBranch));
+ document.querySelectorAll('.component-link[data-branch="guard"]').forEach(el=>
+  el.addEventListener("click",()=>setBranch("guard")));
  $("clearBranch").addEventListener("click",()=>{
   state.branch="all";renderBranchCounters();renderPhotos();
  });
@@ -276,7 +345,7 @@ function installEvents(){
 }
 async function reload(){
  $("reloadPhotos").disabled=true;
- try{await loadAssets();await signedImages();renderHero();renderDirectory();renderFilterOptions();renderBranchCounters();renderPhotos();toast("United States military photographs refreshed.")}
+ try{await loadAssets();await signedImages();if(!state.featuredBranch)state.featuredBranch=chooseInitialFeatured();renderHero();renderDirectory();renderFilterOptions();renderBranchCounters();renderPhotos();toast("United States military photographs refreshed.")}
  catch(err){toast(err.message||"Refresh failed")}finally{$("reloadPhotos").disabled=false}
 }
 async function boot(){
@@ -287,6 +356,7 @@ async function boot(){
   if(!state.view.length)state.view=["US"];
   state.builder=[...state.view];
   await signedImages();
+  state.featuredBranch=chooseInitialFeatured();
   renderHero();renderDirectory();renderTokens();renderSavedHybrids();renderFilterOptions();renderBranchCounters();renderPhotos();
   installEvents();
   $("accessGate").hidden=true;$("countryApp").hidden=false;
