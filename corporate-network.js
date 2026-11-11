@@ -1,6 +1,7 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-staff1';
 import {setupBlackcellPhotos} from './corporate-network-photos.js?v=20261111-viewer-vote-only';
 import {mountMilitaryGunner} from './military-gunner.js?v=20261110-fast4';
+import {createNetworkPersonalization} from './corporate-network-personalization.js?v=20261111-personal2';
 const client=corporateClient(),bucket=client.storage.from('corp-social-media');
 const $=id=>document.getElementById(id);
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -413,10 +414,11 @@ function renderFeed(){
  }
  if(state.deepPost){posts=posts.filter(p=>p.id===state.deepPost);library=[];}
  // Keep one activity per original upload. Library media are not social-post attachments.
- const entries=[
+ const recent=[
   ...posts.map(p=>({type:'post',item:p})),
   ...library.map(a=>({type:'library',item:a}))
  ].sort((a,b)=>Date.parse(b.item.created_at||0)-Date.parse(a.item.created_at||0)).slice(0,160);
+ const entries=state.feedFilter==='for-you'?personalization.rankFeed(recent):recent;
  if(!entries.length){
   box.append(empty(state.feedFilter==='following'?'No following updates yet':'No network activity yet',
    'Military Library photo uploads and network posts will appear here automatically.'));
@@ -692,12 +694,14 @@ async function boot(){
   }
   if(!verified)throw Error('Your corporate account must be active and authorized to enter the network.');
   await loadAll({show:false});
+  await personalization.load();
   if(auth.member.role==='owner'||auth.member.can_chat===true){
    const {data}=await client.rpc('corp_chat_peers');
    if(data?.ok===true&&Array.isArray(data.peers))state.chatPeers=data.peers;
   }
   $('gate').hidden=true;$('app').hidden=false;
   setupEvents();
+  personalization.setup();
   installNetworkSecurityChecks();
   // Periodic read-only refresh works even when Realtime publication is disabled.
   window.setInterval(()=>void refreshVisibleNetworkFeed(),90000);
@@ -741,6 +745,8 @@ async function boot(){
   $('gateBack').hidden=false;
  }
 }
+const personalization=createNetworkPersonalization({client,state,toast,
+ onChanged:()=>{photos.render();renderFeed()}});
 const photos=setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadAsset,refresh,profile,openProfile,
- ensureSigned:loadSigned,switchView});
+ ensureSigned:loadSigned,switchView,personalization});
 void boot();
