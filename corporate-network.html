@@ -47,12 +47,30 @@
       <button class="rail-link selected" data-view="feed"><span>▦</span> Network Feed</button>
       <button class="rail-link" data-view="profile"><span>♙</span> My Profile</button>
       <button class="rail-link" data-view="videos"><span>▶</span> Video Channel</button>
-      <button class="rail-link" data-view="photos"><span>▧</span> Military Library</button>
+      <div class="bc-library-nav-group" id="libraryNavGroup">
+       <div class="bc-library-nav-head">
+        <button class="rail-link bc-library-open" data-view="photos" type="button"><span>▧</span> Military Library</button>
+        <button class="bc-library-disclosure" id="libraryDisclosure" type="button" aria-expanded="false" aria-controls="librarySubmenu" aria-label="Expand Military Library menu"><span aria-hidden="true">⌄</span></button>
+       </div>
+       <nav class="bc-library-submenu" id="librarySubmenu" aria-label="Military Library sections" hidden>
+        <button type="button" data-library-jump="photosView"><span>⌂</span> Overview</button>
+        <button type="button" data-library-jump="wfExplorer"><span>◉</span> World Forces</button>
+        <button type="button" data-library-jump="militaryCategoryTiles"><span>▦</span> Browse by Subject</button>
+        <button type="button" data-library-jump="appleAlbumStrip"><span>▤</span> Albums</button>
+        <button type="button" data-library-jump="libraryMediaBrowse"><span>▧</span> My Military Media</button>
+        <button type="button" data-library-filter="for-you" data-library-jump="libraryMediaBrowse"><span>✦</span> For You</button>
+        <button type="button" data-library-filter="countries" data-library-jump="libraryMediaBrowse"><span>◎</span> My Country Pages</button>
+        <button type="button" data-library-jump="libraryMediaBrowse" data-library-focus="militaryFilterBranch"><span>≡</span> Branch / Subject / Era</button>
+        <button type="button" data-library-jump="militaryUploadSettings"><span>＋</span> Upload &amp; Classify</button>
+        <span class="bc-library-sub-label">FIELD RESOURCES</span>
+        <a href="uniform-care.html"><span>◇</span> Uniform Care</a>
+        <a href="uniform-innovations.html"><span>◈</span> Uniform Innovations</a>
+        <a href="uniform-history.html"><span>◷</span> Uniform Evolution</a>
+        <a href="uniform-of-the-year.html"><span>★</span> Uniform of the Year</a>
+       </nav>
+      </div>
       <button class="rail-link" data-view="discover"><span>◎</span> People & Following</button>
       <a class="rail-link" href="corporate-chat.html"><span>▧</span> Private Chat</a>
-      <a class="rail-link" href="uniform-care.html"><span>✦</span> Uniform Care</a>
-      <a class="rail-link" href="uniform-innovations.html"><span>◇</span> Uniform Innovations</a>
-      <a class="rail-link" href="uniform-of-the-year.html"><span>★</span> Uniform of the Year</a>
     </div>
     <div class="rail-note">PRIVATE CORPORATE SPACE<span>Verified employees and the Level 7 administrator only. Network posts are visible to authorized members.</span></div>
   </aside>
@@ -206,7 +224,7 @@
         <label>TAGS<input id="militaryUploadTags" maxlength="350" placeholder="Comma-separated searchable tags"></label>
       </div><p>Optional classification. A selected album’s metadata is used as the default. Do not upload restricted operational material.</p></details>
       <section class="apple-album-section"><div class="photos-section-head"><div><div class="overline">ORGANIZED MILITARY COLLECTIONS</div><h2>Albums</h2></div><span>Organized by the people of Blackcell</span></div><div id="appleAlbumStrip" class="apple-album-strip"></div></section>
-      <section class="apple-gallery-section">
+      <section class="apple-gallery-section" id="libraryMediaBrowse">
         <div class="photos-section-head"><div><div class="overline">PRIVATE / SEARCHABLE ARCHIVE</div><h2 id="photosGalleryTitle">My Military Media</h2></div><button id="photosClearAlbum" class="photos-clear-album" hidden>VIEW ALL ↗</button></div>
         <div class="military-filters" aria-label="Military media filters">
           <label>BRANCH<select id="militaryFilterBranch"><option value="">All branches</option><option value="Unspecified">Unspecified</option><option value="Army">Army</option><option value="Navy">Navy</option><option value="Marine Corps">Marine Corps</option><option value="Air Force">Air Force</option><option value="Space Force">Space Force</option><option value="Coast Guard">Coast Guard</option><option value="National Guard">National Guard</option><option value="Special Operations">Special Operations</option><option value="Joint / Multinational">Joint / Multinational</option><option value="Other">Other</option></select></label>
