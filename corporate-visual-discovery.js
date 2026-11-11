@@ -135,7 +135,13 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    const label=element('span','',asset.filename||'Military photo');
    b.append(img,label);host.append(b);
   }
-  host.querySelector('.active')?.scrollIntoView({behavior:'auto',block:'nearest',inline:'nearest'});
+  // Scrolling the thumbnail into view vertically can hide the large photo
+  // on iPhone. Move only the horizontal source strip.
+  const active=host.querySelector('.active');
+  if(active){
+   const delta=active.getBoundingClientRect().left-host.getBoundingClientRect().left;
+   host.scrollLeft+=delta-(host.clientWidth-active.clientWidth)/2;
+  }
  }
  function showAsset(asset,{preserve=false,autoFind=false}={}){
   if(!asset||asset.kind!=='photo'||!mediaUrl(asset))return;
@@ -272,11 +278,18 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
     if(request!==searchId||!inUse())return;
     if(score){matches.push(score);if(score.pixel!==null)matchedPixels++}
     percent(++done,candidates.length);
+    // Give mobile members real, labeled partial results while large originals
+    // are still being compared, rather than an apparently frozen interface.
+    if(mobile&&done%5===0&&matches.length){
+     const partial=[...matches].sort((a,b)=>b.score-a.score).slice(0,12);
+     renderResults(partial);
+     status('Finding matches… '+done+' of '+candidates.length+' photos checked.');
+    }
     if(index%4===0)await new Promise(r=>setTimeout(r,0));
    }
   };
   // Workers increment the shared index synchronously, with bounded loads.
-  await Promise.all(Array.from({length:Math.min(mobile?1:4,candidates.length)},()=>process()));
+  await Promise.all(Array.from({length:Math.min(mobile?2:4,candidates.length)},()=>process()));
   if(request!==searchId||!inUse())return;
   working=false;$('vdProcess').hidden=true;$('vdAnalyze').disabled=false;
   matches.sort((a,b)=>b.score-a.score);
