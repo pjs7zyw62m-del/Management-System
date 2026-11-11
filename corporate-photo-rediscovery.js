@@ -5,6 +5,7 @@
 export function createPhotoRediscovery({client,state,personalization,mediaUrl,openPhoto,toast}){
  let pendingTimer=null,active=false,card=null,lastInteraction=Date.now(),sessionShown=false;
  let lastSourceId='',didBind=false;
+ let dwellTimer=null,dwellSequence=0;
  const $=id=>document.getElementById(id);
  const opts=()=>personalization.get();
  const on=()=>{const p=opts();return p.enabled===true&&p.rediscovery_enabled===true};
@@ -49,6 +50,39 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
    const {error}=await client.rpc('corp_record_photo_rediscovery_view',{p_asset_id:asset.id});
    if(error)console.warn('Rediscovery view was not recorded:',error.message);
   }catch(error){console.warn('Rediscovery view failed:',error?.message)}
+ }
+
+ /* Count time only while the member is actually looking at the enlarged image.
+  * A 15-second view is an interest clue, NOT a like, vote or rating.
+  * Pausing, changing photos and leaving the tab all prevent accidental counts. */
+ function stopViewing(){
+  dwellSequence++;
+  if(dwellTimer!==null){clearInterval(dwellTimer);dwellTimer=null}
+ }
+ function startViewing(asset){
+  stopViewing();
+  if(!on()||asset?.kind!=='photo'||!asset.id)return;
+  const sequence=dwellSequence,assetId=asset.id;
+  let activeTime=0,lastTick=performance.now();
+  dwellTimer=setInterval(()=>{
+   if(sequence!==dwellSequence)return;
+   const now=performance.now();
+   const delta=Math.max(0,Math.min(now-lastTick,900));
+   lastTick=now;
+   const viewer=$('applePhotoViewer');
+   const blocked=['militaryAssetOverlay','aiPhotoOverlay','tasteOverlay','predOverlayLayer','personalizationOverlay']
+     .some(id=>$(id)?.hidden===false);
+   if(document.hidden||!document.hasFocus()||viewer?.hidden!==false||blocked)return;
+   activeTime+=delta;
+   if(activeTime>=15000){
+    stopViewing();
+    void client.rpc('corp_record_photo_rediscovery_engagement',{p_asset_id:assetId})
+      .then(({data,error})=>{
+       if(error)console.warn('15-second photo signal could not be recorded:',error.message);
+       else if(data===true)console.info('Photo rediscovery: long-view interest signal recorded.');
+      }).catch(error=>console.warn('Photo engagement request failed:',error?.message));
+   }
+  },500);
  }
  function possibleSource(){
   return (state.assets||[]).filter(a=>a.kind==='photo'&&a.purpose==='library'&&mediaUrl(a));
@@ -100,7 +134,7 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
  function button(text,action,cls=''){
   const b=el('button',cls,text);b.type='button';b.addEventListener('click',action);return b;
  }
- function showSeed(seed,preview=false){
+ function showSeed(seed,preview=false,lingered=false){
   if(!on()||!seed||!mediaUrl(seed))return;
   destroyCard();
   lastSourceId=seed.id;
@@ -116,7 +150,8 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
   const img=el('img');
   img.src=mediaUrl(seed);img.alt=seed.caption||seed.filename||'Military photograph you explored';
   img.loading='lazy';fig.append(img);
-  const desc=el('p','', 'You opened this photo before. Want another look, or see related photographs?');
+  const desc=el('p','', preview?'This photo appeared in your viewing history. Want to explore it again?':
+   (lingered?'You spent extra time viewing this photo. Want another look or related photographs?':'You opened this photo before. Want another look, or see related photographs?'));
   const label=el('div','bc-rediscovery-photo-title',
    (seed.caption||seed.filename||'Military photo').slice(0,115));
   const actions=el('div','bc-rediscovery-actions');
@@ -151,11 +186,12 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
   if(!on()||!state.user?.id||(sessionShown&&!preview))return;
   if(!preview&&!allowedMoment())return;
   const {data,error}=await client.from('corp_social_photo_rediscovery')
-    .select('asset_id,view_count,last_viewed_at,last_suggested_at,not_interested')
+    .select('asset_id,view_count,engaged_views,last_viewed_at,last_suggested_at,not_interested')
     .eq('user_id',state.user.id).eq('not_interested',false)
-    .gte('view_count',preview?1:2).order('view_count',{ascending:false}).limit(130);
+    .order('engaged_views',{ascending:false}).order('view_count',{ascending:false}).limit(130);
   if(error){console.warn('Rediscovery suggestions unavailable:',error.message);return}
   const candidates=(data||[]).filter(r=>
+   (Number(r.engaged_views||0)>0||Number(r.view_count||0)>=(preview?1:2)) &&
    possibleSource().some(a=>a.id===r.asset_id) &&
    (preview||elapsed(r.last_viewed_at)>3*60000));
   if(!candidates.length){
@@ -169,9 +205,9 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
   }
   const eligible=candidates.filter(c=>preview||elapsed(c.last_suggested_at)>cooldown);
   if(!eligible.length)return;
-  // Weighted random choice from explicit revisits; higher view count only
-  // increases eligibility modestly. Nothing here is a vote.
-  const sorted=eligible.sort((a,b)=>b.view_count-a.view_count).slice(0,12);
+  // Longer looks outweigh repeated openings; neither is a confirmed like or vote.
+  const strength=row=>Math.min(5,Number(row.engaged_views||0))*5+Math.min(10,Number(row.view_count||0));
+  const sorted=eligible.sort((a,b)=>strength(b)-strength(a)).slice(0,12);
   const choice=sorted[Math.floor(Math.pow(Math.random(),1.5)*sorted.length)];
   const seed=possibleSource().find(a=>a.id===choice.asset_id);
   if(!seed)return;
@@ -182,7 +218,7 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
    if(markError||!marked?.length)return;
    sessionShown=true;
   }
-  showSeed(seed,preview);
+  showSeed(seed,preview,Number(choice.engaged_views||0)>0);
  }
  function start(){
   if(active)return;active=true;
@@ -203,8 +239,8 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
   schedule();
  }
  function stop(){
-  active=false;destroyCard();
+  active=false;stopViewing();destroyCard();
   if(pendingTimer!==null){clearTimeout(pendingTimer);pendingTimer=null}
  }
- return {start,stop,refresh,recordView,preview:()=>offer({preview:true}),findSimilar};
+ return {start,stop,refresh,recordView,startViewing,stopViewing,preview:()=>offer({preview:true}),findSimilar};
 }
