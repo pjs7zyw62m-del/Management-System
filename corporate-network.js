@@ -1,5 +1,6 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-staff1';
-import {setupBlackcellPhotos} from './corporate-network-photos.js?v=20261111-vision1';
+import {setupBlackcellPhotos} from './corporate-network-photos.js?v=20261111-storage1';
+import {setupBlackcellStorageStatus} from './corporate-storage-status.js?v=20261111-storage1';
 import {mountMilitaryGunner} from './military-gunner.js?v=20261110-fast4';
 import {createNetworkPersonalization} from './corporate-network-personalization.js?v=20261111-rediscovery2';
 import {createPhotoRediscovery} from './corporate-photo-rediscovery.js?v=20261111-voted-trigger4';
@@ -129,7 +130,7 @@ function switchView(view,{who=null,tab=null,keepPost=false}={}){
  if(view==='profile')renderProfile();
  if(view==='discover')renderDirectory();
  if(view==='videos')renderVideos();
- if(view==='photos')photos.render();
+ if(view==='photos'){photos.render();void storageStatus.refresh()}
  const params=new URLSearchParams();
  if(view==='profile'&&state.profileUserId!==state.user.id)params.set('user',state.profileUserId);
  if(view==='videos'||view==='discover'||view==='photos')params.set('view',view);
@@ -846,4 +847,5 @@ const visualDiscovery=createVisualDiscovery({
 });
 const photos=setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadAsset,refresh,profile,openProfile,
  ensureSigned:loadSigned,switchView,personalization,rediscovery,dedupe});
+const storageStatus=setupBlackcellStorageStatus({client,bucket,state});
 void boot();
