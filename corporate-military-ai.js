@@ -5,7 +5,7 @@ export function createMilitaryPhotoAI({client,state,toast,getCurrent,mediaUrl,on
  const name="blackcell-military-ai";
  let asset=null,review=null,busy=false,lastBatch=[];
  let uploadedQueue=[],uploadedIndex=0;
- const own=a=>a&&a.kind==="photo"&&!a.adult_restricted&&a.owner_id===state.user?.id&&["library","post"].includes(a.purpose);
+ const own=a=>state.member?.role==='owner'&&Number(state.member?.clearance_level)===7&&a&&a.kind==="photo"&&!a.adult_restricted&&a.owner_id===state.user?.id&&["library","post"].includes(a.purpose);
  const say=(message)=>{if($("aiPhotoStatus"))$("aiPhotoStatus").textContent=message};
  const setBusy=(on)=>{busy=!!on;for(const id of ["aiPhotoAnalyze","aiPhotoManual","aiPhotoBatchStart"]){if($(id))$(id).disabled=busy}for(const id of ["aiPhotoApprove","aiPhotoReject"]){if($(id))$(id).disabled=busy||review?.status!=="suggested"}};
  const label=(t)=>{if($("aiPhotoAnalyze"))$("aiPhotoAnalyze").textContent=t};

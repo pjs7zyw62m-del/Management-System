@@ -1,6 +1,6 @@
 /* BLACKCELL NETWORK / Apple Photos × Flickr private corporate library */
 import {createWorldForces} from './corporate-world-forces.js?v=20261110-countries1';
-import {createMilitaryPhotoAI} from './corporate-military-ai.js?v=20261111-mediareset1';
+import {createMilitaryPhotoAI} from './corporate-military-ai.js?v=20261111-adminmove1';
 import {createPhotoTaste} from './corporate-photo-taste.js?v=20261110-trigger2';
 import {createPhotoPredict} from './corporate-photo-predict.js?v=20261110-pred1';
 import {createPhotoVoting} from './corporate-photo-votes.js?v=20261111-votes2';
@@ -986,7 +986,12 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  }
  function setup(){
   world.setup();
-  if($('bcAdultFilter'))$('bcAdultFilter').hidden=state.member?.role!=='owner';
+  const admin=state.member?.role==='owner'&&Number(state.member?.clearance_level)===7;
+  if($('bcAdultFilter'))$('bcAdultFilter').hidden=!admin;
+  // Employees have a simple uploader. Corporate classification/approval
+  // is performed in the independent Level 7 Administration processor.
+  if($('aiLibraryBatchButton'))$('aiLibraryBatchButton').hidden=!admin;
+  if($('militaryUploadSettings'))$('militaryUploadSettings').hidden=!admin;
   $('wfOpenCountryGallery').addEventListener('click',()=>{
    const selection=world.selectedCountryCodes();
    goToCountryPage({country_codes:selection.length?selection:['US']});

@@ -1,10 +1,10 @@
 # BLACKCELL — Photo & Video Fresh Start + Import Processor
 
-**Status:** Database review gate created and confirmed; BLACKCELL owner controls and review UI prepared for deployment. **Existing 33 photos have NOT been deleted.** External iCloud→Backblaze B2 is NOT connected or running.
+**Status:** Database review gate active and review interface available from the Level 7 Administration dashboard. Media reset still requires explicit owner action. **Existing 33 photos have NOT been deleted.** External iCloud→Backblaze B2 is NOT connected or running.
 
 ## 1. Permanent fresh-start reset
 
-Only the verified BLACKCELL corporate owner can see the **Reset All BLACKCELL Photo & Video Media** control in **Network → Military Library → Media Import Processor**. It requires both browser confirmation and typing `DELETE ALL BLACKCELL MEDIA`.
+Only the verified BLACKCELL Level 7 corporate owner can open **Administration → Media Import Processor** (`corporate-media-admin.html`) and see the **Reset All BLACKCELL Photo & Video Media** control. These controls have been removed from the Network Military Library. It requires both browser confirmation and typing `DELETE ALL BLACKCELL MEDIA`.
 
 The reset proceeds in this order:
 1. Read the exact current media file paths from `corp_social_assets` (not from a user-supplied URL).
@@ -22,6 +22,8 @@ The reset proceeds in this order:
 All newly uploaded `library` or `post` assets are assigned `review_status='pending'` **by a database trigger**, even if a client tries to mark them approved.
 
 The private media and its signed Storage URL are visible only to its owner and verified Level 7 corporate administrators while pending; shared galleries, album browsing, recommendation engines, visual discovery, profiles and network feeds exclude them.
+
+**Employee interface:** Employees still upload photos and videos from **BLACKCELL Network → Military Library**, but the advanced upload classification and batch AI controls are hidden. The separate Administration page requires owner role, clearance level 7, current corporate security-code verification and Supabase RLS. Employees cannot open its processor or reset controls. The administrative dashboard design itself is not modified beyond a new navigation card/link.
 
 **Manual review is required before release:**
 - Identify the country *only when supported by evidence*. Unknown remains pending.
@@ -56,3 +58,11 @@ No automatic country inference from unreliable uniform visuals; owner verificati
 - Nonexplicit approved media appears in matching country album.
 - Explicit approved media appears only under the owner's PRIVATE 18+ ARCHIVE; employees cannot sign or fetch those private objects.
 - New media is never auto-sent to OpenAI for analysis.
+
+## November 11 — Administration location
+
+- Administration dashboard card + navigation: **Media Import Processor**.
+- Dedicated security-gated route: `corporate-media-admin.html`.
+- The old processor/irreversible-reset interface was removed from `corporate-network.html`.
+- Existing pending uploads continue to be gated by database policies and protected Storage URLs.
+- Website deployment must be tested in the owner's authenticated browser before claiming a successful live end-to-end review or reset.

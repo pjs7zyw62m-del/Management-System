@@ -1,6 +1,5 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-staff1';
-import {setupBlackcellPhotos} from './corporate-network-photos.js?v=20261111-mediareset1';
-import {createBlackcellMediaProcessor} from './corporate-media-processor.js?v=20261111-mediareset1';
+import {setupBlackcellPhotos} from './corporate-network-photos.js?v=20261111-adminmove1';
 import {setupBlackcellStorageStatus} from './corporate-storage-status.js?v=20261111-storage1';
 import {mountMilitaryGunner} from './military-gunner.js?v=20261110-fast4';
 import {createNetworkPersonalization} from './corporate-network-personalization.js?v=20261111-rediscovery2';
@@ -132,7 +131,7 @@ function switchView(view,{who=null,tab=null,keepPost=false}={}){
  if(view==='profile')renderProfile();
  if(view==='discover')renderDirectory();
  if(view==='videos')renderVideos();
- if(view==='photos'){photos.render();void storageStatus.refresh();void mediaProcessor.refresh()}
+ if(view==='photos'){photos.render();void storageStatus.refresh()}
  const params=new URLSearchParams();
  if(view==='profile'&&state.profileUserId!==state.user.id)params.set('user',state.profileUserId);
  if(view==='videos'||view==='discover'||view==='photos')params.set('view',view);
@@ -795,7 +794,6 @@ async function boot(){
   personalization.setup();
   rediscovery.start();
   installNetworkSecurityChecks();
-  mediaProcessor.setup();
   document.addEventListener('bc:media-updated',()=>void storageStatus.refresh({force:true}));
   // Periodic read-only refresh works even when Realtime publication is disabled.
   window.setInterval(()=>void refreshVisibleNetworkFeed(),90000);
@@ -853,6 +851,4 @@ const visualDiscovery=createVisualDiscovery({
 const photos=setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadAsset,refresh,profile,openProfile,
  ensureSigned:loadSigned,switchView,personalization,rediscovery,dedupe});
 const storageStatus=setupBlackcellStorageStatus({client,bucket,state});
-const mediaProcessor=createBlackcellMediaProcessor({client,bucket,state,refresh,mediaUrl,toast,
- openAIReview:a=>photos.openAIReview(a)});
 void boot();
