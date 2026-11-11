@@ -77,7 +77,7 @@ $('download').addEventListener('click',async()=>{
    if(error||data?.verified!==true){setStatus('Level 7 verification is required for this media.');return}
   }else if(authorized.member.role==='employee'){
    const {data,error}=await client.rpc('corp_employee_code_status');
-   if(error||data?.verified!==true){setStatus('Verify your employee access codes before viewing this media.');return}
+   if(error||data?.verified!==true){setStatus('Sign in with an active employee account to view this media.');return}
   }else{setStatus('Unauthorized account.');return}
   const {data:item,error:itemError}=await client.from('corp_chat_media_items')
    .select('id,batch_id,kind,filename,storage_path,bytes').eq('id',id).maybeSingle();
