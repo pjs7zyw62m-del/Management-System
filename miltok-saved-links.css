@@ -52,3 +52,21 @@
  .mt-saved-card{align-items:stretch;flex-direction:column}
  .mt-saved-card-actions{flex-wrap:wrap}.mt-saved-fields{grid-template-columns:1fr}
  .mt-saved-form{padding:12px}}
+
+/* In-library playback from TikTok's official creator-hosted player. */
+.mt-saved-link-entry{display:flex;gap:8px;align-items:stretch}
+.mt-saved-link-entry input{flex:1;min-width:0}
+.mt-saved-link-entry button{flex:none;border:1px solid #783a4d;border-radius:9px;
+ background:#231721;color:#f4e9ed;font-size:10px;letter-spacing:.04em;font-weight:850;padding:0 13px}
+.mt-saved-link-entry button:hover{border-color:#e04d62;background:#381d29}
+.mt-saved-card{flex-wrap:wrap}
+.mt-saved-card-copy{flex:1}
+.mt-saved-embed{width:100%;margin-top:14px;border-top:1px solid #41424d;padding-top:16px;
+ display:flex;flex-direction:column;align-items:center;gap:10px}
+.mt-saved-player{display:block;width:min(100%,380px);height:min(72vh,670px);min-height:440px;
+ border:1px solid #4b4c55;border-radius:13px;background:#000}
+.mt-saved-embed small{color:#a8b2be;line-height:1.6;text-align:center;font-size:10px}
+.mt-saved-card-actions button.mt-saved-play{border-color:#ae4258;background:#39202b;color:#f5eff1}
+@media(max-width:590px){.mt-saved-link-entry{flex-direction:column}
+ .mt-saved-link-entry button{min-height:40px}
+ .mt-saved-player{width:100%;height:65vh;min-height:400px}}
