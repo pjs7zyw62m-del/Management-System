@@ -1,7 +1,11 @@
 import {corporateClient,corporateAuthorize} from "./corp-auth.js?v=20261109-staff1";
 import {mountMilitaryGunner} from "./military-gunner.js?v=20261110-fast4";
 import {createUsaPhotoOfDay} from "./usa-photo-of-day.js?v=20261111-bento3";
-const $=id=>document.getElementById(id);
+const $=id=>{
+ const element=document.getElementById(id);
+ if(!element)throw Error("USA preview file mismatch: missing #"+id+". Refresh this page to load the latest HTML and scripts.");
+ return element;
+};
 const client=corporateClient();
 const storage=client.storage.from("corp-social-media");
 const state={user:null,member:null,assets:[],urls:new Map(),view:[],discovered:[],saved:[],allCodes:[],current:null,position:0,branch:"all",category:"all",era:"all"};
