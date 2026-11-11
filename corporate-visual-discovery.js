@@ -144,7 +144,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    host.scrollLeft+=delta-(host.clientWidth-active.clientWidth)/2;
   }
  }
- function showAsset(asset,{preserve=false,preset=null,autoFind=false}={}){
+ function showAsset(asset,{preserve=false,preset=null,autoFind=false,autoAI=false}={}){
   if(!asset||asset.kind!=='photo'||!mediaUrl(asset))return;
   searchId++;working=false;$('vdProcess').hidden=true;
   $('vdAnalyze').disabled=true;
@@ -157,7 +157,8 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    sourceReady=true;
    if(kept)selectRect(kept);else clearSelection();
    showSourceStrip();
-   if(autoFind&&kept)void analyze();
+   if(autoAI&&kept)void findWithAI();
+   else if(autoFind&&kept)void analyze();
   };
   main.onerror=()=>{
    if(current?.id!==expected)return;
@@ -374,7 +375,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
     liked.setAttribute('aria-pressed',String(reactions.get(asset.id)==='more'));
     less.setAttribute('aria-pressed',String(reactions.get(asset.id)==='less'));
    };
-   const more=button('⌖ MORE LIKE THIS',()=>showAsset(asset,{preset:result.region||selection,autoFind:true}));
+   const more=button('⌖ MORE LIKE THIS',()=>showAsset(asset,{preset:result.region||selection,autoFind:!result.ai,autoAI:!!result.ai}));
    actions.append(liked,less,more);
    body.append(actions);card.append(picture,body);host.append(card);sync();
   }
