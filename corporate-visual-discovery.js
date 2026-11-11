@@ -88,7 +88,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   selection=null;clickPoint=null;showSelection();preview();
   $('vdAnalyze').disabled=true;$('vdAISearch').disabled=true;$('vdRefine').disabled=true;
   $('vdSelectionHint').textContent=onPhone()?'TAP A DETAIL · THEN AI FIND':'CLICK OR DRAG TO SELECT A DETAIL';
-  status('Select a detail, then choose AI Find Same Item. The image collection must be AI-indexed first.');
+  status('Select a detail, then choose AI Find Similar Detail to compare EVERY accessible gallery photo. AI indexing is not required.');
  }
  function down(e){
   if(!main.naturalWidth||working)return;
@@ -387,7 +387,8 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    const body=element('div','bc-vd-match-copy');
    body.append(element('strong','',asset.caption||asset.filename));
    body.append(element('small','',result.ai?
-    (result.found===false?'NOT IDENTIFIED AS SIMILAR · review manually · ':
+    (result.unavailable?'NOT SCANNED · image could not load · ':
+     result.found===false?'NOT IDENTIFIED AS SIMILAR · review manually · ':
       result.score>=.7?'VISUALLY SIMILAR · ':'POSSIBLY SIMILAR · ')+
     result.feature_label+' · '+(result.verification||result.feature_description):
     'BASIC appearance/category comparison only — not an identified matching item'));
@@ -460,7 +461,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    const valid=box&&[box.x,box.y,box.w,box.h].every(x=>Number.isFinite(Number(x)))
     &&Number(box.w)>0&&Number(box.h)>0;
    return {asset,ai:true,score:Number(row.score||0),
-    found:row.found!==false,
+    found:row.found!==false,unavailable:row.unavailable===true,
     feature_label:row.feature_label||'Visual detail',
     feature_description:row.feature_description||'',
     pixel:null,region:valid?box:null};
@@ -522,10 +523,10 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    else{
     const local=eligible().filter(a=>a.owner_id===state.user.id).length;
     output.textContent='DATABASE CONNECTED · '+(fingerprints.count||0)+' photo fingerprints · '+
-     (features.count||0)+' AI-indexed photos · '+local+' of your photos available · AI SERVICE '+
+     (features.count||0)+' optionally indexed photos · '+local+' of your photos available · AI SERVICE '+
      (ai.data.configured?'READY (API credits required for scans)':'NOT CONFIGURED (missing server API key)')+
      ' · Internet photo discovery '+(webAvailable?'READY (Google API credits required)':'NOT CONFIGURED (Google Vision key missing)')+
-     '. To begin, choose Scan Duplicates (free), then Index 5 Photos with AI (paid).';
+     '. AI full-gallery scanning works WITHOUT indexing. Choose a photo detail then AI Find Similar Detail; approve the per-scan cost prompt.';
    }
   }catch(e){output.textContent='SYSTEM CHECK FAILED · '+(e?.message||'Network unavailable')}
   finally{button.disabled=false}
@@ -631,7 +632,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   emptyResults('AI scanning the entire accessible gallery. This does not require pre-indexing.');
   try{
    const crop=jpegPreview(main,area);
-   let completed=0;
+   let completed=0,actuallyCompared=0;
    for(let offset=0;offset<photos.length;offset+=5){
     if(request!==searchId||!inUse()||current?.id!==source.id)return;
     const portion=photos.slice(offset,offset+5),items=[];
@@ -639,9 +640,22 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
     for(const asset of portion){
      if(request!==searchId||!inUse())return;
      try{
-      const image=await loadImage(mediaUrl(asset));
+      let image;
+      try{image=await loadImage(mediaUrl(asset))}
+      catch(initialError){
+       // Refresh an expired Supabase signed URL once; never silently skip it.
+       const {data:fresh,error:signError}=await client.storage.from('corp-social-media')
+        .createSignedUrl(asset.storage_path,1800);
+       if(signError||!fresh?.signedUrl)throw initialError;
+       image=await loadImage(fresh.signedUrl);
+      }
       items.push({asset_id:asset.id,preview:jpegPreview(image,null,520)});
-     }catch(e){unreadable.push(safeText(asset))}
+     }catch(e){
+      unreadable.push(safeText(asset));
+      results.push({asset_id:asset.id,found:false,unavailable:true,score:0,
+       feature_label:'Image unavailable',feature_description:'Image could not be read; inspect it manually',
+       bbox:null});
+     }
     }
     if(items.length){
      status('Comparing '+items.length+' photographs directly with your selected detail (batch '+(Math.floor(offset/5)+1)+'/'+batches+')…');
@@ -650,6 +664,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
      }});
      if(error||!data?.ok)throw Error(await functionError(error,data));
      results.push(...(data.results||[]));
+     actuallyCompared+=items.length;
     }
     completed+=portion.length;
     percent(completed,total);
@@ -657,15 +672,15 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    }
    if(request!==searchId||!inUse())return;
    const matched=results.filter(x=>x.found).length;
-   displayAI(results,{method:'gallery',scanned:results.length,indexed_photos:results.length});
-   status('FULL GALLERY SCAN: '+results.length+' of '+total+' photographs compared · '+
+   displayAI(results,{method:'gallery',scanned:total,indexed_photos:actuallyCompared});
+   status('FULL GALLERY SCAN: '+actuallyCompared+' of '+total+' photographs compared · '+
     matched+' visually similar · '+(results.length-matched)+' available for manual review'+
     (unreadable.length?' · '+unreadable.length+' photos could not load':'')+
     '. Choose REVIEW OTHER PHOTOS if any known match is missing.');
   }catch(e){
    if(request!==searchId||!inUse())return;
-   displayAI(results,{method:'gallery',scanned:results.length,indexed_photos:results.length});
-   status('Gallery scan stopped after '+results.length+' of '+total+' photos: '+
+   displayAI(results,{method:'gallery',scanned:total,indexed_photos:actuallyCompared});
+   status('Gallery scan stopped after '+actuallyCompared+' of '+total+' photos: '+
     (e?.message||'Unknown issue')+'. Any completed results are shown; you can retry when ready.');
   }finally{
    if(request===searchId){
