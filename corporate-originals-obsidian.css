@@ -1,0 +1,17 @@
+/* BLACKCELL — original media viewers, obsidian gunmetal theme.
+   No media sizing, download, navigation, or fullscreen logic changed. */
+:root{color-scheme:dark}
+html,body{background:#030507!important;color:#edf0f4!important}
+body{background:radial-gradient(ellipse at 50% -10%,rgba(117,21,39,.10),transparent 58%),#030507!important}
+header{background:#0c1015!important;border-bottom-color:#313943!important}
+header strong,.footer strong,.toolbar strong{color:#e9edf2!important}
+header small,.caption,#caption{color:#a3adba!important}
+header a,.toolbar button,.toolbar a,.footer button,.footer a{
+ background:#151a20!important;border-color:#37404c!important;color:#e8ebf0!important
+}
+header a:hover,.toolbar button:hover,.toolbar a:hover,.footer button:hover,.footer a:hover{border-color:#b32c40!important;background:#1b2027!important}
+#status{color:#b7c0ca!important}
+.toolbar,.footer{background:#0a0e13!important;border-color:#303942!important}
+.stage{background:#000!important}
+.stage img,.stage video{object-fit:contain!important}
+button:focus-visible,a:focus-visible{outline:2px solid #c52c42;outline-offset:3px}
