@@ -25,6 +25,8 @@ const codeSupport=document.getElementById('codeSupport');
 const originalSupport=codeSupport.textContent;
 const adminLoginTab=document.getElementById('adminLoginTab');
 const employeeLoginTab=document.getElementById('employeeLoginTab');
+const accessPassTab=document.getElementById('accessPassTab');
+const inlineAccessStep=document.getElementById('inlineAccessStep');
 const loginRoleDescription=document.getElementById('loginRoleDescription');
 window.BLACKCELL_LOGIN_BOOTED=true;
 const LOGIN_DEADLINE_MS=16000;
@@ -106,15 +108,30 @@ function applyClearance(member){
 }
 
 function showPass(){
+  // The second credential form lives INSIDE the original login card.
+  // No second window or executive pass is made visible.
+  const before=adminLoginTab.getBoundingClientRect();
   formCode.hidden=false;
   continueVerified.hidden=true;
   codeSupport.textContent=originalSupport;
   clearMessage(codeStatus);
+  stage.classList.remove('codes-approved');
+  accessPassTab.hidden=false;
+  accessPassTab.querySelector('small').textContent='SECURITY VERIFICATION';
+  accessPassTab.setAttribute('aria-selected','true');
+  adminLoginTab.setAttribute('aria-selected','false');
+  adminLoginTab.querySelector('small').textContent='VERIFIED ✓';
+  employeeLoginTab.setAttribute('aria-selected','false');
+  accessPassTab.tabIndex=0;
+  adminLoginTab.tabIndex=-1;
+  employeeLoginTab.tabIndex=-1;
   stage.classList.add('show-pass');
   loginPanel.setAttribute('aria-hidden','false');
-  passPanel.setAttribute('aria-hidden','false');
-  loginCard.classList.add('signed-in');
-  loginHeading.textContent='Sign In'; // Keep the original login card/heading anchored; status + verified button indicate success.
+  passPanel.setAttribute('aria-hidden','true');
+  form.hidden=true;
+  inlineAccessStep.hidden=false;
+  loginHeading.textContent='Sign In';
+  loginRoleDescription.textContent='Administration verified · Level 7 access pass required.';
   emailInput.disabled=true;
   password.value='';
   password.disabled=true;
@@ -122,7 +139,20 @@ function showPass(){
   loginButton.disabled=true;
   loginButton.textContent='IDENTITY VERIFIED ✓';
   changeAccount.hidden=false;
-  message(status,'✓ EMAIL & PASSWORD ACCEPTED');
+  clearMessage(status);
+  // FLIP animation makes Administration physically move from left to right.
+  requestAnimationFrame(()=>{
+    const after=adminLoginTab.getBoundingClientRect();
+    const shift=before.left-after.left;
+    if(adminLoginTab.animate&&Math.abs(shift)>2){
+      adminLoginTab.animate([{transform:'translateX('+shift+'px)'},{transform:'translateX(0)'}],
+        {duration:680,easing:'cubic-bezier(.22,.78,.25,1)'});
+    }
+    if(accessPassTab.animate){
+      accessPassTab.animate([{opacity:0,transform:'translateX(-20px)'},{opacity:1,transform:'translateX(0)'}],
+        {duration:550,easing:'cubic-bezier(.22,.78,.25,1)'});
+    }
+  });
   window.setTimeout(()=>{
     if(stage.classList.contains('show-pass'))access.focus({preventScroll:true});
   },750);
@@ -132,15 +162,31 @@ function verifiedResume(){
   showPass();
   formCode.hidden=true;
   continueVerified.hidden=false;
-  codeSupport.textContent='Your corporate security session is already verified. Continue to Administration.';
+  stage.classList.add('codes-approved');
+  accessPassTab.querySelector('small').textContent='VERIFIED ✓';
+  codeSupport.textContent='Both credentials already verified. Continue to Administration.';
   window.setTimeout(()=>continueVerified.focus({preventScroll:true}),750);
 }
 
 function showLogin(){
-  stage.classList.remove('show-pass');
+  stage.classList.remove('show-pass','codes-approved');
   loginPanel.setAttribute('aria-hidden','false');
   passPanel.setAttribute('aria-hidden','true');
   loginCard.classList.remove('signed-in');
+  form.hidden=false;
+  inlineAccessStep.hidden=true;
+  accessPassTab.hidden=true;
+  accessPassTab.setAttribute('aria-selected','false');
+  accessPassTab.tabIndex=-1;
+  accessPassTab.querySelector('small').textContent='SECURITY VERIFICATION';
+  adminLoginTab.querySelector('small').textContent='LEVEL 7';
+  adminLoginTab.setAttribute('aria-selected',String(selectedPortal==='admin'));
+  employeeLoginTab.setAttribute('aria-selected',String(selectedPortal==='employee'));
+  adminLoginTab.tabIndex=selectedPortal==='admin'?0:-1;
+  employeeLoginTab.tabIndex=selectedPortal==='employee'?0:-1;
+  loginRoleDescription.textContent=selectedPortal==='admin'
+    ?'Level 7 Executive Administration access.'
+    :'Employee Network · Your name, profile, messages and employee access card.';
   loginHeading.textContent='Sign In';
   executivePass.classList.remove('authorized','pass-verified','pass-condensed','merge-source');
   loginCard.classList.remove('merge-source');
@@ -173,11 +219,15 @@ function approvalAndLaunch(){
   continueVerified.disabled=true;
   changeAccount.disabled=true;
   clearMessage(codeStatus);
+  // The Access Pass becomes verified GREEN only after the server approves both
+  // codes and the corporate session is finalized.
+  stage.classList.add('codes-approved');
+  accessPassTab.querySelector('small').textContent='VERIFIED ✓';
+  accessPassTab.setAttribute('aria-selected','false');
+  message(codeStatus,'✓ ACCESS PASS VERIFIED');
   executivePass.classList.add('pass-verified');
-  window.setTimeout(()=>{
-    executivePass.classList.add('pass-condensed');
-    window.setTimeout(mergeVerifiedBubbles,890);
-  },630);
+  // Show both green states before running the existing cinematic authorization.
+  window.setTimeout(mergeVerifiedBubbles,1350);
 }
 
 function mergeVerifiedBubbles(){
@@ -203,8 +253,10 @@ function mergeVerifiedBubbles(){
     const r=element.getBoundingClientRect();
     return makeRect(r.left,r.top,r.width,r.height);
   }
-  let identityRect=fromElement(loginCard);
-  let passRect=fromElement(executivePass);
+  // The two verified sources are the actual green tabs on ONE login card,
+  // not a second standalone credential window.
+  let identityRect=fromElement(adminLoginTab);
+  let passRect=fromElement(accessPassTab);
   if(compact){
     // On small screens the verified identity is hidden behind the card;
     // position both compact summaries visibly before they converge.
