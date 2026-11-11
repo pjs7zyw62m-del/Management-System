@@ -815,7 +815,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   $('appleViewerAddAlbum').textContent=own(a)?'＋ ADD TO ALBUM':'＋ CURATE TO MY ALBUM';
   $('appleViewerEditCaption').hidden=!own(a);
   $('appleViewerEditMilitary').hidden=!own(a);
-  $('appleViewerDelete').hidden=!(own(a)&&a.purpose==='library');
+  $('appleViewerDelete').hidden=!(isAdmin()&&a.purpose==='library');
   const film=$('appleViewerFilmstrip');film.replaceChildren();
   for(const [i,item] of meta.viewerItems.slice(0,70).entries()){
    const thumb=press('',()=>{meta.viewerIndex=i;renderViewer()});
@@ -860,13 +860,14 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   a.caption=proposed.trim();renderViewer();render();toast('Caption saved.');
  }
  async function deleteLibraryMedia(){
-  const a=viewerCurrent();if(!a||!own(a)||a.purpose!=='library')return;
+  const a=viewerCurrent();if(!a||!isAdmin()||a.purpose!=='library')return;
   if(!confirm('Permanently delete "'+a.filename+'" from the corporate library and albums?'))return;
   try{
    // Remove from storage before deleting the metadata RLS authorization.
    const {error:removeError}=await bucket.remove([a.storage_path]);
    if(removeError)throw removeError;
-   const {error}=await client.from('corp_social_assets').delete().eq('id',a.id).eq('owner_id',ownId());
+   const {data:deleted,error}=await client.from('corp_social_assets').delete().eq('id',a.id).eq('purpose','library').select('id');
+   if(!error&&(!deleted||deleted.length!==1))throw Error('The deletion was not authorized or the asset no longer exists.');
    if(error)throw error;
    closeViewer();await refresh();render();toast('Media deleted from the library.');
   }catch(e){toast('Could not delete original: '+(e?.message||'Unknown error'))}
