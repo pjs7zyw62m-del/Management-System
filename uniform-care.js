@@ -69,7 +69,7 @@ async function verify(){
  if(!auth.ok)throw Error("Your account is not authorized for the corporate network.");
  const fn=auth.member.role==="owner"?"corp_code_status":"corp_employee_code_status";
  const {data:status,error:gateError}=await client.rpc(fn);
- if(gateError||status?.verified!==true)throw Error("Verify your Blackcell access pass to open Uniform Care.");
+ if(gateError||status?.verified!==true)throw Error("Your corporate account is not authorized to open Uniform Care.");
 }
 async function start(){
  try{
