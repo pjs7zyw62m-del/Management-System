@@ -107,7 +107,9 @@ body.bc-network .bc-rediscovery-large-photo > img {
  border:0!important;border-radius:0!important;
  margin:0!important;padding:0!important;
  background:#030507!important;
- transform:none!important;filter:none!important;
+ transform-origin:center center!important;filter:none!important;
+ touch-action:none!important;user-select:none!important;-webkit-user-drag:none!important;
+ will-change:transform;
 }
 body.bc-network .bc-rediscovery-panel .bc-rediscovery-footer {
  flex:0 0 auto!important;min-height:0!important;
@@ -152,4 +154,18 @@ body.bc-network .bc-rediscovery-busy .bc-rediscovery-footer button {pointer-even
 }
 @media (prefers-reduced-motion:reduce) {
  body.bc-network .bc-rediscovery-panel {animation:none!important}
+}
+
+/* Zooming inside either photo card. The unzoomed original remains fully
+   contained; drag and pinch affect only the visual viewport, never the file. */
+body.bc-network .bc-rediscovery-large-photo {
+ touch-action:none!important;
+ cursor:zoom-in!important;
+ overscroll-behavior:contain!important;
+}
+body.bc-network .bc-rediscovery-large-photo.bc-card-zoomed {
+ cursor:grab!important;
+}
+body.bc-network .bc-rediscovery-large-photo.bc-card-zoomed:active {
+ cursor:grabbing!important;
 }
