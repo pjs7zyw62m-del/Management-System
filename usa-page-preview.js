@@ -98,7 +98,9 @@ function renderHero(){
  $("heroDescription").textContent="Explore the uniforms, personnel, training, and history of the U.S. Armed Forces through your existing private photo collection.";
  $("photoCount").textContent=String(assets.length);
  $("branchCount").textContent=String(new Set(assets.map(branchOf).filter(x=>x!=="unclassified")).size);
- $("eraSpan").textContent=archiveEraSpan(assets);
+ const era=archiveEraSpan(assets);
+ $("eraSpan").textContent=era==="NOT SET"?"Not set":era;
+ $("eraStat").classList.toggle("unset",era==="NOT SET");
  $("galleryTitle").textContent="MILITARY PHOTO ARCHIVE";
  $("gallerySubtext").textContent=assets.length+" United States photograph"+(assets.length===1?"":"s")+" available in your protected archive.";
  document.title="BLACKCELL — United States Armed Forces | Redesign Preview";
