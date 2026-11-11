@@ -8,8 +8,8 @@
 <title>BLACKCELL — United States Military | Redesign Preview</title>
 <script src="corp-config.js" defer></script>
 <link rel="stylesheet" href="military-country.css?v=20261110-country1">
-<link rel="stylesheet" href="usa-page-preview.css?v=20261111-photo-wall9">
-<script type="module" src="usa-page-preview.js?v=20261111-photo-wall9"></script>
+<link rel="stylesheet" href="usa-page-preview.css?v=20261111-branch-cards10">
+<script type="module" src="usa-page-preview.js?v=20261111-branch-cards10"></script>
 </head>
 <body data-page-theme="usa" class="usa-revamp">
 <header class="topbar usa-topbar">
@@ -83,7 +83,7 @@
    <div class="editorial-line"><span class="line-index">01 / BRANCH DIRECTORY</span><span class="line-rule"></span><span class="line-note">ONE NATION · MULTIPLE BRANCHES</span></div>
    <section class="branch-section" id="branches" aria-labelledby="branchTitle">
     <div class="section-intro">
-     <div><div class="eyebrow">DISCOVER THE UNITED STATES MILITARY</div><h2 id="branchTitle">THE BRANCHES<span class="red-period">.</span></h2><p>Select a service to preview its archive and filter your saved photographs below.</p></div>
+     <div><div class="eyebrow">DISCOVER THE UNITED STATES MILITARY</div><h2 id="branchTitle">THE BRANCHES<span class="red-period">.</span></h2><p>Choose a branch to spotlight its archive, or view photographs from every branch.</p></div>
      <button id="clearBranch" type="button" class="clear-filter" hidden>✕ CLEAR BRANCH FILTER</button>
     </div>
     <div class="services-bento" id="branchGrid">
@@ -92,7 +92,7 @@
      <button id="featuredBranch" type="button" class="bento-featured" data-branch="marines" aria-pressed="false" aria-label="Explore featured military branch">
       <img id="featuredBranchImage" class="bento-featured-image" alt="" hidden>
       <span class="bento-featured-shade" aria-hidden="true"></span>
-      <span class="bento-topline"><span id="featuredBranchCode">02 / EXPEDITIONARY</span><span class="bento-top-right"><img id="featuredBranchEmblem" class="bento-featured-emblem" alt="Marine Corps emblem" loading="lazy"><span aria-hidden="true">↗</span></span></span>
+      <span class="bento-topline bento-headbar"><span id="featuredBranchCode">02 / EXPEDITIONARY</span><span class="bento-top-right"><img id="featuredBranchEmblem" class="bento-featured-emblem" alt="Marine Corps emblem" loading="lazy"><span class="bento-featured-arrow" aria-hidden="true">↗</span></span></span>
       <span class="bento-bottomline">
        <span class="bento-featured-text">
         <span class="bento-personnel" id="featuredBranchPersonnel">MARINES</span>
@@ -108,7 +108,7 @@
     </div>
     <div class="branch-footer">
       <button type="button" class="component-link" data-branch="guard" aria-pressed="false"><img class="national-guard-emblem" alt="National Guard emblem" src="https://commons.wikimedia.org/wiki/Special:FilePath/Seal_of_the_United_States_National_Guard.svg?width=120" loading="lazy" decoding="async"> NATIONAL GUARD <small>COMPONENT COLLECTION</small><b data-count="guard">0 PHOTOS</b></button>
-      <span class="branch-footer-note">Only photographs already classified under the selected service will appear.</span>
+      <span class="branch-footer-actions"><span class="branch-footer-note">Showing photographs from your private military collection.</span><button type="button" class="view-all-branches" id="viewAllBranches" aria-pressed="true"><span class="view-all-icon" aria-hidden="true">▦</span><span>VIEW ALL BRANCHES</span><span class="view-all-arrow" aria-hidden="true">→</span></button></span>
     </div>
    </section>
 
