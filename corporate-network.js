@@ -796,6 +796,7 @@ async function boot(){
   rediscovery.start();
   installNetworkSecurityChecks();
   mediaProcessor.setup();
+  document.addEventListener('bc:media-updated',()=>void storageStatus.refresh({force:true}));
   // Periodic read-only refresh works even when Realtime publication is disabled.
   window.setInterval(()=>void refreshVisibleNetworkFeed(),90000);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refreshVisibleNetworkFeed()});
