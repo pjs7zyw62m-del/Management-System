@@ -9,12 +9,8 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
  const opts=()=>personalization.get();
  const on=()=>{const p=opts();return p.enabled===true&&p.rediscovery_enabled===true};
  const rare=()=>opts().rediscovery_frequency==='rare';
- const interval=()=>Math.round((rare()?35:16 + Math.random()*(rare()?35:22))*60000);
+ const interval=()=>Math.round(((rare()?35:16)+Math.random()*(rare()?35:22))*60000);
  const elapsed=(value)=>value?Date.now()-new Date(value).getTime():Infinity;
- const safe=()=>document.visibilityState==='visible' && !document.hidden &&
-   ['feed','photos','profile'].includes(state.view) &&
-   Date.now()-lastInteraction < 5*60000 &&
-   !$('applePhotoViewer')?.hidden===false; // overwritten below by clearer predicate
  function allowedMoment(){
   if(document.hidden||!['feed','photos','profile'].includes(state.view))return false;
   if(Date.now()-lastInteraction>5*60000)return false;
