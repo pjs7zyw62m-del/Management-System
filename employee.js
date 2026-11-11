@@ -47,7 +47,7 @@ function noteActivity(){
 }
 function setVerified(isVerified,m){
  verified=isVerified;
- $('employeeCodePanel').hidden=isVerified;
+ $('employeeCodePanel').hidden=true; // Employee access codes no longer required.
  $('sendSecurityEmailButton').hidden=isVerified;
  $('employeeCard').classList.toggle('codes-verified',isVerified);
  $('chatLink').hidden=!isVerified||m.can_chat!==true;
@@ -83,10 +83,10 @@ async function load(reveal=false){
    void $('employeeCard').offsetWidth;
    $('employeeCard').classList.add('reveal');
   }
-  const {data,statusError,error}=await client.rpc('corp_employee_code_status');
-  if(error||statusError||data?.ok!==true){
+  const {data,error}=await client.rpc('corp_employee_code_status');
+  if(error||data?.ok!==true){
    setVerified(false,member);
-   showError('employeeStatus','Employee security verification is temporarily unavailable.');
+   showError('employeeStatus','Employee authorization is temporarily unavailable.');
    return;
   }
   setVerified(data.verified===true,member);
@@ -204,7 +204,7 @@ $('activateButton').addEventListener('click',async()=>{
   $('activationPassword').value='';$('confirmPassword').value='';
   recoveryFlow=false;
   await load(true);
-  await sendEmployeeSecurityEmail({resend:false});
+  // Email/password activation is complete; no second security-code email is sent.
  }catch(_){showError('activationError','Activation unavailable. Check your connection.')}
  finally{btn.disabled=false;btn.textContent='ACTIVATE & REVEAL MY EMPLOYEE CARD'}
 });
