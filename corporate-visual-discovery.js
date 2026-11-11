@@ -81,8 +81,8 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
  function clearSelection(){
   selection=null;showSelection();preview();
   $('vdAnalyze').disabled=true;
-  $('vdSelectionHint').textContent='CLICK A DETAIL OR DRAG TO SELECT AN AREA';
-  status('Click the photograph or drag across a detail to select it.');
+  $('vdSelectionHint').textContent=onPhone()?'TAP A DETAIL · AUTOMATIC SEARCH':'CLICK A DETAIL OR DRAG TO SELECT AN AREA';
+  status(onPhone()?'Tap a detail in the photo. Similar images will load automatically.':'Click the photograph or drag across a detail to select it.');
  }
  function down(e){
   if(!main.naturalWidth||working)return;
@@ -387,6 +387,10 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    }
   });
   $('vdAnalyze').addEventListener('click',()=>void analyze());
+  $('vdQuickPick').addEventListener('click',()=>{
+   if(!sourceReady||working){status('Choose a loaded photo first.');return}
+   selectRect({x:.35,y:.32,w:.30,h:.36},{auto:true});
+  });
   $('vdReset').addEventListener('click',clearSelection);
   $('vdMatchMode').addEventListener('change',()=>{if(selection&&!working)status('Search mode changed. Press Find Similar Photos to update results.')});
   document.addEventListener('keydown',e=>{
