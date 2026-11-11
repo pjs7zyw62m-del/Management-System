@@ -1,6 +1,7 @@
 /* BLACKCELL VISUAL DISCOVERY / REAL MEMBER MEDIA, CLIENT-SIDE ANALYSIS */
 body.bc-network .bc-vd-overlay[hidden],
 body.bc-network #vdSelection[hidden],
+body.bc-network #vdCropMessage[hidden],
 body.bc-network #vdProcess[hidden],
 body.bc-network #vdNoPhoto[hidden]{display:none!important}
 body.bc-network.bc-vd-open{overflow:hidden!important}
