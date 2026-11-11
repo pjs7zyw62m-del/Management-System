@@ -94,7 +94,7 @@ export function createPhotoDedupe({client,state,mediaUrl,toast}){
   const pending=state.assets.filter(a=>owned(a)&&['library','post'].includes(a.purpose)&&mediaUrl(a)&&
    !entries.some(x=>x.asset_id===a.id)).slice(0,100);
   let saved=0,skipped=0,failed=0;
-  const flagged=[];
+  const flagged=[],errors=[];
   for(let i=0;i<pending.length;i++){
    const asset=pending[i];
    try{
@@ -107,12 +107,15 @@ export function createPhotoDedupe({client,state,mediaUrl,toast}){
     const hit=matches.find(m=>m.asset_id!==asset.id);
     if(hit)flagged.push({asset_id:asset.id,filename:asset.filename,match_asset_id:hit.asset_id,match_name:nameOf(hit.asset_id),type:hit.type});
     if(await record(asset,fingerprint))saved++;else failed++;
-   }catch(e){failed++;console.warn('Could not fingerprint '+asset.filename,e?.message)}
+   }catch(e){
+    failed++;console.warn('Could not fingerprint '+asset.filename,e?.message);
+    if(errors.length<5)errors.push(String(asset.filename||'Photo').slice(0,70)+': '+String(e?.message||'Browser photo processing error').slice(0,140));
+   }
    if(onProgress)onProgress({processed:i+1,total:pending.length,saved,failed,flagged:flagged.length});
    if((i+1)%5===0)await new Promise(r=>setTimeout(r,0));
   }
   if(!pending.length)skipped=entries.length;
-  return {saved,failed,skipped,pending:pending.length,flagged};
+  return {saved,failed,skipped,pending:pending.length,flagged,errors};
  }
  return {load,preflight,record,indexExisting,nameOf,comparePhotoFingerprint};
 }
