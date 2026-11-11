@@ -429,9 +429,11 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   $('vdResultMethod').textContent='AI SAME-ITEM SEARCH';
   if(details?.detected_item)status('AI detected: '+details.detected_item+
    (details.uncertain?' (uncertain)':'')+' · '+mapped.length+' matches from '+details.indexed_photos+' indexed photos.');
-  if(!mapped.length)status('AI identified '+(details?.detected_item||'the selected detail')+
-   ', but found no other indexed photo with a verified matching item. '+details?.indexed_photos+
-   ' photos are indexed. Index more of the collection or choose another detail.');
+  if(!mapped.length)status(details?.uncertain?
+   'AI could not reliably identify this selected item. Select more of the actual tie, belt, boots, or gear and retry. No unrelated matches were shown.':
+   'AI recognized '+(details?.detected_item||'the selected item')+
+   ', but found no photograph with that SAME item in the '+(details?.indexed_photos||0)+
+   ' indexed photos. Index more photos or choose another detail.');
   if(onPhone()&&mapped.length)requestAnimationFrame(()=>$('vdResults').scrollIntoView({behavior:'smooth',block:'nearest'}));
  }
 
