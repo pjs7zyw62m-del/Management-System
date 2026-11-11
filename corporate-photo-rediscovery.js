@@ -4,7 +4,8 @@
  * biometric/sensitive inferences or paid AI requests. */
 export function createPhotoRediscovery({client,state,personalization,mediaUrl,openPhoto,toast}){
  let pendingTimer=null,active=false,card=null,lastInteraction=Date.now(),sessionShown=false;
- let lastSourceId='',didBind=false;
+ let lastSourceId='',didBind=false,feedbackBusy=false,mode='rediscovery',lastFocus=null;
+ let sessionSeen=new Set();
  let dwellTimer=null,dwellSequence=0;
  const $=id=>document.getElementById(id);
  const opts=()=>personalization.get();
@@ -37,7 +38,7 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
  }
  function refresh(){
   if(!on()){
-   destroyCard();if(pendingTimer!==null){clearTimeout(pendingTimer);pendingTimer=null}
+   closeCard();if(pendingTimer!==null){clearTimeout(pendingTimer);pendingTimer=null}
    return;
   }
   if(active)schedule();
@@ -125,73 +126,118 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
    .sort((x,y)=>y.score-x.score||Date.parse(y.a.created_at||0)-Date.parse(x.a.created_at||0))
    .slice(0,4).map(x=>x.a);
  }
- async function suppress(assetId){
-  const uid=state.user?.id;
-  if(!uid)return;
-  const {data,error}=await client.from('corp_social_photo_rediscovery')
-    .update({not_interested:true}).eq('user_id',uid).eq('asset_id',assetId)
-    .select('asset_id');
-  if(error||!data?.length){toast('Could not update this suggestion. Please try again.');return}
+
+ function el(tag,cls='',content=null){
+  const e=document.createElement(tag);
+  if(cls)e.className=cls;
+  if(content!==null)e.textContent=String(content);
+  return e;
+ }
+ function button(label,handler,cls=''){
+  const e=el('button',cls,label);e.type='button';e.addEventListener('click',handler);return e;
+ }
+ function closeCard(){
+  if(card){card.remove();card=null}
+  const old=lastFocus;lastFocus=null;sessionSeen.clear();mode='rediscovery';
+  if(old?.isConnected)old.focus({preventScroll:true});
+ }
+ function destroyCard(){
+  if(card){card.remove();card=null}
+  lastSourceId='';
+ }
+ function chooseNext(seed,choice='more'){
+  const all=possibleSource().filter(a=>!sessionSeen.has(a.id)&&a.id!==seed.id);
+  if(!all.length)return null;
+  const related=findSimilar(seed).filter(a=>!sessionSeen.has(a.id));
+  if(choice!=='dislike'&&related.length)return related[Math.floor(Math.random()*Math.min(4,related.length))];
+  const category=x=>[x.military_category,x.military_branch,x.military_era].filter(known).join(':');
+  const alternatives=choice==='dislike'?all.filter(a=>category(a)!==category(seed)):all;
+  const source=alternatives.length?alternatives:all;
+  return source[Math.floor(Math.random()*source.length)];
+ }
+ async function storeFeedback(seed,feedback){
+  if(!on()||!seed?.id||!state.user?.id)return false;
+  const uid=state.user.id;
+  const fields={rediscovery_feedback:feedback,not_interested:feedback==='dislike',last_feedback_at:new Date().toISOString()};
+  try{
+   const {data:updated,error}=await client.from('corp_social_photo_rediscovery')
+    .update(fields).eq('user_id',uid).eq('asset_id',seed.id).select('asset_id');
+   if(error)throw error;
+   if(!updated?.length){
+    const {error:insertError}=await client.from('corp_social_photo_rediscovery')
+     .insert({user_id:uid,asset_id:seed.id,view_count:0,...fields});
+    if(insertError)throw insertError;
+   }
+   if(typeof personalization.load==='function'){
+    void personalization.load().catch(e=>console.warn('Private recommendation refresh:',e));
+   }
+   return true;
+  }catch(e){
+   toast('Could not save your choice: '+(e?.message||'Connection error'));
+   return false;
+  }
+ }
+ async function respond(seed,feedback,{trigger=false}={}){
+  if(feedbackBusy)return;
+  feedbackBusy=true;
+  if(card)card.classList.add('bc-rediscovery-busy');
+  try{
+   if(!await storeFeedback(seed,feedback))return;
+   const next=chooseNext(seed,feedback);
+   if(trigger){
+    destroyCard();
+    if(!next){closeCard();toast('Your choice is saved. Add more classified photographs to discover similar images.');return}
+    showSeed(next,'trigger');
+    return;
+   }
+   if(!next){closeCard();toast('All available photos reviewed. Your choices were saved.');return}
+   showSeed(next,mode);
+  }finally{
+   feedbackBusy=false;
+   if(card)card.classList.remove('bc-rediscovery-busy');
+  }
+ }
+ function showSeed(seed,nextMode='rediscovery'){
+  if(!on()||!seed?.id||!mediaUrl(seed))return;
+  if(!card)lastFocus=document.activeElement;
   destroyCard();
-  toast("Won't suggest this photo again.");
- }
- function el(tag,cl,text){
-  const node=document.createElement(tag);if(cl)node.className=cl;
-  if(text!==undefined)node.textContent=String(text);
-  return node;
- }
- function button(text,action,cls=''){
-  const b=el('button',cls,text);b.type='button';b.addEventListener('click',action);return b;
- }
- function showSeed(seed,preview=false,lingered=false){
-  if(!on()||!seed||!mediaUrl(seed))return;
-  destroyCard();
+  mode=nextMode==='trigger'?'trigger':'rediscovery';
   lastSourceId=seed.id;
-  const wrap=el('aside','bc-rediscovery-card');
-  wrap.setAttribute('aria-label','Suggested photograph from your personal history');
-  wrap.setAttribute('role','complementary');
-  const head=el('div','bc-rediscovery-head');
-  const intro=el('div');
-  intro.append(el('small','',preview?'PREVIEW · PHOTO REDISCOVERY':'FROM YOUR PHOTO HISTORY'));
-  intro.append(el('strong','',preview?'TEST YOUR REDISCOVERY CARD':'REVISIT A PHOTO'));
-  head.append(intro,button('✕',destroyCard,'bc-rediscovery-close'));
-  const fig=el('div','bc-rediscovery-image');
-  const img=el('img');
-  img.src=mediaUrl(seed);img.alt=seed.caption||seed.filename||'Military photograph you explored';
-  img.loading='lazy';fig.append(img);
-  const desc=el('p','', preview?'This photo appeared in your viewing history. Want to explore it again?':
-   (lingered?'You spent extra time viewing this photo. Want another look or related photographs?':'You opened this photo before. Want another look, or see related photographs?'));
-  const label=el('div','bc-rediscovery-photo-title',
-   (seed.caption||seed.filename||'Military photo').slice(0,115));
-  const actions=el('div','bc-rediscovery-actions');
-  actions.append(button('OPEN PHOTO · VOTE',()=>{
-   destroyCard();void openPhoto(seed);
-  },'primary'));
-  actions.append(button('MORE LIKE THIS',()=>{
-   const matches=findSimilar(seed);
-   const list=wrap.querySelector('.bc-rediscovery-related');
-   if(list){list.remove();return}
-   const related=el('div','bc-rediscovery-related');
-   related.append(el('small','',matches.length?'SIMILAR SUBJECT · BRANCH · ERA':'NO MATCHING PHOTOS YET'));
-   if(!matches.length){
-    related.append(el('p','','Related results will appear as your military archive grows and photos receive subject tags.'));
-   }
-   for(const found of matches){
-    const item=button('',()=>{destroyCard();void openPhoto(found)},'bc-rediscovery-related-photo');
-    const image=el('img');image.src=mediaUrl(found);
-    image.alt=found.caption||found.filename||'Related military photograph';image.loading='lazy';
-    item.append(image,el('span','',(found.caption||found.filename||'Military photograph').slice(0,45)));
-    related.append(item);
-   }
-   actions.insertAdjacentElement('afterend',related);
-  }));
-  const foot=el('div','bc-rediscovery-foot');
-  foot.append(button('NOT INTERESTED',()=>{void suppress(seed.id)}));
-  foot.append(button('DISMISS',destroyCard));
-  wrap.append(head,fig,label,desc,actions,foot);
-  document.body.append(wrap);card=wrap;
+  sessionSeen.add(seed.id);
+  const overlay=el('div','bc-rediscovery-overlay');
+  overlay.setAttribute('role','presentation');
+  const panel=el('section','bc-rediscovery-panel');
+  panel.setAttribute('role','dialog');
+  panel.setAttribute('aria-modal','true');
+  panel.setAttribute('aria-label',mode==='trigger'?'Your personal Trigger Card':'Photo Rediscovery');
+  const head=el('header','bc-rediscovery-head');
+  const label=el('strong','bc-rediscovery-title',mode==='trigger'?'TRIGGER CARD':'PHOTO REDISCOVERY');
+  const close=button('✕',closeCard,'bc-rediscovery-close');
+  close.setAttribute('aria-label','Close photo suggestions');
+  head.append(label,close);
+  const imageBox=el('div','bc-rediscovery-large-photo');
+  const image=el('img');
+  image.src=mediaUrl(seed);
+  image.alt=seed.caption||seed.filename||'Military Library photograph';
+  image.draggable=false;image.loading='eager';
+  imageBox.append(image);
+  const actions=el('div','bc-rediscovery-choice-row');
+  const like=button('♡  LIKE',()=>void respond(seed,'like'),'bc-rediscovery-like');
+  const dislike=button('✕  DON’T LIKE',()=>void respond(seed,'dislike'),'bc-rediscovery-dislike');
+  actions.append(like,dislike);
+  const more=button('MORE LIKE THIS',()=>void respond(seed,'more',{trigger:true}),'bc-rediscovery-more');
+  more.setAttribute('aria-label','Find similar military photos without voting');
+  const foot=el('footer','bc-rediscovery-footer');
+  foot.append(actions,more);
+  panel.append(head,imageBox,foot);
+  overlay.append(panel);
+  overlay.addEventListener('click',e=>{if(e.target===overlay)closeCard()});
+  document.body.append(overlay);
+  card=overlay;
+  close.focus({preventScroll:true});
  }
- async function offer({preview=false}={}){
+
+async function offer({preview=false}={}){
   if(!on()||!state.user?.id||(sessionShown&&!preview))return;
   if(!preview&&!allowedMoment())return;
   const {data,error}=await client.from('corp_social_photo_rediscovery')
@@ -227,7 +273,10 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
    if(markError||!marked?.length)return;
    sessionShown=true;
   }
-  showSeed(seed,preview,Number(choice.engaged_views||0)>0||Number(choice.zoom_engaged_views||0)>0);
+  const qualified=Number(choice.zoom_engaged_views||0)>0||Number(choice.engaged_views||0)>0;
+  const related=qualified?findSimilar(seed):[];
+  const recommended=!preview&&related.length>0&&Math.random()<.4;
+  showSeed(recommended?related[0]:seed,recommended?'trigger':'rediscovery');
  }
  function start(){
   if(active)return;active=true;
@@ -235,20 +284,39 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
    const touch=()=>{lastInteraction=Date.now()};
    document.addEventListener('pointerdown',touch,{passive:true});
    document.addEventListener('keydown',touch,{passive:true});
+   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&card)closeCard()});
    document.addEventListener('visibilitychange',()=>{
-    if(document.hidden)destroyCard();
+    if(document.hidden)closeCard();
    });
    $('rediscoveryPreview')?.addEventListener('click',()=>{
     if(!on()){toast('Enable and save Photo Rediscovery first.');return}
     if($('personalizationOverlay'))$('personalizationOverlay').hidden=true;
     void offer({preview:true});
    });
+   $('triggerPreview')?.addEventListener('click',async()=>{
+    if(!on()){toast('Enable and save Photo Rediscovery first.');return}
+    if($('personalizationOverlay'))$('personalizationOverlay').hidden=true;
+    const candidates=possibleSource();
+    if(!candidates.length){toast('Upload photos to the Military Library to preview Trigger Cards.');return}
+    const {data}=await client.from('corp_social_photo_rediscovery')
+      .select('asset_id,view_count,engaged_views,zoom_engaged_views,rediscovery_feedback')
+      .eq('user_id',state.user.id).eq('not_interested',false)
+      .order('view_count',{ascending:false}).limit(100);
+    const score=x=>Number(x.zoom_engaged_views||0)*8+Number(x.engaged_views||0)*5+
+      Number(x.view_count||0)+(x.rediscovery_feedback==='like'?20:0)+(x.rediscovery_feedback==='more'?15:0);
+    const rows=(data||[]).sort((a,b)=>score(b)-score(a));
+    const source=rows.map(r=>candidates.find(a=>a.id===r.asset_id)).find(Boolean);
+    const suggested=source?findSimilar(source)[0]:null;
+    if(!suggested){toast('Open and explore more classified photographs so Blackcell can find related Trigger Cards.');return}
+    sessionSeen.clear();
+    showSeed(suggested,'trigger');
+   });
    didBind=true;
   }
   schedule();
  }
  function stop(){
-  active=false;stopViewing();destroyCard();
+  active=false;stopViewing();closeCard();
   if(pendingTimer!==null){clearTimeout(pendingTimer);pendingTimer=null}
  }
  return {start,stop,refresh,recordView,startViewing,stopViewing,recordZoomHold,
