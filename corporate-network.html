@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="corporate-chat-dock.css?v=20261109-floating-right2"><link rel="stylesheet" href="corporate-chat-bubble-dock.css?v=20261109-bubble-dock1"><link rel="stylesheet" href="corporate-chat-premium-dock.css?v=20261109-premium1">
 <link rel="stylesheet" href="corporate-chat-media-bubble-host.css?v=20261109-independent-media1"><link rel="stylesheet" href="corporate-chat-media-responsive.css?v=20261109-sidebyside2"><link rel="stylesheet" href="corporate-chat-media-flip-focus.css?v=20261109-flip-focus1">
 <script src="corporate-chat-media-bubble-host.js?v=20261109-large-media1" defer></script>
-<script src="corp-config.js" defer></script><script type="module" src="corporate-network.js?v=20261111-justified-fix3"></script><link rel="stylesheet" href="corp-adaptive-layout.css?v=20261109-device2">
+<script src="corp-config.js" defer></script><script type="module" src="corporate-network.js?v=20261111-vote-care-awards1"></script><link rel="stylesheet" href="corp-adaptive-layout.css?v=20261109-device2">
 <link rel="stylesheet" href="corp-adaptive-chat.css?v=20261109-device2">
 <link rel="stylesheet" href="corporate-network-feed-media.css?v=20261109-uncropped2">
 <link rel="stylesheet" href="corporate-chat-compact-media.css?v=20261109-mobile-gallery4">
@@ -22,6 +22,7 @@
 <style>.military-usa-nav{display:inline-flex;align-items:center;color:#f7deeb;border:1px solid #a35878;background:linear-gradient(110deg,#102a4a,#69233e);border-radius:9px;padding:10px 12px;text-decoration:none;font-size:10px;font-weight:850;white-space:nowrap}.military-usa-nav:hover{background:#8a3254}</style>
 <link rel="stylesheet" href="corporate-network-obsidian.css?v=20261111-dark1">
 <link rel="stylesheet" href="corporate-gallery-justified.css?v=20261111-justified-fix4">
+<link rel="stylesheet" href="corporate-military-resources.css?v=20261111-vote-care-awards1">
 </head>
 <body class="bc-network">
 <header class="masthead">
@@ -50,6 +51,8 @@
       <button class="rail-link" data-view="discover"><span>◎</span> People & Following</button>
       <a class="rail-link" href="corporate-chat.html"><span>▧</span> Private Chat</a>
       <a class="rail-link" href="uniform-care.html"><span>✦</span> Uniform Care</a>
+      <a class="rail-link" href="uniform-innovations.html"><span>◇</span> Uniform Innovations</a>
+      <a class="rail-link" href="uniform-of-the-year.html"><span>★</span> Uniform of the Year</a>
     </div>
     <div class="rail-note">PRIVATE CORPORATE SPACE<span>Verified employees and the Level 7 administrator only. Network posts are visible to authorized members.</span></div>
   </aside>
@@ -99,12 +102,19 @@
    <button type="button" id="mxHeroExplore" class="mx-btn mx-primary">EXPLORE THE LIBRARY ↗</button>
    <a class="mx-btn" id="mxHeroUSA" href="usa-page.html">🇺🇸 OPEN USA PAGE ↗</a>
    <a class="mx-btn" href="uniform-care.html">✦ UNIFORM CARE ↗</a>
+   <a class="mx-btn" href="uniform-innovations.html">◇ UNIFORM INNOVATIONS ↗</a>
+   <a class="mx-btn" href="uniform-of-the-year.html">★ UNIFORM OF THE YEAR ↗</a>
    <button type="button" id="mxHeroWatch" class="mx-btn">▷ WATCH CINEMATIC PREVIEW</button>
    <button type="button" id="mxHeroMen" class="mx-btn">✦ MEN IN UNIFORM</button>
   </div>
  </div>
  <span class="mx-hero-credit">Background: U.S. Department of Defense / public domain</span>
 </div>
+<section class="bc-military-resources" aria-label="Military Library resources">
+ <a href="uniform-care.html"><span>FIELD HANDBOOK</span><strong>UNIFORM CARE</strong><small>Maintain uniforms, boots and protective gear</small></a>
+ <a href="uniform-innovations.html"><span>TECHNOLOGY &amp; DESIGN</span><strong>UNIFORM INNOVATIONS</strong><small>Real new military fabrics, fit and protection</small></a>
+ <a href="uniform-of-the-year.html"><span>BLACKCELL MEMBER AWARDS</span><strong>UNIFORM OF THE YEAR</strong><small>Vote on photographs and explore past winners</small></a>
+</section>
 <div class="mx-ticker"><span><strong>WORLD FORCES</strong> / GROUND · AIR · SEA</span><span>GLOBAL MILITARY MEDIA / PRIVATE NETWORK</span><span>IMMERSIVE COLLECTIONS / USER CONTROLLED</span></div>
 
 <section id="wfExplorer" class="wf-explorer" aria-labelledby="wfTitle">
@@ -363,7 +373,7 @@
 </div>
 <div id="applePhotoViewer" class="apple-photo-viewer" hidden role="dialog" aria-modal="true" aria-label="Apple Photos style viewer">
  <div class="apple-photo-viewer-header"><div><strong id="appleViewerFilename">Media</strong><small id="appleViewerMeta">ORIGINAL QUALITY</small></div>
-   <div class="apple-photo-viewer-actions"><button id="appleViewerFavorite" title="Favorite this media" type="button">♡</button><button id="appleViewerTaste" type="button" hidden>✦ WHAT CAUGHT YOUR EYE?</button><button id="appleViewerPredict" type="button" hidden>◎ PREDICT MY INTEREST</button><button id="appleViewerOriginal" type="button">↗ FULL PHOTO</button>
+   <div class="apple-photo-viewer-actions"><button id="appleViewerFavorite" title="Favorite this media" type="button">♡</button><span id="appleViewerVoteSlot" class="bc-viewer-vote-slot" aria-label="Photo voting"></span><button id="appleViewerTaste" type="button" hidden>✦ WHAT CAUGHT YOUR EYE?</button><button id="appleViewerPredict" type="button" hidden>◎ PREDICT MY INTEREST</button><button id="appleViewerOriginal" type="button">↗ FULL PHOTO</button>
     <button id="appleViewerDownload" type="button">↓ DOWNLOAD</button><button id="appleViewerClose" class="close-x" type="button" aria-label="Close viewer">✕</button></div></div>
  <div class="apple-photo-viewer-stage"><button id="appleViewerPrevious" class="apple-photo-nav previous" type="button" aria-label="Previous photo">‹</button>
    <div id="appleViewerStage" class="apple-photo-stage-inner"></div><button id="appleViewerNext" class="apple-photo-nav next" type="button" aria-label="Next photo">›</button></div>
