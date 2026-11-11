@@ -303,7 +303,7 @@ function layoutJustifiedGallery(){
  if(!items.length){holder.replaceChildren();return}
  const width=Math.floor(holder.getBoundingClientRect().width);
  if(width<90)return; // The gallery may still be hidden during session verification.
- const gap=width<640?8:width<1000?9:10;
+ const gap=0; // Pixel-perfect, edge-to-edge justified photographs on every screen.
  const target=width<480?195:width<800?235:width<1150?275:335;
  const minHeight=target*.68;
  const rows=[];
@@ -323,8 +323,7 @@ function layoutJustifiedGallery(){
   const h=(width-gap*(current.length-1))/ratioSum;
   if(h<=target*1.08)commit(true);
  }
- commit(false);
- const fragment=document.createDocumentFragment();
+ commit(true); // Justify the final row as well: no empty trailing gutter.
  rows.forEach(({items:rowItems,ratioSum:sum,full})=>{
   const row=document.createElement("div");
   row.className="justified-row";
