@@ -656,7 +656,7 @@ async function verifyNetworkSession(){
   const rpc=state.member?.role==='owner'?'corp_code_status':'corp_employee_code_status';
   const status=await client.rpc(rpc);
   if(status.error||status.data?.verified!==true)
-   closeNetworkForSecurity('Your verified access pass has expired. Return to the corporate portal and verify your access again.');
+   closeNetworkForSecurity('Your corporate account authorization has expired. Sign in again.');
  }catch(_){
   closeNetworkForSecurity('Network access could not be verified. Return to the corporate portal to reconnect.');
  }finally{networkSecurityChecking=false}
@@ -690,7 +690,7 @@ async function boot(){
    const {data,error}=await client.rpc('corp_employee_code_status');
    verified=!error&&data?.ok===true&&data.verified===true;
   }
-  if(!verified)throw Error('Your Blackcell Access Pass must be verified before entering the social network.');
+  if(!verified)throw Error('Your corporate account must be active and authorized to enter the network.');
   await loadAll({show:false});
   if(auth.member.role==='owner'||auth.member.can_chat===true){
    const {data}=await client.rpc('corp_chat_peers');
