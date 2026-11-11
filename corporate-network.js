@@ -591,12 +591,41 @@ async function publish(){
  if(state.busy)return;
  const body=$('postBody').value.trim();
  if(!body&&!formFiles.length){toast('Write an update or attach media before publishing.');return}
- const hasVideo=formFiles.some(f=>f.type.startsWith('video/'));
- const kind=hasVideo?'video':formFiles.length?'photo':'update';
  state.busy=true;const publishBtn=$('publishPost');
- publishBtn.disabled=true;publishBtn.textContent='PUBLISHING…';
+ publishBtn.disabled=true;publishBtn.textContent='CHECKING PHOTOS…';
+ let selected=[],fingerprints=new Map(),skipped=0;
+ try{
+  for(const f of formFiles){
+   if(f.type.startsWith('image/')){
+    const check=await dedupe.preflight(f);
+    const hit=check.matches[0];
+    if(hit?.type==='exact'){
+     skipped++;toast('Exact duplicate skipped: '+f.name);continue;
+    }
+    if(hit?.type==='possible'&&!confirm(
+     'POSSIBLE DUPLICATE\n\n'+f.name+' may match '+dedupe.nameOf(hit.asset_id)+
+     '.\n\nInclude it in your post anyway?')){
+     skipped++;continue;
+    }
+    fingerprints.set(f,check.fingerprint);
+   }
+   selected.push(f);
+  }
+ }catch(e){
+  toast('Could not check photo duplicates: '+(e?.message||'Try again'));
+  state.busy=false;publishBtn.disabled=false;publishBtn.textContent='PUBLISH POST ↗';
+  return;
+ }
+ if(!body&&!selected.length){
+  toast('Nothing new to publish. '+skipped+' duplicate photo'+(skipped===1?' was':'s were')+' skipped.');
+  state.busy=false;publishBtn.disabled=false;publishBtn.textContent='PUBLISH POST ↗';
+  return;
+ }
+ const hasVideo=selected.some(f=>f.type.startsWith('video/'));
+ const kind=hasVideo?'video':selected.length?'photo':'update';
+ publishBtn.textContent='PUBLISHING…';
  const progress=$('uploadProgress');
- if(formFiles.length){progress.hidden=false;$('uploadFill').style.width='0%'}
+ if(selected.length){progress.hidden=false;$('uploadFill').style.width='0%'}
  let postId=null;
  try{
   const {data,error}=await client.from('corp_social_posts').insert({
@@ -604,16 +633,17 @@ async function publish(){
   }).select('id').single();
   if(error||!data?.id)throw Error(error?.message||'Could not create post.');
   postId=data.id;
-  for(const [i,f] of formFiles.entries()){
-   $('uploadFill').style.width=Math.round(i*100/formFiles.length)+'%';
-   $('uploadText').textContent='Uploading '+(i+1)+' of '+formFiles.length+': '+f.name;
-   await uploadAsset(f,'post',postId);
-   $('uploadFill').style.width=Math.round((i+1)*100/formFiles.length)+'%';
+  for(const [i,f] of selected.entries()){
+   $('uploadFill').style.width=Math.round(i*100/selected.length)+'%';
+   $('uploadText').textContent='Uploading '+(i+1)+' of '+selected.length+': '+f.name;
+   const asset=await uploadAsset(f,'post',postId);
+   if(asset.kind==='photo'&&fingerprints.has(f))await dedupe.record(asset,fingerprints.get(f));
+   $('uploadFill').style.width=Math.round((i+1)*100/selected.length)+'%';
   }
   $('uploadText').textContent='Upload complete.';
   $('postBody').value='';formFiles=[];renderAttachments();updateCounter();
   await refresh();
-  switchView('feed');toast('Post published to your private Blackcell Network.');
+  switchView('feed');toast('Post published'+(skipped?' · '+skipped+' duplicate'+(skipped===1?'':'s')+' skipped':'')+'.');
  }catch(e){
   // Remove incomplete post (metadata cascades), keeping the feed consistent.
   if(postId)await client.from('corp_social_posts').delete().eq('id',postId).eq('author_id',state.user.id);
