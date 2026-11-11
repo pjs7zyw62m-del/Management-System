@@ -1,5 +1,5 @@
 import {authorizeUniformHub} from './uniform-hub-auth.js?v=20261111-i1';
-import {createPhotoVoting} from './corporate-photo-votes.js?v=20261111-votes1';
+import {createPhotoVoting} from './corporate-photo-votes.js?v=20261111-votes2';
 const $=id=>document.getElementById(id);
 const currentYear=new Date().getUTCFullYear();
 let session=null,votes=null,history=[],members=new Map(),selectedYear=currentYear;
