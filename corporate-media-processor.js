@@ -10,7 +10,8 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
   const node=document.createElement(tag);if(cls)node.className=cls;
   if(text!==undefined)node.textContent=text;return node;
  };
- let queue=[],albums=[],current=null,busy=false;
+ let queue=[],albums=[],current=null,busy=false,page=0,totalPending=0;
+ const pageSize=40;
  const status=text=>{if($('bcProcessStatus'))$('bcProcessStatus').textContent=text};
  const errText=e=>e?.message||'Unknown error';
  const setBusy=v=>{busy=v;for(const name of ['bcMediaReset','bcProcessRefresh','bcReviewApprove','bcReviewReject','bcReviewAI'])
@@ -25,7 +26,10 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
  }
  function updateCards(){
   const pending=queue.filter(a=>a.review_status==='pending');
-  $('bcProcessCount').textContent=String(pending.length);
+  $('bcProcessCount').textContent=String(totalPending);
+  $('bcQueuePage').textContent=(page+1)+' / '+Math.max(1,Math.ceil(totalPending/pageSize));
+  $('bcQueuePrev').disabled=page===0;
+  $('bcQueueNext').disabled=(page+1)*pageSize>=totalPending;
   const host=$('bcProcessQueue');host.replaceChildren();
   if(!pending.length){
    host.append(el('p','bc-proc-empty','No photographs or videos waiting for review. Imports will enter this private queue before becoming part of BLACKCELL.'));
@@ -44,14 +48,17 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
   status('Loading pending private photographs and videos…');
   try{
    const [a,b]=await Promise.all([
-    client.from('corp_social_assets').select('*').eq('review_status','pending')
-     .in('kind',['photo','video']).order('created_at',{ascending:true}).limit(1000),
+    client.from('corp_social_assets').select('*',{count:'exact'}).eq('review_status','pending')
+     .in('kind',['photo','video']).order('created_at',{ascending:true})
+     .range(page*pageSize,(page+1)*pageSize-1),
     client.from('corp_social_albums').select('id,title,owner_id,military_country_code,military_branch,military_category')
      .eq('owner_id',state.user.id).limit(1000)
    ]);
    if(a.error||b.error)throw a.error||b.error;
+   totalPending=Number(a.count||0);
+   if(page>0&&page*pageSize>=totalPending){page=Math.max(0,page-1);return await reload(true)}
    queue=a.data||[];albums=b.data||[];updateCards();
-   status(queue.length+' waiting for approval · adult or uncertain media stays owner-only · country and albums are never guessed from appearance.');
+   status(totalPending+' waiting for approval · '+queue.length+' on this page · adult or uncertain media stays owner-only · no country guessing.');
   }catch(e){status('Could not load import queue: '+errText(e))}
  }
  function fillChoose(){
@@ -129,6 +136,9 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
   if(adult&&!ages){status('Approval blocked: confirm every depicted person is an adult and your authority to hold this explicit media.');return}
   if(!adult&&(!country||branch==='Unspecified'||subject==='Unsorted')){
    status('Accurate sorting requires a confirmed country, branch and subject. Leave it pending when unknown; never guess.');return;
+  }
+  if(!adult&&choice==='unfiled'){
+   status('To publish regular media, file it into an accurately labeled album. Choose AUTO CREATE or a matching album.');return;
   }
   if(adult&&choice!=='unfiled'){
    status('Adult-restricted media cannot be placed in shared albums. Choose LEAVE UNFILED; it remains owner-only.');return;
@@ -252,6 +262,8 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
   options('bcReviewCategory','militaryUploadCategory');
   options('bcReviewEra','militaryUploadEra');
   $('bcProcessRefresh').addEventListener('click',()=>void reload());
+  $('bcQueuePrev').addEventListener('click',()=>{if(page>0){page--;void reload()}});
+  $('bcQueueNext').addEventListener('click',()=>{if((page+1)*pageSize<totalPending){page++;void reload()}});
   document.addEventListener('bc:media-updated',()=>void reload());
   $('bcMediaReset').addEventListener('click',()=>void resetMedia());
   $('bcReviewApprove').addEventListener('click',()=>void approve());
