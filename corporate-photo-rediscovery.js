@@ -84,6 +84,15 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
    }
   },500);
  }
+
+ async function recordZoomHold(asset){
+  if(!on()||asset?.kind!=='photo'||!asset.id)return false;
+  try{
+   const {data,error}=await client.rpc('corp_record_photo_zoom_engagement',{p_asset_id:asset.id});
+   if(error){console.warn('Private zoom interest was not saved:',error.message);return false}
+   return data===true;
+  }catch(error){console.warn('Zoom engagement unavailable:',error?.message);return false}
+ }
  function possibleSource(){
   return (state.assets||[]).filter(a=>a.kind==='photo'&&a.purpose==='library'&&mediaUrl(a));
  }
@@ -186,12 +195,12 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
   if(!on()||!state.user?.id||(sessionShown&&!preview))return;
   if(!preview&&!allowedMoment())return;
   const {data,error}=await client.from('corp_social_photo_rediscovery')
-    .select('asset_id,view_count,engaged_views,last_viewed_at,last_suggested_at,not_interested')
+    .select('asset_id,view_count,engaged_views,zoom_engaged_views,last_viewed_at,last_suggested_at,not_interested')
     .eq('user_id',state.user.id).eq('not_interested',false)
     .order('engaged_views',{ascending:false}).order('view_count',{ascending:false}).limit(130);
   if(error){console.warn('Rediscovery suggestions unavailable:',error.message);return}
   const candidates=(data||[]).filter(r=>
-   (Number(r.engaged_views||0)>0||Number(r.view_count||0)>=(preview?1:2)) &&
+   (Number(r.zoom_engaged_views||0)>0||Number(r.engaged_views||0)>0||Number(r.view_count||0)>=(preview?1:2)) &&
    possibleSource().some(a=>a.id===r.asset_id) &&
    (preview||elapsed(r.last_viewed_at)>3*60000));
   if(!candidates.length){
@@ -206,7 +215,7 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
   const eligible=candidates.filter(c=>preview||elapsed(c.last_suggested_at)>cooldown);
   if(!eligible.length)return;
   // Longer looks outweigh repeated openings; neither is a confirmed like or vote.
-  const strength=row=>Math.min(5,Number(row.engaged_views||0))*5+Math.min(10,Number(row.view_count||0));
+  const strength=row=>Math.min(5,Number(row.zoom_engaged_views||0))*7+Math.min(5,Number(row.engaged_views||0))*5+Math.min(10,Number(row.view_count||0));
   const sorted=eligible.sort((a,b)=>strength(b)-strength(a)).slice(0,12);
   const choice=sorted[Math.floor(Math.pow(Math.random(),1.5)*sorted.length)];
   const seed=possibleSource().find(a=>a.id===choice.asset_id);
@@ -218,7 +227,7 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
    if(markError||!marked?.length)return;
    sessionShown=true;
   }
-  showSeed(seed,preview,Number(choice.engaged_views||0)>0);
+  showSeed(seed,preview,Number(choice.engaged_views||0)>0||Number(choice.zoom_engaged_views||0)>0);
  }
  function start(){
   if(active)return;active=true;
@@ -242,5 +251,6 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
   active=false;stopViewing();destroyCard();
   if(pendingTimer!==null){clearTimeout(pendingTimer);pendingTimer=null}
  }
- return {start,stop,refresh,recordView,startViewing,stopViewing,preview:()=>offer({preview:true}),findSimilar};
+ return {start,stop,refresh,recordView,startViewing,stopViewing,recordZoomHold,
+  preview:()=>offer({preview:true}),findSimilar,imageUrl:mediaUrl};
 }
