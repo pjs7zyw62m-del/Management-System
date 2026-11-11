@@ -81,10 +81,28 @@ export function createPhotoZoom({rediscovery,openPhoto}){
    }
   },250);
  }
- function applyZoom(n){
+ // Anchor zoom to a point in viewport coordinates (mouse cursor or pinch midpoint).
+ // The image uses translate(...) scale(...) with transform-origin at its center:
+ // preserving the same image pixel under the cursor requires adjusting translation
+ // by (1 - nextScale / oldScale) times the cursor's offset from that center.
+ function applyZoom(n,anchor=null){
   if(!img)return;
-  const previous=scale;scale=clamp(Math.round(n*100)/100,min,max);
-  if(scale===1){tx=0;ty=0}
+  const previous=scale,next=clamp(Math.round(n*100)/100,min,max);
+  if(next===previous)return;
+  if(next===1){scale=1;tx=0;ty=0}
+  else if(anchor&&Number.isFinite(anchor.x)&&Number.isFinite(anchor.y)){
+   const bounds=img.getBoundingClientRect();
+   // An image can be portrait-shaped within a wide black stage. Focus on
+   // the nearest actual photo pixel, not on empty background beside it.
+   const cursorX=clamp(anchor.x,bounds.left,bounds.right);
+   const cursorY=clamp(anchor.y,bounds.top,bounds.bottom);
+   const centerX=bounds.left+bounds.width/2-tx;
+   const centerY=bounds.top+bounds.height/2-ty;
+   const ratio=next/previous;
+   tx+=(cursorX-centerX-tx)*(1-ratio);
+   ty+=(cursorY-centerY-ty)*(1-ratio);
+   scale=next;
+  }else scale=next;
   display();
   if(scale>=1.3&&previous<1.3)startTimer();
   if(scale<1.3&&previous>=1.3)stopTimer();
@@ -113,14 +131,14 @@ export function createPhotoZoom({rediscovery,openPhoto}){
  zoomOut.addEventListener('click',()=>applyZoom(scale-.5));
  fit.addEventListener('click',()=>applyZoom(1));
  stage.addEventListener('wheel',e=>{
-  if(!img||!viewer||viewer.hidden)return;
+  if(!img||!viewer||viewer.hidden||e.deltaY===0)return;
   e.preventDefault();
-  applyZoom(scale+(e.deltaY<0?.25:-.25));
+  applyZoom(scale+(e.deltaY<0?.25:-.25),{x:e.clientX,y:e.clientY});
  },{passive:false});
  stage.addEventListener('dblclick',e=>{
   if(!img||!img.contains(e.target))return;
   e.preventDefault();
-  applyZoom(scale>=1.8?1:2);
+  applyZoom(scale>=1.8?1:2,{x:e.clientX,y:e.clientY});
  });
  function dist(){
   const coords=[...pointers.values()];
@@ -140,7 +158,14 @@ export function createPhotoZoom({rediscovery,openPhoto}){
   if(pointers.size>=2){
    gesture=true;
    if(!pinchDistance){pinchDistance=dist();pinchScale=scale}
-   const d=dist();if(d>0&&pinchDistance>0)applyZoom(pinchScale*d/pinchDistance);
+   const d=dist();
+   if(d>0&&pinchDistance>0){
+    const two=[...pointers.values()];
+    applyZoom(pinchScale*d/pinchDistance,{
+     x:(two[0].x+two[1].x)/2,
+     y:(two[0].y+two[1].y)/2
+    });
+   }
   }else if(scale>1.02){
    tx+=e.clientX-prev.x;ty+=e.clientY-prev.y;display();
    gesture=true;
