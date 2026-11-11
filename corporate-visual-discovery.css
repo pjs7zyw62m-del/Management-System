@@ -339,3 +339,46 @@ body.bc-network .bc-vd-top-actions ~ .bc-vd-index-status{
   max-height:140px!important;flex:none!important;margin-bottom:9px!important
  }
 }
+
+
+/* Same-item recognition is now the primary action. The optional local
+   color comparison must not look like an AI object match. */
+body.bc-network .bc-vd-actions button#vdAISearch{
+ background:linear-gradient(116deg,#9c2842,#d2425f)!important;
+ border:1px solid #ec637e!important;
+ color:#fff!important;
+ box-shadow:0 4px 18px rgba(173,43,73,.2)!important;
+ min-height:46px!important;
+ font-weight:850!important;
+}
+body.bc-network .bc-vd-actions button#vdAnalyze{
+ background:#151e29!important;border:1px solid #405060!important;
+ color:#d1dce5!important;min-height:44px!important
+}
+body.bc-network .bc-vd-actions button#vdAISearch:disabled{
+ opacity:.50!important;cursor:not-allowed!important
+}
+body.bc-network .bc-vd-actions button#vdAISearch:not(:disabled):hover{
+ background:linear-gradient(116deg,#b73250,#ed5371)!important
+}
+body.bc-network .bc-vd-matching-label{
+ border:1px solid #354050;background:#0c131d;border-radius:9px;
+ padding:10px!important
+}
+body.bc-network .bc-vd-index-status{
+ font-size:11px!important;line-height:1.65!important
+}
+@media(max-width:900px){
+ body.bc-network .bc-vd-actions button#vdAISearch{
+  flex:1 1 100%!important;min-height:48px!important;
+  font-size:12px!important;letter-spacing:.08em!important;
+ }
+ body.bc-network .bc-vd-actions button#vdAnalyze{
+  flex:1 1 auto!important;min-height:43px!important
+ }
+ body.bc-network .bc-vd-stage::after{
+  content:'TAP ITEM · THEN AI FIND SAME ITEM'!important;
+  white-space:normal!important;text-align:center!important;
+  font-size:9px!important;max-width:calc(100% - 22px);
+ }
+}
