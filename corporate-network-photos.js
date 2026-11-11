@@ -210,7 +210,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   if(meta.filter==='countries'&&a.military_country_code)
    tile.append(make('span','country-photo-label',world.countryName(String(a.military_country_code).toUpperCase())));
   if(a.kind==='video')tile.append(make('span','apple-photo-kind','VIDEO'));
-  else tile.append(votes.button(a,'bc-gallery-photo-vote'));
+  // Votes belong to the open photo viewer, never over the gallery thumbnail.
   const heart=press(favorited(a.id)?'♥':'♡',event=>{
    event.stopPropagation();void toggleFavorite(a.id);
   },'apple-photo-heart'+(favorited(a.id)?' liked':''));
