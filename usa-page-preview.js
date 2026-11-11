@@ -1,5 +1,6 @@
 import {corporateClient,corporateAuthorize} from "./corp-auth.js?v=20261109-staff1";
 import {mountMilitaryGunner} from "./military-gunner.js?v=20261110-fast4";
+import {createUsaPhotoOfDay} from "./usa-photo-of-day.js?v=20261111-bento3";
 const $=id=>document.getElementById(id);
 const client=corporateClient();
 const storage=client.storage.from("corp-social-media");
@@ -42,7 +43,7 @@ async function loadPages(){
 }
 async function loadAssets(){
  const {data,error}=await client.from("corp_social_assets")
-  .select("id,owner_id,kind,purpose,mime_type,filename,caption,created_at,storage_path,military_country_code,military_category,military_branch,military_era,military_unit,military_tags")
+  .select("id,owner_id,kind,purpose,mime_type,filename,caption,created_at,storage_path,military_country_code,military_category,military_branch,military_era,military_year,military_unit,military_tags")
   .in("purpose",["post","library"]).order("created_at",{ascending:false}).limit(2500);
  if(error)throw Error("Authorized military photographs could not be loaded: "+error.message);
  state.assets=data||[];
@@ -66,28 +67,37 @@ async function signedImages(){
   chunk.forEach((a,j)=>{if(data?.[j]?.signedUrl)state.urls.set(a.id,data[j].signedUrl)});
  }
 }
+function archiveEraSpan(assets){
+ const years=assets.map(a=>{
+  const year=Number(a.military_year);
+  if(Number.isInteger(year)&&year>=1850&&year<=2100)return year;
+  const era=String(a.military_era||"").match(/\b(?:18|19|20)\d{2}\b/);
+  return era?Number(era[0]):null;
+ }).filter(Number.isFinite).sort((x,y)=>x-y);
+ if(!years.length)return "NOT SET";
+ const first=Math.floor(years[0]/10)*10,last=Math.floor(years[years.length-1]/10)*10;
+ return first===last?first+"s":first+"s–"+last+"s";
+}
 function renderHero(){
- const mode=state.view.length===1&&state.view[0]==="US"?"usa":state.view.length>1?"hybrid":"nation";
- document.body.dataset.pageTheme=mode;
- const title=state.view.length===1?titleFor(state.view[0]):state.view.map(titleFor).join(" + ");
- const isUs=mode==="usa";
- $("heroFlags").textContent=state.view.map(flag).join("  ");
- $("heroEyebrow").textContent=state.view.length>1?"BLACKCELL / "+state.view.length+"-NATION HYBRID ARCHIVE":
-  isUs?"BLACKCELL / UNITED STATES ARMED FORCES":"BLACKCELL / "+title+" MILITARY ARCHIVE";
- const pageTitle=$("pageTitle");
- pageTitle.replaceChildren();
+ const assets=galleryFor();
+ document.body.dataset.pageTheme="usa";
+ const title=$("pageTitle");
+ title.replaceChildren();
  const lineOne=document.createElement("span"),lineTwo=document.createElement("em");
  lineOne.textContent="UNITED STATES";lineTwo.textContent="ARMED FORCES.";
- pageTitle.append(lineOne,lineTwo);
- $("heroDescription").textContent="Explore the uniforms, personnel, training and history of the U.S. Armed Forces through your existing private photo collection. Images appear here when classified as United States.";
- $("heroSeal").textContent=isUs?"US":state.view.length>1?"HX":state.view[0];
- const visible=galleryFor();
- $("photoCount").textContent=String(visible.length);
- $("countryCount").textContent=String(state.view.length);
- $("branchCount").textContent=String(new Set(visible.map(x=>x.military_branch).filter(x=>x&&x!=="Unspecified")).size);
+ title.append(lineOne,lineTwo);
+ const eyebrow=$("heroEyebrow");
+ eyebrow.replaceChildren();
+ const dot=document.createElement("span");
+ dot.className="crumb-dot";dot.setAttribute("aria-hidden","true");
+ eyebrow.append(dot,document.createTextNode("BLACKCELL // UNITED STATES ARMED FORCES"));
+ $("heroDescription").textContent="Explore the uniforms, personnel, training, and history of the U.S. Armed Forces through your existing private photo collection.";
+ $("photoCount").textContent=String(assets.length);
+ $("branchCount").textContent=String(new Set(assets.map(branchOf).filter(x=>x!=="unclassified")).size);
+ $("eraSpan").textContent=archiveEraSpan(assets);
  $("galleryTitle").textContent="MILITARY PHOTO ARCHIVE";
- $("gallerySubtext").textContent=visible.length+" United States photograph"+(visible.length===1?"s":"")+" available in your protected archive.";
- document.title="BLACKCELL — "+title+(state.view.length>1?" Hybrid":" Military");
+ $("gallerySubtext").textContent=assets.length+" United States photograph"+(assets.length===1?"":"s")+" available in your protected archive.";
+ document.title="BLACKCELL — United States Armed Forces | Redesign Preview";
 }
 function renderDirectory(){
  const root=$("countryCards"),select=$("addCountry");
@@ -309,7 +319,23 @@ async function navigate(codes,{saveHybrid=false}={}){
  }
  location.assign(pageFor(valid));
 }
+const dailyPhoto=createUsaPhotoOfDay({
+ client,
+ getUser:()=>state.user,
+ getAssets:()=>galleryFor(),
+ getSignedUrl:a=>state.urls.get(a.id)||null,
+ openAsset:asset=>{
+  let index=(state.shown||[]).findIndex(x=>x.id===asset.id);
+  if(index<0){
+   state.shown=[asset,...galleryFor().filter(a=>a.id!==asset.id)];
+   index=0;
+  }
+  openPhoto(index);
+ }
+});
 function installEvents(){
+ dailyPhoto.setup();
+ document.addEventListener("visibilitychange",()=>{if(!document.hidden)void dailyPhoto.refreshIfNewDay?.()});
  $("gallerySearch").addEventListener("input",renderPhotos);
  $("categoryFilter").addEventListener("change",e=>{state.category=e.target.value;renderPhotos()});
  $("eraFilter").addEventListener("change",e=>{state.era=e.target.value;renderPhotos()});
@@ -345,7 +371,7 @@ function installEvents(){
 }
 async function reload(){
  $("reloadPhotos").disabled=true;
- try{await loadAssets();await signedImages();if(!state.featuredBranch)state.featuredBranch=chooseInitialFeatured();renderHero();renderDirectory();renderFilterOptions();renderBranchCounters();renderPhotos();toast("United States military photographs refreshed.")}
+ try{await loadAssets();await signedImages();if(!state.featuredBranch)state.featuredBranch=chooseInitialFeatured();renderHero();renderDirectory();renderFilterOptions();renderBranchCounters();renderPhotos();await dailyPhoto.refresh();toast("United States military photographs refreshed.")}
  catch(err){toast(err.message||"Refresh failed")}finally{$("reloadPhotos").disabled=false}
 }
 async function boot(){
@@ -360,6 +386,7 @@ async function boot(){
   renderHero();renderDirectory();renderTokens();renderSavedHybrids();renderFilterOptions();renderBranchCounters();renderPhotos();
   installEvents();
   $("accessGate").hidden=true;$("countryApp").hidden=false;
+  void dailyPhoto.refresh();
   mountMilitaryGunner({client,getContext:()=>({
    page_title:document.title.replace(/^BLACKCELL — /,""),
    countries:state.view,
