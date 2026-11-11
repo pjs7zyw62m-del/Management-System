@@ -1,5 +1,8 @@
 # BLACKCELL — iCloud cloud-to-cloud transfer (PREPARED, NOT CONNECTED)
 
+> **Adult-media destination option:** See [MEGA-OPTION.md](MEGA-OPTION.md) for the prepared iCloud → MEGA Cloud Drive / MEGA S4 cloud-to-cloud transfer path. MEGA’s legal adult-content permissions require explicit provider verification; the option is not activated and existing BLACKCELL storage is unchanged.
+
+
 ## Correct architecture
 
 **iCloud Photos (or iCloud Drive) → private hosted transfer worker running rclone → BLACKCELL Supabase Storage S3 bucket → metadata registration → Military Library.**
