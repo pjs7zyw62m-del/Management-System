@@ -4,8 +4,8 @@
 <meta name="theme-color" content="#030507"><meta name="robots" content="noindex,nofollow">
 <title>MilTok | Blackcell Military Library</title>
 <script defer src="corp-config.js"></script>
-<link rel="stylesheet" href="miltok.css?v=20261111-m1">
-<script type="module" src="miltok.js?v=20261111-m1"></script>
+<link rel="stylesheet" href="miltok.css?v=20261111-m1"><link rel="stylesheet" href="miltok-saved-links.css?v=20261111-saved2">
+<script type="module" src="miltok.js?v=20261111-saved2"></script><script type="module" src="miltok-saved-links.js?v=20261111-saved2"></script>
 </head><body>
 <div id="uGate" class="mt-gate" role="status"><div class="mt-gate-card"><div class="mt-gate-logo">B</div><span>BLACKCELL / PRIVATE NETWORK</span><h2>Verifying MilTok access</h2><p id="uGateText">Checking your authorized corporate session.</p><a href="login.html">CORPORATE SIGN IN</a></div></div>
 <main id="uMain" hidden>
@@ -15,7 +15,7 @@
  <aside class="mt-sidebar"><span class="mt-eyebrow">DISCOVER</span><h1>MIL<span>TOK.</span></h1><p>Short military videos from authorized Blackcell members. One video at a time, in full focus.</p>
  <div class="mt-tabs" role="group" aria-label="Choose video feed"><button id="mtDiscover" class="selected" type="button" aria-pressed="true">✦ DISCOVER</button><button id="mtFollowing" type="button" aria-pressed="false">◎ FOLLOWING</button></div>
  <label class="mt-search"><span>FIND VIDEOS</span><input id="mtSearch" type="search" placeholder="Search uniforms, training, branch…" autocomplete="off"></label>
- <div class="mt-sidebar-links"><a href="corporate-network.html?view=photos">▧ MILITARY LIBRARY</a><a href="corporate-network.html?view=videos">▷ NETWORK VIDEOS</a><a href="uniform-of-the-year.html">★ UNIFORM OF THE YEAR</a></div>
+ <div class="mt-sidebar-links"><button type="button" id="mtOpenSaved">▤ SAVED TIKTOK LINKS</button><a href="corporate-network.html?view=photos">▧ MILITARY LIBRARY</a><a href="corporate-network.html?view=videos">▷ NETWORK VIDEOS</a><a href="uniform-of-the-year.html">★ UNIFORM OF THE YEAR</a></div>
  <p class="mt-privacy">PRIVATE MILITARY COLLECTION<br>Only authorized Blackcell members can view these videos. Sound starts muted.</p></aside>
  <section class="mt-stage" aria-label="MilTok video feed">
    <div class="mt-stage-title"><strong>BLACKCELL / MILTOK</strong><span id="mtCount">LOADING VIDEOS</span></div>
@@ -23,6 +23,27 @@
    <div class="mt-stepper"><button type="button" id="mtPrev" aria-label="Previous video">↑</button><button type="button" id="mtNext" aria-label="Next video">↓</button></div>
  </section>
  <aside class="mt-info"><div class="mt-info-card"><span>01 / MILITARY VIDEO</span><h2>REAL CLIPS.<br>REAL SERVICE.</h2><p>Uniforms, training, history, airpower, naval forces and equipment—from the Blackcell military archive.</p></div><div class="mt-info-card"><span>02 / CONTRIBUTE</span><p>Upload a short MP4 or MOV through Military Library and classify its branch, subject and era. Existing private videos appear here automatically.</p><a href="corporate-network.html?view=photos">UPLOAD IN LIBRARY ↗</a></div></aside>
+</section>
+
+<section id="mtSavedOverlay" class="mt-saved-overlay" hidden aria-labelledby="mtSavedTitle" role="dialog" aria-modal="true">
+  <div class="mt-saved-dialog">
+    <header class="mt-saved-header"><div><small>BLACKCELL / PRIVATE VIDEO REFERENCE LIBRARY</small><h2 id="mtSavedTitle">SAVED MILITARY TIKTOKS.</h2><p>Keep TikTok links organized without downloading videos, removing watermarks, or using Blackcell's media storage.</p></div><button id="mtSavedClose" type="button" aria-label="Close saved TikToks">✕</button></header>
+    <div class="mt-saved-inner">
+      <form id="mtSavedForm" class="mt-saved-form">
+        <label>TIKTOK LINKS — ONE PER LINE<input id="mtSavedOne" name="tiktok-links" class="mt-saved-input" placeholder="https://www.tiktok.com/@creator/video/..." autocomplete="off" type="url"></label>
+        <label class="mt-batch-label">OR PASTE MULTIPLE LINKS<textarea id="mtSavedBatch" rows="3" placeholder="Paste up to 50 TikTok links, one per line"></textarea></label>
+        <div class="mt-saved-fields">
+          <label>BRANCH<select id="mtSavedBranch"><option>Unspecified</option><option>Army</option><option>Navy</option><option>Marine Corps</option><option>Air Force</option><option>Space Force</option><option>Coast Guard</option><option>National Guard</option><option>Joint</option><option>Military History</option><option>Other</option></select></label>
+          <label>TITLE (OPTIONAL)<input id="mtSavedTitleInput" maxlength="200" type="text" placeholder="E.g., Army field training"></label>
+        </div>
+        <button id="mtSavedSubmit" type="submit">＋ SAVE TIKTOK LINKS</button>
+        <small>Only TikTok links are stored. The original creator retains the video; availability follows TikTok's settings. For a clean, watermark-free copy, upload an authorized original file separately.</small>
+      </form>
+      <div class="mt-saved-list-head"><strong>MY SAVED MILITARY VIDEOS</strong><span id="mtSavedCount">0 SAVED</span></div>
+      <p id="mtSavedMessage" class="mt-saved-message" role="status" aria-live="polite"></p>
+      <div id="mtSavedList" class="mt-saved-list"></div>
+    </div>
+  </div>
 </section>
 <div id="mtToast" role="status" aria-live="polite" class="mt-toast" hidden></div>
 </main>
