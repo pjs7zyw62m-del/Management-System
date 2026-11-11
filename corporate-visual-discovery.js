@@ -5,13 +5,13 @@
  */
 import {signatureFromImage,visualSimilarity,metadataSimilarity,candidateRegions,labelReasons}
  from './corporate-visual-match.js?v=20261111-area3';
-export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,openPhoto,getCurrentPhoto,personalization}){
+export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,openPhoto,getCurrentPhoto,personalization,dedupe}){
  const $=id=>document.getElementById(id);
  const overlay=$('visualDiscoveryOverlay'),stage=$('vdStage'),main=$('vdMainPhoto');
  const selectionNode=$('vdSelection');
  let current=null,selection=null,dragStart=null,dragging=false,searchId=0,working=false;
  let previousFocus=null,previousOverflow='',reactions=new Map(),lastResults=[],resizeObserver=null;
- let sourceReady=false,looping=false,lastPointerSelectionAt=0;
+ let sourceReady=false,looping=false,lastPointerSelectionAt=0,aiBusy=false,scanBusy=false;
  const onPhone=()=>window.matchMedia('(hover: none) and (pointer: coarse)').matches || window.innerWidth<=600;
  const eligible=()=>state.assets.filter(a=>a.kind==='photo'&&['library','post'].includes(a.purpose)&&mediaUrl(a));
  const status=s=>{$('vdStatus').textContent=s};
@@ -73,6 +73,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   selection=rect;
   showSelection();preview();
   $('vdAnalyze').disabled=!selection||!current||working;
+  $('vdAISearch').disabled=!selection||!current||working||aiBusy;
   $('vdSelectionHint').textContent=auto?'DETAIL SELECTED · FINDING SIMILAR PHOTOS':'AREA SELECTED · SEARCH OR SELECT A NEW DETAIL';
   if(!working)status('Ready. Search by this area’s colors, textures, and available military classification.');
   // One tap should work on an iPhone. Desktop retains the manual Search button.
@@ -80,7 +81,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
  }
  function clearSelection(){
   selection=null;showSelection();preview();
-  $('vdAnalyze').disabled=true;
+  $('vdAnalyze').disabled=true;$('vdAISearch').disabled=true;
   $('vdSelectionHint').textContent=onPhone()?'TAP A DETAIL · AUTOMATIC SEARCH':'CLICK A DETAIL OR DRAG TO SELECT AN AREA';
   status(onPhone()?'Tap a detail in the photo. Similar images will load automatically.':'Click the photograph or drag across a detail to select it.');
  }
@@ -149,7 +150,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   $('vdAnalyze').disabled=true;
   const kept=preset?{...preset}:(preserve&&selection?{...selection}:null);
   current=asset;selection=null;sourceReady=false;
-  main.alt=safeText(asset);main.removeAttribute('src');
+  main.alt=safeText(asset);main.removeAttribute('src');main.crossOrigin='anonymous';
   const expected=asset.id;
   main.onload=()=>{
    if(!inUse()||current?.id!==expected)return;
@@ -359,8 +360,9 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    }
    const body=element('div','bc-vd-match-copy');
    body.append(element('strong','',asset.caption||asset.filename));
-   body.append(element('small','',result.region?
-    'Matched area highlighted · '+labelReasons(current,asset,true):
+   body.append(element('small','',result.ai?
+    'AI: '+result.feature_label+' · '+result.feature_description:
+    result.region?'Matched area highlighted · '+labelReasons(current,asset,true):
     'Military tag resemblance · '+labelReasons(current,asset,false)));
    const actions=element('div','bc-vd-match-actions');
    const liked=button('♡ LIKE',()=>void feedback(asset,'more',liked,less),'');
@@ -394,6 +396,120 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   }catch(e){status('Your choice could not be saved: '+(e?.message||'Please try again'))}
   finally{control.disabled=false;other.disabled=false}
  }
+
+ function jpegPreview(image,region=null){
+  const w=image.naturalWidth||image.width,h=image.naturalHeight||image.height;
+  if(!w||!h)throw Error('Photo has not loaded');
+  const left=region?Math.floor(Math.max(0,region.x)*w):0;
+  const top=region?Math.floor(Math.max(0,region.y)*h):0;
+  const cw=region?Math.max(1,Math.min(w-left,Math.ceil(region.w*w))):w;
+  const ch=region?Math.max(1,Math.min(h-top,Math.ceil(region.h*h))):h;
+  const factor=Math.min(1,750/Math.max(cw,ch));
+  const canvas=document.createElement('canvas');
+  canvas.width=Math.max(1,Math.round(cw*factor));
+  canvas.height=Math.max(1,Math.round(ch*factor));
+  const ctx=canvas.getContext('2d');if(!ctx)throw Error('Browser canvas unavailable');
+  ctx.drawImage(image,left,top,cw,ch,0,0,canvas.width,canvas.height);
+  const data=canvas.toDataURL('image/jpeg',.72);
+  if(data.length>1800000)throw Error('Image preview exceeded server size limit');
+  return data;
+ }
+ function displayAI(matches,details){
+  const assets=new Map(eligible().map(a=>[a.id,a]));
+  const mapped=(matches||[]).map(row=>{
+   const asset=assets.get(row.asset_id);
+   if(!asset)return null;
+   const box=row.bbox&&typeof row.bbox==='object'?row.bbox:null;
+   const valid=box&&[box.x,box.y,box.w,box.h].every(x=>Number.isFinite(Number(x)))
+    &&Number(box.w)>0&&Number(box.h)>0;
+   return {asset,ai:true,score:Number(row.score||0),
+    feature_label:row.feature_label||'Visual detail',
+    feature_description:row.feature_description||'',
+    pixel:null,region:valid?box:null};
+  }).filter(Boolean);
+  lastResults=mapped;
+  renderResults(mapped);
+  $('vdResultMethod').textContent='AI SEMANTIC MATCH';
+  if(details?.detected_item)status('AI detected: '+details.detected_item+
+   (details.uncertain?' (uncertain)':'')+' · '+mapped.length+' matches from '+details.indexed_photos+' indexed photos.');
+  if(!mapped.length)status('AI identified '+(details?.detected_item||'this detail')+
+   ', but found no indexed matches. Index more photographs to improve results.');
+  if(onPhone()&&mapped.length)requestAnimationFrame(()=>$('vdResults').scrollIntoView({behavior:'smooth',block:'nearest'}));
+ }
+ async function findWithAI(){
+  if(aiBusy||!sourceReady||!current||!selection)return;
+  if(!confirm('AI visual search sends ONLY your selected photo detail to the configured vision provider and uses API credits. Continue?'))return;
+  aiBusy=true;$('vdAISearch').disabled=true;
+  status('AI recognizing the selected detail and searching indexed photographs…');
+  try{
+   const cropped=jpegPreview(main,selection);
+   const {data,error}=await client.functions.invoke('blackcell-visual-ai',{body:{
+    action:'search',asset_id:current.id,preview:cropped
+   }});
+   if(error||!data?.ok)throw Error(data?.error||error?.message||'AI search was unsuccessful');
+   displayAI(data.results,data);
+  }catch(e){status('AI search unavailable: '+(e?.message||'Unknown issue')+
+   '. Existing color and military-tag search remains available.')}
+  finally{aiBusy=false;$('vdAISearch').disabled=!selection||working||!sourceReady}
+ }
+ async function indexWithAI(){
+  if(aiBusy||scanBusy||!state.user)return;
+  const mine=eligible().filter(a=>a.owner_id===state.user.id);
+  if(!mine.length){$('vdIndexStatus').textContent='No photographs owned by your account to index.';return}
+  const {data:rows,error:lookupError}=await client.from('corp_social_photo_features')
+   .select('asset_id').eq('feature_key','overall').limit(3000);
+  if(lookupError){$('vdIndexStatus').textContent='Could not check indexed photos: '+lookupError.message;return}
+  const existing=new Set((rows||[]).map(r=>r.asset_id));
+  const next=mine.filter(a=>!existing.has(a.id)).slice(0,5);
+  if(!next.length){$('vdIndexStatus').textContent='All your currently visible photographs are AI-indexed.';return}
+  if(!confirm('INDEX '+next.length+' PHOTO'+(next.length===1?'':'S')+' WITH AI?\\n\\nBlackcell will send resized copies of these photographs to the configured vision provider and use paid API credits. This is not a background task. Proceed?'))return;
+  aiBusy=true;
+  const btn=$('vdAIIndex');btn.disabled=true;
+  let done=0,failed=0;
+  try{
+   for(const asset of next){
+    $('vdIndexStatus').textContent='AI indexing '+(done+failed+1)+' of '+next.length+': '+safeText(asset);
+    try{
+     const image=await loadImage(mediaUrl(asset));
+     const preview=jpegPreview(image);
+     const {data,error}=await client.functions.invoke('blackcell-visual-ai',{body:{
+      action:'index',asset_id:asset.id,preview
+     }});
+     if(error||!data?.ok)throw Error(data?.error||error?.message||'AI index rejected');
+     done++;
+    }catch(e){failed++;console.warn('AI photo indexing failed',safeText(asset),e?.message);
+     $('vdIndexStatus').textContent='AI indexing issue: '+(e?.message||'Try later');}
+   }
+   $('vdIndexStatus').textContent=done+' photos indexed with AI'+(failed?', '+failed+' failed':'')+
+    '. Use AI Identify & Match on a selected detail.';
+  }finally{aiBusy=false;btn.disabled=false}
+ }
+ async function scanDuplicates(){
+  if(scanBusy||aiBusy)return;
+  if(!confirm('Scan your existing photos for exact and possible duplicates? This uses browser bandwidth but NO AI API credits. No photographs will be deleted.'))return;
+  scanBusy=true;const btn=$('vdDuplicateScan');btn.disabled=true;
+  $('vdDuplicateResults').hidden=false;
+  $('vdDuplicateResults').replaceChildren(element('div','bc-vd-empty','Checking stored photographs…'));
+  try{
+   const result=await dedupe.indexExisting({onProgress:progress=>{
+    $('vdIndexStatus').textContent='Checking '+progress.processed+' of '+progress.total+
+     ' photos. '+progress.flagged+' potential duplicates flagged.';
+   }});
+   const host=$('vdDuplicateResults');host.replaceChildren();
+   if(!result.flagged.length)host.append(element('div','bc-vd-empty',
+    result.pending?'No duplicates found among newly scanned photos.':'Your photos are already fingerprinted. No new photos to scan.'));
+   for(const pair of result.flagged){
+    const card=element('div','bc-vd-duplicate-item');
+    card.append(element('strong','',pair.type==='exact'?'EXACT DUPLICATE':'POSSIBLE VISUAL DUPLICATE'),
+      element('small','',pair.filename+' ↔ '+pair.match_name));
+    host.append(card);
+   }
+   $('vdIndexStatus').textContent='Fingerprint scan: '+result.saved+' saved, '+result.failed+
+    ' unavailable, '+result.flagged.length+' duplicate candidates. No photos deleted.';
+  }catch(e){$('vdIndexStatus').textContent='Could not complete duplicate scan: '+(e?.message||'Unknown error')}
+  finally{scanBusy=false;btn.disabled=false}
+ }
+
  function setup(){
   document.querySelectorAll('[data-open-visual-discovery]').forEach(el=>
    el.addEventListener('click',()=>open()));
@@ -420,6 +536,9 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    }
   });
   $('vdAnalyze').addEventListener('click',()=>void analyze());
+  $('vdAISearch').addEventListener('click',()=>void findWithAI());
+  $('vdAIIndex').addEventListener('click',()=>void indexWithAI());
+  $('vdDuplicateScan').addEventListener('click',()=>void scanDuplicates());
   $('vdQuickPick').addEventListener('click',()=>{
    if(!sourceReady||working){status('Choose a loaded photo first.');return}
    selectRect({x:.35,y:.32,w:.30,h:.36},{auto:true});
