@@ -247,3 +247,37 @@ body.bc-network #vdQuickPick{display:none}
  body.bc-network #vdQuickPick{display:inline-flex!important;align-items:center;justify-content:center;min-height:44px!important;background:#212933!important;border:1px solid #55616b!important}
  body.bc-network #vdQuickPick:hover{border-color:#dd526b!important}
 }
+
+
+/* 2026-11-11 / Display the approximate matching PHOTO REGION, not just a
+   generic gallery result. The original remains fully contained and uncut. */
+body.bc-network .bc-vd-match-picture{
+ position:relative!important;isolation:isolate!important
+}
+body.bc-network .bc-vd-match-region{
+ position:absolute;z-index:2;display:block;box-sizing:border-box;
+ pointer-events:none;border:2px solid #f44765;border-radius:4px;
+ background:rgba(235,49,83,.11);
+ box-shadow:0 0 0 1px #280914,0 0 14px rgba(226,55,84,.62);
+}
+body.bc-network .bc-vd-match-region::after{
+ content:'AREA';position:absolute;bottom:100%;left:-2px;padding:2px 6px;
+ border-radius:4px 4px 0 0;background:#b72c48;color:#fff;
+ font-size:8px;line-height:1.25;letter-spacing:.06em;font-weight:850
+}
+body.bc-network .bc-vd-match-copy small{color:#c7b8c2!important}
+@media(max-width:570px){
+ body.bc-network .bc-vd-results{
+  grid-template-columns:1fr!important;gap:12px!important
+ }
+ body.bc-network .bc-vd-match-card>button.bc-vd-match-picture{
+  height:200px!important;max-height:200px!important
+ }
+ body.bc-network .bc-vd-match-copy{padding:12px!important;gap:8px!important}
+ body.bc-network .bc-vd-match-copy strong{font-size:12px!important}
+ body.bc-network .bc-vd-match-copy small{font-size:10px!important}
+ body.bc-network .bc-vd-match-actions button{
+  min-height:37px!important;flex:1 1 auto!important;
+  font-size:10px!important;padding:8px 10px!important
+ }
+}
