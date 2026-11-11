@@ -324,6 +324,7 @@ function layoutJustifiedGallery(){
   if(h<=target*1.08)commit(true);
  }
  commit(true); // Justify the final row as well: no empty trailing gutter.
+ const fragment=document.createDocumentFragment();
  rows.forEach(({items:rowItems,ratioSum:sum,full})=>{
   const row=document.createElement("div");
   row.className="justified-row";
