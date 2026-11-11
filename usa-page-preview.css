@@ -1198,3 +1198,170 @@ body.usa-revamp .usa-hero.hero-v4.hero-v7 .hero-footer-stats{
 @media(prefers-reduced-motion:reduce){
  body.usa-revamp .usa-hero.hero-v4.hero-v7 .daily-feedback-buttons button{transition:none}
 }
+
+
+
+/* JUSTIFIED ARCHIVE V8 — reference-matched graphite repository.
+   Keep the reference's title/search/controls. Thumbnails show PHOTO ONLY.
+   Unlike a regular grid, the layout script uses each image's own aspect ratio,
+   filling the row precisely without cropping, stretching or blank captions. */
+body.usa-revamp .usa-gallery{
+ max-width:1470px;width:100%;margin:0 auto;padding:0 clamp(15px,3.4vw,49px);
+ background:none;border:0;box-shadow:none;
+}
+body.usa-revamp .editorial-line.second-line{
+ max-width:1470px;margin:44px auto 10px;
+ padding:0 clamp(15px,3.4vw,49px);
+ gap:14px;
+}
+body.usa-revamp .editorial-line.second-line .line-index{
+ color:#b97b83;font-size:11px;letter-spacing:.1em;
+ font-weight:650;
+}
+body.usa-revamp .editorial-line.second-line .line-rule,
+body.usa-revamp .editorial-line.second-line .line-note{display:none}
+body.usa-revamp .usa-gallery .gallery-heading{
+ display:flex;align-items:center;justify-content:space-between;gap:24px;
+ margin:0;padding:0 0 22px;border:0;background:none;
+}
+body.usa-revamp .usa-gallery .gallery-heading h2{
+ margin:0 0 9px;font-size:clamp(33px,4.25vw,51px);
+ line-height:1.02;font-weight:900;letter-spacing:-.052em;
+ color:#f7f7f7;
+}
+body.usa-revamp .usa-gallery .gallery-heading .red-period{color:#d3475e}
+body.usa-revamp .usa-gallery .gallery-heading p{
+ margin:0;color:#a5a2a6;font-size:14px;line-height:1.6;
+}
+body.usa-revamp .usa-gallery .upload-link{
+ flex:none;align-self:center;display:inline-flex;align-items:center;
+ min-height:42px;padding:11px 16px;margin:0;
+ color:#edacb6;background:linear-gradient(110deg,#361920,#271319);
+ border:1px solid #c654686e;border-radius:99px;
+ box-shadow:inset 0 1px #ffffff0d;
+ font-size:11px;font-weight:850;letter-spacing:.05em;
+}
+body.usa-revamp .usa-gallery .upload-link:hover{
+ background:#5a2533;color:#ffe5e8;border-color:#dc7280;
+}
+body.usa-revamp .usa-gallery .gallery-toolbar{
+ display:flex;flex-wrap:nowrap;align-items:stretch;gap:8px;
+ margin:0 0 19px;padding:7px;
+ background:linear-gradient(125deg,#1a191c,#161619)!important;
+ border:1px solid #3c3b40;border-radius:12px;
+ box-shadow:0 5px 19px #0005;
+}
+body.usa-revamp .usa-gallery .gallery-search{
+ flex:2 1 0;min-width:0;display:flex;gap:10px;align-items:center;
+ border:1px solid #37363a;border-radius:8px;padding:0 13px;
+ background:#09090b;
+}
+body.usa-revamp .usa-gallery .gallery-search>span{color:#8c878e;font-size:22px}
+body.usa-revamp .usa-gallery .gallery-search input{
+ padding:12px 0;min-width:0;background:none;color:#f3f2f5;
+ font-size:13px;border:0;outline:none;
+}
+body.usa-revamp .usa-gallery .gallery-search input::placeholder{color:#8c888e}
+body.usa-revamp .usa-gallery .filter-box{
+ display:flex;flex:1 1 0;min-width:0;flex-direction:row;
+ align-items:center;gap:5px;
+ padding:0 12px;border:1px solid #37363a;border-radius:8px;
+ background:#0c0b0d;color:#aaa6ac;
+ font-size:12px;font-weight:500;letter-spacing:0;
+}
+body.usa-revamp .usa-gallery .filter-box span{flex:none}
+body.usa-revamp .usa-gallery .filter-box select{
+ width:100%;min-width:0;min-height:44px;
+ border:0;border-radius:0;outline:none;
+ background:transparent;color:#ebe8eb;
+ font-size:12px;padding:7px 6px 7px 1px;
+}
+body.usa-revamp .usa-gallery .filter-box select option{
+ color:#fff;background:#16151a;
+}
+body.usa-revamp .usa-gallery .refresh-btn{
+ flex:none;align-self:stretch;padding:10px 15px;
+ background:linear-gradient(#29282c,#202024);
+ border:1px solid #39393c;border-radius:8px;
+ color:#d7d2d7;font-size:11px;font-weight:800;letter-spacing:.04em;
+}
+body.usa-revamp .usa-gallery .refresh-btn:hover{
+ background:#373136;border-color:#a65968;
+}
+body.usa-revamp .usa-gallery .gallery-summary{
+ display:flex;justify-content:space-between;align-items:center;
+ gap:10px;padding:0 0 13px;
+ color:#a8a2a7;font-size:11px;font-weight:850;letter-spacing:.035em;
+}
+body.usa-revamp .usa-gallery #visibleCount{color:#aaa4aa;font-weight:500}
+body.usa-revamp .usa-gallery .photo-gallery.justified-gallery{
+ display:flex!important;flex-direction:column;align-items:stretch;
+ gap:10px;width:100%;min-width:0;
+ grid-template-columns:none!important;
+}
+body.usa-revamp .usa-gallery .justified-row{
+ display:flex;width:100%;align-items:stretch;justify-content:flex-start;
+ min-width:0;gap:10px;overflow:hidden;
+}
+body.usa-revamp .usa-gallery .justified-row .photo-card.photo-only{
+ display:block;position:relative;flex:none;
+ min-width:0;min-height:0;
+ margin:0;padding:0;border-radius:9px;
+ border:1px solid #56535a;background:#0c0d10;
+ overflow:hidden;box-shadow:none;text-align:left;
+ line-height:0;
+ transition:border-color .2s,box-shadow .2s,transform .2s;
+}
+body.usa-revamp .usa-gallery .justified-row .photo-card.photo-only:hover{
+ border-color:#e0596f;
+ box-shadow:inset 0 0 0 2px #e0596fa0,0 0 22px #ca415345;
+ transform:none;z-index:2;
+}
+body.usa-revamp .usa-gallery .justified-row .photo-card.photo-only:focus-visible{
+ outline:2px solid #ff798b;outline-offset:-3px;
+}
+body.usa-revamp .usa-gallery .justified-row .photo-card.photo-only img{
+ display:block;width:100%;height:100%;
+ max-width:none;max-height:none;min-height:0;margin:0;padding:0;
+ object-fit:contain;object-position:center;
+ filter:none!important;opacity:1!important;
+ background:#111218;
+ border:0;border-radius:0;
+ transform:none!important;
+}
+body.usa-revamp .usa-gallery .justified-row .photo-card.photo-only .photo-info{
+ display:none!important;
+}
+body.usa-revamp .usa-gallery .justified-row .photo-card.photo-only::before,
+body.usa-revamp .usa-gallery .justified-row .photo-card.photo-only::after{
+ content:none!important;
+}
+@media(max-width:950px){
+ body.usa-revamp .usa-gallery .gallery-toolbar{flex-wrap:wrap}
+ body.usa-revamp .usa-gallery .gallery-search{flex:1 1 100%;min-height:45px}
+ body.usa-revamp .usa-gallery .filter-box{flex:1 1 36%}
+ body.usa-revamp .usa-gallery .refresh-btn{flex:1 1 auto}
+ body.usa-revamp .usa-gallery .gallery-heading h2{font-size:clamp(30px,5vw,43px)}
+}
+@media(max-width:620px){
+ body.usa-revamp .usa-gallery{padding:0 13px}
+ body.usa-revamp .editorial-line.second-line{padding:0 13px}
+ body.usa-revamp .usa-gallery .gallery-heading{
+  display:flex;flex-direction:column;align-items:flex-start;gap:13px;
+ }
+ body.usa-revamp .usa-gallery .gallery-heading h2{
+  font-size:clamp(28px,7vw,36px);
+ }
+ body.usa-revamp .usa-gallery .gallery-heading p{font-size:12px}
+ body.usa-revamp .usa-gallery .gallery-toolbar{gap:7px;padding:7px}
+ body.usa-revamp .usa-gallery .filter-box{flex:1 1 42%;padding:0 8px}
+ body.usa-revamp .usa-gallery .filter-box span{font-size:10px}
+ body.usa-revamp .usa-gallery .filter-box select{font-size:11px}
+ body.usa-revamp .usa-gallery .refresh-btn{flex:1 1 100%}
+ body.usa-revamp .usa-gallery .photo-gallery.justified-gallery{gap:8px}
+ body.usa-revamp .usa-gallery .justified-row .photo-card.photo-only{border-radius:7px}
+ body.usa-revamp .usa-gallery .gallery-summary{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){
+ body.usa-revamp .usa-gallery .justified-row .photo-card.photo-only{transition:none}
+}
