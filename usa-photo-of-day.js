@@ -113,14 +113,46 @@ export function createUsaPhotoOfDay({client,getUser,getAssets,getSignedUrl,openA
   }
   return {...best,reason};
  }
+ /* Present the model's saved recommendation evidence as concise, readable
+    explanation + tags. Nothing is inferred from the photo beyond saved labels. */
+ function displayExplanation(savedReason){
+  const raw=String(savedReason||"").trim();
+  const detail=raw.match(/^Picked because you've liked (.+?) in other photos\.$/i);
+  if(detail){
+   return {
+    explanation:"A close match for the details you enjoy in military photographs.",
+    tags:detail[1].split(/\s*,\s*|\s+and\s+/i).map(s=>s.trim()).filter(Boolean).slice(0,4)
+   };
+  }
+  if(/^Matched to the military branches, categories and tags/i.test(raw)){
+   return {explanation:"Drawn from the military photos you already enjoy.",tags:["YOUR FAVORITES","RELATED DETAILS"]};
+  }
+  if(/^A discovery pick from your U\.S\. collection/i.test(raw)){
+   return {explanation:"A fresh discovery from your U.S. military archive. Your reactions help improve future picks.",tags:[]};
+  }
+  return {explanation:raw||"Your next personalized military photo.",tags:[]};
+ }
+ function renderExplanation(reason){
+  const card=$("dailyTags");
+  card.replaceChildren();
+  const details=displayExplanation(reason);
+  $("dailyReason").textContent=details.explanation;
+  for(const label of details.tags){
+   const pill=document.createElement("span");
+   pill.className="daily-match-pill";
+   pill.textContent=label.toUpperCase();
+   card.append(pill);
+  }
+ }
  function draw(){
   const button=$("featuredPhotoButton"),image=$("featuredPhotoImage"),placeholder=$("featuredPlaceholder");
   const a=state.current,url=a&&getSignedUrl(a);
   $("dailyDate").textContent=new Date().toLocaleDateString("en-US",{timeZone:"America/Los_Angeles",month:"short",day:"numeric"}).toUpperCase();
+  $("dailyDate").dateTime=state.date||currentDate();
   if(!url){
    image.hidden=true;image.removeAttribute("src");placeholder.hidden=false;
    button.disabled=true;$("dailyLike").disabled=true;$("dailyLess").disabled=true;
-   $("featuredRecordId").textContent="NO PHOTO SELECTED";
+   $("dailyTags").replaceChildren();
    $("dailyReason").textContent=getAssets().length?
     "A private photo could not be loaded. Refresh the library and try again.":
     "Add U.S. military photos to your private library to begin daily picks.";
@@ -128,8 +160,7 @@ export function createUsaPhotoOfDay({client,getUser,getAssets,getSignedUrl,openA
   }
   image.src=url;image.hidden=false;placeholder.hidden=true;button.disabled=false;
   image.alt="Today's personalized U.S. military photo: "+String(a.filename||"Military photograph");
-  $("featuredRecordId").textContent=$("dailyDate").textContent;
-  $("dailyReason").textContent=state.reason;
+  renderExplanation(state.reason);
   $("dailyLike").disabled=false;$("dailyLess").disabled=false;
   const t=state.tastes.find(x=>x.asset_id===a.id);
   $("dailyLike").classList.toggle("selected",liked(t));
@@ -140,7 +171,8 @@ export function createUsaPhotoOfDay({client,getUser,getAssets,getSignedUrl,openA
   if(!user||state.busy)return;
   state.busy=true;
   const date=currentDate();state.date=date;
-  $("dailyReason").textContent="Matching saved military-photo interests and ratings…";
+  $("dailyReason").textContent="Finding today’s match in your collection…";
+  $("dailyTags").replaceChildren();
   $("dailyFeedbackStatus").textContent="";
   try{
    const candidates=getAssets().filter(a=>a.storage_path&&getSignedUrl(a));
