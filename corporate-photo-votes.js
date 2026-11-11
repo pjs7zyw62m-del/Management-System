@@ -47,10 +47,11 @@ export function createPhotoVoting({client,userId,toast=()=>{},onChange=()=>{}}){
   busy.add(id);updateControls();
   try{
    const query=wasVoted?
-    client.from('corp_social_photo_votes').delete().eq('asset_id',id).eq('user_id',uid()):
-    client.from('corp_social_photo_votes').insert({asset_id:id,user_id:uid()});
-   const {error}=await query;
+    client.from('corp_social_photo_votes').delete().eq('asset_id',id).eq('user_id',uid()).select('asset_id'):
+    client.from('corp_social_photo_votes').insert({asset_id:id,user_id:uid()}).select('asset_id');
+   const {data,error}=await query;
    if(error)throw error;
+   if(!Array.isArray(data)||data.length!==1)throw Error('Your vote was not authorized or the annual vote is locked.');
    if(wasVoted)myVotes.delete(id);else myVotes.add(id);
    const old=counts.get(id)||{asset_id:id,vote_count:0,award_vote_count:0,
       award_year:new Date(asset.created_at).getUTCFullYear()};
