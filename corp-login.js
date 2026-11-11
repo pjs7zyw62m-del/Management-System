@@ -51,7 +51,7 @@ function choosePortal(portal,{quiet=false,force=false}={}){
 function handleAuthorizedRole(member){
   if(member?.role==='employee'){
     message(status,'Employee account recognized. Opening your Network access card…');
-    // The employee page enforces its own security-code verification and
+    // The employee page enforces account activation and
     // activation checks; no access is granted by this redirect.
     location.replace('employee.html');
     return true;
