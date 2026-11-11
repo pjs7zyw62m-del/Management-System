@@ -1,0 +1,51 @@
+/* BLACKCELL Corporation — owner-only Media Administration · obsidian Apple Glass */
+:root{color-scheme:dark;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif}
+*{box-sizing:border-box}
+html,body{min-height:100%;margin:0;background:#050609;color:#f1f2f6}
+body.bc-media-admin-page{background:radial-gradient(ellipse at 80% -15%,#28131b 0,transparent 45%),radial-gradient(ellipse at 0 45%,#121924 0,transparent 45%),#050609;color:#eff0f5}
+[hidden]{display:none!important}
+button,select,input{font:inherit}
+a{color:inherit;text-decoration:none}
+a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid #e45a74;outline-offset:3px}
+#bcAdminGate{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:25px;background:radial-gradient(circle at 50% 25%,#1c121a,#030306 70%)}
+.bc-admin-gate-card{max-width:460px;text-align:center;border:1px solid #453844;border-radius:24px;padding:40px 28px;background:#100e14cc;box-shadow:0 30px 90px #0008}
+.bc-admin-mark{width:39px;height:39px;flex:none;display:inline-grid;place-items:center;border:1px solid #a9445f;border-radius:13px;background:linear-gradient(130deg,#6e1c31,#210b14);font-weight:900;font-size:24px;color:#f6edf1;box-shadow:0 4px 20px #0006}
+.bc-admin-gate-card .bc-admin-mark{width:56px;height:56px;font-size:34px}
+.bc-admin-overline{color:#c9acb8;font-size:10px;letter-spacing:.16em;font-weight:800}
+.bc-admin-gate-card .bc-admin-overline{margin-top:16px}
+.bc-admin-gate-card h1{font-size:21px}
+.bc-admin-gate-card p{font-size:13px;line-height:1.7;color:#bac1cd}
+.bc-admin-gate-card a{display:inline-block;margin-top:9px;padding:11px 18px;background:#64263b;border:1px solid #a7536b;border-radius:10px;font-size:11px;font-weight:800;letter-spacing:.05em}
+.bc-media-admin-header{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px max(20px,calc((100vw - 1250px)/2));min-height:75px;background:#090a10e9;border-bottom:1px solid #302830;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.bc-media-admin-brand{display:flex;align-items:center;gap:11px}
+.bc-media-admin-brand strong{display:block;font-size:12px;font-weight:900;letter-spacing:.1em}
+.bc-media-admin-brand small{display:block;font-size:9px;color:#a9a7af;letter-spacing:.1em;margin-top:3px}
+.bc-media-admin-header nav{display:flex;align-items:center;gap:8px}
+.bc-media-admin-header nav a{font-size:10px;letter-spacing:.05em;font-weight:800;padding:10px 12px;border-radius:10px;background:#1d1b24;border:1px solid #39353c;white-space:nowrap}
+.bc-media-admin-header nav a:hover{background:#522337;border-color:#98445d}
+.bc-media-admin-shell{max-width:1250px;margin:0 auto;padding:35px 22px 85px}
+.bc-media-admin-intro{position:relative;overflow:hidden;border:1px solid #453944;border-radius:20px;padding:35px 30px;background:linear-gradient(125deg,#11131b 35%,#27121b 150%);box-shadow:0 18px 60px #0007}
+.bc-media-admin-intro:after{content:"";position:absolute;right:-100px;top:-190px;width:340px;height:340px;border:1px solid #ad46644a;border-radius:50%;box-shadow:0 0 0 50px #ad46640a,0 0 0 100px #ad466407;pointer-events:none}
+.bc-media-admin-intro h1{font-size:clamp(26px,4vw,43px);font-weight:850;letter-spacing:-.045em;line-height:1.08;margin:13px 0}
+.bc-media-admin-intro h1 span{color:#ba536d}
+.bc-media-admin-intro p{color:#b9bbc7;max-width:730px;font-size:13px;line-height:1.8;margin:0}
+.bc-media-admin-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
+.bc-media-admin-tags span{display:flex;align-items:center;gap:7px;color:#c7bcc5;font-weight:800;letter-spacing:.055em;font-size:9px;border:1px solid #4d3643;padding:9px 12px;border-radius:99px;background:#1c1720}
+.bc-media-admin-tags i{background:#9dcbbb;width:6px;height:6px;border-radius:99px;box-shadow:0 0 8px #9dcbbb}
+.bc-media-admin-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:19px 0}
+.bc-media-admin-summary>div{border:1px solid #343947;border-radius:15px;background:linear-gradient(140deg,#181b24,#0c111a);padding:20px 18px;display:flex;flex-direction:column;gap:8px}
+.bc-media-admin-summary span{font-size:10px;color:#a6aab8;letter-spacing:.1em;font-weight:900}
+.bc-media-admin-summary strong{font-size:26px;font-weight:850;letter-spacing:-.035em;color:#f6f2f5}
+.bc-media-admin-summary small{font-size:10px;color:#8f9caf}
+body.bc-network .bc-media-processor{margin:19px 0 0!important}
+.bc-media-admin-explainer{margin-top:23px;padding:22px;border:1px solid #323a45;border-radius:18px;background:#0c1018}
+.bc-media-admin-explainer h2{font-size:17px;margin:0 0 15px}
+.bc-admin-process-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.bc-admin-process-steps>div{background:#181e28;border:1px solid #343c4a;border-radius:12px;padding:15px}
+.bc-admin-process-steps strong{font-size:11px;color:#e9b4c1}
+.bc-admin-process-steps p{font-size:11px;color:#aebbc9;line-height:1.65;margin-bottom:0}
+.bc-admin-caution{font-size:11px;color:#c1aeb5;line-height:1.7;margin-top:20px}
+.bc-admin-toast{position:fixed;bottom:22px;right:22px;z-index:80;max-width:min(420px,calc(100vw - 32px));padding:16px 19px;background:#1c1520;border:1px solid #b34e69;border-radius:14px;color:#f4e9ef;font-size:12px;box-shadow:0 25px 50px #0009}
+#bcMediaOptionSources[hidden],#bcMediaAdminApp[hidden],#bcAdminGate[hidden],#bcMediaAdminToast[hidden]{display:none!important}
+@media(max-width:750px){.bc-media-admin-header{flex-wrap:wrap;padding:14px 16px}.bc-media-admin-header nav{width:100%;justify-content:flex-start}.bc-media-admin-header nav a{font-size:9px}.bc-media-admin-shell{padding:18px 12px 65px}.bc-media-admin-intro{padding:24px 19px}.bc-media-admin-summary{grid-template-columns:1fr}.bc-media-admin-summary>div{padding:14px}.bc-admin-process-steps{grid-template-columns:1fr 1fr}}
+@media(max-width:410px){.bc-admin-process-steps{grid-template-columns:1fr}.bc-media-admin-brand strong{font-size:10px}.bc-media-admin-brand small{font-size:8px}}
