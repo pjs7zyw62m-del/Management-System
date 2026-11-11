@@ -4,7 +4,7 @@
  * Does not identify faces, individuals, military objects or clothing by name.
  */
 import {signatureFromImage,visualSimilarity,metadataSimilarity,candidateRegions,labelReasons}
- from './corporate-visual-match.js?v=20261111-vd1';
+ from './corporate-visual-match.js?v=20261111-area3';
 export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,openPhoto,getCurrentPhoto,personalization}){
  const $=id=>document.getElementById(id);
  const overlay=$('visualDiscoveryOverlay'),stage=$('vdStage'),main=$('vdMainPhoto');
