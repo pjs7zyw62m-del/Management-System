@@ -4,7 +4,7 @@ import {createBlackcellMediaProcessor} from './corporate-media-processor.js?v=20
 import {setupBlackcellStorageStatus} from './corporate-storage-status.js?v=20261111-storage1';
 import {mountMilitaryGunner} from './military-gunner.js?v=20261110-fast4';
 import {createNetworkPersonalization} from './corporate-network-personalization.js?v=20261111-rediscovery2';
-import {createPhotoRediscovery} from './corporate-photo-rediscovery.js?v=20261111-voted-trigger4';
+import {createPhotoRediscovery} from './corporate-photo-rediscovery.js?v=20261111-mediareset1';
 import {createVisualDiscovery} from './corporate-visual-discovery.js?v=20261111-fullgallery2';
 import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phonecheck2';
 const client=corporateClient(),bucket=client.storage.from('corp-social-media');
