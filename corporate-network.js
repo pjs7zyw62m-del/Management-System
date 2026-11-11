@@ -54,6 +54,56 @@ function liking(id){return state.likes.some(l=>l.post_id===id&&l.user_id===state
 function postedAssets(id){return state.assets.filter(a=>a.post_id===id&&a.purpose==='post')}
 function countPosts(id){return state.posts.filter(p=>p.author_id===id).length}
 function countVideos(id){return state.assets.filter(a=>a.owner_id===id&&a.kind==='video'&&a.purpose==='post').length}
+/* An expandable, keyboard-accessible section menu avoids scrolling through
+   the long Military Library. It never alters member uploads or permissions. */
+function setLibraryMenuExpanded(expanded){
+ const submenu=$('librarySubmenu'),toggle=$('libraryDisclosure');
+ if(!submenu||!toggle)return;
+ submenu.hidden=!expanded;
+ toggle.setAttribute('aria-expanded',String(expanded));
+ toggle.setAttribute('aria-label',(expanded?'Collapse':'Expand')+' Military Library menu');
+}
+function syncLibraryMenu(view){
+ const isLibrary=view==='photos';
+ document.body.classList.toggle('bc-in-library',isLibrary);
+ if(isLibrary)setLibraryMenuExpanded(true);
+ else setLibraryMenuExpanded(false);
+}
+function jumpToMilitarySection(button){
+ const targetId=button.dataset.libraryJump;
+ if(!targetId)return;
+ if(state.view!=='photos')switchView('photos');
+ const filter=button.dataset.libraryFilter;
+ if(filter){
+  document.querySelector('#photosFilters [data-photo-filter="'+filter+'"]')?.click();
+ }
+ if(targetId==='militaryUploadSettings')$('militaryUploadSettings').open=true;
+ document.querySelectorAll('#librarySubmenu button[data-library-jump]').forEach(x=>{
+  x.classList.toggle('is-current',x===button);
+  if(x===button)x.setAttribute('aria-current','location');
+  else x.removeAttribute('aria-current');
+ });
+ requestAnimationFrame(()=>requestAnimationFrame(()=>{
+  const target=$(targetId);
+  if(target){target.scrollIntoView({behavior:'smooth',block:'start'});}
+  const focus=button.dataset.libraryFocus;
+  if(focus){
+   const input=$(focus);
+   if(input)input.focus({preventScroll:true});
+  }
+ }));
+}
+function setupLibraryMenu(){
+ const toggle=$('libraryDisclosure'),open=$('librarySubmenu');
+ if(!toggle||!open)return;
+ toggle.addEventListener('click',()=>setLibraryMenuExpanded(open.hidden));
+ open.querySelectorAll('button[data-library-jump]').forEach(button=>
+  button.addEventListener('click',()=>jumpToMilitarySection(button)));
+ const nav=document.querySelector('.bc-library-open');
+ nav?.addEventListener('click',()=>setLibraryMenuExpanded(true));
+ syncLibraryMenu(state.view);
+}
+
 function switchView(view,{who=null,tab=null,keepPost=false}={}){
  if(!fields.includes(view+'View'))view='feed';
  if(!keepPost)state.deepPost=null;
@@ -61,6 +111,7 @@ function switchView(view,{who=null,tab=null,keepPost=false}={}){
   state.assetUrls.clear();void loadSigned().then(renderAll).catch(()=>{});
  }
  state.view=view;
+ syncLibraryMenu(view);
  gunnerDock?.setVisible(view==='photos');
  if(view==='profile'){
   state.profileUserId=who||state.user.id;
@@ -701,6 +752,7 @@ async function boot(){
   }
   $('gate').hidden=true;$('app').hidden=false;
   setupEvents();
+  setupLibraryMenu();
   personalization.setup();
   installNetworkSecurityChecks();
   // Periodic read-only refresh works even when Realtime publication is disabled.
