@@ -229,7 +229,13 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
     client.from('corp_social_country_collections').delete().eq('user_id',state.user.id)
    ]);
    if(albumRes.error||countryRes.error)throw albumRes.error||countryRes.error;
-   resetEditor();queue=[];albums=[];await refresh();await reload(true);
+   const {count:remaining,error:checkError}=await client.from('corp_social_assets')
+    .select('id',{count:'exact',head:true}).in('kind',['photo','video']);
+   if(checkError||remaining!==0)
+    throw Error('Final database verification did not reach zero: '+(checkError?.message||remaining+' rows remain'));
+   resetEditor();queue=[];albums=[];
+   await refresh();await reload(true);
+   document.dispatchEvent(new CustomEvent('bc:media-updated'));
    status('FRESH START COMPLETE · '+removed+' photo/video originals removed from BLACKCELL storage and database. Private chat, NEXUS and iCloud sources unchanged.');
    toast('BLACKCELL photo/video library reset. Ready for new verified imports.');
   }catch(e){
