@@ -1,5 +1,6 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-staff1';
-import {setupBlackcellPhotos} from './corporate-network-photos.js?v=20261111-storage1';
+import {setupBlackcellPhotos} from './corporate-network-photos.js?v=20261111-mediareset1';
+import {createBlackcellMediaProcessor} from './corporate-media-processor.js?v=20261111-mediareset1';
 import {setupBlackcellStorageStatus} from './corporate-storage-status.js?v=20261111-storage1';
 import {mountMilitaryGunner} from './military-gunner.js?v=20261110-fast4';
 import {createNetworkPersonalization} from './corporate-network-personalization.js?v=20261111-rediscovery2';
@@ -55,9 +56,10 @@ function cover(node,p){
 function myProfile(){return profile(state.user?.id)}
 function following(id){return state.follows.some(f=>f.follower_id===state.user.id&&f.following_id===id)}
 function liking(id){return state.likes.some(l=>l.post_id===id&&l.user_id===state.user.id)}
-function postedAssets(id){return state.assets.filter(a=>a.post_id===id&&a.purpose==='post')}
+const sharedMedia=a=>a?.review_status==='approved'&&a?.adult_restricted!==true;
+function postedAssets(id){return state.assets.filter(a=>a.post_id===id&&a.purpose==='post'&&sharedMedia(a))}
 function countPosts(id){return state.posts.filter(p=>p.author_id===id).length}
-function countVideos(id){return state.assets.filter(a=>a.owner_id===id&&a.kind==='video'&&a.purpose==='post').length}
+function countVideos(id){return state.assets.filter(a=>a.owner_id===id&&a.kind==='video'&&a.purpose==='post'&&sharedMedia(a)).length}
 /* An expandable, keyboard-accessible section menu avoids scrolling through
    the long Military Library. It never alters member uploads or permissions. */
 function setLibraryMenuExpanded(expanded){
@@ -130,7 +132,7 @@ function switchView(view,{who=null,tab=null,keepPost=false}={}){
  if(view==='profile')renderProfile();
  if(view==='discover')renderDirectory();
  if(view==='videos')renderVideos();
- if(view==='photos'){photos.render();void storageStatus.refresh()}
+ if(view==='photos'){photos.render();void storageStatus.refresh();void mediaProcessor.refresh()}
  const params=new URLSearchParams();
  if(view==='profile'&&state.profileUserId!==state.user.id)params.set('user',state.profileUserId);
  if(view==='videos'||view==='discover'||view==='photos')params.set('view',view);
@@ -285,7 +287,7 @@ function renderProfile(){
  if(state.profileTab==='photos'||state.profileTab==='videos'){
   box.append(photos.renderProfilePhotos(p.user_id,state.profileTab==='videos'?'video':'photo'));return;
  }
- const media=state.assets.filter(a=>a.owner_id===p.user_id&&a.purpose==='post'&&
+ const media=state.assets.filter(a=>sharedMedia(a)&&a.owner_id===p.user_id&&a.purpose==='post'&&
     a.kind===(state.profileTab==='videos'?'video':'photo'));
  const grid=el('div',state.profileTab==='videos'?'video-grid':'directory-grid');
  if(!media.length){box.append(empty('Nothing here yet',state.profileTab==='videos'?'This member has not shared any videos.':'This member has not shared photos.'));return}
@@ -461,7 +463,7 @@ function renderFeed(){
  const allowedFollow=id=>state.feedFilter!=='following'||followingIds.has(id)||id===state.user.id;
  let posts=state.posts.filter(p=>allowedFollow(p.author_id));
  let library=state.assets.filter(a=>
-   a.purpose==='library'&&(a.kind==='photo'||a.kind==='video')&&
+   sharedMedia(a)&&a.purpose==='library'&&(a.kind==='photo'||a.kind==='video')&&
    allowedOwner(a.owner_id)&&allowedFollow(a.owner_id));
  if(state.feedFilter==='videos'){
   posts=posts.filter(p=>p.kind==='video');
@@ -496,7 +498,7 @@ function videoTile(a){
 }
 function renderVideos(){
  const node=$('videoGrid');node.replaceChildren();
- const media=state.assets.filter(a=>a.kind==='video'&&a.purpose==='post');
+ const media=state.assets.filter(a=>sharedMedia(a)&&a.kind==='video'&&a.purpose==='post');
  if(!media.length){node.append(empty('Your network channel is ready','Video uploads from authorized Blackcell members will appear here.'));return}
  for(const a of media)node.append(videoTile(a));
 }
@@ -644,7 +646,7 @@ async function publish(){
   $('uploadText').textContent='Upload complete.';
   $('postBody').value='';formFiles=[];renderAttachments();updateCounter();
   await refresh();
-  switchView('feed');toast('Post published'+(skipped?' · '+skipped+' duplicate'+(skipped===1?'':'s')+' skipped':'')+'.');
+  switchView('feed');toast(selected.length?'Post created. Attached photos/videos are PRIVATE until administrator review.':'Text post published.');
  }catch(e){
   // Remove incomplete post (metadata cascades), keeping the feed consistent.
   if(postId)await client.from('corp_social_posts').delete().eq('id',postId).eq('author_id',state.user.id);
@@ -792,6 +794,7 @@ async function boot(){
   personalization.setup();
   rediscovery.start();
   installNetworkSecurityChecks();
+  mediaProcessor.setup();
   // Periodic read-only refresh works even when Realtime publication is disabled.
   window.setInterval(()=>void refreshVisibleNetworkFeed(),90000);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refreshVisibleNetworkFeed()});
@@ -848,4 +851,6 @@ const visualDiscovery=createVisualDiscovery({
 const photos=setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadAsset,refresh,profile,openProfile,
  ensureSigned:loadSigned,switchView,personalization,rediscovery,dedupe});
 const storageStatus=setupBlackcellStorageStatus({client,bucket,state});
+const mediaProcessor=createBlackcellMediaProcessor({client,bucket,state,refresh,mediaUrl,toast,
+ openAIReview:a=>photos.openAIReview(a)});
 void boot();
