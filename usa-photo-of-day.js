@@ -220,5 +220,5 @@ export function createUsaPhotoOfDay({client,getUser,getAssets,getSignedUrl,openA
   $("dailyLike").addEventListener("click",()=>void sendFeedback("more"));
   $("dailyLess").addEventListener("click",()=>void sendFeedback("less"));
  }
- return {setup,refresh,getCurrent:()=>state.current,scoreDaily};
+ return {setup,refresh,refreshIfNewDay:()=>currentDate()!==state.date?refresh():Promise.resolve(),getCurrent:()=>state.current,scoreDaily};
 }
