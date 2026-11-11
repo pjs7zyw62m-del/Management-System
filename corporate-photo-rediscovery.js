@@ -193,7 +193,11 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
    document.addEventListener('visibilitychange',()=>{
     if(document.hidden)destroyCard();
    });
-   $('rediscoveryPreview')?.addEventListener('click',()=>void offer({preview:true}));
+   $('rediscoveryPreview')?.addEventListener('click',()=>{
+    if(!on()){toast('Enable and save Photo Rediscovery first.');return}
+    if($('personalizationOverlay'))$('personalizationOverlay').hidden=true;
+    void offer({preview:true});
+   });
    didBind=true;
   }
   schedule();
