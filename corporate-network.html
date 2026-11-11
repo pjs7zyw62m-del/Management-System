@@ -523,7 +523,7 @@
   <header class="bc-vd-head">
    <div><small>BLACKCELL / MILITARY LIBRARY / PRIVATE MEMBER EXPERIENCE</small>
     <h2 id="vdTitle"><span>⌖</span> VISUAL DISCOVERY.</h2>
-    <p id="vdDescription">Select a detail in any military photograph. Discover related imagery from the actual Blackcell library.</p>
+    <p id="vdDescription">Select a uniform detail, then use AI Find Same Item. AI matching searches photographs that have been indexed with your approval.</p>
    </div>
    <button type="button" id="vdClose" class="bc-vd-close" aria-label="Close Visual Discovery">✕</button>
   </header>
@@ -534,7 +534,7 @@
      <button id="vdDuplicateScan" type="button">◎ SCAN DUPLICATES · FREE</button>
      <button id="vdAIIndex" type="button">✦ INDEX 5 PHOTOS WITH AI · PAID</button>
     </div>
-    <p id="vdIndexStatus" class="bc-vd-index-status" role="status" aria-live="polite">Choose Check AI &amp; Duplicates to verify your connection. AI indexing uses API credits.</p>
+    <p id="vdIndexStatus" class="bc-vd-index-status" role="status" aria-live="polite">AI matching requires an indexed photo collection. Check your status here; indexing uses API credits only when you approve it.</p>
     <div id="vdDuplicateResults" class="bc-vd-duplicate-results" hidden></div>
     <div class="bc-vd-bar"><strong id="vdFilename">CHOOSE A PHOTOGRAPH</strong><span id="vdSelectionHint">CLICK A DETAIL OR DRAG TO SELECT AN AREA</span></div>
     <div id="vdStage" class="bc-vd-stage" role="group" aria-label="Select a region of the displayed military photograph" tabindex="0">
@@ -543,8 +543,8 @@
      <div id="vdNoPhoto" class="bc-vd-stage-empty" hidden>Upload photographs to Military Library to start Visual Discovery.</div>
     </div>
     <div class="bc-vd-actions">
-     <button id="vdAnalyze" class="bc-vd-primary" type="button" disabled><span>⌖</span> FIND SIMILAR PHOTOS</button>
-     <button id="vdAISearch" type="button" disabled class="bc-vd-ai-search">✦ AI IDENTIFY &amp; MATCH</button>
+     <button id="vdAISearch" type="button" disabled class="bc-vd-ai-search bc-vd-primary">✦ AI FIND SAME ITEM</button>
+     <button id="vdAnalyze" class="bc-vd-basic-search" type="button" disabled><span>⌖</span> COMPARE COLORS (BASIC)</button>
      <button id="vdQuickPick" type="button">◎ CENTER SELECT</button>
      <button id="vdReset" type="button">CLEAR SELECTION</button>
      <span class="bc-vd-privacy"><span class="bc-vd-led"></span> PRIVATE · IN-BROWSER VISUAL MATCHING</span>
@@ -559,7 +559,7 @@
      <canvas id="vdCropPreview" width="320" height="172" aria-label="Selected part of the photograph"></canvas>
      <div id="vdCropMessage">Choose a uniform, tie, insignia, boots, pattern, or another detail.</div>
     </div>
-    <label class="bc-vd-matching-label" for="vdMatchMode">FIND PHOTOS USING
+    <label class="bc-vd-matching-label" for="vdMatchMode">OPTIONAL BASIC SEARCH — DOES NOT IDENTIFY OBJECTS
      <select id="vdMatchMode"><option value="hybrid">Appearance + military tags</option>
       <option value="pixels">Color and texture</option><option value="tags">Military tags and context</option></select>
     </label>
@@ -569,8 +569,8 @@
     </div>
     <p id="vdStatus" class="bc-vd-status" role="status" aria-live="polite">Choose a photograph and select the detail you want to explore.</p>
     <div class="bc-vd-results-head"><strong>SIMILAR PHOTOS <span id="vdResultCount"></span></strong><span id="vdResultMethod"></span></div>
-    <div id="vdResults" class="bc-vd-results"><div class="bc-vd-empty">Your results will appear here after you select an area.</div></div>
-    <p class="bc-vd-disclaimer">Basic search compares image appearance. The optional AI search identifies visible clothing and equipment details in the selected region and searches photos you explicitly indexed. AI labels and matching boxes are approximate. Likes improve private recommendations; they never cast competition votes.</p>
+    <div id="vdResults" class="bc-vd-results"><div class="bc-vd-empty">Tap a photo detail, then choose AI Find Same Item. First index your photos with approval.</div></div>
+    <p class="bc-vd-disclaimer">AI Find Same Item recognizes visible clothing or gear details, then searches only your authorized AI-indexed images. Compare Colors is a separate, limited pattern comparison and is NOT object recognition. AI descriptions are approximate; no photograph is deleted or competition vote submitted.</p>
    </aside>
   </div>
  </section>
