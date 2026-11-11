@@ -1,9 +1,10 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-staff1';
-import {setupBlackcellPhotos} from './corporate-network-photos.js?v=20261111-vd1';
+import {setupBlackcellPhotos} from './corporate-network-photos.js?v=20261111-dedupe1';
 import {mountMilitaryGunner} from './military-gunner.js?v=20261110-fast4';
 import {createNetworkPersonalization} from './corporate-network-personalization.js?v=20261111-rediscovery2';
 import {createPhotoRediscovery} from './corporate-photo-rediscovery.js?v=20261111-voted-trigger4';
 import {createVisualDiscovery} from './corporate-visual-discovery.js?v=20261111-area4';
+import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-dedupe1';
 const client=corporateClient(),bucket=client.storage.from('corp-social-media');
 const $=id=>document.getElementById(id);
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -747,6 +748,7 @@ async function boot(){
   }
   if(!verified)throw Error('Your corporate account must be active and authorized to enter the network.');
   await loadAll({show:false});
+  await dedupe.load();
   await personalization.load();
   if(auth.member.role==='owner'||auth.member.can_chat===true){
    const {data}=await client.rpc('corp_chat_peers');
@@ -805,12 +807,13 @@ const personalization=createNetworkPersonalization({client,state,toast,
  onChanged:()=>{photos.render();renderFeed();rediscovery.refresh()}});
 const rediscovery=createPhotoRediscovery({client,state,personalization,mediaUrl,toast,
  openPhoto:a=>photos.openAsset(a)});
+const dedupe=createPhotoDedupe({client,state,mediaUrl,toast});
 const visualDiscovery=createVisualDiscovery({
- client,state,mediaUrl,toast,personalization,
+ client,state,mediaUrl,toast,personalization,dedupe,
  closeViewer:()=>photos.closeViewer(),
  openPhoto:a=>photos.openAsset(a),
  getCurrentPhoto:()=>photos.getCurrentPhoto()
 });
 const photos=setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadAsset,refresh,profile,openProfile,
- ensureSigned:loadSigned,switchView,personalization,rediscovery});
+ ensureSigned:loadSigned,switchView,personalization,rediscovery,dedupe});
 void boot();
