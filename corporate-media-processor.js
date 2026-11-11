@@ -109,8 +109,27 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
   if(!confirm('AI analysis is OPTIONAL and uses provider credits. Confirm this photograph contains NO sexually explicit content and that you authorize sending a reduced copy to the configured AI provider. Proceed?'))return;
   const a=state.assets.find(x=>x.id===current.id)||current;
   if(!a||!openAIReview){status('Photo AI review is not available from this queue.');return}
-  openAIReview(a);
-  status('AI review opened. Approve corrected suggestions there; then return to this queue to publish. AI labels alone do NOT release the photo.');
+  setBusy(true);
+  status('Requesting optional AI suggestions for this non-explicit photograph…');
+  try{
+   const result=await openAIReview(a);
+   if(!result||current?.id!==a.id)throw new Error('No suggestions returned.');
+   const selections=[
+    ['bcReviewCountry',result.country_code],
+    ['bcReviewBranch',result.military_branch],
+    ['bcReviewCategory',result.military_category]
+   ];
+   for(const [name,value] of selections){
+    const node=$(name);
+    if(value&&[...node.options].some(opt=>opt.value===value))node.value=value;
+   }
+   if(Array.isArray(result.tags)){
+    $('bcReviewTags').value=[...new Set(result.tags.map(t=>String(t).trim()).filter(Boolean))].slice(0,15).join(', ');
+   }
+   status('AI suggestions loaded for review. Verify country, branch, tags and adult status YOURSELF before approving. No media was published.');
+  }catch(error){
+   status('AI unavailable; classify manually. '+(error?.message||'Unknown error'));
+  }finally{setBusy(false)}
  }
  async function createAlbum(country,branch,subject){
   const name=$('bcReviewCountry').selectedOptions?.[0]?.textContent?.trim()||country;
