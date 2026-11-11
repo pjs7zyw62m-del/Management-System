@@ -760,8 +760,10 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
       if(error)toast('Photo uploaded, but adding to album failed: '+error.message);
      }
     }catch(e){failures++;toast('Media upload failed for '+f.name+': '+(e?.message||'Unknown error'))}
-    completed++;fill.style.width=Math.round(completed*100/supported.length)+'%';
-    label.textContent=completed+' of '+supported.length+' files processed';
+    finally{
+     completed++;fill.style.width=Math.round(completed*100/supported.length)+'%';
+     label.textContent=completed+' of '+supported.length+' files processed';
+    }
    }
    await refresh();
    render();
