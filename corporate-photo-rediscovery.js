@@ -109,7 +109,7 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
   }catch(error){console.warn('Zoom engagement unavailable:',error?.message);return false}
  }
  function possibleSource(){
-  return (state.assets||[]).filter(a=>a.kind==='photo'&&a.purpose==='library'&&mediaUrl(a));
+  return (state.assets||[]).filter(a=>a.kind==='photo'&&a.purpose==='library'&&a.review_status==='approved'&&!a.adult_restricted&&mediaUrl(a));
  }
  function same(x,y){
   return String(x||'').trim().toLowerCase()===String(y||'').trim().toLowerCase();
