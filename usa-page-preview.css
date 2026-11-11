@@ -219,3 +219,169 @@ body.usa-revamp *{scroll-margin-top:98px}
  .usa-hero:before,.hero-insignia .orbit-inner{animation:none!important}
  .branch-tile,.photo-card,.hero-buttons a{transition:none!important}
 }
+
+/* DESIGN V2 — User-supplied compact 540px U.S. Armed Forces hero.
+   Separate preview only; the existing country page is unchanged. */
+body.usa-revamp .usa-hero{
+ display:flex;flex-direction:column;isolation:isolate;min-height:540px;
+ width:100%;max-width:1152px;margin:0 auto;overflow:hidden;
+ padding:clamp(28px,4.8vw,56px);
+ border:1px solid #ffffff1a;border-radius:16px;background:#0D0B0C;
+ box-shadow:0 24px 70px #000b;
+}
+body.usa-revamp .usa-hero:before{
+ content:"";position:absolute;inset:0;z-index:-1;
+ background:none!important;animation:none!important;pointer-events:none;
+}
+body.usa-revamp .usa-hero:after{display:none}
+body.usa-revamp .usa-hero .hero-grid{
+ position:absolute;inset:0;z-index:-1;opacity:1;mask-image:none;
+ background-image:linear-gradient(to right,#ffffff06 1px,transparent 1px),
+ linear-gradient(to bottom,#ffffff06 1px,transparent 1px);
+ background-size:32px 32px;pointer-events:none
+}
+body.usa-revamp .usa-hero .hero-glow{
+ position:absolute;z-index:-1;top:50%;right:-96px;width:500px;height:500px;
+ transform:translateY(-50%);border-radius:50%;background:#C83E4D33;
+ filter:blur(120px);pointer-events:none
+}
+body.usa-revamp .usa-hero-inner{
+ flex:1;position:relative;z-index:2;display:grid;
+ grid-template-columns:minmax(0,7fr) minmax(0,5fr);
+ align-items:center;gap:40px;padding:0;min-height:0;width:100%
+}
+body.usa-revamp .usa-hero .hero-text{width:100%;max-width:none;min-width:0}
+body.usa-revamp .usa-hero .hero-breadcrumb{
+ display:flex;align-items:center;gap:10px;margin:0 0 24px;
+ color:#a3a3a3;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;
+ font-size:11px;line-height:1.5;letter-spacing:.2em;text-transform:uppercase;font-weight:600
+}
+.usa-revamp .crumb-dot{display:inline-block;width:6px;height:6px;flex:0 0 6px;
+ border-radius:50%;background:#C83E4D;box-shadow:0 0 10px #C83E4D70}
+body.usa-revamp .usa-hero .hero-text h1{
+ display:block;max-width:none;margin:0;
+ font-size:clamp(39px,5.1vw,66px);line-height:.95;letter-spacing:-.047em;font-weight:900
+}
+body.usa-revamp .usa-hero .hero-text h1 span{display:block;color:#fff;white-space:normal}
+body.usa-revamp .usa-hero .hero-text h1 em{
+ display:block;margin-top:5px;color:#C83E4D!important;
+ font-style:normal;letter-spacing:-.047em
+}
+body.usa-revamp .usa-hero .hero-text p{
+ max-width:520px;margin:24px 0 0;
+ color:#a3a3a3;font-size:15px;line-height:1.7
+}
+body.usa-revamp .usa-hero .hero-buttons{
+ display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin:28px 0 0
+}
+body.usa-revamp .usa-hero .hero-buttons a{
+ display:inline-flex;align-items:center;justify-content:center;gap:14px;min-height:47px;
+ padding:13px 22px;border-radius:9px;font-size:11px;
+ font-weight:800;letter-spacing:.12em;transition:background .2s,transform .2s
+}
+body.usa-revamp .usa-hero .hero-buttons a:hover{transform:translateY(-2px)}
+body.usa-revamp .usa-hero .hero-buttons .primary-route{
+ color:white;background:#C83E4D;border:1px solid #C83E4D;
+ box-shadow:0 8px 25px #C83E4D38
+}
+body.usa-revamp .usa-hero .hero-buttons .primary-route:hover{background:#b03240}
+body.usa-revamp .usa-hero .hero-buttons .secondary-route{
+ color:#dedee1;background:#ffffff0c;border:1px solid #ffffff1a
+}
+body.usa-revamp .usa-hero .hero-buttons .secondary-route:hover{background:#ffffff17}
+.usa-revamp .hero-featured{
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ gap:13px;min-width:0;width:100%
+}
+.usa-revamp .viewfinder-shell{
+ position:relative;display:flex;align-items:center;justify-content:center;
+ width:100%;max-width:340px;aspect-ratio:1/1;padding:16px;
+ border:1px solid #ffffff19;border-radius:50%;background:#0006;backdrop-filter:blur(4px)
+}
+.usa-revamp .viewfinder-dashed{
+ position:absolute;inset:12px;border:1px dashed #C83E4D65;
+ border-radius:50%;pointer-events:none
+}
+.usa-revamp .viewfinder-photo{
+ position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+ padding:0;border-radius:50%;border:1px solid #ffffff25;
+ overflow:hidden;isolation:isolate;background:#171717;cursor:zoom-in
+}
+.usa-revamp .viewfinder-photo:disabled{cursor:default}
+.usa-revamp .viewfinder-photo img{
+ width:100%;height:100%;object-fit:cover;filter:grayscale(100%) contrast(1.2);
+ opacity:.65;transition:opacity .5s,transform .5s
+}
+.usa-revamp .viewfinder-photo:hover:not(:disabled) img{opacity:.85;transform:scale(1.05)}
+.usa-revamp .viewfinder-placeholder{font-size:110px;font-weight:900;color:#cba9b354}
+.usa-revamp .viewfinder-shade{
+ position:absolute;inset:0;pointer-events:none;
+ background:linear-gradient(0deg,#000e 0%,#0004 45%,transparent 95%)
+}
+.usa-revamp .viewfinder-caption{
+ position:absolute;bottom:24px;left:14px;right:14px;text-align:center;
+ display:flex;flex-direction:column;align-items:center;gap:5px;
+ pointer-events:none
+}
+.usa-revamp .viewfinder-record-type{
+ font-size:11px;font-weight:900;color:#C83E4D;letter-spacing:.19em;
+ font-family:ui-monospace,SFMono-Regular,Consolas,monospace
+}
+.usa-revamp .viewfinder-record-index{
+ font-size:10px;color:#e5e5e5;letter-spacing:.10em;line-height:1.4;
+ font-family:ui-monospace,SFMono-Regular,Consolas,monospace
+}
+.usa-revamp .viewfinder-motto{
+ margin:0;color:#808080;font-size:9px;text-align:center;
+ letter-spacing:.2em;line-height:1.5;
+ font-family:ui-monospace,SFMono-Regular,Consolas,monospace
+}
+.usa-revamp .daily-photo-info{max-width:370px;width:100%;text-align:center}
+.usa-revamp .daily-photo-tag{display:flex;align-items:center;justify-content:center;gap:8px;
+ color:#d0c7cc;font-size:9px;font-weight:850;letter-spacing:.11em;line-height:1.5}
+.usa-revamp .daily-photo-live{height:6px;width:6px;flex:0 0 6px;background:#C83E4D;border-radius:50%;box-shadow:0 0 11px #C83E4D90}
+.usa-revamp #dailyDate{color:#87868b;font-weight:600}
+.usa-revamp #dailyReason{margin:8px 0 9px;color:#a8a5ad;font-size:11px;line-height:1.55;min-height:34px}
+.usa-revamp .daily-feedback{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.usa-revamp .daily-feedback button{
+ background:#ffffff0a;border:1px solid #ffffff22;color:#bcb7be;
+ padding:9px 13px;border-radius:8px;font-size:9px;font-weight:850;
+ letter-spacing:.07em;transition:background .2s,border-color .2s
+}
+.usa-revamp .daily-feedback button:disabled{cursor:not-allowed;opacity:.4}
+.usa-revamp .daily-feedback button:hover:not(:disabled){background:#3a222b;border-color:#b65b6c}
+.usa-revamp .daily-feedback button.selected{color:#e9bcca;background:#53222e;border-color:#bd6172}
+.usa-revamp .daily-feedback-status{min-height:0;margin:4px 0 0;color:#8fa99e;font-size:10px;line-height:1.5}
+.usa-revamp .hero-footer-stats{
+ position:relative;z-index:2;align-self:flex-start;display:grid;
+ grid-template-columns:repeat(3,minmax(0,1fr));
+ width:min(100%,570px);gap:25px;margin-top:45px;padding-top:23px;border-top:1px solid #ffffff1a
+}
+.usa-revamp .hero-footer-stats strong{display:block;color:#f6f6f6;font-size:clamp(20px,2.7vw,30px);
+ font-weight:900;letter-spacing:-.04em;line-height:1.25;overflow-wrap:anywhere}
+.usa-revamp .hero-footer-stats small{display:block;margin-top:6px;font-size:10px;line-height:1.5;
+ letter-spacing:.13em;color:#7f7f82}
+@media(max-width:950px){
+ body.usa-revamp .usa-hero-inner{gap:20px;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);padding:0}
+ .usa-revamp .viewfinder-shell{max-width:265px}
+ body.usa-revamp .usa-hero .hero-text h1{font-size:clamp(35px,5vw,50px)}
+ .usa-revamp .daily-photo-info{max-width:260px}
+}
+@media(max-width:700px){
+ body.usa-revamp .usa-hero{min-height:0;padding:28px 20px;border-radius:16px}
+ body.usa-revamp .usa-hero-inner{display:flex;flex-direction:column;gap:28px;align-items:stretch;min-height:0;padding:0}
+ body.usa-revamp .usa-hero .hero-text h1{font-size:clamp(34px,8.2vw,54px)}
+ body.usa-revamp .usa-hero .hero-text p{font-size:13px;margin:18px 0 0}
+ body.usa-revamp .usa-hero .hero-buttons{margin-top:22px}
+ body.usa-revamp .usa-hero .hero-buttons a{flex:1 1 175px;padding:13px 11px}
+ .usa-revamp .hero-featured{position:relative;opacity:1;inset:auto;width:100%;gap:12px}
+ .usa-revamp .viewfinder-shell{width:min(75vw,310px);max-width:310px}
+ .usa-revamp .daily-photo-info{max-width:340px}
+ .usa-revamp .viewfinder-motto{display:block}
+ .usa-revamp .hero-footer-stats{width:100%;margin-top:27px;gap:10px}
+ .usa-revamp .hero-footer-stats strong{font-size:22px}
+ .usa-revamp .hero-footer-stats small{font-size:8px}
+}
+@media(prefers-reduced-motion:reduce){
+ .usa-revamp .viewfinder-photo img,.usa-revamp .daily-feedback button{transition:none}
+}
