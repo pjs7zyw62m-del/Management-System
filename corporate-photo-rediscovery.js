@@ -7,7 +7,7 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
  let testTurn=0,lastTestPhotoId=null;
  let lastSourceId='',didBind=false,feedbackBusy=false,mode='rediscovery',lastFocus=null;
  let sessionSeen=new Set();
- let dwellTimer=null,dwellSequence=0;
+ let dwellTimer=null,dwellSequence=0,cardZoomCleanup=null;
  const $=id=>document.getElementById(id);
  const opts=()=>personalization.get();
  const on=()=>{const p=opts();return p.enabled===true&&p.rediscovery_enabled===true};
@@ -46,6 +46,7 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
   },interval());
  }
  function destroyCard(){
+  if(cardZoomCleanup){cardZoomCleanup();cardZoomCleanup=null}
   if(card){card.remove();card=null}
   lastSourceId='';
  }
@@ -150,6 +151,7 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
   const e=el('button',cls,label);e.type='button';e.addEventListener('click',handler);return e;
  }
  function closeCard(){
+  if(cardZoomCleanup){cardZoomCleanup();cardZoomCleanup=null}
   if(card){card.remove();card=null}
   lastSourceId='';
   const old=lastFocus;lastFocus=null;sessionSeen.clear();mode='rediscovery';
@@ -211,6 +213,132 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
    if(card)card.classList.remove('bc-rediscovery-busy');
   }
  }
+
+ /* Full-size viewer parity: wheel and double-click zoom into the pixel
+    under the mouse; touch pinch zooms at finger midpoint. Default 100%
+    always shows the ENTIRE original, with object-fit:contain.
+    These are local CSS transforms; no media is downloaded or modified. */
+ function attachCardZoom(viewport,image,seed){
+  const points=new Map();
+  let scale=1,tx=0,ty=0,pinchStart=0,pinchBase=1;
+  let lastTick=performance.now(),activeZoomMs=0,holdTimer=null;
+  let tracked=false,holdRecorded=false,disposed=false;
+  const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+  function render(){
+   if(disposed)return;
+   tx=clamp(tx,-Math.max(0,image.clientWidth*(scale-1)/2),
+                   Math.max(0,image.clientWidth*(scale-1)/2));
+   ty=clamp(ty,-Math.max(0,image.clientHeight*(scale-1)/2),
+                   Math.max(0,image.clientHeight*(scale-1)/2));
+   image.style.transform='translate3d('+tx.toFixed(2)+'px,'+ty.toFixed(2)+'px,0) scale('+scale.toFixed(3)+')';
+   viewport.classList.toggle('bc-card-zoomed',scale>1.02);
+  }
+  function zoomTo(next,x,y){
+   if(disposed)return;
+   next=clamp(Math.round(next*100)/100,1,5);
+   if(next===scale)return;
+   const old=scale;
+   if(next===1){scale=1;tx=0;ty=0;activeZoomMs=0}
+   else {
+    const box=image.getBoundingClientRect();
+    const cx=box.left+box.width/2,cy=box.top+box.height/2;
+    // Clamp the zoom focus to the visibly contained photo rather than
+    // surrounding black letterboxing on portrait/landscape images.
+    const iw=image.naturalWidth||image.clientWidth||1;
+    const ih=image.naturalHeight||image.clientHeight||1;
+    const fitted=Math.min(image.clientWidth/iw,image.clientHeight/ih);
+    const shownW=iw*fitted*old,shownH=ih*fitted*old;
+    const ax=clamp(x,cx-shownW/2,cx+shownW/2);
+    const ay=clamp(y,cy-shownH/2,cy+shownH/2);
+    const ratio=next/old;
+    tx+=(ax-cx)*(1-ratio);
+    ty+=(ay-cy)*(1-ratio);
+    scale=next;
+   }
+   if(scale>=1.3&&!tracked){
+    tracked=true;
+    void recordView(seed);
+   }
+   lastTick=performance.now();
+   render();
+  }
+  function wheel(e){
+   if(disposed||e.deltaY===0)return;
+   e.preventDefault();
+   zoomTo(scale+(e.deltaY<0?.25:-.25),e.clientX,e.clientY);
+  }
+  function dblclick(e){
+   e.preventDefault();
+   zoomTo(scale>=1.8?1:2,e.clientX,e.clientY);
+  }
+  const distance=()=>{
+   const p=[...points.values()];
+   return p.length<2?0:Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y);
+  };
+  function down(e){
+   if(e.pointerType==='mouse'&&e.button!==0)return;
+   points.set(e.pointerId,{x:e.clientX,y:e.clientY});
+   if(points.size>=2){pinchStart=distance();pinchBase=scale}
+   if(scale>1.02||points.size>=2){
+    try{viewport.setPointerCapture(e.pointerId)}catch(_){}
+   }
+  }
+  function move(e){
+   const previous=points.get(e.pointerId);
+   if(!previous)return;
+   points.set(e.pointerId,{x:e.clientX,y:e.clientY});
+   if(points.size>=2){
+    const d=distance();
+    if(!pinchStart){pinchStart=d;pinchBase=scale}
+    if(d>0&&pinchStart){
+     const p=[...points.values()];
+     zoomTo(pinchBase*d/pinchStart,
+       (p[0].x+p[1].x)/2,(p[0].y+p[1].y)/2);
+    }
+   }else if(scale>1.02){
+    tx+=e.clientX-previous.x;ty+=e.clientY-previous.y;
+    render();
+   }
+  }
+  function up(e){
+   points.delete(e.pointerId);
+   if(points.size<2){pinchStart=0;pinchBase=scale}
+  }
+  function tick(){
+   if(disposed)return;
+   const now=performance.now();
+   const delta=Math.max(0,Math.min(750,now-lastTick));lastTick=now;
+   if(scale<1.3){activeZoomMs=0;return}
+   if(document.hidden||!document.hasFocus()||card?.contains(viewport)!==true)return;
+   activeZoomMs+=delta;
+   if(activeZoomMs>=4000&&!holdRecorded){
+    holdRecorded=true;
+    void recordZoomHold(seed).then(saved=>{
+     if(saved&&typeof personalization.load==='function')void personalization.load();
+    });
+   }
+  }
+  viewport.addEventListener('wheel',wheel,{passive:false});
+  viewport.addEventListener('dblclick',dblclick);
+  viewport.addEventListener('pointerdown',down);
+  viewport.addEventListener('pointermove',move);
+  viewport.addEventListener('pointerup',up);
+  viewport.addEventListener('pointercancel',up);
+  holdTimer=setInterval(tick,250);
+  return ()=>{
+   disposed=true;
+   if(holdTimer!==null)clearInterval(holdTimer);
+   viewport.removeEventListener('wheel',wheel);
+   viewport.removeEventListener('dblclick',dblclick);
+   viewport.removeEventListener('pointerdown',down);
+   viewport.removeEventListener('pointermove',move);
+   viewport.removeEventListener('pointerup',up);
+   viewport.removeEventListener('pointercancel',up);
+   points.clear();
+   image.style.transform='';
+  };
+ }
+
  function showSeed(seed,nextMode='rediscovery'){
   if(!on()||!seed?.id||!mediaUrl(seed))return;
   if(!lastFocus)lastFocus=document.activeElement;
@@ -248,6 +376,7 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
   overlay.addEventListener('click',e=>{if(e.target===overlay)closeCard()});
   document.body.append(overlay);
   card=overlay;
+  cardZoomCleanup=attachCardZoom(imageBox,image,seed);
   close.focus({preventScroll:true});
  }
 
