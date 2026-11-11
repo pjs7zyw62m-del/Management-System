@@ -486,3 +486,10 @@ body.bc-network #photosView .mx-holo{background:linear-gradient(90deg,#3b0e19,#e
 @media(prefers-reduced-motion:reduce){
  body.bc-network #photosView .mx-holo{animation:none!important}
 }
+
+/* Uniform Care entry — dark and restrained, with responsive nav. */
+body.bc-network .mainnav a.uc-care-nav{display:inline-flex;align-items:center;justify-content:center;padding:9px 11px;align-self:center;background:#11161c;border:1px solid #3b434d;border-radius:9px;color:#c9d1dc;text-decoration:none;font-size:10px;font-weight:800;white-space:nowrap;letter-spacing:.055em}
+body.bc-network .mainnav a.uc-care-nav:hover{border-color:#a82c42;background:#23141b;color:#fff}
+body.bc-network .mx-row a[href="uniform-care.html"]{border-color:#5b3542!important;background:#12171c!important;color:#e3e6ec!important}
+body.bc-network .mx-row a[href="uniform-care.html"]:hover{border-color:#cb2a43!important;background:#231620!important}
+@media (min-width:801px) and (max-width:1260px){body.bc-network .mainnav{gap:12px!important}body.bc-network .mainnav a.uc-care-nav{display:none!important}}
