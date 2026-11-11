@@ -15,7 +15,12 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  const fileMax=45*1024*1024;
  const photoFormats=new Set(['image/jpeg','image/png','image/webp','image/gif','image/heic']);
  const videoFormats=new Set(['video/mp4','video/webm','video/quicktime','video/x-m4v']);
- const archiveAssets=()=>state.assets.filter(a=>['post','library'].includes(a.purpose));
+ // Only reviewed non-explicit media can enter shared discovery and albums.
+ const archiveAssets=()=>state.assets.filter(a=>['post','library'].includes(a.purpose)
+  &&a.review_status==='approved'&&!a.adult_restricted);
+ const privateAdultAssets=()=>state.member?.role==='owner'
+  ?state.assets.filter(a=>['post','library'].includes(a.purpose)
+    &&a.review_status==='approved'&&a.adult_restricted===true):[];
  const ownId=()=>state.user.id;
  const own=a=>a.owner_id===ownId();
  const favorited=id=>meta.favorites.some(x=>x.asset_id===id&&x.user_id===ownId());
@@ -119,6 +124,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   return arr;
  }
  function selectedAssets(){
+  if(meta.filter==='adult')return sortAssets(privateAdultAssets());
   if(meta.filter==='global')return [...archiveAssets()].sort((a,b)=>Date.parse(b.created_at)-Date.parse(a.created_at));
   if(meta.filter==='countries'){
    const codes=new Set(world.selectedCountryCodes());
@@ -555,7 +561,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   const list=selectedAssets(),album=albumFor(meta.activeAlbum);
   taste.renderInsights(list[0],meta.filter==='for-you'&&personalization?.enabled());
   renderMyCountries();
-  $('photosGalleryTitle').textContent=meta.filter==='global'?'Global Military Library · All Countries':meta.filter==='countries'
+  $('photosGalleryTitle').textContent=meta.filter==='adult'?'PRIVATE ADULT ARCHIVE · OWNER ONLY':meta.filter==='global'?'Global Military Library · All Countries':meta.filter==='countries'
    ?'My Countries · '+(world.selectedCountryCodes().map(c=>world.countryName(c)).join(' + ')||'Select Countries')
    :meta.filter==='for-you'?'For You · Personalized Military Media'
    :world.title()||(album?album.title:(meta.scope==='mine'?'My Military Media':'Network Military Media'));
@@ -621,8 +627,9 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  }
  function render(){
   const all=archiveAssets().filter(a=>meta.scope==='network'||own(a));
-  $('photoCountMetric').textContent=all.filter(a=>a.kind==='photo').length;
-  $('videoCountMetric').textContent=all.filter(a=>a.kind==='video').length;
+  const withPrivate=all.concat(privateAdultAssets());
+  $('photoCountMetric').textContent=withPrivate.filter(a=>a.kind==='photo').length;
+  $('videoCountMetric').textContent=withPrivate.filter(a=>a.kind==='video').length;
   $('albumCountMetric').textContent=allAlbums().filter(a=>meta.scope==='network'||a.owner_id===ownId()).length;
   $('favoriteCountMetric').textContent=all.filter(a=>favorited(a.id)).length;
   for(const b of document.querySelectorAll('#militaryScope [data-military-scope]'))
@@ -714,7 +721,8 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
    toast('Unsupported file types or files over 45 MB were skipped. Use JPG, PNG, HEIC, GIF, MOV, or MP4.');
   }
   if(!supported.length)return;
-  const scanAfterUpload=$('aiAnalyzeOnUpload')?.checked===true;
+  // No automatic AI upload analysis: adult/explicit imagery may be present.
+  const scanAfterUpload=false;
   const uploadedPhotoIds=[];
   meta.uploading=true;
   const bar=$('applePhotoProgress'),fill=$('applePhotoMeterFill'),label=$('appleProgressLabel');
@@ -767,7 +775,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
    }
    await refresh();
    render();
-   toast((supported.length-failures-skippedDuplicates)+' uploaded, '+skippedDuplicates+' duplicate'+(skippedDuplicates===1?'':'s')+' skipped'+(failures?', '+failures+' failed':'')+'.');
+   toast((supported.length-failures-skippedDuplicates)+' privately uploaded for review, '+skippedDuplicates+' duplicates skipped'+(failures?', '+failures+' failed':'')+'. Nothing is published before approval.');
    if(scanAfterUpload&&uploadedPhotoIds.length){
     const newest=uploadedPhotoIds.map(item=>({asset:byId(item.id),file:item.file})).filter(item=>item.asset);
     if(newest.length){
@@ -980,6 +988,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  }
  function setup(){
   world.setup();
+  if($('bcAdultFilter'))$('bcAdultFilter').hidden=state.member?.role!=='owner';
   $('wfOpenCountryGallery').addEventListener('click',()=>{
    const selection=world.selectedCountryCodes();
    goToCountryPage({country_codes:selection.length?selection:['US']});
@@ -1069,5 +1078,6 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
    const group=sortAssets(archiveAssets().filter(x=>x.owner_id===a.owner_id&&x.kind===a.kind));
    const pos=group.findIndex(x=>x.id===a.id);
    return openViewer(group,pos<0?0:pos)
- },closeViewer,selectAlbum,getCurrentPhoto:()=>viewerCurrent(),getCountryCodes:()=>world.selectedCountryCodes()};
+ },closeViewer,selectAlbum,getCurrentPhoto:()=>viewerCurrent(),getCountryCodes:()=>world.selectedCountryCodes(),
+ openAIReview:a=>void ai.open(a)};
 }
