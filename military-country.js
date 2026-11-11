@@ -35,7 +35,7 @@ async function verify(){
  if(!auth.ok)throw Error("Your account is not authorized to view the Military Library.");
  const rpc=auth.member.role==="owner"?"corp_code_status":"corp_employee_code_status";
  const {data:status,error:gateError}=await client.rpc(rpc);
- if(gateError||status?.verified!==true)throw Error("Verify your Blackcell access pass, then reopen this country page.");
+ if(gateError||status?.verified!==true)throw Error("Your corporate session must be active to open this page.");
  state.user=auth.user;state.member=auth.member;
 }
 async function loadPages(){
