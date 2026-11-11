@@ -239,6 +239,9 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
   $('bcReviewReject').addEventListener('click',()=>void reject());
   $('bcReviewAI').addEventListener('click',()=>void applyAI());
   $('bcReviewCancel').addEventListener('click',resetEditor);
+  $('bcReviewAdult').addEventListener('change',e=>{
+   if(e.target.checked){$('bcReviewAlbum').value='unfiled';status('Adult-restricted media stays owner-only and cannot be filed in shared albums.')}
+  });
   void reload();
  }
  return {setup,refresh:reload};
