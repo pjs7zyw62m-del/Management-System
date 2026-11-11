@@ -1,0 +1,71 @@
+/* MILITARY LIBRARY / resource rails and one-vote-per-photo controls */
+body.bc-network #photosView .bc-military-resources{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:15px 0 20px
+}
+body.bc-network #photosView .bc-military-resources>a{
+ display:flex;flex-direction:column;gap:7px;min-width:0;
+ border:1px solid #353e48;border-radius:13px;
+ background:linear-gradient(135deg,#192129,#0a0e13);
+ padding:18px 19px;text-decoration:none;color:#e8edf2
+}
+body.bc-network #photosView .bc-military-resources>a:hover{
+ border-color:#b83a4e;background:linear-gradient(135deg,#252028,#0f1318)
+}
+body.bc-network #photosView .bc-military-resources>a>span{
+ color:#d15c70;font-size:9px;letter-spacing:.12em;font-weight:840
+}
+body.bc-network #photosView .bc-military-resources>a>strong{
+ font-size:clamp(14px,1.5vw,20px);font-weight:850;line-height:1.2;letter-spacing:-.025em
+}
+body.bc-network #photosView .bc-military-resources>a>small{
+ color:#a9b5c2;font-size:10px;line-height:1.55
+}
+body.bc-network .apple-photo-grid-item>.bc-gallery-photo-vote{
+ position:absolute!important;z-index:8!important;left:7px!important;bottom:8px!important;
+ min-width:0!important;max-width:calc(100% - 18px)!important;
+ width:auto!important;height:auto!important;min-height:29px!important;
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;
+ padding:5px 8px!important;border:1px solid #994251!important;
+ background:rgba(11,15,21,.84)!important;border-radius:8px!important;
+ color:#ecf0f5!important;font-size:9px!important;letter-spacing:.04em!important;
+ font-weight:820!important;white-space:nowrap!important;box-shadow:0 3px 16px #0008!important;
+ cursor:pointer!important
+}
+body.bc-network .apple-photo-grid-item>.bc-gallery-photo-vote .bc-vote-mark{
+ color:#ea6d7c!important;font-size:12px!important;line-height:1!important
+}
+body.bc-network .apple-photo-grid-item>.bc-gallery-photo-vote b{
+ font-variant-numeric:tabular-nums;border-radius:5px;
+ background:#263039;color:#eef2f5;padding:2px 5px;font-size:10px
+}
+body.bc-network .apple-photo-grid-item>.bc-gallery-photo-vote:hover,
+body.bc-network .apple-photo-grid-item>.bc-gallery-photo-vote.is-voted{
+ background:rgba(89,25,43,.93)!important;border-color:#e3576c!important
+}
+body.bc-network .apple-photo-grid-item>.bc-gallery-photo-vote:disabled{opacity:.65!important;cursor:wait!important}
+body.bc-network .apple-photo-viewer-actions .bc-viewer-vote-slot{
+ display:inline-flex;align-items:center;flex:none
+}
+body.bc-network .apple-photo-viewer-actions .bc-viewer-photo-vote{
+ display:inline-flex;align-items:center;gap:6px;
+ border:1px solid #8f3d4e;border-radius:9px;background:#221820;color:#f1eaef;
+ padding:9px 11px;min-height:35px;font-size:10px;font-weight:850
+}
+body.bc-network .apple-photo-viewer-actions .bc-viewer-photo-vote.is-voted{
+ border-color:#e0546c;background:#40212e
+}
+body.bc-network .apple-photo-viewer-actions .bc-viewer-photo-vote b{
+ color:#f4f6fa;padding:3px 5px;border-radius:5px;background:#090d13;font-size:10px
+}
+body.bc-network #applePhotosGallery .apple-justified-row .apple-photo-taste-entry{display:none!important}
+body.bc-network #photosView .bc-military-resources>a:focus-visible{
+ outline:2px solid #e45266;outline-offset:2px
+}
+@media(max-width:870px){
+ body.bc-network #photosView .bc-military-resources{grid-template-columns:1fr 1fr}
+}
+@media(max-width:570px){
+ body.bc-network #photosView .bc-military-resources{grid-template-columns:1fr}
+ body.bc-network #photosView .bc-military-resources>a{padding:14px 16px}
+ body.bc-network .apple-photo-grid-item>.bc-gallery-photo-vote{min-height:27px!important;padding:4px 6px!important;font-size:8px!important}
+}
