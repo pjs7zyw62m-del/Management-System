@@ -4,12 +4,14 @@ import {createMilitaryPhotoAI} from './corporate-military-ai.js?v=20261110-learn
 import {createPhotoTaste} from './corporate-photo-taste.js?v=20261110-trigger2';
 import {createPhotoPredict} from './corporate-photo-predict.js?v=20261110-pred1';
 import {createPhotoVoting} from './corporate-photo-votes.js?v=20261111-votes2';
+import {createPhotoZoom} from './corporate-photo-zoom.js?v=20261111-zoom1';
 export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadAsset,refresh,profile,openProfile,ensureSigned,switchView,personalization,rediscovery}){
  const $=id=>document.getElementById(id);
  const meta={albums:[],albumItems:[],favorites:[],activeAlbum:null,filter:'all',sort:'newest',query:'',
    scope:'mine',branch:'',category:'',era:'',editingAsset:null,
    viewerItems:[],viewerIndex:0,editingAlbum:null,uploading:false,renderCount:0,tastes:[],countryPages:[],countryPageId:null};
  const votes=createPhotoVoting({client,userId:()=>state.user.id,toast});
+ const zoom=createPhotoZoom({rediscovery,openPhoto:asset=>openViewer([asset],0)});
  const fileMax=45*1024*1024;
  const photoFormats=new Set(['image/jpeg','image/png','image/webp','image/gif','image/heic']);
  const videoFormats=new Set(['video/mp4','video/webm','video/quicktime','video/x-m4v']);
@@ -769,6 +771,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   rediscovery.startViewing(viewerCurrent());
  }
  function closeViewer(){
+  zoom.unmount();
   rediscovery.stopViewing();
   $('applePhotoViewer').hidden=true;document.body.style.overflow='';
   $('appleViewerStage').replaceChildren();
@@ -781,7 +784,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  }
  function renderViewer(){
   const a=viewerCurrent();if(!a)return;
-  const frame=$('appleViewerStage');frame.replaceChildren();
+  const frame=$('appleViewerStage');zoom.unmount();frame.replaceChildren();
   const u=mediaUrl(a);
   $('appleViewerFilename').textContent=a.filename;
   $('appleViewerMeta').textContent=nameOf(a)+' · '+size(a.bytes)+' · '+cat(a)+' · '+branch(a)+(a.military_country_code?' · '+world.countryName(a.military_country_code):'');
@@ -811,6 +814,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
     frame.append(img);
    }
   }else frame.append(make('p','empty-state','Original media is not available. Refresh the library to renew the secure link.'));
+  zoom.mount(a);
   // The Level 7 owner may curate network-shared assets into the owner's
   // own albums, without being able to edit, classify, or delete the source.
   $('appleViewerOwnerControls').hidden=!(own(a)||isAdmin());
@@ -825,7 +829,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   $('appleViewerDelete').hidden=!(isAdmin()&&a.purpose==='library');
   const film=$('appleViewerFilmstrip');film.replaceChildren();
   for(const [i,item] of meta.viewerItems.slice(0,70).entries()){
-   const thumb=press('',()=>{meta.viewerIndex=i;renderViewer()});
+   const thumb=press('',()=>changeViewer(i-meta.viewerIndex));
    thumb.classList.toggle('selected',meta.viewerIndex===i);
    const url=mediaUrl(item);
    if(item.kind==='photo'&&url){
@@ -1030,7 +1034,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   $('appleViewerStage').addEventListener('touchstart',e=>{touchStart=e.touches[0]?.clientX||0},{passive:true});
   $('appleViewerStage').addEventListener('touchend',e=>{
    const end=e.changedTouches[0]?.clientX||touchStart,delta=end-touchStart;
-   if(Math.abs(delta)>65)changeViewer(delta<0?1:-1);
+   if(Math.abs(delta)>65&&!zoom.blockSwipe())changeViewer(delta<0?1:-1);
   },{passive:true});
  }
  setup();
