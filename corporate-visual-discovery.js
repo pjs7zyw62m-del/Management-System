@@ -5,7 +5,7 @@
  */
 import {signatureFromImage,visualSimilarity,metadataSimilarity,candidateRegions,labelReasons}
  from './corporate-visual-match.js?v=20261111-vd1';
-export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,openPhoto,personalization}){
+export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,openPhoto,getCurrentPhoto,personalization}){
  const $=id=>document.getElementById(id);
  const overlay=$('visualDiscoveryOverlay'),stage=$('vdStage'),main=$('vdMainPhoto');
  const selectionNode=$('vdSelection');
@@ -256,15 +256,16 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    $('vdProcess').hidden=true;working=false;$('vdAnalyze').disabled=false;return;
   }
   const matches=[];
+  let nextIndex=0;
   const process=async()=>{
    while(true){
     if(request!==searchId||!inUse())return;
-    const index=done++;if(index>=candidates.length)return;
+    const index=nextIndex++;if(index>=candidates.length)return;
     const a=candidates[index];
     const score=await scoreCandidate(a,mode,sig,region);
     if(request!==searchId||!inUse())return;
     if(score){matches.push(score);if(score.pixel!==null)matchedPixels++}
-    percent(index+1,candidates.length);
+    percent(++done,candidates.length);
     if(index%4===0)await new Promise(r=>setTimeout(r,0));
    }
   };
@@ -340,9 +341,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   document.querySelectorAll('[data-open-visual-discovery]').forEach(el=>
    el.addEventListener('click',()=>open()));
   $('appleViewerVisualDiscovery')?.addEventListener('click',()=>{
-   const asset=typeof window.BLACKCELL_getCurrentVisualPhoto==='function'?
-    window.BLACKCELL_getCurrentVisualPhoto():null;
-   open(asset);
+   open(typeof getCurrentPhoto==='function'?getCurrentPhoto():null);
   });
   $('vdClose').addEventListener('click',close);
   overlay.addEventListener('click',e=>{if(e.target===overlay)close()});
