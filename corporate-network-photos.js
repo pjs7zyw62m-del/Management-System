@@ -766,8 +766,10 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   document.body.style.overflow='hidden';
   renderViewer();
   void rediscovery.recordView(viewerCurrent());
+  rediscovery.startViewing(viewerCurrent());
  }
  function closeViewer(){
+  rediscovery.stopViewing();
   $('applePhotoViewer').hidden=true;document.body.style.overflow='';
   $('appleViewerStage').replaceChildren();
  }
@@ -775,6 +777,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   const length=meta.viewerItems.length;if(!length)return;
   meta.viewerIndex=(meta.viewerIndex+step+length)%length;renderViewer();
   void rediscovery.recordView(viewerCurrent());
+  rediscovery.startViewing(viewerCurrent());
  }
  function renderViewer(){
   const a=viewerCurrent();if(!a)return;
