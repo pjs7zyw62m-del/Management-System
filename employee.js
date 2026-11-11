@@ -47,15 +47,13 @@ function noteActivity(){
 }
 function setVerified(isVerified,m){
  verified=isVerified;
- $('employeeCodePanel').hidden=true; // Employee access codes no longer required.
- $('sendSecurityEmailButton').hidden=isVerified;
  $('employeeCard').classList.toggle('codes-verified',isVerified);
  $('chatLink').hidden=!isVerified||m.can_chat!==true;
  $('networkLink').hidden=!isVerified;
  syncEmployeeMessenger(isVerified&&m.can_chat===true);
  $('employeeAccess').textContent=isVerified
-   ?(m.can_chat?'SECURITY VERIFIED · CHAT AUTHORIZED':'SECURITY VERIFIED · CHAT RESTRICTED')
-   :'IDENTITY ACTIVATED · CODE VERIFICATION REQUIRED';
+   ?(m.can_chat?'ACCOUNT ACTIVE · CHAT AUTHORIZED':'ACCOUNT ACTIVE · CHAT RESTRICTED')
+   :'ACCOUNT ACTIVATION REQUIRED';
  if(isVerified){lastActivity=Date.now();lastTouch=Date.now();}
 }
 async function load(reveal=false){
@@ -144,48 +142,6 @@ $('signin').addEventListener('submit',async e=>{
  finally{btn.disabled=false;btn.textContent='SIGN IN ↗'}
 });
 
-async function sendEmployeeSecurityEmail({resend=false}={}){
- const btn=$('sendSecurityEmailButton');
- btn.disabled=true;
- btn.textContent='SENDING SECURITY EMAIL…';
- clearError('employeeStatus');
- try{
-  const {data,error}=await client.functions.invoke('blackcell-send-employee-codes',{body:{resend}});
-  let detail=data;
-  if(error?.context&&typeof error.context.clone==='function'){
-   try{detail=await error.context.clone().json()}catch(_){}
-  }
-  if(error||detail?.ok!==true){
-   const reason=detail?.reason||'email_delivery_unavailable';
-   const message={
-    resend_api_key_not_configured:'Your account is activated. Automatic security-code email delivery is not configured yet. Contact your administrator.',
-    email_delivery_processing:'Security email processing is already underway. Check your inbox and try again shortly.',
-    email_delivery_limit_reached:'Too many email requests. Try again in an hour or contact your administrator.',
-    resend_daily_limit:'You have reached the limit of 3 replacement emails in 24 hours. Contact your administrator if you still cannot receive your codes.',
-    resend_cooldown:'For security, wait 2 minutes between code emails. Check your inbox and Spam folder first.',
-    account_not_activated:'Activate your account password before requesting security codes.',
-    email_delivery_rejected:'Your account is activated, but the email provider rejected the security-code message. Contact your administrator.',
-    email_sent_confirmation_pending:'Your email may have been delivered, but the confirmation is pending. Check your inbox before retrying.'
-   }[reason]||'Your account is activated, but the security-code email could not be sent. Contact your administrator.';
-   showError('employeeStatus',message);
-   return false;
-  }
-  showError('employeeStatus',detail.status==='security_email_already_sent'
-    ?'Your security-code email was already sent. Check your inbox, including Spam or Promotions.'
-    :detail.status==='security_email_resent'
-    ?'A replacement Blackcell security-code email has been sent. Use only the NEW 4-digit and 12-digit codes; earlier codes have been replaced.'
-    :'Your Blackcell Network Security Credentials email has been sent. Check your inbox for the 4-digit and 12-digit codes.');
-  return true;
- }catch(_){
-  showError('employeeStatus','Your account is activated, but the code email could not be requested. Check your connection or contact your administrator.');
-  return false;
- }finally{
-  btn.disabled=false;
-  btn.textContent='RESEND MY SECURITY EMAIL';
- }
-}
-$('sendSecurityEmailButton').addEventListener('click',()=>{void sendEmployeeSecurityEmail({resend:true})});
-
 $('activateButton').addEventListener('click',async()=>{
  const pwd=$('activationPassword').value;
  const confirmation=$('confirmPassword').value;
@@ -207,29 +163,6 @@ $('activateButton').addEventListener('click',async()=>{
   // Email/password activation is complete; no second security-code email is sent.
  }catch(_){showError('activationError','Activation unavailable. Check your connection.')}
  finally{btn.disabled=false;btn.textContent='ACTIVATE & REVEAL MY EMPLOYEE CARD'}
-});
-$('employeeCodeForm').addEventListener('submit',async e=>{
- e.preventDefault();
- const access=$('employeeAccessCode').value,security=$('employeeSecurityCode').value;
- clearError('employeeStatus');
- if(!/^[0-9]{4}$/.test(access)||!/^[0-9]{12}$/.test(security)){
-  showError('employeeStatus','Enter a 4-digit Access Code and a 12-digit Security Code.');
-  return;
- }
- const btn=$('verifyCodes');btn.disabled=true;btn.textContent='AUTHENTICATING…';
- try{
-  const {data,error}=await client.rpc('corp_employee_verify_codes',{p_access:access,p_security:security});
-  $('employeeAccessCode').value='';$('employeeSecurityCode').value='';
-  if(error||data?.ok!==true){
-   showError('employeeStatus',data?.reason==='temporarily_locked'
-    ?'Too many attempts. Security verification is locked for 15 minutes.'
-    :'Codes were not accepted. Check both codes with your administrator.');
-   return;
-  }
-  await load(false);
-  showError('employeeStatus','Security approved. Your employee chat is now available.');
- }catch(_){showError('employeeStatus','Security verification unavailable. Try again later.')}
- finally{btn.disabled=false;btn.textContent='AUTHENTICATE EMPLOYEE ACCESS ↗'}
 });
 window.addEventListener('message',event=>{
  if(event.origin!==location.origin||event.data?.type!=='blackcell-chat-activity')return;
