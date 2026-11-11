@@ -551,8 +551,8 @@ footer{height:36px;line-height:36px;padding:0;align-self:stretch;margin:0;white-
 </style>
 <link rel="stylesheet" href="corp-login-roles.css?v=20261109-roles1">
 <script src="corp-config.js" defer></script>
-<script type="module" src="corp-login.js?v=20261109-roles1"></script>
-<link rel="stylesheet" href="corp-adaptive-access.css?v=20261111-auth-slide1">
+<script type="module" src="corp-login.js?v=20261111-anchored-pass2"></script>
+<link rel="stylesheet" href="corp-adaptive-access.css?v=20261111-anchored-pass2">
 </head>
 <body>
 <header>
@@ -663,10 +663,10 @@ footer{height:36px;line-height:36px;padding:0;align-self:stretch;margin:0;white-
     var availableWidth=Math.max(1,window.innerWidth-32);
     var compact=window.matchMedia('(max-width: 950px)').matches;
     // Keep the sign-in center fixed. On wide screens scale only enough
-    // to fit the Level 7 pass to the right of the collapsed sign-in card.
+    // to fit a full-width Level 7 pass RIGHT of the anchored 445px sign-in.
     var scale=compact
       ?Math.min(1,availableWidth/445,availableHeight/660)
-      :Math.min(1,availableHeight/660,(window.innerWidth/2-16)/575);
+      :Math.min(1,availableHeight/660,(window.innerWidth/2-16)/675);
     stage.style.setProperty('--blackcell-stage-scale',String(Math.max(.35,scale)));
   }
   window.addEventListener('resize',fit,{passive:true});
