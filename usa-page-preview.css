@@ -385,3 +385,151 @@ body.usa-revamp .usa-hero .hero-buttons .secondary-route:hover{background:#fffff
 @media(prefers-reduced-motion:reduce){
  .usa-revamp .viewfinder-photo img,.usa-revamp .daily-feedback button{transition:none}
 }
+
+
+
+/* SIX SERVICES · DYNAMIC BENTO DIRECTORY / approved reference v3
+   One large featured military branch, two 50% cards and three 33% cards.
+   The featured branch changes on click without requiring React/Tailwind. */
+.usa-revamp .branch-section{max-width:1280px;margin:0 auto;padding:10px 0 12px}
+.usa-revamp .branch-section .section-intro{align-items:end;margin-bottom:29px}
+.usa-revamp .branch-section .section-intro h2{
+ font-size:clamp(36px,4.5vw,54px);font-weight:900;letter-spacing:-.055em;
+ color:#f5f4f6;text-transform:uppercase
+}
+.usa-revamp .branch-section .section-intro p{max-width:720px;color:#8e8c94;font-size:13px}
+.usa-revamp .services-bento{
+ display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+ align-items:stretch;gap:20px;min-height:360px;
+}
+.usa-revamp .bento-featured{
+ position:relative;display:flex;flex-direction:column;justify-content:space-between;
+ text-align:left;isolation:isolate;min-width:0;min-height:360px;overflow:hidden;
+ padding:28px;border-radius:16px;
+ border:1px solid #C83E4D9c;
+ background:radial-gradient(ellipse at 52% 45%,#343338,#131113 65%);
+ color:#fff;box-shadow:0 0 40px #C83E4D26;
+ transition:border-color .27s,transform .27s,box-shadow .27s;
+ cursor:pointer;
+}
+.usa-revamp .bento-featured:hover{
+ transform:translateY(-2px);border-color:#C83E4D;
+ box-shadow:0 0 48px #C83E4D35;
+}
+.usa-revamp .bento-featured-image{
+ position:absolute;inset:0;z-index:-2;width:100%;height:100%;
+ object-fit:cover;filter:grayscale(100%) contrast(1.22);
+ opacity:.62;transition:transform .5s,opacity .5s
+}
+.usa-revamp .bento-featured:hover .bento-featured-image{transform:scale(1.05);opacity:.77}
+.usa-revamp .bento-featured-shade{
+ position:absolute;inset:0;z-index:-1;pointer-events:none;
+ background:linear-gradient(0deg,#000f 0%,#0008 43%,#0005 100%);
+}
+.usa-revamp .bento-topline{
+ display:flex;justify-content:space-between;align-items:center;gap:12px;
+ color:#cac6cb;font-size:11px;font-weight:700;letter-spacing:.2em;
+ font-family:ui-monospace,SFMono-Regular,Consolas,monospace;
+}
+.usa-revamp .bento-topline>span:last-child{font-size:20px;line-height:1;transition:transform .2s}
+.usa-revamp .bento-featured:hover .bento-topline>span:last-child{transform:translate(3px,-3px)}
+.usa-revamp .bento-bottomline{
+ display:flex;align-items:end;justify-content:space-between;gap:15px;width:100%
+}
+.usa-revamp .bento-featured-text{display:flex;flex-direction:column;align-items:flex-start;min-width:0;gap:7px}
+.usa-revamp .bento-personnel{
+ color:#e75a70;font-size:11px;font-weight:800;letter-spacing:.19em;
+ font-family:ui-monospace,SFMono-Regular,Consolas,monospace
+}
+.usa-revamp .bento-featured-text strong{
+ font-size:clamp(25px,3.1vw,42px);font-weight:900;
+ letter-spacing:-.05em;line-height:1.05;max-width:100%;
+ overflow-wrap:anywhere;text-transform:uppercase
+}
+.usa-revamp .bento-explore{
+ display:flex;align-items:center;gap:10px;margin-top:8px;
+ color:#d2c9ce;font-size:11px;letter-spacing:.16em;font-weight:800;
+ font-family:ui-monospace,SFMono-Regular,Consolas,monospace
+}
+.usa-revamp .bento-featured-count{
+ flex:none;padding:9px 13px;border-radius:99px;background:#C83E4D;color:#fff;
+ font-size:11px;font-weight:850;letter-spacing:.09em;white-space:nowrap
+}
+.usa-revamp .bento-featured-count.empty{
+ background:#ffffff17;color:#bcb8c0;border:1px solid #ffffff26
+}
+.usa-revamp .bento-secondary{
+ display:grid;grid-template-columns:repeat(6,minmax(0,1fr));
+ grid-template-rows:repeat(2,minmax(0,1fr));gap:20px;min-width:0
+}
+.usa-revamp .bento-small{
+ grid-column:span 2;display:flex;flex-direction:column;justify-content:space-between;
+ min-width:0;min-height:168px;padding:20px;
+ text-align:left;border-radius:16px;border:1px solid #ffffff1a;
+ background:#121012;color:#f6f5f7;
+ transition:border-color .22s,background .22s,transform .22s;
+ cursor:pointer;
+}
+.usa-revamp .bento-small:nth-child(-n+2){grid-column:span 3}
+.usa-revamp .bento-small:hover{border-color:#ffffff43;background:#1a1417;transform:translateY(-2px)}
+.usa-revamp .bento-small.has-photos{
+ border-color:#C83E4D58;background:#171114
+}
+.usa-revamp .bento-small.has-photos:hover{border-color:#C83E4Db0}
+.usa-revamp .bento-small-top{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;
+ color:#88828c;font-size:10px;font-weight:750;letter-spacing:.17em;
+ font-family:ui-monospace,SFMono-Regular,Consolas,monospace
+}
+.usa-revamp .bento-small-top>span:last-child{font-size:17px;line-height:1}
+.usa-revamp .bento-small-bottom{display:flex;flex-direction:column;gap:8px;min-width:0}
+.usa-revamp .bento-small-bottom strong{
+ display:block;color:#fff;font-size:clamp(15px,1.5vw,22px);
+ line-height:1.12;letter-spacing:-.04em;font-weight:900;text-transform:uppercase;
+ overflow-wrap:anywhere;
+}
+.usa-revamp .bento-small-footer{
+ display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
+ color:#797780;font-size:10px;letter-spacing:.09em;
+ font-family:ui-monospace,SFMono-Regular,Consolas,monospace
+}
+.usa-revamp .bento-small-count{
+ display:inline-block;flex:none;padding:6px 9px;border-radius:99px;
+ border:1px solid #ffffff1a;background:#ffffff09;color:#aaa8b0;
+ font-size:10px;letter-spacing:.04em;white-space:nowrap
+}
+.usa-revamp .bento-small.has-photos .bento-small-count{
+ border-color:#C83E4D6a;background:#C83E4D25;color:#ee8497
+}
+.usa-revamp .branch-footer{
+ display:flex;justify-content:space-between;align-items:center;gap:16px;
+ margin-top:22px;padding:20px 0 0;border-top:1px solid #ffffff19
+}
+.usa-revamp .branch-footer .component-link{
+ padding:12px 14px;background:#121012;border:1px solid #ffffff19;border-radius:12px;
+ color:#eee;font-size:11px;letter-spacing:.1em;
+}
+.usa-revamp .branch-footer .component-link:hover{border-color:#ffffff43}
+.usa-revamp .branch-footer-note{font-size:12px;color:#76727b}
+@media(max-width:1080px){
+ .usa-revamp .services-bento{grid-template-columns:minmax(0,1fr);gap:15px}
+ .usa-revamp .bento-featured{min-height:325px}
+ .usa-revamp .bento-secondary{gap:13px}
+ .usa-revamp .bento-small{min-height:160px}
+ .usa-revamp .bento-featured-text strong{font-size:clamp(30px,5vw,43px)}
+}
+@media(max-width:640px){
+ .usa-revamp .branch-section .section-intro{align-items:flex-start;gap:10px;flex-direction:column}
+ .usa-revamp .bento-featured{padding:22px;min-height:290px}
+ .usa-revamp .bento-featured-text strong{font-size:clamp(25px,7vw,36px)}
+ .usa-revamp .bento-featured-count{font-size:9px;padding:7px 10px}
+ .usa-revamp .bento-secondary{grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+ .usa-revamp .bento-small{grid-column:span 3;min-height:160px;padding:14px}
+ .usa-revamp .bento-small:nth-child(-n+2){grid-column:span 3}
+ .usa-revamp .bento-small:last-child{grid-column:span 6}
+ .usa-revamp .bento-small-bottom strong{font-size:clamp(15px,4vw,18px)}
+ .usa-revamp .branch-footer{align-items:flex-start}
+}
+@media(prefers-reduced-motion:reduce){
+ .usa-revamp .bento-featured,.usa-revamp .bento-small,.usa-revamp .bento-featured-image{transition:none!important}
+}
