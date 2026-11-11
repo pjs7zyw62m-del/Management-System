@@ -20,6 +20,7 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
   ['insignia','Insignia & patches',/insignia|rank|badge|patch|medals?|ribbons?/i]
  ];
  const DEFAULT=()=>({user_id:state.user?.id,enabled:false,personalize_feed:false,
+   rediscovery_enabled:false,rediscovery_frequency:'occasional',
    preferred_topics:[],muted_topics:[]});
  let current=DEFAULT(),tastes=[],favorites=new Set(),loaded=false,saving=false;
  const get=()=>({...current,preferred_topics:[...current.preferred_topics],muted_topics:[...current.muted_topics]});
@@ -99,7 +100,7 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
   const uid=state.user.id;
   const [options,reactions,liked]=await Promise.all([
    client.from('corp_social_personalization_settings')
-     .select('user_id,enabled,personalize_feed,preferred_topics,muted_topics')
+     .select('user_id,enabled,personalize_feed,rediscovery_enabled,rediscovery_frequency,preferred_topics,muted_topics')
      .eq('user_id',uid).maybeSingle(),
    client.from('corp_social_photo_tastes')
      .select('asset_id,rating,reaction,cues').eq('user_id',uid).limit(2000),
@@ -155,6 +156,8 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
   const modal=id('personalizationOverlay');if(!modal)return;
   id('personalizationEnabled').checked=enabled();
   id('personalizationFeedEnabled').checked=current.personalize_feed===true;
+  id('rediscoveryEnabled').checked=current.rediscovery_enabled===true;
+  id('rediscoveryFrequency').value=current.rediscovery_frequency==='rare'?'rare':'occasional';
   id('personalizationFeedback').textContent='';
   renderChoices();
   modal.hidden=false;
@@ -171,6 +174,8 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
    user_id:state.user.id,
    enabled:id('personalizationEnabled').checked,
    personalize_feed:id('personalizationFeedEnabled').checked,
+   rediscovery_enabled:id('rediscoveryEnabled').checked&&id('personalizationEnabled').checked,
+   rediscovery_frequency:id('rediscoveryFrequency').value==='rare'?'rare':'occasional',
    preferred_topics:TOPICS.filter(([key])=>
     document.querySelector('input[name="bc-topic-'+key+'"]:checked')?.value==='more').map(([key])=>key),
    muted_topics:TOPICS.filter(([key])=>
@@ -183,6 +188,11 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
      .upsert(options,{onConflict:'user_id'});
    if(error)throw error;
    current={...options};
+   if(!options.rediscovery_enabled){
+    const {error:clearError}=await client.from('corp_social_photo_rediscovery')
+     .delete().eq('user_id',state.user.id);
+    if(clearError)console.warn('Could not clear disabled rediscovery history:',clearError.message);
+   }
    updateButtons();
    const modal=id('personalizationOverlay');if(modal)modal.hidden=true;
    toast(enabled()?'Your private recommendations have been updated.':'Personalization is off for your account.');
@@ -201,9 +211,14 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
    const {data,error}=await client.from('corp_social_personalization_settings')
      .delete().eq('user_id',state.user.id).select('user_id');
    if(error)throw error;
+   const {error:clearError}=await client.from('corp_social_photo_rediscovery')
+    .delete().eq('user_id',state.user.id);
+   if(clearError)console.warn('Photo rediscovery history reset failed:',clearError.message);
    current=DEFAULT();updateButtons();renderChoices();
    id('personalizationEnabled').checked=false;
    id('personalizationFeedEnabled').checked=false;
+   id('rediscoveryEnabled').checked=false;
+   id('rediscoveryFrequency').value='occasional';
    id('personalizationFeedback').textContent='Your interests were reset. Photo ratings and favorites were kept.';
    toast('Your personal recommendation settings were reset.');
    if(typeof onChanged==='function')onChanged();
