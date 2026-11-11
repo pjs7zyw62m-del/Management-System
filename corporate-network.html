@@ -4,11 +4,12 @@
 <script src="corporate-chat-capabilities.js?v=20261109-large-media1"></script><meta name="theme-color" content="#030305"><title>BLACKCELL NETWORK | Corporate Social</title>
 <link rel="stylesheet" href="corporate-network.css?v=20261109-uncropped2">
 <link rel="stylesheet" href="corporate-network-photos.css?v=20261109-photos3">
+<link rel="stylesheet" href="corporate-storage-status.css?v=20261111-storage1">
 <link rel="stylesheet" href="corporate-network-military.css?v=20261109-military2">
 <link rel="stylesheet" href="corporate-chat-dock.css?v=20261109-floating-right2"><link rel="stylesheet" href="corporate-chat-bubble-dock.css?v=20261109-bubble-dock1"><link rel="stylesheet" href="corporate-chat-premium-dock.css?v=20261109-premium1">
 <link rel="stylesheet" href="corporate-chat-media-bubble-host.css?v=20261109-independent-media1"><link rel="stylesheet" href="corporate-chat-media-responsive.css?v=20261109-sidebyside2"><link rel="stylesheet" href="corporate-chat-media-flip-focus.css?v=20261109-flip-focus1">
 <script src="corporate-chat-media-bubble-host.js?v=20261109-large-media1" defer></script>
-<script src="corp-config.js" defer></script><script type="module" src="corporate-network.js?v=20261111-fullgallery2"></script><link rel="stylesheet" href="corp-adaptive-layout.css?v=20261109-device2">
+<script src="corp-config.js" defer></script><script type="module" src="corporate-network.js?v=20261111-storage1"></script><link rel="stylesheet" href="corp-adaptive-layout.css?v=20261109-device2">
 <link rel="stylesheet" href="corp-adaptive-chat.css?v=20261109-device2">
 <link rel="stylesheet" href="corporate-network-feed-media.css?v=20261109-uncropped2">
 <link rel="stylesheet" href="corporate-chat-compact-media.css?v=20261109-mobile-gallery4">
@@ -226,6 +227,13 @@
         <div class="panel"><strong id="albumCountMetric">0</strong><span>ALBUMS</span></div>
         <div class="panel"><strong id="favoriteCountMetric">0</strong><span>FAVORITES</span></div>
       </div>
+      <section class="panel bc-storage-status" aria-label="Private media storage health">
+        <div class="bc-storage-heading"><div><span class="overline">BLACKCELL / PRIVATE CLOUD</span><h3>Media Storage</h3></div><span id="bcStorageBadge" data-health="needs-attention">CHECK STATUS</span></div>
+        <div class="bc-storage-stats"><div><strong id="bcStorageFiles">—</strong><small>MEDIA RECORDS</small></div><div><strong id="bcStorageUsage">—</strong><small>STORED IN YOUR ACCESSIBLE GALLERY</small></div><div><strong>45 MB</strong><small>CURRENT PER-FILE LIMIT</small></div></div>
+        <p id="bcStorageMessage" role="status" aria-live="polite">Checking your private media storage connection…</p>
+        <div class="bc-storage-buttons"><button id="bcStorageRefresh" type="button">◉ CHECK STORAGE</button><button id="bcStorageTest" type="button">✓ TEST UPLOAD &amp; RETRIEVAL</button></div>
+        <small class="bc-storage-note">This shows accessible files, not your purchased storage allowance. The test creates a tiny temporary image, verifies a private download, and deletes it. Larger storage capacity is controlled by your provider and billing plan.</small>
+       </section>
       <section class="military-subject-section"><div class="photos-section-head"><div><div class="overline">MILITARY INDEX</div><h2>Browse by Subject</h2></div><span>Only media available within your authorized network</span></div><div id="militaryCategoryTiles" class="military-category-grid"></div></section>
       <details class="military-upload-settings panel" id="militaryUploadSettings"><summary>CLASSIFY NEW UPLOADS <span>BRANCH · SUBJECT · ERA · UNIT</span></summary><div class="military-upload-fields">
         <label>COUNTRY<select id="militaryUploadCountry"><option value="">Not specified</option></select></label><label>BRANCH<select id="militaryUploadBranch"><option value="Unspecified">Unspecified</option><option value="Army">Army</option><option value="Navy">Navy</option><option value="Marine Corps">Marine Corps</option><option value="Air Force">Air Force</option><option value="Space Force">Space Force</option><option value="Coast Guard">Coast Guard</option><option value="National Guard">National Guard</option><option value="Special Operations">Special Operations</option><option value="Joint / Multinational">Joint / Multinational</option><option value="Other">Other</option><option value="Naval Infantry">Naval Infantry / Marines</option></select></label>
