@@ -216,14 +216,8 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   },'apple-photo-heart'+(favorited(a.id)?' liked':''));
   heart.setAttribute('aria-label',(favorited(a.id)?'Remove favorite':'Add favorite')+' '+a.filename);
   tile.append(heart);
-  if(a.kind==='photo'){
-   const marked=meta.tastes.find(t=>t.asset_id===a.id);
-   const action=press(marked?'✦ EDIT DETAILS':'✦ MARK WHAT I LIKE',event=>{
-    event.stopPropagation();taste.open(a)
-   },'apple-photo-taste-entry');
-   action.title='Highlight areas, label details, and tell Blackcell what catches your eye';
-   tile.append(action);
-  }
+  // Photo preferences are edited only after opening the full-size viewer.
+  // Keep thumbnails completely unobstructed (including on mouse hover).
   return tile;
  }
 
