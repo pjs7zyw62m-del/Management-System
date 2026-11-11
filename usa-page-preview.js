@@ -155,6 +155,24 @@ const SERVICES=[
  {id:"coast",code:"06 / MARITIME",name:"COAST GUARD",personnel:"COAST GUARDSMEN"}
 ];
 const branches={...Object.fromEntries(SERVICES.map(x=>[x.id,x.name])),guard:"NATIONAL GUARD"};
+const SERVICE_EMBLEMS=Object.freeze({
+ army:"https://commons.wikimedia.org/wiki/Special:FilePath/Emblem_of_the_United_States_Department_of_the_Army.svg?width=220",
+ marines:"https://commons.wikimedia.org/wiki/Special:FilePath/Seal_of_the_United_States_Marine_Corps.svg?width=220",
+ navy:"https://commons.wikimedia.org/wiki/Special:FilePath/Seal_of_the_United_States_Department_of_the_Navy.svg?width=220",
+ air:"https://commons.wikimedia.org/wiki/Special:FilePath/Seal_of_the_U.S._Air_Force.svg?width=220",
+ space:"https://commons.wikimedia.org/wiki/Special:FilePath/Seal_of_the_United_States_Space_Force.svg?width=220",
+ coast:"https://commons.wikimedia.org/wiki/Special:FilePath/Seal_of_the_United_States_Coast_Guard.svg?width=220",
+ guard:"https://commons.wikimedia.org/wiki/Special:FilePath/Seal_of_the_United_States_National_Guard.svg?width=220"
+});
+function serviceEmblem(id,small=false){
+ const img=document.createElement("img");
+ img.className=small?"bento-branch-emblem":"bento-featured-emblem";
+ img.alt=(branches[id]||"Military branch")+" emblem";
+ img.loading="lazy";img.decoding="async";
+ img.src=SERVICE_EMBLEMS[id]||"";
+ return img;
+}
+
 const photoCountByService=id=>galleryFor().filter(a=>branchOf(a)===id).length;
 function chooseInitialFeatured(){
  // Highest real photo count; use archive order to break ties, never placeholder counts.
@@ -173,6 +191,8 @@ function showFeaturedService(){
  const service=SERVICES.find(s=>s.id===state.featuredBranch)||SERVICES[0];
  const count=photoCountByService(service.id);
  $("featuredBranch").dataset.branch=service.id;
+ $("featuredBranchEmblem").src=SERVICE_EMBLEMS[service.id];
+ $("featuredBranchEmblem").alt=service.name+" emblem";
  $("featuredBranch").setAttribute("aria-label","View "+service.name+" photo archive");
  $("featuredBranch").setAttribute("aria-pressed",String(state.branch===service.id));
  $("featuredBranch").classList.toggle("active",state.branch===service.id);
@@ -199,11 +219,14 @@ function renderSecondaryServices(){
   const button=makeElement("button","bento-small");
   button.type="button";
   button.dataset.branch=item.id;
+  button.style.setProperty("--branch-accent",({army:"#b7a14d",marines:"#c83e4d",navy:"#3c82c9",air:"#6aa6ec",space:"#9386de",coast:"#e96e4d"})[item.id]||"#c83e4d");
   button.classList.toggle("has-photos",count>0);
   button.setAttribute("aria-pressed",String(state.branch===item.id));
   button.setAttribute("aria-label","Show "+item.name+" photo archive, "+count+" photos");
   const top=makeElement("span","bento-small-top");
-  top.append(makeElement("span","",item.code),makeElement("span","","↗"));
+  const topRight=makeElement("span","bento-small-emblem-wrap");
+  topRight.append(serviceEmblem(item.id,true),makeElement("span","bento-arrow","↗"));
+  top.append(makeElement("span","",item.code),topRight);
   const bottom=makeElement("span","bento-small-bottom");
   bottom.append(makeElement("strong","",item.name));
   const footer=makeElement("span","bento-small-footer");
