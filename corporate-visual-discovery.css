@@ -240,3 +240,10 @@ body.bc-network #vdCropMessage[hidden]{display:none!important}
  body.bc-network .bc-vd-head h2{font-size:21px!important}
  body.bc-network .bc-vd-close{min-width:41px;min-height:41px}
 }
+
+/* Accessible fallback when iOS touch selection is interrupted. */
+body.bc-network #vdQuickPick{display:none}
+@media(max-width:900px){
+ body.bc-network #vdQuickPick{display:inline-flex!important;align-items:center;justify-content:center;min-height:44px!important;background:#212933!important;border:1px solid #55616b!important}
+ body.bc-network #vdQuickPick:hover{border-color:#dd526b!important}
+}
