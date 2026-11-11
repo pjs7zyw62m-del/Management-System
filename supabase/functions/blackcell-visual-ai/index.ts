@@ -165,6 +165,12 @@ Deno.serve(async req=>{
   if(!count)return reply({ok:false,error:"AI photo index is empty. Select Index My Photos first.",code:"INDEX_REQUIRED"},409,origin);
   await useQuota(client,user.id,assetId,"search");
   const detail=await vision(preview,cropPrompt,cropSchema,"blackcell_visual_detail");
+  if(detail.uncertain||!objectGroup(detail.object)){
+   // Do not force-match a generic color patch to a different piece of gear.
+   return reply({ok:true,detected_item:cut(detail.object,90),
+    description:cut(detail.description,400),uncertain:true,indexed_photos:count,
+    results:[],method:"No reliable object identification"},200,origin);
+  }
   const queryText=[cut(detail.object,90),cut(detail.description,400)].filter(Boolean).join(". ");
   if(!queryText)return reply({ok:false,error:"No recognizable detail in selected region"},422,origin);
   const [v]=await embed(["Military photo item: "+queryText]);
