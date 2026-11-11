@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="corporate-chat-dock.css?v=20261109-floating-right2"><link rel="stylesheet" href="corporate-chat-bubble-dock.css?v=20261109-bubble-dock1"><link rel="stylesheet" href="corporate-chat-premium-dock.css?v=20261109-premium1">
 <link rel="stylesheet" href="corporate-chat-media-bubble-host.css?v=20261109-independent-media1"><link rel="stylesheet" href="corporate-chat-media-responsive.css?v=20261109-sidebyside2"><link rel="stylesheet" href="corporate-chat-media-flip-focus.css?v=20261109-flip-focus1">
 <script src="corporate-chat-media-bubble-host.js?v=20261109-large-media1" defer></script>
-<script src="corp-config.js" defer></script><script type="module" src="corporate-network.js?v=20261111-voted-trigger4"></script><link rel="stylesheet" href="corp-adaptive-layout.css?v=20261109-device2">
+<script src="corp-config.js" defer></script><script type="module" src="corporate-network.js?v=20261111-vd1"></script><link rel="stylesheet" href="corp-adaptive-layout.css?v=20261109-device2">
 <link rel="stylesheet" href="corp-adaptive-chat.css?v=20261109-device2">
 <link rel="stylesheet" href="corporate-network-feed-media.css?v=20261109-uncropped2">
 <link rel="stylesheet" href="corporate-chat-compact-media.css?v=20261109-mobile-gallery4">
@@ -27,6 +27,7 @@
 <link rel="stylesheet" href="corporate-network-personalization.css?v=20261111-personal3">
 <link rel="stylesheet" href="corporate-photo-rediscovery.css?v=20261111-card-pointer3">
 <link rel="stylesheet" href="corporate-photo-zoom.css?v=20261111-zoom1">
+<link rel="stylesheet" href="corporate-visual-discovery.css?v=20261111-vd1">
 </head>
 <body class="bc-network">
 <header class="masthead">
@@ -62,6 +63,7 @@
         <button type="button" data-library-jump="militaryCategoryTiles"><span>▦</span> Browse by Subject</button>
         <button type="button" data-library-jump="appleAlbumStrip"><span>▤</span> Albums</button>
         <button type="button" data-library-jump="libraryMediaBrowse"><span>▧</span> My Military Media</button>
+        <button type="button" data-open-visual-discovery class="bc-vd-submenu-entry"><span>⌖</span> Visual Discovery</button>
         <button type="button" data-library-filter="for-you" data-library-jump="libraryMediaBrowse"><span>✦</span> For You</button>
         <button type="button" data-library-filter="countries" data-library-jump="libraryMediaBrowse"><span>◎</span> My Country Pages</button>
         <button type="button" data-library-jump="libraryMediaBrowse" data-library-focus="militaryFilterBranch"><span>≡</span> Branch / Subject / Era</button>
@@ -401,7 +403,7 @@
 </div>
 <div id="applePhotoViewer" class="apple-photo-viewer" hidden role="dialog" aria-modal="true" aria-label="Apple Photos style viewer">
  <div class="apple-photo-viewer-header"><div><strong id="appleViewerFilename">Media</strong><small id="appleViewerMeta">ORIGINAL QUALITY</small></div>
-   <div class="apple-photo-viewer-actions"><button id="appleViewerFavorite" title="Favorite this media" type="button">♡</button><span id="appleViewerVoteSlot" class="bc-viewer-vote-slot" aria-label="Photo voting"></span><button id="appleViewerTaste" type="button" hidden>✦ WHAT CAUGHT YOUR EYE?</button><button id="appleViewerPredict" type="button" hidden>◎ PREDICT MY INTEREST</button><button id="appleViewerOriginal" type="button">↗ FULL PHOTO</button>
+   <div class="apple-photo-viewer-actions"><button id="appleViewerFavorite" title="Favorite this media" type="button">♡</button><span id="appleViewerVoteSlot" class="bc-viewer-vote-slot" aria-label="Photo voting"></span><button id="appleViewerTaste" type="button" hidden>✦ WHAT CAUGHT YOUR EYE?</button><button id="appleViewerPredict" type="button" hidden>◎ PREDICT MY INTEREST</button><button id="appleViewerVisualDiscovery" type="button" title="Select a detail to find similar photos">⌖ VISUAL DISCOVERY</button><button id="appleViewerOriginal" type="button">↗ FULL PHOTO</button>
     <button id="appleViewerDownload" type="button">↓ DOWNLOAD</button><button id="appleViewerClose" class="close-x" type="button" aria-label="Close viewer">✕</button></div></div>
  <div class="apple-photo-viewer-stage">
  <div id="appleZoomControls" class="bc-photo-zoom-controls" role="group" aria-label="Full photo zoom controls" hidden>
@@ -512,6 +514,54 @@
    <p id="personalizationFeedback" role="status" aria-live="polite" class="bc-personalize-feedback"></p>
   </div>
   <footer><button id="personalizationReset" type="button" class="bc-personalize-reset">RESET MY INTERESTS</button><div><button id="personalizationCancel" type="button">CANCEL</button><button id="personalizationSave" type="button" class="bc-personalize-save">SAVE MY PREFERENCES</button></div></footer>
+ </section>
+</div>
+
+<div id="visualDiscoveryOverlay" class="bc-vd-overlay" hidden>
+ <section class="bc-vd-dialog" role="dialog" aria-modal="true" aria-labelledby="vdTitle" aria-describedby="vdDescription">
+  <header class="bc-vd-head">
+   <div><small>BLACKCELL / MILITARY LIBRARY / PRIVATE MEMBER EXPERIENCE</small>
+    <h2 id="vdTitle"><span>⌖</span> VISUAL DISCOVERY.</h2>
+    <p id="vdDescription">Select a detail in any military photograph. Discover related imagery from the actual Blackcell library.</p>
+   </div>
+   <button type="button" id="vdClose" class="bc-vd-close" aria-label="Close Visual Discovery">✕</button>
+  </header>
+  <div class="bc-vd-layout">
+   <div class="bc-vd-workspace">
+    <div class="bc-vd-bar"><strong id="vdFilename">CHOOSE A PHOTOGRAPH</strong><span id="vdSelectionHint">CLICK A DETAIL OR DRAG TO SELECT AN AREA</span></div>
+    <div id="vdStage" class="bc-vd-stage" role="group" aria-label="Select a region of the displayed military photograph" tabindex="0">
+     <img id="vdMainPhoto" alt="Selected Military Library photograph" draggable="false">
+     <div id="vdSelection" class="bc-vd-selection" hidden aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+     <div id="vdNoPhoto" class="bc-vd-stage-empty" hidden>Upload photographs to Military Library to start Visual Discovery.</div>
+    </div>
+    <div class="bc-vd-actions">
+     <button id="vdAnalyze" class="bc-vd-primary" type="button" disabled><span>⌖</span> FIND SIMILAR PHOTOS</button>
+     <button id="vdReset" type="button">CLEAR SELECTION</button>
+     <span class="bc-vd-privacy"><span class="bc-vd-led"></span> PRIVATE · IN-BROWSER VISUAL MATCHING</span>
+    </div>
+    <div class="bc-vd-source-head"><strong>SELECT A PHOTO TO EXPLORE</strong><span id="vdSourceCount"></span></div>
+    <div id="vdSourceStrip" class="bc-vd-source-strip" aria-label="Choose a military photograph"></div>
+   </div>
+   <aside class="bc-vd-side" aria-label="Visual Discovery analysis and recommendations">
+    <div class="bc-vd-step"><span>01 / SELECTION</span><strong>WHAT CAUGHT YOUR EYE?</strong></div>
+    <div class="bc-vd-selection-preview">
+     <canvas id="vdCropPreview" width="320" height="172" aria-label="Selected part of the photograph"></canvas>
+     <div id="vdCropMessage">Choose a uniform, tie, insignia, boots, pattern, or another detail.</div>
+    </div>
+    <label class="bc-vd-matching-label" for="vdMatchMode">FIND PHOTOS USING
+     <select id="vdMatchMode"><option value="hybrid">Appearance + military tags</option>
+      <option value="pixels">Color and texture</option><option value="tags">Military tags and context</option></select>
+    </label>
+    <div id="vdProcess" class="bc-vd-process" hidden>
+     <div class="bc-vd-process-top"><strong>SEARCHING BLACKCELL PHOTOS</strong><span id="vdProgressNumber">0%</span></div>
+     <div class="bc-vd-progress-track"><div id="vdProgressBar"></div></div>
+    </div>
+    <p id="vdStatus" class="bc-vd-status" role="status" aria-live="polite">Choose a photograph and select the detail you want to explore.</p>
+    <div class="bc-vd-results-head"><strong>SIMILAR PHOTOS <span id="vdResultCount"></span></strong><span id="vdResultMethod"></span></div>
+    <div id="vdResults" class="bc-vd-results"><div class="bc-vd-empty">Your results will appear here after you select an area.</div></div>
+    <p class="bc-vd-disclaimer">Matches use available visual characteristics and military classifications. This version does not identify objects, people, or clothing items by name. Likes improve private recommendations; they do not cast award votes.</p>
+   </aside>
+  </div>
  </section>
 </div>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
