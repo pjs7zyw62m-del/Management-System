@@ -12,7 +12,7 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
  let current=null,selection=null,dragStart=null,dragging=false,searchId=0,working=false;
  let previousFocus=null,previousOverflow='',reactions=new Map(),lastResults=[],resizeObserver=null;
  let sourceReady=false,looping=false,lastPointerSelectionAt=0,aiBusy=false,scanBusy=false,refineBusy=false;
- let clickPoint=null,votedIds=new Set(),webAvailable=false,webBusy=false;
+ let clickPoint=null,votedIds=new Set(),webAvailable=false,webBusy=false,samAvailable=false;
  const webSeen=new Set();
  const onPhone=()=>window.matchMedia('(hover: none) and (pointer: coarse)').matches || window.innerWidth<=600;
  const eligible=()=>state.assets.filter(a=>a.kind==='photo'&&['library','post'].includes(a.purpose)&&mediaUrl(a));
@@ -481,6 +481,8 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    if(features.error)problems.push('Photo index: '+features.error.message);
    if(ai.error||!ai.data?.ok)problems.push('AI endpoint: '+await functionError(ai.error,ai.data));
    webAvailable=!!ai.data?.capabilities?.web_discovery;
+   samAvailable=!!ai.data?.capabilities?.sam_segmentation;
+   $('vdRefine').title=samAvailable?'Meta SAM 3.1 point segmentation · uses API credits':'Approximate AI object selection · uses API credits';
    $('vdWebSearch').disabled=!webAvailable;
    $('vdWebSearch').title=webAvailable?'Discover external photos using Google Cloud Vision credits':
     'Not configured: add GOOGLE_VISION_KEY to Supabase Edge Function secrets';
@@ -555,13 +557,16 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
  }
  async function refineWithAI(){
   if(refineBusy||aiBusy||working||!sourceReady||!current||!selection||!clickPoint)return;
-  if(!confirm('Use AI to refine the object at your selected point? A resized copy of this photo will be processed by the vision provider and API credits may apply. This estimates an object box; it does not yet use SAM segmentation. Continue?'))return;
+  if(!confirm('Refine the item at your selected point? '+(samAvailable?'Meta SAM 3.1 will segment the item.':'The vision AI will estimate an object box.')+' A resized copy of this photo goes to the configured provider and API credits may apply. Continue?'))return;
   refineBusy=true;$('vdRefine').disabled=true;$('vdAISearch').disabled=true;
   try{
    status('AI identifying the clothing or equipment at your selected point…');
    const preview=jpegPreview(main);
+   const factor=Math.min(1,750/Math.max(main.naturalWidth,main.naturalHeight));
+   const dimensions={width:Math.max(1,Math.round(main.naturalWidth*factor)),
+    height:Math.max(1,Math.round(main.naturalHeight*factor))};
    const {data,error}=await client.functions.invoke('blackcell-visual-ai',{body:{
-    action:'refine',asset_id:current.id,preview,point:clickPoint
+    action:'refine',asset_id:current.id,preview,point:clickPoint,dimensions
    }});
    if(error||!data?.ok)throw Error(await functionError(error,data));
    if(data.uncertain||!data.bbox){
@@ -569,8 +574,8 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
     return;
    }
    selectRect(data.bbox);
-   status('Approximate AI selection: '+(data.detected_item||'visible item')+
-    '. Check the outlined area, then choose AI Find Same Item. This is not precise SAM segmentation.');
+   status((samAvailable?'SAM point selection: ':'Approximate AI selection: ')+(data.detected_item||'visible item')+
+    '. Check the outlined area, then choose AI Find Similar Detail.');
   }catch(e){status('AI refine unavailable: '+(e?.message||'Unknown error')+'. Manual selection is still available.')}
   finally{refineBusy=false;$('vdRefine').disabled=!selection||!sourceReady||working;
    $('vdAISearch').disabled=!selection||working||aiBusy}
