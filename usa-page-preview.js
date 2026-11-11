@@ -224,16 +224,6 @@ function renderSecondaryServices(){
   button.dataset.branch=item.id;
   button.style.setProperty("--branch-accent",({army:"#b7a14d",marines:"#c83e4d",navy:"#3c82c9",air:"#6aa6ec",space:"#9386de",coast:"#e96e4d"})[item.id]||"#c83e4d");
   button.classList.toggle("has-photos",count>0);
-  const cover=serviceCover(item.id);
-  if(cover){
-   const background=makeElement("img","bento-small-image");
-   background.src=state.urls.get(cover.id);
-   background.alt="";
-   background.loading="lazy";
-   background.decoding="async";
-   button.append(background,makeElement("span","bento-small-scrim"));
-   button.classList.add("has-cover");
-  }
   button.setAttribute("aria-pressed",String(state.branch===item.id));
   button.setAttribute("aria-label","Show "+item.name+" photo archive, "+count+" photos");
   const top=makeElement("span","bento-small-top");
@@ -284,6 +274,7 @@ function renderBranchCounters(){
   el.setAttribute("aria-pressed",String(state.branch==="guard"));
  });
  $("clearBranch").hidden=state.branch==="all";
+ $("allBranchCount").textContent=galleryFor().length+" PHOTO"+(galleryFor().length===1?"":"S");
  const allButton=$("viewAllBranches");
  allButton.classList.toggle("selected",state.branch==="all");
  allButton.setAttribute("aria-pressed",String(state.branch==="all"));
