@@ -4,7 +4,7 @@ import {createMilitaryPhotoAI} from './corporate-military-ai.js?v=20261110-learn
 import {createPhotoTaste} from './corporate-photo-taste.js?v=20261110-trigger2';
 import {createPhotoPredict} from './corporate-photo-predict.js?v=20261110-pred1';
 import {createPhotoVoting} from './corporate-photo-votes.js?v=20261111-votes2';
-export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadAsset,refresh,profile,openProfile,ensureSigned,switchView}){
+export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadAsset,refresh,profile,openProfile,ensureSigned,switchView,personalization}){
  const $=id=>document.getElementById(id);
  const meta={albums:[],albumItems:[],favorites:[],activeAlbum:null,filter:'all',sort:'newest',query:'',
    scope:'mine',branch:'',category:'',era:'',editingAsset:null,
@@ -123,7 +123,10 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
    return codes.size?archiveAssets().filter(a=>a.kind==='photo'&&codes.has(String(a.military_country_code||'').toUpperCase()))
     .sort((a,b)=>Date.parse(b.created_at)-Date.parse(a.created_at)):[];
   }
-  if(meta.filter==='for-you')return taste.rank(world.rank(archiveAssets()));
+  if(meta.filter==='for-you'){
+   const available=sortAssets(archiveAssets());
+   return personalization?.enabled()?personalization.rankAssets(taste.rank(world.rank(available))):available;
+  }
   let assets=meta.activeAlbum?albumMedia(albumFor(meta.activeAlbum)||{id:''})
    :archiveAssets().filter(x=>meta.scope==='network'||own(x));
   if(meta.filter==='photo')assets=assets.filter(x=>x.kind==='photo');
@@ -551,7 +554,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  function renderGallery(){
   const node=$('applePhotosGallery');node.replaceChildren();
   const list=selectedAssets(),album=albumFor(meta.activeAlbum);
-  taste.renderInsights(list[0],meta.filter==='for-you');
+  taste.renderInsights(list[0],meta.filter==='for-you'&&personalization?.enabled());
   renderMyCountries();
   $('photosGalleryTitle').textContent=meta.filter==='global'?'Global Military Library · All Countries':meta.filter==='countries'
    ?'My Countries · '+(world.selectedCountryCodes().map(c=>world.countryName(c)).join(' + ')||'Select Countries')
@@ -626,6 +629,8 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   for(const b of document.querySelectorAll('#militaryScope [data-military-scope]'))
    b.classList.toggle('selected',b.dataset.militaryScope===meta.scope);
   renderCategoryTiles();renderAlbums();renderGallery();world.renderWorld();
+  const note=$('personalizationGalleryNote');
+  if(note)note.hidden=!(meta.filter==='for-you'&&!personalization?.enabled());
  }
  async function toggleFavorite(id){
   const was=favorited(id);
