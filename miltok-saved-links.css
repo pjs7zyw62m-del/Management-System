@@ -1,0 +1,54 @@
+
+/* Private MilTok saved TikTok links: references only, no watermark removal. */
+.mt-sidebar-links button{display:block;width:100%;text-align:left;border:1px solid #8a3950;
+ background:linear-gradient(120deg,#311d29,#171c22);padding:12px 11px;border-radius:9px;
+ color:#eff2f6;font-weight:800;font-size:10px;letter-spacing:.055em;margin:0 0 6px}
+.mt-sidebar-links button:hover{background:#4b2533;border-color:#d0435a}
+.mt-saved-overlay[hidden]{display:none!important}
+.mt-saved-overlay{position:fixed;inset:0;z-index:110;background:rgba(0,1,4,.90);
+ backdrop-filter:blur(12px);display:grid;place-items:center;padding:15px}
+.mt-saved-dialog{display:flex;flex-direction:column;max-height:93dvh;width:min(950px,100%);
+ border:1px solid #45404b;border-radius:20px;overflow:hidden;
+ background:linear-gradient(145deg,#161c24,#080b11);box-shadow:0 40px 140px #000e}
+.mt-saved-header{padding:23px 26px 16px;display:flex;align-items:start;justify-content:space-between;gap:16px;border-bottom:1px solid #343d46}
+.mt-saved-header small{display:block;color:#e07487;font-size:9px;font-weight:800;letter-spacing:.16em}
+.mt-saved-header h2{font-size:clamp(23px,3.8vw,38px);letter-spacing:-.045em;margin:10px 0 7px}
+.mt-saved-header p{max-width:740px;color:#abb6c3;font-size:11px;line-height:1.7;margin:0}
+#mtSavedClose{border:1px solid #7a3848;background:#231923;color:#ebc7cf;border-radius:9px;min-width:40px;min-height:40px}
+.mt-saved-inner{padding:21px 26px;overflow-y:auto;overscroll-behavior:contain}
+.mt-saved-form{display:grid;gap:12px;padding:18px;border:1px solid #36404b;background:#0e141b;border-radius:14px}
+.mt-saved-form label{display:flex;flex-direction:column;gap:7px;color:#c7d0da;font-size:10px;font-weight:800;letter-spacing:.07em}
+.mt-saved-form input,.mt-saved-form textarea,.mt-saved-form select{
+ width:100%;min-width:0;border:1px solid #414c58;background:#080e14;color:#f1f3f5;border-radius:9px;
+ padding:12px;font-size:12px;font-weight:500;letter-spacing:0;resize:vertical}
+.mt-saved-fields{display:grid;grid-template-columns:1fr 2fr;gap:11px}
+.mt-saved-form>button{background:linear-gradient(125deg,#85263b,#bd3850);
+ border:1px solid #cb4a60;color:#fff;border-radius:10px;padding:13px 18px;font-size:11px;
+ font-weight:900;justify-self:start}
+.mt-saved-form>button:disabled{opacity:.6}
+.mt-saved-form>small{font-size:10px;color:#9caab8;line-height:1.65}
+.mt-saved-list-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:20px;
+ padding:0 3px 12px;color:#e9edf3;font-size:11px;letter-spacing:.095em}
+.mt-saved-list-head span{font-size:10px;color:#b7c0cb}
+.mt-saved-list{display:grid;gap:9px}
+.mt-saved-card{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;
+ border:1px solid #35404c;background:#10171f;border-radius:12px;padding:15px}
+.mt-saved-card-copy{display:flex;flex-direction:column;gap:6px;min-width:0}
+.mt-saved-card-copy strong{font-size:13px;overflow-wrap:anywhere}
+.mt-saved-card-copy small{font-size:10px;color:#9dabb9;overflow-wrap:anywhere}
+.mt-saved-card-branch{font-size:9px;color:#d07486;letter-spacing:.09em;font-weight:850}
+.mt-saved-card-actions{display:flex;gap:7px;flex-shrink:0}
+.mt-saved-card-actions a,.mt-saved-card-actions button{
+ border:1px solid #753848;border-radius:8px;padding:10px 11px;background:#261924;color:#f0e8ed;
+ font-size:10px;font-weight:800}
+.mt-saved-card-actions button{border-color:#48515b;background:#141b22;color:#acb7c4}
+.mt-saved-card-actions button:hover,.mt-saved-card-actions a:hover{border-color:#d74660}
+.mt-saved-empty{padding:21px 17px;border:1px dashed #46515d;border-radius:12px;
+ text-align:center;color:#afbac6;font-size:12px;line-height:1.7}
+.mt-saved-message{font-size:11px;color:#e0abb5;line-height:1.6;min-height:16px}
+@media(max-width:800px){.mt-sidebar-links{display:block}.mt-sidebar-links>a{display:none}
+ .mt-sidebar-links button{width:auto;margin:9px 0 0}
+ .mt-saved-inner{padding:14px}.mt-saved-header{padding:15px}
+ .mt-saved-card{align-items:stretch;flex-direction:column}
+ .mt-saved-card-actions{flex-wrap:wrap}.mt-saved-fields{grid-template-columns:1fr}
+ .mt-saved-form{padding:12px}}
