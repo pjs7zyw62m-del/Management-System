@@ -426,11 +426,12 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
   }).filter(Boolean);
   lastResults=mapped;
   renderResults(mapped);
-  $('vdResultMethod').textContent='AI SEMANTIC MATCH';
+  $('vdResultMethod').textContent='AI SAME-ITEM SEARCH';
   if(details?.detected_item)status('AI detected: '+details.detected_item+
    (details.uncertain?' (uncertain)':'')+' · '+mapped.length+' matches from '+details.indexed_photos+' indexed photos.');
-  if(!mapped.length)status('AI identified '+(details?.detected_item||'this detail')+
-   ', but found no indexed matches. Index more photographs to improve results.');
+  if(!mapped.length)status('AI identified '+(details?.detected_item||'the selected detail')+
+   ', but found no other indexed photo with a verified matching item. '+details?.indexed_photos+
+   ' photos are indexed. Index more of the collection or choose another detail.');
   if(onPhone()&&mapped.length)requestAnimationFrame(()=>$('vdResults').scrollIntoView({behavior:'smooth',block:'nearest'}));
  }
 
@@ -473,19 +474,32 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
  }
 
  async function findWithAI(){
-  if(aiBusy||!sourceReady||!current||!selection)return;
-  if(!confirm('AI visual search sends ONLY your selected photo detail to the configured vision provider and uses API credits. Continue?'))return;
+  if(aiBusy||!sourceReady||!current||!selection||working)return;
   aiBusy=true;$('vdAISearch').disabled=true;
-  status('AI recognizing the selected detail and searching indexed photographs…');
   try{
+   // Do not charge for a search that cannot return anything. First verify
+   // the searchable AI index exists (the old interface made this unclear).
+   const {count,error:countErr}=await client.from('corp_social_photo_features')
+    .select('asset_id',{count:'exact',head:true}).eq('feature_key','overall');
+   if(countErr)throw Error('Unable to read the AI photo index: '+countErr.message);
+   if(!count){
+    status('AI OBJECT SEARCH IS NOT READY: 0 photos indexed. Use INDEX 5 PHOTOS WITH AI at the top, approve the one-time batch, then search again. No AI search charge occurred.');
+    $('vdIndexStatus').textContent='AI INDEX EMPTY: none of the '+eligible().length+
+     ' photographs have been processed by the vision model. Choose INDEX 5 PHOTOS WITH AI (paid) to begin.';
+    $('vdAIIndex').scrollIntoView({behavior:'smooth',block:'nearest'});
+    return;
+   }
+   if(!confirm('AI will identify the selected clothing or equipment detail, then search '+count+
+    ' AI-indexed photographs for the SAME TYPE OF ITEM. The configured vision provider uses API credits. Continue?'))return;
+   status('AI identifying the actual item and searching '+count+' indexed photographs…');
    const cropped=jpegPreview(main,selection);
    const {data,error}=await client.functions.invoke('blackcell-visual-ai',{body:{
     action:'search',asset_id:current.id,preview:cropped
    }});
    if(error||!data?.ok)throw Error(await functionError(error,data));
    displayAI(data.results,data);
-  }catch(e){status('AI search unavailable: '+(e?.message||'Unknown issue')+
-   '. Existing color and military-tag search remains available.')}
+  }catch(e){status('AI object search could not finish: '+(e?.message||'Unknown issue')+
+   '. No item matches were verified.')}
   finally{aiBusy=false;$('vdAISearch').disabled=!selection||working||!sourceReady}
  }
  async function indexWithAI(){
@@ -496,7 +510,14 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    .select('asset_id').eq('feature_key','overall').limit(3000);
   if(lookupError){$('vdIndexStatus').textContent='Could not check indexed photos: '+lookupError.message;return}
   const existing=new Set((rows||[]).map(r=>r.asset_id));
-  const next=mine.filter(a=>!existing.has(a.id)).slice(0,5);
+  // Start with the photo being explored and other similarly classified
+  // photos, so the first small AI batch can actually help this search.
+  const next=mine.filter(a=>!existing.has(a.id)).sort((a,b)=>{
+   const weight=x=>(x.id===current?.id?100:0)+
+    (x.military_category&&x.military_category!=='Unsorted'&&x.military_category===current?.military_category?20:0)+
+    (x.military_branch&&x.military_branch!=='Unspecified'&&x.military_branch===current?.military_branch?5:0);
+   return weight(b)-weight(a);
+  }).slice(0,5);
   if(!next.length){$('vdIndexStatus').textContent='All your currently visible photographs are AI-indexed.';return}
   if(!confirm('INDEX '+next.length+' PHOTO'+(next.length===1?'':'S')+' WITH AI?\\n\\nBlackcell will send resized copies of these photographs to the configured vision provider and use paid API credits. This is not a background task. Proceed?'))return;
   aiBusy=true;
@@ -524,7 +545,8 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
     }
    }
    $('vdIndexStatus').textContent=done+' photos indexed with AI'+(failed?', '+failed+' failed':'')+
-    (failureMessages.length?' · FIRST ERROR: '+failureMessages[0]:' · Select a photo detail, then AI Identify & Match.');
+    (failureMessages.length?' · FIRST ERROR: '+failureMessages[0]:
+     ' · AI recognition is now available for indexed photographs. More batches increase coverage; choose AI Find Same Item on your selected detail.');
   }finally{aiBusy=false;btn.disabled=false}
  }
  async function scanDuplicates(){
