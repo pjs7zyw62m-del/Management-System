@@ -49,3 +49,26 @@ body.bc-network #photosView .apple-gallery-section #militaryFiltersReset{
 @media(max-width:760px){body.bc-network #photosView .apple-gallery-section .military-filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:480px){body.bc-network #photosView .apple-gallery-section .military-filters{grid-template-columns:1fr}body.bc-network #applePhotosGallery .apple-photo-month h3{font-size:12px}}
 @media(prefers-reduced-motion:reduce){body.bc-network #applePhotosGallery .apple-justified-row .apple-photo-grid-item{transition:none!important}}
+
+/* Photograph-first presentation: contextual tools never obscure whole images. */
+body.bc-network #applePhotosGallery .apple-justified-row .apple-photo-taste-entry{
+ opacity:0!important;pointer-events:none!important;
+ transition:opacity .16s ease!important;
+ max-width:calc(100% - 14px)!important;
+ overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important
+}
+body.bc-network #applePhotosGallery .apple-justified-row .apple-photo-grid-item:hover .apple-photo-taste-entry,
+body.bc-network #applePhotosGallery .apple-justified-row .apple-photo-grid-item:focus-within .apple-photo-taste-entry{
+ opacity:1!important;pointer-events:auto!important
+}
+body.bc-network #applePhotosGallery .apple-justified-row .apple-photo-grid-item .apple-photo-heart{
+ background:rgba(8,12,16,.70)!important
+}
+@media(hover:none){
+ body.bc-network #applePhotosGallery .apple-justified-row .apple-photo-taste-entry{
+  opacity:0!important;pointer-events:none!important
+ }
+ body.bc-network #applePhotosGallery .apple-justified-row .apple-photo-grid-item:focus-within .apple-photo-taste-entry{
+  opacity:1!important;pointer-events:auto!important
+ }
+}
