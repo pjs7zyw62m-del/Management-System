@@ -50,7 +50,7 @@ export function setupBlackcellLibraryBunnySync({client,toast}){
   running=true;stopRequested=false;repaint();
   progress.max=Math.max(1,info.approved_to_archive);
   progress.value=info.archived;
-  let verified=0;
+  let verified=0, failure="";
   for(const file of info.items){
    if(stopRequested)break;
    detail.textContent='Copying and verifying '+(verified+1)+' of '+info.remaining+': '+file.filename+
@@ -61,8 +61,9 @@ export function setupBlackcellLibraryBunnySync({client,toast}){
     verified++;
     progress.value=Math.min(progress.max,info.archived+verified);
    }catch(e){
-    detail.textContent='Stopped at '+file.filename+': '+issue(e)+
+    failure='Stopped at '+file.filename+': '+issue(e)+
       '. Completed files are safe in Bunny. Select SYNC again to retry the remaining files.';
+    detail.textContent=failure;
     break;
    }
   }
@@ -77,6 +78,8 @@ export function setupBlackcellLibraryBunnySync({client,toast}){
    }else if(wasStopped){
     detail.textContent='Paused. '+latest.archived+' verified in Bunny; '+latest.remaining+
       ' remaining. Select SYNC to resume.';
+   }else if(failure){
+    detail.textContent=failure+' '+latest.remaining+' photo(s) remain.';
    }else if(verified===info.items.length){
     detail.textContent=latest.remaining+' photos remain; select SYNC to continue the next group.';
    }
