@@ -215,9 +215,13 @@ export function setupBlackcellMediaDiagnostics({client,bucket,initialLoadMs=0}){
    try{
     const image=await loadImage(data.signedUrl);
     const duration=now()-t;
+    if(image.width>384||image.height>384){
+     return {state:'warn',detail:'IMAGE RESIZING NOT APPLIED — requested 320 × 320 but received '+
+      image.width+' × '+image.height+' after '+ms(duration)+
+      '. Your private image links work, but large originals are being sent instead of thumbnails. Check Supabase Storage → Settings → Enable Image Transformations (requires supported Supabase plan).'};
+    }
     return {state:duration>3200?'warn':'pass',
-     detail:'320-pixel private preview delivered and decoded · '+ms(duration)+
-     ' · image '+image.width+' × '+image.height};
+     detail:'Verified resized '+image.width+' × '+image.height+' private thumbnail delivered and decoded · '+ms(duration)};
    }catch(e){
     return {state:'warn',detail:'Optimized preview unavailable: '+short(e)+'. Existing gallery may need original-image fallback.'};
    }
