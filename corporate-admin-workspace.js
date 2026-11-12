@@ -151,7 +151,8 @@ export function createCorporateMediaWorkspace({onEnter,onRefresh,member}){
  const explainer=main.querySelector(':scope > .bc-media-admin-explainer');
  if(!introduction||!stats||!icloud||!explainer)throw Error('ADMIN_LAYOUT_SOURCE_MISSING');
  // Preserve metric IDs used by existing controllers.
- paneMap.get('overview').append(overview,stats);
+ paneMap.get('overview').append(overview);
+ overview.insertBefore(stats,actionHeading);
  paneMap.get('legacy').append(icloud,explainer);
  // Keep the originally approved intro and summary content available, but
  // show its data in the new hero and metric strip, not two huge hero blocks.
@@ -171,6 +172,8 @@ export function createCorporateMediaWorkspace({onEnter,onRefresh,member}){
 
  const btnToDanger=$('bcMediaReset');
  if(btnToDanger){
+  // Prevent clicking a destructive control before its protected handler is loaded.
+  btnToDanger.disabled=true;
   const danger=el('details','bc-workspace-danger');
   const summaryDanger=el('summary','','Danger Zone · Reset Media Library');
   const explanation=el('p','','This destructive action is separate from routine review. It permanently removes original Supabase files and associated records after multiple confirmations. Do not use it for performance troubleshooting or Bunny sync.');
