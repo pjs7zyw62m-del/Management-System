@@ -1,4 +1,5 @@
 import {createClient} from "npm:@supabase/supabase-js@2.119.0";
+import {S3Client,ListObjectsV2Command} from "npm:@aws-sdk/client-s3@3.856.0";
 
 /* BLACKCELL's private Backblaze B2 connection check.
    Never exposes credentials or media. Only the authenticated Level 7
@@ -10,7 +11,6 @@ const origins=new Set([
  "https://www.blackcellcorp.com",
  "https://pjs7zyw62m-del.github.io"
 ]);
-const encoder=new TextEncoder();
 function cors(origin:string|null):Record<string,string>{
  return {
   "Access-Control-Allow-Origin":origins.has(origin||"")?origin!:"https://blackcellcorp.com",
@@ -23,81 +23,49 @@ function cors(origin:string|null):Record<string,string>{
 function json(data:Record<string,unknown>,status:number,origin:string|null){
  return new Response(JSON.stringify(data),{status,headers:{"Content-Type":"application/json",...cors(origin)}});
 }
-const byteHex=(u:Uint8Array)=>Array.from(u,x=>x.toString(16).padStart(2,"0")).join("");
-async function sha256(input:string){
- return byteHex(new Uint8Array(await crypto.subtle.digest("SHA-256",encoder.encode(input))));
-}
-async function hmac(key:string|Uint8Array,message:string):Promise<Uint8Array>{
- const bytes=typeof key==="string"?encoder.encode(key):key;
- const cryptokey=await crypto.subtle.importKey("raw",bytes,{name:"HMAC",hash:"SHA-256"},false,["sign"]);
- return new Uint8Array(await crypto.subtle.sign("HMAC",cryptokey,encoder.encode(message)));
-}
+/* Standard AWS Signature V4 signing via the supported AWS SDK, rather than
+   constructing canonical requests by hand. No media or secret returned. */
 async function checkBucket(keyId:string,secret:string,bucket:string,endpoint:string){
- const target=new URL(endpoint);
- const match=/^s3\.([a-z0-9-]+)\.backblazeb2\.com$/i.exec(target.hostname);
+ const target=new URL(endpoint.trim());
+ const match=/^s3\\.([a-z0-9-]+)\\.backblazeb2\\.com$/i.exec(target.hostname);
  if(target.protocol!=="https:"||target.pathname!=="/"||target.search||target.hash||!match)
   return {ok:false,code:"INVALID_B2_ENDPOINT",detail:"Enter the S3 endpoint exactly as shown for your B2 bucket."};
+ bucket=bucket.trim();
  if(!/^[a-z0-9][a-z0-9.-]{4,62}$/.test(bucket))
   return {ok:false,code:"INVALID_B2_BUCKET",detail:"Confirm your bucket name."};
- const region=match[1],now=new Date();
- const amzDate=now.toISOString().replace(/[:-]|\.\d{3}/g,"");
- const day=amzDate.slice(0,8);
- const payloadHash=await sha256("");
- const path="/"+bucket;
- // Prefix must be at least as restrictive as the application's Backblaze key.
- const query="list-type=2&max-keys=1&prefix=blackcell-intake%2F";
- const canonicalHeaders="host:"+target.host+"\n"+
-  "x-amz-content-sha256:"+payloadHash+"\n"+
-  "x-amz-date:"+amzDate+"\n";
- const signedHeaders="host;x-amz-content-sha256;x-amz-date";
- const canonical=["GET",path,query,canonicalHeaders,signedHeaders,payloadHash].join("\n");
- const scope=day+"/"+region+"/s3/aws4_request";
- const toSign=["AWS4-HMAC-SHA256",amzDate,scope,await sha256(canonical)].join("\n");
- const kDay=await hmac("AWS4"+secret,day);
- const kRegion=await hmac(kDay,region);
- const kService=await hmac(kRegion,"s3");
- const kSigning=await hmac(kService,"aws4_request");
- const signature=byteHex(await hmac(kSigning,toSign));
- const authorization="AWS4-HMAC-SHA256 Credential="+keyId+"/"+scope+
-  ",SignedHeaders="+signedHeaders+",Signature="+signature;
- const url=target.origin+path+"?"+query;
- let response:Response;
+ const region=match[1];
+ const client=new S3Client({
+  endpoint:target.origin,
+  region,
+  credentials:{accessKeyId:keyId.trim(),secretAccessKey:secret.trim()},
+  forcePathStyle:true,
+  maxAttempts:1,
+  requestChecksumCalculation:"WHEN_REQUIRED",
+  responseChecksumValidation:"WHEN_REQUIRED"
+ });
  try{
-  response=await fetch(url,{method:"GET",headers:{
-   "Authorization":authorization,
-   "x-amz-content-sha256":payloadHash,
-   "x-amz-date":amzDate
-  },signal:AbortSignal.timeout(12000)});
- }catch(_){
-  return {ok:false,code:"B2_UNREACHABLE",detail:"Could not reach Backblaze. Try again shortly."};
- }
- if(!response.ok){
-  // Safe S3 error class only; never expose raw XML response, credentials, or request headers.
-  let raw="";
-  try{raw=(await response.text()).slice(0,4096)}catch(_){}
-  const code=/<(?:[a-zA-Z0-9_]+:)?Code>\s*([A-Za-z][A-Za-z0-9_-]{0,63})\s*<\/(?:[a-zA-Z0-9_]+:)?Code>/.exec(raw)?.[1]||"";
+  await client.send(new ListObjectsV2Command({Bucket:bucket,Prefix:"blackcell-intake/",MaxKeys:1}));
+  return {ok:true,connected:true,region,bucket,prefix:"blackcell-intake/",method:"aws-sdk-v3"};
+ }catch(e){
+  const err=e as {name?:string,$metadata?:{httpStatusCode?:number}};
   const known=new Set(["InvalidAccessKeyId","SignatureDoesNotMatch","AccessDenied","InvalidArgument","InvalidBucketName","NoSuchBucket","AuthorizationHeaderMalformed","InvalidRequest","RequestTimeTooSkewed"]);
-  const s3_code=known.has(code)?code:"Other";
+  const s3_code=known.has(String(err?.name||""))?String(err.name):"Other";
   const advice:Record<string,string>={
-   InvalidAccessKeyId:"Backblaze does not recognize this Key ID. In Supabase, verify BLACKCELL_B2_KEY_ID is the Key ID of your application key, not its name, bucket ID, or secret.",
-   SignatureDoesNotMatch:"The Key ID and secret Application Key do not match, or the signing settings are incorrect. Verify both were saved from the SAME Backblaze application key.",
-   AccessDenied:"Backblaze denied the ListObjectsV2 request for blackcell-intake/. Check that the application key is scoped to this exact bucket, has Read and Write access, and includes the blackcell-intake/ prefix.",
-   InvalidArgument:"Backblaze rejected one of the list request parameters.",
-   InvalidBucketName:"Backblaze rejected the bucket name. Check BLACKCELL_B2_BUCKET.",
-   NoSuchBucket:"Backblaze cannot find the configured bucket on this regional endpoint.",
-   AuthorizationHeaderMalformed:"Backblaze rejected the request's S3 authorization region or format.",
-   InvalidRequest:"Backblaze could not process the signed request.",
-   RequestTimeTooSkewed:"The server and Backblaze clocks are out of sync."
+   InvalidAccessKeyId:"Backblaze does not recognize this Key ID. Confirm it comes from your blackcell-media-import application key.",
+   SignatureDoesNotMatch:"Even with the standard AWS signer, Backblaze rejected the signature. Confirm the Key ID and the secret Application Key came from the SAME Backblaze key and were pasted without extra characters.",
+   AccessDenied:"Backblaze denied access to list the blackcell-intake/ prefix. Check the selected bucket and key's Read and Write permissions.",
+   InvalidArgument:"Backblaze rejected a request parameter. Confirm the bucket endpoint.",
+   InvalidBucketName:"Backblaze rejected the bucket name.",
+   NoSuchBucket:"The bucket is not found on the configured regional endpoint.",
+   AuthorizationHeaderMalformed:"Backblaze rejected the region or authorization format.",
+   InvalidRequest:"Backblaze rejected the S3 request.",
+   RequestTimeTooSkewed:"Backblaze reports a clock difference during signing."
   };
-  return {
-   ok:false,code:"B2_ACCESS_ERROR",s3_code,http_status:response.status,
-   detail:advice[s3_code]||"Backblaze rejected the signed bucket check (HTTP "+response.status+"). Confirm the endpoint, bucket, and S3 application key."
-  };
+  return {ok:false,code:"B2_ACCESS_ERROR",s3_code,http_status:Number(err?.$metadata?.httpStatusCode||0),
+   detail:advice[s3_code]||"Could not verify the Backblaze S3 connection. Check the key pair, bucket, and endpoint."};
+ }finally{
+  client.destroy();
  }
- const xml=await response.text();
- if(!xml.includes("ListBucketResult"))
-  return {ok:false,code:"B2_UNEXPECTED_RESPONSE",detail:"Backblaze returned an unexpected response."};
- return {ok:true,connected:true,region,bucket,prefix:"blackcell-intake/"};
 }
 Deno.serve(async request=>{
  const origin=request.headers.get("origin");
