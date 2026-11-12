@@ -7,6 +7,7 @@ import {createBlackcellMediaProcessor} from './corporate-media-processor.js?v=20
 import {setupBlackcellBulk} from './corporate-b2-bulk.js?v=20261111-cors2';
 import {setupBlackcellBunnyBulk} from './corporate-bunny-bulk.js?v=20261111-bunny-review1';
 import {setupBlackcellBunnyReview} from './corporate-bunny-review.js?v=20261111-bunny-review1';
+import {setupBlackcellLibraryBunnySync} from './corporate-bunny-library-sync.js?v=20261112-library-sync1';
 
 const $=id=>document.getElementById(id);
 const state={user:null,member:null,assets:[],bunnyWaitingCount:0};
@@ -222,6 +223,7 @@ async function boot(){
   setupIcloudTest();
   document.addEventListener('bc:bunny-staged-count',()=>void refreshCounts().catch(()=>{}));
   setupBlackcellBunnyReview({client,state,refresh:loadAssets,toast});
+  setupBlackcellLibraryBunnySync({client,toast});
   setupBlackcellBunnyBulk({client});
   setupBlackcellBulk({client,toast});
   $('bcBunnyCheck').addEventListener('click',()=>void checkBunny());
