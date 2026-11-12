@@ -115,3 +115,13 @@ footer{padding:20px 0 40px;margin-top:44px;border-top:1px solid #ffffff1b;color:
 @media(max-width:730px){header{height:72px;padding:0 14px}.shell{display:block;padding:0 14px}aside{height:auto;position:relative;padding:12px 0 0;border-right:0;overflow:visible}.sidebar-title,.side-note{display:none}.side-nav{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none}.side-nav a{flex:none;font-size:11px;border:1px solid #ffffff18;background:#ffffff07;padding:10px}.side-nav .glyph{font-size:15px;min-width:18px}.logo strong{font-size:9px}.logo small{font-size:8px}.header-tag{display:none}.logomark{width:36px;height:36px;font-size:22px}main{padding:30px 0 65px}.check-grid{grid-template-columns:1fr}.check p{min-height:0}.metrics{gap:9px}.metric{padding:15px;min-height:105px}.metric strong{font-size:30px}.filters{grid-template-columns:1fr 1fr}.filters input{grid-column:1/-1}.panel{padding:17px}.info-row .value{max-width:52%}}
 @media(max-width:480px){h1{font-size:38px}.formline{grid-template-columns:1fr}.toolbar-left,.toolbar-right{width:100%}.toolbar .btn{flex:1}.check{padding:17px}.item-controls{width:100%}.item-controls .btn{flex:1}.logo strong{letter-spacing:.07em}main{padding-top:23px}}
 @media(prefers-reduced-motion:reduce){.dot[data-state=checking]{animation:none}*{transition-duration:0ms!important;scroll-behavior:auto!important}}
+
+/* narrow mobile header: keep sign-out and back navigation usable */
+@media(max-width:490px){
+  header{gap:9px}
+  .logo span:last-child{display:none}
+  .logo{flex:none}
+  .head-actions{margin-left:auto;gap:7px}
+  .head-actions>a.btn{padding:10px;font-size:10px;white-space:nowrap}
+  .head-actions .icon{width:36px;height:36px;flex:none}
+}
