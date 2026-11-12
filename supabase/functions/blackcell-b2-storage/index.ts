@@ -147,7 +147,7 @@ async function importTestPhoto(photo:File,keyId:string,secret:string,bucket:stri
    if(Number(head.ContentLength)!==bytes.length)throw new Error("CHECKSUM_COLLISION");
    existing=true;
   }catch(e){
-   const err=e as {name?:string,$metadata?:{httpStatusCode?:number}};
+   const err=e as {name?:string,message?:string,$metadata?:{httpStatusCode?:number}};
    if(err?.message==="CHECKSUM_COLLISION")throw e;
    if(err.name!=="NotFound"&&err.name!=="NoSuchKey"&&Number(err.$metadata?.httpStatusCode)!==404)throw e;
   }
