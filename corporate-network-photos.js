@@ -5,12 +5,14 @@ import {createPhotoTaste} from './corporate-photo-taste.js?v=20261110-trigger2';
 import {createPhotoPredict} from './corporate-photo-predict.js?v=20261110-pred1';
 import {createPhotoVoting} from './corporate-photo-votes.js?v=20261111-votes2';
 import {createPhotoZoom} from './corporate-photo-zoom.js?v=20261111-pointer2';
+import {createPrivatePhotoThumbnails} from './corporate-photo-thumbnails.js?v=20261112-speed1';
 export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadAsset,refresh,profile,openProfile,ensureSigned,switchView,personalization,rediscovery,dedupe}){
  const $=id=>document.getElementById(id);
  const meta={albums:[],albumItems:[],favorites:[],activeAlbum:null,filter:'all',sort:'newest',query:'',
    scope:'mine',branch:'',category:'',era:'',editingAsset:null,
    viewerItems:[],viewerIndex:0,editingAlbum:null,uploading:false,renderCount:0,tastes:[],countryPages:[],countryPageId:null};
  const votes=createPhotoVoting({client,userId:()=>state.user.id,toast});
+ const thumbnails=createPrivatePhotoThumbnails({bucket,state});
  const zoom=createPhotoZoom({rediscovery,openPhoto:asset=>openViewer([asset],0)});
  const fileMax=45*1024*1024;
  const photoFormats=new Set(['image/jpeg','image/png','image/webp','image/gif','image/heic']);
@@ -182,7 +184,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
     if(a.kind==='video')cover.append(make('span','album-video-icon','▶'));
     else{
      const link=mediaUrl(a);
-     if(link){const image=make('img');image.src=link;image.alt=a.filename;image.loading='lazy';cover.append(image)}
+     if(link){const image=make('img');image.alt=a.filename;thumbnails.bind(image,a);cover.append(image)}
      else cover.append(make('span','album-video-icon','▧'));
     }
    }
@@ -211,8 +213,8 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   if(a.kind==='video'){
    open.append(make('span','apple-photo-video','▶'));
   }else if(link){
-   const img=make('img','apple-photo-thumb');img.src=link;
-   img.alt=a.caption||a.filename;img.loading='lazy';open.append(img);
+   const img=make('img','apple-photo-thumb');
+   img.alt=a.caption||a.filename;thumbnails.bind(img,a);open.append(img);
   }else open.append(make('span','apple-photo-video','▧'));
   open.append(make('span','apple-photo-label',a.caption||a.filename));
   open.title=(a.caption||a.filename)+' · '+cat(a)+' · '+branch(a)+' · '+nameOf(a);
@@ -862,7 +864,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
    thumb.classList.toggle('selected',meta.viewerIndex===i);
    const url=mediaUrl(item);
    if(item.kind==='photo'&&url){
-    const img=make('img');img.src=url;img.alt=item.filename;thumb.append(img);
+    const img=make('img');img.alt=item.filename;thumbnails.bind(img,item);thumb.append(img);
    }else thumb.append(make('span','',item.kind==='video'?'▶':'▧'));
    film.append(thumb);
   }
