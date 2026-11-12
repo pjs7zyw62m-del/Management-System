@@ -72,12 +72,26 @@ async function checkBucket(keyId:string,secret:string,bucket:string,endpoint:str
   return {ok:false,code:"B2_UNREACHABLE",detail:"Could not reach Backblaze. Try again shortly."};
  }
  if(!response.ok){
+  // Safe S3 error class only; never expose raw XML response, credentials, or request headers.
+  let raw="";
+  try{raw=(await response.text()).slice(0,4096)}catch(_){}
+  const code=/<(?:[a-zA-Z0-9_]+:)?Code>\s*([A-Za-z][A-Za-z0-9_-]{0,63})\s*<\/(?:[a-zA-Z0-9_]+:)?Code>/.exec(raw)?.[1]||"";
+  const known=new Set(["InvalidAccessKeyId","SignatureDoesNotMatch","AccessDenied","InvalidArgument","InvalidBucketName","NoSuchBucket","AuthorizationHeaderMalformed","InvalidRequest","RequestTimeTooSkewed"]);
+  const s3_code=known.has(code)?code:"Other";
+  const advice:Record<string,string>={
+   InvalidAccessKeyId:"Backblaze does not recognize this Key ID. In Supabase, verify BLACKCELL_B2_KEY_ID is the Key ID of your application key, not its name, bucket ID, or secret.",
+   SignatureDoesNotMatch:"The Key ID and secret Application Key do not match, or the signing settings are incorrect. Verify both were saved from the SAME Backblaze application key.",
+   AccessDenied:"Backblaze denied the ListObjectsV2 request for blackcell-intake/. Check that the application key is scoped to this exact bucket, has Read and Write access, and includes the blackcell-intake/ prefix.",
+   InvalidArgument:"Backblaze rejected one of the list request parameters.",
+   InvalidBucketName:"Backblaze rejected the bucket name. Check BLACKCELL_B2_BUCKET.",
+   NoSuchBucket:"Backblaze cannot find the configured bucket on this regional endpoint.",
+   AuthorizationHeaderMalformed:"Backblaze rejected the request's S3 authorization region or format.",
+   InvalidRequest:"Backblaze could not process the signed request.",
+   RequestTimeTooSkewed:"The server and Backblaze clocks are out of sync."
+  };
   return {
-   ok:false,code:"B2_ACCESS_ERROR",
-   http_status:response.status,
-   detail:response.status===401||response.status===403
-    ?"The bucket rejected these credentials or the blackcell-intake/ permission. Check Key ID, secret, bucket and endpoint."
-    :"Backblaze returned an unsuccessful response. Check the private bucket configuration."
+   ok:false,code:"B2_ACCESS_ERROR",s3_code,http_status:response.status,
+   detail:advice[s3_code]||"Backblaze rejected the signed bucket check (HTTP "+response.status+"). Confirm the endpoint, bucket, and S3 application key."
   };
  }
  const xml=await response.text();
@@ -92,7 +106,7 @@ Deno.serve(async request=>{
  // CORS is not authorization. Every request still requires a real user token.
  if(origin&&!origins.has(origin))return json({ok:false,code:"ORIGIN_NOT_ALLOWED"},403,origin);
  const bearer=request.headers.get("authorization")||"";
- if(!/^Bearer\s+\S+$/i.test(bearer))return json({ok:false,code:"UNAUTHORIZED"},401,origin);
+ if(!/^Bearer\s+\S+$/i.test(bearer))return json({ok:false,code:"UNAUTHORIZED",detail:"BLACKCELL login has expired. Sign in again."},401,origin);
  const token=bearer.replace(/^Bearer\s+/i,"").trim();
  const supabaseUrl=Deno.env.get("SUPABASE_URL")||"";
  const defaultPub=Deno.env.get("SUPABASE_ANON_KEY")||
@@ -108,10 +122,10 @@ Deno.serve(async request=>{
   .select("user_id,role,active,clearance_level")
   .eq("user_id",identity.data.user.id).eq("active",true).maybeSingle();
  if(memberError||!member||member.role!=="owner"||Number(member.clearance_level)!==7)
-  return json({ok:false,code:"OWNER_ONLY"},403,origin);
+  return json({ok:false,code:"OWNER_ONLY",detail:"A verified BLACKCELL Level 7 owner session is required."},403,origin);
  const verified=await db.rpc("corp_code_status");
  if(verified.error||verified.data?.ok!==true||verified.data?.verified!==true)
-  return json({ok:false,code:"SECURITY_SESSION_REQUIRED"},403,origin);
+  return json({ok:false,code:"SECURITY_SESSION_REQUIRED",detail:"Your BLACKCELL security-code session expired. Sign in to Administration and verify your access/security codes, then retry."},403,origin);
  let action="";
  try{
   const payload=await request.json();
