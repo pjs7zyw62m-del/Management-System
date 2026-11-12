@@ -94,7 +94,7 @@ Deno.serve(async(req:Request)=>{
   if(body.action==="status"){
     const {data,error}=await db.from("corp_social_assets")
       .select("id,owner_id,filename,bytes,source_provider,bunny_storage_path,review_status")
-      .eq("purpose","library").eq("kind","photo").order("created_at",{ascending:true}).limit(5000);
+      .in("purpose",["library","post"]).eq("kind","photo").order("created_at",{ascending:true}).limit(5000);
     if(error)return response({ok:false,code:"LIBRARY_QUERY_FAILED"},503,origin);
     if((data||[]).length>=5000)return response({ok:false,code:"LIBRARY_QUERY_TOO_LARGE"},422,origin);
     const manual=(data||[]).filter(x=>x.source_provider!=="bunny-private"&&x.review_status==="approved");
@@ -118,7 +118,7 @@ Deno.serve(async(req:Request)=>{
       .select("id,owner_id,purpose,kind,mime_type,storage_path,bytes,review_status,source_provider,bunny_storage_path")
       .eq("id",assetId).maybeSingle();
     if(assetError||!asset)return response({ok:false,code:"ASSET_NOT_FOUND"},404,origin);
-    if(asset.purpose!=="library"||asset.kind!=="photo"||asset.review_status!=="approved"||
+    if(!["library","post"].includes(asset.purpose)||asset.kind!=="photo"||asset.review_status!=="approved"||
        asset.source_provider==="bunny-private")
       return response({ok:false,code:"ASSET_NOT_ELIGIBLE"},422,origin);
     if(asset.bunny_storage_path)
