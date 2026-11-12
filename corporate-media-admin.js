@@ -8,7 +8,7 @@ import {setupBlackcellBulk} from './corporate-b2-bulk.js?v=20261112-diag1';
 import {setupBlackcellBunnyBulk} from './corporate-bunny-bulk.js?v=20261111-bunny-review1';
 import {setupBlackcellBunnyReview} from './corporate-bunny-review.js?v=20261111-bunny-review1';
 import {setupBlackcellLibraryBunnySync} from './corporate-bunny-library-sync.js?v=20261112-library-sync1';
-import {setupBlackcellMediaDiagnostics} from './corporate-media-diagnostics.js?v=20261112-diag1';
+import {setupBlackcellMediaDiagnostics} from './corporate-media-diagnostics.js?v=20261112-diag2';
 
 const $=id=>document.getElementById(id);
 const state={user:null,member:null,assets:[],bunnyWaitingCount:0};
