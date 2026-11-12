@@ -9,3 +9,22 @@
 .mf-approved-hotspots>button:hover{box-shadow:inset 0 0 0 2px #f4476844;background:linear-gradient(0deg,#e8243810,transparent 50%)}
 .mf-header{position:sticky;top:0}
 @media(prefers-reduced-motion:reduce){.mf-approved-hotspots>button{transition:none}}
+
+/* The six cards use their exact illustrations from the previously approved
+ * homepage instead of unrelated stock imagery. The original image bytes
+ * are not modified, cropped permanently, or sent to third-party services. */
+.mf-style-card{border-radius:19px!important;min-height:320px}
+.mf-style-card::before{
+ background-position:center 15%;
+ filter:brightness(.88) saturate(.9)!important;
+}
+.mf-style-card::after{
+ background:linear-gradient(0deg,#030306f9 0%,#050507a0 28%,transparent 69%)!important;
+}
+.mf-style-card.mf-style-military::before{background-image:url('assets/maf/approved-military.jpg')!important}
+.mf-style-card.mf-style-police::before{background-image:url('assets/maf/approved-law-enforcement.jpg')!important}
+.mf-style-card.mf-style-fire::before{background-image:url('assets/maf/approved-fire-rescue.jpg')!important}
+.mf-style-card.mf-style-medical::before{background-image:url('assets/maf/approved-emergency-medical.jpg')!important}
+.mf-style-card.mf-style-security::before{background-image:url('assets/maf/approved-corrections-security.jpg')!important}
+.mf-style-card.mf-style-professional::before{background-image:url('assets/maf/approved-professional-uniforms.jpg')!important}
+@media(max-width:600px){.mf-style-card{min-height:265px}}
