@@ -3,12 +3,13 @@
  * The same existing photo/video intake controller is mounted on an admin-only page.
  */
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-clearance5';
-import {createBlackcellMediaProcessor} from './corporate-media-processor.js?v=20261111-adminmove1';
+import {createBlackcellMediaProcessor} from './corporate-media-processor.js?v=20261111-bunny-review1';
 import {setupBlackcellBulk} from './corporate-b2-bulk.js?v=20261111-cors2';
-import {setupBlackcellBunnyBulk} from './corporate-bunny-bulk.js?v=20261111-bunny2';
+import {setupBlackcellBunnyBulk} from './corporate-bunny-bulk.js?v=20261111-bunny-review1';
+import {setupBlackcellBunnyReview} from './corporate-bunny-review.js?v=20261111-bunny-review1';
 
 const $=id=>document.getElementById(id);
-const state={user:null,member:null,assets:[]};
+const state={user:null,member:null,assets:[],bunnyWaitingCount:0};
 const client=corporateClient();
 const bucket=client.storage.from('corp-social-media');
 let processor=null,verifying=false,expires=false,toastTimeout=0;
@@ -62,7 +63,7 @@ async function refreshCounts(){
  ]);
  if(all.error||pending.error)throw new Error(all.error?.message||pending.error?.message);
  $('bcAdminAssetsCount').textContent=String(all.count??'—');
- $('bcAdminPendingCount').textContent=String(pending.count??'—');
+ $('bcAdminPendingCount').textContent=String(Number(pending.count||0)+Number(state.bunnyWaitingCount||0));
 }
 async function makePreview(a){
  if(a.kind!=='photo')throw new Error('Video AI classification is not available; review videos manually.');
@@ -219,6 +220,8 @@ async function boot(){
   processor=createBlackcellMediaProcessor({client,bucket,state,refresh:loadAssets,mediaUrl:()=>'',toast,openAIReview:makePreview});
   processor.setup();
   setupIcloudTest();
+  document.addEventListener('bc:bunny-staged-count',()=>void refreshCounts().catch(()=>{}));
+  setupBlackcellBunnyReview({client,state,refresh:loadAssets,toast});
   setupBlackcellBunnyBulk({client});
   setupBlackcellBulk({client,toast});
   $('bcBunnyCheck').addEventListener('click',()=>void checkBunny());
