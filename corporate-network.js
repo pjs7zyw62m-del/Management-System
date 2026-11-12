@@ -167,19 +167,27 @@ async function loadAll({show=true}={}){
   if(lr.error||cr.error)throw Error('Could not load network interactions.');
   state.likes=lr.data||[];state.comments=cr.data||[];
  }else{state.likes=[];state.comments=[]}
- await loadSigned();
- await photos.loadData();
+ // Media signing and library metadata do not depend on each other.
+ // Start both together so the photo wall opens sooner on mobile.
+ await Promise.all([loadSigned(),photos.loadData()]);
  if(show)renderAll();
 }
 async function loadSigned(){
  if(Date.now()-state.signedAt>25*60*1000){state.assetUrls.clear();state.signedAt=Date.now()}
  const all=state.assets.filter(a=>!state.assetUrls.has(a.id));
- for(let i=0;i<all.length;i+=30){
-  const group=all.slice(i,i+30);
-  const {data,error}=await bucket.createSignedUrls(group.map(a=>a.storage_path),1800);
-  if(error)continue;
-  for(let j=0;j<group.length;j++)if(data?.[j]?.signedUrl)state.assetUrls.set(group[j].id,data[j].signedUrl);
- }
+ // Avoid a serial waterfall of 30-file signing batches while keeping the
+ // number of concurrent private Storage requests bounded.
+ let offset=0;
+ const signNext=async()=>{
+  while(offset<all.length){
+   const start=offset;offset+=30;
+   const group=all.slice(start,start+30);
+   const {data,error}=await bucket.createSignedUrls(group.map(a=>a.storage_path),1800);
+   if(error)continue;
+   for(let j=0;j<group.length;j++)if(data?.[j]?.signedUrl)state.assetUrls.set(group[j].id,data[j].signedUrl);
+  }
+ };
+ await Promise.all(Array.from({length:Math.min(4,Math.ceil(all.length/30))},signNext));
 }
 function renderAll(){
  renderMini();renderSuggestions();
