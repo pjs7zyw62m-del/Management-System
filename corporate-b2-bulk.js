@@ -6,6 +6,7 @@ export function setupBlackcellBulk({client,toast}){
  const input=$('bcBulkFiles'),choose=$('bcBulkChoose'),start=$('bcBulkStart');
  const pause=$('bcBulkPause'),retry=$('bcBulkRetry'),queue=$('bcBulkQueue');
  const note=$('bcBulkNote'),stats=$('bcBulkStats'),meter=$('bcBulkMeter');
+ const corsButton=$('bcBulkCorsCheck'),corsStatus=$('bcBulkCorsResult');
  if(!input||!choose||!start||!pause||!queue)return;
  const jobs=[];let running=false,stopAfterFile=false,active=null;
  const MAX_FILE=50*1024**3;
@@ -23,6 +24,31 @@ export function setupBlackcellBulk({client,toast}){
   if(!result?.ok)throw new Error(result?.detail||'Private storage operation failed');
   return result;
  }
+ async function checkCors(){
+  if(!corsButton||!corsStatus)return;
+  corsButton.disabled=true;
+  corsStatus.textContent='Checking Backblaze browser upload permissions…';
+  corsStatus.dataset.cors='checking';
+  try{
+   const result=await invoke({action:'bulk-cors-check'});
+   if(result.cors_ok===true){
+    corsStatus.dataset.cors='pass';
+    corsStatus.textContent='✓ Browser PUT permission appears enabled. If an upload fails, send the exact file error.';
+   }else if(result.cors_ok===false){
+    corsStatus.dataset.cors='fail';
+    corsStatus.textContent='✕ Backblaze has not approved browser PUT uploads for blackcellcorp.com. A bucket admin must configure S3 CORS: origin https://blackcellcorp.com, method PUT, allowed header Content-Type, exposed header ETag. No new BLACKCELL storage key is needed.';
+    report('Bucket CORS is missing or incomplete. Avoid starting a large upload until this is corrected.','error');
+   }else{
+    corsStatus.dataset.cors='unknown';
+    corsStatus.textContent='Could not verify the CORS rule automatically. Try one file and read its detailed error.';
+   }
+  }catch(e){
+   corsStatus.dataset.cors='unknown';
+   corsStatus.textContent='Browser permission check unavailable: '+String(e?.message||e).slice(0,180);
+  }finally{corsButton.disabled=false;}
+ }
+ corsButton?.addEventListener('click',()=>void checkCors());
+
  // Hash each small chunk, then hash a size-bound manifest of chunk digests.
  // Deterministic over full bytes, with fixed 8 MiB chunking, without ever
  // allocating the entire video in memory. Named CHUNKED-SHA256-v1, not plain SHA256.
@@ -138,13 +164,18 @@ export function setupBlackcellBulk({client,toast}){
     catch(e){
      job.state='failed';job.error=String(e?.message||'Upload failed').slice(0,300);
      job.progress=0;
+     if(/Browser upload blocked or interrupted|did not expose the ETag/i.test(job.error)){
+      stopAfterFile=true;
+      report('Batch stopped after a browser upload permission/network error. Check B2 CORS before retrying; other files remain queued.','error');
+     }
      render();
     }
    }
    const remaining=jobs.filter(j=>!done(j)&&j.state!=='failed');
    const failures=jobs.filter(j=>j.state==='failed').length;
    const allFinished=jobs.length>0&&jobs.every(j=>done(j));
-   if(stopAfterFile)report('Paused between files. Your verified uploads are already saved. Select START to continue.');
+   if(stopAfterFile&&!jobs.some(j=>j.state==='failed'))report('Paused between files. Your verified uploads are already saved. Select START to continue.');
+   else if(stopAfterFile&&jobs.some(j=>j.state==='failed'))report('Stopped after the first browser upload error instead of failing the whole batch. Check B2 CORS and then retry.','error');
    else if(allFinished)report('✓ All selected media verified in Backblaze private storage. Nothing is published to your website.','success');
    else if(failures)report('Some files failed. Review errors below and select RETRY FAILED; your successful uploads remain saved.','error');
    else if(remaining.length)report('Ready to continue your selected batch.');
@@ -177,4 +208,5 @@ export function setupBlackcellBulk({client,toast}){
   e.preventDefault();e.returnValue='';
  });
  render();
+ void checkCors();
 }
