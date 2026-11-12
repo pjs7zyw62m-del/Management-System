@@ -238,7 +238,7 @@ async function enterWorkspace(tab){
   if(bunnyReady)return;
   const [{setupBlackcellBunnyBulk},{setupBlackcellLibraryBunnySync}]=await Promise.all([
    import('./corporate-bunny-bulk.js?v=20261112-command1'),
-   import('./corporate-bunny-library-sync.js?v=20261112-library-sync1')
+   import('./corporate-bunny-library-sync.js?v=20261112-library-sync2')
   ]);
   setupBlackcellBunnyBulk({client});
   setupBlackcellLibraryBunnySync({client,toast});
