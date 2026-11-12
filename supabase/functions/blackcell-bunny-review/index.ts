@@ -17,6 +17,8 @@ const accepted:Record<string,string>={
  webp:"image/webp",heic:"image/heic",mp4:"video/mp4",
  webm:"video/webm",mov:"video/quicktime",m4v:"video/x-m4v"
 };
+const mediaExtensions=new Set(["jpg","jpeg","png","gif","webp","heic","heif","avif","tif","tiff","bmp","mp4","mov","m4v","webm","avi","mkv","3gp"]);
+const videoExtensions=new Set(["mp4","mov","m4v","webm","avi","mkv","3gp"]);
 const origins=new Set(["https://blackcellcorp.com","https://www.blackcellcorp.com","https://pjs7zyw62m-del.github.io"]);
 const cors=(origin:string|null):Record<string,string>=>({
  "Access-Control-Allow-Origin":origins.has(origin||"")?origin!:"https://blackcellcorp.com",
@@ -61,7 +63,8 @@ function fileMeta(key:string,length:number){
  const name=parts(key)?.name||"";
  const ext=name.split(".").at(-1)?.toLowerCase()||"";
  const mime=accepted[ext]||"";
- return {key,filename:original(name),bytes:Number(length)||0,kind:ext in accepted?mime.startsWith("video/")?"video":"photo":"unknown",
+ return {key,filename:original(name),bytes:Number(length)||0,
+  kind:mediaExtensions.has(ext)?(videoExtensions.has(ext)?"video":"photo"):"unknown",
   supported:!!mime&&Number(length)>0&&Number(length)<=maxBytes,mime_type:mime};
 }
 function errorText(error:unknown){return error instanceof Error?error.message:"Unexpected storage error"}
