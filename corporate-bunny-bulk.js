@@ -124,6 +124,9 @@ export function setupBlackcellBunnyBulk({client}){
   }
   running=false;active=null;
   render();
+  if(jobs.some(j=>complete(j))){
+   document.dispatchEvent(new CustomEvent('bc:bunny-uploaded'));
+  }
   if(!jobs.some(j=>j.state==='queued'||j.state==='failed')&&jobs.some(j=>complete(j))){
    announce('Completed: '+jobs.filter(j=>complete(j)).length+' verified or skipped as exact duplicates. Files remain private in Bunny staging.');
   }else if(paused&&!jobs.some(j=>j.state==='failed')){
