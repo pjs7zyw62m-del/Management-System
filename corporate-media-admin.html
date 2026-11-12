@@ -2,9 +2,9 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#030305"><title>BLACKCELL CORPORATION | Media Administration</title>
 <link rel="stylesheet" href="corporate-media-processor.css?v=20261111-adminmove1">
-<link rel="stylesheet" href="corporate-media-admin.css?v=20261111-b2ready1">
+<link rel="stylesheet" href="corporate-media-admin.css?v=20261111-icloudtest1">
 <script src="corp-config.js" defer></script>
-<script type="module" src="corporate-media-admin.js?v=20261111-b2ready1"></script>
+<script type="module" src="corporate-media-admin.js?v=20261111-icloudtest1"></script>
 </head>
 <body class="bc-network bc-media-admin-page">
 <div id="bcAdminGate" role="status" aria-live="polite">
@@ -40,6 +40,22 @@
     </div>
     <p id="bcB2Message">Add the four private B2 credentials in Supabase Edge Function Secrets, then check the connection.</p>
     <small>Private bucket: blackcellcorp-media-vault · Region: us-east-005 · Staging prefix: blackcell-intake/ · Existing Supabase media remains unchanged</small>
+  </section>
+  <section class="bc-icloud-test" aria-label="Import one iCloud photo to Backblaze">
+    <div class="bc-admin-overline">BLACKCELL / PRIVATE CLOUD INTAKE TEST</div>
+    <h2>iCloud Photo Import <span>· One Photo Test</span></h2>
+    <p>Choose one photo using your Apple Photos library or iCloud Drive. BLACKCELL sends it securely to a private Backblaze staging folder and verifies it arrived. It will not appear in the public gallery.</p>
+    <div class="bc-icloud-test-controls">
+      <input id="bcIcloudFile" type="file" accept="image/*,.heic,.heif,.avif" hidden aria-label="Select one iCloud photo">
+      <button id="bcIcloudChoose" type="button">＋ CHOOSE PHOTO</button>
+      <button id="bcIcloudImport" type="button" disabled>↑ IMPORT ONE PHOTO</button>
+    </div>
+    <div class="bc-icloud-preview" id="bcIcloudPreview" hidden>
+      <img id="bcIcloudThumb" alt="Selected photo preview" hidden>
+      <div><strong id="bcIcloudName">Selected photo</strong><small id="bcIcloudSize"></small></div>
+    </div>
+    <p id="bcIcloudStatus" role="status" aria-live="polite">No photo selected yet.</p>
+    <small>On iPhone or iPad: tap Choose Photo, then choose Photo Library or Choose Files (iCloud Drive). This is a manual one-photo test; automatic iCloud sync will be a separate connection.</small>
   </section>
   <section class="panel bc-media-processor" id="bcProcessorPanel" hidden aria-label="Media Import Processor">
         <div class="bc-proc-head">
@@ -80,7 +96,7 @@
   <section class="bc-media-admin-explainer">
    <h2>How this operates</h2>
    <div class="bc-admin-process-steps"><div><strong>01. RECEIVE</strong><p>New photographs and videos are stored privately and queued for review.</p></div><div><strong>02. VERIFY</strong><p>Inspect images or videos, check duplication, rights and adult classification.</p></div><div><strong>03. SORT</strong><p>Confirm country, military branch and subject before selecting an accurate album.</p></div><div><strong>04. AUTHORIZE</strong><p>Only approved non-explicit media enters shared albums; restricted media stays owner-only.</p></div></div>
-   <p class="bc-admin-caution">Cloud-to-cloud iCloud → Backblaze transfer is a separate integration and has not been connected. Reset permanently removes existing BLACKCELL Network media; it never deletes iCloud originals, NEXUS files or private employee chat attachments.</p>
+   <p class="bc-admin-caution">One-photo imports from the Apple Photos/Files picker are available as a manual test. Automatic iCloud → Backblaze syncing is not yet connected. Reset permanently removes existing BLACKCELL Network media; it never deletes iCloud originals, NEXUS files or private employee chat attachments.</p>
   </section>
  </main>
 </div>
