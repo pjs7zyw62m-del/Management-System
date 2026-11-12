@@ -171,3 +171,24 @@ body.bc-network .bc-media-processor{margin:19px 0 0!important}
 .bc-bunny-file[data-state="failed"]{border-color:#b65e6a}
 .bc-bunny-file[data-state="unsupported"]{border-color:#705e48}
 @media(max-width:650px){.bc-bunny-uploader{padding:16px}.bc-bunny-actions button{flex:1 1 180px;text-align:center}}
+
+
+/* Bunny Incoming: private source staging, before Military Library approval */
+.bc-bunny-review-panel{margin:18px 0;padding:18px;border:1px solid #4b5b64;border-radius:16px;background:linear-gradient(137deg,#16212b,#11151f 75%);box-shadow:0 13px 34px #0003}
+.bc-bunny-stage-header h3{margin:6px 0 4px;font-size:18px;letter-spacing:-.018em;display:flex;align-items:center;gap:10px}
+.bc-bunny-stage-header h3 strong{border:1px solid #60707a;background:#2a333c;border-radius:9px;padding:5px 9px;color:#cde7ed;font-size:13px;font-variant-numeric:tabular-nums}
+.bc-bunny-review-panel p,.bc-bunny-review-panel>small{font-size:11px;color:#b8c5ce;line-height:1.75}
+.bc-bunny-stage-actions{display:flex;flex-wrap:wrap;gap:9px;margin:13px 0 10px}
+.bc-bunny-stage-actions button{border:1px solid #516a78;border-radius:9px;background:#243542;color:#ecf3f8;padding:11px 13px;font-size:10px;font-weight:800;cursor:pointer}
+#bcBunnyPrepareBatch{border-color:#99606f;background:#452635}
+.bc-bunny-stage-actions button:disabled{opacity:.4;cursor:not-allowed}
+#bcBunnyStagingStatus{color:#d1dfe8;margin:9px 0 12px}
+.bc-bunny-stage-queue{display:grid;gap:7px;max-height:390px;overflow:auto;margin:13px 0}
+.bc-bunny-stage-item{display:flex;align-items:center;justify-content:space-between;gap:15px;border:1px solid #394854;border-radius:11px;padding:11px 12px;background:#131d28}
+.bc-bunny-stage-meta{display:grid;gap:4px;min-width:0;flex:1}
+.bc-bunny-stage-meta strong{font-size:11px;color:#ecf1f5;overflow-wrap:anywhere}
+.bc-bunny-stage-meta small{font-size:10px;color:#9dabb8;line-height:1.4}
+.bc-bunny-stage-item button{background:#3b2933;color:#f6e5e7;border:1px solid #895061;border-radius:8px;padding:10px 12px;font-size:10px;font-weight:800;cursor:pointer;flex-shrink:0}
+.bc-bunny-stage-item button:disabled{background:#242933;border-color:#454e57;color:#99a5ae;opacity:.6;cursor:default}
+.bc-bunny-review-empty{padding:12px;border:1px dashed #46535d;border-radius:9px;background:#111822}
+@media(max-width:640px){.bc-bunny-review-panel{padding:14px}.bc-bunny-stage-item{align-items:stretch;flex-direction:column}.bc-bunny-stage-item button{align-self:stretch}}
