@@ -1,0 +1,40 @@
+/* BLACKCELL owner-only Media Diagnostic • Obsidian Apple Glass */
+.bc-media-diag{
+ margin:18px 0 24px;padding:23px;border:1px solid #554250;border-radius:20px;
+ background:linear-gradient(130deg,#17151d 0,#0b111b 76%,#111015);
+ box-shadow:0 16px 44px #0005;color:#f3f1f5
+}
+.bc-diag-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.bc-media-diag h2{font-size:clamp(19px,2.8vw,26px);margin:8px 0 7px;letter-spacing:-.025em}
+.bc-media-diag p{font-size:12px;line-height:1.7;color:#b7bac9}
+.bc-diag-header p{max-width:720px;margin:0}
+#bcDiagBadge{border:1px solid #615365;color:#cfc6d0;background:#201b26;border-radius:50px;padding:9px 13px;letter-spacing:.09em;font-size:10px;white-space:nowrap}
+#bcDiagBadge[data-result="busy"]{border-color:#9b536c;color:#f6c3d3}
+#bcDiagBadge[data-result="pass"]{border-color:#426959;color:#a2e1c8}
+#bcDiagBadge[data-result="warn"]{border-color:#896646;color:#ffe2af}
+#bcDiagBadge[data-result="fail"]{border-color:#884052;color:#ffc1ca}
+.bc-diag-actions{display:flex;gap:9px;flex-wrap:wrap;margin:21px 0 13px}
+.bc-diag-actions button{min-height:44px;border-radius:11px;border:1px solid #865568;padding:12px 17px;background:#572c41;color:#fff;font-size:11px;font-weight:850;letter-spacing:.06em;cursor:pointer}
+.bc-diag-actions button+button{background:#1b202c;border-color:#465363}
+.bc-diag-actions button:disabled{opacity:.48;cursor:default}
+#bcDiagMeter{width:100%;height:8px;display:block;accent-color:#b84f6a;margin-bottom:10px}
+#bcDiagStatus{font-size:11px;min-height:16px;margin:9px 0 12px;color:#c9c3cc}
+#bcDiagSummary{font-size:12px;margin:8px 0;color:#f3e5ea;line-height:1.65}
+#bcDiagResults{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px}
+#bcDiagResults li{display:flex;align-items:flex-start;gap:12px;padding:13px 14px;background:#121722;border:1px solid #303443;border-radius:12px;min-width:0}
+#bcDiagResults .bc-diag-mark{display:inline-grid;place-items:center;flex:none;width:23px;height:23px;border-radius:50%;background:#223b34;color:#9ee2c4;font-size:16px;font-weight:800}
+#bcDiagResults li[data-result="warn"] .bc-diag-mark{background:#473327;color:#ffdeaa}
+#bcDiagResults li[data-result="fail"] .bc-diag-mark{background:#4b2434;color:#ffc0cb}
+#bcDiagResults li[data-result="info"] .bc-diag-mark{background:#2b3040;color:#aebbcf}
+.bc-diag-row-text{flex:1;min-width:0}
+.bc-diag-row-text strong{font-size:12px;display:block;line-height:1.4}
+.bc-diag-row-text p{font-size:11px;margin:4px 0 0;overflow-wrap:anywhere;color:#b0bacb}
+#bcDiagResults li>small{flex:none;color:#a8aabb;font-size:10px;font-variant-numeric:tabular-nums;margin-top:4px}
+#bcDiagReport{margin-top:12px;resize:vertical;width:100%;max-width:100%;min-height:180px;border-radius:12px;border:1px solid #42404c;background:#0b1018;color:#d4d9e1;padding:13px 15px;font:11px/1.65 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.bc-diag-foot{margin:11px 0 0;color:#9ea7b5;font-size:11px;line-height:1.6}
+@media(max-width:540px){
+ .bc-media-diag{padding:18px 15px;margin-top:14px}
+ .bc-diag-actions button{flex:1}
+ #bcDiagResults li{padding:12px 10px;gap:9px}
+ #bcDiagResults li>small{font-size:9px}
+}
