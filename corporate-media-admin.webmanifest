@@ -1,0 +1,29 @@
+{
+  "name": "BLACKCELL CORPORATION · Media Command",
+  "short_name": "BLACKCELL MEDIA",
+  "description": "Private Level 7 media administration, Bunny Storage, review queue and system diagnostics.",
+  "id": "./corporate-media-admin.html",
+  "start_url": "./corporate-media-admin.html?tab=overview",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#050608",
+  "theme_color": "#050608",
+  "orientation": "any",
+  "shortcuts": [
+    {
+      "name": "Review & Approval",
+      "short_name": "Review",
+      "url": "./corporate-media-admin.html?tab=review"
+    },
+    {
+      "name": "Bunny Storage",
+      "short_name": "Bunny",
+      "url": "./corporate-media-admin.html?tab=bunny"
+    },
+    {
+      "name": "Diagnostics",
+      "short_name": "Diagnostics",
+      "url": "./corporate-media-admin.html?tab=diagnostics"
+    }
+  ]
+}
