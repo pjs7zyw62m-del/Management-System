@@ -93,7 +93,7 @@ export function setup(client,ui){
  function draw(id){
   const s=state[id],c=cards[id];if(!c)return;
   c.card.dataset.state=s.status;c.dot.dataset.state=s.status;
-  c.header.textContent=(s.status==='online'&&s.success_label)?s.success_label:statusText[s.status];
+  c.header.textContent=!records.find(x=>x.id===id)?.check?'NOT MONITORED':(s.status==='online'&&s.success_label)?s.success_label:statusText[s.status];
   c.reason.textContent=s.reason;
   c.meta.textContent=s.checked_at?date(s.checked_at)+(s.latency_ms!==null?' · '+s.latency_ms+' ms':''):'No verified check yet';
  }
