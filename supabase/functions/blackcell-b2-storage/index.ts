@@ -27,7 +27,7 @@ function json(data:Record<string,unknown>,status:number,origin:string|null){
    constructing canonical requests by hand. No media or secret returned. */
 async function checkBucket(keyId:string,secret:string,bucket:string,endpoint:string){
  const target=new URL(endpoint.trim());
- const match=/^s3\\.([a-z0-9-]+)\\.backblazeb2\\.com$/i.exec(target.hostname);
+ const match=/^s3\.([a-z0-9-]+)\.backblazeb2\.com$/i.exec(target.hostname);
  if(target.protocol!=="https:"||target.pathname!=="/"||target.search||target.hash||!match)
   return {ok:false,code:"INVALID_B2_ENDPOINT",detail:"Enter the S3 endpoint exactly as shown for your B2 bucket."};
  bucket=bucket.trim();
