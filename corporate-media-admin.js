@@ -117,6 +117,68 @@ async function checkBackblaze(){
   message.textContent=String(e?.message||e||'Unrecognized error').slice(0,260);
  }finally{button.disabled=false}
 }
+
+let chosenIcloudPhoto=null,icloudPreviewUrl="";
+function setupIcloudTest(){
+ const picker=$('bcIcloudFile'),choose=$('bcIcloudChoose'),upload=$('bcIcloudImport');
+ const status=$('bcIcloudStatus'),preview=$('bcIcloudPreview'),thumb=$('bcIcloudThumb');
+ const label=$('bcIcloudName'),size=$('bcIcloudSize');
+ if(!picker||!choose||!upload||!status)return;
+ // Synchronous .click() keeps iOS Safari's required user gesture.
+ choose.addEventListener('click',()=>{if(upload.dataset.busy==='true')return;picker.click()});
+ picker.addEventListener('change',()=>{
+  const file=picker.files?.[0]||null;
+  chosenIcloudPhoto=null;upload.disabled=true;delete status.dataset.result;
+  if(icloudPreviewUrl){URL.revokeObjectURL(icloudPreviewUrl);icloudPreviewUrl=""}
+  preview.hidden=true;thumb.hidden=true;thumb.removeAttribute('src');
+  if(!file){status.textContent='No photo selected yet.';return}
+  if(!file.size||file.size>8*1024*1024){
+   status.textContent='Choose a photo smaller than 8 MB for this first test.';
+   picker.value='';return;
+  }
+  chosenIcloudPhoto=file;
+  label.textContent=file.name||'Selected photo';
+  size.textContent=(file.size/1024/1024).toFixed(2)+' MB · Private staging only';
+  preview.hidden=false;
+  icloudPreviewUrl=URL.createObjectURL(file);
+  thumb.src=icloudPreviewUrl;thumb.hidden=false;
+  thumb.onerror=()=>{thumb.hidden=true};
+  upload.disabled=false;
+  status.textContent='Ready to send one photo to your private Backblaze bucket.';
+ });
+ upload.addEventListener('click',async()=>{
+  if(!chosenIcloudPhoto||upload.disabled)return;
+  const file=chosenIcloudPhoto;
+  upload.disabled=true;upload.dataset.busy='true';choose.disabled=true;
+  upload.textContent='UPLOADING & VERIFYING…';
+  status.dataset.result='pending';
+  status.textContent='Sending the selected photo securely to Backblaze; verifying the stored file…';
+  try{
+   const payload=new FormData();
+   payload.append('action','import-photo-test');
+   payload.append('photo',file,file.name||'icloud-photo');
+   const {data,error}=await client.functions.invoke('blackcell-b2-storage',{body:payload});
+   let body=data;
+   if(error){
+    try{body=await error.context?.json?.()}catch(_){}
+    throw new Error(body?.detail||error.message||'The private import failed.');
+   }
+   if(!body?.ok||!body?.stored)throw new Error(body?.detail||'Backblaze did not verify the photo.');
+   status.dataset.result='success';
+   status.textContent=body.duplicate?
+    '✓ VERIFIED — This exact photo already exists in Backblaze private staging; no duplicate was saved.':
+    '✓ VERIFIED — The photo arrived in Backblaze private staging and its file size was checked. It is not published.';
+   toast('BLACKCELL: one iCloud photo verified in private Backblaze staging.');
+  }catch(e){
+   status.dataset.result='error';
+   status.textContent='IMPORT FAILED — '+String(e?.message||e||'Connection error').slice(0,230);
+  }finally{
+   upload.disabled=!chosenIcloudPhoto;upload.dataset.busy='false';
+   choose.disabled=false;upload.textContent='↑ IMPORT ONE PHOTO';
+  }
+ });
+}
+
 async function boot(){
  try{
   const auth=await validOwner();
@@ -130,6 +192,7 @@ async function boot(){
   $('bcMediaAdminApp').hidden=false;$('bcAdminGate').hidden=true;
   processor=createBlackcellMediaProcessor({client,bucket,state,refresh:loadAssets,mediaUrl:()=>'',toast,openAIReview:makePreview});
   processor.setup();
+  setupIcloudTest();
   $('bcB2Check').addEventListener('click',()=>void checkBackblaze());
   void checkBackblaze();
   document.addEventListener('bc:media-updated',()=>void refreshCounts().catch(()=>{}));

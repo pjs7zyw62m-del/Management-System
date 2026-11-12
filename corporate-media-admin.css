@@ -61,3 +61,22 @@ body.bc-network .bc-media-processor{margin:19px 0 0!important}
 .bc-b2-connection-toolbar button:disabled{opacity:.4}
 .bc-b2-connection-toolbar a{background:#3a1c2a;border-color:#784255}
 .bc-b2-connection #bcB2Message{font-size:11px;color:#d8e1e9;line-height:1.7;margin:14px 0 7px}
+
+/* Owner-only, mobile-first manual photo picker for iCloud / Apple Photos test. */
+.bc-icloud-test{margin:18px 0 8px;padding:23px;border:1px solid #483c4b;border-radius:18px;background:linear-gradient(135deg,#1b1420,#0d111a 74%);box-shadow:0 15px 45px #0005}
+.bc-icloud-test h2{font-size:19px;letter-spacing:-.02em;margin:7px 0 8px}
+.bc-icloud-test h2 span{color:#c3abb7;font-size:12px;font-weight:600;letter-spacing:0}
+.bc-icloud-test p,.bc-icloud-test>small{font-size:11px;color:#b9bdcc;line-height:1.8}
+.bc-icloud-test-controls{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 12px}
+.bc-icloud-test-controls button{background:#35202d;border:1px solid #805063;border-radius:11px;padding:13px 18px;color:#f2eaf0;letter-spacing:.04em;font-weight:800;font-size:11px;min-height:45px;cursor:pointer}
+.bc-icloud-test-controls button:last-child{background:#782c49;border-color:#ab5475}
+.bc-icloud-test-controls button:disabled{opacity:.43;cursor:not-allowed}
+.bc-icloud-preview{display:flex;align-items:center;gap:14px;margin:13px 0;padding:12px;background:#10141e;border:1px solid #333a47;border-radius:14px;min-width:0}
+.bc-icloud-preview img{width:76px;height:76px;object-fit:contain;flex-shrink:0;background:#080a0f;border-radius:9px}
+.bc-icloud-preview div{min-width:0}
+.bc-icloud-preview strong{font-size:12px;display:block;overflow-wrap:anywhere}
+.bc-icloud-preview small{font-size:10px;color:#a8b2c2;display:block;margin-top:6px}
+#bcIcloudStatus{margin:12px 0;color:#c9c6d0;font-size:11px}
+#bcIcloudStatus[data-result="success"]{color:#b4ebd0}
+#bcIcloudStatus[data-result="error"]{color:#ffbdca}
+@media(max-width:410px){.bc-icloud-test{padding:18px 15px}.bc-icloud-test-controls button{width:100%}}

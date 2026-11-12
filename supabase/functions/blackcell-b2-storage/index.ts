@@ -1,5 +1,5 @@
 import {createClient} from "npm:@supabase/supabase-js@2.119.0";
-import {S3Client,ListObjectsV2Command} from "npm:@aws-sdk/client-s3@3.856.0";
+import {S3Client,ListObjectsV2Command,PutObjectCommand,HeadObjectCommand} from "npm:@aws-sdk/client-s3@3.856.0";
 
 /* BLACKCELL's private Backblaze B2 connection check.
    Never exposes credentials or media. Only the authenticated Level 7
@@ -101,6 +101,79 @@ async function verifyNativeB2Pair(keyId:string,secret:string):Promise<{
  }catch(_){return {valid:true,http_status:200,code:"B2_NATIVE_PAIR_VERIFIED"};}
 }
 
+
+/* One-photo, owner-only test, staged in Backblaze and never published.
+   SHA-256 content address prevents exact-byte duplicate test objects.
+   Upload is server-side: no browser-to-B2 CORS changes or exposed B2 tokens. */
+function detectPhoto(data:Uint8Array):{type:string,ext:string}|null{
+ if(data.length<12)return null;
+ if(data[0]===0xff&&data[1]===0xd8&&data[2]===0xff)return {type:"image/jpeg",ext:"jpg"};
+ if([137,80,78,71,13,10,26,10].every((v,i)=>data[i]===v))return {type:"image/png",ext:"png"};
+ const ascii=(start:number,length:number)=>String.fromCharCode(...data.subarray(start,start+length));
+ if(ascii(0,4)==="RIFF"&&ascii(8,4)==="WEBP")return {type:"image/webp",ext:"webp"};
+ if(ascii(0,6)==="GIF87a"||ascii(0,6)==="GIF89a")return {type:"image/gif",ext:"gif"};
+ if(ascii(4,4)==="ftyp"){
+  const brand=ascii(8,4);
+  if(["heic","heix","hevc","hevx","mif1","msf1"].includes(brand))return {type:"image/heic",ext:"heic"};
+  if(["avif","avis"].includes(brand))return {type:"image/avif",ext:"avif"};
+ }
+ return null;
+}
+async function importTestPhoto(photo:File,keyId:string,secret:string,bucket:string,endpoint:string){
+ const maximum=8*1024*1024;
+ if(photo.size<12||photo.size>maximum)return {ok:false,code:"PHOTO_SIZE_REJECTED",
+  detail:"Choose one image smaller than 8 MB for this first connection test."};
+ const target=new URL(endpoint.trim());
+ const match=/^s3\.([a-z0-9-]+)\.backblazeb2\.com$/i.exec(target.hostname);
+ if(target.protocol!=="https:"||target.pathname!=="/"||target.search||target.hash||!match)
+  return {ok:false,code:"INVALID_B2_ENDPOINT",detail:"Verify the Backblaze S3 endpoint."};
+ const bytes=new Uint8Array(await photo.arrayBuffer());
+ const detected=detectPhoto(bytes);
+ if(!detected)return {ok:false,code:"PHOTO_FORMAT_REJECTED",
+  detail:"This first test supports JPEG, PNG, WEBP, GIF, HEIC and AVIF photos."};
+ const digest=new Uint8Array(await crypto.subtle.digest("SHA-256",bytes));
+ const hash=Array.from(digest).map(x=>x.toString(16).padStart(2,"0")).join("");
+ const key="blackcell-intake/icloud-tests/sha256-"+hash+"."+detected.ext;
+ const client=new S3Client({
+  endpoint:target.origin,region:match[1],forcePathStyle:true,maxAttempts:1,
+  credentials:{accessKeyId:keyId.trim(),secretAccessKey:secret.trim()},
+  requestChecksumCalculation:"WHEN_REQUIRED",responseChecksumValidation:"WHEN_REQUIRED"
+ });
+ try{
+  // An existing object with the same content digest is a confirmed duplicate.
+  let existing=false;
+  try{
+   const head=await client.send(new HeadObjectCommand({Bucket:bucket.trim(),Key:key}));
+   if(Number(head.ContentLength)!==bytes.length)throw new Error("CHECKSUM_COLLISION");
+   existing=true;
+  }catch(e){
+   const err=e as {name?:string,message?:string,$metadata?:{httpStatusCode?:number}};
+   if(err?.message==="CHECKSUM_COLLISION")throw e;
+   if(err.name!=="NotFound"&&err.name!=="NoSuchKey"&&Number(err.$metadata?.httpStatusCode)!==404)throw e;
+  }
+  if(!existing){
+   await client.send(new PutObjectCommand({
+    Bucket:bucket.trim(),Key:key,Body:bytes,
+    ContentLength:bytes.byteLength,ContentType:detected.type,
+    Metadata:{"blackcell-import":"icloud-manual-test","sha256":hash}
+   }));
+  }
+  const confirmed=await client.send(new HeadObjectCommand({Bucket:bucket.trim(),Key:key}));
+  if(Number(confirmed.ContentLength)!==bytes.length)
+   return {ok:false,code:"B2_VERIFY_SIZE_MISMATCH",detail:"Upload returned but Backblaze did not confirm the expected file length."};
+  return {ok:true,connected:true,stored:true,duplicate:existing,bytes:bytes.length,
+   mime_type:detected.type,storage_path:key,
+   detail:existing?"Identical photo already exists in private Backblaze staging; no second copy was saved.":
+   "Photo uploaded and verified in private Backblaze staging. It is not published to the website."};
+ }catch(e){
+  const err=e as {name?:string,$metadata?:{httpStatusCode?:number}};
+  const allowed=new Set(["AccessDenied","InvalidAccessKeyId","SignatureDoesNotMatch","RequestTimeout","EntityTooLarge","InvalidRequest"]);
+  const reason=allowed.has(String(err?.name))?err.name:"Other";
+  return {ok:false,code:"B2_TEST_UPLOAD_FAILED",b2_code:reason,
+   detail:"Backblaze did not verify the photo upload ("+reason+"). Existing media remains unchanged."};
+ }finally{client.destroy();}
+}
+
 Deno.serve(async request=>{
  const origin=request.headers.get("origin");
  if(request.method==="OPTIONS")return new Response(null,{status:204,headers:cors(origin)});
@@ -128,12 +201,22 @@ Deno.serve(async request=>{
  const verified=await db.rpc("corp_code_status");
  if(verified.error||verified.data?.ok!==true||verified.data?.verified!==true)
   return json({ok:false,code:"SECURITY_SESSION_REQUIRED",detail:"Your BLACKCELL security-code session expired. Sign in to Administration and verify your access/security codes, then retry."},403,origin);
- let action="";
+ let action="",photo:File|null=null;
  try{
-  const payload=await request.json();
-  action=typeof payload?.action==="string"?payload.action:"";
- }catch(_){return json({ok:false,code:"INVALID_JSON"},400,origin)}
- if(action!=="status")return json({ok:false,code:"UNSUPPORTED_ACTION"},400,origin);
+  if((request.headers.get("content-type")||"").toLowerCase().includes("multipart/form-data")){
+   const length=Number(request.headers.get("content-length")||0);
+   if(length>9*1024*1024)return json({ok:false,code:"TEST_TOO_LARGE",detail:"Choose a photo smaller than 8 MB."},413,origin);
+   const form=await request.formData();
+   action=String(form.get("action")||"");
+   const file=form.get("photo");
+   if(file instanceof File)photo=file;
+  }else{
+   const payload=await request.json();
+   action=typeof payload?.action==="string"?payload.action:"";
+  }
+ }catch(_){return json({ok:false,code:"INVALID_UPLOAD_REQUEST",detail:"Could not read the selected file."},400,origin)}
+ if(action!=="status"&&action!=="import-photo-test")
+  return json({ok:false,code:"UNSUPPORTED_ACTION"},400,origin);
  const keyId=Deno.env.get("BLACKCELL_B2_KEY_ID")||"";
  const secret=Deno.env.get("BLACKCELL_B2_APPLICATION_KEY")||"";
  const bucket=Deno.env.get("BLACKCELL_B2_BUCKET")||"";
@@ -147,6 +230,15 @@ Deno.serve(async request=>{
  if(missing.length)
   return json({ok:true,connected:false,code:"B2_NOT_CONFIGURED",
    detail:"Missing in NEXUS Management System → Edge Function Secrets: "+missing.join(", ")+". Add these exact secret names and their values, then press CHECK CONNECTION."},200,origin);
+ if(action==="import-photo-test"){
+  if(!photo)return json({ok:false,code:"PHOTO_REQUIRED",detail:"Select one photo from Photos or iCloud Drive."},400,origin);
+  try{
+   const result=await importTestPhoto(photo,keyId,secret,bucket,endpoint);
+   return json(result,result.ok?200:422,origin);
+  }catch(_){
+   return json({ok:false,code:"B2_TEST_IMPORT_FAILED",detail:"The selected photo could not be imported. No existing media was modified."},500,origin);
+  }
+ }
  try{
   const result=await checkBucket(keyId,secret,bucket,endpoint);
   if(result.ok)return json(result,200,origin);
