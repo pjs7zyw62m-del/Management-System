@@ -8,6 +8,7 @@ import {setupBlackcellBulk} from './corporate-b2-bulk.js?v=20261111-cors2';
 import {setupBlackcellBunnyBulk} from './corporate-bunny-bulk.js?v=20261111-bunny-review1';
 import {setupBlackcellBunnyReview} from './corporate-bunny-review.js?v=20261111-bunny-review1';
 import {setupBlackcellLibraryBunnySync} from './corporate-bunny-library-sync.js?v=20261112-library-sync1';
+import {setupBlackcellMediaDiagnostics} from './corporate-media-diagnostics.js?v=20261112-diag1';
 
 const $=id=>document.getElementById(id);
 const state={user:null,member:null,assets:[],bunnyWaitingCount:0};
@@ -208,6 +209,7 @@ function setupIcloudTest(){
 }
 
 async function boot(){
+ const bootTime=performance.now();
  try{
   const auth=await validOwner();
   if(!auth){
@@ -224,12 +226,13 @@ async function boot(){
   document.addEventListener('bc:bunny-staged-count',()=>void refreshCounts().catch(()=>{}));
   setupBlackcellBunnyReview({client,state,refresh:loadAssets,toast});
   setupBlackcellLibraryBunnySync({client,toast});
+  setupBlackcellMediaDiagnostics({client,bucket,initialLoadMs:performance.now()-bootTime});
   setupBlackcellBunnyBulk({client});
   setupBlackcellBulk({client,toast});
   $('bcBunnyCheck').addEventListener('click',()=>void checkBunny());
   void checkBunny();
   $('bcB2Check').addEventListener('click',()=>void checkBackblaze());
-  void checkBackblaze();
+  // Backblaze is legacy/optional. Check it only when the owner explicitly clicks CHECK CONNECTION.
   document.addEventListener('bc:media-updated',()=>void refreshCounts().catch(()=>{}));
   // Require a valid corporate code session throughout an active admin view.
   const recheck=async()=>{
