@@ -195,7 +195,21 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
    const {data,error}=await client.from('corp_social_assets').update(update).eq('id',id)
     .eq('review_status','pending').select('id').single();
    if(error||!data)throw Error('Media approval failed: '+errText(error));
+   // New approved Military Library photos are archived to Bunny automatically.
+   // Archiving is separate from approval: an archive error must never undo or
+   // misrepresent the already-approved asset. The owner can retry from the
+   // "Connect Existing Military Library Photos" panel.
+   let archivePending=false;
+   if(current.kind==='photo'&&current.purpose==='library'&&current.source_provider!=='bunny-private'){
+    try{
+     const {data:archive,error:archiveError}=await client.functions.invoke(
+      'blackcell-bunny-library-sync',{body:{action:'sync-one',asset_id:id}});
+     archivePending=!!archiveError||archive?.ok!==true||archive?.verified!==true;
+    }catch(_){archivePending=true}
+   }
    resetEditor();await refresh();await reload(true);
+   if(archivePending)
+    status('Photo approved and filed. Bunny copy not yet verified; use Connect Existing Military Library Photos to finish archival.');
    toast(adult?'Approved to OWNER-ONLY private media archive.':'Media approved and filed in the military album.');
   }catch(e){status('Media remains pending: '+errText(e))}
   finally{setBusy(false)}
