@@ -1,0 +1,45 @@
+
+/* BLACKCELL / CONTENT INTELLIGENCE WORKSPACE */
+.ci-hero{margin:6px 0 22px;padding:25px;border:1px solid #ffffff1f;border-radius:19px;background:radial-gradient(ellipse 50% 90% at 92% 0%,#75253b3e,transparent 85%),linear-gradient(130deg,#211b24,#0b0c12);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px}
+.ci-hero h2{font-size:22px;margin:0 0 7px;letter-spacing:-.05em}
+.ci-hero p{max-width:670px;margin:0;color:#aca5b2;font-size:12px;line-height:1.65}
+.ci-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0}
+.ci-form label{display:block;min-width:0;color:#bab4c0;font-size:10px;font-weight:770;letter-spacing:.11em}
+.ci-form input,.ci-form select,.ci-form textarea{margin-top:7px;min-width:0;width:100%;min-height:44px;border:1px solid #ffffff24;background:#07080c;border-radius:10px;color:#f4f0f6;padding:12px;font:inherit}
+.ci-form textarea{resize:vertical;min-height:85px}
+.ci-form .wide{grid-column:1/-1}
+.ci-result-note{padding:13px;border-radius:11px;background:#1c1921;border:1px solid #ffffff18;color:#c8c0ca;font-size:11px;line-height:1.6;margin:10px 0}
+.ci-result-note.warn{border-color:#d6a34e63;color:#e7ca9b}
+.ci-chart{display:grid;gap:12px;margin-top:14px}
+.ci-chart-row{display:grid;grid-template-columns:minmax(70px,145px) 1fr 42px;align-items:center;gap:10px}
+.ci-chart-row span{font-size:11px;color:#c9c2ce;overflow-wrap:anywhere}
+.ci-bar{height:9px;border-radius:8px;background:#ffffff0d;overflow:hidden}
+.ci-bar-fill{height:100%;border-radius:8px;background:linear-gradient(90deg,#7e2c48,#ce7289);min-width:2px}
+.ci-ideas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.ci-idea{position:relative;padding:20px;border-radius:16px;border:1px solid #ffffff1e;background:linear-gradient(142deg,#25212b,#0e0f15 75%);min-width:0;display:flex;flex-direction:column}
+.ci-idea>small{color:#ca8297;letter-spacing:.11em;text-transform:uppercase;font-size:9px;font-weight:800}
+.ci-idea h3{font-size:18px;line-height:1.32;letter-spacing:-.045em;margin:10px 0 8px}
+.ci-idea p{font-size:11px;color:#bcb2bf;line-height:1.66;margin:0 0 11px}
+.ci-idea ul{margin:8px 0 15px;padding-left:20px;color:#c3b8c5;font-size:11px;line-height:1.6}
+.ci-idea li{margin:5px 0}
+.ci-footer{margin-top:auto;border-top:1px solid #ffffff16;padding-top:13px;display:grid;gap:10px}
+.ci-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ci-meta span{font-size:9px;letter-spacing:.04em;padding:5px 8px;border:1px solid #ffffff20;background:#ffffff0c;color:#c1bdc6;border-radius:6px}
+.ci-idea .ci-metric{font-size:10px;color:#e2c5d0}
+.ci-actionbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ci-actionbar button,.ci-actionbar select{min-width:0;font-size:10px}
+.ci-actionbar .btn{flex:1;min-height:36px;padding:9px}
+.ci-actionbar select{border:1px solid #ffffff26;background:#101117;border-radius:8px;padding:9px;color:#efeaf1}
+.ci-empty{padding:25px;border:1px dashed #ffffff31;border-radius:13px;text-align:center;color:#a7a0ae;font-size:12px;line-height:1.65}
+.ci-tabline{display:flex;flex-wrap:wrap;gap:8px;padding:7px;background:#0b0c10;border:1px solid #ffffff1b;border-radius:12px;margin:19px 0}
+.ci-tabline button{padding:10px 14px;border-radius:9px;background:transparent;border:1px solid transparent;font-size:11px;font-weight:740;color:#aba7b5}
+.ci-tabline button[aria-selected=true]{color:#fff;border-color:#b560734d;background:#67293d54}
+.ci-tab-panel[hidden]{display:none}
+.ci-source{font-size:10px;color:#95929e;line-height:1.5}
+.ci-inline{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.ci-inline .btn{white-space:normal}
+.ci-help{color:#8d8b97;font-size:10px;line-height:1.7}
+.ci-steps-list{display:grid;gap:9px}
+.ci-steps-list .info-row{padding:11px 1px}
+@media(max-width:760px){.ci-ideas{grid-template-columns:1fr}.ci-form{grid-template-columns:1fr}.ci-form .wide{grid-column:auto}.ci-hero{padding:20px}.ci-hero h2{font-size:19px}}
+@media(max-width:460px){.ci-tabline button{flex:1}.ci-idea{padding:17px}.ci-chart-row{grid-template-columns:95px 1fr 32px}.ci-form label{font-size:9px}}
