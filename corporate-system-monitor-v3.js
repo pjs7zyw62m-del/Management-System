@@ -202,6 +202,13 @@
     for(const id of unmonitored){update(id,'unknown',id==='bunny'
       ?'Private Bunny Storage API health is not configured; deployment of an owner-only status endpoint is needed.'
       :'An authenticated health endpoint for the AI runtime has not been configured.',null)}
+    const jump=()=>{
+      const close=document.getElementById('closeDrawer');if(close)close.click();
+      const target=document.getElementById('systemHealth');
+      if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
+    };
+    document.getElementById('ops-monitor-link')?.addEventListener('click',jump);
+    document.getElementById('ops-nav-health')?.addEventListener('click',jump);
     const refreshButton=document.getElementById('ops-refresh');
     if(refreshButton)refreshButton.addEventListener('click',()=>{void refresh()});
     const auto=document.getElementById('ops-autocheck');
