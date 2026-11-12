@@ -200,7 +200,7 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
    // misrepresent the already-approved asset. The owner can retry from the
    // "Connect Existing Military Library Photos" panel.
    let archivePending=false;
-   if(current.kind==='photo'&&current.purpose==='library'&&current.source_provider!=='bunny-private'){
+   if(current.kind==='photo'&&['library','post'].includes(current.purpose)&&current.source_provider!=='bunny-private'){
     try{
      const {data:archive,error:archiveError}=await client.functions.invoke(
       'blackcell-bunny-library-sync',{body:{action:'sync-one',asset_id:id}});
