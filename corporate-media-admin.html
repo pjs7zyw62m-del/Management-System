@@ -2,9 +2,9 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#030305"><title>BLACKCELL CORPORATION | Media Administration</title>
 <link rel="stylesheet" href="corporate-media-processor.css?v=20261111-adminmove1">
-<link rel="stylesheet" href="corporate-media-admin.css?v=20261111-bulk1">
+<link rel="stylesheet" href="corporate-media-admin.css?v=20261111-cors2">
 <script src="corp-config.js" defer></script>
-<script type="module" src="corporate-media-admin.js?v=20261111-bulk1"></script>
+<script type="module" src="corporate-media-admin.js?v=20261111-cors2"></script>
 </head>
 <body class="bc-network bc-media-admin-page">
 <div id="bcAdminGate" role="status" aria-live="polite">
@@ -51,6 +51,10 @@
     <button type="button" id="bcBulkStart" disabled>↑ START PRIVATE UPLOAD</button>
     <button type="button" id="bcBulkPause" disabled>Ⅱ PAUSE AFTER CURRENT FILE</button>
     <button type="button" id="bcBulkRetry" disabled>↻ RETRY FAILED</button>
+   </div>
+   <div class="bc-bulk-cors">
+    <button id="bcBulkCorsCheck" type="button">↻ CHECK BROWSER UPLOAD ACCESS</button>
+    <span id="bcBulkCorsResult" role="status" aria-live="polite">Checking whether Backblaze permits uploads from this website…</span>
    </div>
    <div class="bc-bulk-summary" id="bcBulkStats">No media selected yet</div>
    <progress class="bc-bulk-total" id="bcBulkMeter" max="1" value="0" aria-label="Overall verified upload progress"></progress>
