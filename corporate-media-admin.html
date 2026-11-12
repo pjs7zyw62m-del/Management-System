@@ -2,9 +2,9 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#030305"><title>BLACKCELL CORPORATION | Media Administration</title>
 <link rel="stylesheet" href="corporate-media-processor.css?v=20261111-adminmove1">
-<link rel="stylesheet" href="corporate-media-admin.css?v=20261111-cors2">
+<link rel="stylesheet" href="corporate-media-admin.css?v=20261111-bunny1">
 <script src="corp-config.js" defer></script>
-<script type="module" src="corporate-media-admin.js?v=20261111-cors2"></script>
+<script type="module" src="corporate-media-admin.js?v=20261111-bunny1"></script>
 </head>
 <body class="bc-network bc-media-admin-page">
 <div id="bcAdminGate" role="status" aria-live="polite">
@@ -29,6 +29,18 @@
    <div><span>STORAGE</span><strong id="bcAdminStorageStatus">Private</strong><small>Supabase · existing secure media bucket</small></div>
    <div><span>MEDIA REGISTERED</span><strong id="bcAdminAssetsCount">—</strong><small>Current BLACKCELL media records</small></div>
    <div><span>IMPORT QUEUE</span><strong id="bcAdminPendingCount">—</strong><small>Awaiting owner review</small></div>
+  </section>
+  <section class="bc-bunny-connection" id="bcBunnyConnection" aria-label="Bunny Storage private cloud connection">
+   <div class="bc-admin-overline">BLACKCELL / NEW PRIVATE CLOUD STORAGE</div>
+   <h2>Bunny Storage <span>· Los Angeles</span></h2>
+   <p>Storage zone: <strong>blackcell-media-vault</strong>. This connection replaces Backblaze as the planned destination after verification. Your existing BLACKCELL and Backblaze media remain untouched.</p>
+   <div class="bc-bunny-toolbar">
+    <strong id="bcBunnyStatus" role="status" aria-live="polite">NOT VERIFIED</strong>
+    <button id="bcBunnyCheck" type="button">↻ CHECK BUNNY CONNECTION</button>
+    <a href="https://supabase.com/dashboard/project/eeddazzwqokqlzvzjlxz/functions/secrets" target="_blank" rel="noopener noreferrer">MANAGE SECURE PASSWORD ↗</a>
+   </div>
+   <p id="bcBunnyMessage" role="status" aria-live="polite">Save the Bunny Storage Zone API / HTTP Access Key Password under the Supabase Edge Secret named BLACKCELL_BUNNY_STORAGE_ACCESS_KEY, then check the connection. Never put the password in GitHub or this website's public code.</p>
+   <small>API endpoint: https://la.storage.bunnycdn.com/blackcell-media-vault/ · Private storage · This check lists the root internally; no files are uploaded or published</small>
   </section>
   <section class="bc-b2-connection" id="bcB2Connection" aria-label="Backblaze B2 private cloud connection">
     <div class="bc-b2-connection-title"><span class="bc-admin-overline">BLACKCELL / PRIVATE CLOUD CONNECTION</span><h2>Backblaze B2 Storage</h2>
