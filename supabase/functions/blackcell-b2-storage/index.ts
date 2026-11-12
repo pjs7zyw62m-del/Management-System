@@ -73,7 +73,7 @@ async function checkBucket(keyId:string,secret:string,bucket:string,endpoint:str
    Do not persist, log or return the token or the submitted credentials. */
 async function verifyNativeB2Pair(keyId:string,secret:string):Promise<{
  valid:boolean|"unknown",http_status:number,code:string,
- has_list_all_buckets?:boolean,has_list_files?:boolean,has_s3_option?:boolean
+ has_list_all_buckets?:boolean,has_list_files?:boolean
 }>{
  let response:Response;
  try{
@@ -150,7 +150,8 @@ Deno.serve(async request=>{
  try{
   const result=await checkBucket(keyId,secret,bucket,endpoint);
   if(result.ok)return json(result,200,origin);
-  if(result.code!=="B2_ACCESS_ERROR"||result.s3_code!=="SignatureDoesNotMatch")
+  const s3Error=("s3_code" in result)?result.s3_code:"";
+  if(result.code!=="B2_ACCESS_ERROR"||s3Error!=="SignatureDoesNotMatch")
    return json(result,422,origin);
   const native=await verifyNativeB2Pair(keyId,secret);
   if(native.valid===false){
@@ -159,7 +160,7 @@ Deno.serve(async request=>{
   }
   if(native.valid===true){
    return json({ok:false,connected:false,code:"B2_S3_SIGNATURE_FAILED",native_auth:"verified",
-    s3_code:result.s3_code,
+    s3_code:s3Error,
     permissions:{
      ...(typeof native.has_list_all_buckets==="boolean"?{listAllBucketNames:native.has_list_all_buckets}:{}),
      ...(typeof native.has_list_files==="boolean"?{listFiles:native.has_list_files}:{})
@@ -167,7 +168,7 @@ Deno.serve(async request=>{
     detail:"Backblaze Native API ACCEPTED your Key ID + secret pair, but its S3 API rejected the signature. The credentials match; we need to examine S3 compatibility, permissions and signing settings instead."},422,origin);
   }
   return json({ok:false,connected:false,code:"B2_NATIVE_CHECK_UNAVAILABLE",
-   s3_code:result.s3_code,http_status:native.http_status,
+   s3_code:s3Error,http_status:native.http_status,
    detail:"The S3 signature failed and independent Backblaze Native API verification was temporarily unavailable. Do not replace credentials until this can be checked."},422,origin);
  }catch(_){
   return json({ok:false,connected:false,code:"B2_CHECK_FAILED",
