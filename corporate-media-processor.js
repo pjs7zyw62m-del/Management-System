@@ -215,7 +215,7 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
  }
  async function resetMedia(){
   if(!active()||busy)return;
-  if(!confirm('PERMANENT FRESH START: Remove ALL BLACKCELL Network photos and videos from the private media bucket, including library, post attachments and profile images? This does not affect NEXUS, iCloud originals or private chat. All media-linked votes, favorites and AI indexes will be deleted. Continue?'))return;
+  if(!confirm('PERMANENT FRESH START: Remove ALL BLACKCELL Network photos and videos from the private media bucket, including library, post attachments and profile images? This does not affect Bunny Storage originals, NEXUS, iCloud originals or private chat. All media-linked votes, favorites and AI indexes will be deleted. Continue?'))return;
   const check=prompt('FINAL CONFIRMATION: type DELETE ALL BLACKCELL MEDIA to permanently erase the BLACKCELL Network photo/video files.');
   if(check!=='DELETE ALL BLACKCELL MEDIA'){status('Reset canceled. No files were removed.');return}
   setBusy(true);
