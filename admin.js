@@ -1185,9 +1185,65 @@ function corporateSystems(){
   }));
 }
 function division(){let nexus=activeModal==='nexus',name=names[activeModal];let b=block('Division Overview');b.append(p(nexus?'Private management operations, records, communications and financial systems.':'Photo collections, review workflows, album organization, and AI-related projects.'));let g=grid();(nexus?[['Records','Profiles and activity'],['Communications','Messaging and analysis'],['Financial','Budget and transactions'],['System Health','Not connected']]:[['Uniforms','Photo library and albums'],['Collections','Inmate and media collections'],['Gunner AI','Separate AI project'],['System Health','Not connected']]).forEach(x=>{let c=card(x[0],x[1]);g.append(c)});b.append(g);content.append(b);let a=el('a','btn primary full',`Open ${name} Website ↗`);a.href=nexus?'https://www.blackcellcorp.com':'mans-armed-forces.html';a.target='_blank';a.rel='noopener noreferrer';content.append(a,note('This opens the independent website. Existing authentication, permissions, and policies still apply. Corporate preview access does not sign you in.'));}
-function notifications(){let b=block('Notifications');b.append(p('No live corporate notifications are connected. Future authenticated events can include new-device alerts, failed sign-ins, system incidents, and administrator updates.'));content.append(b);}
-function account(){let b=block('Administrator Profile');b.append(row('Corporate role','Proposed primary administrator','Owner'),row('Account identity','No authenticated corporate account','Not connected'));content.append(b,note('The corporate login is a preview; account credentials and roles must be confirmed by a secure backend.'));}
-function signout(){content.append(note('This preview cannot revoke GitHub Pages, Supabase, or other application sessions. Global sign-out requires separately authorized server integrations.'));let b=el('div','actions');b.append(action('Cancel',close));let a=el('a','btn outline','Return to Login Preview');a.href='index.html';b.append(a);content.append(b);}
+
+function notifications(){
+  const shell=corporatePanel('Recent Administrative Notifications',
+    'Recent recorded security, personnel, and settings events. This is an in-app activity view, not push or email delivery.');
+  const body=el('div');body.append(p('Loading activity…'));shell.append(body);
+  const refresh=action('REFRESH NOTIFICATIONS',()=>{render()});
+  shell.append(refresh);
+  void (async()=>{
+    try{
+      const response=await corporateRpc('corp_admin_console_activity',{p_limit:20});
+      if(!body.isConnected||activeModal!=='notifications')return;
+      const events=response.items||[];body.replaceChildren();
+      if(!events.length){body.append(note('No recorded activity found yet.'));return;}
+      for(const item of events.slice(0,15))
+        body.append(row(item.description||item.name,item.category?.toUpperCase()||'ACTIVITY',corpDate(item.at)));
+      shell.append(action('OPEN ALL ACTIVITY LOGS',()=>{activeModal='logs';activeTab='all';render()}));
+    }catch(err){if(body.isConnected)body.replaceChildren(note('Notifications could not be loaded: '+String(err.message||err)));}
+  })();
+}
+function account(){
+  const shell=corporatePanel('Verified Administrator Identity','The currently signed-in corporate administrator and authorized session.');
+  const body=el('div');body.append(p('Verifying owner identity…'));shell.append(body);
+  void (async()=>{
+    try{
+      const client=corporateApi();
+      if(!client)throw new Error('Corporate client unavailable');
+      const {data,error}=await client.auth.getUser();
+      if(error||!data.user)throw new Error('Your login is not available.');
+      const owner=await corporateRpc('corp_admin_security_overview');
+      if(!body.isConnected||activeModal!=='account')return;
+      body.replaceChildren();
+      body.append(row('Account email','Verified Supabase authentication',data.user.email||'Not available'),
+        row('Administrative clearance','Protected by database owner verification',owner.owner_verified?'LEVEL 7 / OWNER':'NOT VERIFIED'),
+        row('Current corporate session','Verification is required to access Administration',
+          owner.owner_sessions?.some(v=>v.current)?'ACTIVE':'NOT VERIFIED'),
+        row('Recent owner sessions','Unexpired corporate verification grants',
+          String(owner.owner_sessions?.length||0)));
+      body.append(action('REVIEW MY SECURITY SESSIONS',()=>{activeModal='security';activeTab='sessions';render()}));
+    }catch(err){if(body.isConnected)body.replaceChildren(note('Account could not be verified: '+String(err.message||err)));}
+  })();
+}
+function signout(){
+  const shell=corporatePanel('Corporate Portal Sign Out',
+    'End this browser’s corporate verification and Supabase session. Other devices and independent applications are not affected.');
+  const feedback=el('p','muted','');shell.append(feedback);
+  shell.append(action('CANCEL',close));
+  const leave=action('SIGN OUT THIS BROWSER',async()=>{
+    leave.disabled=true;corpStatus(feedback,'Signing out this corporate session…');
+    try{
+      const client=corporateApi();
+      if(client){
+        await client.rpc('corp_end_session');
+        await client.auth.signOut({scope:'local'});
+      }
+      location.replace('login.html');
+    }catch(err){corpStatus(feedback,'Sign out failed. You may need to close this browser: '+String(err.message||err),true);leave.disabled=false;}
+  },false,true);
+  shell.append(leave);
+}
 function restricted(){content.append(note('Service identifiers are placeholders. A production operator would require server-side authorization before service details could be unlocked.'),action('Verify & Unlock — Not Connected',null,true));}
 const openDrawer=()=>{$('drawer').classList.add('open');$('drawer').setAttribute('aria-hidden','false');$('drawerShade').hidden=false;$('menuButton').setAttribute('aria-expanded','true');};
 const closeDrawer=()=>{$('drawer').classList.remove('open');$('drawer').setAttribute('aria-hidden','true');$('drawerShade').hidden=true;$('menuButton').setAttribute('aria-expanded','false');};
@@ -1196,4 +1252,5 @@ $('menuButton').addEventListener('click',openDrawer);$('closeDrawer').addEventLi
 // Set only after the navigation, modal, and button event handlers initialize.
 window.BLACKCELL_ADMIN_READY=true;
 document.documentElement.dataset.adminControls='ready';
+void loadCorporatePreferences();
 })();
