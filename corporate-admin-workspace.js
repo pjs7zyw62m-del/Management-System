@@ -115,7 +115,6 @@ export function createCorporateMediaWorkspace({onEnter,onRefresh,member}){
  bottom.append(libraryLink);
  const updated=el('span','bc-overview-updated','COUNTS NOT CHECKED');
  bottom.append(updated);overview.append(bottom);
- const summary=required('bcMediaAdminApp') /* not a main child: below we add actual summary separately */;
  // Pane construction: move original elements by reference to preserve IDs,
  // input values, file input gestures, and each existing module's event handlers.
  for(const d of definitions){
@@ -200,7 +199,7 @@ export function createCorporateMediaWorkspace({onEnter,onRefresh,member}){
   crumb.textContent='BLACKCELL / MEDIA ADMINISTRATION / '+currentDef.label;
   const url=new URL(window.location.href);url.searchParams.set('tab',id);
   history.replaceState(null,'',url.pathname+url.search+url.hash);
-  window.scrollTo({top:0,behavior:'instant'});
+  window.scrollTo({top:0,behavior:'auto'});
   if(id!=='overview'){
    let statusBox=paneMap.get(id).querySelector(':scope > .bc-workspace-status');
    if(!statusBox){statusBox=el('div','bc-workspace-status');paneMap.get(id).prepend(statusBox)}
