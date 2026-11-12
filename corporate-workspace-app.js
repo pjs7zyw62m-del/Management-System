@@ -69,7 +69,8 @@ export async function initWorkspace(client){
    diagnostics:'corporate-workspace-diagnostics.js',
    security:'corporate-workspace-security.js',
    activity:'corporate-workspace-activity.js',
-   backups:'corporate-workspace-backups.js'
+   backups:'corporate-workspace-backups.js',
+   content:'corporate-workspace-content.js'
  };
  const path=map[document.body.dataset.workspace];
  if(!path){root.append(panel('Unavailable workspace','Return to Administration.'));return}
