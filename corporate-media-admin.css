@@ -143,3 +143,31 @@ body.bc-network .bc-media-processor{margin:19px 0 0!important}
 .bc-bunny-toolbar a{background:#292333;border-color:#6b4a64}
 .bc-bunny-toolbar button:disabled{opacity:.45;cursor:wait}
 #bcBunnyMessage{margin:12px 0 7px;color:#dce6eb}
+
+
+/* Bunny Storage protected batch upload · obsidian Apple Glass */
+.bc-bunny-uploader{margin:16px 0 20px;padding:23px;border:1px solid #435762;border-radius:19px;background:linear-gradient(140deg,#151a25,#0a1017 80%);box-shadow:0 16px 38px #0006}
+.bc-bunny-uploader h2{font-size:20px;margin:8px 0 10px;letter-spacing:-.02em}
+.bc-bunny-uploader h2 span{font-weight:500;font-size:12px;color:#b6c5d0}
+.bc-bunny-uploader p,.bc-bunny-uploader small{font-size:11px;color:#b3c0cc;line-height:1.8}
+.bc-bunny-uploader p strong{color:#f2f4f8}
+.bc-bunny-uploader-warning{border-left:2px solid #b87958;padding:7px 12px;margin:14px 0;background:#36231955}
+.bc-bunny-actions{display:flex;gap:8px;flex-wrap:wrap;margin:17px 0 14px}
+.bc-bunny-actions button{font-size:10px;letter-spacing:.025em;font-weight:800;padding:12px 14px;background:#263440;color:#e6f0f6;border-radius:10px;border:1px solid #4d6471;cursor:pointer}
+.bc-bunny-actions button:disabled{opacity:.35;cursor:not-allowed}
+#bcBunnyStart{background:linear-gradient(110deg,#401f2b,#672a3c);border-color:#925064}
+#bcBunnyPause{background:#23232e;border-color:#484454}
+.bc-bunny-batch-progress{background:#25313c;height:8px;overflow:hidden;border-radius:30px;border:1px solid #455766}
+.bc-bunny-batch-progress>div{width:0;height:100%;border-radius:30px;background:linear-gradient(90deg,#755466,#c6576a,#c8a3aa);transition:width .2s ease}
+.bc-bunny-batch-stats{font-size:11px;color:#cbdbe4;line-height:1.5;margin:11px 0}
+#bcBunnyUploadNote{margin:10px 0 12px;color:#d7e0e6}
+#bcBunnyUploadNote[data-level="error"]{color:#ffadb9}
+.bc-bunny-batch-queue{display:grid;gap:7px;max-height:400px;overflow:auto;margin:12px 0}
+.bc-bunny-file{display:flex;gap:6px;flex-direction:column;border:1px solid #384752;background:#111a23;border-radius:10px;padding:11px 12px}
+.bc-bunny-file span{font-size:12px;overflow-wrap:anywhere;color:#f1f4f8;font-weight:700}
+.bc-bunny-file small{font-size:10px;color:#a8b7c3}
+.bc-bunny-file p{margin:3px 0;color:#e8a5aa}
+.bc-bunny-file[data-state="verified"],.bc-bunny-file[data-state="duplicate"]{border-color:#3c7366}
+.bc-bunny-file[data-state="failed"]{border-color:#b65e6a}
+.bc-bunny-file[data-state="unsupported"]{border-color:#705e48}
+@media(max-width:650px){.bc-bunny-uploader{padding:16px}.bc-bunny-actions button{flex:1 1 180px;text-align:center}}
