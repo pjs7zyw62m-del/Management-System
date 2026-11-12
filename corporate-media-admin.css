@@ -119,3 +119,11 @@ body.bc-network .bc-media-processor{margin:19px 0 0!important}
  .bc-bulk-file-top small{white-space:normal}
 }
 @media(max-width:390px){.bc-bulk-actions button{flex-basis:100%}}
+
+/* Browser-to-B2 permission diagnostics */
+.bc-bulk-cors{display:flex;align-items:flex-start;gap:12px;margin:9px 0 16px;padding:14px 15px;background:#111922;border:1px solid #3c4b57;border-radius:12px;flex-wrap:wrap}
+.bc-bulk-cors button{padding:10px 13px;border:1px solid #59738a;color:#ddeaf6;background:#253544;border-radius:9px;font-size:10px;font-weight:800;cursor:pointer}
+.bc-bulk-cors button:disabled{opacity:.5;cursor:progress}
+.bc-bulk-cors span{font-size:11px;line-height:1.75;color:#c6d1dc;flex:1 1 300px}
+.bc-bulk-cors span[data-cors="fail"]{color:#ffc1c9}
+.bc-bulk-cors span[data-cors="pass"]{color:#a9e4ca}

@@ -180,6 +180,39 @@ async function importTestPhoto(photo:File,keyId:string,secret:string,bucket:stri
    The browser transfers each photo/video directly to Backblaze B2, avoiding
    Supabase's media proxy and large-body limits. This function never exposes
    a long-lived B2 credential and never publishes assets. */
+/* Read-only Backblaze CORS preflight probe. This never creates files and
+   never exposes the application's S3 credentials or a presigned URL. */
+async function checkBulkCors(keyId:string,secret:string,bucket:string,endpoint:string){
+ const client=bulkClient(keyId,secret,endpoint);
+ try{
+  const key="blackcell-intake/bulk/00/"+"0".repeat(64);
+  const presigned=await getSignedUrl(client,new PutObjectCommand({
+   Bucket:bucket.trim(),Key:key,ContentType:"image/jpeg"
+  }),{expiresIn:90});
+  const origin="https://blackcellcorp.com";
+  const response=await fetch(presigned,{
+   method:"OPTIONS",
+   headers:{"Origin":origin,"Access-Control-Request-Method":"PUT",
+    "Access-Control-Request-Headers":"content-type"},
+   signal:AbortSignal.timeout(12000)
+  });
+  const allowedOrigin=response.headers.get("access-control-allow-origin")||"";
+  const allowedMethods=response.headers.get("access-control-allow-methods")||"";
+  const allowedHeaders=response.headers.get("access-control-allow-headers")||"";
+  const methods=allowedMethods.split(",").map(x=>x.trim().toUpperCase());
+  const headers=allowedHeaders.split(",").map(x=>x.trim().toLowerCase());
+  const cors_ok=response.ok&&(allowedOrigin===origin||allowedOrigin==="*")&&
+    methods.includes("PUT")&&(headers.includes("*")||headers.includes("content-type"));
+  return {ok:true,cors_ok,http_status:response.status,
+   detail:cors_ok?
+    "Browser upload permission appears enabled for blackcellcorp.com. Try a single-file upload; if it fails, inspect the error for an S3 response.":
+    "Browser PUT permission is missing or incomplete on the Backblaze bucket. The BLACKCELL storage key can upload files but cannot edit bucket CORS. An administrator must add an S3-compatible CORS rule allowing PUT + Content-Type from https://blackcellcorp.com (and expose ETag for video multipart uploads)."};
+ }catch(_){
+  return {ok:true,cors_ok:null,code:"B2_CORS_CHECK_UNAVAILABLE",
+   detail:"The Backblaze browser-permission probe could not complete. The existing key and bucket are unchanged. If uploads fail before reaching Backblaze, check bucket S3 CORS rules."};
+ }finally{client.destroy()}
+}
+
 const BULK_PART_BYTES=32*1024*1024;
 const BULK_MAX_BYTES=50*1024*1024*1024; // 50 GiB per individual file; no batch cap
 const BULK_SMALL_BYTES=32*1024*1024;
@@ -380,7 +413,7 @@ Deno.serve(async request=>{
   }
  }catch(_){return json({ok:false,code:"INVALID_UPLOAD_REQUEST",detail:"Could not read the selected file."},400,origin)}
  if(action!=="status"&&action!=="import-photo-test"&&
-    !["bulk-plan","bulk-part","bulk-complete","bulk-verify","bulk-abort"].includes(action))
+    !["bulk-plan","bulk-part","bulk-complete","bulk-verify","bulk-abort","bulk-cors-check"].includes(action))
   return json({ok:false,code:"UNSUPPORTED_ACTION"},400,origin);
  const keyId=Deno.env.get("BLACKCELL_B2_KEY_ID")||"";
  const secret=Deno.env.get("BLACKCELL_B2_APPLICATION_KEY")||"";
@@ -395,6 +428,10 @@ Deno.serve(async request=>{
  if(missing.length)
   return json({ok:true,connected:false,code:"B2_NOT_CONFIGURED",
    detail:"Missing in NEXUS Management System → Edge Function Secrets: "+missing.join(", ")+". Add these exact secret names and their values, then press CHECK CONNECTION."},200,origin);
+ if(action==="bulk-cors-check"){
+  const result=await checkBulkCors(keyId,secret,bucket,endpoint);
+  return json(result,200,origin);
+ }
  if(action.startsWith("bulk-")){
   const result=await doBulkAction(action,payload,identity.data.user.id,keyId,secret,bucket,endpoint);
   return json(result,result.ok?200:422,origin);
