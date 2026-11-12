@@ -2,9 +2,9 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#030305"><title>BLACKCELL CORPORATION | Media Administration</title>
 <link rel="stylesheet" href="corporate-media-processor.css?v=20261111-adminmove1">
-<link rel="stylesheet" href="corporate-media-admin.css?v=20261111-bunny2">
+<link rel="stylesheet" href="corporate-media-admin.css?v=20261111-bunny-review1">
 <script src="corp-config.js" defer></script>
-<script type="module" src="corporate-media-admin.js?v=20261111-bunny2"></script>
+<script type="module" src="corporate-media-admin.js?v=20261111-bunny-review1"></script>
 </head>
 <body class="bc-network bc-media-admin-page">
 <div id="bcAdminGate" role="status" aria-live="polite">
@@ -119,6 +119,19 @@
         </div>
         <div class="bc-proc-steps"><span>01 · RECEIVE</span><span>02 · DUPLICATES</span><span>03 · CLASSIFY</span><span>04 · APPROVE &amp; FILE</span></div>
         <div class="bc-proc-toolbar"><button type="button" id="bcProcessRefresh">↻ REFRESH REVIEW QUEUE</button><button type="button" id="bcMediaReset" class="bc-proc-danger">RESET ALL BLACKCELL PHOTO &amp; VIDEO MEDIA</button></div>
+        <section class="bc-bunny-review-panel" id="bcBunnyStagingPanel" aria-label="Bunny private media waiting for Military Library review">
+          <div class="bc-bunny-stage-header">
+            <div><span class="bc-admin-overline">BUNNY PRIVATE VAULT → MILITARY LIBRARY</span><h3>Bunny Incoming <strong id="bcBunnyStagingCount">0</strong></h3>
+              <p>Files saved in Bunny appear here automatically for private intake. Select the photographs or videos you want prepared for the Military Library approval queue. Nothing posts without your approval.</p></div>
+          </div>
+          <div class="bc-bunny-stage-actions">
+            <button type="button" id="bcBunnyStagingRefresh">↻ REFRESH BUNNY INTAKE</button>
+            <button type="button" id="bcBunnyPrepareBatch" disabled>PREPARE NEXT 10 FOR REVIEW</button>
+          </div>
+          <p id="bcBunnyStagingStatus" role="status" aria-live="polite">Checking your private Bunny originals…</p>
+          <div id="bcBunnyStagingQueue" class="bc-bunny-stage-queue"></div>
+          <small>Preparing makes a separate private review copy in BLACKCELL's existing Military Library system. Originals remain in Bunny. Files over 32 MiB and unsupported formats are held safely in Bunny for a later large-media import.</small>
+        </section>
         <p id="bcProcessStatus" role="status" aria-live="polite">Checking import queue…</p>
         <div id="bcProcessQueue" class="bc-proc-queue"></div>
         <div class="bc-proc-pagination"><button id="bcQueuePrev" type="button">← PREVIOUS</button><span id="bcQueuePage">1 / 1</span><button id="bcQueueNext" type="button">NEXT →</button></div>
@@ -146,7 +159,7 @@
            <button id="bcReviewApprove" type="button" class="bc-proc-approve">✓ APPROVE &amp; FILE MEDIA</button>
           </div>
         </div>
-        <small class="bc-proc-note">The permanent reset requires two confirmations and deletes BLACKCELL Network photo/video originals through Supabase Storage, followed by their gallery records. NEXUS, iCloud originals, and private chat attachments remain untouched. Backblaze cloud import is not yet connected.</small>
+        <small class="bc-proc-note">The permanent reset requires two confirmations and deletes BLACKCELL Network photo/video originals through Supabase Storage, followed by their gallery records. NEXUS, iCloud originals, and private chat attachments remain untouched. Bunny incoming items are shown above and are never posted automatically.</small>
       </section>
   <section class="bc-media-admin-explainer">
    <h2>How this operates</h2>
