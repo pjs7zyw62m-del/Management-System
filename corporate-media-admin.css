@@ -80,3 +80,42 @@ body.bc-network .bc-media-processor{margin:19px 0 0!important}
 #bcIcloudStatus[data-result="success"]{color:#b4ebd0}
 #bcIcloudStatus[data-result="error"]{color:#ffbdca}
 @media(max-width:410px){.bc-icloud-test{padding:18px 15px}.bc-icloud-test-controls button{width:100%}}
+
+
+/* Bulk private B2 intake: matches approved BLACKCELL obsidian Apple Glass. */
+.bc-bulk-intake{margin:20px 0 10px;padding:24px;border-radius:19px;border:1px solid #534454;background:linear-gradient(145deg,#1a121e 0,#101821 72%,#101116);box-shadow:0 18px 42px #0005}
+.bc-bulk-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}
+.bc-bulk-heading h2{font-size:21px;margin:8px 0 8px;letter-spacing:-.03em}
+.bc-bulk-heading h2 span{font-size:12px;color:#c6b7c7;letter-spacing:normal}
+.bc-bulk-heading p{font-size:12px;color:#b5c2cd;line-height:1.8;max-width:800px}
+.bc-bulk-mark{white-space:nowrap;border:1px solid #3a8b78;color:#b0efdb;background:#11342e;border-radius:99px;padding:10px 13px;font-size:10px;letter-spacing:.1em;font-weight:850}
+.bc-bulk-actions{display:flex;gap:9px;flex-wrap:wrap;margin:19px 0 15px}
+.bc-bulk-actions button{padding:13px 15px;min-height:45px;border-radius:11px;color:#f6eff4;border:1px solid #86506a;background:#35212c;font-weight:800;font-size:11px;letter-spacing:.04em;cursor:pointer}
+.bc-bulk-actions #bcBulkStart{border-color:#ae5477;background:#80324d}
+.bc-bulk-actions #bcBulkPause{border-color:#485464;background:#25303b}
+.bc-bulk-actions #bcBulkRetry{border-color:#556477;background:#222d3a}
+.bc-bulk-actions button:disabled{opacity:.4;cursor:not-allowed}
+.bc-bulk-summary{font-size:11px;color:#d6dbe4;margin:15px 0 8px}
+.bc-bulk-total,.bc-bulk-file progress{display:block;width:100%;height:8px;overflow:hidden;accent-color:#b14c70;appearance:auto}
+#bcBulkNote{margin:14px 0;font-size:11px;color:#d0c5d2;line-height:1.7}
+#bcBulkNote[data-state="success"]{color:#a8e2cf}
+#bcBulkNote[data-state="error"]{color:#ffc5d0}
+.bc-bulk-queue{max-height:420px;overflow:auto;display:grid;gap:7px;padding-right:3px;scrollbar-color:#624254 #141219}
+.bc-bulk-file{background:#0b1018c9;border:1px solid #393c48;border-radius:11px;padding:12px 14px}
+.bc-bulk-file-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:7px}
+.bc-bulk-file-top strong{font-size:11px;font-weight:750;line-height:1.5;word-break:break-word;min-width:0}
+.bc-bulk-file-top small{font-size:9px;color:#a4abba;white-space:nowrap}
+.bc-bulk-file.bc-bulk-complete{border-color:#3f7669}
+.bc-bulk-file.bc-bulk-duplicate{border-color:#69765a}
+.bc-bulk-file.bc-bulk-failed{border-color:#a45166}
+.bc-bulk-file progress{height:5px}
+.bc-bulk-error{display:block;margin-top:8px;color:#ffb7ca;font-size:10px;line-height:1.6}
+.bc-bulk-empty{border:1px dashed #544b59;padding:22px;text-align:center;font-size:11px;color:#a3a9b6;border-radius:12px}
+.bc-bulk-foot{display:block;margin-top:15px;color:#99a5b7;font-size:10px;line-height:1.8}
+@media(max-width:680px){
+ .bc-bulk-intake{padding:18px 15px}.bc-bulk-heading{display:block}.bc-bulk-mark{display:inline-block;margin-top:6px}
+ .bc-bulk-actions button{flex:1 1 42%;font-size:10px;min-height:47px}
+ .bc-bulk-file-top{flex-direction:column;gap:3px}
+ .bc-bulk-file-top small{white-space:normal}
+}
+@media(max-width:390px){.bc-bulk-actions button{flex-basis:100%}}
