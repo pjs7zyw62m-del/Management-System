@@ -92,3 +92,82 @@ body[data-page="admin-preview"] .admin-footer{border-top-color:#ffffff18}
 @media(max-width:730px){body[data-page="admin-preview"] .metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.ops-health-grid{grid-template-columns:1fr}.ops-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.ops-monitor-head{display:block}.ops-actions{margin-top:18px}.ops-monitor{border-radius:17px}.ops-service{padding:15px}.ops-hero-status{letter-spacing:.05em}.ops-service .ops-service-head{gap:8px}}
 @media(max-width:460px){body[data-page="admin-preview"] .admin-hero{min-height:290px;padding:33px 20px 26px}body[data-page="admin-preview"] .admin-hero h1{font-size:42px}.ops-actions{display:grid;grid-template-columns:1fr 1fr}.ops-actions .ops-auto{grid-column:1/-1}.ops-button{padding:12px 10px}.ops-monitor{padding:17px 12px}.ops-metric{padding:13px}.ops-metric strong{font-size:24px}.ops-service .ops-service-head .ops-service-title small{font-size:9px}body[data-page="admin-preview"] .metric{padding:16px;min-height:114px}body[data-page="admin-preview"] .metric strong{font-size:30px}}
 @media(prefers-reduced-motion:reduce){.ops-dot[data-state="checking"]{animation:none}body[data-page="admin-preview"] .admin-card,body[data-page="admin-preview"] .division-grid .division{transition:none}}
+
+/* GLOBAL ADMINISTRATION PANELS: Security, Settings, Logs, Backups and Corporate Systems. */
+body[data-page="admin-preview"] .drawer{
+  width:min(410px,95vw);
+  background:radial-gradient(ellipse 80% 35% at 13% 6%,#67253b28,transparent),linear-gradient(155deg,#19191f,#07080d 67%);
+  border-right:1px solid #ffffff29;box-shadow:28px 0 90px #000a;padding:clamp(20px,3vw,29px);
+}
+body[data-page="admin-preview"] .drawer-heading{padding-bottom:19px;border-bottom:1px solid #ffffff15}
+body[data-page="admin-preview"] .drawer h2{font-size:29px;letter-spacing:-.05em}
+body[data-page="admin-preview"] .drawer nav{gap:6px}
+body[data-page="admin-preview"] .drawer nav button,
+body[data-page="admin-preview"] .drawer nav a{
+  border-radius:11px;border:1px solid transparent;background:#ffffff04;
+  padding:14px;color:#d8d7df;font-size:12px;
+  transition:background .16s,border-color .16s;
+}
+body[data-page="admin-preview"] .drawer nav button:hover,
+body[data-page="admin-preview"] .drawer nav a:hover{
+  background:#5d273637;border-color:#b65c7447;color:#fff;
+}
+body[data-page="admin-preview"] .drawer .signout{
+  padding:14px;border:1px solid #85374d63;background:#461b2b44;border-radius:10px;
+}
+body[data-page="admin-preview"] .modal-backdrop{
+  background:#020307dc;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+}
+body[data-page="admin-preview"] .admin-modal:not(.user-management-v2){
+  max-width:min(880px,calc(100vw - 22px));
+  background:radial-gradient(ellipse 40% 28% at 85% 0%,#79354a2d,transparent),linear-gradient(140deg,#22212a,#0b0c11 60%);
+  border:1px solid #ffffff24;border-radius:23px;box-shadow:0 34px 110px #000d,inset 0 1px #ffffff1a;
+}
+body[data-page="admin-preview"] .admin-modal:not(.user-management-v2) .modal-top{
+  padding-bottom:14px;border-bottom:1px solid #ffffff19;margin-bottom:16px;
+}
+body[data-page="admin-preview"] .admin-modal:not(.user-management-v2) .modal-top h2{
+  font-size:clamp(25px,3.2vw,35px);letter-spacing:-.05em;font-weight:740;
+}
+body[data-page="admin-preview"] .admin-modal:not(.user-management-v2) .modal-tabbar{
+  background:#08090dc9;border:1px solid #ffffff1b;padding:6px;gap:6px;border-radius:12px;
+}
+body[data-page="admin-preview"] .admin-modal:not(.user-management-v2) .modal-tabbar button{
+  border-radius:9px;font-size:11px;font-weight:720;padding:12px 16px;border:1px solid transparent;
+}
+body[data-page="admin-preview"] .admin-modal:not(.user-management-v2) .modal-tabbar button.active{
+  background:linear-gradient(120deg,#6c2842,#381b2f);border-color:#bb5a7362;color:#fff;
+}
+body[data-page="admin-preview"] .admin-modal:not(.user-management-v2) .content-block{
+  background:linear-gradient(135deg,#222129d6,#0d0d14);border:1px solid #ffffff1a;border-radius:14px;
+}
+body[data-page="admin-preview"] .admin-modal:not(.user-management-v2) .info-card{
+  background:#ffffff07;border:1px solid #ffffff18;border-radius:13px;
+}
+body[data-page="admin-preview"] .admin-modal:not(.user-management-v2) .text-action{
+  border-radius:10px;background:#ffffff0e;border:1px solid #ffffff20;color:#e9e6ed;font-size:11px;
+}
+body[data-page="admin-preview"] .admin-modal:not(.user-management-v2) .text-action.emphasis{
+  background:linear-gradient(115deg,#62223a,#a43b52);border-color:#bd6979;color:#fff;
+}
+body[data-page="admin-preview"] .admin-modal:not(.user-management-v2) .list-row{
+  border-bottom-color:#ffffff15;padding:14px 0;gap:12px;
+}
+body[data-page="admin-preview"] .admin-modal:not(.user-management-v2) .mock-state{
+  background:#ffffff0c;border-color:#ffffff1b;border-radius:8px;
+}
+body[data-page="admin-preview"] .admin-modal:not(.user-management-v2) .disabled-callout{
+  background:#241e2696;border-color:#a2546841;color:#bfb5bf;border-radius:12px;
+}
+body[data-page="admin-preview"] .admin-modal:not(.user-management-v2) input:not([type=checkbox]),
+body[data-page="admin-preview"] .admin-modal:not(.user-management-v2) select{
+  background:#090a10;border:1px solid #ffffff29;border-radius:9px;color:#f3f1f6;
+}
+body[data-page="admin-preview"] .admin-modal:not(.user-management-v2) input:focus,
+body[data-page="admin-preview"] .admin-modal:not(.user-management-v2) select:focus{
+  border-color:#bf7182;box-shadow:0 0 0 3px #a03e532d;outline:0;
+}
+body[data-page="admin-preview"] .ops-modal-health>h3{margin:0 0 6px;font-size:17px;color:#f6f2f7}
+body[data-page="admin-preview"] .ops-modal-health>.muted{margin:0 0 18px}
+body[data-page="admin-preview"] .ops-modal-health>.text-action{margin-top:15px}
+@media(max-width:630px){body[data-page="admin-preview"] .drawer{padding:17px}body[data-page="admin-preview"] .admin-modal:not(.user-management-v2){padding:17px}}
