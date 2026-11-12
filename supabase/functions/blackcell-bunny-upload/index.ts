@@ -82,15 +82,26 @@ Deno.serve(async req=>{
   return send({ok:false,code:"LENGTH_MISMATCH",detail:"The transmitted file size did not match the selection."},422,origin);
  const accessKey=Deno.env.get("BLACKCELL_BUNNY_STORAGE_ACCESS_KEY")?.trim()||"";
  if(!accessKey)return send({ok:false,code:"BUNNY_SECRET_MISSING"},503,origin);
- const folder="blackcell-intake/bulk/"+hash.slice(0,2)+"/";
+ // Keep every NEW upload directly in this single, shared intake folder.
+ // Historical upload batches used an extra 2-character hash subfolder; read
+ // that older location only for deduplication. Never move/delete old objects.
+ const folder="blackcell-intake/bulk/";
+ const legacyFolder=folder+hash.slice(0,2)+"/";
  const prefix=hash+"__";
  try{
-  // These requests do not read or modify existing Bunny files.
-  const before=await folderEntries(accessKey,folder);
-  const prior=before.find(x=>x.ObjectName.startsWith(prefix));
-  if(prior){
-   if(Number(prior.Length)!==size)return send({ok:false,code:"HASH_COLLISION_OR_SIZE_MISMATCH"},409,origin);
+  // Detect duplicates across the new flat layout AND legacy hash folders.
+  // Read-only directory listings; no existing Bunny files are changed.
+  const flatFiles=await folderEntries(accessKey,folder);
+  const current=flatFiles.find(x=>x.ObjectName.startsWith(prefix));
+  if(current){
+   if(Number(current.Length)!==size)return send({ok:false,code:"HASH_COLLISION_OR_SIZE_MISMATCH"},409,origin);
    return send({ok:true,stored:true,duplicate:true,verified:true,size,code:"EXISTING_MATCH"},200,origin);
+  }
+  const legacyFiles=await folderEntries(accessKey,legacyFolder);
+  const legacy=legacyFiles.find(x=>x.ObjectName.startsWith(prefix));
+  if(legacy){
+   if(Number(legacy.Length)!==size)return send({ok:false,code:"HASH_COLLISION_OR_SIZE_MISMATCH"},409,origin);
+   return send({ok:true,stored:true,duplicate:true,verified:true,size,code:"EXISTING_MATCH_LEGACY"},200,origin);
   }
 
   // Bound memory; hash file bytes independently before accepting the PUT.
