@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="corporate-bunny-library-sync.css?v=20261112-library-sync1"
 <link rel="stylesheet" href="corporate-media-diagnostics.css?v=20261112-diag1">
 <script src="corp-config.js" defer></script>
-<script type="module" src="corporate-media-admin.js?v=20261112-library-sync2"></script>
+<script type="module" src="corporate-media-admin.js?v=20261112-diag1"></script>
 </head>
 <body class="bc-network bc-media-admin-page">
 <div id="bcAdminGate" role="status" aria-live="polite">
@@ -97,11 +97,11 @@
     <div class="bc-b2-connection-title"><span class="bc-admin-overline">BLACKCELL / PRIVATE CLOUD CONNECTION</span><h2>Backblaze B2 Storage</h2>
      <p>Your restricted 1 TB+ storage destination. Secrets stay in Supabase; nothing is uploaded or published by checking the connection.</p></div>
     <div class="bc-b2-connection-toolbar">
-      <strong id="bcB2Status" role="status" aria-live="polite">NOT VERIFIED</strong>
+      <strong id="bcB2Status" role="status" aria-live="polite">OPTIONAL · ON DEMAND</strong>
       <button id="bcB2Check" type="button">↻ CHECK CONNECTION</button>
       <a href="https://supabase.com/dashboard/project/eeddazzwqokqlzvzjlxz/functions/secrets" target="_blank" rel="noopener noreferrer">MANAGE SUPABASE SECRETS ↗</a>
     </div>
-    <p id="bcB2Message">Add the four private B2 credentials in Supabase Edge Function Secrets, then check the connection.</p>
+    <p id="bcB2Message">Backblaze is a legacy, optional connection. Press CHECK CONNECTION only if you intend to use Backblaze; normal BLACKCELL media uses Bunny Storage.</p>
     <small>Private bucket: blackcellcorp-media-vault · Region: us-east-005 · Staging prefix: blackcell-intake/ · Existing Supabase media remains unchanged</small>
   </section>
   <section class="bc-bulk-intake" id="bcBulkIntake" aria-label="Bulk upload photos and videos to Backblaze">
@@ -117,7 +117,7 @@
    </div>
    <div class="bc-bulk-cors">
     <button id="bcBulkCorsCheck" type="button">↻ CHECK BROWSER UPLOAD ACCESS</button>
-    <span id="bcBulkCorsResult" role="status" aria-live="polite">Checking whether Backblaze permits uploads from this website…</span>
+    <span id="bcBulkCorsResult" role="status" aria-live="polite">Optional Backblaze connection: press CHECK BROWSER UPLOAD ACCESS to test it.</span>
    </div>
    <div class="bc-bulk-summary" id="bcBulkStats">No media selected yet</div>
    <progress class="bc-bulk-total" id="bcBulkMeter" max="1" value="0" aria-label="Overall verified upload progress"></progress>
