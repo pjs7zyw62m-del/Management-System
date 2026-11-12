@@ -21,22 +21,26 @@ export function setupBlackcellLibraryBunnySync({client,toast}){
   return data;
  }
  function repaint(){
+  const empty=current&&current.approved_to_archive===0;
   button.disabled=running||!current?.remaining;
   pause.disabled=!running;
-  button.textContent=running?'SYNC IN PROGRESS…':current?.remaining?
-   '↑ SYNC '+current.remaining+' PHOTOS TO BUNNY':'✓ LIBRARY BACKED UP TO BUNNY';
+  button.textContent=running?'SYNC IN PROGRESS…':empty?'NO PHOTOS TO SYNC':current?.remaining?
+   '↑ SYNC '+current.remaining+' PHOTOS TO BUNNY':'✓ ALL REGISTERED PHOTOS ARCHIVED';
   count.textContent=current?
     current.archived+' / '+current.approved_to_archive+' VERIFIED':'—';
-  badge.textContent=current?.remaining===0?'ARCHIVED':running?'SYNCING':'READY TO SYNC';
-  badge.dataset.mode=current?.remaining===0?'complete':running?'busy':'ready';
+  badge.textContent=empty?'EMPTY LIBRARY':current?.remaining===0?'ARCHIVED':running?'SYNCING':'READY TO SYNC';
+  badge.dataset.mode=empty?'empty':current?.remaining===0?'complete':running?'busy':'ready';
  }
  async function refresh(){
   const info=await invoke({action:'status'});
   current=info;
   repaint();
   if(!running){
-   detail.textContent=info.remaining?
-    info.remaining+' approved Military Library photos ('+bytes(info.remaining_bytes)+') still need a verified Bunny copy. '+info.existing_bunny_files+' other media records are already Bunny-sourced.':'Every approved legacy Military Library photo now has a verified Bunny copy. '+info.existing_bunny_files+' existing Bunny-sourced records are unchanged. Existing Supabase previews remain available.';
+   detail.textContent=info.approved_to_archive===0?
+    'Your current Military Library has no approved photos to sync. This does not inspect or erase any older Bunny files. New approved photos can be archived later.':
+    info.remaining?
+    info.remaining+' approved Military Library photos ('+bytes(info.remaining_bytes)+') still need a verified Bunny copy. '+info.existing_bunny_files+' other current media records are already Bunny-sourced.':
+    'All '+info.approved_to_archive+' approved legacy photos currently registered in the Military Library have verified Bunny archive references. Originals and permissions are unchanged.';
    progress.max=Math.max(1,info.approved_to_archive);
    progress.value=info.archived;
   }
