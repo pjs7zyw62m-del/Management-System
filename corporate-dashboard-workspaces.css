@@ -1,0 +1,83 @@
+
+/* Dashboard Overview and standalone check workspaces */
+body[data-page="admin-preview"] .ops-dashboard-overview{
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:17px 0 34px;
+}
+body[data-page="admin-preview"] .ops-dashboard-overview .metric{
+ padding:21px;min-height:128px;border:1px solid #ffffff1d;border-radius:16px;
+ background:linear-gradient(145deg,#211e28,#0d0e12 70%);
+}
+body[data-page="admin-preview"] .ops-dashboard-overview .metric strong{
+ font-variant-numeric:tabular-nums;font-size:clamp(24px,3vw,35px);letter-spacing:-.055em;
+}
+body[data-page="admin-preview"] .ops-dashboard-overview .metric:last-child strong{
+ color:#e9b4c0;font-size:clamp(23px,2.6vw,31px);
+}
+body[data-page="admin-preview"] .ops-dashboard-workspaces{
+ padding:clamp(18px,3vw,30px);border:1px solid #ffffff1f;border-radius:22px;
+ background:radial-gradient(ellipse 50% 65% at 100% 0%,#6e2b422b,transparent 90%),linear-gradient(125deg,#1d1b23,#090a0f);
+ box-shadow:inset 0 1px #ffffff12,0 21px 50px #0003;margin-bottom:35px;
+}
+body[data-page="admin-preview"] .ops-dashboard-workspaces .section-title{margin:0 0 8px;align-items:end}
+body[data-page="admin-preview"] .ops-dashboard-workspaces .section-title h2{
+ font-size:clamp(23px,2.7vw,30px);letter-spacing:-.045em;margin:9px 0 0;
+}
+body[data-page="admin-preview"] .ops-workspace-note{
+ font-size:12px;color:#aaa3af;line-height:1.7;max-width:800px;margin:7px 0 21px;
+}
+body[data-page="admin-preview"] .ops-workspace-grid{
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;
+}
+body[data-page="admin-preview"] .ops-workspace-link{
+ display:flex;flex-direction:column;min-width:0;min-height:173px;padding:19px;
+ border-radius:16px;border:1px solid #ffffff1b;
+ background:linear-gradient(145deg,#29252f91,#101117e8);position:relative;
+ transition:border-color .18s,transform .18s,background .18s;
+}
+body[data-page="admin-preview"] .ops-workspace-link:hover{
+ border-color:#bb617774;background:linear-gradient(140deg,#3a2735,#171218);transform:translateY(-2px);
+}
+body[data-page="admin-preview"] .ops-workspace-icon{
+ display:grid;place-items:center;width:37px;height:37px;border-radius:10px;
+ border:1px solid #ac637061;color:#edb2c0;background:#56243959;
+ font-size:20px;margin-bottom:15px;
+}
+body[data-page="admin-preview"] .ops-workspace-link strong{
+ font-size:13px;line-height:1.45;color:#f4eff4;
+}
+body[data-page="admin-preview"] .ops-workspace-link small{
+ display:block;font-size:11px;color:#a49da9;line-height:1.55;margin:6px 0 11px;
+}
+body[data-page="admin-preview"] .ops-workspace-tag{
+ margin-top:auto;letter-spacing:.12em;color:#d095a4;font-size:9px;font-weight:850;
+}
+body[data-page="admin-preview"] .admin-grid .admin-card{min-width:0}
+body[data-page="admin-preview"] .drawer nav .ops-drawer-page{
+ display:flex;align-items:center;justify-content:space-between;gap:14px;
+ font-size:12px;font-weight:650;color:#e4e0e6;border-radius:11px;
+ background:#ffffff05;border:1px solid transparent;padding:14px;
+}
+body[data-page="admin-preview"] .drawer nav .ops-drawer-page:hover{
+ color:#fff;background:#662b3a50;border-color:#bc61715a;
+}
+@media(max-width:1100px){
+ body[data-page="admin-preview"] .ops-workspace-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body[data-page="admin-preview"] .ops-workspace-link{min-height:145px}
+}
+@media(max-width:780px){
+ body[data-page="admin-preview"] .ops-dashboard-overview{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ body[data-page="admin-preview"] .ops-dashboard-overview .metric{min-height:113px;padding:15px}
+ body[data-page="admin-preview"] .ops-dashboard-workspaces{padding:16px;border-radius:17px}
+ body[data-page="admin-preview"] .ops-dashboard-workspaces .section-title{gap:8px}
+ body[data-page="admin-preview"] .ops-dashboard-workspaces .section-title>span{font-size:10px}
+ body[data-page="admin-preview"] .ops-workspace-grid{gap:9px}
+ body[data-page="admin-preview"] .ops-workspace-link{min-height:148px;padding:14px}
+ body[data-page="admin-preview"] .ops-workspace-link strong{font-size:12px}
+ body[data-page="admin-preview"] .ops-workspace-link small{font-size:10px}
+}
+@media(max-width:430px){
+ body[data-page="admin-preview"] .ops-workspace-icon{width:32px;height:32px;font-size:17px;margin-bottom:12px}
+ body[data-page="admin-preview"] .ops-workspace-link{min-height:161px}
+ body[data-page="admin-preview"] .ops-workspace-tag{font-size:8px}
+ body[data-page="admin-preview"] .ops-dashboard-overview .metric:last-child strong{font-size:24px}
+}
