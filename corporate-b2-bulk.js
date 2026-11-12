@@ -208,5 +208,7 @@ export function setupBlackcellBulk({client,toast}){
   e.preventDefault();e.returnValue='';
  });
  render();
- void checkCors();
+ // Backblaze is the retired/optional provider. Do not stall Media Admin
+ // with a legacy CORS round trip until the owner explicitly requests it.
+ if(corsStatus)corsStatus.textContent='Optional Backblaze check is idle. Press CHECK BROWSER UPLOAD ACCESS if you need this legacy provider.';
 }
