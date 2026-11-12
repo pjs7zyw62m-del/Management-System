@@ -161,6 +161,7 @@ body.bc-media-admin-page{
 .bc-overview-bottom{display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:space-between;padding:18px 3px;color:#8d96a5}
 .bc-overview-library-link{font-size:11px;font-weight:850;color:#e0b2c2;border-bottom:1px solid #7b485a;padding:5px 1px}
 .bc-overview-updated{font-size:10px;letter-spacing:.06em}
+.bc-overview-install{display:block;flex-basis:100%;font-size:9px;letter-spacing:.06em;color:#878f9d;margin-top:4px}
 .bc-workspace-review-note,.bc-workspace-legacy-note{
  background:#151921;border:1px solid #35414a;border-radius:16px;padding:18px 20px;margin:0 0 15px;color:#d6d8df
 }
@@ -183,7 +184,7 @@ body.bc-media-admin-page{
  .bc-media-admin-shell{padding:15px 13px 50px!important}
  .bc-workspace{display:flex;flex-direction:column;gap:10px}
  .bc-workspace-sidebar{
-   position:relative;top:auto;width:100%;padding:10px;border-radius:17px;
+   position:sticky;top:0;z-index:45;width:100%;padding:10px;border-radius:17px;
    background:#12151cf0;
  }
  .bc-workspace-brand,.bc-workspace-nav-hint,.bc-workspace-footer{display:none}
@@ -216,6 +217,7 @@ body.bc-media-admin-page{
  .bc-workflow-steps{grid-template-columns:repeat(2,minmax(0,1fr))}
  .bc-workspace-pane .bc-media-admin-summary{grid-template-columns:repeat(2,minmax(0,1fr))!important}
  .bc-workspace-pane .bc-media-admin-summary>div{padding:13px 12px!important}
+ .bc-workspace-pane .bc-media-admin-summary>div:first-child{grid-column:1 / -1}
  .bc-workspace-pane .bc-media-admin-summary strong{font-size:23px!important}
  .bc-workspace-pane .bc-media-admin-summary small{font-size:9px}
  .bc-workspace-pane .bc-bunny-connection,
