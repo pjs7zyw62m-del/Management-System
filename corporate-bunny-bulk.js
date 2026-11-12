@@ -64,16 +64,13 @@ export function setupBlackcellBunnyBulk({client}){
   const hash=await crypto.subtle.digest('SHA-256',bytes);
   return [...new Uint8Array(hash)].map(x=>x.toString(16).padStart(2,'0')).join('');
  }
- function send(file,hash,onProgress){
-  return new Promise(async(resolve,reject)=>{
-   let session;
-   try{
-    const result=await client.auth.getSession();
-    session=result.data?.session;
-    if(!session?.access_token)throw new Error('Your owner session expired. Sign in again.');
-   }catch(e){reject(e);return}
-   const conf=window.BLACKCELL_CORP_CONFIG||{};
-   if(!conf.url||!conf.publishableKey){reject(new Error('BLACKCELL Supabase configuration unavailable.'));return}
+ async function send(file,hash,onProgress){
+  const result=await client.auth.getSession();
+  const session=result.data?.session;
+  if(!session?.access_token)throw new Error('Your owner session expired. Sign in again.');
+  const conf=window.BLACKCELL_CORP_CONFIG||{};
+  if(!conf.url||!conf.publishableKey)throw new Error('BLACKCELL Supabase configuration unavailable.');
+  return new Promise((resolve,reject)=>{
    const xhr=new XMLHttpRequest();
    active=xhr;
    xhr.open('POST',conf.url.replace(/\/$/,'')+'/functions/v1/blackcell-bunny-upload');
