@@ -21,8 +21,44 @@ const note=(message)=>el('div','disabled-callout',message);
 const select=(options,value,handler)=>{const s=el('select');for(let [v,title] of options){const o=new Option(title,v);s.add(o)}s.value=value;s.addEventListener('change',()=>handler(s.value));return s};
 function open(id,trigger){closeDrawer();lastTrigger=trigger||document.activeElement;activeModal=id;activeTab=(tabs[id]||[['overview']])[0][0];searchTerm='';period='all';selectedEvent=null;selectedSystem=null;modal.hidden=false;document.body.style.overflow='hidden';render();$('closeModal').focus();}
 function close(){modal.hidden=true;document.body.style.overflow='';activeModal='';content.replaceChildren();if(lastTrigger&&lastTrigger.isConnected)lastTrigger.focus();}
-function render(){ $('modalTitle').textContent=names[activeModal]||'Corporate System'; $('modalEyebrow').textContent=activeModal==='nexus'||activeModal==='mans'?'BLACKCELL CORPORATION / DIVISION CONTROL':'BLACKCELL CORPORATION / ADMINISTRATION';content.replaceChildren();if(tabs[activeModal]){let bar=el('div','modal-tabbar');for(const [id,label] of tabs[activeModal]){let b=action(label,()=>{activeTab=id;render();});b.className=id===activeTab?'active':'';bar.append(b)}content.append(bar)}switch(activeModal){case 'users':users();break;case 'chat':chat();break;case 'security':security();break;case 'settings':settings();break;case 'logs':logs();break;case 'backups':backups();break;case 'systems':corporateSystems();break;case 'nexus':case 'mans':division();break;case 'notifications':notifications();break;case 'account':account();break;case 'signout':signout();break;case 'restricted':restricted();break;}}
+function render(){ pane.classList.toggle('user-management-v2',activeModal==='users');$('modalTitle').textContent=names[activeModal]||'Corporate System'; $('modalEyebrow').textContent=activeModal==='nexus'||activeModal==='mans'?'BLACKCELL CORPORATION / DIVISION CONTROL':'BLACKCELL CORPORATION / ADMINISTRATION'; const disclaimer=document.querySelector('.preview-disclaimer');if(disclaimer)disclaimer.textContent=activeModal==='users'?'SECURE CORPORATE MANAGEMENT · ACTIONS REQUIRE VERIFIED OWNER AUTHORIZATION':'INTERACTIVE DESIGN PREVIEW · NO LIVE ADMINISTRATIVE CHANGES'; content.replaceChildren(); if(activeModal==='users')renderUserManagementHeader();if(tabs[activeModal]){let bar=el('div','modal-tabbar');for(const [id,label] of tabs[activeModal]){let b=action(label,()=>{activeTab=id;render();});b.className=id===activeTab?'active':'';bar.append(b)}content.append(bar)}switch(activeModal){case 'users':users();break;case 'chat':chat();break;case 'security':security();break;case 'settings':settings();break;case 'logs':logs();break;case 'backups':backups();break;case 'systems':corporateSystems();break;case 'nexus':case 'mans':division();break;case 'notifications':notifications();break;case 'account':account();break;case 'signout':signout();break;case 'restricted':restricted();break;}}
 
+
+
+/* BLACKCELL 2.0 user-management dashboard, reading only verified owner-accessible directory data. */
+function renderUserManagementHeader(){
+ const wrap=el('section','um2-header');
+ const lead=el('div','um2-lead');
+ lead.append(el('span','um2-eyebrow','BLACKCELL CORPORATION  /  PERSONNEL COMMAND'),
+   el('h3','','One place for your entire network.'),
+   el('p','','Manage invitations, review employee identities, control clearance, and secure access without leaving Administration.'));
+ const actions=el('div','um2-shortcuts');
+ actions.append(action('＋  INVITE EMPLOYEE',()=>{activeTab='accounts';render();},false,true),
+   action('♙  VIEW PERSONNEL',()=>{activeTab='profiles';render();}));
+ const upper=el('div','um2-upper'); upper.append(lead,actions);wrap.append(upper);
+ const cards=el('div','um2-stats');
+ const metrics=[['ALL PERSONNEL','total','Includes corporate owner'],['ACTIVE ACCOUNTS','active','Activated & enabled'],['AWAITING ACTIVATION','pending','Invited accounts'],['DISABLED ACCOUNTS','disabled','Access turned off']];
+ const values={};
+ for(const [label,key,description] of metrics){
+   const box=el('div','um2-stat');
+   box.append(el('small','',label));const value=el('strong','','—');
+   box.append(value,el('span','',description));cards.append(box);values[key]=value;
+ }
+ wrap.append(cards);content.append(wrap);
+ const api=window.BLACKCELL_CORPORATE_ADMIN_API?.client;
+ if(!api)return;
+ void (async()=>{
+   try{
+     const {data,error}=await api.rpc('corp_admin_members');
+     if(!wrap.isConnected||error||data?.ok!==true||!Array.isArray(data.members))return;
+     const members=data.members;
+     values.total.textContent=String(members.length);
+     values.active.textContent=String(members.filter(m=>m.active===true&&(m.role==='owner'||m.password_activated===true)).length);
+     values.pending.textContent=String(members.filter(m=>m.active===true&&m.role!=='owner'&&!m.password_activated).length);
+     values.disabled.textContent=String(members.filter(m=>m.active===false).length);
+   }catch(_){}
+ })();
+}
 
 function chat(){
   content.append(p('Private Blackcell messaging. Only verified corporate accounts with Chat access can send and receive messages.'));
@@ -208,6 +244,11 @@ async function employeeProfiles(){
   });
   preview.classList.add('profile-demo-button');
   container.append(preview);
+  const tools=el('div','um2-directory-tools');
+  const search=el('input','um2-search');search.type='search';search.placeholder='Search employee name, email or username';search.setAttribute('aria-label','Search employee profiles');
+  const filter=el('select','um2-directory-filter');filter.setAttribute('aria-label','Filter employee accounts by status');
+  for(const [value,label] of [['all','All statuses'],['active','Active'],['pending','Pending'],['disabled','Disabled']])filter.add(new Option(label,value));
+  tools.append(search,filter);container.append(tools);
   const list=el('div','employee-profile-list');
   list.append(p('Loading profiles…'));
   container.append(list);
@@ -220,8 +261,17 @@ async function employeeProfiles(){
     if(error||data?.ok!==true||!Array.isArray(data.members)){
       list.replaceChildren(p('Could not load authorized employee profiles.'));return;
     }
-    list.replaceChildren();
-    for(const member of data.members){
+    const members=data.members;
+    const paint=()=>{
+      list.replaceChildren();
+      const needle=search.value.trim().toLowerCase(),status=filter.value;
+      const filtered=members.filter(m=>{
+        const label=!m.active?'disabled':(m.role==='owner'||m.password_activated)?'active':'pending';
+        const text=[m.display_name,m.email,m.username].join(' ').toLowerCase();
+        return (status==='all'||label===status)&&(!needle||text.includes(needle));
+      });
+      if(!filtered.length){list.append(p('No employees match the current filters.'));return;}
+      for(const member of filtered){
       const item=el('div','employee-profile-listitem');
       const info=el('div');
       info.append(el('strong','',member.display_name||'Employee'),
@@ -238,7 +288,11 @@ async function employeeProfiles(){
       }
       item.append(info,actions);
       list.append(item);
-    }
+      }
+    };
+    search.addEventListener('input',paint);
+    filter.addEventListener('change',paint);
+    paint();
   }catch(_){if(list.isConnected)list.replaceChildren(p('Unable to load employee profile list.'))}
 }
 function showInvitationPreview(form,inputs){
@@ -615,9 +669,12 @@ function users(){
       finally{submit.disabled=false;submit.textContent='SEND EMPLOYEE INVITATION';}
     });
     section.append(form,feedback);
+    section.classList.add('um2-invite-panel');
     const list=block('Approved & Invited Accounts');
+    list.classList.add('um2-account-panel');
     list.append(p('Loading corporate accounts…'));
-    content.append(section,list);
+    const workspace=el('div','um2-workspace');workspace.append(section,list);
+    content.append(workspace);
     void displayCorporateAccounts(list);
   }else if(activeTab==='profiles'){
     void employeeProfiles();
