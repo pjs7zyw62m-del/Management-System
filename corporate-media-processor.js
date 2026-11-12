@@ -10,7 +10,7 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
   const node=document.createElement(tag);if(cls)node.className=cls;
   if(text!==undefined)node.textContent=text;return node;
  };
- let queue=[],albums=[],current=null,busy=false,page=0,totalPending=0;
+ let queue=[],albums=[],current=null,busy=false,page=0,totalPending=0,bunnyWaiting=0;
  const pageSize=40;
  const status=text=>{if($('bcProcessStatus'))$('bcProcessStatus').textContent=text};
  const errText=e=>e?.message||'Unknown error';
@@ -26,13 +26,13 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
  }
  function updateCards(){
   const pending=queue.filter(a=>a.review_status==='pending');
-  $('bcProcessCount').textContent=String(totalPending);
+  $('bcProcessCount').textContent=String(totalPending+bunnyWaiting);
   $('bcQueuePage').textContent=(page+1)+' / '+Math.max(1,Math.ceil(totalPending/pageSize));
   $('bcQueuePrev').disabled=page===0;
   $('bcQueueNext').disabled=(page+1)*pageSize>=totalPending;
   const host=$('bcProcessQueue');host.replaceChildren();
   if(!pending.length){
-   host.append(el('p','bc-proc-empty','No photographs or videos waiting for review. Imports will enter this private queue before becoming part of BLACKCELL.'));
+   host.append(el('p','bc-proc-empty','No prepared photographs or videos waiting for approval. Bunny originals waiting to be prepared are shown in Bunny Incoming above.'));
    return;
   }
   for(const item of pending){
@@ -58,7 +58,7 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
    totalPending=Number(a.count||0);
    if(page>0&&page*pageSize>=totalPending){page=Math.max(0,page-1);return await reload(true)}
    queue=a.data||[];albums=b.data||[];updateCards();
-   status(totalPending+' waiting for approval · '+queue.length+' on this page · adult or uncertain media stays owner-only · no country guessing.');
+   status(totalPending+' prepared for approval · '+bunnyWaiting+' Bunny originals waiting for preparation · adult or uncertain media stays owner-only · no country guessing.');
   }catch(e){status('Could not load import queue: '+errText(e))}
  }
  function fillChoose(){
@@ -284,6 +284,10 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
   $('bcQueuePrev').addEventListener('click',()=>{if(page>0){page--;void reload()}});
   $('bcQueueNext').addEventListener('click',()=>{if((page+1)*pageSize<totalPending){page++;void reload()}});
   document.addEventListener('bc:media-updated',()=>void reload());
+  document.addEventListener('bc:bunny-staged-count',event=>{
+    bunnyWaiting=Math.max(0,Number(event.detail?.count)||0);
+    updateCards();
+  });
   $('bcMediaReset').addEventListener('click',()=>void resetMedia());
   $('bcReviewApprove').addEventListener('click',()=>void approve());
   $('bcReviewReject').addEventListener('click',()=>void reject());
