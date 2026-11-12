@@ -3,7 +3,8 @@
 <meta name="theme-color" content="#030305"><title>BLACKCELL CORPORATION | Media Administration</title>
 <link rel="stylesheet" href="corporate-media-processor.css?v=20261111-adminmove1">
 <link rel="stylesheet" href="corporate-media-admin.css?v=20261111-bunny-review1">
-<link rel="stylesheet" href="corporate-bunny-library-sync.css?v=20261112-library-sync1">
+<link rel="stylesheet" href="corporate-bunny-library-sync.css?v=20261112-library-sync1"
+<link rel="stylesheet" href="corporate-media-diagnostics.css?v=20261112-diag1">
 <script src="corp-config.js" defer></script>
 <script type="module" src="corporate-media-admin.js?v=20261112-library-sync2"></script>
 </head>
@@ -30,6 +31,24 @@
    <div><span>STORAGE</span><strong id="bcAdminStorageStatus">Private</strong><small>Supabase · existing secure media bucket</small></div>
    <div><span>MEDIA REGISTERED</span><strong id="bcAdminAssetsCount">—</strong><small>Current BLACKCELL media records</small></div>
    <div><span>IMPORT QUEUE</span><strong id="bcAdminPendingCount">—</strong><small>Awaiting owner review</small></div>
+  </section>
+  <section class="bc-media-diag" id="bcMediaDiagnostics" aria-label="Owner media performance diagnostics">
+   <div class="bc-diag-header">
+    <div><div class="bc-admin-overline">BLACKCELL / SYSTEM HEALTH &amp; PERFORMANCE</div>
+     <h2>MEDIA SYSTEM DIAGNOSTICS.</h2>
+     <p>Test the actual loading speed of your administration device, private photo previews, Supabase database, media review queue and Bunny Storage. The tests are read-only; they never modify or publish any media.</p></div>
+    <strong id="bcDiagBadge" data-result="ready">READY TO TEST</strong>
+   </div>
+   <div class="bc-diag-actions">
+    <button type="button" id="bcDiagRun">◉ RUN FULL DIAGNOSTIC</button>
+    <button type="button" id="bcDiagCopy" disabled>▧ COPY DIAGNOSTIC REPORT</button>
+   </div>
+   <progress id="bcDiagMeter" max="9" value="0" aria-label="Media system diagnostic progress"></progress>
+   <p id="bcDiagStatus" role="status" aria-live="polite">Ready to inspect your private media system.</p>
+   <p id="bcDiagSummary" role="status" aria-live="polite"></p>
+   <ol id="bcDiagResults" aria-label="Individual media diagnostic results"></ol>
+   <textarea id="bcDiagReport" readonly hidden aria-label="Copyable diagnostic report" spellcheck="false"></textarea>
+   <div class="bc-diag-foot">9 read-only checks · Measured on your current device · Private links and credentials are never included in the copyable report · Full-resolution originals remain intact</div>
   </section>
   <section class="bc-bunny-connection" id="bcBunnyConnection" aria-label="Bunny Storage private cloud connection">
    <div class="bc-admin-overline">BLACKCELL / NEW PRIVATE CLOUD STORAGE</div>
