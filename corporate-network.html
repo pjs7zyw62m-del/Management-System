@@ -25,6 +25,7 @@
 <link rel="stylesheet" href="corporate-gallery-justified.css?v=20261111-justified-fix4">
 <link rel="stylesheet" href="corporate-military-resources.css?v=20261111-viewer-actions-only4">
 <link rel="stylesheet" href="corporate-library-submenu.css?v=20261111-library-nav1">
+<link rel="stylesheet" href="mans-armed-forces-entry.css?v=20261111-mf1">
 <link rel="stylesheet" href="corporate-network-personalization.css?v=20261111-personal3">
 <link rel="stylesheet" href="corporate-photo-rediscovery.css?v=20261111-card-pointer3">
 <link rel="stylesheet" href="corporate-photo-zoom.css?v=20261111-zoom1">
@@ -38,7 +39,7 @@
   <button data-view="discover">DISCOVER</button>
   <button data-view="profile">MY PROFILE</button>
   <button data-view="videos">VIDEOS</button>
-  <button data-view="photos">MILITARY LIBRARY</button>
+  <a class="mf-network-door" href="mans-armed-forces.html">MAN'S ARMED FORCES</a>
   <a class="military-usa-nav" href="usa-page.html">🇺🇸 USA PAGE ↗</a>
   <a class="uc-care-nav" href="uniform-care.html">UNIFORM CARE ↗</a>
  </nav>
@@ -55,10 +56,11 @@
       <button class="rail-link" data-view="videos"><span>▶</span> Video Channel</button>
       <div class="bc-library-nav-group" id="libraryNavGroup">
        <div class="bc-library-nav-head">
-        <button class="rail-link bc-library-open" data-view="photos" type="button"><span>▧</span> Military Library</button>
+        <a class="rail-link bc-library-open mf-rail-door" href="mans-armed-forces.html"><span>▧</span> Man's Armed Forces</a>
         <button class="bc-library-disclosure" id="libraryDisclosure" type="button" aria-expanded="false" aria-controls="librarySubmenu" aria-label="Expand Military Library menu"><span aria-hidden="true">⌄</span></button>
        </div>
        <nav class="bc-library-submenu" id="librarySubmenu" aria-label="Military Library sections" hidden>
+        <a href="corporate-network.html?view=photos" class="mf-existing-library-link"><span>▧</span> Open Military Library</a>
         <button type="button" data-library-jump="photosView"><span>⌂</span> Overview</button>
         <button type="button" data-library-jump="wfExplorer"><span>◉</span> World Forces</button>
         <button type="button" data-library-jump="militaryCategoryTiles"><span>▦</span> Browse by Subject</button>
