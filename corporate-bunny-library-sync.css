@@ -1,0 +1,24 @@
+/* Additive Apple Glass panel for existing Military Library -> Bunny archive. */
+.bc-library-bunny-sync{
+  margin:18px 0;padding:22px;border:1px solid #4b343c;border-radius:18px;
+  background:linear-gradient(120deg,#171217,#090a0e 75%);color:#e6e6e8
+}
+.bc-library-bunny-sync .bc-library-sync-head{
+  display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap
+}
+.bc-library-bunny-sync h2{margin:5px 0 9px;font-size:clamp(19px,3vw,25px);font-weight:750;letter-spacing:-.02em}
+.bc-library-bunny-sync p{color:#b5b1b8;line-height:1.5;margin:7px 0 16px;font-size:13px}
+.bc-library-bunny-sync .bc-library-sync-metric{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:14px 0}
+#bcLibraryBunnyCount{font-variant-numeric:tabular-nums;font-size:23px;color:#f3f3f3}
+#bcLibraryBunnyBadge{font-size:10px;letter-spacing:.12em;color:#dbc0c8}
+#bcLibraryBunnyBadge[data-mode="complete"]{color:#a5d9be}
+.bc-library-bunny-sync progress{display:block;width:100%;height:9px;accent-color:#b33c52;margin:11px 0 14px}
+.bc-library-bunny-sync .bc-library-sync-actions{display:flex;gap:8px;flex-wrap:wrap}
+.bc-library-bunny-sync button{
+  border:1px solid #794458;background:#452331;color:#faf6f7;
+  border-radius:10px;padding:12px 15px;font-size:12px;font-weight:750;cursor:pointer
+}
+.bc-library-bunny-sync button+button{background:#15151a;border-color:#55515a}
+.bc-library-bunny-sync button:disabled{opacity:.52;cursor:default}
+.bc-library-bunny-sync button:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.bc-library-bunny-sync small{display:block;margin-top:12px;color:#9a959f;font-size:11px;line-height:1.5}
