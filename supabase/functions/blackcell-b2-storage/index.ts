@@ -67,6 +67,40 @@ async function checkBucket(keyId:string,secret:string,bucket:string,endpoint:str
   client.destroy();
  }
 }
+/* Independent read-only native auth probe, only if S3 SDK verification fails.
+   Backblaze B2 v4 supports ordinary restricted app keys, and HTTP 401 definitively
+   indicates the supplied app Key ID / secret pairing is invalid.
+   Do not persist, log or return the token or the submitted credentials. */
+async function verifyNativeB2Pair(keyId:string,secret:string):Promise<{
+ valid:boolean|"unknown",http_status:number,code:string,
+ has_list_all_buckets?:boolean,has_list_files?:boolean,has_s3_option?:boolean
+}>{
+ let response:Response;
+ try{
+  const cred=btoa(String.fromCharCode(...new TextEncoder().encode(keyId.trim()+":"+secret.trim())));
+  response=await fetch("https://api.backblazeb2.com/b2api/v4/b2_authorize_account",{
+   method:"GET",headers:{Authorization:"Basic "+cred,Accept:"application/json"},
+   signal:AbortSignal.timeout(12000)
+  });
+ }catch(_){return {valid:"unknown",http_status:0,code:"B2_NATIVE_UNREACHABLE"};}
+ if(response.status===401)return {valid:false,http_status:401,code:"B2_NATIVE_INVALID_KEY_PAIR"};
+ if(!response.ok)return {valid:"unknown",http_status:response.status,code:"B2_NATIVE_AUTH_ERROR"};
+ try{
+  const data=await response.json();
+  const allowed=data?.apiInfo?.storageApi?.allowed||data?.allowed||{};
+  const caps=Array.isArray(allowed.capabilities)?allowed.capabilities:[];
+  // Some older Backblaze responses may omit allowed details. Capability presence is
+  // advisory; false is not conclusive when the field itself is absent.
+  return {
+   valid:true,http_status:200,code:"B2_NATIVE_PAIR_VERIFIED",
+   ...(Array.isArray(allowed.capabilities)?{
+    has_list_all_buckets:caps.includes("listAllBucketNames"),
+    has_list_files:caps.includes("listFiles")
+   }:{})
+  };
+ }catch(_){return {valid:true,http_status:200,code:"B2_NATIVE_PAIR_VERIFIED"};}
+}
+
 Deno.serve(async request=>{
  const origin=request.headers.get("origin");
  if(request.method==="OPTIONS")return new Response(null,{status:204,headers:cors(origin)});
@@ -115,7 +149,26 @@ Deno.serve(async request=>{
    detail:"Missing in NEXUS Management System → Edge Function Secrets: "+missing.join(", ")+". Add these exact secret names and their values, then press CHECK CONNECTION."},200,origin);
  try{
   const result=await checkBucket(keyId,secret,bucket,endpoint);
-  return json(result,result.ok?200:422,origin);
+  if(result.ok)return json(result,200,origin);
+  if(result.code!=="B2_ACCESS_ERROR"||result.s3_code!=="SignatureDoesNotMatch")
+   return json(result,422,origin);
+  const native=await verifyNativeB2Pair(keyId,secret);
+  if(native.valid===false){
+   return json({ok:false,connected:false,code:"B2_KEY_PAIR_INVALID",native_auth:"rejected",
+    detail:"Backblaze rejected this same Key ID and secret through its independent Native API (HTTP 401). These two Supabase values are not a valid matching Backblaze application-key pair. Do not change the bucket or endpoint."},422,origin);
+  }
+  if(native.valid===true){
+   return json({ok:false,connected:false,code:"B2_S3_SIGNATURE_FAILED",native_auth:"verified",
+    s3_code:result.s3_code,
+    permissions:{
+     ...(typeof native.has_list_all_buckets==="boolean"?{listAllBucketNames:native.has_list_all_buckets}:{}),
+     ...(typeof native.has_list_files==="boolean"?{listFiles:native.has_list_files}:{})
+    },
+    detail:"Backblaze Native API ACCEPTED your Key ID + secret pair, but its S3 API rejected the signature. The credentials match; we need to examine S3 compatibility, permissions and signing settings instead."},422,origin);
+  }
+  return json({ok:false,connected:false,code:"B2_NATIVE_CHECK_UNAVAILABLE",
+   s3_code:result.s3_code,http_status:native.http_status,
+   detail:"The S3 signature failed and independent Backblaze Native API verification was temporarily unavailable. Do not replace credentials until this can be checked."},422,origin);
  }catch(_){
   return json({ok:false,connected:false,code:"B2_CHECK_FAILED",
    detail:"Backblaze connection check failed. No files or credentials were exposed."},500,origin);
