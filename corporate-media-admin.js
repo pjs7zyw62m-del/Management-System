@@ -3,12 +3,7 @@
  * The same existing photo/video intake controller is mounted on an admin-only page.
  */
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-clearance5';
-import {createBlackcellMediaProcessor} from './corporate-media-processor.js?v=20261112-library-sync2';
-import {setupBlackcellBulk} from './corporate-b2-bulk.js?v=20261112-diag1';
-import {setupBlackcellBunnyBulk} from './corporate-bunny-bulk.js?v=20261111-bunny-review1';
-import {setupBlackcellBunnyReview} from './corporate-bunny-review.js?v=20261111-bunny-review1';
-import {setupBlackcellLibraryBunnySync} from './corporate-bunny-library-sync.js?v=20261112-library-sync1';
-import {setupBlackcellMediaDiagnostics} from './corporate-media-diagnostics.js?v=20261112-diag2';
+import {createCorporateMediaWorkspace} from './corporate-admin-workspace.js?v=20261112-command1';
 
 const $=id=>document.getElementById(id);
 const state={user:null,member:null,assets:[],bunnyWaitingCount:0};
@@ -212,6 +207,64 @@ function setupIcloudTest(){
  });
 }
 
+/* On-demand modules ensure the command center loads without querying dormant
+ * legacy providers or opening the image-heavy review and upload workers. */
+let reviewReady=false,stagingReady=false,bunnyReady=false,diagnosticReady=false,legacyReady=false;
+let workspace=null,bootDuration=0;
+async function enterWorkspace(tab){
+ if(tab==='review'){
+  if(reviewReady)return;
+  await loadAssets();
+  const [{createBlackcellMediaProcessor},{setupBlackcellBunnyReview}]=await Promise.all([
+   import('./corporate-media-processor.js?v=20261112-library-sync2'),
+   import('./corporate-bunny-review.js?v=20261112-command1')
+  ]);
+  if(!processor){
+   processor=createBlackcellMediaProcessor({client,bucket,state,refresh:loadAssets,
+    mediaUrl:()=>'',toast,openAIReview:makePreview});
+   processor.setup();
+  }
+  if(!stagingReady){
+   setupBlackcellBunnyReview({client,state,refresh:loadAssets,toast});
+   stagingReady=true;
+  }
+  reviewReady=true;
+  return;
+ }
+ if(tab==='bunny'){
+  if(bunnyReady)return;
+  const [{setupBlackcellBunnyBulk},{setupBlackcellLibraryBunnySync}]=await Promise.all([
+   import('./corporate-bunny-bulk.js?v=20261112-command1'),
+   import('./corporate-bunny-library-sync.js?v=20261112-library-sync1')
+  ]);
+  setupBlackcellBunnyBulk({client});
+  setupBlackcellLibraryBunnySync({client,toast});
+  $('bcBunnyCheck').addEventListener('click',()=>void checkBunny());
+  bunnyReady=true;
+  void checkBunny();
+  return;
+ }
+ if(tab==='diagnostics'){
+  if(diagnosticReady)return;
+  const {setupBlackcellMediaDiagnostics}=await import('./corporate-media-diagnostics.js?v=20261112-diag2');
+  setupBlackcellMediaDiagnostics({client,bucket,initialLoadMs:bootDuration});
+  diagnosticReady=true;
+  return;
+ }
+ if(tab==='legacy'){
+  if(legacyReady)return;
+  // The reset control belongs in Advanced Settings, but the old protected
+  // approval controller still owns its two-confirmation event handler.
+  // Ensure that controller is initialized before allowing a reset.
+  await enterWorkspace('review');
+  const {setupBlackcellBulk}=await import('./corporate-b2-bulk.js?v=20261112-diag1');
+  setupBlackcellBulk({client,toast});
+  setupIcloudTest();
+  $('bcB2Check').addEventListener('click',()=>void checkBackblaze());
+  legacyReady=true;
+  return;
+ }
+}
 async function boot(){
  const bootTime=performance.now();
  try{
@@ -222,31 +275,34 @@ async function boot(){
   }
   state.user=auth.user;state.member=auth.member;
   countries();
-  await loadAssets();
+  // The verified owner sees the app before slow optional cloud checks.
+  bootDuration=performance.now()-bootTime;
+  workspace=createCorporateMediaWorkspace({
+   member:state.member,
+   onEnter:enterWorkspace,
+   onRefresh:async()=>{
+    await refreshCounts();
+    if(reviewReady)await processor?.refresh();
+   }
+  });
   $('bcMediaAdminApp').hidden=false;$('bcAdminGate').hidden=true;
-  processor=createBlackcellMediaProcessor({client,bucket,state,refresh:loadAssets,mediaUrl:()=>'',toast,openAIReview:makePreview});
-  processor.setup();
-  setupIcloudTest();
-  document.addEventListener('bc:bunny-staged-count',()=>void refreshCounts().catch(()=>{}));
-  setupBlackcellBunnyReview({client,state,refresh:loadAssets,toast});
-  setupBlackcellLibraryBunnySync({client,toast});
-  setupBlackcellMediaDiagnostics({client,bucket,initialLoadMs:performance.now()-bootTime});
-  setupBlackcellBunnyBulk({client});
-  setupBlackcellBulk({client,toast});
-  $('bcBunnyCheck').addEventListener('click',()=>void checkBunny());
-  void checkBunny();
-  $('bcB2Check').addEventListener('click',()=>void checkBackblaze());
-  // Backblaze is legacy/optional. Check it only when the owner explicitly clicks CHECK CONNECTION.
+  void refreshCounts().catch(e=>toast('Could not refresh media counts: '+(e?.message||'Network error')));
+  document.addEventListener('bc:bunny-staged-count',event=>{
+   state.bunnyWaitingCount=Math.max(0,Number(event.detail?.count)||0);
+   void refreshCounts().catch(()=>{});
+  });
   document.addEventListener('bc:media-updated',()=>void refreshCounts().catch(()=>{}));
-  // Require a valid corporate code session throughout an active admin view.
+  // Recheck verified owner+code session while page is active.
   const recheck=async()=>{
    if(verifying||expires||document.hidden)return;
    verifying=true;
    try{
     const check=await validOwner();
-    if(!check||check.user.id!==state.user.id)lock('Your executive session expired. Return to Administration and sign in again.');
-   }catch(_){lock('Could not confirm current corporate authorization. Return to Administration.')}
-   finally{verifying=false}
+    if(!check||check.user.id!==state.user.id)
+     lock('Your executive session expired. Return to Administration and sign in again.');
+   }catch(_){
+    lock('Could not confirm current corporate authorization. Return to Administration.');
+   }finally{verifying=false}
   };
   window.addEventListener('focus',()=>void recheck());
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)void recheck()});
@@ -254,4 +310,5 @@ async function boot(){
   setInterval(()=>void recheck(),60000);
  }catch(e){lock('Media Administration could not initialize: '+(e?.message||'Unknown error'))}
 }
+
 void boot();
