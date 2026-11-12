@@ -1,0 +1,189 @@
+/* BLACKCELL | Live Administration User Management 2.0 | November 2026
+   Layout only. Existing Supabase authorization, invitation, deletion and permissions stay server-enforced. */
+.admin-modal.user-management-v2{
+  position:relative;width:min(1190px,calc(100vw - 24px));max-width:1190px;
+  max-height:min(94dvh,1200px);padding:clamp(17px,2.8vw,34px);
+  border:1px solid #ffffff25;border-radius:25px;
+  background:radial-gradient(ellipse 42% 28% at 92% 8%,rgba(121,35,61,.16),transparent 90%),linear-gradient(145deg,#202027 0%,#101116 39%,#08090e 100%);
+  box-shadow:0 45px 120px #000d,inset 0 1px #ffffff19;
+}
+.user-management-v2 .modal-top{
+  padding:0 0 19px;margin-bottom:0;border-bottom:1px solid #ffffff16;
+}
+.user-management-v2 .modal-top h2{
+  font-size:clamp(29px,4.1vw,43px);font-weight:720;letter-spacing:-.05em;margin:4px 0;
+}
+.user-management-v2 #modalEyebrow{
+  letter-spacing:.21em;color:#bd7988;font-size:10px;
+}
+.user-management-v2 .um2-header{
+  margin:23px 0 20px;padding:0;
+}
+.user-management-v2 .um2-upper{
+  display:flex;gap:20px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:23px;
+}
+.user-management-v2 .um2-lead{min-width:0;flex:1 1 330px}
+.user-management-v2 .um2-eyebrow{
+  display:block;font-size:9px;letter-spacing:.16em;font-weight:750;color:#c27c8e;
+}
+.user-management-v2 .um2-lead h3{
+  font-size:clamp(20px,2.7vw,29px);letter-spacing:-.05em;margin:8px 0;color:#f2f0f4;
+}
+.user-management-v2 .um2-lead p{
+  font-size:12px;color:#a1a0ac;line-height:1.7;max-width:650px;margin:0;
+}
+.user-management-v2 .um2-shortcuts{display:flex;flex-wrap:wrap;gap:9px}
+.user-management-v2 .um2-shortcuts button{
+  padding:13px 17px;border:1px solid #ffffff27;border-radius:11px;
+  color:#eeeaf0;background:#ffffff09;font-weight:760;font-size:11px;letter-spacing:.04em;
+}
+.user-management-v2 .um2-shortcuts button:first-child{
+  color:#fff;background:linear-gradient(110deg,#5c1c30,#a2324a,#632033);
+  border-color:#ad566c;box-shadow:0 9px 28px #9e284025;
+}
+.user-management-v2 .um2-stats{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;
+}
+.user-management-v2 .um2-stat{
+  background:linear-gradient(135deg,#26252f94,#0d0e12ee);
+  border:1px solid #ffffff1b;box-shadow:inset 0 1px #ffffff0a,0 13px 30px #0003;
+  border-radius:16px;padding:20px 18px;min-height:125px;position:relative;overflow:hidden;
+}
+.user-management-v2 .um2-stat::before{
+  content:'';position:absolute;top:0;left:19px;width:44px;height:2px;background:linear-gradient(90deg,#ba4e69,transparent);
+}
+.user-management-v2 .um2-stat small{
+  display:block;color:#9895a0;letter-spacing:.10em;font-size:9px;font-weight:750;line-height:1.5;
+}
+.user-management-v2 .um2-stat strong{
+  display:block;color:#f8f6fa;font-size:37px;letter-spacing:-.06em;font-weight:710;margin:15px 0 4px;font-variant-numeric:tabular-nums;
+}
+.user-management-v2 .um2-stat span{
+  display:block;color:#878995;font-size:10px;line-height:1.45;
+}
+.user-management-v2 .modal-tabbar{
+  display:flex;gap:7px;margin:8px 0 20px;padding:7px;border:1px solid #ffffff17;
+  border-radius:13px;background:#090a0ed1;overflow-x:auto;scrollbar-width:thin;
+}
+.user-management-v2 .modal-tabbar button{
+  border:1px solid transparent;border-radius:9px;color:#a1a1ac;background:transparent;
+  font-weight:700;letter-spacing:.035em;padding:12px 18px;font-size:12px;
+}
+.user-management-v2 .modal-tabbar button.active{
+  border-color:#c35c7460;color:#fff;background:linear-gradient(115deg,#69223982,#3c1b2e73);
+}
+.user-management-v2 .um2-workspace{
+  display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);
+  align-items:start;gap:15px;
+}
+.user-management-v2 .content-block{
+  border-radius:16px;border:1px solid #ffffff19;
+  background:linear-gradient(145deg,#201f27ae,#111117b8);
+  padding:clamp(17px,2vw,24px);margin:0 0 15px;
+  box-shadow:inset 0 1px #ffffff0a;
+}
+.user-management-v2 .content-block h3{
+  color:#f3f0f4;font-weight:740;letter-spacing:-.02em;font-size:16px;
+}
+.user-management-v2 .content-block > p.muted{
+  color:#a5a2ae;font-size:12px;line-height:1.65;
+}
+.user-management-v2 .um2-invite-panel form{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;
+}
+.user-management-v2 .um2-invite-panel form label{
+  min-width:0;letter-spacing:.06em!important;color:#b4aeb8!important;font-size:10px!important;
+}
+.user-management-v2 .um2-invite-panel form label:nth-of-type(1),
+.user-management-v2 .um2-invite-panel form label:nth-of-type(2){
+  grid-column:auto;
+}
+.user-management-v2 input:not([type=checkbox]),
+.user-management-v2 select{
+  background:#090a0fdc;border:1px solid #ffffff23;border-radius:10px;
+  min-width:0;width:100%;color:#eeedf1;min-height:42px;
+}
+.user-management-v2 input:focus,
+.user-management-v2 select:focus{
+  outline:none;border-color:#cb7086;box-shadow:0 0 0 3px #9c354c23;
+}
+.user-management-v2 .text-action{
+  font-size:11px;line-height:1.4;letter-spacing:.02em;border-radius:9px;
+  background:linear-gradient(140deg,#33313b,#1c1b23);border:1px solid #ffffff15;
+  padding:10px 12px;min-height:39px;
+}
+.user-management-v2 .text-action:hover:not(:disabled){
+  background:#483542;
+}
+.user-management-v2 .text-action.emphasis{
+  background:linear-gradient(115deg,#612039,#9d344a);border:1px solid #c76274;color:#fff;
+}
+.user-management-v2 .um2-account-panel{
+  position:relative;min-height:180px;
+}
+.user-management-v2 .um2-account-panel .list-row{
+  display:flex;flex-wrap:wrap;gap:10px;align-items:center;border-bottom-color:#ffffff14;
+  padding:17px 0;
+}
+.user-management-v2 .um2-account-panel .list-row>div:first-child{
+  flex:1 1 155px;min-width:0;
+}
+.user-management-v2 .um2-account-panel .list-row small{
+  overflow-wrap:anywhere;line-height:1.6;
+}
+.user-management-v2 .mock-state{
+  padding:7px 9px;background:#ffffff0a;border:1px solid #ffffff1d;
+  border-radius:8px;font-size:9px;color:#ddd6e0;
+}
+.user-management-v2 .employee-profile-actions{
+  display:flex;flex-wrap:wrap;gap:7px;align-items:center;justify-content:flex-start;
+}
+.user-management-v2 .employee-profile-actions .text-action{
+  font-size:10px;padding:9px 11px;min-height:34px;
+}
+.user-management-v2 .um2-directory-tools{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(160px,.35fr);
+  gap:10px;margin:17px 0 8px;
+}
+.user-management-v2 .um2-directory-tools input,
+.user-management-v2 .um2-directory-tools select{margin:0!important}
+.user-management-v2 .employee-profile-listitem{
+  background:linear-gradient(130deg,#ffffff06,#ffffff02);border:1px solid #ffffff14;
+  border-radius:12px;padding:15px 17px;margin:10px 0;
+}
+.user-management-v2 .employee-profile-listcopy strong{color:#f4f2f7;font-size:13px}
+.user-management-v2 .employee-profile-listcopy small{color:#a7a2af;line-height:1.6}
+.user-management-v2 .employee-profile-pass{border-color:#a34e656b}
+.user-management-v2 .invitation-preview,
+.user-management-v2 .security-credential-preview{max-width:100%}
+.user-management-v2 .delete-employee-button{
+  border-color:#8e3a4e99!important;color:#efa9b9!important;background:#3a1a26b8!important;
+}
+.user-management-v2 .preview-disclaimer{
+  letter-spacing:.07em;color:#96929e;border-top-color:#ffffff16;
+}
+@media(min-width:1350px){
+ .admin-modal.user-management-v2{width:min(1210px,calc(100vw - 60px))}
+}
+@media(max-width:950px){
+ .user-management-v2 .um2-workspace{grid-template-columns:1fr}
+ .user-management-v2 .um2-invite-panel form{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .user-management-v2 .um2-stats{gap:8px}
+ .user-management-v2 .um2-stat{padding:16px;min-height:112px}
+ .user-management-v2 .um2-stat strong{font-size:32px}
+}
+@media(max-width:650px){
+ .admin-modal.user-management-v2{width:calc(100vw - 12px);max-height:95dvh;padding:17px;border-radius:20px}
+ .user-management-v2 .um2-upper{display:block}
+ .user-management-v2 .um2-shortcuts{margin-top:16px}
+ .user-management-v2 .um2-shortcuts button{flex:1}
+ .user-management-v2 .um2-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .user-management-v2 .um2-stat{min-height:100px;padding:16px}
+ .user-management-v2 .um2-stat strong{margin-top:10px;font-size:31px}
+ .user-management-v2 .modal-tabbar button{white-space:nowrap;padding:11px 14px}
+ .user-management-v2 .um2-invite-panel form{grid-template-columns:1fr!important}
+ .user-management-v2 .um2-directory-tools{grid-template-columns:1fr}
+ .user-management-v2 .employee-profile-listitem{flex-direction:column;align-items:stretch}
+ .user-management-v2 .employee-profile-actions{width:100%}
+ .user-management-v2 .um2-shortcuts{display:flex}
+}
