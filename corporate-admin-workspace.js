@@ -97,7 +97,11 @@ export function createCorporateMediaWorkspace({onEnter,onRefresh,member}){
   const body=el('div');
   body.append(el('strong','',label),el('small','',desc));
   button.append(body,el('span','bc-overview-action-chevron','›'));
-  button.addEventListener('click',()=>void open(id,{action:id==='diagnostics'?'run':null}));
+  button.addEventListener('click',()=>void open(id,{
+   action:btnId==='bcOverviewUpload'?'upload':
+    btnId==='bcOverviewCloud'?'cloud':
+    id==='diagnostics'?'run':null
+  }));
   shortcutButtons.push(button);actionGrid.append(button);
  }
  overview.append(actionGrid);
@@ -158,6 +162,21 @@ export function createCorporateMediaWorkspace({onEnter,onRefresh,member}){
  // Preserve metric IDs used by existing controllers.
  paneMap.get('overview').append(overview);
  overview.insertBefore(stats,actionHeading);
+ // A clean empty state must not imply that older Bunny objects were
+ // deleted, restored, or automatically included in the active library.
+ const emptyState=el('section','bc-overview-empty');
+ emptyState.hidden=true;emptyState.id='bcOverviewEmptyState';
+ const emptyIcon=el('span','bc-overview-empty-icon','▧');
+ const emptyWords=el('div','bc-overview-empty-copy');
+ emptyWords.append(
+  el('strong','','Military Library is ready for new media.'),
+  el('p','','No files are currently registered in the library. Your next upload can be sent privately to Bunny Storage and reviewed before it appears in the gallery. This does not restore previously deleted media.')
+ );
+ const emptyUpload=el('button','bc-overview-empty-cta','＋ UPLOAD NEW MEDIA');
+ emptyUpload.type='button';
+ emptyUpload.addEventListener('click',()=>void open('bunny',{action:'upload'}));
+ emptyState.append(emptyIcon,emptyWords,emptyUpload);
+ overview.insertBefore(emptyState,actionHeading);
  paneMap.get('legacy').append(icloud,explainer);
  // Keep the originally approved intro and summary content available, but
  // show its data in the new hero and metric strip, not two huge hero blocks.
@@ -230,7 +249,16 @@ export function createCorporateMediaWorkspace({onEnter,onRefresh,member}){
    }
   }
   if(action==='run'&&id==='diagnostics'&&loaded.has(id))$('bcDiagRun')?.click();
-  if(action==='upload'&&id==='bunny'&&loaded.has(id))$('bcBunnyChoose')?.click();
+  if(action==='upload'&&id==='bunny'&&loaded.has(id)){
+   // iOS Safari blocks delayed programmatic file picker clicks. Focus
+   // the real upload section; let the user tap the native picker button.
+   const target=$('bcBunnyBulkPanel');
+   target?.scrollIntoView({behavior:'smooth',block:'start'});
+   const chooser=$('bcBunnyChoose');if(chooser)chooser.focus({preventScroll:true});
+  }
+  if(action==='cloud'&&id==='bunny'&&loaded.has(id)){
+   $('bcBunnyConnection')?.scrollIntoView({behavior:'smooth',block:'start'});
+  }
   // The pane scroll position never drops the user into a different section.
   document.dispatchEvent(new CustomEvent('bc:admin-pane-open',{detail:{tab:id}}));
  }
@@ -240,7 +268,9 @@ export function createCorporateMediaWorkspace({onEnter,onRefresh,member}){
   const count=$('bcAdminAssetsCount')?.textContent?.trim()||'—';
   updated.textContent=count+' MEDIA RECORDS · '+pending+' WAITING REVIEW';
   const counts=tabMap.get('bunny');
-  if(counts)counts.suffix.textContent='●';
+  if(counts)counts.suffix.textContent='CLOUD';
+  const actual=Number(count);
+  emptyState.hidden=!(Number.isFinite(actual)&&actual===0);
  }
  const observer=new MutationObserver(setCounts);
  for(const id of ['bcAdminPendingCount','bcAdminAssetsCount'])if($(id))observer.observe($(id),{childList:true,subtree:true,characterData:true});
