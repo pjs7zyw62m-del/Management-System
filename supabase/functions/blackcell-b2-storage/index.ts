@@ -288,7 +288,7 @@ async function doBulkAction(
    const signed=await getSignedUrl(client,new PutObjectCommand({
     Bucket:bucketName,Key:key,ContentType:mime
    }),{expiresIn:900});
-   return {ok:true,mode:"single",ticket,url:signed,parts:1,
+   return {ok:true,mode:"single",ticket,url:signed,mime,parts:1,
     detail:"Temporary upload URL created for private staging."};
   }
   const session=await readBulkTicket(payload.ticket,owner,secret);
