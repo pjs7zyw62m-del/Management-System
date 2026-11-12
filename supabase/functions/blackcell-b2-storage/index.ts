@@ -122,9 +122,15 @@ Deno.serve(async request=>{
  const secret=Deno.env.get("BLACKCELL_B2_APPLICATION_KEY")||"";
  const bucket=Deno.env.get("BLACKCELL_B2_BUCKET")||"";
  const endpoint=Deno.env.get("BLACKCELL_B2_ENDPOINT")||"";
- if(!keyId||!secret||!bucket||!endpoint)
+ const missing=[
+  ["BLACKCELL_B2_KEY_ID",keyId],
+  ["BLACKCELL_B2_APPLICATION_KEY",secret],
+  ["BLACKCELL_B2_BUCKET",bucket],
+  ["BLACKCELL_B2_ENDPOINT",endpoint]
+ ].filter(([,value])=>!String(value).trim()).map(([name])=>name);
+ if(missing.length)
   return json({ok:true,connected:false,code:"B2_NOT_CONFIGURED",
-   detail:"Enter all four BLACKCELL_B2_* secrets in Supabase Edge Function Secrets."},200,origin);
+   detail:"Missing in NEXUS Management System → Edge Function Secrets: "+missing.join(", ")+". Add these exact secret names and their values, then press CHECK CONNECTION."},200,origin);
  try{
   const result=await checkBucket(keyId,secret,bucket,endpoint);
   return json(result,result.ok?200:422,origin);
