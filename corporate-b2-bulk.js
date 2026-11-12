@@ -28,14 +28,14 @@ export function setupBlackcellBulk({client,toast}){
  // allocating the entire video in memory. Named CHUNKED-SHA256-v1, not plain SHA256.
  async function fingerprint(file,onProgress){
   const unit=8*1024*1024,count=Math.ceil(file.size/unit);
-  const marks=new Uint8Array(24+count*32);
+  const marks=new Uint8Array(32+count*32);
   const prefix=new TextEncoder().encode('BC-CHUNK-SHA256-v1');
   marks.set(prefix,0);
-  new DataView(marks.buffer).setBigUint64(16,BigInt(file.size),false);
+  new DataView(marks.buffer).setBigUint64(24,BigInt(file.size),false);
   for(let i=0;i<count;i++){
    const data=await file.slice(i*unit,Math.min(file.size,(i+1)*unit)).arrayBuffer();
    const hash=await crypto.subtle.digest('SHA-256',data);
-   marks.set(new Uint8Array(hash),24+i*32);
+   marks.set(new Uint8Array(hash),32+i*32);
    onProgress(Math.round((i+1)/count*100));
    if(i%4===0)await new Promise(resolve=>setTimeout(resolve,0));
   }
@@ -94,7 +94,7 @@ export function setupBlackcellBulk({client,toast}){
   if(planned.duplicate){job.state='duplicate';job.progress=100;render();return;}
   let ticket=planned.ticket,multipart=planned.mode==='multipart';
   try{
-   const mime=job.file.type||undefined;
+   const mime=planned.mime||job.file.type||undefined;
    job.state='uploading';job.progress=20;render();
    if(!multipart){
     await send(planned.url,job.file,mime,(current,total)=>{
