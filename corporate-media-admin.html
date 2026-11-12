@@ -9,9 +9,9 @@
 <link rel="stylesheet" href="corporate-media-admin.css?v=20261111-bunny-review1">
 <link rel="stylesheet" href="corporate-bunny-library-sync.css?v=20261112-library-sync1"
 <link rel="stylesheet" href="corporate-media-diagnostics.css?v=20261112-diag1">
-<link rel="stylesheet" href="corporate-admin-workspace.css?v=20261112-command1">
+<link rel="stylesheet" href="corporate-admin-workspace.css?v=20261112-command2">
 <script src="corp-config.js" defer></script>
-<script type="module" src="corporate-media-admin.js?v=20261112-command1"></script>
+<script type="module" src="corporate-media-admin.js?v=20261112-command2"></script>
 </head>
 <body class="bc-network bc-media-admin-page">
 <div id="bcAdminGate" role="status" aria-live="polite">
@@ -58,7 +58,7 @@
   <section class="bc-bunny-connection" id="bcBunnyConnection" aria-label="Bunny Storage private cloud connection">
    <div class="bc-admin-overline">BLACKCELL / NEW PRIVATE CLOUD STORAGE</div>
    <h2>Bunny Storage <span>· Los Angeles</span></h2>
-   <p>Storage zone: <strong>blackcell-media-vault</strong>. This connection replaces Backblaze as the planned destination after verification. Your existing BLACKCELL and Backblaze media remain untouched.</p>
+   <p>Storage zone: <strong>blackcell-media-vault</strong>. Bunny is the primary protected media vault. Existing approved Library photographs have verified copies in Bunny; full-size viewing and review permissions remain protected. Optional legacy Backblaze tools are located in Advanced Settings.</p>
    <div class="bc-bunny-toolbar">
     <strong id="bcBunnyStatus" role="status" aria-live="polite">NOT VERIFIED</strong>
     <button id="bcBunnyCheck" type="button">↻ CHECK BUNNY CONNECTION</button>
@@ -100,7 +100,7 @@
   </section>
   <section class="bc-b2-connection" id="bcB2Connection" aria-label="Backblaze B2 private cloud connection">
     <div class="bc-b2-connection-title"><span class="bc-admin-overline">BLACKCELL / PRIVATE CLOUD CONNECTION</span><h2>Backblaze B2 Storage</h2>
-     <p>Your restricted 1 TB+ storage destination. Secrets stay in Supabase; nothing is uploaded or published by checking the connection.</p></div>
+     <p>Optional older storage integration, retained for compatibility. Bunny is the primary media vault. No legacy connection check runs unless you request it.</p></div>
     <div class="bc-b2-connection-toolbar">
       <strong id="bcB2Status" role="status" aria-live="polite">OPTIONAL · ON DEMAND</strong>
       <button id="bcB2Check" type="button">↻ CHECK CONNECTION</button>
