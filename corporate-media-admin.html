@@ -47,6 +47,7 @@
    <h2>Mass Media Upload <span>· Bunny Storage</span></h2>
    <p>Select a batch of photographs and short videos from your device. Accepted files go through your protected BLACKCELL server into the private <strong>blackcell-media-vault</strong> storage zone. They will not be published or automatically organized.</p>
    <p class="bc-bunny-uploader-warning">FIRST TEST PHASE: Up to <strong>32 MiB per file</strong>. Larger videos are flagged, not uploaded. Leave this page open while the batch runs. The upload queue is not saved across page reloads.</p>
+   <p><strong>One shared intake folder:</strong> <code>blackcell-intake/bulk/</code>. New photos and videos are saved together without individual hash folders. Earlier uploads stay in their original locations, and duplicate checks include both layouts.</p>
    <div class="bc-bunny-actions">
     <input type="file" id="bcBunnyFiles" accept="image/*,video/*,.heic,.heif,.avif,.tif,.tiff,.mkv,.avi,.3gp" multiple hidden>
     <input type="file" id="bcBunnyFolder" webkitdirectory directory multiple hidden>
