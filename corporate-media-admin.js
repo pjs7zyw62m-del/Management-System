@@ -125,10 +125,10 @@ function setupIcloudTest(){
  const label=$('bcIcloudName'),size=$('bcIcloudSize');
  if(!picker||!choose||!upload||!status)return;
  // Synchronous .click() keeps iOS Safari's required user gesture.
- choose.addEventListener('click',()=>{if(!upload.disabled&&upload.dataset.busy==='true')return;picker.click()});
+ choose.addEventListener('click',()=>{if(upload.dataset.busy==='true')return;picker.click()});
  picker.addEventListener('change',()=>{
   const file=picker.files?.[0]||null;
-  chosenIcloudPhoto=null;upload.disabled=true;
+  chosenIcloudPhoto=null;upload.disabled=true;delete status.dataset.result;
   if(icloudPreviewUrl){URL.revokeObjectURL(icloudPreviewUrl);icloudPreviewUrl=""}
   preview.hidden=true;thumb.hidden=true;thumb.removeAttribute('src');
   if(!file){status.textContent='No photo selected yet.';return}
