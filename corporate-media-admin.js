@@ -3,7 +3,7 @@
  * The same existing photo/video intake controller is mounted on an admin-only page.
  */
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-clearance5';
-import {createBlackcellMediaProcessor} from './corporate-media-processor.js?v=20261112-library-sync1';
+import {createBlackcellMediaProcessor} from './corporate-media-processor.js?v=20261112-library-sync2';
 import {setupBlackcellBulk} from './corporate-b2-bulk.js?v=20261111-cors2';
 import {setupBlackcellBunnyBulk} from './corporate-bunny-bulk.js?v=20261111-bunny-review1';
 import {setupBlackcellBunnyReview} from './corporate-bunny-review.js?v=20261111-bunny-review1';
@@ -108,7 +108,7 @@ async function checkBunny(){
   }
   if(result?.connected===true){
    badge.dataset.health='connected';badge.textContent='CONNECTED';
-   message.textContent='✓ Bunny Storage zone verified in Los Angeles. Only private read access has been tested; bulk uploading is not enabled yet.';
+   message.textContent='✓ Bunny Storage connected in Los Angeles. Private upload, review and Military Library archival are available from this page.';
   }else{
    badge.dataset.health='not-configured';badge.textContent='NOT CONNECTED';
    message.textContent=result?.detail||'Save BLACKCELL_BUNNY_STORAGE_ACCESS_KEY as a Supabase Edge Function Secret, then check again.';
