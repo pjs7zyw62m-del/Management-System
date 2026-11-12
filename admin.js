@@ -816,14 +816,374 @@ async function loadClearanceLevels(container){
     }
   }catch(_){if(container.isConnected)status.textContent='Clearance levels could not be loaded.'}
 }
-function security(){if(activeTab==='overview'){let g=grid();[['Security status','Not connected'],['Active sessions','—'],['Failed attempts','—'],['Security events','—']].forEach(x=>g.append(card(...x)));content.append(g);let b=block('Recent Security Activity');b.append(p('No real corporate login or security event monitoring is connected.'));content.append(b);}else if(activeTab==='sessions'){let b=block('Authorized Devices & Sessions');b.append(p('Current sessions, device recognition, expiration, and session revocation will appear here after backend integration.'));content.append(b,action('Sign Out Other Sessions — Not Connected',null,true));}else{content.append(el('h3','','Security Preferences'),choice('Security Notifications','Proposed alerts for important corporate events','securityNotify'),choice('New Device Login Alerts','Proposed alerts for unfamiliar sign-ins','deviceAlerts'),note('These are local preview switches and do not activate security monitoring.'));}}
-function field(name,value,readOnly=true){let l=el('label','field',name),i=el('input');i.value=value;i.readOnly=readOnly;l.append(i);return l;}
-function settings(){if(activeTab==='general'){let b=block('Corporate Identity');b.append(field('Corporation Name','Blackcell Corporation'),field('Portal Title','Command & Administration Center'),row('Administrator Access','Protected role; not editable here','Owner'));content.append(b);}else if(activeTab==='appearance'){let b=block('Interface Appearance');b.append(el('label','field','Visual theme'));b.append(select([['glass','Ultra-Dark Apple Glass'],['black','Pure Black — Minimal'],['silver','Charcoal & Silver Glass']],state.appearance,v=>{state.appearance=v;document.body.dataset.appearance=v}));content.append(b,choice('Interface Animations','Smooth popup and navigation transitions','animations'));}else if(activeTab==='divisions'){let b=block('Configured Divisions');b.append(row('NEXUS Management','Management System','Separate application'),row('MansArmedForces','Media Collection','Separate application'));content.append(b,note('Division configuration is illustrative. Changing it here does not change independent applications.'));}else{content.append(choice('Corporate Notifications','Show proposed administrative notifications','notify'),choice('Confirm Important Actions','Proposed confirmation before critical changes','confirm'));}}
-function logRows(container){container.replaceChildren();let data=demoEvents.filter(x=>(activeTab==='all'||x.type===activeTab)&&`${x.title} ${x.description}`.toLowerCase().includes(searchTerm.toLowerCase())&&(period==='all'||(period==='today'&&x.date==='2026-11-08')||(period==='recent'&&x.date>='2026-11-07')));container.append(el('p','muted',`${data.length} fictional demonstration events`));if(!data.length)container.append(el('div','empty-state','No matching events'));for(let e of data){let b=el('button','item-button');b.append(el('strong','',e.title),el('small','',e.display));b.addEventListener('click',()=>{selectedEvent=selectedEvent===e.id?null:e.id;logRows(container)});container.append(b);if(selectedEvent===e.id)container.append(el('div','event-details',`${e.description} · Category: ${e.type} · Event ID: ${e.id}`));}}
-function logs(){let bar=el('div','search-row'),a=el('label','field','Search events'),q=el('input');q.placeholder='Search activity…';q.value=searchTerm;a.append(q);let t=el('label','field','Date range'),picker=select([['all','All Time'],['today','Today (sample)'],['recent','Recent (sample)']],period,v=>{period=v;logRows(list)});t.append(picker);bar.append(a,t);content.append(bar);let list=el('div');content.append(list);q.addEventListener('input',()=>{searchTerm=q.value;logRows(list)});logRows(list);content.append(note('All entries are fictional examples. No corporate audit data is stored or retrieved.'),action('Export Actual Logs — Not Connected',null,true));}
-function backups(){if(activeTab==='overview'){let g=grid();g.append(card('Last Backup','Not connected'),card('Recovery Status','Not verified'));content.append(g);let b=block('Choose Backup Scope');let selector=select([['portal','Corporate Portal Configuration'],['nexus','NEXUS Management — future'],['mans','MansArmedForces — future']],'portal',()=>{});b.append(selector,el('div','actions'));b.querySelector('.actions').append(action('Create Backup — Not Connected',null,true));content.append(b,note('A backup must be written to secured storage and verified before it can be reported as successful. No backup was created.'));}else if(activeTab==='history'){content.append(el('div','empty-state','No connected backup history. Completed, verified backup records will appear here.'),action('Choose Recovery Point — Not Connected',null,true));}else{content.append(choice('Automatic Backups','Future recurring backup scheduling','autoBackup'),choice('Require Restore Confirmation','Additional confirmation before overwriting data','restoreConfirm'),note('These switches are preview-only. Automatic backups are not running.'));}}
-function systemResults(container){container.replaceChildren();let data=systems.filter(x=>(x.name+' '+x.kind+' '+x.provider).toLowerCase().includes(searchTerm.toLowerCase()));container.append(el('p','muted',`${data.length} systems in the design directory`));if(!data.length)container.append(el('div','empty-state','No matching systems'));data.forEach(s=>{let b=el('button','item-button');b.append(el('strong','',`${s.icon}  ${s.name}`),el('small','',s.kind));b.addEventListener('click',()=>{selectedSystem=selectedSystem===s.id?null:s.id;systemResults(container)});container.append(b);if(selectedSystem===s.id){let n=block('Directory Details');n.append(p(s.desc),row('Technology',s.provider,'Not monitored'));if(s.href){let a=el('a','btn outline',`Open ${s.name} ↗`);a.href=s.href;a.target='_blank';a.rel='noopener noreferrer';n.append(a)}container.append(n)}});}
-function corporateSystems(){if(activeTab==='infrastructure'||activeTab==='monitoring'){const monitor=window.BLACKCELL_HEALTH;if(monitor){monitor.renderInto(content);}else{content.append(note('Live diagnostics are not initialized yet. Open Servers & System Health from the Administration dashboard.'));}return;}if(activeTab==='systems'){let a=el('label','field','Search corporate systems'),q=el('input');q.placeholder='Search corporate systems…';q.value=searchTerm;a.append(q);content.append(a);let list=el('div');content.append(list);q.addEventListener('input',()=>{searchTerm=q.value;systemResults(list)});systemResults(list);}else if(activeTab==='infrastructure'){let b=block('Infrastructure Directory');b.append(row('GitHub Pages','Corporate website hosting and deployments','Directory only'),row('Supabase','Authentication, storage, database APIs','Directory only'),row('AI Infrastructure','Inference endpoints and model operations','Directory only'));content.append(b,note('No service credentials, status data, or infrastructure access is exposed.'));}else{let g=grid();[['Website availability','Not monitored'],['API connectivity','Not monitored'],['Database health','Not monitored'],['AI service status','Not monitored']].forEach(x=>g.append(card(...x)));content.append(g,note('Green status will appear only after authenticated and verified health checks are implemented.'),action('Configure Monitoring — Coming Later',null,true));}}
+
+/* Corporate operations. All privileged functions below execute with an owner-
+   validated Supabase session. No admin-side changes rely on client-only role flags. */
+const defaultCorpPreferences=Object.freeze({theme:'glass',animations:true,notifications:true,confirm_actions:true});
+let corporatePreferences={...defaultCorpPreferences};
+function corporateApi(){return window.BLACKCELL_CORPORATE_ADMIN_API?.client||null;}
+async function corporateRpc(name,params={}){
+  const client=corporateApi();
+  if(!client)throw new Error('Administrator session not available. Sign in with your Level 7 account.');
+  const {data,error}=await client.rpc(name,params);
+  if(error)throw new Error(error.message||'Secure operation failed');
+  if(!data||data.ok!==true)throw new Error(data?.reason==='owner_verification_required'?
+    'Level 7 owner verification has expired. Please sign in again.':data?.reason||'Secure operation was not accepted.');
+  return data;
+}
+function corpDate(value){
+  if(!value)return 'Not recorded';
+  const d=new Date(value);
+  return Number.isNaN(d.getTime())?'Not recorded':d.toLocaleString(undefined,{year:'numeric',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+}
+function corpStatus(container,text,error=false){
+  container.textContent=text;
+  container.setAttribute('role','status');
+  container.classList.toggle('corp-error',error);
+}
+function corpDownload(filename,obj){
+  const bytes=new Blob([JSON.stringify(obj,null,2)],{type:'application/json;charset=utf-8'});
+  const url=URL.createObjectURL(bytes),link=document.createElement('a');
+  link.href=url;link.download=filename;link.style.display='none';
+  document.body.append(link);link.click();link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),60000);
+}
+function applyCorporatePreferences(value){
+  corporatePreferences={...defaultCorpPreferences,...value};
+  const theme=corporatePreferences.theme;
+  document.body.dataset.appearance=['glass','black','silver'].includes(theme)?theme:'glass';
+  document.body.classList.toggle('corp-motion-reduced',!corporatePreferences.animations);
+  const icon=document.querySelector('.header-end [data-open="notifications"]');
+  if(icon)icon.hidden=!corporatePreferences.notifications;
+}
+async function loadCorporatePreferences(){
+  try{
+    const data=await corporateRpc('corp_admin_console_preferences',{p_action:'get'});
+    applyCorporatePreferences(data.preferences);
+  }catch(_){ /* owner authorization will block in other workflows */ }
+}
+function corporatePanel(title,intro){
+  const shell=el('section','content-block corp-live-panel');
+  shell.append(el('div','corp-panel-overline','BLACKCELL / OWNER OPERATIONS'),
+    el('h3','',title),p(intro));
+  content.append(shell);return shell;
+}
+function security(){
+  if(activeTab==='overview'){
+    const shell=corporatePanel('Corporate Security Overview','Live verification, employee status, and identity activity from the secured corporate database.');
+    const result=el('div','corp-live-result');result.append(p('Loading corporate security information…'));shell.append(result);
+    const control=el('div','actions');
+    control.append(action('⟳ REFRESH SECURITY CHECK',()=>{activeTab='overview';render();}));
+    shell.append(control);
+    void (async()=>{
+      try{
+        const info=await corporateRpc('corp_admin_security_overview');
+        if(!result.isConnected||activeModal!=='security')return;
+        result.replaceChildren();
+        const g=grid();
+        [['Owner verified',info.owner_verified?'YES':'NO'],
+         ['Owner sessions',String(info.owner_sessions?.length||0)],
+         ['Active employees',String(info.active_employees??0)],
+         ['Employee sessions',String(info.active_employee_verifications??0)],
+         ['Failed master-code attempts',String(info.master_code_failed_attempts??0)],
+         ['Disabled employees',String(info.disabled_employees??0)]].forEach(x=>g.append(card(...x)));
+        result.append(g);
+        const notes=block('Verification details');
+        notes.append(row('Master code lock','Applies only if the existing gateway has enforced a lock',
+          info.owner_master_code_locked_until&&new Date(info.owner_master_code_locked_until)>new Date()?
+          'LOCKED UNTIL '+corpDate(info.owner_master_code_locked_until):'NO ACTIVE LOCK'));
+        notes.append(row('Security read time','Supabase database time',corpDate(info.read_at)));
+        result.append(notes);
+        if(info.master_code_failed_attempts>0)
+          result.append(note('Master-code failure count is cumulative in the current gateway record, not a count of unique login events.'));
+      }catch(err){if(result.isConnected)result.replaceChildren(note('Security check unavailable: '+String(err.message||err)));}
+    })();
+  }else if(activeTab==='sessions'){
+    const shell=corporatePanel('Corporate Verification Sessions',
+      'Review Level 7 owner verification sessions. Revoke other corporate verification grants without deleting user accounts.');
+    const result=el('div');result.append(p('Loading secure session list…'));shell.append(result);
+    void (async()=>{
+      try{
+        const data=await corporateRpc('corp_admin_security_overview');
+        if(!result.isConnected||activeModal!=='security')return;
+        result.replaceChildren();
+        const sessions=data.owner_sessions||[];
+        if(!sessions.length)result.append(note('No unexpired corporate verification grants found.'));
+        for(const item of sessions){
+          result.append(row(item.current?'Current owner session':'Another owner session',
+            'Verified '+corpDate(item.verified_at),
+            item.current?'THIS DEVICE':'Expires '+corpDate(item.expires_at)));
+        }
+        const feedback=el('p','muted','');feedback.setAttribute('role','status');
+        const actions=el('div','actions');
+        const revoke=action('REVOKE OTHER CORPORATE SESSIONS',async()=>{
+          if(!confirm('Revoke all other Level 7 corporate verification grants? Those sessions will need to reverify. This does not revoke Supabase Auth tokens or sessions in other applications.'))return;
+          revoke.disabled=true;corpStatus(feedback,'Revoking other corporate verification grants…');
+          try{
+            const response=await corporateRpc('corp_admin_revoke_other_verified_sessions');
+            corpStatus(feedback,'Revoked '+response.revoked+' other corporate verification grant(s). Your current session remains active.');
+            setTimeout(()=>{if(activeModal==='security'&&activeTab==='sessions')render()},1000);
+          }catch(err){corpStatus(feedback,String(err.message||err),true);revoke.disabled=false;}
+        });
+        actions.append(revoke);result.append(actions,feedback);
+        result.append(note('This action revokes corporate code verification grants only. It does not log users out of NEXUS, Supabase Auth, or other independent applications.'));
+      }catch(err){if(result.isConnected)result.replaceChildren(note('Unable to inspect verified sessions: '+String(err.message||err)));}
+    })();
+  }else{
+    const shell=corporatePanel('Security Notifications & Controls','Only configured capabilities are available. Server alerts are not silently enabled by a cosmetic switch.');
+    const status=el('p','muted','Loading your preferences…');shell.append(status);
+    const goto=action('OPEN CONFIGURED PREFERENCES',()=>{activeModal='settings';activeTab='preferences';render()});
+    shell.append(goto);
+    shell.append(note('Live checks and recorded security events are available. Automatic new-device email/SMS alerts require a separate server-side notification pipeline and are not enabled here.'));
+    void loadCorporatePreferences().then(()=>{if(status.isConnected)status.textContent='Saved Administration preferences loaded. You can change them in System Settings.'});
+  }
+}
+function settings(){
+  if(activeTab==='general'){
+    const shell=corporatePanel('Corporate Identity','Verified account details and the connected corporate application—not an editable fake profile.');
+    const body=el('div');body.append(p('Loading administrator account…'));shell.append(body);
+    void (async()=>{
+      try{
+        const client=corporateApi();
+        if(!client)throw new Error('Administrator session unavailable');
+        const {data,error}=await client.auth.getUser();
+        if(error||!data?.user)throw new Error('Account authentication failed');
+        const members=await corporateRpc('corp_admin_members');
+        if(!body.isConnected||activeModal!=='settings')return;
+        const owner=members.members?.find(m=>m.user_id===data.user.id);
+        body.replaceChildren();
+        body.append(row('Corporation','Official network name','BLACKCELL CORPORATION'),
+          row('Owner name','From the secured personnel directory',owner?.display_name||'Verified owner'),
+          row('Administrator email','Supabase Authentication',data.user.email||'Not available'),
+          row('Clearance','Server-enforced permissions','LEVEL 7 / OWNER'));
+      }catch(err){if(body.isConnected)body.replaceChildren(note('Identity unavailable: '+String(err.message||err)));}
+    })();
+  }else if(activeTab==='appearance'||activeTab==='preferences'){
+    const shell=corporatePanel(activeTab==='appearance'?'Appearance & Layout':'Administration Preferences',
+      'Saved to your Level 7 owner profile in Supabase. These controls affect this Administration interface, not other BLACKCELL applications.');
+    const form=el('form','corp-settings-form');
+    const theme=el('label','field','ADMINISTRATION THEME');
+    const chooser=select([['glass','Ultra-Dark Apple Glass'],['black','Pure Black'],['silver','Charcoal & Silver']],corporatePreferences.theme,()=>{});
+    theme.append(chooser);form.append(theme);
+    function toggle(title,description,key){
+      const label=el('label','corp-pref-toggle'),copy=el('div');
+      copy.append(el('b','',title),el('small','',description));
+      const input=el('input');input.type='checkbox';input.checked=!!corporatePreferences[key];
+      label.append(copy,input);form.append(label);return input;
+    }
+    const animation=toggle('Interface animations','Control dashboard motion and transitions','animations');
+    const notifications=toggle('Show notification shortcut','Show or hide the Administration notification icon','notifications');
+    const confirmActions=toggle('Confirm routine actions','Ask before creating configuration snapshots','confirm_actions');
+    const feedback=el('p','muted','');
+    const save=action('SAVE ADMINISTRATION SETTINGS',null,false,true);save.type='submit';
+    form.append(save,feedback);shell.append(form);
+    form.addEventListener('submit',async event=>{
+      event.preventDefault();save.disabled=true;corpStatus(feedback,'Saving settings securely…');
+      const updated={theme:chooser.value,animations:animation.checked,notifications:notifications.checked,confirm_actions:confirmActions.checked};
+      try{
+        const resp=await corporateRpc('corp_admin_console_preferences',{p_action:'set',p_value:updated});
+        applyCorporatePreferences(resp.preferences);
+        corpStatus(feedback,'Settings saved to your verified owner profile.');
+      }catch(err){corpStatus(feedback,'Save failed: '+String(err.message||err),true)}
+      finally{save.disabled=false}
+    });
+    void (async()=>{try{
+      const result=await corporateRpc('corp_admin_console_preferences',{p_action:'get'});
+      if(!form.isConnected)return;
+      applyCorporatePreferences(result.preferences);
+      chooser.value=corporatePreferences.theme;animation.checked=corporatePreferences.animations;
+      notifications.checked=corporatePreferences.notifications;
+      confirmActions.checked=corporatePreferences.confirm_actions;
+    }catch(err){if(feedback.isConnected)corpStatus(feedback,'Settings could not be loaded: '+String(err.message||err),true)}})();
+  }else{
+    const shell=corporatePanel('Corporate Divisions','Direct links to connected BLACKCELL applications. Access continues to require each application’s own permissions.');
+    for(const item of systems.filter(x=>['nexus','maf','corporate'].includes(x.id))){
+      const link=el('a','btn outline','OPEN '+item.name.toUpperCase()+'  ↗');
+      link.href=item.href||'dashboard.html';
+      link.rel='noopener noreferrer';link.target='_blank';
+      shell.append(row(item.name,item.desc,link));
+    }
+  }
+}
+function logRows(container,events,query='',category='all',range='all'){
+  container.replaceChildren();
+  const now=Date.now(),periodMs={day:86400000,week:604800000,month:2592000000}[range]||0;
+  const rows=events.filter(e=>(category==='all'||e.category===category)
+    &&(!query||[e.name,e.description,e.source].join(' ').toLowerCase().includes(query.toLowerCase()))
+    &&(!periodMs||now-new Date(e.at).getTime()<=periodMs));
+  container.append(el('p','muted',rows.length+' recorded event(s) match these filters.'));
+  if(!rows.length){container.append(el('div','empty-state','No recorded events for these filters.'));return rows;}
+  rows.forEach(e=>{
+    const item=el('div','corp-activity-row');
+    item.append(el('span','corp-event-kind',String(e.category||'EVENT').toUpperCase()));
+    const body=el('div');
+    body.append(el('strong','',String(e.description||e.name)),el('small','',corpDate(e.at)+' · '+String(e.source||'database record')));
+    item.append(body);container.append(item);
+  });
+  return rows;
+}
+function logs(){
+  const shell=corporatePanel('Recorded Corporate Activity',
+    'Actual events from owner verification sessions, employee invitations, account activation, and logged administrator actions. Not fabricated sample events.');
+  const toolbar=el('div','corp-log-toolbar');
+  const search=el('input');search.type='search';search.placeholder='Search recorded activity…';search.setAttribute('aria-label','Search recorded events');
+  const category=select([['all','All categories'],['security','Security'],['access','Employee access'],['admin','Administration']],'all',()=>{});
+  const range=select([['all','All available'],['day','Past 24 hours'],['week','Past 7 days'],['month','Past 30 days']],'all',()=>{});
+  toolbar.append(search,category,range);shell.append(toolbar);
+  const result=el('div','corp-activity');result.append(p('Loading recorded corporate events…'));shell.append(result);
+  const actions=el('div','actions'),feedback=el('p','muted','');
+  const refresh=action('⟳ REFRESH ACTIVITY',()=>{render()});
+  const exportButton=action('EXPORT FILTERED EVENTS',()=>{},true);
+  actions.append(refresh,exportButton);shell.append(actions,feedback);
+  void (async()=>{
+    try{
+      const response=await corporateRpc('corp_admin_console_activity',{p_limit:200});
+      if(!result.isConnected||activeModal!=='logs')return;
+      const events=response.items||[];
+      const draw=()=>logRows(result,events,search.value,category.value,range.value);
+      search.addEventListener('input',draw);category.addEventListener('change',draw);range.addEventListener('change',draw);
+      exportButton.disabled=false;
+      exportButton.addEventListener('click',()=>{
+        const filtered=draw();
+        corpDownload('blackcell-admin-activity-'+new Date().toISOString().slice(0,10)+'.json',
+          {type:'blackcell-administration-event-export',exported_at:new Date().toISOString(),source:'verified corporate database',events:filtered});
+        corpStatus(feedback,filtered.length+' recorded event(s) exported as JSON.');
+      });
+      draw();
+      shell.append(note('Coverage is limited to recorded event sources. This is not a complete log of every HTTP request, network packet, failed login, or action in an independent division.'));
+    }catch(err){if(result.isConnected)result.replaceChildren(note('Activity unavailable: '+String(err.message||err)));}
+  })();
+}
+function backups(){
+  if(activeTab==='overview'){
+    const shell=corporatePanel('Configuration Snapshot Center',
+      'Create a checksummed snapshot of owner UI preferences and personnel totals, saved in Supabase. This is NOT a full database, employee credential, or media backup.');
+    const stats=el('div');stats.append(p('Loading snapshot status…'));shell.append(stats);
+    const label=el('label','field','SNAPSHOT NAME'),input=el('input');input.type='text';input.maxLength=75;input.placeholder='e.g. Before settings changes';
+    label.append(input);shell.append(label);
+    const feedback=el('p','muted','');
+    const actions=el('div','actions');
+    const create=action('CREATE VERIFIED CONFIGURATION SNAPSHOT',async()=>{
+      if(corporatePreferences.confirm_actions&&!confirm('Save a configuration snapshot to the secured database? This captures only owner interface preferences and aggregate personnel counts.'))return;
+      create.disabled=true;corpStatus(feedback,'Creating checksum-verified snapshot…');
+      try{
+        const v=await corporateRpc('corp_admin_config_snapshot',{p_action:'create',p_title:input.value.trim()||'Manual configuration snapshot'});
+        corpStatus(feedback,'Snapshot saved: '+v.title+' · SHA-256 '+v.checksum.slice(0,18)+'…');
+        input.value='';
+        void drawStats();
+      }catch(err){corpStatus(feedback,'Snapshot not saved: '+String(err.message||err),true)}
+      finally{create.disabled=false}
+    },false,true);
+    actions.append(create,action('OPEN SNAPSHOT HISTORY',()=>{activeTab='history';render()}));
+    shell.append(actions,feedback,note('Snapshots restore only the owner Administration preferences. They do not restore users, passwords, Supabase database tables, Bunny files, chats or NEXUS records.'));
+    async function drawStats(){
+      try{
+        const r=await corporateRpc('corp_admin_config_snapshot',{p_action:'list'});
+        if(!stats.isConnected)return;
+        stats.replaceChildren();
+        const g=grid();g.append(card('Saved snapshots',String(r.items.length)),card('Most recent',r.items.length?corpDate(r.items[0].created_at):'None yet'));stats.append(g);
+      }catch(err){if(stats.isConnected)stats.replaceChildren(note('Snapshot records unavailable: '+String(err.message||err)));}
+    }
+    void drawStats();
+  }else if(activeTab==='history'){
+    const shell=corporatePanel('Configuration Snapshot History','Review, download, verify, restore owner preferences, or delete individual snapshots. Every operation is owner-authorized.');
+    const result=el('div');result.append(p('Loading saved snapshots…'));shell.append(result);
+    const footer=el('p','muted','');shell.append(footer);
+    void (async()=>{
+      try{
+        const r=await corporateRpc('corp_admin_config_snapshot',{p_action:'list'});
+        if(!result.isConnected||activeModal!=='backups')return;
+        result.replaceChildren();
+        if(!r.items.length){result.append(note('No configuration snapshots exist. Create one in Overview.'));return;}
+        for(const record of r.items){
+          const item=el('div','corp-backup-record'),heading=el('div');
+          heading.append(el('strong','',record.title),el('small','',corpDate(record.created_at)+' · SHA-256 '+record.checksum.slice(0,15)+'…'));
+          item.append(heading);
+          const buttons=el('div','corp-backup-actions');
+          const inspect=action('VERIFY & VIEW',async()=>{
+            try{
+              const v=await corporateRpc('corp_admin_config_snapshot',{p_action:'get',p_id:record.id});
+              const pre=el('pre','corp-json-view',JSON.stringify(v.payload,null,2));
+              item.querySelector('.corp-json-view')?.remove();item.append(pre);
+              corpStatus(footer,'Checksum verified by the secure database for '+v.title+'.');
+            }catch(err){corpStatus(footer,'Unable to verify: '+String(err.message||err),true)}
+          });
+          const download=action('DOWNLOAD',async()=>{
+            try{
+              const v=await corporateRpc('corp_admin_config_snapshot',{p_action:'get',p_id:record.id});
+              corpDownload('blackcell-config-'+record.id.slice(0,8)+'.json',
+                {title:v.title,checksum:v.checksum,checksum_verified:v.checksum_verified,payload:v.payload});
+              corpStatus(footer,'Verified snapshot exported. Store it securely.');
+            }catch(err){corpStatus(footer,'Export failed: '+String(err.message||err),true)}
+          });
+          const restore=action('RESTORE UI SETTINGS',async()=>{
+            if(!confirm('Restore Administration appearance and preference settings from this snapshot? Employee accounts, chat, databases and storage will NOT be restored or modified.'))return;
+            try{
+              const v=await corporateRpc('corp_admin_config_snapshot',{p_action:'restore_preferences',p_id:record.id});
+              applyCorporatePreferences(v.preferences);
+              corpStatus(footer,'Owner Administration preferences restored. Other systems were not modified.');
+            }catch(err){corpStatus(footer,'Restore rejected: '+String(err.message||err),true)}
+          });
+          const erase=action('DELETE',async()=>{
+            if(!confirm('Permanently delete this single configuration snapshot?'))return;
+            try{await corporateRpc('corp_admin_config_snapshot',{p_action:'delete',p_id:record.id});
+              item.remove();corpStatus(footer,'Snapshot deleted.');}
+            catch(err){corpStatus(footer,'Delete failed: '+String(err.message||err),true)}
+          });
+          erase.classList.add('delete-employee-button');
+          buttons.append(inspect,download,restore,erase);item.append(buttons);result.append(item);
+        }
+      }catch(err){if(result.isConnected)result.replaceChildren(note('Unable to load saved snapshots: '+String(err.message||err)));}
+    })();
+  }else{
+    const shell=corporatePanel('Recovery Scope & Limitations',
+      'Only configuration snapshots are supported here. Full storage/database disaster recovery remains a separate infrastructure project.');
+    shell.append(row('Administration preferences','Create, inspect and restore from checksummed snapshots','AVAILABLE'),
+      row('Personnel identity recovery','Requires secured Auth and database backups','NOT CONFIGURED'),
+      row('NEXUS data recovery','Requires verified full database and storage backups','NOT CONFIGURED'),
+      row('Bunny Storage recovery','Requires independent protected file replication','NOT CONFIGURED'),
+      note('Scheduled off-site backups, complete restore testing, and point-in-time recovery cannot be activated from this interface until the relevant backend systems are configured.'));
+  }
+}
+function systemResults(container){
+  container.replaceChildren();
+  const data=systems.filter(x=>[x.name,x.kind,x.provider].join(' ').toLowerCase().includes(searchTerm.toLowerCase()));
+  container.append(p(data.length+' configured corporate service entries.'));
+  if(!data.length)container.append(el('div','empty-state','No matching services.'));
+  const health=window.BLACKCELL_HEALTH?.snapshot?.()||[];
+  const map={nexus:'database',maf:'web',gunner:'ai',corporate:'web'};
+  data.forEach(item=>{
+    const svc=health.find(v=>v.id===map[item.id]),label=svc?.state||'unknown';
+    const section=el('div','corp-service-entry'),left=el('div');
+    left.append(el('strong','',item.name),el('small','',item.kind+' · '+item.provider));
+    const right=el('div','corp-service-actions');
+    const stateLabel=el('span','corp-service-status',label==='online'?'● RESPONDING':label==='attention'?'● REVIEW':label==='offline'?'● UNREACHABLE':'● NOT VERIFIED');
+    stateLabel.dataset.state=label;right.append(stateLabel);
+    if(item.href){const link=el('a','btn outline','OPEN ↗');link.href=item.href;link.rel='noopener noreferrer';link.target='_blank';right.append(link)}
+    section.append(left,right);container.append(section);
+  });
+  container.append(note('A successful network check does not prove that every feature in an application is healthy. Independent service checks have their own coverage.'));
+}
+function corporateSystems(){
+  if(activeTab==='infrastructure'||activeTab==='monitoring'){
+    const shell=corporatePanel(activeTab==='monitoring'?'Verified Live Health Checks':'Connected Infrastructure',
+      'Service responses are collected by the authenticated system monitor. Green means a recent successful check, not guaranteed continuous uptime.');
+    if(window.BLACKCELL_HEALTH){
+      window.BLACKCELL_HEALTH.renderInto(shell);
+      shell.append(action('RUN CURRENT SYSTEM CHECKS',()=>{void window.BLACKCELL_HEALTH.refresh()}));
+    }else shell.append(note('Monitor not initialized. Reload the Administration dashboard to load diagnostics.'));
+    return;
+  }
+  const shell=corporatePanel('Corporate Application Directory','Launch approved divisions and review verified system health in one place.');
+  const bar=el('label','field','SEARCH SERVICES'),q=el('input');q.type='search';q.placeholder='Search connected systems…';q.value=searchTerm;
+  bar.append(q);shell.append(bar);
+  const list=el('div');shell.append(list);
+  q.addEventListener('input',()=>{searchTerm=q.value;systemResults(list)});
+  systemResults(list);
+  shell.append(action('VIEW SERVER HEALTH MONITOR',()=>{
+    close();document.getElementById('systemHealth')?.scrollIntoView({behavior:'smooth',block:'start'});
+  }));
+}
 function division(){let nexus=activeModal==='nexus',name=names[activeModal];let b=block('Division Overview');b.append(p(nexus?'Private management operations, records, communications and financial systems.':'Photo collections, review workflows, album organization, and AI-related projects.'));let g=grid();(nexus?[['Records','Profiles and activity'],['Communications','Messaging and analysis'],['Financial','Budget and transactions'],['System Health','Not connected']]:[['Uniforms','Photo library and albums'],['Collections','Inmate and media collections'],['Gunner AI','Separate AI project'],['System Health','Not connected']]).forEach(x=>{let c=card(x[0],x[1]);g.append(c)});b.append(g);content.append(b);let a=el('a','btn primary full',`Open ${name} Website ↗`);a.href=nexus?'https://www.blackcellcorp.com':'mans-armed-forces.html';a.target='_blank';a.rel='noopener noreferrer';content.append(a,note('This opens the independent website. Existing authentication, permissions, and policies still apply. Corporate preview access does not sign you in.'));}
 function notifications(){let b=block('Notifications');b.append(p('No live corporate notifications are connected. Future authenticated events can include new-device alerts, failed sign-ins, system incidents, and administrator updates.'));content.append(b);}
 function account(){let b=block('Administrator Profile');b.append(row('Corporate role','Proposed primary administrator','Owner'),row('Account identity','No authenticated corporate account','Not connected'));content.append(b,note('The corporate login is a preview; account credentials and roles must be confirmed by a secure backend.'));}
