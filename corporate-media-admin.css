@@ -127,3 +127,19 @@ body.bc-network .bc-media-processor{margin:19px 0 0!important}
 .bc-bulk-cors span{font-size:11px;line-height:1.75;color:#c6d1dc;flex:1 1 300px}
 .bc-bulk-cors span[data-cors="fail"]{color:#ffc1c9}
 .bc-bulk-cors span[data-cors="pass"]{color:#a9e4ca}
+
+
+/* New private Bunny Storage zone · BLACKCELL obsidian Apple Glass */
+.bc-bunny-connection{margin:18px 0 12px;padding:23px;border:1px solid #40585d;border-radius:19px;background:linear-gradient(130deg,#112027,#0f131d 70%);box-shadow:0 18px 42px #0005}
+.bc-bunny-connection h2{font-size:19px;margin:8px 0 6px;letter-spacing:-.018em}
+.bc-bunny-connection h2 span{font-size:12px;color:#b9c7cd;letter-spacing:0;font-weight:600}
+.bc-bunny-connection p,.bc-bunny-connection>small{font-size:11px;color:#b4c1ce;line-height:1.85}
+.bc-bunny-connection p strong{color:#e6edf3}
+.bc-bunny-toolbar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:16px 0 10px}
+.bc-bunny-toolbar strong{padding:10px 12px;border-radius:9px;border:1px solid #455a63;background:#1f303b;color:#d9e7f1;font-size:10px;letter-spacing:.09em}
+.bc-bunny-toolbar strong[data-health="connected"]{border-color:#4c877a;background:#15332d;color:#b8efd6}
+.bc-bunny-toolbar strong[data-health="error"]{border-color:#ac5263;background:#361c26;color:#ffc3d1}
+.bc-bunny-toolbar button,.bc-bunny-toolbar a{padding:10px 13px;border:1px solid #536e7a;background:#283843;color:#edf4fa;font-size:10px;font-weight:800;border-radius:9px;cursor:pointer}
+.bc-bunny-toolbar a{background:#292333;border-color:#6b4a64}
+.bc-bunny-toolbar button:disabled{opacity:.45;cursor:wait}
+#bcBunnyMessage{margin:12px 0 7px;color:#dce6eb}
