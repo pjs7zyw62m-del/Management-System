@@ -1163,23 +1163,24 @@ function systemResults(container){
 }
 function corporateSystems(){
   if(activeTab==='infrastructure'||activeTab==='monitoring'){
-    const shell=corporatePanel(activeTab==='monitoring'?'Verified Live Health Checks':'Connected Infrastructure',
-      'Service responses are collected by the authenticated system monitor. Green means a recent successful check, not guaranteed continuous uptime.');
-    if(window.BLACKCELL_HEALTH){
-      window.BLACKCELL_HEALTH.renderInto(shell);
-      shell.append(action('RUN CURRENT SYSTEM CHECKS',()=>{void window.BLACKCELL_HEALTH.refresh()}));
-    }else shell.append(note('Monitor not initialized. Reload the Administration dashboard to load diagnostics.'));
+    const shell=corporatePanel(activeTab==='monitoring'?'Manual System Diagnostics':'Connected Infrastructure',
+      'Manual infrastructure checks now have their own secured full-page workspace.');
+    const link=el('a','btn primary full','OPEN DEDICATED DIAGNOSTICS PAGE ↗');
+    link.href='corporate-diagnostics.html';shell.append(link);
+    shell.append(note('Run the individual website, database, authentication, Edge Function, and storage checks there. External services without authenticated health endpoints remain unmonitored.'));
     return;
   }
-  const shell=corporatePanel('Corporate Application Directory','Launch approved divisions and review verified system health in one place.');
-  const bar=el('label','field','SEARCH SERVICES'),q=el('input');q.type='search';q.placeholder='Search connected systems…';q.value=searchTerm;
+  const shell=corporatePanel('Corporate Application Directory',
+    'Launch configured divisions or open the separate diagnostics workspace.');
+  const bar=el('label','field','SEARCH SERVICES'),q=el('input');
+  q.type='search';q.placeholder='Search connected systems…';q.value=searchTerm;
   bar.append(q);shell.append(bar);
   const list=el('div');shell.append(list);
   q.addEventListener('input',()=>{searchTerm=q.value;systemResults(list)});
   systemResults(list);
-  shell.append(action('VIEW SERVER HEALTH MONITOR',()=>{
-    close();document.getElementById('systemHealth')?.scrollIntoView({behavior:'smooth',block:'start'});
-  }));
+  const link=el('a','btn primary full','OPEN SYSTEM DIAGNOSTICS ↗');
+  link.href='corporate-diagnostics.html';
+  shell.append(link);
 }
 function division(){let nexus=activeModal==='nexus',name=names[activeModal];let b=block('Division Overview');b.append(p(nexus?'Private management operations, records, communications and financial systems.':'Photo collections, review workflows, album organization, and AI-related projects.'));let g=grid();(nexus?[['Records','Profiles and activity'],['Communications','Messaging and analysis'],['Financial','Budget and transactions'],['System Health','Not connected']]:[['Uniforms','Photo library and albums'],['Collections','Inmate and media collections'],['Gunner AI','Separate AI project'],['System Health','Not connected']]).forEach(x=>{let c=card(x[0],x[1]);g.append(c)});b.append(g);content.append(b);let a=el('a','btn primary full',`Open ${name} Website ↗`);a.href=nexus?'https://www.blackcellcorp.com':'mans-armed-forces.html';a.target='_blank';a.rel='noopener noreferrer';content.append(a,note('This opens the independent website. Existing authentication, permissions, and policies still apply. Corporate preview access does not sign you in.'));}
 
