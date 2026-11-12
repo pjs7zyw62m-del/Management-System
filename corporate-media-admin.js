@@ -91,6 +91,30 @@ async function makePreview(a){
  if(!data?.ok||!data.analysis)throw new Error(data?.error||'No suggestions were produced; use manual classification.');
  return data.analysis;
 }
+async function checkBunny(){
+ const button=$('bcBunnyCheck'),badge=$('bcBunnyStatus'),message=$('bcBunnyMessage');
+ if(!button||!badge||!message)return;
+ button.disabled=true;badge.dataset.health='checking';badge.textContent='CHECKING';
+ message.textContent='Verifying the private Bunny Storage zone securely through your Supabase backend…';
+ try{
+  const {data,error}=await client.functions.invoke('blackcell-bunny-storage',{body:{action:'status'}});
+  let result=data;
+  if(error){
+   try{result=await error.context?.json?.()}catch(_){}
+   throw new Error(result?.detail||error.message||'Bunny connection check failed.');
+  }
+  if(result?.connected===true){
+   badge.dataset.health='connected';badge.textContent='CONNECTED';
+   message.textContent='✓ Bunny Storage zone verified in Los Angeles. Only private read access has been tested; bulk uploading is not enabled yet.';
+  }else{
+   badge.dataset.health='not-configured';badge.textContent='NOT CONNECTED';
+   message.textContent=result?.detail||'Save BLACKCELL_BUNNY_STORAGE_ACCESS_KEY as a Supabase Edge Function Secret, then check again.';
+  }
+ }catch(e){
+  badge.dataset.health='error';badge.textContent='CONNECTION ERROR';
+  message.textContent=String(e?.message||e||'Unknown error').slice(0,300);
+ }finally{button.disabled=false}
+}
 async function checkBackblaze(){
  const button=$('bcB2Check'),badge=$('bcB2Status'),message=$('bcB2Message');
  if(!button||!badge||!message)return;
@@ -195,6 +219,8 @@ async function boot(){
   processor.setup();
   setupIcloudTest();
   setupBlackcellBulk({client,toast});
+  $('bcBunnyCheck').addEventListener('click',()=>void checkBunny());
+  void checkBunny();
   $('bcB2Check').addEventListener('click',()=>void checkBackblaze());
   void checkBackblaze();
   document.addEventListener('bc:media-updated',()=>void refreshCounts().catch(()=>{}));
