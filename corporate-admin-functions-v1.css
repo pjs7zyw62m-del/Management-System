@@ -1,0 +1,87 @@
+/* BLACKCELL CORPORATE ADMINISTRATION — FUNCTIONAL PANELS / 12 NOV 2026 */
+body[data-page="admin-preview"] .admin-card{cursor:pointer}
+body[data-page="admin-preview"] .admin-card .admin-card-state{
+  display:inline-flex;align-items:center;gap:7px;position:absolute;right:18px;bottom:18px;
+  font-size:9px;letter-spacing:.09em;color:#a6a5af;font-weight:700
+}
+body[data-page="admin-preview"] .admin-card .admin-card-state::before{
+  content:'';width:6px;height:6px;background:#858692;border-radius:100%;box-shadow:0 0 0 3px #ffffff0c
+}
+body[data-page="admin-preview"] .admin-card .admin-card-state[data-state="available"]::before{
+  background:#58d9a4;box-shadow:0 0 0 3px #59dc9b1a,0 0 12px #5adaaf6c
+}
+body[data-page="admin-preview"] .admin-card .admin-card-state[data-state="partial"]::before{
+  background:#d6a65c;box-shadow:0 0 0 3px #d6a65c19
+}
+.admin-modal .corp-live-panel{position:relative;padding:clamp(18px,2.5vw,29px);border:1px solid #ffffff22;background:radial-gradient(ellipse 40% 35% at 90% 0%,#6c283839,transparent),linear-gradient(145deg,#1a1a22c7,#0c0d13d9);border-radius:17px;box-shadow:inset 0 1px #ffffff10}
+.admin-modal .corp-panel-overline{color:#ce8194;font-size:9px;letter-spacing:.22em;font-weight:800;margin:0 0 12px}
+.admin-modal .corp-live-panel>h3{font-size:20px;letter-spacing:-.04em;margin:0 0 8px;font-weight:750}
+.admin-modal .corp-live-panel>p.muted{margin:0 0 19px;color:#aaa6b2;line-height:1.65}
+.admin-modal .corp-live-result .grid-two{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.admin-modal .corp-live-result .info-card{min-height:100px;background:#ffffff07;border:1px solid #ffffff1a;padding:16px}
+.admin-modal .corp-live-result .info-card small{font-size:10px;line-height:1.4;color:#b6afba}
+.admin-modal .corp-live-result .info-card strong{font-size:24px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.admin-modal .corp-live-panel .list-row{background:transparent;border-bottom-color:#ffffff15}
+.admin-modal .corp-live-panel .list-row>div:first-child{min-width:0;flex:1}
+.admin-modal .corp-live-panel .list-row small{line-height:1.55;overflow-wrap:anywhere}
+.admin-modal .corp-live-panel .mock-state{white-space:normal;max-width:46%;overflow-wrap:anywhere;text-align:right}
+.admin-modal .corp-live-panel .actions{margin:16px 0;display:flex;flex-wrap:wrap;gap:9px}
+.admin-modal .corp-live-panel .actions .text-action{white-space:normal;text-align:center;min-height:41px}
+.admin-modal .corp-live-panel .text-action{cursor:pointer;border:1px solid #ffffff24;transition:border-color .15s,background .15s}
+.admin-modal .corp-live-panel .text-action:focus-visible{outline:2px solid #db8293}
+.admin-modal .corp-error{color:#f0a5b5!important}
+.admin-modal .corp-settings-form{display:grid;grid-template-columns:1fr;gap:12px}
+.admin-modal .corp-settings-form .field{margin-bottom:2px}
+.admin-modal .corp-settings-form .field select{margin:8px 0 0}
+.admin-modal .corp-pref-toggle{display:flex;align-items:center;gap:18px;justify-content:space-between;background:#ffffff06;border:1px solid #ffffff1c;padding:15px;border-radius:11px;cursor:pointer}
+.admin-modal .corp-pref-toggle>div{flex:1}
+.admin-modal .corp-pref-toggle b{display:block;color:#f0edf3;font-size:12px;margin-bottom:5px}
+.admin-modal .corp-pref-toggle small{display:block;color:#a29eab;font-size:11px;line-height:1.5}
+.admin-modal .corp-pref-toggle input{accent-color:#ba4b66;width:19px;height:19px;flex:none}
+.admin-modal .corp-settings-form .text-action.emphasis{min-height:43px}
+.admin-modal .corp-log-toolbar{display:grid;grid-template-columns:minmax(0,1fr) minmax(120px,.47fr) minmax(120px,.47fr);align-items:center;gap:9px;margin:17px 0}
+.admin-modal .corp-log-toolbar input,.admin-modal .corp-log-toolbar select{width:100%;margin:0;min-height:43px}
+.admin-modal .corp-activity{border:1px solid #ffffff14;background:#08090cc7;border-radius:13px;max-height:370px;overflow:auto;padding:6px 14px}
+.admin-modal .corp-activity>p{padding:5px 0 9px;margin:8px 0;border-bottom:1px solid #ffffff14}
+.admin-modal .corp-activity-row{display:grid;grid-template-columns:100px minmax(0,1fr);gap:16px;align-items:start;padding:14px 4px;border-bottom:1px solid #ffffff12}
+.admin-modal .corp-activity-row:last-child{border-bottom:0}
+.admin-modal .corp-event-kind{font-size:9px;color:#e0a1b2;border:1px solid #9e455c50;background:#6a253a32;border-radius:8px;padding:7px 6px;text-align:center;letter-spacing:.06em;font-weight:750}
+.admin-modal .corp-activity-row strong{display:block;color:#e9e6ec;font-size:12px;font-weight:670;line-height:1.6}
+.admin-modal .corp-activity-row small{display:block;color:#9898a6;font-size:10px;line-height:1.5;margin-top:5px}
+.admin-modal .corp-backup-record{background:linear-gradient(145deg,#22202b8f,#0e0e13);border:1px solid #ffffff20;border-radius:12px;padding:17px;margin:11px 0}
+.admin-modal .corp-backup-record strong{display:block;color:#f5f2f7;font-size:13px}
+.admin-modal .corp-backup-record small{display:block;color:#9b9ba6;font-size:11px;margin:6px 0 13px;overflow-wrap:anywhere}
+.admin-modal .corp-backup-actions{display:flex;flex-wrap:wrap;gap:7px}
+.admin-modal .corp-backup-actions .text-action{font-size:10px;padding:9px 10px;min-height:35px}
+.admin-modal .corp-json-view{font:11px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;max-height:250px;overflow:auto;padding:14px;border-radius:10px;background:#08090c;border:1px solid #ffffff16;color:#cbcad2;white-space:pre-wrap;overflow-wrap:anywhere}
+.admin-modal .corp-service-entry{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 4px;border-bottom:1px solid #ffffff14}
+.admin-modal .corp-service-entry>div:first-child{flex:1;min-width:0}
+.admin-modal .corp-service-entry strong{display:block;font-size:12px;margin-bottom:6px;color:#f3f1f6}
+.admin-modal .corp-service-entry small{display:block;color:#a4a1aa;font-size:10px;overflow-wrap:anywhere}
+.admin-modal .corp-service-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.admin-modal .corp-service-actions .btn{font-size:10px;padding:9px}
+.admin-modal .corp-service-status{font-size:10px;color:#9a9aa6;white-space:nowrap;font-weight:760}
+.admin-modal .corp-service-status[data-state="online"]{color:#80dab0}
+.admin-modal .corp-service-status[data-state="attention"]{color:#ebbf83}
+.admin-modal .corp-service-status[data-state="offline"]{color:#ec8c9b}
+body[data-appearance="black"] .corp-live-panel,body[data-appearance="black"] .ops-monitor,body[data-appearance="black"] .admin-card{background:#09090b!important}
+body[data-appearance="silver"] .corp-live-panel,body[data-appearance="silver"] .ops-monitor,body[data-appearance="silver"] .admin-card{background:linear-gradient(140deg,#33333c,#181920)!important;border-color:#ffffff36!important}
+body.corp-motion-reduced *,body.corp-motion-reduced *::before,body.corp-motion-reduced *::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+@media(max-width:770px){
+ .admin-modal .corp-live-result .grid-two{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .admin-modal .corp-log-toolbar{grid-template-columns:1fr 1fr}
+ .admin-modal .corp-log-toolbar input{grid-column:1/-1}
+ .admin-modal .corp-service-entry{align-items:flex-start;flex-direction:column}
+ .admin-modal .corp-service-actions{width:100%}
+}
+@media(max-width:490px){
+ .admin-modal .corp-live-panel{padding:17px}
+ .admin-modal .corp-live-result .info-card{padding:12px;min-height:100px}
+ .admin-modal .corp-live-result .info-card strong{font-size:20px}
+ .admin-modal .corp-live-panel .list-row{flex-wrap:wrap}
+ .admin-modal .corp-live-panel .mock-state{max-width:100%;text-align:left}
+ .admin-modal .corp-event-kind{font-size:8px}
+ .admin-modal .corp-activity-row{grid-template-columns:78px minmax(0,1fr);gap:9px}
+ .admin-modal .corp-backup-actions .text-action{flex:1 1 43%}
+ .admin-modal .corp-service-entry{gap:11px}
+}
