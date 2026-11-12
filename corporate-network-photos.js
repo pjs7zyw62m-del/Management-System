@@ -110,10 +110,9 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   meta.albums=a.data||[];
   meta.albumItems=b.data||[];
   meta.favorites=c.data||[];
-  await votes.load();
-  await world.load();
-  await taste.load();
-  await loadCountryPages();
+  // These independent account lookups used to block each other in a series.
+  // Running them in parallel makes the Library interactive sooner.
+  await Promise.all([votes.load(),world.load(),taste.load(),loadCountryPages()]);
   if(meta.activeAlbum&&!meta.albums.some(x=>x.id===meta.activeAlbum))meta.activeAlbum=null;
  }
  function albumFor(id){return meta.albums.find(x=>x.id===id)}
