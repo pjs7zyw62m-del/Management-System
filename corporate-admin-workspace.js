@@ -116,6 +116,8 @@ export function createCorporateMediaWorkspace({onEnter,onRefresh,member}){
  const libraryLink=el('a','bc-overview-library-link','OPEN LIVE MILITARY LIBRARY ↗');
  libraryLink.href='corporate-network.html?view=photos';
  bottom.append(libraryLink);
+ const installNote=el('small','bc-overview-install','ON IPHONE OR IPAD · SAFARI SHARE → ADD TO HOME SCREEN FOR AN APP-STYLE SHORTCUT');
+ bottom.append(installNote);
  const updated=el('span','bc-overview-updated','COUNTS NOT CHECKED');
  bottom.append(updated);overview.append(bottom);
  // Pane construction: move original elements by reference to preserve IDs,
