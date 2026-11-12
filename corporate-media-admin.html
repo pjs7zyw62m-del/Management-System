@@ -2,9 +2,9 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#030305"><title>BLACKCELL CORPORATION | Media Administration</title>
 <link rel="stylesheet" href="corporate-media-processor.css?v=20261111-adminmove1">
-<link rel="stylesheet" href="corporate-media-admin.css?v=20261111-icloudtest1">
+<link rel="stylesheet" href="corporate-media-admin.css?v=20261111-bulk1">
 <script src="corp-config.js" defer></script>
-<script type="module" src="corporate-media-admin.js?v=20261111-icloudtest1"></script>
+<script type="module" src="corporate-media-admin.js?v=20261111-bulk1"></script>
 </head>
 <body class="bc-network bc-media-admin-page">
 <div id="bcAdminGate" role="status" aria-live="polite">
@@ -40,6 +40,25 @@
     </div>
     <p id="bcB2Message">Add the four private B2 credentials in Supabase Edge Function Secrets, then check the connection.</p>
     <small>Private bucket: blackcellcorp-media-vault · Region: us-east-005 · Staging prefix: blackcell-intake/ · Existing Supabase media remains unchanged</small>
+  </section>
+  <section class="bc-bulk-intake" id="bcBulkIntake" aria-label="Bulk upload photos and videos to Backblaze">
+   <div class="bc-admin-overline">BLACKCELL / PRIVATE BACKBLAZE STAGING</div>
+   <div class="bc-bulk-heading"><div><h2>Mass Media Upload <span>· Photos + Videos</span></h2>
+    <p>Select many photos and videos from Photos or Files. Upload directly to your private Backblaze B2 storage, with per-file progress, exact-content fingerprint checks and retry. Nothing is made public or placed in the military library until you review it.</p></div><span class="bc-bulk-mark">B2 PRIVATE</span></div>
+   <input id="bcBulkFiles" type="file" accept="image/*,video/*,.heic,.heif,.avif,.mov,.m4v,.mkv,.avi" multiple hidden aria-label="Select multiple photos or videos">
+   <div class="bc-bulk-actions">
+    <button type="button" id="bcBulkChoose">＋ ADD PHOTOS &amp; VIDEOS</button>
+    <button type="button" id="bcBulkStart" disabled>↑ START PRIVATE UPLOAD</button>
+    <button type="button" id="bcBulkPause" disabled>Ⅱ PAUSE AFTER CURRENT FILE</button>
+    <button type="button" id="bcBulkRetry" disabled>↻ RETRY FAILED</button>
+   </div>
+   <div class="bc-bulk-summary" id="bcBulkStats">No media selected yet</div>
+   <progress class="bc-bulk-total" id="bcBulkMeter" max="1" value="0" aria-label="Overall verified upload progress"></progress>
+   <p id="bcBulkNote" role="status" aria-live="polite">Your uploads will stay in Backblaze private staging until you organize and approve them.</p>
+   <div id="bcBulkQueue" class="bc-bulk-queue" aria-label="Selected media and upload progress">
+    <div class="bc-bulk-empty">Your selected photographs and videos will appear here.</div>
+   </div>
+   <small class="bc-bulk-foot">Use batches that your device can handle; leave this tab open while uploading. Finished uploads stay saved even if you return later. Re-selecting identical files skips duplicates. Individual files up to 50 GiB are supported by the upload service. Large-file uploads require Backblaze bucket CORS configured for your BLACKCELL website (PUT, Content-Type, expose ETag). This does not connect automatic iCloud sync.</small>
   </section>
   <section class="bc-icloud-test" aria-label="Import one iCloud photo to Backblaze">
     <div class="bc-admin-overline">BLACKCELL / PRIVATE CLOUD INTAKE TEST</div>
