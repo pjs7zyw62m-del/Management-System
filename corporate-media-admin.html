@@ -3,6 +3,7 @@
 <meta name="theme-color" content="#030305"><title>BLACKCELL CORPORATION | Media Administration</title>
 <link rel="stylesheet" href="corporate-media-processor.css?v=20261111-adminmove1">
 <link rel="stylesheet" href="corporate-media-admin.css?v=20261111-bunny-review1">
+<link rel="stylesheet" href="corporate-bunny-library-sync.css?v=20261112-library-sync1">
 <script src="corp-config.js" defer></script>
 <script type="module" src="corporate-media-admin.js?v=20261111-bunny-review1"></script>
 </head>
@@ -41,6 +42,17 @@
    </div>
    <p id="bcBunnyMessage" role="status" aria-live="polite">Save the Bunny Storage Zone API / HTTP Access Key Password under the Supabase Edge Secret named BLACKCELL_BUNNY_STORAGE_ACCESS_KEY, then check the connection. Never put the password in GitHub or this website's public code.</p>
    <small>API endpoint: https://la.storage.bunnycdn.com/blackcell-media-vault/ · Private storage · This check lists the root internally; no files are uploaded or published</small>
+  </section>
+  <section class="bc-library-bunny-sync" id="bcLibraryBunnySync" aria-label="Archive existing Military Library photographs to Bunny Storage">
+    <div class="bc-admin-overline">BLACKCELL / EXISTING LIBRARY → BUNNY PRIVATE STORAGE</div>
+    <div class="bc-library-sync-head"><h2>Connect Existing Military Library Photos</h2>
+      <strong id="bcLibraryBunnyBadge" data-mode="ready">CHECKING</strong></div>
+    <p>Securely copy your already-approved Military Library photos into Bunny Storage. Every file is checked against its original before it is linked. Photos, country labels, albums and visibility remain exactly as they are.</p>
+    <div class="bc-library-sync-metric"><strong id="bcLibraryBunnyCount">—</strong><small>LEGACY PHOTOS VERIFIED IN BUNNY</small></div>
+    <progress id="bcLibraryBunnyProgress" value="0" max="1" aria-label="Military Library Bunny backup verification progress"></progress>
+    <div class="bc-library-sync-actions"><button id="bcLibraryBunnyStart" type="button" disabled>CHECKING ARCHIVE…</button><button id="bcLibraryBunnyPause" type="button" disabled>PAUSE AFTER PHOTO</button></div>
+    <p id="bcLibraryBunnyDetail" role="status" aria-live="polite">Checking your private photo archive…</p>
+    <small>Verified copies go into one Bunny folder, blackcell-library/. Existing Supabase originals remain available for protected previews. No automatic publishing, deletions, public links or changes to your review queue.</small>
   </section>
   <section class="bc-bunny-uploader" id="bcBunnyBulkPanel" aria-label="Bunny Storage bulk photo and video upload">
    <div class="bc-admin-overline">BLACKCELL / PRIVATE BUNNY STAGING</div>
