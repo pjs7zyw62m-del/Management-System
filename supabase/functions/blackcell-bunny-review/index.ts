@@ -189,7 +189,7 @@ Deno.serve(async req=>{
     mime_type:meta.mime_type,filename:meta.filename,
     storage_path:dest,bytes:meta.bytes,review_status:"pending",
     adult_restricted:true,rights_confirmed:false,ages_confirmed:false,
-    source_provider:"bunny-private",
+    source_provider:"bunny-private",bunny_storage_path:key,bunny_synced_at:new Date().toISOString(),
     military_country_code:"",military_branch:"Unspecified",military_category:"Unsorted"
    }).select("id").single();
    if(created.error||!created.data){
