@@ -223,6 +223,9 @@ async function enterWorkspace(tab){
    processor=createBlackcellMediaProcessor({client,bucket,state,refresh:loadAssets,
     mediaUrl:()=>'',toast,openAIReview:makePreview});
    processor.setup();
+   // The reset control is in the Advanced / Danger Zone and stays disabled
+   // until the protected, double-confirmation handler has been registered.
+   const reset=$('bcMediaReset');if(reset)reset.disabled=false;
   }
   if(!stagingReady){
    setupBlackcellBunnyReview({client,state,refresh:loadAssets,toast});
