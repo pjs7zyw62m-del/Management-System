@@ -25,6 +25,9 @@ export function createCorporateMediaWorkspace({onEnter,onRefresh,member}){
   return node;
  };
  const originalChildren=[...main.children];
+ // Capture existing controls before moving their parent sections into the
+ // detached app workspace; document.getElementById won't find them mid-move.
+ const resetButton=document.getElementById('bcMediaReset');
  const lookup=new Map(originalChildren.filter(e=>e.id).map(e=>[e.id,e]));
  const required=id=>{
   const node=lookup.get(id);
@@ -170,7 +173,7 @@ export function createCorporateMediaWorkspace({onEnter,onRefresh,member}){
   el('p','','Prepare originals from Bunny, verify country and subject labels, confirm rights and age restrictions when relevant, and then approve. Unsure? Keep media pending.'));
  paneMap.get('review').prepend(reviewNotice);
 
- const btnToDanger=$('bcMediaReset');
+ const btnToDanger=resetButton;
  if(btnToDanger){
   // Prevent clicking a destructive control before its protected handler is loaded.
   btnToDanger.disabled=true;
