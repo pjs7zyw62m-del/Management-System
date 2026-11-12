@@ -234,3 +234,35 @@ body.bc-media-admin-page{
  .bc-workspace-pane{animation:none}
  .bc-overview-action,.bc-workspace-tab{transition:none}
 }
+
+/* Clean-slate state makes an intentionally emptied catalog obvious, not alarming. */
+.bc-overview-empty{
+ display:flex;align-items:center;gap:17px;margin:2px 0 18px;
+ padding:20px 19px;border-radius:17px;
+ border:1px solid #56444e;background:linear-gradient(110deg,#1c1921,#131822 75%);
+}
+.bc-overview-empty[hidden]{display:none!important}
+.bc-overview-empty-icon{
+ display:grid;place-items:center;flex:none;width:51px;height:51px;
+ border:1px solid #78586a;border-radius:15px;background:#29202d;
+ color:#e9b9c8;font-size:26px
+}
+.bc-overview-empty-copy{min-width:0;flex:1}
+.bc-overview-empty-copy strong{display:block;font-size:13px;color:#e7e8ec;line-height:1.5}
+.bc-overview-empty-copy p{font-size:11px;line-height:1.7;margin:6px 0 0;color:#abb1bf}
+.bc-overview-empty-cta{
+ flex:none;cursor:pointer;min-height:43px;padding:12px 15px;border:1px solid #9d586a;
+ border-radius:11px;background:#682d43;color:#f8eff3;font-size:10px;font-weight:850;
+ letter-spacing:.035em
+}
+.bc-overview-empty-cta:hover{background:#82354f}
+.bc-workspace-pane .bc-bunny-uploader,
+.bc-workspace-pane .bc-bunny-connection{scroll-margin-top:118px}
+@media(max-width:900px){.bc-workspace-sidebar{top:90px!important;z-index:30!important}}
+@media(max-width:600px){
+ .bc-overview-empty{flex-wrap:wrap;padding:15px;gap:12px}
+ .bc-overview-empty-icon{width:42px;height:42px}
+ .bc-overview-empty-copy{flex-basis:calc(100% - 55px)}
+ .bc-overview-empty-cta{width:100%}
+ .bc-workspace-sidebar{top:103px!important}
+}
