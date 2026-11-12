@@ -52,11 +52,15 @@ function countries(){
  }
 }
 async function loadAssets(){
- const {data,error}=await client.from('corp_social_assets')
-  .select('*').order('created_at',{ascending:false}).limit(1000);
- if(error)throw new Error('Admin media catalog unavailable: '+error.message);
- state.assets=data||[];
- await refreshCounts();
+ // Catalog and the independent summary counts previously formed a two-stage
+ // network waterfall, delaying the owner dashboard on high-latency devices.
+ const [result]=await Promise.all([
+  client.from('corp_social_assets')
+   .select('*').order('created_at',{ascending:false}).limit(1000),
+  refreshCounts()
+ ]);
+ if(result.error)throw new Error('Admin media catalog unavailable: '+result.error.message);
+ state.assets=result.data||[];
 }
 async function refreshCounts(){
  const [all,pending]=await Promise.all([
