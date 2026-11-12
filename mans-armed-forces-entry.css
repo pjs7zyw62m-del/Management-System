@@ -1,0 +1,20 @@
+/* Integrated Mans Armed Forces gateway in existing BLACKCELL Network nav */
+body.bc-network .mainnav a.mf-network-door{
+ display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;
+ font-size:10px;font-weight:850;letter-spacing:.06em;text-decoration:none;
+ min-height:36px;padding:9px 13px;border:1px solid #784655;border-radius:10px;
+ background:linear-gradient(125deg,#3e1a28,#211720);color:#f5e4ec;
+ transition:background .25s,border-color .25s;
+}
+body.bc-network .mainnav a.mf-network-door:hover{border-color:#d97e96;background:#5a2437}
+body.bc-network .nav-panel a.mf-rail-door{
+ display:flex;gap:10px;align-items:center;width:100%;text-decoration:none;
+ color:inherit;min-height:38px;padding:9px 13px;border-radius:11px;font-size:12px;font-weight:600
+}
+body.bc-network .nav-panel a.mf-rail-door:hover{background:#391e2a;color:#fff}
+body.bc-network .bc-library-submenu a.mf-existing-library-link{
+ color:#e9c4ce;border-color:#6a4554;background:#301c29;font-weight:800
+}
+@media(max-width:960px){
+ body.bc-network .mainnav a.mf-network-door{font-size:9px;padding:8px 9px}
+}
