@@ -4,6 +4,7 @@
  */
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-clearance5';
 import {createBlackcellMediaProcessor} from './corporate-media-processor.js?v=20261111-adminmove1';
+import {setupBlackcellBulk} from './corporate-b2-bulk.js?v=20261111-bulk1';
 
 const $=id=>document.getElementById(id);
 const state={user:null,member:null,assets:[]};
@@ -193,6 +194,7 @@ async function boot(){
   processor=createBlackcellMediaProcessor({client,bucket,state,refresh:loadAssets,mediaUrl:()=>'',toast,openAIReview:makePreview});
   processor.setup();
   setupIcloudTest();
+  setupBlackcellBulk({client,toast});
   $('bcB2Check').addEventListener('click',()=>void checkBackblaze());
   void checkBackblaze();
   document.addEventListener('bc:media-updated',()=>void refreshCounts().catch(()=>{}));
