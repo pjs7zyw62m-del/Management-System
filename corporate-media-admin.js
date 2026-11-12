@@ -3,7 +3,7 @@
  * The same existing photo/video intake controller is mounted on an admin-only page.
  */
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-clearance5';
-import {createBlackcellMediaProcessor} from './corporate-media-processor.js?v=20261111-bunny-review1';
+import {createBlackcellMediaProcessor} from './corporate-media-processor.js?v=20261112-library-sync1';
 import {setupBlackcellBulk} from './corporate-b2-bulk.js?v=20261111-cors2';
 import {setupBlackcellBunnyBulk} from './corporate-bunny-bulk.js?v=20261111-bunny-review1';
 import {setupBlackcellBunnyReview} from './corporate-bunny-review.js?v=20261111-bunny-review1';
