@@ -38,9 +38,17 @@ export function createPrivatePhotoThumbnails({bucket,state}){
    reverted=true;
    bad.add(asset.id);
    failedImages++;
-   // Disabled image transformations can sign URLs but fail when requested.
-   if(failedImages>=2)disabled=true;
+   if(failedImages>=2){disabled=true;cache.clear()}
    fallback(img,asset,fullUrl);
+  },{once:true});
+  img.addEventListener('load',()=>{
+   // Supabase Free plans can return a perfectly valid original image even
+   // when the URL requested a 560px preview. Do not spend additional
+   // signing requests for ineffective transforms once this is detected.
+   if(img.naturalWidth>680){
+    disabled=true;
+    cache.clear();
+   }
   },{once:true});
   img.src=url;
  }
@@ -79,6 +87,7 @@ export function createPrivatePhotoThumbnails({bucket,state}){
   if(disabled||!isEligible(asset)){fallback(img,asset,fullUrl);return}
   const url=await signed(asset);
   if(!img.isConnected)return;
+  if(disabled){fallback(img,asset,fullUrl);return}
   paint(img,asset,fullUrl,url);
  }
  function bind(img,asset){
