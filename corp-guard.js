@@ -117,6 +117,7 @@ try {
         if (!exiting && !document.hidden) void checkOnReturn();
       }, 60000);
       window.BLACKCELL_CORPORATE_ADMIN_API=Object.freeze({client});
+      window.dispatchEvent(new Event('blackcell-corporate-authorized'));
       window.addEventListener('message',event=>{
         if(event.origin!==location.origin || event.data?.type!=='blackcell-chat-activity')return;
         const valid=[...document.querySelectorAll('iframe')].some(frame=>{
@@ -132,7 +133,7 @@ try {
       // A new version query forces browsers/CDNs to fetch the repaired file.
       window.BLACKCELL_ADMIN_READY=false;
       const script=document.createElement('script');
-      script.src='admin.js?v=20261112-um2';
+      script.src='admin.js?v=20261112-ops3';
       script.defer=true;
       const showAdminLoadError=()=>{
         if(document.getElementById('adminControlsReload'))return;
