@@ -48,15 +48,43 @@ function setChannel(channel){
  $('bcTgBotPane').hidden=channel!=='bot';
  $('bcTgPersonalPane').hidden=channel!=='personal';
  if(channel==='personal'){
-  $('bcTgHeading').textContent='Personal Telegram';
-  $('bcTgIntro').textContent='Private personal account integration requires an authorized Telegram client.';
-  $('bcTgStatus').textContent='NOT CONNECTED';
+  $('bcTgHeading').textContent='Connect Telegram';
+  $('bcTgIntro').textContent='Sign in with your Telegram identity. Personal chat syncing is separate and optional.';
+  $('bcTgStatus').textContent='CHECKING';
   $('bcTgStatus').classList.remove('connected');
+  void refreshPersonalIdentity();
  }else if(channel==='bot'){
   $('bcTgHeading').textContent='Telegram Bot';
   $('bcTgIntro').textContent='Messages with your BLACKCELL Telegram bot, separate from your personal conversations.';
   if(!state.initialized)void initializeTelegram();
   else{renderStatus();void refreshTelegram()}
+ }
+}
+async function refreshPersonalIdentity(){
+ const statusEl=$('bcTgPersonalLinkStatus');
+ if(!statusEl)return;
+ statusEl.textContent='CHECKING CONNECTION';
+ try{
+  const {data,error}=await db.functions.invoke('blackcell-telegram-login',{body:{action:'status'}});
+  if(error||data?.ok!==true){
+   statusEl.textContent='BLACKCELL VERIFIED SIGN-IN REQUIRED';
+   $('bcTgStatus').textContent='NOT VERIFIED';
+   return;
+  }
+  const connected=Boolean(data.connected);
+  if(connected){
+   const username=String(data.account?.username||'').trim();
+   statusEl.textContent=username?'CONNECTED AS @'+username:'TELEGRAM IDENTITY CONNECTED';
+   $('bcTgStatus').textContent='IDENTITY CONNECTED';
+   $('bcTgStatus').classList.add('connected');
+  }else{
+   statusEl.textContent=data.configured?'READY TO CONNECT':'ADMIN SETUP REQUIRED';
+   $('bcTgStatus').textContent=data.configured?'NOT CONNECTED':'NOT CONFIGURED';
+   $('bcTgStatus').classList.remove('connected');
+  }
+ }catch{
+  statusEl.textContent='SIGN-IN STATUS TEMPORARILY UNAVAILABLE';
+  $('bcTgStatus').textContent='UNAVAILABLE';
  }
 }
 function renderStatus(){
