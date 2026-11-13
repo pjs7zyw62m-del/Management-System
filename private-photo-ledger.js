@@ -11,7 +11,7 @@ const $=id=>document.getElementById(id);
 const state={
  user:null,member:null,isOwner:false,rooms:[],room:null,employees:[],
  entries:[],filter:'all',busy:false,refreshing:false,closed:false,
- images:new Map(),entryFingerprint:'',liveStarted:false,roomChannel:null,roomsChannel:null,liveRoomId:null,liveQueued:false,liveTimer:null,liveConnected:false
+ images:new Map(),entryFingerprint:'',liveStarted:false,roomChannel:null,roomsChannel:null,liveRoomId:null,liveQueued:false,liveTimer:null,liveConnected:false,scopeMemberId:null,scopeValue:'full',scopeLoading:false
 };
 const node=(tag,klass,content)=>{
  const n=document.createElement(tag);
@@ -75,19 +75,25 @@ async function verify(){
  const method=state.isOwner?'corp_code_status':'corp_employee_code_status';
  const res=await db.rpc(method);
  if(res.error||res.data?.ok!==true||res.data.verified!==true)throw Error('Your corporate security verification has expired.');
+ if(!state.isOwner){
+  const {data,error:scopeError}=await db.from('corp_access_members')
+   .select('access_scope').eq('user_id',state.user.id).single();
+  if(scopeError)throw Error('Your current employee permissions could not be checked.');
+  state.member.access_scope=data?.access_scope==='ledger_only'?'ledger_only':'full';
+  updateLedgerNavigation();
+ }
 }
 async function initialize(){
  try{
   const {data:{session}}=await db.auth.getSession();
   if(!session)throw Error('Sign in through BLACKCELL first.');
-  const a=await corporateAuthorize(db);
+  const a=await corporateAuthorize(db,{allowLedgerOnly:true});
   if(!a.ok)throw Error('Your corporate account is not approved or active.');
   state.user=a.user;state.member=a.member;
   state.isOwner=a.member.role==='owner'&&a.member.clearance_level===7;
   if(!state.isOwner&&a.member.role!=='employee')throw Error('This private area is available only to verified owner and selected employees.');
   await verify();
-  $('backLink').href=state.isOwner?'dashboard.html':'corporate-network.html?view=profile';
-  $('backLink').textContent=state.isOwner?'RETURN TO ADMINISTRATION ↗':'RETURN TO NETWORK ↗';
+  updateLedgerNavigation();
   $('accessGate').hidden=true;
   $('ledgerApp').hidden=false;
   $('ownerSetup').hidden=!state.isOwner;
@@ -110,6 +116,70 @@ async function initialize(){
    if(event==='SIGNED_OUT'&&!state.closed)gate('Signed out. Sign in again to enter this private room.');
   });
  }catch(e){gate(fail(e))}
+}
+function updateLedgerNavigation(){
+ const scoped=!state.isOwner&&state.member?.access_scope==='ledger_only';
+ $('backLink').hidden=scoped;
+ $('ledgerSignOut').hidden=state.isOwner;
+ $('ledgerBrand').href=scoped?'private-photo-ledger.html':
+  state.isOwner?'dashboard.html':'corporate-network.html?view=profile';
+ if(!scoped){
+  $('backLink').href=state.isOwner?'dashboard.html':'corporate-network.html?view=profile';
+  $('backLink').textContent=state.isOwner?'RETURN TO ADMINISTRATION ↗':'RETURN TO NETWORK ↗';
+ }
+}
+function renderLedgerScope(){
+ const limited=state.scopeValue==='ledger_only';
+ show('ledgerScopeStatus',limited?'LEDGER-ONLY ACCESS':'FULL CORPORATE ACCESS');
+ show('ledgerScopeIndicator',limited?'RESTRICTED':'STANDARD ACCESS');
+ show('ledgerScopeDescription',limited
+  ?'The assigned employee can only use this private photo ledger. Network, chat and other corporate applications are blocked by server-side permissions. You may restore normal access.'
+  :'This employee currently has regular corporate access. Restrict them to this photo ledger to block Network, chat and other authorized corporate apps.');
+ const btn=$('ledgerScopeToggle');
+ btn.disabled=state.scopeLoading;
+ btn.textContent=limited?'RESTORE FULL CORPORATE ACCESS':'RESTRICT EMPLOYEE TO LEDGER ONLY';
+ btn.classList.toggle('scope-restricted',limited);
+}
+async function loadLedgerScope(memberId){
+ if(!state.isOwner||!memberId)return;
+ const r=await db.rpc('corp_owner_ledger_scope',{p_member_id:memberId});
+ if(state.room?.member_id!==memberId)return;
+ if(r.error||r.data?.ok!==true){
+  show('ledgerScopeStatus','COULD NOT VERIFY PERMISSIONS');
+  show('ledgerScopeFeedback','Unable to read employee permissions: '+fail(r.error||r.data?.reason));
+  $('ledgerScopeToggle').disabled=true;
+  return;
+ }
+ state.scopeValue=r.data.access_scope==='ledger_only'?'ledger_only':'full';
+ state.scopeLoading=false;
+ show('ledgerScopeFeedback','');
+ renderLedgerScope();
+}
+async function toggleLedgerScope(){
+ const room=state.room;
+ if(!state.isOwner||!room||state.busy||state.scopeLoading)return;
+ const restrict=state.scopeValue!=='ledger_only';
+ const who=participantName(room.member_id);
+ const message=restrict
+  ?'RESTRICT '+who+' to the Private Photo Ledger ONLY?\n\nThe employee will no longer be able to use Blackcell Network, chat, or other corporate apps. Existing private ledger photos stay available.'
+  :'RESTORE FULL CORPORATE ACCESS for '+who+'?\n\nThis will re-enable their other permitted BLACKCELL applications.';
+ if(!window.confirm(message))return;
+ state.scopeLoading=true;
+ renderLedgerScope();
+ show('ledgerScopeFeedback','Updating employee permissions…');
+ try{
+  await verify();
+  const r=await db.rpc('corp_owner_ledger_scope',{
+   p_member_id:room.member_id,p_ledger_only:restrict
+  });
+  if(r.error||r.data?.ok!==true)throw Error(r.error?.message||r.data?.reason||'Permission update declined');
+  if(state.room?.member_id!==room.member_id)return;
+  state.scopeValue=r.data.access_scope==='ledger_only'?'ledger_only':'full';
+  show('ledgerScopeFeedback',restrict
+   ?'Ledger-only restriction saved. Other corporate data access is now blocked for that employee.'
+   :'Full access restored to the employee’s otherwise authorized applications.');
+ }catch(e){show('ledgerScopeFeedback','Permission change failed: '+fail(e))}
+ finally{state.scopeLoading=false;renderLedgerScope()}
 }
 async function loadEmployees(){
  const r=await db.rpc('corp_admin_members');
@@ -140,6 +210,8 @@ async function refresh({initial=false,force=false}={}){
   $('noRoom').hidden=!!preferred;
   $('activeRoom').hidden=!preferred;
   if(!preferred){
+   $('ownerLedgerScope').hidden=true;
+   state.scopeMemberId=null;
    $('uploadAccessStatus').hidden=true;
    $('ownerUploadInfo').hidden=true;
    $('employeeUpload').hidden=true;
@@ -159,6 +231,14 @@ async function refresh({initial=false,force=false}={}){
   $('closeRoomBtn').hidden=!state.isOwner;
   $('closeRoomBtn').textContent=preferred.active?'CLOSE ROOM':'REOPEN ROOM';
   $('employeeUpload').hidden=state.isOwner||!preferred.active;
+  $('ownerLedgerScope').hidden=!state.isOwner;
+  if(state.isOwner&&state.scopeMemberId!==preferred.member_id){
+   state.scopeMemberId=preferred.member_id;
+   state.scopeValue='full';
+   show('ledgerScopeStatus','CHECKING PERMISSIONS…');
+   $('ledgerScopeToggle').disabled=true;
+   void loadLedgerScope(preferred.member_id);
+  }
   updateUploadAccess(preferred);
   show('owedDescription',state.isOwner?'Amount owed by you to this employee':'Amount the owner owes you');
   const idx=state.rooms.findIndex(x=>x.id===preferred.id);
@@ -565,6 +645,11 @@ function wireEvents(){
  });
  $('closeRoomBtn').addEventListener('click',()=>void toggleRoom());
  $('copyRoomLink').addEventListener('click',()=>void copyLink());
+ $('ledgerScopeToggle').addEventListener('click',()=>void toggleLedgerScope());
+ $('ledgerSignOut').addEventListener('click',async()=>{
+  try{await db.auth.signOut({scope:'local'})}catch(_){}
+  location.replace('employee.html');
+ });
  $('ownerUploadShare').addEventListener('click',()=>void copyLink());
  $('uploadAccessAction').addEventListener('click',()=>{
   if(!state.room)return;
