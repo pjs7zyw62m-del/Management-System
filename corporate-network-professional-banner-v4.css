@@ -1,0 +1,52 @@
+/* BLACKCELL CORPORATION / Approved professional banner
+   Default banner: large metallic wordmark and neon red B on a dark security-compound scene.
+   Uploaded member covers still override this image via the existing inline !important style. */
+html body.bc-network.bc-profile-mode #profileCover.bc-fb-cover {
+  background-color:#080c14!important;
+  background-image:url('blackcell-network-corporate-banner-v2.svg')!important;
+  background-size:cover!important;
+  background-position:left 11%!important;
+  background-repeat:no-repeat!important;
+  border-bottom:1px solid rgba(183,80,101,.45)!important;
+}
+/* The new banner contains the approved branding. Do not print the logo twice. */
+html body.bc-network.bc-profile-mode #profileCover.bc-fb-cover:not(.bc-custom-member-cover) .bc-fb-cover-mark,
+html body.bc-network.bc-profile-mode #profileCover.bc-fb-cover .bc-security-cover-stamp {
+  display:none!important;
+}
+/* Keep the existing small BLACKCELL overlay on member-uploaded covers only. */
+html body.bc-network.bc-profile-mode #profileCover.bc-custom-member-cover .bc-fb-cover-mark {
+  display:flex!important;
+  top:17px!important;
+  left:20px!important;
+  padding:8px 10px;
+  border-radius:8px;
+  background:linear-gradient(120deg,rgba(6,10,16,.68),rgba(6,10,16,.22));
+  backdrop-filter:blur(9px);
+  -webkit-backdrop-filter:blur(9px);
+}
+html body.bc-network.bc-profile-mode #profileCover.bc-fb-cover::before {
+  background:linear-gradient(110deg,rgba(6,8,13,.06),transparent 55%)!important;
+  opacity:1!important;
+}
+html body.bc-network.bc-profile-mode #profileCover.bc-fb-cover::after {
+  background:linear-gradient(0deg,rgba(5,8,13,.12),transparent 55%)!important;
+  height:24%!important;
+}
+/* On phones favor the metallic lettering over the far-right building. */
+@media(max-width:620px) {
+  html body.bc-network.bc-profile-mode #profileCover.bc-fb-cover:not(.bc-custom-member-cover) {
+    background-size:auto 91%!important;
+    background-position:left center!important;
+    background-repeat:no-repeat!important;
+  }
+  html body.bc-network.bc-profile-mode #profileCover.bc-custom-member-cover {
+    background-size:cover!important;
+    background-position:center!important;
+  }
+}
+@media(min-width:621px) and (max-width:1024px){
+  html body.bc-network.bc-profile-mode #profileCover.bc-fb-cover:not(.bc-custom-member-cover){
+    background-position:left 8%!important;
+  }
+}
