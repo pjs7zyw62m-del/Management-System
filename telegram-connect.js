@@ -22,6 +22,10 @@ function render(account=null){
   :'Secure Telegram identity sign-in. Personal chats remain private.';
  $('connect').hidden=connected;
  $('disconnect').hidden=!connected;
+ $('testBot').hidden=!connected;
+ $('botTestHint').hidden=!connected;
+ if(access?.member?.role==='owner'&&access?.member?.clearance_level===7)
+  $('ownerHelp').hidden=connected;
  // Keep the button usable even before administrator setup: explain what is missing.
  $('connect').disabled=loading||!access;
  $('disconnect').disabled=loading;
