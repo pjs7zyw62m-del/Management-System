@@ -518,7 +518,7 @@ body.bc-network.bc-profile-mode .bc-security-community:hover{border-color:#d4526
   body.bc-network.bc-profile-mode .bc-fb-photos-card,
   body.bc-network.bc-profile-mode .bc-fb-following-card{grid-column:span 1}
   body.bc-network.bc-profile-mode #profileTabs.bc-fb-tabs{
-    overflow-x:auto!important;overflow-y:visible!important;
+    overflow:visible!important;
   }
 }
 @media(max-width:620px){
