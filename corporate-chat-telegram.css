@@ -71,3 +71,43 @@
  .bc-tg-composer button{padding:11px;font-size:10px}
 }
 @media(prefers-reduced-motion:reduce){.bc-channel-choice,.bc-tg-action{transition:none!important}}
+
+
+/* Unified BLACKCELL + Telegram Sign In tab */
+.bc-tg-signin{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:clamp(16px,3vw,28px);scrollbar-width:none;background:radial-gradient(circle at 72% 10%,#6323391a,transparent 48%),#090a0f}
+.bc-tg-signin::-webkit-scrollbar{display:none}
+.bc-tg-signin[hidden]{display:none!important}
+.bc-signin-heading{max-width:780px;margin:0 auto 21px;text-align:center}
+.bc-signin-heading h3{font-size:clamp(21px,3.4vw,30px);letter-spacing:-.05em;margin:7px 0 8px}
+.bc-signin-heading p{margin:0;color:#aaa4b1;font-size:12px;line-height:1.65}
+.bc-signin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;max-width:910px;margin:0 auto}
+.bc-signin-card{display:flex;flex-direction:column;min-width:0;gap:10px;padding:20px;border:1px solid #65515f;background:linear-gradient(160deg,#24202a,#12141a 75%);border-radius:19px;box-shadow:0 12px 34px #0005,inset 0 1px #ffffff14}
+.bc-signin-cardhead{display:flex;align-items:center;gap:13px}
+.bc-signin-cardhead>div{min-width:0}
+.bc-signin-symbol{display:grid;place-items:center;width:53px;height:53px;flex:none;border-radius:14px;font-family:Georgia,serif;font-size:31px;font-weight:700;color:#f5dce5;border:1px solid #a05271;background:linear-gradient(135deg,#742e49,#18131e);box-shadow:0 0 21px #bd315b25}
+.bc-signin-symbol.telegram{font-family:inherit;font-size:28px;background:linear-gradient(135deg,#893554,#231826)}
+.bc-signin-card h4{font-size:20px;letter-spacing:-.035em;margin:5px 0 0;color:#f0eaf1}
+.bc-signin-description{font-size:12px;color:#b5aebb;line-height:1.65;margin:0;min-height:43px}
+.bc-signin-state{border:1px solid #806477;background:#2e2230;color:#e5c0ce;border-radius:10px;padding:12px 14px;font-size:11px;font-weight:760;letter-spacing:.035em;overflow-wrap:anywhere}
+.bc-signin-state.connected{color:#b7f0ce;border-color:#498e6a;background:#153126}
+.bc-signin-card .bc-tg-action{margin-top:auto}
+.bc-signin-sync{max-width:910px;margin:14px auto 0;padding:18px 20px;border:1px solid #57434f;border-radius:16px;background:linear-gradient(160deg,#1b1821,#101218)}
+.bc-signin-synchead{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.bc-signin-synchead strong{color:#f0eaf2;font-size:13px}
+.bc-signin-sync-pill{border:1px solid #906579;color:#f2c8d7;background:#33222d;border-radius:9px;padding:7px 10px;flex:none;font-size:9px;font-weight:800;letter-spacing:.06em}
+.bc-signin-sync p{font-size:11px;line-height:1.7;color:#afa7b3;margin:10px 0}
+.bc-signin-sync .bc-tg-alt{max-width:310px;margin:12px 0 0}
+@media(max-width:680px){
+ .bc-tg-signin{padding:14px 11px 20px}
+ .bc-signin-heading{text-align:left;margin-bottom:14px}
+ .bc-signin-heading h3{font-size:22px}
+ .bc-signin-grid{grid-template-columns:minmax(0,1fr);gap:10px}
+ .bc-signin-card{padding:16px;border-radius:15px;gap:8px}
+ .bc-signin-description{min-height:0}
+ .bc-signin-card h4{font-size:19px}
+ .bc-signin-symbol{height:45px;width:45px;font-size:26px}
+ .bc-signin-sync{padding:15px}
+ .bc-signin-sync-pill{padding:6px 8px}
+ .bc-signin-synchead strong{font-size:12px}
+ .bc-signin-sync .bc-tg-alt{max-width:none}
+}
