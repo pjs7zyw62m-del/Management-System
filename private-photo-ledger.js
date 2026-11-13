@@ -333,7 +333,9 @@ function imageType(file){
  const normalized=String(file?.type||'').toLowerCase();
  if(types[normalized])return{mime:normalized,ext:types[normalized]};
  const ext=String(file?.name||'').split('.').pop().toLowerCase();
- if(ext==='heic'||ext==='heif')return{mime:'image/'+ext,ext};
+ const fileTypes={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',
+  webp:'image/webp',heic:'image/heic',heif:'image/heif'};
+ if(!normalized&&fileTypes[ext])return{mime:fileTypes[ext],ext:ext==='jpeg'?'jpg':ext};
  throw Error('Choose a JPEG, PNG, WebP or HEIC image.');
 }
 async function uploadPhoto(event){
