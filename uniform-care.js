@@ -1,4 +1,4 @@
-import {corporateClient,corporateAuthorize} from "./corp-auth.js?v=20261109-staff1";
+import {corporateClient,corporateAuthorize} from "./corp-auth.js?v=20261112-access2";
 const byId=id=>document.getElementById(id);
 const state={category:"all",search:""};
 const guides=[...document.querySelectorAll(".uc-guide")];
