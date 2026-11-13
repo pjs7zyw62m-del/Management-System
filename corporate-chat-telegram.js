@@ -4,7 +4,7 @@ const $=id=>document.getElementById(id);
 const state={channel:'imessage',user:null,owner:false,authorized:false,
  ready:false,username:'',linked:false,telegramUsername:'',
  working:false,lastSnapshot:'',subscription:null,accountChannel:null,
- initialized:false,refreshing:false};
+ initialized:false,refreshing:false,botTokenConfigured:false,webhookSecretConfigured:false};
 const note=value=>{ $('bcTgFeedback').textContent=String(value||'')};
 const explain=err=>String(err?.message||err||'Connection unavailable').replace(/\s+/g,' ').slice(0,210);
 const span=(tag,className,value)=>{
@@ -72,12 +72,18 @@ async function refreshPersonalIdentity(){
    return;
   }
   const connected=Boolean(data.connected);
+  const connectLink=$('bcTgPersonalConnectLink');
+  const tryBot=$('bcTgTryBot');
   if(connected){
+   connectLink.textContent='MANAGE CONNECTED IDENTITY ↗';
+   tryBot.hidden=false;
    const username=String(data.account?.username||'').trim();
    statusEl.textContent=username?'CONNECTED AS @'+username:'TELEGRAM IDENTITY CONNECTED';
    $('bcTgStatus').textContent='IDENTITY CONNECTED';
    $('bcTgStatus').classList.add('connected');
   }else{
+   connectLink.textContent='✈ CONNECT TELEGRAM IDENTITY ↗';
+   tryBot.hidden=false;
    statusEl.textContent=data.configured?'READY TO CONNECT':'ADMIN SETUP REQUIRED';
    $('bcTgStatus').textContent=data.configured?'NOT CONNECTED':'NOT CONFIGURED';
    $('bcTgStatus').classList.remove('connected');
@@ -132,6 +138,13 @@ async function refreshTelegram(){
   if(messages.error)throw messages.error;
   state.ready=Boolean(status.ready);
   state.username=String(status.bot_username||'');
+  state.botTokenConfigured=Boolean(status.bot_token_configured);
+  state.webhookSecretConfigured=Boolean(status.webhook_secret_configured);
+  if(state.owner){
+   $('bcTgOwnerHelp').textContent=!state.botTokenConfigured||!state.webhookSecretConfigured
+    ?'Owner setup: add BLACKCELL_TELEGRAM_BOT_TOKEN and BLACKCELL_TELEGRAM_WEBHOOK_SECRET in Supabase Edge Function Secrets. Do not paste these secrets into BLACKCELL.'
+    :'Server credentials are present. Tap ACTIVATE WEBHOOK to verify the bot, save its public username automatically, and enable messaging.';
+  }
   state.linked=Boolean(account.data);
   state.telegramUsername=String(account.data?.username||'');
   renderStatus();
@@ -242,7 +255,7 @@ async function activate(){
  state.working=true;renderStatus();
  try{
   const data=await api({action:'activate_webhook'});
-  note(data.registered?'Telegram webhook activated. Telegram can now deliver bot messages to BLACKCELL.':'Telegram webhook activation was not confirmed.');
+  note(data.registered?'Telegram bot @'+String(data.bot_username||'')+' activated. Next tap GENERATE PRIVATE LINK, open Telegram, and press Start.':'Telegram webhook activation was not confirmed.');
  }catch(e){note('Webhook not activated: '+explain(e))}
  finally{state.working=false;await refreshTelegram()}
 }
@@ -265,6 +278,8 @@ $('bcChannelImessage').addEventListener('click',()=>setChannel('imessage'));
 $('bcChannelBot').addEventListener('click',()=>setChannel('bot'));
 $('bcChannelPersonal').addEventListener('click',()=>setChannel('personal'));
 $('bcTgGenerateLink').addEventListener('click',()=>void generateLink());
+$('bcTgTryBot').addEventListener('click',()=>setChannel('bot'));
+$('bcTgRefresh').addEventListener('click',()=>void refreshTelegram());
 $('bcTgDisconnect').addEventListener('click',()=>void disconnect());
 $('bcTgSaveName').addEventListener('click',()=>void saveName());
 $('bcTgActivateWebhook').addEventListener('click',()=>void activate());
