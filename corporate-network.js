@@ -133,7 +133,10 @@ function switchView(view,{who=null,tab=null,keepPost=false}={}){
  if(view==='videos')renderVideos();
  if(view==='photos'){photos.render();void storageStatus.refresh()}
  const params=new URLSearchParams();
- if(view==='profile'&&state.profileUserId!==state.user.id)params.set('user',state.profileUserId);
+ if(view==='profile'){
+  params.set('view','profile');
+  if(state.profileUserId!==state.user.id)params.set('user',state.profileUserId);
+ }
  if(view==='videos'||view==='discover'||view==='photos')params.set('view',view);
  history.replaceState(null,'',location.pathname+(params.toString()?'?'+params.toString():''));
  window.scrollTo({top:0,behavior:'smooth'});
@@ -777,7 +780,9 @@ async function boot(){
   const auth=await corporateAuthorize(client);
   if(!auth.ok)throw Error('Your corporate session is no longer authorized. Sign in again.');
   state.user=auth.user;state.member=auth.member;
-  $('portalLink').href=auth.member.role==='owner'?'dashboard.html':'employee.html';
+  $('portalLink').href=auth.member.role==='owner'?'dashboard.html':'employee.html?card=1';
+  $('portalLink').textContent=auth.member.role==='owner'?'PORTAL ↗':'MY CARD ↗';
+  $('portalLink').title=auth.member.role==='owner'?'Return to Administration':'View my Employee Access Card';
   $('gateBack').href=$('portalLink').href;
   let verified=false;
   if(auth.member.role==='owner'){
@@ -837,6 +842,7 @@ async function boot(){
    }
   }
   if(uid&&UUID.test(uid)&&profile(uid))switchView('profile',{who:uid});
+  else if(params.get('view')==='profile')switchView('profile',{who:state.user.id});
   else if(['discover','videos','photos'].includes(params.get('view')))switchView(params.get('view'));
   else switchView('feed',{keepPost:!!state.deepPost});
   renderMini();renderSuggestions();
