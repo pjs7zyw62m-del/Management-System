@@ -462,6 +462,105 @@ body.bc-network.bc-profile-mode .bc-profile-private span{
  body.bc-network.bc-profile-mode .bc-profile-empty-actions{width:100%}
  body.bc-network.bc-profile-mode .bc-profile-empty-actions button{width:100%}
 }
+/* Profile editing uses the same premium layout; no changes to save/upload logic. */
+body.bc-network #editOverlay{
+ background:rgba(0,0,0,.84)!important;
+ backdrop-filter:blur(19px);-webkit-backdrop-filter:blur(19px);
+ padding:clamp(10px,2.4vw,28px)!important;
+}
+body.bc-network #editOverlay>.modal{
+ width:min(730px,100%)!important;max-width:730px!important;
+ max-height:min(90dvh,900px)!important;
+ background:radial-gradient(ellipse at 90% 0%,#75394d27,transparent 65%),
+ linear-gradient(145deg,#1c1d26,#0b0d12)!important;
+ border:1px solid #ffffff2b!important;border-radius:21px!important;
+ box-shadow:0 36px 100px #000d!important;overflow:hidden;
+}
+body.bc-network #editOverlay .modal-head{
+ padding:clamp(18px,3vw,29px)!important;gap:16px;
+ border-bottom:1px solid #ffffff18;background:#101116ab;
+}
+body.bc-network #editOverlay .modal-head .overline{
+ color:#d17e94;font-size:10px;letter-spacing:.2em;
+}
+body.bc-network #editOverlay .modal-head h2{
+ color:#f5f1f6;font-weight:760;font-size:clamp(23px,3vw,32px);
+ margin:8px 0 0;letter-spacing:-.05em;
+}
+body.bc-network #editOverlay .close-x{
+ width:43px;min-width:43px;height:43px;border-radius:11px;
+ font-size:20px;color:#f9e9ef;background:#4e2032;border-color:#af6477;
+}
+body.bc-network #editOverlay .modal-body{
+ padding:clamp(17px,3vw,29px)!important;overflow-y:auto;
+}
+body.bc-network #editOverlay .modal-body label{
+ display:block;color:#bebcc8;font-size:10px;font-weight:800;
+ letter-spacing:.11em;margin:0 0 10px!important;
+}
+body.bc-network #editOverlay .modal-body label small{
+ color:#898d9b;font-size:9px;letter-spacing:.03em;font-weight:600;
+}
+body.bc-network #editOverlay .modal-body input:not([type=file]),
+body.bc-network #editOverlay .modal-body textarea{
+ width:100%;min-height:47px;padding:13px 14px;
+ border:1px solid #ffffff28!important;background:#080a10!important;
+ color:#eeeef3;border-radius:10px!important;font-size:16px!important;
+ margin:8px 0 19px!important;box-shadow:none;
+}
+body.bc-network #editOverlay .modal-body textarea{
+ min-height:116px;resize:vertical;line-height:1.65;
+}
+body.bc-network #editOverlay .modal-body :is(input,textarea):focus{
+ outline:2px solid #bf6176!important;outline-offset:1px;
+}
+body.bc-network #editOverlay .edit-files{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+body.bc-network #editOverlay .edit-files label{
+ display:flex;flex-direction:column;justify-content:space-between;
+ gap:13px;min-width:0;min-height:105px;
+ color:#eee7ef;background:linear-gradient(145deg,#25212c,#111218);
+ border:1px dashed #805c70;border-radius:13px;
+ padding:16px!important;letter-spacing:.06em;
+}
+body.bc-network #editOverlay .edit-files label:focus-within{
+ border-color:#de8ca2;background:#392534;
+}
+body.bc-network #editOverlay .edit-files input[type=file]{
+ display:block;width:100%;font-size:12px;color:#aba6b4;max-width:100%;
+ margin-top:auto;
+}
+body.bc-network #editOverlay .edit-files input[type=file]::file-selector-button{
+ border-radius:9px;background:#3d2b3c;border:1px solid #a36d86;
+ color:#f3e7f0;padding:9px 12px;margin-right:10px;min-height:38px;
+}
+body.bc-network #editOverlay .hint{
+ color:#9297a4;font-size:11px;line-height:1.7;margin:15px 0;
+}
+body.bc-network #editOverlay .feedback{
+ background:#322132;border:1px solid #a85d75;color:#ffd5df;
+ padding:12px;border-radius:10px;font-size:12px;line-height:1.6;
+}
+body.bc-network #editOverlay .modal-footer{
+ display:flex;justify-content:flex-end;gap:10px;
+ padding:18px clamp(17px,3vw,29px)!important;
+ border-top:1px solid #ffffff1c;background:#0d0e13;
+}
+body.bc-network #editOverlay .modal-footer button{
+ min-height:46px;min-width:140px;padding:12px 18px;
+ border-radius:10px;font-size:11px;letter-spacing:.06em;font-weight:800;
+}
+body.bc-network #editOverlay .modal-footer .crimson{
+ background:linear-gradient(120deg,#71243a,#a43e57);
+ border-color:#c56a80;
+}
+@media(max-width:570px){
+ body.bc-network #editOverlay{padding:9px!important}
+ body.bc-network #editOverlay>.modal{max-height:95dvh!important;border-radius:17px!important}
+ body.bc-network #editOverlay .edit-files{grid-template-columns:1fr}
+ body.bc-network #editOverlay .modal-footer{display:grid;grid-template-columns:1fr 1fr;padding:14px!important}
+ body.bc-network #editOverlay .modal-footer button{min-width:0}
+}
+
 @media(prefers-reduced-motion:reduce){
  body.bc-network.bc-profile-mode *{scroll-behavior:auto!important;transition-duration:.01ms!important}
 }
