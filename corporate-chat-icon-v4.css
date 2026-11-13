@@ -1,0 +1,154 @@
+/* BLACKCELL · CORPORATE MESSAGE EMBLEM 4.0
+   Crisp vector icon, black steel and silver with restrained crimson.
+   Visual-only. Existing chat, unread badges and access logic are unchanged. */
+.bc-chat-orb{
+  --bc-chat-accent:#d83c57;
+  width:68px!important;height:68px!important;
+  border-radius:21px!important;
+  border:1px solid rgba(199,207,219,.48)!important;
+  color:#e8ecf2!important;
+  background:
+    radial-gradient(ellipse at 24% 7%,rgba(221,228,240,.22),transparent 47%),
+    linear-gradient(148deg,#303945 0%,#151d29 36%,#090d15 72%,#05070d 100%)!important;
+  box-shadow:
+    0 15px 38px rgba(0,0,0,.8),
+    0 0 0 4px rgba(50,58,72,.43),
+    0 0 23px rgba(205,33,65,.14),
+    inset 0 1px 0 rgba(255,255,255,.37),
+    inset 0 -1px 0 rgba(8,11,18,.8)!important;
+  display:grid!important;
+  place-items:center!important;
+  overflow:visible!important;
+  isolation:isolate;
+  transition:transform .24s cubic-bezier(.2,.75,.25,1),box-shadow .24s,border-color .2s!important;
+}
+.bc-chat-orb[hidden]{display:none!important}
+.bc-chat-orb:after{
+  content:"";
+  position:absolute;
+  inset:4px;
+  pointer-events:none;
+  border-radius:17px;
+  border-top:1px solid rgba(238,244,251,.11);
+  border-right:1px solid rgba(203,43,75,.38);
+  border-bottom:2px solid rgba(212,35,69,.8);
+  box-shadow:inset -1px -2px 10px rgba(160,23,53,.08);
+}
+.bc-chat-orb:hover,.bc-chat-orb:focus-visible{
+  transform:translateY(-3px) scale(1.045)!important;
+  border-color:rgba(231,237,247,.82)!important;
+  box-shadow:
+    0 17px 45px rgba(0,0,0,.85),
+    0 0 0 5px rgba(75,79,95,.48),
+    0 0 28px rgba(213,33,67,.34),
+    inset 0 1px 0 rgba(255,255,255,.46)!important;
+}
+.bc-chat-orb:active{transform:scale(.96)!important}
+.bc-chat-orb:focus-visible{
+  outline:2px solid rgba(232,101,127,.95)!important;
+  outline-offset:4px!important;
+}
+.bc-chat-orb:before{
+  content:"PRIVATE MESSAGES"!important;
+  background:linear-gradient(110deg,#202633,#0b1018)!important;
+  border:1px solid rgba(207,213,229,.4)!important;
+  color:#e9edf5!important;
+  letter-spacing:.09em!important;
+}
+.bc-orb-chat-vector{
+  width:39px;
+  height:39px;
+  display:block;
+  overflow:visible;
+  filter:drop-shadow(0 2px 3px #000c);
+  position:relative;z-index:1;
+  transform:translateY(-4px);
+}
+.bc-orb-chat-vector .bc-msg-back,
+.bc-header-chat-vector .bc-msg-back{
+  fill:none;stroke:#c32c49;stroke-width:2.9;
+  stroke-linecap:round;stroke-linejoin:round;opacity:.83;
+}
+.bc-orb-chat-vector .bc-msg-face,
+.bc-header-chat-vector .bc-msg-face{
+  fill:rgba(10,14,22,.85);stroke:#e0e6f0;
+  stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;
+}
+.bc-orb-chat-vector .bc-msg-line,
+.bc-header-chat-vector .bc-msg-line{
+  fill:none;stroke:#c8d0de;stroke-width:2.35;stroke-linecap:round;
+}
+.bc-orb-chat-vector .bc-msg-pulse,
+.bc-header-chat-vector .bc-msg-pulse{
+  fill:#ef3f61;stroke:#ed879b;stroke-width:.6;
+}
+.bc-orb-chat-vector .bc-msg-red-edge{
+  fill:none;stroke:#fa4a68;stroke-width:2.1;
+  stroke-linecap:round;stroke-linejoin:round;
+  filter:drop-shadow(0 0 3px rgba(239,46,80,.65));
+}
+.bc-orb-brand{
+  position:absolute;bottom:7px;left:50%;transform:translateX(-50%);
+  color:#a8b5c7;pointer-events:none;user-select:none;
+  font-size:7px;font-weight:850;letter-spacing:.2em;
+  line-height:1;
+}
+.bc-chat-orb .bc-online{
+  width:11px!important;height:11px!important;
+  bottom:-3px!important;left:-3px!important;
+  background:#75dcaa!important;
+  border:2px solid #091018!important;
+  box-shadow:0 0 11px rgba(87,217,147,.58)!important;
+}
+.bc-chat-orb .bc-unread{
+  top:-7px!important;right:-7px!important;
+  min-width:24px!important;height:24px!important;
+  border:2px solid #0b1018!important;
+  background:linear-gradient(140deg,#ef5771,#ac173d)!important;
+  color:#fff!important;
+  box-shadow:0 5px 14px #0009,0 0 14px #d51e4b4d!important;
+  font-variant-numeric:tabular-nums;
+}
+.bc-chat-orb.has-unread{
+  border-color:#e36d88!important;
+  animation:bcMessageHalo 2.7s ease-in-out infinite!important;
+}
+@keyframes bcMessageHalo{
+  0%,100%{filter:drop-shadow(0 0 0 rgba(210,31,68,0))}
+  50%{filter:drop-shadow(0 0 10px rgba(221,49,80,.57))}
+}
+/* Match the same mark in the open chat window's header. */
+.bc-chat-pane-header .bc-chat-header-bubble{
+  flex:none;
+  display:grid;place-items:center;
+  width:43px;height:43px;
+  background:linear-gradient(135deg,#2b3644,#0f141e)!important;
+  border:1px solid rgba(183,192,211,.42)!important;
+  border-radius:13px!important;
+  box-shadow:inset 0 1px 0 #ffffff29,0 4px 12px #0005!important;
+  color:#dce3ed!important;
+}
+.bc-chat-pane-header .bc-chat-header-bubble:after{display:none!important}
+.bc-header-chat-vector{
+  display:block;width:31px;height:31px;
+  overflow:visible;
+  filter:drop-shadow(0 1px 3px rgba(0,0,0,.55));
+}
+/* The classic three-dot pictogram is retired and not overlaid over this icon. */
+.bc-chat-orb .bc-orb-chat-icon,.bc-chat-orb .bc-orb-chat-dots{display:none!important}
+@media(max-width:660px){
+  .bc-chat-orb{
+    width:62px!important;height:62px!important;
+    border-radius:19px!important;
+    right:calc(13px + env(safe-area-inset-right,0px))!important;
+    bottom:calc(15px + env(safe-area-inset-bottom,0px))!important;
+  }
+  .bc-chat-orb:after{inset:4px;border-radius:15px}
+  .bc-orb-chat-vector{width:36px;height:36px;transform:translateY(-3px)}
+  .bc-orb-brand{bottom:6px;font-size:6.5px}
+  .bc-chat-orb:before{display:none!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .bc-chat-orb.has-unread{animation:none!important}
+  .bc-chat-orb,.bc-orb-chat-vector{transition:none!important}
+}
