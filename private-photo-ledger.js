@@ -91,6 +91,7 @@ async function initialize(){
   if(!a.ok)throw Error('Your corporate account is not approved or active.');
   state.user=a.user;state.member=a.member;
   state.isOwner=a.member.role==='owner'&&a.member.clearance_level===7;
+  state.filter=state.isOwner?'reviewed':'all';
   if(!state.isOwner&&a.member.role!=='employee')throw Error('This private area is available only to verified owner and selected employees.');
   await verify();
   updateLedgerNavigation();
@@ -99,6 +100,7 @@ async function initialize(){
   $('ownerSetup').hidden=!state.isOwner;
   if(state.isOwner)await loadEmployees();
   wireEvents();
+  setFilter(state.filter);
   await refresh({initial:true});
   setupRealtime();
   window.setInterval(async()=>{
@@ -211,6 +213,8 @@ async function refresh({initial=false,force=false}={}){
   $('noRoom').hidden=!!preferred;
   $('activeRoom').hidden=!preferred;
   if(!preferred){
+   $('ownerReviewQueue').hidden=true;
+   $('reviewQueueCurrent').replaceChildren();
    $('ownerLedgerScope').hidden=true;
    state.scopeMemberId=null;
    $('uploadAccessStatus').hidden=true;
@@ -358,6 +362,7 @@ async function loadEntries({force=false}={}){
   state.entryFingerprint=signature;
   await signImages(all);
   renderEntries();
+  renderReviewQueue();
  }
  if(all.length>=5000)show('entriesFeedback','Showing up to 5,000 latest submissions; ask administration to archive older records.');
  else show('entriesFeedback','');
@@ -408,14 +413,50 @@ function entryState(e){
  if(e.settled_at)return 'settled';
  return 'owed';
 }
+function renderReviewQueue(){
+ const queue=$('ownerReviewQueue');
+ queue.hidden=!state.isOwner||!state.room;
+ if(queue.hidden)return;
+ const pending=state.entries
+  .filter(e=>entryState(e)==='pending')
+  .sort((a,b)=>new Date(a.created_at)-new Date(b.created_at)||a.id.localeCompare(b.id));
+ show('reviewQueueCount',pending.length+' WAITING');
+ const parent=$('reviewQueueCurrent');parent.replaceChildren();
+ if(!pending.length){
+  const empty=node('div','queue-empty');
+  empty.append(node('strong','','ALL CAUGHT UP'));
+  empty.append(node('p','','Every submitted photo has been accepted or rejected. The next upload will appear here automatically.'));
+  const history=button('VIEW REVIEWED PHOTOS',()=>{
+   setFilter('reviewed');
+   document.querySelector('.timeline-toolbar')?.scrollIntoView({behavior:'smooth',block:'start'});
+  },'button-outline');
+  empty.append(history);
+  parent.append(empty);
+  return;
+ }
+ const current=pending[0];
+ const progress=node('div','queue-progress');
+ progress.append(
+  node('strong','','NEXT PHOTO TO REVIEW'),
+  node('span','','1 OF '+pending.length+' · OLDEST FIRST')
+ );
+ parent.append(progress,renderEntry(current));
+}
 function renderEntries(){
  const parent=$('photoEntries');parent.replaceChildren();
  if(!state.room)return;
- const list=state.entries.filter(e=>state.filter==='all'||entryState(e)===state.filter);
+ const list=state.entries.filter(e=>
+  state.filter==='all'
+  ||(state.filter==='reviewed'&&entryState(e)!=='pending')
+  ||entryState(e)===state.filter
+ );
  if(!list.length){
-  parent.append(node('div','empty-entries',state.filter==='all'
-   ?'No photos yet. The selected employee can upload the first picture here.'
-   :'No photo entries match this filter.'));
+  const message=state.filter==='reviewed'
+   ?'No reviewed photos yet. Accept or reject a picture above and it will appear here.'
+   :state.filter==='all'
+     ?'No photos yet. The selected employee can upload the first picture here.'
+     :'No photo entries match this filter.';
+  parent.append(node('div','empty-entries',message));
   return;
  }
  for(const e of list)parent.append(renderEntry(e));
@@ -493,6 +534,7 @@ async function assignAmount(entry,input,submit){
   if(r.error)throw r.error;
   state.entryFingerprint='';await loadEntries({force:true});
   show('entriesFeedback','Photo accepted for '+dollars(amount)+'. Both screens will update automatically.');
+  show('reviewQueueFeedback','Accepted for '+dollars(amount)+' · Showing the next pending photo.');
  }catch(e){show('entriesFeedback','Could not assign amount: '+fail(e))}
  finally{state.busy=false;submit.disabled=false;submit.textContent='✓ ACCEPT PHOTO'}
 }
@@ -513,6 +555,7 @@ async function rejectPhoto(entry,trigger){
   if(r.error)throw r.error;
   state.entryFingerprint='';await loadEntries({force:true});
   show('entriesFeedback','Photo rejected. Both participants will see the decision automatically.');
+  show('reviewQueueFeedback','Photo rejected · Showing the next pending photo.');
  }catch(e){show('entriesFeedback','Could not reject photo: '+fail(e))}
  finally{state.busy=false;trigger.disabled=false}
 }
@@ -642,6 +685,7 @@ function wireEvents(){
    history.replaceState(null,'',u.pathname+u.search);
   }
   state.entryFingerprint='';
+  show('reviewQueueFeedback','');
   void refresh({force:true}).catch(e=>show('entriesFeedback',fail(e)));
  });
  $('closeRoomBtn').addEventListener('click',()=>void toggleRoom());
