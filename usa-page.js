@@ -1,4 +1,4 @@
-import {corporateClient,corporateAuthorize} from "./corp-auth.js?v=20261109-staff1";
+import {corporateClient,corporateAuthorize} from "./corp-auth.js?v=20261112-access2";
 import {mountMilitaryGunner} from "./military-gunner.js?v=20261110-fast4";
 import {createUsaPhotoOfDay} from "./usa-photo-of-day.js?v=20261111-daily-showcase7";
 const $=id=>{
