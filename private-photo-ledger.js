@@ -11,7 +11,7 @@ const $=id=>document.getElementById(id);
 const state={
  user:null,member:null,isOwner:false,rooms:[],room:null,employees:[],
  entries:[],filter:'all',busy:false,refreshing:false,closed:false,
- images:new Map(),entryFingerprint:''
+ images:new Map(),entryFingerprint:'',liveStarted:false,roomChannel:null,roomsChannel:null,liveRoomId:null,liveQueued:false,liveTimer:null,liveConnected:false
 };
 const node=(tag,klass,content)=>{
  const n=document.createElement(tag);
@@ -62,6 +62,9 @@ function roomLink(room){
 function validId(input){return typeof input==='string'&&VALID_ID.test(input)}
 function gate(message){
  state.closed=true;
+ if(state.liveTimer)clearTimeout(state.liveTimer);
+ if(state.roomChannel)void db.removeChannel(state.roomChannel);
+ if(state.roomsChannel)void db.removeChannel(state.roomsChannel);
  $('ledgerApp').hidden=true;
  $('accessGate').hidden=false;
  show('gateMessage',message);
@@ -91,10 +94,11 @@ async function initialize(){
   if(state.isOwner)await loadEmployees();
   wireEvents();
   await refresh({initial:true});
+  setupRealtime();
   window.setInterval(async()=>{
    if(document.hidden||state.closed||state.busy)return;
    try {await refresh()}catch(e){show('entriesFeedback','Refresh unavailable: '+fail(e))}
-  },25000);
+  },15000);
   window.setInterval(async()=>{
    if(document.hidden||state.closed)return;
    try{await verify()}catch(e){gate(fail(e))}
@@ -118,7 +122,8 @@ async function loadEmployees(){
  if(!state.employees.length)show('setupFeedback','No activated employees are available. Activate an employee in User Management first.');
 }
 async function refresh({initial=false,force=false}={}){
- if(state.refreshing||state.closed)return;
+ if(state.closed)return;
+ if(state.refreshing){state.liveQueued=true;return}
  state.refreshing=true;
  try{
   const result=await db.from(ROOMS).select('id,owner_id,member_id,title,active,created_at')
@@ -127,10 +132,11 @@ async function refresh({initial=false,force=false}={}){
   state.rooms=result.data||[];
   const currentId=state.room?.id;
   const requested=new URLSearchParams(location.search).get('room');
-  const preferred=state.rooms.find(x=>x.id===currentId)
-     ||(validId(requested)?state.rooms.find(x=>x.id===requested):null)
+  const preferred=(validId(requested)?state.rooms.find(x=>x.id===requested):null)
+     ||state.rooms.find(x=>x.id===currentId)
      ||state.rooms[0]||null;
   state.room=preferred;
+  if(state.liveStarted)subscribeEntries(preferred);
   $('noRoom').hidden=!!preferred;
   $('activeRoom').hidden=!preferred;
   if(!preferred){
@@ -160,7 +166,10 @@ async function refresh({initial=false,force=false}={}){
   const u=new URL(location.href);u.searchParams.set('room',preferred.id);
   history.replaceState(null,'',u.pathname+u.search);
   await loadEntries({force:force||initial||currentId!==preferred.id});
- }finally{state.refreshing=false}
+ }finally{
+  state.refreshing=false;
+  if(state.liveQueued){state.liveQueued=false;queueLiveRefresh()}
+ }
 }
 function updateUploadAccess(room){
  const available=Boolean(room?.active);
@@ -186,6 +195,56 @@ function updateUploadAccess(room){
   action.textContent=available?'＋ UPLOAD PHOTO':'ROOM CLOSED';
   action.disabled=!available;
  }
+}
+function liveStatus(message,connected=false){
+ state.liveConnected=connected;
+ const el=$('ledgerLiveStatus');
+ if(el){el.textContent=message;el.dataset.connected=connected?'true':'false'}
+}
+function queueLiveRefresh(){
+ if(state.closed)return;
+ if(state.liveTimer)clearTimeout(state.liveTimer);
+ state.liveTimer=setTimeout(()=>{
+  state.liveTimer=null;
+  if(state.busy||state.refreshing){state.liveQueued=true;return}
+  void refresh().catch(err=>{
+   show('entriesFeedback','Live synchronization interrupted: '+fail(err));
+   liveStatus('RECONNECTING · AUTOMATIC SYNC',false);
+  });
+ },200);
+}
+function subscribeEntries(room){
+ const id=room?.id||null;
+ if(state.liveRoomId===id)return;
+ if(state.roomChannel){void db.removeChannel(state.roomChannel);state.roomChannel=null}
+ state.liveRoomId=id;
+ if(!id)return;
+ const channel=db.channel('bc-private-entry-'+id+'-'+state.user.id)
+  .on('postgres_changes',{
+   event:'*',schema:'public',table:ENTRIES,filter:'room_id=eq.'+id
+  },()=>queueLiveRefresh());
+ state.roomChannel=channel;
+ channel.subscribe(status=>{
+  if(state.closed)return;
+  if(status==='SUBSCRIBED'){liveStatus('● LIVE UPDATES CONNECTED',true);queueLiveRefresh()}
+  else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED')
+   liveStatus('RECONNECTING · AUTOMATIC SYNC',false);
+ });
+}
+function setupRealtime(){
+ if(state.liveStarted||state.closed)return;
+ state.liveStarted=true;
+ const scope=state.isOwner?'owner_id':'member_id';
+ const channel=db.channel('bc-private-rooms-'+state.user.id)
+  .on('postgres_changes',{
+   event:'*',schema:'public',table:ROOMS,filter:scope+'=eq.'+state.user.id
+  },()=>queueLiveRefresh());
+ state.roomsChannel=channel;
+ channel.subscribe(status=>{
+  if(state.closed)return;
+  if(status==='SUBSCRIBED')queueLiveRefresh();
+ });
+ subscribeEntries(state.room);
 }
 function fillRoomPicker(){
  const sel=$('roomPicker');sel.replaceChildren();
@@ -497,6 +556,10 @@ function wireEvents(){
  $('refreshLedger').addEventListener('click',()=>{state.entryFingerprint='';void refresh({force:true}).catch(e=>show('entriesFeedback','Refresh failed: '+fail(e)))});
  $('roomPicker').addEventListener('change',()=>{
   state.room=state.rooms.find(r=>r.id===$('roomPicker').value)||null;
+  if(state.room){
+   const u=new URL(location.href);u.searchParams.set('room',state.room.id);
+   history.replaceState(null,'',u.pathname+u.search);
+  }
   state.entryFingerprint='';
   void refresh({force:true}).catch(e=>show('entriesFeedback',fail(e)));
  });
