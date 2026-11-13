@@ -76,17 +76,135 @@ h1 em{font-style:normal;color:#e56882}
  .orb .unread{width:42px;height:42px;font-size:23px;right:-11px;top:-10px}
  .actions .pill{min-width:130px}
 }
+
+/* BLACKCELL GLASS CONCEPT 04: black iMessage, red glowing NEW MESSAGE.
+   The button does not rotate. Only the red illumination softly breathes. */
+.stage{
+  background:
+    radial-gradient(ellipse 50% 70% at 50% 48%,rgba(52,34,51,.28),transparent 72%),
+    linear-gradient(145deg,#10121b 0%,#090b12 56%,#06070c 100%);
+}
+.orb{
+  border:1px solid rgba(211,222,235,.53);
+  background:
+    radial-gradient(ellipse 70% 40% at 33% 12%,rgba(242,247,255,.2),transparent 75%),
+    radial-gradient(ellipse at 57% 86%,rgba(29,36,55,.34),transparent 65%),
+    linear-gradient(150deg,#292f3b 0%,#11151d 41%,#05070c 77%,#000102 100%);
+  box-shadow:
+    0 19px 55px #000e,
+    0 0 0 4px rgba(115,126,141,.12),
+    inset 0 2px 2px rgba(255,255,255,.31),
+    inset 0 -7px 18px #000e,
+    0 0 22px rgba(138,155,182,.08);
+  transition:background .3s ease,box-shadow .3s ease,border-color .3s ease,transform .2s ease;
+  overflow:visible;
+  -webkit-tap-highlight-color:transparent;
+}
+.orb::before{
+  inset:-7px;
+  border:2px solid rgba(192,201,215,.37);
+  box-shadow:0 0 12px rgba(185,195,210,.12),inset 0 0 7px rgba(185,195,210,.07);
+  animation:blackGlassBreath 4.2s ease-in-out infinite;
+}
+.orb::after{
+  inset:6px;
+  border:1px solid rgba(243,247,255,.2);
+  border-radius:50%;
+  background:linear-gradient(160deg,rgba(255,255,255,.1),transparent 43%);
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.08);
+  animation:none;
+}
+@keyframes blackGlassBreath{
+  0%,100%{opacity:.5;filter:brightness(.85)}
+  50%{opacity:.78;filter:brightness(1.18)}
+}
+#unreadMode:checked~.stage{
+  border-color:rgba(220,48,87,.67);
+  background:radial-gradient(ellipse 55% 60% at center,rgba(162,16,58,.22),transparent 80%),linear-gradient(150deg,#160c16,#090a10 77%);
+}
+#unreadMode:checked~.stage .orb{
+  border-color:#ff9bac;
+  background:
+    radial-gradient(ellipse 70% 38% at 34% 10%,rgba(255,235,242,.52),transparent 68%),
+    radial-gradient(ellipse 66% 72% at 77% 81%,rgba(74,0,22,.5),transparent 78%),
+    linear-gradient(149deg,#db4b69 0%,#a81641 30%,#6a082d 63%,#240410 100%);
+  box-shadow:
+    0 18px 54px #000c,
+    0 0 0 4px rgba(175,20,64,.22),
+    0 0 32px rgba(253,29,79,.45),
+    0 0 75px rgba(223,13,62,.21),
+    inset 0 2px 2px rgba(255,255,255,.55),
+    inset 0 -11px 27px rgba(45,0,15,.7);
+  animation:redGlassBreath 2.5s ease-in-out infinite;
+}
+#unreadMode:checked~.stage .orb::before{
+  inset:-9px;
+  border:3px solid rgba(255,80,115,.86);
+  box-shadow:
+    0 0 13px rgba(255,51,98,.86),
+    0 0 34px rgba(220,20,66,.48),
+    inset 0 0 10px rgba(255,115,139,.2);
+  animation:redGlassRim 2.5s ease-in-out infinite;
+}
+#unreadMode:checked~.stage .orb::after{
+  inset:7px;
+  border-color:rgba(255,234,238,.35);
+  background:linear-gradient(148deg,rgba(255,255,255,.3),rgba(255,255,255,.035) 42%,transparent 72%);
+}
+@keyframes redGlassBreath{
+  0%,100%{filter:brightness(.87)}
+  50%{filter:brightness(1.2)}
+}
+@keyframes redGlassRim{
+  0%,100%{opacity:.68;filter:brightness(.9)}
+  50%{opacity:1;filter:brightness(1.32)}
+}
+/* Silver message pictogram remains visible on both finishes. */
+#unreadMode:checked~.stage .chat-icon{
+  filter:drop-shadow(0 3px 7px rgba(39,0,15,.7)) drop-shadow(0 0 7px rgba(255,231,240,.22));
+}
+/* Readable charcoal numeral on light-red glass, safely above the main glow. */
+#unreadMode:checked~.stage .orb .unread{
+  color:#150810;
+  background:linear-gradient(145deg,#ffbec5,#ff7b91 52%,#ff4a6b);
+  border-color:#230812;
+  box-shadow:0 0 0 2px rgba(255,119,148,.85),0 0 22px rgba(255,35,90,.65),0 4px 15px #000a;
+  text-shadow:none;
+  font-size:26px;
+}
+.controls .pill{
+  background:linear-gradient(140deg,#1a1d26,#070a10);
+  border-color:rgba(190,203,223,.4);
+  color:#ecf0f6;
+  min-height:50px;
+}
+#normalMode:checked~.controls label[for="normalMode"]{
+  background:linear-gradient(140deg,#303846,#0d121b);
+  border-color:#c5d4e9;color:#fff;box-shadow:inset 0 1px rgba(255,255,255,.21),0 0 17px rgba(174,191,213,.19);
+}
+#unreadMode:checked~.controls label[for="unreadMode"]{
+  background:linear-gradient(135deg,#dc4a6c,#710f35 70%);
+  border-color:#ffa1b8;color:#fff;box-shadow:inset 0 1px #ffffff35,0 0 21px #e82b5b7a;
+}
+@media(max-width:580px){
+ #unreadMode:checked~.stage .orb .unread{font-size:23px}
+ .actions .pill{flex:1 1 142px}
+}
+@media(prefers-reduced-motion:reduce){
+ .orb::before,#unreadMode:checked~.stage .orb,#unreadMode:checked~.stage .orb::before{animation:none!important}
+}
+
 </style>
 </head>
 <body>
 <header class="header">
  <div class="identity"><div class="mark">B</div><div><div class="heading">BLACKCELL CORPORATION</div><div class="byline">CORPORATE MESSAGES · DESIGN LAB</div></div></div>
- <div class="preview-tag">LIVE ANIMATED SAMPLE · V3</div>
+ <div class="preview-tag">LIVE ANIMATED SAMPLE · V4</div>
 </header>
 <main class="main">
  <div class="eyebrow">PRIVATE NETWORK / COMMUNICATIONS UI</div>
- <h1>Red pulse <em>chat icon.</em></h1>
- <p class="intro">Watch the stationary red glow pulse. Tap <strong>3 Unread Messages</strong> below to brighten the effect and display the new bold, dark “3” on a high-contrast red badge, then tap the chat icon to open sample messages.</p>
+ <h1>Black glass. <em>Red glass.</em></h1>
+ <p class="intro"><strong>Normal iMessage:</strong> polished black glass with a silver message symbol. <strong>New message:</strong> luminous crimson glass with a clear dark unread number and a soft breathing glow. No spinning light. Switch between both styles below, then tap the icon to open a sample chat.</p>
  <input class="mode-radio" type="radio" name="chatDemoMode" id="normalMode" checked aria-label="Normal glow preview">
  <input class="mode-radio" type="radio" name="chatDemoMode" id="unreadMode" aria-label="3 unread messages preview">
  <section class="stage" aria-label="Animated BLACKCELL chat icon preview">
@@ -102,21 +220,21 @@ h1 em{font-style:normal;color:#e56882}
     <span class="unread" id="unreadBadge">3</span>
    </button>
   </div>
-  <div class="stage-label" aria-live="polite"><strong><span class="label-normal">NO NEW MESSAGES</span><span class="label-unread">3 NEW MESSAGES</span></strong><span class="detail-normal">Soft red light slowly pulses around the icon.</span><span class="detail-unread">Brighter crimson glow and a large, readable dark 3. Tap the icon to open a sample chat.</span></div>
+  <div class="stage-label" aria-live="polite"><strong><span class="label-normal">iMESSAGE · BLACK GLASS</span><span class="label-unread">NEW MESSAGES · RED GLASS</span></strong><span class="detail-normal">Smoked black glass, silver highlights. Quiet when no messages are waiting.</span><span class="detail-unread">Glowing translucent crimson glass and a high-contrast dark 3.</span></div>
   <section class="dialog" id="sampleDialog" role="dialog" aria-label="Sample chat window" aria-modal="false" hidden>
    <div class="dialog-head"><div><strong>BLACKCELL MESSAGES</strong><small>PRIVATE · VERIFIED NETWORK</small></div><button id="closeDialog" type="button">✕ CLOSE</button></div>
-   <div class="dialog-body"><div class="sample-msg">New private message received.</div><div class="sample-msg out">The red ring pulses without spinning.</div></div>
+   <div class="dialog-body"><div class="sample-msg">New private message received.</div><div class="sample-msg out">New messages light up the whole red glass button.</div></div>
    <div class="dialog-foot">SAMPLE CHAT · NOT CONNECTED TO REAL MESSAGES</div>
   </section>
  </section>
  <div class="controls">
-  <div><div class="controls-label">LIVE PREVIEW CONTROLS</div><small>Tap either mode to change the animation instantly.</small></div>
+  <div><div class="controls-label">BLACKCELL GLASS FINISHES</div><small>Tap Black Glass or Red Glass to change the preview.</small></div>
   <div class="actions" role="group" aria-label="Choose a chat alert preview">
-   <label for="normalMode" class="pill">Normal Glow</label>
-   <label for="unreadMode" class="pill">3 Unread Messages</label>
+   <label for="normalMode" class="pill">Black Glass · Normal</label>
+   <label for="unreadMode" class="pill">Red Glass · 3 Unread</label>
   </div>
  </div>
- <p class="disclaimer">This standalone sample is not connected to actual messages and does not change your production chat icon. The animation runs automatically when this page is open.</p>
+ <p class="disclaimer">This is an interactive design preview, not connected to real messages. Your existing production chat icon remains unchanged until you approve this version.</p>
 </main>
 <script>
 (function(){
