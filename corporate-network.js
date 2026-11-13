@@ -48,9 +48,14 @@ function avatar(p,size='med'){
  return v;
 }
 function cover(node,p){
- node.style.backgroundImage='';
+ node.style.removeProperty('background-image');
  const src=mediaUrl(asset(p?.cover_asset_id));
- if(src)node.style.backgroundImage='linear-gradient(to top,#0d090e88,transparent 65%),url("'+src.replace(/["\\]/g,'')+'")';
+ if(src){
+  const image='linear-gradient(to top,rgba(8,9,14,.75),rgba(9,10,15,.08) 65%),url("'+src.replace(/["\\]/g,'')+'")';
+  // The new premium profile stylesheet has a strong fallback image.
+  // An explicitly uploaded member cover must always override the fallback.
+  node.style.setProperty('background-image',image,node.id==='profileCover'?'important':'');
+ }
 }
 function myProfile(){return profile(state.user?.id)}
 function following(id){return state.follows.some(f=>f.follower_id===state.user.id&&f.following_id===id)}
@@ -116,6 +121,7 @@ function switchView(view,{who=null,tab=null,keepPost=false}={}){
   state.assetUrls.clear();void loadSigned().then(renderAll).catch(()=>{});
  }
  state.view=view;
+ document.body.classList.toggle('bc-profile-mode',view==='profile');
  syncLibraryMenu(view);
  gunnerDock?.setVisible(view==='photos');
  if(view==='profile'){
@@ -268,6 +274,33 @@ function renderProfile(){
  $('profileFollowerCount').textContent=state.follows.filter(f=>f.following_id===p.user_id).length;
  $('profileFollowingCount').textContent=state.follows.filter(f=>f.follower_id===p.user_id).length;
  $('profileVideoCount').textContent=countVideos(p.user_id);
+ const isMine=p.user_id===state.user.id;
+ $('profilePageTitle').textContent=isMine?'My Profile.':personName(p)+' · Profile';
+ $('profileAboutSummary').textContent=p.bio?.trim()||(
+   isMine?'Introduce yourself with a short biography, interests, and what you share with the Network.'
+         :'This member has not added an introduction yet.');
+ $('profileAsideJoined').textContent=date(p.created_at);
+ $('profileAsideRole').textContent=isMine?'LEVEL '+state.member.clearance_level:'VERIFIED MEMBER';
+ $('profileEditDetails').hidden=!isMine;
+ $('profileCoverAction').hidden=!isMine;
+ $('profileGettingStarted').hidden=!isMine;
+ if(isMine){
+   const completed=[!!p.avatar_asset_id,!!p.cover_asset_id,!!p.headline?.trim(),!!p.bio?.trim()];
+   const steps=completed.filter(Boolean).length;
+   $('profileSetupProgress').style.width=(steps/4*100)+'%';
+   $('profileSetupNote').textContent=steps===4?'All four profile details are complete.':steps+' of 4 details complete · Avatar, cover, headline and bio';
+   $('profileGettingStarted').querySelector('h3').textContent=steps===4?'Your profile is complete':'Make it yours';
+ }
+ const tabCopy={
+  posts:['Activity & Posts','Updates shared with verified Network members.'],
+  photos:['Photo Collection','Photographs and images from this member.'],
+  videos:['Video Channel','Videos shared with the Network.'],
+  albums:['Photo Albums','Organized collections from this member.'],
+  about:['Profile Details','Introduction and identity information.']
+ };
+ const sectionInfo=tabCopy[state.profileTab]||tabCopy.posts;
+ $('profileSectionTitle').textContent=sectionInfo[0];
+ $('profileSectionIntro').textContent=sectionInfo[1];
  const actions=$('profileActions');actions.replaceChildren();
  if(p.user_id===state.user.id)actions.append(btn('EDIT PROFILE ↗',openEdit));
  else{
@@ -287,8 +320,25 @@ function renderProfile(){
  }
  if(state.profileTab==='posts'){
   const posts=state.posts.filter(x=>x.author_id===p.user_id);
-  if(!posts.length)box.append(empty('No posts yet','Updates shared by this member will appear here.'));
-  else for(const post of posts)box.append(renderPost(post));
+  if(!posts.length){
+   const emptyState=el('section','bc-profile-empty-state');
+   const symbol=el('div','bc-profile-empty-symbol','▤');
+   const title=el('h3','',isMine?'Your story starts here':'No posts shared yet');
+   const body=el('p','',isMine
+     ?'Share an introduction, a photograph, or an update with your Network. You control what you post.'
+     :'Updates shared by this member will appear here.');
+   emptyState.append(symbol,title,body);
+   if(isMine){
+    const actions=el('div','bc-profile-empty-actions');
+    actions.append(btn('＋ CREATE YOUR FIRST POST',()=>{
+      switchView('feed');
+      $('postBody')?.focus({preventScroll:false});
+    },'bc-profile-primary'));
+    actions.append(btn('✎ COMPLETE YOUR PROFILE',openEdit,'bc-profile-secondary'));
+    emptyState.append(actions);
+   }
+   box.append(emptyState);
+  }else for(const post of posts)box.append(renderPost(post));
   return;
  }
  if(state.profileTab==='albums'){
@@ -731,6 +781,22 @@ function setupEvents(){
  $('cancelEdit').addEventListener('click',closeEdit);
  $('editOverlay').addEventListener('click',e=>{if(e.target===$('editOverlay'))closeEdit()});
  $('saveProfile').addEventListener('click',()=>void saveProfile());
+ $('profileReturnFeed').addEventListener('click',()=>switchView('feed'));
+ $('profileCoverAction').addEventListener('click',openEdit);
+ $('profileEditDetails').addEventListener('click',openEdit);
+ $('profileSetupAction').addEventListener('click',openEdit);
+ $('profileShareLink').addEventListener('click',async()=>{
+   const p=profile(state.profileUserId)||myProfile();
+   if(!p)return;
+   const link=new URL('corporate-network.html',location.href);
+   link.searchParams.set('view','profile');
+   link.searchParams.set('user',p.user_id);
+   try{
+     if(!navigator.clipboard?.writeText)throw Error('Clipboard unavailable');
+     await navigator.clipboard.writeText(link.href);
+     toast('Profile link copied. It can only be viewed by authorized Network members.');
+   }catch(_){window.prompt('Copy this private Network profile link:',link.href)}
+ });
 }
 
 let networkSecurityChecksInstalled=false,networkSecurityChecking=false;
