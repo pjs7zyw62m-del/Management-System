@@ -1117,6 +1117,14 @@ function installNetworkSecurityChecks(){
  });
 }
 
+async function setupPrivateLedgerDoor(){
+ const link=$('privateLedgerNav');if(!link||!state.user)return;
+ link.hidden=true;
+ if(state.member?.role==='owner'){link.hidden=false;return}
+ const {data,error}=await client.from('corp_private_photo_rooms')
+   .select('id').limit(1);
+ if(!error&&Array.isArray(data)&&data.length>0)link.hidden=false;
+}
 async function boot(){
  try{
   const {data:{session}}=await client.auth.getSession();
@@ -1140,6 +1148,7 @@ async function boot(){
   await loadAll({show:false});
   await dedupe.load();
   await personalization.load();
+  await setupPrivateLedgerDoor();
   if(auth.member.role==='owner'||auth.member.can_chat===true){
    const {data}=await client.rpc('corp_chat_peers');
    if(data?.ok===true&&Array.isArray(data.peers))state.chatPeers=data.peers;
@@ -1155,6 +1164,7 @@ async function boot(){
   // Periodic read-only refresh works even when Realtime publication is disabled.
   window.setInterval(()=>void refreshVisibleNetworkFeed(),90000);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refreshVisibleNetworkFeed()});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)void setupPrivateLedgerDoor()});
   gunnerDock=mountMilitaryGunner({
    client,mount:document.body,visible:false,
    getContext:()=>({
