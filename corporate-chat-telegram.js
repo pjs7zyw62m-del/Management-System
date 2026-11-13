@@ -66,7 +66,7 @@ function renderStatus(){
  $('bcTgMessageInput').disabled=!(state.linked&&state.ready)||state.working;
  $('bcTgSend').disabled=!(state.linked&&state.ready)||state.working;
  $('bcTgOwnerSettings').hidden=!state.owner;
- if(state.owner)$('bcTgUsername').value=state.username;
+ if(state.owner&&document.activeElement!==$('bcTgUsername'))$('bcTgUsername').value=state.username;
  if(!state.ready)$('bcTgLinkDetails').textContent=
   'A verified administrator must register the BLACKCELL bot and configure its server-side token and webhook secret first.';
  else if(state.linked)$('bcTgLinkDetails').textContent=
