@@ -37,15 +37,15 @@ button,input{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;curs
 </style><link rel="stylesheet" href="corporate-chat-media.css?v=20261109-media1"><link rel="stylesheet" href="corporate-chat-imessage.css?v=20261109-imessage1"><link rel="stylesheet" href="corporate-chat-bubbles.css?v=20261109-bubbles1"><link rel="stylesheet" href="corporate-chat-compact.css?v=20261109-compact1"><link rel="stylesheet" href="corporate-chat-live.css?v=20261109-live1">
 <link rel="stylesheet" href="corporate-chat-media-bubble-host.css?v=20261109-independent-media1"><link rel="stylesheet" href="corporate-chat-media-responsive.css?v=20261109-sidebyside2"><link rel="stylesheet" href="corporate-chat-media-flip-focus.css?v=20261109-flip-focus1">
 <script src="corporate-chat-media-bubble-host.js?v=20261109-large-media1" defer></script><script src="corp-config.js" defer></script><script type="module" src="corporate-chat.js?v=20261112-ledger-scope3"></script>
-<script type="module" src="corporate-chat-telegram.js?v=20261113-bottest4"></script><link rel="stylesheet" href="corp-adaptive-chat.css?v=20261109-device2">
+<script type="module" src="corporate-chat-telegram.js?v=20261113-signin2"></script><link rel="stylesheet" href="corp-adaptive-chat.css?v=20261109-device2">
 <link rel="stylesheet" href="corporate-chat-compact-media.css?v=20261109-mobile-gallery4">
 <link rel="stylesheet" href="corporate-chat-obsidian.css?v=20261111-dark1">
-<link rel="stylesheet" href="corporate-chat-telegram.css?v=20261113-combo1">
+<link rel="stylesheet" href="corporate-chat-telegram.css?v=20261113-signin2">
 </head>
 <body class="bc-chat"><header class="chat-header"><div><strong>BLACKCELL CORPORATION</strong><small>PRIVATE NETWORK / iMessage</small></div><span style="display:flex;align-items:center;gap:14px"><a href="corporate-network.html">BLACKCELL NETWORK ↗</a><a id="returnLink" href="employee.html">RETURN TO PORTAL</a></span></header><div id="systemStatus" role="status" hidden></div>
 <nav class="bc-channel-switch" aria-label="BLACKCELL messaging channels">
  <button type="button" id="bcChannelImessage" class="bc-channel-choice active" aria-pressed="true">◉ iMessage</button>
- <button type="button" id="bcChannelPersonal" class="bc-channel-choice" aria-pressed="false">✈ Connect Telegram</button>
+ <button type="button" id="bcChannelPersonal" class="bc-channel-choice" aria-pressed="false">◈ Sign In</button>
  <button type="button" id="bcChannelBot" class="bc-channel-choice" aria-pressed="false">✧ Telegram Bot · Optional</button>
 </nav>
 <section id="bcTelegramWorkspace" class="bc-telegram-workspace" aria-label="BLACKCELL Telegram integration" hidden>
@@ -91,17 +91,33 @@ button,input{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;curs
    </form>
   </div>
  </div>
- <div id="bcTgPersonalPane" class="bc-tg-personal" hidden>
-  <div class="bc-tg-personal-icon">✈</div>
-  <div class="bc-tg-label">PERSONAL TELEGRAM / EASY LOGIN</div>
-  <h3>Telegram identity</h3>
-  <p>Sign in through Telegram's official authorization. Your BLACKCELL account stays separate and protected.</p>
-  <div class="bc-tg-personal-status" id="bcTgPersonalLinkStatus">CHECKING CONNECTION</div>
-  <a id="bcTgPersonalConnectLink" href="telegram-connect.html" target="_top" class="bc-tg-action" style="max-width:310px">✈ CONNECT TELEGRAM IDENTITY ↗</a>
-  <button type="button" class="bc-tg-alt" id="bcTgTryBot" style="max-width:310px" hidden>TEST TELEGRAM BOT MESSAGING</button>
-  <p class="bc-tg-note">Employees approve a one-time Telegram identity link. No BotFather setup or Telegram API token is needed from employees.</p>
-  <div class="bc-tg-personal-status">PERSONAL CHAT SYNC · NOT AVAILABLE YET</div>
-  <p class="bc-tg-note">Telegram Login verifies only your identity. Personal chats and contacts are not imported. To test sending and receiving real messages with the BLACKCELL bot, select TEST TELEGRAM BOT MESSAGING above; that bot chat is separate from all your other conversations.</p>
+
+ <div id="bcTgPersonalPane" class="bc-tg-signin" hidden>
+  <div class="bc-signin-heading">
+   <div class="bc-tg-label">BLACKCELL PRIVATE NETWORK / ACCOUNT ACCESS</div>
+   <h3>Sign in &amp; connected accounts</h3>
+   <p>Manage BLACKCELL and Telegram together. Each uses its own secure authorization; connecting your identity does not import private messages.</p>
+  </div>
+  <div class="bc-signin-grid">
+   <section class="bc-signin-card" aria-label="BLACKCELL account">
+    <div class="bc-signin-cardhead"><span class="bc-signin-symbol">B</span><div><div class="bc-tg-label">CORPORATE ACCOUNT</div><h4>BLACKCELL</h4></div></div>
+    <p class="bc-signin-description">Your verified BLACKCELL network account and iMessage access.</p>
+    <div class="bc-signin-state" id="bcBlackcellAuthStatus" role="status">CHECKING SIGN-IN</div>
+    <button type="button" id="bcGoImessage" class="bc-tg-action" hidden>OPEN BLACKCELL iMESSAGE</button>
+    <a id="bcBlackcellLoginLink" class="bc-tg-action" href="employee.html" hidden>SIGN IN TO BLACKCELL</a>
+   </section>
+   <section class="bc-signin-card" aria-label="Telegram account">
+    <div class="bc-signin-cardhead"><span class="bc-signin-symbol telegram">✈</span><div><div class="bc-tg-label">PERSONAL ACCOUNT</div><h4>Telegram</h4></div></div>
+    <p class="bc-signin-description">Connect your own Telegram identity without sharing personal messages or groups.</p>
+    <div class="bc-signin-state" id="bcTgPersonalLinkStatus" role="status">CHECKING CONNECTION</div>
+    <a id="bcTgPersonalConnectLink" href="telegram-connect.html" target="_top" class="bc-tg-action">CONNECT TELEGRAM</a>
+   </section>
+  </div>
+  <div class="bc-signin-sync">
+   <div class="bc-signin-synchead"><strong>Telegram contacts, chats &amp; groups</strong><span class="bc-signin-sync-pill">NOT SYNCED</span></div>
+   <p>Telegram Login confirms identity only. Importing your contacts, personal messages, channels and groups requires a separate Telegram user-client authorization. No chat history has been imported.</p>
+   <button type="button" class="bc-tg-alt" id="bcTgTryBot">TEST TELEGRAM BOT CHANNEL (SEPARATE)</button>
+  </div>
  </div>
  <p id="bcTgFeedback" class="bc-tg-feedback" role="status" aria-live="polite"></p>
 </section>
