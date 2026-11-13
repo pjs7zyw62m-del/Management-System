@@ -1,0 +1,16 @@
+/* The private-photo link is revealed only after verified auth + row-level membership lookup. */
+#privateLedgerNav[hidden]{display:none!important}
+body.bc-network .bc-private-photo-nav{
+ display:inline-flex;align-items:center;justify-content:center;
+ min-height:38px;padding:9px 13px;border:1px solid #b46b7b;
+ border-radius:9px;text-decoration:none;background:linear-gradient(120deg,#482338,#19141d);
+ color:#f5e6ed;white-space:nowrap;font-size:10px;font-weight:800;letter-spacing:.05em;
+}
+body.bc-network .bc-private-photo-nav:hover{filter:brightness(1.15);border-color:#e88ca4}
+@media(max-width:1060px){
+ body.bc-network .head-actions{flex-wrap:wrap;justify-content:flex-end;gap:6px}
+ body.bc-network .bc-private-photo-nav{font-size:9px;min-height:35px;padding:8px 9px}
+}
+@media(max-width:650px){
+ body.bc-network .bc-private-photo-nav{order:1;min-height:40px}
+}
