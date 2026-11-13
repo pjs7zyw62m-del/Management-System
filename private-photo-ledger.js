@@ -183,7 +183,9 @@ async function loadEntries({force=false}={}){
  const signature=JSON.stringify(all.map(e=>[e.id,e.amount_cents,e.priced_at,e.settled_at,e.caption]));
  state.entries=all;
  updateTotals();
- if(signature!==state.entryFingerprint||force){
+ const needsSignedRefresh=all.some(e=>!state.images.has(e.image_path)
+   ||state.images.get(e.image_path).expires<Date.now());
+ if(signature!==state.entryFingerprint||force||needsSignedRefresh){
   state.entryFingerprint=signature;
   await signImages(all);
   renderEntries();
@@ -209,12 +211,12 @@ async function signImages(items){
  const needed=items.filter(e=>!state.images.has(e.image_path)||state.images.get(e.image_path).expires<now);
  for(let i=0;i<needed.length;i+=30){
   const batch=needed.slice(i,i+30);
-  const result=await db.storage.from(BUCKET).createSignedUrls(batch.map(e=>e.image_path),1800);
+  const result=await db.storage.from(BUCKET).createSignedUrls(batch.map(e=>e.image_path),600);
   if(result.error){show('entriesFeedback','Private photo previews unavailable: '+fail(result.error));continue}
   for(let j=0;j<batch.length;j++){
    const url=result.data?.[j]?.signedUrl;
    if(url&&typeof url==='string'&&url.startsWith('https://')){
-    state.images.set(batch[j].image_path,{url,expires:Date.now()+20*60*1000});
+    state.images.set(batch[j].image_path,{url,expires:Date.now()+4*60*1000});
    }
   }
  }
