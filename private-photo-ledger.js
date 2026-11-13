@@ -134,6 +134,9 @@ async function refresh({initial=false,force=false}={}){
   $('noRoom').hidden=!!preferred;
   $('activeRoom').hidden=!preferred;
   if(!preferred){
+   $('uploadAccessStatus').hidden=true;
+   $('ownerUploadInfo').hidden=true;
+   $('employeeUpload').hidden=true;
    $('noRoomText').textContent=state.isOwner?
     'Choose an activated employee above to create a private room. No one can post pictures until you assign them.':
     'No private room has been assigned to your employee account yet. Only the BLACKCELL owner can grant access.';
@@ -150,6 +153,7 @@ async function refresh({initial=false,force=false}={}){
   $('closeRoomBtn').hidden=!state.isOwner;
   $('closeRoomBtn').textContent=preferred.active?'CLOSE ROOM':'REOPEN ROOM';
   $('employeeUpload').hidden=state.isOwner||!preferred.active;
+  updateUploadAccess(preferred);
   show('owedDescription',state.isOwner?'Amount owed by you to this employee':'Amount the owner owes you');
   const idx=state.rooms.findIndex(x=>x.id===preferred.id);
   show('roomNumber',String(idx+1).padStart(2,'0'));
@@ -157,6 +161,31 @@ async function refresh({initial=false,force=false}={}){
   history.replaceState(null,'',u.pathname+u.search);
   await loadEntries({force:force||initial||currentId!==preferred.id});
  }finally{state.refreshing=false}
+}
+function updateUploadAccess(room){
+ const available=Boolean(room?.active);
+ $('uploadAccessStatus').hidden=!room;
+ if(!room)return;
+ $('ownerUploadInfo').hidden=!state.isOwner;
+ const action=$('uploadAccessAction');
+ if(state.isOwner){
+  show('uploadAccessTitle','PHOTO UPLOAD · ASSIGNED EMPLOYEE');
+  show('uploadAccessDetail',available
+   ?'The selected employee has the working Upload Photo control on his account. You can copy the private link and see each photo here before assigning an amount.'
+   :'This room is closed. Reopen it before the employee can upload.');
+  show('ownerUploadDescription',available
+   ?'The photo upload form is available when the selected employee signs in with his own corporate account. Your Level 7 account controls amounts and settlement records.'
+   :'This room is closed. Existing photos remain available, but new employee uploads are paused.');
+  action.textContent=available?'COPY EMPLOYEE UPLOAD LINK':'REOPEN ROOM TO UPLOAD';
+  action.disabled=false;
+ }else{
+  show('uploadAccessTitle',available?'UPLOAD A PRIVATE PHOTO':'PHOTO UPLOAD PAUSED');
+  show('uploadAccessDetail',available
+   ?'Your private room is active. Tap the button to open the photo picker on this iPad or choose a photo in the upload panel below.'
+   :'The owner has closed this room. Previous submissions remain visible, but uploading is temporarily disabled.');
+  action.textContent=available?'＋ UPLOAD PHOTO':'ROOM CLOSED';
+  action.disabled=!available;
+ }
 }
 function fillRoomPicker(){
  const sel=$('roomPicker');sel.replaceChildren();
@@ -438,6 +467,19 @@ function wireEvents(){
  });
  $('closeRoomBtn').addEventListener('click',()=>void toggleRoom());
  $('copyRoomLink').addEventListener('click',()=>void copyLink());
+ $('ownerUploadShare').addEventListener('click',()=>void copyLink());
+ $('uploadAccessAction').addEventListener('click',()=>{
+  if(!state.room)return;
+  if(state.isOwner){
+   if(state.room.active)void copyLink();
+   else void toggleRoom();
+   return;
+  }
+  if(!state.room.active)return;
+  const panel=$('employeeUpload');
+  panel.scrollIntoView({behavior:'smooth',block:'center'});
+  $('uploadPhoto').click();
+ });
  $('closeLightbox').addEventListener('click',closeLightbox);
  $('photoLightbox').addEventListener('click',e=>{if(e.target===$('photoLightbox'))closeLightbox()});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('photoLightbox').hidden)closeLightbox()});
