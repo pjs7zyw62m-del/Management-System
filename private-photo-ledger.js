@@ -142,12 +142,13 @@ function renderLedgerScope(){
 }
 async function loadLedgerScope(memberId){
  if(!state.isOwner||!memberId)return;
- const r=await db.rpc('corp_owner_ledger_scope',{p_member_id:memberId});
+ const r=await db.rpc('corp_owner_ledger_scope',{p_member_id:memberId,p_ledger_only:null});
  if(state.room?.member_id!==memberId)return;
  if(r.error||r.data?.ok!==true){
   show('ledgerScopeStatus','COULD NOT VERIFY PERMISSIONS');
   show('ledgerScopeFeedback','Unable to read employee permissions: '+fail(r.error||r.data?.reason));
   $('ledgerScopeToggle').disabled=true;
+  state.scopeMemberId=null; // Retry automatically on the next sync.
   return;
  }
  state.scopeValue=r.data.access_scope==='ledger_only'?'ledger_only':'full';
