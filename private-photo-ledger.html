@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#07090d">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>BLACKCELL | Private Photo Ledger</title>
+<link rel="stylesheet" href="private-photo-ledger.css?v=20261112-ledger1">
+<script src="corp-config.js"></script>
+<script type="module" src="private-photo-ledger.js?v=20261112-ledger1"></script>
+</head>
+<body>
+<header class="topbar">
+ <a class="brand" href="corporate-network.html?view=profile" aria-label="Return to Blackcell Network">
+  <span class="brand-b">B</span><span class="brand-label"><strong>BLACKCELL CORPORATION</strong><small>PRIVATE PHOTO LEDGER</small></span>
+ </a>
+ <div class="top-actions">
+  <span class="privacy-pill"><span class="status-dot"></span> RESTRICTED · 2 PERSONS</span>
+  <a id="backLink" href="corporate-network.html?view=profile" class="navlink">RETURN TO NETWORK <span>↗</span></a>
+ </div>
+</header>
+<section id="accessGate" class="gate">
+ <div class="gate-card">
+  <span class="gate-emblem">B</span>
+  <div class="eyebrow">PRIVATE ACCESS / VERIFICATION</div>
+  <h1>Securing your workspace</h1>
+  <p id="gateMessage">Checking your BLACKCELL employee or owner authorization.</p>
+  <a class="button-outline" href="login.html">CORPORATE SIGN IN ↗</a>
+ </div>
+</section>
+<main id="ledgerApp" class="shell" hidden>
+ <div class="page-heading">
+  <div><div class="eyebrow">BLACKCELL / DIRECT ARRANGEMENTS</div><h1>Private Photo <em>Ledger.</em></h1>
+   <p>Two people. One private record of uploaded photos, assigned amounts, and what remains owed.</p></div>
+  <div class="workspace-actions">
+   <button id="refreshLedger" class="button-outline" type="button">↻ REFRESH</button>
+   <span class="verified-mark"><span class="status-dot"></span> VERIFIED SESSION</span>
+  </div>
+ </div>
+ <section id="ownerSetup" class="panel owner-setup" hidden>
+  <div class="section-top"><div><div class="eyebrow">OWNER ONLY / INVITATION CONTROL</div><h2>Choose an employee</h2><p>Select the one person who can submit photos into their own private room.</p></div><span class="mini-tag">LEVEL 7</span></div>
+  <form id="createRoomForm" class="setup-form">
+   <label>ASSIGNED EMPLOYEE
+    <select id="employeeChoice" required><option value="">Loading approved employees…</option></select>
+   </label>
+   <label>ROOM TITLE
+    <input id="roomLabel" maxlength="90" value="Private Photo Arrangement" required>
+   </label>
+   <button id="createRoom" class="button-main" type="submit">＋ CREATE PRIVATE ROOM</button>
+  </form>
+  <p id="setupFeedback" class="form-note" role="status" aria-live="polite"></p>
+ </section>
+ <section id="noRoom" class="panel empty-room" hidden>
+  <div class="empty-icon">⌑</div><h2>No private photo room assigned</h2>
+  <p id="noRoomText">This section only opens after the BLACKCELL owner assigns an employee. No Network member can browse another person's private room.</p>
+ </section>
+ <section id="activeRoom" hidden>
+  <div class="room-toolbar panel">
+   <div class="room-identity">
+    <span class="eyebrow">PRIVATE DIRECT WORKSPACE / ROOM <span id="roomNumber">01</span></span>
+    <h2 id="activeRoomTitle">Private Photo Arrangement</h2>
+    <p id="roomPeople">Authorized participants only</p>
+   </div>
+   <div class="room-controls">
+    <label id="roomPickerWrap" hidden>SELECT ROOM
+     <select id="roomPicker"></select>
+    </label>
+    <span class="room-state"><span class="status-dot"></span><span id="roomStateLabel">ACTIVE</span></span>
+    <button id="closeRoomBtn" type="button" class="button-outline" hidden>CLOSE ROOM</button>
+   </div>
+  </div>
+  <div class="metrics" aria-label="Photo ledger totals">
+   <article class="metric metric-owed"><span>OUTSTANDING · YOU OWE / YOU ARE OWED</span><strong id="totalOwed" class="money">$0.00</strong><small id="owedDescription">Not yet assigned</small></article>
+   <article class="metric"><span>TOTAL ASSIGNED</span><strong id="totalAssigned" class="money">$0.00</strong><small>Amounts entered by owner</small></article>
+   <article class="metric"><span>RECORDED AS PAID</span><strong id="totalPaid" class="money">$0.00</strong><small>Manual settlement records</small></article>
+   <article class="metric"><span>AWAITING AMOUNT</span><strong id="pendingCount">0</strong><small>Photos awaiting owner decision</small></article>
+  </div>
+  <div class="room-body">
+   <aside class="side-column">
+    <section id="employeeUpload" class="panel upload-card" hidden>
+     <div class="card-title"><span class="card-icon">▧</span><div><div class="eyebrow">EMPLOYEE / PHOTO SUBMISSION</div><h3>Post a Private Photo</h3></div></div>
+     <form id="uploadPhotoForm">
+      <label class="file-drop" for="uploadPhoto"><span class="file-symbol">＋</span><strong>CHOOSE A PHOTO</strong><small>JPEG, PNG, WebP or HEIC · up to 12 MB</small><span id="selectedPhotoName">No photo selected</span></label>
+      <input id="uploadPhoto" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" required>
+      <label class="stack-label">CAPTION / NOTE
+       <textarea id="uploadCaption" maxlength="500" placeholder="Describe this photo, or add a short note…" rows="4"></textarea>
+      </label>
+      <button id="submitPhoto" type="submit" class="button-main">POST TO OUR PRIVATE ROOM ↗</button>
+     </form>
+     <p id="uploadFeedback" class="form-note" role="status"></p>
+    </section>
+    <section class="panel info-card">
+     <div class="card-title"><span class="card-icon">♢</span><div><div class="eyebrow">TWO-PERSON ACCESS</div><h3>How this works</h3></div></div>
+     <div class="explainer"><span>01</span><p>The chosen employee uploads a private photograph. It is <strong>not</strong> published to the Network feed or Military Library.</p></div>
+     <div class="explainer"><span>02</span><p>The BLACKCELL owner enters an amount for that photo. Once set, the amount cannot be changed or deleted.</p></div>
+     <div class="explainer"><span>03</span><p>Both sides see the same amount owed. The owner can record a payment as settled when it has actually been made.</p></div>
+     <p class="privacy-note">This is a private record only. BLACKCELL does not transfer money or automatically make payments here.</p>
+    </section>
+    <section class="panel link-card">
+     <div class="eyebrow">PRIVATE ROOM LINK</div>
+     <h3>Send access to the selected person</h3>
+     <p>The employee must sign in using their own verified corporate credentials. A link alone never grants access.</p>
+     <button id="copyRoomLink" type="button" class="button-outline full">COPY PRIVATE LINK</button>
+     <p id="linkFeedback" class="form-note" role="status"></p>
+    </section>
+   </aside>
+   <section class="timeline-column">
+    <div class="timeline-toolbar panel">
+     <div><div class="eyebrow">PHOTO SUBMISSIONS / SHARED LEDGER</div><h2>Our Photo History</h2><p>Prices and settlement statuses are synchronized from the same private records.</p></div>
+     <div class="filter-buttons" aria-label="Filter photo submissions">
+      <button type="button" data-photo-filter="all" aria-pressed="true">ALL</button>
+      <button type="button" data-photo-filter="pending" aria-pressed="false">UNPRICED</button>
+      <button type="button" data-photo-filter="owed" aria-pressed="false">OWED</button>
+      <button type="button" data-photo-filter="settled" aria-pressed="false">PAID</button>
+     </div>
+    </div>
+    <div id="photoEntries" class="photo-entries" aria-live="polite">
+      <div class="empty-entries">No private photos have been posted yet.</div>
+    </div>
+    <p id="entriesFeedback" class="form-note" role="status"></p>
+   </section>
+  </div>
+ </section>
+</main>
+<div id="photoLightbox" class="lightbox" hidden role="dialog" aria-modal="true" aria-label="Private original photograph">
+ <button id="closeLightbox" class="lightbox-close" type="button">✕ CLOSE</button><img id="lightboxImage" alt="Private photo, full size">
+</div>
+<footer>BLACKCELL CORPORATION · PRIVATE TWO-PARTY LEDGER · VERIFIED OWNER AND SELECTED EMPLOYEE ONLY</footer>
+</body>
+</html>
