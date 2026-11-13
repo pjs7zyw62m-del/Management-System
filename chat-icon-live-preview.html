@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080a10">
 <meta name="robots" content="noindex,nofollow">
-<title>BLACKCELL — Live Chat Icon Preview</title>
+<title>BLACKCELL iMessage — Black & Red Glass Live Preview</title>
 <style>
 :root{color-scheme:dark;--red:#ff325a;--wine:#951735;--steel:#e6e9f2;--muted:#a4a7b5}
 *{box-sizing:border-box}
@@ -194,16 +194,31 @@ h1 em{font-style:normal;color:#e56882}
  .orb::before,#unreadMode:checked~.stage .orb,#unreadMode:checked~.stage .orb::before{animation:none!important}
 }
 
+
+/* Confirm the approved name is visible ON the icon itself, not merely the page. */
+.orb .preview-imessage-word{
+ position:absolute;bottom:10px;left:0;right:0;
+ z-index:3;pointer-events:none;text-align:center;
+ color:#e8eef8;font-size:12px;font-weight:850;letter-spacing:.01em;
+ text-shadow:0 1px 4px #000d;
+}
+.orb .chat-icon{transform:translateY(-9px);width:57px;height:57px}
+#unreadMode:checked~.stage .orb .preview-imessage-word{color:#fff0f4;text-shadow:0 1px 5px #530c27}
+@media(max-width:580px){
+ .orb .preview-imessage-word{font-size:10px;bottom:8px}
+ .orb .chat-icon{width:52px;height:52px;transform:translateY(-8px)}
+}
+
 </style>
 </head>
 <body>
 <header class="header">
- <div class="identity"><div class="mark">B</div><div><div class="heading">BLACKCELL CORPORATION</div><div class="byline">CORPORATE MESSAGES · DESIGN LAB</div></div></div>
+ <div class="identity"><div class="mark">B</div><div><div class="heading">BLACKCELL CORPORATION</div><div class="byline">iMessage · BLACKCELL DESIGN LAB</div></div></div>
  <div class="preview-tag">LIVE ANIMATED SAMPLE · V4</div>
 </header>
 <main class="main">
  <div class="eyebrow">PRIVATE NETWORK / COMMUNICATIONS UI</div>
- <h1>Black glass. <em>Red glass.</em></h1>
+ <h1>BLACKCELL <em>iMessage.</em></h1>
  <p class="intro"><strong>Normal iMessage:</strong> polished black glass with a silver message symbol. <strong>New message:</strong> luminous crimson glass with a clear dark unread number and a soft breathing glow. No spinning light. Switch between both styles below, then tap the icon to open a sample chat.</p>
  <input class="mode-radio" type="radio" name="chatDemoMode" id="normalMode" checked aria-label="Normal glow preview">
  <input class="mode-radio" type="radio" name="chatDemoMode" id="unreadMode" aria-label="3 unread messages preview">
@@ -218,17 +233,18 @@ h1 em{font-style:normal;color:#e56882}
      <circle cx="19" cy="32" r="4.1" fill="#202632"/><circle cx="32" cy="32" r="4.1" fill="#202632"/><circle cx="45" cy="32" r="4.1" fill="#202632"/>
     </svg>
     <span class="unread" id="unreadBadge">3</span>
+    <span class="preview-imessage-word">iMessage</span>
    </button>
   </div>
-  <div class="stage-label" aria-live="polite"><strong><span class="label-normal">iMESSAGE · BLACK GLASS</span><span class="label-unread">NEW MESSAGES · RED GLASS</span></strong><span class="detail-normal">Smoked black glass, silver highlights. Quiet when no messages are waiting.</span><span class="detail-unread">Glowing translucent crimson glass and a high-contrast dark 3.</span></div>
+  <div class="stage-label" aria-live="polite"><strong><span class="label-normal">iMessage · Black Glass</span><span class="label-unread">iMessage · New Messages · Red Glass</span></strong><span class="detail-normal">Smoked black glass, silver highlights. Quiet when no messages are waiting.</span><span class="detail-unread">Glowing translucent crimson glass and a high-contrast dark 3.</span></div>
   <section class="dialog" id="sampleDialog" role="dialog" aria-label="Sample chat window" aria-modal="false" hidden>
-   <div class="dialog-head"><div><strong>BLACKCELL MESSAGES</strong><small>PRIVATE · VERIFIED NETWORK</small></div><button id="closeDialog" type="button">✕ CLOSE</button></div>
+   <div class="dialog-head"><div><strong>BLACKCELL iMessage</strong><small>PRIVATE · VERIFIED NETWORK</small></div><button id="closeDialog" type="button">✕ CLOSE</button></div>
    <div class="dialog-body"><div class="sample-msg">New private message received.</div><div class="sample-msg out">New messages light up the whole red glass button.</div></div>
    <div class="dialog-foot">SAMPLE CHAT · NOT CONNECTED TO REAL MESSAGES</div>
   </section>
  </section>
  <div class="controls">
-  <div><div class="controls-label">BLACKCELL GLASS FINISHES</div><small>Tap Black Glass or Red Glass to change the preview.</small></div>
+  <div><div class="controls-label">BLACKCELL iMessage · GLASS FINISHES</div><small>Tap Black Glass or Red Glass to change the preview.</small></div>
   <div class="actions" role="group" aria-label="Choose a chat alert preview">
    <label for="normalMode" class="pill">Black Glass · Normal</label>
    <label for="unreadMode" class="pill">Red Glass · 3 Unread</label>
