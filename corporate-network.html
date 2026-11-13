@@ -90,6 +90,7 @@
   <main class="workspace">
     <section id="feedView" class="view">
       <div class="page-intro"><div><div class="overline">BLACKCELL / CORPORATE SOCIAL</div><h1>Network Feed<span>.</span></h1><p>Updates, conversations, photos, and video from within the network.</p></div><span class="live-dot">PRIVATE NETWORK</span></div>
+      <div id="networkFeedComposerAnchor" hidden></div>
       <section class="panel composer" aria-label="Create a network post">
         <div class="composer-top"><div id="composerAvatar" class="avatar med">B</div><div><strong id="composerName">Your network profile</strong><small>Post to Blackcell Network</small></div></div>
         <textarea id="postBody" maxlength="1000" rows="3" placeholder="Share an update with the network…"></textarea>
@@ -104,82 +105,82 @@
       <div class="feed-controls"><h2>Latest Activity</h2><div class="tabs" id="feedFilter"><button data-filter="latest" class="selected">All Posts</button><button data-filter="following">Following</button><button data-filter="videos">Videos</button><button data-filter="for-you">✦ For You</button></div><button class="bc-personalization-trigger bc-personalize-quick" type="button" data-personalization-open>⚙ MY INTERESTS</button></div>
       <div id="feedPosts" class="posts"></div>
     </section>
-    <section id="profileView" class="view bc-profile-view" hidden>
-      <div class="bc-profile-workspace">
-        <div class="bc-profile-topbar">
-          <div class="bc-profile-topbar-title"><span class="bc-profile-kicker">BLACKCELL CORPORATION / NETWORK IDENTITY</span><h2 id="profilePageTitle">My Profile<span>.</span></h2><p>Personal identity, collections and connections in one place.</p></div>
-          <div class="bc-profile-top-actions">
-            <button type="button" class="bc-profile-quiet-btn" id="profileReturnFeed">← NETWORK FEED</button>
-            <button type="button" class="bc-profile-quiet-btn" id="profileShareLink">↗ COPY PROFILE LINK</button>
+    <section id="profileView" class="view bc-profile-view bc-fb-profile" hidden>
+      <div class="bc-fb-profile-shell">
+        <div class="bc-fb-breadcrumb">
+          <div><span class="bc-fb-eyebrow">BLACKCELL / PRIVATE NETWORK</span><h2 id="profilePageTitle">My Profile.</h2></div>
+          <div class="bc-fb-breadcrumb-actions">
+            <button type="button" id="profileReturnFeed" class="bc-profile-quiet-btn">← NETWORK FEED</button>
+            <button type="button" id="profileShareLink" class="bc-profile-quiet-btn">↗ SHARE PROFILE</button>
           </div>
         </div>
-        <article class="profile-hero panel bc-profile-hero">
-          <div id="profileCover" class="profile-cover bc-profile-cover">
-            <div class="bc-profile-cover-shine" aria-hidden="true"></div>
-            <div class="bc-profile-cover-inner">
-              <div class="cover-label">B / BLACKCELL PRIVATE NETWORK</div>
-              <div class="bc-profile-cover-heading"><span>YOUR NETWORK.</span><strong>YOUR IDENTITY.</strong></div>
-            </div>
-            <button type="button" class="bc-profile-cover-action" id="profileCoverAction" hidden>✎ CUSTOMIZE COVER</button>
+        <article class="profile-hero panel bc-fb-header">
+          <div id="profileCover" class="profile-cover bc-fb-cover">
+            <div class="bc-fb-cover-mark">BLACKCELL <span>/</span> NETWORK</div>
+            <button type="button" class="bc-fb-cover-edit" id="profileCoverAction" hidden>▧ EDIT COVER PHOTO</button>
           </div>
-          <div class="profile-identity bc-profile-identity">
-            <div class="profile-identity-main">
+          <div class="profile-identity bc-fb-identity">
+            <div class="profile-identity-main bc-fb-identity-main">
               <div id="profileAvatar" class="avatar gigantic">B</div>
-              <div class="identity-info">
-                <div class="bc-profile-verified"><span class="bc-profile-verified-dot"></span><span>VERIFIED NETWORK MEMBER</span></div>
+              <div class="identity-info bc-fb-identity-info">
+                <div class="bc-profile-verified"><span class="bc-profile-verified-dot"></span><span>VERIFIED MEMBER</span></div>
                 <h1 id="profileName">Network Member</h1>
                 <p id="profileHandle">@network</p>
                 <p id="profileHeadline">Part of Blackcell Corporation.</p>
-                <div class="identity-meta"><span id="profileLevel">NETWORK</span><span id="profileJoined">MEMBER</span></div>
+                <div class="identity-meta">
+                  <span id="profileLevel">NETWORK</span>
+                  <span id="profileJoined">MEMBER</span>
+                </div>
               </div>
             </div>
-            <div id="profileActions" class="profile-actions"></div>
+            <div id="profileActions" class="profile-actions bc-fb-action-buttons"></div>
           </div>
-          <div class="profile-stats bc-profile-stats">
-            <div><strong id="profilePostCount">0</strong><span>POSTS</span></div>
-            <div><strong id="profileFollowerCount">0</strong><span>FOLLOWERS</span></div>
-            <div><strong id="profileFollowingCount">0</strong><span>FOLLOWING</span></div>
-            <div><strong id="profileVideoCount">0</strong><span>VIDEOS</span></div>
+          <div class="profile-stats bc-fb-stats">
+            <div><strong id="profilePostCount">0</strong><span>Posts</span></div>
+            <div><strong id="profileFollowerCount">0</strong><span>Followers</span></div>
+            <div><strong id="profileFollowingCount">0</strong><span>Following</span></div>
+            <div><strong id="profileVideoCount">0</strong><span>Videos</span></div>
           </div>
+          <nav class="tabs profile-tabs bc-fb-tabs" id="profileTabs" aria-label="Member profile sections">
+            <button type="button" data-tab="posts" class="selected">Posts</button>
+            <button type="button" data-tab="about">About</button>
+            <button type="button" data-tab="photos">Photos</button>
+            <button type="button" data-tab="videos">Videos</button>
+            <button type="button" data-tab="albums">Albums</button>
+          </nav>
         </article>
-        <div class="bc-profile-content-grid">
-          <section class="bc-profile-main" aria-label="Profile content">
-            <div class="bc-profile-content-head">
-              <div><div class="bc-profile-kicker">PROFILE COLLECTIONS</div><h2 id="profileSectionTitle">Your Activity</h2><p id="profileSectionIntro">Posts and updates shared with the Network.</p></div>
-            </div>
-            <nav class="tabs profile-tabs" id="profileTabs" aria-label="Profile sections">
-              <button type="button" data-tab="posts" class="selected">▤ <span>Posts</span></button>
-              <button type="button" data-tab="photos">▧ <span>Photos</span></button>
-              <button type="button" data-tab="videos">▷ <span>Videos</span></button>
-              <button type="button" data-tab="albums">▦ <span>Albums</span></button>
-              <button type="button" data-tab="about">♙ <span>About</span></button>
-            </nav>
-            <div id="profileContent" class="posts bc-profile-posts"></div>
-          </section>
-          <aside class="bc-profile-side" aria-label="Profile summary and settings">
-            <section class="bc-profile-side-card">
-              <div class="bc-profile-side-eyebrow">01 / INTRODUCTION</div>
-              <h3>About this member</h3>
-              <p id="profileAboutSummary">Your introduction will appear here.</p>
-              <div class="bc-profile-detail-row"><span>Member since</span><strong id="profileAsideJoined">—</strong></div>
-              <div class="bc-profile-detail-row"><span>Network access</span><strong id="profileAsideRole">—</strong></div>
-              <button id="profileEditDetails" type="button" class="bc-profile-side-button" hidden>✎ EDIT YOUR INFORMATION</button>
+        <div class="bc-fb-content">
+          <aside class="bc-fb-left" aria-label="Member summary">
+            <section class="bc-fb-card bc-fb-intro">
+              <h3>Intro</h3>
+              <p id="profileAboutSummary">Introduction from this Network member.</p>
+              <div class="bc-fb-detail"><span>Joined</span><strong id="profileAsideJoined">—</strong></div>
+              <div class="bc-fb-detail"><span>Access</span><strong id="profileAsideRole">—</strong></div>
+              <button id="profileEditDetails" type="button" class="bc-fb-soft-button" hidden>EDIT PROFILE DETAILS</button>
             </section>
-            <section class="bc-profile-side-card" id="profileGettingStarted" hidden>
-              <div class="bc-profile-side-eyebrow">02 / YOUR PROFILE</div>
-              <h3>Make it yours</h3>
-              <p>Your profile starts here. Add your details and build a personal presence across the Network.</p>
+            <section class="bc-fb-card" id="profileGettingStarted" hidden>
+              <h3>Make your profile yours</h3>
+              <p>Complete your photo, cover, headline, and introduction.</p>
               <div class="bc-profile-progress"><div id="profileSetupProgress"></div></div>
-              <div id="profileSetupNote" class="bc-profile-setup-caption"></div>
-              <button id="profileSetupAction" type="button" class="bc-profile-side-button">COMPLETE YOUR PROFILE ↗</button>
+              <div id="profileSetupNote" class="bc-profile-setup-caption">0 of 4 details complete</div>
+              <button id="profileSetupAction" type="button" class="bc-fb-soft-button">COMPLETE PROFILE</button>
             </section>
-            <section class="bc-profile-side-card bc-profile-privacy">
-              <div class="bc-profile-side-eyebrow">03 / NETWORK</div>
-              <h3>Verified corporate space</h3>
-              <p>Your profile is visible to authorized BLACKCELL Network members. Employee accounts cannot access Level 7 Administration.</p>
-              <span class="bc-profile-private"><span></span> VERIFIED MEMBER ACCESS</span>
+            <section class="bc-fb-card bc-fb-photos-card">
+              <div class="bc-fb-card-head"><h3>Photos</h3><button type="button" id="profilePhotosSeeAll">See all</button></div>
+              <div id="profilePhotoPreview" class="bc-fb-photo-preview"></div>
+            </section>
+            <section class="bc-fb-card bc-fb-following-card">
+              <div class="bc-fb-card-head"><h3>Following</h3><button type="button" id="profileFollowingSeeAll">See people</button></div>
+              <div id="profileFollowingPreview" class="bc-fb-follow-preview"></div>
             </section>
           </aside>
+          <section class="bc-fb-timeline" aria-label="Posts and profile content">
+            <div id="profileTimelineComposer" class="bc-fb-composer-mount" hidden></div>
+            <div class="bc-fb-section-heading">
+              <div><h2 id="profileSectionTitle">Posts</h2><p id="profileSectionIntro">Recent updates shared with the Network.</p></div>
+            </div>
+            <div id="profileContent" class="posts bc-profile-posts"></div>
+          </section>
         </div>
       </div>
     </section>
