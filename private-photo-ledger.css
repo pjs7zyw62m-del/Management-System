@@ -265,3 +265,110 @@ footer{border-top:1px solid #ffffff14;color:#777c87;text-align:center;padding:18
  .live-ledger-status{font-size:8px}
  .amount-row .reject-photo{flex:1 1 100%}
 }
+
+
+/* OWNER REVIEW QUEUE — one pending picture at a time, reviewed photos kept in history */
+.owner-review-queue{
+ overflow:hidden;
+ border-color:#b85d7c8c!important;
+ background:linear-gradient(145deg,#221b28,#0f131b 75%)!important;
+ padding:clamp(16px,2.5vw,24px);
+ scroll-margin-top:90px;
+}
+.owner-review-heading{
+ display:flex;align-items:center;justify-content:space-between;
+ gap:13px;flex-wrap:wrap;margin:0 0 16px;
+}
+.owner-review-heading h2{
+ font-size:clamp(23px,2.5vw,31px);font-weight:820;
+ letter-spacing:-.045em;margin:4px 0 6px;
+}
+.owner-review-heading p{
+ font-size:11px;line-height:1.6;
+ max-width:610px;color:#c4b8c5;margin:0;
+}
+.queue-counter{
+ display:inline-flex;align-items:center;justify-content:center;
+ min-height:38px;padding:8px 11px;
+ border:1px solid #ce788f8c;border-radius:9px;
+ background:#4b2537;color:#ffe3ed;
+ font-size:10px;letter-spacing:.085em;font-weight:850;
+ font-variant-numeric:tabular-nums;
+}
+.review-queue-current{min-height:150px}
+.queue-progress{
+ display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;
+ align-items:center;font-size:10px;letter-spacing:.08em;
+ padding:10px 12px;border:1px solid #ffffff23;
+ border-radius:9px 9px 0 0;background:#11151c;
+}
+.queue-progress strong{color:#f4d8e2;font-weight:810}
+.queue-progress span{color:#b9a9b6;font-variant-numeric:tabular-nums}
+.owner-review-queue .photo-entry{
+ border-radius:0 0 12px 12px;
+ border-color:#875667a6;
+ grid-template-columns:minmax(0,1fr) minmax(260px,.92fr);
+ margin:0;
+ background:linear-gradient(115deg,#1d1b25,#12151e);
+}
+.owner-review-queue .photo-image-btn{
+ display:flex;align-items:center;justify-content:center;
+ min-height:310px;background:#06080d;
+}
+.owner-review-queue .photo-entry img{
+ object-fit:contain;
+ width:100%;height:auto;
+ min-height:290px;max-height:490px;
+}
+.owner-review-queue .photo-entry-content{padding:clamp(17px,2.8vw,28px)}
+.owner-review-queue .entry-amount{font-size:clamp(18px,2vw,25px)}
+.owner-review-queue .amount-row{display:flex;flex-wrap:wrap;gap:9px}
+.owner-review-queue .amount-row input{
+ width:100%;max-width:none;
+ min-height:47px;flex:1 1 100%;
+}
+.owner-review-queue .amount-row button{
+ min-height:48px;flex:1 1 150px;
+ font-size:10px;letter-spacing:.035em;
+}
+.owner-review-queue .amount-row .reject-photo{
+ flex:1 1 100%;
+ min-height:45px;
+}
+.queue-empty{
+ min-height:170px;
+ display:flex;flex-direction:column;
+ justify-content:center;align-items:center;
+ text-align:center;gap:11px;
+ padding:30px 18px;
+ border:1px dashed #6b806f86;border-radius:12px;
+ background:linear-gradient(125deg,#18251f,#131721);
+}
+.queue-empty strong{
+ color:#a5e0bd;font-size:15px;letter-spacing:.09em;
+}
+.queue-empty p{
+ margin:0;max-width:450px;line-height:1.65;
+ font-size:11px;color:#b0bdb5;
+}
+.queue-feedback{
+ color:#d8bac6;font-size:11px;line-height:1.65;
+ margin:10px 0 0;
+}
+.queue-feedback:empty{display:none}
+@media(max-width:1050px){
+ .owner-review-queue .photo-entry{
+  grid-template-columns:minmax(0,1fr);
+ }
+ .owner-review-queue .photo-image-btn{min-height:230px}
+ .owner-review-queue .photo-entry img{min-height:210px;max-height:440px}
+}
+@media(max-width:580px){
+ .owner-review-queue{padding:13px}
+ .owner-review-queue .photo-entry{display:flex;flex-direction:column}
+ .owner-review-queue .photo-entry img{min-height:0;max-height:420px}
+ .owner-review-queue .photo-image-btn{min-height:190px}
+ .owner-review-queue .amount-row button{flex:1 1 100%}
+ .owner-review-queue .photo-entry-content{padding:16px}
+ .queue-counter{font-size:9px}
+}
