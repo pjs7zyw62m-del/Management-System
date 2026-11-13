@@ -543,16 +543,21 @@ body.bc-network.bc-profile-mode .bc-security-community:hover{border-color:#d4526
     padding:0 15px 15px!important;
   }
   html body.bc-network.bc-profile-mode #profileTabs.bc-fb-tabs{
-    padding:0 4px!important;gap:0!important;
-    overflow-x:auto!important;min-height:52px!important;height:52px!important;
+    display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    grid-auto-rows:49px;gap:0!important;
+    padding:0 6px!important;min-height:98px!important;height:auto!important;
+    overflow:visible!important;
   }
   html body.bc-network.bc-profile-mode #profileTabs.bc-fb-tabs>button{
-    min-width:74px!important;padding:0 11px!important;
-    height:51px!important;min-height:51px!important;font-size:10px!important;
+    width:100%;min-width:0!important;padding:0 8px!important;
+    height:49px!important;min-height:49px!important;font-size:10px!important;
   }
-  body.bc-network.bc-profile-mode #profileTabs .bc-security-more{min-width:82px!important}
+  body.bc-network.bc-profile-mode #profileTabs .bc-security-more{width:100%;min-width:0!important}
   body.bc-network.bc-profile-mode #profileTabs .bc-security-more summary{
-    font-size:10px!important;min-height:51px!important;padding:0 9px!important;
+    font-size:10px!important;min-height:49px!important;padding:0 9px!important;
+  }
+  body.bc-network.bc-profile-mode #profileTabs .bc-security-more-menu{
+    right:0;min-width:190px;
   }
   body.bc-network.bc-profile-mode .bc-fb-left{display:flex!important;flex-direction:column!important}
   body.bc-network.bc-profile-mode .bc-security-communities{grid-column:auto}
