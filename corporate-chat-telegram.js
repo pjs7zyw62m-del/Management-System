@@ -284,4 +284,6 @@ $('bcTgDisconnect').addEventListener('click',()=>void disconnect());
 $('bcTgSaveName').addEventListener('click',()=>void saveName());
 $('bcTgActivateWebhook').addEventListener('click',()=>void activate());
 $('bcTgComposer').addEventListener('submit',e=>void sendMessage(e));
-setChannel('imessage');
+// The identity page can send an authorized user straight to the bot test.
+const initialChannel=new URLSearchParams(location.search).get('channel')==='bot'?'bot':'imessage';
+setChannel(initialChannel);
