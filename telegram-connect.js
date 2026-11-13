@@ -22,7 +22,8 @@ function render(account=null){
   :'Secure Telegram identity sign-in. Personal chats remain private.';
  $('connect').hidden=connected;
  $('disconnect').hidden=!connected;
- $('connect').disabled=loading||!configured||!access;
+ // Keep the button usable even before administrator setup: explain what is missing.
+ $('connect').disabled=loading||!access;
  $('disconnect').disabled=loading;
  $('syncBadge').textContent='NOT ENABLED';
  $('step1').className='step '+(connected?'done':'active');
@@ -87,7 +88,14 @@ async function init(){
  }
 }
 $('connect').addEventListener('click',async()=>{
- if(loading||!configured||!client)return;
+ if(loading||!client||!access)return;
+ if(!configured){
+  message(access.member?.role==='owner'
+   ?'Telegram Login needs one-time setup. Follow the Administrator Setup instructions below, then try again.'
+   :'Telegram Login has not been activated by your BLACKCELL administrator yet.',true);
+  if(access.member?.role==='owner')$('ownerHelp').scrollIntoView({behavior:'smooth',block:'center'});
+  return;
+ }
  loading=true;$('connect').disabled=true;message('Opening Telegram authorization securely…');
  try{
   const data=await invoke('begin');
