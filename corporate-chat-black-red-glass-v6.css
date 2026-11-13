@@ -1,0 +1,158 @@
+/* BLACKCELL iMessage — approved black-glass / new-message red-glass launcher.
+ * Standstill luminous glass. No orbit. Existing unread counters and chat controls remain.
+ * Loaded last on Administration, Network and Employee Access.
+ */
+.bc-chat-dock{display:none!important}
+.bc-chat-orb{
+ position:fixed;right:23px;bottom:26px;left:auto;
+ z-index:200001!important;
+ display:grid!important;place-items:center!important;
+ isolation:isolate;overflow:visible!important;
+ width:72px!important;height:72px!important;border-radius:50%!important;
+ padding:0!important;
+ border:1px solid rgba(211,222,235,.55)!important;
+ background:
+  radial-gradient(ellipse 70% 38% at 32% 12%,rgba(242,247,255,.22),transparent 72%),
+  radial-gradient(ellipse 60% 70% at 62% 83%,rgba(37,45,65,.32),transparent 77%),
+  linear-gradient(150deg,#2b303b 0%,#11151d 44%,#05070b 82%,#000102 100%)!important;
+ box-shadow:0 16px 38px #000c,0 0 0 3px rgba(149,161,182,.12),
+  inset 0 2px 1px rgba(255,255,255,.3),inset 0 -6px 15px rgba(0,0,0,.84)!important;
+ color:#edf0f6!important;
+ animation:none!important;
+ transition:transform .2s ease,box-shadow .25s ease,border-color .25s ease!important;
+ cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+}
+.bc-chat-orb[hidden]{display:none!important}
+.bc-chat-orb:hover,.bc-chat-orb:focus-visible{
+ transform:translateY(-2px) scale(1.04)!important;
+ border-color:#eff2fa!important;
+ box-shadow:0 19px 48px #000e,0 0 0 4px rgba(155,168,188,.23),
+  inset 0 2px 1px rgba(255,255,255,.38)!important;
+}
+.bc-chat-orb:focus-visible{outline:2px solid #f18aa4!important;outline-offset:6px!important}
+.bc-chat-orb:active{transform:scale(.97)!important}
+/* Black-glass idle rim; used as a stationary highlight, never rotating. */
+.bc-chat-orb::before{
+ content:""!important;display:block!important;
+ position:absolute;pointer-events:none;inset:-5px;border-radius:50%;
+ padding:0!important;opacity:.64!important;
+ background:none!important;
+ transform:none!important;
+ border:2px solid rgba(193,201,217,.35)!important;
+ box-shadow:0 0 12px rgba(185,195,210,.12),inset 0 0 8px rgba(188,196,212,.09)!important;
+ animation:bcBlackGlassIdle 4s ease-in-out infinite!important;
+}
+/* Smooth transparent glass reflection over button, under icon. */
+.bc-chat-orb::after{
+ content:""!important;position:absolute;inset:5px;pointer-events:none;
+ display:block!important;border-radius:50%;
+ background:linear-gradient(160deg,rgba(255,255,255,.16),transparent 42%)!important;
+ border:1px solid rgba(245,248,255,.15)!important;
+ box-shadow:inset 0 1px rgba(255,255,255,.09)!important;
+}
+@keyframes bcBlackGlassIdle{
+ 0%,100%{opacity:.46;filter:brightness(.86)}
+ 50%{opacity:.76;filter:brightness(1.16)}
+}
+.bc-chat-orb .bc-imessage-vector{
+ display:block;position:relative;z-index:2;
+ width:38px;height:38px;flex:none;
+ transform:translateY(-8px);
+ filter:drop-shadow(0 3px 5px rgba(0,0,0,.72));
+ pointer-events:none;
+}
+.bc-chat-orb .bc-imessage-silver{
+ fill:#e0e6f0;stroke:#fff;stroke-width:1.4;
+ stroke-linejoin:round;
+}
+.bc-chat-orb .bc-imessage-dot{fill:#232b37}
+.bc-chat-orb .bc-imessage-name{
+ position:absolute;z-index:3;bottom:8px;left:0;right:0;
+ display:block;text-align:center;
+ font-size:10px!important;line-height:1!important;
+ font-weight:800;letter-spacing:.015em!important;
+ color:#e8edf6!important;
+ text-shadow:0 1px 4px #000b;
+ pointer-events:none;
+}
+/* Unread state: switch the whole button to red translucent glass, not just rim. */
+.bc-chat-orb.has-unread{
+ border-color:#ffadb9!important;
+ background:
+  radial-gradient(ellipse 72% 40% at 32% 10%,rgba(255,237,243,.54),transparent 70%),
+  radial-gradient(ellipse 66% 70% at 76% 81%,rgba(80,0,25,.52),transparent 77%),
+  linear-gradient(150deg,#df4d70 0%,#ae1745 32%,#710b32 65%,#270510 100%)!important;
+ box-shadow:0 18px 49px #000d,
+  0 0 0 3px rgba(189,23,65,.25),
+  0 0 28px rgba(248,31,79,.45),
+  0 0 62px rgba(223,13,62,.2),
+  inset 0 2px 2px rgba(255,255,255,.52),
+  inset 0 -9px 18px rgba(51,0,16,.72)!important;
+ animation:bcRedGlassPulse 2.55s ease-in-out infinite!important;
+}
+.bc-chat-orb.has-unread::before{
+ inset:-7px;border:3px solid rgba(255,86,124,.83)!important;
+ box-shadow:0 0 14px rgba(255,51,98,.82),0 0 32px rgba(220,20,66,.48),
+  inset 0 0 9px rgba(255,123,156,.19)!important;
+ animation:bcRedGlassRim 2.55s ease-in-out infinite!important;
+}
+.bc-chat-orb.has-unread::after{
+ background:linear-gradient(150deg,rgba(255,255,255,.32),rgba(255,255,255,.03) 45%,transparent 75%)!important;
+ border-color:rgba(255,237,242,.33)!important;
+}
+.bc-chat-orb.has-unread .bc-imessage-name{
+ color:#fff0f5!important;text-shadow:0 1px 5px rgba(58,0,22,.75);
+}
+@keyframes bcRedGlassPulse{
+ 0%,100%{filter:brightness(.88)}
+ 50%{filter:brightness(1.2)}
+}
+@keyframes bcRedGlassRim{
+ 0%,100%{opacity:.66;filter:brightness(.92)}
+ 50%{opacity:1;filter:brightness(1.32)}
+}
+/* Larger high-contrast UNREAD count: near-black on light red-pink glass. */
+.bc-chat-orb .bc-unread{
+ position:absolute!important;z-index:6!important;
+ top:-12px!important;right:-13px!important;
+ display:grid;place-items:center;
+ min-width:30px!important;width:auto;height:30px!important;
+ padding:2px 6px!important;
+ font-size:16px!important;font-weight:950!important;
+ line-height:1!important;font-variant-numeric:tabular-nums;
+ color:#190911!important;text-shadow:none!important;
+ background:linear-gradient(145deg,#ffc1c9 0%,#ff859a 53%,#ff4f72 100%)!important;
+ border:2px solid #220911!important;border-radius:999px!important;
+ box-shadow:0 0 0 2px rgba(255,130,155,.7),
+  0 0 14px rgba(248,28,80,.63),0 3px 9px #000a!important;
+ pointer-events:none;
+}
+.bc-chat-orb .bc-unread[hidden]{display:none!important}
+.bc-chat-orb .bc-online{
+ bottom:0!important;left:0!important;
+ width:10px!important;height:10px!important;
+ background:#79dda6!important;border:2px solid #0a1016!important;
+ box-shadow:0 0 8px rgba(89,213,141,.5)!important;
+ z-index:5;
+}
+/* Use the approved name throughout the opened message window. */
+.bc-chat-pane-label strong{letter-spacing:.055em!important}
+.bc-chat-pane-header .bc-chat-header-bubble{
+ border-color:rgba(192,201,214,.48)!important;
+ background:linear-gradient(145deg,#323741,#11151f)!important;
+ color:#f0f3f7!important;
+}
+@media(max-width:660px){
+ .bc-chat-orb{
+  right:calc(14px + env(safe-area-inset-right,0px))!important;
+  bottom:calc(21px + env(safe-area-inset-bottom,0px))!important;
+  width:65px!important;height:65px!important;
+ }
+ .bc-chat-orb .bc-imessage-vector{width:35px;height:35px;transform:translateY(-7px)}
+ .bc-chat-orb .bc-imessage-name{font-size:9px!important;bottom:7px}
+ .bc-chat-orb .bc-unread{top:-9px!important;right:-10px!important;min-width:28px!important;height:28px!important;font-size:15px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .bc-chat-orb,.bc-chat-orb::before,.bc-chat-orb.has-unread,
+ .bc-chat-orb.has-unread::before{animation:none!important;transition:none!important}
+}
