@@ -12,12 +12,13 @@
 </head>
 <body>
 <header class="topbar">
- <a class="brand" href="corporate-network.html?view=profile" aria-label="Return to Blackcell Network">
+ <a class="brand" id="ledgerBrand" href="corporate-network.html?view=profile" aria-label="Return to Blackcell Network">
   <span class="brand-b">B</span><span class="brand-label"><strong>BLACKCELL CORPORATION</strong><small>PRIVATE PHOTO LEDGER</small></span>
  </a>
  <div class="top-actions">
   <span class="privacy-pill"><span class="status-dot"></span> RESTRICTED · 2 PERSONS</span>
   <a id="backLink" href="corporate-network.html?view=profile" class="navlink">RETURN TO NETWORK <span>↗</span></a>
+  <button id="ledgerSignOut" type="button" class="navlink ledger-signout" hidden>SIGN OUT <span>↗</span></button>
  </div>
 </header>
 <section id="accessGate" class="gate">
@@ -100,6 +101,13 @@
      </div>
      <p class="privacy-note">Owner view is read-only for photo submissions. Your employee can post photos that appear in both accounts.</p>
      <button id="ownerUploadShare" type="button" class="button-outline full">COPY EMPLOYEE UPLOAD LINK</button>
+    </section>
+    <section id="ownerLedgerScope" class="panel ledger-scope-card" hidden>
+     <div class="card-title"><span class="card-icon">♢</span><div><div class="eyebrow">OWNER PERMISSIONS / SELECTED EMPLOYEE</div><h3>Employee Access Scope</h3></div></div>
+     <div class="ledger-scope-state"><strong id="ledgerScopeStatus">CHECKING PERMISSIONS…</strong><span id="ledgerScopeIndicator">PRIVATE SETTINGS</span></div>
+     <p id="ledgerScopeDescription">Choose whether this employee may use the full corporate Network or only the Private Photo Ledger. This setting affects their own account, not other members.</p>
+     <button id="ledgerScopeToggle" type="button" class="button-outline full" disabled>LOADING ACCESS SETTINGS…</button>
+     <p id="ledgerScopeFeedback" class="form-note" role="status" aria-live="polite"></p>
     </section>
     <section id="employeeUpload" class="panel upload-card" hidden>
      <div class="card-title"><span class="card-icon">▧</span><div><div class="eyebrow">EMPLOYEE / PHOTO SUBMISSION</div><h3>Post a Private Photo</h3></div></div>
