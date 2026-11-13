@@ -1,6 +1,7 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-employee4';
 
 const recoveryHint=new URLSearchParams(location.hash.replace(/^#/,'' )).get('type')==='recovery';
+const employeeCardRequested=new URLSearchParams(location.search).get('card')==='1';
 const client=corporateClient();
 const $=id=>document.getElementById(id);
 let recoveryFlow=recoveryHint;
@@ -72,6 +73,14 @@ async function load(reveal=false){
    verified=false;showPanel('employeeActivation');
    return;
   }
+  // Verified employees land on their own social profile by default.
+  // ?card=1 is an explicit employee-only route to view the access pass.
+  // No redirect occurs until corporateAuthorize and employee code status pass.
+  const {data,error}=await client.rpc('corp_employee_code_status');
+  if(!error&&data?.ok===true&&data.verified===true&&!employeeCardRequested){
+   location.replace('corporate-network.html?view=profile');
+   return;
+  }
   showPanel('employeeHome');
   $('employeeLevel').textContent='LEVEL '+member.clearance_level;
   $('employeeName').textContent=member.display_name||'BLACKCELL EMPLOYEE';
@@ -81,7 +90,6 @@ async function load(reveal=false){
    void $('employeeCard').offsetWidth;
    $('employeeCard').classList.add('reveal');
   }
-  const {data,error}=await client.rpc('corp_employee_code_status');
   if(error||data?.ok!==true){
    setVerified(false,member);
    showError('employeeStatus','Employee authorization is temporarily unavailable.');
