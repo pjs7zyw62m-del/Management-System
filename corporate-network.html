@@ -115,7 +115,12 @@
           <div class="bc-fb-breadcrumb-actions">
             <button type="button" id="profileReturnFeed" class="bc-profile-quiet-btn">← NETWORK FEED</button>
             <button type="button" id="profileShareLink" class="bc-profile-quiet-btn">↗ SHARE PROFILE</button>
+            <button type="button" id="profileViewAs" class="bc-profile-quiet-btn">◉ VIEW AS MEMBER</button>
           </div>
+        </div>
+        <div id="profileViewAsNotice" class="bc-view-as-notice" hidden role="status">
+          <span>◉ VIEW AS MEMBER — this is how your profile appears to other verified BLACKCELL members. Edit and publishing controls are hidden during preview.</span>
+          <button id="profileEndPreview" type="button">EXIT PREVIEW</button>
         </div>
         <article class="profile-hero panel bc-fb-header">
           <div id="profileCover" class="profile-cover bc-fb-cover">
@@ -181,6 +186,12 @@
               <div class="bc-fb-detail"><span>Verified identity</span><strong id="profilePersonalIdentity">NETWORK MEMBER</strong></div>
               <div class="bc-fb-detail"><span>Member since</span><strong id="profilePersonalJoined">—</strong></div>
               <div class="bc-fb-detail"><span>Access classification</span><strong id="profilePersonalClearance">—</strong></div>
+            </section>
+            <section class="bc-fb-card bc-service-focus-panel" id="profileServiceFocusPanel" hidden>
+              <div class="bc-security-card-heading"><span class="bc-security-card-glyph">✧</span><h3>MY NETWORK THEME</h3></div>
+              <p>Choose which uniforms and stories appear first in your personal recommendations.</p>
+              <div class="bc-service-focus-indicator"><span id="profileServiceFocusLabel">All uniforms</span><span>PRIVATE</span></div>
+              <button id="profileServiceFocusEdit" type="button" class="bc-fb-soft-button">⚙ CHOOSE MILITARY OR POLICE</button>
             </section>
             <section class="bc-fb-card bc-security-highlights">
               <div class="bc-fb-card-head"><div class="bc-security-card-heading"><span class="bc-security-card-glyph">✦</span><h3>HIGHLIGHTS</h3></div><button type="button" id="profileHighlightsSeeAll">See all</button></div>
@@ -614,6 +625,21 @@
  <section class="bc-personalize-dialog" role="dialog" aria-modal="true" aria-labelledby="personalizationTitle">
   <header><div><span class="overline">BLACKCELL / PRIVATE DISCOVERY</span><h2 id="personalizationTitle">PERSONALIZATION &amp; TRIGGERS</h2><p>Choose the military photo subjects you want to see more or less of. Every member gets a separate, private set of preferences.</p></div><button id="personalizationClose" type="button" aria-label="Close personalization">✕</button></header>
   <div class="bc-personalize-scroll">
+   <section class="bc-service-focus-chooser">
+     <div class="bc-personalize-heading"><strong>CHOOSE YOUR NETWORK THEME</strong><small>Your private choice affects recommended content and your view of BLACKCELL. It does not change your official employee clearance or someone else’s profile.</small></div>
+     <label for="personalizationServiceFocus">CONTENT &amp; VISUAL STYLE</label>
+     <select id="personalizationServiceFocus" aria-describedby="serviceFocusHelp">
+       <option value="all">ALL UNIFORMS — balanced default</option>
+       <option value="military">MILITARY — armed forces, uniforms and training</option>
+       <option value="police">LAW ENFORCEMENT — police, sheriff and tactical</option>
+       <option value="both">MILITARY + POLICE — both categories</option>
+     </select>
+     <div class="bc-service-theme-preview" id="personalizationThemePreview" aria-live="polite">
+       <span>◈ BLACKCELL / PRIVATE NETWORK</span><strong id="personalizationThemeName">ALL UNIFORMS</strong>
+       <small id="personalizationThemeDescription">Balanced discovery across uniformed professions.</small>
+     </div>
+     <p id="serviceFocusHelp">Your choice prioritizes matching, approved content; it does not hide the other uniforms or change the private access rules.</p>
+   </section>
    <div class="bc-personalize-switch"><label><input id="personalizationEnabled" type="checkbox"><span><strong>ENABLE MY PERSONAL RECOMMENDATIONS</strong><small>When off, recommendations stay chronological. Your saved preferences are not used to rank photographs.</small></span></label></div>
    <div class="bc-personalize-switch"><label><input id="personalizationFeedEnabled" type="checkbox"><span><strong>PERSONALIZE THE NETWORK FEED TOO</strong><small>Use the same subject preferences when you choose For You in the feed. Nothing is hidden or deleted.</small></span></label></div>
    <div class="bc-personalize-switch bc-rediscovery-setting">
