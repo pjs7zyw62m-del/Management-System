@@ -5,6 +5,13 @@
 */
 export function createNetworkPersonalization({client,state,toast,onChanged}){
  const id=value=>document.getElementById(value);
+ const FOCUS={
+  all:{label:'All uniforms',pattern:null},
+  military:{label:'Military',pattern:/\b(army|soldiers?|marines?|marine corps|military|navy|naval|coast guard|air force|airman|airmen|combat|military uniform|armed forces|national guard|soldier training)\b/i},
+  police:{label:'Law enforcement',pattern:/\b(police|law enforcement|sheriff|deputy|officer|state trooper|highway patrol|swat|police academy|constable|policing)\b/i},
+  both:{label:'Military + police',pattern:null}
+ };
+ const focusLabel=key=>FOCUS[key]?.label||FOCUS.all.label;
  const TOPICS=[
   ['uniforms','Uniform design & fit',/\buniforms?\b|fatigue|utility clothing|\b(?:acu|mccuu|bdu|ocp)\b|dress coat/i],
   ['camouflage','Camouflage patterns',/camouflage|\bcamo\b|marpat|multicam|woodland|desert pattern/i],
@@ -19,7 +26,7 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
   ['vehicles','Military vehicles',/tank|armou?red vehicles?|ground vehicles?|mrap|transport truck/i],
   ['insignia','Insignia & patches',/insignia|rank|badge|patch|medals?|ribbons?/i]
  ];
- const DEFAULT=()=>({user_id:state.user?.id,enabled:false,personalize_feed:false,
+ const DEFAULT=()=>({user_id:state.user?.id,enabled:false,personalize_feed:false,service_focus:'all',
    rediscovery_enabled:false,rediscovery_frequency:'occasional',
    preferred_topics:[],muted_topics:[]});
  let current=DEFAULT(),tastes=[],favorites=new Set(),interestSignals=new Map(),loaded=false,saving=false;
@@ -27,6 +34,7 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
  const enabled=()=>current.enabled===true;
  const feedEnabled=()=>enabled()&&current.personalize_feed===true;
  const topicList=()=>TOPICS.map(([key,label])=>({key,label}));
+ const serviceFocus=()=>FOCUS[current.service_focus]?current.service_focus:'all';
  const describe=asset=>{
   const a=asset||{};
   return [a.filename,a.caption,a.military_category,a.military_branch,a.military_era,
@@ -34,10 +42,23 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
    .filter(Boolean).join(' ').toLowerCase();
  };
  const matching=asset=>new Set(TOPICS.filter(([, ,pattern])=>pattern.test(describe(asset))).map(([key])=>key));
+ const focusScore=asset=>{
+  const choice=serviceFocus();
+  if(choice==='all'||!enabled())return 0;
+  const raw=describe(asset),military=FOCUS.military.pattern.test(raw),police=FOCUS.police.pattern.test(raw);
+  if(choice==='both')return military||police?75:0;
+  return FOCUS[choice].pattern.test(raw)?110:0;
+ };
+ const textFocusScore=body=>{
+  const choice=serviceFocus();
+  if(!enabled()||choice==='all')return 0;
+  const raw=String(body||'');
+  return (choice==='both'?FOCUS.military.pattern.test(raw)||FOCUS.police.pattern.test(raw):FOCUS[choice].pattern.test(raw))?38:0;
+ };
  function preferenceScore(asset){
   if(!enabled())return 0;
   const match=matching(asset);
-  let score=0;
+  let score=focusScore(asset);
   for(const key of current.preferred_topics||[])if(match.has(key))score+=20;
   for(const key of current.muted_topics||[])if(match.has(key))score-=50;
   const direct=tastes.find(t=>t.asset_id===asset?.id);
@@ -98,7 +119,7 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
    const item=entry.item;
    const assets=entry.type==='library'?[item]:(state.assets||[]).filter(a=>a.post_id===item.id);
    const base=assets.length?Math.max(...assets.map(a=>preferenceScore(a)+relatedScore(a))):0;
-   let textScore=0;
+   let textScore=textFocusScore(item.body);
    if(item.body && !assets.length){
     for(const [key,,regex] of TOPICS){
      if(regex.test(item.body)){
@@ -118,7 +139,7 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
   const uid=state.user.id;
   const [options,reactions,liked,engagements]=await Promise.all([
    client.from('corp_social_personalization_settings')
-     .select('user_id,enabled,personalize_feed,rediscovery_enabled,rediscovery_frequency,preferred_topics,muted_topics')
+     .select('user_id,enabled,personalize_feed,rediscovery_enabled,rediscovery_frequency,preferred_topics,muted_topics,service_focus')
      .eq('user_id',uid).maybeSingle(),
    client.from('corp_social_photo_tastes')
      .select('asset_id,rating,reaction,cues').eq('user_id',uid).limit(2000),
@@ -134,6 +155,7 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
   if(engagements.error)console.warn('Private photo interest signals unavailable:',engagements.error.message);
   current=options.data?{
    ...DEFAULT(),...options.data,
+   service_focus:FOCUS[options.data.service_focus]?options.data.service_focus:'all',
    preferred_topics:Array.isArray(options.data.preferred_topics)?options.data.preferred_topics:[],
    muted_topics:Array.isArray(options.data.muted_topics)?options.data.muted_topics:[]
   }:DEFAULT();
@@ -147,6 +169,9 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
    b.classList.toggle('personalization-active',enabled());
    b.setAttribute('aria-label','Open my private personalization settings'+(enabled()?' (on)':' (off)'));
   });
+  document.body.dataset.serviceFocus=enabled()?serviceFocus():'all';
+  const profileLabel=id('profileServiceFocusLabel');
+  if(profileLabel)profileLabel.textContent=enabled()?focusLabel(serviceFocus()):'All uniforms';
   const label=id('personalizationCurrentStatus');
   if(label)label.textContent=enabled()?
    'ON · RECOMMENDATIONS ONLY FOR YOU':'OFF · PRIVATE UNTIL YOU OPT IN';
@@ -178,6 +203,7 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
   if(!loaded){toast('Personalization settings are loading. Try again.');return}
   const modal=id('personalizationOverlay');if(!modal)return;
   id('personalizationEnabled').checked=enabled();
+  id('personalizationServiceFocus').value=serviceFocus();
   id('personalizationFeedEnabled').checked=current.personalize_feed===true;
   id('rediscoveryEnabled').checked=current.rediscovery_enabled===true;
   id('rediscoveryFrequency').value=current.rediscovery_frequency==='rare'?'rare':'occasional';
@@ -196,6 +222,7 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
   const options={
    user_id:state.user.id,
    enabled:id('personalizationEnabled').checked,
+   service_focus:FOCUS[id('personalizationServiceFocus').value]?id('personalizationServiceFocus').value:'all',
    personalize_feed:id('personalizationFeedEnabled').checked,
    rediscovery_enabled:id('rediscoveryEnabled').checked&&id('personalizationEnabled').checked,
    rediscovery_frequency:id('rediscoveryFrequency').value==='rare'?'rare':'occasional',
@@ -239,6 +266,7 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
    if(clearError)console.warn('Photo rediscovery history reset failed:',clearError.message);
    current=DEFAULT();updateButtons();renderChoices();
    id('personalizationEnabled').checked=false;
+   id('personalizationServiceFocus').value='all';
    id('personalizationFeedEnabled').checked=false;
    id('rediscoveryEnabled').checked=false;
    id('rediscoveryFrequency').value='occasional';
@@ -252,6 +280,12 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
  function setup(){
   document.querySelectorAll('[data-personalization-open]').forEach(b=>b.addEventListener('click',open));
   id('personalizationSave')?.addEventListener('click',()=>void save());
+  id('personalizationServiceFocus')?.addEventListener('change',()=>{
+   if(id('personalizationServiceFocus').value!=='all'){
+    id('personalizationEnabled').checked=true;
+    id('personalizationFeedEnabled').checked=true;
+   }
+  });
   id('personalizationReset')?.addEventListener('click',()=>void reset());
   id('personalizationClose')?.addEventListener('click',close);
   id('personalizationCancel')?.addEventListener('click',close);
@@ -264,5 +298,5 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
   updateButtons();
  }
  return {load,setup,open,close,get,enabled,feedEnabled,rankAssets,rankFeed,
-   preferenceScore,topicList};
+   preferenceScore,topicList,serviceFocus,focusLabel};
 }
