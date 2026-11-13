@@ -19,32 +19,17 @@
   email.type='button';email.disabled=true;email.title='Corporate email is not connected yet';
   dock.append(people,imessage,email);
   dock.hidden=true; // Bubble-only launcher; avoid a redundant, cluttered bottom toolbar.
-  // A vector communication emblem, not a text bubble or emoji:
-  // sharp metallic speech icon with an illuminated crimson message signal.
-  function makeChatEmblem(className,compact=false){
-    const ns='http://www.w3.org/2000/svg';
-    const svg=document.createElementNS(ns,'svg');
-    svg.setAttribute('viewBox','0 0 48 48');
-    svg.setAttribute('focusable','false');
-    svg.setAttribute('aria-hidden','true');
-    svg.setAttribute('class',className);
-    const shape=(name,attrs)=>{
-      const element=document.createElementNS(ns,name);
-      for(const [key,value] of Object.entries(attrs))element.setAttribute(key,String(value));
-      svg.append(element);return element;
-    };
-    shape('path',{class:'bc-msg-back',d:'M15 9H35a7 7 0 0 1 7 7v12'});
-    shape('path',{class:'bc-msg-face',d:'M12 13h22a7 7 0 0 1 7 7v9a7 7 0 0 1-7 7H23l-9 6v-6h-2a7 7 0 0 1-7-7v-9a7 7 0 0 1 7-7Z'});
-    shape('path',{class:'bc-msg-line',d:'M15 23h17M15 29h11'});
-    shape('circle',{class:'bc-msg-pulse',cx:33,cy:29,r:2.1});
-    if(!compact)shape('path',{class:'bc-msg-red-edge',d:'M29 13h5a7 7 0 0 1 7 7v5'});
-    return svg;
-  }
+  // A classic glass chat bubble with an actual crimson light orbiting its rim.
   const orb=make('button','bc-chat-orb');
-  orb.type='button';orb.setAttribute('aria-label','Open Blackcell Messages');
+  orb.type='button';
+  orb.setAttribute('aria-label','Open Blackcell Messages');
   orb.setAttribute('title','BLACKCELL · Private Messages');
-  orb.append(makeChatEmblem('bc-orb-chat-vector'));
-  orb.append(make('span','bc-orb-brand','BC'));
+  const orbit=make('span','bc-chat-orbit-ring');
+  orbit.setAttribute('aria-hidden','true');
+  const icon=make('span','bc-orb-chat-icon');
+  icon.setAttribute('aria-hidden','true');
+  icon.append(make('span','bc-orb-chat-dots','•••'));
+  orb.append(orbit,icon);
   const dot=make('span','bc-online');
   const counter=make('span','bc-unread');counter.hidden=true;
   orb.append(dot,counter);
@@ -54,9 +39,8 @@
   pane.hidden=true;
   const header=make('div','bc-chat-pane-header');
   const label=make('div','bc-chat-pane-label');
-  const labelIcon=make('span','bc-chat-header-bubble');
+  const labelIcon=make('span','bc-chat-header-bubble','•••');
   labelIcon.setAttribute('aria-hidden','true');
-  labelIcon.append(makeChatEmblem('bc-header-chat-vector',true));
   const labelContent=make('span','bc-chat-header-label');
   const labelTitle=make('strong','','BLACKCELL MESSAGES');
   const labelSubtitle=make('small','','PRIVATE · VERIFIED NETWORK');
