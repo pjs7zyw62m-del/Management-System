@@ -139,9 +139,24 @@
     </section>
    </aside>
    <section class="timeline-column">
+    <section id="ownerReviewQueue" class="panel owner-review-queue" aria-label="Photo review queue" hidden>
+     <div class="owner-review-heading">
+      <div>
+       <div class="eyebrow">OWNER REVIEW DESK / ONE PHOTO AT A TIME</div>
+       <h2>Review Next Photo</h2>
+       <p>Accept with any amount, accept for $0.00, or reject. After your decision, the next photo appears automatically.</p>
+      </div>
+      <span id="reviewQueueCount" class="queue-counter">0 WAITING</span>
+     </div>
+     <div id="reviewQueueCurrent" class="review-queue-current" aria-live="polite">
+      <div class="queue-empty">Waiting for the next photo submission.</div>
+     </div>
+     <p id="reviewQueueFeedback" class="queue-feedback" role="status" aria-live="polite"></p>
+    </section>
     <div class="timeline-toolbar panel">
-     <div><div class="eyebrow">PHOTO SUBMISSIONS / SHARED LEDGER</div><h2>Our Photo History</h2><p>Photo submissions, decisions and balances update live on both accounts.</p></div>
+     <div><div class="eyebrow">PHOTO SUBMISSIONS / SHARED LEDGER</div><h2>Photo History</h2><p>Accepted, rejected, and paid photos remain in this private record. Both accounts receive live updates.</p></div>
      <div class="filter-buttons" aria-label="Filter photo submissions">
+      <button type="button" data-photo-filter="reviewed" aria-pressed="false">REVIEWED</button>
       <button type="button" data-photo-filter="all" aria-pressed="true">ALL</button>
       <button type="button" data-photo-filter="pending" aria-pressed="false">PENDING REVIEW</button>
       <button type="button" data-photo-filter="owed" aria-pressed="false">OWED</button>
