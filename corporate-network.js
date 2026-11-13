@@ -463,7 +463,6 @@ function renderProfile(){
  const p=profile(state.profileUserId)||myProfile();
  if(!p)return;
  state.profileUserId=p.user_id;
- cover($('profileCover'),p);
  const av=avatar(p,'gigantic');av.id='profileAvatar';
  $('profileAvatar').replaceWith(av);
  $('profileName').textContent=personName(p);
@@ -496,15 +495,14 @@ function renderProfile(){
  $('profilePersonalJoined').textContent=date(p.created_at);
  $('profilePersonalClearance').textContent=isMine?'LEVEL '+state.member.clearance_level:'VERIFIED MEMBER';
  $('profileEditDetails').hidden=!isMine;
- $('profileCoverAction').hidden=!isMine;
  $('profileGettingStarted').hidden=!isMine;
  if(isMine){
-   const completed=[!!p.avatar_asset_id,!!p.cover_asset_id,!!p.headline?.trim(),!!p.bio?.trim()];
+   const completed=[!!p.avatar_asset_id,!!p.headline?.trim(),!!p.bio?.trim()];
    const steps=completed.filter(Boolean).length;
-   $('profileSetupProgress').style.width=(steps/4*100)+'%';
-   $('profileSetupNote').textContent=steps===4?'All four profile details are complete.':steps+' of 4 details complete · Avatar, cover, headline and bio';
-   $('profileGettingStarted').querySelector('h3').textContent=steps===4?'Your profile is complete':'Make it yours';
-   $('profileGettingStarted').hidden=steps===4;
+   $('profileSetupProgress').style.width=(steps/3*100)+'%';
+   $('profileSetupNote').textContent=steps===3?'All three profile details are complete.':steps+' of 3 details complete · Photo, headline and bio';
+   $('profileGettingStarted').querySelector('h3').textContent=steps===3?'Your profile is complete':'Make it yours';
+   $('profileGettingStarted').hidden=steps===3;
  }
  renderProfileSidePreviews(p);
  renderSecurityHighlights(p);
@@ -979,7 +977,7 @@ function openEdit(){
  const p=myProfile();if(!p)return;
  $('editHeadline').value=p.headline||'';
  $('editBio').value=p.bio||'';
- $('editAvatar').value='';$('editCover').value='';
+ $('editAvatar').value='';
  $('editFeedback').hidden=true;$('editOverlay').hidden=false;
 }
 function closeEdit(){$('editOverlay').hidden=true}
@@ -991,9 +989,8 @@ async function saveProfile(){
  try{
   const changes={headline:$('editHeadline').value.trim().slice(0,140),
    bio:$('editBio').value.trim().slice(0,1000)};
-  const ava=$('editAvatar').files?.[0],cov=$('editCover').files?.[0];
+  const ava=$('editAvatar').files?.[0];
   if(ava){const img=await uploadAsset(ava,'avatar');changes.avatar_asset_id=img.id}
-  if(cov){const img=await uploadAsset(cov,'cover');changes.cover_asset_id=img.id}
   const {error}=await client.from('corp_social_profiles').update(changes).eq('user_id',state.user.id);
   if(error)throw error;
   closeEdit();await refresh();openProfile(state.user.id);toast('Your corporate social profile was updated.');
@@ -1034,7 +1031,6 @@ function setupEvents(){
  $('editOverlay').addEventListener('click',e=>{if(e.target===$('editOverlay'))closeEdit()});
  $('saveProfile').addEventListener('click',()=>void saveProfile());
  $('profileReturnFeed').addEventListener('click',()=>switchView('feed'));
- $('profileCoverAction').addEventListener('click',openEdit);
  $('profileEditDetails').addEventListener('click',openEdit);
  $('profileSetupAction').addEventListener('click',openEdit);
  $('profileHighlightsSeeAll').addEventListener('click',()=>{
