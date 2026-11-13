@@ -199,11 +199,25 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
    row.append(title,actions);root.append(row);
   }
  }
+ function updateThemePreview(){
+  const choice=id('personalizationServiceFocus').value;
+  const preview=id('personalizationThemePreview');
+  preview.dataset.theme=FOCUS[choice]?choice:'all';
+  id('personalizationThemeName').textContent=focusLabel(choice).toUpperCase();
+  const descriptions={
+   all:'Balanced discovery across every uniformed profession.',
+   military:'Armed forces, military equipment, uniforms and training.',
+   police:'Police officers, sheriffs, tactical teams and law enforcement.',
+   both:'Military and law enforcement recommendations together.'
+  };
+  id('personalizationThemeDescription').textContent=descriptions[choice]||descriptions.all;
+ }
  function open(){
   if(!loaded){toast('Personalization settings are loading. Try again.');return}
   const modal=id('personalizationOverlay');if(!modal)return;
   id('personalizationEnabled').checked=enabled();
   id('personalizationServiceFocus').value=serviceFocus();
+  updateThemePreview();
   id('personalizationFeedEnabled').checked=current.personalize_feed===true;
   id('rediscoveryEnabled').checked=current.rediscovery_enabled===true;
   id('rediscoveryFrequency').value=current.rediscovery_frequency==='rare'?'rare':'occasional';
@@ -267,6 +281,7 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
    current=DEFAULT();updateButtons();renderChoices();
    id('personalizationEnabled').checked=false;
    id('personalizationServiceFocus').value='all';
+   updateThemePreview();
    id('personalizationFeedEnabled').checked=false;
    id('rediscoveryEnabled').checked=false;
    id('rediscoveryFrequency').value='occasional';
@@ -281,6 +296,7 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
   document.querySelectorAll('[data-personalization-open]').forEach(b=>b.addEventListener('click',open));
   id('personalizationSave')?.addEventListener('click',()=>void save());
   id('personalizationServiceFocus')?.addEventListener('change',()=>{
+   updateThemePreview();
    if(id('personalizationServiceFocus').value!=='all'){
     id('personalizationEnabled').checked=true;
     id('personalizationFeedEnabled').checked=true;
