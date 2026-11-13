@@ -36,7 +36,7 @@ h1 em{font-style:normal;color:#e56882}
 @keyframes glowBreath{0%,100%{opacity:.38;filter:brightness(.68)}50%{opacity:.94;filter:brightness(1.24)}}
 @keyframes outerBreath{0%,100%{opacity:.28;transform:scale(.98)}50%{opacity:.77;transform:scale(1.025)}}
 .chat-icon{width:62px;height:62px;z-index:1;position:relative;filter:drop-shadow(0 4px 7px #0008)}
-.orb .unread{position:absolute;z-index:3;right:-8px;top:-5px;width:33px;height:33px;display:none;place-items:center;border-radius:50%;border:2px solid #190a12;background:linear-gradient(140deg,#fd5e79,#b10a3c);color:white;font-size:15px;font-weight:800;box-shadow:0 0 12px #d41d49a0,0 3px 11px #0008}
+.orb .unread{position:absolute;z-index:4;right:-14px;top:-12px;width:46px;height:46px;display:none;place-items:center;border-radius:50%;border:3px solid #090b12;background:linear-gradient(145deg,#ff94a0 0%,#ff6179 46%,#fa2e56 100%);color:#1a0910;font-size:25px;font-weight:950;line-height:1;text-shadow:0 1px 0 rgba(255,255,255,.18);box-shadow:0 0 0 2px #dc3d59,0 0 18px #f32959a3,0 4px 15px #000a;font-variant-numeric:tabular-nums;user-select:none;pointer-events:none}
 #unreadMode:checked~.stage .orb .unread{display:grid}
 #unreadMode:checked~.stage .orb::before{animation:unreadBreath 1.7s ease-in-out infinite;border-color:#ff486b}
 #unreadMode:checked~.stage .orb::after{animation:outerBreath 1.7s ease-in-out infinite}
@@ -71,17 +71,22 @@ h1 em{font-style:normal;color:#e56882}
 .dialog-foot{padding:13px;border-top:1px solid #ffffff20;text-align:center;font-size:9px;color:#ae9faf}
 @media(max-width:580px){.main{padding-top:24px}.header{padding:13px 16px}.heading{font-size:9px}.byline{font-size:8px}.preview-tag{font-size:8px;padding:8px}.stage{min-height:330px}.orb{width:102px;height:102px}.chat-icon{width:55px;height:55px}.controls{align-items:stretch}.actions{width:100%}.pill{flex:1}.dialog{max-height:calc(100% - 25px)}}
 @media(prefers-reduced-motion:reduce){.orb::before,.orb::after{animation:none}.orb::before{opacity:.8}}
+/* Unread-number readability also scales with compact mobile layouts. */
+@media(max-width:580px){
+ .orb .unread{width:42px;height:42px;font-size:23px;right:-11px;top:-10px}
+ .actions .pill{min-width:130px}
+}
 </style>
 </head>
 <body>
 <header class="header">
  <div class="identity"><div class="mark">B</div><div><div class="heading">BLACKCELL CORPORATION</div><div class="byline">CORPORATE MESSAGES · DESIGN LAB</div></div></div>
- <div class="preview-tag">LIVE ANIMATED SAMPLE · V2</div>
+ <div class="preview-tag">LIVE ANIMATED SAMPLE · V3</div>
 </header>
 <main class="main">
  <div class="eyebrow">PRIVATE NETWORK / COMMUNICATIONS UI</div>
  <h1>Red pulse <em>chat icon.</em></h1>
- <p class="intro">Watch the stationary red glow pulse. Tap <strong>3 Unread Messages</strong> below to brighten the effect and display an unread badge, then tap the chat icon to open sample messages.</p>
+ <p class="intro">Watch the stationary red glow pulse. Tap <strong>3 Unread Messages</strong> below to brighten the effect and display the new bold, dark “3” on a high-contrast red badge, then tap the chat icon to open sample messages.</p>
  <input class="mode-radio" type="radio" name="chatDemoMode" id="normalMode" checked aria-label="Normal glow preview">
  <input class="mode-radio" type="radio" name="chatDemoMode" id="unreadMode" aria-label="3 unread messages preview">
  <section class="stage" aria-label="Animated BLACKCELL chat icon preview">
@@ -92,12 +97,12 @@ h1 em{font-style:normal;color:#e56882}
       <linearGradient id="silver" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#fff"/><stop offset=".52" stop-color="#d8dee9"/><stop offset="1" stop-color="#a6afbf"/></linearGradient>
      </defs>
      <path d="M12 12H51a8 8 0 0 1 8 8v24a8 8 0 0 1-8 8H27L13 61v-9h-1a8 8 0 0 1-8-8V20a8 8 0 0 1 8-8Z" fill="url(#silver)" stroke="#fff" stroke-width="1.4"/>
-     <path d="M17 24H45M17 32H45M17 40H35" fill="none" stroke="#313843" stroke-width="4.2" stroke-linecap="round"/>
+     <circle cx="19" cy="32" r="4.1" fill="#202632"/><circle cx="32" cy="32" r="4.1" fill="#202632"/><circle cx="45" cy="32" r="4.1" fill="#202632"/>
     </svg>
     <span class="unread" id="unreadBadge">3</span>
    </button>
   </div>
-  <div class="stage-label" aria-live="polite"><strong><span class="label-normal">NO NEW MESSAGES</span><span class="label-unread">3 NEW MESSAGES</span></strong><span class="detail-normal">Soft red light slowly pulses around the icon.</span><span class="detail-unread">Bright red glow and the unread badge. Tap the icon to preview the chat.</span></div>
+  <div class="stage-label" aria-live="polite"><strong><span class="label-normal">NO NEW MESSAGES</span><span class="label-unread">3 NEW MESSAGES</span></strong><span class="detail-normal">Soft red light slowly pulses around the icon.</span><span class="detail-unread">Brighter crimson glow and a large, readable dark 3. Tap the icon to open a sample chat.</span></div>
   <section class="dialog" id="sampleDialog" role="dialog" aria-label="Sample chat window" aria-modal="false" hidden>
    <div class="dialog-head"><div><strong>BLACKCELL MESSAGES</strong><small>PRIVATE · VERIFIED NETWORK</small></div><button id="closeDialog" type="button">✕ CLOSE</button></div>
    <div class="dialog-body"><div class="sample-msg">New private message received.</div><div class="sample-msg out">The red ring pulses without spinning.</div></div>
