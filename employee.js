@@ -16,7 +16,7 @@ function syncEmployeeMessenger(permitted){
  if(!employeeDockLoading){
   employeeDockLoading=true;
   const script=document.createElement('script');
-  script.src='corporate-chat-dock.js?v=20261109-mobile-gallery4';
+  script.src='corporate-chat-dock.js?v=20261113-icon4';
   script.addEventListener('error',()=>employeeDockLoading=false);
   document.body.append(script);
  }else window.dispatchEvent(new Event('blackcell-resume-imessage'));
