@@ -129,6 +129,8 @@ function switchView(view,{who=null,tab=null,keepPost=false}={}){
   if(tab)state.profileTab=tab;
  }
  for(const f of fields)$(f).hidden=f!==view+'View';
+ // Keep the original, fully wired Network composer on the active page.
+ syncProfileComposer();
  document.querySelectorAll('[data-view]').forEach(n=>{
   n.classList.toggle('nav-active',n.dataset.view===view&&n.closest('.mainnav')!==null);
   n.classList.toggle('selected',n.dataset.view===view&&n.closest('.nav-panel')!==null);
@@ -256,6 +258,68 @@ function empty(title,detail){
  const n=el('div','panel empty-state');
  n.append(el('strong','',title),el('span','',detail));return n;
 }
+/* Move—not duplicate—the existing post composer. This preserves file inputs,
+   upload progress, validation, duplicate checks, and Supabase publishing. */
+function syncProfileComposer(){
+ const feedAnchor=$('networkFeedComposerAnchor');
+ const mount=$('profileTimelineComposer');
+ const composer=$('postBody')?.closest('.composer');
+ if(!feedAnchor||!mount||!composer)return;
+ const onOwnPosts=state.view==='profile'
+  &&state.profileUserId===state.user?.id
+  &&state.profileTab==='posts';
+ if(onOwnPosts){
+  mount.hidden=false;
+  if(composer.parentElement!==mount)mount.append(composer);
+  composer.classList.add('bc-fb-live-composer');
+ }else{
+  mount.hidden=true;
+  if(composer.previousElementSibling!==feedAnchor)feedAnchor.after(composer);
+  composer.classList.remove('bc-fb-live-composer');
+ }
+}
+function renderProfileSidePreviews(p){
+ const pictures=$('profilePhotoPreview');
+ if(pictures){
+  pictures.replaceChildren();
+  const media=state.assets.filter(a=>a.owner_id===p.user_id
+    &&a.kind==='photo'&&sharedMedia(a)
+    &&a.purpose!=='avatar'&&a.purpose!=='cover')
+    .filter(a=>Boolean(mediaUrl(a))).slice(0,6);
+  if(!media.length){
+   pictures.append(el('p','bc-fb-no-preview','No shared photos yet.'));
+  }else{
+   for(const asset of media){
+    const img=el('img');img.src=mediaUrl(asset);
+    img.alt=asset.filename||'Shared photo';img.loading='lazy';
+    const open=btn('',()=>{void photos.openAsset(asset)});
+    open.className='bc-fb-photo-thumb';
+    open.setAttribute('aria-label','Open '+(asset.filename||'photo'));
+    open.append(img);pictures.append(open);
+   }
+  }
+ }
+ const following=$('profileFollowingPreview');
+ if(following){
+  following.replaceChildren();
+  const ids=state.follows.filter(f=>f.follower_id===p.user_id)
+   .map(f=>f.following_id).slice(0,5);
+  const matches=ids.map(id=>profile(id)).filter(Boolean);
+  if(!matches.length){
+   following.append(el('p','bc-fb-no-preview','No followed members yet.'));
+  }else{
+   for(const person of matches){
+    const row=btn('',()=>openProfile(person.user_id));
+    row.className='bc-fb-follow-item';
+    row.append(avatar(person,'small'));
+    const label=el('span','bc-fb-follow-label');
+    label.append(el('strong','',personName(person)),
+      el('small','',personHandle(person)));
+    row.append(label);following.append(row);
+   }
+  }
+ }
+}
 function renderProfile(){
  const p=profile(state.profileUserId)||myProfile();
  if(!p)return;
@@ -290,7 +354,9 @@ function renderProfile(){
    $('profileSetupProgress').style.width=(steps/4*100)+'%';
    $('profileSetupNote').textContent=steps===4?'All four profile details are complete.':steps+' of 4 details complete · Avatar, cover, headline and bio';
    $('profileGettingStarted').querySelector('h3').textContent=steps===4?'Your profile is complete':'Make it yours';
+   $('profileGettingStarted').hidden=steps===4;
  }
+ renderProfileSidePreviews(p);
  const tabCopy={
   posts:['Activity & Posts','Updates shared with verified Network members.'],
   photos:['Photo Collection','Photographs and images from this member.'],
@@ -310,7 +376,11 @@ function renderProfile(){
    actions.append(directChat);
   }
  }
- document.querySelectorAll('#profileTabs [data-tab]').forEach(b=>b.classList.toggle('selected',b.dataset.tab===state.profileTab));
+ document.querySelectorAll('#profileTabs [data-tab]').forEach(b=>{
+  b.classList.toggle('selected',b.dataset.tab===state.profileTab);
+  b.setAttribute('aria-current',b.dataset.tab===state.profileTab?'page':'false');
+ });
+ syncProfileComposer();
  const box=$('profileContent');box.replaceChildren();
  if(state.profileTab==='about'){
   const about=el('div','panel about-content');
@@ -331,8 +401,11 @@ function renderProfile(){
    if(isMine){
     const actions=el('div','bc-profile-empty-actions');
     actions.append(btn('＋ CREATE YOUR FIRST POST',()=>{
-      switchView('feed');
-      $('postBody')?.focus({preventScroll:false});
+      const composer=$('postBody');
+      if(composer){
+       composer.scrollIntoView({behavior:'smooth',block:'center'});
+       composer.focus({preventScroll:true});
+      }
     },'bc-profile-primary'));
     actions.append(btn('✎ COMPLETE YOUR PROFILE',openEdit,'bc-profile-secondary'));
     emptyState.append(actions);
@@ -652,6 +725,8 @@ function selectFiles(input){
 }
 async function publish(){
  if(state.busy)return;
+ const publishedFromProfile=state.view==='profile'
+  &&state.profileUserId===state.user?.id&&state.profileTab==='posts';
  const body=$('postBody').value.trim();
  if(!body&&!formFiles.length){toast('Write an update or attach media before publishing.');return}
  state.busy=true;const publishBtn=$('publishPost');
@@ -707,7 +782,9 @@ async function publish(){
   $('postBody').value='';formFiles=[];renderAttachments();updateCounter();
   await refresh();
   document.dispatchEvent(new CustomEvent('bc:media-updated'));
-  switchView('feed');toast(selected.length?'Post created. Attached photos/videos are PRIVATE until administrator review.':'Text post published.');
+  if(publishedFromProfile) switchView('profile',{who:state.user.id,tab:'posts'});
+  else switchView('feed');
+  toast(selected.length?'Post created. Attached photos/videos are PRIVATE until administrator review.':'Text post published.');
  }catch(e){
   // Remove incomplete post (metadata cascades), keeping the feed consistent.
   if(postId)await client.from('corp_social_posts').delete().eq('id',postId).eq('author_id',state.user.id);
@@ -785,6 +862,11 @@ function setupEvents(){
  $('profileCoverAction').addEventListener('click',openEdit);
  $('profileEditDetails').addEventListener('click',openEdit);
  $('profileSetupAction').addEventListener('click',openEdit);
+ $('profilePhotosSeeAll').addEventListener('click',()=>{
+  state.profileTab='photos';renderProfile();
+  $('profileTabs').scrollIntoView({behavior:'smooth',block:'center'});
+ });
+ $('profileFollowingSeeAll').addEventListener('click',()=>switchView('discover'));
  $('profileShareLink').addEventListener('click',async()=>{
    const p=profile(state.profileUserId)||myProfile();
    if(!p)return;
