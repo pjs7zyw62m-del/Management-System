@@ -1,4 +1,4 @@
-import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-staff1';
+import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
 export const corporate=corporateClient();
 export async function authorizeUniformHub(){
  const gate=document.getElementById('uGate');
