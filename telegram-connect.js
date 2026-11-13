@@ -1,7 +1,7 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
 
 const $=id=>document.getElementById(id);
-let client=null,access=null,connected=false,configured=false,loading=false;
+let client=null,access=null,connected=false,configured=false,loading=false,statusUnknown=false;
 const callbackUrl='https://eeddazzwqokqlzvzjlxz.supabase.co/functions/v1/blackcell-telegram-login';
 
 function message(text,error=false){
@@ -48,6 +48,7 @@ async function invoke(action){
 }
 async function status(){
  const d=await invoke('status');
+ statusUnknown=false;
  configured=Boolean(d.configured);
  render(d.connected?d.account:null);
  $('callback').textContent=d.callback_url||callbackUrl;
@@ -82,14 +83,17 @@ async function init(){
   await status();
   if(result==='linked')message('Telegram identity connected securely. Your personal chats were not imported.');
  }catch(err){
-  badge('UNAVAILABLE','pending');
-  message('Connection status could not be checked: '+String(err.message||err).slice(0,140),true);
-  $('connect').disabled=true;
+  statusUnknown=true;
+  badge('RETRY AVAILABLE','pending');
+  $('heading').textContent='Personal Telegram';
+  $('description').textContent='Your BLACKCELL session is available. Telegram connection check needs another attempt.';
+  message('Telegram connection check failed. Tap Continue with Telegram to retry the authorization securely. '+String(err.message||err).slice(0,90),true);
+  $('connect').disabled=!access;
  }
 }
 $('connect').addEventListener('click',async()=>{
  if(loading||!client||!access)return;
- if(!configured){
+ if(!configured&&!statusUnknown){
   message(access.member?.role==='owner'
    ?'Telegram Login needs one-time setup. Follow the Administrator Setup instructions below, then try again.'
    :'Telegram Login has not been activated by your BLACKCELL administrator yet.',true);
@@ -103,8 +107,9 @@ $('connect').addEventListener('click',async()=>{
   if(url.origin!=='https://oauth.telegram.org'||url.pathname!=='/auth')throw Error('Invalid authorization URL');
   location.assign(url.href);
  }catch(err){
+  loading=false;
   message('Telegram sign-in could not start: '+String(err.message||err).slice(0,160),true);
-  loading=false;render(null);
+  $('connect').disabled=false;
  }
 });
 $('disconnect').addEventListener('click',async()=>{
