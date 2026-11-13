@@ -14,7 +14,7 @@ const state={
  user:null,member:null,profiles:[],posts:[],assets:[],likes:[],comments:[],follows:[],
  assetUrls:new Map(),view:'feed',feedFilter:'latest',profileUserId:null,profileTab:'posts',
  attached:[],openComments:new Set(),busy:false,sort:'newest',deepPost:null,
- chatPeers:[],signedAt:0,profilePostFilter:'all',profilePostGrid:false,profileFriendsMode:'following',profileFriendsQuery:''
+ chatPeers:[],signedAt:0,profilePreview:false,profilePostFilter:'all',profilePostGrid:false,profileFriendsMode:'following',profileFriendsQuery:''
 };
 const fields=['feedView','profileView','discoverView','videosView','photosView'];
 let gunnerDock=null;
@@ -122,7 +122,9 @@ function switchView(view,{who=null,tab=null,keepPost=false}={}){
   state.assetUrls.clear();void loadSigned().then(renderAll).catch(()=>{});
  }
  state.view=view;
+ state.profilePreview=false;
  document.body.classList.toggle('bc-profile-mode',view==='profile');
+ document.body.classList.remove('bc-profile-view-as');
  syncLibraryMenu(view);
  gunnerDock?.setVisible(view==='photos');
  if(view==='profile'){
@@ -268,7 +270,7 @@ function syncProfileComposer(){
  if(!feedAnchor||!mount||!composer)return;
  const onOwnPosts=state.view==='profile'
   &&state.profileUserId===state.user?.id
-  &&state.profileTab==='posts';
+  &&state.profileTab==='posts'&&!state.profilePreview;
  if(onOwnPosts){
   mount.hidden=false;
   if(composer.parentElement!==mount)mount.append(composer);
@@ -467,7 +469,7 @@ function renderProfile(){
  $('profileName').textContent=personName(p);
  $('profileHandle').textContent=personHandle(p);
  $('profileHeadline').textContent=p.headline||'Verified Blackcell Network member';
- $('profileLevel').textContent=p.user_id===state.user.id
+ $('profileLevel').textContent=p.user_id===state.user.id&&!state.profilePreview
    ?'MY ACCOUNT · LEVEL '+state.member.clearance_level
    :'VERIFIED NETWORK MEMBER';
  $('profileJoined').textContent='JOINED '+date(p.created_at).toUpperCase();
@@ -475,8 +477,15 @@ function renderProfile(){
  $('profileFollowerCount').textContent=state.follows.filter(f=>f.following_id===p.user_id).length;
  $('profileFollowingCount').textContent=state.follows.filter(f=>f.follower_id===p.user_id).length;
  $('profileVideoCount').textContent=countVideos(p.user_id);
- const isMine=p.user_id===state.user.id;
- $('profilePageTitle').textContent=isMine?'My Profile.':personName(p)+' · Profile';
+ const isMine=p.user_id===state.user.id&&!state.profilePreview;
+ const isOwnProfile=p.user_id===state.user.id;
+ const isPreview=isOwnProfile&&state.profilePreview;
+ document.body.classList.toggle('bc-profile-view-as',isPreview);
+ $('profileViewAs').hidden=!isOwnProfile||isPreview;
+ $('profileViewAsNotice').hidden=!isPreview;
+ $('profileServiceFocusPanel').hidden=!isMine;
+ $('profileServiceFocusLabel').textContent=personalization.enabled()?personalization.focusLabel(personalization.serviceFocus()):'All uniforms';
+ $('profilePageTitle').textContent=isPreview?personName(p)+' · Member View':isMine?'My Profile.':personName(p)+' · Profile';
  $('profileAboutSummary').textContent=p.bio?.trim()||(
    isMine?'Introduce yourself with a short biography, interests, and what you share with the Network.'
          :'This member has not added an introduction yet.');
@@ -511,11 +520,11 @@ function renderProfile(){
  $('profileSectionTitle').textContent=sectionInfo[0];
  $('profileSectionIntro').textContent=sectionInfo[1];
  const actions=$('profileActions');actions.replaceChildren();
- if(p.user_id===state.user.id){
+ if(isMine){
   actions.append(btn('＋ CREATE POST',focusProfileComposer,'bc-security-create-post'));
   actions.append(btn('✎ EDIT PROFILE',openEdit,'bc-security-edit-profile'));
  }
- else{
+ else if(!isOwnProfile){
   actions.append(btn(following(p.user_id)?'✓ FOLLOWING':'+ FOLLOW',()=>void toggleFollow(p.user_id)));
   if(state.chatPeers.some(x=>x.user_id===p.user_id)){
    const directChat=btn('OPEN CHAT ↗',()=>window.dispatchEvent(new CustomEvent('blackcell-open-imessage',{detail:{peerId:p.user_id}})),'secondary');
@@ -672,7 +681,7 @@ function renderPost(p){
  });
  const share=btn('↗  COPY LINK',()=>void copyPostLink(p.id));
  actions.append(like,replies,share);
- if(p.author_id===state.user.id)actions.append(btn('DELETE',()=>void deletePost(p),'post-delete'));
+ if(p.author_id===state.user.id&&!(state.view==='profile'&&state.profilePreview))actions.append(btn('DELETE',()=>void deletePost(p),'post-delete'));
  node.append(actions);
  if(state.openComments.has(p.id)){
   const zone=el('div','comment-zone');
@@ -1044,6 +1053,18 @@ function setupEvents(){
   $('profileTabs').scrollIntoView({behavior:'smooth',block:'center'});
  });
  $('profileFollowingSeeAll').addEventListener('click',()=>switchView('discover'));
+ $('profileServiceFocusEdit').addEventListener('click',()=>personalization.open());
+ $('profileViewAs').addEventListener('click',()=>{
+  if(state.profileUserId!==state.user.id)return;
+  state.profilePreview=true;
+  renderProfile();
+  window.scrollTo({top:0,behavior:'smooth'});
+ });
+ $('profileEndPreview').addEventListener('click',()=>{
+  state.profilePreview=false;
+  renderProfile();
+  window.scrollTo({top:0,behavior:'smooth'});
+ });
  $('profileShareLink').addEventListener('click',async()=>{
    const p=profile(state.profileUserId)||myProfile();
    if(!p)return;
