@@ -1114,7 +1114,7 @@ async function verifyNetworkSession(){
 }
 function installNetworkSecurityChecks(){
  if(networkSecurityChecksInstalled)return;networkSecurityChecksInstalled=true;
- window.setInterval(()=>void verifyNetworkSession(),60000);
+ window.setInterval(()=>void verifyNetworkSession(),20000);
  document.addEventListener('visibilitychange',()=>{
   if(!document.hidden)void verifyNetworkSession()
  });
