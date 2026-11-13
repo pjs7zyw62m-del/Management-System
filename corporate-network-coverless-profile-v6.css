@@ -1,0 +1,173 @@
+/* BLACKCELL NETWORK — COVERLESS MEMBER PROFILE
+   The oversized cover/banner has been removed, not replaced by a blank placeholder.
+   Keep the photo, identity, profile controls, feed, tabs and security state intact.
+   Applies only to profile mode, on desktop, tablets and phones.
+*/
+html body.bc-network.bc-profile-mode .bc-fb-header.profile-hero {
+  overflow:hidden!important;
+  border-radius:14px!important;
+  background:linear-gradient(145deg,#181c24,#0a0e15)!important;
+}
+html body.bc-network.bc-profile-mode .bc-profile-id-strip {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:8px 18px;
+  min-height:48px;
+  padding:14px clamp(20px,3vw,37px);
+  border-bottom:1px solid rgba(212,220,233,.12);
+  background:linear-gradient(90deg,#10151e,#11151c 70%,#1b131c);
+  color:#b8becb;
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.15em;
+}
+html body.bc-network.bc-profile-mode .bc-profile-id-strip span:first-child {
+  color:#f0e9ef;
+}
+html body.bc-network.bc-profile-mode .bc-profile-id-strip span:last-child {
+  color:#bb7e8f;
+  text-align:right;
+}
+html body.bc-network.bc-profile-mode .bc-fb-identity.profile-identity {
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  flex-wrap:wrap!important;
+  gap:17px!important;
+  min-height:0!important;
+  padding:clamp(18px,2.8vw,30px) clamp(20px,3vw,37px) 19px!important;
+  margin:0!important;
+  background:linear-gradient(120deg,#141922,#0c1118 58%,#11121b)!important;
+}
+html body.bc-network.bc-profile-mode .bc-fb-identity-main.profile-identity-main {
+  display:flex!important;
+  align-items:center!important;
+  flex:1 1 450px!important;
+  gap:clamp(15px,2.4vw,27px)!important;
+  min-width:0!important;
+}
+html body.bc-network.bc-profile-mode #profileAvatar.gigantic {
+  display:grid!important;
+  place-items:center!important;
+  margin:0!important;
+  flex:none!important;
+  position:relative!important;
+  width:clamp(105px,10vw,142px)!important;
+  height:clamp(105px,10vw,142px)!important;
+  border:4px solid #171d27!important;
+  outline:1px solid #b55065a8!important;
+  border-radius:50%!important;
+  box-shadow:0 9px 29px #0009,0 0 18px #b34e6822!important;
+}
+html body.bc-network.bc-profile-mode .bc-fb-identity-info.identity-info {
+  padding:0!important;
+  margin:0!important;
+  flex:1 1 200px!important;
+  align-self:center!important;
+  min-width:0!important;
+}
+html body.bc-network.bc-profile-mode #profileName {
+  margin:0 0 5px!important;
+  line-height:1.12!important;
+  font-size:clamp(28px,2.8vw,39px)!important;
+}
+html body.bc-network.bc-profile-mode #profileHeadline {
+  max-width:670px!important;
+}
+html body.bc-network.bc-profile-mode .bc-fb-action-buttons.profile-actions {
+  align-self:center!important;
+  justify-content:flex-end!important;
+  flex:0 1 auto!important;
+  margin:0!important;
+}
+html body.bc-network.bc-profile-mode #profileActions button {
+  min-height:45px!important;
+}
+html body.bc-network.bc-profile-mode #profileView .bc-fb-stats.profile-stats {
+  padding-top:10px!important;
+  padding-bottom:13px!important;
+  background:#0e1219!important;
+  border-top:1px solid rgba(219,225,237,.1)!important;
+}
+html body.bc-network.bc-profile-mode #profileTabs.bc-fb-tabs {
+  border-radius:0 0 13px 13px!important;
+}
+html body.bc-network #editOverlay .edit-files {
+  display:flex!important;
+  flex-direction:column!important;
+  gap:8px!important;
+}
+html body.bc-network #editOverlay .edit-files label {
+  min-height:88px!important;
+  width:100%!important;
+}
+@media(max-width:1050px) {
+  html body.bc-network.bc-profile-mode .bc-fb-identity.profile-identity {
+    align-items:center!important;
+    padding:20px!important;
+  }
+  html body.bc-network.bc-profile-mode .bc-fb-identity-main.profile-identity-main {
+    gap:17px!important;
+    flex:1 1 390px!important;
+  }
+  html body.bc-network.bc-profile-mode #profileAvatar.gigantic {
+    width:112px!important;
+    height:112px!important;
+    margin:0!important;
+  }
+}
+@media(max-width:620px) {
+  html body.bc-network.bc-profile-mode .bc-profile-id-strip{
+    padding:12px 15px!important;
+    min-height:0;
+    line-height:1.4;
+  }
+  html body.bc-network.bc-profile-mode .bc-profile-id-strip span:last-child{
+    text-align:left;
+  }
+  html body.bc-network.bc-profile-mode .bc-fb-identity.profile-identity{
+    display:block!important;
+    padding:20px 16px 18px!important;
+    min-height:0!important;
+  }
+  html body.bc-network.bc-profile-mode .bc-fb-identity-main.profile-identity-main{
+    display:flex!important;
+    align-items:center!important;
+    gap:13px!important;
+    min-width:0!important;
+  }
+  html body.bc-network.bc-profile-mode #profileAvatar.gigantic{
+    width:84px!important;
+    height:84px!important;
+    min-width:84px!important;
+    margin:0!important;
+    font-size:29px!important;
+  }
+  html body.bc-network.bc-profile-mode .bc-fb-identity-info.identity-info{
+    padding:0!important;
+    flex:1 1 auto!important;
+    min-width:0!important;
+  }
+  html body.bc-network.bc-profile-mode #profileName{
+    font-size:clamp(23px,6vw,30px)!important;
+    overflow-wrap:anywhere;
+  }
+  html body.bc-network.bc-profile-mode #profileHandle{
+    font-size:11px!important;
+    overflow-wrap:anywhere;
+  }
+  html body.bc-network.bc-profile-mode .bc-profile-verified{
+    font-size:8px!important;
+  }
+  html body.bc-network.bc-profile-mode .bc-fb-action-buttons.profile-actions {
+    margin-top:18px!important;
+    justify-content:stretch!important;
+    width:100%!important;
+  }
+  html body.bc-network.bc-profile-mode #profileActions button{
+    min-height:44px!important;
+    flex:1!important;
+  }
+}
