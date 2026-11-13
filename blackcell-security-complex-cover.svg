@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1600 510" role="img" aria-label="Cinematic BLACKCELL high-security complex at night with guard tower and red warning lights">
+<defs>
+ <linearGradient id="sky" x1="0" x2=".7" y1="0" y2="1"><stop stop-color="#111b27"/><stop offset=".44" stop-color="#243341"/><stop offset="1" stop-color="#06090f"/></linearGradient>
+ <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#26303a"/><stop offset=".4" stop-color="#141b24"/><stop offset="1" stop-color="#060910"/></linearGradient>
+ <linearGradient id="gate" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#2c333d"/><stop offset=".7" stop-color="#090d15"/><stop offset="1" stop-color="#08090d"/></linearGradient>
+ <linearGradient id="red" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#c4324b" stop-opacity=".83"/><stop offset="1" stop-color="#420813" stop-opacity="0"/></linearGradient>
+ <linearGradient id="haze" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#8d9caa" stop-opacity=".15"/><stop offset="1" stop-color="#c3c4cc" stop-opacity="0"/></linearGradient>
+ <radialGradient id="spot"><stop stop-color="#e2e8fa" stop-opacity=".7"/><stop offset=".23" stop-color="#e5ebf5" stop-opacity=".3"/><stop offset="1" stop-color="#e5ebf5" stop-opacity="0"/></radialGradient>
+ <radialGradient id="beacon"><stop stop-color="#ff4c64" stop-opacity=".9"/><stop offset=".18" stop-color="#dc1f37" stop-opacity=".6"/><stop offset="1" stop-color="#d21835" stop-opacity="0"/></radialGradient>
+ <pattern id="grain" width="81" height="73" patternUnits="userSpaceOnUse"><path d="M0 16h81M11 0v73M0 64h81M68 0v73" stroke="#a5bac4" stroke-opacity=".035" stroke-width="1"/><circle cx="29" cy="42" r=".85" fill="#fff" opacity=".1"/><circle cx="71" cy="18" r=".75" fill="#fff" opacity=".06"/></pattern>
+ <pattern id="mesh" width="18" height="18" patternUnits="userSpaceOnUse"><path d="M0 0l18 18M18 0L0 18" stroke="#a0b0b9" stroke-width=".8" opacity=".23"/></pattern>
+ <filter id="blur"><feGaussianBlur stdDeviation="16"/></filter>
+ <filter id="micro"><feGaussianBlur stdDeviation="2.1"/></filter>
+</defs>
+<rect width="1600" height="510" fill="url(#sky)"/>
+<path d="M0 0h1600v510H0z" fill="url(#grain)"/>
+<path d="M0 95Q400 50 720 92T1600 65" fill="none" stroke="#607483" stroke-opacity=".25" stroke-width="2"/>
+<path d="M0 238l91-23 120 25 133-25 156 18 149-16 159 18 102-15 199 17 230-34v310H0z" fill="#0b121a" opacity=".6"/>
+<!-- tactical research compound long concrete façade -->
+<path d="M0 158L1183 89 1214 464 0 487Z" fill="url(#wall)" stroke="#85909a" stroke-opacity=".28" stroke-width="3"/>
+<path d="M0 198L1184 130" stroke="#c1c8ce" stroke-opacity=".14" stroke-width="3"/>
+<path d="M0 272L1192 200M0 355L1197 302" stroke="#a3adb7" stroke-opacity=".075" stroke-width="2"/>
+<path d="M88 166l24 317M300 142l23 338M521 127l19 346M746 114l14 354M978 101l11 362" stroke="#02060a" stroke-opacity=".43" stroke-width="5"/>
+<path d="M0 158L1183 89" stroke="#9ba7ad" stroke-opacity=".25" stroke-width="7"/>
+<!-- building window strips -->
+<g fill="#02060a" stroke="#5c6877" stroke-opacity=".45" stroke-width="2">
+ <path d="M55 231l85-5 4 31-87 7zM178 224l87-6 3 33-87 6zM320 216l87-5 4 31-88 6zM464 209l90-5 2 31-89 6zM609 199l85-5 3 31-85 5zM748 191l93-6 2 30-92 6zM899 181l92-6 2 34-94 4z"/>
+</g>
+<g stroke="#e5edf7" stroke-opacity=".10"><path d="M0 284L1160 215M0 387L1170 312M0 462L1170 399"/></g>
+<path d="M270 167h11v293h-11zM777 125h12v351h-12z" fill="#091019" opacity=".45"/>
+<!-- corporate insignia on building -->
+<g transform="translate(395 193) skewY(-3.2)" opacity=".44">
+ <path d="M0 0h67v82H0z" fill="#11161f" stroke="#a1a8ad" stroke-width="4"/>
+ <text x="33" y="63" text-anchor="middle" font-family="Arial,sans-serif" font-size="61" font-weight="900" fill="#abb2bc">B</text>
+ <text x="90" y="42" font-family="Arial,sans-serif" font-size="51" font-weight="900" letter-spacing="8" fill="#c7d0d7">BLACKCELL</text>
+ <text x="91" y="72" font-family="Arial,sans-serif" font-size="18" font-weight="600" letter-spacing="7" fill="#bdc5cd">SECURITY DIVISION</text>
+</g>
+<!-- roof guard rail and antennas -->
+<g stroke="#080b10" stroke-width="5"><path d="M0 151l1182-72M20 141v-34M175 130V95M350 118V78M525 108V70M700 99V61M880 90V45M1052 78V40"/></g>
+<path d="M0 123l1050-73" stroke="#c3d2dc" stroke-width="1" opacity=".17"/>
+<!-- spotlights and red security beacons -->
+<g><ellipse cx="115" cy="176" rx="103" ry="99" fill="url(#beacon)"/><ellipse cx="328" cy="148" rx="96" ry="90" fill="url(#beacon)"/><ellipse cx="951" cy="91" rx="101" ry="82" fill="url(#beacon)"/>
+<circle cx="115" cy="165" r="5" fill="#ff5464"/><circle cx="328" cy="137" r="5" fill="#ff5464"/><circle cx="951" cy="80" r="5" fill="#ff5464"/>
+<path d="M115 165L10 500h215zM328 137L212 510h240zM951 80L836 500h220z" fill="url(#red)" opacity=".13"/>
+</g>
+<!-- elevated tower -->
+<path d="M1270 226l25-122h168l33 122z" fill="#10151e" stroke="#717f8c" stroke-opacity=".59" stroke-width="4"/>
+<path d="M1243 114h258l-25-22h-203z" fill="#293440" stroke="#aab4c1" stroke-opacity=".4" stroke-width="4"/>
+<path d="M1279 118h172v88h-172z" fill="#081019" stroke="#8f9ba6" stroke-opacity=".47" stroke-width="6"/>
+<path d="M1340 118v88M1396 118v88" stroke="#667686" stroke-width="5"/>
+<path d="M1342 169q13-26 23-4l5 33h-37z" fill="#030508"/>
+<path d="M1343 153a13 13 0 1 1 26 0a13 13 0 1 1-26 0" fill="#020508"/>
+<path d="M1272 222h237v17h-237zM1309 241l-39 208h31l45-208zM1432 241l39 208h33l-39-208z" fill="#10131a" stroke="#76828c" stroke-opacity=".28" stroke-width="3"/>
+<g stroke="#5d6c7a" stroke-width="5" opacity=".7"><path d="M1310 266l158 165M1471 269l-175 163M1300 432h201M1315 363h171"/></g>
+<path d="M1411 93v-56M1411 37l20-14" stroke="#6b7782" stroke-width="3"/>
+<circle cx="1411" cy="34" r="43" fill="url(#beacon)"/><circle cx="1411" cy="34" r="5" fill="#f23a57"/>
+<!-- watch tower floodlights -->
+<path d="M1290 205L1088 497h437z" fill="#b8cfed" opacity=".055"/>
+<ellipse cx="1293" cy="215" rx="118" ry="100" fill="url(#spot)"/>
+<circle cx="1292" cy="205" r="6" fill="#e7f0ff"/>
+<!-- gate fencing layers -->
+<rect x="0" y="370" width="1600" height="140" fill="#030507" opacity=".31"/>
+<g stroke="#0a0f14" stroke-width="9"><path d="M0 387h1600M0 468h1600M96 352v158M296 352v158M496 352v158M696 352v158M896 352v158M1096 352v158M1296 352v158M1496 352v158"/></g>
+<path d="M0 369h1600v130H0z" fill="url(#mesh)" opacity=".56"/>
+<g stroke="#6e7483" stroke-opacity=".25" stroke-width="3"><path d="M0 372h1600M0 467h1600"/></g>
+<path d="M0 343Q80 304 155 340T320 340T480 344T640 337T800 341T960 336T1120 337T1280 334T1440 338T1600 330" fill="none" stroke="#0b0d12" stroke-width="6"/>
+<!-- silhouettes of two security guards -->
+<g fill="#060a0f" opacity=".98">
+ <circle cx="1133" cy="362" r="16"/><path d="M1102 384q31-22 59 1l14 121h-89z"/>
+ <path d="M1103 400l-27 80 15 7 30-56M1159 400l26 80-14 8-31-57"/>
+ <circle cx="1220" cy="373" r="14"/><path d="M1196 394q27-17 48 3l12 115h-72z"/>
+ <path d="M1197 406l-18 70 13 6 23-50"/>
+</g>
+<!-- atmospheric mist -->
+<ellipse cx="890" cy="452" rx="550" ry="79" fill="url(#haze)" filter="url(#blur)"/>
+<ellipse cx="260" cy="437" rx="400" ry="68" fill="#a1adba" opacity=".095" filter="url(#blur)"/>
+<rect width="1600" height="510" fill="url(#grain)"/>
+<path d="M0 510V0h1600v510" fill="none" stroke="#171b25" stroke-width="35" opacity=".3"/>
+</svg>
