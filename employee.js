@@ -1,4 +1,4 @@
-import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-employee4';
+import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-ledger-access1';
 
 const recoveryHint=new URLSearchParams(location.hash.replace(/^#/,'' )).get('type')==='recovery';
 const employeeCardRequested=new URLSearchParams(location.search).get('card')==='1';
@@ -49,18 +49,19 @@ function noteActivity(){
 function setVerified(isVerified,m){
  verified=isVerified;
  $('employeeCard').classList.toggle('codes-verified',isVerified);
- $('chatLink').hidden=!isVerified||m.can_chat!==true;
- $('networkLink').hidden=!isVerified;
- syncEmployeeMessenger(isVerified&&m.can_chat===true);
+ $('chatLink').hidden=!isVerified||m.can_chat!==true||m.access_scope==='ledger_only';
+ $('networkLink').hidden=!isVerified||m.access_scope==='ledger_only';
+ syncEmployeeMessenger(isVerified&&m.can_chat===true&&m.access_scope!=='ledger_only');
  $('employeeAccess').textContent=isVerified
-   ?(m.can_chat?'ACCOUNT ACTIVE · CHAT AUTHORIZED':'ACCOUNT ACTIVE · CHAT RESTRICTED')
+   ?(m.access_scope==='ledger_only'?'ACCOUNT ACTIVE · PRIVATE LEDGER ONLY':
+     m.can_chat?'ACCOUNT ACTIVE · CHAT AUTHORIZED':'ACCOUNT ACTIVE · CHAT RESTRICTED')
    :'ACCOUNT ACTIVATION REQUIRED';
  if(isVerified){lastActivity=Date.now();lastTouch=Date.now();}
 }
 async function load(reveal=false){
  try{
   await client.auth.getSession();
-  const result=await corporateAuthorize(client);
+  const result=await corporateAuthorize(client,{allowLedgerOnly:true});
   if(!result.ok){verified=false;showPanel('employeeLogin');return;}
   const member=result.member;
   if(member.role==='owner'){location.replace('dashboard.html');return;}
@@ -77,6 +78,10 @@ async function load(reveal=false){
   // ?card=1 is an explicit employee-only route to view the access pass.
   // No redirect occurs until corporateAuthorize and employee code status pass.
   const {data,error}=await client.rpc('corp_employee_code_status');
+  if(!error&&data?.ok===true&&data.verified===true&&member.access_scope==='ledger_only'){
+   location.replace('private-photo-ledger.html');
+   return;
+  }
   if(!error&&data?.ok===true&&data.verified===true&&!employeeCardRequested){
    location.replace('corporate-network.html?view=profile');
    return;
