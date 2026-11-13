@@ -1,0 +1,73 @@
+/* BLACKCELL iMessage · Telegram bot + personal Telegram channel shell */
+.bc-channel-switch{display:flex;align-items:center;gap:7px;padding:9px 13px;border-bottom:1px solid #68435459;background:linear-gradient(125deg,#13141b,#0b0d13);flex:none;overflow-x:auto;scrollbar-width:none}
+.bc-channel-switch::-webkit-scrollbar{display:none}
+.bc-channel-choice{flex:none;min-height:41px;padding:10px 14px;border:1px solid #525462a0;border-radius:11px;background:#191b25;color:#aaaab9;font-size:11px;font-weight:790;white-space:nowrap;letter-spacing:.015em;cursor:pointer}
+.bc-channel-choice:hover{border-color:#a55c75;color:#efe5ec}
+.bc-channel-choice.active{background:linear-gradient(135deg,#563046,#251b2a);border-color:#c65c80;color:#fff;box-shadow:inset 0 1px #fce7f21a,0 0 16px #a52c5235}
+.bc-channel-choice:focus-visible,.bc-tg-action:focus-visible,.bc-tg-alt:focus-visible{outline:2px solid #f17e9c;outline-offset:3px}
+.bc-channel-hide-chat .chat{display:none!important}
+.bc-telegram-workspace{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;background:radial-gradient(ellipse at top right,#5d26341e,transparent 65%),#080a10}
+.bc-telegram-workspace[hidden],.bc-tg-body[hidden],.bc-tg-personal[hidden]{display:none!important}
+.bc-tg-head{display:flex;align-items:center;gap:15px;padding:17px 20px;background:#15141c;border-bottom:1px solid #ffffff1b;flex:none}
+.bc-tg-emblem{display:grid;place-items:center;width:46px;height:46px;flex:none;background:linear-gradient(135deg,#59243e,#111621);border:1px solid #a44a69;border-radius:13px;color:#ffd8e4;font-size:26px}
+.bc-tg-head>div:nth-child(2){min-width:0;flex:1}
+.bc-tg-kicker,.bc-tg-label{font-size:9px;letter-spacing:.13em;color:#c78198;font-weight:820;line-height:1.6}
+.bc-tg-head h2{font-size:20px;line-height:1.15;letter-spacing:-.03em;margin:4px 0 5px}
+.bc-tg-head p{font-size:11px;color:#bcb5c0;margin:0;line-height:1.5}
+.bc-tg-status{font-size:9px;letter-spacing:.07em;color:#d9b9c7;border:1px solid #9a587a;padding:9px 11px;border-radius:9px;flex:none;text-align:center}
+.bc-tg-status.connected{color:#a8ecd2;background:#163527;border-color:#539b79}
+.bc-tg-body{display:grid;grid-template-columns:minmax(245px,305px) minmax(0,1fr);flex:1;min-height:0;overflow:hidden}
+.bc-tg-sidebar{padding:15px;overflow-y:auto;scrollbar-width:none;border-right:1px solid #ffffff1b}
+.bc-tg-sidebar::-webkit-scrollbar{display:none}
+.bc-tg-box{border:1px solid #ffffff24;background:linear-gradient(145deg,#1f1e28,#10131a);border-radius:14px;margin-bottom:12px;padding:16px}
+.bc-tg-box h3{font-size:15px;margin:9px 0;letter-spacing:-.03em}
+.bc-tg-box p,.bc-tg-personal p{color:#b2acb9;font-size:11px;line-height:1.75;margin:9px 0 13px}
+.bc-tg-action,.bc-tg-alt{width:100%;min-height:43px;display:flex;justify-content:center;align-items:center;gap:8px;padding:11px 13px;border-radius:10px;font-size:10px;font-weight:810;letter-spacing:.045em;text-decoration:none;margin:9px 0}
+.bc-tg-action{background:linear-gradient(135deg,#912c4c,#b73a60);color:#fff;border:1px solid #da7896;box-shadow:inset 0 1px #ffffff33}
+.bc-tg-alt{color:#e8d4df;border:1px solid #8e5a75;background:#24202c}
+.bc-tg-action[hidden],.bc-tg-alt[hidden]{display:none!important}
+.bc-tg-action:disabled,.bc-tg-alt:disabled{opacity:.54;cursor:default}
+.bc-tg-box summary{font-size:10px;color:#d7a9be;letter-spacing:.1em;font-weight:800;cursor:pointer;padding:1px 0 5px}
+.bc-tg-box input,.bc-tg-composer input{background:#0d1017;color:#f4edf4;border:1px solid #726174;padding:12px;border-radius:10px;font-size:15px;min-height:43px;min-width:0;width:100%;margin:7px 0}
+.bc-tg-box input:focus,.bc-tg-composer input:focus{outline:1px solid #bc6482}
+.bc-tg-note{color:#a99eae;font-size:10px;line-height:1.75;margin-top:10px;overflow-wrap:anywhere}
+.bc-tg-thread{display:flex;flex-direction:column;min-height:0;min-width:0}
+.bc-tg-thread-title{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;padding:14px 17px;border-bottom:1px solid #ffffff1b;min-height:51px}
+.bc-tg-thread-title strong{font-size:13px}
+.bc-tg-thread-title span{font-size:9px;color:#a9a2ae;letter-spacing:.08em}
+.bc-tg-messages{flex:1;min-height:0;overflow-y:auto;padding:19px;display:flex;flex-direction:column;gap:10px;scrollbar-width:none}
+.bc-tg-messages::-webkit-scrollbar{display:none}
+.bc-tg-empty{font-size:12px;color:#b5acb9;line-height:1.6;text-align:center;padding:25px 12px}
+.bc-tg-message{max-width:min(86%,420px);min-width:85px;display:flex;flex-direction:column;align-self:flex-start;gap:5px}
+.bc-tg-message.outgoing{align-self:flex-end;align-items:flex-end}
+.bc-tg-message .bc-tg-bubble{color:#f2edf3;border-radius:16px 16px 16px 5px;padding:12px 13px;font-size:13px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere;background:#262530;border:1px solid #5e5564}
+.bc-tg-message.outgoing .bc-tg-bubble{border-radius:16px 16px 5px 16px;background:#68253f;border-color:#a55370}
+.bc-tg-message small{font-size:9px;color:#aaa3af}
+.bc-tg-composer{display:flex;align-items:center;gap:10px;padding:11px 15px;border-top:1px solid #ffffff22;min-height:69px;background:#15151d;flex:none}
+.bc-tg-composer input{flex:1;margin:0}
+.bc-tg-composer button{min-height:43px;border:1px solid #c46383;border-radius:10px;background:#83304b;color:white;font-size:10px;font-weight:800;padding:11px 16px}
+.bc-tg-composer button:disabled{opacity:.5}
+.bc-tg-feedback{min-height:0;flex:none;font-size:11px;color:#e6b8c8;padding:0 17px;line-height:1.6;white-space:pre-wrap}
+.bc-tg-feedback:empty{display:none}
+.bc-tg-personal{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:28px}
+.bc-tg-personal-icon{display:grid;place-items:center;width:66px;height:66px;border-radius:18px;font-size:36px;color:#ffcfdf;background:#51263c;border:1px solid #aa5c7b}
+.bc-tg-personal h3{font-size:clamp(20px,3.3vw,30px);margin:4px 0;letter-spacing:-.05em}
+.bc-tg-personal p{max-width:550px;margin:0}
+.bc-tg-personal-status{font-size:10px;font-weight:800;letter-spacing:.055em;border:1px solid #aa6978;border-radius:10px;background:#30202a;color:#f7cdd6;padding:12px 14px;margin-top:12px}
+@media(max-width:680px){
+ .bc-channel-switch{padding:8px;gap:5px}
+ .bc-channel-choice{min-height:43px;padding:11px;font-size:10px}
+ .bc-tg-head{padding:12px;gap:10px}
+ .bc-tg-head h2{font-size:17px}
+ .bc-tg-head p{font-size:10px}
+ .bc-tg-status{font-size:8px;padding:7px;max-width:105px}
+ .bc-tg-emblem{width:37px;height:37px;font-size:22px}
+ .bc-tg-body{display:flex;flex-direction:column;overflow:auto}
+ .bc-tg-sidebar{flex:none;overflow:visible;border-right:0;border-bottom:1px solid #ffffff21;padding:10px}
+ .bc-tg-sidebar .bc-tg-box{padding:12px;margin-bottom:8px}
+ .bc-tg-thread{min-height:340px;flex:1}
+ .bc-tg-messages{min-height:180px;padding:12px}
+ .bc-tg-composer{padding:9px;min-height:62px}
+ .bc-tg-composer button{padding:11px;font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){.bc-channel-choice,.bc-tg-action{transition:none!important}}
