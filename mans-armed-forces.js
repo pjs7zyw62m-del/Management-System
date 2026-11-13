@@ -3,7 +3,7 @@
  * Renders ONLY approved, non-adult-restricted photos using short-lived URLs.
  * Does not register, modify, share, or publish any member or Bunny media.
  */
-import {authorizeUniformHub,corporate} from './uniform-hub-auth.js?v=20261111-mf2';
+import {authorizeUniformHub,corporate} from './uniform-hub-auth.js?v=20261112-access2';
 
 const $=id=>document.getElementById(id);
 let approved=[],shown=[],filterBranch='all',filterStyle='all',filterCategory='all',lastSigned=0,authorized=null;
