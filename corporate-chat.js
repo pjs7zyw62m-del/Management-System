@@ -1,4 +1,4 @@
-import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-staff1';
+import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
 import {setupCorporateMedia} from './corporate-chat-media.js?v=20261109-mobile-gallery4';
 import {setupCorporateChatLive} from './corporate-chat-live.js?v=20261109-live1';
 const client=corporateClient(),$=id=>document.getElementById(id);
@@ -109,6 +109,7 @@ async function boot(){
  try{
    await client.auth.getSession();
    const member=await corporateAuthorize(client);
+   if(!member.ok&&member.reason==='ledger-only'){location.replace('private-photo-ledger.html');return}
    if(!member.ok){status('Sign in and activate your employee account to access chat.');return}
    self=member.user.id;
    const m=member.member;
