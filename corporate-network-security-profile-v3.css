@@ -1,0 +1,591 @@
+/* BLACKCELL / TACTICAL NETWORK PROFILE v3
+   Inspired by cinematic survival-horror security facilities, not copied IP.
+   Scoped to active Network profiles; all prior social publishing remains intact.
+*/
+body.bc-network.bc-profile-mode{
+  --bc-red:#bd3b55;--bc-alert:#ed6175;
+  --bc-steel:#b8c1ce;--bc-ink:#07090d;
+  color:#e8e9ee;
+  background:radial-gradient(ellipse 95% 45% at 47% 1%,#15212d,#05070b 72%)!important;
+}
+body.bc-network.bc-profile-mode::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:repeating-linear-gradient(0deg,transparent 0 4px,#cbd7e706 5px 6px);
+  opacity:.42;
+}
+body.bc-network.bc-profile-mode header.masthead{
+  position:relative;z-index:40;min-height:67px;
+  background:linear-gradient(100deg,#0e1117,#07080c 62%,#100d14)!important;
+  border-bottom:1px solid #af344d62!important;
+  box-shadow:0 9px 29px #0009,0 1px #fb526927;
+}
+body.bc-network.bc-profile-mode header.masthead .brand-mark{
+  background:linear-gradient(140deg,#262c37,#111419)!important;
+  border:1px solid #c94e66!important;border-radius:7px!important;
+  box-shadow:inset 0 0 17px #bc3b5233,0 0 19px #9c33432b!important;
+  color:#faf1f3!important;
+}
+body.bc-network.bc-profile-mode header.masthead .brand strong{letter-spacing:.15em;font-weight:850}
+body.bc-network.bc-profile-mode header.masthead .brand small{color:#a3a9b6;letter-spacing:.17em}
+body.bc-network.bc-profile-mode .mainnav [data-view="profile"].nav-active{
+  color:#f1e8ee!important;border-bottom-color:#cc3d5a!important;
+}
+html body.bc-network.bc-profile-mode #app.app{max-width:1530px!important;padding-top:21px!important}
+body.bc-network.bc-profile-mode .bc-fb-breadcrumb{
+  max-width:100%;margin:0 0 14px!important;
+}
+body.bc-network.bc-profile-mode .bc-fb-breadcrumb .bc-fb-eyebrow{
+  color:#cf6c81!important;letter-spacing:.27em!important;
+}
+body.bc-network.bc-profile-mode #profilePageTitle{
+  color:#edf0f6!important;font-size:17px!important;letter-spacing:.012em!important;
+}
+body.bc-network.bc-profile-mode .bc-fb-breadcrumb-actions button{
+  color:#dde0e6!important;border-color:#ffffff2b!important;
+  background:linear-gradient(130deg,#1b2028,#0b0d13)!important;
+  box-shadow:inset 0 1px #ffffff0b;
+}
+html body.bc-network.bc-profile-mode .bc-fb-header.profile-hero{
+  background:#0d1118!important;
+  border:1px solid #77818e59!important;border-radius:14px!important;
+  box-shadow:0 28px 65px #0009,0 0 1px #e15a6c29!important;
+}
+html body.bc-network.bc-profile-mode #profileCover.bc-fb-cover{
+  height:clamp(235px,27vw,362px)!important;min-height:230px!important;
+  background-image:
+    linear-gradient(0deg,rgba(5,7,12,.48),rgba(6,9,16,.12) 60%,rgba(7,11,18,.25)),
+    url('blackcell-security-complex-cover.svg')!important;
+  background-size:cover!important;background-position:center 45%!important;
+  border-radius:13px 13px 0 0!important;
+  border-bottom:1px solid #943c50ba;
+  overflow:hidden!important;
+}
+html body.bc-network.bc-profile-mode #profileCover.bc-fb-cover::before{
+  content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:
+    linear-gradient(120deg,#910e2314,transparent 27%,#ca324d1d 83%,transparent),
+    repeating-linear-gradient(0deg,#0000 0 4px,#ecf0ff09 5px 6px);
+  opacity:.7;
+}
+html body.bc-network.bc-profile-mode #profileCover.bc-fb-cover::after{
+  content:''!important;position:absolute;inset:auto 0 0!important;
+  height:51%!important;z-index:0;pointer-events:none;
+  background:linear-gradient(transparent,rgba(5,7,12,.68))!important;
+}
+body.bc-network.bc-profile-mode .bc-fb-cover-mark{
+  display:flex;align-items:center;gap:12px;top:20px;left:25px;
+  z-index:3;letter-spacing:.1em!important;
+  color:#f7f4f7!important;text-shadow:0 2px 10px #000d;
+}
+body.bc-network.bc-profile-mode .bc-security-mark{
+  width:38px;height:38px;display:grid;place-items:center;
+  border:1px solid #d5687f;border-radius:8px;
+  background:linear-gradient(135deg,#452637d6,#111319de);
+  color:#fff;font:800 24px/1 Georgia,serif;letter-spacing:-.04em;
+  box-shadow:0 0 25px #db3c593c;
+}
+body.bc-network.bc-profile-mode .bc-security-cover-logo{
+  font-size:11px;font-weight:850;letter-spacing:.17em;
+  display:flex;flex-direction:column;gap:5px;
+}
+body.bc-network.bc-profile-mode .bc-security-cover-logo small{
+  color:#c7c8d3;font-size:8px;font-weight:720;letter-spacing:.22em;
+}
+body.bc-network.bc-profile-mode .bc-security-cover-stamp{
+  position:absolute;z-index:3;bottom:22px;left:27px;
+  font-size:9px;color:#e0d1d8;letter-spacing:.21em;font-weight:800;
+  text-shadow:0 1px 9px #000e;
+  background:#11171e66;border-left:2px solid #c64a61;padding:8px 10px;
+}
+body.bc-network.bc-profile-mode #profileCover .bc-fb-cover-edit{
+  z-index:4!important;
+  background:#10151ccf!important;color:#f5f5f8!important;
+  border:1px solid #efebee75!important;box-shadow:0 4px 18px #0008;
+  backdrop-filter:blur(14px);
+}
+body.bc-network.bc-profile-mode #profileCover .bc-fb-cover-edit:hover{
+  background:#732138d9!important;
+}
+html body.bc-network.bc-profile-mode .bc-fb-identity.profile-identity{
+  background:linear-gradient(90deg,#11151d,#0b0f16 60%,#0e111a);
+  padding-bottom:23px!important;border-bottom:1px solid #ffffff10;
+}
+html body.bc-network.bc-profile-mode .bc-fb-identity-main.profile-identity-main{
+  gap:23px!important;
+}
+html body.bc-network.bc-profile-mode #profileAvatar.gigantic{
+  width:clamp(138px,13vw,183px)!important;
+  height:clamp(138px,13vw,183px)!important;
+  margin-top:-78px!important;
+  border:5px solid #0c1018!important;
+  outline:2px solid #d8445f!important;outline-offset:0;
+  box-shadow:0 0 0 3px #101520,0 14px 37px #000b,0 0 22px #ab38507d!important;
+  background:linear-gradient(140deg,#343c4b,#11141b)!important;
+}
+html body.bc-network.bc-profile-mode .bc-fb-identity-info.identity-info{
+  padding:15px 0 0!important;
+}
+body.bc-network.bc-profile-mode .bc-profile-verified{
+  gap:7px!important;color:#aab7c6!important;
+  font-size:9px!important;letter-spacing:.14em!important;
+}
+body.bc-network.bc-profile-mode .bc-profile-verified-dot{
+  background:#d64a61!important;
+  box-shadow:0 0 0 3px #bf486322,0 0 10px #e44e6e!important;
+}
+html body.bc-network.bc-profile-mode #profileName{
+  font-size:clamp(28px,3.4vw,47px)!important;
+  color:#fafbfe!important;font-weight:840!important;
+  letter-spacing:-.055em!important;
+  text-shadow:0 4px 20px #0009;
+}
+html body.bc-network.bc-profile-mode #profileHandle{
+  font-size:12px!important;color:#da8c9f!important;
+}
+html body.bc-network.bc-profile-mode #profileHeadline{
+  color:#c9ccd5!important;font-size:12px!important;line-height:1.6!important;
+}
+html body.bc-network.bc-profile-mode .bc-fb-identity .identity-meta span{
+  border:1px solid #8793a540!important;border-radius:6px!important;
+  background:#1018209c!important;color:#bdc4ce!important;
+  font-size:9px!important;letter-spacing:.08em!important;
+}
+html body.bc-network.bc-profile-mode .bc-fb-action-buttons.profile-actions{
+  gap:10px!important;
+}
+html body.bc-network.bc-profile-mode #profileActions button{
+  border-radius:9px!important;min-height:43px!important;
+  background:linear-gradient(110deg,#861d35,#b5324a)!important;
+  border:1px solid #de6176!important;color:#fff!important;
+  box-shadow:inset 0 1px #e9768a55,0 5px 23px #b62c4526!important;
+  font-size:10px!important;letter-spacing:.06em!important;font-weight:820!important;
+}
+html body.bc-network.bc-profile-mode #profileActions .bc-security-edit-profile{
+  background:linear-gradient(140deg,#272b34,#191d24)!important;
+  border-color:#667281a6!important;
+}
+html body.bc-network.bc-profile-mode #profileActions button:hover{filter:brightness(1.17)}
+html body.bc-network.bc-profile-mode #profileView .bc-fb-stats.profile-stats{
+  background:linear-gradient(90deg,#11151d,#0d1017)!important;
+  padding-top:8px!important;padding-bottom:15px!important;
+}
+html body.bc-network.bc-profile-mode #profileView .bc-fb-stats strong{
+  color:#eef0f7!important;
+}
+html body.bc-network.bc-profile-mode #profileView .bc-fb-stats span{
+  color:#a0a8b5!important;
+}
+html body.bc-network.bc-profile-mode #profileTabs.bc-fb-tabs{
+  background:linear-gradient(110deg,#0c1017,#151820 80%)!important;
+  border-top:1px solid #e7eaef24!important;
+  border-radius:0 0 13px 13px!important;
+  min-height:61px!important;height:61px!important;overflow:visible!important;
+  gap:8px!important;
+}
+html body.bc-network.bc-profile-mode #profileTabs.bc-fb-tabs>button,
+html body.bc-network.bc-profile-mode #profileTabs.bc-fb-tabs>.bc-security-more>summary{
+  font-size:11px!important;letter-spacing:.06em!important;
+  font-weight:810!important;min-height:61px!important;
+  color:#aeb5c2!important;white-space:nowrap!important;
+}
+html body.bc-network.bc-profile-mode #profileTabs.bc-fb-tabs>button.selected{
+  color:#f7f5f7!important;
+  border-bottom:3px solid #d5415b!important;
+  background:linear-gradient(transparent,#c9364c19)!important;
+}
+body.bc-network.bc-profile-mode #profileTabs .bc-security-more{
+  position:relative;align-self:stretch;min-width:100px;
+  margin:0!important;
+}
+body.bc-network.bc-profile-mode #profileTabs .bc-security-more summary{
+  display:flex!important;align-items:center;justify-content:center;gap:9px;
+  list-style:none;cursor:pointer;border-bottom:3px solid transparent;
+  padding:0 17px!important;
+}
+body.bc-network.bc-profile-mode #profileTabs .bc-security-more summary::-webkit-details-marker{display:none}
+body.bc-network.bc-profile-mode #profileTabs .bc-security-more.selected summary{
+  color:#f3e2e8!important;border-bottom-color:#d5415b;
+}
+body.bc-network.bc-profile-mode .bc-security-more-menu{
+  position:absolute;top:calc(100% + 5px);right:0;z-index:20;
+  min-width:220px;border:1px solid #6b4a5b;border-radius:11px;
+  background:#141720;box-shadow:0 17px 38px #000c;
+  padding:6px;display:grid;gap:3px;
+}
+body.bc-network.bc-profile-mode #profileTabs .bc-security-more-menu button{
+  display:block!important;width:100%;height:auto!important;min-height:42px!important;
+  flex:auto!important;text-align:left!important;min-width:0!important;
+  padding:11px 13px!important;border:0!important;border-radius:8px!important;
+  background:transparent!important;color:#d3d3dc!important;
+  font-size:11px!important;font-weight:680!important;
+}
+body.bc-network.bc-profile-mode #profileTabs .bc-security-more-menu button:hover{
+  background:#7b2a425c!important;color:#fff!important;
+}
+body.bc-network.bc-profile-mode .bc-fb-content{
+  display:grid;grid-template-columns:minmax(275px,405px) minmax(0,1fr);
+  gap:17px!important;margin-top:18px!important;
+}
+body.bc-network.bc-profile-mode .bc-fb-left{gap:10px!important}
+html body.bc-network.bc-profile-mode .bc-fb-card,
+html body.bc-network.bc-profile-mode .bc-fb-section-heading,
+html body.bc-network.bc-profile-mode .bc-fb-live-composer.composer{
+  background:linear-gradient(145deg,#191d25,#0e1219 77%)!important;
+  border:1px solid #6e7b8d44!important;
+  border-radius:10px!important;
+  box-shadow:0 5px 19px #0004,inset 0 1px #ffffff08!important;
+}
+html body.bc-network.bc-profile-mode .bc-fb-card{
+  padding:16px 17px!important;
+}
+body.bc-network.bc-profile-mode .bc-security-card-heading{
+  display:flex;align-items:center;gap:11px;min-width:0;
+}
+body.bc-network.bc-profile-mode .bc-security-card-heading h3,
+body.bc-network.bc-profile-mode .bc-fb-card>.bc-security-card-heading h3{
+  color:#ecedf3!important;font-size:11px!important;
+  letter-spacing:.17em!important;font-weight:830!important;
+  line-height:1.45;margin:0!important;text-transform:uppercase;
+}
+body.bc-network.bc-profile-mode .bc-security-card-glyph{
+  color:#e64c66;font-size:16px;flex:none;width:22px;text-align:center;
+}
+body.bc-network.bc-profile-mode .bc-fb-card>p{
+  margin:13px 0!important;font-size:11px!important;line-height:1.65!important;
+  color:#c2c6d0!important;
+}
+body.bc-network.bc-profile-mode .bc-fb-detail{
+  margin-top:7px!important;padding-top:10px!important;
+}
+body.bc-network.bc-profile-mode .bc-fb-detail span{
+  color:#9da8b5!important;font-size:11px!important;
+}
+body.bc-network.bc-profile-mode .bc-fb-detail strong{
+  color:#e8e8ed!important;font-size:10px!important;
+}
+body.bc-network.bc-profile-mode .bc-security-personal .bc-fb-detail{
+  justify-content:space-between!important;
+}
+body.bc-network.bc-profile-mode .bc-security-highlights .bc-fb-card-head,
+body.bc-network.bc-profile-mode .bc-fb-photos-card .bc-fb-card-head,
+body.bc-network.bc-profile-mode .bc-fb-following-card .bc-fb-card-head{
+  margin-bottom:13px!important;
+}
+body.bc-network.bc-profile-mode .bc-security-highlights-grid{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:6px;border-radius:7px;overflow:hidden;
+}
+body.bc-network.bc-profile-mode .bc-security-highlight{
+  appearance:none;display:block;padding:0;width:100%;
+  aspect-ratio:1;border:1px solid #ffffff21;background:#090c13;
+  border-radius:6px;overflow:hidden;cursor:pointer;
+}
+body.bc-network.bc-profile-mode .bc-security-highlight img{
+  width:100%;height:100%;object-fit:cover;display:block;
+}
+body.bc-network.bc-profile-mode .bc-security-empty-preview{
+  color:#adb0bf;font-size:11px;line-height:1.65;margin:0;
+  padding:9px 3px!important;grid-column:1/-1;
+}
+body.bc-network.bc-profile-mode .bc-fb-photo-preview{
+  gap:5px!important;border-radius:7px!important;
+}
+body.bc-network.bc-profile-mode .bc-fb-photo-thumb{
+  border:1px solid #ffffff12;border-radius:6px;
+}
+body.bc-network.bc-profile-mode .bc-fb-card-head button{
+  color:#d9899e!important;letter-spacing:.02em;
+}
+body.bc-network.bc-profile-mode .bc-fb-follow-item{
+  border-radius:8px!important;border:1px solid #ffffff10;
+  padding:6px!important;background:#ffffff04!important;
+}
+body.bc-network.bc-profile-mode .bc-fb-follow-item:hover{background:#ffffff10!important}
+body.bc-network.bc-profile-mode .bc-fb-follow-item .avatar.small{
+  border:1px solid #cb6a7e99;
+}
+body.bc-network.bc-profile-mode .bc-security-communities a{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  text-decoration:none;color:#d9d7e0;font-size:10px;
+  font-weight:740;letter-spacing:.07em;min-height:39px;
+  padding:10px 0;border-top:1px solid #ffffff13;
+}
+body.bc-network.bc-profile-mode .bc-security-communities a span{color:#d14f6c}
+body.bc-network.bc-profile-mode .bc-security-communities a:hover{color:#f698b1}
+html body.bc-network.bc-profile-mode .bc-fb-section-heading{
+  padding:14px 16px!important;min-height:0!important;
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  gap:13px;flex-wrap:wrap;
+}
+body.bc-network.bc-profile-mode .bc-security-section-kicker{
+  font-size:9px;color:#c46b7e;letter-spacing:.17em;font-weight:800;margin:0 0 8px;
+}
+html body.bc-network.bc-profile-mode .bc-fb-section-heading h2{
+  color:#f0edf2!important;font-size:17px!important;letter-spacing:.07em!important;
+  font-weight:820!important;text-transform:uppercase;margin:0 0 3px!important;
+}
+html body.bc-network.bc-profile-mode .bc-fb-section-heading p{
+  color:#9aa6b3!important;font-size:10px!important;
+}
+body.bc-network.bc-profile-mode .bc-security-post-controls{
+  display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap;
+}
+body.bc-network.bc-profile-mode .bc-security-post-controls select,
+body.bc-network.bc-profile-mode .bc-security-post-controls button{
+  min-height:39px;padding:9px 11px;border-radius:7px;
+  background:#20252f;border:1px solid #4d5866;color:#d8dbe5;
+  font-size:10px;font-weight:780;letter-spacing:.03em;
+}
+body.bc-network.bc-profile-mode .bc-security-post-controls select{max-width:145px}
+html body.bc-network.bc-profile-mode .bc-fb-live-composer.composer{
+  padding:17px!important;
+}
+body.bc-network.bc-profile-mode .bc-fb-live-composer::before{
+  content:'◉  NETWORK TRANSMISSION / CREATE POST';
+  display:block;margin-bottom:15px;color:#cf8093;
+  font-size:10px;letter-spacing:.15em;font-weight:850;
+}
+html body.bc-network.bc-profile-mode .bc-fb-live-composer #postBody{
+  border-color:#57616d88!important;background:#0a0d14!important;
+  min-height:86px!important;
+}
+html body.bc-network.bc-profile-mode .bc-fb-live-composer #publishPost{
+  background:linear-gradient(110deg,#7e223c,#b43954)!important;
+  border-color:#d36378!important;
+}
+html body.bc-network.bc-profile-mode #profileContent.bc-profile-posts{
+  min-width:0;gap:13px!important;
+}
+html body.bc-network.bc-profile-mode #profileContent>.post{
+  background:linear-gradient(143deg,#1a1d25,#11151c)!important;
+  border-color:#69748448!important;border-radius:11px!important;
+}
+body.bc-network.bc-profile-mode #profileContent>.post .post-head{
+  border-bottom:1px solid #ffffff13;padding-bottom:10px;
+}
+body.bc-network.bc-profile-mode #profileContent>.post .post-label{
+  color:#d3899b;background:#6e283b24;border-color:#bf65785c;
+}
+body.bc-network.bc-profile-mode #profileContent.bc-security-post-grid{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:13px!important;align-items:start!important;
+}
+body.bc-network.bc-profile-mode #profileContent.bc-security-post-grid>.post{
+  min-width:0!important;width:100%!important;padding:15px!important;
+}
+body.bc-network.bc-profile-mode #profileContent.bc-security-post-grid .post-media img{
+  width:100%!important;height:auto!important;object-fit:contain!important;
+}
+body.bc-network.bc-profile-mode .bc-security-directory,
+body.bc-network.bc-profile-mode .bc-security-about,
+body.bc-network.bc-profile-mode .bc-security-group-panel{
+  background:linear-gradient(143deg,#1a1e26,#0f1218);
+  border:1px solid #69768751;border-radius:11px;padding:20px;
+  min-width:0;
+}
+body.bc-network.bc-profile-mode .bc-security-directory-head{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:13px;flex-wrap:wrap;margin-bottom:13px;
+}
+body.bc-network.bc-profile-mode .bc-security-directory-head h3,
+body.bc-network.bc-profile-mode .bc-security-about-detail h3,
+body.bc-network.bc-profile-mode .bc-security-group-panel h3{
+  font-size:20px;color:#eceef4;font-weight:790;
+  letter-spacing:-.035em;margin:0 0 8px;
+}
+body.bc-network.bc-profile-mode .bc-security-friend-search{
+  width:min(260px,100%);min-height:41px;border:1px solid #556071;border-radius:9px;
+  background:#0b0f17;color:#f2f0f5;padding:11px 14px;font-size:13px;
+}
+body.bc-network.bc-profile-mode .bc-security-directory-tabs{
+  display:flex;gap:5px;border-bottom:1px solid #ffffff20;margin:0 0 15px;
+}
+body.bc-network.bc-profile-mode .bc-security-directory-tabs button{
+  padding:12px 15px;font-size:11px;font-weight:770;color:#b9bfca;
+  border:0;border-bottom:2px solid transparent;background:transparent;
+}
+body.bc-network.bc-profile-mode .bc-security-directory-tabs button[aria-selected=true]{
+  border-bottom-color:#e14f6b;color:#f4eef1;
+}
+body.bc-network.bc-profile-mode .bc-security-friend-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;
+}
+body.bc-network.bc-profile-mode .bc-security-friend-card{
+  display:flex;align-items:center;gap:12px;width:100%;min-width:0;
+  text-align:left;padding:11px;border-radius:9px;
+  background:#151a23;border:1px solid #ffffff12;color:#f2edf2;
+}
+body.bc-network.bc-profile-mode .bc-security-friend-card:hover{
+  background:#35202c;border-color:#a7466070;
+}
+body.bc-network.bc-profile-mode .bc-security-friend-card .avatar.med{
+  width:59px;height:59px;flex:none;border-radius:10px!important;
+  border:1px solid #6e7f91;overflow:hidden;
+}
+body.bc-network.bc-profile-mode .bc-security-friend-card span{
+  min-width:0;display:flex;flex-direction:column;gap:4px;
+}
+body.bc-network.bc-profile-mode .bc-security-friend-card strong{
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;
+}
+body.bc-network.bc-profile-mode .bc-security-friend-card small{
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-size:10px;color:#b17f94;
+}
+body.bc-network.bc-profile-mode .bc-security-button{
+  background:linear-gradient(120deg,#792338,#ad344e);
+  color:#fff;border:1px solid #bf536c;border-radius:9px;
+  padding:11px 15px;font-weight:780;font-size:10px;
+  letter-spacing:.055em;min-height:43px;margin-top:17px;
+}
+body.bc-network.bc-profile-mode .bc-security-about{
+  display:grid;grid-template-columns:190px minmax(0,1fr);
+  gap:22px;min-height:260px;
+}
+body.bc-network.bc-profile-mode .bc-security-about-nav{
+  display:flex;flex-direction:column;gap:6px;border-right:1px solid #ffffff21;
+  padding-right:14px;
+}
+body.bc-network.bc-profile-mode .bc-security-about-nav button{
+  text-align:left;background:transparent;color:#abb3c0;border:0;border-radius:8px;
+  padding:12px;font-size:12px;min-height:41px;font-weight:760;
+}
+body.bc-network.bc-profile-mode .bc-security-about-nav button[aria-selected=true]{
+  background:linear-gradient(110deg,#8630476b,#431e2e51);
+  color:#fff;border:1px solid #d45a744a;
+}
+body.bc-network.bc-profile-mode .bc-security-about-sub{
+  color:#9aa4b2;font-size:12px;line-height:1.6;margin:0 0 17px;
+}
+body.bc-network.bc-profile-mode .bc-security-about-row{
+  padding:14px 0;border-top:1px solid #ffffff13;display:flex;
+  align-items:start;justify-content:space-between;gap:16px;
+}
+body.bc-network.bc-profile-mode .bc-security-about-row span{
+  color:#aeb6c3;font-size:12px;
+}
+body.bc-network.bc-profile-mode .bc-security-about-row strong{
+  color:#e7e8ee;font-size:12px;font-weight:650;max-width:67%;
+  line-height:1.6;text-align:right;white-space:pre-wrap;overflow-wrap:anywhere;
+}
+body.bc-network.bc-profile-mode .bc-security-group-panel p{
+  color:#a9b3c0;line-height:1.6;font-size:12px;
+}
+body.bc-network.bc-profile-mode .bc-security-community-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;
+  margin-top:17px;
+}
+body.bc-network.bc-profile-mode .bc-security-community{
+  display:flex;flex-direction:column;gap:8px;
+  text-decoration:none;color:#e8edf3;
+  padding:18px;border-radius:9px;border:1px solid #ffffff1f;
+  background:linear-gradient(125deg,#252a34,#111721);
+}
+body.bc-network.bc-profile-mode .bc-security-community strong{
+  font-size:13px;letter-spacing:.05em;
+}
+body.bc-network.bc-profile-mode .bc-security-community small{color:#abb5c3;font-size:11px}
+body.bc-network.bc-profile-mode .bc-security-community span{
+  color:#de778e;font-size:10px;font-weight:840;
+}
+body.bc-network.bc-profile-mode .bc-security-community:hover{border-color:#d4526c}
+@media(min-width:1450px){
+  body.bc-network.bc-profile-mode .bc-fb-content{grid-template-columns:420px minmax(0,1fr)!important}
+}
+@media(max-width:1050px){
+  body.bc-network.bc-profile-mode .bc-fb-content{
+    grid-template-columns:minmax(230px,330px) minmax(0,1fr)!important;gap:12px!important;
+  }
+  html body.bc-network.bc-profile-mode #profileAvatar.gigantic{
+    width:140px!important;height:140px!important;margin-top:-58px!important;
+  }
+  html body.bc-network.bc-profile-mode #profileName{font-size:34px!important}
+  body.bc-network.bc-profile-mode .bc-security-cover-stamp{font-size:8px}
+  body.bc-network.bc-profile-mode .bc-security-more-menu{right:-15px}
+}
+@media(max-width:860px){
+  body.bc-network.bc-profile-mode .bc-fb-content{
+    display:flex!important;flex-direction:column!important;
+  }
+  body.bc-network.bc-profile-mode .bc-fb-timeline{order:1}
+  body.bc-network.bc-profile-mode .bc-fb-left{
+    order:2;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  body.bc-network.bc-profile-mode .bc-security-personal,
+  body.bc-network.bc-profile-mode .bc-fb-intro{grid-column:span 1}
+  body.bc-network.bc-profile-mode .bc-security-communities{grid-column:span 2}
+  body.bc-network.bc-profile-mode .bc-security-highlights,
+  body.bc-network.bc-profile-mode .bc-fb-photos-card,
+  body.bc-network.bc-profile-mode .bc-fb-following-card{grid-column:span 1}
+  body.bc-network.bc-profile-mode #profileTabs.bc-fb-tabs{
+    overflow-x:auto!important;overflow-y:visible!important;
+  }
+}
+@media(max-width:620px){
+  body.bc-network.bc-profile-mode header.masthead{min-height:60px}
+  html body.bc-network.bc-profile-mode #app.app{padding:11px 11px 60px!important}
+  html body.bc-network.bc-profile-mode #profileCover.bc-fb-cover{
+    height:202px!important;min-height:202px!important;
+    background-position:61% center!important;
+  }
+  body.bc-network.bc-profile-mode .bc-fb-cover-mark{top:12px;left:13px;gap:8px}
+  body.bc-network.bc-profile-mode .bc-security-mark{width:30px;height:30px;font-size:20px}
+  body.bc-network.bc-profile-mode .bc-security-cover-logo{font-size:8px}
+  body.bc-network.bc-profile-mode .bc-security-cover-logo small{font-size:7px}
+  body.bc-network.bc-profile-mode .bc-security-cover-stamp{
+    bottom:11px;left:12px;font-size:7px;max-width:63%;letter-spacing:.1em;padding:7px;
+  }
+  html body.bc-network.bc-profile-mode #profileAvatar.gigantic{
+    width:116px!important;height:116px!important;margin-top:-56px!important;
+  }
+  html body.bc-network.bc-profile-mode #profileName{font-size:32px!important}
+  html body.bc-network.bc-profile-mode .bc-fb-identity.profile-identity{
+    padding:0 15px 15px!important;
+  }
+  html body.bc-network.bc-profile-mode #profileTabs.bc-fb-tabs{
+    padding:0 4px!important;gap:0!important;
+    overflow-x:auto!important;min-height:52px!important;height:52px!important;
+  }
+  html body.bc-network.bc-profile-mode #profileTabs.bc-fb-tabs>button{
+    min-width:74px!important;padding:0 11px!important;
+    height:51px!important;min-height:51px!important;font-size:10px!important;
+  }
+  body.bc-network.bc-profile-mode #profileTabs .bc-security-more{min-width:82px!important}
+  body.bc-network.bc-profile-mode #profileTabs .bc-security-more summary{
+    font-size:10px!important;min-height:51px!important;padding:0 9px!important;
+  }
+  body.bc-network.bc-profile-mode .bc-fb-left{display:flex!important;flex-direction:column!important}
+  body.bc-network.bc-profile-mode .bc-security-communities{grid-column:auto}
+  body.bc-network.bc-profile-mode .bc-fb-card{padding:17px!important}
+  body.bc-network.bc-profile-mode .bc-fb-section-heading{padding:14px!important}
+  body.bc-network.bc-profile-mode .bc-security-post-controls{
+    width:100%;justify-content:space-between;
+  }
+  body.bc-network.bc-profile-mode .bc-security-post-controls select,
+  body.bc-network.bc-profile-mode .bc-security-post-controls button{
+    flex:1;max-width:none!important;
+  }
+  body.bc-network.bc-profile-mode #profileContent.bc-security-post-grid{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  body.bc-network.bc-profile-mode .bc-security-friend-grid,
+  body.bc-network.bc-profile-mode .bc-security-community-grid{
+    grid-template-columns:minmax(0,1fr);
+  }
+  body.bc-network.bc-profile-mode .bc-security-directory,
+  body.bc-network.bc-profile-mode .bc-security-about,
+  body.bc-network.bc-profile-mode .bc-security-group-panel{padding:16px}
+  body.bc-network.bc-profile-mode .bc-security-about{
+    display:flex;flex-direction:column;gap:16px;
+  }
+  body.bc-network.bc-profile-mode .bc-security-about-nav{
+    flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid #ffffff21;
+    padding-right:0;padding-bottom:10px;
+  }
+  body.bc-network.bc-profile-mode .bc-security-about-nav button{white-space:nowrap}
+  body.bc-network.bc-profile-mode .bc-security-about-row strong{max-width:65%}
+  body.bc-network.bc-profile-mode .bc-security-friend-search{width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+  body.bc-network.bc-profile-mode *{transition-duration:0ms!important;scroll-behavior:auto!important}
+}
