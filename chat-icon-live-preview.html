@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080a10">
+<meta name="robots" content="noindex,nofollow">
+<title>BLACKCELL — Live Chat Icon Preview</title>
+<style>
+:root{color-scheme:dark;--red:#ff325a;--wine:#951735;--steel:#e6e9f2;--muted:#a4a7b5}
+*{box-sizing:border-box}
+body{margin:0;min-height:100dvh;background:#070910;color:#eff0f5;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button{font:inherit;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:2px solid #f86783;outline-offset:5px}
+.header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px clamp(18px,3vw,38px);border-bottom:1px solid #7a33453c;background:#0b0d15}
+.identity{display:flex;align-items:center;gap:13px}
+.mark{display:grid;place-items:center;font:700 26px Georgia,serif;width:42px;height:42px;border-radius:11px;border:1px solid #a74e64;background:#411d2b;color:white;box-shadow:0 0 16px #c32b4e26}
+.heading{font-size:11px;letter-spacing:.18em;font-weight:800}
+.byline{font-size:9px;color:#bb92a0;letter-spacing:.16em;margin-top:5px}
+.preview-tag{font-size:9px;letter-spacing:.1em;font-weight:750;color:#dbb4c2;border:1px solid #725061;border-radius:10px;padding:10px}
+.main{max-width:1120px;margin:auto;padding:30px clamp(15px,3vw,38px) 70px}
+.eyebrow{font-size:10px;color:#d56d87;letter-spacing:.19em;font-weight:800}
+h1{font-size:clamp(30px,5vw,52px);letter-spacing:-.06em;line-height:1.04;margin:13px 0 10px}
+h1 em{font-style:normal;color:#e56882}
+.intro{max-width:700px;font-size:13px;color:#afb1c0;line-height:1.8;margin:0 0 25px}
+.stage{border:1px solid #673c4d;border-radius:24px;min-height:360px;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:32px;padding:42px 20px;background:
+ radial-gradient(ellipse 40% 55% at 50% 50%,#5e182640,transparent 90%),
+ radial-gradient(ellipse 80% 60% at 70% 0%,#1c1a2c55,transparent),
+ linear-gradient(140deg,#10121c,#080a11 78%);box-shadow:0 17px 60px #0007}
+.stage::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;background-image:linear-gradient(#8a637610 1px,transparent 1px),linear-gradient(90deg,#8a637610 1px,transparent 1px);background-size:34px 34px}
+.icon-wrap{position:relative;z-index:1;display:grid;place-items:center}
+.orb{position:relative;display:grid;place-items:center;width:116px;height:116px;border-radius:50%;border:1px solid #8a8f9e;background:radial-gradient(circle at 38% 14%,#505563,#252b35 35%,#10141d 69%,#080a11 100%);box-shadow:0 18px 48px #000d,inset 0 2px 1px #ffffff65,inset 0 -4px 15px #0009;z-index:1;transition:transform .22s}
+.orb:hover{transform:scale(1.04)}
+.orb::before{content:"";position:absolute;inset:-8px;border-radius:50%;border:3px solid #f92650;box-shadow:0 0 11px 1px #fc375f,0 0 23px 4px #e51e4c98,0 0 45px 11px #a1092b42,inset 0 0 10px #da143f45;animation:glowBreath 2.8s ease-in-out infinite;pointer-events:none}
+.orb::after{content:"";position:absolute;inset:-16px;border-radius:50%;border:1px solid #f62c5055;box-shadow:0 0 27px #ba19451e;animation:outerBreath 2.8s ease-in-out infinite;pointer-events:none}
+@keyframes glowBreath{0%,100%{opacity:.38;filter:brightness(.68)}50%{opacity:.94;filter:brightness(1.24)}}
+@keyframes outerBreath{0%,100%{opacity:.28;transform:scale(.98)}50%{opacity:.77;transform:scale(1.025)}}
+.chat-icon{width:62px;height:62px;z-index:1;position:relative;filter:drop-shadow(0 4px 7px #0008)}
+.orb .unread{position:absolute;z-index:3;right:-8px;top:-5px;width:33px;height:33px;display:grid;place-items:center;border-radius:50%;border:2px solid #190a12;background:linear-gradient(140deg,#fd5e79,#b10a3c);color:white;font-size:15px;font-weight:800;box-shadow:0 0 12px #d41d49a0,0 3px 11px #0008}
+.unread[hidden]{display:none}
+.orb.unread-mode::before{animation:unreadBreath 1.7s ease-in-out infinite;border-color:#ff486b}
+.orb.unread-mode::after{animation:outerBreath 1.7s ease-in-out infinite}
+@keyframes unreadBreath{0%,100%{opacity:.76;filter:brightness(1.02)}50%{opacity:1;filter:brightness(1.47)}}
+.stage-label{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.stage-label strong{letter-spacing:.17em;font-size:11px}
+.stage-label span{font-size:11px;color:#b3a7b3;line-height:1.65}
+.controls{margin-top:18px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;padding:17px 19px;background:linear-gradient(120deg,#181620,#11131b);border:1px solid #4a3b48;border-radius:15px}
+.controls-label{font-size:10px;letter-spacing:.11em;color:#c0b1bc;font-weight:800}
+.controls small{display:block;margin-top:5px;color:#9fa1ae;font-size:10px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.pill{min-height:43px;border:1px solid #73515e;border-radius:10px;padding:11px 15px;background:#25202a;color:#e4cbd4;font-size:11px;font-weight:800}
+.pill[aria-pressed=true]{background:linear-gradient(145deg,#93304a,#5d2036);border-color:#dc6a84;color:#fff;box-shadow:0 0 17px #a62b4b40}
+.pill:hover{filter:brightness(1.13)}
+.disclaimer{font-size:11px;color:#94939f;line-height:1.7;margin:18px 2px 0}
+.dialog{position:absolute;z-index:5;inset:14px;margin:auto;max-width:430px;max-height:320px;border-radius:19px;border:1px solid #a55975;background:linear-gradient(142deg,#241d2b,#0f1017);box-shadow:0 22px 70px #000e;display:flex;flex-direction:column;overflow:hidden}
+.dialog[hidden]{display:none}
+.dialog-head{display:flex;justify-content:space-between;gap:10px;align-items:center;border-bottom:1px solid #ffffff20;padding:14px 15px}
+.dialog-head strong{font-size:11px;letter-spacing:.09em}
+.dialog-head small{display:block;font-size:9px;color:#b2a1ae;margin-top:5px}
+.dialog-head button{background:#302430;color:#ffdde8;border:1px solid #84516a;border-radius:9px;padding:8px 11px}
+.dialog-body{flex:1;min-height:140px;padding:20px;display:flex;flex-direction:column;justify-content:center;gap:11px}
+.sample-msg{border-radius:12px;background:#363240;padding:11px 12px;max-width:86%;width:max-content;font-size:11px}
+.sample-msg.out{align-self:flex-end;background:#7d2842}
+.dialog-foot{padding:13px;border-top:1px solid #ffffff20;text-align:center;font-size:9px;color:#ae9faf}
+@media(max-width:580px){.main{padding-top:24px}.header{padding:13px 16px}.heading{font-size:9px}.byline{font-size:8px}.preview-tag{font-size:8px;padding:8px}.stage{min-height:330px}.orb{width:102px;height:102px}.chat-icon{width:55px;height:55px}.controls{align-items:stretch}.actions{width:100%}.pill{flex:1}.dialog{max-height:calc(100% - 25px)}}
+@media(prefers-reduced-motion:reduce){.orb::before,.orb::after{animation:none}.orb::before{opacity:.8}}
+</style>
+</head>
+<body>
+<header class="header">
+ <div class="identity"><div class="mark">B</div><div><div class="heading">BLACKCELL CORPORATION</div><div class="byline">CORPORATE MESSAGES · DESIGN LAB</div></div></div>
+ <div class="preview-tag">LIVE ANIMATED SAMPLE</div>
+</header>
+<main class="main">
+ <div class="eyebrow">PRIVATE NETWORK / COMMUNICATIONS UI</div>
+ <h1>Red pulse <em>chat icon.</em></h1>
+ <p class="intro">This is the working version of the red-glow concept. The light stays in place and slowly gets brighter and dimmer. Switch to Unread Messages to see a stronger alert, or tap the icon to open a sample chat window.</p>
+ <section class="stage" aria-label="Animated BLACKCELL chat icon preview">
+  <div class="icon-wrap">
+   <button type="button" id="chatOrb" class="orb" aria-label="Open example Blackcell Messages">
+    <svg class="chat-icon" viewBox="0 0 64 64" aria-hidden="true">
+     <defs>
+      <linearGradient id="silver" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#fff"/><stop offset=".52" stop-color="#d8dee9"/><stop offset="1" stop-color="#a6afbf"/></linearGradient>
+     </defs>
+     <path d="M12 12H51a8 8 0 0 1 8 8v24a8 8 0 0 1-8 8H27L13 61v-9h-1a8 8 0 0 1-8-8V20a8 8 0 0 1 8-8Z" fill="url(#silver)" stroke="#fff" stroke-width="1.4"/>
+     <path d="M17 24H45M17 32H45M17 40H35" fill="none" stroke="#313843" stroke-width="4.2" stroke-linecap="round"/>
+    </svg>
+    <span class="unread" id="unreadBadge" hidden>3</span>
+   </button>
+  </div>
+  <div class="stage-label"><strong id="stageLabel">NO NEW MESSAGES</strong><span id="stageDetail">Soft red light slowly pulses around the icon.</span></div>
+  <section class="dialog" id="sampleDialog" role="dialog" aria-label="Sample chat window" aria-modal="false" hidden>
+   <div class="dialog-head"><div><strong>BLACKCELL MESSAGES</strong><small>PRIVATE · VERIFIED NETWORK</small></div><button id="closeDialog" type="button">✕ CLOSE</button></div>
+   <div class="dialog-body"><div class="sample-msg">New private message received.</div><div class="sample-msg out">The red ring pulses without spinning.</div></div>
+   <div class="dialog-foot">SAMPLE CHAT · NOT CONNECTED TO REAL MESSAGES</div>
+  </section>
+ </section>
+ <div class="controls">
+  <div><div class="controls-label">LIVE PREVIEW CONTROLS</div><small>Tap either mode to change the animation instantly.</small></div>
+  <div class="actions">
+   <button id="normalBtn" class="pill" aria-pressed="true" type="button">Normal Glow</button>
+   <button id="unreadBtn" class="pill" aria-pressed="false" type="button">3 Unread Messages</button>
+  </div>
+ </div>
+ <p class="disclaimer">This standalone sample is not connected to actual messages and does not change your production chat icon. The animation runs automatically when this page is open.</p>
+</main>
+<script>
+(function(){
+ const orb=document.getElementById('chatOrb');
+ const badge=document.getElementById('unreadBadge');
+ const normal=document.getElementById('normalBtn');
+ const unread=document.getElementById('unreadBtn');
+ const label=document.getElementById('stageLabel');
+ const detail=document.getElementById('stageDetail');
+ const dialog=document.getElementById('sampleDialog');
+ function setUnread(value){
+  orb.classList.toggle('unread-mode',value);
+  badge.hidden=!value;
+  normal.setAttribute('aria-pressed',String(!value));
+  unread.setAttribute('aria-pressed',String(value));
+  label.textContent=value?'3 NEW MESSAGES':'NO NEW MESSAGES';
+  detail.textContent=value?'A brighter red glow signals unread messages.':'Soft red light slowly pulses around the icon.';
+ }
+ normal.addEventListener('click',()=>setUnread(false));
+ unread.addEventListener('click',()=>setUnread(true));
+ orb.addEventListener('click',()=>{dialog.hidden=false});
+ document.getElementById('closeDialog').addEventListener('click',()=>{dialog.hidden=true;orb.focus()});
+ document.addEventListener('keydown',ev=>{if(ev.key==='Escape')dialog.hidden=true});
+})();
+</script>
+</body>
+</html>
