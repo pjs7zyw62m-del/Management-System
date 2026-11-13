@@ -190,7 +190,22 @@ window.addEventListener('message',event=>{
 });
 for(const e of ['pointerdown','keydown','wheel','touchstart'])window.addEventListener(e,noteActivity,{passive:true});
 setInterval(()=>{if(verified&&Date.now()-lastActivity>=IDLE_MS)void expireSession();},15000);
+let ledgerScopeChecking=false;
+async function checkLedgerOnlyStatus(){
+ if(!verified||logoutRunning||document.hidden||ledgerScopeChecking)return;
+ ledgerScopeChecking=true;
+ try{
+  const {data,error}=await client.from('corp_access_members')
+   .select('access_scope').eq('user_id',(await client.auth.getUser()).data?.user?.id).maybeSingle();
+  if(!error&&data?.access_scope==='ledger_only')
+   location.replace('private-photo-ledger.html');
+ }catch(_){}
+ finally{ledgerScopeChecking=false}
+}
+setInterval(()=>void checkLedgerOnlyStatus(),20000);
+
 document.addEventListener('visibilitychange',()=>{
+ if(!document.hidden)void checkLedgerOnlyStatus();
  if(!document.hidden&&verified){
   if(Date.now()-lastActivity>=IDLE_MS)void expireSession();
   else void client.rpc('corp_employee_code_status').then(({data,error})=>{
