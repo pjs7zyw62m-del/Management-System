@@ -125,10 +125,8 @@
           <button id="profileEndPreview" type="button">EXIT PREVIEW</button>
         </div>
         <article class="profile-hero panel bc-fb-header">
-          <div id="profileCover" class="profile-cover bc-fb-cover">
-            <div class="bc-fb-cover-mark"><span class="bc-security-mark">B</span><span class="bc-security-cover-logo">BLACKCELL CORPORATION <small>PRIVATE SECURITY NETWORK</small></span></div>
-            <div class="bc-security-cover-stamp" aria-hidden="true">DIVISION 07 · RESTRICTED NETWORK · IDENTITY CONTROL</div>
-            <button type="button" class="bc-fb-cover-edit" id="profileCoverAction" hidden>▧ EDIT COVER PHOTO</button>
+          <div class="bc-profile-id-strip" aria-label="Blackcell Network identity">
+            <span>BLACKCELL CORPORATION</span><span>PRIVATE NETWORK / MEMBER PROFILE</span>
           </div>
           <div class="profile-identity bc-fb-identity">
             <div class="profile-identity-main bc-fb-identity-main">
@@ -178,9 +176,9 @@
             </section>
             <section class="bc-fb-card bc-security-setup" id="profileGettingStarted" hidden>
               <h3>Make your profile yours</h3>
-              <p>Complete your photo, cover, headline, and introduction.</p>
+              <p>Complete your profile photo, headline, and introduction.</p>
               <div class="bc-profile-progress"><div id="profileSetupProgress"></div></div>
-              <div id="profileSetupNote" class="bc-profile-setup-caption">0 of 4 details complete</div>
+              <div id="profileSetupNote" class="bc-profile-setup-caption">0 of 3 details complete</div>
               <button id="profileSetupAction" type="button" class="bc-fb-soft-button">COMPLETE PROFILE</button>
             </section>
             <section class="bc-fb-card bc-security-personal">
@@ -464,7 +462,7 @@
 <div id="editOverlay" class="modal-backdrop" hidden><section class="modal panel" role="dialog" aria-modal="true" aria-labelledby="editTitle">
   <header class="modal-head"><div><div class="overline">BLACKCELL / PERSONAL IDENTITY</div><h2 id="editTitle">Edit Your Profile</h2></div><button id="closeEdit" class="close-x" aria-label="Close editing">✕</button></header>
   <div class="modal-body"><label for="editHeadline">HEADLINE <small>MAX 140 CHARACTERS</small></label><input id="editHeadline" maxlength="140" placeholder="Describe your role or interests"><label for="editBio">ABOUT YOU <small>MAX 1,000 CHARACTERS</small></label><textarea id="editBio" maxlength="1000" rows="4" placeholder="Introduce yourself to the Blackcell Network…"></textarea>
-    <div class="edit-files"><label>PROFILE PHOTO <input id="editAvatar" type="file" accept="image/*"></label><label>COVER BANNER <input id="editCover" type="file" accept="image/*"></label></div><p class="hint">Images up to 12 MB. Your username and clearance are assigned by Blackcell Administration.</p><p id="editFeedback" class="feedback" hidden></p></div>
+    <div class="edit-files"><label>PROFILE PHOTO <input id="editAvatar" type="file" accept="image/*"></label></div><p class="hint">Images up to 12 MB. Your username and clearance are assigned by Blackcell Administration.</p><p id="editFeedback" class="feedback" hidden></p></div>
   <footer class="modal-footer"><button id="cancelEdit" class="btn outline">CANCEL</button><button id="saveProfile" class="btn crimson">SAVE PROFILE ↗</button></footer>
 </section></div>
 <div id="appleAlbumOverlay" class="modal-backdrop" hidden>
