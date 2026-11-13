@@ -70,9 +70,9 @@ button,input{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;curs
     <div id="bcTgLinkDetails" class="bc-tg-note" aria-live="polite"></div>
    </div>
    <details id="bcTgOwnerSettings" class="bc-tg-box" hidden>
-    <summary>OWNER · BOT CONFIGURATION</summary>
-    <p>Register a bot through Telegram's official BotFather. Add the bot token and a webhook secret as Supabase Edge Function Secrets—never enter them in this browser.</p>
-    <label class="bc-tg-label" for="bcTgUsername">PUBLIC BOT USERNAME</label>
+    <summary>OWNER · ENABLE TELEGRAM BOT</summary>
+    <p>Telegram identity login is already separate. To test messages with the BLACKCELL bot, add its BotFather API token and a webhook secret in Supabase Edge Function Secrets, then tap ACTIVATE WEBHOOK. The website detects the bot username automatically.</p>
+    <label class="bc-tg-label" for="bcTgUsername">PUBLIC BOT USERNAME · OPTIONAL OVERRIDE</label>
     <input id="bcTgUsername" autocomplete="off" placeholder="YourBotUsername_bot">
     <button type="button" id="bcTgSaveName" class="bc-tg-alt">SAVE BOT USERNAME</button>
     <button type="button" id="bcTgActivateWebhook" class="bc-tg-action">ACTIVATE WEBHOOK</button>
