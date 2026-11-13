@@ -50,6 +50,7 @@ function avatar(p,size='med'){
 function cover(node,p){
  node.style.removeProperty('background-image');
  const src=mediaUrl(asset(p?.cover_asset_id));
+ if(node.id==='profileCover')node.classList.toggle('bc-custom-member-cover',Boolean(src));
  if(src){
   const image='linear-gradient(to top,rgba(8,9,14,.75),rgba(9,10,15,.08) 65%),url("'+src.replace(/["\\]/g,'')+'")';
   // The new premium profile stylesheet has a strong fallback image.
