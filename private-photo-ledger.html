@@ -54,6 +54,7 @@
  <section id="noRoom" class="panel empty-room" hidden>
   <div class="empty-icon">⌑</div><h2>No private photo room assigned</h2>
   <p id="noRoomText">This section only opens after the BLACKCELL owner assigns an employee. No Network member can browse another person's private room.</p>
+  <div class="no-room-upload-hint"><span>▧</span><strong>UPLOAD PHOTO</strong><small>Available after the owner assigns your employee account to a private room.</small></div>
  </section>
  <section id="activeRoom" hidden>
   <div class="room-toolbar panel">
@@ -70,6 +71,14 @@
     <button id="closeRoomBtn" type="button" class="button-outline" hidden>CLOSE ROOM</button>
    </div>
   </div>
+  <div id="uploadAccessStatus" class="upload-access-status" role="status" aria-live="polite">
+   <div class="upload-access-icon">▧</div>
+   <div class="upload-access-copy">
+    <strong id="uploadAccessTitle">Photo uploads</strong>
+    <p id="uploadAccessDetail">Checking which account can post photos to this room.</p>
+   </div>
+   <button id="uploadAccessAction" type="button" class="button-main">GO TO UPLOAD</button>
+  </div>
   <div class="metrics" aria-label="Photo ledger totals">
    <article class="metric metric-owed"><span>OUTSTANDING · YOU OWE / YOU ARE OWED</span><strong id="totalOwed" class="money">$0.00</strong><small id="owedDescription">Not yet assigned</small></article>
    <article class="metric"><span>TOTAL ASSIGNED</span><strong id="totalAssigned" class="money">$0.00</strong><small>Amounts entered by owner</small></article>
@@ -78,16 +87,29 @@
   </div>
   <div class="room-body">
    <aside class="side-column">
+    <section id="ownerUploadInfo" class="panel owner-upload-info" hidden>
+     <div class="card-title"><span class="card-icon">▧</span><div><div class="eyebrow">PHOTO UPLOAD / EMPLOYEE VIEW</div><h3>Employee Upload Access</h3></div></div>
+     <p id="ownerUploadDescription">Your selected employee has the upload controls on his own private page. Your account controls the amounts instead.</p>
+     <div class="owner-upload-example" aria-label="Illustration of employee upload control">
+      <span class="file-symbol">＋</span>
+      <strong>UPLOAD PHOTO</strong>
+      <small>Available when the selected employee signs in</small>
+     </div>
+     <p class="privacy-note">Owner view is read-only for photo submissions. Your employee can post photos that appear in both accounts.</p>
+     <button id="ownerUploadShare" type="button" class="button-outline full">COPY EMPLOYEE UPLOAD LINK</button>
+    </section>
     <section id="employeeUpload" class="panel upload-card" hidden>
      <div class="card-title"><span class="card-icon">▧</span><div><div class="eyebrow">EMPLOYEE / PHOTO SUBMISSION</div><h3>Post a Private Photo</h3></div></div>
      <form id="uploadPhotoForm">
       <label class="file-drop" for="uploadPhoto"><span class="file-symbol">＋</span><strong>CHOOSE A PHOTO</strong><small>JPEG, PNG, WebP or HEIC · up to 12 MB</small><span id="selectedPhotoName">No photo selected</span></label>
-      <input id="uploadPhoto" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" required>
+      <label class="native-upload-label" for="uploadPhoto">OR USE YOUR DEVICE'S FILE PICKER</label>
+      <input id="uploadPhoto" class="upload-native-file" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" required>
       <label class="stack-label">CAPTION / NOTE
        <textarea id="uploadCaption" maxlength="500" placeholder="Describe this photo, or add a short note…" rows="4"></textarea>
       </label>
       <button id="submitPhoto" type="submit" class="button-main">POST TO OUR PRIVATE ROOM ↗</button>
      </form>
+     <p class="upload-helper">On iPad, tap <strong>Choose a Photo</strong> or <strong>Choose File</strong> to select from Photos or Files.</p>
      <p id="uploadFeedback" class="form-note" role="status"></p>
     </section>
     <section class="panel info-card">
