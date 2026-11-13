@@ -36,6 +36,14 @@ function setChannel(channel){
   button.setAttribute('aria-pressed',String(channel===key));
  }
  document.body.classList.toggle('bc-channel-hide-chat',channel!=='imessage');
+ // Some legacy chat styles force the original pane visible on mobile.
+ // Apply an explicit channel visibility rule so Telegram never stacks on top of iMessage.
+ const originalPane=document.querySelector('body > .chat');
+ if(originalPane){
+  originalPane.hidden=channel!=='imessage';
+  if(channel!=='imessage')originalPane.style.setProperty('display','none','important');
+  else originalPane.style.removeProperty('display');
+ }
  $('bcTelegramWorkspace').hidden=channel==='imessage';
  $('bcTgBotPane').hidden=channel!=='bot';
  $('bcTgPersonalPane').hidden=channel!=='personal';
