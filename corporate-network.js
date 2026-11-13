@@ -1186,7 +1186,7 @@ async function boot(){
   if(auth.member.role==='owner'||auth.member.can_chat===true){
    window.BLACKCELL_CORPORATE_NETWORK_CLIENT=client;
    const chatScript=document.createElement('script');
-   chatScript.src='corporate-chat-dock.js?v=20261113-orbit5';
+   chatScript.src='corporate-chat-dock.js?v=20261113-imessage6';
    chatScript.defer=true;
    document.body.append(chatScript);
   }
