@@ -48,8 +48,9 @@ function setChannel(channel){
  $('bcTgBotPane').hidden=channel!=='bot';
  $('bcTgPersonalPane').hidden=channel!=='personal';
  if(channel==='personal'){
-  $('bcTgHeading').textContent='Connect Telegram';
-  $('bcTgIntro').textContent='Sign in with your Telegram identity. Personal chat syncing is separate and optional.';
+  $('bcTgHeading').textContent='Sign In';
+  $('bcTgIntro').textContent='BLACKCELL and Telegram accounts in one place. Each connection stays private.';
+  note('');
   $('bcTgStatus').textContent='CHECKING';
   $('bcTgStatus').classList.remove('connected');
   void refreshPersonalIdentity();
@@ -62,37 +63,70 @@ function setChannel(channel){
 }
 async function refreshPersonalIdentity(){
  const statusEl=$('bcTgPersonalLinkStatus');
- if(!statusEl)return;
- statusEl.textContent='CHECKING CONNECTION';
+ const blackcellStatus=$('bcBlackcellAuthStatus');
+ const blackcellLink=$('bcBlackcellLoginLink');
+ const blackcellOpen=$('bcGoImessage');
+ const connectLink=$('bcTgPersonalConnectLink');
+ const botButton=$('bcTgTryBot');
+ blackcellStatus.textContent='CHECKING BLACKCELL SIGN-IN';
+ blackcellStatus.classList.remove('connected');
+ statusEl.textContent='CHECKING TELEGRAM';
+ statusEl.classList.remove('connected');
+ blackcellOpen.hidden=true;
+ blackcellLink.hidden=true;
+ botButton.hidden=true;
  try{
+  // Only an authorized BLACKCELL session can access Telegram identity status.
+  // This is intentionally separate from user-client chat authorization.
+  const a=await corporateAuthorize(db);
+  if(a?.member?.role==='owner')blackcellLink.href='dashboard.html';
+  else blackcellLink.href='employee.html';
+  const verified=await requireChat();
+  if(!verified){
+   blackcellStatus.textContent='SIGN-IN OR CHAT VERIFICATION REQUIRED';
+   blackcellLink.hidden=false;
+   statusEl.textContent='SIGN IN TO BLACKCELL FIRST';
+   connectLink.textContent='SIGN IN TO TELEGRAM AFTER BLACKCELL';
+   connectLink.hidden=true;
+   $('bcTgStatus').textContent='SIGN-IN REQUIRED';
+   $('bcTgStatus').classList.remove('connected');
+   return;
+  }
+  blackcellStatus.textContent='CONNECTED · VERIFIED NETWORK';
+  blackcellStatus.classList.add('connected');
+  blackcellOpen.hidden=false;
+  connectLink.hidden=false;
   const {data,error}=await db.functions.invoke('blackcell-telegram-login',{body:{action:'status'}});
   if(error||data?.ok!==true){
-   statusEl.textContent='BLACKCELL VERIFIED SIGN-IN REQUIRED';
-   $('bcTgStatus').textContent='NOT VERIFIED';
+   statusEl.textContent='TELEGRAM STATUS UNAVAILABLE';
+   connectLink.textContent='CHECK TELEGRAM CONNECTION';
+   $('bcTgStatus').textContent='BLACKCELL CONNECTED';
+   $('bcTgStatus').classList.add('connected');
    return;
   }
   const connected=Boolean(data.connected);
-  const connectLink=$('bcTgPersonalConnectLink');
-  const tryBot=$('bcTgTryBot');
+  botButton.hidden=false;
   if(connected){
-   connectLink.textContent='MANAGE CONNECTED IDENTITY ↗';
-   tryBot.hidden=false;
+   connectLink.textContent='MANAGE TELEGRAM IDENTITY ↗';
    const username=String(data.account?.username||'').trim();
-   statusEl.textContent=username?'CONNECTED AS @'+username:'TELEGRAM IDENTITY CONNECTED';
-   $('bcTgStatus').textContent='IDENTITY CONNECTED';
-   $('bcTgStatus').classList.add('connected');
+   statusEl.textContent=username?'CONNECTED AS @'+username:'CONNECTED · TELEGRAM IDENTITY';
+   statusEl.classList.add('connected');
+   $('bcTgStatus').textContent='BOTH CONNECTED';
   }else{
-   connectLink.textContent='✈ CONNECT TELEGRAM IDENTITY ↗';
-   tryBot.hidden=false;
-   statusEl.textContent=data.configured?'READY TO CONNECT':'ADMIN SETUP REQUIRED';
-   $('bcTgStatus').textContent=data.configured?'NOT CONNECTED':'NOT CONFIGURED';
-   $('bcTgStatus').classList.remove('connected');
+   connectLink.textContent='SIGN IN TO TELEGRAM ↗';
+   statusEl.textContent=data.configured?'READY TO CONNECT':'TELEGRAM LOGIN NOT CONFIGURED';
+   $('bcTgStatus').textContent='BLACKCELL CONNECTED';
   }
+  $('bcTgStatus').classList.add('connected');
  }catch{
-  statusEl.textContent='SIGN-IN STATUS TEMPORARILY UNAVAILABLE';
-  $('bcTgStatus').textContent='UNAVAILABLE';
+  blackcellStatus.textContent='BLACKCELL CONNECTION COULD NOT BE VERIFIED';
+  blackcellLink.hidden=false;
+  statusEl.textContent='TELEGRAM STATUS UNAVAILABLE';
+  $('bcTgStatus').textContent='RETRY SIGN-IN';
+  $('bcTgStatus').classList.remove('connected');
  }
 }
+
 function renderStatus(){
  const badge=$('bcTgStatus');
  badge.classList.toggle('connected',state.linked&&state.ready);
@@ -279,11 +313,13 @@ $('bcChannelBot').addEventListener('click',()=>setChannel('bot'));
 $('bcChannelPersonal').addEventListener('click',()=>setChannel('personal'));
 $('bcTgGenerateLink').addEventListener('click',()=>void generateLink());
 $('bcTgTryBot').addEventListener('click',()=>setChannel('bot'));
+$('bcGoImessage').addEventListener('click',()=>setChannel('imessage'));
 $('bcTgRefresh').addEventListener('click',()=>void refreshTelegram());
 $('bcTgDisconnect').addEventListener('click',()=>void disconnect());
 $('bcTgSaveName').addEventListener('click',()=>void saveName());
 $('bcTgActivateWebhook').addEventListener('click',()=>void activate());
 $('bcTgComposer').addEventListener('submit',e=>void sendMessage(e));
 // The identity page can send an authorized user straight to the bot test.
-const initialChannel=new URLSearchParams(location.search).get('channel')==='bot'?'bot':'imessage';
+const requestedChannel=new URLSearchParams(location.search).get('channel');
+const initialChannel=requestedChannel==='bot'?'bot':requestedChannel==='signin'?'personal':'imessage';
 setChannel(initialChannel);
