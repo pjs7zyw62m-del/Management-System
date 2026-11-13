@@ -345,4 +345,22 @@ window.addEventListener('message',event=>{
   if(typeof id==='string'&&contacts.some(x=>x.user_id===id))choose(id);
  }
 });
+let chatScopeChecking=false;
+async function verifyChatScope(){
+ if(!employeeSession||sessionEnded||!ready||document.hidden||chatScopeChecking)return;
+ chatScopeChecking=true;
+ try{
+  const {data,error}=await client.from('corp_access_members')
+   .select('access_scope').eq('user_id',self).single();
+  if(!error&&data?.access_scope==='ledger_only'){
+   ready=false;
+   location.replace('private-photo-ledger.html');
+  }
+ }catch(_){}
+ finally{chatScopeChecking=false}
+}
+setInterval(()=>void verifyChatScope(),20000);
+document.addEventListener('visibilitychange',()=>{
+ if(!document.hidden)void verifyChatScope()
+});
 void boot();
