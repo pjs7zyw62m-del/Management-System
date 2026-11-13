@@ -19,22 +19,37 @@
   email.type='button';email.disabled=true;email.title='Corporate email is not connected yet';
   dock.append(people,imessage,email);
   dock.hidden=true; // Bubble-only launcher; avoid a redundant, cluttered bottom toolbar.
-  // A classic glass chat bubble with an actual crimson light orbiting its rim.
+  // Approved smoked-black-glass iMessage; switch to glowing red glass on unread.
+  // Chat functionality and unread detection are preserved.
   const orb=make('button','bc-chat-orb');
   orb.type='button';
-  orb.setAttribute('aria-label','Open Blackcell Messages');
-  orb.setAttribute('title','BLACKCELL · Private Messages');
-  const orbit=make('span','bc-chat-orbit-ring');
-  orbit.setAttribute('aria-hidden','true');
-  const icon=make('span','bc-orb-chat-icon');
+  orb.setAttribute('aria-label','Open BLACKCELL iMessage');
+  orb.setAttribute('title','BLACKCELL iMessage');
+  const icon=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  icon.setAttribute('class','bc-imessage-vector');
+  icon.setAttribute('viewBox','0 0 64 64');
   icon.setAttribute('aria-hidden','true');
-  icon.append(make('span','bc-orb-chat-dots','•••'));
-  orb.append(orbit,icon);
+  icon.setAttribute('focusable','false');
+  const iconNS='http://www.w3.org/2000/svg';
+  const silver=document.createElementNS(iconNS,'path');
+  silver.setAttribute('d','M12 12H51a8 8 0 0 1 8 8v24a8 8 0 0 1-8 8H27L13 61v-9h-1a8 8 0 0 1-8-8V20a8 8 0 0 1 8-8Z');
+  silver.setAttribute('class','bc-imessage-silver');
+  icon.append(silver);
+  for(const cx of [19,32,45]){
+    const circle=document.createElementNS(iconNS,'circle');
+    circle.setAttribute('cx',String(cx));
+    circle.setAttribute('cy','32');
+    circle.setAttribute('r','4.1');
+    circle.setAttribute('class','bc-imessage-dot');
+    icon.append(circle);
+  }
+  orb.append(icon);
+  orb.append(make('span','bc-imessage-name','iMessage'));
   const dot=make('span','bc-online');
   const counter=make('span','bc-unread');counter.hidden=true;
   orb.append(dot,counter);
   const pane=make('section','bc-chat-pane');
-  pane.setAttribute('role','dialog');pane.setAttribute('aria-label','Blackcell Messages floating conversation window');
+  pane.setAttribute('role','dialog');pane.setAttribute('aria-label','BLACKCELL iMessage floating conversation window');
   pane.id='bcChatPane';
   pane.hidden=true;
   const header=make('div','bc-chat-pane-header');
@@ -42,7 +57,7 @@
   const labelIcon=make('span','bc-chat-header-bubble','•••');
   labelIcon.setAttribute('aria-hidden','true');
   const labelContent=make('span','bc-chat-header-label');
-  const labelTitle=make('strong','','BLACKCELL MESSAGES');
+  const labelTitle=make('strong','','BLACKCELL iMessage');
   const labelSubtitle=make('small','','PRIVATE · VERIFIED NETWORK');
   labelContent.append(labelTitle,labelSubtitle);
   label.append(labelIcon,labelContent);
@@ -87,7 +102,7 @@
   function setUnread(number){
     unread=Math.max(0,number);
     counter.hidden=unread===0;counter.textContent=unread>99?'99+':String(unread);
-    orb.setAttribute('aria-label','Open minimized iMessage chat'+(unread?' ('+unread+' unread)':''));
+    orb.setAttribute('aria-label','Open BLACKCELL iMessage'+(unread?' ('+unread+' unread messages)':''));
     imessage.textContent='● iMESSAGE'+(unread?' ('+unread+')':'');
     orb.classList.toggle('has-unread',unread>0);
     imessage.classList.toggle('has-unread',unread>0);
