@@ -2,7 +2,7 @@ import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-staf
 import {setupBlackcellPhotos} from './corporate-network-photos.js?v=20261112-speed2';
 import {setupBlackcellStorageStatus} from './corporate-storage-status.js?v=20261111-storage1';
 import {mountMilitaryGunner} from './military-gunner.js?v=20261110-fast4';
-import {createNetworkPersonalization} from './corporate-network-personalization.js?v=20261111-rediscovery2';
+import {createNetworkPersonalization} from './corporate-network-personalization.js?v=20261112-themes5';
 import {createPhotoRediscovery} from './corporate-photo-rediscovery.js?v=20261111-mediareset1';
 import {createVisualDiscovery} from './corporate-visual-discovery.js?v=20261111-mediareset1';
 import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phonecheck2';
@@ -1198,7 +1198,12 @@ async function boot(){
  }
 }
 const personalization=createNetworkPersonalization({client,state,toast,
- onChanged:()=>{photos.render();renderFeed();rediscovery.refresh()}});
+ onChanged:()=>{
+  state.feedFilter=personalization.enabled()?'for-you':'latest';
+  document.querySelectorAll('#feedFilter [data-filter]').forEach(n=>n.classList.toggle('selected',n.dataset.filter===state.feedFilter));
+  photos.render();renderFeed();rediscovery.refresh();
+  if(state.view==='profile')renderProfile();
+ }});
 const rediscovery=createPhotoRediscovery({client,state,personalization,mediaUrl,toast,
  openPhoto:a=>photos.openAsset(a)});
 const dedupe=createPhotoDedupe({client,state,mediaUrl,toast});
