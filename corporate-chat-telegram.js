@@ -135,6 +135,7 @@ async function initializeTelegram(){
  state.initialized=true;
  note('Verifying your corporate messaging permissions…');
  if(!await requireChat()){
+  state.initialized=false;
   note('BLACKCELL chat access must be verified before Telegram can be used.');
   $('bcTgStatus').textContent='NOT AUTHORIZED';
   return;
@@ -164,7 +165,7 @@ async function generateLink(){
   const {data,error}=await db.rpc('corp_telegram_begin_bot_link');
   if(error||!data?.ok)throw Error(error?.message||data?.reason||'Could not create link');
   const url=String(data.url||'');
-  if(!/^https:\/\/t\.me\/[A-Za-z][A-Za-z0-9_]{4,31}bot\?start=[a-f0-9-]+$/i.test(url))
+  if(!/^https:\/\/t\.me\/[A-Za-z][A-Za-z0-9_]{1,28}bot\?start=[a-f0-9-]+$/i.test(url))
    throw Error('Invalid Telegram link from server');
   const link=$('bcTgConnectLink');
   link.href=url;link.hidden=false;
