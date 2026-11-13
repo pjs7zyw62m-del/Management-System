@@ -76,6 +76,12 @@ body.bc-network.bc-profile-mode .bc-service-focus-indicator>span:last-child{
 body.bc-network.bc-profile-mode .bc-service-focus-panel button{
  border-color:#b4526e!important;color:#f7e5eb!important;
 }
+body.bc-network.bc-profile-mode .bc-view-as-notice[hidden],
+body.bc-network.bc-profile-mode #profileViewAs[hidden],
+body.bc-network.bc-profile-mode #profileThemeQuick[hidden],
+body.bc-network.bc-profile-mode #profileServiceFocusPanel[hidden]{
+ display:none!important;
+}
 body.bc-network.bc-profile-mode .bc-view-as-notice{
  display:flex;justify-content:space-between;align-items:center;gap:13px;flex-wrap:wrap;
  border:1px solid #b37b43a8;border-radius:11px;padding:12px 15px;
