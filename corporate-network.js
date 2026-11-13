@@ -482,6 +482,7 @@ function renderProfile(){
  const isPreview=isOwnProfile&&state.profilePreview;
  document.body.classList.toggle('bc-profile-view-as',isPreview);
  $('profileViewAs').hidden=!isOwnProfile||isPreview;
+ $('profileThemeQuick').hidden=!isMine;
  $('profileViewAsNotice').hidden=!isPreview;
  $('profileServiceFocusPanel').hidden=!isMine;
  $('profileServiceFocusLabel').textContent=personalization.enabled()?personalization.focusLabel(personalization.serviceFocus()):'All uniforms';
@@ -1054,6 +1055,7 @@ function setupEvents(){
  });
  $('profileFollowingSeeAll').addEventListener('click',()=>switchView('discover'));
  $('profileServiceFocusEdit').addEventListener('click',()=>personalization.open());
+ $('profileThemeQuick').addEventListener('click',()=>personalization.open());
  $('profileViewAs').addEventListener('click',()=>{
   if(state.profileUserId!==state.user.id)return;
   state.profilePreview=true;
