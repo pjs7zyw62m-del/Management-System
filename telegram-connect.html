@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#05060a">
+<meta name="robots" content="noindex,nofollow">
+<script>if(/iPhone|iPod/i.test(navigator.userAgent)||(navigator.maxTouchPoints>0&&Math.min(screen.width||Infinity,screen.height||Infinity)<=650))document.documentElement.classList.add("bc-phone");</script><meta name="theme-color" content="#05060a">
 <title>BLACKCELL iMessage · Connect Telegram</title>
 <style>
 :root{color-scheme:dark;--text:#f0eff4;--dim:#aba5b2;--red:#f05b7c;--border:#78627377}
@@ -81,10 +82,29 @@ h1 em{color:#ff7b9c;font-style:normal}
 .footer{font-size:10px;color:#928d9c;line-height:1.6;margin-top:20px}
 @media(max-width:790px){.layout{grid-template-columns:1fr}main{padding:24px 15px}.panelhead{padding:14px 15px}.content{padding:17px}}
 @media(max-width:440px){.top{min-height:66px;padding:10px 13px}.logo{font-size:10px;letter-spacing:.1em}.below{font-size:8px}.symbol{height:37px;width:37px}.back{font-size:9px;padding:10px}.glass{height:67px;width:67px}.hero h2{font-size:18px}.step{padding:9px}.step strong{font-size:9px}.step small{font-size:8px}.options{flex-direction:column}}
+.bc-phone,.bc-phone body{max-width:100%;overflow-x:hidden}
+.bc-phone main{width:100%;max-width:680px;padding:21px 14px 28px}
+.bc-phone .layout{grid-template-columns:minmax(0,1fr)!important;gap:13px}
+.bc-phone .panel,.bc-phone .content,.bc-phone .hero>div{min-width:0}
+.bc-phone .top{padding:10px 12px}
+.bc-phone .logo{font-size:10px;white-space:normal}
+.bc-phone h1{font-size:clamp(29px,7.6vw,41px);line-height:1.1;letter-spacing:-.052em}
+.bc-phone .lede{font-size:12px;line-height:1.65}
+.bc-phone .panelhead{padding:13px 13px}
+.bc-phone .content{padding:16px 14px}
+.bc-phone .hero{gap:14px}
+.bc-phone .hero h2{font-size:20px;overflow-wrap:anywhere}
+.bc-phone .steps{gap:5px}
+.bc-phone .step{min-width:0;padding:9px 7px;overflow-wrap:anywhere}
+.bc-phone .step strong{font-size:9px}
+.bc-phone .step small{font-size:9px}
+.bc-phone .next code,.next code{overflow-wrap:anywhere;word-break:break-all}
+.bc-phone .syncblock{padding:15px}
+.bc-phone .primary,.bc-phone .secondary,.bc-phone .danger{font-size:12px}
 @media(prefers-reduced-motion:reduce){.glass.connected{animation:none}}
 </style>
 <script src="corp-config.js" defer></script>
-<script type="module" src="telegram-connect.js?v=20261113-oidc7"></script>
+<script type="module" src="telegram-connect.js?v=20261113-bottest8"></script>
 </head>
 <body>
 <header class="top"><div class="brand"><div class="symbol">B</div><div><div class="logo">BLACKCELL iMessage</div><div class="below">PRIVATE CONNECTIONS / TELEGRAM</div></div></div>
@@ -100,6 +120,8 @@ h1 em{color:#ff7b9c;font-style:normal}
 <div class="hero"><div class="glass" id="glass"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M56 11 9 29l16 7 6 18 25-43Z" fill="#eef5ff" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="m25 36 31-25" stroke="#253345" stroke-width="3"/><path d="m25 36 20 10" stroke="#253345" stroke-width="3"/></svg></div>
 <div><h2 id="heading">Personal Telegram</h2><p id="description">Checking your secure BLACKCELL session.</p></div></div>
 <button type="button" class="primary" id="connect" disabled>✈ Continue with Telegram</button>
+<a href="corporate-chat.html?channel=bot" id="testBot" class="primary" hidden>✈ TEST TELEGRAM BOT MESSAGING</a>
+<p id="botTestHint" class="statusnote" hidden>Telegram identity is linked. Bot messaging requires a separate private bot link and administrator activation. Your personal conversations stay untouched.</p>
 <button type="button" class="danger" id="disconnect" hidden>Disconnect Telegram identity</button>
 <p id="feedback" class="statusnote" role="status" aria-live="polite"></p>
 <div class="detail"><strong>Only the identity you approve</strong><p>BLACKCELL will store your Telegram user ID, name and username to recognize your account. Sign-in does not copy personal messages, contacts or account passwords.</p></div>
