@@ -323,3 +323,15 @@ $('bcTgComposer').addEventListener('submit',e=>void sendMessage(e));
 const requestedChannel=new URLSearchParams(location.search).get('channel');
 const initialChannel=requestedChannel==='bot'?'bot':requestedChannel==='signin'?'personal':'imessage';
 setChannel(initialChannel);
+if(initialChannel==='personal'){
+ const outcome=new URLSearchParams(location.search).get('telegram');
+ const feedback={
+  linked:'Telegram identity connected. Both accounts are shown above; personal chat syncing is still separate.',
+  failed:'Telegram authorization could not be completed. You can retry through your Telegram card.',
+  expired:'Telegram authorization expired. Use the Telegram card to start again.',
+  in_use:'This Telegram identity is already linked to another BLACKCELL account.',
+  not_allowed:'Your BLACKCELL network session is not authorized for Telegram Login.'
+ };
+ if(feedback[outcome])note(feedback[outcome]);
+ if(outcome)history.replaceState(null,'',location.pathname+'?channel=signin');
+}
