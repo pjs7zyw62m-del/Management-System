@@ -134,3 +134,63 @@ footer{border-top:1px solid #ffffff14;color:#777c87;text-align:center;padding:18
 @media(max-width:850px){.room-body{display:flex;flex-direction:column}.side-column{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}.side-column .upload-card{grid-column:1/-1}.timeline-column{width:100%}.setup-form{grid-template-columns:repeat(2,minmax(0,1fr))}.setup-form button{grid-column:1/-1}.page-heading{align-items:flex-start}.top-actions .privacy-pill{display:none}}
 @media(max-width:580px){.topbar{padding:12px;min-height:67px}.brand-label strong{font-size:9px}.brand-label small{font-size:8px}.brand-b{width:36px;height:36px;font-size:23px}.navlink{font-size:9px;padding:10px}.shell{padding:22px 12px 55px}.page-heading h1{font-size:37px}.room-toolbar{padding:17px}.room-controls{justify-content:stretch;width:100%}.room-controls label,.room-controls select{width:100%}.metrics{gap:8px}.metric{padding:13px}.metric strong{font-size:26px}.metric span{font-size:8px}.side-column{display:flex;flex-direction:column}.side-column>.panel{width:100%}.photo-entry{display:flex;flex-direction:column}.photo-entry img{max-height:440px;height:auto;min-height:0;aspect-ratio:auto;object-fit:contain;background:#090b10}.photo-entry-content{padding:18px}.setup-form{display:flex;flex-direction:column}.setup-form label,.setup-form button{width:100%}.filter-buttons{width:100%}.filter-buttons button{flex:1;min-width:70px}.top-actions{margin-left:auto}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important}}
+
+
+/* PHOTO UPLOAD ACCESS: clearly distinguish owner and employee workflows */
+.upload-access-status{
+ display:flex;align-items:center;gap:15px;justify-content:space-between;flex-wrap:wrap;
+ border:1px solid #ba5b7895;border-radius:13px;
+ background:radial-gradient(ellipse at 96% 0%,#9c37512d,transparent 66%),linear-gradient(125deg,#211923,#131722);
+ padding:17px 19px;margin:0 0 15px;box-shadow:inset 0 1px #ffffff10
+}
+.upload-access-icon{
+ display:grid;place-items:center;flex:none;width:48px;height:48px;border-radius:10px;
+ background:#60293f;border:1px solid #ae5973;color:#f5c7d6;font-size:25px
+}
+.upload-access-copy{min-width:180px;flex:1}
+.upload-access-copy strong{font-size:14px;letter-spacing:.03em;font-weight:790;color:#f8edf2}
+.upload-access-copy p{font-size:11px;color:#c1b7c4;line-height:1.65;margin:6px 0 0;max-width:710px}
+.upload-access-status button{flex:0 0 auto;min-height:47px;font-size:11px}
+.owner-upload-info{border-color:#735365!important}
+.owner-upload-info>p{font-size:11px;line-height:1.7;color:#c4bac6}
+.owner-upload-example{
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+ border:1px dashed #8e6072;border-radius:11px;padding:20px 15px;min-height:130px;
+ background:linear-gradient(140deg,#2a1c2b,#151a22);text-align:center;margin:15px 0
+}
+.owner-upload-example strong{font-size:13px;letter-spacing:.06em;color:#f6ecf3}
+.owner-upload-example small{color:#aaa0af;font-size:10px;line-height:1.6}
+.upload-helper{font-size:11px;line-height:1.65;color:#aeb3be;margin:13px 0 0}
+.upload-helper strong{color:#f4dee7}
+.native-upload-label{
+ display:block;margin-top:13px;font-size:10px;color:#cdbbc7;
+ letter-spacing:.09em;font-weight:760
+}
+#uploadPhoto.upload-native-file{
+ position:static!important;display:block!important;width:100%!important;
+ height:auto!important;min-height:52px!important;opacity:1!important;
+ overflow:visible!important;margin:9px 0 13px;
+ padding:9px!important;border-radius:10px!important;
+ background:#0a0e16!important;border:1px solid #a8687eaa!important;
+ color:#f3e9ef!important;font-size:12px!important;cursor:pointer;
+}
+#uploadPhoto.upload-native-file::file-selector-button{
+ display:inline-block;min-height:35px;border:1px solid #ce738b;border-radius:8px;
+ background:#64243b;color:#fff;font-weight:770;font-size:11px;
+ padding:9px 13px;margin-right:12px;cursor:pointer
+}
+.no-room-upload-hint{
+ display:flex;flex-direction:column;align-items:center;gap:8px;
+ padding:16px;border:1px dashed #715263;border-radius:11px;margin-top:15px;
+ background:#201922
+}
+.no-room-upload-hint span{font-size:23px;color:#cb829b}
+.no-room-upload-hint strong{font-size:12px;color:#e9d1da;letter-spacing:.05em}
+.no-room-upload-hint small{font-size:11px;color:#ada3b0;line-height:1.6}
+@media(max-width:620px){
+ .upload-access-status{padding:16px;gap:10px}
+ .upload-access-copy{flex-basis:calc(100% - 60px)}
+ .upload-access-status button{width:100%}
+ .upload-access-icon{width:42px;height:42px}
+ #uploadPhoto.upload-native-file{font-size:12px!important}
+}
