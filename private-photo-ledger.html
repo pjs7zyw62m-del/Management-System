@@ -36,6 +36,7 @@
   <div class="workspace-actions">
    <button id="refreshLedger" class="button-outline" type="button">↻ REFRESH</button>
    <span class="verified-mark"><span class="status-dot"></span> VERIFIED SESSION</span>
+   <span id="ledgerLiveStatus" class="live-ledger-status" role="status" aria-live="polite">CONNECTING LIVE UPDATES…</span>
   </div>
  </div>
  <section id="ownerSetup" class="panel owner-setup" hidden>
@@ -83,7 +84,9 @@
    <article class="metric metric-owed"><span>OUTSTANDING · YOU OWE / YOU ARE OWED</span><strong id="totalOwed" class="money">$0.00</strong><small id="owedDescription">Not yet assigned</small></article>
    <article class="metric"><span>TOTAL ASSIGNED</span><strong id="totalAssigned" class="money">$0.00</strong><small>Amounts entered by owner</small></article>
    <article class="metric"><span>RECORDED AS PAID</span><strong id="totalPaid" class="money">$0.00</strong><small>Manual settlement records</small></article>
-   <article class="metric"><span>AWAITING AMOUNT</span><strong id="pendingCount">0</strong><small>Photos awaiting owner decision</small></article>
+   <article class="metric"><span>AWAITING REVIEW</span><strong id="pendingCount">0</strong><small>Photos awaiting owner decision</small></article>
+   <article class="metric"><span>ACCEPTED AT $0.00</span><strong id="freeCount">0</strong><small>Accepted, nothing owed</small></article>
+   <article class="metric"><span>REJECTED PHOTOS</span><strong id="rejectedCount">0</strong><small>Not included in amounts owed</small></article>
   </div>
   <div class="room-body">
    <aside class="side-column">
@@ -115,8 +118,8 @@
     <section class="panel info-card">
      <div class="card-title"><span class="card-icon">♢</span><div><div class="eyebrow">TWO-PERSON ACCESS</div><h3>How this works</h3></div></div>
      <div class="explainer"><span>01</span><p>The chosen employee uploads a private photograph. It is <strong>not</strong> published to the Network feed or Military Library.</p></div>
-     <div class="explainer"><span>02</span><p>The BLACKCELL owner enters an amount for that photo. Once set, the amount cannot be changed or deleted.</p></div>
-     <div class="explainer"><span>03</span><p>Both sides see the same amount owed. The owner can record a payment as settled when it has actually been made.</p></div>
+     <div class="explainer"><span>02</span><p>The BLACKCELL owner accepts the photo for any amount, including $0.00, or rejects it. The decision is saved and cannot be undone.</p></div>
+     <div class="explainer"><span>03</span><p>Both sides see live updates and the same balance. Accepted $0.00 or rejected photos add nothing owed. The owner can record positive payments as settled.</p></div>
      <p class="privacy-note">This is a private record only. BLACKCELL does not transfer money or automatically make payments here.</p>
     </section>
     <section class="panel link-card">
@@ -129,12 +132,14 @@
    </aside>
    <section class="timeline-column">
     <div class="timeline-toolbar panel">
-     <div><div class="eyebrow">PHOTO SUBMISSIONS / SHARED LEDGER</div><h2>Our Photo History</h2><p>Prices and settlement statuses are synchronized from the same private records.</p></div>
+     <div><div class="eyebrow">PHOTO SUBMISSIONS / SHARED LEDGER</div><h2>Our Photo History</h2><p>Photo submissions, decisions and balances update live on both accounts.</p></div>
      <div class="filter-buttons" aria-label="Filter photo submissions">
       <button type="button" data-photo-filter="all" aria-pressed="true">ALL</button>
-      <button type="button" data-photo-filter="pending" aria-pressed="false">UNPRICED</button>
+      <button type="button" data-photo-filter="pending" aria-pressed="false">PENDING REVIEW</button>
       <button type="button" data-photo-filter="owed" aria-pressed="false">OWED</button>
       <button type="button" data-photo-filter="settled" aria-pressed="false">PAID</button>
+      <button type="button" data-photo-filter="free" aria-pressed="false">$0 ACCEPTED</button>
+      <button type="button" data-photo-filter="rejected" aria-pressed="false">REJECTED</button>
      </div>
     </div>
     <div id="photoEntries" class="photo-entries" aria-live="polite">
