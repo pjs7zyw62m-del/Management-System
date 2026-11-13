@@ -36,20 +36,27 @@ h1 em{font-style:normal;color:#e56882}
 @keyframes glowBreath{0%,100%{opacity:.38;filter:brightness(.68)}50%{opacity:.94;filter:brightness(1.24)}}
 @keyframes outerBreath{0%,100%{opacity:.28;transform:scale(.98)}50%{opacity:.77;transform:scale(1.025)}}
 .chat-icon{width:62px;height:62px;z-index:1;position:relative;filter:drop-shadow(0 4px 7px #0008)}
-.orb .unread{position:absolute;z-index:3;right:-8px;top:-5px;width:33px;height:33px;display:grid;place-items:center;border-radius:50%;border:2px solid #190a12;background:linear-gradient(140deg,#fd5e79,#b10a3c);color:white;font-size:15px;font-weight:800;box-shadow:0 0 12px #d41d49a0,0 3px 11px #0008}
-.unread[hidden]{display:none}
-.orb.unread-mode::before{animation:unreadBreath 1.7s ease-in-out infinite;border-color:#ff486b}
-.orb.unread-mode::after{animation:outerBreath 1.7s ease-in-out infinite}
+.orb .unread{position:absolute;z-index:3;right:-8px;top:-5px;width:33px;height:33px;display:none;place-items:center;border-radius:50%;border:2px solid #190a12;background:linear-gradient(140deg,#fd5e79,#b10a3c);color:white;font-size:15px;font-weight:800;box-shadow:0 0 12px #d41d49a0,0 3px 11px #0008}
+#unreadMode:checked~.stage .orb .unread{display:grid}
+#unreadMode:checked~.stage .orb::before{animation:unreadBreath 1.7s ease-in-out infinite;border-color:#ff486b}
+#unreadMode:checked~.stage .orb::after{animation:outerBreath 1.7s ease-in-out infinite}
 @keyframes unreadBreath{0%,100%{opacity:.76;filter:brightness(1.02)}50%{opacity:1;filter:brightness(1.47)}}
 .stage-label{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
 .stage-label strong{letter-spacing:.17em;font-size:11px}
 .stage-label span{font-size:11px;color:#b3a7b3;line-height:1.65}
+.stage-label .label-unread,.stage-label .detail-unread{display:none}
+#unreadMode:checked~.stage .stage-label .label-normal,
+#unreadMode:checked~.stage .stage-label .detail-normal{display:none}
+#unreadMode:checked~.stage .stage-label .label-unread,
+#unreadMode:checked~.stage .stage-label .detail-unread{display:inline}
 .controls{margin-top:18px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;padding:17px 19px;background:linear-gradient(120deg,#181620,#11131b);border:1px solid #4a3b48;border-radius:15px}
 .controls-label{font-size:10px;letter-spacing:.11em;color:#c0b1bc;font-weight:800}
 .controls small{display:block;margin-top:5px;color:#9fa1ae;font-size:10px}
 .actions{display:flex;gap:8px;flex-wrap:wrap}
-.pill{min-height:43px;border:1px solid #73515e;border-radius:10px;padding:11px 15px;background:#25202a;color:#e4cbd4;font-size:11px;font-weight:800}
-.pill[aria-pressed=true]{background:linear-gradient(145deg,#93304a,#5d2036);border-color:#dc6a84;color:#fff;box-shadow:0 0 17px #a62b4b40}
+.mode-radio{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.pill{min-height:50px;display:inline-flex;align-items:center;justify-content:center;text-align:center;border:1px solid #73515e;border-radius:10px;padding:13px 18px;background:#25202a;color:#e4cbd4;font-size:12px;font-weight:800;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:rgba(245,68,107,.3)}
+#normalMode:checked~.controls label[for="normalMode"],#unreadMode:checked~.controls label[for="unreadMode"]{background:linear-gradient(145deg,#a53251,#5d2036);border-color:#fa8099;color:#fff;box-shadow:0 0 17px #a62b4b5b}
+.mode-radio:focus-visible~.controls label[for="normalMode"],.mode-radio:focus-visible~.controls label[for="unreadMode"]{outline:2px solid #ff9db1;outline-offset:4px}
 .pill:hover{filter:brightness(1.13)}
 .disclaimer{font-size:11px;color:#94939f;line-height:1.7;margin:18px 2px 0}
 .dialog{position:absolute;z-index:5;inset:14px;margin:auto;max-width:430px;max-height:320px;border-radius:19px;border:1px solid #a55975;background:linear-gradient(142deg,#241d2b,#0f1017);box-shadow:0 22px 70px #000e;display:flex;flex-direction:column;overflow:hidden}
@@ -69,12 +76,14 @@ h1 em{font-style:normal;color:#e56882}
 <body>
 <header class="header">
  <div class="identity"><div class="mark">B</div><div><div class="heading">BLACKCELL CORPORATION</div><div class="byline">CORPORATE MESSAGES · DESIGN LAB</div></div></div>
- <div class="preview-tag">LIVE ANIMATED SAMPLE</div>
+ <div class="preview-tag">LIVE ANIMATED SAMPLE · V2</div>
 </header>
 <main class="main">
  <div class="eyebrow">PRIVATE NETWORK / COMMUNICATIONS UI</div>
  <h1>Red pulse <em>chat icon.</em></h1>
- <p class="intro">This is the working version of the red-glow concept. The light stays in place and slowly gets brighter and dimmer. Switch to Unread Messages to see a stronger alert, or tap the icon to open a sample chat window.</p>
+ <p class="intro">Watch the stationary red glow pulse. Tap <strong>3 Unread Messages</strong> below to brighten the effect and display an unread badge, then tap the chat icon to open sample messages.</p>
+ <input class="mode-radio" type="radio" name="chatDemoMode" id="normalMode" checked aria-label="Normal glow preview">
+ <input class="mode-radio" type="radio" name="chatDemoMode" id="unreadMode" aria-label="3 unread messages preview">
  <section class="stage" aria-label="Animated BLACKCELL chat icon preview">
   <div class="icon-wrap">
    <button type="button" id="chatOrb" class="orb" aria-label="Open example Blackcell Messages">
@@ -85,10 +94,10 @@ h1 em{font-style:normal;color:#e56882}
      <path d="M12 12H51a8 8 0 0 1 8 8v24a8 8 0 0 1-8 8H27L13 61v-9h-1a8 8 0 0 1-8-8V20a8 8 0 0 1 8-8Z" fill="url(#silver)" stroke="#fff" stroke-width="1.4"/>
      <path d="M17 24H45M17 32H45M17 40H35" fill="none" stroke="#313843" stroke-width="4.2" stroke-linecap="round"/>
     </svg>
-    <span class="unread" id="unreadBadge" hidden>3</span>
+    <span class="unread" id="unreadBadge">3</span>
    </button>
   </div>
-  <div class="stage-label"><strong id="stageLabel">NO NEW MESSAGES</strong><span id="stageDetail">Soft red light slowly pulses around the icon.</span></div>
+  <div class="stage-label" aria-live="polite"><strong><span class="label-normal">NO NEW MESSAGES</span><span class="label-unread">3 NEW MESSAGES</span></strong><span class="detail-normal">Soft red light slowly pulses around the icon.</span><span class="detail-unread">Bright red glow and the unread badge. Tap the icon to preview the chat.</span></div>
   <section class="dialog" id="sampleDialog" role="dialog" aria-label="Sample chat window" aria-modal="false" hidden>
    <div class="dialog-head"><div><strong>BLACKCELL MESSAGES</strong><small>PRIVATE · VERIFIED NETWORK</small></div><button id="closeDialog" type="button">✕ CLOSE</button></div>
    <div class="dialog-body"><div class="sample-msg">New private message received.</div><div class="sample-msg out">The red ring pulses without spinning.</div></div>
@@ -97,9 +106,9 @@ h1 em{font-style:normal;color:#e56882}
  </section>
  <div class="controls">
   <div><div class="controls-label">LIVE PREVIEW CONTROLS</div><small>Tap either mode to change the animation instantly.</small></div>
-  <div class="actions">
-   <button id="normalBtn" class="pill" aria-pressed="true" type="button">Normal Glow</button>
-   <button id="unreadBtn" class="pill" aria-pressed="false" type="button">3 Unread Messages</button>
+  <div class="actions" role="group" aria-label="Choose a chat alert preview">
+   <label for="normalMode" class="pill">Normal Glow</label>
+   <label for="unreadMode" class="pill">3 Unread Messages</label>
   </div>
  </div>
  <p class="disclaimer">This standalone sample is not connected to actual messages and does not change your production chat icon. The animation runs automatically when this page is open.</p>
@@ -107,25 +116,20 @@ h1 em{font-style:normal;color:#e56882}
 <script>
 (function(){
  const orb=document.getElementById('chatOrb');
- const badge=document.getElementById('unreadBadge');
- const normal=document.getElementById('normalBtn');
- const unread=document.getElementById('unreadBtn');
- const label=document.getElementById('stageLabel');
- const detail=document.getElementById('stageDetail');
  const dialog=document.getElementById('sampleDialog');
- function setUnread(value){
-  orb.classList.toggle('unread-mode',value);
-  badge.hidden=!value;
-  normal.setAttribute('aria-pressed',String(!value));
-  unread.setAttribute('aria-pressed',String(value));
-  label.textContent=value?'3 NEW MESSAGES':'NO NEW MESSAGES';
-  detail.textContent=value?'A brighter red glow signals unread messages.':'Soft red light slowly pulses around the icon.';
+ const close=document.getElementById('closeDialog');
+ const normal=document.getElementById('normalMode');
+ const unread=document.getElementById('unreadMode');
+ // Native radio inputs/labels change the glow using CSS, even if JS is disabled.
+ // JavaScript is used only for the sample chat window.
+ function openDemo(){dialog.hidden=false;}
+ function closeDemo(){dialog.hidden=true;orb.focus();}
+ orb.addEventListener('click',openDemo);
+ close.addEventListener('click',closeDemo);
+ document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&!dialog.hidden)closeDemo()});
+ for(const input of [normal,unread]){
+  input.addEventListener('change',()=>{dialog.hidden=true;orb.setAttribute('aria-label',unread.checked?'Open example chat showing 3 unread messages':'Open example Blackcell Messages')});
  }
- normal.addEventListener('click',()=>setUnread(false));
- unread.addEventListener('click',()=>setUnread(true));
- orb.addEventListener('click',()=>{dialog.hidden=false});
- document.getElementById('closeDialog').addEventListener('click',()=>{dialog.hidden=true;orb.focus()});
- document.addEventListener('keydown',ev=>{if(ev.key==='Escape')dialog.hidden=true});
 })();
 </script>
 </body>
