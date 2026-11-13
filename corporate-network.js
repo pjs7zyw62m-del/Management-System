@@ -1,4 +1,4 @@
-import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-staff1';
+import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
 import {setupBlackcellPhotos} from './corporate-network-photos.js?v=20261112-speed2';
 import {setupBlackcellStorageStatus} from './corporate-storage-status.js?v=20261111-storage1';
 import {mountMilitaryGunner} from './military-gunner.js?v=20261110-fast4';
@@ -1097,6 +1097,13 @@ async function verifyNetworkSession(){
   const {data,error}=await client.auth.getUser();
   if(error||data?.user?.id!==state.user.id)
    return closeNetworkForSecurity('Your Blackcell session ended. Sign in again to view the private network.');
+  if(state.member?.role==='employee'){
+   const {data:access,error:accessError}=await client.from('corp_access_members')
+    .select('access_scope').eq('user_id',state.user.id).single();
+   if(accessError||access?.access_scope==='ledger_only'){
+    location.replace('private-photo-ledger.html');return;
+   }
+  }
   const rpc=state.member?.role==='owner'?'corp_code_status':'corp_employee_code_status';
   const status=await client.rpc(rpc);
   if(status.error||status.data?.verified!==true)
@@ -1130,6 +1137,9 @@ async function boot(){
   const {data:{session}}=await client.auth.getSession();
   if(!session)throw Error('Sign in to your employee account to open Blackcell Network.');
   const auth=await corporateAuthorize(client);
+  if(!auth.ok&&auth.reason==='ledger-only'){
+   location.replace('private-photo-ledger.html');return;
+  }
   if(!auth.ok)throw Error('Your corporate session is no longer authorized. Sign in again.');
   state.user=auth.user;state.member=auth.member;
   $('portalLink').href=auth.member.role==='owner'?'dashboard.html':'employee.html?card=1';
