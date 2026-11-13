@@ -14,7 +14,7 @@ const state={
  user:null,member:null,profiles:[],posts:[],assets:[],likes:[],comments:[],follows:[],
  assetUrls:new Map(),view:'feed',feedFilter:'latest',profileUserId:null,profileTab:'posts',
  attached:[],openComments:new Set(),busy:false,sort:'newest',deepPost:null,
- chatPeers:[],signedAt:0
+ chatPeers:[],signedAt:0,profilePostFilter:'all',profilePostGrid:false,profileFriendsMode:'following',profileFriendsQuery:''
 };
 const fields=['feedView','profileView','discoverView','videosView','photosView'];
 let gunnerDock=null;
@@ -320,6 +320,142 @@ function renderProfileSidePreviews(p){
   }
  }
 }
+function focusProfileComposer(){
+ if(state.profileUserId!==state.user?.id)return;
+ if(state.profileTab!=='posts'){state.profileTab='posts';renderProfile();}
+ const input=$('postBody');
+ if(input){input.scrollIntoView({behavior:'smooth',block:'center'});input.focus({preventScroll:true})}
+}
+function renderSecurityHighlights(p){
+ const container=$('profileHighlightsPreview');
+ if(!container)return;
+ container.replaceChildren();
+ const items=state.assets.filter(a=>a.owner_id===p.user_id&&a.kind==='photo'
+  &&sharedMedia(a)&&Boolean(mediaUrl(a))).slice(0,4);
+ if(!items.length){
+  container.append(el('p','bc-security-empty-preview','Highlights appear after approved photos are shared.'));
+  return;
+ }
+ for(const a of items){
+  const item=btn('',()=>{void photos.openAsset(a)});
+  item.className='bc-security-highlight';
+  item.setAttribute('aria-label','View '+(a.filename||'highlight'));
+  const img=el('img');img.src=mediaUrl(a);img.alt=a.filename||'Member highlight';img.loading='lazy';
+  item.append(img);container.append(item);
+ }
+}
+function renderProfileFriends(p){
+ const box=el('section','bc-security-directory');
+ const heading=el('div','bc-security-directory-head');
+ heading.append(el('h3','','Network Connections'));
+ const input=el('input','bc-security-friend-search');
+ input.type='search';input.maxLength=80;
+ input.placeholder='Search members you follow…';
+ input.value=state.profileFriendsQuery;
+ input.setAttribute('aria-label','Search connections');
+ heading.append(input);box.append(heading);
+ const tabs=el('div','bc-security-directory-tabs');
+ const list=el('div','bc-security-friend-grid');
+ function paint(){
+  list.replaceChildren();
+  const ids=state.follows
+   .filter(f=>state.profileFriendsMode==='following'?f.follower_id===p.user_id:f.following_id===p.user_id)
+   .map(f=>state.profileFriendsMode==='following'?f.following_id:f.follower_id);
+  const people=ids.map(id=>profile(id)).filter(Boolean)
+   .filter(member=>(personName(member)+' '+personHandle(member)).toLowerCase()
+       .includes(state.profileFriendsQuery.toLowerCase()));
+  if(!people.length){
+   list.append(el('div','bc-security-empty-preview',
+      ids.length?'No members match this search.':'No '+state.profileFriendsMode+' connections to show yet.'));
+  }else for(const person of people){
+   const row=btn('',()=>openProfile(person.user_id));
+   row.className='bc-security-friend-card';
+   row.append(avatar(person,'med'));
+   const label=el('span');
+   label.append(el('strong','',personName(person)),el('small','',personHandle(person)));
+   row.append(label);
+   list.append(row);
+  }
+ }
+ for(const [value,label] of [['following','Following'],['followers','Followers']]){
+  const button=btn(label,()=>{
+   state.profileFriendsMode=value;
+   for(const item of tabs.querySelectorAll('button'))
+    item.setAttribute('aria-selected',String(item.dataset.mode===value));
+   paint();
+  });
+  button.dataset.mode=value;button.setAttribute('aria-selected',String(value===state.profileFriendsMode));
+  tabs.append(button);
+ }
+ input.addEventListener('input',()=>{
+  state.profileFriendsQuery=input.value.trim().slice(0,80);
+  paint();
+ });
+ box.append(tabs,list);
+ const discover=btn('＋ DISCOVER VERIFIED MEMBERS',()=>switchView('discover'),'bc-security-button');
+ box.append(discover);paint();return box;
+}
+function renderProfileAbout(p,isMine){
+ const wrap=el('section','bc-security-about');
+ const nav=el('nav','bc-security-about-nav');
+ nav.setAttribute('aria-label','About categories');
+ const detail=el('div','bc-security-about-detail');
+ const sections=[
+  {id:'intro',title:'Introduction',sub:'Information provided by this member',
+   rows:[['Biography',p.bio?.trim()||'Not provided'],
+         ['Headline',p.headline?.trim()||'Not provided']]},
+  {id:'network',title:'Network Identity',sub:'Verified BLACKCELL member information',
+   rows:[['Name',personName(p)],['Username',personHandle(p)],
+         ['Joined',date(p.created_at)],['Account access',
+          isMine?'Level '+state.member.clearance_level:'Verified member']]},
+  {id:'activity',title:'Activity Summary',sub:'Actual member activity recorded in the Network',
+   rows:[['Posts',String(countPosts(p.user_id))],
+         ['Followers',String(state.follows.filter(f=>f.following_id===p.user_id).length)],
+         ['Following',String(state.follows.filter(f=>f.follower_id===p.user_id).length)],
+         ['Videos',String(countVideos(p.user_id))]]}
+ ];
+ function display(section){
+  detail.replaceChildren();
+  detail.append(el('div','bc-security-section-kicker','PERSONNEL / '+section.id.toUpperCase()));
+  detail.append(el('h3','',section.title),el('p','bc-security-about-sub',section.sub));
+  for(const [label,value] of section.rows){
+   const row=el('div','bc-security-about-row');
+   row.append(el('span','',label),el('strong','',value));
+   detail.append(row);
+  }
+  if(isMine&&section.id==='intro')
+   detail.append(btn('✎ EDIT BIO & HEADLINE',openEdit,'bc-security-button'));
+ }
+ for(const section of sections){
+  const b=btn(section.title,()=>{
+   for(const other of nav.querySelectorAll('button'))
+    other.setAttribute('aria-selected',String(other===b));
+   display(section);
+  });
+  b.setAttribute('aria-selected',String(section===sections[0]));
+  nav.append(b);
+ }
+ display(sections[0]);wrap.append(nav,detail);return wrap;
+}
+function renderProfileGroups(){
+ const wrap=el('section','bc-security-group-panel');
+ wrap.append(el('div','bc-security-section-kicker','BLACKCELL / COMMUNITY ACCESS'));
+ wrap.append(el('h3','','Groups & Uniform Communities'));
+ wrap.append(el('p','',
+  'Group membership features are not yet connected. Explore the existing BLACKCELL collections below; no group memberships or member counts are invented.'));
+ const links=[
+  ['MAN’S ARMED FORCES','All uniformed professions','mans-armed-forces.html'],
+  ['USA UNIFORMS','United States division','usa-page.html'],
+  ['MILITARY LIBRARY','Approved shared media and collections','corporate-network.html?view=photos']
+ ];
+ const grid=el('div','bc-security-community-grid');
+ for(const [name,description,href] of links){
+  const a=el('a','bc-security-community');
+  a.href=href;a.append(el('strong','',name),el('small','',description),el('span','','VIEW COLLECTION ↗'));
+  grid.append(a);
+ }
+ wrap.append(grid);return wrap;
+}
 function renderProfile(){
  const p=profile(state.profileUserId)||myProfile();
  if(!p)return;
@@ -345,6 +481,9 @@ function renderProfile(){
          :'This member has not added an introduction yet.');
  $('profileAsideJoined').textContent=date(p.created_at);
  $('profileAsideRole').textContent=isMine?'LEVEL '+state.member.clearance_level:'VERIFIED MEMBER';
+ $('profilePersonalIdentity').textContent=personName(p);
+ $('profilePersonalJoined').textContent=date(p.created_at);
+ $('profilePersonalClearance').textContent=isMine?'LEVEL '+state.member.clearance_level:'VERIFIED MEMBER';
  $('profileEditDetails').hidden=!isMine;
  $('profileCoverAction').hidden=!isMine;
  $('profileGettingStarted').hidden=!isMine;
@@ -357,18 +496,24 @@ function renderProfile(){
    $('profileGettingStarted').hidden=steps===4;
  }
  renderProfileSidePreviews(p);
+ renderSecurityHighlights(p);
  const tabCopy={
-  posts:['Activity & Posts','Updates shared with verified Network members.'],
-  photos:['Photo Collection','Photographs and images from this member.'],
-  videos:['Video Channel','Videos shared with the Network.'],
-  albums:['Photo Albums','Organized collections from this member.'],
-  about:['Profile Details','Introduction and identity information.']
+  posts:['Network Timeline','Updates shared with verified BLACKCELL members.'],
+  photos:['Photo Archive','Approved photographs shared by this member.'],
+  videos:['Reels & Videos','Videos shared in the BLACKCELL Network.'],
+  albums:['Albums','Organized photo collections.'],
+  about:['About','Personal introduction and verified account details.'],
+  friends:['Friends & Following','Real network connections and verified members.'],
+  groups:['Groups & Communities','Existing BLACKCELL collections and community information.']
  };
  const sectionInfo=tabCopy[state.profileTab]||tabCopy.posts;
  $('profileSectionTitle').textContent=sectionInfo[0];
  $('profileSectionIntro').textContent=sectionInfo[1];
  const actions=$('profileActions');actions.replaceChildren();
- if(p.user_id===state.user.id)actions.append(btn('EDIT PROFILE ↗',openEdit));
+ if(p.user_id===state.user.id){
+  actions.append(btn('＋ CREATE POST',focusProfileComposer,'bc-security-create-post'));
+  actions.append(btn('✎ EDIT PROFILE',openEdit,'bc-security-edit-profile'));
+ }
  else{
   actions.append(btn(following(p.user_id)?'✓ FOLLOWING':'+ FOLLOW',()=>void toggleFollow(p.user_id)));
   if(state.chatPeers.some(x=>x.user_id===p.user_id)){
@@ -380,20 +525,38 @@ function renderProfile(){
   b.classList.toggle('selected',b.dataset.tab===state.profileTab);
   b.setAttribute('aria-current',b.dataset.tab===state.profileTab?'page':'false');
  });
+ const more=$('profileMoreDropdown');
+ if(more)more.classList.toggle('selected',['albums','groups'].includes(state.profileTab));
+ $('profilePostControls').hidden=state.profileTab!=='posts';
+ $('profilePostLayout').textContent=state.profilePostGrid?'☷ LIST VIEW':'▦ GRID VIEW';
+ $('profilePostLayout').setAttribute('aria-pressed',String(state.profilePostGrid));
  syncProfileComposer();
  const box=$('profileContent');box.replaceChildren();
+ box.classList.toggle('bc-security-post-grid',state.profileTab==='posts'&&state.profilePostGrid);
  if(state.profileTab==='about'){
-  const about=el('div','panel about-content');
-  about.append(el('h3','','About '+personName(p)),el('p','',p.bio||'This member has not added a biography yet.'));
-  about.append(el('h3','','Network Identity'),el('p','',personHandle(p)+'\n'+(p.headline||'Blackcell Corporation')));
-  box.append(about);return;
+  box.append(renderProfileAbout(p,isMine));return;
+ }
+ if(state.profileTab==='friends'){
+  box.append(renderProfileFriends(p));return;
+ }
+ if(state.profileTab==='groups'){
+  box.append(renderProfileGroups());return;
  }
  if(state.profileTab==='posts'){
-  const posts=state.posts.filter(x=>x.author_id===p.user_id);
+  const posts=state.posts.filter(x=>{
+   if(x.author_id!==p.user_id)return false;
+   const filter=state.profilePostFilter;
+   if(filter==='all')return true;
+   const posted=postedAssets(x.id);
+   if(filter==='photos')return posted.some(a=>a.kind==='photo');
+   if(filter==='videos')return posted.some(a=>a.kind==='video');
+   if(filter==='text')return !posted.length;
+   return true;
+  });
   if(!posts.length){
    const emptyState=el('section','bc-profile-empty-state');
    const symbol=el('div','bc-profile-empty-symbol','▤');
-   const title=el('h3','',isMine?'Your story starts here':'No posts shared yet');
+   const title=el('h3','',state.profilePostFilter!=='all'?'No matching posts':isMine?'Your story starts here':'No posts shared yet');
    const body=el('p','',isMine
      ?'Share an introduction, a photograph, or an update with your Network. You control what you post.'
      :'Updates shared by this member will appear here.');
@@ -847,6 +1010,7 @@ function setupEvents(){
  }));
  document.querySelectorAll('#profileTabs [data-tab]').forEach(n=>n.addEventListener('click',()=>{
   state.profileTab=n.dataset.tab;
+  $('profileMoreDropdown')?.removeAttribute('open');
   renderProfile();
  }));
  $('postBody').addEventListener('input',updateCounter);
@@ -862,6 +1026,18 @@ function setupEvents(){
  $('profileCoverAction').addEventListener('click',openEdit);
  $('profileEditDetails').addEventListener('click',openEdit);
  $('profileSetupAction').addEventListener('click',openEdit);
+ $('profileHighlightsSeeAll').addEventListener('click',()=>{
+  state.profileTab='photos';renderProfile();
+  $('profileTabs').scrollIntoView({behavior:'smooth',block:'center'});
+ });
+ $('profilePostFilter').addEventListener('change',()=>{
+  state.profilePostFilter=$('profilePostFilter').value;
+  if(state.view==='profile'&&state.profileTab==='posts')renderProfile();
+ });
+ $('profilePostLayout').addEventListener('click',()=>{
+  state.profilePostGrid=!state.profilePostGrid;
+  if(state.view==='profile'&&state.profileTab==='posts')renderProfile();
+ });
  $('profilePhotosSeeAll').addEventListener('click',()=>{
   state.profileTab='photos';renderProfile();
   $('profileTabs').scrollIntoView({behavior:'smooth',block:'center'});
