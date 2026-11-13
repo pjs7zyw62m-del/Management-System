@@ -1,0 +1,127 @@
+/* BLACKCELL · PRIVATE NETWORK MEMBER THEMES AND PROFILE PREVIEW
+   Each theme is a private viewing preference. It does not change identity,
+   security roles, authorization, profile ownership or approval status. */
+body.bc-network .bc-service-focus-chooser{
+ display:flex;flex-direction:column;gap:12px;padding:19px;
+ margin:0 0 17px;border:1px solid #536071;background:
+ radial-gradient(ellipse at 90% 0%,#812d4433,transparent 63%),
+ linear-gradient(135deg,#1c2430,#090e15);border-radius:13px;
+}
+body.bc-network .bc-service-focus-chooser .bc-personalize-heading{margin:0}
+body.bc-network .bc-service-focus-chooser .bc-personalize-heading strong{
+ font-size:12px;letter-spacing:.1em;color:#f4eff5;
+}
+body.bc-network .bc-service-focus-chooser .bc-personalize-heading small{
+ color:#b5c0cb;max-width:720px;display:block;font-size:11px;line-height:1.6;margin-top:5px;
+}
+body.bc-network .bc-service-focus-chooser>label{
+ font-size:10px;color:#c5cbd6;letter-spacing:.14em;font-weight:760;
+}
+body.bc-network #personalizationServiceFocus{
+ width:100%;min-height:48px;border:1px solid #79869b65;border-radius:9px;
+ background:#0d121a;color:#f2f2f6;padding:12px;font-size:14px;font-weight:680;
+}
+body.bc-network .bc-service-theme-preview{
+ --theme-glow:#bb3c59;min-height:118px;
+ display:flex;justify-content:center;flex-direction:column;gap:9px;
+ position:relative;isolation:isolate;overflow:hidden;
+ border:1px solid #b9c4d544;border-left:3px solid var(--theme-glow);
+ border-radius:10px;padding:22px;background:
+ linear-gradient(110deg,#0a0e15e8,#111824bb),
+ radial-gradient(ellipse at 90% 15%,var(--theme-glow),transparent 59%),
+ url('blackcell-network-corporate-banner-v2.svg') center/cover;
+ box-shadow:inset 0 1px #fff1,0 8px 25px #0005;
+}
+body.bc-network .bc-service-theme-preview[data-theme="military"]{
+ --theme-glow:#7d8e59;
+ background:
+ linear-gradient(90deg,#0b1512f2,#18251cc9),
+ radial-gradient(ellipse at 89% 40%,#607148,transparent 67%),
+ url('blackcell-network-corporate-banner-v2.svg') center/cover;
+}
+body.bc-network .bc-service-theme-preview[data-theme="police"]{
+ --theme-glow:#638fb7;
+ background:
+ linear-gradient(90deg,#09131ff2,#15263bc9),
+ radial-gradient(ellipse at 89% 40%,#2d668d,transparent 67%),
+ url('blackcell-network-corporate-banner-v2.svg') center/cover;
+}
+body.bc-network .bc-service-theme-preview[data-theme="both"]{
+ --theme-glow:#b54c64;
+}
+body.bc-network .bc-service-theme-preview span{
+ color:#d4d7e0;font-size:9px;letter-spacing:.17em;font-weight:800;
+}
+body.bc-network .bc-service-theme-preview strong{
+ font-size:clamp(20px,3vw,33px);font-weight:820;letter-spacing:.05em;color:#fff;
+ line-height:1.1;text-shadow:0 3px 10px #000b;
+}
+body.bc-network .bc-service-theme-preview small{
+ font-size:11px;color:#d2d6e1;line-height:1.5;
+}
+body.bc-network #serviceFocusHelp{
+ color:#aab5c1;font-size:11px;line-height:1.6;margin:0;
+}
+body.bc-network.bc-profile-mode .bc-service-focus-panel .bc-service-focus-indicator{
+ display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+ padding:12px;border-radius:9px;border:1px solid #67748950;
+ background:linear-gradient(120deg,#121923,#161b24);
+}
+body.bc-network.bc-profile-mode .bc-service-focus-indicator>span:first-child{
+ color:#f2eef3;font-size:13px;font-weight:750;
+}
+body.bc-network.bc-profile-mode .bc-service-focus-indicator>span:last-child{
+ font-size:9px;font-weight:800;letter-spacing:.12em;color:#9cb8a8;
+}
+body.bc-network.bc-profile-mode .bc-service-focus-panel button{
+ border-color:#b4526e!important;color:#f7e5eb!important;
+}
+body.bc-network.bc-profile-mode .bc-view-as-notice{
+ display:flex;justify-content:space-between;align-items:center;gap:13px;flex-wrap:wrap;
+ border:1px solid #b37b43a8;border-radius:11px;padding:12px 15px;
+ background:linear-gradient(110deg,#332a20,#171a20);
+ color:#f7ebd8;font-size:11px;line-height:1.6;margin-bottom:14px;
+}
+body.bc-network.bc-profile-mode .bc-view-as-notice button{
+ background:#51341f;border:1px solid #d7a06a;color:#fff4df;
+ border-radius:9px;padding:11px 14px;min-height:43px;
+ font-size:10px;letter-spacing:.07em;font-weight:800;
+}
+body.bc-network.bc-profile-view-as #profileContent .post-actions button,
+body.bc-network.bc-profile-view-as #profileContent .post-delete{
+ pointer-events:none!important;opacity:.5!important;
+}
+body.bc-network.bc-profile-view-as #profileContent .post-delete,
+body.bc-network.bc-profile-view-as #profileView #profileCoverAction,
+body.bc-network.bc-profile-view-as #profileView #profileEditDetails,
+body.bc-network.bc-profile-view-as #profileView #profileGettingStarted,
+body.bc-network.bc-profile-view-as #profileView #profileServiceFocusPanel,
+body.bc-network.bc-profile-view-as #profileView #profileTimelineComposer{
+ display:none!important;
+}
+body.bc-network[data-service-focus="military"].bc-profile-mode .bc-fb-header{
+ border-color:#8b9b71b0!important;
+}
+body.bc-network[data-service-focus="military"].bc-profile-mode #profileTabs.bc-fb-tabs>button.selected{
+ border-bottom-color:#92a976!important;
+}
+body.bc-network[data-service-focus="military"].bc-profile-mode .bc-service-focus-indicator{
+ border-left:3px solid #829c66;
+}
+body.bc-network[data-service-focus="police"].bc-profile-mode .bc-fb-header{
+ border-color:#6894b9a8!important;
+}
+body.bc-network[data-service-focus="police"].bc-profile-mode #profileTabs.bc-fb-tabs>button.selected{
+ border-bottom-color:#719dca!important;
+}
+body.bc-network[data-service-focus="police"].bc-profile-mode .bc-service-focus-indicator{
+ border-left:3px solid #729fc7;
+}
+body.bc-network[data-service-focus="both"].bc-profile-mode .bc-service-focus-indicator{
+ border-left:3px solid #d55172;
+}
+@media(max-width:620px){
+ body.bc-network .bc-service-focus-chooser{padding:14px}
+ body.bc-network .bc-service-theme-preview{padding:17px;min-height:103px}
+ body.bc-network.bc-profile-mode .bc-view-as-notice button{width:100%}
+}
