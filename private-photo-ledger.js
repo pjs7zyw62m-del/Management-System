@@ -36,7 +36,7 @@ function parseDollars(value){
  if(!/^\d+(?:\.\d{1,2})?$/.test(str))throw Error('Enter a valid USD amount with up to two decimals, for example 3.50.');
  const [a,b='']=str.split('.');
  const n=BigInt(a)*100n+BigInt(b.padEnd(2,'0'));
- if(n<1n||n>MAX_SAFE)throw Error('Amount must be at least $0.01 and within the supported limit.');
+ if(n<0n||n>MAX_SAFE)throw Error('Amount must be $0.00 or more, within the supported limit.');
  return Number(n);
 }
 function show(id,text){$(id).textContent=String(text||'')}
@@ -202,14 +202,14 @@ async function loadEntries({force=false}={}){
  const all=[];
  for(let from=0;from<5000;from+=250){
   const result=await db.from(ENTRIES)
-   .select('id,room_id,uploaded_by,image_path,file_name,caption,amount_cents,priced_at,settled_at,created_at')
+   .select('id,room_id,uploaded_by,image_path,file_name,caption,amount_cents,decision_status,decided_at,priced_at,settled_at,created_at')
    .eq('room_id',selectedRoom.id).order('created_at',{ascending:false}).range(from,from+249);
   if(result.error)throw result.error;
   all.push(...(result.data||[]));
   if((result.data||[]).length<250)break;
  }
  if(state.room?.id!==selectedRoom.id)return;
- const signature=JSON.stringify(all.map(e=>[e.id,e.amount_cents,e.priced_at,e.settled_at,e.caption]));
+ const signature=JSON.stringify(all.map(e=>[e.id,e.amount_cents,e.decision_status,e.decided_at,e.priced_at,e.settled_at,e.caption]));
  state.entries=all;
  updateTotals();
  const needsSignedRefresh=all.some(e=>!state.images.has(e.image_path)
@@ -224,9 +224,12 @@ async function loadEntries({force=false}={}){
 }
 function updateTotals(){
  let assigned=0n,paid=0n,owed=0n,pending=0;
+ let rejected=0,complimentary=0;
  for(const e of state.entries){
-  if(e.amount_cents===null){pending++;continue}
+  if(e.decision_status==='rejected'){rejected++;continue}
+  if(e.decision_status!=='accepted'||e.amount_cents===null){pending++;continue}
   const amount=cents(e.amount_cents);
+  if(amount===0n)complimentary++;
   assigned+=amount;
   if(e.settled_at)paid+=amount;else owed+=amount;
  }
@@ -234,6 +237,8 @@ function updateTotals(){
  show('totalPaid',dollars(paid));
  show('totalOwed',dollars(owed));
  show('pendingCount',String(pending));
+ show('rejectedCount',String(rejected));
+ show('freeCount',String(complimentary));
 }
 async function signImages(items){
  const now=Date.now();
@@ -257,9 +262,11 @@ function setFilter(name){
  renderEntries();
 }
 function entryState(e){
+ if(e.decision_status==='rejected')return 'rejected';
+ if(e.decision_status!=='accepted')return 'pending';
+ if(cents(e.amount_cents)===0n)return 'free';
  if(e.settled_at)return 'settled';
- if(e.amount_cents!==null)return 'owed';
- return 'pending';
+ return 'owed';
 }
 function renderEntries(){
  const parent=$('photoEntries');parent.replaceChildren();
@@ -295,54 +302,82 @@ function renderEntry(e){
  const body=node('div','photo-entry-content');
  const meta=node('div','entry-meta');
  meta.append(node('span','',when(e.created_at)));
- const statusBadge=node('span','entry-badge '+status,status==='pending'?'AWAITING AMOUNT':status==='owed'?'AMOUNT OWED':'RECORDED PAID');
+ const statusBadge=node('span','entry-badge '+status,status==='pending'?'AWAITING YOUR REVIEW':status==='rejected'?'REJECTED':status==='free'?'ACCEPTED · $0.00':status==='owed'?'AMOUNT OWED':'RECORDED PAID');
  meta.append(statusBadge);
  body.append(meta,node('h3','','PHOTO '+e.id.slice(0,8).toUpperCase()));
  body.append(node('p','caption',e.caption||'No caption provided.'));
  const ctrl=node('div','entry-controls');
- if(e.amount_cents!==null){
+ if(status==='rejected'){
+  body.append(node('div','entry-amount','REJECTED'));
+  ctrl.append(node('small','','The owner rejected this photo on '+when(e.decided_at)+'. Nothing was added to the balance.'));
+ }else if(status==='free'){
+  body.append(node('div','entry-amount','$0.00'));
+  ctrl.append(node('small','','Accepted at no charge on '+when(e.decided_at)+'. No payment is owed.'));
+ }else if(e.decision_status==='accepted'){
   body.append(node('div','entry-amount',dollars(e.amount_cents)));
   ctrl.append(node('small','',e.settled_at
-   ?'Manually marked as paid on '+when(e.settled_at)
-   :'Amount assigned by the owner on '+when(e.priced_at)+'.'));
-  if(state.isOwner&&!e.settled_at){
+   ?'Manually recorded as paid on '+when(e.settled_at)
+   :'Accepted by the owner on '+when(e.decided_at)+'.'));
+  if(state.isOwner&&!e.settled_at&&cents(e.amount_cents)>0n){
    ctrl.append(button('✓ RECORD AS PAID',()=>void settle(e),'button-outline'));
   }
  }else{
-  body.append(node('div','entry-amount','AWAITING AMOUNT'));
+  body.append(node('div','entry-amount','PENDING OWNER REVIEW'));
   if(state.isOwner){
    const row=node('div','amount-row');
    const input=node('input');
    input.type='text';input.inputMode='decimal';input.placeholder='USD 0.00';input.maxLength=23;
-   input.setAttribute('aria-label','Amount to assign in USD for photo '+e.id.slice(0,8));
-   const submit=button('PLACE MY AMOUNT',()=>void assignAmount(e,input,submit),'button-main');
-   row.append(input,submit);
-   ctrl.append(row,node('small','','Once you assign an amount it is locked. The employee can see it immediately after refreshing.'));
+   input.setAttribute('aria-label','Amount to accept in USD for photo '+e.id.slice(0,8));
+   const submit=button('✓ ACCEPT PHOTO',()=>void assignAmount(e,input,submit),'button-main');
+   const zero=button('✓ ACCEPT $0.00',()=>void acceptZero(e,zero),'button-outline');
+   const reject=button('✕ REJECT PHOTO',()=>void rejectPhoto(e,reject),'button-outline reject-photo');
+   row.append(input,submit,zero,reject);
+   ctrl.append(row,node('small','','Accept for any amount, including $0.00, or reject. A decision is recorded and cannot be undone.'));
   }else{
-   ctrl.append(node('small','','The BLACKCELL owner has not set an amount for this photograph yet.'));
+   ctrl.append(node('small','','Waiting for the BLACKCELL owner to accept or reject this photograph.'));
   }
  }
  body.append(ctrl);card.append(body);return card;
 }
 async function assignAmount(entry,input,submit){
- if(!state.isOwner||state.busy||entry.amount_cents!==null)return;
+ if(!state.isOwner||state.busy||entry.decision_status!=='pending')return;
  let amount;
  try{amount=parseDollars(input.value)}catch(e){show('entriesFeedback',fail(e));return}
- if(!window.confirm('Set '+dollars(amount)+' for this photo? Once assigned, the amount cannot be changed.'))return;
+ if(!window.confirm('ACCEPT this photo for '+dollars(amount)+'? This acceptance and amount are final.'))return;
  state.busy=true;submit.disabled=true;submit.textContent='SAVING…';
  try{
   await verify();
-  const r=await db.from(ENTRIES).update({amount_cents:amount})
-   .eq('id',entry.id).eq('room_id',state.room.id).is('amount_cents',null)
-   .select('id,amount_cents').single();
+  const r=await db.from(ENTRIES).update({amount_cents:amount,decision_status:'accepted'})
+   .eq('id',entry.id).eq('room_id',state.room.id).eq('decision_status','pending')
+   .select('id,amount_cents,decision_status').single();
   if(r.error)throw r.error;
   state.entryFingerprint='';await loadEntries({force:true});
-  show('entriesFeedback','Amount '+dollars(amount)+' assigned. Both participants can now see it.');
+  show('entriesFeedback','Photo accepted for '+dollars(amount)+'. Both screens will update automatically.');
  }catch(e){show('entriesFeedback','Could not assign amount: '+fail(e))}
- finally{state.busy=false;submit.disabled=false;submit.textContent='PLACE MY AMOUNT'}
+ finally{state.busy=false;submit.disabled=false;submit.textContent='✓ ACCEPT PHOTO'}
+}
+async function acceptZero(entry,trigger){
+ const field=document.createElement('input');
+ field.value='0.00';
+ await assignAmount(entry,field,trigger);
+}
+async function rejectPhoto(entry,trigger){
+ if(!state.isOwner||state.busy||entry.decision_status!=='pending')return;
+ if(!window.confirm('Reject this photo? It will remain in the private record as REJECTED with no amount owed. This cannot be undone.'))return;
+ state.busy=true;trigger.disabled=true;
+ try{
+  await verify();
+  const r=await db.from(ENTRIES).update({decision_status:'rejected'})
+    .eq('id',entry.id).eq('room_id',state.room.id).eq('decision_status','pending')
+    .select('id,decision_status').single();
+  if(r.error)throw r.error;
+  state.entryFingerprint='';await loadEntries({force:true});
+  show('entriesFeedback','Photo rejected. Both participants will see the decision automatically.');
+ }catch(e){show('entriesFeedback','Could not reject photo: '+fail(e))}
+ finally{state.busy=false;trigger.disabled=false}
 }
 async function settle(entry){
- if(!state.isOwner||state.busy||!entry.amount_cents||entry.settled_at)return;
+ if(!state.isOwner||state.busy||entry.decision_status!=='accepted'||cents(entry.amount_cents)<=0n||entry.settled_at)return;
  const message='Record '+dollars(entry.amount_cents)+' as paid?\n\nThis is only a ledger record; no money will move. Only continue if you actually settled the amount.';
  if(!window.confirm(message))return;
  state.busy=true;
@@ -385,7 +420,7 @@ async function uploadPhoto(event){
   const upload=await db.storage.from(BUCKET).upload(path,file,{contentType:info.mime,upsert:false,cacheControl:'60'});
   if(upload.error)throw upload.error;
   const r=await db.from(ENTRIES).insert({
-    id,room_id:room.id,uploaded_by:state.user.id,image_path:path,
+    id,room_id:room.id,uploaded_by:state.user.id,image_path:path,decision_status:'pending',
     file_name:file.name.slice(0,180),caption:$('uploadCaption').value.trim().slice(0,500)
   }).select('id').single();
   if(r.error){
