@@ -129,7 +129,7 @@ $('disconnect').addEventListener('click',async()=>{
   await status().catch(()=>{});
  }
 });
-$('skip').addEventListener('click',()=>{location.assign('corporate-chat.html')});
+$('skip').addEventListener('click',()=>{location.assign('corporate-chat.html?channel=signin')});
 $('chatSync').addEventListener('click',()=>{
  message('Personal chat syncing is not available yet. A separate Telegram TDLib client and individual authorization are required. Your Telegram Login only connects your identity.');
  document.querySelector('#ownerHelp')?.scrollIntoView({behavior:'smooth',block:'nearest'});
