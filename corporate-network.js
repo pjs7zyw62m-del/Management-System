@@ -1104,7 +1104,7 @@ function openDirectVideoUpload(category='standard'){
  $('bcVideoUploadClose').focus({preventScroll:true});
 }
 function closeDirectVideoUpload(){
- if(directVideoBusy)return;
+ if(directVideoBusy||posterAiBusy)return;
  $('bcVideoUploadDialog').hidden=true;
  $('bcVideoUploadForm').reset();
  videoPosterClear();
@@ -1496,13 +1496,29 @@ function setupEvents(){
  $('bcVideoUploadForm').addEventListener('submit',e=>void publishDirectVideo(e));
  $('bcVideoCategory').addEventListener('change',syncDirectVideoCategory);
  $('bcVideoPoster').addEventListener('change',videoPosterSelect);
+ $('bcPosterGenerate').addEventListener('click',()=>void makeAiPoster());
+ $('bcPosterChooseOriginal').addEventListener('click',()=>{
+  if(studioOriginalPoster()){posterSelected='original';renderPosterOptions()}
+ });
+ $('bcPosterChooseAi').addEventListener('click',()=>{
+  if(posterAiPath){posterSelected='ai';renderPosterOptions()}
+ });
  $('bcVideoPosterRemove').addEventListener('click',()=>{
+  if(posterAiBusy)return;
   $('bcVideoPoster').value='';videoPosterClear();
  });
  $('bcVideoUploadClose').addEventListener('click',closeDirectVideoUpload);
  $('bcVideoUploadCancel').addEventListener('click',closeDirectVideoUpload);
  $('bcVideoFile').addEventListener('change',()=>{
   const f=$('bcVideoFile').files?.[0];
+  if(posterVideoFrameFile){
+   posterVideoFrameFile=null;
+   if(videoPosterPreviewUrl&&!$('bcVideoPoster').files?.[0]){
+    URL.revokeObjectURL(videoPosterPreviewUrl);videoPosterPreviewUrl=null;
+   }
+  }
+  if(posterAiPath)clearUnusedAiPoster();
+  renderPosterOptions();
   $('bcVideoFileName').textContent=videoFileSizeLabel(f);
   void refreshVideoStorageStatus(f);
  });
