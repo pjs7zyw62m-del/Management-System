@@ -4,13 +4,15 @@ import {setupCorporateChatLive} from './corporate-chat-live.js?v=20261113-no-typ
 const client=corporateClient(),$=id=>document.getElementById(id);
 const embedParams=new URLSearchParams(location.search);
 const mediaPanelMode=['share','library'].includes(embedParams.get('mediaPanel'))?embedParams.get('mediaPanel'):null;
+const osChat=!mediaPanelMode&&(embedParams.get('osApp')==='chat'||(()=>{try{return window.parent!==window&&window.parent.location.origin===location.origin&&/\/blackcell-os(?:-preview)?\.html$/.test(window.parent.location.pathname)}catch(_){return false}})());
 if(embedParams.get('embed')==='1')document.documentElement.classList.add('bc-embedded');
+if(osChat)document.documentElement.classList.add('bc-os-chat');
 const physicallySmallPhone=/iPhone|iPod/i.test(navigator.userAgent||'')||
  (navigator.maxTouchPoints>0&&Math.min(screen.width||Infinity,screen.height||Infinity)<=650);
-const compactChat=!mediaPanelMode&&(
- embedParams.get('embed')==='1'||physicallySmallPhone||window.matchMedia('(max-width:680px)').matches
-);
-if(compactChat)document.documentElement.classList.add('bc-compact-chat');
+const smallWindow=window.matchMedia(osChat?'(max-width: 550px)':'(max-width: 680px)');
+const isCompact=()=>!mediaPanelMode&&(embedParams.get('embed')==='1'||physicallySmallPhone||smallWindow.matches);
+let compactChat=isCompact();
+document.documentElement.classList.toggle('bc-compact-chat',compactChat);
 if(mediaPanelMode)document.documentElement.classList.add('bc-media-panel','bc-media-'+mediaPanelMode);
 if(!mediaPanelMode&&window.parent===window&&window.BlackcellMediaBubbleHost)
  window.BlackcellMediaBubbleHostController=window.BlackcellMediaBubbleHost({mode:'standalone'});
@@ -93,6 +95,13 @@ $('backToInbox').addEventListener('click',()=>{
  $('mediaToggleButton').classList.remove('open');
  if(window.parent!==window)window.parent.postMessage({type:'blackcell-chat-inbox-open'},location.origin);
  void refreshInboxSummaries();
+});
+if(osChat)smallWindow.addEventListener('change',()=>{
+ const next=isCompact();if(next===compactChat)return;compactChat=next;
+ document.documentElement.classList.toggle('bc-compact-chat',compactChat);
+ document.querySelector('.chat').classList.toggle('bc-thread-active',compactChat&&!!peer);
+ live.setThreadOpen(!!peer&&!mediaPanelMode);
+ if(!compactChat&&ready&&!peer&&contacts.length)choose(contacts[0].user_id);
 });
 const composerText=$('messageInput');
 function resizeComposer(){composerText.style.height='auto';composerText.style.height=Math.min(composerText.scrollHeight,112)+'px'}
@@ -207,7 +216,7 @@ function renderPeers(){
    const button=document.createElement('button');button.type='button';button.className='peer'+(peer?.user_id===c.user_id?' active':'');
    const initial=String(c.display_name||'B').trim().slice(0,1).toUpperCase();
    button.append(text('span','avatar',initial));
-   const wrap=document.createElement('span');
+   const wrap=document.createElement('span');wrap.className='peer-copy';
    wrap.append(text('strong','',c.display_name||'Employee'),text('small','',c.role==='owner'?'CORPORATE OWNER':'LEVEL '+c.clearance_level));
    const summary=inboxSummaries.get(c.user_id);
    wrap.append(text('span','peer-preview',summary?.preview||'Start a private conversation'));
@@ -295,7 +304,7 @@ async function loadMessages(){
    }
    box.append(item);
   }
-  if(!ordered.length)box.append(text('p','empty','Private conversation started. Send the first message.'));
+  if(!ordered.length){if(osChat){const empty=document.createElement('div');empty.className='os-chat-empty';const symbol=text('span','os-chat-empty-icon','');symbol.setAttribute('aria-hidden','true');empty.append(symbol,text('h2','', 'Start a conversation'),text('p','','Send your first iMessage to '+(peer.display_name||'this contact')+'.'));box.append(empty)}else box.append(text('p','empty','Private conversation started. Send the first message.'));}
   sharedMedia.syncInlineUpload();
   if(atBottom||firstLoad)box.scrollTop=box.scrollHeight;
   firstLoad=false;status('');
