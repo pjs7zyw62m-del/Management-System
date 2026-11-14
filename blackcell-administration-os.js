@@ -1,7 +1,9 @@
 /* Administration: compact Settings-style navigation, using existing guarded controls. */
 (()=> {
  let embedded=false;try{embedded=parent!==window&&new URLSearchParams(location.search).get('osApp')==='administration'&&parent.location.origin===location.origin&&parent.location.pathname.endsWith('/blackcell-os.html')&&parent.document.getElementById('bcOsAdministrationFrame')?.contentWindow===window}catch(_){}
- if(!embedded)return;
+ const dedicated=document.body.classList.contains('bc-admin-os-dedicated');
+ if(!embedded&&!dedicated)return;
+ const retry=document.getElementById('bcAdminOsRetry');if(retry)retry.onclick=()=>location.reload();
  const sections=[
  {id:'overview',label:'Overview',glyph:'▦',desc:'Your executive command center.',items:[['User Management','Manage employee accounts, roles, invitations and access.','modal','users'],['Media Import Processor','Review, classify and approve shared-library content.','link','corporate-media-admin.html'],['System Diagnostics','Run real service and server checks.','link','corporate-diagnostics.html'],['Costs & Revenue','Review financial plans and service costs.','link','corporate-costs-revenue.html']]},
  {id:'personnel',label:'Personnel',glyph:'♙',desc:'Corporate identity, employees and account permissions.',items:[['User Management','Accounts, profiles, roles and clearance.','modal','users'],['Employee Chat','Open your existing secure communications interface.','modal','chat'],['Private Photo Ledger','Review authorized private submissions and the shared balance.','link','private-photo-ledger.html']]},
@@ -41,11 +43,12 @@
    body.append(panel);
    if(current.id==='overview'){const note=make('section','bc-admin-os-panel');note.append(make('h2','','Executive workspace'),make('p','bc-admin-os-muted','All administration actions use the existing verified corporate account. Service checks are manual; no unverified uptime or visitor totals are displayed.'));body.append(note)}
   }
-  shell.append(rail,body);old.insertAdjacentElement('afterend',shell);render();document.body.classList.add('bc-admin-os-mode');
+  shell.append(rail,body);old.insertAdjacentElement('afterend',shell);render();document.body.classList.add('bc-admin-os-mode');document.getElementById('bcAdminOsLoading')?.remove();
   // Preserve all original admin controls and their handlers, including the existing modals.
   // Refocus the current sidebar after a modal closes rather than a hidden legacy tile.
   if(modal)new MutationObserver(()=>{if(modal.hidden&&document.activeElement?.closest('main.admin-dashboard,#drawer'))nav.get(selected)?.focus()}).observe(modal,{attributes:true,attributeFilter:['hidden']});
   return true
  }
- if(!start()){let tries=0;const timer=setInterval(()=>{if(start()||++tries>=100)clearInterval(timer)},150)}
+ function attempt(){if(start())return true;return !!document.querySelector('.bc-admin-os')}
+ if(!attempt()){const observer=new MutationObserver(()=>{if(attempt())observer.disconnect()});observer.observe(document.documentElement,{attributes:true,attributeFilter:['class','data-admin-controls']});window.addEventListener('blackcell-corporate-authorized',attempt);let tries=0;const timer=setInterval(()=>{if(attempt()){clearInterval(timer);observer.disconnect()}else if(++tries===120){const label=document.getElementById('bcAdminOsLoadingText');if(label)label.textContent='Administration controls have not finished loading. Reload to retry.';if(retry)retry.hidden=false}else if(tries>=600){clearInterval(timer);observer.disconnect()}},250)}
 })();
