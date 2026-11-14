@@ -32,5 +32,5 @@ export function mountStore(host,api){
   if(category==='discover'&&!q){group('Featured add-ons',filtered.filter(a=>a.optional));group('BLACKCELL system applications',filtered.filter(a=>!a.optional))}else group(category==='installed'?'Your applications':'Applications',filtered);restoreScroll(before,info);
  }
  function restoreScroll(top,info){if(restoring&&info.error)return;restoring=false;body.scrollTop=top;persist()}
- search.addEventListener('input',()=>navigate(()=>{detail=null}));body.addEventListener('scroll',()=>{clearTimeout(scrollTimer);scrollTimer=setTimeout(persist,100)},{passive:true});render();return {render,dispose(){disposed=true;clearTimeout(scrollTimer)}};
+ search.addEventListener('input',()=>navigate(()=>{detail=null}));body.addEventListener('scroll',()=>{clearTimeout(scrollTimer);scrollTimer=setTimeout(persist,100)},{passive:true});render();return {render,selectCategory(next){if(!busy&&['discover','installed','optional'].includes(next))navigate(()=>{category=next;detail=null})},dispose(){disposed=true;clearTimeout(scrollTimer)}};
 }
