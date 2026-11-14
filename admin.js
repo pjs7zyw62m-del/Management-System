@@ -417,28 +417,16 @@ function ensureInvitationCardPreviewStyle(){
   const style=el('style');style.id='um4-card-preview-style';
   style.textContent=`
     #modalContent .um4-card-preview-slot[hidden]{display:none!important}
-    #modalContent .um4-card-preview-slot{min-width:0;width:100%;box-sizing:border-box;align-self:start;container-type:inline-size;position:relative;overflow:hidden}
+    #modalContent .um4-card-preview-slot{min-width:0;box-sizing:border-box;align-self:flex-start;container-type:inline-size;overflow:hidden}
     #modalContent .um4-card-preview-slot>.employee-card-inline-preview,
-    #modalContent .um4-card-preview-slot>.security-credential-preview{margin:0!important;max-width:100%;width:100%;box-sizing:border-box;animation:um4-card-slide-right 360ms cubic-bezier(.2,.75,.25,1) both}
+    #modalContent .um4-card-preview-slot>.security-credential-preview{margin:0!important;max-width:100%;width:100%;box-sizing:border-box}
     #modalContent .um4-preview-row button[aria-pressed="true"]{border-color:#c76274;background:#59303d;color:#fff}
-    @keyframes um4-card-slide-right{from{opacity:0;transform:translate3d(48px,0,0)}to{opacity:1;transform:translate3d(0,0,0)}}
-    #modalContent .um3-invitation-workspace.um4-preview-open{--um4-preview-columns:minmax(0,min(52%,850px)) minmax(0,1fr);gap:14px;align-items:start}
-    #modalContent .um4-preview-open>.um4-invite-panel{grid-column:1!important;grid-row:1!important}
-    #modalContent .um4-preview-open>.um4-card-preview-slot{grid-column:2!important;grid-row:1!important}
-    #modalContent .um4-preview-open>.um2-account-panel{grid-column:1/-1;grid-row:2}
-    @media(max-width:760px){
-      #modalContent .um3-invitation-workspace.um4-preview-open{--um4-preview-columns:minmax(0,1fr)}
-      #modalContent .um4-preview-open>.um4-card-preview-slot{position:fixed!important;inset:8px 0 8px auto!important;width:min(95vw,520px)!important;max-height:calc(100dvh - 16px);overflow:auto;scrollbar-width:none;z-index:10010;padding:8px;background:#17171c;box-shadow:-20px 0 60px #000a;border:1px solid #3e3e47;border-radius:12px 0 0 12px;animation:um4-card-slide-right 360ms cubic-bezier(.2,.75,.25,1) both}
-      #modalContent .um4-card-preview-slot::-webkit-scrollbar{display:none}
-      #modalContent .um4-card-preview-slot>.employee-card-inline-preview,#modalContent .um4-card-preview-slot>.security-credential-preview{animation:none}
-    }
     @container(max-width:570px){
       #modalContent .um4-card-preview-slot .employee-profile-layout{grid-template-columns:minmax(0,1fr)}
       #modalContent .um4-card-preview-slot .employee-profile-pass{width:min(100%,310px);box-sizing:border-box;justify-self:center}
       #modalContent .um4-card-preview-slot .security-credential-fields{grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}
       #modalContent .um4-card-preview-slot .security-credential-code-grid{grid-template-columns:minmax(0,1fr)}
     }
-    @media(prefers-reduced-motion:reduce){#modalContent .um4-card-preview-slot,#modalContent .um4-card-preview-slot>.employee-card-inline-preview,#modalContent .um4-card-preview-slot>.security-credential-preview{animation:none!important}}
   `;
   document.head.append(style);
 }
@@ -516,26 +504,49 @@ function users(){
     ensureInvitationCardPreviewStyle();
     const section=block('Register New Employee');
     const cardSlot=el('aside','um4-card-preview-slot');
-    cardSlot.id='um4-card-preview-slot';cardSlot.hidden=true;
+    cardSlot.id='um4-card-preview-slot';cardSlot.hidden=true;cardSlot.dataset.previewBuild='horizontal-v3';
     cardSlot.setAttribute('aria-label','Employee card preview');
-    let activeCardButton=null;
+    let activeCardButton=null,previewObserver=null,previewMotion=null;
+    const applyImportant=(node,styles)=>{for(const [key,value] of Object.entries(styles))node.style.setProperty(key,value,'important')};
+    const clearStyles=(node,keys)=>{for(const key of keys)node.style.removeProperty(key)};
+    function layoutCardPreview(){
+      if(!workspace.isConnected||cardSlot.hidden){previewObserver?.disconnect();return}
+      const wide=workspace.getBoundingClientRect().width>=920;
+      // Explicit horizontal, non-wrapping layout: legacy grid rules cannot put the card below.
+      applyImportant(workspace,{'display':'flex','flex-flow':'row nowrap','align-items':'flex-start','position':'relative','gap':'14px'});
+      applyImportant(section,{'flex':wide?'0 0 min(52%,850px)':'0 0 100%','min-width':'0'});
+      applyImportant(cardSlot,{'display':'block','position':wide?'relative':'absolute','top':'0','right':'0','flex':wide?'1 1 0':'0 0 auto','width':wide?'auto':'min(94%,520px)','z-index':'20','min-width':'0'});
+      if(!wide)workspace.style.setProperty('min-height',Math.ceil(Math.max(section.offsetHeight,cardSlot.offsetHeight))+'px','important');
+      else workspace.style.removeProperty('min-height');
+    }
     function closeCardPreview(restoreFocus=false){
       const previous=activeCardButton;
       if(previous)previous.setAttribute('aria-pressed','false');
-      activeCardButton=null;
+      activeCardButton=null;previewObserver?.disconnect();previewObserver=null;previewMotion?.cancel();previewMotion=null;
       cardSlot.replaceChildren();cardSlot.hidden=true;
       workspace.classList.remove('um4-preview-open');
-      workspace.style.removeProperty('display');workspace.style.removeProperty('grid-template-columns');
-      if(restoreFocus&&previous?.isConnected)previous.focus();
+      clearStyles(workspace,['display','flex-flow','align-items','position','gap','min-height']);
+      clearStyles(section,['flex','min-width']);
+      clearStyles(cardSlot,['display','position','top','right','flex','width','z-index','min-width']);
+      if(list.parentElement!==workspace)workspace.append(list);
+      if(restoreFocus&&previous?.isConnected)previous.focus({preventScroll:true});
     }
     function showCardPreview(panel,button){
       if(activeCardButton)activeCardButton.setAttribute('aria-pressed','false');
       activeCardButton=button;button.setAttribute('aria-pressed','true');
-      cardSlot.replaceChildren(panel);cardSlot.hidden=false;
+      previewMotion?.cancel();cardSlot.replaceChildren(panel);cardSlot.hidden=false;
       workspace.classList.add('um4-preview-open');
-      // Inline important wins over the OS and tablet one-column workspace rules.
-      workspace.style.setProperty('display','grid','important');
-      workspace.style.setProperty('grid-template-columns','var(--um4-preview-columns, minmax(0,1fr))','important');
+      // Keep the existing account list available outside the horizontal row on the regular dashboard.
+      if(list.parentElement===workspace){
+        if(getComputedStyle(list).display!=='none')workspace.after(list);
+      }
+      layoutCardPreview();
+      if(!previewObserver&&typeof ResizeObserver==='function'){
+        previewObserver=new ResizeObserver(()=>layoutCardPreview());previewObserver.observe(workspace);previewObserver.observe(cardSlot);
+      }
+      if(!matchMedia('(prefers-reduced-motion: reduce)').matches&&typeof cardSlot.animate==='function'){
+        previewMotion=cardSlot.animate([{transform:'translate3d(56px,0,0)',opacity:0},{transform:'translate3d(0,0,0)',opacity:1}],{duration:360,easing:'cubic-bezier(.2,.75,.25,1)'});
+      }
     }
     section.append(p('Create a private invitation and digital access pass. The employee sets their own password.'));
     const form=el('form','um4-invite-form');
