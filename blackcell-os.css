@@ -118,3 +118,71 @@
 .app[data-app=photoledger] .app-icon,.dock [data-open=photoledger]{background:linear-gradient(145deg,#656772,#292a32 55%,#111116);border-color:#ffffff30;color:#f6e1e5;box-shadow:inset 0 1px #ffffff30,0 5px 12px #0006}
 
 .bc-store-release-controls{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:7px;min-width:0}.bc-store-release-controls .bc-store-search{width:clamp(90px,15vw,180px);max-width:100%}.bc-store-release-controls .bc-store-get{white-space:nowrap}@media(max-width:620px){.bc-store-header{align-items:flex-start;flex-direction:column;gap:8px}.bc-store-release-controls{justify-content:flex-start;width:100%}}
+
+/* BLACKCELL Photos: macOS-inspired window chrome and privacy-preserving library. */
+.bc-pm-gallery.bc-apple-photos{display:grid;grid-template-columns:190px minmax(0,1fr);height:100%;min-height:0;background:#18181a;color:#ececf0;overflow:hidden;container-type:inline-size;font:13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.bc-apple-photos.ap-side-closed{grid-template-columns:0 minmax(0,1fr)}
+.bc-apple-photos.ap-side-closed>.ap-side{visibility:hidden;width:0;padding:0;border:0;pointer-events:none}
+.bc-apple-photos .ap-side{display:flex;flex-direction:column;min-width:0;min-height:0;background:#2a2a2d;border-right:1px solid #ffffff13;padding:14px 10px;overflow:hidden}
+.bc-apple-photos .ap-side-title{display:flex;align-items:center;gap:9px;margin:2px 8px 20px;font-size:15px;letter-spacing:-.02em;font-weight:650}
+.ap-flower{font-size:26px;color:#f3f3f5;line-height:1;text-shadow:0 -2px #eb667e,3px 1px #f9b14f,-3px 1px #79b4f0}
+.ap-sidemenu{flex:1;min-height:0;overflow:auto;scrollbar-width:none}
+.ap-sidemenu::-webkit-scrollbar,.ap-content::-webkit-scrollbar,.bc-apple-photos .ap-grid::-webkit-scrollbar{display:none}
+.ap-section-label{margin:15px 9px 7px;color:#96969f;font-size:11px;font-weight:600}
+.ap-nav-item{display:flex;align-items:center;gap:9px;text-align:left;padding:8px 9px;width:100%;border:0;border-radius:6px;background:transparent;color:#e7e7eb;font:13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;cursor:pointer}
+.ap-nav-item:hover{background:#ffffff0a}
+.ap-nav-item.selected{background:#4c4c52;color:white}
+.ap-nav-item span:last-child{flex:1;min-width:0;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.ap-nav-icon{font-size:17px;flex:0 0 19px;text-align:center;color:#b7b7bf}
+.ap-nav-item.selected .ap-nav-icon{color:#8bbaff}
+.ap-create{color:#b8cde9;font-size:12px}.ap-nav-item:disabled{opacity:.45;cursor:default}
+.ap-org-note{font-size:10px;line-height:1.5;color:#93939d;padding:8px 9px;margin-top:12px}
+.ap-main,.ap-content{display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden}
+.ap-main{background:#19191b}.ap-content{flex:1}
+.ap-toolbar{display:flex;align-items:center;gap:10px;flex:none;flex-wrap:wrap;min-height:54px;padding:10px 12px;background:#29292d;border-bottom:1px solid #ffffff12}
+.bc-apple-photos .bc-pm-button{font:500 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;border:1px solid #ffffff10;background:#404045;color:#ededf0;border-radius:6px;padding:6px 10px;white-space:nowrap}
+.bc-apple-photos .bc-pm-button:hover:not(:disabled){background:#505057}
+.bc-apple-photos .bc-pm-button:disabled{opacity:.4;cursor:default}
+.ap-segments{display:flex;align-items:center;background:#1c1c20;border-radius:7px;padding:2px;gap:1px;margin:auto}
+.bc-apple-photos .ap-segments .bc-pm-button{background:transparent;border:0;padding:6px 11px;color:#b9b9c3;font-size:12px}
+.bc-apple-photos .ap-segments .bc-pm-button.selected{background:#525258;color:#fff;box-shadow:0 1px 4px #0004}
+.ap-tools{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-left:auto}
+.bc-apple-photos .ap-search{width:136px;flex:0 1 136px;min-width:85px;border:1px solid #ffffff12;background:#1d1d20;border-radius:7px;padding:7px 9px;color:#f0f0f3;font-size:12px}
+.ap-zoom{display:flex;align-items:center;gap:5px;color:#bcbcc5;font-size:13px}
+.ap-zoom input{width:65px;accent-color:#a4a4ac;cursor:pointer}
+.ap-heading{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:22px 18px 12px;flex:none}
+.ap-heading h2{font-size:25px;font-weight:700;letter-spacing:-.055em;margin:0}
+.ap-heading p{font:12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#a0a0aa;margin:0}
+.ap-heading .bc-pm-button{margin-left:auto}
+.bc-apple-photos .ap-grid{display:flex;flex-direction:column;gap:20px;flex:1;min-height:0;overflow:auto;padding:2px 18px 22px;scrollbar-width:none}
+.ap-day h3{font:650 15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:0 0 10px;letter-spacing:-.025em;color:#e6e6ec}
+.ap-photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,var(--ap-thumb-size,144px)),1fr));gap:4px;align-items:start}
+.bc-apple-photos .ap-photo{display:block;position:relative;min-width:0;padding:0;border:0;border-radius:2px;overflow:hidden;background:transparent}
+.bc-apple-photos .bc-pm-thumb{position:relative;aspect-ratio:1;border-radius:2px;background:#313137;color:#8f8f9c;font-size:27px;overflow:hidden}
+.bc-apple-photos .bc-pm-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.bc-apple-photos .ap-photo:hover .bc-pm-thumb{filter:brightness(1.10)}
+.bc-apple-photos .ap-photo:focus-visible{outline:2px solid #78adff;outline-offset:2px}
+.bc-apple-photos .ap-photo.is-selected .bc-pm-thumb{outline:3px solid #609eef;outline-offset:-3px}
+.ap-favmark,.ap-video-label{position:absolute;bottom:6px;left:6px;font:600 15px system-ui;color:white;text-shadow:0 1px 5px #000;padding:3px;pointer-events:none}
+.ap-video-label{left:auto;right:6px;font-size:9px;border-radius:4px;background:#141418aa;padding:4px 5px}
+.ap-collection-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr));gap:14px}
+.ap-period{display:flex;flex-direction:column;min-width:0;border:0;border-radius:9px;background:transparent;color:#e8e8ed;text-align:left;padding:0;gap:6px;cursor:pointer;overflow:hidden}
+.ap-period .bc-pm-thumb{width:100%;aspect-ratio:16/10;border-radius:8px}
+.ap-period strong{font-size:17px;letter-spacing:-.03em}.ap-period small{color:#a1a1ac;font-size:11px}
+.ap-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;min-height:220px;flex:1;text-align:center;padding:25px;color:#aaaab3}
+.ap-empty-icon{font-size:43px;color:#85858f}.ap-empty h3{margin:0;color:#ededf1;font-size:18px;letter-spacing:-.04em}.ap-empty p{max-width:340px;margin:0;font-size:12px;line-height:1.5}
+.bc-apple-photos .bc-pm-foot{background:#19191b;justify-content:center;border-top:1px solid #ffffff0e;flex-wrap:wrap;flex:none;min-height:40px;padding:8px 12px;font-size:11px}
+.bc-apple-photos .bc-pm-foot>span{flex:1;text-align:center}
+.bc-apple-photos .bc-pm-selectionbar{flex-wrap:wrap;background:#2b2b30;padding:8px 12px;flex:none}
+.bc-apple-photos .bc-pm-selectionbar[hidden]{display:none}
+.bc-apple-photos .ap-viewer{background:#0b0b0d}
+.ap-view-toolbar{background:#29292d;flex-wrap:wrap;min-height:51px}
+.ap-view-toolbar .bc-pm-view-actions{flex-wrap:wrap;gap:5px}
+.ap-view-area{display:flex;min-height:0;min-width:0}
+.ap-view-area .bc-pm-view-body{flex:1;min-width:0;min-height:0;padding:16px;overflow:hidden}
+.ap-view-area .bc-pm-view-body img,.ap-view-area .bc-pm-view-body video{width:100%;height:100%;object-fit:contain;max-width:100%;max-height:100%}
+.ap-info{width:min(230px,38%);flex:none;overflow:auto;padding:20px 14px;background:#29292d;border-left:1px solid #ffffff18;overflow-wrap:anywhere}
+.ap-info h3{font-size:16px;margin:0 0 17px}.ap-info p{font-size:12px;color:#aaaab5}
+.ap-info[hidden]{display:none}
+@container(max-width:850px){.ap-toolbar{gap:6px}.ap-tools{margin-left:0}.ap-zoom input{width:48px}.bc-apple-photos .ap-search{width:98px;flex-basis:98px}.ap-heading{padding:15px 12px 10px}.bc-apple-photos .ap-grid{padding:2px 12px 16px}}
+@media(max-width:620px){.bc-pm-gallery.bc-apple-photos{grid-template-columns:118px minmax(0,1fr)}.bc-pm-gallery.bc-apple-photos.ap-side-closed{grid-template-columns:0 minmax(0,1fr)}.bc-apple-photos .ap-side{padding:9px 5px}.ap-side-title{margin:4px 3px 14px!important;gap:4px!important}.ap-nav-item{font-size:11px;padding:7px 5px;gap:4px}.ap-nav-icon{font-size:13px;flex-basis:15px}.ap-section-label{font-size:9px;margin:12px 4px 5px}.ap-org-note{display:none}.ap-toolbar{padding:7px 8px}.ap-zoom{display:none}.bc-apple-photos .ap-segments .bc-pm-button{padding:5px 6px;font-size:10px}.ap-heading h2{font-size:20px}.ap-photo-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,90px),1fr))}.ap-view-toolbar .bc-pm-view-actions{flex:1;width:100%}.ap-info{padding:12px 8px}}
