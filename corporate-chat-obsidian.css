@@ -265,3 +265,16 @@ html.bc-os-chat.bc-compact-chat .peer{min-height:68px}
 html.bc-os-chat.bc-compact-chat .bc-inbox-back{height:32px;width:32px;min-width:32px;background:#303037;border-color:#ffffff18}
 @media(max-width:820px){html.bc-os-chat .imessage-secure-indicator{display:none}html.bc-os-chat .media-actions button:last-child{margin-left:0}}
 @media(max-width:550px){html.bc-os-chat .chat-title{padding:9px 11px;min-height:58px}html.bc-os-chat .conversation{padding:12px 14px}html.bc-os-chat .imessage-title-actions a{padding:7px;font-size:9px}html.bc-os-chat .message{max-width:91%}}
+
+/* Collapse the ENTIRE conversation rail inside OS. Compact mobile navigation is separate. */
+.os-chat-sidebar-toggle{display:none}
+html.bc-os-chat:not(.bc-compact-chat) .os-chat-sidebar-toggle:not([hidden]){display:grid;place-items:center;width:32px;height:32px;flex:0 0 32px;padding:0;border:1px solid #ffffff18;border-radius:7px;background:#303037;color:#d7d7de;cursor:pointer}
+html.bc-os-chat .os-chat-sidebar-toggle:hover{background:#414148;color:#fff}
+html.bc-os-chat .os-chat-sidebar-toggle:disabled{opacity:.4;cursor:default}
+html.bc-os-chat .os-chat-sidebar-toggle svg{width:17px;height:17px;display:block}
+html.bc-os-chat .os-chat-sidebar-toggle[aria-expanded=false] .os-sidebar-chevron{transform:rotate(180deg);transform-origin:14px 12px}
+html.bc-os-chat:not(.bc-compact-chat) .chat.os-sidebar-closed:not(.media-open){grid-template-columns:0 minmax(0,1fr)}
+html.bc-os-chat:not(.bc-compact-chat) .chat.os-sidebar-closed>.sidebar{width:0;min-width:0;max-width:0;padding:0;border:0;visibility:hidden;overflow:hidden;pointer-events:none}
+html.bc-os-chat:not(.bc-compact-chat) .chat.os-sidebar-closed.media-open{grid-template-columns:0 minmax(0,.85fr) minmax(320px,1fr)}
+@media(max-width:760px){html.bc-os-chat:not(.bc-compact-chat) .chat.os-sidebar-closed.media-open{grid-template-columns:0 minmax(0,1fr)}}
+@media(prefers-reduced-motion:reduce){html.bc-os-chat .chat{transition:none}}
