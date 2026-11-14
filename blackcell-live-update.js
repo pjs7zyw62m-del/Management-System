@@ -47,7 +47,7 @@ function save(){try{const scroll=Array.from(document.querySelectorAll('[id]')).f
 function restore(){let r;try{r=JSON.parse(sessionStorage.getItem(KEY)||'null');sessionStorage.removeItem(KEY)}catch(_){return}if(!r||r.path!==location.pathname||Date.now()-r.at>60000||performance.getEntriesByType('navigation')[0]?.type!=='reload')return;
 interrupted=false;overlay('Restoring your corporate workspace…');const move=()=>{if(interrupted||location.pathname!==r.path)return;scrollTo(r.x||0,r.y||0);for(const item of r.scroll||[]){const el=$(item.id);if(el){el.scrollTop=item.top;el.scrollLeft=item.left}}};
 move();setTimeout(move,300);setTimeout(move,1100);setTimeout(()=>{screen?.remove();screen=null;move()},1500);setTimeout(move,2600)}
-async function refresh(){if(refreshing||!pending||(testing?busy():!safe()))return;refreshing=true;overlay('Applying the latest corporate system update…');await new Promise(r=>setTimeout(r,testing?3200:850));if(testing?busy():!safe()){screen?.remove();screen=null;refreshing=false;return}save();if(testing){try{sessionStorage.setItem('bc.live-update.test-complete','1')}catch(_){}}location.reload()}
+async function refresh(){if(refreshing||!pending||(testing?busy():!safe()))return;refreshing=true;overlay('Applying the latest corporate system update…');await new Promise(r=>setTimeout(r,testing?3200:850));if(testing?busy():!safe()){screen?.remove();screen=null;refreshing=false;return}save();if(testing){try{sessionStorage.setItem('bc.live-update.test-complete',location.pathname+location.search+location.hash)}catch(_){}}location.reload()}
 async function version(){const url=new URL('blackcell-site-version.json',location.href);url.searchParams.set('_bc',String(Date.now()));const r=await fetch(url,{cache:'no-store',credentials:'same-origin'});if(!r.ok)throw Error('Version unavailable');const text=await r.text(),json=JSON.parse(text.slice(text.indexOf('{'),text.lastIndexOf('}')+1));const rev=String(json.revision||'');if(/^[a-f0-9]{7,64}$/i.test(rev))return rev;const build=String(json.built||'');if(/^\d{14}$/.test(build))return build;return String(json.fallback||'')}
 async function check(){if(checking||refreshing||document.hidden||!navigator.onLine)return;checking=true;try{const v=await version();if(!v)return;if(!baseline){baseline=v;return}pending=v!==baseline?v:'';if(pending)maybeRefresh()}catch(_){/* fail open */}finally{checking=false}}
 if(testMode){
@@ -61,7 +61,7 @@ if(testMode){
   if(busy()){if(output)output.textContent='Test paused: an active operation is blocking refresh.';return;}
   testing=true;pending='local-test';button.disabled=true;if(output)output.textContent='Running the real update engine…';void refresh().catch(()=>{button.disabled=false;if(output)output.textContent='Update test failed during refresh.'});
  });
- try{if(sessionStorage.getItem('bc.live-update.test-complete')==='1'){
+ try{if(sessionStorage.getItem('bc.live-update.test-complete')===location.pathname+location.search+location.hash&&performance.getEntriesByType('navigation')[0]?.type==='reload'){
   sessionStorage.removeItem('bc.live-update.test-complete');
   $('bcTestResult').textContent='TEST COMPLETE — returned to the same page after refresh.';
  }}catch(_){}
