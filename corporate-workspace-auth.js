@@ -6,6 +6,8 @@ const loginLink=document.getElementById('opLogin');
 const app=document.getElementById('opApp');
 let client,closed=false,lastActivity=Date.now(),lastTouch=0,touching=false;
 const idleLimit=60*60*1000;
+let embedded=false;try{embedded=parent!==window&&parent.location.origin===location.origin&&parent.document.documentElement.classList.contains('corp-ok')&&[...parent.document.querySelectorAll('iframe[data-bc-admin-workspace]')].some(f=>f.contentWindow===window)}catch(_){}
+const notify=type=>{if(embedded)parent.postMessage({type},location.origin)};
 function deny(message){
   if(gateMessage)gateMessage.textContent=message;
   if(gate)gate.hidden=false;
@@ -18,11 +20,11 @@ async function signOut(){
   deny('Ending your corporate verification session…');
   try{await client?.rpc('corp_end_session')}catch(_){}
   try{await client?.auth.signOut({scope:'local'})}catch(_){}
-  location.replace('login.html');
+  if(embedded)notify('blackcell-admin-workspace-signed-out');else location.replace('login.html');
 }
 async function verifySession(){
   if(closed||!client)return;
-  if(Date.now()-lastActivity>=idleLimit){await signOut();return;}
+  if(!embedded&&Date.now()-lastActivity>=idleLimit){await signOut();return;}
   try{
     const {data,error}=await client.rpc('corp_code_status');
     if(error||data?.ok!==true||data?.verified!==true){await signOut();}
@@ -30,7 +32,7 @@ async function verifySession(){
 }
 async function extendSession(){
   if(closed||touching||Date.now()-lastTouch<60000)return;
-  if(Date.now()-lastActivity>=idleLimit){await signOut();return;}
+  if(!embedded&&Date.now()-lastActivity>=idleLimit){await signOut();return;}
   touching=true;lastTouch=Date.now();
   try{
     const {data,error}=await client.rpc('corp_touch_session');
@@ -56,12 +58,12 @@ try{
   document.getElementById('opSignOut')?.addEventListener('click',()=>{void signOut()});
   for(const name of ['pointerdown','keydown','touchstart']){
     window.addEventListener(name,()=>{
-      lastActivity=Date.now();void extendSession();
+      lastActivity=Date.now();if(embedded)notify('blackcell-admin-workspace-activity');else void extendSession();
     },{passive:true});
   }
   window.addEventListener('focus',()=>{void verifySession()});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)void verifySession()});
-  setInterval(()=>{if(Date.now()-lastActivity>=idleLimit)void signOut()},15000);
+  setInterval(()=>{if(!embedded&&Date.now()-lastActivity>=idleLimit)void signOut()},15000);
   setInterval(()=>{if(!document.hidden)void verifySession()},60000);
 }catch(error){
   deny(error?.message||'Could not verify corporate session. Return to sign in.');
