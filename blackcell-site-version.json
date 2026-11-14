@@ -1,4 +1,4 @@
 ---
 layout: null
 ---
-{"revision":"{{ site.github.build_revision }}","built":"{{ site.time | date: '%Y%m%d%H%M%S' }}","fallback":"20261114-catalog-refresh"}
+{"revision":"{{ site.github.build_revision }}","built":"{{ site.time | date: '%Y%m%d%H%M%S' }}","fallback":"20261114-ledger-discovery"}
