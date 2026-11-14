@@ -21,7 +21,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu()});
 function markDock(id,on){document.querySelector('[data-open="'+id+'"]')?.classList.toggle('is-running',on)}
 function raise(r){r.el.hidden=false;r.el.style.zIndex=String(++layer);selectedWindow=r;markDock(r.id,true)}
 function showDesktop(){for(const r of windows.values())r.el.hidden=true;selectedWindow=null}
-function dispose(r,force=false){if(!preview&&!force&&!confirm('Close '+r.title+'? Finish any uploads, playback or unsaved work in this application before closing.'))return;r.cleanup?.();r.frame?.remove();r.el.remove();r.release?.();windows.delete(r.id);markDock(r.id,false);if(selectedWindow===r)selectedWindow=null}
+function dispose(r,force=false){if(r.id!=='browser'&&!preview&&!force&&!confirm('Close '+r.title+'? Finish any uploads, playback or unsaved work in this application before closing.'))return;r.cleanup?.();r.frame?.remove();r.el.remove();r.release?.();windows.delete(r.id);markDock(r.id,false);if(selectedWindow===r)selectedWindow=null}
 function closeAll(force){for(const r of [...windows.values()])dispose(r,force)}
 function showApp(id){
  if(!active&&!preview)return;
