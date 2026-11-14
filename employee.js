@@ -27,7 +27,8 @@ const IDLE_MS=60*60*1000;
 function renderEmployeeQr(member){
  const container=$('credentialQr'),link=$('credentialRecordLink'),message=$('credentialQrMessage');
  container.replaceChildren();link.hidden=true;link.removeAttribute('href');
- $('credentialEmployeeId').textContent=member.user_id||'Not assigned';
+ const id=member.user_id||'Not assigned';
+ for(const key of ['credentialEmployeeId','credentialFrontId']){$(key).textContent=id;$(key).title=id;}
  try{
   if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(member.user_id||''))throw new Error('Missing employee identifier');
   const url=new URL('corporate-network.html',location.href);
@@ -43,7 +44,29 @@ function renderEmployeeQr(member){
  }
 }
 
+let photoRequest=0;
+async function renderCredentialPhoto(member,allowed){
+ const request=++photoRequest,img=$('credentialPhoto');
+ img.hidden=true;img.removeAttribute('src');$('credentialInitials').hidden=false;
+ if(!allowed||member.access_scope==='ledger_only')return;
+ try{
+  const p=await client.from('corp_social_profiles').select('avatar_asset_id').eq('user_id',member.user_id).maybeSingle();
+  if(p.error||!p.data?.avatar_asset_id)return;
+  const a=await client.from('corp_social_assets').select('storage_path').eq('id',p.data.avatar_asset_id).eq('owner_id',member.user_id).maybeSingle();
+  if(a.error||!a.data?.storage_path)return;
+  const out=await client.storage.from('corp-social-media').createSignedUrl(a.data.storage_path,1800);
+  if(request!==photoRequest||!verified||out.error||!out.data?.signedUrl)return;
+  img.onload=()=>{if(request===photoRequest&&verified){img.hidden=false;$('credentialInitials').hidden=true;}};
+  img.onerror=()=>{if(request===photoRequest){img.hidden=true;$('credentialInitials').hidden=false;}};
+  img.src=out.data.signedUrl;
+ }catch(_){/* keep initials if photo unavailable */}
+}
 function syncCredentialReverse(){
+ $('credentialSignature').textContent=$('employeeName').textContent;
+ $('credentialSignature').title=$('employeeName').textContent;
+ $('employeeName').title=$('employeeName').textContent;
+ $('credentialFooterLevel').textContent=$('employeeLevel').textContent;
+ $('credentialFrontStatus').textContent=verified?'ACTIVE':'PENDING';
  $('credentialBackName').textContent=$('employeeName').textContent;
  $('credentialBackUsername').textContent=$('employeeUsername').textContent.replace(/^USERNAME · /,'');
  $('credentialBackLevel').textContent=$('employeeLevel').textContent;
@@ -94,6 +117,7 @@ function setVerified(isVerified,m){
      m.can_chat?'ACCOUNT ACTIVE · CHAT AUTHORIZED':'ACCOUNT ACTIVE · CHAT RESTRICTED')
    :'ACCOUNT ACTIVATION REQUIRED';
  syncCredentialReverse();
+ void renderCredentialPhoto(m,isVerified);
  if(isVerified){lastActivity=Date.now();lastTouch=Date.now();}
 }
 async function load(reveal=false){
@@ -125,7 +149,7 @@ async function load(reveal=false){
    return;
   }
   showPanel('employeeHome');
-  $('employeeLevel').textContent='LEVEL '+member.clearance_level;
+  $('employeeLevel').textContent='LEVEL '+String(member.clearance_level??'—').padStart(2,'0');
   $('employeeName').textContent=member.display_name||'BLACKCELL USER';
   const initials=(member.display_name||member.username||'Blackcell').trim().split(/\s+/).slice(0,2).map(part=>Array.from(part)[0]||'').join('').toUpperCase();
   $('credentialInitials').textContent=initials||'BC';

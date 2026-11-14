@@ -179,13 +179,38 @@ body{background:#000}
 #employeeCard .credential-face:before,#employeeCard .credential-face:after{width:2.6cqw}
 .cr80-spec{text-align:center;font-size:10px;letter-spacing:.1em;color:#969696;line-height:1.6;margin:0 0 16px}
 
+
+/* BLACKCELL futuristic credential; scoped to card only. */
+#employeeCard.bc-future-card{width:360px;max-width:100%;aspect-ratio:54/85.6;container-type:inline-size;padding:3px;border:1px solid #929295;border-radius:5.6%/3.5%;background:linear-gradient(135deg,#28282a,#0a0a0b 16%,#000 45%,#181819 86%,#333338);box-shadow:0 14px 32px #000,0 0 25px #a1001833,inset 0 0 0 2px #060606;overflow:visible}
+#employeeCard.bc-future-card .credential-rotor{height:100%;min-height:0;grid-template: minmax(0,1fr)/minmax(0,1fr)}
+#employeeCard.bc-future-card .credential-face{position:relative;display:block;isolation:isolate;height:100%;width:100%;padding:0;border:0;border-radius:5%/3%;background:#000;overflow:hidden;color:#e9e9eb;font-family:Arial,Helvetica,sans-serif}
+#employeeCard.bc-future-card .credential-face:before,#employeeCard.bc-future-card .credential-face:after{display:none}
+.bc-future-frame{position:absolute;inset:2.5%;width:95%;height:95%;z-index:-1;overflow:visible}
+.bc-future-frame .shell{fill:#060607;stroke:#55555c;stroke-width:.45}.bc-future-frame .trim{fill:none;stroke:#29292e;stroke-width:.8}.bc-future-frame .edge{stroke:#ff202e;stroke-width:.55;fill:none;filter:drop-shadow(0 0 1.5px #ff081b);animation:bcCardGlow 3.6s ease-in-out infinite}.bc-future-frame .edge:last-child{animation-delay:-1.8s}
+@keyframes bcCardGlow{0%,100%{opacity:.72}50%{opacity:1;filter:drop-shadow(0 0 2.8px #ff1323)}}
+.bc-future-brand{position:absolute;left:10%;width:80%;text-align:center;top:3.3%}.bc-future-brand svg{width:25cqw;height:25cqw;display:block;margin:0 auto .9cqw}.bc-future-brand b{font-weight:950;font-size:7.5cqw;letter-spacing:.07em;display:block;line-height:1.1;color:#ececef;text-shadow:0 1px 2px #000}.bc-future-brand small{display:block;font-size:3.1cqw;font-weight:bold;letter-spacing:.34em;margin-top:1cqw;color:#c6c6cc}.bc-future-brand small:before,.bc-future-brand small:after{content:'';display:inline-block;width:6cqw;height:1px;background:#e91224;vertical-align:middle;margin:0 1.6cqw}
+.bc-future-photo{position:absolute;top:24%;left:21%;width:58%;height:39%;display:grid;place-items:center;background:linear-gradient(135deg,#242427,#080808);border:2px solid #a2a2a8;outline:1px solid #e7192b;outline-offset:3px;box-shadow:0 0 12px #c2002655;clip-path:polygon(9% 0,91% 0,100% 8%,100% 92%,91% 100%,9% 100%,0 92%,0 8%);overflow:hidden}
+.bc-future-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.bc-future-photo #credentialInitials{font-size:14cqw;font-weight:800;letter-spacing:.05em;color:#8c8c90}
+.bc-future-name{position:absolute;top:65%;left:5%;width:90%;text-align:center;font-size:6.5cqw;line-height:1.15;font-weight:900;letter-spacing:.055em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:uppercase}.bc-future-namebar{position:absolute;top:70%;left:11%;width:78%;height:1.6cqw;background:linear-gradient(90deg,#e80a1e,#6f0811 86%,transparent 86% 89%,#e80a1e 89% 92%,transparent 92% 95%,#e80a1e 95%);transform:skewX(-28deg)}
+.bc-future-fields{position:absolute;left:12%;width:76%;font-size:3.7cqw;line-height:1.08;top:72.3%}.bc-future-fields>div{display:grid;grid-template-columns:49% 51%;align-items:center;border-bottom:1px solid #444449;padding:1.15cqw 0}.bc-future-fields>div:last-child{border:0}.bc-future-fields span{color:#aaaab0;letter-spacing:.04em}.bc-future-fields b{min-width:0;font-size:inherit;font-weight:650;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bc-future-fields .bc-future-level{color:#ff2738}
+#employeeCard.bc-future-card #credentialEmployeeId,#employeeCard.bc-future-card #credentialFrontId{font-family:ui-monospace,monospace;font-size:3cqw!important}
+.bc-future-restricted{position:absolute;left:5%;width:90%;bottom:3%;height:7.5%;display:flex;justify-content:center;align-items:center;gap:1.1cqw;background:linear-gradient(110deg,#ad0818,#fd2636 50%,#a70919);color:#060606;font-size:5.1cqw;font-weight:950;letter-spacing:.05em;clip-path:polygon(5% 0,95% 0,100% 25%,100% 75%,95% 100%,5% 100%,0 75%,0 25%);border-block:1px solid #ff626c;box-shadow:inset 0 0 0 2px #970615}
+.bc-future-back .bc-future-brand{top:5%;left:9%;width:82%;display:flex;align-items:center;gap:3.2cqw;text-align:left}.bc-future-back .bc-future-brand svg{width:18cqw;height:18cqw;flex:none;margin:0}.bc-future-back .bc-future-brand b{font-size:6.2cqw}.bc-future-back .bc-future-brand small{font-size:2.7cqw;text-align:center;letter-spacing:.3em}.bc-future-back .bc-future-brand small:before,.bc-future-back .bc-future-brand small:after{width:3cqw;margin:0 1cqw}
+.bc-future-auth{position:absolute;top:17.2%;left:5%;width:90%;background:linear-gradient(90deg,#9d0613,#f22b3a,#9d0613);text-align:center;font-size:4.05cqw;letter-spacing:.105em;font-weight:950;color:#090000;padding:1.4cqw 0;clip-path:polygon(4% 0,96% 0,100% 50%,96% 100%,4% 100%,0 50%)}
+.bc-future-back .bc-future-fields{top:23%;left:11%;width:78%;font-size:3.65cqw}.bc-future-back .bc-future-fields>div{grid-template-columns:43% 57%;padding:1.35cqw 0}
+.bc-future-qr{position:absolute;top:40.5%;left:29%;width:42%;text-align:center}.bc-future-qr #credentialRecordLink{width:100%;max-width:none;margin:0 auto 1cqw;border:2px solid #ff2034;padding:2cqw;background:#09090a;box-shadow:0 0 12px #b9162866}.bc-future-qr #credentialQr{background:#fff}.bc-future-qr #credentialQr svg{width:100%;height:auto}.bc-future-qrlabel{font-size:2.1cqw;letter-spacing:.13em;color:#aaa}.bc-future-qr #credentialQrMessage{font-size:2.8cqw}
+.bc-future-signature{position:absolute;top:69%;left:8%;width:84%;height:10%;display:flex;align-items:center;justify-content:center;background:repeating-linear-gradient(133deg,#ffffff12 0 1px,transparent 1px 3px),linear-gradient(110deg,#73737b,#e0e0e3 48%,#888891);color:#060606;font-family:'Segoe Script','Brush Script MT','Apple Chancery','URW Chancery L',cursive;font-style:italic;font-size:6.9cqw;letter-spacing:-.05em;overflow:hidden;white-space:nowrap;clip-path:polygon(4% 0,96% 0,100% 13%,100% 87%,96% 100%,4% 100%,0 87%,0 13%)}
+.bc-future-siglabel{position:absolute;top:80%;width:100%;text-align:center;font-size:2.85cqw;letter-spacing:.22em;color:#b6b6bd}
+.bc-future-codes{position:absolute;top:85%;left:7%;width:86%;display:grid;grid-template-columns:37% 63%;padding:1.8cqw 2.5cqw;background:#09090a;border:1px solid #606066;clip-path:polygon(5% 0,95% 0,100% 18%,100% 82%,95% 100%,5% 100%,0 82%,0 18%)}.bc-future-codes>div{min-width:0;text-align:center;padding:0 1cqw}.bc-future-codes span{display:block;color:#bdbdc2;font-size:2.65cqw;font-weight:bold;letter-spacing:.1em;margin-bottom:1cqw}.bc-future-codes b{display:block;border:1px solid #ff2034;padding:.8cqw 0;font-size:3.7cqw;letter-spacing:.06em;color:#e7e7ec;font-variant-numeric:tabular-nums;white-space:nowrap}.bc-future-code-note{position:absolute;bottom:3%;width:100%;text-align:center;font-size:1.75cqw;letter-spacing:.09em;color:#999}.bc-future-mark{position:absolute;bottom:1%;left:44%;width:12%;height:1cqw;transform:skewX(-40deg);background:repeating-linear-gradient(90deg,#ef1024 0 28%,transparent 28% 35%)}
+@media(prefers-reduced-motion:reduce){.bc-future-frame .edge{animation:none!important}}
+
 </style>
 <link rel="stylesheet" href="corporate-chat-dock.css?v=20261109-floating-right2">
 <link rel="stylesheet" href="corporate-chat-bubble-dock.css?v=20261109-bubble-dock1">
 <link rel="stylesheet" href="corporate-chat-premium-dock.css?v=20261109-premium1">
 <link rel="stylesheet" href="corporate-chat-media-bubble-host.css?v=20261109-independent-media1"><link rel="stylesheet" href="corporate-chat-media-responsive.css?v=20261109-sidebyside2"><link rel="stylesheet" href="corporate-chat-media-flip-focus.css?v=20261109-flip-focus1">
 <script src="corp-config.js" defer></script>
-<script src="corporate-chat-media-bubble-host.js?v=20261109-large-media1" defer></script><script type="module" src="employee.js?v=20261114-personal-qr"></script>
+<script src="corporate-chat-media-bubble-host.js?v=20261109-large-media1" defer></script><script type="module" src="employee.js?v=20261114-future-card1"></script>
 <link rel="stylesheet" href="corp-adaptive-layout.css?v=20261109-device2">
 <link rel="stylesheet" href="corp-adaptive-chat.css?v=20261109-device2">
 <link rel="stylesheet" href="corporate-chat-compact-media.css?v=20261109-mobile-gallery4">
@@ -207,7 +232,7 @@ body{background:#000}
 <section class="panel" id="employeeActivation" hidden>
 <div class="logo">B</div><div class="eyebrow">EMPLOYEE CREDENTIAL ACTIVATION</div>
 <h1>Activate Your Account</h1>
-<p>Your corporate email invitation is verified. Create a private password to activate your employee card. Once your password is activated, a second Blackcell corporate email will send your 4-digit Access Code and 12-digit Security Code.</p>
+<p>Your corporate email invitation is verified. Create a private password to activate your employee card. Once your password is activated, your personal Blackcell employee card will be available.</p>
 <label for="activationPassword">CREATE PASSWORD</label>
 <input id="activationPassword" type="password" autocomplete="new-password" minlength="12" placeholder="At least 12 characters">
 <label for="confirmPassword">CONFIRM PASSWORD</label>
@@ -218,39 +243,20 @@ body{background:#000}
 </section>
 <section class="panel" id="employeeHome" hidden>
 <div class="eyebrow">PRIVATE CORPORATE CREDENTIAL</div><h1>Your Network Card</h1>
-<div class="access-card" id="employeeCard"><div class="credential-rotor"><div class="card-interior credential-face" id="credentialFront" aria-label="Credential front">
-<div class="credential-topline"><span>BLACKCELL / NETWORK</span><span>IDENTITY CREDENTIAL</span></div>
-<div class="card-top">BLACKCELL<br><span>CORPORATION</span><small>PRIVATE CORPORATE NETWORK</small></div>
-<div class="credential-band">PERSONNEL AUTHORIZATION</div>
-<div class="credential-portrait" aria-label="Account initials">
-<span id="credentialInitials" aria-hidden="true">BC</span>
-<span class="portrait-caption">NETWORK IDENTITY</span>
-</div>
-<div class="card-owner" id="employeeName">Network User</div>
-<div class="credential-role">NETWORK MEMBER</div>
-<p class="status credential-username" id="employeeUsername">USERNAME</p>
-<div class="clearance"><strong id="employeeLevel">LEVEL —</strong><span>ACCESS PASS</span></div>
-<p class="status credential-status" id="employeeAccess" hidden>AUTHORIZATION PENDING</p>
-<div class="credential-bottom"><span>BLACKCELL CORPORATION</span><span>PRIVATE · NON-TRANSFERABLE</span></div>
-</div>
-<div class="card-interior credential-face credential-back" id="credentialBack" aria-label="Credential back" aria-hidden="true" inert>
-<div class="credential-topline"><span>BLACKCELL / NETWORK</span><span>REVERSE / ACCOUNT RECORD</span></div>
-<div class="card-top">BLACKCELL<br><span>CORPORATION</span><small>PRIVATE CORPORATE NETWORK</small></div>
-<div class="credential-band">PERSONNEL AUTHORIZATION</div>
-<dl class="credential-record">
-<div><dt>NAME</dt><dd id="credentialBackName">—</dd></div>
-<div><dt>USERNAME</dt><dd id="credentialBackUsername">—</dd></div>
-<div><dt>EMPLOYEE ID</dt><dd id="credentialEmployeeId">—</dd></div>
-<div><dt>CLEARANCE</dt><dd id="credentialBackLevel">—</dd></div>
-<div hidden><dt>ACCOUNT STATUS</dt><dd id="credentialBackStatus">AUTHORIZATION PENDING</dd></div>
-</dl>
-<div class="credential-qr-block">
-<a id="credentialRecordLink" hidden aria-label="Open this employee's Network profile"><span id="credentialQr"></span></a>
-<span class="credential-qr-label">PERSONNEL RECORD</span>
-<p id="credentialQrMessage" role="status">Preparing personal QR code…</p>
-</div>
-<div class="credential-back-notice"><span>NETWORK ACCESS</span><p>This credential identifies the account holder. Access is governed by the account’s assigned permissions.</p></div>
-<div class="credential-bottom"><span>BLACKCELL CORPORATION</span><span>PRIVATE · NON-TRANSFERABLE</span></div>
+<div class="access-card bc-future-card" id="employeeCard"><div class="credential-rotor">
+<div class="card-interior credential-face bc-future-front" id="credentialFront" aria-label="Credential front"><svg class="bc-future-frame" viewBox="0 0 100 158.5" preserveAspectRatio="none" aria-hidden="true"><path class="shell" d="M10 1H90L99 10V36L92 45V68L99 78V120L92 129V141L99 148 90 157H10L1 148 8 141V129L1 120V78L8 68V45L1 36V10Z"/><path class="trim" d="M11 3H89L96 10V35L89 44V69L96 79V119L89 128V142L96 149 89 155H11L4 149 11 142V128L4 119V79L11 69V44L4 35V10Z"/><path class="edge" d="M2 13 5 16V38M8 67 2 78V105M2 139 8 145M98 13 95 16V38M92 67 98 78V105M98 139 92 145"/><path class="edge" d="M18 1H37M63 1H82M25 157H75"/></svg><div class="bc-future-brand"><svg viewBox="0 0 110 112" aria-hidden="true"><defs><linearGradient id="bcRedFront" x2="0" y2="1"><stop stop-color="#ff4c50"/><stop offset=".45" stop-color="#e20b18"/><stop offset="1" stop-color="#8e0008"/></linearGradient></defs><path d="M9 29 56 3 105 30 97 49 32 86 32 66 81 38 56 24 23 43 23 88 9 80ZM100 56 100 82 56 108 35 96 83 69 83 65 64 75 64 61 91 46Z" fill="url(#bcRedFront)" stroke="#ff5258" stroke-width=".7"/></svg><div><b>BLACKCELL</b><small>CORPORATION</small></div></div>
+<div class="bc-future-photo"><img id="credentialPhoto" alt="Employee profile photograph" hidden referrerpolicy="no-referrer"><span id="credentialInitials" aria-hidden="true">BC</span></div>
+<div id="employeeName" class="bc-future-name">Network User</div><div class="bc-future-namebar"></div>
+<div class="bc-future-fields"><div><span>EMPLOYEE ID:</span><b id="credentialFrontId">—</b></div><div><span>DIVISION:</span><b>_____</b></div><div><span>CLEARANCE:</span><b id="employeeLevel" class="bc-future-level">LEVEL —</b></div><div><span>STATUS:</span><b id="credentialFrontStatus">PENDING</b></div></div>
+<span id="employeeUsername" hidden>USERNAME</span><span id="employeeAccess" hidden>AUTHORIZATION PENDING</span>
+<div class="bc-future-restricted"><span>RESTRICTED · </span><span id="credentialFooterLevel">LEVEL —</span></div></div>
+<div class="card-interior credential-face credential-back bc-future-back" id="credentialBack" aria-label="Credential back" aria-hidden="true" inert><svg class="bc-future-frame" viewBox="0 0 100 158.5" preserveAspectRatio="none" aria-hidden="true"><path class="shell" d="M10 1H90L99 10V36L92 45V68L99 78V120L92 129V141L99 148 90 157H10L1 148 8 141V129L1 120V78L8 68V45L1 36V10Z"/><path class="trim" d="M11 3H89L96 10V35L89 44V69L96 79V119L89 128V142L96 149 89 155H11L4 149 11 142V128L4 119V79L11 69V44L4 35V10Z"/><path class="edge" d="M2 13 5 16V38M8 67 2 78V105M2 139 8 145M98 13 95 16V38M92 67 98 78V105M98 139 92 145"/><path class="edge" d="M18 1H37M63 1H82M25 157H75"/></svg><div class="bc-future-brand"><svg viewBox="0 0 110 112" aria-hidden="true"><defs><linearGradient id="bcRedBack" x2="0" y2="1"><stop stop-color="#ff4c50"/><stop offset=".45" stop-color="#e20b18"/><stop offset="1" stop-color="#8e0008"/></linearGradient></defs><path d="M9 29 56 3 105 30 97 49 32 86 32 66 81 38 56 24 23 43 23 88 9 80ZM100 56 100 82 56 108 35 96 83 69 83 65 64 75 64 61 91 46Z" fill="url(#bcRedBack)" stroke="#ff5258" stroke-width=".7"/></svg><div><b>BLACKCELL</b><small>CORPORATION</small></div></div>
+<div class="bc-future-auth">PERSONNEL AUTHORIZATION</div>
+<div class="bc-future-fields"><div><span>NAME:</span><b id="credentialBackName">—</b></div><div><span>EMPLOYEE ID:</span><b id="credentialEmployeeId">—</b></div><div><span>DIVISION:</span><b>_____</b></div><div><span>CLEARANCE:</span><b id="credentialBackLevel" class="bc-future-level">—</b></div></div>
+<span id="credentialBackUsername" hidden></span><span id="credentialBackStatus" hidden></span>
+<div class="bc-future-qr"><a id="credentialRecordLink" hidden aria-label="Open this employee's Network profile"><span id="credentialQr"></span></a><p id="credentialQrMessage" role="status">Preparing personal QR code…</p><span class="bc-future-qrlabel">PERSONNEL RECORD</span></div>
+<div class="bc-future-signature" id="credentialSignature">—</div><div class="bc-future-siglabel">AUTHORIZED SIGNATURE</div>
+<div class="bc-future-codes"><div><span>ACCESS CODE</span><b>••••</b></div><div><span>SECURITY CODE</span><b>•••• •••• ••••</b></div></div><div class="bc-future-code-note">CODES NOT DISPLAYED</div><div class="bc-future-mark"></div>
 </div></div></div>
 <p class="cr80-spec">CR80 · 54 × 85.6 MM · PORTRAIT</p>
 <div class="credential-flip-controls"><button type="button" id="credentialFlip" aria-controls="credentialFront credentialBack" aria-pressed="false">VIEW BACK ↻</button><span id="credentialSide" aria-live="polite">FRONT · 1 / 2</span></div>
