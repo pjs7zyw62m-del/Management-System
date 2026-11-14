@@ -823,7 +823,39 @@ function videoTile(a){
  card.append(footer);return card;
 }
 // Dedicated Video Studio: uploads happen inside Video Channel, never in Network Feed.
-let directVideoBusy=false;
+const MAX_VIDEO_BYTES=10*1024*1024*1024;
+const SMALL_VIDEO_BYTES=45*1048576;
+const MAX_POSTER_BYTES=8*1048576;
+let directVideoBusy=false,videoPosterPreviewUrl=null;
+const VIDEO_MIMES=new Set(['video/mp4','video/webm','video/quicktime','video/x-m4v']);
+const POSTER_MIMES=new Set(['image/jpeg','image/png','image/webp']);
+async function videoStreamApi(action,payload={}){
+ const {data,error}=await client.functions.invoke('blackcell-video-stream-api',{body:{action,...payload}});
+ if(error||data?.ok!==true){
+  const code=data?.error||error?.message||'video_stream_unavailable';
+  throw Error(code);
+ }
+ return data;
+}
+function videoPosterClear(){
+ if(videoPosterPreviewUrl)URL.revokeObjectURL(videoPosterPreviewUrl);
+ videoPosterPreviewUrl=null;
+ $('bcVideoPosterPreview').removeAttribute('src');
+ $('bcVideoPosterPreviewFrame').hidden=true;
+}
+function videoPosterSelect(){
+ videoPosterClear();
+ const f=$('bcVideoPoster').files?.[0];
+ if(!f)return;
+ if(!POSTER_MIMES.has(f.type)||f.size<=0||f.size>MAX_POSTER_BYTES){
+  $('bcVideoPoster').value='';
+  toast('Poster must be JPG, PNG or WEBP and 8 MB or smaller.');
+  return;
+ }
+ videoPosterPreviewUrl=URL.createObjectURL(f);
+ $('bcVideoPosterPreview').src=videoPosterPreviewUrl;
+ $('bcVideoPosterPreviewFrame').hidden=false;
+}
 function syncDirectVideoCategory(){
  const kind=$('bcVideoCategory').value;
  const episode=kind==='series';
@@ -833,12 +865,37 @@ function syncDirectVideoCategory(){
  $('bcVideoEpisode').required=episode;
  $('bcVideoUploadHeading').textContent=kind==='movie'?'Upload Movie':kind==='series'?'Upload TV Episode':kind==='documentary'?'Upload Documentary':kind==='short'?'Upload Short':'Upload Video';
 }
+function videoFileSizeLabel(file){
+ if(!file)return 'Choose MP4, MOV or WEBM · up to 10 GB (resumable for large files)';
+ return file.name+' · '+prettyBytes(file.size)+(file.size>SMALL_VIDEO_BYTES?' · 10 GB resumable mode':' · private upload');
+}
+async function refreshVideoStorageStatus(file){
+ const note=$('bcVideoLargeUploadStatus');
+ if(!note)return;
+ if(file&&file.size<=SMALL_VIDEO_BYTES){
+  note.textContent='Standard private upload · administrator review required';
+  note.classList.add('is-ready');return;
+ }
+ note.textContent='Checking 10 GB resumable storage…';note.classList.remove('is-ready');
+ try{
+  const status=await videoStreamApi('status');
+  if(status.resumableReady){
+   note.textContent='10 GB resumable Bunny Stream uploads ready · interrupted uploads can be resumed on this device';
+   note.classList.add('is-ready');
+  }else{
+   note.textContent='10 GB uploads need a Bunny Stream library ID, API key and embed token key configured in Supabase. Small videos up to 45 MB still work.';
+  }
+ }catch(_){
+  note.textContent='10 GB storage connection unavailable. Small videos up to 45 MB are still supported.';
+ }
+}
 function openDirectVideoUpload(category='standard'){
  if(directVideoBusy||state.busy)return;
  const modal=$('bcVideoUploadDialog');
  $('bcVideoUploadForm').reset();
+ videoPosterClear();
  $('bcVideoCategory').value=['standard','short','movie','series','documentary'].includes(category)?category:'standard';
- $('bcVideoFileName').textContent='Choose MP4, MOV or WEBM (maximum 45 MB with current storage limits)';
+ $('bcVideoFileName').textContent=videoFileSizeLabel(null);
  $('bcVideoUploadMessage').textContent='';
  $('bcVideoUploadProgress').hidden=true;
  $('bcVideoUploadFill').classList.remove('is-uploading');
@@ -847,73 +904,157 @@ function openDirectVideoUpload(category='standard'){
  syncDirectVideoCategory();
  modal.hidden=false;
  document.body.classList.add('bc-video-upload-open');
+ void refreshVideoStorageStatus();
  $('bcVideoTitle').focus({preventScroll:true});
 }
 function closeDirectVideoUpload(){
  if(directVideoBusy)return;
  $('bcVideoUploadDialog').hidden=true;
  $('bcVideoUploadForm').reset();
+ videoPosterClear();
  document.body.classList.remove('bc-video-upload-open');
+}
+async function uploadMoviePoster(file){
+ if(!file)return null;
+ if(!POSTER_MIMES.has(file.type)||file.size<=0||file.size>MAX_POSTER_BYTES)throw Error('Poster must be JPG, PNG or WEBP under 8 MB');
+ const extension=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
+ const path=state.user.id+'/video-posters/'+crypto.randomUUID()+'.'+extension;
+ const {error}=await bucket.upload(path,file,{contentType:file.type,cacheControl:'1800',upsert:false});
+ if(error)throw Error('Poster upload failed: '+error.message);
+ return path;
+}
+async function sendViaStream(file,metadata,posterFile){
+ const status=await videoStreamApi('status');
+ if(!status.resumableReady){
+  throw Error('10 GB uploads require Bunny Stream library ID, API key and embed security key. Configure these three Supabase Edge Function secrets before trying a large video.');
+ }
+ const tus=window.tus;
+ if(!tus?.Upload)throw Error('Resumable uploader did not load. Refresh BLACKCELL with an internet connection and try again.');
+ const key='bc-large-video:'+state.user.id+':'+file.name+':'+file.size+':'+file.lastModified;
+ const resumeId=localStorage.getItem(key)||undefined;
+ const start=await videoStreamApi('start',{
+  title:metadata.title,fileName:file.name,bytes:file.size,mimeType:file.type,category:metadata.category,
+  synopsis:metadata.synopsis,seriesTitle:metadata.seriesTitle,season:metadata.season,episode:metadata.episode,
+  rightsConfirmed:true,...(resumeId?{resumeId}:{})
+ });
+ localStorage.setItem(key,start.catalogId);
+ const fill=$('bcVideoUploadFill'),message=$('bcVideoUploadMessage');
+ fill.classList.remove('is-uploading');fill.style.width='0%';
+ message.textContent='Uploading 0% · resumable chunks';
+ await new Promise((resolve,reject)=>{
+  const uploader=new tus.Upload(file,{
+   endpoint:start.endpoint,
+   retryDelays:[0,2000,5000,10000,20000,45000,60000],
+   chunkSize:32*1024*1024,
+   removeFingerprintOnSuccess:true,
+   headers:{
+    AuthorizationSignature:start.signature,
+    AuthorizationExpire:String(start.expirationTime),
+    VideoId:start.videoId,
+    LibraryId:String(start.libraryId)
+   },
+   metadata:{filetype:file.type,title:metadata.title},
+   onProgress(sent,total){
+    const percent=total?Math.round(sent*100/total):0;
+    fill.style.width=Math.min(100,percent)+'%';
+    message.textContent='Uploading '+percent+'% · '+prettyBytes(sent)+' of '+prettyBytes(total);
+   },
+   onSuccess:resolve,
+   onError:reject
+  });
+  uploader.findPreviousUploads().then(previous=>{
+   // Resume only the same catalog/video; TUS fingerprints are tied to browser-local storage.
+   if(previous.length&&resumeId===start.catalogId)uploader.resumeFromPreviousUpload(previous[0]);
+   uploader.start();
+  }).catch(reject);
+ });
+ localStorage.removeItem(key);
+ message.textContent='Video uploaded · verifying with Bunny Stream…';
+ const remote=await videoStreamApi('finish',{catalogId:start.catalogId});
+ if(posterFile){
+  try{
+   const path=await uploadMoviePoster(posterFile);
+   await videoStreamApi('poster',{catalogId:start.catalogId,posterPath:path});
+  }catch(e){toast('Video saved; the poster could not be attached: '+fail(e))}
+ }
+ return {status:remote.status,catalogId:start.catalogId};
 }
 async function publishDirectVideo(event){
  event.preventDefault();
  if(directVideoBusy||state.busy)return;
- const file=$('bcVideoFile').files?.[0];
- const title=$('bcVideoTitle').value.trim();
- const category=$('bcVideoCategory').value;
+ const file=$('bcVideoFile').files?.[0],posterFile=$('bcVideoPoster').files?.[0];
+ const title=$('bcVideoTitle').value.trim(),category=$('bcVideoCategory').value;
  const synopsis=$('bcVideoDescription').value.trim();
  const seriesTitle=$('bcVideoSeriesTitle').value.trim();
- const season=Number($('bcVideoSeason').value);
- const episode=Number($('bcVideoEpisode').value);
+ const season=Number($('bcVideoSeason').value),episode=Number($('bcVideoEpisode').value);
  if(!file){toast('Choose a video file first.');return}
- if(!allowedTypes.has(file.type)||!file.type.startsWith('video/')||file.size<=0||file.size>45*1048576){
-  toast('Use an MP4, MOV or WEBM video of 45 MB or less.');return;
+ if(!VIDEO_MIMES.has(file.type)||file.size<=0||file.size>MAX_VIDEO_BYTES){
+  toast('Choose an MP4, MOV or WEBM file up to 10 GB.');return;
  }
  if(!title){toast('Enter a video title.');return}
- if(!$('bcVideoRights').checked){toast('Confirm you have the rights to share this video.');return}
- if(category==='series'&&(!seriesTitle||!Number.isInteger(season)||season<1||season>100||!Number.isInteger(episode)||episode<1||episode>999)){
-  toast('Enter the TV show title, season and episode number.');return;
+ if(posterFile&&(!POSTER_MIMES.has(posterFile.type)||posterFile.size>MAX_POSTER_BYTES||posterFile.size<=0)){
+  toast('Poster must be JPG, PNG or WEBP, 8 MB or less.');return;
  }
- const metadata={title,category,seriesTitle:category==='series'?seriesTitle:null,season:category==='series'?season:null,episode:category==='series'?episode:null,synopsis};
+ if(!$('bcVideoRights').checked){toast('Confirm your rights to share the video.');return}
+ if(category==='series'&&(!seriesTitle||!Number.isInteger(season)||season<1||season>100||!Number.isInteger(episode)||episode<1||episode>999)){
+  toast('Enter a series title, season and episode number.');return;
+ }
+ const metadata={title,category,seriesTitle:category==='series'?seriesTitle:null,
+  season:category==='series'?season:null,episode:category==='series'?episode:null,synopsis};
  const submit=$('bcVideoUploadSubmit'),progress=$('bcVideoUploadProgress');
  directVideoBusy=true;state.busy=true;submit.disabled=true;
  $('bcVideoUploadClose').disabled=true;$('bcVideoUploadCancel').disabled=true;
  progress.hidden=false;
  $('bcVideoUploadFill').classList.add('is-uploading');
  $('bcVideoUploadMessage').textContent='Preparing secure upload…';
- let postId=null;
+ let postId=null,posterPath=null;
  try{
-  const {data,error}=await client.from('corp_social_posts').insert({
-   author_id:state.user.id,body:title,kind:'video'
-  }).select('id').single();
-  if(error||!data?.id)throw Error(error?.message||'Could not create video record.');
-  postId=data.id;
-  $('bcVideoUploadMessage').textContent='Uploading securely…';
-  $('bcVideoUploadFill').classList.add('is-uploading');
-  // Current Storage API does not report progress; the bar remains indeterminate during upload.
-  await uploadAsset(file,'post',postId,metadata);
-  $('bcVideoUploadFill').classList.remove('is-uploading');
-  $('bcVideoUploadFill').style.width='100%';
-  $('bcVideoUploadMessage').textContent='Upload complete. Awaiting administrator review.';
-  await loadAll({show:true});
+  if(file.size>SMALL_VIDEO_BYTES){
+   await sendViaStream(file,metadata,posterFile);
+   $('bcVideoUploadMessage').textContent='Upload received. Video encoding and administrator review are pending.';
+  }else{
+   // Preserve the existing small-file Supabase workflow.
+   // The shared Free bucket cannot accept files larger than 45 MB.
+   posterPath=await uploadMoviePoster(posterFile);
+   const {data,error}=await client.from('corp_social_posts').insert({author_id:state.user.id,body:title,kind:'video'}).select('id').single();
+   if(error||!data?.id)throw Error(error?.message||'Could not create video post.');
+   postId=data.id;
+   $('bcVideoUploadMessage').textContent='Uploading private video…';
+   await uploadAsset(file,'post',postId,{...metadata,posterPath});
+   $('bcVideoUploadFill').classList.remove('is-uploading');
+   $('bcVideoUploadFill').style.width='100%';
+   $('bcVideoUploadMessage').textContent='Upload complete. Awaiting administrator review.';
+  }
+  try{await loadAll({show:true})}catch(err){console.warn('Video catalog refresh:',fail(err))}
   $('bcVideoUploadDialog').hidden=true;
   document.body.classList.remove('bc-video-upload-open');
+  videoPosterClear();
   document.dispatchEvent(new CustomEvent('bc:media-updated'));
-  toast('Video uploaded for administrator review. It will appear in Video Channel after approval.');
+  toast('Video received. It will appear in the Channel after encoding (if needed) and administrator approval.');
  }catch(e){
   if(postId)await client.from('corp_social_posts').delete().eq('id',postId).eq('author_id',state.user.id);
-  $('bcVideoUploadMessage').textContent='Upload failed: '+fail(e);
+  if(postId&&posterPath)await bucket.remove([posterPath]).catch(()=>{});
+  $('bcVideoUploadMessage').textContent='Upload incomplete: '+fail(e);
   $('bcVideoUploadFill').classList.remove('is-uploading');
   $('bcVideoUploadFill').style.width='0%';
-  toast('Video upload failed: '+fail(e));
+  toast('Video upload incomplete: '+fail(e));
  }finally{
   directVideoBusy=false;state.busy=false;submit.disabled=false;
   $('bcVideoUploadClose').disabled=false;$('bcVideoUploadCancel').disabled=false;
  }
 }
 const videoChannel=createBlackcellVideoChannel({
- state,mediaUrl,sharedMedia,profile,personName,stamp,switchView,openProfile,toast,
- uploadVideo:openDirectVideoUpload
+ state,mediaUrl,posterUrl,sharedMedia,profile,personName,stamp,switchView,openProfile,toast,
+ uploadVideo:openDirectVideoUpload,
+ playStream:async a=>{
+  const data=await videoStreamApi('play',{catalogId:a.id});
+  return data.url;
+ },
+ reviewStream:async(a,decision)=>{
+  await videoStreamApi('review',{catalogId:a.id,decision});
+  await loadAll({show:true});
+  toast('Video review updated.');
+ }
 });
 
 function renderVideos(){videoChannel.render()}
