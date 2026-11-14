@@ -15,6 +15,7 @@ const regions=typeof Intl.DisplayNames==='function'?new Intl.DisplayNames(['en']
 
 function lock(message){
  expires=true;
+ state.member=null;state.user=null;
  $('bcMediaAdminApp').hidden=true;
  $('bcAdminGate').hidden=false;
  $('bcAdminGateTitle').textContent='Administration Access Required';
@@ -216,7 +217,7 @@ async function enterWorkspace(tab){
   if(reviewReady)return;
   await loadAssets();
   const [{createBlackcellMediaProcessor},{setupBlackcellBunnyReview}]=await Promise.all([
-   import('./corporate-media-processor.js?v=20261112-library-sync2'),
+   import('./corporate-media-processor.js?v=20261114-review-studio'),
    import('./corporate-bunny-review.js?v=20261112-command1')
   ]);
   if(!processor){

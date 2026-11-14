@@ -10,19 +10,21 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
   const node=document.createElement(tag);if(cls)node.className=cls;
   if(text!==undefined)node.textContent=text;return node;
  };
- let queue=[],albums=[],current=null,busy=false,page=0,totalPending=0,bunnyWaiting=0;
+ let queue=[],albums=[],current=null,busy=false,page=0,totalPending=0,bunnyWaiting=0,previewEpoch=0,previewReady=false,firstReview=true;
+ const native=()=>!!$('bcProcessorPanel')?.classList.contains('bc-native-review');
  const pageSize=40;
  const status=text=>{if($('bcProcessStatus'))$('bcProcessStatus').textContent=text};
  const errText=e=>e?.message||'Unknown error';
  const setBusy=v=>{busy=v;for(const name of ['bcMediaReset','bcProcessRefresh','bcReviewApprove','bcReviewReject','bcReviewAI'])
-  {const node=$(name);if(node)node.disabled=v}};
+  {const node=$(name);if(node)node.disabled=v||name==='bcReviewApprove'&&!previewReady||name==='bcReviewAI'&&(!previewReady||current?.kind!=='photo')}
+  const cancel=$('bcReviewCancel');if(cancel)cancel.disabled=v;};
  function options(targetId,sourceId){
   const target=$(targetId),source=$(sourceId);if(!target||!source)return;
   target.replaceChildren(...[...source.options].map(x=>new Option(x.textContent,x.value)));
  }
  function resetEditor(){
-  current=null;$('bcReviewEditor').hidden=true;
-  const host=$('bcReviewPreview');host.replaceChildren();
+  if(busy&&current===null)return;previewEpoch++;previewReady=false;current=null;$('bcReviewEditor').hidden=true;
+  const host=$('bcReviewPreview');for(const video of host.querySelectorAll('video')){video.pause();video.removeAttribute('src');video.load()}host.replaceChildren();updateCards();
  }
  function updateCards(){
   const pending=queue.filter(a=>a.review_status==='pending');
@@ -32,13 +34,13 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
   $('bcQueueNext').disabled=(page+1)*pageSize>=totalPending;
   const host=$('bcProcessQueue');host.replaceChildren();
   if(!pending.length){
-   host.append(el('p','bc-proc-empty','No prepared photographs or videos waiting for approval. Bunny originals waiting to be prepared are shown in Bunny Incoming above.'));
+   host.append(el('p','bc-proc-empty','No prepared media waiting for approval. Open Bunny incoming to prepare staged originals.'));
    return;
   }
   for(const item of pending){
    const btn=el('button','bc-proc-item');btn.type='button';
-   btn.append(el('strong','',item.filename||'Untitled media'),
-    el('span','',item.kind.toUpperCase()+' · '+(item.source_provider||'manual')+' · '+(item.military_country_code||'COUNTRY UNCONFIRMED')));
+   const copy=el('div','bc-review-queue-copy');copy.append(el('strong','',item.filename||'Untitled media'),el('span','',item.kind.toUpperCase()+' · '+(item.source_provider||'manual')+' · '+(item.military_country_code||'COUNTRY UNCONFIRMED')));
+   if(native())btn.append(el('span','bc-review-queue-icon',item.kind==='video'?'▷':'▧'),copy);else btn.append(...copy.children);btn.classList.toggle('selected',current?.id===item.id);btn.setAttribute('aria-pressed',String(current?.id===item.id));
    btn.addEventListener('click',()=>void open(item));
    host.append(btn);
   }
@@ -58,7 +60,8 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
    totalPending=Number(a.count||0);
    if(page>0&&page*pageSize>=totalPending){page=Math.max(0,page-1);return await reload(true)}
    queue=a.data||[];albums=b.data||[];updateCards();
-   status(totalPending+' prepared for approval · '+bunnyWaiting+' Bunny originals waiting for preparation · adult or uncertain media stays owner-only · no country guessing.');
+   status(totalPending+' prepared for approval · '+bunnyWaiting+' Bunny originals awaiting preparation.');
+   if(native()&&firstReview&&queue.length&&!$('bcProcessorPanel').closest('[hidden]')&&!current&&!busy){firstReview=false;void open(queue[0])}
   }catch(e){status('Could not load import queue: '+errText(e))}
  }
  function fillChoose(){
@@ -69,21 +72,9 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
  }
  async function open(item){
   if(!active()||busy)return;
-  current=item;
-  const host=$('bcReviewPreview');host.replaceChildren();
+  const seq=++previewEpoch;previewReady=false;current=item;
+  const host=$('bcReviewPreview');for(const video of host.querySelectorAll('video')){video.pause();video.removeAttribute('src');video.load()}host.replaceChildren(el('p','bc-review-preview-message','Loading private media…'));
   $('bcReviewName').textContent=(item.kind==='video'?'VIDEO · ':'PHOTO · ')+(item.filename||'Untitled');
-  const asset=state.assets.find(a=>a.id===item.id);
-  let url=asset?mediaUrl(asset):'';
-  if(!url){
-   const {data,error}=await bucket.createSignedUrl(item.storage_path,1200);
-   if(error||!data?.signedUrl){status('Preview unavailable: '+(error?.message||'No private file link'));return}
-   url=data.signedUrl;
-  }
-  const preview=el(item.kind==='video'?'video':'img');
-  preview.src=url;
-  if(item.kind==='video'){preview.controls=true;preview.playsInline=true;preview.preload='metadata'}
-  else preview.alt=item.filename||'Pending photograph';
-  host.append(preview);
   $('bcReviewCountry').value=item.military_country_code||'';
   $('bcReviewBranch').value=item.military_branch||'Unspecified';
   $('bcReviewCategory').value=item.military_category||'Unsorted';
@@ -96,12 +87,25 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
   $('bcReviewAI').disabled=item.kind!=='photo';
   $('bcReviewAI').title=item.kind==='video'?'Video frame classification is not enabled yet; manually review this video':
    'Photo AI is optional and uses provider credits. Never submit explicit photos to an unapproved model.';
-  $('bcReviewEditor').hidden=false;
-  status('Review the actual '+item.kind+'. Verify country, branch, subject and adult restrictions before approving.');
-  $('bcReviewEditor').scrollIntoView({behavior:'smooth',block:'start'});
+
+  $('bcReviewEditor').hidden=false;setBusy(false);updateCards();
+  status('Loading secure preview…');
+  if(!native())$('bcReviewEditor').scrollIntoView({behavior:'smooth',block:'start'});
+  const valid=()=>active()&&seq===previewEpoch&&current?.id===item.id;
+  const fail=()=>{if(!valid())return;previewReady=false;if(!busy)setBusy(false);const retry=el('button','bc-review-retry','Retry preview');retry.type='button';retry.onclick=()=>void open(item);host.replaceChildren(el('p','bc-review-preview-message','Private preview unavailable. This item remains pending.'),retry);status('Could not display this private file. Retry the preview before approval.')};
+  try{
+   const asset=state.assets.find(a=>a.id===item.id);let url=asset?mediaUrl(asset):'';
+   if(!url){const {data,error}=await bucket.createSignedUrl(item.storage_path,1200);if(!valid())return;if(error||!data?.signedUrl){fail();return}url=data.signedUrl}
+   if(!valid())return;
+   const preview=el(item.kind==='video'?'video':'img');
+   if(item.kind==='video'){preview.controls=true;preview.playsInline=true;preview.preload='metadata'}else preview.alt=item.filename||'Pending photograph';
+   const loaded=()=>{if(!valid())return;previewReady=true;if(!busy)setBusy(false);status('Review the actual '+item.kind+'. Verify country, branch, subject and applicable restrictions before approving.')};
+   preview.addEventListener(item.kind==='video'?'loadedmetadata':'load',loaded,{once:true});preview.addEventListener('error',fail,{once:true});
+   host.replaceChildren(preview);preview.src=url;
+  }catch(_){fail()}
  }
  async function applyAI(){
-  if(!active()||!current||busy||current.kind!=='photo')return;
+  if(!active()||!current||busy||!previewReady||current.kind!=='photo')return;
   if($('bcReviewAdult').checked){
    status('Explicit or adult-restricted photographs must be classified manually. No external AI provider was called.');
    return;
@@ -145,7 +149,7 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
   albums.push(data);return data.id;
  }
  async function approve(){
-  if(!active()||!current||busy)return;
+  if(!active()||!current||busy||!previewReady)return;
   const id=current.id;
   const country=$('bcReviewCountry').value,branch=$('bcReviewBranch').value;
   const subject=$('bcReviewCategory').value,era=$('bcReviewEra').value;
@@ -295,8 +299,8 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
   options('bcReviewCategory','militaryUploadCategory');
   options('bcReviewEra','militaryUploadEra');
   $('bcProcessRefresh').addEventListener('click',()=>void reload());
-  $('bcQueuePrev').addEventListener('click',()=>{if(page>0){page--;void reload()}});
-  $('bcQueueNext').addEventListener('click',()=>{if((page+1)*pageSize<totalPending){page++;void reload()}});
+  $('bcQueuePrev').addEventListener('click',()=>{if(!busy&&page>0){resetEditor();page--;void reload()}});
+  $('bcQueueNext').addEventListener('click',()=>{if(!busy&&(page+1)*pageSize<totalPending){resetEditor();page++;void reload()}});
   document.addEventListener('bc:media-updated',()=>void reload());
   document.addEventListener('bc:bunny-staged-count',event=>{
     bunnyWaiting=Math.max(0,Number(event.detail?.count)||0);
@@ -306,7 +310,7 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
   $('bcReviewApprove').addEventListener('click',()=>void approve());
   $('bcReviewReject').addEventListener('click',()=>void reject());
   $('bcReviewAI').addEventListener('click',()=>void applyAI());
-  $('bcReviewCancel').addEventListener('click',resetEditor);
+  $('bcReviewCancel').addEventListener('click',()=>{if(!busy)resetEditor()});
   $('bcReviewAdult').addEventListener('change',e=>{
    if(e.target.checked){$('bcReviewAlbum').value='unfiled';status('Adult-restricted media stays owner-only and cannot be filed in shared albums.')}
   });

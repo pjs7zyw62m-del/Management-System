@@ -409,3 +409,81 @@ body.bc-media-admin-page .bc-media-admin-shell,html.bc-admin-workspace-embedded 
  .bc-media-admin-page .bc-workspace-panels{padding:12px}
  .bc-media-admin-page .bc-workspace-headline{font-size:18px}
 }
+
+/* Native owner review studio — compact queue, private canvas, inspector. */
+body.bc-media-admin-page .bc-workspace-pane[data-admin-pane=review]>.bc-workspace-review-note{display:none}
+body.bc-media-admin-page .bc-native-review#bcProcessorPanel{padding:0!important;margin:0!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;color:#eee}
+.bc-native-review .bc-native-review-top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 10px}
+.bc-native-review .bc-review-kicker{font:600 9px system-ui;color:#a8a8b2;letter-spacing:.15em}
+.bc-native-review .bc-native-review-top h2{font:650 21px system-ui;letter-spacing:-.04em;margin:4px 0}
+.bc-native-review .bc-native-review-top p{font:12px system-ui;color:#a8a8b2;margin:0}
+.bc-native-review .bc-review-top-tools{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+body.bc-network .bc-native-review .bc-proc-count{flex-direction:row;min-width:0;gap:7px;background:#29292e;border:1px solid #ffffff17;padding:7px 10px;border-radius:8px}
+body.bc-network .bc-native-review .bc-proc-count span{font:650 22px system-ui}
+body.bc-network .bc-native-review .bc-proc-count small{font:600 9px system-ui;color:#aaaab6}
+.bc-native-review #bcProcessRefresh,.bc-native-review .bc-review-retry{font:550 12px system-ui;border:1px solid #ffffff22;background:#36363e;color:#eee;border-radius:7px;padding:9px 12px;cursor:pointer}
+body.bc-network .bc-native-review #bcProcessStatus{margin:0 0 12px;padding:9px 11px;border-radius:7px;background:#222227;color:#c6c6cf;font:11px/1.5 system-ui;overflow-wrap:anywhere}
+.bc-native-review .bc-native-review-layout{display:grid;grid-template-columns:clamp(195px,21%,250px) minmax(0,1fr);gap:12px;min-width:0;align-items:stretch}
+.bc-native-review .bc-review-rail,.bc-native-review .bc-review-main{min-width:0;border:1px solid #ffffff15;border-radius:12px;background:#202024;overflow:hidden}
+.bc-native-review .bc-review-rail{padding:12px;display:flex;flex-direction:column;gap:10px}
+.bc-native-review .bc-review-rail-title h3{font:650 14px system-ui;margin:0 0 3px}
+.bc-native-review .bc-review-rail-title>span{font:11px system-ui;color:#aaaab4}
+body.bc-network .bc-native-review .bc-proc-queue{display:flex;flex-direction:column;gap:5px;max-height:330px;overflow:auto;scrollbar-width:none}
+body.bc-network .bc-native-review .bc-proc-item{display:flex;flex-direction:row;align-items:center;gap:8px;min-width:0;padding:9px;border:1px solid transparent;border-radius:8px;background:#2a2a2f;color:#eaeaf0}
+body.bc-network .bc-native-review .bc-proc-item:hover{background:#35353b}
+body.bc-network .bc-native-review .bc-proc-item.selected{background:#3b3038;border-color:#9b5260;box-shadow:inset 3px 0 #bf5267}
+.bc-native-review .bc-review-queue-icon{width:30px;height:33px;flex:none;display:grid;place-items:center;border-radius:6px;background:#46464e;color:#e7e7eb!important;font-size:18px!important}
+.bc-native-review .bc-review-queue-copy{min-width:0;flex:1;display:grid;gap:4px}
+body.bc-network .bc-native-review .bc-proc-item strong{font:550 11px system-ui;display:block;text-overflow:ellipsis;overflow:hidden}
+body.bc-network .bc-native-review .bc-proc-item span:not(.bc-review-queue-icon){font:9px system-ui;line-height:1.4;white-space:normal;color:#b0b0bc}
+body.bc-network .bc-native-review .bc-proc-empty{background:#1b1b20;border-color:#ffffff1b;color:#a0a0ac;font:11px/1.5 system-ui;padding:10px}
+body.bc-network .bc-native-review .bc-proc-pagination{margin:0;gap:7px;flex-wrap:wrap}
+body.bc-network .bc-native-review .bc-proc-pagination button{padding:6px 8px;border-radius:6px;background:#303036;border-color:#ffffff17;color:#d6d6df;font:10px system-ui}
+body.bc-network .bc-native-review .bc-proc-pagination span{font:11px system-ui}
+.bc-native-review .bc-bunny-review-panel{margin:4px 0 0;padding:0;border:1px solid #ffffff16;border-radius:9px;background:#252529;box-shadow:none;min-width:0}
+.bc-native-review .bc-review-bunny-summary{display:flex;align-items:center;gap:8px;padding:10px;cursor:pointer;list-style:none;min-width:0;color:#e2e2e8}
+.bc-review-bunny-summary::-webkit-details-marker{display:none}
+.bc-native-review .bc-review-bunny-summary>strong{flex:1;min-width:0;font:550 12px system-ui}
+.bc-native-review .bc-review-bunny-summary:after{content:"›";color:#9b9ba5;font-size:18px}
+.bc-native-review details[open]>.bc-review-bunny-summary:after{transform:rotate(90deg)}
+.bc-native-review .bc-review-bunny-summary>span:first-child{font:20px system-ui;color:#b6b6c3}
+.bc-native-review #bcBunnyStagingCount{font:650 12px system-ui;color:#ddd}
+.bc-native-review .bc-bunny-review-panel>p,.bc-native-review .bc-bunny-review-panel>small{display:block;margin:8px 10px;font:10px/1.5 system-ui;color:#aaaab5}
+.bc-native-review .bc-bunny-stage-actions{margin:10px;gap:6px}
+.bc-native-review .bc-bunny-stage-actions button,.bc-native-review .bc-bunny-stage-item button{border:1px solid #ffffff20;background:#38383f;color:#eee;border-radius:6px;padding:8px;font:550 10px system-ui;white-space:normal}
+.bc-native-review .bc-bunny-stage-queue{margin:8px 10px;max-height:220px;scrollbar-width:none}
+.bc-native-review .bc-bunny-stage-item{flex-direction:column;align-items:stretch;background:#1b1b20;border-color:#ffffff12;gap:7px;padding:8px}
+.bc-native-review .bc-bunny-review-empty{margin:0;padding:8px;background:transparent;border-color:#ffffff15;font:10px/1.5 system-ui;color:#a2a2ae}
+.bc-native-review .bc-review-main{background:#141417;min-height:420px}
+.bc-native-review .bc-review-idle{min-height:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:25px;gap:9px}
+.bc-native-review .bc-review-main:has(#bcReviewEditor:not([hidden])) .bc-review-idle{display:none}
+.bc-native-review .bc-review-idle>div{font:45px system-ui;color:#666670}
+.bc-native-review .bc-review-idle h3{font:650 19px system-ui;margin:0}
+.bc-native-review .bc-review-idle p{max-width:320px;color:#a7a7b0;font:12px/1.6 system-ui;margin:0}
+body.bc-network .bc-native-review .bc-review-editor{margin:0;border:0;padding:0;min-width:0}
+body.bc-network .bc-native-review .bc-proc-editor-head{padding:13px 14px;background:#252529;border-bottom:1px solid #ffffff14}
+body.bc-network .bc-native-review .bc-proc-editor-head strong{font:550 12px system-ui;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.bc-network .bc-native-review .bc-proc-editor-head button{flex:none;background:#38383d;border-color:#ffffff20;border-radius:6px;padding:6px 10px;font:500 11px system-ui}
+.bc-native-review .bc-review-workbench{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,335px);min-width:0;align-items:stretch}
+.bc-native-review .bc-review-canvas{display:flex;flex-direction:column;min-width:0;min-height:0;background:#0c0c0e}
+body.bc-network .bc-native-review .bc-review-preview{display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;margin:0;border:none;border-radius:0;background:#0c0c0e;flex:1;min-height:320px;max-height:min(72dvh,760px);padding:12px}
+body.bc-network .bc-native-review .bc-review-preview img,body.bc-network .bc-native-review .bc-review-preview video{display:block;width:100%;height:auto;max-height:clamp(250px,62dvh,700px);max-width:100%;object-fit:contain}
+.bc-native-review .bc-review-preview-message{font:12px/1.5 system-ui;color:#acacb8;padding:15px;text-align:center}
+.bc-native-review .bc-review-canvas-note{padding:9px;text-align:center;color:#91919b;font:10px system-ui;border-top:1px solid #ffffff0d}
+.bc-native-review .bc-review-inspector{min-width:0;padding:14px;border-left:1px solid #ffffff12;background:#242428}
+.bc-native-review .bc-review-inspector h3{font:650 13px system-ui;margin:0 0 12px;color:#eee}
+.bc-native-review .bc-review-inspector h3:not(:first-child){margin-top:18px}
+body.bc-network .bc-native-review .bc-review-grid{gap:9px;grid-template-columns:repeat(2,minmax(0,1fr))}
+body.bc-network .bc-native-review .bc-review-grid label{font:550 9px system-ui;letter-spacing:.045em;color:#b0b0bb;gap:5px}
+body.bc-network .bc-native-review .bc-review-grid select,body.bc-network .bc-native-review .bc-review-grid input{width:100%;min-width:0;background:#19191d;border:1px solid #ffffff1f;border-radius:7px;padding:8px 6px;font:11px system-ui;color:#e8e8ef;min-height:33px}
+body.bc-network .bc-native-review .bc-review-checks{gap:8px;margin:0 0 11px}
+body.bc-network .bc-native-review .bc-review-checks label{font:11px/1.45 system-ui;color:#d1d1da;gap:6px}
+body.bc-network .bc-native-review .bc-proc-warning{font:10px/1.5 system-ui;color:#b4b4be;margin:9px 0}
+body.bc-network .bc-native-review .bc-review-inspector .bc-proc-toolbar{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:12px 0 0}
+body.bc-network .bc-native-review .bc-review-inspector .bc-proc-toolbar button{font:550 11px system-ui;letter-spacing:0;background:#3a3a40;border:1px solid #ffffff1c;border-radius:7px;min-height:34px;padding:8px}
+body.bc-network .bc-native-review .bc-review-inspector .bc-proc-toolbar .bc-proc-approve{grid-column:1/-1;background:#97374a;border-color:#c4576a;color:white}
+body.bc-network .bc-native-review .bc-proc-note{font:10px/1.5 system-ui;color:#9797a2;margin:10px 1px 0}
+.bc-native-review .bc-review-rail ::-webkit-scrollbar{display:none}
+.bc-native-review .bc-review-main{container-type:inline-size}
+@container(max-width:560px){.bc-native-review .bc-review-workbench{grid-template-columns:minmax(0,1fr)}.bc-native-review .bc-review-inspector{border-left:0;border-top:1px solid #ffffff12}.bc-native-review .bc-review-preview{min-height:270px!important}}
+@media(max-width:650px){.bc-native-review .bc-native-review-layout{display:flex;flex-direction:column}.bc-native-review .bc-native-review-top{align-items:flex-start;flex-wrap:wrap}.bc-native-review .bc-review-main,.bc-native-review .bc-review-idle{min-height:260px}.bc-native-review .bc-proc-queue{max-height:180px!important}}

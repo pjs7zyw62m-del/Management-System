@@ -10,9 +10,9 @@
 <link rel="stylesheet" href="corporate-media-admin.css?v=20261111-bunny-review1">
 <link rel="stylesheet" href="corporate-bunny-library-sync.css?v=20261112-library-sync2">
 <link rel="stylesheet" href="corporate-media-diagnostics.css?v=20261112-diag1">
-<link rel="stylesheet" href="corporate-admin-workspace.css?v=20261114-native-media-app">
+<link rel="stylesheet" href="corporate-admin-workspace.css?v=20261114-review-studio">
 <script src="corp-config.js" defer></script>
-<script type="module" src="corporate-media-admin.js?v=20261114-native-media-app"></script>
+<script type="module" src="corporate-media-admin.js?v=20261114-review-studio"></script>
 <script src="blackcell-live-update.js?v=20261114-auto3" defer data-mode="auto"></script>
 </head>
 <body class="bc-network bc-media-admin-page">
@@ -150,32 +150,23 @@
     <p id="bcIcloudStatus" role="status" aria-live="polite">No photo selected yet.</p>
     <small>On iPhone or iPad: tap Choose Photo, then choose Photo Library or Choose Files (iCloud Drive). This is a manual one-photo test; automatic iCloud sync will be a separate connection.</small>
   </section>
-  <section class="panel bc-media-processor" id="bcProcessorPanel" hidden aria-label="Media Import Processor">
-        <div class="bc-proc-head">
-          <div><span class="overline">BLACKCELL / CONTROLLED MEDIA INTAKE</span><h2>Media Import Processor</h2><p>Every incoming photo and video enters private review. No publishing until country, military category and approved album placement are verified.</p></div>
-          <strong class="bc-proc-count"><span id="bcProcessCount">0</span><small>PENDING REVIEW</small></strong>
-        </div>
-        <div class="bc-proc-steps"><span>01 · RECEIVE</span><span>02 · DUPLICATES</span><span>03 · CLASSIFY</span><span>04 · APPROVE &amp; FILE</span></div>
-        <div class="bc-proc-toolbar"><button type="button" id="bcProcessRefresh">↻ REFRESH REVIEW QUEUE</button><button type="button" id="bcMediaReset" class="bc-proc-danger">RESET ALL BLACKCELL PHOTO &amp; VIDEO MEDIA</button></div>
-        <section class="bc-bunny-review-panel" id="bcBunnyStagingPanel" aria-label="Bunny private media waiting for Military Library review">
-          <div class="bc-bunny-stage-header">
-            <div><span class="bc-admin-overline">BUNNY PRIVATE VAULT → MILITARY LIBRARY</span><h3>Bunny Incoming <strong id="bcBunnyStagingCount">0</strong></h3>
-              <p>Files saved in Bunny appear here automatically for private intake. Select the photographs or videos you want prepared for the Military Library approval queue. Nothing posts without your approval.</p></div>
-          </div>
+  <section class="panel bc-media-processor bc-native-review" id="bcProcessorPanel" hidden aria-label="Media Import Processor">
+<div class="bc-native-review-top"><div><span class="bc-review-kicker">PRIVATE INTAKE</span><h2>Pending media</h2><p>Inspect, classify and approve before publication.</p></div><div class="bc-review-top-tools"><strong class="bc-proc-count"><span id="bcProcessCount">0</span><small>TOTAL WAITING</small></strong><button type="button" id="bcProcessRefresh">↻ Refresh queue</button><button type="button" id="bcMediaReset" class="bc-proc-danger">RESET ALL BLACKCELL PHOTO &amp; VIDEO MEDIA</button></div></div>
+<p id="bcProcessStatus" role="status" aria-live="polite">Checking import queue…</p><div class="bc-native-review-layout"><aside class="bc-review-rail" aria-label="Private review queue"><div class="bc-review-rail-title"><h3>Review queue</h3><span>Prepared files</span></div>
+        <div id="bcProcessQueue" class="bc-proc-queue"></div>
+        <div class="bc-proc-pagination"><button id="bcQueuePrev" type="button">‹ Previous</button><span id="bcQueuePage">1 / 1</span><button id="bcQueueNext" type="button">Next ›</button></div>
+        <details class="bc-bunny-review-panel" id="bcBunnyStagingPanel" aria-label="Bunny private media waiting for Military Library review">
+          <summary class="bc-review-bunny-summary"><span aria-hidden="true">☁</span><strong>Bunny incoming</strong><span id="bcBunnyStagingCount">0</span></summary><p>Prepare private review copies. Originals remain in Bunny.</p>
           <div class="bc-bunny-stage-actions">
-            <button type="button" id="bcBunnyStagingRefresh">↻ REFRESH BUNNY INTAKE</button>
-            <button type="button" id="bcBunnyPrepareBatch" disabled>PREPARE NEXT 10 FOR REVIEW</button>
+            <button type="button" id="bcBunnyStagingRefresh">Refresh intake</button>
+            <button type="button" id="bcBunnyPrepareBatch" disabled>Prepare next 10</button>
           </div>
           <p id="bcBunnyStagingStatus" role="status" aria-live="polite">Checking your private Bunny originals…</p>
           <div id="bcBunnyStagingQueue" class="bc-bunny-stage-queue"></div>
-          <small>Preparing makes a separate private review copy in BLACKCELL's existing Military Library system. Originals remain in Bunny. Files over 32 MiB and unsupported formats are held safely in Bunny for a later large-media import.</small>
-        </section>
-        <p id="bcProcessStatus" role="status" aria-live="polite">Checking import queue…</p>
-        <div id="bcProcessQueue" class="bc-proc-queue"></div>
-        <div class="bc-proc-pagination"><button id="bcQueuePrev" type="button">← PREVIOUS</button><span id="bcQueuePage">1 / 1</span><button id="bcQueueNext" type="button">NEXT →</button></div>
-        <div id="bcReviewEditor" class="bc-review-editor" hidden>
-          <div class="bc-proc-editor-head"><strong id="bcReviewName">MEDIA TO REVIEW</strong><button type="button" id="bcReviewCancel">✕ CLOSE</button></div>
-          <div id="bcReviewPreview" class="bc-review-preview"></div>
+          <small>Files over 32 MiB and unsupported formats remain safely in Bunny.</small>
+        </details></aside><section class="bc-review-main" aria-label="Media inspection"><div class="bc-review-idle"><div aria-hidden="true">▧</div><h3>Select media to review</h3><p>Choose a prepared photo or video to inspect and classify.</p></div><div id="bcReviewEditor" class="bc-review-editor" hidden>
+          <div class="bc-proc-editor-head"><strong id="bcReviewName">MEDIA TO REVIEW</strong><button type="button" id="bcReviewCancel">Close</button></div>
+          <div class="bc-review-workbench"><div class="bc-review-canvas"><div id="bcReviewPreview" class="bc-review-preview"></div><div class="bc-review-canvas-note">Private preview · Not yet published</div></div><div class="bc-review-inspector"><h3>Classification</h3>
           <div class="bc-review-grid">
            <label>VERIFIED COUNTRY <select id="bcReviewCountry"></select></label>
            <label>MILITARY BRANCH <select id="bcReviewBranch"></select></label>
@@ -185,20 +176,18 @@
            <label>TAGS <input id="bcReviewTags" maxlength="350" placeholder="Visible details, comma separated"></label>
            <label class="bc-review-album">DESTINATION ALBUM <select id="bcReviewAlbum"></select></label>
           </div>
-          <div class="bc-review-checks">
+          <h3>Publication checks</h3><div class="bc-review-checks">
            <label><input id="bcReviewAdult" type="checkbox"> ADULT / EXPLICIT — RESTRICT TO OWNER ONLY</label>
            <label><input id="bcReviewRights" type="checkbox"> I confirm I have the necessary rights and consent to store and display this media.</label>
            <label><input id="bcReviewAges" type="checkbox"> If explicit: all depicted people are adults, and I have appropriate authority to hold the material.</label>
           </div>
           <p class="bc-proc-warning">Country, branch and unit must be supported by evidence. If uncertain, leave pending. Explicit media stays owner-only and is never added to a shared album. AI is optional for verified non-explicit photos only.</p>
           <div class="bc-proc-toolbar">
-           <button id="bcReviewAI" type="button">✦ OPTIONAL PHOTO AI SUGGESTIONS</button>
-           <button id="bcReviewReject" type="button">HOLD / REJECT</button>
-           <button id="bcReviewApprove" type="button" class="bc-proc-approve">✓ APPROVE &amp; FILE MEDIA</button>
+           <button id="bcReviewAI" type="button">AI suggestions</button>
+           <button id="bcReviewReject" type="button">Reject…</button>
+           <button id="bcReviewApprove" type="button" class="bc-proc-approve">Approve &amp; file…</button>
           </div>
-        </div>
-        <small class="bc-proc-note">The permanent reset requires two confirmations and deletes BLACKCELL Network photo/video originals through Supabase Storage, followed by their gallery records. NEXUS, iCloud originals, and private chat attachments remain untouched. Bunny incoming items are shown above and are never posted automatically.</small>
-      </section>
+        </div></div></div></section></div><small class="bc-proc-note">Nothing publishes automatically. Uncertain media remains pending; restricted media stays owner-only.</small></section>
   <section class="bc-media-admin-explainer">
    <h2>How this operates</h2>
    <div class="bc-admin-process-steps"><div><strong>01. RECEIVE</strong><p>New photographs and videos are stored privately and queued for review.</p></div><div><strong>02. VERIFY</strong><p>Inspect images or videos, check duplication, rights and adult classification.</p></div><div><strong>03. SORT</strong><p>Confirm country, military branch and subject before selecting an accurate album.</p></div><div><strong>04. AUTHORIZE</strong><p>Only approved non-explicit media enters shared albums; restricted media stays owner-only.</p></div></div>
