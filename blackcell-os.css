@@ -116,3 +116,5 @@
 
 /* Private Photo Ledger — distinct restricted application icon. */
 .app[data-app=photoledger] .app-icon,.dock [data-open=photoledger]{background:linear-gradient(145deg,#656772,#292a32 55%,#111116);border-color:#ffffff30;color:#f6e1e5;box-shadow:inset 0 1px #ffffff30,0 5px 12px #0006}
+
+.bc-store-release-controls{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:7px;min-width:0}.bc-store-release-controls .bc-store-search{width:clamp(90px,15vw,180px);max-width:100%}.bc-store-release-controls .bc-store-get{white-space:nowrap}@media(max-width:620px){.bc-store-header{align-items:flex-start;flex-direction:column;gap:8px}.bc-store-release-controls{justify-content:flex-start;width:100%}}
