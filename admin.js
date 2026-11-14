@@ -488,58 +488,57 @@ function showSecurityCodeCardPreview(form,inputs){
 function users(){
   if(activeTab==='accounts'){
     const section=block('Register New Employee');
-    section.append(p('Send a private activation invitation. The employee sets their own password and receives a Blackcell digital access card. New employees cannot enter Level 7 Administration or NEXUS.'));
-    const form=el('form','');
-    form.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:13px;align-items:end;margin-top:15px';
+    section.append(p('Create a private invitation and digital access pass. The employee sets their own password.'));
+    const form=el('form','um4-invite-form');
     const field=(label,type,placeholder)=>{
-      const wrap=el('label');wrap.style.cssText='display:flex;flex-direction:column;gap:7px;font-size:10px;letter-spacing:.12em;color:#bab0bc';
+      const wrap=el('label','um4-field');
       wrap.append(el('span','',label));
       const input=el('input');input.type=type;input.required=true;input.placeholder=placeholder;input.style.width='100%';
       wrap.append(input);form.append(wrap);return input;
     };
-    const name=field('NAME','text','Full name');
+    const identity=el('div','um4-form-group');identity.append(el('h4','','Employee identity'));
+    const name=field('Full name','text','Full name');
     name.minLength=2;name.maxLength=80;
-    const email=field('EMPLOYEE EMAIL','email','name@example.com');
+    const email=field('Email address','email','name@example.com');
+    const identityGrid=el('div','um4-form-grid');identityGrid.append(name.parentElement,email.parentElement);identity.append(identityGrid);form.append(identity);
 
-    const uniqueUser=field('GENERATED USERNAME','text','bc_employee_12345');
+    const uniqueUser=field('Username','text','bc_employee_12345');const usernameField=uniqueUser.parentElement;const usernameRow=el('div','um4-inline-input');usernameRow.append(uniqueUser);usernameField.append(usernameRow);
     uniqueUser.pattern='[a-z][a-z0-9_]{5,31}';
     uniqueUser.maxLength=32;uniqueUser.autocapitalize='off';uniqueUser.spellcheck=false;
-    const usernameButton=action('GENERATE USERNAME',()=>{
+    const usernameButton=action('Generate',()=>{
       uniqueUser.value=corporateUsername(name.value);
     },false);
-    usernameButton.type='button';usernameButton.style.cssText='min-height:44px';
-    form.append(usernameButton);
+    usernameButton.type='button';usernameRow.append(usernameButton);identityGrid.append(usernameField);
 
     function codeGenerator(label,count){
-      const wrap=el('div');
-      wrap.style.cssText='display:flex;flex-direction:column;gap:8px';
+      const wrap=el('div','um4-field');
       const caption=el('label','',label);
-      caption.style.cssText='font-size:10px;letter-spacing:.12em;color:#bcb2bf';
       const input=el('input');
-      input.type='password';input.readOnly=true;input.required=true;
+      input.type='password';input.id='um4-code-'+count;caption.htmlFor=input.id;input.readOnly=true;input.required=true;
       input.autocomplete='off';input.inputMode='numeric';
       input.maxLength=count;input.minLength=count;
       input.placeholder=count+' random digits';input.style.width='100%';
-      const buttons=el('div');buttons.style.cssText='display:flex;gap:6px';
-      const gen=action('GENERATE',()=>{input.value=corporateRandomDigits(count);},false);
+      const buttons=el('div','um4-inline-input um4-code-actions');buttons.append(input);
+      const gen=action('Generate',()=>{input.value=corporateRandomDigits(count);},false);
       gen.type='button';
-      const reveal=action('REVEAL',()=>{
+      const reveal=action('Reveal',()=>{
         input.type=input.type==='password'?'text':'password';
-        reveal.textContent=input.type==='text'?'HIDE':'REVEAL';
+        reveal.textContent=input.type==='text'?'Hide':'Reveal';
       },false);
       reveal.type='button';
-      const copy=action('COPY',()=>{
+      const copy=action('Copy',()=>{
         if(input.value)navigator.clipboard?.writeText(input.value).then(()=>{
           copy.textContent='COPIED ✓';
         }).catch(()=>{copy.textContent='SELECT TO COPY';input.type='text';input.select();});
       },false);
       copy.type='button';
       buttons.append(gen,reveal,copy);
-      wrap.append(caption,input,buttons);form.append(wrap);
+      wrap.append(caption,buttons);credentialGrid.append(wrap);
       return input;
     }
-    const accessCode=codeGenerator('ACCESS CODE · 4 DIGITS',4);
-    const securityCode=codeGenerator('SECURITY CODE · 12 DIGITS',12);
+    const credentials=el('div','um4-form-group'),credentialGrid=el('div','um4-form-grid');credentials.append(el('h4','','Access credentials'),p('Generate both codes before sending the invitation.'),credentialGrid);form.append(credentials);
+    const accessCode=codeGenerator('Access code · 4 digits',4);
+    const securityCode=codeGenerator('Security code · 12 digits',12);
     if(pendingReinvite){
       name.value=pendingReinvite.name;
       email.value=pendingReinvite.email;
@@ -548,16 +547,17 @@ function users(){
       securityCode.value=corporateRandomDigits(12);
       pendingReinvite=null;
     }
-    const levelLabel=el('label');levelLabel.style.cssText='display:flex;flex-direction:column;gap:7px;font-size:10px;letter-spacing:.12em;color:#bab0bc';
-    levelLabel.append(el('span','','CLEARANCE'));
+    const levelLabel=el('label','um4-field');
+    levelLabel.append(el('span','','Clearance'));
     const level=el('select');for(let i=1;i<=6;i++)level.add(new Option('Level '+i,i));
-    level.value='1';levelLabel.append(level);form.append(levelLabel);
+    level.value='1';levelLabel.append(level);identityGrid.append(levelLabel);
+    const previewGroup=el('div','um4-form-group');previewGroup.append(el('h4','','Preview & send'));const previewRow=el('div','um4-preview-row'),sendRow=el('div','um4-send-row');previewGroup.append(previewRow,sendRow);form.append(previewGroup);
     const previewInvite=action('PREVIEW INVITATION',()=>{
       showInvitationPreview(form,{name,email,username:uniqueUser,level});
     });
     previewInvite.type='button';
-    previewInvite.style.cssText='width:100%;min-height:44px';
-    form.append(previewInvite);
+    previewInvite.textContent='Invitation email';
+    previewRow.append(previewInvite);
     const previewCard=action('PREVIEW EMPLOYEE CARD',()=>{
       section.querySelector('.employee-card-inline-preview')?.remove();
       const preview=el('div','employee-card-inline-preview');
@@ -573,21 +573,21 @@ function users(){
       section.append(preview);
       preview.scrollIntoView({behavior:'smooth',block:'nearest'});
     });
-    previewCard.type='button';previewCard.style.cssText='width:100%;min-height:44px';
-    form.append(previewCard);
+    previewCard.type='button';previewCard.textContent='Employee card';
+    previewRow.append(previewCard);
     const previewCodes=action('PREVIEW ACCESS & SECURITY CARD',()=>{
       showSecurityCodeCardPreview(form,{name,username:uniqueUser,level,accessCode,securityCode});
     });
     previewCodes.type='button';
-    previewCodes.style.cssText='width:100%;min-height:44px';
-    form.append(previewCodes);
+    previewCodes.textContent='Access & security card';
+    previewRow.append(previewCodes);
     const testConnection=action('CHECK CONNECTION — NO EMAIL',null,false);
     testConnection.type='button';
-    testConnection.style.cssText='width:100%;min-height:44px;border-color:#7c6470';
-    form.append(testConnection);
+    testConnection.textContent='Check connection';testConnection.title='Check secure connection without sending email';
+    sendRow.append(testConnection);
     const submit=action('SEND EMPLOYEE INVITATION',null,false,true);
-    submit.type='submit';submit.style.cssText='width:100%;min-height:44px';
-    form.append(submit);
+    submit.type='submit';submit.textContent='Send invitation';
+    sendRow.append(submit);
     const feedback=el('p','muted','');
     feedback.setAttribute('role','status');
     feedback.setAttribute('aria-live','polite');
@@ -695,7 +695,7 @@ function users(){
       finally{submit.disabled=false;submit.textContent='SEND EMPLOYEE INVITATION';}
     });
     section.append(form,feedback);
-    section.classList.add('um2-invite-panel');
+    section.classList.add('um2-invite-panel','um4-invite-panel');
     const list=block('Approved & Invited Accounts');
     list.classList.add('um2-account-panel');
     list.append(p('Loading corporate accounts…'));
