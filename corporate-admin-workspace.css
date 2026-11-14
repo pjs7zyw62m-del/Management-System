@@ -266,3 +266,70 @@ body.bc-media-admin-page{
  .bc-overview-empty-cta{width:100%}
  .bc-workspace-sidebar{top:103px!important}
 }
+
+/* Media Command / compact BLACKCELL OS workspace, November 2026. */
+body.bc-media-admin-page{background:#080809!important;scrollbar-width:none}
+html:has(body.bc-media-admin-page){scrollbar-width:none}
+body.bc-media-admin-page::-webkit-scrollbar,html:has(body.bc-media-admin-page)::-webkit-scrollbar{display:none}
+.bc-media-admin-page .bc-media-admin-shell{max-width:none!important;width:100%!important;padding:14px 18px 28px!important}
+.bc-media-admin-page .bc-workspace{grid-template-columns:210px minmax(0,1fr);gap:16px}
+.bc-media-admin-page .bc-workspace-sidebar{top:88px;border-radius:12px;padding:12px 9px;background:linear-gradient(150deg,#1c1c20,#111114);border-color:#38383e;box-shadow:none}
+html.bc-admin-workspace-embedded body.bc-media-admin-page .bc-media-admin-shell{padding:12px 16px 24px!important}
+html.bc-admin-workspace-embedded .bc-media-admin-page .bc-workspace-sidebar{top:12px!important}
+.bc-media-admin-page .bc-workspace-brand{padding:3px 7px 12px;gap:9px;border-color:#343438}
+.bc-media-admin-page .bc-workspace-brand-mark{width:32px;height:32px;border-color:#9c3543;border-radius:9px;background:linear-gradient(145deg,#342027,#121214);color:#f2f2f3}
+.bc-media-admin-page .bc-workspace-brand small{margin-top:3px;color:#a3a3ab}
+.bc-media-admin-page .bc-workspace-nav-hint{padding:14px 8px 8px}
+.bc-media-admin-page .bc-workspace-nav{gap:5px}
+.bc-media-admin-page .bc-workspace-tab{min-height:47px;padding:7px 8px;border-radius:8px;gap:9px}
+.bc-media-admin-page .bc-workspace-tab.selected{background:linear-gradient(110deg,#401a22,#232025);border-color:#79343f;box-shadow:inset 3px 0 #c13b4e}
+.bc-media-admin-page .bc-workspace-tab-icon{width:30px;height:30px;border-radius:8px;background:#29292e;border-color:#424248;color:#d2d2d8}
+.bc-media-admin-page .bc-workspace-tab.selected .bc-workspace-tab-icon{background:#482128;border-color:#94505b}
+.bc-media-admin-page .bc-workspace-tab-words small{margin-top:3px}
+.bc-media-admin-page .bc-workspace-footer{margin-top:15px;padding:11px 7px 3px}
+.bc-media-admin-page .bc-workspace-context{padding:2px 0 11px;gap:12px;margin:0;border-color:#303034;align-items:center}
+.bc-media-admin-page .bc-workspace-headline{font-size:clamp(23px,2.3vw,30px);margin:5px 0 3px;line-height:1.15}
+.bc-media-admin-page .bc-workspace-overline{color:#b5a2a6;font-size:9px}
+.bc-media-admin-page .bc-workspace-subtitle{font-size:11px;margin:4px 0 0;line-height:1.5}
+.bc-media-admin-page .bc-workspace-refresh{min-height:34px;padding:8px 11px;border-radius:7px;background:#232327;border-color:#414147}
+.bc-media-admin-page .bc-workspace-live{padding:7px 9px}
+.bc-media-admin-page .bc-workspace-pane{padding-top:10px}
+.bc-media-admin-page .bc-overview-hero{display:none!important}
+.bc-media-admin-page .bc-workspace-pane .bc-media-admin-summary{margin:0 0 13px!important;gap:9px!important}
+.bc-media-admin-page .bc-workspace-pane .bc-media-admin-summary>div{min-height:85px;padding:12px 15px!important;border-radius:10px!important;background:linear-gradient(145deg,#232327,#141416)!important;border-color:#3c3c42!important}
+.bc-media-admin-page .bc-workspace-pane .bc-media-admin-summary strong{font-size:27px!important;line-height:1.14;margin:6px 0!important}
+.bc-media-admin-page .bc-workspace-pane .bc-media-admin-summary small{font-size:10px;color:#a5a5af}
+.bc-media-admin-page .bc-overview-section-title{margin:15px 0 9px}
+.bc-media-admin-page .bc-overview-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.bc-media-admin-page .bc-overview-action{min-height:67px;padding:12px;border-radius:10px;gap:10px;background:linear-gradient(140deg,#232327,#141416);border-color:#3b3b42}
+.bc-media-admin-page .bc-overview-action:hover{transform:none;background:#292329;border-color:#a24755}
+.bc-media-admin-page .bc-overview-action-icon{width:35px;height:35px;border-radius:8px;background:#2a1b20;border-color:#6f3540;color:#e1abb4;font-size:19px}
+.bc-media-admin-page #bcOverviewUpload{border-color:#a14755;background:linear-gradient(120deg,#382026,#21181b)}
+.bc-media-admin-page #bcOverviewUpload .bc-overview-action-icon{background:#6c2631;border-color:#ad4c5b;color:#fff}
+.bc-media-admin-page .bc-overview-action small{margin-top:4px;font-size:10px}
+.bc-media-admin-page .bc-overview-workflow{margin-top:12px;padding:13px 14px;border-radius:10px;background:#141416;border-color:#3b3b41}
+.bc-media-admin-page .bc-workflow-steps{margin-top:9px;gap:7px}
+.bc-media-admin-page .bc-workflow-stage{padding:9px 10px;border-radius:7px;background:#202024;border-color:#36363d}
+.bc-media-admin-page .bc-workflow-stage span{color:#cf6a79}
+.bc-media-admin-page .bc-workflow-stage strong{margin-top:4px}
+.bc-media-admin-page .bc-overview-workflow p{margin-top:9px;font-size:10px;line-height:1.45}
+.bc-media-admin-page .bc-overview-bottom{padding:11px 1px;gap:7px}
+.bc-media-admin-page .bc-overview-install{font-size:9px;margin-top:0}
+.bc-media-admin-page .bc-overview-empty{padding:12px;margin:0 0 10px;border-radius:10px;gap:10px}
+.bc-media-admin-page .bc-overview-empty-icon{width:37px;height:37px;border-radius:8px}
+.bc-media-admin-page .bc-overview-empty-copy p{margin-top:3px;line-height:1.4}
+@media(min-width:1260px){.bc-media-admin-page .bc-overview-actions{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:900px){
+ .bc-media-admin-page .bc-workspace{display:flex;flex-direction:column;gap:10px}
+ .bc-media-admin-page .bc-workspace-sidebar{top:84px!important;width:100%;padding:7px 8px}
+ html.bc-admin-workspace-embedded .bc-media-admin-page .bc-workspace-sidebar{top:0!important}
+ .bc-media-admin-page .bc-workspace-nav{scrollbar-width:none}
+ .bc-media-admin-page .bc-workspace-tab{min-height:43px;min-width:128px}
+}
+@media(max-width:600px){
+ .bc-media-admin-page .bc-media-admin-shell{padding:10px 10px 20px!important}
+ .bc-media-admin-page .bc-workspace-context{align-items:flex-start}
+ .bc-media-admin-page .bc-overview-actions{grid-template-columns:minmax(0,1fr)}
+ .bc-media-admin-page .bc-workspace-pane .bc-media-admin-summary>div{min-height:70px;padding:10px 12px!important}
+ .bc-media-admin-page .bc-workspace-sidebar{top:103px!important}
+}
