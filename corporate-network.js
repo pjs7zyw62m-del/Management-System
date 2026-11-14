@@ -891,6 +891,7 @@ function videoPosterSelect(){
 function syncDirectVideoCategory(){
  const kind=$('bcVideoCategory').value;
  const episode=kind==='series';
+ $('bcVideoFileLabel').textContent=kind==='movie'?'SELECT MOVIE FILE':episode?'SELECT EPISODE FILE':kind==='documentary'?'SELECT DOCUMENTARY FILE':kind==='short'?'SELECT SHORT VIDEO FILE':'SELECT VIDEO FILE';
  $('bcVideoEpisodeFields').hidden=!episode;
  $('bcVideoSeriesTitle').required=episode;
  $('bcVideoSeason').required=episode;
@@ -904,7 +905,11 @@ function videoFileSizeLabel(file){
 async function refreshVideoStorageStatus(file){
  const note=$('bcVideoLargeUploadStatus');
  if(!note)return;
- if(file&&!requiresBunnyStream(file)){
+ // Keep the approved clean iPad form free of warnings until a file is selected.
+ // File-specific errors remain visible once upload mode is known.
+ if(!file){note.hidden=true;return}
+ note.hidden=false;
+ if(!requiresBunnyStream(file)){
   note.textContent='Standard private upload · administrator review required';
   note.classList.add('is-ready');return;
  }
@@ -937,7 +942,8 @@ function openDirectVideoUpload(category='standard'){
  modal.hidden=false;
  document.body.classList.add('bc-video-upload-open');
  void refreshVideoStorageStatus();
- $('bcVideoTitle').focus({preventScroll:true});
+ // Avoid raising the iPad software keyboard before the user chooses artwork or a movie.
+ $('bcVideoUploadClose').focus({preventScroll:true});
 }
 function closeDirectVideoUpload(){
  if(directVideoBusy)return;
