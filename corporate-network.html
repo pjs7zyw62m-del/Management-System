@@ -9,7 +9,8 @@
 <link rel="stylesheet" href="corporate-chat-dock.css?v=20261109-floating-right2"><link rel="stylesheet" href="corporate-chat-bubble-dock.css?v=20261109-bubble-dock1"><link rel="stylesheet" href="corporate-chat-premium-dock.css?v=20261109-premium1">
 <link rel="stylesheet" href="corporate-chat-media-bubble-host.css?v=20261109-independent-media1"><link rel="stylesheet" href="corporate-chat-media-responsive.css?v=20261109-sidebyside2"><link rel="stylesheet" href="corporate-chat-media-flip-focus.css?v=20261109-flip-focus1">
 <script src="corporate-chat-media-bubble-host.js?v=20261109-large-media1" defer></script>
-<script src="corp-config.js" defer></script><script type="module" src="corporate-network.js?v=20261113-moviesstudio6"></script><link rel="stylesheet" href="corp-adaptive-layout.css?v=20261109-device2">
+<script src="corp-config.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js" defer></script><script type="module" src="corporate-network.js?v=20261113-moviesstudio6"></script><link rel="stylesheet" href="corp-adaptive-layout.css?v=20261109-device2">
 <link rel="stylesheet" href="corp-adaptive-chat.css?v=20261109-device2">
 <link rel="stylesheet" href="corporate-network-feed-media.css?v=20261109-uncropped2">
 <link rel="stylesheet" href="corporate-chat-compact-media.css?v=20261109-mobile-gallery4">
@@ -356,7 +357,11 @@
               <div class="bc-yt-section-head"><h2 id="bcMoviesEpisodesTitle">Episodes</h2><button type="button" id="bcMoviesBackToSeries">← ALL SHOWS</button></div>
               <div id="bcMoviesEpisodes" class="bc-yt-videogrid"></div>
             </section>
-            <p class="bc-movies-privacy">Only video content you're authorized to upload is allowed. New uploads enter review before appearing in the library.</p>
+            <section id="bcStreamOwnerReview" class="bc-yt-section" hidden>
+            <div class="bc-yt-section-head"><h2>Awaiting Video Review</h2><span>Level 7 administration only</span></div>
+            <div id="bcStreamReviewList" class="bc-stream-review-list"></div>
+          </section>
+          <p class="bc-movies-privacy">Only video content you're authorized to upload is allowed. New uploads enter review before appearing in the library.</p>
           </section>
           <section id="bcVideoLibraryScreen" class="bc-yt-screen" data-video-screen="library" hidden>
             <div id="bcVideoLibraryIdentity" class="bc-yt-library-identity"></div>
@@ -386,8 +391,17 @@
         <form id="bcVideoUploadForm">
           <label class="bc-video-file-drop" for="bcVideoFile">SELECT VIDEO FILE
             <input id="bcVideoFile" type="file" accept="video/mp4,video/webm,video/quicktime,video/x-m4v" required>
-            <small id="bcVideoFileName">Choose MP4, MOV or WEBM (up to 45 MB with current storage limits)</small>
+            <small id="bcVideoFileName">Choose MP4, MOV or WEBM · up to 10 GB (large files use resumable uploads)</small>
           </label>
+          <div id="bcVideoLargeUploadStatus" class="bc-video-storage-status" role="status">Files over 45 MB require Bunny Stream · checking connection…</div>
+          <label class="bc-video-file-drop bc-video-cover-drop" for="bcVideoPoster">MOVIE POSTER / ALBUM COVER (OPTIONAL)
+            <input id="bcVideoPoster" type="file" accept="image/jpeg,image/png,image/webp">
+            <small>JPG, PNG or WEBP · up to 8 MB · portrait 2:3 recommended</small>
+          </label>
+          <div id="bcVideoPosterPreviewFrame" class="bc-video-poster-preview" hidden>
+            <img id="bcVideoPosterPreview" alt="Preview of your movie poster">
+            <button type="button" id="bcVideoPosterRemove">REMOVE COVER</button>
+          </div>
           <label>VIDEO TITLE<input id="bcVideoTitle" type="text" maxlength="140" required placeholder="Name your video"></label>
           <label>CONTENT TYPE<select id="bcVideoCategory"><option value="standard">Regular Video</option><option value="short">Shorts</option><option value="movie">Movie / Film</option><option value="series">TV Episode</option><option value="documentary">Documentary</option></select></label>
           <div id="bcVideoEpisodeFields" class="bc-video-episode-fields" hidden>
@@ -422,6 +436,7 @@
     <header class="bc-cinema-head"><div><span class="bc-video-eyebrow">BLACKCELL / NOW PLAYING</span><h2 id="bcCinemaTitle">Video</h2></div><button type="button" id="bcCinemaClose" aria-label="Close video player">✕</button></header>
     <div class="bc-cinema-layout">
       <div class="bc-cinema-stage"><video id="bcCinemaPlayer" controls playsinline preload="metadata" aria-label="BLACKCELL video player"></video>
+          <iframe id="bcCinemaStreamPlayer" title="Secure BLACKCELL movie playback" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" hidden></iframe>
         <div class="bc-cinema-playerbar"><button type="button" id="bcCinemaPrev">← PREVIOUS</button><button type="button" id="bcCinemaNext">NEXT VIDEO →</button><button type="button" id="bcCinemaFullscreen">⛶ FULL SCREEN</button></div>
       </div>
       <aside class="bc-cinema-details"><div class="bc-video-eyebrow">NOW WATCHING</div><h3 id="bcCinemaVideoTitle"></h3><p id="bcCinemaVideoMeta"></p>
