@@ -1,7 +1,7 @@
 /* BLACKCELL Video Channel: content-first, YouTube-like navigation,
    Shorts and private Plex-style library. All videos come from already
    approved Network assets; personal likes/history are device-local. */
-export function createBlackcellVideoChannel({state,mediaUrl,sharedMedia,profile,personName,stamp,switchView,openProfile,uploadVideo,toast}){
+export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,sharedMedia,profile,personName,stamp,switchView,openProfile,uploadVideo,playStream,reviewStream,refreshStream,toast}){
  const $=id=>document.getElementById(id);
  const make=(tag,cls='',value=null)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(value!==null)el.textContent=String(value);return el};
  const button=(label,cls,callback)=>{const b=make('button',cls,label);b.type='button';b.addEventListener('click',callback);return b};
@@ -34,13 +34,13 @@ export function createBlackcellVideoChannel({state,mediaUrl,sharedMedia,profile,
  const storeHistory=()=>write('bc-video-history-v1-'+accountKey(),watchHistory);
  const storeInfo=()=>write('bc-video-orientation-v1-'+accountKey(),shortInfo);
  const postOf=a=>state.posts.find(p=>p.id===a.post_id);
- const title=a=>String(postOf(a)?.body||a.filename||'Untitled video').replace(/\s+/g,' ').trim().slice(0,135)||'Untitled video';
+ const title=a=>String(a.title||postOf(a)?.body||a.caption||a.filename||'Untitled video').replace(/\s+/g,' ').trim().slice(0,135)||'Untitled video';
  const creator=a=>personName(profile(a.owner_id));
  const source=a=>String(mediaUrl(a)||'');
  const when=a=>stamp(a.created_at);
  const newest=(a,b)=>Date.parse(b.created_at||0)-Date.parse(a.created_at||0);
  function allVideos(){
-  return state.assets.filter(a=>sharedMedia(a)&&a.kind==='video'&&['post','library'].includes(a.purpose)&&
+  return [...state.assets,...(state.streamVideos||[])].filter(a=>sharedMedia(a)&&a.kind==='video'&&['post','library'].includes(a.purpose)&&
    (a.owner_id===state.user?.id||Boolean(profile(a.owner_id)))).slice().sort(newest);
  }
  function shortVideo(a){
@@ -48,7 +48,7 @@ export function createBlackcellVideoChannel({state,mediaUrl,sharedMedia,profile,
   if(info&&info.duration>0&&info.duration<=180&&info.height>info.width*1.15)return true;
   return regexShort.test(title(a)+' '+String(a.filename||''));
  }
- const shorts=all=>all.filter(shortVideo);
+ const shorts=all=>all.filter(a=>!a.bunny_stream&&shortVideo(a));
  const saved=a=>Boolean(watchLater[a.id]);
  const liked=a=>Boolean(likes[a.id]);
  function progressValid(a){
@@ -130,10 +130,12 @@ export function createBlackcellVideoChannel({state,mediaUrl,sharedMedia,profile,
   const card=make('article','bc-yt-video-card');
   const thumbnail=button('', 'bc-yt-thumb',()=>openCinema(a,queue));
   thumbnail.setAttribute('aria-label','Watch '+title(a));
-  const url=source(a);
-  if(url){
+  const url=source(a),cover=posterUrl(a);
+  if(cover){
+   const img=make('img','bc-video-custom-poster');img.src=cover;img.alt='Cover for '+title(a);img.loading='lazy';thumbnail.append(img);
+  }else if(url){
    const v=make('video');lazyThumb(v,url,a);thumbnail.append(v);
-  }else thumbnail.append(make('span','bc-yt-preview-unavailable','PREVIEW UNAVAILABLE'));
+  }else thumbnail.append(make('span','bc-yt-preview-unavailable',a.bunny_stream?'VIDEO POSTER NOT ADDED':'PREVIEW UNAVAILABLE'));
   thumbnail.append(make('span','bc-yt-play','▶'));
   if(shortInfo[a.id]?.duration){const d=shortInfo[a.id].duration;const t=Math.floor(d/60)+':'+String(Math.floor(d%60)).padStart(2,'0');thumbnail.append(make('span','bc-yt-duration',t))}
   if(progPercent(a)){
@@ -247,9 +249,10 @@ export function createBlackcellVideoChannel({state,mediaUrl,sharedMedia,profile,
  function moviePoster(a,queue){
   const c=make('article','bc-movies-poster-card');
   const tap=button('','bc-movies-poster-thumb',()=>openCinema(a,queue));
-  const url=source(a);
-  if(url){const v=make('video');lazyThumb(v,url,a);tap.append(v)}
-  else tap.append(make('span','bc-yt-preview-unavailable','PREVIEW UNAVAILABLE'));
+  const url=source(a),cover=posterUrl(a);
+  if(cover){const img=make('img','bc-movies-cover-image');img.src=cover;img.alt='Poster for '+title(a);img.loading='lazy';tap.append(img)}
+  else if(url){const v=make('video');lazyThumb(v,url,a);tap.append(v)}
+  else tap.append(make('span','bc-yt-preview-unavailable','POSTER NOT ADDED'));
   tap.append(make('span','bc-movies-play','▶'));
   tap.append(make('span','bc-movies-format-tag',a.video_category==='documentary'?'DOCUMENTARY':'MOVIE'));
   const info=make('div','bc-movies-poster-info');
@@ -295,12 +298,28 @@ export function createBlackcellVideoChannel({state,mediaUrl,sharedMedia,profile,
   else for(const [key,group] of groups){
    const c=make('article','bc-movies-show-card');
    const art=button('','bc-movies-show-thumb',()=>{seriesFocus=key;renderMovies()});
-   const a=group.items[0],url=source(a);
-   if(url){const v=make('video');lazyThumb(v,url,a);art.append(v)}
+   const a=group.items[0],url=source(a),cover=posterUrl(a);
+   if(cover){const img=make('img','bc-movies-cover-image');img.src=cover;img.alt='Series cover for '+group.name;img.loading='lazy';art.append(img)}
+   else if(url){const v=make('video');lazyThumb(v,url,a);art.append(v)}
    art.append(make('span','bc-movies-show-play','▶ EPISODES'));
    const info=make('div','bc-movies-show-info');
    info.append(make('strong','',group.name),make('small','',group.items.length+' episode'+(group.items.length===1?'':'s')));
    c.append(art,info);seriesGrid.append(c);
+  }
+  const owner=state.member?.role==='owner'&&state.member?.clearance_level===7;
+  const pending=owner?(state.streamVideos||[]).filter(a=>a.review_status==='pending'):[];
+  const queue=$('bcStreamOwnerReview'),list=$('bcStreamReviewList');
+  queue.hidden=!pending.length;
+  list.replaceChildren();
+  for(const a of pending){
+   const row=make('div','bc-stream-review-row');
+   const detail=make('div','');
+   detail.append(make('strong','',title(a)),make('small','',a.upload_status+' · '+a.filename));
+   const actions=make('div','bc-stream-review-actions');
+   actions.append(button('CHECK ENCODING','',()=>refreshStream(a)));
+   actions.append(button('APPROVE','',()=>reviewStream(a,'approved')));
+   actions.append(button('REJECT','',()=>reviewStream(a,'rejected')));
+   row.append(detail,actions);list.append(row);
   }
   if(seriesFocus){
    const group=groups.get(seriesFocus);
