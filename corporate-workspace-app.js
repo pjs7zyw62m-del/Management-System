@@ -66,6 +66,7 @@ export async function initWorkspace(client){
  const section=(text)=>{root.append(E('div','section-heading',text))};
  const ui={root,E,add,button,panel,info,metrics,date,rpc,download,status,timeout,toolbar,section};
  const map={
+   costs:'corporate-workspace-costs.js',
    diagnostics:'corporate-workspace-diagnostics.js',
    security:'corporate-workspace-security.js',
    activity:'corporate-workspace-activity.js',
@@ -75,7 +76,7 @@ export async function initWorkspace(client){
  };
  const path=map[document.body.dataset.workspace];
  if(!path){root.append(panel('Unavailable workspace','Return to Administration.'));return}
- const page=await import('./'+path+'?v=20261112-ws1');
+ const page=await import('./'+path+'?v=20261113-costs1');
  if(typeof page.setup!=='function')throw new Error('Workspace module is invalid.');
  await page.setup(client,ui);
 }
