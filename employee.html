@@ -92,13 +92,36 @@ body{background:#000}
 #employeeHome .notice{background:#ffffff06;border-color:#ffffff2e;color:#ddd;text-align:center}
 @media(max-width:380px){#employeeHome{padding:18px 13px}#employeeCard .card-interior{padding:16px 18px}#employeeCard .card-top{font-size:26px}.credential-topline{font-size:5px}.credential-bottom{font-size:5px}}
 
+
+/* Two faces share one footprint; the reverse is never mirrored or focusable when hidden. */
+#employeeCard{perspective:1200px}
+.credential-rotor{display:grid;transform-style:preserve-3d;transition:transform .65s cubic-bezier(.2,.75,.2,1)}
+#employeeCard.is-flipped .credential-rotor{transform:rotateY(180deg)}
+#employeeCard .credential-face{grid-area:1 / 1;min-width:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+#employeeCard .credential-back{transform:rotateY(180deg);display:flex;flex-direction:column}
+.credential-record{margin:20px 0;display:grid;gap:0}
+.credential-record>div{padding:13px 0;border-bottom:1px solid #ffffff14}
+.credential-record dt{color:#969696;font-size:8px;letter-spacing:.15em}
+.credential-record dd{margin:6px 0 0;font-size:13px;line-height:1.5;color:#eee;font-weight:650;overflow-wrap:anywhere}
+#credentialBackLevel{color:#d04444}
+#employeeCard.codes-verified #credentialBackStatus{color:#a5c9ae}
+.credential-back-notice{border:1px solid #5b1818;padding:13px;margin:auto 0 18px;background:#110606}
+.credential-back-notice>span{font-size:9px;letter-spacing:.16em;color:#d04444;font-weight:800}
+.credential-back-notice p{font-size:10px;line-height:1.7;margin:8px 0 0;color:#aaa}
+.credential-flip-controls{display:flex;align-items:center;justify-content:center;gap:15px;margin:0 0 22px}
+#credentialFlip{border:1px solid #7c1a1a;border-radius:9px;background:#240505;color:#eee;font-size:10px;font-weight:750;letter-spacing:.12em;min-height:44px;padding:12px 18px}
+#credentialFlip:hover{background:#400909}
+#credentialFlip:focus-visible{outline:2px solid #eee;outline-offset:4px}
+#credentialSide{font-size:8px;letter-spacing:.14em;color:#999}
+@media(prefers-reduced-motion:reduce){.credential-rotor{transition:none}}
+
 </style>
 <link rel="stylesheet" href="corporate-chat-dock.css?v=20261109-floating-right2">
 <link rel="stylesheet" href="corporate-chat-bubble-dock.css?v=20261109-bubble-dock1">
 <link rel="stylesheet" href="corporate-chat-premium-dock.css?v=20261109-premium1">
 <link rel="stylesheet" href="corporate-chat-media-bubble-host.css?v=20261109-independent-media1"><link rel="stylesheet" href="corporate-chat-media-responsive.css?v=20261109-sidebyside2"><link rel="stylesheet" href="corporate-chat-media-flip-focus.css?v=20261109-flip-focus1">
 <script src="corp-config.js" defer></script>
-<script src="corporate-chat-media-bubble-host.js?v=20261109-large-media1" defer></script><script type="module" src="employee.js?v=20261114-credential"></script>
+<script src="corporate-chat-media-bubble-host.js?v=20261109-large-media1" defer></script><script type="module" src="employee.js?v=20261114-double-sided"></script>
 <link rel="stylesheet" href="corp-adaptive-layout.css?v=20261109-device2">
 <link rel="stylesheet" href="corp-adaptive-chat.css?v=20261109-device2">
 <link rel="stylesheet" href="corporate-chat-compact-media.css?v=20261109-mobile-gallery4">
@@ -131,7 +154,7 @@ body{background:#000}
 </section>
 <section class="panel" id="employeeHome" hidden>
 <div class="eyebrow">PRIVATE CORPORATE CREDENTIAL</div><h1>Your Network Card</h1>
-<div class="access-card" id="employeeCard"><div class="card-interior">
+<div class="access-card" id="employeeCard"><div class="credential-rotor"><div class="card-interior credential-face" id="credentialFront" aria-label="Credential front">
 <div class="credential-topline"><span>BLACKCELL / NETWORK</span><span>IDENTITY CREDENTIAL</span></div>
 <div class="card-top">BLACKCELL<br><span>CORPORATION</span><small>PRIVATE CORPORATE NETWORK</small></div>
 <div class="credential-band">PERSONNEL AUTHORIZATION</div>
@@ -145,7 +168,21 @@ body{background:#000}
 <div class="clearance"><strong id="employeeLevel">LEVEL —</strong><span>ACCESS PASS</span></div>
 <p class="status credential-status" id="employeeAccess">AUTHORIZATION PENDING</p>
 <div class="credential-bottom"><span>BLACKCELL CORPORATION</span><span>PRIVATE · NON-TRANSFERABLE</span></div>
-</div></div>
+</div>
+<div class="card-interior credential-face credential-back" id="credentialBack" aria-label="Credential back" aria-hidden="true" inert>
+<div class="credential-topline"><span>BLACKCELL / NETWORK</span><span>REVERSE / ACCOUNT RECORD</span></div>
+<div class="card-top">BLACKCELL<br><span>CORPORATION</span><small>PRIVATE CORPORATE NETWORK</small></div>
+<div class="credential-band">PERSONNEL AUTHORIZATION</div>
+<dl class="credential-record">
+<div><dt>NAME</dt><dd id="credentialBackName">—</dd></div>
+<div><dt>USERNAME</dt><dd id="credentialBackUsername">—</dd></div>
+<div><dt>CLEARANCE</dt><dd id="credentialBackLevel">—</dd></div>
+<div><dt>ACCOUNT STATUS</dt><dd id="credentialBackStatus">AUTHORIZATION PENDING</dd></div>
+</dl>
+<div class="credential-back-notice"><span>NETWORK ACCESS</span><p>This credential identifies the account holder. Access is governed by the account’s assigned permissions.</p></div>
+<div class="credential-bottom"><span>BLACKCELL CORPORATION</span><span>PRIVATE · NON-TRANSFERABLE</span></div>
+</div></div></div>
+<div class="credential-flip-controls"><button type="button" id="credentialFlip" aria-controls="credentialFront credentialBack" aria-pressed="false">VIEW BACK ↻</button><span id="credentialSide" aria-live="polite">FRONT · 1 / 2</span></div>
 <p>Your card identifies your assigned clearance. It does not provide access to the Level 7 Administration dashboard or NEXUS records.</p>
 <p id="employeeStatus" class="notice" hidden role="status"></p>
 <div class="action-row"><a class="outline" id="networkLink" href="corporate-network.html" hidden>OPEN BLACKCELL NETWORK ↗</a><a class="outline" id="chatLink" href="corporate-chat.html" hidden>OPEN NETWORK CHAT ↗</a><button id="signout" class="outline">SIGN OUT</button></div>
