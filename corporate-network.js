@@ -845,8 +845,27 @@ const POSTER_MIMES=new Set(['image/jpeg','image/png','image/webp']);
 async function videoStreamApi(action,payload={}){
  const {data,error}=await client.functions.invoke('blackcell-video-stream-api',{body:{action,...payload}});
  if(error||data?.ok!==true){
-  const code=data?.error||error?.message||'video_stream_unavailable';
-  throw Error(code);
+  // Supabase returns FunctionsHttpError on non-2xx responses. The useful
+  // JSON error code is in error.context (the Response), not error.message.
+  let responseData=data;
+  if(error?.context&&typeof error.context.json==='function'){
+   try{responseData=await error.context.json()}catch(_){}
+  }
+  const reason=String(responseData?.error||error?.message||'video_stream_unavailable');
+  const messages={
+   network_access_denied:'BLACKCELL Network authorization was rejected. Sign out and sign back in with an active Network account.',
+   security_session_required:'Your BLACKCELL security verification is missing or has expired. Complete Corporate Access verification, then retry.',
+   security_session_unavailable:'BLACKCELL could not validate your security session. Refresh and sign in again.',
+   sign_in_required:'Your BLACKCELL sign-in has expired. Sign in again to upload.',
+   bunny_stream_library_not_configured:'Large video storage is not configured yet: add your Bunny Stream Library ID and API Key in Supabase Edge Function Secrets.',
+   bunny_stream_embed_security_not_configured:'Bunny Stream embed token security is not configured yet. Add BUNNY_STREAM_EMBED_TOKEN_KEY in Supabase Edge Function Secrets.',
+   server_database_not_configured:'BLACKCELL video service configuration is incomplete. The administrator needs to check its server connection.',
+   bunny_create_failed:'Bunny Stream rejected creation of the video. Check the Bunny Stream Library ID, API key, and account access.',
+   invalid_video_upload:'The video details or format were rejected. Choose a supported file up to 10 GB.',
+   catalog_registration_failed:'The video was accepted by storage but its private catalog entry could not be created.',
+   video_stream_service_error:'BLACKCELL video service could not complete the request. Check the Video Studio connection and try again.'
+  };
+  throw Error(messages[reason]||('BLACKCELL video service: '+reason.replace(/[^a-zA-Z0-9_ -]/g,'').slice(0,110)));
  }
  return data;
 }
@@ -898,8 +917,8 @@ async function refreshVideoStorageStatus(file){
   }else{
    note.textContent='10 GB uploads need a Bunny Stream library ID, API key and embed token key configured in Supabase. Small videos up to 45 MB still work.';
   }
- }catch(_){
-  note.textContent='10 GB storage connection unavailable. Small videos up to 45 MB are still supported.';
+ }catch(e){
+  note.textContent=String(e?.message||'10 GB storage connection unavailable. Small videos up to 45 MB are still supported.');
  }
 }
 function openDirectVideoUpload(category='standard'){
