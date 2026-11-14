@@ -177,13 +177,32 @@ export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,sharedMedi
   buttonView.setAttribute('aria-label','View complete thumbnail for '+title(a));
   card.append(buttonView);
  }
+ function appendNativeArtwork(frame,src,alt,cls){
+  const img=make('img',cls+' bc-native-artwork');
+  img.alt=alt;img.loading='lazy';img.decoding='async';
+  // Use actual image dimensions, not a forced 16:9 thumbnail.
+  frame.classList.add('bc-native-artwork-frame');
+  for(const [key,value] of [['aspect-ratio','auto'],['height','auto'],['min-height','0'],['max-height','none'],['display','block']])
+   frame.style.setProperty(key,value,'important');
+  for(const [key,value] of [['width','100%'],['height','auto'],['max-height','none'],['min-height','0'],['object-fit','contain'],['aspect-ratio','auto'],['position','static'],['display','block']])
+   img.style.setProperty(key,value,'important');
+  const fit=()=>{
+   if(!img.naturalWidth||!img.naturalHeight)return;
+   img.width=img.naturalWidth;img.height=img.naturalHeight;
+   frame.dataset.artworkRatio=img.naturalWidth+'/'+img.naturalHeight;
+  };
+  img.addEventListener('load',fit,{once:true});
+  frame.append(img);img.src=src;
+  if(img.complete)fit();
+  return img;
+ }
  function tile(a,queue=videosCache){
   const card=make('article','bc-yt-video-card');
   const thumbnail=button('', 'bc-yt-thumb',()=>openCinema(a,queue));
   thumbnail.setAttribute('aria-label','Watch '+title(a));
   const url=source(a),cover=posterUrl(a);
   if(cover){
-   const img=make('img','bc-video-custom-poster');img.src=cover;img.alt='Cover for '+title(a);img.loading='lazy';thumbnail.append(img);
+   appendNativeArtwork(thumbnail,cover,'Cover for '+title(a),'bc-video-custom-poster');
   }else if(url){
    const v=make('video');lazyThumb(v,url,a);thumbnail.append(v);
   }else thumbnail.append(make('span','bc-yt-preview-unavailable',a.bunny_stream?'VIDEO POSTER NOT ADDED':'PREVIEW UNAVAILABLE'));
@@ -217,7 +236,7 @@ export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,sharedMedi
     const card=make('article','bc-yt-short-tile');
     const tap=button('','bc-yt-short-thumb',()=>goShorts(a.id));
     const url=source(a),cover=posterUrl(a);
-    if(cover){const img=make('img','bc-video-custom-poster');img.src=cover;img.alt='Short thumbnail for '+title(a);img.loading='lazy';tap.append(img)}
+    if(cover){appendNativeArtwork(tap,cover,'Short thumbnail for '+title(a),'bc-video-custom-poster')}
     else if(url){const v=make('video');lazyThumb(v,url,a);tap.append(v)}
     tap.append(make('span','bc-yt-short-play','▶'));
     card.append(tap,make('strong','',title(a)),make('small','',creator(a)));
@@ -303,7 +322,7 @@ export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,sharedMedi
   const c=make('article','bc-movies-poster-card');
   const tap=button('','bc-movies-poster-thumb',()=>openCinema(a,queue));
   const url=source(a),cover=posterUrl(a);
-  if(cover){const img=make('img','bc-movies-cover-image');img.src=cover;img.alt='Poster for '+title(a);img.loading='lazy';tap.append(img)}
+  if(cover){appendNativeArtwork(tap,cover,'Poster for '+title(a),'bc-movies-cover-image')}
   else if(url){const v=make('video');lazyThumb(v,url,a);tap.append(v)}
   else tap.append(make('span','bc-yt-preview-unavailable','POSTER NOT ADDED'));
   tap.append(make('span','bc-movies-play','▶'));
@@ -352,7 +371,7 @@ export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,sharedMedi
    const c=make('article','bc-movies-show-card');
    const art=button('','bc-movies-show-thumb',()=>{seriesFocus=key;renderMovies()});
    const a=group.items[0],url=source(a),cover=posterUrl(a);
-   if(cover){const img=make('img','bc-movies-cover-image');img.src=cover;img.alt='Series cover for '+group.name;img.loading='lazy';art.append(img)}
+   if(cover){appendNativeArtwork(art,cover,'Series cover for '+group.name,'bc-movies-cover-image')}
    else if(url){const v=make('video');lazyThumb(v,url,a);art.append(v)}
    art.append(make('span','bc-movies-show-play','▶ EPISODES'));
    const info=make('div','bc-movies-show-info');
