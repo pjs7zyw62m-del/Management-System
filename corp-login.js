@@ -47,7 +47,7 @@ function choosePortal(portal,{quiet=false,force=false}={}){
 }
 function handleAuthorizedRole(member){
   if(member?.role==='employee'){
-    message(status,'Employee account recognized. Opening your Network profile…');
+    message(status,'Employee account recognized. Opening your secure workspace…');
     // The employee page enforces account activation and
     // activation checks; no access is granted by this redirect.
     location.replace('employee.html');
@@ -161,7 +161,7 @@ function verifiedResume(){
   continueVerified.hidden=false;
   stage.classList.add('codes-approved');
   accessPassTab.querySelector('small').textContent='VERIFIED ✓';
-  codeSupport.textContent='Both credentials already verified. Continue to Administration.';
+  codeSupport.textContent='Both credentials already verified. Opening BLACKCELL OS.';
   window.setTimeout(()=>continueVerified.focus({preventScroll:true}),750);
 }
 
@@ -311,9 +311,9 @@ function displayLaunch(){
     const number=Math.round(smoothed*100);
     fill.style.width=number+'%';
     percent.textContent=number+'%';
-    note.textContent=p<.33?'VERIFYING CORPORATE SESSION':p<.77?'INITIALIZING COMMAND CENTER':'LAUNCHING ADMINISTRATION';
+    note.textContent=p<.33?'VERIFYING CORPORATE SESSION':p<.77?'INITIALIZING BLACKCELL OS':'LAUNCHING WORKSPACE';
     if(p<1)requestAnimationFrame(frame);
-    else location.replace('dashboard.html');
+    else location.replace('blackcell-os.html');
   }
   requestAnimationFrame(frame);
 }
@@ -340,7 +340,7 @@ async function initialState(){
     message(status,'Unable to verify the security session. Please try again.');
     return;
   }
-  if(data.verified===true){verifiedResume();return;}
+  if(data.verified===true){location.replace('blackcell-os.html');return;}
   if(data.expired===true){
     await client.auth.signOut({scope:'local'});
     message(status,'Signed out after 60 minutes of inactivity. Please sign in again.');
