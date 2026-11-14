@@ -412,6 +412,33 @@
               <div class="bc-studio-preview-caption"><strong>POSTER SELECTED</strong><span>Cover artwork ready for upload</span></div>
               <button type="button" id="bcVideoPosterRemove">REMOVE COVER</button>
             </div>
+            <div class="bc-studio-ai-tools">
+              <div>
+                <strong><span aria-hidden="true">✦</span> AI POSTER STUDIO</strong>
+                <small>Optional · Generate only when you press the button. Your original artwork stays saved.</small>
+              </div>
+              <div class="bc-studio-ai-controls">
+                <select id="bcPosterAiStyle" aria-label="AI poster style">
+                  <option value="cinematic">Cinematic Recreation</option>
+                  <option value="enhance">Enhance Original</option>
+                </select>
+                <button type="button" id="bcPosterGenerate">✦ GENERATE WITH AI</button>
+              </div>
+              <span id="bcPosterAiStatus" role="status" aria-live="polite"></span>
+            </div>
+            <div id="bcPosterArtworkChoices" class="bc-studio-artwork-choices" hidden>
+              <div class="bc-studio-artwork-heading"><strong>YOUR POSTER VERSIONS</strong><small>Keep both. Select which poster appears on BLACKCELL.</small></div>
+              <div class="bc-studio-artwork-variants">
+                <button type="button" id="bcPosterChooseOriginal" class="bc-studio-art-option is-selected" aria-pressed="true">
+                  <img id="bcPosterOriginalVariant" alt="Original poster preview">
+                  <strong>ORIGINAL</strong><span>✓ DISPLAY THIS</span>
+                </button>
+                <button type="button" id="bcPosterChooseAi" class="bc-studio-art-option" disabled aria-pressed="false">
+                  <img id="bcPosterAiVariant" alt="AI-generated poster preview">
+                  <strong>AI RECREATION</strong><span>GENERATE TO PREVIEW</span>
+                </button>
+              </div>
+            </div>
             <label class="bc-video-file-drop bc-studio-upload-card bc-studio-video-drop" for="bcVideoFile">
               <span class="bc-studio-upload-symbol" aria-hidden="true">
                 <svg viewBox="0 0 48 48" width="38" height="38" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="12" width="28" height="24" rx="4"/><path d="m33 19 10-6v22l-10-6z"/></svg>
