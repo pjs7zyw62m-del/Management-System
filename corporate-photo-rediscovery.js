@@ -10,7 +10,26 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
  let dwellTimer=null,dwellSequence=0,cardZoomCleanup=null;
  const $=id=>document.getElementById(id);
  const opts=()=>personalization.get();
- const on=()=>{const p=opts();return p.enabled===true&&p.rediscovery_enabled===true};
+ const owner=()=>state.member?.role==='owner'&&Number(state.member?.clearance_level)===7;
+ let paused=false;
+ const pauseKey=()=> 'bc-photo-suggestions-paused:'+String(state.user?.id||'');
+ const consent=()=>{const p=opts();return p.enabled===true&&p.rediscovery_enabled===true};
+ const on=()=>!paused&&(owner()||consent());
+ const suggestedThisVisit=new Set();
+ function updatePauseButton(){
+  const b=$('bcPhotoSuggestionsPause');
+  if(!b)return;
+  b.hidden=!owner()&&!consent();
+  b.textContent=paused?'▶ RESUME PHOTO SUGGESTIONS':'Ⅱ PAUSE PHOTO SUGGESTIONS';
+  b.setAttribute('aria-pressed',String(paused));
+ }
+ function togglePaused(){
+  paused=!paused;
+  try{localStorage.setItem(pauseKey(),paused?'1':'0')}catch(_){}
+  if(paused){stopViewing();closeCard();if(pendingTimer!==null){clearTimeout(pendingTimer);pendingTimer=null}}
+  updatePauseButton();refresh();
+  toast(paused?'Automatic photo suggestions paused.':'Automatic photo suggestions resumed.');
+ }
  const rare=()=>opts().rediscovery_frequency==='rare';
  // TEMPORARY TESTING ONLY: the Level 7 owner sees a card every 30 seconds
  // while actively browsing, with no annual/day cooldown. Employees keep their
@@ -51,6 +70,7 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
   lastSourceId='';
  }
  function refresh(){
+  updatePauseButton();
   if(!on()){
    closeCard();if(pendingTimer!==null){clearTimeout(pendingTimer);pendingTimer=null}
    return;
@@ -58,7 +78,7 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
   if(active)schedule();
  }
  async function recordView(asset){
-  if(!on()||asset?.kind!=='photo')return;
+  if(!on()||!consent()||asset?.kind!=='photo')return;
   // This RPC atomically records only intentional enlarged photo views,
   // and checks the user's current opt-in at the database layer.
   try{
@@ -76,7 +96,7 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
  }
  function startViewing(asset){
   stopViewing();
-  if(!on()||asset?.kind!=='photo'||!asset.id)return;
+  if(!on()||!consent()||asset?.kind!=='photo'||!asset.id)return;
   const sequence=dwellSequence,assetId=asset.id;
   let activeTime=0,lastTick=performance.now();
   dwellTimer=setInterval(()=>{
@@ -394,8 +414,10 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
   const head=el('header','bc-rediscovery-head');
   const label=el('strong','bc-rediscovery-title',mode==='trigger'?'TRIGGER CARD':'PHOTO REDISCOVERY');
   const close=button('✕',closeCard,'bc-rediscovery-close');
+  const pause=button('Ⅱ PAUSE',togglePaused,'bc-view-full-thumb');
+  pause.style.cssText='position:static;margin-left:auto;padding:6px 10px;font-size:11px;background:#171217;color:#fff;border:1px solid #785463;border-radius:8px';
   close.setAttribute('aria-label','Close photo suggestions');
-  head.append(label,close);
+  head.append(label,pause,close);
   const imageBox=el('div','bc-rediscovery-large-photo');
   const image=el('img');
   image.src=mediaUrl(seed);
@@ -492,6 +514,10 @@ async function offer({preview=false,test=false,requestedMode='rediscovery'}={}){
   }else if(!rediscovery&&related.length){
    proposed=related[0];selectedMode='trigger';
   }
+  if(!proposed&&owner()&&!preview||!proposed&&owner()&&test){
+   const fresh=photos.filter(a=>!suppressed.has(a.id)&&!suggestedThisVisit.has(a.id));
+   if(fresh.length){proposed=fresh[Math.floor(Math.random()*fresh.length)];selectedMode='trigger'}
+  }
   if(!proposed){
    if(preview&&!test)toast('No unreviewed photos are ready. Explore more photographs or select Trigger Preview.');
    return false;
@@ -499,7 +525,7 @@ async function offer({preview=false,test=false,requestedMode='rediscovery'}={}){
   // Exact targeted query prevents races and protects members with more
   // historical votes than the initial snapshot's result limit.
   if(!await isNotVotedNow(proposed.id))return false;
-  if(card)return false;
+  if(card||!on())return false;
   if(!preview&&!test&&selectedMode==='rediscovery'){
    const {data:marked,error:markError}=await client.from('corp_social_photo_rediscovery')
     .update({last_suggested_at:new Date().toISOString()})
@@ -509,11 +535,15 @@ async function offer({preview=false,test=false,requestedMode='rediscovery'}={}){
   if(!preview&&!test)sessionShown=true;
   if(test)lastTestPhotoId=proposed.id;
   sessionSeen.clear();
+  if(!on())return false;
+  suggestedThisVisit.add(proposed.id);
   showSeed(proposed,selectedMode);
   return true;
  }
  function start(){
   if(active)return;active=true;
+  try{paused=localStorage.getItem(pauseKey())==='1'}catch(_){paused=false}
+  updatePauseButton();
   if(!didBind){
    const touch=()=>{lastInteraction=Date.now()};
    document.addEventListener('pointerdown',touch,{passive:true});
@@ -533,6 +563,7 @@ async function offer({preview=false,test=false,requestedMode='rediscovery'}={}){
     const shown=await offer({preview:true,requestedMode:'trigger'});
     if(!shown)toast('No new related photographs are available yet. Explore more classified photos to help Trigger Cards find matches.');
    });
+   $('bcPhotoSuggestionsPause')?.addEventListener('click',togglePaused);
    didBind=true;
   }
   schedule();
