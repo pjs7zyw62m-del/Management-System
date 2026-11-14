@@ -777,12 +777,13 @@ body.bc-video-upload-open{overflow:hidden}
 
 /* BLACKCELL VIDEO / COMPLETE THUMBNAILS — no automatic cropping.
    Playback is still reached by tapping the thumbnail itself. */
-.bc-yt-video-card,.bc-movies-poster-card,.bc-movies-show-card{position:relative}
+.bc-yt-video-card,.bc-yt-short-tile,.bc-movies-poster-card,.bc-movies-show-card{position:relative}
 .bc-yt-thumb,.bc-yt-short-thumb,.bc-movies-poster-thumb,.bc-movies-show-thumb{
  background:#030304!important
 }
 .bc-yt-thumb video,
 .bc-yt-thumb .bc-video-custom-poster,
+.bc-yt-short-thumb .bc-video-custom-poster,
 .bc-yt-short-thumb video,
 .bc-movies-poster-thumb video,
 .bc-movies-poster-thumb .bc-movies-cover-image,
