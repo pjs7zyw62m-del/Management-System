@@ -1,268 +1,495 @@
-/* BLACKCELL Video Channel — private Plex-style cinema + YouTube-style discovery.
-   Uses existing approved corporate-network media and signed Storage URLs only.
-   Watch Later / Continue Watching are device-local preferences, not cloud sync. */
+/* BLACKCELL Video Channel: content-first, YouTube-like navigation,
+   Shorts and private Plex-style library. All videos come from already
+   approved Network assets; personal likes/history are device-local. */
 export function createBlackcellVideoChannel({state,mediaUrl,sharedMedia,profile,personName,stamp,switchView,openProfile,uploadVideo,toast}){
  const $=id=>document.getElementById(id);
- const node=(tag,cls='',text=null)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==null)n.textContent=String(text);return n};
- const button=(label,cls,action)=>{const b=node('button',cls,label);b.type='button';b.addEventListener('click',action);return b};
- let initialized=false,search='',filter='all',sort='newest',current=null,queue=[],observer=null,lastWrite=0;
- let watchLater={},resume={},loadedUser=null;
- const prefix=()=>String(state.user?.id||'signed-out');
- function readStore(key){
-  try{const o=JSON.parse(localStorage.getItem(key)||'{}');return o&&typeof o==='object'&&!Array.isArray(o)?o:{}}catch{return {}}
+ const make=(tag,cls='',value=null)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(value!==null)el.textContent=String(value);return el};
+ const button=(label,cls,callback)=>{const b=make('button',cls,label);b.type='button';b.addEventListener('click',callback);return b};
+ const regexShort=/(^|[^a-z])(shorts?|reels?|vertical)([^a-z]|$)/i;
+ const categoryWords={
+  military:/military|marine|army|navy|sailor|soldier|troop|infantry|air force|coast guard|corps|barracks|boot camp|armed forces|recon|seal\b|uniformed service/i,
+  police:/police|sheriff|law enforcement|officer|patrol|state trooper|cop\b|deputy|swat|corrections|prison/i,
+  fire:/firefighter|fire engine|fire department|firehouse|fire rescue|paramedic|ems\b|emergency response/i,
+  training:/training|workout|fitness|boot camp|drill|exercise|recruit|academy|pushup/i,
+  uniform:/uniform|dress blues|insignia|equipment|gear|tactical vest|dress uniform/i,
+  aviation:/aircraft|aviation|pilot|airplane|helicopter|flight|air force|aircrew/i,
+  history:/history|historic|vintage|archive|war ii|1980|1990|1970|old school/i
+ };
+ let initialized=false,selected='home',topic='all',query='',sort='newest',sidebarCollapsed=false,channelId=null;
+ let videosCache=[],watchLater={},likes={},watchHistory={},resume={},shortInfo={},loadedFor='',activeCinema=null,cinemaQueue=[],shortIndex=0,shortQueue=[],observer=null,mostRecentWrite=0,pendingId=null;
+ const accountKey=()=>String(state.user?.id||'anonymous');
+ function read(key){try{const x=JSON.parse(localStorage.getItem(key)||'{}');return x&&typeof x==='object'&&!Array.isArray(x)?x:{}}catch{return {}}}
+ function write(key,x){try{localStorage.setItem(key,JSON.stringify(x))}catch{}}
+ function ensureSaved(){
+  const id=accountKey();if(loadedFor===id)return;loadedFor=id;
+  watchLater=read('bc-video-watchlater-v1-'+id);
+  resume=read('bc-video-resume-v1-'+id);
+  likes=read('bc-video-liked-v1-'+id);
+  watchHistory=read('bc-video-history-v1-'+id);
+  shortInfo=read('bc-video-orientation-v1-'+id);
  }
- function writeStore(key,data){try{localStorage.setItem(key,JSON.stringify(data))}catch{ /* optional device-only preferences */ }}
- function ensureStore(){
-  const id=prefix();if(loadedUser===id)return;loadedUser=id;
-  watchLater=readStore('bc-video-watchlater-v1-'+id);
-  resume=readStore('bc-video-resume-v1-'+id);
+ const storeLater=()=>write('bc-video-watchlater-v1-'+accountKey(),watchLater);
+ const storeResume=()=>write('bc-video-resume-v1-'+accountKey(),resume);
+ const storeLikes=()=>write('bc-video-liked-v1-'+accountKey(),likes);
+ const storeHistory=()=>write('bc-video-history-v1-'+accountKey(),watchHistory);
+ const storeInfo=()=>write('bc-video-orientation-v1-'+accountKey(),shortInfo);
+ const postOf=a=>state.posts.find(p=>p.id===a.post_id);
+ const title=a=>String(postOf(a)?.body||a.filename||'Untitled video').replace(/\s+/g,' ').trim().slice(0,135)||'Untitled video';
+ const creator=a=>personName(profile(a.owner_id));
+ const source=a=>String(mediaUrl(a)||'');
+ const when=a=>stamp(a.created_at);
+ const newest=(a,b)=>Date.parse(b.created_at||0)-Date.parse(a.created_at||0);
+ function allVideos(){
+  return state.assets.filter(a=>sharedMedia(a)&&a.kind==='video'&&['post','library'].includes(a.purpose)&&
+   (a.owner_id===state.user?.id||Boolean(profile(a.owner_id)))).slice().sort(newest);
  }
- const saveLater=()=>writeStore('bc-video-watchlater-v1-'+prefix(),watchLater);
- const saveProgress=()=>writeStore('bc-video-resume-v1-'+prefix(),resume);
- const byNewest=(a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0);
- function title(a){
-  const post=state.posts.find(p=>p.id===a.post_id);
-  return String(post?.body||a.filename||'Untitled video').trim().slice(0,155)||'Untitled video';
+ function shortVideo(a){
+  const info=shortInfo[a.id];
+  if(info&&info.duration>0&&info.duration<=180&&info.height>info.width*1.15)return true;
+  return regexShort.test(title(a)+' '+String(a.filename||''));
  }
- function creator(a){return personName(profile(a.owner_id))}
- function items(){
-  return state.assets.filter(a=>sharedMedia(a)&&a.kind==='video'&&['post','library'].includes(a.purpose) &&
-   (a.owner_id===state.user?.id||Boolean(profile(a.owner_id)))).slice().sort(byNewest);
+ const shorts=all=>all.filter(shortVideo);
+ const saved=a=>Boolean(watchLater[a.id]);
+ const liked=a=>Boolean(likes[a.id]);
+ function progressValid(a){
+  const v=resume[a.id];
+  return v&&Number.isFinite(+v.time)&&Number.isFinite(+v.duration)&&+v.duration>10&&+v.time>=5&&+v.time<+v.duration-8;
  }
- function isSaved(id){return watchLater[id]===true}
- function validProgress(a){
-  const p=resume[a.id];const t=Number(p?.time),d=Number(p?.duration);
-  return Number.isFinite(t)&&Number.isFinite(d)&&d>15&&t>=5&&t<d-10;
- }
- function percentage(a){
-  if(!validProgress(a))return 0;
-  const p=resume[a.id];return Math.max(0,Math.min(99,100*p.time/p.duration));
+ const progPercent=a=>progressValid(a)?Math.min(99,Math.max(0,100*resume[a.id].time/resume[a.id].duration)):0;
+ function remember(a){
+  watchHistory[a.id]=Date.now();storeHistory();
  }
  function toggleLater(a){
-  ensureStore();
-  if(isSaved(a.id))delete watchLater[a.id];else watchLater[a.id]=true;
-  saveLater();render();
-  if(current?.id===a.id)syncCinemaLater();
-  toast(isSaved(a.id)?'Added to Watch Later on this device.':'Removed from Watch Later.');
+  ensureSaved();if(saved(a))delete watchLater[a.id];else watchLater[a.id]=true;
+  storeLater();renderVisible();syncCinemaActions();syncShortActions();
+  toast(saved(a)?'Saved to Watch Later on this device.':'Removed from Watch Later.');
  }
- function filteredItems(all){
-  let out=all.filter(a=>{
-   if(filter==='following'){
-    if(a.owner_id===state.user?.id)return true;
-    return state.follows.some(f=>f.follower_id===state.user?.id&&f.following_id===a.owner_id);
+ function toggleLike(a){
+  ensureSaved();if(liked(a))delete likes[a.id];else likes[a.id]=true;
+  storeLikes();renderVisible();syncCinemaActions();syncShortActions();
+  toast(liked(a)?'Liked on this device.':'Removed from liked videos.');
+ }
+ function track(a,v,force=false){
+  if(!a||!v||!Number.isFinite(v.duration)||v.duration<5||!Number.isFinite(v.currentTime))return;
+  const now=Date.now();if(!force&&now-mostRecentWrite<2600)return;mostRecentWrite=now;
+  if(v.ended||v.currentTime>=v.duration-6)delete resume[a.id];
+  else if(v.currentTime>=5)resume[a.id]={time:Math.floor(v.currentTime),duration:Math.floor(v.duration),updated:now};
+  storeResume();
+ }
+ function copyLink(a){
+  const u=new URL('corporate-network.html',location.href);u.searchParams.set('view','videos');u.searchParams.set('video',a.id);
+  const text=u.href;
+  if(navigator.share){
+   navigator.share({title:title(a),url:text}).catch(()=>{});
+  }else if(navigator.clipboard?.writeText){
+   navigator.clipboard.writeText(text).then(()=>toast('Private video link copied.')).catch(()=>window.prompt('Copy the video link:',text));
+  }else window.prompt('Copy the private video link:',text);
+ }
+ function filterTopic(all){
+  let x=all;
+  if(topic==='today'){const midnight=new Date();midnight.setHours(0,0,0,0);x=x.filter(a=>Date.parse(a.created_at||0)>=midnight.getTime())}
+  else if(topic==='unwatched')x=x.filter(a=>!watchHistory[a.id]);
+  else if(categoryWords[topic])x=x.filter(a=>categoryWords[topic].test(title(a)+' '+(a.filename||'')));
+  return x;
+ }
+ function searchVideo(all){
+  const q=query.trim().toLowerCase();return q?all.filter(a=>(title(a)+' '+creator(a)+' '+(a.filename||'')).toLowerCase().includes(q)):all;
+ }
+ function sortVideos(all){
+  const result=all.slice();
+  if(sort==='oldest')result.reverse();
+  if(sort==='title')result.sort((a,b)=>title(a).localeCompare(title(b)));
+  return result;
+ }
+ function lazyThumb(v,url,a){
+  if(!url)return;
+  v.preload='metadata';v.playsInline=true;v.muted=true;v.setAttribute('aria-hidden','true');v.tabIndex=-1;
+  v.addEventListener('loadedmetadata',()=>{
+   if(!a||!v.videoWidth||!v.videoHeight||!Number.isFinite(v.duration))return;
+   const was=shortVideo(a);
+   const newInfo={width:v.videoWidth,height:v.videoHeight,duration:v.duration};
+   const old=shortInfo[a.id];
+   if(!old||old.width!==newInfo.width||old.height!==newInfo.height||Math.round(old.duration)!==Math.round(newInfo.duration)){
+    shortInfo[a.id]=newInfo;storeInfo();
+    if(!was&&shortVideo(a)&&selected==='home')requestAnimationFrame(()=>renderShortsShelf());
    }
-   if(filter==='mine')return a.owner_id===state.user?.id;
-   if(filter==='watchlater')return isSaved(a.id);
-   return true;
-  });
-  const q=search.trim().toLowerCase();
-  if(q)out=out.filter(a=>(title(a)+' '+creator(a)+' '+(a.filename||'')).toLowerCase().includes(q));
-  if(sort==='oldest')out.sort((a,b)=>-byNewest(a,b));
-  if(sort==='title')out.sort((a,b)=>title(a).localeCompare(title(b)));
-  return out;
- }
- const media=(a)=>String(mediaUrl(a)||'');
- function deferThumbnail(video,src){
-  if(!src)return;
-  if(!('IntersectionObserver' in window)){video.src=src;return}
+  },{once:true});
+  if(!('IntersectionObserver' in window)){v.src=url;return}
   if(!observer){
    observer=new IntersectionObserver(entries=>{
-    for(const entry of entries){
-     if(!entry.isIntersecting)continue;
-     const v=entry.target;
-     if(v._bcVideoUrl&&!v.src)v.src=v._bcVideoUrl;
-     observer.unobserve(v);
+    for(const e of entries){
+     if(!e.isIntersecting)continue;
+     const el=e.target;if(el._bcSource&&!el.src)el.src=el._bcSource;
+     observer.unobserve(el);
     }
-   },{rootMargin:'160px'});
+   },{rootMargin:'130px'});
   }
-  video._bcVideoUrl=src;observer.observe(video);
+  v._bcSource=url;observer.observe(v);
  }
- function tile(a,options={}){
-  const article=node('article','bc-video-tile');
-  const main=button('', 'bc-video-tile-main',()=>open(a,options.queue||items()));
-  main.setAttribute('aria-label','Play '+title(a));
-  const thumb=node('div','bc-video-thumb');
-  const src=media(a);
-  if(src){
-   const preview=node('video');preview.muted=true;preview.playsInline=true;
-   preview.preload='metadata';preview.setAttribute('aria-hidden','true');
-   preview.setAttribute('tabindex','-1');
-   deferThumbnail(preview,src);thumb.append(preview);
-  }else thumb.append(node('span','bc-video-tile-placeholder','PREVIEW UNAVAILABLE'));
-  const play=node('span','bc-video-play','▶');play.setAttribute('aria-hidden','true');thumb.append(play);
-  thumb.append(node('span','bc-video-thumb-badge','BLACKCELL'));
-  const progress=percentage(a);
-  if(progress){const p=node('div','bc-video-progress');p.style.width=progress+'%';thumb.append(p)}
-  main.append(thumb);
-  const details=node('div','bc-video-tile-details'),info=node('div','bc-video-info');
-  info.append(node('strong','',title(a)),node('small','',creator(a)+' · '+stamp(a.created_at)));
-  const later=button(isSaved(a.id)?'✓':'＋','bc-video-save'+(isSaved(a.id)?' is-saved':''),(e)=>toggleLater(a));
-  later.title=isSaved(a.id)?'Remove from Watch Later':'Save to Watch Later';
-  later.setAttribute('aria-label',later.title+' (on this device)');
-  details.append(info,later);
-  article.append(main,details);
-  return article;
- }
- function spotlight(all){
-  const container=$('bcVideoSpotlight');container.replaceChildren();
-  const a=all[0];const copy=node('div','bc-spotlight-copy');
-  if(!a){
-   container.append(node('div','bc-spotlight-art'));
-   copy.append(node('span','bc-spotlight-tag','YOUR PRIVATE CINEMA'),
-    node('h2','','Every great channel starts with its first video.'),
-    node('p','','Approved videos from BLACKCELL members will appear here. Upload a video through the Network Feed to get started.'));
-   const actions=node('div','bc-spotlight-actions');
-   actions.append(button('＋ UPLOAD A VIDEO','bc-spotlight-watch',()=>uploadVideo()));
-   copy.append(actions);container.append(copy);return;
+ function tile(a,queue=videosCache){
+  const card=make('article','bc-yt-video-card');
+  const thumbnail=button('', 'bc-yt-thumb',()=>openCinema(a,queue));
+  thumbnail.setAttribute('aria-label','Watch '+title(a));
+  const url=source(a);
+  if(url){
+   const v=make('video');lazyThumb(v,url,a);thumbnail.append(v);
+  }else thumbnail.append(make('span','bc-yt-preview-unavailable','PREVIEW UNAVAILABLE'));
+  thumbnail.append(make('span','bc-yt-play','▶'));
+  if(shortInfo[a.id]?.duration){const d=shortInfo[a.id].duration;const t=Math.floor(d/60)+':'+String(Math.floor(d%60)).padStart(2,'0');thumbnail.append(make('span','bc-yt-duration',t))}
+  if(progPercent(a)){
+   const p=make('span','bc-video-progress');p.style.width=progPercent(a)+'%';thumbnail.append(p);
   }
-  const source=media(a);
-  if(source){
-   const v=node('video','bc-spotlight-film');v.muted=true;v.playsInline=true;v.preload='metadata';
-   v.setAttribute('aria-hidden','true');deferThumbnail(v,source);container.append(v);
-  }else container.append(node('div','bc-spotlight-art'));
-  copy.append(node('span','bc-spotlight-tag','✦ FEATURED ON BLACKCELL'),
-   node('h2','',title(a)),node('div','bc-spotlight-meta',creator(a)+' · '+stamp(a.created_at)),
-   node('p','','The latest approved feature from the BLACKCELL Network. Watch in the dedicated cinema player.'));
-  const actions=node('div','bc-spotlight-actions');
-  actions.append(button('▶ PLAY FEATURED','bc-spotlight-watch',()=>open(a,all)));
-  actions.append(button(isSaved(a.id)?'✓ SAVED TO WATCH LATER':'＋ WATCH LATER','bc-spotlight-save',()=>toggleLater(a)));
-  copy.append(actions);container.append(copy);
+  const body=make('div','bc-yt-cardbody');
+  const image=make('div','bc-yt-creator-avatar',creator(a).slice(0,1).toUpperCase()||'B');
+  const info=make('div','bc-yt-video-details');
+  info.append(make('strong','',title(a)),make('small','',creator(a)),make('small','',when(a)));
+  const save=button(saved(a)?'✓':'⋮','bc-yt-card-save',()=>toggleLater(a));
+  save.title=saved(a)?'Remove from Watch Later':'Save to Watch Later';
+  save.setAttribute('aria-label',save.title);body.append(image,info,save);
+  card.append(thumbnail,body);return card;
  }
- function renderShelf(container,all,emptyText){
-  container.replaceChildren();
-  for(const a of all)container.append(tile(a,{queue:all}));
-  if(!all.length&&emptyText)container.append(node('p','bc-video-empty',emptyText));
+ function putGrid(id,videos,emptyMessage='No approved videos match this view.'){
+  const root=$(id);root.replaceChildren();
+  if(!videos.length){
+   const empty=make('div','bc-yt-empty',emptyMessage);
+   if(!allVideos().length)empty.append(button('Upload a video','bc-yt-empty-action',uploadVideo));
+   root.append(empty);return;
+  }
+  for(const a of videos)root.append(tile(a,videos));
  }
- function render(){
-  if(!initialized)return;
-  ensureStore();
+ function putShelf(id,videos,kind='normal'){
+  const root=$(id);root.replaceChildren();
+  for(const a of videos){
+   if(kind==='shorts'){
+    const card=make('article','bc-yt-short-tile');
+    const tap=button('','bc-yt-short-thumb',()=>goShorts(a.id));
+    const url=source(a);
+    if(url){const v=make('video');lazyThumb(v,url,a);tap.append(v)}
+    tap.append(make('span','bc-yt-short-play','▶'));
+    card.append(tap,make('strong','',title(a)),make('small','',creator(a)));root.append(card);
+   }else root.append(tile(a,videos));
+  }
+ }
+ function updateHead(){
+  $('bcVideoTotal').textContent=videosCache.length+' VIDEO'+(videosCache.length===1?'':'S');
+  const me=profile(state.user?.id);
+  $('bcVideoAccount').textContent=String(me?.display_name||'B').slice(0,1).toUpperCase();
+ }
+ function renderSubscriptions(){
+  const container=$('bcVideoSubscribedChannels');container.replaceChildren();
+  const owners=new Set(videosCache.map(a=>a.owner_id));
+  const followingIds=new Set(state.follows.filter(f=>f.follower_id===state.user?.id).map(f=>f.following_id));
+  const users=Array.from(owners).filter(id=>followingIds.has(id)).sort((a,b)=>personName(profile(a)).localeCompare(personName(profile(b))));
+  if(!users.length){container.append(make('p','bc-yt-nav-caption','Channels you follow appear here.'));return}
+  for(const id of users.slice(0,22)){
+   const b=button('','bc-yt-subitem',()=>goChannels(id));
+   b.append(make('span','bc-yt-subavatar',personName(profile(id)).slice(0,1).toUpperCase()),
+    make('span','',personName(profile(id))));container.append(b);
+  }
+ }
+ function renderShortsShelf(){
+  if(selected!=='home')return;
+  const v=shorts(videosCache).slice(0,12);
+  $('bcVideoShortsSection').hidden=!v.length||topic!=='all'||Boolean(query);
+  if(v.length)putShelf('bcVideoShortsShelf',v,'shorts');
+ }
+ function renderHome(){
+  const all=searchVideo(filterTopic(videosCache));
+  const sorted=sortVideos(all);
+  $('bcVideoHomeTitle').textContent=query?'Search results':topic==='all'?'Recommended for you':document.querySelector('#bcVideoTopics [data-video-topic="'+topic+'"]')?.textContent||'Videos';
+  $('bcVideoResults').textContent=sorted.length+' video'+(sorted.length===1?'':'s');
+  if(topic==='all'&&!query&&!videosCache.length){
+   $('bcVideoHomeNotice').hidden=false;
+   $('bcVideoHomeNotice').textContent='Videos will appear here when approved members upload to BLACKCELL.';
+  }else $('bcVideoHomeNotice').hidden=true;
+  putGrid('videoGrid',sorted.slice(0,24),query?'No videos match your search.':topic!=='all'?'Nothing matches this category yet.':'No approved videos on the Network yet.');
+  renderShortsShelf();
+  const watching=videosCache.filter(progressValid).sort((a,b)=>(resume[b.id]?.updated||0)-(resume[a.id]?.updated||0)).slice(0,12);
+  $('bcVideoContinueSection').hidden=!watching.length||topic!=='all'||Boolean(query);
+  if(!$('bcVideoContinueSection').hidden)putShelf('bcVideoContinue',watching);
+  $('bcVideoLatestSection').hidden=!videosCache.length||topic!=='all'||Boolean(query);
+  if(!$('bcVideoLatestSection').hidden)putShelf('bcVideoLatest',videosCache.slice(0,12));
+ }
+ function renderChannels(){
+  const followerIds=new Set(state.follows.filter(f=>f.follower_id===state.user?.id).map(f=>f.following_id));
+  const names=[...new Set(videosCache.map(a=>a.owner_id))].sort((a,b)=>personName(profile(a)).localeCompare(personName(profile(b))));
+  const options=selected==='following'?names.filter(id=>followerIds.has(id)):names;
+  const list=$('bcVideoChannelList');list.replaceChildren();
+  $('bcVideoChannelsTitle').textContent=selected==='following'?'Subscriptions':'Channels';
+  if(!options.length){
+   list.append(make('div','bc-yt-empty',selected==='following'?'You have not followed any channels with approved videos yet.':'No creator channels have approved videos yet.'));
+   $('bcVideoChannelVideosTitle').textContent='Latest videos';
+   putGrid('bcVideoChannelGrid',[]);
+   return;
+  }
+  if(!channelId||!options.includes(channelId))channelId=options[0];
+  for(const id of options){
+   const count=videosCache.filter(a=>a.owner_id===id).length;
+   const b=button('','bc-yt-channel-card'+(id===channelId?' is-selected':''),()=>{channelId=id;renderChannels()});
+   b.append(make('span','bc-yt-channel-avatar',personName(profile(id)).slice(0,1).toUpperCase()));
+   const t=make('span','bc-yt-channel-text');t.append(make('strong','',personName(profile(id))),make('small','',count+' video'+(count===1?'':'s')+(followerIds.has(id)?' · Following':'')));
+   b.append(t);list.append(b);
+  }
+  const selectedName=personName(profile(channelId));
+  $('bcVideoChannelVideosTitle').textContent=selectedName+' · Videos';
+  const vids=searchVideo(videosCache.filter(a=>a.owner_id===channelId));
+  putGrid('bcVideoChannelGrid',sortVideos(vids),'No approved videos match your search.');
+ }
+ function identity(){
+  const p=profile(state.user?.id);
+  const root=$('bcVideoLibraryIdentity');root.replaceChildren();
+  const icon=make('div','bc-yt-library-avatar',personName(p).slice(0,1).toUpperCase());
+  const detail=make('div','bc-yt-library-name');detail.append(make('h2','',personName(p)),make('p','','Your private video library · '+videosCache.filter(a=>a.owner_id===state.user?.id).length+' uploads'));
+  root.append(icon,detail,button('View My Network Profile','bc-yt-library-profile',()=>openProfile(state.user.id,'videos')));
+ }
+ function libraryShelf(label,all,collection,max=12){
+  if(!all.length)return null;
+  const section=make('section','bc-yt-section bc-yt-library-shelf');
+  const heading=make('div','bc-yt-section-head');heading.append(make('h2','',label));
+  heading.append(button('See all →','',()=>go(collection)));section.append(heading);
+  const row=make('div','bc-video-scroller');for(const a of all.slice(0,max))row.append(tile(a,all));
+  section.append(row);return section;
+ }
+ function renderLibrary(){
+  identity();
+  const root=$('bcVideoLibraryShelves');root.replaceChildren();
+  const recents=videosCache.filter(a=>watchHistory[a.id]).sort((a,b)=>watchHistory[b.id]-watchHistory[a.id]);
+  const continueV=videosCache.filter(progressValid).sort((a,b)=>(resume[b.id]?.updated||0)-(resume[a.id]?.updated||0));
+  const rows=[
+   libraryShelf('Continue watching',continueV,'history'),
+   libraryShelf('History',recents,'history'),
+   libraryShelf('Shorts you watched',recents.filter(shortVideo),'history'),
+   libraryShelf('Liked videos',videosCache.filter(a=>liked(a)),'liked'),
+   libraryShelf('Watch later',videosCache.filter(saved),'watchlater'),
+   libraryShelf('My uploads',videosCache.filter(a=>a.owner_id===state.user?.id),'uploads')
+  ];
+  let inserted=0;for(const r of rows){if(r){root.append(r);inserted++}}
+  if(!inserted)root.append(make('div','bc-yt-empty','Your library is ready. Watch, like, or save approved videos to build your collection.'));
+ }
+ function renderCollection(){
+  const labels={history:'History',watchlater:'Watch later',uploads:'My uploads',liked:'Liked videos'};
+  $('bcVideoCollectionTitle').textContent=labels[selected]||'Videos';
+  let all=videosCache;
+  if(selected==='history')all=all.filter(a=>watchHistory[a.id]).sort((a,b)=>watchHistory[b.id]-watchHistory[a.id]);
+  if(selected==='watchlater')all=all.filter(saved);
+  if(selected==='liked')all=all.filter(liked);
+  if(selected==='uploads')all=all.filter(a=>a.owner_id===state.user?.id);
+  putGrid('bcVideoCollectionGrid',sortVideos(searchVideo(all)),'No videos in this collection yet.');
+ }
+ function renderVisible(){
+  if(!initialized||state.view!=='videos')return;
+  ensureSaved();videosCache=allVideos();updateHead();renderSubscriptions();
   if(observer){observer.disconnect();observer=null}
-  const all=items();
-  $('bcVideoTotal').textContent=all.length+' VIDEO'+(all.length===1?'':'S');
-  const results=filteredItems(all),focused=filter!=='all'||Boolean(search.trim());
-  $('bcVideoSpotlight').hidden=focused;
-  const latest=$('bcVideoLatestSection');latest.hidden=focused||all.length===0;
-  if(!focused){spotlight(all);renderShelf($('bcVideoLatest'),all.slice(0,12));}
-  const continuation=all.filter(validProgress).sort((a,b)=>{
-   return Number(resume[b.id]?.updated||0)-Number(resume[a.id]?.updated||0);
-  }).slice(0,12);
-  const cont=$('bcVideoContinueSection');cont.hidden=focused||!continuation.length;
-  if(!cont.hidden)renderShelf($('bcVideoContinue'),continuation);
-  const names={all:'Explore all videos',following:'From people you follow',mine:'My video uploads',watchlater:'Watch later'};
-  $('bcVideoCollectionTitle').textContent=search.trim()?'Search results':names[filter]||names.all;
-  $('bcVideoResults').textContent=results.length+' result'+(results.length===1?'':'s');
-  const grid=$('videoGrid');grid.replaceChildren();
-  if(!results.length){
-   const noVideos=all.length===0;const pane=node('div','bc-video-empty');
-   pane.append(node('strong','',noVideos?'The channel is ready for videos.':'Nothing matches this view.'));
-   pane.append(node('div','',noVideos?'There are no approved network video posts yet.':'Try another search or filter. Watch Later is saved on this device.'));
-   if(noVideos)pane.append(button('UPLOAD A VIDEO', '',()=>uploadVideo()));
-   grid.append(pane);
-  }else for(const a of results)grid.append(tile(a,{queue:results}));
+  const displays=['home','shorts','channels','library','collection'];
+  const currentScreen=selected==='following'?'channels':['history','watchlater','uploads','liked'].includes(selected)?'collection':selected;
+  for(const d of displays)document.querySelector('[data-video-screen="'+d+'"]').hidden=currentScreen!==d;
+  $('bcVideoTopics').hidden=selected!=='home';
+  for(const n of $('bcVideoShell').querySelectorAll('[data-vnav]')){
+   const active=n.dataset.vnav===selected||(selected==='liked'&&n.dataset.vnav==='library');
+   n.classList.toggle('is-active',active);n.setAttribute('aria-current',active?'page':'false');
+  }
+  if(currentScreen==='home')renderHome();
+  if(currentScreen==='channels')renderChannels();
+  if(currentScreen==='library')renderLibrary();
+  if(currentScreen==='collection')renderCollection();
+  if(currentScreen==='shorts')renderShorts();
  }
- function syncCinemaLater(){
-  if(!current)return;
-  $('bcCinemaWatchLater').textContent=isSaved(current.id)?'✓ SAVED TO WATCH LATER':'＋ WATCH LATER';
- }
- function syncNav(){
-  const index=queue.findIndex(x=>x.id===current?.id);
-  $('bcCinemaPrev').disabled=index<=0;
-  $('bcCinemaNext').disabled=index<0||index>=queue.length-1;
- }
- function open(a,nextQueue){
+ function go(name){
   if(!initialized)return;
-  const src=media(a);
-  if(!src){toast('This video is temporarily unavailable. Please refresh the channel.');return}
-  ensureStore();
-  const dialog=$('bcVideoCinema'),player=$('bcCinemaPlayer');
-  if(!dialog.hidden)player.pause();
-  current=a;queue=(nextQueue?.length?nextQueue:items()).slice();
-  if(!queue.some(x=>x.id===a.id))queue.unshift(a);
+  if(selected==='shorts'&&name!=='shorts')stopShort();
+  selected=name;renderVisible();
+  $('bcVideoContent').scrollTo({top:0,behavior:'instant'});
+ }
+ function goChannels(id){channelId=id;go('channels')}
+ function openCreate(){
+  $('bcVideoCreateMenu').hidden=false;
+  $('bcVideoCreateVideo').focus();
+ }
+ function closeCreate(){$('bcVideoCreateMenu').hidden=true}
+ function stopShort(){
+  const p=$('bcVideoShortPlayer');
+  if(p){const a=shortQueue[shortIndex];track(a,p,true);p.pause();p.removeAttribute('src');p.load()}
+ }
+ function goShorts(id=null){
+  shortQueue=shorts(allVideos());shortIndex=Math.max(0,shortQueue.findIndex(a=>a.id===id));
+  go('shorts');
+ }
+ function renderShorts(){
+  shortQueue=shorts(videosCache);
+  $('bcVideoShortsPlayerArea').hidden=!shortQueue.length;
+  $('bcVideoShortsEmpty').hidden=Boolean(shortQueue.length);
+  if(!shortQueue.length)return;
+  if(shortIndex>=shortQueue.length||shortIndex<0)shortIndex=0;
+  loadShort();
+ }
+ function syncShortActions(){
+  if(selected!=='shorts'||!shortQueue.length)return;
+  const a=shortQueue[shortIndex];
+  $('bcVideoShortLike').firstChild.textContent=liked(a)?'♥':'♡';
+  $('bcVideoShortSave').firstChild.textContent=saved(a)?'▣':'▢';
+  $('bcVideoShortPrev').disabled=shortIndex<=0;
+  $('bcVideoShortNext').disabled=shortIndex>=shortQueue.length-1;
+ }
+ function loadShort(){
+  const a=shortQueue[shortIndex],v=$('bcVideoShortPlayer');if(!a)return;
+  const src=source(a);
+  v.pause();v.removeAttribute('src');v.load();v.onloadedmetadata=null;
+  $('bcVideoShortCreator').textContent=creator(a);
+  $('bcVideoShortTitle').textContent=title(a);
+  if(!src){toast('This short is temporarily unavailable.');return}
+  remember(a);mostRecentWrite=0;
+  v.src=src;v.load();
+  const last=Number(resume[a.id]?.time||0);
+  v.onloadedmetadata=()=>{if(last>=5&&last<v.duration-7)try{v.currentTime=last}catch{}};
+  v.play().catch(()=>{});
+  syncShortActions();
+ }
+ function nextShort(delta){
+  if(selected!=='shorts'||!shortQueue.length)return;
+  const v=$('bcVideoShortPlayer');track(shortQueue[shortIndex],v,true);
+  const next=shortIndex+delta;if(next<0||next>=shortQueue.length)return;
+  shortIndex=next;loadShort();
+ }
+ function syncCinemaActions(){
+  if(!activeCinema)return;
+  $('bcCinemaWatchLater').textContent=saved(activeCinema)?'✓ SAVED TO WATCH LATER':'＋ WATCH LATER';
+  $('bcCinemaLike').textContent=liked(activeCinema)?'♥ LIKED':'♡ LIKE';
+ }
+ function syncCinemaNav(){
+  const i=cinemaQueue.findIndex(x=>x.id===activeCinema?.id);
+  $('bcCinemaPrev').disabled=i<1;
+  $('bcCinemaNext').disabled=i<0||i>=cinemaQueue.length-1;
+ }
+ function openCinema(a,list){
+  if(!initialized)return;
+  const url=source(a);if(!url){toast('Video temporarily unavailable. Refresh the channel.');return}
+  const player=$('bcCinemaPlayer');
+  if(activeCinema){track(activeCinema,player,true);player.pause()}
+  activeCinema=a;cinemaQueue=list?.length?list.slice():allVideos();
+  if(!cinemaQueue.some(x=>x.id===a.id))cinemaQueue.unshift(a);
+  remember(a);mostRecentWrite=0;
   $('bcCinemaTitle').textContent=title(a);
   $('bcCinemaVideoTitle').textContent=title(a);
-  $('bcCinemaVideoMeta').textContent=creator(a)+' · '+stamp(a.created_at);
-  $('bcCinemaDescription').textContent='Shared by a verified BLACKCELL Network member. Only approved videos are available in this player.';
-  syncCinemaLater();syncNav();
-  dialog.hidden=false;document.body.classList.add('bc-cinema-open');
-  player.src=src;player.load();
-  const t=Number(resume[a.id]?.time||0);
-  player.onloadedmetadata=()=>{
-   if(t>=5&&Number.isFinite(t)&&t<player.duration-10){
-    try{player.currentTime=t}catch{}
-   }
-  };
+  $('bcCinemaVideoMeta').textContent=creator(a)+' · '+when(a);
+  $('bcCinemaDescription').textContent='Approved private BLACKCELL Network video.';
+  syncCinemaNav();syncCinemaActions();
+  $('bcVideoCinema').hidden=false;document.body.classList.add('bc-cinema-open');
+  player.src=url;player.load();
+  const last=Number(resume[a.id]?.time||0);
+  player.onloadedmetadata=()=>{if(last>=5&&last<player.duration-8)try{player.currentTime=last}catch{}};
   player.play().catch(()=>{});
   $('bcCinemaClose').focus({preventScroll:true});
  }
- function close(){
-  const dialog=$('bcVideoCinema');
-  if(!dialog||dialog.hidden)return;
-  const v=$('bcCinemaPlayer');
-  capture();
-  v.pause();v.removeAttribute('src');v.load();v.onloadedmetadata=null;
-  dialog.hidden=true;document.body.classList.remove('bc-cinema-open');
-  current=null;queue=[];lastWrite=0;
-  if(state.view==='videos')render();
+ function closeCinema(){
+  if(!activeCinema||$('bcVideoCinema').hidden)return;
+  const p=$('bcCinemaPlayer');track(activeCinema,p,true);
+  p.pause();p.removeAttribute('src');p.load();p.onloadedmetadata=null;
+  activeCinema=null;cinemaQueue=[];mostRecentWrite=0;
+  $('bcVideoCinema').hidden=true;document.body.classList.remove('bc-cinema-open');
+  if(state.view==='videos')renderVisible();
  }
- function move(delta){
-  if(!current)return;
-  const index=queue.findIndex(x=>x.id===current.id);
-  const next=queue[index+delta];if(next)open(next,queue);
+ function moveCinema(n){
+  if(!activeCinema)return;
+  const i=cinemaQueue.findIndex(x=>x.id===activeCinema.id);
+  const next=cinemaQueue[i+n];if(next)openCinema(next,cinemaQueue);
  }
- function capture(force=false){
-  if(!current)return;
-  const player=$('bcCinemaPlayer');
-  if(!player||!Number.isFinite(player.duration)||player.duration<=15)return;
-  if(!Number.isFinite(player.currentTime))return;
-  const now=Date.now();
-  if(!force&&now-lastWrite<2800)return;
-  lastWrite=now;
-  if(player.ended||player.currentTime>=player.duration-7)delete resume[current.id];
-  else if(player.currentTime>=5)resume[current.id]={
-   time:Math.floor(player.currentTime),duration:Math.floor(player.duration),updated:now
-  };
-  saveProgress();
+ function leave(){
+  closeCinema();if(selected==='shorts')stopShort();closeCreate();
  }
  function init(){
-  if(initialized)return;initialized=true;
-  ensureStore();
-  $('bcVideoSearch').addEventListener('input',e=>{search=e.target.value||'';render()});
-  $('bcVideoSort').addEventListener('change',e=>{sort=e.target.value||'newest';render()});
-  for(const b of $('bcVideoFilters').querySelectorAll('[data-video-filter]')){
-   b.addEventListener('click',()=>{
-    filter=b.dataset.videoFilter||'all';
-    for(const c of $('bcVideoFilters').querySelectorAll('button')){
-     const yes=c===b;c.classList.toggle('is-active',yes);c.setAttribute('aria-pressed',String(yes));
-    }
-    render();
-   });
-  }
-  $('bcVideoUpload').addEventListener('click',()=>uploadVideo());
-  $('bcCinemaClose').addEventListener('click',close);
-  $('bcVideoCinema').addEventListener('click',e=>{if(e.target===$('bcVideoCinema'))close()});
-  $('bcCinemaPrev').addEventListener('click',()=>move(-1));
-  $('bcCinemaNext').addEventListener('click',()=>move(1));
-  $('bcCinemaCreator').addEventListener('click',()=>{
-   if(!current)return;const id=current.owner_id;close();openProfile(id,'videos');
+  if(initialized)return;initialized=true;ensureSaved();
+  const url=new URLSearchParams(location.search);
+  const id=url.get('video');if(id&&/^[a-f0-9-]{36}$/i.test(id))pendingId=id;
+  $('bcVideoMenu').addEventListener('click',()=>{
+   sidebarCollapsed=!sidebarCollapsed;
+   $('bcVideoShell').classList.toggle('is-collapsed',sidebarCollapsed);
+   $('bcVideoMenu').setAttribute('aria-expanded',String(!sidebarCollapsed));
   });
-  $('bcCinemaWatchLater').addEventListener('click',()=>{if(current)toggleLater(current)});
+  $('bcVideoHomeLogo').addEventListener('click',()=>go('home'));
+  $('bcVideoBackNetwork').addEventListener('click',()=>switchView('feed'));
+  $('bcVideoExitSidebar').addEventListener('click',()=>switchView('feed'));
+  $('bcVideoAccount').addEventListener('click',()=>go('library'));
+  for(const b of $('bcVideoShell').querySelectorAll('[data-vnav]'))b.addEventListener('click',()=>go(b.dataset.vnav));
+  $('bcVideoBrowseChannels').addEventListener('click',()=>go('channels'));
+  $('bcVideoSearch').addEventListener('input',e=>{query=e.target.value||'';renderVisible()});
+  $('bcVideoSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();go('home')}});
+  for(const b of $('bcVideoTopics').querySelectorAll('[data-video-topic]'))b.addEventListener('click',()=>{
+   topic=b.dataset.videoTopic;
+   for(const t of $('bcVideoTopics').querySelectorAll('button')){
+    t.classList.toggle('is-active',t===b);t.setAttribute('aria-pressed',String(t===b));
+   }
+   go('home');
+  });
+  $('bcVideoSort').addEventListener('change',e=>{sort=e.target.value||'newest';renderVisible()});
+  $('bcVideoOpenShorts').addEventListener('click',()=>goShorts());
+  $('bcVideoContinueAll').addEventListener('click',()=>go('library'));
+  $('bcVideoUpload').addEventListener('click',openCreate);
+  $('bcVideoMobileCreate').addEventListener('click',openCreate);
+  $('bcVideoCreateDismiss').addEventListener('click',closeCreate);
+  $('bcVideoCreateCancel').addEventListener('click',closeCreate);
+  $('bcVideoCreateVideo').addEventListener('click',()=>{closeCreate();uploadVideo()});
+  $('bcVideoCreatePost').addEventListener('click',()=>{closeCreate();switchView('feed');$('postBody')?.focus()});
+  $('bcCinemaClose').addEventListener('click',closeCinema);
+  $('bcVideoCinema').addEventListener('click',e=>{if(e.target===$('bcVideoCinema'))closeCinema()});
+  $('bcCinemaPrev').addEventListener('click',()=>moveCinema(-1));
+  $('bcCinemaNext').addEventListener('click',()=>moveCinema(1));
+  $('bcCinemaCreator').addEventListener('click',()=>{if(!activeCinema)return;const owner=activeCinema.owner_id;closeCinema();openProfile(owner,'videos')});
+  $('bcCinemaWatchLater').addEventListener('click',()=>{if(activeCinema)toggleLater(activeCinema)});
+  $('bcCinemaLike').addEventListener('click',()=>{if(activeCinema)toggleLike(activeCinema)});
+  $('bcCinemaShare').addEventListener('click',()=>{if(activeCinema)copyLink(activeCinema)});
   $('bcCinemaFullscreen').addEventListener('click',()=>{
-   const v=$('bcCinemaPlayer');
-   if(v.requestFullscreen)void v.requestFullscreen().catch(()=>{});
+   const v=$('bcCinemaPlayer');if(v.requestFullscreen)void v.requestFullscreen().catch(()=>{});
    else if(v.webkitEnterFullscreen)v.webkitEnterFullscreen();
   });
-  const player=$('bcCinemaPlayer');
-  player.addEventListener('timeupdate',()=>capture());
-  player.addEventListener('pause',()=>{capture(true);if(state.view==='videos')render()});
-  player.addEventListener('ended',()=>{capture(true);if(state.view==='videos')render()});
+  const cinemaPlayer=$('bcCinemaPlayer');
+  cinemaPlayer.addEventListener('timeupdate',()=>track(activeCinema,cinemaPlayer));
+  cinemaPlayer.addEventListener('pause',()=>track(activeCinema,cinemaPlayer,true));
+  cinemaPlayer.addEventListener('ended',()=>{track(activeCinema,cinemaPlayer,true)});
+  $('bcVideoShortLike').addEventListener('click',()=>{if(shortQueue[shortIndex])toggleLike(shortQueue[shortIndex])});
+  $('bcVideoShortSave').addEventListener('click',()=>{if(shortQueue[shortIndex])toggleLater(shortQueue[shortIndex])});
+  $('bcVideoShortShare').addEventListener('click',()=>{if(shortQueue[shortIndex])copyLink(shortQueue[shortIndex])});
+  $('bcVideoShortNext').addEventListener('click',()=>nextShort(1));
+  $('bcVideoShortPrev').addEventListener('click',()=>nextShort(-1));
+  const shortsPlayer=$('bcVideoShortPlayer');
+  shortsPlayer.addEventListener('timeupdate',()=>track(shortQueue[shortIndex],shortsPlayer));
+  shortsPlayer.addEventListener('pause',()=>track(shortQueue[shortIndex],shortsPlayer,true));
+  shortsPlayer.addEventListener('ended',()=>{track(shortQueue[shortIndex],shortsPlayer,true);nextShort(1)});
+  let touchY=null;
+  $('bcVideoShortsPlayerArea').addEventListener('touchstart',e=>{touchY=e.touches[0]?.clientY||0},{passive:true});
+  $('bcVideoShortsPlayerArea').addEventListener('touchend',e=>{
+   if(touchY===null)return;
+   const dy=(e.changedTouches[0]?.clientY||0)-touchY;touchY=null;
+   if(Math.abs(dy)>55)nextShort(dy<0?1:-1);
+  },{passive:true});
+  let wheelAt=0;
+  $('bcVideoShortsPlayerArea').addEventListener('wheel',e=>{
+   if(Math.abs(e.deltaY)<18||Date.now()-wheelAt<650)return;
+   wheelAt=Date.now();e.preventDefault();nextShort(e.deltaY>0?1:-1);
+  },{passive:false});
   window.addEventListener('keydown',e=>{
-   if($('bcVideoCinema').hidden)return;
-   if(e.key==='Escape'){e.preventDefault();close()}
-   if(e.target instanceof HTMLInputElement)return;
-   if(e.key==='ArrowRight'&&e.altKey){e.preventDefault();move(1)}
-   if(e.key==='ArrowLeft'&&e.altKey){e.preventDefault();move(-1)}
+   if(!$('bcVideoCinema').hidden){
+    if(e.key==='Escape'){e.preventDefault();closeCinema()}
+    else if(e.altKey&&e.key==='ArrowRight')moveCinema(1);
+    else if(e.altKey&&e.key==='ArrowLeft')moveCinema(-1);
+    return;
+   }
+   if(!$('bcVideoCreateMenu').hidden&&e.key==='Escape'){closeCreate();return}
+   if(selected!=='shorts'||state.view!=='videos'||e.target instanceof HTMLInputElement)return;
+   if(e.key==='ArrowDown'){e.preventDefault();nextShort(1)}
+   if(e.key==='ArrowUp'){e.preventDefault();nextShort(-1)}
   });
-  document.addEventListener('visibilitychange',()=>{if(document.hidden)capture(true)});
+  document.addEventListener('visibilitychange',()=>{
+   if(!document.hidden)return;
+   track(activeCinema,cinemaPlayer,true);
+   if(selected==='shorts')track(shortQueue[shortIndex],shortsPlayer,true);
+  });
  }
- return {init,render,close};
+ function render(){
+  if(!initialized)return;renderVisible();
+  if(pendingId){
+   const a=videosCache.find(x=>x.id===pendingId);pendingId=null;
+   if(a)queueMicrotask(()=>{if(state.view==='videos')openCinema(a,videosCache)});
+  }
+ }
+ return {init,render,close:leave};
 }
