@@ -333,3 +333,79 @@ html.bc-admin-workspace-embedded .bc-media-admin-page .bc-workspace-sidebar{top:
  .bc-media-admin-page .bc-workspace-pane .bc-media-admin-summary>div{min-height:70px;padding:10px 12px!important}
  .bc-media-admin-page .bc-workspace-sidebar{top:103px!important}
 }
+
+/* Native BLACKCELL OS application shell: fixed navigation and toolbar, independently scrollable workspace. */
+html:has(body.bc-media-admin-page){height:100%;overflow:hidden}
+body.bc-media-admin-page{height:100dvh;min-height:0!important;overflow:hidden!important;background:#17171b!important;color:#eee!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important}
+.bc-media-admin-page #bcMediaAdminApp:not([hidden]){height:100%;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.bc-media-admin-page .bc-media-admin-header{flex:none}
+body.bc-media-admin-page .bc-media-admin-shell,html.bc-admin-workspace-embedded body.bc-media-admin-page .bc-media-admin-shell{padding:0!important;max-width:none!important;width:100%!important;margin:0!important;flex:1;min-height:0;overflow:hidden}
+.bc-media-admin-page .bc-workspace{height:100%;display:grid;grid-template-columns:196px minmax(0,1fr);gap:0;align-items:stretch;min-height:0;background:#17171b}
+.bc-media-admin-page .bc-workspace-sidebar,html.bc-admin-workspace-embedded .bc-media-admin-page .bc-workspace-sidebar{position:relative!important;top:auto!important;height:100%;min-height:0;display:flex;flex-direction:column;padding:16px 10px 10px;overflow:auto;scrollbar-width:none;border:0;border-right:1px solid #ffffff13;border-radius:0;background:#242429;box-shadow:none;backdrop-filter:none}
+.bc-media-admin-page .bc-workspace-brand{padding:2px 7px 15px;align-items:center;gap:10px;border-color:#ffffff13}
+.bc-media-admin-page .bc-workspace-brand-mark{width:34px;height:34px;border-radius:9px;background:linear-gradient(145deg,#963747,#401421);border:1px solid #e0747d55;color:white;font-size:21px;font-weight:750;box-shadow:none}
+.bc-media-admin-page .bc-workspace-brand strong{font:650 13px system-ui;letter-spacing:0}
+.bc-media-admin-page .bc-workspace-brand small{font:700 9px system-ui;letter-spacing:.06em;color:#b38b95}
+.bc-media-admin-page .bc-workspace-nav-hint{font:700 10px system-ui;letter-spacing:.05em;color:#9999a4;padding:16px 7px 7px}
+.bc-media-admin-page .bc-workspace-nav{gap:4px;flex:0 0 auto}
+.bc-media-admin-page .bc-workspace-tab{border:0;background:transparent;color:#dfdfe5;border-radius:8px;min-height:42px;padding:7px;width:100%;gap:9px;box-shadow:none}
+.bc-media-admin-page .bc-workspace-tab:hover{background:#ffffff0c}
+.bc-media-admin-page .bc-workspace-tab.selected{background:#ffffff15;box-shadow:none}
+.bc-media-admin-page .bc-workspace-tab-icon{width:25px;height:25px;border:0;border-radius:7px;background:#45454e;color:#fff;font-size:16px}
+.bc-media-admin-page .bc-workspace-tab.selected .bc-workspace-tab-icon{background:#b23549;color:#fff;border:0}
+.bc-media-admin-page .bc-workspace-tab-words strong{font:500 12px system-ui;letter-spacing:0}
+.bc-media-admin-page .bc-workspace-tab-words small{display:none}
+.bc-media-admin-page .bc-workspace-tab-suffix{font:11px system-ui;min-width:14px}
+.bc-media-admin-page .bc-workspace-tab[data-admin-tab=bunny] .bc-workspace-tab-suffix{display:none}
+.bc-media-admin-page .bc-workspace-footer{margin-top:auto;padding:13px 7px 3px;border-color:#ffffff12}
+.bc-media-admin-page .bc-workspace-footer small{font-size:8px;letter-spacing:0}
+.bc-media-admin-page .bc-workspace-region{display:flex;flex-direction:column;height:100%;min-height:0;min-width:0;overflow:hidden}
+.bc-media-admin-page .bc-workspace-context{flex:none;background:#212126;border-bottom:1px solid #ffffff16;padding:11px 20px;gap:10px;min-height:62px;align-items:center}
+.bc-media-admin-page .bc-workspace-overline{display:none}
+.bc-media-admin-page .bc-workspace-headline{font:650 21px system-ui;letter-spacing:-.035em;margin:0 0 4px}
+.bc-media-admin-page .bc-workspace-subtitle{font:11px system-ui;color:#aaaab5;margin:0}
+.bc-media-admin-page .bc-workspace-refresh{background:#36363d;border:1px solid #ffffff20;border-radius:7px;font:500 11px system-ui;min-height:31px;padding:7px 11px}
+.bc-media-admin-page .bc-workspace-live{font:600 9px system-ui;border:none;background:transparent;color:#a1cbb2;padding:4px;letter-spacing:0}
+.bc-media-admin-page .bc-workspace-panels{flex:1;min-height:0;overflow:auto;overflow-x:hidden;scrollbar-width:none;overscroll-behavior:contain;padding:16px 20px 22px}
+.bc-media-admin-page .bc-workspace-panels::-webkit-scrollbar,.bc-media-admin-page .bc-workspace-sidebar::-webkit-scrollbar{display:none}
+.bc-media-admin-page .bc-workspace-pane{padding:0;animation:none}
+.bc-media-admin-page .bc-overview-hero,.bc-media-admin-page .bc-overview-install{display:none!important}
+.bc-media-admin-page .bc-overview{max-width:1100px}
+.bc-media-admin-page .bc-workspace-pane .bc-media-admin-summary{margin:0 0 17px!important;gap:10px!important}
+.bc-media-admin-page .bc-workspace-pane .bc-media-admin-summary>div{background:#232328!important;border:1px solid #ffffff14!important;border-radius:12px!important;min-height:94px;padding:13px!important;box-shadow:none}
+.bc-media-admin-page .bc-workspace-pane .bc-media-admin-summary span{font:500 11px system-ui!important;letter-spacing:0;color:#a9a9b5!important}
+.bc-media-admin-page .bc-workspace-pane .bc-media-admin-summary strong{font:650 25px system-ui!important;letter-spacing:-.04em!important}
+.bc-media-admin-page .bc-workspace-pane .bc-media-admin-summary small{font:10px system-ui;color:#a9a9b5}
+.bc-media-admin-page .bc-overview-section-title{margin:0 0 9px;align-items:center}
+.bc-media-admin-page .bc-overview-section-title strong{font:600 13px system-ui;letter-spacing:0;text-transform:none}
+.bc-media-admin-page .bc-overview-section-title small{font:10px system-ui;color:#aaaab5}
+.bc-media-admin-page .bc-overview-actions{display:flex;flex-direction:column;gap:0;background:#232328;border:1px solid #ffffff14;border-radius:12px;padding:0 14px}
+.bc-media-admin-page .bc-overview-action,.bc-media-admin-page #bcOverviewUpload{min-height:60px;width:100%;padding:11px 0;gap:11px;background:transparent;border:0;border-top:1px solid #ffffff0d;border-radius:0;box-shadow:none}
+.bc-media-admin-page .bc-overview-action:first-child{border-top:0}
+.bc-media-admin-page .bc-overview-action:hover,.bc-media-admin-page #bcOverviewUpload:hover{background:#ffffff06;transform:none}
+.bc-media-admin-page .bc-overview-action-icon{width:32px;height:32px;border:0;border-radius:8px;background:#45454e;color:#fff;font-size:18px}
+.bc-media-admin-page #bcOverviewUpload .bc-overview-action-icon{background:#a7384a;border:0}
+.bc-media-admin-page .bc-overview-action strong{font:550 12px system-ui;letter-spacing:0;text-transform:none}
+.bc-media-admin-page .bc-overview-action small{font:11px system-ui;color:#a2a2ae;margin-top:4px}
+.bc-media-admin-page .bc-overview-action-chevron{font:20px system-ui;color:#85858f}
+.bc-media-admin-page .bc-overview-workflow{background:#232328;border:1px solid #ffffff14;border-radius:12px;margin:14px 0 0;padding:13px}
+.bc-media-admin-page .bc-overview-workflow>strong{font:600 12px system-ui;letter-spacing:0}
+.bc-media-admin-page .bc-workflow-stage{background:#1b1b20;border-color:#ffffff12;border-radius:7px}
+.bc-media-admin-page .bc-workflow-stage strong{font:600 10px system-ui;letter-spacing:0}
+.bc-media-admin-page .bc-overview-bottom{padding:12px 1px}
+.bc-media-admin-page .bc-overview-updated,.bc-media-admin-page .bc-overview-library-link{font:10px system-ui;letter-spacing:0}
+.bc-media-admin-page .bc-workspace-pane .bc-bunny-connection,.bc-media-admin-page .bc-workspace-pane .bc-library-bunny-sync,.bc-media-admin-page .bc-workspace-pane .bc-bunny-uploader,.bc-media-admin-page .bc-workspace-pane .bc-media-processor,.bc-media-admin-page .bc-workspace-pane .bc-media-diag,.bc-media-admin-page .bc-workspace-pane .bc-b2-connection,.bc-media-admin-page .bc-workspace-pane .bc-bulk-intake,.bc-media-admin-page .bc-workspace-pane .bc-icloud-test,.bc-media-admin-page .bc-workspace-pane .bc-media-admin-explainer{background:#232328!important;border-color:#ffffff14!important;box-shadow:none!important;border-radius:12px!important;scroll-margin-top:10px}
+.bc-media-admin-page .bc-workspace-review-note,.bc-media-admin-page .bc-workspace-legacy-note{background:#232328;border-color:#ffffff14;border-radius:12px;padding:13px 15px}
+@media(max-width:760px){
+ .bc-media-admin-page .bc-workspace{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}
+ .bc-media-admin-page .bc-workspace-sidebar,html.bc-admin-workspace-embedded .bc-media-admin-page .bc-workspace-sidebar{height:auto;padding:5px 7px;overflow:hidden;border-right:0;border-bottom:1px solid #ffffff13}
+ .bc-media-admin-page .bc-workspace-brand,.bc-media-admin-page .bc-workspace-nav-hint,.bc-media-admin-page .bc-workspace-footer{display:none}
+ .bc-media-admin-page .bc-workspace-nav{flex-direction:row;overflow-x:auto;scrollbar-width:none;padding:0}
+ .bc-media-admin-page .bc-workspace-tab{width:auto;min-width:max-content;min-height:35px;flex:none;padding:5px 7px}
+ .bc-media-admin-page .bc-workspace-tab-words strong{font-size:11px}
+ .bc-media-admin-page .bc-workspace-context{padding:10px 12px;flex-direction:row;align-items:center}
+ .bc-media-admin-page .bc-workspace-header-tools{width:auto}
+ .bc-media-admin-page .bc-workspace-live{display:none}
+ .bc-media-admin-page .bc-workspace-panels{padding:12px}
+ .bc-media-admin-page .bc-workspace-headline{font-size:18px}
+}
