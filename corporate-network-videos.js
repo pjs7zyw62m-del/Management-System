@@ -126,6 +126,57 @@ export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,sharedMedi
   }
   v._bcSource=url;observer.observe(v);
  }
+ let fullThumbnailLayer=null;
+ function closeFullThumbnail(){
+  if(!fullThumbnailLayer)return;
+  fullThumbnailLayer.remove();
+  fullThumbnailLayer=null;
+  document.body.classList.remove('bc-full-thumbnail-open');
+  document.removeEventListener('keydown',thumbnailEscape);
+ }
+ function thumbnailEscape(event){
+  if(event.key==='Escape'&&fullThumbnailLayer){event.preventDefault();closeFullThumbnail()}
+ }
+ function viewFullThumbnail(a,cover,videoUrl){
+  if(!cover&&!videoUrl)return;
+  closeFullThumbnail();
+  const overlay=make('div','bc-full-thumb-overlay');
+  overlay.setAttribute('role','dialog');
+  overlay.setAttribute('aria-modal','true');
+  overlay.setAttribute('aria-label','Full thumbnail for '+title(a));
+  const pane=make('div','bc-full-thumb-panel');
+  const bar=make('div','bc-full-thumb-toolbar');
+  const label=make('strong','',title(a));
+  const close=button('✕ CLOSE','bc-full-thumb-close',closeFullThumbnail);
+  close.setAttribute('aria-label','Close full thumbnail');
+  bar.append(label,close);
+  const stage=make('div','bc-full-thumb-stage');
+  if(cover){
+   const img=make('img');
+   img.src=cover;
+   img.alt='Complete original thumbnail for '+title(a);
+   img.decoding='async';
+   stage.append(img);
+  }else{
+   const video=make('video');
+   video.src=videoUrl;video.preload='metadata';video.muted=true;video.playsInline=true;
+   video.controls=true;video.setAttribute('aria-label','Video preview for '+title(a));
+   stage.append(video);
+  }
+  pane.append(bar,stage,make('div','bc-full-thumb-caption','FULL IMAGE · ORIGINAL PROPORTIONS · NOTHING CROPPED'));
+  overlay.append(pane);
+  overlay.addEventListener('click',event=>{if(event.target===overlay)closeFullThumbnail()});
+  document.body.append(overlay);document.body.classList.add('bc-full-thumbnail-open');
+  fullThumbnailLayer=overlay;
+  document.addEventListener('keydown',thumbnailEscape);
+  close.focus({preventScroll:true});
+ }
+ function addFullThumbnailControl(card,a,cover,url){
+  if(!cover&&!url)return;
+  const buttonView=button('⛶ VIEW FULL','bc-view-full-thumb',()=>viewFullThumbnail(a,cover,url));
+  buttonView.setAttribute('aria-label','View complete thumbnail for '+title(a));
+  card.append(buttonView);
+ }
  function tile(a,queue=videosCache){
   const card=make('article','bc-yt-video-card');
   const thumbnail=button('', 'bc-yt-thumb',()=>openCinema(a,queue));
@@ -148,7 +199,7 @@ export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,sharedMedi
   const save=button(saved(a)?'✓':'＋','bc-yt-card-save',()=>toggleLater(a));
   save.title=saved(a)?'Remove from Watch Later':'Save to Watch Later';
   save.setAttribute('aria-label',save.title);body.append(image,info,save);
-  card.append(thumbnail,body);return card;
+  card.append(thumbnail,body);addFullThumbnailControl(card,a,cover,url);return card;
  }
  function putGrid(id,videos,emptyMessage='No approved videos match this view.'){
   const root=$(id);root.replaceChildren();
@@ -258,7 +309,7 @@ export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,sharedMedi
   const info=make('div','bc-movies-poster-info');
   info.append(make('strong','',title(a)),make('small','',creator(a)));
   if(a.video_synopsis)info.append(make('p','',String(a.video_synopsis).slice(0,140)));
-  c.append(tap,info);return c;
+  c.append(tap,info);addFullThumbnailControl(c,a,cover,url);return c;
  }
  function renderMovies(){
   const filmV=videosCache.filter(a=>['movie','series','documentary'].includes(a.video_category));
@@ -304,7 +355,7 @@ export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,sharedMedi
    art.append(make('span','bc-movies-show-play','▶ EPISODES'));
    const info=make('div','bc-movies-show-info');
    info.append(make('strong','',group.name),make('small','',group.items.length+' episode'+(group.items.length===1?'':'s')));
-   c.append(art,info);seriesGrid.append(c);
+   c.append(art,info);addFullThumbnailControl(c,a,cover,url);seriesGrid.append(c);
   }
   const owner=state.member?.role==='owner'&&state.member?.clearance_level===7;
   const pending=owner?(state.streamVideos||[]).filter(a=>a.review_status==='pending'):[];
@@ -512,6 +563,7 @@ export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,sharedMedi
   const next=cinemaQueue[i+n];if(next)openCinema(next,cinemaQueue);
  }
  function leave(){
+  closeFullThumbnail();
   closeCinema();if(selected==='shorts')stopShort();closeCreate();
  }
  function init(){
