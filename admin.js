@@ -412,10 +412,37 @@ function showInvitationPreview(form,inputs){
   wrapper.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
-function showSecurityCodeCardPreview(form,inputs){
-  const container=form.closest('.content-block');
-  if(!container)return;
-  container.querySelector('.security-credential-preview')?.remove();
+function ensureInvitationCardPreviewStyle(){
+  if(document.getElementById('um4-card-preview-style'))return;
+  const style=el('style');style.id='um4-card-preview-style';
+  style.textContent=`
+    #modalContent .um4-card-preview-slot[hidden]{display:none!important}
+    #modalContent .um4-card-preview-slot{min-width:0;width:100%;box-sizing:border-box;align-self:start;container-type:inline-size}
+    #modalContent .um4-card-preview-slot>.employee-card-inline-preview,
+    #modalContent .um4-card-preview-slot>.security-credential-preview{margin:0;max-width:100%;width:100%;box-sizing:border-box;animation:um4-card-slide-right 340ms cubic-bezier(.2,.75,.25,1) both}
+    #modalContent .um4-preview-row button[aria-pressed="true"]{border-color:#c76274;background:#59303d;color:#fff}
+    @keyframes um4-card-slide-right{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:translateX(0)}}
+    @media(min-width:1051px){
+      #modalContent .um3-invitation-workspace.um4-preview-open{grid-template-columns:minmax(0,min(52%,850px)) minmax(0,1fr)!important;gap:14px;align-items:start}
+      #modalContent .um4-preview-open>.um4-invite-panel{grid-column:1;grid-row:1}
+      #modalContent .um4-preview-open>.um4-card-preview-slot{grid-column:2;grid-row:1}
+      #modalContent .um4-preview-open>.um2-account-panel{grid-column:1/-1;grid-row:2}
+    }
+    @media(max-width:1050px){
+      #modalContent .um3-invitation-workspace.um4-preview-open{grid-template-columns:minmax(0,1fr)!important}
+      #modalContent .um4-card-preview-slot{max-width:850px}
+    }
+    @container(max-width:540px){
+      #modalContent .um4-card-preview-slot .employee-profile-layout{grid-template-columns:minmax(0,1fr)}
+      #modalContent .um4-card-preview-slot .employee-profile-pass{width:min(100%,310px);box-sizing:border-box;justify-self:center}
+      #modalContent .um4-card-preview-slot .security-credential-fields{grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}
+      #modalContent .um4-card-preview-slot .security-credential-code-grid{grid-template-columns:minmax(0,1fr)}
+    }
+    @media(prefers-reduced-motion:reduce){#modalContent .um4-card-preview-slot>.employee-card-inline-preview,#modalContent .um4-card-preview-slot>.security-credential-preview{animation:none}}
+  `;
+  document.head.append(style);
+}
+function showSecurityCodeCardPreview(inputs,showPreview,closePreview){
   const {name,username,level,accessCode,securityCode}=inputs;
   const panel=el('section','security-credential-preview');
   panel.setAttribute('aria-label','Private Access and Security Code preview — not issued');
@@ -478,16 +505,35 @@ function showSecurityCodeCardPreview(form,inputs){
   body.append(warning);
   card.append(body);
   panel.append(card,el('p','muted','Preview only. Nothing has been issued or sent. Codes are masked until you choose Reveal.'));
-  const closeButton=action('CLOSE CODE CARD',()=>panel.remove());
+  const closeButton=action('CLOSE CODE CARD',()=>closePreview(true));
   closeButton.type='button';
   panel.append(closeButton);
-  container.append(panel);
-  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+  showPreview(panel);
 }
 
 function users(){
   if(activeTab==='accounts'){
+    ensureInvitationCardPreviewStyle();
     const section=block('Register New Employee');
+    const cardSlot=el('aside','um4-card-preview-slot');
+    cardSlot.id='um4-card-preview-slot';cardSlot.hidden=true;
+    cardSlot.setAttribute('aria-label','Employee card preview');
+    let activeCardButton=null;
+    function closeCardPreview(restoreFocus=false){
+      const previous=activeCardButton;
+      if(previous)previous.setAttribute('aria-pressed','false');
+      activeCardButton=null;
+      cardSlot.replaceChildren();cardSlot.hidden=true;
+      workspace.classList.remove('um4-preview-open');
+      if(restoreFocus&&previous?.isConnected)previous.focus();
+    }
+    function showCardPreview(panel,button){
+      if(activeCardButton)activeCardButton.setAttribute('aria-pressed','false');
+      activeCardButton=button;button.setAttribute('aria-pressed','true');
+      cardSlot.replaceChildren(panel);cardSlot.hidden=false;
+      workspace.classList.add('um4-preview-open');
+      if(matchMedia('(max-width:1050px)').matches)cardSlot.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'nearest'});
+    }
     section.append(p('Create a private invitation and digital access pass. The employee sets their own password.'));
     const form=el('form','um4-invite-form');
     const field=(label,type,placeholder)=>{
@@ -559,7 +605,6 @@ function users(){
     previewInvite.textContent='Invitation email';
     previewRow.append(previewInvite);
     const previewCard=action('PREVIEW EMPLOYEE CARD',()=>{
-      section.querySelector('.employee-card-inline-preview')?.remove();
       const preview=el('div','employee-card-inline-preview');
       preview.append(el('h3','','SAMPLE EMPLOYEE CARD · NOT REGISTERED'));
       preview.append(employeeCardView({
@@ -569,18 +614,18 @@ function users(){
         clearance_level:Number(level.value),role:'employee',active:false,
         can_chat:true,password_activated:false
       },true));
-      preview.append(action('CLOSE CARD PREVIEW',()=>preview.remove()));
-      section.append(preview);
-      preview.scrollIntoView({behavior:'smooth',block:'nearest'});
+      preview.append(action('CLOSE CARD PREVIEW',()=>closeCardPreview(true)));
+      showCardPreview(preview,previewCard);
     });
     previewCard.type='button';previewCard.textContent='Employee card';
     previewRow.append(previewCard);
     const previewCodes=action('PREVIEW ACCESS & SECURITY CARD',()=>{
-      showSecurityCodeCardPreview(form,{name,username:uniqueUser,level,accessCode,securityCode});
+      showSecurityCodeCardPreview({name,username:uniqueUser,level,accessCode,securityCode},panel=>showCardPreview(panel,previewCodes),closeCardPreview);
     });
     previewCodes.type='button';
     previewCodes.textContent='Access & security card';
     previewRow.append(previewCodes);
+    for(const button of [previewCard,previewCodes]){button.setAttribute('aria-controls',cardSlot.id);button.setAttribute('aria-pressed','false');}
     const testConnection=action('CHECK CONNECTION — NO EMAIL',null,false);
     testConnection.type='button';
     testConnection.textContent='Check connection';testConnection.title='Check secure connection without sending email';
@@ -689,6 +734,7 @@ function users(){
         dismiss.type='button';
         receipt.append(pre,copyReceipt,dismiss);
         feedback.after(receipt);
+        closeCardPreview();
         name.value='';email.value='';accessCode.value='';securityCode.value='';uniqueUser.value='';
         void displayCorporateAccounts(list);
       }catch(err){feedback.textContent='Invitation not sent: '+String(err?.message||'Check the network and email service.')}
@@ -699,7 +745,7 @@ function users(){
     const list=block('Approved & Invited Accounts');
     list.classList.add('um2-account-panel');
     list.append(p('Loading corporate accounts…'));
-    const workspace=el('div','um2-workspace um3-invitation-workspace');workspace.append(section,list);
+    const workspace=el('div','um2-workspace um3-invitation-workspace');workspace.append(section,cardSlot,list);
     content.append(workspace);
     void displayCorporateAccounts(list);
   }else if(activeTab==='profiles'){
