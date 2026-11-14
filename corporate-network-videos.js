@@ -6,7 +6,7 @@ export function createBlackcellVideoChannel({state,mediaUrl,sharedMedia,profile,
  const node=(tag,cls='',text=null)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==null)n.textContent=String(text);return n};
  const button=(label,cls,action)=>{const b=node('button',cls,label);b.type='button';b.addEventListener('click',action);return b};
  let initialized=false,search='',filter='all',sort='newest',current=null,queue=[],observer=null,lastWrite=0;
- let watchLater={},resume={},loadedUser=null,wasPlaying=false;
+ let watchLater={},resume={},loadedUser=null;
  const prefix=()=>String(state.user?.id||'signed-out');
  function readStore(key){
   try{const o=JSON.parse(localStorage.getItem(key)||'{}');return o&&typeof o==='object'&&!Array.isArray(o)?o:{}}catch{return {}}
@@ -238,7 +238,7 @@ export function createBlackcellVideoChannel({state,mediaUrl,sharedMedia,profile,
   }
   $('bcVideoUpload').addEventListener('click',()=>uploadVideo());
   $('bcCinemaClose').addEventListener('click',close);
-  $('bcCinema').addEventListener('click',e=>{if(e.target===$('bcVideoCinema'))close()});
+  $('bcVideoCinema').addEventListener('click',e=>{if(e.target===$('bcVideoCinema'))close()});
   $('bcCinemaPrev').addEventListener('click',()=>move(-1));
   $('bcCinemaNext').addEventListener('click',()=>move(1));
   $('bcCinemaCreator').addEventListener('click',()=>{
