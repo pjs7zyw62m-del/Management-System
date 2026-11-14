@@ -1119,7 +1119,7 @@ async function uploadMoviePoster(file){
  if(error)throw Error('Poster upload failed: '+error.message);
  return path;
 }
-async function sendViaStream(file,metadata,posterFile){
+async function sendViaStream(file,metadata,posterFile,aiPath=null,choice='original'){
  const status=await videoStreamApi('status');
  if(!status.resumableReady){
   throw Error('10 GB uploads require a Bunny Stream Video Library ID and library API key. Add BUNNY_STREAM_LIBRARY_ID and BUNNY_STREAM_API_KEY in Supabase Edge Function Secrets.');
@@ -1167,18 +1167,24 @@ async function sendViaStream(file,metadata,posterFile){
  localStorage.removeItem(key);
  message.textContent='Video uploaded · verifying with Bunny Stream…';
  const remote=await videoStreamApi('finish',{catalogId:start.catalogId});
- if(posterFile){
+ if(posterFile||aiPath){
   try{
-   const path=await uploadMoviePoster(posterFile);
-   await videoStreamApi('poster',{catalogId:start.catalogId,posterPath:path});
+   const originalPath=await uploadMoviePoster(posterFile);
+   const selectedPath=choice==='ai'&&aiPath?aiPath:originalPath;
+   if(!selectedPath)throw Error('No selected poster available');
+   await videoStreamApi('poster',{
+    catalogId:start.catalogId,posterPath:selectedPath,
+    posterOriginalPath:originalPath,posterAiPath:aiPath
+   });
   }catch(e){toast('Video saved; the poster could not be attached: '+fail(e))}
  }
  return {status:remote.status,catalogId:start.catalogId};
 }
 async function publishDirectVideo(event){
  event.preventDefault();
- if(directVideoBusy||state.busy)return;
- const file=$('bcVideoFile').files?.[0],posterFile=$('bcVideoPoster').files?.[0];
+ if(directVideoBusy||posterAiBusy||state.busy)return;
+ const file=$('bcVideoFile').files?.[0],posterFile=studioOriginalPoster();
+ const aiPath=posterAiPath,posterChoice=posterSelected;
  const title=$('bcVideoTitle').value.trim(),category=$('bcVideoCategory').value;
  const synopsis=$('bcVideoDescription').value.trim();
  const seriesTitle=$('bcVideoSeriesTitle').value.trim();
@@ -1203,20 +1209,21 @@ async function publishDirectVideo(event){
  progress.hidden=false;
  $('bcVideoUploadFill').classList.add('is-uploading');
  $('bcVideoUploadMessage').textContent='Preparing secure upload…';
- let postId=null,posterPath=null;
+ let postId=null,posterPath=null,originalPosterPath=null;
  try{
   if(requiresBunnyStream(file)){
-   await sendViaStream(file,metadata,posterFile);
+   await sendViaStream(file,metadata,posterFile,aiPath,posterChoice);
    $('bcVideoUploadMessage').textContent='Upload received. Video encoding and administrator review are pending.';
   }else{
    // Preserve the existing small-file Supabase workflow.
    // The shared Free bucket cannot accept files larger than 45 MB.
-   posterPath=await uploadMoviePoster(posterFile);
+   originalPosterPath=await uploadMoviePoster(posterFile);
+   posterPath=posterChoice==='ai'&&aiPath?aiPath:originalPosterPath;
    const {data,error}=await client.from('corp_social_posts').insert({author_id:state.user.id,body:title,kind:'video'}).select('id').single();
    if(error||!data?.id)throw Error(error?.message||'Could not create video post.');
    postId=data.id;
    $('bcVideoUploadMessage').textContent='Uploading private video…';
-   await uploadAsset(file,'post',postId,{...metadata,posterPath});
+   await uploadAsset(file,'post',postId,{...metadata,posterPath,posterOriginalPath:originalPosterPath,posterAiPath:aiPath});
    $('bcVideoUploadFill').classList.remove('is-uploading');
    $('bcVideoUploadFill').style.width='100%';
    $('bcVideoUploadMessage').textContent='Upload complete. Awaiting administrator review.';
@@ -1224,12 +1231,14 @@ async function publishDirectVideo(event){
   try{await loadAll({show:true})}catch(err){console.warn('Video catalog refresh:',fail(err))}
   $('bcVideoUploadDialog').hidden=true;
   document.body.classList.remove('bc-video-upload-open');
+  // The AI image belongs to the saved movie now; reset without deleting it.
+  posterAiPath=null;
   videoPosterClear();
   document.dispatchEvent(new CustomEvent('bc:media-updated'));
   toast('Video received. It will appear in the Channel after encoding (if needed) and administrator approval.');
  }catch(e){
   if(postId)await client.from('corp_social_posts').delete().eq('id',postId).eq('author_id',state.user.id);
-  if(postId&&posterPath)await bucket.remove([posterPath]).catch(()=>{});
+  if(originalPosterPath)await bucket.remove([originalPosterPath]).catch(()=>{});
   $('bcVideoUploadMessage').textContent='Upload incomplete: '+fail(e);
   $('bcVideoUploadFill').classList.remove('is-uploading');
   $('bcVideoUploadFill').style.width='0%';
@@ -1331,6 +1340,8 @@ async function uploadAsset(file,purpose,postId=null,videoMetadata=null){
   record.video_episode=videoMetadata.episode||null;
   record.video_synopsis=videoMetadata.synopsis||null;
   record.video_poster_path=videoMetadata.posterPath||null;
+  record.video_poster_original_path=videoMetadata.posterOriginalPath||null;
+  record.video_poster_ai_path=videoMetadata.posterAiPath||null;
   record.rights_confirmed=true;
   record.review_status='pending';
  }
