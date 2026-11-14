@@ -127,7 +127,55 @@ body{background:#000}
 #employeeCard .credential-back .credential-back-notice{margin-top:auto;padding:10px}
 
 
-.preview-note{max-width:460px;margin:0 auto 20px;text-align:center;padding:12px;color:#aaa;font-size:12px;line-height:1.6}header{justify-content:center}</style></head><body><header><strong>BLACKCELL · CARD PREVIEW</strong></header><main><section class="panel" id="employeeHome">
+.preview-note{max-width:460px;margin:0 auto 20px;text-align:center;padding:12px;color:#aaa;font-size:12px;line-height:1.6}header{justify-content:center}
+/* Portrait CR80: the two faces share the physical 54 × 85.6 mm ratio. */
+#employeeCard{
+ width:340px;max-width:100%;aspect-ratio:54 / 85.6;
+ container-type:inline-size;padding:5px;border-radius:12px;
+ background:linear-gradient(135deg,#626262,#111 20%,#333 82%,#090909);
+ box-shadow:0 16px 32px #0009;
+}
+#employeeCard .credential-rotor{height:100%;min-height:0}
+#employeeCard .credential-face{
+ height:100%;min-height:0;padding:5cqw;border-radius:7px;
+ display:flex;flex-direction:column;overflow:hidden;
+}
+#employeeCard .credential-topline{font-size:1.65cqw;padding-bottom:2.5cqw;flex:none}
+#employeeCard .card-top,#employeeCard .credential-back .card-top{
+ font-size:8cqw;margin:3.5cqw 0;flex:none;line-height:1;
+}
+#employeeCard .card-top>span{font-size:4.4cqw}
+#employeeCard .card-top small{font-size:1.8cqw;margin:2cqw 0 0}
+#employeeCard .credential-band{font-size:2.3cqw;padding:2cqw 0;flex:none}
+#employeeCard .credential-portrait{
+ width:37cqw;max-width:none;aspect-ratio:4 / 4.5;
+ margin:4cqw auto 3cqw;flex:none;
+ outline-width:2px;outline-offset:2px;box-shadow:0 0 0 3px #600c0c;
+}
+#employeeCard #credentialInitials{font-size:14cqw}
+#employeeCard .portrait-caption{font-size:1.6cqw;bottom:2.5cqw}
+#employeeCard .card-owner{font-size:6cqw;line-height:1.15;margin:1cqw 0 2.5cqw;flex:none;overflow-wrap:anywhere}
+#employeeCard .credential-role{font-size:2.7cqw;padding:2cqw;flex:none}
+#employeeCard .credential-username{font-size:2.3cqw;margin:3cqw 0;line-height:1.5;flex:none}
+#employeeCard .clearance{min-height:0;flex:none}
+#employeeCard .clearance strong{font-size:3.2cqw;padding:3cqw 1cqw}
+#employeeCard .clearance span{font-size:2.6cqw;padding:3cqw 1cqw}
+#employeeCard .credential-bottom{font-size:1.5cqw;padding-top:2.5cqw;margin-top:auto;flex:none;line-height:1.4;border-top-width:2px}
+#employeeCard .credential-back .credential-record{margin:3cqw 0;flex:none}
+#employeeCard .credential-back .credential-record>div{grid-template-columns:23cqw minmax(0,1fr);gap:2cqw;padding:2cqw 0}
+#employeeCard .credential-record dt{font-size:2cqw}
+#employeeCard .credential-back .credential-record dd{font-size:2.6cqw;line-height:1.4}
+#employeeCard #credentialEmployeeId{font-size:2cqw!important}
+#employeeCard .credential-qr-block{margin:2cqw auto 4cqw;flex:none}
+#employeeCard #credentialRecordLink{width:45cqw;max-width:100%;margin-bottom:2cqw}
+#employeeCard .credential-qr-label{font-size:2cqw}
+#employeeCard .credential-back .credential-back-notice{padding:2.5cqw;margin:auto 0 3cqw;flex:none}
+#employeeCard .credential-back-notice>span{font-size:2.2cqw}
+#employeeCard .credential-back-notice p{font-size:2.4cqw;line-height:1.5;margin-top:1.5cqw}
+#employeeCard .credential-face:before,#employeeCard .credential-face:after{width:2.6cqw}
+.cr80-spec{text-align:center;font-size:10px;letter-spacing:.1em;color:#969696;line-height:1.6;margin:0 0 16px}
+
+</style></head><body><header><strong>BLACKCELL · CARD PREVIEW</strong></header><main><section class="panel" id="employeeHome">
 <div class="eyebrow">PRIVATE CORPORATE CREDENTIAL</div><h1>Your Network Card</h1>
 <div class="access-card codes-verified" id="employeeCard"><div class="credential-rotor"><div class="card-interior credential-face" id="credentialFront" aria-label="Credential front">
 <div class="credential-topline"><span>BLACKCELL / NETWORK</span><span>IDENTITY CREDENTIAL</span></div>
@@ -163,6 +211,7 @@ body{background:#000}
 <div class="credential-back-notice"><span>NETWORK ACCESS</span><p>This credential identifies the account holder. Access is governed by the account’s assigned permissions.</p></div>
 <div class="credential-bottom"><span>BLACKCELL CORPORATION</span><span>PRIVATE · NON-TRANSFERABLE</span></div>
 </div></div></div>
+<p class="cr80-spec">CR80 · 54 × 85.6 MM · PORTRAIT</p>
 <div class="credential-flip-controls"><button type="button" id="credentialFlip" aria-controls="credentialFront credentialBack" aria-pressed="false">VIEW BACK ↻</button><span id="credentialSide" aria-live="polite">FRONT · 1 / 2</span></div>
 <p>Your card identifies your assigned clearance. It does not provide access to the Level 7 Administration dashboard or NEXUS records.</p>
 <p id="employeeStatus" class="notice" hidden role="status"></p>
