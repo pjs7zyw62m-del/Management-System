@@ -18,6 +18,35 @@ if(!mediaPanelMode&&window.parent===window&&window.BlackcellMediaBubbleHost)
  window.BlackcellMediaBubbleHostController=window.BlackcellMediaBubbleHost({mode:'standalone'});
 let self=null,peer=null,contacts=[],isLoading=false,firstLoad=true,ready=false;
 let inboxSummaries=new Map();
+let sidebarClosed=false;
+const sidebarKey=()=>self?'bc.imessage.sidebar.v1:'+self:null;
+function readSidebarPreference(){
+ const key=sidebarKey();if(!key)return false;
+ const records=[];
+ for(const name of ['localStorage','sessionStorage'])try{const v=JSON.parse(window[name].getItem(key)||'null');if(typeof v?.closed==='boolean')records.push(v)}catch(_){}
+ records.sort((a,b)=>(Number(b.at)||0)-(Number(a.at)||0));
+ return records[0]?.closed===true;
+}
+function applySidebarPreference(){
+ if(!osChat)return;
+ const toggle=$('osSidebarToggle'),sidebar=$('osChatSidebar'),chat=document.querySelector('.chat');
+ if(!toggle||!sidebar||!chat)return;
+ const closed=!compactChat&&sidebarClosed&&!!peer;
+ chat.classList.toggle('os-sidebar-closed',closed);
+ sidebar.inert=closed;
+ toggle.hidden=compactChat;
+ toggle.disabled=!peer;
+ toggle.setAttribute('aria-expanded',String(!closed));
+ toggle.setAttribute('aria-label',closed?'Show conversations':'Hide conversations');
+ toggle.title=closed?'Show conversations':'Hide conversations';
+}
+function changeSidebarPreference(){
+ if(!osChat||compactChat||!peer)return;
+ sidebarClosed=!sidebarClosed;
+ const key=sidebarKey();if(key){const value=JSON.stringify({closed:sidebarClosed,at:Date.now()});for(const name of ['localStorage','sessionStorage'])try{window[name].setItem(key,value)}catch(_){}}
+ applySidebarPreference();
+}
+if(osChat)$('osSidebarToggle')?.addEventListener('click',changeSidebarPreference);
 let employeeSession=false,sessionEnded=false,lastActivity=Date.now(),lastTouch=Date.now();
 const IDLE_LIMIT_MS=60*60*1000;
 async function endChatAccess(reason){
@@ -102,6 +131,7 @@ if(osChat)smallWindow.addEventListener('change',()=>{
  document.querySelector('.chat').classList.toggle('bc-thread-active',compactChat&&!!peer);
  live.setThreadOpen(!!peer&&!mediaPanelMode);
  if(!compactChat&&ready&&!peer&&contacts.length)choose(contacts[0].user_id);
+ applySidebarPreference();
 });
 const composerText=$('messageInput');
 function resizeComposer(){composerText.style.height='auto';composerText.style.height=Math.min(composerText.scrollHeight,112)+'px'}
@@ -138,7 +168,7 @@ async function boot(){
    }else{status('This account cannot access Employee Chat.');return}
    const {data,error}=await client.rpc('corp_chat_peers');
    if(error||data?.ok!==true||!Array.isArray(data.peers)){status('Contacts cannot be loaded. Contact your corporate administrator.');return}
-   contacts=data.peers;ready=true;status('');
+   contacts=data.peers;ready=true;status('');if(osChat){sidebarClosed=readSidebarPreference();applySidebarPreference()}
    client.channel('blackcell-chat-'+self)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'corp_chat_messages'},payload=>{
       const m=payload.new;
@@ -234,7 +264,7 @@ function choose(userId){
  const selected=contacts.find(x=>x.user_id===userId);if(!selected||!ready)return;
  const previousPeer=peer?.user_id;
  live.onPeerChange(previousPeer,userId);
- peer=selected;sharedMedia.onPeerChange(userId);firstLoad=true;
+ peer=selected;sharedMedia.onPeerChange(userId);firstLoad=true;applySidebarPreference();
  live.setThreadOpen(!mediaPanelMode);
  if(compactChat)document.querySelector('.chat').classList.add('bc-thread-active');
  if(window.parent!==window)window.parent.postMessage({type:'blackcell-chat-conversation',peerId:userId,name:peer.display_name||'Employee'},location.origin);$('peerName').textContent=peer.display_name||'Employee';$('peerDetail').textContent=peer.role==='owner'?'LEVEL 7 · OWNER':'LEVEL '+peer.clearance_level;
