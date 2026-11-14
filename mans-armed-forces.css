@@ -161,3 +161,22 @@ button:focus-visible,a:focus-visible{outline:2px solid #ef8e98;outline-offset:4p
 #mfMoveWrap{font-size:10px;display:flex;flex-direction:column;gap:5px;color:#d5c3cb}
 #mfMoveCategory{font-size:11px;min-height:35px;padding:7px}
 @media(max-width:700px){.mf-upload-panel{padding:16px}.mf-upload-head button{width:100%}.mf-upload-actions button{flex:1}.mf-lightbox-bottom{flex-wrap:wrap;gap:8px}.mf-lightbox img{height:calc(100% - 215px);max-height:calc(92svh - 215px)}}
+
+/* Posted media sorting queue — not a publication approval queue. */
+.mf-sort-panel{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:15px;margin:16px 0 24px;padding:21px;border:1px solid #503843;border-radius:17px;background:linear-gradient(135deg,#110b10,#060607 75%)}
+.mf-sort-panel h3{font-size:23px;margin:7px 0;letter-spacing:-.035em}
+.mf-sort-panel h3 strong{color:#e6a8b9}
+.mf-sort-panel p{font-size:12px;color:#b7a8b2;line-height:1.6;margin:4px 0}
+#mfPendingPanel{flex-basis:100%;padding-top:14px;border-top:1px solid #3f2d38;display:flex;align-items:center;justify-content:space-between;gap:8px}
+#mfPendingPanel[hidden],#mfQueueControls[hidden]{display:none!important}
+#mfQueueMessage{flex-basis:100%;margin:0}
+#mfQueueMessage:empty,#mfQueueError:empty{display:none}
+.mf-sort-panel button:disabled{opacity:.4;cursor:not-allowed}
+#mfLightbox:has(#mfQueueControls:not([hidden])){display:flex;flex-direction:column}
+#mfLightbox:has(#mfQueueControls:not([hidden]))>img{flex:1;min-height:0;max-height:none;height:auto;object-fit:contain}
+.mf-queue-controls{flex:none;padding:12px 18px 16px;border-top:1px solid #49323e;background:#08070a}
+.mf-queue-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;font-size:11px;color:#d2adb9}
+.mf-queue-categories{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.mf-queue-categories button{background:#21131c;border:1px solid #694151;border-radius:9px;color:#fff;padding:10px 6px;min-height:43px;font-size:10px;letter-spacing:.04em;font-weight:800}
+#mfQueueError{color:#f39cae;font-size:11px}
+@media(max-width:600px){.mf-sort-panel{padding:15px}.mf-sort-panel>.mf-primary{width:100%}.mf-queue-categories{grid-template-columns:repeat(2,minmax(0,1fr))}#mfPendingPanel{flex-wrap:wrap}.mf-queue-controls{padding:9px}}
