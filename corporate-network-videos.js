@@ -477,6 +477,8 @@ export function createBlackcellVideoChannel({state,mediaUrl,sharedMedia,profile,
  function init(){
   if(initialized)return;initialized=true;ensureSaved();
   const url=new URLSearchParams(location.search);
+  const initialSection=url.get('section');
+  if(['home','movies','channels','library','shorts','following','history','watchlater','uploads'].includes(initialSection))selected=initialSection;
   const id=url.get('video');if(id&&/^[a-f0-9-]{36}$/i.test(id))pendingId=id;
   $('bcVideoMenu').addEventListener('click',()=>{
    sidebarCollapsed=!sidebarCollapsed;
