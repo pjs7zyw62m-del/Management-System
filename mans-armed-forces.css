@@ -172,8 +172,8 @@ button:focus-visible,a:focus-visible{outline:2px solid #ef8e98;outline-offset:4p
 #mfQueueMessage{flex-basis:100%;margin:0}
 #mfQueueMessage:empty,#mfQueueError:empty{display:none}
 .mf-sort-panel button:disabled{opacity:.4;cursor:not-allowed}
-#mfLightbox:has(#mfQueueControls:not([hidden])){display:flex;flex-direction:column}
-#mfLightbox:has(#mfQueueControls:not([hidden]))>img{flex:1;min-height:0;max-height:none;height:auto;object-fit:contain}
+#mfLightbox[open]:has(#mfQueueControls:not([hidden])){display:flex;flex-direction:column}
+#mfLightbox[open]:has(#mfQueueControls:not([hidden]))>img{flex:1;min-height:0;max-height:none;height:auto;object-fit:contain}
 .mf-queue-controls{flex:none;padding:12px 18px 16px;border-top:1px solid #49323e;background:#08070a}
 .mf-queue-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;font-size:11px;color:#d2adb9}
 .mf-queue-categories{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
