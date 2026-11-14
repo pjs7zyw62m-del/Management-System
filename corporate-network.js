@@ -1516,13 +1516,16 @@ function openEdit(){
  $('editFeedback').hidden=true;$('editOverlay').hidden=false;
 }
 function closeEdit(){$('editOverlay').hidden=true}
+let profileSavePromise=null;
 async function saveProfile(...args){
+ if(profileSavePromise)return profileSavePromise;
  let release;
  try{release=window.top.BLACKCELL_LIVE_UPDATE?.hold('saveProfile',window)}catch(_){}
- try{return await bcLiveOriginal_saveProfile.apply(this,args)}finally{release?.()}
+ profileSavePromise=bcLiveOriginal_saveProfile.apply(this,args);
+ try{return await profileSavePromise}finally{profileSavePromise=null;release?.()}
 }
 async function bcLiveOriginal_saveProfile(){
- const p=myProfile();if(!p||state.busy)return;
+ const p=myProfile();if(!p||state.busy)return false;
  state.busy=true;
  const b=$('saveProfile');b.disabled=true;b.textContent='SAVING…';
  $('editFeedback').hidden=false;$('editFeedback').textContent='Saving profile to Blackcell Network…';
@@ -1533,10 +1536,25 @@ async function bcLiveOriginal_saveProfile(){
   if(ava){const img=await uploadAsset(ava,'avatar');changes.avatar_asset_id=img.id}
   const {error}=await client.from('corp_social_profiles').update(changes).eq('user_id',state.user.id);
   if(error)throw error;
-  closeEdit();await refresh();openProfile(state.user.id);toast('Your corporate social profile was updated.');
- }catch(e){$('editFeedback').textContent='Could not save profile: '+fail(e)}
+  $('editAvatar').value='';closeEdit();try{await refresh();openProfile(state.user.id)}catch(_){}toast('Your corporate social profile was updated.');return true;
+ }catch(e){$('editFeedback').textContent='Could not save profile: '+fail(e);return false}
  finally{state.busy=false;b.disabled=false;b.textContent='SAVE PROFILE ↗'}
 }
+/* BLACKCELL OS close integration: only submit explicit profile edits,
+ never publish posts, send messages, or submit unrelated forms on close. */
+window.BLACKCELL_OS_BEFORE_CLOSE=async()=>{
+ if(!state.user||$('app').hidden)return {ok:true,retain:true};
+ if(profileSavePromise){const ok=await profileSavePromise;if(!ok)return {ok:false,retain:true,message:'Profile save failed. Reopen My Profile to retry.'}}
+ if(state.busy)return {ok:true,retain:true,message:'An operation is still running. Your window has been retained.'};
+ if(!$('editOverlay').hidden){
+  const p=myProfile();if(!p)return {ok:false,retain:true,message:'Profile changes are retained. Reopen My Profile to retry.'};
+  const changed=$('editHeadline').value.trim()!==(p.headline||'')||$('editBio').value.trim()!==(p.bio||'')||!!$('editAvatar').files?.length;
+  if(changed){const saved=await saveProfile();if(!saved)return {ok:false,retain:true,message:'Profile save failed. Reopen My Profile to retry.'};return {ok:true,retain:true,message:'Profile changes saved.'}}
+  closeEdit();
+ }
+ // Preserve all remaining drafts, selected files, and other network features.
+ return {ok:true,retain:true};
+};
 async function refresh(){
  await loadAll({show:true});
 }

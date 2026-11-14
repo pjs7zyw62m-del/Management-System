@@ -28,7 +28,7 @@ function closeMenu(){menus.hidden=true;for(const btn of menuButtons)btn.setAttri
 function menuAction(label,fn){const button=document.createElement('button');button.type='button';button.textContent=label;button.onclick=()=>{closeMenu();fn()};menus.append(button)}
 function menu(name,trigger){const was=trigger.getAttribute('aria-expanded')==='true';closeMenu();if(was)return;menus.replaceChildren();trigger.setAttribute('aria-expanded','true');
  if(name==='apps'){for(const tile of document.querySelectorAll('[data-app]'))if(!tile.hidden&&!tile.disabled)menuAction(tile.dataset.title,()=>showApp(tile.dataset.app))}
- else if(name==='window'){menuAction('Show Desktop',showDesktop);for(const record of windows.values())menuAction(record.title,()=>raise(record))}
+ else if(name==='window'){menuAction('Show Desktop',showDesktop);for(const record of windows.values())menuAction(record.title+(record.suspended?' · Resume':''),()=>raise(record))}
  else{if(owner)menuAction('Administration',returnAdmin);menuAction('Show Desktop',showDesktop);menuAction('My Profile',()=>showApp('person'));menuAction(preview?'Exit Preview':'Sign Out',()=>void signOut())}
  menus.style.left=trigger.offsetLeft+'px';menus.hidden=false;
 }
@@ -36,9 +36,34 @@ for(const btn of menuButtons)btn.addEventListener('click',()=>menu(btn.dataset.m
 document.addEventListener('pointerdown',e=>{if(!e.target.closest('.menubar'))closeMenu()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu()});
 function markDock(id,on){document.querySelector('[data-open="'+id+'"]')?.classList.toggle('is-running',on)}
-function raise(r){r.el.hidden=false;r.el.style.zIndex=String(++layer);selectedWindow=r;markDock(r.id,true)}
+function raise(r){if(r.closing)r.reopened=true;r.suspended=false;r.el.hidden=false;r.el.style.zIndex=String(++layer);selectedWindow=r;markDock(r.id,true)}
 function showDesktop(){for(const r of windows.values())r.el.hidden=true;selectedWindow=null}
-function dispose(r,force=false){if(!['browser','store'].includes(r.id)&&!preview&&!force&&!confirm('Close '+r.title+'? Finish any uploads, playback or unsaved work in this application before closing.'))return;r.cleanup?.();r.frame?.remove();r.el.remove();r.release?.();windows.delete(r.id);markDock(r.id,false);if(selectedWindow===r)selectedWindow=null}
+function dispose(r,force=false){if(!force){void requestClose(r);return;}r.cleanup?.();r.frame?.remove();r.el.remove();r.release?.();windows.delete(r.id);markDock(r.id,false);if(selectedWindow===r)selectedWindow=null}
+function osNotice(message){let n=$('osCloseNotice');if(!n){n=document.createElement('div');n.id='osCloseNotice';n.className='os-close-notice';n.setAttribute('role','status');$('desktop').append(n)}n.textContent=message;n.hidden=false;clearTimeout(osNotice.timer);osNotice.timer=setTimeout(()=>{n.hidden=true},6000)}
+function suspend(r){r.el.hidden=true;r.suspended=true;markDock(r.id,false);if(selectedWindow===r)selectedWindow=null}
+function pauseFrameMedia(frame){try{for(const m of frame.contentDocument?.querySelectorAll('video,audio')||[])if(!m.paused)m.pause()}catch(_){}}
+async function requestClose(r){
+ if(!r||windows.get(r.id)!==r)return;
+ if(r.closing){suspend(r);return}
+ if(!r.frame||preview){dispose(r,true);return}
+ // Hide immediately. Keep the original iframe alive until explicit app save completes;
+ // unknown applications are retained in memory rather than risking unsaved data.
+ suspend(r);r.closing=true;pauseFrameMedia(r.frame);
+ try{
+  let save;try{save=r.frame.contentWindow.BLACKCELL_OS_BEFORE_CLOSE}catch(_){}
+  if(typeof save==='function'){
+   const result=await save();
+   if(windows.get(r.id)!==r)return;
+   if(result?.ok===true&&!result?.retain&&!r.reopened){dispose(r,true);return}
+   if(result?.ok===false)osNotice(result.message||'Changes could not be saved. Reopen the app to retry; your work is retained.');
+   else if(result?.retain)osNotice(result.message||'Your work is retained. Reopen the app to continue.');
+  }
+  // Apps without a verified save hook stay suspended, preserving forms, drafts
+  // and transfers without submitting any action on the user's behalf.
+ }catch(_){if(windows.get(r.id)===r)osNotice('Save could not be confirmed. Reopen the app to continue.')}
+ finally{r.closing=false;r.reopened=false}
+}
+
 function closeAll(force){for(const r of [...windows.values()])dispose(r,force)}
 function showApp(id){
  if(!active&&!preview)return;
@@ -52,7 +77,7 @@ function showApp(id){
  const external=document.createElement('a');external.href=url.href;external.target='_blank';external.rel='noopener';external.textContent='Open full page ↗';bar.append(controls,title,external);
  const content=document.createElement('div');content.className='os-window-body';w.append(bar,content);
  const r={id,title:tile.dataset.title,el:w,frame:null,release:null};windows.set(id,r);
- for(const [label,symbol,fn] of [['Close','×',()=>dispose(r)],['Minimize','−',()=>{w.hidden=true;selectedWindow=null}],['Maximize or restore','+',()=>w.classList.toggle('is-max')]]){const btn=document.createElement('button');btn.type='button';btn.setAttribute('aria-label',label+' '+r.title);btn.title=label;btn.textContent=symbol;btn.addEventListener('click',fn);controls.append(btn)}
+ for(const [label,symbol,fn] of [['Close','×',()=>void requestClose(r)],['Minimize','−',()=>{w.hidden=true;selectedWindow=null}],['Maximize or restore','+',()=>w.classList.toggle('is-max')]]){const btn=document.createElement('button');btn.type='button';btn.setAttribute('aria-label',label+' '+r.title);btn.title=label;btn.textContent=symbol;btn.addEventListener('click',fn);controls.append(btn)}
  if(id==='store'){external.hidden=true;const message=document.createElement('p');message.textContent='Opening App Store…';message.style.padding='20px';content.append(message);(storeModule??=import('./blackcell-app-store.js?v=2')).then(module=>{if(windows.get(id)!==r)return;content.replaceChildren();r.refreshStore=module.mountStore(content,{catalog:storeCatalog,install:installApp,open:showApp,info:storeInfo,setRule:setStoreRule});}).catch(()=>{storeModule=null;if(windows.get(id)===r){content.replaceChildren(message);message.textContent='App Store could not start. Close this window and try again.'}});}
  else if(id==='browser'){if(!preview)r.release=window.BLACKCELL_LIVE_UPDATE?.hold('BLACKCELL Browser window');const message=document.createElement('p');message.className='os-window-status';message.textContent='Opening BLACKCELL Browser…';message.style.padding='20px';content.append(message);(browserModule??=import('./blackcell-browser.js?v=2')).then(module=>{if(windows.get(id)!==r)return;content.replaceChildren();module.mountBrowser(content,r,external,activity)}).catch(()=>{browserModule=null;if(windows.get(id)===r)message.textContent='Browser could not load. Close this window and try again.'});}
  else if(preview){const demo=document.createElement('div');demo.className='os-demo';const box=document.createElement('div');box.append(tile.querySelector('.app-icon').cloneNode(true));const h=document.createElement('h2');h.textContent=r.title;const p=document.createElement('p');p.textContent=tile.dataset.desc;const status=document.createElement('p');status.textContent='DESIGN PREVIEW · No private account data loaded.';status.className='os-window-status';box.append(h,p,status);demo.append(box);content.append(demo)}
