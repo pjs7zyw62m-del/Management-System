@@ -15,7 +15,7 @@ export function createBlackcellVideoChannel({state,mediaUrl,sharedMedia,profile,
   aviation:/aircraft|aviation|pilot|airplane|helicopter|flight|air force|aircrew/i,
   history:/history|historic|vintage|archive|war ii|1980|1990|1970|old school/i
  };
- let initialized=false,selected='home',topic='all',query='',sort='newest',sidebarCollapsed=false,channelId=null;
+ let initialized=false,selected='home',topic='all',query='',sort='newest',sidebarCollapsed=false,channelId=null,movieFilter='all',seriesFocus=null;
  let videosCache=[],watchLater={},likes={},watchHistory={},resume={},shortInfo={},loadedFor='',activeCinema=null,cinemaQueue=[],shortIndex=0,shortQueue=[],displayedShortId=null,observer=null,mostRecentWrite=0,pendingId=null;
  const accountKey=()=>String(state.user?.id||'anonymous');
  function read(key){try{const x=JSON.parse(localStorage.getItem(key)||'{}');return x&&typeof x==='object'&&!Array.isArray(x)?x:{}}catch{return {}}}
@@ -212,14 +212,23 @@ export function createBlackcellVideoChannel({state,mediaUrl,sharedMedia,profile,
  }
  function renderChannels(){
   const followerIds=new Set(state.follows.filter(f=>f.follower_id===state.user?.id).map(f=>f.following_id));
-  const names=[...new Set(videosCache.map(a=>a.owner_id))].sort((a,b)=>personName(profile(a)).localeCompare(personName(profile(b))));
-  const options=selected==='following'?names.filter(id=>followerIds.has(id)):names;
+  // RLS already limits state.profiles to verified, active BLACKCELL members.
+  // Show signed-up members even when they have not uploaded videos yet.
+  const allIds=state.profiles.map(p=>p.user_id).filter(Boolean)
+   .sort((a,b)=>personName(profile(a)).localeCompare(personName(profile(b))));
+  const q=query.trim().toLowerCase();
+  const options=allIds.filter(id=>{
+   if(selected==='following'&&!followerIds.has(id))return false;
+   return !q||personName(profile(id)).toLowerCase().includes(q)
+    ||videosCache.some(a=>a.owner_id===id&&title(a).toLowerCase().includes(q));
+  });
   const list=$('bcVideoChannelList');list.replaceChildren();
-  $('bcVideoChannelsTitle').textContent=selected==='following'?'Subscriptions':'Channels';
+  $('bcVideoChannelsTitle').textContent=selected==='following'?'Subscriptions · People you follow':'Browse Member Channels';
+  $('bcVideoChannelProfile').hidden=!options.length;
   if(!options.length){
-   list.append(make('div','bc-yt-empty',selected==='following'?'You have not followed any channels with approved videos yet.':'No creator channels have approved videos yet.'));
+   list.append(make('div','bc-yt-empty',selected==='following'?'No followed members match this view yet.':'No registered BLACKCELL member channels match the search.'));
    $('bcVideoChannelVideosTitle').textContent='Latest videos';
-   putGrid('bcVideoChannelGrid',[]);
+   putGrid('bcVideoChannelGrid',[],'No approved videos from these channels yet.');
    return;
   }
   if(!channelId||!options.includes(channelId))channelId=options[0];
@@ -227,13 +236,79 @@ export function createBlackcellVideoChannel({state,mediaUrl,sharedMedia,profile,
    const count=videosCache.filter(a=>a.owner_id===id).length;
    const b=button('','bc-yt-channel-card'+(id===channelId?' is-selected':''),()=>{channelId=id;renderChannels()});
    b.append(make('span','bc-yt-channel-avatar',personName(profile(id)).slice(0,1).toUpperCase()));
-   const t=make('span','bc-yt-channel-text');t.append(make('strong','',personName(profile(id))),make('small','',count+' video'+(count===1?'':'s')+(followerIds.has(id)?' · Following':'')));
+   const t=make('span','bc-yt-channel-text');
+   t.append(make('strong','',personName(profile(id))),make('small','',count+' video'+(count===1?'':'s')+(followerIds.has(id)?' · Following':'')));
    b.append(t);list.append(b);
   }
-  const selectedName=personName(profile(channelId));
-  $('bcVideoChannelVideosTitle').textContent=selectedName+' · Videos';
+  $('bcVideoChannelVideosTitle').textContent=personName(profile(channelId))+' · Videos';
   const vids=searchVideo(videosCache.filter(a=>a.owner_id===channelId));
-  putGrid('bcVideoChannelGrid',sortVideos(vids),'No approved videos match your search.');
+  putGrid('bcVideoChannelGrid',sortVideos(vids),'This member has not published any approved videos yet.');
+ }
+ function moviePoster(a,queue){
+  const c=make('article','bc-movies-poster-card');
+  const tap=button('','bc-movies-poster-thumb',()=>openCinema(a,queue));
+  const url=source(a);
+  if(url){const v=make('video');lazyThumb(v,url,a);tap.append(v)}
+  else tap.append(make('span','bc-yt-preview-unavailable','PREVIEW UNAVAILABLE'));
+  tap.append(make('span','bc-movies-play','▶'));
+  tap.append(make('span','bc-movies-format-tag',a.video_category==='documentary'?'DOCUMENTARY':'MOVIE'));
+  const info=make('div','bc-movies-poster-info');
+  info.append(make('strong','',title(a)),make('small','',creator(a)));
+  if(a.video_synopsis)info.append(make('p','',String(a.video_synopsis).slice(0,140)));
+  c.append(tap,info);return c;
+ }
+ function renderMovies(){
+  const filmV=videosCache.filter(a=>['movie','series','documentary'].includes(a.video_category));
+  const films=searchVideo(filmV.filter(a=>a.video_category==='movie'));
+  const docs=searchVideo(filmV.filter(a=>a.video_category==='documentary'));
+  const episodes=searchVideo(filmV.filter(a=>a.video_category==='series'));
+  const continuing=filmV.filter(progressValid).sort((a,b)=>(resume[b.id]?.updated||0)-(resume[a.id]?.updated||0));
+  $('bcMoviesContinueSection').hidden=movieFilter!=='all'||!continuing.length||Boolean(seriesFocus);
+  if(!$('bcMoviesContinueSection').hidden)putShelf('bcMoviesContinue',continuing.slice(0,12));
+  for(const b of $('bcMoviesTabs').querySelectorAll('[data-movies-filter]')){
+   const active=b.dataset.moviesFilter===movieFilter;
+   b.classList.toggle('is-active',active);b.setAttribute('aria-pressed',String(active));
+  }
+  const filmSection=$('bcMoviesFilmsSection'),seriesSection=$('bcMoviesSeriesSection'),docSection=$('bcMoviesDocumentariesSection');
+  const episodeSection=$('bcMoviesEpisodesSection');
+  filmSection.hidden=Boolean(seriesFocus)||(movieFilter==='series'||movieFilter==='documentary');
+  seriesSection.hidden=Boolean(seriesFocus)||(movieFilter==='movie'||movieFilter==='documentary');
+  docSection.hidden=Boolean(seriesFocus)||(movieFilter==='movie'||movieFilter==='series');
+  episodeSection.hidden=!seriesFocus;
+  const filmGrid=$('bcMoviesFilms');filmGrid.replaceChildren();
+  $('bcMoviesFilmsHeading').textContent='Movies';
+  $('bcMoviesFilmsCount').textContent=films.length+' film'+(films.length===1?'':'s');
+  if(!films.length)filmGrid.append(make('div','bc-movies-empty','No approved movies yet. Use Add a Movie to submit one for review.'));
+  else for(const a of films)filmGrid.append(moviePoster(a,films));
+  const docGrid=$('bcMoviesDocumentaries');docGrid.replaceChildren();
+  if(!docs.length)docGrid.append(make('div','bc-movies-empty','No approved documentaries yet.'));
+  else for(const a of docs)docGrid.append(moviePoster(a,docs));
+  const groups=new Map();
+  for(const a of episodes){
+   const titleText=String(a.video_series_title||title(a)).trim()||'Untitled series';
+   const key=titleText.toLowerCase();
+   if(!groups.has(key))groups.set(key,{name:titleText,items:[]});
+   groups.get(key).items.push(a);
+  }
+  const seriesGrid=$('bcMoviesSeries');seriesGrid.replaceChildren();
+  if(!groups.size)seriesGrid.append(make('div','bc-movies-empty','No TV shows have been approved yet. Use Add an Episode to start a series.'));
+  else for(const [key,group] of groups){
+   const c=make('article','bc-movies-show-card');
+   const art=button('','bc-movies-show-thumb',()=>{seriesFocus=key;renderMovies()});
+   const a=group.items[0],url=source(a);
+   if(url){const v=make('video');lazyThumb(v,url,a);art.append(v)}
+   art.append(make('span','bc-movies-show-play','▶ EPISODES'));
+   const info=make('div','bc-movies-show-info');
+   info.append(make('strong','',group.name),make('small','',group.items.length+' episode'+(group.items.length===1?'':'s')));
+   c.append(art,info);seriesGrid.append(c);
+  }
+  if(seriesFocus){
+   const group=groups.get(seriesFocus);
+   if(!group){seriesFocus=null;episodeSection.hidden=true;return}
+   $('bcMoviesEpisodesTitle').textContent=group.name+' · Episodes';
+   const sorted=group.items.slice().sort((a,b)=>(a.video_season||1)-(b.video_season||1)||(a.video_episode||1)-(b.video_episode||1));
+   putGrid('bcMoviesEpisodes',sorted,'There are no approved episodes.');
+  }
  }
  function identity(){
   const p=profile(state.user?.id);
@@ -280,7 +355,7 @@ export function createBlackcellVideoChannel({state,mediaUrl,sharedMedia,profile,
   if(!initialized||state.view!=='videos')return;
   ensureSaved();videosCache=allVideos();updateHead();renderSubscriptions();
   if(observer){observer.disconnect();observer=null}
-  const displays=['home','shorts','channels','library','collection'];
+  const displays=['home','shorts','channels','movies','library','collection'];
   const currentScreen=selected==='following'?'channels':['history','watchlater','uploads','liked'].includes(selected)?'collection':selected;
   for(const d of displays)document.querySelector('[data-video-screen="'+d+'"]').hidden=currentScreen!==d;
   $('bcVideoTopics').hidden=selected!=='home';
@@ -290,6 +365,7 @@ export function createBlackcellVideoChannel({state,mediaUrl,sharedMedia,profile,
   }
   if(currentScreen==='home')renderHome();
   if(currentScreen==='channels')renderChannels();
+  if(currentScreen==='movies')renderMovies();
   if(currentScreen==='library')renderLibrary();
   if(currentScreen==='collection')renderCollection();
   if(currentScreen==='shorts')renderShorts();
@@ -297,6 +373,7 @@ export function createBlackcellVideoChannel({state,mediaUrl,sharedMedia,profile,
  function go(name){
   if(!initialized)return;
   if(selected==='shorts'&&name!=='shorts')stopShort();
+  if(name!=='movies')seriesFocus=null;
   selected=name;renderVisible();
   window.scrollTo({top:0,behavior:'auto'});
  }
@@ -412,6 +489,13 @@ export function createBlackcellVideoChannel({state,mediaUrl,sharedMedia,profile,
   $('bcVideoAccount').addEventListener('click',()=>go('library'));
   for(const b of $('bcVideoShell').querySelectorAll('[data-vnav]'))b.addEventListener('click',()=>go(b.dataset.vnav));
   $('bcVideoBrowseChannels').addEventListener('click',()=>go('channels'));
+  $('bcVideoChannelProfile').addEventListener('click',()=>{if(channelId)openProfile(channelId,'videos')});
+  $('bcMoviesUploadFilm').addEventListener('click',()=>uploadVideo('movie'));
+  $('bcMoviesUploadEpisode').addEventListener('click',()=>uploadVideo('series'));
+  $('bcMoviesBackToSeries').addEventListener('click',()=>{seriesFocus=null;renderMovies()});
+  for(const b of $('bcMoviesTabs').querySelectorAll('[data-movies-filter]'))b.addEventListener('click',()=>{
+   movieFilter=b.dataset.moviesFilter||'all';seriesFocus=null;renderMovies();
+  });
   $('bcVideoSearch').addEventListener('input',e=>{query=e.target.value||'';renderVisible()});
   $('bcVideoSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();go('home')}});
   for(const b of $('bcVideoTopics').querySelectorAll('[data-video-topic]'))b.addEventListener('click',()=>{
@@ -424,11 +508,11 @@ export function createBlackcellVideoChannel({state,mediaUrl,sharedMedia,profile,
   $('bcVideoSort').addEventListener('change',e=>{sort=e.target.value||'newest';renderVisible()});
   $('bcVideoOpenShorts').addEventListener('click',()=>goShorts());
   $('bcVideoContinueAll').addEventListener('click',()=>go('library'));
-  $('bcVideoUpload').addEventListener('click',openCreate);
+  $('bcVideoUpload').addEventListener('click',()=>uploadVideo('standard'));
   $('bcVideoMobileCreate').addEventListener('click',openCreate);
   $('bcVideoCreateDismiss').addEventListener('click',closeCreate);
   $('bcVideoCreateCancel').addEventListener('click',closeCreate);
-  $('bcVideoCreateVideo').addEventListener('click',()=>{closeCreate();uploadVideo()});
+  $('bcVideoCreateVideo').addEventListener('click',()=>{closeCreate();uploadVideo('standard')});
   $('bcVideoCreatePost').addEventListener('click',()=>{closeCreate();switchView('feed');$('postBody')?.focus()});
   $('bcCinemaClose').addEventListener('click',closeCinema);
   $('bcVideoCinema').addEventListener('click',e=>{if(e.target===$('bcVideoCinema'))closeCinema()});
