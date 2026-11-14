@@ -1,5 +1,5 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
-import {setupBlackcellPhotos} from './corporate-network-photos.js?v=20261113-uniform-collections1';
+import {setupBlackcellPhotos} from './corporate-network-photos.js?v=20261114-private-picker';
 import {setupBlackcellStorageStatus} from './corporate-storage-status.js?v=20261111-storage1';
 import {mountMilitaryGunner} from './military-gunner.js?v=20261110-fast4';
 import {createNetworkPersonalization} from './corporate-network-personalization.js?v=20261112-themes5';
@@ -1413,7 +1413,9 @@ function renderAttachments(){
 }
 function selectFiles(input){
  const files=Array.from(input.files||[]);
- input.value='';
+ input.value='';appendSelectedFiles(files);
+}
+function appendSelectedFiles(files){
  if(!files.length)return;
  if(files.some(f=>!allowedTypes.has(f.type)||f.size>45*1048576)){
   toast('Unsupported media. Choose images or videos up to 45 MB each.');return;
@@ -1617,6 +1619,8 @@ function setupEvents(){
  $('attachPhotos').addEventListener('click',()=>{$('postFiles').accept='image/*';$('postFiles').multiple=true;$('postFiles').click()});
  $('attachVideo').addEventListener('click',()=>{$('postFiles').accept='video/*';$('postFiles').multiple=false;$('postFiles').click()});
  $('postFiles').addEventListener('change',()=>selectFiles($('postFiles')));
+ $('attachPrivateFiles').addEventListener('click',async()=>{if(state.busy||!state.user)return;try{const m=await import('./blackcell-private-media.js?v=1');await m.choosePrivateMedia({client,userId:state.user.id,max:6,onSelect:files=>appendSelectedFiles(files),actionLabel:'Attach selected (not published)'})}catch(e){toast('Private file picker unavailable.')}});
+ $('libraryPrivateFiles').addEventListener('click',async()=>{if(!state.user||state.busy)return;try{const m=await import('./blackcell-private-media.js?v=1');await m.choosePrivateMedia({client,userId:state.user.id,max:20,onSelect:files=>photos.uploadFiles(files),actionLabel:'Upload selected to shared library'})}catch(e){toast('Private file picker unavailable.')}});
  $('publishPost').addEventListener('click',()=>void publish());
  $('closeEdit').addEventListener('click',closeEdit);
  $('cancelEdit').addEventListener('click',closeEdit);

@@ -1092,7 +1092,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   },{passive:true});
  }
  setup();
- return {loadData,render,renderProfilePhotos,renderProfileAlbums,openViewer,openAsset:(a)=>{
+ return {uploadFiles,loadData,render,renderProfilePhotos,renderProfileAlbums,openViewer,openAsset:(a)=>{
    const group=sortAssets(archiveAssets().filter(x=>x.owner_id===a.owner_id&&x.kind===a.kind));
    const pos=group.findIndex(x=>x.id===a.id);
    return openViewer(group,pos<0?0:pos)

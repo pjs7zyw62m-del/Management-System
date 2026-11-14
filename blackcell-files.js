@@ -1,3 +1,4 @@
+import {mediaType,createPrivateViewer} from './blackcell-private-media.js?v=1';
 const BUCKET='blackcell-os-files',MARK='.blackcell-folder',LIMIT=10*1024*1024;
 export function mountFiles(host,{client,userId,preview,onBusy,alive}){
  host.classList.add('bc-files');
@@ -11,7 +12,7 @@ export function mountFiles(host,{client,userId,preview,onBusy,alive}){
  host.append(sidebar,view);view.append(toolbar,bread,editor,items,status,fileInput);
  let path=[],entries=[],working=false,sequence=0,action=null,disposed=false,layout='grid';
  const memory=new Map([['Documents',[]],['Pictures',[]],['Downloads',[]]]);
- const storage=client?.storage.from(BUCKET);
+ const storage=client?.storage.from(BUCKET);const viewer=createPrivateViewer(host,storage,()=>usable());
  const root=()=>[userId,...path].join('/');
  const key=name=>root()+'/'+name;
  const report=t=>{if(!disposed)status.textContent=t};
@@ -41,7 +42,7 @@ export function mountFiles(host,{client,userId,preview,onBusy,alive}){
  sidebar.append(el('strong','','Files'),el('small','','LOCATIONS'),btn('☁  My Cloud Drive',()=>navigate([]),'bc-files-location selected'),el('small','','PRIVATE WORKSPACE'),el('p','','Files are visible to your own authorized account.'),el('p','','10 MB per item · cloud storage'));
  function render(){if(disposed)return;back.disabled=working||!path.length;for(const b of [upload,newFolder,reload,toggle])b.disabled=working;bread.replaceChildren(btn('My Cloud Drive',()=>navigate([]),'bc-files-crumb'));path.forEach((n,i)=>bread.append(el('span','','›'),btn(n,()=>navigate(path.slice(0,i+1)),'bc-files-crumb')));items.className='bc-files-items '+layout;items.replaceChildren();const q=search.value.toLowerCase();const filtered=entries.filter(x=>x.name.toLowerCase().includes(q));
   if(!filtered.length){items.append(el('div','bc-files-empty',q?'No matching files.':'This folder is empty. Create a folder or upload files.'));return}
-  for(const row of filtered){const card=el('article','bc-files-item'),open=btn('',()=>{});open.className='bc-files-open';open.onclick=()=>row.folder?navigate([...path,row.name]):void download(row);open.append(glyph(row.folder),el('strong','',row.name),el('small','',row.folder?'Folder':formatSize(row.size)));const controls=el('div','bc-files-actions');if(!row.folder)controls.append(btn('Rename',()=>rename(row)));controls.append(btn('Delete',()=>remove(row)));for(const b of controls.querySelectorAll('button'))b.disabled=working;open.disabled=working;card.append(open,controls);items.append(card)}
+  for(const row of filtered){const card=el('article','bc-files-item'),open=btn('',()=>{});open.className='bc-files-open';open.onclick=()=>row.folder?navigate([...path,row.name]):mediaType(row.name)&&!preview?void viewer.open({name:row.name,path:key(row.name),type:mediaType(row.name)}):void download(row);open.append(glyph(row.folder),el('strong','',row.name),el('small','',row.folder?'Folder':formatSize(row.size)));const controls=el('div','bc-files-actions');if(!row.folder)controls.append(btn('Download',()=>void download(row)),btn('Rename',()=>rename(row)));controls.append(btn('Delete',()=>remove(row)));for(const b of controls.querySelectorAll('button'))b.disabled=working;open.disabled=working;card.append(open,controls);items.append(card)}
  }
- search.oninput=render;void refresh();return {dispose(){disposed=true;sequence++},busy:()=>working,refresh};
+ search.oninput=render;void refresh();return {dispose(){disposed=true;sequence++;viewer.close()},busy:()=>working,refresh};
 }
