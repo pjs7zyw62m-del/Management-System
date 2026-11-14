@@ -585,7 +585,12 @@ function imageType(file){
  if(!normalized&&fileTypes[ext])return{mime:fileTypes[ext],ext:ext==='jpeg'?'jpg':ext};
  throw Error('Choose a JPEG, PNG, WebP or HEIC image.');
 }
-async function uploadPhoto(event){
+async function uploadPhoto(...args){
+ let release;
+ try{release=window.top.BLACKCELL_LIVE_UPDATE?.hold('uploadPhoto',window)}catch(_){}
+ try{return await bcLiveOriginal_uploadPhoto.apply(this,args)}finally{release?.()}
+}
+async function bcLiveOriginal_uploadPhoto(event){
  event.preventDefault();
  if(state.isOwner||state.busy||!state.room?.active)return;
  const file=$('uploadPhoto').files?.[0];

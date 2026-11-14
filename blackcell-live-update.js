@@ -4,12 +4,28 @@
 if(window.top!==window.self||window.BLACKCELL_LIVE_UPDATE)return;
 const auto=document.currentScript?.dataset.mode==='auto', KEY='bc.live-update.v1';
 let baseline='',pending='',checking=false,refreshing=false,delay=0,last=Date.now(),interrupted=false,notice=null,screen=null;
-const dirty=new Set(),holds=new Set(),$=id=>document.getElementById(id);
+const dirty=new Set(),holds=new Map(),$=id=>document.getElementById(id);
 for(const e of ['pointerdown','keydown','wheel','touchstart'])addEventListener(e,()=>{last=Date.now();interrupted=true},{capture:true,passive:true});
 function track(e){const t=e.target;if(t instanceof Element&&!t.closest('#bc-update-notice')&&t.matches('input:not([type=hidden]):not([type=button]):not([type=submit]),textarea,select,[contenteditable=true]'))dirty.add(t)}
 document.addEventListener('input',track,true);document.addEventListener('change',track,true);
-window.BLACKCELL_LIVE_UPDATE=Object.freeze({hold(reason='operation'){const t=Symbol(reason);holds.add(t);return()=>holds.delete(t)},clean(element){if(element instanceof Element)for(const t of dirty)if(t===element||element.contains(t))dirty.delete(t)},check:()=>void check()});
-function busy(){return holds.size>0||!!document.querySelector('[aria-busy=true],.is-uploading,progress:not([value])')}
+window.BLACKCELL_LIVE_UPDATE=Object.freeze({hold(reason='operation',owner=window){const t=Symbol(reason);holds.set(t,owner);return()=>holds.delete(t)},clean(element){if(element instanceof Element)for(const t of dirty)if(t===element||element.contains(t))dirty.delete(t)},check:()=>void check()});
+function activityDoc(doc,depth=0){
+ if(!doc||depth>3)return false;
+ if(doc.querySelector('[aria-busy=true],.is-uploading,[data-busy=true],progress:not([value])'))return true;
+ const visible=e=>!!(e.getClientRects().length&&!e.closest('[hidden],[aria-hidden=true]')&&e.ownerDocument.defaultView.getComputedStyle(e).visibility!=='hidden');
+ for(const el of doc.querySelectorAll('video,audio')){
+  if(el.ended)continue;
+  if(!el.paused||((el.currentTime>0||el.id==='bcCinemaPlayer')&&visible(el)&&!!(el.currentSrc||el.getAttribute('src'))))return true;
+ }
+ for(const frame of doc.querySelectorAll('iframe')){
+  const src=frame.getAttribute('src')||'';
+  if(src&&src!=='about:blank'&&visible(frame)&&(/stream|player|youtube|vimeo|video|bunny/i.test(src)||frame.id==='bcCinemaStreamPlayer'))return true;
+  try{if(frame.contentDocument&&activityDoc(frame.contentDocument,depth+1))return true}catch(_){}
+ }
+ return false;
+}
+function busy(){for(const [token,owner] of holds){try{if(owner.closed||owner!==window&&owner.top!==window)holds.delete(token)}catch(_){holds.delete(token)}}return holds.size>0||activityDoc(document)}
+
 function modified(){for(const t of dirty)if(!t.isConnected)dirty.delete(t);return dirty.size>0||Array.from(document.querySelectorAll('input[type=file]')).some(t=>t.files?.length)}
 function styles(){const s=document.createElement('style');s.textContent=
 '#bc-update-overlay,#bc-update-notice{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;color:#f5f5f5;z-index:2147483000;line-height:1.5}#bc-update-overlay *,#bc-update-notice *{box-sizing:border-box}'+
@@ -22,10 +38,10 @@ function styles(){const s=document.createElement('style');s.textContent=
 styles();
 function overlay(message){if(!screen){screen=document.createElement('div');screen.id='bc-update-overlay';screen.setAttribute('role','status');screen.innerHTML='<div class="bc-up-body"><div class="bc-up-brand">BLACKCELL</div><div class="bc-up-corp">CORPORATION</div><div class="bc-up-ring" aria-hidden="true"></div><h2>SITE UPDATING</h2><p id="bc-up-message"></p><div class="bc-up-track" aria-hidden="true"><i></i></div><p>Preserving your current location</p><div class="bc-up-foot">CONTROL IS EVERYTHING.</div></div>';document.body.append(screen)}$('bc-up-message').textContent=message}
 function dismiss(){notice?.remove();notice=null}
-function showNotice(){if(notice||Date.now()<delay||document.hidden)return;
-notice=document.createElement('aside');notice.id='bc-update-notice';notice.setAttribute('aria-label','Blackcell system update');notice.innerHTML='<strong>BLACKCELL · SYSTEM UPDATE AVAILABLE</strong><p>Finish uploads, save edits and send drafts before updating. Your current page will stay the same.</p><div><button type="button">UPDATE NOW</button><button type="button">LATER</button></div>';
+function showNotice(){if(busy()){dismiss();return}if(notice||Date.now()<delay||document.hidden)return;
+notice=document.createElement('aside');notice.id='bc-update-notice';notice.setAttribute('aria-label','Blackcell system update');notice.innerHTML='<strong>BLACKCELL · SYSTEM UPDATE AVAILABLE</strong><p>Updates wait for uploads and active players. Save edits and send drafts before updating. Your current page will stay the same.</p><div><button type="button">UPDATE NOW</button><button type="button">LATER</button></div>';
 const [go,later]=notice.querySelectorAll('button');
-go.onclick=()=>{if(busy()){notice.querySelector('p').textContent='An operation is still active. Finish it before updating.';return}if((!auto||modified())&&!confirm('Refresh this page now? Make sure uploads, drafts and edits are complete. Unsaved changes may be lost.'))return;void refresh()};
+go.onclick=()=>{if(busy()){notice.querySelector('p').textContent='An upload, video playback or other operation is still active. Your update is paused. Finish the upload or close the player before updating.';return}if((!auto||modified())&&!confirm('Refresh this page now? Make sure uploads, drafts and edits are complete. Unsaved changes may be lost.'))return;void refresh()};
 later.onclick=()=>{delay=Date.now()+300000;dismiss()};document.body.append(notice)}
 function save(){try{const scroll=Array.from(document.querySelectorAll('[id]')).filter(t=>t.clientHeight>0&&t.scrollHeight>t.clientHeight+4&&t.scrollTop>0).slice(0,30).map(t=>({id:t.id,top:t.scrollTop,left:t.scrollLeft}));sessionStorage.setItem(KEY,JSON.stringify({path:location.pathname,at:Date.now(),x:scrollX,y:scrollY,scroll}))}catch(_){}}
 function restore(){let r;try{r=JSON.parse(sessionStorage.getItem(KEY)||'null');sessionStorage.removeItem(KEY)}catch(_){return}if(!r||r.path!==location.pathname||Date.now()-r.at>60000||performance.getEntriesByType('navigation')[0]?.type!=='reload')return;
@@ -34,5 +50,5 @@ move();setTimeout(move,300);setTimeout(move,1100);setTimeout(()=>{screen?.remove
 async function refresh(){if(refreshing||!pending||busy())return;refreshing=true;dismiss();overlay('Applying the latest corporate system update…');await new Promise(r=>setTimeout(r,850));if(busy()){screen?.remove();screen=null;refreshing=false;showNotice();return}save();location.reload()}
 async function version(){const r=await fetch(new URL('blackcell-site-version.json',location.href),{cache:'no-store',credentials:'same-origin'});if(!r.ok)throw Error('Version unavailable');const text=await r.text(),json=JSON.parse(text.slice(text.indexOf('{'),text.lastIndexOf('}')+1));const rev=String(json.revision||'');if(/^[a-f0-9]{7,64}$/i.test(rev))return rev;const build=String(json.built||'');if(/^\d{14}$/.test(build))return build;return String(json.fallback||'')}
 async function check(){if(checking||refreshing||document.hidden||!navigator.onLine)return;checking=true;try{const v=await version();if(!v)return;if(!baseline){baseline=v;return}pending=v!==baseline?v:'';if(!pending){dismiss();return}if(auto&&!modified()&&!busy()&&!document.querySelector('dialog[open],[aria-modal=true]:not([hidden]):not([aria-hidden=true])')&&Date.now()-last>=12000&&Date.now()>=delay){await refresh();return}showNotice()}catch(_){/* fail open */}finally{checking=false}}
-restore();void check();setInterval(()=>void check(),30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)void check()});addEventListener('online',()=>void check());
+restore();void check();setInterval(()=>void check(),30000);setInterval(()=>{if(pending&&!refreshing){if(busy())dismiss();else showNotice()}},2000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)void check()});addEventListener('online',()=>void check());
 })();

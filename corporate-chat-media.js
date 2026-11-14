@@ -381,7 +381,12 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
    xhr.send(file);
   });
  }
- async function sendSelection(){
+ async function sendSelection(...args){
+  let release;
+  try{release=window.top.BLACKCELL_LIVE_UPDATE?.hold('sendSelection',window)}catch(_){}
+  try{return await bcLiveOriginal_sendSelection.apply(this,args)}finally{release?.()}
+ }
+ async function bcLiveOriginal_sendSelection(){
   const c=requirePeer();if(!c||!selection.length||busy)return;
   const files=selection.slice();
   if(files.some(f=>f.size>MAX_BYTES||!ALLOWED.has(mediaType(f))))return;

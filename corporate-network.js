@@ -1216,7 +1216,12 @@ async function sendViaStream(file,metadata,posterFile,aiPath=null,choice='origin
  }
  return {status:remote.status,catalogId:start.catalogId};
 }
-async function publishDirectVideo(event){
+async function publishDirectVideo(...args){
+ let release;
+ try{release=window.top.BLACKCELL_LIVE_UPDATE?.hold('publishDirectVideo',window)}catch(_){}
+ try{return await bcLiveOriginal_publishDirectVideo.apply(this,args)}finally{release?.()}
+}
+async function bcLiveOriginal_publishDirectVideo(event){
  event.preventDefault();
  if(directVideoBusy||posterAiBusy||state.busy)return;
  const file=$('bcVideoFile').files?.[0],posterFile=studioOriginalPoster();
@@ -1420,7 +1425,12 @@ function selectFiles(input){
  if(all.length>6){toast('Maximum 6 photos in one post.');return}
  formFiles=all;renderAttachments();
 }
-async function publish(){
+async function publish(...args){
+ let release;
+ try{release=window.top.BLACKCELL_LIVE_UPDATE?.hold('publish',window)}catch(_){}
+ try{return await bcLiveOriginal_publish.apply(this,args)}finally{release?.()}
+}
+async function bcLiveOriginal_publish(){
  if(state.busy)return;
  const publishedFromProfile=state.view==='profile'
   &&state.profileUserId===state.user?.id&&state.profileTab==='posts';
@@ -1506,7 +1516,12 @@ function openEdit(){
  $('editFeedback').hidden=true;$('editOverlay').hidden=false;
 }
 function closeEdit(){$('editOverlay').hidden=true}
-async function saveProfile(){
+async function saveProfile(...args){
+ let release;
+ try{release=window.top.BLACKCELL_LIVE_UPDATE?.hold('saveProfile',window)}catch(_){}
+ try{return await bcLiveOriginal_saveProfile.apply(this,args)}finally{release?.()}
+}
+async function bcLiveOriginal_saveProfile(){
  const p=myProfile();if(!p||state.busy)return;
  state.busy=true;
  const b=$('saveProfile');b.disabled=true;b.textContent='SAVING…';

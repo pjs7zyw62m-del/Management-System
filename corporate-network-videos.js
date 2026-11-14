@@ -555,7 +555,9 @@ export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,posterVers
   $('bcCinemaPrev').disabled=i<1;
   $('bcCinemaNext').disabled=i<0||i>=cinemaQueue.length-1;
  }
+ let bcCinemaUpdateRelease=null;
  async function openCinema(a,list){
+  if(!bcCinemaUpdateRelease){try{bcCinemaUpdateRelease=window.top.BLACKCELL_LIVE_UPDATE?.hold('cinema',window)}catch(_){}}
   if(!initialized)return;
   const src=source(a);
   if(!a.bunny_stream&&!src){toast('Video temporarily unavailable. Refresh the channel.');return}
@@ -595,6 +597,7 @@ export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,posterVers
   $('bcCinemaClose').focus({preventScroll:true});
  }
  function closeCinema(){
+  bcCinemaUpdateRelease?.();bcCinemaUpdateRelease=null;
   if(!activeCinema||$('bcVideoCinema').hidden)return;
   const p=$('bcCinemaPlayer'),iframe=$('bcCinemaStreamPlayer');
   track(activeCinema,p,true);

@@ -97,7 +97,12 @@ export function setupBlackcellBunnyBulk({client}){
    xhr.send(file);
   });
  }
- async function run(){
+ async function run(...args){
+  let release;
+  try{release=window.top.BLACKCELL_LIVE_UPDATE?.hold('run',window)}catch(_){}
+  try{return await bcLiveOriginal_run.apply(this,args)}finally{release?.()}
+ }
+ async function bcLiveOriginal_run(){
   if(running)return;
   running=true;paused=false;render();
   while(!paused){

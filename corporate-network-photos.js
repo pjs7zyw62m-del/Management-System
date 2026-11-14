@@ -714,7 +714,12 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   if(error){toast('Could not add media to album: '+error.message);return}
   await loadData();render();toast('Added to '+album.title+'.');
  }
- async function uploadFiles(files){
+ async function uploadFiles(...args){
+  let release;
+  try{release=window.top.BLACKCELL_LIVE_UPDATE?.hold('uploadFiles',window)}catch(_){}
+  try{return await bcLiveOriginal_uploadFiles.apply(this,args)}finally{release?.()}
+ }
+ async function bcLiveOriginal_uploadFiles(files){
   if(meta.uploading)return;
   const picked=Array.from(files||[]).slice(0,MAX_LIBRARY_UPLOAD_BATCH);
   if(!picked.length)return;
