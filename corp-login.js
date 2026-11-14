@@ -41,9 +41,7 @@ function choosePortal(portal,{quiet=false,force=false}={}){
   employeeLoginTab.setAttribute('aria-selected',String(selectedPortal==='employee'));
   adminLoginTab.tabIndex=selectedPortal==='admin'?0:-1;
   employeeLoginTab.tabIndex=selectedPortal==='employee'?0:-1;
-  loginRoleDescription.textContent=selectedPortal==='admin'
-    ?'Level 7 Executive Administration access.'
-    :'Employee Network · Your name, profile, messages and employee access card.';
+  loginRoleDescription.textContent='';
   loginButton.textContent=selectedPortal==='admin'
     ?'SIGN IN TO ADMINISTRATION ↗':'SIGN IN TO USER NETWORK ↗';
   if(!quiet)clearMessage(status);
@@ -184,9 +182,7 @@ function showLogin(){
   employeeLoginTab.setAttribute('aria-selected',String(selectedPortal==='employee'));
   adminLoginTab.tabIndex=selectedPortal==='admin'?0:-1;
   employeeLoginTab.tabIndex=selectedPortal==='employee'?0:-1;
-  loginRoleDescription.textContent=selectedPortal==='admin'
-    ?'Level 7 Executive Administration access.'
-    :'Employee Network · Your name, profile, messages and employee access card.';
+  loginRoleDescription.textContent='';
   loginHeading.textContent='Sign In';
   executivePass.classList.remove('authorized','pass-verified','pass-condensed','merge-source');
   loginCard.classList.remove('merge-source');
