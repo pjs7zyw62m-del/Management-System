@@ -7,6 +7,7 @@
  const sections=[
  {id:'users',label:'User Management',glyph:'♙',direct:['modal','users']},
  {id:'processor',label:'Media Import Processor',glyph:'▧',direct:['link','corporate-media-admin.html']},
+ {id:'systems',label:'Systems',glyph:'▣',direct:['link','corporate-systems.html']},
  {id:'diagnostics',label:'System Diagnostics',glyph:'◉',direct:['link','corporate-diagnostics.html']},
  {id:'costs',label:'Costs & Revenue',glyph:'◈',direct:['link','corporate-costs-revenue.html']},
  {id:'overview',label:'Executive Workspace',glyph:'▦',desc:'Live corporate monitoring and operational overview.',items:[['User Management','Manage employee accounts, roles, invitations and access.','modal','users'],['Media Import Processor','Review, classify and approve shared-library content.','link','corporate-media-admin.html'],['System Diagnostics','Run real service and server checks.','link','corporate-diagnostics.html'],['Costs & Revenue','Review financial plans and service costs.','link','corporate-costs-revenue.html']]},
@@ -20,7 +21,7 @@
  {id:'settings',label:'Administration Settings',glyph:'⚙',desc:'Owner preferences and corporate configuration.',items:[['System Settings','Existing owner settings, appearance, divisions and preferences.','modal','settings'],['Corporate Notifications','Review your notifications.','modal','notifications']]},
  {id:'account',label:'Account',glyph:'◉',desc:'Current executive identity and session.',items:[['My Account','Administrator account information.','modal','account'],['Sign Out','End the current corporate session using the existing secure control.','modal','signout']]}
  ];
- const directIds={'users':'users','corporate-media-admin.html':'processor','corporate-diagnostics.html':'diagnostics','corporate-costs-revenue.html':'costs'};
+ const directIds={'users':'users','corporate-media-admin.html':'processor','corporate-systems.html':'systems','corporate-diagnostics.html':'diagnostics','corporate-costs-revenue.html':'costs'};
  const allowed=new Set(sections.flatMap(s=>(s.items||[]).filter(i=>i[2]==='link').map(i=>i[3])).concat(sections.filter(s=>s.direct?.[0]==='link').map(s=>s.direct[1])));
  const make=(tag,cls,t)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(t!==undefined)n.textContent=t;return n};
  const btn=(label,fn,cls='bc-admin-os-button')=>{const n=make('button',cls,label);n.type='button';n.onclick=fn;return n};
