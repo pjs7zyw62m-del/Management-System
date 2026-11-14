@@ -45,13 +45,13 @@
     frame.addEventListener('load',()=>{try{
      const doc=frame.contentDocument,u=new URL(frame.contentWindow.location.href);if(!doc||u.origin!==location.origin)return;
      if(u.pathname.endsWith('/login.html')){if(embedded)parent.postMessage({type:'blackcell-admin-app-signed-out'},location.origin);else location.replace('login.html');return}
-     if(u.pathname.endsWith('/dashboard.html')||u.pathname.endsWith('/blackcell-administration-app.html')){select('overview');frame.contentWindow.location.replace(target+'?adminPane=1&rev=3');return}
+     if(u.pathname.endsWith('/dashboard.html')||u.pathname.endsWith('/blackcell-administration-app.html')){select('overview');frame.contentWindow.location.replace(target+'?adminPane=1&rev='+(target==='corporate-media-admin.html'?'native-media-app-20261114':'3'));return}
      if(!allowed.has(u.pathname.split('/').at(-1)))return;
      doc.documentElement.classList.add('bc-admin-workspace-embedded');const sheet=doc.createElement('link');sheet.rel='stylesheet';sheet.href='blackcell-admin-workspace-embedded.css?v=1';doc.head.append(sheet);
      for(const event of ['pointerdown','keydown','touchstart','wheel'])doc.addEventListener(event,activity,{passive:true});
      doc.addEventListener('click',e=>{const a=e.target.closest?.('a[href]');if(!a||e.defaultPrevented||e.button!==0||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;const href=new URL(a.href,location.href);if(href.origin!==location.origin)return;const file=href.pathname.split('/').at(-1);if(file==='dashboard.html'||file==='blackcell-administration-app.html'){e.preventDefault();select('overview');return}if(allowed.has(file)){e.preventDefault();openTarget(file,a.textContent.trim()||file);return}},true)
     }catch(_){}});
-    frame.src=target+'?adminPane=1&rev=3';
+    frame.src=target+'?adminPane=1&rev='+(target==='corporate-media-admin.html'?'native-media-app-20261114':'3');
    }
    rec.panel.hidden=false
   }
