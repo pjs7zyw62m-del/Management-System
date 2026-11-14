@@ -2,7 +2,8 @@
    Strictly scoped to Video Channel. Other BLACKCELL Network pages remain unchanged. */
 body.bc-video-mode{background:#08090b}
 body.bc-video-mode>.masthead{display:none!important}
-body.bc-video-mode #app.app{display:block!important;max-width:none;width:100%;padding:0!important;margin:0!important}
+body.bc-video-mode #app.app{display:block;max-width:none;width:100%;padding:0!important;margin:0!important}
+body.bc-video-mode #app.app[hidden]{display:none!important}
 body.bc-video-mode #app>.left-rail,body.bc-video-mode #app>.right-rail{display:none!important}
 body.bc-video-mode #app>.workspace{width:100%;max-width:none;min-width:0;margin:0;padding:0}
 body.bc-video-mode .bc-chat-dock{z-index:250}
