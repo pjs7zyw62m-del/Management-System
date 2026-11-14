@@ -945,15 +945,16 @@ function fileImageReference(file){
   const url=URL.createObjectURL(file),img=new Image();
   img.onload=async()=>{
    try{
+    const w=img.naturalWidth,h=img.naturalHeight;
+    if(!w||!h)throw Error('Poster image could not be opened.');
+    // Allocate a small canvas first; never allocate the giant original on iPad.
+    const scale=Math.min(1,1100/Math.max(w,h));
     const canvas=document.createElement('canvas');
-    canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;
+    canvas.width=Math.max(1,Math.round(w*scale));
+    canvas.height=Math.max(1,Math.round(h*scale));
     const ctx=canvas.getContext('2d');
-    if(!ctx||!canvas.width||!canvas.height)throw Error('Poster image could not be opened.');
-    // Downscale before drawing to avoid enormous mobile image memory usage.
-    const scale=Math.min(1,1100/Math.max(canvas.width,canvas.height));
-    canvas.width=Math.max(1,Math.round(canvas.width*scale));
-    canvas.height=Math.max(1,Math.round(canvas.height*scale));
-    canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+    if(!ctx)throw Error('Poster image could not be opened.');
+    ctx.drawImage(img,0,0,canvas.width,canvas.height);
     resolve(await canvasReference(canvas));
    }catch(err){reject(err)}finally{URL.revokeObjectURL(url)}
   };
