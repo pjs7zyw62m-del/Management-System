@@ -222,3 +222,20 @@ body.bc-video-upload-open{overflow:hidden}
 }
 @media(max-width:370px){.bc-movies-series-grid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.bc-movies-play{transition:none}.bc-video-upload-track span{animation:none}}
+
+
+/* Six compact mobile destinations, including Channels and Movies. */
+@media(max-width:700px){
+ .bc-yt-bottomnav{gap:0}
+ .bc-yt-bottomnav button{min-width:0;flex:1;padding:5px 1px;white-space:nowrap;font-size:9px}
+ .bc-yt-bottomnav button span{font-size:21px}
+}
+.bc-video-upload-track span.is-uploading{
+ width:33%!important;
+ animation:bcVideoUploadPending 1.5s ease-in-out infinite;
+}
+@keyframes bcVideoUploadPending{
+ from{transform:translateX(-105%)}
+ to{transform:translateX(305%)}
+}
+@media(prefers-reduced-motion:reduce){.bc-video-upload-track span.is-uploading{animation:none;opacity:.65;width:100%!important}}
