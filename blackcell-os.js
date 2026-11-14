@@ -28,14 +28,39 @@ function storeCatalog(){if(preview)return [];return [...document.querySelectorAl
 function storeInfo(){return {owner:storeAdmin,level:storeLevel,error:preview?'Design preview only. Sign in to see your approved app catalog.':storeError}}
 function appBusy(r){if(!r)return false;if(r.closing||r.filesBusy||r.storeBusy)return true;try{return !!r.frame?.contentDocument?.querySelector('[aria-busy=true],.is-uploading,[data-busy=true],progress:not([value])')}catch{return true}}
 async function closeForUninstall(id){const r=windows.get(id);if(!r)return {ok:true};if(appBusy(r))return {ok:false,error:r.title+' is busy. Finish your current operation before removing it.'};await requestClose(r);if(r.closing||windows.get(id)===r&&!r.suspended)return {ok:false,error:'The application is still saving. Try again when it finishes.'};return {ok:true}}
-async function installApp(id,install){if(!active||preview||id==='store'||!authorizedApp(id))return {ok:false,error:id==='store'?'The App Store must remain installed.':'Your access level does not permit this application.'};if(!install){const result=await closeForUninstall(id);if(!result.ok)return result}return storeRequest(install?'install':'remove',id)}
+/* Timed installation experience. Completion depends on the authoritative catalog RPC. */
+let appOperation=false;
+async function timedAppOperation(label,install,operation){
+ if(appOperation||storeMutating)return {ok:false,error:'Another App Store operation is in progress.'};
+ if(!active||preview)return {ok:false,error:'Corporate access required.'};
+ appOperation=true;const uid=storeProfile,duration=install?10000:5000;
+ let release;try{release=window.top.BLACKCELL_LIVE_UPDATE?.hold('BLACKCELL App installation',window)}catch(_){}
+ const create=(tag,cls,value)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(value!==undefined)n.textContent=value;return n};
+ const overlay=create('div','os-install-overlay');overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label',install?'Installing application':'Uninstalling application');overlay.tabIndex=-1;
+ const panel=create('section','os-install-panel'),brand=create('div','os-install-brand','BLACKCELL OS / APP STORE'),icon=create('div','os-install-icon',install?'↓':'×'),heading=create('h2','',install?'Installing':'Uninstalling'),name=create('p','os-install-name',label),track=create('div','os-install-track'),fill=create('div','os-install-fill'),row=create('div','os-install-meta'),status=create('span','', 'Preparing…'),percent=create('span','','0%');
+ track.setAttribute('role','progressbar');track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax','100');track.setAttribute('aria-valuenow','0');track.append(fill);row.append(status,percent);panel.append(brand,icon,heading,name,track,row,create('small','','Your account data remains intact.'));overlay.append(panel);$('desktop').append(overlay);overlay.focus();
+ const started=performance.now();let timer=null;
+ const update=()=>{const elapsed=performance.now()-started;const value=Math.min(95,Math.floor(elapsed/duration*95));fill.style.width=value+'%';percent.textContent=value+'%';track.setAttribute('aria-valuenow',String(value));status.textContent=elapsed<duration*.2?'Preparing…':elapsed<duration*.8?(install?'Installing application…':'Removing application…'):'Finalizing…'};
+ overlay.addEventListener('keydown',e=>{if(e.key==='Tab'||e.key==='Escape'){e.preventDefault();e.stopPropagation()}});
+ try{
+  update();timer=setInterval(update,80);
+  await new Promise(resolve=>setTimeout(resolve,duration));
+  clearInterval(timer);timer=null;fill.style.width='95%';percent.textContent='95%';track.setAttribute('aria-valuenow','95');status.textContent='Confirming with server…';
+  if(!active||leaving||storeProfile!==uid)return {ok:false,error:'Corporate session ended.'};
+  const result=await operation();
+  if(result?.ok){fill.style.width='100%';percent.textContent='100%';track.setAttribute('aria-valuenow','100');heading.textContent=install?'Installed':'Uninstalled';status.textContent='Complete';panel.classList.add('complete');await new Promise(resolve=>setTimeout(resolve,260))}
+  return result||{ok:false,error:'Operation not confirmed.'};
+ }catch(_){return {ok:false,error:'App operation could not be completed.'}}
+ finally{clearInterval(timer);overlay.remove();release?.();appOperation=false}
+}
+
+async function installApp(id,install){if(!active||preview||id==='store'||!authorizedApp(id))return {ok:false,error:id==='store'?'The App Store must remain installed.':'Your access level does not permit this application.'};if(!install&&appBusy(windows.get(id)))return {ok:false,error:'Finish the active operation before uninstalling.'};const title=document.querySelector('.app[data-app="'+id+'"]')?.dataset.title||'Application';return timedAppOperation(title,install,async()=>{if(!authorizedApp(id))return {ok:false,error:'Your access level no longer permits this application.'};if(!install){const result=await closeForUninstall(id);if(!result.ok)return result}return storeRequest(install?'install':'remove',id)})}
 async function removeAllApps(){
  if(!active||preview)return {ok:false,error:'Corporate access required.'};
  const ids=[...storeInstalled].filter(id=>id!=='store'&&authorizedApp(id));
  if(!ids.length)return {ok:true};
  const busy=ids.map(id=>windows.get(id)).find(appBusy);if(busy)return {ok:false,error:busy.title+' is busy. Finish your current operation first.'};
- for(const id of ids){const result=await closeForUninstall(id);if(!result.ok)return result}
- return storeRequest('remove_all')
+ return timedAppOperation('All installed apps',false,async()=>{const current=[...storeInstalled].filter(id=>id!=='store'&&authorizedApp(id));for(const id of current){const result=await closeForUninstall(id);if(!result.ok)return result}return storeRequest('remove_all')})
 }
 async function setStoreRule(id,level,enabled){if(!storeAdmin||preview)return {ok:false,error:'Level 7 administrator required.'};return storeRequest('set_rule',id,level,enabled)}
 
