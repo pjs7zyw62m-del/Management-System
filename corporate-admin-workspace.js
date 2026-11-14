@@ -10,13 +10,13 @@ export function createCorporateMediaWorkspace({onEnter,onRefresh,member}){
   {id:'overview',icon:'⌂',name:'Command Center',label:'OVERVIEW',
    title:'Media Import Processor',subtitle:'Manage uploads, review incoming media, and maintain your private library.'},
   {id:'review',icon:'▣',name:'Review & Approval',label:'INTAKE',
-   title:'Review & approve.',subtitle:'Prepare private Bunny originals, classify content, and authorize library publication.'},
+   title:'Review & Approval',subtitle:'Prepare private Bunny originals, classify content, and authorize library publication.'},
   {id:'bunny',icon:'◈',name:'Bunny Storage',label:'PRIMARY CLOUD',
-   title:'Your private cloud.',subtitle:'Upload batches, check connection health and keep the Military Library safely archived.'},
+   title:'Bunny Storage',subtitle:'Upload batches, check connection health and keep the Military Library safely archived.'},
   {id:'diagnostics',icon:'⌁',name:'Diagnostics',label:'SYSTEM HEALTH',
-   title:'System diagnostics.',subtitle:'Test your device, private photo delivery, database and connected storage.'},
+   title:'Diagnostics',subtitle:'Test your device, private photo delivery, database and connected storage.'},
   {id:'legacy',icon:'⚙',name:'Legacy & Settings',label:'ADVANCED',
-   title:'Legacy tools & settings.',subtitle:'Optional Backblaze controls and other advanced administration tools.'}
+   title:'Advanced Settings',subtitle:'Optional Backblaze controls and other advanced administration tools.'}
  ];
  const el=(tag,cls='',txt)=>{
   const node=document.createElement(tag);
@@ -72,23 +72,15 @@ export function createCorporateMediaWorkspace({onEnter,onRefresh,member}){
  shell.append(sidebar,region);
  const paneMap=new Map(),tabMap=new Map(),loading=new Map(),loaded=new Set();
  const overview=el('div','bc-overview');
- const chips=el('div','bc-overview-kicker','RESTRICTED / EXECUTIVE MEDIA CONTROL');
- const hero=el('div','bc-overview-hero');
- const heroText=el('div','bc-overview-hero-text');
- heroText.append(chips,el('h2','','Your media. One control center.'),
-  el('p','','Upload to Bunny, review incoming media, maintain the Military Library, and monitor your system—without navigating a long settings page.'));
- const heroLogo=el('div','bc-overview-hero-logo','B');heroLogo.setAttribute('aria-hidden','true');
- hero.append(heroText,heroLogo);
- overview.append(hero);
  const actionHeading=el('div','bc-overview-section-title');
- actionHeading.append(el('strong','','QUICK OPERATIONS'),el('small','','Choose an operation'));
+ actionHeading.append(el('strong','','Quick Operations'),el('small','',''));
  overview.append(actionHeading);
  const actionGrid=el('div','bc-overview-actions');
  const actions=[
-  ['review','▣','REVIEW INCOMING','Prepare, classify and approve', 'bcOverviewReview'],
-  ['bunny','↑','UPLOAD TO BUNNY','Send photo and video batches','bcOverviewUpload'],
-  ['diagnostics','⌁','RUN DIAGNOSTICS','Check photo and server performance','bcOverviewHealth'],
-  ['bunny','◈','CLOUD & ARCHIVE','Storage health and verified copies','bcOverviewCloud']
+  ['review','▣','Review incoming media','Prepare, classify and approve', 'bcOverviewReview'],
+  ['bunny','↑','Upload to Bunny','Send photo and video batches','bcOverviewUpload'],
+  ['diagnostics','⌁','Run diagnostics','Check photo and server performance','bcOverviewHealth'],
+  ['bunny','◈','Cloud & archive','Storage health and verified copies','bcOverviewCloud']
  ];
  const shortcutButtons=[];
  for(const [id,icon,label,desc,btnId] of actions){
@@ -106,7 +98,7 @@ export function createCorporateMediaWorkspace({onEnter,onRefresh,member}){
  }
  overview.append(actionGrid);
  const workflow=el('div','bc-overview-workflow');
- workflow.append(el('strong','','PRIVATE MEDIA WORKFLOW'));
+ workflow.append(el('strong','','Media workflow'));
  const stages=el('div','bc-workflow-steps');
  for(const [step,label] of [
   ['01','BUNNY UPLOAD'],['02','PRIVATE REVIEW'],['03','OWNER APPROVAL'],['04','LIBRARY & ARCHIVE']
@@ -120,8 +112,6 @@ export function createCorporateMediaWorkspace({onEnter,onRefresh,member}){
  const libraryLink=el('a','bc-overview-library-link','OPEN LIVE MILITARY LIBRARY ↗');
  libraryLink.href='corporate-network.html?view=photos';
  bottom.append(libraryLink);
- const installNote=el('small','bc-overview-install','ON IPHONE OR IPAD · SAFARI SHARE → ADD TO HOME SCREEN FOR AN APP-STYLE SHORTCUT');
- bottom.append(installNote);
  const updated=el('span','bc-overview-updated','COUNTS NOT CHECKED');
  bottom.append(updated);overview.append(bottom);
  // Pane construction: move original elements by reference to preserve IDs,
@@ -226,7 +216,7 @@ export function createCorporateMediaWorkspace({onEnter,onRefresh,member}){
   crumb.textContent='BLACKCELL / MEDIA ADMINISTRATION / '+currentDef.label;
   const url=new URL(window.location.href);url.searchParams.set('tab',id);
   history.replaceState(null,'',url.pathname+url.search+url.hash);
-  window.scrollTo({top:0,behavior:'auto'});
+  panels.scrollTo({top:0,behavior:'auto'});
   if(id!=='overview'){
    let statusBox=paneMap.get(id).querySelector(':scope > .bc-workspace-status');
    if(!statusBox){statusBox=el('div','bc-workspace-status');paneMap.get(id).prepend(statusBox)}
