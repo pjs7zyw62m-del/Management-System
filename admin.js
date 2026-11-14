@@ -417,28 +417,28 @@ function ensureInvitationCardPreviewStyle(){
   const style=el('style');style.id='um4-card-preview-style';
   style.textContent=`
     #modalContent .um4-card-preview-slot[hidden]{display:none!important}
-    #modalContent .um4-card-preview-slot{min-width:0;width:100%;box-sizing:border-box;align-self:start;container-type:inline-size}
+    #modalContent .um4-card-preview-slot{min-width:0;width:100%;box-sizing:border-box;align-self:start;container-type:inline-size;position:relative;overflow:hidden}
     #modalContent .um4-card-preview-slot>.employee-card-inline-preview,
-    #modalContent .um4-card-preview-slot>.security-credential-preview{margin:0;max-width:100%;width:100%;box-sizing:border-box;animation:um4-card-slide-right 340ms cubic-bezier(.2,.75,.25,1) both}
+    #modalContent .um4-card-preview-slot>.security-credential-preview{margin:0!important;max-width:100%;width:100%;box-sizing:border-box;animation:um4-card-slide-right 360ms cubic-bezier(.2,.75,.25,1) both}
     #modalContent .um4-preview-row button[aria-pressed="true"]{border-color:#c76274;background:#59303d;color:#fff}
-    @keyframes um4-card-slide-right{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:translateX(0)}}
-    @media(min-width:1051px){
-      #modalContent .um3-invitation-workspace.um4-preview-open{grid-template-columns:minmax(0,min(52%,850px)) minmax(0,1fr)!important;gap:14px;align-items:start}
-      #modalContent .um4-preview-open>.um4-invite-panel{grid-column:1;grid-row:1}
-      #modalContent .um4-preview-open>.um4-card-preview-slot{grid-column:2;grid-row:1}
-      #modalContent .um4-preview-open>.um2-account-panel{grid-column:1/-1;grid-row:2}
+    @keyframes um4-card-slide-right{from{opacity:0;transform:translate3d(48px,0,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+    #modalContent .um3-invitation-workspace.um4-preview-open{--um4-preview-columns:minmax(0,min(52%,850px)) minmax(0,1fr);gap:14px;align-items:start}
+    #modalContent .um4-preview-open>.um4-invite-panel{grid-column:1!important;grid-row:1!important}
+    #modalContent .um4-preview-open>.um4-card-preview-slot{grid-column:2!important;grid-row:1!important}
+    #modalContent .um4-preview-open>.um2-account-panel{grid-column:1/-1;grid-row:2}
+    @media(max-width:760px){
+      #modalContent .um3-invitation-workspace.um4-preview-open{--um4-preview-columns:minmax(0,1fr)}
+      #modalContent .um4-preview-open>.um4-card-preview-slot{position:fixed!important;inset:8px 0 8px auto!important;width:min(95vw,520px)!important;max-height:calc(100dvh - 16px);overflow:auto;scrollbar-width:none;z-index:10010;padding:8px;background:#17171c;box-shadow:-20px 0 60px #000a;border:1px solid #3e3e47;border-radius:12px 0 0 12px;animation:um4-card-slide-right 360ms cubic-bezier(.2,.75,.25,1) both}
+      #modalContent .um4-card-preview-slot::-webkit-scrollbar{display:none}
+      #modalContent .um4-card-preview-slot>.employee-card-inline-preview,#modalContent .um4-card-preview-slot>.security-credential-preview{animation:none}
     }
-    @media(max-width:1050px){
-      #modalContent .um3-invitation-workspace.um4-preview-open{grid-template-columns:minmax(0,1fr)!important}
-      #modalContent .um4-card-preview-slot{max-width:850px}
-    }
-    @container(max-width:540px){
+    @container(max-width:570px){
       #modalContent .um4-card-preview-slot .employee-profile-layout{grid-template-columns:minmax(0,1fr)}
       #modalContent .um4-card-preview-slot .employee-profile-pass{width:min(100%,310px);box-sizing:border-box;justify-self:center}
       #modalContent .um4-card-preview-slot .security-credential-fields{grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}
       #modalContent .um4-card-preview-slot .security-credential-code-grid{grid-template-columns:minmax(0,1fr)}
     }
-    @media(prefers-reduced-motion:reduce){#modalContent .um4-card-preview-slot>.employee-card-inline-preview,#modalContent .um4-card-preview-slot>.security-credential-preview{animation:none}}
+    @media(prefers-reduced-motion:reduce){#modalContent .um4-card-preview-slot,#modalContent .um4-card-preview-slot>.employee-card-inline-preview,#modalContent .um4-card-preview-slot>.security-credential-preview{animation:none!important}}
   `;
   document.head.append(style);
 }
@@ -525,6 +525,7 @@ function users(){
       activeCardButton=null;
       cardSlot.replaceChildren();cardSlot.hidden=true;
       workspace.classList.remove('um4-preview-open');
+      workspace.style.removeProperty('display');workspace.style.removeProperty('grid-template-columns');
       if(restoreFocus&&previous?.isConnected)previous.focus();
     }
     function showCardPreview(panel,button){
@@ -532,7 +533,9 @@ function users(){
       activeCardButton=button;button.setAttribute('aria-pressed','true');
       cardSlot.replaceChildren(panel);cardSlot.hidden=false;
       workspace.classList.add('um4-preview-open');
-      if(matchMedia('(max-width:1050px)').matches)cardSlot.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'nearest'});
+      // Inline important wins over the OS and tablet one-column workspace rules.
+      workspace.style.setProperty('display','grid','important');
+      workspace.style.setProperty('grid-template-columns','var(--um4-preview-columns, minmax(0,1fr))','important');
     }
     section.append(p('Create a private invitation and digital access pass. The employee sets their own password.'));
     const form=el('form','um4-invite-form');
