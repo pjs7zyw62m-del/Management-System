@@ -5,9 +5,9 @@
 <title>Man's Armed Forces | BLACKCELL CORPORATION</title>
 <meta name="description" content="Man's Armed Forces — the private BLACKCELL collection of men in military, police, fire, emergency medical, corrections, security and other professional uniforms.">
 <script src="corp-config.js" defer></script>
-<link rel="stylesheet" href="mans-armed-forces.css?v=20261113-uniform-upload1">
+<link rel="stylesheet" href="mans-armed-forces.css?v=20261113-post-sort-queue2">
 <link rel="stylesheet" href="mans-armed-forces-approved.css?v=20261112-approved2">
-<script type="module" src="mans-armed-forces.js?v=20261113-uniform-upload1"></script>
+<script type="module" src="mans-armed-forces.js?v=20261113-post-sort-queue2"></script>
 </head><body class="mf-body">
 <div id="uGate" class="mf-gate" role="status" aria-live="polite"><div class="mf-gate-box">
   <span class="mf-gate-mark">B</span><span class="mf-overline">BLACKCELL CORPORATION / PRIVATE COLLECTION</span>
@@ -67,15 +67,21 @@
 <section class="mf-section mf-collection" id="collection" aria-labelledby="mfCollectionHeading">
  <div class="mf-section-heading"><div><span class="mf-overline">03 / FROM YOUR PRIVATE NETWORK</span><h2 id="mfCollectionHeading">APPROVED PHOTO COLLECTION<span>.</span></h2><p>Browse approved, unrestricted BLACKCELL photographs by uniform category or military branch. Pending uploads remain private until approved.</p></div><div class="mf-collection-count"><strong id="mfImageCount">—</strong><small>APPROVED PHOTOS</small></div></div>
  <section class="mf-upload-panel" aria-label="Upload uniform photographs">
- <div class="mf-upload-head"><div><span class="mf-overline">PRIVATE COLLECTION / UPLOAD STUDIO</span><h3>Upload &amp; sort uniforms</h3><p>Choose up to 1,000 photographs. Automatic sorting uses uniform labels, filenames and optional visual AI; uncertain photos go to Unsorted.</p></div><button type="button" id="mfUploadOpen" class="mf-primary">＋ UPLOAD PHOTOS</button></div>
+ <div class="mf-upload-head"><div><span class="mf-overline">PRIVATE COLLECTION / UPLOAD STUDIO</span><h3>Upload &amp; sort uniforms</h3><p>Choose up to 1,000 photographs. New eligible owner photos are posted immediately; only unclassified photos enter the sorting queue.</p></div><button type="button" id="mfUploadOpen" class="mf-primary">＋ UPLOAD PHOTOS</button></div>
  <div id="mfUploadForm" hidden>
   <label class="mf-upload-field">SORT INTO<select id="mfUploadCategory"><option value="auto">Automatically sort by uniform</option><option value="military">Military</option><option value="police">Law Enforcement</option><option value="fire">Fire &amp; Rescue</option><option value="medical">Emergency Medical</option><option value="security">Corrections &amp; Security</option><option value="professional">Professional Uniforms</option><option value="unsorted">Unsorted</option></select></label>
   <label class="mf-upload-check" id="mfAiOption"><input type="checkbox" id="mfUploadAi"><span>Use visual AI for this batch (optional; sends reduced image copies to the AI provider and uses API credits; existing daily allowance applies).</span></label>
-  <label class="mf-upload-check" id="mfDirectOption"><input type="checkbox" id="mfUploadDirect"><span>I confirm these are non-explicit photographs I have the rights and consent to share with verified BLACKCELL members. Make my photos available without admin approval.</span></label>
+  <label class="mf-upload-check" id="mfDirectOption"><input type="checkbox" id="mfUploadDirect"><span>I confirm these are non-explicit photographs I have the rights and consent to share with verified BLACKCELL members. Post my photos immediately. Sorting does not delay publication.</span></label>
   <input id="mfUploadFiles" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,image/heic" aria-label="Select uniform photographs">
-  <div class="mf-upload-actions"><button type="button" id="mfUploadChoose" class="mf-secondary">CHOOSE PHOTOS</button><button type="button" id="mfUploadPause" class="mf-secondary" hidden>Ⅱ PAUSE QUEUE</button><button type="button" id="mfUploadClose" class="mf-secondary">CLOSE</button></div>
+  <div class="mf-upload-actions"><button type="button" id="mfUploadChoose" class="mf-secondary">CHOOSE PHOTOS</button><button type="button" id="mfUploadPause" class="mf-secondary" hidden>Ⅱ PAUSE UPLOADS / AI</button><button type="button" id="mfUploadClose" class="mf-secondary">CLOSE</button></div>
   <div id="mfUploadStatus" role="status" aria-live="polite"></div><progress id="mfUploadProgress" max="1" value="0" hidden></progress>
  </div>
+</section>
+<section class="mf-sort-panel" aria-label="Unsorted photograph queue">
+ <div><span class="mf-overline">POSTED / NEEDS CATEGORY</span><h3><strong id="mfQueueCount">0</strong> Unsorted photos</h3><p>These photos are already visible in All Uniforms. Assign a uniform category or skip to the next photo.</p></div>
+ <button id="mfReviewQueue" class="mf-primary" type="button" disabled>REVIEW UNSORTED ↗</button>
+ <div id="mfPendingPanel" hidden><p><strong id="mfPendingCount">0</strong> older Man’s Armed Forces uploads are still pending publication.</p><button type="button" id="mfPublishPending" class="mf-secondary">POST EXISTING UPLOADS</button></div>
+ <p id="mfQueueMessage" role="status" aria-live="polite"></p>
 </section>
 <div class="mf-filter-bar mf-category-filters" aria-label="Filter approved photographs by uniform category">
   <button type="button" data-category-filter="all" class="selected" aria-pressed="true">ALL UNIFORMS</button>
@@ -109,6 +115,9 @@
 <dialog id="mfLightbox" class="mf-lightbox" aria-label="Selected Military Library photograph">
   <div class="mf-lightbox-top"><div><small>BLACKCELL / APPROVED COLLECTION</small><strong id="mfViewerTitle">PHOTOGRAPH</strong></div><button type="button" id="mfCloseViewer" aria-label="Close photograph viewer">✕</button></div>
   <img id="mfViewerImage" alt="Selected approved military photograph"><div class="mf-lightbox-bottom"><span id="mfViewerMeta">UNIFORM COLLECTION</span><label id="mfMoveWrap" hidden>UNIFORM CATEGORY <select id="mfMoveCategory" aria-label="Move photograph to uniform category"><option value="military">Military</option><option value="police">Law Enforcement</option><option value="fire">Fire &amp; Rescue</option><option value="medical">Emergency Medical</option><option value="security">Corrections &amp; Security</option><option value="professional">Professional Uniforms</option><option value="unsorted">Unsorted</option></select></label><a href="corporate-network.html?view=photos">FULL LIBRARY ↗</a></div>
+ <div id="mfQueueControls" class="mf-queue-controls" hidden><div class="mf-queue-top"><strong id="mfQueuePosition"></strong><button type="button" id="mfQueueSkip" class="mf-secondary">SKIP →</button></div>
+ <div class="mf-queue-categories"><button type="button" data-assign-uniform="military">MILITARY</button><button type="button" data-assign-uniform="police">LAW ENFORCEMENT</button><button type="button" data-assign-uniform="fire">FIRE &amp; RESCUE</button><button type="button" data-assign-uniform="medical">EMERGENCY MEDICAL</button><button type="button" data-assign-uniform="security">CORRECTIONS &amp; SECURITY</button><button type="button" data-assign-uniform="professional">PROFESSIONAL</button></div>
+ <p id="mfQueueError" role="status"></p></div>
 </dialog>
 <div class="mf-editorial-credit">Editorial reference photography: Pexels. Photographs in the approved gallery remain their contributors’ own content. No government endorsement implied.</div>
 </div>
