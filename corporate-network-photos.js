@@ -19,8 +19,9 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  const photoFormats=new Set(['image/jpeg','image/png','image/webp','image/gif','image/heic']);
  const videoFormats=new Set(['video/mp4','video/webm','video/quicktime','video/x-m4v']);
  // Only reviewed non-explicit media can enter shared discovery and albums.
+ const belongsToMilitaryLibrary=a=>!Array.isArray(a.military_tags)||!a.military_tags.some(t=>/^maf:(police|fire|medical|security|professional|unsorted)$/.test(t));
  const archiveAssets=()=>state.assets.filter(a=>['post','library'].includes(a.purpose)
-  &&a.review_status==='approved'&&!a.adult_restricted);
+  &&a.review_status==='approved'&&!a.adult_restricted&&belongsToMilitaryLibrary(a));
  const privateAdultAssets=()=>state.member?.role==='owner'
   ?state.assets.filter(a=>['post','library'].includes(a.purpose)
     &&a.review_status==='approved'&&a.adult_restricted===true):[];
