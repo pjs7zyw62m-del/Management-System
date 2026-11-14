@@ -550,13 +550,13 @@ footer{height:36px;line-height:36px;padding:0;align-self:stretch;margin:0;white-
 </style>
 <link rel="stylesheet" href="corp-login-roles.css?v=20261109-roles1">
 <script src="corp-config.js" defer></script>
-<script type="module" src="corp-login.js?v=20261114-user-network"></script>
+<script type="module" src="corp-login.js?v=20261114-no-descriptions"></script>
 <link rel="stylesheet" href="corp-adaptive-access.css?v=20261111-single-card2">
 <style>
 /* Neutral black surfaces; retain selected-tab and authorization state colors. */
 .login-role-tabs{background:#050505;border-color:#353535}
 .show{background:#171717}
-#adminLoginTab small:empty{display:none}
+#adminLoginTab small:empty,.login-role-description:empty{display:none}
 /* Deep true red accents, without rose or magenta tones. */
 :root{--red:#a20b0b}
 .primary{background:linear-gradient(120deg,#620606,#a20b0b,#780808);border-color:#b32222}
@@ -588,7 +588,7 @@ input:focus-visible{outline-color:#c83232}
   <button type="button" id="employeeLoginTab" role="tab" aria-selected="false" aria-controls="login" tabindex="-1"><span>USER NETWORK</span><small>NETWORK ACCESS</small></button>
   <button type="button" id="accessPassTab" class="access-pass-tab" role="tab" aria-selected="false" aria-controls="inlineAccessStep" tabindex="-1" disabled hidden><span>ACCESS PASS</span><small>SECURITY VERIFICATION</small></button>
 </div>
-<p class="login-role-description" id="loginRoleDescription" aria-live="polite">Level 7 Executive Administration access.</p>
+<p class="login-role-description" id="loginRoleDescription" aria-live="polite"></p>
 <form id="login">
 <label for="email">EMAIL ADDRESS</label>
 <input id="email" type="email" autocomplete="username" required placeholder="name@example.com">
