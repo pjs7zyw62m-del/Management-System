@@ -804,13 +804,97 @@ function videoTile(a){
   btn('OPEN AUTHOR PROFILE ↗',()=>openProfile(a.owner_id,'videos')));
  card.append(footer);return card;
 }
+// Dedicated Video Studio: uploads happen inside Video Channel, never in Network Feed.
+let directVideoBusy=false;
+function syncDirectVideoCategory(){
+ const kind=$('bcVideoCategory').value;
+ const episode=kind==='series';
+ $('bcVideoEpisodeFields').hidden=!episode;
+ $('bcVideoSeriesTitle').required=episode;
+ $('bcVideoSeason').required=episode;
+ $('bcVideoEpisode').required=episode;
+ $('bcVideoUploadHeading').textContent=kind==='movie'?'Upload Movie':kind==='series'?'Upload TV Episode':kind==='documentary'?'Upload Documentary':kind==='short'?'Upload Short':'Upload Video';
+}
+function openDirectVideoUpload(category='standard'){
+ if(directVideoBusy||state.busy)return;
+ const modal=$('bcVideoUploadDialog');
+ $('bcVideoUploadForm').reset();
+ $('bcVideoCategory').value=['standard','short','movie','series','documentary'].includes(category)?category:'standard';
+ $('bcVideoFileName').textContent='Choose MP4, MOV or WEBM (maximum 45 MB with current storage limits)';
+ $('bcVideoUploadMessage').textContent='';
+ $('bcVideoUploadProgress').hidden=true;
+ $('bcVideoUploadFill').style.width='0%';
+ $('bcVideoUploadSubmit').disabled=false;
+ syncDirectVideoCategory();
+ modal.hidden=false;
+ document.body.classList.add('bc-video-upload-open');
+ $('bcVideoTitle').focus({preventScroll:true});
+}
+function closeDirectVideoUpload(){
+ if(directVideoBusy)return;
+ $('bcVideoUploadDialog').hidden=true;
+ $('bcVideoUploadForm').reset();
+ document.body.classList.remove('bc-video-upload-open');
+}
+async function publishDirectVideo(event){
+ event.preventDefault();
+ if(directVideoBusy||state.busy)return;
+ const file=$('bcVideoFile').files?.[0];
+ const title=$('bcVideoTitle').value.trim();
+ const category=$('bcVideoCategory').value;
+ const synopsis=$('bcVideoDescription').value.trim();
+ const seriesTitle=$('bcVideoSeriesTitle').value.trim();
+ const season=Number($('bcVideoSeason').value);
+ const episode=Number($('bcVideoEpisode').value);
+ if(!file){toast('Choose a video file first.');return}
+ if(!allowedTypes.has(file.type)||!file.type.startsWith('video/')||file.size<=0||file.size>45*1048576){
+  toast('Use an MP4, MOV or WEBM video of 45 MB or less.');return;
+ }
+ if(!title){toast('Enter a video title.');return}
+ if(!$('bcVideoRights').checked){toast('Confirm you have the rights to share this video.');return}
+ if(category==='series'&&(!seriesTitle||!Number.isInteger(season)||season<1||season>100||!Number.isInteger(episode)||episode<1||episode>999)){
+  toast('Enter the TV show title, season and episode number.');return;
+ }
+ const metadata={title,category,seriesTitle:category==='series'?seriesTitle:null,season:category==='series'?season:null,episode:category==='series'?episode:null,synopsis};
+ const submit=$('bcVideoUploadSubmit'),progress=$('bcVideoUploadProgress');
+ directVideoBusy=true;state.busy=true;submit.disabled=true;
+ $('bcVideoUploadClose').disabled=true;$('bcVideoUploadCancel').disabled=true;
+ progress.hidden=false;
+ $('bcVideoUploadFill').style.width='8%';
+ $('bcVideoUploadMessage').textContent='Preparing secure upload…';
+ let postId=null;
+ try{
+  const {data,error}=await client.from('corp_social_posts').insert({
+   author_id:state.user.id,body:title,kind:'video'
+  }).select('id').single();
+  if(error||!data?.id)throw Error(error?.message||'Could not create video record.');
+  postId=data.id;
+  $('bcVideoUploadMessage').textContent='Uploading securely…';
+  $('bcVideoUploadFill').style.width='24%';
+  // Current Storage API does not report progress; the bar remains indeterminate during upload.
+  await uploadAsset(file,'post',postId,metadata);
+  $('bcVideoUploadFill').style.width='100%';
+  $('bcVideoUploadMessage').textContent='Upload complete. Awaiting administrator review.';
+  await loadAll({show:true});
+  $('bcVideoUploadDialog').hidden=true;
+  document.body.classList.remove('bc-video-upload-open');
+  document.dispatchEvent(new CustomEvent('bc:media-updated'));
+  toast('Video uploaded for administrator review. It will appear in Video Channel after approval.');
+ }catch(e){
+  if(postId)await client.from('corp_social_posts').delete().eq('id',postId).eq('author_id',state.user.id);
+  $('bcVideoUploadMessage').textContent='Upload failed: '+fail(e);
+  $('bcVideoUploadFill').style.width='0%';
+  toast('Video upload failed: '+fail(e));
+ }finally{
+  directVideoBusy=false;state.busy=false;submit.disabled=false;
+  $('bcVideoUploadClose').disabled=false;$('bcVideoUploadCancel').disabled=false;
+ }
+}
 const videoChannel=createBlackcellVideoChannel({
  state,mediaUrl,sharedMedia,profile,personName,stamp,switchView,openProfile,toast,
- uploadVideo:()=>{
-  switchView('feed');
-  $('attachVideo').click();
- }
+ uploadVideo:openDirectVideoUpload
 });
+
 function renderVideos(){videoChannel.render()}
 async function toggleFollow(id){
  if(id===state.user.id)return;
@@ -855,7 +939,7 @@ async function deletePost(p){
   await refresh();toast('Post deleted.');
  }catch(e){toast('Could not delete post: '+fail(e))}
 }
-async function uploadAsset(file,purpose,postId=null){
+async function uploadAsset(file,purpose,postId=null,videoMetadata=null){
  if(!allowedTypes.has(file.type))throw Error('Unsupported format. Use JPG, PNG, WEBP, GIF, HEIC, MP4, MOV, or WEBM.');
  if(file.size<=0||file.size>45*1048576)throw Error('File must be smaller than 45 MB.');
  if(purpose!=='post' && (!file.type.startsWith('image/')||file.size>12*1048576))
@@ -870,8 +954,24 @@ async function uploadAsset(file,purpose,postId=null){
  const record={id,owner_id:state.user.id,post_id:postId,purpose,
   kind:file.type.startsWith('image/')?'photo':'video',
   mime_type:file.type,filename:file.name.slice(0,180),storage_path:path,bytes:file.size};
+ // Video Studio uses structured metadata and requires explicit administrator review.
+ // Normal profile images and Network composer uploads retain their existing behavior.
+ if(videoMetadata && purpose==='post' && record.kind==='video'){
+  record.caption=String(videoMetadata.title||'').slice(0,300);
+  record.video_category=String(videoMetadata.category||'standard');
+  record.video_series_title=videoMetadata.seriesTitle||null;
+  record.video_season=videoMetadata.season||null;
+  record.video_episode=videoMetadata.episode||null;
+  record.video_synopsis=videoMetadata.synopsis||null;
+  record.rights_confirmed=true;
+  record.review_status='pending';
+ }
  const {error}=await client.from('corp_social_assets').insert(record);
- if(error)throw Error('Media storage saved, but registration failed: '+error.message);
+ if(error){
+  // Do not strand the uploaded bytes if the metadata insert fails.
+  await bucket.remove([path]).catch(()=>{});
+  throw Error('Media storage saved, but registration failed: '+error.message);
+ }
  return record;
 }
 let formFiles=[];
@@ -1014,6 +1114,17 @@ async function refreshVisibleNetworkFeed(){
 }
 function setupEvents(){
  videoChannel.init();
+ $('bcVideoUploadForm').addEventListener('submit',e=>void publishDirectVideo(e));
+ $('bcVideoCategory').addEventListener('change',syncDirectVideoCategory);
+ $('bcVideoUploadClose').addEventListener('click',closeDirectVideoUpload);
+ $('bcVideoUploadCancel').addEventListener('click',closeDirectVideoUpload);
+ $('bcVideoFile').addEventListener('change',()=>{
+  const f=$('bcVideoFile').files?.[0];
+  $('bcVideoFileName').textContent=f?f.name+' · '+prettyBytes(f.size):'Choose a video file';
+ });
+ $('bcVideoUploadDialog').addEventListener('click',e=>{
+  if(e.target===$('bcVideoUploadDialog'))closeDirectVideoUpload()
+ });
  document.querySelectorAll('[data-view]').forEach(n=>n.addEventListener('click',()=>switchView(n.dataset.view)));
  $('viewAllPeople').addEventListener('click',()=>switchView('discover'));
  $('peopleSearch').addEventListener('input',renderDirectory);
@@ -1086,6 +1197,8 @@ function setupEvents(){
 let networkSecurityChecksInstalled=false,networkSecurityChecking=false;
 function closeNetworkForSecurity(reason){
  videoChannel.close();
+ $('bcVideoUploadDialog').hidden=true;
+ document.body.classList.remove('bc-video-upload-open');
  $('app').hidden=true;
  $('gate').hidden=false;
  $('gateText').textContent=reason;
