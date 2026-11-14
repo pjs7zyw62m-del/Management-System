@@ -333,7 +333,8 @@ function showInvitationPreview(inputs,showPreview,closePreview){
     el('span','invitation-preview-status','PREVIEW ONLY · NOT SENT')
   );
   wrapper.append(top);
-  wrapper.dataset.sidePreview='v5';
+  wrapper.dataset.sidePreview='v6';
+  top.append(el('span','um4-email-build','SIDE PREVIEW · V6'));
 
   const address=el('div','invitation-preview-address');
   address.append(
@@ -415,7 +416,9 @@ function ensureInvitationCardPreviewStyle(){
   const style=el('style');style.id='um4-card-preview-style';
   style.textContent=`
     #modalContent .um4-card-preview-slot[hidden]{display:none!important}
-    #modalContent .um4-card-preview-slot[data-kind=email]{overflow-y:auto!important;overflow-x:hidden!important;scrollbar-width:none;overscroll-behavior:contain;overflow-anchor:none}
+    #modalContent .um4-card-preview-slot[data-kind=email]{overflow-y:auto!important;overflow-x:hidden!important;scrollbar-width:none;overscroll-behavior:contain;overflow-anchor:none;background:#111116;border-radius:18px}
+    #modalContent .um4-email-build{font-size:9px;letter-spacing:.1em;color:#9d9da7}
+    @keyframes bcEmailSideV6{from{transform:translate3d(100%,0,0);opacity:.65}to{transform:translate3d(0,0,0);opacity:1}}
     #modalContent .um4-card-preview-slot[data-kind=email]::-webkit-scrollbar{display:none}
     #modalContent .um4-card-preview-slot[data-kind=email]>.invitation-preview{position:relative!important;inset:auto!important;transform:none!important;animation:none!important;transition:none!important}
     #modalContent .um4-preview-open{overflow-anchor:none}
@@ -509,7 +512,7 @@ function users(){
     ensureInvitationCardPreviewStyle();
     const section=block('Register New Employee');
     const cardSlot=el('aside','um4-card-preview-slot');
-    cardSlot.id='um4-card-preview-slot';cardSlot.hidden=true;cardSlot.dataset.previewBuild='horizontal-v5-email';
+    cardSlot.id='um4-card-preview-slot';cardSlot.hidden=true;cardSlot.dataset.previewBuild='horizontal-v6-email';
     cardSlot.setAttribute('aria-label','Employee invitation and credential previews');
     let activeCardButton=null,previewObserver=null,previewMotion=null;
     const applyImportant=(node,styles)=>{for(const [key,value] of Object.entries(styles))node.style.setProperty(key,value,'important')};
@@ -520,13 +523,22 @@ function users(){
       // Explicit horizontal, non-wrapping layout: legacy grid rules cannot put the card below.
       applyImportant(workspace,{'display':'flex','flex-flow':'row nowrap','align-items':'flex-start','position':'relative','gap':'14px'});
       applyImportant(section,{'flex':wide?'0 0 min(52%,850px)':'0 0 100%','min-width':'0'});
-      applyImportant(cardSlot,{'display':'block','position':wide?'relative':'absolute','top':'0','right':'0','flex':wide?'1 1 0':'0 0 auto','width':wide?'auto':'min(94%,520px)','z-index':'20','min-width':'0'});
       if(cardSlot.dataset.kind==='email'){
+        // The email is an overlay anchored at the top RIGHT of this workspace,
+        // not a flow/grid item. Its height can never add a row under the form.
+        const workspaceWidth=workspace.clientWidth;
+        const formWidth=section.getBoundingClientRect().width;
+        const sideWidth=wide?Math.max(1,workspaceWidth-formWidth-14):Math.min(workspaceWidth,520);
+        applyImportant(cardSlot,{'display':'block','position':'absolute','inset':'0 0 auto auto','flex':'none','width':Math.floor(sideWidth)+'px','z-index':'30','min-width':'0','margin':'0'});
         const visibleBottom=Math.min(window.innerHeight,content.getBoundingClientRect().bottom);
-        const available=Math.max(240,visibleBottom-workspace.getBoundingClientRect().top-12);
+        const available=Math.max(180,visibleBottom-workspace.getBoundingClientRect().top-12);
         cardSlot.style.setProperty('max-height',Math.floor(available)+'px','important');
-      }else cardSlot.style.removeProperty('max-height');
-      if(!wide)workspace.style.setProperty('min-height',Math.ceil(Math.max(section.offsetHeight,cardSlot.offsetHeight))+'px','important');
+      }else{
+        clearStyles(cardSlot,['inset','margin','animation']);
+        applyImportant(cardSlot,{'display':'block','position':wide?'relative':'absolute','top':'0','right':'0','flex':wide?'1 1 0':'0 0 auto','width':wide?'auto':'min(94%,520px)','z-index':'20','min-width':'0'});
+        cardSlot.style.removeProperty('max-height');
+      }
+      if(!wide&&cardSlot.dataset.kind!=='email')workspace.style.setProperty('min-height',Math.ceil(Math.max(section.offsetHeight,cardSlot.offsetHeight))+'px','important');
       else workspace.style.removeProperty('min-height');
     }
     function closeCardPreview(restoreFocus=false){
@@ -537,7 +549,7 @@ function users(){
       workspace.classList.remove('um4-preview-open');
       clearStyles(workspace,['display','flex-flow','align-items','position','gap','min-height']);
       clearStyles(section,['flex','min-width']);
-      clearStyles(cardSlot,['display','position','top','right','flex','width','z-index','min-width','max-height']);
+      clearStyles(cardSlot,['display','position','inset','top','right','flex','width','z-index','min-width','max-height','margin','animation']);
       if(list.parentElement!==workspace)workspace.append(list);
       if(restoreFocus&&previous?.isConnected)previous.focus({preventScroll:true});
     }
@@ -559,8 +571,15 @@ function users(){
       if(!previewObserver&&typeof ResizeObserver==='function'){
         previewObserver=new ResizeObserver(()=>layoutCardPreview());previewObserver.observe(workspace);previewObserver.observe(cardSlot);
       }
-      if(!matchMedia('(prefers-reduced-motion: reduce)').matches&&typeof cardSlot.animate==='function'){
-        previewMotion=cardSlot.animate([{transform:'translate3d(56px,0,0)',opacity:0},{transform:'translate3d(0,0,0)',opacity:1}],{duration:360,easing:'cubic-bezier(.2,.75,.25,1)'});
+      cardSlot.style.removeProperty('animation');
+      if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
+        if(isEmail){
+          // Full-width horizontal motion, from right edge only.
+          void cardSlot.offsetWidth;
+          cardSlot.style.setProperty('animation','bcEmailSideV6 420ms cubic-bezier(.2,.75,.25,1) both','important');
+        }else if(typeof cardSlot.animate==='function'){
+          previewMotion=cardSlot.animate([{transform:'translate3d(56px,0,0)',opacity:0},{transform:'translate3d(0,0,0)',opacity:1}],{duration:360,easing:'cubic-bezier(.2,.75,.25,1)'});
+        }
       }
     }
     section.append(p('Create a private invitation and digital access pass. The employee sets their own password.'));
