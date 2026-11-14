@@ -136,7 +136,7 @@ async function load(reveal=false){
    verified=false;configurePasswordPanel(member);showPanel('employeeActivation');
    return;
   }
-  // Verified employees land on their own social profile by default.
+  // Verified employees land on their BLACKCELL OS desktop by default.
   // ?card=1 is an explicit employee-only route to view the access pass.
   // No redirect occurs until corporateAuthorize and employee code status pass.
   const {data,error}=await client.rpc('corp_employee_code_status');
@@ -145,7 +145,7 @@ async function load(reveal=false){
    return;
   }
   if(!error&&data?.ok===true&&data.verified===true&&!employeeCardRequested){
-   location.replace('corporate-network.html?view=profile');
+   location.replace('blackcell-os.html');
    return;
   }
   showPanel('employeeHome');
