@@ -782,27 +782,28 @@ async function loadClearanceLevels(container){
       container.append(p('No approved accounts were found.'));
       return;
     }
+    container.classList.add('um3-clearance-list');
     for(const member of data.members){
-      const entry=el('div','list-row');
-      const details=el('div');
+      const entry=el('div','um3-clearance-row');
+      const identity=el('div','um3-access-identity'),details=el('div','um3-access-copy');
+      const avatar=el('span','um3-avatar',String(member.display_name||'BC').trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase());
       details.append(el('b','',member.display_name||'Corporate Member'),
         el('small','',String(member.role||'employee').toUpperCase()+
           ' · Current Level '+String(member.clearance_level)));
-      entry.append(details);
+      identity.append(avatar,details);entry.append(identity);
       if(member.role==='owner'){
-        entry.append(el('span','mock-state','LEVEL 7 · OWNER'));
+        entry.append(el('span','um3-owner-clearance','Level 7 · Owner'));
       }else{
-        const controls=el('div');
-        controls.style.cssText='display:flex;gap:7px;align-items:center;flex-wrap:wrap';
-        const dropdown=el('select');
+        const controls=el('div','um3-clearance-controls');
+        const dropdown=el('select','um3-clearance-select');
         dropdown.setAttribute('aria-label','Clearance level for '+(member.display_name||'employee'));
         for(let level=1;level<=6;level++){
           const option=new Option('Level '+level,String(level));
           dropdown.add(option);
         }
         dropdown.value=String(member.clearance_level);
-        const save=action('SAVE LEVEL',async()=>{
-          save.disabled=true;
+        const save=action('Save',async()=>{
+          save.disabled=true;dropdown.disabled=true;
           save.textContent='SAVING…';
           try{
             const {data:changed,error:changeError}=await api.rpc('corp_set_clearance_level',{
@@ -817,8 +818,9 @@ async function loadClearanceLevels(container){
                 String(member.role).toUpperCase()+' · Current Level '+member.clearance_level;
             }
           }catch(_){save.textContent='NOT SAVED'}
-          finally{save.disabled=false}
+          finally{save.disabled=false;dropdown.disabled=false}
         });
+        save.classList.add('um3-clearance-save');dropdown.addEventListener('change',()=>{save.textContent='Save'});
         controls.append(dropdown,save);
         entry.append(controls);
       }
