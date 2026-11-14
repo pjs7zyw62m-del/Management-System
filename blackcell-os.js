@@ -1,3 +1,4 @@
+import {mountBrowser} from './blackcell-browser.js?v=1';
 let corporateClient,corporateAuthorize;
 const $=id=>document.getElementById(id),preview=document.body.dataset.preview==='true';
 let client,active=false,leaving=false,last=Date.now(),touched=Date.now(),touching=false,checking=false;
@@ -34,7 +35,8 @@ function showApp(id){
  const content=document.createElement('div');content.className='os-window-body';w.append(bar,content);
  const r={id,title:tile.dataset.title,el:w,frame:null,release:null};windows.set(id,r);
  for(const [label,symbol,fn] of [['Close','×',()=>dispose(r)],['Minimize','−',()=>{w.hidden=true;selectedWindow=null}],['Maximize or restore','+',()=>w.classList.toggle('is-max')]]){const btn=document.createElement('button');btn.type='button';btn.setAttribute('aria-label',label+' '+r.title);btn.title=label;btn.textContent=symbol;btn.addEventListener('click',fn);controls.append(btn)}
- if(preview){const demo=document.createElement('div');demo.className='os-demo';const box=document.createElement('div');box.append(tile.querySelector('.app-icon').cloneNode(true));const h=document.createElement('h2');h.textContent=r.title;const p=document.createElement('p');p.textContent=tile.dataset.desc;const status=document.createElement('p');status.textContent='DESIGN PREVIEW · No private account data loaded.';status.className='os-window-status';box.append(h,p,status);demo.append(box);content.append(demo)}
+ if(id==='browser'){if(!preview)r.release=window.BLACKCELL_LIVE_UPDATE?.hold('BLACKCELL Browser window');mountBrowser(content,r,external,activity);}
+ else if(preview){const demo=document.createElement('div');demo.className='os-demo';const box=document.createElement('div');box.append(tile.querySelector('.app-icon').cloneNode(true));const h=document.createElement('h2');h.textContent=r.title;const p=document.createElement('p');p.textContent=tile.dataset.desc;const status=document.createElement('p');status.textContent='DESIGN PREVIEW · No private account data loaded.';status.className='os-window-status';box.append(h,p,status);demo.append(box);content.append(demo)}
  else{r.release=window.BLACKCELL_LIVE_UPDATE?.hold('BLACKCELL OS application window');const frame=document.createElement('iframe');frame.title=r.title;frame.src=url.href;frame.allow='fullscreen';frame.setAttribute('allowfullscreen','');r.frame=frame;content.append(frame);
  frame.addEventListener('load',()=>{try{const child=frame.contentDocument;if(!child)return;const childURL=new URL(frame.contentWindow.location.href);if(childURL.origin!==location.origin)return;if(childURL.pathname.endsWith('/blackcell-os.html')||childURL.pathname.endsWith('/blackcell-os-preview.html')){dispose(r,true);return}for(const event of ['pointerdown','keydown','touchstart','wheel'])child.addEventListener(event,()=>void activity(),{passive:true});}catch(_){}});
  }
