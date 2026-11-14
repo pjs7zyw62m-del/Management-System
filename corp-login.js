@@ -45,7 +45,7 @@ function choosePortal(portal,{quiet=false,force=false}={}){
     ?'Level 7 Executive Administration access.'
     :'Employee Network · Your name, profile, messages and employee access card.';
   loginButton.textContent=selectedPortal==='admin'
-    ?'SIGN IN TO ADMINISTRATION ↗':'SIGN IN TO EMPLOYEE NETWORK ↗';
+    ?'SIGN IN TO ADMINISTRATION ↗':'SIGN IN TO USER NETWORK ↗';
   if(!quiet)clearMessage(status);
 }
 function handleAuthorizedRole(member){
@@ -179,7 +179,7 @@ function showLogin(){
   accessPassTab.setAttribute('aria-selected','false');
   accessPassTab.tabIndex=-1;
   accessPassTab.querySelector('small').textContent='SECURITY VERIFICATION';
-  adminLoginTab.querySelector('small').textContent='LEVEL 7';
+  adminLoginTab.querySelector('small').textContent='';
   adminLoginTab.setAttribute('aria-selected',String(selectedPortal==='admin'));
   employeeLoginTab.setAttribute('aria-selected',String(selectedPortal==='employee'));
   adminLoginTab.tabIndex=selectedPortal==='admin'?0:-1;
@@ -198,7 +198,7 @@ function showLogin(){
   passwordToggle.disabled=false;
   loginButton.disabled=false;
   loginButton.textContent=selectedPortal==='employee'
-    ?'SIGN IN TO EMPLOYEE NETWORK ↗':'SIGN IN TO ADMINISTRATION ↗';
+    ?'SIGN IN TO USER NETWORK ↗':'SIGN IN TO ADMINISTRATION ↗';
   changeAccount.hidden=true;
   access.value='';
   security.value='';
@@ -401,7 +401,7 @@ form.addEventListener('submit',async event=>{
     if(!stage.classList.contains('show-pass')){
       loginButton.disabled=false;
       loginButton.textContent=selectedPortal==='employee'
-        ?'SIGN IN TO EMPLOYEE NETWORK ↗':'SIGN IN TO ADMINISTRATION ↗';
+        ?'SIGN IN TO USER NETWORK ↗':'SIGN IN TO ADMINISTRATION ↗';
     }
   }
 });
