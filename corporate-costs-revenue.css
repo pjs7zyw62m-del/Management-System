@@ -1,6 +1,7 @@
 
 /* BLACKCELL | Private Costs & Revenue forecasting. Visual assumptions are not invoices. */
-body[data-workspace=costs]{background:#020203}
+body[data-workspace=costs]{background:#020203;scrollbar-width:none}
+body[data-workspace=costs]::-webkit-scrollbar{display:none}
 body[data-workspace=costs] .bg-glow{background:radial-gradient(ellipse at 88% 3%,#681d3420,transparent 53%)}
 body[data-workspace=costs] .shell main{padding-top:32px}
 .bc-cost-head{display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:15px}
