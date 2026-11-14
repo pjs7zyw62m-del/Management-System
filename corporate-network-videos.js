@@ -93,7 +93,7 @@ export function createBlackcellVideoChannel({state,mediaUrl,sharedMedia,profile,
   return x;
  }
  function searchVideo(all){
-  const q=query.trim().toLowerCase();return q?all.filter(a=>(title(a)+' '+creator(a)+' '+(a.filename||'')).toLowerCase().includes(q)):all;
+  const q=query.trim().toLowerCase();return q?all.filter(a=>(title(a)+' '+creator(a)+' '+(a.filename||'')+' '+(a.video_series_title||'')).toLowerCase().includes(q)):all;
  }
  function sortVideos(all){
   const result=all.slice();
