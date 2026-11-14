@@ -37,7 +37,7 @@
 <link rel="stylesheet" href="corporate-network-coverless-profile-v6.css?v=20261112-coverless6">
 <link rel="stylesheet" href="private-photo-ledger-nav.css?v=20261112-photoledger1">
 <link rel="stylesheet" href="corporate-chat-black-red-glass-v6.css?v=20261113-imessage6">
-<link rel="stylesheet" href="corporate-network-videos.css?v=20261113-plex-youtube2">
+<link rel="stylesheet" href="corporate-network-videos.css?v=20261113-youtube-layout3">
 </head>
 <body class="bc-network">
 <header class="masthead">
@@ -240,63 +240,139 @@
       <div class="panel directory-search"><input id="peopleSearch" type="search" placeholder="Search names and usernames…" aria-label="Search the corporate directory"></div>
       <div id="peopleDirectory" class="directory-grid"></div>
     </section>
-    <section id="videosView" class="view bc-video-view" hidden>
-      <div class="bc-videos-heading">
-        <div><div class="bc-video-eyebrow">BLACKCELL ORIGINALS / THE NETWORK CHANNEL</div>
-          <h1>Video <span>Channel.</span></h1>
-          <p>Discover films and videos shared by verified members of your private network.</p>
-        </div>
-        <div class="bc-video-header-tools">
-          <span id="bcVideoTotal" class="bc-video-counter">VIDEO LIBRARY</span>
-          <button type="button" id="bcVideoUpload" class="bc-video-primary">＋ UPLOAD VIDEO</button>
-        </div>
+    
+<section id="videosView" class="view bc-video-view" hidden>
+  <div class="bc-ytshell" id="bcVideoShell">
+    <header class="bc-yt-topbar">
+      <div class="bc-yt-brand">
+        <button type="button" id="bcVideoMenu" class="bc-yt-iconbtn" aria-label="Toggle Video Channel sidebar" aria-expanded="true">☰</button>
+        <button type="button" id="bcVideoHomeLogo" class="bc-yt-wordmark" title="Video Channel home"><span class="bc-yt-playmark">▶</span><strong>BLACKCELL</strong><span>VIDEO</span></button>
       </div>
-      <div class="bc-video-toolbar">
-        <label class="bc-video-search"><span aria-hidden="true">⌕</span>
-          <input id="bcVideoSearch" type="search" placeholder="Search videos, creators, titles…" autocomplete="off" aria-label="Search video library">
-        </label>
-        <div id="bcVideoFilters" class="bc-video-filters" aria-label="Video library filters">
-          <button class="is-active" type="button" data-video-filter="all" aria-pressed="true">All Videos</button>
-          <button type="button" data-video-filter="following" aria-pressed="false">Following</button>
-          <button type="button" data-video-filter="mine" aria-pressed="false">My Uploads</button>
-          <button type="button" data-video-filter="watchlater" aria-pressed="false">＋ Watch Later</button>
-        </div>
-        <select id="bcVideoSort" aria-label="Sort videos">
-          <option value="newest">Newest first</option>
-          <option value="oldest">Oldest first</option>
-          <option value="title">Title A–Z</option>
-        </select>
+      <label class="bc-yt-search"><input id="bcVideoSearch" type="search" placeholder="Search videos, channels and creators" aria-label="Search BLACKCELL videos" autocomplete="off"><span aria-hidden="true">⌕</span></label>
+      <div class="bc-yt-head-actions">
+        <span id="bcVideoTotal" class="bc-video-counter" aria-live="polite">VIDEO CHANNEL</span>
+        <button type="button" id="bcVideoUpload" class="bc-yt-iconbtn bc-yt-create" aria-label="Create or upload video">＋</button>
+        <button type="button" id="bcVideoAccount" class="bc-yt-avatar" aria-label="Open your video library">B</button>
+        <button type="button" id="bcVideoBackNetwork" class="bc-yt-return">← NETWORK</button>
       </div>
-      <div id="bcVideoSpotlight" class="bc-video-spotlight" aria-label="Featured network video"></div>
-      <section id="bcVideoContinueSection" class="bc-video-shelf" hidden>
-        <div class="bc-video-shelf-heading"><div><span class="bc-video-eyebrow">PICK UP WHERE YOU LEFT OFF</span><h2>Continue watching</h2></div></div>
-        <div id="bcVideoContinue" class="bc-video-scroller"></div>
-      </section>
-      <section id="bcVideoLatestSection" class="bc-video-shelf">
-        <div class="bc-video-shelf-heading"><div><span class="bc-video-eyebrow">FRESH FROM THE NETWORK</span><h2>Recently added</h2></div></div>
-        <div id="bcVideoLatest" class="bc-video-scroller"></div>
-      </section>
-      <section class="bc-video-shelf bc-video-all">
-        <div class="bc-video-shelf-heading"><div><span class="bc-video-eyebrow">THE BLACKCELL COLLECTION</span><h2 id="bcVideoCollectionTitle">Explore all videos</h2></div><span id="bcVideoResults" class="bc-video-count-label"></span></div>
-        <div id="videoGrid" class="bc-video-grid"></div>
-      </section>
-      <div class="bc-video-disclaimer">Private BLACKCELL network · Only approved, authorized videos are shown.</div>
-    </section>
-    <div id="bcVideoCinema" class="bc-video-cinema" hidden>
-      <section class="bc-video-cinema-dialog" role="dialog" aria-modal="true" aria-labelledby="bcCinemaTitle">
-        <header class="bc-cinema-head"><div><span class="bc-video-eyebrow">BLACKCELL / NOW PLAYING</span><h2 id="bcCinemaTitle">Video</h2></div><button type="button" id="bcCinemaClose" aria-label="Close video player">✕</button></header>
-        <div class="bc-cinema-layout">
-          <div class="bc-cinema-stage"><video id="bcCinemaPlayer" controls playsinline preload="metadata" controlsList="nodownload" aria-label="BLACKCELL video player"></video>
-            <div class="bc-cinema-playerbar"><button type="button" id="bcCinemaPrev">← PREVIOUS</button><button type="button" id="bcCinemaNext">NEXT VIDEO →</button><button type="button" id="bcCinemaFullscreen">⛶ FULL SCREEN</button></div>
-          </div>
-          <aside class="bc-cinema-details"><div class="bc-video-eyebrow">NOW WATCHING</div><h3 id="bcCinemaVideoTitle"></h3><p id="bcCinemaVideoMeta"></p>
-            <div class="bc-cinema-actions"><button type="button" id="bcCinemaWatchLater">＋ WATCH LATER</button><button type="button" id="bcCinemaCreator">VIEW CREATOR ↗</button></div>
-            <p id="bcCinemaDescription"></p><p class="bc-cinema-hint">Continue watching is remembered on this device. Videos remain protected by BLACKCELL access controls.</p>
-          </aside>
+    </header>
+    <div class="bc-yt-body">
+      <aside id="bcVideoSidebar" class="bc-yt-sidebar" aria-label="Video Channel navigation">
+        <div class="bc-yt-nav">
+          <button type="button" data-vnav="home" class="is-active" aria-current="page"><span>⌂</span><b>Home</b></button>
+          <button type="button" data-vnav="shorts"><span>▷</span><b>Shorts</b></button>
+          <button type="button" data-vnav="following"><span>▰</span><b>Subscriptions</b></button>
+          <button type="button" data-vnav="channels"><span>◉</span><b>Channels</b></button>
+          <button type="button" data-vnav="library"><span>▣</span><b>You · Library</b></button>
+          <button type="button" data-vnav="history"><span>◷</span><b>History</b></button>
+          <button type="button" data-vnav="watchlater"><span>▢</span><b>Watch Later</b></button>
+          <button type="button" data-vnav="uploads"><span>⬆</span><b>My Uploads</b></button>
         </div>
-      </section>
+        <div class="bc-yt-nav-divider"></div>
+        <div class="bc-yt-subtitle">FROM YOUR NETWORK</div>
+        <div id="bcVideoSubscribedChannels" class="bc-yt-sublist"></div>
+        <button type="button" id="bcVideoBrowseChannels" class="bc-yt-nav-extra">＋ Browse channels</button>
+        <div class="bc-yt-nav-divider"></div>
+        <button type="button" id="bcVideoExitSidebar" class="bc-yt-nav-extra">← Back to Network</button>
+      </aside>
+      <main class="bc-yt-content" id="bcVideoContent">
+        <nav class="bc-yt-topics" id="bcVideoTopics" aria-label="Browse video categories">
+          <button type="button" data-video-topic="all" class="is-active" aria-pressed="true">All</button>
+          <button type="button" data-video-topic="today" aria-pressed="false">Today</button>
+          <button type="button" data-video-topic="unwatched" aria-pressed="false">Unwatched</button>
+          <button type="button" data-video-topic="military" aria-pressed="false">Military</button>
+          <button type="button" data-video-topic="police" aria-pressed="false">Law Enforcement</button>
+          <button type="button" data-video-topic="fire" aria-pressed="false">Fire & Rescue</button>
+          <button type="button" data-video-topic="training" aria-pressed="false">Training</button>
+          <button type="button" data-video-topic="uniform" aria-pressed="false">Uniforms</button>
+          <button type="button" data-video-topic="aviation" aria-pressed="false">Aviation</button>
+          <button type="button" data-video-topic="history" aria-pressed="false">History</button>
+        </nav>
+        <div class="bc-yt-screens" id="bcVideoScreens">
+          <section id="bcVideoHomeScreen" class="bc-yt-screen" data-video-screen="home">
+            <div id="bcVideoHomeNotice" class="bc-yt-home-notice" hidden></div>
+            <div class="bc-yt-section-head"><h2 id="bcVideoHomeTitle">Recommended for you</h2><span id="bcVideoResults"></span></div>
+            <div id="videoGrid" class="bc-yt-videogrid"></div>
+            <section id="bcVideoShortsSection" class="bc-yt-section" hidden>
+              <div class="bc-yt-section-head"><h2><span class="bc-yt-shortmark">▷</span> Shorts</h2><button type="button" id="bcVideoOpenShorts">View all →</button></div>
+              <div id="bcVideoShortsShelf" class="bc-yt-shortshelf"></div>
+            </section>
+            <section id="bcVideoContinueSection" class="bc-yt-section" hidden>
+              <div class="bc-yt-section-head"><h2>Continue watching</h2><button type="button" id="bcVideoContinueAll">Your library →</button></div>
+              <div id="bcVideoContinue" class="bc-video-scroller"></div>
+            </section>
+            <section id="bcVideoLatestSection" class="bc-yt-section" hidden>
+              <div class="bc-yt-section-head"><h2>Recently added</h2></div>
+              <div id="bcVideoLatest" class="bc-video-scroller"></div>
+            </section>
+          </section>
+          <section id="bcVideoShortsScreen" class="bc-yt-screen bc-yt-shorts-screen" data-video-screen="shorts" hidden>
+            <div class="bc-yt-section-head"><h2>BLACKCELL Shorts</h2><span>Swipe up or down to explore</span></div>
+            <div id="bcVideoShortsPlayerArea" class="bc-yt-short-stage">
+              <div class="bc-yt-short-frame"><video id="bcVideoShortPlayer" playsinline controls preload="metadata" aria-label="Short video player"></video><div class="bc-yt-short-caption"><strong id="bcVideoShortCreator"></strong><p id="bcVideoShortTitle"></p></div></div>
+              <div class="bc-yt-short-actions">
+                <button type="button" id="bcVideoShortLike" aria-label="Like current short">♡<small>Like</small></button>
+                <button type="button" id="bcVideoShortSave" aria-label="Save current short">▢<small>Save</small></button>
+                <button type="button" id="bcVideoShortShare" aria-label="Share current short">↗<small>Share</small></button>
+                <button type="button" id="bcVideoShortPrev" aria-label="Previous short">↑<small>Previous</small></button>
+                <button type="button" id="bcVideoShortNext" aria-label="Next short">↓<small>Next</small></button>
+              </div>
+            </div>
+            <div id="bcVideoShortsEmpty" class="bc-yt-empty" hidden>No approved Shorts are available yet. Vertical or Shorts-tagged uploads will appear here.</div>
+          </section>
+          <section id="bcVideoChannelsScreen" class="bc-yt-screen" data-video-screen="channels" hidden>
+            <div class="bc-yt-section-head"><h2 id="bcVideoChannelsTitle">Channels</h2></div>
+            <div id="bcVideoChannelList" class="bc-yt-channel-list"></div>
+            <div class="bc-yt-section-head"><h2 id="bcVideoChannelVideosTitle">Latest channel videos</h2></div>
+            <div id="bcVideoChannelGrid" class="bc-yt-videogrid"></div>
+          </section>
+          <section id="bcVideoLibraryScreen" class="bc-yt-screen" data-video-screen="library" hidden>
+            <div id="bcVideoLibraryIdentity" class="bc-yt-library-identity"></div>
+            <div id="bcVideoLibraryShelves"></div>
+          </section>
+          <section id="bcVideoCollectionScreen" class="bc-yt-screen" data-video-screen="collection" hidden>
+            <div class="bc-yt-section-head"><h2 id="bcVideoCollectionTitle">Your videos</h2>
+              <select id="bcVideoSort" aria-label="Sort videos"><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="title">Title A–Z</option></select>
+            </div>
+            <div id="bcVideoCollectionGrid" class="bc-yt-videogrid"></div>
+          </section>
+        </div>
+      </main>
     </div>
-    <section id="photosView" class="view" hidden>
+    <nav class="bc-yt-bottomnav" aria-label="Video Channel mobile navigation">
+      <button data-vnav="home" type="button"><span>⌂</span>Home</button>
+      <button data-vnav="shorts" type="button"><span>▷</span>Shorts</button>
+      <button id="bcVideoMobileCreate" type="button" aria-label="Create video"><span>＋</span>Create</button>
+      <button data-vnav="channels" type="button"><span>▰</span>Channels</button>
+      <button data-vnav="library" type="button"><span>◉</span>You</button>
+    </nav>
+    <div id="bcVideoCreateMenu" class="bc-yt-create-menu" hidden>
+      <div class="bc-yt-create-backdrop" id="bcVideoCreateDismiss"></div>
+      <div class="bc-yt-create-dialog" role="dialog" aria-modal="true" aria-label="Create on BLACKCELL">
+        <strong>Create</strong>
+        <button type="button" id="bcVideoCreateVideo">▣ Upload Video</button>
+        <button type="button" id="bcVideoCreatePost">✎ Create Post</button>
+        <button type="button" id="bcVideoCreateCancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+  <div class="bc-video-disclaimer">BLACKCELL PRIVATE NETWORK · Only approved, authorized videos are visible · Watch history and likes remain on this device.</div>
+</section>
+<div id="bcVideoCinema" class="bc-video-cinema" hidden>
+  <section class="bc-video-cinema-dialog" role="dialog" aria-modal="true" aria-labelledby="bcCinemaTitle">
+    <header class="bc-cinema-head"><div><span class="bc-video-eyebrow">BLACKCELL / NOW PLAYING</span><h2 id="bcCinemaTitle">Video</h2></div><button type="button" id="bcCinemaClose" aria-label="Close video player">✕</button></header>
+    <div class="bc-cinema-layout">
+      <div class="bc-cinema-stage"><video id="bcCinemaPlayer" controls playsinline preload="metadata" aria-label="BLACKCELL video player"></video>
+        <div class="bc-cinema-playerbar"><button type="button" id="bcCinemaPrev">← PREVIOUS</button><button type="button" id="bcCinemaNext">NEXT VIDEO →</button><button type="button" id="bcCinemaFullscreen">⛶ FULL SCREEN</button></div>
+      </div>
+      <aside class="bc-cinema-details"><div class="bc-video-eyebrow">NOW WATCHING</div><h3 id="bcCinemaVideoTitle"></h3><p id="bcCinemaVideoMeta"></p>
+        <div class="bc-cinema-actions"><button type="button" id="bcCinemaWatchLater">＋ WATCH LATER</button><button type="button" id="bcCinemaLike">♡ LIKE</button><button type="button" id="bcCinemaShare">↗ SHARE</button><button type="button" id="bcCinemaCreator">VIEW CREATOR ↗</button></div>
+        <p id="bcCinemaDescription"></p><p class="bc-cinema-hint">Watch history and likes are saved on this device. Corporate permissions still control playback.</p>
+      </aside>
+    </div>
+  </section>
+</div>
+<section id="photosView" class="view" hidden>
       <div class="mx-hero" aria-label="Global Military Media Library opening">
  <div class="mx-holo" aria-hidden="true"></div>
  <div class="mx-hero-content">
