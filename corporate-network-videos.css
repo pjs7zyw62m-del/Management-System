@@ -752,3 +752,24 @@ body.bc-video-upload-open{overflow:hidden}
 @media(prefers-reduced-motion:reduce){
  .bc-video-upload-dialog .bc-studio-ai-controls button{transition:none}
 }
+
+
+/* Direct authenticated Bunny Stream connection test (requires no video upload). */
+.bc-video-upload-dialog .bc-stream-connection-tools{
+ display:flex;align-items:center;justify-content:flex-end;margin-top:-4px;
+}
+.bc-video-upload-dialog .bc-stream-connection-tools button{
+ min-height:37px;padding:8px 13px;
+ display:inline-flex;align-items:center;justify-content:center;gap:7px;
+ border-radius:10px;border:1px solid rgba(131,85,103,.7);
+ background:#101014;color:#d5c0cb;font-size:10px;
+ font-weight:780;letter-spacing:.055em;
+}
+.bc-video-upload-dialog .bc-stream-connection-tools button:hover:not(:disabled){
+ background:#1d121a;border-color:#b25c7a;color:#fff;
+}
+.bc-video-upload-dialog .bc-stream-connection-tools button:disabled{opacity:.58;cursor:progress}
+.bc-video-upload-dialog .bc-stream-connection-tools button span{color:#e38ca7;font-size:14px}
+@media(max-width:430px){
+ .bc-video-upload-dialog .bc-stream-connection-tools button{width:100%}
+}
