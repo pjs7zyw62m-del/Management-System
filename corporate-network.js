@@ -823,6 +823,7 @@ function openDirectVideoUpload(category='standard'){
  $('bcVideoFileName').textContent='Choose MP4, MOV or WEBM (maximum 45 MB with current storage limits)';
  $('bcVideoUploadMessage').textContent='';
  $('bcVideoUploadProgress').hidden=true;
+ $('bcVideoUploadFill').classList.remove('is-uploading');
  $('bcVideoUploadFill').style.width='0%';
  $('bcVideoUploadSubmit').disabled=false;
  syncDirectVideoCategory();
@@ -860,7 +861,7 @@ async function publishDirectVideo(event){
  directVideoBusy=true;state.busy=true;submit.disabled=true;
  $('bcVideoUploadClose').disabled=true;$('bcVideoUploadCancel').disabled=true;
  progress.hidden=false;
- $('bcVideoUploadFill').style.width='8%';
+ $('bcVideoUploadFill').classList.add('is-uploading');
  $('bcVideoUploadMessage').textContent='Preparing secure upload…';
  let postId=null;
  try{
@@ -870,9 +871,10 @@ async function publishDirectVideo(event){
   if(error||!data?.id)throw Error(error?.message||'Could not create video record.');
   postId=data.id;
   $('bcVideoUploadMessage').textContent='Uploading securely…';
-  $('bcVideoUploadFill').style.width='24%';
+  $('bcVideoUploadFill').classList.add('is-uploading');
   // Current Storage API does not report progress; the bar remains indeterminate during upload.
   await uploadAsset(file,'post',postId,metadata);
+  $('bcVideoUploadFill').classList.remove('is-uploading');
   $('bcVideoUploadFill').style.width='100%';
   $('bcVideoUploadMessage').textContent='Upload complete. Awaiting administrator review.';
   await loadAll({show:true});
@@ -883,6 +885,7 @@ async function publishDirectVideo(event){
  }catch(e){
   if(postId)await client.from('corp_social_posts').delete().eq('id',postId).eq('author_id',state.user.id);
   $('bcVideoUploadMessage').textContent='Upload failed: '+fail(e);
+  $('bcVideoUploadFill').classList.remove('is-uploading');
   $('bcVideoUploadFill').style.width='0%';
   toast('Video upload failed: '+fail(e));
  }finally{
