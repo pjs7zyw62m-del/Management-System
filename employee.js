@@ -133,7 +133,7 @@ async function load(reveal=false){
    return;
   }
   if(!member.password_activated_at||recoveryFlow){
-   verified=false;showPanel('employeeActivation');
+   verified=false;configurePasswordPanel(member);showPanel('employeeActivation');
    return;
   }
   // Verified employees land on their own social profile by default.
@@ -172,31 +172,61 @@ async function load(reveal=false){
  }
 }
 
-$('recoverAccessButton').addEventListener('click',async()=>{
- const address=$('email').value.trim().toLowerCase();
+let recoveryMode='activation',recoverySending=false,needsActivation=true;
+const recoveryCopy={
+ activation:{title:'Resume Activation',description:'Enter the email address from your employee invitation. We will send a secure link so you can finish setting up your account.',action:'SEND ACTIVATION LINK'},
+ reset:{title:'Reset Password',description:'Enter your registered employee email address to request a secure password reset link.',action:'SEND RESET LINK'}
+};
+function showRecovery(mode){
+ if(recoverySending)return;
+ recoveryMode=mode;const copy=recoveryCopy[mode];
  clearError('recoveryFeedback');
- if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address)){
-   showError('recoveryFeedback','Enter your invited email address above first.');
-   return;
- }
- const button=$('recoverAccessButton');
- button.disabled=true;button.textContent='SENDING SECURE LINK…';
- try{
-   const {error}=await client.auth.resetPasswordForEmail(address,{
-     redirectTo:'https://blackcellcorp.com/employee.html'
-   });
-   if(error){
-     showError('recoveryFeedback','Could not request the email: '+error.message);
-     return;
-   }
-   showError('recoveryFeedback','If this email has a Blackcell account, a secure link has been requested. Check that inbox and follow its link to create your password. No new account was created.');
- }catch(err){
-   showError('recoveryFeedback','Could not request the link: '+String(err?.message||'Network unavailable.'));
- }finally{
-   button.disabled=false;
-   button.textContent='RESUME ACTIVATION / RESET PASSWORD';
- }
+ $('bcRecoveryTitle').textContent=copy.title;
+ $('bcRecoveryDescription').textContent=copy.description;
+ $('bcRecoverySubmit').textContent=copy.action;
+ $('bcRecoveryEmail').value=$('email').value.trim()||$('bcRecoveryEmail').value;
+ $('bcRecoveryPanel').hidden=false;
+ $('recoverAccessButton').setAttribute('aria-expanded',String(mode==='activation'));
+ $('resetPasswordButton').setAttribute('aria-expanded',String(mode==='reset'));
+ $('bcRecoveryEmail').focus();
+}
+$('recoverAccessButton').addEventListener('click',()=>showRecovery('activation'));
+$('resetPasswordButton').addEventListener('click',()=>showRecovery('reset'));
+$('bcRecoveryCancel').addEventListener('click',()=>{
+ if(recoverySending)return;
+ $('bcRecoveryPanel').hidden=true;clearError('recoveryFeedback');
+ $('recoverAccessButton').setAttribute('aria-expanded','false');
+ $('resetPasswordButton').setAttribute('aria-expanded','false');
+ $(recoveryMode==='activation'?'recoverAccessButton':'resetPasswordButton').focus();
 });
+$('bcTogglePassword').addEventListener('click',()=>{
+ const show=$('password').type==='password';$('password').type=show?'text':'password';
+ $('bcTogglePassword').textContent=show?'HIDE':'SHOW';$('bcTogglePassword').setAttribute('aria-pressed',String(show));
+ $('bcTogglePassword').setAttribute('aria-label',show?'Hide password':'Show password');
+});
+$('bcRecoveryForm').addEventListener('submit',async e=>{
+ e.preventDefault();if(recoverySending)return;
+ const address=$('bcRecoveryEmail').value.trim().toLowerCase();
+ clearError('recoveryFeedback');
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address)){showError('recoveryFeedback','Enter a valid registered email address.');return;}
+ const button=$('bcRecoverySubmit'),mode=recoveryMode;
+ recoverySending=true;
+ for(const id of ['bcRecoverySubmit','bcRecoveryCancel','recoverAccessButton','resetPasswordButton'])$(id).disabled=true;
+ button.textContent='SENDING SECURE LINK…';
+ try{
+  const {error}=await client.auth.resetPasswordForEmail(address,{redirectTo:'https://blackcellcorp.com/employee.html'});
+  if(error){showError('recoveryFeedback','Unable to request the link right now. Please try again shortly.');return;}
+  showError('recoveryFeedback',mode==='activation'?'If this email has an eligible Blackcell account, a secure link has been requested. Check your inbox to complete account setup.':'If this email has an eligible Blackcell account, a secure link has been requested. Check your inbox to set a new password.');
+ }catch(_){showError('recoveryFeedback','Unable to request the link. Check your connection and try again.');}
+ finally{recoverySending=false;for(const id of ['bcRecoverySubmit','bcRecoveryCancel','recoverAccessButton','resetPasswordButton'])$(id).disabled=false;button.textContent=recoveryCopy[mode].action;}
+});
+function configurePasswordPanel(member){
+ needsActivation=!member.password_activated_at;
+ $('bcActivationEyebrow').textContent=needsActivation?'EMPLOYEE CREDENTIAL ACTIVATION':'SECURE ACCOUNT RECOVERY';
+ $('bcActivationTitle').textContent=needsActivation?'Activate Your Account':'Reset Your Password';
+ $('bcActivationDescription').textContent=needsActivation?'Create a private password to activate your employee card.':'Choose a new private password for your existing employee account.';
+ $('activateButton').textContent=needsActivation?'ACTIVATE & REVEAL MY EMPLOYEE CARD':'SAVE NEW PASSWORD';
+}
 client.auth.onAuthStateChange((event)=>{
  if(event==='PASSWORD_RECOVERY'){
    recoveryFlow=true;
@@ -226,21 +256,23 @@ $('activateButton').addEventListener('click',async()=>{
  clearError('activationError');
  if(pwd.length<12){showError('activationError','Choose a password containing at least 12 characters.');return}
  if(pwd!==confirmation){showError('activationError','The passwords do not match.');return}
- const btn=$('activateButton');btn.disabled=true;btn.textContent='ACTIVATING…';
+ const btn=$('activateButton');btn.disabled=true;btn.textContent=needsActivation?'ACTIVATING…':'SAVING PASSWORD…';
  try{
   const {error}=await client.auth.updateUser({password:pwd});
   if(error){showError('activationError','Password activation failed: '+error.message);return}
+  if(needsActivation){
   const {data,error:rpcError}=await client.rpc('corp_employee_activate');
   if(rpcError||data?.ok!==true){
    showError('activationError','Password saved but employee activation is incomplete. Contact your administrator.');
    return;
+  }
   }
   $('activationPassword').value='';$('confirmPassword').value='';
   recoveryFlow=false;
   await load(true);
   // Email/password activation is complete; no second security-code email is sent.
  }catch(_){showError('activationError','Activation unavailable. Check your connection.')}
- finally{btn.disabled=false;btn.textContent='ACTIVATE & REVEAL MY EMPLOYEE CARD'}
+ finally{btn.disabled=false;btn.textContent=needsActivation?'ACTIVATE & REVEAL MY EMPLOYEE CARD':'SAVE NEW PASSWORD'}
 });
 window.addEventListener('message',event=>{
  if(event.origin!==location.origin||event.data?.type!=='blackcell-chat-activity')return;

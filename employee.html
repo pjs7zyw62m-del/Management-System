@@ -211,13 +211,34 @@ body{background:#000}
 .bc-future-back .bc-future-brand b{font-size:7.5cqw}
 .bc-future-back .bc-future-brand small{font-size:3.1cqw;letter-spacing:.34em}
 .bc-future-back .bc-future-brand small:before,.bc-future-back .bc-future-brand small:after{width:6cqw;margin:0 1.6cqw}
+
+/* BLACKCELL executive sign-in; isolated from the employee credential and chat. */
+.bc-employee:has(#employeeLogin:not([hidden])),.bc-employee:has(#employeeActivation:not([hidden])){background:#000}
+.bc-signin.panel{position:relative;isolation:isolate;overflow:hidden;width:min(510px,100%);padding:clamp(24px,5vw,42px);border-radius:20px;border:1px solid #69696d;background:linear-gradient(145deg,#19191b 0%,#080809 16%,#000 48%,#09090a 90%,#171719);box-shadow:0 0 0 4px #121214,0 25px 80px #000,0 0 45px #94001426,inset 0 1px #ffffff20}
+.bc-signin.panel:before,.bc-signin.panel:after{content:"";position:absolute;pointer-events:none;z-index:-1;width:68px;height:68px;border:1px solid #e31b2d;filter:drop-shadow(0 0 6px #ff1428);opacity:.85;animation:bcSigninPulse 4s ease-in-out infinite}
+.bc-signin.panel:before{left:8px;top:8px;border-right:0;border-bottom:0;border-radius:12px 0 0 0}
+.bc-signin.panel:after{right:8px;bottom:8px;border-left:0;border-top:0;border-radius:0 0 12px 0;animation-delay:-2s}
+@keyframes bcSigninPulse{50%{opacity:.4}}
+.bc-login-brand{text-align:center;margin:5px 0 25px}.bc-login-brand strong{display:block;font-size:clamp(26px,6vw,36px);font-weight:900;letter-spacing:.09em;line-height:1.15;color:#e8e8eb;text-shadow:0 1px #fff4,0 3px 8px #000}.bc-login-brand>span{display:flex;align-items:center;justify-content:center;gap:12px;font-size:10px;font-weight:800;letter-spacing:.48em;color:#aaaab2;margin-top:6px}.bc-login-brand>span:before,.bc-login-brand>span:after{content:"";width:28px;height:1px;background:#ed1b32;box-shadow:0 0 9px #ed1b32}
+.bc-login-rule{height:2px;background:linear-gradient(90deg,transparent,#830a17 15%,#ff3041 50%,#830a17 85%,transparent);margin:0 0 26px;box-shadow:0 0 12px #e21d2c44}
+.bc-signin .eyebrow{text-align:center;font-size:10px;letter-spacing:.18em;color:#ef4b5a}.bc-signin h1{text-align:center;margin:10px 0 6px;font-size:clamp(24px,6vw,30px);letter-spacing:-.025em}.bc-signin .bc-login-intro,.bc-signin #bcActivationDescription{text-align:center;color:#aaaab1;font-size:12px;margin:0 0 25px}
+.bc-signin label{color:#c2c2ca;font-size:10px;letter-spacing:.13em;margin:18px 0 8px}.bc-signin input{border:1px solid #55555b;border-radius:9px;min-height:50px;background:#09090b;outline:none;box-shadow:inset 0 1px 4px #000;color:#fff}.bc-signin input:focus{border-color:#ff3a4c;box-shadow:0 0 0 3px #e71c3023}.bc-signin input::placeholder{color:#81818a}
+.bc-password-wrap{position:relative}.bc-password-wrap input{padding-right:68px}.bc-password-wrap button{position:absolute;right:5px;top:5px;bottom:5px;border:0;background:transparent;color:#c7c7cf;font-size:10px;font-weight:750;letter-spacing:.09em;padding:0 9px;border-radius:7px}
+.bc-signin .primary{border:1px solid #ff4b57;background:linear-gradient(105deg,#8a0715,#d7192c 50%,#a90919);box-shadow:0 0 20px #e31b2d32,inset 0 1px #ffffff30;border-radius:9px;min-height:50px;letter-spacing:.15em;font-size:12px;font-weight:850;position:relative}.bc-signin .primary:hover:not(:disabled){background:linear-gradient(105deg,#b30c1b,#ee2638,#bc1121)}.bc-signin .primary>span{position:absolute;right:16px}
+.bc-login-separator{display:flex;align-items:center;gap:10px;color:#9b9ba3;font-size:9px;font-weight:650;letter-spacing:.13em;margin:25px 0 13px}.bc-login-separator:before,.bc-login-separator:after{content:"";height:1px;background:#303035;flex:1}
+.bc-login-help{display:grid;grid-template-columns:1fr 1fr;gap:10px}.bc-help-button{display:flex;align-items:center;gap:8px;min-height:76px;padding:11px 10px;background:linear-gradient(140deg,#171719,#09090b);border:1px solid #4a4a50;border-radius:10px;text-align:left;color:#eee;min-width:0;transition:border-color .2s,background .2s}.bc-help-button:hover,.bc-help-button[aria-expanded=true]{border-color:#e52b3b;background:#1c0a0d}.bc-help-icon{font-size:20px;color:#ff4a58;flex:none}.bc-help-button strong,.bc-help-button small{display:block}.bc-help-button strong{font-size:11px;font-weight:750;line-height:1.4}.bc-help-button small{color:#acacb4;font-size:10px;line-height:1.3;margin-top:4px}.bc-help-arrow{color:#e44956;font-size:16px;margin-left:auto}
+.bc-recovery-panel{margin-top:15px;padding:17px;border:1px solid #5e252d;border-radius:10px;background:#0b080a}.bc-recovery-panel h2{font-size:17px;margin:0}.bc-recovery-panel p{font-size:12px;margin:7px 0 12px}.bc-recovery-panel .primary{margin-top:14px}.bc-cancel{border:0;background:transparent;color:#bcbcc4;text-align:center;width:100%;min-height:44px;font-size:10px;letter-spacing:.12em;font-weight:700;margin-top:7px}.bc-signin button:focus-visible{outline:2px solid #fafafa;outline-offset:3px}
+.bc-signin .notice{background:#1b0b0e;border-color:#71313b;color:#f1d8dc;overflow-wrap:anywhere}.bc-login-footer{text-align:center;margin:25px 0 0;color:#9b9ba4;letter-spacing:.09em;line-height:1.65;font-size:8px}.bc-login-footer>span{display:inline-block;width:6px;height:6px;background:#f32b40;box-shadow:0 0 7px #f32b40;border-radius:50%;margin-right:6px}.bc-login-footer i{font-style:normal;color:#5e5e68}
+@media(max-width:390px){.bc-login-help{grid-template-columns:1fr}.bc-help-button{min-height:60px}.bc-signin.panel{padding:24px 20px}}
+@media(prefers-reduced-motion:reduce){.bc-signin.panel:before,.bc-signin.panel:after{animation:none}}
+
 </style>
 <link rel="stylesheet" href="corporate-chat-dock.css?v=20261109-floating-right2">
 <link rel="stylesheet" href="corporate-chat-bubble-dock.css?v=20261109-bubble-dock1">
 <link rel="stylesheet" href="corporate-chat-premium-dock.css?v=20261109-premium1">
 <link rel="stylesheet" href="corporate-chat-media-bubble-host.css?v=20261109-independent-media1"><link rel="stylesheet" href="corporate-chat-media-responsive.css?v=20261109-sidebyside2"><link rel="stylesheet" href="corporate-chat-media-flip-focus.css?v=20261109-flip-focus1">
 <script src="corp-config.js" defer></script>
-<script src="corporate-chat-media-bubble-host.js?v=20261109-large-media1" defer></script><script type="module" src="employee.js?v=20261114-future-card1"></script>
+<script src="corporate-chat-media-bubble-host.js?v=20261109-large-media1" defer></script><script type="module" src="employee.js?v=20261114-executive-signin2"></script>
 <link rel="stylesheet" href="corp-adaptive-layout.css?v=20261109-device2">
 <link rel="stylesheet" href="corp-adaptive-chat.css?v=20261109-device2">
 <link rel="stylesheet" href="corporate-chat-compact-media.css?v=20261109-mobile-gallery4">
@@ -225,28 +246,33 @@ body{background:#000}
 </head><body class="bc-employee">
 <header><strong>BLACKCELL CORPORATION</strong><span>EMPLOYEE ACCESS</span></header>
 <main>
-<section class="panel" id="employeeLogin">
-<div class="logo">B</div><div class="eyebrow">BLACKCELL / EMPLOYEE NETWORK</div>
-<h1>Employee Sign In</h1><p>Use your assigned employee email and your own password. Your corporate owner account uses a separate Administration sign-in.</p>
-<form id="signin"><label for="email">EMPLOYEE EMAIL</label><input id="email" type="email" autocomplete="username" required>
-<label for="password">PASSWORD</label><input id="password" type="password" autocomplete="current-password" required>
-<button id="signinButton" class="primary">SIGN IN ↗</button></form>
-<button id="recoverAccessButton" type="button" class="outline">RESUME ACTIVATION / RESET PASSWORD</button>
-<p>Already accepted an invitation but the link opened localhost? Enter the invited email above, then request a new secure activation link after your corporate URL settings are corrected.</p>
-<p id="recoveryFeedback" class="notice" hidden role="status" aria-live="polite"></p>
+<section class="panel bc-signin" id="employeeLogin" aria-labelledby="employeeLoginTitle">
+<div class="bc-login-brand"><strong>BLACKCELL</strong><span>CORPORATION</span></div>
+<div class="bc-login-rule" aria-hidden="true"></div>
+<div class="eyebrow">EMPLOYEE NETWORK / SECURE ACCESS</div>
+<h1 id="employeeLoginTitle">Employee Sign In</h1><p class="bc-login-intro">Enter your corporate credentials to access your network.</p>
+<form id="signin"><label for="email">EMPLOYEE EMAIL</label><input id="email" type="email" autocomplete="username" placeholder="name@example.com" required>
+<label for="password">PASSWORD</label><div class="bc-password-wrap"><input id="password" type="password" autocomplete="current-password" placeholder="Enter your password" required><button type="button" id="bcTogglePassword" aria-pressed="false" aria-label="Show password">SHOW</button></div>
+<button id="signinButton" class="primary">SIGN IN <span aria-hidden="true">↗</span></button></form>
 <p id="loginError" class="notice" hidden role="status"></p>
+<div class="bc-login-separator"><span>ACCOUNT ASSISTANCE</span></div>
+<div class="bc-login-help">
+<button id="recoverAccessButton" type="button" class="bc-help-button" aria-expanded="false" aria-controls="bcRecoveryPanel"><span class="bc-help-icon" aria-hidden="true">↻</span><span><strong>Resume Activation</strong><small>Complete your invitation</small></span><span class="bc-help-arrow" aria-hidden="true">›</span></button>
+<button id="resetPasswordButton" type="button" class="bc-help-button" aria-expanded="false" aria-controls="bcRecoveryPanel"><span class="bc-help-icon" aria-hidden="true">⌑</span><span><strong>Reset Password</strong><small>Recover your account</small></span><span class="bc-help-arrow" aria-hidden="true">›</span></button>
+</div>
+<div id="bcRecoveryPanel" class="bc-recovery-panel" hidden><h2 id="bcRecoveryTitle">Account assistance</h2><p id="bcRecoveryDescription"></p><form id="bcRecoveryForm"><label for="bcRecoveryEmail">REGISTERED EMAIL</label><input id="bcRecoveryEmail" type="email" autocomplete="email" required><button type="submit" class="primary" id="bcRecoverySubmit">SEND SECURE LINK</button></form><button type="button" id="bcRecoveryCancel" class="bc-cancel">BACK TO SIGN IN</button></div>
+<p id="recoveryFeedback" class="notice" hidden role="status" aria-live="polite"></p>
+<div class="bc-login-footer"><span aria-hidden="true"></span> PRIVATE CORPORATE NETWORK <i> / </i> AUTHORIZED PERSONNEL</div>
 </section>
-<section class="panel" id="employeeActivation" hidden>
-<div class="logo">B</div><div class="eyebrow">EMPLOYEE CREDENTIAL ACTIVATION</div>
-<h1>Activate Your Account</h1>
-<p>Your corporate email invitation is verified. Create a private password to activate your employee card. Once your password is activated, your personal Blackcell employee card will be available.</p>
-<label for="activationPassword">CREATE PASSWORD</label>
-<input id="activationPassword" type="password" autocomplete="new-password" minlength="12" placeholder="At least 12 characters">
-<label for="confirmPassword">CONFIRM PASSWORD</label>
-<input id="confirmPassword" type="password" autocomplete="new-password" minlength="12" placeholder="Re-enter your password">
-<button class="primary" id="activateButton" type="button">ACTIVATE & REVEAL MY EMPLOYEE CARD</button>
-<p id="activationError" role="status" class="notice" hidden></p>
+<section class="panel bc-signin" id="employeeActivation" hidden aria-labelledby="bcActivationTitle">
+<div class="bc-login-brand"><strong>BLACKCELL</strong><span>CORPORATION</span></div><div class="bc-login-rule" aria-hidden="true"></div><div class="eyebrow" id="bcActivationEyebrow">EMPLOYEE CREDENTIAL ACTIVATION</div>
+<h1 id="bcActivationTitle">Activate Your Account</h1>
+<p id="bcActivationDescription">Create a private password to activate your employee card.</p>
+<label for="activationPassword">NEW PASSWORD</label><input id="activationPassword" type="password" autocomplete="new-password" minlength="12" placeholder="At least 12 characters">
+<label for="confirmPassword">CONFIRM PASSWORD</label><input id="confirmPassword" type="password" autocomplete="new-password" minlength="12" placeholder="Re-enter your password">
+<button class="primary" id="activateButton" type="button">ACTIVATE &amp; REVEAL MY EMPLOYEE CARD</button><p id="activationError" role="status" class="notice" hidden></p>
 <button id="activationSignout" type="button" class="outline">SIGN OUT</button>
+<div class="bc-login-footer"><span aria-hidden="true"></span> PRIVATE CORPORATE NETWORK</div>
 </section>
 <section class="panel" id="employeeHome" hidden>
 <div class="eyebrow">PRIVATE CORPORATE CREDENTIAL</div><h1>Your Network Card</h1>
