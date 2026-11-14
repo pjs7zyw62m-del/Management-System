@@ -50,7 +50,7 @@ try{
   if(status.error||status.data?.ok!==true||status.data?.verified!==true)
     throw new Error('Verified corporate security codes are required. Return to secure sign-in.');
   window.BLACKCELL_CORPORATE_ADMIN_API=Object.freeze({client});
-  const {initWorkspace}=await import('./corporate-workspace-app.js?v=20261113-costs1');
+  const {initWorkspace}=await import(document.body.dataset.workspace==='systems'?'./corporate-workspace-app.js?v=20261114-systems-panel':'./corporate-workspace-app.js?v=20261113-costs1');
   if(typeof initWorkspace!=='function')throw new Error('Workspace initialization is unavailable.');
   await initWorkspace(client);
   gate.hidden=true;app.hidden=false;
