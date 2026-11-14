@@ -13,6 +13,9 @@ const sizeLimit=48;
 const MAX_BATCH=1000;
 const allowedPhotos=new Set(['image/jpeg','image/png','image/webp','image/gif','image/heic']);
 let page=0,renderToken=0,uploading=false,queuePaused=false,viewerAsset=null;
+let pendingOwn=[],sortingQueue=false,queueBusy=false,queueIndex=0;
+const canSort=a=>Boolean(authorized&&a&&(owner()||a.owner_id===authorized.user.id));
+const unsortedQueue=()=>approved.filter(a=>canSort(a)&&inferCategory(a)==='unsorted');
 const uploadState={user:null,assets:[]};
 const dedupe=createPhotoDedupe({client:corporate,state:uploadState,mediaUrl:a=>a.signedUrl||'',toast:console.info});
 const bucket=corporate.storage.from('corp-social-media');
@@ -85,7 +88,7 @@ function formatMetadata(a){
  return [displayCategory(inferCategory(a)),inferCategory(a)==='military'&&branchOf(a)!=='Unspecified'?branchOf(a):'',safe(a.military_era)]
  .filter(Boolean).join(' · ')||'MILITARY LIBRARY';
 }
-function openViewer(a){
+function openViewer(a,{queue=false}={}){
  if(!authorized||!a||!a.signedUrl)return;
  const dialog=$('mfLightbox');
  if(!dialog?.showModal)return;
@@ -93,10 +96,12 @@ function openViewer(a){
  $('mfViewerImage').alt=safe(a.caption)||safe(a.filename)||'Approved military photograph';
  text($('mfViewerTitle'),safe(a.caption)||safe(a.filename)||'Military photograph');
  text($('mfViewerMeta'),formatMetadata(a));
- viewerAsset=a;
- $('mfMoveWrap').hidden=!(owner()||a.owner_id===authorized.user.id);
+ viewerAsset=a;sortingQueue=queue;
+ $('mfQueueControls').hidden=!queue;
+ $('mfMoveWrap').hidden=queue||!canSort(a);
+ if(queue)text($('mfQueuePosition'),(queueIndex+1)+' / '+unsortedQueue().length+' · POSTED · NEEDS CATEGORY');
  $('mfMoveCategory').value=inferCategory(a);
- dialog.showModal();
+ if(!dialog.open)dialog.showModal();
 }
 async function render(){
  const token=++renderToken,grid=$('mfPhotoGrid');if(!grid)return;
@@ -105,6 +110,7 @@ async function render(){
  page=Math.max(0,Math.min(page,pages-1));
  const visible=shown.slice(page*sizeLimit,(page+1)*sizeLimit);
  text($('mfImageCount'),approved.length);
+ updateQueueStatus();
  for(const b of document.querySelectorAll('[data-category-filter]')){
   if(!b.dataset.originalLabel)b.dataset.originalLabel=b.textContent.trim();
   const count=b.dataset.categoryFilter==='all'?approved.length:approved.filter(a=>inferCategory(a)===b.dataset.categoryFilter).length;
@@ -150,11 +156,64 @@ function categoryTags(a,category){
 async function movePhoto(a,category){
  if(!authorized||!a||!(owner()||a.owner_id===authorized.user.id))return;
  const tags=categoryTags(a,category);
- const {error}=await corporate.from('corp_social_assets').update({military_tags:tags}).eq('id',a.id).eq('owner_id',a.owner_id);
- if(error)throw Error(error.message);
- a.military_tags=tags;
+ const updates={military_tags:tags,military_category:category==='unsorted'?'Unsorted':'Uniforms'};
+ if(category!=='military')updates.military_branch='Unspecified';
+ const {data,error}=await corporate.from('corp_social_assets').update(updates).eq('id',a.id).eq('owner_id',a.owner_id).select('id').maybeSingle();
+ if(error||!data)throw Error(error?.message||'Category update was not authorized');
+ Object.assign(a,updates);
  text($('mfViewerMeta'),formatMetadata(a));
  void render();
+}
+function updateQueueStatus(){
+ const n=unsortedQueue().length;
+ text($('mfQueueCount'),n);
+ $('mfReviewQueue').disabled=!n;
+ $('mfPendingPanel').hidden=!owner()||!pendingOwn.length;
+ text($('mfPendingCount'),pendingOwn.length);
+}
+async function openQueue(index=0){
+ const list=unsortedQueue();
+ if(!list.length){$('mfLightbox').close();text($('mfQueueMessage'),'All posted photos are sorted.');return}
+ queueIndex=((index%list.length)+list.length)%list.length;
+ const a=list[queueIndex];
+ if(!a.signedUrl||Date.now()-(a.signedAt||0)>signedMs){
+  const out=await bucket.createSignedUrl(a.storage_path,1800);
+  if(out.error||!out.data?.signedUrl){
+   text($('mfQueueMessage'),'Could not open this photo. Refresh the page and try again.');return
+  }
+  a.signedUrl=out.data.signedUrl;a.signedAt=Date.now();
+ }
+ openViewer(a,{queue:true});
+}
+async function assignQueued(category){
+ if(queueBusy||!sortingQueue||!viewerAsset)return;
+ queueBusy=true;
+ const btns=[...$('mfQueueControls').querySelectorAll('button')];btns.forEach(b=>b.disabled=true);
+ try{
+  await movePhoto(viewerAsset,category);
+  const remaining=unsortedQueue().length;
+  text($('mfQueueMessage'),remaining?'Category saved. '+remaining+' posted photos still need sorting.':'All posted photos are sorted.');
+  if(remaining)await openQueue(Math.min(queueIndex,remaining-1));
+  else $('mfLightbox').close();
+ }catch(e){text($('mfQueueError'),e?.message||'Could not save category.')}
+ finally{queueBusy=false;btns.forEach(b=>b.disabled=false)}
+}
+async function publishPending(){
+ if(!owner()||!pendingOwn.length||uploading)return;
+ if(!confirm('Post '+pendingOwn.length+' previously uploaded photographs to the private BLACKCELL Network? Confirm these photos are non-explicit and you have the rights and consent to share them. Unsorted photos will appear in the sorting queue.'))return;
+ const ids=pendingOwn.map(a=>a.id),uid=authorized.user.id;
+ $('mfPublishPending').disabled=true;
+ let count=0;
+ try{
+  for(let i=0;i<ids.length;i+=50){
+   const out=await corporate.from('corp_social_assets').update({review_status:'approved',rights_confirmed:true,adult_restricted:false})
+    .eq('owner_id',uid).eq('review_status','pending').eq('adult_restricted',false).eq('purpose','library').eq('kind','photo').in('id',ids.slice(i,i+50)).select('id');
+   if(out.error)throw Error(out.error.message);
+   count+=out.data?.length||0;
+  }
+  text($('mfQueueMessage'),count+' existing photos posted. Only unsorted ones remain in the sorting queue.');
+ }catch(e){text($('mfQueueMessage'),'Published '+count+' before stopping: '+e.message)}
+ finally{$('mfPublishPending').disabled=false;await loadApproved()}
 }
 function filenameBranch(name){
  const n=String(name||'').replace(/[_-]/g,' ');
@@ -176,10 +235,12 @@ async function uploadUniforms(files){
  const good=picked.filter(f=>allowedPhotos.has(f.type)&&f.size>0&&f.size<=45*1048576);
  if(!good.length){text($('mfUploadStatus'),'Choose supported photographs up to 45 MB each.');return}
  const category=$('mfUploadCategory').value;
- const direct=owner()&&$('mfUploadDirect').checked;
+ const direct=owner();
+ if(direct&&!$('mfUploadDirect').checked){text($('mfUploadStatus'),'Confirm the batch is non-explicit and you have permission to share it, then select photos again. Sorting is not an approval requirement.');return}
  let useAI=direct&&category==='auto'&&$('mfUploadAi').checked;
  if(useAI&&!confirm('Use the paid visual AI service for up to 60 photos in this batch, subject to your remaining daily allowance? The rest will use filenames or remain Unsorted. Original files are preserved.'))useAI=false;
- let aiRemaining=useAI?60:0,aiSkipped=0,aiFailures=0,done=0,saved=0,duplicates=0,failed=0,unsorted=0;
+ let aiRemaining=useAI?60:0,aiSkipped=0,aiFailures=0,done=0,saved=0,duplicates=0,failed=0,posted=0,unsorted=0;
+ const aiJobs=[];
  const uid=authorized.user.id;
  uploading=true;queuePaused=false;
  const progress=$('mfUploadProgress');progress.hidden=false;progress.max=good.length;progress.value=0;
@@ -206,12 +267,31 @@ async function uploadUniforms(files){
     const added=await corporate.from('corp_social_assets').insert(asset).select('id,review_status').single();
     if(added.error){await bucket.remove([path]).catch(()=>{});throw Error(added.error.message)}
     saved++;
+    asset.review_status=added.data?.review_status;asset.created_at=new Date().toISOString();
     uploadState.assets.push(asset);
+    if(asset.review_status==='approved'){
+     posted++;approved.unshift(asset);updateQueueStatus();
+     text($('mfImageCount'),approved.length);
+     if(posted===1||posted%10===0)void render();
+    }
     await dedupe.record(asset,check.fingerprint).catch(()=>false);
-    if(useAI&&aiRemaining>0&&added.data?.review_status==='approved'){
-     aiRemaining--;
+    if(useAI&&added.data?.review_status==='approved'&&target==='unsorted'&&aiJobs.length<60)aiJobs.push({file,asset});
+    else if(useAI&&target==='unsorted')aiSkipped++;
+    if(target==='unsorted')unsorted++;
+   }catch(e){failed++;console.warn('Uniform upload failed:',e?.message)}
+   finally{done++;progress.value=done}
+  }
+  await render();
+  // Uploads are already posted. Optional visual sorting runs separately afterward.
+  for(let index=0;index<aiJobs.length;index++){
+   if(!aiRemaining||authorized?.user?.id!==uid){aiSkipped+=aiJobs.length-index;break}
+   while(queuePaused&&authorized?.user?.id===uid)await new Promise(res=>setTimeout(res,300));
+   if(authorized?.user?.id!==uid)break;
+   const {file,asset}=aiJobs[index],id=asset.id;
+   if(inferCategory(asset)!=='unsorted')continue;
+   aiRemaining--;
      try{
-      text($('mfUploadStatus'),'Identifying uniform with AI · '+(done+1)+' / '+good.length);
+      text($('mfUploadStatus'),'Posted '+posted+' photos · sorting '+(index+1)+' / '+aiJobs.length+' with AI');
       const preview=await aiPreview(file);
       const result=await corporate.functions.invoke('blackcell-military-ai',{body:{action:'analyze_uniform',asset_id:id,preview_image:preview}});
       let data=result.data;if(result.error?.context?.json)try{data=await result.error.context.json()}catch(_){}
@@ -225,18 +305,15 @@ async function uploadUniforms(files){
       if(suggested!=='unsorted'){
        const updates={military_tags:categoryTags(asset,suggested),military_category:'Uniforms',military_branch:suggested==='military'?(a.military_branch||'Unspecified'):'Unspecified'};
        if(suggested==='military'&&/^[A-Z]{2}$/.test(a.country_code||''))updates.military_country_code=a.country_code;
-       const update=await corporate.from('corp_social_assets').update(updates).eq('id',id).eq('owner_id',uid);
+       const update=await corporate.from('corp_social_assets').update(updates).eq('id',id).eq('owner_id',uid).contains('military_tags',['maf:unsorted']).select('id').maybeSingle();
        if(update.error)throw Error(update.error.message);
-       Object.assign(asset,updates);target=suggested;
+       if(update.data){Object.assign(asset,updates);unsorted=Math.max(0,unsorted-1);updateQueueStatus();}
       }
      }catch(e){aiFailures++;console.warn('Uniform AI unavailable:',e?.message)}
-    }else if(useAI)aiSkipped++;
-    if(target==='unsorted')unsorted++;
-   }catch(e){failed++;console.warn('Uniform upload failed:',e?.message)}
-   finally{done++;progress.value=done}
+
   }
   await loadApproved();
-  text($('mfUploadStatus'),saved+' saved · '+duplicates+' duplicates skipped · '+failed+' failed · '+unsorted+' unsorted'+(useAI?' · '+aiFailures+' AI errors · '+aiSkipped+' not visually analyzed':'')+(selected.length>picked.length?' · '+(selected.length-picked.length)+' over batch limit':'')+(picked.length>good.length?' · '+(picked.length-good.length)+' unsupported':'')+(direct?' · eligible owner photos available directly':' · uploads pending review')+'.');
+  text($('mfUploadStatus'),posted+' posted · '+saved+' saved · '+duplicates+' duplicates skipped · '+failed+' failed · '+unsorted+' unsorted'+(useAI?' · '+aiFailures+' AI errors · '+aiSkipped+' not visually analyzed':'')+(selected.length>picked.length?' · '+(selected.length-picked.length)+' over batch limit':'')+(picked.length>good.length?' · '+(picked.length-good.length)+' unsupported':'')+(direct?' · sorting is separate from posting':' · uploads pending review')+'.');
  }finally{
   uploading=false;queuePaused=false;$('mfUploadChoose').disabled=false;$('mfUploadClose').disabled=false;$('mfUploadCategory').disabled=false;$('mfUploadAi').disabled=false;$('mfUploadDirect').disabled=false;$('mfUploadPause').hidden=true;
  }
@@ -248,6 +325,10 @@ function wire(){
  $('mfUploadChoose').addEventListener('click',()=>{$('mfUploadFiles').value='';$('mfUploadFiles').click()});
  $('mfUploadFiles').addEventListener('change',()=>{const input=$('mfUploadFiles'),files=Array.from(input.files||[]);input.value='';void uploadUniforms(files)});
  $('mfUploadPause').addEventListener('click',()=>{queuePaused=!queuePaused;$('mfUploadPause').textContent=queuePaused?'▶ RESUME QUEUE':'Ⅱ PAUSE QUEUE';if(queuePaused)text($('mfUploadStatus'),'Paused after the current item finishes.');});
+ $('mfReviewQueue').addEventListener('click',()=>{text($('mfQueueError'),'');void openQueue(0)});
+ $('mfQueueSkip').addEventListener('click',()=>{if(!queueBusy){text($('mfQueueError'),'');void openQueue(queueIndex+1)}});
+ $('mfQueueControls').querySelectorAll('[data-assign-uniform]').forEach(b=>b.addEventListener('click',()=>void assignQueued(b.dataset.assignUniform)));
+ $('mfPublishPending').addEventListener('click',()=>void publishPending());
  $('mfPreviousPage').addEventListener('click',()=>{page--;void render()});
  $('mfNextPage').addEventListener('click',()=>{page++;void render()});
  $('mfMoveCategory').addEventListener('change',async()=>{try{await movePhoto(viewerAsset,$('mfMoveCategory').value)}catch(e){alert('Category update failed: '+e.message);$('mfMoveCategory').value=inferCategory(viewerAsset)}});
@@ -262,7 +343,7 @@ function wire(){
  const dialog=$('mfLightbox');
  $('mfCloseViewer')?.addEventListener('click',()=>dialog?.close());
  dialog?.addEventListener('click',e=>{if(e.target===dialog)dialog.close()});
- dialog?.addEventListener('close',()=>{$('mfViewerImage').removeAttribute('src')});
+ dialog?.addEventListener('close',()=>{$('mfViewerImage').removeAttribute('src');sortingQueue=false;viewerAsset=null;});
  document.querySelectorAll('.mf-portrait img').forEach(image=>{
   image.addEventListener('error',()=>{
    image.style.opacity='0';
@@ -284,6 +365,16 @@ async function loadApproved(){
    if(!data||data.length<500)break;
   }
   approved=candidates;uploadState.assets=approved.slice();lastSigned=Date.now();
+  pendingOwn=[];
+  if(owner()){
+   // Do not publish previously pending files without a fresh rights declaration.
+   for(let offset=0;offset<10000;offset+=500){
+    const out=await corporate.from('corp_social_assets').select('id,military_tags').eq('owner_id',authorized.user.id).eq('review_status','pending').eq('adult_restricted',false).eq('purpose','library').eq('kind','photo').order('id').range(offset,offset+499);
+    if(out.error)break;
+    pendingOwn.push(...(out.data||[]).filter(a=>(a.military_tags||[]).some(t=>/^maf:(military|police|fire|medical|security|professional|unsorted)$/.test(t))));
+    if(!out.data||out.data.length<500)break;
+   }
+  }
   await render();
  }catch(e){text($('mfCollectionStatus'),'Uniform collection unavailable: '+safe(e?.message||'Connection error'))}
 }
