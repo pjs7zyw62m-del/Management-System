@@ -1,1 +1,22 @@
 html.bc-admin-workspace-embedded,html.bc-admin-workspace-embedded body{scrollbar-width:none;overflow-x:hidden}html.bc-admin-workspace-embedded #opApp>header,html.bc-admin-workspace-embedded #opApp>.shell>aside,html.bc-admin-workspace-embedded .bc-media-admin-header{display:none!important}html.bc-admin-workspace-embedded #opApp>.shell{display:block!important;width:100%!important;max-width:none!important;padding:16px 20px!important;margin:0!important}html.bc-admin-workspace-embedded #opApp>.shell>main{width:100%!important;max-width:none!important;margin:0!important;min-width:0}html.bc-admin-workspace-embedded .bc-media-admin-shell{width:100%!important;max-width:none!important;padding:18px!important;margin:0!important}
+
+/* Embed only owner Administration tools; never change the employee-facing ledger or network. */
+html.bc-admin-workspace-embedded body:has(#ledgerApp:not([hidden])){height:100dvh;min-height:0;overflow:hidden;background:#17171b;color:#eeedf1;font:12px/1.5 system-ui}
+html.bc-admin-workspace-embedded body:has(#ledgerApp:not([hidden]))>header.topbar{display:none!important}
+html.bc-admin-workspace-embedded #ledgerApp:not([hidden]){height:100%;width:100%;max-width:none;padding:0 20px 22px;margin:0;overflow:auto;scrollbar-width:none}
+html.bc-admin-workspace-embedded #ledgerApp::-webkit-scrollbar{display:none}
+html.bc-admin-workspace-embedded #ledgerApp .page-heading{position:sticky;top:0;z-index:12;background:#212126;border-bottom:1px solid #ffffff16;margin:0 -20px 16px;padding:12px 20px;align-items:center;gap:12px}
+html.bc-admin-workspace-embedded #ledgerApp .page-heading .eyebrow{display:none}
+html.bc-admin-workspace-embedded #ledgerApp .page-heading h1{font:650 21px system-ui;letter-spacing:-.035em;margin:0 0 4px}
+html.bc-admin-workspace-embedded #ledgerApp .page-heading h1 em{color:inherit}
+html.bc-admin-workspace-embedded #ledgerApp .page-heading p{font:11px/1.5 system-ui;color:#aaaab5}
+html.bc-admin-workspace-embedded #ledgerApp .panel,html.bc-admin-workspace-embedded #ledgerApp .metric{background:#232328;border:1px solid #ffffff14;border-radius:12px;box-shadow:none}
+html.bc-admin-workspace-embedded #ledgerApp .metric{padding:13px}
+html.bc-admin-workspace-embedded #ledgerApp .metric strong{font:650 25px system-ui;margin:9px 0 4px}
+html.bc-admin-workspace-embedded #ledgerApp .metric span,html.bc-admin-workspace-embedded #ledgerApp .metric small{font:10px/1.5 system-ui;letter-spacing:0;color:#a9a9b5}
+html.bc-admin-workspace-embedded #ledgerApp .button-outline,html.bc-admin-workspace-embedded #ledgerApp .button-main{min-height:32px;padding:7px 11px;border-radius:7px;font:500 11px system-ui;letter-spacing:0;background:#36363d;border:1px solid #ffffff20;box-shadow:none}
+html.bc-admin-workspace-embedded #ledgerApp .button-main{background:#8a3446;border-color:#b45162}
+html.bc-admin-workspace-embedded #ledgerApp input:not([type=file]):not([type=checkbox]):not([type=radio]),html.bc-admin-workspace-embedded #ledgerApp select,html.bc-admin-workspace-embedded #ledgerApp textarea{background:#17171c;border-color:#ffffff24;border-radius:7px;color:#eee;font:12px system-ui;min-height:34px;padding:7px 9px}
+html.bc-admin-workspace-embedded #ledgerApp .card-title h3,html.bc-admin-workspace-embedded #ledgerApp .section-top h2,html.bc-admin-workspace-embedded #ledgerApp .timeline-toolbar h2,html.bc-admin-workspace-embedded #ledgerApp .room-identity h2{font:600 16px system-ui;letter-spacing:-.015em}
+html.bc-admin-workspace-embedded #ledgerApp .card-icon{background:#45454e;border:0;border-radius:8px;color:#eee}
+@media(max-width:760px){html.bc-admin-workspace-embedded #ledgerApp:not([hidden]){padding:0 12px 16px}html.bc-admin-workspace-embedded #ledgerApp .page-heading{margin:0 -12px 12px;padding:10px 12px}}
