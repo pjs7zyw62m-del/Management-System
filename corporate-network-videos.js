@@ -26,7 +26,7 @@ export function createBlackcellVideoChannel({state,mediaUrl,sharedMedia,profile,
  }
  function creator(a){return personName(profile(a.owner_id))}
  function items(){
-  return state.assets.filter(a=>sharedMedia(a)&&a.kind==='video'&&a.purpose==='post' &&
+  return state.assets.filter(a=>sharedMedia(a)&&a.kind==='video'&&['post','library'].includes(a.purpose) &&
    (a.owner_id===state.user?.id||Boolean(profile(a.owner_id)))).slice().sort(byNewest);
  }
  function isSaved(id){return watchLater[id]===true}
@@ -202,6 +202,7 @@ export function createBlackcellVideoChannel({state,mediaUrl,sharedMedia,profile,
   v.pause();v.removeAttribute('src');v.load();v.onloadedmetadata=null;
   dialog.hidden=true;document.body.classList.remove('bc-cinema-open');
   current=null;queue=[];lastWrite=0;
+  if(state.view==='videos')render();
  }
  function move(delta){
   if(!current)return;
