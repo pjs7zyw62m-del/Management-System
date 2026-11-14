@@ -1,5 +1,7 @@
+import {mountCloudPilot} from './blackcell-cloud-browser.js?v=1';
 /* BLACKCELL Browser: web-based viewer, not a proxy or native browser. */
-export function mountBrowser(container,record,external,activity){
+export function mountBrowser(host,record,external,activity){
+ const container=document.createElement('div');mountCloudPilot(host,record,container);
  container.classList.add('bc-browser');
  const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text)n.textContent=text;return n};
  const button=(label,text,fn)=>{const n=el('button','bc-browser-btn',text);n.type='button';n.title=label;n.setAttribute('aria-label',label);n.onclick=fn;return n};
