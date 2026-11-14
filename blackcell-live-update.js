@@ -15,6 +15,8 @@ document.addEventListener('input',track,true);document.addEventListener('change'
 window.BLACKCELL_LIVE_UPDATE=Object.freeze({hold(reason='operation',owner=window){const t=Symbol(reason);holds.set(t,owner);return()=>holds.delete(t)},clean(element){if(element&&typeof element.contains==='function')for(const t of dirty.keys())if(t===element||element.contains(t)){dirty.delete(t);original.set(t,value(t))}},check:()=>void check()});
 function activityDoc(doc,depth=0){
  if(!doc||depth>3)return false;
+ // Visible App Store windows must never be interrupted by background updates.
+ if(doc.querySelector('.os-window[data-os-app="store"]:not([hidden])'))return true;
  if(doc.querySelector('[aria-busy=true],.is-uploading,[data-busy=true],progress:not([value])'))return true;
  const visible=e=>!!(e.getClientRects().length&&!e.closest('[hidden],[aria-hidden=true]')&&e.ownerDocument.defaultView.getComputedStyle(e).visibility!=='hidden');
  for(const el of doc.querySelectorAll('video,audio')){

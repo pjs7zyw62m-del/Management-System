@@ -28,7 +28,7 @@ function workspaceKey(){return 'bc.os.workspace.v1:'+String(storeProfile||'previ
 function saveWorkspace(){
  if(!workspaceReady||workspaceRestoring||(!active&&!preview)||leaving)return;
  try{
-  const records=[...windows.values()].filter(r=>!r.suspended).map(r=>({id:r.id,minimized:r.el.hidden,maximized:r.el.classList.contains('is-max'),left:r.el.style.left,top:r.el.style.top,width:r.el.style.width,height:r.el.style.height,order:Number(r.el.style.zIndex)||0,...(r.id==='files'?{files:r.fileState||{path:[],layout:'grid'}}:{})}));
+  const records=[...windows.values()].filter(r=>!r.suspended).map(r=>({id:r.id,minimized:r.el.hidden,maximized:r.el.classList.contains('is-max'),left:r.el.style.left,top:r.el.style.top,width:r.el.style.width,height:r.el.style.height,order:Number(r.el.style.zIndex)||0,...(r.id==='files'?{files:r.fileState||{path:[],layout:'grid'}}:r.id==='store'?{store:r.storeState||null}:{})}));
   for(const pending of pendingRestore)if(!records.some(r=>r.id===pending.id))records.push(pending);
   sessionStorage.setItem(workspaceKey(),JSON.stringify({version:1,at:Date.now(),windows:records.slice(0,24)}));
  }catch(_){}
@@ -38,7 +38,7 @@ function safePixels(value){return typeof value==='string'&&/^\d{1,5}(?:\.\d+)?px
 function restoreRecord(saved){
  if(!saved||typeof saved.id!=='string'||!/^[a-z]+$/.test(saved.id)||saved.id.length>40||windows.has(saved.id))return;
  const tile=document.querySelector('.app[data-app="'+saved.id+'"]');if(!tile||tile.hidden||tile.disabled)return;
- showApp(saved.id,saved.files);const r=windows.get(saved.id);if(!r)return;
+ showApp(saved.id,saved.id==='store'?saved.store:saved.files);const r=windows.get(saved.id);if(!r)return;
  if(innerWidth>620){
   const width=safePixels(saved.width),height=safePixels(saved.height),left=safePixels(saved.left),top=safePixels(saved.top);
   if(width!==null)r.el.style.width=Math.min(Math.max(280,width),Math.max(280,innerWidth-12))+'px';
@@ -46,7 +46,7 @@ function restoreRecord(saved){
   if(left!==null)r.el.style.left=Math.max(0,Math.min(left,innerWidth-r.el.offsetWidth))+'px';
   if(top!==null)r.el.style.top=Math.max(34,Math.min(top,innerHeight-110))+'px';
  }
- r.el.classList.toggle('is-max',saved.maximized===true);if(saved.minimized===true){r.el.hidden=true;if(selectedWindow===r)selectedWindow=null}
+ r.el.classList.toggle('is-max',saved.maximized===true);if(saved.minimized===true){r.el.hidden=true;if(selectedWindow===r)selectedWindow=null;syncStoreUpdateHold()}
 }
 function restoreWorkspace(){
  let saved=null;try{saved=JSON.parse(sessionStorage.getItem(workspaceKey())||'null')}catch(_){}
@@ -83,16 +83,17 @@ for(const btn of menuButtons)btn.addEventListener('click',()=>menu(btn.dataset.m
 document.addEventListener('pointerdown',e=>{if(!e.target.closest('.menubar'))closeMenu()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu()});
 function markDock(id,on){document.querySelector('[data-open="'+id+'"]')?.classList.toggle('is-running',on)}
-function raise(r){if(r.closing)r.reopened=true;r.suspended=false;r.el.hidden=false;r.el.style.zIndex=String(++layer);selectedWindow=r;markDock(r.id,true);saveWorkspace()}
-function showDesktop(){for(const r of windows.values())r.el.hidden=true;selectedWindow=null;saveWorkspace()}
-function dispose(r,force=false){if(!force){void requestClose(r);return;}r.cleanup?.();r.frame?.remove();r.el.remove();r.release?.();windows.delete(r.id);markDock(r.id,false);if(selectedWindow===r)selectedWindow=null;saveWorkspace()}
+function syncStoreUpdateHold(){const r=windows.get('store');if(!r)return;const needed=!r.el.hidden||r.storeBusy;if(needed&&!r.updateHold&&!preview){try{r.updateHold=window.top.BLACKCELL_LIVE_UPDATE?.hold('App Store workspace',window)}catch(_){}}else if(!needed&&r.updateHold){r.updateHold();r.updateHold=null}}
+function raise(r){if(r.closing)r.reopened=true;r.suspended=false;r.el.hidden=false;r.el.style.zIndex=String(++layer);selectedWindow=r;markDock(r.id,true);syncStoreUpdateHold();saveWorkspace()}
+function showDesktop(){for(const r of windows.values())r.el.hidden=true;selectedWindow=null;syncStoreUpdateHold();saveWorkspace()}
+function dispose(r,force=false){if(!force){void requestClose(r);return;}r.updateHold?.();r.updateHold=null;r.cleanup?.();r.frame?.remove();r.el.remove();r.release?.();windows.delete(r.id);markDock(r.id,false);if(selectedWindow===r)selectedWindow=null;saveWorkspace()}
 function osNotice(message){let n=$('osCloseNotice');if(!n){n=document.createElement('div');n.id='osCloseNotice';n.className='os-close-notice';n.setAttribute('role','status');$('desktop').append(n)}n.textContent=message;n.hidden=false;clearTimeout(osNotice.timer);osNotice.timer=setTimeout(()=>{n.hidden=true},6000)}
-function suspend(r){r.el.hidden=true;r.suspended=true;markDock(r.id,false);if(selectedWindow===r)selectedWindow=null;saveWorkspace()}
+function suspend(r){r.el.hidden=true;r.suspended=true;markDock(r.id,false);if(selectedWindow===r)selectedWindow=null;syncStoreUpdateHold();saveWorkspace()}
 function pauseFrameMedia(frame){try{for(const m of frame.contentDocument?.querySelectorAll('video,audio')||[])if(!m.paused)m.pause()}catch(_){}}
 async function requestClose(r){
  if(!r||windows.get(r.id)!==r)return;
  if(r.closing){suspend(r);return}
- if(['files','personalphotos'].includes(r.id)&&r.filesBusy){suspend(r);return}
+ if((['files','personalphotos'].includes(r.id)&&r.filesBusy)||(r.id==='store'&&r.storeBusy)){suspend(r);return}
  if(!r.frame||preview){dispose(r,true);return}
  // Hide immediately. Keep the original iframe alive until explicit app save completes;
  // unknown applications are retained in memory rather than risking unsaved data.
@@ -113,22 +114,22 @@ async function requestClose(r){
 }
 
 function closeAll(force){for(const r of [...windows.values()])dispose(r,force)}
-function showApp(id,initialFiles=null){
+function showApp(id,initialState=null){
  closeAppContext();if(!active&&!preview)return;
  if(storeRules.has(id)&&(!storeRules.get(id).allowed||!storeInstalled.has(id)))return;
  const tile=document.querySelector('.app[data-app="'+id+'"]');if(!tile||tile.hidden||tile.disabled)return;
  if(windows.has(id)){raise(windows.get(id));return}
  const url=new URL(tile.dataset.url,location.href);if(url.origin!==location.origin)return;
- const w=document.createElement('section');w.className='os-window';w.setAttribute('aria-label',tile.dataset.title+' window');
+ const w=document.createElement('section');w.className='os-window';w.dataset.osApp=id;w.setAttribute('aria-label',tile.dataset.title+' window');
  const bar=document.createElement('div');bar.className='os-window-head';const controls=document.createElement('div');controls.className='traffic';
  const title=document.createElement('span');title.textContent=tile.dataset.title;
  const external=document.createElement('a');external.href=url.href;external.target='_blank';external.rel='noopener';external.textContent='Open full page ↗';bar.append(controls,title,external);
  const content=document.createElement('div');content.className='os-window-body';w.append(bar,content);
- const r={id,title:tile.dataset.title,el:w,frame:null,release:null,fileState:id==='files'?initialFiles:null};windows.set(id,r);
- for(const [label,symbol,fn] of [['Close','×',()=>void requestClose(r)],['Minimize','−',()=>{w.hidden=true;selectedWindow=null;saveWorkspace()}],['Maximize or restore','+',()=>{w.classList.toggle('is-max');saveWorkspace()}]]){const btn=document.createElement('button');btn.type='button';btn.setAttribute('aria-label',label+' '+r.title);btn.title=label;btn.textContent=symbol;btn.addEventListener('click',fn);controls.append(btn)}
+ const r={id,title:tile.dataset.title,el:w,frame:null,release:null,fileState:id==='files'?initialState:null,storeState:id==='store'?initialState:null,storeBusy:false};windows.set(id,r);
+ for(const [label,symbol,fn] of [['Close','×',()=>void requestClose(r)],['Minimize','−',()=>{w.hidden=true;selectedWindow=null;syncStoreUpdateHold();saveWorkspace()}],['Maximize or restore','+',()=>{w.classList.toggle('is-max');saveWorkspace()}]]){const btn=document.createElement('button');btn.type='button';btn.setAttribute('aria-label',label+' '+r.title);btn.title=label;btn.textContent=symbol;btn.addEventListener('click',fn);controls.append(btn)}
  if(id==='personalphotos'){external.hidden=true;const msg=document.createElement('p');msg.textContent='Loading private Photos…';content.append(msg);(personalPhotosModule??=import('./blackcell-private-media.js?v=2')).then(module=>{if(windows.get(id)!==r)return;content.replaceChildren();const app=module.mountPrivatePhotos(content,{client,userId:storeProfile,preview,alive:()=>windows.get(id)===r&&(active||preview),onBusy:busy=>{r.filesBusy=busy;if(busy&&!r.release){try{r.release=window.top.BLACKCELL_LIVE_UPDATE?.hold('Private Photos import',window)}catch(_){}}else if(!busy){r.release?.();r.release=null}}});r.cleanup=()=>app.dispose();}).catch(()=>{personalPhotosModule=null;if(windows.get(id)===r){content.replaceChildren(msg);msg.textContent='Photos could not load. Reopen to try again.'}});}
  else if(id==='files'){external.hidden=true;const msg=document.createElement('p');msg.textContent='Opening private drive…';msg.style.padding='20px';content.append(msg);(filesModule??=import('./blackcell-files.js?v=4')).then(module=>{if(windows.get(id)!==r)return;content.replaceChildren();const app=module.mountFiles(content,{client,userId:storeProfile,preview,initialState:r.fileState,onState:state=>{r.fileState=state;saveWorkspace()},alive:()=>windows.get(id)===r&&(active||preview),onBusy:busy=>{r.filesBusy=busy;if(busy&&!r.release){try{r.release=window.top.BLACKCELL_LIVE_UPDATE?.hold('BLACKCELL Files transfer',window)}catch(_){}}else if(!busy){r.release?.();r.release=null}}});r.cleanup=()=>app.dispose();}).catch(()=>{filesModule=null;if(windows.get(id)===r){content.replaceChildren(msg);msg.textContent='Files could not load. Reopen to try again.'}});}
- else if(id==='store'){external.hidden=true;const message=document.createElement('p');message.textContent='Opening App Store…';message.style.padding='20px';content.append(message);(storeModule??=import('./blackcell-app-store.js?v=3')).then(module=>{if(windows.get(id)!==r)return;content.replaceChildren();r.refreshStore=module.mountStore(content,{catalog:storeCatalog,install:installApp,open:showApp,info:storeInfo,setRule:setStoreRule});}).catch(()=>{storeModule=null;if(windows.get(id)===r){content.replaceChildren(message);message.textContent='App Store could not start. Close this window and try again.'}});}
+ else if(id==='store'){external.hidden=true;const message=document.createElement('p');message.textContent='Opening App Store…';message.style.padding='20px';content.append(message);(storeModule??=import('./blackcell-app-store.js?v=4')).then(module=>{if(windows.get(id)!==r)return;content.replaceChildren();const store=module.mountStore(content,{catalog:storeCatalog,install:installApp,open:showApp,info:storeInfo,setRule:setStoreRule,initialState:r.storeState,onState:state=>{r.storeState=state;saveWorkspace()},onBusy:busy=>{r.storeBusy=busy;syncStoreUpdateHold();if(!busy&&r.suspended)dispose(r,true)}});r.refreshStore=store.render;r.cleanup=store.dispose;}).catch(()=>{storeModule=null;if(windows.get(id)===r){content.replaceChildren(message);message.textContent='App Store could not start. Close this window and try again.'}});}
  else if(id==='browser'){if(!preview)r.release=window.BLACKCELL_LIVE_UPDATE?.hold('BLACKCELL Browser window');const message=document.createElement('p');message.className='os-window-status';message.textContent='Opening BLACKCELL Browser…';message.style.padding='20px';content.append(message);(browserModule??=import('./blackcell-browser.js?v=2')).then(module=>{if(windows.get(id)!==r)return;content.replaceChildren();module.mountBrowser(content,r,external,activity)}).catch(()=>{browserModule=null;if(windows.get(id)===r)message.textContent='Browser could not load. Close this window and try again.'});}
  else if(preview){const demo=document.createElement('div');demo.className='os-demo';const box=document.createElement('div');box.append(tile.querySelector('.app-icon').cloneNode(true));const h=document.createElement('h2');h.textContent=r.title;const p=document.createElement('p');p.textContent=tile.dataset.desc;const status=document.createElement('p');status.textContent='DESIGN PREVIEW · No private account data loaded.';status.className='os-window-status';box.append(h,p,status);demo.append(box);content.append(demo)}
  else{r.release=window.BLACKCELL_LIVE_UPDATE?.hold('BLACKCELL OS application window');const frame=document.createElement('iframe');frame.title=r.title;frame.src=url.href;frame.allow='fullscreen';frame.setAttribute('allowfullscreen','');r.frame=frame;content.append(frame);
