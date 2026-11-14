@@ -984,6 +984,7 @@ async function uploadAsset(file,purpose,postId=null,videoMetadata=null){
   record.video_season=videoMetadata.season||null;
   record.video_episode=videoMetadata.episode||null;
   record.video_synopsis=videoMetadata.synopsis||null;
+  record.video_poster_path=videoMetadata.posterPath||null;
   record.rights_confirmed=true;
   record.review_status='pending';
  }
