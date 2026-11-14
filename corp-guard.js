@@ -10,6 +10,8 @@ let lastActivity = Date.now();
 let lastTouch = Date.now();
 let touching = false;
 let exiting = false;
+let embeddedApp=false;try{embeddedApp=window.parent!==window&&new URLSearchParams(location.search).get('osApp')==='administration'&&window.parent.location.origin===location.origin&&window.parent.location.pathname.endsWith('/blackcell-os.html')&&window.parent.document.getElementById('bcOsAdministrationFrame')?.contentWindow===window}catch(_){}
+function notifyOS(type){if(embeddedApp)window.parent.postMessage({type},location.origin)}
 
 function locked(text) {
   document.documentElement.classList.remove('corp-ok');
@@ -24,11 +26,11 @@ async function leave(reason = 'Corporate session ended.') {
   locked(reason);
   try { await client?.rpc('corp_end_session'); } catch (_) {}
   try { await client?.auth.signOut({ scope:'local' }); } catch (_) {}
-  location.replace('login.html');
+  if(embeddedApp){notifyOS('blackcell-admin-app-signed-out');window.top.location.replace('login.html')}else location.replace('login.html');
 }
 
 function expiredLocally() {
-  return Date.now() - lastActivity >= IDLE_LIMIT_MS;
+  return !embeddedApp&&Date.now() - lastActivity >= IDLE_LIMIT_MS;
 }
 
 async function extendOnActivity() {
@@ -53,6 +55,7 @@ function interacted() {
   if (exiting) return;
   if (expiredLocally()) { void leave('Signed out after 60 minutes of inactivity.'); return; }
   lastActivity = Date.now();
+  if(embeddedApp){notifyOS('blackcell-admin-app-activity');return}
   void extendOnActivity();
 }
 
