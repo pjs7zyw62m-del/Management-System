@@ -242,7 +242,7 @@ async function uploadUniforms(files){
  let aiRemaining=useAI?60:0,aiSkipped=0,aiFailures=0,done=0,saved=0,duplicates=0,failed=0,posted=0,unsorted=0;
  const aiJobs=[];
  const uid=authorized.user.id;
- uploading=true;queuePaused=false;
+ uploading=true;queuePaused=false;$('mfUploadPause').textContent='Ⅱ PAUSE UPLOADS / AI';
  const progress=$('mfUploadProgress');progress.hidden=false;progress.max=good.length;progress.value=0;
  $('mfUploadChoose').disabled=true;$('mfUploadClose').disabled=true;$('mfUploadCategory').disabled=true;$('mfUploadAi').disabled=true;$('mfUploadDirect').disabled=true;$('mfUploadPause').hidden=false;
  try{
@@ -324,7 +324,7 @@ function wire(){
  $('mfUploadClose').addEventListener('click',()=>{if(!uploading)$('mfUploadForm').hidden=true});
  $('mfUploadChoose').addEventListener('click',()=>{$('mfUploadFiles').value='';$('mfUploadFiles').click()});
  $('mfUploadFiles').addEventListener('change',()=>{const input=$('mfUploadFiles'),files=Array.from(input.files||[]);input.value='';void uploadUniforms(files)});
- $('mfUploadPause').addEventListener('click',()=>{queuePaused=!queuePaused;$('mfUploadPause').textContent=queuePaused?'▶ RESUME QUEUE':'Ⅱ PAUSE QUEUE';if(queuePaused)text($('mfUploadStatus'),'Paused after the current item finishes.');});
+ $('mfUploadPause').addEventListener('click',()=>{queuePaused=!queuePaused;$('mfUploadPause').textContent=queuePaused?'▶ RESUME UPLOADS / AI':'Ⅱ PAUSE UPLOADS / AI';if(queuePaused)text($('mfUploadStatus'),'Paused after the current item finishes.');});
  $('mfReviewQueue').addEventListener('click',()=>{text($('mfQueueError'),'');void openQueue(0)});
  $('mfQueueSkip').addEventListener('click',()=>{if(!queueBusy){text($('mfQueueError'),'');void openQueue(queueIndex+1)}});
  $('mfQueueControls').querySelectorAll('[data-assign-uniform]').forEach(b=>b.addEventListener('click',()=>void assignQueued(b.dataset.assignUniform)));
@@ -343,7 +343,7 @@ function wire(){
  const dialog=$('mfLightbox');
  $('mfCloseViewer')?.addEventListener('click',()=>dialog?.close());
  dialog?.addEventListener('click',e=>{if(e.target===dialog)dialog.close()});
- dialog?.addEventListener('close',()=>{$('mfViewerImage').removeAttribute('src');sortingQueue=false;viewerAsset=null;});
+ dialog?.addEventListener('close',()=>{$('mfViewerImage').removeAttribute('src');sortingQueue=false;viewerAsset=null;$('mfQueueControls').hidden=true;});
  document.querySelectorAll('.mf-portrait img').forEach(image=>{
   image.addEventListener('error',()=>{
    image.style.opacity='0';
