@@ -177,7 +177,7 @@ function showLogin(){
   accessPassTab.setAttribute('aria-selected','false');
   accessPassTab.tabIndex=-1;
   accessPassTab.querySelector('small').textContent='SECURITY VERIFICATION';
-  adminLoginTab.querySelector('small').textContent='';
+  adminLoginTab.querySelector('small').textContent='NETWORK ACCESS';
   adminLoginTab.setAttribute('aria-selected',String(selectedPortal==='admin'));
   employeeLoginTab.setAttribute('aria-selected',String(selectedPortal==='employee'));
   adminLoginTab.tabIndex=selectedPortal==='admin'?0:-1;
