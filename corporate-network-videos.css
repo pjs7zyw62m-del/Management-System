@@ -642,3 +642,113 @@ body.bc-video-upload-open{overflow:hidden}
  .bc-video-upload-dialog form .bc-studio-fields select,
  .bc-video-upload-dialog form .bc-studio-fields textarea{transition:none}
 }
+
+
+/* BLACKCELL AI Poster Studio – entirely opt-in. Retains original and generated artwork.
+   The primary uploaded poster remains the original until the user explicitly selects AI. */
+.bc-video-upload-dialog .bc-studio-ai-tools{
+  display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
+  gap:12px 16px; padding:15px 18px;
+  background:linear-gradient(118deg,#111014,#09090d 60%,#1b0f18);
+  border:1px solid rgba(103,70,89,.65); border-radius:13px;
+}
+.bc-video-upload-dialog .bc-studio-ai-tools>div:first-child{
+  display:flex;flex-direction:column;gap:6px;min-width:180px;flex:1;
+}
+.bc-video-upload-dialog .bc-studio-ai-tools>div:first-child strong{
+  color:#f1d3df;font-size:11px;font-weight:850;letter-spacing:.11em;
+}
+.bc-video-upload-dialog .bc-studio-ai-tools>div:first-child strong span{
+  color:#e45a85;font-size:17px;margin-right:4px;
+}
+.bc-video-upload-dialog .bc-studio-ai-tools>div:first-child small{
+  color:#a79ba7;font-size:10px;font-weight:450;line-height:1.6;
+}
+.bc-video-upload-dialog .bc-studio-ai-controls{
+  display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;
+}
+.bc-video-upload-dialog .bc-studio-ai-controls select{
+  min-height:40px;max-width:200px;color:#eee5ec;
+  border:1px solid #61505e;border-radius:9px;background:#111015;
+  padding:10px 12px;font-size:11px;
+}
+.bc-video-upload-dialog .bc-studio-ai-controls button{
+  min-height:41px; padding:9px 13px; border-radius:10px;
+  color:#fff;background:linear-gradient(115deg,#732443,#a12d51);
+  border:1px solid #bc5c7d;font-size:10px;font-weight:840;letter-spacing:.05em;
+  box-shadow:0 5px 19px #9e295225;
+}
+.bc-video-upload-dialog .bc-studio-ai-controls button:hover:not(:disabled){
+  filter:brightness(1.16);
+}
+.bc-video-upload-dialog #bcPosterAiStatus{
+  width:100%;color:#d2adbd;font-size:10px;line-height:1.65;
+}
+.bc-video-upload-dialog #bcPosterAiStatus:empty{display:none}
+.bc-video-upload-dialog .bc-studio-artwork-choices{
+  padding:15px 18px;
+  background:#08080b;border:1px solid #4f3e4c;border-radius:13px;
+}
+.bc-video-upload-dialog .bc-studio-artwork-choices[hidden]{display:none!important}
+.bc-video-upload-dialog .bc-studio-artwork-heading{
+  display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:4px 10px;
+  margin-bottom:13px;
+}
+.bc-video-upload-dialog .bc-studio-artwork-heading strong{
+  font-size:10px;color:#f5e9ef;letter-spacing:.1em;font-weight:850;
+}
+.bc-video-upload-dialog .bc-studio-artwork-heading small{
+  color:#a89da8;font-size:10px;font-weight:400;line-height:1.5;
+}
+.bc-video-upload-dialog .bc-studio-artwork-variants{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;
+}
+.bc-video-upload-dialog form .bc-studio-art-option{
+  display:flex;flex-direction:column;align-items:center;
+  gap:6px;min-width:0;min-height:230px;padding:12px;
+  background:linear-gradient(130deg,#131017,#08080a);
+  border:1px solid #554652;border-radius:12px;
+  color:#e8dfe7;cursor:pointer;text-align:center;
+}
+.bc-video-upload-dialog form .bc-studio-art-option img{
+  width:100%;height:161px;max-width:160px;object-fit:contain;
+  border:1px solid #322a32;border-radius:8px;background:#070709;
+}
+.bc-video-upload-dialog form .bc-studio-art-option strong{
+  font-size:10px;letter-spacing:.09em;font-weight:800;
+}
+.bc-video-upload-dialog form .bc-studio-art-option span{
+  color:#c4a9b9;font-size:9px;letter-spacing:.035em;
+}
+.bc-video-upload-dialog form .bc-studio-art-option.is-selected{
+  border-color:#dd7699;
+  background:linear-gradient(130deg,#2c1523,#120a10);
+  box-shadow:0 0 0 1px #a92e554a inset;
+}
+.bc-video-upload-dialog form .bc-studio-art-option.is-selected span{
+  color:#ffc1d3;font-weight:800;
+}
+.bc-video-upload-dialog form .bc-studio-art-option:disabled{
+  opacity:.52;cursor:default;border-style:dashed;
+}
+.bc-video-upload-dialog form .bc-studio-art-option:focus-visible{
+  outline:2px solid #d96087;outline-offset:3px;
+}
+@media(max-width:700px){
+ .bc-video-upload-dialog .bc-studio-ai-tools{padding:13px}
+ .bc-video-upload-dialog .bc-studio-ai-controls{justify-content:stretch;width:100%}
+ .bc-video-upload-dialog .bc-studio-ai-controls select{flex:1;min-width:0;max-width:none}
+ .bc-video-upload-dialog .bc-studio-ai-controls button{flex:none}
+ .bc-video-upload-dialog .bc-studio-artwork-choices{padding:12px}
+ .bc-video-upload-dialog .bc-studio-artwork-variants{gap:8px}
+ .bc-video-upload-dialog form .bc-studio-art-option{padding:9px;min-height:208px}
+ .bc-video-upload-dialog form .bc-studio-art-option img{height:143px}
+}
+@media(max-width:430px){
+ .bc-video-upload-dialog .bc-studio-ai-controls{flex-direction:column;align-items:stretch}
+ .bc-video-upload-dialog .bc-studio-ai-controls button,
+ .bc-video-upload-dialog .bc-studio-ai-controls select{width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+ .bc-video-upload-dialog .bc-studio-ai-controls button{transition:none}
+}
