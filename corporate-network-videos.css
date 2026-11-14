@@ -151,3 +151,74 @@ body.bc-cinema-open{overflow:hidden}
 @media(max-width:700px){.bc-yt-topbar{height:58px;grid-template-columns:minmax(95px,170px) minmax(0,1fr) auto;padding:0 11px;gap:7px}.bc-yt-brand{gap:4px}.bc-yt-iconbtn{height:34px;width:34px;font-size:18px}.bc-yt-wordmark{gap:4px}.bc-yt-wordmark strong{font-size:12px}.bc-yt-wordmark>span:last-child{display:none}.bc-yt-playmark{height:19px;width:25px}.bc-yt-search{height:36px}.bc-yt-search input{font-size:12px;padding:8px}.bc-yt-search span{width:35px;font-size:19px}.bc-yt-avatar{height:31px;width:31px}.bc-yt-create{display:none}.bc-yt-body,.bc-ytshell.is-collapsed .bc-yt-body{display:block}.bc-yt-sidebar{display:none}.bc-yt-content{padding:0 12px 100px}.bc-yt-topics{top:58px;padding:10px 0 12px;gap:7px}.bc-yt-topics button{padding:9px 11px;font-size:10px}.bc-yt-screens{padding-top:6px}.bc-yt-videogrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 9px}.bc-yt-video-details strong{font-size:10px}.bc-yt-video-details small{font-size:9px}.bc-yt-creator-avatar{width:27px;height:27px;font-size:12px}.bc-yt-cardbody{gap:6px;padding-top:7px}.bc-yt-thumb{border-radius:9px}.bc-yt-section-head h2{font-size:17px}.bc-yt-short-tile{flex-basis:43%}.bc-video-scroller>.bc-yt-video-card{flex-basis:68%}.bc-yt-bottomnav{position:fixed;bottom:0;left:0;right:0;height:calc(63px + env(safe-area-inset-bottom));display:flex;justify-content:space-around;align-items:start;padding:5px 6px env(safe-area-inset-bottom);z-index:170;background:#08080aef;border-top:1px solid #35343b;backdrop-filter:blur(18px)}.bc-yt-bottomnav button{border:0;background:none;color:#b6b5bd;font-size:10px;min-width:55px;display:flex;align-items:center;flex-direction:column;gap:1px;padding:5px}.bc-yt-bottomnav button span{font-size:23px;line-height:1.2}.bc-yt-bottomnav button.is-active{color:#fff}.bc-yt-short-stage{min-height:70dvh;grid-template-columns:minmax(0,min(60vw,360px)) 51px;gap:8px}.bc-yt-short-frame{height:min(71dvh,720px)}.bc-yt-short-actions button{height:42px;width:42px;font-size:20px}.bc-yt-short-actions{gap:17px}.bc-yt-short-actions button small{top:15px}.bc-yt-library-avatar{width:62px;height:62px;font-size:29px}.bc-yt-library-identity{gap:10px;flex-wrap:wrap}.bc-yt-library-profile{margin-left:auto}.bc-video-cinema-dialog{max-height:96dvh;overflow:auto}.bc-cinema-layout{grid-template-columns:1fr}.bc-cinema-details{border:0;border-top:1px solid #38303a;padding:14px}.bc-cinema-details h3{font-size:19px}.bc-cinema-actions{flex-direction:row;flex-wrap:wrap}.bc-cinema-stage video{max-height:56dvh}.bc-cinema-playerbar{flex-wrap:wrap;gap:6px;padding:9px}.bc-cinema-playerbar button{padding:9px;font-size:9px}.bc-video-disclaimer{padding-bottom:80px}}
 @media(max-width:490px){.bc-yt-video-card .bc-yt-card-save{display:none}.bc-yt-videogrid{grid-template-columns:1fr;gap:20px}.bc-yt-video-details strong{font-size:12px}.bc-yt-video-details small{font-size:10px}.bc-yt-creator-avatar{height:33px;width:33px}.bc-yt-wordmark strong{font-size:11px}.bc-yt-topbar{grid-template-columns:auto minmax(100px,1fr) auto}.bc-yt-brand .bc-yt-iconbtn{display:none}.bc-yt-short-tile{flex-basis:47%}}
 @media(prefers-reduced-motion:reduce){.bc-yt-play{transition:none}}
+
+
+/* Movies & TV: Plex-style shelves, separate from YouTube-like Home. */
+.bc-movies-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;border-bottom:1px solid #302c30;padding:14px 0 22px}
+.bc-movies-heading h1{font-size:clamp(29px,4vw,46px);letter-spacing:-.056em;line-height:1.12;margin:11px 0 8px;font-weight:760}
+.bc-movies-heading h1 em{font-style:normal;color:#e16d88}
+.bc-movies-heading p{font-size:12px;line-height:1.75;color:#a5a0a9;margin:0;max-width:670px}
+.bc-movies-actions{display:flex;flex-wrap:wrap;gap:9px;justify-content:flex-end}
+.bc-movies-actions button{flex:none;border-radius:10px;border:1px solid #774255;background:#231821;color:#f7d5e1;padding:12px 15px;font-size:10px;font-weight:760;white-space:nowrap}
+.bc-movies-actions button:hover{background:#552336}
+.bc-movies-tabs{display:flex;align-items:center;overflow-x:auto;scrollbar-width:none;gap:8px;padding:20px 0 6px}
+.bc-movies-tabs button{background:#252429;border:1px solid #36343b;border-radius:9px;color:#e0dce5;padding:10px 16px;font-size:11px;white-space:nowrap}
+.bc-movies-tabs button.is-active{color:#171116;background:#f1e8ef;border-color:#f1e8ef}
+.bc-movies-poster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,177px),1fr));gap:18px 13px}
+.bc-movies-poster-card,.bc-movies-show-card{min-width:0}
+.bc-movies-poster-thumb{width:100%;display:block;position:relative;aspect-ratio:2/3;border:1px solid #403640;border-radius:13px;background:radial-gradient(circle at 50% 35%,#542c3c,#0f0d14 70%);overflow:hidden;padding:0;color:#f8f3f8;cursor:pointer}
+.bc-movies-poster-thumb video{display:block;width:100%;height:100%;object-fit:cover;background:#111017}
+.bc-movies-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:48px;height:48px;border:1px solid #ffffff80;background:#050408a8;display:grid;place-items:center;border-radius:50%;font-size:20px;opacity:0;transition:opacity .15s}
+.bc-movies-poster-thumb:hover .bc-movies-play{opacity:1}
+.bc-movies-format-tag{position:absolute;top:9px;left:9px;padding:5px 8px;font-size:9px;font-weight:820;letter-spacing:.05em;border-radius:5px;background:#0d0c0ecb;border:1px solid #ffffff37}
+.bc-movies-poster-info{padding-top:10px}
+.bc-movies-poster-info strong,.bc-movies-show-info strong{display:block;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.bc-movies-poster-info small,.bc-movies-show-info small{display:block;font-size:10px;line-height:1.5;color:#9a949d;margin-top:4px}
+.bc-movies-poster-info p{color:#8c8792;font-size:10px;line-height:1.6;margin:5px 0 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.bc-movies-series-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:17px}
+.bc-movies-show-thumb{display:block;width:100%;aspect-ratio:16/9;position:relative;overflow:hidden;padding:0;color:#f7f5fa;background:#1b111d;border:1px solid #654557;border-radius:12px}
+.bc-movies-show-thumb video{height:100%;width:100%;object-fit:cover}
+.bc-movies-show-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);padding:9px 12px;border-radius:10px;background:#0b080cc5;border:1px solid #ffffff7c;font-size:10px;font-weight:800}
+.bc-movies-show-info{padding-top:9px}
+.bc-movies-empty{grid-column:1/-1;max-width:100%;background:#17151b;border:1px dashed #4a404c;border-radius:14px;padding:25px 18px;color:#b9aeb9;font-size:12px;line-height:1.6}
+.bc-movies-privacy{font-size:10px;color:#847e87;padding:26px 0}
+.bc-video-upload-overlay{position:fixed;inset:0;z-index:390;padding:clamp(10px,2vw,24px);display:grid;place-items:center;background:#050405e9;backdrop-filter:blur(19px)}
+.bc-video-upload-overlay[hidden],.bc-video-episode-fields[hidden],.bc-video-upload-progress[hidden]{display:none!important}
+.bc-video-upload-dialog{display:flex;flex-direction:column;width:min(580px,100%);max-height:94dvh;overflow:auto;background:linear-gradient(150deg,#231923,#0f1016);color:#f5edf6;border:1px solid #83516a;box-shadow:0 30px 85px #000b;border-radius:18px;scrollbar-width:none}
+.bc-video-upload-dialog>header{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #ffffff20;padding:18px 20px}
+.bc-video-upload-dialog>header h2{margin:7px 0 0;font-size:21px;letter-spacing:-.045em}
+.bc-video-upload-dialog>header button{background:#261b29;border:1px solid #604956;border-radius:10px;width:36px;height:36px;color:#fff;flex:none}
+.bc-video-upload-dialog form{display:flex;flex-direction:column;gap:13px;padding:20px}
+.bc-video-upload-dialog form label{display:flex;flex-direction:column;gap:7px;font-size:10px;letter-spacing:.07em;font-weight:750;color:#e3c5d4}
+.bc-video-upload-dialog form input:not([type=checkbox]),.bc-video-upload-dialog form textarea,.bc-video-upload-dialog form select{color:#f8f1f7;min-width:0;width:100%;background:#101015;border:1px solid #67515e;border-radius:10px;padding:12px 13px;outline:none;font-size:13px;letter-spacing:0;font-weight:400}
+.bc-video-upload-dialog form textarea{resize:vertical;min-height:72px}
+.bc-video-file-drop{border:1px dashed #91607a!important;background:#231521;border-radius:13px;padding:17px!important;text-align:center;cursor:pointer}
+.bc-video-file-drop input[type=file]{background:none!important;border:0!important;padding:7px 0!important;font-size:11px!important}
+.bc-video-file-drop small{display:block;font-size:10px;font-weight:400;letter-spacing:0;color:#ab96a5;overflow-wrap:anywhere}
+.bc-video-episode-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.bc-video-episode-fields label:first-child{grid-column:1/-1}
+.bc-video-upload-dialog form .bc-video-rights{display:flex;flex-direction:row;align-items:flex-start;gap:9px;letter-spacing:0;line-height:1.6;font-size:11px;font-weight:500;color:#e7d9e1}
+.bc-video-rights input{flex:none;margin:2px 0 0;accent-color:#c34f70;width:18px;height:18px}
+.bc-video-upload-note{font-size:10px;line-height:1.6;color:#b5a6b4;margin:0}
+.bc-video-upload-progress{display:flex;flex-direction:column;gap:8px;font-size:10px;color:#d4bcce}
+.bc-video-upload-track{height:7px;position:relative;overflow:hidden;border-radius:8px;background:#312131}
+.bc-video-upload-track span{display:block;height:100%;width:0%;background:repeating-linear-gradient(100deg,#7a304e,#a75370 16px,#6f283f 28px);background-size:80px 100%;animation:bcUploadWaiting 2s linear infinite}
+@keyframes bcUploadWaiting{to{background-position:80px 0}}
+.bc-video-upload-dialog form footer{display:flex;justify-content:end;gap:10px;align-items:center;border-top:1px solid #ffffff18;padding-top:15px}
+.bc-video-upload-dialog form footer button{background:#24212a;border:1px solid #685063;color:#fff;border-radius:10px;padding:12px 15px;font-size:11px;font-weight:800}
+.bc-video-upload-dialog form footer button[type=submit]{background:linear-gradient(130deg,#94334c,#5d2135);border-color:#bd6982}
+.bc-video-upload-dialog button:disabled{opacity:.5;cursor:default}
+body.bc-video-upload-open{overflow:hidden}
+@media(max-width:700px){
+ .bc-movies-heading{display:block}
+ .bc-movies-actions{justify-content:flex-start;margin-top:16px}
+ .bc-movies-heading h1{font-size:30px}
+ .bc-movies-poster-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:15px 11px}
+ .bc-movies-series-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ .bc-video-upload-overlay{padding:8px 8px max(8px,env(safe-area-inset-bottom))}
+ .bc-video-upload-dialog{max-height:calc(100dvh - 20px)}
+ .bc-video-upload-dialog form{padding:14px}
+ .bc-video-upload-dialog>header{padding:15px}
+}
+@media(max-width:370px){.bc-movies-series-grid{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.bc-movies-play{transition:none}.bc-video-upload-track span{animation:none}}
