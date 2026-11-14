@@ -827,7 +827,20 @@ const MAX_VIDEO_BYTES=10*1024*1024*1024;
 const SMALL_VIDEO_BYTES=45*1048576;
 const MAX_POSTER_BYTES=8*1048576;
 let directVideoBusy=false,videoPosterPreviewUrl=null;
-const VIDEO_MIMES=new Set(['video/mp4','video/webm','video/quicktime','video/x-m4v']);
+const VIDEO_MIMES=new Set(['video/mp4','video/webm','video/quicktime','video/x-m4v','video/x-msvideo']);
+// AVI MIME values vary by browser; only normalize files that actually end in .avi.
+// AVI must use Bunny Stream transcoding, never the browser-only small-video player.
+function isAviVideo(file){return Boolean(file&&/\.avi$/i.test(file.name||''))}
+function videoUploadMime(file){
+ if(!file)return '';
+ if(isAviVideo(file)){
+  return ['video/x-msvideo','video/avi','video/msvideo','application/x-troff-msvideo','application/octet-stream',''].includes(file.type||'')?'video/x-msvideo':'';
+ }
+ return VIDEO_MIMES.has(file.type)?file.type:'';
+}
+function requiresBunnyStream(file){
+ return Boolean(file&&(isAviVideo(file)||file.size>SMALL_VIDEO_BYTES));
+}
 const POSTER_MIMES=new Set(['image/jpeg','image/png','image/webp']);
 async function videoStreamApi(action,payload={}){
  const {data,error}=await client.functions.invoke('blackcell-video-stream-api',{body:{action,...payload}});
@@ -866,13 +879,13 @@ function syncDirectVideoCategory(){
  $('bcVideoUploadHeading').textContent=kind==='movie'?'Upload Movie':kind==='series'?'Upload TV Episode':kind==='documentary'?'Upload Documentary':kind==='short'?'Upload Short':'Upload Video';
 }
 function videoFileSizeLabel(file){
- if(!file)return 'Choose MP4, MOV or WEBM · up to 10 GB (resumable for large files)';
- return file.name+' · '+prettyBytes(file.size)+(file.size>SMALL_VIDEO_BYTES?' · 10 GB resumable mode':' · private upload');
+ if(!file)return 'Choose MP4, MOV, WEBM or AVI · up to 10 GB (AVI uses Bunny Stream)';
+ return file.name+' · '+prettyBytes(file.size)+(requiresBunnyStream(file)?' · Bunny Stream resumable upload':' · private upload');
 }
 async function refreshVideoStorageStatus(file){
  const note=$('bcVideoLargeUploadStatus');
  if(!note)return;
- if(file&&file.size<=SMALL_VIDEO_BYTES){
+ if(file&&!requiresBunnyStream(file)){
   note.textContent='Standard private upload · administrator review required';
   note.classList.add('is-ready');return;
  }
@@ -933,7 +946,7 @@ async function sendViaStream(file,metadata,posterFile){
  const key='bc-large-video:'+state.user.id+':'+file.name+':'+file.size+':'+file.lastModified;
  const resumeId=localStorage.getItem(key)||undefined;
  const start=await videoStreamApi('start',{
-  title:metadata.title,fileName:file.name,bytes:file.size,mimeType:file.type,category:metadata.category,
+  title:metadata.title,fileName:file.name,bytes:file.size,mimeType:videoUploadMime(file),category:metadata.category,
   synopsis:metadata.synopsis,seriesTitle:metadata.seriesTitle,season:metadata.season,episode:metadata.episode,
   rightsConfirmed:true,...(resumeId?{resumeId}:{})
  });
@@ -953,7 +966,7 @@ async function sendViaStream(file,metadata,posterFile){
     VideoId:start.videoId,
     LibraryId:String(start.libraryId)
    },
-   metadata:{filetype:file.type,title:metadata.title},
+   metadata:{filetype:videoUploadMime(file),title:metadata.title},
    onProgress(sent,total){
     const percent=total?Math.round(sent*100/total):0;
     fill.style.width=Math.min(100,percent)+'%';
@@ -988,8 +1001,8 @@ async function publishDirectVideo(event){
  const seriesTitle=$('bcVideoSeriesTitle').value.trim();
  const season=Number($('bcVideoSeason').value),episode=Number($('bcVideoEpisode').value);
  if(!file){toast('Choose a video file first.');return}
- if(!VIDEO_MIMES.has(file.type)||file.size<=0||file.size>MAX_VIDEO_BYTES){
-  toast('Choose an MP4, MOV or WEBM file up to 10 GB.');return;
+ if(!videoUploadMime(file)||file.size<=0||file.size>MAX_VIDEO_BYTES){
+  toast('Choose an MP4, MOV, WEBM or AVI video up to 10 GB.');return;
  }
  if(!title){toast('Enter a video title.');return}
  if(posterFile&&(!POSTER_MIMES.has(posterFile.type)||posterFile.size>MAX_POSTER_BYTES||posterFile.size<=0)){
@@ -1009,7 +1022,7 @@ async function publishDirectVideo(event){
  $('bcVideoUploadMessage').textContent='Preparing secure upload…';
  let postId=null,posterPath=null;
  try{
-  if(file.size>SMALL_VIDEO_BYTES){
+  if(requiresBunnyStream(file)){
    await sendViaStream(file,metadata,posterFile);
    $('bcVideoUploadMessage').textContent='Upload received. Video encoding and administrator review are pending.';
   }else{
