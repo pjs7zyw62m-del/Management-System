@@ -111,6 +111,7 @@ function setVerified(isVerified,m){
  $('employeeCard').classList.toggle('codes-verified',isVerified);
  $('chatLink').hidden=!isVerified||m.can_chat!==true||m.access_scope==='ledger_only';
  $('networkLink').hidden=!isVerified||m.access_scope==='ledger_only';
+ $('blackcellOsLink').hidden=!isVerified||m.access_scope==='ledger_only';
  syncEmployeeMessenger(isVerified&&m.can_chat===true&&m.access_scope!=='ledger_only');
  $('employeeAccess').textContent=isVerified
    ?(m.access_scope==='ledger_only'?'ACCOUNT ACTIVE · PRIVATE LEDGER ONLY':

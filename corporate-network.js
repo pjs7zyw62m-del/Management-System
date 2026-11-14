@@ -1723,6 +1723,13 @@ async function boot(){
   $('portalLink').textContent=auth.member.role==='owner'?'PORTAL ↗':'MY CARD ↗';
   $('portalLink').title=auth.member.role==='owner'?'Return to Administration':'View my Employee Access Card';
   $('gateBack').href=$('portalLink').href;
+  for(const id of ['blackcellOsLink','blackcellOsRail']){
+   const link=$(id);if(!link)continue;
+   const owner=auth.member.role==='owner';
+   link.href=owner?'blackcell-os-preview.html':'blackcell-os.html';
+   if(owner)link.title='Preview the employee desktop';
+   link.hidden=false;
+  }
   let verified=false;
   if(auth.member.role==='owner'){
    const {data,error}=await client.rpc('corp_code_status');
