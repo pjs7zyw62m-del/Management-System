@@ -726,12 +726,14 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   if(!supported.length)return;
   // No automatic AI upload analysis: adult/explicit imagery may be present.
   const scanAfterUpload=false;
+  const owner=state.member?.role==='owner'&&Number(state.member?.clearance_level)===7;
+  const directLibrary=owner&&supported.some(f=>photoFormats.has(f.type))&&confirm('DIRECT PHOTO UPLOAD\n\nConfirm all photographs in this batch are non-explicit and you have the rights and consent to share them with the private BLACKCELL Network. OK uploads these photos directly; Cancel keeps normal private review. Videos still require review.');
   const uploadedPhotoIds=[];
   meta.uploading=true;
   const bar=$('applePhotoProgress'),fill=$('applePhotoMeterFill'),label=$('appleProgressLabel');
   $('photosUploadButton').disabled=true;
   bar.hidden=false;fill.style.width='0%';
-  let completed=0,failures=0,skippedDuplicates=0;
+  let completed=0,failures=0,skippedDuplicates=0,directCount=0;
   const batchClassification=uploadClassification();
   try{
    // Keep this queue sequential, including for a 1,000-file selection.
@@ -756,8 +758,9 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
        if(!approved){skippedDuplicates++;continue}
       }
      }
-     const asset=await uploadAsset(f,'library');
+     const asset=await uploadAsset(f,'library',null,{directLibrary:directLibrary&&photoFormats.has(f.type)});
      if(asset.kind==='photo'){
+      if(directLibrary)directCount++;
       if(scanAfterUpload)uploadedPhotoIds.push({id:asset.id,file:f});
       if(fingerprint)await dedupe.record(asset,fingerprint);
      }
@@ -776,7 +779,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
    await refresh();
    render();
    document.dispatchEvent(new CustomEvent('bc:media-updated'));
-   toast((supported.length-failures-skippedDuplicates)+' privately uploaded for review, '+skippedDuplicates+' duplicates skipped'+(failures?', '+failures+' failed':'')+(picked.length>supported.length?', '+(picked.length-supported.length)+' unsupported':'')+(overLimit?', '+overLimit+' not queued':'')+'. Nothing is published before approval.');
+   toast((supported.length-failures-skippedDuplicates)+' uploaded ('+directCount+' direct, '+(supported.length-failures-skippedDuplicates-directCount)+' for review), '+skippedDuplicates+' duplicates skipped'+(failures?', '+failures+' failed':'')+(picked.length>supported.length?', '+(picked.length-supported.length)+' unsupported':'')+(overLimit?', '+overLimit+' not queued':'')+'. Direct photos are available to verified Network members; other uploads remain pending.');
    if(scanAfterUpload&&uploadedPhotoIds.length){
     const newest=uploadedPhotoIds.map(item=>({asset:byId(item.id),file:item.file})).filter(item=>item.asset);
     if(newest.length){
