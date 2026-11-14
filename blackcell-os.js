@@ -12,10 +12,10 @@ async function storeRequest(p_action,p_app=null,p_level=null,p_enabled=null){
  const seq=++storeSequence;try{const {data,error}=await client.rpc('corp_app_store',{p_action,p_app,p_level,p_enabled});if(seq!==storeSequence||!active)return {ok:false,error:'App Store request superseded.'};if(error||!data?.ok){const message=data?.error||'App Store permissions unavailable.';if(p_action==='catalog')clearStore(message);return {ok:false,error:message}}applyStore(data);return {ok:true}}catch(_){if(seq===storeSequence&&p_action==='catalog')clearStore('App Store permissions unavailable.');return {ok:false,error:'Unable to contact App Store.'}}
 }
 function initStore(uid){storeProfile=uid;clearStore('Checking app permissions…')}
-function syncStore(){for(const tile of document.querySelectorAll('[data-optional=true]')){const id=tile.dataset.app;tile.hidden=!storeInstalled.has(id);if(tile.hidden&&windows.has(id))dispose(windows.get(id),true)}}
+function syncStore(){for(const tile of document.querySelectorAll('[data-optional=true]')){const id=tile.dataset.app;tile.hidden=!storeInstalled.has(id);if(tile.hidden&&windows.has(id)){const r=windows.get(id);if(!storeRules.get(id)?.allowed)dispose(r,true);else if(!r.suspended)suspend(r)}}}
 function storeCatalog(){if(preview)return [];return [...document.querySelectorAll('[data-app]')].filter(t=>t.dataset.app!=='store'&&!t.disabled&&(t.dataset.optional==='true'?storeRules.has(t.dataset.app):!t.hidden)).map(t=>{const r=storeRules.get(t.dataset.app),optional=t.dataset.optional==='true';return {id:t.dataset.app,title:t.dataset.title,sub:t.dataset.sub,desc:t.dataset.desc,icon:t.querySelector('svg'),optional,installed:optional?storeInstalled.has(t.dataset.app):true,allowed:optional?r.allowed:true,minLevel:r?.minLevel,enabled:r?.enabled}})}
 function storeInfo(){return {owner:storeAdmin,level:storeLevel,error:preview?'Design preview only. Sign in to see your approved app catalog.':storeError}}
-async function installApp(id,install){if(!active||preview||!storeRules.get(id)?.allowed)return {ok:false,error:'Your access level does not permit this installation.'};if(!install&&windows.has(id))return {ok:false,error:'Close the application before removing its shortcut.'};return storeRequest(install?'install':'remove',id)}
+async function installApp(id,install){if(!active||preview||!storeRules.get(id)?.allowed)return {ok:false,error:'Your access level does not permit this installation.'};if(!install&&windows.has(id)){const r=windows.get(id);await requestClose(r);if(r.closing)return {ok:false,error:'The application is still saving. Try uninstalling again once it finishes.'};if(windows.get(id)===r&&!r.suspended)return {ok:false,error:'Close the application before uninstalling.'};}return storeRequest(install?'install':'remove',id)}
 async function setStoreRule(id,level,enabled){if(!storeAdmin||preview)return {ok:false,error:'Level 7 administrator required.'};return storeRequest('set_rule',id,level,enabled)}
 
 function hostMessage(type){if(embeddedAdmin)window.parent.postMessage({type},location.origin)}
@@ -28,7 +28,7 @@ function closeMenu(){menus.hidden=true;for(const btn of menuButtons)btn.setAttri
 function menuAction(label,fn){const button=document.createElement('button');button.type='button';button.textContent=label;button.onclick=()=>{closeMenu();fn()};menus.append(button)}
 function menu(name,trigger){const was=trigger.getAttribute('aria-expanded')==='true';closeMenu();if(was)return;menus.replaceChildren();trigger.setAttribute('aria-expanded','true');
  if(name==='apps'){for(const tile of document.querySelectorAll('[data-app]'))if(!tile.hidden&&!tile.disabled)menuAction(tile.dataset.title,()=>showApp(tile.dataset.app))}
- else if(name==='window'){menuAction('Show Desktop',showDesktop);for(const record of windows.values())menuAction(record.title+(record.suspended?' · Resume':''),()=>raise(record))}
+ else if(name==='window'){menuAction('Show Desktop',showDesktop);for(const record of windows.values())if(!document.querySelector('.app[data-app="'+record.id+'"]')?.hidden)menuAction(record.title+(record.suspended?' · Resume':''),()=>showApp(record.id))}
  else{if(owner)menuAction('Administration',returnAdmin);menuAction('Show Desktop',showDesktop);menuAction('My Profile',()=>showApp('person'));menuAction(preview?'Exit Preview':'Sign Out',()=>void signOut())}
  menus.style.left=trigger.offsetLeft+'px';menus.hidden=false;
 }
@@ -67,7 +67,7 @@ async function requestClose(r){
 
 function closeAll(force){for(const r of [...windows.values()])dispose(r,force)}
 function showApp(id){
- if(!active&&!preview)return;
+ closeAppContext();if(!active&&!preview)return;
  if(storeRules.has(id)&&(!storeRules.get(id).allowed||!storeInstalled.has(id)))return;
  const tile=document.querySelector('.app[data-app="'+id+'"]');if(!tile||tile.hidden||tile.disabled)return;
  if(windows.has(id)){raise(windows.get(id));return}
@@ -80,7 +80,7 @@ function showApp(id){
  const r={id,title:tile.dataset.title,el:w,frame:null,release:null};windows.set(id,r);
  for(const [label,symbol,fn] of [['Close','×',()=>void requestClose(r)],['Minimize','−',()=>{w.hidden=true;selectedWindow=null}],['Maximize or restore','+',()=>w.classList.toggle('is-max')]]){const btn=document.createElement('button');btn.type='button';btn.setAttribute('aria-label',label+' '+r.title);btn.title=label;btn.textContent=symbol;btn.addEventListener('click',fn);controls.append(btn)}
  if(id==='files'){external.hidden=true;const msg=document.createElement('p');msg.textContent='Opening private drive…';msg.style.padding='20px';content.append(msg);(filesModule??=import('./blackcell-files.js?v=1')).then(module=>{if(windows.get(id)!==r)return;content.replaceChildren();const app=module.mountFiles(content,{client,userId:storeProfile,preview,alive:()=>windows.get(id)===r&&(active||preview),onBusy:busy=>{r.filesBusy=busy;if(busy&&!r.release){try{r.release=window.top.BLACKCELL_LIVE_UPDATE?.hold('BLACKCELL Files transfer',window)}catch(_){}}else if(!busy){r.release?.();r.release=null}}});r.cleanup=()=>app.dispose();}).catch(()=>{filesModule=null;if(windows.get(id)===r){content.replaceChildren(msg);msg.textContent='Files could not load. Reopen to try again.'}});}
- else if(id==='store'){external.hidden=true;const message=document.createElement('p');message.textContent='Opening App Store…';message.style.padding='20px';content.append(message);(storeModule??=import('./blackcell-app-store.js?v=2')).then(module=>{if(windows.get(id)!==r)return;content.replaceChildren();r.refreshStore=module.mountStore(content,{catalog:storeCatalog,install:installApp,open:showApp,info:storeInfo,setRule:setStoreRule});}).catch(()=>{storeModule=null;if(windows.get(id)===r){content.replaceChildren(message);message.textContent='App Store could not start. Close this window and try again.'}});}
+ else if(id==='store'){external.hidden=true;const message=document.createElement('p');message.textContent='Opening App Store…';message.style.padding='20px';content.append(message);(storeModule??=import('./blackcell-app-store.js?v=3')).then(module=>{if(windows.get(id)!==r)return;content.replaceChildren();r.refreshStore=module.mountStore(content,{catalog:storeCatalog,install:installApp,open:showApp,info:storeInfo,setRule:setStoreRule});}).catch(()=>{storeModule=null;if(windows.get(id)===r){content.replaceChildren(message);message.textContent='App Store could not start. Close this window and try again.'}});}
  else if(id==='browser'){if(!preview)r.release=window.BLACKCELL_LIVE_UPDATE?.hold('BLACKCELL Browser window');const message=document.createElement('p');message.className='os-window-status';message.textContent='Opening BLACKCELL Browser…';message.style.padding='20px';content.append(message);(browserModule??=import('./blackcell-browser.js?v=2')).then(module=>{if(windows.get(id)!==r)return;content.replaceChildren();module.mountBrowser(content,r,external,activity)}).catch(()=>{browserModule=null;if(windows.get(id)===r)message.textContent='Browser could not load. Close this window and try again.'});}
  else if(preview){const demo=document.createElement('div');demo.className='os-demo';const box=document.createElement('div');box.append(tile.querySelector('.app-icon').cloneNode(true));const h=document.createElement('h2');h.textContent=r.title;const p=document.createElement('p');p.textContent=tile.dataset.desc;const status=document.createElement('p');status.textContent='DESIGN PREVIEW · No private account data loaded.';status.className='os-window-status';box.append(h,p,status);demo.append(box);content.append(demo)}
  else{r.release=window.BLACKCELL_LIVE_UPDATE?.hold('BLACKCELL OS application window');const frame=document.createElement('iframe');frame.title=r.title;frame.src=url.href;frame.allow='fullscreen';frame.setAttribute('allowfullscreen','');r.frame=frame;content.append(frame);
@@ -92,7 +92,35 @@ function showApp(id){
  bar.addEventListener('pointermove',e=>{if(!drag)return;w.style.left=Math.max(0,Math.min(innerWidth-w.offsetWidth,e.clientX-drag.x))+'px';w.style.top=Math.max(34,Math.min(innerHeight-100,e.clientY-drag.y))+'px'});
  for(const event of ['pointerup','pointercancel','lostpointercapture'])bar.addEventListener(event,()=>{drag=null});
 }
-for(const button of document.querySelectorAll('[data-app]'))button.addEventListener('click',()=>showApp(button.dataset.app));
+let appContext=null,contextTrigger=null;
+function closeAppContext(restore=false){if(appContext){appContext.remove();appContext=null}if(restore)contextTrigger?.focus();contextTrigger=null}
+function openAppContext(tile,x,y){
+ closeMenu();closeAppContext();
+ if(!active||preview||tile.hidden)return;
+ const id=tile.dataset.app,removable=tile.dataset.optional==='true'&&storeRules.get(id)?.allowed&&storeInstalled.has(id);
+ const panel=document.createElement('div');panel.className='os-app-context';panel.setAttribute('role','group');panel.setAttribute('aria-label',tile.dataset.title+' options');contextTrigger=tile;
+ const name=document.createElement('strong');name.textContent=tile.dataset.title;panel.append(name);
+ const item=(label,fn,cls='')=>{const btn=document.createElement('button');btn.type='button';btn.className=cls;btn.textContent=label;btn.onclick=()=>{closeAppContext();fn()};panel.append(btn);return btn};
+ item('Open',()=>showApp(id));
+ if(removable)item('Uninstall app',()=>void uninstallFromDesktop(id,tile.dataset.title),'danger');
+ else{const note=document.createElement('small');note.textContent='Included with BLACKCELL OS';panel.append(note)}
+ $('desktop').append(panel);appContext=panel;
+ const rect=panel.getBoundingClientRect();panel.style.left=Math.max(8,Math.min(x,innerWidth-rect.width-8))+'px';panel.style.top=Math.max(38,Math.min(y,innerHeight-rect.height-8))+'px';
+ panel.querySelector('button')?.focus();
+}
+async function uninstallFromDesktop(id,title){
+ const result=await installApp(id,false);
+ osNotice(result.ok?title+' uninstalled. Your app data is unchanged.':result.error||'Unable to uninstall application.');
+ windows.get('store')?.refreshStore?.();
+}
+function bindAppContext(tile){
+ tile.addEventListener('contextmenu',e=>{if(!active||preview)return;e.preventDefault();openAppContext(tile,e.clientX,e.clientY)});
+ tile.addEventListener('keydown',e=>{if(e.key==='ContextMenu'||(e.shiftKey&&e.key==='F10')){e.preventDefault();const r=tile.getBoundingClientRect();openAppContext(tile,r.left,r.bottom)}});
+}
+document.addEventListener('pointerdown',e=>{if(appContext&&!appContext.contains(e.target))closeAppContext()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAppContext(true)});
+
+for(const button of document.querySelectorAll('[data-app]')){button.addEventListener('click',()=>showApp(button.dataset.app));bindAppContext(button)}
 for(const button of document.querySelectorAll('[data-open]'))button.addEventListener('click',()=>showApp(button.dataset.open));
 $('showDesktop').addEventListener('click',showDesktop);
 async function signOut(force=false){if(preview){location.assign('login.html');return}if(leaving)return;if(!force&&windows.size&&!confirm('Sign out and close your open applications? Finish uploads, playback and unsaved work first.'))return;leaving=true;active=false;blocked('Ending your corporate session…');try{await client.rpc(owner?'corp_end_session':'corp_employee_end_session')}catch(_){}try{await client.auth.signOut({scope:'local'})}catch(_){}if(embeddedAdmin)window.top.location.replace('login.html');else location.replace('login.html')}
