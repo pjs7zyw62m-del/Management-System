@@ -1,7 +1,7 @@
 /* BLACKCELL Video Channel: content-first, YouTube-like navigation,
    Shorts and private Plex-style library. All videos come from already
    approved Network assets; personal likes/history are device-local. */
-export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,sharedMedia,profile,personName,stamp,switchView,openProfile,uploadVideo,playStream,reviewStream,refreshStream,toast}){
+export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,posterVersions,sharedMedia,profile,personName,stamp,switchView,openProfile,uploadVideo,playStream,reviewStream,refreshStream,toast}){
  const $=id=>document.getElementById(id);
  const make=(tag,cls='',value=null)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(value!==null)el.textContent=String(value);return el};
  const button=(label,cls,callback)=>{const b=make('button',cls,label);b.type='button';b.addEventListener('click',callback);return b};
@@ -137,7 +137,7 @@ export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,sharedMedi
  function thumbnailEscape(event){
   if(event.key==='Escape'&&fullThumbnailLayer){event.preventDefault();closeFullThumbnail()}
  }
- function viewFullThumbnail(a,cover,videoUrl){
+ async function viewFullThumbnail(a,cover,videoUrl){
   if(!cover&&!videoUrl)return;
   closeFullThumbnail();
   const overlay=make('div','bc-full-thumb-overlay');
@@ -151,8 +151,10 @@ export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,sharedMedi
   close.setAttribute('aria-label','Close full thumbnail');
   bar.append(label,close);
   const stage=make('div','bc-full-thumb-stage');
+  let artworkImage=null;
   if(cover){
-   const img=make('img');
+   const img=make('img','bc-full-original-artwork');
+   artworkImage=img;
    img.src=cover;
    img.alt='Complete original thumbnail for '+title(a);
    img.decoding='async';
@@ -163,21 +165,42 @@ export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,sharedMedi
    video.controls=true;video.setAttribute('aria-label','Video preview for '+title(a));
    stage.append(video);
   }
-  pane.append(bar,stage,make('div','bc-full-thumb-caption','FULL IMAGE · ORIGINAL PROPORTIONS · NOTHING CROPPED'));
+  const choices=make('div','bc-full-poster-choices');choices.hidden=true;
+  pane.append(bar,choices,stage,make('div','bc-full-thumb-caption','FULL IMAGE · ORIGINAL PROPORTIONS · NOTHING CROPPED'));
   overlay.append(pane);
   overlay.addEventListener('click',event=>{if(event.target===overlay)closeFullThumbnail()});
   document.body.append(overlay);document.body.classList.add('bc-full-thumbnail-open');
   fullThumbnailLayer=overlay;
   document.addEventListener('keydown',thumbnailEscape);
   close.focus({preventScroll:true});
+  if(artworkImage&&typeof posterVersions==='function'){
+   try{
+    const variants=await posterVersions(a);
+    if(fullThumbnailLayer!==overlay||variants.length<2)return;
+    choices.hidden=false;
+    for(const variant of variants){
+     const control=button(variant.label,'bc-full-poster-version',()=>{
+      artworkImage.src=variant.url;
+      for(const item of choices.querySelectorAll('button')){
+       item.classList.toggle('is-active',item===control);
+       item.setAttribute('aria-pressed',String(item===control));
+      }
+     });
+     control.classList.toggle('is-active',variant.selected);
+     control.setAttribute('aria-pressed',String(variant.selected));
+     choices.append(control);
+    }
+   }catch(_){}
+  }
  }
  function addFullThumbnailControl(card,a,cover,url){
   if(!cover&&!url)return;
-  const buttonView=button('⛶ VIEW FULL','bc-view-full-thumb',()=>viewFullThumbnail(a,cover,url));
+  const buttonView=button(isFilmArtwork(a)?'⛶ VIEW FULL POSTER':'⛶ VIEW FULL','bc-view-full-thumb',()=>viewFullThumbnail(a,cover,url));
   buttonView.setAttribute('aria-label','View complete thumbnail for '+title(a));
   card.append(buttonView);
  }
- function appendNativeArtwork(frame,src,alt,cls){
+ function isFilmArtwork(a){return ['movie','series','documentary'].includes(a.video_category)}
+ function appendNativeArtwork(frame,src,alt,cls,film=false){
   const img=make('img',cls+' bc-native-artwork');
   img.alt=alt;img.loading='lazy';img.decoding='async';
   // Use actual image dimensions, not a forced 16:9 thumbnail.
@@ -194,21 +217,24 @@ export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,sharedMedi
   img.addEventListener('load',fit,{once:true});
   frame.append(img);img.src=src;
   if(img.complete)fit();
+  if(film){frame.classList.add('bc-complete-film-poster');frame.style.setProperty('aspect-ratio','2 / 3','important');frame.style.setProperty('height','auto','important');img.style.setProperty('height','100%','important');img.style.setProperty('position','absolute','important');img.style.setProperty('inset','0','important');}
   return img;
  }
  function tile(a,queue=videosCache){
   const card=make('article','bc-yt-video-card');
+  const film=isFilmArtwork(a);
+  if(film)card.classList.add('bc-film-video-card');
   const thumbnail=button('', 'bc-yt-thumb',()=>openCinema(a,queue));
   thumbnail.setAttribute('aria-label','Watch '+title(a));
   const url=source(a),cover=posterUrl(a);
   if(cover){
-   appendNativeArtwork(thumbnail,cover,'Cover for '+title(a),'bc-video-custom-poster');
+   appendNativeArtwork(thumbnail,cover,'Cover for '+title(a),'bc-video-custom-poster',film);
   }else if(url){
    const v=make('video');lazyThumb(v,url,a);thumbnail.append(v);
   }else thumbnail.append(make('span','bc-yt-preview-unavailable',a.bunny_stream?'VIDEO POSTER NOT ADDED':'PREVIEW UNAVAILABLE'));
-  thumbnail.append(make('span','bc-yt-play','▶'));
-  if(shortInfo[a.id]?.duration){const d=shortInfo[a.id].duration;const t=Math.floor(d/60)+':'+String(Math.floor(d%60)).padStart(2,'0');thumbnail.append(make('span','bc-yt-duration',t))}
-  if(progPercent(a)){
+  if(!film)thumbnail.append(make('span','bc-yt-play','▶'));
+  if(!film&&shortInfo[a.id]?.duration){const d=shortInfo[a.id].duration;const t=Math.floor(d/60)+':'+String(Math.floor(d%60)).padStart(2,'0');thumbnail.append(make('span','bc-yt-duration',t))}
+  if(!film&&progPercent(a)){
    const p=make('span','bc-video-progress');p.style.width=progPercent(a)+'%';thumbnail.append(p);
   }
   const body=make('div','bc-yt-cardbody');
@@ -322,11 +348,11 @@ export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,sharedMedi
   const c=make('article','bc-movies-poster-card');
   const tap=button('','bc-movies-poster-thumb',()=>openCinema(a,queue));
   const url=source(a),cover=posterUrl(a);
-  if(cover){appendNativeArtwork(tap,cover,'Poster for '+title(a),'bc-movies-cover-image')}
+  if(cover){appendNativeArtwork(tap,cover,'Poster for '+title(a),'bc-movies-cover-image',true)}
   else if(url){const v=make('video');lazyThumb(v,url,a);tap.append(v)}
   else tap.append(make('span','bc-yt-preview-unavailable','POSTER NOT ADDED'));
-  tap.append(make('span','bc-movies-play','▶'));
-  tap.append(make('span','bc-movies-format-tag',a.video_category==='documentary'?'DOCUMENTARY':'MOVIE'));
+  // Do not overlay playback symbols or labels on movie-poster artwork.
+  if(!cover)tap.append(make('span','bc-movies-play','▶'));
   const info=make('div','bc-movies-poster-info');
   info.append(make('strong','',title(a)),make('small','',creator(a)));
   if(a.video_synopsis)info.append(make('p','',String(a.video_synopsis).slice(0,140)));
@@ -371,7 +397,7 @@ export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,sharedMedi
    const c=make('article','bc-movies-show-card');
    const art=button('','bc-movies-show-thumb',()=>{seriesFocus=key;renderMovies()});
    const a=group.items[0],url=source(a),cover=posterUrl(a);
-   if(cover){appendNativeArtwork(art,cover,'Series cover for '+group.name,'bc-movies-cover-image')}
+   if(cover){appendNativeArtwork(art,cover,'Series cover for '+group.name,'bc-movies-cover-image',true)}
    else if(url){const v=make('video');lazyThumb(v,url,a);art.append(v)}
    art.append(make('span','bc-movies-show-play','▶ EPISODES'));
    const info=make('div','bc-movies-show-info');
