@@ -1,0 +1,190 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>BLACKCELL — Double-sided Network Card Preview</title><style>
+:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#030305;color:#f1edf2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{min-height:100dvh;display:grid;grid-template-rows:auto 1fr auto;background:radial-gradient(ellipse at 50% 38%,#54152924,transparent 55%),#030305}
+header{padding:22px clamp(18px,4vw,62px);border-bottom:1px solid #ffffff17;display:flex;justify-content:space-between;align-items:center}
+header strong{font-size:12px;letter-spacing:.18em}header span{font-size:10px;letter-spacing:.15em;color:#b0abb3}
+main{display:grid;place-items:center;padding:24px 16px;min-height:0}
+.panel{width:min(460px,100%);border:1px solid #b9b0bc66;border-radius:24px;padding:clamp(25px,4vw,42px);background:linear-gradient(145deg,#29242bb0,#0b0a0cf0);box-shadow:0 22px 90px #000b}
+.logo{width:64px;height:64px;display:grid;place-items:center;font-size:36px;font-weight:900;border-radius:18px;border:1px solid #b752694a;margin-bottom:18px}
+.eyebrow{font-size:10px;letter-spacing:.23em;color:#b85b70;font-weight:750}
+h1{font-size:27px;margin:12px 0 14px;letter-spacing:-.035em}
+p{font-size:12px;line-height:1.7;color:#aaa5af}
+label{display:block;margin:15px 0 7px;color:#c9c3cf;font-size:10px;letter-spacing:.1em;font-weight:700}
+input{width:100%;padding:14px 12px;min-height:46px;border:1px solid #4d4652;border-radius:10px;background:#08070b;color:white;font-size:14px}
+button{cursor:pointer;font:inherit}
+.primary{width:100%;border:1px solid #a95569;border-radius:11px;padding:15px;background:linear-gradient(110deg,#681f32,#9e364d);font-size:12px;font-weight:800;letter-spacing:.12em;color:white;margin-top:22px}
+.primary:disabled{opacity:.6}
+.outline{display:inline-block;border:1px solid #6c5964;padding:11px 17px;border-radius:10px;background:#141217;color:#ece5ed;font-size:11px;text-decoration:none;margin-top:13px}
+.notice{padding:11px 12px;background:#261820;border:1px solid #804253;border-radius:10px;font-size:11px;color:#f1c3d0;margin-top:15px}
+[hidden]{display:none!important}
+.access-card{border:3px solid #bfb5c4;border-radius:17px;background:#101015;padding:8px;box-shadow:0 0 50px #000b;margin:20px 0}
+.card-interior{border:1px solid #716873;padding:20px 16px;background:linear-gradient(140deg,#231e25,#07070b);border-radius:10px}
+.card-top{font-size:23px;font-weight:900;letter-spacing:-.05em;line-height:1.05}
+.card-top small{display:block;color:#aba6b0;font-size:9px;letter-spacing:.19em;font-weight:550;margin:9px 0 12px}
+.stripe{height:8px;margin:18px 0 10px;background:repeating-linear-gradient(110deg,#a44459 0 4px,#101014 4px 12px)}
+.clearance{display:flex;min-height:48px;align-items:center}
+.clearance strong{width:43%;background:#e0d8e1;color:#16131a;padding:15px 8px;text-align:center;font-size:16px}
+.clearance span{flex:1;background:#351421;padding:15px 8px;text-align:center;font-size:12px;font-weight:850;letter-spacing:.1em}
+.card-owner{font-size:18px;font-weight:750;margin:10px 0 0}
+.action-row{display:flex;gap:9px;flex-wrap:wrap}
+.action-row .primary{width:auto;flex:1}
+.status{color:#bde8c9;font-size:11px;letter-spacing:.07em}
+footer{text-align:center;padding:15px;color:#75717e;font-size:9px;letter-spacing:.11em}
+@media(max-width:520px){header span{display:none}.card-top{font-size:21px}}
+
+#employeeHome{transition:opacity .6s ease}
+#employeeCard{opacity:1;transform:translateY(0) scale(1)}
+#employeeCard.reveal{animation:employee-card-reveal .9s cubic-bezier(.18,.82,.25,1) both}
+@keyframes employee-card-reveal{
+  from{transform:translateY(35px) scale(.89);opacity:0;filter:blur(8px)}
+  to{transform:translateY(0) scale(1);opacity:1;filter:blur(0)}
+}
+#employeeCard.codes-verified{border-color:#71d798;box-shadow:0 0 38px #41d57e5e}
+#employeeCard.codes-verified .clearance span{background:#246e42;color:#e8ffef}
+#employeeCard.codes-verified .card-interior{border-color:#62b982}
+.code-verify{background:#121015;border:1px solid #514753;padding:16px;border-radius:15px}
+.code-verify h2{font-size:20px;margin:10px 0}
+#employeeHome #chatLink{background:#193e27;border-color:#64af7a;color:#e6fff0}
+@media(prefers-reduced-motion:reduce){#employeeCard.reveal{animation:none}}
+html,body,*{scrollbar-width:none;-ms-overflow-style:none}
+*::-webkit-scrollbar{width:0!important;height:0!important;display:none!important}
+
+
+/* BLACKCELL personnel credential */
+body{background:#000}
+#employeeHome{width:min(510px,100%);background:#070707;border-color:#2c2c2c;padding:clamp(20px,4vw,36px)}
+#employeeHome>.eyebrow{color:#c33333}
+#employeeHome>.eyebrow,#employeeHome>h1{text-align:center}
+#employeeHome>h1{font-size:25px;color:#eee}
+#employeeCard{position:relative;margin:24px auto;border:1px solid #707070;border-radius:18px;padding:7px;background:linear-gradient(135deg,#424242,#0b0b0b 22%,#252525 78%,#080808);box-shadow:0 24px 50px #000;overflow:hidden;max-width:360px}
+#employeeCard .card-interior{position:relative;isolation:isolate;overflow:hidden;border:1px solid #742020;border-radius:11px;background:#080808;padding:20px 22px 16px}
+#employeeCard .card-interior:before,#employeeCard .card-interior:after{content:"";position:absolute;top:0;bottom:0;width:13px;background:linear-gradient(160deg,#b01111 0 24%,#400707 24% 26%,transparent 26% 68%,#8e0b0b 68% 73%,#240505 73%);z-index:-1}
+#employeeCard .card-interior:before{left:0;clip-path:polygon(0 0,100% 0,100% 33%,30% 36%,30% 72%,100% 75%,100% 100%,0 100%)}
+#employeeCard .card-interior:after{right:0;transform:rotate(180deg)}
+.credential-topline{display:flex;justify-content:space-between;gap:8px;font-size:6px;letter-spacing:.11em;color:#8d8d8d;padding-bottom:14px;border-bottom:1px solid #333}
+#employeeCard .card-top{margin:17px 0;text-align:center;font-size:30px;line-height:1;letter-spacing:-.035em;color:#eee}
+#employeeCard .card-top>span{font-size:16px;letter-spacing:.21em;font-weight:650}
+#employeeCard .card-top small{font-size:7px;letter-spacing:.17em;margin:10px 0 0;color:#999}
+.credential-band{text-align:center;background:#960b0b;color:#fff;padding:8px 3px;font-size:9px;letter-spacing:.15em;font-weight:800}
+.credential-portrait{position:relative;display:grid;place-items:center;max-width:174px;aspect-ratio:4/4.5;margin:20px auto 17px;border:1px solid #797979;outline:3px solid #141414;outline-offset:3px;background:linear-gradient(150deg,#191919,#050505);box-shadow:0 0 0 5px #600c0c}
+#credentialInitials{font-size:54px;letter-spacing:.06em;font-weight:600;color:#747474}
+.portrait-caption{position:absolute;bottom:10px;font-size:6px;letter-spacing:.22em;color:#8b8b8b}
+#employeeCard .card-owner{text-align:center;text-transform:uppercase;font-size:25px;line-height:1.15;overflow-wrap:anywhere;margin:0 0 10px;letter-spacing:-.025em;color:#f3f3f3}
+.credential-role{background:#960b0b;text-align:center;font-size:11px;letter-spacing:.15em;font-weight:850;padding:7px}
+#employeeCard .credential-username{color:#b8b8b8;text-align:center;font-size:9px;overflow-wrap:anywhere;margin:14px 0}
+#employeeCard .clearance{min-height:40px;border:1px solid #5b1818}
+#employeeCard .clearance strong{width:43%;padding:12px 5px;background:#bfbfbf;color:#080808;font-size:13px}
+#employeeCard .clearance span{padding:12px 5px;background:#620909;color:#fff;font-size:10px}
+#employeeCard .credential-status{color:#a9a9a9;font-size:8px;text-align:center;letter-spacing:.06em;line-height:1.6;margin:13px 0}
+#employeeCard.codes-verified{border-color:#707070;box-shadow:0 24px 50px #000}
+#employeeCard.codes-verified .card-interior{border-color:#742020}
+#employeeCard.codes-verified .clearance span{background:#620909;color:#fff}
+#employeeCard.codes-verified .credential-status{color:#a5c9ae}
+#employeeCard.codes-verified .credential-status:before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:#77b98a;margin-right:7px;vertical-align:middle}
+.credential-bottom{border-top:3px solid #970c0c;padding-top:10px;display:flex;justify-content:space-between;gap:8px;color:#8d8d8d;font-size:6px;letter-spacing:.08em}
+#employeeHome .action-row .outline{flex:1;text-align:center;background:#101010;border-color:#3d3d3d;line-height:1.5}
+#employeeHome #chatLink{background:#250505;border-color:#7c1a1a;color:#eee}
+#employeeHome .notice{background:#ffffff06;border-color:#ffffff2e;color:#ddd;text-align:center}
+@media(max-width:380px){#employeeHome{padding:18px 13px}#employeeCard .card-interior{padding:16px 18px}#employeeCard .card-top{font-size:26px}.credential-topline{font-size:5px}.credential-bottom{font-size:5px}}
+
+
+/* Two faces share one footprint; the reverse is never mirrored or focusable when hidden. */
+#employeeCard{perspective:1200px}
+.credential-rotor{display:grid;transform-style:preserve-3d;transition:transform .65s cubic-bezier(.2,.75,.2,1)}
+#employeeCard.is-flipped .credential-rotor{transform:rotateY(180deg)}
+#employeeCard .credential-face{grid-area:1 / 1;min-width:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+#employeeCard .credential-back{transform:rotateY(180deg);display:flex;flex-direction:column}
+.credential-record{margin:20px 0;display:grid;gap:0}
+.credential-record>div{padding:13px 0;border-bottom:1px solid #ffffff14}
+.credential-record dt{color:#969696;font-size:8px;letter-spacing:.15em}
+.credential-record dd{margin:6px 0 0;font-size:13px;line-height:1.5;color:#eee;font-weight:650;overflow-wrap:anywhere}
+#credentialBackLevel{color:#d04444}
+#employeeCard.codes-verified #credentialBackStatus{color:#a5c9ae}
+.credential-back-notice{border:1px solid #5b1818;padding:13px;margin:auto 0 18px;background:#110606}
+.credential-back-notice>span{font-size:9px;letter-spacing:.16em;color:#d04444;font-weight:800}
+.credential-back-notice p{font-size:10px;line-height:1.7;margin:8px 0 0;color:#aaa}
+.credential-flip-controls{display:flex;align-items:center;justify-content:center;gap:15px;margin:0 0 22px}
+#credentialFlip{border:1px solid #7c1a1a;border-radius:9px;background:#240505;color:#eee;font-size:10px;font-weight:750;letter-spacing:.12em;min-height:44px;padding:12px 18px}
+#credentialFlip:hover{background:#400909}
+#credentialFlip:focus-visible{outline:2px solid #eee;outline-offset:4px}
+#credentialSide{font-size:8px;letter-spacing:.14em;color:#999}
+@media(prefers-reduced-motion:reduce){.credential-rotor{transition:none}}
+
+
+/* Scannable personal record, four-module quiet zone included in the SVG. */
+#employeeCard .credential-back .card-top{font-size:26px;margin:14px 0}
+#employeeCard .credential-back .credential-record{margin:12px 0}
+#employeeCard .credential-back .credential-record>div{display:grid;grid-template-columns:80px minmax(0,1fr);gap:10px;padding:7px 0;align-items:baseline}
+#employeeCard .credential-back .credential-record dd{margin:0;font-size:10px}
+#credentialEmployeeId{font-family:ui-monospace,monospace;font-size:8px!important}
+.credential-qr-block{text-align:center;margin:8px auto 16px;width:100%}
+#credentialRecordLink{display:block;width:min(174px,100%);margin:0 auto 9px;line-height:0;border:1px solid #ccc;background:#fff}
+#credentialRecordLink:focus-visible{outline:2px solid #d33;outline-offset:5px}
+#credentialQr{display:block}
+#credentialQr svg{display:block;width:100%;height:auto;shape-rendering:crispEdges}
+.credential-qr-label{display:block;font-size:8px;letter-spacing:.16em;color:#ccc}
+#credentialQrMessage{font-size:10px;color:#aaa;line-height:1.5}
+#employeeCard .credential-back .credential-back-notice{margin-top:auto;padding:10px}
+
+
+.preview-note{max-width:460px;margin:0 auto 20px;text-align:center;padding:12px;color:#aaa;font-size:12px;line-height:1.6}header{justify-content:center}</style></head><body><header><strong>BLACKCELL · CARD PREVIEW</strong></header><main><section class="panel" id="employeeHome">
+<div class="eyebrow">PRIVATE CORPORATE CREDENTIAL</div><h1>Your Network Card</h1>
+<div class="access-card codes-verified" id="employeeCard"><div class="credential-rotor"><div class="card-interior credential-face" id="credentialFront" aria-label="Credential front">
+<div class="credential-topline"><span>BLACKCELL / NETWORK</span><span>IDENTITY CREDENTIAL</span></div>
+<div class="card-top">BLACKCELL<br><span>CORPORATION</span><small>PRIVATE CORPORATE NETWORK</small></div>
+<div class="credential-band">PERSONNEL AUTHORIZATION</div>
+<div class="credential-portrait" aria-label="Account initials">
+<span id="credentialInitials" aria-hidden="true">BC</span>
+<span class="portrait-caption">NETWORK IDENTITY</span>
+</div>
+<div class="card-owner" id="employeeName">Network User</div>
+<div class="credential-role">NETWORK MEMBER</div>
+<p class="status credential-username" id="employeeUsername">USERNAME</p>
+<div class="clearance"><strong id="employeeLevel">LEVEL —</strong><span>ACCESS PASS</span></div>
+<p class="status credential-status" id="employeeAccess" hidden>AUTHORIZATION PENDING</p>
+<div class="credential-bottom"><span>BLACKCELL CORPORATION</span><span>PRIVATE · NON-TRANSFERABLE</span></div>
+</div>
+<div class="card-interior credential-face credential-back" id="credentialBack" aria-label="Credential back" aria-hidden="true" inert>
+<div class="credential-topline"><span>BLACKCELL / NETWORK</span><span>REVERSE / ACCOUNT RECORD</span></div>
+<div class="card-top">BLACKCELL<br><span>CORPORATION</span><small>PRIVATE CORPORATE NETWORK</small></div>
+<div class="credential-band">PERSONNEL AUTHORIZATION</div>
+<dl class="credential-record">
+<div><dt>NAME</dt><dd id="credentialBackName">—</dd></div>
+<div><dt>USERNAME</dt><dd id="credentialBackUsername">—</dd></div>
+<div><dt>EMPLOYEE ID</dt><dd id="credentialEmployeeId">—</dd></div>
+<div><dt>CLEARANCE</dt><dd id="credentialBackLevel">—</dd></div>
+<div hidden><dt>ACCOUNT STATUS</dt><dd id="credentialBackStatus">AUTHORIZATION PENDING</dd></div>
+</dl>
+<div class="credential-qr-block">
+<a id="credentialRecordLink" hidden aria-label="Open this employee's Network profile"><span id="credentialQr"></span></a>
+<span class="credential-qr-label">PERSONNEL RECORD</span>
+<p id="credentialQrMessage" role="status">Preparing personal QR code…</p>
+</div>
+<div class="credential-back-notice"><span>NETWORK ACCESS</span><p>This credential identifies the account holder. Access is governed by the account’s assigned permissions.</p></div>
+<div class="credential-bottom"><span>BLACKCELL CORPORATION</span><span>PRIVATE · NON-TRANSFERABLE</span></div>
+</div></div></div>
+<div class="credential-flip-controls"><button type="button" id="credentialFlip" aria-controls="credentialFront credentialBack" aria-pressed="false">VIEW BACK ↻</button><span id="credentialSide" aria-live="polite">FRONT · 1 / 2</span></div>
+<p>Your card identifies your assigned clearance. It does not provide access to the Level 7 Administration dashboard or NEXUS records.</p>
+<p id="employeeStatus" class="notice" hidden role="status"></p>
+
+</section>
+</main><footer class="preview-note">Sample details only. Use VIEW BACK to see the QR code.<br>The demonstration QR opens this preview; employee cards link to their individual profiles.</footer><script type="module">
+import qrcode from './vendor/blackcell-qrcode.js';
+const $=id=>document.getElementById(id);
+const values={employeeName:'Test User',credentialInitials:'TU',employeeUsername:'USERNAME · bc_test_88717',employeeLevel:'LEVEL 1',credentialBackName:'Test User',credentialBackUsername:'bc_test_88717',credentialBackLevel:'LEVEL 1',credentialEmployeeId:'DEMO-001'};
+for(const [id,value] of Object.entries(values))$(id).textContent=value;
+const demoUrl=new URL('employee-card-preview.html',location.href);
+demoUrl.hash='sample-personnel-record';
+const qr=qrcode(0,'M');qr.addData(demoUrl.href,'Byte');qr.make();
+$('credentialQr').innerHTML=qr.createSvgTag({cellSize:4,margin:16,scalable:true});
+$('credentialRecordLink').href=demoUrl.href;$('credentialRecordLink').hidden=false;
+$('credentialQrMessage').hidden=true;
+$('credentialFlip').addEventListener('click',()=>{
+ const flipped=$('employeeCard').classList.toggle('is-flipped');
+ $('credentialFlip').textContent=flipped?'VIEW FRONT ↻':'VIEW BACK ↻';
+ $('credentialFlip').setAttribute('aria-pressed',String(flipped));
+ $('credentialFront').setAttribute('aria-hidden',String(flipped));$('credentialFront').inert=flipped;
+ $('credentialBack').setAttribute('aria-hidden',String(!flipped));$('credentialBack').inert=!flipped;
+ $('credentialSide').textContent=flipped?'BACK · 2 / 2':'FRONT · 1 / 2';
+});
+</script></body></html>
