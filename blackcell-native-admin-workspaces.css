@@ -1,0 +1,79 @@
+/* BLACKCELL OS native Administration design. Presentation only. */
+html:has(body[data-workspace]){height:100%;overflow:hidden;scrollbar-width:none}
+body[data-workspace]{height:100dvh!important;min-height:0!important;overflow:hidden!important;background:#17171b!important;color:#eeedf1;font:12px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important}
+body[data-workspace] #opApp:not([hidden]){height:100%;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+body[data-workspace] #opApp>.bg-glow{display:none}
+body[data-workspace] #opApp>header{height:54px;flex:none;background:#212126;border-color:#ffffff16;padding:0 16px;box-shadow:none;backdrop-filter:none}
+body[data-workspace] .logomark{width:32px;height:32px;border-radius:8px;font:750 21px system-ui;background:linear-gradient(145deg,#963747,#401421);border-color:#e0747d55;box-shadow:none}
+body[data-workspace] #opApp>.shell{width:100%!important;max-width:none!important;margin:0!important;padding:0!important;display:grid!important;grid-template-columns:196px minmax(0,1fr);gap:0;flex:1;min-height:0;overflow:hidden}
+body[data-workspace] #opApp>.shell>aside{position:relative;top:auto;height:100%;min-height:0;overflow:auto;scrollbar-width:none;padding:16px 10px;background:#242429;border-right:1px solid #ffffff13}
+body[data-workspace] .sidebar-title{font:700 10px system-ui;letter-spacing:.06em;color:#9999a4;padding:0 7px;margin:0 0 14px}
+body[data-workspace] .side-nav{display:flex;flex-direction:column;gap:4px}
+body[data-workspace] .side-nav a{border:0;padding:7px 8px;border-radius:8px;gap:9px;color:#dfdfe5;font:500 12px system-ui;min-height:39px;background:transparent}
+body[data-workspace] .side-nav a:hover{background:#ffffff0c}
+body[data-workspace] .side-nav a[aria-current=page]{background:#ffffff15;color:#fff}
+body[data-workspace] .side-nav .glyph{display:grid;place-items:center;flex:none;width:25px;height:25px;min-width:25px;border-radius:7px;background:#45454e;color:#fff;font-size:16px}
+body[data-workspace] .side-nav a[aria-current=page] .glyph{background:#b23549}
+body[data-workspace] .side-note{background:none;border:0;border-top:1px solid #ffffff12;border-radius:0;padding:12px 7px;color:#a2a2ae;margin-top:24px}
+body[data-workspace] #opApp>.shell>main{height:100%!important;width:100%!important;max-width:none!important;min-height:0;min-width:0;padding:0!important;margin:0!important;display:flex;flex-direction:column;overflow:hidden}
+body[data-workspace] .bc-native-heading{position:relative;flex:none;min-width:0;background:#212126;border-bottom:1px solid #ffffff16;padding:12px 20px;min-height:62px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+body[data-workspace] .bc-native-heading>.bc-native-heading-copy{min-width:0;flex:1}
+body[data-workspace] .bc-native-heading .eyebrow{display:none!important}
+body[data-workspace] .bc-native-heading h1{font:650 21px/1.2 system-ui!important;letter-spacing:-.035em!important;margin:0 0 4px!important;color:#eeedf1}
+body[data-workspace] .bc-native-heading h1 span{color:inherit}
+body[data-workspace] .bc-native-heading .lead{font:11px/1.5 system-ui;color:#aaaab5;margin:0!important;max-width:850px}
+body[data-workspace] .bc-native-heading .bc-cost-head{margin:0;gap:10px;align-items:center}
+body[data-workspace] .bc-estimate-mark{font:600 9px system-ui;letter-spacing:0;padding:6px 8px;border-radius:6px;background:#2b2520;border-color:#80714c;color:#e4c994}
+body[data-workspace] .bc-native-scroll{flex:1;min-height:0;overflow:auto;overflow-x:hidden;scrollbar-width:none;overscroll-behavior:contain;padding:16px 20px 22px}
+body[data-workspace] .bc-native-scroll::-webkit-scrollbar,body[data-workspace] #opApp>.shell>aside::-webkit-scrollbar{display:none}
+body[data-workspace] .bc-native-scroll #opContent{width:100%;max-width:1360px;margin:0 auto}
+body[data-workspace] .bc-native-scroll footer{max-width:1360px;margin:18px auto 0;padding:11px 0;border-top:1px solid #ffffff10;color:#888893;font:10px system-ui;letter-spacing:0}
+body[data-workspace] #opContent .metric,body[data-workspace] #opContent .panel,body[data-workspace] #opContent .check,body[data-workspace] #opContent .bc-c-panel,body[data-workspace] #opContent .bc-c-presets,body[data-workspace] #opContent .bc-c-metrics article,body[data-workspace] #opContent .ci-hero,body[data-workspace] #opContent .ci-idea,body[data-workspace] #opContent .sys-mast{background:#232328!important;border:1px solid #ffffff14!important;border-radius:12px!important;box-shadow:none!important}
+body[data-workspace] #opContent .metric{min-height:94px;padding:13px!important}
+body[data-workspace] #opContent .metric:before,body[data-workspace] #opContent .sys-mast:before{display:none}
+body[data-workspace] #opContent .metric strong{font:650 25px system-ui;letter-spacing:-.04em;margin:9px 0 4px}
+body[data-workspace] #opContent .metric small,body[data-workspace] #opContent .metric span{font:11px system-ui;letter-spacing:0;color:#a9a9b5;text-transform:none}
+body[data-workspace] #opContent .panel,body[data-workspace] #opContent .check,body[data-workspace] #opContent .ci-idea{padding:14px 16px!important}
+body[data-workspace] #opContent .panel h2,body[data-workspace] #opContent .ci-hero h2,body[data-workspace] #opContent .sys-mast h2{font:600 16px system-ui;letter-spacing:-.015em}
+body[data-workspace] #opContent .check-icon{width:30px;height:30px;border:0;background:#45454e;border-radius:8px;color:#fff}
+body[data-workspace] #opContent .check-label b{font:550 12px system-ui}
+body[data-workspace] #opContent .check-label small,body[data-workspace] #opContent .check-result{font:11px/1.5 system-ui;color:#a2a2ae}
+body[data-workspace] #opContent .check[data-state=online]{border-color:#43755c!important}
+body[data-workspace] #opContent .check[data-state=attention]{border-color:#806a43!important}
+body[data-workspace] #opContent .check[data-state=offline]{border-color:#994453!important}
+body[data-workspace] .btn,body[data-workspace] #opContent .bc-c-presets button,body[data-workspace] #opContent .bc-c-actions button{background:#36363d;border:1px solid #ffffff20;color:#e6e6eb;border-radius:7px;font:500 11px system-ui;letter-spacing:0;padding:7px 10px;min-height:31px;box-shadow:none}
+body[data-workspace] .btn:hover:not(:disabled){background:#4b4b54;border-color:#ffffff30}
+body[data-workspace] .btn.primary,body[data-workspace] #opContent .bc-c-presets button.active,body[data-workspace] #opContent .bc-c-actions .bc-c-primary{background:#8a3446;border-color:#b45162;color:#fff}
+body[data-workspace] .btn.danger{background:#481d29;border-color:#a24459;color:#ffd1d8}
+body[data-workspace] #opContent input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),body[data-workspace] #opContent select,body[data-workspace] #opContent textarea{background:#17171c!important;border:1px solid #ffffff24!important;border-radius:7px!important;min-height:33px;padding:7px 9px;font:12px system-ui;color:#eee}
+body[data-workspace] #opContent input:focus,body[data-workspace] #opContent select:focus,body[data-workspace] #opContent textarea:focus{outline:2px solid #af5065;outline-offset:1px}
+body[data-workspace] #opContent .toolbar{margin:12px 0 15px;gap:8px}
+body[data-workspace] #opContent .metrics{margin:0 0 14px;gap:10px}
+body[data-workspace] #opContent .section-heading{font:600 13px system-ui;letter-spacing:0;color:#e1e1e6}
+body[data-workspace] #opContent .check-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:10px}
+body[data-workspace] #opContent .notice,body[data-workspace] #opContent .feed{background:#202024;border-color:#ffffff14;border-radius:9px}
+body[data-workspace] #opContent .sys-mast{padding:14px 16px!important;margin-bottom:12px}
+body[data-workspace] #opContent .sys-seal{width:40px;height:40px;font-size:24px;border-radius:8px;background:#36363d;box-shadow:none}
+body[data-workspace] #opContent .sys-kicker{display:none}
+body[data-workspace] #opContent .sys-filters,body[data-workspace] #opContent .ci-tabline{background:#242429;border-color:#ffffff14;border-radius:8px;padding:4px;gap:4px}
+body[data-workspace] #opContent .sys-filters button[aria-pressed=true],body[data-workspace] #opContent .ci-tabline button[aria-selected=true]{background:#43434b;border-color:#ffffff16;color:#fff}
+body[data-workspace] #opContent .bc-c-panel>header.bc-c-panel-title{background:#232328!important;border-bottom:1px solid #ffffff14;padding:13px 16px!important}
+body[data-workspace] #opContent .bc-c-panel-title h2{font:600 16px system-ui}
+body[data-workspace] #opContent .bc-c-inside{padding:14px 16px}
+body[data-workspace] #opContent .bc-c-metrics article{padding:14px}
+body[data-workspace] #opContent .bc-c-metrics article>strong{font:650 25px system-ui}
+body[data-workspace] #opContent .ci-hero{padding:14px 16px!important;margin:0 0 13px}
+body[data-workspace] #opContent .ci-idea h3{font:600 15px system-ui}
+html.bc-admin-workspace-embedded body[data-workspace] #opApp>.shell{display:block!important;padding:0!important}
+html.bc-admin-workspace-embedded body[data-workspace] #opApp>.shell>aside{display:none!important}
+@media(max-width:760px){
+ body[data-workspace] #opApp>.shell{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}
+ body[data-workspace] #opApp>.shell>aside{height:auto;padding:5px 7px;border-right:0;border-bottom:1px solid #ffffff13;overflow:hidden}
+ body[data-workspace] .sidebar-title,body[data-workspace] .side-note{display:none}
+ body[data-workspace] .side-nav{flex-direction:row;overflow-x:auto;scrollbar-width:none}
+ body[data-workspace] .side-nav a{flex:none;white-space:nowrap}
+ body[data-workspace] .bc-native-heading{padding:10px 12px}
+ body[data-workspace] .bc-native-heading h1{font-size:18px!important}
+ body[data-workspace] .bc-native-scroll{padding:12px}
+ body[data-workspace] #opContent .metric{min-height:80px}
+}
