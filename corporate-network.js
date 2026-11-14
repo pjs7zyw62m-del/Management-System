@@ -1,5 +1,5 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
-import {setupBlackcellPhotos} from './corporate-network-photos.js?v=20261113-direct-upload1000';
+import {setupBlackcellPhotos} from './corporate-network-photos.js?v=20261113-uniform-collections1';
 import {setupBlackcellStorageStatus} from './corporate-storage-status.js?v=20261111-storage1';
 import {mountMilitaryGunner} from './military-gunner.js?v=20261110-fast4';
 import {createNetworkPersonalization} from './corporate-network-personalization.js?v=20261112-themes5';
