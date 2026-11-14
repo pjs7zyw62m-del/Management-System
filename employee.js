@@ -247,7 +247,7 @@ $('signin').addEventListener('submit',async e=>{
   $('password').value='';
   await load(true);
  }catch(_){showError('loginError','Sign in unavailable. Check your connection.')}
- finally{btn.disabled=false;btn.textContent='SIGN IN ↗'}
+ finally{btn.disabled=false;btn.textContent='SIGN IN'}
 });
 
 $('activateButton').addEventListener('click',async()=>{
