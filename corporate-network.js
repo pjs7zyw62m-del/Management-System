@@ -861,8 +861,8 @@ async function videoStreamApi(action,payload={}){
    security_session_required:'Your BLACKCELL security verification is missing or has expired. Complete Corporate Access verification, then retry.',
    security_session_unavailable:'BLACKCELL could not validate your security session. Refresh and sign in again.',
    sign_in_required:'Your BLACKCELL sign-in has expired. Sign in again to upload.',
-   bunny_stream_library_not_configured:'Large video storage is not configured yet: add your Bunny Stream Library ID and API Key in Supabase Edge Function Secrets.',
-   bunny_stream_embed_security_not_configured:'Bunny Stream embed token security is not configured yet. Add BUNNY_STREAM_EMBED_TOKEN_KEY in Supabase Edge Function Secrets.',
+   bunny_stream_library_not_configured:'Large video storage is not configured: add Bunny Stream Library ID and library API Key in Supabase Edge Function Secrets.',
+   bunny_stream_embed_security_not_configured:'Bunny Stream playback signing is unavailable. Verify the library API key or an explicitly configured embed token key.',
    server_database_not_configured:'BLACKCELL video service configuration is incomplete. The administrator needs to check its server connection.',
    bunny_create_failed:'Bunny Stream rejected creation of the video. Check the Bunny Stream Library ID, API key, and account access.',
    invalid_video_upload:'The video details or format were rejected. Choose a supported file up to 10 GB.',
@@ -924,7 +924,7 @@ async function refreshVideoStorageStatus(file){
    note.textContent='10 GB resumable Bunny Stream uploads ready · interrupted uploads can be resumed on this device';
    note.classList.add('is-ready');
   }else{
-   note.textContent='10 GB uploads need a Bunny Stream library ID, API key and embed token key configured in Supabase. Small videos up to 45 MB still work.';
+   note.textContent='10 GB uploads need a Bunny Stream Library ID and library API key configured in Supabase. Small MP4, MOV and WEBM videos up to 45 MB can still use private storage.';
   }
  }catch(e){
   note.textContent=String(e?.message||'10 GB storage connection unavailable. Small videos up to 45 MB are still supported.');
@@ -968,7 +968,7 @@ async function uploadMoviePoster(file){
 async function sendViaStream(file,metadata,posterFile){
  const status=await videoStreamApi('status');
  if(!status.resumableReady){
-  throw Error('10 GB uploads require Bunny Stream library ID, API key and embed security key. Configure these three Supabase Edge Function secrets before trying a large video.');
+  throw Error('10 GB uploads require a Bunny Stream Video Library ID and library API key. Add BUNNY_STREAM_LIBRARY_ID and BUNNY_STREAM_API_KEY in Supabase Edge Function Secrets.');
  }
  const tus=window.tus;
  if(!tus?.Upload)throw Error('Resumable uploader did not load. Refresh BLACKCELL with an internet connection and try again.');
