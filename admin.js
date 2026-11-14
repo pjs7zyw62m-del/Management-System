@@ -321,10 +321,8 @@ async function employeeProfiles(){
     paint();
   }catch(_){if(list.isConnected)list.replaceChildren(p('Unable to load employee profile list.'))}
 }
-function showInvitationPreview(form,inputs){
+function showInvitationPreview(inputs,showPreview,closePreview){
   const {name,email,username,level}=inputs;
-  const existing=form.parentElement.querySelector('.invitation-preview');
-  if(existing)existing.remove();
 
   const wrapper=el('section','invitation-preview');
   wrapper.setAttribute('aria-label','Blackcell corporate invitation concept preview — not sent');
@@ -404,12 +402,11 @@ function showInvitationPreview(form,inputs){
 
   wrapper.append(el('p','invitation-preview-bottomnote',
     'Visual concept preview only. No invitation has been sent. The real invitation is generated using the email template configured in Supabase and may have different wording or styling.'));
-  const closeButton=action('CLOSE PREVIEW',()=>wrapper.remove());
+  const closeButton=action('CLOSE PREVIEW',()=>closePreview(true));
   closeButton.type='button';
   closeButton.classList.add('invitation-preview-close');
   wrapper.append(closeButton);
-  form.after(wrapper);
-  wrapper.scrollIntoView({behavior:'smooth',block:'nearest'});
+  showPreview(wrapper);
 }
 
 function ensureInvitationCardPreviewStyle(){
@@ -418,10 +415,13 @@ function ensureInvitationCardPreviewStyle(){
   style.textContent=`
     #modalContent .um4-card-preview-slot[hidden]{display:none!important}
     #modalContent .um4-card-preview-slot{min-width:0;box-sizing:border-box;align-self:flex-start;container-type:inline-size;overflow:hidden}
+    #modalContent .um4-card-preview-slot>.invitation-preview,
     #modalContent .um4-card-preview-slot>.employee-card-inline-preview,
     #modalContent .um4-card-preview-slot>.security-credential-preview{margin:0!important;max-width:100%;width:100%;box-sizing:border-box}
     #modalContent .um4-preview-row button[aria-pressed="true"]{border-color:#c76274;background:#59303d;color:#fff}
     @container(max-width:570px){
+      #modalContent .um4-card-preview-slot .invitation-preview-grid{grid-template-columns:minmax(0,1fr)}
+      #modalContent .um4-card-preview-slot .invitation-preview-brandtext{min-width:0;overflow-wrap:anywhere}
       #modalContent .um4-card-preview-slot .employee-profile-layout{grid-template-columns:minmax(0,1fr)}
       #modalContent .um4-card-preview-slot .employee-profile-pass{width:min(100%,310px);box-sizing:border-box;justify-self:center}
       #modalContent .um4-card-preview-slot .security-credential-fields{grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}
@@ -504,8 +504,8 @@ function users(){
     ensureInvitationCardPreviewStyle();
     const section=block('Register New Employee');
     const cardSlot=el('aside','um4-card-preview-slot');
-    cardSlot.id='um4-card-preview-slot';cardSlot.hidden=true;cardSlot.dataset.previewBuild='horizontal-v3';
-    cardSlot.setAttribute('aria-label','Employee card preview');
+    cardSlot.id='um4-card-preview-slot';cardSlot.hidden=true;cardSlot.dataset.previewBuild='horizontal-v4-invitation';
+    cardSlot.setAttribute('aria-label','Employee invitation and credential previews');
     let activeCardButton=null,previewObserver=null,previewMotion=null;
     const applyImportant=(node,styles)=>{for(const [key,value] of Object.entries(styles))node.style.setProperty(key,value,'important')};
     const clearStyles=(node,keys)=>{for(const key of keys)node.style.removeProperty(key)};
@@ -613,7 +613,7 @@ function users(){
     level.value='1';levelLabel.append(level);identityGrid.append(levelLabel);
     const previewGroup=el('div','um4-form-group');previewGroup.append(el('h4','','Preview & send'));const previewRow=el('div','um4-preview-row'),sendRow=el('div','um4-send-row');previewGroup.append(previewRow,sendRow);form.append(previewGroup);
     const previewInvite=action('PREVIEW INVITATION',()=>{
-      showInvitationPreview(form,{name,email,username:uniqueUser,level});
+      showInvitationPreview({name,email,username:uniqueUser,level},panel=>showCardPreview(panel,previewInvite),closeCardPreview);
     });
     previewInvite.type='button';
     previewInvite.textContent='Invitation email';
@@ -639,7 +639,7 @@ function users(){
     previewCodes.type='button';
     previewCodes.textContent='Access & security card';
     previewRow.append(previewCodes);
-    for(const button of [previewCard,previewCodes]){button.setAttribute('aria-controls',cardSlot.id);button.setAttribute('aria-pressed','false');}
+    for(const button of [previewInvite,previewCard,previewCodes]){button.setAttribute('aria-controls',cardSlot.id);button.setAttribute('aria-pressed','false');}
     const testConnection=action('CHECK CONNECTION — NO EMAIL',null,false);
     testConnection.type='button';
     testConnection.textContent='Check connection';testConnection.title='Check secure connection without sending email';
