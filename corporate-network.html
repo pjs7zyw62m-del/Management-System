@@ -37,6 +37,7 @@
 <link rel="stylesheet" href="corporate-network-coverless-profile-v6.css?v=20261112-coverless6">
 <link rel="stylesheet" href="private-photo-ledger-nav.css?v=20261112-photoledger1">
 <link rel="stylesheet" href="corporate-chat-black-red-glass-v6.css?v=20261113-imessage6">
+<link rel="stylesheet" href="corporate-network-videos.css?v=20261113-plex-youtube1">
 </head>
 <body class="bc-network">
 <header class="masthead">
@@ -239,10 +240,62 @@
       <div class="panel directory-search"><input id="peopleSearch" type="search" placeholder="Search names and usernames…" aria-label="Search the corporate directory"></div>
       <div id="peopleDirectory" class="directory-grid"></div>
     </section>
-    <section id="videosView" class="view" hidden>
-      <div class="page-intro"><div><div class="overline">BLACKCELL / VIDEO CHANNEL</div><h1>Network Videos<span>.</span></h1><p>Every video shared across the private corporate network.</p></div></div>
-      <div id="videoGrid" class="video-grid"></div>
+    <section id="videosView" class="view bc-video-view" hidden>
+      <div class="bc-videos-heading">
+        <div><div class="bc-video-eyebrow">BLACKCELL ORIGINALS / THE NETWORK CHANNEL</div>
+          <h1>Video <span>Channel.</span></h1>
+          <p>Discover films and videos shared by verified members of your private network.</p>
+        </div>
+        <div class="bc-video-header-tools">
+          <span id="bcVideoTotal" class="bc-video-counter">VIDEO LIBRARY</span>
+          <button type="button" id="bcVideoUpload" class="bc-video-primary">＋ UPLOAD VIDEO</button>
+        </div>
+      </div>
+      <div class="bc-video-toolbar">
+        <label class="bc-video-search"><span aria-hidden="true">⌕</span>
+          <input id="bcVideoSearch" type="search" placeholder="Search videos, creators, titles…" autocomplete="off" aria-label="Search video library">
+        </label>
+        <div id="bcVideoFilters" class="bc-video-filters" aria-label="Video library filters">
+          <button class="is-active" type="button" data-video-filter="all" aria-pressed="true">All Videos</button>
+          <button type="button" data-video-filter="following" aria-pressed="false">Following</button>
+          <button type="button" data-video-filter="mine" aria-pressed="false">My Uploads</button>
+          <button type="button" data-video-filter="watchlater" aria-pressed="false">＋ Watch Later</button>
+        </div>
+        <select id="bcVideoSort" aria-label="Sort videos">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="title">Title A–Z</option>
+        </select>
+      </div>
+      <div id="bcVideoSpotlight" class="bc-video-spotlight" aria-label="Featured network video"></div>
+      <section id="bcVideoContinueSection" class="bc-video-shelf" hidden>
+        <div class="bc-video-shelf-heading"><div><span class="bc-video-eyebrow">PICK UP WHERE YOU LEFT OFF</span><h2>Continue watching</h2></div></div>
+        <div id="bcVideoContinue" class="bc-video-scroller"></div>
+      </section>
+      <section id="bcVideoLatestSection" class="bc-video-shelf">
+        <div class="bc-video-shelf-heading"><div><span class="bc-video-eyebrow">FRESH FROM THE NETWORK</span><h2>Recently added</h2></div></div>
+        <div id="bcVideoLatest" class="bc-video-scroller"></div>
+      </section>
+      <section class="bc-video-shelf bc-video-all">
+        <div class="bc-video-shelf-heading"><div><span class="bc-video-eyebrow">THE BLACKCELL COLLECTION</span><h2 id="bcVideoCollectionTitle">Explore all videos</h2></div><span id="bcVideoResults" class="bc-video-count-label"></span></div>
+        <div id="videoGrid" class="bc-video-grid"></div>
+      </section>
+      <div class="bc-video-disclaimer">Private BLACKCELL network · Only approved, authorized videos are shown.</div>
     </section>
+    <div id="bcVideoCinema" class="bc-video-cinema" hidden>
+      <section class="bc-video-cinema-dialog" role="dialog" aria-modal="true" aria-labelledby="bcCinemaTitle">
+        <header class="bc-cinema-head"><div><span class="bc-video-eyebrow">BLACKCELL / NOW PLAYING</span><h2 id="bcCinemaTitle">Video</h2></div><button type="button" id="bcCinemaClose" aria-label="Close video player">✕</button></header>
+        <div class="bc-cinema-layout">
+          <div class="bc-cinema-stage"><video id="bcCinemaPlayer" controls playsinline preload="metadata" controlsList="nodownload" aria-label="BLACKCELL video player"></video>
+            <div class="bc-cinema-playerbar"><button type="button" id="bcCinemaPrev">← PREVIOUS</button><button type="button" id="bcCinemaNext">NEXT VIDEO →</button><button type="button" id="bcCinemaFullscreen">⛶ FULL SCREEN</button></div>
+          </div>
+          <aside class="bc-cinema-details"><div class="bc-video-eyebrow">NOW WATCHING</div><h3 id="bcCinemaVideoTitle"></h3><p id="bcCinemaVideoMeta"></p>
+            <div class="bc-cinema-actions"><button type="button" id="bcCinemaWatchLater">＋ WATCH LATER</button><button type="button" id="bcCinemaCreator">VIEW CREATOR ↗</button></div>
+            <p id="bcCinemaDescription"></p><p class="bc-cinema-hint">Continue watching is remembered on this device. Videos remain protected by BLACKCELL access controls.</p>
+          </aside>
+        </div>
+      </section>
+    </div>
     <section id="photosView" class="view" hidden>
       <div class="mx-hero" aria-label="Global Military Media Library opening">
  <div class="mx-holo" aria-hidden="true"></div>
