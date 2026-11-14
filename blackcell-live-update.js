@@ -2,7 +2,7 @@
 (function(){
 'use strict';
 if(window.top!==window.self||window.BLACKCELL_LIVE_UPDATE)return;
-const auto=document.currentScript?.dataset.mode==='auto', testMode=document.currentScript?.dataset.test==='true'&&location.pathname.endsWith('/site-update-test.html'), KEY='bc.live-update.v1';
+const auto=document.currentScript?.dataset.mode==='auto', testMode=document.currentScript?.dataset.test==='true'&&/\/site-update-test(?:-v2)?\.html$/.test(location.pathname), KEY='bc.live-update.v1';
 let testing=false,baseline='',pending='',checking=false,refreshing=false,delay=0,last=Date.now(),interrupted=false,notice=null,screen=null;
 const dirty=new Set(),holds=new Map(),$=id=>document.getElementById(id);
 for(const e of ['pointerdown','keydown','wheel','touchstart'])addEventListener(e,()=>{last=Date.now();interrupted=true},{capture:true,passive:true});
@@ -48,18 +48,23 @@ function restore(){let r;try{r=JSON.parse(sessionStorage.getItem(KEY)||'null');s
 interrupted=false;overlay('Restoring your corporate workspace…');const move=()=>{if(interrupted||location.pathname!==r.path)return;scrollTo(r.x||0,r.y||0);for(const item of r.scroll||[]){const el=$(item.id);if(el){el.scrollTop=item.top;el.scrollLeft=item.left}}};
 move();setTimeout(move,300);setTimeout(move,1100);setTimeout(()=>{screen?.remove();screen=null;move()},1500);setTimeout(move,2600)}
 async function refresh(){if(refreshing||!pending||busy())return;refreshing=true;dismiss();overlay('Applying the latest corporate system update…');await new Promise(r=>setTimeout(r,testing?3200:850));if(busy()){screen?.remove();screen=null;refreshing=false;showNotice();return}save();if(testing){try{sessionStorage.setItem('bc.live-update.test-complete','1')}catch(_){}}location.reload()}
-async function version(){const r=await fetch(new URL('blackcell-site-version.json',location.href),{cache:'no-store',credentials:'same-origin'});if(!r.ok)throw Error('Version unavailable');const text=await r.text(),json=JSON.parse(text.slice(text.indexOf('{'),text.lastIndexOf('}')+1));const rev=String(json.revision||'');if(/^[a-f0-9]{7,64}$/i.test(rev))return rev;const build=String(json.built||'');if(/^\d{14}$/.test(build))return build;return String(json.fallback||'')}
+async function version(){const url=new URL('blackcell-site-version.json',location.href);url.searchParams.set('_bc',String(Date.now()));const r=await fetch(url,{cache:'no-store',credentials:'same-origin'});if(!r.ok)throw Error('Version unavailable');const text=await r.text(),json=JSON.parse(text.slice(text.indexOf('{'),text.lastIndexOf('}')+1));const rev=String(json.revision||'');if(/^[a-f0-9]{7,64}$/i.test(rev))return rev;const build=String(json.built||'');if(/^\d{14}$/.test(build))return build;return String(json.fallback||'')}
 async function check(){if(checking||refreshing||document.hidden||!navigator.onLine)return;checking=true;try{const v=await version();if(!v)return;if(!baseline){baseline=v;return}pending=v!==baseline?v:'';if(!pending){dismiss();return}if(auto&&!modified()&&!busy()&&!document.querySelector('dialog[open],[aria-modal=true]:not([hidden]):not([aria-hidden=true])')&&Date.now()-last>=12000&&Date.now()>=delay){await refresh();return}showNotice()}catch(_){/* fail open */}finally{checking=false}}
 if(testMode){
  const button=$('bcRunUpdateTest');
+ const output=$('bcTestResult');
+ if(output)output.textContent='UPDATE ENGINE READY — click RUN UPDATE TEST.';
+ if(button)button.disabled=false;
+ if($('bcManifestResult'))void version().then(v=>{$('bcManifestResult').textContent='Deployed release: '+(v||'unavailable')}).catch(()=>{$('bcManifestResult').textContent='Release manifest unavailable; local animation test is still available.'});
  button?.addEventListener('click',()=>{
-  if(busy()||refreshing)return;
-  testing=true;pending='local-test';button.disabled=true;void refresh();
+  if(refreshing)return;
+  if(busy()){if(output)output.textContent='Test paused: an active operation is blocking refresh.';return;}
+  testing=true;pending='local-test';button.disabled=true;if(output)output.textContent='Running the real update engine…';void refresh().catch(()=>{button.disabled=false;if(output)output.textContent='Update test failed during refresh.'});
  });
  try{if(sessionStorage.getItem('bc.live-update.test-complete')==='1'){
   sessionStorage.removeItem('bc.live-update.test-complete');
   $('bcTestResult').textContent='TEST COMPLETE — returned to the same page after refresh.';
  }}catch(_){}
 }
-restore();void check();setInterval(()=>void check(),30000);setInterval(()=>{if(pending&&!refreshing){if(busy())dismiss();else showNotice()}},2000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)void check()});addEventListener('online',()=>void check());
+restore();if(!testMode){void check();setInterval(()=>void check(),30000);setInterval(()=>{if(pending&&!refreshing){if(busy())dismiss();else showNotice()}},2000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)void check()});addEventListener('online',()=>void check());}
 })();

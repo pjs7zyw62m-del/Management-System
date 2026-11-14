@@ -1,3 +1,73 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>BLACKCELL | Live Update Test</title><style>
 *{box-sizing:border-box}html{color-scheme:dark}body{margin:0;min-height:100dvh;background:#000;color:#eee;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;display:grid;place-items:center;padding:24px}main{width:min(460px,100%);border:1px solid #555;border-radius:20px;background:linear-gradient(145deg,#151515,#050505);padding:35px;text-align:center;box-shadow:0 0 35px #a30b191c}h1{font-size:26px;letter-spacing:.11em;margin:0}small{display:block;color:#999;letter-spacing:.35em;font-size:10px;margin:6px 0 24px}.rule{height:2px;background:linear-gradient(90deg,transparent,#f32338,transparent);margin:20px 0}h2{font-size:20px;margin:20px 0 10px}p{font-size:13px;color:#bcbcbc;line-height:1.65}button{display:block;min-height:48px;width:220px;max-width:100%;margin:24px auto 16px;background:linear-gradient(130deg,#7b090e,#c81223);border:1px solid #e83748;color:white;border-radius:10px;letter-spacing:.1em;font-weight:800;cursor:pointer}button:disabled{opacity:.5}a{color:#bbb;font-size:12px}#bcTestResult{color:#eee;font-size:12px;min-height:36px}
-</style><script src="blackcell-live-update.js?v=20261114-test3" defer data-mode="manual" data-test="true"></script></head><body><main><h1>BLACKCELL</h1><small>CORPORATION</small><div class="rule"></div><h2>LIVE UPDATE TEST</h2><p>Run the real update animation and reload this exact page. This test affects only this browser tab and does not require signing in.</p><button id="bcRunUpdateTest" type="button">RUN UPDATE TEST</button><p id="bcTestResult" role="status" aria-live="polite">Ready to test the update system.</p><a href="index.html">Return to BLACKCELL</a></main></body></html>
+</style></head><body><main><h1>BLACKCELL</h1><small>CORPORATION</small><div class="rule"></div><h2>LIVE UPDATE TEST</h2><p>Run the real update animation and reload this exact page. This test affects only this browser tab and does not require signing in.</p><button id="bcRunUpdateTest" type="button" disabled>RUN UPDATE TEST</button><p id="bcTestResult" role="status" aria-live="polite">Initializing update engine… If this does not change, JavaScript has not started.</p><p id="bcManifestResult" style="font-size:11px;color:#aaa;overflow-wrap:anywhere">Checking deployed release…</p><a href="index.html">Return to BLACKCELL</a></main><script data-mode="manual" data-test="true">/* BLACKCELL site update system. Same-origin only; no credentials or drafts are saved. */
+(function(){
+'use strict';
+if(window.top!==window.self||window.BLACKCELL_LIVE_UPDATE)return;
+const auto=document.currentScript?.dataset.mode==='auto', testMode=document.currentScript?.dataset.test==='true'&&/\/site-update-test(?:-v2)?\.html$/.test(location.pathname), KEY='bc.live-update.v1';
+let testing=false,baseline='',pending='',checking=false,refreshing=false,delay=0,last=Date.now(),interrupted=false,notice=null,screen=null;
+const dirty=new Set(),holds=new Map(),$=id=>document.getElementById(id);
+for(const e of ['pointerdown','keydown','wheel','touchstart'])addEventListener(e,()=>{last=Date.now();interrupted=true},{capture:true,passive:true});
+function track(e){const t=e.target;if(t instanceof Element&&!t.closest('#bc-update-notice')&&t.matches('input:not([type=hidden]):not([type=button]):not([type=submit]),textarea,select,[contenteditable=true]'))dirty.add(t)}
+document.addEventListener('input',track,true);document.addEventListener('change',track,true);
+window.BLACKCELL_LIVE_UPDATE=Object.freeze({hold(reason='operation',owner=window){const t=Symbol(reason);holds.set(t,owner);return()=>holds.delete(t)},clean(element){if(element instanceof Element)for(const t of dirty)if(t===element||element.contains(t))dirty.delete(t)},check:()=>void check()});
+function activityDoc(doc,depth=0){
+ if(!doc||depth>3)return false;
+ if(doc.querySelector('[aria-busy=true],.is-uploading,[data-busy=true],progress:not([value])'))return true;
+ const visible=e=>!!(e.getClientRects().length&&!e.closest('[hidden],[aria-hidden=true]')&&e.ownerDocument.defaultView.getComputedStyle(e).visibility!=='hidden');
+ for(const el of doc.querySelectorAll('video,audio')){
+  if(el.ended)continue;
+  if(!el.paused||((el.currentTime>0||el.id==='bcCinemaPlayer')&&visible(el)&&!!(el.currentSrc||el.getAttribute('src'))))return true;
+ }
+ for(const frame of doc.querySelectorAll('iframe')){
+  const src=frame.getAttribute('src')||'';
+  if(src&&src!=='about:blank'&&visible(frame)&&(/stream|player|youtube|vimeo|video|bunny/i.test(src)||frame.id==='bcCinemaStreamPlayer'))return true;
+  try{if(frame.contentDocument&&activityDoc(frame.contentDocument,depth+1))return true}catch(_){}
+ }
+ return false;
+}
+function busy(){for(const [token,owner] of holds){try{if(owner.closed||owner!==window&&owner.top!==window)holds.delete(token)}catch(_){holds.delete(token)}}return holds.size>0||activityDoc(document)}
+
+function modified(){for(const t of dirty)if(!t.isConnected)dirty.delete(t);return dirty.size>0||Array.from(document.querySelectorAll('input[type=file]')).some(t=>t.files?.length)}
+function styles(){const s=document.createElement('style');s.textContent=
+'#bc-update-overlay,#bc-update-notice{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;color:#f5f5f5;z-index:2147483000;line-height:1.5}#bc-update-overlay *,#bc-update-notice *{box-sizing:border-box}'+
+'#bc-update-overlay{position:fixed;inset:0;background:#000;display:grid;place-items:center;padding:24px;text-align:center}#bc-update-overlay .bc-up-body{width:min(460px,100%);display:grid;justify-items:center;gap:15px}'+
+'#bc-update-overlay .bc-up-brand{font-size:clamp(19px,5vw,29px);letter-spacing:.34em;font-weight:800;color:#eee}#bc-update-overlay .bc-up-corp{font-size:10px;letter-spacing:.47em;color:#aaa;margin-top:-12px}'+
+'#bc-update-overlay .bc-up-ring{width:112px;height:112px;border-radius:50%;border:2px solid #292929;border-top-color:#ff2038;border-right-color:#ac0b1c;box-shadow:0 0 32px #ae0a262c;animation:bcupdspin 1.35s linear infinite;margin:22px 0 7px}'+
+'#bc-update-overlay h2{font-size:24px;letter-spacing:.14em;color:#fff;margin:0}#bc-update-overlay p{font-size:12px;color:#aaa;margin:0}#bc-update-overlay .bc-up-track{width:80%;height:4px;background:#222;overflow:hidden;border-radius:8px;margin-top:8px}#bc-update-overlay .bc-up-track i{display:block;width:36%;height:4px;background:#ed1230;animation:bcupdscan 1.45s ease-in-out infinite}#bc-update-overlay .bc-up-foot{border-top:1px solid #272727;padding-top:21px;margin-top:18px;width:100%;font-size:9px;letter-spacing:.25em;color:#777}'+
+'#bc-update-notice{position:fixed;bottom:max(18px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(460px,calc(100vw - 28px));padding:18px;background:linear-gradient(145deg,#171719,#080808);border:1px solid #6d2933;border-radius:15px;box-shadow:0 10px 45px #000b,0 0 18px #b914222c}#bc-update-notice strong{display:block;color:#fff;font-size:14px;letter-spacing:.07em}#bc-update-notice p{font-size:12px;color:#bfbfc4;margin:7px 0 12px}#bc-update-notice div{display:flex;gap:9px}#bc-update-notice button{font:600 11px/1.3 -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;min-height:44px;padding:10px 15px;border-radius:8px;border:1px solid #555;color:#fff;background:#171719;cursor:pointer}#bc-update-notice button:first-child{background:#bd1026;border-color:#f32c40}#bc-update-notice button:focus-visible{outline:2px solid #fff;outline-offset:3px}'+
+'@keyframes bcupdspin{to{transform:rotate(360deg)}}@keyframes bcupdscan{0%{transform:translateX(-100%)}100%{transform:translateX(380%)}}@media(prefers-reduced-motion:reduce){#bc-update-overlay .bc-up-ring,#bc-update-overlay .bc-up-track i{animation:none}}';document.head.append(s)}
+styles();
+function overlay(message){if(!screen){screen=document.createElement('div');screen.id='bc-update-overlay';screen.setAttribute('role','status');screen.innerHTML='<div class="bc-up-body"><div class="bc-up-brand">BLACKCELL</div><div class="bc-up-corp">CORPORATION</div><div class="bc-up-ring" aria-hidden="true"></div><h2>SITE UPDATING</h2><p id="bc-up-message"></p><div class="bc-up-track" aria-hidden="true"><i></i></div><p>Preserving your current location</p><div class="bc-up-foot">CONTROL IS EVERYTHING.</div></div>';document.body.append(screen)}$('bc-up-message').textContent=message}
+function dismiss(){notice?.remove();notice=null}
+function showNotice(){if(busy()){dismiss();return}if(notice||Date.now()<delay||document.hidden)return;
+notice=document.createElement('aside');notice.id='bc-update-notice';notice.setAttribute('aria-label','Blackcell system update');notice.innerHTML='<strong>BLACKCELL · SYSTEM UPDATE AVAILABLE</strong><p>Updates wait for uploads and active players. Save edits and send drafts before updating. Your current page will stay the same.</p><div><button type="button">UPDATE NOW</button><button type="button">LATER</button></div>';
+const [go,later]=notice.querySelectorAll('button');
+go.onclick=()=>{if(busy()){notice.querySelector('p').textContent='An upload, video playback or other operation is still active. Your update is paused. Finish the upload or close the player before updating.';return}if((!auto||modified())&&!confirm('Refresh this page now? Make sure uploads, drafts and edits are complete. Unsaved changes may be lost.'))return;void refresh()};
+later.onclick=()=>{delay=Date.now()+300000;dismiss()};document.body.append(notice)}
+function save(){try{const scroll=Array.from(document.querySelectorAll('[id]')).filter(t=>t.clientHeight>0&&t.scrollHeight>t.clientHeight+4&&t.scrollTop>0).slice(0,30).map(t=>({id:t.id,top:t.scrollTop,left:t.scrollLeft}));sessionStorage.setItem(KEY,JSON.stringify({path:location.pathname,at:Date.now(),x:scrollX,y:scrollY,scroll}))}catch(_){}}
+function restore(){let r;try{r=JSON.parse(sessionStorage.getItem(KEY)||'null');sessionStorage.removeItem(KEY)}catch(_){return}if(!r||r.path!==location.pathname||Date.now()-r.at>60000||performance.getEntriesByType('navigation')[0]?.type!=='reload')return;
+interrupted=false;overlay('Restoring your corporate workspace…');const move=()=>{if(interrupted||location.pathname!==r.path)return;scrollTo(r.x||0,r.y||0);for(const item of r.scroll||[]){const el=$(item.id);if(el){el.scrollTop=item.top;el.scrollLeft=item.left}}};
+move();setTimeout(move,300);setTimeout(move,1100);setTimeout(()=>{screen?.remove();screen=null;move()},1500);setTimeout(move,2600)}
+async function refresh(){if(refreshing||!pending||busy())return;refreshing=true;dismiss();overlay('Applying the latest corporate system update…');await new Promise(r=>setTimeout(r,testing?3200:850));if(busy()){screen?.remove();screen=null;refreshing=false;showNotice();return}save();if(testing){try{sessionStorage.setItem('bc.live-update.test-complete','1')}catch(_){}}location.reload()}
+async function version(){const url=new URL('blackcell-site-version.json',location.href);url.searchParams.set('_bc',String(Date.now()));const r=await fetch(url,{cache:'no-store',credentials:'same-origin'});if(!r.ok)throw Error('Version unavailable');const text=await r.text(),json=JSON.parse(text.slice(text.indexOf('{'),text.lastIndexOf('}')+1));const rev=String(json.revision||'');if(/^[a-f0-9]{7,64}$/i.test(rev))return rev;const build=String(json.built||'');if(/^\d{14}$/.test(build))return build;return String(json.fallback||'')}
+async function check(){if(checking||refreshing||document.hidden||!navigator.onLine)return;checking=true;try{const v=await version();if(!v)return;if(!baseline){baseline=v;return}pending=v!==baseline?v:'';if(!pending){dismiss();return}if(auto&&!modified()&&!busy()&&!document.querySelector('dialog[open],[aria-modal=true]:not([hidden]):not([aria-hidden=true])')&&Date.now()-last>=12000&&Date.now()>=delay){await refresh();return}showNotice()}catch(_){/* fail open */}finally{checking=false}}
+if(testMode){
+ const button=$('bcRunUpdateTest');
+ const output=$('bcTestResult');
+ if(output)output.textContent='UPDATE ENGINE READY — click RUN UPDATE TEST.';
+ if(button)button.disabled=false;
+ if($('bcManifestResult'))void version().then(v=>{$('bcManifestResult').textContent='Deployed release: '+(v||'unavailable')}).catch(()=>{$('bcManifestResult').textContent='Release manifest unavailable; local animation test is still available.'});
+ button?.addEventListener('click',()=>{
+  if(refreshing)return;
+  if(busy()){if(output)output.textContent='Test paused: an active operation is blocking refresh.';return;}
+  testing=true;pending='local-test';button.disabled=true;if(output)output.textContent='Running the real update engine…';void refresh().catch(()=>{button.disabled=false;if(output)output.textContent='Update test failed during refresh.'});
+ });
+ try{if(sessionStorage.getItem('bc.live-update.test-complete')==='1'){
+  sessionStorage.removeItem('bc.live-update.test-complete');
+  $('bcTestResult').textContent='TEST COMPLETE — returned to the same page after refresh.';
+ }}catch(_){}
+}
+restore();if(!testMode){void check();setInterval(()=>void check(),30000);setInterval(()=>{if(pending&&!refreshing){if(busy())dismiss();else showNotice()}},2000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)void check()});addEventListener('online',()=>void check());}
+})();
+</script></body></html>
