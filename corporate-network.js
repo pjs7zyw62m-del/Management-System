@@ -30,7 +30,7 @@ function btn(title,fn,cls=''){
 }
 function date(t){try{return new Date(t).toLocaleDateString([],{month:'short',day:'numeric',year:'numeric'})}catch(_){return ''}}
 function stamp(t){try{return new Date(t).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}catch(_){return ''}}
-function prettyBytes(n){return n>=1048576?(n/1048576).toFixed(1)+' MB':Math.round(n/1024)+' KB'}
+function prettyBytes(n){return n>=1073741824?(n/1073741824).toFixed(2)+' GB':n>=1048576?(n/1048576).toFixed(1)+' MB':Math.round(n/1024)+' KB'}
 function fail(e){return String(e?.message||e||'Unknown error').slice(0,220)}
 let toastTimeout=0;
 function toast(s){
@@ -1279,11 +1279,16 @@ function setupEvents(){
  videoChannel.init();
  $('bcVideoUploadForm').addEventListener('submit',e=>void publishDirectVideo(e));
  $('bcVideoCategory').addEventListener('change',syncDirectVideoCategory);
+ $('bcVideoPoster').addEventListener('change',videoPosterSelect);
+ $('bcVideoPosterRemove').addEventListener('click',()=>{
+  $('bcVideoPoster').value='';videoPosterClear();
+ });
  $('bcVideoUploadClose').addEventListener('click',closeDirectVideoUpload);
  $('bcVideoUploadCancel').addEventListener('click',closeDirectVideoUpload);
  $('bcVideoFile').addEventListener('change',()=>{
   const f=$('bcVideoFile').files?.[0];
-  $('bcVideoFileName').textContent=f?f.name+' · '+prettyBytes(f.size):'Choose a video file';
+  $('bcVideoFileName').textContent=videoFileSizeLabel(f);
+  void refreshVideoStorageStatus(f);
  });
  $('bcVideoUploadDialog').addEventListener('click',e=>{
   if(e.target===$('bcVideoUploadDialog'))closeDirectVideoUpload()
