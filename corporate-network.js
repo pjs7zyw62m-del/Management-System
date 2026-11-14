@@ -923,7 +923,7 @@ function videoPosterSelect(){
   toast('Poster must be JPG, PNG or WEBP and 8 MB or smaller.');
   return;
  }
- videoPosterPreviewUrl=URL.createObjectURL(f);
+ if(!videoPosterPreviewUrl)videoPosterPreviewUrl=URL.createObjectURL(f);
  $('bcVideoPosterPreview').src=videoPosterPreviewUrl;
  $('bcVideoPosterPreviewFrame').hidden=false;
  renderPosterOptions();
@@ -1234,6 +1234,7 @@ async function publishDirectVideo(event){
   document.body.classList.remove('bc-video-upload-open');
   // The AI image belongs to the saved movie now; reset without deleting it.
   posterAiPath=null;
+  $('bcVideoUploadForm').reset();
   videoPosterClear();
   document.dispatchEvent(new CustomEvent('bc:media-updated'));
   toast('Video received. It will appear in the Channel after encoding (if needed) and administrator approval.');
