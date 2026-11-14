@@ -1,4 +1,4 @@
-import {mountCloudPilot} from './blackcell-cloud-browser.js?v=1';
+import {mountCloudPilot} from './blackcell-cloud-browser.js?v=2';
 /* BLACKCELL Browser: web-based viewer, not a proxy or native browser. */
 export function mountBrowser(host,record,external,activity){
  const container=document.createElement('div');mountCloudPilot(host,record,container);
