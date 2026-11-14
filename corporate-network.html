@@ -384,38 +384,69 @@
       <button data-vnav="movies" type="button"><span>▤</span>Movies</button>
       <button data-vnav="library" type="button"><span>◉</span>You</button>
     </nav>
+
     <div id="bcVideoUploadDialog" class="bc-video-upload-overlay" hidden>
       <div class="bc-video-upload-dialog" role="dialog" aria-modal="true" aria-labelledby="bcVideoUploadHeading">
-        <header><div><span class="bc-video-eyebrow">BLACKCELL / VIDEO STUDIO</span><h2 id="bcVideoUploadHeading">Upload Video</h2></div>
-          <button type="button" id="bcVideoUploadClose" aria-label="Close video upload">✕</button></header>
+        <header class="bc-studio-head">
+          <div class="bc-studio-heading-copy">
+            <span class="bc-video-eyebrow">BLACKCELL / VIDEO STUDIO</span>
+            <h2 id="bcVideoUploadHeading">Upload Video</h2>
+          </div>
+          <button type="button" id="bcVideoUploadClose" class="bc-studio-close" aria-label="Close video upload">✕</button>
+        </header>
         <form id="bcVideoUploadForm">
-          <label class="bc-video-file-drop" for="bcVideoFile">SELECT VIDEO FILE
-            <input id="bcVideoFile" type="file" accept=".mp4,.mov,.webm,.m4v,.avi,video/mp4,video/webm,video/quicktime,video/x-m4v,video/x-msvideo" required>
-            <small id="bcVideoFileName">Choose MP4, MOV, WEBM or AVI · up to 10 GB (AVI uses Bunny Stream)</small>
-          </label>
-          <div id="bcVideoLargeUploadStatus" class="bc-video-storage-status" role="status">Files over 45 MB require Bunny Stream · checking connection…</div>
-          <label class="bc-video-file-drop bc-video-cover-drop" for="bcVideoPoster">MOVIE POSTER / ALBUM COVER (OPTIONAL)
-            <input id="bcVideoPoster" type="file" accept="image/jpeg,image/png,image/webp">
-            <small>JPG, PNG or WEBP · up to 8 MB · portrait 2:3 recommended</small>
-          </label>
-          <div id="bcVideoPosterPreviewFrame" class="bc-video-poster-preview" hidden>
-            <img id="bcVideoPosterPreview" alt="Preview of your movie poster">
-            <button type="button" id="bcVideoPosterRemove">REMOVE COVER</button>
+          <div class="bc-studio-upload-stack">
+            <label class="bc-video-file-drop bc-video-cover-drop bc-studio-upload-card" for="bcVideoPoster">
+              <span class="bc-studio-upload-symbol" aria-hidden="true">
+                <svg viewBox="0 0 48 48" width="38" height="38" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="9" width="36" height="30" rx="4"/><circle cx="17" cy="19" r="3"/><path d="m9 34 10-10 7 7 5-5 9 10"/></svg>
+              </span>
+              <span class="bc-studio-upload-details">
+                <strong>MOVIE POSTER / ALBUM COVER <span class="bc-studio-optional">(OPTIONAL)</span></strong>
+                <small>JPG, PNG or WEBP · up to 8 MB · portrait 2:3 recommended</small>
+                <span class="bc-studio-choose-file"><span aria-hidden="true">⇧</span> Choose File</span>
+              </span>
+              <input id="bcVideoPoster" class="bc-studio-file-input" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Choose movie poster or album cover">
+            </label>
+            <div id="bcVideoPosterPreviewFrame" class="bc-video-poster-preview" hidden>
+              <img id="bcVideoPosterPreview" alt="Preview of your movie poster">
+              <div class="bc-studio-preview-caption"><strong>POSTER SELECTED</strong><span>Cover artwork ready for upload</span></div>
+              <button type="button" id="bcVideoPosterRemove">REMOVE COVER</button>
+            </div>
+            <label class="bc-video-file-drop bc-studio-upload-card bc-studio-video-drop" for="bcVideoFile">
+              <span class="bc-studio-upload-symbol" aria-hidden="true">
+                <svg viewBox="0 0 48 48" width="38" height="38" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="12" width="28" height="24" rx="4"/><path d="m33 19 10-6v22l-10-6z"/></svg>
+              </span>
+              <span class="bc-studio-upload-details">
+                <strong id="bcVideoFileLabel">SELECT MOVIE FILE</strong>
+                <small id="bcVideoFileName">Choose MP4, MOV, WEBM or AVI · up to 10 GB (AVI uses Bunny Stream)</small>
+                <span class="bc-studio-choose-file"><span aria-hidden="true">⇧</span> Choose File</span>
+              </span>
+              <input id="bcVideoFile" class="bc-studio-file-input" type="file" accept=".mp4,.mov,.webm,.m4v,.avi,video/mp4,video/webm,video/quicktime,video/x-m4v,video/x-msvideo" aria-label="Choose video or movie file" required>
+            </label>
           </div>
-          <label>VIDEO TITLE<input id="bcVideoTitle" type="text" maxlength="140" required placeholder="Name your video"></label>
-          <label>CONTENT TYPE<select id="bcVideoCategory"><option value="standard">Regular Video</option><option value="short">Shorts</option><option value="movie">Movie / Film</option><option value="series">TV Episode</option><option value="documentary">Documentary</option></select></label>
-          <div id="bcVideoEpisodeFields" class="bc-video-episode-fields" hidden>
-            <label>SERIES TITLE<input id="bcVideoSeriesTitle" type="text" maxlength="140" placeholder="Name of TV show"></label>
-            <label>SEASON<input id="bcVideoSeason" type="number" min="1" max="100" value="1"></label>
-            <label>EPISODE<input id="bcVideoEpisode" type="number" min="1" max="999" value="1"></label>
+          <div id="bcVideoLargeUploadStatus" class="bc-video-storage-status" role="status" hidden>Checking video storage…</div>
+          <div class="bc-studio-fields">
+            <label>VIDEO TITLE<input id="bcVideoTitle" type="text" maxlength="140" required placeholder="Name your video" autocomplete="off"></label>
+            <label>CONTENT TYPE<select id="bcVideoCategory">
+              <option value="standard">Regular Video</option>
+              <option value="short">Shorts</option>
+              <option value="movie">Movie / Film</option>
+              <option value="series">TV Episode</option>
+              <option value="documentary">Documentary</option>
+            </select></label>
+            <div id="bcVideoEpisodeFields" class="bc-video-episode-fields" hidden>
+              <label>SERIES TITLE<input id="bcVideoSeriesTitle" type="text" maxlength="140" placeholder="Name of TV show"></label>
+              <label>SEASON<input id="bcVideoSeason" type="number" min="1" max="100" value="1"></label>
+              <label>EPISODE<input id="bcVideoEpisode" type="number" min="1" max="999" value="1"></label>
+            </div>
+            <label>DESCRIPTION<textarea id="bcVideoDescription" maxlength="1000" rows="3" placeholder="What is this video about? (optional)"></textarea></label>
           </div>
-          <label>DESCRIPTION<textarea id="bcVideoDescription" maxlength="1000" rows="3" placeholder="What is this video about? (optional)"></textarea></label>
-          <label class="bc-video-rights"><input id="bcVideoRights" type="checkbox" required> I confirm I have the rights to upload and share this video on BLACKCELL.</label>
+          <label class="bc-video-rights"><input id="bcVideoRights" type="checkbox" required> <span>I confirm I have the rights to upload and share this video on BLACKCELL.</span></label>
           <p class="bc-video-upload-note">New videos enter administrator review. Uploading does not make them public to the Network.</p>
           <div id="bcVideoUploadProgress" class="bc-video-upload-progress" hidden>
             <div class="bc-video-upload-track"><span id="bcVideoUploadFill"></span></div><span id="bcVideoUploadMessage" role="status">Uploading…</span>
           </div>
-          <footer><button type="button" id="bcVideoUploadCancel">CANCEL</button><button type="submit" id="bcVideoUploadSubmit">UPLOAD VIDEO ↑</button></footer>
+          <footer class="bc-studio-actions"><button type="button" id="bcVideoUploadCancel">CANCEL</button><button type="submit" id="bcVideoUploadSubmit"><span aria-hidden="true">⇧</span> UPLOAD VIDEO</button></footer>
         </form>
       </div>
     </div>
