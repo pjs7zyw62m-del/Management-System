@@ -1,4 +1,4 @@
 ---
 layout: null
 ---
-{"revision":"{{ site.github.build_revision }}","built":"{{ site.time | date: '%Y%m%d%H%M%S' }}","fallback":"20261114-blackcell-app-store"}
+{"revision":"{{ site.github.build_revision }}","built":"{{ site.time | date: '%Y%m%d%H%M%S' }}","fallback":"20261114-store-clearance"}
