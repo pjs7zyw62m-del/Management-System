@@ -42,3 +42,6 @@ body.bc-admin-os-dedicated{height:100dvh;overflow:hidden!important;background:#1
 
 /* Clearance is saved on selection; feedback reflects confirmed server state. */
 .um3-clearance-status{display:inline-block;min-width:78px;color:#a5a5b1;font:500 10px system-ui;text-align:right;white-space:nowrap}.um3-clearance-status[data-state=saved]{color:#7bd6a4}.um3-clearance-status[data-state=error]{color:#eea5ae}.um3-clearance-status[data-state=saving]{color:#c7c7d1}.um3-field .um3-clearance-status{text-align:left;min-width:0;white-space:normal}
+
+/* The inline User Management pane uses the Administration sidebar, not a popup close button. */
+#modalBackdrop.bc-admin-inline-modal #closeModal{display:none!important}
