@@ -886,3 +886,39 @@ body.bc-full-thumbnail-open{overflow:hidden}
  width:fit-content;max-width:100%;padding:6px 10px;min-height:28px;
  box-shadow:none;background:#100e12;
 }
+
+/* Dedicated, unobscured cinema artwork. Fit every original pixel inside a
+   vertical 2:3 display; if the artwork was supplied landscape, letterbox it. */
+#bcVideoShell .bc-native-artwork-frame.bc-complete-film-poster{
+ position:relative!important;aspect-ratio:2/3!important;
+ width:100%!important;height:auto!important;min-height:0!important;
+ display:block!important;overflow:hidden!important;background:#000!important;
+ border-radius:10px!important;
+}
+#bcVideoShell .bc-complete-film-poster>img.bc-native-artwork{
+ display:block!important;position:absolute!important;inset:0!important;
+ width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;
+ object-fit:contain!important;object-position:center center!important;
+ margin:0!important;padding:0!important;transform:none!important;
+}
+#bcVideoShell .bc-complete-film-poster .bc-yt-play,
+#bcVideoShell .bc-complete-film-poster .bc-movies-play,
+#bcVideoShell .bc-complete-film-poster .bc-movies-format-tag,
+#bcVideoShell .bc-complete-film-poster .bc-yt-duration,
+#bcVideoShell .bc-complete-film-poster .bc-video-progress{display:none!important}
+#bcVideoShell .bc-film-video-card{max-width:330px}
+#bcVideoShell .bc-movies-poster-card{max-width:330px}
+.bc-full-poster-choices{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:10px;background:#0b090d}
+.bc-full-poster-choices[hidden]{display:none!important}
+.bc-full-poster-version{
+ border:1px solid #5b4651;border-radius:9px;color:#e3d6dd;background:#151015;
+ min-height:40px;padding:8px 14px;font-size:10px;font-weight:750;letter-spacing:.05em
+}
+.bc-full-poster-version.is-active{background:#482132;border-color:#bd718b;color:#fff}
+.bc-full-thumb-panel{max-height:calc(100dvh - 24px)}
+.bc-full-thumb-stage{min-height:0;flex:1;overflow:auto}
+.bc-full-thumb-stage>img.bc-full-original-artwork{
+ display:block!important;position:static!important;width:auto!important;height:auto!important;
+ max-width:100%!important;max-height:calc(100dvh - 215px)!important;
+ object-fit:contain!important;object-position:center!important;transform:none!important;
+}
