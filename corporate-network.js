@@ -6,6 +6,7 @@ import {createNetworkPersonalization} from './corporate-network-personalization.
 import {createPhotoRediscovery} from './corporate-photo-rediscovery.js?v=20261111-mediareset1';
 import {createVisualDiscovery} from './corporate-visual-discovery.js?v=20261111-mediareset1';
 import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phonecheck2';
+import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261113-plex-youtube1';
 const client=corporateClient(),bucket=client.storage.from('corp-social-media');
 const $=id=>document.getElementById(id);
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -122,6 +123,8 @@ function switchView(view,{who=null,tab=null,keepPost=false}={}){
   state.assetUrls.clear();void loadSigned().then(renderAll).catch(()=>{});
  }
  state.view=view;
+ if(view!=='videos')videoChannel.close();
+ document.body.classList.toggle('bc-video-mode',view==='videos');
  state.profilePreview=false;
  document.body.classList.toggle('bc-profile-mode',view==='profile');
  document.body.classList.remove('bc-profile-view-as');
@@ -801,12 +804,14 @@ function videoTile(a){
   btn('OPEN AUTHOR PROFILE ↗',()=>openProfile(a.owner_id,'videos')));
  card.append(footer);return card;
 }
-function renderVideos(){
- const node=$('videoGrid');node.replaceChildren();
- const media=state.assets.filter(a=>sharedMedia(a)&&a.kind==='video'&&a.purpose==='post');
- if(!media.length){node.append(empty('Your network channel is ready','Video uploads from authorized Blackcell members will appear here.'));return}
- for(const a of media)node.append(videoTile(a));
-}
+const videoChannel=createBlackcellVideoChannel({
+ state,mediaUrl,sharedMedia,profile,personName,stamp,switchView,openProfile,toast,
+ uploadVideo:()=>{
+  switchView('feed');
+  $('attachVideo').click();
+ }
+});
+function renderVideos(){videoChannel.render()}
 async function toggleFollow(id){
  if(id===state.user.id)return;
  try{
@@ -1008,6 +1013,7 @@ async function refreshVisibleNetworkFeed(){
  finally{libraryFeedRefreshing=false}
 }
 function setupEvents(){
+ videoChannel.init();
  document.querySelectorAll('[data-view]').forEach(n=>n.addEventListener('click',()=>switchView(n.dataset.view)));
  $('viewAllPeople').addEventListener('click',()=>switchView('discover'));
  $('peopleSearch').addEventListener('input',renderDirectory);
@@ -1079,6 +1085,7 @@ function setupEvents(){
 
 let networkSecurityChecksInstalled=false,networkSecurityChecking=false;
 function closeNetworkForSecurity(reason){
+ videoChannel.close();
  $('app').hidden=true;
  $('gate').hidden=false;
  $('gateText').textContent=reason;
