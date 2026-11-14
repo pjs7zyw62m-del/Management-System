@@ -1,6 +1,6 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
 import {setupCorporateMedia} from './corporate-chat-media.js?v=20261109-mobile-gallery4';
-import {setupCorporateChatLive} from './corporate-chat-live.js?v=20261109-live1';
+import {setupCorporateChatLive} from './corporate-chat-live.js?v=20261113-no-typing1';
 const client=corporateClient(),$=id=>document.getElementById(id);
 const embedParams=new URLSearchParams(location.search);
 const mediaPanelMode=['share','library'].includes(embedParams.get('mediaPanel'))?embedParams.get('mediaPanel'):null;
