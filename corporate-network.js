@@ -853,7 +853,11 @@ async function videoStreamApi(action,payload={}){
   }
   const reason=String(responseData?.error||error?.message||'video_stream_unavailable');
   const messages={
-   network_access_denied:'BLACKCELL Network authorization was rejected. Sign out and sign back in with an active Network account.',
+   network_access_denied:'Your current account is not authorized for BLACKCELL Network video uploads. Check Network access permissions in Administration.',
+   member_lookup_unavailable:'Video Studio could not verify your Network membership because the membership service is unavailable. Your account has not been rejected.',
+   profile_lookup_unavailable:'Video Studio could not verify your Network profile because the profile service is unavailable. Your account has not been rejected.',
+   network_profile_missing:'Your account has no active BLACKCELL Network profile. Open the Network and complete profile setup.',
+   server_auth_unavailable:'The video service is missing its Supabase authentication configuration. The administrator must check the server setup.',
    security_session_required:'Your BLACKCELL security verification is missing or has expired. Complete Corporate Access verification, then retry.',
    security_session_unavailable:'BLACKCELL could not validate your security session. Refresh and sign in again.',
    sign_in_required:'Your BLACKCELL sign-in has expired. Sign in again to upload.',
