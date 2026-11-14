@@ -40,14 +40,16 @@
  const shell=document.createElement('section');shell.id='bcOsHost';shell.hidden=true;shell.setAttribute('aria-label','BLACKCELL OS executive workspace');
  const bar=document.createElement('header');bar.id='bcOsHostBar';const name=document.createElement('span');name.textContent='BLACKCELL OS · EXECUTIVE WORKSPACE';const status=document.createElement('span');status.id='bcOsHostStatus';status.setAttribute('role','status');status.textContent='Opening desktop…';
  const back=document.createElement('button');back.type='button';back.textContent='Return to Administration';bar.append(name,status,back);shell.append(bar);document.body.append(shell);
- let frame=null,release=null,watch=null;
- function hide(){shell.hidden=true;back.blur()}
+ let frame=null,release=null,watch=null,ownerId=null,hostStarted=false;
+ const hostKey='bc.os.host.v1';
+ function recordHost(){try{if(ownerId&&!shell.hidden)sessionStorage.setItem(hostKey,JSON.stringify({uid:ownerId,at:Date.now()}));else sessionStorage.removeItem(hostKey)}catch(_){}}
+ function hide(){shell.hidden=true;recordHost();back.blur()}
  function ready(){clearTimeout(watch);status.textContent='Desktop loaded'}
  function open(){
   if(!document.documentElement.classList.contains('corp-ok')||!window.BLACKCELL_CORPORATE_ADMIN_API?.client)return false;
-  shell.hidden=false;
+  shell.hidden=false;recordHost();
   if(!frame){
-   status.textContent='Opening desktop…';frame=document.createElement('iframe');frame.id='bcExecutiveOsFrame';frame.title='BLACKCELL OS';frame.allow='fullscreen';frame.src='blackcell-os.html?launch=executive-v8';shell.append(frame);
+   status.textContent='Opening desktop…';frame=document.createElement('iframe');frame.id='bcExecutiveOsFrame';frame.title='BLACKCELL OS';frame.allow='fullscreen';frame.src='blackcell-os.html?launch=executive-v16';shell.append(frame);
    release=window.BLACKCELL_LIVE_UPDATE?.hold('Executive OS workspace');
    frame.addEventListener('load',()=>{try{const doc=frame.contentDocument;if(!doc)return;for(const event of ['pointerdown','keydown','touchstart','wheel'])doc.addEventListener(event,()=>window.dispatchEvent(new Event('pointerdown')),{passive:true});const desktop=doc.getElementById('desktop');if(desktop&&!desktop.hidden)ready();else status.textContent='Verifying desktop session…'}catch(_){status.textContent='Desktop loaded; check the window below.'}});
    watch=setTimeout(()=>{status.textContent='If startup is blocked, check the message below.'},18000)
@@ -60,9 +62,12 @@
   if(event.origin!==location.origin||event.source!==frame?.contentWindow)return;
   if(event.data?.type==='blackcell-os-ready')ready();
   if(event.data?.type==='blackcell-os-return')hide();
-  if(event.data?.type==='blackcell-os-blocked'){clearTimeout(watch);status.textContent='Access check blocked — see the desktop message.'}
+  if(event.data?.type==='blackcell-os-blocked'){try{sessionStorage.removeItem(hostKey)}catch(_){}clearTimeout(watch);status.textContent='Access check blocked — see the desktop message.'}
  });
+ async function restoreHost(){if(hostStarted||!document.documentElement.classList.contains('corp-ok')||!window.BLACKCELL_CORPORATE_ADMIN_API?.client)return;hostStarted=true;try{const {data,error}=await window.BLACKCELL_CORPORATE_ADMIN_API.client.auth.getUser();if(error||!data?.user)return;ownerId=data.user.id;const saved=JSON.parse(sessionStorage.getItem(hostKey)||'null');const reload=performance.getEntriesByType('navigation')[0]?.type==='reload';if(reload&&saved?.uid===ownerId&&Date.now()-Number(saved.at)<3600000&&Date.now()>=Number(saved.at))open();else if(!shell.hidden)recordHost();else sessionStorage.removeItem(hostKey)}catch(_){}}
+ window.addEventListener('blackcell-corporate-authorized',()=>void restoreHost());void restoreHost();
+ window.addEventListener('pagehide',()=>{if(!shell.hidden&&document.documentElement.classList.contains('corp-ok'))recordHost()});
  // Do not keep an embedded authenticated desktop visible if the admin guard locks.
- new MutationObserver(()=>{if(!document.documentElement.classList.contains('corp-ok')){shell.hidden=true;frame?.remove();frame=null;release?.();release=null;clearTimeout(watch)}}).observe(document.documentElement,{attributes:true,attributeFilter:['class']});
+ new MutationObserver(()=>{if(!document.documentElement.classList.contains('corp-ok')){shell.hidden=true;recordHost();frame?.remove();frame=null;release?.();release=null;clearTimeout(watch)}}).observe(document.documentElement,{attributes:true,attributeFilter:['class']});
 })();
 </script></body></html>
