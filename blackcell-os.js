@@ -21,7 +21,7 @@ function setupAutoHideDock(){
  dock.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!desktopPrefs.dockAutoHide)return;if(e.detail>0)b.blur();dockReveal(false)});
  document.addEventListener('pointerdown',e=>{if(desktopPrefs.dockAutoHide&&!wrap.contains(e.target)&&e.target!==edge)dockReveal(false)},{capture:true,passive:true});
  window.addEventListener('blur',()=>{if(desktopPrefs.dockAutoHide)dockReveal(false)});
- document.addEventListener('keydown',e=>{if(e.key==='Escape'&&shell.classList.contains('os-dock-revealed')){dockReveal(false);if(dock.contains(document.activeElement))edge.focus({preventScroll:true})}});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&shell.classList.contains('os-dock-revealed')){dockReveal(false);if(dock.contains(document.activeElement)||document.activeElement===edge)shell.querySelector('.menubar button')?.focus({preventScroll:true})}});
 }
 function applyDesktopPrefs(){const shell=$('desktop');setupAutoHideDock();shell.classList.toggle('os-reduce-motion',desktopPrefs.reduceMotion);shell.classList.toggle('os-hide-dock-labels',!desktopPrefs.dockLabels);shell.classList.toggle('os-dock-auto-hide',desktopPrefs.dockAutoHide);dockReveal(false)}
 function initDesktopPrefs(){desktopPrefs={reduceMotion:false,dockLabels:true,dockAutoHide:true};try{const p=JSON.parse(localStorage.getItem(prefKey())||'null');if(p&&typeof p==='object'){desktopPrefs.reduceMotion=p.reduceMotion===true;desktopPrefs.dockLabels=p.dockLabels!==false;desktopPrefs.dockAutoHide=p.dockAutoHide!==false}}catch(_){}applyDesktopPrefs()}
