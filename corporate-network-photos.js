@@ -15,6 +15,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  const thumbnails=createPrivatePhotoThumbnails({bucket,state});
  const zoom=createPhotoZoom({rediscovery,openPhoto:asset=>openViewer([asset],0)});
  const fileMax=45*1024*1024;
+ const MAX_LIBRARY_UPLOAD_BATCH=1000;
  const photoFormats=new Set(['image/jpeg','image/png','image/webp','image/gif','image/heic']);
  const videoFormats=new Set(['video/mp4','video/webm','video/quicktime','video/x-m4v']);
  // Only reviewed non-explicit media can enter shared discovery and albums.
@@ -714,9 +715,10 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  }
  async function uploadFiles(files){
   if(meta.uploading)return;
-  const picked=Array.from(files).slice(0,20);
+  const picked=Array.from(files||[]).slice(0,MAX_LIBRARY_UPLOAD_BATCH);
   if(!picked.length)return;
-  if(files.length>20)toast('Only the first 20 files will upload in one batch.');
+  const overLimit=Math.max(0,files.length-MAX_LIBRARY_UPLOAD_BATCH);
+  if(overLimit)toast('Up to 1,000 files per batch. '+overLimit+' additional files were not queued.');
   const supported=picked.filter(f=>(photoFormats.has(f.type)||videoFormats.has(f.type))&&f.size<=fileMax&&f.size>0);
   if(supported.length!==picked.length){
    toast('Unsupported file types or files over 45 MB were skipped. Use JPG, PNG, HEIC, GIF, MOV, or MP4.');
@@ -730,8 +732,9 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   $('photosUploadButton').disabled=true;
   bar.hidden=false;fill.style.width='0%';
   let completed=0,failures=0,skippedDuplicates=0;
-  const album=albumFor(meta.activeAlbum);
+  const batchClassification=uploadClassification();
   try{
+   // Keep this queue sequential, including for a 1,000-file selection.
    for(const f of supported){
     label.textContent='Uploading '+(completed+1)+' of '+supported.length+' · '+f.name.slice(0,36);
     try{
@@ -755,12 +758,11 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
      }
      const asset=await uploadAsset(f,'library');
      if(asset.kind==='photo'){
-      uploadedPhotoIds.push({id:asset.id,file:f});
+      if(scanAfterUpload)uploadedPhotoIds.push({id:asset.id,file:f});
       if(fingerprint)await dedupe.record(asset,fingerprint);
      }
-     const classification=uploadClassification();
      const {error:tagError}=await client.from('corp_social_assets')
-      .update(classification).eq('id',asset.id).eq('owner_id',ownId());
+      .update(batchClassification).eq('id',asset.id).eq('owner_id',ownId());
      if(tagError)toast('Upload saved; classification could not be applied: '+tagError.message);
      // Never attach a pending upload to any shared album.
      // The Media Import Processor will verify the metadata and file it
@@ -774,7 +776,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
    await refresh();
    render();
    document.dispatchEvent(new CustomEvent('bc:media-updated'));
-   toast((supported.length-failures-skippedDuplicates)+' privately uploaded for review, '+skippedDuplicates+' duplicates skipped'+(failures?', '+failures+' failed':'')+'. Nothing is published before approval.');
+   toast((supported.length-failures-skippedDuplicates)+' privately uploaded for review, '+skippedDuplicates+' duplicates skipped'+(failures?', '+failures+' failed':'')+(picked.length>supported.length?', '+(picked.length-supported.length)+' unsupported':'')+(overLimit?', '+overLimit+' not queued':'')+'. Nothing is published before approval.');
    if(scanAfterUpload&&uploadedPhotoIds.length){
     const newest=uploadedPhotoIds.map(item=>({asset:byId(item.id),file:item.file})).filter(item=>item.asset);
     if(newest.length){
@@ -1029,7 +1031,10 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
    try{if(typeof input.showPicker==='function')input.showPicker();else input.click()}
    catch(_){input.click()}
   });
-  $('applePhotoFiles').addEventListener('change',()=>void uploadFiles($('applePhotoFiles').files));
+  $('applePhotoFiles').addEventListener('change',()=>{
+   const input=$('applePhotoFiles'),files=Array.from(input.files||[]);input.value='';
+   void uploadFiles(files);
+  });
   $('photosClearAlbum').addEventListener('click',()=>selectAlbum(null));
   $('photosSearch').addEventListener('input',e=>{meta.query=e.target.value.trim().toLowerCase();renderGallery()});
   $('photosSort').addEventListener('change',e=>{meta.sort=e.target.value;renderGallery()});
