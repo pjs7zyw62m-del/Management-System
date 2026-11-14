@@ -1051,9 +1051,18 @@ const videoChannel=createBlackcellVideoChannel({
   return data.url;
  },
  reviewStream:async(a,decision)=>{
-  await videoStreamApi('review',{catalogId:a.id,decision});
-  await loadAll({show:true});
-  toast('Video review updated.');
+  try{
+   await videoStreamApi('review',{catalogId:a.id,decision});
+   await loadAll({show:true});
+   toast('Video review updated.');
+  }catch(e){toast('Review failed: '+fail(e))}
+ },
+ refreshStream:async a=>{
+  try{
+   const result=await videoStreamApi('refresh',{catalogId:a.id});
+   await loadAll({show:true});
+   toast(result.ready?'Movie encoding complete. Ready for review.':'Video processing: '+result.status);
+  }catch(e){toast('Could not check encoding: '+fail(e))}
  }
 });
 
