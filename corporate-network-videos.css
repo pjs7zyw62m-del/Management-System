@@ -863,3 +863,26 @@ body.bc-full-thumbnail-open{overflow:hidden}
  .bc-full-thumb-stage{padding:4px}
  .bc-view-full-thumb{font-size:9px;padding:7px 8px;right:5px;top:5px}
 }
+
+/* Native artwork ratio: gallery displays the entire source artwork before any click.
+   No fixed-height frame, no 16:9 crop, and no button layered over its corners. */
+#bcVideoShell .bc-native-artwork-frame{
+ display:block!important;aspect-ratio:auto!important;
+ width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;
+ padding:0!important;overflow:hidden!important;background:#030304!important;
+}
+#bcVideoShell .bc-native-artwork-frame>img.bc-native-artwork{
+ display:block!important;position:static!important;inset:auto!important;
+ width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;
+ max-width:100%!important;aspect-ratio:auto!important;object-fit:contain!important;
+ object-position:center!important;transform:none!important;margin:0!important;padding:0!important;
+ border:0!important;
+}
+#bcVideoShell .bc-yt-videogrid,#bcVideoShell .bc-movies-poster-grid{align-items:start!important}
+#bcVideoShell .bc-video-scroller,#bcVideoShell .bc-yt-shortshelf{align-items:flex-start!important}
+#bcVideoShell .bc-view-full-thumb{
+ position:static!important;inset:auto!important;
+ margin:8px 0 0 auto;display:flex;justify-content:center;
+ width:fit-content;max-width:100%;padding:6px 10px;min-height:28px;
+ box-shadow:none;background:#100e12;
+}
