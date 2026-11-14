@@ -261,6 +261,7 @@
         <div class="bc-yt-nav">
           <button type="button" data-vnav="home" class="is-active" aria-current="page"><span>⌂</span><b>Home</b></button>
           <button type="button" data-vnav="shorts"><span>▷</span><b>Shorts</b></button>
+          <button type="button" data-vnav="movies"><span>▤</span><b>Movies &amp; TV Shows</b></button>
           <button type="button" data-vnav="following"><span>▰</span><b>Subscriptions</b></button>
           <button type="button" data-vnav="channels"><span>◉</span><b>Channels</b></button>
           <button type="button" data-vnav="library"><span>▣</span><b>You · Library</b></button>
@@ -271,7 +272,7 @@
         <div class="bc-yt-nav-divider"></div>
         <div class="bc-yt-subtitle">FROM YOUR NETWORK</div>
         <div id="bcVideoSubscribedChannels" class="bc-yt-sublist"></div>
-        <button type="button" id="bcVideoBrowseChannels" class="bc-yt-nav-extra">＋ Browse channels</button>
+        <button type="button" id="bcVideoBrowseChannels" class="bc-yt-nav-extra">＋ Browse all members</button>
         <div class="bc-yt-nav-divider"></div>
         <button type="button" id="bcVideoExitSidebar" class="bc-yt-nav-extra">← Back to Network</button>
       </aside>
@@ -323,8 +324,39 @@
           <section id="bcVideoChannelsScreen" class="bc-yt-screen" data-video-screen="channels" hidden>
             <div class="bc-yt-section-head"><h2 id="bcVideoChannelsTitle">Channels</h2></div>
             <div id="bcVideoChannelList" class="bc-yt-channel-list"></div>
-            <div class="bc-yt-section-head"><h2 id="bcVideoChannelVideosTitle">Latest channel videos</h2></div>
+            <div class="bc-yt-section-head"><h2 id="bcVideoChannelVideosTitle">Latest channel videos</h2><button type="button" id="bcVideoChannelProfile">VIEW MEMBER PROFILE ↗</button></div>
             <div id="bcVideoChannelGrid" class="bc-yt-videogrid"></div>
+          </section>
+          <section id="bcVideoMoviesScreen" class="bc-yt-screen bc-movies-screen" data-video-screen="movies" hidden>
+            <div class="bc-movies-heading">
+              <div><span class="bc-video-eyebrow">BLACKCELL STREAMING LIBRARY</span><h1>Movies <em>&amp;</em> TV Shows</h1>
+                <p>A Plex-style collection of approved movies, series and documentaries from your private network.</p></div>
+              <div class="bc-movies-actions"><button type="button" id="bcMoviesUploadFilm">＋ ADD A MOVIE</button><button type="button" id="bcMoviesUploadEpisode">＋ ADD AN EPISODE</button></div>
+            </div>
+            <nav class="bc-movies-tabs" id="bcMoviesTabs" aria-label="Movies and TV categories">
+              <button type="button" data-movies-filter="all" class="is-active" aria-pressed="true">All</button>
+              <button type="button" data-movies-filter="movie" aria-pressed="false">Movies</button>
+              <button type="button" data-movies-filter="series" aria-pressed="false">TV Shows</button>
+              <button type="button" data-movies-filter="documentary" aria-pressed="false">Documentaries</button>
+            </nav>
+            <section class="bc-yt-section" id="bcMoviesContinueSection" hidden>
+              <div class="bc-yt-section-head"><h2>Continue Watching</h2></div><div id="bcMoviesContinue" class="bc-video-scroller"></div>
+            </section>
+            <section class="bc-yt-section" id="bcMoviesFilmsSection">
+              <div class="bc-yt-section-head"><h2 id="bcMoviesFilmsHeading">Movies</h2><span id="bcMoviesFilmsCount"></span></div>
+              <div id="bcMoviesFilms" class="bc-movies-poster-grid"></div>
+            </section>
+            <section class="bc-yt-section" id="bcMoviesSeriesSection">
+              <div class="bc-yt-section-head"><h2>TV Shows &amp; Series</h2></div><div id="bcMoviesSeries" class="bc-movies-series-grid"></div>
+            </section>
+            <section class="bc-yt-section" id="bcMoviesDocumentariesSection">
+              <div class="bc-yt-section-head"><h2>Documentaries</h2></div><div id="bcMoviesDocumentaries" class="bc-movies-poster-grid"></div>
+            </section>
+            <section class="bc-yt-section" id="bcMoviesEpisodesSection" hidden>
+              <div class="bc-yt-section-head"><h2 id="bcMoviesEpisodesTitle">Episodes</h2><button type="button" id="bcMoviesBackToSeries">← ALL SHOWS</button></div>
+              <div id="bcMoviesEpisodes" class="bc-yt-videogrid"></div>
+            </section>
+            <p class="bc-movies-privacy">Only video content you're authorized to upload is allowed. New uploads enter review before appearing in the library.</p>
           </section>
           <section id="bcVideoLibraryScreen" class="bc-yt-screen" data-video-screen="library" hidden>
             <div id="bcVideoLibraryIdentity" class="bc-yt-library-identity"></div>
@@ -343,9 +375,35 @@
       <button data-vnav="home" type="button"><span>⌂</span>Home</button>
       <button data-vnav="shorts" type="button"><span>▷</span>Shorts</button>
       <button id="bcVideoMobileCreate" type="button" aria-label="Create video"><span>＋</span>Create</button>
-      <button data-vnav="channels" type="button"><span>▰</span>Channels</button>
+      <button data-vnav="movies" type="button"><span>▤</span>Movies</button>
       <button data-vnav="library" type="button"><span>◉</span>You</button>
     </nav>
+    <div id="bcVideoUploadDialog" class="bc-video-upload-overlay" hidden>
+      <div class="bc-video-upload-dialog" role="dialog" aria-modal="true" aria-labelledby="bcVideoUploadHeading">
+        <header><div><span class="bc-video-eyebrow">BLACKCELL / VIDEO STUDIO</span><h2 id="bcVideoUploadHeading">Upload Video</h2></div>
+          <button type="button" id="bcVideoUploadClose" aria-label="Close video upload">✕</button></header>
+        <form id="bcVideoUploadForm">
+          <label class="bc-video-file-drop" for="bcVideoFile">SELECT VIDEO FILE
+            <input id="bcVideoFile" type="file" accept="video/mp4,video/webm,video/quicktime,video/x-m4v" required>
+            <small id="bcVideoFileName">Choose MP4, MOV or WEBM (up to 45 MB with current storage limits)</small>
+          </label>
+          <label>VIDEO TITLE<input id="bcVideoTitle" type="text" maxlength="140" required placeholder="Name your video"></label>
+          <label>CONTENT TYPE<select id="bcVideoCategory"><option value="standard">Regular Video</option><option value="short">Shorts</option><option value="movie">Movie / Film</option><option value="series">TV Episode</option><option value="documentary">Documentary</option></select></label>
+          <div id="bcVideoEpisodeFields" class="bc-video-episode-fields" hidden>
+            <label>SERIES TITLE<input id="bcVideoSeriesTitle" type="text" maxlength="140" placeholder="Name of TV show"></label>
+            <label>SEASON<input id="bcVideoSeason" type="number" min="1" max="100" value="1"></label>
+            <label>EPISODE<input id="bcVideoEpisode" type="number" min="1" max="999" value="1"></label>
+          </div>
+          <label>DESCRIPTION<textarea id="bcVideoDescription" maxlength="1000" rows="3" placeholder="What is this video about? (optional)"></textarea></label>
+          <label class="bc-video-rights"><input id="bcVideoRights" type="checkbox" required> I confirm I have the rights to upload and share this video on BLACKCELL.</label>
+          <p class="bc-video-upload-note">New videos enter administrator review. Uploading does not make them public to the Network.</p>
+          <div id="bcVideoUploadProgress" class="bc-video-upload-progress" hidden>
+            <div class="bc-video-upload-track"><span id="bcVideoUploadFill"></span></div><span id="bcVideoUploadMessage" role="status">Uploading…</span>
+          </div>
+          <footer><button type="button" id="bcVideoUploadCancel">CANCEL</button><button type="submit" id="bcVideoUploadSubmit">UPLOAD VIDEO ↑</button></footer>
+        </form>
+      </div>
+    </div>
     <div id="bcVideoCreateMenu" class="bc-yt-create-menu" hidden>
       <div class="bc-yt-create-backdrop" id="bcVideoCreateDismiss"></div>
       <div class="bc-yt-create-dialog" role="dialog" aria-modal="true" aria-label="Create on BLACKCELL">
