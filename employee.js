@@ -1,3 +1,4 @@
+import qrcode from './vendor/blackcell-qrcode.js';
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-ledger-access1';
 
 const recoveryHint=new URLSearchParams(location.hash.replace(/^#/,'' )).get('type')==='recovery';
@@ -22,6 +23,26 @@ function syncEmployeeMessenger(permitted){
  }else window.dispatchEvent(new Event('blackcell-resume-imessage'));
 }
 const IDLE_MS=60*60*1000;
+
+function renderEmployeeQr(member){
+ const container=$('credentialQr'),link=$('credentialRecordLink'),message=$('credentialQrMessage');
+ container.replaceChildren();link.hidden=true;link.removeAttribute('href');
+ $('credentialEmployeeId').textContent=member.user_id||'Not assigned';
+ try{
+  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(member.user_id||''))throw new Error('Missing employee identifier');
+  const url=new URL('corporate-network.html',location.href);
+  url.searchParams.set('user',member.user_id);
+  const qr=qrcode(0,'M');
+  qr.addData(url.href,'Byte');qr.make();
+  container.innerHTML=qr.createSvgTag({cellSize:4,margin:16,scalable:true});
+  const svg=container.querySelector('svg');
+  svg.setAttribute('role','img');svg.setAttribute('aria-label','QR code for employee Network profile');
+  link.href=url.href;link.hidden=false;message.hidden=true;
+ }catch(_){
+  message.textContent='QR code unavailable. Please reload your card.';message.hidden=false;
+ }
+}
+
 function syncCredentialReverse(){
  $('credentialBackName').textContent=$('employeeName').textContent;
  $('credentialBackUsername').textContent=$('employeeUsername').textContent.replace(/^USERNAME · /,'');
@@ -109,6 +130,7 @@ async function load(reveal=false){
   const initials=(member.display_name||member.username||'Blackcell').trim().split(/\s+/).slice(0,2).map(part=>Array.from(part)[0]||'').join('').toUpperCase();
   $('credentialInitials').textContent=initials||'BC';
   $('employeeUsername').textContent='USERNAME · '+(member.username||'Not assigned');
+  renderEmployeeQr(member);
   if(reveal){
    $('employeeCard').classList.remove('reveal');
    void $('employeeCard').offsetWidth;
