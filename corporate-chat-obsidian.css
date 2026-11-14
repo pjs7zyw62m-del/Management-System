@@ -181,3 +181,28 @@ body.bc-chat input,body.bc-chat textarea,body.bc-chat select{color:#f1f3f6;backg
 body.bc-chat .chat-shell,body.bc-chat .chat-panel,body.bc-chat .panel,body.bc-chat .dialog,
 body.bc-chat .sidebar,body.bc-chat .conversation-list{border-color:#303841!important}
 body.bc-chat button:focus-visible,body.bc-chat a:focus-visible{outline-color:#d04455!important}
+
+
+/* Keep the attachment plus and send arrow optically centered inside their buttons.
+   Only the glyph moves; existing circular buttons, touch targets and actions remain intact. */
+.composer #mediaToggleButton,
+.composer #sendButton{
+  display:grid;
+  place-items:center;
+  padding:0;
+  text-align:center;
+  line-height:1;
+}
+.composer #mediaToggleButton .composer-symbol,
+.composer #sendButton .composer-symbol{
+  display:block;
+  width:max-content;
+  height:auto;
+  margin:0;
+  padding:0;
+  line-height:1;
+  font-weight:inherit;
+  letter-spacing:0;
+  pointer-events:none;
+  transform:translateY(-1px);
+}
