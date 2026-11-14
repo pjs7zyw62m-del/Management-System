@@ -16,7 +16,7 @@ export function createBlackcellVideoChannel({state,mediaUrl,sharedMedia,profile,
   history:/history|historic|vintage|archive|war ii|1980|1990|1970|old school/i
  };
  let initialized=false,selected='home',topic='all',query='',sort='newest',sidebarCollapsed=false,channelId=null;
- let videosCache=[],watchLater={},likes={},watchHistory={},resume={},shortInfo={},loadedFor='',activeCinema=null,cinemaQueue=[],shortIndex=0,shortQueue=[],observer=null,mostRecentWrite=0,pendingId=null;
+ let videosCache=[],watchLater={},likes={},watchHistory={},resume={},shortInfo={},loadedFor='',activeCinema=null,cinemaQueue=[],shortIndex=0,shortQueue=[],displayedShortId=null,observer=null,mostRecentWrite=0,pendingId=null;
  const accountKey=()=>String(state.user?.id||'anonymous');
  function read(key){try{const x=JSON.parse(localStorage.getItem(key)||'{}');return x&&typeof x==='object'&&!Array.isArray(x)?x:{}}catch{return {}}}
  function write(key,x){try{localStorage.setItem(key,JSON.stringify(x))}catch{}}
@@ -308,7 +308,7 @@ export function createBlackcellVideoChannel({state,mediaUrl,sharedMedia,profile,
  function closeCreate(){$('bcVideoCreateMenu').hidden=true}
  function stopShort(){
   const p=$('bcVideoShortPlayer');
-  if(p){const a=shortQueue[shortIndex];track(a,p,true);p.pause();p.removeAttribute('src');p.load()}
+  if(p){const a=shortQueue[shortIndex];track(a,p,true);p.pause();p.removeAttribute('src');p.load();displayedShortId=null}
  }
  function goShorts(id=null){
   shortQueue=shorts(allVideos());shortIndex=Math.max(0,shortQueue.findIndex(a=>a.id===id));
@@ -320,6 +320,7 @@ export function createBlackcellVideoChannel({state,mediaUrl,sharedMedia,profile,
   $('bcVideoShortsEmpty').hidden=Boolean(shortQueue.length);
   if(!shortQueue.length)return;
   if(shortIndex>=shortQueue.length||shortIndex<0)shortIndex=0;
+  if(displayedShortId===shortQueue[shortIndex]?.id&&$('bcVideoShortPlayer').src){syncShortActions();return}
   loadShort();
  }
  function syncShortActions(){
@@ -336,8 +337,8 @@ export function createBlackcellVideoChannel({state,mediaUrl,sharedMedia,profile,
   v.pause();v.removeAttribute('src');v.load();v.onloadedmetadata=null;
   $('bcVideoShortCreator').textContent=creator(a);
   $('bcVideoShortTitle').textContent=title(a);
-  if(!src){toast('This short is temporarily unavailable.');return}
-  remember(a);mostRecentWrite=0;
+  if(!src){displayedShortId=null;toast('This short is temporarily unavailable.');return}
+  displayedShortId=a.id;remember(a);mostRecentWrite=0;
   v.src=src;v.load();
   const last=Number(resume[a.id]?.time||0);
   v.onloadedmetadata=()=>{if(last>=5&&last<v.duration-7)try{v.currentTime=last}catch{}};
