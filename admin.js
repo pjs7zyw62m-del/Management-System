@@ -231,7 +231,8 @@ function showEmployeeProfile(member,sample=false){
    function check(labelText,value){const {label,input}=permissionSwitch(labelText,value);label.classList.add('um3-permission-check');fields.append(label);return input}
    const enabled=check('Account enabled',member.active),chat=check('Employee chat',member.can_chat);
    const feedback=el('p','muted','');feedback.setAttribute('role','status');
-   const save=action('Save changes',async()=>{
+   const clearanceFeedback=el('span','um3-clearance-status','');clearanceFeedback.setAttribute('role','status');levelLabel.append(clearanceFeedback);
+   const save=action('Save permissions',async()=>{
     if(save.disabled)return;const api=window.BLACKCELL_CORPORATE_ADMIN_API?.client;if(!api){feedback.textContent='Verified owner session unavailable.';return}
     if(!/^[1-6]$/.test(level.value)){feedback.textContent='Choose a valid clearance level.';return}
     save.disabled=true;level.disabled=enabled.disabled=chat.disabled=true;panel.setAttribute('aria-busy','true');feedback.textContent='Checking current account…';
@@ -245,6 +246,23 @@ function showEmployeeProfile(member,sample=false){
      cardPanel.replaceChildren(el('h3','','Digital access pass'),employeeCardView(member));feedback.textContent='Changes saved.';
     }catch(e){feedback.textContent=String(e?.message||'Unable to save.')}finally{save.disabled=false;level.disabled=enabled.disabled=chat.disabled=false;panel.removeAttribute('aria-busy')}
    },false,true);
+   level.addEventListener('change',async()=>{
+    const next=Number(level.value),previous=Number(member.clearance_level);if(level.disabled||save.disabled||next===previous||!Number.isInteger(next)||next<1||next>6)return;
+    const api=window.BLACKCELL_CORPORATE_ADMIN_API?.client;if(!api){level.value=String(previous);clearanceFeedback.dataset.state='error';clearanceFeedback.textContent='Session unavailable';return}
+    save.disabled=level.disabled=enabled.disabled=chat.disabled=true;panel.setAttribute('aria-busy','true');clearanceFeedback.dataset.state='saving';clearanceFeedback.textContent='Saving…';
+    try{
+      const {data,error}=await api.rpc('corp_set_clearance_level',{p_user_id:member.user_id,p_level:next});
+      if(error||data?.ok!==true)throw Error('Not confirmed');
+      member={...member,clearance_level:next};clearanceFeedback.dataset.state='saved';clearanceFeedback.textContent='Saved ✓';
+    }catch(_){
+      clearanceFeedback.dataset.state='error';clearanceFeedback.textContent='Not confirmed';
+      try{const {data:fresh,error}=await api.rpc('corp_list_clearance');const actual=fresh?.members?.find(m=>m.user_id===member.user_id);
+       if(error||fresh?.ok!==true||!actual||!Number.isInteger(Number(actual.clearance_level))||Number(actual.clearance_level)<1||Number(actual.clearance_level)>6)throw Error('Unavailable');
+       member={...member,clearance_level:Number(actual.clearance_level)};clearanceFeedback.textContent=member.clearance_level===next?'Saved ✓':'Not saved';clearanceFeedback.dataset.state=member.clearance_level===next?'saved':'error';
+      }catch(_){level.value=String(previous);clearanceFeedback.textContent='Reopen profile to verify';panel.removeAttribute('aria-busy');return}
+    }
+    level.value=String(member.clearance_level);cardPanel.replaceChildren(el('h3','','Digital access pass'),employeeCardView(member));save.disabled=level.disabled=enabled.disabled=chat.disabled=false;panel.removeAttribute('aria-busy');
+   });
    panel.append(fields,save,feedback);content.append(panel);
    const danger=block('Account removal');danger.classList.add('um3-danger');danger.append(p('Permanently delete this employee only after confirming their email.'),action('Delete employee profile',()=>confirmEmployeeDelete(member,'profiles')));danger.querySelector('button').classList.add('delete-employee-button');content.append(danger)
   }
@@ -802,26 +820,26 @@ async function loadClearanceLevels(container){
           dropdown.add(option);
         }
         dropdown.value=String(member.clearance_level);
-        const save=action('Save',async()=>{
-          save.disabled=true;dropdown.disabled=true;
-          save.textContent='SAVING…';
+        const feedback=el('span','um3-clearance-status','');feedback.setAttribute('role','status');
+        dropdown.addEventListener('change',async()=>{
+          const next=Number(dropdown.value),previous=Number(member.clearance_level);
+          if(dropdown.disabled||next===previous||!Number.isInteger(next)||next<1||next>6)return;
+          dropdown.disabled=true;entry.setAttribute('aria-busy','true');feedback.dataset.state='saving';feedback.textContent='Saving…';
           try{
-            const {data:changed,error:changeError}=await api.rpc('corp_set_clearance_level',{
-              p_user_id:member.user_id,p_level:Number(dropdown.value)
-            });
-            if(changeError||changed?.ok!==true){
-              save.textContent='NOT SAVED';
-            }else{
-              member.clearance_level=Number(dropdown.value);
-              save.textContent='SAVED ✓';
-              details.querySelector('small').textContent=
-                String(member.role).toUpperCase()+' · Current Level '+member.clearance_level;
-            }
-          }catch(_){save.textContent='NOT SAVED'}
-          finally{save.disabled=false;dropdown.disabled=false}
+            const {data:changed,error:changeError}=await api.rpc('corp_set_clearance_level',{p_user_id:member.user_id,p_level:next});
+            if(changeError||changed?.ok!==true)throw Error('Not confirmed');
+            member.clearance_level=next;feedback.dataset.state='saved';feedback.textContent='Saved ✓';
+          }catch(_){
+            feedback.dataset.state='error';feedback.textContent='Not confirmed';
+            try{const {data:fresh,error}=await api.rpc('corp_list_clearance');const actual=fresh?.members?.find(m=>m.user_id===member.user_id);
+              if(error||fresh?.ok!==true||!actual||!Number.isInteger(Number(actual.clearance_level))||Number(actual.clearance_level)<1||Number(actual.clearance_level)>6)throw Error('Unavailable');
+              member.clearance_level=Number(actual.clearance_level);feedback.textContent=member.clearance_level===next?'Saved ✓':'Not saved';feedback.dataset.state=member.clearance_level===next?'saved':'error';
+            }catch(_){feedback.textContent='Refresh to verify';dropdown.value=String(previous);entry.removeAttribute('aria-busy');return}
+          }
+          dropdown.value=String(member.clearance_level);details.querySelector('small').textContent=String(member.role).toUpperCase()+' · Current Level '+member.clearance_level;
+          dropdown.disabled=false;entry.removeAttribute('aria-busy');
         });
-        save.classList.add('um3-clearance-save');dropdown.addEventListener('change',()=>{save.textContent='Save'});
-        controls.append(dropdown,save);
+        controls.append(dropdown,feedback);
         entry.append(controls);
       }
       container.append(entry);
