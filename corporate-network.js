@@ -1726,8 +1726,8 @@ async function boot(){
   for(const id of ['blackcellOsLink','blackcellOsRail']){
    const link=$(id);if(!link)continue;
    const owner=auth.member.role==='owner';
-   link.href=owner?'blackcell-os-preview.html':'blackcell-os.html';
-   if(owner)link.title='Preview the employee desktop';
+   link.href='blackcell-os.html';
+   if(owner)link.title='Launch the executive BLACKCELL OS desktop';
    link.hidden=false;
   }
   let verified=false;
