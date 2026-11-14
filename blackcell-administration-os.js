@@ -30,12 +30,12 @@
   const old=document.querySelector('main.admin-dashboard');if(!old)return false;
   const modal=document.getElementById('modalBackdrop'),shell=make('section','bc-admin-os'),rail=make('nav','bc-admin-os-rail'),body=make('main','bc-admin-os-body');rail.setAttribute('aria-label','Administration sections');
   const label=make('div','bc-admin-os-brand');label.append(make('div','bc-admin-os-emblem','B'),make('strong','','Administration'),make('small','','EXECUTIVE / LEVEL 7'));rail.append(label);
-  const nav=new Map(),frames=new Map();let selected='overview',inlineUsers=false;const originalParent=modal.parentElement,originalNext=modal.nextSibling;const right=make('section','bc-admin-os-right'),pages=make('div','bc-admin-os-pages'),usersPane=make('div','bc-admin-os-users');pages.hidden=true;usersPane.hidden=true;right.append(body,pages,usersPane);try{const saved=sessionStorage.getItem('bc.admin.os.section');if(sections.some(s=>s.id===saved))selected=saved}catch(_){}
+  const nav=new Map(),frames=new Map();let selected='overview',inlineUsers=false,inlineTarget=null;const originalParent=modal.parentElement,originalNext=modal.nextSibling;const right=make('section','bc-admin-os-right'),pages=make('div','bc-admin-os-pages'),usersPane=make('div','bc-admin-os-users');pages.hidden=true;usersPane.hidden=true;right.append(body,pages,usersPane);try{const saved=sessionStorage.getItem('bc.admin.os.section');if(sections.some(s=>s.id===saved))selected=saved}catch(_){}
   const save=()=>{try{sessionStorage.setItem('bc.admin.os.section',selected)}catch(_){}};
   const updateNav=()=>{for(const [id,button] of nav){button.classList.toggle('selected',id===selected);button.setAttribute('aria-current',id===selected?'page':'false')}};
   const activity=()=>{if(embedded)parent.postMessage({type:'blackcell-admin-app-activity'},location.origin)};
   function showBody(){pages.hidden=true;for(const record of frames.values())record.panel.hidden=true;usersPane.hidden=true;body.hidden=false}
-  function detachUsers(){if(!inlineUsers)return;inlineUsers=false;document.getElementById('closeModal')?.click();modal.classList.remove('bc-admin-inline-modal');modal.querySelector('.admin-modal')?.setAttribute('aria-modal','true');originalParent.insertBefore(modal,originalNext);usersPane.hidden=true}
+  function detachUsers(){if(!inlineUsers)return;inlineUsers=false;inlineTarget=null;document.getElementById('closeModal')?.click();modal.classList.remove('bc-admin-inline-modal','bc-admin-inline-secondary');modal.querySelector('.admin-modal')?.setAttribute('aria-modal','true');originalParent.insertBefore(modal,originalNext);usersPane.hidden=true}
   function workspace(target,label){
    if(!allowed.has(target))return;
    usersPane.hidden=true;body.hidden=true;pages.hidden=false;for(const item of frames.values())item.panel.hidden=true;
@@ -45,22 +45,29 @@
     frame.addEventListener('load',()=>{try{
      const doc=frame.contentDocument,u=new URL(frame.contentWindow.location.href);if(!doc||u.origin!==location.origin)return;
      if(u.pathname.endsWith('/login.html')){if(embedded)parent.postMessage({type:'blackcell-admin-app-signed-out'},location.origin);else location.replace('login.html');return}
-     if(u.pathname.endsWith('/dashboard.html')||u.pathname.endsWith('/blackcell-administration-app.html')){select('overview');frame.contentWindow.location.replace(target+'?adminPane=1&rev='+(target==='corporate-media-admin.html'?'native-media-app-20261114':'3'));return}
+     if(u.pathname.endsWith('/dashboard.html')||u.pathname.endsWith('/blackcell-administration-app.html')){select('overview');frame.contentWindow.location.replace(target+'?adminPane=1&rev=native-admin-20261114');return}
      if(!allowed.has(u.pathname.split('/').at(-1)))return;
-     doc.documentElement.classList.add('bc-admin-workspace-embedded');const sheet=doc.createElement('link');sheet.rel='stylesheet';sheet.href='blackcell-admin-workspace-embedded.css?v=1';doc.head.append(sheet);
+     doc.documentElement.classList.add('bc-admin-workspace-embedded');const sheet=doc.createElement('link');sheet.rel='stylesheet';sheet.href='blackcell-admin-workspace-embedded.css?v=2-native-admin';doc.head.append(sheet);
      for(const event of ['pointerdown','keydown','touchstart','wheel'])doc.addEventListener(event,activity,{passive:true});
      doc.addEventListener('click',e=>{const a=e.target.closest?.('a[href]');if(!a||e.defaultPrevented||e.button!==0||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;const href=new URL(a.href,location.href);if(href.origin!==location.origin)return;const file=href.pathname.split('/').at(-1);if(file==='dashboard.html'||file==='blackcell-administration-app.html'){e.preventDefault();select('overview');return}if(allowed.has(file)){e.preventDefault();openTarget(file,a.textContent.trim()||file);return}},true)
     }catch(_){}});
-    frame.src=target+'?adminPane=1&rev='+(target==='corporate-media-admin.html'?'native-media-app-20261114':'3');
+    frame.src=target+'?adminPane=1&rev=native-admin-20261114';
    }
    rec.panel.hidden=false
   }
-  function showUsers(){
+  function showInline(target){
+   if(!['users','settings','notifications','account','nexus','mans'].includes(target))return;
+   const trigger=document.querySelector('main.admin-dashboard [data-open="'+target+'"]')||document.querySelector('[data-open="'+target+'"]');
+   if(!trigger)return;
+   if(inlineUsers&&inlineTarget!==target)detachUsers();
    body.hidden=true;pages.hidden=true;for(const item of frames.values())item.panel.hidden=true;usersPane.hidden=false;
-   if(inlineUsers&&!modal.hidden)return;
-   modal.classList.add('bc-admin-inline-modal');modal.querySelector('.admin-modal')?.setAttribute('aria-modal','false');usersPane.append(modal);inlineUsers=true;
-   const trigger=document.querySelector('main.admin-dashboard [data-open="users"]');if(trigger)trigger.click();else{detachUsers();showBody();body.append(make('p','bc-admin-os-muted','User Management controls unavailable.'))}
+   if(inlineUsers&&inlineTarget===target&&!modal.hidden)return;
+   modal.classList.add('bc-admin-inline-modal');modal.classList.toggle('bc-admin-inline-secondary',target!=='users');
+   modal.querySelector('.admin-modal')?.setAttribute('aria-modal','false');
+   usersPane.append(modal);inlineUsers=true;inlineTarget=target;
+   trigger.click();
   }
+  function showUsers(){showInline('users')}
   function openTarget(target,label){if(directIds[target]){select(directIds[target]);return}
    selected=sections.find(s=>s.items?.some(i=>i[3]===target))?.id||'overview';save();updateNav();workspace(target,label)
   }
@@ -111,7 +118,7 @@
    const panel=make('section','bc-admin-os-panel');panel.append(make('h2','',current.id==='overview'?'Quick access':current.label+' controls'));
    for(const [name,desc,kind,target] of current.items||[]){
     const r=make('div','bc-admin-os-row'),icon=make('span','bc-admin-os-row-icon',current.glyph),copy=make('div','bc-admin-os-copy');copy.append(make('strong','',name),make('small','',desc));r.append(icon,copy);
-    if(kind==='modal'){const trigger=document.querySelector('[data-open="'+target+'"]');const action=btn('Open ›',()=>{if(window.BLACKCELL_ADMIN_READY!==true||!document.documentElement.classList.contains('corp-ok'))return;if(target==='users'){select('users');return}if(inlineUsers)detachUsers();trigger?.click()});action.disabled=!trigger;r.append(action)}
+    if(kind==='modal'){const trigger=document.querySelector('[data-open="'+target+'"]');const action=btn('Open ›',()=>{if(window.BLACKCELL_ADMIN_READY!==true||!document.documentElement.classList.contains('corp-ok'))return;if(target==='users'){select('users');return}if(['settings','notifications','account','nexus','mans'].includes(target)){showInline(target);return}if(inlineUsers)detachUsers();trigger?.click()});action.disabled=!trigger;r.append(action)}
     else{const link=btn('Open ›',()=>openTarget(target,name));r.append(link)}
     panel.append(r)
    }
@@ -121,7 +128,7 @@
   shell.append(rail,right);old.insertAdjacentElement('afterend',shell);select(selected);document.body.classList.add('bc-admin-os-mode');document.getElementById('bcAdminOsLoading')?.remove();
   // Preserve all original admin controls and their handlers, including the existing modals.
   // Refocus the current sidebar after a modal closes rather than a hidden legacy tile.
-  if(modal)new MutationObserver(()=>{if(modal.hidden&&inlineUsers){inlineUsers=false;modal.classList.remove('bc-admin-inline-modal');modal.querySelector('.admin-modal')?.setAttribute('aria-modal','true');originalParent.insertBefore(modal,originalNext);usersPane.hidden=true;if(selected==='users')select('overview')}if(modal.hidden&&document.activeElement?.closest('main.admin-dashboard,#drawer'))nav.get(selected)?.focus()}).observe(modal,{attributes:true,attributeFilter:['hidden']});
+  if(modal)new MutationObserver(()=>{if(modal.hidden&&inlineUsers){inlineUsers=false;inlineTarget=null;modal.classList.remove('bc-admin-inline-modal','bc-admin-inline-secondary');modal.querySelector('.admin-modal')?.setAttribute('aria-modal','true');originalParent.insertBefore(modal,originalNext);usersPane.hidden=true;if(selected==='users')select('overview');else if(!pages.hidden){/* keep the active embedded workspace */}else{showBody();render()}}if(modal.hidden&&document.activeElement?.closest('main.admin-dashboard,#drawer'))nav.get(selected)?.focus()}).observe(modal,{attributes:true,attributeFilter:['hidden']});
   return true
  }
  function attempt(){if(start())return true;return !!document.querySelector('.bc-admin-os')}
