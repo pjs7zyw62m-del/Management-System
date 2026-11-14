@@ -1061,28 +1061,48 @@ function videoFileSizeLabel(file){
  if(!file)return 'Choose MP4, MOV, WEBM or AVI · up to 10 GB (AVI uses Bunny Stream)';
  return file.name+' · '+prettyBytes(file.size)+(requiresBunnyStream(file)?' · Bunny Stream resumable upload':' · private upload');
 }
+function videoStreamConnectionMessage(result){
+ if(result?.resumableReady&&result.connectionStatus==='connected')return 'CONNECTED — Bunny Stream verified. 10 GB resumable uploads are ready.';
+ switch(result?.connectionStatus){
+  case 'missing_credentials':return 'Bunny Stream is not configured. Verify BUNNY_STREAM_LIBRARY_ID and BUNNY_STREAM_API_KEY in Supabase Secrets.';
+  case 'invalid_library_api_key':return 'Bunny Stream rejected the library API key. Use the API key from this exact Stream Video Library, not Bunny Storage.';
+  case 'library_not_found':return 'Bunny Stream could not find that Video Library ID. Check the numeric Library ID in Supabase Secrets.';
+  case 'bunny_stream_unreachable':return 'Bunny Stream could not be reached. Try checking again when the connection is stable.';
+  case 'bunny_stream_api_error':return 'Bunny Stream returned an unexpected service error. Check again before uploading.';
+  default:return result?.resumableReady?'Bunny Stream is configured.':'Video Stream setup is incomplete. Verify the Library ID and API key in Supabase.';
+ }
+}
+async function checkVideoStreamConnection(){
+ const button=$('bcStreamConnectionCheck'),note=$('bcVideoLargeUploadStatus');
+ if(!button||!note||button.disabled)return;
+ button.disabled=true;note.hidden=false;note.classList.remove('is-ready');
+ note.textContent='Testing your Bunny Stream Video Library securely…';
+ try{
+  const status=await videoStreamApi('status');
+  note.textContent=videoStreamConnectionMessage(status);
+  note.classList.toggle('is-ready',status.resumableReady===true&&status.connectionStatus==='connected');
+ }catch(e){note.textContent=String(e?.message||'Could not check Bunny Stream.');note.classList.remove('is-ready')}
+ finally{button.disabled=false}
+}
 async function refreshVideoStorageStatus(file){
  const note=$('bcVideoLargeUploadStatus');
  if(!note)return;
- // Keep the approved clean iPad form free of warnings until a file is selected.
- // File-specific errors remain visible once upload mode is known.
+ // Keep the pitch-black upload form uncluttered until a movie is selected or
+ // the owner deliberately presses Check Stream Connection.
  if(!file){note.hidden=true;return}
  note.hidden=false;
  if(!requiresBunnyStream(file)){
   note.textContent='Standard private upload · administrator review required';
   note.classList.add('is-ready');return;
  }
- note.textContent='Checking 10 GB resumable storage…';note.classList.remove('is-ready');
+ note.textContent='Verifying 10 GB resumable storage…';note.classList.remove('is-ready');
  try{
   const status=await videoStreamApi('status');
-  if(status.resumableReady){
-   note.textContent='10 GB resumable Bunny Stream uploads ready · interrupted uploads can be resumed on this device';
-   note.classList.add('is-ready');
-  }else{
-   note.textContent='10 GB uploads need a Bunny Stream Library ID and library API key configured in Supabase. Small MP4, MOV and WEBM videos up to 45 MB can still use private storage.';
-  }
+  note.textContent=videoStreamConnectionMessage(status);
+  note.classList.toggle('is-ready',status.resumableReady===true&&status.connectionStatus==='connected');
  }catch(e){
-  note.textContent=String(e?.message||'10 GB storage connection unavailable. Small videos up to 45 MB are still supported.');
+  note.textContent=String(e?.message||'Bunny Stream connection could not be checked.');
+  note.classList.remove('is-ready');
  }
 }
 function openDirectVideoUpload(category='standard'){
@@ -1496,6 +1516,7 @@ async function refreshVisibleNetworkFeed(){
 function setupEvents(){
  videoChannel.init();
  $('bcVideoUploadForm').addEventListener('submit',e=>void publishDirectVideo(e));
+ $('bcStreamConnectionCheck').addEventListener('click',()=>void checkVideoStreamConnection());
  $('bcVideoCategory').addEventListener('change',syncDirectVideoCategory);
  $('bcVideoPoster').addEventListener('change',videoPosterSelect);
  $('bcPosterGenerate').addEventListener('click',()=>void makeAiPoster());
