@@ -1,9 +1,9 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
-import {setupBlackcellPhotos} from './corporate-network-photos.js?v=20261113-batch1000';
+import {setupBlackcellPhotos} from './corporate-network-photos.js?v=20261113-direct-upload1000';
 import {setupBlackcellStorageStatus} from './corporate-storage-status.js?v=20261111-storage1';
 import {mountMilitaryGunner} from './military-gunner.js?v=20261110-fast4';
 import {createNetworkPersonalization} from './corporate-network-personalization.js?v=20261112-themes5';
-import {createPhotoRediscovery} from './corporate-photo-rediscovery.js?v=20261111-mediareset1';
+import {createPhotoRediscovery} from './corporate-photo-rediscovery.js?v=20261113-auto-suggest1';
 import {createVisualDiscovery} from './corporate-visual-discovery.js?v=20261111-mediareset1';
 import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phonecheck2';
 import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261113-complete-movie-poster4';
@@ -1355,7 +1355,7 @@ async function deletePost(p){
 async function uploadAsset(file,purpose,postId=null,videoMetadata=null){
  if(!allowedTypes.has(file.type))throw Error('Unsupported format. Use JPG, PNG, WEBP, GIF, HEIC, MP4, MOV, or WEBM.');
  if(file.size<=0||file.size>45*1048576)throw Error('File must be smaller than 45 MB.');
- if(purpose!=='post' && (!file.type.startsWith('image/')||file.size>12*1048576))
+ if(['avatar','cover'].includes(purpose) && (!file.type.startsWith('image/')||file.size>12*1048576))
   throw Error('Profile and cover images must be smaller than 12 MB.');
  const id=crypto.randomUUID();
  const ext=(file.name.split('.').pop()||'bin').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,8)||'bin';
@@ -1367,6 +1367,10 @@ async function uploadAsset(file,purpose,postId=null,videoMetadata=null){
  const record={id,owner_id:state.user.id,post_id:postId,purpose,
   kind:file.type.startsWith('image/')?'photo':'video',
   mime_type:file.type,filename:file.name.slice(0,180),storage_path:path,bytes:file.size};
+ // Direct intake is self-declared only, with the server independently checking owner access.
+ if(purpose==='library'&&record.kind==='photo'&&videoMetadata?.directLibrary===true){
+  record.review_status='approved';record.rights_confirmed=true;record.adult_restricted=false;
+ }
  // Video Studio uses structured metadata and requires explicit administrator review.
  // Normal profile images and Network composer uploads retain their existing behavior.
  if(videoMetadata && purpose==='post' && record.kind==='video'){
