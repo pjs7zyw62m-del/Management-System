@@ -42,8 +42,7 @@ function choosePortal(portal,{quiet=false,force=false}={}){
   adminLoginTab.tabIndex=selectedPortal==='admin'?0:-1;
   employeeLoginTab.tabIndex=selectedPortal==='employee'?0:-1;
   loginRoleDescription.textContent='';
-  loginButton.textContent=selectedPortal==='admin'
-    ?'SIGN IN TO ADMINISTRATION ↗':'SIGN IN TO USER NETWORK ↗';
+  loginButton.textContent='SIGN IN';
   if(!quiet)clearMessage(status);
 }
 function handleAuthorizedRole(member){
@@ -193,8 +192,7 @@ function showLogin(){
   password.disabled=false;
   passwordToggle.disabled=false;
   loginButton.disabled=false;
-  loginButton.textContent=selectedPortal==='employee'
-    ?'SIGN IN TO USER NETWORK ↗':'SIGN IN TO ADMINISTRATION ↗';
+  loginButton.textContent='SIGN IN';
   changeAccount.hidden=true;
   access.value='';
   security.value='';
@@ -396,8 +394,7 @@ form.addEventListener('submit',async event=>{
     loginInProgress=false;
     if(!stage.classList.contains('show-pass')){
       loginButton.disabled=false;
-      loginButton.textContent=selectedPortal==='employee'
-        ?'SIGN IN TO USER NETWORK ↗':'SIGN IN TO ADMINISTRATION ↗';
+      loginButton.textContent='SIGN IN';
     }
   }
 });
