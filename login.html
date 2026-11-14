@@ -584,6 +584,7 @@ input:focus-visible{outline-color:#c83232}
 .stage-window.show-pass .login-role-tabs #accessPassTab small{color:#d87979}
 </style>
 <script src="blackcell-live-update.js?v=20261114-1" defer data-mode="manual"></script>
+<link rel="stylesheet" href="blackcell-qr-login.css?v=1"><script type="module" src="blackcell-qr-login.js?v=1"></script>
 </head>
 <body>
 <header>
@@ -609,6 +610,7 @@ input:focus-visible{outline-color:#c83232}
 <label for="password">PASSWORD</label>
 <div class="password"><input id="password" type="password" autocomplete="current-password" required><button id="toggle" class="show" type="button">SHOW</button></div>
 <button id="submit" class="primary" type="submit">SIGN IN</button>
+<button id="bcQrLaunch" type="button" class="bc-qr-launch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3zM21 14v7h-7M6 6h1v1H6zM17 6h1v1h-1zM6 17h1v1H6z"/></svg>SIGN IN WITH QR CODE</button>
 </form>
 <section id="inlineAccessStep" class="inline-access-step" aria-label="Level 7 access pass verification" hidden>
 
@@ -646,7 +648,7 @@ input:focus-visible{outline-color:#c83232}
  <div id="mergeIdentity" class="merge-piece merge-identity-piece">
    <span class="merge-badge">B</span>
    <span class="merge-heading">Identity Verified</span>
-   <span class="merge-desc">EMAIL &amp; PASSWORD ACCEPTED</span>
+   <span class="merge-desc">IDENTITY AUTHENTICATED</span>
  </div>
  <div id="mergePass" class="merge-piece merge-pass-piece">
    <span class="merge-badge">B</span>
@@ -707,4 +709,5 @@ input:focus-visible{outline-color:#c83232}
   },9000);
 })();
 </script>
+<dialog id="bcQrDialog" class="bc-qr-dialog" aria-labelledby="bcQrTitle"><div class="bc-qr-brand">BLACKCELL</div><div class="bc-qr-corp">CORPORATION</div><div class="bc-qr-rule"></div><h2 id="bcQrTitle" class="bc-qr-title">SIGN IN WITH QR CODE</h2><p id="bcQrStatus" class="bc-qr-copy" role="status" aria-live="polite">Preparing secure sign-in…</p><div id="bcQrImage" class="bc-qr-image"></div><div class="bc-qr-label">PHONE APPROVAL NUMBER</div><div id="bcQrNumber" class="bc-qr-number">—</div><div id="bcQrCountdown" class="bc-qr-count"></div><button type="button" class="bc-qr-action" id="bcQrRenew" hidden>GENERATE NEW CODE</button><button class="bc-qr-action bc-qr-secondary" id="bcQrCancel" type="button">CANCEL</button><p class="bc-qr-copy">SECURE CORPORATE AUTHENTICATION</p></dialog>
 </body></html>

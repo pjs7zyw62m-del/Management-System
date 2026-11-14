@@ -247,6 +247,7 @@ body{background:#000}
 <link rel="stylesheet" href="corporate-chat-compact-media.css?v=20261109-mobile-gallery4">
 <link rel="stylesheet" href="corporate-chat-black-red-glass-v6.css?v=20261113-imessage6">
 <script src="blackcell-live-update.js?v=20261114-1" defer data-mode="manual"></script>
+<link rel="stylesheet" href="blackcell-qr-login.css?v=1"><script type="module" src="blackcell-qr-login.js?v=1"></script>
 </head><body class="bc-employee">
 <header><strong>BLACKCELL CORPORATION</strong><span>EMPLOYEE ACCESS</span></header>
 <main>
@@ -257,7 +258,8 @@ body{background:#000}
 <h1 id="employeeLoginTitle">Employee Sign In</h1><p class="bc-login-intro">Enter your corporate credentials to access your network.</p>
 <form id="signin"><label for="email">EMPLOYEE EMAIL</label><input id="email" type="email" autocomplete="username" placeholder="name@example.com" required>
 <label for="password">PASSWORD</label><div class="bc-password-wrap"><input id="password" type="password" autocomplete="current-password" placeholder="Enter your password" required><button type="button" id="bcTogglePassword" aria-pressed="false" aria-label="Show password">SHOW</button></div>
-<button id="signinButton" class="primary">SIGN IN</button></form>
+<button id="signinButton" class="primary">SIGN IN</button>
+<button id="bcQrLaunch" type="button" class="bc-qr-launch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3zM21 14v7h-7M6 6h1v1H6zM17 6h1v1h-1zM6 17h1v1H6z"/></svg>SIGN IN WITH QR CODE</button></form>
 <p id="loginError" class="notice" hidden role="status"></p>
 <div class="bc-login-separator"><span>ACCOUNT ASSISTANCE</span></div>
 <div class="bc-login-help">
@@ -301,4 +303,5 @@ body{background:#000}
 <p id="employeeStatus" class="notice" hidden role="status"></p>
 <div class="action-row"><a class="outline" id="networkLink" href="corporate-network.html" hidden>OPEN BLACKCELL NETWORK ↗</a><a class="outline" id="chatLink" href="corporate-chat.html" hidden>OPEN NETWORK CHAT ↗</a><button id="signout" class="outline">SIGN OUT</button></div>
 </section>
-</main><footer>BLACKCELL CORPORATION · SECURE EMPLOYEE ACCESS</footer></body></html>
+</main><footer>BLACKCELL CORPORATION · SECURE EMPLOYEE ACCESS</footer><dialog id="bcQrDialog" class="bc-qr-dialog" aria-labelledby="bcQrTitle"><div class="bc-qr-brand">BLACKCELL</div><div class="bc-qr-corp">CORPORATION</div><div class="bc-qr-rule"></div><h2 id="bcQrTitle" class="bc-qr-title">SIGN IN WITH QR CODE</h2><p id="bcQrStatus" class="bc-qr-copy" role="status" aria-live="polite">Preparing secure sign-in…</p><div id="bcQrImage" class="bc-qr-image"></div><div class="bc-qr-label">PHONE APPROVAL NUMBER</div><div id="bcQrNumber" class="bc-qr-number">—</div><div id="bcQrCountdown" class="bc-qr-count"></div><button type="button" class="bc-qr-action" id="bcQrRenew" hidden>GENERATE NEW CODE</button><button class="bc-qr-action bc-qr-secondary" id="bcQrCancel" type="button">CANCEL</button><p class="bc-qr-copy">SECURE CORPORATE AUTHENTICATION</p></dialog>
+</body></html>
