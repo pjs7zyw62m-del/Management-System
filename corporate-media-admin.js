@@ -3,7 +3,7 @@
  * The same existing photo/video intake controller is mounted on an admin-only page.
  */
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-clearance5';
-import {createCorporateMediaWorkspace} from './corporate-admin-workspace.js?v=20261114-compact-media';
+import {createCorporateMediaWorkspace} from './corporate-admin-workspace.js?v=20261114-native-media-app';
 
 const $=id=>document.getElementById(id);
 const state={user:null,member:null,assets:[],bunnyWaitingCount:0};
