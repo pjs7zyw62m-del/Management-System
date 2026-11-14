@@ -88,7 +88,9 @@ async function load(reveal=false){
   }
   showPanel('employeeHome');
   $('employeeLevel').textContent='LEVEL '+member.clearance_level;
-  $('employeeName').textContent=member.display_name||'BLACKCELL EMPLOYEE';
+  $('employeeName').textContent=member.display_name||'BLACKCELL USER';
+  const initials=(member.display_name||member.username||'Blackcell').trim().split(/\s+/).slice(0,2).map(part=>Array.from(part)[0]||'').join('').toUpperCase();
+  $('credentialInitials').textContent=initials||'BC';
   $('employeeUsername').textContent='USERNAME · '+(member.username||'Not assigned');
   if(reveal){
    $('employeeCard').classList.remove('reveal');
