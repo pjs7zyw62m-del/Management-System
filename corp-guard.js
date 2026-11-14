@@ -136,7 +136,7 @@ try {
       // A new version query forces browsers/CDNs to fetch the repaired file.
       window.BLACKCELL_ADMIN_READY=false;
       const script=document.createElement('script');
-      script.src='admin.js?v=20261114-personnel3';
+      script.src='admin.js?v=20261114-permission-switches';
       script.defer=true;
       const showAdminLoadError=()=>{
         if(document.getElementById('adminControlsReload'))return;

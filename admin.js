@@ -228,7 +228,7 @@ function showEmployeeProfile(member,sample=false){
    panel.append(p('Changes apply to this employee only. Division permissions are separate.'));
    const fields=el('div','um3-permission-grid'),levelLabel=el('label','um3-field','Security clearance'),level=el('select');
    for(let i=1;i<=6;i++)level.add(new Option('Level '+i,String(i)));level.value=String(member.clearance_level);levelLabel.append(level);fields.append(levelLabel);
-   function check(labelText,value){const label=el('label','um3-permission-check'),input=el('input');input.type='checkbox';input.checked=value===true;label.append(el('span','',labelText),input);fields.append(label);return input}
+   function check(labelText,value){const {label,input}=permissionSwitch(labelText,value);label.classList.add('um3-permission-check');fields.append(label);return input}
    const enabled=check('Account enabled',member.active),chat=check('Employee chat',member.can_chat);
    const feedback=el('p','muted','');feedback.setAttribute('role','status');
    const save=action('Save changes',async()=>{
@@ -724,6 +724,10 @@ async function displayCorporateAccounts(container){
     }
   }catch(_){if(container.isConnected)container.append(p('Unable to load accounts.'))}
 }
+function permissionSwitch(labelText,checked){
+ const label=el('label','um3-switch-label'),input=el('input','um3-switch-input');input.type='checkbox';input.setAttribute('role','switch');input.checked=checked===true;
+ label.append(el('span','um3-switch-label-text',labelText),input,el('span','um3-switch-track'));label.lastElementChild.setAttribute('aria-hidden','true');return {label,input}
+}
 async function displayEmployeeAccess(container){
   const api=window.BLACKCELL_CORPORATE_ADMIN_API?.client;
   if(!api)return;
@@ -737,19 +741,16 @@ async function displayEmployeeAccess(container){
     status.remove();
     const employees=data.members.filter(m=>m.role!=='owner');
     if(!employees.length){container.append(p('No employee accounts yet. Start from the Accounts tab.'));return;}
+    container.classList.add('um3-access-list');
     for(const member of employees){
-      const section=el('div','content-block');
-      section.append(el('h3','',member.display_name||'Employee'),p(member.email||''));
-      const controls=el('div');controls.style.cssText='display:flex;gap:12px;align-items:center;flex-wrap:wrap';
-      const check=(labelText,checked)=>{
-        const label=el('label');label.style.cssText='display:flex;gap:8px;align-items:center';
-        const input=el('input');input.type='checkbox';input.checked=checked;
-        label.append(input,document.createTextNode(labelText));return {label,input};
-      };
-      const enabled=check('Account enabled',member.active),chat=check('Employee Chat',member.can_chat);
+      const section=el('div','um3-access-row'),identity=el('div','um3-access-identity'),copy=el('div','um3-access-copy');
+      const avatar=el('span','um3-avatar',String(member.display_name||'BC').trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase());
+      copy.append(el('strong','',member.display_name||'Employee'),el('small','',member.email||''));identity.append(avatar,copy);section.append(identity);
+      const controls=el('div','um3-access-controls');
+      const enabled=permissionSwitch('Account enabled',member.active),chat=permissionSwitch('Employee Chat',member.can_chat);
       controls.append(enabled.label,chat.label);
       const save=action('SAVE PERMISSIONS',async()=>{
-        save.disabled=true;save.textContent='SAVING…';
+        save.disabled=true;enabled.input.disabled=chat.input.disabled=true;save.textContent='SAVING…';
         try{
           const {data:updated,error:updateError}=await api.rpc('corp_admin_update_employee',{
             p_user_id:member.user_id,p_level:member.clearance_level,
@@ -757,8 +758,9 @@ async function displayEmployeeAccess(container){
           });
           save.textContent=updateError||updated?.ok!==true?'NOT SAVED':'SAVED ✓';
         }catch(_){save.textContent='NOT SAVED'}
-        finally{save.disabled=false}
+        finally{save.disabled=false;enabled.input.disabled=chat.input.disabled=false}
       },false,true);
+      save.classList.add('um3-access-save');for(const input of [enabled.input,chat.input])input.addEventListener('change',()=>{save.textContent='SAVE PERMISSIONS'});
       controls.append(save);section.append(controls);container.append(section);
     }
   }catch(_){status.textContent='Could not load employee access permissions.'}
