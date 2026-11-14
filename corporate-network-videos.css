@@ -239,3 +239,30 @@ body.bc-video-upload-open{overflow:hidden}
  to{transform:translateX(305%)}
 }
 @media(prefers-reduced-motion:reduce){.bc-video-upload-track span.is-uploading{animation:none;opacity:.65;width:100%!important}}
+
+
+/* 10 GB uploader and separate poster artwork, with secure player embeds. */
+.bc-video-custom-poster{width:100%;height:100%;display:block;object-fit:cover;background:#151017}
+.bc-movies-cover-image{width:100%;height:100%;display:block;object-fit:cover;background:#171319}
+.bc-movies-poster-thumb .bc-movies-cover-image{object-fit:contain;background:#0b0a0e}
+.bc-movies-show-thumb .bc-movies-cover-image{object-fit:cover}
+.bc-movies-poster-thumb:has(.bc-movies-cover-image){background:#080709}
+.bc-video-storage-status{padding:11px 13px;border:1px solid #84596a;border-radius:10px;background:#2e1c2a;color:#e7b9c8;font-size:11px;line-height:1.6;font-weight:530}
+.bc-video-storage-status.is-ready{background:#142820;border-color:#557a63;color:#c3e6ce}
+.bc-video-poster-preview{display:flex;align-items:center;gap:14px;background:#151017;border:1px solid #5b4756;border-radius:12px;padding:11px}
+.bc-video-poster-preview img{display:block;width:80px;height:118px;object-fit:contain;border-radius:8px;background:#09090a;border:1px solid #57404a}
+.bc-video-poster-preview button{border:1px solid #714c5c;background:#28212b;color:#f6dce7;border-radius:9px;padding:10px 13px;font-size:11px}
+.bc-video-poster-preview[hidden]{display:none!important}
+.bc-cinema-stage #bcCinemaStreamPlayer{width:100%;aspect-ratio:16/9;min-height:210px;height:min(70dvh,750px);border:0;background:#050506;display:block}
+.bc-cinema-stage #bcCinemaStreamPlayer[hidden],.bc-cinema-stage #bcCinemaPlayer[hidden]{display:none!important}
+.bc-stream-review-list{display:flex;flex-direction:column;gap:9px}
+.bc-stream-review-row{padding:14px;background:#1c171f;border:1px solid #594457;border-radius:12px;display:flex;align-items:center;justify-content:space-between;gap:13px;flex-wrap:wrap}
+.bc-stream-review-row strong{display:block;font-size:12px;color:#eee5ef;overflow-wrap:anywhere}
+.bc-stream-review-row small{display:block;font-size:10px;color:#b3a5b1;margin-top:5px}
+.bc-stream-review-actions{display:flex;gap:6px;flex-wrap:wrap}
+.bc-stream-review-actions button{padding:9px 12px;background:#392431;border:1px solid #74526a;color:#f2d8e4;border-radius:8px;font-size:10px;font-weight:700}
+.bc-stream-review-actions button:hover{background:#602b43}
+@media(max-width:700px){
+ .bc-cinema-stage #bcCinemaStreamPlayer{height:50dvh;min-height:200px}
+ .bc-video-poster-preview img{width:70px;height:100px}
+}
