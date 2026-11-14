@@ -111,7 +111,6 @@ function setVerified(isVerified,m){
  $('employeeCard').classList.toggle('codes-verified',isVerified);
  $('chatLink').hidden=!isVerified||m.can_chat!==true||m.access_scope==='ledger_only';
  $('networkLink').hidden=!isVerified||m.access_scope==='ledger_only';
- $('blackcellOsLink').hidden=!isVerified||m.access_scope==='ledger_only';
  syncEmployeeMessenger(isVerified&&m.can_chat===true&&m.access_scope!=='ledger_only');
  $('employeeAccess').textContent=isVerified
    ?(m.access_scope==='ledger_only'?'ACCOUNT ACTIVE · PRIVATE LEDGER ONLY':
@@ -127,7 +126,7 @@ async function load(reveal=false){
   const result=await corporateAuthorize(client,{allowLedgerOnly:true});
   if(!result.ok){verified=false;showPanel('employeeLogin');return;}
   const member=result.member;
-  if(member.role==='owner'){location.replace('dashboard.html');return;}
+  if(member.role==='owner'){location.replace('login.html');return;}
   if(member.role!=='employee'){
    showPanel('employeeLogin');
    showError('loginError','This account is not authorized for Employee Access.');
