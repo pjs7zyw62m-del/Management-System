@@ -826,7 +826,7 @@ function videoTile(a){
 const MAX_VIDEO_BYTES=10*1024*1024*1024;
 const SMALL_VIDEO_BYTES=45*1048576;
 const MAX_POSTER_BYTES=8*1048576;
-let directVideoBusy=false,videoPosterPreviewUrl=null;
+let directVideoBusy=false,videoPosterPreviewUrl=null,posterAiPath=null,posterAiPreviewUrl=null,posterSelected='original',posterVideoFrameFile=null,posterAiBusy=false;
 const VIDEO_MIMES=new Set(['video/mp4','video/webm','video/quicktime','video/x-m4v','video/x-msvideo']);
 // AVI MIME values vary by browser; only normalize files that actually end in .avi.
 // AVI must use Bunny Stream transcoding, never the browser-only small-video player.
@@ -873,11 +873,46 @@ async function videoStreamApi(action,payload={}){
  }
  return data;
 }
+function studioOriginalPoster(){
+ return $('bcVideoPoster')?.files?.[0]||posterVideoFrameFile||null;
+}
+function clearUnusedAiPoster(){
+ const unused=posterAiPath;
+ posterAiPath=null;posterAiPreviewUrl=null;posterSelected='original';
+ if(unused)void bucket.remove([unused]).catch(()=>{});
+}
+function renderPosterOptions(){
+ const original=studioOriginalPoster();
+ const root=$('bcPosterArtworkChoices');
+ root.hidden=!original&&!posterAiPreviewUrl;
+ const originalButton=$('bcPosterChooseOriginal'),aiButton=$('bcPosterChooseAi');
+ originalButton.disabled=!original;
+ aiButton.disabled=!posterAiPreviewUrl;
+ if(original&&!videoPosterPreviewUrl){
+  videoPosterPreviewUrl=URL.createObjectURL(original);
+ }
+ const oldImage=$('bcPosterOriginalVariant'),newImage=$('bcPosterAiVariant');
+ if(original&&videoPosterPreviewUrl)oldImage.src=videoPosterPreviewUrl;
+ else oldImage.removeAttribute('src');
+ if(posterAiPreviewUrl)newImage.src=posterAiPreviewUrl;
+ else newImage.removeAttribute('src');
+ if(!posterAiPreviewUrl&&posterSelected==='ai')posterSelected='original';
+ for(const [button,kind] of [[originalButton,'original'],[aiButton,'ai']]){
+  const active=posterSelected===kind;
+  button.classList.toggle('is-selected',active);
+  button.setAttribute('aria-pressed',String(active));
+  button.querySelector('span').textContent=active?'✓ DISPLAY THIS':kind==='ai'&&!posterAiPreviewUrl?'GENERATE TO PREVIEW':'SELECT COVER';
+ }
+}
 function videoPosterClear(){
  if(videoPosterPreviewUrl)URL.revokeObjectURL(videoPosterPreviewUrl);
  videoPosterPreviewUrl=null;
+ clearUnusedAiPoster();
+ posterVideoFrameFile=null;
  $('bcVideoPosterPreview').removeAttribute('src');
  $('bcVideoPosterPreviewFrame').hidden=true;
+ $('bcPosterAiStatus').textContent='';
+ renderPosterOptions();
 }
 function videoPosterSelect(){
  videoPosterClear();
@@ -891,6 +926,125 @@ function videoPosterSelect(){
  videoPosterPreviewUrl=URL.createObjectURL(f);
  $('bcVideoPosterPreview').src=videoPosterPreviewUrl;
  $('bcVideoPosterPreviewFrame').hidden=false;
+ renderPosterOptions();
+}
+function canvasReference(sourceCanvas){
+ return new Promise((resolve,reject)=>{
+  const scale=Math.min(1,1100/Math.max(sourceCanvas.width,sourceCanvas.height));
+  const canvas=document.createElement('canvas');
+  canvas.width=Math.max(1,Math.round(sourceCanvas.width*scale));
+  canvas.height=Math.max(1,Math.round(sourceCanvas.height*scale));
+  const ctx=canvas.getContext('2d');
+  if(!ctx){reject(Error('Cannot process this image on this device.'));return}
+  ctx.drawImage(sourceCanvas,0,0,canvas.width,canvas.height);
+  canvas.toBlob(blob=>blob?resolve(blob):reject(Error('Cannot prepare poster reference.')),'image/jpeg',.83);
+ });
+}
+function fileImageReference(file){
+ return new Promise(async(resolve,reject)=>{
+  const url=URL.createObjectURL(file),img=new Image();
+  img.onload=async()=>{
+   try{
+    const canvas=document.createElement('canvas');
+    canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;
+    const ctx=canvas.getContext('2d');
+    if(!ctx||!canvas.width||!canvas.height)throw Error('Poster image could not be opened.');
+    // Downscale before drawing to avoid enormous mobile image memory usage.
+    const scale=Math.min(1,1100/Math.max(canvas.width,canvas.height));
+    canvas.width=Math.max(1,Math.round(canvas.width*scale));
+    canvas.height=Math.max(1,Math.round(canvas.height*scale));
+    canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+    resolve(await canvasReference(canvas));
+   }catch(err){reject(err)}finally{URL.revokeObjectURL(url)}
+  };
+  img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('The original poster could not be read.'))};
+  img.src=url;
+ });
+}
+function videoFrameReference(file){
+ return new Promise((resolve,reject)=>{
+  const url=URL.createObjectURL(file),video=document.createElement('video');
+  video.preload='metadata';video.muted=true;video.playsInline=true;
+  let done=false;
+  const cleanup=()=>{video.pause();video.removeAttribute('src');video.load();URL.revokeObjectURL(url)};
+  const fail=e=>{if(done)return;done=true;cleanup();reject(e instanceof Error?e:Error('This device cannot preview that video. Choose a poster image as the AI reference instead.'))};
+  const timer=setTimeout(()=>fail(Error('Video preview timed out. Choose a poster image as the reference.')),13000);
+  const finish=async()=>{
+   if(done)return;done=true;clearTimeout(timer);
+   try{
+    const w=video.videoWidth,h=video.videoHeight;
+    if(!w||!h)throw Error('No readable frames in this video.');
+    const scale=Math.min(1,1100/Math.max(w,h)),canvas=document.createElement('canvas');
+    canvas.width=Math.max(1,Math.round(w*scale));canvas.height=Math.max(1,Math.round(h*scale));
+    canvas.getContext('2d').drawImage(video,0,0,canvas.width,canvas.height);
+    resolve(await canvasReference(canvas));
+   }catch(e){reject(e)}finally{cleanup()}
+  };
+  video.onerror=()=>{clearTimeout(timer);fail(Error('This video format cannot be previewed on iPad. Choose an original poster first.'))};
+  video.onloadedmetadata=()=>{
+   if(!Number.isFinite(video.duration)||video.duration<=0){void video.play().then(()=>video.pause()).catch(()=>{});return}
+   const seek=Math.max(0,Math.min(8,video.duration*.1));
+   if(seek<.1)video.onloadeddata=()=>void finish();
+   else {video.onseeked=()=>void finish();video.currentTime=seek}
+  };
+  video.onloadeddata=()=>{if(video.currentTime===0)void finish()};
+  video.src=url;
+ });
+}
+async function aiPosterReference(){
+ const poster=$('bcVideoPoster').files?.[0];
+ if(poster)return await fileImageReference(poster);
+ const movie=$('bcVideoFile').files?.[0];
+ if(!movie)throw Error('Select a movie poster or video file before generating artwork.');
+ const blob=await videoFrameReference(movie);
+ posterVideoFrameFile=new File([blob],'original-video-frame.jpg',{type:'image/jpeg'});
+ renderPosterOptions();
+ return blob;
+}
+async function makeAiPoster(){
+ if(posterAiBusy||directVideoBusy||state.busy)return;
+ posterAiBusy=true;
+ const button=$('bcPosterGenerate'),note=$('bcPosterAiStatus');
+ button.disabled=true;note.textContent='Preparing reference image…';
+ try{
+  const reference=await aiPosterReference();
+  if(reference.size>2*1048576)throw Error('Reference frame is too large. Choose a smaller picture.');
+  const bytes=new Uint8Array(await reference.arrayBuffer());
+  const chunks=[];for(let i=0;i<bytes.length;i+=16384)chunks.push(String.fromCharCode(...bytes.subarray(i,i+16384)));
+  note.textContent='Creating your AI artwork… The original will be preserved.';
+  const title=$('bcVideoTitle').value.trim()||'BLACKCELL VIDEO';
+  const format=$('bcVideoCategory').value==='movie'||$('bcVideoCategory').value==='series'||$('bcVideoCategory').value==='documentary'?'poster':'thumbnail';
+  const {data,error}=await client.functions.invoke('blackcell-ai-poster',{
+   body:{action:'generate',imageBase64:btoa(chunks.join('')),mimeType:'image/jpeg',
+    title,mode:$('bcPosterAiStyle').value,format}
+  });
+  if(error||data?.ok!==true){
+   let response=data;
+   if(error?.context?.json)try{response=await error.context.json()}catch(_){}
+   const reason=String(response?.error||error?.message||'ai_generation_unavailable');
+   const map={
+    ai_poster_not_configured:'AI poster generation needs an OPENAI_API_KEY saved in Supabase Edge Function Secrets.',
+    ai_key_invalid:'The AI poster API key was rejected. Check OPENAI_API_KEY in Supabase.',
+    ai_rate_limited:'The AI image service is temporarily rate-limited or out of credits.',
+    ai_image_request_rejected:'The image-generation service declined this reference. Try a different image or keep the original.',
+    ai_generation_unavailable:'AI image generation is temporarily unavailable.',
+    security_session_required:'BLACKCELL authorization has expired. Reverify your Corporate Access session.'
+   };
+   throw Error(map[reason]||('AI poster service: '+reason.replace(/[^a-z0-9_ -]/gi,'')));
+  }
+  if(typeof data.posterPath!=='string'||!data.posterPath.startsWith(state.user.id+'/video-posters/')||!data.previewUrl?.startsWith('https://'))throw Error('Generated artwork could not be verified.');
+  const previous=posterAiPath;
+  posterAiPath=data.posterPath;posterAiPreviewUrl=data.previewUrl;
+  if(previous&&previous!==posterAiPath)void bucket.remove([previous]).catch(()=>{});
+  // Do not auto-select AI. The user chooses which cover BLACKCELL displays.
+  renderPosterOptions();
+  note.textContent='AI poster ready. Both versions are retained. Choose which one to display.';
+ }catch(e){
+  note.textContent=fail(e);
+ }finally{
+  posterAiBusy=false;
+  button.disabled=false;
+ }
 }
 function syncDirectVideoCategory(){
  const kind=$('bcVideoCategory').value;
