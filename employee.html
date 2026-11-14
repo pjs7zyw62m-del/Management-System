@@ -115,13 +115,29 @@ body{background:#000}
 #credentialSide{font-size:8px;letter-spacing:.14em;color:#999}
 @media(prefers-reduced-motion:reduce){.credential-rotor{transition:none}}
 
+
+/* Scannable personal record, four-module quiet zone included in the SVG. */
+#employeeCard .credential-back .card-top{font-size:26px;margin:14px 0}
+#employeeCard .credential-back .credential-record{margin:12px 0}
+#employeeCard .credential-back .credential-record>div{display:grid;grid-template-columns:80px minmax(0,1fr);gap:10px;padding:7px 0;align-items:baseline}
+#employeeCard .credential-back .credential-record dd{margin:0;font-size:10px}
+#credentialEmployeeId{font-family:ui-monospace,monospace;font-size:8px!important}
+.credential-qr-block{text-align:center;margin:8px auto 16px;width:100%}
+#credentialRecordLink{display:block;width:min(174px,100%);margin:0 auto 9px;line-height:0;border:1px solid #ccc;background:#fff}
+#credentialRecordLink:focus-visible{outline:2px solid #d33;outline-offset:5px}
+#credentialQr{display:block}
+#credentialQr svg{display:block;width:100%;height:auto;shape-rendering:crispEdges}
+.credential-qr-label{display:block;font-size:8px;letter-spacing:.16em;color:#ccc}
+#credentialQrMessage{font-size:10px;color:#aaa;line-height:1.5}
+#employeeCard .credential-back .credential-back-notice{margin-top:auto;padding:10px}
+
 </style>
 <link rel="stylesheet" href="corporate-chat-dock.css?v=20261109-floating-right2">
 <link rel="stylesheet" href="corporate-chat-bubble-dock.css?v=20261109-bubble-dock1">
 <link rel="stylesheet" href="corporate-chat-premium-dock.css?v=20261109-premium1">
 <link rel="stylesheet" href="corporate-chat-media-bubble-host.css?v=20261109-independent-media1"><link rel="stylesheet" href="corporate-chat-media-responsive.css?v=20261109-sidebyside2"><link rel="stylesheet" href="corporate-chat-media-flip-focus.css?v=20261109-flip-focus1">
 <script src="corp-config.js" defer></script>
-<script src="corporate-chat-media-bubble-host.js?v=20261109-large-media1" defer></script><script type="module" src="employee.js?v=20261114-double-sided"></script>
+<script src="corporate-chat-media-bubble-host.js?v=20261109-large-media1" defer></script><script type="module" src="employee.js?v=20261114-personal-qr"></script>
 <link rel="stylesheet" href="corp-adaptive-layout.css?v=20261109-device2">
 <link rel="stylesheet" href="corp-adaptive-chat.css?v=20261109-device2">
 <link rel="stylesheet" href="corporate-chat-compact-media.css?v=20261109-mobile-gallery4">
@@ -176,9 +192,15 @@ body{background:#000}
 <dl class="credential-record">
 <div><dt>NAME</dt><dd id="credentialBackName">—</dd></div>
 <div><dt>USERNAME</dt><dd id="credentialBackUsername">—</dd></div>
+<div><dt>EMPLOYEE ID</dt><dd id="credentialEmployeeId">—</dd></div>
 <div><dt>CLEARANCE</dt><dd id="credentialBackLevel">—</dd></div>
 <div hidden><dt>ACCOUNT STATUS</dt><dd id="credentialBackStatus">AUTHORIZATION PENDING</dd></div>
 </dl>
+<div class="credential-qr-block">
+<a id="credentialRecordLink" hidden aria-label="Open this employee's Network profile"><span id="credentialQr"></span></a>
+<span class="credential-qr-label">PERSONNEL RECORD</span>
+<p id="credentialQrMessage" role="status">Preparing personal QR code…</p>
+</div>
 <div class="credential-back-notice"><span>NETWORK ACCESS</span><p>This credential identifies the account holder. Access is governed by the account’s assigned permissions.</p></div>
 <div class="credential-bottom"><span>BLACKCELL CORPORATION</span><span>PRIVATE · NON-TRANSFERABLE</span></div>
 </div></div></div>
