@@ -6,7 +6,7 @@ import {createNetworkPersonalization} from './corporate-network-personalization.
 import {createPhotoRediscovery} from './corporate-photo-rediscovery.js?v=20261111-mediareset1';
 import {createVisualDiscovery} from './corporate-visual-discovery.js?v=20261111-mediareset1';
 import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phonecheck2';
-import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261113-youtube-layout4';
+import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261113-moviesstudio5';
 const client=corporateClient(),bucket=client.storage.from('corp-social-media');
 const $=id=>document.getElementById(id);
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
