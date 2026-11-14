@@ -12,8 +12,8 @@ const $=id=>document.getElementById(id);
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const allowedTypes=new Set(['image/jpeg','image/png','image/webp','image/gif','image/heic','video/mp4','video/webm','video/quicktime','video/x-m4v']);
 const state={
- user:null,member:null,profiles:[],posts:[],assets:[],likes:[],comments:[],follows:[],
- assetUrls:new Map(),view:'feed',feedFilter:'latest',profileUserId:null,profileTab:'posts',
+ user:null,member:null,profiles:[],posts:[],assets:[],streamVideos:[],likes:[],comments:[],follows:[],
+ assetUrls:new Map(),posterUrls:new Map(),view:'feed',feedFilter:'latest',profileUserId:null,profileTab:'posts',
  attached:[],openComments:new Set(),busy:false,sort:'newest',deepPost:null,
  chatPeers:[],signedAt:0,profilePreview:false,profilePostFilter:'all',profilePostGrid:false,profileFriendsMode:'following',profileFriendsQuery:''
 };
@@ -42,6 +42,7 @@ function personName(p){return p?.display_name||'Blackcell Member'}
 function personHandle(p){return '@'+(p?.username||'network')}
 function asset(id){return state.assets.find(a=>a.id===id)}
 function mediaUrl(a){return state.assetUrls.get(typeof a==='string'?a:a?.id)||''}
+function posterUrl(a){return state.posterUrls.get(typeof a==='string'?a:a?.id)||''}
 function avatar(p,size='med'){
  const v=el('div','avatar '+size,(personName(p).trim()[0]||'B').toUpperCase());
  const a=asset(p?.avatar_asset_id),src=mediaUrl(a);
@@ -159,15 +160,20 @@ function openProfile(uid,tab='posts'){
  switchView('profile',{who:uid,tab});
 }
 async function loadAll({show=true}={}){
- const [pr,po,as,fo]=await Promise.all([
+ const [pr,po,as,fo,stream]=await Promise.all([
   client.from('corp_social_profiles').select('*').order('display_name',{ascending:true}).limit(500),
   client.from('corp_social_posts').select('*').order('created_at',{ascending:false}).limit(120),
   client.from('corp_social_assets').select('*').order('created_at',{ascending:false}).limit(1000),
-  client.from('corp_social_follows').select('follower_id,following_id').limit(2000)
+  client.from('corp_social_follows').select('follower_id,following_id').limit(2000),
+  client.from('corp_stream_videos').select('*').order('created_at',{ascending:false}).limit(600)
  ]);
- for(const r of [pr,po,as,fo])if(r.error)throw Error('Network data could not be read: '+r.error.message);
+ for(const r of [pr,po,as,fo,stream])if(r.error)throw Error('Network data could not be read: '+r.error.message);
  state.profiles=pr.data||[];state.posts=po.data||[];
  state.assets=as.data||[];state.follows=fo.data||[];
+ state.streamVideos=(stream.data||[]).map(a=>({...a,
+  kind:'video',purpose:'post',filename:a.filename,video_poster_path:a.poster_path,
+  bunny_stream:true
+ }));
  if(!profile(state.user.id)){
   const {error}=await client.from('corp_social_profiles').insert({user_id:state.user.id,display_name:state.member.display_name,username:state.member.username||'network'});
   if(error)throw Error('Could not create your verified network profile: '+error.message);
@@ -190,7 +196,7 @@ async function loadAll({show=true}={}){
  if(show)renderAll();
 }
 async function loadSigned(){
- if(Date.now()-state.signedAt>25*60*1000){state.assetUrls.clear();state.signedAt=Date.now()}
+ if(Date.now()-state.signedAt>25*60*1000){state.assetUrls.clear();state.posterUrls.clear();state.signedAt=Date.now()}
  const all=state.assets.filter(a=>!state.assetUrls.has(a.id));
  // Avoid a serial waterfall of 30-file signing batches while keeping the
  // number of concurrent private Storage requests bounded.
@@ -205,6 +211,18 @@ async function loadSigned(){
   }
  };
  await Promise.all(Array.from({length:Math.min(4,Math.ceil(all.length/30))},signNext));
+ // Poster images stay in the existing private Supabase bucket, not Bunny public URLs.
+ const covers=[...state.assets,...state.streamVideos].filter(a=>a.video_poster_path&&!state.posterUrls.has(a.id));
+ let coverOffset=0;
+ const signCovers=async()=>{
+  while(coverOffset<covers.length){
+   const from=coverOffset;coverOffset+=25;const group=covers.slice(from,from+25);
+   const {data,error}=await bucket.createSignedUrls(group.map(a=>a.video_poster_path),1800);
+   if(error)continue;
+   for(let j=0;j<group.length;j++)if(data?.[j]?.signedUrl)state.posterUrls.set(group[j].id,data[j].signedUrl);
+  }
+ };
+ await Promise.all(Array.from({length:Math.min(3,Math.ceil(covers.length/25))},signCovers));
 }
 function renderAll(){
  renderMini();renderSuggestions();
