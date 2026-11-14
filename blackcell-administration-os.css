@@ -1,0 +1,23 @@
+/* Scoped to verified Administration inside BLACKCELL OS. Standalone dashboard is unchanged. */
+body.bc-admin-os-mode{margin:0;overflow:hidden!important;height:100dvh;min-height:0;background:#17171b!important;color:#eee}
+body.bc-admin-os-mode>.site-header,body.bc-admin-os-mode>.admin-dashboard,body.bc-admin-os-mode>.cinematic-atmos,body.bc-admin-os-mode>.cinematic-lines{display:none!important}
+body.bc-admin-os-mode:after{display:none!important}
+.bc-admin-os{display:grid;grid-template-columns:minmax(158px,210px) minmax(0,1fr);height:100dvh;min-height:0;background:#17171b;color:#eeedf1;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
+.bc-admin-os-rail{background:#242429;border-right:1px solid #ffffff13;padding:16px 10px;overflow:auto;scrollbar-width:none}
+.bc-admin-os-brand{display:grid;gap:4px;padding:5px 8px 18px;margin-bottom:8px;border-bottom:1px solid #ffffff12}
+.bc-admin-os-emblem{width:36px;height:36px;background:linear-gradient(145deg,#963747,#401421);border:1px solid #e0747d55;border-radius:10px;display:grid;place-items:center;color:white;font-size:21px;font-weight:750;margin-bottom:7px}
+.bc-admin-os-brand strong{font:650 15px system-ui}.bc-admin-os-brand small{color:#b38b95;font:700 9px system-ui;letter-spacing:.09em}
+.bc-admin-os-nav{width:100%;display:flex;align-items:center;gap:9px;background:transparent;border:0;border-radius:8px;color:#dfdfe5;padding:9px 7px;margin:4px 0;text-align:left;font:12px system-ui;cursor:pointer}
+.bc-admin-os-nav.selected{background:#ffffff15}.bc-admin-os-nav:hover{background:#ffffff0c}
+.bc-admin-os-glyph,.bc-admin-os-row-icon{display:grid;place-items:center;width:25px;height:25px;flex:none;font-size:16px;background:#45454e;border-radius:7px;color:#fff}
+.bc-admin-os-nav.selected .bc-admin-os-glyph{background:#b23549}.bc-admin-os-note{font:700 8px system-ui;color:#888893;letter-spacing:.12em;padding:25px 8px 8px}
+.bc-admin-os-body{overflow:auto;scrollbar-width:none;padding:24px 28px;min-width:0;min-height:0}
+.bc-admin-os-heading{margin-bottom:23px}.bc-admin-os-kicker{font:700 9px system-ui;letter-spacing:.13em;color:#a5a5af}
+.bc-admin-os-heading h1{font:650 27px system-ui;letter-spacing:-.04em;margin:7px 0}.bc-admin-os-heading p{font:12px system-ui;color:#aaaab5;margin:0;line-height:1.5}
+.bc-admin-os-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-bottom:14px}
+.bc-admin-os-metric,.bc-admin-os-panel{background:#232328;border:1px solid #ffffff12;border-radius:13px;padding:15px 17px}
+.bc-admin-os-metric{display:grid;gap:8px;min-width:0;padding:13px}.bc-admin-os-metric small,.bc-admin-os-metric span{font:10px system-ui;color:#a0a0ad}.bc-admin-os-metric strong{font:650 20px system-ui;letter-spacing:-.045em;overflow-wrap:anywhere}
+.bc-admin-os-panel{margin-bottom:14px}.bc-admin-os-panel h2{font:600 15px system-ui;margin:0 0 9px}.bc-admin-os-row{display:flex;align-items:center;gap:11px;border-top:1px solid #ffffff0d;padding:12px 0}
+.bc-admin-os-copy{flex:1;min-width:0;display:grid;gap:4px}.bc-admin-os-copy strong{font:550 12px system-ui}.bc-admin-os-copy small,.bc-admin-os-muted{font:11px system-ui;line-height:1.5;color:#a2a2ae}
+.bc-admin-os-button{background:#36363d;border:1px solid #ffffff20;border-radius:7px;font:11px system-ui;color:#e6e6eb;text-decoration:none;padding:7px 10px;white-space:nowrap;cursor:pointer}.bc-admin-os-button:hover{background:#4b4b54}.bc-admin-os-button:focus-visible,.bc-admin-os-nav:focus-visible{outline:2px solid #e67b89;outline-offset:2px}
+@media(max-width:620px){.bc-admin-os{grid-template-columns:112px minmax(0,1fr)}.bc-admin-os-rail{padding:9px 5px}.bc-admin-os-brand{padding:4px 4px 12px}.bc-admin-os-brand strong{font-size:11px}.bc-admin-os-brand small{font-size:8px}.bc-admin-os-nav{font-size:10px;padding:9px 4px}.bc-admin-os-glyph{display:none}.bc-admin-os-body{padding:14px 10px}.bc-admin-os-metrics{grid-template-columns:1fr}.bc-admin-os-metric{gap:3px}.bc-admin-os-metric strong{font-size:17px}.bc-admin-os-panel{padding:12px 10px}.bc-admin-os-row{gap:6px}.bc-admin-os-row-icon{display:none}.bc-admin-os-button{font-size:10px;padding:6px}.bc-admin-os-heading h1{font-size:23px}}
