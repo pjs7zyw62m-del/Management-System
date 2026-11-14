@@ -1,5 +1,21 @@
 /* Personal media only. Never writes to public/social storage. */
 export const PRIVATE_BUCKET='blackcell-os-files';
+export const PRIVATE_FILE_LIMIT=50*1024*1024;
+export function privateUploadError(error){
+ const raw=String(error?.message||error||'Upload failed.');
+ if(/duplicate|already exists|409|resource already exists/i.test(raw))return 'A file with this name already exists.';
+ if(/size|too large|payload|413/i.test(raw))return 'Storage rejected the file size. Check the 50 MB project limit.';
+ if(/403|401|policy|permission|unauthorized|jwt/i.test(raw))return 'Access denied. Verify your corporate session.';
+ if(/network|fetch|load failed|timeout/i.test(raw))return 'Connection interrupted. Try uploading again.';
+ return raw.replace(/https?:\/\/\S+/g,'[storage endpoint]').slice(0,130)
+}
+export async function uploadPrivateFile(storage,path,file){
+ if(!file.size)throw Error('The file is empty.');
+ if(file.size>PRIVATE_FILE_LIMIT)throw Error('File exceeds the 50 MB private upload limit.');
+ const result=await storage.upload(path,file,{upsert:false,contentType:'application/octet-stream',cacheControl:'0'});
+ if(result.error)throw result.error;return result.data
+}
+
 const formats={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',gif:'image/gif',heic:'image/heic',heif:'image/heif',mp4:'video/mp4',m4v:'video/x-m4v',mov:'video/quicktime',webm:'video/webm'};
 export const mediaType=name=>formats[String(name).split('.').pop().toLowerCase()]||'';
 const make=(tag,cls,txt)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(txt!==undefined)n.textContent=txt;return n};
@@ -40,7 +56,7 @@ export function mountPrivatePhotos(host,{client,userId,preview,alive,onBusy}){
   for(const row of visible){const card=button('' ,()=>void viewer.open(row));card.className='bc-pm-photo';const thumb=make('div','bc-pm-thumb',row.type.startsWith('video/')?'▶':'▧');card.append(thumb,make('span','',row.name));grid.append(card);if(row.type.startsWith('image/')&&!/heic|heif/.test(row.type)){void (async()=>{try{const f=await getPrivateMedia(storage,row);if(seq!==version||!usable())return;const src=URL.createObjectURL(f);urls.push(src);const img=make('img');img.loading='lazy';img.alt=row.name;img.src=src;thumb.replaceChildren(img)}catch{}})()}}
   if(filtered.length>36){const prev=button('‹',()=>{page--;render()}),next=button('›',()=>{page++;render()});prev.disabled=page===0;next.disabled=(page+1)*36>=filtered.length;pager.append(prev,make('span','',String(page+1)+' / '+Math.ceil(filtered.length/36)),next)}
  }
- input.onchange=async()=>{const list=Array.from(input.files||[]);input.value='';if(preview){status.textContent='Sign in to import private media.';return}if(busy||!usable())return;busy=true;add.disabled=true;onBusy(true);let n=0,skip=0;try{for(const file of list){if(!usable())break;const type=mediaType(file.name);if(!type||file.size>10485760||!file.size){skip++;continue}const name=file.name.normalize('NFKD').replace(/[^a-zA-Z0-9_. -]/g,'_').replace(/^\.+/,'').slice(0,100);if(!name){skip++;continue}status.textContent='Importing '+name+'…';const r=await storage.upload(userId+'/Photos/'+name,file,{upsert:false,contentType:'application/octet-stream',cacheControl:'0'});if(r.error)skip++;else n++}await refresh();status.textContent=n+' imported privately · '+skip+' skipped (size, duplicate or format).'}finally{busy=false;add.disabled=false;onBusy(false)}};
+ input.onchange=async()=>{const list=Array.from(input.files||[]);input.value='';if(preview){status.textContent='Sign in to import private media.';return}if(busy||!usable()||!list.length)return;busy=true;add.disabled=true;refreshBtn.disabled=true;onBusy(true);let n=0,failed=[];try{for(const [i,file] of list.entries()){if(!usable())break;const type=mediaType(file.name),name=file.name.normalize('NFKD').replace(/[^a-zA-Z0-9_. -]/g,'_').replace(/^\.+/,'').slice(0,100);if(!type||!name){failed.push(file.name+': Unsupported format or file name.');continue}if(!file.size||file.size>PRIVATE_FILE_LIMIT){failed.push(name+': '+(!file.size?'Empty file.':'Exceeds 50 MB ('+(file.size/1048576).toFixed(1)+' MB).'));continue}status.textContent='Importing '+(i+1)+' of '+list.length+' · '+name+' ('+(file.size/1048576).toFixed(1)+' MB)…';try{await uploadPrivateFile(storage,userId+'/Photos/'+name,file);n++}catch(e){failed.push(name+': '+privateUploadError(e))}}await refresh();status.textContent=n+' imported privately'+(failed.length?' · '+failed.length+' failed · '+failed.slice(0,3).join(' | '):'')}catch(e){status.textContent=privateUploadError(e)}finally{busy=false;add.disabled=false;refreshBtn.disabled=false;onBusy(false)}};
  const moved=()=>{viewer.close();void refresh()};window.addEventListener('bc-private-files-changed',moved);search.oninput=()=>{page=0;render()};void refresh();return {dispose(){closed=true;version++;window.removeEventListener('bc-private-files-changed',moved);viewer.close();clearThumbs()},refresh,closeViewer:viewer.close};
 }
 export async function choosePrivateMedia({client,userId,onSelect,actionLabel='Attach selected',max=6}){
