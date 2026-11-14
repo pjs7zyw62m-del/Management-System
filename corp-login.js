@@ -319,7 +319,7 @@ function displayLaunch(){
 }
 
 async function initialState(){
-  const state=await timed(corporateAuthorize(client),'Saved session check');
+  const state=await timed(corporateAuthorize(client,{allowLedgerOnly:true}),'Saved session check');
   if(!state.ok){
     if(state.reason==='not-approved'){
       await client.auth.signOut({scope:'local'});
@@ -371,7 +371,7 @@ form.addEventListener('submit',async event=>{
     }), 'Email and password sign-in');
     if(error){message(status,'Email or password was not accepted.');return;}
     message(status,'Email and password accepted. Checking corporate authorization…');
-    const member=await timed(corporateAuthorize(client),'Corporate employee check');
+    const member=await timed(corporateAuthorize(client,{allowLedgerOnly:true}),'Corporate employee check');
     if(!member.ok){
       await client.auth.signOut({scope:'local'});
       message(status,member.reason==='verification-error'?'Cannot verify access right now.':'This account is not approved for Corporate Access.');
@@ -387,6 +387,7 @@ form.addEventListener('submit',async event=>{
       message(status,'Unable to start code verification.');
       return;
     }
+    if(data.verified===true){location.replace('blackcell-os.html');return;}
     showPass();
   }catch(error){
     message(status,explain(error,'Sign in could not be completed. Check your connection.'));
