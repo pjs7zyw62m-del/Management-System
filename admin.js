@@ -333,6 +333,7 @@ function showInvitationPreview(inputs,showPreview,closePreview){
     el('span','invitation-preview-status','PREVIEW ONLY · NOT SENT')
   );
   wrapper.append(top);
+  wrapper.dataset.sidePreview='v5';
 
   const address=el('div','invitation-preview-address');
   address.append(
@@ -414,6 +415,10 @@ function ensureInvitationCardPreviewStyle(){
   const style=el('style');style.id='um4-card-preview-style';
   style.textContent=`
     #modalContent .um4-card-preview-slot[hidden]{display:none!important}
+    #modalContent .um4-card-preview-slot[data-kind=email]{overflow-y:auto!important;overflow-x:hidden!important;scrollbar-width:none;overscroll-behavior:contain;overflow-anchor:none}
+    #modalContent .um4-card-preview-slot[data-kind=email]::-webkit-scrollbar{display:none}
+    #modalContent .um4-card-preview-slot[data-kind=email]>.invitation-preview{position:relative!important;inset:auto!important;transform:none!important;animation:none!important;transition:none!important}
+    #modalContent .um4-preview-open{overflow-anchor:none}
     #modalContent .um4-card-preview-slot{min-width:0;box-sizing:border-box;align-self:flex-start;container-type:inline-size;overflow:hidden}
     #modalContent .um4-card-preview-slot>.invitation-preview,
     #modalContent .um4-card-preview-slot>.employee-card-inline-preview,
@@ -504,7 +509,7 @@ function users(){
     ensureInvitationCardPreviewStyle();
     const section=block('Register New Employee');
     const cardSlot=el('aside','um4-card-preview-slot');
-    cardSlot.id='um4-card-preview-slot';cardSlot.hidden=true;cardSlot.dataset.previewBuild='horizontal-v4-invitation';
+    cardSlot.id='um4-card-preview-slot';cardSlot.hidden=true;cardSlot.dataset.previewBuild='horizontal-v5-email';
     cardSlot.setAttribute('aria-label','Employee invitation and credential previews');
     let activeCardButton=null,previewObserver=null,previewMotion=null;
     const applyImportant=(node,styles)=>{for(const [key,value] of Object.entries(styles))node.style.setProperty(key,value,'important')};
@@ -516,6 +521,11 @@ function users(){
       applyImportant(workspace,{'display':'flex','flex-flow':'row nowrap','align-items':'flex-start','position':'relative','gap':'14px'});
       applyImportant(section,{'flex':wide?'0 0 min(52%,850px)':'0 0 100%','min-width':'0'});
       applyImportant(cardSlot,{'display':'block','position':wide?'relative':'absolute','top':'0','right':'0','flex':wide?'1 1 0':'0 0 auto','width':wide?'auto':'min(94%,520px)','z-index':'20','min-width':'0'});
+      if(cardSlot.dataset.kind==='email'){
+        const visibleBottom=Math.min(window.innerHeight,content.getBoundingClientRect().bottom);
+        const available=Math.max(240,visibleBottom-workspace.getBoundingClientRect().top-12);
+        cardSlot.style.setProperty('max-height',Math.floor(available)+'px','important');
+      }else cardSlot.style.removeProperty('max-height');
       if(!wide)workspace.style.setProperty('min-height',Math.ceil(Math.max(section.offsetHeight,cardSlot.offsetHeight))+'px','important');
       else workspace.style.removeProperty('min-height');
     }
@@ -523,24 +533,29 @@ function users(){
       const previous=activeCardButton;
       if(previous)previous.setAttribute('aria-pressed','false');
       activeCardButton=null;previewObserver?.disconnect();previewObserver=null;previewMotion?.cancel();previewMotion=null;
-      cardSlot.replaceChildren();cardSlot.hidden=true;
+      cardSlot.replaceChildren();cardSlot.hidden=true;delete cardSlot.dataset.kind;
       workspace.classList.remove('um4-preview-open');
       clearStyles(workspace,['display','flex-flow','align-items','position','gap','min-height']);
       clearStyles(section,['flex','min-width']);
-      clearStyles(cardSlot,['display','position','top','right','flex','width','z-index','min-width']);
+      clearStyles(cardSlot,['display','position','top','right','flex','width','z-index','min-width','max-height']);
       if(list.parentElement!==workspace)workspace.append(list);
       if(restoreFocus&&previous?.isConnected)previous.focus({preventScroll:true});
     }
     function showCardPreview(panel,button){
+      const isEmail=panel.classList.contains('invitation-preview');
+      const savedTop=content.scrollTop;
       if(activeCardButton)activeCardButton.setAttribute('aria-pressed','false');
       activeCardButton=button;button.setAttribute('aria-pressed','true');
-      previewMotion?.cancel();cardSlot.replaceChildren(panel);cardSlot.hidden=false;
+      previewMotion?.cancel();cardSlot.replaceChildren();cardSlot.dataset.kind=isEmail?'email':'card';cardSlot.hidden=false;
       workspace.classList.add('um4-preview-open');
       // Keep the existing account list available outside the horizontal row on the regular dashboard.
       if(list.parentElement===workspace){
         if(getComputedStyle(list).display!=='none')workspace.after(list);
       }
       layoutCardPreview();
+      cardSlot.append(panel);cardSlot.scrollTop=0;
+      layoutCardPreview();
+      if(isEmail)content.scrollTop=savedTop;
       if(!previewObserver&&typeof ResizeObserver==='function'){
         previewObserver=new ResizeObserver(()=>layoutCardPreview());previewObserver.observe(workspace);previewObserver.observe(cardSlot);
       }
