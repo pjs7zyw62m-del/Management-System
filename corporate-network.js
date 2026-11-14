@@ -1619,8 +1619,8 @@ function setupEvents(){
  $('attachPhotos').addEventListener('click',()=>{$('postFiles').accept='image/*';$('postFiles').multiple=true;$('postFiles').click()});
  $('attachVideo').addEventListener('click',()=>{$('postFiles').accept='video/*';$('postFiles').multiple=false;$('postFiles').click()});
  $('postFiles').addEventListener('change',()=>selectFiles($('postFiles')));
- $('attachPrivateFiles').addEventListener('click',async()=>{if(state.busy||!state.user)return;try{const m=await import('./blackcell-private-media.js?v=1');await m.choosePrivateMedia({client,userId:state.user.id,max:6,onSelect:files=>appendSelectedFiles(files),actionLabel:'Attach selected (not published)'})}catch(e){toast('Private file picker unavailable.')}});
- $('libraryPrivateFiles').addEventListener('click',async()=>{if(!state.user||state.busy)return;try{const m=await import('./blackcell-private-media.js?v=1');await m.choosePrivateMedia({client,userId:state.user.id,max:20,onSelect:files=>photos.uploadFiles(files),actionLabel:'Upload selected to shared library'})}catch(e){toast('Private file picker unavailable.')}});
+ $('attachPrivateFiles').addEventListener('click',async()=>{if(state.busy||!state.user)return;try{const m=await import('./blackcell-private-media.js?v=4');await m.choosePrivateMedia({client,userId:state.user.id,max:6,onSelect:files=>appendSelectedFiles(files),actionLabel:'Attach selected (not published)'})}catch(e){toast('Private file picker unavailable.')}});
+ $('libraryPrivateFiles').addEventListener('click',async()=>{if(!state.user||state.busy)return;try{const m=await import('./blackcell-private-media.js?v=4');await m.choosePrivateMedia({client,userId:state.user.id,max:20,onSelect:files=>photos.uploadFiles(files),actionLabel:'Upload selected to shared library'})}catch(e){toast('Private file picker unavailable.')}});
  $('publishPost').addEventListener('click',()=>void publish());
  $('closeEdit').addEventListener('click',closeEdit);
  $('cancelEdit').addEventListener('click',closeEdit);
