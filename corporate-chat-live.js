@@ -24,7 +24,8 @@ export function setupCorporateChatLive({client,context,typingLabel,typingName}){
 
  function showRemote(value){
   remoteTyping=!!value&&hasThread();
-  typingLabel.hidden=!remoteTyping;
+  // The three-dot typing UI has been removed; read receipts remain active.
+  if(typingLabel)typingLabel.hidden=!remoteTyping;
   if(typingName)typingName.textContent=name()+' is typing';
  }
  function queueTyping(to,enabled){
