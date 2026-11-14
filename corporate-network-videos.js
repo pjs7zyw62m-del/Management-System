@@ -61,12 +61,12 @@ export function createBlackcellVideoChannel({state,mediaUrl,sharedMedia,profile,
  }
  function toggleLater(a){
   ensureSaved();if(saved(a))delete watchLater[a.id];else watchLater[a.id]=true;
-  storeLater();renderVisible();syncCinemaActions();syncShortActions();
+  storeLater();if(selected!=='shorts')renderVisible();syncCinemaActions();syncShortActions();
   toast(saved(a)?'Saved to Watch Later on this device.':'Removed from Watch Later.');
  }
  function toggleLike(a){
   ensureSaved();if(liked(a))delete likes[a.id];else likes[a.id]=true;
-  storeLikes();renderVisible();syncCinemaActions();syncShortActions();
+  storeLikes();if(selected!=='shorts')renderVisible();syncCinemaActions();syncShortActions();
   toast(liked(a)?'Liked on this device.':'Removed from liked videos.');
  }
  function track(a,v,force=false){
@@ -143,7 +143,7 @@ export function createBlackcellVideoChannel({state,mediaUrl,sharedMedia,profile,
   const image=make('div','bc-yt-creator-avatar',creator(a).slice(0,1).toUpperCase()||'B');
   const info=make('div','bc-yt-video-details');
   info.append(make('strong','',title(a)),make('small','',creator(a)),make('small','',when(a)));
-  const save=button(saved(a)?'✓':'⋮','bc-yt-card-save',()=>toggleLater(a));
+  const save=button(saved(a)?'✓':'＋','bc-yt-card-save',()=>toggleLater(a));
   save.title=saved(a)?'Remove from Watch Later':'Save to Watch Later';
   save.setAttribute('aria-label',save.title);body.append(image,info,save);
   card.append(thumbnail,body);return card;
@@ -298,7 +298,7 @@ export function createBlackcellVideoChannel({state,mediaUrl,sharedMedia,profile,
   if(!initialized)return;
   if(selected==='shorts'&&name!=='shorts')stopShort();
   selected=name;renderVisible();
-  $('bcVideoContent').scrollTo({top:0,behavior:'instant'});
+  window.scrollTo({top:0,behavior:'auto'});
  }
  function goChannels(id){channelId=id;go('channels')}
  function openCreate(){
