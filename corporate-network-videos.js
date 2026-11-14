@@ -216,10 +216,12 @@ export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,sharedMedi
    if(kind==='shorts'){
     const card=make('article','bc-yt-short-tile');
     const tap=button('','bc-yt-short-thumb',()=>goShorts(a.id));
-    const url=source(a);
-    if(url){const v=make('video');lazyThumb(v,url,a);tap.append(v)}
+    const url=source(a),cover=posterUrl(a);
+    if(cover){const img=make('img','bc-video-custom-poster');img.src=cover;img.alt='Short thumbnail for '+title(a);img.loading='lazy';tap.append(img)}
+    else if(url){const v=make('video');lazyThumb(v,url,a);tap.append(v)}
     tap.append(make('span','bc-yt-short-play','▶'));
-    card.append(tap,make('strong','',title(a)),make('small','',creator(a)));root.append(card);
+    card.append(tap,make('strong','',title(a)),make('small','',creator(a)));
+    addFullThumbnailControl(card,a,cover,url);root.append(card);
    }else root.append(tile(a,videos));
   }
  }
