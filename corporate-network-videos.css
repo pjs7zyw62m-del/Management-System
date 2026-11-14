@@ -266,3 +266,379 @@ body.bc-video-upload-open{overflow:hidden}
  .bc-cinema-stage #bcCinemaStreamPlayer{height:50dvh;min-height:200px}
  .bc-video-poster-preview img{width:70px;height:100px}
 }
+
+
+
+/* BLACKCELL Video Studio / approved pitch-black iPad glass redesign.
+   Intentional form order: poster → movie file → title → type → description.
+   Visual changes only; existing file input IDs and upload handlers are preserved. */
+.bc-video-upload-overlay{
+  padding:clamp(12px,2.5vw,32px);
+  background:rgba(0,0,0,.92);
+  backdrop-filter:blur(24px) saturate(65%);
+  -webkit-backdrop-filter:blur(24px) saturate(65%);
+  align-items:center;
+  justify-items:center;
+}
+.bc-video-upload-dialog{
+  width:min(756px,calc(100vw - 30px));
+  max-height:calc(100dvh - 26px);
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  background:
+    radial-gradient(ellipse 43% 23% at 98% 0%,rgba(106,0,29,.27),transparent 80%),
+    radial-gradient(ellipse 37% 18% at 100% 100%,rgba(96,0,28,.13),transparent 87%),
+    #060608;
+  border:1px solid rgba(140,81,102,.65);
+  border-radius:24px;
+  box-shadow:0 35px 130px rgba(0,0,0,.94),0 0 0 1px rgba(255,255,255,.025) inset;
+  color:#f7f6f9;
+}
+.bc-video-upload-dialog::before{
+  content:"";
+  position:absolute;
+  pointer-events:none;
+  z-index:-1;
+  width:360px;height:160px;
+  right:-145px;top:-85px;
+  transform:rotate(-18deg);
+  border:1px solid rgba(199,45,77,.28);
+  border-radius:50%;
+  box-shadow:0 0 32px rgba(135,0,32,.12),0 25px 80px rgba(91,0,21,.15) inset;
+}
+.bc-video-upload-dialog>.bc-studio-head{
+  position:relative;
+  z-index:1;
+  padding:27px 34px 10px;
+  border:0;
+  flex:none;
+  background:transparent;
+}
+.bc-video-upload-dialog .bc-studio-head .bc-video-eyebrow{
+  color:#e36b8a;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.19em;
+}
+.bc-video-upload-dialog .bc-studio-head h2{
+  font-size:clamp(26px,3.8vw,33px);
+  font-weight:780;
+  line-height:1.12;
+  color:#faf8fb;
+  letter-spacing:-.065em;
+  margin:10px 0 0;
+}
+.bc-video-upload-dialog .bc-studio-head .bc-studio-close{
+  display:grid;place-items:center;
+  width:40px;height:40px;
+  color:#f5f1f5;
+  background:linear-gradient(145deg,#1a1a1f,#0d0c10);
+  border:1px solid #47414a;
+  border-radius:11px;
+  font-size:16px;
+  box-shadow:0 4px 13px #0005;
+}
+.bc-video-upload-dialog .bc-studio-head .bc-studio-close:hover{
+  border-color:#a25872;background:#21151b;
+}
+.bc-video-upload-dialog form{
+  min-height:0;
+  padding:18px 34px 24px;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  gap:15px;
+}
+.bc-video-upload-dialog form::-webkit-scrollbar{display:none}
+.bc-studio-upload-stack{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:14px;
+}
+.bc-video-upload-dialog form label.bc-studio-upload-card{
+  position:relative;
+  display:grid;
+  grid-template-columns:98px minmax(0,1fr);
+  align-items:center;
+  gap:20px;
+  min-height:131px;
+  width:100%;
+  padding:17px 26px!important;
+  border:1px dashed rgba(207,70,108,.76)!important;
+  border-radius:15px;
+  background:linear-gradient(127deg,rgba(35,13,25,.46),rgba(9,8,12,.98) 56%,rgba(24,8,14,.55));
+  color:#f7f3f7;
+  text-align:left;
+  cursor:pointer;
+  letter-spacing:normal;
+  box-shadow:0 0 0 1px rgba(153,21,57,.045) inset;
+  transition:border-color .2s ease,background .2s ease,box-shadow .2s ease;
+}
+.bc-video-upload-dialog form label.bc-studio-upload-card:hover,
+.bc-video-upload-dialog form label.bc-studio-upload-card:focus-within{
+  background:linear-gradient(127deg,rgba(48,15,30,.6),rgba(10,9,13,.98) 60%,rgba(31,9,17,.5));
+  border-color:#ec6e95!important;
+  box-shadow:0 0 0 2px rgba(211,62,105,.14);
+}
+.bc-video-upload-dialog .bc-studio-upload-symbol{
+  display:grid;
+  place-items:center;
+  width:75px;height:75px;
+  position:relative;
+  border-radius:13px;
+  color:#e9a1b5;
+  background:linear-gradient(145deg,rgba(61,27,42,.58),rgba(20,13,20,.96));
+  border:1px solid rgba(180,77,106,.32);
+  box-shadow:inset 0 0 18px rgba(131,14,45,.09),0 7px 20px rgba(0,0,0,.3);
+}
+.bc-video-upload-dialog .bc-studio-upload-symbol::after{
+  content:"";
+  position:absolute;
+  right:-25px;top:12px;
+  height:50px;width:1px;
+  background:linear-gradient(transparent,rgba(185,160,171,.44),transparent);
+}
+.bc-video-upload-dialog .bc-studio-upload-symbol svg{display:block;max-width:45px}
+.bc-video-upload-dialog .bc-studio-upload-details{
+  display:flex;
+  align-items:flex-start;
+  flex-direction:column;
+  justify-content:center;
+  gap:7px;
+  min-width:0;
+}
+.bc-video-upload-dialog .bc-studio-upload-details strong{
+  font-size:12px;
+  font-weight:810;
+  letter-spacing:.06em;
+  line-height:1.45;
+  color:#fff;
+  overflow-wrap:anywhere;
+}
+.bc-video-upload-dialog .bc-studio-optional{
+  color:#c5bbc4;
+  font-size:10px;
+}
+.bc-video-upload-dialog .bc-studio-upload-details small{
+  font-size:11px;
+  line-height:1.4;
+  letter-spacing:0;
+  font-weight:400;
+  color:#b9aeb8;
+  overflow-wrap:anywhere;
+}
+.bc-video-upload-dialog .bc-studio-choose-file{
+  display:inline-flex;
+  align-items:center;justify-content:center;
+  gap:8px;
+  margin-top:5px;
+  min-height:35px;
+  padding:7px 20px;
+  border-radius:10px;
+  background:linear-gradient(130deg,rgba(101,21,42,.55),rgba(30,10,18,.9));
+  border:1px solid rgba(233,82,124,.7);
+  color:#fdf8fc;
+  font-weight:750;
+  font-size:12px;
+  letter-spacing:0;
+  box-shadow:inset 0 1px rgba(255,255,255,.08);
+}
+.bc-video-upload-dialog .bc-studio-choose-file>span{font-size:20px;line-height:1}
+.bc-video-upload-dialog form .bc-studio-upload-card input.bc-studio-file-input{
+  position:absolute!important;
+  inset:0;
+  z-index:2;
+  width:100%!important;
+  height:100%!important;
+  opacity:0;
+  cursor:pointer;
+  padding:0!important;
+  margin:0!important;
+  border:0!important;
+  font-size:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.bc-video-upload-dialog form .bc-studio-upload-card input.bc-studio-file-input:focus-visible{
+  outline:0!important;
+}
+.bc-video-upload-dialog form .bc-studio-fields{display:grid;gap:13px;margin-top:4px}
+.bc-video-upload-dialog form .bc-studio-fields>label,
+.bc-video-upload-dialog form .bc-video-episode-fields>label{
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:7px;
+  font-size:10px;
+  font-weight:810;
+  letter-spacing:.11em;
+  color:#e9e4ea;
+}
+.bc-video-upload-dialog form .bc-studio-fields input:not([type=checkbox]),
+.bc-video-upload-dialog form .bc-studio-fields select,
+.bc-video-upload-dialog form .bc-studio-fields textarea{
+  background:#0b0b0e!important;
+  border:1px solid rgba(109,103,116,.6);
+  border-radius:10px;
+  color:#f8f7f9;
+  font-size:13px;
+  min-height:46px;
+  padding:12px 14px;
+  transition:border-color .16s ease,box-shadow .16s ease;
+  box-shadow:none;
+  font-weight:460;
+}
+.bc-video-upload-dialog form .bc-studio-fields input:focus,
+.bc-video-upload-dialog form .bc-studio-fields select:focus,
+.bc-video-upload-dialog form .bc-studio-fields textarea:focus{
+  outline:none;
+  border-color:#c46182;
+  box-shadow:0 0 0 2px rgba(191,80,115,.16);
+}
+.bc-video-upload-dialog form .bc-studio-fields textarea{min-height:80px;resize:vertical}
+.bc-video-upload-dialog form .bc-studio-fields input::placeholder,
+.bc-video-upload-dialog form .bc-studio-fields textarea::placeholder{color:#9c97a2}
+.bc-video-upload-dialog form .bc-video-rights{
+  display:flex;align-items:center;flex-direction:row;
+  gap:10px;
+  margin:2px 0 0;
+  font-size:11px;
+  line-height:1.5;
+  letter-spacing:0;
+  font-weight:580;
+  color:#eee8ee;
+}
+.bc-video-upload-dialog form .bc-video-rights input{
+  flex:none;
+  width:19px;height:19px;
+  margin:0;
+  accent-color:#b32e54;
+  cursor:pointer;
+}
+.bc-video-upload-dialog form .bc-video-upload-note{
+  border-top:1px solid #342b32;
+  padding-top:11px;
+  margin:0;
+  color:#96929a;
+  font-size:10px;
+  line-height:1.7;
+}
+.bc-video-upload-dialog form .bc-studio-actions{
+  position:sticky;
+  bottom:-24px;
+  z-index:4;
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  gap:12px;
+  padding:15px 0 5px;
+  margin-top:0;
+  border-top:0;
+  background:linear-gradient(180deg,rgba(6,6,8,0),#060608 24%);
+}
+.bc-video-upload-dialog form .bc-studio-actions button{
+  min-height:47px;
+  border:1px solid #4a454f;
+  border-radius:11px;
+  background:linear-gradient(135deg,#16161b,#09090c);
+  box-shadow:0 6px 16px rgba(0,0,0,.35);
+  color:#f1edf3;
+  font-size:11px;
+  font-weight:820;
+  letter-spacing:.055em;
+  padding:12px 23px;
+}
+.bc-video-upload-dialog form .bc-studio-actions button[type=submit]{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  border-color:#dc4e75;
+  background:linear-gradient(115deg,#6f1733,#9c2345 53%,#64182e);
+  color:#fff;
+  box-shadow:inset 0 1px rgba(255,255,255,.12),0 8px 25px rgba(102,7,42,.22);
+}
+.bc-video-upload-dialog form .bc-studio-actions button[type=submit]>span{font-size:20px;line-height:1}
+.bc-video-upload-dialog .bc-video-poster-preview{
+  display:flex;align-items:center;
+  gap:14px;
+  background:#0c0c10;
+  border:1px solid #594451;
+  padding:10px 13px;
+  border-radius:12px;
+}
+.bc-video-upload-dialog .bc-video-poster-preview[hidden]{display:none!important}
+.bc-video-upload-dialog .bc-video-poster-preview img{
+  display:block;
+  width:57px;height:82px;
+  border-radius:7px;
+  background:#050507;
+  object-fit:cover;
+}
+.bc-video-upload-dialog .bc-studio-preview-caption{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.bc-video-upload-dialog .bc-studio-preview-caption strong{font-size:10px;letter-spacing:.08em;color:#f2dce4}
+.bc-video-upload-dialog .bc-studio-preview-caption span{font-size:10px;color:#aea4ad}
+.bc-video-upload-dialog .bc-video-poster-preview button{font-size:10px}
+.bc-video-upload-dialog .bc-video-storage-status{
+  padding:9px 12px;
+  margin-top:-4px;
+  background:rgba(40,16,25,.65);
+  border:1px solid rgba(121,58,78,.58);
+  border-radius:9px;
+  color:#d8b9c4;
+  font-size:10px;
+  line-height:1.55;
+}
+.bc-video-upload-dialog .bc-video-storage-status.is-ready{
+  background:rgba(12,30,22,.7);
+  border-color:rgba(64,125,86,.7);
+  color:#b6dfc5;
+}
+.bc-video-upload-dialog .bc-video-storage-status[hidden]{display:none!important}
+.bc-video-upload-dialog .bc-video-upload-progress{
+  background:#141015;
+  border:1px solid #594350;
+  border-radius:10px;
+  padding:12px;
+}
+@media(min-width:700px) and (max-width:1366px){
+  .bc-video-upload-dialog{width:min(760px,calc(100vw - 70px))}
+  .bc-video-upload-dialog form{padding-left:36px;padding-right:36px}
+}
+@media(max-width:700px){
+  .bc-video-upload-overlay{padding:10px}
+  .bc-video-upload-dialog{width:100%;max-height:calc(100dvh - 20px);border-radius:18px}
+  .bc-video-upload-dialog>.bc-studio-head{padding:22px 20px 9px}
+  .bc-video-upload-dialog .bc-studio-head h2{font-size:27px}
+  .bc-video-upload-dialog form{padding:13px 20px 18px;gap:13px}
+  .bc-video-upload-dialog form label.bc-studio-upload-card{
+    grid-template-columns:68px minmax(0,1fr);
+    gap:14px;min-height:119px;padding:13px 15px!important;
+  }
+  .bc-video-upload-dialog .bc-studio-upload-symbol{height:57px;width:57px;border-radius:12px}
+  .bc-video-upload-dialog .bc-studio-upload-symbol svg{width:29px;height:29px}
+  .bc-video-upload-dialog .bc-studio-upload-symbol::after{right:-16px;top:9px;height:38px}
+  .bc-video-upload-dialog .bc-studio-upload-details strong{font-size:10px}
+  .bc-video-upload-dialog .bc-studio-upload-details small{font-size:10px}
+  .bc-video-upload-dialog .bc-studio-choose-file{font-size:10px;min-height:30px;padding:5px 12px}
+  .bc-video-upload-dialog form .bc-studio-actions{bottom:-18px}
+}
+@media(max-width:400px){
+  .bc-video-upload-dialog form{padding-left:14px;padding-right:14px}
+  .bc-video-upload-dialog>.bc-studio-head{padding-left:15px;padding-right:15px}
+  .bc-video-upload-dialog form label.bc-studio-upload-card{grid-template-columns:52px minmax(0,1fr);gap:10px;padding:12px 10px!important}
+  .bc-video-upload-dialog .bc-studio-upload-symbol{width:45px;height:45px}
+  .bc-video-upload-dialog .bc-studio-upload-symbol::after{right:-7px}
+  .bc-video-upload-dialog form .bc-studio-actions{gap:7px}
+  .bc-video-upload-dialog form .bc-studio-actions button{padding:12px 13px}
+}
+@media(prefers-reduced-motion:reduce){
+ .bc-video-upload-dialog form label.bc-studio-upload-card{transition:none}
+ .bc-video-upload-dialog form .bc-studio-fields input,
+ .bc-video-upload-dialog form .bc-studio-fields select,
+ .bc-video-upload-dialog form .bc-studio-fields textarea{transition:none}
+}
