@@ -6,7 +6,7 @@ import {createNetworkPersonalization} from './corporate-network-personalization.
 import {createPhotoRediscovery} from './corporate-photo-rediscovery.js?v=20261111-mediareset1';
 import {createVisualDiscovery} from './corporate-visual-discovery.js?v=20261111-mediareset1';
 import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phonecheck2';
-import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261113-native-artwork3';
+import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261113-complete-movie-poster4';
 const client=corporateClient(),bucket=client.storage.from('corp-social-media');
 const $=id=>document.getElementById(id);
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -43,6 +43,21 @@ function personHandle(p){return '@'+(p?.username||'network')}
 function asset(id){return state.assets.find(a=>a.id===id)}
 function mediaUrl(a){return state.assetUrls.get(typeof a==='string'?a:a?.id)||''}
 function posterUrl(a){return state.posterUrls.get(typeof a==='string'?a:a?.id)||''}
+// Only sign saved variants when the uploader opens the enlarged poster.
+// The selected public-facing image remains unchanged; storage RLS remains enforced.
+async function posterVersions(a){
+ if(!a||a.owner_id!==state.user?.id)return [];
+ const selected=a.video_poster_path||a.poster_path;
+ const original=a.video_poster_original_path||a.poster_original_path;
+ const ai=a.video_poster_ai_path||a.poster_ai_path;
+ if(!original||!ai||original===ai)return [];
+ const out=await bucket.createSignedUrls([original,ai],1800);
+ if(out.error)return [];
+ return [{label:'ORIGINAL POSTER',path:original},{label:'AI POSTER',path:ai}]
+  .map((v,i)=>({...v,url:v.path===selected?posterUrl(a):out.data?.[i]?.signedUrl,selected:v.path===selected}))
+  .filter(v=>Boolean(v.url));
+}
+
 function avatar(p,size='med'){
  const v=el('div','avatar '+size,(personName(p).trim()[0]||'B').toUpperCase());
  const a=asset(p?.avatar_asset_id),src=mediaUrl(a);
@@ -1271,7 +1286,7 @@ async function publishDirectVideo(event){
  }
 }
 const videoChannel=createBlackcellVideoChannel({
- state,mediaUrl,posterUrl,sharedMedia,profile,personName,stamp,switchView,openProfile,toast,
+ state,mediaUrl,posterUrl,posterVersions,sharedMedia,profile,personName,stamp,switchView,openProfile,toast,
  uploadVideo:openDirectVideoUpload,
  playStream:async a=>{
   const data=await videoStreamApi('play',{catalogId:a.id});
