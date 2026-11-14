@@ -9,7 +9,7 @@
  {id:'processor',label:'Media Import Processor',glyph:'▧',direct:['link','corporate-media-admin.html']},
  {id:'diagnostics',label:'System Diagnostics',glyph:'◉',direct:['link','corporate-diagnostics.html']},
  {id:'costs',label:'Costs & Revenue',glyph:'◈',direct:['link','corporate-costs-revenue.html']},
- {id:'overview',label:'Executive Workspace',glyph:'▦',desc:'Your executive command center.',items:[['User Management','Manage employee accounts, roles, invitations and access.','modal','users'],['Media Import Processor','Review, classify and approve shared-library content.','link','corporate-media-admin.html'],['System Diagnostics','Run real service and server checks.','link','corporate-diagnostics.html'],['Costs & Revenue','Review financial plans and service costs.','link','corporate-costs-revenue.html']]},
+ {id:'overview',label:'Executive Workspace',glyph:'▦',desc:'Live corporate monitoring and operational overview.',items:[['User Management','Manage employee accounts, roles, invitations and access.','modal','users'],['Media Import Processor','Review, classify and approve shared-library content.','link','corporate-media-admin.html'],['System Diagnostics','Run real service and server checks.','link','corporate-diagnostics.html'],['Costs & Revenue','Review financial plans and service costs.','link','corporate-costs-revenue.html']]},
  {id:'personnel',label:'Personnel',glyph:'♙',desc:'Corporate identity, employees and account permissions.',items:[['User Management','Accounts, profiles, roles and clearance.','modal','users'],['Employee Chat','Open your existing secure communications interface.','modal','chat'],['Private Photo Ledger','Review authorized private submissions and the shared balance.','link','private-photo-ledger.html']]},
  {id:'divisions',label:'Divisions',glyph:'◇',desc:'Independent corporate applications and division controls.',items:[['NEXUS Management','Records, communications and financial management.','modal','nexus'],["Man’s Armed Forces",'Uniform collections and media operations.','modal','mans']]},
  {id:'media',label:'Media',glyph:'▧',desc:'Shared media administration and the network.',items:[['Media Import Processor','Review, classify and approve photographs and videos.','link','corporate-media-admin.html'],['BLACKCELL Network','Social profiles, updates and video channels.','link','corporate-network.html'],['Private Photo Ledger','Access the existing restricted ledger.','link','private-photo-ledger.html']]},
@@ -68,12 +68,45 @@
 
   for(const s of [...sections.filter(s=>s.id==='overview'),...sections.filter(s=>s.id!=='overview')]){const button=btn('',()=>select(s.id),'bc-admin-os-nav');button.append(make('span','bc-admin-os-glyph',s.glyph),make('span','',s.label));rail.append(button);nav.set(s.id,button)}
   rail.append(make('div','bc-admin-os-note','CONTROL IS EVERYTHING.'));
+  let monitorRun=0;
+  function executiveMonitor(){
+   const seq=++monitorRun,summary=make('section','bc-executive-metrics'),cells=new Map();
+   const set=(key,value,note,state='')=>{const item=cells.get(key);if(!item)return;item.value.textContent=value;item.note.textContent=note;item.card.dataset.state=state};
+   for(const [key,title] of [['members','Registered accounts'],['sessions','Verified sessions'],['pending','Pending media imports'],['media','Registered photo & video'],['database','Database response'],['security','Security attention'],['storage','Corporate storage'],['costs','Monthly operating expenses']]){
+    const card=make('article','bc-executive-metric'),value=make('strong','','—'),note=make('small','','Checking…');card.append(make('span','',title),value,note);summary.append(card);cells.set(key,{card,value,note})
+   }
+   body.append(summary);
+   const bar=make('div','bc-executive-status'),stamp=make('span','','Waiting for data…'),refresh=btn('↻ Refresh',()=>void load());bar.append(stamp,refresh);body.append(bar);
+   const events=make('section','bc-admin-os-panel bc-executive-activity');events.append(make('h2','','Recent corporate activity'));const list=make('div','bc-executive-events','Loading recorded events…');events.append(list);body.append(events);
+   const note=make('p','bc-admin-os-muted','Live readings use verified corporate records. Session totals are verification grants, not online-presence counts. Provider billing, full storage totals and continuous uptime are not connected.');body.append(note);
+   const valid=()=>seq===monitorRun&&selected==='overview'&&summary.isConnected&&document.documentElement.classList.contains('corp-ok');
+   let loading=false;
+   const number=v=>Number.isFinite(Number(v))&&v!==null&&v!==undefined?Number(v):null;
+   const count=v=>number(v)===null?'—':Number(v).toLocaleString();
+   async function load(){
+    if(!valid()||loading||document.hidden)return;loading=true;refresh.disabled=true;stamp.textContent='Refreshing corporate records…';
+    const client=window.BLACKCELL_CORPORATE_ADMIN_API?.client;
+    set('storage','—','Provider total not connected');set('costs','—','Actual billing not connected');
+    if(!client){stamp.textContent='Verified session unavailable';loading=false;refresh.disabled=false;return}
+    async function rpc(name,params){const {data,error}=await client.rpc(name,params||{});if(error||data?.ok!==true)throw Error('Unavailable');return data}
+    const clock=performance.now();
+    const tasks=[
+     rpc('corp_admin_members').then(d=>{if(!valid())return;const members=Array.isArray(d.members)?d.members:null;set('members',members?count(members.length):'—',members?'Personnel directory':'Directory unavailable')}).catch(()=>{if(valid())set('members','—','Directory unavailable','warn')}),
+     rpc('corp_admin_security_overview').then(d=>{if(!valid())return;set('database',Math.round(performance.now()-clock)+' ms','Verified database RPC','good');const owner=Array.isArray(d.owner_sessions)?d.owner_sessions.length:null,employee=number(d.active_employee_verifications);set('sessions',owner===null||employee===null?'—':count(owner+employee),owner===null||employee===null?'Verification counts unavailable':owner+' owner · '+employee+' employee');const locked=!!d.owner_master_code_locked_until&&new Date(d.owner_master_code_locked_until)>new Date();const fails=number(d.master_code_failed_attempts);set('security',locked?'Locked':fails===null?'—':fails>0?count(fails):'No lock',locked?'Master-code lock active':fails===null?'Security count unavailable':fails>0?'Recorded master-code failures (cumulative)':'No recorded master-code failures',locked||fails>0?'warn':'good')}).catch(()=>{if(valid()){set('database','—','Database check unavailable','warn');set('sessions','—','Verification data unavailable','warn');set('security','—','Security data unavailable','warn')}}),
+     Promise.resolve(client.from('corp_social_assets').select('id',{head:true,count:'exact'}).eq('review_status','pending')).then(r=>{if(!valid())return;if(r.error||r.count===null)throw Error('Unavailable');set('pending',count(r.count),r.count?'Awaiting review':'No pending records',r.count?'warn':'good')}).catch(()=>{if(valid())set('pending','—','Media count unavailable','warn')}),
+     Promise.resolve(client.from('corp_social_assets').select('id',{head:true,count:'exact'}).in('kind',['photo','video'])).then(r=>{if(!valid())return;if(r.error||r.count===null)throw Error('Unavailable');set('media',count(r.count),'Shared media catalog')}).catch(()=>{if(valid())set('media','—','Media count unavailable','warn')}),
+     rpc('corp_admin_console_activity',{p_limit:8}).then(d=>{if(!valid())return;list.replaceChildren();const records=Array.isArray(d.items)?d.items:[];if(!records.length){list.textContent='No recorded events returned.';return}for(const item of records){const r=make('div','bc-admin-os-row'),copy=make('div','bc-admin-os-copy'),date=new Date(item.at);copy.append(make('strong','',String(item.description||item.name||'Recorded event')),make('small','',String(item.source||'Corporate record')));r.append(copy,make('small','bc-executive-date',Number.isFinite(date.getTime())?date.toLocaleString():'Time unavailable'));list.append(r)}}).catch(()=>{if(valid())list.textContent='Recorded activity unavailable.'})
+    ];
+    try{await Promise.allSettled(tasks);if(valid())stamp.textContent='Last checked '+new Date().toLocaleTimeString()}finally{loading=false;refresh.disabled=false}
+   }
+   void load();
+   const timer=setInterval(()=>{if(!valid()){clearInterval(timer);return}void load()},30000)
+  }
+
   function render(){
    const current=sections.find(x=>x.id===selected)||sections[0];for(const [id,button] of nav){button.classList.toggle('selected',id===current.id);button.setAttribute('aria-current',id===current.id?'page':'false')}
    body.replaceChildren();const header=make('header','bc-admin-os-heading');header.append(make('div','bc-admin-os-kicker','BLACKCELL CORPORATION / ADMINISTRATION'),make('h1','',current.label),make('p','',current.desc));body.append(header);
-   if(current.id==='overview'){
-    const cards=make('div','bc-admin-os-metrics');for(const [title,value,desc] of [['Corporate Access','Level 7','Verified owner'],['Divisions','2','Independent applications'],['Service health','On demand','Use Diagnostics']]){const item=make('section','bc-admin-os-metric');item.append(make('small','',title),make('strong','',value),make('span','',desc));cards.append(item)}body.append(cards)
-   }
+   if(current.id==='overview'){executiveMonitor();return}
    const panel=make('section','bc-admin-os-panel');panel.append(make('h2','',current.id==='overview'?'Quick access':current.label+' controls'));
    for(const [name,desc,kind,target] of current.items||[]){
     const r=make('div','bc-admin-os-row'),icon=make('span','bc-admin-os-row-icon',current.glyph),copy=make('div','bc-admin-os-copy');copy.append(make('strong','',name),make('small','',desc));r.append(icon,copy);
@@ -82,7 +115,7 @@
     panel.append(r)
    }
    body.append(panel);
-   if(current.id==='overview'){const note=make('section','bc-admin-os-panel');note.append(make('h2','','Executive workspace'),make('p','bc-admin-os-muted','All administration actions use the existing verified corporate account. Service checks are manual; no unverified uptime or visitor totals are displayed.'));body.append(note)}
+
   }
   shell.append(rail,right);old.insertAdjacentElement('afterend',shell);select(selected);document.body.classList.add('bc-admin-os-mode');document.getElementById('bcAdminOsLoading')?.remove();
   // Preserve all original admin controls and their handlers, including the existing modals.
