@@ -22,6 +22,22 @@ function syncEmployeeMessenger(permitted){
  }else window.dispatchEvent(new Event('blackcell-resume-imessage'));
 }
 const IDLE_MS=60*60*1000;
+function syncCredentialReverse(){
+ $('credentialBackName').textContent=$('employeeName').textContent;
+ $('credentialBackUsername').textContent=$('employeeUsername').textContent.replace(/^USERNAME · /,'');
+ $('credentialBackLevel').textContent=$('employeeLevel').textContent;
+ $('credentialBackStatus').textContent=$('employeeAccess').textContent;
+}
+$('credentialFlip').addEventListener('click',()=>{
+ const flipped=$('employeeCard').classList.toggle('is-flipped');
+ $('credentialFlip').textContent=flipped?'VIEW FRONT ↻':'VIEW BACK ↻';
+ $('credentialFlip').setAttribute('aria-pressed',String(flipped));
+ $('credentialFront').setAttribute('aria-hidden',String(flipped));
+ $('credentialFront').inert=flipped;
+ $('credentialBack').setAttribute('aria-hidden',String(!flipped));
+ $('credentialBack').inert=!flipped;
+ $('credentialSide').textContent=flipped?'BACK · 2 / 2':'FRONT · 1 / 2';
+});
 function showPanel(id){
  for(const name of ['employeeLogin','employeeActivation','employeeHome'])$(name).hidden=name!==id;
 }
@@ -56,6 +72,7 @@ function setVerified(isVerified,m){
    ?(m.access_scope==='ledger_only'?'ACCOUNT ACTIVE · PRIVATE LEDGER ONLY':
      m.can_chat?'ACCOUNT ACTIVE · CHAT AUTHORIZED':'ACCOUNT ACTIVE · CHAT RESTRICTED')
    :'ACCOUNT ACTIVATION REQUIRED';
+ syncCredentialReverse();
  if(isVerified){lastActivity=Date.now();lastTouch=Date.now();}
 }
 async function load(reveal=false){
