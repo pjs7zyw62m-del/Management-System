@@ -278,3 +278,28 @@ html.bc-os-chat:not(.bc-compact-chat) .chat.os-sidebar-closed>.sidebar{width:0;m
 html.bc-os-chat:not(.bc-compact-chat) .chat.os-sidebar-closed.media-open{grid-template-columns:0 minmax(0,.85fr) minmax(320px,1fr)}
 @media(max-width:760px){html.bc-os-chat:not(.bc-compact-chat) .chat.os-sidebar-closed.media-open{grid-template-columns:0 minmax(0,1fr)}}
 @media(prefers-reduced-motion:reduce){html.bc-os-chat .chat{transition:none}}
+
+/* Native OS: an inactive media viewer must never create a second grid row.
+   Keep the visible conversation and composer in the one full-height track. */
+html.bc-os-chat body.bc-chat{height:100%;height:100dvh;min-height:0;overflow:hidden}
+html.bc-os-chat body.bc-chat>.chat{flex:1 1 0%;width:100%;min-width:0;min-height:0;overflow:hidden}
+html.bc-os-chat:not(.bc-compact-chat) body.bc-chat>.chat{display:grid;grid-template-rows:minmax(0,1fr);align-items:stretch}
+html.bc-os-chat:not(.bc-compact-chat) .chat>.sidebar{grid-column:1;grid-row:1;align-self:stretch}
+html.bc-os-chat:not(.bc-compact-chat) .chat>.chat-main{grid-column:2;grid-row:1;align-self:stretch}
+html.bc-os-chat .chat:not(.media-open)>.media-viewer{display:none!important}
+html.bc-os-chat .chat>.chat-main{height:100%;min-width:0;min-height:0;max-height:100%;overflow:hidden}
+html.bc-os-chat .chat-main>.chat-title,html.bc-os-chat .chat-main>.media-actions,html.bc-os-chat .chat-main>.composer{flex:0 0 auto}
+html.bc-os-chat .chat-main>.conversation{flex:1 1 0%;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
+html.bc-os-chat .conversation:has(>.message)::before{content:"";flex:1 0 0px}
+html.bc-os-chat .conversation>.message{flex-shrink:0}
+html.bc-os-chat .composer .composer-input-wrap{min-width:0;align-items:center;overflow:hidden}
+html.bc-os-chat .composer .composer-input-wrap textarea{display:block;box-sizing:border-box;min-height:38px;height:38px;max-height:112px;padding:9px 13px;line-height:20px;font-family:inherit;resize:none;overflow-y:auto;scrollbar-width:none}
+html.bc-os-chat .composer .composer-input-wrap textarea::-webkit-scrollbar{display:none}
+@media(min-width:761px){
+ html.bc-os-chat:not(.bc-compact-chat) .chat.media-open:not(.os-sidebar-closed){grid-template-columns:clamp(165px,22%,220px) minmax(0,.85fr) minmax(280px,1fr)}
+ html.bc-os-chat:not(.bc-compact-chat) .chat.media-open>.media-viewer{grid-column:3;grid-row:1;min-height:0}
+}
+@media(max-width:760px){
+ html.bc-os-chat:not(.bc-compact-chat) .chat.media-open:not(.os-sidebar-closed){grid-template-columns:clamp(160px,30%,220px) minmax(0,1fr)}
+ html.bc-os-chat .chat.media-open>.media-viewer{position:absolute;top:0;bottom:0;right:0;height:100%;max-height:100%}
+}
