@@ -8,7 +8,7 @@ export function createCorporateMediaWorkspace({onEnter,onRefresh,member}){
  if(!main)throw Error('ADMIN_SHELL_MISSING');
  const definitions=[
   {id:'overview',icon:'⌂',name:'Command Center',label:'OVERVIEW',
-   title:'Media operations.',subtitle:'Your private media system at a glance. Start with the task you need.'},
+   title:'Media Import Processor',subtitle:'Manage uploads, review incoming media, and maintain your private library.'},
   {id:'review',icon:'▣',name:'Review & Approval',label:'INTAKE',
    title:'Review & approve.',subtitle:'Prepare private Bunny originals, classify content, and authorize library publication.'},
   {id:'bunny',icon:'◈',name:'Bunny Storage',label:'PRIMARY CLOUD',
@@ -59,7 +59,7 @@ export function createCorporateMediaWorkspace({onEnter,onRefresh,member}){
  const header=el('div','bc-workspace-context');
  const description=el('div','bc-workspace-context-text');
  const crumb=el('div','bc-workspace-overline','BLACKCELL / MEDIA ADMINISTRATION');
- const headline=el('h2','bc-workspace-headline','Media operations.');
+ const headline=el('h2','bc-workspace-headline','Media Import Processor');
  const subtitle=el('p','bc-workspace-subtitle','');
  description.append(crumb,headline,subtitle);header.append(description);
  const tools=el('div','bc-workspace-header-tools');
@@ -81,7 +81,7 @@ export function createCorporateMediaWorkspace({onEnter,onRefresh,member}){
  hero.append(heroText,heroLogo);
  overview.append(hero);
  const actionHeading=el('div','bc-overview-section-title');
- actionHeading.append(el('strong','','QUICK OPERATIONS'),el('small','','Select a task to open its workspace'));
+ actionHeading.append(el('strong','','QUICK OPERATIONS'),el('small','','Choose an operation'));
  overview.append(actionHeading);
  const actionGrid=el('div','bc-overview-actions');
  const actions=[
