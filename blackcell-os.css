@@ -585,3 +585,9 @@ html.bc-os-phone #desktop .workspace .bc-free-app-canvas>.bc-recycle-shortcut .b
 /* The canvas reaches the usable lower desktop edge. Dock and system insets
    are already reserved by the shell, so no second large padding is needed. */
 html #desktop.os-dock-auto-hide>.workspace:has(.bc-free-app-canvas){padding-bottom:6px}
+
+/* Recover from an interrupted verification without unlocking the desktop. */
+.gate #gateRetry{display:inline-flex;justify-content:center;align-items:center;border:1px solid #d72b3e;background:linear-gradient(135deg,#790910,#b81727);border-radius:9px;padding:12px 22px;color:white;font-size:11px;font-weight:750;letter-spacing:.1em;min-height:44px;cursor:pointer}
+.gate[data-state=paused]>div{display:grid;justify-items:center;gap:12px}
+.gate[data-state=paused] p{line-height:1.65;margin:0 0 8px}
+.gate[data-state=paused] #gateLink{border-color:#3b3b41;background:#19191d}
