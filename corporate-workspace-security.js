@@ -14,6 +14,22 @@ export function setup(client,u){
  add(heroTop,mark,copy,health);hero.append(heroTop);
  const banner=E('div','soc-banner'),headline=E('strong','','Waiting for verified records'),sub=E('p','','No security conclusion can be made until the first check completes.');
  add(banner,headline,sub);hero.append(banner);root.append(hero);
+ // Readiness only: no client-side switch, no simulated containment, no live access changes.
+ const lockdown=panel('Executive Lockdown Protocol','OMEGA / LEVEL 07 · Emergency isolation readiness');
+ const lockdownState=E('div','soc-banner');
+ add(lockdownState,E('strong','','NOT ARMED — ENFORCEMENT NOT VERIFIED'),E('p','','This panel cannot isolate the site. Activation is intentionally unavailable until server-side controls and owner recovery are verified.'));
+ lockdown.append(lockdownState);
+ const readiness=E('div','info-list');
+ for(const [name,detail] of [
+  ['Owner recovery','Independent emergency authentication and verified recovery access'],
+  ['Application isolation','Deny ordinary user access and terminate active application sessions'],
+  ['Communications isolation','Suspend corporate messaging, external integrations and ordinary traffic'],
+  ['Data isolation','Enforce server-side blocks on application database and media access'],
+  ['Recovery review','Keep minimal protected incident telemetry and require explicit owner authorization to restore service']
+ ])readiness.append(info(name,detail,'NOT VERIFIED'));
+ lockdown.append(readiness);
+ lockdown.append(E('p','soc-note','No production permissions or traffic have been changed. No countdown or automatic reopening is planned.'));
+ root.append(lockdown);
  const values=metrics([
    ['failures','CODE FAILURES','Current gateway counter'],
    ['sessions','OWNER GRANTS','Verified / unexpired'],
