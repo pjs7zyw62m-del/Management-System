@@ -421,7 +421,7 @@ function nextPortrait(state,initial=false){
  incoming.src=path;
 }
 function paintPortraitPause(){
- const b=$('mfPortraitPause');if(!b)return;b.setAttribute('aria-pressed',String(portraitsPaused));b.setAttribute('aria-label',portraitsPaused?'Resume portrait rotation':'Pause portrait rotation');b.title=portraitsPaused?'Resume portrait rotation':'Pause portrait rotation';
+ const b=$('mfPortraitPause');if(!b)return;b.setAttribute('aria-pressed',String(portraitsPaused));b.setAttribute('aria-label',portraitsPaused?'Resume portrait rotation':'Pause portrait rotation');b.title=portraitsPaused?'Resume portrait rotation':'Pause portrait rotation';text($('mfRotationLabel'),portraitsPaused?'Portraits paused':'Live portraits');
 }
 function startPortraitRotation(){
  if(portraitTimer!==null)return;
