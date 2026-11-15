@@ -1,3 +1,4 @@
+import {mountChatFilmstrip,makeChatThumbnail} from './corporate-chat-filmstrip.js?v=1';
 import {attachPhotoTransfer} from './blackcell-photo-transfer.js?v=2-chat';
 /* BLACKCELL CORPORATION / Secure private chat photo + video sharing */
 const BUCKET='corp-chat-media';
@@ -186,6 +187,9 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const transfer=button('Transfer to Photos',()=>{},'bc-chat-transfer');
  const syncTransfer=attachPhotoTransfer(transfer,{client,source:'chat',getPhoto:()=>context()?.ready&&chat.classList.contains('media-open')?visible[active]:null,getPeer:()=>context()?.peer?.user_id,notify:msg=>{wingStatus.textContent=msg}});
  currentMeta.append(currentName,currentIndex,transfer);
+ const focusBody=el('div','bc-media-focus-body');
+ const filmstrip=mountChatFilmstrip({getItems:()=>context()?.ready&&chat.classList.contains('media-open')?visible:[],getActive:()=>active,canLoadMore:()=>mediaReady&&hasMoreMedia&&!loadingMoreMedia&&context()?.ready&&chat.classList.contains('media-open'),loadMore:()=>loadFocusPage(),select:i=>{if(mediaReady)void showIndex(i)},thumbnail:focusThumbnail});
+ focusBody.append(stage,filmstrip.root);
  // Direct manipulation of the two panes. Only layout preferences are stored, never media or contact data.
  const widthDivider=el('div','bc-media-resize bc-media-resize-width');
  const resizeGuide=el('div','bc-media-drag-guide');resizeGuide.hidden=true;resizeGuide.setAttribute('aria-hidden','true');document.body.append(resizeGuide);
@@ -230,7 +234,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
    if(node.hasPointerCapture?.(id))node.releasePointerCapture(id);
    resizeGuide.hidden=true;resizeGuide.style.transform='';
    if(commit){setDimension(axis,size,bounds,false);announceLayout();saveMediaLayout()}
-   chat.classList.remove('bc-media-resizing');document.documentElement.classList.remove('bc-media-resizing');
+   chat.classList.remove('bc-media-resizing');document.documentElement.classList.remove('bc-media-resizing');filmstrip.resume();
   };
   node.addEventListener('pointerdown',e=>{
    if(drag||e.button!==0||!chat.classList.contains('media-open')||chat.classList.contains('bc-media-resizing')||node.getClientRects().length===0)return;
@@ -238,7 +242,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
    const bounds=widthBounds(),size=current(),start=position(e);
    const rect=node.getBoundingClientRect();
    if(bounds.total<=0)return;
-   drag={id:e.pointerId,start,size,latest:start,bounds};
+   drag={id:e.pointerId,start,size,latest:start,bounds};filmstrip.pause();
    cancelActiveResize=()=>end();
    node.setPointerCapture(e.pointerId);
    resizeGuide.className='bc-media-drag-guide '+(horizontal?'is-width':'is-height');
@@ -262,7 +266,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
    e.preventDefault();setDimension(axis,current()+(e.key===increase?1:-1)*(e.shiftKey?64:16));saveMediaLayout();
   });
  }
- wing.append(widthDivider,head,wingStatus,stage,currentMeta);
+ wing.append(widthDivider,head,wingStatus,focusBody,currentMeta);
  main.after(wing);
  bindDivider(widthDivider,'width');applyLayout();
  wing.classList.add('media-focused','bc-focus-only');
@@ -504,7 +508,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  }
  function closeWing(){
   cancelActiveResize();libraryGeneration++;focusRequest++;visible=[];active=0;mediaReady=false;hasMoreMedia=false;loadingMoreMedia=false;
-  stageInner.querySelector('video')?.pause();stageInner.replaceChildren();syncTransfer();signed.clear();
+  stageInner.querySelector('video')?.pause();stageInner.replaceChildren();syncTransfer();signed.clear();filmstrip.clear();
   if(standalonePanel&&mediaPanel==='library'&&requestPanelClose('library'))return;
   mediaLibrary.setAttribute('aria-expanded','false');chat.classList.remove('media-open');wing.setAttribute('aria-hidden','true');
  }
@@ -534,9 +538,23 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  function focusCurrent(g,p,b){return g===libraryGeneration&&context()?.ready&&context()?.peer?.user_id===p&&batchFocus===b&&chat.classList.contains('media-open')}
  function syncFocusArrows(){prev.disabled=!mediaReady||active<=0;next.disabled=!mediaReady||loadingMoreMedia||(active>=visible.length-1&&!hasMoreMedia)}
  function focusError(message){wingStatus.textContent=message;refreshLibrary.hidden=false}
+ async function focusThumbnail(item,signal){
+  const g=libraryGeneration,p=context()?.peer?.user_id,b=batchFocus;
+  const still=()=>!signal.aborted&&focusCurrent(g,p,b);
+  if(!still()||item.kind!=='photo')return null;
+  try{
+   const {data,error}=await bucket.createSignedUrl(item.storage_path,300,{transform:{width:144,height:144,resize:'contain',quality:65}});
+   if(!still())return null;if(!error&&data?.signedUrl){try{const thumb=await makeChatThumbnail(data.signedUrl,signal);if(thumb&&still())return thumb}catch(_){} }
+  }catch(_){}
+  if(!still())return null;
+  // If storage transformations are unavailable, downscale a signed original locally, one at a time.
+  let link=signed.get(item.id);
+  if(!link||link.expires<=Date.now()){const {data,error}=await bucket.createSignedUrl(item.storage_path,300);if(error||!data?.signedUrl||!still())return null;link={src:data.signedUrl,expires:Date.now()+240000};}
+  return still()?await makeChatThumbnail(link.src,signal):null;
+ }
  async function loadLibrary(){
   const c=requirePeer();if(!c)return;
-  const g=++libraryGeneration,p=c.peer.user_id,b=batchFocus;focusRequest++;visible=[];active=0;mediaReady=false;loadingMoreMedia=false;hasMoreMedia=false;libraryOffset=0;focusTotal=null;signed.clear();
+  const g=++libraryGeneration,p=c.peer.user_id,b=batchFocus;focusRequest++;visible=[];active=0;mediaReady=false;loadingMoreMedia=false;hasMoreMedia=false;libraryOffset=0;focusTotal=null;signed.clear();filmstrip.clear();
   refreshLibrary.hidden=true;wingStatus.textContent='';syncTransfer();syncFocusArrows();currentName.textContent='';currentIndex.textContent='';stageInner.querySelector('video')?.pause();stageInner.replaceChildren(el('p','media-stage-empty','Loading shared media…'));
   try{
    const {data,error,count}=await focusQuery(c,b).range(0,MEDIA_PAGE_SIZE-1);
@@ -550,6 +568,11 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   const index=active+step;if(index<0)return;
   if(index<visible.length){await showIndex(index);return}
   if(!hasMoreMedia)return;
+  const before=active,g=libraryGeneration;
+  if(await loadFocusPage()&&g===libraryGeneration&&active===before&&index<visible.length)await showIndex(index);
+ }
+ async function loadFocusPage(){
+  if(!mediaReady||loadingMoreMedia||!hasMoreMedia)return false;
   const c=requirePeer();if(!c)return;const g=libraryGeneration,p=c.peer.user_id,b=batchFocus;
   loadingMoreMedia=true;syncFocusArrows();
   try{
@@ -557,16 +580,16 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
    if(!focusCurrent(g,p,b))return;if(error)throw error;
    const more=data||[];libraryOffset+=more.length;if(typeof count==='number')focusTotal=count;
    const ids=new Set(visible.map(x=>x.id));visible.push(...more.filter(x=>!ids.has(x.id)));hasMoreMedia=more.length>0&&(focusTotal!==null?libraryOffset<focusTotal:more.length===MEDIA_PAGE_SIZE);
-   if(index<visible.length)await showIndex(index);
-  }catch(e){if(focusCurrent(g,p,b))wingStatus.textContent='More media could not load. Try the next arrow again.'}
-  finally{if(focusCurrent(g,p,b)){loadingMoreMedia=false;syncFocusArrows()}}
+   return more.length>0;
+  }catch(e){if(focusCurrent(g,p,b))wingStatus.textContent='More media could not load. Try again.';return false}
+  finally{if(focusCurrent(g,p,b)){loadingMoreMedia=false;syncFocusArrows();filmstrip.refresh()}}
  }
  async function showIndex(index){
   const c=context(),g=libraryGeneration,p=c?.peer?.user_id,b=batchFocus,request=++focusRequest;
   if(!focusCurrent(g,p,b))return;
   stageInner.querySelector('video')?.pause();stageInner.replaceChildren();
-  if(!visible.length){currentName.textContent='';currentIndex.textContent='0 / 0';syncTransfer();syncFocusArrows();stageInner.append(el('p','media-stage-empty','No shared photos or videos yet.'));return}
-  active=Math.max(0,Math.min(index,visible.length-1));const item=visible[active];
+  if(!visible.length){filmstrip.refresh();currentName.textContent='';currentIndex.textContent='0 / 0';syncTransfer();syncFocusArrows();stageInner.append(el('p','media-stage-empty','No shared photos or videos yet.'));return}
+  active=Math.max(0,Math.min(index,visible.length-1));const item=visible[active];filmstrip.follow();
   syncTransfer();syncFocusArrows();currentName.textContent=item.filename+' · '+fmtBytes(item.bytes);currentIndex.textContent=(active+1)+' / '+(focusTotal??(visible.length+(hasMoreMedia?'+':'')));wingStatus.textContent='';refreshLibrary.hidden=true;
   stageInner.append(el('p','media-stage-empty','Opening…'));
   const still=()=>request===focusRequest&&focusCurrent(g,p,b);
@@ -817,7 +840,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   peerId=newPeerId;
   visible=[];active=0;batchFocus=null;mediaReady=false;syncTransfer();
   libraryOffset=0;hasMoreMedia=false;loadingMoreMedia=false;
-  signed.clear();
+  signed.clear();filmstrip.clear();
   closeMobileGallery();
   previewCache.clear();previewPending.clear();
   stageInner.querySelector('video')?.pause();stageInner.replaceChildren();
