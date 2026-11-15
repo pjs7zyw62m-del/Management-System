@@ -602,7 +602,7 @@ html #desktop.os-dock-auto-hide>.workspace:has(.bc-free-app-canvas){padding-bott
 @media(min-width:621px){
  html:not(.bc-os-phone):not(.bc-os-tablet) #desktop>.os-chat-popout:not(.is-max):not(.is-chat-media-open){
   border-radius:48px;box-sizing:border-box;border:1px solid #57575e;
-  padding:6px 6px 0;grid-template-rows:25px minmax(0,1fr) 21px;
+  padding:6px;grid-template-rows:25px minmax(0,1fr);
   background:#000;box-shadow:0 0 0 1px #17171b,0 0 0 3px #333338,0 0 0 4px #111114,0 25px 75px #000b,inset 0 0 0 1px #242429;
   overflow:hidden;
  }
@@ -616,7 +616,5 @@ html #desktop.os-dock-auto-hide>.workspace:has(.bc-free-app-canvas){padding-bott
  html:not(.bc-os-phone):not(.bc-os-tablet) #desktop>.os-chat-popout:not(.is-max):not(.is-chat-media-open)>.os-window-head .traffic{left:17px;top:8px;gap:6px;z-index:2}
  html:not(.bc-os-phone):not(.bc-os-tablet) #desktop>.os-chat-popout:not(.is-max):not(.is-chat-media-open)>.os-window-head .traffic button{width:10px;height:10px}
  html:not(.bc-os-phone):not(.bc-os-tablet) #desktop>.os-chat-popout:not(.is-max):not(.is-chat-media-open)>.os-window-body{border-radius:0 0 29px 29px;overflow:hidden;min-height:0;background:#000}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop>.os-chat-popout:not(.is-max):not(.is-chat-media-open)::after{
-  content:'';width:32%;max-width:120px;height:4px;border-radius:99px;background:#dedee2;opacity:.82;align-self:center;justify-self:center;pointer-events:none;
- }
+
 }
