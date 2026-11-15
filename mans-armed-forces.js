@@ -77,6 +77,7 @@ let workspaceView='discover';
 function showWorkspaceView(view,{updateHash=true}={}){
  if(!workspaceViews.has(view))view='discover';
  workspaceView=view;
+ const root=$('uMain');if(root)root.dataset.mfActive=view;
  document.querySelectorAll('[data-mf-panel]').forEach(panel=>{panel.hidden=panel.id!==view});
  document.querySelectorAll('.mf-workspace-nav [data-mf-view]').forEach(btn=>{const selected=btn.dataset.mfView===view;btn.classList.toggle('selected',selected);if(selected)btn.setAttribute('aria-current','page');else btn.removeAttribute('aria-current')});
  if($('mfContent'))$('mfContent').scrollTop=0;
