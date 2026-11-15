@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+import {bundlePage} from './bundle.mjs';
+const hash=s=>createHash('sha256').update(s).digest('hex').slice(0,16);
+const css={'one.css':'body{color:red;background:url(assets/test.png)}','two.css':'body{color:black}','three.css':'body{color:white}','four.css':'body{margin:0}','import.css':'@import "other.css";'};
+const read=async name=>{assert.ok(Object.hasOwn(css,name));return css[name]};
+const link=n=>'<link rel="stylesheet" href="'+n+'?v=1">';
+const html='<head>'+link('one.css')+'\n'+link('two.css')+'<style>body{color:blue}</style>'+link('three.css')+'<script defer src="test.js"></script>'+link('four.css')+'</head>';
+let r=await bundlePage(html,'test.html',read,hash);
+assert.equal(r.before,4);assert.equal(r.after,3);assert.equal(r.assets.size,1);
+const data=[...r.assets.values()][0];assert.ok(data.indexOf(css['one.css'])<data.indexOf(css['two.css']));assert.ok(data.includes('url(assets/test.png)'));assert.ok(r.html.includes('<style>body{color:blue}</style>'));assert.ok(r.html.includes('<script defer src="test.js"></script>'));assert.ok(r.html.includes(link('three.css')));
+r=await bundlePage('<head>'+link('one.css')+link('import.css')+'</head>','test.html',read,hash);assert.equal(r.assets.size,0);
+r=await bundlePage('<head>'+link('one.css')+'<link rel="stylesheet" href="two.css" media="print"></head>','test.html',read,hash);assert.equal(r.assets.size,0);
+console.log('10 conservative CSS bundler checks passed.');
