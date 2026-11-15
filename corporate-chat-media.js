@@ -47,6 +47,8 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const standalonePanel=mediaPanel==='share'||mediaPanel==='library';
  const useLargePanels=()=>window.BlackcellChatMedia?.enabled()===true;
  const compactMedia=()=>!useLargePanels();
+ const isChatPopout=new URLSearchParams(location.search).get('popout')==='1';
+ function notifyPopoutMedia(open){if(!isChatPopout||standalonePanel||window.parent===window)return;window.parent.postMessage({type:'blackcell-chat-popout-media',open:open===true},location.origin)}
  function closeMediaTray(){
   if(!compactMedia()&&!standalonePanel)return;
   const menu=document.querySelector('.media-actions'),toggle=document.getElementById('mediaToggleButton');
@@ -470,7 +472,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   cancelActiveResize();libraryGeneration++;focusRequest++;visible=[];active=0;mediaReady=false;hasMoreMedia=false;loadingMoreMedia=false;
   stageInner.querySelector('video')?.pause();stageInner.replaceChildren();syncTransfer();signed.clear();filmstrip.clear();
   if(standalonePanel&&mediaPanel==='library'&&requestPanelClose('library'))return;
-  mediaLibrary.setAttribute('aria-expanded','false');chat.classList.remove('media-open');wing.setAttribute('aria-hidden','true');
+  mediaLibrary.setAttribute('aria-expanded','false');chat.classList.remove('media-open');wing.setAttribute('aria-hidden','true');notifyPopoutMedia(false);
  }
  async function openLibrary(){
   if(!requirePeer())return;
@@ -480,7 +482,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  }
  function openWing(){
   closeMediaTray();setFocus();chat.classList.add('media-open');
-  mediaLibrary.setAttribute('aria-expanded','true');wing.setAttribute('aria-hidden','false');
+  mediaLibrary.setAttribute('aria-expanded','true');wing.setAttribute('aria-hidden','false');notifyPopoutMedia(true);
  }
  async function openBatch(id){
   if(!requirePeer())return;
@@ -795,6 +797,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   previewCache.clear();previewPending.clear();
   stageInner.querySelector('video')?.pause();stageInner.replaceChildren();
   // Reset the previous conversation without sending a close request to the bubble host.
+  if(chat.classList.contains('media-open'))notifyPopoutMedia(false);
   chat.classList.remove('media-open');
   wing.setAttribute('aria-hidden','true');
   stageInner.querySelector('video')?.pause();
