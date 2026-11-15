@@ -1,0 +1,20 @@
+name: Architecture 2 validation
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Validate original paths and CSS bundling
+        run: |
+          node --version
+          node architecture/test.mjs
+          node architecture/build.mjs
+          mv dist dist-plain
+          node architecture/build.mjs --bundle-css
+          node architecture/verify-output.mjs
