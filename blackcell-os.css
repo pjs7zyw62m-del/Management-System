@@ -484,3 +484,22 @@ html.bc-os-installed #desktop>.topbar .brand:before{box-shadow:none}
  html.bc-os-installed:is(.bc-os-phone,.bc-os-tablet) #desktop>.wallpaper{top:var(--bc-touch-top)}
  html.bc-os-installed:is(.bc-os-phone,.bc-os-tablet) #desktop .menubar>button{color:#f0f0f3}
 }
+
+/* Installed touch OS: fullscreen apps occupy the full usable viewport.
+   The auto-hidden dock is an overlay; its handle no longer reserves
+   an exterior strip of desktop wallpaper below a maximized window. */
+html.bc-os-installed.bc-os-tablet #desktop.os-dock-auto-hide>.os-window.is-max,
+html.bc-os-installed.bc-os-phone #desktop.os-dock-auto-hide>.os-window{
+ bottom:0!important;height:auto!important;border-bottom:0;
+ padding-bottom:max(14px,env(safe-area-inset-bottom,0px));
+}
+html.bc-os-installed.bc-os-tablet #desktop.os-dock-auto-hide:has(>.os-window.is-max:not([hidden]))>.os-dock-edge,
+html.bc-os-installed.bc-os-phone #desktop.os-dock-auto-hide:has(>.os-window:not([hidden]))>.os-dock-edge{
+ height:max(14px,env(safe-area-inset-bottom,0px));
+}
+html.bc-os-installed.bc-os-tablet #desktop.os-dock-auto-hide:has(>.os-window.is-max:not([hidden]))>.os-dock-edge:after,
+html.bc-os-installed.bc-os-phone #desktop.os-dock-auto-hide:has(>.os-window:not([hidden]))>.os-dock-edge:after{
+ bottom:4px;
+}
+html.bc-os-installed.bc-os-tablet.bc-os-keyboard #desktop.os-dock-auto-hide>.os-window.is-max,
+html.bc-os-installed.bc-os-phone.bc-os-keyboard #desktop.os-dock-auto-hide>.os-window{padding-bottom:0}
