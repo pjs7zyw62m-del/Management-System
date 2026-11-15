@@ -176,6 +176,12 @@ async function storeRequest(p_action,p_app=null,p_level=null,p_enabled=null){
    They inherit the server-authorized Man's Armed Forces permission; saving a tile never grants media access. */
 const worldApps=Object.freeze({uniform:'worlduniform',military:'worldmilitary',police:'worldpolice',fire:'worldfire',security:'worldsecurity',medical:'worldmedical',professional:'worldprofessional'});
 const worldAppIds=new Set(Object.values(worldApps));
+const worldLaunchPages=Object.freeze({worlduniform:'uniform-world.html',worldmilitary:'military-world.html',worldpolice:'law-enforcement-world.html',worldfire:'fire-rescue-world.html',worldsecurity:'corrections-world.html',worldmedical:'ems-world.html',worldprofessional:'aviation-world.html'});
+function restoreWorldInstance(record){
+ const page=worldLaunchPages[record.id];if(!page||!record.frame)return;
+ try{const target=new URL(page,location.href),current=new URL(record.frame.contentWindow.location.href);const otherWorld=Object.values(worldLaunchPages).some(p=>new URL(p,location.href).pathname===current.pathname);const gateway=current.pathname===new URL('mans-armed-forces.html',location.href).pathname;if(current.origin===target.origin&&(gateway||otherWorld)&&current.pathname!==target.pathname){if(appBusy(record)){osNotice('Finish the active operation before returning to this world.');return}record.frameLoading?.begin();record.frame.contentWindow.location.replace(target.href)}}catch(_){}
+}
+
 let worldInstalled=new Set();
 const worldInstallKey=()=> 'bc.os.world-installs.v1:'+String(storeProfile||'');
 function readWorldInstalls(){
@@ -717,8 +723,8 @@ function showApp(id,initialState=null,passwordVerified=null){
  if(deferred)initialState={peerId:id.slice(8),name:deferred.name};
  if(appProtected(baseId)&&passwordVerified!==appPasswordPermit&&(!windows.has(id)||windows.get(id).el.hidden)){askAppPassword(tile.dataset.title||'App','Unlock',()=>showApp(id,initialState,appPasswordPermit),{custom:customAppLock(baseId),recover:()=>changeAppPassword(baseId,tile.dataset.title||'App')});return;}
  if(chatPopout&&!windows.has(id)&&(!initialState||initialState.peerId!==id.slice(8)||[...windows.values()].filter(r=>r.chatPopout).length>=8)){osNotice('Close a chat pop-out before opening another.');return;}
- if(windows.has(id)){const existing=windows.get(id);raise(existing);if(id==='files'&&initialState?.path){if(existing.openFolder)existing.openFolder(initialState.path);else{existing.fileState={path:[...initialState.path],layout:initialState.layout||'grid'};saveWorkspace()}}if(id==='settings'&&initialState?.section)existing.selectSettings?.(initialState.section);if(id==='store'){if(initialState?.category)existing.selectCategory?.(initialState.category);if(!preview&&!storeMutating)void storeRequest('catalog').then(()=>existing.refreshStore?.())}return}
- const url=new URL(tile.dataset.url,location.href);if(url.origin!==location.origin)return;
+ if(windows.has(id)){const existing=windows.get(id);restoreWorldInstance(existing);raise(existing);if(id==='files'&&initialState?.path){if(existing.openFolder)existing.openFolder(initialState.path);else{existing.fileState={path:[...initialState.path],layout:initialState.layout||'grid'};saveWorkspace()}}if(id==='settings'&&initialState?.section)existing.selectSettings?.(initialState.section);if(id==='store'){if(initialState?.category)existing.selectCategory?.(initialState.category);if(!preview&&!storeMutating)void storeRequest('catalog').then(()=>existing.refreshStore?.())}return}
+ const url=new URL(worldLaunchPages[id]||tile.dataset.url,location.href);if(url.origin!==location.origin)return;
  const windowTitle=chatPopout?String(initialState.name||'Conversation').slice(0,70):tile.dataset.title;
  if(chatPopout){url.searchParams.set('popout','1');url.searchParams.set('peer',initialState.peerId);url.searchParams.set('osApp','chat');url.searchParams.set('embed','1')}
  const w=document.createElement('section');w.className='os-window'+(chatPopout?' os-chat-popout':'');w.dataset.osApp=id;w.setAttribute('aria-label',windowTitle+' window');
