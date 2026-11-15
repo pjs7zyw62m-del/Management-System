@@ -1,3 +1,4 @@
+import {placePhotoTransfer} from './blackcell-photo-transfer.js?v=1';
 import {authorizeUniformHub} from './uniform-hub-auth.js?v=20261111-i1';
 import {createPhotoVoting} from './corporate-photo-votes.js?v=20261111-votes2';
 const $=id=>document.getElementById(id);
@@ -68,7 +69,7 @@ async function loadHistory(){
   detail.append(node('p','',item.winner_owner_name+(item.winner_branch?' · '+item.winner_branch:'')));
   detail.append(node('p','',Number(item.final_vote_count)+' final '+(Number(item.final_vote_count)===1?'vote':'votes')));
   detail.append(node('p','',src?'Winning photograph preserved in the Military Library.':'The original photograph is unavailable; award information remains archived.'));
-  card.append(cover,detail);host.append(card);
+  card.append(cover,detail);if(src&&item.winner_asset_id){const open=node('a','','VIEW ORIGINAL ↗');open.href='corporate-photos-original.html?id='+encodeURIComponent(item.winner_asset_id);open.target='_blank';open.rel='noopener';detail.append(open);placePhotoTransfer(open,{client:session.client,getPhoto:()=>({id:item.winner_asset_id,kind:'photo'})})}host.append(card);
  }
 }
 function awardAsset(row){
@@ -107,7 +108,7 @@ async function renderLeaderboard(){
    const card=node('article','u-rank-card');
    const fig=articlePhoto(item,urls.get(item.storage_path));
    const rankLabel=node('span','u-rank-label',rank===0&&count>0?(closed?'YEAR LEADER':'CURRENT LEADER'):'#'+(rank+1));
-   fig.append(rankLabel);card.append(fig);
+   fig.append(rankLabel);card.append(fig);if(urls.get(item.storage_path)){const open=node('a','','VIEW ORIGINAL ↗');open.href='corporate-photos-original.html?id='+encodeURIComponent(item.asset_id);open.target='_blank';open.rel='noopener';card.append(open);placePhotoTransfer(open,{client:session.client,getPhoto:()=>({id:item.asset_id,kind:'photo'})})}
    const detail=node('div','u-rank-copy');
    detail.append(node('div','u-overline',item.military_branch||'MILITARY UNIFORM'));
    detail.append(node('h3','',item.caption||item.filename));
