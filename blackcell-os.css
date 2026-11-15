@@ -416,3 +416,25 @@ html.bc-os-tablet #desktop>.workspace>section>.apps{
  gap:8px 10px;max-width:none
 }
 html.bc-os-tablet #desktop>.workspace>section>.apps>.app{min-height:92px;padding:6px 3px}
+
+/* Owner-only notification controls are mounted after verified OS authorization. */
+.bc-soc-bell{position:relative;display:grid;place-items:center;background:transparent;color:#dedee6;border:0;border-radius:7px;width:29px;height:30px;padding:4px;flex:none;cursor:pointer;order:-1}
+.bc-soc-bell svg{width:19px;height:19px}
+.bc-soc-bell:hover,.bc-soc-bell[aria-expanded="true"]{background:#ffffff12}
+.bc-soc-bell[data-state="unavailable"]{color:#deb87b}
+.bc-soc-badge{position:absolute;top:0;right:0;min-width:14px;height:14px;display:grid;place-items:center;padding:0 3px;border-radius:10px;background:#b76d22;color:white;font-size:9px;font-weight:750;line-height:1}
+.bc-soc-badge[data-high="true"]{background:#c73745}
+.bc-soc-notifications{position:absolute;z-index:2147480000;top:40px;right:12px;width:min(370px,calc(100vw - 24px));max-height:calc(100% - 65px);display:flex;flex-direction:column;overflow:hidden;background:linear-gradient(140deg,#2a2a30f7,#16161bf7);border:1px solid #ffffff23;border-radius:15px;box-shadow:0 16px 45px #0009;backdrop-filter:blur(30px);padding:13px;color:#ececf1;font:13px system-ui}
+.bc-soc-n-head{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:15px}
+.bc-soc-n-head button{height:30px;width:30px;border:0;border-radius:7px;color:#ddd;background:#ffffff0e;font-size:19px;cursor:pointer}
+.bc-soc-n-state{font-size:11px;line-height:1.45;color:#b0b0ba;padding:8px 0;margin:0}
+.bc-soc-n-list{min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:none;display:grid;gap:6px}
+.bc-soc-n-event{border:1px solid #ffffff10;border-left:2px solid #d6a45e;background:#ffffff05;padding:9px 10px;border-radius:8px}
+.bc-soc-n-event[data-severity="high"]{border-left-color:#ff646f;background:#a0203017}
+.bc-soc-n-event strong{font-size:12px;display:block}
+.bc-soc-n-event p,.bc-soc-n-list>p{margin:5px 0;font-size:11px;color:#b6b6bf;line-height:1.45}
+.bc-soc-n-event small{font-size:10px;color:#9797a2}
+.bc-soc-n-open{margin-top:10px;background:#ffffff0c;border:1px solid #ffffff19;border-radius:8px;min-height:35px;color:#e5e5eb;font-size:12px;cursor:pointer;padding:6px}
+html:is(.bc-os-phone,.bc-os-tablet) .bc-soc-bell{width:36px;height:40px}
+html:is(.bc-os-phone,.bc-os-tablet) .bc-soc-notifications{top:calc(var(--bc-touch-top) + 5px);right:max(8px,env(safe-area-inset-right,0px));max-height:calc(var(--bc-touch-height,100dvh) - var(--bc-touch-top) - 20px)}
+@media(max-width:345px){html.bc-os-phone .bc-soc-bell{width:29px;height:36px}html.bc-os-phone #desktop .menubar>button{padding-left:3px;padding-right:3px}}

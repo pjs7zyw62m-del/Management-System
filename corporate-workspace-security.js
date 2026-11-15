@@ -1,3 +1,4 @@
+import {getSecuritySnapshot,securityLabels} from './blackcell-soc-client.js?v=1';
 /* BLACKCELL SOC — owner-verified, read-only snapshots; no client-generated attack claims. */
 export function setup(client,u){
  const {root,E,add,button,metrics,panel,info,rpc,status,toolbar,date,timeout}=u;
@@ -24,6 +25,8 @@ export function setup(client,u){
  const toggle=button('AUTO REFRESH: ON',()=>{auto=!auto;toggle.textContent='AUTO REFRESH: '+(auto?'ON':'OFF');toggle.setAttribute('aria-pressed',String(auto));if(auto)void load(false)});
  toggle.setAttribute('aria-pressed','true');
  const check=E('small','soc-check','Not checked');add(left,run,toggle);bar.append(left,check);
+ const collectorPanel=panel('Background security collector','Server-side observations continue while the browser is closed. Raw IP addresses, file paths and contents are not stored in this alert feed.');
+ const collectorStatus=E('div','soc-check','Checking server heartbeat…'),collectorFeed=E('div','soc-feed');collectorPanel.append(collectorStatus,collectorFeed);root.append(collectorPanel);
  const alertsPanel=panel('Security alerts','Current indicators use actual corporate records. They are not proof of intrusion.');
  const alerts=E('div','soc-alerts');alertsPanel.append(alerts);root.append(alertsPanel);
  const coverage=panel('Monitoring coverage','Sources and limitations — unavailable is not the same as zero.');
@@ -47,15 +50,16 @@ export function setup(client,u){
    const row=E('div','soc-coverage-row'),copy=E('div');add(copy,E('b','',label),E('small','',description));
    const tag=E('span','soc-source',state);tag.dataset.state=state;add(row,copy,tag);cov.append(row)
  }
- function renderCoverage(live,activity){
+ function renderCoverage(live,activity,collector){
    cov.replaceChildren();
    covItem('Corporate master-code counter','Current failures and active gateway lock.',live?'Connected':'Unavailable');
    covItem('Verified corporate sessions','Grant counts and other unexpired owner grants.',live?'Connected':'Unavailable');
    covItem('Administrator activity','Recorded permission changes and access actions.',activity?'Connected':'Unavailable');
    covItem('Password sign-in failures / blocked requests','Requires secure provider-log collection; not measured here.','Not connected');
-   covItem('IP reputation / new device identification','No device or IP attribution in these sources.','Not connected');
-   covItem('Database and file-access anomalies','Requires dedicated server-side audit telemetry.','Not connected');
-   covItem('Continuous background monitoring / OS-wide push','Refreshes while this authenticated workspace is visible only.','Not connected');
+   covItem('Repeated network / new browser signatures','Privacy-preserving session patterns; not IP reputation or verified physical devices.',collector?.healthy?'Connected':collector?'Unavailable':'Not connected');
+   covItem('Database and file metadata write signals','Approximate elevated catalog writes and recorded permission changes. Individual reads are not monitored.',collector?.healthy?'Connected':collector?'Unavailable':'Not connected');
+   covItem('Continuous background collector','Server-side scheduled scans with retained alerts and heartbeat.',collector?.healthy?'Connected':collector?'Unavailable':'Not connected');
+   covItem('OS-wide notification bell','Authenticated OS alerts while the workspace is unlocked. Native device push when closed is not connected.','Connected');
  }
  function alertRow(level,title,description,time){
    const row=E('div','soc-alert'),dot=E('i'),copy=E('div');
@@ -66,7 +70,7 @@ export function setup(client,u){
    Object.values(values).forEach(n=>n.textContent='—');health.dataset.state='unknown';health.textContent='UNAVAILABLE';headline.textContent='Security status unavailable';sub.textContent=message;
    check.textContent='Last attempt '+date(new Date().toISOString());alerts.replaceChildren();alertRow(1,'Monitoring interrupted','No conclusion about current security activity can be made.');
    details.replaceChildren(E('p','','Access check unavailable.'));sessionList.replaceChildren();feed.replaceChildren(E('p','','Activity unavailable.'));
-   renderCoverage(false,false)
+   collectorStatus.textContent='Background collector status unavailable.';collectorFeed.replaceChildren();renderCoverage(false,false,null)
  }
  function visible(){
    if(document.hidden||document.getElementById('opApp')?.hidden)return false;
@@ -84,9 +88,15 @@ export function setup(client,u){
      const {data:guard,error}=await timeout(client.rpc('corp_code_status'),20000);
      if(error||guard?.ok!==true||guard?.verified!==true)throw new Error('verification');
      if(closed||epoch!==generation||!visible())return;
-     const results=await Promise.allSettled([timeout(rpc('corp_admin_security_overview'),20000),timeout(rpc('corp_admin_console_activity',{p_limit:200}),20000)]);
+     const results=await Promise.allSettled([timeout(rpc('corp_admin_security_overview'),20000),timeout(rpc('corp_admin_console_activity',{p_limit:200}),20000),timeout(getSecuritySnapshot(client),20000)]);
      if(closed||epoch!==generation||!visible())return;
      if(results[0].status!=='fulfilled'||results[0].value.owner_verified!==true)throw new Error('overview');
+     const collector=results[2].status==='fulfilled'?results[2].value:null;
+     collectorStatus.textContent=collector?(collector.healthy?'BACKGROUND MONITOR ACTIVE · Last scan ':'COLLECTOR DELAYED · Last scan ')+date(collector.lastRun):'Background collector unavailable. No conclusion can be made.';
+     collectorFeed.replaceChildren();
+     if(!collector)collectorFeed.append(E('p','','Unable to retrieve server-collected alerts.'));
+     else if(!collector.alerts.length)collectorFeed.append(E('p','','No recorded alerts in the connected background collector. Coverage remains partial.'));
+     else for(const a of collector.alerts.slice(0,30)){const row=E('div','soc-event'),icon=E('span','soc-event-icon',a.severity==='high'?'!':'·'),body=E('div'),label=securityLabels[a.kind];row.dataset.review=String(a.severity==='high');add(body,E('b','',label[0]+' · '+a.event_count),E('small','',label[1]));add(row,icon,body,E('time','',date(a.event_at)));collectorFeed.append(row)}
      const d=results[0].value,records=results[1].status==='fulfilled'&&Array.isArray(results[1].value.items)?results[1].value.items:null;
      const sessionsData=Array.isArray(d.owner_sessions)?d.owner_sessions:null,failures=safeCount(d.master_code_failed_attempts),employees=safeCount(d.active_employee_verifications);
      const lock=d.owner_master_code_locked_until&&new Date(d.owner_master_code_locked_until)>new Date();
@@ -108,7 +118,7 @@ export function setup(client,u){
      if(!indicators.length)alertRow(0,'No current indicators in connected records','Limited coverage; this does not rule out an attack.',date(lastRead));
      headline.textContent=level===2?'High-priority security indicator':level===1?'Review security indicators':'No current indicators in connected records';
      health.dataset.state=level===2?'high':level===1?'review':'limited';health.textContent=LEVELS[level].toUpperCase();
-     sub.textContent='Coverage is limited. Password failures, IP threats and file anomalies are not connected.';
+     sub.textContent='Coverage is limited. Password failures, rejected HTTP requests, IP reputation and individual file reads are not connected.';
      check.textContent='Last checked '+date(lastRead);
      details.replaceChildren(info('Active employee accounts','Activated staff',countLabel(safeCount(d.active_employees))),info('Pending activations','Awaiting password activation',countLabel(safeCount(d.pending_employees))),info('Disabled accounts','Inactive personnel',countLabel(safeCount(d.disabled_employees))),info('Master-code lock','Gateway lockout state',lock?'LOCKED UNTIL '+date(d.owner_master_code_locked_until):'NO ACTIVE LOCK'));
      sessionList.replaceChildren();
@@ -132,7 +142,7 @@ export function setup(client,u){
        for(const v of events)seen.add(String(v.at)+'|'+String(v.name)+'|'+String(v.description));
        if(seen.size>1000){seen.clear();for(const v of events)seen.add(String(v.at)+'|'+String(v.name)+'|'+String(v.description))}
      }
-     renderCoverage(true,records!==null);previous={failures};first=false;
+     renderCoverage(true,records!==null,collector);previous={failures};first=false;
      if(manual)status('Security records refreshed.','success');
    }catch(_){if(!closed&&epoch===generation)setUnknown('Unable to verify or retrieve the current records. Refresh or re-enter Corporate Access.')}
    finally{run.disabled=false;running=false}
