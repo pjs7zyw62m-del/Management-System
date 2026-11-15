@@ -384,6 +384,16 @@ async function uploadUniforms(files){
 }
 
 function wire(){
+ document.querySelectorAll('.mf-portrait-tile').forEach(tile=>{
+  const img=tile.querySelector('img[data-portrait-src]'),download=tile.querySelector('.mf-portrait-download');
+  if(!img||!download)return;
+  const fallback=img.getAttribute('src'),requested=img.dataset.portraitSrc;
+  // Keep the current portrait usable until its new original file is present.
+  const replacement=new Image();
+  replacement.onload=()=>{img.src=requested;download.href=requested;download.download=requested.split('/').pop()};
+  replacement.onerror=()=>{download.href=fallback;download.download=fallback.split('/').pop()};
+  replacement.src=requested;
+ });
  document.querySelectorAll('[data-mf-view]').forEach(btn=>btn.addEventListener('click',e=>{e.preventDefault();showWorkspaceView(btn.dataset.mfView)}));
  showWorkspaceView(location.hash.slice(1)||'discover',{updateHash:false});
  window.addEventListener('hashchange',()=>showWorkspaceView(location.hash.slice(1),{updateHash:false}));
