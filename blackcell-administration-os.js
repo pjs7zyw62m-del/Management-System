@@ -115,6 +115,16 @@
    const current=sections.find(x=>x.id===selected)||sections[0];for(const [id,button] of nav){button.classList.toggle('selected',id===current.id);button.setAttribute('aria-current',id===current.id?'page':'false')}
    body.replaceChildren();const header=make('header','bc-admin-os-heading');header.append(make('div','bc-admin-os-kicker','BLACKCELL CORPORATION / ADMINISTRATION'),make('h1','',current.label),make('p','',current.desc));body.append(header);
    if(current.id==='overview'){executiveMonitor();return}
+   if(current.id==='security'){
+    const card=make('section','bc-omega-control');card.setAttribute('aria-label','Executive emergency lockdown');
+    const title=make('div','bc-omega-title'),icon=make('span','bc-omega-emblem','Ω'),copy=make('div','bc-omega-copy');
+    copy.append(make('small','','EXECUTIVE SECURITY / LEVEL 07'),make('h2','','OMEGA PROTOCOL'),make('p','','Emergency corporation-wide isolation'));title.append(icon,copy);card.append(title);
+    const state=make('div','bc-omega-state','NOT ARMED · BACKEND ENFORCEMENT UNVERIFIED');
+    const launch=make('button','bc-omega-launch','INITIATE OMEGA LOCKDOWN');launch.type='button';launch.disabled=true;launch.setAttribute('aria-describedby','bcOmegaExplanation');
+    const explain=make('p','bc-omega-explanation','Activation is disabled until isolation and independent recovery login pass verification. No services have been interrupted.');explain.id='bcOmegaExplanation';
+    const review=btn('Review lockdown readiness ›',()=>{if(window.BLACKCELL_ADMIN_READY!==true||!document.documentElement.classList.contains('corp-ok'))return;openTarget('corporate-security-checks.html','Security Operations Center')});
+    card.append(state,launch,explain,review);body.append(card);
+   }
    const panel=make('section','bc-admin-os-panel');panel.append(make('h2','',current.id==='overview'?'Quick access':current.label+' controls'));
    for(const [name,desc,kind,target] of current.items||[]){
     const r=make('div','bc-admin-os-row'),icon=make('span','bc-admin-os-row-icon',current.glyph),copy=make('div','bc-admin-os-copy');copy.append(make('strong','',name),make('small','',desc));r.append(icon,copy);

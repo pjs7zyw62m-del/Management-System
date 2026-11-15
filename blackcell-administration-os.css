@@ -62,3 +62,12 @@ body .user-management-v2 .um4-invite-panel{max-width:850px;width:100%;box-sizing
 .bc-admin-os-users .bc-admin-inline-secondary #modalContent .text-action.primary{background:#8a3446;border-color:#b45162}
 .bc-admin-os-users .bc-admin-inline-secondary #modalContent input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),.bc-admin-os-users .bc-admin-inline-secondary #modalContent select,.bc-admin-os-users .bc-admin-inline-secondary #modalContent textarea{background:#17171c;border:1px solid #ffffff24;border-radius:7px;font:12px system-ui;color:#eee}
 .bc-admin-os-users .bc-admin-inline-secondary #modalContent::-webkit-scrollbar{display:none}
+
+/* Unarmed executive emergency control */
+.bc-omega-control{background:radial-gradient(ellipse at top left,#58182035,transparent 70%),#1b171b;border:1px solid #79323e;border-radius:15px;padding:18px;margin:0 0 16px;display:grid;gap:11px;max-width:850px;box-sizing:border-box}
+.bc-omega-title{display:flex;align-items:center;gap:14px;min-width:0}.bc-omega-emblem{width:48px;height:48px;display:grid;place-items:center;flex:0 0 48px;border:1px solid #9a434d;border-radius:12px;background:linear-gradient(135deg,#65272f,#270e14);color:#ffe1e4;font:600 32px system-ui}
+.bc-omega-copy{min-width:0}.bc-omega-copy small{font:650 10px system-ui;letter-spacing:.12em;color:#d3a5ac}.bc-omega-copy h2{font:700 22px system-ui;letter-spacing:.06em;color:#f7edef;margin:3px 0}.bc-omega-copy p{font:12px system-ui;color:#c3b5bc;margin:0}
+.bc-omega-state{font:650 10px/1.45 system-ui;letter-spacing:.07em;color:#e6a7ae;background:#471c2455;border:1px solid #b3566033;border-radius:8px;padding:9px 11px}
+.bc-omega-launch{border:1px solid #a74655;border-radius:9px;background:linear-gradient(145deg,#66212b,#3c131b);color:#f9cccc;font:700 12px/1.35 system-ui;letter-spacing:.07em;min-height:47px;padding:12px;box-shadow:0 0 18px #a7263020;text-align:center}.bc-omega-launch:disabled{cursor:not-allowed;opacity:.8}
+.bc-omega-explanation{font:12px/1.5 system-ui;color:#bdb0b7;margin:0}.bc-omega-control>.bc-admin-os-button{justify-self:start}
+@media(max-width:600px){.bc-omega-control{padding:13px;gap:9px}.bc-omega-copy h2{font-size:18px}.bc-omega-emblem{width:40px;height:40px;flex-basis:40px;font-size:25px}}
