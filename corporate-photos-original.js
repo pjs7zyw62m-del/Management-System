@@ -1,11 +1,14 @@
+import {placePhotoTransfer} from './blackcell-photo-transfer.js?v=1';
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-staff1';
 const client=corporateClient(),storage=client.storage.from('corp-social-media');
 const $=id=>document.getElementById(id);
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 let items=[],index=0;
 function status(s){$('status').textContent=s;$('status').hidden=!s}
+let syncTransfer;
 async function show(){
  const a=items[index];if(!a)return;
+ syncTransfer??=placePhotoTransfer($('downloadOriginal'),{client,getPhoto:()=>items[index]});syncTransfer();
  const stage=$('mediaStage');stage.replaceChildren();
  $('imageCounter').textContent=(index+1)+' / '+items.length;
  $('mediaPrevious').disabled=items.length<=1;$('mediaNext').disabled=items.length<=1;
