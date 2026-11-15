@@ -14,7 +14,7 @@ let authBusy=false;
 const sizeLimit=48;
 const MAX_BATCH=1000;
 const allowedPhotos=new Set(['image/jpeg','image/png','image/webp','image/gif','image/heic']);
-let page=0,renderToken=0,uploading=false,queuePaused=false,viewerAsset=null;
+let page=0,renderToken=0,uploading=false,queuePaused=false,viewerAsset=null,searchQuery='',searchTimer=null;
 let pendingOwn=[],sortingQueue=false,queueBusy=false,queueIndex=0;
 const canSort=a=>Boolean(authorized&&a&&(owner()||a.owner_id===authorized.user.id));
 const unsortedQueue=()=>approved.filter(a=>canSort(a)&&inferCategory(a)==='unsorted');
@@ -59,6 +59,7 @@ function searchable(a){
  .filter(Boolean).join(' ').toLowerCase();
 }
 function matches(a){
+ if(searchQuery&&!searchable(a).includes(searchQuery))return false;
  if(!matchesCategory(a,filterCategory))return false;
  if(filterBranch!=='all'&&branchOf(a)!==filterBranch)return false;
  if(filterStyle==='all')return true;
@@ -71,8 +72,18 @@ function placeholder(title,body){
  const desc=document.createElement('p');desc.textContent=body;
  div.append(heading,desc);return div;
 }
+const workspaceViews=new Set(['discover','explore','branches','collection','studio']);
+let workspaceView='discover';
+function showWorkspaceView(view,{updateHash=true}={}){
+ if(!workspaceViews.has(view))view='discover';
+ workspaceView=view;
+ document.querySelectorAll('[data-mf-panel]').forEach(panel=>{panel.hidden=panel.id!==view});
+ document.querySelectorAll('.mf-workspace-nav [data-mf-view]').forEach(btn=>{const selected=btn.dataset.mfView===view;btn.classList.toggle('selected',selected);if(selected)btn.setAttribute('aria-current','page');else btn.removeAttribute('aria-current')});
+ if($('mfContent'))$('mfContent').scrollTop=0;
+ if(updateHash&&location.hash!=='#'+view)try{history.replaceState(null,'','#'+view)}catch(_){}
+}
 function setFilter({branch='all',style='all',category='all'}={}){
- filterBranch=branch;filterStyle=style;filterCategory=category;page=0;
+ filterBranch=branch;filterStyle=style;filterCategory=category;page=0;searchQuery='';if($('mfSearch'))$('mfSearch').value='';
  document.querySelectorAll('[data-category-filter]').forEach(btn=>{
   const selected=btn.dataset.categoryFilter===category;
   btn.classList.toggle('selected',selected);btn.setAttribute('aria-pressed',String(selected));
@@ -83,8 +94,8 @@ function setFilter({branch='all',style='all',category='all'}={}){
  });
  document.querySelectorAll('[data-branch]').forEach(btn=>btn.classList.toggle('active',category==='military'&&btn.dataset.branch===branch));
  document.querySelectorAll('[data-category]').forEach(btn=>btn.classList.toggle('active',btn.dataset.category===category));
- render();
- $('collection')?.scrollIntoView({behavior:'smooth',block:'start'});
+ showWorkspaceView('collection');
+ void render();
 }
 function formatMetadata(a){
  return [displayCategory(inferCategory(a)),inferCategory(a)==='military'&&branchOf(a)!=='Unspecified'?branchOf(a):'',safe(a.military_era)]
@@ -173,7 +184,7 @@ async function render(){
  grid.replaceChildren();
  if(!visible.length){
   grid.append(placeholder(approved.length?'NO MATCHES FOR THIS SELECTION':'YOUR COLLECTION IS READY','Upload photographs or choose another uniform collection. Pending and restricted uploads stay private.'));
-  text($('mfCollectionStatus'),'No approved '+displayCategory(filterCategory).toLowerCase()+' photographs.');
+  text($('mfCollectionStatus'),searchQuery?'No approved photographs match your search.':'No approved '+displayCategory(filterCategory).toLowerCase()+' photographs.');
   return;
  }
  text($('mfCollectionStatus'),'Loading '+visible.length+' of '+shown.length+' photographs…');
@@ -370,6 +381,10 @@ async function uploadUniforms(files){
 }
 
 function wire(){
+ document.querySelectorAll('[data-mf-view]').forEach(btn=>btn.addEventListener('click',e=>{e.preventDefault();showWorkspaceView(btn.dataset.mfView)}));
+ showWorkspaceView(location.hash.slice(1)||'discover',{updateHash:false});
+ window.addEventListener('hashchange',()=>showWorkspaceView(location.hash.slice(1),{updateHash:false}));
+ $('mfSearch')?.addEventListener('input',e=>{clearTimeout(searchTimer);const value=e.target.value.trim().toLowerCase();searchTimer=setTimeout(()=>{if(value===searchQuery)return;searchQuery=value;page=0;if(authorized)void render()},180)});
  $('mfTransferPhotos')?.addEventListener('click',()=>void transferToPhotos());
  $('mfUploadOpen').addEventListener('click',()=>{$('mfUploadForm').hidden=false});
  $('mfUploadClose').addEventListener('click',()=>{if(!uploading)$('mfUploadForm').hidden=true});
