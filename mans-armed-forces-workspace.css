@@ -284,3 +284,34 @@ body.mf-body::before{display:none}
  #discover .mf-editorial-footer{font-size:9px}
 }
 @media(prefers-reduced-motion:reduce){#discover.mf-cinematic-landing .mf-portrait-tile,#discover .mf-app-get{transition:none}}
+
+/* Dedicated uniform worlds — independent URLs and visual identities, shared private library. */
+.mf-world-body #uMain{background:#000;color:#f5f5f7}
+.mf-world-body #uMain #discover.mf-world-home{width:100%;max-width:1400px;min-height:100%;box-sizing:border-box;padding:0 clamp(18px,4vw,65px);display:flex;flex-direction:column;background:#000;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
+.mf-world-top{display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:58px;flex:none;border-bottom:1px solid #ffffff15}
+.mf-world-top>a,.mf-world-top>button{display:flex;align-items:center;gap:5px;color:#f5f5f7;text-decoration:none;line-height:1.2;font-family:inherit;font-size:13px;font-weight:500;background:none;border:0;padding:8px 0;cursor:pointer}
+.mf-world-top>a svg{width:18px;height:18px;flex:none}
+.mf-world-top>span{font-size:10px;font-weight:600;letter-spacing:.19em;color:#77777f}
+.mf-world-hero{display:grid;grid-template-columns: minmax(0,1fr) minmax(0,1fr);align-items:center;gap:22px;flex:1 0 auto;min-height:min(72dvh,670px);padding:18px 0;box-sizing:border-box}
+.mf-world-copy{position:relative;z-index:1;max-width:620px}
+.mf-world-kicker{color:var(--mf-world-accent,#a1a1a6);font-size:11px;letter-spacing:.17em;font-weight:650}
+.mf-world-copy h1{font-size:clamp(44px,6.4vw,95px);font-weight:650;letter-spacing:-.062em;line-height:1.01;margin:15px 0 16px;color:#f5f5f7;overflow-wrap:normal}
+.mf-world-tagline{font-size:clamp(21px,2.2vw,32px);letter-spacing:-.035em;font-weight:550;color:#f5f5f7;margin:0 0 10px}
+.mf-world-description{font-size:clamp(14px,1.45vw,19px);line-height:1.5;color:#a1a1a6;max-width:490px;margin:0}
+.mf-world-actions,.mf-world-special{display:flex;flex-wrap:wrap;gap:12px;margin-top:24px}
+.mf-world-special:empty{display:none}
+.mf-world-actions button,.mf-world-special a,.mf-world-special button{display:inline-flex;align-items:center;justify-content:center;gap:14px;min-height:44px;padding:12px 18px;border-radius:999px;font-family:inherit;font-weight:550;font-size:14px;line-height:1.2;text-decoration:none;cursor:pointer}
+.mf-world-primary{border:1px solid #fff;background:#f5f5f7;color:#141416}
+.mf-world-secondary{border:1px solid #ffffff24;background:#19191c;color:#f5f5f7}
+.mf-world-primary:hover{background:#d6d6dc}.mf-world-secondary:hover{background:#2d2d31}
+.mf-world-art{min-width:0;display:flex;justify-content:center;align-items:center;overflow:hidden}
+.mf-world-art img{display:block;width:100%;height:min(73dvh,720px);object-fit:contain;object-position:center bottom}
+.mf-world-foot{flex:none;display:flex;justify-content:space-between;gap:12px;align-items:center;padding:19px 0 22px;border-top:1px solid #ffffff15;font-size:11px;color:#85858b;letter-spacing:.08em}
+.mf-world-foot a{color:#b8b8c0;text-decoration:none;letter-spacing:0}
+.mf-world-body .mf-world-global-queue{display:none!important}
+.mf-world-body #uMain[data-mf-active=discover] .mf-editorial-credit{display:none}
+.mf-world-body #uMain .mf-brand strong{letter-spacing:0;font-size:13px}
+.mf-world-body #uMain .mf-workspace-nav button.selected{background:#ffffff12;color:#f5f5f7}
+#discover .mf-app-copy .mf-app-name{overflow-wrap:anywhere}
+@media(max-width:850px){.mf-world-hero{grid-template-columns:minmax(0,1fr) minmax(0, .85fr);min-height:min(68dvh,550px);gap:6px}.mf-world-copy h1{font-size:clamp(36px,5.9vw,66px)}.mf-world-art img{height:min(62dvh,550px)}}
+@media(max-width:600px){.mf-world-top>span{display:none}.mf-world-hero{grid-template-columns:1fr;padding:26px 0 0;gap:14px;text-align:center}.mf-world-copy{margin:0 auto}.mf-world-copy h1{font-size:clamp(38px,9vw,57px);margin-top:10px}.mf-world-description{margin:0 auto}.mf-world-actions,.mf-world-special{justify-content:center;gap:8px;margin-top:18px}.mf-world-actions button,.mf-world-special a,.mf-world-special button{font-size:12px;padding:10px 13px}.mf-world-art img{height:min(57dvh,500px)}.mf-world-foot{font-size:9px}.mf-world-top>a,.mf-world-top>button{font-size:12px}}
