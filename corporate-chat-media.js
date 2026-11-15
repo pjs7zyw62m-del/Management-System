@@ -41,6 +41,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const useLargePanels=()=>window.BlackcellChatMedia?.enabled()===true;
  const compactMedia=()=>!useLargePanels();
  function closeMediaTray(){
+  if(!compactMedia()&&!standalonePanel)return;
   const menu=document.querySelector('.media-actions'),toggle=document.getElementById('mediaToggleButton');
   menu?.classList.add('is-collapsed');
   if(toggle){toggle.classList.remove('open');toggle.setAttribute('aria-expanded','false')}
@@ -361,7 +362,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   const key=String(client.supabaseKey||'');
   if(!base||!key)throw Error('Media storage configuration unavailable.');
   return await new Promise((resolve,reject)=>{
-   const xhr=new XMLHttpRequest();
+   const xhr=new XMLHttpRequest();xhr.timeout=180000;
    xhr.open('POST',base+'/storage/v1/object/'+BUCKET+'/'+path,true);
    xhr.setRequestHeader('Authorization','Bearer '+session.access_token);
    xhr.setRequestHeader('apikey',key);
@@ -370,6 +371,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
    xhr.setRequestHeader('cache-control','3600');
    xhr.upload.onprogress=e=>{if(e.lengthComputable)onProgress(Math.min(file.size,e.loaded))};
    xhr.onerror=()=>reject(Error('Upload network error.'));
+   xhr.ontimeout=()=>reject(Error('Upload timed out. Check Shared Media before retrying.'));
    xhr.onabort=()=>reject(Error('Media upload was interrupted.'));
    xhr.onload=()=>{
     if(xhr.status>=200&&xhr.status<300)resolve();
