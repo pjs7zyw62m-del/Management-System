@@ -84,9 +84,11 @@ async function finishBoot(){
  if(!preview&&(!active||leaving||$('gate').dataset.state!=='boot'))return false;
  bootComplete=true;$('gate').hidden=true;if(!workspaceLock?.isLocked())$('desktop').hidden=false;return true;
 }
-function setupWorkspaceLock(){if(workspaceLock)return;workspaceLock=createWorkspaceLock({host:$('desktop'),preview,account:()=>({id:storeProfile,name:$('memberName').textContent,initials:$('initials').textContent}),usable:()=>!leaving&&(active||preview),verify:async secret=>{const verified=await verifyWorkspacePassword(client,storeProfile,secret);if(!verified.ok)return verified;const result=await corporateAuthorize(client,{allowLedgerOnly:true});if(!result.ok||result.user.id!==storeProfile||!memberAllowed(result.member)||(!owner&&result.member.access_scope==='ledger_only'))return {ok:false,message:'Corporate session has expired. Sign Out and authenticate again.'};const {data,error}=await client.rpc(owner?'corp_code_status':'corp_employee_code_status');if(error||data?.ok!==true||data?.verified!==true)return {ok:false,message:'Corporate security verification expired. Sign Out and authenticate again.'};return {ok:true}},onLock:()=>{securityNotifications?.pause();closeMenu();dockReveal(false);saveWorkspace();for(const r of windows.values()){if(r.frame)pauseFrameMedia(r.frame);for(const media of r.el.querySelectorAll('video,audio'))try{media.pause()}catch(_){}}},onUnlock:()=>{last=Date.now();if(bootComplete)$('desktop').hidden=false;void activity();void recheck();void securityNotifications?.refresh()},onSignOut:()=>void signOut()});}
+function setupWorkspaceLock(){if(workspaceLock)return;workspaceLock=createWorkspaceLock({host:$('desktop'),preview,account:()=>({id:storeProfile,name:$('memberName').textContent,initials:$('initials').textContent}),usable:()=>!leaving&&(active||preview),verify:async secret=>{const verified=await verifyWorkspacePassword(client,storeProfile,secret);if(!verified.ok)return verified;const result=await corporateAuthorize(client,{allowLedgerOnly:true});if(!result.ok||result.user.id!==storeProfile||!memberAllowed(result.member)||(!owner&&result.member.access_scope==='ledger_only'))return {ok:false,message:'Corporate session has expired. Sign Out and authenticate again.'};const {data,error}=await client.rpc(owner?'corp_code_status':'corp_employee_code_status');if(error||data?.ok!==true||data?.verified!==true)return {ok:false,message:'Corporate security verification expired. Sign Out and authenticate again.'};return {ok:true}},onLock:()=>{securityNotifications?.pause();cancelAppHold();closeAppContext();closeMenu();dockReveal(false);saveWorkspace();for(const r of windows.values()){if(r.frame)pauseFrameMedia(r.frame);for(const media of r.el.querySelectorAll('video,audio'))try{media.pause()}catch(_){}}},onUnlock:()=>{last=Date.now();if(bootComplete)$('desktop').hidden=false;void activity();void recheck();void securityNotifications?.refresh()},onSignOut:()=>void signOut()});}
 function lockWorkspace(mode='lock'){if(!workspaceLock||workspaceLock.isLocked())return;workspaceLock.lock(mode);}
 function restartWorkspace(){if(!active&&!preview)return;if([...windows.values()].some(appBusy)){osNotice('Finish active operations before restarting.');return}if(!confirm('Restart BLACKCELL OS? Save unsaved work first. Your window layout will be restored.'))return;saveWorkspace();location.reload();}
+const dockDefaults=new Set([...document.querySelectorAll('.dock [data-open]')].map(b=>b.dataset.open));
+let dockOverrides=new Map();
 let storeModule,storeProfile=null,storeInstalled=new Set(),storeRules=new Map(),storeAdmin=false,storeLevel=null,storeError='',storeSequence=0,storeMutating=false,catalogPending=null;
 // Catalog metadata for recently released apps. Permissions always come from corp_app_store.
 const releasedApps={
@@ -102,10 +104,10 @@ function ensureReleaseTiles(){
   if(grid&&!grid.querySelector('[data-app="'+id+'"]')){
    const tile=document.createElement('button');tile.type='button';tile.className='app';tile.hidden=true;Object.assign(tile.dataset,{app:id,title:app.title,sub:app.sub,url:app.url,desc:app.desc,optional:'true'});
    for(const [cls,label] of [['app-icon',null],['app-name',app.title],['app-sub',app.sub]]){const n=document.createElement('span');n.className=cls;if(label===null)n.append(releaseIcon(app));else n.textContent=label;tile.append(n)}
-   tile.addEventListener('click',()=>showApp(id));tile.addEventListener('contextmenu',e=>{if(active&&!tile.hidden){e.preventDefault();openAppContext(tile,e.clientX,e.clientY)}});grid.append(tile);
+   tile.addEventListener('click',()=>showApp(id));bindAppContext(tile);grid.append(tile);
   }
   if(dock&&!dock.querySelector('[data-open="'+id+'"]')){
-   const button=document.createElement('button');button.type='button';button.hidden=true;button.dataset.open=id;button.title=app.title;button.setAttribute('aria-label',app.title);const label=document.createElement('span');label.textContent=app.title;button.append(releaseIcon(app),label);button.addEventListener('click',()=>showApp(id));button.addEventListener('contextmenu',e=>{const tile=document.querySelector('.app[data-app="'+id+'"]');if(active&&tile&&!tile.hidden){e.preventDefault();openAppContext(tile,e.clientX,e.clientY)}});dock.append(button);
+   const button=document.createElement('button');button.type='button';button.hidden=true;button.dataset.open=id;button.title=app.title;button.setAttribute('aria-label',app.title);const label=document.createElement('span');label.textContent=app.title;button.append(releaseIcon(app),label);button.addEventListener('click',()=>showApp(id));dock.append(button);
   }
  }
 }
@@ -141,12 +143,35 @@ async function storeRequest(p_action,p_app=null,p_level=null,p_enabled=null){
 }
 function authorizedApp(id){return id==='store'||!!storeRules.get(id)?.allowed}
 function installedApp(id){return id==='store'||authorizedApp(id)&&storeInstalled.has(id)}
-function initStore(uid){storeProfile=uid;clearStore('Checking app permissions…')}
+function dockPreferenceKey(){return 'bc.os.dock.v1:'+String(storeProfile)}
+function readDockPreferences(){dockOverrides=new Map();if(!storeProfile)return;for(const {store} of preferenceStores()){try{const data=JSON.parse(store.getItem(dockPreferenceKey())||'null');if(!data||typeof data!=='object'||Array.isArray(data))continue;dockOverrides=new Map(Object.entries(data).filter(([id,value])=>/^[a-z][a-z0-9_-]{0,63}$/.test(id)&&typeof value==='boolean'));break}catch(_){}}}
+function dockPinned(id){return dockOverrides.has(id)?dockOverrides.get(id):dockDefaults.has(id)}
+function ensureDockShortcut(tile){
+ const id=tile.dataset.app,dock=document.querySelector('.dock');if(!dock)return null;
+ let b=dock.querySelector('[data-open="'+id+'"]');if(b)return b;
+ if(!installedApp(id)||tile.hidden||!dockPinned(id))return null;
+ const icon=tile.querySelector('.app-icon svg');if(!icon)return null;
+ b=document.createElement('button');b.type='button';b.dataset.open=id;b.title=tile.dataset.title;b.setAttribute('aria-label',tile.dataset.title);
+ const label=document.createElement('span');label.textContent=tile.querySelector('.app-name')?.textContent||tile.dataset.title;
+ b.append(icon.cloneNode(true),label);b.addEventListener('click',()=>showApp(id));dock.append(b);b.classList.toggle('is-running',windows.has(id)&&!windows.get(id)?.suspended);return b;
+}
+function syncDockTile(tile){
+ const id=tile.dataset.app;if(!tile.hidden&&dockPinned(id))ensureDockShortcut(tile);
+ for(const b of document.querySelectorAll('.dock [data-open="'+id+'"]'))b.hidden=tile.hidden||!dockPinned(id);
+}
+function setDockPin(id,pinned){
+ if(!contextAllowed()||!installedApp(id))return;
+ const tile=document.querySelector('.app[data-app="'+id+'"]');if(!tile||tile.hidden||tile.disabled)return;
+ dockOverrides.set(id,!!pinned);
+ let saved=false;const record=JSON.stringify(Object.fromEntries(dockOverrides));for(const {name,store} of preferenceStores()){try{store.setItem(dockPreferenceKey(),record);if(name==='localStorage'&&store.getItem(dockPreferenceKey())===record)saved=true}catch(_){}}
+ syncDockTile(tile);osNotice((tile.dataset.title||'App')+(pinned?' added to Dock.':' removed from Dock.')+(saved?'':' Preference could not be saved permanently on this device.'));if(pinned&&desktopPrefs.dockAutoHide)dockReveal(true)
+}
+function initStore(uid){storeProfile=uid;readDockPreferences();clearStore('Checking app permissions…')}
 function syncStore(){
  if(preview)return;
  for(const tile of document.querySelectorAll('.app[data-app]')){
   const id=tile.dataset.app;tile.hidden=!installedApp(id);
-  for(const dock of document.querySelectorAll('[data-open="'+id+'"]'))dock.hidden=tile.hidden;
+  syncDockTile(tile);
   if(tile.hidden&&windows.has(id)){const r=windows.get(id);if(!authorizedApp(id)&&!storeError)dispose(r,true);else if(!r.suspended)suspend(r)}
  }
  $('adminReturn').hidden=!installedApp('administration');
@@ -195,7 +220,7 @@ async function setStoreRule(id,level,enabled){if(!storeAdmin||preview)return {ok
 function hostMessage(type){if(embeddedAdmin)window.parent.postMessage({type},location.origin)}
 function returnAdmin(){if(owner||preview)showApp('administration')}
 function clock(){ $('clock').textContent=new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}); }clock();setInterval(clock,15000);
-function blocked(message){stopBootProgress();workspaceLock?.dismiss();$('gate').dataset.state='blocked';stopStorageWidget();securityNotifications?.dispose();securityNotifications=null;clearWorkspace();active=false;closeAll(true);$('desktop').hidden=true;$('gate').hidden=false;$('gateMessage').textContent=message;$('gateLink').hidden=false;hostMessage('blackcell-os-blocked');}
+function blocked(message){cancelAppHold();closeAppContext();stopBootProgress();workspaceLock?.dismiss();$('gate').dataset.state='blocked';stopStorageWidget();securityNotifications?.dispose();securityNotifications=null;clearWorkspace();active=false;closeAll(true);$('desktop').hidden=true;$('gate').hidden=false;$('gateMessage').textContent=message;$('gateLink').hidden=false;hostMessage('blackcell-os-blocked');}
 const windows=new Map();let layer=25,selectedWindow=null;
 let workspaceReady=false,workspaceRestoring=false,pendingRestore=[];
 function workspaceKey(){return 'bc.os.workspace.v1:'+String(storeProfile||'preview')+':'+(embeddedAdmin?'executive':'desktop')}
@@ -335,36 +360,57 @@ function showApp(id,initialState=null){
  bar.addEventListener('pointermove',e=>{if(!drag)return;w.style.left=Math.max(0,Math.min(innerWidth-w.offsetWidth,e.clientX-drag.x))+'px';w.style.top=Math.max(34,Math.min(innerHeight-100,e.clientY-drag.y))+'px'});
  for(const event of ['pointerup','pointercancel','lostpointercapture'])bar.addEventListener(event,()=>{drag=null;saveWorkspace()});
 }
-let appContext=null,contextTrigger=null;
-function closeAppContext(restore=false){if(appContext){appContext.remove();appContext=null}if(restore)contextTrigger?.focus();contextTrigger=null}
-function openAppContext(tile,x,y){
+let appContext=null,contextTrigger=null,appHold=null,suppressedAppClick=null;
+function contextAllowed(){return active&&!preview&&!leaving&&!workspaceLock?.isLocked()&&!$('desktop').hidden}
+function closeAppContext(restore=false){if(appContext){appContext.remove();appContext=null}if(restore&&contextAllowed())contextTrigger?.focus({preventScroll:true});contextTrigger=null}
+function openAppContext(tile,x,y,trigger=tile){
+ if(!contextAllowed()||!tile||tile.hidden||tile.disabled||!installedApp(tile.dataset.app))return false;
  closeMenu();closeAppContext();
- if(!active||preview||tile.hidden)return;
- const id=tile.dataset.app,removable=id!=='store'&&installedApp(id);
- const panel=document.createElement('div');panel.className='os-app-context';panel.setAttribute('role','group');panel.setAttribute('aria-label',tile.dataset.title+' options');contextTrigger=tile;
+ const id=tile.dataset.app,removable=id!=='store'&&installedApp(id),pinned=dockPinned(id);
+ const panel=document.createElement('div');panel.className='os-app-context';panel.setAttribute('role','group');panel.setAttribute('aria-label',tile.dataset.title+' options');contextTrigger=trigger;
  const name=document.createElement('strong');name.textContent=tile.dataset.title;panel.append(name);
- const item=(label,fn,cls='')=>{const btn=document.createElement('button');btn.type='button';btn.className=cls;btn.textContent=label;btn.onclick=()=>{closeAppContext();fn()};panel.append(btn);return btn};
- item('Open',()=>showApp(id));
- if(removable)item('Uninstall app',()=>void uninstallFromDesktop(id,tile.dataset.title),'danger');
+ const item=(label,fn,cls='')=>{const btn=document.createElement('button');btn.type='button';btn.className=cls;btn.textContent=label;btn.onclick=()=>{closeAppContext();if(contextAllowed())fn()};panel.append(btn);return btn};
+ item(pinned?'Remove from Dock':'Add to Dock',()=>setDockPin(id,!pinned));
+ if(removable)item('Uninstall',()=>{if(confirm('Uninstall '+tile.dataset.title+'? Your app data will be kept.'))void uninstallFromDesktop(id,tile.dataset.title)},'danger');
  else{const note=document.createElement('small');note.textContent='App Store cannot be uninstalled';panel.append(note)}
  $('desktop').append(panel);appContext=panel;
- const rect=panel.getBoundingClientRect();panel.style.left=Math.max(8,Math.min(x,innerWidth-rect.width-8))+'px';panel.style.top=Math.max(38,Math.min(y,innerHeight-rect.height-8))+'px';
- panel.querySelector('button')?.focus();
+ const rect=panel.getBoundingClientRect(),top=$('desktop').querySelector('.topbar').getBoundingClientRect().bottom,limit=window.visualViewport?.height||innerHeight;
+ panel.style.left=Math.max(8,Math.min(x,innerWidth-rect.width-8))+'px';panel.style.top=Math.max(top+4,Math.min(y,limit-rect.height-8))+'px';
+ panel.querySelector('button')?.focus({preventScroll:true});return true;
 }
 async function uninstallFromDesktop(id,title){
+ if(!contextAllowed()||!installedApp(id)||id==='store')return;
  const result=await installApp(id,false);
- osNotice(result.ok?title+' uninstalled. Your app data is unchanged.':result.error||'Unable to uninstall application.');
+ if(contextAllowed())osNotice(result.ok?title+' uninstalled. Your app data is unchanged.':result.error||'Unable to uninstall application.');
  windows.get('store')?.refreshStore?.();
 }
-function bindAppContext(tile){
- tile.addEventListener('contextmenu',e=>{if(!active||preview)return;e.preventDefault();openAppContext(tile,e.clientX,e.clientY)});
- tile.addEventListener('keydown',e=>{if(e.key==='ContextMenu'||(e.shiftKey&&e.key==='F10')){e.preventDefault();const r=tile.getBoundingClientRect();openAppContext(tile,r.left,r.bottom)}});
+function contextSource(target){
+ const trigger=target?.closest?.('.app[data-app],.dock button[data-open]');if(!trigger||trigger.hidden||trigger.disabled)return null;
+ const id=trigger.dataset.app||trigger.dataset.open,tile=document.querySelector('.app[data-app="'+id+'"]');
+ if(!tile||tile.hidden||tile.disabled||!installedApp(id))return null;return {trigger,tile}
 }
-document.addEventListener('pointerdown',e=>{if(appContext&&!appContext.contains(e.target))closeAppContext()});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAppContext(true)});
-
+function cancelAppHold(){if(appHold){clearTimeout(appHold.timer);appHold=null}}
+function suppressAppClick(trigger){suppressedAppClick={trigger,until:performance.now()+1200}}
+function bindAppContext(tile){
+ tile.addEventListener('keydown',e=>{if(e.key==='ContextMenu'||(e.shiftKey&&e.key==='F10')){if(!contextAllowed())return;e.preventDefault();const r=tile.getBoundingClientRect();openAppContext(tile,r.left,r.bottom)}});
+}
+document.addEventListener('pointerdown',e=>{
+ cancelAppHold();suppressedAppClick=null;
+ if(appContext&&!appContext.contains(e.target))closeAppContext();
+ if(!contextAllowed()||!touchOS()||e.pointerType!=='touch'||!e.isPrimary)return;
+ const source=contextSource(e.target);if(!source)return;
+ const hold={...source,id:e.pointerId,x:e.clientX,y:e.clientY,timer:null,opened:false};appHold=hold;
+ hold.timer=setTimeout(()=>{if(appHold!==hold||!contextAllowed()||!hold.trigger.isConnected)return;hold.opened=openAppContext(hold.tile,hold.x+6,hold.y+10,hold.trigger);if(hold.opened)suppressAppClick(hold.trigger)},500);
+},{capture:true,passive:true});
+document.addEventListener('pointermove',e=>{if(appHold?.id===e.pointerId&&!appHold.opened&&Math.hypot(e.clientX-appHold.x,e.clientY-appHold.y)>12)cancelAppHold()},{capture:true,passive:true});
+for(const type of ['pointerup','pointercancel'])document.addEventListener(type,e=>{if(appHold?.id!==e.pointerId)return;if(appHold.opened)suppressAppClick(appHold.trigger);cancelAppHold()},{capture:true,passive:true});
+document.addEventListener('contextmenu',e=>{const source=contextSource(e.target);if(!source||!contextAllowed())return;e.preventDefault();if(appContext&&contextTrigger===source.trigger)return;cancelAppHold();if(openAppContext(source.tile,e.clientX||source.trigger.getBoundingClientRect().left,e.clientY||source.trigger.getBoundingClientRect().bottom,source.trigger)&&touchOS())suppressAppClick(source.trigger)});
+document.addEventListener('click',e=>{const pending=suppressedAppClick;if(!pending)return;if(performance.now()>pending.until){suppressedAppClick=null;return}if(pending.trigger.contains(e.target)){suppressedAppClick=null;e.preventDefault();e.stopImmediatePropagation()}},true);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){cancelAppHold();closeAppContext(true)}else if((e.key==='ContextMenu'||e.shiftKey&&e.key==='F10')&&e.target.closest?.('.dock button[data-open]')){const source=contextSource(e.target);if(source&&contextAllowed()){e.preventDefault();const r=source.trigger.getBoundingClientRect();openAppContext(source.tile,r.left,r.top,source.trigger)}}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelAppHold();closeAppContext()}});
+window.addEventListener('resize',()=>{cancelAppHold();closeAppContext()},{passive:true});
 for(const button of document.querySelectorAll('[data-app]')){button.addEventListener('click',()=>showApp(button.dataset.app));bindAppContext(button)}
-for(const button of document.querySelectorAll('[data-open]')){button.addEventListener('click',()=>showApp(button.dataset.open));button.addEventListener('contextmenu',e=>{const tile=document.querySelector('.app[data-app="'+button.dataset.open+'"]');if(active&&tile&&!tile.hidden){e.preventDefault();openAppContext(tile,e.clientX,e.clientY)}})}
+for(const button of document.querySelectorAll('[data-open]'))button.addEventListener('click',()=>showApp(button.dataset.open));
 $('showDesktop').addEventListener('click',showDesktop);$('osTouchHome')?.addEventListener('click',()=>{closeMenu();showDesktop();if(desktopPrefs.dockAutoHide)dockReveal(true)});$('bcStorageManage')?.addEventListener('click',()=>openAppOrStore('settings','storage'));
 async function signOut(force=false){if(preview){clearWorkspace();location.assign('login.html');return}if(leaving)return;if(!force&&windows.size&&!confirm('Sign out and close your open applications? Finish uploads, playback and unsaved work first.'))return;leaving=true;active=false;blocked('Ending your corporate session…');try{await client.rpc(owner?'corp_end_session':'corp_employee_end_session')}catch(_){}try{const result=await client.auth.signOut({scope:'local'});if(!result?.error)workspaceLock?.clear()}catch(_){}if(embeddedAdmin)window.top.location.replace('login.html');else location.replace('login.html')}
 $('signOut').addEventListener('click',()=>void signOut());$('osLockButton')?.addEventListener('click',()=>lockWorkspace());document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.key.toLowerCase()==='l'&&(active||preview)){e.preventDefault();lockWorkspace()}});

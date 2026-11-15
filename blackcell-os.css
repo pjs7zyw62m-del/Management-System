@@ -503,3 +503,19 @@ html.bc-os-installed.bc-os-phone #desktop.os-dock-auto-hide:has(>.os-window:not(
 }
 html.bc-os-installed.bc-os-tablet.bc-os-keyboard #desktop.os-dock-auto-hide>.os-window.is-max,
 html.bc-os-installed.bc-os-phone.bc-os-keyboard #desktop.os-dock-auto-hide>.os-window{padding-bottom:0}
+
+/* Touch app actions: native-style press and hold; scrolling stays enabled. */
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .app[data-app],
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .dock button[data-open]{
+ -webkit-touch-callout:none;-webkit-user-select:none;user-select:none;
+}
+html:is(.bc-os-phone,.bc-os-tablet) .os-app-context{
+ min-width:208px;max-width:calc(100vw - 16px);padding:6px;
+ background:#242429;border:1px solid #ffffff25;border-radius:13px;
+ -webkit-backdrop-filter:none;backdrop-filter:none;
+ box-shadow:0 14px 50px #000b;
+}
+html:is(.bc-os-phone,.bc-os-tablet) .os-app-context>strong{font-size:12px;padding:10px 12px}
+html:is(.bc-os-phone,.bc-os-tablet) .os-app-context>button{font-size:14px;min-height:46px;padding:11px 12px;border-radius:8px;touch-action:manipulation}
+html:is(.bc-os-phone,.bc-os-tablet) .os-app-context>button.danger{border-top:1px solid #ffffff12;color:#ff8e9b}
+html:is(.bc-os-phone,.bc-os-tablet) .os-app-context>small{font-size:11px;padding:9px 12px}
