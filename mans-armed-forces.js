@@ -317,7 +317,7 @@ async function uploadUniforms(files){
  const good=picked.filter(f=>allowedPhotos.has(f.type)&&f.size>0&&f.size<=45*1048576);
  if(!good.length){text($('mfUploadStatus'),'Choose supported photographs up to 45 MB each.');return}
  const category=worldScope||$('mfUploadCategory').value;
- const direct=owner();
+ const direct=owner()&&worldId!=='uniform';
  if(direct&&!$('mfUploadDirect').checked){text($('mfUploadStatus'),'Confirm the batch is non-explicit and you have permission to share it, then select photos again. Sorting is not an approval requirement.');return}
  let useAI=direct&&category==='auto'&&$('mfUploadAi').checked;
  if(useAI&&!confirm('Use the paid visual AI service for up to 60 photos in this batch, subject to your remaining daily allowance? The rest will use filenames or remain Unsorted. Original files are preserved.'))useAI=false;
@@ -509,7 +509,7 @@ function wire(){
  window.addEventListener('hashchange',()=>showWorkspaceView(location.hash.slice(1),{updateHash:false}));
  $('mfSearch')?.addEventListener('input',e=>{clearTimeout(searchTimer);const value=e.target.value.trim().toLowerCase();searchTimer=setTimeout(()=>{if(value===searchQuery)return;searchQuery=value;page=0;if(authorized)void render()},180)});
  $('mfTransferPhotos')?.addEventListener('click',()=>void transferToPhotos());
- $('mfUploadOpen').addEventListener('click',()=>{$('mfUploadForm').hidden=false});
+ $('mfUploadOpen').addEventListener('click',()=>{if(uploading)return;$('mfUploadForm').hidden=false;if(worldId==='uniform'){$('mfUploadFiles').value='';$('mfUploadFiles').click()}});
  $('mfUploadClose').addEventListener('click',()=>{if(!uploading)$('mfUploadForm').hidden=true});
  $('mfUploadChoose').addEventListener('click',()=>{$('mfUploadFiles').value='';$('mfUploadFiles').click()});
  $('mfUploadFiles').addEventListener('change',()=>{const input=$('mfUploadFiles'),files=Array.from(input.files||[]);input.value='';void uploadUniforms(files)});
