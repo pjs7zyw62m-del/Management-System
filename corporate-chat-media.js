@@ -183,11 +183,9 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const currentMeta=el('div','media-viewer-meta');
  const currentName=el('span','media-current-name','','');
  const currentIndex=el('span','media-current-index','','');
- const full=el('a','media-full-link','VIEW FULL MEDIA ↗');
- full.target='_blank';full.rel='noopener';full.href='#';
  const transfer=button('Transfer to Photos',()=>{},'bc-chat-transfer');
  const syncTransfer=attachPhotoTransfer(transfer,{client,source:'chat',getPhoto:()=>context()?.ready&&chat.classList.contains('media-open')?visible[active]:null,getPeer:()=>context()?.peer?.user_id,notify:msg=>{wingStatus.textContent=msg}});
- currentMeta.append(currentName,currentIndex,transfer,full);
+ currentMeta.append(currentName,currentIndex,transfer);
  // Direct manipulation of the two panes. Only layout preferences are stored, never media or contact data.
  const widthDivider=el('div','bc-media-resize bc-media-resize-width');
  const resizeGuide=el('div','bc-media-drag-guide');resizeGuide.hidden=true;resizeGuide.setAttribute('aria-hidden','true');document.body.append(resizeGuide);
@@ -539,7 +537,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  async function loadLibrary(){
   const c=requirePeer();if(!c)return;
   const g=++libraryGeneration,p=c.peer.user_id,b=batchFocus;focusRequest++;visible=[];active=0;mediaReady=false;loadingMoreMedia=false;hasMoreMedia=false;libraryOffset=0;focusTotal=null;signed.clear();
-  refreshLibrary.hidden=true;wingStatus.textContent='';full.hidden=true;syncTransfer();syncFocusArrows();currentName.textContent='';currentIndex.textContent='';stageInner.querySelector('video')?.pause();stageInner.replaceChildren(el('p','media-stage-empty','Loading shared media…'));
+  refreshLibrary.hidden=true;wingStatus.textContent='';syncTransfer();syncFocusArrows();currentName.textContent='';currentIndex.textContent='';stageInner.querySelector('video')?.pause();stageInner.replaceChildren(el('p','media-stage-empty','Loading shared media…'));
   try{
    const {data,error,count}=await focusQuery(c,b).range(0,MEDIA_PAGE_SIZE-1);
    if(!focusCurrent(g,p,b))return;if(error)throw error;
@@ -567,9 +565,9 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   const c=context(),g=libraryGeneration,p=c?.peer?.user_id,b=batchFocus,request=++focusRequest;
   if(!focusCurrent(g,p,b))return;
   stageInner.querySelector('video')?.pause();stageInner.replaceChildren();
-  if(!visible.length){currentName.textContent='';currentIndex.textContent='0 / 0';full.hidden=true;syncTransfer();syncFocusArrows();stageInner.append(el('p','media-stage-empty','No shared photos or videos yet.'));return}
+  if(!visible.length){currentName.textContent='';currentIndex.textContent='0 / 0';syncTransfer();syncFocusArrows();stageInner.append(el('p','media-stage-empty','No shared photos or videos yet.'));return}
   active=Math.max(0,Math.min(index,visible.length-1));const item=visible[active];
-  syncTransfer();syncFocusArrows();currentName.textContent=item.filename+' · '+fmtBytes(item.bytes);currentIndex.textContent=(active+1)+' / '+(focusTotal??(visible.length+(hasMoreMedia?'+':'')));full.hidden=false;full.href='corporate-media.html?id='+encodeURIComponent(item.id);wingStatus.textContent='';refreshLibrary.hidden=true;
+  syncTransfer();syncFocusArrows();currentName.textContent=item.filename+' · '+fmtBytes(item.bytes);currentIndex.textContent=(active+1)+' / '+(focusTotal??(visible.length+(hasMoreMedia?'+':'')));wingStatus.textContent='';refreshLibrary.hidden=true;
   stageInner.append(el('p','media-stage-empty','Opening…'));
   const still=()=>request===focusRequest&&focusCurrent(g,p,b);
   try{
@@ -582,7 +580,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
    if(!still())return;
    const media=el(item.kind==='video'?'video':'img');media.src=link.src;
    if(item.kind==='video'){media.controls=true;media.playsInline=true;media.preload='metadata';media.setAttribute('controlsList','nodownload')}
-   else{media.alt=item.filename;media.decoding='async';media.addEventListener('click',()=>window.open(full.href,'_blank','noopener'));media.title='Open original-resolution media in a new tab'}
+   else{media.alt=item.filename;media.decoding='async';}
    media.addEventListener('error',()=>{if(still()){signed.delete(item.id);focusError('Preview unavailable. Select Retry.');stageInner.replaceChildren(el('p','media-stage-empty','Unable to display media.'))}},{once:true});
    stageInner.replaceChildren(media);
   }catch(e){if(still()){focusError('Unable to load media. Select Retry.');stageInner.replaceChildren(el('p','media-stage-empty','Media unavailable.'))}}
