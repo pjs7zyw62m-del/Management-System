@@ -519,3 +519,21 @@ html:is(.bc-os-phone,.bc-os-tablet) .os-app-context>strong{font-size:12px;paddin
 html:is(.bc-os-phone,.bc-os-tablet) .os-app-context>button{font-size:14px;min-height:46px;padding:11px 12px;border-radius:8px;touch-action:manipulation}
 html:is(.bc-os-phone,.bc-os-tablet) .os-app-context>button.danger{border-top:1px solid #ffffff12;color:#ff8e9b}
 html:is(.bc-os-phone,.bc-os-tablet) .os-app-context>small{font-size:11px;padding:9px 12px}
+
+/* Home-screen editing: order only, no permission or app installation changes. */
+.bc-app-rearrange-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;max-width:650px;margin:0 0 10px;padding:8px 10px 8px 12px;background:#25252bea;border:1px solid #ffffff20;border-radius:10px;color:#d6d6de;font:12px/1.4 system-ui}
+.bc-app-rearrange-bar>button{flex:none;border:1px solid #ffffff25;border-radius:8px;padding:8px 16px;background:#393940;color:#fff;font:650 12px system-ui;min-height:36px}
+html.bc-os-phone #desktop>.workspace>section>.bc-app-rearrange-bar{order:3;margin:0}
+html:is(.bc-os-phone,.bc-os-tablet) .bc-app-rearrange-bar>button{min-height:42px}
+#desktop .bc-app-rearranging>.app{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+#desktop .bc-app-rearranging>.app:hover{transform:none}
+#desktop .bc-app-rearranging>.app .app-icon{animation:bc-app-jiggle .24s ease-in-out infinite alternate}
+#desktop .bc-app-rearranging>.app:nth-child(even) .app-icon{animation-delay:-.18s}
+#desktop .bc-app-rearranging>.app.bc-app-dragging{opacity:.28}
+#desktop .bc-app-rearranging>.app.bc-app-drop-target{background:#ffffff10;outline:1.5px solid #e16b7c;outline-offset:-1px}
+.bc-app-drag-ghost{position:fixed;z-index:2147482500;pointer-events:none;transform:translate(-50%,-50%) scale(1.08);display:grid;justify-items:center;gap:4px;width:110px;text-align:center;color:#fff;filter:drop-shadow(0 12px 15px #000a)}
+.bc-app-drag-ghost .app-icon{margin:0;display:grid;place-items:center}
+.bc-app-drag-ghost .app-name{font:600 11px/1.25 system-ui;max-width:110px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
+@keyframes bc-app-jiggle{from{transform:rotate(-1.8deg)}to{transform:rotate(1.8deg)}}
+@media(prefers-reduced-motion:reduce){#desktop .bc-app-rearranging>.app .app-icon{animation:none}}
+#desktop.os-reduce-motion .bc-app-rearranging>.app .app-icon{animation:none}

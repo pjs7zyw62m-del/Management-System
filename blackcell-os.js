@@ -84,7 +84,7 @@ async function finishBoot(){
  if(!preview&&(!active||leaving||$('gate').dataset.state!=='boot'))return false;
  bootComplete=true;$('gate').hidden=true;if(!workspaceLock?.isLocked())$('desktop').hidden=false;return true;
 }
-function setupWorkspaceLock(){if(workspaceLock)return;workspaceLock=createWorkspaceLock({host:$('desktop'),preview,account:()=>({id:storeProfile,name:$('memberName').textContent,initials:$('initials').textContent}),usable:()=>!leaving&&(active||preview),verify:async secret=>{const verified=await verifyWorkspacePassword(client,storeProfile,secret);if(!verified.ok)return verified;const result=await corporateAuthorize(client,{allowLedgerOnly:true});if(!result.ok||result.user.id!==storeProfile||!memberAllowed(result.member)||(!owner&&result.member.access_scope==='ledger_only'))return {ok:false,message:'Corporate session has expired. Sign Out and authenticate again.'};const {data,error}=await client.rpc(owner?'corp_code_status':'corp_employee_code_status');if(error||data?.ok!==true||data?.verified!==true)return {ok:false,message:'Corporate security verification expired. Sign Out and authenticate again.'};return {ok:true}},onLock:()=>{securityNotifications?.pause();cancelAppHold();closeAppContext();closeMenu();dockReveal(false);saveWorkspace();for(const r of windows.values()){if(r.frame)pauseFrameMedia(r.frame);for(const media of r.el.querySelectorAll('video,audio'))try{media.pause()}catch(_){}}},onUnlock:()=>{last=Date.now();if(bootComplete)$('desktop').hidden=false;void activity();void recheck();void securityNotifications?.refresh()},onSignOut:()=>void signOut()});}
+function setupWorkspaceLock(){if(workspaceLock)return;workspaceLock=createWorkspaceLock({host:$('desktop'),preview,account:()=>({id:storeProfile,name:$('memberName').textContent,initials:$('initials').textContent}),usable:()=>!leaving&&(active||preview),verify:async secret=>{const verified=await verifyWorkspacePassword(client,storeProfile,secret);if(!verified.ok)return verified;const result=await corporateAuthorize(client,{allowLedgerOnly:true});if(!result.ok||result.user.id!==storeProfile||!memberAllowed(result.member)||(!owner&&result.member.access_scope==='ledger_only'))return {ok:false,message:'Corporate session has expired. Sign Out and authenticate again.'};const {data,error}=await client.rpc(owner?'corp_code_status':'corp_employee_code_status');if(error||data?.ok!==true||data?.verified!==true)return {ok:false,message:'Corporate security verification expired. Sign Out and authenticate again.'};return {ok:true}},onLock:()=>{securityNotifications?.pause();finishAppRearrange();cancelAppHold();closeAppContext();closeMenu();dockReveal(false);saveWorkspace();for(const r of windows.values()){if(r.frame)pauseFrameMedia(r.frame);for(const media of r.el.querySelectorAll('video,audio'))try{media.pause()}catch(_){}}},onUnlock:()=>{last=Date.now();if(bootComplete)$('desktop').hidden=false;void activity();void recheck();void securityNotifications?.refresh()},onSignOut:()=>void signOut()});}
 function lockWorkspace(mode='lock'){if(!workspaceLock||workspaceLock.isLocked())return;workspaceLock.lock(mode);}
 function restartWorkspace(){if(!active&&!preview)return;if([...windows.values()].some(appBusy)){osNotice('Finish active operations before restarting.');return}if(!confirm('Restart BLACKCELL OS? Save unsaved work first. Your window layout will be restored.'))return;saveWorkspace();location.reload();}
 const dockDefaults=new Set([...document.querySelectorAll('.dock [data-open]')].map(b=>b.dataset.open));
@@ -166,7 +166,7 @@ function setDockPin(id,pinned){
  let saved=false;const record=JSON.stringify(Object.fromEntries(dockOverrides));for(const {name,store} of preferenceStores()){try{store.setItem(dockPreferenceKey(),record);if(name==='localStorage'&&store.getItem(dockPreferenceKey())===record)saved=true}catch(_){}}
  syncDockTile(tile);osNotice((tile.dataset.title||'App')+(pinned?' added to Dock.':' removed from Dock.')+(saved?'':' Preference could not be saved permanently on this device.'));if(pinned&&desktopPrefs.dockAutoHide)dockReveal(true)
 }
-function initStore(uid){storeProfile=uid;readDockPreferences();clearStore('Checking app permissions…')}
+function initStore(uid){storeProfile=uid;readDockPreferences();readAppLayout();clearStore('Checking app permissions…')}
 function syncStore(){
  if(preview)return;
  for(const tile of document.querySelectorAll('.app[data-app]')){
@@ -174,6 +174,8 @@ function syncStore(){
   syncDockTile(tile);
   if(tile.hidden&&windows.has(id)){const r=windows.get(id);if(!authorizedApp(id)&&!storeError)dispose(r,true);else if(!r.suspended)suspend(r)}
  }
+ if(appDrag&&(appDrag.tile.hidden||appDrag.target?.hidden))cancelAppDrag();
+ applyAppLayout();
  $('adminReturn').hidden=!installedApp('administration');
  renderFolderPins();windows.get('settings')?.refreshSettings?.();
 }
@@ -220,7 +222,7 @@ async function setStoreRule(id,level,enabled){if(!storeAdmin||preview)return {ok
 function hostMessage(type){if(embeddedAdmin)window.parent.postMessage({type},location.origin)}
 function returnAdmin(){if(owner||preview)showApp('administration')}
 function clock(){ $('clock').textContent=new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}); }clock();setInterval(clock,15000);
-function blocked(message){cancelAppHold();closeAppContext();stopBootProgress();workspaceLock?.dismiss();$('gate').dataset.state='blocked';stopStorageWidget();securityNotifications?.dispose();securityNotifications=null;clearWorkspace();active=false;closeAll(true);$('desktop').hidden=true;$('gate').hidden=false;$('gateMessage').textContent=message;$('gateLink').hidden=false;hostMessage('blackcell-os-blocked');}
+function blocked(message){finishAppRearrange();cancelAppHold();closeAppContext();stopBootProgress();workspaceLock?.dismiss();$('gate').dataset.state='blocked';stopStorageWidget();securityNotifications?.dispose();securityNotifications=null;clearWorkspace();active=false;closeAll(true);$('desktop').hidden=true;$('gate').hidden=false;$('gateMessage').textContent=message;$('gateLink').hidden=false;hostMessage('blackcell-os-blocked');}
 const windows=new Map();let layer=25,selectedWindow=null;
 let workspaceReady=false,workspaceRestoring=false,pendingRestore=[];
 function workspaceKey(){return 'bc.os.workspace.v1:'+String(storeProfile||'preview')+':'+(embeddedAdmin?'executive':'desktop')}
@@ -332,7 +334,7 @@ $('desktop').addEventListener('drop',e=>{if(isDesktopDrop(e)){e.preventDefault()
 window.addEventListener('dragend',endFolderDrag);
 
 function showApp(id,initialState=null){
- closeAppContext();if(!active&&!preview)return;if(id==='administration'&&!owner&&!preview)return;
+ finishAppRearrange();closeAppContext();if(!active&&!preview)return;if(id==='administration'&&!owner&&!preview)return;
  if(!preview&&!installedApp(id))return;
  const tile=document.querySelector('.app[data-app="'+id+'"]');if(!tile||tile.hidden||tile.disabled)return;
  if(windows.has(id)){const existing=windows.get(id);raise(existing);if(id==='settings'&&initialState?.section)existing.selectSettings?.(initialState.section);if(id==='store'){if(initialState?.category)existing.selectCategory?.(initialState.category);if(!preview&&!storeMutating)void storeRequest('catalog').then(()=>existing.refreshStore?.())}return}
@@ -364,13 +366,14 @@ let appContext=null,contextTrigger=null,appHold=null,suppressedAppClick=null;
 function contextAllowed(){return active&&!preview&&!leaving&&!workspaceLock?.isLocked()&&!$('desktop').hidden}
 function closeAppContext(restore=false){if(appContext){appContext.remove();appContext=null}if(restore&&contextAllowed())contextTrigger?.focus({preventScroll:true});contextTrigger=null}
 function openAppContext(tile,x,y,trigger=tile){
- if(!contextAllowed()||!tile||tile.hidden||tile.disabled||!installedApp(tile.dataset.app))return false;
+ if(appRearranging||!contextAllowed()||!tile||tile.hidden||tile.disabled||!installedApp(tile.dataset.app))return false;
  closeMenu();closeAppContext();
  const id=tile.dataset.app,removable=id!=='store'&&installedApp(id),pinned=dockPinned(id);
  const panel=document.createElement('div');panel.className='os-app-context';panel.setAttribute('role','group');panel.setAttribute('aria-label',tile.dataset.title+' options');contextTrigger=trigger;
  const name=document.createElement('strong');name.textContent=tile.dataset.title;panel.append(name);
  const item=(label,fn,cls='')=>{const btn=document.createElement('button');btn.type='button';btn.className=cls;btn.textContent=label;btn.onclick=()=>{closeAppContext();if(contextAllowed())fn()};panel.append(btn);return btn};
  item(pinned?'Remove from Dock':'Add to Dock',()=>setDockPin(id,!pinned));
+ item('Rearrange Apps',()=>startAppRearrange(tile));
  if(removable)item('Uninstall',()=>{if(confirm('Uninstall '+tile.dataset.title+'? Your app data will be kept.'))void uninstallFromDesktop(id,tile.dataset.title)},'danger');
  else{const note=document.createElement('small');note.textContent='App Store cannot be uninstalled';panel.append(note)}
  $('desktop').append(panel);appContext=panel;
@@ -389,6 +392,96 @@ function contextSource(target){
  const id=trigger.dataset.app||trigger.dataset.open,tile=document.querySelector('.app[data-app="'+id+'"]');
  if(!tile||tile.hidden||tile.disabled||!installedApp(id))return null;return {trigger,tile}
 }
+/* Layout preferences are presentation-only: server catalog remains authoritative. */
+let appLayout=[],appRearranging=false,appDrag=null,appEditBar=null,appLayoutRelease=null;
+const appGrid=()=>document.querySelector('#desktop .workspace .apps');
+function layoutKey(){return 'bc.os.app-layout.v1:'+String(storeProfile)}
+function readAppLayout(){appLayout=[];if(!storeProfile)return;for(const {store} of preferenceStores())try{const data=JSON.parse(store.getItem(layoutKey())||'null');if(!Array.isArray(data))continue;appLayout=[...new Set(data.filter(x=>typeof x==='string'&&/^[a-z][a-z0-9_-]{0,63}$/.test(x)))].slice(0,250);break}catch(_){}}
+function orderedAppIds(current,preferred){const available=new Set(current);return [...new Set([...preferred.filter(id=>available.has(id)),...current])]}
+function moveAppIds(current,visible,from,to){
+ const list=visible.slice(),a=list.indexOf(from),b=list.indexOf(to);
+ if(a<0||b<0||a===b)return current.slice();
+ list.splice(a,1);list.splice(b,0,from);
+ const set=new Set(visible);let i=0;return current.map(id=>set.has(id)?list[i++]:id);
+}
+function applyAppLayout(){
+ if(appDrag)return;
+ const grid=appGrid();if(!grid)return;const tiles=[...grid.querySelectorAll(':scope > .app[data-app]')],ids=tiles.map(t=>t.dataset.app),order=orderedAppIds(ids,appLayout);
+ if(ids.every((id,i)=>id===order[i]))return;
+ const byId=new Map(tiles.map(t=>[t.dataset.app,t]));const focused=document.activeElement;
+ for(const id of order)grid.append(byId.get(id));
+ if(tiles.includes(focused))focused.focus({preventScroll:true});
+}
+function saveAppLayout(){
+ if(!contextAllowed()||!storeProfile)return false;const record=JSON.stringify(appLayout);let saved=false;
+ for(const {name,store} of preferenceStores())try{store.setItem(layoutKey(),record);if(name==='localStorage'&&store.getItem(layoutKey())===record)saved=true}catch(_){}
+ if(!saved)osNotice('Layout updated for this session. Persistent device storage is unavailable.');return saved;
+}
+function visibleLayoutTiles(){return [...(appGrid()?.querySelectorAll(':scope > .app[data-app]')||[])].filter(t=>!t.hidden&&!t.disabled&&installedApp(t.dataset.app))}
+function reorderApp(tile,target){
+ if(!appRearranging||!contextAllowed()||!tile||!target||tile===target)return;
+ const grid=appGrid();if(!grid)return;const visible=visibleLayoutTiles(),ids=[...grid.querySelectorAll(':scope > .app[data-app]')].map(t=>t.dataset.app);
+ if(!visible.includes(tile)||!visible.includes(target))return;
+ const next=moveAppIds(ids,visible.map(t=>t.dataset.app),tile.dataset.app,target.dataset.app);
+ if(next.every((id,i)=>id===ids[i]))return;
+ // Retain preferences for currently unavailable/newly registered applications.
+ appLayout=[...next,...appLayout.filter(id=>!ids.includes(id))];applyAppLayout();saveAppLayout();
+ if(appEditBar)appEditBar.querySelector('.bc-rearrange-status').textContent=tile.dataset.title+' moved to position '+(visibleLayoutTiles().indexOf(tile)+1)+'.';
+}
+function startAppRearrange(tile){
+ if(!contextAllowed()||appRearranging||visibleLayoutTiles().length<2)return;
+ closeAppContext();cancelAppHold();showDesktop();dockReveal(false);
+ const grid=appGrid();if(!grid)return;
+ appRearranging=true;grid.classList.add('bc-app-rearranging');
+ const bar=document.createElement('div');bar.className='bc-app-rearrange-bar';const label=document.createElement('div');label.className='bc-rearrange-status';label.setAttribute('role','status');label.textContent='Drag apps into your preferred order.';
+ const done=document.createElement('button');done.type='button';done.textContent='Done';done.onclick=()=>finishAppRearrange(true);
+ bar.append(label,done);grid.parentElement.insertBefore(bar,grid);appEditBar=bar;
+ try{appLayoutRelease=window.BLACKCELL_LIVE_UPDATE?.hold('Rearranging applications')}catch(_){}
+ if(tile&&!tile.hidden)tile.focus({preventScroll:true});
+}
+function cancelAppDrag(){
+ if(!appDrag)return;const drag=appDrag;appDrag=null;drag.ghost?.remove();drag.tile.classList.remove('bc-app-dragging');drag.target?.classList.remove('bc-app-drop-target');
+ try{if(drag.grid.hasPointerCapture(drag.id))drag.grid.releasePointerCapture(drag.id)}catch(_){}
+}
+function finishAppRearrange(notify=false){
+ if(!appRearranging)return;cancelAppDrag();appRearranging=false;appGrid()?.classList.remove('bc-app-rearranging');appEditBar?.remove();appEditBar=null;appLayoutRelease?.();appLayoutRelease=null;
+ if(notify&&contextAllowed())osNotice('Application layout updated.');
+}
+function beginAppDrag(e){
+ if(!appRearranging||!contextAllowed()||!e.isPrimary||e.button!==0)return;
+ const tile=e.target.closest?.('.bc-app-rearranging > .app[data-app]');if(!tile||!visibleLayoutTiles().includes(tile))return;
+ e.preventDefault();cancelAppDrag();const grid=appGrid();appDrag={grid,tile,id:e.pointerId,x:e.clientX,y:e.clientY,target:null,ghost:null};try{grid.setPointerCapture(e.pointerId)}catch(_){}
+}
+function updateAppDrag(e){
+ const d=appDrag;if(!d||d.id!==e.pointerId)return;if(!contextAllowed()||d.tile.hidden){cancelAppDrag();return}
+ if(!d.ghost&&Math.hypot(e.clientX-d.x,e.clientY-d.y)<7)return;
+ if(e.cancelable)e.preventDefault();
+ if(!d.ghost){
+  const ghost=document.createElement('div');ghost.className='bc-app-drag-ghost';ghost.setAttribute('aria-hidden','true');const icon=d.tile.querySelector('.app-icon'),name=d.tile.querySelector('.app-name');if(icon)ghost.append(icon.cloneNode(true));if(name)ghost.append(name.cloneNode(true));document.body.append(ghost);d.ghost=ghost;d.tile.classList.add('bc-app-dragging');
+ }
+ d.ghost.style.left=e.clientX+'px';d.ghost.style.top=e.clientY+'px';
+ const hit=document.elementFromPoint(e.clientX,e.clientY),candidate=hit?.closest?.('.bc-app-rearranging > .app[data-app]'),visible=visibleLayoutTiles();
+ let target=visible.includes(candidate)?candidate:null;
+ if(!target){const bounds=d.grid.getBoundingClientRect();if(e.clientX>=bounds.left&&e.clientX<=bounds.right&&e.clientY>=bounds.top&&e.clientY<=bounds.bottom){target=visible.reduce((best,tile)=>{const r=tile.getBoundingClientRect(),dist=Math.hypot(e.clientX-(r.left+r.width/2),e.clientY-(r.top+r.height/2));return !best||dist<best.dist?{tile,dist}:best},null)?.tile||null}}
+ if(target===d.tile)target=null;
+ if(target!==d.target){d.target?.classList.remove('bc-app-drop-target');d.target=target;target?.classList.add('bc-app-drop-target')}
+}
+function endAppDrag(e,commit){
+ const d=appDrag;if(!d||d.id!==e.pointerId)return;const tile=d.tile,target=d.target,dragged=!!d.ghost;cancelAppDrag();if(commit&&dragged&&target)reorderApp(tile,target);if(dragged)suppressAppClick(tile);
+}
+document.addEventListener('pointerdown',beginAppDrag,true);
+document.addEventListener('pointermove',updateAppDrag,{capture:true,passive:false});
+document.addEventListener('pointerup',e=>endAppDrag(e,true),true);
+document.addEventListener('pointercancel',e=>endAppDrag(e,false),true);
+document.addEventListener('lostpointercapture',e=>{if(appDrag?.id===e.pointerId)cancelAppDrag()},true);
+document.addEventListener('click',e=>{if(appRearranging&&e.target.closest?.('.bc-app-rearranging > .app[data-app]')){e.preventDefault();e.stopImmediatePropagation()}},true);
+document.addEventListener('keydown',e=>{
+ if(!appRearranging)return;if(e.key==='Escape'){e.preventDefault();finishAppRearrange(true);return}
+ const tile=e.target.closest?.('.bc-app-rearranging > .app[data-app]');if(!tile)return;
+ if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();const tiles=visibleLayoutTiles(),index=tiles.indexOf(tile),delta=['ArrowLeft','ArrowUp'].includes(e.key)?-1:1;reorderApp(tile,tiles[index+delta]);tile.focus({preventScroll:true})}
+},true);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)finishAppRearrange()});
+window.addEventListener('resize',cancelAppDrag,{passive:true});
 function cancelAppHold(){if(appHold){clearTimeout(appHold.timer);appHold=null}}
 function suppressAppClick(trigger){suppressedAppClick={trigger,until:performance.now()+1200}}
 function bindAppContext(tile){
@@ -397,7 +490,7 @@ function bindAppContext(tile){
 document.addEventListener('pointerdown',e=>{
  cancelAppHold();suppressedAppClick=null;
  if(appContext&&!appContext.contains(e.target))closeAppContext();
- if(!contextAllowed()||!touchOS()||e.pointerType!=='touch'||!e.isPrimary)return;
+ if(appRearranging||!contextAllowed()||!touchOS()||e.pointerType!=='touch'||!e.isPrimary)return;
  const source=contextSource(e.target);if(!source)return;
  const hold={...source,id:e.pointerId,x:e.clientX,y:e.clientY,timer:null,opened:false};appHold=hold;
  hold.timer=setTimeout(()=>{if(appHold!==hold||!contextAllowed()||!hold.trigger.isConnected)return;hold.opened=openAppContext(hold.tile,hold.x+6,hold.y+10,hold.trigger);if(hold.opened)suppressAppClick(hold.trigger)},500);
