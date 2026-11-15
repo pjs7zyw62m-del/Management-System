@@ -174,3 +174,17 @@ html.bc-chat-popout.bc-compact-chat:not(.bc-media-panel):not(.bc-chat-lite) .cha
   grid-area:1/2!important;border-top:0;border-left:1px solid #ffffff24
  }
 }
+
+/* Shared Media: enlarge the original photograph in the current window. */
+.media-stage-inner img.bc-chat-enlargeable{cursor:zoom-in}
+.media-stage-inner img.bc-chat-enlargeable:focus-visible{outline:2px solid #e4657c;outline-offset:-3px}
+dialog.bc-chat-photo-enlarge{box-sizing:border-box;position:fixed;inset:0;margin:0;width:100%;height:100%;max-width:none;max-height:none;padding:0;border:0;background:#050506;color:#f1f1f3;overflow:hidden}
+dialog.bc-chat-photo-enlarge:not([open]){display:none}
+dialog.bc-chat-photo-enlarge[open]{display:grid;grid-template-rows:auto minmax(0,1fr)}
+dialog.bc-chat-photo-enlarge::backdrop{background:#050506}
+.bc-chat-photo-enlarge-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;background:#202024;border-bottom:1px solid #ffffff16}
+.bc-chat-photo-enlarge-head strong{font-size:13px;font-weight:600}
+.bc-chat-photo-enlarge-close{font:inherit;font-size:12px;color:#e9e9ed;background:#303036;border:1px solid #ffffff20;border-radius:7px;padding:8px 12px;cursor:pointer}
+.bc-chat-photo-enlarge-close:hover{background:#45454b}
+.bc-chat-photo-enlarge-stage{display:grid;place-items:center;min-height:0;min-width:0;overflow:hidden}
+.bc-chat-photo-enlarge-stage img{display:block;width:100%;height:100%;min-width:0;min-height:0;object-fit:contain}
