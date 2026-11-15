@@ -315,3 +315,10 @@ body.mf-body::before{display:none}
 #discover .mf-app-copy .mf-app-name{overflow-wrap:anywhere}
 @media(max-width:850px){.mf-world-hero{grid-template-columns:minmax(0,1fr) minmax(0, .85fr);min-height:min(68dvh,550px);gap:6px}.mf-world-copy h1{font-size:clamp(36px,5.9vw,66px)}.mf-world-art img{height:min(62dvh,550px)}}
 @media(max-width:600px){.mf-world-top>span{display:none}.mf-world-hero{grid-template-columns:1fr;padding:26px 0 0;gap:14px;text-align:center}.mf-world-copy{margin:0 auto}.mf-world-copy h1{font-size:clamp(38px,9vw,57px);margin-top:10px}.mf-world-description{margin:0 auto}.mf-world-actions,.mf-world-special{justify-content:center;gap:8px;margin-top:18px}.mf-world-actions button,.mf-world-special a,.mf-world-special button{font-size:12px;padding:10px 13px}.mf-world-art img{height:min(57dvh,500px)}.mf-world-foot{font-size:9px}.mf-world-top>a,.mf-world-top>button{font-size:12px}}
+
+/* Cloud buttons install exclusively into BLACKCELL OS; photo download is independent. */
+#discover .mf-app-get .mf-world-open-icon{display:none}
+#discover .mf-app-get[data-installed=true] .mf-world-open-icon{display:block}
+#discover .mf-app-get[data-installed=true] .mf-cloud-install{display:none}
+#discover .mf-app-get[aria-busy=true]{opacity:.55;cursor:progress}
+#discover .mf-app-get:disabled:not([aria-busy=true]){opacity:.5;cursor:default}
