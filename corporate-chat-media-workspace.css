@@ -101,3 +101,14 @@ html.bc-media-panel .bc-media-resize{display:none!important}
 .bc-media-drag-guide.is-width{box-shadow:0 0 7px #e35b7355}
 .bc-media-drag-guide.is-height{box-shadow:0 0 7px #e35b7355}
 html.bc-media-resizing .bc-media-resize::after{transition:none!important}
+
+/* Focus View is fast because the thumbnail subtree is not painted. Give
+   normal library mode the same drag performance, without changing the
+   saved dimensions, selected photograph, scroll position or filters. */
+html:not(.bc-media-panel) .media-viewer .media-library{position:relative;contain:layout paint;isolation:isolate;min-width:0}
+html:not(.bc-media-panel) .media-viewer .media-library-list{flex:1 1 0;min-height:0;min-width:0;grid-template-columns:repeat(auto-fill,78px);justify-content:start;grid-auto-rows:80px;contain:layout paint;overscroll-behavior:contain}
+html:not(.bc-media-panel) .media-library-item{width:78px;height:80px;contain:strict;content-visibility:auto;contain-intrinsic-size:78px 80px}
+html:not(.bc-media-panel) .media-library-item img{width:100%;height:60px;object-fit:cover;display:block}
+html:not(.bc-media-panel) .media-library-item.selected{box-shadow:none;border-color:#c64b61}
+html.bc-media-resizing:not(.bc-media-panel) .media-viewer:not(.media-focused) .media-library-list{content-visibility:hidden;visibility:hidden;pointer-events:none}
+html.bc-media-resizing:not(.bc-media-panel) .media-viewer:not(.media-focused) .media-library::after{content:"Resizing…";position:absolute;bottom:10px;left:12px;color:#888891;font-size:10px;pointer-events:none}
