@@ -270,16 +270,77 @@ function pauseVerification(message){
 const windows=new Map();let layer=25,selectedWindow=null;
 let workspaceReady=false,workspaceRestoring=false,pendingRestore=[];
 /* Account-scoped device privacy preference; the corporate backend still enforces access. */
-const protectedApps=new Set(),deferredParkedChats=new Map(),appPasswordPermit=Symbol('app-password-verified');
+const protectedApps=new Set(),customAppLocks=new Map(),deferredParkedChats=new Map(),appPasswordPermit=Symbol('app-password-verified');
+const APP_KDF_ROUNDS=600000;
 let appPasswordPrompt=null,appPasswordFailures=0,appPasswordRetryAt=0;
 const appBase=id=>String(id).startsWith('chatpop-')?'chat':id;
 const appLockKey=()=> 'bc.os.app-locks.v1:'+String(storeProfile||'');
 function readAppLocks(){
- protectedApps.clear();deferredParkedChats.clear();
+ protectedApps.clear();customAppLocks.clear();deferredParkedChats.clear();
  if(preview||!storeProfile)return;
- try{const saved=JSON.parse(localStorage.getItem(appLockKey())||'[]');if(Array.isArray(saved))for(const id of saved)if(typeof id==='string'&&/^[a-z]{1,40}$/.test(id))protectedApps.add(id)}catch(_){}
+ try{
+  const saved=JSON.parse(localStorage.getItem(appLockKey())||'[]'),ids=Array.isArray(saved)?saved:saved?.apps;
+  if(Array.isArray(ids))for(const id of ids)if(typeof id==='string'&&/^[a-z]{1,40}$/.test(id))protectedApps.add(id);
+  if(!Array.isArray(saved)&&saved?.custom&&typeof saved.custom==='object')for(const id of protectedApps){
+   const entry=saved.custom[id];if(entry?.mode==='custom'&&entry.rounds===APP_KDF_ROUNDS&&/^[a-f0-9]{32}$/.test(entry.salt)&&/^[a-f0-9]{64}$/.test(entry.hash))customAppLocks.set(id,entry);
+  }
+ }catch(_){}
 }
 function appProtected(id){return !preview&&protectedApps.has(appBase(id))}
+function customAppLock(id){return customAppLocks.get(appBase(id))||null}
+const appHex=bytes=>Array.from(bytes,v=>v.toString(16).padStart(2,'0')).join('');
+async function appPasswordHash(secret,salt){
+ const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(secret),'PBKDF2',false,['deriveBits']);
+ const bytes=Uint8Array.from(salt.match(/../g),v=>parseInt(v,16));
+ return appHex(new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:bytes,iterations:APP_KDF_ROUNDS},key,256)));
+}
+async function createCustomAppLock(secret){
+ const salt=appHex(crypto.getRandomValues(new Uint8Array(16)));
+ return {mode:'custom',rounds:APP_KDF_ROUNDS,salt,hash:await appPasswordHash(secret,salt)};
+}
+async function verifyCustomAppLock(secret,record){
+ const hash=await appPasswordHash(secret,record.salt);let diff=0;
+ for(let i=0;i<record.hash.length;i++)diff|=hash.charCodeAt(i)^record.hash.charCodeAt(i);
+ return diff===0;
+}
+function saveAppProtection(id,title,mode,record=null){
+ if(!contextAllowed()||!installedApp(id))return;
+ const next=new Set(protectedApps),custom=new Map(customAppLocks);
+ if(mode==='remove'){next.delete(id);custom.delete(id);}
+ else{next.add(id);if(mode==='custom')custom.set(id,record);else custom.delete(id);}
+ try{localStorage.setItem(appLockKey(),JSON.stringify({version:2,apps:[...next],custom:Object.fromEntries(custom)}));}
+ catch(_){osNotice('App lock could not be saved on this device.');return}
+ protectedApps.clear();customAppLocks.clear();for(const value of next)protectedApps.add(value);for(const [key,value] of custom)customAppLocks.set(key,value);
+ if(mode!=='remove')hideProtectedWindows(id);
+ refreshAppLockBadges();syncParkedChatBubbles();osNotice(mode==='remove'?title+' password lock removed.':title+' is password protected on this device.');
+}
+function chooseAppPassword(id,title){
+ if(!contextAllowed()||appPasswordPrompt||!installedApp(id))return;
+ const uid=storeProfile,dialog=document.createElement('dialog');dialog.className='bc-app-lock-dialog';dialog.setAttribute('aria-label','Protect '+title);
+ const make=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt)e.textContent=txt;return e};
+ const card=make('form','bc-app-lock-card'),heading=make('h2','','Protect '+title),desc=make('p','','Choose how you want to unlock this app.');
+ const choices=make('div','bc-app-lock-choices'),corporate=make('button','bc-app-lock-choice','Use Corporate Password'),custom=make('button','bc-app-lock-choice','Create Custom Password');
+ corporate.type=custom.type='button';choices.append(corporate,custom);
+ const fields=make('div','bc-app-lock-custom-fields');fields.hidden=true;
+ const input=make('input','bc-app-lock-input'),confirmInput=make('input','bc-app-lock-input');
+ for(const [el,label] of [[input,'New app password'],[confirmInput,'Confirm app password']]){el.type='password';el.autocomplete='new-password';el.placeholder=label;el.setAttribute('aria-label',label);el.minLength=8;el.maxLength=128;el.disabled=true;}
+ fields.append(input,confirmInput,make('p','','Use at least 8 characters. This password is specific to this app on this device.'));
+ const note=make('p','bc-app-lock-status');note.setAttribute('role','status');
+ const buttons=make('div','bc-app-lock-actions'),cancel=make('button','','Cancel'),submit=make('button','bc-app-lock-submit','Save Password');cancel.type='button';submit.type='submit';submit.disabled=true;buttons.append(cancel,submit);
+ card.append(heading,desc,choices,fields,note,buttons);dialog.append(card);document.body.append(dialog);
+ const prompt={dialog,input,extraInputs:[confirmInput]};appPasswordPrompt=prompt;
+ cancel.onclick=closeAppPasswordPrompt;dialog.addEventListener('cancel',e=>{e.preventDefault();closeAppPasswordPrompt()});
+ corporate.onclick=()=>{if(appPasswordPrompt!==prompt||storeProfile!==uid)return;closeAppPasswordPrompt();saveAppProtection(id,title,'corporate')};
+ custom.onclick=()=>{fields.hidden=false;input.disabled=confirmInput.disabled=false;input.required=confirmInput.required=true;submit.disabled=false;custom.classList.add('selected');custom.setAttribute('aria-pressed','true');input.focus()};
+ card.onsubmit=async e=>{e.preventDefault();if(appPasswordPrompt!==prompt||submit.disabled||fields.hidden)return;
+  if(input.value.length<8||input.value.length>128){note.textContent='Use 8 to 128 characters.';return}
+  if(input.value!==confirmInput.value){note.textContent='Passwords do not match.';return}
+  const secret=input.value;input.value=confirmInput.value='';input.disabled=confirmInput.disabled=submit.disabled=corporate.disabled=custom.disabled=true;note.textContent='Protecting app…';
+  try{const record=await createCustomAppLock(secret);if(appPasswordPrompt!==prompt||storeProfile!==uid||!contextAllowed())return;closeAppPasswordPrompt();saveAppProtection(id,title,'custom',record)}
+  catch(_){if(appPasswordPrompt===prompt){note.textContent='Unable to create a secure password. Try again.';input.disabled=confirmInput.disabled=submit.disabled=corporate.disabled=custom.disabled=false;input.focus()}}
+ };
+ try{dialog.showModal();corporate.focus()}catch(_){closeAppPasswordPrompt();osNotice('Unable to open password settings.')}
+}
 function refreshAppLockBadges(){
  for(const tile of document.querySelectorAll('.app[data-app]'))tile.classList.toggle('bc-app-protected',appProtected(tile.dataset.app));
  for(const button of document.querySelectorAll('.dock button[data-open]'))button.classList.toggle('bc-app-protected',appProtected(button.dataset.open));
@@ -292,19 +353,21 @@ function hideProtectedWindows(id=null){
 }
 function closeAppPasswordPrompt(){
  if(!appPasswordPrompt)return;
- const p=appPasswordPrompt;appPasswordPrompt=null;p.input.value='';p.dialog.close();p.dialog.remove();
+ const p=appPasswordPrompt;appPasswordPrompt=null;p.input.value='';for(const el of p.extraInputs||[])el.value='';p.dialog.close();p.dialog.remove();
 }
-function askAppPassword(title,verb,verified){
+function askAppPassword(title,verb,verified,options={}){
  if(!active||preview||leaving||workspaceLock?.isLocked()||appPasswordPrompt)return;
- const uid=storeProfile,dialog=document.createElement('dialog');dialog.className='bc-app-lock-dialog';dialog.setAttribute('aria-label',verb+' '+title);
+ const uid=storeProfile,record=options.custom||null,dialog=document.createElement('dialog');dialog.className='bc-app-lock-dialog';dialog.setAttribute('aria-label',verb+' '+title);
  const make=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt)e.textContent=txt;return e};
  const card=make('form','bc-app-lock-card'),icon=make('div','bc-app-lock-symbol');
  icon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>';
- const heading=make('h2','',verb+' '+title),description=make('p','','Verify your corporate password to continue.');
- const input=make('input','bc-app-lock-input');input.type='password';input.autocomplete='current-password';input.placeholder='Corporate password';input.required=true;input.maxLength=1024;input.setAttribute('aria-label','Corporate password');
+ const heading=make('h2','',verb+' '+title),description=make('p','',record?'Enter the custom password for this app.':'Verify your corporate password to continue.');
+ const input=make('input','bc-app-lock-input');input.type='password';input.autocomplete=record?'off':'current-password';input.placeholder=record?'App password':'Corporate password';input.required=true;input.maxLength=record?128:1024;input.setAttribute('aria-label',input.placeholder);
  const note=make('p','bc-app-lock-status');note.setAttribute('role','status');
  const buttons=make('div','bc-app-lock-actions'),cancel=make('button','','Cancel'),submit=make('button','bc-app-lock-submit',verb);cancel.type='button';submit.type='submit';
- buttons.append(cancel,submit);card.append(icon,heading,description,input,note,buttons);dialog.append(card);document.body.append(dialog);
+ buttons.append(cancel,submit);card.append(icon,heading,description,input,note,buttons);
+ if(record&&options.recover){const reset=make('button','bc-app-lock-recovery','Forgot app password?');reset.type='button';reset.onclick=()=>{closeAppPasswordPrompt();options.recover()};card.append(reset);}
+ dialog.append(card);document.body.append(dialog);
  const prompt={dialog,input};appPasswordPrompt=prompt;
  cancel.onclick=closeAppPasswordPrompt;dialog.addEventListener('cancel',e=>{e.preventDefault();closeAppPasswordPrompt()});
  card.onsubmit=async e=>{
@@ -312,7 +375,7 @@ function askAppPassword(title,verb,verified){
   if(Date.now()<appPasswordRetryAt){note.textContent='Try again in '+Math.ceil((appPasswordRetryAt-Date.now())/1000)+' seconds.';return}
   const secret=input.value;input.value='';input.disabled=true;submit.disabled=true;note.textContent='Verifying…';
   try{
-   const result=await verifyWorkspacePassword(client,uid,secret);
+   const result=record?{ok:await verifyCustomAppLock(secret,record),message:'App password was not accepted.'}:await verifyWorkspacePassword(client,uid,secret);
    if(appPasswordPrompt!==prompt||!active||leaving||storeProfile!==uid||workspaceLock?.isLocked())return;
    if(!result?.ok){appPasswordFailures++;appPasswordRetryAt=Date.now()+Math.min(30000,1000*2**Math.min(appPasswordFailures,5));note.textContent=result?.message||'Password not accepted.';return}
    const auth=await corporateAuthorize(client,{allowLedgerOnly:true});
@@ -329,16 +392,12 @@ function askAppPassword(title,verb,verified){
 }
 function toggleAppProtection(id,title){
  if(!contextAllowed()||!installedApp(id))return;
- const enable=!appProtected(id);
- askAppPassword(title,enable?'Protect':'Remove lock from',()=>{
-  if(!contextAllowed()||!installedApp(id))return;
-  const next=new Set(protectedApps);if(enable)next.add(id);else next.delete(id);
-  try{localStorage.setItem(appLockKey(),JSON.stringify([...next]));}
-  catch(_){osNotice('App lock could not be saved on this device.');return}
-  protectedApps.clear();for(const value of next)protectedApps.add(value);
-  if(enable)hideProtectedWindows(id);
-  refreshAppLockBadges();syncParkedChatBubbles();osNotice(enable?title+' is password protected on this device.':title+' password lock removed.');
- });
+ if(!appProtected(id)){askAppPassword(title,'Protect',()=>chooseAppPassword(id,title));return}
+ askAppPassword(title,'Remove lock from',()=>saveAppProtection(id,title,'remove'));
+}
+function changeAppPassword(id,title){
+ if(!contextAllowed()||!installedApp(id)||!appProtected(id))return;
+ askAppPassword(title,'Reset password for',()=>chooseAppPassword(id,title));
 }
 function workspaceKey(){return 'bc.os.workspace.v1:'+String(storeProfile||'preview')+':'+(embeddedAdmin?'executive':'desktop')}
 function saveWorkspace(){
@@ -568,7 +627,7 @@ function showApp(id,initialState=null,passwordVerified=null){
  const tile=document.querySelector('.app[data-app="'+baseId+'"]');if(!tile||tile.hidden||tile.disabled)return;
  const deferred=chatPopout?deferredParkedChats.get(id):null;
  if(deferred)initialState={peerId:id.slice(8),name:deferred.name};
- if(appProtected(baseId)&&passwordVerified!==appPasswordPermit&&(!windows.has(id)||windows.get(id).el.hidden)){askAppPassword(tile.dataset.title||'App','Unlock',()=>showApp(id,initialState,appPasswordPermit));return;}
+ if(appProtected(baseId)&&passwordVerified!==appPasswordPermit&&(!windows.has(id)||windows.get(id).el.hidden)){askAppPassword(tile.dataset.title||'App','Unlock',()=>showApp(id,initialState,appPasswordPermit),{custom:customAppLock(baseId),recover:()=>changeAppPassword(baseId,tile.dataset.title||'App')});return;}
  if(chatPopout&&!windows.has(id)&&(!initialState||initialState.peerId!==id.slice(8)||[...windows.values()].filter(r=>r.chatPopout).length>=8)){osNotice('Close a chat pop-out before opening another.');return;}
  if(windows.has(id)){const existing=windows.get(id);raise(existing);if(id==='files'&&initialState?.path){if(existing.openFolder)existing.openFolder(initialState.path);else{existing.fileState={path:[...initialState.path],layout:initialState.layout||'grid'};saveWorkspace()}}if(id==='settings'&&initialState?.section)existing.selectSettings?.(initialState.section);if(id==='store'){if(initialState?.category)existing.selectCategory?.(initialState.category);if(!preview&&!storeMutating)void storeRequest('catalog').then(()=>existing.refreshStore?.())}return}
  const url=new URL(tile.dataset.url,location.href);if(url.origin!==location.origin)return;
@@ -613,6 +672,7 @@ function openAppContext(tile,x,y,trigger=tile){
  else{
  item(pinned?'Remove from Dock':'Add to Dock',()=>setDockPin(id,!pinned));
  item(appProtected(id)?'Remove Password Protection':'Require Password',()=>toggleAppProtection(id,title));
+ if(appProtected(id))item('Change App Password',()=>changeAppPassword(id,title));
  if(recycledApps.has(id))item('Restore Desktop Shortcut',()=>restoreRecycled(id));
  else{item('Rearrange Apps',()=>startAppRearrange(tile));item('Move to Recycle Bin',()=>recycleApp(tile));}
  if(removable)item('Uninstall',()=>{if(confirm('Uninstall '+tile.dataset.title+'? Your app data will be kept.'))void uninstallFromDesktop(id,tile.dataset.title)},'danger');
