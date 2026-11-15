@@ -828,6 +828,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
  function renderViewer(){
   const a=viewerCurrent();if(!a)return;
   syncTransfer??=placePhotoTransfer($('appleViewerDownload'),{client,getPhoto:viewerCurrent,notify:toast});syncTransfer();
+  $('appleViewerDownload').style.display=a.kind==='photo'?'none':'';
   const frame=$('appleViewerStage');zoom.unmount();frame.replaceChildren();
   const u=mediaUrl(a);
   $('appleViewerFilename').textContent=a.filename;
@@ -884,7 +885,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   film.querySelector('.selected')?.scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});
  }
  async function downloadAsset(){
-  const a=viewerCurrent();if(!a)return;
+  const a=viewerCurrent();if(!a)return;if(a.kind==='photo'){toast('Use Transfer to Photos, then download from BLACKCELL Photos.');return}
   const b=$('appleViewerDownload');b.disabled=true;b.textContent='PREPARING…';
   try{
    const {data,error}=await bucket.download(a.storage_path);
