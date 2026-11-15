@@ -92,7 +92,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   return false;
  }
  let peerId=null,library=[],visible=[],active=0,batchFocus=null,viewMode='standard',focused=false;
- let selection=[],busy=false,filter='all',search='',sort='newest',autoNext=false,mediaReady=false,pickPeer=null,libraryGeneration=0,uploadInterrupted=false;
+ let selection=[],busy=false,filter='all',search='',sort='newest',autoNext=false,mediaReady=false,pickPeer=null,libraryGeneration=0,selectionPeer=null;
  let signed=new Map(),urlsTime=0,drawToken=0;
  let libraryOffset=0,hasMoreMedia=false,loadingMoreMedia=false;
  const MEDIA_PAGE_SIZE=160;
@@ -278,6 +278,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
    status('Some files were skipped. Use JPG, PNG, WEBP, GIF, HEIC, MP4, MOV, or WEBM, maximum 50 MB each.');
   }
   if(!accepted.length)return;
+  const chosen=context()?.peer?.user_id;if(!chosen)return;if(selectionPeer&&selectionPeer!==chosen)selection=[];selectionPeer=chosen;
   if(compactMedia()){
    selection=accepted;
    void sendSelection(); // One tap -> native picker -> direct in-chat upload
@@ -337,12 +338,13 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   sendButton.disabled=selection.length===0||busy;
   for(const [i,f] of selection.entries()){
    const row=el('div','media-selected-row');
-   const detail=el('div');
+   const icon=el('span','bc-media-selection-icon',kindOf(f)==='photo'?'▧':'▶');icon.setAttribute('aria-hidden','true');
+   const detail=el('div','bc-media-selection-detail');
    detail.append(el('strong','',f.name),el('small','',kindOf(f).toUpperCase()+' · '+fmtBytes(f.size)));
    const rm=button('REMOVE',()=>{
     if(busy)return;selection.splice(i,1);renderSelection();
    });
-   row.append(detail,rm);itemsBox.append(row);
+   row.append(icon,detail,rm);itemsBox.append(row);
   }
  }
  function updateProgress(n,label){
@@ -386,7 +388,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   try{return await bcLiveOriginal_sendSelection.apply(this,args)}finally{release?.()}
  }
  async function bcLiveOriginal_sendSelection(){
-  const c=requirePeer();if(!c||!selection.length||busy)return;
+  const c=requirePeer();if(!c||!selection.length||busy)return;if(selectionPeer!==c.peer.user_id){selection=[];renderSelection();status('Conversation changed. Select media again.');return}
   const files=selection.slice();
   if(files.some(f=>f.size>MAX_BYTES||!ALLOWED.has(mediaType(f))))return;
   uploadingForPeer=c.peer.user_id;
@@ -456,9 +458,9 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
    }
   }catch(e){
    progress.classList.remove('active');
-   if(standalonePanel&&mediaPanel==='share'){
+   if(!compactMedia()&&context()?.peer?.user_id===receiver){
     overlay.hidden=false;
-    pickInfo.textContent='Upload failed: '+safeErr(e)+'. You can try sharing these files again.';
+    pickInfo.textContent='Upload failed: '+safeErr(e)+'. Review the conversation before retrying to avoid duplicates.';
    }
    if(compactMedia()){
     updateInlineUpload(0,'UPLOAD FAILED · '+safeErr(e),true);
@@ -466,6 +468,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
    status('Media upload failed: '+safeErr(e)+'. Check your connection and retry.');
   }finally{
    footer.hidden=false;
+   if(context()?.peer?.user_id!==receiver){selection=[];selectionPeer=null;renderSelection();inlineUploadVisible=false;inlineUpload.remove()}
    toggleBusy(false);
    flipButton.disabled=false;
    notifyUploadState(false);
@@ -542,7 +545,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  }
  async function loadOlderMedia(){
   if(loadingMoreMedia||!hasMoreMedia)return;
-  const c=context(),chosenPeer=c?.peer?.user_id,chosenBatch=batchFocus;
+  const c=context(),chosenPeer=c?.peer?.user_id,chosenBatch=batchFocus,generation=libraryGeneration;
   if(!c?.ready||!c.self||!chosenPeer)return;
   loadingMoreMedia=true;loadMoreButton.disabled=true;
   loadMoreButton.textContent='LOADING MORE MEDIA…';
@@ -554,7 +557,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
    if(chosenBatch)query=query.eq('batch_id',chosenBatch);
    const {data,error}=await query.range(libraryOffset,libraryOffset+MEDIA_PAGE_SIZE-1);
    if(error)throw error;
-   if(context()?.peer?.user_id!==chosenPeer||batchFocus!==chosenBatch)return;
+   if(generation!==libraryGeneration||!context()?.ready||context()?.peer?.user_id!==chosenPeer||batchFocus!==chosenBatch)return;
    const more=data||[];
    library.push(...more);libraryOffset+=more.length;hasMoreMedia=more.length===MEDIA_PAGE_SIZE;
    for(const item of more){
@@ -562,7 +565,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
      history.add(new Option('COLLECTION · '+new Date(item.created_at).toLocaleDateString(),item.batch_id));
    }
    await ensureSigned(more);
-   if(context()?.peer?.user_id!==chosenPeer||batchFocus!==chosenBatch)return;
+   if(generation!==libraryGeneration||!context()?.ready||context()?.peer?.user_id!==chosenPeer||batchFocus!==chosenBatch)return;
    renderLibrary();loadMoreButton.hidden=!hasMoreMedia;
   }catch(e){wingStatus.textContent='Older media could not load. Tap Load More to retry.'}
   finally{loadingMoreMedia=false;loadMoreButton.disabled=false;loadMoreButton.textContent='LOAD MORE MEDIA'}
@@ -877,7 +880,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   wing.setAttribute('aria-hidden','true');
   stageInner.querySelector('video')?.pause();
   overlay.hidden=true;
-  if(!busy){selection=[];renderSelection();hideInlineUpload()}
+  if(!busy){selection=[];selectionPeer=null;renderSelection();hideInlineUpload()}
  }
  return {renderMediaBubble,onPeerChange,openShare,openLibrary,openBatch,closeWing,pickMobileFiles,syncInlineUpload,pause:()=>{stageInner.querySelector('video')?.pause();mobileCanvas.querySelector('video')?.pause()}};
 }
