@@ -408,7 +408,7 @@ function saveWorkspace(){
   // Store only parked conversation shortcuts and window geometry, never message data or drafts.
   const parkedChats=[...windows.values()].filter(r=>r.chatPopout&&r.chatParked&&r.el.hidden).slice(0,8).map(r=>{
    const geometry=r.parkedGeometry||captureParkedGeometry(r);
-   return {id:r.id,name:r.title,...geometry};
+   return {id:r.id,name:r.title,...geometry,keepOnTop:r.chatKeepOnTop===true};
   });
   for(const saved of deferredParkedChats.values())if(!parkedChats.some(r=>r.id===saved.id))parkedChats.push(saved);
   sessionStorage.setItem(workspaceKey(),JSON.stringify({version:1,at:Date.now(),windows:records.slice(0,24),parkedChats:parkedChats.slice(0,8)}));
@@ -449,7 +449,7 @@ function restoreRecord(saved,parked=false){
  const previous=selectedWindow;
  showApp(saved.id,parked?{peerId:saved.id.slice(8),name:saved.name.slice(0,70)||'Conversation'}:saved.id==='store'?saved.store:saved.id==='settings'?saved.settings:saved.files);
  const r=windows.get(saved.id);if(!r)return;
- if(parked)applyParkedGeometry(r,saved);
+ if(parked){applyParkedGeometry(r,saved);r.chatKeepOnTop=saved.keepOnTop===true;}
  else if(innerWidth>620&&!touchOS()){
   const width=safePixels(saved.width),height=safePixels(saved.height),left=safePixels(saved.left),top=safePixels(saved.top);
   if(width!==null)r.el.style.width=Math.min(Math.max(280,width),Math.max(280,innerWidth-12))+'px';
@@ -515,6 +515,38 @@ function resizeChatForMedia(r,open){
 function syncChatVisibility(){for(const r of windows.values())if(r.id==='chat'||r.chatPopout)chatFrameMessage(r,'blackcell-chat-visibility',{visible:active&&!workspaceLock?.isLocked()&&!r.el.hidden&&selectedWindow===r})}
 window.addEventListener('message',event=>{if(event.origin!==location.origin||!active||leaving||workspaceLock?.isLocked())return;const data=event.data;if(!data||typeof data!=='object')return;const source=[...windows.values()].find(r=>(r.id==='chat'||r.chatPopout)&&r.frame?.contentWindow===event.source);if(!source)return;if(data.type==='blackcell-chat-popout-close'&&source.chatPopout){void requestClose(source);return}if(data.type==='blackcell-chat-popout'&&source.id==='chat'&&installedApp('chat')&&typeof data.peerId==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.peerId)){showApp('chatpop-'+data.peerId,{peerId:data.peerId,name:typeof data.name==='string'?data.name:'Conversation'});return}if(data.type==='blackcell-chat-popout-media'&&typeof data.open==='boolean'){resizeChatForMedia(source,data.open);return}if(data.type==='blackcell-chat-activity'&&!source.el.hidden){for(const r of windows.values())if(r!==source&&(r.id==='chat'||r.chatPopout))chatFrameMessage(r,'blackcell-chat-shared-activity');void activity()}});
 function syncStoreUpdateHold(){const r=windows.get('store');if(!r)return;const needed=!r.el.hidden||r.storeBusy;if(needed&&!r.updateHold&&!preview){try{r.updateHold=window.top.BLACKCELL_LIVE_UPDATE?.hold('App Store workspace',window)}catch(_){}}else if(!needed&&r.updateHold){r.updateHold();r.updateHold=null}}
+/* Parked bubbles sit at desktop level unless explicitly kept above windows. */
+function bubbleKeepsOnTop(id){return windows.get(id)?.chatKeepOnTop===true||deferredParkedChats.get(id)?.keepOnTop===true}
+function setBubbleKeepOnTop(id,enabled){
+ const r=windows.get(id),saved=deferredParkedChats.get(id);
+ if(r?.chatPopout&&r.chatParked)r.chatKeepOnTop=enabled===true;
+ else if(saved)saved.keepOnTop=enabled===true;
+ else return;
+ syncParkedChatBubbles();saveWorkspace();
+}
+function openBubbleContext(id,bubble,x,y){
+ if(!contextAllowed()||!installedApp('chat')||(!windows.get(id)?.chatParked&&!deferredParkedChats.has(id)))return false;
+ closeMenu();closeAppContext();
+ const onTop=bubbleKeepsOnTop(id),panel=document.createElement('div');panel.className='os-app-context';panel.setAttribute('role','group');panel.setAttribute('aria-label','Chat bubble options');contextTrigger=bubble;
+ const label=document.createElement('strong');label.textContent='Chat bubble';
+ const toggle=document.createElement('button');toggle.type='button';toggle.textContent=onTop?'Keep on Top ✓':'Keep on Top';toggle.setAttribute('aria-pressed',String(onTop));toggle.onclick=()=>{closeAppContext();if(contextAllowed())setBubbleKeepOnTop(id,!onTop)};
+ const reopen=document.createElement('button');reopen.type='button';reopen.textContent='Open Conversation';reopen.onclick=()=>{closeAppContext();if(contextAllowed())showApp(id)};
+ panel.append(label,toggle,reopen);$('desktop').append(panel);appContext=panel;
+ const rect=panel.getBoundingClientRect(),top=$('desktop').querySelector('.topbar').getBoundingClientRect().bottom,limit=window.visualViewport?.height||innerHeight;
+ panel.style.left=Math.max(8,Math.min(x,innerWidth-rect.width-8))+'px';panel.style.top=Math.max(top+4,Math.min(y,limit-rect.height-8))+'px';
+ toggle.focus({preventScroll:true});return true;
+}
+function bindBubbleContext(bubble,id){
+ let hold=null,startX=0,startY=0,suppressUntil=0;
+ const cancel=()=>{if(hold!==null)clearTimeout(hold);hold=null};
+ const open=(x,y)=>openBubbleContext(id,bubble,x,y);
+ bubble.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();cancel();if(open(e.clientX,e.clientY))suppressUntil=Date.now()+800});
+ bubble.addEventListener('keydown',e=>{if(e.key==='ContextMenu'||(e.shiftKey&&e.key==='F10')){e.preventDefault();const rect=bubble.getBoundingClientRect();open(rect.left,rect.bottom)}});
+ bubble.addEventListener('pointerdown',e=>{if(e.pointerType!=='touch'&&e.pointerType!=='pen')return;cancel();startX=e.clientX;startY=e.clientY;hold=setTimeout(()=>{hold=null;if(open(startX,startY))suppressUntil=Date.now()+1500},550)});
+ bubble.addEventListener('pointermove',e=>{if(hold!==null&&Math.hypot(e.clientX-startX,e.clientY-startY)>10)cancel()});
+ for(const type of ['pointerup','pointercancel','pointerleave'])bubble.addEventListener(type,cancel);
+ bubble.addEventListener('click',e=>{if(Date.now()<suppressUntil){e.preventDefault();e.stopImmediatePropagation()}},true);
+}
 /* Park a live conversation without closing its iframe or losing its draft. */
 function syncParkedChatBubbles(){
  let rail=$('osParkedChatRail');
@@ -528,14 +560,16 @@ function syncParkedChatBubbles(){
  const wanted=new Set(records.map(r=>r.id));
  for(const child of [...rail.children])if(!wanted.has(child.dataset.chatId))child.remove();
  for(const r of records){
-  if([...rail.children].some(child=>child.dataset.chatId===r.id))continue;
-  const bubble=document.createElement('button');bubble.type='button';bubble.className='os-parked-chat-bubble';bubble.dataset.chatId=r.id;
+  const existing=[...rail.children].find(child=>child.dataset.chatId===r.id);
+  if(existing){existing.classList.toggle('is-kept-on-top',bubbleKeepsOnTop(r.id));continue;}
+  const bubble=document.createElement('button');bubble.type='button';bubble.className='os-parked-chat-bubble';bubble.dataset.chatId=r.id;bubble.classList.toggle('is-kept-on-top',bubbleKeepsOnTop(r.id));
   bubble.title='Reopen '+r.title;bubble.setAttribute('aria-label','Reopen conversation with '+r.title);
   const avatar=document.createElement('span');avatar.className='os-parked-chat-avatar';avatar.textContent=Array.from(r.title.trim())[0]?.toUpperCase()||'•';
   const glyph=document.createElement('span');glyph.className='os-parked-chat-glyph';glyph.setAttribute('aria-hidden','true');
   glyph.innerHTML='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C6.5 3 2 6.6 2 11c0 2.6 1.5 4.9 3.9 6.4L5 21l4-2.1c1 .2 2 .3 3 .3 5.5 0 10-3.6 10-8.1S17.5 3 12 3Z"/></svg>';
   const label=document.createElement('span');label.className='os-parked-chat-label';label.textContent=r.title;
   bubble.append(avatar,glyph,label);
+  bindBubbleContext(bubble,r.id);
   bubble.addEventListener('click',()=>{if(windows.has(r.id)||deferredParkedChats.has(r.id))showApp(r.id)});
   rail.append(bubble);
  }
@@ -652,7 +686,7 @@ function showApp(id,initialState=null,passwordVerified=null){
  else{r.release=window.BLACKCELL_LIVE_UPDATE?.hold('BLACKCELL OS application window');const frame=document.createElement('iframe');frame.title=r.title;if(id==='photoledger'){w.classList.add('is-max');frame.id='bcOsPhotoLedgerFrame'}if(id==='administration'){frame.id='bcOsAdministrationFrame';external.hidden=true;external.href='blackcell-administration-app.html';w.classList.add('is-max');const home=document.createElement('button');home.type='button';home.className='os-admin-home';home.textContent='‹ Administration';home.hidden=true;home.onclick=()=>{r.frameLoading?.begin();frame.src=url.href};r.adminHome=home;bar.insertBefore(home,title)}frame.allow=id==='voicememos'?'fullscreen; microphone':id==='community'?'fullscreen; camera':'fullscreen';frame.setAttribute('allowfullscreen','');r.frame=frame;const loader=appFrameLoading(frame,content,r.title,url,()=>windows.get(id)===r);r.frameLoading=loader;r.cleanup=loader.dispose;
  frame.addEventListener('load',()=>{try{const child=frame.contentDocument;if(!child)return;const childURL=new URL(frame.contentWindow.location.href);if(childURL.protocol==='about:')return;if(childURL.origin!==location.origin){loader.finish();return;}if(id==='photoledger'&&childURL.pathname.endsWith('/private-photo-ledger.html')){child.documentElement.classList.add('bc-admin-workspace-embedded');if(!child.querySelector('link[data-os-ledger-style]')){const sheet=child.createElement('link');sheet.rel='stylesheet';sheet.href='blackcell-admin-workspace-embedded.css?v=2-native-admin';sheet.dataset.osLedgerStyle='true';child.head.append(sheet)}}if(id==='administration'){if(childURL.pathname.endsWith('/dashboard.html')){loader.begin();frame.contentWindow.location.replace(url.href);return}if(r.adminHome)r.adminHome.hidden=childURL.pathname.endsWith('/blackcell-administration-app.html')}if(childURL.pathname.endsWith('/blackcell-os.html')||childURL.pathname.endsWith('/blackcell-os-preview.html')){dispose(r,true);return}if(id==='administration'&&childURL.pathname.endsWith('/login.html')){if(active)void recheck();loader.finish();return}for(const event of ['pointerdown','keydown','touchstart','wheel'])child.addEventListener(event,()=>void activity(),{passive:true});loader.finish();}catch(_){loader.finish();}});if(chatPopout||id==='chat')frame.addEventListener('load',syncChatVisibility);frame.src=url.href;content.prepend(frame);
  }
- $('desktop').append(w);if(deferred){applyParkedGeometry(r,deferred);deferredParkedChats.delete(id);}raise(r);w.addEventListener('pointerdown',()=>raise(r),true);bar.addEventListener('dblclick',e=>{if(!e.target.closest('button,a')){w.classList.toggle('is-max');saveWorkspace()}});
+ $('desktop').append(w);if(deferred){applyParkedGeometry(r,deferred);r.chatKeepOnTop=deferred.keepOnTop===true;deferredParkedChats.delete(id);}raise(r);w.addEventListener('pointerdown',()=>raise(r),true);bar.addEventListener('dblclick',e=>{if(!e.target.closest('button,a')){w.classList.toggle('is-max');saveWorkspace()}});
  let drag=null;
  bar.addEventListener('pointerdown',e=>{if(e.target.closest('button,a')||w.classList.contains('is-max')||touchOS()||innerWidth<=620)return;const rect=w.getBoundingClientRect();drag={x:e.clientX-rect.left,y:e.clientY-rect.top};bar.setPointerCapture(e.pointerId)});
  bar.addEventListener('pointermove',e=>{if(!drag)return;w.style.left=Math.max(0,Math.min(innerWidth-w.offsetWidth,e.clientX-drag.x))+'px';w.style.top=Math.max(34,Math.min(innerHeight-100,e.clientY-drag.y))+'px'});
