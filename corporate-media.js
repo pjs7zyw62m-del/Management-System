@@ -14,8 +14,8 @@ async function render(){
  $('filename').textContent=item.filename+' · '+(item.kind==='video'?'VIDEO':'PHOTO');
  $('caption').textContent='Secure original media · '+(item.bytes/(1024*1024)).toFixed(1)+' MB';
  $('stage').replaceChildren();
- $('download').disabled=true;
- $('viewOriginal').hidden=true;
+ $('download').disabled=true;$('download').style.display=item.kind==='photo'?'none':'';
+ $('viewOriginal').hidden=true;$('viewOriginal').style.display=item.kind==='photo'?'none':'';$('viewOriginal').removeAttribute('href');
  history.replaceState(null,'','?id='+encodeURIComponent(item.id));
  setStatus('Loading original media…');
  try{
@@ -32,12 +32,12 @@ async function render(){
    const img=document.createElement('img');
    img.alt=item.filename;img.src=data.signedUrl;
    img.addEventListener('load',()=>{
-    $('caption').textContent='Original photo · '+img.naturalWidth+' × '+img.naturalHeight+' pixels · '+(item.bytes/(1024*1024)).toFixed(1)+' MB · Long-press to save';
+    $('caption').textContent='Original photo · '+img.naturalWidth+' × '+img.naturalHeight+' pixels · '+(item.bytes/(1024*1024)).toFixed(1)+' MB · Photo downloads are available only in BLACKCELL Photos';
    });
    img.addEventListener('error',()=>setStatus('Could not load this photo. Try returning to Shared Media.'));
    $('stage').append(img);
   }
-  $('viewOriginal').href=data.signedUrl;$('viewOriginal').hidden=false;
+  if(item.kind!=='photo'){$('viewOriginal').href=data.signedUrl;$('viewOriginal').hidden=false;}
   $('download').disabled=false;
   setStatus('');
  }catch(e){setStatus(e.message||'Media unavailable')}
@@ -50,7 +50,7 @@ let touchX=0;
 $('stage').addEventListener('touchstart',e=>{touchX=e.touches[0]?.clientX||0},{passive:true});
 $('stage').addEventListener('touchend',e=>{const x=e.changedTouches[0]?.clientX||touchX;const diff=x-touchX;if(Math.abs(diff)>80)change(diff<0?1:-1)},{passive:true});
 $('download').addEventListener('click',async()=>{
- const item=items[current];if(!item)return;
+ const item=items[current];if(!item)return;if(item.kind==='photo'){setStatus('Photo downloads are available only in BLACKCELL Photos. Chat photo transfers are not connected yet.');return}
  const btn=$('download');btn.disabled=true;btn.textContent='PREPARING DOWNLOAD…';
  try{
   const {data,error}=await storage.download(item.storage_path);
