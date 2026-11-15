@@ -197,3 +197,90 @@ body.mf-body::before{display:none}
 @media(max-width:980px){#discover.mf-cinematic-landing .mf-album-grid{grid-template-columns:repeat(3,minmax(0,1fr))}#discover.mf-cinematic-landing .mf-lineup img{height:auto;max-height:55dvh}#discover .mf-app-name{font-size:14px}}
 @media(max-width:520px){#discover.mf-cinematic-landing .mf-album-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}#discover.mf-cinematic-landing .mf-lineup img{max-height:none}#discover .mf-app-strip{min-height:57px;padding:9px}#discover .mf-app-get{flex-basis:38px;height:38px}#discover .mf-app-name{font-size:12px}}
 @media(prefers-reduced-motion:reduce){#discover.mf-cinematic-landing .mf-album-art img,#discover.mf-cinematic-landing .mf-portrait-tile,#discover .mf-app-get{transition:none}}
+
+/* MAF — premium editorial storefront. Preserve the original photography. */
+#uMain #discover.mf-cinematic-landing{
+ --mf-silver:#a1a1a6;--mf-white:#f5f5f7;--mf-content:1320px;
+ gap:0;padding:0 0 max(18px,env(safe-area-inset-bottom));color:var(--mf-white);
+ font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;
+}
+#discover.mf-cinematic-landing .mf-editorial-nav{
+ width:100%;max-width:var(--mf-content);min-height:57px;box-sizing:border-box;
+ padding:10px clamp(20px,4vw,56px);display:flex;align-items:center;justify-content:space-between;gap:14px;
+ border-bottom:1px solid #ffffff13;flex:none;
+}
+#discover .mf-editorial-brand{display:flex;align-items:center;gap:10px;color:#f5f5f7;text-decoration:none;font-size:14px;font-weight:650;letter-spacing:-.025em;line-height:1.15;white-space:nowrap}
+#discover .mf-editorial-mark{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:linear-gradient(145deg,#343438,#121214);border:1px solid #ffffff23;font-size:18px;font-weight:700;box-shadow:inset 0 1px 0 #ffffff12}
+#discover .mf-editorial-brand small{display:block;color:#86868b;font-size:8px;font-weight:650;letter-spacing:.12em;margin-top:4px}
+#discover .mf-editorial-nav nav{display:flex;align-items:center;gap:clamp(4px,1.4vw,20px)}
+#discover .mf-editorial-nav nav button{display:flex;align-items:center;gap:6px;padding:9px 10px;color:#d1d1d6;line-height:1.2;font-family:inherit;font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;white-space:nowrap;border:0;background:none;border-radius:999px;cursor:pointer}
+#discover .mf-editorial-nav nav button:hover,#discover .mf-editorial-nav nav button:focus-visible{color:#fff;background:#ffffff12}
+#discover .mf-editorial-nav nav .mf-editorial-upload{border:1px solid #ffffff22;padding:8px 13px;background:#171719}
+#discover .mf-editorial-upload svg{width:15px;height:15px}
+#discover .mf-editorial-intro{text-align:center;max-width:100%;padding:clamp(24px,4vh,58px) 20px 12px;box-sizing:border-box;flex:none}
+#discover .mf-editorial-intro h1{margin:0;color:#f5f5f7;font-size:clamp(34px,5.3vw,76px);font-weight:650;letter-spacing:-.058em;line-height:1.02}
+#discover .mf-editorial-intro p{margin:9px 0 0;color:#a1a1a6;font-size:clamp(14px,1.6vw,23px);font-weight:450;letter-spacing:-.025em}
+#discover.mf-cinematic-landing .mf-lineup{width:100%;max-width:var(--mf-content);margin:0 auto;box-sizing:border-box}
+#discover.mf-cinematic-landing .mf-lineup img{display:block;height:min(46dvh,560px);width:100%;max-width:100%;object-fit:contain;object-position:center bottom}
+#discover.mf-cinematic-landing .mf-app-shelf{width:min(100%,var(--mf-content));padding:clamp(18px,2.8vh,34px) clamp(20px,4vw,56px) 0;border-top:1px solid #ffffff15}
+#discover.mf-cinematic-landing .mf-shelf-tools{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin:0 0 18px;min-height:0}
+#discover .mf-shelf-heading h2{margin:0;font-size:clamp(22px,2.45vw,34px);font-weight:650;letter-spacing:-.045em;line-height:1.1}
+#discover .mf-shelf-heading p{margin:6px 0 0;color:#a1a1a6;font-size:13px;letter-spacing:-.01em}
+#discover .mf-rotation-group{display:flex;align-items:center;gap:9px;flex:none}
+#discover .mf-rotation-text{font-size:11px;font-weight:550;color:#a1a1a6;white-space:nowrap}
+#discover .mf-rotation-control{width:33px;height:33px;min-height:33px;min-width:33px;background:#1b1b1e;color:#eee;border:1px solid #ffffff18}
+#discover.mf-cinematic-landing .mf-album-grid{grid-template-columns:repeat(6,minmax(0,1fr));gap:clamp(9px,1.25vw,17px);align-items:stretch}
+#discover.mf-cinematic-landing .mf-portrait-tile{display:flex;flex-direction:column;gap:0;border-radius:20px;border:1px solid #ffffff14;background:#101012;box-shadow:0 6px 24px #0007;isolation:isolate}
+#discover.mf-cinematic-landing .mf-portrait-tile:hover,#discover.mf-cinematic-landing .mf-portrait-tile:focus-within{border-color:#ffffff36;box-shadow:0 8px 24px #ffffff0b}
+#discover.mf-cinematic-landing .mf-album{flex:0 0 auto;display:block;background:#000}
+#discover.mf-cinematic-landing .mf-album-art{height:auto;aspect-ratio:2/3;position:relative;background:#000}
+#discover.mf-cinematic-landing .mf-album-art img{object-fit:contain;object-position:center;transform:none}
+#discover.mf-cinematic-landing .mf-app-strip{flex:1;align-items:center;min-height:70px;gap:8px;padding:9px 11px;background:linear-gradient(150deg,#232325,#141416);border-top:1px solid #ffffff14}
+#discover .mf-app-copy{min-width:0;flex:1;display:flex;flex-direction:column;justify-content:center;gap:5px}
+#discover .mf-app-copy .mf-app-name{font-weight:650;font-size:clamp(11px,1.09vw,15px);line-height:1.12;letter-spacing:-.025em;overflow-wrap:normal}
+#discover .mf-app-copy small{color:#a1a1a6;font-size:10px;line-height:1.15;font-weight:450;letter-spacing:0;overflow-wrap:normal}
+#discover .mf-app-get{flex:0 0 32px;width:32px;height:32px;border:0;background:transparent;color:#2997ff}
+#discover .mf-app-get svg{width:23px;height:23px}
+#discover .mf-app-get:hover,#discover .mf-app-get:focus-visible{background:#2997ff20;color:#72b7ff}
+#discover .mf-editorial-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;color:#737378;font-size:10px;font-weight:550;letter-spacing:.055em;margin-top:24px;padding-top:14px;border-top:1px solid #ffffff12}
+#discover .mf-shortcut-status{min-height:0;margin:7px 0 0}
+#discover .mf-shortcut-status:empty{display:none}
+@media(min-width:1001px) and (max-height:800px){
+ #discover .mf-editorial-intro{padding:18px 20px 8px}
+ #discover .mf-editorial-intro h1{font-size:clamp(38px,4.2vw,60px)}
+ #discover .mf-editorial-intro p{margin-top:6px;font-size:16px}
+ #discover.mf-cinematic-landing .mf-lineup img{height:min(38dvh,320px)}
+ #discover.mf-cinematic-landing .mf-app-shelf{padding-top:17px;max-width:1150px}
+ #discover.mf-cinematic-landing .mf-shelf-tools{margin-bottom:12px}
+ #discover.mf-cinematic-landing .mf-app-strip{min-height:62px}
+}
+@media(max-width:1000px){
+ #discover.mf-cinematic-landing .mf-album-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+ #discover.mf-cinematic-landing .mf-lineup img{height:auto;max-height:52dvh}
+ #discover .mf-app-copy .mf-app-name{font-size:14px}
+ #discover .mf-app-copy small{font-size:11px}
+}
+@media(max-width:560px){
+ #discover.mf-cinematic-landing .mf-editorial-nav{padding:10px 14px;min-height:53px;gap:4px}
+ #discover .mf-editorial-brand{font-size:12px;gap:7px}
+ #discover .mf-editorial-brand small{font-size:7px}
+ #discover .mf-editorial-mark{width:27px;height:27px;font-size:15px}
+ #discover .mf-editorial-nav nav{gap:0}
+ #discover .mf-editorial-nav nav button{font-size:11px;padding:8px 6px}
+ #discover .mf-editorial-nav nav .mf-editorial-upload{padding:7px 8px}
+ #discover .mf-editorial-upload span{display:none}
+ #discover .mf-editorial-intro{padding:25px 10px 12px}
+ #discover .mf-editorial-intro h1{font-size:clamp(30px,8.5vw,46px)}
+ #discover.mf-cinematic-landing .mf-lineup img{height:auto;max-height:none}
+ #discover.mf-cinematic-landing .mf-app-shelf{padding:20px 14px 0}
+ #discover.mf-cinematic-landing .mf-album-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ #discover.mf-cinematic-landing .mf-shelf-tools{gap:6px;margin-bottom:14px}
+ #discover .mf-shelf-heading h2{font-size:22px}
+ #discover .mf-shelf-heading p{font-size:11px}
+ #discover .mf-rotation-text{display:none}
+ #discover.mf-cinematic-landing .mf-app-strip{min-height:65px;padding:8px 9px}
+ #discover .mf-app-copy .mf-app-name{font-size:13px}
+ #discover .mf-app-copy small{font-size:10px}
+ #discover .mf-editorial-footer{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){#discover.mf-cinematic-landing .mf-portrait-tile,#discover .mf-app-get{transition:none}}
