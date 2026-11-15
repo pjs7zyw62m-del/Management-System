@@ -98,7 +98,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   }
   return false;
  }
- let peerId=null,library=[],visible=[],active=0,batchFocus=null,viewMode='standard',focused=false;
+ let peerId=null,library=[],visible=[],active=0,batchFocus=null,focused=false;
  let selection=[],busy=false,filter='all',search='',sort='newest',autoNext=false,mediaReady=false,pickPeer=null,libraryGeneration=0,selectionPeer=null;
  let signed=new Map(),urlsTime=0,drawToken=0;
  let libraryOffset=0,hasMoreMedia=false,loadingMoreMedia=false;
@@ -170,9 +170,6 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const brand=el('div','media-viewer-brand');
  brand.append(el('strong','','Shared Media'),el('small','','PRIVATE CONVERSATION LIBRARY'));
  const actions=el('div','media-viewer-actions');
- const standard=button('Standard',()=>setSize('standard'));
- const expanded=button('Expanded',()=>setSize('expanded'));
- const custom=button('Custom',()=>setSize('custom'));
  const add=button('＋ Add Media',()=>openShare());
  const focus=button('FOCUS VIEW ↗',()=>setFocus(!focused),'media-focus-toggle');
  focus.setAttribute('aria-pressed','false');
@@ -181,12 +178,6 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const refreshLibrary=button('↻ Refresh',()=>void loadLibrary());
  actions.append(refreshLibrary,focus,add,close);
  head.append(brand,actions);
- const sizing=el('div','media-custom-range');sizing.hidden=true;
- const sizeLabel=el('span','','Viewer size');
- const sizeRange=el('input');sizeRange.type='range';sizeRange.min='35';sizeRange.max='85';sizeRange.value='55';
- const sizeValue=el('span','','55%');
- sizeRange.addEventListener('input',()=>{wing.style.setProperty('--media-custom-height',sizeRange.value+'%');sizeValue.textContent=sizeRange.value+'%'});
- sizing.append(sizeLabel,sizeRange,sizeValue);
  const tools=el('div','media-viewer-tools');
  const searchBox=el('input');searchBox.type='search';searchBox.placeholder='Search media…';
  searchBox.setAttribute('aria-label','Search media by file name');
@@ -232,20 +223,58 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const loadMoreButton=button('LOAD MORE MEDIA',()=>void loadOlderMedia(),'bc-media-load-more');
  loadMoreButton.hidden=true;
  libraryBox.append(libraryHead,history,libraryList,loadMoreButton);
- wing.append(head,sizing,tools,wingStatus,stage,currentMeta,libraryBox);
- main.after(wing);
- function setSize(value){
-  viewMode=value;
-  stage.className='media-viewer-stage '+value;
-  sizing.hidden=value!=='custom';
-  for(const [k,b] of [['standard',standard],['expanded',expanded],['custom',custom]])
-   b.classList.toggle('active',value===k);
+ // Direct manipulation of the two panes. Only layout preferences are stored, never media or contact data.
+ const widthDivider=el('div','bc-media-resize bc-media-resize-width');
+ const heightDivider=el('div','bc-media-resize bc-media-resize-height');
+ const layoutKey='bc.imessage.media.layout.v1';
+ const clamp=(v,lo,hi)=>Math.min(hi,Math.max(lo,v));
+ let preferredWidth=42,preferredLibrary=32;
+ try{const v=JSON.parse(localStorage.getItem(layoutKey)||'null');if(Number.isFinite(v?.width))preferredWidth=clamp(v.width,15,85);if(Number.isFinite(v?.library))preferredLibrary=clamp(v.library,10,75)}catch(_){}
+ function applyLayout(){chat.style.setProperty('--bc-shared-width',preferredWidth+'%');wing.style.setProperty('--bc-library-share',preferredLibrary+'%');widthDivider.setAttribute('aria-valuenow',String(Math.round(preferredWidth)));heightDivider.setAttribute('aria-valuenow',String(Math.round(preferredLibrary)))}
+ function saveMediaLayout(){try{localStorage.setItem(layoutKey,JSON.stringify({width:preferredWidth,library:preferredLibrary}))}catch(_){}}
+ function widthBounds(){
+  const total=chat.getBoundingClientRect().width;
+  const sidebarRect=chat.querySelector('.sidebar')?.getBoundingClientRect();
+  const sidebar=chat.classList.contains('os-sidebar-closed')?0:(sidebarRect?.width||0);
+  const min=Math.min(300,total),max=Math.max(min,total-sidebar-260);return {total,min,max};
  }
- setSize('standard');
+ function libraryBounds(){
+  const total=wing.getBoundingClientRect().height,available=stage.getBoundingClientRect().height+libraryBox.getBoundingClientRect().height;
+  const min=Math.min(94,available),max=Math.max(min,available-100);return {total,min,max};
+ }
+ function setDimension(axis,pixels){
+  const {total,min,max}=axis==='width'?widthBounds():libraryBounds();if(total<=0)return;
+  const percent=clamp(pixels,min,max)/total*100;
+  if(axis==='width')preferredWidth=percent;else preferredLibrary=percent;applyLayout();
+ }
+ function bindDivider(node,axis){
+  const horizontal=axis==='width',label=horizontal?'Resize Shared Media width':'Resize media library height';
+  node.tabIndex=0;node.setAttribute('role','separator');node.setAttribute('aria-label',label);node.setAttribute('aria-orientation',horizontal?'vertical':'horizontal');node.setAttribute('aria-valuemin','0');node.setAttribute('aria-valuemax','100');
+  node.title=horizontal?'Drag left or right to resize Shared Media. Double-click to reset.':'Drag up or down to resize the viewer. Double-click to reset.';
+  let drag=null;
+  const position=e=>horizontal?e.clientX:e.clientY;
+  const current=()=>horizontal?wing.getBoundingClientRect().width:libraryBox.getBoundingClientRect().height;
+  const reset=()=>{if(horizontal)preferredWidth=42;else preferredLibrary=32;applyLayout();saveMediaLayout()};
+  const end=e=>{if(!drag||e?.pointerId!==undefined&&e.pointerId!==drag.id)return;const id=drag.id;drag=null;if(node.hasPointerCapture?.(id))node.releasePointerCapture(id);chat.classList.remove('bc-media-resizing');document.documentElement.classList.remove('bc-media-resizing');saveMediaLayout()};
+  node.addEventListener('pointerdown',e=>{if(drag||e.button!==0||!chat.classList.contains('media-open')||node.getClientRects().length===0)return;e.preventDefault();drag={id:e.pointerId,start:position(e),size:current()};node.setPointerCapture(e.pointerId);chat.classList.add('bc-media-resizing');document.documentElement.classList.add('bc-media-resizing')});
+  node.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;e.preventDefault();setDimension(axis,drag.size+drag.start-position(e))});
+  for(const type of ['pointerup','pointercancel','lostpointercapture'])node.addEventListener(type,end);
+  window.addEventListener('blur',()=>end());
+  node.addEventListener('dblclick',e=>{e.preventDefault();reset()});
+  node.addEventListener('keydown',e=>{
+   if(e.key==='Home'){e.preventDefault();reset();return}
+   const increase=horizontal?'ArrowLeft':'ArrowUp',decrease=horizontal?'ArrowRight':'ArrowDown';if(e.key!==increase&&e.key!==decrease)return;
+   e.preventDefault();setDimension(axis,current()+(e.key===increase?1:-1)*(e.shiftKey?64:16));saveMediaLayout();
+  });
+ }
+ wing.append(widthDivider,head,tools,wingStatus,stage,currentMeta,heightDivider,libraryBox);
+ main.after(wing);
+ bindDivider(widthDivider,'width');bindDivider(heightDivider,'height');applyLayout();
  function setFocus(value){
   focused=!!value;
   document.documentElement.classList.toggle('bc-media-focus',focused);
   wing.classList.toggle('media-focused',focused);
+  heightDivider.hidden=focused;
   focus.textContent=focused?'SHOW LIBRARY ▧':'FOCUS VIEW ↗';
   focus.title=focused?'Show thumbnails, search and album history':'Hide thumbnails to enlarge the photo or video';
   focus.setAttribute('aria-pressed',String(focused));
