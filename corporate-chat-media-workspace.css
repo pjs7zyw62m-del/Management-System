@@ -79,7 +79,11 @@ html:not(.bc-media-panel) .media-dialog-footer .media-primary{background:#a22d43
 .bc-media-resize-height::after{content:"";position:absolute;top:3px;left:calc(50% - 20px);height:3px;width:40px;border-radius:4px;background:#ffffff45}
 .bc-media-resize:hover,.bc-media-resize:focus-visible{background:#ab3b4b38}
 .bc-media-resize-width:hover::after,.bc-media-resize-width:focus-visible::after,.bc-media-resize-height:hover::after,.bc-media-resize-height:focus-visible::after{background:#e16d80}
-html.bc-media-resizing,html.bc-media-resizing *{user-select:none!important;transition:none!important;animation:none!important}
+html.bc-media-resizing{user-select:none!important}
+html.bc-media-resizing .chat,html.bc-media-resizing .chat-main,html.bc-media-resizing .media-viewer,html.bc-media-resizing .media-library,html.bc-media-resizing .media-viewer-stage{transition:none!important;animation:none!important}
+html:not(.bc-media-panel) .chat.media-open{transition:none!important}
+html:not(.bc-media-panel) .media-viewer-stage,html:not(.bc-media-panel) .media-library-list{contain:layout paint}
+html.bc-media-resizing .media-library-item,html.bc-media-resizing .media-viewer-stage img,html.bc-media-resizing .media-viewer-stage video{transition:none!important}
 html:not(.bc-media-panel) .media-viewer .media-library{flex:0 1 var(--bc-library-share,32%);max-height:none;min-height:94px}
 html:not(.bc-media-panel) .media-viewer .media-viewer-stage{flex:1 1 0;min-height:100px}
 html:not(.bc-media-panel) .media-viewer :is(.media-viewer-head,.media-viewer-tools,.media-viewer-status,.media-viewer-meta){flex:none}
