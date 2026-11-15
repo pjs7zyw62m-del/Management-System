@@ -94,7 +94,7 @@ async function finishBoot(){
  if(!preview&&(!active||leaving||$('gate').dataset.state!=='boot'))return false;
  bootComplete=true;$('gate').hidden=true;if(!workspaceLock?.isLocked())$('desktop').hidden=false;applyAppLayout();return true;
 }
-function setupWorkspaceLock(){if(workspaceLock)return;workspaceLock=createWorkspaceLock({host:$('desktop'),preview,account:()=>({id:storeProfile,name:$('memberName').textContent,initials:$('initials').textContent}),usable:()=>!leaving&&(active||preview),verify:async secret=>{const verified=await verifyWorkspacePassword(client,storeProfile,secret);if(!verified.ok)return verified;const result=await corporateAuthorize(client,{allowLedgerOnly:true});if(!result.ok||result.user.id!==storeProfile||!memberAllowed(result.member)||(!owner&&result.member.access_scope==='ledger_only'))return {ok:false,message:'Corporate session has expired. Sign Out and authenticate again.'};const {data,error}=await client.rpc(owner?'corp_code_status':'corp_employee_code_status');if(error||data?.ok!==true||data?.verified!==true)return {ok:false,message:'Corporate security verification expired. Sign Out and authenticate again.'};return {ok:true}},onLock:()=>{const parked=$('osParkedChatRail');if(parked){parked.hidden=true;parked.replaceChildren();}securityNotifications?.pause();closeRecycleBin();finishAppRearrange();cancelAppHold();closeAppContext();closeMenu();dockReveal(false);saveWorkspace();for(const r of windows.values()){if(r.frame)pauseFrameMedia(r.frame);for(const media of r.el.querySelectorAll('video,audio'))try{media.pause()}catch(_){}}},onUnlock:()=>{syncParkedChatBubbles();last=Date.now();if(bootComplete)$('desktop').hidden=false;applyAppLayout();void activity();void recheck();void securityNotifications?.refresh()},onSignOut:()=>void signOut()});}
+function setupWorkspaceLock(){if(workspaceLock)return;workspaceLock=createWorkspaceLock({host:$('desktop'),preview,account:()=>({id:storeProfile,name:$('memberName').textContent,initials:$('initials').textContent}),usable:()=>!leaving&&(active||preview),verify:async secret=>{const verified=await verifyWorkspacePassword(client,storeProfile,secret);if(!verified.ok)return verified;const result=await corporateAuthorize(client,{allowLedgerOnly:true});if(!result.ok||result.user.id!==storeProfile||!memberAllowed(result.member)||(!owner&&result.member.access_scope==='ledger_only'))return {ok:false,message:'Corporate session has expired. Sign Out and authenticate again.'};const {data,error}=await client.rpc(owner?'corp_code_status':'corp_employee_code_status');if(error||data?.ok!==true||data?.verified!==true)return {ok:false,message:'Corporate security verification expired. Sign Out and authenticate again.'};return {ok:true}},onLock:()=>{closeAppPasswordPrompt();hideProtectedWindows();const parked=$('osParkedChatRail');if(parked){parked.hidden=true;parked.replaceChildren();}securityNotifications?.pause();closeRecycleBin();finishAppRearrange();cancelAppHold();closeAppContext();closeMenu();dockReveal(false);saveWorkspace();for(const r of windows.values()){if(r.frame)pauseFrameMedia(r.frame);for(const media of r.el.querySelectorAll('video,audio'))try{media.pause()}catch(_){}}},onUnlock:()=>{syncParkedChatBubbles();last=Date.now();if(bootComplete)$('desktop').hidden=false;applyAppLayout();void activity();void recheck();void securityNotifications?.refresh()},onSignOut:()=>void signOut()});}
 function lockWorkspace(mode='lock'){if(!workspaceLock||workspaceLock.isLocked())return;workspaceLock.lock(mode);}
 function restartWorkspace(){if(!active&&!preview)return;if([...windows.values()].some(appBusy)){osNotice('Finish active operations before restarting.');return}if(!confirm('Restart BLACKCELL OS? Save unsaved work first. Your window layout will be restored.'))return;saveWorkspace();location.reload();}
 const dockDefaults=new Set([...document.querySelectorAll('.dock [data-open]')].map(b=>b.dataset.open));
@@ -197,7 +197,7 @@ function setDockPin(id,pinned){
  let saved=false;const record=JSON.stringify(Object.fromEntries(dockOverrides));for(const {name,store} of preferenceStores()){try{store.setItem(dockPreferenceKey(),record);if(name==='localStorage'&&store.getItem(dockPreferenceKey())===record)saved=true}catch(_){}}
  syncDockTile(tile);osNotice((tile.dataset.title||'App')+(pinned?' added to Dock.':' removed from Dock.')+(saved?'':' Preference could not be saved permanently on this device.'));if(pinned&&desktopPrefs.dockAutoHide)dockReveal(true)
 }
-function initStore(uid){storeProfile=uid;readDockPreferences();readAppLayout();clearStore('Checking app permissions…')}
+function initStore(uid){storeProfile=uid;readAppLocks();readDockPreferences();readAppLayout();clearStore('Checking app permissions…')}
 function syncStore(){
  if(preview)return;
  for(const tile of document.querySelectorAll('.app[data-app]')){
@@ -209,7 +209,7 @@ function syncStore(){
  applyAppLayout();
  if(recyclePanel)renderRecycleBin();
  $('adminReturn').hidden=!installedApp('administration');
- renderFolderPins();windows.get('settings')?.refreshSettings?.();
+ renderFolderPins();refreshAppLockBadges();windows.get('settings')?.refreshSettings?.();
 }
 function storeCatalog(){if(preview)return [];return [...document.querySelectorAll('.app[data-app]')].filter(t=>t.dataset.app!=='store'&&!t.disabled&&storeRules.has(t.dataset.app)).map(t=>{const r=storeRules.get(t.dataset.app),optional=t.dataset.optional==='true';return {id:t.dataset.app,title:t.dataset.title,sub:t.dataset.sub,desc:t.dataset.desc,icon:t.querySelector('svg'),optional,removable:true,installed:storeInstalled.has(t.dataset.app),allowed:r.allowed,minLevel:r.minLevel,enabled:r.enabled}})}
 function storeInfo(){return {owner:storeAdmin,level:storeLevel,error:preview?'Design preview only. Sign in to see your approved app catalog.':storeError,missingLedger:owner&&!preview&&!storeRules.has('photoledger'),release:'67 · Photos-only downloads',registered:storeRules.size,ledger:storeRules.has('photoledger')?(storeInstalled.has('photoledger')?'Installed':storeRules.get('photoledger').allowed?'Available':'Restricted'):'Not returned',sessionRequired:!preview&&/session|verify corporate access|sign in|clearance required/i.test(storeError)}}
@@ -254,14 +254,14 @@ async function setStoreRule(id,level,enabled){if(!storeAdmin||preview)return {ok
 function hostMessage(type){if(embeddedAdmin)window.parent.postMessage({type},location.origin)}
 function returnAdmin(){if(owner||preview)showApp('administration')}
 function clock(){ $('clock').textContent=new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}); }clock();setInterval(clock,15000);
-function blocked(message){stopRecovery();recoveryAttempts=0;recoveryAccount=null;recoveryLast=null;$('gateRetry').hidden=true;closeRecycleBin();finishAppRearrange();cancelAppHold();closeAppContext();stopBootProgress();workspaceLock?.dismiss();$('gate').dataset.state='blocked';stopStorageWidget();securityNotifications?.dispose();securityNotifications=null;clearWorkspace();active=false;closeAll(true);$('desktop').hidden=true;$('gate').hidden=false;$('gateMessage').textContent=message;$('gateLink').hidden=false;hostMessage('blackcell-os-blocked');}
+function blocked(message){closeAppPasswordPrompt();stopRecovery();recoveryAttempts=0;recoveryAccount=null;recoveryLast=null;$('gateRetry').hidden=true;closeRecycleBin();finishAppRearrange();cancelAppHold();closeAppContext();stopBootProgress();workspaceLock?.dismiss();$('gate').dataset.state='blocked';stopStorageWidget();securityNotifications?.dispose();securityNotifications=null;clearWorkspace();active=false;closeAll(true);$('desktop').hidden=true;$('gate').hidden=false;$('gateMessage').textContent=message;$('gateLink').hidden=false;hostMessage('blackcell-os-blocked');}
 /* Fail closed on uncertain connectivity without revoking credentials or
    deleting the saved workspace. Explicit expiry still uses blocked/signOut. */
 function pauseVerification(message){
  if(leaving)return;
  if($('gate').dataset.state==='paused'){if(recoveryTimer===null)scheduleRecovery(recoveryDelay(recoveryAttempts));return}
  if(active&&storeProfile){recoveryAccount=storeProfile;recoveryLast=last;saveWorkspace()}
- active=false;bootComplete=false;workspaceReady=false;stopBootProgress();closeRecycleBin();finishAppRearrange();cancelAppHold();closeAppContext();closeMenu();dockReveal(false);workspaceLock?.dismiss();
+ closeAppPasswordPrompt();active=false;bootComplete=false;workspaceReady=false;stopBootProgress();closeRecycleBin();finishAppRearrange();cancelAppHold();closeAppContext();closeMenu();dockReveal(false);workspaceLock?.dismiss();
  stopStorageWidget();securityNotifications?.dispose();securityNotifications=null;closeAll(true);
  const delay=recoveryDelay(++recoveryAttempts);
  $('desktop').hidden=true;$('gate').dataset.state='paused';$('gate').hidden=false;$('gateMessage').textContent=message+' Reconnecting automatically. Your sign-in has not been ended.';$('gateRetry').hidden=false;$('gateRetry').disabled=false;$('gateRetry').textContent='RETRY NOW';$('gateLink').hidden=true;
@@ -269,6 +269,77 @@ function pauseVerification(message){
 }
 const windows=new Map();let layer=25,selectedWindow=null;
 let workspaceReady=false,workspaceRestoring=false,pendingRestore=[];
+/* Account-scoped device privacy preference; the corporate backend still enforces access. */
+const protectedApps=new Set(),deferredParkedChats=new Map();
+let appPasswordPrompt=null,appPasswordFailures=0,appPasswordRetryAt=0;
+const appBase=id=>String(id).startsWith('chatpop-')?'chat':id;
+const appLockKey=()=> 'bc.os.app-locks.v1:'+String(storeProfile||'');
+function readAppLocks(){
+ protectedApps.clear();deferredParkedChats.clear();
+ if(preview||!storeProfile)return;
+ try{const saved=JSON.parse(localStorage.getItem(appLockKey())||'[]');if(Array.isArray(saved))for(const id of saved)if(typeof id==='string'&&/^[a-z]{1,40}$/.test(id))protectedApps.add(id)}catch(_){}
+}
+function appProtected(id){return !preview&&protectedApps.has(appBase(id))}
+function refreshAppLockBadges(){
+ for(const tile of document.querySelectorAll('.app[data-app]'))tile.classList.toggle('bc-app-protected',appProtected(tile.dataset.app));
+ for(const button of document.querySelectorAll('.dock button[data-open]'))button.classList.toggle('bc-app-protected',appProtected(button.dataset.open));
+}
+function hideProtectedWindows(id=null){
+ for(const r of windows.values())if(appProtected(r.id)&&(!id||appBase(r.id)===id)){
+  r.el.hidden=true;pauseFrameMedia(r.frame);if(selectedWindow===r)selectedWindow=null;
+ }
+ syncStoreUpdateHold();syncChatVisibility();saveWorkspace();
+}
+function closeAppPasswordPrompt(){
+ if(!appPasswordPrompt)return;
+ const p=appPasswordPrompt;appPasswordPrompt=null;p.input.value='';p.dialog.close();p.dialog.remove();
+}
+function askAppPassword(title,verb,verified){
+ if(!active||preview||leaving||workspaceLock?.isLocked()||appPasswordPrompt)return;
+ const uid=storeProfile,dialog=document.createElement('dialog');dialog.className='bc-app-lock-dialog';dialog.setAttribute('aria-label',verb+' '+title);
+ const make=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt)e.textContent=txt;return e};
+ const card=make('form','bc-app-lock-card'),icon=make('div','bc-app-lock-symbol');
+ icon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>';
+ const heading=make('h2','',verb+' '+title),description=make('p','','Verify your corporate password to continue.');
+ const input=make('input','bc-app-lock-input');input.type='password';input.autocomplete='current-password';input.placeholder='Corporate password';input.required=true;input.maxLength=1024;input.setAttribute('aria-label','Corporate password');
+ const note=make('p','bc-app-lock-status');note.setAttribute('role','status');
+ const buttons=make('div','bc-app-lock-actions'),cancel=make('button','','Cancel'),submit=make('button','bc-app-lock-submit',verb);cancel.type='button';submit.type='submit';
+ buttons.append(cancel,submit);card.append(icon,heading,description,input,note,buttons);dialog.append(card);document.body.append(dialog);
+ const prompt={dialog,input};appPasswordPrompt=prompt;
+ cancel.onclick=closeAppPasswordPrompt;dialog.addEventListener('cancel',e=>{e.preventDefault();closeAppPasswordPrompt()});
+ card.onsubmit=async e=>{
+  e.preventDefault();if(appPasswordPrompt!==prompt||submit.disabled)return;
+  if(Date.now()<appPasswordRetryAt){note.textContent='Try again in '+Math.ceil((appPasswordRetryAt-Date.now())/1000)+' seconds.';return}
+  const secret=input.value;input.value='';input.disabled=true;submit.disabled=true;note.textContent='Verifying…';
+  try{
+   const result=await verifyWorkspacePassword(client,uid,secret);
+   if(appPasswordPrompt!==prompt||!active||leaving||storeProfile!==uid||workspaceLock?.isLocked())return;
+   if(!result?.ok){appPasswordFailures++;appPasswordRetryAt=Date.now()+Math.min(30000,1000*2**Math.min(appPasswordFailures,5));note.textContent=result?.message||'Password not accepted.';return}
+   const auth=await corporateAuthorize(client,{allowLedgerOnly:true});
+   if(appPasswordPrompt!==prompt||!active||leaving||storeProfile!==uid||workspaceLock?.isLocked())return;
+   if(!auth.ok||auth.user.id!==uid||!memberAllowed(auth.member)||(!owner&&auth.member.access_scope==='ledger_only')){note.textContent='Your corporate session needs verification. Sign in again.';return}
+   const {data,error}=await client.rpc(owner?'corp_code_status':'corp_employee_code_status');
+   if(appPasswordPrompt!==prompt||!active||leaving||storeProfile!==uid||workspaceLock?.isLocked())return;
+   if(error||data?.ok!==true||data?.verified!==true){note.textContent='Corporate security verification expired.';return}
+   appPasswordFailures=0;appPasswordRetryAt=0;closeAppPasswordPrompt();verified();
+  }catch(_){if(appPasswordPrompt===prompt)note.textContent='Unable to verify. Try again.'}
+  finally{if(appPasswordPrompt===prompt){input.disabled=false;submit.disabled=false;input.focus()}}
+ };
+ try{dialog.showModal();input.focus()}catch(_){closeAppPasswordPrompt();osNotice('Unable to open password verification.')}
+}
+function toggleAppProtection(id,title){
+ if(!contextAllowed()||!installedApp(id))return;
+ const enable=!appProtected(id);
+ askAppPassword(title,enable?'Protect':'Remove lock from',()=>{
+  if(!contextAllowed()||!installedApp(id))return;
+  const next=new Set(protectedApps);if(enable)next.add(id);else next.delete(id);
+  try{localStorage.setItem(appLockKey(),JSON.stringify([...next]));}
+  catch(_){osNotice('App lock could not be saved on this device.');return}
+  protectedApps.clear();for(const value of next)protectedApps.add(value);
+  if(enable)hideProtectedWindows(id);
+  refreshAppLockBadges();syncParkedChatBubbles();osNotice(enable?title+' is password protected on this device.':title+' password lock removed.');
+ });
+}
 function workspaceKey(){return 'bc.os.workspace.v1:'+String(storeProfile||'preview')+':'+(embeddedAdmin?'executive':'desktop')}
 function saveWorkspace(){
  if(!workspaceReady||workspaceRestoring||(!active&&!preview)||leaving)return;
@@ -280,10 +351,11 @@ function saveWorkspace(){
    const geometry=r.parkedGeometry||captureParkedGeometry(r);
    return {id:r.id,name:r.title,...geometry};
   });
-  sessionStorage.setItem(workspaceKey(),JSON.stringify({version:1,at:Date.now(),windows:records.slice(0,24),parkedChats}));
+  for(const saved of deferredParkedChats.values())if(!parkedChats.some(r=>r.id===saved.id))parkedChats.push(saved);
+  sessionStorage.setItem(workspaceKey(),JSON.stringify({version:1,at:Date.now(),windows:records.slice(0,24),parkedChats:parkedChats.slice(0,8)}));
  }catch(_){}
 }
-function clearWorkspace(){pendingRestore=[];workspaceReady=false;try{sessionStorage.removeItem(workspaceKey());if(embeddedAdmin)sessionStorage.removeItem('bc.os.host.v1')}catch(_){}}
+function clearWorkspace(){pendingRestore=[];deferredParkedChats.clear();workspaceReady=false;try{sessionStorage.removeItem(workspaceKey());if(embeddedAdmin)sessionStorage.removeItem('bc.os.host.v1')}catch(_){}}
 function safePixels(value){return typeof value==='string'&&/^\d{1,5}(?:\.\d+)?px$/.test(value)?Number.parseFloat(value):null}
 function captureParkedGeometry(r){
  const w=r.el,maximized=w.classList.contains('is-max');
@@ -314,6 +386,7 @@ function restoreRecord(saved,parked=false){
   if(!/^chatpop-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(saved.id)||typeof saved.name!=='string'||(!preview&&!installedApp('chat')))return;
  }else if(!/^[a-z]+$/.test(saved.id)||saved.id.length>40)return;
  const tile=document.querySelector('.app[data-app="'+(parked?'chat':saved.id)+'"]');if(!tile||tile.hidden||tile.disabled)return;
+ if(appProtected(saved.id)){if(parked)deferredParkedChats.set(saved.id,saved);return;}
  const previous=selectedWindow;
  showApp(saved.id,parked?{peerId:saved.id.slice(8),name:saved.name.slice(0,70)||'Conversation'}:saved.id==='store'?saved.store:saved.id==='settings'?saved.settings:saved.files);
  const r=windows.get(saved.id);if(!r)return;
@@ -387,6 +460,7 @@ function syncStoreUpdateHold(){const r=windows.get('store');if(!r)return;const n
 function syncParkedChatBubbles(){
  let rail=$('osParkedChatRail');
  const records=[...windows.values()].filter(r=>r.chatPopout&&r.chatParked&&r.el.hidden);
+ for(const saved of deferredParkedChats.values())if(!records.some(r=>r.id===saved.id))records.push({id:saved.id,title:saved.name||'Conversation'});
  const permitted=(active||preview)&&!leaving&&!workspaceLock?.isLocked()&&(preview||installedApp('chat'));
  if(!rail&&!records.length)return;
  if(!rail){rail=document.createElement('aside');rail.id='osParkedChatRail';rail.className='os-parked-chat-rail';rail.setAttribute('aria-label','Parked conversations');$('desktop').append(rail)}
@@ -403,7 +477,7 @@ function syncParkedChatBubbles(){
   glyph.innerHTML='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C6.5 3 2 6.6 2 11c0 2.6 1.5 4.9 3.9 6.4L5 21l4-2.1c1 .2 2 .3 3 .3 5.5 0 10-3.6 10-8.1S17.5 3 12 3Z"/></svg>';
   const label=document.createElement('span');label.className='os-parked-chat-label';label.textContent=r.title;
   bubble.append(avatar,glyph,label);
-  bubble.addEventListener('click',()=>{if(windows.get(r.id)===r)showApp(r.id)});
+  bubble.addEventListener('click',()=>{if(windows.has(r.id)||deferredParkedChats.has(r.id))showApp(r.id)});
   rail.append(bubble);
  }
 }
@@ -453,7 +527,7 @@ const pinAllowed=()=> (active||preview)&&!!storeProfile;
 function initFolderPins(){folderPins=[];try{const raw=JSON.parse(localStorage.getItem(pinKey())||'[]');if(Array.isArray(raw))folderPins=raw.filter(validPin).slice(0,40)}catch(_){}renderFolderPins()}
 function saveFolderPins(next){try{localStorage.setItem(pinKey(),JSON.stringify(next));folderPins=next;renderFolderPins();return true}catch(_){osNotice('Browser storage is unavailable. Shortcut not saved.');return false}}
 function pinFolder(p){if(!pinAllowed()||!validPin(p))return;if(folderPins.some(x=>JSON.stringify(x)===JSON.stringify(p))){osNotice('That folder is already on your desktop.');return}if(folderPins.length>=40){osNotice('Remove an existing shortcut first.');return}if(saveFolderPins([...folderPins,[...p]]))osNotice(p.at(-1)+' added to your desktop.')}
-function openPinnedFolder(p){if(!pinAllowed()||!validPin(p))return;if(!preview&&!installedApp('files')){osNotice('Reinstall BLACKCELL Files from the App Store to open this folder.');showApp('store');return}const r=windows.get('files');if(r?.filesBusy){osNotice('Files is still processing an operation.');return}if(r){raise(r);if(r.openFolder)r.openFolder(p);else{r.fileState={path:[...p],layout:r.fileState?.layout||'grid'};saveWorkspace()}}else showApp('files',{path:[...p],layout:'grid'})}
+function openPinnedFolder(p){if(!pinAllowed()||!validPin(p))return;if(!preview&&!installedApp('files')){osNotice('Reinstall BLACKCELL Files from the App Store to open this folder.');showApp('store');return}const r=windows.get('files');if(r?.filesBusy){osNotice('Files is still processing an operation.');return}showApp('files',{path:[...p],layout:r?.fileState?.layout||'grid'})}
 function renderFolderPins(){const grid=$('desktopFolders'),section=$('desktopFolderSection');if(!grid||!section)return;grid.replaceChildren();section.hidden=!folderPins.length||(!preview&&!installedApp('files'));for(const p of folderPins){const card=document.createElement('div');card.className='os-folder-alias';const btn=document.createElement('button');btn.type='button';btn.className='os-folder-open';btn.title=p.join(' / ');btn.setAttribute('aria-label','Open '+p.at(-1));const glyph=document.createElement('span');glyph.className='os-folder-glyph';const arrow=document.createElement('span');arrow.className='os-folder-arrow';arrow.textContent='↗';glyph.append(arrow);const label=document.createElement('span');label.className='os-folder-name';label.textContent=p.at(-1);btn.append(glyph,label);btn.onclick=()=>openPinnedFolder(p);const rm=document.createElement('button');rm.type='button';rm.className='os-folder-remove';rm.textContent='×';rm.title='Remove shortcut (keep original folder)';rm.setAttribute('aria-label','Remove shortcut for '+p.at(-1));rm.onclick=()=>{if(pinAllowed()&&saveFolderPins(folderPins.filter(x=>JSON.stringify(x)!==JSON.stringify(p))))osNotice('Shortcut removed. Original folder kept.')};card.append(btn,rm);grid.append(card)}}
 function endFolderDrag(){folderDrag=null;if(pinDrop)pinDrop.hidden=true;document.querySelector('.workspace')?.classList.remove('os-folder-dragging')}
 function beginFolderDrag(p,e){if(!pinAllowed()||!validPin(p)||!e.dataTransfer){e.preventDefault();return}folderDrag=[...p];e.dataTransfer.effectAllowed='link';e.dataTransfer.setData('application/x-blackcell-folder-alias','folder');if(!pinDrop){pinDrop=document.createElement('div');pinDrop.className='os-folder-dropzone';pinDrop.hidden=true;pinDrop.textContent='＋ Drop folder on desktop';$('desktop').append(pinDrop)}pinDrop.hidden=false;document.querySelector('.workspace')?.classList.add('os-folder-dragging')}
@@ -487,13 +561,16 @@ function warmAppComponents(){
  if(typeof requestIdleCallback==='function')requestIdleCallback(run,{timeout:5000});else setTimeout(run,2500);
 }
 
-function showApp(id,initialState=null){
+function showApp(id,initialState=null,passwordVerified=false){
  closeRecycleBin();finishAppRearrange();closeAppContext();if((!active&&!preview)||workspaceLock?.isLocked())return;if(id==='administration'&&!owner&&!preview)return;
  const chatPopout=/^chatpop-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id),baseId=chatPopout?'chat':id;
  if(!preview&&!installedApp(baseId))return;
  const tile=document.querySelector('.app[data-app="'+baseId+'"]');if(!tile||tile.hidden||tile.disabled)return;
+ const deferred=chatPopout?deferredParkedChats.get(id):null;
+ if(deferred)initialState={peerId:id.slice(8),name:deferred.name};
+ if(appProtected(baseId)&&!passwordVerified&&(!windows.has(id)||windows.get(id).el.hidden)){askAppPassword(tile.dataset.title||'App','Unlock',()=>showApp(id,initialState,true));return;}
  if(chatPopout&&!windows.has(id)&&(!initialState||initialState.peerId!==id.slice(8)||[...windows.values()].filter(r=>r.chatPopout).length>=8)){osNotice('Close a chat pop-out before opening another.');return;}
- if(windows.has(id)){const existing=windows.get(id);raise(existing);if(id==='settings'&&initialState?.section)existing.selectSettings?.(initialState.section);if(id==='store'){if(initialState?.category)existing.selectCategory?.(initialState.category);if(!preview&&!storeMutating)void storeRequest('catalog').then(()=>existing.refreshStore?.())}return}
+ if(windows.has(id)){const existing=windows.get(id);raise(existing);if(id==='files'&&initialState?.path){if(existing.openFolder)existing.openFolder(initialState.path);else{existing.fileState={path:[...initialState.path],layout:initialState.layout||'grid'};saveWorkspace()}}if(id==='settings'&&initialState?.section)existing.selectSettings?.(initialState.section);if(id==='store'){if(initialState?.category)existing.selectCategory?.(initialState.category);if(!preview&&!storeMutating)void storeRequest('catalog').then(()=>existing.refreshStore?.())}return}
  const url=new URL(tile.dataset.url,location.href);if(url.origin!==location.origin)return;
  const windowTitle=chatPopout?String(initialState.name||'Conversation').slice(0,70):tile.dataset.title;
  if(chatPopout){url.searchParams.set('popout','1');url.searchParams.set('peer',initialState.peerId);url.searchParams.set('osApp','chat');url.searchParams.set('embed','1')}
@@ -516,7 +593,7 @@ function showApp(id,initialState=null){
  else{r.release=window.BLACKCELL_LIVE_UPDATE?.hold('BLACKCELL OS application window');const frame=document.createElement('iframe');frame.title=r.title;if(id==='photoledger'){w.classList.add('is-max');frame.id='bcOsPhotoLedgerFrame'}if(id==='administration'){frame.id='bcOsAdministrationFrame';external.hidden=true;external.href='blackcell-administration-app.html';w.classList.add('is-max');const home=document.createElement('button');home.type='button';home.className='os-admin-home';home.textContent='‹ Administration';home.hidden=true;home.onclick=()=>{r.frameLoading?.begin();frame.src=url.href};r.adminHome=home;bar.insertBefore(home,title)}frame.allow=id==='voicememos'?'fullscreen; microphone':id==='community'?'fullscreen; camera':'fullscreen';frame.setAttribute('allowfullscreen','');r.frame=frame;const loader=appFrameLoading(frame,content,r.title,url,()=>windows.get(id)===r);r.frameLoading=loader;r.cleanup=loader.dispose;
  frame.addEventListener('load',()=>{try{const child=frame.contentDocument;if(!child)return;const childURL=new URL(frame.contentWindow.location.href);if(childURL.protocol==='about:')return;if(childURL.origin!==location.origin){loader.finish();return;}if(id==='photoledger'&&childURL.pathname.endsWith('/private-photo-ledger.html')){child.documentElement.classList.add('bc-admin-workspace-embedded');if(!child.querySelector('link[data-os-ledger-style]')){const sheet=child.createElement('link');sheet.rel='stylesheet';sheet.href='blackcell-admin-workspace-embedded.css?v=2-native-admin';sheet.dataset.osLedgerStyle='true';child.head.append(sheet)}}if(id==='administration'){if(childURL.pathname.endsWith('/dashboard.html')){loader.begin();frame.contentWindow.location.replace(url.href);return}if(r.adminHome)r.adminHome.hidden=childURL.pathname.endsWith('/blackcell-administration-app.html')}if(childURL.pathname.endsWith('/blackcell-os.html')||childURL.pathname.endsWith('/blackcell-os-preview.html')){dispose(r,true);return}if(id==='administration'&&childURL.pathname.endsWith('/login.html')){if(active)void recheck();loader.finish();return}for(const event of ['pointerdown','keydown','touchstart','wheel'])child.addEventListener(event,()=>void activity(),{passive:true});loader.finish();}catch(_){loader.finish();}});if(chatPopout||id==='chat')frame.addEventListener('load',syncChatVisibility);frame.src=url.href;content.prepend(frame);
  }
- $('desktop').append(w);raise(r);w.addEventListener('pointerdown',()=>raise(r),true);bar.addEventListener('dblclick',e=>{if(!e.target.closest('button,a')){w.classList.toggle('is-max');saveWorkspace()}});
+ $('desktop').append(w);if(deferred){applyParkedGeometry(r,deferred);deferredParkedChats.delete(id);}raise(r);w.addEventListener('pointerdown',()=>raise(r),true);bar.addEventListener('dblclick',e=>{if(!e.target.closest('button,a')){w.classList.toggle('is-max');saveWorkspace()}});
  let drag=null;
  bar.addEventListener('pointerdown',e=>{if(e.target.closest('button,a')||w.classList.contains('is-max')||touchOS()||innerWidth<=620)return;const rect=w.getBoundingClientRect();drag={x:e.clientX-rect.left,y:e.clientY-rect.top};bar.setPointerCapture(e.pointerId)});
  bar.addEventListener('pointermove',e=>{if(!drag)return;w.style.left=Math.max(0,Math.min(innerWidth-w.offsetWidth,e.clientX-drag.x))+'px';w.style.top=Math.max(34,Math.min(innerHeight-100,e.clientY-drag.y))+'px'});
@@ -535,6 +612,7 @@ function openAppContext(tile,x,y,trigger=tile){
  if(isBin){item('Rearrange Apps',()=>startAppRearrange(tile));}
  else{
  item(pinned?'Remove from Dock':'Add to Dock',()=>setDockPin(id,!pinned));
+ item(appProtected(id)?'Remove Password Protection':'Require Password',()=>toggleAppProtection(id,title));
  if(recycledApps.has(id))item('Restore Desktop Shortcut',()=>restoreRecycled(id));
  else{item('Rearrange Apps',()=>startAppRearrange(tile));item('Move to Recycle Bin',()=>recycleApp(tile));}
  if(removable)item('Uninstall',()=>{if(confirm('Uninstall '+tile.dataset.title+'? Your app data will be kept.'))void uninstallFromDesktop(id,tile.dataset.title)},'danger');
