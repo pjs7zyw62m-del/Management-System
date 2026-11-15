@@ -1,0 +1,54 @@
+/* BLACKCELL iMessage — unified, in-window media workspace */
+html:not(.bc-media-panel) .media-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;background:#1b1b1f;border-top:1px solid #ffffff12;padding:9px 13px}
+html:not(.bc-media-panel) .media-actions[hidden],html:not(.bc-media-panel) .media-actions.is-collapsed{display:none!important}
+html:not(.bc-media-panel) .media-actions button{font-size:11px;letter-spacing:0;font-weight:650;text-transform:none;padding:8px 12px;color:#e8e8ec;background:#29292f;border:1px solid #ffffff13;border-radius:9px;min-height:33px}
+html:not(.bc-media-panel) .media-actions .bc-media-share-primary{background:linear-gradient(135deg,#6f2636,#a12a40);border-color:#be4a5d55;color:white}
+html:not(.bc-media-panel) .media-actions .bc-media-library-trigger{margin-left:auto;background:#2c2c33}
+html:not(.bc-media-panel) .media-actions .bc-media-library-trigger[aria-expanded=true]{border-color:#ad495a;background:#522a35}
+.bc-chat-header-media{display:none;background:#29292f;color:#eee;border:1px solid #ffffff16;border-radius:8px;padding:7px 10px;font-size:11px;font-weight:600;white-space:nowrap}
+html.bc-chat-lite .bc-chat-header-media,html.bc-compact-chat .bc-chat-header-media{display:block}
+html:not(.bc-media-panel) .chat:not(.media-open)>.media-viewer{display:none!important}
+html:not(.bc-media-panel) .chat.media-open>.media-viewer{display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;min-height:0;min-width:0;transform:none!important;grid-area:1/3;border-radius:0;box-shadow:none;background:#131316}
+html:not(.bc-media-panel) .chat.media-open>.chat-main{transform:none!important;min-width:0}
+@media(min-width:850px){
+ html:not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open{grid-template-columns:clamp(155px,20%,220px) minmax(0,1fr) minmax(300px,42%)!important;grid-template-rows:minmax(0,1fr)}
+ html:not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open.os-sidebar-closed{grid-template-columns:0 minmax(0,1fr) minmax(300px,44%)!important}
+ html:not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open>.media-viewer{position:relative!important;inset:auto!important;width:auto!important;height:100%;max-height:100%;animation:bcMediaSlide .25s ease-out}
+}
+@media(max-width:849px){
+ html:not(.bc-media-panel) .chat.media-open>.media-viewer{position:absolute!important;inset:0 0 0 auto!important;width:min(100%,520px)!important;height:100%;z-index:70;box-shadow:-15px 0 60px #0009;animation:bcMediaSlide .25s ease-out}
+}
+@keyframes bcMediaSlide{from{transform:translateX(25px);opacity:.4}to{transform:translateX(0);opacity:1}}
+html:not(.bc-media-panel) .media-viewer-head{padding:12px;background:#202024}
+html:not(.bc-media-panel) .media-viewer-brand strong{font-size:15px;letter-spacing:-.02em}
+html:not(.bc-media-panel) .media-viewer-brand small{font-size:9px;letter-spacing:.04em}
+html:not(.bc-media-panel) .media-viewer-actions button{font-size:10px;min-height:30px;padding:6px 8px;border:1px solid #ffffff18;background:#2b2b31}
+html:not(.bc-media-panel) .media-viewer-tools{padding:9px;gap:7px}
+html:not(.bc-media-panel) .media-viewer-tools input[type=search]{min-width:90px}
+html:not(.bc-media-panel) .media-viewer-stage{min-height:80px;flex:1 1 0;overflow:hidden}
+html:not(.bc-media-panel) .media-viewer-stage img,html:not(.bc-media-panel) .media-viewer-stage video{object-fit:contain}
+html:not(.bc-media-panel) .media-library{flex:0 0 32%;max-height:38%;min-height:94px}
+html:not(.bc-media-panel) .media-viewer.media-focused .media-library,html:not(.bc-media-panel) .media-viewer.media-focused .media-viewer-tools{display:none}
+html:not(.bc-media-panel) .media-library-list{grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:6px;padding:8px}
+html:not(.bc-media-panel) .media-library-item{height:80px;border-radius:6px}
+html:not(.bc-media-panel) .media-library-item img,html:not(.bc-media-panel) .media-library-item .media-video-thumb{height:60px}
+html:not(.bc-media-panel) .media-dialog{background:#1b1b20;border:1px solid #ffffff24;border-radius:18px;max-height:90dvh;width:min(610px,96%);box-shadow:0 24px 90px #000a}
+html:not(.bc-media-panel) .media-dialog-head{background:#212126;padding:18px}
+html:not(.bc-media-panel) .media-dialog-head strong{font-size:20px;letter-spacing:-.03em;text-transform:none}
+html:not(.bc-media-panel) .media-dialog-selection{min-height:85px;border-color:#ffffff24;background:#17171b}
+html:not(.bc-media-panel) .media-dialog-footer{flex-wrap:wrap;gap:8px;padding:13px}
+html:not(.bc-media-panel) .media-dialog-footer button{min-height:38px;background:#303038;color:white;border-color:#ffffff20;letter-spacing:0}
+html:not(.bc-media-panel) .media-dialog-footer .media-primary{background:#a22d43;border-color:#be4a5e;color:white}
+.bc-media-selection-icon{width:35px;height:35px;display:grid;place-items:center;flex:none;border-radius:8px;background:#33333c;color:#e3a5b1;font-size:17px}
+.bc-media-selection-detail{flex:1;min-width:0;overflow-wrap:anywhere}.bc-media-selection-detail small{display:block}
+.bc-pm-picker{position:fixed;inset:0;z-index:13000;display:grid;place-items:center;background:#000b;backdrop-filter:blur(10px);padding:12px}
+.bc-pm-picker-panel{width:min(580px,100%);max-height:90dvh;display:flex;flex-direction:column;gap:12px;min-height:0;background:#1d1d22;border:1px solid #ffffff25;border-radius:16px;padding:18px}
+.bc-pm-picker-panel .bc-pm-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.bc-pm-picker-panel h2{margin:0;font-size:18px}.bc-pm-picker-panel p{margin:5px 0;color:#b8b8c2;font-size:12px}
+.bc-pm-picker-panel button,.bc-pm-picker-panel input{font:inherit;color:#eee;border:1px solid #ffffff24;background:#303038;border-radius:8px;padding:9px}
+.bc-pm-picker-panel input[type=search]{width:100%;background:#141416}
+.bc-pm-pick-list{overflow:auto;min-height:80px;flex:1}
+.bc-pm-pick-row{display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid #ffffff12;font-size:12px;overflow-wrap:anywhere}
+.bc-pm-pick-row input{accent-color:#b43b50}.bc-pm-picker-panel>button{background:#a22d43}
+@media(max-width:520px){.bc-chat-header-media{font-size:10px;padding:7px 8px}.imessage-title-actions{gap:5px}.imessage-title-actions .imessage-secure-indicator{display:none}}
+@media(prefers-reduced-motion:reduce){html:not(.bc-media-panel) .chat.media-open>.media-viewer{animation:none!important}}
