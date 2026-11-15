@@ -112,3 +112,13 @@ html:not(.bc-media-panel) .media-library-item img{width:100%;height:60px;object-
 html:not(.bc-media-panel) .media-library-item.selected{box-shadow:none;border-color:#c64b61}
 html.bc-media-resizing:not(.bc-media-panel) .media-viewer:not(.media-focused) .media-library-list{content-visibility:hidden;visibility:hidden;pointer-events:none}
 html.bc-media-resizing:not(.bc-media-panel) .media-viewer:not(.media-focused) .media-library::after{content:"Resizing…";position:absolute;bottom:10px;left:12px;color:#888891;font-size:10px;pointer-events:none}
+
+/* Permanent focus view: only media, navigation, transfer and close. */
+.media-viewer.bc-focus-only .media-viewer-head{flex:0 0 auto;min-height:49px;padding:10px 13px}
+.media-viewer.bc-focus-only .media-viewer-status:empty{display:none!important}
+.media-viewer.bc-focus-only .media-viewer-status:not(:empty){display:block!important;flex:none;overflow-wrap:anywhere}
+.media-viewer.bc-focus-only .media-viewer-stage{flex:1 1 0!important;min-height:0!important;max-height:none!important;aspect-ratio:auto!important}
+.media-viewer.bc-focus-only .media-stage-inner{width:100%;height:100%;min-height:0}
+.media-viewer.bc-focus-only .media-stage-inner img,.media-viewer.bc-focus-only .media-stage-inner video{width:100%;height:100%;object-fit:contain}
+.media-viewer.bc-focus-only .media-viewer-meta{flex:0 0 auto;min-height:42px;padding:8px 12px}
+.media-viewer.bc-focus-only .media-viewer-actions button[hidden],.media-viewer.bc-focus-only .media-full-link[hidden]{display:none!important}
