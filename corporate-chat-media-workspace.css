@@ -94,3 +94,10 @@ html.bc-media-panel .bc-media-resize{display:none!important}
  html:not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open>.media-viewer{padding-left:8px;border-left:0}
 }
 @media(max-height:430px){html:not(.bc-media-panel) .media-viewer .media-viewer-stage{min-height:56px}html:not(.bc-media-panel) .media-viewer .media-library{min-height:64px}}
+
+/* High-performance resizing: only this layer moves until pointer release. */
+.bc-media-drag-guide{position:fixed;z-index:2147483000;pointer-events:none;background:#e35b73;border-radius:2px;will-change:transform;contain:strict;transition:none!important;animation:none!important}
+.bc-media-drag-guide[hidden]{display:none!important}
+.bc-media-drag-guide.is-width{box-shadow:0 0 7px #e35b7355}
+.bc-media-drag-guide.is-height{box-shadow:0 0 7px #e35b7355}
+html.bc-media-resizing .bc-media-resize::after{transition:none!important}
