@@ -1,3 +1,4 @@
+import {placePhotoTransfer} from './blackcell-photo-transfer.js?v=1';
 /* BLACKCELL NETWORK / Apple Photos × Flickr private corporate library */
 import {createWorldForces} from './corporate-world-forces.js?v=20261110-countries1';
 import {createMilitaryPhotoAI} from './corporate-military-ai.js?v=20261111-adminmove1';
@@ -823,8 +824,10 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   void rediscovery.recordView(viewerCurrent());
   rediscovery.startViewing(viewerCurrent());
  }
+ let syncTransfer;
  function renderViewer(){
   const a=viewerCurrent();if(!a)return;
+  syncTransfer??=placePhotoTransfer($('appleViewerDownload'),{client,getPhoto:viewerCurrent,notify:toast});syncTransfer();
   const frame=$('appleViewerStage');zoom.unmount();frame.replaceChildren();
   const u=mediaUrl(a);
   $('appleViewerFilename').textContent=a.filename;
