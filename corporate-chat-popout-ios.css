@@ -67,3 +67,68 @@ html.bc-chat-popout:not(.bc-media-panel) .chat:not(.media-open) .imessage-names{
 html.bc-chat-popout:not(.bc-media-panel) .chat:not(.media-open) .bc-pop-nav{background:#202024c9;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
 html.bc-chat-popout:not(.bc-media-panel) .chat:not(.media-open) .composer{border-top:0!important;padding-bottom:6px!important}
 html.bc-chat-popout:not(.bc-media-panel) .chat:not(.media-open) .composer-input-wrap{border-color:#303036!important}
+
+/* Shared Media extends the same black iPhone conversation rather than changing window theme. */
+html.bc-chat-popout.bc-compact-chat:not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open{
+ background:#000!important;gap:7px!important;padding:0 2px 2px!important;
+}
+html.bc-chat-popout.bc-compact-chat:not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open>.chat-main{
+ border-radius:25px!important;background:#000!important;
+}
+html.bc-chat-popout.bc-compact-chat:not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open>.media-viewer{
+ box-sizing:border-box;border:1px solid #ffffff14!important;border-radius:25px!important;
+ background:#000!important;overflow:hidden!important;box-shadow:none!important;
+}
+html.bc-chat-popout:not(.bc-media-panel) .chat.media-open .media-viewer-head{
+ display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;
+ min-height:50px;padding:10px 12px!important;background:#0b0b0d!important;border:0!important;
+}
+html.bc-chat-popout:not(.bc-media-panel) .chat.media-open .media-viewer-brand strong{
+ color:#f5f5f7!important;font-size:15px!important;font-weight:650;letter-spacing:-.025em!important;text-transform:none;
+}
+html.bc-chat-popout:not(.bc-media-panel) .chat.media-open .media-viewer-brand small{display:none!important}
+html.bc-chat-popout:not(.bc-media-panel) .chat.media-open .media-viewer-actions{display:flex;align-items:center;gap:7px}
+html.bc-chat-popout:not(.bc-media-panel) .chat.media-open .media-viewer-actions .bc-pop-media-close{
+ display:grid;place-items:center;width:30px;height:30px;min-width:30px;padding:0!important;border-radius:50%!important;
+ background:#242427!important;border:1px solid #ffffff1d!important;color:#eee!important;font-size:19px!important;font-weight:400;line-height:1;
+}
+html.bc-chat-popout:not(.bc-media-panel) .chat.media-open .media-viewer-actions .bc-pop-media-close:hover{background:#35353b!important}
+html.bc-chat-popout:not(.bc-media-panel) .chat.media-open .media-viewer-actions .bc-media-header-count{
+ font-size:11px;color:#b1b1ba;background:#1c1c20;border:1px solid #ffffff14;border-radius:99px;padding:5px 8px;
+}
+html.bc-chat-popout:not(.bc-media-panel) .chat.media-open .bc-media-focus-body{
+ background:#000!important;gap:4px;padding:4px 5px 0!important;
+}
+html.bc-chat-popout:not(.bc-media-panel) .chat.media-open .media-viewer-stage,
+html.bc-chat-popout:not(.bc-media-panel) .chat.media-open .media-stage-inner{background:#000!important;border:0!important;border-radius:15px}
+html.bc-chat-popout:not(.bc-media-panel) .chat.media-open .media-stage-inner img,
+html.bc-chat-popout:not(.bc-media-panel) .chat.media-open .media-stage-inner video{object-fit:contain!important}
+html.bc-chat-popout:not(.bc-media-panel) .chat.media-open .bc-chat-filmstrip{
+ background:#0b0b0d!important;border-left:0!important;border-radius:12px;
+}
+html.bc-chat-popout:not(.bc-media-panel) .chat.media-open .bc-filmstrip-tile{border-radius:10px!important;background:#171719!important}
+html.bc-chat-popout:not(.bc-media-panel) .chat.media-open .bc-filmstrip-tile.selected{border:2px solid #0a84ff!important;background:#172c45!important}
+html.bc-chat-popout:not(.bc-media-panel) .chat.media-open .media-viewer-stage button.media-nav{
+ display:grid;place-items:center;border-radius:50%!important;width:34px;height:34px;padding:0!important;
+ background:#232327b8!important;border:1px solid #ffffff26!important;color:#fff!important;backdrop-filter:blur(14px);font-size:22px!important;
+}
+html.bc-chat-popout:not(.bc-media-panel) .chat.media-open .media-viewer-meta{background:#000!important;border:0!important;min-height:51px;padding:8px!important}
+html.bc-chat-popout:not(.bc-media-panel) .chat.media-open .media-viewer-meta .bc-chat-transfer{
+ border:1px solid #ffffff1c!important;border-radius:999px!important;padding:9px 16px!important;
+ background:#0a84ff!important;color:#fff!important;font-size:12px!important;font-weight:600;min-height:34px;
+}
+html.bc-chat-popout:not(.bc-media-panel) .chat.media-open .composer{border-top:0!important;padding-bottom:6px!important}
+html.bc-chat-popout:not(.bc-media-panel) .chat.media-open .imessage-names{border-radius:999px}
+html.bc-chat-popout:not(.bc-media-panel) dialog.bc-chat-photo-enlarge{background:#000!important;color:#fff!important}
+html.bc-chat-popout:not(.bc-media-panel) .bc-chat-photo-enlarge-head{background:#000!important;border:0!important;padding:12px 16px}
+html.bc-chat-popout:not(.bc-media-panel) .bc-chat-photo-enlarge-close{border-radius:999px!important;background:#252529!important;border-color:#ffffff18!important}
+@media(min-width:640px){
+ html.bc-chat-popout.bc-compact-chat:not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open{
+  grid-template-columns:minmax(265px,39%) minmax(0,1fr)!important;
+ }
+}
+@media(max-width:639px){
+ html.bc-chat-popout.bc-compact-chat:not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open{padding:0 2px 2px!important}
+ html.bc-chat-popout:not(.bc-media-panel) .chat.media-open .media-viewer-head{min-height:40px;padding:5px 10px!important}
+ html.bc-chat-popout:not(.bc-media-panel) .chat.media-open .media-viewer-meta{min-height:40px;padding:4px!important}
+}
