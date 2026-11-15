@@ -15,7 +15,13 @@ const physicallySmallPhone=/iPhone|iPod/i.test(navigator.userAgent||'')||
 const smallWindow=window.matchMedia(osChat?'(max-width: 550px)':'(max-width: 680px)');
 const isCompact=()=>!mediaPanelMode&&(popout||embedParams.get('embed')==='1'||physicallySmallPhone||smallWindow.matches);
 let compactChat=isCompact();
-document.documentElement.classList.toggle('bc-compact-chat',compactChat);
+function syncChatLayout(){
+ const desktop=!compactChat&&!mediaPanelMode&&!popout;
+ document.documentElement.classList.toggle('bc-compact-chat',compactChat);
+ document.documentElement.classList.toggle('bc-desktop-messages',desktop);
+ document.documentElement.classList.toggle('bc-desktop-messages-page',desktop&&window.parent===window&&!osChat&&embedParams.get('embed')!=='1');
+}
+syncChatLayout();
 if(mediaPanelMode)document.documentElement.classList.add('bc-media-panel','bc-media-'+mediaPanelMode);
 if(!mediaPanelMode&&window.parent===window&&window.BlackcellMediaBubbleHost)
  window.BlackcellMediaBubbleHostController=window.BlackcellMediaBubbleHost({mode:'standalone'});
@@ -143,13 +149,13 @@ $('backToInbox').addEventListener('click',()=>{
  if(window.parent!==window)window.parent.postMessage({type:'blackcell-chat-inbox-open'},location.origin);
  void refreshInboxSummaries();
 });
-if(osChat)smallWindow.addEventListener('change',()=>{
+smallWindow.addEventListener('change',()=>{
  const next=isCompact();if(next===compactChat)return;compactChat=next;
- document.documentElement.classList.toggle('bc-compact-chat',compactChat);
+ syncChatLayout();
  document.querySelector('.chat').classList.toggle('bc-thread-active',compactChat&&!!peer);
  live.setThreadOpen(!!peer&&!mediaPanelMode);
  if(!compactChat&&ready&&!peer&&contacts.length)choose(contacts[0].user_id);
- applySidebarPreference();
+ applySidebarPreference();renderPeers();
 });
 const composerText=$('messageInput');
 function resizeComposer(){composerText.style.height='auto';composerText.style.height=Math.min(composerText.scrollHeight,112)+'px'}
@@ -269,8 +275,22 @@ function inboxTime(value){
  if(date.toDateString()===yesterday.toDateString())return 'Yesterday';
  return date.toLocaleDateString([],{month:'short',day:'numeric'});
 }
+function renderDesktopRecent(){
+ const box=$('inboxRecent');box.replaceChildren();
+ const list=contacts.filter(c=>inboxSummaries.has(c.user_id)).sort((a,b)=>new Date(inboxSummaries.get(b.user_id)?.when||0)-new Date(inboxSummaries.get(a.user_id)?.when||0)).slice(0,3);
+ box.hidden=compactChat||!!mediaPanelMode||popout||!ready||inboxEditing||inboxComposing||inboxFilter!=='all'||!!$('peerSearch').value.trim()||!list.length;
+ if(box.hidden)return;
+ for(const c of list){
+  const b=document.createElement('button');b.type='button';b.className='desktop-recent-person'+(inboxUnread.has(c.user_id)?' is-unread':'');
+  const name=String(c.display_name||'Employee').trim()||'Employee';
+  b.setAttribute('aria-label','Open recent conversation with '+name);b.title=name;
+  const initials=name.split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase();
+  b.append(text('span','avatar',initials),text('span','desktop-recent-name',name.split(/\s+/)[0]));
+  b.addEventListener('click',()=>choose(c.user_id));box.append(b);
+ }
+}
 function renderPeers(){
- const box=$('peers');box.replaceChildren();syncInboxControls();
+ const box=$('peers');box.replaceChildren();syncInboxControls();renderDesktopRecent();
  const query=$('peerSearch').value.trim().toLowerCase();
  // Every contact is a server-authorized known sender. Unknown external senders are not admitted.
  const visible=contacts.filter(c=>(String(c.display_name||'')+' '+String(c.role||'')).toLowerCase().includes(query))
