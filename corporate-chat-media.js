@@ -212,7 +212,8 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const brand=el('div','media-viewer-brand');
  brand.append(el('strong','','Shared Media'),el('small','','PRIVATE CONVERSATION LIBRARY'));
  const actions=el('div','media-viewer-actions');
- const close=button('✕ Close',()=>closeWing());
+ const popoutViewer=new URLSearchParams(location.search).get('popout')==='1'&&!mediaPanel;
+ const close=button(popoutViewer?'×':'✕ Close',()=>closeWing(),popoutViewer?'bc-pop-media-close':'');close.setAttribute('aria-label','Close Shared Media');
  const refreshLibrary=button('Retry',()=>void loadLibrary());refreshLibrary.hidden=true;
  actions.append(refreshLibrary,close);
  head.append(brand,actions);
