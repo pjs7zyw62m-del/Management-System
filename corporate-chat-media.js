@@ -1,3 +1,4 @@
+import {attachPhotoTransfer} from './blackcell-photo-transfer.js?v=2-chat';
 /* BLACKCELL CORPORATION / Secure private chat photo + video sharing */
 const BUCKET='corp-chat-media';
 const MAX_BYTES=50*1024*1024;
@@ -8,6 +9,11 @@ function el(tag,cls='',content=null){
 }
 function button(label,handler,cls=''){
  const b=el('button',cls,label);b.type='button';b.addEventListener('click',handler);return b;
+}
+function decorateButton(b,kind,subtitle=''){
+ const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');svg.setAttribute('fill','none');svg.setAttribute('stroke','currentColor');svg.setAttribute('stroke-width','1.6');svg.setAttribute('stroke-linecap','round');svg.setAttribute('stroke-linejoin','round');
+ const p=document.createElementNS(ns,'path');p.setAttribute('d',({photo:'M3 3h18v18H3z M4 18l5-5 4 4 4-6 4 7 M8 8h.1',video:'M3 5h13v14H3z M16 10l5-4v12l-5-4',upload:'M12 16V3m-5 5 5-5 5 5M4 16v5h16v-5',library:'M5 3h16v16H5z M3 7v14h14 M6 15l5-5 4 4 3-4 3 5'})[kind]);svg.append(p);
+ const label=el('span','bc-media-button-label',b.textContent);b.replaceChildren(svg,label);if(subtitle)b.append(el('small','',subtitle));
 }
 function fmtBytes(n){
  if(n>=1024*1024)return (n/(1024*1024)).toFixed(1)+' MB';
@@ -102,7 +108,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const chooseVideos=button('Videos',()=>chooseFiles('video/*'),'bc-media-quick');chooseVideos.title='Select videos from your device';
  const mediaShare=button('Media Share',()=>openShare(),'bc-media-share-primary');
  const mediaLibrary=button('Shared Media',()=>void openLibrary(),'bc-media-library-trigger');mediaLibrary.setAttribute('aria-expanded','false');
- controls.append(choosePhotos,chooseVideos,mediaShare,mediaLibrary);
+ decorateButton(choosePhotos,'photo');decorateButton(chooseVideos,'video');controls.append(choosePhotos,chooseVideos,mediaShare,mediaLibrary);
  const headerLibrary=button('Shared Media',()=>void openLibrary(),'bc-chat-header-media');headerLibrary.title='Open this conversation’s shared media';document.querySelector('.imessage-title-actions')?.prepend(headerLibrary);
  const fileInput=el('input');fileInput.type='file';fileInput.multiple=true;
  fileInput.accept='image/*,video/*';
@@ -211,7 +217,9 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const currentIndex=el('span','media-current-index','','');
  const full=el('a','media-full-link','VIEW FULL MEDIA ↗');
  full.target='_blank';full.rel='noopener';full.href='#';
- currentMeta.append(currentName,currentIndex,full);
+ const transfer=button('Transfer to Photos',()=>{},'bc-chat-transfer');
+ const syncTransfer=attachPhotoTransfer(transfer,{client,source:'chat',getPhoto:()=>context()?.ready?visible[active]:null,getPeer:()=>context()?.peer?.user_id,notify:msg=>{wingStatus.textContent=msg}});
+ currentMeta.append(currentName,currentIndex,transfer,full);
  const libraryBox=el('section','media-library');
  const libraryHead=el('div','media-library-head');
  libraryHead.append(el('strong','','MEDIA LIBRARY'));
@@ -305,7 +313,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  dialogHead.append(dialogTitle,shareHeadActions);
  const body=el('div','media-dialog-body');
  const pickInfo=el('div','media-dialog-selection','Select photos or videos to share securely with this contact.');
- const itemsBox=el('div','media-selected-items');
+ const itemsBox=el('div','media-selected-items');let selectionURLs=[];
  body.append(pickInfo,itemsBox);
  if((standalonePanel&&mediaPanel==='share')||compactMedia()){
   body.append(progress);
@@ -316,7 +324,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const selectButton=button('From device',()=>chooseFiles('image/*,video/*'));
  const privateButton=button('BLACKCELL Photos',async()=>{const c=requirePeer();if(!c||busy)return;const startedPeer=c.peer.user_id;privateButton.disabled=true;try{const {choosePrivateMedia}=await import('./blackcell-private-media.js?v=9-photos-only');if(context()?.peer?.user_id!==startedPeer||!context()?.ready)return;await choosePrivateMedia({client,userId:c.self,actionLabel:'Add to selection',max:30,onSelect:files=>{if(context()?.peer?.user_id!==startedPeer||!context()?.ready){status('Conversation changed. Select files again.');return}selectFiles(files)}})}catch(e){status('Could not open private Photos. '+safeErr(e))}finally{privateButton.disabled=busy}});
  const sendButton=button('SHARE SELECTED MEDIA',()=>void sendSelection(),'media-primary');
- footer.append(selectButton,privateButton,sendButton);
+ const sources=el('div','bc-media-source-cards');selectButton.classList.add('bc-media-source');privateButton.classList.add('bc-media-source');decorateButton(selectButton,'upload','Choose photos or videos');decorateButton(privateButton,'library','Choose from your library');sources.append(selectButton,privateButton);body.prepend(sources);footer.append(button('Cancel',closeShare),sendButton);
  dialog.append(dialogHead,body,footer);overlay.append(dialog);
  document.body.append(overlay);
  overlay.addEventListener('click',e=>{if(e.target===overlay&&!busy)closeShare()});
@@ -332,7 +340,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   selection=[];renderSelection();requestPanelClose('share');
  }
  function renderSelection(){
-  itemsBox.replaceChildren();
+  for(const u of selectionURLs)URL.revokeObjectURL(u);selectionURLs=[];itemsBox.replaceChildren();
   pickInfo.textContent=selection.length
    ?caption(selection.map(f=>({kind:kindOf(f)})))+' selected for this conversation.'
    :'Select photos or videos to share securely with this contact.';
@@ -345,7 +353,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
    const rm=button('REMOVE',()=>{
     if(busy)return;selection.splice(i,1);renderSelection();
    });
-   row.append(icon,detail,rm);itemsBox.append(row);
+   if(kindOf(f)==='photo'&&['image/jpeg','image/png','image/webp','image/gif','image/avif'].includes(mediaType(f))){const img=el('img','bc-media-selected-thumb');img.alt='';const u=URL.createObjectURL(f);selectionURLs.push(u);img.src=u;img.onerror=()=>img.replaceWith(icon);row.append(img,detail,rm)}else row.append(icon,detail,rm);itemsBox.append(row);
   }
  }
  function updateProgress(n,label){
@@ -617,12 +625,12 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   const count=visible.length;
   stageInner.replaceChildren();
   if(!count){
-   stageInner.append(el('p','media-stage-empty','No photos or videos in this collection.'));
+   syncTransfer();stageInner.append(el('p','media-stage-empty','No photos or videos in this collection.'));
    currentName.textContent='';currentIndex.textContent='0 / 0';
    full.hidden=true;prev.disabled=true;next.disabled=true;return;
   }
   active=(index+count)%count;
-  const item=visible[active];
+  const item=visible[active];syncTransfer();
   prev.disabled=count<=1;next.disabled=count<=1;full.hidden=false;
   currentName.textContent=item.filename+' · '+fmtBytes(item.bytes);
   currentIndex.textContent=(active+1)+' / '+count;
@@ -654,7 +662,9 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const mobileCounter=el('span','bc-mobile-lightbox-count','');
  const mobileClose=button('✕',closeMobileGallery,'bc-mobile-lightbox-close');
  mobileClose.setAttribute('aria-label','Close photo');
- mobileHeader.append(mobileLabel,mobileCounter,mobileClose);
+ const mobileTransfer=button('Transfer to Photos',()=>{},'bc-chat-transfer');
+ const syncMobileTransfer=attachPhotoTransfer(mobileTransfer,{client,source:'chat',getPhoto:()=>!mobileBox.hidden&&context()?.ready?mobileItems[mobileIndex]:null,getPeer:()=>context()?.peer?.user_id,notify:msg=>{mobileCaption.textContent=msg}});
+ mobileHeader.append(mobileLabel,mobileCounter,mobileTransfer,mobileClose);
  const mobileStage=el('div','bc-mobile-lightbox-stage');
  const mobileCanvas=el('div','bc-mobile-lightbox-canvas');
  const mobilePrev=button('‹',()=>void moveMobile(-1),'bc-mobile-lightbox-prev');
@@ -675,7 +685,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   mobileCanvas.querySelector('video')?.pause();
   mobileCanvas.replaceChildren();mobileItems=[];mobileOffset=0;
   mobileBatch=null;mobilePeer=null;mobileTotal=0;mobileIndex=0;
-  mobileSigned.clear();mobileFetching=false;
+  mobileSigned.clear();mobileFetching=false;syncMobileTransfer();
  }
  async function mobileFetch(session){
   if(!mobileActive(session)||mobileFetching)return;
@@ -705,7 +715,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   if(!mobileActive(session)||mobileIndex!==index)return;
   mobileCounter.textContent=mobileTotal?(index+1)+' / '+mobileTotal:'0 / 0';
   mobilePrev.disabled=index<=0;mobileNext.disabled=index>=mobileTotal-1;
-  const item=mobileItems[index];
+  const item=mobileItems[index];syncMobileTransfer();
   if(!item){
    mobileCanvas.replaceChildren(el('span','bc-mobile-lightbox-loading','Unable to open this media.'));
    return;
@@ -740,7 +750,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   const session=mobileSession;
   mobilePeer=c.peer.user_id;mobileBatch=batchId||null;
   mobileIndex=Number.isFinite(startIndex)?Math.max(0,Math.floor(startIndex)):0;
-  mobileBox.hidden=false;mobileCounter.textContent='Loading…';
+  mobileBox.hidden=false;syncMobileTransfer();mobileCounter.textContent='Loading…';
   mobileCaption.textContent='';mobilePrev.disabled=true;mobileNext.disabled=true;
   mobileCanvas.replaceChildren(el('span','bc-mobile-lightbox-loading','Loading photos and videos…'));
   mobileClose.focus({preventScroll:true});
@@ -871,7 +881,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
    else window.BlackcellMediaBubbleHostController?.closeAll();
   }
   peerId=newPeerId;
-  library=[];visible=[];active=0;batchFocus=null;mediaReady=false;
+  library=[];visible=[];active=0;batchFocus=null;mediaReady=false;syncTransfer();
   libraryOffset=0;hasMoreMedia=false;loadMoreButton.hidden=true;
   signed.clear();
   closeMobileGallery();
