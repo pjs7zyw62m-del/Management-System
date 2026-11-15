@@ -1,7 +1,7 @@
 import {mountChatFilmstrip,makeChatThumbnail} from './corporate-chat-filmstrip.js?v=1';
-import {attachPhotoTransfer} from './blackcell-photo-transfer.js?v=2-chat';
+import {attachPhotoTransfer} from './blackcell-photo-transfer.js?v=3-bunny';
 /* BLACKCELL CORPORATION / Secure private chat photo + video sharing */
-const BUCKET='corp-chat-media';
+import {createChatBunnyTransport} from './blackcell-chat-bunny.js?v=1';
 const MAX_BYTES=50*1024*1024;
 const ALLOWED=new Set(['image/jpeg','image/png','image/webp','image/gif','image/heic','image/heif','image/heic-sequence','image/heif-sequence','image/avif','video/mp4','video/webm','video/quicktime','video/x-m4v']);
 function el(tag,cls='',content=null){
@@ -42,7 +42,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const chat=document.querySelector('.chat');
  const main=document.querySelector('.chat-main');
  const messageForm=document.getElementById('sendForm');
- const bucket=client.storage.from(BUCKET);
+ const transport=createChatBunnyTransport(client);
  const mediaPanel=new URLSearchParams(location.search).get('mediaPanel');
  const standalonePanel=mediaPanel==='share'||mediaPanel==='library';
  const useLargePanels=()=>window.BlackcellChatMedia?.enabled()===true;
@@ -384,35 +384,6 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   progressNumber.textContent=Math.max(0,Math.min(100,n))+'%';
   progressFill.style.width=Math.max(0,Math.min(100,n))+'%';
  }
- async function xhrUpload(file,path,onProgress){
-  const {data:{session},error}=await client.auth.getSession();
-  if(error||!session)throw Error('Employee session expired. Sign in again.');
-  const base=String(client.supabaseUrl||'').replace(/\/$/,'');
-  const key=String(client.supabaseKey||'');
-  if(!base||!key)throw Error('Media storage configuration unavailable.');
-  return await new Promise((resolve,reject)=>{
-   const xhr=new XMLHttpRequest();xhr.timeout=180000;
-   xhr.open('POST',base+'/storage/v1/object/'+BUCKET+'/'+path,true);
-   xhr.setRequestHeader('Authorization','Bearer '+session.access_token);
-   xhr.setRequestHeader('apikey',key);
-   xhr.setRequestHeader('Content-Type',mediaType(file));
-   xhr.setRequestHeader('x-upsert','false');
-   xhr.setRequestHeader('cache-control','3600');
-   xhr.upload.onprogress=e=>{if(e.lengthComputable)onProgress(Math.min(file.size,e.loaded))};
-   xhr.onerror=()=>reject(Error('Upload network error.'));
-   xhr.ontimeout=()=>reject(Error('Upload timed out. Check Shared Media before retrying.'));
-   xhr.onabort=()=>reject(Error('Media upload was interrupted.'));
-   xhr.onload=()=>{
-    if(xhr.status>=200&&xhr.status<300)resolve();
-    else{
-     let problem='Media upload rejected (HTTP '+xhr.status+').';
-     try{problem=JSON.parse(xhr.responseText)?.message||problem}catch(_){}
-     reject(Error(problem));
-    }
-   };
-   xhr.send(file);
-  });
- }
  async function sendSelection(...args){
   let release;
   try{release=window.top.BLACKCELL_LIVE_UPDATE?.hold('sendSelection',window)}catch(_){}
@@ -442,29 +413,18 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
    if(batchError)throw Error('Could not create the private media collection: '+batchError.message);
    const records=[];
    for(let i=0;i<files.length;i++){
-    const f=files[i],id=crypto.randomUUID();
-    const extension=(f.name.split('.').at(-1)||f.type.split('/')[1]||'bin')
-      .toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,9)||'bin';
-    const path=[c.self,receiver,batchId,id+'.'+extension].join('/');
-    const offset=transferred;
+    const f=files[i];
+     const offset=transferred;
     updateProgress(Math.min(98,Math.floor(98*transferred/total)),
       'UPLOADING '+(i+1)+' OF '+files.length+' · '+f.name.slice(0,30));
-    await xhrUpload(f,path,loaded=>{
+    const record=await transport.upload(f,batchId,i,mediaType(f),loaded=>{
      updateProgress(Math.min(98,Math.floor(98*(offset+loaded)/total)),
        'UPLOADING '+(i+1)+' OF '+files.length);
     });
     transferred+=f.size;
-    records.push({
-      id,batch_id:batchId,sender_id:c.self,recipient_id:receiver,
-      kind:kindOf(f),filename:f.name.slice(0,180),mime_type:mediaType(f),
-      bytes:f.size,storage_path:path,item_order:i
-    });
+    records.push(record);
    }
    updateProgress(98,'SAVING PRIVATE SHARED MEDIA');
-   for(let i=0;i<records.length;i+=100){
-    const {error:itemError}=await client.from('corp_chat_media_items').insert(records.slice(i,i+100));
-    if(itemError)throw Error('Media uploaded but could not be indexed: '+itemError.message);
-   }
    const summary=caption(records)+' available to view';
    const {error:messageError}=await client.from('corp_chat_messages').insert({
      sender_id:c.self,recipient_id:receiver,body:summary,media_batch_id:batchId
@@ -542,17 +502,11 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   const g=libraryGeneration,p=context()?.peer?.user_id,b=batchFocus;
   const still=()=>!signal.aborted&&focusCurrent(g,p,b);
   if(!still()||item.kind!=='photo')return null;
-  try{
-   const {data,error}=await bucket.createSignedUrl(item.storage_path,300,{transform:{width:144,height:144,resize:'contain',quality:65}});
-   if(!still())return null;if(!error&&data?.signedUrl){try{const thumb=await makeChatThumbnail(data.signedUrl,signal);if(thumb&&still())return thumb}catch(_){} }
-  }catch(_){}
-  if(!still())return null;
-  // If storage transformations are unavailable, downscale a signed original locally, one at a time.
   let link=signed.get(item.id);
-  if(!link||link.expires<=Date.now()){const {data,error}=await bucket.createSignedUrl(item.storage_path,300);if(error||!data?.signedUrl||!still())return null;link={src:data.signedUrl,expires:Date.now()+240000};}
-  return still()?await makeChatThumbnail(link.src,signal):null;
- }
- async function loadLibrary(){
+   try{if(!link||link.expires<=Date.now()){const src=await transport.link(item.id);if(!still())return null;link={src,expires:Date.now()+240000};signed.set(item.id,link);if(signed.size>24)signed.delete(signed.keys().next().value)}
+   return still()?await makeChatThumbnail(link.src,signal):null}catch(_){return null}
+  }
+  async function loadLibrary(){
   const c=requirePeer();if(!c)return;
   const g=++libraryGeneration,p=c.peer.user_id,b=batchFocus;focusRequest++;visible=[];active=0;mediaReady=false;loadingMoreMedia=false;hasMoreMedia=false;libraryOffset=0;focusTotal=null;signed.clear();filmstrip.clear();
   refreshLibrary.hidden=true;wingStatus.textContent='';syncTransfer();syncFocusArrows();currentName.textContent='';currentIndex.textContent='';stageInner.querySelector('video')?.pause();stageInner.replaceChildren(el('p','media-stage-empty','Loading shared media…'));
@@ -596,12 +550,11 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   try{
    let link=signed.get(item.id);
    if(!link||link.expires<=Date.now()){
-    const {data,error}=await bucket.createSignedUrl(item.storage_path,300);if(!still())return;if(error||!data?.signedUrl)throw error||Error('Media unavailable');
-    link={src:data.signedUrl,expires:Date.now()+240000};signed.set(item.id,link);
+    const src=await transport.link(item.id);if(!still())return;link={src,expires:Date.now()+240000};signed.set(item.id,link);
     if(signed.size>24)signed.delete(signed.keys().next().value);
    }
    if(!still())return;
-   const media=el(item.kind==='video'?'video':'img');media.src=link.src;
+   const media=el(item.kind==='video'?'video':'img');media.referrerPolicy='no-referrer';media.src=link.src;
    if(item.kind==='video'){media.controls=true;media.playsInline=true;media.preload='metadata';media.setAttribute('controlsList','nodownload')}
    else{media.alt=item.filename;media.decoding='async';}
    media.addEventListener('error',()=>{if(still()){signed.delete(item.id);focusError('Preview unavailable. Select Retry.');stageInner.replaceChildren(el('p','media-stage-empty','Unable to display media.'))}},{once:true});
@@ -680,9 +633,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   let url=mobileSigned.get(item.id);
   if(!url||url.expires<Date.now()){
    try{
-    const {data,error}=await bucket.createSignedUrl(item.storage_path,300);
-    if(error||!data?.signedUrl)throw error||Error('Unavailable');
-    url={src:data.signedUrl,expires:Date.now()+240000};
+    const src=await transport.link(item.id);url={src,expires:Date.now()+240000};
     mobileSigned.set(item.id,url);
    }catch(_){
     if(mobileActive(session))mobileCanvas.replaceChildren(
@@ -692,7 +643,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   }
   if(!mobileActive(session)||mobileIndex!==index)return;
   const media=el(item.kind==='video'?'video':'img');
-  media.src=url.src;
+  media.referrerPolicy='no-referrer';media.src=url.src;
   if(item.kind==='video'){
    media.controls=true;media.playsInline=true;media.preload='metadata';
    media.setAttribute('aria-label',item.filename||'Shared video');
@@ -762,13 +713,12 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
     .order('item_order',{ascending:true}).limit(4);
    if(error)throw error;
    if(!data?.length)return [];
-   const {data:links,error:linkError}=await bucket.createSignedUrls(data.map(i=>i.storage_path),300);
-   if(linkError)throw linkError;
+   const links=await transport.links(data.map(i=>i.id));
    const items=data.map((item,i)=>({
     kind:item.kind,
     filename:item.filename,
     order:item.item_order,
-    url:links?.[i]?.signedUrl||null
+    url:links.get(item.id)||null
    }));
    previewCache.set(batchId,{items,expires:Date.now()+240000});
    return items;
