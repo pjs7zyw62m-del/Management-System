@@ -1,5 +1,5 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
-import {setupCorporateMedia} from './corporate-chat-media.js?v=20261115-photo-toggle';
+import {setupCorporateMedia} from './corporate-chat-media.js?v=20261115-attachment-menu';
 import {setupCorporateChatLive} from './corporate-chat-live.js?v=20261113-no-typing1';
 const client=corporateClient(),$=id=>document.getElementById(id);
 const embedParams=new URLSearchParams(location.search);
@@ -96,46 +96,18 @@ const live=setupCorporateChatLive({
  client,context:()=>({self,peer,ready}),
  typingLabel:$('typingIndicator'),typingName:$('typingName')
 });
-const mediaControls=document.querySelector('.media-actions');
 const mediaToggle=$('mediaToggleButton');
 const canShowFullMedia=()=>window.BlackcellChatMedia?.enabled()===true;
-function syncMediaUI(){
- // One attachment button on iPhone/smaller iPad; large media tools are desktop-only.
- const large=canShowFullMedia();
- mediaToggle.hidden=false;
- mediaControls.hidden=!large;
- mediaToggle.setAttribute('aria-label',large?'Show or hide media tools':'Attach photos or videos');
- mediaToggle.title=large?'Media tools':'Attach photo or video';
- if(!large){
-  mediaControls.classList.add('is-collapsed');
-  mediaToggle.classList.remove('open');
-  mediaToggle.setAttribute('aria-expanded','false');
- }
-}
-syncMediaUI();
-window.addEventListener('blackcell-chat-media-capability-change',syncMediaUI);
-mediaToggle.addEventListener('click',()=>{
- if(!canShowFullMedia()){
-  sharedMedia.pickMobileFiles();
-  return;
- }
- const collapsed=mediaControls.classList.toggle('is-collapsed');
- mediaToggle.setAttribute('aria-expanded',String(!collapsed));
- mediaToggle.classList.toggle('open',!collapsed);
-});
-if(compactChat||!canShowFullMedia()){
- mediaControls.classList.add('is-collapsed');
- mediaToggle.setAttribute('aria-expanded','false');
- mediaToggle.classList.remove('open');
-}else mediaToggle.classList.add('open');
+mediaToggle.hidden=false;mediaToggle.title='Attachments';
+mediaToggle.setAttribute('aria-label','Attachment options');
+mediaToggle.addEventListener('click',()=>sharedMedia.toggleMediaTray());
+window.addEventListener('blackcell-chat-media-capability-change',()=>sharedMedia.closeMediaTray());
 $('peerSearch').addEventListener('input',renderPeers);
 $('backToInbox').addEventListener('click',()=>{
  if(!compactChat||popout)return;
  live.setThreadOpen(false);
  document.querySelector('.chat').classList.remove('bc-thread-active');
- document.querySelector('.media-actions')?.classList.add('is-collapsed');
- $('mediaToggleButton').setAttribute('aria-expanded','false');
- $('mediaToggleButton').classList.remove('open');
+ sharedMedia.closeMediaTray();
  if(window.parent!==window)window.parent.postMessage({type:'blackcell-chat-inbox-open'},location.origin);
  void refreshInboxSummaries();
 });
