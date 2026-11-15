@@ -399,3 +399,20 @@ html.bc-os-phone .bc-apple-photos .ap-view-area .bc-pm-view-body{padding:4px}
 html.bc-os-tablet .bc-apple-photos .bc-pm-button{min-height:36px}
 html.bc-os-tablet .bc-apple-photos .ap-nav-item{min-height:40px}
 @media(orientation:landscape){html.bc-os-phone .bc-apple-photos .ap-photo-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
+
+/* Compact application spacing: non-phone home screens only.
+   Fixed-width tracks prevent icons stretching apart across wide displays. */
+html:not(.bc-os-phone) #desktop>.workspace>section>.apps{
+ grid-template-columns:repeat(auto-fill,minmax(min(100%,108px),108px));
+ justify-content:start;align-items:start;gap:9px 12px;max-width:650px
+}
+html:not(.bc-os-phone) #desktop>.workspace>section>.apps>.app{
+ min-width:0;min-height:94px;padding:6px 3px;justify-content:flex-start
+}
+html:not(.bc-os-phone) #desktop>.workspace>section>.apps>.app .app-icon{margin-bottom:7px}
+html:not(.bc-os-phone) #desktop>.workspace>section>.apps>.app .app-name{max-width:100%;overflow-wrap:anywhere;line-height:1.25}
+html.bc-os-tablet #desktop>.workspace>section>.apps{
+ grid-template-columns:repeat(auto-fill,minmax(min(100%,96px),96px));
+ gap:8px 10px;max-width:none
+}
+html.bc-os-tablet #desktop>.workspace>section>.apps>.app{min-height:92px;padding:6px 3px}
