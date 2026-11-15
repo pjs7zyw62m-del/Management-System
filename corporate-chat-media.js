@@ -1,5 +1,5 @@
 import {mountChatFilmstrip,makeChatThumbnail} from './corporate-chat-filmstrip.js?v=1';
-import {attachPhotoTransfer} from './blackcell-photo-transfer.js?v=2-chat';
+import {attachPhotoTransfer} from './blackcell-photo-transfer.js?v=3-bunny';
 /* BLACKCELL CORPORATION / Secure private chat photo + video sharing */
 import {createChatBunnyTransport} from './blackcell-chat-bunny.js?v=1';
 const MAX_BYTES=50*1024*1024;
