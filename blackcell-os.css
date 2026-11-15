@@ -263,3 +263,139 @@
 @media(min-width:621px) and (max-width:900px){.workspace:has(>.bc-system-panel){grid-template-columns:minmax(0,1fr) minmax(220px,250px);gap:16px}.bc-system-panel>.glass{padding:13px}.bc-identity-profile{gap:8px}.bc-identity-profile .avatar{width:42px;height:42px;flex-basis:42px}}
 @media(min-width:621px) and (max-height:760px){.workspace:has(>.bc-system-panel){padding-top:22px;padding-bottom:18px}.bc-system-panel{gap:9px}.bc-system-panel>.glass{padding:12px 14px}.bc-identity-profile{margin:10px 0 8px}.bc-session-details{margin-top:10px;padding-top:3px}.bc-system-panel .minirow{padding:5px 0}.bc-cloud-card .bc-storage-provider{margin-bottom:12px}.bc-cloud-card .bc-storage-detail{margin-bottom:10px}.bc-cloud-card .bc-storage-foot{margin-top:8px}.bc-cloud-card .bc-storage-manage{margin-top:8px}}
 @media(max-width:620px){.workspace:has(>.bc-system-panel){display:block}.bc-system-panel{margin-top:22px;gap:10px}.bc-system-panel>.glass{padding:15px}.bc-system-panel .bc-panel-heading{margin-bottom:2px}}
+
+/* Authenticated adaptive shell. The approved pointer-based desktop styles
+   are unchanged; responsive overrides are limited to these device classes. */
+#osTouchHome{display:none}
+html:is(.bc-os-phone,.bc-os-tablet){--bc-touch-top:calc(48px + env(safe-area-inset-top,0px));--bc-touch-dock:calc(74px + env(safe-area-inset-bottom,0px));--bc-touch-edge:calc(18px + env(safe-area-inset-bottom,0px))}
+html:is(.bc-os-phone,.bc-os-tablet),html:is(.bc-os-phone,.bc-os-tablet) body{height:100%;min-height:0;overflow:hidden}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop{height:var(--bc-touch-height,100dvh);min-height:0;grid-template-rows:var(--bc-touch-top) minmax(0,1fr) var(--bc-touch-dock)}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop.os-dock-auto-hide{grid-template-rows:var(--bc-touch-top) minmax(0,1fr) var(--bc-touch-edge)!important}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop>.topbar{height:var(--bc-touch-top);padding:env(safe-area-inset-top,0px) max(10px,env(safe-area-inset-right,0px)) 0 max(10px,env(safe-area-inset-left,0px));gap:8px;min-width:0}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .topright{min-width:0;gap:5px}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .menubar>button{font-size:12px;min-height:40px;padding:6px 9px}
+html:is(.bc-os-phone,.bc-os-tablet) #osTouchHome,html:is(.bc-os-phone,.bc-os-tablet) #osLockButton{display:grid;place-items:center;flex:none;min-width:40px;min-height:40px;background:transparent;border:0;border-radius:8px;color:#dddde4;padding:8px;touch-action:manipulation}
+html:is(.bc-os-phone,.bc-os-tablet) #osTouchHome svg,html:is(.bc-os-phone,.bc-os-tablet) #osLockButton svg{width:20px;height:20px}
+html:is(.bc-os-phone,.bc-os-tablet) #osTouchHome:active,html:is(.bc-os-phone,.bc-os-tablet) #osLockButton:active{background:#ffffff15}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .os-menu{position:fixed;top:var(--bc-touch-top);left:max(10px,env(safe-area-inset-left,0px))!important;right:max(10px,env(safe-area-inset-right,0px));width:auto;max-width:340px;max-height:calc(var(--bc-touch-height,100dvh) - var(--bc-touch-top) - 24px);overflow-y:auto;scrollbar-width:none;border-radius:14px}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .os-menu button{min-height:44px;font-size:14px;padding:10px 14px}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop>.workspace{min-height:0;min-width:0;overflow-x:hidden;overflow-y:auto;scrollbar-width:none;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop>.workspace::-webkit-scrollbar{display:none}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .app{touch-action:manipulation}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .app:hover{transform:none}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .app:active{background:#ffffff12}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop>.dockwrap{height:var(--bc-touch-dock);min-width:0;padding:7px max(10px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px));align-items:center}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .dock{justify-content:flex-start;min-width:0;max-width:100%;width:max-content;gap:8px;padding:8px 11px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;overscroll-behavior-inline:contain;-webkit-overflow-scrolling:touch;touch-action:pan-x}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .dock::-webkit-scrollbar{display:none}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .dock button{position:relative;flex:0 0 44px;width:44px;height:44px;min-width:44px;touch-action:manipulation;border-radius:12px}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .dock button:hover{transform:none}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .dock button>span{display:none}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .dock button.is-running:after{bottom:-6px}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop.os-dock-auto-hide>.os-dock-edge{left:50%;right:auto;width:112px;height:var(--bc-touch-edge);transform:translateX(-50%);touch-action:manipulation}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop.os-dock-auto-hide>.os-dock-edge:after{content:"";position:absolute;left:25px;right:25px;bottom:calc(5px + env(safe-area-inset-bottom,0px));height:4px;background:#b8b8c1aa;border-radius:4px}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop>.os-window{top:var(--bc-touch-top)!important;bottom:var(--bc-touch-dock)!important;left:0!important;right:0!important;width:auto!important;height:auto!important;min-width:0;min-height:0;max-width:none;max-height:none;resize:none;grid-template-rows:46px minmax(0,1fr)}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop.os-dock-auto-hide>.os-window{bottom:var(--bc-touch-edge)!important;height:auto!important}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .os-window-head{height:46px;min-width:0;display:flex;justify-content:flex-start;gap:6px;padding:0 9px;cursor:default;touch-action:manipulation}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .os-window-head>span{min-width:0;flex:1;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .os-window-head .traffic{position:static;gap:3px;flex:none;display:flex}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .os-window-head .traffic button{width:34px;height:36px;border-radius:8px;padding:0;font-size:18px!important;font-weight:600;line-height:1;box-shadow:none;background:#ffffff08!important}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .os-window-head .traffic button:nth-child(1){color:#ff8c85}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .os-window-head .traffic button:nth-child(2){color:#f8cf6c}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .os-window-head .traffic button:nth-child(3){color:#8adba2}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .os-window-head>a{position:static;display:grid;place-items:center;width:38px;height:40px;flex:none;font-size:0}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .os-window-head>a:after{content:"↗";font-size:18px;color:#d5d5df}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .os-window-head .os-admin-home{min-height:36px;font-size:11px}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .os-window-body{min-width:0;min-height:0;overflow:hidden}
+html:is(.bc-os-phone,.bc-os-tablet) .bc-lock-screen{padding:max(18px,env(safe-area-inset-top,0px)) max(18px,env(safe-area-inset-right,0px)) max(18px,env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px))}
+html:is(.bc-os-phone,.bc-os-tablet) .bc-lock-password{font-size:16px;min-height:44px}
+html:is(.bc-os-phone,.bc-os-tablet) .bc-lock-unlock,html:is(.bc-os-phone,.bc-os-tablet) .bc-lock-exit{min-height:44px}
+html:is(.bc-os-phone,.bc-os-tablet).bc-os-keyboard{--bc-touch-dock:0px;--bc-touch-edge:0px}
+html:is(.bc-os-phone,.bc-os-tablet).bc-os-keyboard #desktop>.dockwrap,
+html:is(.bc-os-phone,.bc-os-tablet).bc-os-keyboard #desktop>.os-dock-edge{display:none!important}
+/* Phone: compact identity/storage above the app grid, full-window apps. */
+html.bc-os-phone #desktop .brand{font-size:10px;gap:3px;flex:none}
+html.bc-os-phone #desktop .brand:before{display:none}
+html.bc-os-phone #desktop .brand em{font-size:10px}
+html.bc-os-phone #desktop .menubar #menuWindow,
+html.bc-os-phone #desktop .topright .os-admin-return,
+html.bc-os-phone #desktop .topright>.status,
+html.bc-os-phone #desktop .topright>.clock,
+html.bc-os-phone #desktop #signOut{display:none!important}
+html.bc-os-phone #desktop>.workspace{display:grid;grid-template-columns:minmax(0,1fr);align-content:start;align-items:start;gap:12px;padding:18px max(15px,env(safe-area-inset-right,0px)) 14px max(15px,env(safe-area-inset-left,0px));height:100%}
+html.bc-os-phone #desktop>.workspace>section{display:contents}
+html.bc-os-phone #desktop>.workspace>section>.hero{order:0}
+html.bc-os-phone #desktop .hero .overline{font-size:9px;letter-spacing:.08em}
+html.bc-os-phone #desktop .hero h1{font-size:clamp(27px,7vw,38px);margin:5px 0;overflow-wrap:anywhere}
+html.bc-os-phone #desktop .hero p{margin:0;font-size:12px}
+html.bc-os-phone #desktop>.workspace>.bc-system-panel{order:1;margin:0;gap:0;padding:13px;border:1px solid #ffffff1e;border-radius:18px;background:linear-gradient(145deg,#28282dcc,#111115dc);box-shadow:0 10px 24px #0004}
+html.bc-os-phone #desktop .bc-system-panel>.bc-panel-heading,html.bc-os-phone #desktop .bc-system-panel .release{display:none}
+html.bc-os-phone #desktop .bc-system-panel>.glass{background:transparent;border:0;border-radius:0;box-shadow:none;backdrop-filter:none;padding:0}
+html.bc-os-phone #desktop .bc-identity-card .bc-panel-label{display:none}
+html.bc-os-phone #desktop .bc-identity-profile{margin:0 0 6px;gap:10px}
+html.bc-os-phone #desktop .bc-identity-profile .avatar{width:39px;height:39px;flex-basis:39px;font-size:13px;border-radius:12px}
+html.bc-os-phone #desktop .bc-identity-copy .identity{font-size:14px}
+html.bc-os-phone #desktop .bc-identity-copy .memberline{font-size:10px;margin-top:3px}
+html.bc-os-phone #desktop .bc-identity-card .chip{margin-left:49px;font-size:9px;padding:4px 6px}
+html.bc-os-phone #desktop .bc-session-details{display:none}
+html.bc-os-phone #desktop .bc-system-panel>.bc-cloud-card{margin-top:11px;padding-top:11px;border-top:1px solid #ffffff14;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 8px;align-items:center}
+html.bc-os-phone #desktop .bc-cloud-card .bc-storage-provider{grid-column:1/-1;margin:0 0 3px;gap:8px}
+html.bc-os-phone #desktop .bc-cloud-icon{width:30px;height:30px;flex-basis:30px}
+html.bc-os-phone #desktop .bc-cloud-card .bc-storage-provider strong{font-size:12px}
+html.bc-os-phone #desktop .bc-cloud-card .bc-storage-provider button{width:36px;height:36px}
+html.bc-os-phone #desktop .bc-storage-caption{display:none}
+html.bc-os-phone #desktop .bc-cloud-card .bc-storage-used{grid-column:1;font-size:12px}
+html.bc-os-phone #desktop .bc-cloud-card .bc-storage-used strong{font-size:22px}
+html.bc-os-phone #desktop .bc-cloud-card .bc-storage-track{grid-column:1/-1;margin:2px 0;height:5px}
+html.bc-os-phone #desktop .bc-cloud-card .bc-storage-detail{grid-column:1;margin:0;font-size:10px}
+html.bc-os-phone #desktop .bc-cloud-card .bc-storage-stats,html.bc-os-phone #desktop .bc-cloud-card .bc-storage-foot{display:none}
+html.bc-os-phone #desktop .bc-cloud-card>.minirow{grid-column:1/-1}
+html.bc-os-phone #desktop .bc-cloud-card .bc-storage-manage{grid-column:2;grid-row:2;padding:5px 7px;margin:0;min-height:36px;font-size:10px;white-space:nowrap}
+html.bc-os-phone #desktop>.workspace>section>#desktopFolderSection{order:2}
+html.bc-os-phone #desktop>.workspace>section>.sectionhead{order:3;margin:2px 0 0}
+html.bc-os-phone #desktop>.workspace>section>.apps{order:4;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 7px;max-width:none;min-width:0}
+html.bc-os-phone #desktop .app{padding:7px 2px;min-width:0;min-height:92px}
+html.bc-os-phone #desktop .app-icon{width:58px;height:58px;border-radius:16px;margin-bottom:7px}
+html.bc-os-phone #desktop .app-icon svg{width:29px;height:29px}
+html.bc-os-phone #desktop .app-name{font-size:12px;line-height:1.25;overflow-wrap:anywhere}
+html.bc-os-phone #desktop>.os-window,html.bc-os-phone #desktop>.os-window.is-max{border-radius:0;border-left:0;border-right:0}
+html.bc-os-phone #desktop .traffic button:nth-child(3){display:none}
+@media(max-width:345px){html.bc-os-phone #desktop .topbar{gap:4px;padding-left:6px;padding-right:6px}html.bc-os-phone #desktop .menubar>button{font-size:11px;padding:5px}html.bc-os-phone #desktop .topright{gap:1px}html.bc-os-phone #osTouchHome,html.bc-os-phone #osLockButton{min-width:36px}}
+@media(orientation:landscape){html.bc-os-phone #desktop>.workspace>section>.apps{grid-template-columns:repeat(5,minmax(0,1fr))}html.bc-os-phone #desktop>.workspace>.bc-system-panel{max-width:none}html.bc-os-phone #desktop .app{min-height:82px}}
+/* Tablet: spacious desktop-inspired home and inset/expanded app windows. */
+html.bc-os-tablet #desktop>.workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(215px,260px);gap:22px;padding:24px max(21px,env(safe-area-inset-right,0px)) 22px max(21px,env(safe-area-inset-left,0px))}
+html.bc-os-tablet #desktop .apps{grid-template-columns:repeat(4,minmax(0,1fr));gap:15px 8px;max-width:none}
+html.bc-os-tablet #desktop .app{padding:10px 3px;min-height:102px}
+html.bc-os-tablet #desktop .app-icon{width:62px;height:62px;border-radius:16px}
+html.bc-os-tablet #desktop .app-name{font-size:12px}
+html.bc-os-tablet #desktop .topright .os-admin-return{display:none!important}
+html.bc-os-tablet #desktop .topbar #signOut{min-width:40px;min-height:40px}
+html.bc-os-tablet #desktop>.os-window:not(.is-max){left:12px!important;right:12px!important;top:calc(var(--bc-touch-top) + 9px)!important;bottom:calc(var(--bc-touch-dock) + 9px)!important;border-radius:14px}
+html.bc-os-tablet #desktop.os-dock-auto-hide>.os-window:not(.is-max){bottom:calc(var(--bc-touch-edge) + 9px)!important}
+html.bc-os-tablet #desktop>.os-window.is-max{border-radius:0}
+@media(max-width:820px){html.bc-os-tablet #desktop>.workspace{grid-template-columns:minmax(0,1fr) 220px;gap:16px;padding:19px 16px}html.bc-os-tablet #desktop .apps{grid-template-columns:repeat(3,minmax(0,1fr))}html.bc-os-tablet #desktop .topright>.status{display:none}}
+/* Photos: touch library navigation opens above the gallery; desktop sidebar remains unchanged. */
+html.bc-os-phone .bc-pm-gallery.bc-apple-photos{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,min(35%,230px)) minmax(0,1fr)}
+html.bc-os-phone .bc-pm-gallery.bc-apple-photos.ap-side-closed{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr)}
+html.bc-os-phone .bc-apple-photos>.ap-side{grid-row:1;grid-column:1;padding:10px 12px;width:auto;border-right:0;border-bottom:1px solid #ffffff14}
+html.bc-os-phone .bc-apple-photos.ap-side-closed>.ap-side{display:none}
+html.bc-os-phone .bc-apple-photos>.ap-main{grid-row:2;grid-column:1}
+html.bc-os-phone .bc-apple-photos.ap-side-closed>.ap-main{grid-row:1}
+html.bc-os-phone .bc-apple-photos .ap-side-title{margin:0 0 6px!important}
+html.bc-os-phone .bc-apple-photos .ap-nav-item{min-height:40px;font-size:13px}
+html.bc-os-phone .bc-apple-photos .ap-section-label{font-size:10px}
+html.bc-os-phone .bc-apple-photos .ap-toolbar{gap:6px;padding:8px}
+html.bc-os-phone .bc-apple-photos .ap-zoom{display:none}
+html.bc-os-phone .bc-apple-photos .ap-segments{margin:0 0 0 auto;flex:1;justify-content:center}
+html.bc-os-phone .bc-apple-photos .ap-segments .bc-pm-button{font-size:11px;flex:1}
+html.bc-os-phone .bc-apple-photos .ap-tools{width:100%;display:flex;flex-wrap:nowrap;gap:5px;margin:0}
+html.bc-os-phone .bc-apple-photos .ap-search{font-size:16px;min-width:0;flex:1;min-height:38px}
+html.bc-os-phone .bc-apple-photos .bc-pm-button{min-height:38px;font-size:12px;padding:7px 9px}
+html.bc-os-phone .bc-apple-photos .ap-photo-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:3px}
+html.bc-os-phone .bc-apple-photos .ap-heading{padding:12px 10px 8px}
+html.bc-os-phone .bc-apple-photos .ap-grid{padding:2px 8px 15px}
+html.bc-os-phone .bc-apple-photos .ap-view-toolbar .bc-pm-view-actions{width:100%;flex:1;justify-content:space-between;gap:4px}
+html.bc-os-phone .bc-apple-photos .ap-view-toolbar .bc-pm-view-actions button{min-width:38px;min-height:38px}
+html.bc-os-phone .bc-apple-photos .ap-view-area .bc-pm-view-body{padding:4px}
+html.bc-os-tablet .bc-apple-photos .bc-pm-button{min-height:36px}
+html.bc-os-tablet .bc-apple-photos .ap-nav-item{min-height:40px}
+@media(orientation:landscape){html.bc-os-phone .bc-apple-photos .ap-photo-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
