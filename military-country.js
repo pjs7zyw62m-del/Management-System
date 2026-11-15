@@ -1,3 +1,4 @@
+import {placePhotoTransfer} from './blackcell-photo-transfer.js?v=1';
 import {corporateClient,corporateAuthorize} from "./corp-auth.js?v=20261109-staff1";
 import {mountMilitaryGunner} from "./military-gunner.js?v=20261110-fast4";
 const $=id=>document.getElementById(id);
@@ -153,11 +154,13 @@ function renderPhotos(){
   button.addEventListener("click",()=>openPhoto(i));holder.append(button);
  });
 }
+let syncTransfer;
 function openPhoto(index){
  if(!state.shown?.length)return;
  state.position=(index+state.shown.length)%state.shown.length;
  const a=state.shown[state.position],url=state.urls.get(a.id);
  state.current=a;
+ syncTransfer??=placePhotoTransfer($("openFullPhoto"),{client,getPhoto:()=>state.current,notify:toast});syncTransfer();
  $("photoLightbox").hidden=false;
  $("lightboxTitle").textContent=a.filename||"MILITARY PHOTOGRAPH";
  $("lightboxImage").alt=a.filename||"Selected military photograph";
