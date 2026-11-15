@@ -227,6 +227,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const widthDivider=el('div','bc-media-resize bc-media-resize-width');
  const heightDivider=el('div','bc-media-resize bc-media-resize-height');
  const resizeGuide=el('div','bc-media-drag-guide');resizeGuide.hidden=true;resizeGuide.setAttribute('aria-hidden','true');document.body.append(resizeGuide);
+ let deferredLibraryRender=false;
  let cancelActiveResize=()=>{};
  const layoutKey='bc.imessage.media.layout.v1';
  const clamp=(v,lo,hi)=>Math.min(hi,Math.max(lo,v));
@@ -272,6 +273,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
    resizeGuide.hidden=true;resizeGuide.style.transform='';
    if(commit){setDimension(axis,size,bounds,false);announceLayout();saveMediaLayout()}
    chat.classList.remove('bc-media-resizing');document.documentElement.classList.remove('bc-media-resizing');
+   if(deferredLibraryRender){const g=libraryGeneration;deferredLibraryRender=false;requestAnimationFrame(()=>{if(g===libraryGeneration&&chat.classList.contains('media-open')&&context()?.ready)renderLibrary()})}
   };
   node.addEventListener('pointerdown',e=>{
    if(drag||e.button!==0||!chat.classList.contains('media-open')||chat.classList.contains('bc-media-resizing')||node.getClientRects().length===0)return;
@@ -551,7 +553,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   }
  }
  function closeWing(){
-  cancelActiveResize();
+  deferredLibraryRender=false;cancelActiveResize();
   if(standalonePanel&&mediaPanel==='library'&&requestPanelClose('library'))return;
   libraryGeneration++;mediaLibrary.setAttribute('aria-expanded','false');
   chat.classList.remove('media-open');
@@ -659,6 +661,8 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  }
  function renderLibrary(){
   if(!mediaReady)return;
+  if(chat.classList.contains('bc-media-resizing')){deferredLibraryRender=true;return}
+  deferredLibraryRender=false;
   const old=visible[active]?.id;
   visible=library.filter(it=>
    (!batchFocus||it.batch_id===batchFocus)&&
@@ -678,7 +682,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
     const tile=button('',()=>showIndex(i),'media-library-item'+(i===active?' selected':''));
     tile.title=item.filename;
     if(item.kind==='photo'&&signed.has(item.id)){
-      const img=el('img');img.alt=item.filename;img.loading='lazy';img.src=signed.get(item.id);tile.append(img);
+      const img=el('img');img.alt=item.filename;img.loading='lazy';img.decoding='async';img.fetchPriority='low';img.width=78;img.height=60;img.src=signed.get(item.id);tile.append(img);
     }else{
       tile.append(el('span','media-video-thumb',item.kind==='video'?'▶':'▧'));
     }
@@ -940,7 +944,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   return cell;
  }
  function onPeerChange(newPeerId){
-  cancelActiveResize();
+  deferredLibraryRender=false;cancelActiveResize();
   libraryGeneration++;mediaLibrary.setAttribute('aria-expanded','false');pickPeer=null;
   if(!standalonePanel&&peerId&&peerId!==newPeerId){
    if(window.parent!==window)
