@@ -199,3 +199,35 @@ dialog.bc-chat-photo-enlarge::backdrop{background:#050506}
  padding:0 4px;
 }
 .media-viewer.bc-focus-only .bc-media-header-count:empty{display:none}
+
+/* Main iMessage: use the same in-window split at narrow sizes, without
+   putting the absolutely positioned viewer into an implicit third grid column.
+   The conversation list is temporarily hidden, not removed or reconfigured. */
+@media(max-width:1000px){
+ html.bc-os-chat:not(.bc-chat-popout):not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open{
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:minmax(0,1fr) minmax(0,1fr)!important;
+  position:relative!important;overflow:hidden!important;gap:0;min-width:0;min-height:0;
+ }
+ html.bc-os-chat:not(.bc-chat-popout):not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open>.sidebar{display:none!important}
+ html.bc-os-chat:not(.bc-chat-popout):not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open>.chat-main{
+  display:flex!important;grid-area:1/1!important;position:relative!important;inset:auto!important;
+  height:100%;width:100%;min-width:0;min-height:0;overflow:hidden;transform:none!important
+ }
+ html.bc-os-chat:not(.bc-chat-popout):not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open>.media-viewer{
+  display:flex!important;grid-area:2/1!important;position:relative!important;inset:auto!important;
+  width:100%!important;height:100%!important;max-width:100%;max-height:100%;
+  min-width:0;min-height:0;padding:0!important;border-left:0;border-top:1px solid #ffffff24;
+  visibility:visible!important;opacity:1!important;box-shadow:none!important;animation:none!important
+ }
+ html.bc-os-chat:not(.bc-chat-popout):not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open .bc-media-resize-width{display:none!important}
+}
+@media(min-width:640px) and (max-width:1000px){
+ html.bc-os-chat:not(.bc-chat-popout):not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open{
+  grid-template-columns:minmax(285px,42%) minmax(0,1fr)!important;
+  grid-template-rows:minmax(0,1fr)!important
+ }
+ html.bc-os-chat:not(.bc-chat-popout):not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open>.media-viewer{
+  grid-area:1/2!important;border-top:0;border-left:1px solid #ffffff24
+ }
+}
