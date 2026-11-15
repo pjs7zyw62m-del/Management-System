@@ -1,6 +1,6 @@
 import {createClient} from "npm:@supabase/supabase-js@2.119.0";
 
-// NOT deployed. Requires a dedicated, verified token-protected Bunny Pull Zone.
+// Dedicated token-protected Bunny Pull Zone; deployment gated by owner cutover secret.
 // No browser receives a storage credential. All access is checked via caller RLS.
 // Proposed isolated storage zone, not the existing shared media vault.
 const zone="https://la.storage.bunnycdn.com/blackcell-private-chat/";
@@ -41,9 +41,9 @@ Deno.serve(async(req:Request)=>{
  const token=req.headers.get("authorization")||"";
  if(!/^Bearer\s+\S+$/i.test(token))return send(401,{ok:false,code:"SIGN_IN_REQUIRED"});
  const host=Deno.env.get("SUPABASE_URL")||"",pub=Deno.env.get("SUPABASE_ANON_KEY")||"";
- const storageKey=Deno.env.get("BLACKCELL_CHAT_BUNNY_STORAGE_ACCESS_KEY")||"",cdnKey=Deno.env.get("BLACKCELL_CHAT_BUNNY_TOKEN_KEY")||"",cdn=Deno.env.get("BLACKCELL_CHAT_BUNNY_CDN_URL")||"";
+ const storageKey=(Deno.env.get("BLACKCELL_CHAT_BUNNY_STORAGE_ACCESS_KEY")||"").trim(),cdnKey=(Deno.env.get("BLACKCELL_CHAT_BUNNY_TOKEN_KEY")||"").trim(),cdn=(Deno.env.get("BLACKCELL_CHAT_BUNNY_CDN_URL")||"").trim();
  // Fail closed until the separate CDN zone has been validated by an administrator.
- if(Deno.env.get("BLACKCELL_CHAT_BUNNY_CUTOVER")!=="verified-v1"||!host||!pub||!storageKey||!cdnKey||!/^https:\/\/[a-z0-9-]+\.b-cdn\.net$/i.test(cdn))
+ if(Deno.env.get("BLACKCELL_CHAT_BUNNY_CUTOVER")!=="verified-v1"||!host||!pub||!storageKey||!cdnKey||cdn!=="https://blackcell-private-chat.b-cdn.net")
   return send(503,{ok:false,code:"PRIVATE_BUNNY_DELIVERY_NOT_CONFIGURED"});
  const jwt=token.replace(/^Bearer\s+/i,""),db=createClient(host,pub,{global:{headers:{Authorization:"Bearer "+jwt}},auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
  try{
