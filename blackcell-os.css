@@ -438,3 +438,24 @@ html.bc-os-tablet #desktop>.workspace>section>.apps>.app{min-height:92px;padding
 html:is(.bc-os-phone,.bc-os-tablet) .bc-soc-bell{width:36px;height:40px}
 html:is(.bc-os-phone,.bc-os-tablet) .bc-soc-notifications{top:calc(var(--bc-touch-top) + 5px);right:max(8px,env(safe-area-inset-right,0px));max-height:calc(var(--bc-touch-height,100dvh) - var(--bc-touch-top) - 20px)}
 @media(max-width:345px){html.bc-os-phone .bc-soc-bell{width:29px;height:36px}html.bc-os-phone #desktop .menubar>button{padding-left:3px;padding-right:3px}}
+ 
+/* Installed web app: keep system status area black and the menu crisp.
+   Preserve the existing safe-area row, controls and window offsets. */
+html.bc-os-installed,html.bc-os-installed body{background:#000}
+html.bc-os-installed #desktop>.topbar{
+ background:#101013;
+ -webkit-backdrop-filter:none;
+ backdrop-filter:none;
+ border-bottom-color:#ffffff18;
+}
+html.bc-os-installed:is(.bc-os-phone,.bc-os-tablet) #desktop>.topbar{
+ background:linear-gradient(to bottom,#000 0,#000 env(safe-area-inset-top,0px),#101013 env(safe-area-inset-top,0px),#101013 100%);
+}
+html.bc-os-installed #desktop>.topbar .brand,
+html.bc-os-installed #desktop>.topbar .menubar>button{color:#f0f0f3;text-shadow:none}
+html.bc-os-installed #desktop>.topbar .topright{color:#c7c7cf;text-shadow:none}
+html.bc-os-installed #desktop>.topbar .brand:before{box-shadow:none}
+@media(display-mode:standalone){
+ #desktop>.topbar{-webkit-backdrop-filter:none;backdrop-filter:none;background:#101013;border-bottom-color:#ffffff18}
+ html:is(.bc-os-phone,.bc-os-tablet) #desktop>.topbar{background:linear-gradient(to bottom,#000 0,#000 env(safe-area-inset-top,0px),#101013 env(safe-area-inset-top,0px),#101013 100%)}
+}
