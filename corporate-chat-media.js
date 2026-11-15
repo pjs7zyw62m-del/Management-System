@@ -226,6 +226,8 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  // Direct manipulation of the two panes. Only layout preferences are stored, never media or contact data.
  const widthDivider=el('div','bc-media-resize bc-media-resize-width');
  const heightDivider=el('div','bc-media-resize bc-media-resize-height');
+ const resizeGuide=el('div','bc-media-drag-guide');resizeGuide.hidden=true;resizeGuide.setAttribute('aria-hidden','true');document.body.append(resizeGuide);
+ let cancelActiveResize=()=>{};
  const layoutKey='bc.imessage.media.layout.v1';
  const clamp=(v,lo,hi)=>Math.min(hi,Math.max(lo,v));
  let preferredWidth=42,preferredLibrary=32;
@@ -257,24 +259,33 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   const position=e=>horizontal?e.clientX:e.clientY;
   const current=()=>horizontal?wing.getBoundingClientRect().width:libraryBox.getBoundingClientRect().height;
   const reset=()=>{if(horizontal)preferredWidth=42;else preferredLibrary=32;applyLayout();saveMediaLayout()};
-  const paint=()=>{frame=0;if(drag)setDimension(axis,drag.size+drag.start-drag.latest,drag.bounds,false)};
+  // Move only a compositor-friendly guide while dragging; resize the live panes once on release.
+  const targetSize=()=>clamp(drag.size+drag.start-drag.latest,drag.bounds.min,drag.bounds.max);
+  const paint=()=>{frame=0;if(!drag)return;const delta=drag.size-targetSize();resizeGuide.style.transform=horizontal?'translate3d('+delta+'px,0,0)':'translate3d(0,'+delta+'px,0)'};
   const end=e=>{
    if(!drag||e?.pointerId!==undefined&&e.pointerId!==drag.id)return;
    if(e?.type==='pointerup')drag.latest=position(e);
    if(frame){cancelAnimationFrame(frame);frame=0}
-   paint();const id=drag.id;drag=null;
+   const id=drag.id,commit=e?.type==='pointerup',size=targetSize(),bounds=drag.bounds;drag=null;
+   cancelActiveResize=()=>{};
    if(node.hasPointerCapture?.(id))node.releasePointerCapture(id);
+   resizeGuide.hidden=true;resizeGuide.style.transform='';
+   if(commit){setDimension(axis,size,bounds,false);announceLayout();saveMediaLayout()}
    chat.classList.remove('bc-media-resizing');document.documentElement.classList.remove('bc-media-resizing');
-   announceLayout();saveMediaLayout();
   };
   node.addEventListener('pointerdown',e=>{
    if(drag||e.button!==0||!chat.classList.contains('media-open')||chat.classList.contains('bc-media-resizing')||node.getClientRects().length===0)return;
    e.preventDefault();
-   // All geometry reads happen once, before style writes. No synchronous reflow on pointermove.
    const bounds=horizontal?widthBounds():libraryBounds(),size=current(),start=position(e);
+   const rect=node.getBoundingClientRect();
    if(bounds.total<=0)return;
    drag={id:e.pointerId,start,size,latest:start,bounds};
-   node.setPointerCapture(e.pointerId);chat.classList.add('bc-media-resizing');document.documentElement.classList.add('bc-media-resizing');
+   cancelActiveResize=()=>end();
+   node.setPointerCapture(e.pointerId);
+   resizeGuide.className='bc-media-drag-guide '+(horizontal?'is-width':'is-height');
+   Object.assign(resizeGuide.style,{left:(horizontal?rect.left+rect.width/2:rect.left)+'px',top:(horizontal?rect.top:rect.top+rect.height/2)+'px',width:(horizontal?2:rect.width)+'px',height:(horizontal?rect.height:2)+'px',transform:'translate3d(0,0,0)'});
+   resizeGuide.hidden=false;
+   chat.classList.add('bc-media-resizing');document.documentElement.classList.add('bc-media-resizing');
   });
   node.addEventListener('pointermove',e=>{
    if(!drag||drag.id!==e.pointerId)return;e.preventDefault();drag.latest=position(e);
@@ -283,6 +294,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   for(const type of ['pointerup','pointercancel','lostpointercapture'])node.addEventListener(type,end);
   window.addEventListener('blur',()=>end());
   window.addEventListener('resize',()=>end(),{passive:true});
+  window.addEventListener('keydown',e=>{if(drag&&e.key==='Escape'){e.preventDefault();end()}});
   node.addEventListener('dblclick',e=>{e.preventDefault();reset()});
   node.addEventListener('keydown',e=>{
    if(drag||chat.classList.contains('bc-media-resizing'))return;
@@ -539,6 +551,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   }
  }
  function closeWing(){
+  cancelActiveResize();
   if(standalonePanel&&mediaPanel==='library'&&requestPanelClose('library'))return;
   libraryGeneration++;mediaLibrary.setAttribute('aria-expanded','false');
   chat.classList.remove('media-open');
@@ -927,6 +940,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   return cell;
  }
  function onPeerChange(newPeerId){
+  cancelActiveResize();
   libraryGeneration++;mediaLibrary.setAttribute('aria-expanded','false');pickPeer=null;
   if(!standalonePanel&&peerId&&peerId!==newPeerId){
    if(window.parent!==window)
@@ -947,5 +961,5 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   overlay.hidden=true;
   if(!busy){selection=[];selectionPeer=null;renderSelection();hideInlineUpload()}
  }
- return {renderMediaBubble,onPeerChange,openShare,openLibrary,openBatch,closeWing,pickMobileFiles,syncInlineUpload,pause:()=>{stageInner.querySelector('video')?.pause();mobileCanvas.querySelector('video')?.pause()}};
+ return {renderMediaBubble,onPeerChange,openShare,openLibrary,openBatch,closeWing,pickMobileFiles,syncInlineUpload,pause:()=>{cancelActiveResize();stageInner.querySelector('video')?.pause();mobileCanvas.querySelector('video')?.pause()}};
 }
