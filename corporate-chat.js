@@ -1,5 +1,5 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
-import {setupCorporateMedia} from './corporate-chat-media.js?v=20261109-mobile-gallery4';
+import {setupCorporateMedia} from './corporate-chat-media.js?v=20261114-workspace1';
 import {setupCorporateChatLive} from './corporate-chat-live.js?v=20261113-no-typing1';
 const client=corporateClient(),$=id=>document.getElementById(id);
 const embedParams=new URLSearchParams(location.search);
@@ -78,6 +78,7 @@ function chatActivity(){
 
 function status(text){$('systemStatus').textContent=text;$('systemStatus').hidden=!text}
 const sharedMedia=setupCorporateMedia({client,context:()=>({self,peer,ready}),reloadMessages:loadMessages,status});
+window.BLACKCELL_OS_PAUSE_MEDIA=()=>sharedMedia.pause();
 const live=setupCorporateChatLive({
  client,context:()=>({self,peer,ready}),
  typingLabel:$('typingIndicator'),typingName:$('typingName')
