@@ -5,10 +5,10 @@ export function omegaStage(elapsed){
  if(t<10000)return {phase:'initializing',percent:Math.min(99,Math.floor(100*(t-650)/9350))};
  return {phase:'warning',percent:100};
 }
-export function mountOmegaRehearsal({authorized,returnFocus}){
+export function mountOmegaRehearsal({authorized,returnFocus,mode='user'}){
  if(typeof authorized!=='function'||!authorized()||document.querySelector('.bc-omega-rehearsal'))return;
  const create=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n};
- const layer=create('section','bc-omega-rehearsal');layer.dataset.phase='blackout';layer.setAttribute('role','dialog');layer.setAttribute('aria-modal','true');layer.setAttribute('aria-label','OMEGA lockdown visual rehearsal');
+ const layer=create('section','bc-omega-rehearsal');layer.dataset.phase=mode==='landing'?'warning':'blackout';layer.setAttribute('role','dialog');layer.setAttribute('aria-modal','true');layer.setAttribute('aria-label',mode==='landing'?'OMEGA public landing page rehearsal':'OMEGA lockdown visual rehearsal');
  const demo=create('div','bc-omega-demo-label','ADMINISTRATOR REHEARSAL · NO LIVE LOCKDOWN');
  const stage=create('div','bc-omega-rehearsal-stage');
  const init=create('div','bc-omega-init'),warning=create('div','bc-omega-warning');
@@ -29,7 +29,7 @@ export function mountOmegaRehearsal({authorized,returnFocus}){
  exit.onclick=close;document.addEventListener('keydown',keys,true);document.addEventListener('visibilitychange',visibility);window.addEventListener('pagehide',close,{once:true});
  function frame(now){
   if(closed)return;if(!authorized()){close();return}
-  const state=omegaStage(now-started);layer.dataset.phase=state.phase;
+  const state=mode==='landing'?{phase:'warning',percent:100}:omegaStage(now-started);layer.dataset.phase=state.phase;
   if(state.phase==='initializing'){
    fill.style.width=state.percent+'%';pct.textContent=String(state.percent).padStart(2,'0')+'%';progress.setAttribute('aria-valuenow',String(state.percent));
    note.textContent=state.percent<35?'INITIALIZING SECURITY PROTOCOL':state.percent<70?'APPLYING RESTRICTED ACCESS':'FINALIZING LOCKDOWN DISPLAY';
