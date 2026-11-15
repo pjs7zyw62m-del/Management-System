@@ -230,7 +230,8 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const clamp=(v,lo,hi)=>Math.min(hi,Math.max(lo,v));
  let preferredWidth=42,preferredLibrary=32;
  try{const v=JSON.parse(localStorage.getItem(layoutKey)||'null');if(Number.isFinite(v?.width))preferredWidth=clamp(v.width,15,85);if(Number.isFinite(v?.library))preferredLibrary=clamp(v.library,10,75)}catch(_){}
- function applyLayout(){chat.style.setProperty('--bc-shared-width',preferredWidth+'%');wing.style.setProperty('--bc-library-share',preferredLibrary+'%');widthDivider.setAttribute('aria-valuenow',String(Math.round(preferredWidth)));heightDivider.setAttribute('aria-valuenow',String(Math.round(preferredLibrary)))}
+ function announceLayout(){widthDivider.setAttribute('aria-valuenow',String(Math.round(preferredWidth)));heightDivider.setAttribute('aria-valuenow',String(Math.round(preferredLibrary)))}
+ function applyLayout(){chat.style.setProperty('--bc-shared-width',preferredWidth+'%');wing.style.setProperty('--bc-library-share',preferredLibrary+'%');announceLayout()}
  function saveMediaLayout(){try{localStorage.setItem(layoutKey,JSON.stringify({width:preferredWidth,library:preferredLibrary}))}catch(_){}}
  function widthBounds(){
   const total=chat.getBoundingClientRect().width;
@@ -242,26 +243,49 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   const total=wing.getBoundingClientRect().height,available=stage.getBoundingClientRect().height+libraryBox.getBoundingClientRect().height;
   const min=Math.min(94,available),max=Math.max(min,available-100);return {total,min,max};
  }
- function setDimension(axis,pixels){
-  const {total,min,max}=axis==='width'?widthBounds():libraryBounds();if(total<=0)return;
+ function setDimension(axis,pixels,bounds=axis==='width'?widthBounds():libraryBounds(),announce=true){
+  const {total,min,max}=bounds;if(total<=0)return;
   const percent=clamp(pixels,min,max)/total*100;
-  if(axis==='width')preferredWidth=percent;else preferredLibrary=percent;applyLayout();
+  if(axis==='width'){if(percent!==preferredWidth){preferredWidth=percent;chat.style.setProperty('--bc-shared-width',percent+'%')}}else if(percent!==preferredLibrary){preferredLibrary=percent;wing.style.setProperty('--bc-library-share',percent+'%')}
+  if(announce)announceLayout();
  }
  function bindDivider(node,axis){
   const horizontal=axis==='width',label=horizontal?'Resize Shared Media width':'Resize media library height';
   node.tabIndex=0;node.setAttribute('role','separator');node.setAttribute('aria-label',label);node.setAttribute('aria-orientation',horizontal?'vertical':'horizontal');node.setAttribute('aria-valuemin','0');node.setAttribute('aria-valuemax','100');
   node.title=horizontal?'Drag left or right to resize Shared Media. Double-click to reset.':'Drag up or down to resize the viewer. Double-click to reset.';
-  let drag=null;
+  let drag=null,frame=0;
   const position=e=>horizontal?e.clientX:e.clientY;
   const current=()=>horizontal?wing.getBoundingClientRect().width:libraryBox.getBoundingClientRect().height;
   const reset=()=>{if(horizontal)preferredWidth=42;else preferredLibrary=32;applyLayout();saveMediaLayout()};
-  const end=e=>{if(!drag||e?.pointerId!==undefined&&e.pointerId!==drag.id)return;const id=drag.id;drag=null;if(node.hasPointerCapture?.(id))node.releasePointerCapture(id);chat.classList.remove('bc-media-resizing');document.documentElement.classList.remove('bc-media-resizing');saveMediaLayout()};
-  node.addEventListener('pointerdown',e=>{if(drag||e.button!==0||!chat.classList.contains('media-open')||node.getClientRects().length===0)return;e.preventDefault();drag={id:e.pointerId,start:position(e),size:current()};node.setPointerCapture(e.pointerId);chat.classList.add('bc-media-resizing');document.documentElement.classList.add('bc-media-resizing')});
-  node.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;e.preventDefault();setDimension(axis,drag.size+drag.start-position(e))});
+  const paint=()=>{frame=0;if(drag)setDimension(axis,drag.size+drag.start-drag.latest,drag.bounds,false)};
+  const end=e=>{
+   if(!drag||e?.pointerId!==undefined&&e.pointerId!==drag.id)return;
+   if(e?.type==='pointerup')drag.latest=position(e);
+   if(frame){cancelAnimationFrame(frame);frame=0}
+   paint();const id=drag.id;drag=null;
+   if(node.hasPointerCapture?.(id))node.releasePointerCapture(id);
+   chat.classList.remove('bc-media-resizing');document.documentElement.classList.remove('bc-media-resizing');
+   announceLayout();saveMediaLayout();
+  };
+  node.addEventListener('pointerdown',e=>{
+   if(drag||e.button!==0||!chat.classList.contains('media-open')||chat.classList.contains('bc-media-resizing')||node.getClientRects().length===0)return;
+   e.preventDefault();
+   // All geometry reads happen once, before style writes. No synchronous reflow on pointermove.
+   const bounds=horizontal?widthBounds():libraryBounds(),size=current(),start=position(e);
+   if(bounds.total<=0)return;
+   drag={id:e.pointerId,start,size,latest:start,bounds};
+   node.setPointerCapture(e.pointerId);chat.classList.add('bc-media-resizing');document.documentElement.classList.add('bc-media-resizing');
+  });
+  node.addEventListener('pointermove',e=>{
+   if(!drag||drag.id!==e.pointerId)return;e.preventDefault();drag.latest=position(e);
+   if(!frame)frame=requestAnimationFrame(paint);
+  });
   for(const type of ['pointerup','pointercancel','lostpointercapture'])node.addEventListener(type,end);
   window.addEventListener('blur',()=>end());
+  window.addEventListener('resize',()=>end(),{passive:true});
   node.addEventListener('dblclick',e=>{e.preventDefault();reset()});
   node.addEventListener('keydown',e=>{
+   if(drag||chat.classList.contains('bc-media-resizing'))return;
    if(e.key==='Home'){e.preventDefault();reset();return}
    const increase=horizontal?'ArrowLeft':'ArrowUp',decrease=horizontal?'ArrowRight':'ArrowDown';if(e.key!==increase&&e.key!==decrease)return;
    e.preventDefault();setDimension(axis,current()+(e.key===increase?1:-1)*(e.shiftKey?64:16));saveMediaLayout();
