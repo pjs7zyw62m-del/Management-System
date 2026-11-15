@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="corporate-chat-media-bubble-host.css?v=20261109-independent-media1"><link rel="stylesheet" href="corporate-chat-media-responsive.css?v=20261109-sidebyside2"><link rel="stylesheet" href="corporate-chat-media-flip-focus.css?v=20261109-flip-focus1">
 <script src="corporate-chat-media-bubble-host.js?v=20261109-large-media1" defer></script>
 <script src="corp-config.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js" defer></script><script type="module" src="corporate-network.js?v=20261114-transfer"></script><link rel="stylesheet" href="corp-adaptive-layout.css?v=20261109-device2">
+<script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js" defer></script><script type="module" src="corporate-network.js?v=20261114-photos-only"></script><link rel="stylesheet" href="corp-adaptive-layout.css?v=20261109-device2">
 <link rel="stylesheet" href="corp-adaptive-chat.css?v=20261109-device2">
 <link rel="stylesheet" href="corporate-network-feed-media.css?v=20261109-uncropped2">
 <link rel="stylesheet" href="corporate-chat-compact-media.css?v=20261109-mobile-gallery4">
@@ -801,7 +801,7 @@
 <div id="applePhotoViewer" class="apple-photo-viewer" hidden role="dialog" aria-modal="true" aria-label="Apple Photos style viewer">
  <div class="apple-photo-viewer-header"><div><strong id="appleViewerFilename">Media</strong><small id="appleViewerMeta">ORIGINAL QUALITY</small></div>
    <div class="apple-photo-viewer-actions"><button id="appleViewerFavorite" title="Favorite this media" type="button">♡</button><span id="appleViewerVoteSlot" class="bc-viewer-vote-slot" aria-label="Photo voting"></span><button id="appleViewerTaste" type="button" hidden>✦ WHAT CAUGHT YOUR EYE?</button><button id="appleViewerPredict" type="button" hidden>◎ PREDICT MY INTEREST</button><button id="appleViewerVisualDiscovery" type="button" title="Select a detail to find similar photos">⌖ VISUAL DISCOVERY</button><button id="appleViewerOriginal" type="button">↗ FULL PHOTO</button>
-    <button id="appleViewerDownload" type="button">↓ DOWNLOAD</button><button id="appleViewerClose" class="close-x" type="button" aria-label="Close viewer">✕</button></div></div>
+    <button id="appleViewerDownload" type="button" style="display:none">↓ DOWNLOAD</button><button id="appleViewerClose" class="close-x" type="button" aria-label="Close viewer">✕</button></div></div>
  <div class="apple-photo-viewer-stage">
  <div id="appleZoomControls" class="bc-photo-zoom-controls" role="group" aria-label="Full photo zoom controls" hidden>
   <button id="appleZoomOut" type="button" aria-label="Zoom out">−</button>
