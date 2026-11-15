@@ -1,6 +1,6 @@
 import {mountPopoutActions} from './corporate-chat-popout-actions.js?v=20261115-ios-popout1';
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
-import {setupCorporateMedia} from './corporate-chat-media.js?v=20261115-photos-uploader1';
+import {setupCorporateMedia} from './corporate-chat-media.js?v=20261115-popout-info1';
 import {setupCorporateChatLive} from './corporate-chat-live.js?v=20261113-no-typing1';
 const client=corporateClient(),$=id=>document.getElementById(id);
 const embedParams=new URLSearchParams(location.search);
@@ -27,13 +27,14 @@ if(mediaPanelMode)document.documentElement.classList.add('bc-media-panel','bc-me
 if(!mediaPanelMode&&window.parent===window&&window.BlackcellMediaBubbleHost)
  window.BlackcellMediaBubbleHostController=window.BlackcellMediaBubbleHost({mode:'standalone'});
 let self=null,peer=null,contacts=[],isLoading=false,firstLoad=true,ready=false;
+let chatBlocked=false,blockKnown=false,blockBusy=false,blockGeneration=0,blockReadSerial=0,sendingMessage=false;
 const popButton=$('popoutChat');
 if(popout){document.querySelector('.chat').classList.add('bc-thread-active');$('backToInbox').hidden=true;popButton.hidden=true;}
 function openChatPopout(){
  if(!ready||!peer||popout||mediaPanelMode)return;
  let parentOS=false;try{parentOS=window.parent!==window&&window.parent.location.origin===location.origin&&/\/blackcell-os(?:-preview)?\.html$/.test(window.parent.location.pathname)}catch(_){}
  if(parentOS){window.parent.postMessage({type:'blackcell-chat-popout',peerId:peer.user_id,name:peer.display_name||'Employee'},location.origin);return;}
- const url=new URL(location.pathname,location.origin);url.searchParams.set('popout','1');url.searchParams.set('peer',peer.user_id);url.searchParams.set('v','20261115-black-popout1');window.open(url.href,'_blank','noopener,noreferrer,width=440,height=720');
+ const url=new URL(location.pathname,location.origin);url.searchParams.set('popout','1');url.searchParams.set('peer',peer.user_id);url.searchParams.set('v','20261115-popout-info1');window.open(url.href,'_blank','noopener,noreferrer,width=440,height=720');
 }
 popButton?.addEventListener('click',openChatPopout);
 window.BLACKCELL_OS_BEFORE_CLOSE=()=>({ok:true,retain:!!$('messageInput').value.trim()||!!document.querySelector('[aria-busy=true],.is-uploading,[data-busy=true]')});
@@ -135,7 +136,7 @@ function chatActivity(){
 }
 
 function status(text){$('systemStatus').textContent=text;$('systemStatus').hidden=!text}
-const sharedMedia=setupCorporateMedia({client,context:()=>({self,peer,ready}),reloadMessages:loadMessages,status});
+const sharedMedia=setupCorporateMedia({client,context:()=>({self,peer,ready,blocked:chatBlocked||!blockKnown||blockBusy}),reloadMessages:loadMessages,status});
 window.BLACKCELL_OS_PAUSE_MEDIA=()=>sharedMedia.pause();
 const live=setupCorporateChatLive({
  client,context:()=>({self,peer,ready}),
@@ -206,7 +207,7 @@ function resizeComposer(){composerText.style.height='auto';composerText.style.he
   canAct:()=>ready&&!!self&&peer?.user_id===popoutId,
   composer:composerText,resizeComposer,status,
   sendReaction:async body=>{
-   if(!ready||!self||peer?.user_id!==popoutId)return;
+   if(!ready||!self||peer?.user_id!==popoutId||chatBlocked||!blockKnown||blockBusy){status('Unblock this conversation before sending.');return;}
    try{const {error}=await client.from('corp_chat_messages').insert({sender_id:self,recipient_id:popoutId,body});if(error)throw error;await loadMessages()}
    catch(_){status('Reaction message could not be sent. Try again.')}
   }
@@ -218,14 +219,61 @@ function resizeComposer(){composerText.style.height='auto';composerText.style.he
    if(window.parent!==window&&osChat){window.parent.postMessage({type:'blackcell-chat-popout-close'},location.origin);return}
    if($('messageInput').value.trim()&&!confirm('Close this conversation? Your unsent draft may be lost.'))return;
    window.close();
-   if(!window.closed)location.assign('corporate-chat.html?v=20261115-black-popout1');
+   if(!window.closed)location.assign('corporate-chat.html?v=20261115-popout-info1');
   });
-  const profile=document.createElement('a');profile.id='popoutProfile';profile.className='bc-pop-nav bc-pop-profile';profile.textContent='ⓘ';profile.href='corporate-network.html';profile.target='_blank';profile.rel='noopener';profile.hidden=true;profile.setAttribute('aria-label','View contact profile');
-  header.append(back,profile);
+  const info=document.createElement('button');info.type='button';info.id='popoutInfo';info.className='bc-pop-nav bc-pop-profile';info.textContent='ⓘ';info.hidden=true;info.setAttribute('aria-label','Contact options');info.setAttribute('aria-expanded','false');info.setAttribute('aria-controls','popoutInfoMenu');
+  const menu=document.createElement('div');menu.id='popoutInfoMenu';menu.className='bc-pop-info-menu';menu.hidden=true;
+  const profile=document.createElement('a');profile.id='popoutProfile';profile.href='corporate-network.html';profile.target='_blank';profile.rel='noopener';profile.textContent='View Profile';
+  const block=document.createElement('button');block.type='button';block.id='popoutBlock';block.className='bc-pop-block-action';block.textContent='Block';
+  block.addEventListener('click',()=>{closeInfoMenu();void toggleCurrentBlock()});
+  profile.addEventListener('click',closeInfoMenu);
+  menu.append(profile,block);
+  info.addEventListener('click',()=>{if(!ready||!peer)return;const open=menu.hidden;menu.hidden=!open;info.setAttribute('aria-expanded',String(open));if(open){syncBlockControls();void refreshCurrentBlock();}});
+  document.addEventListener('pointerdown',e=>{if(!menu.hidden&&!menu.contains(e.target)&&!info.contains(e.target))closeInfoMenu()});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!menu.hidden){closeInfoMenu();info.focus()}});
+  header.append(back,info,menu);
  }
+const blockNotice=document.createElement('div');blockNotice.className='bc-chat-block-notice';blockNotice.hidden=true;blockNotice.setAttribute('role','status');
+const blockNoticeText=document.createElement('span');blockNoticeText.textContent='You blocked this contact. New messages and attachments are disabled.';
+const unblockButton=document.createElement('button');unblockButton.type='button';unblockButton.textContent='Unblock';unblockButton.addEventListener('click',()=>void toggleCurrentBlock());blockNotice.append(blockNoticeText,unblockButton);
+$('sendForm').before(blockNotice);
+function closeInfoMenu(){const menu=$('popoutInfoMenu'),info=$('popoutInfo');if(menu)menu.hidden=true;if(info)info.setAttribute('aria-expanded','false')}
+function syncBlockControls(){
+ const disabled=!ready||!peer||!blockKnown||chatBlocked||blockBusy;
+ $('messageInput').disabled=disabled;$('sendButton').disabled=disabled||sendingMessage;
+ blockNotice.hidden=!chatBlocked||!ready||!peer;unblockButton.disabled=blockBusy;
+ const action=$('popoutBlock');if(action){action.textContent=chatBlocked?'Unblock':'Block';action.classList.toggle('bc-pop-block-action',!chatBlocked);action.disabled=!blockKnown||blockBusy||!ready}
+ if(chatBlocked)sharedMedia.closeMediaTray();
+}
+async function refreshCurrentBlock(){
+ if(!ready||!self||!peer||blockBusy)return;
+ const pid=peer.user_id,generation=blockGeneration,serial=++blockReadSerial;
+ try{
+  const {data,error}=await client.from('corp_chat_blocks').select('blocked_id').eq('blocker_id',self).eq('blocked_id',pid).maybeSingle();
+  if(generation!==blockGeneration||serial!==blockReadSerial||blockBusy||!ready)return;
+  if(error)throw error;
+  chatBlocked=!!data;blockKnown=true;syncBlockControls();
+ }catch(_){if(generation===blockGeneration&&serial===blockReadSerial&&!blockKnown)status('Could not check contact blocking. Try again shortly.')}
+}
+async function toggleCurrentBlock(){
+ if(!ready||!self||!peer||!blockKnown||blockBusy)return;
+ const pid=peer.user_id,generation=blockGeneration,willBlock=!chatBlocked,name=peer.display_name||'this contact';
+ if(willBlock&&!confirm('Block '+name+'? New messages and attachments between you will be disabled. Previous messages will remain.'))return;
+ blockBusy=true;blockReadSerial++;syncBlockControls();
+ try{
+  const request=willBlock?client.from('corp_chat_blocks').insert({blocker_id:self,blocked_id:pid}):client.from('corp_chat_blocks').delete().eq('blocker_id',self).eq('blocked_id',pid);
+  const {error}=await request;
+  if(error&&!(willBlock&&error.code==='23505'))throw error;
+  if(generation===blockGeneration&&ready){chatBlocked=willBlock;blockKnown=true;status(willBlock?'Contact blocked.':'Contact unblocked.');}
+  try{localStorage.setItem('bc.chat.block.changed.'+self,String(Date.now()))}catch(_){}
+ }catch(_){if(generation===blockGeneration)status('Could not change blocking. No change confirmed.')}
+ finally{blockBusy=false;syncBlockControls();void refreshCurrentBlock()}
+}
+window.addEventListener('storage',e=>{if(ready&&self&&e.key==='bc.chat.block.changed.'+self)void refreshCurrentBlock()});
+setInterval(()=>{if(ready&&peer&&!document.hidden)void refreshCurrentBlock()},20000);
 composerText.addEventListener('input',()=>{
  resizeComposer();
- live.onInput(composerText.value);
+ if(!chatBlocked&&blockKnown&&!blockBusy)live.onInput(composerText.value);
 });
 composerText.addEventListener('blur',()=>live.stopTyping());
 composerText.addEventListener('keydown',e=>{
@@ -394,16 +442,16 @@ function choose(userId){
  const selected=contacts.find(x=>x.user_id===userId);if(!selected||!ready||(popout&&userId!==popoutId))return;
  const previousPeer=peer?.user_id;
  live.onPeerChange(previousPeer,userId);
- peer=selected;sharedMedia.onPeerChange(userId);firstLoad=true;applySidebarPreference();
+ peer=selected;blockGeneration++;blockKnown=false;chatBlocked=false;closeInfoMenu();sharedMedia.onPeerChange(userId);firstLoad=true;applySidebarPreference();
  live.setThreadOpen(!mediaPanelMode);
  if(compactChat)document.querySelector('.chat').classList.add('bc-thread-active');
  if(window.parent!==window&&!popout)window.parent.postMessage({type:'blackcell-chat-conversation',peerId:userId,name:peer.display_name||'Employee'},location.origin);$('peerName').textContent=peer.display_name||'Employee';$('peerDetail').textContent=peer.role==='owner'?'LEVEL 7 · OWNER':'LEVEL '+peer.clearance_level;
  $('imessagePortrait').textContent=String(peer.display_name||'B').trim().slice(0,1).toUpperCase();
  $('peerProfileLink').href='corporate-network.html?user='+encodeURIComponent(userId);
  $('peerProfileLink').hidden=false;
- if(popoutActions){const profile=$('popoutProfile');profile.href=$('peerProfileLink').href;profile.hidden=false;}
+ if(popoutActions){const profile=$('popoutProfile');profile.href=$('peerProfileLink').href;$('popoutInfo').hidden=false;}
  if(popButton){popButton.hidden=popout||!!mediaPanelMode;popButton.disabled=false;}
- $('messageInput').disabled=false;$('sendButton').disabled=false;renderPeers();void loadMessages();
+ syncBlockControls();renderPeers();void refreshCurrentBlock();void loadMessages();
 }
 async function loadMessages(){
  if(!ready||!peer||isLoading||document.hidden)return;
@@ -476,15 +524,15 @@ async function loadMessages(){
  finally{isLoading=false}
 }
 $('sendForm').addEventListener('submit',async e=>{
- e.preventDefault();const body=$('messageInput').value.trim();if(!ready||!peer||!body)return;
+ e.preventDefault();const body=$('messageInput').value.trim();if(!ready||!peer||!body||chatBlocked||!blockKnown||blockBusy||sendingMessage)return;
  live.stopTyping(peer.user_id);
- const btn=$('sendButton');btn.disabled=true;status('');
+ const btn=$('sendButton');sendingMessage=true;btn.disabled=true;status('');
  try{
   const {error}=await client.from('corp_chat_messages').insert({sender_id:self,recipient_id:peer.user_id,body});
-  if(error){status('Message not sent. Check your permissions.');return}
+  if(error){status('Message not sent. The contact may be blocked or unavailable.');void refreshCurrentBlock();return}
   $('messageInput').value='';resizeComposer();await loadMessages();
  }catch(_){status('Message not sent. Check your connection.')}
- finally{btn.disabled=false;$('messageInput').focus()}
+ finally{sendingMessage=false;syncBlockControls();if(!$('messageInput').disabled)$('messageInput').focus()}
 });
 // Only actual user input extends security sessions. Polling does not.
 for(const evt of ['pointerdown','keydown','wheel','touchstart']){

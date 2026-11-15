@@ -48,3 +48,13 @@ html.bc-chat-popout:not(.bc-media-panel) #systemStatus{background:#101a2a;color:
 .bc-pop-translation{font-size:14px}
 .bc-pop-translated-label{font-size:10px;opacity:.8;text-align:right}
 @media(max-height:400px){html.bc-chat-popout:not(.bc-media-panel) body.bc-chat .chat-main>.chat-title{flex-basis:78px;min-height:78px!important}html.bc-chat-popout:not(.bc-media-panel) .imessage-portrait{width:36px!important;height:36px!important}}
+
+/* Compact contact options, available only in the independent chat pop-out. */
+html.bc-chat-popout:not(.bc-media-panel) .bc-pop-nav[hidden],.bc-pop-info-menu[hidden],.bc-chat-block-notice[hidden]{display:none!important}
+.bc-pop-info-menu{position:absolute;top:56px;right:12px;z-index:50;width:150px;padding:4px;border-radius:13px;border:1px solid #ffffff25;background:#242428f2;box-shadow:0 10px 28px #000b;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)}
+.bc-pop-info-menu a,.bc-pop-info-menu button{box-sizing:border-box;display:block;width:100%;padding:10px 11px;border:0;border-radius:8px;background:transparent;color:#f5f5f7;text-decoration:none;text-align:left;font:500 13px/1.2 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;cursor:pointer}
+.bc-pop-info-menu a:hover,.bc-pop-info-menu button:not(:disabled):hover{background:#ffffff13}
+.bc-pop-info-menu .bc-pop-block-action{color:#ff625f}
+.bc-pop-info-menu button:disabled{opacity:.4;cursor:default}
+.bc-chat-block-notice{display:flex;align-items:center;justify-content:space-between;gap:9px;flex:none;padding:9px 12px;color:#c9c9d0;background:#18181c;border-top:1px solid #ffffff15;font:12px/1.35 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.bc-chat-block-notice button{flex:none;border:1px solid #ffffff20;border-radius:8px;background:#303037;color:#f5f5f7;padding:6px 10px;font-size:12px;cursor:pointer}

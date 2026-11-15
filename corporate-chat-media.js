@@ -66,6 +66,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  function toggleMediaTray(){
   if(!controls.hidden){closeMediaTray(true);return}
   if(!requirePeer())return;
+  choosePhotos.disabled=busy||context()?.blocked===true;
   controls.hidden=false;attachmentToggle?.classList.add('open');
   attachmentToggle?.setAttribute('aria-expanded','true');positionMediaTray();
  }
@@ -347,7 +348,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   }
  }
  function toggleBusy(v){
-  busy=v;for(const b of [choosePhotos,selectButton,privateButton])b.disabled=v;
+  busy=v;for(const b of [choosePhotos,selectButton,privateButton])b.disabled=v||context()?.blocked===true;
  }
  function requirePeer(){
   const c=context();
@@ -355,7 +356,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   return c;
  }
  function chooseFiles(accept){
-  const c=requirePeer();if(!c||busy)return;
+  const c=requirePeer();if(!c||busy||c.blocked)return;
   pickPeer=c.peer.user_id;fileInput.value='';fileInput.accept=accept;
   if(compactMedia())closeMediaTray();
   // Keep native pickers inside the original trusted click; no iframe handoff.
@@ -372,7 +373,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   selectFiles(incoming);
  });
  function selectFiles(files){
-  if(!requirePeer()||busy||overlay.hidden)return;
+  if(!requirePeer()||busy||overlay.hidden||context()?.blocked)return;
   const accepted=files.filter(f=>ALLOWED.has(mediaType(f))&&f.size>0&&f.size<=MAX_BYTES);
   if(accepted.length!==files.length){
    uploadNotice.textContent='Some files were skipped. Use supported photos or videos, maximum 50 MB each.';uploadNotice.hidden=false;
@@ -410,9 +411,9 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const footer=el('footer','media-dialog-footer');
  const selectButton=button('Choose files',()=>chooseFiles('image/*,video/*'));
  const privateButton=button('BLACKCELL Photos',async()=>{
-  const c=requirePeer();if(!c||busy||overlay.hidden)return;
+  const c=requirePeer();if(!c||busy||overlay.hidden||c.blocked)return;
   const startedPeer=c.peer.user_id,generation=uploadPanelGeneration;
-  const valid=()=>context()?.ready&&context()?.peer?.user_id===startedPeer&&generation===uploadPanelGeneration&&!overlay.hidden&&!busy;
+  const valid=()=>context()?.ready&&context()?.peer?.user_id===startedPeer&&generation===uploadPanelGeneration&&!overlay.hidden&&!busy&&!context()?.blocked;
   privateButton.disabled=true;
   try{
    const {choosePrivateMedia}=await import('./blackcell-private-media.js?v=10-photo-picker');
@@ -422,7 +423,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
     selectFiles(files);
    }});
   }catch(e){uploadNotice.textContent='Could not open BLACKCELL Photos. '+safeErr(e);uploadNotice.hidden=false}
-  finally{privateButton.disabled=busy}
+  finally{privateButton.disabled=busy||context()?.blocked===true}
  });
  const sendButton=button('Send selected media',()=>void sendSelection(),'media-primary');
  const sources=el('div','bc-photo-upload-sources');
@@ -450,6 +451,8 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  overlay.addEventListener('click',e=>{if(e.target===overlay&&!busy)closeShare()});
  function openShare(){
   if(!requirePeer()||busy)return;
+  if(context()?.blocked){status('Unblock this conversation before sending attachments.');return;}
+  selectButton.disabled=false;privateButton.disabled=false;
   if(routeBubble('share'))return;
   closeMediaTray();
   if(overlay.hidden){uploadPanelGeneration++;uploadNotice.hidden=true;uploadNotice.textContent='';}
@@ -491,7 +494,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   try{return await bcLiveOriginal_sendSelection.apply(this,args)}finally{release?.()}
  }
  async function bcLiveOriginal_sendSelection(){
-  const c=requirePeer();if(!c||!selection.length||busy)return;if(selectionPeer!==c.peer.user_id){selection=[];renderSelection();status('Conversation changed. Select media again.');return}
+  const c=requirePeer();if(!c||!selection.length||busy)return;if(c.blocked){status('Unblock this conversation before sending attachments.');return;}if(selectionPeer!==c.peer.user_id){selection=[];renderSelection();status('Conversation changed. Select media again.');return}
   const files=selection.slice();
   if(files.some(f=>f.size>MAX_BYTES||!ALLOWED.has(mediaType(f))))return;
   uploadingForPeer=c.peer.user_id;
