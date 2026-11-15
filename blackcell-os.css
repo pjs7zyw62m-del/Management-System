@@ -591,3 +591,9 @@ html #desktop.os-dock-auto-hide>.workspace:has(.bc-free-app-canvas){padding-bott
 .gate[data-state=paused]>div{display:grid;justify-items:center;gap:12px}
 .gate[data-state=paused] p{line-height:1.65;margin:0 0 8px}
 .gate[data-state=paused] #gateLink{border-color:#3b3b41;background:#19191d}
+
+/* BLACKCELL dark app opening overlay; does not delay already loaded windows. */
+.os-window-body iframe.bc-app-frame-pending{opacity:0;pointer-events:none}
+.bc-app-loading{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:#08080b;color:#eeeef2;text-align:center;padding:24px;font:inherit}
+.bc-app-loading[hidden]{display:none!important}.bc-app-loading strong{font-size:13px;letter-spacing:.16em}.bc-app-loading-message{font-size:12px;color:#a5a5af}.bc-app-loading-spinner{width:32px;height:32px;border:2px solid #343039;border-top-color:#c12b43;border-radius:50%;animation:bc-app-spin .85s linear infinite}.bc-app-loading button{border:1px solid #63303b;border-radius:9px;background:#33151e;color:#f8e4e8;padding:10px 16px;font:inherit;cursor:pointer}.bc-app-loading button[hidden]{display:none!important}@keyframes bc-app-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.bc-app-loading-spinner{animation:none}}
+.os-reduce-motion .bc-app-loading-spinner{animation:none}
