@@ -29,7 +29,8 @@ const accessPassTab=document.getElementById('accessPassTab');
 const inlineAccessStep=document.getElementById('inlineAccessStep');
 const loginRoleDescription=document.getElementById('loginRoleDescription');
 window.BLACKCELL_LOGIN_BOOTED=true;
-const LOGIN_DEADLINE_MS=16000;
+const LOGIN_DEADLINE_MS=35000;
+let savedSessionEpoch=0;
 let loginInProgress=false;
 let approvalPending=false;
 let selectedPortal=new URLSearchParams(location.search).get('portal')==='employee'?'employee':'admin';
@@ -81,13 +82,13 @@ function timed(promise, description, timeout=LOGIN_DEADLINE_MS){
   return Promise.race([
     promise,
     new Promise((_,reject)=>{
-      timer=setTimeout(()=>reject(new Error(description+' timed out. Check your connection and try again.')),timeout);
+      timer=setTimeout(()=>reject(Object.assign(new Error(description+' timed out.'),{loginStep:description})),timeout);
     })
   ]).finally(()=>clearTimeout(timer));
 }
 function explain(error, fallback){
   const text=String(error?.message||'');
-  if(/timed out/i.test(text))return 'The login server is taking too long to respond. Check your internet connection and try again.';
+  if(/timed out/i.test(text))return (error.loginStep||'Secure login')+' is taking longer than expected. No access has been granted by this attempt. Try again; if it repeats, close other BLACKCELL tabs and reopen Corporate Access.';
   return fallback;
 }
 
@@ -318,12 +319,14 @@ function displayLaunch(){
   requestAnimationFrame(frame);
 }
 
-async function initialState(){
+async function initialState(epoch){
+  const current=()=>epoch===savedSessionEpoch&&!loginInProgress;
   const state=await timed(corporateAuthorize(client,{allowLedgerOnly:true}),'Saved session check');
+  if(!current())return;
   if(!state.ok){
     if(state.reason==='not-approved'){
       await client.auth.signOut({scope:'local'});
-      message(status,'This account is not approved for Corporate Access.');
+      if(current())message(status,'This account is not approved for Corporate Access.');
     }else if(state.reason==='verification-error'){
       message(status,'Unable to verify employee authorization.');
     }
@@ -336,6 +339,7 @@ async function initialState(){
   }
   emailInput.value=state.user?.email||emailInput.value;
   const {data,error}=await timed(client.rpc('corp_code_status'),'Saved code status check');
+  if(!current())return;
   if(error||data?.ok!==true){
     message(status,'Unable to verify the security session. Please try again.');
     return;
@@ -343,7 +347,7 @@ async function initialState(){
   if(data.verified===true){location.replace('blackcell-os.html');return;}
   if(data.expired===true){
     await client.auth.signOut({scope:'local'});
-    message(status,'Signed out after 60 minutes of inactivity. Please sign in again.');
+    if(current())message(status,'Signed out after 60 minutes of inactivity. Please sign in again.');
     return;
   }
   showPass();
@@ -360,6 +364,7 @@ form.addEventListener('submit',async event=>{
   event.preventDefault();
   if(loginInProgress)return;
   if(!client){message(status,'Secure login is still starting. Please try again.');return;}
+  ++savedSessionEpoch;
   loginInProgress=true;
   loginButton.disabled=true;
   loginButton.textContent='SIGNING IN…';
@@ -449,6 +454,7 @@ formCode.addEventListener('submit',async event=>{
 });
 
 changeAccount.addEventListener('click',async()=>{
+  ++savedSessionEpoch;
   try{await client?.auth.signOut({scope:'local'});}catch(_){}
   showLogin();
 });
@@ -473,10 +479,11 @@ async function initializeLogin(){
     message(status,'Secure login cannot initialize. Refresh the page.');
     return;
   }
+  const epoch=++savedSessionEpoch;
   try{
-    await timed(initialState(),'Initial security check');
+    await initialState(epoch);
   }catch(error){
-    if(!loginInProgress && !stage.classList.contains('show-pass'))
+    if(epoch===savedSessionEpoch&&!loginInProgress && !stage.classList.contains('show-pass'))
       message(status,explain(error,'Saved session could not be checked. You may still sign in with your email and password.'));
   }
 }
