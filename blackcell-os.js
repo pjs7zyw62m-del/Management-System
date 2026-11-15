@@ -420,14 +420,16 @@ function readAppLayout(){
 }
 function orderedAppIds(current,preferred){const available=new Set(current);return [...new Set([...preferred.filter(id=>available.has(id)),...current])]}
 function overlaps(a,b,gap=0){return a.x<b.x+b.w+gap&&a.x+a.w+gap>b.x&&a.y<b.y+b.h+gap&&a.y+a.h+gap>b.y}
+/* Snap to a fixed desktop lattice. Nearest unoccupied cell wins; empty
+   rows and columns are preserved rather than packing shortcuts. */
 function findAppSpot(w,h,iw,ih,desired,blocked){
- const maxX=Math.max(0,w-iw),maxY=Math.max(0,h-ih),fit=(x,y)=>({x:Math.max(0,Math.min(maxX,x)),y:Math.max(0,Math.min(maxY,y)),w:iw,h:ih});
- const legal=r=>!blocked.some(b=>overlaps(r,b,3));
- const want=desired?fit(desired.x,desired.y):null;if(want&&legal(want))return want;
- const candidates=[];for(let y=0;y<=maxY+1;y+=ih+8)for(let x=0;x<=maxX+1;x+=iw+8)candidates.push(fit(x,y));
- for(const b of blocked){if(want){candidates.push(fit(b.x-iw-4,want.y),fit(b.x+b.w+4,want.y),fit(want.x,b.y-ih-4),fit(want.x,b.y+b.h+4))}}
- if(want)candidates.sort((a,b)=>(a.x-want.x)**2+(a.y-want.y)**2-((b.x-want.x)**2+(b.y-want.y)**2));
- return candidates.find(legal)||null;
+ const maxX=Math.max(0,w-iw),maxY=Math.max(0,h-ih),dx=iw+8,dy=ih+8;
+ const candidates=[];
+ for(let y=0;y<=maxY+.01;y+=dy)for(let x=0;x<=maxX+.01;x+=dx){
+  const slot={x,y,w:iw,h:ih};if(!blocked.some(b=>overlaps(slot,b,3)))candidates.push(slot);
+ }
+ if(desired)candidates.sort((a,b)=>(a.x-desired.x)**2+(a.y-desired.y)**2-((b.x-desired.x)**2+(b.y-desired.y)**2)||a.y-b.y||a.x-b.x);
+ return candidates[0]||null;
 }
 function ensureRecycleButton(grid){
  if(recycleButton?.isConnected)return recycleButton;
@@ -462,7 +464,7 @@ function renderFreeLayout(){
  const minCols=Math.max(1,Math.floor((width+8)/(iw+8)));height=Math.max(height,Math.ceil((visible.length+1)/minCols)*(ih+8));
  let placed=null,binRect=null;for(let pass=0;pass<25;pass++){
   const binDesired=recyclePosition?{x:recyclePosition.x*Math.max(0,width-iw),y:recyclePosition.y*Math.max(0,height-ih)}:{x:Math.max(0,width-iw),y:Math.max(0,height-ih)};
-  binRect=recyclePosition?findAppSpot(width,height,iw,ih,binDesired,obstacles):{...binDesired,w:iw,h:ih};
+  binRect=findAppSpot(width,height,iw,ih,binDesired,obstacles);
   if(!binRect||obstacles.some(o=>overlaps(binRect,o,3))){height+=ih+8;continue}
   const taken=[...obstacles,binRect],positions=new Map();
   const custom=visible.filter(t=>appPositions.has(t.dataset.app)),defaults=visible.filter(t=>!appPositions.has(t.dataset.app));let failed=false;
@@ -511,7 +513,7 @@ function startAppRearrange(tile){
  if(!contextAllowed()||appRearranging||!canvasGeometry)return;
  closeAppContext();cancelAppHold();showDesktop();dockReveal(false);const grid=appGrid();if(!grid)return;
  appRearranging=true;grid.classList.add('bc-app-rearranging');
- const bar=document.createElement('div');bar.className='bc-app-rearrange-bar';const label=document.createElement('div');label.className='bc-rearrange-status';label.setAttribute('role','status');label.textContent='Drag apps or Recycle Bin to any open desktop position.';
+ const bar=document.createElement('div');bar.className='bc-app-rearrange-bar';const label=document.createElement('div');label.className='bc-rearrange-status';label.setAttribute('role','status');label.textContent='Drag apps or Recycle Bin to any open position. Icons snap into alignment.';
  const done=document.createElement('button');done.type='button';done.textContent='Done';done.onclick=()=>finishAppRearrange(true);bar.append(label,done);grid.parentElement.insertBefore(bar,grid);appEditBar=bar;
  try{appLayoutRelease=window.BLACKCELL_LIVE_UPDATE?.hold('Rearranging applications')}catch(_){}
  renderFreeLayout();if(tile&&!tile.hidden&&!recycledApps.has(tile.dataset.app))tile.focus({preventScroll:true});
@@ -552,7 +554,7 @@ document.addEventListener('click',e=>{if(appRearranging&&e.target.closest?.('.bc
 document.addEventListener('keydown',e=>{
  if(e.key==='Escape'&&recyclePanel){e.preventDefault();closeRecycleBin();return}if(!appRearranging)return;if(e.key==='Escape'){e.preventDefault();finishAppRearrange(true);return}
  const tile=e.target.closest?.('.bc-app-rearranging > .app[data-app],.bc-app-rearranging > .bc-recycle-shortcut'),p=tile===recycleButton?canvasGeometry?.binRect:canvasGeometry?.placed.get(tile);if(!tile||!p)return;
- if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();const step=24;placeApp(tile,p.x+(e.key==='ArrowRight'?step:e.key==='ArrowLeft'?-step:0),p.y+(e.key==='ArrowDown'?step:e.key==='ArrowUp'?-step:0));tile.focus({preventScroll:true})}
+ if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();const dx=canvasGeometry.iw+8,dy=canvasGeometry.ih+8;placeApp(tile,p.x+(e.key==='ArrowRight'?dx:e.key==='ArrowLeft'?-dx:0),p.y+(e.key==='ArrowDown'?dy:e.key==='ArrowUp'?-dy:0));tile.focus({preventScroll:true})}
 },true);
 document.addEventListener('visibilitychange',()=>{if(document.hidden){closeRecycleBin();finishAppRearrange()}else applyAppLayout()});
 window.addEventListener('resize',()=>{cancelAppDrag();applyAppLayout()},{passive:true});

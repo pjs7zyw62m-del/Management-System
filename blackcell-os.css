@@ -571,3 +571,13 @@ html:is(.bc-os-phone,.bc-os-tablet) .bc-recycle-panel button{min-height:44px}
 .bc-app-drag-ghost .bc-recycle-name{font:600 11px/1.25 system-ui}
 @media(prefers-reduced-motion:reduce){#desktop .bc-app-rearranging>.bc-recycle-shortcut .bc-recycle-icon{animation:none}}
 #desktop.os-reduce-motion .bc-app-rearranging>.bc-recycle-shortcut .bc-recycle-icon{animation:none}
+
+/* Aligned desktop slots: all icons share a top edge, even with wrapped labels. */
+#desktop .workspace .bc-free-app-canvas>.app{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;transform:none;transition:background .18s,border-color .18s}
+#desktop .workspace .bc-free-app-canvas>.app:is(:hover,:active){transform:none}
+#desktop .workspace .bc-free-app-canvas>.app .app-icon{flex:none}
+#desktop .workspace .bc-free-app-canvas>.app .app-name{line-height:1.25;text-align:center}
+#desktop .workspace .bc-free-app-canvas>.bc-recycle-shortcut{align-content:start;padding-top:6px;transform:none}
+#desktop .workspace .bc-free-app-canvas>.bc-recycle-shortcut .bc-recycle-icon{width:64px;height:64px}
+html.bc-os-tablet #desktop .workspace .bc-free-app-canvas>.bc-recycle-shortcut .bc-recycle-icon{width:62px;height:62px}
+html.bc-os-phone #desktop .workspace .bc-free-app-canvas>.bc-recycle-shortcut .bc-recycle-icon{width:58px;height:58px}
