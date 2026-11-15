@@ -49,3 +49,10 @@ export function attachPhotoTransfer(button,{client,getPhoto,notify}){
  };
  sync();return sync;
 }
+
+export function placePhotoTransfer(anchor,options){
+ const b=document.createElement('button');b.type='button';b.textContent='TRANSFER TO PHOTOS';b.className='bc-transfer-photo';b.style.cssText='min-height:44px;background:#792237;color:white;border:1px solid #b14c5f;border-radius:8px;padding:9px 14px;font:600 11px system-ui;cursor:pointer';
+ const status=document.createElement('span');status.setAttribute('role','status');status.style.cssText='font-size:12px;color:#e7cbd1;max-width:260px;overflow-wrap:anywhere';anchor.after(b,status);
+ const sync=attachPhotoTransfer(b,{...options,notify:message=>{status.textContent=message;options.notify?.(message)}});
+ let last;return ()=>{const id=options.getPhoto()?.id;if(id!==last){status.textContent='';last=id}sync()};
+}
