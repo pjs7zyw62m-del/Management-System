@@ -141,3 +141,18 @@ body.mf-body::before{display:none}
 
 .mf-album:hover img{transform:none;filter:brightness(1.06)}
 @media(prefers-reduced-motion:reduce){.mf-album-art img{transition:none}}
+
+/* Portrait-only landing. All collection controls appear after a uniform is selected. */
+#uMain[data-mf-active="discover"]>.mf-header{display:none}
+#uMain[data-mf-active="discover"] .mf-workspace{background:#000}
+#uMain #discover.mf-portrait-only{max-width:none;width:100%;min-height:100%;margin:0;padding:0;display:flex;align-items:center;justify-content:center;background:#000}
+#discover.mf-portrait-only .mf-album-grid{width:100%;max-width:2100px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin:0;align-items:center}
+#discover.mf-portrait-only .mf-album{display:block;position:relative;width:100%;padding:0;border:0;border-radius:0;background:#000;outline-offset:-4px;overflow:hidden}
+#discover.mf-portrait-only .mf-album-art{display:block;width:100%;height:auto;aspect-ratio:3/4;border:0;border-radius:0;background:#000;box-shadow:none;overflow:hidden}
+#discover.mf-portrait-only .mf-album-art img{display:block;width:100%;height:100%;object-fit:contain;object-position:center;transition:filter .25s}
+#discover.mf-portrait-only .mf-portrait-label{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);opacity:0;background:#17171acf;border:1px solid #ffffff25;border-radius:999px;padding:7px 13px;white-space:nowrap;color:#f5f5f7;font-size:12px;font-weight:550;pointer-events:none;transition:opacity .2s}
+#discover.mf-portrait-only .mf-album:hover .mf-portrait-label,#discover.mf-portrait-only .mf-album:focus-visible .mf-portrait-label{opacity:1}
+#discover.mf-portrait-only .mf-album:hover img{filter:brightness(1.08);transform:none}
+@media(min-width:1250px) and (min-aspect-ratio:7/5){#discover.mf-portrait-only .mf-album-grid{grid-template-columns:repeat(6,minmax(0,1fr))}#discover.mf-portrait-only .mf-album-art{aspect-ratio:unset;height:min(88dvh,680px)}}
+@media(max-width:760px){#uMain #discover.mf-portrait-only{align-items:flex-start}#discover.mf-portrait-only .mf-album-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#discover.mf-portrait-only .mf-album-art{aspect-ratio:3/4}}
+@media(prefers-reduced-motion:reduce){#discover.mf-portrait-only .mf-portrait-label,#discover.mf-portrait-only .mf-album-art img{transition:none}}
