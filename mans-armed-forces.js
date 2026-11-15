@@ -437,18 +437,43 @@ function startPortraitRotation(){
 function categoryEntry(id){
  return new URL(worldPages[id]||'mans-armed-forces.html',location.href);
 }
-function downloadCategoryShortcut(id){
- if(!authorized||!Object.hasOwn(categories,id))return;
- const label=({medical:'EMS',security:'Corrections',professional:'Aviation'})[id]||categories[id].label;
- const url=categoryEntry(id).href;
- const mac=/Macintosh|MacIntel/i.test(navigator.userAgent+' '+navigator.platform)&&!(/iPad|iPhone|iPod/i.test(navigator.userAgent))&&navigator.maxTouchPoints<2;
- const xmlEscape=str=>str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
- const contents=mac?'<?xml version="1.0" encoding="UTF-8"?><plist version="1.0"><dict><key>URL</key><string>'+xmlEscape(url)+'</string></dict></plist>':'[InternetShortcut]\r\nURL='+url+'\r\n';
- const objectUrl=URL.createObjectURL(new Blob([contents],{type:mac?'application/xml':'application/internet-shortcut'}));
- const link=document.createElement('a');link.href=objectUrl;link.download='BLACKCELL - '+label.replace(/[^a-zA-Z0-9 &'()-]/g,'')+(mac?'.webloc':'.url');
- document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(objectUrl),30000);
- text($('mfShortcutStatus'),label+' web shortcut requested. Opens the secure collection in your browser.');
+/* Installation is an OS-host operation, never a file download to the user's device. */
+const worldInstallLabels={military:'Military World',police:'Law Enforcement World',fire:'Fire & Rescue World',security:'Corrections World',medical:'EMS World',professional:'Aviation World'};
+let worldInstallState={},worldInstallPending=null,worldInstallTimeout=null;
+function paintWorldInstallButtons(){
+ document.querySelectorAll('[data-mf-shortcut]').forEach(btn=>{
+  const id=btn.dataset.mfShortcut,installed=worldInstallState[id]===true,label=worldInstallLabels[id]||'World';
+  btn.dataset.installed=String(installed);btn.disabled=!!worldInstallPending;
+  btn.title=installed?'Open '+label+' in BLACKCELL OS':'Install '+label+' on BLACKCELL OS';
+  btn.setAttribute('aria-label',btn.title);
+  btn.setAttribute('aria-busy',String(worldInstallPending?.category===id));
+ });
 }
+function queryWorldOS(){
+ if(window.parent===window)return;
+ try{window.parent.postMessage({type:'blackcell-world-os-query'},location.origin)}catch(_){}
+}
+function installWorldFromGateway(id){
+ if(!authorized||!Object.hasOwn(worldPages,id)||worldInstallPending)return;
+ if(window.parent===window){text($('mfShortcutStatus'),'Open Man’s Armed Forces inside BLACKCELL OS to install this world. No browser file will be downloaded.');return}
+ const request=String(Date.now())+'-'+Math.random().toString(36).slice(2);
+ worldInstallPending={category:id,request};paintWorldInstallButtons();
+ text($('mfShortcutStatus'),worldInstallState[id]?'Opening '+worldInstallLabels[id]+'…':'Installing '+worldInstallLabels[id]+' on BLACKCELL OS…');
+ worldInstallTimeout=setTimeout(()=>{
+  worldInstallPending=null;paintWorldInstallButtons();text($('mfShortcutStatus'),'BLACKCELL OS did not respond. Open Man’s Armed Forces inside the verified OS and try again.');queryWorldOS();
+ },8000);
+ try{window.parent.postMessage({type:'blackcell-world-os-install',category:id,request},location.origin)}catch(_){clearTimeout(worldInstallTimeout);worldInstallPending=null;paintWorldInstallButtons();text($('mfShortcutStatus'),'Open this gateway inside BLACKCELL OS to install the world.')}
+}
+window.addEventListener('message',event=>{
+ if(window.parent===window||event.source!==window.parent||event.origin!==location.origin)return;
+ const data=event.data;if(data?.type!=='blackcell-world-os-state'||!data.installed||typeof data.installed!=='object')return;
+ worldInstallState=Object.fromEntries(Object.keys(worldInstallLabels).map(id=>[id,data.installed[id]===true]));
+ if(worldInstallPending&&data.request===worldInstallPending.request&&data.category===worldInstallPending.category){
+  const label=worldInstallLabels[worldInstallPending.category];clearTimeout(worldInstallTimeout);worldInstallPending=null;
+  text($('mfShortcutStatus'),data.ok===true?(data.opened?'Opening '+label+' inside BLACKCELL OS.':label+' installed on your BLACKCELL OS desktop.'):(typeof data.error==='string'?data.error:'World installation was not confirmed.'));
+ }
+ paintWorldInstallButtons();
+});
 function wire(){
  document.querySelectorAll('.mf-portrait-tile[data-mf-uniform]').forEach(tile=>{
   const img=tile.querySelector('.mf-album-art img'),download=tile.querySelector('.mf-portrait-download');if(!img||!download)return;
@@ -460,7 +485,9 @@ function wire(){
   const onOriginalError=()=>{if(state.img!==img||img.getAttribute('src')===fallback)return;img.src=fallback;portraitLink(state,fallback)};
   img.addEventListener('error',onOriginalError);if(img.complete&&!img.naturalWidth)onOriginalError();
  });
- document.querySelectorAll('[data-mf-shortcut]').forEach(btn=>btn.addEventListener('click',()=>downloadCategoryShortcut(btn.dataset.mfShortcut)));
+ document.querySelectorAll('[data-mf-shortcut]').forEach(btn=>btn.addEventListener('click',()=>installWorldFromGateway(btn.dataset.mfShortcut)));
+ paintWorldInstallButtons();
+ if(!worldId){window.addEventListener('focus',queryWorldOS);document.addEventListener('visibilitychange',()=>{if(!document.hidden)queryWorldOS()})}
  paintPortraitPause();$('mfPortraitPause')?.addEventListener('click',()=>{portraitsPaused=!portraitsPaused;paintPortraitPause()});
  document.querySelectorAll('[data-mf-view]').forEach(btn=>btn.addEventListener('click',e=>{e.preventDefault();showWorkspaceView(btn.dataset.mfView)}));
  const entry=new URLSearchParams(location.search).get('uniform');
@@ -549,7 +576,7 @@ async function boot(){
  wire();
  authorized=await authorizeUniformHub();
  if(!authorized)return;
- if(!worldId)startPortraitRotation();
+ if(!worldId){startPortraitRotation();queryWorldOS();}
  $('mfPortal').href=authorized.member.role==='owner'?'dashboard.html':'employee.html';
  uploadState.user=authorized.user;
  $('mfAiOption').hidden=!!worldId||!owner();$('mfDirectOption').hidden=!owner();
