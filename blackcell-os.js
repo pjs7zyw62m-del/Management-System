@@ -275,15 +275,25 @@ function saveWorkspace(){
  try{
   const records=[...windows.values()].filter(r=>!r.suspended&&!r.chatPopout).map(r=>({id:r.id,minimized:r.el.hidden,maximized:r.el.classList.contains('is-max'),left:r.el.style.left,top:r.el.style.top,width:r.el.style.width,height:r.el.style.height,order:Number(r.el.style.zIndex)||0,...(r.id==='files'?{files:r.fileState||{path:[],layout:'grid'}}:r.id==='store'?{store:r.storeState||null}:r.id==='settings'?{settings:{section:r.settingsSection||'general'}}:{})}));
   for(const pending of pendingRestore)if(!records.some(r=>r.id===pending.id))records.push(pending);
-  sessionStorage.setItem(workspaceKey(),JSON.stringify({version:1,at:Date.now(),windows:records.slice(0,24)}));
+  // Store only parked conversation shortcuts and window geometry, never message data or drafts.
+  const parkedChats=[...windows.values()].filter(r=>r.chatPopout&&r.chatParked&&r.el.hidden).slice(0,8).map(r=>{
+   const geometry=r.mediaOriginalGeometry||r.el.style;
+   return {id:r.id,name:r.title,left:geometry.left,top:geometry.top,width:geometry.width,height:geometry.height,maximized:r.el.classList.contains('is-max')};
+  });
+  sessionStorage.setItem(workspaceKey(),JSON.stringify({version:1,at:Date.now(),windows:records.slice(0,24),parkedChats}));
  }catch(_){}
 }
 function clearWorkspace(){pendingRestore=[];workspaceReady=false;try{sessionStorage.removeItem(workspaceKey());if(embeddedAdmin)sessionStorage.removeItem('bc.os.host.v1')}catch(_){}}
 function safePixels(value){return typeof value==='string'&&/^\d{1,5}(?:\.\d+)?px$/.test(value)?Number.parseFloat(value):null}
-function restoreRecord(saved){
- if(!saved||typeof saved.id!=='string'||!/^[a-z]+$/.test(saved.id)||saved.id.length>40||windows.has(saved.id))return;
- const tile=document.querySelector('.app[data-app="'+saved.id+'"]');if(!tile||tile.hidden||tile.disabled)return;
- showApp(saved.id,saved.id==='store'?saved.store:saved.id==='settings'?saved.settings:saved.files);const r=windows.get(saved.id);if(!r)return;
+function restoreRecord(saved,parked=false){
+ if(!saved||typeof saved.id!=='string'||windows.has(saved.id))return;
+ if(parked){
+  if(!/^chatpop-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(saved.id)||typeof saved.name!=='string'||(!preview&&!installedApp('chat')))return;
+ }else if(!/^[a-z]+$/.test(saved.id)||saved.id.length>40)return;
+ const tile=document.querySelector('.app[data-app="'+(parked?'chat':saved.id)+'"]');if(!tile||tile.hidden||tile.disabled)return;
+ const previous=selectedWindow;
+ showApp(saved.id,parked?{peerId:saved.id.slice(8),name:saved.name.slice(0,70)||'Conversation'}:saved.id==='store'?saved.store:saved.id==='settings'?saved.settings:saved.files);
+ const r=windows.get(saved.id);if(!r)return;
  if(innerWidth>620&&!touchOS()){
   const width=safePixels(saved.width),height=safePixels(saved.height),left=safePixels(saved.left),top=safePixels(saved.top);
   if(width!==null)r.el.style.width=Math.min(Math.max(280,width),Math.max(280,innerWidth-12))+'px';
@@ -291,7 +301,9 @@ function restoreRecord(saved){
   if(left!==null)r.el.style.left=Math.max(0,Math.min(left,innerWidth-r.el.offsetWidth))+'px';
   if(top!==null)r.el.style.top=Math.max(34,Math.min(top,innerHeight-110))+'px';
  }
- r.el.classList.toggle('is-max',saved.maximized===true);if(saved.minimized===true){r.el.hidden=true;if(selectedWindow===r)selectedWindow=null;syncStoreUpdateHold()}
+ r.el.classList.toggle('is-max',saved.maximized===true);
+ if(parked){parkChat(r);if(previous&&!previous.el.hidden&&windows.get(previous.id)===previous)selectedWindow=previous;syncChatVisibility()}
+ else if(saved.minimized===true){r.el.hidden=true;if(selectedWindow===r)selectedWindow=null;syncStoreUpdateHold()}
 }
 function restoreWorkspace(){
  let saved=null;try{saved=JSON.parse(sessionStorage.getItem(workspaceKey())||'null')}catch(_){}
@@ -303,8 +315,9 @@ function restoreWorkspace(){
     const tile=document.querySelector('.app[data-app="'+entry.id+'"]');if(!tile)continue;
     if(tile.dataset.optional==='true')pendingRestore.push(entry);else restoreRecord(entry)
    }
+   if(Array.isArray(saved.parkedChats))for(const entry of saved.parkedChats.slice(0,8))restoreRecord(entry,true);
   }
- }finally{workspaceRestoring=false;workspaceReady=true;saveWorkspace()}
+ }finally{workspaceRestoring=false;workspaceReady=true;syncParkedChatBubbles();saveWorkspace()}
 }
 function restoreOptionalWorkspace(){
  if(!active||!pendingRestore.length)return;
