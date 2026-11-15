@@ -231,3 +231,7 @@ dialog.bc-chat-photo-enlarge::backdrop{background:#050506}
   grid-area:1/2!important;border-top:0;border-left:1px solid #ffffff24
  }
 }
+
+/* Click the enlarged photo again to return to the existing conversation. */
+.bc-chat-photo-enlarge-stage img{cursor:zoom-out}
+.bc-chat-photo-enlarge-stage img:focus-visible{outline:2px solid #e4657c;outline-offset:-3px}
