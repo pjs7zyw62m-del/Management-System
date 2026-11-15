@@ -581,3 +581,7 @@ html:is(.bc-os-phone,.bc-os-tablet) .bc-recycle-panel button{min-height:44px}
 #desktop .workspace .bc-free-app-canvas>.bc-recycle-shortcut .bc-recycle-icon{width:64px;height:64px}
 html.bc-os-tablet #desktop .workspace .bc-free-app-canvas>.bc-recycle-shortcut .bc-recycle-icon{width:62px;height:62px}
 html.bc-os-phone #desktop .workspace .bc-free-app-canvas>.bc-recycle-shortcut .bc-recycle-icon{width:58px;height:58px}
+
+/* The canvas reaches the usable lower desktop edge. Dock and system insets
+   are already reserved by the shell, so no second large padding is needed. */
+html #desktop.os-dock-auto-hide>.workspace:has(.bc-free-app-canvas){padding-bottom:6px}

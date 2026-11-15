@@ -423,9 +423,13 @@ function overlaps(a,b,gap=0){return a.x<b.x+b.w+gap&&a.x+a.w+gap>b.x&&a.y<b.y+b.
 /* Snap to a fixed desktop lattice. Nearest unoccupied cell wins; empty
    rows and columns are preserved rather than packing shortcuts. */
 function findAppSpot(w,h,iw,ih,desired,blocked){
- const maxX=Math.max(0,w-iw),maxY=Math.max(0,h-ih),dx=iw+8,dy=ih+8;
+ const maxX=Math.max(0,w-iw),maxY=Math.max(0,h-ih),dx=iw+8;
+ // Distribute the spare vertical pixels between rows instead of leaving
+ // an inaccessible strip underneath the last row.
+ const rows=Math.floor(maxY/(ih+8));
  const candidates=[];
- for(let y=0;y<=maxY+.01;y+=dy)for(let x=0;x<=maxX+.01;x+=dx){
+ for(let row=0;row<=rows;row++)for(let x=0;x<=maxX+.01;x+=dx){
+  const y=rows?Math.round(row*maxY/rows):0;
   const slot={x,y,w:iw,h:ih};if(!blocked.some(b=>overlaps(slot,b,3)))candidates.push(slot);
  }
  if(desired)candidates.sort((a,b)=>(a.x-desired.x)**2+(a.y-desired.y)**2-((b.x-desired.x)**2+(b.y-desired.y)**2)||a.y-b.y||a.x-b.x);
@@ -543,7 +547,7 @@ function placeApp(tile,x,y){
 }
 function endAppDrag(e,commit){
  const d=appDrag;if(!d||d.id!==e.pointerId)return;const tile=d.tile,dragged=!!d.ghost,r=d.grid.getBoundingClientRect(),br=recycleButton?.getBoundingClientRect(),bin=tile!==recycleButton&&!!br&&e.clientX>=br.left&&e.clientX<=br.right&&e.clientY>=br.top&&e.clientY<=br.bottom;
- cancelAppDrag();if(commit&&dragged&&contextAllowed()){if(bin)recycleApp(tile);else if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom&&canvasGeometry)placeApp(tile,e.clientX-r.left-canvasGeometry.iw/2,e.clientY-r.top-canvasGeometry.ih/2)}if(dragged)suppressAppClick(tile);applyAppLayout()
+ cancelAppDrag();if(commit&&dragged&&contextAllowed()){if(bin)recycleApp(tile);else if(canvasGeometry&&e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=Math.min($('desktop').querySelector('.workspace').getBoundingClientRect().bottom,r.bottom+24))placeApp(tile,e.clientX-r.left-canvasGeometry.iw/2,e.clientY-r.top-canvasGeometry.ih/2)}if(dragged)suppressAppClick(tile);applyAppLayout()
 }
 document.addEventListener('pointerdown',beginAppDrag,true);
 document.addEventListener('pointermove',updateAppDrag,{capture:true,passive:false});
@@ -554,7 +558,7 @@ document.addEventListener('click',e=>{if(appRearranging&&e.target.closest?.('.bc
 document.addEventListener('keydown',e=>{
  if(e.key==='Escape'&&recyclePanel){e.preventDefault();closeRecycleBin();return}if(!appRearranging)return;if(e.key==='Escape'){e.preventDefault();finishAppRearrange(true);return}
  const tile=e.target.closest?.('.bc-app-rearranging > .app[data-app],.bc-app-rearranging > .bc-recycle-shortcut'),p=tile===recycleButton?canvasGeometry?.binRect:canvasGeometry?.placed.get(tile);if(!tile||!p)return;
- if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();const dx=canvasGeometry.iw+8,dy=canvasGeometry.ih+8;placeApp(tile,p.x+(e.key==='ArrowRight'?dx:e.key==='ArrowLeft'?-dx:0),p.y+(e.key==='ArrowDown'?dy:e.key==='ArrowUp'?-dy:0));tile.focus({preventScroll:true})}
+ if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();const dx=canvasGeometry.iw+8,maxY=Math.max(0,canvasGeometry.height-canvasGeometry.ih),rows=Math.floor(maxY/(canvasGeometry.ih+8)),dy=rows?maxY/rows:canvasGeometry.ih+8;placeApp(tile,p.x+(e.key==='ArrowRight'?dx:e.key==='ArrowLeft'?-dx:0),p.y+(e.key==='ArrowDown'?dy:e.key==='ArrowUp'?-dy:0));tile.focus({preventScroll:true})}
 },true);
 document.addEventListener('visibilitychange',()=>{if(document.hidden){closeRecycleBin();finishAppRearrange()}else applyAppLayout()});
 window.addEventListener('resize',()=>{cancelAppDrag();applyAppLayout()},{passive:true});
