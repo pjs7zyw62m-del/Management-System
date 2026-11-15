@@ -459,3 +459,28 @@ html.bc-os-installed #desktop>.topbar .brand:before{box-shadow:none}
  #desktop>.topbar{-webkit-backdrop-filter:none;backdrop-filter:none;background:#101013;border-bottom-color:#ffffff18}
  html:is(.bc-os-phone,.bc-os-tablet) #desktop>.topbar{background:linear-gradient(to bottom,#000 0,#000 env(safe-area-inset-top,0px),#101013 env(safe-area-inset-top,0px),#101013 100%)}
 }
+
+/* iOS/iPadOS Home Screen: the system scroll-edge effect can extend below
+   the reported safe area. Give WebKit a real viewport-fixed opaque edge,
+   and reserve clearance before the menu without changing app-window math. */
+.bc-installed-top-edge{display:none}
+@supports (-webkit-touch-callout: none){
+ html.bc-os-installed:is(.bc-os-phone,.bc-os-tablet){
+  --bc-installed-clearance:28px;
+  --bc-installed-edge:calc(env(safe-area-inset-top,0px) + var(--bc-installed-clearance));
+  --bc-touch-top:calc(48px + var(--bc-installed-edge));
+ }
+ html.bc-os-installed:is(.bc-os-phone,.bc-os-tablet) #desktop>.bc-installed-top-edge{
+  display:block;position:fixed;top:0;left:0;right:0;height:var(--bc-installed-edge);
+  background:#000;pointer-events:none;z-index:61;
+ }
+ html.bc-os-installed:is(.bc-os-phone,.bc-os-tablet) #desktop>.topbar{
+  padding-top:var(--bc-installed-edge);
+  background:#101013;
+  -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+  filter:none;
+ }
+ html.bc-os-installed:is(.bc-os-phone,.bc-os-tablet) #desktop:before,
+ html.bc-os-installed:is(.bc-os-phone,.bc-os-tablet) #desktop>.wallpaper{top:var(--bc-touch-top)}
+ html.bc-os-installed:is(.bc-os-phone,.bc-os-tablet) #desktop .menubar>button{color:#f0f0f3}
+}
