@@ -392,7 +392,7 @@ function askAppPassword(title,verb,verified,options={}){
 }
 function toggleAppProtection(id,title){
  if(!contextAllowed()||!installedApp(id))return;
- if(!appProtected(id)){askAppPassword(title,'Protect',()=>chooseAppPassword(id,title));return}
+ if(!appProtected(id)){chooseAppPassword(id,title);return}
  askAppPassword(title,'Remove lock from',()=>saveAppProtection(id,title,'remove'));
 }
 function changeAppPassword(id,title){
