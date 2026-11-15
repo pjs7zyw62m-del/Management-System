@@ -123,7 +123,8 @@
     const launch=make('button','bc-omega-launch','INITIATE OMEGA LOCKDOWN');launch.type='button';launch.disabled=true;launch.setAttribute('aria-describedby','bcOmegaExplanation');
     const explain=make('p','bc-omega-explanation','Activation is disabled until isolation and independent recovery login pass verification. No services have been interrupted.');explain.id='bcOmegaExplanation';
     const review=btn('Review lockdown readiness ›',()=>{if(window.BLACKCELL_ADMIN_READY!==true||!document.documentElement.classList.contains('corp-ok'))return;openTarget('corporate-security-checks.html','Security Operations Center')});
-    card.append(state,launch,explain,review);body.append(card);
+    const rehearsal=btn('Preview user lockdown sequence ›',async()=>{const authorized=()=>window.BLACKCELL_ADMIN_READY===true&&document.documentElement.classList.contains('corp-ok');if(!authorized())return;rehearsal.disabled=true;try{const m=await import('./blackcell-omega-rehearsal.js?v=1');if(authorized())m.mountOmegaRehearsal({authorized,returnFocus:rehearsal})}catch(_){explain.textContent='Unable to load the visual rehearsal. Refresh Administration to retry. No lockdown was activated.'}finally{rehearsal.disabled=false}});
+    card.append(state,launch,explain,rehearsal,review);body.append(card);
    }
    const panel=make('section','bc-admin-os-panel');panel.append(make('h2','',current.id==='overview'?'Quick access':current.label+' controls'));
    for(const [name,desc,kind,target] of current.items||[]){
