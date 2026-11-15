@@ -132,3 +132,33 @@ html.bc-chat-popout:not(.bc-media-panel) .bc-chat-photo-enlarge-close{border-rad
  html.bc-chat-popout:not(.bc-media-panel) .chat.media-open .media-viewer-head{min-height:40px;padding:5px 10px!important}
  html.bc-chat-popout:not(.bc-media-panel) .chat.media-open .media-viewer-meta{min-height:40px;padding:4px!important}
 }
+
+/* Centered, optical-aligned pop-out navigation and a little breathing room under the portrait. */
+html.bc-chat-popout:not(.bc-media-panel) body.bc-chat .chat-main>.chat-title{
+ flex-basis:118px;min-height:118px!important;align-items:flex-start!important;padding:11px 48px 12px!important;
+}
+html.bc-chat-popout:not(.bc-media-panel) body.bc-chat .chat-title .imessage-identity{
+ gap:8px!important;align-items:center!important;justify-content:flex-start!important;
+}
+html.bc-chat-popout:not(.bc-media-panel) body.bc-chat .chat-title .imessage-names{
+ margin:0!important;align-self:center;line-height:1.2;padding:5px 12px;
+}
+html.bc-chat-popout:not(.bc-media-panel) body.bc-chat .chat-title .bc-pop-nav{
+ box-sizing:border-box;top:20px;display:grid;place-items:center;align-content:center;justify-content:center;
+ width:36px;height:36px;min-width:36px;min-height:36px;padding:0!important;
+ background:#202024!important;color:#f5f5f7!important;border:1px solid #ffffff18;line-height:1!important;
+}
+html.bc-chat-popout:not(.bc-media-panel) .bc-pop-nav svg{
+ display:block;width:20px;height:20px;flex:none;pointer-events:none;
+}
+html.bc-chat-popout:not(.bc-media-panel) body.bc-chat .chat-title .bc-pop-nav:hover{
+ background:#303035!important;
+}
+html.bc-chat-popout:not(.bc-media-panel) body.bc-chat .chat-title .bc-pop-nav[hidden]{display:none!important}
+html.bc-chat-popout:not(.bc-media-panel) .bc-pop-info-menu{top:62px}
+@media(max-height:400px){
+ html.bc-chat-popout:not(.bc-media-panel) body.bc-chat .chat-main>.chat-title{flex-basis:88px;min-height:88px!important;padding-top:7px!important}
+ html.bc-chat-popout:not(.bc-media-panel) body.bc-chat .chat-title .imessage-identity{gap:5px!important}
+ html.bc-chat-popout:not(.bc-media-panel) body.bc-chat .chat-title .bc-pop-nav{top:7px}
+ html.bc-chat-popout:not(.bc-media-panel) .bc-pop-info-menu{top:49px}
+}
