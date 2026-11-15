@@ -1,3 +1,4 @@
+import {mountPopoutActions} from './corporate-chat-popout-actions.js?v=20261115-ios-popout1';
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
 import {setupCorporateMedia} from './corporate-chat-media.js?v=20261115-photos-uploader1';
 import {setupCorporateChatLive} from './corporate-chat-live.js?v=20261113-no-typing1';
@@ -32,7 +33,7 @@ function openChatPopout(){
  if(!ready||!peer||popout||mediaPanelMode)return;
  let parentOS=false;try{parentOS=window.parent!==window&&window.parent.location.origin===location.origin&&/\/blackcell-os(?:-preview)?\.html$/.test(window.parent.location.pathname)}catch(_){}
  if(parentOS){window.parent.postMessage({type:'blackcell-chat-popout',peerId:peer.user_id,name:peer.display_name||'Employee'},location.origin);return;}
- const url=new URL(location.pathname,location.origin);url.searchParams.set('popout','1');url.searchParams.set('peer',peer.user_id);url.searchParams.set('v','20261115-chat-popout');window.open(url.href,'_blank','noopener,noreferrer,width=440,height=720');
+ const url=new URL(location.pathname,location.origin);url.searchParams.set('popout','1');url.searchParams.set('peer',peer.user_id);url.searchParams.set('v','20261115-ios-popout1');window.open(url.href,'_blank','noopener,noreferrer,width=440,height=720');
 }
 popButton?.addEventListener('click',openChatPopout);
 window.BLACKCELL_OS_BEFORE_CLOSE=()=>({ok:true,retain:!!$('messageInput').value.trim()||!!document.querySelector('[aria-busy=true],.is-uploading,[data-busy=true]')});
@@ -201,6 +202,27 @@ smallWindow.addEventListener('change',()=>{
 });
 const composerText=$('messageInput');
 function resizeComposer(){composerText.style.height='auto';composerText.style.height=Math.min(composerText.scrollHeight,112)+'px'}
+ const popoutActions=popout&&!mediaPanelMode?mountPopoutActions({
+  canAct:()=>ready&&!!self&&peer?.user_id===popoutId,
+  composer:composerText,resizeComposer,status,
+  sendReaction:async body=>{
+   if(!ready||!self||peer?.user_id!==popoutId)return;
+   try{const {error}=await client.from('corp_chat_messages').insert({sender_id:self,recipient_id:popoutId,body});if(error)throw error;await loadMessages()}
+   catch(_){status('Reaction message could not be sent. Try again.')}
+  }
+ }):null;
+ if(popoutActions){
+  const header=document.querySelector('.chat-title');
+  const back=document.createElement('button');back.type='button';back.className='bc-pop-nav bc-pop-back';back.textContent='‹';back.setAttribute('aria-label','Close pop-out and return to messages');
+  back.addEventListener('click',()=>{
+   if(window.parent!==window&&osChat){window.parent.postMessage({type:'blackcell-chat-popout-close'},location.origin);return}
+   if($('messageInput').value.trim()&&!confirm('Close this conversation? Your unsent draft may be lost.'))return;
+   window.close();
+   if(!window.closed)location.assign('corporate-chat.html?v=20261115-ios-popout1');
+  });
+  const profile=document.createElement('a');profile.id='popoutProfile';profile.className='bc-pop-nav bc-pop-profile';profile.textContent='ⓘ';profile.href='corporate-network.html';profile.target='_blank';profile.rel='noopener';profile.hidden=true;profile.setAttribute('aria-label','View contact profile');
+  header.append(back,profile);
+ }
 composerText.addEventListener('input',()=>{
  resizeComposer();
  live.onInput(composerText.value);
@@ -379,6 +401,7 @@ function choose(userId){
  $('imessagePortrait').textContent=String(peer.display_name||'B').trim().slice(0,1).toUpperCase();
  $('peerProfileLink').href='corporate-network.html?user='+encodeURIComponent(userId);
  $('peerProfileLink').hidden=false;
+ if(popoutActions){const profile=$('popoutProfile');profile.href=$('peerProfileLink').href;profile.hidden=false;}
  if(popButton){popButton.hidden=popout||!!mediaPanelMode;popButton.disabled=false;}
  $('messageInput').disabled=false;$('sendButton').disabled=false;renderPeers();void loadMessages();
 }
@@ -400,7 +423,7 @@ async function loadMessages(){
    void live.markRead(ordered);
    return;
   }
-  box.dataset.newest=newest;box.dataset.readSignature=signature;box.replaceChildren();
+  box.dataset.newest=newest;box.dataset.readSignature=signature;popoutActions?.close();box.replaceChildren();
   let currentDay='';
   for(let i=0;i<ordered.length;i++){
    const m=ordered[i],previous=ordered[i-1],next=ordered[i+1];
@@ -418,6 +441,7 @@ async function loadMessages(){
    if(!firstLoad&&oldNewest!==newest&&m.id===newest)item.classList.add('message-fresh');
    const bubble=m.media_batch_id?sharedMedia.renderMediaBubble(m,own):text('div','bubble',m.body);
    if(!m.media_batch_id){
+    popoutActions?.attach(bubble,m,own);
     bubble.tabIndex=0;
     bubble.title='Sent '+when.toLocaleString()+' · Tap to show the time';
     const reveal=()=>item.classList.toggle('show-time');
