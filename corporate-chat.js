@@ -34,7 +34,7 @@ function openChatPopout(){
  if(!ready||!peer||popout||mediaPanelMode)return;
  let parentOS=false;try{parentOS=window.parent!==window&&window.parent.location.origin===location.origin&&/\/blackcell-os(?:-preview)?\.html$/.test(window.parent.location.pathname)}catch(_){}
  if(parentOS){window.parent.postMessage({type:'blackcell-chat-popout',peerId:peer.user_id,name:peer.display_name||'Employee'},location.origin);return;}
- const url=new URL(location.pathname,location.origin);url.searchParams.set('popout','1');url.searchParams.set('peer',peer.user_id);url.searchParams.set('v','20261115-cohesive-media1');window.open(url.href,'_blank','noopener,noreferrer,width=440,height=720');
+ const url=new URL(location.pathname,location.origin);url.searchParams.set('popout','1');url.searchParams.set('peer',peer.user_id);url.searchParams.set('v','20261115-popout-header2');window.open(url.href,'_blank','noopener,noreferrer,width=440,height=720');
 }
 popButton?.addEventListener('click',openChatPopout);
 window.BLACKCELL_OS_BEFORE_CLOSE=()=>({ok:true,retain:!!$('messageInput').value.trim()||!!document.querySelector('[aria-busy=true],.is-uploading,[data-busy=true]')});
@@ -214,14 +214,14 @@ function resizeComposer(){composerText.style.height='auto';composerText.style.he
  }):null;
  if(popoutActions){
   const header=document.querySelector('.chat-title');
-  const back=document.createElement('button');back.type='button';back.className='bc-pop-nav bc-pop-back';back.textContent='‹';back.setAttribute('aria-label','Close pop-out and return to messages');
+  const back=document.createElement('button');back.type='button';back.className='bc-pop-nav bc-pop-back';back.innerHTML='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';back.setAttribute('aria-label','Close pop-out and return to messages');
   back.addEventListener('click',()=>{
    if(window.parent!==window&&osChat){window.parent.postMessage({type:'blackcell-chat-popout-close'},location.origin);return}
    if($('messageInput').value.trim()&&!confirm('Close this conversation? Your unsent draft may be lost.'))return;
    window.close();
-   if(!window.closed)location.assign('corporate-chat.html?v=20261115-cohesive-media1');
+   if(!window.closed)location.assign('corporate-chat.html?v=20261115-popout-header2');
   });
-  const info=document.createElement('button');info.type='button';info.id='popoutInfo';info.className='bc-pop-nav bc-pop-profile';info.textContent='ⓘ';info.hidden=true;info.setAttribute('aria-label','Contact options');info.setAttribute('aria-expanded','false');info.setAttribute('aria-controls','popoutInfoMenu');
+  const info=document.createElement('button');info.type='button';info.id='popoutInfo';info.className='bc-pop-nav bc-pop-profile';info.innerHTML='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="6" r="1.5" fill="currentColor"/><path d="M12 10v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';info.hidden=true;info.setAttribute('aria-label','Contact options');info.setAttribute('aria-expanded','false');info.setAttribute('aria-controls','popoutInfoMenu');
   const menu=document.createElement('div');menu.id='popoutInfoMenu';menu.className='bc-pop-info-menu';menu.hidden=true;
   const profile=document.createElement('a');profile.id='popoutProfile';profile.href='corporate-network.html';profile.target='_blank';profile.rel='noopener';profile.textContent='View Profile';
   const block=document.createElement('button');block.type='button';block.id='popoutBlock';block.className='bc-pop-block-action';block.textContent='Block';
