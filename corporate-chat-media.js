@@ -198,6 +198,9 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  function openPhotoFocus(image,item,still){
   if(!still()||!context()?.ready||!image.complete||!image.naturalWidth||photoFocus.open)return;
   const full=el('img');full.alt=item.filename||'Shared photo';full.referrerPolicy='no-referrer';full.decoding='async';
+  full.tabIndex=0;full.setAttribute('role','button');full.setAttribute('aria-label','Return to conversation and Shared Media');full.title='Click to return';
+  full.addEventListener('click',closePhotoFocus);
+  full.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();closePhotoFocus()}});
   full.addEventListener('error',()=>{if(photoFocus.open&&full.isConnected)photoFocusStage.replaceChildren(el('p','media-stage-empty','Unable to enlarge this photo. Close and reopen Shared Media.'))},{once:true});
   full.src=image.currentSrc||image.src;photoFocusTrigger=image;photoFocusStage.replaceChildren(full);
   try{photoFocus.showModal();photoFocusClose.focus({preventScroll:true})}catch(_){clearPhotoFocus()}
