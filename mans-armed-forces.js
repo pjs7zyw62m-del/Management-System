@@ -48,9 +48,10 @@ function inferCategory(a){
  // Conflicting evidence must not be silently filed into the wrong service.
  return hits.length===1?hits[0]:'unsorted';
 }
-const worldPages=Object.freeze({military:'military-world.html',police:'law-enforcement-world.html',fire:'fire-rescue-world.html',security:'corrections-world.html',medical:'ems-world.html',professional:'aviation-world.html'});
+const worldPages=Object.freeze({uniform:'uniform-world.html',military:'military-world.html',police:'law-enforcement-world.html',fire:'fire-rescue-world.html',security:'corrections-world.html',medical:'ems-world.html',professional:'aviation-world.html'});
 const worldId=Object.hasOwn(worldPages,document.body.dataset.mfWorld)?document.body.dataset.mfWorld:null;
-if(worldId)filterCategory=worldId;
+const worldScope=worldId&&worldId!=='uniform'?worldId:null;
+if(worldScope)filterCategory=worldScope;
 function matchesCategory(a,category){return category==='all'||inferCategory(a)===category}
 function displayCategory(category){return category==='unsorted'?'Unsorted':categories[category]?.label||'All Uniforms'}
 
@@ -63,7 +64,7 @@ function searchable(a){
 }
 function matches(a){
  if(searchQuery&&!searchable(a).includes(searchQuery))return false;
- if(!matchesCategory(a,worldId||filterCategory))return false;
+ if(!matchesCategory(a,worldScope||filterCategory))return false;
  if(filterBranch!=='all'&&branchOf(a)!==filterBranch)return false;
  if(filterStyle==='all')return true;
  const str=searchable(a);
@@ -78,7 +79,7 @@ function placeholder(title,body){
 const workspaceViews=new Set(['discover','explore','branches','collection','studio']);
 let workspaceView='discover';
 function showWorkspaceView(view,{updateHash=true}={}){
- if(!workspaceViews.has(view)||(worldId&&(view==='explore'||(view==='branches'&&worldId!=='military'))))view='discover';
+ if(!workspaceViews.has(view)||(worldScope&&(view==='explore'||(view==='branches'&&worldScope!=='military'))))view='discover';
  workspaceView=view;
  const root=$('uMain');if(root)root.dataset.mfActive=view;
  document.querySelectorAll('[data-mf-panel]').forEach(panel=>{panel.hidden=panel.id!==view});
@@ -88,7 +89,7 @@ function showWorkspaceView(view,{updateHash=true}={}){
  if(updateHash)try{const url=new URL(location.href);url.hash=view;if(worldId)url.searchParams.delete('uniform');else if(view!=='collection')url.searchParams.delete('uniform');else if(Object.hasOwn(categories,filterCategory))url.searchParams.set('uniform',filterCategory);else url.searchParams.delete('uniform');if(url.href!==location.href)history.replaceState(null,'',url.href)}catch(_){}
 }
 function setFilter({branch='all',style='all',category='all'}={}){
- if(worldId){category=worldId;if(worldId!=='military')branch='all'}
+ if(worldScope){category=worldScope;if(worldScope!=='military')branch='all'}
  filterBranch=branch;filterStyle=style;filterCategory=category;page=0;searchQuery='';if($('mfSearch'))$('mfSearch').value='';
  document.querySelectorAll('[data-category-filter]').forEach(btn=>{
   const selected=btn.dataset.categoryFilter===category;
@@ -176,7 +177,7 @@ async function render(){
  const pages=Math.max(1,Math.ceil(shown.length/sizeLimit));
  page=Math.max(0,Math.min(page,pages-1));
  const visible=shown.slice(page*sizeLimit,(page+1)*sizeLimit);
- text($('mfImageCount'),worldId?approved.filter(a=>matchesCategory(a,worldId)).length:approved.length);
+ text($('mfImageCount'),worldScope?approved.filter(a=>matchesCategory(a,worldScope)).length:approved.length);
  const totals=new Map();for(const asset of approved){const category=inferCategory(asset);totals.set(category,(totals.get(category)||0)+1)}
  for(const label of document.querySelectorAll('[data-mf-count]')){const count=totals.get(label.dataset.mfCount)||0;text(label,count+' '+(count===1?'photo':'photos'))}
  updateQueueStatus();
@@ -304,7 +305,7 @@ async function uploadUniforms(files){
  const selected=Array.from(files||[]),picked=selected.slice(0,MAX_BATCH);
  const good=picked.filter(f=>allowedPhotos.has(f.type)&&f.size>0&&f.size<=45*1048576);
  if(!good.length){text($('mfUploadStatus'),'Choose supported photographs up to 45 MB each.');return}
- const category=worldId||$('mfUploadCategory').value;
+ const category=worldScope||$('mfUploadCategory').value;
  const direct=owner();
  if(direct&&!$('mfUploadDirect').checked){text($('mfUploadStatus'),'Confirm the batch is non-explicit and you have permission to share it, then select photos again. Sorting is not an approval requirement.');return}
  let useAI=direct&&category==='auto'&&$('mfUploadAi').checked;
@@ -438,7 +439,7 @@ function categoryEntry(id){
  return new URL(worldPages[id]||'mans-armed-forces.html',location.href);
 }
 /* Installation is an OS-host operation, never a file download to the user's device. */
-const worldInstallLabels={military:'Military World',police:'Law Enforcement World',fire:'Fire & Rescue World',security:'Corrections World',medical:'EMS World',professional:'Aviation World'};
+const worldInstallLabels={uniform:'Uniform World',military:'Military World',police:'Law Enforcement World',fire:'Fire & Rescue World',security:'Corrections World',medical:'EMS World',professional:'Aviation World'};
 let worldInstallState={},worldInstallPending=null,worldInstallTimeout=null;
 function paintWorldInstallButtons(){
  document.querySelectorAll('[data-mf-shortcut]').forEach(btn=>{
@@ -491,7 +492,7 @@ function wire(){
  paintPortraitPause();$('mfPortraitPause')?.addEventListener('click',()=>{portraitsPaused=!portraitsPaused;paintPortraitPause()});
  document.querySelectorAll('[data-mf-view]').forEach(btn=>btn.addEventListener('click',e=>{e.preventDefault();showWorkspaceView(btn.dataset.mfView)}));
  const entry=new URLSearchParams(location.search).get('uniform');
- if(worldId){filterCategory=worldId;showWorkspaceView(location.hash.slice(1)||'discover',{updateHash:false});}
+ if(worldId){filterCategory=worldScope||'all';showWorkspaceView(location.hash.slice(1)||'discover',{updateHash:false});}
  else if(entry&&Object.hasOwn(categories,entry)&&(!location.hash||location.hash==='#collection'))setFilter({category:entry});
  else showWorkspaceView(location.hash.slice(1)||'discover',{updateHash:false});
  window.addEventListener('hashchange',()=>showWorkspaceView(location.hash.slice(1),{updateHash:false}));
@@ -512,7 +513,7 @@ function wire(){
  document.querySelectorAll('[data-category-filter]').forEach(btn=>
   btn.addEventListener('click',()=>setFilter({category:btn.dataset.categoryFilter})));
  document.querySelectorAll('[data-category]').forEach(btn=>
-  btn.addEventListener('click',()=>{const id=btn.dataset.category;if(!worldId&&Object.hasOwn(worldPages,id))location.assign(categoryEntry(id).href);else setFilter({category:id})}));
+  btn.addEventListener('click',()=>{const id=btn.dataset.category;if(!worldScope&&Object.hasOwn(worldPages,id))location.assign(categoryEntry(id).href);else setFilter({category:id})}));
  document.querySelectorAll('[data-filter]').forEach(btn=>
   btn.addEventListener('click',()=>setFilter({branch:btn.dataset.filter,category:'military'})));
  document.querySelectorAll('[data-branch]').forEach(btn=>
@@ -579,7 +580,7 @@ async function boot(){
  if(!worldId){startPortraitRotation();queryWorldOS();}
  $('mfPortal').href=authorized.member.role==='owner'?'dashboard.html':'employee.html';
  uploadState.user=authorized.user;
- $('mfAiOption').hidden=!!worldId||!owner();$('mfDirectOption').hidden=!owner();
+ $('mfAiOption').hidden=!!worldScope||!owner();$('mfDirectOption').hidden=!owner();
  await loadApproved();
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)void securityCheck()});
  window.addEventListener('focus',()=>void securityCheck());
