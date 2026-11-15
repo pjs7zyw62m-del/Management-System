@@ -270,7 +270,7 @@ function pauseVerification(message){
 const windows=new Map();let layer=25,selectedWindow=null;
 let workspaceReady=false,workspaceRestoring=false,pendingRestore=[];
 /* Account-scoped device privacy preference; the corporate backend still enforces access. */
-const protectedApps=new Set(),deferredParkedChats=new Map();
+const protectedApps=new Set(),deferredParkedChats=new Map(),appPasswordPermit=Symbol('app-password-verified');
 let appPasswordPrompt=null,appPasswordFailures=0,appPasswordRetryAt=0;
 const appBase=id=>String(id).startsWith('chatpop-')?'chat':id;
 const appLockKey=()=> 'bc.os.app-locks.v1:'+String(storeProfile||'');
@@ -561,14 +561,14 @@ function warmAppComponents(){
  if(typeof requestIdleCallback==='function')requestIdleCallback(run,{timeout:5000});else setTimeout(run,2500);
 }
 
-function showApp(id,initialState=null,passwordVerified=false){
+function showApp(id,initialState=null,passwordVerified=null){
  closeRecycleBin();finishAppRearrange();closeAppContext();if((!active&&!preview)||workspaceLock?.isLocked())return;if(id==='administration'&&!owner&&!preview)return;
  const chatPopout=/^chatpop-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id),baseId=chatPopout?'chat':id;
  if(!preview&&!installedApp(baseId))return;
  const tile=document.querySelector('.app[data-app="'+baseId+'"]');if(!tile||tile.hidden||tile.disabled)return;
  const deferred=chatPopout?deferredParkedChats.get(id):null;
  if(deferred)initialState={peerId:id.slice(8),name:deferred.name};
- if(appProtected(baseId)&&!passwordVerified&&(!windows.has(id)||windows.get(id).el.hidden)){askAppPassword(tile.dataset.title||'App','Unlock',()=>showApp(id,initialState,true));return;}
+ if(appProtected(baseId)&&passwordVerified!==appPasswordPermit&&(!windows.has(id)||windows.get(id).el.hidden)){askAppPassword(tile.dataset.title||'App','Unlock',()=>showApp(id,initialState,appPasswordPermit));return;}
  if(chatPopout&&!windows.has(id)&&(!initialState||initialState.peerId!==id.slice(8)||[...windows.values()].filter(r=>r.chatPopout).length>=8)){osNotice('Close a chat pop-out before opening another.');return;}
  if(windows.has(id)){const existing=windows.get(id);raise(existing);if(id==='files'&&initialState?.path){if(existing.openFolder)existing.openFolder(initialState.path);else{existing.fileState={path:[...initialState.path],layout:initialState.layout||'grid'};saveWorkspace()}}if(id==='settings'&&initialState?.section)existing.selectSettings?.(initialState.section);if(id==='store'){if(initialState?.category)existing.selectCategory?.(initialState.category);if(!preview&&!storeMutating)void storeRequest('catalog').then(()=>existing.refreshStore?.())}return}
  const url=new URL(tile.dataset.url,location.href);if(url.origin!==location.origin)return;
