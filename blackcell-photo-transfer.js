@@ -1,3 +1,4 @@
+import {createChatBunnyTransport} from './blackcell-chat-bunny.js?v=1';
 /* Shared control for the approved Military Library photo saving action. */
 import {createPrivateDrive,PRIVATE_FILE_LIMIT} from './blackcell-private-drive.js?v=1';
 import {uploadPrivateFile,mediaType,privateUploadError} from './blackcell-private-media.js?v=8-transfer';
@@ -38,7 +39,17 @@ export function attachPhotoTransfer(button,{client,getPhoto,notify,source='socia
    if((chat?record.sender_id!==uid:record.owner_id!==uid)&&!confirm('Confirm that you have permission to keep a private copy of this photograph.'))return;
    if(Number(record.bytes)>PRIVATE_FILE_LIMIT)throw Error('Original exceeds private Photos file limit.');
    report('Copying original photograph…');
-   const original=await client.storage.from(chat?'corp-chat-media':'corp-social-media').download(record.storage_path);
+   let original;
+   if(chat){
+    const url=await createChatBunnyTransport(client).link(record.id);
+    const response=await fetch(url,{credentials:'omit',referrerPolicy:'no-referrer',cache:'no-store',redirect:'error'});
+    if(!response.ok)throw Error('Private Bunny original unavailable.');
+    const size=Number(record.bytes);
+    if(!Number.isSafeInteger(size)||size<=0||size>PRIVATE_FILE_LIMIT)throw Error('Invalid original photo size.');
+    const data=await response.blob();
+    if(data.size!==size)throw Error('Original photo size verification failed.');
+    original={data};
+   }else original=await client.storage.from('corp-social-media').download(record.storage_path);
    if(original.error||!original.data?.size||original.data.size>PRIVATE_FILE_LIMIT)throw Error('Original photo unavailable.');
    const fresh=await corporateAuthorize(client,{classifyTransport:true});
    if(!fresh.ok||fresh.user.id!==uid||!sameView())throw Error('Corporate session changed.');
