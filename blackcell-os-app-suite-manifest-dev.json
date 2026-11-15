@@ -1,0 +1,179 @@
+{
+  "version": 1,
+  "channel": "development",
+  "autoInstall": false,
+  "releaseReady": false,
+  "apps": [
+    {
+      "id": "calculator",
+      "title": "Calculator",
+      "entry": "blackcell-os-utilities-dev.html?app=calculator",
+      "features": "Standard/scientific parser, keyboard/touch buttons",
+      "remaining": "Browser and OS tests",
+      "releaseReady": false,
+      "autoInstall": false
+    },
+    {
+      "id": "worldclock",
+      "title": "World Clock",
+      "entry": "blackcell-os-utilities-dev.html?app=worldclock",
+      "features": "IANA clocks, city selection, foreground one-time alarms",
+      "remaining": "Browser/audio tests, persisted clocks, background alerts",
+      "releaseReady": false,
+      "autoInstall": false
+    },
+    {
+      "id": "notes",
+      "title": "Notes",
+      "entry": "blackcell-os-app-suite-dev.html?app=notes",
+      "features": "Notes, notebooks, search, text/JSON export",
+      "remaining": "Account storage, import",
+      "releaseReady": false,
+      "autoInstall": false
+    },
+    {
+      "id": "calendar",
+      "title": "Calendar",
+      "entry": "blackcell-os-app-suite-dev.html?app=calendar",
+      "features": "Month navigation, dated events, JSON export",
+      "remaining": "Recurrence, external calendar, account storage",
+      "releaseReady": false,
+      "autoInstall": false
+    },
+    {
+      "id": "reminders",
+      "title": "Reminders",
+      "entry": "blackcell-os-app-suite-dev.html?app=reminders",
+      "features": "Task lists, deadlines, completion and overdue status",
+      "remaining": "Account storage, background reminders",
+      "releaseReady": false,
+      "autoInstall": false
+    },
+    {
+      "id": "contacts",
+      "title": "Contacts",
+      "entry": "blackcell-os-app-suite-dev.html?app=contacts",
+      "features": "Create/edit/delete/search, CSV export",
+      "remaining": "Import and account storage",
+      "releaseReady": false,
+      "autoInstall": false
+    },
+    {
+      "id": "mail",
+      "title": "Mail",
+      "entry": "blackcell-os-app-suite-dev.html?app=mail",
+      "features": "Draft workspace, mailto handoff, draft export",
+      "remaining": "OAuth, inbox, authenticated sending",
+      "releaseReady": false,
+      "autoInstall": false
+    },
+    {
+      "id": "gunner",
+      "title": "Gunner AI",
+      "entry": "blackcell-os-app-suite-dev.html?app=gunner",
+      "features": "Conversation request editor and export",
+      "remaining": "Authorized AI integration and actual replies",
+      "releaseReady": false,
+      "autoInstall": false
+    },
+    {
+      "id": "music",
+      "title": "Music",
+      "entry": "blackcell-os-app-suite-dev.html?app=music",
+      "features": "Local audio file selection and playback, auto-next",
+      "remaining": "Account media library, playlists",
+      "releaseReady": false,
+      "autoInstall": false
+    },
+    {
+      "id": "cinema",
+      "title": "Cinema",
+      "entry": "blackcell-os-app-suite-dev.html?app=cinema",
+      "features": "Local video file selection and playback",
+      "remaining": "Account media library",
+      "releaseReady": false,
+      "autoInstall": false
+    },
+    {
+      "id": "wallet",
+      "title": "Wallet",
+      "entry": "blackcell-os-app-suite-dev.html?app=wallet",
+      "features": "Manual USD ledger, totals and CSV export",
+      "remaining": "Account storage, budget targets, optional banking",
+      "releaseReady": false,
+      "autoInstall": false
+    },
+    {
+      "id": "journal",
+      "title": "Journal",
+      "entry": "blackcell-os-app-suite-dev.html?app=journal",
+      "features": "Dated writing, search and export",
+      "remaining": "Account storage and privacy tests",
+      "releaseReady": false,
+      "autoInstall": false
+    },
+    {
+      "id": "vault",
+      "title": "Vault",
+      "entry": "blackcell-os-app-suite-dev.html?app=vault",
+      "features": "Local AES-GCM password-based file encryption/decryption",
+      "remaining": "Cryptographic round-trip and browser tests, cloud vault",
+      "releaseReady": false,
+      "autoInstall": false
+    },
+    {
+      "id": "terminal",
+      "title": "Terminal",
+      "entry": "blackcell-os-app-suite-dev.html?app=terminal",
+      "features": "Allowlisted local utility commands",
+      "remaining": "Authorized administrative tools, if approved",
+      "releaseReady": false,
+      "autoInstall": false
+    },
+    {
+      "id": "voicememos",
+      "title": "Voice Memos",
+      "entry": "blackcell-os-app-suite-dev.html?app=voicememos",
+      "features": "Microphone recording, playback and download",
+      "remaining": "Browser microphone tests and account storage",
+      "releaseReady": false,
+      "autoInstall": false
+    },
+    {
+      "id": "documents",
+      "title": "Documents",
+      "entry": "blackcell-os-app-suite-dev.html?app=documents",
+      "features": "Plain-text editor, word count, export",
+      "remaining": "Rich formatting, account storage, DOCX import/export",
+      "releaseReady": false,
+      "autoInstall": false
+    },
+    {
+      "id": "spreadsheets",
+      "title": "Spreadsheets",
+      "entry": "blackcell-os-app-suite-dev.html?app=spreadsheets",
+      "features": "25x8 formula grid, CSV and JSON export",
+      "remaining": "Browser and larger formula tests, XLSX and account storage",
+      "releaseReady": false,
+      "autoInstall": false
+    },
+    {
+      "id": "creativestudio",
+      "title": "Creative Studio",
+      "entry": "blackcell-os-app-suite-dev.html?app=creativestudio",
+      "features": "Local image editing, export and AI brief",
+      "remaining": "Approved AI image/video providers, job billing",
+      "releaseReady": false,
+      "autoInstall": false
+    },
+    {
+      "id": "presentations",
+      "title": "Presentations",
+      "entry": "blackcell-os-app-suite-dev.html?app=presentations",
+      "features": "Slide editor, themes, preview, JSON export",
+      "remaining": "Account storage, import, PPTX export",
+      "releaseReady": false,
+      "autoInstall": false
+    }
+  ]
+}
