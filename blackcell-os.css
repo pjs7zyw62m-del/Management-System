@@ -631,3 +631,23 @@ html:is(.bc-os-phone,.bc-os-tablet) #desktop .os-chat-popout .traffic button.os-
 .os-parked-chat-glyph svg{width:12px;height:12px}
 .os-parked-chat-label{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 @media(prefers-reduced-motion:no-preference){.os-parked-chat-bubble{animation:bc-park-appear .18s ease-out}@keyframes bc-park-appear{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}}
+
+/* Per-app privacy lock: recognizable, compact Apple-inspired black glass. */
+#desktop .app.bc-app-protected .app-icon{position:relative}
+#desktop .app.bc-app-protected .app-icon::after,#desktop .dock button.bc-app-protected::before{content:'';position:absolute;right:-4px;top:-4px;width:21px;height:21px;border-radius:50%;border:1px solid #ffffff45;background:#19191d url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='1.8' stroke-linecap='round'%3E%3Crect x='5' y='10' width='14' height='11' rx='3'/%3E%3Cpath d='M8 10V7a4 4 0 0 1 8 0v3'/%3E%3C/svg%3E") center/13px no-repeat;box-shadow:0 3px 8px #0009;pointer-events:none;z-index:1}
+#desktop .dock button.bc-app-protected::before{width:17px;height:17px;background-size:11px}
+dialog.bc-app-lock-dialog{box-sizing:border-box;width:min(340px,calc(100vw - 36px));max-height:calc(100dvh - 36px);margin:auto;padding:0;border-radius:24px;color:#f5f5f7;background:#18181c;border:1px solid #ffffff26;box-shadow:0 24px 85px #000b;font:14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color-scheme:dark;overflow:auto}
+dialog.bc-app-lock-dialog:not([open]){display:none}
+dialog.bc-app-lock-dialog::backdrop{background:#0009;backdrop-filter:blur(7px)}
+.bc-app-lock-card{display:flex;flex-direction:column;align-items:center;gap:12px;padding:24px;text-align:center;margin:0}
+.bc-app-lock-symbol{display:grid;place-items:center;width:52px;height:52px;border-radius:17px;background:linear-gradient(145deg,#36363e,#202024);border:1px solid #ffffff20;color:#f2f2f7}
+.bc-app-lock-symbol svg{width:28px;height:28px}
+.bc-app-lock-card h2{font-size:19px;font-weight:650;margin:2px 0 0;letter-spacing:-.025em}
+.bc-app-lock-card p{margin:0;font-size:13px;color:#a9a9b3;line-height:1.5}
+.bc-app-lock-input{box-sizing:border-box;width:100%;padding:12px 14px;border:1px solid #ffffff24;border-radius:11px;background:#08080a;color:#f5f5f7;font-family:inherit;font-size:16px;outline:none}
+.bc-app-lock-input:focus{border-color:#0a84ff;box-shadow:0 0 0 3px #0a84ff26}
+.bc-app-lock-card .bc-app-lock-status{min-height:18px;max-width:100%;font-size:12px;color:#c8c8cf}
+.bc-app-lock-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%}
+.bc-app-lock-actions button{min-height:40px;border:0;border-radius:10px;background:#34343a;color:#f5f5f7;font-size:14px;font-weight:600;cursor:pointer}
+.bc-app-lock-actions .bc-app-lock-submit{background:#0a84ff;color:white}
+.bc-app-lock-actions button:disabled{opacity:.45;cursor:default}
