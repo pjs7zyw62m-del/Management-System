@@ -37,7 +37,45 @@ function openChatPopout(){
 popButton?.addEventListener('click',openChatPopout);
 window.BLACKCELL_OS_BEFORE_CLOSE=()=>({ok:true,retain:!!$('messageInput').value.trim()||!!document.querySelector('[aria-busy=true],.is-uploading,[data-busy=true]')});
 let inboxSummaries=new Map(),inboxUnread=new Set(),inboxFilter='all',inboxEditing=false,inboxComposing=false,inboxRefreshing=false,inboxSelection=new Set(),inboxMarking=false,inboxUnreadAvailable=false;
-let sidebarClosed=false;
+let sidebarClosed=false,inboxPins=[],pinMenuId=null;
+const inboxPinKey=()=>self?'bc.imessage.pins.v1:'+self:null;
+const normalizePins=value=>Array.isArray(value)?[...new Set(value.filter(id=>typeof id==='string'&&contacts.some(c=>c.user_id===id)))]:[];
+function readInboxPins(){
+ const key=inboxPinKey();if(!key)return [];
+ try{return normalizePins(JSON.parse(localStorage.getItem(key)||'[]'))}catch(_){return []}
+}
+function toggleInboxPin(id){
+ if(!ready||!self||popout||mediaPanelMode||!contacts.some(c=>c.user_id===id))return;
+ // Read the newest browser-scoped account preference before changing it.
+ let current=inboxPins;
+ try{const saved=localStorage.getItem(inboxPinKey());if(saved!==null)current=normalizePins(JSON.parse(saved))}catch(_){}
+ const next=current.includes(id)?current.filter(x=>x!==id):[...current,id];
+ try{localStorage.setItem(inboxPinKey(),JSON.stringify(next))}catch(_){status('Pins could not be saved on this device.')}
+ inboxPins=next;closePinMenu();renderPeers();
+}
+window.addEventListener('storage',event=>{
+ if(ready&&self&&event.key===inboxPinKey()){inboxPins=readInboxPins();renderPeers()}
+});
+function closePinMenu(){const menu=$('inboxPinMenu');if(menu)menu.hidden=true;pinMenuId=null}
+function openPinMenu(event,id,anchor){
+ if(!ready||!contacts.some(c=>c.user_id===id)||inboxEditing||inboxComposing)return;
+ event.preventDefault();event.stopPropagation();closeInboxFilter();
+ const menu=$('inboxPinMenu'),action=$('inboxPinMenuAction');pinMenuId=id;
+ action.textContent=inboxPins.includes(id)?'Unpin conversation':'Pin conversation';
+ menu.hidden=false;
+ const rect=anchor.getBoundingClientRect(),x=event.clientX||rect.left,y=event.clientY||rect.bottom;
+ menu.style.left=Math.max(6,Math.min(x,innerWidth-menu.offsetWidth-6))+'px';
+ menu.style.top=Math.max(6,Math.min(y,innerHeight-menu.offsetHeight-6))+'px';
+ action.focus();
+}
+function pinButton(c){
+ const pinned=inboxPins.includes(c.user_id),button=document.createElement('button');button.type='button';
+ const label=(pinned?'Unpin ':'Pin ')+(c.display_name||'conversation');
+ button.className='inbox-pin-action'+(pinned?' is-pinned':'');button.title=label;button.setAttribute('aria-label',label);
+ button.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 4 6 6-3 1-3 5-3 1-2-2-5 5 5-5-2-2 1-3 5-3 1-3Z"/>'+(pinned?'<path d="M3 3l18 18"/>':'')+'</svg>';
+ button.addEventListener('click',event=>{event.stopPropagation();toggleInboxPin(c.user_id)});
+ return button;
+}
 const sidebarKey=()=>self?'bc.imessage.sidebar.v1:'+self:null;
 function readSidebarPreference(){
  const key=sidebarKey();if(!key)return false;
@@ -70,7 +108,7 @@ let employeeSession=false,sessionEnded=false,lastActivity=Date.now(),lastTouch=D
 const IDLE_LIMIT_MS=60*60*1000;
 async function endChatAccess(reason){
  if(sessionEnded)return;
- sessionEnded=true;ready=false;employeeSession=false;syncInboxControls();
+ sessionEnded=true;ready=false;employeeSession=false;inboxPins=[];closePinMenu();syncInboxControls();$('inboxRecent').hidden=true;
  $('messageInput').disabled=true;$('sendButton').disabled=true;
  status(reason);
  live.dispose();
@@ -139,7 +177,11 @@ inboxMarkRead.addEventListener('click',async()=>{
  }catch(_){status('Could not mark selected conversations as read. Try again.')}
  finally{inboxMarking=false;syncInboxControls()}
 });
-$('peerSearch').addEventListener('input',renderPeers);
+$('inboxPinMenuAction').addEventListener('click',()=>{if(pinMenuId)toggleInboxPin(pinMenuId)});
+document.addEventListener('pointerdown',e=>{if(!$('inboxPinMenu').hidden&&!e.target.closest('#inboxPinMenu'))closePinMenu()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('inboxPinMenu').hidden){closePinMenu();e.preventDefault()}});
+window.addEventListener('resize',closePinMenu);
+$('peerSearch').addEventListener('input',()=>{closePinMenu();renderPeers()});
 syncInboxControls();
 $('backToInbox').addEventListener('click',()=>{
  if(!compactChat||popout)return;
@@ -192,7 +234,7 @@ async function boot(){
    }else{status('This account cannot access Employee Chat.');return}
    const {data,error}=await client.rpc('corp_chat_peers');
    if(error||data?.ok!==true||!Array.isArray(data.peers)){status('Contacts cannot be loaded. Contact your corporate administrator.');return}
-   contacts=data.peers;ready=true;status('');if(osChat){sidebarClosed=readSidebarPreference();applySidebarPreference()}
+   contacts=data.peers;ready=true;inboxPins=readInboxPins();status('');if(osChat){sidebarClosed=readSidebarPreference();applySidebarPreference()}
    client.channel('blackcell-chat-'+self)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'corp_chat_messages'},payload=>{
       const m=payload.new;
@@ -275,30 +317,36 @@ function inboxTime(value){
  if(date.toDateString()===yesterday.toDateString())return 'Yesterday';
  return date.toLocaleDateString([],{month:'short',day:'numeric'});
 }
-function renderDesktopRecent(){
+function renderPinnedConversations(){
  const box=$('inboxRecent');box.replaceChildren();
- const list=contacts.filter(c=>inboxSummaries.has(c.user_id)).sort((a,b)=>new Date(inboxSummaries.get(b.user_id)?.when||0)-new Date(inboxSummaries.get(a.user_id)?.when||0)).slice(0,3);
- box.hidden=compactChat||!!mediaPanelMode||popout||!ready||inboxEditing||inboxComposing||inboxFilter!=='all'||!!$('peerSearch').value.trim()||!list.length;
- if(box.hidden)return;
+ const list=inboxPins.map(id=>contacts.find(c=>c.user_id===id)).filter(Boolean);
+ box.hidden=!!mediaPanelMode||popout||!ready||inboxEditing||inboxComposing||inboxFilter!=='all'||!!$('peerSearch').value.trim()||!list.length;
+ if(box.hidden)return false;
  for(const c of list){
+  const cell=document.createElement('div');cell.className='inbox-pinned-cell';
   const b=document.createElement('button');b.type='button';b.className='desktop-recent-person'+(inboxUnread.has(c.user_id)?' is-unread':'');
   const name=String(c.display_name||'Employee').trim()||'Employee';
-  b.setAttribute('aria-label','Open recent conversation with '+name);b.title=name;
+  b.setAttribute('aria-label','Open pinned conversation with '+name);b.title=name;
   const initials=name.split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase();
   b.append(text('span','avatar',initials),text('span','desktop-recent-name',name.split(/\s+/)[0]));
-  b.addEventListener('click',()=>choose(c.user_id));box.append(b);
+  b.addEventListener('click',()=>choose(c.user_id));
+  b.addEventListener('contextmenu',event=>openPinMenu(event,c.user_id,b));
+  cell.append(b,pinButton(c));box.append(cell);
  }
+ return true;
 }
 function renderPeers(){
- const box=$('peers');box.replaceChildren();syncInboxControls();renderDesktopRecent();
+ const box=$('peers');box.replaceChildren();syncInboxControls();const pinsVisible=renderPinnedConversations();
  const query=$('peerSearch').value.trim().toLowerCase();
  // Every contact is a server-authorized known sender. Unknown external senders are not admitted.
  const visible=contacts.filter(c=>(String(c.display_name||'')+' '+String(c.role||'')).toLowerCase().includes(query))
   .filter(c=>inboxComposing||inboxFilter==='all'||inboxFilter==='known'||(inboxFilter==='unread'&&inboxUnread.has(c.user_id)))
   .sort((a,b)=>new Date(inboxSummaries.get(b.user_id)?.when||0)-new Date(inboxSummaries.get(a.user_id)?.when||0)||String(a.display_name||'').localeCompare(String(b.display_name||'')));
+ const unpinned=pinsVisible?visible.filter(c=>!inboxPins.includes(c.user_id)):visible;
  $('contactCount').textContent=String(visible.length);
+ if(!unpinned.length&&pinsVisible)return;
  if(!visible.length){box.append(text('p','empty',!ready?'Checking contacts…':query?'No matching contacts.':inboxFilter==='unknown'?'Only authorized BLACKCELL contacts can send messages.':inboxFilter==='unread'?(inboxUnreadAvailable?'No unread messages.':'Unread status unavailable. Retrying…'):'No authorized contacts.'));return}
- for(const c of visible){
+ for(const c of unpinned){
    const button=document.createElement('button');button.type='button';const unread=inboxUnread.has(c.user_id);
    button.className='peer'+(peer?.user_id===c.user_id?' active':'')+(unread?' is-unread':'');
    if(inboxEditing){const checked=inboxSelection.has(c.user_id);button.setAttribute('aria-pressed',String(checked));button.append(text('span','apple-select-dot',checked?'✓':''))}
@@ -314,7 +362,10 @@ function renderPeers(){
    button.append(trailing);
    if(unread)button.setAttribute('aria-label',(c.display_name||'Employee')+', unread messages');
    button.onclick=()=>{if(inboxEditing){if(inboxSelection.has(c.user_id))inboxSelection.delete(c.user_id);else inboxSelection.add(c.user_id);renderPeers();return}if(inboxComposing){exitInboxMode();$('peerSearch').value=''}choose(c.user_id)};
-   box.append(button);
+   const row=document.createElement('div');row.className='inbox-peer-row'+(!inboxEditing&&!inboxComposing?' has-pin-action':'');
+   row.append(button);
+   if(!inboxEditing&&!inboxComposing){row.append(pinButton(c));button.addEventListener('contextmenu',event=>openPinMenu(event,c.user_id,button))}
+   box.append(row);
  }
 }
 function choose(userId){
