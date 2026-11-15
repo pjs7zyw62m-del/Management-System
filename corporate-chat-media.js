@@ -56,7 +56,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  function positionMediaTray(){
   if(controls.hidden||!attachmentToggle)return;
   const rect=attachmentToggle.getBoundingClientRect();
-  const width=Math.min(244,Math.max(160,document.documentElement.clientWidth-20));
+  const width=Math.min(340,Math.max(160,document.documentElement.clientWidth-28));
   const left=Math.max(10,Math.min(rect.left,document.documentElement.clientWidth-width-10));
   controls.style.width=width+'px';controls.style.left=left+'px';
   controls.style.bottom=Math.max(8,window.innerHeight-rect.top+9)+'px';
@@ -131,6 +131,22 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const mediaLibrary=button('Shared Media',()=>void openLibrary(),'bc-attachment-item');mediaLibrary.setAttribute('aria-expanded','false');
  decorateButton(choosePhotos,'photo');decorateButton(chooseVideos,'video');
  decorateButton(choosePrivate,'photo');decorateButton(mediaShare,'upload');decorateButton(mediaLibrary,'library');
+ // App-style icon badges, kept local to this menu.
+ for(const [item,kind] of [[choosePhotos,'photos'],[chooseVideos,'videos'],[choosePrivate,'blackcell'],[mediaShare,'share'],[mediaLibrary,'library']]){
+  const glyph=item.querySelector('svg'),badge=el('span','bc-attachment-app-icon bc-attachment-app-'+kind);
+  badge.setAttribute('aria-hidden','true');
+  if(glyph)badge.append(glyph);
+  item.prepend(badge);
+ }
+ const photosBadge=choosePhotos.querySelector('.bc-attachment-app-icon');
+ if(photosBadge){
+  const ns='http://www.w3.org/2000/svg',flower=document.createElementNS(ns,'svg');
+  flower.setAttribute('viewBox','0 0 40 40');flower.setAttribute('aria-hidden','true');
+  const colors=['#f8cc43','#f59935','#ec635a','#d96bb6','#826ae3','#55ace9','#54c7bb','#82c94e'];
+  for(let i=0;i<8;i++){const petal=document.createElementNS(ns,'ellipse');petal.setAttribute('cx','20');petal.setAttribute('cy','12');petal.setAttribute('rx','5.2');petal.setAttribute('ry','9');petal.setAttribute('fill',colors[i]);petal.setAttribute('fill-opacity','.88');petal.setAttribute('transform','rotate('+(i*45)+' 20 20)');flower.append(petal)}
+  photosBadge.replaceChildren(flower);
+ }
+
  const menuDivider=el('div','bc-attachment-divider');menuDivider.setAttribute('aria-hidden','true');
  controls.append(choosePhotos,chooseVideos,choosePrivate,menuDivider,mediaShare,mediaLibrary);
  document.body.append(controls);
