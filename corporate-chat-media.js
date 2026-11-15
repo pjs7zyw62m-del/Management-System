@@ -56,10 +56,11 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  function positionMediaTray(){
   if(controls.hidden||!attachmentToggle)return;
   const rect=attachmentToggle.getBoundingClientRect();
-  const width=Math.min(340,Math.max(160,document.documentElement.clientWidth-28));
+  const touch=window.matchMedia('(pointer:coarse)').matches;
+  const width=Math.min(touch?230:205,Math.max(0,document.documentElement.clientWidth-20));
   const left=Math.max(10,Math.min(rect.left,document.documentElement.clientWidth-width-10));
   controls.style.width=width+'px';controls.style.left=left+'px';
-  controls.style.bottom=Math.max(8,window.innerHeight-rect.top+9)+'px';
+  controls.style.bottom=Math.max(8,window.innerHeight-rect.top+6)+'px';
   controls.style.maxHeight=Math.max(80,rect.top-16)+'px';
  }
  function toggleMediaTray(){
