@@ -562,3 +562,12 @@ html:is(.bc-os-phone,.bc-os-tablet) #desktop .bc-recycle-shortcut{height:96px}
 .bc-recycle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 2px;border-top:1px solid #ffffff12}
 .bc-recycle-row>strong{font:550 13px system-ui;overflow-wrap:anywhere}
 html:is(.bc-os-phone,.bc-os-tablet) .bc-recycle-panel button{min-height:44px}
+
+/* Recycle Bin is movable, but cannot itself be recycled. */
+#desktop .bc-recycle-shortcut{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+#desktop .bc-app-rearranging>.bc-recycle-shortcut{touch-action:none;cursor:grab}
+#desktop .bc-app-rearranging>.bc-recycle-shortcut .bc-recycle-icon{animation:bc-app-jiggle .24s ease-in-out infinite alternate}
+#desktop .bc-app-rearranging>.bc-recycle-shortcut.bc-app-dragging{opacity:.28}
+.bc-app-drag-ghost .bc-recycle-name{font:600 11px/1.25 system-ui}
+@media(prefers-reduced-motion:reduce){#desktop .bc-app-rearranging>.bc-recycle-shortcut .bc-recycle-icon{animation:none}}
+#desktop.os-reduce-motion .bc-app-rearranging>.bc-recycle-shortcut .bc-recycle-icon{animation:none}

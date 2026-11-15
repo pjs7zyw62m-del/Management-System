@@ -367,17 +367,20 @@ let appContext=null,contextTrigger=null,appHold=null,suppressedAppClick=null;
 function contextAllowed(){return active&&!preview&&!leaving&&!workspaceLock?.isLocked()&&!$('desktop').hidden}
 function closeAppContext(restore=false){if(appContext){appContext.remove();appContext=null}if(restore&&contextAllowed())contextTrigger?.focus({preventScroll:true});contextTrigger=null}
 function openAppContext(tile,x,y,trigger=tile){
- if(appRearranging||!contextAllowed()||!tile||tile.hidden||tile.disabled||!installedApp(tile.dataset.app))return false;
+ if(appRearranging||!contextAllowed()||!tile||tile.hidden||tile.disabled||(tile!==recycleButton&&!installedApp(tile.dataset.app)))return false;
  closeMenu();closeAppContext();
- const id=tile.dataset.app,removable=id!=='store'&&installedApp(id),pinned=dockPinned(id);
- const panel=document.createElement('div');panel.className='os-app-context';panel.setAttribute('role','group');panel.setAttribute('aria-label',tile.dataset.title+' options');contextTrigger=trigger;
- const name=document.createElement('strong');name.textContent=tile.dataset.title;panel.append(name);
+ const isBin=tile===recycleButton,id=tile.dataset.app,removable=!isBin&&id!=='store'&&installedApp(id),pinned=!isBin&&dockPinned(id),title=isBin?'Recycle Bin':tile.dataset.title;
+ const panel=document.createElement('div');panel.className='os-app-context';panel.setAttribute('role','group');panel.setAttribute('aria-label',title+' options');contextTrigger=trigger;
+ const name=document.createElement('strong');name.textContent=title;panel.append(name);
  const item=(label,fn,cls='')=>{const btn=document.createElement('button');btn.type='button';btn.className=cls;btn.textContent=label;btn.onclick=()=>{closeAppContext();if(contextAllowed())fn()};panel.append(btn);return btn};
+ if(isBin){item('Rearrange Apps',()=>startAppRearrange(tile));}
+ else{
  item(pinned?'Remove from Dock':'Add to Dock',()=>setDockPin(id,!pinned));
  if(recycledApps.has(id))item('Restore Desktop Shortcut',()=>restoreRecycled(id));
  else{item('Rearrange Apps',()=>startAppRearrange(tile));item('Move to Recycle Bin',()=>recycleApp(tile));}
  if(removable)item('Uninstall',()=>{if(confirm('Uninstall '+tile.dataset.title+'? Your app data will be kept.'))void uninstallFromDesktop(id,tile.dataset.title)},'danger');
  else{const note=document.createElement('small');note.textContent='App Store cannot be uninstalled';panel.append(note)}
+ }
  $('desktop').append(panel);appContext=panel;
  const rect=panel.getBoundingClientRect(),top=$('desktop').querySelector('.topbar').getBoundingClientRect().bottom,limit=window.visualViewport?.height||innerHeight;
  panel.style.left=Math.max(8,Math.min(x,innerWidth-rect.width-8))+'px';panel.style.top=Math.max(top+4,Math.min(y,limit-rect.height-8))+'px';
@@ -390,24 +393,26 @@ async function uninstallFromDesktop(id,title){
  windows.get('store')?.refreshStore?.();
 }
 function contextSource(target){
- const trigger=target?.closest?.('.app[data-app],.dock button[data-open]');if(!trigger||trigger.hidden||trigger.disabled)return null;
+ const trigger=target?.closest?.('.app[data-app],.dock button[data-open],.bc-recycle-shortcut');if(!trigger||trigger.hidden||trigger.disabled)return null;
+ if(trigger===recycleButton)return {trigger,tile:trigger};
  const id=trigger.dataset.app||trigger.dataset.open,tile=document.querySelector('.app[data-app="'+id+'"]');
  if(!tile||tile.hidden||tile.disabled||!installedApp(id))return null;return {trigger,tile}
 }
 /* Desktop placement and Recycle Bin are local shortcut preferences only.
    Neither operation uninstalls apps, grants access, nor deletes user data. */
-let appLayout=[],appPositions=new Map(),recycledApps=new Set(),appRearranging=false,appDrag=null,appEditBar=null,appLayoutRelease=null,recycleButton=null,recyclePanel=null,layoutFrame=0,layoutObserver=null,layoutObserved=false,canvasGeometry=null;
+let appLayout=[],appPositions=new Map(),recycledApps=new Set(),recyclePosition=null,appRearranging=false,appDrag=null,appEditBar=null,appLayoutRelease=null,recycleButton=null,recyclePanel=null,layoutFrame=0,layoutObserver=null,layoutObserved=false,canvasGeometry=null;
 const appGrid=()=>document.querySelector('#desktop .workspace .apps');
 const validAppId=id=>typeof id==='string'&&/^[a-z][a-z0-9_-]{0,63}$/.test(id);
 const clampUnit=x=>Math.max(0,Math.min(1,x));
 function layoutKey(){return 'bc.os.app-layout.v2:'+String(storeProfile)}
 function readAppLayout(){
- appLayout=[];appPositions=new Map();recycledApps=new Set();if(!storeProfile)return;
+ appLayout=[];appPositions=new Map();recycledApps=new Set();recyclePosition=null;if(!storeProfile)return;
  for(const {store} of preferenceStores())try{
   const data=JSON.parse(store.getItem(layoutKey())||'null');
   if(data&&typeof data==='object'&&!Array.isArray(data)){
    appLayout=Array.isArray(data.order)?[...new Set(data.order.filter(validAppId))].slice(0,250):[];
    if(Array.isArray(data.positions))appPositions=new Map(data.positions.slice(0,250).filter(p=>Array.isArray(p)&&validAppId(p[0])&&p[1]&&Number.isFinite(p[1].x)&&Number.isFinite(p[1].y)).map(([id,p])=>[id,{x:clampUnit(p.x),y:clampUnit(p.y)}]));
+   if(data.bin&&Number.isFinite(data.bin.x)&&Number.isFinite(data.bin.y))recyclePosition={x:clampUnit(data.bin.x),y:clampUnit(data.bin.y)};
    if(Array.isArray(data.recycled))recycledApps=new Set(data.recycled.filter(validAppId).slice(0,250));return;
   }
   const old=JSON.parse(store.getItem('bc.os.app-layout.v1:'+String(storeProfile))||'null');if(Array.isArray(old))appLayout=[...new Set(old.filter(validAppId))].slice(0,250);
@@ -430,7 +435,7 @@ function ensureRecycleButton(grid){
  const icon=document.createElement('span');icon.className='bc-recycle-icon';const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 48 48');svg.setAttribute('aria-hidden','true');
  const path=document.createElementNS(ns,'path');path.setAttribute('d','M13 14H35L32 40H16Z M10 11H38 M19 11V7H29V11 M21 20V33 M27 20V33');path.setAttribute('fill','none');path.setAttribute('stroke','currentColor');path.setAttribute('stroke-width','2.2');path.setAttribute('stroke-linecap','round');path.setAttribute('stroke-linejoin','round');svg.append(path);icon.append(svg);
  const name=document.createElement('span');name.textContent='Recycle Bin';name.className='bc-recycle-name';const count=document.createElement('small');count.className='bc-recycle-count';count.hidden=true;
- btn.append(icon,name,count);btn.onclick=()=>{if(contextAllowed())openRecycleBin()};grid.append(btn);recycleButton=btn;return btn;
+ btn.append(icon,name,count);btn.onclick=()=>{if(contextAllowed()&&!appRearranging)openRecycleBin()};bindAppContext(btn);grid.append(btn);recycleButton=btn;return btn;
 }
 function visibleLayoutTiles(){return [...(appGrid()?.querySelectorAll(':scope > .app[data-app]')||[])].filter(t=>!t.hidden&&!t.disabled&&!recycledApps.has(t.dataset.app)&&installedApp(t.dataset.app))}
 function refreshRecycleCount(){
@@ -456,8 +461,9 @@ function renderFreeLayout(){
  const obstacles=[];if(sr&&sr.width&&sr.height&&sr.bottom>gr.top&&sr.right>gr.left&&sr.left<gr.left+width)obstacles.push({x:Math.max(0,sr.left-gr.left-8),y:Math.max(0,sr.top-gr.top-8),w:sr.right-Math.max(gr.left,sr.left-8)+8,h:sr.bottom-Math.max(gr.top,sr.top-8)+8});
  const minCols=Math.max(1,Math.floor((width+8)/(iw+8)));height=Math.max(height,Math.ceil((visible.length+1)/minCols)*(ih+8));
  let placed=null,binRect=null;for(let pass=0;pass<25;pass++){
-  binRect={x:Math.max(0,width-iw),y:Math.max(0,height-ih),w:iw,h:ih};
-  if(obstacles.some(o=>overlaps(binRect,o,4))){height+=ih+8;continue}
+  const binDesired=recyclePosition?{x:recyclePosition.x*Math.max(0,width-iw),y:recyclePosition.y*Math.max(0,height-ih)}:{x:Math.max(0,width-iw),y:Math.max(0,height-ih)};
+  binRect=recyclePosition?findAppSpot(width,height,iw,ih,binDesired,obstacles):{...binDesired,w:iw,h:ih};
+  if(!binRect||obstacles.some(o=>overlaps(binRect,o,3))){height+=ih+8;continue}
   const taken=[...obstacles,binRect],positions=new Map();
   const custom=visible.filter(t=>appPositions.has(t.dataset.app)),defaults=visible.filter(t=>!appPositions.has(t.dataset.app));let failed=false;
   for(const tile of [...custom,...defaults]){
@@ -472,7 +478,7 @@ function renderFreeLayout(){
  if(!layoutObserved&&typeof ResizeObserver==='function'){layoutObserved=true;layoutObserver=new ResizeObserver(()=>applyAppLayout());layoutObserver.observe(workspace);if(side)layoutObserver.observe(side)}
 }
 function saveAppLayout(){
- if(!contextAllowed()||!storeProfile)return false;const record=JSON.stringify({order:appLayout,positions:[...appPositions],recycled:[...recycledApps]});let saved=false;
+ if(!contextAllowed()||!storeProfile)return false;const record=JSON.stringify({order:appLayout,positions:[...appPositions],recycled:[...recycledApps],bin:recyclePosition});let saved=false;
  for(const {name,store} of preferenceStores())try{store.setItem(layoutKey(),record);if(name==='localStorage'&&store.getItem(layoutKey())===record)saved=true}catch(_){}
  if(!saved)osNotice('Layout changed for this session. Persistent device storage is unavailable.');return saved;
 }
@@ -502,10 +508,10 @@ function openRecycleBin(){
  const list=document.createElement('div');list.className='bc-recycle-list';panel.append(head,note,list);$('desktop').append(panel);recyclePanel=panel;renderRecycleBin();close.focus({preventScroll:true})
 }
 function startAppRearrange(tile){
- if(!contextAllowed()||appRearranging||!visibleLayoutTiles().length)return;
+ if(!contextAllowed()||appRearranging||!canvasGeometry)return;
  closeAppContext();cancelAppHold();showDesktop();dockReveal(false);const grid=appGrid();if(!grid)return;
  appRearranging=true;grid.classList.add('bc-app-rearranging');
- const bar=document.createElement('div');bar.className='bc-app-rearrange-bar';const label=document.createElement('div');label.className='bc-rearrange-status';label.setAttribute('role','status');label.textContent='Drag anywhere on the desktop or into Recycle Bin.';
+ const bar=document.createElement('div');bar.className='bc-app-rearrange-bar';const label=document.createElement('div');label.className='bc-rearrange-status';label.setAttribute('role','status');label.textContent='Drag apps or Recycle Bin to any open desktop position.';
  const done=document.createElement('button');done.type='button';done.textContent='Done';done.onclick=()=>finishAppRearrange(true);bar.append(label,done);grid.parentElement.insertBefore(bar,grid);appEditBar=bar;
  try{appLayoutRelease=window.BLACKCELL_LIVE_UPDATE?.hold('Rearranging applications')}catch(_){}
  renderFreeLayout();if(tile&&!tile.hidden&&!recycledApps.has(tile.dataset.app))tile.focus({preventScroll:true});
@@ -517,23 +523,24 @@ function finishAppRearrange(notify=false){
  if(!appRearranging)return;cancelAppDrag();appRearranging=false;appGrid()?.classList.remove('bc-app-rearranging');appEditBar?.remove();appEditBar=null;appLayoutRelease?.();appLayoutRelease=null;applyAppLayout();if(notify&&contextAllowed())osNotice('Desktop layout updated.');
 }
 function beginAppDrag(e){
- if(!appRearranging||!contextAllowed()||!e.isPrimary||e.button!==0)return;const tile=e.target.closest?.('.bc-app-rearranging > .app[data-app]');if(!tile||!visibleLayoutTiles().includes(tile)||!canvasGeometry)return;
+ if(!appRearranging||!contextAllowed()||!e.isPrimary||e.button!==0)return;const tile=e.target.closest?.('.bc-app-rearranging > .app[data-app],.bc-app-rearranging > .bc-recycle-shortcut');if(!tile||(tile!==recycleButton&&!visibleLayoutTiles().includes(tile))||!canvasGeometry)return;
  e.preventDefault();cancelAppDrag();const grid=appGrid();appDrag={grid,tile,id:e.pointerId,x:e.clientX,y:e.clientY,ghost:null,bin:false};try{grid.setPointerCapture(e.pointerId)}catch(_){}
 }
 function updateAppDrag(e){
  const d=appDrag;if(!d||d.id!==e.pointerId)return;if(!contextAllowed()||d.tile.hidden||recycledApps.has(d.tile.dataset.app)){cancelAppDrag();return}
  if(!d.ghost&&Math.hypot(e.clientX-d.x,e.clientY-d.y)<7)return;if(e.cancelable)e.preventDefault();
- if(!d.ghost){const ghost=document.createElement('div');ghost.className='bc-app-drag-ghost';ghost.setAttribute('aria-hidden','true');const icon=d.tile.querySelector('.app-icon'),name=d.tile.querySelector('.app-name');if(icon)ghost.append(icon.cloneNode(true));if(name)ghost.append(name.cloneNode(true));document.body.append(ghost);d.ghost=ghost;d.tile.classList.add('bc-app-dragging')}
- d.ghost.style.left=e.clientX+'px';d.ghost.style.top=e.clientY+'px';const r=recycleButton?.getBoundingClientRect();d.bin=!!r&&e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom;recycleButton?.classList.toggle('bc-recycle-drop',d.bin);
+ if(!d.ghost){const ghost=document.createElement('div');ghost.className='bc-app-drag-ghost';ghost.setAttribute('aria-hidden','true');const icon=d.tile.querySelector('.app-icon,.bc-recycle-icon'),name=d.tile.querySelector('.app-name,.bc-recycle-name');if(icon)ghost.append(icon.cloneNode(true));if(name)ghost.append(name.cloneNode(true));document.body.append(ghost);d.ghost=ghost;d.tile.classList.add('bc-app-dragging')}
+ d.ghost.style.left=e.clientX+'px';d.ghost.style.top=e.clientY+'px';const r=recycleButton?.getBoundingClientRect();d.bin=d.tile!==recycleButton&&!!r&&e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom;recycleButton?.classList.toggle('bc-recycle-drop',d.bin);
  const ws=$('desktop').querySelector('.workspace'),wr=ws.getBoundingClientRect();if(e.clientY>wr.bottom-38)ws.scrollTop+=18;else if(e.clientY<wr.top+38)ws.scrollTop-=18;
 }
 function placeApp(tile,x,y){
- const g=canvasGeometry;if(!g||!contextAllowed()||!appRearranging||!visibleLayoutTiles().includes(tile))return;
- const blocks=[...g.obstacles,g.binRect,...[...g.placed].filter(([t])=>t!==tile).map(([,p])=>p)],spot=findAppSpot(g.width,g.height,g.iw,g.ih,{x,y},blocks);if(!spot){osNotice('Choose an open desktop area.');return}
+ const g=canvasGeometry,isBin=tile===recycleButton;if(!g||!contextAllowed()||!appRearranging||(!isBin&&!visibleLayoutTiles().includes(tile)))return;
+ const blocks=[...g.obstacles,...(isBin?[]:[g.binRect]),...[...g.placed].filter(([t])=>t!==tile).map(([,p])=>p)],spot=findAppSpot(g.width,g.height,g.iw,g.ih,{x,y},blocks);if(!spot){osNotice('Choose an open desktop area.');return}
+ if(isBin){rememberVisiblePositions();recyclePosition={x:spot.x/Math.max(1,g.width-g.iw),y:spot.y/Math.max(1,g.height-g.ih)};saveAppLayout();renderFreeLayout();if(appEditBar)appEditBar.querySelector('.bc-rearrange-status').textContent='Recycle Bin moved.';return}
  rememberVisiblePositions();appPositions.set(tile.dataset.app,{x:spot.x/Math.max(1,g.width-g.iw),y:spot.y/Math.max(1,g.height-g.ih)});appLayout=orderedAppIds([...appGrid().querySelectorAll(':scope > .app[data-app]')].map(t=>t.dataset.app),appLayout);saveAppLayout();renderFreeLayout();if(appEditBar)appEditBar.querySelector('.bc-rearrange-status').textContent=tile.dataset.title+' moved.';
 }
 function endAppDrag(e,commit){
- const d=appDrag;if(!d||d.id!==e.pointerId)return;const tile=d.tile,dragged=!!d.ghost,r=d.grid.getBoundingClientRect(),br=recycleButton?.getBoundingClientRect(),bin=!!br&&e.clientX>=br.left&&e.clientX<=br.right&&e.clientY>=br.top&&e.clientY<=br.bottom;
+ const d=appDrag;if(!d||d.id!==e.pointerId)return;const tile=d.tile,dragged=!!d.ghost,r=d.grid.getBoundingClientRect(),br=recycleButton?.getBoundingClientRect(),bin=tile!==recycleButton&&!!br&&e.clientX>=br.left&&e.clientX<=br.right&&e.clientY>=br.top&&e.clientY<=br.bottom;
  cancelAppDrag();if(commit&&dragged&&contextAllowed()){if(bin)recycleApp(tile);else if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom&&canvasGeometry)placeApp(tile,e.clientX-r.left-canvasGeometry.iw/2,e.clientY-r.top-canvasGeometry.ih/2)}if(dragged)suppressAppClick(tile);applyAppLayout()
 }
 document.addEventListener('pointerdown',beginAppDrag,true);
@@ -541,10 +548,10 @@ document.addEventListener('pointermove',updateAppDrag,{capture:true,passive:fals
 document.addEventListener('pointerup',e=>endAppDrag(e,true),true);
 document.addEventListener('pointercancel',e=>endAppDrag(e,false),true);
 document.addEventListener('lostpointercapture',e=>{if(appDrag?.id===e.pointerId)cancelAppDrag()},true);
-document.addEventListener('click',e=>{if(appRearranging&&e.target.closest?.('.bc-app-rearranging > .app[data-app]')){e.preventDefault();e.stopImmediatePropagation()}},true);
+document.addEventListener('click',e=>{if(appRearranging&&e.target.closest?.('.bc-app-rearranging > .app[data-app],.bc-app-rearranging > .bc-recycle-shortcut')){e.preventDefault();e.stopImmediatePropagation()}},true);
 document.addEventListener('keydown',e=>{
  if(e.key==='Escape'&&recyclePanel){e.preventDefault();closeRecycleBin();return}if(!appRearranging)return;if(e.key==='Escape'){e.preventDefault();finishAppRearrange(true);return}
- const tile=e.target.closest?.('.bc-app-rearranging > .app[data-app]'),p=canvasGeometry?.placed.get(tile);if(!tile||!p)return;
+ const tile=e.target.closest?.('.bc-app-rearranging > .app[data-app],.bc-app-rearranging > .bc-recycle-shortcut'),p=tile===recycleButton?canvasGeometry?.binRect:canvasGeometry?.placed.get(tile);if(!tile||!p)return;
  if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();const step=24;placeApp(tile,p.x+(e.key==='ArrowRight'?step:e.key==='ArrowLeft'?-step:0),p.y+(e.key==='ArrowDown'?step:e.key==='ArrowUp'?-step:0));tile.focus({preventScroll:true})}
 },true);
 document.addEventListener('visibilitychange',()=>{if(document.hidden){closeRecycleBin();finishAppRearrange()}else applyAppLayout()});
