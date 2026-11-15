@@ -332,6 +332,7 @@ function chatFrameMessage(r,type,data={}){if(!r?.frame)return;try{r.frame.conten
 function resizeChatForMedia(r,open){
  if(!r||(r.id!=='chat'&&!r.chatPopout))return;
  const w=r.el;
+ if(r.chatPopout)w.classList.toggle('is-chat-media-open',open===true);
  if(!open){const saved=r.mediaOriginalGeometry;if(saved){Object.assign(w.style,saved);r.mediaOriginalGeometry=null}return;}
  if(r.mediaOriginalGeometry||w.classList.contains('is-max')||touchOS()||innerWidth<680)return;
  const rect=w.getBoundingClientRect(),available=Math.max(0,innerWidth-24),target=Math.min(available,Math.max(rect.width,r.chatPopout?840:1060));
@@ -428,7 +429,7 @@ function showApp(id,initialState=null){
  const windowTitle=chatPopout?String(initialState.name||'Conversation').slice(0,70):tile.dataset.title;
  if(chatPopout){url.searchParams.set('popout','1');url.searchParams.set('peer',initialState.peerId);url.searchParams.set('osApp','chat');url.searchParams.set('embed','1')}
  const w=document.createElement('section');w.className='os-window'+(chatPopout?' os-chat-popout':'');w.dataset.osApp=id;w.setAttribute('aria-label',windowTitle+' window');
- if(chatPopout&&!touchOS()&&innerWidth>620){const n=[...windows.values()].filter(r=>r.chatPopout).length,width=Math.min(420,innerWidth-24),height=Math.min(660,innerHeight-110);w.style.width=width+'px';w.style.height=height+'px';w.style.left=Math.max(12,innerWidth-width-28-(n%4)*30)+'px';w.style.top=Math.max(40,Math.min(70+(n%4)*28,innerHeight-height-50))+'px';}
+ if(chatPopout&&!touchOS()&&innerWidth>620){const n=[...windows.values()].filter(r=>r.chatPopout).length,height=Math.min(760,innerHeight-100),width=Math.min(390,innerWidth-24,Math.max(320,Math.round(height*.54)));w.style.width=width+'px';w.style.height=height+'px';w.style.left=Math.max(12,innerWidth-width-28-(n%4)*30)+'px';w.style.top=Math.max(40,Math.min(70+(n%4)*28,innerHeight-height-50))+'px';}
  const bar=document.createElement('div');bar.className='os-window-head';const controls=document.createElement('div');controls.className='traffic';
  const title=document.createElement('span');title.textContent=windowTitle;
  const external=document.createElement('a');external.href=url.href;external.target='_blank';external.rel='noopener';external.textContent='Open full page ↗';bar.append(controls,title);if(!chatPopout)bar.append(external);
