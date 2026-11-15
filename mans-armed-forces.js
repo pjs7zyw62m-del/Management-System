@@ -238,23 +238,34 @@ async function movePhoto(a,category){
 function updateQueueStatus(){
  const n=unsortedQueue().length;
  text($('mfQueueCount'),n);
- $('mfReviewQueue').disabled=!n;
+ $('mfReviewQueue').disabled=!n||queueOpening;
  $('mfPendingPanel').hidden=!owner()||!pendingOwn.length;
  text($('mfPendingCount'),pendingOwn.length);
 }
+let queueOpening=false;
 async function openQueue(index=0){
- const list=unsortedQueue();
- if(!list.length){$('mfLightbox').close();text($('mfQueueMessage'),'All posted photos are sorted.');return}
- queueIndex=((index%list.length)+list.length)%list.length;
- const a=list[queueIndex];
- if(!a.signedUrl||Date.now()-(a.signedAt||0)>signedMs){
-  const out=await bucket.createSignedUrl(a.storage_path,1800);
-  if(out.error||!out.data?.signedUrl){
-   text($('mfQueueMessage'),'Could not open this photo. Refresh the page and try again.');return
+ if(queueOpening)return;
+ const list=unsortedQueue(),button=$('mfReviewQueue'),dialog=$('mfLightbox');
+ if(!list.length){if(dialog?.open)dialog.close();text($('mfQueueMessage'),'All posted photos are sorted.');return}
+ queueOpening=true;button.disabled=true;button.setAttribute('aria-busy','true');
+ text($('mfQueueMessage'),'Opening unsorted photograph…');
+ try{
+  queueIndex=((index%list.length)+list.length)%list.length;
+  const a=list[queueIndex];
+  if(!a.signedUrl||Date.now()-(a.signedAt||0)>signedMs){
+   const out=await bucket.createSignedUrl(a.storage_path,1800);
+   if(out.error||!out.data?.signedUrl)throw Error(out.error?.message||'Photo preview unavailable');
+   a.signedUrl=out.data.signedUrl;a.signedAt=Date.now();
   }
-  a.signedUrl=out.data.signedUrl;a.signedAt=Date.now();
- }
- openViewer(a,{queue:true});
+  if(!authorized)throw Error('Your session has expired. Sign in again.');
+  if(!dialog?.showModal)throw Error('Photo viewer is unavailable in this browser.');
+  openViewer(a,{queue:true});
+  if(!dialog.open)throw Error('Photo viewer could not open.');
+  text($('mfQueueMessage'),'');text($('mfQueueError'),'');
+ }catch(e){
+  const message='Unable to open unsorted photo: '+String(e?.message||'Try again.');
+  text($('mfQueueMessage'),message);text($('mfQueueError'),message);
+ }finally{queueOpening=false;button.removeAttribute('aria-busy');updateQueueStatus()}
 }
 async function assignQueued(category){
  if(queueBusy||!sortingQueue||!viewerAsset)return;
