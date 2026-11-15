@@ -5,6 +5,8 @@
  */
 import {authorizeUniformHub,corporate} from './uniform-hub-auth.js?v=20261112-access2';
 import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phonecheck2';
+import {createPrivateDrive,PRIVATE_FILE_LIMIT} from './blackcell-private-drive.js?v=1';
+import {uploadPrivateFile,mediaType,privateUploadError} from './blackcell-private-media.js?v=8-transfer';
 
 const $=id=>document.getElementById(id);
 let approved=[],shown=[],filterBranch='all',filterStyle='all',filterCategory='all',lastSigned=0,authorized=null;
@@ -88,6 +90,53 @@ function formatMetadata(a){
  return [displayCategory(inferCategory(a)),inferCategory(a)==='military'&&branchOf(a)!=='Unspecified'?branchOf(a):'',safe(a.military_era)]
  .filter(Boolean).join(' · ')||'MILITARY LIBRARY';
 }
+
+let transferringPhoto=false;
+const transferUUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function transferName(asset){
+ const raw=String(asset.filename||'').normalize('NFKD').replace(/[^a-zA-Z0-9_. -]/g,'_').replace(/^\.+/,'');
+ const ext=raw.split('.').pop().toLowerCase();
+ if(!['jpg','jpeg','png','webp','gif','heic','heif'].includes(ext)||!mediaType(raw))throw Error('Unsupported original photo format.');
+ const base=raw.slice(0,-ext.length-1).slice(0,48).trim()||'photo';
+ return 'MAF-'+asset.id+'-'+base+'.'+ext;
+}
+async function freshTransferSession(uid){
+ if(!authorized||authorized.user.id!==uid)throw Error('Your corporate session changed.');
+ const auth=await corporate.auth.getUser();
+ if(auth.error||auth.data.user?.id!==uid)throw Error('Sign in again before transferring.');
+ const check=await corporate.rpc(authorized.member.role==='owner'?'corp_code_status':'corp_employee_code_status');
+ if(check.error||check.data?.verified!==true||authorized?.user.id!==uid)throw Error('Corporate verification required.');
+}
+async function transferToPhotos(){
+ const a=viewerAsset,uid=authorized?.user?.id,b=$('mfTransferPhotos'),st=$('mfTransferStatus');
+ if(transferringPhoto)return;
+ if(!a||!transferUUID.test(a.id)||!transferUUID.test(uid||'')){text(st,'Select an authorized photograph first.');return;}
+ if(a.owner_id!==uid&&!confirm('Save a private copy to BLACKCELL Photos? Confirm that you have permission to retain this photograph.'))return;
+ transferringPhoto=true;b.disabled=true;b.dataset.busy='true';b.textContent='TRANSFERRING…';text(st,'Verifying permission…');
+ let release;try{release=window.top.BLACKCELL_LIVE_UPDATE?.hold('Transfer to private Photos',window)}catch(_){}
+ const report=msg=>{if(viewerAsset?.id===a.id)text(st,msg)};
+ try{
+  await freshTransferSession(uid);
+  const source=await corporate.from('corp_social_assets').select('id,owner_id,filename,storage_path,review_status,adult_restricted,purpose,kind,bytes').eq('id',a.id).eq('review_status','approved').eq('adult_restricted',false).eq('purpose','library').eq('kind','photo').maybeSingle();
+  if(source.error||!source.data?.storage_path)throw Error('This original photo is no longer available to your account.');
+  const record=source.data,name=transferName(record),storage=createPrivateDrive(corporate,uid),folder=uid+'/Photos',path=folder+'/'+name;
+  const exists=async()=>{const result=await storage.list(folder,{search:'MAF-'+record.id+'-',limit:100});if(result.error)throw result.error;return (result.data||[]).some(row=>row.id&&(!row.state||row.state==='ready')&&row.name.startsWith('MAF-'+record.id+'-'))};
+  if(await exists()){report('Already in your Photos library.');return}
+  if(Number(record.bytes)>PRIVATE_FILE_LIMIT)throw Error('Original exceeds the private Photos file limit.');
+  report('Copying original photograph…');
+  const original=await bucket.download(record.storage_path);
+  if(original.error||!original.data?.size)throw Error('Original photo could not be retrieved.');
+  if(original.data.size>PRIVATE_FILE_LIMIT)throw Error('Original exceeds the private Photos file limit.');
+  await freshTransferSession(uid);
+  const file=new File([original.data],name,{type:mediaType(name)});
+  try{await uploadPrivateFile(storage,path,file,(sent,total)=>{if(total>0)report('Saving to Photos · '+Math.min(99,Math.round(sent/total*100))+'%')})}
+  catch(error){if(await exists()){report('Already in your Photos library.');return}throw error}
+  report('✓ Transferred to your private Photos library.');
+  try{const channel=new BroadcastChannel('bc-private-photos-transfer');channel.postMessage({type:'photos-changed',uid});channel.close()}catch(_){try{window.parent.dispatchEvent(new CustomEvent('bc-private-files-changed',{detail:{source:'uniform-transfer',uid}}))}catch(__){}}
+ }catch(e){report('Transfer unavailable: '+privateUploadError(e))}
+ finally{release?.();transferringPhoto=false;delete b.dataset.busy;b.disabled=false;b.textContent='TRANSFER TO PHOTOS'}
+}
+
 function openViewer(a,{queue=false}={}){
  if(!authorized||!a||!a.signedUrl)return;
  const dialog=$('mfLightbox');
@@ -97,6 +146,7 @@ function openViewer(a,{queue=false}={}){
  text($('mfViewerTitle'),safe(a.caption)||safe(a.filename)||'Military photograph');
  text($('mfViewerMeta'),formatMetadata(a));
  viewerAsset=a;sortingQueue=queue;
+ $('mfTransferPhotos').disabled=transferringPhoto;$('mfTransferPhotos').textContent=transferringPhoto?'TRANSFERRING…':'TRANSFER TO PHOTOS';text($('mfTransferStatus'),'');
  $('mfQueueControls').hidden=!queue;
  $('mfMoveWrap').hidden=queue||!canSort(a);
  if(queue)text($('mfQueuePosition'),(queueIndex+1)+' / '+unsortedQueue().length+' · POSTED · NEEDS CATEGORY');
@@ -320,6 +370,7 @@ async function uploadUniforms(files){
 }
 
 function wire(){
+ $('mfTransferPhotos')?.addEventListener('click',()=>void transferToPhotos());
  $('mfUploadOpen').addEventListener('click',()=>{$('mfUploadForm').hidden=false});
  $('mfUploadClose').addEventListener('click',()=>{if(!uploading)$('mfUploadForm').hidden=true});
  $('mfUploadChoose').addEventListener('click',()=>{$('mfUploadFiles').value='';$('mfUploadFiles').click()});
