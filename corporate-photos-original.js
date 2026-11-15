@@ -12,7 +12,7 @@ async function show(){
  const stage=$('mediaStage');stage.replaceChildren();
  $('imageCounter').textContent=(index+1)+' / '+items.length;
  $('mediaPrevious').disabled=items.length<=1;$('mediaNext').disabled=items.length<=1;
- $('downloadOriginal').disabled=true;$('viewOriginal').hidden=true;
+ $('downloadOriginal').disabled=true;$('downloadOriginal').style.display=a.kind==='photo'?'none':'';$('viewOriginal').hidden=true;$('viewOriginal').style.display=a.kind==='photo'?'none':'';$('viewOriginal').removeAttribute('href');
  $('name').textContent=a.caption||a.filename;
  history.replaceState(null,'','?id='+encodeURIComponent(a.id));
  status('Loading original media…');
@@ -20,7 +20,7 @@ async function show(){
   const {data,error}=await storage.createSignedUrl(a.storage_path,300);
   if(error||!data?.signedUrl)throw Error('Original media is not accessible to this session.');
   const src=data.signedUrl;
-  $('viewOriginal').href=src;$('viewOriginal').hidden=false;
+  if(a.kind!=='photo'){$('viewOriginal').href=src;$('viewOriginal').hidden=false;}
   if(a.kind==='video'){
    const vid=document.createElement('video');vid.src=src;vid.controls=true;vid.playsInline=true;vid.preload='metadata';
    vid.addEventListener('loadedmetadata',()=>{
@@ -30,7 +30,7 @@ async function show(){
   }else{
    const img=document.createElement('img');img.src=src;img.alt=a.caption||a.filename;
    img.addEventListener('load',()=>{
-    $('imageDetails').textContent='Original photo · '+img.naturalWidth+' × '+img.naturalHeight+' pixels · '+(a.bytes/1048576).toFixed(1)+' MB · Long press to save';
+    $('imageDetails').textContent='Original photo · '+img.naturalWidth+' × '+img.naturalHeight+' pixels · '+(a.bytes/1048576).toFixed(1)+' MB · Save via Transfer to Photos';
    });
    img.addEventListener('error',()=>status('Could not load original photo. Try opening Photos again.'));
    stage.append(img);
@@ -46,7 +46,7 @@ let touchStart=0;
 $('mediaStage').addEventListener('touchstart',e=>{touchStart=e.touches[0]?.clientX||0},{passive:true});
 $('mediaStage').addEventListener('touchend',e=>{const diff=(e.changedTouches[0]?.clientX||0)-touchStart;if(Math.abs(diff)>80)move(diff<0?1:-1)},{passive:true});
 $('downloadOriginal').addEventListener('click',async()=>{
- const a=items[index];if(!a)return;
+ const a=items[index];if(!a)return;if(a.kind==='photo'){status('Use Transfer to Photos, then download from BLACKCELL Photos.');return}
  const button=$('downloadOriginal');button.disabled=true;button.textContent='PREPARING…';
  try{
   const {data,error}=await storage.download(a.storage_path);
