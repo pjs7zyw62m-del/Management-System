@@ -1,0 +1,55 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>BLACKCELL · iMessage pilot</title><style>
+:root{color-scheme:dark;font-family:system-ui,sans-serif;background:#000;color:#ececf0}*{box-sizing:border-box}body{margin:0;min-height:100dvh;display:grid;place-items:center;padding:20px}main{width:min(100%,650px);border:1px solid #333338;border-radius:24px;padding:26px;background:linear-gradient(150deg,#18181c,#080809)}small{color:#e36c7a;letter-spacing:.12em;font-weight:700}h1{font-size:24px;margin:12px 0}p{color:#b1b1bb;line-height:1.5}select,button{font:600 14px system-ui;color:white;background:#222227;border:1px solid #44444c;padding:13px 15px;border-radius:10px}select{width:100%;margin-bottom:10px}button{cursor:pointer}button.primary{background:#822336;border-color:#bb5061}button:disabled{opacity:.45;cursor:wait}.buttons{display:flex;gap:8px;flex-wrap:wrap}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#000;border:1px solid #303037;padding:16px;border-radius:12px;line-height:1.6;font-size:12px}img{display:block;max-width:100%;border-radius:10px;margin-top:12px}a{color:#aaa}</style><script src="corp-config.js" defer></script></head><body><main><small>BLACKCELL CORPORATION · PRIVATE MEDIA</small><h1>iMessage attachment pilot</h1><p>Choose an approved test contact. This sends one generated test image and a clearly labeled test message. It does not use personal photos. The recipient can open this page and select Refresh test attachments.</p><select id="peer" aria-label="Test contact" disabled><option>Loading approved contacts…</option></select><div class="buttons"><button class="primary" id="send" disabled>Send generated test image</button><button id="refresh" disabled>Refresh test attachments</button></div><pre id="result" role="status" aria-live="polite">Checking corporate session…</pre><div id="preview"></div><p>Diagnostic only. The existing iMessage interface has not switched storage yet. Test records remain until cleanup.</p><a href="blackcell-os.html">Return to OS</a></main><script type="module">
+import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261114-transport-classification';
+/* Draft direct Bunny chat transport: Supabase authorizes, Bunny delivers.
+   No storage passwords or token signing keys in this client. */
+function createChatBunnyTransport(client){
+ async function session(){
+  const {data:{session},error}=await client.auth.getSession();
+  if(error||!session?.access_token)throw Error('Sign in again to access private media.');
+  const base=String(client.supabaseUrl||'').replace(/\/$/,'');
+  const key=String(client.supabaseKey||'');
+  if(!base||!key)throw Error('Private media configuration unavailable.');
+  return {endpoint:base+'/functions/v1/blackcell-chat-bunny',token:session.access_token,key};
+ }
+ async function links(ids){
+  if(!ids.length||ids.length>4)throw Error('Invalid attachment selection.');
+  const s=await session();
+  const r=await fetch(s.endpoint+'?action=links',{method:'POST',cache:'no-store',credentials:'omit',referrerPolicy:'no-referrer',headers:{Authorization:'Bearer '+s.token,apikey:s.key,'Content-Type':'application/json'},body:JSON.stringify({ids})});
+  const d=await r.json();
+  if(!r.ok||!d.ok)throw Error(d.code||'Private media unavailable.');
+  return new Map((d.links||[]).filter(x=>ids.includes(x.id)&&/^https:\/\/[a-z0-9-]+\.b-cdn\.net\//i.test(x.signedUrl)).map(x=>[x.id,x.signedUrl]));
+ }
+ async function link(id){const url=(await links([id])).get(id);if(!url)throw Error('Attachment unavailable.');return url}
+ async function upload(file,batch,order,mime,onProgress){
+  const s=await session();
+  return new Promise((resolve,reject)=>{
+   const xhr=new XMLHttpRequest();xhr.timeout=180000;
+   xhr.open('POST',s.endpoint+'?action=upload',true);
+   xhr.setRequestHeader('Authorization','Bearer '+s.token);
+   xhr.setRequestHeader('apikey',s.key);
+   xhr.setRequestHeader('Content-Type',mime);
+   xhr.setRequestHeader('x-bc-batch',batch);
+   xhr.setRequestHeader('x-bc-order',String(order));
+   xhr.setRequestHeader('x-bc-filename',encodeURIComponent(file.name.slice(0,180)));
+   xhr.upload.onprogress=e=>{if(e.lengthComputable)onProgress?.(Math.min(file.size,e.loaded))};
+   xhr.onerror=()=>reject(Error('Media upload network error.'));
+   xhr.ontimeout=()=>reject(Error('Media upload timed out; verify the conversation before retrying.'));
+   xhr.onabort=()=>reject(Error('Media upload interrupted.'));
+   xhr.onload=()=>{try{const d=JSON.parse(xhr.responseText);if(xhr.status<200||xhr.status>=300||!d.ok||!d.record?.id||d.record.batch_id!==batch||Number(d.record.bytes)!==file.size)throw Error(d.code||'Bunny upload not confirmed.');resolve(d.record)}catch(e){reject(e)}};
+   xhr.send(file);
+  });
+ }
+ return {link,links,upload};
+}
+
+const peer=document.getElementById('peer'),send=document.getElementById('send'),refresh=document.getElementById('refresh'),out=document.getElementById('result'),preview=document.getElementById('preview');let db,transport,self,peers=[],busy=false;
+const name='BLACKCELL-BUNNY-PILOT-v1.png';
+function lock(v){busy=v;send.disabled=v||!peers.length;refresh.disabled=v;peer.disabled=v||!peers.length}
+function err(e){return String(e?.message||e||'Unknown error').slice(0,250)}
+async function display(row){const u=await transport.link(row.id);const parsed=new URL(u);if(parsed.origin!=='https://blackcell-private-chat.b-cdn.net')throw Error('Unexpected delivery hostname');const r=await fetch(u,{cache:'no-store',credentials:'omit',referrerPolicy:'no-referrer'});if(!r.ok)throw Error('CDN HTTP '+r.status);const blob=await r.blob();if(blob.size!==Number(row.bytes))throw Error('CDN byte count mismatch');const bitmap=await createImageBitmap(blob);try{if(bitmap.width!==640||bitmap.height!==360)throw Error('Unexpected test image dimensions')}finally{bitmap.close()}const old=preview.querySelector('img');if(old?.src.startsWith('blob:'))URL.revokeObjectURL(old.src);const img=document.createElement('img');img.alt='BLACKCELL generated test image';img.src=URL.createObjectURL(blob);preview.replaceChildren(img);const unsigned=await fetch(parsed.origin+parsed.pathname,{cache:'no-store',credentials:'omit',referrerPolicy:'no-referrer'}).then(x=>x.status).catch(()=>0);if(unsigned!==403&&unsigned!==401&&unsigned!==0)throw Error('Unexpected unsigned CDN response '+unsigned);return 'SIGNED CDN DOWNLOAD: PASS\nIMAGE DECODE AND SIZE: PASS\nUNSIGNED ACCESS: '+(unsigned===0?'BLOCKED BY BROWSER (server check previously passed)':'DENIED '+unsigned)}
+async function generate(){const canvas=document.createElement('canvas');canvas.width=640;canvas.height=360;const ctx=canvas.getContext('2d');ctx.fillStyle='#0b0b0e';ctx.fillRect(0,0,640,360);ctx.fillStyle='#a32d40';ctx.fillRect(0,0,640,9);ctx.textAlign='center';ctx.fillStyle='#f1f1f6';ctx.font='bold 34px sans-serif';ctx.fillText('BLACKCELL',320,152);ctx.font='18px sans-serif';ctx.fillText('PRIVATE MEDIA CONNECTION TEST',320,190);ctx.fillStyle='#a2a2ad';ctx.font='14px sans-serif';ctx.fillText('GENERATED TEST IMAGE — NO PERSONAL DATA',320,245);const b=await new Promise(r=>canvas.toBlob(r,'image/png'));if(!b)throw Error('Image generation failed');return new File([b],name,{type:'image/png'})}
+send.addEventListener('click',async()=>{if(busy||!peers.some(p=>p.user_id===peer.value))return;lock(true);const receiver=peer.value;try{out.textContent='Creating a test attachment…';const f=await generate(),id=crypto.randomUUID();const {error}=await db.from('corp_chat_media_batches').insert({id,sender_id:self,recipient_id:receiver});if(error)throw error;const row=await transport.upload(f,id,0,'image/png',n=>out.textContent='Uploading generated image: '+Math.round(n/f.size*100)+'%');out.textContent='UPLOAD AND METADATA: PASS\nChecking delivered file…';const checks=await display(row);const {error:me}=await db.from('corp_chat_messages').insert({sender_id:self,recipient_id:receiver,body:'BLACKCELL — private Bunny attachment pilot (generated test image; open the pilot page to view)',media_batch_id:id});if(me)throw Error('Upload passed; test notification failed: '+me.message);out.textContent='PASS — SENDER TEST\n\nUPLOAD AND METADATA: PASS\n'+checks+'\nCHAT NOTIFICATION: PASS\n\nRecipient must open this same pilot page and refresh.'}catch(e){out.textContent='REVIEW REQUIRED — '+err(e)+'\nDo not repeat until the test record has been checked.'}finally{lock(false)}});
+refresh.addEventListener('click',async()=>{if(busy)return;lock(true);try{out.textContent='Checking test attachments…';const {data,error}=await db.from('corp_chat_media_items').select('id,sender_id,recipient_id,bytes,created_at').eq('filename',name).eq('recipient_id',self).order('created_at',{ascending:false}).limit(1);if(error)throw error;if(!data?.length){out.textContent='No incoming pilot attachment yet. Ask the selected sender to send one.';return}const checks=await display(data[0]);out.textContent='PASS — RECEIVER TEST\n\nPARTICIPANT ACCESS: PASS\n'+checks}catch(e){out.textContent='REVIEW REQUIRED — '+err(e)}finally{lock(false)}});
+try{db=corporateClient();const a=await corporateAuthorize(db);if(!a.ok)throw Error('Sign in through Corporate Access, then reopen this page.');self=a.user.id;const {data,error}=await db.rpc('corp_chat_peers');if(error||data?.ok!==true||!Array.isArray(data.peers))throw Error('Authorized chat contacts could not be loaded. Complete corporate verification first.');peers=data.peers.filter(p=>p.user_id!==self);transport=createChatBunnyTransport(db);peer.replaceChildren();for(const p of peers){const opt=document.createElement('option');opt.value=p.user_id;opt.textContent=p.display_name||p.username||'Authorized contact';peer.append(opt)}if(!peers.length){const opt=document.createElement('option');opt.textContent='No approved contacts';peer.append(opt)}lock(false);out.textContent='Ready. Select a test contact, or refresh to receive a test attachment.'}catch(e){out.textContent='REVIEW REQUIRED — '+err(e)}
+</script></body></html>
