@@ -82,9 +82,9 @@ async function finishBoot(){
  }
  stopBootProgress();
  if(!preview&&(!active||leaving||$('gate').dataset.state!=='boot'))return false;
- bootComplete=true;$('gate').hidden=true;if(!workspaceLock?.isLocked())$('desktop').hidden=false;return true;
+ bootComplete=true;$('gate').hidden=true;if(!workspaceLock?.isLocked())$('desktop').hidden=false;applyAppLayout();return true;
 }
-function setupWorkspaceLock(){if(workspaceLock)return;workspaceLock=createWorkspaceLock({host:$('desktop'),preview,account:()=>({id:storeProfile,name:$('memberName').textContent,initials:$('initials').textContent}),usable:()=>!leaving&&(active||preview),verify:async secret=>{const verified=await verifyWorkspacePassword(client,storeProfile,secret);if(!verified.ok)return verified;const result=await corporateAuthorize(client,{allowLedgerOnly:true});if(!result.ok||result.user.id!==storeProfile||!memberAllowed(result.member)||(!owner&&result.member.access_scope==='ledger_only'))return {ok:false,message:'Corporate session has expired. Sign Out and authenticate again.'};const {data,error}=await client.rpc(owner?'corp_code_status':'corp_employee_code_status');if(error||data?.ok!==true||data?.verified!==true)return {ok:false,message:'Corporate security verification expired. Sign Out and authenticate again.'};return {ok:true}},onLock:()=>{securityNotifications?.pause();finishAppRearrange();cancelAppHold();closeAppContext();closeMenu();dockReveal(false);saveWorkspace();for(const r of windows.values()){if(r.frame)pauseFrameMedia(r.frame);for(const media of r.el.querySelectorAll('video,audio'))try{media.pause()}catch(_){}}},onUnlock:()=>{last=Date.now();if(bootComplete)$('desktop').hidden=false;void activity();void recheck();void securityNotifications?.refresh()},onSignOut:()=>void signOut()});}
+function setupWorkspaceLock(){if(workspaceLock)return;workspaceLock=createWorkspaceLock({host:$('desktop'),preview,account:()=>({id:storeProfile,name:$('memberName').textContent,initials:$('initials').textContent}),usable:()=>!leaving&&(active||preview),verify:async secret=>{const verified=await verifyWorkspacePassword(client,storeProfile,secret);if(!verified.ok)return verified;const result=await corporateAuthorize(client,{allowLedgerOnly:true});if(!result.ok||result.user.id!==storeProfile||!memberAllowed(result.member)||(!owner&&result.member.access_scope==='ledger_only'))return {ok:false,message:'Corporate session has expired. Sign Out and authenticate again.'};const {data,error}=await client.rpc(owner?'corp_code_status':'corp_employee_code_status');if(error||data?.ok!==true||data?.verified!==true)return {ok:false,message:'Corporate security verification expired. Sign Out and authenticate again.'};return {ok:true}},onLock:()=>{securityNotifications?.pause();closeRecycleBin();finishAppRearrange();cancelAppHold();closeAppContext();closeMenu();dockReveal(false);saveWorkspace();for(const r of windows.values()){if(r.frame)pauseFrameMedia(r.frame);for(const media of r.el.querySelectorAll('video,audio'))try{media.pause()}catch(_){}}},onUnlock:()=>{last=Date.now();if(bootComplete)$('desktop').hidden=false;applyAppLayout();void activity();void recheck();void securityNotifications?.refresh()},onSignOut:()=>void signOut()});}
 function lockWorkspace(mode='lock'){if(!workspaceLock||workspaceLock.isLocked())return;workspaceLock.lock(mode);}
 function restartWorkspace(){if(!active&&!preview)return;if([...windows.values()].some(appBusy)){osNotice('Finish active operations before restarting.');return}if(!confirm('Restart BLACKCELL OS? Save unsaved work first. Your window layout will be restored.'))return;saveWorkspace();location.reload();}
 const dockDefaults=new Set([...document.querySelectorAll('.dock [data-open]')].map(b=>b.dataset.open));
@@ -176,6 +176,7 @@ function syncStore(){
  }
  if(appDrag&&(appDrag.tile.hidden||appDrag.target?.hidden))cancelAppDrag();
  applyAppLayout();
+ if(recyclePanel)renderRecycleBin();
  $('adminReturn').hidden=!installedApp('administration');
  renderFolderPins();windows.get('settings')?.refreshSettings?.();
 }
@@ -222,7 +223,7 @@ async function setStoreRule(id,level,enabled){if(!storeAdmin||preview)return {ok
 function hostMessage(type){if(embeddedAdmin)window.parent.postMessage({type},location.origin)}
 function returnAdmin(){if(owner||preview)showApp('administration')}
 function clock(){ $('clock').textContent=new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}); }clock();setInterval(clock,15000);
-function blocked(message){finishAppRearrange();cancelAppHold();closeAppContext();stopBootProgress();workspaceLock?.dismiss();$('gate').dataset.state='blocked';stopStorageWidget();securityNotifications?.dispose();securityNotifications=null;clearWorkspace();active=false;closeAll(true);$('desktop').hidden=true;$('gate').hidden=false;$('gateMessage').textContent=message;$('gateLink').hidden=false;hostMessage('blackcell-os-blocked');}
+function blocked(message){closeRecycleBin();finishAppRearrange();cancelAppHold();closeAppContext();stopBootProgress();workspaceLock?.dismiss();$('gate').dataset.state='blocked';stopStorageWidget();securityNotifications?.dispose();securityNotifications=null;clearWorkspace();active=false;closeAll(true);$('desktop').hidden=true;$('gate').hidden=false;$('gateMessage').textContent=message;$('gateLink').hidden=false;hostMessage('blackcell-os-blocked');}
 const windows=new Map();let layer=25,selectedWindow=null;
 let workspaceReady=false,workspaceRestoring=false,pendingRestore=[];
 function workspaceKey(){return 'bc.os.workspace.v1:'+String(storeProfile||'preview')+':'+(embeddedAdmin?'executive':'desktop')}
@@ -286,7 +287,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu()});
 function markDock(id,on){document.querySelector('[data-open="'+id+'"]')?.classList.toggle('is-running',on)}
 function syncStoreUpdateHold(){const r=windows.get('store');if(!r)return;const needed=!r.el.hidden||r.storeBusy;if(needed&&!r.updateHold&&!preview){try{r.updateHold=window.top.BLACKCELL_LIVE_UPDATE?.hold('App Store workspace',window)}catch(_){}}else if(!needed&&r.updateHold){r.updateHold();r.updateHold=null}}
 function raise(r){if(r.closing)r.reopened=true;r.suspended=false;r.el.hidden=false;r.el.style.zIndex=String(++layer);selectedWindow=r;markDock(r.id,true);syncStoreUpdateHold();saveWorkspace()}
-function showDesktop(){for(const r of windows.values())r.el.hidden=true;selectedWindow=null;syncStoreUpdateHold();saveWorkspace()}
+function showDesktop(){closeRecycleBin();for(const r of windows.values())r.el.hidden=true;selectedWindow=null;syncStoreUpdateHold();saveWorkspace()}
 function dispose(r,force=false){if(!force){void requestClose(r);return;}r.updateHold?.();r.updateHold=null;r.cleanup?.();r.frame?.remove();r.el.remove();r.release?.();windows.delete(r.id);markDock(r.id,false);if(selectedWindow===r)selectedWindow=null;saveWorkspace()}
 function osNotice(message){let n=$('osCloseNotice');if(!n){n=document.createElement('div');n.id='osCloseNotice';n.className='os-close-notice';n.setAttribute('role','status');$('desktop').append(n)}n.textContent=message;n.hidden=false;clearTimeout(osNotice.timer);osNotice.timer=setTimeout(()=>{n.hidden=true},6000)}
 function suspend(r){r.el.hidden=true;r.suspended=true;markDock(r.id,false);if(selectedWindow===r)selectedWindow=null;syncStoreUpdateHold();saveWorkspace()}
@@ -334,7 +335,7 @@ $('desktop').addEventListener('drop',e=>{if(isDesktopDrop(e)){e.preventDefault()
 window.addEventListener('dragend',endFolderDrag);
 
 function showApp(id,initialState=null){
- finishAppRearrange();closeAppContext();if(!active&&!preview)return;if(id==='administration'&&!owner&&!preview)return;
+ closeRecycleBin();finishAppRearrange();closeAppContext();if(!active&&!preview)return;if(id==='administration'&&!owner&&!preview)return;
  if(!preview&&!installedApp(id))return;
  const tile=document.querySelector('.app[data-app="'+id+'"]');if(!tile||tile.hidden||tile.disabled)return;
  if(windows.has(id)){const existing=windows.get(id);raise(existing);if(id==='settings'&&initialState?.section)existing.selectSettings?.(initialState.section);if(id==='store'){if(initialState?.category)existing.selectCategory?.(initialState.category);if(!preview&&!storeMutating)void storeRequest('catalog').then(()=>existing.refreshStore?.())}return}
@@ -373,7 +374,8 @@ function openAppContext(tile,x,y,trigger=tile){
  const name=document.createElement('strong');name.textContent=tile.dataset.title;panel.append(name);
  const item=(label,fn,cls='')=>{const btn=document.createElement('button');btn.type='button';btn.className=cls;btn.textContent=label;btn.onclick=()=>{closeAppContext();if(contextAllowed())fn()};panel.append(btn);return btn};
  item(pinned?'Remove from Dock':'Add to Dock',()=>setDockPin(id,!pinned));
- item('Rearrange Apps',()=>startAppRearrange(tile));
+ if(recycledApps.has(id))item('Restore Desktop Shortcut',()=>restoreRecycled(id));
+ else{item('Rearrange Apps',()=>startAppRearrange(tile));item('Move to Recycle Bin',()=>recycleApp(tile));}
  if(removable)item('Uninstall',()=>{if(confirm('Uninstall '+tile.dataset.title+'? Your app data will be kept.'))void uninstallFromDesktop(id,tile.dataset.title)},'danger');
  else{const note=document.createElement('small');note.textContent='App Store cannot be uninstalled';panel.append(note)}
  $('desktop').append(panel);appContext=panel;
@@ -392,82 +394,147 @@ function contextSource(target){
  const id=trigger.dataset.app||trigger.dataset.open,tile=document.querySelector('.app[data-app="'+id+'"]');
  if(!tile||tile.hidden||tile.disabled||!installedApp(id))return null;return {trigger,tile}
 }
-/* Layout preferences are presentation-only: server catalog remains authoritative. */
-let appLayout=[],appRearranging=false,appDrag=null,appEditBar=null,appLayoutRelease=null;
+/* Desktop placement and Recycle Bin are local shortcut preferences only.
+   Neither operation uninstalls apps, grants access, nor deletes user data. */
+let appLayout=[],appPositions=new Map(),recycledApps=new Set(),appRearranging=false,appDrag=null,appEditBar=null,appLayoutRelease=null,recycleButton=null,recyclePanel=null,layoutFrame=0,layoutObserver=null,layoutObserved=false,canvasGeometry=null;
 const appGrid=()=>document.querySelector('#desktop .workspace .apps');
-function layoutKey(){return 'bc.os.app-layout.v1:'+String(storeProfile)}
-function readAppLayout(){appLayout=[];if(!storeProfile)return;for(const {store} of preferenceStores())try{const data=JSON.parse(store.getItem(layoutKey())||'null');if(!Array.isArray(data))continue;appLayout=[...new Set(data.filter(x=>typeof x==='string'&&/^[a-z][a-z0-9_-]{0,63}$/.test(x)))].slice(0,250);break}catch(_){}}
+const validAppId=id=>typeof id==='string'&&/^[a-z][a-z0-9_-]{0,63}$/.test(id);
+const clampUnit=x=>Math.max(0,Math.min(1,x));
+function layoutKey(){return 'bc.os.app-layout.v2:'+String(storeProfile)}
+function readAppLayout(){
+ appLayout=[];appPositions=new Map();recycledApps=new Set();if(!storeProfile)return;
+ for(const {store} of preferenceStores())try{
+  const data=JSON.parse(store.getItem(layoutKey())||'null');
+  if(data&&typeof data==='object'&&!Array.isArray(data)){
+   appLayout=Array.isArray(data.order)?[...new Set(data.order.filter(validAppId))].slice(0,250):[];
+   if(Array.isArray(data.positions))appPositions=new Map(data.positions.slice(0,250).filter(p=>Array.isArray(p)&&validAppId(p[0])&&p[1]&&Number.isFinite(p[1].x)&&Number.isFinite(p[1].y)).map(([id,p])=>[id,{x:clampUnit(p.x),y:clampUnit(p.y)}]));
+   if(Array.isArray(data.recycled))recycledApps=new Set(data.recycled.filter(validAppId).slice(0,250));return;
+  }
+  const old=JSON.parse(store.getItem('bc.os.app-layout.v1:'+String(storeProfile))||'null');if(Array.isArray(old))appLayout=[...new Set(old.filter(validAppId))].slice(0,250);
+ }catch(_){}
+}
 function orderedAppIds(current,preferred){const available=new Set(current);return [...new Set([...preferred.filter(id=>available.has(id)),...current])]}
-function moveAppIds(current,visible,from,to){
- const list=visible.slice(),a=list.indexOf(from),b=list.indexOf(to);
- if(a<0||b<0||a===b)return current.slice();
- list.splice(a,1);list.splice(b,0,from);
- const set=new Set(visible);let i=0;return current.map(id=>set.has(id)?list[i++]:id);
+function overlaps(a,b,gap=0){return a.x<b.x+b.w+gap&&a.x+a.w+gap>b.x&&a.y<b.y+b.h+gap&&a.y+a.h+gap>b.y}
+function findAppSpot(w,h,iw,ih,desired,blocked){
+ const maxX=Math.max(0,w-iw),maxY=Math.max(0,h-ih),fit=(x,y)=>({x:Math.max(0,Math.min(maxX,x)),y:Math.max(0,Math.min(maxY,y)),w:iw,h:ih});
+ const legal=r=>!blocked.some(b=>overlaps(r,b,3));
+ const want=desired?fit(desired.x,desired.y):null;if(want&&legal(want))return want;
+ const candidates=[];for(let y=0;y<=maxY+1;y+=ih+8)for(let x=0;x<=maxX+1;x+=iw+8)candidates.push(fit(x,y));
+ for(const b of blocked){if(want){candidates.push(fit(b.x-iw-4,want.y),fit(b.x+b.w+4,want.y),fit(want.x,b.y-ih-4),fit(want.x,b.y+b.h+4))}}
+ if(want)candidates.sort((a,b)=>(a.x-want.x)**2+(a.y-want.y)**2-((b.x-want.x)**2+(b.y-want.y)**2));
+ return candidates.find(legal)||null;
+}
+function ensureRecycleButton(grid){
+ if(recycleButton?.isConnected)return recycleButton;
+ const btn=document.createElement('button');btn.type='button';btn.className='bc-recycle-shortcut';btn.setAttribute('aria-label','Open Recycle Bin');
+ const icon=document.createElement('span');icon.className='bc-recycle-icon';const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 48 48');svg.setAttribute('aria-hidden','true');
+ const path=document.createElementNS(ns,'path');path.setAttribute('d','M13 14H35L32 40H16Z M10 11H38 M19 11V7H29V11 M21 20V33 M27 20V33');path.setAttribute('fill','none');path.setAttribute('stroke','currentColor');path.setAttribute('stroke-width','2.2');path.setAttribute('stroke-linecap','round');path.setAttribute('stroke-linejoin','round');svg.append(path);icon.append(svg);
+ const name=document.createElement('span');name.textContent='Recycle Bin';name.className='bc-recycle-name';const count=document.createElement('small');count.className='bc-recycle-count';count.hidden=true;
+ btn.append(icon,name,count);btn.onclick=()=>{if(contextAllowed())openRecycleBin()};grid.append(btn);recycleButton=btn;return btn;
+}
+function visibleLayoutTiles(){return [...(appGrid()?.querySelectorAll(':scope > .app[data-app]')||[])].filter(t=>!t.hidden&&!t.disabled&&!recycledApps.has(t.dataset.app)&&installedApp(t.dataset.app))}
+function refreshRecycleCount(){
+ if(!recycleButton)return;const count=[...recycledApps].filter(installedApp).length;const label=recycleButton.querySelector('.bc-recycle-count');label.textContent=String(count);label.hidden=count===0;recycleButton.dataset.full=String(count>0);
 }
 function applyAppLayout(){
- if(appDrag)return;
- const grid=appGrid();if(!grid)return;const tiles=[...grid.querySelectorAll(':scope > .app[data-app]')],ids=tiles.map(t=>t.dataset.app),order=orderedAppIds(ids,appLayout);
- if(ids.every((id,i)=>id===order[i]))return;
- const byId=new Map(tiles.map(t=>[t.dataset.app,t]));const focused=document.activeElement;
- for(const id of order)grid.append(byId.get(id));
- if(tiles.includes(focused))focused.focus({preventScroll:true});
+ if(preview||!storeProfile||appDrag)return;
+ const grid=appGrid();if(!grid)return;for(const tile of grid.querySelectorAll(':scope > .app[data-app]'))tile.classList.toggle('bc-recycled-shortcut',recycledApps.has(tile.dataset.app));
+ if(!layoutFrame)layoutFrame=requestAnimationFrame(()=>{layoutFrame=0;renderFreeLayout()});
+}
+function renderFreeLayout(){
+ if(preview||!active||leaving||workspaceLock?.isLocked()||$('desktop').hidden||appDrag)return;
+ const grid=appGrid(),workspace=$('desktop').querySelector('.workspace');if(!grid||!workspace||!grid.getClientRects().length)return;
+ const all=[...grid.querySelectorAll(':scope > .app[data-app]')],ids=all.map(t=>t.dataset.app),order=orderedAppIds(ids,appLayout);
+ const byId=new Map(all.map(t=>[t.dataset.app,t]));const focused=document.activeElement;
+ if(!ids.every((id,i)=>id===order[i])){for(const id of order)grid.append(byId.get(id));if(all.includes(focused))focused.focus({preventScroll:true})}
+ const bin=ensureRecycleButton(grid);refreshRecycleCount();grid.classList.add('bc-free-app-canvas');
+ const wr=workspace.getBoundingClientRect(),gr=grid.getBoundingClientRect(),pad=parseFloat(getComputedStyle(workspace).paddingRight)||12;
+ const width=Math.max(80,Math.floor(wr.right-gr.left-pad));const iw=touchOS()?88:100,ih=touchOS()?96:100;
+ grid.style.width=width+'px';grid.style.setProperty('--bc-free-icon-width',iw+'px');
+ const visible=visibleLayoutTiles(),side=workspace.querySelector('.bc-system-panel'),sr=side?.getBoundingClientRect();
+ let height=Math.max(ih+8,Math.floor(wr.bottom-gr.top-workspace.scrollTop-(parseFloat(getComputedStyle(workspace).paddingBottom)||12)));
+ const obstacles=[];if(sr&&sr.width&&sr.height&&sr.bottom>gr.top&&sr.right>gr.left&&sr.left<gr.left+width)obstacles.push({x:Math.max(0,sr.left-gr.left-8),y:Math.max(0,sr.top-gr.top-8),w:sr.right-Math.max(gr.left,sr.left-8)+8,h:sr.bottom-Math.max(gr.top,sr.top-8)+8});
+ const minCols=Math.max(1,Math.floor((width+8)/(iw+8)));height=Math.max(height,Math.ceil((visible.length+1)/minCols)*(ih+8));
+ let placed=null,binRect=null;for(let pass=0;pass<25;pass++){
+  binRect={x:Math.max(0,width-iw),y:Math.max(0,height-ih),w:iw,h:ih};
+  if(obstacles.some(o=>overlaps(binRect,o,4))){height+=ih+8;continue}
+  const taken=[...obstacles,binRect],positions=new Map();
+  const custom=visible.filter(t=>appPositions.has(t.dataset.app)),defaults=visible.filter(t=>!appPositions.has(t.dataset.app));let failed=false;
+  for(const tile of [...custom,...defaults]){
+   const p=appPositions.get(tile.dataset.app),desired=p?{x:p.x*Math.max(0,width-iw),y:p.y*Math.max(0,height-ih)}:null;
+   const spot=findAppSpot(width,height,iw,ih,desired,taken);if(!spot){failed=true;break}taken.push(spot);positions.set(tile,spot);
+  }
+  if(!failed){placed=positions;break}height+=ih+8;
+ }
+ if(!placed){grid.classList.remove('bc-free-app-canvas');grid.style.removeProperty('width');grid.style.removeProperty('height');for(const tile of all){tile.style.removeProperty('left');tile.style.removeProperty('top')}canvasGeometry=null;return}
+ grid.style.height=height+'px';for(const [tile,p] of placed){tile.style.left=p.x+'px';tile.style.top=p.y+'px'}
+ bin.style.left=binRect.x+'px';bin.style.top=binRect.y+'px';canvasGeometry={width,height,iw,ih,obstacles,binRect,placed};
+ if(!layoutObserved&&typeof ResizeObserver==='function'){layoutObserved=true;layoutObserver=new ResizeObserver(()=>applyAppLayout());layoutObserver.observe(workspace);if(side)layoutObserver.observe(side)}
 }
 function saveAppLayout(){
- if(!contextAllowed()||!storeProfile)return false;const record=JSON.stringify(appLayout);let saved=false;
+ if(!contextAllowed()||!storeProfile)return false;const record=JSON.stringify({order:appLayout,positions:[...appPositions],recycled:[...recycledApps]});let saved=false;
  for(const {name,store} of preferenceStores())try{store.setItem(layoutKey(),record);if(name==='localStorage'&&store.getItem(layoutKey())===record)saved=true}catch(_){}
- if(!saved)osNotice('Layout updated for this session. Persistent device storage is unavailable.');return saved;
+ if(!saved)osNotice('Layout changed for this session. Persistent device storage is unavailable.');return saved;
 }
-function visibleLayoutTiles(){return [...(appGrid()?.querySelectorAll(':scope > .app[data-app]')||[])].filter(t=>!t.hidden&&!t.disabled&&installedApp(t.dataset.app))}
-function reorderApp(tile,target){
- if(!appRearranging||!contextAllowed()||!tile||!target||tile===target)return;
- const grid=appGrid();if(!grid)return;const visible=visibleLayoutTiles(),ids=[...grid.querySelectorAll(':scope > .app[data-app]')].map(t=>t.dataset.app);
- if(!visible.includes(tile)||!visible.includes(target))return;
- const next=moveAppIds(ids,visible.map(t=>t.dataset.app),tile.dataset.app,target.dataset.app);
- if(next.every((id,i)=>id===ids[i]))return;
- // Retain preferences for currently unavailable/newly registered applications.
- appLayout=[...next,...appLayout.filter(id=>!ids.includes(id))];applyAppLayout();saveAppLayout();
- if(appEditBar)appEditBar.querySelector('.bc-rearrange-status').textContent=tile.dataset.title+' moved to position '+(visibleLayoutTiles().indexOf(tile)+1)+'.';
+function rememberVisiblePositions(){
+ const g=canvasGeometry;if(!g)return;
+ for(const [tile,p] of g.placed)if(!tile.hidden&&installedApp(tile.dataset.app))appPositions.set(tile.dataset.app,{x:p.x/Math.max(1,g.width-g.iw),y:p.y/Math.max(1,g.height-g.ih)});
+}
+function recycleApp(tile){
+ if(!contextAllowed()||!tile||tile.hidden||!installedApp(tile.dataset.app)||recycledApps.has(tile.dataset.app))return;
+ rememberVisiblePositions();recycledApps.add(tile.dataset.app);saveAppLayout();applyAppLayout();osNotice(tile.dataset.title+' shortcut moved to Recycle Bin. App and data kept.');
+}
+function restoreRecycled(id){
+ if(!contextAllowed()||!installedApp(id)||!recycledApps.has(id))return;
+ recycledApps.delete(id);saveAppLayout();applyAppLayout();if(recyclePanel)renderRecycleBin();osNotice('Desktop shortcut restored.');
+}
+function closeRecycleBin(){if(recyclePanel){recyclePanel.remove();recyclePanel=null}}
+function renderRecycleBin(){
+ if(!recyclePanel)return;const list=recyclePanel.querySelector('.bc-recycle-list');list.replaceChildren();
+ const ids=[...recycledApps].filter(installedApp);if(!ids.length){const p=document.createElement('p');p.textContent='Recycle Bin is empty.';list.append(p);return}
+ for(const id of ids){const tile=document.querySelector('.app[data-app="'+id+'"]');if(!tile||tile.hidden)continue;const row=document.createElement('div');row.className='bc-recycle-row';const label=document.createElement('strong');label.textContent=tile.dataset.title;const restore=document.createElement('button');restore.type='button';restore.textContent='Restore';restore.onclick=()=>restoreRecycled(id);row.append(label,restore);list.append(row)}
+}
+function openRecycleBin(){
+ if(!contextAllowed())return;finishAppRearrange();closeAppContext();closeRecycleBin();
+ const panel=document.createElement('section');panel.className='bc-recycle-panel';panel.setAttribute('role','dialog');panel.setAttribute('aria-label','Recycle Bin');
+ const head=document.createElement('header'),title=document.createElement('strong'),close=document.createElement('button');title.textContent='Recycle Bin';close.type='button';close.textContent='Close';close.onclick=closeRecycleBin;head.append(title,close);
+ const note=document.createElement('p');note.textContent='Removed desktop shortcuts appear here. Your apps and files are not deleted.';
+ const list=document.createElement('div');list.className='bc-recycle-list';panel.append(head,note,list);$('desktop').append(panel);recyclePanel=panel;renderRecycleBin();close.focus({preventScroll:true})
 }
 function startAppRearrange(tile){
- if(!contextAllowed()||appRearranging||visibleLayoutTiles().length<2)return;
- closeAppContext();cancelAppHold();showDesktop();dockReveal(false);
- const grid=appGrid();if(!grid)return;
+ if(!contextAllowed()||appRearranging||!visibleLayoutTiles().length)return;
+ closeAppContext();cancelAppHold();showDesktop();dockReveal(false);const grid=appGrid();if(!grid)return;
  appRearranging=true;grid.classList.add('bc-app-rearranging');
- const bar=document.createElement('div');bar.className='bc-app-rearrange-bar';const label=document.createElement('div');label.className='bc-rearrange-status';label.setAttribute('role','status');label.textContent='Drag apps into your preferred order.';
- const done=document.createElement('button');done.type='button';done.textContent='Done';done.onclick=()=>finishAppRearrange(true);
- bar.append(label,done);grid.parentElement.insertBefore(bar,grid);appEditBar=bar;
+ const bar=document.createElement('div');bar.className='bc-app-rearrange-bar';const label=document.createElement('div');label.className='bc-rearrange-status';label.setAttribute('role','status');label.textContent='Drag anywhere on the desktop or into Recycle Bin.';
+ const done=document.createElement('button');done.type='button';done.textContent='Done';done.onclick=()=>finishAppRearrange(true);bar.append(label,done);grid.parentElement.insertBefore(bar,grid);appEditBar=bar;
  try{appLayoutRelease=window.BLACKCELL_LIVE_UPDATE?.hold('Rearranging applications')}catch(_){}
- if(tile&&!tile.hidden)tile.focus({preventScroll:true});
+ renderFreeLayout();if(tile&&!tile.hidden&&!recycledApps.has(tile.dataset.app))tile.focus({preventScroll:true});
 }
 function cancelAppDrag(){
- if(!appDrag)return;const drag=appDrag;appDrag=null;drag.ghost?.remove();drag.tile.classList.remove('bc-app-dragging');drag.target?.classList.remove('bc-app-drop-target');
- try{if(drag.grid.hasPointerCapture(drag.id))drag.grid.releasePointerCapture(drag.id)}catch(_){}
+ if(!appDrag)return;const drag=appDrag;appDrag=null;drag.ghost?.remove();drag.tile.classList.remove('bc-app-dragging');recycleButton?.classList.remove('bc-recycle-drop');try{if(drag.grid.hasPointerCapture(drag.id))drag.grid.releasePointerCapture(drag.id)}catch(_){}
 }
 function finishAppRearrange(notify=false){
- if(!appRearranging)return;cancelAppDrag();appRearranging=false;appGrid()?.classList.remove('bc-app-rearranging');appEditBar?.remove();appEditBar=null;appLayoutRelease?.();appLayoutRelease=null;
- if(notify&&contextAllowed())osNotice('Application layout updated.');
+ if(!appRearranging)return;cancelAppDrag();appRearranging=false;appGrid()?.classList.remove('bc-app-rearranging');appEditBar?.remove();appEditBar=null;appLayoutRelease?.();appLayoutRelease=null;applyAppLayout();if(notify&&contextAllowed())osNotice('Desktop layout updated.');
 }
 function beginAppDrag(e){
- if(!appRearranging||!contextAllowed()||!e.isPrimary||e.button!==0)return;
- const tile=e.target.closest?.('.bc-app-rearranging > .app[data-app]');if(!tile||!visibleLayoutTiles().includes(tile))return;
- e.preventDefault();cancelAppDrag();const grid=appGrid();appDrag={grid,tile,id:e.pointerId,x:e.clientX,y:e.clientY,target:null,ghost:null};try{grid.setPointerCapture(e.pointerId)}catch(_){}
+ if(!appRearranging||!contextAllowed()||!e.isPrimary||e.button!==0)return;const tile=e.target.closest?.('.bc-app-rearranging > .app[data-app]');if(!tile||!visibleLayoutTiles().includes(tile)||!canvasGeometry)return;
+ e.preventDefault();cancelAppDrag();const grid=appGrid();appDrag={grid,tile,id:e.pointerId,x:e.clientX,y:e.clientY,ghost:null,bin:false};try{grid.setPointerCapture(e.pointerId)}catch(_){}
 }
 function updateAppDrag(e){
- const d=appDrag;if(!d||d.id!==e.pointerId)return;if(!contextAllowed()||d.tile.hidden){cancelAppDrag();return}
- if(!d.ghost&&Math.hypot(e.clientX-d.x,e.clientY-d.y)<7)return;
- if(e.cancelable)e.preventDefault();
- if(!d.ghost){
-  const ghost=document.createElement('div');ghost.className='bc-app-drag-ghost';ghost.setAttribute('aria-hidden','true');const icon=d.tile.querySelector('.app-icon'),name=d.tile.querySelector('.app-name');if(icon)ghost.append(icon.cloneNode(true));if(name)ghost.append(name.cloneNode(true));document.body.append(ghost);d.ghost=ghost;d.tile.classList.add('bc-app-dragging');
- }
- d.ghost.style.left=e.clientX+'px';d.ghost.style.top=e.clientY+'px';
- const hit=document.elementFromPoint(e.clientX,e.clientY),candidate=hit?.closest?.('.bc-app-rearranging > .app[data-app]'),visible=visibleLayoutTiles();
- let target=visible.includes(candidate)?candidate:null;
- if(!target){const bounds=d.grid.getBoundingClientRect();if(e.clientX>=bounds.left&&e.clientX<=bounds.right&&e.clientY>=bounds.top&&e.clientY<=bounds.bottom){target=visible.reduce((best,tile)=>{const r=tile.getBoundingClientRect(),dist=Math.hypot(e.clientX-(r.left+r.width/2),e.clientY-(r.top+r.height/2));return !best||dist<best.dist?{tile,dist}:best},null)?.tile||null}}
- if(target===d.tile)target=null;
- if(target!==d.target){d.target?.classList.remove('bc-app-drop-target');d.target=target;target?.classList.add('bc-app-drop-target')}
+ const d=appDrag;if(!d||d.id!==e.pointerId)return;if(!contextAllowed()||d.tile.hidden||recycledApps.has(d.tile.dataset.app)){cancelAppDrag();return}
+ if(!d.ghost&&Math.hypot(e.clientX-d.x,e.clientY-d.y)<7)return;if(e.cancelable)e.preventDefault();
+ if(!d.ghost){const ghost=document.createElement('div');ghost.className='bc-app-drag-ghost';ghost.setAttribute('aria-hidden','true');const icon=d.tile.querySelector('.app-icon'),name=d.tile.querySelector('.app-name');if(icon)ghost.append(icon.cloneNode(true));if(name)ghost.append(name.cloneNode(true));document.body.append(ghost);d.ghost=ghost;d.tile.classList.add('bc-app-dragging')}
+ d.ghost.style.left=e.clientX+'px';d.ghost.style.top=e.clientY+'px';const r=recycleButton?.getBoundingClientRect();d.bin=!!r&&e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom;recycleButton?.classList.toggle('bc-recycle-drop',d.bin);
+ const ws=$('desktop').querySelector('.workspace'),wr=ws.getBoundingClientRect();if(e.clientY>wr.bottom-38)ws.scrollTop+=18;else if(e.clientY<wr.top+38)ws.scrollTop-=18;
+}
+function placeApp(tile,x,y){
+ const g=canvasGeometry;if(!g||!contextAllowed()||!appRearranging||!visibleLayoutTiles().includes(tile))return;
+ const blocks=[...g.obstacles,g.binRect,...[...g.placed].filter(([t])=>t!==tile).map(([,p])=>p)],spot=findAppSpot(g.width,g.height,g.iw,g.ih,{x,y},blocks);if(!spot){osNotice('Choose an open desktop area.');return}
+ rememberVisiblePositions();appPositions.set(tile.dataset.app,{x:spot.x/Math.max(1,g.width-g.iw),y:spot.y/Math.max(1,g.height-g.ih)});appLayout=orderedAppIds([...appGrid().querySelectorAll(':scope > .app[data-app]')].map(t=>t.dataset.app),appLayout);saveAppLayout();renderFreeLayout();if(appEditBar)appEditBar.querySelector('.bc-rearrange-status').textContent=tile.dataset.title+' moved.';
 }
 function endAppDrag(e,commit){
- const d=appDrag;if(!d||d.id!==e.pointerId)return;const tile=d.tile,target=d.target,dragged=!!d.ghost;cancelAppDrag();if(commit&&dragged&&target)reorderApp(tile,target);if(dragged)suppressAppClick(tile);
+ const d=appDrag;if(!d||d.id!==e.pointerId)return;const tile=d.tile,dragged=!!d.ghost,r=d.grid.getBoundingClientRect(),br=recycleButton?.getBoundingClientRect(),bin=!!br&&e.clientX>=br.left&&e.clientX<=br.right&&e.clientY>=br.top&&e.clientY<=br.bottom;
+ cancelAppDrag();if(commit&&dragged&&contextAllowed()){if(bin)recycleApp(tile);else if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom&&canvasGeometry)placeApp(tile,e.clientX-r.left-canvasGeometry.iw/2,e.clientY-r.top-canvasGeometry.ih/2)}if(dragged)suppressAppClick(tile);applyAppLayout()
 }
 document.addEventListener('pointerdown',beginAppDrag,true);
 document.addEventListener('pointermove',updateAppDrag,{capture:true,passive:false});
@@ -476,12 +543,12 @@ document.addEventListener('pointercancel',e=>endAppDrag(e,false),true);
 document.addEventListener('lostpointercapture',e=>{if(appDrag?.id===e.pointerId)cancelAppDrag()},true);
 document.addEventListener('click',e=>{if(appRearranging&&e.target.closest?.('.bc-app-rearranging > .app[data-app]')){e.preventDefault();e.stopImmediatePropagation()}},true);
 document.addEventListener('keydown',e=>{
- if(!appRearranging)return;if(e.key==='Escape'){e.preventDefault();finishAppRearrange(true);return}
- const tile=e.target.closest?.('.bc-app-rearranging > .app[data-app]');if(!tile)return;
- if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();const tiles=visibleLayoutTiles(),index=tiles.indexOf(tile),delta=['ArrowLeft','ArrowUp'].includes(e.key)?-1:1;reorderApp(tile,tiles[index+delta]);tile.focus({preventScroll:true})}
+ if(e.key==='Escape'&&recyclePanel){e.preventDefault();closeRecycleBin();return}if(!appRearranging)return;if(e.key==='Escape'){e.preventDefault();finishAppRearrange(true);return}
+ const tile=e.target.closest?.('.bc-app-rearranging > .app[data-app]'),p=canvasGeometry?.placed.get(tile);if(!tile||!p)return;
+ if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();const step=24;placeApp(tile,p.x+(e.key==='ArrowRight'?step:e.key==='ArrowLeft'?-step:0),p.y+(e.key==='ArrowDown'?step:e.key==='ArrowUp'?-step:0));tile.focus({preventScroll:true})}
 },true);
-document.addEventListener('visibilitychange',()=>{if(document.hidden)finishAppRearrange()});
-window.addEventListener('resize',cancelAppDrag,{passive:true});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){closeRecycleBin();finishAppRearrange()}else applyAppLayout()});
+window.addEventListener('resize',()=>{cancelAppDrag();applyAppLayout()},{passive:true});
 function cancelAppHold(){if(appHold){clearTimeout(appHold.timer);appHold=null}}
 function suppressAppClick(trigger){suppressedAppClick={trigger,until:performance.now()+1200}}
 function bindAppContext(tile){

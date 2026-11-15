@@ -537,3 +537,28 @@ html:is(.bc-os-phone,.bc-os-tablet) .bc-app-rearrange-bar>button{min-height:42px
 @keyframes bc-app-jiggle{from{transform:rotate(-1.8deg)}to{transform:rotate(1.8deg)}}
 @media(prefers-reduced-motion:reduce){#desktop .bc-app-rearranging>.app .app-icon{animation:none}}
 #desktop.os-reduce-motion .bc-app-rearranging>.app .app-icon{animation:none}
+
+/* Free desktop canvas: icons may occupy open wallpaper without auto-packing.
+   Reserve existing system panels and keep the dock independent. */
+#desktop .workspace .apps.bc-free-app-canvas{position:relative;display:block!important;max-width:none!important;min-width:0;pointer-events:none}
+#desktop .workspace .bc-free-app-canvas>.app{position:absolute;width:var(--bc-free-icon-width,100px)!important;min-width:0!important;max-width:var(--bc-free-icon-width,100px);height:100px;min-height:0!important;pointer-events:auto;padding:6px 3px!important;z-index:1}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .workspace .bc-free-app-canvas>.app{height:96px}
+#desktop .workspace .app.bc-recycled-shortcut{display:none!important}
+#desktop .bc-recycle-shortcut{background:transparent;border:0;color:#f1f1f3;display:grid;justify-items:center;align-content:start;gap:5px;border-radius:12px;width:var(--bc-free-icon-width,100px);height:100px;padding:6px 2px;position:relative;pointer-events:auto;cursor:pointer;touch-action:manipulation}
+#desktop .bc-free-app-canvas>.bc-recycle-shortcut{position:absolute;z-index:1}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .bc-recycle-shortcut{height:96px}
+.bc-recycle-icon{width:58px;height:58px;border-radius:15px;display:grid;place-items:center;background:linear-gradient(150deg,#777982,#303139 47%,#17181d);border:1px solid #ffffff24;box-shadow:inset 0 1px 1px #fff3,0 6px 16px #0008;color:#e5e5eb}
+.bc-recycle-icon>svg{width:38px;height:38px}
+.bc-recycle-name{font:550 11px/1.2 system-ui;text-shadow:0 1px 5px #000}
+.bc-recycle-count{position:absolute;right:6px;top:3px;min-width:19px;height:19px;display:grid;place-items:center;border-radius:10px;background:#a33043;color:#fff;font:650 10px system-ui;padding:0 4px}
+#desktop .bc-recycle-shortcut:hover,#desktop .bc-recycle-shortcut.bc-recycle-drop{background:#ffffff14}
+#desktop .bc-recycle-shortcut.bc-recycle-drop{outline:1.5px solid #e26173;box-shadow:0 0 24px #a3304340}
+.bc-recycle-panel{position:absolute;z-index:2147482100;left:50%;top:50%;transform:translate(-50%,-50%);width:min(440px,calc(100% - 32px));max-height:calc(100% - 160px);display:flex;flex-direction:column;overflow:hidden;padding:17px;border:1px solid #ffffff2b;border-radius:16px;background:#242428;box-shadow:0 24px 80px #000c;color:#eee}
+.bc-recycle-panel>header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:0 0 12px;border-bottom:1px solid #ffffff17}
+.bc-recycle-panel>header strong{font:650 19px system-ui}
+.bc-recycle-panel button{border:1px solid #ffffff22;border-radius:7px;padding:8px 12px;background:#414149;color:#fff;font:550 12px system-ui;min-height:36px}
+.bc-recycle-panel>p,.bc-recycle-list>p{font:12px/1.6 system-ui;color:#bdbdc6}
+.bc-recycle-list{min-height:0;overflow:auto;scrollbar-width:none;overscroll-behavior:contain}
+.bc-recycle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 2px;border-top:1px solid #ffffff12}
+.bc-recycle-row>strong{font:550 13px system-ui;overflow-wrap:anywhere}
+html:is(.bc-os-phone,.bc-os-tablet) .bc-recycle-panel button{min-height:44px}
