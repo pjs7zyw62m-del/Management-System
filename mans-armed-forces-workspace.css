@@ -165,3 +165,35 @@ body.mf-body::before{display:none}
 #discover .mf-portrait-download:hover{background:#343438e5}
 @media(hover:none),(pointer:coarse){#discover .mf-portrait-download{opacity:1}}
 @media(prefers-reduced-motion:reduce){#discover .mf-portrait-download{transition:none}}
+
+/* A quiet, cinematic Apple-style app shelf: original lineup above the six entrances. */
+#uMain #discover.mf-cinematic-landing{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:clamp(6px,1.4vh,20px);padding:0 0 max(22px,env(safe-area-inset-bottom));min-height:100%;box-sizing:border-box}
+#discover.mf-cinematic-landing .mf-lineup{width:100%;display:flex;justify-content:center;align-items:flex-start;background:#000;flex:none}
+#discover.mf-cinematic-landing .mf-lineup img{display:block;width:100%;height:min(51dvh,620px);object-fit:contain;object-position:center top}
+#discover.mf-cinematic-landing .mf-app-shelf{width:min(100%,1320px);box-sizing:border-box;padding:0 clamp(14px,3vw,40px);flex:none}
+#discover.mf-cinematic-landing .mf-shelf-tools{display:flex;justify-content:flex-end;min-height:34px;margin:0 0 8px}
+#discover .mf-rotation-control{display:grid;place-items:center;min-width:34px;min-height:34px;padding:5px;border-radius:50%;background:#151517;border:1px solid #ffffff20;color:#b5b5bd;cursor:pointer}
+#discover .mf-rotation-control svg{width:16px;height:16px}
+#discover .mf-rotation-control .mf-play-icon,#discover .mf-rotation-control[aria-pressed=true] .mf-pause-icon{display:none}
+#discover .mf-rotation-control[aria-pressed=true] .mf-play-icon{display:block}
+#discover.mf-cinematic-landing .mf-album-grid{grid-template-columns:repeat(6,minmax(0,1fr));gap:clamp(8px,1.3vw,19px);align-items:start;max-width:none}
+#discover.mf-cinematic-landing .mf-portrait-tile{border-radius:18px;border:1px solid #ffffff13;overflow:hidden;background:#101013;transition:border-color .22s,box-shadow .22s}
+#discover.mf-cinematic-landing .mf-portrait-tile:hover,#discover.mf-cinematic-landing .mf-portrait-tile:focus-within{border-color:#ffffff40;box-shadow:0 5px 24px #ffffff09}
+#discover.mf-cinematic-landing .mf-album{border-radius:0;text-decoration:none}
+#discover.mf-cinematic-landing .mf-album-art{position:relative;aspect-ratio:2/3;height:auto;background:#000}
+#discover.mf-cinematic-landing .mf-album-art img{object-fit:contain;filter:none;transition:opacity .42s ease,filter .2s}
+#discover.mf-cinematic-landing .mf-album-art img.mf-portrait-incoming{position:absolute;inset:0;opacity:0}
+#discover.mf-cinematic-landing .mf-album-art img.mf-portrait-incoming.mf-portrait-visible{opacity:1}
+#discover.mf-cinematic-landing .mf-portrait-download{top:8px;right:8px;width:30px;height:30px}
+#discover.mf-cinematic-landing .mf-portrait-download svg{width:15px;height:15px}
+#discover .mf-app-strip{display:flex;align-items:center;justify-content:space-between;gap:4px;min-height:53px;padding:7px 9px;border-top:1px solid #ffffff12;background:linear-gradient(125deg,#202024,#121214);box-sizing:border-box}
+#discover .mf-app-name{color:#f5f5f7;text-decoration:none;font:600 clamp(10px,1.025vw,14px)/1.2 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-width:0;letter-spacing:-.02em;overflow-wrap:normal}
+#discover .mf-app-get{display:grid;place-items:center;flex:0 0 36px;height:36px;padding:0;border-radius:999px;border:1px solid #87bfff3d;background:#2c78c71e;color:#73b7ff;cursor:pointer;transition:background .2s}
+#discover .mf-app-get svg{width:21px;height:21px}
+#discover .mf-app-get:hover,#discover .mf-app-get:focus-visible{background:#2c78c74d;color:#a6d4ff}
+#discover .mf-shortcut-status{min-height:1.2em;text-align:right;font:12px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#a2a2ad;margin:9px 0 0}
+#uMain[data-mf-active=discover] .mf-editorial-credit{display:none}
+@media(min-width:900px) and (max-height:780px){#discover.mf-cinematic-landing .mf-app-shelf{width:min(100%,1090px)}#discover.mf-cinematic-landing .mf-lineup img{height:min(43dvh,440px)}}
+@media(max-width:980px){#discover.mf-cinematic-landing .mf-album-grid{grid-template-columns:repeat(3,minmax(0,1fr))}#discover.mf-cinematic-landing .mf-lineup img{height:auto;max-height:55dvh}#discover .mf-app-name{font-size:14px}}
+@media(max-width:520px){#discover.mf-cinematic-landing .mf-album-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}#discover.mf-cinematic-landing .mf-lineup img{max-height:none}#discover .mf-app-strip{min-height:57px;padding:9px}#discover .mf-app-get{flex-basis:38px;height:38px}#discover .mf-app-name{font-size:12px}}
+@media(prefers-reduced-motion:reduce){#discover.mf-cinematic-landing .mf-album-art img,#discover.mf-cinematic-landing .mf-portrait-tile,#discover .mf-app-get{transition:none}}
