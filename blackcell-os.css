@@ -597,3 +597,28 @@ html #desktop.os-dock-auto-hide>.workspace:has(.bc-free-app-canvas){padding-bott
 .bc-app-loading{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:#08080b;color:#eeeef2;text-align:center;padding:24px;font:inherit}
 .bc-app-loading[hidden]{display:none!important}.bc-app-loading strong{font-size:13px;letter-spacing:.16em}.bc-app-loading-message{font-size:12px;color:#a5a5af}.bc-app-loading-spinner{width:32px;height:32px;border:2px solid #343039;border-top-color:#c12b43;border-radius:50%;animation:bc-app-spin .85s linear infinite}.bc-app-loading button{border:1px solid #63303b;border-radius:9px;background:#33151e;color:#f8e4e8;padding:10px 16px;font:inherit;cursor:pointer}.bc-app-loading button[hidden]{display:none!important}@keyframes bc-app-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.bc-app-loading-spinner{animation:none}}
 .os-reduce-motion .bc-app-loading-spinner{animation:none}
+
+/* Desktop-only iPhone-inspired chassis for independent Messages windows. */
+@media(min-width:621px){
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop>.os-chat-popout:not(.is-max):not(.is-chat-media-open){
+  border-radius:48px;box-sizing:border-box;border:1px solid #57575e;
+  padding:6px 6px 0;grid-template-rows:35px minmax(0,1fr) 21px;
+  background:#000;box-shadow:0 0 0 1px #17171b,0 0 0 3px #333338,0 0 0 4px #111114,0 25px 75px #000b,inset 0 0 0 1px #242429;
+  overflow:hidden;
+ }
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop>.os-chat-popout:not(.is-max):not(.is-chat-media-open)>.os-window-head{
+  background:#000;border:0;border-radius:40px 40px 0 0;box-shadow:none;min-width:0;
+ }
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop>.os-chat-popout:not(.is-max):not(.is-chat-media-open)>.os-window-head::after{
+  content:'';position:absolute;left:50%;top:6px;transform:translateX(-50%);width:92px;height:23px;border-radius:99px;background:#09090b;border:1px solid #222227;box-shadow:inset 0 1px 2px #000;pointer-events:none;
+ }
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop>.os-chat-popout:not(.is-max):not(.is-chat-media-open)>.os-window-head>span{
+  position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;
+ }
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop>.os-chat-popout:not(.is-max):not(.is-chat-media-open)>.os-window-head .traffic{left:17px;top:13px;gap:6px;z-index:2}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop>.os-chat-popout:not(.is-max):not(.is-chat-media-open)>.os-window-head .traffic button{width:10px;height:10px}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop>.os-chat-popout:not(.is-max):not(.is-chat-media-open)>.os-window-body{border-radius:0 0 29px 29px;overflow:hidden;min-height:0;background:#000}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop>.os-chat-popout:not(.is-max):not(.is-chat-media-open)::after{
+  content:'';width:32%;max-width:120px;height:4px;border-radius:99px;background:#dedee2;opacity:.82;align-self:center;justify-self:center;pointer-events:none;
+ }
+}

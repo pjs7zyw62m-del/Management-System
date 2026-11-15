@@ -34,7 +34,7 @@ function openChatPopout(){
  if(!ready||!peer||popout||mediaPanelMode)return;
  let parentOS=false;try{parentOS=window.parent!==window&&window.parent.location.origin===location.origin&&/\/blackcell-os(?:-preview)?\.html$/.test(window.parent.location.pathname)}catch(_){}
  if(parentOS){window.parent.postMessage({type:'blackcell-chat-popout',peerId:peer.user_id,name:peer.display_name||'Employee'},location.origin);return;}
- const url=new URL(location.pathname,location.origin);url.searchParams.set('popout','1');url.searchParams.set('peer',peer.user_id);url.searchParams.set('v','20261115-popout-info1');window.open(url.href,'_blank','noopener,noreferrer,width=440,height=720');
+ const url=new URL(location.pathname,location.origin);url.searchParams.set('popout','1');url.searchParams.set('peer',peer.user_id);url.searchParams.set('v','20261115-rounded-phone1');window.open(url.href,'_blank','noopener,noreferrer,width=440,height=720');
 }
 popButton?.addEventListener('click',openChatPopout);
 window.BLACKCELL_OS_BEFORE_CLOSE=()=>({ok:true,retain:!!$('messageInput').value.trim()||!!document.querySelector('[aria-busy=true],.is-uploading,[data-busy=true]')});
@@ -219,7 +219,7 @@ function resizeComposer(){composerText.style.height='auto';composerText.style.he
    if(window.parent!==window&&osChat){window.parent.postMessage({type:'blackcell-chat-popout-close'},location.origin);return}
    if($('messageInput').value.trim()&&!confirm('Close this conversation? Your unsent draft may be lost.'))return;
    window.close();
-   if(!window.closed)location.assign('corporate-chat.html?v=20261115-popout-info1');
+   if(!window.closed)location.assign('corporate-chat.html?v=20261115-rounded-phone1');
   });
   const info=document.createElement('button');info.type='button';info.id='popoutInfo';info.className='bc-pop-nav bc-pop-profile';info.textContent='ⓘ';info.hidden=true;info.setAttribute('aria-label','Contact options');info.setAttribute('aria-expanded','false');info.setAttribute('aria-controls','popoutInfoMenu');
   const menu=document.createElement('div');menu.id='popoutInfoMenu';menu.className='bc-pop-info-menu';menu.hidden=true;
