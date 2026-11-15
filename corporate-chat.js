@@ -34,7 +34,7 @@ function openChatPopout(){
  if(!ready||!peer||popout||mediaPanelMode)return;
  let parentOS=false;try{parentOS=window.parent!==window&&window.parent.location.origin===location.origin&&/\/blackcell-os(?:-preview)?\.html$/.test(window.parent.location.pathname)}catch(_){}
  if(parentOS){window.parent.postMessage({type:'blackcell-chat-popout',peerId:peer.user_id,name:peer.display_name||'Employee'},location.origin);return;}
- const url=new URL(location.pathname,location.origin);url.searchParams.set('popout','1');url.searchParams.set('peer',peer.user_id);url.searchParams.set('v','20261115-popout-header2');window.open(url.href,'_blank','noopener,noreferrer,width=440,height=720');
+ const url=new URL(location.pathname,location.origin);url.searchParams.set('popout','1');url.searchParams.set('peer',peer.user_id);url.searchParams.set('v','20261115-popout-camera1');window.open(url.href,'_blank','noopener,noreferrer,width=440,height=720');
 }
 popButton?.addEventListener('click',openChatPopout);
 window.BLACKCELL_OS_BEFORE_CLOSE=()=>({ok:true,retain:!!$('messageInput').value.trim()||!!document.querySelector('[aria-busy=true],.is-uploading,[data-busy=true]')});
@@ -219,8 +219,9 @@ function resizeComposer(){composerText.style.height='auto';composerText.style.he
    if(window.parent!==window&&osChat){window.parent.postMessage({type:'blackcell-chat-popout-close'},location.origin);return}
    if($('messageInput').value.trim()&&!confirm('Close this conversation? Your unsent draft may be lost.'))return;
    window.close();
-   if(!window.closed)location.assign('corporate-chat.html?v=20261115-popout-header2');
+   if(!window.closed)location.assign('corporate-chat.html?v=20261115-popout-camera1');
   });
+  const camera=document.createElement('button');camera.type='button';camera.id='popoutCamera';camera.className='bc-pop-nav bc-pop-camera';camera.hidden=true;camera.title='Video calling — not connected yet';camera.setAttribute('aria-label','Video calling, not available yet');camera.innerHTML='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="6.5" width="12" height="11" rx="2.8" stroke="currentColor" stroke-width="1.7"/><path d="m15 10 4.6-2.8a.9.9 0 0 1 1.4.8v8a.9.9 0 0 1-1.4.8L15 14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';camera.addEventListener('click',()=>{closeInfoMenu();status('Video calling is not available yet.');});
   const info=document.createElement('button');info.type='button';info.id='popoutInfo';info.className='bc-pop-nav bc-pop-profile';info.innerHTML='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="6" r="1.5" fill="currentColor"/><path d="M12 10v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';info.hidden=true;info.setAttribute('aria-label','Contact options');info.setAttribute('aria-expanded','false');info.setAttribute('aria-controls','popoutInfoMenu');
   const menu=document.createElement('div');menu.id='popoutInfoMenu';menu.className='bc-pop-info-menu';menu.hidden=true;
   const profile=document.createElement('a');profile.id='popoutProfile';profile.href='corporate-network.html';profile.target='_blank';profile.rel='noopener';profile.textContent='View Profile';
@@ -231,7 +232,7 @@ function resizeComposer(){composerText.style.height='auto';composerText.style.he
   info.addEventListener('click',()=>{if(!ready||!peer)return;const open=menu.hidden;menu.hidden=!open;info.setAttribute('aria-expanded',String(open));if(open){syncBlockControls();void refreshCurrentBlock();}});
   document.addEventListener('pointerdown',e=>{if(!menu.hidden&&!menu.contains(e.target)&&!info.contains(e.target))closeInfoMenu()});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!menu.hidden){closeInfoMenu();info.focus()}});
-  header.append(back,info,menu);
+  header.append(back,camera,info,menu);
  }
 const blockNotice=document.createElement('div');blockNotice.className='bc-chat-block-notice';blockNotice.hidden=true;blockNotice.setAttribute('role','status');
 const blockNoticeText=document.createElement('span');blockNoticeText.textContent='You blocked this contact. New messages and attachments are disabled.';
@@ -449,7 +450,7 @@ function choose(userId){
  $('imessagePortrait').textContent=String(peer.display_name||'B').trim().slice(0,1).toUpperCase();
  $('peerProfileLink').href='corporate-network.html?user='+encodeURIComponent(userId);
  $('peerProfileLink').hidden=false;
- if(popoutActions){const profile=$('popoutProfile');profile.href=$('peerProfileLink').href;$('popoutInfo').hidden=false;}
+ if(popoutActions){const profile=$('popoutProfile');profile.href=$('peerProfileLink').href;$('popoutInfo').hidden=false;$('popoutCamera').hidden=false;}
  if(popButton){popButton.hidden=popout||!!mediaPanelMode;popButton.disabled=false;}
  syncBlockControls();renderPeers();void refreshCurrentBlock();void loadMessages();
 }
