@@ -52,3 +52,19 @@ html:not(.bc-media-panel) .media-dialog-footer .media-primary{background:#a22d43
 .bc-pm-pick-row input{accent-color:#b43b50}.bc-pm-picker-panel>button{background:#a22d43}
 @media(max-width:520px){.bc-chat-header-media{font-size:10px;padding:7px 8px}.imessage-title-actions{gap:5px}.imessage-title-actions .imessage-secure-indicator{display:none}}
 @media(prefers-reduced-motion:reduce){html:not(.bc-media-panel) .chat.media-open>.media-viewer{animation:none!important}}
+
+/* Approved interactive preview: source cards, selection thumbnails and Photos action. */
+.bc-media-quick{display:inline-flex;align-items:center;gap:6px}
+.bc-media-quick svg{width:15px;height:15px;flex:none}
+.bc-media-source-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:15px}
+.media-dialog .bc-media-source{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:7px;min-height:94px;text-align:center;background:#25252b;border-color:#ffffff18;letter-spacing:0;font-size:13px;font-weight:650;padding:11px}
+.media-dialog .bc-media-source:hover{background:#333039;border-color:#b74c61}
+.bc-media-source svg{width:24px;height:24px;color:#d899a7}
+.bc-media-source small{font-size:10px;color:#a9a9b4;font-weight:400}
+.bc-media-selected-thumb{width:42px;height:42px;object-fit:cover;flex:none;border-radius:7px}
+.media-dialog-footer .media-primary{flex:1}
+.bc-chat-transfer{background:#8b2c40!important;border:1px solid #ba4b60!important;color:#fff!important;white-space:nowrap;font-size:10px!important;min-height:32px;padding:7px 8px!important;border-radius:8px}
+.bc-chat-transfer[hidden]{display:none!important}
+.media-viewer-meta{flex-wrap:wrap}
+.bc-mobile-lightbox-bar .bc-chat-transfer{font-size:9px!important;min-height:32px;letter-spacing:0}
+@media(max-width:420px){.bc-media-source-cards{gap:8px}.media-dialog .bc-media-source{font-size:12px;padding:8px}.bc-mobile-lightbox-bar .bc-chat-transfer{white-space:normal;max-width:110px}}
