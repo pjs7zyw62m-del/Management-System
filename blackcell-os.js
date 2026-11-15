@@ -277,14 +277,37 @@ function saveWorkspace(){
   for(const pending of pendingRestore)if(!records.some(r=>r.id===pending.id))records.push(pending);
   // Store only parked conversation shortcuts and window geometry, never message data or drafts.
   const parkedChats=[...windows.values()].filter(r=>r.chatPopout&&r.chatParked&&r.el.hidden).slice(0,8).map(r=>{
-   const geometry=r.mediaOriginalGeometry||r.el.style;
-   return {id:r.id,name:r.title,left:geometry.left,top:geometry.top,width:geometry.width,height:geometry.height,maximized:r.el.classList.contains('is-max')};
+   const geometry=r.parkedGeometry||captureParkedGeometry(r);
+   return {id:r.id,name:r.title,...geometry};
   });
   sessionStorage.setItem(workspaceKey(),JSON.stringify({version:1,at:Date.now(),windows:records.slice(0,24),parkedChats}));
  }catch(_){}
 }
 function clearWorkspace(){pendingRestore=[];workspaceReady=false;try{sessionStorage.removeItem(workspaceKey());if(embeddedAdmin)sessionStorage.removeItem('bc.os.host.v1')}catch(_){}}
 function safePixels(value){return typeof value==='string'&&/^\d{1,5}(?:\.\d+)?px$/.test(value)?Number.parseFloat(value):null}
+function captureParkedGeometry(r){
+ const w=r.el,maximized=w.classList.contains('is-max');
+ const useActual=!w.hidden&&!maximized&&innerWidth>620&&!touchOS();
+ const geometry={maximized,viewportWidth:innerWidth,viewportHeight:innerHeight};
+ for(const [key,metric] of [['left','offsetLeft'],['top','offsetTop'],['width','offsetWidth'],['height','offsetHeight']]){
+  const actual=w[metric];
+  geometry[key]=useActual&&Number.isFinite(actual)&&(key==='left'||key==='top'||actual>0)?Math.max(0,actual)+'px':w.style[key];
+ }
+ return geometry;
+}
+function applyParkedGeometry(r,saved){
+ if(!saved)return;
+ const w=r.el;
+ if(innerWidth>620&&!touchOS()){
+  const sameViewport=saved.viewportWidth===innerWidth&&saved.viewportHeight===innerHeight;
+  const width=safePixels(saved.width),height=safePixels(saved.height),left=safePixels(saved.left),top=safePixels(saved.top);
+  if(width!==null)w.style.width=(sameViewport?width:Math.min(Math.max(300,width),Math.max(300,innerWidth-12)))+'px';
+  if(height!==null)w.style.height=(sameViewport?height:Math.min(Math.max(260,height),Math.max(260,innerHeight-100)))+'px';
+  if(left!==null)w.style.left=(sameViewport?left:Math.max(0,Math.min(left,innerWidth-(safePixels(w.style.width)||300))))+'px';
+  if(top!==null)w.style.top=(sameViewport?top:Math.max(34,Math.min(top,innerHeight-100)))+'px';
+ }
+ w.classList.toggle('is-max',saved.maximized===true);
+}
 function restoreRecord(saved,parked=false){
  if(!saved||typeof saved.id!=='string'||windows.has(saved.id))return;
  if(parked){
@@ -294,7 +317,8 @@ function restoreRecord(saved,parked=false){
  const previous=selectedWindow;
  showApp(saved.id,parked?{peerId:saved.id.slice(8),name:saved.name.slice(0,70)||'Conversation'}:saved.id==='store'?saved.store:saved.id==='settings'?saved.settings:saved.files);
  const r=windows.get(saved.id);if(!r)return;
- if(innerWidth>620&&!touchOS()){
+ if(parked)applyParkedGeometry(r,saved);
+ else if(innerWidth>620&&!touchOS()){
   const width=safePixels(saved.width),height=safePixels(saved.height),left=safePixels(saved.left),top=safePixels(saved.top);
   if(width!==null)r.el.style.width=Math.min(Math.max(280,width),Math.max(280,innerWidth-12))+'px';
   if(height!==null)r.el.style.height=Math.min(Math.max(220,height),Math.max(220,innerHeight-100))+'px';
@@ -346,6 +370,8 @@ function resizeChatForMedia(r,open){
  if(!r||(r.id!=='chat'&&!r.chatPopout))return;
  const w=r.el;
  if(r.chatPopout)w.classList.toggle('is-chat-media-open',open===true);
+ // The parked window has no measurable layout. Never let a hidden media event move it.
+ if(r.chatPopout&&r.chatParked){if(!open)r.mediaOriginalGeometry=null;return;}
  if(!open){const saved=r.mediaOriginalGeometry;if(saved){Object.assign(w.style,saved);r.mediaOriginalGeometry=null}return;}
  if(r.mediaOriginalGeometry||w.classList.contains('is-max')||touchOS()||innerWidth<680)return;
  const rect=w.getBoundingClientRect(),available=Math.max(0,innerWidth-24),target=Math.min(available,Math.max(rect.width,r.chatPopout?840:1060));
@@ -383,10 +409,11 @@ function syncParkedChatBubbles(){
 }
 function parkChat(r){
  if(!r?.chatPopout||windows.get(r.id)!==r||(!active&&!preview)||workspaceLock?.isLocked())return;
+ if(!r.chatParked)r.parkedGeometry=captureParkedGeometry(r);
  r.chatParked=true;r.el.hidden=true;if(selectedWindow===r)selectedWindow=null;
  pauseFrameMedia(r.frame);syncParkedChatBubbles();syncChatVisibility();saveWorkspace();
 }
-function raise(r){r.chatParked=false;syncParkedChatBubbles();if(r.closing)r.reopened=true;r.suspended=false;r.el.hidden=false;r.el.style.zIndex=String(++layer);selectedWindow=r;markDock(r.id,true);syncStoreUpdateHold();syncChatVisibility();saveWorkspace()}
+function raise(r){if(r.chatParked){applyParkedGeometry(r,r.parkedGeometry);r.parkedGeometry=null;}r.chatParked=false;syncParkedChatBubbles();if(r.closing)r.reopened=true;r.suspended=false;r.el.hidden=false;r.el.style.zIndex=String(++layer);selectedWindow=r;markDock(r.id,true);syncStoreUpdateHold();syncChatVisibility();saveWorkspace()}
 function showDesktop(){closeRecycleBin();for(const r of windows.values())r.el.hidden=true;selectedWindow=null;syncStoreUpdateHold();syncChatVisibility();saveWorkspace()}
 function dispose(r,force=false){if(!force){void requestClose(r);return;}r.updateHold?.();r.updateHold=null;r.cleanup?.();r.frame?.remove();r.el.remove();r.release?.();windows.delete(r.id);syncParkedChatBubbles();markDock(r.id,false);if(selectedWindow===r)selectedWindow=null;syncChatVisibility();saveWorkspace()}
 function osNotice(message){let n=$('osCloseNotice');if(!n){n=document.createElement('div');n.id='osCloseNotice';n.className='os-close-notice';n.setAttribute('role','status');$('desktop').append(n)}n.textContent=message;n.hidden=false;clearTimeout(osNotice.timer);osNotice.timer=setTimeout(()=>{n.hidden=true},6000)}
