@@ -171,6 +171,8 @@ async function render(){
  page=Math.max(0,Math.min(page,pages-1));
  const visible=shown.slice(page*sizeLimit,(page+1)*sizeLimit);
  text($('mfImageCount'),approved.length);
+ const totals=new Map();for(const asset of approved){const category=inferCategory(asset);totals.set(category,(totals.get(category)||0)+1)}
+ for(const label of document.querySelectorAll('[data-mf-count]')){const count=totals.get(label.dataset.mfCount)||0;text(label,count+' '+(count===1?'photo':'photos'))}
  updateQueueStatus();
  for(const b of document.querySelectorAll('[data-category-filter]')){
   if(!b.dataset.originalLabel)b.dataset.originalLabel=b.textContent.trim();
@@ -201,7 +203,7 @@ async function render(){
  let unavailable=0;
  for(const a of visible){
   if(!a.signedUrl){unavailable++;continue}
-  const card=document.createElement('button');card.type='button';card.className='mf-photo-card';
+  const card=document.createElement('button');card.type='button';card.className='mf-photo-card';card.setAttribute('aria-label',(safe(a.caption)||safe(a.filename)||'Uniform photograph')+' — '+formatMetadata(a));
   const img=document.createElement('img');img.loading='lazy';img.decoding='async';img.src=a.signedUrl;img.alt=safe(a.caption)||safe(a.filename)||'Uniform photograph';
   const details=document.createElement('div');details.className='mf-photo-info';
   const title=document.createElement('strong');title.textContent=(safe(a.caption)||safe(a.filename)||'Uniform photograph').slice(0,85);
