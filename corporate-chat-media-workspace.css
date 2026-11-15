@@ -146,3 +146,31 @@ html.bc-media-resizing:not(.bc-media-panel) .media-viewer:not(.media-focused) .m
 .media-viewer .bc-filmstrip-more{font-size:11px;min-height:0}
 html.bc-media-resizing .bc-chat-filmstrip .bc-filmstrip-track{content-visibility:hidden;visibility:hidden;pointer-events:none}
 @media(max-width:550px){.media-viewer.bc-focus-only .bc-media-focus-body{grid-template-columns:minmax(0,1fr) 70px}.media-viewer .bc-filmstrip-tile{left:4px}}
+
+/* A popped-out desktop conversation stays visible when its library opens.
+   The OS expands the host window when possible; a tight viewport stacks the panes. */
+html.bc-chat-popout.bc-compact-chat:not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open{
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr)!important;
+ grid-template-rows:minmax(0,1fr) minmax(0,1fr)!important;
+ gap:0;overflow:hidden!important;position:relative!important;
+}
+html.bc-chat-popout.bc-compact-chat:not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open>.sidebar{display:none!important}
+html.bc-chat-popout.bc-compact-chat:not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open>.chat-main{
+ grid-area:1/1!important;position:relative!important;height:100%;width:100%;min-height:0;min-width:0;
+ overflow:hidden;transform:none!important
+}
+html.bc-chat-popout.bc-compact-chat:not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open>.media-viewer{
+ grid-area:2/1!important;position:relative!important;inset:auto!important;display:flex!important;
+ width:100%!important;height:100%!important;max-width:100%;max-height:100%;min-height:0;min-width:0;
+ padding:0!important;border-left:0;border-top:1px solid #ffffff24;box-shadow:none!important;animation:none!important;
+}
+html.bc-chat-popout.bc-compact-chat:not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open .bc-media-resize-width{display:none!important}
+@media(min-width:640px){
+ html.bc-chat-popout.bc-compact-chat:not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open{
+  grid-template-columns:minmax(285px,42%) minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr)!important
+ }
+ html.bc-chat-popout.bc-compact-chat:not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open>.media-viewer{
+  grid-area:1/2!important;border-top:0;border-left:1px solid #ffffff24
+ }
+}
