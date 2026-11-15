@@ -33,7 +33,7 @@ function openChatPopout(){
  if(!ready||!peer||popout||mediaPanelMode)return;
  let parentOS=false;try{parentOS=window.parent!==window&&window.parent.location.origin===location.origin&&/\/blackcell-os(?:-preview)?\.html$/.test(window.parent.location.pathname)}catch(_){}
  if(parentOS){window.parent.postMessage({type:'blackcell-chat-popout',peerId:peer.user_id,name:peer.display_name||'Employee'},location.origin);return;}
- const url=new URL(location.pathname,location.origin);url.searchParams.set('popout','1');url.searchParams.set('peer',peer.user_id);url.searchParams.set('v','20261115-ios-popout1');window.open(url.href,'_blank','noopener,noreferrer,width=440,height=720');
+ const url=new URL(location.pathname,location.origin);url.searchParams.set('popout','1');url.searchParams.set('peer',peer.user_id);url.searchParams.set('v','20261115-black-popout1');window.open(url.href,'_blank','noopener,noreferrer,width=440,height=720');
 }
 popButton?.addEventListener('click',openChatPopout);
 window.BLACKCELL_OS_BEFORE_CLOSE=()=>({ok:true,retain:!!$('messageInput').value.trim()||!!document.querySelector('[aria-busy=true],.is-uploading,[data-busy=true]')});
@@ -218,7 +218,7 @@ function resizeComposer(){composerText.style.height='auto';composerText.style.he
    if(window.parent!==window&&osChat){window.parent.postMessage({type:'blackcell-chat-popout-close'},location.origin);return}
    if($('messageInput').value.trim()&&!confirm('Close this conversation? Your unsent draft may be lost.'))return;
    window.close();
-   if(!window.closed)location.assign('corporate-chat.html?v=20261115-ios-popout1');
+   if(!window.closed)location.assign('corporate-chat.html?v=20261115-black-popout1');
   });
   const profile=document.createElement('a');profile.id='popoutProfile';profile.className='bc-pop-nav bc-pop-profile';profile.textContent='ⓘ';profile.href='corporate-network.html';profile.target='_blank';profile.rel='noopener';profile.hidden=true;profile.setAttribute('aria-label','View contact profile');
   header.append(back,profile);
