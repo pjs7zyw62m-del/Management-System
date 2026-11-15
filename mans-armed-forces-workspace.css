@@ -156,3 +156,12 @@ body.mf-body::before{display:none}
 @media(min-width:1250px) and (min-aspect-ratio:7/5){#discover.mf-portrait-only .mf-album-grid{grid-template-columns:repeat(6,minmax(0,1fr))}#discover.mf-portrait-only .mf-album-art{aspect-ratio:unset;height:min(88dvh,680px)}}
 @media(max-width:760px){#uMain #discover.mf-portrait-only{align-items:flex-start}#discover.mf-portrait-only .mf-album-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#discover.mf-portrait-only .mf-album-art{aspect-ratio:3/4}}
 @media(prefers-reduced-motion:reduce){#discover.mf-portrait-only .mf-portrait-label,#discover.mf-portrait-only .mf-album-art img{transition:none}}
+
+/* Separate download control: selecting a photograph opens its collection, not a download. */
+#discover .mf-portrait-tile{position:relative;min-width:0}
+#discover .mf-portrait-download{position:absolute;z-index:3;right:12px;top:12px;display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:#19191dc4;border:1px solid #ffffff2b;color:#fff;backdrop-filter:blur(20px) saturate(150%);opacity:0;transition:opacity .18s,background .18s}
+#discover .mf-portrait-download svg{width:19px;height:19px}
+#discover .mf-portrait-tile:hover .mf-portrait-download,#discover .mf-portrait-tile:focus-within .mf-portrait-download{opacity:1}
+#discover .mf-portrait-download:hover{background:#343438e5}
+@media(hover:none),(pointer:coarse){#discover .mf-portrait-download{opacity:1}}
+@media(prefers-reduced-motion:reduce){#discover .mf-portrait-download{transition:none}}
