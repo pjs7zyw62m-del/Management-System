@@ -30,7 +30,7 @@ function openChatPopout(){
 }
 popButton?.addEventListener('click',openChatPopout);
 window.BLACKCELL_OS_BEFORE_CLOSE=()=>({ok:true,retain:!!$('messageInput').value.trim()||!!document.querySelector('[aria-busy=true],.is-uploading,[data-busy=true]')});
-let inboxSummaries=new Map();
+let inboxSummaries=new Map(),inboxUnread=new Set(),inboxFilter='all',inboxEditing=false,inboxComposing=false,inboxRefreshing=false,inboxSelection=new Set(),inboxMarking=false,inboxUnreadAvailable=false;
 let sidebarClosed=false;
 const sidebarKey=()=>self?'bc.imessage.sidebar.v1:'+self:null;
 function readSidebarPreference(){
@@ -64,7 +64,7 @@ let employeeSession=false,sessionEnded=false,lastActivity=Date.now(),lastTouch=D
 const IDLE_LIMIT_MS=60*60*1000;
 async function endChatAccess(reason){
  if(sessionEnded)return;
- sessionEnded=true;ready=false;employeeSession=false;
+ sessionEnded=true;ready=false;employeeSession=false;syncInboxControls();
  $('messageInput').disabled=true;$('sendButton').disabled=true;
  status(reason);
  live.dispose();
@@ -102,7 +102,39 @@ mediaToggle.hidden=false;mediaToggle.title='Attachments';
 mediaToggle.setAttribute('aria-label','Attachment options');
 mediaToggle.addEventListener('click',()=>sharedMedia.toggleMediaTray());
 window.addEventListener('blackcell-chat-media-capability-change',()=>sharedMedia.closeMediaTray());
+const inboxEdit=$('inboxEdit'),inboxCompose=$('inboxCompose'),inboxMenu=$('inboxFilterMenu'),inboxFilterButton=$('inboxFilter'),inboxMarkRead=$('inboxMarkRead');
+function closeInboxFilter(){inboxMenu.hidden=true;inboxFilterButton.setAttribute('aria-expanded','false')}
+function syncInboxControls(){
+ inboxEdit.textContent=inboxComposing?'Cancel':inboxEditing?'Done':'Edit';
+ inboxEdit.setAttribute('aria-pressed',String(inboxEditing));
+ inboxEdit.disabled=!ready||inboxMarking;
+ inboxCompose.disabled=!ready||inboxComposing||inboxEditing;
+ inboxCompose.hidden=inboxEditing;
+ inboxMarkRead.hidden=!inboxEditing;
+ inboxMarkRead.disabled=!ready||!inboxSelection.size||inboxMarking;
+ inboxFilterButton.disabled=inboxEditing||inboxComposing;
+ $('inboxHeading').textContent=inboxComposing?'New Message':inboxFilter==='all'?'iMessage':inboxFilter==='unread'?'Unread Messages':inboxFilter==='known'?'Known Senders':'Unknown Senders';
+}
+function exitInboxMode(){inboxEditing=false;inboxComposing=false;inboxSelection.clear();syncInboxControls()}
+inboxFilterButton.addEventListener('click',()=>{if(!inboxMenu.hidden){closeInboxFilter();return}inboxMenu.hidden=false;inboxFilterButton.setAttribute('aria-expanded','true');inboxMenu.querySelector('[aria-pressed=true]')?.focus()});
+inboxMenu.addEventListener('click',e=>{const b=e.target.closest('[data-inbox-filter]');if(!b)return;inboxFilter=b.dataset.inboxFilter;for(const item of inboxMenu.querySelectorAll('button'))item.setAttribute('aria-pressed',String(item===b));closeInboxFilter();inboxFilterButton.focus();renderPeers();if(inboxFilter==='unread')void refreshInboxSummaries()});
+document.addEventListener('pointerdown',e=>{if(!inboxMenu.hidden&&!e.target.closest('.apple-filter-anchor'))closeInboxFilter()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!inboxMenu.hidden){closeInboxFilter();inboxFilterButton.focus()}});
+inboxEdit.addEventListener('click',()=>{closeInboxFilter();if(inboxComposing||inboxEditing){exitInboxMode();$('peerSearch').value=''}else{inboxEditing=true;inboxSelection.clear()}renderPeers()});
+inboxCompose.addEventListener('click',()=>{closeInboxFilter();inboxComposing=true;inboxEditing=false;inboxSelection.clear();$('peerSearch').value='';renderPeers();$('peerSearch').focus()});
+inboxMarkRead.addEventListener('click',async()=>{
+ if(!ready||!self||inboxMarking||!inboxSelection.size)return;
+ inboxMarking=true;syncInboxControls();
+ const selected=[...inboxSelection].filter(id=>contacts.some(c=>c.user_id===id));
+ try{
+  if(selected.length){const {error}=await client.from('corp_chat_messages').update({read_at:new Date().toISOString()}).eq('recipient_id',self).in('sender_id',selected).is('read_at',null);if(error)throw error}
+  for(const id of selected)inboxUnread.delete(id);
+  exitInboxMode();await refreshInboxSummaries();renderPeers();
+ }catch(_){status('Could not mark selected conversations as read. Try again.')}
+ finally{inboxMarking=false;syncInboxControls()}
+});
 $('peerSearch').addEventListener('input',renderPeers);
+syncInboxControls();
 $('backToInbox').addEventListener('click',()=>{
  if(!compactChat||popout)return;
  live.setThreadOpen(false);
@@ -160,12 +192,12 @@ async function boot(){
       const m=payload.new;
       if(m&&(m.sender_id===self||m.recipient_id===self)){
        void loadMessages();
-       if(compactChat)void refreshInboxSummaries();
+       if(!popout&&!mediaPanelMode)void refreshInboxSummaries();
       }
     })
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'corp_chat_messages'},payload=>{
       const m=payload.new;
-      if(m&&(m.sender_id===self||m.recipient_id===self))void loadMessages();
+      if(m&&(m.sender_id===self||m.recipient_id===self)){void loadMessages();if(!popout&&!mediaPanelMode&&m.recipient_id===self)void refreshInboxSummaries();}
     })
     .on('postgres_changes',{event:'*',schema:'public',table:'corp_chat_typing'},payload=>{
       live.onTypingChange(payload);
@@ -203,48 +235,66 @@ function isBubbleNeighbor(first,second){
  return a.toDateString()===b.toDateString()&&(b.getTime()-a.getTime())<=5*60*1000;
 }
 async function refreshInboxSummaries(){
- if(!ready||!self)return;
+ if(!ready||!self||popout||mediaPanelMode||inboxRefreshing)return;
+ inboxRefreshing=true;
  try{
   const {data,error}=await client.from('corp_chat_messages')
    .select('sender_id,recipient_id,body,media_batch_id,created_at')
    .or('sender_id.eq.'+self+',recipient_id.eq.'+self)
    .order('created_at',{ascending:false}).limit(180);
-  if(error)return;
-  const summaries=new Map();
-  for(const message of data||[]){
-   const other=message.sender_id===self?message.recipient_id:message.sender_id;
-   if(other===self||summaries.has(other))continue;
-   summaries.set(other,{
-    preview:message.media_batch_id?'▧ Photo or video collection':String(message.body||'').slice(0,120),
-    when:message.created_at
-   });
+  if(!error){
+   const summaries=new Map();
+   for(const message of data||[]){
+    const other=message.sender_id===self?message.recipient_id:message.sender_id;
+    if(other===self||summaries.has(other))continue;
+    summaries.set(other,{preview:message.media_batch_id?'Photo or video attachment':String(message.body||'').slice(0,120),when:message.created_at});
+   }
+   inboxSummaries=summaries;
   }
-  inboxSummaries=summaries;renderPeers();
- }catch(_){}
+  // Unread is independently queried, not inferred from the truncated preview history.
+  const unread=new Set();let offset=0;
+  while(ready){
+   const result=await client.from('corp_chat_messages').select('id,sender_id').eq('recipient_id',self).is('read_at',null).order('id',{ascending:true}).range(offset,offset+499);
+   if(result.error)throw result.error;
+   for(const row of result.data||[])unread.add(row.sender_id);
+   if((result.data||[]).length<500)break;
+   offset+=500;
+  }
+  if(ready){inboxUnread=unread;inboxUnreadAvailable=true;renderPeers()}
+ }catch(_){renderPeers()}finally{inboxRefreshing=false}
+}
+function inboxTime(value){
+ const date=new Date(value),now=new Date(),yesterday=new Date(now);yesterday.setDate(yesterday.getDate()-1);
+ if(date.toDateString()===now.toDateString())return date.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+ if(date.toDateString()===yesterday.toDateString())return 'Yesterday';
+ return date.toLocaleDateString([],{month:'short',day:'numeric'});
 }
 function renderPeers(){
- const box=$('peers');box.replaceChildren();
+ const box=$('peers');box.replaceChildren();syncInboxControls();
  const query=$('peerSearch').value.trim().toLowerCase();
+ // Every contact is a server-authorized known sender. Unknown external senders are not admitted.
  const visible=contacts.filter(c=>(String(c.display_name||'')+' '+String(c.role||'')).toLowerCase().includes(query))
-  .sort((a,b)=>new Date(inboxSummaries.get(b.user_id)?.when||0)-new Date(inboxSummaries.get(a.user_id)?.when||0));
- $('contactCount').textContent=String(contacts.length);
- if(!visible.length){box.append(text('p','empty',query?'No matching contacts.':'No authorized contacts.'));return}
+  .filter(c=>inboxComposing||inboxFilter==='all'||inboxFilter==='known'||(inboxFilter==='unread'&&inboxUnread.has(c.user_id)))
+  .sort((a,b)=>new Date(inboxSummaries.get(b.user_id)?.when||0)-new Date(inboxSummaries.get(a.user_id)?.when||0)||String(a.display_name||'').localeCompare(String(b.display_name||'')));
+ $('contactCount').textContent=String(visible.length);
+ if(!visible.length){box.append(text('p','empty',!ready?'Checking contacts…':query?'No matching contacts.':inboxFilter==='unknown'?'Only authorized BLACKCELL contacts can send messages.':inboxFilter==='unread'?(inboxUnreadAvailable?'No unread messages.':'Unread status unavailable. Retrying…'):'No authorized contacts.'));return}
  for(const c of visible){
-   const button=document.createElement('button');button.type='button';button.className='peer'+(peer?.user_id===c.user_id?' active':'');
+   const button=document.createElement('button');button.type='button';const unread=inboxUnread.has(c.user_id);
+   button.className='peer'+(peer?.user_id===c.user_id?' active':'')+(unread?' is-unread':'');
+   if(inboxEditing){const checked=inboxSelection.has(c.user_id);button.setAttribute('aria-pressed',String(checked));button.append(text('span','apple-select-dot',checked?'✓':''))}
    const initial=String(c.display_name||'B').trim().slice(0,1).toUpperCase();
    button.append(text('span','avatar',initial));
    const wrap=document.createElement('span');wrap.className='peer-copy';
-   wrap.append(text('strong','',c.display_name||'Employee'),text('small','',c.role==='owner'?'CORPORATE OWNER':'LEVEL '+c.clearance_level));
    const summary=inboxSummaries.get(c.user_id);
-   wrap.append(text('span','peer-preview',summary?.preview||'Start a private conversation'));
+   wrap.append(text('strong','',c.display_name||'Employee'),text('span','peer-preview',summary?.preview||'Start a private conversation'));
    button.append(wrap);
-   if(summary?.when){
-    const time=document.createElement('time');time.className='peer-meta';
-    time.dateTime=summary.when;
-    time.textContent=new Date(summary.when).toLocaleDateString([],{month:'short',day:'numeric'});
-    button.append(time);
-   }
-   button.onclick=()=>choose(c.user_id);box.append(button);
+   const trailing=document.createElement('span');trailing.className='apple-peer-trailing';
+   if(summary?.when){const time=document.createElement('time');time.className='peer-meta';time.dateTime=summary.when;time.textContent=inboxTime(summary.when);trailing.append(time)}
+   if(!inboxEditing)trailing.append(text('span','apple-chevron','›'));
+   button.append(trailing);
+   if(unread)button.setAttribute('aria-label',(c.display_name||'Employee')+', unread messages');
+   button.onclick=()=>{if(inboxEditing){if(inboxSelection.has(c.user_id))inboxSelection.delete(c.user_id);else inboxSelection.add(c.user_id);renderPeers();return}if(inboxComposing){exitInboxMode();$('peerSearch').value=''}choose(c.user_id)};
+   box.append(button);
  }
 }
 function choose(userId){
@@ -346,7 +396,7 @@ for(const evt of ['pointerdown','keydown','wheel','touchstart']){
  document.addEventListener(evt,chatActivity,{passive:true});
 }
 setInterval(()=>{if(ready&&live.visible())void loadMessages()},5000);
-setInterval(()=>{if(ready&&compactChat&&!popout&&!document.hidden)void refreshInboxSummaries()},13000);
+setInterval(()=>{if(ready&&!mediaPanelMode&&!popout&&!document.hidden&&(inboxFilter==='unread'||!compactChat||!document.querySelector('.chat').classList.contains('bc-thread-active')))void refreshInboxSummaries()},13000);
 setInterval(()=>{
  if(employeeSession&&!sessionEnded&&Date.now()-lastActivity>=IDLE_LIMIT_MS)
   void endChatAccess('Signed out after 60 minutes of inactivity.');
