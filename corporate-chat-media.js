@@ -180,6 +180,31 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const wingStatus=el('div','media-viewer-status','','');
  const stage=el('div','media-viewer-stage standard');
  const stageInner=el('div','media-stage-inner');
+ // Original-size focus viewer, kept inside the authenticated chat window.
+ const photoFocus=el('dialog','bc-chat-photo-enlarge');
+ photoFocus.setAttribute('aria-label','Enlarged shared photo');
+ const photoFocusHead=el('header','bc-chat-photo-enlarge-head');
+ const photoFocusLabel=el('strong','','Shared Photo');
+ const photoFocusClose=button('Close ×',()=>closePhotoFocus(),'bc-chat-photo-enlarge-close');
+ photoFocusClose.setAttribute('aria-label','Close enlarged photo');
+ const photoFocusStage=el('div','bc-chat-photo-enlarge-stage');
+ photoFocusHead.append(photoFocusLabel,photoFocusClose);
+ photoFocus.append(photoFocusHead,photoFocusStage);document.body.append(photoFocus);
+ let photoFocusTrigger=null;
+ function clearPhotoFocus(){photoFocusStage.replaceChildren();const trigger=photoFocusTrigger;photoFocusTrigger=null;if(trigger?.isConnected&&context()?.ready)trigger.focus({preventScroll:true})}
+ function closePhotoFocus(){if(photoFocus.open)photoFocus.close();clearPhotoFocus()}
+ photoFocus.addEventListener('close',()=>{if(!photoFocus.open)clearPhotoFocus()});
+ photoFocus.addEventListener('cancel',e=>{e.preventDefault();closePhotoFocus()});
+ photoFocusStage.addEventListener('click',e=>{if(e.target===photoFocusStage)closePhotoFocus()});
+ function openPhotoFocus(image,item,still){
+  if(!still()||!context()?.ready||!image.complete||!image.naturalWidth||photoFocus.open)return;
+  const full=el('img');full.alt=item.filename||'Shared photo';full.referrerPolicy='no-referrer';full.decoding='async';
+  full.addEventListener('error',()=>{if(photoFocus.open&&full.isConnected)photoFocusStage.replaceChildren(el('p','media-stage-empty','Unable to enlarge this photo. Close and reopen Shared Media.'))},{once:true});
+  full.src=image.currentSrc||image.src;photoFocusTrigger=image;photoFocusStage.replaceChildren(full);
+  try{photoFocus.showModal();photoFocusClose.focus({preventScroll:true})}catch(_){clearPhotoFocus()}
+ }
+ function enablePhotoFocus(image,item,still){image.classList.add('bc-chat-enlargeable');image.tabIndex=0;image.setAttribute('role','button');image.setAttribute('aria-label','Enlarge shared photo');image.title='Click to enlarge';image.addEventListener('click',()=>openPhotoFocus(image,item,still));image.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openPhotoFocus(image,item,still)}})}
+
  const prev=button('‹',()=>void moveFocus(-1),'media-nav prev');prev.setAttribute('aria-label','Previous media');
  const next=button('›',()=>void moveFocus(1),'media-nav next');next.setAttribute('aria-label','Next media');
  stage.append(stageInner,prev,next);
@@ -469,7 +494,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   }
  }
  function closeWing(){
-  cancelActiveResize();libraryGeneration++;focusRequest++;visible=[];active=0;mediaReady=false;hasMoreMedia=false;loadingMoreMedia=false;
+  closePhotoFocus();cancelActiveResize();libraryGeneration++;focusRequest++;visible=[];active=0;mediaReady=false;hasMoreMedia=false;loadingMoreMedia=false;
   stageInner.querySelector('video')?.pause();stageInner.replaceChildren();syncTransfer();signed.clear();filmstrip.clear();
   if(standalonePanel&&mediaPanel==='library'&&requestPanelClose('library'))return;
   mediaLibrary.setAttribute('aria-expanded','false');chat.classList.remove('media-open');wing.setAttribute('aria-hidden','true');notifyPopoutMedia(false);
@@ -509,7 +534,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
    return still()?await makeChatThumbnail(link.src,signal):null}catch(_){return null}
   }
   async function loadLibrary(){
-  const c=requirePeer();if(!c)return;
+  closePhotoFocus();const c=requirePeer();if(!c)return;
   const g=++libraryGeneration,p=c.peer.user_id,b=batchFocus;focusRequest++;visible=[];active=0;mediaReady=false;loadingMoreMedia=false;hasMoreMedia=false;libraryOffset=0;focusTotal=null;signed.clear();filmstrip.clear();
   refreshLibrary.hidden=true;wingStatus.textContent='';syncTransfer();syncFocusArrows();currentName.textContent='';currentIndex.textContent='';stageInner.querySelector('video')?.pause();stageInner.replaceChildren(el('p','media-stage-empty','Loading shared media…'));
   try{
@@ -543,7 +568,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  async function showIndex(index){
   const c=context(),g=libraryGeneration,p=c?.peer?.user_id,b=batchFocus,request=++focusRequest;
   if(!focusCurrent(g,p,b))return;
-  stageInner.querySelector('video')?.pause();stageInner.replaceChildren();
+  closePhotoFocus();stageInner.querySelector('video')?.pause();stageInner.replaceChildren();
   if(!visible.length){filmstrip.refresh();currentName.textContent='';currentIndex.textContent='0 / 0';syncTransfer();syncFocusArrows();stageInner.append(el('p','media-stage-empty','No shared photos or videos yet.'));return}
   active=Math.max(0,Math.min(index,visible.length-1));const item=visible[active];filmstrip.follow();
   syncTransfer();syncFocusArrows();currentName.textContent=item.filename+' · '+fmtBytes(item.bytes);currentIndex.textContent=(active+1)+' / '+(focusTotal??(visible.length+(hasMoreMedia?'+':'')));wingStatus.textContent='';refreshLibrary.hidden=true;
@@ -558,12 +583,12 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
    if(!still())return;
    const media=el(item.kind==='video'?'video':'img');media.referrerPolicy='no-referrer';media.src=link.src;
    if(item.kind==='video'){media.controls=true;media.playsInline=true;media.preload='metadata';media.setAttribute('controlsList','nodownload')}
-   else{media.alt=item.filename;media.decoding='async';}
+   else{media.alt=item.filename;media.decoding='async';enablePhotoFocus(media,item,still);}
    media.addEventListener('error',()=>{if(still()){signed.delete(item.id);focusError('Preview unavailable. Select Retry.');stageInner.replaceChildren(el('p','media-stage-empty','Unable to display media.'))}},{once:true});
    stageInner.replaceChildren(media);
   }catch(e){if(still()){focusError('Unable to load media. Select Retry.');stageInner.replaceChildren(el('p','media-stage-empty','Media unavailable.'))}}
  }
- document.addEventListener('keydown',e=>{if(e.defaultPrevented||!chat.classList.contains('media-open')||!mobileBox.hidden||!overlay.hidden||/INPUT|TEXTAREA|SELECT/.test(e.target?.tagName||'')||e.target?.isContentEditable)return;if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();void moveFocus(e.key==='ArrowLeft'?-1:1)}});
+ document.addEventListener('keydown',e=>{if(e.defaultPrevented||photoFocus.open||!chat.classList.contains('media-open')||!mobileBox.hidden||!overlay.hidden||/INPUT|TEXTAREA|SELECT/.test(e.target?.tagName||'')||e.target?.isContentEditable)return;if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();void moveFocus(e.key==='ArrowLeft'?-1:1)}});
  // Mobile: minimal photo/video lightbox with arrows; no desktop media player.
  const mobileBox=el('section','bc-mobile-lightbox');mobileBox.hidden=true;
  mobileBox.setAttribute('role','dialog');mobileBox.setAttribute('aria-modal','true');
@@ -782,7 +807,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   return cell;
  }
  function onPeerChange(newPeerId){
-  cancelActiveResize();focusRequest++;
+  closePhotoFocus();cancelActiveResize();focusRequest++;
   libraryGeneration++;mediaLibrary.setAttribute('aria-expanded','false');pickPeer=null;
   if(!standalonePanel&&peerId&&peerId!==newPeerId){
    if(window.parent!==window)
@@ -804,5 +829,5 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   overlay.hidden=true;
   if(!busy){selection=[];selectionPeer=null;renderSelection();hideInlineUpload()}
  }
- return {renderMediaBubble,onPeerChange,openShare,openLibrary,openBatch,closeWing,pickMobileFiles,syncInlineUpload,pause:()=>{cancelActiveResize();stageInner.querySelector('video')?.pause();mobileCanvas.querySelector('video')?.pause()}};
+ return {renderMediaBubble,onPeerChange,openShare,openLibrary,openBatch,closeWing,pickMobileFiles,syncInlineUpload,pause:()=>{closePhotoFocus();cancelActiveResize();stageInner.querySelector('video')?.pause();mobileCanvas.querySelector('video')?.pause()}};
 }
