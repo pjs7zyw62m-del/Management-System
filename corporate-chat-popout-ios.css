@@ -162,3 +162,14 @@ html.bc-chat-popout:not(.bc-media-panel) .bc-pop-info-menu{top:62px}
  html.bc-chat-popout:not(.bc-media-panel) body.bc-chat .chat-title .bc-pop-nav{top:7px}
  html.bc-chat-popout:not(.bc-media-panel) .bc-pop-info-menu{top:49px}
 }
+
+/* The video camera is immediately before contact information. */
+html.bc-chat-popout:not(.bc-media-panel) body.bc-chat .chat-title .bc-pop-camera{right:54px}
+@media(max-width:299px){
+ html.bc-chat-popout:not(.bc-media-panel) body.bc-chat .chat-title .bc-pop-camera{right:44px;width:30px;height:30px;min-width:30px;min-height:30px;top:23px}
+ html.bc-chat-popout:not(.bc-media-panel) body.bc-chat .chat-title .bc-pop-profile{right:8px;width:30px;height:30px;min-width:30px;min-height:30px;top:23px}
+ html.bc-chat-popout:not(.bc-media-panel) .bc-pop-camera svg,html.bc-chat-popout:not(.bc-media-panel) .bc-pop-profile svg{width:17px;height:17px}
+}
+@media(max-width:299px) and (max-height:400px){
+ html.bc-chat-popout:not(.bc-media-panel) body.bc-chat .chat-title .bc-pop-camera,html.bc-chat-popout:not(.bc-media-panel) body.bc-chat .chat-title .bc-pop-profile{top:10px}
+}
