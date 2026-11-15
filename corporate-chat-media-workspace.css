@@ -247,28 +247,28 @@ dialog.bc-chat-photo-enlarge::backdrop{background:#050506}
 @keyframes bc-attachment-appear{from{opacity:0;transform:translateY(5px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){.bc-attachment-menu{animation:none}}
 
-/* Spacious iOS-inspired liquid-glass attachment menu — BLACKCELL dark appearance. */
+/* Compact Apple-inspired liquid-glass attachment menu — BLACKCELL dark appearance. */
 .bc-attachment-menu{
- padding:13px 12px;gap:3px;border-radius:32px;
+ padding:5px;gap:1px;border-radius:15px;
  background:linear-gradient(145deg,#39393dc9,#1a1a20b8);
  border:1px solid #ffffff36;box-shadow:inset 0 1px 1px #ffffff18,0 24px 60px #0007,0 5px 14px #0004;
  backdrop-filter:blur(28px) saturate(175%);-webkit-backdrop-filter:blur(28px) saturate(175%);
 }
 .bc-attachment-menu .bc-attachment-item{
- min-height:62px;gap:19px;padding:9px 14px;border-radius:20px;
- font:500 18px/1.2 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-.025em;
+ min-height:36px;gap:9px;padding:4px 8px;border-radius:8px;
+ font:500 13px/1.2 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-.025em;
 }
 .bc-attachment-menu .bc-attachment-app-icon{
- display:grid;place-items:center;width:43px;height:43px;flex:0 0 43px;border-radius:50%;
+ display:grid;place-items:center;width:26px;height:26px;flex:0 0 26px;border-radius:50%;
  box-shadow:inset 0 1px 2px #ffffff35,0 2px 5px #0003;
 }
-.bc-attachment-menu .bc-attachment-app-icon svg{width:23px;height:23px;color:#fff}
+.bc-attachment-menu .bc-attachment-app-icon svg{width:15px;height:15px;color:#fff}
 .bc-attachment-menu .bc-attachment-app-photos{background:linear-gradient(145deg,#fff,#e6e6e8)}
-.bc-attachment-menu .bc-attachment-app-photos svg{width:35px;height:35px}
+.bc-attachment-menu .bc-attachment-app-photos svg{width:21px;height:21px}
 .bc-attachment-menu .bc-attachment-app-videos{background:linear-gradient(145deg,#9b9ba6,#42424b)}
 .bc-attachment-menu .bc-attachment-app-blackcell{background:linear-gradient(145deg,#d35368,#791b32)}
 .bc-attachment-menu .bc-attachment-app-share{background:linear-gradient(145deg,#5cc0ff,#2566d9)}
 .bc-attachment-menu .bc-attachment-app-library{background:linear-gradient(145deg,#ab92f1,#7953bc)}
 .bc-attachment-menu .bc-attachment-divider{display:none}
-@media(max-width:360px){.bc-attachment-menu{border-radius:27px;padding:9px}.bc-attachment-menu .bc-attachment-item{font-size:16px;min-height:56px;gap:14px;padding:7px 10px}.bc-attachment-menu .bc-attachment-app-icon{width:39px;height:39px;flex-basis:39px}}
+@media(pointer:coarse){.bc-attachment-menu{padding:6px;border-radius:18px}.bc-attachment-menu .bc-attachment-item{font-size:14px;min-height:44px;gap:10px;padding:5px 9px}.bc-attachment-menu .bc-attachment-app-icon{width:30px;height:30px;flex-basis:30px}}
 @media(prefers-reduced-transparency:reduce){.bc-attachment-menu{background:#27272d}}
