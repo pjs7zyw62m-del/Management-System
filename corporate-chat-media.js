@@ -98,9 +98,9 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   }
   return false;
  }
- let peerId=null,library=[],visible=[],active=0,batchFocus=null,focused=false;
- let selection=[],busy=false,filter='all',search='',sort='newest',autoNext=false,mediaReady=false,pickPeer=null,libraryGeneration=0,selectionPeer=null;
- let signed=new Map(),urlsTime=0,drawToken=0;
+ let peerId=null,visible=[],active=0,batchFocus=null;
+ let selection=[],busy=false,mediaReady=false,pickPeer=null,libraryGeneration=0,selectionPeer=null;
+ const signed=new Map();
  let libraryOffset=0,hasMoreMedia=false,loadingMoreMedia=false;
  const MEDIA_PAGE_SIZE=160;
  const controls=el('div','media-actions');
@@ -505,7 +505,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   }
  }
  function closeWing(){
-  cancelActiveResize();libraryGeneration++;focusRequest++;visible=[];library=[];active=0;mediaReady=false;hasMoreMedia=false;loadingMoreMedia=false;
+  cancelActiveResize();libraryGeneration++;focusRequest++;visible=[];active=0;mediaReady=false;hasMoreMedia=false;loadingMoreMedia=false;
   stageInner.querySelector('video')?.pause();stageInner.replaceChildren();syncTransfer();signed.clear();
   if(standalonePanel&&mediaPanel==='library'&&requestPanelClose('library'))return;
   mediaLibrary.setAttribute('aria-expanded','false');chat.classList.remove('media-open');wing.setAttribute('aria-hidden','true');
@@ -538,12 +538,12 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  function focusError(message){wingStatus.textContent=message;refreshLibrary.hidden=false}
  async function loadLibrary(){
   const c=requirePeer();if(!c)return;
-  const g=++libraryGeneration,p=c.peer.user_id,b=batchFocus;focusRequest++;visible=[];library=[];active=0;mediaReady=false;loadingMoreMedia=false;hasMoreMedia=false;libraryOffset=0;focusTotal=null;signed.clear();
+  const g=++libraryGeneration,p=c.peer.user_id,b=batchFocus;focusRequest++;visible=[];active=0;mediaReady=false;loadingMoreMedia=false;hasMoreMedia=false;libraryOffset=0;focusTotal=null;signed.clear();
   refreshLibrary.hidden=true;wingStatus.textContent='';full.hidden=true;syncTransfer();syncFocusArrows();currentName.textContent='';currentIndex.textContent='';stageInner.querySelector('video')?.pause();stageInner.replaceChildren(el('p','media-stage-empty','Loading shared media…'));
   try{
    const {data,error,count}=await focusQuery(c,b).range(0,MEDIA_PAGE_SIZE-1);
    if(!focusCurrent(g,p,b))return;if(error)throw error;
-   visible=data||[];library=visible;libraryOffset=visible.length;focusTotal=typeof count==='number'?count:null;hasMoreMedia=focusTotal!==null?libraryOffset<focusTotal:visible.length===MEDIA_PAGE_SIZE;mediaReady=true;
+   visible=data||[];libraryOffset=visible.length;focusTotal=typeof count==='number'?count:null;hasMoreMedia=focusTotal!==null?libraryOffset<focusTotal:visible.length===MEDIA_PAGE_SIZE;mediaReady=true;
    await showIndex(0);
   }catch(e){if(focusCurrent(g,p,b)){focusError('Could not load shared media. Select Retry.');stageInner.replaceChildren(el('p','media-stage-empty','Media unavailable.'))}}
  }
@@ -587,7 +587,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
    stageInner.replaceChildren(media);
   }catch(e){if(still()){focusError('Unable to load media. Select Retry.');stageInner.replaceChildren(el('p','media-stage-empty','Media unavailable.'))}}
  }
- document.addEventListener('keydown',e=>{if(!chat.classList.contains('media-open')||!mobileBox.hidden||!overlay.hidden||/INPUT|TEXTAREA|SELECT/.test(e.target?.tagName||'')||e.target?.isContentEditable)return;if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();void moveFocus(e.key==='ArrowLeft'?-1:1)}});
+ document.addEventListener('keydown',e=>{if(e.defaultPrevented||!chat.classList.contains('media-open')||!mobileBox.hidden||!overlay.hidden||/INPUT|TEXTAREA|SELECT/.test(e.target?.tagName||'')||e.target?.isContentEditable)return;if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();void moveFocus(e.key==='ArrowLeft'?-1:1)}});
  // Mobile: minimal photo/video lightbox with arrows; no desktop media player.
  const mobileBox=el('section','bc-mobile-lightbox');mobileBox.hidden=true;
  mobileBox.setAttribute('role','dialog');mobileBox.setAttribute('aria-modal','true');
@@ -817,12 +817,12 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
    else window.BlackcellMediaBubbleHostController?.closeAll();
   }
   peerId=newPeerId;
-  library=[];visible=[];active=0;batchFocus=null;mediaReady=false;syncTransfer();
+  visible=[];active=0;batchFocus=null;mediaReady=false;syncTransfer();
   libraryOffset=0;hasMoreMedia=false;loadingMoreMedia=false;
   signed.clear();
   closeMobileGallery();
   previewCache.clear();previewPending.clear();
-  stageInner.replaceChildren();
+  stageInner.querySelector('video')?.pause();stageInner.replaceChildren();
   // Reset the previous conversation without sending a close request to the bubble host.
   chat.classList.remove('media-open');
   wing.setAttribute('aria-hidden','true');
