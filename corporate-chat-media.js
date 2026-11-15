@@ -48,11 +48,25 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const useLargePanels=()=>window.BlackcellChatMedia?.enabled()===true;
  const compactMedia=()=>!useLargePanels();
  function notifyChatMedia(open){if(standalonePanel||window.parent===window)return;window.parent.postMessage({type:'blackcell-chat-popout-media',open:open===true},location.origin)}
- function closeMediaTray(){
-  if(!compactMedia()&&!standalonePanel)return;
-  const menu=document.querySelector('.media-actions'),toggle=document.getElementById('mediaToggleButton');
-  menu?.classList.add('is-collapsed');
-  if(toggle){toggle.classList.remove('open');toggle.setAttribute('aria-expanded','false')}
+ function closeMediaTray(restoreFocus=false){
+  controls.hidden=true;attachmentToggle?.classList.remove('open');
+  attachmentToggle?.setAttribute('aria-expanded','false');
+  if(restoreFocus)attachmentToggle?.focus({preventScroll:true});
+ }
+ function positionMediaTray(){
+  if(controls.hidden||!attachmentToggle)return;
+  const rect=attachmentToggle.getBoundingClientRect();
+  const width=Math.min(244,Math.max(160,document.documentElement.clientWidth-20));
+  const left=Math.max(10,Math.min(rect.left,document.documentElement.clientWidth-width-10));
+  controls.style.width=width+'px';controls.style.left=left+'px';
+  controls.style.bottom=Math.max(8,window.innerHeight-rect.top+9)+'px';
+  controls.style.maxHeight=Math.max(80,rect.top-16)+'px';
+ }
+ function toggleMediaTray(){
+  if(!controls.hidden){closeMediaTray(true);return}
+  if(!requirePeer())return;
+  controls.hidden=false;attachmentToggle?.classList.add('open');
+  attachmentToggle?.setAttribute('aria-expanded','true');positionMediaTray();
  }
  function routeBubble(panel,{batchId=null,pick=null}={}){
   if(!standalonePanel||!useLargePanels())return false;
@@ -105,12 +119,26 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const signed=new Map();
  let libraryOffset=0,hasMoreMedia=false,loadingMoreMedia=false;
  const MEDIA_PAGE_SIZE=160;
- const controls=el('div','media-actions');
- const choosePhotos=button('Photos',()=>chooseFiles('image/*'),'bc-media-quick');choosePhotos.title='Select photographs from your device';
- const chooseVideos=button('Videos',()=>chooseFiles('video/*'),'bc-media-quick');chooseVideos.title='Select videos from your device';
- const mediaShare=button('Media Share',()=>openShare(),'bc-media-share-primary');
- const mediaLibrary=button('Shared Media',()=>void openLibrary(),'bc-media-library-trigger');mediaLibrary.setAttribute('aria-expanded','false');
- decorateButton(choosePhotos,'photo');decorateButton(chooseVideos,'video');controls.append(choosePhotos,chooseVideos,mediaShare,mediaLibrary);
+ const controls=el('div','bc-attachment-menu');controls.id='bcAttachmentMenu';controls.hidden=true;
+ controls.setAttribute('role','group');controls.setAttribute('aria-label','Attachment options');
+ const attachmentToggle=document.getElementById('mediaToggleButton');
+ attachmentToggle?.setAttribute('aria-controls',controls.id);
+ attachmentToggle?.setAttribute('aria-expanded','false');
+ const choosePhotos=button('Photos',()=>chooseFiles('image/*'),'bc-attachment-item');choosePhotos.title='Select photographs from your device';
+ const chooseVideos=button('Videos',()=>chooseFiles('video/*'),'bc-attachment-item');chooseVideos.title='Select videos from your device';
+ const choosePrivate=button('BLACKCELL Photos',()=>privateButton.click(),'bc-attachment-item');
+ const mediaShare=button('Media Share',()=>openShare(),'bc-attachment-item');
+ const mediaLibrary=button('Shared Media',()=>void openLibrary(),'bc-attachment-item');mediaLibrary.setAttribute('aria-expanded','false');
+ decorateButton(choosePhotos,'photo');decorateButton(chooseVideos,'video');
+ decorateButton(choosePrivate,'photo');decorateButton(mediaShare,'upload');decorateButton(mediaLibrary,'library');
+ const menuDivider=el('div','bc-attachment-divider');menuDivider.setAttribute('aria-hidden','true');
+ controls.append(choosePhotos,chooseVideos,choosePrivate,menuDivider,mediaShare,mediaLibrary);
+ document.body.append(controls);
+ controls.addEventListener('click',e=>{if(e.target.closest('button:not(:disabled)'))closeMediaTray()},true);
+ document.addEventListener('pointerdown',e=>{if(!controls.hidden&&!controls.contains(e.target)&&!attachmentToggle?.contains(e.target))closeMediaTray()},true);
+ document.addEventListener('keydown',e=>{if(!controls.hidden&&e.key==='Escape'){e.preventDefault();e.stopPropagation();closeMediaTray(true)}},true);
+ window.addEventListener('resize',positionMediaTray,{passive:true});
+ window.visualViewport?.addEventListener('resize',positionMediaTray,{passive:true});
  const headerLibrary=button('Shared Media',()=>void openLibrary(),'bc-chat-header-media');headerLibrary.title='Open this conversation’s shared media';document.querySelector('.imessage-title-actions')?.prepend(headerLibrary);
  const fileInput=el('input');fileInput.type='file';fileInput.multiple=true;
  fileInput.accept='image/*,video/*';
@@ -127,7 +155,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const progressTrack=el('div','media-progress-track');
  const progressFill=el('div','media-progress-fill');
  progressTrack.append(progressFill);progress.append(progressHead,progressTrack);
- messageForm.before(controls,progress);
+ messageForm.before(progress);
  const inlineUpload=el('div','message mine bc-inline-upload');
  const inlineBubble=el('div','bubble bc-inline-upload-bubble');
  const inlineTitle=el('div','bc-inline-upload-title','PREPARING MEDIA…');
@@ -308,7 +336,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   }
  }
  function toggleBusy(v){
-  busy=v;for(const b of [choosePhotos,chooseVideos,mediaShare])b.disabled=v;
+  busy=v;for(const b of [choosePhotos,chooseVideos,choosePrivate,mediaShare])b.disabled=v;
  }
  function requirePeer(){
   const c=context();
@@ -811,7 +839,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   return cell;
  }
  function onPeerChange(newPeerId){
-  closePhotoFocus();cancelActiveResize();focusRequest++;
+  closeMediaTray();closePhotoFocus();cancelActiveResize();focusRequest++;
   libraryGeneration++;mediaLibrary.setAttribute('aria-expanded','false');pickPeer=null;
   if(!standalonePanel&&peerId&&peerId!==newPeerId){
    if(window.parent!==window)
@@ -833,5 +861,5 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   overlay.hidden=true;
   if(!busy){selection=[];selectionPeer=null;renderSelection();hideInlineUpload()}
  }
- return {renderMediaBubble,onPeerChange,openShare,openLibrary,openBatch,closeWing,pickMobileFiles,syncInlineUpload,pause:()=>{closePhotoFocus();cancelActiveResize();stageInner.querySelector('video')?.pause();mobileCanvas.querySelector('video')?.pause()}};
+ return {renderMediaBubble,onPeerChange,openShare,openLibrary,openBatch,closeWing,pickMobileFiles,toggleMediaTray,closeMediaTray,syncInlineUpload,pause:()=>{closeMediaTray();closePhotoFocus();cancelActiveResize();stageInner.querySelector('video')?.pause();mobileCanvas.querySelector('video')?.pause()}};
 }
