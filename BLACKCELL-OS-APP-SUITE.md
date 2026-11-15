@@ -1,39 +1,41 @@
 # BLACKCELL OS — Optional application suite
 
 ## Release policy
-All 19 applications are independently optional. Development is not installation. The existing corporate App Store remains authoritative for eligibility, installation and removal. No new app is automatically installed or pinned; no existing installations are modified. App Store listing moves from Coming Soon to Install only after an app passes its release checks and the server catalog is explicitly registered with the existing permissions. Uninstall removes the app from the desktop, not its saved account data. Deleting personal data is a separate explicit action. Never publish credentials or service-role keys to the browser.
+All 19 apps have an initial development entry. Keep each application independently optional, preserve existing corporate authorization and the server-owned installation state, and never automatically install or pin any app. No development entry is registered in the production catalog. Uninstall must preserve account data. Never expose service keys or credentials. This branch is not merged or deployed.
 
-## Application implementation register
-| App | Development scope | Status |
+## Development implementation register
+| App | Initial implementation | Remaining work |
 |---|---|---|
-| Calculator | Standard/scientific arithmetic, degrees/radians, keyboard and touch | Initial development build, parser tests passed; browser and OS integration pending |
-| World Clock | Live IANA time zones, add/remove cities, 12/24-hour mode, alarms | Initial live-clock build; alarms, account preferences and browser/OS integration pending |
-| Notes | Notes, notebooks, search, account autosave | Planned |
-| Calendar | Events, recurring schedules, time zones, optional external calendar connection | Planned |
-| Reminders | Lists, due dates, repeat schedules, notification permissions | Planned |
-| Contacts | Private address book, search, import/export | Planned |
-| Mail | Connected email through provider-authorized access; compose and inbox | Planned |
-| Gunner AI | Existing Gunner service connection with per-account authorization and approved actions | Planned |
-| Music | Personal audio library, playlists and playback | Planned |
-| Cinema | Personal video library and playback | Planned |
-| Wallet | Private manual finances, budgets and optional approved connections | Planned |
-| Journal | Account-private daily entries and search | Planned |
-| Vault | Private file storage, access controls and explicit deletion | Planned |
-| Terminal | Restricted developer tools; explicit permissions and command safeguards | Planned |
-| Voice Memos | Permission-based recording, playback, export and private storage | Planned |
-| Documents | Word processing, saving, recovery and export | Planned |
-| Spreadsheets | Grid, formulas, persistence and import/export | Planned |
-| Creative Studio | Authorized AI image/video providers and explicit job cost controls | Planned |
-| Presentations | Editable slides, save, preview and export | Planned |
+| Calculator | Standard/scientific parser, keyboard/touch buttons | Browser and OS tests |
+| World Clock | IANA clocks, city selection, foreground one-time alarms | Browser/audio tests, persisted clocks, background alerts |
+| Notes | Notes, notebooks, search, text/JSON export | Account storage, import |
+| Calendar | Month navigation, dated events, JSON export | Recurrence, external calendar, account storage |
+| Reminders | Task lists, deadlines, completion and overdue status | Account storage, background reminders |
+| Contacts | Create/edit/delete/search, CSV export | Import and account storage |
+| Mail | Draft workspace, mailto handoff, draft export | OAuth, inbox, authenticated sending |
+| Gunner AI | Conversation request editor and export | Authorized AI integration and actual replies |
+| Music | Local audio file selection and playback, auto-next | Account media library, playlists |
+| Cinema | Local video file selection and playback | Account media library |
+| Wallet | Manual USD ledger, totals and CSV export | Account storage, budget targets, optional banking |
+| Journal | Dated writing, search and export | Account storage and privacy tests |
+| Vault | Local AES-GCM password-based file encryption/decryption | Cryptographic round-trip and browser tests, cloud vault |
+| Terminal | Allowlisted local utility commands | Authorized administrative tools, if approved |
+| Voice Memos | Microphone recording, playback and download | Browser microphone tests and account storage |
+| Documents | Plain-text editor, word count, export | Rich formatting, account storage, DOCX import/export |
+| Spreadsheets | 25x8 formula grid, CSV and JSON export | Browser and larger formula tests, XLSX and account storage |
+| Creative Studio | Local image editing, export and AI brief | Approved AI image/video providers, job billing |
+| Presentations | Slide editor, themes, preview, JSON export | Account storage, import, PPTX export |
 
-## Release checklist (each app)
-- Functional implementation, no placeholder actions; keyboard, mobile, tablet and desktop checks.
-- App-specific authentication, account isolation, authorization and privacy checks as applicable.
-- Verify persistence, reconnect and error handling where appropriate; no silent data loss.
-- Verify lazy opening and closing, desktop layout, dock, recycle/uninstall and OS startup.
-- Verify catalog registration and explicit user installation; preserve current user installs and settings.
-- Deployment confirmation against actual production release, not only repository commit.
-- For external services, require a working approved provider connection and disclose any costs.
+## Verification
+18 arithmetic/parser checks and 8 basic ledger, CSV and spreadsheet checks passed in isolated JavaScript tests. Saved source files inspected; full browser, device, crypto, media, security, cloud and catalog tests are not complete. No production readiness claim is made. Development data is tab-local unless explicitly exported. No confidential data should be entered into standalone builds.
 
-## Initial development build
-`blackcell-os-utilities-dev.html?app=calculator` and `blackcell-os-utilities-dev.html?app=worldclock` are separate entry modes in a shared utility file, not catalog entries yet. The build has no backend writes or personal cloud data. Clock preferences are session-only; alarms are not yet implemented. This branch is not merged to production.
+## Release gates
+- Functional browser checks across desktop, iPad and phone.
+- Corporate authorization and account isolation; separate storage permissions and audit controls as needed.
+- Appropriate persistence, import/export, recovery, reconnect and error handling.
+- Real provider integrations and cost controls where appropriate, not fake data or simulated AI.
+- Install, launch, dock, close and uninstall without affecting existing apps or account data.
+- Server-side catalog registration as optional, default uninstalled; no automatic desktop installation.
+- Production deployment verification before calling an app available.
+
+See `blackcell-os-app-suite-manifest-dev.json` for independent entry paths and status.
