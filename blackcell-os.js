@@ -174,7 +174,7 @@ async function storeRequest(p_action,p_app=null,p_level=null,p_enabled=null){
 }
 /* The six optional worlds are local BLACKCELL desktop installations, deliberately outside the App Store.
    They inherit the server-authorized Man's Armed Forces permission; saving a tile never grants media access. */
-const worldApps=Object.freeze({military:'worldmilitary',police:'worldpolice',fire:'worldfire',security:'worldsecurity',medical:'worldmedical',professional:'worldprofessional'});
+const worldApps=Object.freeze({uniform:'worlduniform',military:'worldmilitary',police:'worldpolice',fire:'worldfire',security:'worldsecurity',medical:'worldmedical',professional:'worldprofessional'});
 const worldAppIds=new Set(Object.values(worldApps));
 let worldInstalled=new Set();
 const worldInstallKey=()=> 'bc.os.world-installs.v1:'+String(storeProfile||'');
