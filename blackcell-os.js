@@ -172,8 +172,62 @@ async function storeRequest(p_action,p_app=null,p_level=null,p_enabled=null){
  const pending=task();catalogPending=pending;
  try{return await pending}finally{if(catalogPending===pending)catalogPending=null}
 }
-function authorizedApp(id){return id==='store'||!!storeRules.get(id)?.allowed}
-function installedApp(id){return id==='store'||authorizedApp(id)&&storeInstalled.has(id)}
+/* The six optional worlds are local BLACKCELL desktop installations, deliberately outside the App Store.
+   They inherit the server-authorized Man's Armed Forces permission; saving a tile never grants media access. */
+const worldApps=Object.freeze({military:'worldmilitary',police:'worldpolice',fire:'worldfire',security:'worldsecurity',medical:'worldmedical',professional:'worldprofessional'});
+const worldAppIds=new Set(Object.values(worldApps));
+let worldInstalled=new Set();
+const worldInstallKey=()=> 'bc.os.world-installs.v1:'+String(storeProfile||'');
+function readWorldInstalls(){
+ worldInstalled=new Set();if(preview||!storeProfile)return;
+ try{const saved=JSON.parse(localStorage.getItem(worldInstallKey())||'[]');if(Array.isArray(saved))worldInstalled=new Set(saved.filter(id=>worldAppIds.has(id)))}catch(_){}
+}
+function saveWorldInstalls(next){
+ if(!storeProfile||preview||!active||leaving)return false;
+ try{const serialized=JSON.stringify([...next].filter(id=>worldAppIds.has(id)));localStorage.setItem(worldInstallKey(),serialized);if(localStorage.getItem(worldInstallKey())!==serialized)return false;worldInstalled=new Set(JSON.parse(serialized));return true}catch(_){return false}
+}
+function authorizedApp(id){return id==='store'||(worldAppIds.has(id)?!!storeRules.get('forces')?.allowed:!!storeRules.get(id)?.allowed)}
+function installedApp(id){return id==='store'||authorizedApp(id)&&(worldAppIds.has(id)?worldInstalled.has(id):storeInstalled.has(id))}
+function worldStatus(){return Object.fromEntries(Object.entries(worldApps).map(([category,id])=>[category,installedApp(id)]))}
+function worldGatewayFrame(record){
+ if(!record?.frame||!(record.id==='forces'||worldAppIds.has(record.id))||!installedApp(record.id))return false;
+ try{return record.frame.contentWindow.location.origin===location.origin&&record.frame.contentWindow.location.pathname===new URL('mans-armed-forces.html',location.href).pathname}catch(_){return false}
+}
+function sendWorldStatus(record,extra={}){
+ if(!worldGatewayFrame(record))return;
+ try{record.frame.contentWindow.postMessage({type:'blackcell-world-os-state',installed:worldStatus(),...extra},location.origin)}catch(_){}
+}
+function broadcastWorldStatus(){for(const record of windows.values())sendWorldStatus(record)}
+async function installWorldApp(id,install){
+ if(!contextAllowed()||!worldAppIds.has(id)||!authorizedApp(id))return {ok:false,error:'Verified BLACKCELL OS access is required.'};
+ const account=storeProfile;
+ if(!install){
+  const result=await closeForUninstall(id);if(!result.ok)return result;
+  if(!contextAllowed()||storeProfile!==account||!authorizedApp(id))return {ok:false,error:'Corporate session changed; try again.'};
+ }
+ const next=new Set(worldInstalled);if(install)next.add(id);else next.delete(id);
+ if(!saveWorldInstalls(next))return {ok:false,error:'Desktop storage is unavailable. The world was not '+(install?'installed.':'uninstalled.')};
+ if(install&&recycledApps.has(id)){recycledApps.delete(id);saveAppLayout()}
+ syncStore();saveWorkspace();
+ return {ok:true};
+}
+window.addEventListener('message',event=>{
+ if(event.origin!==location.origin||!contextAllowed())return;
+ const data=event.data;if(!data||typeof data!=='object'||!['blackcell-world-os-query','blackcell-world-os-install'].includes(data.type))return;
+ const record=[...windows.values()].find(r=>r.frame?.contentWindow===event.source&&worldGatewayFrame(r));
+ if(!record||record.el.hidden||record.suspended)return;
+ if(data.type==='blackcell-world-os-query'){sendWorldStatus(record);return}
+ const category=data.category;if(typeof category!=='string'||!Object.hasOwn(worldApps,category))return;
+ const id=worldApps[category],request=typeof data.request==='string'?data.request.slice(0,80):'';
+ if(!authorizedApp(id)){sendWorldStatus(record,{request,category,ok:false,error:'Your corporate access does not permit this world.'});return}
+ if(installedApp(id)){showApp(id);sendWorldStatus(record,{request,category,ok:true,opened:true});return}
+ void installWorldApp(id,true).then(result=>{
+  if(!contextAllowed()||!worldGatewayFrame(record))return;
+  if(result.ok)osNotice((document.querySelector('.app[data-app="'+id+'"]')?.dataset.title||'World')+' installed on BLACKCELL OS.');
+  sendWorldStatus(record,{request,category,...result});
+ });
+});
+window.addEventListener('storage',event=>{if(!contextAllowed()||event.key!==worldInstallKey())return;readWorldInstalls();syncStore()});
 function dockPreferenceKey(){return 'bc.os.dock.v1:'+String(storeProfile)}
 function readDockPreferences(){dockOverrides=new Map();if(!storeProfile)return;for(const {store} of preferenceStores()){try{const data=JSON.parse(store.getItem(dockPreferenceKey())||'null');if(!data||typeof data!=='object'||Array.isArray(data))continue;dockOverrides=new Map(Object.entries(data).filter(([id,value])=>/^[a-z][a-z0-9_-]{0,63}$/.test(id)&&typeof value==='boolean'));break}catch(_){}}}
 function dockPinned(id){return dockOverrides.has(id)?dockOverrides.get(id):dockDefaults.has(id)}
@@ -197,7 +251,7 @@ function setDockPin(id,pinned){
  let saved=false;const record=JSON.stringify(Object.fromEntries(dockOverrides));for(const {name,store} of preferenceStores()){try{store.setItem(dockPreferenceKey(),record);if(name==='localStorage'&&store.getItem(dockPreferenceKey())===record)saved=true}catch(_){}}
  syncDockTile(tile);osNotice((tile.dataset.title||'App')+(pinned?' added to Dock.':' removed from Dock.')+(saved?'':' Preference could not be saved permanently on this device.'));if(pinned&&desktopPrefs.dockAutoHide)dockReveal(true)
 }
-function initStore(uid){storeProfile=uid;readAppLocks();readDockPreferences();readAppLayout();clearStore('Checking app permissions…')}
+function initStore(uid){storeProfile=uid;readWorldInstalls();readAppLocks();readDockPreferences();readAppLayout();clearStore('Checking app permissions…')}
 function syncStore(){
  if(preview)return;
  for(const tile of document.querySelectorAll('.app[data-app]')){
@@ -209,9 +263,9 @@ function syncStore(){
  applyAppLayout();
  if(recyclePanel)renderRecycleBin();
  $('adminReturn').hidden=!installedApp('administration');
- renderFolderPins();refreshAppLockBadges();windows.get('settings')?.refreshSettings?.();
+ renderFolderPins();refreshAppLockBadges();windows.get('settings')?.refreshSettings?.();broadcastWorldStatus();
 }
-function storeCatalog(){if(preview)return [];return [...document.querySelectorAll('.app[data-app]')].filter(t=>t.dataset.app!=='store'&&!t.disabled&&storeRules.has(t.dataset.app)).map(t=>{const r=storeRules.get(t.dataset.app),optional=t.dataset.optional==='true';return {id:t.dataset.app,title:t.dataset.title,sub:t.dataset.sub,desc:t.dataset.desc,icon:t.querySelector('svg'),optional,removable:true,installed:storeInstalled.has(t.dataset.app),allowed:r.allowed,minLevel:r.minLevel,enabled:r.enabled}})}
+function storeCatalog(){if(preview)return [];return [...document.querySelectorAll('.app[data-app]')].filter(t=>t.dataset.app!=='store'&&!worldAppIds.has(t.dataset.app)&&!t.disabled&&storeRules.has(t.dataset.app)).map(t=>{const r=storeRules.get(t.dataset.app),optional=t.dataset.optional==='true';return {id:t.dataset.app,title:t.dataset.title,sub:t.dataset.sub,desc:t.dataset.desc,icon:t.querySelector('svg'),optional,removable:true,installed:storeInstalled.has(t.dataset.app),allowed:r.allowed,minLevel:r.minLevel,enabled:r.enabled}})}
 function storeInfo(){return {owner:storeAdmin,level:storeLevel,error:preview?'Design preview only. Sign in to see your approved app catalog.':storeError,missingLedger:owner&&!preview&&!storeRules.has('photoledger'),release:'67 · Photos-only downloads',registered:storeRules.size,ledger:storeRules.has('photoledger')?(storeInstalled.has('photoledger')?'Installed':storeRules.get('photoledger').allowed?'Available':'Restricted'):'Not returned',sessionRequired:!preview&&/session|verify corporate access|sign in|clearance required/i.test(storeError)}}
 function appBusy(r){if(!r)return false;if(r.closing||r.filesBusy||r.storeBusy)return true;try{return !!r.frame?.contentDocument?.querySelector('[aria-busy=true],.is-uploading,[data-busy=true],progress:not([value])')}catch{return true}}
 async function closeForUninstall(id){const r=windows.get(id);if(!r)return {ok:true};if(appBusy(r))return {ok:false,error:r.title+' is busy. Finish your current operation before removing it.'};await requestClose(r);if(r.closing||windows.get(id)===r&&!r.suspended)return {ok:false,error:'The application is still saving. Try again when it finishes.'};return {ok:true}}
@@ -241,7 +295,7 @@ async function timedAppOperation(label,install,operation){
  finally{clearInterval(timer);overlay.remove();release?.();appOperation=false}
 }
 
-async function installApp(id,install){if(!active||preview||id==='store'||!authorizedApp(id))return {ok:false,error:id==='store'?'The App Store must remain installed.':'Your access level does not permit this application.'};if(!install&&appBusy(windows.get(id)))return {ok:false,error:'Finish the active operation before uninstalling.'};const title=document.querySelector('.app[data-app="'+id+'"]')?.dataset.title||'Application';return timedAppOperation(title,install,async()=>{if(!authorizedApp(id))return {ok:false,error:'Your access level no longer permits this application.'};if(!install){const result=await closeForUninstall(id);if(!result.ok)return result}return storeRequest(install?'install':'remove',id)})}
+async function installApp(id,install){if(worldAppIds.has(id))return installWorldApp(id,install);if(!active||preview||id==='store'||!authorizedApp(id))return {ok:false,error:id==='store'?'The App Store must remain installed.':'Your access level does not permit this application.'};if(!install&&appBusy(windows.get(id)))return {ok:false,error:'Finish the active operation before uninstalling.'};const title=document.querySelector('.app[data-app="'+id+'"]')?.dataset.title||'Application';return timedAppOperation(title,install,async()=>{if(!authorizedApp(id))return {ok:false,error:'Your access level no longer permits this application.'};if(!install){const result=await closeForUninstall(id);if(!result.ok)return result}return storeRequest(install?'install':'remove',id)})}
 async function removeAllApps(){
  if(!active||preview)return {ok:false,error:'Corporate access required.'};
  const ids=[...storeInstalled].filter(id=>id!=='store'&&authorizedApp(id));
@@ -478,7 +532,7 @@ function restoreWorkspace(){
 function restoreOptionalWorkspace(){
  if(!active||!pendingRestore.length)return;
  const records=pendingRestore;pendingRestore=[];workspaceRestoring=true;
- try{for(const item of records)if(storeRules.get(item.id)?.allowed&&storeInstalled.has(item.id))restoreRecord(item)}
+ try{for(const item of records)if(installedApp(item.id))restoreRecord(item)}
  finally{workspaceRestoring=false;saveWorkspace()}
 }
 window.addEventListener('pagehide',saveWorkspace);
