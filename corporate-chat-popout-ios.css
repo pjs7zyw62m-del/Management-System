@@ -1,46 +1,46 @@
 
-/* Light iPhone-style conversation; only the independently popped-out thread. */
-html.bc-chat-popout:not(.bc-media-panel),html.bc-chat-popout:not(.bc-media-panel) body.bc-chat{background:#f7f7fa!important;color:#18181c!important;color-scheme:light}
-html.bc-chat-popout:not(.bc-media-panel) body.bc-chat>.chat{background:#f7f7fa!important}
-html.bc-chat-popout:not(.bc-media-panel) body.bc-chat .chat>.chat-main{background:#fff!important;color:#18181c;position:relative}
-html.bc-chat-popout:not(.bc-media-panel) body.bc-chat .chat-main>.chat-title{position:relative;flex:0 0 106px;min-height:106px!important;display:flex;align-items:center;justify-content:center;padding:8px 48px 10px!important;background:linear-gradient(180deg,#e9e9eef5,#f5f5f7dd)!important;border:0;box-shadow:0 1px 0 #0000000b;backdrop-filter:blur(28px) saturate(130%);z-index:3}
+/* Pitch-black iPhone-style conversation; only the independently popped-out thread. */
+html.bc-chat-popout:not(.bc-media-panel),html.bc-chat-popout:not(.bc-media-panel) body.bc-chat{background:#000!important;color:#f5f5f7!important;color-scheme:dark}
+html.bc-chat-popout:not(.bc-media-panel) body.bc-chat>.chat{background:#000!important}
+html.bc-chat-popout:not(.bc-media-panel) body.bc-chat .chat>.chat-main{background:#000!important;color:#f5f5f7;position:relative}
+html.bc-chat-popout:not(.bc-media-panel) body.bc-chat .chat-main>.chat-title{position:relative;flex:0 0 106px;min-height:106px!important;display:flex;align-items:center;justify-content:center;padding:8px 48px 10px!important;background:linear-gradient(180deg,#161619f5,#080809ed)!important;border:0;box-shadow:0 1px 0 #ffffff10;backdrop-filter:blur(28px) saturate(130%);z-index:3}
 html.bc-chat-popout:not(.bc-media-panel) .imessage-identity{flex:0 1 auto;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:1px!important;min-width:0}
-html.bc-chat-popout:not(.bc-media-panel) .imessage-portrait{width:54px!important;height:54px!important;font-size:21px!important;border-radius:50%;background:linear-gradient(145deg,#a8b3ca,#7283a1)!important;border:1px solid #ffffff70!important;color:#fff;box-shadow:0 3px 10px #00000012!important}
-html.bc-chat-popout:not(.bc-media-panel) .imessage-names{max-width:100%;padding:5px 12px;border:1px solid #ffffffd0;border-radius:20px;background:#ffffffc0;box-shadow:0 2px 7px #00000008}
-html.bc-chat-popout:not(.bc-media-panel) .imessage-names strong{color:#15151a;font-size:13px!important;font-weight:700;letter-spacing:-.02em}
+html.bc-chat-popout:not(.bc-media-panel) .imessage-portrait{width:54px!important;height:54px!important;font-size:21px!important;border-radius:50%;background:linear-gradient(145deg,#626772,#30333c)!important;border:1px solid #ffffff27!important;color:#fff;box-shadow:0 3px 10px #00000012!important}
+html.bc-chat-popout:not(.bc-media-panel) .imessage-names{max-width:100%;padding:5px 12px;border:1px solid #ffffff20;border-radius:20px;background:#242428d9;box-shadow:0 2px 7px #0007}
+html.bc-chat-popout:not(.bc-media-panel) .imessage-names strong{color:#f5f5f7;font-size:13px!important;font-weight:700;letter-spacing:-.02em}
 html.bc-chat-popout:not(.bc-media-panel) .imessage-names small{display:none!important}
 html.bc-chat-popout:not(.bc-media-panel) .imessage-title-actions{display:none!important}
-html.bc-chat-popout:not(.bc-media-panel) .bc-pop-nav{position:absolute;top:15px;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;border:1px solid #fff;background:#ffffffc9;box-shadow:0 3px 10px #0000000c;color:#15151a;font-size:23px;cursor:pointer;line-height:1}
+html.bc-chat-popout:not(.bc-media-panel) .bc-pop-nav{position:absolute;top:15px;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;border:1px solid #ffffff20;background:#232326d9;box-shadow:0 3px 10px #0007;color:#f5f5f7;font-size:23px;cursor:pointer;line-height:1}
 html.bc-chat-popout:not(.bc-media-panel) .bc-pop-back{left:12px}
 html.bc-chat-popout:not(.bc-media-panel) .bc-pop-profile{right:12px;text-decoration:none;font-size:19px}
-html.bc-chat-popout:not(.bc-media-panel) .bc-pop-nav:hover{background:#fff}
-html.bc-chat-popout:not(.bc-media-panel) body.bc-chat .conversation{background:#fff!important;padding:16px 14px 12px!important;gap:8px;scrollbar-width:none;color:#18181c}
+html.bc-chat-popout:not(.bc-media-panel) .bc-pop-nav:hover{background:#36363b}
+html.bc-chat-popout:not(.bc-media-panel) body.bc-chat .conversation{background:#000!important;padding:16px 14px 12px!important;gap:8px;scrollbar-width:none;color:#f5f5f7}
 html.bc-chat-popout:not(.bc-media-panel) .message{max-width:min(82%,440px)}
-html.bc-chat-popout:not(.bc-media-panel) .message:not(.message-media) .bubble:not(.bc-inline-upload-bubble){font-size:14px!important;line-height:1.35!important;padding:9px 12px!important;background:#e9e9eb!important;color:#15151a!important;border:0!important;box-shadow:none!important;border-radius:19px!important}
+html.bc-chat-popout:not(.bc-media-panel) .message:not(.message-media) .bubble:not(.bc-inline-upload-bubble){font-size:14px!important;line-height:1.35!important;padding:9px 12px!important;background:#262629!important;color:#f5f5f7!important;border:0!important;box-shadow:none!important;border-radius:19px!important}
 html.bc-chat-popout:not(.bc-media-panel) .message.mine:not(.message-media) .bubble:not(.bc-inline-upload-bubble){background:linear-gradient(180deg,#36aafc,#0788ef)!important;color:white!important}
-html.bc-chat-popout:not(.bc-media-panel) .message.group-end:not(.message-media):not(.mine) .bubble:after,html.bc-chat-popout:not(.bc-media-panel) .message.group-single:not(.message-media):not(.mine) .bubble:after{background:#e9e9eb;filter:none}
+html.bc-chat-popout:not(.bc-media-panel) .message.group-end:not(.message-media):not(.mine) .bubble:after,html.bc-chat-popout:not(.bc-media-panel) .message.group-single:not(.message-media):not(.mine) .bubble:after{background:#262629;filter:none}
 html.bc-chat-popout:not(.bc-media-panel) .message.mine.group-end:not(.message-media) .bubble:after,html.bc-chat-popout:not(.bc-media-panel) .message.mine.group-single:not(.message-media) .bubble:after{background:#0788ef;filter:none}
 html.bc-chat-popout:not(.bc-media-panel) .chat-day-separator,html.bc-chat-popout:not(.bc-media-panel) .message time,html.bc-chat-popout:not(.bc-media-panel) .message-receipt{color:#81818a!important;font-size:10px}
 html.bc-chat-popout:not(.bc-media-panel) .chat-day-separator{background:none!important;border:0!important}
-html.bc-chat-popout:not(.bc-media-panel) .composer{background:#f7f7f9!important;border-top:1px solid #15151a0d!important;padding:10px 10px 12px!important;gap:7px!important}
-html.bc-chat-popout:not(.bc-media-panel) .composer #mediaToggleButton{background:#fff!important;border:1px solid #e9e9ed!important;box-shadow:0 2px 6px #0000000b!important;color:#232329!important;border-radius:50%;width:36px!important;height:36px!important;min-width:36px!important;min-height:36px!important}
-html.bc-chat-popout:not(.bc-media-panel) .composer-input-wrap{background:#fff!important;border:1px solid #dedee5!important;border-radius:22px!important;box-shadow:none!important;min-height:37px}
-html.bc-chat-popout:not(.bc-media-panel) .composer textarea{color:#17171a!important;caret-color:#0788ef;font-size:14px!important}
+html.bc-chat-popout:not(.bc-media-panel) .composer{background:#000!important;border-top:1px solid #ffffff12!important;padding:10px 10px 12px!important;gap:7px!important}
+html.bc-chat-popout:not(.bc-media-panel) .composer #mediaToggleButton{background:#202024!important;border:1px solid #ffffff20!important;box-shadow:none!important;color:#f5f5f7!important;border-radius:50%;width:36px!important;height:36px!important;min-width:36px!important;min-height:36px!important}
+html.bc-chat-popout:not(.bc-media-panel) .composer-input-wrap{background:#111113!important;border:1px solid #37373c!important;border-radius:22px!important;box-shadow:none!important;min-height:37px}
+html.bc-chat-popout:not(.bc-media-panel) .composer textarea{color:#f5f5f7!important;caret-color:#0788ef;font-size:14px!important}
 html.bc-chat-popout:not(.bc-media-panel) .composer textarea::placeholder{color:#a3a3ab!important}
 html.bc-chat-popout:not(.bc-media-panel) .composer #sendButton{background:#0788ef!important;border:0!important;color:white!important;box-shadow:none!important;border-radius:50%;width:35px!important;height:35px!important;min-width:35px!important;min-height:35px!important}
-html.bc-chat-popout:not(.bc-media-panel) .composer #sendButton:disabled{background:#d7d7dc!important;color:#fff!important}
-html.bc-chat-popout:not(.bc-media-panel) .os-chat-empty h2{color:#363639}
+html.bc-chat-popout:not(.bc-media-panel) .composer #sendButton:disabled{background:#26262a!important;color:#92929b!important}
+html.bc-chat-popout:not(.bc-media-panel) .os-chat-empty h2{color:#e1e1e7}
 html.bc-chat-popout:not(.bc-media-panel) .os-chat-empty p,html.bc-chat-popout:not(.bc-media-panel) #messages .empty{color:#808089}
-html.bc-chat-popout:not(.bc-media-panel) #systemStatus{background:#e8edf6;color:#304664;border-color:#d8e1f2}
-.bc-pop-action-shade{position:fixed;inset:0;background:#1a1a272c;backdrop-filter:blur(2px);z-index:17000}
-.bc-pop-action-surface{position:fixed;z-index:17002;display:flex;flex-direction:column;gap:7px;width:min(228px,calc(100vw - 20px));color:#141419;max-height:calc(100dvh - 16px);overflow:auto;scrollbar-width:none}
+html.bc-chat-popout:not(.bc-media-panel) #systemStatus{background:#101a2a;color:#c8e0ff;border-color:#254366}
+.bc-pop-action-shade{position:fixed;inset:0;background:#0008;backdrop-filter:blur(2px);z-index:17000}
+.bc-pop-action-surface{position:fixed;z-index:17002;display:flex;flex-direction:column;gap:7px;width:min(228px,calc(100vw - 20px));color:#f5f5f7;max-height:calc(100dvh - 16px);overflow:auto;scrollbar-width:none}
 .bc-pop-action-surface[hidden],.bc-pop-action-shade[hidden]{display:none!important}
-.bc-pop-reactions,.bc-pop-actions{background:#f8f8f9eb;border:1px solid #ffffffbd;box-shadow:0 8px 30px #00000026;backdrop-filter:blur(22px) saturate(160%)}
+.bc-pop-reactions,.bc-pop-actions{background:#242428f2;border:1px solid #ffffff25;box-shadow:0 8px 30px #0009;backdrop-filter:blur(22px) saturate(160%)}
 .bc-pop-reactions{display:flex;align-items:center;justify-content:space-evenly;padding:5px;border-radius:28px;gap:1px}
 .bc-pop-reaction{border:0;background:transparent;border-radius:50%;font-size:20px;padding:4px;cursor:pointer;min-width:29px}
 .bc-pop-actions{border-radius:17px;padding:4px}
-.bc-pop-actions button{display:flex;gap:11px;align-items:center;width:100%;color:#202025;background:transparent;border:0;padding:10px 12px;text-align:left;border-radius:9px;font:500 14px/1.2 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;cursor:pointer}
-.bc-pop-actions button:hover,.bc-pop-reaction:hover{background:#0000000b}
+.bc-pop-actions button{display:flex;gap:11px;align-items:center;width:100%;color:#f5f5f7;background:transparent;border:0;padding:10px 12px;text-align:left;border-radius:9px;font:500 14px/1.2 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;cursor:pointer}
+.bc-pop-actions button:hover,.bc-pop-reaction:hover{background:#ffffff13}
 .bc-pop-action-icon{width:22px;text-align:center;font-size:18px;line-height:1}
 .bc-pop-text-bubble.bc-pop-action-selected{z-index:17001;position:relative}
 .bc-pop-text-bubble.bc-pop-is-translated{display:flex!important;flex-direction:column;gap:6px}
