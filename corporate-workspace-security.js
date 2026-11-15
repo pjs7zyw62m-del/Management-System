@@ -1,60 +1,149 @@
+/* BLACKCELL SOC — owner-verified, read-only snapshots; no client-generated attack claims. */
 export function setup(client,u){
- const {root,E,add,button,metrics,panel,info,rpc,status,toolbar,date}=u;
+ const {root,E,add,button,metrics,panel,info,rpc,status,toolbar,date,timeout}=u;
+ const safeCount=x=>x!==null&&x!==undefined&&Number.isSafeInteger(Number(x))&&Number(x)>=0?Number(x):null;
+ const countLabel=x=>x===null?'—':String(x);
+ const LEVELS=['Coverage limited','Review recommended','High priority'];
+ let running=false,closed=false,lastRead=null,previous=null,auto=true,interval=null,generation=0;
+ const seen=new Set();let first=true;
+ const hero=E('section','soc-hero');
+ const heroTop=E('div','soc-hero-top'),mark=E('div','soc-mark','♢'),copy=E('div','soc-hero-copy');
+ add(copy,E('small','','SECURITY OPERATIONS / LEVEL 07'),E('h2','','Executive threat monitoring'),E('p','','Recorded indicators, session grants and administrator activity.'));
+ const health=E('span','soc-health','NOT CHECKED');health.dataset.state='unknown';
+ add(heroTop,mark,copy,health);hero.append(heroTop);
+ const banner=E('div','soc-banner'),headline=E('strong','','Waiting for verified records'),sub=E('p','','No security conclusion can be made until the first check completes.');
+ add(banner,headline,sub);hero.append(banner);root.append(hero);
  const values=metrics([
-   ['verified','OWNER VERIFIED','Level 7 grant'],
-   ['sessions','OWNER SESSIONS','Active grants'],
-   ['employees','ACTIVE EMPLOYEES','Activated staff'],
-   ['failures','CODE FAILURES','Current gateway record']
+   ['failures','CODE FAILURES','Current gateway counter'],
+   ['sessions','OWNER GRANTS','Verified / unexpired'],
+   ['employeeSessions','EMPLOYEE GRANTS','Verified / unexpired'],
+   ['changes','PERMISSION CHANGES','Recorded in last 24 hours*']
  ]);
  const bar=toolbar(),left=E('div','toolbar-left');
- const run=button('⟳ RUN SECURITY CHECK',()=>{void load()},'primary');
- const goto=button('REVIEW SESSIONS',()=>{document.getElementById('sessionList')?.scrollIntoView({behavior:'smooth',block:'start'})});
- add(left,run,goto);bar.append(left);
- const overview=panel('Verified Security Overview','Owner-authorized results from the real corporate database, not example alerts.');
- const details=E('div','info-list');overview.append(details);root.append(overview);
- const sessions=panel('Corporate Verification Sessions',
-  'These are code-verification grants only, not a complete list of browser devices or Supabase Auth tokens.');
+ const run=button('⟳ REFRESH NOW',()=>void load(true),'primary');
+ const toggle=button('AUTO REFRESH: ON',()=>{auto=!auto;toggle.textContent='AUTO REFRESH: '+(auto?'ON':'OFF');toggle.setAttribute('aria-pressed',String(auto));if(auto)void load(false)});
+ toggle.setAttribute('aria-pressed','true');
+ const check=E('small','soc-check','Not checked');add(left,run,toggle);bar.append(left,check);
+ const alertsPanel=panel('Security alerts','Current indicators use actual corporate records. They are not proof of intrusion.');
+ const alerts=E('div','soc-alerts');alertsPanel.append(alerts);root.append(alertsPanel);
+ const coverage=panel('Monitoring coverage','Sources and limitations — unavailable is not the same as zero.');
+ const cov=E('div','soc-coverage');
+ const feedPanel=panel('Security activity','Most recent recorded security, access and administrator events. Not a complete authentication log.');
+ const feed=E('div','soc-feed');feed.setAttribute('aria-live','off');feedPanel.append(feed);
+ const overview=panel('Verified Security Overview','Database-backed owner and employee grant counts.');
+ const details=E('div','info-list');overview.append(details);
+ const sessions=panel('Corporate Verification Sessions','These are verification grants, not a complete list of devices or Supabase Auth tokens.');
  const sessionList=E('div','info-list');sessionList.id='sessionList';sessions.append(sessionList);
  const revoke=button('REVOKE OTHER CORPORATE VERIFICATION GRANTS',async()=>{
    if(!confirm('Revoke other corporate Level 7 code-verification grants? They will need to reverify. This does not revoke sessions in other independent apps.'))return;
-   revoke.disabled=true;status('Revoking other corporate grants…');
-   try{
-     const res=await rpc('corp_admin_revoke_other_verified_sessions');
-     status('Revoked '+res.revoked+' other verification grant(s).','success');
-     void load();
-   }catch(e){status('Could not revoke grants: '+e.message,'error')}
-   finally{revoke.disabled=false}
- },'danger');
- sessions.append(revoke);root.append(sessions);
- root.append(E('div','notice',
-   'This page cannot prove that every device is safe, revoke every Supabase JWT, or enable new-device email alerts. Those features require additional secure infrastructure.'));
- details.append(E('p','','Run the security check to fetch live records.'));
- sessionList.append(E('p','','No sessions loaded.'));
- async function load(){
-   run.disabled=true;status('Verifying owner security state…');
-   try{
-     const d=await rpc('corp_admin_security_overview');
-     values.verified.textContent=d.owner_verified?'YES':'NO';
-     values.sessions.textContent=String(d.owner_sessions?.length||0);
-     values.employees.textContent=String(d.active_employees??0);
-     values.failures.textContent=String(d.master_code_failed_attempts??0);
-     details.replaceChildren();
-     details.append(info('Active employee verification grants','Employees with active verification sessions',
-       String(d.active_employee_verifications??0)));
-     details.append(info('Pending employee activations','Accounts awaiting password activation',String(d.pending_employees??0)));
-     details.append(info('Disabled employee accounts','Accounts no longer active',String(d.disabled_employees??0)));
-     details.append(info('Master-code lock','Existing gateway lockout state',
-       d.owner_master_code_locked_until&&new Date(d.owner_master_code_locked_until)>new Date()?
-        'LOCKED UNTIL '+date(d.owner_master_code_locked_until):'NO ACTIVE LOCK'));
-     details.append(info('Database response time','Last security read',date(d.read_at)));
-     sessionList.replaceChildren();
-     if(!d.owner_sessions?.length)sessionList.append(E('p','','No unexpired verified corporate sessions.'));
-     else d.owner_sessions.forEach(session=>{
-       sessionList.append(info(session.current?'Current owner session':'Other owner session',
-         'Verified '+date(session.verified_at),'Expires '+date(session.expires_at)));
-     });
-     status('Security check completed successfully.','success');
-   }catch(e){status('Security check failed: '+e.message,'error')}
-   finally{run.disabled=false}
+   revoke.disabled=true;
+   try{const res=await rpc('corp_admin_revoke_other_verified_sessions');status('Revoked '+res.revoked+' other verification grant(s).','success');void load(true)}
+   catch(_){status('Could not revoke grants. Verify your session and retry.','error')}
+   finally{revoke.disabled=!lastRead}
+ },'danger');revoke.disabled=true;sessions.append(revoke);
+ add(root,feedPanel,overview,sessions,coverage);
+ coverage.append(cov);
+ function covItem(label,description,state){
+   const row=E('div','soc-coverage-row'),copy=E('div');add(copy,E('b','',label),E('small','',description));
+   const tag=E('span','soc-source',state);tag.dataset.state=state;add(row,copy,tag);cov.append(row)
  }
+ function renderCoverage(live,activity){
+   cov.replaceChildren();
+   covItem('Corporate master-code counter','Current failures and active gateway lock.',live?'Connected':'Unavailable');
+   covItem('Verified corporate sessions','Grant counts and other unexpired owner grants.',live?'Connected':'Unavailable');
+   covItem('Administrator activity','Recorded permission changes and access actions.',activity?'Connected':'Unavailable');
+   covItem('Password sign-in failures / blocked requests','Requires secure provider-log collection; not measured here.','Not connected');
+   covItem('IP reputation / new device identification','No device or IP attribution in these sources.','Not connected');
+   covItem('Database and file-access anomalies','Requires dedicated server-side audit telemetry.','Not connected');
+   covItem('Continuous background monitoring / OS-wide push','Refreshes while this authenticated workspace is visible only.','Not connected');
+ }
+ function alertRow(level,title,description,time){
+   const row=E('div','soc-alert'),dot=E('i'),copy=E('div');
+   row.dataset.level=String(level);add(copy,E('strong','',title),E('small','',description));add(row,dot,copy,E('span','',time||''));alerts.append(row);
+ }
+ function setUnknown(message){
+   generation++;lastRead=null;previous=null;revoke.disabled=true;
+   Object.values(values).forEach(n=>n.textContent='—');health.dataset.state='unknown';health.textContent='UNAVAILABLE';headline.textContent='Security status unavailable';sub.textContent=message;
+   check.textContent='Last attempt '+date(new Date().toISOString());alerts.replaceChildren();alertRow(1,'Monitoring interrupted','No conclusion about current security activity can be made.');
+   details.replaceChildren(E('p','','Access check unavailable.'));sessionList.replaceChildren();feed.replaceChildren(E('p','','Activity unavailable.'));
+   renderCoverage(false,false)
+ }
+ function visible(){
+   if(document.hidden||document.getElementById('opApp')?.hidden)return false;
+   try{
+     let w=window;
+     while(w!==w.parent){const f=w.frameElement;if(!f||!f.getClientRects().length||f.closest('[hidden],[inert]'))return false;w=w.parent}
+   }catch(_){return false}
+   return true;
+ }
+ async function load(manual=false){
+   if(closed||running||(!manual&&!visible()))return;
+   running=true;run.disabled=true;const epoch=generation;
+   if(!lastRead){health.dataset.state='unknown';health.textContent='CHECKING'}
+   try{
+     const {data:guard,error}=await timeout(client.rpc('corp_code_status'),20000);
+     if(error||guard?.ok!==true||guard?.verified!==true)throw new Error('verification');
+     if(closed||epoch!==generation||!visible())return;
+     const results=await Promise.allSettled([timeout(rpc('corp_admin_security_overview'),20000),timeout(rpc('corp_admin_console_activity',{p_limit:200}),20000)]);
+     if(closed||epoch!==generation||!visible())return;
+     if(results[0].status!=='fulfilled'||results[0].value.owner_verified!==true)throw new Error('overview');
+     const d=results[0].value,records=results[1].status==='fulfilled'&&Array.isArray(results[1].value.items)?results[1].value.items:null;
+     const sessionsData=Array.isArray(d.owner_sessions)?d.owner_sessions:null,failures=safeCount(d.master_code_failed_attempts),employees=safeCount(d.active_employee_verifications);
+     const lock=d.owner_master_code_locked_until&&new Date(d.owner_master_code_locked_until)>new Date();
+     const other=sessionsData?sessionsData.filter(s=>s.current===false).length:null;
+     const events=records?.filter(v=>v&&typeof v==='object'&&Number.isFinite(Date.parse(v.at)))||[];
+     const recentChanges=events.filter(x=>x.name==='employee_permissions_updated'&&Date.parse(x.at)>=Date.now()-86400000);
+     lastRead=d.read_at||new Date().toISOString();
+     values.failures.textContent=countLabel(failures);values.sessions.textContent=countLabel(sessionsData?.length??null);values.employeeSessions.textContent=countLabel(employees);
+     values.changes.textContent=records?(records.length===200?'≥':'')+recentChanges.length:'—';
+     const indicators=[];let level=0;
+     if(lock){level=2;indicators.push([2,'Master-code lock active','A recorded gateway lock is active. Verify whether you initiated the failed attempts.',date(d.owner_master_code_locked_until)])}
+     if(failures!==null&&failures>0){level=Math.max(level,1);indicators.push([1,'Recorded code failures',failures+' currently recorded failure(s). This is not a complete history.',date(lastRead)])}
+     if(other!==null&&other>0){level=Math.max(level,1);indicators.push([1,'Other verified owner grants',other+' other unexpired grant(s). Review whether these are yours.',date(lastRead)])}
+     if(previous&&failures!==null&&previous.failures!==null&&failures>previous.failures){level=Math.max(level,1);indicators.unshift([1,'Code failure count increased','Current counter increased since the previous visible check.',date(lastRead)])}
+     if(records&&recentChanges.length){level=Math.max(level,1);indicators.push([1,'Recent permission changes',recentChanges.length+' recorded change(s) in the returned activity window. Review expected changes.',date(recentChanges[0].at)])}
+     if(!records||failures===null||!sessionsData){indicators.push([1,'Partial data','One or more sources are unavailable. Missing metrics are not zero.']);level=Math.max(level,1)}
+     alerts.replaceChildren();
+     for(const item of indicators)alertRow(...item);
+     if(!indicators.length)alertRow(0,'No current indicators in connected records','Limited coverage; this does not rule out an attack.',date(lastRead));
+     headline.textContent=level===2?'High-priority security indicator':level===1?'Review security indicators':'No current indicators in connected records';
+     health.dataset.state=level===2?'high':level===1?'review':'limited';health.textContent=LEVELS[level].toUpperCase();
+     sub.textContent='Coverage is limited. Password failures, IP threats and file anomalies are not connected.';
+     check.textContent='Last checked '+date(lastRead);
+     details.replaceChildren(info('Active employee accounts','Activated staff',countLabel(safeCount(d.active_employees))),info('Pending activations','Awaiting password activation',countLabel(safeCount(d.pending_employees))),info('Disabled accounts','Inactive personnel',countLabel(safeCount(d.disabled_employees))),info('Master-code lock','Gateway lockout state',lock?'LOCKED UNTIL '+date(d.owner_master_code_locked_until):'NO ACTIVE LOCK'));
+     sessionList.replaceChildren();
+     if(!sessionsData)sessionList.append(E('p','','Grant data unavailable.'));
+     else if(!sessionsData.length)sessionList.append(E('p','','No unexpired owner grants recorded.'));
+     else for(const v of sessionsData)sessionList.append(info(v.current?'Current owner grant':'Other owner grant','Verified '+date(v.verified_at),'Expires '+date(v.expires_at)));
+     revoke.disabled=false;
+     feed.replaceChildren();
+     if(records===null)feed.append(E('p','','Recorded activity is unavailable. This is not a zero-event result.'));
+     else if(!events.length)feed.append(E('p','','No events returned by the connected activity source.'));
+     else{
+       if(records.length===200)feed.append(E('p','soc-note','Showing up to 200 most recent records; older activity may not be included.'));
+       for(const v of events.slice(0,30)){
+         const row=E('div','soc-event'),icon=E('span','soc-event-icon',v.name==='employee_permissions_updated'?'!':'·'),body=E('div');
+         const key=String(v.at)+'|'+String(v.name)+'|'+String(v.description);
+         const change=v.name==='employee_permissions_updated';if(change)row.dataset.review='true';
+         add(body,E('b','',String(v.name||'recorded activity').replace(/_/g,' ')),E('small','',v.description||'Recorded event'));
+         add(row,icon,body,E('time','',date(v.at)));feed.append(row);
+         if(!first&&!seen.has(key)&&change)row.dataset.new='true';
+       }
+       for(const v of events)seen.add(String(v.at)+'|'+String(v.name)+'|'+String(v.description));
+       if(seen.size>1000){seen.clear();for(const v of events)seen.add(String(v.at)+'|'+String(v.name)+'|'+String(v.description))}
+     }
+     renderCoverage(true,records!==null);previous={failures};first=false;
+     if(manual)status('Security records refreshed.','success');
+   }catch(_){if(!closed&&epoch===generation)setUnknown('Unable to verify or retrieve the current records. Refresh or re-enter Corporate Access.')}
+   finally{run.disabled=false;running=false}
+ }
+ setUnknown('Awaiting authenticated security records.');
+ // Existing workspace authorization reveals opApp after setup. Poll only when visible.
+ const kick=()=>{if(auto&&visible())void load(false)};
+ setTimeout(kick,100);interval=setInterval(kick,30000);
+ document.addEventListener('visibilitychange',kick);window.addEventListener('focus',kick);
+ window.addEventListener('pagehide',e=>{if(e.persisted){setUnknown('Workspace paused.');return}closed=true;clearInterval(interval);document.removeEventListener('visibilitychange',kick);window.removeEventListener('focus',kick);setUnknown('Workspace closed.')});
+ window.addEventListener('pageshow',kick);
+ if(typeof MutationObserver!=='undefined')new MutationObserver(()=>{if(document.getElementById('opApp')?.hidden){setUnknown('Workspace access is not verified.')}else kick()}).observe(document.getElementById('opApp'),{attributes:true,attributeFilter:['hidden']});
+ root.append(E('p','soc-note','* Permission changes are counted only in the returned activity window (maximum 200 events). No accounts are blocked automatically.'));
 }
