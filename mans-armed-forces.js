@@ -302,7 +302,7 @@ async function aiPreview(file){
 }
 async function uploadUniforms(files){
  if(uploading||!authorized)return;
- const selected=Array.from(files||[]),picked=selected.slice(0,MAX_BATCH);
+ const selected=Array.from(files||[]),picked=worldId==='uniform'?selected:selected.slice(0,MAX_BATCH);
  const good=picked.filter(f=>allowedPhotos.has(f.type)&&f.size>0&&f.size<=45*1048576);
  if(!good.length){text($('mfUploadStatus'),'Choose supported photographs up to 45 MB each.');return}
  const category=worldScope||$('mfUploadCategory').value;
@@ -325,7 +325,7 @@ async function uploadUniforms(files){
     const check=await dedupe.preflight(file);
     const hit=check.matches[0];
     if(hit?.type==='exact'){duplicates++;continue}
-    if(hit?.type==='possible'&&!confirm('Possible duplicate: '+file.name+'. Keep both copies?')){duplicates++;continue}
+    if(worldId!=='uniform'&&hit?.type==='possible'&&!confirm('Possible duplicate: '+file.name+'. Keep both copies?')){duplicates++;continue}
     let target=category==='auto'?inferCategory({filename:file.name}):category;
     if(!['military','police','fire','medical','security','professional','unsorted'].includes(target))target='unsorted';
     const id=crypto.randomUUID(),ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,8)||'jpg';
