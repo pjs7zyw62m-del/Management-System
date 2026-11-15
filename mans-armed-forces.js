@@ -311,11 +311,18 @@ async function aiPreview(file){
   c.getContext('2d').drawImage(img,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.78);
  }finally{URL.revokeObjectURL(url)}
 }
+async function worldVideoOrientation(file){
+ const url=URL.createObjectURL(file),v=document.createElement('video');
+ try{return await new Promise(resolve=>{
+  const done=()=>{clearTimeout(timer);resolve(v.videoWidth&&v.videoHeight?(v.videoHeight>v.videoWidth?'short':'standard'):'unknown')};
+  const timer=setTimeout(done,5000);v.preload='metadata';v.onloadedmetadata=done;v.onerror=done;v.src=url;
+ })}finally{v.removeAttribute('src');v.load();URL.revokeObjectURL(url)}
+}
 async function uploadUniforms(files){
  if(uploading||!authorized)return;
  const selected=Array.from(files||[]),picked=worldId==='uniform'?selected:selected.slice(0,MAX_BATCH);
- const good=picked.filter(f=>allowedPhotos.has(f.type)&&f.size>0&&f.size<=45*1048576);
- if(!good.length){text($('mfUploadStatus'),'Choose supported photographs up to 45 MB each.');return}
+ const good=picked.filter(f=>(allowedPhotos.has(f.type)||['video/mp4','video/quicktime','video/webm'].includes(f.type))&&f.size>0&&f.size<=45*1048576);
+ if(!good.length){text($('mfUploadStatus'),'Choose supported photos or videos up to 45 MB each.');return}
  const category=worldScope||$('mfUploadCategory').value;
  const direct=owner()&&worldId!=='uniform';
  if(direct&&!$('mfUploadDirect').checked){text($('mfUploadStatus'),'Confirm the batch is non-explicit and you have permission to share it, then select photos again. Sorting is not an approval requirement.');return}
@@ -333,7 +340,8 @@ async function uploadUniforms(files){
    if(authorized?.user?.id!==uid)break;
    text($('mfUploadStatus'),'Uploading '+(done+1)+' / '+good.length+' · '+file.name.slice(0,65));
    try{
-    const check=await dedupe.preflight(file);
+    const isVideo=file.type.startsWith('video/');
+    const check=isVideo?{matches:[]}:await dedupe.preflight(file);
     const hit=check.matches[0];
     if(hit?.type==='exact'){duplicates++;continue}
     if(worldId!=='uniform'&&hit?.type==='possible'&&!confirm('Possible duplicate: '+file.name+'. Keep both copies?')){duplicates++;continue}
@@ -341,9 +349,10 @@ async function uploadUniforms(files){
     if(!['military','police','fire','medical','security','professional','unsorted'].includes(target))target='unsorted';
     const id=crypto.randomUUID(),ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,8)||'jpg';
     const path=uid+'/'+id+'.'+ext;
-    const asset={id,owner_id:uid,purpose:'library',kind:'photo',mime_type:file.type,filename:file.name.slice(0,180),storage_path:path,bytes:file.size,
+    const asset={id,owner_id:uid,purpose:'library',kind:isVideo?'video':'photo',mime_type:file.type,filename:file.name.slice(0,180),storage_path:path,bytes:file.size,
       military_category:target==='unsorted'?'Unsorted':'Uniforms',military_branch:target==='military'?filenameBranch(file.name):'Unspecified',military_tags:['maf:'+target]};
-    if(direct)Object.assign(asset,{review_status:'approved',rights_confirmed:true,adult_restricted:false});
+    if(isVideo){asset.video_category='standard';asset.military_tags.push('bc-video-orientation:'+await worldVideoOrientation(file));}
+    if(direct&&!isVideo)Object.assign(asset,{review_status:'approved',rights_confirmed:true,adult_restricted:false});
     const up=await bucket.upload(path,file,{contentType:file.type,cacheControl:'1800',upsert:false});
     if(up.error)throw Error(up.error.message);
     const added=await corporate.from('corp_social_assets').insert(asset).select('id,review_status').single();
@@ -351,11 +360,12 @@ async function uploadUniforms(files){
     saved++;
     asset.review_status=added.data?.review_status;asset.created_at=new Date().toISOString();
     uploadState.assets.push(asset);
-    if(asset.review_status==='approved'){
+    if(!isVideo&&asset.review_status==='approved'){
      posted++;approved.unshift(asset);updateQueueStatus();
      text($('mfImageCount'),approved.length);
      if(posted===1||posted%10===0)void render();
     }
+    if(isVideo)continue;
     await dedupe.record(asset,check.fingerprint).catch(()=>false);
     if(useAI&&added.data?.review_status==='approved'&&target==='unsorted'&&aiJobs.length<60)aiJobs.push({file,asset});
     else if(useAI&&target==='unsorted')aiSkipped++;
