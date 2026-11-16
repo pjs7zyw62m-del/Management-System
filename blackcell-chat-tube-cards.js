@@ -1,5 +1,5 @@
 /* Internal video references, not URLs. All resolution uses the current chat session. */
-import {isWorldVideo,worldVideoTitle} from './blackcell-world-video-catalog.js?v=2-native-playback';
+import {isWorldVideo,worldVideoTitle,readWorldVideo} from './blackcell-world-video-catalog.js?v=1';
 const idPart='[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
 const refPattern=new RegExp('(?:^|\\n|\\s)(blackcell:video/('+idPart+'))\\s*$','i');
 export function parseTubeReference(body){
@@ -16,7 +16,7 @@ export function createChatTubeCards(client,alive){
   return data;
  }
  async function signed(path){const {data,error}=await bucket.createSignedUrl(path,900);if(error||!data?.signedUrl)throw Error('Unavailable');return data.signedUrl}
- function stop(card){const v=card.video;v.pause();v.removeAttribute('src');v.load();v.hidden=true;card.cover.hidden=false;card.play.hidden=false;card.expand.disabled=true;card.stage.classList.remove('is-expanded');card.expand.textContent='Expand';if(active===card)active=null}
+ function stop(card){const v=card.video;v.pause();v.removeAttribute('src');v.load();if(card.objectUrl){URL.revokeObjectURL(card.objectUrl);card.objectUrl=''}v.hidden=true;card.cover.hidden=false;card.play.hidden=false;card.expand.disabled=true;card.stage.classList.remove('is-expanded');card.expand.textContent='Expand';if(active===card)active=null}
  function clear(){for(const c of cards){c.observer?.disconnect();stop(c)}cards.clear()}
  function render(ref){
   const root=make('div','bubble bc-chat-tube-card');if(ref.caption)root.append(make('p','bc-chat-tube-caption',ref.caption));
@@ -36,10 +36,10 @@ export function createChatTubeCards(client,alive){
   play.addEventListener('click',async e=>{
    e.stopPropagation();if(!valid()||loading)return;loading=true;play.disabled=true;note.textContent='Authorizing private playback…';
    try{const a=await asset(ref.id);if(!valid())return;let src;
-    if(isWorldVideo(a)){const mod=await import('./blackcell-world-video-catalog.js?v=2-native-playback');if(typeof mod.worldPlaybackUrl!=='function'){throw Error('Native streaming is not deployed yet')}src=await mod.worldPlaybackUrl(client,a)}
+    if(isWorldVideo(a)){const blob=await readWorldVideo(client,a);if(!valid())return;card.objectUrl=URL.createObjectURL(blob);src=card.objectUrl}
     else{if(!a.storage_path||a.source_provider==='world-bunny-v1')throw Error('Unavailable');src=await signed(a.storage_path)}
-    if(!valid())return;if(active&&active!==card)stop(active);active=card;cover.hidden=true;v.hidden=false;v.src=src;v.load();expand.disabled=false;note.textContent='Private BLACKCELL Tube video';try{await v.play()}catch{}
-   }catch(e){if(valid())note.textContent=String(e?.message||'').includes('not deployed yet')?'Private World streaming is not available yet.':'Video could not start. Tap play to retry.'}
+    if(!valid()){if(card.objectUrl){URL.revokeObjectURL(card.objectUrl);card.objectUrl=''}return}if(active&&active!==card)stop(active);active=card;cover.hidden=true;v.hidden=false;v.src=src;v.load();expand.disabled=false;note.textContent='Private BLACKCELL Tube video';try{await v.play()}catch{}
+   }catch(e){if(valid())note.textContent='Video could not start. Tap play to retry.'}
    finally{loading=false;if(valid())play.disabled=false}
   });
   expand.addEventListener('click',e=>{e.stopPropagation();if(!valid())return;if(v.hidden&&!loading&&!play.disabled)play.click();if(stage.classList.contains('is-expanded')){stage.classList.remove('is-expanded');expand.textContent='Expand';return}if(document.fullscreenElement===stage){void document.exitFullscreen().catch(()=>{});return}const fallback=()=>{if(valid()){stage.classList.add('is-expanded');expand.textContent='Reduce'}};if(stage.requestFullscreen)void stage.requestFullscreen().catch(fallback);else fallback()});
