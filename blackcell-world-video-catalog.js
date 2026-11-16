@@ -12,13 +12,13 @@ export function worldVideoTitle(a){
  const date=String(a?.created_at||'').slice(0,10);
  return label+' Video'+(/^\d{4}-\d{2}-\d{2}$/.test(date)?' · '+date:'');
 }
-export async function readWorldVideo(client,a){
+export async function readWorldVideo(client,a,{signal}={}){
  if(!isWorldVideo(a))throw Error('Not a World video');
  const session=(await client.auth.getSession()).data?.session;
  const config=window.BLACKCELL_CORP_CONFIG||{};
  if(!session?.access_token||!config.url||!config.publishableKey)throw Error('Sign in again to play this private video.');
  const response=await fetch(config.url.replace(/\/$/,'')+'/functions/v1/blackcell-world-media?action=read',{
-  method:'POST',headers:{Authorization:'Bearer '+session.access_token,apikey:config.publishableKey,'Content-Type':'application/json'},
+  signal,method:'POST',headers:{Authorization:'Bearer '+session.access_token,apikey:config.publishableKey,'Content-Type':'application/json'},
   body:JSON.stringify({id:a.id})
  });
  if(!response.ok)throw Error('Private video unavailable ('+response.status+')');
@@ -27,24 +27,29 @@ export async function readWorldVideo(client,a){
  if((await client.auth.getSession()).data?.session?.user?.id!==session.user.id)throw Error('Session changed');
  return blob;
 }
-async function frameFromBlob(blob){
+async function frameFromBlob(blob,signal){
+ signal?.throwIfAborted();
  const url=URL.createObjectURL(blob),video=document.createElement('video');
  video.muted=true;video.playsInline=true;video.preload='auto';
  try{
   await new Promise((resolve,reject)=>{
    let timer=setTimeout(()=>finish(Error('Preview decode timed out')),12000);
-   function finish(error){clearTimeout(timer);video.removeEventListener('loadeddata',loaded);video.removeEventListener('error',failed);error?reject(error):resolve()}
+   function abort(){finish(new DOMException('Preview paused','AbortError'))}
+   function finish(error){signal?.removeEventListener('abort',abort);clearTimeout(timer);video.removeEventListener('loadeddata',loaded);video.removeEventListener('error',failed);error?reject(error):resolve()}
    function loaded(){finish()}
    function failed(){finish(Error('Unsupported video preview'))}
+   signal?.addEventListener('abort',abort,{once:true});if(signal?.aborted){abort();return}
    video.addEventListener('loadeddata',loaded,{once:true});video.addEventListener('error',failed,{once:true});video.src=url;video.load();
   });
+  signal?.throwIfAborted();
   if(Number.isFinite(video.duration)&&video.duration>1){
    await new Promise(resolve=>{
-    const done=()=>{clearTimeout(timer);video.removeEventListener('seeked',done);resolve()};
-    const timer=setTimeout(done,2200);video.addEventListener('seeked',done,{once:true});
+    const done=()=>{signal?.removeEventListener('abort',done);clearTimeout(timer);video.removeEventListener('seeked',done);resolve()};
+    const timer=setTimeout(done,2200);video.addEventListener('seeked',done,{once:true});signal?.addEventListener('abort',done,{once:true});if(signal?.aborted){done();return}
     try{video.currentTime=Math.min(video.duration*.18,4,video.duration-.1)}catch{done()}
    });
   }
+  signal?.throwIfAborted();
   if(!video.videoWidth||!video.videoHeight)throw Error('No decoded frame');
   const canvas=document.createElement('canvas'),scale=Math.min(1,640/video.videoWidth,640/video.videoHeight);
   canvas.width=Math.max(1,Math.round(video.videoWidth*scale));canvas.height=Math.max(1,Math.round(video.videoHeight*scale));
@@ -55,19 +60,22 @@ async function frameFromBlob(blob){
  }finally{video.pause();video.removeAttribute('src');video.load();URL.revokeObjectURL(url)}
 }
 export function createWorldVideoPreviews(client){
- const cache=new Map(),queued=new Map();let tail=Promise.resolve(),epoch=0;
- const clear=()=>{epoch++;for(const value of cache.values())URL.revokeObjectURL(value);cache.clear();queued.clear()};
+ const cache=new Map(),queued=new Map();let tail=Promise.resolve(),epoch=0,paused=false,controller=null;
+ const clear=()=>{epoch++;controller?.abort();for(const value of cache.values())URL.revokeObjectURL(value);cache.clear();queued.clear()};
  window.addEventListener('pagehide',clear);
  client.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT')clear()});
+ function setPaused(value){const next=!!value;if(next===paused)return;paused=next;if(paused){epoch++;controller?.abort();queued.clear()}}
  async function get(a){
   if(cache.has(a.id))return cache.get(a.id);
+  if(paused)throw Error('Preview paused for playback');
   if(queued.has(a.id))return queued.get(a.id);
   const version=epoch;
   const job=tail.then(async()=>{
-   if(version!==epoch)throw Error('Preview session changed');
-   const blob=await readWorldVideo(client,a),jpeg=await frameFromBlob(blob);
-   if(version!==epoch)throw Error('Preview session changed');
-   const url=URL.createObjectURL(jpeg);cache.set(a.id,url);return url;
+   if(version!==epoch||paused)throw Error('Preview session changed');
+   const task=new AbortController();controller=task;
+   try{const blob=await readWorldVideo(client,a,{signal:task.signal}),jpeg=await frameFromBlob(blob,task.signal);
+   if(version!==epoch||paused)throw Error('Preview session changed');
+   const url=URL.createObjectURL(jpeg);cache.set(a.id,url);return url;}finally{if(controller===task)controller=null}
   });
   tail=job.catch(()=>{});queued.set(a.id,job);
   try{return await job}finally{if(queued.get(a.id)===job)queued.delete(a.id)}
@@ -81,5 +89,5 @@ export function createWorldVideoPreviews(client){
   // Detached tile observers are cleaned up even when they never enter view.
   setTimeout(()=>observer.disconnect(),30000);
  }
- return {mount,get,clear};
+ return {mount,get,clear,setPaused};
 }
