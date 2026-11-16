@@ -249,7 +249,7 @@ async function render(){
   const card=document.createElement('button');card.type='button';card.className='mf-photo-card';card.setAttribute('aria-label',(safe(a.caption)||safe(a.filename)||'Uniform photograph')+' — '+formatMetadata(a));
   const isVideo=a.kind==='video';
   const img=document.createElement(isVideo?'div':'img');
-  if(isVideo){img.className='mf-video-tile';const play=document.createElement('span');play.textContent='▶';const label=document.createElement('small');label.textContent='VIDEO';img.append(play,label)}
+  if(isVideo){card.classList.add('mf-video-card');card.setAttribute('aria-label','Play '+(safe(a.filename)||'uniform video'));img.className='mf-video-tile';const play=document.createElement('span');play.textContent='▶';const label=document.createElement('small');label.textContent='VIDEO';img.append(play,label)}
   else{img.loading='lazy';img.decoding='async';img.src=a.signedUrl;img.alt=safe(a.caption)||safe(a.filename)||'Uniform photograph'}
   const details=document.createElement('div');details.className='mf-photo-info';
   const title=document.createElement('strong');title.textContent=(safe(a.caption)||safe(a.filename)||'Uniform photograph').slice(0,85);
@@ -556,7 +556,26 @@ window.addEventListener('message',event=>{
  }
  paintWorldInstallButtons();
 });
+function ensureMediaUI(){
+ const image=$('mfViewerImage'),grid=$('mfPhotoGrid');
+ if(image&&!$('mfViewerVideo')){
+  const v=document.createElement('video');v.id='mfViewerVideo';v.controls=true;v.playsInline=true;v.preload='none';v.hidden=true;v.setAttribute('aria-label','Private video player');image.after(v);
+ }
+ if(grid&&!$('mfMediaFilter')){
+  const label=document.createElement('label');label.className='mf-media-filter';label.append('Media type ');
+  const select=document.createElement('select');select.id='mfMediaFilter';select.setAttribute('aria-label','Filter media');
+  for(const [value,title] of [['all','All media'],['photo','Photos'],['video','Videos']]){const o=document.createElement('option');o.value=value;o.textContent=title;select.append(o)}
+  label.append(select);grid.before(label);
+ }
+ const heading=$('mfCollectionHeading');if(heading)heading.textContent=heading.textContent.replace(/Photo Library/g,'Media Library');
+ const count=$('mfImageCount')?.nextElementSibling;if(count)count.textContent='MEDIA ITEMS';
+ const desc=heading?.parentElement?.querySelector('p');if(desc)desc.textContent='Browse photos and videos in your collection. Your pending uploads stay private.';
+ if(!document.getElementById('mfRuntimeMediaStyle')){
+  const style=document.createElement('style');style.id='mfRuntimeMediaStyle';style.textContent='#uMain .mf-photo-card.mf-video-card{display:block;width:100%;min-width:0;min-height:132px;overflow:hidden;text-align:left;border:1px solid #35373e;background:#101116;border-radius:12px;padding:0}#uMain .mf-video-tile{width:100%;aspect-ratio:16/10;min-height:112px;display:grid;place-content:center;justify-items:center;gap:9px;background:linear-gradient(145deg,#252831,#090a0d);color:#f3f5f8}#uMain .mf-video-tile span{display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:#ffffff15;font-size:20px}#uMain .mf-video-tile small{font-size:10px;letter-spacing:.16em}#uMain .mf-video-card .mf-photo-info{display:block;padding:10px;overflow:hidden}#uMain .mf-video-card .mf-photo-info strong,#uMain .mf-video-card .mf-photo-info small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#mfViewerVideo{width:100%;min-height:100px;max-height:65vh;object-fit:contain;background:#000;flex:1 1 auto}#mfViewerVideo[hidden],#mfViewerImage[hidden],#mfTransferPhotos[hidden]{display:none!important}.mf-media-filter{display:flex;gap:10px;align-items:center;margin:12px 0;color:#aaa;font-size:13px}.mf-media-filter select{background:#18191c;color:#fff;border:1px solid #41434a;border-radius:8px;padding:8px}';document.head.append(style);
+ }
+}
 function wire(){
+ ensureMediaUI();
  $('mfMediaFilter')?.addEventListener('change',e=>{mediaFilter=e.target.value;page=0;if(authorized)void render()});
  document.querySelectorAll('.mf-portrait-tile[data-mf-uniform]').forEach(tile=>{
   const img=tile.querySelector('.mf-album-art img'),download=tile.querySelector('.mf-portrait-download');if(!img||!download)return;
