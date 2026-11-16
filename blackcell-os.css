@@ -684,3 +684,7 @@ html .bc-apple-photos .ap-justified-grid>.ap-photo{flex:none;box-sizing:border-b
 html .bc-apple-photos .ap-justified-grid .bc-pm-thumb{width:100%;height:100%;aspect-ratio:auto;border-radius:0}
 html .bc-apple-photos .ap-justified-grid .bc-pm-thumb img{width:100%;height:100%;object-fit:cover;object-position:center;max-width:100%;max-height:100%}
 .bc-apple-photos .ap-period .bc-pm-thumb img{object-fit:cover;object-position:center}
+
+/* Private video artwork: keep play and duration readable over any frame. */
+.bc-apple-photos .ap-video-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:grid;place-items:center;width:38px;height:38px;border:1px solid #ffffff55;border-radius:50%;background:#0007;color:#fff;font:600 16px system-ui;z-index:1;pointer-events:none;backdrop-filter:blur(8px)}
+.bc-apple-photos .ap-video-label{z-index:2;font:600 11px system-ui;background:#000b;padding:4px 6px;letter-spacing:.02em}
