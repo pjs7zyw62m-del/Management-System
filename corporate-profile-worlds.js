@@ -135,23 +135,85 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
  function mountPhoto(a,img,gen){const run=async()=>{if(!img.isConnected||gen!==generation)return;try{const entry=await photoUrl(a);if(!img.isConnected||gen!==generation){if(entry.object)URL.revokeObjectURL(entry.url);return}if(entry.object)urls.add(entry.url);img.src=entry.url;img.hidden=false;img.parentElement.querySelector('.bc-pw-placeholder').hidden=true}catch{if(img.isConnected)img.parentElement.querySelector('.bc-pw-placeholder').textContent='Preview unavailable'}};
   if(!window.IntersectionObserver){void run();return}const ob=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){ob.disconnect();void run()}},{rootMargin:'80px'});ob.observe(img.parentElement);setTimeout(()=>ob.disconnect(),60000);
  }
- function showPhoto(img){
+ // Save an authorized original to the active member's private Photos folder.
+ async function transferFeedPhoto(a){
+  const account=state.user?.id;
+  if(!account||!a||a.kind!=='photo'||!/^\w[\w-]{0,80}$/.test(String(a.id||'')))throw Error('Photo unavailable');
+  const session=(await client.auth.getSession()).data?.session;
+  if(!session?.access_token||session.user.id!==account)throw Error('Sign in again');
+  const m=await import('./blackcell-private-media.js?v=4');
+  const source=await photoUrl(a);
+  let blob;
+  try{
+   const response=await fetch(source.url,{cache:'no-store'});
+   if(!response.ok)throw Error('Original photo could not be read');
+   blob=await response.blob();
+  }finally{if(source.object)URL.revokeObjectURL(source.url)}
+  const ext={'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif','image/heic':'heic','image/heif':'heif'}[blob.type.toLowerCase().split(';')[0]];
+  if(!ext||!blob.size)throw Error('Unsupported photo format');
+  if(blob.size>m.PRIVATE_FILE_LIMIT)throw Error('Photo exceeds private storage upload limit');
+  const current=(await client.auth.getSession()).data?.session;
+  if(current?.user?.id!==account||state.user?.id!==account)throw Error('Session changed');
+  const name='BLACKCELL-'+a.id+'.'+ext;
+  try{
+   await m.uploadPrivateFile(client.storage.from(m.PRIVATE_BUCKET),account+'/Photos/'+name,new File([blob],name,{type:blob.type}));
+  }catch(e){
+   if(/duplicate|already exists|resource already exists|\b409\b/i.test(String(e?.message||e?.statusCode||e)))return 'This photo is already in your BLACKCELL Photos.';
+   throw Error(m.privateUploadError(e));
+  }
+  window.dispatchEvent(new CustomEvent('bc-private-files-changed',{detail:{source:'world-transfer',uid:account}}));
+  try{const channel=new BroadcastChannel('bc-private-photos-transfer');channel.postMessage({type:'photos-changed',uid:account});channel.close()}catch(_){}
+  return 'Transferred to BLACKCELL Photos.';
+ }
+ function showPhoto(img,a){
   if(!img.src||img.hidden||document.querySelector('.bc-pw-viewer[open]'))return;
   const opener=document.activeElement,d=make('dialog','bc-pw-viewer'),full=make('img');
-  d.setAttribute('aria-label','Full-size photograph. Tap anywhere or press Escape to close.');
+  d.setAttribute('aria-label','Full-size photograph. Tap to close. Right-click or press Shift+F10 to transfer to BLACKCELL Photos.');
   d.tabIndex=-1;
   full.src=img.src;full.alt=img.alt;full.draggable=false;d.append(full);
-  // Native dialog sends backdrop and image clicks to this handler.
-  // Do not dismiss while the user is dragging or making a multi-touch gesture.
-  let start=null;
-  d.addEventListener('pointerdown',e=>{start=e.isPrimary?{x:e.clientX,y:e.clientY}:null});
-  d.addEventListener('pointercancel',()=>{start=null});
+  const menu=make('div','bc-pw-transfer-menu');menu.hidden=true;menu.setAttribute('role','menu');
+  const status=make('span','bc-pw-transfer-status');status.setAttribute('role','status');status.hidden=true;
+  let start=null,hold=null,busy=false,suppressTap=false;
+  const transfer=button('Transfer to BLACKCELL Photos',async()=>{
+   if(busy)return;busy=true;transfer.disabled=true;transfer.textContent='Transferring…';status.hidden=true;
+   try{const message=await transferFeedPhoto(a);if(d.open)d.close();toast(message)}
+   catch(e){if(d.open){status.textContent=String(e?.message||'Transfer failed. Try again.');status.hidden=false}else toast('Transfer failed. Try again.')}
+   finally{busy=false;transfer.disabled=false;transfer.textContent='Transfer to BLACKCELL Photos'}
+  },'bc-pw-transfer-action');
+  transfer.setAttribute('role','menuitem');menu.append(transfer,status);d.append(menu);
+  function cancelHold(){clearTimeout(hold);hold=null}
+  function showMenu(x,y){
+   if(!a||a.kind!=='photo')return;
+   cancelHold();start=null;suppressTap=true;menu.hidden=false;
+   const rect=d.getBoundingClientRect(),mw=menu.offsetWidth,mh=menu.offsetHeight;
+   menu.style.left=Math.max(4,Math.min(x-rect.left,rect.width-mw-5))+'px';
+   menu.style.top=Math.max(4,Math.min(y-rect.top,rect.height-mh-5))+'px';
+   transfer.focus({preventScroll:true});
+  }
+  d.addEventListener('contextmenu',e=>{e.preventDefault();if(!menu.contains(e.target))showMenu(e.clientX,e.clientY)});
+  d.addEventListener('pointerdown',e=>{
+   if(menu.contains(e.target))return;
+   if(!e.isPrimary||e.button!==0){cancelHold();start=null;return}
+   start={x:e.clientX,y:e.clientY};suppressTap=false;
+   if(e.pointerType==='touch'||e.pointerType==='pen')hold=setTimeout(()=>{if(start)showMenu(start.x,start.y)},550);
+  });
+  d.addEventListener('pointermove',e=>{if(start&&Math.hypot(e.clientX-start.x,e.clientY-start.y)>=12){cancelHold();start=null}});
+  d.addEventListener('pointerup',cancelHold);
+  d.addEventListener('pointercancel',()=>{cancelHold();start=null});
   d.addEventListener('click',e=>{
+   if(menu.contains(e.target))return;
+   if(suppressTap){suppressTap=false;start=null;return}
+   if(!menu.hidden){menu.hidden=true;d.focus({preventScroll:true});start=null;return}
    if(e.detail===0||(start&&Math.hypot(e.clientX-start.x,e.clientY-start.y)<12))d.close();
    start=null;
   });
-  d.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();d.close()}});
-  d.addEventListener('close',()=>{d.remove();if(opener?.isConnected)opener.focus({preventScroll:true})},{once:true});
+  d.addEventListener('keydown',e=>{
+   if(e.key==='ContextMenu'||(e.shiftKey&&e.key==='F10')){e.preventDefault();const r=d.getBoundingClientRect();showMenu(r.left+r.width/2,r.top+r.height/2);return}
+   if(e.key==='Escape'&&!menu.hidden){e.preventDefault();e.stopPropagation();menu.hidden=true;d.focus({preventScroll:true});return}
+   if(e.target===d&&(e.key==='Enter'||e.key===' ')){e.preventDefault();d.close()}
+  });
+  d.addEventListener('cancel',e=>{if(!menu.hidden){e.preventDefault();menu.hidden=true;d.focus({preventScroll:true})}});
+  d.addEventListener('close',()=>{cancelHold();d.remove();if(opener?.isConnected)opener.focus({preventScroll:true})},{once:true});
   document.body.append(d);d.showModal();
  }
  function feed(box){
@@ -164,7 +226,7 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
   function appendCard(a,target,unsorted){
    const label=unsorted?'Unsorted':mediaWorld(a);
     const card=make('article','bc-pw-card'),frame=make('div','bc-pw-frame');const placeholder=make('span','bc-pw-placeholder',a.kind==='video'?'▶':'Loading photograph…');const img=make('img');img.hidden=true;img.alt=a.caption||label+' media';img.loading='lazy';frame.append(placeholder,img);
-    const open=button('',()=>{if(a.kind==='photo')showPhoto(img);else{const u=new URL('corporate-network.html',location.href);u.searchParams.set('view','videos');u.searchParams.set('video',a.id);location.assign(u.href)}},'bc-pw-media');open.append(frame);
+    const open=button('',()=>{if(a.kind==='photo')showPhoto(img,a);else{const u=new URL('corporate-network.html',location.href);u.searchParams.set('view','videos');u.searchParams.set('video',a.id);location.assign(u.href)}},'bc-pw-media');open.append(frame);
     card.append(open,make('strong','',a.kind==='video'?title(a):a.caption||label+' photograph'),make('small','',label+' · '+(a.review_status==='pending'?'Private · pending review':unsorted?'Awaiting World assignment':a.kind==='video'?'BLACKCELL TUBE':'WORLD PHOTO')));target.append(card);
     if(a.kind==='photo')mountPhoto(a,img,gen);else if(a.source_provider==='world-bunny-v1')previews.mount(a,img);
   }
