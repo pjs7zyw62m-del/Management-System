@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="corporate-chat-media-bubble-host.css?v=20261109-independent-media1"><link rel="stylesheet" href="corporate-chat-media-responsive.css?v=20261109-sidebyside2"><link rel="stylesheet" href="corporate-chat-media-flip-focus.css?v=20261109-flip-focus1">
 <script src="corporate-chat-media-bubble-host.js?v=20261109-large-media1" defer></script>
 <script src="corp-config.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js" defer></script><script type="module" src="corporate-network.js?v=20261116-pulse-social1"></script><link rel="stylesheet" href="corp-adaptive-layout.css?v=20261109-device2">
+<script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js" defer></script><script type="module" src="corporate-network.js?v=20261116-pulse-archive1"></script><link rel="stylesheet" href="corp-adaptive-layout.css?v=20261109-device2">
 <link rel="stylesheet" href="corp-adaptive-chat.css?v=20261109-device2">
 <link rel="stylesheet" href="corporate-network-feed-media.css?v=20261109-uncropped2">
 <link rel="stylesheet" href="corporate-chat-compact-media.css?v=20261109-mobile-gallery4">
@@ -54,6 +54,40 @@ body.bc-pulse-mode .workspace{min-width:0}
 .bc-pulse-scroll{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:none;padding:16px 12px max(32px,env(safe-area-inset-bottom))}.bc-pulse-scroll::-webkit-scrollbar{display:none}
 .bc-pulse-timeline{display:grid;gap:12px;width:min(100%,680px);margin:0 auto}.bc-pulse-timeline>.post{min-width:0;border:1px solid #2d2d33;border-radius:16px;background:#111114;overflow:hidden;box-shadow:0 8px 25px #0005}.bc-pulse-timeline img,.bc-pulse-timeline video{max-width:100%;object-fit:contain}.bc-pulse-timeline .post-media{background:#08080a}
 .bc-pulse-footer{text-align:center;padding:22px;color:#9999a2}.bc-pulse-end{font-size:13px}
+/* PULSE member blog: Tumblr-inspired shell, BLACKCELL glass aesthetic. */
+.bc-pulse-member{width:min(100%,680px);margin:0 auto 14px;background:#141416;border:1px solid #2c2c30;border-radius:18px;overflow:hidden;color:#f3f3f5}
+.bc-pulse-member-cover{height:clamp(165px,29vw,280px);position:relative;background-color:#202024;background-image:radial-gradient(ellipse at 75% 10%,#66303c 0%,transparent 58%),radial-gradient(ellipse at 9% 100%,#323239 0%,transparent 60%),linear-gradient(135deg,#35353c,#111114 70%);background-size:cover;background-position:center}
+.bc-pulse-cover-top{position:absolute;inset:14px 16px auto;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.bc-pulse-handle,.bc-pulse-member-icon{border:1px solid #ffffff38;border-radius:40px;padding:10px 14px;color:#fff;background:#0005;backdrop-filter:blur(20px);font:650 14px system-ui}
+.bc-pulse-member-icon{min-width:44px;min-height:44px;cursor:pointer}
+.bc-pulse-member-identity{position:relative;text-align:center;display:flex;align-items:center;flex-direction:column;gap:10px;padding:0 24px 22px}
+.bc-pulse-member-identity .avatar.gigantic{margin-top:-52px;position:relative;width:104px;height:104px;border:4px solid #141416;border-radius:50%;box-shadow:0 4px 20px #0008;overflow:hidden;flex:none}
+.bc-pulse-member-identity .avatar img{width:100%;height:100%;object-fit:cover}
+.bc-pulse-member-identity h1{font:650 clamp(27px,5vw,38px)/1.15 system-ui;margin:2px 0;letter-spacing:-.035em;color:#f7f7f9}
+.bc-pulse-member-bio{max-width:510px;margin:0;color:#b9b9c2;font-size:15px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.bc-pulse-member-buttons{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin-top:5px}
+.bc-pulse-member-primary,.bc-pulse-member-secondary{min-height:42px;padding:9px 19px;border:1px solid #ffffff20;border-radius:24px;background:#29292e;color:#f5f5f7;font:600 13px system-ui;cursor:pointer}
+.bc-pulse-member-primary{background:#b93248;border-color:#db5468;color:#fff}
+.bc-pulse-member-nav{display:flex;justify-content:space-around;gap:4px;overflow-x:auto;scrollbar-width:none;padding:0 8px;border-top:1px solid #ffffff0d}
+.bc-pulse-member-tab{border:0;border-bottom:3px solid transparent;background:transparent;color:#aaaab4;white-space:nowrap;padding:12px 8px;min-height:44px;cursor:pointer;font:600 13px system-ui}
+.bc-pulse-member-tab[aria-pressed=true]{color:#f8f8f9;border-bottom-color:#ed465c}
+.bc-pulse-member-preview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px;padding:0 10px 12px}
+.bc-pulse-member-preview .bc-pulse-archive-tile:first-child{border-radius:9px 0 0 9px}
+.bc-pulse-member-preview .bc-pulse-archive-tile:last-child{border-radius:0 9px 9px 0}
+.bc-pulse-archive-controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between;padding:16px;background:#141416;border:1px solid #2b2b30;border-radius:14px}
+.bc-pulse-archive-title h2{font-size:22px;margin:0;color:#f4f4f5}.bc-pulse-archive-title p{font-size:12px;color:#9999a4;margin:4px 0 0}
+.bc-pulse-archive-date{display:flex;gap:6px;align-items:center}.bc-pulse-archive-date input{min-width:0;min-height:42px;color-scheme:dark;background:#242429;border:1px solid #424249;border-radius:9px;color:#fff;padding:8px;font:600 13px system-ui}
+.bc-pulse-archive-filters{width:100%;display:flex;gap:12px;border-top:1px solid #ffffff0d}
+.bc-pulse-archive-month{padding:8px 0 12px}.bc-pulse-archive-month-head{display:flex;justify-content:space-between;align-items:center;padding:8px 4px 12px}.bc-pulse-archive-month-head h3{font-size:20px;color:#f5f5f7;margin:0;letter-spacing:-.035em}.bc-pulse-archive-month-head span{font-size:12px;color:#9d9da6}
+.bc-pulse-archive-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:4px}
+.bc-pulse-archive-tile{position:relative;display:block;min-width:0;aspect-ratio:1;border:0;padding:0;background:#252528;border-radius:5px;overflow:hidden;cursor:pointer}
+.bc-pulse-archive-frame{position:absolute;inset:0;display:grid;place-items:center;color:#a5a5b0;font-size:12px}.bc-pulse-archive-frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.bc-pulse-archive-frame [hidden]{display:none!important}
+.bc-pulse-archive-play{position:absolute;bottom:7px;right:7px;background:#000a;border-radius:50%;width:30px;height:30px;display:grid;place-items:center;color:white;font-size:12px}
+.bc-pulse-member-activity{display:grid;gap:8px}.bc-pulse-activity-person,.bc-pulse-activity-item{display:flex;gap:10px;align-items:center;background:#17171a;border:1px solid #2c2c31;border-radius:12px;padding:13px}
+.bc-pulse-activity-item{flex-wrap:wrap}.bc-pulse-activity-item small{color:#9999a4}.bc-pulse-activity-item p{flex-basis:100%;white-space:pre-wrap;margin:0;color:#ddd}
+.bc-pulse-timeline>.post{overflow:visible}
+@media(max-width:600px){.bc-pulse-member{border-radius:14px}.bc-pulse-member-identity{padding-inline:15px}.bc-pulse-member-bio{font-size:14px}.bc-pulse-member-nav{justify-content:space-between;gap:0}.bc-pulse-member-tab{padding-inline:7px;font-size:12px}.bc-pulse-archive-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.bc-pulse-archive-controls{padding:12px}.bc-pulse-archive-date{flex:1;min-width:0}.bc-pulse-archive-date input{flex:1}}
+
 @media(max-width:600px){.bc-pulse-header{padding:12px 9px;gap:7px}.bc-pulse-brand{gap:2px 5px}.bc-pulse-brand small{display:none}.bc-pulse-glyph{font-size:28px}.bc-pulse-back,.bc-pulse-create{padding:8px}.bc-pulse-tabs{justify-content:flex-start}.bc-pulse-scroll{padding:8px 5px 24px}}
 </style>
 <style>
