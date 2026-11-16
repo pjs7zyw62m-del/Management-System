@@ -141,7 +141,7 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
   if(!account||!a||a.kind!=='photo'||!/^\w[\w-]{0,80}$/.test(String(a.id||'')))throw Error('Photo unavailable');
   const session=(await client.auth.getSession()).data?.session;
   if(!session?.access_token||session.user.id!==account)throw Error('Sign in again');
-  const m=await import('./blackcell-private-media.js?v=4');
+  const [m,drive]=await Promise.all([import('./blackcell-private-media.js?v=9-photos-only'),import('./blackcell-private-drive.js?v=1')]);
   const source=await photoUrl(a);
   let blob;
   try{
@@ -156,7 +156,7 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
   if(current?.user?.id!==account||state.user?.id!==account)throw Error('Session changed');
   const name='BLACKCELL-'+a.id+'.'+ext;
   try{
-   await m.uploadPrivateFile(client.storage.from(m.PRIVATE_BUCKET),account+'/Photos/'+name,new File([blob],name,{type:blob.type}));
+   await m.uploadPrivateFile(drive.createPrivateDrive(client,account),account+'/Photos/'+name,new File([blob],name,{type:blob.type}));
   }catch(e){
    if(/duplicate|already exists|resource already exists|\b409\b/i.test(String(e?.message||e?.statusCode||e)))return 'This photo is already in your BLACKCELL Photos.';
    throw Error(m.privateUploadError(e));
