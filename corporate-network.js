@@ -8,7 +8,7 @@ import {createVisualDiscovery} from './corporate-visual-discovery.js?v=20261111-
 import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phonecheck2';
 import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261115-world-catalog1';
 import {isWorldVideo,worldVideoTitle,readWorldVideo,createWorldVideoPreviews} from './blackcell-world-video-catalog.js?v=1';
-import {createProfileWorlds} from './corporate-profile-worlds.js?v=2-hybrid';
+import {createProfileWorlds} from './corporate-profile-worlds.js?v=3-auto-hybrid';
 const client=corporateClient(),bucket=client.storage.from('corp-social-media');
 const worldVideoPreviews=createWorldVideoPreviews(client);
 const $=id=>document.getElementById(id);
@@ -156,6 +156,7 @@ function switchView(view,{who=null,tab=null,keepPost=false}={}){
  if(view==='profile'){
   state.profileUserId=who||state.user.id;
   state.profileTab=tab||(state.profileUserId===state.user.id?'worldfeed':'posts');
+  if(state.profileTab==='worldfeed'&&state.profileUserId===state.user.id)profileWorlds.reset();
  }
  for(const f of fields)$(f).hidden=f!==view+'View';
  // Keep the original, fully wired Network composer on the active page.
@@ -1669,6 +1670,7 @@ function setupEvents(){
  document.querySelectorAll('[data-profile-stat]').forEach(n=>n.addEventListener('click',()=>{const value=n.dataset.profileStat;if(value==='followers'||value==='following'){state.profileFriendsMode=value;state.profileFriendsQuery='';state.profileTab='friends'}else state.profileTab=value;renderProfile()}));
  document.querySelectorAll('#profileTabs [data-tab]').forEach(n=>n.addEventListener('click',()=>{
   state.profileTab=n.dataset.tab;
+  if(state.profileTab==='worldfeed')profileWorlds.reset();
   $('profileMoreDropdown')?.removeAttribute('open');
   renderProfile();
  }));
