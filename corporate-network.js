@@ -6,8 +6,10 @@ import {createNetworkPersonalization} from './corporate-network-personalization.
 import {createPhotoRediscovery} from './corporate-photo-rediscovery.js?v=20261113-auto-suggest1';
 import {createVisualDiscovery} from './corporate-visual-discovery.js?v=20261111-mediareset1';
 import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phonecheck2';
-import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261113-complete-movie-poster4';
+import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261115-world-catalog1';
+import {isWorldVideo,readWorldVideo,createWorldVideoPreviews} from './blackcell-world-video-catalog.js?v=1';
 const client=corporateClient(),bucket=client.storage.from('corp-social-media');
+const worldVideoPreviews=createWorldVideoPreviews(client);
 const $=id=>document.getElementById(id);
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const allowedTypes=new Set(['image/jpeg','image/png','image/webp','image/gif','image/heic','video/mp4','video/webm','video/quicktime','video/x-m4v']);
@@ -185,6 +187,9 @@ async function loadAll({show=true}={}){
  for(const r of [pr,po,as,fo,stream])if(r.error)throw Error('Network data could not be read: '+r.error.message);
  state.profiles=pr.data||[];state.posts=po.data||[];
  state.assets=as.data||[];state.follows=fo.data||[];
+ // The general feed has a 1000-row cap; enumerate the separate World video catalog without it.
+ const worldVideos=[];for(let offset=0;;offset+=500){const out=await client.from('corp_social_assets').select('*').eq('source_provider','world-bunny-v1').eq('purpose','library').eq('kind','video').or('and(review_status.eq.approved,adult_restricted.eq.false),and(review_status.eq.pending,owner_id.eq.'+state.user.id+')').order('id').range(offset,offset+499);if(out.error){console.warn('World video catalog unavailable',out.error.message);break}worldVideos.push(...(out.data||[]));if((out.data||[]).length<500)break}
+ const catalog=new Map(state.assets.map(a=>[a.id,a]));for(const a of worldVideos)catalog.set(a.id,a);state.assets=[...catalog.values()];
  state.streamVideos=(stream.data||[]).map(a=>({...a,
   kind:'video',purpose:'post',filename:a.filename,video_poster_path:a.poster_path,
   bunny_stream:true
@@ -212,7 +217,7 @@ async function loadAll({show=true}={}){
 }
 async function loadSigned(){
  if(Date.now()-state.signedAt>25*60*1000){state.assetUrls.clear();state.posterUrls.clear();state.signedAt=Date.now()}
- const all=state.assets.filter(a=>!state.assetUrls.has(a.id));
+ const all=state.assets.filter(a=>!isWorldVideo(a)&&!state.assetUrls.has(a.id));
  // Avoid a serial waterfall of 30-file signing batches while keeping the
  // number of concurrent private Storage requests bounded.
  let offset=0;
@@ -1292,6 +1297,7 @@ async function bcLiveOriginal_publishDirectVideo(event){
 }
 const videoChannel=createBlackcellVideoChannel({
  state,mediaUrl,posterUrl,posterVersions,sharedMedia,profile,personName,stamp,switchView,openProfile,toast,
+ worldVideoPreviews,readWorldVideo:a=>readWorldVideo(client,a),
  uploadVideo:openDirectVideoUpload,
  playStream:async a=>{
   const data=await videoStreamApi('play',{catalogId:a.id});
