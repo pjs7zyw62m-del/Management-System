@@ -1,6 +1,6 @@
 /* Personal media only. Never writes to public/social storage. */
 export const PRIVATE_BUCKET='blackcell-os-files';
-import {createPrivateDrive,PRIVATE_FILE_LIMIT} from './blackcell-private-drive.js?v=1';
+import {createPrivateDrive,PRIVATE_FILE_LIMIT} from './blackcell-private-drive.js?v=2-album-list';
 export {PRIVATE_FILE_LIMIT};
 export function privateUploadError(error){
  const raw=String(error?.message||error||'Upload failed.');
