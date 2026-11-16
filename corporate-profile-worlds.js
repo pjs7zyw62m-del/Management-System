@@ -31,12 +31,13 @@ export function isPaidVideo(a){
  return ['movie','movies','film','films','series','tv','tv show','tv shows','tv series','television','television series','television show','television shows','episode','episodes','documentary','documentaries'].includes(category)||a.paid_content===true||a.is_paid===true;
 }
 export function createProfileWorlds({client,state,previews,title,render,toast,readVideo}){
- let dismissFeedMenu=null,feedTransferBusy=false;
+ let dismissFeedMenu=null,feedTransferBusy=false,photoJobs=[],activePhotoJobs=0;
+ function pumpPhotos(){while(activePhotoJobs<3&&photoJobs.length){const run=photoJobs.shift();activePhotoJobs++;void Promise.resolve().then(run).catch(()=>{}).finally(()=>{activePhotoJobs--;pumpPhotos()})}}
  const root=()=>document.getElementById('profileWorlds');
  let selected=[],active='',filter='all',open=false,draft=[],saving=false,ready=false,uid='',generation=0,urls=new Set(),disposeLiveCover=null;
  const make=(tag,cls,txt)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(txt!==undefined)el.textContent=txt;return el};
  const button=(txt,fn,cls)=>{const b=make('button',cls,txt);b.type='button';b.onclick=fn;return b};
- function clear(){dismissFeedMenu?.();generation++;for(const url of urls)URL.revokeObjectURL(url);urls.clear()}
+ function clear(){dismissFeedMenu?.();generation++;photoJobs=[];for(const url of urls)URL.revokeObjectURL(url);urls.clear()}
  window.addEventListener('pagehide',()=>{clear();disposeLiveCover?.();disposeLiveCover=null});
  client.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT'){clear();disposeLiveCover?.();disposeLiveCover=null;selected=[];active='';uid='';ready=false;open=false}});
  async function load(){
@@ -140,7 +141,8 @@ export function createProfileWorlds({client,state,previews,title,render,toast,re
   if(!res.ok)throw Error('Private image unavailable');const blob=await res.blob();if(blob.size>45*1048576||!blob.type.startsWith('image/'))throw Error('Unsupported preview');return {url:URL.createObjectURL(blob),object:true};
  }
  function mountPhoto(a,img,gen){const run=async()=>{if(!img.isConnected||gen!==generation)return;try{const entry=await photoUrl(a);if(!img.isConnected||gen!==generation){if(entry.object)URL.revokeObjectURL(entry.url);return}if(entry.object)urls.add(entry.url);img.src=entry.url;img.hidden=false;img.parentElement.querySelector('.bc-pw-placeholder').hidden=true}catch{if(img.isConnected)img.parentElement.querySelector('.bc-pw-placeholder').textContent='Preview unavailable'}};
-  if(!window.IntersectionObserver){void run();return}const ob=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){ob.disconnect();void run()}},{rootMargin:'80px'});ob.observe(img.parentElement);setTimeout(()=>ob.disconnect(),60000);
+  const enqueue=()=>{if(gen!==generation||!img.isConnected)return;photoJobs.push(run);pumpPhotos()};
+  if(!window.IntersectionObserver){queueMicrotask(enqueue);return}const ob=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){ob.disconnect();enqueue()}},{rootMargin:'80px'});ob.observe(img.parentElement);setTimeout(()=>ob.disconnect(),60000);
  }
  // Save an authorized original to the active member's private Photos folder.
  async function transferFeedPhoto(a){
