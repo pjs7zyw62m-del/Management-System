@@ -70,3 +70,10 @@ html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile #profileCove
 #profileView .bc-pw-unsorted[hidden]{display:none!important}
 #profileView .bc-pw-unsorted .bc-pw-quiet{text-decoration:none;display:inline-flex;align-items:center}
 #profileView .bc-pw-feed-heading>button{margin-top:8px}
+
+/* Silent cinematic covers: retain the full frame and static art fallback. */
+#profileView .bc-pw-live-cover{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;background:#08090b;opacity:0;z-index:1;pointer-events:none;transition:opacity .35s ease}
+#profileView .bc-pw-live-playing .bc-pw-live-cover{opacity:1}
+#profileView #profileCover .bc-pw-live-toggle{position:absolute;right:12px;top:12px;z-index:5;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;border:1px solid #ffffff38;background:#101014bb;color:#fff;font-size:13px;line-height:1;cursor:pointer;backdrop-filter:blur(8px)}
+#profileView #profileCover .bc-pw-live-toggle:focus-visible{outline:2px solid white;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){#profileView .bc-pw-live-cover{transition:none}}

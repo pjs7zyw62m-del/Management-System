@@ -8,7 +8,7 @@ import {createVisualDiscovery} from './corporate-visual-discovery.js?v=20261111-
 import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phonecheck2';
 import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261115-world-catalog1';
 import {isWorldVideo,worldVideoTitle,readWorldVideo,createWorldVideoPreviews} from './blackcell-world-video-catalog.js?v=1';
-import {createProfileWorlds} from './corporate-profile-worlds.js?v=3-auto-hybrid';
+import {createProfileWorlds} from './corporate-profile-worlds.js?v=4-live-cover';
 const client=corporateClient(),bucket=client.storage.from('corp-social-media');
 const worldVideoPreviews=createWorldVideoPreviews(client);
 const $=id=>document.getElementById(id);
@@ -1596,7 +1596,7 @@ window.BLACKCELL_OS_CAN_RELOAD=()=>{
  const visible=n=>!!(n.getClientRects().length&&!n.closest('[hidden],[aria-hidden=true]')&&getComputedStyle(n).visibility!=='hidden');
  if(Array.from(document.querySelectorAll('dialog[open],[aria-modal=true],#editOverlay,.bc-chat-pane')).some(visible))return false;
  if(Array.from(document.querySelectorAll('input[type=file]')).some(n=>n.files?.length))return false;
- if(Array.from(document.querySelectorAll('video,audio')).some(n=>!n.paused&&!n.ended))return false;
+ if(Array.from(document.querySelectorAll('video:not(.bc-pw-live-cover),audio')).some(n=>!n.paused&&!n.ended))return false;
  if(Array.from(document.querySelectorAll('textarea')).some(n=>visible(n)&&n.value.trim()&&n.value!==n.defaultValue))return false;
  return true;
 };

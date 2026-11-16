@@ -12,6 +12,12 @@ export const WORLDS=[
 export function normalizeWorlds(raw){return WORLDS.map(w=>w[0]).filter(id=>Array.isArray(raw)&&raw.includes(id))}
 const labels=new Map(WORLDS.map(w=>[w[0],w]));
 export function worldBubbles(raw){return normalizeWorlds(raw)}
+// Approved five-second preview. The external render URL is deliberately
+// isolated so the source can be replaced with first-party CDN hosting later.
+const LIVE_COVERS=Object.freeze({
+ 'military|police':'https://resource2.heygen.ai/videos/d6924ed15d034cdbaa4de030f7a18969/d6924ed15d034cdbaa4de030f7a18969/01a1e308-dc3a-7164-8861-b3f11404f39e.mp4'
+});
+export function liveCoverSource(raw){return LIVE_COVERS[normalizeWorlds(raw).join('|')]||null}
 export function initialWorld(raw){const ids=normalizeWorlds(raw);return ids.length>1?'hybrid':ids[0]||''}
 export function worldScope(active,raw){const ids=normalizeWorlds(raw);return active==='hybrid'&&ids.length>1?ids:ids.includes(active)?[active]:[]}
 const worldLabel=id=>labels.get(id)?.[1]||'Uniform';
@@ -19,12 +25,12 @@ const mediaWorld=a=>{const tag=(Array.isArray(a.military_tags)?a.military_tags:[
 const uniformTerms='source_provider.eq.world-bunny-v1,military_tags.cs.{maf:military},military_tags.cs.{maf:police},military_tags.cs.{maf:fire},military_tags.cs.{maf:security},military_tags.cs.{maf:medical},military_tags.cs.{maf:professional},military_tags.cs.{maf:unsorted}';
 export function createProfileWorlds({client,state,previews,title,render,toast}){
  const root=()=>document.getElementById('profileWorlds');
- let selected=[],active='',filter='all',open=false,draft=[],saving=false,ready=false,uid='',generation=0,urls=new Set();
+ let selected=[],active='',filter='all',open=false,draft=[],saving=false,ready=false,uid='',generation=0,urls=new Set(),disposeLiveCover=null;
  const make=(tag,cls,txt)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(txt!==undefined)el.textContent=txt;return el};
  const button=(txt,fn,cls)=>{const b=make('button',cls,txt);b.type='button';b.onclick=fn;return b};
  function clear(){generation++;for(const url of urls)URL.revokeObjectURL(url);urls.clear()}
  window.addEventListener('pagehide',clear);
- client.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT'){clear();selected=[];active='';uid='';ready=false;open=false}});
+ client.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT'){clear();disposeLiveCover?.();disposeLiveCover=null;selected=[];active='';uid='';ready=false;open=false}});
  async function load(){
   const resp=await client.auth.getUser();
   if(resp.error||!resp.data?.user||resp.data.user.id!==state.user?.id){ready=false;return}
@@ -41,15 +47,38 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
    open=false;state.profileTab='worldfeed';toast('My Worlds saved to your account.');
   }catch(e){toast('World selection not saved: '+e.message)}finally{saving=false;render()}
  }
+ function mountLiveCover(cover,art,source){
+  const motion=window.matchMedia('(prefers-reduced-motion: reduce)');
+  const video=make('video','bc-pw-live-cover');video.muted=true;video.defaultMuted=true;video.loop=true;video.playsInline=true;video.setAttribute('playsinline','');video.setAttribute('muted','');video.preload='none';video.disablePictureInPicture=true;video.setAttribute('aria-hidden','true');
+  const toggle=button('Play cover',()=>{},'bc-pw-live-toggle');toggle.setAttribute('aria-label','Play animated profile cover');toggle.title='Play or pause animated profile cover';
+  let allowed=!motion.matches,visible=false,failed=false,disposed=false;
+  function syncToggle(){const paused=!allowed||video.paused;toggle.textContent=paused?'▶':'Ⅱ';toggle.setAttribute('aria-label',paused?'Play animated profile cover':'Pause animated profile cover')}
+  function sync(){
+   if(disposed||failed)return;
+   if(!allowed||!visible||document.hidden){video.pause();syncToggle();return}
+   if(!video.getAttribute('src'))video.src=source;
+   video.play().catch(()=>{if(disposed||failed)return;syncToggle()});
+  }
+  function fallback(){failed=true;video.pause();art.classList.remove('bc-pw-live-playing');video.removeAttribute('src');video.remove();toggle.remove()}
+  video.addEventListener('playing',()=>{if(disposed)return;art.classList.add('bc-pw-live-playing');syncToggle()});
+  video.addEventListener('pause',syncToggle);video.addEventListener('error',fallback,{once:true});
+  toggle.onclick=()=>{allowed=video.paused;if(!allowed){video.pause();syncToggle();return}sync()};
+  const onMotion=()=>{if(motion.matches){allowed=false;art.classList.remove('bc-pw-live-playing')}sync()};
+  if(motion.addEventListener)motion.addEventListener('change',onMotion);else motion.addListener?.(onMotion);
+  document.addEventListener('visibilitychange',sync);
+  const observer=typeof IntersectionObserver==='function'?new IntersectionObserver(entries=>{visible=entries.some(x=>x.isIntersecting);sync()},{threshold:0.05}):null;
+  art.append(video);cover.append(toggle);if(observer)observer.observe(cover);else{visible=true;sync()}syncToggle();
+  return ()=>{if(disposed)return;disposed=true;observer?.disconnect();document.removeEventListener('visibilitychange',sync);if(motion.removeEventListener)motion.removeEventListener('change',onMotion);else motion.removeListener?.(onMotion);video.pause();video.removeAttribute('src');video.load();video.remove();toggle.remove();art.classList.remove('bc-pw-live-playing')};
+ }
  function renderCover(id){
   const cover=document.getElementById('profileCover');if(!cover)return;
   const scope=worldScope(id,selected),existing=cover.querySelector('.bc-pw-cover-art');
-  if(!scope.length){existing?.remove();delete cover.dataset.worldCover;return}
+  if(!scope.length){disposeLiveCover?.();disposeLiveCover=null;existing?.remove();delete cover.dataset.worldCover;return}
   const key=scope.join('|')+'|'+id;
   cover.dataset.worldCover=id;cover.classList.add('bc-custom-member-cover');
   cover.style.setProperty('background-image','none','important');
   if(existing?.dataset.signature===key)return;
-  existing?.remove();
+  disposeLiveCover?.();disposeLiveCover=null;existing?.remove();
   const art=make('div','bc-pw-cover-art');art.dataset.signature=key;art.style.setProperty('--world-count',String(scope.length));art.setAttribute('role','img');art.setAttribute('aria-label',scope.map(worldLabel).join(' and ')+' cover artwork');
   const panels=make('div','bc-pw-cover-panels');
   for(const item of scope){const [_,name,icon,src,color]=labels.get(item);const panel=make('div','bc-pw-cover-panel');
@@ -58,7 +87,8 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
    panel.append(img,make('span','bc-pw-cover-panel-label',name));panels.append(panel)
   }
   const tag=make('div','bc-pw-cover-caption');tag.append(make('strong','',id==='hybrid'?'HYBRID WORLDS':worldLabel(id).toUpperCase()+' WORLD'),make('small','',id==='hybrid'?scope.length+' WORLDS · ONE FEED':'BLACKCELL NETWORK'));
-  art.append(panels,tag);cover.prepend(art)
+  art.append(panels,tag);cover.prepend(art);
+  const source=liveCoverSource(scope);if(source)disposeLiveCover=mountLiveCover(cover,art,source)
  }
  function header(isMine){
   const box=root();if(!box)return;box.hidden=!isMine;box.replaceChildren();
