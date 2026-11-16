@@ -8,7 +8,7 @@ import {createVisualDiscovery} from './corporate-visual-discovery.js?v=20261111-
 import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phonecheck2';
 import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261115-world-catalog1';
 import {isWorldVideo,worldVideoTitle,readWorldVideo,createWorldVideoPreviews} from './blackcell-world-video-catalog.js?v=1';
-import {createProfileWorlds} from './corporate-profile-worlds.js?v=9-social-feed';
+import {createProfileWorlds} from './corporate-profile-worlds.js?v=10-one-feed';
 const client=corporateClient(),bucket=client.storage.from('corp-social-media');
 const worldVideoPreviews=createWorldVideoPreviews(client);
 const $=id=>document.getElementById(id);
@@ -16,12 +16,12 @@ const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const allowedTypes=new Set(['image/jpeg','image/png','image/webp','image/gif','image/heic','video/mp4','video/webm','video/quicktime','video/x-m4v']);
 const state={
  user:null,member:null,profiles:[],posts:[],assets:[],streamVideos:[],likes:[],comments:[],follows:[],
- assetUrls:new Map(),posterUrls:new Map(),view:'feed',feedFilter:'latest',profileUserId:null,profileTab:'posts',
+ assetUrls:new Map(),posterUrls:new Map(),view:'profile',profileUserId:null,profileTab:'posts',
  attached:[],openComments:new Set(),busy:false,sort:'newest',deepPost:null,
  chatPeers:[],signedAt:0,profilePreview:false,profileFeedMode:'for-you',profileFeedLimit:12,profileFeedRefreshing:false,profilePostFilter:'all',profilePostGrid:false,profileFriendsMode:'following',profileFriendsQuery:''
 };
 const profileWorlds=createProfileWorlds({client,state,previews:worldVideoPreviews,title:worldVideoTitle,render:()=>renderProfile(),toast});
-const fields=['feedView','profileView','discoverView','videosView','photosView'];
+const fields=['profileView','discoverView','videosView','photosView'];
 let gunnerDock=null;
 function el(tag,cls='',content=null){
  const n=document.createElement(tag);
@@ -139,7 +139,7 @@ function setupLibraryMenu(){
 }
 
 function switchView(view,{who=null,tab=null,keepPost=false}={}){
- if(!fields.includes(view+'View'))view='feed';
+ if(view==='feed'||!fields.includes(view+'View'))view='profile';
  if(!keepPost)state.deepPost=null;
  if(Date.now()-state.signedAt>25*60*1000){
   state.assetUrls.clear();void loadSigned().then(renderAll).catch(()=>{});
@@ -165,7 +165,7 @@ function switchView(view,{who=null,tab=null,keepPost=false}={}){
   n.classList.toggle('nav-active',n.dataset.view===view&&n.closest('.mainnav')!==null);
   n.classList.toggle('selected',n.dataset.view===view&&n.closest('.nav-panel')!==null);
  });
- if(view==='feed')renderFeed();
+
  if(view==='profile')renderProfile();
  if(view==='discover')renderDirectory();
  if(view==='videos')renderVideos();
@@ -176,6 +176,7 @@ function switchView(view,{who=null,tab=null,keepPost=false}={}){
   if(state.profileUserId!==state.user.id)params.set('user',state.profileUserId);
  }
  if(view==='videos'||view==='discover'||view==='photos')params.set('view',view);
+ if(keepPost&&state.deepPost)params.set('post',state.deepPost);
  history.replaceState(null,'',location.pathname+(params.toString()?'?'+params.toString():''));
  window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -253,7 +254,7 @@ async function loadSigned(){
 function renderAll(){
  renderMini();renderSuggestions();
  if(state.view==='profile')renderProfile();
- if(state.view==='feed')renderFeed();
+
  if(state.view==='discover')renderDirectory();
  if(state.view==='videos')renderVideos();
  if(state.view==='photos')photos.render();
@@ -311,20 +312,20 @@ function empty(title,detail){
 /* Move—not duplicate—the existing post composer. This preserves file inputs,
    upload progress, validation, duplicate checks, and Supabase publishing. */
 function syncProfileComposer(){
- const feedAnchor=$('networkFeedComposerAnchor');
+
  const mount=$('profileTimelineComposer');
  const composer=$('postBody')?.closest('.composer');
- if(!feedAnchor||!mount||!composer)return;
+ if(!mount||!composer)return;
  const onOwnPosts=state.view==='profile'
   &&state.profileUserId===state.user?.id
-  &&state.profileTab==='posts'&&!state.profilePreview;
+  &&['posts','worldfeed'].includes(state.profileTab)&&!state.profilePreview;
  if(onOwnPosts){
   mount.hidden=false;
   if(composer.parentElement!==mount)mount.append(composer);
   composer.classList.add('bc-fb-live-composer');
  }else{
   mount.hidden=true;
-  if(composer.previousElementSibling!==feedAnchor)feedAnchor.after(composer);
+
   composer.classList.remove('bc-fb-live-composer');
  }
 }
@@ -372,7 +373,7 @@ function renderProfileSidePreviews(p){
 }
 function focusProfileComposer(){
  if(state.profileUserId!==state.user?.id)return;
- if(state.profileTab!=='posts'){state.profileTab='posts';renderProfile();}
+ if(!['posts','worldfeed'].includes(state.profileTab)){state.profileTab='posts';renderProfile();}
  const input=$('postBody');
  if(input){input.scrollIntoView({behavior:'smooth',block:'center'});input.focus({preventScroll:true})}
 }
@@ -536,6 +537,8 @@ function renderProfile(){
  $('profileThemeQuick').hidden=!isMine;
  $('profileViewAsNotice').hidden=!isPreview;
  $('profileServiceFocusPanel').hidden=!isMine;
+ $('profileSocialNavigation').hidden=!isMine;
+ $('profileSuggestedPeople').hidden=!isMine||state.profileTab!=='worldfeed';
  $('profileServiceFocusLabel').textContent=personalization.enabled()?personalization.focusLabel(personalization.serviceFocus()):'All uniforms';
  $('profilePageTitle').textContent=isPreview?personName(p)+' · Member View':isMine?'My Profile.':personName(p)+' · Profile';
  $('profileAboutSummary').textContent=p.bio?.trim()||(
@@ -715,7 +718,7 @@ function renderPost(p){
   for(const f of files.slice(0,6)){
    const src=mediaUrl(f);if(!src)continue;
    if(f.kind==='video'){
-    const v=el('video');v.src=src;v.controls=true;v.preload='metadata';v.playsInline=true;
+    const v=el('video');v.src=src;v.controls=true;v.preload='none';v.playsInline=true;
     v.classList.add('post-media-original-video');
     v.setAttribute('aria-label',f.filename);
     // No fixed-height poster: render the entire original video frame.
@@ -808,7 +811,7 @@ function renderLibraryActivity(a){
  head.append(pic,title,el('span','post-label',a.kind==='video'?'VIDEO UPLOADED':'PHOTO UPLOADED'));
  node.append(head);
  const caption=String(a.caption||'').trim();
- node.append(el('div','library-feed-context','MILITARY LIBRARY  /  NEW TO THE ARCHIVE'));
+ node.append(el('div','library-feed-context',a.bunny_stream?'BLACKCELL TUBE':a.source_provider==='world-bunny-v1'?'WORLD UPLOAD':'LIBRARY UPLOAD'));
  if(caption)node.append(el('div','post-body',caption));
  const tags=[a.military_branch,a.military_category,a.military_era].filter(v=>v&&v!=='Unspecified'&&v!=='Unsorted');
  if(tags.length)node.append(el('div','library-feed-tags',tags.join('  ·  ')));
@@ -817,7 +820,7 @@ function renderLibraryActivity(a){
   const wrap=el('div','post-media post-media-original library-feed-media');
   if(a.kind==='video'){
    const v=el('video','post-media-original-video');
-   v.src=src;v.controls=true;v.playsInline=true;v.preload='metadata';
+   v.src=src;v.controls=true;v.playsInline=true;v.preload='none';
    v.style.width='100%';v.style.height='auto';v.style.objectFit='contain';
    wrap.append(v);
   }else{
@@ -834,8 +837,10 @@ function renderLibraryActivity(a){
   }
   node.append(wrap);
  }
+ if(!src&&a.source_provider==='world-bunny-v1'&&a.kind==='photo'){const frame=el('div','bc-pw-frame');const img=el('img');img.hidden=true;img.alt=caption||'World photo';img.loading='lazy';frame.append(el('span','bc-pw-placeholder','Loading photograph…'),img);const open=btn('',()=>profileWorlds.openFeedPhoto(img),'bc-pw-media');open.append(frame);node.append(open);profileWorlds.mountFeedPhoto(a,img)}
+ if(!src&&a.kind==='video'){const frame=el('div','bc-pw-frame');const img=el('img');img.hidden=true;img.alt='';const poster=posterUrl(a);frame.append(el('span','bc-pw-placeholder','▶'),img);if(poster){img.src=poster;img.hidden=false}const open=btn('',()=>{const u=new URL(location.href);u.search='';u.searchParams.set('view','videos');u.searchParams.set('video',a.id);location.assign(u.href)},'bc-pw-media');open.append(frame);node.append(open)}
  const actions=el('div','post-actions');
- actions.append(btn('▧  VIEW IN MILITARY LIBRARY',()=>void photos.openAsset(a)));
+ if(a.kind==='video')actions.append(btn('▶ WATCH IN BLACKCELL TUBE',()=>{const u=new URL(location.href);u.search='';u.searchParams.set('view','videos');u.searchParams.set('video',a.id);location.assign(u.href)}));else if(a.source_provider!=='world-bunny-v1')actions.append(btn('▧ VIEW ORIGINAL',()=>void photos.openAsset(a)));
  actions.append(btn('◌  VIEW PROFILE',()=>openProfile(a.owner_id)));
  node.append(actions);
  return node;
@@ -862,7 +867,7 @@ function renderProfileSocialFeed(box){
  const mode=state.profileFeedMode;
  const tabs=el('nav','bc-profile-feed-modes');tabs.setAttribute('aria-label','Choose your social feed');
  for(const [key,label] of [['for-you','For You'],['following','Following'],['latest','Latest'],['worlds','My Worlds']]){
-  const b=btn(label,()=>{if(state.profileFeedMode===key)return;state.profileFeedMode=key;state.profileFeedLimit=12;if(key==='worlds')profileWorlds.reset();renderProfile()},'bc-profile-feed-mode');b.setAttribute('aria-pressed',String(mode===key));tabs.append(b);
+  const b=btn(label,()=>{if(state.profileFeedMode===key&&!state.deepPost)return;state.deepPost=null;state.profileFeedMode=key;state.profileFeedLimit=12;if(key==='worlds')profileWorlds.reset();renderProfile()},'bc-profile-feed-mode');b.setAttribute('aria-pressed',String(mode===key));tabs.append(b);
  }
  const refresh=btn(state.profileFeedRefreshing?'Refreshing…':'↻ Refresh',async()=>{
   if(state.profileFeedRefreshing||state.busy)return;
@@ -870,12 +875,20 @@ function renderProfileSocialFeed(box){
   try{await loadAll({show:false});toast('Network feed refreshed.')}catch(e){toast('Unable to refresh feed: '+fail(e))}
   finally{state.profileFeedRefreshing=false;if(state.view==='profile'&&state.profileUserId===state.user?.id&&!state.profilePreview&&state.profileTab==='worldfeed')renderProfile()}
  },'bc-profile-feed-refresh');refresh.disabled=state.profileFeedRefreshing;tabs.append(refresh);box.append(tabs);
+ if(state.deepPost){const direct=state.posts.find(p=>p.id===state.deepPost);box.append(btn('← Back to My Feed',()=>switchView('profile',{who:state.user.id,tab:'worldfeed'}),'bc-pw-quiet'));box.append(direct?renderPost(direct):empty('Post unavailable','This post may have been removed or is not shared with your account.'));return}
  const posts=selectProfileFeedPosts(state.posts,state.assets,state.follows,state.user.id,mode,profileWorlds.currentScope());
  let entries=posts.map(item=>({type:'post',item}));
+ if(mode!=='worlds'){
+  const followed=new Set(state.follows.filter(f=>f.follower_id===state.user.id).map(f=>f.following_id));
+  const members=new Set(state.profiles.map(p=>p.user_id));
+  const uploads=[...state.assets,...(state.streamVideos||[])].filter(a=>sharedMedia(a)&&['photo','video'].includes(a.kind)&&!['movie','series','documentary'].includes(String(a.video_category||'').toLowerCase())&&(a.purpose==='library'||(a.bunny_stream&&!a.post_id))&&(members.has(a.owner_id)||a.owner_id===state.user.id)&&(mode!=='following'||followed.has(a.owner_id)));
+  entries.push(...[...new Map(uploads.map(a=>[a.id,a])).values()].map(item=>({type:'library',item})));
+  entries.sort((a,b)=>Date.parse(b.item.created_at||0)-Date.parse(a.item.created_at||0));
+ }
  if(mode==='for-you')entries=personalization.rankFeed(entries);
  const timeline=el('div','bc-profile-social-timeline');box.append(timeline);
  const shown=entries.slice(0,state.profileFeedLimit);
- for(const entry of shown)timeline.append(renderPost(entry.item));
+ for(const entry of shown)timeline.append(entry.type==='post'?renderPost(entry.item):renderLibraryActivity(entry.item));
  if(entries.length>shown.length)timeline.append(btn('Load more posts',()=>{state.profileFeedLimit+=12;renderProfile()},'bc-pw-quiet bc-profile-feed-more'));
  if(mode==='worlds'){
   if(!shown.length)timeline.append(el('p','bc-pw-caption','No matching social posts yet. Explore your World photographs and videos below.'));
@@ -883,34 +896,6 @@ function renderProfileSocialFeed(box){
  }
  if(!shown.length)timeline.append(empty(mode==='following'?'No posts from followed members yet':'No community posts yet',mode==='following'?'Follow other members to see their posts here.':'Member updates and shared media will appear here.'));
  if(mode==='following'&&!shown.length)timeline.append(btn('Discover members',()=>switchView('discover'),'bc-pw-quiet bc-profile-feed-more'));
-}
-function renderFeed(){
- const box=$('feedPosts');box.replaceChildren();
- const followingIds=new Set(state.follows.filter(f=>f.follower_id===state.user.id).map(f=>f.following_id));
- const members=new Set(state.profiles.map(p=>p.user_id));
- const allowedOwner=id=>members.has(id)||id===state.user.id;
- const allowedFollow=id=>state.feedFilter!=='following'||followingIds.has(id)||id===state.user.id;
- let posts=state.posts.filter(p=>allowedFollow(p.author_id));
- let library=state.assets.filter(a=>
-   sharedMedia(a)&&a.purpose==='library'&&(a.kind==='photo'||a.kind==='video')&&
-   allowedOwner(a.owner_id)&&allowedFollow(a.owner_id));
- if(state.feedFilter==='videos'){
-  posts=posts.filter(p=>p.kind==='video');
-  library=library.filter(a=>a.kind==='video');
- }
- if(state.deepPost){posts=posts.filter(p=>p.id===state.deepPost);library=[];}
- // Keep one activity per original upload. Library media are not social-post attachments.
- const recent=[
-  ...posts.map(p=>({type:'post',item:p})),
-  ...library.map(a=>({type:'library',item:a}))
- ].sort((a,b)=>Date.parse(b.item.created_at||0)-Date.parse(a.item.created_at||0)).slice(0,160);
- const entries=state.feedFilter==='for-you'?personalization.rankFeed(recent):recent;
- if(!entries.length){
-  box.append(empty(state.feedFilter==='following'?'No following updates yet':'No network activity yet',
-   'Military Library photo uploads and network posts will appear here automatically.'));
-  return;
- }
- for(const entry of entries)box.append(entry.type==='post'?renderPost(entry.item):renderLibraryActivity(entry.item));
 }
 function videoTile(a){
  const p=state.posts.find(p=>p.id===a.post_id),person=profile(a.owner_id);
@@ -1581,7 +1566,7 @@ async function bcLiveOriginal_publish(){
   await refresh();
   document.dispatchEvent(new CustomEvent('bc:media-updated'));
   if(publishedFromProfile) switchView('profile',{who:state.user.id,tab:'posts'});
-  else switchView('feed');
+  else switchView('profile',{who:state.user.id,tab:'worldfeed'});
   toast(selected.length?'Post created. Attached photos/videos are PRIVATE until administrator review.':'Text post published.');
  }catch(e){
   // Remove incomplete post (metadata cascades), keeping the feed consistent.
@@ -1659,13 +1644,6 @@ window.BLACKCELL_OS_BEFORE_CLOSE=async()=>{
 async function refresh(){
  await loadAll({show:true});
 }
-let libraryFeedRefreshing=false;
-async function refreshVisibleNetworkFeed(){
- if(libraryFeedRefreshing||document.hidden||state.view!=='feed'||$('app').hidden||state.busy)return;
- libraryFeedRefreshing=true;
- try{await loadAll({show:true})}catch(e){console.warn('Network feed refresh failed:',fail(e))}
- finally{libraryFeedRefreshing=false}
-}
 function setupEvents(){
  videoChannel.init();
  $('bcVideoUploadForm').addEventListener('submit',e=>void publishDirectVideo(e));
@@ -1704,15 +1682,10 @@ function setupEvents(){
  document.querySelectorAll('[data-view]').forEach(n=>n.addEventListener('click',()=>switchView(n.dataset.view)));
  $('viewAllPeople').addEventListener('click',()=>switchView('discover'));
  $('peopleSearch').addEventListener('input',renderDirectory);
- document.querySelectorAll('#feedFilter [data-filter]').forEach(n=>n.addEventListener('click',()=>{
-  state.feedFilter=n.dataset.filter;state.deepPost=null;
-  document.querySelectorAll('#feedFilter [data-filter]').forEach(x=>x.classList.toggle('selected',x===n));
-  renderFeed();
- }));
  $('profileCoverAction').addEventListener('click',()=>{openEdit();$('editCover').focus()});
  document.querySelectorAll('[data-profile-stat]').forEach(n=>n.addEventListener('click',()=>{const value=n.dataset.profileStat;if(value==='followers'||value==='following'){state.profileFriendsMode=value;state.profileFriendsQuery='';state.profileTab='friends'}else state.profileTab=value;renderProfile()}));
  document.querySelectorAll('#profileTabs [data-tab]').forEach(n=>n.addEventListener('click',()=>{
-  state.profileTab=n.dataset.tab;
+  state.deepPost=null;state.profileTab=n.dataset.tab;
   if(state.profileTab==='worldfeed'){profileWorlds.reset();state.profileFeedMode='for-you';state.profileFeedLimit=12}
   $('profileMoreDropdown')?.removeAttribute('open');
   renderProfile();
@@ -1728,7 +1701,7 @@ function setupEvents(){
  $('cancelEdit').addEventListener('click',closeEdit);
  $('editOverlay').addEventListener('click',e=>{if(e.target===$('editOverlay'))closeEdit()});
  $('saveProfile').addEventListener('click',()=>void saveProfile());
- $('profileReturnFeed').addEventListener('click',()=>switchView('feed'));
+ $('profileReturnFeed').addEventListener('click',()=>switchView('profile',{who:state.user.id,tab:'worldfeed'}));
  $('profileEditDetails').addEventListener('click',openEdit);
  $('profileSetupAction').addEventListener('click',openEdit);
  $('profileHighlightsSeeAll').addEventListener('click',()=>{
@@ -1881,8 +1854,7 @@ async function boot(){
   installNetworkSecurityChecks();
   document.addEventListener('bc:media-updated',()=>void storageStatus.refresh({force:true}));
   // Periodic read-only refresh works even when Realtime publication is disabled.
-  window.setInterval(()=>void refreshVisibleNetworkFeed(),90000);
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refreshVisibleNetworkFeed()});
+
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)void setupPrivateLedgerDoor()});
   gunnerDock=mountMilitaryGunner({
    client,mount:document.body,visible:false,
@@ -1914,10 +1886,11 @@ async function boot(){
     }
    }
   }
-  if(uid&&UUID.test(uid)&&profile(uid))switchView('profile',{who:uid});
+  if(state.deepPost)switchView('profile',{who:state.user.id,tab:'worldfeed',keepPost:true});
+  else if(uid&&UUID.test(uid)&&profile(uid))switchView('profile',{who:uid});
   else if(params.get('view')==='profile')switchView('profile',{who:state.user.id});
   else if(['discover','videos','photos'].includes(params.get('view')))switchView(params.get('view'));
-  else switchView('feed',{keepPost:!!state.deepPost});
+  else switchView('profile',{who:state.user.id,tab:'worldfeed',keepPost:!!state.deepPost});
   renderMini();renderSuggestions();
  }catch(e){
   $('gateText').textContent=fail(e);
@@ -1926,9 +1899,7 @@ async function boot(){
 }
 const personalization=createNetworkPersonalization({client,state,toast,
  onChanged:()=>{
-  state.feedFilter=personalization.enabled()?'for-you':'latest';
-  document.querySelectorAll('#feedFilter [data-filter]').forEach(n=>n.classList.toggle('selected',n.dataset.filter===state.feedFilter));
-  photos.render();renderFeed();rediscovery.refresh();
+  photos.render();rediscovery.refresh();
   if(state.view==='profile')renderProfile();
  }});
 const rediscovery=createPhotoRediscovery({client,state,personalization,mediaUrl,toast,
