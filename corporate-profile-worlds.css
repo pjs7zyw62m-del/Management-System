@@ -192,3 +192,12 @@ html body.bc-network.bc-profile-mode #app.app{padding-top:clamp(12px,1.4vw,24px)
 #profileView .bc-profile-world-gallery{min-width:0;display:flex;flex-direction:column;gap:10px}
 #profileView .bc-profile-feed-more{align-self:center;margin:6px auto 10px}
 @media(max-width:480px){#profileView .bc-profile-feed-modes{gap:0;padding:0 3px}#profileView .bc-profile-feed-mode{min-width:0;flex:1 1 24%;font-size:11px;padding:8px 3px}#profileView .bc-profile-feed-refresh{margin-left:auto;min-height:30px}}
+
+/* One social experience; retain quick access without restoring the masthead. */
+#profileView .bc-profile-social-nav{display:flex;flex-direction:column;gap:5px}
+#profileView .bc-profile-social-nav[hidden],#profileView .bc-profile-suggested[hidden],#profileView #profileTimelineComposer[hidden]{display:none!important}
+#profileView .bc-profile-social-nav>button,#profileView .bc-profile-social-nav>a{display:block;text-align:left;border:1px solid transparent;border-radius:9px;background:transparent;color:#d4d4da;padding:11px 10px;font-size:12px;font-weight:600;text-decoration:none;cursor:pointer}
+#profileView .bc-profile-social-nav>button:hover,#profileView .bc-profile-social-nav>a:hover{background:#ffffff08;border-color:#ffffff15;color:#fff}
+#profileView .bc-profile-suggested #suggestedPeople{margin-top:8px}
+#profileView .bc-profile-social-timeline .bc-pw-media{width:100%;margin-top:12px}
+#profileView .bc-profile-social-timeline .bc-pw-frame{max-height:540px}
