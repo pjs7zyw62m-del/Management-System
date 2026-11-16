@@ -35,7 +35,7 @@ Deno.serve(async req=>{
    let payload;try{payload=JSON.parse(new TextDecoder().decode(await bounded(req,4096)))}catch{return send(400,{ok:false,code:"INVALID_REQUEST"})}
    if(typeof payload.id!=="string"||!uuid.test(payload.id))return send(400,{ok:false,code:"INVALID_ID"});
    const row=await db.from("corp_social_assets").select("id,owner_id,storage_path,mime_type,source_provider,purpose,review_status,adult_restricted").eq("id",payload.id).maybeSingle(),a=row.data;
-   if(row.error||!a||a.purpose!=="library"||a.source_provider!==provider||a.review_status==="rejected"||!(a.owner_id===uid||(a.review_status==="approved"&&!a.adult_restricted)))return send(404,{ok:false,code:"MEDIA_UNAVAILABLE"});
+   if(row.error||!a||a.purpose!=="library"||a.source_provider!==provider||a.review_status==="rejected"||!(a.owner_id===uid||(a.review_status==="approved"&&!a.adult_restricted)||(role==="owner"&&Number(member.data?.clearance_level)===7&&a.review_status==="pending")))return send(404,{ok:false,code:"MEDIA_UNAVAILABLE"});
    const path=pathFor(a.owner_id,a.id,a.mime_type);
    if(a.storage_path!==path)return send(404,{ok:false,code:"MEDIA_UNAVAILABLE"});
    const response=await fetch(zone+path,{headers:{AccessKey:key},redirect:"error",signal:AbortSignal.timeout(90000)});
