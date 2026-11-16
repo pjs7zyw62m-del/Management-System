@@ -12,6 +12,17 @@ export function worldVideoTitle(a){
  const date=String(a?.created_at||'').slice(0,10);
  return label+' Video'+(/^\d{4}-\d{2}-\d{2}$/.test(date)?' · '+date:'');
 }
+export async function worldPlaybackUrl(client,a){
+ if(!isWorldVideo(a))throw Error('Not a World video');
+ const session=(await client.auth.getSession()).data?.session,config=window.BLACKCELL_CORP_CONFIG||{};
+ if(!session?.access_token||!config.url||!config.publishableKey)throw Error('Sign in again to play this private video.');
+ const endpoint=config.url.replace(/\/$/,'')+'/functions/v1/blackcell-world-playback';
+ const response=await fetch(endpoint,{method:'POST',headers:{Authorization:'Bearer '+session.access_token,apikey:config.publishableKey,'Content-Type':'application/json'},body:JSON.stringify({id:a.id}),cache:'no-store',signal:AbortSignal.timeout(15000)});
+ if(!response.ok)throw Error('Secure playback unavailable ('+response.status+')');
+ const result=await response.json();if(typeof result.ticket!=='string'||!result.ticket)throw Error('Playback ticket unavailable');
+ if((await client.auth.getSession()).data?.session?.user?.id!==session.user.id)throw Error('Session changed');
+ const url=new URL(endpoint);url.searchParams.set('ticket',result.ticket);return url.href;
+}
 export async function readWorldVideo(client,a){
  if(!isWorldVideo(a))throw Error('Not a World video');
  const session=(await client.auth.getSession()).data?.session;
