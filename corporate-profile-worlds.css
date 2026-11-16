@@ -123,3 +123,36 @@ html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-pw-video
  html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-pw-profile-main>.bc-fb-identity.profile-identity{padding:2px 0!important}
  #profileView.bc-fusion-profile .bc-pw-profile-side{padding:0}
 }
+
+/* Photo-first World Spotlight: completed video assets still take precedence.
+   A single portrait gets a full-bleed editorial background and a separate
+   undistorted foreground subject; multi-World selections fill the card. */
+#profileView .bc-pw-video-panel .bc-pw-cover-art[data-count="1"] .bc-pw-cover-panel{
+ background:linear-gradient(105deg,#12161c,#090a0c);border:0
+}
+#profileView .bc-pw-video-panel .bc-pw-cover-art[data-count="1"] .bc-pw-cover-panel:before{
+ inset:0;background-size:cover;background-position:center 16%;filter:blur(12px) brightness(.59) saturate(.8);opacity:1
+}
+#profileView .bc-pw-video-panel .bc-pw-cover-art[data-count="1"] .bc-pw-cover-portrait{
+ position:absolute;right:0;top:0;width:61%;height:100%;object-fit:contain;object-position:center top;
+ mask-image:linear-gradient(90deg,transparent,#000 11%,#000 89%,transparent)
+}
+#profileView .bc-pw-video-panel .bc-pw-cover-art[data-count="1"] .bc-pw-cover-panel:after{
+ background:linear-gradient(90deg,#090b10eb 0%,#090b10b5 28%,transparent 65%),linear-gradient(0deg,#07080bc9,transparent 27%)
+}
+#profileView .bc-pw-video-panel .bc-pw-cover-art[data-count="1"] .bc-pw-cover-caption{
+ left:5%;right:auto;width:46%;top:0;bottom:0;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:6px;text-align:left
+}
+#profileView .bc-pw-video-panel .bc-pw-cover-art[data-count="1"] .bc-pw-cover-caption strong{
+ font-size:clamp(13px,2vw,21px);line-height:1.1;letter-spacing:.08em;overflow-wrap:anywhere
+}
+#profileView .bc-pw-video-panel .bc-pw-spotlight-kicker,#profileView .bc-pw-video-panel .bc-pw-spotlight-sub{
+ font-size:8px;line-height:1.3;letter-spacing:.08em;color:#c8c9ce
+}
+#profileView .bc-pw-video-panel .bc-pw-spotlight-kicker{color:#ee6775}
+#profileView .bc-pw-video-panel .bc-pw-cover-art:not([data-count="1"]) .bc-pw-cover-panel{
+ background-image:var(--world-art);background-size:cover;background-position:center 10%
+}
+#profileView .bc-pw-video-panel .bc-pw-cover-art:not([data-count="1"]) .bc-pw-cover-portrait{object-fit:cover;object-position:center 7%}
+#profileView .bc-pw-video-panel .bc-pw-cover-art:not([data-count="1"]) .bc-pw-cover-panel:after{background:linear-gradient(0deg,#040507d9,transparent 42%)}
+#profileView .bc-pw-video-panel .bc-pw-live-playing .bc-pw-cover-caption{display:none!important}

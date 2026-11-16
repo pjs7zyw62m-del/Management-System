@@ -88,7 +88,7 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
    const img=make('img','bc-pw-cover-portrait');img.src=src;img.alt='';img.decoding='async';
    panel.append(img,make('span','bc-pw-cover-panel-label',name));panels.append(panel)
   }
-  const tag=make('div','bc-pw-cover-caption');tag.append(make('strong','',id==='hybrid'?'HYBRID WORLDS':worldLabel(id).toUpperCase()+' WORLD'));
+  const tag=make('div','bc-pw-cover-caption');tag.append(make('strong','',id==='hybrid'?'HYBRID WORLDS':worldLabel(id).toUpperCase()+' WORLD'));if(scope.length===1){tag.prepend(make('small','bc-pw-spotlight-kicker','BLACKCELL / WORLD SPOTLIGHT'));tag.append(make('small','bc-pw-spotlight-sub','MAN’S ARMED FORCES'))}
   art.append(panels,tag);cover.prepend(art);
   const source=liveCoverSource(scope);if(source)disposeLiveCover=mountLiveCover(cover,art,source)
  }
