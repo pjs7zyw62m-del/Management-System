@@ -1,3 +1,4 @@
+import {attachPhotoTransfer} from './blackcell-photo-transfer.js?v=1';
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
 import {setupBlackcellPhotos} from './corporate-network-photos.js?v=20261114-photos-only';
 import {setupBlackcellStorageStatus} from './corporate-storage-status.js?v=20261111-storage1';
@@ -150,7 +151,7 @@ function switchView(view,{who=null,tab=null,keepPost=false,pulseWho=null}={}){
  }
  stopFeedPlayback();
  if(state.view==='pulse'&&view!=='pulse')clearPulse();
- if(view==='pulse'){pulseScroll=null;pulseAuthor=pulseWho&&profile(pulseWho)?pulseWho:null;pulseMode=pulseAuthor?'author':'for-you';pulseLimit=12;pulseEnd=false;pulseAutoPages=0;}
+ if(view==='pulse'){pulseMemberTab='posts';pulseArchiveState=null;pulseScroll=null;pulseAuthor=pulseWho&&profile(pulseWho)?pulseWho:null;pulseMode=pulseAuthor?'author':'for-you';pulseLimit=12;pulseEnd=false;pulseAutoPages=0;}
  state.view=view;
  document.body.classList.toggle('bc-pulse-mode',view==='pulse');
  if(view!=='videos')videoChannel.close();
@@ -700,7 +701,7 @@ function prepareReblog(p){
  if(!state.user||state.busy)return;
  const field=$('postBody'),line='BLACKCELL REBLOG: '+p.id;
  if(field.value.includes(line)){switchView('profile',{who:state.user.id,tab:'posts'});focusProfileComposer();return}
- if(reblogReference(field.value)){toast('Finish or remove the existing reblog reference first.');return}
+ if(reblogReference(field.value)||pulseMediaReference(field.value)||videoShareReference(field.value)){toast('Finish or remove the existing reblog reference first.');return}
  const body=(field.value.trim()?field.value.trim()+'\n\n':'')+line;
  if(body.length>1000){toast('Shorten your draft before adding a reblog.');return}
  switchView('profile',{who:state.user.id,tab:'posts'});field.value=body;updateCounter();focusProfileComposer();toast('Reblog added to your draft. Publish when ready.');
@@ -710,24 +711,113 @@ function prepareVideoShare(a){
  if(!state.user||state.busy||!sharedMedia(a)||a.kind!=='video'||!UUID.test(a.id)){toast('This video cannot be shared.');return}
  const field=$('postBody'),line='BLACKCELL VIDEO: '+a.id;
  if(field.value.includes(line)){switchView('profile',{who:state.user.id,tab:'posts'});focusProfileComposer();return}
- if(videoShareReference(field.value)||reblogReference(field.value)){toast('Finish or remove the existing share in your draft first.');return}
+ if(videoShareReference(field.value)||reblogReference(field.value)||pulseMediaReference(field.value)){toast('Finish or remove the existing share in your draft first.');return}
  const body=(field.value.trim()?field.value.trim()+'\n\n':'')+line;
  if(body.length>1000){toast('Shorten your draft before sharing.');return}
  switchView('profile',{who:state.user.id,tab:'posts'});field.value=body;updateCounter();focusProfileComposer();toast('Video added to your private Network draft. Publish when ready.');
 }
-function renderPost(p){
- const node=el('article','panel post');node.id='post-'+p.id;
+
+/* PULSE actions: use the authenticated catalog and RLS. No media bytes are copied. */
+const pulsePending=new Map();
+let pulseMutes=new Set(),pulseSaved=new Set(),pulsePersonalReady=false,pulseViewObserver=null,pulseSeen=new Set(),pulseViewPending=new Map(),pulseViewTimer=null;
+const pulseKey=t=>t.kind+':'+t.id;
+function pulseTargetFor(entry){return entry.type==='post'?{kind:'post',id:entry.item.id}:pulseTarget(entry.item)}
+async function loadPulsePersonal(){
+ const uid=state.user.id;const [m,b]=await Promise.all([client.from('corp_pulse_mutes').select('muted_user_id').eq('user_id',uid),client.from('corp_pulse_interactions').select('target_kind,target_id').eq('user_id',uid).eq('action','bookmark').limit(1000)]);
+ if(state.user?.id!==uid)return;if(m.error||b.error){pulsePersonalReady=false;console.warn('PULSE preferences unavailable');return}
+ pulseMutes=new Set((m.data||[]).map(x=>x.muted_user_id));pulseSaved=new Set((b.data||[]).map(x=>x.target_kind+':'+x.target_id));pulsePersonalReady=true;
+}
+async function pulseMute(owner){if(owner===state.user.id)return;if(!pulsePersonalReady){toast('Mute settings unavailable. Refresh and try again.');return}const old=pulseMutes.has(owner);const q=client.from('corp_pulse_mutes');const {error}=old?await q.delete().eq('user_id',state.user.id).eq('muted_user_id',owner):await q.insert({user_id:state.user.id,muted_user_id:owner});if(error){toast('Unable to update mute: '+fail(error));return}if(old)pulseMutes.delete(owner);else pulseMutes.add(owner);renderAll();toast(old?'Member unmuted.':'Member muted in PULSE.');}
+async function loadSavedTargets(){
+ const missing={post:[],asset:[],stream:[]};for(const key of pulseSaved){const [kind,id]=key.split(':');if(!missing[kind]||!UUID.test(id))continue;if(kind==='post'?!state.posts.some(p=>p.id===id):!pulseFindMedia({kind,id}))missing[kind].push(id)}
+ for(const [kind,ids] of Object.entries(missing)){const table=kind==='post'?'corp_social_posts':kind==='asset'?'corp_social_assets':'corp_stream_videos';for(let i=0;i<ids.length;i+=100){const {data,error}=await client.from(table).select('*').in('id',ids.slice(i,i+100));if(error)continue;for(const a of data||[]){if(kind==='post'){if(!state.posts.some(p=>p.id===a.id))state.posts.push(a)}else if(kind==='asset'){if(!state.assets.some(x=>x.id===a.id))state.assets.push(a)}else if(!state.streamVideos.some(x=>x.id===a.id))state.streamVideos.push({...a,kind:'video',purpose:'post',bunny_stream:true,video_poster_path:a.poster_path})}}}
+ for(let i=0;i<missing.post.length;i+=100){const ids=missing.post.slice(i,i+100);const [assets,likes,comments]=await Promise.all([client.from('corp_social_assets').select('*').in('post_id',ids),client.from('corp_social_likes').select('post_id,user_id').in('post_id',ids),client.from('corp_social_comments').select('id,post_id,user_id,body,created_at').in('post_id',ids).order('created_at')]);for(const a of assets.data||[])if(!state.assets.some(x=>x.id===a.id))state.assets.push(a);for(const l of likes.data||[])if(!state.likes.some(x=>x.post_id===l.post_id&&x.user_id===l.user_id))state.likes.push(l);for(const c of comments.data||[])if(!state.comments.some(x=>x.id===c.id))state.comments.push(c)}
+ await loadSigned();
+}
+function pulseViewAnchor(node,t,update){
+ node.dataset.pulseTarget=pulseKey(t);node._pulseRefresh=()=>pulseQueue(t,update);
+ if(state.view==='pulse'&&pulseViewObserver)pulseViewObserver.observe(node.querySelector('.post-head')||node);
+}
+function pulseViewSetup(scroll){
+ if(typeof IntersectionObserver!=='function')return;
+ pulseViewObserver=new IntersectionObserver(entries=>{
+  for(const e of entries){if(!e.isIntersecting||document.hidden||state.view!=='pulse')continue;const node=e.target.closest('[data-pulse-target]');if(!node)continue;const key=node.dataset.pulseTarget,seen=state.user.id+':'+key;if(pulseSeen.has(seen)){pulseViewObserver?.unobserve(e.target);continue}pulseSeen.add(seen);pulseViewObserver?.unobserve(e.target);pulseViewPending.set(key,{node,seen});}
+  if(pulseViewPending.size&&!pulseViewTimer)pulseViewTimer=setTimeout(async()=>{pulseViewTimer=null;const entries=[...pulseViewPending];pulseViewPending.clear();for(const kind of ['post','asset','stream']){const group=entries.filter(([key])=>key.startsWith(kind+':'));for(let i=0;i<group.length;i+=100){const chunk=group.slice(i,i+100);const {error}=await client.rpc('corp_pulse_record_views',{p_kind:kind,p_ids:chunk.map(([key])=>key.split(':')[1])});for(const [key,value] of chunk){if(error)pulseSeen.delete(value.seen);else if(value.node.isConnected)value.node._pulseRefresh?.()}}}},450);
+ },{root:scroll,threshold:.5});
+}
+
+let pulseSummaryScheduled=false;
+function pulseTarget(a){return {kind:a.bunny_stream?'stream':'asset',id:a.id}}
+function pulseMediaReference(body){const m=String(body||'').match(/(?:^|\n)BLACKCELL MEDIA: (asset|stream):([0-9a-f-]{36})\s*$/i);return m&&UUID.test(m[2])?{kind:m[1],id:m[2],comment:String(body).slice(0,m.index).trim()}:null}
+function pulseReference(t){return t.kind==='post'?'BLACKCELL REBLOG: '+t.id:'BLACKCELL MEDIA: '+t.kind+':'+t.id}
+function pulseFindMedia(t){return (t.kind==='stream'?state.streamVideos:state.assets).find(a=>a.id===t.id&&sharedMedia(a)&&!pulseCinema(a)&&['photo','video'].includes(a.kind)&&(a.purpose==='library'||a.purpose==='post'))}
+function pulseButton(label,icon,fn){const b=btn(icon,fn,'bc-pulse-action');b.title=label;b.setAttribute('aria-label',label);return b}
+function pulseQueue(t,render){
+ const key=t.kind+':'+t.id;if(!pulsePending.has(key))pulsePending.set(key,{t,callbacks:[]});pulsePending.get(key).callbacks.push(render);
+ if(pulseSummaryScheduled)return;pulseSummaryScheduled=true;queueMicrotask(async()=>{
+  pulseSummaryScheduled=false;const batch=[...pulsePending.values()];pulsePending.clear();
+  for(const kind of ['post','asset','stream']){
+   const items=batch.filter(x=>x.t.kind===kind);
+   for(let i=0;i<items.length;i+=100){const group=items.slice(i,i+100);const {data,error}=await client.rpc('corp_pulse_summary',{p_kind:kind,p_ids:group.map(x=>x.t.id)});
+    for(const x of group){const row=data?.find(d=>d.target_id===x.t.id)||{};for(const cb of x.callbacks)cb(error?null:row)}
+   }
+  }
+ });
+}
+async function pulseToggle(t,action,selected){const q=client.from('corp_pulse_interactions');const result=selected?await q.delete().eq('target_kind',t.kind).eq('target_id',t.id).eq('user_id',state.user.id).eq('action',action):await q.insert({target_kind:t.kind,target_id:t.id,user_id:state.user.id,action});if(result.error)throw result.error;if(action==='bookmark'){if(selected)pulseSaved.delete(pulseKey(t));else pulseSaved.add(pulseKey(t));}}
+function pulseQuote(t){
+ const field=$('postBody'),line=pulseReference(t);
+ if(reblogReference(field.value)||videoShareReference(field.value)||pulseMediaReference(field.value)){toast('Finish the existing share draft first.');return}
+ const body=(field.value.trim()?field.value.trim()+'\n\n':'')+line;
+ if(body.length>1000){toast('Shorten your draft before sharing.');return}
+ switchView('profile',{who:state.user.id,tab:'posts'});field.value=body;updateCounter();focusProfileComposer();toast('Quote added to your draft. Publish when ready.');
+}
+async function pulseRepost(t){
+ const line=pulseReference(t);
+ if(state.posts.some(p=>p.author_id===state.user.id&&p.body===line)){toast('You already reposted this item.');return}
+ const {data:existing,error:checkError}=await client.from('corp_social_posts').select('id').eq('author_id',state.user.id).eq('body',line).limit(1);
+ if(checkError)throw checkError;if(existing?.length){toast('You already reposted this item.');return}
+ const {data,error}=await client.from('corp_social_posts').insert({author_id:state.user.id,body:line,kind:'update'}).select('*').single();
+ if(error)throw error;state.posts.unshift(data);renderAll();toast('Reposted to your timeline.');
+}
+function pulseLink(t){const u=new URL(location.href);u.search='';u.hash='';if(t.kind==='post')u.searchParams.set('post',t.id);else{u.searchParams.set('view','pulse');u.searchParams.set('media',pulseKey(t))}return u.href}
+function pulseShareMenu(t){const menu=el('details','bc-pulse-menu'),trigger=el('summary','','↗'),options=el('div','bc-pulse-menu-options');trigger.title='Share';trigger.setAttribute('aria-label','Share');options.append(btn('Copy private link',async()=>{menu.open=false;try{await navigator.clipboard.writeText(pulseLink(t));toast('Private link copied. Verified members only.')}catch(e){toast('Unable to copy private link.')}}));if(navigator.share)options.append(btn('Share link…',async()=>{menu.open=false;try{await navigator.share({title:'BLACKCELL PULSE',url:pulseLink(t)})}catch(e){if(e.name!=='AbortError')toast('Unable to share link.')}}));if(state.member?.role==='owner'||state.member?.can_chat===true)options.append(btn('Copy link & open iMessage',async()=>{menu.open=false;try{await navigator.clipboard.writeText(pulseLink(t));window.dispatchEvent(new CustomEvent('blackcell-open-imessage'));toast('Link copied. Paste it into your chosen conversation.')}catch(e){toast('Unable to copy private link.')}}));menu.append(trigger,options);return menu}
+function pulseMediaActions(node,a){
+ const t=pulseTarget(a),bar=el('div','post-actions bc-pulse-interactions'),zone=el('div','comment-zone');zone.hidden=true;const repost=pulseRepostMenu(t),views=el('span','bc-pulse-view-count','▥');views.title='Unique verified member views';
+ let current=null;
+ const update=row=>{if(!bar.isConnected)return;current=row;like.disabled=!row;bookmark.disabled=!row;like.textContent=row?(row.liked?'♥':'♡')+' '+(row.hearts||0):'♡';like.classList.toggle('liked',!!row?.liked);like.setAttribute('aria-pressed',String(!!row?.liked));reply.textContent=row?'◯ '+(row.replies||0):'◯';bookmark.textContent=row?.bookmarked?'▣':'▱';bookmark.setAttribute('aria-pressed',String(!!row?.bookmarked));pulseRepostPaint(repost,row);views.textContent=row?'▥ '+(row.views||0):'▥';};
+ const change=async(action,b)=>{if(!current)return;b.disabled=true;try{await pulseToggle(t,action,action==='like'?current.liked:current.bookmarked);pulseQueue(t,update)}catch(e){toast('Unable to save: '+fail(e));b.disabled=false}};
+ const like=pulseButton('Like or unlike','♡',()=>void change('like',like)),bookmark=pulseButton('Save or remove bookmark','▱',()=>void change('bookmark',bookmark));like.disabled=bookmark.disabled=true;
+ const loadReplies=async()=>{zone.replaceChildren(el('p','','Loading replies…'));const {data,error}=await client.from('corp_pulse_interactions').select('id,user_id,body,created_at').eq('target_kind',t.kind).eq('target_id',t.id).eq('action','comment').order('created_at',{ascending:false}).limit(100);if(zone.hidden)return;zone.replaceChildren();if(error){zone.append(el('p','','Replies unavailable. Try again.'));return}
+  for(const c of [...(data||[])].reverse()){const row=el('div','comment'),main=el('div','comment-main');row.append(avatar(profile(c.user_id),'small'));main.append(el('strong','',personName(profile(c.user_id))),el('small','',stamp(c.created_at)),el('p','',c.body));row.append(main);zone.append(row)}
+  const form=el('form','comment-compose'),input=el('input'),send=el('button','','Reply');input.required=true;input.maxLength=1000;input.placeholder='Write a reply…';send.type='submit';form.append(input,send);form.addEventListener('submit',async e=>{e.preventDefault();if(!input.value.trim())return;send.disabled=true;const {error}=await client.from('corp_pulse_interactions').insert({target_kind:t.kind,target_id:t.id,action:'comment',user_id:state.user.id,body:input.value.trim()});if(error){toast('Reply not saved: '+fail(error));send.disabled=false;return}pulseQueue(t,update);void loadReplies()});zone.append(form)
+ };
+ const reply=pulseButton('Comments','◯',()=>{zone.hidden=!zone.hidden;if(!zone.hidden)void loadReplies()});
+ bar.append(reply,repost,like,views,bookmark,pulseShareMenu(t),pulseMore(t,a.owner_id,a));
+ node.append(bar,zone);pulseQueue(t,update);pulseViewAnchor(node,t,update);
+}
+function pulseRepostMenu(t){const menu=el('details','bc-pulse-menu'),trigger=el('summary','','↻');trigger.title='Repost or quote';trigger.setAttribute('aria-label','Repost or quote');const options=el('div','bc-pulse-menu-options');options.append(btn('Repost',async()=>{menu.open=false;try{await pulseRepost(t)}catch(e){toast('Repost failed: '+fail(e))}}),btn('Quote post',()=>{menu.open=false;pulseQuote(t)}));menu.append(trigger,options);return menu}
+function pulseRepostPaint(menu,row){const trigger=menu?.querySelector('summary');if(!trigger)return;trigger.textContent=row?'↻ '+(row.reposts||0):'↻';trigger.classList.toggle('bc-pulse-reposted',!!row?.reposted);}
+function pulseMore(t,owner,media=null){const menu=el('details','bc-pulse-menu'),trigger=el('summary','','⋯'),options=el('div','bc-pulse-menu-options');trigger.setAttribute('aria-label','More options');if(owner!==state.user.id)options.append(btn(following(owner)?'Unfollow':'Follow',()=>{menu.open=false;void toggleFollow(owner)}),btn(pulseMutes.has(owner)?'Unmute':'Mute',()=>{menu.open=false;void pulseMute(owner)}));if(media?.kind==='photo'&&media.source_provider!=='world-bunny-v1'){const transfer=btn('Transfer to Photos',()=>{});attachPhotoTransfer(transfer,{client,getPhoto:()=>media,notify:toast});options.append(transfer)}options.append(btn('Report',async()=>{menu.open=false;const reason=prompt('Why are you reporting this item?');if(!reason?.trim())return;const {error}=await client.from('corp_pulse_interactions').insert({target_kind:t.kind,target_id:t.id,user_id:state.user.id,action:'report',body:reason.trim().slice(0,1000)});toast(error?'Report not saved: '+fail(error):'Report recorded privately.')}));menu.append(trigger,options);return menu}
+function pulsePostExtras(actions,p,node,repost){const t={kind:'post',id:p.id};let saved=false;const views=el('span','bc-pulse-view-count','▥');views.title='Unique verified member views';const bookmark=pulseButton('Save or remove bookmark','▱',async()=>{bookmark.disabled=true;try{await pulseToggle(t,'bookmark',saved);pulseQueue(t,update)}catch(e){toast('Bookmark not saved: '+fail(e));bookmark.disabled=false}});const update=row=>{if(!bookmark.isConnected)return;bookmark.disabled=!row;saved=!!row?.bookmarked;bookmark.textContent=saved?'▣':'▱';bookmark.setAttribute('aria-pressed',String(saved));pulseRepostPaint(repost,row);views.textContent=row?'▥ '+(row.views||0):'▥';};bookmark.disabled=true;actions.append(views,bookmark,pulseMore(t,p.author_id));pulseQueue(t,update);pulseViewAnchor(node,t,update)}
+
+function renderPost(p,{reblogSource=false}={}){
+ const node=el('article',reblogSource?'bc-pulse-reblog-source':'panel post');if(!reblogSource)node.id='post-'+p.id;
  const person=profile(p.author_id);
  const head=el('div','post-head');
  const pic=avatar(person,'small');
- pic.style.cursor='pointer';pic.addEventListener('click',()=>openProfile(p.author_id));
+ pic.style.cursor='pointer';pic.addEventListener('click',()=>pulseMemberOpen(p.author_id));
  const title=el('div','post-author');
- const name=btn(personName(person),()=>openProfile(p.author_id));
+ const name=btn(personName(person),()=>pulseMemberOpen(p.author_id));
  title.append(name,el('small','',personHandle(person)+' · '+stamp(p.created_at)));
- head.append(pic,title,el('span','post-label',postType(p)));
+ head.append(pic,title,el('span','post-label',postType(p)));if(reblogSource&&p.author_id!==state.user.id)head.append(btn(following(p.author_id)?'Following':'Follow',()=>void toggleFollow(p.author_id),'bc-pulse-member-secondary'));
  node.append(head);
- const videoRef=videoShareReference(p.body),reference=reblogReference(p.body);
- if(videoRef){
+ const videoRef=videoShareReference(p.body),reference=reblogReference(p.body),mediaRef=pulseMediaReference(p.body);
+ if(mediaRef){
+  if(mediaRef.comment)node.append(el('div','post-body',mediaRef.comment));
+  const original=pulseFindMedia(mediaRef);node.append(el('small','library-feed-context','↻ REPOSTED MEDIA'));
+  if(original){const nested=renderLibraryActivity(original);nested.removeAttribute('id');node.append(nested)}else node.append(el('p','post-body','Original media is no longer available to your account.'));
+ }else if(videoRef){
   if(videoRef.comment)node.append(el('div','post-body',videoRef.comment));
   const card=el('div','bc-fusion-reblog');card.append(el('small','','▶ SHARED WITHIN BLACKCELL TUBE'));
   const a=[...state.assets,...(state.streamVideos||[])].find(x=>x.id===videoRef.id&&x.kind==='video'&&sharedMedia(x)&&(state.view!=='pulse'||!pulseCinema(x)));
@@ -739,7 +829,7 @@ function renderPost(p){
   const original=state.posts.find(x=>x.id===reference.id&&x.id!==p.id);
   const card=el('div','bc-fusion-reblog');card.append(el('small','','↻ REBLOGGED FROM BLACKCELL NETWORK'));
   // Only display an original already visible to this session; never copy its media or bypass RLS.
-  if(original){const sourcePerson=profile(original.author_id);card.append(el('strong','',personName(sourcePerson)),el('p','',String(reblogReference(original.body)?.comment||original.body||'Media post').slice(0,300)));}else card.append(el('p','','Original post may be unavailable or outside the current feed.'));
+  if(original&&!reblogSource&&!reblogReference(original.body)&&!pulseMediaReference(original.body)){card.append(renderPost(original,{reblogSource:true}));}else if(original){const sourcePerson=profile(original.author_id);card.append(el('strong','',personName(sourcePerson)),el('p','',String(reblogReference(original.body)?.comment||pulseMediaReference(original.body)?.comment||'Shared post').slice(0,300)));}else card.append(el('p','','Original post may be unavailable or outside the current feed.'));
   const open=btn('View original post ↗',()=>{const u=new URL(location.href);u.search='';u.hash='';u.searchParams.set('post',reference.id);location.assign(u.href)});card.append(open);node.append(card);
  }else if(p.body)node.append(el('div','post-body',p.body));
  const files=postedAssets(p.id).filter(a=>state.view!=='pulse'||!pulseCinema(a));
@@ -780,19 +870,22 @@ function renderPost(p){
   }
   node.append(wrap);
  }
- const actions=el('div','post-actions');
+ if(reblogSource)return node;
+ const actions=el('div','post-actions bc-pulse-interactions');
  const likeCount=state.likes.filter(l=>l.post_id===p.id).length;
- const like=btn((liking(p.id)?'♥':'♡')+' '+likeCount,()=>void toggleLike(p.id));
+ const like=pulseButton(liking(p.id)?'Unlike post':'Like post',(liking(p.id)?'♥':'♡')+' '+likeCount,()=>void toggleLike(p.id));
  like.classList.toggle('liked',liking(p.id));
  like.setAttribute('aria-label',liking(p.id)?'Unlike post':'Like post');
- const replies=btn('◌  '+state.comments.filter(c=>c.post_id===p.id).length+' COMMENTS',()=>{
+ const replies=pulseButton('Comments','◯ '+state.comments.filter(c=>c.post_id===p.id).length,()=>{
   if(state.openComments.has(p.id))state.openComments.delete(p.id);
   else state.openComments.add(p.id);
   renderAll();
  });
- const share=btn('↗  COPY LINK',()=>void copyPostLink(p.id));
- actions.append(like,replies);
- if(!(state.view==='profile'&&state.profilePreview))actions.append(btn('↻ REBLOG',()=>prepareReblog(p),'bc-fusion-reblog-action'));
+ const share=pulseShareMenu({kind:'post',id:p.id});
+ actions.append(replies);
+ const repost=pulseRepostMenu({kind:'post',id:p.id});if(!(state.view==='profile'&&state.profilePreview))actions.append(repost);
+ actions.append(like);
+ if(!(state.view==='profile'&&state.profilePreview))pulsePostExtras(actions,p,node,repost);
  actions.append(share);
  if(p.author_id===state.user.id&&!(state.view==='profile'&&state.profilePreview))actions.append(btn('DELETE',()=>void deletePost(p),'post-delete'));
  node.append(actions);
@@ -859,9 +952,9 @@ function renderLibraryActivity(a){
  const head=el('div','post-head');
  const pic=avatar(person,'small');
  pic.style.cursor='pointer';
- pic.addEventListener('click',()=>openProfile(a.owner_id));
+ pic.addEventListener('click',()=>pulseMemberOpen(a.owner_id));
  const title=el('div','post-author');
- title.append(btn(personName(person),()=>openProfile(a.owner_id)),
+ title.append(btn(personName(person),()=>pulseMemberOpen(a.owner_id)),
    el('small','',personHandle(person)+' · '+stamp(a.created_at)));
  head.append(pic,title,el('span','post-label',a.kind==='video'?'VIDEO UPLOADED':'PHOTO UPLOADED'));
  node.append(head);
@@ -899,6 +992,7 @@ function renderLibraryActivity(a){
  if(a.kind==='video')actions.append(btn('▶ WATCH IN BLACKCELL TUBE',()=>{const u=new URL(location.href);u.search='';u.searchParams.set('view','videos');u.searchParams.set('video',a.id);location.assign(u.href)}));else if(a.source_provider!=='world-bunny-v1')actions.append(btn('▧ VIEW ORIGINAL',()=>void photos.openAsset(a)));
  actions.append(btn('◌  VIEW PROFILE',()=>openProfile(a.owner_id)));
  node.append(actions);
+ if(!(state.view==='profile'&&state.profilePreview)&&sharedMedia(a)&&!pulseCinema(a))pulseMediaActions(node,a);
  return node;
 }
 
@@ -920,7 +1014,7 @@ function selectProfileFeedPosts(posts,assets,follows,userId,mode,worlds=[]){
 }
 // BLACKCELL PULSE uses only the signed-in Network catalog and existing RLS-backed actions.
 const pulseCinema=a=>['movie','series','documentary','tv','tv show','tv_show'].includes(String(a?.video_category||'').trim().toLowerCase());
-function clearPulse(){stopFeedPlayback();pulseRevision++;pulseObserver?.disconnect();pulseObserver=null;pulseVideos?.disconnect();pulseVideos=null;pulseVisible.clear();for(const v of $('pulseView')?.querySelectorAll('video')||[])v.pause();}
+function clearPulse(){pulseActivityToken++;profileWorlds.clear();pulseViewObserver?.disconnect();pulseViewObserver=null;stopFeedPlayback();pulseRevision++;pulseObserver?.disconnect();pulseObserver=null;pulseVideos?.disconnect();pulseVideos=null;pulseVisible.clear();for(const v of $('pulseView')?.querySelectorAll('video')||[])v.pause();}
 function pulseEntries(){
  const mode=pulseMode==='following'?'following':'latest';
  const posts=selectProfileFeedPosts(state.posts,state.assets,state.follows,state.user.id,mode).filter(p=>pulseMode!=='author'||p.author_id===pulseAuthor);
@@ -928,7 +1022,8 @@ function pulseEntries(){
  const uploads=[...state.assets,...(state.streamVideos||[])].filter(a=>sharedMedia(a)&&!pulseCinema(a)&&['photo','video'].includes(a.kind)&&(a.purpose==='library'||(a.bunny_stream&&!a.post_id))&&(pulseMode!=='author'||a.owner_id===pulseAuthor)&&(pulseMode!=='following'||ids.has(a.owner_id)));
  let entries=[...posts.map(item=>({type:'post',item})),...[...new Map(uploads.map(a=>[a.id,a])).values()].map(item=>({type:'library',item}))].sort((a,b)=>Date.parse(b.item.created_at||0)-Date.parse(a.item.created_at||0));
  if(pulseMode==='for-you')entries=personalization.rankFeed(entries);
- return entries;
+ if(pulseMode==='saved')return entries.filter(e=>pulseSaved.has(pulseKey(pulseTargetFor(e))));
+ return entries.filter(e=>!pulseMutes.has(e.type==='post'?e.item.author_id:e.item.owner_id));
 }
 function pulsePlay(){
  const candidates=[...pulseVisible].filter(([v,x])=>v.isConnected&&x>=.65).sort((a,b)=>b[1]-a[1]);
@@ -961,6 +1056,102 @@ async function loadPulseOlder(){
  }catch(e){if(state.view==='pulse')toast('Older posts unavailable: '+fail(e));pulseEnd=true}
  finally{pulseOlderBusy=false;if(state.view==='pulse'&&rev===pulseRevision)renderPulse()}
 }
+
+/* Tumblr-style member blog and date-organized archive. Metadata pages first;
+   private photo/thumbnail delivery is deferred until a tile is near the viewport. */
+let pulseMemberTab='posts',pulseArchiveState=null,pulseActivityToken=0;
+const pulseProfileMode=()=>pulseMode==='author'&&!!pulseAuthor;
+function pulseMemberOpen(uid){if(state.view==='pulse'&&profile(uid)){switchView('pulse',{pulseWho:uid});return}openProfile(uid)}
+function pulseMonthKey(a){const d=new Date(a.created_at);return Number.isFinite(d.getTime())?d.toISOString().slice(0,7):''}
+function pulseMonthLabel(key){return new Intl.DateTimeFormat(undefined,{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(key+'-01T00:00:00Z'))}
+function pulseArchiveMedia(a){return a&&sharedMedia(a)&&!pulseCinema(a)&&['photo','video'].includes(a.kind)&&['library','post'].includes(a.purpose)}
+function pulseArchiveTile(a){
+ const tile=btn('',()=>{if(a.kind==='photo'){if(!img.hidden&&img.src)profileWorlds.openFeedPhoto(img,a);else toast('Photo preview is still loading.')}else location.assign(pulseLink(pulseTarget(a)))},'bc-pulse-archive-tile');
+ const frame=el('div','bc-pulse-archive-frame'),placeholder=el('span','bc-pw-placeholder',a.kind==='video'?'▶':'Loading…'),img=el('img');
+ img.alt=a.caption||a.title||(a.kind==='video'?'Video thumbnail':'Shared photograph');img.loading='lazy';img.decoding='async';img.hidden=true;
+ frame.append(placeholder,img);tile.append(frame);
+ if(a.kind==='video'){
+  tile.append(el('span','bc-pulse-archive-play','▶'));
+  const known=posterUrl(a);
+  if(known){img.src=known;img.hidden=false;placeholder.hidden=true}
+  else if(a.video_poster_path||a.poster_path){const path=a.video_poster_path||a.poster_path;const load=async()=>{if(!img.isConnected)return;const {data,error}=await bucket.createSignedUrl(path,1800);if(!error&&data?.signedUrl&&img.isConnected){img.src=data.signedUrl;img.hidden=false;placeholder.hidden=true}};if(typeof IntersectionObserver==='function'){const ob=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)){ob.disconnect();void load()}},{rootMargin:'100px'});ob.observe(tile);setTimeout(()=>ob.disconnect(),60000)}else queueMicrotask(load)}
+  else if(isWorldVideo(a)){worldVideoPreviews.mount(a,img);img.addEventListener('load',()=>{placeholder.hidden=true},{once:true})}
+ }else{const known=mediaUrl(a);if(known){img.src=known;img.hidden=false;placeholder.hidden=true}else profileWorlds.mountFeedPhoto(a,img)}
+ tile.setAttribute('aria-label',(a.kind==='photo'?'Open photograph: ':'Open video: ')+(a.caption||a.title||'Shared media')+' · '+stamp(a.created_at));
+ profileWorlds.bindFeedPhoto(tile,a);return tile;
+}
+function pulseArchiveData(owner,month='',kind='all'){return {owner,month,kind,rows:[],cursor:null,done:false,busy:false,error:'',uid:state.user.id}}
+function pulseArchiveQuery(table,a){
+ const stream=table==='corp_stream_videos';
+ let q=client.from(table).select(stream?'id,owner_id,title,filename,created_at,poster_path,video_category,review_status,adult_restricted,upload_status':'id,owner_id,post_id,purpose,kind,filename,caption,created_at,storage_path,bytes,source_provider,bunny_storage_path,video_category,video_poster_path,review_status,adult_restricted').eq('owner_id',a.owner).eq('review_status','approved').eq('adult_restricted',false);
+ if(stream)q=q.in('upload_status',['uploaded','processing','ready']);else{q=q.in('purpose',['library','post']).in('kind',a.kind==='all'?['photo','video']:[a.kind])}
+ if(a.month){const start=new Date(a.month+'-01T00:00:00Z');const next=new Date(start);next.setUTCMonth(next.getUTCMonth()+1);q=q.gte('created_at',start.toISOString()).lt('created_at',next.toISOString())}
+ if(a.cursor)q=q.or('created_at.lt.'+a.cursor.created_at+',and(created_at.eq.'+a.cursor.created_at+',id.lt.'+a.cursor.id+')');
+ return q.order('created_at',{ascending:false}).order('id',{ascending:false}).limit(48);
+}
+async function pulseArchiveNext(a){
+ if(a.busy||a.done||a.uid!==state.user?.id)return;a.busy=true;a.error='';
+ try{
+  const [photosResult,streamResult]=await Promise.all([pulseArchiveQuery('corp_social_assets',a),a.kind==='photo'?Promise.resolve({data:[]}):pulseArchiveQuery('corp_stream_videos',a)]);
+  if(photosResult.error||streamResult.error)throw photosResult.error||streamResult.error;
+  if(a!==pulseArchiveState||a.uid!==state.user?.id)return;
+  const raw=[...(photosResult.data||[]),...(streamResult.data||[]).map(v=>({...v,kind:'video',purpose:'post',bunny_stream:true,video_poster_path:v.poster_path}))].sort((x,y)=>Date.parse(y.created_at)-Date.parse(x.created_at)||y.id.localeCompare(x.id));
+  const page=raw.slice(0,48);a.done=raw.length<48;if(page.length)a.cursor=page[page.length-1];
+  const known=new Set(a.rows.map(x=>pulseKey(pulseTarget(x))));
+  for(const item of page){const key=pulseKey(pulseTarget(item));if(pulseArchiveMedia(item)&&!known.has(key)){a.rows.push(item);known.add(key)}}
+ }catch(e){a.error=fail(e)}finally{a.busy=false;if(state.view==='pulse'&&pulseProfileMode()&&pulseMemberTab==='archive'&&a===pulseArchiveState)renderPulse()}
+}
+function pulseArchivePanel(box){
+ const owner=pulseAuthor;
+ let a=pulseArchiveState;if(!a||a.owner!==owner||a.uid!==state.user.id){a=pulseArchiveData(owner);pulseArchiveState=a}
+ const top=el('div','bc-pulse-archive-controls'),label=el('div','bc-pulse-archive-title');
+ label.append(el('h2','','Archive'),el('p','','All shared uploads · newest first'));
+ const month=el('input');month.type='month';month.value=a.month;month.setAttribute('aria-label','Filter archive by month and year');
+ const change=(m,k)=>{if(m&&!/^\d{4}-\d{2}$/.test(m))return;pulseArchiveState=pulseArchiveData(owner,m,k);renderPulse()};
+ month.addEventListener('change',()=>change(month.value,a.kind));
+ const filters=el('div','bc-pulse-archive-filters');for(const [key,name] of [['all','All media'],['photo','Photos'],['video','Videos']]){const b=btn(name,()=>change(a.month,key),'bc-pulse-member-tab');b.setAttribute('aria-pressed',String(a.kind===key));filters.append(b)}
+ const dateTools=el('div','bc-pulse-archive-date');dateTools.append(month,btn('All months',()=>change('',a.kind),'bc-pulse-member-tab'));
+ top.append(label,dateTools,filters);box.append(top);
+ const groups=new Map();for(const item of a.rows){const key=pulseMonthKey(item);if(!key)continue;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(item)}
+ for(const [key,items] of groups){const section=el('section','bc-pulse-archive-month'),head=el('div','bc-pulse-archive-month-head'),grid=el('div','bc-pulse-archive-grid');head.append(el('h3','',pulseMonthLabel(key)),el('span','',items.length+' loaded'));for(const item of items)grid.append(pulseArchiveTile(item));section.append(head,grid);box.append(section)}
+ if(a.error)box.append(el('p','bc-pulse-end','Archive could not be loaded: '+a.error));
+ if(!groups.size&&a.done&&!a.error)box.append(empty('No shared media','No approved photographs or personal videos in this period.'));
+ if(a.busy||(!a.cursor&&!a.done&&!a.error)){box.append(el('p','bc-pulse-end','Loading archive…'));if(!a.busy)queueMicrotask(()=>{if(a===pulseArchiveState&&!a.busy)void pulseArchiveNext(a)})}
+ else if(!a.done||a.error)box.append(btn(a.error?'Retry':'Load earlier uploads',()=>void pulseArchiveNext(a),'bc-pulse-more'));
+ else if(groups.size)box.append(el('p','bc-pulse-end','Beginning of archive.'));
+}
+function pulseMemberHeader(scroll){
+ const p=profile(pulseAuthor);if(!p)return;
+ const section=el('section','bc-pulse-member'),hero=el('div','bc-pulse-member-cover');cover(hero,p);
+ const overlay=el('div','bc-pulse-cover-top');overlay.append(el('span','bc-pulse-handle',personHandle(p)),btn('⋯',()=>openProfile(p.user_id),'bc-pulse-member-icon'));hero.append(overlay);
+ const identity=el('div','bc-pulse-member-identity'),pic=avatar(p,'gigantic');identity.append(pic,el('h1','',personName(p)),el('p','bc-pulse-member-bio',p.bio?.trim()||p.headline?.trim()||'Verified BLACKCELL member'));
+ const buttons=el('div','bc-pulse-member-buttons');
+ if(p.user_id===state.user.id)buttons.append(btn('Edit profile',()=>openProfile(p.user_id),'bc-pulse-member-primary'));
+ else{buttons.append(btn(following(p.user_id)?'Following':'Follow',()=>void toggleFollow(p.user_id),'bc-pulse-member-primary'));if(state.member?.role==='owner'||state.member?.can_chat===true)buttons.append(btn('Message',()=>window.dispatchEvent(new CustomEvent('blackcell-open-imessage',{detail:{peerId:p.user_id,source:'pulse'}})),'bc-pulse-member-secondary'))}
+ buttons.append(btn('Archive',()=>pulseSetMemberTab('archive'),'bc-pulse-member-secondary'));identity.append(buttons);
+ const navigation=el('nav','bc-pulse-member-nav');navigation.setAttribute('aria-label','Member blog sections');
+ for(const [key,name] of [['posts','Posts'],['likes','Likes'],['following','Following'],['comments','Comments'],['archive','Archive']]){const tab=btn(name,()=>pulseSetMemberTab(key),'bc-pulse-member-tab');tab.setAttribute('aria-pressed',String(pulseMemberTab===key));navigation.append(tab)}
+ section.append(hero,identity,navigation);
+ if(pulseMemberTab==='posts'){const recent=[...state.assets,...state.streamVideos].filter(a=>a.owner_id===p.user_id&&pulseArchiveMedia(a)).sort((a,b)=>Date.parse(b.created_at)-Date.parse(a.created_at)).slice(0,3);if(recent.length){const strip=el('div','bc-pulse-member-preview');for(const a of recent)strip.append(pulseArchiveTile(a));section.append(strip)}}
+ scroll.append(section);
+}
+function pulseSetMemberTab(tab){if(!pulseProfileMode())return;if(pulseMemberTab===tab)return;pulseMemberTab=tab;pulseLimit=12;pulseEnd=false;pulseAutoPages=0;if(pulseScroll)pulseScroll.scrollTop=0;renderPulse()}
+async function pulseMemberActivity(box){
+ const token=++pulseActivityToken,owner=pulseAuthor,tab=pulseMemberTab,uid=state.user.id;
+ const valid=()=>box.isConnected&&token===pulseActivityToken&&state.view==='pulse'&&pulseProfileMode()&&pulseAuthor===owner&&pulseMemberTab===tab&&state.user?.id===uid;
+ let offset=0;const list=el('div','bc-pulse-member-activity'),status=el('p','bc-pulse-end','Loading…');box.append(list,status);
+ const more=async()=>{status.textContent='Loading…';status.hidden=false;try{
+  if(tab==='following'){const {data,error}=await client.from('corp_social_follows').select('following_id').eq('follower_id',owner).order('following_id').range(offset,offset+49);if(error)throw error;if(!valid())return;for(const f of data||[]){const p=profile(f.following_id);if(!p)continue;const card=el('div','bc-pulse-activity-person');card.append(avatar(p,'small'),btn(personName(p),()=>pulseMemberOpen(p.user_id),'bc-pulse-member-secondary'));list.append(card)}offset+=50;finish((data||[]).length===50);return}
+  const likes=tab==='likes',table=likes?'corp_social_likes':'corp_social_comments',fields=likes?'post_id,created_at':'post_id,body,created_at',action=likes?'like':'comment';
+  const [posts,media]=await Promise.all([client.from(table).select(fields).eq('user_id',owner).order('created_at',{ascending:false}).range(0,offset+49),client.from('corp_pulse_interactions').select('target_kind,target_id,body,created_at').eq('user_id',owner).eq('action',action).order('created_at',{ascending:false}).range(0,offset+49)]);
+  if(posts.error||media.error)throw posts.error||media.error;if(!valid())return;
+  const records=[...(posts.data||[]).map(x=>({...x,target_kind:'post',target_id:x.post_id})),...(media.data||[])].sort((a,b)=>Date.parse(b.created_at)-Date.parse(a.created_at));
+  const page=records.slice(offset,offset+50);for(const x of page){if(!UUID.test(x.target_id)||!['post','asset','stream'].includes(x.target_kind))continue;const item=el('div','bc-pulse-activity-item');item.append(el('strong','',likes?'Liked shared '+(x.target_kind==='post'?'post':'media'):'Commented on a shared item'),el('small','',stamp(x.created_at)));if(!likes)item.append(el('p','',x.body));item.append(btn('Open original ↗',()=>location.assign(pulseLink({kind:x.target_kind,id:x.target_id})),'bc-pulse-member-secondary'));list.append(item)}offset+=50;finish(records.length>offset||(posts.data||[]).length===offset||(media.data||[]).length===offset);
+ }catch(e){if(valid())status.textContent='Activity unavailable: '+fail(e)}};
+ const finish=hasMore=>{status.replaceChildren();if(!list.children.length){status.textContent='No visible activity yet.';return}if(hasMore)status.append(btn('Load more',()=>void more(),'bc-pulse-more'));else status.hidden=true};
+ await more();
+}
+
 function renderPulse(){
  if(state.view!=='pulse')return;
  const root=$('pulseView'),savedScroll=pulseScroll?.scrollTop||0;clearPulse();root.replaceChildren();
@@ -968,12 +1159,16 @@ function renderPulse(){
  brand.append(el('span','bc-pulse-glyph','⌁'),el('strong','','BLACKCELL PULSE'),el('small','','DISCOVER · CONNECT · EXPRESS'));
  head.append(btn('‹ Profile',()=>openProfile(pulseAuthor||state.user.id),'bc-pulse-back'),brand,btn('＋ Post',()=>{openProfile(state.user.id,'posts');focusProfileComposer()},'bc-pulse-create'));
  const tabs=el('nav','bc-pulse-tabs');tabs.setAttribute('aria-label','PULSE feeds');
- for(const [key,label] of [['for-you','For You'],['following','Following'],['latest','Explore'],['author',pulseAuthor&&pulseAuthor!==state.user.id?personName(profile(pulseAuthor)):'My Feed']]){
-  const tab=btn(label,()=>{pulseMode=key;if(key==='author'&&!pulseAuthor)pulseAuthor=state.user.id;pulseLimit=12;pulseEnd=false;pulseAutoPages=0;if(pulseScroll)pulseScroll.scrollTop=0;renderPulse()},'bc-pulse-tab');tab.setAttribute('aria-pressed',String(pulseMode===key));tabs.append(tab)
+ for(const [key,label] of [['for-you','For You'],['following','Following'],['latest','Explore'],['saved','Saved'],['muted','Muted'],['author',pulseAuthor&&pulseAuthor!==state.user.id?personName(profile(pulseAuthor)):'My Feed']]){
+  const tab=btn(label,async()=>{pulseMode=key;if(key==='author'&&!pulseAuthor){pulseAuthor=state.user.id;pulseMemberTab='posts';}pulseLimit=12;pulseEnd=key==='saved'||key==='muted';pulseAutoPages=0;if(pulseScroll)pulseScroll.scrollTop=0;if(key==='saved'){tab.disabled=true;tab.textContent='Loading saved…';try{await loadPulsePersonal();await loadSavedTargets()}catch(e){toast('Saved items unavailable: '+fail(e))}finally{tab.disabled=false;tab.textContent=label}}if(state.view==='pulse'&&pulseMode===key)renderPulse()},'bc-pulse-tab');tab.setAttribute('aria-pressed',String(pulseMode===key));tabs.append(tab)
  }
  const auto=btn(pulseAutoplay?'Autoplay on':'Autoplay off',()=>{pulseAutoplay=!pulseAutoplay;auto.textContent=pulseAutoplay?'Autoplay on':'Autoplay off';pulsePlay()},'bc-pulse-auto');tabs.append(auto);
- const scroll=el('div','bc-pulse-scroll');pulseScroll=scroll;const timeline=el('div','bc-pulse-timeline');scroll.append(timeline);
+ const scroll=el('div','bc-pulse-scroll');pulseScroll=scroll;const timeline=el('div','bc-pulse-timeline');if(pulseProfileMode())pulseMemberHeader(scroll);scroll.append(timeline);pulseViewSetup(scroll);
  root.append(head,tabs,scroll);scroll.scrollTop=savedScroll;
+ if(pulseProfileMode()&&pulseMemberTab==='archive'){pulseArchivePanel(timeline);return}
+ if(pulseProfileMode()&&pulseMemberTab!=='posts'){void pulseMemberActivity(timeline);return}
+ if(pulseMode==='muted'){for(const id of pulseMutes){const row=el('div','panel post');row.append(el('strong','',personName(profile(id))),btn('Unmute',()=>void pulseMute(id)));timeline.append(row)}if(!pulseMutes.size)timeline.append(empty('No muted members','Members you mute will appear here.'));return}
+ if(pulseMode==='saved'&&!pulsePersonalReady){timeline.append(empty('Saved items unavailable','Refresh to load your private bookmarks.'));return}
  const entries=pulseEntries();let rendered=0;
  const footer=el('div','bc-pulse-footer');scroll.append(footer);
  if(typeof IntersectionObserver==='function'){pulseVideos=new IntersectionObserver(items=>{for(const e of items)pulseVisible.set(e.target,e.intersectionRatio);pulsePlay()},{root:scroll,threshold:[0,.65,1]})}
@@ -1970,7 +2165,7 @@ async function boot(){
   }
   if(!verified)throw Error('Your corporate account must be active and authorized to enter the network.');
   await loadAll({show:false});
-  await dedupe.load();
+  await Promise.all([loadPulsePersonal(),dedupe.load()]);
   await personalization.load();
   await profileWorlds.load().catch(()=>{});
   await setupPrivateLedgerDoor();
@@ -2019,7 +2214,15 @@ async function boot(){
     }
    }
   }
-  if(params.get('view')==='pulse')switchView('pulse',{pulseWho:uid&&UUID.test(uid)&&profile(uid)?uid:null});
+  if(params.get('view')==='pulse'){
+   const ref=String(params.get('media')||'').split(':');let target=null;
+   if(['asset','stream'].includes(ref[0])&&UUID.test(ref[1]||'')){
+    const t={kind:ref[0],id:ref[1]};target=pulseFindMedia(t);
+    if(!target){const {data}=await client.from(t.kind==='stream'?'corp_stream_videos':'corp_social_assets').select('*').eq('id',t.id).maybeSingle();if(data){if(t.kind==='stream')state.streamVideos.push({...data,kind:'video',purpose:'post',bunny_stream:true,video_poster_path:data.poster_path});else state.assets.push(data);target=pulseFindMedia(t);if(target)await loadSigned()}}
+   }
+   switchView('pulse',{pulseWho:target?.owner_id||(uid&&UUID.test(uid)&&profile(uid)?uid:null)});
+   if(target){const u=new URL(location.href);u.searchParams.set('media',ref.join(':'));history.replaceState(null,'',u);const timeline=$('pulseView').querySelector('.bc-pulse-timeline');if(timeline){const prev=timeline.querySelector('#library-media-'+target.id);if(prev)prev.remove();timeline.prepend(renderLibraryActivity(target));}}
+  }
   else if(state.deepPost)switchView('profile',{who:state.user.id,tab:'worldfeed',keepPost:true});
   else if(uid&&UUID.test(uid)&&profile(uid))switchView('profile',{who:uid});
   else if(params.get('view')==='profile')switchView('profile',{who:state.user.id});
