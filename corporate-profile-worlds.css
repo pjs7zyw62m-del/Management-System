@@ -201,3 +201,12 @@ html body.bc-network.bc-profile-mode #app.app{padding-top:clamp(12px,1.4vw,24px)
 #profileView .bc-profile-suggested #suggestedPeople{margin-top:8px}
 #profileView .bc-profile-social-timeline .bc-pw-media{width:100%;margin-top:12px}
 #profileView .bc-profile-social-timeline .bc-pw-frame{max-height:540px}
+
+/* Single-action photo context menu; no browser save menu. */
+.bc-pw-viewer img{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
+.bc-pw-transfer-menu{position:absolute;z-index:2;box-sizing:border-box;min-width:min(214px,calc(100% - 10px));max-width:calc(100% - 10px);padding:5px;background:#232326f5;border:1px solid #ffffff29;border-radius:10px;box-shadow:0 12px 36px #000a;backdrop-filter:blur(24px);cursor:default}
+.bc-pw-transfer-menu[hidden],.bc-pw-transfer-status[hidden]{display:none!important}
+.bc-pw-transfer-action{display:block;width:100%;border:0;border-radius:6px;background:transparent;color:#f5f5f7;font:500 13px/1.4 system-ui,sans-serif;text-align:left;padding:11px 14px;cursor:pointer;white-space:normal}
+.bc-pw-transfer-action:hover,.bc-pw-transfer-action:focus-visible{background:#ffffff16;outline:none}
+.bc-pw-transfer-action:disabled{opacity:.65;cursor:wait}
+.bc-pw-transfer-status{display:block;font:12px/1.4 system-ui,sans-serif;padding:5px 10px 8px;color:#ffaaaa;overflow-wrap:anywhere}
