@@ -660,3 +660,9 @@ dialog.bc-app-lock-dialog::backdrop{background:#0009;backdrop-filter:blur(7px)}
 
 /* The rail must not establish a stacking context; individual bubbles can sit above or behind windows. */
 .os-parked-chat-bubble.is-kept-on-top{z-index:2000000}
+
+/* Window traffic controls: precise 5% increase for red/yellow/green only. */
+.traffic button:nth-child(-n+3){width:12.6px;height:12.6px;min-width:12.6px}
+.traffic:hover button:nth-child(-n+3){line-height:12.6px}
+@media(min-width:621px){html:not(.bc-os-phone):not(.bc-os-tablet) #desktop>.os-chat-popout:not(.is-max)>.os-window-head .traffic button:nth-child(-n+3){width:13.65px;height:13.65px;min-width:13.65px;line-height:13.65px}}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .os-window-head .traffic button:nth-child(-n+3){width:35.7px;height:37.8px;min-width:35.7px;line-height:1}
