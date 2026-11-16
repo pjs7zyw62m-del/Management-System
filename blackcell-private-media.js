@@ -180,7 +180,7 @@ export function mountPrivatePhotos(host,{client,userId,preview,alive,onBusy}){
  function newAlbum(paths=[]){if(preview||busy||loading)return;const name=prompt('Name the new album:');if(!name?.trim())return;const album={id:'album-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),name:name.trim().slice(0,80),paths:[...new Set(paths)]};prefs.albums.push(album);savePrefs();switchMode(album.id)}
  function addToAlbum(paths){if(preview||busy||loading||!paths.length)return;if(!prefs.albums.length){newAlbum(paths);return}const choice=prompt('Choose an album number, or enter a new album name:\n'+prefs.albums.map((a,i)=>(i+1)+'. '+a.name).join('\n'));if(!choice?.trim())return;const a=prefs.albums[Number(choice)-1];if(a){a.paths=[...new Set([...a.paths,...paths])];savePrefs();status.textContent=paths.length+' added to '+a.name;render()}else{const album={id:'album-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),name:choice.trim().slice(0,80),paths:[...new Set(paths)]};prefs.albums.push(album);savePrefs();render()}}
  function renderSidebar(){sidemenu.replaceChildren();const group=(label,entries)=>{sidemenu.append(make('div','ap-section-label',label));for(const [m,icon,name] of entries){const b=button('',()=>switchMode(m));b.className='ap-nav-item'+(mode===m?' selected':'');b.append(make('span','ap-nav-icon',icon),make('span','',name));b.setAttribute('aria-current',mode===m?'page':'false');sidemenu.append(b)}};group('Photos',[['all','▧','Library'],['recent','◷','Recently Added'],['favorites','♡','Favorites']]);group('Media Types',[['photos','▨','Photos'],['videos','▷','Videos']]);const members=memberAlbums().sort((a,b)=>memberName(a).localeCompare(memberName(b)));group('My Albums',[...prefs.albums.map(a=>[a.id,'▱',a.name]),...members.map(id=>['member:'+id,'▱',memberName(id)+' · '+rows.filter(r=>memberIdFor(r)===id).length])]);const create=button('+ New Album',()=>newAlbum());create.className='ap-nav-item ap-create';create.disabled=preview||busy||loading;sidemenu.append(create);const folders=[...new Set(rows.map(r=>r.path.slice((userId||'').length+1).split('/').slice(0,-1).join('/')).filter(folder=>folder&&!folder.startsWith('Photos/From Members')))].sort();if(folders.length)group('Files Folders',folders.slice(0,60).map(f=>['folder:'+f,'▰',f.split('/').at(-1)]));sidemenu.append(make('p','ap-org-note','Member albums sync through your private drive. Manual albums and favorites are saved in this browser.'))}
- const ratios=new Map(),videoFrames=new Map();let layoutFrame=0,videoObserver=null,videoQueue=[],videoWorkerRunning=false;
+ const ratios=new Map(),videoFrames=new Map(),photoFrames=new Map(),photoPending=new Map();let layoutFrame=0,videoObserver=null,videoQueue=[],videoWorkerRunning=false,photoObserver=null,photoQueue=[],photoActive=0,photoFrameBytes=0;
  function queuePhotoLayout(){
   if(layoutFrame||closed)return;
   layoutFrame=requestAnimationFrame(()=>{layoutFrame=0;if(!usable())return;
@@ -199,7 +199,49 @@ export function mountPrivatePhotos(host,{client,userId,preview,alive,onBusy}){
   if(videoWorkerRunning)return;videoWorkerRunning=true;
   try{while(usable()&&videoQueue.length)await videoQueue.shift()()}finally{videoWorkerRunning=false}
  }
- function clearThumbs(){videoObserver?.disconnect();videoObserver=null;videoQueue=[];for(const u of urls)URL.revokeObjectURL(u);urls=[]}
+ function previewKey(row){return row.path+'|'+String(row.date||'')+'|'+String(row.size||'')}
+ function cachePhoto(key,frame){
+  // An in-memory preview only, bounded to 12 MiB. Never store originals
+  // or private thumbnails in localStorage, IndexedDB, or a service worker.
+  if(!frame?.small||frame.blob.size>1024*1024||!usable())return;
+  if(photoFrames.has(key)){photoFrameBytes-=photoFrames.get(key).blob.size;photoFrames.delete(key)}
+  photoFrames.set(key,frame);photoFrameBytes+=frame.blob.size;
+  while(photoFrameBytes>12*1024*1024||photoFrames.size>120){
+   const oldest=photoFrames.keys().next().value;photoFrameBytes-=photoFrames.get(oldest).blob.size;photoFrames.delete(oldest);
+  }
+ }
+ async function photoPreview(row){
+  const key=previewKey(row);
+  if(photoFrames.has(key)){const frame=photoFrames.get(key);photoFrames.delete(key);photoFrames.set(key,frame);return frame}
+  if(photoPending.has(key))return photoPending.get(key);
+  const job=(async()=>{
+   const file=await getPrivateMedia(storage,row);if(!usable())throw Error('Photos closed');
+   let bitmap=null,image=null,url=null;
+   try{
+    if(typeof createImageBitmap==='function'){try{bitmap=await createImageBitmap(file)}catch(_){}}
+    if(!bitmap){url=URL.createObjectURL(file);image=new Image();image.src=url;await image.decode()}
+    const src=bitmap||image,width=bitmap?.width||image?.naturalWidth,height=bitmap?.height||image?.naturalHeight;
+    if(!width||!height)throw Error('Image preview unavailable');
+    const scale=Math.min(1,640/Math.max(width,height)),canvas=document.createElement('canvas');
+    canvas.width=Math.max(1,Math.round(width*scale));canvas.height=Math.max(1,Math.round(height*scale));
+    const context=canvas.getContext('2d');if(!context)throw Error('Canvas unavailable');
+    context.drawImage(src,0,0,canvas.width,canvas.height);
+    const small=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',.80));
+    const frame=small?{blob:small,ratio:width/height,small:true}:{blob:file,ratio:width/height,small:false};
+    cachePhoto(key,frame);return frame;
+   }catch(_){return {blob:file,ratio:null,small:false}}
+   finally{bitmap?.close();if(url)URL.revokeObjectURL(url)}
+  })();
+  photoPending.set(key,job);
+  try{return await job}finally{if(photoPending.get(key)===job)photoPending.delete(key)}
+ }
+ function pumpPhotoQueue(){
+  while(usable()&&photoActive<3&&photoQueue.length){
+   const run=photoQueue.shift();photoActive++;
+   void Promise.resolve().then(run).catch(()=>{}).finally(()=>{photoActive--;pumpPhotoQueue()});
+  }
+ }
+ function clearThumbs(){photoObserver?.disconnect();photoObserver=null;photoQueue=[];videoObserver?.disconnect();videoObserver=null;videoQueue=[];for(const u of urls)URL.revokeObjectURL(u);urls=[]}
  function filteredRows(){const q=search.value.trim().toLowerCase(),album=prefs.albums.find(a=>a.id===mode);return rows.filter(r=>{const folder=r.path.slice((userId||'').length+1).split('/').slice(0,-1).join('/');return (mode==='all'||mode==='recent'||mode==='favorites'&&favorites.has(r.path)||mode==='photos'&&r.type.startsWith('image/')||mode==='videos'&&r.type.startsWith('video/')||album?.paths.includes(r.path)||mode.startsWith('member:')&&memberIdFor(r)===mode.slice(7)||mode.startsWith('folder:')&&folder===mode.slice(7))&&(!dateScope||(dateScope==='Unknown date'?!r.date:String(r.date).startsWith(dateScope)))&&(!q||r.name.toLowerCase().includes(q)||String(r.date).toLowerCase().includes(q)||folder.toLowerCase().includes(q))})}
  function visibleRows(){return filteredRows().slice(page*36,page*36+36)}
  function syncControls(){add.disabled=busy||loading;refreshBtn.disabled=busy||loading;selectBtn.disabled=preview||busy||loading||!rows.length;selectBtn.textContent=selecting?'Done':'Select';selectionBar.hidden=!selecting;selectionCount.textContent=selected.size+' selected';const visible=visibleRows();selectPage.disabled=busy||loading||!visible.length;selectPage.textContent=visible.length&&visible.every(r=>selected.has(r.path))?'Deselect page':'Select page';deleteSelected.disabled=favoriteSelected.disabled=albumSelected.disabled=busy||loading||!selected.size;}
@@ -238,7 +280,6 @@ export function mountPrivatePhotos(host,{client,userId,preview,alive,onBusy}){
   if(dateScope){const reset=button('‹ All dates',()=>{dateScope='';page=0;render()});heading.replaceChildren(title,subtitle,reset)}else heading.replaceChildren(title,subtitle);if(mode.startsWith('member:')){const id=mode.slice(7),visit=button('Visit Profile ↗',()=>{const u=new URL('corporate-network.html',location.href);u.searchParams.set('view','profile');u.searchParams.set('user',id);window.open(u.href,'_blank','noopener,noreferrer')});heading.append(visit)}
   page=Math.max(0,Math.min(page,Math.max(0,Math.ceil(filtered.length/36)-1)));syncControls();
   if(!filtered.length){const empty=make('div','ap-empty');empty.append(make('span','ap-empty-icon','▧'),make('h3','',preview?'Your Photos library':mode==='favorites'?'No favorites yet':album?'This album is empty':'No photos or videos'),make('p','',preview?'Sign in to view private media.':mode==='favorites'?'Choose the heart while viewing a photo.':album?'Select photos in your library and add them to this album.':'Import media to your private library. Nothing is shared automatically.'));if(mode==='all'||mode==='recent')empty.append(button('Import Photos',()=>input.click()));grid.append(empty);return}
-  const jobs=[];
   function videoThumbnail(row,thumb){
    const key=row.path+'|'+String(row.date||'')+'|'+String(row.size||'');
    const valid=()=>seq===version&&usable()&&thumb.isConnected;
@@ -271,15 +312,37 @@ export function mountPrivatePhotos(host,{client,userId,preview,alive,onBusy}){
    },{root:grid,rootMargin:'150px'});
    thumb._bcPreviewTask=enqueue;videoObserver.observe(thumb);
   }
-  function thumbnail(row,thumb){if(row.type.startsWith('video/')){videoThumbnail(row,thumb);return}if(row.type.startsWith('image/')&&!/heic|heif/.test(row.type))jobs.push(async()=>{try{const f=await getPrivateMedia(storage,row);if(seq!==version||!usable())return;let thumbnailFile=f;if(typeof createImageBitmap==='function'){let bitmap;try{bitmap=await createImageBitmap(f,{resizeWidth:420,resizeQuality:'medium'});if(seq!==version||!usable())return;const canvas=document.createElement('canvas');canvas.width=bitmap.width;canvas.height=bitmap.height;const context=canvas.getContext('2d');if(context){context.drawImage(bitmap,0,0);const small=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',.84));if(small)thumbnailFile=small}}catch(_){}finally{bitmap?.close()}}if(seq!==version||!usable())return;const u=URL.createObjectURL(thumbnailFile);urls.push(u);const img=make('img');img.loading='lazy';img.alt=row.name;img.src=u;const card=thumb.parentElement;const decoded=()=>{if(seq!==version||!usable()||!img.naturalHeight)return;const ratio=img.naturalWidth/img.naturalHeight;ratios.set(row.path,ratio);if(card?.classList.contains('ap-photo')){card.dataset.ratio=String(ratio);queuePhotoLayout()}};img.addEventListener('load',decoded,{once:true});thumb.replaceChildren(img);if(img.complete)decoded();if(favorites.has(row.path))thumb.append(make('span','ap-favmark','♥'))}catch(_){}})}
+  function thumbnail(row,thumb){
+   if(row.type.startsWith('video/')){videoThumbnail(row,thumb);return}
+   if(!row.type.startsWith('image/')||/heic|heif/.test(row.type))return;
+   const valid=()=>seq===version&&usable()&&thumb.isConnected,key=previewKey(row);
+   function paint(frame){
+    if(!valid())return;
+    const url=URL.createObjectURL(frame.blob);urls.push(url);
+    const img=make('img');img.alt=row.name;img.decoding='async';
+    const card=thumb.parentElement;
+    const apply=ratio=>{if(!valid()||!ratio)return;ratios.set(row.path,ratio);if(card?.classList.contains('ap-photo')){card.dataset.ratio=String(ratio);queuePhotoLayout()}};
+    img.addEventListener('load',()=>apply(frame.ratio||(img.naturalHeight?img.naturalWidth/img.naturalHeight:0)),{once:true});
+    img.src=url;thumb.replaceChildren(img);if(frame.ratio)apply(frame.ratio);
+    if(favorites.has(row.path))thumb.append(make('span','ap-favmark','♥'));
+   }
+   if(photoFrames.has(key)){const frame=photoFrames.get(key);photoFrames.delete(key);photoFrames.set(key,frame);queueMicrotask(()=>paint(frame));return}
+   const run=async()=>{if(!valid())return;try{paint(await photoPreview(row))}catch(_){}};
+   const enqueue=()=>{if(!valid())return;photoQueue.push(run);pumpPhotoQueue()};
+   if(typeof IntersectionObserver==='undefined'){queueMicrotask(enqueue);return}
+   if(!photoObserver)photoObserver=new IntersectionObserver(entries=>{
+    for(const entry of entries)if(entry.isIntersecting){photoObserver?.unobserve(entry.target);const task=entry.target._bcPhotoTask;delete entry.target._bcPhotoTask;task?.()}
+   },{root:grid,rootMargin:'200px'});
+   thumb._bcPhotoTask=enqueue;photoObserver.observe(thumb);
+  }
   function tile(row,parent){const card=button('',()=>{if(busy||loading)return;if(selecting){if(selected.has(row.path))selected.delete(row.path);else selected.add(row.path);card.classList.toggle('is-selected',selected.has(row.path));card.setAttribute('aria-pressed',String(selected.has(row.path)));check.textContent=selected.has(row.path)?'✓':'';syncControls()}else void viewer.open(row)});card.className='bc-pm-photo ap-photo';card.dataset.ratio=String(ratios.get(row.path)||(row.type.startsWith('video/')?16/9:1));card.setAttribute('aria-label',(selecting?'Select ':'Open ')+row.name);const thumb=make('div','bc-pm-thumb',row.type.startsWith('video/')?'▶':'▧');card.title=row.name;card.append(thumb);if(row.type.startsWith('video/'))thumb.append(make('span','ap-video-label','VIDEO'));const check=make('span','bc-pm-selection-check',selected.has(row.path)?'✓':'');if(selecting){card.append(check);card.classList.toggle('is-selected',selected.has(row.path));card.setAttribute('aria-pressed',String(selected.has(row.path)))}parent.append(card);thumbnail(row,thumb)}
   if(view!=='all'&&!selecting){const groups=new Map();for(const row of filtered){const k=String(row.date||'').slice(0,view==='years'?4:7)||'Unknown date';if(!groups.has(k))groups.set(k,[]);groups.get(k).push(row)}const entries=[...groups.entries()];page=Math.min(page,Math.max(0,Math.ceil(entries.length/36)-1));const collection=make('div','ap-collection-grid');for(const [k,items] of entries.slice(page*36,page*36+36)){const row=items[0],card=button('',()=>{dateScope=k;view='all';page=0;render()});card.className='ap-period';const thumb=make('div','bc-pm-thumb',row.type.startsWith('video/')?'▶':'▧');card.append(thumb,make('strong','',k),make('small','',items.length+' items'));collection.append(card);thumbnail(row,thumb)}grid.append(collection);if(entries.length>36)renderPager(entries.length)}
   else{const visible=visibleRows(),collection=make('div','ap-photo-grid ap-justified-grid');grid.append(collection);for(const row of visible)tile(row,collection);queuePhotoLayout();if(filtered.length>36)renderPager(filtered.length)}
   function renderPager(count){const prev=button('‹',()=>{if(busy||loading)return;page--;grid.scrollTop=0;render()}),next=button('›',()=>{if(busy||loading)return;page++;grid.scrollTop=0;render()});prev.disabled=busy||loading||page===0;next.disabled=busy||loading||(page+1)*36>=count;pager.append(prev,make('span','',String(page+1)+' / '+Math.ceil(count/36)),next)}
-  let jobIndex=0;async function worker(){while(seq===version&&usable()&&jobIndex<jobs.length){const fn=jobs[jobIndex++];await fn()}}for(let i=0;i<Math.min(4,jobs.length);i++)void worker();
+  // Preview tasks are queued only when their tiles approach the viewport.
  }
  input.onchange=async()=>{const list=Array.from(input.files||[]);input.value='';if(preview){status.textContent='Sign in to import private media.';return}if(busy||loading||!usable()||!list.length||deleteDialog)return;busy=true;syncControls();onBusy(true);let n=0,failed=[];try{for(const [i,file] of list.entries()){if(!usable())break;const type=mediaType(file.name),name=file.name.normalize('NFKD').replace(/[^a-zA-Z0-9_. -]/g,'_').replace(/^\.+/,'').slice(0,100);if(!type||!name){failed.push(file.name+': Unsupported format or file name.');continue}if(!file.size||file.size>PRIVATE_FILE_LIMIT){failed.push(name+': '+(!file.size?'Empty file.':'Exceeds 256 MB ('+(file.size/1048576).toFixed(1)+' MB).'));continue}status.textContent='Importing '+(i+1)+' of '+list.length+' · '+name+' ('+(file.size/1048576).toFixed(1)+' MB)…';try{await uploadPrivateFile(storage,userId+'/Photos/'+name,file,(sent,total)=>{status.textContent='Importing '+name+' · '+Math.round(sent/total*100)+'%'});n++}catch(e){failed.push(name+': '+privateUploadError(e))}}await refresh();if(n)window.dispatchEvent(new CustomEvent('bc-private-files-changed',{detail:{source:'photos'}}));status.textContent=n+' imported privately'+(failed.length?' · '+failed.length+' failed · '+failed.slice(0,3).join(' | '):'')}catch(e){status.textContent=privateUploadError(e)}finally{busy=false;onBusy(false);if(usable())syncControls()}};
- const moved=event=>{if(event.detail?.source==='photos'||(event.detail?.uid&&event.detail.uid!==userId)||busy)return;viewer.close();closeDelete();void refresh(true)};window.addEventListener('bc-private-files-changed',moved);let transferChannel=null;try{transferChannel=new BroadcastChannel('bc-private-photos-transfer');transferChannel.onmessage=e=>{if(e.data?.type==='photos-changed'&&e.data.uid===userId&&!busy)void refresh(true)}}catch(_){}search.oninput=()=>{page=0;dateScope='';view='all';render()};void refresh();return {dispose(){closed=true;version++;refreshSeq++;photoResize?.disconnect();if(layoutFrame)cancelAnimationFrame(layoutFrame);ratios.clear();videoFrames.clear();closeDelete();window.removeEventListener('bc-private-files-changed',moved);transferChannel?.close();legacyOwners.clear();memberLabels.clear();viewer.close();clearThumbs()},refresh,closeViewer:viewer.close};
+ const moved=event=>{if(event.detail?.source==='photos'||(event.detail?.uid&&event.detail.uid!==userId)||busy)return;viewer.close();closeDelete();void refresh(true)};window.addEventListener('bc-private-files-changed',moved);let transferChannel=null;try{transferChannel=new BroadcastChannel('bc-private-photos-transfer');transferChannel.onmessage=e=>{if(e.data?.type==='photos-changed'&&e.data.uid===userId&&!busy)void refresh(true)}}catch(_){}search.oninput=()=>{page=0;dateScope='';view='all';render()};void refresh();return {dispose(){closed=true;version++;refreshSeq++;photoResize?.disconnect();if(layoutFrame)cancelAnimationFrame(layoutFrame);ratios.clear();videoFrames.clear();photoFrames.clear();photoPending.clear();photoFrameBytes=0;closeDelete();window.removeEventListener('bc-private-files-changed',moved);transferChannel?.close();legacyOwners.clear();memberLabels.clear();viewer.close();clearThumbs()},refresh,closeViewer:viewer.close};
 }
 export async function choosePrivateMedia({client,userId,onSelect,actionLabel='Attach selected',max=6}){
  if(!userId)return;
