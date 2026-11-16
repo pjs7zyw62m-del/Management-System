@@ -1,6 +1,6 @@
 import {createClient} from "npm:@supabase/supabase-js@2.119.0";
 const origins=new Set(["https://blackcellcorp.com","https://www.blackcellcorp.com","https://pjs7zyw62m-del.github.io"]);
-const base="https://api-singapore.klingai.com",MAX=8*1024*1024,CHUNK=4*1024*1024,TABLE="blackcell_ai_video_pilot";
+const base="https://api-singapore.klingai.com",MAX=8*1024*1024,CHUNK=4*1024*1024,TABLE="blackcell_ai_video_retry";
 const motions:Record<string,string>={gentle:"Subtle natural movement, preserve appearance, clothing and surroundings. Steady camera, realistic motion.",camera:"Gentle cinematic camera movement around the existing scene. Preserve identity, clothing, surroundings and proportions.",ambient:"Subtle natural movement in the existing environment. Preserve the original scene, clothing, identity and proportions."};
 const states=new Set(["submitted","processing","succeeded","failed"]);
 const validPath=(p:unknown,uid:string):p is string=>typeof p==="string"&&p.length<330&&!/[\x00-\x1f\x7f\\]/.test(p)&&( /^Photos\/[^/]+\.(?:jpe?g|png)$/i.test(p)&&!/^Photos\/BLACKCELL-[0-9a-f-]{36}\./i.test(p)||p.startsWith("Photos/From Members/"+uid+"/")&&/^BLACKCELL-[0-9a-f-]{36}\.(?:jpe?g|png)$/i.test(p.split("/").at(-1)||"")&&p.split("/").length===4);
@@ -29,13 +29,22 @@ Deno.serve(async req=>{
   if(Number(req.headers.get("content-length")||0)>4096)return send({ok:false,code:"INVALID_REQUEST"},400);
   const input=await req.json(),action=input.action,path=input.path;
   if(!["status","create","output"].includes(action)||!validPath(path,uid))return send({ok:false,code:"PILOT_REQUIRES_OWN_JPEG_OR_PNG"});
-  const existing=await db.from(TABLE).select("id,user_id,source_path,state,provider_task_id,created_at").eq("singleton",true).maybeSingle();
+  const existing=await db.from(TABLE).select("id,user_id,source_path,state,provider_task_id,created_at,provider_http,provider_code").eq("singleton",true).maybeSingle();
   if(existing.error)return send({ok:false,code:"LEDGER_UNAVAILABLE"});
   const job=existing.data;
+  const previous=await db.from("blackcell_ai_video_pilot").select("id,user_id,source_path,state,provider_task_id,created_at").eq("singleton",true).maybeSingle();
+  if(previous.error||!previous.data||previous.data.user_id!==uid||previous.data.provider_task_id||previous.data.state!=="uncertain")return send({ok:false,code:"PRIOR_ATTEMPT_REVIEW_REQUIRED"});
+  if(!job&&path===previous.data.source_path)return send({ok:false,code:"USE_DIFFERENT_TEST_IMAGE"});
   if(job&&(job.user_id!==uid||job.source_path!==path))return send({ok:false,code:"PILOT_ALREADY_USED"});
   if(action==="create"){
    if(job)return send({ok:true,state:job.state,id:job.id});
    if(input.approve!==true||input.rights!==true||!Object.hasOwn(motions,input.motion))return send({ok:false,code:"CONFIRMATION_REQUIRED"});
+   if(input.retryConfirmed!==true)return send({ok:false,code:"CONFIRMATION_REQUIRED"});
+   // No second submission unless both provider lookups again find no matching prior job.
+   const old=previous.data,oldRes=await kling("/tasks?external_task_ids="+encodeURIComponent(old.id)),oldData=await oldRes.json().catch(()=>null);
+   if(!oldRes.ok||oldData?.code!==0||!Array.isArray(oldData.data)||oldData.data.length!==0)return send({ok:false,code:"PRIOR_ATTEMPT_REVIEW_REQUIRED"});
+   const history=await kling("/tasks",{method:"POST",body:JSON.stringify({start_time:String(new Date(old.created_at).getTime()-60000),end_time:String(Date.now()),cursor:"",limit:100,filters:[{key:"product_type",values:["video"]}]})}),hist=await history.json().catch(()=>null);
+   if(!history.ok||hist?.code!==0||!Array.isArray(hist.data?.result)||hist.data.has_more!==false||hist.data.result.some((t:Record<string,unknown>)=>t.external_id===old.id))return send({ok:false,code:"PRIOR_ATTEMPT_REVIEW_REQUIRED"});
    // Authoritative read via the signed-in owner's encrypted storage gateway. No caller-supplied image bytes or URL.
    const drive=(act:string,body:Record<string,unknown>)=>fetch(host+"/functions/v1/blackcell-os-private-drive?action="+act,{method:"POST",headers:{Authorization:"Bearer "+jwt,apikey:pub,"Content-Type":"application/json"},body:JSON.stringify(body),redirect:"error",signal:AbortSignal.timeout(25000)});
    const lookup=await drive("lookup",{path}),catalog=await lookup.json().catch(()=>null);
@@ -60,12 +69,15 @@ Deno.serve(async req=>{
    try{
     const res=await kling("/image-to-video/kling-3.0",{method:"POST",body:JSON.stringify({contents:[{type:"prompt",text:motions[input.motion]},{type:"first_frame",url:b64(photo)}],settings:{resolution:"720p",duration:5,audio:"off",multi_shot:false},options:{external_task_id:id,watermark_info:{enabled:true}}})}),data=await res.json().catch(()=>null);
     console.info("KLING_CREATE_RESULT",JSON.stringify({http:res.status,code:Number.isInteger(data?.code)?data.code:null,taskReceived:typeof data?.data?.id==="string"}));
-    const accepted=res.ok&&data?.code===0&&typeof data?.data?.id==="string",state=accepted&&states.has(data.data.status)?data.data.status:accepted?"submitted":"uncertain";
-    await db.from(TABLE).update({state,provider_task_id:accepted?data.data.id:null}).eq("id",id);
-    return send({ok:accepted,state,id,code:accepted?"SUBMITTED":"SUBMISSION_UNCONFIRMED"});
+    const accepted=res.ok&&data?.code===0&&typeof data?.data?.id==="string";
+    const providerCode=Number.isInteger(data?.code)?data.code:null, definiteReject=res.status>=400&&res.status<500&&providerCode!==null&&providerCode!==0;
+    const state=accepted&&states.has(data.data.status)?data.data.status:accepted?"submitted":definiteReject?"failed":"uncertain";
+    await db.from(TABLE).update({state,provider_task_id:accepted?data.data.id:null,provider_http:res.status,provider_code:providerCode}).eq("id",id);
+    return send({ok:accepted,state,id,code:accepted?"SUBMITTED":definiteReject?"PROVIDER_REJECTED":"SUBMISSION_UNCONFIRMED",diagnostic:{http:res.status,providerCode}});
    }catch{await db.from(TABLE).update({state:"uncertain"}).eq("id",id);return send({ok:false,state:"uncertain",id,code:"SUBMISSION_UNCONFIRMED"})}
   }
   if(!job)return send({ok:true,state:"ready"});
+  if(job.state==="failed"&&!job.provider_task_id)return send({ok:true,state:"failed",id:job.id,code:"PROVIDER_REJECTED",diagnostic:{http:job.provider_http,providerCode:job.provider_code}});
   const query=job.provider_task_id?"task_ids="+encodeURIComponent(job.provider_task_id):"external_task_ids="+encodeURIComponent(job.id);
   const res=await kling("/tasks?"+query),data=await res.json().catch(()=>null);
   let task=res.ok&&data?.code===0&&Array.isArray(data.data)?data.data.find((t:Record<string,unknown>)=>job.provider_task_id?t.id===job.provider_task_id:t.external_id===job.id):null;
