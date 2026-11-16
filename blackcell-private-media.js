@@ -79,7 +79,7 @@ async function privateVideoFrame(file){
    const point=Math.min(4,video.duration*.18,video.duration-.1);
    try{await wait('seeked',null,()=>{video.currentTime=point},3500)}catch(_){}
   }
-  const canvas=document.createElement('canvas'),scale=Math.min(1,640/Math.max(video.videoWidth,video.videoHeight));
+  const canvas=document.createElement('canvas'),scale=Math.min(1,960/Math.max(video.videoWidth,video.videoHeight));
   canvas.width=Math.max(1,Math.round(video.videoWidth*scale));canvas.height=Math.max(1,Math.round(video.videoHeight*scale));
   const ctx=canvas.getContext('2d');if(!ctx)throw Error('Preview unavailable');
   ctx.drawImage(video,0,0,canvas.width,canvas.height);
@@ -106,12 +106,13 @@ async function imageFrame(file){
   if(!bitmap){url=URL.createObjectURL(file);image=new Image();image.src=url;await image.decode()}
   const src=bitmap||image,width=bitmap?.width||image?.naturalWidth,height=bitmap?.height||image?.naturalHeight;
   if(!width||!height)throw Error('Image preview unavailable');
-  const scale=Math.min(1,640/Math.max(width,height)),canvas=document.createElement('canvas');
+  const scale=Math.min(1,960/Math.max(width,height)),canvas=document.createElement('canvas');
   canvas.width=Math.max(1,Math.round(width*scale));canvas.height=Math.max(1,Math.round(height*scale));
   const ctx=canvas.getContext('2d');if(!ctx)throw Error('Canvas unavailable');
   ctx.drawImage(src,0,0,canvas.width,canvas.height);
-  const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.80));
+  const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.88));
   if(!blob)throw Error('Preview unavailable');
+  if(blob.size>524272){const smaller=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.78));if(smaller&&smaller.size<=524272)return {blob:smaller,ratio:width/height,small:true}}
   return {blob,ratio:width/height,small:true};
  }finally{bitmap?.close();if(url)URL.revokeObjectURL(url)}
 }
@@ -181,7 +182,9 @@ export function mountPrivatePhotos(host,{client,userId,preview,alive,onBusy}){
  async function openViewer(row){
   closeViewer();if(!usable())return;currentRow=row;const seq=viewerGeneration,visible=filteredRows(),index=visible.findIndex(x=>x.path===row.path);viewerOverlay=make('section','bc-pm-viewer ap-viewer');const top=make('header','bc-pm-view-head ap-view-toolbar'),label=make('strong','',row.name),actions=make('div','bc-pm-view-actions');const back=button('‹ Library',closeViewer),prev=button('‹',()=>{if(index>0)void openViewer(visible[index-1])}),next=button('›',()=>{if(index+1<visible.length)void openViewer(visible[index+1])});prev.disabled=index<=0;next.disabled=index<0||index>=visible.length-1;prev.setAttribute('aria-label','Previous photo');next.setAttribute('aria-label','Next photo');const fav=button(favorites.has(row.path)?'♥':'♡',()=>{if(preview)return;if(favorites.has(row.path))favorites.delete(row.path);else favorites.add(row.path);savePrefs();fav.textContent=favorites.has(row.path)?'♥':'♡';render()});fav.disabled=preview;fav.setAttribute('aria-label','Favorite photo');const details=make('aside','ap-info');details.hidden=!infoShown;const toggle=button('ⓘ',()=>{infoShown=!infoShown;details.hidden=!infoShown});toggle.setAttribute('aria-label','Photo information');details.append(make('h3','','Info'),make('strong','',row.name),make('p','',row.type),make('p','',row.date?new Date(row.date).toLocaleString():'Date unavailable'),make('p','',row.size?((row.size/1048576).toFixed(2)+' MB'):'Size unavailable'));const download=button('↓',()=>{if(!viewerURL)return;const link=make('a');link.href=viewerURL;link.download=row.name;link.click()});download.disabled=true;download.setAttribute('aria-label','Download original');actions.append(prev,next,fav,toggle,download);if(!preview){const del=button('Delete',()=>confirmDelete([row]));del.classList.add('bc-pm-danger');actions.append(del)}top.append(back,label,actions);const area=make('div','ap-view-area'),content=make('div','bc-pm-view-body','Loading original…');area.append(content,details);viewerOverlay.append(top,area);host.append(viewerOverlay);viewerOverlay.tabIndex=-1;viewerOverlay.focus();
   viewerOverlay.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();closeViewer()}else if(e.key==='ArrowLeft'&&index>0&&e.target?.tagName!=='VIDEO'){e.preventDefault();void openViewer(visible[index-1])}else if(e.key==='ArrowRight'&&index>=0&&index+1<visible.length&&e.target?.tagName!=='VIDEO'){e.preventDefault();void openViewer(visible[index+1])}});
-  try{const f=await getPrivateMedia(storage,row);if(seq!==viewerGeneration||!usable())return;viewerURL=URL.createObjectURL(f);const video=f.type.startsWith('video/'),m=make(video?'video':'img');viewerPhoto=m;m.src=viewerURL;if(video){m.controls=true;m.playsInline=true;m.preload='metadata'}else{
+  try{
+   if(row.type.startsWith('image/')){const cached=photoFrames.get(previewKey(row));if(cached?.small){const temp=make('img');const u=URL.createObjectURL(cached.blob);urls.push(u);temp.src=u;temp.alt='Loading full-resolution photograph';content.replaceChildren(temp)}}
+   const f=await getPrivateMedia(storage,row);if(seq!==viewerGeneration||!usable())return;viewerURL=URL.createObjectURL(f);const video=f.type.startsWith('video/'),m=make(video?'video':'img');viewerPhoto=m;m.src=viewerURL;if(video){m.controls=true;m.playsInline=true;m.preload='metadata'}else{
     m.alt=row.name;m.draggable=false;m.tabIndex=0;m.setAttribute('role','button');m.setAttribute('aria-label','Enlarge photograph');m.setAttribute('aria-pressed','false');
     m.classList.add('ap-zoomable-photo');
     let zoomed=false,down=null;
