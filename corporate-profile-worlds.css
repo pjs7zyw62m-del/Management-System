@@ -65,3 +65,8 @@ html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile #profileCove
 @keyframes bc-pw-cover-reveal{from{opacity:0}to{opacity:1}}
 @media(max-width:620px){html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile #profileCover[data-world-cover]{height:clamp(160px,37vw,210px)!important}#profileView .bc-pw-cover-caption{bottom:9px;gap:4px;flex-direction:column}#profileView .bc-pw-cover-caption small{font-size:8px}#profileView .bc-pw-cover-panel-label{bottom:47px;font-size:9px;letter-spacing:0}#profileView .bc-pw-cover-art[style*="--world-count: 5"] .bc-pw-cover-panel-label,#profileView .bc-pw-cover-art[style*="--world-count: 6"] .bc-pw-cover-panel-label,#profileView .bc-pw-cover-art[style*="--world-count: 7"] .bc-pw-cover-panel-label{display:none}}
 @media(prefers-reduced-motion:reduce){#profileView #profileCover .bc-pw-cover-art{animation:none}}
+
+#profileView .bc-pw-unsorted{margin-top:24px;padding-top:18px;border-top:1px solid #ffffff18}
+#profileView .bc-pw-unsorted[hidden]{display:none!important}
+#profileView .bc-pw-unsorted .bc-pw-quiet{text-decoration:none;display:inline-flex;align-items:center}
+#profileView .bc-pw-feed-heading>button{margin-top:8px}
