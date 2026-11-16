@@ -45,17 +45,17 @@ export function createChatPulseCards(client,alive){
  }
  async function signed(path){if(!path)throw Error('Not available');const {data,error}=await bucket.createSignedUrl(path,900);if(error||!data?.signedUrl)throw Error('Not available');return data.signedUrl}
  function stopActive(){if(active){active();active=null}}
- function clear(){stopActive();for(const card of cards){card.observer?.disconnect();card.abort.abort();for(const url of card.urls)URL.revokeObjectURL(url);card.urls.clear()}cards.clear();previews.clear()}
+ function clear(){stopActive();for(const card of cards){card.observer?.disconnect();card.abort.abort();for(const dialog of card.dialogs){if(dialog.open)dialog.close();dialog.remove()}card.dialogs.clear();for(const url of card.urls)URL.revokeObjectURL(url);card.urls.clear()}cards.clear();previews.clear()}
  function render(parsed){
   const root=make('div','bubble bc-chat-pulse-card');if(parsed.caption)root.append(make('p','bc-chat-pulse-caption',parsed.caption));
-  const card={root,urls:new Set(),abort:new AbortController(),observer:null};cards.add(card);
+  const card={root,urls:new Set(),dialogs:new Set(),abort:new AbortController(),observer:null};cards.add(card);
   const valid=()=>alive()&&cards.has(card)&&root.isConnected&&!card.abort.signal.aborted;
   async function file(a){if(isWorldMedia(a)){const blob=await readWorldMedia(client,a,{signal:card.abort.signal});if(!valid())throw Error('Session changed');const url=URL.createObjectURL(blob);card.urls.add(url);return url}return signed(a.storage_path)}
   function tile(a,ref){
    const frame=make('div','bc-chat-pulse-frame'),img=make('img'),hint=make('span','bc-chat-pulse-hint',a.kind==='photo'?'Loading photo…':'Video');img.hidden=true;img.alt=a.kind==='photo'?'Shared photograph':'Video preview';img.loading='lazy';img.decoding='async';img.referrerPolicy='no-referrer';frame.append(hint,img);
    const note=make('small','bc-chat-pulse-note','');
    if(a.kind==='photo'){
-    const open=button('',()=>{if(!valid()||img.hidden)return;const dialog=make('dialog','bc-chat-pulse-full'),large=make('img');large.src=img.src;large.alt=img.alt;dialog.append(large,button('Close',()=>dialog.close(),'bc-chat-pulse-close'));dialog.addEventListener('close',()=>dialog.remove(),{once:true});document.body.append(dialog);dialog.showModal()},'bc-chat-pulse-picture');open.setAttribute('aria-label','Open shared photograph');open.append(frame);void file(a).then(src=>{if(valid()){img.src=src;img.hidden=false;hint.hidden=true}}).catch(()=>{if(valid())hint.textContent='Photo unavailable'});return open
+    const open=button('',()=>{if(!valid()||img.hidden)return;const dialog=make('dialog','bc-chat-pulse-full'),large=make('img');large.src=img.src;large.alt=img.alt;dialog.append(large,button('Close',()=>dialog.close(),'bc-chat-pulse-close'));card.dialogs.add(dialog);dialog.addEventListener('close',()=>{card.dialogs.delete(dialog);dialog.remove()},{once:true});document.body.append(dialog);dialog.showModal()},'bc-chat-pulse-picture');open.setAttribute('aria-label','Open shared photograph');open.append(frame);void file(a).then(src=>{if(valid()){img.src=src;img.hidden=false;hint.hidden=true}}).catch(()=>{if(valid())hint.textContent='Photo unavailable'});return open
    }
    const play=button('▶',async()=>{
     if(!valid()||play.disabled)return;play.disabled=true;note.textContent='Connecting…';stopActive();
