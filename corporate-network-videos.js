@@ -2,7 +2,7 @@
    Shorts and private Plex-style library. All videos come from already
    approved Network assets; personal likes/history are device-local. */
 import {isWorldVideo,worldVideoTitle} from './blackcell-world-video-catalog.js?v=1';
-export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,bindTransfer,loadVideoComments,addVideoComment,state,mediaUrl,posterUrl,posterVersions,sharedMedia,profile,personName,stamp,switchView,openProfile,uploadVideo,playStream,reviewStream,refreshStream,toast}){
+export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,bindTransfer,loadVideoComments,addVideoComment,shareVideoInside,state,mediaUrl,posterUrl,posterVersions,sharedMedia,profile,personName,stamp,switchView,openProfile,uploadVideo,playStream,reviewStream,refreshStream,toast}){
  const $=id=>document.getElementById(id);
  const make=(tag,cls='',value=null)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(value!==null)el.textContent=String(value);return el};
  const button=(label,cls,callback)=>{const b=make('button',cls,label);b.type='button';b.addEventListener('click',callback);return b};
@@ -85,14 +85,15 @@ export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,b
   else if(v.currentTime>=5)resume[a.id]={time:Math.floor(v.currentTime),duration:Math.floor(v.duration),updated:now};
   storeResume();
  }
- function copyLink(a){
-  const u=new URL('corporate-network.html',location.href);u.searchParams.set('view','videos');u.searchParams.set('video',a.id);
-  const text=u.href;
-  if(navigator.share){
-   navigator.share({title:title(a),url:text}).catch(()=>{});
-  }else if(navigator.clipboard?.writeText){
-   navigator.clipboard.writeText(text).then(()=>toast('Private video link copied.')).catch(()=>window.prompt('Copy the video link:',text));
-  }else window.prompt('Copy the private video link:',text);
+ function shareInside(a){
+  if(!a||!sharedMedia(a)){toast('Only approved, shareable videos can be shared.');return}
+  if(typeof shareVideoInside!=='function'){toast('Internal sharing is unavailable.');return}
+  shareVideoInside(a);
+ }
+ function openById(id){
+  const a=allVideos().find(v=>v.id===id);
+  if(!a){toast('Video is unavailable to your account.');return false}
+  void openCinema(a,allVideos());return true;
  }
  function filterTopic(all){
   let x=all;
@@ -697,7 +698,7 @@ export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,b
   $('bcCinemaCreator').addEventListener('click',()=>{if(!activeCinema)return;const owner=activeCinema.owner_id;closeCinema();openProfile(owner,'videos')});
   $('bcCinemaWatchLater').addEventListener('click',()=>{if(activeCinema)toggleLater(activeCinema)});
   $('bcCinemaLike').addEventListener('click',()=>{if(activeCinema)toggleLike(activeCinema)});
-  $('bcCinemaShare').addEventListener('click',()=>{if(activeCinema)copyLink(activeCinema)});
+  $('bcCinemaShare').addEventListener('click',()=>{if(activeCinema)shareInside(activeCinema)});
   $('bcCinemaFullscreen').addEventListener('click',()=>{
    if(activeCinema?.bunny_stream){const v=$('bcCinemaStreamPlayer');if(v.requestFullscreen)void v.requestFullscreen().catch(()=>{})}else watchFullscreen();
   });
@@ -707,7 +708,7 @@ export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,b
   cinemaPlayer.addEventListener('ended',()=>{track(activeCinema,cinemaPlayer,true)});
   $('bcVideoShortLike').addEventListener('click',()=>{if(shortQueue[shortIndex])toggleLike(shortQueue[shortIndex])});
   $('bcVideoShortSave').addEventListener('click',()=>{if(shortQueue[shortIndex])toggleLater(shortQueue[shortIndex])});
-  $('bcVideoShortShare').addEventListener('click',()=>{if(shortQueue[shortIndex])copyLink(shortQueue[shortIndex])});
+  $('bcVideoShortShare').addEventListener('click',()=>{if(shortQueue[shortIndex])shareInside(shortQueue[shortIndex])});
   $('bcVideoShortNext').addEventListener('click',()=>nextShort(1));
   $('bcVideoShortPrev').addEventListener('click',()=>nextShort(-1));
   const shortsPlayer=$('bcVideoShortPlayer');
@@ -751,5 +752,5 @@ export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,b
    if(a)queueMicrotask(()=>{if(state.view==='videos')openCinema(a,videosCache)});
   }
  }
- return {init,render,close:leave};
+ return {init,render,close:leave,openById};
 }
