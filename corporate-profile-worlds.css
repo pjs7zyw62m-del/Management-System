@@ -34,10 +34,10 @@
 #profileView .bc-pw-frame{width:100%;aspect-ratio:4/3;display:grid;place-items:center;position:relative;overflow:hidden}
 #profileView .bc-pw-frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 #profileView .bc-pw-placeholder{color:#aaa;font-size:12px;position:relative;z-index:1;background:#0008;padding:5px 8px;border-radius:8px}
-.bc-pw-viewer{position:fixed;max-width:min(95vw,1100px);max-height:94vh;border:1px solid #444;border-radius:15px;background:#0a0a0b;color:#fff;padding:12px}
+.bc-pw-viewer{position:fixed;inset:0;margin:auto;width:fit-content;height:fit-content;max-width:min(96vw,1100px);max-height:96dvh;border:1px solid #444;border-radius:15px;background:#0a0a0b;color:#fff;padding:6px;overflow:hidden;cursor:zoom-out}
 .bc-pw-viewer::backdrop{background:#000d}
-.bc-pw-viewer img{display:block;max-width:100%;max-height:80vh;object-fit:contain;margin:8px auto 0}
-.bc-pw-viewer button{background:#28282c;color:white;padding:8px 12px;border:1px solid #444;border-radius:8px}
+.bc-pw-viewer img{display:block;max-width:100%;max-height:calc(96dvh - 14px);width:auto;height:auto;object-fit:contain;margin:0 auto;border-radius:9px;cursor:zoom-out}
+
 @media(max-width:620px){#profileView #profileWorlds{padding:14px}#profileView .bc-pw-bubbles{gap:8px}#profileView .bc-pw-bubble{width:112px}#profileView .bc-pw-circle{width:104px;height:104px}#profileView .bc-pw-feed{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 /* Wide artwork is composed from the approved World portraits instead of
