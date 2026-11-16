@@ -123,8 +123,9 @@ export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,b
   if(sort==='title')result.sort((a,b)=>title(a).localeCompare(title(b)));
   return result;
  }
+ function suspendBrowsePreviews(){if(observer){observer.disconnect();observer=null}for(const v of $('bcVideoShell').querySelectorAll('.bc-yt-body video')){if(v.id==='bcVideoShortPlayer')continue;v.pause();if(v.hasAttribute('src')){v.removeAttribute('src');v.load()}}worldVideoPreviews.setPaused?.(true)}
  function lazyThumb(v,url,a){
-  if(!url)return;
+  if(!url||activeCinema)return;
   v.preload='metadata';v.playsInline=true;v.muted=true;v.setAttribute('aria-hidden','true');v.tabIndex=-1;
   v.addEventListener('loadedmetadata',()=>{
    if(!a||!v.videoWidth||!v.videoHeight||!Number.isFinite(v.duration))return;
@@ -140,7 +141,7 @@ export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,b
   if(!observer){
    observer=new IntersectionObserver(entries=>{
     for(const e of entries){
-     if(!e.isIntersecting)continue;
+     if(!e.isIntersecting||activeCinema)continue;
      const el=e.target;if(el._bcSource&&!el.src)el.src=el._bcSource;
      observer.unobserve(el);
     }
@@ -582,7 +583,9 @@ export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,b
  function renderWatchRecommendations(a){const root=$('bcCinemaRecommended');root.replaceChildren();const all=allVideos().filter(v=>v.id!==a.id);for(const item of [...all.filter(v=>v.owner_id===a.owner_id),...all.filter(v=>v.owner_id!==a.owner_id)].slice(0,20)){const row=button('','bc-watch-item',()=>openCinema(item,allVideos()));row.setAttribute('aria-label','Watch '+title(item));const art=make('span','bc-watch-art','▶'),cover=posterUrl(item);if(cover){const img=make('img');img.loading='lazy';img.decoding='async';img.alt='';img.src=cover;art.append(img)}const info=make('span');info.append(make('strong','',title(item)),make('small','',creator(item)),make('small','',when(item)));row.append(art,info);root.append(row)}if(!root.childElementCount)root.append(make('p','','No other authorized videos yet.'))}
  function paintWatchComments(){const root=$('bcWatchCommentList');root.replaceChildren();$('bcWatchCommentCount').textContent=watchComments.length+' Comments';const sorted=watchComments.slice().sort((a,b)=>($('bcWatchCommentSort').value==='oldest'?1:-1)*(Date.parse(a.created_at)-Date.parse(b.created_at)));for(const c of sorted){const row=make('div','bc-watch-comment'),name=personName(profile(c.user_id)),avatar=make('span','bc-yt-creator-avatar',String(name||'B').slice(0,1).toUpperCase()),main=make('div');main.append(make('strong','',name),make('small','',stamp(c.created_at)),make('p','',c.body));row.append(avatar,main);root.append(row)}}
  async function refreshWatchComments(a){const epoch=++commentEpoch;watchComments=[];commentBusy=false;paintWatchComments();const field=$('bcWatchCommentInput'),submit=$('bcWatchCommentSubmit'),status=$('bcWatchCommentStatus');field.value='';field.disabled=submit.disabled=true;status.textContent='Loading comments…';if(!a.post_id||!loadVideoComments){status.textContent='Comments are not available for this library video yet.';return}try{const rows=await loadVideoComments(a);if(epoch!==commentEpoch||activeCinema?.id!==a.id)return;watchComments=rows;paintWatchComments();status.textContent=rows.length?'':'Be the first to comment.';field.disabled=submit.disabled=false}catch{if(epoch===commentEpoch)status.textContent='Comments could not load. Reopen the video to retry.'}}
- function syncWatchControls(){const v=$('bcCinemaPlayer'),stage=v.parentElement,native=activeCinema&&!activeCinema.bunny_stream;$('bcWatchControls').hidden=!native;if(!native){v.controls=true;return}v.controls=false;stage.classList.toggle('is-playing',!v.paused&&!v.ended);const p=$('bcWatchPlay');p.textContent=v.paused?'▶':'⏸';p.setAttribute('aria-label',v.paused?'Play':'Pause');const m=$('bcWatchMute');m.textContent=v.muted||v.volume===0?'🔇':'🔊';m.setAttribute('aria-label',v.muted?'Unmute':'Mute');$('bcWatchVolume').value=String(v.muted?0:v.volume);$('bcWatchSpeed').value=String(v.playbackRate);const duration=Number.isFinite(v.duration)&&v.duration>0?v.duration:0,fmt=n=>{n=Math.max(0,Math.floor(Number(n)||0));return (n>=3600?Math.floor(n/3600)+':':'')+String(Math.floor(n/60)%60).padStart(n>=3600?2:1,'0')+':'+String(n%60).padStart(2,'0')};$('bcWatchTime').textContent=fmt(v.currentTime)+' / '+fmt(duration);const seek=$('bcWatchSeek');seek.disabled=!duration;if(document.activeElement!==seek)seek.value=String(duration?Math.round(v.currentTime/duration*1000):0);$('bcWatchNext').disabled=$('bcCinemaNext').disabled;const tracks=Array.from(v.textTracks||[]).filter(t=>['captions','subtitles'].includes(t.kind));$('bcWatchCaptions').disabled=!tracks.length;$('bcWatchCaptions').setAttribute('aria-pressed',String(tracks.some(t=>t.mode==='showing')));$('bcWatchPip').hidden=!(document.pictureInPictureEnabled&&v.requestPictureInPicture)}
+ let lastWatchTick=-1;
+ function syncWatchTime(force=false){const v=$('bcCinemaPlayer');if(!activeCinema||activeCinema.bunny_stream)return;const t=Math.floor(v.currentTime||0);if(!force&&t===lastWatchTick)return;lastWatchTick=t;const duration=Number.isFinite(v.duration)&&v.duration>0?v.duration:0,fmt=n=>{n=Math.max(0,Math.floor(Number(n)||0));return (n>=3600?Math.floor(n/3600)+':':'')+String(Math.floor(n/60)%60).padStart(n>=3600?2:1,'0')+':'+String(n%60).padStart(2,'0')};$('bcWatchTime').textContent=fmt(v.currentTime)+' / '+fmt(duration);const seek=$('bcWatchSeek');seek.disabled=!duration;if(document.activeElement!==seek)seek.value=String(duration?Math.round(v.currentTime/duration*1000):0)}
+ function syncWatchControls(){const v=$('bcCinemaPlayer'),stage=v.parentElement,native=activeCinema&&!activeCinema.bunny_stream;$('bcWatchControls').hidden=!native;if(!native){v.controls=true;return}v.controls=false;stage.classList.toggle('is-playing',!v.paused&&!v.ended);const p=$('bcWatchPlay');p.textContent=v.paused?'▶':'⏸';p.setAttribute('aria-label',v.paused?'Play':'Pause');const m=$('bcWatchMute');m.textContent=v.muted||v.volume===0?'🔇':'🔊';m.setAttribute('aria-label',v.muted?'Unmute':'Mute');$('bcWatchVolume').value=String(v.muted?0:v.volume);$('bcWatchSpeed').value=String(v.playbackRate);syncWatchTime(true);$('bcWatchNext').disabled=$('bcCinemaNext').disabled;const tracks=Array.from(v.textTracks||[]).filter(t=>['captions','subtitles'].includes(t.kind));$('bcWatchCaptions').disabled=!tracks.length;$('bcWatchCaptions').setAttribute('aria-pressed',String(tracks.some(t=>t.mode==='showing')));$('bcWatchPip').hidden=!(document.pictureInPictureEnabled&&v.requestPictureInPicture)}
  function watchFullscreen(){const v=$('bcCinemaPlayer'),stage=v.parentElement;if(document.fullscreenElement){void document.exitFullscreen().catch(()=>{});return}if(stage.requestFullscreen)void stage.requestFullscreen().catch(()=>{if(v.webkitEnterFullscreen)v.webkitEnterFullscreen()});else if(v.webkitEnterFullscreen)v.webkitEnterFullscreen()}
 
  async function openCinema(a,list){
@@ -601,7 +604,7 @@ export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,b
   $('bcCinemaVideoTitle').textContent=title(a);
   $('bcCinemaVideoMeta').textContent=creator(a)+' · '+when(a);
   $('bcCinemaDescription').textContent=String(a.video_synopsis||'Approved private BLACKCELL Network video.').slice(0,1000);
-  syncCinemaNav();syncCinemaActions();
+  syncCinemaNav();syncCinemaActions();suspendBrowsePreviews();
   $('bcVideoCinema').hidden=false;$('bcVideoShell').classList.add('is-watching');if(selected==='shorts')stopShort();setWatchMode(watchMode);renderWatchRecommendations(a);void refreshWatchComments(a);syncWatchControls();window.scrollTo({top:0,behavior:'auto'});
   if(a.bunny_stream){
    player.pause();player.removeAttribute('src');player.load();player.hidden=true;
@@ -636,7 +639,7 @@ export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,b
   track(activeCinema,p,true);
   p.pause();p.removeAttribute('src');p.load();releaseObject('cinema');p.onloadedmetadata=null;p.hidden=false;
   iframe.src='about:blank';iframe.hidden=true;
-  activeCinema=null;cinemaQueue=[];mostRecentWrite=0;
+  activeCinema=null;cinemaQueue=[];mostRecentWrite=0;worldVideoPreviews.setPaused?.(false);
   $('bcVideoCinema').hidden=true;$('bcVideoShell').classList.remove('is-watching');commentEpoch++;watchComments=[];commentBusy=false;$('bcWatchControls').hidden=true;p.controls=true;
   if(restore&&state.view==='videos')renderVisible();
  }
@@ -699,7 +702,7 @@ export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,b
   $('bcCinemaDefault').addEventListener('click',()=>setWatchMode('default'));$('bcCinemaTheater').addEventListener('click',()=>setWatchMode('theater'));$('bcWatchMode').addEventListener('click',()=>setWatchMode(watchMode==='theater'?'default':'theater'));
   const wv=$('bcCinemaPlayer');
   $('bcWatchPlay').addEventListener('click',()=>{if(wv.paused)void wv.play().catch(()=>{});else wv.pause()});$('bcWatchNext').addEventListener('click',()=>moveCinema(1));$('bcWatchMute').addEventListener('click',()=>{wv.muted=!wv.muted;if(!wv.muted&&wv.volume===0)wv.volume=1});$('bcWatchVolume').addEventListener('input',e=>{wv.volume=Number(e.target.value);wv.muted=wv.volume===0});$('bcWatchSeek').addEventListener('input',e=>{if(Number.isFinite(wv.duration)&&wv.duration>0)wv.currentTime=Number(e.target.value)/1000*wv.duration});$('bcWatchSpeed').addEventListener('change',e=>{wv.playbackRate=Number(e.target.value)});$('bcWatchCaptions').addEventListener('click',()=>{const tracks=Array.from(wv.textTracks||[]).filter(t=>['captions','subtitles'].includes(t.kind)),on=tracks.some(t=>t.mode==='showing');tracks.forEach((t,i)=>{t.mode=!on&&i===0?'showing':'disabled'});syncWatchControls()});$('bcWatchPip').addEventListener('click',()=>{if(document.pictureInPictureElement)void document.exitPictureInPicture().catch(()=>{});else if(wv.requestPictureInPicture)void wv.requestPictureInPicture().catch(()=>{})});$('bcWatchFull').addEventListener('click',watchFullscreen);
-  for(const event of ['play','pause','loadedmetadata','durationchange','timeupdate','volumechange','ratechange','ended','emptied'])wv.addEventListener(event,syncWatchControls);
+  for(const event of ['play','pause','loadedmetadata','durationchange','volumechange','ratechange','ended','emptied'])wv.addEventListener(event,syncWatchControls);wv.addEventListener('timeupdate',()=>syncWatchTime());
   wv.addEventListener('click',()=>{if(!activeCinema||activeCinema.bunny_stream)return;if(wv.paused)void wv.play().catch(()=>{});else wv.pause()});wv.textTracks?.addEventListener?.('addtrack',syncWatchControls);
   $('bcWatchCommentSort').addEventListener('change',paintWatchComments);$('bcWatchCommentForm').addEventListener('submit',async e=>{e.preventDefault();const a=activeCinema,field=$('bcWatchCommentInput'),submit=$('bcWatchCommentSubmit'),status=$('bcWatchCommentStatus'),body=field.value.trim(),epoch=commentEpoch;if(!a?.post_id||!body||commentBusy||!addVideoComment)return;commentBusy=true;submit.disabled=true;try{await addVideoComment(a,body);if(epoch!==commentEpoch)return;await refreshWatchComments(a)}catch{if(epoch===commentEpoch){status.textContent='Comment could not be published. Try again.';submit.disabled=false}}finally{if(epoch===commentEpoch)commentBusy=false}});
   $('bcCinemaPrev').addEventListener('click',()=>moveCinema(-1));
