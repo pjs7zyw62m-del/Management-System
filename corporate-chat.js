@@ -1,4 +1,4 @@
-import {mountPopoutActions} from './corporate-chat-popout-actions.js?v=20261115-ios-popout1';
+import {mountPopoutActions} from './corporate-chat-popout-actions.js?v=20261116-edit-unsend1';
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
 import {setupCorporateMedia} from './corporate-chat-media.js?v=20261115-cohesive-media1';
 import {setupCorporateChatLive} from './corporate-chat-live.js?v=20261113-no-typing1';
@@ -205,16 +205,56 @@ smallWindow.addEventListener('change',()=>{
 });
 const composerText=$('messageInput');
 function resizeComposer(){composerText.style.height='auto';composerText.style.height=Math.min(composerText.scrollHeight,112)+'px'}
- const popoutActions=popout&&!mediaPanelMode?mountPopoutActions({
-  canAct:()=>ready&&!!self&&peer?.user_id===popoutId,
-  composer:composerText,resizeComposer,status,
+
+let messageMutationBusy=false;
+function ownEditableMessage(m){return ready&&!!self&&peer?.user_id===m.recipient_id&&m.sender_id===self&&!m.media_batch_id&&!m.deleted_at}
+async function mutateSentMessage(m,{body,remove=false}){
+ if(!ownEditableMessage(m)||messageMutationBusy)return false;
+ if(!remove&&(chatBlocked||!blockKnown||blockBusy)){status('Unblock this conversation before editing.');return false}
+ const uid=self,pid=peer.user_id;messageMutationBusy=true;
+ try{
+  const content=String(body||'').trim();
+  if(!remove&&(!content||content.length>2000)){status('Enter a message of up to 2,000 characters.');return false}
+  if(!remove){const ref=parseTubeReference(content);if(ref&&!(await tubeCards.canShare(ref))){status('That private video cannot be shared.');return false}}
+  if(!ownEditableMessage(m)||self!==uid||peer?.user_id!==pid)return false;
+  const patch=remove?{deleted_at:new Date().toISOString()}:{body:content};
+  let query=client.from('corp_chat_messages').update(patch).eq('id',m.id).eq('sender_id',uid).eq('recipient_id',pid).is('deleted_at',null).eq('body',m.body);
+  const {data,error}=await query.select('id,edited_at,deleted_at').maybeSingle();
+  if(error||!data){status('Message was not changed. It may have been updated elsewhere or the conversation is unavailable.');return false}
+  if(self===uid&&peer?.user_id===pid){$('messages').dataset.readSignature='';await loadMessages();if(!popout&&!mediaPanelMode)void refreshInboxSummaries();status(remove?'Message deleted for everyone.':'Message edited.')}
+  return true;
+ }catch(e){status('Unable to update the message. Check your connection.');return false}
+ finally{messageMutationBusy=false}
+}
+function editSentMessage(m){
+ if(!ownEditableMessage(m)||messageMutationBusy||document.querySelector('.bc-message-edit-dialog[open]'))return;
+ const d=document.createElement('dialog');d.className='bc-message-edit-dialog';d.setAttribute('aria-label','Edit sent message');
+ const form=document.createElement('form'),area=document.createElement('textarea');area.value=m.body;area.required=true;area.maxLength=2000;area.rows=5;area.setAttribute('aria-label','Edited message');
+ const actions=document.createElement('div');actions.className='bc-message-edit-buttons';
+ const cancel=text('button','','Cancel');cancel.type='button';cancel.addEventListener('click',()=>d.close());
+ const save=text('button','bc-message-edit-save','Save changes');save.type='submit';
+ const note=text('p','bc-message-edit-note','The recipient will see your updated message marked Edited.');
+ form.append(text('h2','','Edit message'),area,note,actions);actions.append(cancel,save);d.append(form);document.body.append(d);d.addEventListener('close',()=>d.remove(),{once:true});
+ form.addEventListener('submit',async e=>{e.preventDefault();if(!area.value.trim()||!ownEditableMessage(m))return;if(area.value.trim()===m.body){d.close();return}save.disabled=cancel.disabled=true;d.dataset.busy='true';const ok=await mutateSentMessage(m,{body:area.value});delete d.dataset.busy;if(ok)d.close();else{save.disabled=cancel.disabled=false;note.textContent='Unable to save. The message may have changed or this conversation is unavailable.'}});
+ d.addEventListener('cancel',e=>{if(messageMutationBusy)e.preventDefault()});
+ d.showModal();area.focus();area.setSelectionRange(area.value.length,area.value.length);
+}
+async function deleteSentMessage(m){
+ if(!ownEditableMessage(m)||messageMutationBusy)return;
+ if(!confirm('Delete this message for everyone in this conversation? The message text will be removed and replaced with a deleted notice. This cannot be undone.'))return;
+ await mutateSentMessage(m,{remove:true});
+}
+
+ const popoutActions=!mediaPanelMode?mountPopoutActions({
+  canAct:()=>ready&&!!self&&!!peer,
+  composer:composerText,resizeComposer,status,editMessage:editSentMessage,deleteMessage:deleteSentMessage,
   sendReaction:async body=>{
-   if(!ready||!self||peer?.user_id!==popoutId||chatBlocked||!blockKnown||blockBusy){status('Unblock this conversation before sending.');return;}
-   try{const {error}=await client.from('corp_chat_messages').insert({sender_id:self,recipient_id:popoutId,body});if(error)throw error;await loadMessages()}
+   if(!ready||!self||!peer||chatBlocked||!blockKnown||blockBusy){status('Unblock this conversation before sending.');return;}
+   const target=peer.user_id;try{const {error}=await client.from('corp_chat_messages').insert({sender_id:self,recipient_id:target,body});if(error)throw error;await loadMessages()}
    catch(_){status('Reaction message could not be sent. Try again.')}
   }
  }):null;
- if(popoutActions){
+ if(popout&&popoutActions){
   const header=document.querySelector('.chat-title');
   const back=document.createElement('button');back.type='button';back.className='bc-pop-nav bc-pop-back';back.innerHTML='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';back.setAttribute('aria-label','Close pop-out and return to messages');
   back.addEventListener('click',()=>{
@@ -318,7 +358,7 @@ async function boot(){
     })
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'corp_chat_messages'},payload=>{
       const m=payload.new;
-      if(m&&(m.sender_id===self||m.recipient_id===self)){void loadMessages();if(!popout&&!mediaPanelMode&&m.recipient_id===self)void refreshInboxSummaries();}
+      if(m&&(m.sender_id===self||m.recipient_id===self)){void loadMessages();if(!popout&&!mediaPanelMode)void refreshInboxSummaries();}
     })
     .on('postgres_changes',{event:'*',schema:'public',table:'corp_chat_typing'},payload=>{
       live.onTypingChange(payload);
@@ -351,7 +391,7 @@ function formatChatDay(date){
 }
 function isBubbleNeighbor(first,second){
  if(!first||!second)return false;
- if(first.sender_id!==second.sender_id||first.media_batch_id||second.media_batch_id)return false;
+ if(first.sender_id!==second.sender_id||first.media_batch_id||second.media_batch_id||first.deleted_at||second.deleted_at)return false;
  const a=new Date(first.created_at),b=new Date(second.created_at);
  return a.toDateString()===b.toDateString()&&(b.getTime()-a.getTime())<=5*60*1000;
 }
@@ -453,7 +493,7 @@ function choose(userId){
  $('imessagePortrait').textContent=String(peer.display_name||'B').trim().slice(0,1).toUpperCase();
  $('peerProfileLink').href='corporate-network.html?user='+encodeURIComponent(userId);
  $('peerProfileLink').hidden=false;
- if(popoutActions){const profile=$('popoutProfile');profile.href=$('peerProfileLink').href;$('popoutInfo').hidden=false;$('popoutCamera').hidden=false;}
+ if(popout&&popoutActions){const profile=$('popoutProfile');profile.href=$('peerProfileLink').href;$('popoutInfo').hidden=false;$('popoutCamera').hidden=false;}
  if(popButton){popButton.hidden=popout||!!mediaPanelMode;popButton.disabled=false;}
  syncBlockControls();renderPeers();void refreshCurrentBlock();void loadMessages();
 }
@@ -463,14 +503,14 @@ async function loadMessages(){
  try{
   const pid=peer.user_id;
   const filter='and(sender_id.eq.'+self+',recipient_id.eq.'+pid+'),and(sender_id.eq.'+pid+',recipient_id.eq.'+self+')';
-  const {data,error}=await client.from('corp_chat_messages').select('id,sender_id,recipient_id,body,created_at,media_batch_id,read_at').or(filter).order('created_at',{ascending:false}).limit(100);
+  const {data,error}=await client.from('corp_chat_messages').select('id,sender_id,recipient_id,body,created_at,media_batch_id,read_at,edited_at,deleted_at').or(filter).order('created_at',{ascending:false}).limit(100);
   if(error){status('Messages could not be loaded.');return}
   // Ignore an old request when the user has switched conversations.
   if(peer?.user_id!==pid)return;
   const box=$('messages'),atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<80;
   const ordered=(data||[]).slice().reverse();
   const newest=ordered.at(-1)?.id||'empty',oldNewest=box.dataset.newest;
-  const signature=ordered.map(m=>m.id+':'+(m.read_at||'')).join('|');
+  const signature=ordered.map(m=>m.id+':'+(m.read_at||'')+':'+(m.edited_at||'')+':'+(m.deleted_at||'')).join('|');
   if(box.dataset.readSignature===signature&&!firstLoad){
    void live.markRead(ordered);
    return;
@@ -491,9 +531,9 @@ async function loadMessages(){
    const item=document.createElement('div');
    item.className='message '+group+(own?' mine':'')+(m.media_batch_id?' message-media':'');
    if(!firstLoad&&oldNewest!==newest&&m.id===newest)item.classList.add('message-fresh');
-   const tubeRef=!m.media_batch_id&&parseTubeReference(m.body);
-   const bubble=m.media_batch_id?sharedMedia.renderMediaBubble(m,own):tubeRef?tubeCards.render(tubeRef):text('div','bubble',m.body);
-   if(!m.media_batch_id&&!tubeRef){
+   const tubeRef=!m.deleted_at&&!m.media_batch_id&&parseTubeReference(m.body);
+   const bubble=m.deleted_at?text('div','bubble bc-message-deleted',own?'You deleted a message':'Message deleted'):m.media_batch_id?sharedMedia.renderMediaBubble(m,own):tubeRef?tubeCards.render(tubeRef):text('div','bubble',m.body);
+   if(!m.deleted_at&&!m.media_batch_id&&!tubeRef){
     popoutActions?.attach(bubble,m,own);
     bubble.tabIndex=0;
     bubble.title='Sent '+when.toLocaleString()+' · Tap to show the time';
@@ -502,12 +542,14 @@ async function loadMessages(){
     bubble.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();reveal()}});
    }
    item.append(bubble);
+   if(m.edited_at&&!m.deleted_at){const edited=text('span','bc-message-edited','Edited');edited.title='Edited '+new Date(m.edited_at).toLocaleString();item.append(edited)}
+   if(own&&!m.deleted_at&&!m.media_batch_id&&popoutActions){const action=text('button','bc-message-options','⋯');action.type='button';action.title='Edit or delete this message';action.setAttribute('aria-label','Edit or delete this message');action.addEventListener('click',e=>{e.stopPropagation();popoutActions.open(bubble,m,true)});item.append(action)}
    const t=document.createElement('time');
    t.dateTime=m.created_at;t.textContent=when.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
    t.title=when.toLocaleString();
    if(pairedAfter&&!m.media_batch_id)t.classList.add('group-time');
    item.append(t);
-   if(own&&!pairedAfter){
+   if(own&&!pairedAfter&&!m.deleted_at){
     const receipt=text('span','message-receipt'+(m.read_at?' read':''),'');
     const tick=text('span','receipt-ticks',m.read_at?'✓✓':'✓');
     tick.setAttribute('aria-hidden','true');
