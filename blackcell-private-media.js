@@ -222,7 +222,7 @@ export function mountPrivatePhotos(host,{client,userId,preview,alive,onBusy}){
      if(!active()||working||!pilotEligible)return;pollCount++;working=true;controls();
      try{const data=await invoke('status');if(!active())return;if(!data?.ok){state='blocked';jobStatus.textContent=messages[data?.code]||'Pilot not available · '+String(data?.code||'Unknown error');return}
       state=data.state;jobId=data.id||jobId;destination=data.destination||destination;
-      jobStatus.textContent=state==='ready'?'Ready for one confirmed generation.':state==='succeeded'?'Video completed.':state==='failed'?'Kling reported failure. No automatic retry.':state==='uncertain'||state==='reserved'?'Submission being reconciled. No additional credits will be spent by checking.':'Rendering · '+state;
+      jobStatus.textContent=data.code==='QUERY_UNCONFIRMED'&&data.diagnostic?.http===200&&data.diagnostic?.providerCode===0&&data.diagnostic?.listHttp===200&&data.diagnostic?.listCode===0&&data.diagnostic?.matched===false?'No matching render found in Kling. Submission is not confirmed. Check your Kling usage before another paid attempt.':state==='ready'?'Ready for one confirmed generation.':state==='succeeded'?'Video completed.':state==='failed'?'Kling reported failure. No automatic retry.':state==='uncertain'||state==='reserved'?'Submission being reconciled. No additional credits will be spent by checking.':'Rendering · '+state;
       if(state==='succeeded'&&data.outputReady&&!outputBlob)await loadOutput();
      }catch(e){if(active())jobStatus.textContent=String(e.message||'Status check failed.')}finally{working=false;if(active()){controls();schedule()}}
     }
