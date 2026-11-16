@@ -135,7 +135,25 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
  function mountPhoto(a,img,gen){const run=async()=>{if(!img.isConnected||gen!==generation)return;try{const entry=await photoUrl(a);if(!img.isConnected||gen!==generation){if(entry.object)URL.revokeObjectURL(entry.url);return}if(entry.object)urls.add(entry.url);img.src=entry.url;img.hidden=false;img.parentElement.querySelector('.bc-pw-placeholder').hidden=true}catch{if(img.isConnected)img.parentElement.querySelector('.bc-pw-placeholder').textContent='Preview unavailable'}};
   if(!window.IntersectionObserver){void run();return}const ob=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){ob.disconnect();void run()}},{rootMargin:'80px'});ob.observe(img.parentElement);setTimeout(()=>ob.disconnect(),60000);
  }
- function showPhoto(img){if(!img.src||img.hidden)return;const d=make('dialog','bc-pw-viewer');const close=button('Close ×',()=>d.close(),'bc-pw-quiet');const full=make('img');full.src=img.src;full.alt=img.alt;d.append(close,full);d.addEventListener('close',()=>d.remove(),{once:true});document.body.append(d);d.showModal()}
+ function showPhoto(img){
+  if(!img.src||img.hidden||document.querySelector('.bc-pw-viewer[open]'))return;
+  const opener=document.activeElement,d=make('dialog','bc-pw-viewer'),full=make('img');
+  d.setAttribute('aria-label','Full-size photograph. Tap anywhere or press Escape to close.');
+  d.tabIndex=-1;
+  full.src=img.src;full.alt=img.alt;full.draggable=false;d.append(full);
+  // Native dialog sends backdrop and image clicks to this handler.
+  // Do not dismiss while the user is dragging or making a multi-touch gesture.
+  let start=null;
+  d.addEventListener('pointerdown',e=>{start=e.isPrimary?{x:e.clientX,y:e.clientY}:null});
+  d.addEventListener('pointercancel',()=>{start=null});
+  d.addEventListener('click',e=>{
+   if(e.detail===0||(start&&Math.hypot(e.clientX-start.x,e.clientY-start.y)<12))d.close();
+   start=null;
+  });
+  d.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();d.close()}});
+  d.addEventListener('close',()=>{d.remove();if(opener?.isConnected)opener.focus({preventScroll:true})},{once:true});
+  document.body.append(d);d.showModal();
+ }
  function feed(box){
   clear();const gen=generation,id=active,scope=worldScope(id,selected);
   if(!scope.length){box.append(make('p','bc-pw-empty','Select your Worlds above to start your personalized feed.'));return}
