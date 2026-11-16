@@ -1,3 +1,4 @@
+import {attachPhotoTransfer} from './blackcell-photo-transfer.js?v=1';
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
 import {setupBlackcellPhotos} from './corporate-network-photos.js?v=20261114-photos-only';
 import {setupBlackcellStorageStatus} from './corporate-storage-status.js?v=20261111-storage1';
@@ -727,6 +728,12 @@ async function loadPulsePersonal(){
  pulseMutes=new Set((m.data||[]).map(x=>x.muted_user_id));pulseSaved=new Set((b.data||[]).map(x=>x.target_kind+':'+x.target_id));pulsePersonalReady=true;
 }
 async function pulseMute(owner){if(owner===state.user.id)return;if(!pulsePersonalReady){toast('Mute settings unavailable. Refresh and try again.');return}const old=pulseMutes.has(owner);const q=client.from('corp_pulse_mutes');const {error}=old?await q.delete().eq('user_id',state.user.id).eq('muted_user_id',owner):await q.insert({user_id:state.user.id,muted_user_id:owner});if(error){toast('Unable to update mute: '+fail(error));return}if(old)pulseMutes.delete(owner);else pulseMutes.add(owner);renderAll();toast(old?'Member unmuted.':'Member muted in PULSE.');}
+async function loadSavedTargets(){
+ const missing={post:[],asset:[],stream:[]};for(const key of pulseSaved){const [kind,id]=key.split(':');if(!missing[kind]||!UUID.test(id))continue;if(kind==='post'?!state.posts.some(p=>p.id===id):!pulseFindMedia({kind,id}))missing[kind].push(id)}
+ for(const [kind,ids] of Object.entries(missing)){const table=kind==='post'?'corp_social_posts':kind==='asset'?'corp_social_assets':'corp_stream_videos';for(let i=0;i<ids.length;i+=100){const {data,error}=await client.from(table).select('*').in('id',ids.slice(i,i+100));if(error)continue;for(const a of data||[]){if(kind==='post'){if(!state.posts.some(p=>p.id===a.id))state.posts.push(a)}else if(kind==='asset'){if(!state.assets.some(x=>x.id===a.id))state.assets.push(a)}else if(!state.streamVideos.some(x=>x.id===a.id))state.streamVideos.push({...a,kind:'video',purpose:'post',bunny_stream:true,video_poster_path:a.poster_path})}}}
+ for(let i=0;i<missing.post.length;i+=100){const ids=missing.post.slice(i,i+100);const [assets,likes,comments]=await Promise.all([client.from('corp_social_assets').select('*').in('post_id',ids),client.from('corp_social_likes').select('post_id,user_id').in('post_id',ids),client.from('corp_social_comments').select('id,post_id,user_id,body,created_at').in('post_id',ids).order('created_at')]);for(const a of assets.data||[])if(!state.assets.some(x=>x.id===a.id))state.assets.push(a);for(const l of likes.data||[])if(!state.likes.some(x=>x.post_id===l.post_id&&x.user_id===l.user_id))state.likes.push(l);for(const c of comments.data||[])if(!state.comments.some(x=>x.id===c.id))state.comments.push(c)}
+ await loadSigned();
+}
 function pulseViewAnchor(node,t,update){
  node.dataset.pulseTarget=pulseKey(t);node._pulseRefresh=()=>pulseQueue(t,update);
  if(state.view==='pulse'&&pulseViewObserver)pulseViewObserver.observe(node.querySelector('.post-head')||node);
@@ -773,11 +780,8 @@ async function pulseRepost(t){
  const {data,error}=await client.from('corp_social_posts').insert({author_id:state.user.id,body:line,kind:'update'}).select('*').single();
  if(error)throw error;state.posts.unshift(data);renderAll();toast('Reposted to your timeline.');
 }
-function pulseShare(t,a){
- if(t.kind==='post'){void copyPostLink(t.id);return}
- const u=new URL(location.href);u.search='';u.hash='';u.searchParams.set('view','pulse');u.searchParams.set('media',t.kind+':'+t.id);
- navigator.clipboard.writeText(u.href).then(()=>toast('Private media link copied. Verified members only.')).catch(()=>toast('Unable to copy the private link.'));
-}
+function pulseLink(t){const u=new URL(location.href);u.search='';u.hash='';if(t.kind==='post')u.searchParams.set('post',t.id);else{u.searchParams.set('view','pulse');u.searchParams.set('media',pulseKey(t))}return u.href}
+function pulseShareMenu(t){const menu=el('details','bc-pulse-menu'),trigger=el('summary','','↗'),options=el('div','bc-pulse-menu-options');trigger.title='Share';trigger.setAttribute('aria-label','Share');options.append(btn('Copy private link',async()=>{menu.open=false;try{await navigator.clipboard.writeText(pulseLink(t));toast('Private link copied. Verified members only.')}catch(e){toast('Unable to copy private link.')}}));if(navigator.share)options.append(btn('Share link…',async()=>{menu.open=false;try{await navigator.share({title:'BLACKCELL PULSE',url:pulseLink(t)})}catch(e){if(e.name!=='AbortError')toast('Unable to share link.')}}));if(state.member?.role==='owner'||state.member?.can_chat===true)options.append(btn('Copy link & open iMessage',async()=>{menu.open=false;try{await navigator.clipboard.writeText(pulseLink(t));window.dispatchEvent(new CustomEvent('blackcell-open-imessage'));toast('Link copied. Paste it into your chosen conversation.')}catch(e){toast('Unable to copy private link.')}}));menu.append(trigger,options);return menu}
 function pulseMediaActions(node,a){
  const t=pulseTarget(a),bar=el('div','post-actions bc-pulse-interactions'),zone=el('div','comment-zone');zone.hidden=true;const repost=pulseRepostMenu(t),views=el('span','bc-pulse-view-count','▥');views.title='Unique verified member views';
  let current=null;
@@ -789,12 +793,12 @@ function pulseMediaActions(node,a){
   const form=el('form','comment-compose'),input=el('input'),send=el('button','','Reply');input.required=true;input.maxLength=1000;input.placeholder='Write a reply…';send.type='submit';form.append(input,send);form.addEventListener('submit',async e=>{e.preventDefault();if(!input.value.trim())return;send.disabled=true;const {error}=await client.from('corp_pulse_interactions').insert({target_kind:t.kind,target_id:t.id,action:'comment',user_id:state.user.id,body:input.value.trim()});if(error){toast('Reply not saved: '+fail(error));send.disabled=false;return}pulseQueue(t,update);void loadReplies()});zone.append(form)
  };
  const reply=pulseButton('Comments','◯',()=>{zone.hidden=!zone.hidden;if(!zone.hidden)void loadReplies()});
- bar.append(reply,repost,like,views,bookmark,pulseButton('Share private media link','↗',()=>pulseShare(t,a)),pulseMore(t,a.owner_id));
+ bar.append(reply,repost,like,views,bookmark,pulseShareMenu(t),pulseMore(t,a.owner_id,a));
  node.append(bar,zone);pulseQueue(t,update);pulseViewAnchor(node,t,update);
 }
 function pulseRepostMenu(t){const menu=el('details','bc-pulse-menu'),trigger=el('summary','','↻');trigger.title='Repost or quote';trigger.setAttribute('aria-label','Repost or quote');const options=el('div','bc-pulse-menu-options');options.append(btn('Repost',async()=>{menu.open=false;try{await pulseRepost(t)}catch(e){toast('Repost failed: '+fail(e))}}),btn('Quote post',()=>{menu.open=false;pulseQuote(t)}));menu.append(trigger,options);return menu}
 function pulseRepostPaint(menu,row){const trigger=menu?.querySelector('summary');if(!trigger)return;trigger.textContent=row?'↻ '+(row.reposts||0):'↻';trigger.classList.toggle('bc-pulse-reposted',!!row?.reposted);}
-function pulseMore(t,owner){const menu=el('details','bc-pulse-menu'),trigger=el('summary','','⋯'),options=el('div','bc-pulse-menu-options');trigger.setAttribute('aria-label','More options');if(owner!==state.user.id)options.append(btn(following(owner)?'Unfollow':'Follow',()=>{menu.open=false;void toggleFollow(owner)}),btn(pulseMutes.has(owner)?'Unmute':'Mute',()=>{menu.open=false;void pulseMute(owner)}));options.append(btn('Report',async()=>{menu.open=false;const reason=prompt('Why are you reporting this item?');if(!reason?.trim())return;const {error}=await client.from('corp_pulse_interactions').insert({target_kind:t.kind,target_id:t.id,user_id:state.user.id,action:'report',body:reason.trim().slice(0,1000)});toast(error?'Report not saved: '+fail(error):'Report recorded privately.')}));menu.append(trigger,options);return menu}
+function pulseMore(t,owner,media=null){const menu=el('details','bc-pulse-menu'),trigger=el('summary','','⋯'),options=el('div','bc-pulse-menu-options');trigger.setAttribute('aria-label','More options');if(owner!==state.user.id)options.append(btn(following(owner)?'Unfollow':'Follow',()=>{menu.open=false;void toggleFollow(owner)}),btn(pulseMutes.has(owner)?'Unmute':'Mute',()=>{menu.open=false;void pulseMute(owner)}));if(media?.kind==='photo'&&media.source_provider!=='world-bunny-v1'){const transfer=btn('Transfer to Photos',()=>{});attachPhotoTransfer(transfer,{client,getPhoto:()=>media,notify:toast});options.append(transfer)}options.append(btn('Report',async()=>{menu.open=false;const reason=prompt('Why are you reporting this item?');if(!reason?.trim())return;const {error}=await client.from('corp_pulse_interactions').insert({target_kind:t.kind,target_id:t.id,user_id:state.user.id,action:'report',body:reason.trim().slice(0,1000)});toast(error?'Report not saved: '+fail(error):'Report recorded privately.')}));menu.append(trigger,options);return menu}
 function pulsePostExtras(actions,p,node,repost){const t={kind:'post',id:p.id};let saved=false;const views=el('span','bc-pulse-view-count','▥');views.title='Unique verified member views';const bookmark=pulseButton('Save or remove bookmark','▱',async()=>{bookmark.disabled=true;try{await pulseToggle(t,'bookmark',saved);pulseQueue(t,update)}catch(e){toast('Bookmark not saved: '+fail(e));bookmark.disabled=false}});const update=row=>{if(!bookmark.isConnected)return;bookmark.disabled=!row;saved=!!row?.bookmarked;bookmark.textContent=saved?'▣':'▱';bookmark.setAttribute('aria-pressed',String(saved));pulseRepostPaint(repost,row);views.textContent=row?'▥ '+(row.views||0):'▥';};bookmark.disabled=true;actions.append(views,bookmark,pulseMore(t,p.author_id));pulseQueue(t,update);pulseViewAnchor(node,t,update)}
 
 function renderPost(p){
@@ -866,21 +870,22 @@ function renderPost(p){
   }
   node.append(wrap);
  }
- const actions=el('div','post-actions');
+ const actions=el('div','post-actions bc-pulse-interactions');
  const likeCount=state.likes.filter(l=>l.post_id===p.id).length;
- const like=btn((liking(p.id)?'♥':'♡')+' '+likeCount,()=>void toggleLike(p.id));
+ const like=pulseButton(liking(p.id)?'Unlike post':'Like post',(liking(p.id)?'♥':'♡')+' '+likeCount,()=>void toggleLike(p.id));
  like.classList.toggle('liked',liking(p.id));
  like.setAttribute('aria-label',liking(p.id)?'Unlike post':'Like post');
- const replies=btn('◌  '+state.comments.filter(c=>c.post_id===p.id).length+' COMMENTS',()=>{
+ const replies=pulseButton('Comments','◯ '+state.comments.filter(c=>c.post_id===p.id).length,()=>{
   if(state.openComments.has(p.id))state.openComments.delete(p.id);
   else state.openComments.add(p.id);
   renderAll();
  });
- const share=btn('↗  COPY LINK',()=>void copyPostLink(p.id));
- actions.append(like,replies);
+ const share=pulseShareMenu({kind:'post',id:p.id});
+ actions.append(replies);
  const repost=pulseRepostMenu({kind:'post',id:p.id});if(!(state.view==='profile'&&state.profilePreview))actions.append(repost);
- actions.append(share);
+ actions.append(like);
  if(!(state.view==='profile'&&state.profilePreview))pulsePostExtras(actions,p,node,repost);
+ actions.append(share);
  if(p.author_id===state.user.id&&!(state.view==='profile'&&state.profilePreview))actions.append(btn('DELETE',()=>void deletePost(p),'post-delete'));
  node.append(actions);
  if(state.openComments.has(p.id)){
@@ -1058,7 +1063,7 @@ function renderPulse(){
  head.append(btn('‹ Profile',()=>openProfile(pulseAuthor||state.user.id),'bc-pulse-back'),brand,btn('＋ Post',()=>{openProfile(state.user.id,'posts');focusProfileComposer()},'bc-pulse-create'));
  const tabs=el('nav','bc-pulse-tabs');tabs.setAttribute('aria-label','PULSE feeds');
  for(const [key,label] of [['for-you','For You'],['following','Following'],['latest','Explore'],['saved','Saved'],['muted','Muted'],['author',pulseAuthor&&pulseAuthor!==state.user.id?personName(profile(pulseAuthor)):'My Feed']]){
-  const tab=btn(label,()=>{pulseMode=key;if(key==='author'&&!pulseAuthor)pulseAuthor=state.user.id;pulseLimit=12;pulseEnd=false;pulseAutoPages=0;if(pulseScroll)pulseScroll.scrollTop=0;renderPulse()},'bc-pulse-tab');tab.setAttribute('aria-pressed',String(pulseMode===key));tabs.append(tab)
+  const tab=btn(label,async()=>{pulseMode=key;if(key==='author'&&!pulseAuthor)pulseAuthor=state.user.id;pulseLimit=12;pulseEnd=key==='saved'||key==='muted';pulseAutoPages=0;if(pulseScroll)pulseScroll.scrollTop=0;if(key==='saved'){tab.disabled=true;tab.textContent='Loading saved…';try{await loadPulsePersonal();await loadSavedTargets()}catch(e){toast('Saved items unavailable: '+fail(e))}finally{tab.disabled=false;tab.textContent=label}}if(state.view==='pulse'&&pulseMode===key)renderPulse()},'bc-pulse-tab');tab.setAttribute('aria-pressed',String(pulseMode===key));tabs.append(tab)
  }
  const auto=btn(pulseAutoplay?'Autoplay on':'Autoplay off',()=>{pulseAutoplay=!pulseAutoplay;auto.textContent=pulseAutoplay?'Autoplay on':'Autoplay off';pulsePlay()},'bc-pulse-auto');tabs.append(auto);
  const scroll=el('div','bc-pulse-scroll');pulseScroll=scroll;const timeline=el('div','bc-pulse-timeline');scroll.append(timeline);pulseViewSetup(scroll);
@@ -2117,7 +2122,7 @@ async function boot(){
     if(!target){const {data}=await client.from(t.kind==='stream'?'corp_stream_videos':'corp_social_assets').select('*').eq('id',t.id).maybeSingle();if(data){if(t.kind==='stream')state.streamVideos.push({...data,kind:'video',purpose:'post',bunny_stream:true,video_poster_path:data.poster_path});else state.assets.push(data);target=pulseFindMedia(t);if(target)await loadSigned()}}
    }
    switchView('pulse',{pulseWho:target?.owner_id||(uid&&UUID.test(uid)&&profile(uid)?uid:null)});
-   if(target){const timeline=$('pulseView').querySelector('.bc-pulse-timeline');if(timeline){const prev=timeline.querySelector('#library-media-'+target.id);if(prev)prev.remove();timeline.prepend(renderLibraryActivity(target));}}
+   if(target){const u=new URL(location.href);u.searchParams.set('media',ref.join(':'));history.replaceState(null,'',u);const timeline=$('pulseView').querySelector('.bc-pulse-timeline');if(timeline){const prev=timeline.querySelector('#library-media-'+target.id);if(prev)prev.remove();timeline.prepend(renderLibraryActivity(target));}}
   }
   else if(state.deepPost)switchView('profile',{who:state.user.id,tab:'worldfeed',keepPost:true});
   else if(uid&&UUID.test(uid)&&profile(uid))switchView('profile',{who:uid});
