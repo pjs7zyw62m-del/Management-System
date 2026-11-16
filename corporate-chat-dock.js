@@ -76,7 +76,8 @@
   });
   const minimizeBtn=button('Minimize iMessage','−','',()=>minimize());
   const closeBtn=button('Close iMessage','×','bc-chat-close',()=>closeChat());
-  controls.append(pop,minimizeBtn,closeBtn);
+  const expand=button('Expand conversation','⛶','bc-profile-chat-expand',()=>{const active=pane.classList.toggle('bc-profile-chat-expanded');expand.textContent=active?'↙':'⛶';expand.title=active?'Restore conversation':'Expand conversation';expand.setAttribute('aria-label',expand.title);expand.setAttribute('aria-pressed',String(active));if(active)for(const prop of ['top','left','right','bottom','width','height'])pane.style.removeProperty(prop)});expand.hidden=true;expand.setAttribute('aria-pressed','false');
+  controls.append(pop,expand,minimizeBtn,closeBtn);
   header.append(label,controls);
   const frame=make('iframe','bc-chat-pane-iframe');
   frame.title='Blackcell private messages, photos, videos, and shared media';
@@ -131,7 +132,8 @@
     peerWanted=peerId;
     try{frame.contentWindow?.postMessage({type:'blackcell-select-peer',peerId},location.origin);}catch(_){}
   }
-  function openChat(peerId){
+  function openChat(peerId,source){
+    if(source==='profile'){pane.classList.add('bc-profile-chat');expand.hidden=false;}
     if(peerId)peerWanted=peerId;
     state='open';pane.hidden=false;orb.hidden=true;
     pane.classList.add('bc-chat-window-open');
@@ -154,7 +156,7 @@
     pane.classList.remove('bc-chat-window-open');
     mediaBubbles?.closeAll();
     frame.removeAttribute('src');frameLoaded=false;
-    peerWanted=null;labelSubtitle.textContent='PRIVATE · VERIFIED NETWORK';
+    peerWanted=null;labelSubtitle.textContent='PRIVATE · VERIFIED NETWORK';pane.classList.remove('bc-profile-chat','bc-profile-chat-expanded');expand.hidden=true;expand.textContent='⛶';expand.title='Expand conversation';expand.setAttribute('aria-label',expand.title);expand.setAttribute('aria-pressed','false');
     saveWindowState();
   }
   function suspendChat(){
@@ -173,7 +175,7 @@
   orb.addEventListener('click',()=>openChat());
   people.addEventListener('click',()=>openChat());
   imessage.addEventListener('click',()=>openChat());
-  window.addEventListener('blackcell-open-imessage',ev=>openChat(ev?.detail?.peerId||undefined));
+  window.addEventListener('blackcell-open-imessage',ev=>openChat(ev?.detail?.peerId||undefined,ev?.detail?.source));
   window.addEventListener('message',event=>{
    if(event.origin!==location.origin||event.source!==frame.contentWindow)return;
    const detail=event.data||{};
