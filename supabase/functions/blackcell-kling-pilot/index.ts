@@ -1,6 +1,6 @@
 import {createClient} from "npm:@supabase/supabase-js@2.119.0";
 const origins=new Set(["https://blackcellcorp.com","https://www.blackcellcorp.com","https://pjs7zyw62m-del.github.io"]);
-const base="https://api-singapore.klingai.com",MAX=8*1024*1024,CHUNK=4*1024*1024,TABLE="blackcell_ai_video_retry";
+const base="https://api-singapore.klingai.com",MAX=8*1024*1024,CHUNK=4*1024*1024,TABLE="blackcell_ai_video_flagship";
 const motions:Record<string,string>={gentle:"Subtle natural movement, preserve appearance, clothing and surroundings. Steady camera, realistic motion.",camera:"Gentle cinematic camera movement around the existing scene. Preserve identity, clothing, surroundings and proportions.",ambient:"Subtle natural movement in the existing environment. Preserve the original scene, clothing, identity and proportions."};
 const states=new Set(["submitted","processing","succeeded","failed"]);
 const validPath=(p:unknown,uid:string):p is string=>typeof p==="string"&&p.length<330&&!/[\x00-\x1f\x7f\\]/.test(p)&&( /^Photos\/[^/]+\.(?:jpe?g|png)$/i.test(p)&&!/^Photos\/BLACKCELL-[0-9a-f-]{36}\./i.test(p)||p.startsWith("Photos/From Members/"+uid+"/")&&/^BLACKCELL-[0-9a-f-]{36}\.(?:jpe?g|png)$/i.test(p.split("/").at(-1)||"")&&p.split("/").length===4);
@@ -35,15 +35,17 @@ Deno.serve(async req=>{
   const previous=await db.from("blackcell_ai_video_pilot").select("id,user_id,source_path,state,provider_task_id,created_at").eq("singleton",true).maybeSingle();
   if(previous.error||!previous.data||previous.data.user_id!==uid||previous.data.provider_task_id||previous.data.state!=="uncertain")return send({ok:false,code:"PRIOR_ATTEMPT_REVIEW_REQUIRED"});
   if(job&&(job.user_id!==uid||job.source_path!==path))return send({ok:false,code:"PILOT_ALREADY_USED"});
+  const rejected=await db.from("blackcell_ai_video_retry").select("id,user_id,state,provider_task_id,provider_http,provider_code,created_at").eq("singleton",true).maybeSingle();
+  if(rejected.error||rejected.data?.user_id!==uid||rejected.data.state!=="failed"||rejected.data.provider_task_id||rejected.data.provider_http!==429||rejected.data.provider_code!==1102)return send({ok:false,code:"PRIOR_ATTEMPT_REVIEW_REQUIRED"});
   async function priorCheck(){
-   const old=previous.data!;
-   const exact=await kling("/tasks?external_task_ids="+encodeURIComponent(old.id)),a=await exact.json().catch(()=>null);
+   const old=previous.data!;const declined=rejected.data!;
+   const exact=await kling("/tasks?external_task_ids="+encodeURIComponent(old.id+","+declined.id)),a=await exact.json().catch(()=>null);
    const history=await kling("/tasks",{method:"POST",body:JSON.stringify({start_time:String(new Date(old.created_at).getTime()-60000),end_time:String(Date.now()),cursor:"",limit:100,filters:[{key:"product_type",values:["video"]}]})}),h=await history.json().catch(()=>null);
    const exactRows=Array.isArray(a?.data)?a.data:Array.isArray(a?.data?.result)?a.data.result:null;
    const raw=h?.data?.result,reported=h?.data?.count;
    const emptyCount=reported===0||reported==="0";
    const list=Array.isArray(raw)?raw:raw==null&&emptyCount&&h?.data?.has_more===false?[]:null;
-   const diagnostic={exactHttp:exact.status,exactCode:Number.isInteger(a?.code)?a.code:null,exactCount:exactRows?.length??null,exactShape:Array.isArray(a?.data)?"array":Array.isArray(a?.data?.result)?"result":a?.data===null?"null":typeof a?.data,historyHttp:history.status,historyCode:Number.isInteger(h?.code)?h.code:null,historyCount:list?.length??null,reportedCount:typeof reported==="number"&&Number.isFinite(reported)?reported:reported==="0"?0:null,historyShape:raw===null?"null":Array.isArray(raw)?"array":typeof raw,more:h?.data?.has_more===false?false:h?.data?.has_more===true?true:null,matched:!!list?.some((t:Record<string,unknown>)=>t?.external_id===old.id||t?.external_task_id===old.id)};
+   const diagnostic={exactHttp:exact.status,exactCode:Number.isInteger(a?.code)?a.code:null,exactCount:exactRows?.length??null,exactShape:Array.isArray(a?.data)?"array":Array.isArray(a?.data?.result)?"result":a?.data===null?"null":typeof a?.data,historyHttp:history.status,historyCode:Number.isInteger(h?.code)?h.code:null,historyCount:list?.length??null,reportedCount:typeof reported==="number"&&Number.isFinite(reported)?reported:reported==="0"?0:null,historyShape:raw===null?"null":Array.isArray(raw)?"array":typeof raw,more:h?.data?.has_more===false?false:h?.data?.has_more===true?true:null,matched:!!list?.some((t:Record<string,unknown>)=>[old.id,declined.id].includes(String(t?.external_id||t?.external_task_id||"")))};
    const ok=exact.ok&&a?.code===0&&exactRows?.length===0&&history.ok&&h?.code===0&&list!==null&&diagnostic.more===false&&!diagnostic.matched;
    console.info("KLING_RETRY_PREFLIGHT",JSON.stringify({...diagnostic,ok}));
    return {ok,diagnostic};
@@ -55,7 +57,7 @@ Deno.serve(async req=>{
   if(action==="create"){
    if(job)return send({ok:true,state:job.state,id:job.id});
    if(input.approve!==true||input.rights!==true||!Object.hasOwn(motions,input.motion))return send({ok:false,code:"CONFIRMATION_REQUIRED"});
-   if(input.retryConfirmed!==true)return send({ok:false,code:"CONFIRMATION_REQUIRED"});
+   if(input.retryConfirmed!==true||input.model!=="kling-4.0-flash")return send({ok:false,code:"CONFIRMATION_REQUIRED"});
    const preflight=await priorCheck();if(!preflight.ok)return send({ok:false,code:"PRIOR_ATTEMPT_REVIEW_REQUIRED",diagnostic:preflight.diagnostic});
    // Authoritative read via the signed-in owner's encrypted storage gateway. No caller-supplied image bytes or URL.
    const drive=(act:string,body:Record<string,unknown>)=>fetch(host+"/functions/v1/blackcell-os-private-drive?action="+act,{method:"POST",headers:{Authorization:"Bearer "+jwt,apikey:pub,"Content-Type":"application/json"},body:JSON.stringify(body),redirect:"error",signal:AbortSignal.timeout(25000)});
@@ -73,13 +75,13 @@ Deno.serve(async req=>{
    if(!(photo[0]===255&&photo[1]===216&&photo[2]===255||photo[0]===137&&photo[1]===80&&photo[2]===78&&photo[3]===71))return send({ok:false,code:"SOURCE_FORMAT_UNSUPPORTED"});
    const end=Date.now(),acct=await kling("/account/costs?start_time="+(end-30*86400000)+"&end_time="+end),usage=await acct.json().catch(()=>null);
    const packs=usage?.data?.resource_pack_subscribe_infos;
-   if(!acct.ok||usage?.code!==0||usage?.data?.code!==0||!Array.isArray(packs)||!packs.some(p=>p.status==="online"&&Number(p.remaining_quantity)>=3))return send({ok:false,code:"PACKAGE_NOT_READY"});
+   if(!acct.ok||usage?.code!==0||usage?.data?.code!==0||!Array.isArray(packs)||!packs.some(p=>p.status==="online"&&Number(p.remaining_quantity)>=3&&(/flagship|4[.]0/i.test(String(p.resource_pack_name||""))||[64,637].includes(Number(p.total_quantity)))))return send({ok:false,code:"PACKAGE_NOT_READY"});
    // Atomic project-wide cap. A failed/ambiguous POST never triggers another paid submission.
    const reserved=await db.from(TABLE).insert({singleton:true,user_id:uid,source_path:path,state:"reserved"}).select("id").single();
    if(reserved.error||!reserved.data)return send({ok:false,code:"PILOT_ALREADY_USED"});
    const id=reserved.data.id;
    try{
-    const res=await kling("/image-to-video/kling-3.0",{method:"POST",body:JSON.stringify({contents:[{type:"prompt",text:motions[input.motion]},{type:"first_frame",url:b64(photo)}],settings:{resolution:"720p",duration:5,audio:"off",multi_shot:false},options:{external_task_id:id,watermark_info:{enabled:true}}})}),data=await res.json().catch(()=>null);
+    const res=await kling("/image-to-video/kling-4.0-flash",{method:"POST",body:JSON.stringify({contents:[{type:"prompt",text:motions[input.motion]},{type:"first_frame",url:b64(photo)}],settings:{resolution:"720p",duration:5},options:{external_task_id:id,watermark_info:{enabled:true}}})}),data=await res.json().catch(()=>null);
     console.info("KLING_CREATE_RESULT",JSON.stringify({http:res.status,code:Number.isInteger(data?.code)?data.code:null,taskReceived:typeof data?.data?.id==="string"}));
     const accepted=res.ok&&data?.code===0&&typeof data?.data?.id==="string";
     const providerCode=Number.isInteger(data?.code)?data.code:null, definiteReject=res.status>=400&&res.status<500&&providerCode!==null&&providerCode!==0;
