@@ -624,13 +624,13 @@ export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,a
    }
   }else{
    player.hidden=false;
-   const qualityMenu=$('bcWatchQuality');qualityMenu.replaceChildren(new Option('Original','original'));qualityMenu.disabled=true;
+   const qualityMenu=$('bcWatchQuality');qualityMenu.replaceChildren(new Option('Original','original'));qualityMenu.disabled=true;qualityMenu.title='Checking available rendered qualities';let adaptiveReason='';
    if(isWorldVideo(a)){
     const description=$('bcCinemaDescription'),alive=()=>request===cinemaRequest&&activeCinema?.id===a.id;
-    const original=async(position)=>{if(!alive())return;activeRender=null;description.textContent='Loading original video…';try{const blob=await readWorldVideo(a);if(!alive())return;releaseObject('cinema');cinemaObject=URL.createObjectURL(blob);player.onloadedmetadata=()=>{if(position>=0&&position<player.duration)try{player.currentTime=position}catch{}};player.src=cinemaObject;player.load();description.textContent=a.review_status==='pending'?'Private upload · pending review':'Original private World video.';void player.play().catch(()=>{});syncWatchControls()}catch(e){if(alive()){description.textContent='Video could not start. Please reopen it.';toast('Private video unavailable: '+String(e.message||e))}}};
+    const original=async(position)=>{if(!alive())return;activeRender=null;description.textContent='Loading original video…';try{const blob=await readWorldVideo(a);if(!alive())return;releaseObject('cinema');cinemaObject=URL.createObjectURL(blob);player.onloadedmetadata=()=>{if(position>=0&&position<player.duration)try{player.currentTime=position}catch{}};player.src=cinemaObject;player.load();description.textContent=a.review_status==='pending'?'Private upload · pending review':'Original private World video.'+(adaptiveReason?' · Adaptive playback: '+adaptiveReason:'');qualityMenu.title=adaptiveReason||'Original quality';void player.play().catch(()=>{});syncWatchControls()}catch(e){if(alive()){description.textContent='Video could not start. Please reopen it.';toast('Private video unavailable: '+String(e.message||e))}}};
     if(typeof attachRenderedWorld==='function'&&window.BLACKCELL_ENABLE_RENDER_PLAYBACK===true){
      description.textContent='Checking available video qualities…';
-     const rendered=await attachRenderedWorld({asset:a,video:player,qualityMenu,alive,startPosition:Number(resume[a.id]?.time||0),onReady:()=>{if(alive())description.textContent='Adaptive quality · BLACKCELL private stream'},onFatal:position=>void original(position),onOriginal:position=>void original(position)});
+     const rendered=await attachRenderedWorld({asset:a,video:player,qualityMenu,alive,startPosition:Number(resume[a.id]?.time||0),onReady:()=>{if(alive()){description.textContent='Adaptive quality · BLACKCELL private stream';qualityMenu.title='Select Auto or a rendered resolution'}},onUnavailable:reason=>{adaptiveReason=reason},onFatal:(position,reason)=>{adaptiveReason=reason;void original(position)},onOriginal:position=>{adaptiveReason='';void original(position)}});
      if(!alive()){rendered?.destroy();return}if(rendered){activeRender=rendered;syncWatchControls();return}
     }
     await original(Number(resume[a.id]?.time||0));return;
