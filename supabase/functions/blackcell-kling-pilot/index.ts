@@ -29,7 +29,7 @@ Deno.serve(async req=>{
   if(Number(req.headers.get("content-length")||0)>4096)return send({ok:false,code:"INVALID_REQUEST"},400);
   const input=await req.json(),action=input.action,path=input.path;
   if(!["status","create","output"].includes(action)||!validPath(path,uid))return send({ok:false,code:"PILOT_REQUIRES_OWN_JPEG_OR_PNG"});
-  const existing=await db.from(TABLE).select("id,user_id,source_path,state,provider_task_id").eq("singleton",true).maybeSingle();
+  const existing=await db.from(TABLE).select("id,user_id,source_path,state,provider_task_id,created_at").eq("singleton",true).maybeSingle();
   if(existing.error)return send({ok:false,code:"LEDGER_UNAVAILABLE"});
   const job=existing.data;
   if(job&&(job.user_id!==uid||job.source_path!==path))return send({ok:false,code:"PILOT_ALREADY_USED"});
@@ -59,6 +59,7 @@ Deno.serve(async req=>{
    const id=reserved.data.id;
    try{
     const res=await kling("/image-to-video/kling-3.0",{method:"POST",body:JSON.stringify({contents:[{type:"prompt",text:motions[input.motion]},{type:"first_frame",url:b64(photo)}],settings:{resolution:"720p",duration:5,audio:"off",multi_shot:false},options:{external_task_id:id,watermark_info:{enabled:true}}})}),data=await res.json().catch(()=>null);
+    console.info("KLING_CREATE_RESULT",JSON.stringify({http:res.status,code:Number.isInteger(data?.code)?data.code:null,taskReceived:typeof data?.data?.id==="string"}));
     const accepted=res.ok&&data?.code===0&&typeof data?.data?.id==="string",state=accepted&&states.has(data.data.status)?data.data.status:accepted?"submitted":"uncertain";
     await db.from(TABLE).update({state,provider_task_id:accepted?data.data.id:null}).eq("id",id);
     return send({ok:accepted,state,id,code:accepted?"SUBMITTED":"SUBMISSION_UNCONFIRMED"});
@@ -67,8 +68,18 @@ Deno.serve(async req=>{
   if(!job)return send({ok:true,state:"ready"});
   const query=job.provider_task_id?"task_ids="+encodeURIComponent(job.provider_task_id):"external_task_ids="+encodeURIComponent(job.id);
   const res=await kling("/tasks?"+query),data=await res.json().catch(()=>null);
-  if(!res.ok||data?.code!==0||!Array.isArray(data.data)||data.data.length!==1)return send({ok:true,state:job.state,id:job.id,code:"QUERY_UNCONFIRMED"});
-  const task=data.data[0],state=states.has(task.status)?task.status:job.state;
+  let task=res.ok&&data?.code===0&&Array.isArray(data.data)?data.data.find((t:Record<string,unknown>)=>job.provider_task_id?t.id===job.provider_task_id:t.external_id===job.id):null;
+  const diag={http:res.status,code:Number.isInteger(data?.code)?data.code:null,matches:task?1:0};
+  // Read-only reconciliation by recent task list, never a second generation.
+  if(!task&&!job.provider_task_id&&["reserved","uncertain"].includes(job.state)){
+   const listed=await kling("/tasks",{method:"POST",body:JSON.stringify({start_time:String(new Date(job.created_at).getTime()-60000),end_time:String(Date.now()),cursor:"",limit:100,filters:[{key:"product_type",values:["video"]}]})});
+   const details=await listed.json().catch(()=>null),list=details?.data?.result;
+   if(listed.ok&&details?.code===0&&Array.isArray(list))task=list.find((t:Record<string,unknown>)=>t.external_id===job.id);
+   console.info("KLING_RECONCILE_RESULT",JSON.stringify({...diag,listHttp:listed.status,listCode:Number.isInteger(details?.code)?details.code:null,matched:!!task,more:details?.data?.has_more===true}));
+   if(!task)return send({ok:true,state:job.state,id:job.id,code:"QUERY_UNCONFIRMED",diagnostic:{http:diag.http,providerCode:diag.code,listHttp:listed.status,listCode:Number.isInteger(details?.code)?details.code:null,matched:false}});
+  }
+  if(!task){console.info("KLING_QUERY_RESULT",JSON.stringify(diag));return send({ok:true,state:job.state,id:job.id,code:"QUERY_UNCONFIRMED",diagnostic:{http:diag.http,providerCode:diag.code,matched:false}})}
+  const state=states.has(task.status)?task.status:job.state;
   if(task.external_id&&task.external_id!==job.id||job.provider_task_id&&task.id!==job.provider_task_id)return send({ok:false,code:"TASK_MISMATCH"});
   await db.from(TABLE).update({state,provider_task_id:typeof task.id==="string"?task.id:job.provider_task_id}).eq("id",job.id);
   const output=state==="succeeded"&&Array.isArray(task.outputs)?task.outputs.find(x=>x.type==="video"):null;
