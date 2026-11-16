@@ -484,8 +484,8 @@ function renderProfileGroups(){
   'Group membership features are not yet connected. Explore the existing BLACKCELL collections below; no group memberships or member counts are invented.'));
  const links=[
   ['MAN’S ARMED FORCES','All uniformed professions','mans-armed-forces.html'],
-  ['USA UNIFORMS','United States division','usa-page.html'],
-  ['MILITARY LIBRARY','Approved shared media and collections','corporate-network.html?view=photos']
+  
+  ['MILITARY WORLD','Approved shared media and collections','military-world.html#collection']
  ];
  const grid=el('div','bc-security-community-grid');
  for(const [name,description,href] of links){
