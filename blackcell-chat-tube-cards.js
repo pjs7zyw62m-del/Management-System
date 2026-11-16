@@ -30,7 +30,7 @@ export function createChatTubeCards(client,alive){
   const valid=()=>alive()&&cards.has(card)&&root.isConnected;
   let loading=false;
   async function hydrate(){
-   try{const a=await asset(ref.id);if(!valid())return;title.textContent=isWorldVideo(a)?worldVideoTitle(a):String(a.title||a.caption||a.filename||'Video').slice(0,160);note.textContent='Private BLACKCELL Tube video';play.disabled=false;if(a.video_poster_path){try{const url=await signed(a.video_poster_path);if(valid()){img.src=url;img.hidden=false}}catch{}}}
+   try{const a=await asset(ref.id);if(!valid())return;title.textContent=isWorldVideo(a)?worldVideoTitle(a):String(a.title||a.caption||a.filename||'Video').slice(0,160);note.textContent='Private BLACKCELL Tube video';play.disabled=false;expand.disabled=false;if(a.video_poster_path){try{const url=await signed(a.video_poster_path);if(valid()){img.src=url;img.hidden=false}}catch{}}}
    catch{if(valid())note.textContent='Video unavailable to your account.'}
   }
   play.addEventListener('click',async e=>{
@@ -42,7 +42,7 @@ export function createChatTubeCards(client,alive){
    }catch{if(valid())note.textContent='Video could not start. Tap play to retry.'}
    finally{loading=false;if(valid())play.disabled=false}
   });
-  expand.addEventListener('click',e=>{e.stopPropagation();if(!valid()||v.hidden)return;if(stage.classList.contains('is-expanded')){stage.classList.remove('is-expanded');expand.textContent='Expand';return}if(document.fullscreenElement===stage){void document.exitFullscreen().catch(()=>{});return}const fallback=()=>{if(valid()){stage.classList.add('is-expanded');expand.textContent='Reduce'}};if(stage.requestFullscreen)void stage.requestFullscreen().catch(fallback);else fallback()});
+  expand.addEventListener('click',e=>{e.stopPropagation();if(!valid())return;if(v.hidden&&!loading&&!play.disabled)play.click();if(stage.classList.contains('is-expanded')){stage.classList.remove('is-expanded');expand.textContent='Expand';return}if(document.fullscreenElement===stage){void document.exitFullscreen().catch(()=>{});return}const fallback=()=>{if(valid()){stage.classList.add('is-expanded');expand.textContent='Reduce'}};if(stage.requestFullscreen)void stage.requestFullscreen().catch(fallback);else fallback()});
   v.addEventListener('error',()=>{if(valid()&&!v.hidden){stop(card);note.textContent='Playback interrupted. Tap play to retry.'}});
   root.addEventListener('click',e=>e.stopPropagation());
   if(typeof IntersectionObserver==='function'){card.observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){card.observer.disconnect();void hydrate()}},{rootMargin:'100px'});card.observer.observe(root)}
