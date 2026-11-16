@@ -214,3 +214,14 @@ html body.bc-network.bc-profile-mode #app.app{padding-top:clamp(12px,1.4vw,24px)
 /* Feed photograph context actions: browser menu replaced only on photos. */
 .bc-pw-transfer-target,.bc-pw-transfer-target img{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
 .bc-pw-feed-context{position:fixed;z-index:2147483000;width:max-content;min-width:218px;max-width:calc(100vw - 12px);margin:0}
+
+/* Fit photo previews without clipping heads, bodies, or landscape edges.
+   Video thumbnails and World Spotlight artwork retain their original styling. */
+#profileView .bc-pw-transfer-target .bc-pw-frame{background:#0b0b0d}
+#profileView .bc-pw-transfer-target .bc-pw-frame img{object-fit:contain;object-position:50% 50%}
+#profileView .bc-pw-transfer-target .bc-pw-frame img[hidden],
+#profileView .bc-pw-transfer-target .bc-pw-placeholder[hidden]{display:none!important}
+/* A feed photograph uses its own proportions; the whole frame is centered
+   and fitted to the available window height instead of a 4:3 crop. */
+#profileView .bc-profile-social-timeline .bc-pw-transfer-target .bc-pw-frame:has(img:not([hidden])){aspect-ratio:auto;max-height:none;min-height:0;display:flex;align-items:center;justify-content:center}
+#profileView .bc-profile-social-timeline .bc-pw-transfer-target .bc-pw-frame img:not([hidden]){position:static;inset:auto;display:block;width:auto;height:auto;max-width:100%;max-height:min(82dvh,1000px);object-fit:contain;object-position:center}
