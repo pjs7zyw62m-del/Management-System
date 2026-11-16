@@ -700,3 +700,6 @@ html .bc-apple-photos .ap-justified-grid .bc-pm-thumb img{width:100%;height:100%
 @keyframes ap-ai-enter{from{opacity:.5;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
 @media(max-width:700px){.ap-view-area.ap-ai-split{flex-direction:column;overflow:auto}.ap-view-area.ap-ai-split .bc-pm-view-body{flex:0 0 auto;height:clamp(145px,30vh,300px)}.ap-ai-studio{flex:1 0 auto;overflow:visible;padding:12px}.ap-ai-stage{flex:0 0 135px}}
 @media(prefers-reduced-motion:reduce){.ap-view-area.ap-ai-split .bc-pm-view-body,.ap-ai-studio{animation:none}}
+
+/* Real Kling pilot controls and private output preview */
+.ap-ai-field select{width:100%;box-sizing:border-box;background:#0c0c10;color:#f2f2f5;border:1px solid #3b3b42;border-radius:8px;padding:10px;font:inherit}.ap-ai-rights{display:flex;align-items:flex-start;gap:8px;color:#c9c9d0;font-size:12px;line-height:1.5}.ap-ai-rights input{flex:none;accent-color:#d63a51;margin-top:3px}.ap-ai-job-status{font-size:12px;color:#e9c7cf;line-height:1.45;margin:0}.ap-ai-stage.has-result .ap-ai-symbol{display:none}.ap-ai-stage .ap-ai-preview{display:block;width:100%;max-height:36vh;object-fit:contain;background:#000;border-radius:8px}.ap-ai-actions button:not(:disabled){cursor:pointer;background:#53222c;color:#fff;border-color:#a94356}
