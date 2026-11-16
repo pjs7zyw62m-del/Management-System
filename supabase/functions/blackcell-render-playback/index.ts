@@ -44,7 +44,7 @@ Deno.serve(async req=>{
   const rewritten=playlist.split(/\r?\n/).map(line=>{
    if(!line.trim()||line.startsWith("#")){if(/URI\s*=/i.test(line))throw Error("Unsupported playlist tag");return line}
    const path=base+line.trim();if(!filePattern.test(path))throw Error("Invalid playlist path");
-   const q=new URLSearchParams({id,file:path,generation:current});return u.pathname+"?"+q.toString();
+   const q=new URLSearchParams({id,file:path,generation:current});const endpoint=new URL("/functions/v1/blackcell-render-playback",host);endpoint.search=q.toString();return endpoint.href;
   }).join("\n");
   return new Response(rewritten,{headers:{...h,"Content-Type":"application/vnd.apple.mpegurl"}});
  }catch{return fail(502,"RENDER_DELIVERY_FAILED")}
