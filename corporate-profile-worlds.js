@@ -24,6 +24,12 @@ export function worldScope(active,raw){const ids=normalizeWorlds(raw);return act
 const worldLabel=id=>labels.get(id)?.[1]||'Uniform';
 const mediaWorld=a=>{const tag=(Array.isArray(a.military_tags)?a.military_tags:[]).find(t=>typeof t==='string'&&labels.has(t.slice(4))&&t.startsWith('maf:'));return tag?worldLabel(tag.slice(4)):'Uniform'};
 const uniformTerms='source_provider.eq.world-bunny-v1,military_tags.cs.{maf:military},military_tags.cs.{maf:police},military_tags.cs.{maf:fire},military_tags.cs.{maf:security},military_tags.cs.{maf:medical},military_tags.cs.{maf:professional},military_tags.cs.{maf:unsorted}';
+// Cinema content is watch-only in BLACKCELL, never a Photos transfer.
+export function isPaidVideo(a){
+ if(a?.kind!=='video')return false;
+ const category=String(a.video_category||'').trim().toLowerCase().replace(/[\s_-]+/g,' ');
+ return ['movie','movies','film','films','series','tv','tv show','tv shows','tv series','television','television series','television show','television shows','episode','episodes','documentary','documentaries'].includes(category)||a.paid_content===true||a.is_paid===true;
+}
 export function createProfileWorlds({client,state,previews,title,render,toast,readVideo}){
  let dismissFeedMenu=null,feedTransferBusy=false;
  const root=()=>document.getElementById('profileWorlds');
@@ -140,11 +146,21 @@ export function createProfileWorlds({client,state,previews,title,render,toast,re
  async function transferFeedPhoto(a){
   const account=state.user?.id;
   if(!account||!a||!['photo','video'].includes(a.kind)||!/^\w[\w-]{0,80}$/.test(String(a.id||'')))throw Error('Media unavailable');
+  if(isPaidVideo(a))throw Error('Movies, TV shows and other cinema content cannot be transferred to BLACKCELL Photos.');
   if(a.bunny_stream)throw Error('This streaming video does not have an authorized original-file transfer yet.');
   if(a.review_status!=='approved'&&a.owner_id!==account)throw Error('Media is not available for transfer.');
   if(a.adult_restricted===true&&a.owner_id!==account)throw Error('Media is not available for transfer.');
   const session=(await client.auth.getSession()).data?.session;
   if(!session?.access_token||session.user.id!==account)throw Error('Sign in again');
+  // Recheck canonical catalog metadata before reading the original, including
+  // changes made since the feed was loaded. Deny missing or unauthorized rows.
+  if(a.kind==='video'){
+   const {data,error}=await client.from('corp_social_assets').select('*').eq('id',a.id).maybeSingle();
+   if(error||!data||data.kind!=='video')throw Error('Video transfer authorization could not be verified.');
+   if(isPaidVideo(data))throw Error('Movies, TV shows and other cinema content cannot be transferred to BLACKCELL Photos.');
+   if((data.review_status!=='approved'||data.adult_restricted===true)&&data.owner_id!==account)throw Error('Media is not available for transfer.');
+   a=data;
+  }
   const [m,drive]=await Promise.all([import('./blackcell-private-media.js?v=12-member-album-repair'),import('./blackcell-private-drive.js?v=2-album-list')]);
   let blob;
   if(a.kind==='video'&&a.source_provider==='world-bunny-v1'){
@@ -202,6 +218,7 @@ export function createProfileWorlds({client,state,previews,title,render,toast,re
 
  function bindFeedPhoto(target,a){
   if(!target||!a||!['photo','video'].includes(a.kind))return;
+  if(isPaidVideo(a)){target.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation()});return}
   target.classList.add('bc-pw-transfer-target');
   // Keep video thumbnails out of the photo-only aspect-ratio CSS.
   if(a.kind==='video'){target.classList.remove('bc-pw-transfer-target');target.classList.add('bc-pw-video-transfer-target');if(target.tagName==='VIDEO')target.tabIndex=0}
