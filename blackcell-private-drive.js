@@ -11,7 +11,7 @@ export function createPrivateDrive(client,uid){
  async function request(action,data={},binary=null,id=null,index=null,read=false){
   const cfg=window.BLACKCELL_CORP_CONFIG;
   if(!cfg?.url||!cfg?.publishableKey)throw Error('Corporate storage configuration unavailable.');
-  const {data:session,error}=await client.auth.getSession();if(error||!session?.session?.access_token)throw Error('Verify corporate access.');
+  const {data:session,error}=await client.auth.getSession();if(error||!session?.session?.access_token||session.session.user?.id!==uid)throw Error('Verify corporate access.');
   const u=new URL(cfg.url+'/functions/v1/blackcell-os-private-drive');u.searchParams.set('action',action);
   const headers={Authorization:'Bearer '+session.session.access_token,apikey:cfg.publishableKey,'Content-Type':binary?'application/octet-stream':'application/json'};
   if(binary){headers['x-bc-id']=id;headers['x-bc-index']=String(index)}
@@ -33,7 +33,7 @@ export function createPrivateDrive(client,uid){
  }
  async function list(full,opts={}){
   try{const p=relative(full),rows=localRows(await catalog(),p);let offset=0;
-   for(;offset<5000;offset+=100){const r=await legacy.list(full,{limit:100,offset,sortBy:{column:'name',order:'asc'}});if(r.error)throw r.error;for(const e of r.data||[]){if(!rows.has(e.name))rows.set(e.name,e)}if((r.data||[]).length<100)break}
+   for(;offset<5000;offset+=100){const r=await legacy.list(full,{limit:100,offset,sortBy:{column:'name',order:'asc'}});if(r.error){if(/bucket not found|no such bucket/i.test(String(r.error.message||'')))break;throw r.error}for(const e of r.data||[]){if(!rows.has(e.name))rows.set(e.name,e)}if((r.data||[]).length<100)break}
    let merged=[...rows.values()].sort((a,b)=>a.name.localeCompare(b.name));if(opts.search)merged=merged.filter(r=>r.name.includes(opts.search));if(opts.sortBy?.order==='desc')merged.reverse();
    return ok(merged.slice(opts.offset||0,(opts.offset||0)+(opts.limit||100)))
   }catch(e){return err(e)}
