@@ -6,10 +6,12 @@ import {createNetworkPersonalization} from './corporate-network-personalization.
 import {createPhotoRediscovery} from './corporate-photo-rediscovery.js?v=20261113-auto-suggest1';
 import {createVisualDiscovery} from './corporate-visual-discovery.js?v=20261111-mediareset1';
 import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phonecheck2';
-import {attachRenderedWorld} from './blackcell-render-player.js?v=1';
+import {attachRenderedWorld} from './blackcell-render-player.js?v=2';
 import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261116-render-pilot9';
 import {isWorldVideo,worldVideoTitle,readWorldVideo,createWorldVideoPreviews} from './blackcell-world-video-catalog.js?v=3-playback-priority';
 import {createProfileWorlds} from './corporate-profile-worlds.js?v=20-progressive-previews';
+// Pilot only: the private manifest must exist and authorization must pass; otherwise use original playback.
+window.BLACKCELL_ENABLE_RENDER_PLAYBACK=true;
 const client=corporateClient(),bucket=client.storage.from('corp-social-media');
 const worldVideoPreviews=createWorldVideoPreviews(client);
 const $=id=>document.getElementById(id);
