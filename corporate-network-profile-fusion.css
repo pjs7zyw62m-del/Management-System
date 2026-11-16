@@ -1,0 +1,50 @@
+/* BLACKCELL social profile fusion — scoped to the existing profile screen. */
+html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile{--fusion-bg:#080809;--fusion-panel:#121214;--fusion-line:#ffffff16;--fusion-ink:#f5f5f7;--fusion-muted:#96969f;--fusion-accent:#e6384d;color:var(--fusion-ink)}
+html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-fb-profile-shell{max-width:1160px!important;margin:0 auto!important;width:100%!important}
+html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-fb-header.profile-hero{background:#121214!important;border:1px solid var(--fusion-line)!important;border-radius:18px!important;overflow:visible!important;box-shadow:0 20px 70px #0005!important}
+html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-profile-id-strip{display:none!important}
+html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile #profileCover{display:block!important;position:relative!important;height:clamp(125px,19vw,220px)!important;min-height:0!important;border-radius:17px 17px 0 0!important;background:linear-gradient(110deg,#08090b88,#15161acc),repeating-linear-gradient(125deg,#ffffff08 0px,#ffffff08 1px,transparent 1px,transparent 45px),radial-gradient(ellipse at 80% 15%,#3e4249,#0b0c0d 70%);background-size:cover!important;background-position:center!important;overflow:hidden}
+#profileView.bc-fusion-profile #profileCover.bc-custom-member-cover .bc-fusion-cover-brand{display:none}
+#profileView .bc-fusion-cover-brand{position:absolute;left:26px;bottom:22px;color:#e5e7eb;font-size:10px;font-weight:800;letter-spacing:.25em}
+#profileView .bc-fusion-cover-brand span{color:#e6384d}
+#profileView .bc-fusion-cover-action{position:absolute;right:15px;bottom:15px;background:#121214d9;color:#fff;border:1px solid #ffffff35;padding:9px 13px;border-radius:9px;font-size:12px;backdrop-filter:blur(16px)}
+#profileView .bc-fusion-cover-action[hidden]{display:none!important}
+html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-fb-identity.profile-identity{background:#121214!important;padding:22px 26px!important;gap:18px!important}
+html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile #profileAvatar.gigantic{width:clamp(86px,10vw,120px)!important;height:clamp(86px,10vw,120px)!important;border:3px solid #303035!important;outline:0!important;box-shadow:0 10px 25px #0006!important}
+#profileView .bc-fusion-name{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile #profileName{font-size:clamp(25px,3.5vw,38px)!important;letter-spacing:-.045em!important;color:#f5f5f7!important;margin:0!important}
+#profileView .bc-fusion-verified{display:inline-grid;place-items:center;width:19px;height:19px;border-radius:50%;background:#4087df;color:white;font-size:13px;font-weight:900;flex:none}
+html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile #profileHandle{color:#9999a2!important;font-size:14px!important}
+html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile #profileHeadline{color:#e4e4e8!important;font-size:14px!important;line-height:1.5!important;letter-spacing:0!important}
+html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile #profileActions button{border-radius:10px!important;text-transform:none!important;letter-spacing:0!important;font-size:13px!important;padding:11px 16px!important;background:#242428!important;color:#f5f5f7!important;border:1px solid #ffffff15!important}
+html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile #profileActions .bc-security-create-post{background:#ee3548!important;color:#fff!important;border-color:#ee3548!important}
+html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-fb-stats.profile-stats{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;background:#121214!important;border-top:1px solid #ffffff10!important;padding:0 24px!important;gap:0!important}
+#profileView.bc-fusion-profile .bc-fb-stats>button{min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:14px 3px;background:transparent;color:#fff;border:0;border-right:1px solid #ffffff10;border-radius:0;cursor:pointer}
+#profileView.bc-fusion-profile .bc-fb-stats>button:last-child{border-right:0}
+#profileView.bc-fusion-profile .bc-fb-stats>button:hover{background:#ffffff08}
+html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-fb-stats strong{font-size:22px!important;letter-spacing:-.04em!important;color:#f5f5f7!important}
+html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-fb-stats span{font-size:11px!important;letter-spacing:0!important;text-transform:none!important;color:#a1a1a9!important}
+html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile #profileTabs.bc-fb-tabs{display:flex!important;flex-wrap:wrap!important;align-items:stretch!important;gap:0!important;padding:0 18px!important;background:#111113!important;border-top:1px solid #ffffff12!important;border-radius:0 0 17px 17px!important;overflow:visible!important}
+html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile #profileTabs.bc-fb-tabs>button,html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile #profileTabs.bc-fb-tabs>.bc-security-more>summary{flex:1 1 auto!important;width:auto!important;min-width:0!important;background:transparent!important;border:0!important;border-bottom:2px solid transparent!important;border-radius:0!important;min-height:50px!important;font-size:13px!important;letter-spacing:0!important;text-transform:none!important;color:#9898a0!important;padding:10px 12px!important}
+html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile #profileTabs.bc-fb-tabs>button.selected,html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile #profileTabs.bc-fb-tabs>.bc-security-more.selected>summary{color:#fff!important;border-bottom-color:#ee3548!important}
+html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-fb-content{display:grid!important;grid-template-columns:minmax(220px,300px) minmax(0,1fr)!important;gap:18px!important;margin-top:18px!important;align-items:start!important}
+html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-fb-left{min-width:0!important;gap:12px!important}
+html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-fb-card,html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile #profileContent .post,html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile #profileTimelineComposer .composer{background:#121214!important;border:1px solid #ffffff12!important;border-radius:15px!important;box-shadow:none!important}
+html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-fb-card h3{font-size:14px!important;text-transform:none!important;letter-spacing:0!important;color:#eee!important}
+html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-fb-section-heading h2{font-size:24px!important;letter-spacing:-.04em!important;text-transform:none!important;color:#f5f5f7!important}
+html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-fb-section-heading p{color:#96969f!important}
+#profileView.bc-fusion-profile .post-actions{gap:8px!important;flex-wrap:wrap!important}
+#profileView.bc-fusion-profile .post-actions button{font-size:11px!important;letter-spacing:0!important;text-transform:none!important}
+.bc-fusion-reblog{padding:15px;border:1px solid #ffffff18;border-radius:12px;background:#1a1a1d;margin:10px 0;display:grid;gap:8px;overflow-wrap:anywhere}
+.bc-fusion-reblog small{font-size:10px;color:#a6a6ae;letter-spacing:.08em}
+.bc-fusion-reblog p{margin:0;color:#c5c5c9;line-height:1.5}
+.bc-fusion-reblog button{justify-self:start;padding:8px 11px;border-radius:8px;color:#f4f4f6;background:#28282d;border:1px solid #ffffff18}
+#profileView .bc-fusion-tube-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+#profileView .bc-fusion-tube-card{display:flex;flex-direction:column;gap:6px;text-align:left;background:#171719;border:1px solid #ffffff14;border-radius:12px;overflow:hidden;padding:0 0 10px;color:#fff}
+#profileView .bc-fusion-tube-frame{position:relative;display:grid;place-items:center;aspect-ratio:16/9;width:100%;background:#222227;overflow:hidden}
+#profileView .bc-fusion-tube-frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#profileView .bc-fusion-tube-frame span{z-index:1;background:#000a;border-radius:50%;padding:12px}
+#profileView .bc-fusion-tube-card strong,#profileView .bc-fusion-tube-card small{padding:0 10px;overflow-wrap:anywhere}
+#profileView .bc-fusion-tube-card small{color:#a1a1a9}
+@media(max-width:780px){html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-fb-content{grid-template-columns:minmax(0,1fr)!important}html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-fb-timeline{order:-1!important;min-width:0!important}html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-fb-left{order:1!important}html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-fb-identity.profile-identity{padding:18px 15px!important}html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile #profileTabs.bc-fb-tabs{padding:0 5px!important}html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile #profileTabs.bc-fb-tabs>.bc-security-more{width:auto!important;flex:1 1 auto!important}html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile #profileTabs.bc-fb-tabs>button{padding:10px 8px!important;font-size:12px!important}html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-fb-stats.profile-stats{padding:0 6px!important}}
+@media(prefers-reduced-motion:reduce){#profileView.bc-fusion-profile *{scroll-behavior:auto!important}}
