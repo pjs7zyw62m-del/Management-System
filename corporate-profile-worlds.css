@@ -39,3 +39,29 @@
 .bc-pw-viewer img{display:block;max-width:100%;max-height:80vh;object-fit:contain;margin:8px auto 0}
 .bc-pw-viewer button{background:#28282c;color:white;padding:8px 12px;border:1px solid #444;border-radius:8px}
 @media(max-width:620px){#profileView #profileWorlds{padding:14px}#profileView .bc-pw-bubbles{gap:8px}#profileView .bc-pw-bubble{width:66px}#profileView .bc-pw-circle{width:58px;height:58px}#profileView .bc-pw-feed{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Wide artwork is composed from the approved World portraits instead of
+   zooming a vertical portrait until the face is outside the cover. */
+html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile #profileCover[data-world-cover]{height:clamp(180px,23vw,300px)!important;isolation:isolate;background:#08090b!important}
+#profileView #profileCover .bc-pw-cover-art{position:absolute;inset:0;overflow:hidden;border-radius:inherit;background:#090a0c;animation:bc-pw-cover-reveal .34s ease both;pointer-events:none}
+#profileView .bc-pw-cover-panels{display:grid;grid-template-columns:repeat(var(--world-count),minmax(0,1fr));position:absolute;inset:0}
+#profileView .bc-pw-cover-panel{position:relative;min-width:0;overflow:hidden;isolation:isolate;display:flex;align-items:stretch;justify-content:center;background:#0b0c0e;border-right:1px solid #ffffff15}
+#profileView .bc-pw-cover-panel:last-child{border-right:0}
+#profileView .bc-pw-cover-panel:before{content:'';position:absolute;inset:-18px;background-image:var(--world-art);background-size:cover;background-position:center 20%;filter:blur(16px) brightness(.37) saturate(.65);opacity:.65;z-index:-1}
+#profileView .bc-pw-cover-panel:after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,#040406ed 0%,#04040610 42%,transparent 80%),linear-gradient(90deg,#08090b80,transparent 18%,transparent 82%,#08090b80);pointer-events:none}
+#profileView .bc-pw-cover-portrait{display:block;position:relative;width:100%;height:100%;min-width:0;object-fit:contain;object-position:center top;filter:saturate(.82) brightness(.93)}
+#profileView .bc-pw-cover-panel-label{position:absolute;bottom:46px;left:6px;right:6px;text-align:center;z-index:1;color:#f4f4f6;font-size:clamp(9px,1.2vw,12px);font-weight:650;letter-spacing:.035em;line-height:1.15;text-shadow:0 2px 8px #000;overflow-wrap:anywhere}
+#profileView #profileCover:not([data-world-cover=hybrid]) .bc-pw-cover-panel-label{display:none}
+#profileView .bc-pw-cover-caption{position:absolute;bottom:13px;left:15px;right:15px;display:flex;justify-content:center;align-items:center;gap:12px;z-index:2;white-space:normal}
+#profileView .bc-pw-cover-caption strong{font-size:clamp(13px,2.4vw,23px);letter-spacing:.14em;font-weight:850;color:#fff;text-shadow:0 2px 12px #000}
+#profileView .bc-pw-cover-caption small{font-size:9px;letter-spacing:.12em;color:#bbb;text-shadow:0 2px 8px #000}
+#profileView .bc-pw-circle{overflow:hidden;position:relative}
+#profileView .bc-pw-circle>img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 10%;filter:brightness(.88)}
+#profileView .bc-pw-hybrid .bc-pw-circle{border-color:#9d4b58}
+#profileView .bc-pw-hybrid-mosaic{position:absolute;inset:0;display:flex;overflow:hidden}
+#profileView .bc-pw-hybrid-mosaic span{display:block;flex:1;min-width:0;background-size:auto 100%;background-position:center top;box-shadow:inset -1px 0 #ffffff35;filter:brightness(.67)}
+#profileView .bc-pw-hybrid-mark{z-index:1;position:relative;color:#fff;text-shadow:0 1px 6px #000;font-size:29px}
+#profileView .bc-pw-feed-heading p{margin:5px 0 0;line-height:1.5}
+@keyframes bc-pw-cover-reveal{from{opacity:0}to{opacity:1}}
+@media(max-width:620px){html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile #profileCover[data-world-cover]{height:clamp(160px,37vw,210px)!important}#profileView .bc-pw-cover-caption{bottom:9px;gap:4px;flex-direction:column}#profileView .bc-pw-cover-caption small{font-size:8px}#profileView .bc-pw-cover-panel-label{bottom:47px;font-size:9px;letter-spacing:0}#profileView .bc-pw-cover-art[style*="--world-count: 5"] .bc-pw-cover-panel-label,#profileView .bc-pw-cover-art[style*="--world-count: 6"] .bc-pw-cover-panel-label,#profileView .bc-pw-cover-art[style*="--world-count: 7"] .bc-pw-cover-panel-label{display:none}}
+@media(prefers-reduced-motion:reduce){#profileView #profileCover .bc-pw-cover-art{animation:none}}
