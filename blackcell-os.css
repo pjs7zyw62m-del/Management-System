@@ -677,3 +677,10 @@ html:is(.bc-os-phone,.bc-os-tablet) #desktop .os-window-head .traffic button:nth
 .bc-apple-photos .bc-pm-thumb{position:relative;background:#101013}
 .bc-apple-photos .bc-pm-thumb img{position:absolute;inset:0;width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;object-position:center center}
 .bc-apple-photos .bc-pm-thumb .ap-favmark{z-index:1}
+
+/* Justified library rows, shared by personal and automatic member albums. */
+html .bc-apple-photos .ap-justified-grid{display:flex;flex-wrap:wrap;align-items:flex-start;align-content:flex-start;gap:3px;width:100%;min-width:0}
+html .bc-apple-photos .ap-justified-grid>.ap-photo{flex:none;box-sizing:border-box;width:var(--ap-thumb-size,144px);height:var(--ap-thumb-size,144px);border:0;border-radius:0;padding:0;margin:0;background:transparent}
+html .bc-apple-photos .ap-justified-grid .bc-pm-thumb{width:100%;height:100%;aspect-ratio:auto;border-radius:0}
+html .bc-apple-photos .ap-justified-grid .bc-pm-thumb img{width:100%;height:100%;object-fit:cover;object-position:center;max-width:100%;max-height:100%}
+.bc-apple-photos .ap-period .bc-pm-thumb img{object-fit:cover;object-position:center}
