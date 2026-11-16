@@ -40,8 +40,10 @@ Deno.serve(async req=>{
    const exact=await kling("/tasks?external_task_ids="+encodeURIComponent(old.id)),a=await exact.json().catch(()=>null);
    const history=await kling("/tasks",{method:"POST",body:JSON.stringify({start_time:String(new Date(old.created_at).getTime()-60000),end_time:String(Date.now()),cursor:"",limit:100,filters:[{key:"product_type",values:["video"]}]})}),h=await history.json().catch(()=>null);
    const exactRows=Array.isArray(a?.data)?a.data:Array.isArray(a?.data?.result)?a.data.result:null;
-   const list=Array.isArray(h?.data?.result)?h.data.result:null;
-   const diagnostic={exactHttp:exact.status,exactCode:Number.isInteger(a?.code)?a.code:null,exactCount:exactRows?.length??null,exactShape:Array.isArray(a?.data)?"array":Array.isArray(a?.data?.result)?"result":a?.data===null?"null":typeof a?.data,historyHttp:history.status,historyCode:Number.isInteger(h?.code)?h.code:null,historyCount:list?.length??null,more:h?.data?.has_more===false?false:h?.data?.has_more===true?true:null,matched:!!list?.some((t:Record<string,unknown>)=>t?.external_id===old.id||t?.external_task_id===old.id)};
+   const raw=h?.data?.result,reported=h?.data?.count;
+   const emptyCount=reported===0||reported==="0";
+   const list=Array.isArray(raw)?raw:raw==null&&emptyCount&&h?.data?.has_more===false?[]:null;
+   const diagnostic={exactHttp:exact.status,exactCode:Number.isInteger(a?.code)?a.code:null,exactCount:exactRows?.length??null,exactShape:Array.isArray(a?.data)?"array":Array.isArray(a?.data?.result)?"result":a?.data===null?"null":typeof a?.data,historyHttp:history.status,historyCode:Number.isInteger(h?.code)?h.code:null,historyCount:list?.length??null,reportedCount:typeof reported==="number"&&Number.isFinite(reported)?reported:reported==="0"?0:null,historyShape:raw===null?"null":Array.isArray(raw)?"array":typeof raw,more:h?.data?.has_more===false?false:h?.data?.has_more===true?true:null,matched:!!list?.some((t:Record<string,unknown>)=>t?.external_id===old.id||t?.external_task_id===old.id)};
    const ok=exact.ok&&a?.code===0&&exactRows?.length===0&&history.ok&&h?.code===0&&list!==null&&diagnostic.more===false&&!diagnostic.matched;
    console.info("KLING_RETRY_PREFLIGHT",JSON.stringify({...diagnostic,ok}));
    return {ok,diagnostic};
