@@ -114,7 +114,7 @@ html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-pw-video
 #profileView .bc-pw-video-panel .bc-pw-cover-art[data-count="7"] .bc-pw-cover-panels{grid-template-columns:repeat(7,minmax(0,1fr))}
 #profileView .bc-pw-video-panel .bc-pw-cover-portrait{object-fit:cover;object-position:center 5%}
 #profileView .bc-pw-video-panel .bc-pw-cover-art[data-count="1"] .bc-pw-cover-portrait{object-fit:contain;object-position:center top}
-#profileView .bc-pw-video-panel .bc-pw-live-cover{object-fit:contain;object-position:center}
+#profileView .bc-pw-video-panel .bc-pw-live-cover{object-fit:cover;object-position:center}
 #profileView .bc-pw-video-panel .bc-pw-live-playing .bc-pw-cover-caption{display:none}
 #profileView.bc-fusion-profile .bc-fb-header>#profileWorlds{min-width:0;border-top:1px solid #ffffff12}
 #profileView.bc-fusion-profile .bc-fb-header>#profileTabs{min-width:0}
