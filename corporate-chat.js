@@ -3,6 +3,7 @@ import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-acce
 import {setupCorporateMedia} from './corporate-chat-media.js?v=20261115-cohesive-media1';
 import {setupCorporateChatLive} from './corporate-chat-live.js?v=20261113-no-typing1';
 import {createChatTubeCards,parseTubeReference} from './blackcell-chat-tube-cards.js?v=1';
+import {createChatPulseCards,parsePulseShare} from './blackcell-chat-pulse-cards.js?v=1';
 const client=corporateClient(),$=id=>document.getElementById(id);
 const embedParams=new URLSearchParams(location.search);
 const popoutId=embedParams.get('popout')==='1'?embedParams.get('peer'):null;
@@ -28,7 +29,7 @@ if(mediaPanelMode)document.documentElement.classList.add('bc-media-panel','bc-me
 if(!mediaPanelMode&&window.parent===window&&window.BlackcellMediaBubbleHost)
  window.BlackcellMediaBubbleHostController=window.BlackcellMediaBubbleHost({mode:'standalone'});
 let self=null,peer=null,contacts=[],isLoading=false,firstLoad=true,ready=false;
-const tubeCards=createChatTubeCards(client,()=>ready&&!!self&&!!peer);client.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT')tubeCards.clear()});
+const tubeCards=createChatTubeCards(client,()=>ready&&!!self&&!!peer),pulseCards=createChatPulseCards(client,()=>ready&&!!self&&!!peer);client.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'){tubeCards.clear();pulseCards.clear()}});
 let chatBlocked=false,blockKnown=false,blockBusy=false,blockGeneration=0,blockReadSerial=0,sendingMessage=false;
 const popButton=$('popoutChat');
 if(popout){document.querySelector('.chat').classList.add('bc-thread-active');$('backToInbox').hidden=true;popButton.hidden=true;}
@@ -112,7 +113,7 @@ let employeeSession=false,sessionEnded=false,lastActivity=Date.now(),lastTouch=D
 const IDLE_LIMIT_MS=60*60*1000;
 async function endChatAccess(reason){
  if(sessionEnded)return;
- sessionEnded=true;ready=false;tubeCards.clear();employeeSession=false;inboxPins=[];closePinMenu();syncInboxControls();$('inboxRecent').hidden=true;
+ sessionEnded=true;ready=false;tubeCards.clear();pulseCards.clear();employeeSession=false;inboxPins=[];closePinMenu();syncInboxControls();$('inboxRecent').hidden=true;
  $('messageInput').disabled=true;$('sendButton').disabled=true;
  status(reason);
  live.dispose();
@@ -484,7 +485,7 @@ function renderPeers(){
 function choose(userId){
  const selected=contacts.find(x=>x.user_id===userId);if(!selected||!ready||(popout&&userId!==popoutId))return;
  const previousPeer=peer?.user_id;
- if(previousPeer!==userId)tubeCards.clear();
+ if(previousPeer!==userId){tubeCards.clear();pulseCards.clear()}
  live.onPeerChange(previousPeer,userId);
  peer=selected;blockGeneration++;blockKnown=false;chatBlocked=false;closeInfoMenu();sharedMedia.onPeerChange(userId);firstLoad=true;applySidebarPreference();
  live.setThreadOpen(!mediaPanelMode);
@@ -515,7 +516,7 @@ async function loadMessages(){
    void live.markRead(ordered);
    return;
   }
-  box.dataset.newest=newest;box.dataset.readSignature=signature;popoutActions?.close();tubeCards.clear();box.replaceChildren();
+  box.dataset.newest=newest;box.dataset.readSignature=signature;popoutActions?.close();tubeCards.clear();pulseCards.clear();box.replaceChildren();
   let currentDay='';
   for(let i=0;i<ordered.length;i++){
    const m=ordered[i],previous=ordered[i-1],next=ordered[i+1];
@@ -531,9 +532,9 @@ async function loadMessages(){
    const item=document.createElement('div');
    item.className='message '+group+(own?' mine':'')+(m.media_batch_id?' message-media':'');
    if(!firstLoad&&oldNewest!==newest&&m.id===newest)item.classList.add('message-fresh');
-   const tubeRef=!m.deleted_at&&!m.media_batch_id&&parseTubeReference(m.body);
-   const bubble=m.deleted_at?text('div','bubble bc-message-deleted',own?'You deleted a message':'Message deleted'):m.media_batch_id?sharedMedia.renderMediaBubble(m,own):tubeRef?tubeCards.render(tubeRef):text('div','bubble',m.body);
-   if(!m.deleted_at&&!m.media_batch_id&&!tubeRef){
+   const tubeRef=!m.deleted_at&&!m.media_batch_id&&parseTubeReference(m.body),pulseRef=!m.deleted_at&&!m.media_batch_id&&!tubeRef&&parsePulseShare(m.body);
+   const bubble=m.deleted_at?text('div','bubble bc-message-deleted',own?'You deleted a message':'Message deleted'):m.media_batch_id?sharedMedia.renderMediaBubble(m,own):tubeRef?tubeCards.render(tubeRef):pulseRef?pulseCards.render(pulseRef):text('div','bubble',m.body);
+   if(!m.deleted_at&&!m.media_batch_id&&!tubeRef&&!pulseRef){
     popoutActions?.attach(bubble,m,own);
     bubble.tabIndex=0;
     bubble.title='Sent '+when.toLocaleString()+' · Tap to show the time';
@@ -608,7 +609,7 @@ document.addEventListener('visibilitychange',()=>{
 window.addEventListener('message',event=>{
  if(event.origin!==location.origin||event.source!==window.parent)return;
  if(event.data?.type==='blackcell-chat-visibility'){
-  live.setVisible(event.data.visible===true);if(event.data.visible!==true)tubeCards.stopActive();
+  live.setVisible(event.data.visible===true);if(event.data.visible!==true){tubeCards.stopActive();pulseCards.stopActive()}
   if(event.data.visible===true&&ready&&peer)void loadMessages();
  }else if(event.data?.type==='blackcell-chat-shared-activity'&&employeeSession&&!sessionEnded){
   lastActivity=Date.now();
