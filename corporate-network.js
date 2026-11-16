@@ -7,7 +7,7 @@ import {createPhotoRediscovery} from './corporate-photo-rediscovery.js?v=2026111
 import {createVisualDiscovery} from './corporate-visual-discovery.js?v=20261111-mediareset1';
 import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phonecheck2';
 import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261115-world-catalog1';
-import {isWorldVideo,readWorldVideo,createWorldVideoPreviews} from './blackcell-world-video-catalog.js?v=1';
+import {isWorldVideo,worldVideoTitle,readWorldVideo,createWorldVideoPreviews} from './blackcell-world-video-catalog.js?v=1';
 const client=corporateClient(),bucket=client.storage.from('corp-social-media');
 const worldVideoPreviews=createWorldVideoPreviews(client);
 const $=id=>document.getElementById(id);
@@ -83,7 +83,9 @@ function liking(id){return state.likes.some(l=>l.post_id===id&&l.user_id===state
 const sharedMedia=a=>a?.review_status==='approved'&&a?.adult_restricted!==true;
 function postedAssets(id){return state.assets.filter(a=>a.post_id===id&&a.purpose==='post'&&sharedMedia(a))}
 function countPosts(id){return state.posts.filter(p=>p.author_id===id).length}
-function countVideos(id){return state.assets.filter(a=>a.owner_id===id&&a.kind==='video'&&['post','library'].includes(a.purpose)&&sharedMedia(a)).length+(state.streamVideos||[]).filter(a=>a.owner_id===id&&sharedMedia(a)).length}
+function profileVideos(id,includePending=false){const list=[...state.assets,...(state.streamVideos||[])].filter(a=>a.owner_id===id&&a.kind==='video'&&['post','library'].includes(a.purpose)&&(sharedMedia(a)||(includePending&&id===state.user?.id&&isWorldVideo(a)&&a.review_status==='pending')));return [...new Map(list.map(a=>[a.id,a])).values()].sort((a,b)=>Date.parse(b.created_at||0)-Date.parse(a.created_at||0))}
+function countVideos(id){return profileVideos(id,id===state.user?.id&&!state.profilePreview).length}
+function renderFusionVideos(p,isMine){const list=profileVideos(p.user_id,isMine);if(!list.length)return empty('No videos yet','Videos from this member will appear here and in BLACKCELL Tube.');const grid=el('div','bc-fusion-tube-grid');for(const a of list){const name=isWorldVideo(a)?worldVideoTitle(a):String(a.title||a.caption||state.posts.find(x=>x.id===a.post_id)?.body||'Untitled video').slice(0,135);const card=btn('',()=>{const u=new URL(location.href);u.search='';u.hash='';u.searchParams.set('view','videos');u.searchParams.set('video',a.id);location.assign(u.href)},'bc-fusion-tube-card');const frame=el('div','bc-fusion-tube-frame');const src=posterUrl(a);if(src||isWorldVideo(a)){const img=el('img');img.alt='';img.loading='lazy';frame.append(img);if(src)img.src=src;else{img.hidden=true;worldVideoPreviews.mount(a,img)}}frame.append(el('span','','▶'));card.append(frame,el('strong','',name),el('small','',a.review_status==='pending'?'PRIVATE · PENDING REVIEW':'BLACKCELL TUBE'));grid.append(card)}return grid}
 /* An expandable, keyboard-accessible section menu avoids scrolling through
    the long Military Library. It never alters member uploads or permissions. */
 function setLibraryMenuExpanded(expanded){
@@ -639,9 +641,8 @@ function renderProfile(){
  if(state.profileTab==='albums'){
   box.append(photos.renderProfileAlbums(p.user_id));return;
  }
- if(state.profileTab==='photos'||state.profileTab==='videos'){
-  box.append(photos.renderProfilePhotos(p.user_id,state.profileTab==='videos'?'video':'photo'));return;
- }
+ if(state.profileTab==='videos'){box.append(renderFusionVideos(p,isMine));return;}
+ if(state.profileTab==='photos'){box.append(photos.renderProfilePhotos(p.user_id,'photo'));return;}
  const media=state.assets.filter(a=>sharedMedia(a)&&a.owner_id===p.user_id&&a.purpose==='post'&&
     a.kind===(state.profileTab==='videos'?'video':'photo'));
  const grid=el('div',state.profileTab==='videos'?'video-grid':'directory-grid');
@@ -672,7 +673,7 @@ function reblogReference(body){const match=String(body||'').match(/(?:^|\n)BLACK
 function prepareReblog(p){
  if(!state.user||state.busy)return;
  const field=$('postBody'),line='BLACKCELL REBLOG: '+p.id;
- if(field.value.includes(line)){focusProfileComposer();return}
+ if(field.value.includes(line)){switchView('profile',{who:state.user.id,tab:'posts'});focusProfileComposer();return}
  if(reblogReference(field.value)){toast('Finish or remove the existing reblog reference first.');return}
  const body=(field.value.trim()?field.value.trim()+'\n\n':'')+line;
  if(body.length>1000){toast('Shorten your draft before adding a reblog.');return}
@@ -695,7 +696,7 @@ function renderPost(p){
   const original=state.posts.find(x=>x.id===reference.id&&x.id!==p.id);
   const card=el('div','bc-fusion-reblog');card.append(el('small','','↻ REBLOGGED FROM BLACKCELL NETWORK'));
   // Only display an original already visible to this session; never copy its media or bypass RLS.
-  if(original){const sourcePerson=profile(original.author_id);card.append(el('strong','',personName(sourcePerson)),el('p','',String(reblogReference(original.body)?.comment||original.body||'Media post').slice(0,300)));}
+  if(original){const sourcePerson=profile(original.author_id);card.append(el('strong','',personName(sourcePerson)),el('p','',String(reblogReference(original.body)?.comment||original.body||'Media post').slice(0,300)));}else card.append(el('p','','Original post may be unavailable or outside the current feed.'));
   const open=btn('View original post ↗',()=>{const u=new URL(location.href);u.search='';u.hash='';u.searchParams.set('post',reference.id);location.assign(u.href)});card.append(open);node.append(card);
  }else if(p.body)node.append(el('div','post-body',p.body));
  const files=postedAssets(p.id);
