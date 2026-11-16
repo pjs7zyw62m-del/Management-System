@@ -4,7 +4,7 @@
  * Does not register, modify, share, or publish any member or Bunny media.
  */
 import {authorizeUniformHub,corporate} from './uniform-hub-auth.js?v=20261112-access2';
-import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phonecheck2';
+import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261115-own-only';
 import {createPrivateDrive,PRIVATE_FILE_LIMIT} from './blackcell-private-drive.js?v=1';
 import {uploadPrivateFile,mediaType,privateUploadError} from './blackcell-private-media.js?v=8-transfer';
 
@@ -335,11 +335,17 @@ async function chooseCloudPhotos(){
  }catch(e){panel.textContent='Could not load Photos. Try again.';}
 }
 
+let worldFailedFiles=[];
+function showWorldUploadFailures(failures){
+ const status=$('mfUploadStatus');if(!status||!failures.length)return;const list=document.createElement('ul');for(const f of failures){const item=document.createElement('li');item.textContent=f.file.name+': '+f.reason;list.append(item)}status.append(list);const retry=document.createElement('button');retry.type='button';retry.className='mf-secondary';retry.textContent='Retry failed files';retry.onclick=()=>{if(!uploading)void uploadUniforms(failures.map(f=>f.file))};status.append(retry);
+}
 async function uploadUniforms(files){
  if(uploading||!authorized)return;
  const selected=Array.from(files||[]),picked=selected;
+ worldFailedFiles=[];
  const good=picked.filter(f=>(allowedPhotos.has(f.type)||['video/mp4','video/quicktime','video/webm'].includes(f.type))&&f.size>0&&f.size<=45*1048576);
- if(!good.length){text($('mfUploadStatus'),'Choose supported photos or videos up to 45 MB each.');return}
+ const rejected=picked.filter(f=>!good.includes(f));
+ if(!good.length){text($('mfUploadStatus'),'No supported files.');showWorldUploadFailures(rejected.map(file=>({file,reason:'Unsupported format, empty file or exceeds current 45 MB limit.'})));return}
  const category=worldScope||$('mfUploadCategory').value;
  const direct=false;
  if(direct&&!$('mfUploadDirect').checked){text($('mfUploadStatus'),'Confirm the batch is non-explicit and you have permission to share it, then select photos again. Sorting is not an approval requirement.');return}
@@ -358,8 +364,8 @@ async function uploadUniforms(files){
    text($('mfUploadStatus'),'Uploading '+(done+1)+' / '+good.length+' · '+file.name.slice(0,65));
    try{
     const isVideo=file.type.startsWith('video/');
-    const check=isVideo?{matches:[]}:await dedupe.preflight(file);
-    const hit=check.matches[0];
+    let check={matches:[]};if(!isVideo)try{check=await dedupe.preflight(file,{ownerOnly:true})}catch(e){console.warn('Fingerprint unavailable; continuing upload',e?.message)}
+    const hit=check.matches.find(m=>m.type==='exact');
     if(hit?.type==='exact'){duplicates++;continue}
     
     let target=category==='auto'?inferCategory({filename:file.name}):category;
@@ -383,11 +389,11 @@ async function uploadUniforms(files){
      if(posted===1||posted%10===0)void render();
     }
     if(isVideo)continue;
-    await dedupe.record(asset,check.fingerprint).catch(()=>false);
+    if(check.fingerprint)await dedupe.record(asset,check.fingerprint).catch(()=>false);
     if(useAI&&added.data?.review_status==='approved'&&target==='unsorted'&&aiJobs.length<60)aiJobs.push({file,asset});
     else if(useAI&&target==='unsorted')aiSkipped++;
     if(target==='unsorted')unsorted++;
-   }catch(e){failed++;console.warn('Uniform upload failed:',e?.message)}
+   }catch(e){failed++;worldFailedFiles.push({file,reason:String(e?.message||'Upload failed').slice(0,220)});console.warn('Uniform upload failed:',e?.message)}
    finally{done++;progress.value=done}
   }
   await render();
@@ -421,9 +427,10 @@ async function uploadUniforms(files){
      }catch(e){aiFailures++;console.warn('Uniform AI unavailable:',e?.message)}
 
   }
-  await loadApproved();
+  try{await loadApproved()}catch(e){console.warn('Library refresh failed',e?.message)}
   text($('mfUploadStatus'),posted+' posted · '+saved+' saved · '+duplicates+' duplicates skipped · '+failed+' failed · '+unsorted+' unsorted'+(useAI?' · '+aiFailures+' AI errors · '+aiSkipped+' not visually analyzed':'')+(selected.length>picked.length?' · '+(selected.length-picked.length)+' over batch limit':'')+(picked.length>good.length?' · '+(picked.length-good.length)+' unsupported':'')+(direct?' · sorting is separate from posting':' · uploads pending review')+'.');
  }finally{
+  showWorldUploadFailures(worldFailedFiles.concat(rejected.map(file=>({file,reason:'Unsupported format, empty file or exceeds current 45 MB limit.'}))));
   uploading=false;queuePaused=false;$('mfUploadChoose').disabled=false;$('mfUploadClose').disabled=false;$('mfUploadCategory').disabled=false;$('mfUploadAi').disabled=false;$('mfUploadDirect').disabled=false;$('mfUploadPause').hidden=true;
  }
 }
