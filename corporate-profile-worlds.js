@@ -142,7 +142,7 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
   if(!account||!a||a.kind!=='photo'||!/^\w[\w-]{0,80}$/.test(String(a.id||'')))throw Error('Photo unavailable');
   const session=(await client.auth.getSession()).data?.session;
   if(!session?.access_token||session.user.id!==account)throw Error('Sign in again');
-  const [m,drive]=await Promise.all([import('./blackcell-private-media.js?v=9-photos-only'),import('./blackcell-private-drive.js?v=1')]);
+  const [m,drive]=await Promise.all([import('./blackcell-private-media.js?v=12-member-album-repair'),import('./blackcell-private-drive.js?v=2-album-list')]);
   const source=await photoUrl(a);
   let blob;
   try{
