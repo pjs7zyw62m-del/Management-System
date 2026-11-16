@@ -8,7 +8,7 @@ import {createVisualDiscovery} from './corporate-visual-discovery.js?v=20261111-
 import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phonecheck2';
 import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261115-world-catalog1';
 import {isWorldVideo,worldVideoTitle,readWorldVideo,createWorldVideoPreviews} from './blackcell-world-video-catalog.js?v=1';
-import {createProfileWorlds} from './corporate-profile-worlds.js?v=8-member-preview';
+import {createProfileWorlds} from './corporate-profile-worlds.js?v=9-social-feed';
 const client=corporateClient(),bucket=client.storage.from('corp-social-media');
 const worldVideoPreviews=createWorldVideoPreviews(client);
 const $=id=>document.getElementById(id);
@@ -18,7 +18,7 @@ const state={
  user:null,member:null,profiles:[],posts:[],assets:[],streamVideos:[],likes:[],comments:[],follows:[],
  assetUrls:new Map(),posterUrls:new Map(),view:'feed',feedFilter:'latest',profileUserId:null,profileTab:'posts',
  attached:[],openComments:new Set(),busy:false,sort:'newest',deepPost:null,
- chatPeers:[],signedAt:0,profilePreview:false,profilePostFilter:'all',profilePostGrid:false,profileFriendsMode:'following',profileFriendsQuery:''
+ chatPeers:[],signedAt:0,profilePreview:false,profileFeedMode:'for-you',profileFeedLimit:12,profileFeedRefreshing:false,profilePostFilter:'all',profilePostGrid:false,profileFriendsMode:'following',profileFriendsQuery:''
 };
 const profileWorlds=createProfileWorlds({client,state,previews:worldVideoPreviews,title:worldVideoTitle,render:()=>renderProfile(),toast});
 const fields=['feedView','profileView','discoverView','videosView','photosView'];
@@ -156,7 +156,7 @@ function switchView(view,{who=null,tab=null,keepPost=false}={}){
  if(view==='profile'){
   state.profileUserId=who||state.user.id;
   state.profileTab=tab||(state.profileUserId===state.user.id?'worldfeed':'posts');
-  if(state.profileTab==='worldfeed'&&state.profileUserId===state.user.id)profileWorlds.reset();
+  if(state.profileTab==='worldfeed'&&state.profileUserId===state.user.id){profileWorlds.reset();state.profileFeedMode='for-you';state.profileFeedLimit=12}
  }
  for(const f of fields)$(f).hidden=f!==view+'View';
  // Keep the original, fully wired Network composer on the active page.
@@ -559,7 +559,7 @@ function renderProfile(){
  renderProfileSidePreviews(p);
  renderSecurityHighlights(p);
  const tabCopy={
-  worldfeed:['My Feed','Photos and videos from your selected Worlds.'],
+  worldfeed:['My Feed','Discover posts, conversations and media from the BLACKCELL community.'],
   posts:[isMine?'My Posts':'Timeline','Your story, updates and conversations.'],
   reblogs:['Reblogs','Posts this member has shared from the Network.'],
   photos:['Photo Archive','Approved photographs shared by this member.'],
@@ -597,7 +597,7 @@ function renderProfile(){
  syncProfileComposer();
  const box=$('profileContent');box.replaceChildren();
  box.classList.toggle('bc-security-post-grid',state.profileTab==='posts'&&state.profilePostGrid);
- if(state.profileTab==='worldfeed'&&isMine){profileWorlds.feed(box);return}profileWorlds.clear();
+ if(state.profileTab==='worldfeed'&&isMine){renderProfileSocialFeed(box);return}profileWorlds.clear();
  if(state.profileTab==='about'){
   box.append(renderProfileAbout(p,isMine));return;
  }
@@ -841,6 +841,49 @@ function renderLibraryActivity(a){
  return node;
 }
 
+/* The personal timeline consumes only posts already returned by the
+   authenticated Network query. Cinema uploads are not social posts. */
+function selectProfileFeedPosts(posts,assets,follows,userId,mode,worlds=[]){
+ const followingIds=new Set(follows.filter(f=>f.follower_id===userId).map(f=>f.following_id));
+ const cinema=a=>['movie','series','documentary'].includes(String(a.video_category||'').trim().toLowerCase());
+ const visibleByPost=new Map();
+ for(const a of assets){if(!a.post_id||a.purpose!=='post'||a.review_status!=='approved'||a.adult_restricted===true)continue;const group=visibleByPost.get(a.post_id)||[];group.push(a);visibleByPost.set(a.post_id,group)}
+ const tags=new Set(worlds.map(w=>'maf:'+w));
+ return posts.filter(p=>{
+  const files=visibleByPost.get(p.id)||[];
+  if(files.length&&files.every(cinema))return false;
+  if(mode==='following'&&!followingIds.has(p.author_id))return false;
+  if(mode==='worlds')return tags.size>0&&files.some(a=>!cinema(a)&&(a.military_tags||[]).some(t=>tags.has(t)||(tags.has('maf:uniform')&&String(t).startsWith('maf:'))));
+  return true;
+ }).sort((a,b)=>Date.parse(b.created_at||0)-Date.parse(a.created_at||0));
+}
+function renderProfileSocialFeed(box){
+ profileWorlds.clear();
+ const mode=state.profileFeedMode;
+ const tabs=el('nav','bc-profile-feed-modes');tabs.setAttribute('aria-label','Choose your social feed');
+ for(const [key,label] of [['for-you','For You'],['following','Following'],['latest','Latest'],['worlds','My Worlds']]){
+  const b=btn(label,()=>{if(state.profileFeedMode===key)return;state.profileFeedMode=key;state.profileFeedLimit=12;if(key==='worlds')profileWorlds.reset();renderProfile()},'bc-profile-feed-mode');b.setAttribute('aria-pressed',String(mode===key));tabs.append(b);
+ }
+ const refresh=btn(state.profileFeedRefreshing?'Refreshing…':'↻ Refresh',async()=>{
+  if(state.profileFeedRefreshing||state.busy)return;
+  state.profileFeedRefreshing=true;refresh.disabled=true;refresh.textContent='Refreshing…';
+  try{await loadAll({show:false});toast('Network feed refreshed.')}catch(e){toast('Unable to refresh feed: '+fail(e))}
+  finally{state.profileFeedRefreshing=false;if(state.view==='profile'&&state.profileUserId===state.user?.id&&!state.profilePreview&&state.profileTab==='worldfeed')renderProfile()}
+ },'bc-profile-feed-refresh');refresh.disabled=state.profileFeedRefreshing;tabs.append(refresh);box.append(tabs);
+ const posts=selectProfileFeedPosts(state.posts,state.assets,state.follows,state.user.id,mode,profileWorlds.currentScope());
+ let entries=posts.map(item=>({type:'post',item}));
+ if(mode==='for-you')entries=personalization.rankFeed(entries);
+ const timeline=el('div','bc-profile-social-timeline');box.append(timeline);
+ const shown=entries.slice(0,state.profileFeedLimit);
+ for(const entry of shown)timeline.append(renderPost(entry.item));
+ if(entries.length>shown.length)timeline.append(btn('Load more posts',()=>{state.profileFeedLimit+=12;renderProfile()},'bc-pw-quiet bc-profile-feed-more'));
+ if(mode==='worlds'){
+  if(!shown.length)timeline.append(el('p','bc-pw-caption','No matching social posts yet. Explore your World photographs and videos below.'));
+  const gallery=el('section','bc-profile-world-gallery');box.append(gallery);profileWorlds.feed(gallery);return
+ }
+ if(!shown.length)timeline.append(empty(mode==='following'?'No posts from followed members yet':'No community posts yet',mode==='following'?'Follow other members to see their posts here.':'Member updates and shared media will appear here.'));
+ if(mode==='following'&&!shown.length)timeline.append(btn('Discover members',()=>switchView('discover'),'bc-pw-quiet bc-profile-feed-more'));
+}
 function renderFeed(){
  const box=$('feedPosts');box.replaceChildren();
  const followingIds=new Set(state.follows.filter(f=>f.follower_id===state.user.id).map(f=>f.following_id));
@@ -1670,7 +1713,7 @@ function setupEvents(){
  document.querySelectorAll('[data-profile-stat]').forEach(n=>n.addEventListener('click',()=>{const value=n.dataset.profileStat;if(value==='followers'||value==='following'){state.profileFriendsMode=value;state.profileFriendsQuery='';state.profileTab='friends'}else state.profileTab=value;renderProfile()}));
  document.querySelectorAll('#profileTabs [data-tab]').forEach(n=>n.addEventListener('click',()=>{
   state.profileTab=n.dataset.tab;
-  if(state.profileTab==='worldfeed')profileWorlds.reset();
+  if(state.profileTab==='worldfeed'){profileWorlds.reset();state.profileFeedMode='for-you';state.profileFeedLimit=12}
   $('profileMoreDropdown')?.removeAttribute('open');
   renderProfile();
  }));
