@@ -28,7 +28,7 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
  const pageSize=40;
  const status=text=>{if($('bcProcessStatus'))$('bcProcessStatus').textContent=text;if($('bcReviewStatus')&&current)$('bcReviewStatus').textContent=text};
  const errText=e=>e?.message||'Unknown error';
- const setBusy=v=>{busy=v;for(const name of ['bcMediaReset','bcProcessRefresh','bcReviewApprove','bcReviewReject','bcReviewAI'])
+ const setBusy=v=>{busy=v;$('bcProcessorPanel')?.setAttribute('aria-busy',String(v));for(const name of ['bcMediaReset','bcProcessRefresh','bcReviewApprove','bcReviewReject','bcReviewAI'])
   {const node=$(name);if(node)node.disabled=v||name==='bcReviewApprove'&&!previewReady||name==='bcReviewAI'&&(!previewReady||current?.kind!=='photo')}
   const cancel=$('bcReviewCancel');if(cancel)cancel.disabled=v;};
  function options(targetId,sourceId){
