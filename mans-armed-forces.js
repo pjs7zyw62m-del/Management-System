@@ -7,7 +7,7 @@ import {authorizeUniformHub,corporate} from './uniform-hub-auth.js?v=20261112-ac
 import {createPrivateDrive,PRIVATE_FILE_LIMIT} from './blackcell-private-drive.js?v=1';
 import {uploadPrivateFile,mediaType,privateUploadError} from './blackcell-private-media.js?v=8-transfer';
 
-import {installWorldPlayer} from './blackcell-world-player.js?v=1';
+import {installWorldPlayer} from './blackcell-world-player.js?v=2';
 const $=id=>document.getElementById(id);
 let approved=[],shown=[],filterBranch='all',filterStyle='all',filterCategory='all',lastSigned=0,authorized=null;
 let authBusy=false;
