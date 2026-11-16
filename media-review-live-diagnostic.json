@@ -1,0 +1,46 @@
+{
+  "https://blackcellcorp.com/": {
+    "blackcell-site-version.json": {
+      "status": 200,
+      "expected_marker": true
+    },
+    "corporate-media-admin.html": {
+      "status": 200,
+      "expected_marker": true
+    },
+    "corporate-media-admin.js": {
+      "status": 200,
+      "expected_marker": true
+    },
+    "corporate-media-processor.js": {
+      "status": 200,
+      "expected_marker": true
+    },
+    "blackcell-world-video-catalog.js": {
+      "status": 200,
+      "expected_marker": true
+    }
+  },
+  "https://pjs7zyw62m-del.github.io/Management-System/": {
+    "blackcell-site-version.json": {
+      "status": 200,
+      "expected_marker": true
+    },
+    "corporate-media-admin.html": {
+      "status": 200,
+      "expected_marker": true
+    },
+    "corporate-media-admin.js": {
+      "status": 200,
+      "expected_marker": true
+    },
+    "corporate-media-processor.js": {
+      "status": 200,
+      "expected_marker": true
+    },
+    "blackcell-world-video-catalog.js": {
+      "status": 200,
+      "expected_marker": true
+    }
+  }
+}
