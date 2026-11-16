@@ -88,7 +88,18 @@ export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,b
  function shareInside(a){
   if(!a||!sharedMedia(a)){toast('Only approved, shareable videos can be shared.');return}
   if(typeof shareVideoInside!=='function'){toast('Internal sharing is unavailable.');return}
-  shareVideoInside(a);
+  const paid=['movie','movies','series','tv','tv show','tv shows','tv series','documentary','documentaries','film','films','episode','episodes','television','television series'].includes(String(a.video_category||'').toLowerCase().trim())||a.paid_content===true||a.is_paid===true||a.bunny_stream;
+  const dialog=make('dialog','bc-tube-share-dialog'),heading=make('h3','','Share within BLACKCELL'),hint=make('p','','Only authorized Network members can open shared videos.');
+  const close=()=>{dialog.close();dialog.remove()};
+  const feed=button('Share to Network','',()=>{close();shareVideoInside(a)});
+  dialog.append(heading,hint,feed);
+  if(!paid&&/^[0-9a-f-]{36}$/i.test(a.id)){
+   const copy=button('Copy internal iMessage reference','',async()=>{
+    const reference='blackcell:video/'+a.id;
+    try{await navigator.clipboard.writeText(reference);close();toast('Internal reference copied. Paste into BLACKCELL iMessage.')}catch{const field=make('input');field.readOnly=true;field.value=reference;field.setAttribute('aria-label','Internal reference');dialog.append(field);field.select();hint.textContent='Copy this reference and paste it into BLACKCELL iMessage.'}
+   });dialog.append(copy);
+  }
+  dialog.append(button('Cancel','',close));dialog.addEventListener('cancel',e=>{e.preventDefault();close()});document.body.append(dialog);dialog.showModal();
  }
  function openById(id){
   const a=allVideos().find(v=>v.id===id);
