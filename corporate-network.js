@@ -149,7 +149,7 @@ function switchView(view,{who=null,tab=null,keepPost=false,pulseWho=null}={}){
   state.assetUrls.clear();void loadSigned().then(renderAll).catch(()=>{});
  }
  if(state.view==='pulse'&&view!=='pulse')clearPulse();
- if(view==='pulse'){pulseAuthor=pulseWho&&profile(pulseWho)?pulseWho:null;pulseMode=pulseAuthor?'author':'for-you';pulseLimit=12;pulseEnd=false;}
+ if(view==='pulse'){pulseScroll=null;pulseAuthor=pulseWho&&profile(pulseWho)?pulseWho:null;pulseMode=pulseAuthor?'author':'for-you';pulseLimit=12;pulseEnd=false;}
  state.view=view;
  document.body.classList.toggle('bc-pulse-mode',view==='pulse');
  if(view!=='videos')videoChannel.close();
@@ -958,7 +958,7 @@ function renderPulse(){
   if(!entries.length&&!timeline.children.length)timeline.append(empty('No posts yet','Shared posts and personal media will appear here.'));
  }
  add(pulseLimit);scroll.scrollTop=savedScroll;
- if(typeof IntersectionObserver==='function')pulseObserver=new IntersectionObserver(items=>{if(!items.some(x=>x.isIntersecting)||state.view!=='pulse')return;if(rendered<entries.length){pulseLimit+=12;add(pulseLimit)}else if(!pulseOlderBusy&&!pulseEnd&&entries.length)void loadPulseOlder()},{root:scroll,rootMargin:'450px 0px'}),pulseObserver.observe(footer);
+ if(typeof IntersectionObserver==='function')pulseObserver=new IntersectionObserver(items=>{if(!items.some(x=>x.isIntersecting)||state.view!=='pulse')return;if(rendered<entries.length){pulseLimit+=12;add(pulseLimit)}else if(!pulseOlderBusy&&!pulseEnd&&entries.length&&pulseMode!=='author'&&pulseMode!=='following')void loadPulseOlder()},{root:scroll,rootMargin:'450px 0px'}),pulseObserver.observe(footer);
 }
 
 function renderProfileSocialFeed(box){
