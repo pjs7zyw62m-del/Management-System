@@ -185,5 +185,5 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
   void next().catch(()=>{if(gen===generation)status.textContent='Unable to load World media. Try again.'});
   if(unassigned.isConnected)void loadUnsorted().catch(()=>{if(gen===generation){unassigned.hidden=false;unassigned.append(make('p','bc-pw-caption','Unsorted photographs could not load.'))}});
  }
- return {load,header,feed,clear,currentScope:()=>worldScope(active,selected),reset:()=>{active=initialWorld(selected);filter='all'},hasActive:()=>!!active,busy:()=>open||saving};
+ return {load,header,feed,clear,mountFeedPhoto:(a,img)=>mountPhoto(a,img,generation),openFeedPhoto:showPhoto,currentScope:()=>worldScope(active,selected),reset:()=>{active=initialWorld(selected);filter='all'},hasActive:()=>!!active,busy:()=>open||saving};
 }
