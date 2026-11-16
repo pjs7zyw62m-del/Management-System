@@ -21,8 +21,12 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
  window.addEventListener('pagehide',()=>{previewEpoch++;releasePreview()});
  client.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'){previewEpoch++;releasePreview();$('bcReviewPreview')?.replaceChildren()}});
  const native=()=>!!$('bcProcessorPanel')?.classList.contains('bc-native-review');
+ const worlds={unsorted:'Uniform World',military:'Military World',police:'Law Enforcement World',fire:'Fire & Rescue World',medical:'Emergency Medical World',security:'Corrections & Security World',professional:'Aviation & Professional Uniforms World'};
+ const worldFrom=item=>{const tags=Array.isArray(item?.military_tags)?item.military_tags:[];const tagged=tags.find(t=>typeof t==='string'&&t.startsWith('maf:')&&Object.hasOwn(worlds,t.slice(4)));return tagged?tagged.slice(4):item?.military_branch&&item.military_branch!=='Unspecified'?'military':'unsorted'};
+ const currentWorld=()=>Object.hasOwn(worlds,$('bcReviewWorld').value)?$('bcReviewWorld').value:'unsorted';
+ function syncWorld(){const military=currentWorld()==='military';$('bcReviewBranch').disabled=!military;$('bcReviewBranchLabel').hidden=!military;if(!military)$('bcReviewBranch').value='Unspecified';$('bcReviewUnitLabel').firstChild.textContent=military?'UNIT / FORMATION ':'AGENCY / ORGANIZATION ';fillChoose();}
  const pageSize=40;
- const status=text=>{if($('bcProcessStatus'))$('bcProcessStatus').textContent=text};
+ const status=text=>{if($('bcProcessStatus'))$('bcProcessStatus').textContent=text;if($('bcReviewStatus')&&current)$('bcReviewStatus').textContent=text};
  const errText=e=>e?.message||'Unknown error';
  const setBusy=v=>{busy=v;for(const name of ['bcMediaReset','bcProcessRefresh','bcReviewApprove','bcReviewReject','bcReviewAI'])
   {const node=$(name);if(node)node.disabled=v||name==='bcReviewApprove'&&!previewReady||name==='bcReviewAI'&&(!previewReady||current?.kind!=='photo')}
@@ -62,7 +66,7 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
     client.from('corp_social_assets').select('*',{count:'exact'}).eq('review_status','pending')
      .in('kind',['photo','video']).order('created_at',{ascending:true})
      .range(page*pageSize,(page+1)*pageSize-1),
-    client.from('corp_social_albums').select('id,title,owner_id,military_country_code,military_branch,military_category')
+    client.from('corp_social_albums').select('id,title,owner_id,military_country_code,military_branch,military_category,military_tags')
      .eq('owner_id',state.user.id).limit(1000)
    ]);
    if(a.error||b.error)throw a.error||b.error;
@@ -75,9 +79,9 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
  }
  function fillChoose(){
   const album=$('bcReviewAlbum');album.replaceChildren();
-  album.add(new Option('AUTO CREATE / MATCH COUNTRY + BRANCH + SUBJECT','auto'));
+  album.add(new Option('AUTO CREATE / MATCH '+worlds[currentWorld()].toUpperCase(),'auto'));
   album.add(new Option('LEAVE UNFILED (OWNER-ONLY QUEUE)','unfiled'));
-  for(const a of albums)album.add(new Option(a.title,a.id));
+  for(const a of albums.filter(a=>worldFrom(a)===currentWorld()))album.add(new Option(a.title,a.id));
  }
  async function open(item){
   if(!active()||busy)return;
@@ -85,6 +89,7 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
   const host=$('bcReviewPreview');for(const video of host.querySelectorAll('video')){video.pause();video.removeAttribute('src');video.load()}host.replaceChildren(el('p','bc-review-preview-message','Loading private media…'));
   $('bcReviewName').textContent=(item.kind==='video'?'VIDEO · ':'PHOTO · ')+(item.filename||'Untitled');
   $('bcReviewCountry').value=item.military_country_code||'';
+  $('bcReviewWorld').value=worldFrom(item);
   $('bcReviewBranch').value=item.military_branch||'Unspecified';
   $('bcReviewCategory').value=item.military_category||'Unsorted';
   $('bcReviewEra').value=item.military_era||'';
@@ -92,7 +97,7 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
   $('bcReviewTags').value=Array.isArray(item.military_tags)?item.military_tags.join(', '):'';
   $('bcReviewAdult').checked=Boolean(item.adult_restricted);
   $('bcReviewRights').checked=false;$('bcReviewAges').checked=false;
-  fillChoose();$('bcReviewAlbum').value=item.adult_restricted?'unfiled':'auto';
+  syncWorld();$('bcReviewAlbum').value=item.adult_restricted?'unfiled':'auto';
   $('bcReviewAI').disabled=item.kind!=='photo';
   $('bcReviewAI').title=item.kind==='video'?'Video frame classification is not enabled yet; manually review this video':
    'Photo AI is optional and uses provider credits. Never submit explicit photos to an unapproved model.';
@@ -101,7 +106,7 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
   status('Loading secure preview…');
   if(!native())$('bcReviewEditor').scrollIntoView({behavior:'smooth',block:'start'});
   const valid=()=>active()&&seq===previewEpoch&&current?.id===item.id;
-  const fail=()=>{if(!valid())return;releasePreview();previewReady=false;if(!busy)setBusy(false);const retry=el('button','bc-review-retry','Retry preview');retry.type='button';retry.onclick=()=>void open(item);host.replaceChildren(el('p','bc-review-preview-message','Private preview unavailable. This item remains pending.'),retry);status('Could not display this private file. Retry the preview before approval.')};
+  let failed=false;const fail=(reason)=>{if(!valid()||failed)return;failed=true;releasePreview();previewReady=false;if(!busy)setBusy(false);const retry=el('button','bc-review-retry','Retry preview');retry.type='button';retry.onclick=()=>void open(item);host.replaceChildren(el('p','bc-review-preview-message','Private preview unavailable. This item remains pending.'+(typeof reason==='string'?' '+reason:'')),retry);status('Preview is required before approval. '+(typeof reason==='string'?reason:'Retry the preview.'))};
   try{
    const asset=state.assets.find(a=>a.id===item.id);let url='';
    if(isWorldVideo(item)){
@@ -113,11 +118,11 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
    if(!url&&!isWorldVideo(item)){const {data,error}=await bucket.createSignedUrl(item.storage_path,1200);if(!valid())return;if(error||!data?.signedUrl){fail();return}url=data.signedUrl}
    if(!valid())return;
    const preview=el(item.kind==='video'?'video':'img');
-   if(item.kind==='video'){preview.controls=true;preview.playsInline=true;preview.preload='metadata'}else preview.alt=item.filename||'Pending photograph';
+   if(item.kind==='video'){preview.controls=true;preview.playsInline=true;preview.preload='auto'}else preview.alt=item.filename||'Pending photograph';
    const loaded=()=>{if(!valid())return;previewReady=true;if(!busy)setBusy(false);status('Review the actual '+item.kind+'. Verify country, branch, subject and applicable restrictions before approving.')};
-   preview.addEventListener(item.kind==='video'?'loadedmetadata':'load',loaded,{once:true});preview.addEventListener('error',fail,{once:true});
+   preview.addEventListener(item.kind==='video'?'loadeddata':'load',loaded,{once:true});preview.addEventListener('error',()=>fail(item.kind==='video'?'Video decode failed (code '+(preview.error?.code||0)+').':'Image decode failed.'),{once:true});
    host.replaceChildren(preview);preview.src=url;
-  }catch(_){fail()}
+  }catch(e){const match=String(e?.message||'').match(/Private video unavailable \((\d{3})\)/);fail(match?'Storage request failed (HTTP '+match[1]+').':'Private preview request failed. Retry after refreshing.')}
  }
  async function applyAI(){
   if(!active()||!current||busy||!previewReady||current.kind!=='photo')return;
@@ -150,30 +155,30 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
    status('AI unavailable; classify manually. '+(error?.message||'Unknown error'));
   }finally{setBusy(false)}
  }
- async function createAlbum(country,branch,subject){
+ async function createAlbum(country,branch,subject,world){
   const name=$('bcReviewCountry').selectedOptions?.[0]?.textContent?.trim()||country;
-  let match=albums.find(a=>a.owner_id===state.user.id&&a.military_country_code===country&&
+  let match=albums.find(a=>a.owner_id===state.user.id&&worldFrom(a)===world&&a.military_country_code===country&&
    a.military_branch===branch&&a.military_category===subject);
   if(match)return match.id;
-  const title=(name+' / '+branch+' / '+subject).slice(0,100);
+  const title=(worlds[world]+' / '+(country?name:'Country unconfirmed')+(world==='military'?' / '+branch:'')+' / '+subject).slice(0,100);
   const {data,error}=await client.from('corp_social_albums').insert({
    owner_id:state.user.id,title,description:'Verified by BLACKCELL Media Import Processor',
-   military_country_code:country,military_branch:branch,military_category:subject
-  }).select('id,title,owner_id,military_country_code,military_branch,military_category').single();
+   military_country_code:country,military_branch:branch,military_category:subject,military_tags:['maf:'+world]
+  }).select('id,title,owner_id,military_country_code,military_branch,military_category,military_tags').single();
   if(error||!data)throw Error('Could not create sorted album: '+errText(error));
   albums.push(data);return data.id;
  }
  async function approve(){
   if(!active()||!current||busy||!previewReady)return;
   const id=current.id;
-  const country=$('bcReviewCountry').value,branch=$('bcReviewBranch').value;
+  const world=currentWorld(),country=$('bcReviewCountry').value,branch=world==='military'?$('bcReviewBranch').value:'Unspecified';
   const subject=$('bcReviewCategory').value,era=$('bcReviewEra').value;
   const adult=$('bcReviewAdult').checked,rights=$('bcReviewRights').checked,ages=$('bcReviewAges').checked;
   const choice=$('bcReviewAlbum').value;
   if(!rights){status('Approval blocked: confirm you have the rights and consent needed to store and display the media.');return}
   if(adult&&!ages){status('Approval blocked: confirm every depicted person is an adult and your authority to hold this explicit media.');return}
-  if(!adult&&(!country||branch==='Unspecified'||subject==='Unsorted')){
-   status('Accurate sorting requires a confirmed country, branch and subject. Leave it pending when unknown; never guess.');return;
+  if(!adult&&((world==='military'&&(!country||branch==='Unspecified'))||subject==='Unsorted')){
+   status('Choose a subject. Military World also requires confirmed country and branch; other Worlds do not require a military branch.');return;
   }
   if(!adult&&choice==='unfiled'){
    status('To publish regular media, file it into an accurately labeled album. Choose AUTO CREATE or a matching album.');return;
@@ -181,10 +186,10 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
   if(adult&&choice!=='unfiled'){
    status('Adult-restricted media cannot be placed in shared albums. Choose LEAVE UNFILED; it remains owner-only.');return;
   }
-  const tags=[...new Set($('bcReviewTags').value.split(',').map(x=>x.trim().slice(0,40)).filter(Boolean))].slice(0,15);
+  const tags=['maf:'+world,...new Set($('bcReviewTags').value.split(',').map(x=>x.trim().slice(0,40)).filter(x=>x&&!/^maf:/i.test(x)))].slice(0,15);
   const chosenAlbum=albums.find(a=>a.id===choice);
   if(chosenAlbum&&!adult&&
-   ((chosenAlbum.military_country_code&&chosenAlbum.military_country_code!==country)||
+   (worldFrom(chosenAlbum)!==world||(chosenAlbum.military_country_code&&chosenAlbum.military_country_code!==country)||
     (chosenAlbum.military_branch&&chosenAlbum.military_branch!==branch)||
     (chosenAlbum.military_category&&chosenAlbum.military_category!==subject))){
    status('Album mismatch: choose an album with the SAME country, branch and subject, or AUTO CREATE.');return;
@@ -197,7 +202,7 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
   try{
    // Prepare album association BEFORE releasing the asset from quarantine.
    let albumId=adult||choice==='unfiled'?null:choice==='auto'
-    ?await createAlbum(country,branch,subject):choice;
+    ?await createAlbum(country,branch,subject,world):choice;
    if(albumId){
     const {error:linkError}=await client.from('corp_social_album_items').upsert({
      album_id:albumId,asset_id:id,added_by:state.user.id
@@ -311,6 +316,8 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
   if(!owner())return;
   options('bcReviewCountry','militaryUploadCountry');
   options('bcReviewBranch','militaryUploadBranch');
+  $('bcReviewWorld').replaceChildren(...Object.entries(worlds).map(([value,label])=>new Option(label,value)));
+  $('bcReviewWorld').addEventListener('change',()=>{const prior=$('bcReviewAdult').checked;syncWorld();$('bcReviewAlbum').value=prior?'unfiled':'auto';status('World selected: '+worlds[currentWorld()]+'. Verify category before approving.');});
   options('bcReviewCategory','militaryUploadCategory');
   options('bcReviewEra','militaryUploadEra');
   $('bcProcessRefresh').addEventListener('click',()=>void reload());
