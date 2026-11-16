@@ -1,17 +1,16 @@
 /* BLACKCELL / MAN'S ARMED FORCES
  * Independent authenticated landing page preceding the existing Military Library.
- * Renders ONLY approved, non-adult-restricted photos using short-lived URLs.
- * Does not register, modify, share, or publish any member or Bunny media.
+ * Private Bunny originals with authenticated delivery; pending uploads visible to their uploader.
+ * Shared visibility remains subject to existing review policy.
  */
 import {authorizeUniformHub,corporate} from './uniform-hub-auth.js?v=20261112-access2';
-import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261115-own-only';
 import {createPrivateDrive,PRIVATE_FILE_LIMIT} from './blackcell-private-drive.js?v=1';
 import {uploadPrivateFile,mediaType,privateUploadError} from './blackcell-private-media.js?v=8-transfer';
 
 const $=id=>document.getElementById(id);
 let approved=[],shown=[],filterBranch='all',filterStyle='all',filterCategory='all',lastSigned=0,authorized=null;
 let authBusy=false;
-const sizeLimit=48;
+const sizeLimit=12;
 const MAX_BATCH=1000;
 const allowedPhotos=new Set(['image/jpeg','image/png','image/webp','image/gif','image/heic']);
 let page=0,renderToken=0,uploading=false,queuePaused=false,viewerAsset=null,searchQuery='',searchTimer=null;
@@ -19,8 +18,28 @@ let pendingOwn=[],sortingQueue=false,queueBusy=false,queueIndex=0;
 const canSort=a=>Boolean(authorized&&a&&(owner()||a.owner_id===authorized.user.id));
 const unsortedQueue=()=>approved.filter(a=>canSort(a)&&inferCategory(a)==='unsorted');
 const uploadState={user:null,assets:[]};
-const dedupe=createPhotoDedupe({client:corporate,state:uploadState,mediaUrl:a=>a.signedUrl||'',toast:console.info});
 const bucket=corporate.storage.from('corp-social-media');
+const worldProvider='world-bunny-v1';
+const worldObjects=new Map();
+function releaseWorldUrls(keep=new Set()){for(const [id,url] of worldObjects)if(!keep.has(id)){URL.revokeObjectURL(url);worldObjects.delete(id)}}
+async function worldRequest(action,body,headers={}){
+ const session=(await corporate.auth.getSession()).data?.session;
+ const config=window.BLACKCELL_CORP_CONFIG||{};
+ if(!session?.access_token||!config.url||!config.publishableKey)throw Error('Sign in again to access private World media.');
+ const response=await fetch(config.url.replace(/\/$/,'')+'/functions/v1/blackcell-world-media?action='+action,{method:'POST',headers:{Authorization:'Bearer '+session.access_token,apikey:config.publishableKey,...headers},body});
+ if(!response.ok){const reply=await response.json().catch(()=>({}));throw Error(reply.detail||reply.code||'World storage request failed (HTTP '+response.status+')')}
+ return response;
+}
+async function worldBlob(a){return (await worldRequest('read',JSON.stringify({id:a.id}),{'Content-Type':'application/json'})).blob()}
+async function worldPreview(a){
+ if(a.source_provider!==worldProvider){const out=await bucket.createSignedUrl(a.storage_path,1800);if(out.error||!out.data?.signedUrl)throw Error(out.error?.message||'Preview unavailable');return out.data.signedUrl}
+ if(worldObjects.has(a.id))return worldObjects.get(a.id);
+ const uid=authorized?.user.id,blob=await worldBlob(a);
+ if(!authorized||authorized.user.id!==uid)throw Error('Session ended');
+ if(worldObjects.has(a.id))return worldObjects.get(a.id);
+ const url=URL.createObjectURL(blob);worldObjects.set(a.id,url);return url;
+}
+window.addEventListener('pagehide',()=>releaseWorldUrls());
 const owner=()=>authorized?.member?.role==='owner'&&Number(authorized.member.clearance_level)===7;
 const signedMs=25*60*1000;
 const words={
@@ -135,14 +154,14 @@ async function transferToPhotos(){
  const report=msg=>{if(viewerAsset?.id===a.id)text(st,msg)};
  try{
   await freshTransferSession(uid);
-  const source=await corporate.from('corp_social_assets').select('id,owner_id,filename,storage_path,review_status,adult_restricted,purpose,kind,bytes').eq('id',a.id).eq('review_status','approved').eq('adult_restricted',false).eq('purpose','library').eq('kind','photo').maybeSingle();
+  const source=await corporate.from('corp_social_assets').select('id,owner_id,filename,storage_path,review_status,adult_restricted,purpose,kind,bytes,source_provider').eq('id',a.id).eq('review_status','approved').eq('adult_restricted',false).eq('purpose','library').eq('kind','photo').maybeSingle();
   if(source.error||!source.data?.storage_path)throw Error('This original photo is no longer available to your account.');
   const record=source.data,name=transferName(record),storage=createPrivateDrive(corporate,uid),folder=uid+'/Photos',path=folder+'/'+name;
   const exists=async()=>{const result=await storage.list(folder,{search:'MAF-'+record.id+'-',limit:100});if(result.error)throw result.error;return (result.data||[]).some(row=>row.id&&(!row.state||row.state==='ready')&&row.name.startsWith('MAF-'+record.id+'-'))};
   if(await exists()){report('Already in your Photos library.');return}
   if(Number(record.bytes)>PRIVATE_FILE_LIMIT)throw Error('Original exceeds the private Photos file limit.');
   report('Copying original photograph…');
-  const original=await bucket.download(record.storage_path);
+  const original=record.source_provider===worldProvider?{data:await worldBlob(record)}:await bucket.download(record.storage_path);
   if(original.error||!original.data?.size)throw Error('Original photo could not be retrieved.');
   if(original.data.size>PRIVATE_FILE_LIMIT)throw Error('Original exceeds the private Photos file limit.');
   await freshTransferSession(uid);
@@ -177,6 +196,8 @@ async function render(){
  const pages=Math.max(1,Math.ceil(shown.length/sizeLimit));
  page=Math.max(0,Math.min(page,pages-1));
  const visible=shown.slice(page*sizeLimit,(page+1)*sizeLimit);
+ const keep=new Set(visible.map(a=>a.id));if(viewerAsset&&$('mfLightbox')?.open)keep.add(viewerAsset.id);releaseWorldUrls(keep);
+ for(const a of approved)if(a.source_provider===worldProvider&&!worldObjects.has(a.id)){a.signedUrl=null;a.signedAt=0}
  text($('mfImageCount'),worldScope?approved.filter(a=>matchesCategory(a,worldScope)).length:approved.length);
  const totals=new Map();for(const asset of approved){const category=inferCategory(asset);totals.set(category,(totals.get(category)||0)+1)}
  for(const label of document.querySelectorAll('[data-mf-count]')){const count=totals.get(label.dataset.mfCount)||0;text(label,count+' '+(count===1?'photo':'photos'))}
@@ -201,10 +222,11 @@ async function render(){
  for(let i=0;i<visible.length;i+=20){
   const group=visible.slice(i,i+20).filter(a=>!a.signedUrl||Date.now()-(a.signedAt||0)>signedMs);
   if(!group.length)continue;
-  const out=await bucket.createSignedUrls(group.map(a=>a.storage_path),1800);
+  const legacy=group.filter(a=>a.source_provider!==worldProvider);const out=legacy.length?await bucket.createSignedUrls(legacy.map(a=>a.storage_path),1800):{data:[]};
+  for(const a of group.filter(a=>a.source_provider===worldProvider)){if(token!==renderToken)return;try{a.signedUrl=await worldPreview(a);a.signedAt=Date.now()}catch(e){console.warn('Private preview unavailable',e?.message)}}
   if(token!==renderToken)return;
-  for(let j=0;j<group.length;j++){
-   if(out.data?.[j]?.signedUrl){group[j].signedUrl=out.data[j].signedUrl;group[j].signedAt=Date.now()}
+  for(let j=0;j<legacy.length;j++){
+   if(out.data?.[j]?.signedUrl){legacy[j].signedUrl=out.data[j].signedUrl;legacy[j].signedAt=Date.now()}
   }
  }
  if(token!==renderToken)return;
@@ -215,7 +237,7 @@ async function render(){
   const img=document.createElement('img');img.loading='lazy';img.decoding='async';img.src=a.signedUrl;img.alt=safe(a.caption)||safe(a.filename)||'Uniform photograph';
   const details=document.createElement('div');details.className='mf-photo-info';
   const title=document.createElement('strong');title.textContent=(safe(a.caption)||safe(a.filename)||'Uniform photograph').slice(0,85);
-  const subtitle=document.createElement('small');subtitle.textContent=formatMetadata(a).slice(0,100);
+  const subtitle=document.createElement('small');subtitle.textContent=(a.review_status==='pending'?'PRIVATE · PENDING REVIEW · ':'')+formatMetadata(a).slice(0,100);
   details.append(title,subtitle);card.append(img,details);card.addEventListener('click',()=>openViewer(a));grid.append(card);
  }
  text($('mfCollectionStatus'),shown.length+' photographs · '+displayCategory(filterCategory)+(filterBranch!=='all'?' · '+filterBranch:'')+(unavailable?' · '+unavailable+' previews unavailable':'')+'. Tap a photo to view it in full.');
@@ -253,9 +275,7 @@ async function openQueue(index=0){
   queueIndex=((index%list.length)+list.length)%list.length;
   const a=list[queueIndex];
   if(!a.signedUrl||Date.now()-(a.signedAt||0)>signedMs){
-   const out=await bucket.createSignedUrl(a.storage_path,1800);
-   if(out.error||!out.data?.signedUrl)throw Error(out.error?.message||'Photo preview unavailable');
-   a.signedUrl=out.data.signedUrl;a.signedAt=Date.now();
+   a.signedUrl=await worldPreview(a);a.signedAt=Date.now();
   }
   if(!authorized)throw Error('Your session has expired. Sign in again.');
   if(!dialog?.showModal)throw Error('Photo viewer is unavailable in this browser.');
@@ -364,9 +384,7 @@ async function uploadUniforms(files){
    text($('mfUploadStatus'),'Uploading '+(done+1)+' / '+good.length+' · '+file.name.slice(0,65));
    try{
     const isVideo=file.type.startsWith('video/');
-    let check={matches:[]};if(!isVideo)try{check=await dedupe.preflight(file,{ownerOnly:true})}catch(e){console.warn('Fingerprint unavailable; continuing upload',e?.message)}
-    const hit=check.matches.find(m=>m.type==='exact');
-    if(hit?.type==='exact'){duplicates++;continue}
+    // Server verifies exact bytes in the uploader's own namespace; no speculative browser skip.
     
     let target=category==='auto'?inferCategory({filename:file.name}):category;
     if(!['military','police','fire','medical','security','professional','unsorted'].includes(target))target='unsorted';
@@ -376,20 +394,22 @@ async function uploadUniforms(files){
       military_category:target==='unsorted'?'Unsorted':'Uniforms',military_branch:target==='military'?filenameBranch(file.name):'Unspecified',military_tags:['maf:'+target]};
     if(isVideo){asset.video_category='standard';asset.military_tags.push('bc-video-orientation:'+await worldVideoOrientation(file));}
     if(direct&&!isVideo)Object.assign(asset,{review_status:'approved',rights_confirmed:true,adult_restricted:false});
-    const up=await bucket.upload(path,file,{contentType:file.type,cacheControl:'1800',upsert:false});
-    if(up.error)throw Error(up.error.message);
-    const added=await corporate.from('corp_social_assets').insert(asset).select('id,review_status').single();
-    if(added.error){await bucket.remove([path]).catch(()=>{});throw Error(added.error.message)}
+    const response=await worldRequest('upload',file,{'Content-Type':file.type,'x-bc-name':encodeURIComponent(file.name),'x-bc-category':target,'x-bc-branch':encodeURIComponent(asset.military_branch),'x-bc-orientation':isVideo?(asset.military_tags[1]||'').split(':').pop():'unknown'});
+    const result=await response.json();
+    if(!result.ok)throw Error(result.code||'Cloud upload was not confirmed');
+    if(result.duplicate){duplicates++;continue}
+    Object.assign(asset,result.record);
+    const added={data:result.record};
     saved++;
     asset.review_status=added.data?.review_status;asset.created_at=new Date().toISOString();
     uploadState.assets.push(asset);
-    if(!isVideo&&asset.review_status==='approved'){
-     posted++;approved.unshift(asset);updateQueueStatus();
+    if(!isVideo&&['approved','pending'].includes(asset.review_status)){
+     if(asset.review_status==='approved')posted++;approved.unshift(asset);updateQueueStatus();
      text($('mfImageCount'),approved.length);
      if(posted===1||posted%10===0)void render();
     }
     if(isVideo)continue;
-    if(check.fingerprint)await dedupe.record(asset,check.fingerprint).catch(()=>false);
+    // Exact duplicate verification is performed by the storage backend.
     if(useAI&&added.data?.review_status==='approved'&&target==='unsorted'&&aiJobs.length<60)aiJobs.push({file,asset});
     else if(useAI&&target==='unsorted')aiSkipped++;
     if(target==='unsorted')unsorted++;
@@ -428,7 +448,7 @@ async function uploadUniforms(files){
 
   }
   try{await loadApproved()}catch(e){console.warn('Library refresh failed',e?.message)}
-  text($('mfUploadStatus'),posted+' posted · '+saved+' saved · '+duplicates+' duplicates skipped · '+failed+' failed · '+unsorted+' unsorted'+(useAI?' · '+aiFailures+' AI errors · '+aiSkipped+' not visually analyzed':'')+(selected.length>picked.length?' · '+(selected.length-picked.length)+' over batch limit':'')+(picked.length>good.length?' · '+(picked.length-good.length)+' unsupported':'')+(direct?' · sorting is separate from posting':' · uploads pending review')+'.');
+  text($('mfUploadStatus'),posted+' posted · '+saved+' saved · '+duplicates+' duplicates skipped · '+failed+' failed · '+unsorted+' unsorted'+(useAI?' · '+aiFailures+' AI errors · '+aiSkipped+' not visually analyzed':'')+(selected.length>picked.length?' · '+(selected.length-picked.length)+' over batch limit':'')+(picked.length>good.length?' · '+(picked.length-good.length)+' unsupported':'')+(direct?' · sorting is separate from posting':' · private uploads saved; sharing pending review')+'.');
  }finally{
   showWorldUploadFailures(worldFailedFiles.concat(rejected.map(file=>({file,reason:'Unsupported format, empty file or exceeds current 45 MB limit.'}))));
   uploading=false;queuePaused=false;$('mfUploadChoose').disabled=false;$('mfUploadClose').disabled=false;$('mfUploadCategory').disabled=false;$('mfUploadAi').disabled=false;$('mfUploadDirect').disabled=false;$('mfUploadPause').hidden=true;
@@ -581,8 +601,8 @@ async function loadApproved(){
   const candidates=[];
   for(let offset=0;authorized;offset+=500){
    const {data,error}=await corporate.from('corp_social_assets')
-    .select('id,owner_id,filename,caption,storage_path,military_branch,military_category,military_era,military_tags,review_status,adult_restricted,purpose,kind,created_at')
-    .eq('review_status','approved').eq('adult_restricted',false).eq('purpose','library').eq('kind','photo')
+    .select('id,owner_id,filename,caption,storage_path,military_branch,military_category,military_era,military_tags,review_status,adult_restricted,purpose,kind,created_at,source_provider,mime_type')
+    .or('and(review_status.eq.approved,adult_restricted.eq.false),and(review_status.eq.pending,owner_id.eq.'+authorized.user.id+')').eq('purpose','library').eq('kind','photo')
     .order('created_at',{ascending:false}).order('id',{ascending:true}).range(offset,offset+499);
    if(error)throw Error(error.message);
    candidates.push(...(data||[]).filter(a=>a.storage_path&&a.id));
@@ -613,7 +633,7 @@ async function securityCheck(){
   if(check.error||check.data?.verified!==true)throw Error('Corporate verification expired.');
   if(Date.now()-lastSigned>signedMs)await loadApproved();
  }catch(_){
-  authorized=null;
+  releaseWorldUrls();authorized=null;
   $('uMain').hidden=true;$('uGate').hidden=false;
   text($('uGateText'),'Your corporate session has expired. Sign in and verify your access again.');
   $('mfLightbox')?.close();
@@ -632,7 +652,7 @@ async function boot(){
  window.addEventListener('focus',()=>void securityCheck());
  corporate.auth.onAuthStateChange(event=>{
   if(event==='SIGNED_OUT'&&authorized){
-   authorized=null;$('uMain').hidden=true;$('uGate').hidden=false;
+   releaseWorldUrls();authorized=null;$('uMain').hidden=true;$('uGate').hidden=false;
    text($('uGateText'),'Signed out. Return to the corporate portal to sign in.');
   }
  });
