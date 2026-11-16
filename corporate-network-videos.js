@@ -235,7 +235,7 @@ export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,b
   if(film)card.classList.add('bc-film-video-card');
   const thumbnail=button('', 'bc-yt-thumb',()=>openCinema(a,queue));
   thumbnail.setAttribute('aria-label','Watch '+title(a));
-  if(!film)bindTransfer?.(thumbnail,a);
+  bindTransfer?.(thumbnail,a);
   const url=source(a),cover=posterUrl(a);
   if(cover){
    appendNativeArtwork(thumbnail,cover,'Cover for '+title(a),'bc-video-custom-poster',film);

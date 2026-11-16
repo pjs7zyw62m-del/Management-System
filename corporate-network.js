@@ -6,9 +6,9 @@ import {createNetworkPersonalization} from './corporate-network-personalization.
 import {createPhotoRediscovery} from './corporate-photo-rediscovery.js?v=20261113-auto-suggest1';
 import {createVisualDiscovery} from './corporate-visual-discovery.js?v=20261111-mediareset1';
 import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phonecheck2';
-import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261116-video-transfer2';
+import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261116-paid-video-guard3';
 import {isWorldVideo,worldVideoTitle,readWorldVideo,createWorldVideoPreviews} from './blackcell-world-video-catalog.js?v=1';
-import {createProfileWorlds} from './corporate-profile-worlds.js?v=17-video-transfer';
+import {createProfileWorlds} from './corporate-profile-worlds.js?v=18-paid-video-guard';
 const client=corporateClient(),bucket=client.storage.from('corp-social-media');
 const worldVideoPreviews=createWorldVideoPreviews(client);
 const $=id=>document.getElementById(id);
