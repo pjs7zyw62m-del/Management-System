@@ -318,13 +318,30 @@ async function worldVideoOrientation(file){
   const timer=setTimeout(done,5000);v.preload='metadata';v.onloadedmetadata=done;v.onerror=done;v.src=url;
  })}finally{v.removeAttribute('src');v.load();URL.revokeObjectURL(url)}
 }
+
+async function chooseCloudPhotos(){
+ if(uploading||!authorized)return;
+ const uid=authorized.user.id,drive=createPrivateDrive(corporate,uid),folder=uid+'/Photos',panel=$('mfCloudPicker');
+ if(!panel)return;panel.hidden=false;panel.replaceChildren();panel.textContent='Loading your Photos…';
+ const types={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',gif:'image/gif',heic:'image/heic',mp4:'video/mp4',mov:'video/quicktime',webm:'video/webm'};
+ try{
+  const items=[];for(let offset=0;;offset+=100){const result=await drive.list(folder,{limit:100,offset});if(result.error)throw result.error;const rows=result.data||[];items.push(...rows.filter(x=>x.id&&types[x.name.split('.').pop().toLowerCase()]));if(rows.length<100)break;}
+  if(authorized?.user?.id!==uid)return;
+  panel.replaceChildren();const selected=new Set(),list=document.createElement('div');list.style.cssText='display:grid;gap:6px;max-height:40vh;overflow:auto';
+  const upload=document.createElement('button');upload.type='button';upload.className='mf-primary';upload.disabled=true;upload.textContent='Upload selected (0)';
+  for(const item of items){const button=document.createElement('button');button.type='button';button.className='mf-secondary';button.textContent=item.name;button.setAttribute('aria-pressed','false');button.onclick=()=>{if(selected.has(item))selected.delete(item);else selected.add(item);button.setAttribute('aria-pressed',String(selected.has(item)));button.style.outline=selected.has(item)?'2px solid #e84545':'';upload.disabled=!selected.size;upload.textContent='Upload selected ('+selected.size+')'};list.append(button);}
+  panel.append(list,upload);if(!items.length)list.textContent='No supported media in your Photos library.';
+  upload.onclick=async()=>{if(uploading||authorized?.user?.id!==uid)return;upload.disabled=true;const files=[];let failed=0;for(const item of selected){if(authorized?.user?.id!==uid)return;try{const result=await drive.download(folder+'/'+item.name);if(result.error)throw result.error;files.push(new File([result.data],item.name,{type:types[item.name.split('.').pop().toLowerCase()]}))}catch(_){failed++}}if(authorized?.user?.id!==uid)return;panel.hidden=true;await uploadUniforms(files);if(failed)$('mfUploadStatus').textContent+=' '+failed+' Photos items could not be read.';};
+ }catch(e){panel.textContent='Could not load Photos. Try again.';}
+}
+
 async function uploadUniforms(files){
  if(uploading||!authorized)return;
- const selected=Array.from(files||[]),picked=worldId==='uniform'?selected:selected.slice(0,MAX_BATCH);
+ const selected=Array.from(files||[]),picked=selected;
  const good=picked.filter(f=>(allowedPhotos.has(f.type)||['video/mp4','video/quicktime','video/webm'].includes(f.type))&&f.size>0&&f.size<=45*1048576);
  if(!good.length){text($('mfUploadStatus'),'Choose supported photos or videos up to 45 MB each.');return}
  const category=worldScope||$('mfUploadCategory').value;
- const direct=owner()&&worldId!=='uniform';
+ const direct=false;
  if(direct&&!$('mfUploadDirect').checked){text($('mfUploadStatus'),'Confirm the batch is non-explicit and you have permission to share it, then select photos again. Sorting is not an approval requirement.');return}
  let useAI=direct&&category==='auto'&&$('mfUploadAi').checked;
  if(useAI&&!confirm('Use the paid visual AI service for up to 60 photos in this batch, subject to your remaining daily allowance? The rest will use filenames or remain Unsorted. Original files are preserved.'))useAI=false;
@@ -344,7 +361,7 @@ async function uploadUniforms(files){
     const check=isVideo?{matches:[]}:await dedupe.preflight(file);
     const hit=check.matches[0];
     if(hit?.type==='exact'){duplicates++;continue}
-    if(worldId!=='uniform'&&hit?.type==='possible'&&!confirm('Possible duplicate: '+file.name+'. Keep both copies?')){duplicates++;continue}
+    
     let target=category==='auto'?inferCategory({filename:file.name}):category;
     if(!['military','police','fire','medical','security','professional','unsorted'].includes(target))target='unsorted';
     const id=crypto.randomUUID(),ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,8)||'jpg';
@@ -519,7 +536,8 @@ function wire(){
  window.addEventListener('hashchange',()=>showWorkspaceView(location.hash.slice(1),{updateHash:false}));
  $('mfSearch')?.addEventListener('input',e=>{clearTimeout(searchTimer);const value=e.target.value.trim().toLowerCase();searchTimer=setTimeout(()=>{if(value===searchQuery)return;searchQuery=value;page=0;if(authorized)void render()},180)});
  $('mfTransferPhotos')?.addEventListener('click',()=>void transferToPhotos());
- $('mfUploadOpen').addEventListener('click',()=>{if(uploading)return;$('mfUploadForm').hidden=false;if(worldId==='uniform'){$('mfUploadFiles').value='';$('mfUploadFiles').click()}});
+ $('mfUploadOpen').addEventListener('click',()=>{if(uploading)return;$('mfUploadForm').hidden=false;});
+ $('mfCloudChoose')?.addEventListener('click',()=>void chooseCloudPhotos());
  $('mfUploadClose').addEventListener('click',()=>{if(!uploading)$('mfUploadForm').hidden=true});
  $('mfUploadChoose').addEventListener('click',()=>{$('mfUploadFiles').value='';$('mfUploadFiles').click()});
  $('mfUploadFiles').addEventListener('change',()=>{const input=$('mfUploadFiles'),files=Array.from(input.files||[]);input.value='';void uploadUniforms(files)});
