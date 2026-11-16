@@ -148,6 +148,7 @@ function switchView(view,{who=null,tab=null,keepPost=false,pulseWho=null}={}){
  if(Date.now()-state.signedAt>25*60*1000){
   state.assetUrls.clear();void loadSigned().then(renderAll).catch(()=>{});
  }
+ stopFeedPlayback();
  if(state.view==='pulse'&&view!=='pulse')clearPulse();
  if(view==='pulse'){pulseScroll=null;pulseAuthor=pulseWho&&profile(pulseWho)?pulseWho:null;pulseMode=pulseAuthor?'author':'for-you';pulseLimit=12;pulseEnd=false;pulseAutoPages=0;}
  state.view=view;
@@ -518,6 +519,7 @@ function renderProfileGroups(){
  wrap.append(grid);return wrap;
 }
 function renderProfile(){
+ stopFeedPlayback();
  const p=profile(state.profileUserId)||myProfile();
  if(!p)return;
  state.profileUserId=p.user_id;
@@ -825,6 +827,31 @@ function renderPost(p){
 
 /* Library uploads are separate from social posts. Display authorized, original
    library files as first-class feed activity, without duplicating or moving them. */
+// Inline World playback: keep a single private stream/download active.
+let feedPlayback=null;
+function stopFeedPlayback(){const player=feedPlayback;feedPlayback=null;player?.dispose()}
+function inlineWorldVideo(a){
+ const frame=el('div','bc-feed-video-frame'),poster=el('img','bc-feed-video-poster');poster.alt='Video thumbnail';poster.hidden=true;poster.loading='lazy';poster.decoding='async';
+ const title=worldVideoTitle(a),play=btn('▶ Play video',()=>void start(),'bc-feed-video-play'),status=el('p','bc-feed-video-status',title);
+ const v=el('video','bc-feed-inline-video');v.controls=true;v.playsInline=true;v.preload='none';v.hidden=true;v.setAttribute('aria-label',title);
+ const quality=el('select','bc-feed-video-quality');quality.hidden=true;quality.setAttribute('aria-label','Video quality');
+ frame.append(poster,play,v,quality,status);
+ const saved=posterUrl(a);if(saved){poster.src=saved;poster.hidden=false;v.poster=saved}else worldVideoPreviews.mount(a,poster);
+ async function start(){
+  if(!frame.isConnected||!sharedMedia(a)||pulseCinema(a)||feedPlayback?.frame===frame)return;
+  stopFeedPlayback();const uid=state.user?.id,controller=new AbortController();let rendered=null,url=null,seq=0,disposed=false,visibility=null;
+  const valid=()=>!disposed&&feedPlayback?.frame===frame&&frame.isConnected&&state.user?.id===uid;
+  const dispose=()=>{disposed=true;seq++;frame.classList.remove('is-playing');controller.abort();visibility?.disconnect();rendered?.destroy();v.pause();v.removeAttribute('src');v.load();if(url)URL.revokeObjectURL(url);v.hidden=true;quality.hidden=true;play.hidden=false;poster.hidden=!poster.getAttribute('src');status.textContent=title;worldVideoPreviews.setPaused(false)};
+  feedPlayback={frame,dispose};frame.classList.add('is-playing');
+  play.hidden=true;poster.hidden=true;v.hidden=false;v.muted=state.view==='pulse'&&pulseAutoplay;status.textContent='Connecting private video…';
+  worldVideoPreviews.setPaused(true);
+  if(typeof IntersectionObserver==='function'){visibility=new IntersectionObserver(entries=>{if(entries.some(e=>!e.isIntersecting)&&valid())stopFeedPlayback()},{threshold:0});visibility.observe(frame)}
+  const original=async(position=0)=>{const n=++seq;rendered?.destroy();rendered=null;quality.hidden=true;status.textContent='Loading full-quality video…';try{const blob=await readWorldVideo(client,a,{signal:controller.signal});if(!valid()||n!==seq)return;if(url)URL.revokeObjectURL(url);url=URL.createObjectURL(blob);v.src=url;v.onloadedmetadata=()=>{if(position>0&&position<v.duration)v.currentTime=position};v.load();status.textContent=title;void v.play().catch(()=>{})}catch(e){if(!valid())return;stopFeedPlayback();status.textContent='Unable to play video. Tap Play video to retry.'}};
+  const n=++seq;const adaptive=await attachRenderedWorld({client,asset:a,video:v,qualityMenu:quality,alive:()=>valid()&&seq===n,onReady:()=>{if(valid()){quality.hidden=false;status.textContent=title}},onFatal:position=>{if(valid())void original(position)},onOriginal:position=>{if(valid())void original(position)}});
+  if(!valid()||n!==seq){adaptive?.destroy();return}if(adaptive){rendered=adaptive;return}await original();
+ }
+ return frame;
+}
 function renderLibraryActivity(a){
  const node=el('article','panel post library-feed-post');
  node.id='library-media-'+a.id;
@@ -866,7 +893,8 @@ function renderLibraryActivity(a){
   node.append(wrap);
  }
  if(!src&&a.source_provider==='world-bunny-v1'&&a.kind==='photo'){const frame=el('div','bc-pw-frame');const img=el('img');img.hidden=true;img.alt=caption||'World photo';img.loading='lazy';frame.append(el('span','bc-pw-placeholder','Loading photograph…'),img);const open=btn('',()=>profileWorlds.openFeedPhoto(img,a),'bc-pw-media');open.append(frame);node.append(open);profileWorlds.bindFeedPhoto(open,a);profileWorlds.mountFeedPhoto(a,img)}
- if(!src&&a.kind==='video'){const frame=el('div','bc-pw-frame');const img=el('img');img.hidden=true;img.alt='';const poster=posterUrl(a);frame.append(el('span','bc-pw-placeholder','▶'),img);if(poster){img.src=poster;img.hidden=false}const open=btn('',()=>{const u=new URL(location.href);u.search='';u.searchParams.set('view','videos');u.searchParams.set('video',a.id);location.assign(u.href)},'bc-pw-media');open.append(frame);node.append(open);profileWorlds.bindFeedPhoto(open,a)}
+ if(!src&&isWorldVideo(a)&&sharedMedia(a)&&!pulseCinema(a)){const player=inlineWorldVideo(a);node.append(player);profileWorlds.bindFeedPhoto(player,a)}
+ else if(!src&&a.kind==='video'){const frame=el('div','bc-pw-frame');const img=el('img');img.hidden=true;img.alt='';const poster=posterUrl(a);frame.append(el('span','bc-pw-placeholder','▶'),img);if(poster){img.src=poster;img.hidden=false}const open=btn('',()=>{const u=new URL(location.href);u.search='';u.searchParams.set('view','videos');u.searchParams.set('video',a.id);location.assign(u.href)},'bc-pw-media');open.append(frame);node.append(open);profileWorlds.bindFeedPhoto(open,a)}
  const actions=el('div','post-actions');
  if(a.kind==='video')actions.append(btn('▶ WATCH IN BLACKCELL TUBE',()=>{const u=new URL(location.href);u.search='';u.searchParams.set('view','videos');u.searchParams.set('video',a.id);location.assign(u.href)}));else if(a.source_provider!=='world-bunny-v1')actions.append(btn('▧ VIEW ORIGINAL',()=>void photos.openAsset(a)));
  actions.append(btn('◌  VIEW PROFILE',()=>openProfile(a.owner_id)));
@@ -892,7 +920,7 @@ function selectProfileFeedPosts(posts,assets,follows,userId,mode,worlds=[]){
 }
 // BLACKCELL PULSE uses only the signed-in Network catalog and existing RLS-backed actions.
 const pulseCinema=a=>['movie','series','documentary','tv','tv show','tv_show'].includes(String(a?.video_category||'').trim().toLowerCase());
-function clearPulse(){pulseRevision++;pulseObserver?.disconnect();pulseObserver=null;pulseVideos?.disconnect();pulseVideos=null;pulseVisible.clear();for(const v of $('pulseView')?.querySelectorAll('video')||[])v.pause();}
+function clearPulse(){stopFeedPlayback();pulseRevision++;pulseObserver?.disconnect();pulseObserver=null;pulseVideos?.disconnect();pulseVideos=null;pulseVisible.clear();for(const v of $('pulseView')?.querySelectorAll('video')||[])v.pause();}
 function pulseEntries(){
  const mode=pulseMode==='following'?'following':'latest';
  const posts=selectProfileFeedPosts(state.posts,state.assets,state.follows,state.user.id,mode).filter(p=>pulseMode!=='author'||p.author_id===pulseAuthor);
@@ -908,7 +936,8 @@ function pulsePlay(){
  const next=allowed?candidates[0]?.[0]:null;
  for(const v of $('pulseView')?.querySelectorAll('video')||[]){if(v===next){if(!v.dataset.pulseStarted){v.muted=true;v.dataset.pulseStarted='1';void v.play().catch(()=>{})}}else{if(v.dataset.pulseStarted){v.pause();delete v.dataset.pulseStarted}}}
 }
-document.addEventListener('visibilitychange',()=>{if(state.view==='pulse')pulsePlay()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stopFeedPlayback();if(state.view==='pulse')pulsePlay()});
+window.addEventListener('pagehide',stopFeedPlayback);
 async function loadPulseOlder(){
  if(pulseOlderBusy||pulseEnd||state.view!=='pulse')return;
  pulseOlderBusy=true;const rev=pulseRevision,uid=state.user.id;
@@ -950,7 +979,7 @@ function renderPulse(){
  if(typeof IntersectionObserver==='function'){pulseVideos=new IntersectionObserver(items=>{for(const e of items)pulseVisible.set(e.target,e.intersectionRatio);pulsePlay()},{root:scroll,threshold:[0,.65,1]})}
  function add(count){
   const limit=Math.min(entries.length,count);
-  for(;rendered<limit;rendered++){const x=entries[rendered],node=x.type==='post'?renderPost(x.item):renderLibraryActivity(x.item);timeline.append(node);for(const image of node.querySelectorAll('img')){image.decoding='async';image.loading='lazy'}for(const v of node.querySelectorAll('video')){v.preload='none';v.playsInline=true;pulseVideos?.observe(v)}}
+  for(;rendered<limit;rendered++){const x=entries[rendered],node=x.type==='post'?renderPost(x.item):renderLibraryActivity(x.item);timeline.append(node);for(const image of node.querySelectorAll('img')){image.decoding='async';image.loading='lazy'}for(const v of node.querySelectorAll('video')){v.preload='none';v.playsInline=true;if(!v.classList.contains('bc-feed-inline-video'))pulseVideos?.observe(v)}}
   footer.replaceChildren();
   if(rendered<entries.length){const more=btn('Load more',()=>{pulseLimit+=12;add(pulseLimit)},'bc-pulse-more');footer.append(more)}
   else if(!pulseEnd){footer.append(btn(pulseOlderBusy?'Loading older posts…':'Load older posts',()=>{pulseAutoPages=0;void loadPulseOlder()},'bc-pulse-more'))}
