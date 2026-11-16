@@ -172,3 +172,7 @@ html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-pw-video
  #profileView #profileWorlds>.bc-pw-heading{grid-template-columns:1fr;gap:6px}
  #profileView #profileWorlds>.bc-pw-heading>h2,#profileView #profileWorlds>.bc-pw-heading>button{grid-column:1;grid-row:auto;justify-self:center}
 }
+
+/* Member preview preserves selected artwork but does not expose edit/feed actions. */
+#profileView .bc-pw-bubble.bc-pw-readonly{cursor:default;color:#fff}
+#profileView .bc-pw-bubble.bc-pw-readonly[data-selected=true] .bc-pw-circle{border-color:var(--world-color);box-shadow:0 0 0 3px #ffffff09,0 0 17px color-mix(in srgb,var(--world-color) 20%,transparent)}
