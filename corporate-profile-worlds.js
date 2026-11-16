@@ -161,7 +161,7 @@ export function createProfileWorlds({client,state,previews,title,render,toast,re
    if((data.review_status!=='approved'||data.adult_restricted===true)&&data.owner_id!==account)throw Error('Media is not available for transfer.');
    a=data;
   }
-  const [m,drive]=await Promise.all([import('./blackcell-private-media.js?v=12-member-album-repair'),import('./blackcell-private-drive.js?v=2-album-list')]);
+  const [m,drive]=await Promise.all([import('./blackcell-private-media.js?v=15-cloud-thumbnails'),import('./blackcell-private-drive.js?v=3-cloud-thumbnails')]);
   let blob;
   if(a.kind==='video'&&a.source_provider==='world-bunny-v1'){
    if(typeof readVideo!=='function')throw Error('Private video transfer unavailable.');

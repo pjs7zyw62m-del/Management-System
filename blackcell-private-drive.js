@@ -17,6 +17,7 @@ export function createPrivateDrive(client,uid){
   if(binary){headers['x-bc-id']=id;headers['x-bc-index']=String(index)}
   const res=await fetch(u.href,{method:'POST',headers,body:binary||JSON.stringify(data),cache:'no-store',signal:AbortSignal.timeout(95000)});
   if(read&&res.ok)return await res.blob();
+  if(read&&action==='preview-read'&&res.status===404){await res.body?.cancel();return null}
   const result=await res.json().catch(()=>null);
   if(!res.ok||!result?.ok)throw Error(result?.error||'Private storage request failed ('+res.status+').');
   return result;
@@ -50,7 +51,7 @@ export function createPrivateDrive(client,uid){
     for(let attempt=0;attempt<3;attempt++){try{await request('chunk',{},part,id,index);problem=null;break}catch(e){problem=e;if(attempt<2)await new Promise(resolve=>setTimeout(resolve,600*(attempt+1)))}}
     if(problem)throw problem;opts.onProgress?.(Math.min(file.size,offset+part.size),file.size);
    }
-   await request('finish',{id});id=null;invalid();return ok({path:full,provider:'bunny'})
+   await request('finish',{id});const savedId=id;id=null;invalid();return ok({path:full,provider:'bunny',id:savedId})
   }catch(e){if(id){try{await request('cancel',{id})}catch(_){/* reservation remains until an explicit cleanup */}}invalid();return err(e)}
  }
  async function download(full){
@@ -70,5 +71,15 @@ export function createPrivateDrive(client,uid){
    const row=await lookup(full);if(row)await request('delete',{id:row.id});else{const r=await legacy.remove([full]);if(r.error)throw r.error}
   }invalid();return ok([])}catch(e){invalid();return err(e)}
  }
- return {list,upload,download,move,remove,connection:()=>request('status'),invalidate:invalid}
+ async function readPreview(id){
+  if(!/^[0-9a-f-]{36}$/i.test(String(id||'')))return null;
+  return request('preview-read',{id},null,null,null,true);
+ }
+ async function writePreview(id,frame){
+  if(!/^[0-9a-f-]{36}$/i.test(String(id||''))||!frame?.blob||frame.blob.size+16>524288||frame.blob.type!=='image/jpeg'||!Number.isFinite(frame.ratio)||frame.ratio<=0)return false;
+  const meta=new ArrayBuffer(16),v=new DataView(meta);v.setFloat64(0,frame.ratio);v.setFloat64(8,Number.isFinite(frame.duration)?frame.duration:NaN);
+  const payload=new Blob([meta,frame.blob],{type:'application/octet-stream'});
+  await request('preview-write',{},payload,id,payload.size);return true;
+ }
+ return {list,upload,download,move,remove,readPreview,writePreview,connection:()=>request('status'),invalidate:invalid}
 }
