@@ -34,7 +34,6 @@ Deno.serve(async req=>{
   const job=existing.data;
   const previous=await db.from("blackcell_ai_video_pilot").select("id,user_id,source_path,state,provider_task_id,created_at").eq("singleton",true).maybeSingle();
   if(previous.error||!previous.data||previous.data.user_id!==uid||previous.data.provider_task_id||previous.data.state!=="uncertain")return send({ok:false,code:"PRIOR_ATTEMPT_REVIEW_REQUIRED"});
-  if(!job&&path===previous.data.source_path)return send({ok:false,code:"USE_DIFFERENT_TEST_IMAGE"});
   if(job&&(job.user_id!==uid||job.source_path!==path))return send({ok:false,code:"PILOT_ALREADY_USED"});
   if(action==="create"){
    if(job)return send({ok:true,state:job.state,id:job.id});
