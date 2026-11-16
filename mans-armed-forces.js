@@ -238,23 +238,34 @@ async function movePhoto(a,category){
 function updateQueueStatus(){
  const n=unsortedQueue().length;
  text($('mfQueueCount'),n);
- $('mfReviewQueue').disabled=!n;
+ $('mfReviewQueue').disabled=!n||queueOpening;
  $('mfPendingPanel').hidden=!owner()||!pendingOwn.length;
  text($('mfPendingCount'),pendingOwn.length);
 }
+let queueOpening=false;
 async function openQueue(index=0){
- const list=unsortedQueue();
- if(!list.length){$('mfLightbox').close();text($('mfQueueMessage'),'All posted photos are sorted.');return}
- queueIndex=((index%list.length)+list.length)%list.length;
- const a=list[queueIndex];
- if(!a.signedUrl||Date.now()-(a.signedAt||0)>signedMs){
-  const out=await bucket.createSignedUrl(a.storage_path,1800);
-  if(out.error||!out.data?.signedUrl){
-   text($('mfQueueMessage'),'Could not open this photo. Refresh the page and try again.');return
+ if(queueOpening)return;
+ const list=unsortedQueue(),button=$('mfReviewQueue'),dialog=$('mfLightbox');
+ if(!list.length){if(dialog?.open)dialog.close();text($('mfQueueMessage'),'All posted photos are sorted.');return}
+ queueOpening=true;button.disabled=true;button.setAttribute('aria-busy','true');
+ text($('mfQueueMessage'),'Opening unsorted photograph…');
+ try{
+  queueIndex=((index%list.length)+list.length)%list.length;
+  const a=list[queueIndex];
+  if(!a.signedUrl||Date.now()-(a.signedAt||0)>signedMs){
+   const out=await bucket.createSignedUrl(a.storage_path,1800);
+   if(out.error||!out.data?.signedUrl)throw Error(out.error?.message||'Photo preview unavailable');
+   a.signedUrl=out.data.signedUrl;a.signedAt=Date.now();
   }
-  a.signedUrl=out.data.signedUrl;a.signedAt=Date.now();
- }
- openViewer(a,{queue:true});
+  if(!authorized)throw Error('Your session has expired. Sign in again.');
+  if(!dialog?.showModal)throw Error('Photo viewer is unavailable in this browser.');
+  openViewer(a,{queue:true});
+  if(!dialog.open)throw Error('Photo viewer could not open.');
+  text($('mfQueueMessage'),'');text($('mfQueueError'),'');
+ }catch(e){
+  const message='Unable to open unsorted photo: '+String(e?.message||'Try again.');
+  text($('mfQueueMessage'),message);text($('mfQueueError'),message);
+ }finally{queueOpening=false;button.removeAttribute('aria-busy');updateQueueStatus()}
 }
 async function assignQueued(category){
  if(queueBusy||!sortingQueue||!viewerAsset)return;
@@ -300,13 +311,20 @@ async function aiPreview(file){
   c.getContext('2d').drawImage(img,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.78);
  }finally{URL.revokeObjectURL(url)}
 }
+async function worldVideoOrientation(file){
+ const url=URL.createObjectURL(file),v=document.createElement('video');
+ try{return await new Promise(resolve=>{
+  const done=()=>{clearTimeout(timer);resolve(v.videoWidth&&v.videoHeight?(v.videoHeight>v.videoWidth?'short':'standard'):'unknown')};
+  const timer=setTimeout(done,5000);v.preload='metadata';v.onloadedmetadata=done;v.onerror=done;v.src=url;
+ })}finally{v.removeAttribute('src');v.load();URL.revokeObjectURL(url)}
+}
 async function uploadUniforms(files){
  if(uploading||!authorized)return;
- const selected=Array.from(files||[]),picked=selected.slice(0,MAX_BATCH);
- const good=picked.filter(f=>allowedPhotos.has(f.type)&&f.size>0&&f.size<=45*1048576);
- if(!good.length){text($('mfUploadStatus'),'Choose supported photographs up to 45 MB each.');return}
+ const selected=Array.from(files||[]),picked=worldId==='uniform'?selected:selected.slice(0,MAX_BATCH);
+ const good=picked.filter(f=>(allowedPhotos.has(f.type)||['video/mp4','video/quicktime','video/webm'].includes(f.type))&&f.size>0&&f.size<=45*1048576);
+ if(!good.length){text($('mfUploadStatus'),'Choose supported photos or videos up to 45 MB each.');return}
  const category=worldScope||$('mfUploadCategory').value;
- const direct=owner();
+ const direct=owner()&&worldId!=='uniform';
  if(direct&&!$('mfUploadDirect').checked){text($('mfUploadStatus'),'Confirm the batch is non-explicit and you have permission to share it, then select photos again. Sorting is not an approval requirement.');return}
  let useAI=direct&&category==='auto'&&$('mfUploadAi').checked;
  if(useAI&&!confirm('Use the paid visual AI service for up to 60 photos in this batch, subject to your remaining daily allowance? The rest will use filenames or remain Unsorted. Original files are preserved.'))useAI=false;
@@ -322,17 +340,19 @@ async function uploadUniforms(files){
    if(authorized?.user?.id!==uid)break;
    text($('mfUploadStatus'),'Uploading '+(done+1)+' / '+good.length+' · '+file.name.slice(0,65));
    try{
-    const check=await dedupe.preflight(file);
+    const isVideo=file.type.startsWith('video/');
+    const check=isVideo?{matches:[]}:await dedupe.preflight(file);
     const hit=check.matches[0];
     if(hit?.type==='exact'){duplicates++;continue}
-    if(hit?.type==='possible'&&!confirm('Possible duplicate: '+file.name+'. Keep both copies?')){duplicates++;continue}
+    if(worldId!=='uniform'&&hit?.type==='possible'&&!confirm('Possible duplicate: '+file.name+'. Keep both copies?')){duplicates++;continue}
     let target=category==='auto'?inferCategory({filename:file.name}):category;
     if(!['military','police','fire','medical','security','professional','unsorted'].includes(target))target='unsorted';
     const id=crypto.randomUUID(),ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,8)||'jpg';
     const path=uid+'/'+id+'.'+ext;
-    const asset={id,owner_id:uid,purpose:'library',kind:'photo',mime_type:file.type,filename:file.name.slice(0,180),storage_path:path,bytes:file.size,
+    const asset={id,owner_id:uid,purpose:'library',kind:isVideo?'video':'photo',mime_type:file.type,filename:file.name.slice(0,180),storage_path:path,bytes:file.size,
       military_category:target==='unsorted'?'Unsorted':'Uniforms',military_branch:target==='military'?filenameBranch(file.name):'Unspecified',military_tags:['maf:'+target]};
-    if(direct)Object.assign(asset,{review_status:'approved',rights_confirmed:true,adult_restricted:false});
+    if(isVideo){asset.video_category='standard';asset.military_tags.push('bc-video-orientation:'+await worldVideoOrientation(file));}
+    if(direct&&!isVideo)Object.assign(asset,{review_status:'approved',rights_confirmed:true,adult_restricted:false});
     const up=await bucket.upload(path,file,{contentType:file.type,cacheControl:'1800',upsert:false});
     if(up.error)throw Error(up.error.message);
     const added=await corporate.from('corp_social_assets').insert(asset).select('id,review_status').single();
@@ -340,11 +360,12 @@ async function uploadUniforms(files){
     saved++;
     asset.review_status=added.data?.review_status;asset.created_at=new Date().toISOString();
     uploadState.assets.push(asset);
-    if(asset.review_status==='approved'){
+    if(!isVideo&&asset.review_status==='approved'){
      posted++;approved.unshift(asset);updateQueueStatus();
      text($('mfImageCount'),approved.length);
      if(posted===1||posted%10===0)void render();
     }
+    if(isVideo)continue;
     await dedupe.record(asset,check.fingerprint).catch(()=>false);
     if(useAI&&added.data?.review_status==='approved'&&target==='unsorted'&&aiJobs.length<60)aiJobs.push({file,asset});
     else if(useAI&&target==='unsorted')aiSkipped++;
@@ -498,7 +519,7 @@ function wire(){
  window.addEventListener('hashchange',()=>showWorkspaceView(location.hash.slice(1),{updateHash:false}));
  $('mfSearch')?.addEventListener('input',e=>{clearTimeout(searchTimer);const value=e.target.value.trim().toLowerCase();searchTimer=setTimeout(()=>{if(value===searchQuery)return;searchQuery=value;page=0;if(authorized)void render()},180)});
  $('mfTransferPhotos')?.addEventListener('click',()=>void transferToPhotos());
- $('mfUploadOpen').addEventListener('click',()=>{$('mfUploadForm').hidden=false});
+ $('mfUploadOpen').addEventListener('click',()=>{if(uploading)return;$('mfUploadForm').hidden=false;if(worldId==='uniform'){$('mfUploadFiles').value='';$('mfUploadFiles').click()}});
  $('mfUploadClose').addEventListener('click',()=>{if(!uploading)$('mfUploadForm').hidden=true});
  $('mfUploadChoose').addEventListener('click',()=>{$('mfUploadFiles').value='';$('mfUploadFiles').click()});
  $('mfUploadFiles').addEventListener('change',()=>{const input=$('mfUploadFiles'),files=Array.from(input.files||[]);input.value='';void uploadUniforms(files)});

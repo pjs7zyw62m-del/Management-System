@@ -44,8 +44,12 @@ export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,posterVers
    (a.owner_id===state.user?.id||Boolean(profile(a.owner_id)))).slice().sort(newest);
  }
  function shortVideo(a){
+  if(['movie','series','documentary'].includes(a.video_category))return false;
+  const tags=Array.isArray(a.military_tags)?a.military_tags:[];
+  if(tags.includes('bc-video-orientation:short'))return true;
+  if(tags.includes('bc-video-orientation:standard'))return false;
   const info=shortInfo[a.id];
-  if(info&&info.duration>0&&info.duration<=180&&info.height>info.width*1.15)return true;
+  if(info&&info.width>0&&info.height>0)return info.height>info.width;
   return regexShort.test(title(a)+' '+String(a.filename||''));
  }
  const shorts=all=>all.filter(a=>!a.bunny_stream&&shortVideo(a));

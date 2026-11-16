@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="mans-armed-forces.css?v=20261113-post-sort-queue3">
 <link rel="stylesheet" href="mans-armed-forces-approved.css?v=20261112-approved2">
 <link rel="stylesheet" href="mans-armed-forces-workspace.css?v=20261115-seven-worlds1">
-<script type="module" src="mans-armed-forces.js?v=20261115-seven-worlds1"></script>
+<script type="module" src="mans-armed-forces.js?v=20261115-world-video1"></script>
 <script src="blackcell-live-update.js?v=20261114-auto3" defer data-mode="auto"></script>
 <style>html{background:#050506;color-scheme:dark}.mf-lightbox[open]{display:flex;flex-direction:column;overflow:auto}.mf-lightbox[open] #mfViewerImage{flex:1 1 auto;min-height:100px;height:auto;max-height:none;object-fit:contain}.mf-lightbox-bottom{flex:0 0 auto;flex-wrap:wrap;gap:8px}#mfTransferPhotos{flex-shrink:0;font-size:11px}#mfTransferStatus{flex:0 0 auto}.mf-lightbox-top{flex:0 0 auto}</style></head><body class="mf-body mf-world-body" data-mf-world="uniform" style="--mf-world-accent:#b9b9c2">
 <div id="uGate" class="mf-gate" role="status" aria-live="polite"><div class="mf-gate-box">
@@ -70,13 +70,13 @@
  <div class="mf-pagination" id="mfPagination" hidden><button type="button" id="mfPreviousPage" class="mf-secondary">← PREVIOUS</button><span id="mfPageLabel"></span><button type="button" id="mfNextPage" class="mf-secondary">NEXT →</button></div><div class="mf-collection-actions"><a class="mf-secondary" href="corporate-network.html?view=photos">OPEN COMPLETE MILITARY LIBRARY <span>↗</span></a><a class="mf-text-link" href="usa-page.html">EXPLORE USA ARCHIVES ↗</a></div>
 </section>
 <section class="mf-section mf-studio" id="studio" data-mf-panel hidden><div class="mf-section-heading"><div><h2>Upload &amp; Sort</h2><p>Upload photographs, review unsorted media, and organize your collection.</p></div></div><section class="mf-upload-panel" aria-label="Upload uniform photographs">
- <div class="mf-upload-head"><div><span class="mf-overline">PRIVATE COLLECTION / UPLOAD STUDIO</span><h3>Upload &amp; sort uniforms</h3><p>Choose up to 1,000 photographs. New eligible owner photos are posted immediately; only unclassified photos enter the sorting queue.</p></div><button type="button" id="mfUploadOpen" class="mf-primary">＋ UPLOAD PHOTOS</button></div>
+ <div class="mf-upload-head"><div><span class="mf-overline">PRIVATE COLLECTION / UPLOAD STUDIO</span><h3>Upload &amp; sort uniforms</h3><p>Choose any number of supported photographs. Sorting is optional at upload; unclassified eligible posted photos enter the sorting queue. Existing sharing permissions apply.</p></div><button type="button" id="mfUploadOpen" class="mf-primary">＋ UPLOAD MEDIA</button></div>
  <div id="mfUploadForm" hidden>
-  <label class="mf-upload-field">SORT INTO<select id="mfUploadCategory"><option value="auto">Automatically sort by uniform</option><option value="military">Military</option><option value="police">Law Enforcement</option><option value="fire">Fire &amp; Rescue</option><option value="medical">Emergency Medical</option><option value="security">Corrections &amp; Security</option><option value="professional">Professional Uniforms</option><option value="unsorted">Unsorted</option></select></label>
-  <label class="mf-upload-check" id="mfAiOption"><input type="checkbox" id="mfUploadAi"><span>Use visual AI for this batch (optional; sends reduced image copies to the AI provider and uses API credits; existing daily allowance applies).</span></label>
-  <label class="mf-upload-check" id="mfDirectOption"><input type="checkbox" id="mfUploadDirect"><span>I confirm these are non-explicit photographs I have the rights and consent to share with verified BLACKCELL members. Post my photos immediately. Sorting does not delay publication.</span></label>
-  <input id="mfUploadFiles" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,image/heic" aria-label="Select uniform photographs">
-  <div class="mf-upload-actions"><button type="button" id="mfUploadChoose" class="mf-secondary">CHOOSE PHOTOS</button><button type="button" id="mfUploadPause" class="mf-secondary" hidden>Ⅱ PAUSE UPLOADS / AI</button><button type="button" id="mfUploadClose" class="mf-secondary">CLOSE</button></div>
+  <label class="mf-upload-field" style="display:none">SORT INTO<select id="mfUploadCategory"><option value="auto">Automatically sort by uniform</option><option value="military">Military</option><option value="police">Law Enforcement</option><option value="fire">Fire &amp; Rescue</option><option value="medical">Emergency Medical</option><option value="security">Corrections &amp; Security</option><option value="professional">Professional Uniforms</option><option value="unsorted">Unsorted</option></select></label>
+  <label class="mf-upload-check" id="mfAiOption" style="display:none"><input type="checkbox" id="mfUploadAi"><span>Use visual AI for this batch (optional; sends reduced image copies to the AI provider and uses API credits; existing daily allowance applies).</span></label>
+  <label class="mf-upload-check" id="mfDirectOption" style="display:none"><input type="checkbox" id="mfUploadDirect"><span>I confirm these are non-explicit photographs I have the rights and consent to share with verified BLACKCELL members. Post my photos immediately. Sorting does not delay publication.</span></label>
+  <input id="mfUploadFiles" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,image/heic,video/mp4,video/quicktime,video/webm" aria-label="Select uniform photographs">
+  <div class="mf-upload-actions"><button type="button" id="mfUploadChoose" class="mf-secondary" style="display:none">CHOOSE PHOTOS</button><button type="button" id="mfUploadPause" class="mf-secondary" hidden>Ⅱ PAUSE UPLOADS / AI</button><button type="button" id="mfUploadClose" class="mf-secondary">CLOSE</button></div>
   <div id="mfUploadStatus" role="status" aria-live="polite"></div><progress id="mfUploadProgress" max="1" value="0" hidden></progress>
  </div>
 </section>
@@ -84,7 +84,7 @@
  <div><span class="mf-overline">POSTED / NEEDS CATEGORY</span><h3><strong id="mfQueueCount">0</strong> Unsorted photos</h3><p>These photos are already visible in All Uniforms. Assign a uniform category or skip to the next photo.</p></div>
  <button id="mfReviewQueue" class="mf-primary" type="button" disabled>REVIEW UNSORTED ↗</button>
  <div id="mfPendingPanel" hidden><p><strong id="mfPendingCount">0</strong> older Man’s Armed Forces uploads are still pending publication.</p><button type="button" id="mfPublishPending" class="mf-secondary">POST EXISTING UPLOADS</button></div>
- <p id="mfQueueMessage" role="status" aria-live="polite"></p>
+ <p id="mfQueueMessage" style="min-height:1.5em;color:#d7dee5" role="status" aria-live="polite"></p>
 </section>
 </section></main></div>
 <dialog id="mfLightbox" class="mf-lightbox" aria-label="Selected Military Library photograph">
