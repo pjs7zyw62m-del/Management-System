@@ -6,9 +6,12 @@ import {createNetworkPersonalization} from './corporate-network-personalization.
 import {createPhotoRediscovery} from './corporate-photo-rediscovery.js?v=20261113-auto-suggest1';
 import {createVisualDiscovery} from './corporate-visual-discovery.js?v=20261111-mediareset1';
 import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phonecheck2';
-import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261116-playback-priority8';
+import {attachRenderedWorld} from './blackcell-render-player.js?v=2';
+import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261116-render-pilot9';
 import {isWorldVideo,worldVideoTitle,readWorldVideo,createWorldVideoPreviews} from './blackcell-world-video-catalog.js?v=3-playback-priority';
 import {createProfileWorlds} from './corporate-profile-worlds.js?v=20-progressive-previews';
+// Pilot only: the private manifest must exist and authorization must pass; otherwise use original playback.
+window.BLACKCELL_ENABLE_RENDER_PLAYBACK=true;
 const client=corporateClient(),bucket=client.storage.from('corp-social-media');
 const worldVideoPreviews=createWorldVideoPreviews(client);
 const $=id=>document.getElementById(id);
@@ -1383,6 +1386,7 @@ async function bcLiveOriginal_publishDirectVideo(event){
 const videoChannel=createBlackcellVideoChannel({
  state,mediaUrl,posterUrl,posterVersions,sharedMedia,profile,personName,stamp,switchView,openProfile,toast,
  worldVideoPreviews,readWorldVideo:a=>readWorldVideo(client,a),bindTransfer:profileWorlds.bindFeedPhoto,
+ attachRenderedWorld:opts=>attachRenderedWorld({client,...opts}),
  shareVideoInside:prepareVideoShare,followChannel:toggleFollow,channelAvatar:p=>mediaUrl(asset(p?.avatar_asset_id)),
  loadVideoComments:async a=>{if(!a.post_id)throw Error('Video has no linked post');const {data,error}=await client.from('corp_social_comments').select('id,post_id,user_id,body,created_at').eq('post_id',a.post_id).order('created_at',{ascending:false}).limit(250);if(error)throw error;return data||[]},
  addVideoComment:async(a,body)=>{if(!state.user?.id||!a.post_id||typeof body!=='string'||!body.trim()||body.length>1000)throw Error('Invalid comment');const {error}=await client.from('corp_social_comments').insert({post_id:a.post_id,user_id:state.user.id,body:body.trim()});if(error)throw error},

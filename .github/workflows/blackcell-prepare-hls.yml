@@ -1,0 +1,34 @@
+name: Prepare BLACKCELL HLS dependency
+on:
+  push:
+    branches: [feature/blackcell-video-rendering]
+    paths: [.github/workflows/blackcell-prepare-hls.yml]
+permissions:
+  contents: write
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/blackcell-video-rendering
+      - name: Fetch pinned package without lifecycle scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p vendor
+          cd "$(mktemp -d)"
+          npm pack hls.js@1.7.4 --ignore-scripts --json --registry=https://registry.npmjs.org > pack.json
+          node -e 'const p=require("./pack.json")[0]; if(p.name!=="hls.js"||p.version!=="1.7.4") process.exit(1); const fs=require("fs"),c=require("crypto"); if("sha512-"+c.createHash("sha512").update(fs.readFileSync(p.filename)).digest("base64")!==p.integrity) process.exit(1);'
+          tar -xzf hls.js-1.7.4.tgz package/dist/hls.min.js package/LICENSE package/package.json
+          cp package/dist/hls.min.js "$GITHUB_WORKSPACE/vendor/hls-1.7.4.min.js"
+          cp package/LICENSE "$GITHUB_WORKSPACE/vendor/hls-1.7.4.LICENSE"
+          node -e 'const p=require("./pack.json")[0];const c=require("crypto"),fs=require("fs"); const file=process.env.GITHUB_WORKSPACE+"/vendor/hls-1.7.4.min.js";fs.writeFileSync(process.env.GITHUB_WORKSPACE+"/vendor/hls-1.7.4.integrity.json",JSON.stringify({name:p.name,version:p.version,packageIntegrity:p.integrity,sha256:c.createHash("sha256").update(fs.readFileSync(file)).digest("hex")},null,2)+"\n");'
+      - name: Commit only reviewed dependency outputs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add vendor/hls-1.7.4.min.js vendor/hls-1.7.4.LICENSE vendor/hls-1.7.4.integrity.json
+          git diff --cached --quiet || git commit -m "Vendor pinned HLS playback dependency 1.7.4"
+          git push origin HEAD:feature/blackcell-video-rendering
