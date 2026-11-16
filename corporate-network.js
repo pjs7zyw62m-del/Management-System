@@ -6,8 +6,8 @@ import {createNetworkPersonalization} from './corporate-network-personalization.
 import {createPhotoRediscovery} from './corporate-photo-rediscovery.js?v=20261113-auto-suggest1';
 import {createVisualDiscovery} from './corporate-visual-discovery.js?v=20261111-mediareset1';
 import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phonecheck2';
-import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261116-paid-video-guard3';
-import {isWorldVideo,worldVideoTitle,readWorldVideo,createWorldVideoPreviews} from './blackcell-world-video-catalog.js?v=1';
+import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261116-native-playback4';
+import {isWorldVideo,worldVideoTitle,readWorldVideo,worldPlaybackUrl,createWorldVideoPreviews} from './blackcell-world-video-catalog.js?v=2-native-playback';
 import {createProfileWorlds} from './corporate-profile-worlds.js?v=20-progressive-previews';
 const client=corporateClient(),bucket=client.storage.from('corp-social-media');
 const worldVideoPreviews=createWorldVideoPreviews(client);
@@ -1365,7 +1365,7 @@ async function bcLiveOriginal_publishDirectVideo(event){
 }
 const videoChannel=createBlackcellVideoChannel({
  state,mediaUrl,posterUrl,posterVersions,sharedMedia,profile,personName,stamp,switchView,openProfile,toast,
- worldVideoPreviews,readWorldVideo:a=>readWorldVideo(client,a),bindTransfer:profileWorlds.bindFeedPhoto,
+ worldVideoPreviews,worldPlaybackUrl:a=>worldPlaybackUrl(client,a),bindTransfer:profileWorlds.bindFeedPhoto,
  uploadVideo:openDirectVideoUpload,
  playStream:async a=>{
   const data=await videoStreamApi('play',{catalogId:a.id});
