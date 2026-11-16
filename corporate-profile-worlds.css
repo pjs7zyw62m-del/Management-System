@@ -17,8 +17,8 @@
 #profileView .bc-pw-buttons{display:flex;gap:8px}
 #profileView .bc-pw-buttons button{flex:1}
 #profileView .bc-pw-bubbles{display:flex;align-items:flex-start;gap:15px;flex-wrap:wrap}
-#profileView .bc-pw-bubble{width:116px;min-width:0;background:none;border:0;color:#c6c6cc;display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;padding:2px;font-size:11px;line-height:1.3;text-align:center;white-space:normal}
-#profileView .bc-pw-circle{display:grid;place-items:center;width:104px;height:104px;border:2px solid #3c3c42;border-radius:50%;background:#17171a!important;color:var(--world-color);font-size:29px;transition:border-color .22s,box-shadow .22s;flex:none}
+#profileView .bc-pw-bubble{width:140px;min-width:0;background:none;border:0;color:#c6c6cc;display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;padding:2px;font-size:11px;line-height:1.3;text-align:center;white-space:normal}
+#profileView .bc-pw-circle{display:grid;place-items:center;width:128px;height:128px;border:2px solid #3c3c42;border-radius:50%;background:#17171a!important;color:var(--world-color);font-size:29px;transition:border-color .22s,box-shadow .22s;flex:none}
 #profileView .bc-pw-bubble[aria-pressed=true]{color:#fff}
 #profileView .bc-pw-bubble[aria-pressed=true] .bc-pw-circle{border-color:var(--world-color);box-shadow:0 0 0 3px #ffffff09,0 0 17px color-mix(in srgb,var(--world-color) 20%,transparent)}
 #profileView #profileCover[data-world-cover]{background-position:center 29%!important}
@@ -38,7 +38,7 @@
 .bc-pw-viewer::backdrop{background:#000d}
 .bc-pw-viewer img{display:block;max-width:100%;max-height:80vh;object-fit:contain;margin:8px auto 0}
 .bc-pw-viewer button{background:#28282c;color:white;padding:8px 12px;border:1px solid #444;border-radius:8px}
-@media(max-width:620px){#profileView #profileWorlds{padding:14px}#profileView .bc-pw-bubbles{gap:8px}#profileView .bc-pw-bubble{width:98px}#profileView .bc-pw-circle{width:90px;height:90px}#profileView .bc-pw-feed{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){#profileView #profileWorlds{padding:14px}#profileView .bc-pw-bubbles{gap:8px}#profileView .bc-pw-bubble{width:112px}#profileView .bc-pw-circle{width:104px;height:104px}#profileView .bc-pw-feed{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 /* Wide artwork is composed from the approved World portraits instead of
    zooming a vertical portrait until the face is outside the cover. */
@@ -156,3 +156,19 @@ html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-pw-video
 #profileView .bc-pw-video-panel .bc-pw-cover-art:not([data-count="1"]) .bc-pw-cover-portrait{object-fit:cover;object-position:center 7%}
 #profileView .bc-pw-video-panel .bc-pw-cover-art:not([data-count="1"]) .bc-pw-cover-panel:after{background:linear-gradient(0deg,#040507d9,transparent 42%)}
 #profileView .bc-pw-video-panel .bc-pw-live-playing .bc-pw-cover-caption{display:none!important}
+
+/* Center My Worlds independently of the right-aligned edit action. */
+#profileView #profileWorlds>.bc-pw-heading{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px;margin-bottom:14px}
+#profileView #profileWorlds>.bc-pw-heading>h2{grid-column:2;grid-row:1;text-align:center;font-size:17px}
+#profileView #profileWorlds>.bc-pw-heading>button{grid-column:3;grid-row:1;justify-self:end;max-width:100%;white-space:normal}
+#profileView #profileWorlds>.bc-pw-bubbles{justify-content:center;gap:10px 12px}
+#profileView #profileWorlds .bc-pw-bubble{font-size:12px}
+@media(min-width:761px){
+ #profileView #profileWorlds>.bc-pw-bubbles{display:flex;flex-wrap:wrap}
+ #profileView #profileWorlds .bc-pw-bubble{width:clamp(102px,calc((100% - 72px)/7),140px)}
+ #profileView #profileWorlds .bc-pw-circle{width:min(128px,100%);height:auto;aspect-ratio:1}
+}
+@media(max-width:420px){
+ #profileView #profileWorlds>.bc-pw-heading{grid-template-columns:1fr;gap:6px}
+ #profileView #profileWorlds>.bc-pw-heading>h2,#profileView #profileWorlds>.bc-pw-heading>button{grid-column:1;grid-row:auto;justify-self:center}
+}
