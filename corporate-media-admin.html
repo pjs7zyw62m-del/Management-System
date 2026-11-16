@@ -10,9 +10,9 @@
 <link rel="stylesheet" href="corporate-media-admin.css?v=20261111-bunny-review1">
 <link rel="stylesheet" href="corporate-bunny-library-sync.css?v=20261112-library-sync2">
 <link rel="stylesheet" href="corporate-media-diagnostics.css?v=20261112-diag1">
-<link rel="stylesheet" href="corporate-admin-workspace.css?v=20261116-world-review38">
+<link rel="stylesheet" href="corporate-admin-workspace.css?v=20261116-world-review39">
 <script src="corp-config.js" defer></script>
-<script type="module" src="corporate-media-admin.js?v=20261116-world-review38"></script>
+<script type="module" src="corporate-media-admin.js?v=20261116-world-review39"></script>
 <script src="blackcell-live-update.js?v=20261114-auto3" defer data-mode="auto"></script>
 </head>
 <body class="bc-network bc-media-admin-page">
@@ -168,11 +168,12 @@
           <div class="bc-proc-editor-head"><strong id="bcReviewName">MEDIA TO REVIEW</strong><button type="button" id="bcReviewCancel">Close</button></div>
           <div class="bc-review-workbench"><div class="bc-review-canvas"><div id="bcReviewPreview" class="bc-review-preview"></div><div class="bc-review-canvas-note">Private preview · Not yet published</div></div><div class="bc-review-inspector"><h3>Classification</h3>
           <div class="bc-review-grid">
+           <label class="bc-review-album">UNIFORM WORLD <select id="bcReviewWorld"></select></label>
            <label>VERIFIED COUNTRY <select id="bcReviewCountry"></select></label>
-           <label>MILITARY BRANCH <select id="bcReviewBranch"></select></label>
+           <label id="bcReviewBranchLabel">MILITARY BRANCH <select id="bcReviewBranch"></select></label>
            <label>SUBJECT CATEGORY <select id="bcReviewCategory"></select></label>
            <label>ERA <select id="bcReviewEra"></select></label>
-           <label>UNIT / FORMATION <input id="bcReviewUnit" maxlength="120" placeholder="Only when known"></label>
+           <label id="bcReviewUnitLabel">UNIT / FORMATION <input id="bcReviewUnit" maxlength="120" placeholder="Only when known"></label>
            <label>TAGS <input id="bcReviewTags" maxlength="350" placeholder="Visible details, comma separated"></label>
            <label class="bc-review-album">DESTINATION ALBUM <select id="bcReviewAlbum"></select></label>
           </div>
@@ -181,11 +182,11 @@
            <label><input id="bcReviewRights" type="checkbox"> I confirm I have the necessary rights and consent to store and display this media.</label>
            <label><input id="bcReviewAges" type="checkbox"> If explicit: all depicted people are adults, and I have appropriate authority to hold the material.</label>
           </div>
-          <p class="bc-proc-warning">Country, branch and unit must be supported by evidence. If uncertain, leave pending. Explicit media stays owner-only and is never added to a shared album. AI is optional for verified non-explicit photos only.</p>
+          <p class="bc-proc-warning">Country and unit or agency must be supported by evidence. Branch is required only for Military World. If uncertain, leave pending. Explicit media stays owner-only and is never added to a shared album. AI is optional for verified non-explicit photos only.</p>
           <div class="bc-proc-toolbar">
            <button id="bcReviewAI" type="button">AI suggestions</button>
            <button id="bcReviewReject" type="button">Reject…</button>
-           <button id="bcReviewApprove" type="button" class="bc-proc-approve">Approve &amp; file…</button>
+           <p id="bcReviewStatus" role="status" aria-live="polite" style="grid-column:1/-1;font-size:12px;line-height:1.4;color:#d8d8e2;margin:4px 0"></p><button id="bcReviewApprove" type="button" class="bc-proc-approve">Approve &amp; file…</button>
           </div>
         </div></div></div></section></div><small class="bc-proc-note">Nothing publishes automatically. Uncertain media remains pending; restricted media stays owner-only.</small></section>
   <section class="bc-media-admin-explainer">
