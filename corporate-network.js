@@ -6,7 +6,7 @@ import {createNetworkPersonalization} from './corporate-network-personalization.
 import {createPhotoRediscovery} from './corporate-photo-rediscovery.js?v=20261113-auto-suggest1';
 import {createVisualDiscovery} from './corporate-visual-discovery.js?v=20261111-mediareset1';
 import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phonecheck2';
-import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261116-internal-share5';
+import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261116-chat-share6';
 import {isWorldVideo,worldVideoTitle,readWorldVideo,createWorldVideoPreviews} from './blackcell-world-video-catalog.js?v=1';
 import {createProfileWorlds} from './corporate-profile-worlds.js?v=20-progressive-previews';
 const client=corporateClient(),bucket=client.storage.from('corp-social-media');
