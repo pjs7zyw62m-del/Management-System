@@ -12,7 +12,7 @@ async function bytes(res:Response,max:number){
 const b64=(v:Uint8Array)=>{let s="";for(let i=0;i<v.length;i+=16384)s+=String.fromCharCode(...v.subarray(i,i+16384));return btoa(s)};
 Deno.serve(async req=>{
  const origin=req.headers.get("origin")||"",headers={"Access-Control-Allow-Origin":origins.has(origin)?origin:"https://blackcellcorp.com","Access-Control-Allow-Methods":"POST,OPTIONS","Access-Control-Allow-Headers":"authorization,apikey,content-type,x-client-info","Cache-Control":"private, no-store","Vary":"Origin","X-Content-Type-Options":"nosniff"};
- const send=(body:Record<string,unknown>,status=200)=>new Response(JSON.stringify(body),{status,headers:{...headers,"Content-Type":"application/json"}});
+ const send=(body:Record<string,unknown>,status=200)=>{if(body.ok===false)console.info("KLING_PILOT_BLOCK",JSON.stringify({code:body.code,status,diagnostic:body.diagnostic||null}));return new Response(JSON.stringify(body),{status,headers:{...headers,"Content-Type":"application/json"}})};
  if(req.method==="OPTIONS")return new Response(null,{status:204,headers});
  if(req.method!=="POST"||(origin&&!origins.has(origin)))return send({ok:false,code:"DENIED"},403);
  const jwt=(req.headers.get("authorization")||"").replace(/^Bearer\s+/i,"");
@@ -35,15 +35,26 @@ Deno.serve(async req=>{
   const previous=await db.from("blackcell_ai_video_pilot").select("id,user_id,source_path,state,provider_task_id,created_at").eq("singleton",true).maybeSingle();
   if(previous.error||!previous.data||previous.data.user_id!==uid||previous.data.provider_task_id||previous.data.state!=="uncertain")return send({ok:false,code:"PRIOR_ATTEMPT_REVIEW_REQUIRED"});
   if(job&&(job.user_id!==uid||job.source_path!==path))return send({ok:false,code:"PILOT_ALREADY_USED"});
+  async function priorCheck(){
+   const old=previous.data!;
+   const exact=await kling("/tasks?external_task_ids="+encodeURIComponent(old.id)),a=await exact.json().catch(()=>null);
+   const history=await kling("/tasks",{method:"POST",body:JSON.stringify({start_time:String(new Date(old.created_at).getTime()-60000),end_time:String(Date.now()),cursor:"",limit:100,filters:[{key:"product_type",values:["video"]}]})}),h=await history.json().catch(()=>null);
+   const exactRows=Array.isArray(a?.data)?a.data:Array.isArray(a?.data?.result)?a.data.result:null;
+   const list=Array.isArray(h?.data?.result)?h.data.result:null;
+   const diagnostic={exactHttp:exact.status,exactCode:Number.isInteger(a?.code)?a.code:null,exactCount:exactRows?.length??null,exactShape:Array.isArray(a?.data)?"array":Array.isArray(a?.data?.result)?"result":a?.data===null?"null":typeof a?.data,historyHttp:history.status,historyCode:Number.isInteger(h?.code)?h.code:null,historyCount:list?.length??null,more:h?.data?.has_more===false?false:h?.data?.has_more===true?true:null,matched:!!list?.some((t:Record<string,unknown>)=>t?.external_id===old.id||t?.external_task_id===old.id)};
+   const ok=exact.ok&&a?.code===0&&exactRows?.length===0&&history.ok&&h?.code===0&&list!==null&&diagnostic.more===false&&!diagnostic.matched;
+   console.info("KLING_RETRY_PREFLIGHT",JSON.stringify({...diagnostic,ok}));
+   return {ok,diagnostic};
+  }
+  if(action==="status"&&!job){
+   const check=await priorCheck();
+   return check.ok?send({ok:true,state:"ready"}):send({ok:false,code:"PRIOR_ATTEMPT_REVIEW_REQUIRED",diagnostic:check.diagnostic});
+  }
   if(action==="create"){
    if(job)return send({ok:true,state:job.state,id:job.id});
    if(input.approve!==true||input.rights!==true||!Object.hasOwn(motions,input.motion))return send({ok:false,code:"CONFIRMATION_REQUIRED"});
    if(input.retryConfirmed!==true)return send({ok:false,code:"CONFIRMATION_REQUIRED"});
-   // No second submission unless both provider lookups again find no matching prior job.
-   const old=previous.data,oldRes=await kling("/tasks?external_task_ids="+encodeURIComponent(old.id)),oldData=await oldRes.json().catch(()=>null);
-   if(!oldRes.ok||oldData?.code!==0||!Array.isArray(oldData.data)||oldData.data.length!==0)return send({ok:false,code:"PRIOR_ATTEMPT_REVIEW_REQUIRED"});
-   const history=await kling("/tasks",{method:"POST",body:JSON.stringify({start_time:String(new Date(old.created_at).getTime()-60000),end_time:String(Date.now()),cursor:"",limit:100,filters:[{key:"product_type",values:["video"]}]})}),hist=await history.json().catch(()=>null);
-   if(!history.ok||hist?.code!==0||!Array.isArray(hist.data?.result)||hist.data.has_more!==false||hist.data.result.some((t:Record<string,unknown>)=>t.external_id===old.id))return send({ok:false,code:"PRIOR_ATTEMPT_REVIEW_REQUIRED"});
+   const preflight=await priorCheck();if(!preflight.ok)return send({ok:false,code:"PRIOR_ATTEMPT_REVIEW_REQUIRED",diagnostic:preflight.diagnostic});
    // Authoritative read via the signed-in owner's encrypted storage gateway. No caller-supplied image bytes or URL.
    const drive=(act:string,body:Record<string,unknown>)=>fetch(host+"/functions/v1/blackcell-os-private-drive?action="+act,{method:"POST",headers:{Authorization:"Bearer "+jwt,apikey:pub,"Content-Type":"application/json"},body:JSON.stringify(body),redirect:"error",signal:AbortSignal.timeout(25000)});
    const lookup=await drive("lookup",{path}),catalog=await lookup.json().catch(()=>null);
