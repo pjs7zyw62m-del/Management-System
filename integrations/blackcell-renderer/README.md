@@ -11,3 +11,6 @@ FFmpeg VOD HLS; original bytes are never replaced. 360p–2160p renditions are s
 
 ## Local synthetic test
 Use testsrc2 (no private media). Generate a five-second 1280x720 24 fps MP4 with sine audio, run render.py input.mp4 output --max-height 720, check 360/480/720 output dimensions, matching 4+1 sec segment durations and ENDLIST, and verify the input hash is unchanged. A component-level FFmpeg command test passed for those three resolutions; cloud end-to-end delivery and browser tests have not run.
+
+## Pilot deployment record
+Railway synthetic 360/480/720p render passed; Bunny read/write and cleanup passed; restricted catalog scan passed with zero eligible records. Production pilot is restricted to 1 vCPU, 1 GB, one job per 15-minute scan, 720p maximum and 45 MiB maximum source; only approved rights-confirmed non-adult World library videos. The worker holds a broker-only token, not a Supabase service-role key. The catalog function is deployed and its RPC executable only by service_role. No actual video has yet been rendered through this integration. Do not enable adaptive playback until the dependency and authorized playback are tested.
