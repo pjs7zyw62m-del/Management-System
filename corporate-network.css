@@ -206,3 +206,7 @@ textarea:focus,input:focus{border-color:#ad7387;box-shadow:0 0 0 2px #ad738723}
 .bc-network .bc-pulse-menu-options button:hover{background:#ffffff12}
 .bc-network .comment-zone[hidden]{display:none!important}
 .bc-network .post .library-feed-post{margin:8px 0;border:1px solid #ffffff16}
+
+.bc-network .post-actions .bc-pulse-menu>summary.bc-pulse-reposted{color:#2dc890}
+.bc-network .bc-pulse-view-count{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:4px 8px;font-size:14px;color:#a7a7b0;font-variant-numeric:tabular-nums}
+.bc-network .bc-pulse-interactions .bc-pulse-menu-options{max-width:calc(100vw - 24px)}
