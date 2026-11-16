@@ -1,7 +1,8 @@
 /* BLACKCELL Video Channel: content-first, YouTube-like navigation,
    Shorts and private Plex-style library. All videos come from already
    approved Network assets; personal likes/history are device-local. */
-export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,posterVersions,sharedMedia,profile,personName,stamp,switchView,openProfile,uploadVideo,playStream,reviewStream,refreshStream,toast}){
+import {isWorldVideo,worldVideoTitle} from './blackcell-world-video-catalog.js?v=1';
+export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,state,mediaUrl,posterUrl,posterVersions,sharedMedia,profile,personName,stamp,switchView,openProfile,uploadVideo,playStream,reviewStream,refreshStream,toast}){
  const $=id=>document.getElementById(id);
  const make=(tag,cls='',value=null)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(value!==null)el.textContent=String(value);return el};
  const button=(label,cls,callback)=>{const b=make('button',cls,label);b.type='button';b.addEventListener('click',callback);return b};
@@ -34,14 +35,18 @@ export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,posterVers
  const storeHistory=()=>write('bc-video-history-v1-'+accountKey(),watchHistory);
  const storeInfo=()=>write('bc-video-orientation-v1-'+accountKey(),shortInfo);
  const postOf=a=>state.posts.find(p=>p.id===a.post_id);
- const title=a=>String(a.title||postOf(a)?.body||a.caption||a.filename||'Untitled video').replace(/\s+/g,' ').trim().slice(0,135)||'Untitled video';
+ const title=a=>isWorldVideo(a)?worldVideoTitle(a):String(a.title||postOf(a)?.body||a.caption||a.filename||'Untitled video').replace(/\s+/g,' ').trim().slice(0,135)||'Untitled video';
  const creator=a=>personName(profile(a.owner_id));
  const source=a=>String(mediaUrl(a)||'');
+ let cinemaObject='',shortObject='',shortRequest=0,cinemaRequest=0;
+ function releaseObject(which){if(which==='cinema'){if(cinemaObject)URL.revokeObjectURL(cinemaObject);cinemaObject=''}else{if(shortObject)URL.revokeObjectURL(shortObject);shortObject=''}}
+ window.addEventListener('pagehide',()=>{releaseObject('cinema');releaseObject('short')});
+ function mountWorldPoster(a,frame){const img=make('img','bc-video-custom-poster');img.alt='';img.hidden=true;img.style.cssText='width:100%;height:100%;object-fit:cover;position:absolute;inset:0';frame.style.position='relative';frame.append(img);worldVideoPreviews.mount(a,img)}
  const when=a=>stamp(a.created_at);
  const newest=(a,b)=>Date.parse(b.created_at||0)-Date.parse(a.created_at||0);
  function allVideos(){
-  return [...state.assets,...(state.streamVideos||[])].filter(a=>sharedMedia(a)&&a.kind==='video'&&['post','library'].includes(a.purpose)&&
-   (a.owner_id===state.user?.id||Boolean(profile(a.owner_id)))).slice().sort(newest);
+  const visible=[...state.assets,...(state.streamVideos||[])].filter(a=>a.kind==='video'&&['post','library'].includes(a.purpose)&&(sharedMedia(a)||(isWorldVideo(a)&&a.owner_id===state.user?.id&&a.review_status==='pending'))&&(isWorldVideo(a)||a.owner_id===state.user?.id||Boolean(profile(a.owner_id))));
+  return [...new Map(visible.map(a=>[a.id,a])).values()].sort(newest);
  }
  function shortVideo(a){
   if(['movie','series','documentary'].includes(a.video_category))return false;
@@ -233,6 +238,8 @@ export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,posterVers
   const url=source(a),cover=posterUrl(a);
   if(cover){
    appendNativeArtwork(thumbnail,cover,'Cover for '+title(a),'bc-video-custom-poster',film);
+  }else if(isWorldVideo(a)){
+   mountWorldPoster(a,thumbnail);
   }else if(url){
    const v=make('video');lazyThumb(v,url,a);thumbnail.append(v);
   }else thumbnail.append(make('span','bc-yt-preview-unavailable',a.bunny_stream?'VIDEO POSTER NOT ADDED':'PREVIEW UNAVAILABLE'));
@@ -244,7 +251,7 @@ export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,posterVers
   const body=make('div','bc-yt-cardbody');
   const image=make('div','bc-yt-creator-avatar',creator(a).slice(0,1).toUpperCase()||'B');
   const info=make('div','bc-yt-video-details');
-  info.append(make('strong','',title(a)),make('small','',creator(a)),make('small','',when(a)));
+  info.append(make('strong','',title(a)),make('small','',creator(a)),make('small','',when(a)));if(isWorldVideo(a)&&a.review_status==='pending')info.append(make('small','','Private · pending review'));
   const save=button(saved(a)?'✓':'＋','bc-yt-card-save',()=>toggleLater(a));
   save.title=saved(a)?'Remove from Watch Later':'Save to Watch Later';
   save.setAttribute('aria-label',save.title);body.append(image,info,save);
@@ -267,6 +274,7 @@ export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,posterVers
     const tap=button('','bc-yt-short-thumb',()=>goShorts(a.id));
     const url=source(a),cover=posterUrl(a);
     if(cover){appendNativeArtwork(tap,cover,'Short thumbnail for '+title(a),'bc-video-custom-poster')}
+    else if(isWorldVideo(a)){mountWorldPoster(a,tap)}
     else if(url){const v=make('video');lazyThumb(v,url,a);tap.append(v)}
     tap.append(make('span','bc-yt-short-play','▶'));
     card.append(tap,make('strong','',title(a)),make('small','',creator(a)));
@@ -505,6 +513,7 @@ export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,posterVers
  }
  function closeCreate(){$('bcVideoCreateMenu').hidden=true}
  function stopShort(){
+  shortRequest++;releaseObject('short');
   const p=$('bcVideoShortPlayer');
   if(p){const a=shortQueue[shortIndex];track(a,p,true);p.pause();p.removeAttribute('src');p.load();displayedShortId=null}
  }
@@ -529,12 +538,13 @@ export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,posterVers
   $('bcVideoShortPrev').disabled=shortIndex<=0;
   $('bcVideoShortNext').disabled=shortIndex>=shortQueue.length-1;
  }
- function loadShort(){
+ async function loadShort(){
   const a=shortQueue[shortIndex],v=$('bcVideoShortPlayer');if(!a)return;
-  const src=source(a);
+  const request=++shortRequest;let src=source(a);releaseObject('short');
   v.pause();v.removeAttribute('src');v.load();v.onloadedmetadata=null;
   $('bcVideoShortCreator').textContent=creator(a);
   $('bcVideoShortTitle').textContent=title(a);
+  if(isWorldVideo(a)){try{const blob=await readWorldVideo(a);if(request!==shortRequest||selected!=='shorts')return;shortObject=URL.createObjectURL(blob);src=shortObject}catch(e){if(request===shortRequest)toast('Private short unavailable: '+String(e.message||e));return}}
   if(!src){displayedShortId=null;toast('This short is temporarily unavailable.');return}
   displayedShortId=a.id;remember(a);mostRecentWrite=0;
   v.src=src;v.load();
@@ -561,12 +571,13 @@ export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,posterVers
  }
  let bcCinemaUpdateRelease=null;
  async function openCinema(a,list){
-  if(!bcCinemaUpdateRelease){try{bcCinemaUpdateRelease=window.top.BLACKCELL_LIVE_UPDATE?.hold('cinema',window)}catch(_){}}
   if(!initialized)return;
-  const src=source(a);
-  if(!a.bunny_stream&&!src){toast('Video temporarily unavailable. Refresh the channel.');return}
+  let src=source(a);const request=++cinemaRequest;
+  if(!a.bunny_stream&&!isWorldVideo(a)&&!src){toast('Video temporarily unavailable. Refresh the channel.');return}
+  if(!bcCinemaUpdateRelease){try{bcCinemaUpdateRelease=window.top.BLACKCELL_LIVE_UPDATE?.hold('cinema',window)}catch(_){}}
   const player=$('bcCinemaPlayer'),streamPlayer=$('bcCinemaStreamPlayer');
-  if(activeCinema){track(activeCinema,player,true);player.pause()}
+  if(activeCinema){track(activeCinema,player,true);player.pause();player.removeAttribute('src');player.load()}
+  releaseObject('cinema');
   streamPlayer.src='about:blank';streamPlayer.hidden=true;
   activeCinema=a;cinemaQueue=list?.length?list.slice():allVideos();
   if(!cinemaQueue.some(x=>x.id===a.id))cinemaQueue.unshift(a);
@@ -583,7 +594,7 @@ export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,posterVers
    $('bcCinemaDescription').textContent='Authenticating secure Stream playback…';
    try{
     const uri=await playStream(a);
-    if(activeCinema?.id!==a.id)return;
+    if(request!==cinemaRequest||activeCinema?.id!==a.id)return;
     if(typeof uri!=='string'||!uri.startsWith('https://player.mediadelivery.net/embed/'))throw Error('Invalid secure player');
     streamPlayer.src=uri;
     $('bcCinemaDescription').textContent=String(a.video_synopsis||'Approved private BLACKCELL movie.').slice(0,1000);
@@ -593,7 +604,9 @@ export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,posterVers
     closeCinema();
    }
   }else{
-   player.hidden=false;player.src=src;player.load();
+   player.hidden=false;
+   if(isWorldVideo(a)){const description=$('bcCinemaDescription');description.textContent='Loading private World video…';try{const blob=await readWorldVideo(a);if(request!==cinemaRequest||activeCinema?.id!==a.id)return;cinemaObject=URL.createObjectURL(blob);src=cinemaObject;description.textContent=a.review_status==='pending'?'Private upload · pending review':'Approved private World video.'}catch(e){if(request===cinemaRequest){toast('Private video unavailable: '+String(e.message||e));closeCinema()}return}}
+   player.src=src;player.load();
    const last=Number(resume[a.id]?.time||0);
    player.onloadedmetadata=()=>{if(last>=5&&last<player.duration-8)try{player.currentTime=last}catch{}};
    player.play().catch(()=>{});
@@ -601,11 +614,12 @@ export function createBlackcellVideoChannel({state,mediaUrl,posterUrl,posterVers
   $('bcCinemaClose').focus({preventScroll:true});
  }
  function closeCinema(){
+  cinemaRequest++;
   bcCinemaUpdateRelease?.();bcCinemaUpdateRelease=null;
   if(!activeCinema||$('bcVideoCinema').hidden)return;
   const p=$('bcCinemaPlayer'),iframe=$('bcCinemaStreamPlayer');
   track(activeCinema,p,true);
-  p.pause();p.removeAttribute('src');p.load();p.onloadedmetadata=null;p.hidden=false;
+  p.pause();p.removeAttribute('src');p.load();releaseObject('cinema');p.onloadedmetadata=null;p.hidden=false;
   iframe.src='about:blank';iframe.hidden=true;
   activeCinema=null;cinemaQueue=[];mostRecentWrite=0;
   $('bcVideoCinema').hidden=true;document.body.classList.remove('bc-cinema-open');

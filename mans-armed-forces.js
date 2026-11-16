@@ -8,6 +8,7 @@ import {createPrivateDrive,PRIVATE_FILE_LIMIT} from './blackcell-private-drive.j
 import {uploadPrivateFile,mediaType,privateUploadError} from './blackcell-private-media.js?v=8-transfer';
 
 import {installWorldPlayer} from './blackcell-world-player.js?v=2';
+import {isWorldVideo,worldVideoTitle,createWorldVideoPreviews} from './blackcell-world-video-catalog.js?v=1';
 const $=id=>document.getElementById(id);
 let approved=[],shown=[],filterBranch='all',filterStyle='all',filterCategory='all',lastSigned=0,authorized=null;
 let authBusy=false;
@@ -21,6 +22,8 @@ const unsortedQueue=()=>approved.filter(a=>a.kind==='photo'&&canSort(a)&&inferCa
 const uploadState={user:null,assets:[]};
 const bucket=corporate.storage.from('corp-social-media');
 const worldProvider='world-bunny-v1';
+const worldVideoPreviews=createWorldVideoPreviews(corporate);
+const mediaTitle=a=>a.kind==='video'?worldVideoTitle(a):(safe(a.caption)||safe(a.filename)||'Uniform photograph');
 const worldObjects=new Map();
 function releaseWorldUrls(keep=new Set()){for(const [id,url] of worldObjects)if(!keep.has(id)){URL.revokeObjectURL(url);worldObjects.delete(id)}}
 async function worldRequest(action,body,headers={}){
@@ -79,7 +82,7 @@ function text(el,value){if(el)el.textContent=String(value??'')}
 function safe(x){return String(x||'').trim().slice(0,180)}
 function branchOf(a){return safe(a.military_branch)||'Unspecified'}
 function searchable(a){
- return [a.filename,a.caption,a.military_branch,a.military_category,a.military_era,...(Array.isArray(a.military_tags)?a.military_tags:[])]
+ return [a.filename,a.caption,a.kind==='video'?worldVideoTitle(a):'',a.military_branch,a.military_category,a.military_era,...(Array.isArray(a.military_tags)?a.military_tags:[])]
  .filter(Boolean).join(' ').toLowerCase();
 }
 function matches(a){
@@ -187,7 +190,8 @@ async function openViewer(a,{queue=false}={}){
  const label=dialog.querySelector('.mf-lightbox-top small');if(label)label.textContent=isVideo?'BLACKCELL / PRIVATE VIDEO':(a.review_status==='pending'?'BLACKCELL / PRIVATE COLLECTION':'BLACKCELL / APPROVED COLLECTION');
  if(!isVideo&&a.signedUrl)image.src=a.signedUrl;
  image.alt=safe(a.caption)||safe(a.filename)||'Uniform photograph';
- text($('mfViewerTitle'),safe(a.caption)||safe(a.filename)||(isVideo?'Uniform video':'Uniform photograph'));
+ text($('mfViewerTitle'),mediaTitle(a));
+ const rename=$('mfRenameVideo');if(rename)rename.hidden=!(isVideo&&a.owner_id===uid);
  text($('mfViewerMeta'),formatMetadata(a));
  viewerAsset=a;sortingQueue=queue;
  $('mfTransferPhotos').hidden=isVideo;$('mfTransferPhotos').disabled=transferringPhoto||isVideo;$('mfTransferPhotos').textContent=transferringPhoto?'TRANSFERRING…':'TRANSFER TO PHOTOS';text($('mfTransferStatus'),'');
@@ -248,13 +252,13 @@ async function render(){
  let unavailable=0;
  for(const a of visible){
   if(a.kind!=='video'&&!a.signedUrl){unavailable++;continue}
-  const card=document.createElement('button');card.type='button';card.className='mf-photo-card';card.setAttribute('aria-label',(safe(a.caption)||safe(a.filename)||'Uniform photograph')+' — '+formatMetadata(a));
+  const card=document.createElement('button');card.type='button';card.className='mf-photo-card';card.setAttribute('aria-label',mediaTitle(a)+' — '+formatMetadata(a));
   const isVideo=a.kind==='video';
   const img=document.createElement(isVideo?'div':'img');
-  if(isVideo){card.classList.add('mf-video-card');card.setAttribute('aria-label','Play '+(safe(a.filename)||'uniform video'));img.className='mf-video-tile';const play=document.createElement('span');play.textContent='▶';const label=document.createElement('small');label.textContent='VIDEO';img.append(play,label)}
+  if(isVideo){card.classList.add('mf-video-card');card.setAttribute('aria-label','Play '+mediaTitle(a));img.className='mf-video-tile';img.style.position='relative';img.style.overflow='hidden';const poster=document.createElement('img');poster.hidden=true;poster.alt='';poster.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;max-height:none';const play=document.createElement('span');play.textContent='▶';play.style.cssText='position:relative;z-index:1;background:#0009';const label=document.createElement('small');label.textContent='VIDEO';label.style.cssText='position:relative;z-index:1;padding:3px 5px;border-radius:4px;background:#0009';img.append(poster,play,label);if(isWorldVideo(a))worldVideoPreviews.mount(a,poster);}
   else{img.loading='lazy';img.decoding='async';img.src=a.signedUrl;img.alt=safe(a.caption)||safe(a.filename)||'Uniform photograph'}
   const details=document.createElement('div');details.className='mf-photo-info';
-  const title=document.createElement('strong');title.textContent=(safe(a.caption)||safe(a.filename)||'Uniform photograph').slice(0,85);
+  const title=document.createElement('strong');title.textContent=mediaTitle(a).slice(0,120);title.title=mediaTitle(a);
   const subtitle=document.createElement('small');subtitle.textContent=(a.review_status==='pending'?'PRIVATE · PENDING REVIEW · ':'')+formatMetadata(a).slice(0,100);
   details.append(title,subtitle);card.append(img,details);card.addEventListener('click',()=>void openViewer(a));grid.append(card);
  }
@@ -385,6 +389,7 @@ async function uploadUniforms(files){
  const rejected=picked.filter(f=>!good.includes(f));
  if(!good.length){text($('mfUploadStatus'),'No supported files.');showWorldUploadFailures(rejected.map(file=>({file,reason:'Unsupported format, empty file or exceeds current 45 MB limit.'})));return}
  const category=worldScope||$('mfUploadCategory').value;
+ const suppliedTitle=good.length===1&&good[0].type.startsWith('video/')?window.prompt('Optional video title — leave blank to use an automatic category title',''):null;
  const direct=false;
  if(direct&&!$('mfUploadDirect').checked){text($('mfUploadStatus'),'Confirm the batch is non-explicit and you have permission to share it, then select photos again. Sorting is not an approval requirement.');return}
  let useAI=direct&&category==='auto'&&$('mfUploadAi').checked;
@@ -417,6 +422,7 @@ async function uploadUniforms(files){
     if(!result.ok)throw Error(result.code||'Cloud upload was not confirmed');
     if(result.duplicate){duplicates++;continue}
     Object.assign(asset,result.record);
+    if(isVideo&&suppliedTitle?.trim()){const caption=suppliedTitle.trim().slice(0,180);const update=await corporate.from('corp_social_assets').update({caption}).eq('id',asset.id).eq('owner_id',uid).select('id,caption').maybeSingle();if(update.data)asset.caption=update.data.caption;else console.warn('Video title not saved',update.error?.message)}
     const added={data:result.record};
     saved++;
     asset.review_status=added.data?.review_status;asset.created_at=new Date().toISOString();
@@ -579,6 +585,9 @@ function ensureMediaUI(){
 function wire(){
  ensureMediaUI();
  installWorldPlayer($('mfViewerVideo'),$('mfLightbox'));
+ const rename=document.createElement('button');rename.type='button';rename.id='mfRenameVideo';rename.className='mf-secondary';rename.textContent='Edit title';rename.hidden=true;
+ $('mfViewerTitle')?.parentElement?.append(rename);
+ rename.addEventListener('click',async()=>{const a=viewerAsset,uid=authorized?.user.id;if(!a||a.kind!=='video'||a.owner_id!==uid)return;const input=window.prompt('Video title',a.caption||worldVideoTitle(a));if(input===null||!input.trim())return;const caption=input.trim().slice(0,180);rename.disabled=true;try{const out=await corporate.from('corp_social_assets').update({caption}).eq('id',a.id).eq('owner_id',uid).select('id,caption').maybeSingle();if(out.error||!out.data)throw Error(out.error?.message||'Title save not confirmed');a.caption=out.data.caption;if(viewerAsset?.id===a.id)text($('mfViewerTitle'),mediaTitle(a));await render()}catch(e){alert('Title not saved: '+e.message)}finally{rename.disabled=false}});
  $('mfMediaFilter')?.addEventListener('change',e=>{mediaFilter=e.target.value;page=0;if(authorized)void render()});
  document.querySelectorAll('.mf-portrait-tile[data-mf-uniform]').forEach(tile=>{
   const img=tile.querySelector('.mf-album-art img'),download=tile.querySelector('.mf-portrait-download');if(!img||!download)return;
