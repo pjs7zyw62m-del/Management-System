@@ -572,7 +572,7 @@ function renderProfile(){
  else if(!isOwnProfile){
   actions.append(btn(following(p.user_id)?'✓ FOLLOWING':'+ FOLLOW',()=>void toggleFollow(p.user_id)));
   if(state.chatPeers.some(x=>x.user_id===p.user_id)){
-   const directChat=btn('OPEN CHAT ↗',()=>window.dispatchEvent(new CustomEvent('blackcell-open-imessage',{detail:{peerId:p.user_id}})),'secondary');
+   const directChat=btn('Message',()=>window.dispatchEvent(new CustomEvent('blackcell-open-imessage',{detail:{peerId:p.user_id,source:'profile'}})),'secondary bc-fusion-message');directChat.setAttribute('aria-label','Message '+personName(p)+' in BLACKCELL iMessage');
    actions.append(directChat);
   }
  }
@@ -1831,7 +1831,7 @@ async function boot(){
   if(auth.member.role==='owner'||auth.member.can_chat===true){
    window.BLACKCELL_CORPORATE_NETWORK_CLIENT=client;
    const chatScript=document.createElement('script');
-   chatScript.src='corporate-chat-dock.js?v=20261113-imessage6';
+   chatScript.src='corporate-chat-dock.js?v=20261115-profile-imessage2';
    chatScript.defer=true;
    document.body.append(chatScript);
   }

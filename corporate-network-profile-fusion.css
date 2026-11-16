@@ -48,3 +48,14 @@ html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-fb-secti
 #profileView .bc-fusion-tube-card small{color:#a1a1a9}
 @media(max-width:780px){html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-fb-content{grid-template-columns:minmax(0,1fr)!important}html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-fb-timeline{order:-1!important;min-width:0!important}html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-fb-left{order:1!important}html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-fb-identity.profile-identity{padding:18px 15px!important}html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile #profileTabs.bc-fb-tabs{padding:0 5px!important}html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile #profileTabs.bc-fb-tabs>.bc-security-more{width:auto!important;flex:1 1 auto!important}html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile #profileTabs.bc-fb-tabs>button{padding:10px 8px!important;font-size:12px!important}html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-fb-stats.profile-stats{padding:0 6px!important}}
 @media(prefers-reduced-motion:reduce){#profileView.bc-fusion-profile *{scroll-behavior:auto!important}}
+
+/* Profile messaging uses the authenticated shared iMessage dock. */
+html body.bc-network #bcChatPane.bc-profile-chat{border:1px solid #444449!important;border-radius:20px!important;background:#111113!important;box-shadow:0 24px 75px #000b!important}
+html body.bc-network #bcChatPane.bc-profile-chat .bc-chat-pane-header{background:#1b1b1e!important;border-bottom:1px solid #343438!important;min-height:60px!important}
+html body.bc-network #bcChatPane.bc-profile-chat .bc-chat-pane-label strong{font-size:14px!important;letter-spacing:0!important;text-transform:none!important}
+html body.bc-network #bcChatPane.bc-profile-chat .bc-chat-pane-label small{color:#aaaab1!important;font-size:10px!important;letter-spacing:.05em!important}
+html body.bc-network #bcChatPane.bc-profile-chat .bc-chat-pane-controls button{background:#2b2b30!important;border-color:#42424a!important;color:#e9e9ee!important}
+html body.bc-network #bcChatPane .bc-profile-chat-expand[hidden]{display:none!important}
+html body.bc-network #bcChatPane.bc-profile-chat.bc-profile-chat-expanded{position:fixed!important;inset:12px!important;width:calc(100vw - 24px)!important;height:calc(100dvh - 24px)!important;max-width:none!important;max-height:none!important;resize:none!important}
+html body.bc-network #bcChatPane.bc-profile-chat.bc-profile-chat-expanded .bc-chat-pane-header{cursor:default!important}
+@media(max-width:620px){html body.bc-network #bcChatPane.bc-profile-chat.bc-profile-chat-expanded{inset:6px!important;width:calc(100vw - 12px)!important;height:calc(100dvh - 12px)!important}}
