@@ -29,7 +29,7 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
  const make=(tag,cls,txt)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(txt!==undefined)el.textContent=txt;return el};
  const button=(txt,fn,cls)=>{const b=make('button',cls,txt);b.type='button';b.onclick=fn;return b};
  function clear(){generation++;for(const url of urls)URL.revokeObjectURL(url);urls.clear()}
- window.addEventListener('pagehide',clear);
+ window.addEventListener('pagehide',()=>{clear();disposeLiveCover?.();disposeLiveCover=null});
  client.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT'){clear();disposeLiveCover?.();disposeLiveCover=null;selected=[];active='';uid='';ready=false;open=false}});
  async function load(){
   const resp=await client.auth.getUser();
@@ -49,10 +49,10 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
  }
  function mountLiveCover(cover,art,source){
   const motion=window.matchMedia('(prefers-reduced-motion: reduce)');
-  const video=make('video','bc-pw-live-cover');video.muted=true;video.defaultMuted=true;video.loop=true;video.playsInline=true;video.setAttribute('playsinline','');video.setAttribute('muted','');video.preload='none';video.disablePictureInPicture=true;video.setAttribute('aria-hidden','true');
-  const toggle=button('Play cover',()=>{},'bc-pw-live-toggle');toggle.setAttribute('aria-label','Play animated profile cover');toggle.title='Play or pause animated profile cover';
+  const video=make('video','bc-pw-live-cover');video.muted=true;video.defaultMuted=true;video.autoplay=true;video.loop=true;video.playsInline=true;video.setAttribute('playsinline','');video.setAttribute('muted','');video.preload='none';video.disablePictureInPicture=true;video.setAttribute('aria-hidden','true');
+  const toggle=button('Pause motion',()=>{},'bc-pw-panel-motion');toggle.setAttribute('aria-label','Pause World video motion');toggle.title='Pause or resume World video motion';
   let allowed=!motion.matches,visible=false,failed=false,disposed=false;
-  function syncToggle(){const paused=!allowed||video.paused;toggle.textContent=paused?'▶':'Ⅱ';toggle.setAttribute('aria-label',paused?'Play animated profile cover':'Pause animated profile cover')}
+  function syncToggle(){const paused=!allowed||video.paused;toggle.textContent=paused?'Resume motion':'Pause motion';toggle.setAttribute('aria-label',paused?'Resume World video motion':'Pause World video motion')}
   function sync(){
    if(disposed||failed)return;
    if(!allowed||!visible||document.hidden){video.pause();syncToggle();return}
@@ -67,26 +67,27 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
   if(motion.addEventListener)motion.addEventListener('change',onMotion);else motion.addListener?.(onMotion);
   document.addEventListener('visibilitychange',sync);
   const observer=typeof IntersectionObserver==='function'?new IntersectionObserver(entries=>{visible=entries.some(x=>x.isIntersecting);sync()},{threshold:0.05}):null;
-  art.append(video);cover.append(toggle);if(observer)observer.observe(cover);else{visible=true;sync()}syncToggle();
+  art.append(video);document.getElementById('profileWorldVideoMotion')?.replaceChildren(toggle);if(observer)observer.observe(cover);else{visible=true;sync()}syncToggle();
   return ()=>{if(disposed)return;disposed=true;observer?.disconnect();document.removeEventListener('visibilitychange',sync);if(motion.removeEventListener)motion.removeEventListener('change',onMotion);else motion.removeListener?.(onMotion);video.pause();video.removeAttribute('src');video.load();video.remove();toggle.remove();art.classList.remove('bc-pw-live-playing')};
  }
  function renderCover(id){
   const cover=document.getElementById('profileCover');if(!cover)return;
   const scope=worldScope(id,selected),existing=cover.querySelector('.bc-pw-cover-art');
+  const label=document.getElementById('profileWorldVideoLabel');if(label)label.textContent=scope.length>1?scope.length+' WORLDS':scope.length===1?worldLabel(scope[0]).toUpperCase():'BLACKCELL';
   if(!scope.length){disposeLiveCover?.();disposeLiveCover=null;existing?.remove();delete cover.dataset.worldCover;return}
   const key=scope.join('|')+'|'+id;
   cover.dataset.worldCover=id;cover.classList.add('bc-custom-member-cover');
   cover.style.setProperty('background-image','none','important');
   if(existing?.dataset.signature===key)return;
   disposeLiveCover?.();disposeLiveCover=null;existing?.remove();
-  const art=make('div','bc-pw-cover-art');art.dataset.signature=key;art.style.setProperty('--world-count',String(scope.length));art.setAttribute('role','img');art.setAttribute('aria-label',scope.map(worldLabel).join(' and ')+' cover artwork');
+  const art=make('div','bc-pw-cover-art');art.dataset.signature=key;art.style.setProperty('--world-count',String(scope.length));art.setAttribute('role','img');art.setAttribute('aria-label',scope.map(worldLabel).join(' and ')+' World video artwork');art.dataset.count=String(scope.length);
   const panels=make('div','bc-pw-cover-panels');
   for(const item of scope){const [_,name,icon,src,color]=labels.get(item);const panel=make('div','bc-pw-cover-panel');
    panel.style.setProperty('--world-art','url("'+src+'")');panel.style.setProperty('--world-color',color);
    const img=make('img','bc-pw-cover-portrait');img.src=src;img.alt='';img.decoding='async';
    panel.append(img,make('span','bc-pw-cover-panel-label',name));panels.append(panel)
   }
-  const tag=make('div','bc-pw-cover-caption');tag.append(make('strong','',id==='hybrid'?'HYBRID WORLDS':worldLabel(id).toUpperCase()+' WORLD'),make('small','',id==='hybrid'?scope.length+' WORLDS · ONE FEED':'BLACKCELL NETWORK'));
+  const tag=make('div','bc-pw-cover-caption');tag.append(make('strong','',id==='hybrid'?'HYBRID WORLDS':worldLabel(id).toUpperCase()+' WORLD'));
   art.append(panels,tag);cover.prepend(art);
   const source=liveCoverSource(scope);if(source)disposeLiveCover=mountLiveCover(cover,art,source)
  }
