@@ -14,7 +14,7 @@ async function bounded(req:Request,limit:number){
 function pathFor(uid:string,id:string,mime:string){if(!uuid.test(uid)||!uuid.test(id)||!Object.hasOwn(types,mime))throw Error("INVALID_PATH");return uid+"/"+id+"."+types[mime]}
 Deno.serve(async req=>{
  const origin=req.headers.get("origin")||"";
- const headers={"Access-Control-Allow-Origin":origins.has(origin)?origin:"https://blackcellcorp.com","Access-Control-Allow-Methods":"POST,OPTIONS","Access-Control-Allow-Headers":"authorization,apikey,content-type,x-client-info,x-bc-name,x-bc-category,x-bc-branch,x-bc-orientation","Cache-Control":"private, no-store","Vary":"Origin","X-Content-Type-Options":"nosniff"};
+ const headers={"Access-Control-Allow-Origin":origins.has(origin)?origin:"https://blackcellcorp.com","Access-Control-Allow-Methods":"POST,OPTIONS","Access-Control-Allow-Headers":"authorization,apikey,content-type,x-client-info,x-bc-name,x-bc-category,x-bc-branch,x-bc-orientation,x-bc-id","Cache-Control":"private, no-store","Vary":"Origin","X-Content-Type-Options":"nosniff"};
  const send=(status:number,body:Record<string,unknown>)=>new Response(JSON.stringify(body),{status,headers:{...headers,"Content-Type":"application/json"}});
  if(req.method==="OPTIONS")return new Response(null,{status:204,headers});
  if(req.method!=="POST"||(origin&&!origins.has(origin)))return send(403,{ok:false,code:"REQUEST_DENIED"});
@@ -31,13 +31,34 @@ Deno.serve(async req=>{
   const verify=await db.rpc(role==="owner"?"corp_code_status":"corp_employee_code_status");
   if(verify.error||verify.data?.verified!==true)return send(403,{ok:false,code:"VERIFY_CORPORATE_SESSION"});
   const action=new URL(req.url).searchParams.get("action");
-  if(action==="read"){
-   let payload;try{payload=JSON.parse(new TextDecoder().decode(await bounded(req,4096)))}catch{return send(400,{ok:false,code:"INVALID_REQUEST"})}
+  if(action==="read"||action==="preview-read"||action==="preview-write"){
+   let payload;try{payload=action==="preview-write"?{id:req.headers.get("x-bc-id")}:JSON.parse(new TextDecoder().decode(await bounded(req,4096)))}catch{return send(400,{ok:false,code:"INVALID_REQUEST"})}
    if(typeof payload.id!=="string"||!uuid.test(payload.id))return send(400,{ok:false,code:"INVALID_ID"});
    const row=await db.from("corp_social_assets").select("id,owner_id,storage_path,mime_type,source_provider,purpose,review_status,adult_restricted").eq("id",payload.id).maybeSingle(),a=row.data;
    if(row.error||!a||a.purpose!=="library"||a.source_provider!==provider||a.review_status==="rejected"||!(a.owner_id===uid||(a.review_status==="approved"&&!a.adult_restricted)))return send(404,{ok:false,code:"MEDIA_UNAVAILABLE"});
    const path=pathFor(a.owner_id,a.id,a.mime_type);
    if(a.storage_path!==path)return send(404,{ok:false,code:"MEDIA_UNAVAILABLE"});
+   // Derivatives are served behind the identical per-asset visibility
+   // check as originals. Only the original uploader may create one.
+   const previewPath=path+".thumb-v1.jpg";
+   if(action==="preview-read"){
+    const r=await fetch(zone+previewPath,{headers:{AccessKey:key},redirect:"error",signal:AbortSignal.timeout(30000)});
+    if(r.status===404){await r.body?.cancel();return send(404,{ok:false,code:"PREVIEW_NOT_GENERATED"})}
+    if(!r.ok||!r.body){await r.body?.cancel();return send(502,{ok:false,code:"PREVIEW_UNAVAILABLE"})}
+    if(Number(r.headers.get("content-length")||0)>524288){await r.body.cancel();return send(502,{ok:false,code:"INVALID_PREVIEW"})}
+    return new Response(r.body,{headers:{...headers,"Content-Type":"image/jpeg"}});
+   }
+   if(action==="preview-write"){
+    if(a.owner_id!==uid)return send(403,{ok:false,code:"OWNER_REQUIRED"});
+    if(req.headers.get("content-type")!=="image/jpeg")return send(422,{ok:false,code:"UNSUPPORTED_PREVIEW"});
+    let bytes;try{bytes=await bounded(req,524288)}catch{return send(413,{ok:false,code:"PREVIEW_TOO_LARGE"})}
+    if(bytes.length<16||bytes[0]!==255||bytes[1]!==216||bytes[2]!==255)return send(422,{ok:false,code:"INVALID_PREVIEW"});
+    const checksum=await digest(bytes);
+    const put=await fetch(zone+previewPath,{method:"PUT",headers:{AccessKey:key,"Content-Type":"image/jpeg",Checksum:checksum.toUpperCase()},body:bytes,redirect:"error",signal:AbortSignal.timeout(30000)});
+    await put.body?.cancel();
+    if(!put.ok)return send(502,{ok:false,code:"PREVIEW_WRITE_FAILED"});
+    return send(200,{ok:true});
+   }
    const response=await fetch(zone+path,{headers:{AccessKey:key},redirect:"error",signal:AbortSignal.timeout(90000)});
    if(!response.ok||!response.body)return send(502,{ok:false,code:"BUNNY_READ_FAILED"});
    return new Response(response.body,{headers:{...headers,"Content-Type":a.mime_type,"Content-Disposition":"inline"}});
