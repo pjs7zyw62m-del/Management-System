@@ -8,7 +8,7 @@ function loadLibrary(){
  }).catch(e=>{libraryPromise=null;throw e});
  return libraryPromise;
 }
-export async function attachRenderedWorld({client,asset,video,qualityMenu,alive,onFatal,onReady,startPosition=0}){
+export async function attachRenderedWorld({client,asset,video,qualityMenu,alive,onFatal,onOriginal,onReady,startPosition=0}){
  if(window.BLACKCELL_ENABLE_RENDER_PLAYBACK!==true||asset?.source_provider!=='world-bunny-v1'||asset.review_status!=='approved'||asset.adult_restricted!==false)return null;
  const config=window.BLACKCELL_CORP_CONFIG||{},base=new URL('/functions/v1/blackcell-render-playback',config.url);
  const url=new URL(base);url.searchParams.set('id',asset.id);
@@ -24,9 +24,9 @@ export async function attachRenderedWorld({client,asset,video,qualityMenu,alive,
    }});
   let disposed=false;const options=new Map();const clear=()=>{qualityMenu.replaceChildren(new Option('Original','original'));qualityMenu.disabled=true};
   const destroy=()=>{if(disposed)return;disposed=true;qualityMenu.removeEventListener('change',change);hls.destroy();clear()};
-  const change=()=>{if(qualityMenu.value==='auto')hls.currentLevel=-1;else if(options.has(qualityMenu.value))hls.currentLevel=options.get(qualityMenu.value)};
+  const change=()=>{if(qualityMenu.value==='original'){const position=video.currentTime;destroy();if(alive())onOriginal?.(position);return}if(qualityMenu.value==='auto')hls.currentLevel=-1;else if(options.has(qualityMenu.value))hls.currentLevel=options.get(qualityMenu.value)};
   qualityMenu.addEventListener('change',change);
-  hls.on(Hls.Events.MANIFEST_PARSED,()=>{if(!alive()||disposed){destroy();return}qualityMenu.replaceChildren(new Option('Auto','auto'));hls.levels.forEach((level,i)=>{const label=Math.min(level.width||0,level.height||0)+'p';if(!options.has(label)){options.set(label,i);qualityMenu.append(new Option(label,label))}});qualityMenu.disabled=false;onReady?.();void video.play().catch(()=>{})});
+  hls.on(Hls.Events.MANIFEST_PARSED,()=>{if(!alive()||disposed){destroy();return}qualityMenu.replaceChildren(new Option('Auto','auto'));hls.levels.forEach((level,i)=>{const label=Math.min(level.width||0,level.height||0)+'p';if(!options.has(label)){options.set(label,i);qualityMenu.append(new Option(label,label))}});qualityMenu.append(new Option('Original','original'));qualityMenu.disabled=false;onReady?.();void video.play().catch(()=>{})});
   hls.on(Hls.Events.ERROR,(_event,data)=>{if(data.fatal&&!disposed){const position=video.currentTime||startPosition;destroy();if(alive())onFatal?.(position)}});
   hls.on(Hls.Events.MEDIA_ATTACHED,()=>{if(alive()&&!disposed)hls.loadSource(url.href)});
   hls.attachMedia(video);return {destroy};
