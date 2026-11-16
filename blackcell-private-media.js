@@ -180,8 +180,8 @@ export function mountPrivatePhotos(host,{client,userId,preview,alive,onBusy}){
  const tools=make('div','ap-tools');tools.append(search,selectBtn,add,refreshBtn);head.append(sideBtn,zoomWrap,nav,tools);
  const selectionBar=make('div','bc-pm-selectionbar'),selectionCount=make('span','','0 selected'),selectPage=button('Select page',()=>{if(busy||loading)return;const visible=visibleRows();const all=visible.length&&visible.every(r=>selected.has(r.path));for(const row of visible){if(all)selected.delete(row.path);else selected.add(row.path)}render()}),favoriteSelected=button('♥ Favorite',()=>{if(!selected.size||busy||loading)return;for(const path of selected)favorites.add(path);savePrefs();render()}),albumSelected=button('Add to album',()=>addToAlbum([...selected])),deleteSelected=button('Delete selected',()=>confirmDelete(rows.filter(r=>selected.has(r.path))));deleteSelected.classList.add('bc-pm-danger');selectionBar.append(selectionCount,selectPage,favoriteSelected,albumSelected,deleteSelected);selectionBar.hidden=true;
  const grid=make('div','bc-pm-grid ap-grid'),foot=make('footer','bc-pm-foot'),status=make('span','','Private library · Never posted automatically'),pager=make('div');foot.append(status,pager);body.append(heading,selectionBar,grid,foot);main.append(head,body);host.append(side,main,input);status.setAttribute('role','status');grid.style.setProperty('--ap-thumb-size',zoom+'px');applySidebar();
- let currentRow=null,viewerGeneration=0,viewerURL=null,viewerOverlay=null,viewerPhoto=null,infoShown=false;
- function closeViewer(){viewerGeneration++;if(viewerPhoto?.tagName==='VIDEO'){viewerPhoto.pause();viewerPhoto.removeAttribute('src');viewerPhoto.load()}viewerOverlay?.remove();viewerOverlay=null;viewerPhoto=null;currentRow=null;if(viewerURL){URL.revokeObjectURL(viewerURL);viewerURL=null}}
+ let currentRow=null,viewerGeneration=0,viewerURL=null,viewerOverlay=null,viewerPhoto=null,infoShown=false,viewerStudioCleanup=null;
+ function closeViewer(){viewerGeneration++;viewerStudioCleanup?.();viewerStudioCleanup=null;if(viewerPhoto?.tagName==='VIDEO'){viewerPhoto.pause();viewerPhoto.removeAttribute('src');viewerPhoto.load()}viewerOverlay?.remove();viewerOverlay=null;viewerPhoto=null;currentRow=null;if(viewerURL){URL.revokeObjectURL(viewerURL);viewerURL=null}}
  async function openViewer(row){
   closeViewer();if(!usable())return;currentRow=row;const seq=viewerGeneration,visible=filteredRows(),index=visible.findIndex(x=>x.path===row.path);viewerOverlay=make('section','bc-pm-viewer ap-viewer');const top=make('header','bc-pm-view-head ap-view-toolbar'),label=make('strong','',row.name),actions=make('div','bc-pm-view-actions');const back=button('‹ Library',closeViewer),prev=button('‹',()=>{if(index>0)void openViewer(visible[index-1])}),next=button('›',()=>{if(index+1<visible.length)void openViewer(visible[index+1])});prev.disabled=index<=0;next.disabled=index<0||index>=visible.length-1;prev.setAttribute('aria-label','Previous photo');next.setAttribute('aria-label','Next photo');const fav=button(favorites.has(row.path)?'♥':'♡',()=>{if(preview)return;if(favorites.has(row.path))favorites.delete(row.path);else favorites.add(row.path);savePrefs();fav.textContent=favorites.has(row.path)?'♥':'♡';render()});fav.disabled=preview;fav.setAttribute('aria-label','Favorite photo');const details=make('aside','ap-info');details.hidden=!infoShown;const toggle=button('ⓘ',()=>{infoShown=!infoShown;details.hidden=!infoShown});toggle.setAttribute('aria-label','Photo information');details.append(make('h3','','Info'),make('strong','',row.name),make('p','',row.type),make('p','',row.date?new Date(row.date).toLocaleString():'Date unavailable'),make('p','',row.size?((row.size/1048576).toFixed(2)+' MB'):'Size unavailable'));const download=button('↓',()=>{if(!viewerURL)return;const link=make('a');link.href=viewerURL;link.download=row.name;link.click()});download.disabled=true;download.setAttribute('aria-label','Download original');actions.append(prev,next,fav,toggle,download);if(!preview){const del=button('Delete',()=>confirmDelete([row]));del.classList.add('bc-pm-danger');actions.append(del)}top.append(back,label,actions);const area=make('div','ap-view-area'),content=make('div','bc-pm-view-body','Loading original…');area.append(content,details);
   let studioOpen=false,studio=null,aiButton=null;
@@ -189,19 +189,65 @@ export function mountPrivatePhotos(host,{client,userId,preview,alive,onBusy}){
    const showStudio=()=>{
     if(!usable()||seq!==viewerGeneration||!viewerPhoto?.naturalWidth)return;
     studioOpen=!studioOpen;aiButton.setAttribute('aria-pressed',String(studioOpen));aiButton.textContent=studioOpen?'Close AI Video':'✧ AI Video';
-    if(!studioOpen){studio?.remove();studio=null;area.classList.remove('ap-ai-split');return}
+    if(!studioOpen){viewerStudioCleanup?.();viewerStudioCleanup=null;studio?.remove();studio=null;area.classList.remove('ap-ai-split');return}
     details.hidden=true;infoShown=false;
     if(content.classList.contains('ap-photo-zoomed'))viewerPhoto.click();
     studio=make('section','ap-ai-studio');studio.setAttribute('aria-label','AI Video Studio');
     const top=make('div','ap-ai-head');top.append(make('span','ap-ai-kicker','BLACKCELL INTELLIGENCE'),make('h2','','AI Video Studio'),make('p','','Create a video from this photograph.'));
     const stage=make('div','ap-ai-stage'),providerStatus=make('p','','Kling AI · Connection not verified');providerStatus.setAttribute('role','status');stage.append(make('span','ap-ai-symbol','▷'),make('strong','','Video preview'),providerStatus);
     const check=button('Check Kling connection',async()=>{if(preview||!studioOpen||!usable())return;check.disabled=true;providerStatus.textContent='Checking Kling securely…';try{const {data,error}=await client.functions.invoke('blackcell-kling-status',{body:{}});if(!studioOpen||!usable()||seq!==viewerGeneration)return;providerStatus.textContent=!error&&data?.ok?'Kling AI connected · '+data.activePackages+' active resource package(s)':data?.code==='SECRET_MISSING'?'Kling API key not configured':data?.code==='KEY_REJECTED'?'Kling rejected the API key':error?'Connection check unavailable · owner session required':'Kling connection not verified · '+String(data?.code||'Unknown status');}catch{if(studioOpen&&usable()&&seq===viewerGeneration)providerStatus.textContent='Connection check failed. Try again.'}finally{check.disabled=preview}});check.disabled=preview;stage.append(check);
-    const field=make('label','ap-ai-field','Motion instructions');const prompt=make('textarea');prompt.rows=3;prompt.maxLength=500;prompt.placeholder='Describe movement, camera motion and atmosphere';field.append(prompt);
-    const note=make('p','ap-ai-note','Connection check is free and owner-only. Generation is disabled until job handling, cost approval and permission checks are implemented. No photograph is sent to Kling by this check.');
-    const generate=button('Generate video',()=>{}),transfer=button('Transfer to Photos',()=>{});generate.disabled=true;transfer.disabled=true;
-    const dest=memberIdFor(row);const album=make('p','ap-ai-destination',dest?'Destination: '+memberName(dest)+' / AI Creations':'Destination: private Photos / AI Creations');
-    const tools=make('div','ap-ai-actions');tools.append(generate,transfer);
-    studio.append(top,stage,field,note,album,tools);area.append(studio);area.classList.add('ap-ai-split');
+    const panel=studio,active=()=>studioOpen&&studio===panel&&seq===viewerGeneration&&usable();
+    const relative=row.path.slice((userId||'').length+1),source=memberIdFor(row);
+    const pilotEligible=!preview&&/\.(?:jpe?g|png)$/i.test(row.name)&&row.size<=8*1024*1024&&viewerPhoto.naturalWidth>=300&&viewerPhoto.naturalHeight>=300&&viewerPhoto.naturalWidth/viewerPhoto.naturalHeight>=.4&&viewerPhoto.naturalWidth/viewerPhoto.naturalHeight<=2.5&&(!source||source===userId)&&(/^Photos\/[^/]+\.(?:jpe?g|png)$/i.test(relative)&&!/^Photos\/BLACKCELL-[0-9a-f-]{36}\./i.test(relative)||source===userId&&relative.split('/').length===4&&/^BLACKCELL-[0-9a-f-]{36}\.(?:jpe?g|png)$/i.test(row.name));
+    const field=make('label','ap-ai-field','Pilot motion');const motion=make('select');for(const [value,label] of [['gentle','Natural subtle movement'],['camera','Gentle cinematic camera'],['ambient','Environment movement']]){const option=make('option','',label);option.value=value;motion.append(option)}field.append(motion);
+    const rightsLabel=make('label','ap-ai-rights'),rights=make('input');rights.type='checkbox';rightsLabel.append(rights,make('span','','I own or have explicit permission to animate this nonsexual image and consent from any person depicted. I agree to send it to Kling AI.'));
+    const note=make('p','ap-ai-note',pilotEligible?'Owner-only pilot · Kling 3.0 · 5 seconds · 720p · silent · estimated 3 units. One submission for this project. Package compatibility and actual billing are subject to Kling.':'Pilot requires your own authorized JPEG/PNG in Photos, up to 8 MB, at least 300 px per side, with supported proportions. Other creators require a separate permission workflow.');
+    const jobStatus=make('p','ap-ai-job-status',pilotEligible?'Checking pilot availability…':'This photo is not eligible for the pilot.');jobStatus.setAttribute('role','status');
+    const album=make('p','ap-ai-destination','Destination: '+memberName(userId||'preview')+' / AI Creations');
+    let state='checking',pollCount=0,timer=null,outputBlob=null,outputURL=null,outputVideo=null,jobId=null,destination=null,working=false,saved=false,attemptedOutput=false;
+    const controls=()=>{generate.disabled=!pilotEligible||!rights.checked||working||state!=='ready';transfer.disabled=!active()||working||!outputBlob||!destination||saved;refreshJob.disabled=!pilotEligible||working;motion.disabled=rights.disabled=working||state!=='ready'};
+    const clean=()=>{clearTimeout(timer);if(outputVideo){outputVideo.pause();outputVideo.removeAttribute('src');outputVideo.load()}if(outputURL)URL.revokeObjectURL(outputURL);outputURL=null;outputBlob=null;outputVideo=null};
+    viewerStudioCleanup=clean;
+    const invoke=async(action,extra={})=>{const {data,error}=await client.functions.invoke('blackcell-kling-pilot',{body:{action,path:relative,...extra}});if(error)throw Error('Owner session or service unavailable');return data};
+    const messages={PILOT_ALREADY_USED:'The single test submission has already been reserved. Open its original photograph to recover it.',PACKAGE_NOT_READY:'No active package with at least three reported units. No job was submitted.',PILOT_REQUIRES_OWN_JPEG_OR_PNG:'Only eligible own JPEG or PNG originals are supported.',SOURCE_SIZE_LIMIT:'Photo exceeds the pilot size limit.',SOURCE_FORMAT_UNSUPPORTED:'Use an original JPEG or PNG.',SUBMISSION_UNCONFIRMED:'Submission not confirmed. Check status; do not resubmit.',OUTPUT_HOST_UNVERIFIED:'The result host needs verification before secure preview.',OUTPUT_UNAVAILABLE:'Video result could not be downloaded securely.',OUTPUT_TOO_LARGE:'Video exceeds the pilot output limit.'};
+    async function loadOutput(){
+     if(!active()||outputBlob||attemptedOutput)return;attemptedOutput=true;jobStatus.textContent='Video completed. Retrieving secure preview…';
+     try{const result=await invoke('output');if(!active())return;if(!(result instanceof Blob)||result.size<16||result.size>45*1024*1024)throw Error(messages[result?.code]||'Secure result unavailable. Check status to retry.');
+      const data=new Uint8Array(await result.slice(0,12).arrayBuffer());if(String.fromCharCode(...data.slice(4,8))!=='ftyp')throw Error('Result is not a recognized MP4.');
+      if(!active())return;outputBlob=new Blob([result],{type:'video/mp4'});outputURL=URL.createObjectURL(outputBlob);outputVideo=make('video','ap-ai-preview');outputVideo.controls=true;outputVideo.playsInline=true;outputVideo.src=outputURL;stage.prepend(outputVideo);stage.classList.add('has-result');jobStatus.textContent='Video ready. Play it or transfer to private Photos.';
+     }catch(e){if(active())jobStatus.textContent=String(e.message||'Preview unavailable');}finally{if(active())controls()}
+    }
+    function schedule(){clearTimeout(timer);if(active()&&pollCount<20&&['reserved','submitted','processing','uncertain'].includes(state))timer=setTimeout(()=>{if(active()&&!document.hidden)void poll();else if(active())schedule()},15000)}
+    async function poll(){
+     if(!active()||working||!pilotEligible)return;pollCount++;working=true;controls();
+     try{const data=await invoke('status');if(!active())return;if(!data?.ok){state='blocked';jobStatus.textContent=messages[data?.code]||'Pilot not available · '+String(data?.code||'Unknown error');return}
+      state=data.state;jobId=data.id||jobId;destination=data.destination||destination;
+      jobStatus.textContent=state==='ready'?'Ready for one confirmed generation.':state==='succeeded'?'Video completed.':state==='failed'?'Kling reported failure. No automatic retry.':state==='uncertain'||state==='reserved'?'Submission being reconciled. No additional credits will be spent by checking.':'Rendering · '+state;
+      if(state==='succeeded'&&data.outputReady&&!outputBlob)await loadOutput();
+     }catch(e){if(active())jobStatus.textContent=String(e.message||'Status check failed.')}finally{working=false;if(active()){controls();schedule()}}
+    }
+    const generate=button('Generate · 3 units est.',async()=>{
+     if(!active()||!pilotEligible||working||state!=='ready'||!rights.checked)return;if(!confirm('Submit one Kling 3.0 five-second video? Estimated three units. This sends your authorized photo to Kling. No automatic retries.'))return;
+     working=true;state='reserved';controls();jobStatus.textContent='Submitting securely…';onBusy(true);
+     try{const data=await invoke('create',{approve:true,rights:true,motion:motion.value});if(!active())return;jobId=data?.id||null;state=data?.state||'checking';jobStatus.textContent=messages[data?.code]||'Submission received. Checking actual status…';if(!jobId&&['PACKAGE_NOT_READY','SOURCE_SIZE_LIMIT','SOURCE_FORMAT_UNSUPPORTED','SOURCE_UNAVAILABLE','SOURCE_INCOMPLETE'].includes(data?.code)){state='ready';return}}
+     catch{if(active()){state='uncertain';jobStatus.textContent='Submission unconfirmed. Checking status is safe; do not resubmit.'}}
+     finally{working=false;onBusy(false);if(active()){controls();if(state!=='ready')void poll()}}
+    });
+    const refreshJob=button('Check render status',()=>{attemptedOutput=false;pollCount=0;void poll()});
+    const transfer=button('Transfer to Photos',async()=>{
+     if(!active()||working||!outputBlob||!destination||!jobId||saved)return;
+     const expected='Photos/From Members/'+userId+'/AI Creations/AI-'+jobId+'.mp4';if(destination!==expected)return;
+     const blob=outputBlob;working=true;busy=true;onBusy(true);controls();jobStatus.textContent='Saving privately…';
+     try{const name=destination.split('/').at(-1),full=userId+'/'+destination,folder=full.slice(0,full.lastIndexOf('/'));const found=await storage.list(folder,{search:name,limit:100});
+      if(!found.error&&found.data?.some(x=>x.name===name)){saved=true;jobStatus.textContent='Already saved in AI Creations.'}
+      else{await uploadPrivateFile(storage,full,new File([blob],name,{type:'video/mp4'}));saved=true;jobStatus.textContent='Saved privately in AI Creations.'}
+      storage.invalidate?.();window.dispatchEvent(new CustomEvent('bc-private-files-changed',{detail:{source:'photos',uid:userId}}));
+      try{const ch=new BroadcastChannel('bc-private-photos-transfer');ch.postMessage({type:'photos-changed',uid:userId});ch.close()}catch{}
+     }catch(e){if(active())jobStatus.textContent=privateUploadError(e)}finally{busy=false;working=false;onBusy(false);if(active()){controls();if(saved){closeViewer();mode='member:'+userId+':ai';page=0;view='all';dateScope='';search.value='';void refresh(true)}}}
+    });
+    const tools=make('div','ap-ai-actions');tools.append(generate,refreshJob,transfer);
+    rights.onchange=controls;studio.append(top,stage,field,rightsLabel,note,jobStatus,album,tools);area.append(studio);area.classList.add('ap-ai-split');controls();if(pilotEligible)void poll();
+
    };
    aiButton=button('✧ AI Video',showStudio);aiButton.classList.add('ap-ai-toggle');aiButton.disabled=true;aiButton.setAttribute('aria-pressed','false');actions.insertBefore(aiButton,download);
   }
