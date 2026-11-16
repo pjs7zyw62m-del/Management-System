@@ -16,10 +16,13 @@ def cfg():
     if not re.fullmatch(r"https://[a-z0-9]+\.supabase\.co",host):raise ValueError("Invalid project URL")
     key=os.environ["BLACKCELL_RENDER_CATALOG_READ_KEY"]
     # Use a server-side key only; never expose it to a browser or log it.
-    return host,{"apikey":key,"Authorization":"Bearer "+key},{"AccessKey":os.environ["BLACKCELL_BUNNY_STORAGE_ACCESS_KEY"]}
+    return host,{"x-blackcell-render-key":key},{"AccessKey":os.environ["BLACKCELL_BUNNY_STORAGE_ACCESS_KEY"]}
 def rows(host,auth,offset,limit=40):
-    query=urllib.parse.urlencode({"select":"id,owner_id,storage_path,bytes,mime_type,review_status,rights_confirmed,adult_restricted","source_provider":"eq.world-bunny-v1","kind":"eq.video","purpose":"eq.library","review_status":"eq.approved","adult_restricted":"eq.false","rights_confirmed":"eq.true","order":"id","offset":offset,"limit":limit})
-    with request(host+"/rest/v1/corp_social_assets?"+query,auth) as r:return json.load(r)
+    query=urllib.parse.urlencode({"offset":offset})
+    with request(host+"/functions/v1/blackcell-render-catalog?"+query,auth) as r:
+        result=json.load(r)
+        if not isinstance(result,list):raise ValueError("Invalid catalog response")
+        return result
 def path_for(a):
     uid,i,ext=a["owner_id"],a["id"],EXT.get(a["mime_type"])
     if not UUID.fullmatch(uid) or not UUID.fullmatch(i) or not ext:raise ValueError("Invalid source")
@@ -76,7 +79,10 @@ def main():
                         # No storage URLs, keys, filenames, payloads or FFmpeg stderr in logs.
                         print("Render failed:",type(exc).__name__,flush=True)
                 offset+=len(batch)
-        except Exception as exc:print("Catalog scan failed:",type(exc).__name__,flush=True)
+            print("BLACKCELL_CATALOG_SCAN_PASS:",offset,"eligible; rendered",done,flush=True)
+        except Exception as exc:
+            print("Catalog scan failed:",type(exc).__name__,flush=True)
+            if not a.poll:raise SystemExit(1)
         if not a.poll:break
         time.sleep(a.poll)
 if __name__=="__main__":main()
