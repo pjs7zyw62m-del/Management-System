@@ -25,6 +25,7 @@ const worldLabel=id=>labels.get(id)?.[1]||'Uniform';
 const mediaWorld=a=>{const tag=(Array.isArray(a.military_tags)?a.military_tags:[]).find(t=>typeof t==='string'&&labels.has(t.slice(4))&&t.startsWith('maf:'));return tag?worldLabel(tag.slice(4)):'Uniform'};
 const uniformTerms='source_provider.eq.world-bunny-v1,military_tags.cs.{maf:military},military_tags.cs.{maf:police},military_tags.cs.{maf:fire},military_tags.cs.{maf:security},military_tags.cs.{maf:medical},military_tags.cs.{maf:professional},military_tags.cs.{maf:unsorted}';
 export function createProfileWorlds({client,state,previews,title,render,toast}){
+ let dismissFeedMenu=null,feedTransferBusy=false;
  const root=()=>document.getElementById('profileWorlds');
  let selected=[],active='',filter='all',open=false,draft=[],saving=false,ready=false,uid='',generation=0,urls=new Set(),disposeLiveCover=null;
  const make=(tag,cls,txt)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(txt!==undefined)el.textContent=txt;return el};
@@ -167,11 +168,12 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
  }
  // One contextual action for every feed photograph. It operates on the
  // original asset, not a thumbnail or browser download.
- let dismissFeedMenu=null,feedTransferBusy=false;
+
  function bindFeedPhoto(target,a){
   if(!target||!a||a.kind!=='photo')return;
   target.classList.add('bc-pw-transfer-target');
   target.setAttribute('aria-haspopup','menu');
+  target.setAttribute('aria-keyshortcuts','Shift+F10');
   let hold=null,start=null,suppress=false;
   function cancel(){clearTimeout(hold);hold=null;start=null}
   function show(x,y){
