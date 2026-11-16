@@ -8,7 +8,7 @@ import {createVisualDiscovery} from './corporate-visual-discovery.js?v=20261111-
 import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phonecheck2';
 import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261115-world-catalog1';
 import {isWorldVideo,worldVideoTitle,readWorldVideo,createWorldVideoPreviews} from './blackcell-world-video-catalog.js?v=1';
-import {createProfileWorlds} from './corporate-profile-worlds.js?v=11-tap-dismiss';
+import {createProfileWorlds} from './corporate-profile-worlds.js?v=12-photo-transfer';
 const client=corporateClient(),bucket=client.storage.from('corp-social-media');
 const worldVideoPreviews=createWorldVideoPreviews(client);
 const $=id=>document.getElementById(id);
@@ -837,7 +837,7 @@ function renderLibraryActivity(a){
   }
   node.append(wrap);
  }
- if(!src&&a.source_provider==='world-bunny-v1'&&a.kind==='photo'){const frame=el('div','bc-pw-frame');const img=el('img');img.hidden=true;img.alt=caption||'World photo';img.loading='lazy';frame.append(el('span','bc-pw-placeholder','Loading photograph…'),img);const open=btn('',()=>profileWorlds.openFeedPhoto(img),'bc-pw-media');open.append(frame);node.append(open);profileWorlds.mountFeedPhoto(a,img)}
+ if(!src&&a.source_provider==='world-bunny-v1'&&a.kind==='photo'){const frame=el('div','bc-pw-frame');const img=el('img');img.hidden=true;img.alt=caption||'World photo';img.loading='lazy';frame.append(el('span','bc-pw-placeholder','Loading photograph…'),img);const open=btn('',()=>profileWorlds.openFeedPhoto(img,a),'bc-pw-media');open.append(frame);node.append(open);profileWorlds.mountFeedPhoto(a,img)}
  if(!src&&a.kind==='video'){const frame=el('div','bc-pw-frame');const img=el('img');img.hidden=true;img.alt='';const poster=posterUrl(a);frame.append(el('span','bc-pw-placeholder','▶'),img);if(poster){img.src=poster;img.hidden=false}const open=btn('',()=>{const u=new URL(location.href);u.search='';u.searchParams.set('view','videos');u.searchParams.set('video',a.id);location.assign(u.href)},'bc-pw-media');open.append(frame);node.append(open)}
  const actions=el('div','post-actions');
  if(a.kind==='video')actions.append(btn('▶ WATCH IN BLACKCELL TUBE',()=>{const u=new URL(location.href);u.search='';u.searchParams.set('view','videos');u.searchParams.set('video',a.id);location.assign(u.href)}));else if(a.source_provider!=='world-bunny-v1')actions.append(btn('▧ VIEW ORIGINAL',()=>void photos.openAsset(a)));
