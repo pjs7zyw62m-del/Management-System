@@ -81,7 +81,7 @@ Deno.serve(async req=>{
    if(reserved.error||!reserved.data)return send({ok:false,code:"ACTIVE_JOB_EXISTS"});
    const id=reserved.data.id;
    try{
-    const res=await kling("/image-to-video/"+model,{method:"POST",body:JSON.stringify({contents:[{type:"prompt",text},{type:"first_frame",url:b64(photo)}],settings:{resolution,duration},options:{external_task_id:id,watermark_info:{enabled:true}}})}),data=await res.json().catch(()=>null);
+    const res=await kling("/image-to-video/"+model,{method:"POST",body:JSON.stringify({contents:[{type:"prompt",text},{type:"first_frame",url:b64(photo)}],settings:{resolution,duration},options:{external_task_id:id,watermark_info:{enabled:false}}})}),data=await res.json().catch(()=>null);
     console.info("KLING_CREATE_RESULT",JSON.stringify({http:res.status,code:Number.isInteger(data?.code)?data.code:null,taskReceived:typeof data?.data?.id==="string"}));
     const accepted=res.ok&&data?.code===0&&typeof data?.data?.id==="string";
     const providerCode=Number.isInteger(data?.code)?data.code:null, definiteReject=res.status>=400&&res.status<500&&providerCode!==null&&providerCode!==0;
@@ -109,7 +109,7 @@ Deno.serve(async req=>{
   if(task.external_id&&task.external_id!==job.id||job.provider_task_id&&task.id!==job.provider_task_id)return send({ok:false,code:"TASK_MISMATCH"});
   await db.from(TABLE).update({state,provider_task_id:typeof task.id==="string"?task.id:job.provider_task_id}).eq("id",job.id);
   const output=state==="succeeded"&&Array.isArray(task.outputs)?task.outputs.find(x=>x.type==="video"):null;
-  const marked=input.watermark===true;
+  const marked=false;
   const dest="Photos/From Members/"+uid+"/AI Creations/AI-"+job.id+(marked?"":"-standard")+".mp4";
   if(action==="status")return send({ok:true,state,id:job.id,outputReady:!!(marked?output?.watermark_url:output?.url),watermarkedAvailable:!!output?.watermark_url,standardAvailable:!!output?.url,destination:dest});
   if(!output)return send({ok:false,code:"OUTPUT_NOT_READY"});
