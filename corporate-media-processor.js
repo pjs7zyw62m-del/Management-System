@@ -3,6 +3,7 @@
  * Adult/restricted media is NEVER published into shared albums or network feeds.
  * A cloud-to-cloud worker is a separate integration: this reviews registered assets.
  */
+import {isWorldVideo,readWorldVideo} from './blackcell-world-video-catalog.js?v=3-playback-priority';
 export function createBlackcellMediaProcessor({client,bucket,state,refresh,mediaUrl,toast,openAIReview}){
  const $=id=>document.getElementById(id),owner=()=>state.member?.role==='owner';
  const active=()=>owner()&&state.user?.id;
@@ -11,6 +12,14 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
   if(text!==undefined)node.textContent=text;return node;
  };
  let queue=[],albums=[],current=null,busy=false,page=0,totalPending=0,bunnyWaiting=0,previewEpoch=0,previewReady=false,firstReview=true;
+ let previewObject='',previewAbort=null;
+ function releasePreview(){
+  previewAbort?.abort();previewAbort=null;
+  const host=$('bcReviewPreview');for(const v of host?.querySelectorAll('video')||[]){v.pause();v.removeAttribute('src');v.load()}
+  if(previewObject){URL.revokeObjectURL(previewObject);previewObject=''}
+ }
+ window.addEventListener('pagehide',()=>{previewEpoch++;releasePreview()});
+ client.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'){previewEpoch++;releasePreview();$('bcReviewPreview')?.replaceChildren()}});
  const native=()=>!!$('bcProcessorPanel')?.classList.contains('bc-native-review');
  const pageSize=40;
  const status=text=>{if($('bcProcessStatus'))$('bcProcessStatus').textContent=text};
@@ -23,7 +32,7 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
   target.replaceChildren(...[...source.options].map(x=>new Option(x.textContent,x.value)));
  }
  function resetEditor(){
-  if(busy&&current===null)return;previewEpoch++;previewReady=false;current=null;$('bcReviewEditor').hidden=true;
+  if(busy&&current===null)return;previewEpoch++;releasePreview();previewReady=false;current=null;$('bcReviewEditor').hidden=true;
   const host=$('bcReviewPreview');for(const video of host.querySelectorAll('video')){video.pause();video.removeAttribute('src');video.load()}host.replaceChildren();updateCards();
  }
  function updateCards(){
@@ -72,7 +81,7 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
  }
  async function open(item){
   if(!active()||busy)return;
-  const seq=++previewEpoch;previewReady=false;current=item;
+  const seq=++previewEpoch;releasePreview();previewReady=false;current=item;
   const host=$('bcReviewPreview');for(const video of host.querySelectorAll('video')){video.pause();video.removeAttribute('src');video.load()}host.replaceChildren(el('p','bc-review-preview-message','Loading private media…'));
   $('bcReviewName').textContent=(item.kind==='video'?'VIDEO · ':'PHOTO · ')+(item.filename||'Untitled');
   $('bcReviewCountry').value=item.military_country_code||'';
@@ -92,10 +101,16 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
   status('Loading secure preview…');
   if(!native())$('bcReviewEditor').scrollIntoView({behavior:'smooth',block:'start'});
   const valid=()=>active()&&seq===previewEpoch&&current?.id===item.id;
-  const fail=()=>{if(!valid())return;previewReady=false;if(!busy)setBusy(false);const retry=el('button','bc-review-retry','Retry preview');retry.type='button';retry.onclick=()=>void open(item);host.replaceChildren(el('p','bc-review-preview-message','Private preview unavailable. This item remains pending.'),retry);status('Could not display this private file. Retry the preview before approval.')};
+  const fail=()=>{if(!valid())return;releasePreview();previewReady=false;if(!busy)setBusy(false);const retry=el('button','bc-review-retry','Retry preview');retry.type='button';retry.onclick=()=>void open(item);host.replaceChildren(el('p','bc-review-preview-message','Private preview unavailable. This item remains pending.'),retry);status('Could not display this private file. Retry the preview before approval.')};
   try{
-   const asset=state.assets.find(a=>a.id===item.id);let url=asset?mediaUrl(asset):'';
-   if(!url){const {data,error}=await bucket.createSignedUrl(item.storage_path,1200);if(!valid())return;if(error||!data?.signedUrl){fail();return}url=data.signedUrl}
+   const asset=state.assets.find(a=>a.id===item.id);let url='';
+   if(isWorldVideo(item)){
+    const controller=new AbortController();previewAbort=controller;
+    const blob=await readWorldVideo(client,item,{signal:controller.signal});
+    if(!valid()||controller.signal.aborted)return;
+    previewAbort=null;previewObject=URL.createObjectURL(blob);url=previewObject;
+   }else url=asset?mediaUrl(asset):'';
+   if(!url&&!isWorldVideo(item)){const {data,error}=await bucket.createSignedUrl(item.storage_path,1200);if(!valid())return;if(error||!data?.signedUrl){fail();return}url=data.signedUrl}
    if(!valid())return;
    const preview=el(item.kind==='video'?'video':'img');
    if(item.kind==='video'){preview.controls=true;preview.playsInline=true;preview.preload='metadata'}else preview.alt=item.filename||'Pending photograph';
