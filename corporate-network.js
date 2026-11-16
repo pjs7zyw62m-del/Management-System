@@ -848,7 +848,7 @@ function pulseInlineShare(t){
 function pulseDraftLinkPreview(){
  const input=$('postBody');if(!input)return;let box=$('pulseDraftPreview');
  if(!box){box=el('div','bc-pulse-draft-preview');box.id='pulseDraftPreview';input.after(box)}
- const links=pulseParseSharedLinks(input.value),key=links.map(x=>x.kind+':'+x.id).join('|');if(box.dataset.key===key)return;box.dataset.key=key;box.replaceChildren();box.hidden=!links.length;
+ const links=pulseParseSharedLinks(input.value),media=pulseMediaReference(input.value),post=reblogReference(input.value);if(media)links.unshift({kind:media.kind,id:media.id});else if(post)links.unshift({kind:'post',id:post.id});const key=links.map(x=>x.kind+':'+x.id).join('|');if(box.dataset.key===key)return;box.dataset.key=key;box.replaceChildren();box.hidden=!links.length;
  for(const link of links)box.append(pulseInlineShare(link));
 }
 
@@ -887,7 +887,7 @@ function renderPost(p,{reblogSource=false}={}){
  if(mediaRef){
   if(mediaRef.comment)node.append(el('div','post-body',mediaRef.comment));
   const original=pulseFindMedia(mediaRef);node.append(el('small','library-feed-context','↻ REPOSTED MEDIA'));
-  if(original){const nested=renderLibraryActivity(original);nested.removeAttribute('id');node.append(nested)}else node.append(el('p','post-body','Original media is no longer available to your account.'));
+  if(original){const nested=renderLibraryActivity(original);nested.removeAttribute('id');node.append(nested)}else node.append(pulseInlineShare(mediaRef));
  }else if(videoRef){
   if(videoRef.comment)node.append(el('div','post-body',videoRef.comment));
   const card=el('div','bc-fusion-reblog');card.append(el('small','','▶ SHARED WITHIN BLACKCELL TUBE'));
@@ -900,7 +900,7 @@ function renderPost(p,{reblogSource=false}={}){
   const original=state.posts.find(x=>x.id===reference.id&&x.id!==p.id);
   const card=el('div','bc-fusion-reblog');card.append(el('small','','↻ REBLOGGED FROM BLACKCELL NETWORK'));
   // Only display an original already visible to this session; never copy its media or bypass RLS.
-  if(original&&!reblogSource&&!reblogReference(original.body)&&!pulseMediaReference(original.body)){card.append(renderPost(original,{reblogSource:true}));}else if(original){const sourcePerson=profile(original.author_id);card.append(el('strong','',personName(sourcePerson)),el('p','',String(reblogReference(original.body)?.comment||pulseMediaReference(original.body)?.comment||'Shared post').slice(0,300)));}else card.append(el('p','','Original post may be unavailable or outside the current feed.'));
+  if(original&&!reblogSource&&!reblogReference(original.body)&&!pulseMediaReference(original.body)){card.append(renderPost(original,{reblogSource:true}));}else if(original){const sourcePerson=profile(original.author_id);card.append(el('strong','',personName(sourcePerson)),el('p','',String(reblogReference(original.body)?.comment||pulseMediaReference(original.body)?.comment||'Shared post').slice(0,300)));}else card.append(pulseInlineShare({kind:'post',id:reference.id}));
   const open=btn('View original post ↗',()=>{const u=new URL(location.href);u.search='';u.hash='';u.searchParams.set('post',reference.id);location.assign(u.href)});card.append(open);node.append(card);
  }else if(p.body){const links=pulseParseSharedLinks(p.body),body=pulseSharedText(p.body,links);if(body)node.append(el('div','post-body',body));for(const link of links)if(link.kind!=='post'||link.id!==p.id)node.append(pulseInlineShare(link));}
  const files=postedAssets(p.id).filter(a=>state.view!=='pulse'||!pulseCinema(a));
