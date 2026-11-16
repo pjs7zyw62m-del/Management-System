@@ -156,18 +156,31 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
   const current=(await client.auth.getSession()).data?.session;
   if(current?.user?.id!==account||state.user?.id!==account)throw Error('Session changed');
   const name='BLACKCELL-'+a.id+'.'+ext;
-  const owner=String(a.owner_id||'');
-  const fromMember=owner!==account&&/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(owner);
-  const destination=account+'/Photos/'+(fromMember?'From Members/'+owner+'/':'')+name;
+  const uuid=/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i;
+  let owner=String(a.owner_id||'');
+  if(!uuid.test(owner)){
+   const {data,error}=await client.from('corp_social_assets').select('owner_id').eq('id',a.id).maybeSingle();
+   if(error||!uuid.test(String(data?.owner_id||'')))throw Error('Original uploader could not be verified.');
+   owner=data.owner_id;
+  }
+  const storage=drive.createPrivateDrive(client,account),destination=account+'/Photos/From Members/'+owner+'/'+name;
+  const notify=()=>{
+   window.dispatchEvent(new CustomEvent('bc-private-files-changed',{detail:{source:'world-transfer',uid:account}}));
+   try{const channel=new BroadcastChannel('bc-private-photos-transfer');channel.postMessage({type:'photos-changed',uid:account});channel.close()}catch(_){}
+  };
+  // Earlier releases saved transfers directly in Photos. Keep that original
+  // and let Photos associate it with the uploader, rather than copying it.
+  const existing=await storage.list(account+'/Photos',{search:name,limit:100});
+  if(existing.error)throw Error(m.privateUploadError(existing.error));
+  if(existing.data?.some(row=>row.id&&row.name===name)){notify();return 'Already saved · linked to the uploader’s album.'}
   try{
-   await m.uploadPrivateFile(drive.createPrivateDrive(client,account),destination,new File([blob],name,{type:blob.type}));
+   await m.uploadPrivateFile(storage,destination,new File([blob],name,{type:blob.type}));
   }catch(e){
-   if(/duplicate|already exists|resource already exists|\b409\b/i.test(String(e?.message||e?.statusCode||e)))return 'This photo is already in your BLACKCELL Photos.';
+   if(/duplicate|already exists|resource already exists|\b409\b/i.test(String(e?.message||e?.statusCode||e))){notify();return 'This photo is already in the uploader’s album.'}
    throw Error(m.privateUploadError(e));
   }
-  window.dispatchEvent(new CustomEvent('bc-private-files-changed',{detail:{source:'world-transfer',uid:account}}));
-  try{const channel=new BroadcastChannel('bc-private-photos-transfer');channel.postMessage({type:'photos-changed',uid:account});channel.close()}catch(_){}
-  return fromMember?'Transferred to the member’s album in BLACKCELL Photos.':'Transferred to BLACKCELL Photos.';
+  notify();
+  return 'Transferred to the uploader’s album in BLACKCELL Photos.';
  }
  // One contextual action for every feed photograph. It operates on the
  // original asset, not a thumbnail or browser download.
