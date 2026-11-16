@@ -9,8 +9,9 @@ function loadLibrary(){
  return libraryPromise;
 }
 export async function attachRenderedWorld({client,asset,video,qualityMenu,alive,onFatal,onOriginal,onReady,startPosition=0}){
- if(window.BLACKCELL_ENABLE_RENDER_PLAYBACK!==true||asset?.source_provider!=='world-bunny-v1'||asset.review_status!=='approved'||asset.adult_restricted!==false)return null;
- const config=window.BLACKCELL_CORP_CONFIG||{},base=new URL('/functions/v1/blackcell-render-playback',config.url);
+ if(window.BLACKCELL_ENABLE_RENDER_PLAYBACK!==true||asset?.source_provider!=='world-bunny-v1'||asset.review_status!=='approved'||asset.adult_restricted!==false||asset.rights_confirmed!==true||!asset.id||Number(asset.bytes)>45*1024*1024)return null;
+ const config=window.BLACKCELL_CORP_CONFIG||{};if(!config.url||!config.publishableKey)return null;
+ const base=new URL('/functions/v1/blackcell-render-playback',config.url);
  const url=new URL(base);url.searchParams.set('id',asset.id);
  const auth=async()=>{const out=await client.auth.getSession(),token=out.data?.session?.access_token;if(!token||!alive())throw Error('Session ended');return {'Authorization':'Bearer '+token,'apikey':config.publishableKey}};
  try{
