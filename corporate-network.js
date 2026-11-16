@@ -8,7 +8,7 @@ import {createVisualDiscovery} from './corporate-visual-discovery.js?v=20261111-
 import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phonecheck2';
 import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261115-world-catalog1';
 import {isWorldVideo,worldVideoTitle,readWorldVideo,createWorldVideoPreviews} from './blackcell-world-video-catalog.js?v=1';
-import {createProfileWorlds} from './corporate-profile-worlds.js?v=1';
+import {createProfileWorlds} from './corporate-profile-worlds.js?v=2-hybrid';
 const client=corporateClient(),bucket=client.storage.from('corp-social-media');
 const worldVideoPreviews=createWorldVideoPreviews(client);
 const $=id=>document.getElementById(id);
@@ -529,7 +529,7 @@ function renderProfile(){
  const worldTab=document.querySelector('#profileTabs [data-tab="worldfeed"]');worldTab.hidden=!isMine;
  if(!isMine&&state.profileTab==='worldfeed')state.profileTab='posts';
  profileWorlds.header(isMine);
- $('profileCoverAction').hidden=!isMine;
+ $('profileCoverAction').hidden=!isMine||profileWorlds.hasActive();
  document.body.classList.toggle('bc-profile-view-as',isPreview);
  $('profileViewAs').hidden=!isOwnProfile||isPreview;
  $('profileThemeQuick').hidden=!isMine;
