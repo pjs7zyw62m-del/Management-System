@@ -6,7 +6,7 @@ import {createNetworkPersonalization} from './corporate-network-personalization.
 import {createPhotoRediscovery} from './corporate-photo-rediscovery.js?v=20261113-auto-suggest1';
 import {createVisualDiscovery} from './corporate-visual-discovery.js?v=20261111-mediareset1';
 import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phonecheck2';
-import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261116-watch-page4';
+import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261116-internal-share5';
 import {isWorldVideo,worldVideoTitle,readWorldVideo,createWorldVideoPreviews} from './blackcell-world-video-catalog.js?v=1';
 import {createProfileWorlds} from './corporate-profile-worlds.js?v=20-progressive-previews';
 const client=corporateClient(),bucket=client.storage.from('corp-social-media');
@@ -692,6 +692,16 @@ function prepareReblog(p){
  if(body.length>1000){toast('Shorten your draft before adding a reblog.');return}
  switchView('profile',{who:state.user.id,tab:'posts'});field.value=body;updateCounter();focusProfileComposer();toast('Reblog added to your draft. Publish when ready.');
 }
+function videoShareReference(body){const match=String(body||'').match(/(?:^|\n)BLACKCELL VIDEO: ([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\s*$/i);return match?{id:match[1],comment:String(body).slice(0,match.index).trim()}:null}
+function prepareVideoShare(a){
+ if(!state.user||state.busy||!sharedMedia(a)||a.kind!=='video'||!UUID.test(a.id)){toast('This video cannot be shared.');return}
+ const field=$('postBody'),line='BLACKCELL VIDEO: '+a.id;
+ if(field.value.includes(line)){switchView('profile',{who:state.user.id,tab:'posts'});focusProfileComposer();return}
+ if(videoShareReference(field.value)||reblogReference(field.value)){toast('Finish or remove the existing share in your draft first.');return}
+ const body=(field.value.trim()?field.value.trim()+'\n\n':'')+line;
+ if(body.length>1000){toast('Shorten your draft before sharing.');return}
+ switchView('profile',{who:state.user.id,tab:'posts'});field.value=body;updateCounter();focusProfileComposer();toast('Video added to your private Network draft. Publish when ready.');
+}
 function renderPost(p){
  const node=el('article','panel post');node.id='post-'+p.id;
  const person=profile(p.author_id);
@@ -703,8 +713,15 @@ function renderPost(p){
  title.append(name,el('small','',personHandle(person)+' · '+stamp(p.created_at)));
  head.append(pic,title,el('span','post-label',postType(p)));
  node.append(head);
- const reference=reblogReference(p.body);
- if(reference){
+ const videoRef=videoShareReference(p.body),reference=reblogReference(p.body);
+ if(videoRef){
+  if(videoRef.comment)node.append(el('div','post-body',videoRef.comment));
+  const card=el('div','bc-fusion-reblog');card.append(el('small','','▶ SHARED WITHIN BLACKCELL TUBE'));
+  const a=[...state.assets,...(state.streamVideos||[])].find(x=>x.id===videoRef.id&&x.kind==='video'&&sharedMedia(x));
+  if(a){card.append(el('strong','',isWorldVideo(a)?worldVideoTitle(a):String(a.title||a.caption||a.filename||'Video').slice(0,180)),el('p','','Shared video · BLACKCELL members only'));card.append(btn('Watch in BLACKCELL Tube ▶',()=>{switchView('videos');videoChannel.openById(a.id)}))}
+  else card.append(el('p','','This video is not available to your account or is no longer shared.'));
+  node.append(card);
+ }else if(reference){
   if(reference.comment)node.append(el('div','post-body',reference.comment));
   const original=state.posts.find(x=>x.id===reference.id&&x.id!==p.id);
   const card=el('div','bc-fusion-reblog');card.append(el('small','','↻ REBLOGGED FROM BLACKCELL NETWORK'));
@@ -1366,6 +1383,7 @@ async function bcLiveOriginal_publishDirectVideo(event){
 const videoChannel=createBlackcellVideoChannel({
  state,mediaUrl,posterUrl,posterVersions,sharedMedia,profile,personName,stamp,switchView,openProfile,toast,
  worldVideoPreviews,readWorldVideo:a=>readWorldVideo(client,a),bindTransfer:profileWorlds.bindFeedPhoto,
+ shareVideoInside:prepareVideoShare,
  loadVideoComments:async a=>{if(!a.post_id)throw Error('Video has no linked post');const {data,error}=await client.from('corp_social_comments').select('id,post_id,user_id,body,created_at').eq('post_id',a.post_id).order('created_at',{ascending:false}).limit(250);if(error)throw error;return data||[]},
  addVideoComment:async(a,body)=>{if(!state.user?.id||!a.post_id||typeof body!=='string'||!body.trim()||body.length>1000)throw Error('Invalid comment');const {error}=await client.from('corp_social_comments').insert({post_id:a.post_id,user_id:state.user.id,body:body.trim()});if(error)throw error},
  uploadVideo:openDirectVideoUpload,
