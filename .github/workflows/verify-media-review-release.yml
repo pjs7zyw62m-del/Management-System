@@ -1,0 +1,40 @@
+name: Verify public Media Admin release
+on:
+  push:
+    branches: [diagnostic/media-review-live-release]
+    paths: [.github/workflows/verify-media-review-release.yml]
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Probe public deployment only
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import urllib.request,json,time
+          result={}
+          for base in ['https://blackcellcorp.com/','https://pjs7zyw62m-del.github.io/Management-System/']:
+            facts={}
+            for path,needle in [('blackcell-site-version.json','20261116-world-review41'),('corporate-media-admin.html','20261116-world-review41'),('corporate-media-admin.js','20261116-world-review41'),('corporate-media-processor.js','await readWorldMedia(client,item'),('blackcell-world-video-catalog.js','export async function readWorldMedia')]:
+              try:
+                request=urllib.request.Request(base+path+'?_bc_probe='+str(time.time_ns()),headers={'Cache-Control':'no-cache','User-Agent':'BLACKCELL Release Verification'})
+                with urllib.request.urlopen(request,timeout=12) as r:
+                  data=r.read(2000000).decode('utf-8',errors='replace')
+                  facts[path]={'status':r.status,'expected_marker':needle in data}
+              except Exception as e:
+                facts[path]={'error':type(e).__name__,'http_status':getattr(e,'code',None)}
+            result[base]=facts
+          open('media-review-live-diagnostic.json','w').write(json.dumps(result,indent=2)+'\n')
+          print(json.dumps(result,indent=2))
+          PY
+      - name: Record release check without private data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add media-review-live-diagnostic.json
+          git diff --cached --quiet || git commit -m "Record public release verification"
+          git push origin HEAD:diagnostic/media-review-live-release
