@@ -7,6 +7,7 @@ import {authorizeUniformHub,corporate} from './uniform-hub-auth.js?v=20261112-ac
 import {createPrivateDrive,PRIVATE_FILE_LIMIT} from './blackcell-private-drive.js?v=1';
 import {uploadPrivateFile,mediaType,privateUploadError} from './blackcell-private-media.js?v=8-transfer';
 
+import {installWorldPlayer} from './blackcell-world-player.js?v=1';
 const $=id=>document.getElementById(id);
 let approved=[],shown=[],filterBranch='all',filterStyle='all',filterCategory='all',lastSigned=0,authorized=null;
 let authBusy=false;
@@ -182,7 +183,8 @@ async function openViewer(a,{queue=false}={}){
  const dialog=$('mfLightbox');
  if(!dialog?.showModal)return;
  const image=$('mfViewerImage'),video=$('mfViewerVideo');
- video.pause();video.removeAttribute('src');video.load();video.hidden=!isVideo;image.hidden=isVideo;image.removeAttribute('src');
+ video.pause();video.removeAttribute('src');video.load();video._blackcellPlayer?.show(isVideo);video.hidden=!isVideo;image.hidden=isVideo;image.removeAttribute('src');
+ const label=dialog.querySelector('.mf-lightbox-top small');if(label)label.textContent=isVideo?'BLACKCELL / PRIVATE VIDEO':(a.review_status==='pending'?'BLACKCELL / PRIVATE COLLECTION':'BLACKCELL / APPROVED COLLECTION');
  if(!isVideo&&a.signedUrl)image.src=a.signedUrl;
  image.alt=safe(a.caption)||safe(a.filename)||'Uniform photograph';
  text($('mfViewerTitle'),safe(a.caption)||safe(a.filename)||(isVideo?'Uniform video':'Uniform photograph'));
@@ -195,12 +197,12 @@ async function openViewer(a,{queue=false}={}){
  $('mfMoveCategory').value=inferCategory(a);
  if(!dialog.open)dialog.showModal();
  if(isVideo){
-  text($('mfTransferStatus'),'Loading private video…');
+  video._blackcellPlayer?.message('Loading private video…');
   try{
    const url=await worldPreview(a);
    if(request!==viewerRequest||!dialog.open||authorized?.user.id!==uid)return;
-   video.src=url;video.load();text($('mfTransferStatus'),'Tap Play to watch.');
-  }catch(e){if(request===viewerRequest)text($('mfTransferStatus'),'Video unavailable: '+String(e?.message||'Retry by opening the video again.'))}
+   video.src=url;video.load();video._blackcellPlayer?.message('');
+  }catch(e){if(request===viewerRequest)video._blackcellPlayer?.message('Video unavailable: '+String(e?.message||'Retry by opening the video again.'))}
  }
 }
 async function render(){
@@ -576,6 +578,7 @@ function ensureMediaUI(){
 }
 function wire(){
  ensureMediaUI();
+ installWorldPlayer($('mfViewerVideo'),$('mfLightbox'));
  $('mfMediaFilter')?.addEventListener('change',e=>{mediaFilter=e.target.value;page=0;if(authorized)void render()});
  document.querySelectorAll('.mf-portrait-tile[data-mf-uniform]').forEach(tile=>{
   const img=tile.querySelector('.mf-album-art img'),download=tile.querySelector('.mf-portrait-download');if(!img||!download)return;
@@ -624,7 +627,7 @@ function wire(){
  $('mfCloseViewer')?.addEventListener('click',()=>dialog?.close());
  dialog?.addEventListener('click',e=>{if(e.target===dialog)dialog.close()});
  $('mfViewerVideo')?.addEventListener('error',()=>{if(viewerAsset?.kind==='video'&&$('mfViewerVideo').getAttribute('src'))text($('mfTransferStatus'),'This video could not be played on this device. Try an MP4 encoded in H.264.')});
- dialog?.addEventListener('close',()=>{viewerRequest++;const v=$('mfViewerVideo');v.pause();v.removeAttribute('src');v.load();v.hidden=true;$('mfViewerImage').hidden=false;$('mfViewerImage').removeAttribute('src');sortingQueue=false;viewerAsset=null;$('mfQueueControls').hidden=true;$('mfTransferPhotos').hidden=false;});
+ dialog?.addEventListener('close',()=>{viewerRequest++;const v=$('mfViewerVideo');v.pause();v.removeAttribute('src');v.load();v._blackcellPlayer?.show(false);v.hidden=true;$('mfViewerImage').hidden=false;$('mfViewerImage').removeAttribute('src');sortingQueue=false;viewerAsset=null;$('mfQueueControls').hidden=true;$('mfTransferPhotos').hidden=false;});
  document.querySelectorAll('.mf-portrait img').forEach(image=>{
   image.addEventListener('error',()=>{
    image.style.opacity='0';
@@ -689,7 +692,7 @@ async function boot(){
  window.addEventListener('focus',()=>void securityCheck());
  corporate.auth.onAuthStateChange(event=>{
   if(event==='SIGNED_OUT'&&authorized){
-   releaseWorldUrls();authorized=null;$('uMain').hidden=true;$('uGate').hidden=false;
+   releaseWorldUrls();authorized=null;$('mfLightbox')?.close();$('uMain').hidden=true;$('uGate').hidden=false;
    text($('uGateText'),'Signed out. Return to the corporate portal to sign in.');
   }
  });
