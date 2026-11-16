@@ -8,6 +8,7 @@ import {createVisualDiscovery} from './corporate-visual-discovery.js?v=20261111-
 import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phonecheck2';
 import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261115-world-catalog1';
 import {isWorldVideo,worldVideoTitle,readWorldVideo,createWorldVideoPreviews} from './blackcell-world-video-catalog.js?v=1';
+import {createProfileWorlds} from './corporate-profile-worlds.js?v=1';
 const client=corporateClient(),bucket=client.storage.from('corp-social-media');
 const worldVideoPreviews=createWorldVideoPreviews(client);
 const $=id=>document.getElementById(id);
@@ -19,6 +20,7 @@ const state={
  attached:[],openComments:new Set(),busy:false,sort:'newest',deepPost:null,
  chatPeers:[],signedAt:0,profilePreview:false,profilePostFilter:'all',profilePostGrid:false,profileFriendsMode:'following',profileFriendsQuery:''
 };
+const profileWorlds=createProfileWorlds({client,state,previews:worldVideoPreviews,title:worldVideoTitle,render:()=>renderProfile(),toast});
 const fields=['feedView','profileView','discoverView','videosView','photosView'];
 let gunnerDock=null;
 function el(tag,cls='',content=null){
@@ -147,12 +149,13 @@ function switchView(view,{who=null,tab=null,keepPost=false}={}){
  document.body.classList.toggle('bc-video-mode',view==='videos');
  state.profilePreview=false;
  document.body.classList.toggle('bc-profile-mode',view==='profile');
+ if(view!=='profile')profileWorlds.clear();
  document.body.classList.remove('bc-profile-view-as');
  syncLibraryMenu(view);
  gunnerDock?.setVisible(view==='photos');
  if(view==='profile'){
   state.profileUserId=who||state.user.id;
-  if(tab)state.profileTab=tab;
+  state.profileTab=tab||(state.profileUserId===state.user.id?'worldfeed':'posts');
  }
  for(const f of fields)$(f).hidden=f!==view+'View';
  // Keep the original, fully wired Network composer on the active page.
@@ -175,7 +178,7 @@ function switchView(view,{who=null,tab=null,keepPost=false}={}){
  history.replaceState(null,'',location.pathname+(params.toString()?'?'+params.toString():''));
  window.scrollTo({top:0,behavior:'smooth'});
 }
-function openProfile(uid,tab='posts'){
+function openProfile(uid,tab=uid===state.user?.id?'worldfeed':'posts'){
  switchView('profile',{who:uid,tab});
 }
 async function loadAll({show=true}={}){
@@ -523,6 +526,9 @@ function renderProfile(){
  const isMine=p.user_id===state.user.id&&!state.profilePreview;
  const isOwnProfile=p.user_id===state.user.id;
  const isPreview=isOwnProfile&&state.profilePreview;
+ const worldTab=document.querySelector('#profileTabs [data-tab="worldfeed"]');worldTab.hidden=!isMine;
+ if(!isMine&&state.profileTab==='worldfeed')state.profileTab='posts';
+ profileWorlds.header(isMine);
  $('profileCoverAction').hidden=!isMine;
  document.body.classList.toggle('bc-profile-view-as',isPreview);
  $('profileViewAs').hidden=!isOwnProfile||isPreview;
@@ -552,7 +558,8 @@ function renderProfile(){
  renderProfileSidePreviews(p);
  renderSecurityHighlights(p);
  const tabCopy={
-  posts:['Timeline','Your story, updates and conversations.'],
+  worldfeed:['My Feed','Photos and videos from your selected Worlds.'],
+  posts:[isMine?'My Posts':'Timeline','Your story, updates and conversations.'],
   reblogs:['Reblogs','Posts this member has shared from the Network.'],
   photos:['Photo Archive','Approved photographs shared by this member.'],
   videos:['Videos','Videos shared by this member across BLACKCELL.'],
@@ -576,6 +583,7 @@ function renderProfile(){
    actions.append(directChat);
   }
  }
+ const postsTab=document.querySelector('#profileTabs [data-tab="posts"]');if(postsTab)postsTab.textContent=isMine?'My Posts':'Timeline';
  document.querySelectorAll('#profileTabs [data-tab]').forEach(b=>{
   b.classList.toggle('selected',b.dataset.tab===state.profileTab);
   b.setAttribute('aria-current',b.dataset.tab===state.profileTab?'page':'false');
@@ -588,6 +596,7 @@ function renderProfile(){
  syncProfileComposer();
  const box=$('profileContent');box.replaceChildren();
  box.classList.toggle('bc-security-post-grid',state.profileTab==='posts'&&state.profilePostGrid);
+ if(state.profileTab==='worldfeed'&&isMine){profileWorlds.feed(box);return}profileWorlds.clear();
  if(state.profileTab==='about'){
   box.append(renderProfileAbout(p,isMine));return;
  }
@@ -1582,7 +1591,7 @@ async function bcLiveOriginal_saveProfile(){
 /* BLACKCELL OS close integration: only submit explicit profile edits,
  never publish posts, send messages, or submit unrelated forms on close. */
 window.BLACKCELL_OS_CAN_RELOAD=()=>{
- if(state.busy||profileSavePromise||formFiles.length||$('postBody')?.value.trim())return false;
+ if(state.busy||profileSavePromise||profileWorlds.busy()||formFiles.length||$('postBody')?.value.trim())return false;
  const visible=n=>!!(n.getClientRects().length&&!n.closest('[hidden],[aria-hidden=true]')&&getComputedStyle(n).visibility!=='hidden');
  if(Array.from(document.querySelectorAll('dialog[open],[aria-modal=true],#editOverlay,.bc-chat-pane')).some(visible))return false;
  if(Array.from(document.querySelectorAll('input[type=file]')).some(n=>n.files?.length))return false;
@@ -1812,6 +1821,7 @@ async function boot(){
   await loadAll({show:false});
   await dedupe.load();
   await personalization.load();
+  await profileWorlds.load().catch(()=>{});
   await setupPrivateLedgerDoor();
   if(auth.member.role==='owner'||auth.member.can_chat===true){
    const {data}=await client.rpc('corp_chat_peers');
