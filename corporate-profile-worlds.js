@@ -25,11 +25,12 @@ const worldLabel=id=>labels.get(id)?.[1]||'Uniform';
 const mediaWorld=a=>{const tag=(Array.isArray(a.military_tags)?a.military_tags:[]).find(t=>typeof t==='string'&&labels.has(t.slice(4))&&t.startsWith('maf:'));return tag?worldLabel(tag.slice(4)):'Uniform'};
 const uniformTerms='source_provider.eq.world-bunny-v1,military_tags.cs.{maf:military},military_tags.cs.{maf:police},military_tags.cs.{maf:fire},military_tags.cs.{maf:security},military_tags.cs.{maf:medical},military_tags.cs.{maf:professional},military_tags.cs.{maf:unsorted}';
 export function createProfileWorlds({client,state,previews,title,render,toast}){
+ let dismissFeedMenu=null,feedTransferBusy=false;
  const root=()=>document.getElementById('profileWorlds');
  let selected=[],active='',filter='all',open=false,draft=[],saving=false,ready=false,uid='',generation=0,urls=new Set(),disposeLiveCover=null;
  const make=(tag,cls,txt)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(txt!==undefined)el.textContent=txt;return el};
  const button=(txt,fn,cls)=>{const b=make('button',cls,txt);b.type='button';b.onclick=fn;return b};
- function clear(){generation++;for(const url of urls)URL.revokeObjectURL(url);urls.clear()}
+ function clear(){dismissFeedMenu?.();generation++;for(const url of urls)URL.revokeObjectURL(url);urls.clear()}
  window.addEventListener('pagehide',()=>{clear();disposeLiveCover?.();disposeLiveCover=null});
  client.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT'){clear();disposeLiveCover?.();disposeLiveCover=null;selected=[];active='';uid='';ready=false;open=false}});
  async function load(){
@@ -165,6 +166,49 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
   try{const channel=new BroadcastChannel('bc-private-photos-transfer');channel.postMessage({type:'photos-changed',uid:account});channel.close()}catch(_){}
   return 'Transferred to BLACKCELL Photos.';
  }
+ // One contextual action for every feed photograph. It operates on the
+ // original asset, not a thumbnail or browser download.
+
+ function bindFeedPhoto(target,a){
+  if(!target||!a||a.kind!=='photo')return;
+  target.classList.add('bc-pw-transfer-target');
+  target.setAttribute('aria-haspopup','menu');
+  target.setAttribute('aria-keyshortcuts','Shift+F10');
+  let hold=null,start=null,suppress=false;
+  function cancel(){clearTimeout(hold);hold=null;start=null}
+  function show(x,y){
+   cancel();dismissFeedMenu?.();
+   const menu=make('div','bc-pw-transfer-menu bc-pw-feed-context');menu.setAttribute('role','menu');
+   const action=button('Transfer to BLACKCELL Photos',async()=>{
+    if(feedTransferBusy)return;feedTransferBusy=true;action.disabled=true;action.textContent='Transferring…';
+    try{const msg=await transferFeedPhoto(a);close();toast(msg)}
+    catch(e){toast(String(e?.message||'Transfer failed. Try again.'));close()}
+    finally{feedTransferBusy=false}
+   },'bc-pw-transfer-action');
+   action.setAttribute('role','menuitem');menu.append(action);document.body.append(menu);
+   const close=()=>{menu.remove();document.removeEventListener('pointerdown',outside,true);document.removeEventListener('keydown',escape,true);window.removeEventListener('resize',close);document.removeEventListener('scroll',close,true);if(dismissFeedMenu===close)dismissFeedMenu=null};
+   const outside=e=>{if(!menu.contains(e.target))close()};
+   const escape=e=>{if(e.key==='Escape'){e.preventDefault();close();target.focus({preventScroll:true})}};
+   dismissFeedMenu=close;
+   menu.style.left=Math.max(6,Math.min(x,window.innerWidth-menu.offsetWidth-6))+'px';
+   menu.style.top=Math.max(6,Math.min(y,window.innerHeight-menu.offsetHeight-6))+'px';
+   document.addEventListener('pointerdown',outside,true);document.addEventListener('keydown',escape,true);
+   window.addEventListener('resize',close);document.addEventListener('scroll',close,true);
+   action.focus({preventScroll:true});
+  }
+  target.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();show(e.clientX,e.clientY)});
+  target.addEventListener('keydown',e=>{if(e.key==='ContextMenu'||(e.shiftKey&&e.key==='F10')){e.preventDefault();const r=target.getBoundingClientRect();show(r.left+r.width/2,r.top+r.height/2)}});
+  target.addEventListener('pointerdown',e=>{
+   cancel();suppress=false;
+   if(e.isPrimary&&e.button===0&&(e.pointerType==='touch'||e.pointerType==='pen')){
+    start={x:e.clientX,y:e.clientY};
+    hold=setTimeout(()=>{if(start){const {x,y}=start;suppress=true;show(x,y)}},550)
+   }
+  });
+  target.addEventListener('pointermove',e=>{if(start&&Math.hypot(e.clientX-start.x,e.clientY-start.y)>=12)cancel()});
+  target.addEventListener('pointerup',cancel);target.addEventListener('pointercancel',cancel);target.addEventListener('pointerleave',cancel);
+  target.addEventListener('click',e=>{if(suppress){suppress=false;e.preventDefault();e.stopImmediatePropagation()}},true);
+ }
  function showPhoto(img,a){
   if(!img.src||img.hidden||document.querySelector('.bc-pw-viewer[open]'))return;
   const opener=document.activeElement,d=make('dialog','bc-pw-viewer'),full=make('img');
@@ -228,7 +272,7 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
     const card=make('article','bc-pw-card'),frame=make('div','bc-pw-frame');const placeholder=make('span','bc-pw-placeholder',a.kind==='video'?'▶':'Loading photograph…');const img=make('img');img.hidden=true;img.alt=a.caption||label+' media';img.loading='lazy';frame.append(placeholder,img);
     const open=button('',()=>{if(a.kind==='photo')showPhoto(img,a);else{const u=new URL('corporate-network.html',location.href);u.searchParams.set('view','videos');u.searchParams.set('video',a.id);location.assign(u.href)}},'bc-pw-media');open.append(frame);
     card.append(open,make('strong','',a.kind==='video'?title(a):a.caption||label+' photograph'),make('small','',label+' · '+(a.review_status==='pending'?'Private · pending review':unsorted?'Awaiting World assignment':a.kind==='video'?'BLACKCELL TUBE':'WORLD PHOTO')));target.append(card);
-    if(a.kind==='photo')mountPhoto(a,img,gen);else if(a.source_provider==='world-bunny-v1')previews.mount(a,img);
+    if(a.kind==='photo'){bindFeedPhoto(open,a);mountPhoto(a,img,gen)}else if(a.source_provider==='world-bunny-v1')previews.mount(a,img);
   }
   async function loadUnsorted(){
    if(!unassigned.isConnected)return;
@@ -265,5 +309,5 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
   void next().catch(()=>{if(gen===generation)status.textContent='Unable to load World media. Try again.'});
   if(unassigned.isConnected)void loadUnsorted().catch(()=>{if(gen===generation){unassigned.hidden=false;unassigned.append(make('p','bc-pw-caption','Unsorted photographs could not load.'))}});
  }
- return {load,header,feed,clear,mountFeedPhoto:(a,img)=>mountPhoto(a,img,generation),openFeedPhoto:showPhoto,currentScope:()=>worldScope(active,selected),reset:()=>{active=initialWorld(selected);filter='all'},hasActive:()=>!!active,busy:()=>open||saving};
+ return {load,header,feed,clear,mountFeedPhoto:(a,img)=>mountPhoto(a,img,generation),openFeedPhoto:showPhoto,bindFeedPhoto,currentScope:()=>worldScope(active,selected),reset:()=>{active=initialWorld(selected);filter='all'},hasActive:()=>!!active,busy:()=>open||saving};
 }

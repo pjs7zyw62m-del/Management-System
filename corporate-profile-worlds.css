@@ -210,3 +210,7 @@ html body.bc-network.bc-profile-mode #app.app{padding-top:clamp(12px,1.4vw,24px)
 .bc-pw-transfer-action:hover,.bc-pw-transfer-action:focus-visible{background:#ffffff16;outline:none}
 .bc-pw-transfer-action:disabled{opacity:.65;cursor:wait}
 .bc-pw-transfer-status{display:block;font:12px/1.4 system-ui,sans-serif;padding:5px 10px 8px;color:#ffaaaa;overflow-wrap:anywhere}
+
+/* Feed photograph context actions: browser menu replaced only on photos. */
+.bc-pw-transfer-target,.bc-pw-transfer-target img{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
+.bc-pw-feed-context{position:fixed;z-index:2147483000;width:max-content;min-width:218px;max-width:calc(100vw - 12px);margin:0}
