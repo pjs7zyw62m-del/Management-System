@@ -25,7 +25,7 @@ const state={
 };
 const profileWorlds=createProfileWorlds({client,state,previews:worldVideoPreviews,title:worldVideoTitle,render:()=>renderProfile(),toast,readVideo:a=>readWorldVideo(client,a)});
 const fields=['profileView','discoverView','videosView','photosView','pulseView'];
-let pulseAuthor=null,pulseMode='for-you',pulseLimit=12,pulseObserver=null,pulseVideos=null,pulseScroll=null,pulseAutoplay=true,pulseVisible=new Map(),pulseOlderBusy=false,pulseEnd=false,pulseRevision=0;
+let pulseAuthor=null,pulseMode='for-you',pulseLimit=12,pulseObserver=null,pulseVideos=null,pulseScroll=null,pulseAutoplay=true,pulseVisible=new Map(),pulseOlderBusy=false,pulseEnd=false,pulseRevision=0,pulseAutoPages=0;
 let gunnerDock=null;
 function el(tag,cls='',content=null){
  const n=document.createElement(tag);
@@ -149,7 +149,7 @@ function switchView(view,{who=null,tab=null,keepPost=false,pulseWho=null}={}){
   state.assetUrls.clear();void loadSigned().then(renderAll).catch(()=>{});
  }
  if(state.view==='pulse'&&view!=='pulse')clearPulse();
- if(view==='pulse'){pulseScroll=null;pulseAuthor=pulseWho&&profile(pulseWho)?pulseWho:null;pulseMode=pulseAuthor?'author':'for-you';pulseLimit=12;pulseEnd=false;}
+ if(view==='pulse'){pulseScroll=null;pulseAuthor=pulseWho&&profile(pulseWho)?pulseWho:null;pulseMode=pulseAuthor?'author':'for-you';pulseLimit=12;pulseEnd=false;pulseAutoPages=0;}
  state.view=view;
  document.body.classList.toggle('bc-pulse-mode',view==='pulse');
  if(view!=='videos')videoChannel.close();
@@ -940,7 +940,7 @@ function renderPulse(){
  head.append(btn('‹ Profile',()=>openProfile(pulseAuthor||state.user.id),'bc-pulse-back'),brand,btn('＋ Post',()=>{openProfile(state.user.id,'posts');focusProfileComposer()},'bc-pulse-create'));
  const tabs=el('nav','bc-pulse-tabs');tabs.setAttribute('aria-label','PULSE feeds');
  for(const [key,label] of [['for-you','For You'],['following','Following'],['latest','Explore'],['author',pulseAuthor&&pulseAuthor!==state.user.id?personName(profile(pulseAuthor)):'My Feed']]){
-  const tab=btn(label,()=>{pulseMode=key;if(key==='author'&&!pulseAuthor)pulseAuthor=state.user.id;pulseLimit=12;pulseEnd=false;if(pulseScroll)pulseScroll.scrollTop=0;renderPulse()},'bc-pulse-tab');tab.setAttribute('aria-pressed',String(pulseMode===key));tabs.append(tab)
+  const tab=btn(label,()=>{pulseMode=key;if(key==='author'&&!pulseAuthor)pulseAuthor=state.user.id;pulseLimit=12;pulseEnd=false;pulseAutoPages=0;if(pulseScroll)pulseScroll.scrollTop=0;renderPulse()},'bc-pulse-tab');tab.setAttribute('aria-pressed',String(pulseMode===key));tabs.append(tab)
  }
  const auto=btn(pulseAutoplay?'Autoplay on':'Autoplay off',()=>{pulseAutoplay=!pulseAutoplay;auto.textContent=pulseAutoplay?'Autoplay on':'Autoplay off';pulsePlay()},'bc-pulse-auto');tabs.append(auto);
  const scroll=el('div','bc-pulse-scroll');pulseScroll=scroll;const timeline=el('div','bc-pulse-timeline');scroll.append(timeline);
@@ -953,12 +953,12 @@ function renderPulse(){
   for(;rendered<limit;rendered++){const x=entries[rendered],node=x.type==='post'?renderPost(x.item):renderLibraryActivity(x.item);timeline.append(node);for(const image of node.querySelectorAll('img')){image.decoding='async';image.loading='lazy'}for(const v of node.querySelectorAll('video')){v.preload='none';v.playsInline=true;pulseVideos?.observe(v)}}
   footer.replaceChildren();
   if(rendered<entries.length){const more=btn('Load more',()=>{pulseLimit+=12;add(pulseLimit)},'bc-pulse-more');footer.append(more)}
-  else if(!pulseEnd){footer.append(btn(pulseOlderBusy?'Loading older posts…':'Load older posts',()=>void loadPulseOlder(),'bc-pulse-more'))}
+  else if(!pulseEnd){footer.append(btn(pulseOlderBusy?'Loading older posts…':'Load older posts',()=>{pulseAutoPages=0;void loadPulseOlder()},'bc-pulse-more'))}
   else footer.append(el('p','bc-pulse-end','You are caught up.'));
   if(!entries.length&&!timeline.children.length)timeline.append(empty('No posts yet','Shared posts and personal media will appear here.'));
  }
  add(pulseLimit);scroll.scrollTop=savedScroll;
- if(typeof IntersectionObserver==='function')pulseObserver=new IntersectionObserver(items=>{if(!items.some(x=>x.isIntersecting)||state.view!=='pulse')return;if(rendered<entries.length){pulseLimit+=12;add(pulseLimit)}else if(!pulseOlderBusy&&!pulseEnd&&entries.length&&pulseMode!=='author'&&pulseMode!=='following')void loadPulseOlder()},{root:scroll,rootMargin:'450px 0px'}),pulseObserver.observe(footer);
+ if(typeof IntersectionObserver==='function')pulseObserver=new IntersectionObserver(items=>{if(!items.some(x=>x.isIntersecting)||state.view!=='pulse')return;if(rendered<entries.length){pulseLimit+=12;add(pulseLimit)}else if(!pulseOlderBusy&&!pulseEnd&&entries.length&&pulseAutoPages<3){pulseAutoPages++;void loadPulseOlder()}},{root:scroll,rootMargin:'450px 0px'}),pulseObserver.observe(footer);
 }
 
 function renderProfileSocialFeed(box){
