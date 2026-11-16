@@ -2,7 +2,8 @@
  * Never sends frames to an external AI service or changes sharing status.
  * Preview frames are generated on-device and kept only in this page's memory.
  */
-export const isWorldVideo=a=>a?.source_provider==='world-bunny-v1'&&a.kind==='video'&&a.purpose==='library';
+export const isWorldMedia=a=>a?.source_provider==='world-bunny-v1'&&['photo','video'].includes(a.kind)&&a.purpose==='library';
+export const isWorldVideo=a=>isWorldMedia(a)&&a.kind==='video';
 const labels={military:'Military',police:'Law Enforcement',fire:'Fire & Rescue',medical:'Emergency Medical',security:'Corrections & Security',professional:'Aviation & Professional Uniforms',unsorted:'Uniform'};
 export function worldVideoTitle(a){
  const provided=String(a?.caption||'').trim();
@@ -12,8 +13,8 @@ export function worldVideoTitle(a){
  const date=String(a?.created_at||'').slice(0,10);
  return label+' Video'+(/^\d{4}-\d{2}-\d{2}$/.test(date)?' · '+date:'');
 }
-export async function readWorldVideo(client,a,{signal}={}){
- if(!isWorldVideo(a))throw Error('Not a World video');
+export async function readWorldMedia(client,a,{signal}={}){
+ if(!isWorldMedia(a))throw Error('Not a World media asset');
  const session=(await client.auth.getSession()).data?.session;
  const config=window.BLACKCELL_CORP_CONFIG||{};
  if(!session?.access_token||!config.url||!config.publishableKey)throw Error('Sign in again to play this private video.');
@@ -21,11 +22,15 @@ export async function readWorldVideo(client,a,{signal}={}){
   signal,method:'POST',headers:{Authorization:'Bearer '+session.access_token,apikey:config.publishableKey,'Content-Type':'application/json'},
   body:JSON.stringify({id:a.id})
  });
- if(!response.ok)throw Error('Private video unavailable ('+response.status+')');
+ if(!response.ok)throw Error('Private '+(a.kind==='video'?'video':'photo')+' unavailable ('+response.status+')');
  const blob=await response.blob();
- if(!blob.size||blob.size>45*1048576)throw Error('Video preview outside supported size');
+ if(!blob.size||blob.size>45*1048576)throw Error('Media preview outside supported size');
  if((await client.auth.getSession()).data?.session?.user?.id!==session.user.id)throw Error('Session changed');
  return blob;
+}
+export async function readWorldVideo(client,a,options={}){
+ if(!isWorldVideo(a))throw Error('Not a World video');
+ return readWorldMedia(client,a,options);
 }
 async function frameFromBlob(blob,signal){
  signal?.throwIfAborted();
