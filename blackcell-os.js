@@ -687,7 +687,7 @@ async function requestClose(r){
   if(typeof save==='function'){
    const result=await save();
    if(windows.get(r.id)!==r)return;
-   if(result?.ok===true&&!result?.retain&&!r.reopened){dispose(r,true);return}
+   if(result?.ok===true&&!r.reopened){let cleanNetwork=false;try{const child=r.frame.contentWindow;cleanNetwork=child.location.pathname.endsWith('/corporate-network.html')&&child.BLACKCELL_OS_CAN_RELOAD?.()===true}catch(_){}if(!result?.retain||cleanNetwork){dispose(r,true);return}}
    if(result?.ok===false)osNotice(result.message||'Changes could not be saved. Reopen the app to retry; your work is retained.');
    else if(result?.retain)osNotice(result.message||'Your work is retained. Reopen the app to continue.');
   }
