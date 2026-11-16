@@ -109,10 +109,13 @@ Deno.serve(async req=>{
   if(task.external_id&&task.external_id!==job.id||job.provider_task_id&&task.id!==job.provider_task_id)return send({ok:false,code:"TASK_MISMATCH"});
   await db.from(TABLE).update({state,provider_task_id:typeof task.id==="string"?task.id:job.provider_task_id}).eq("id",job.id);
   const output=state==="succeeded"&&Array.isArray(task.outputs)?task.outputs.find(x=>x.type==="video"):null;
-  const dest="Photos/From Members/"+uid+"/AI Creations/AI-"+job.id+".mp4";
-  if(action==="status")return send({ok:true,state,id:job.id,outputReady:!!output,destination:dest});
+  const marked=input.watermark===true;
+  const dest="Photos/From Members/"+uid+"/AI Creations/AI-"+job.id+(marked?"":"-standard")+".mp4";
+  if(action==="status")return send({ok:true,state,id:job.id,outputReady:!!(marked?output?.watermark_url:output?.url),watermarkedAvailable:!!output?.watermark_url,standardAvailable:!!output?.url,destination:dest});
   if(!output)return send({ok:false,code:"OUTPUT_NOT_READY"});
-  const link=new URL(output.watermark_url||output.url);
+  const selected=marked?output.watermark_url:output.url;
+  if(typeof selected!=="string"||!selected)return send({ok:false,code:"OUTPUT_VARIANT_UNAVAILABLE"});
+  const link=new URL(selected);
   if(link.protocol!=="https:"||link.username||link.password||link.port||!link.hostname.endsWith(".klingai.com"))return send({ok:false,code:"OUTPUT_HOST_UNVERIFIED"});
   const video=await fetch(link,{redirect:"error",signal:AbortSignal.timeout(60000)});
   if(!video.ok||!video.body||!["video/mp4","application/octet-stream"].includes((video.headers.get("content-type")||"").split(";")[0]))return send({ok:false,code:"OUTPUT_UNAVAILABLE"});
