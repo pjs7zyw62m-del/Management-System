@@ -217,7 +217,7 @@ async function enterWorkspace(tab){
   if(reviewReady)return;
   await loadAssets();
   const [{createBlackcellMediaProcessor},{setupBlackcellBunnyReview}]=await Promise.all([
-   import('./corporate-media-processor.js?v=20261116-world-review40'),
+   import('./corporate-media-processor.js?v=20261116-world-review41'),
    import('./corporate-bunny-review.js?v=20261112-command1')
   ]);
   if(!processor){
