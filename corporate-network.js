@@ -841,8 +841,8 @@ function inlineWorldVideo(a){
   if(!frame.isConnected||!sharedMedia(a)||pulseCinema(a)||feedPlayback?.frame===frame)return;
   stopFeedPlayback();const uid=state.user?.id,controller=new AbortController();let rendered=null,url=null,seq=0,disposed=false,visibility=null;
   const valid=()=>!disposed&&feedPlayback?.frame===frame&&frame.isConnected&&state.user?.id===uid;
-  const dispose=()=>{disposed=true;seq++;controller.abort();visibility?.disconnect();rendered?.destroy();v.pause();v.removeAttribute('src');v.load();if(url)URL.revokeObjectURL(url);v.hidden=true;quality.hidden=true;play.hidden=false;poster.hidden=!poster.src;status.textContent=title;worldVideoPreviews.setPaused(false)};
-  feedPlayback={frame,dispose};
+  const dispose=()=>{disposed=true;seq++;frame.classList.remove('is-playing');controller.abort();visibility?.disconnect();rendered?.destroy();v.pause();v.removeAttribute('src');v.load();if(url)URL.revokeObjectURL(url);v.hidden=true;quality.hidden=true;play.hidden=false;poster.hidden=!poster.getAttribute('src');status.textContent=title;worldVideoPreviews.setPaused(false)};
+  feedPlayback={frame,dispose};frame.classList.add('is-playing');
   play.hidden=true;poster.hidden=true;v.hidden=false;v.muted=state.view==='pulse'&&pulseAutoplay;status.textContent='Connecting private video…';
   worldVideoPreviews.setPaused(true);
   if(typeof IntersectionObserver==='function'){visibility=new IntersectionObserver(entries=>{if(entries.some(e=>!e.isIntersecting)&&valid())stopFeedPlayback()},{threshold:0});visibility.observe(frame)}
