@@ -801,8 +801,8 @@ function pulseRepostPaint(menu,row){const trigger=menu?.querySelector('summary')
 function pulseMore(t,owner,media=null){const menu=el('details','bc-pulse-menu'),trigger=el('summary','','⋯'),options=el('div','bc-pulse-menu-options');trigger.setAttribute('aria-label','More options');if(owner!==state.user.id)options.append(btn(following(owner)?'Unfollow':'Follow',()=>{menu.open=false;void toggleFollow(owner)}),btn(pulseMutes.has(owner)?'Unmute':'Mute',()=>{menu.open=false;void pulseMute(owner)}));if(media?.kind==='photo'&&media.source_provider!=='world-bunny-v1'){const transfer=btn('Transfer to Photos',()=>{});attachPhotoTransfer(transfer,{client,getPhoto:()=>media,notify:toast});options.append(transfer)}options.append(btn('Report',async()=>{menu.open=false;const reason=prompt('Why are you reporting this item?');if(!reason?.trim())return;const {error}=await client.from('corp_pulse_interactions').insert({target_kind:t.kind,target_id:t.id,user_id:state.user.id,action:'report',body:reason.trim().slice(0,1000)});toast(error?'Report not saved: '+fail(error):'Report recorded privately.')}));menu.append(trigger,options);return menu}
 function pulsePostExtras(actions,p,node,repost){const t={kind:'post',id:p.id};let saved=false;const views=el('span','bc-pulse-view-count','▥');views.title='Unique verified member views';const bookmark=pulseButton('Save or remove bookmark','▱',async()=>{bookmark.disabled=true;try{await pulseToggle(t,'bookmark',saved);pulseQueue(t,update)}catch(e){toast('Bookmark not saved: '+fail(e));bookmark.disabled=false}});const update=row=>{if(!bookmark.isConnected)return;bookmark.disabled=!row;saved=!!row?.bookmarked;bookmark.textContent=saved?'▣':'▱';bookmark.setAttribute('aria-pressed',String(saved));pulseRepostPaint(repost,row);views.textContent=row?'▥ '+(row.views||0):'▥';};bookmark.disabled=true;actions.append(views,bookmark,pulseMore(t,p.author_id));pulseQueue(t,update);pulseViewAnchor(node,t,update)}
 
-function renderPost(p){
- const node=el('article','panel post');node.id='post-'+p.id;
+function renderPost(p,{reblogSource=false}={}){
+ const node=el('article',reblogSource?'bc-pulse-reblog-source':'panel post');if(!reblogSource)node.id='post-'+p.id;
  const person=profile(p.author_id);
  const head=el('div','post-head');
  const pic=avatar(person,'small');
@@ -810,7 +810,7 @@ function renderPost(p){
  const title=el('div','post-author');
  const name=btn(personName(person),()=>pulseMemberOpen(p.author_id));
  title.append(name,el('small','',personHandle(person)+' · '+stamp(p.created_at)));
- head.append(pic,title,el('span','post-label',postType(p)));
+ head.append(pic,title,el('span','post-label',postType(p)));if(reblogSource&&p.author_id!==state.user.id)head.append(btn(following(p.author_id)?'Following':'Follow',()=>void toggleFollow(p.author_id),'bc-pulse-member-secondary'));
  node.append(head);
  const videoRef=videoShareReference(p.body),reference=reblogReference(p.body),mediaRef=pulseMediaReference(p.body);
  if(mediaRef){
@@ -829,7 +829,7 @@ function renderPost(p){
   const original=state.posts.find(x=>x.id===reference.id&&x.id!==p.id);
   const card=el('div','bc-fusion-reblog');card.append(el('small','','↻ REBLOGGED FROM BLACKCELL NETWORK'));
   // Only display an original already visible to this session; never copy its media or bypass RLS.
-  if(original){const sourcePerson=profile(original.author_id);card.append(el('strong','',personName(sourcePerson)),el('p','',String(reblogReference(original.body)?.comment||original.body||'Media post').slice(0,300)));}else card.append(el('p','','Original post may be unavailable or outside the current feed.'));
+  if(original&&!reblogSource&&!reblogReference(original.body)&&!pulseMediaReference(original.body)){card.append(renderPost(original,{reblogSource:true}));}else if(original){const sourcePerson=profile(original.author_id);card.append(el('strong','',personName(sourcePerson)),el('p','',String(reblogReference(original.body)?.comment||pulseMediaReference(original.body)?.comment||'Shared post').slice(0,300)));}else card.append(el('p','','Original post may be unavailable or outside the current feed.'));
   const open=btn('View original post ↗',()=>{const u=new URL(location.href);u.search='';u.hash='';u.searchParams.set('post',reference.id);location.assign(u.href)});card.append(open);node.append(card);
  }else if(p.body)node.append(el('div','post-body',p.body));
  const files=postedAssets(p.id).filter(a=>state.view!=='pulse'||!pulseCinema(a));
@@ -870,6 +870,7 @@ function renderPost(p){
   }
   node.append(wrap);
  }
+ if(reblogSource)return node;
  const actions=el('div','post-actions bc-pulse-interactions');
  const likeCount=state.likes.filter(l=>l.post_id===p.id).length;
  const like=pulseButton(liking(p.id)?'Unlike post':'Like post',(liking(p.id)?'♥':'♡')+' '+likeCount,()=>void toggleLike(p.id));
