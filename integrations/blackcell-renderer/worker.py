@@ -81,7 +81,7 @@ def main():
                 offset+=len(batch)
             print("BLACKCELL_CATALOG_SCAN_PASS:",offset,"eligible; rendered",done,flush=True)
         except Exception as exc:
-            print("Catalog scan failed:",type(exc).__name__,flush=True)
+            print("Catalog scan failed:",type(exc).__name__,getattr(exc,"code",""),flush=True)
             if not a.poll:raise SystemExit(1)
         if not a.poll:break
         time.sleep(a.poll)
