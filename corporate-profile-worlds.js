@@ -11,7 +11,7 @@ export const WORLDS=[
 ];
 export function normalizeWorlds(raw){return WORLDS.map(w=>w[0]).filter(id=>Array.isArray(raw)&&raw.includes(id))}
 const labels=new Map(WORLDS.map(w=>[w[0],w]));
-export function worldBubbles(raw){const ids=normalizeWorlds(raw);return ids.length>1?[...ids,'hybrid']:ids}
+export function worldBubbles(raw){return normalizeWorlds(raw)}
 export function initialWorld(raw){const ids=normalizeWorlds(raw);return ids.length>1?'hybrid':ids[0]||''}
 export function worldScope(active,raw){const ids=normalizeWorlds(raw);return active==='hybrid'&&ids.length>1?ids:ids.includes(active)?[active]:[]}
 const worldLabel=id=>labels.get(id)?.[1]||'Uniform';
@@ -66,7 +66,7 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
   const row=make('div','bc-pw-heading');row.append(make('h2','','My Worlds'));
   if(selected.length)row.append(button('Edit Worlds',choose,'bc-pw-quiet'));
   box.append(row);
-  renderCover(active);
+  renderCover(initialWorld(selected));
   if(open){
    const panel=make('div','bc-pw-picker');panel.append(make('h3','','Select Your Worlds'),make('p','','Choose one or more.'));
    for(const [id,name,icon,art,color] of WORLDS){
@@ -81,14 +81,14 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
    if(!ready)empty.append(button('Retry account connection',async()=>{await load();render()},'bc-pw-quiet'));box.append(empty);
   }
   if(selected.length){const bubbles=make('div','bc-pw-bubbles');for(const id of worldBubbles(selected)){
-   const hybrid=id==='hybrid';const [_,name,icon,art,color]=hybrid?['hybrid','Hybrid','◈','','#ed5365']:labels.get(id);
-   const b=button('',()=>{active=id;filter='all';state.profileTab='worldfeed';render()},'bc-pw-bubble'+(hybrid?' bc-pw-hybrid':''));
-   b.setAttribute('aria-pressed',String(id===active));b.title=hybrid?'Combined Worlds: '+selected.map(worldLabel).join(', '):name+' World';
-   b.style.setProperty('--world-color',color);const image=make('span','bc-pw-circle',hybrid?'◇':icon);
-   if(hybrid){image.replaceChildren();const mosaic=make('span','bc-pw-hybrid-mosaic');for(const k of selected){const swatch=make('span');swatch.style.backgroundImage='url("'+labels.get(k)[3]+'")';mosaic.append(swatch)}image.append(mosaic,make('span','bc-pw-hybrid-mark','◇'))}
-   else{const portrait=make('img');portrait.src=art;portrait.alt='';portrait.decoding='async';image.replaceChildren(portrait)}
+   const [_,name,icon,art,color]=labels.get(id);
+   const b=button('',()=>{active=active===id&&selected.length>1?initialWorld(selected):id;filter='all';state.profileTab='worldfeed';render()},'bc-pw-bubble');
+   b.setAttribute('aria-pressed',String(active===id||active==='hybrid'));b.title=name+' World · filter feed';
+   b.style.setProperty('--world-color',color);
+   const image=make('span','bc-pw-circle'),portrait=make('img');portrait.src=art;portrait.alt='';portrait.decoding='async';image.append(portrait);
    b.append(image,make('span','',name));bubbles.append(b)
   }box.append(bubbles)}
+
  }
  async function photoUrl(a){
   if(a.source_provider!=='world-bunny-v1'){const x=await client.storage.from('corp-social-media').createSignedUrl(a.storage_path,1800);if(x.error||!x.data?.signedUrl)throw Error('Private image unavailable');return {url:x.data.signedUrl,object:false}}
@@ -104,9 +104,34 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
  function feed(box){
   clear();const gen=generation,id=active,scope=worldScope(id,selected);
   if(!scope.length){box.append(make('p','bc-pw-empty','Select your Worlds above to start your personalized feed.'));return}
-  const top=make('div','bc-pw-heading');const heading=make('div','bc-pw-feed-heading');heading.append(make('h3','',id==='hybrid'?'Hybrid Feed':worldLabel(id)+' World'));if(id==='hybrid')heading.append(make('p','bc-pw-caption',scope.map(worldLabel).join(' · ')));top.append(heading);
+  const top=make('div','bc-pw-heading');const heading=make('div','bc-pw-feed-heading');heading.append(make('h3','',id==='hybrid'?'My Worlds Feed':worldLabel(id)+' World'));if(id==='hybrid')heading.append(make('p','bc-pw-caption',scope.map(worldLabel).join(' · ')));if(selected.length>1&&id!=='hybrid')heading.append(button('View all selected Worlds',()=>{active=initialWorld(selected);filter='all';render()},'bc-pw-quiet'));top.append(heading);
   const controls=make('div','bc-pw-filter');for(const [key,label] of [['all','All'],['photo','Photos'],['video','Videos']]){const b=button(label,()=>{filter=key;render()});b.setAttribute('aria-pressed',String(filter===key));controls.append(b)}top.append(controls);box.append(top);
   const grid=make('div','bc-pw-feed'),status=make('p','bc-pw-caption','Loading World media…');box.append(grid,status);
+  const unassigned=make('section','bc-pw-unsorted');unassigned.hidden=true;if(id==='hybrid'&&!scope.includes('uniform')&&filter!=='video')box.append(unassigned);
+  function appendCard(a,target,unsorted){
+   const label=unsorted?'Unsorted':mediaWorld(a);
+    const card=make('article','bc-pw-card'),frame=make('div','bc-pw-frame');const placeholder=make('span','bc-pw-placeholder',a.kind==='video'?'▶':'Loading photograph…');const img=make('img');img.hidden=true;img.alt=a.caption||label+' media';img.loading='lazy';frame.append(placeholder,img);
+    const open=button('',()=>{if(a.kind==='photo')showPhoto(img);else{const u=new URL('corporate-network.html',location.href);u.searchParams.set('view','videos');u.searchParams.set('video',a.id);location.assign(u.href)}},'bc-pw-media');open.append(frame);
+    card.append(open,make('strong','',a.kind==='video'?title(a):a.caption||label+' photograph'),make('small','',label+' · '+(a.review_status==='pending'?'Private · pending review':unsorted?'Awaiting World assignment':a.kind==='video'?'BLACKCELL TUBE':'WORLD PHOTO')));target.append(card);
+    if(a.kind==='photo')mountPhoto(a,img,gen);else if(a.source_provider==='world-bunny-v1')previews.mount(a,img);
+  }
+  async function loadUnsorted(){
+   if(!unassigned.isConnected)return;
+   let offset=0,loading=false;const displayed=new Set(),heading=make('div','bc-pw-heading'),gallery=make('div','bc-pw-feed'),notice=make('p','bc-pw-caption','');
+   const info=make('div','bc-pw-feed-heading');info.append(make('h3','','Unsorted photographs'),make('p','bc-pw-caption','These photographs have not been assigned to a World yet.'));heading.append(info);
+   const link=make('a','bc-pw-quiet','Open Uniform World');link.href='uniform-world.html#collection';heading.append(link);unassigned.append(heading,gallery,notice);
+   async function nextUnsorted(){
+    if(loading||gen!==generation)return;loading=true;notice.textContent='Loading photographs…';
+    let result;try{result=await client.from('corp_social_assets').select('*').eq('purpose','library').eq('kind','photo').contains('military_tags',['maf:unsorted']).not('military_tags','ov','{maf:military,maf:police,maf:fire,maf:security,maf:medical,maf:professional}').or('and(review_status.eq.approved,adult_restricted.eq.false),and(review_status.eq.pending,owner_id.eq.'+uid+')').order('created_at',{ascending:false}).order('id').range(offset,offset+23)}catch(e){result={error:e}}finally{loading=false}
+    if(gen!==generation||!unassigned.isConnected)return;
+    if(result.error){unassigned.hidden=false;notice.textContent='Unsorted photographs could not load. ';notice.append(button('Retry',()=>void nextUnsorted(),'bc-pw-quiet'));return}
+    const records=result.data||[];offset+=records.length;if(!offset){unassigned.hidden=true;return}
+    unassigned.hidden=false;notice.textContent='';
+    for(const a of records){if(displayed.has(a.id))continue;displayed.add(a.id);appendCard(a,gallery,true)}
+    if(records.length===24)notice.append(button('Load more photographs',()=>void nextUnsorted(),'bc-pw-quiet'));
+   }
+   await nextUnsorted();
+  }
   let offset=0,loading=false;const shown=new Set();async function next(){
    if(loading||gen!==generation)return;loading=true;
    status.textContent='Loading World media…';
@@ -119,16 +144,11 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
    if(gen!==generation||!box.isConnected)return;
    if(result.error){status.textContent='World media could not load.';status.append(button('Retry',()=>void next(),'bc-pw-quiet'));return}
    const list=result.data||[];offset+=list.length;status.textContent=!offset?'No media in this World yet.':'';
-   for(const a of list){
-    if(shown.has(a.id))continue;shown.add(a.id);const label=mediaWorld(a);
-    const card=make('article','bc-pw-card'),frame=make('div','bc-pw-frame');const placeholder=make('span','bc-pw-placeholder',a.kind==='video'?'▶':'Loading photograph…');const img=make('img');img.hidden=true;img.alt=a.caption||label+' media';img.loading='lazy';frame.append(placeholder,img);
-    const open=button('',()=>{if(a.kind==='photo')showPhoto(img);else{const u=new URL('corporate-network.html',location.href);u.searchParams.set('view','videos');u.searchParams.set('video',a.id);location.assign(u.href)}},'bc-pw-media');open.append(frame);
-    card.append(open,make('strong','',a.kind==='video'?title(a):a.caption||label+' photograph'),make('small','',label+' · '+(a.review_status==='pending'?'Private · pending review':a.kind==='video'?'BLACKCELL TUBE':'WORLD PHOTO')));grid.append(card);
-    if(a.kind==='photo')mountPhoto(a,img,gen);else if(a.source_provider==='world-bunny-v1')previews.mount(a,img);
-   }
+   for(const a of list){if(shown.has(a.id))continue;shown.add(a.id);appendCard(a,grid,false)}
    if(list.length===24)status.append(button('Load more',()=>void next(),'bc-pw-quiet'))
   }
   void next().catch(()=>{if(gen===generation)status.textContent='Unable to load World media. Try again.'});
+  if(unassigned.isConnected)void loadUnsorted().catch(()=>{if(gen===generation){unassigned.hidden=false;unassigned.append(make('p','bc-pw-caption','Unsorted photographs could not load.'))}});
  }
- return {load,header,feed,clear,hasActive:()=>!!active,busy:()=>open||saving};
+ return {load,header,feed,clear,reset:()=>{active=initialWorld(selected);filter='all'},hasActive:()=>!!active,busy:()=>open||saving};
 }
