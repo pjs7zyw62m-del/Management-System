@@ -3,7 +3,7 @@
  * Adult/restricted media is NEVER published into shared albums or network feeds.
  * A cloud-to-cloud worker is a separate integration: this reviews registered assets.
  */
-import {isWorldVideo,readWorldVideo} from './blackcell-world-video-catalog.js?v=3-playback-priority';
+import {isWorldMedia,readWorldMedia} from './blackcell-world-video-catalog.js?v=4-world-media-review';
 export function createBlackcellMediaProcessor({client,bucket,state,refresh,mediaUrl,toast,openAIReview}){
  const $=id=>document.getElementById(id),owner=()=>state.member?.role==='owner';
  const active=()=>owner()&&state.user?.id;
@@ -109,20 +109,20 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
   let failed=false;const fail=(reason)=>{if(!valid()||failed)return;failed=true;releasePreview();previewReady=false;if(!busy)setBusy(false);const retry=el('button','bc-review-retry','Retry preview');retry.type='button';retry.onclick=()=>void open(item);host.replaceChildren(el('p','bc-review-preview-message','Private preview unavailable. This item remains pending.'+(typeof reason==='string'?' '+reason:'')),retry);status('Preview is required before approval. '+(typeof reason==='string'?reason:'Retry the preview.'))};
   try{
    const asset=state.assets.find(a=>a.id===item.id);let url='';
-   if(isWorldVideo(item)){
+   if(isWorldMedia(item)){
     const controller=new AbortController();previewAbort=controller;
-    const blob=await readWorldVideo(client,item,{signal:controller.signal});
+    const blob=await readWorldMedia(client,item,{signal:controller.signal});
     if(!valid()||controller.signal.aborted)return;
     previewAbort=null;previewObject=URL.createObjectURL(blob);url=previewObject;
    }else url=asset?mediaUrl(asset):'';
-   if(!url&&!isWorldVideo(item)){const {data,error}=await bucket.createSignedUrl(item.storage_path,1200);if(!valid())return;if(error||!data?.signedUrl){fail();return}url=data.signedUrl}
+   if(!url&&!isWorldMedia(item)){const {data,error}=await bucket.createSignedUrl(item.storage_path,1200);if(!valid())return;if(error||!data?.signedUrl){fail();return}url=data.signedUrl}
    if(!valid())return;
    const preview=el(item.kind==='video'?'video':'img');
    if(item.kind==='video'){preview.controls=true;preview.playsInline=true;preview.preload='auto'}else preview.alt=item.filename||'Pending photograph';
    const loaded=()=>{if(!valid())return;previewReady=true;if(!busy)setBusy(false);status('Review the actual '+item.kind+'. Verify country, branch, subject and applicable restrictions before approving.')};
    preview.addEventListener(item.kind==='video'?'loadeddata':'load',loaded,{once:true});preview.addEventListener('error',()=>fail(item.kind==='video'?'Video decode failed (code '+(preview.error?.code||0)+').':'Image decode failed.'),{once:true});
    host.replaceChildren(preview);preview.src=url;
-  }catch(e){const match=String(e?.message||'').match(/Private video unavailable \((\d{3})\)/);fail(match?'Storage request failed (HTTP '+match[1]+').':'Private preview request failed. Retry after refreshing.')}
+  }catch(e){const match=String(e?.message||'').match(/Private (?:video|photo) unavailable \((\d{3})\)/);fail(match?'Storage request failed (HTTP '+match[1]+').':'Private preview request failed. Retry after refreshing.')}
  }
  async function applyAI(){
   if(!active()||!current||busy||!previewReady||current.kind!=='photo')return;
@@ -224,7 +224,7 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
    // misrepresent the already-approved asset. The owner can retry from the
    // "Connect Existing Military Library Photos" panel.
    let archivePending=false;
-   if(current.kind==='photo'&&['library','post'].includes(current.purpose)&&current.source_provider!=='bunny-private'){
+   if(current.kind==='photo'&&['library','post'].includes(current.purpose)&&!['bunny-private','world-bunny-v1'].includes(current.source_provider)){
     try{
      const {data:archive,error:archiveError}=await client.functions.invoke(
       'blackcell-bunny-library-sync',{body:{action:'sync-one',asset_id:id}});
@@ -234,7 +234,7 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
    resetEditor();await refresh();await reload(true);
    if(archivePending)
     status('Photo approved and filed. Bunny copy not yet verified; use Connect Existing Military Library Photos to finish archival.');
-   toast(adult?'Approved to OWNER-ONLY private media archive.':'Media approved and filed in the military album.');
+   toast(adult?'Approved to OWNER-ONLY private media archive.':'Media approved and filed in the selected World album.');
   }catch(e){status('Media remains pending: '+errText(e))}
   finally{setBusy(false)}
  }
