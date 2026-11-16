@@ -92,14 +92,17 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
   art.append(panels,tag);cover.prepend(art);
   const source=liveCoverSource(scope);if(source)disposeLiveCover=mountLiveCover(cover,art,source)
  }
- function header(isMine){
-  const box=root();if(!box)return;box.hidden=!isMine;box.replaceChildren();
-  if(!isMine){open=false;renderCover('');return}
+ function header(isMine,isPreview=false){
+  const box=root();if(!box)return;box.replaceChildren();
+  const showWorlds=isMine||(isPreview&&selected.length>0);
+  box.hidden=!showWorlds;
+  if(!showWorlds){open=false;renderCover('');return}
+  if(!isMine)open=false;
   const row=make('div','bc-pw-heading');row.append(make('h2','','My Worlds'));
-  if(selected.length)row.append(button('Edit Worlds',choose,'bc-pw-quiet'));
+  if(isMine&&selected.length)row.append(button('Edit Worlds',choose,'bc-pw-quiet'));
   box.append(row);
   renderCover(initialWorld(selected));
-  if(open){
+  if(isMine&&open){
    const panel=make('div','bc-pw-picker');panel.append(make('h3','','Select Your Worlds'),make('p','','Choose one or more.'));
    for(const [id,name,icon,art,color] of WORLDS){
     const label=make('label','bc-pw-choice');const symbol=make('span','bc-pw-symbol',icon);symbol.style.color=color;const input=make('input');input.type='checkbox';input.checked=draft.includes(id);input.disabled=saving;
@@ -108,14 +111,14 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
    }
    const count=make('p','bc-pw-caption',draft.length+' of 7 Worlds selected');panel.append(count);
    const actions=make('div','bc-pw-buttons');const b=button(saving?'Saving…':'Save My Worlds',()=>void save(),'bc-pw-primary');b.disabled=saving;const cancel=button('Cancel',()=>{open=false;render()},'bc-pw-quiet');cancel.disabled=saving;actions.append(b,cancel);panel.append(actions);box.append(panel);
-  }else if(!selected.length){
+  }else if(isMine&&!selected.length){
    const empty=make('div','bc-pw-empty');empty.append(make('strong','','Build your own experience'),make('p','','Choose the Worlds you want to follow.'));const b=button('＋ Select Your Worlds',choose,'bc-pw-primary');b.disabled=!ready;empty.append(b);
    if(!ready)empty.append(button('Retry account connection',async()=>{await load();render()},'bc-pw-quiet'));box.append(empty);
   }
   if(selected.length){const bubbles=make('div','bc-pw-bubbles');for(const id of worldBubbles(selected)){
    const [_,name,icon,art,color]=labels.get(id);
-   const b=button('',()=>{active=active===id&&selected.length>1?initialWorld(selected):id;filter='all';state.profileTab='worldfeed';render()},'bc-pw-bubble');
-   b.setAttribute('aria-pressed',String(active===id||active==='hybrid'));b.title=name+' World · filter feed';
+   const b=isMine?button('',()=>{active=active===id&&selected.length>1?initialWorld(selected):id;filter='all';state.profileTab='worldfeed';render()},'bc-pw-bubble'):make('div','bc-pw-bubble bc-pw-readonly');
+   if(isMine){b.setAttribute('aria-pressed',String(active===id||active==='hybrid'));b.title=name+' World · filter feed'}else{b.dataset.selected='true';b.title=name+' World'}
    b.style.setProperty('--world-color',color);
    const image=make('span','bc-pw-circle'),portrait=make('img');portrait.src=art;portrait.alt='';portrait.decoding='async';image.append(portrait);
    b.append(image,make('span','',name));bubbles.append(b)
