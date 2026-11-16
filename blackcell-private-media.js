@@ -204,7 +204,7 @@ export function mountPrivatePhotos(host,{client,userId,preview,alive,onBusy}){
     const note=make('p','ap-ai-note',pilotEligible?'Owner-only pilot · Kling 3.0 · 5 seconds · 720p · silent · estimated 3 units. One submission for this project. Package compatibility and actual billing are subject to Kling.':'Pilot requires your own authorized JPEG/PNG in Photos, up to 8 MB, at least 300 px per side, with supported proportions. Other creators require a separate permission workflow.');
     const jobStatus=make('p','ap-ai-job-status',pilotEligible?'Checking pilot availability…':'This photo is not eligible for the pilot.');jobStatus.setAttribute('role','status');
     const album=make('p','ap-ai-destination','Destination: '+memberName(userId||'preview')+' / AI Creations');
-    let state='checking',timer=null,outputBlob=null,outputURL=null,outputVideo=null,jobId=null,destination=null,working=false,saved=false,attemptedOutput=false;
+    let state='checking',pollCount=0,timer=null,outputBlob=null,outputURL=null,outputVideo=null,jobId=null,destination=null,working=false,saved=false,attemptedOutput=false;
     const controls=()=>{generate.disabled=!pilotEligible||!rights.checked||working||state!=='ready';transfer.disabled=!active()||working||!outputBlob||!destination||saved;refreshJob.disabled=!pilotEligible||working;motion.disabled=rights.disabled=working||state!=='ready'};
     const clean=()=>{clearTimeout(timer);if(outputVideo){outputVideo.pause();outputVideo.removeAttribute('src');outputVideo.load()}if(outputURL)URL.revokeObjectURL(outputURL);outputURL=null;outputBlob=null;outputVideo=null};
     viewerStudioCleanup=clean;
@@ -217,9 +217,9 @@ export function mountPrivatePhotos(host,{client,userId,preview,alive,onBusy}){
       if(!active())return;outputBlob=new Blob([result],{type:'video/mp4'});outputURL=URL.createObjectURL(outputBlob);outputVideo=make('video','ap-ai-preview');outputVideo.controls=true;outputVideo.playsInline=true;outputVideo.src=outputURL;stage.prepend(outputVideo);stage.classList.add('has-result');jobStatus.textContent='Video ready. Play it or transfer to private Photos.';
      }catch(e){if(active())jobStatus.textContent=String(e.message||'Preview unavailable');}finally{if(active())controls()}
     }
-    function schedule(){clearTimeout(timer);if(active()&&['reserved','submitted','processing','uncertain'].includes(state))timer=setTimeout(()=>{if(active()&&!document.hidden)void poll();else if(active())schedule()},15000)}
+    function schedule(){clearTimeout(timer);if(active()&&pollCount<20&&['reserved','submitted','processing','uncertain'].includes(state))timer=setTimeout(()=>{if(active()&&!document.hidden)void poll();else if(active())schedule()},15000)}
     async function poll(){
-     if(!active()||working||!pilotEligible)return;working=true;controls();
+     if(!active()||working||!pilotEligible)return;pollCount++;working=true;controls();
      try{const data=await invoke('status');if(!active())return;if(!data?.ok){state='blocked';jobStatus.textContent=messages[data?.code]||'Pilot not available · '+String(data?.code||'Unknown error');return}
       state=data.state;jobId=data.id||jobId;destination=data.destination||destination;
       jobStatus.textContent=state==='ready'?'Ready for one confirmed generation.':state==='succeeded'?'Video completed.':state==='failed'?'Kling reported failure. No automatic retry.':state==='uncertain'||state==='reserved'?'Submission being reconciled. No additional credits will be spent by checking.':'Rendering · '+state;
@@ -229,11 +229,11 @@ export function mountPrivatePhotos(host,{client,userId,preview,alive,onBusy}){
     const generate=button('Generate · 3 units est.',async()=>{
      if(!active()||!pilotEligible||working||state!=='ready'||!rights.checked)return;if(!confirm('Submit one Kling 3.0 five-second video? Estimated three units. This sends your authorized photo to Kling. No automatic retries.'))return;
      working=true;state='reserved';controls();jobStatus.textContent='Submitting securely…';onBusy(true);
-     try{const data=await invoke('create',{approve:true,rights:true,motion:motion.value});if(!active())return;jobId=data?.id||null;state=data?.state||'checking';jobStatus.textContent=messages[data?.code]||'Submission received. Checking actual status…';}
+     try{const data=await invoke('create',{approve:true,rights:true,motion:motion.value});if(!active())return;jobId=data?.id||null;state=data?.state||'checking';jobStatus.textContent=messages[data?.code]||'Submission received. Checking actual status…';if(!jobId&&['PACKAGE_NOT_READY','SOURCE_SIZE_LIMIT','SOURCE_FORMAT_UNSUPPORTED','SOURCE_UNAVAILABLE','SOURCE_INCOMPLETE'].includes(data?.code)){state='ready';return}}
      catch{if(active()){state='uncertain';jobStatus.textContent='Submission unconfirmed. Checking status is safe; do not resubmit.'}}
-     finally{working=false;onBusy(false);if(active()){controls();void poll()}}
+     finally{working=false;onBusy(false);if(active()){controls();if(state!=='ready')void poll()}}
     });
-    const refreshJob=button('Check render status',()=>{attemptedOutput=false;void poll()});
+    const refreshJob=button('Check render status',()=>{attemptedOutput=false;pollCount=0;void poll()});
     const transfer=button('Transfer to Photos',async()=>{
      if(!active()||working||!outputBlob||!destination||!jobId||saved)return;
      const expected='Photos/From Members/'+userId+'/AI Creations/AI-'+jobId+'.mp4';if(destination!==expected)return;
