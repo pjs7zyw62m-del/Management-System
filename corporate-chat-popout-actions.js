@@ -1,6 +1,6 @@
 
 /* iPhone-inspired pop-out message actions. No third-party message export. */
-export function mountPopoutActions({canAct,composer,resizeComposer,sendReaction,status}){
+export function mountPopoutActions({canAct,composer,resizeComposer,sendReaction,status,editMessage,deleteMessage}){
  const make=(tag,cls='',value='')=>{const n=document.createElement(tag);n.className=cls;if(value)n.textContent=value;return n};
  const surface=make('div','bc-pop-action-surface');surface.hidden=true;
  const toolbar=make('div','bc-pop-reactions');toolbar.setAttribute('aria-label','Send a reaction message');
@@ -19,7 +19,7 @@ export function mountPopoutActions({canAct,composer,resizeComposer,sendReaction,
   if(!canAct()||!bubble.isConnected)return;
   event?.preventDefault?.();event?.stopPropagation?.();
   close();previousFocus=bubble;current={bubble,message,own};bubble.classList.add('bc-pop-action-selected');
-  surface.hidden=false;shade.hidden=false;place();
+  editAction.hidden=!own||!!message.deleted_at||!!message.media_batch_id;deleteAction.hidden=editAction.hidden;surface.hidden=false;shade.hidden=false;place();
  }
  const valid=entry=>!!entry&&canAct()&&entry.bubble.isConnected;
  const short=value=>String(value||'').replace(/\s+/g,' ').trim().slice(0,140);
@@ -29,6 +29,8 @@ export function mountPopoutActions({canAct,composer,resizeComposer,sendReaction,
  }
  const add=(icon,label,action)=>{const b=btn('',async()=>{const entry=current;if(!valid(entry))return;close();await action(entry)});
   const symbol=make('span','bc-pop-action-icon',icon);symbol.setAttribute('aria-hidden','true');b.append(symbol,make('span','',label));menu.append(b);return b};
+ const editAction=add('✎','Edit message',entry=>editMessage?.(entry.message));
+ const deleteAction=add('⌫','Delete for everyone',entry=>deleteMessage?.(entry.message));deleteAction.classList.add('bc-chat-delete-action');
  add('↩','Reply',entry=>{
   const quote='> '+short(entry.message.body)+'\n\n';const draft=composer.value;
   if(!draft.startsWith(quote))composer.value=(quote+draft).slice(0,2000);
@@ -54,7 +56,7 @@ export function mountPopoutActions({canAct,composer,resizeComposer,sendReaction,
    const output=await translator.translate(source);
    if(!canAct())return;
    let language=lang;try{language=new Intl.DisplayNames([navigator.language||'en'],{type:'language'}).of(lang)||lang}catch(_){}
-   translated.set(entry.message.id,{output,language});
+   translated.set(entry.message.id,{output,language,source});
    if(entry.bubble.isConnected)showTranslation(entry.bubble,entry.message);
    else for(const b of document.querySelectorAll('.bc-pop-text-bubble'))if(b.dataset.messageId===String(entry.message.id))showTranslation(b,entry.message);
    status('');
@@ -69,7 +71,7 @@ export function mountPopoutActions({canAct,composer,resizeComposer,sendReaction,
   window.speechSynthesis.cancel();const speech=new SpeechSynthesisUtterance(String(entry.message.body||''));speech.voice=voice;speech.lang=voice.lang;window.speechSynthesis.speak(speech);
  });
  function showTranslation(bubble,message){
-  const result=translated.get(message.id);if(!result)return;
+  const result=translated.get(message.id);if(!result||result.source!==String(message.body||''))return;
   const existing=bubble.querySelector('.bc-pop-translation');if(existing)return;
   const original=make('span','bc-pop-original',String(message.body||''));
   const resultText=make('span','bc-pop-translation',result.output);
@@ -90,5 +92,5 @@ export function mountPopoutActions({canAct,composer,resizeComposer,sendReaction,
  shade.addEventListener('click',()=>close(true));document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!surface.hidden){e.preventDefault();close(true)}});
  window.addEventListener('resize',()=>{if(!surface.hidden)place()});
  surface.append(toolbar,menu);document.body.append(shade,surface);
- return {attach,close};
+ return {attach,close,open:(bubble,message,own)=>open(null,bubble,message,own)};
 }
