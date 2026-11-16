@@ -8,7 +8,7 @@ import {createVisualDiscovery} from './corporate-visual-discovery.js?v=20261111-
 import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phonecheck2';
 import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261115-world-catalog1';
 import {isWorldVideo,worldVideoTitle,readWorldVideo,createWorldVideoPreviews} from './blackcell-world-video-catalog.js?v=1';
-import {createProfileWorlds} from './corporate-profile-worlds.js?v=5-compact-panel';
+import {createProfileWorlds} from './corporate-profile-worlds.js?v=6-military-live';
 const client=corporateClient(),bucket=client.storage.from('corp-social-media');
 const worldVideoPreviews=createWorldVideoPreviews(client);
 const $=id=>document.getElementById(id);

@@ -15,6 +15,7 @@ export function worldBubbles(raw){return normalizeWorlds(raw)}
 // Approved five-second preview. The external render URL is deliberately
 // isolated so the source can be replaced with first-party CDN hosting later.
 const LIVE_COVERS=Object.freeze({
+ 'military':'https://resource2.heygen.ai/videos/d6924ed15d034cdbaa4de030f7a18969/d6924ed15d034cdbaa4de030f7a18969/01a1e348-d528-762e-8bb8-360dc00e243c.mp4',
  'military|police':'https://resource2.heygen.ai/videos/d6924ed15d034cdbaa4de030f7a18969/d6924ed15d034cdbaa4de030f7a18969/01a1e308-dc3a-7164-8861-b3f11404f39e.mp4'
 });
 export function liveCoverSource(raw){return LIVE_COVERS[normalizeWorlds(raw).join('|')]||null}
