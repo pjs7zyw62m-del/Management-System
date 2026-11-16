@@ -68,10 +68,10 @@ export function createPhotoDedupe({client,state,mediaUrl,toast}){
   if(error){console.warn('Duplicate index unavailable:',error.message);return false}
   entries=data||[];loaded=true;return true;
  }
- async function preflight(file){
+ async function preflight(file,{ownerOnly=false}={}){
   const fingerprint=await calculatePhotoFingerprint(file);
   if(!loaded)await load();
-  const matches=entries.map(e=>({asset_id:e.asset_id,...compareOrEmpty(fingerprint,e)}))
+  const matches=entries.filter(e=>!ownerOnly||e.owner_id===state.user?.id).map(e=>({asset_id:e.asset_id,...compareOrEmpty(fingerprint,e)}))
    .filter(e=>e.type).sort((a,b)=>a.type==='exact'?-1:b.type==='exact'?1:a.distance-b.distance);
   return {fingerprint,matches};
  }
