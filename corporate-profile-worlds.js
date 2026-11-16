@@ -156,15 +156,18 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
   const current=(await client.auth.getSession()).data?.session;
   if(current?.user?.id!==account||state.user?.id!==account)throw Error('Session changed');
   const name='BLACKCELL-'+a.id+'.'+ext;
+  const owner=String(a.owner_id||'');
+  const fromMember=owner!==account&&/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(owner);
+  const destination=account+'/Photos/'+(fromMember?'From Members/'+owner+'/':'')+name;
   try{
-   await m.uploadPrivateFile(drive.createPrivateDrive(client,account),account+'/Photos/'+name,new File([blob],name,{type:blob.type}));
+   await m.uploadPrivateFile(drive.createPrivateDrive(client,account),destination,new File([blob],name,{type:blob.type}));
   }catch(e){
    if(/duplicate|already exists|resource already exists|\b409\b/i.test(String(e?.message||e?.statusCode||e)))return 'This photo is already in your BLACKCELL Photos.';
    throw Error(m.privateUploadError(e));
   }
   window.dispatchEvent(new CustomEvent('bc-private-files-changed',{detail:{source:'world-transfer',uid:account}}));
   try{const channel=new BroadcastChannel('bc-private-photos-transfer');channel.postMessage({type:'photos-changed',uid:account});channel.close()}catch(_){}
-  return 'Transferred to BLACKCELL Photos.';
+  return fromMember?'Transferred to the member’s album in BLACKCELL Photos.':'Transferred to BLACKCELL Photos.';
  }
  // One contextual action for every feed photograph. It operates on the
  // original asset, not a thumbnail or browser download.
