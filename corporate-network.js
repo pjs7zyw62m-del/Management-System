@@ -151,7 +151,7 @@ function switchView(view,{who=null,tab=null,keepPost=false,pulseWho=null}={}){
  }
  stopFeedPlayback();
  if(state.view==='pulse'&&view!=='pulse')clearPulse();
- if(view==='pulse'){pulseScroll=null;pulseAuthor=pulseWho&&profile(pulseWho)?pulseWho:null;pulseMode=pulseAuthor?'author':'for-you';pulseLimit=12;pulseEnd=false;pulseAutoPages=0;}
+ if(view==='pulse'){pulseMemberTab='posts';pulseArchiveState=null;pulseScroll=null;pulseAuthor=pulseWho&&profile(pulseWho)?pulseWho:null;pulseMode=pulseAuthor?'author':'for-you';pulseLimit=12;pulseEnd=false;pulseAutoPages=0;}
  state.view=view;
  document.body.classList.toggle('bc-pulse-mode',view==='pulse');
  if(view!=='videos')videoChannel.close();
@@ -806,9 +806,9 @@ function renderPost(p){
  const person=profile(p.author_id);
  const head=el('div','post-head');
  const pic=avatar(person,'small');
- pic.style.cursor='pointer';pic.addEventListener('click',()=>openProfile(p.author_id));
+ pic.style.cursor='pointer';pic.addEventListener('click',()=>pulseMemberOpen(p.author_id));
  const title=el('div','post-author');
- const name=btn(personName(person),()=>openProfile(p.author_id));
+ const name=btn(personName(person),()=>pulseMemberOpen(p.author_id));
  title.append(name,el('small','',personHandle(person)+' · '+stamp(p.created_at)));
  head.append(pic,title,el('span','post-label',postType(p)));
  node.append(head);
@@ -951,9 +951,9 @@ function renderLibraryActivity(a){
  const head=el('div','post-head');
  const pic=avatar(person,'small');
  pic.style.cursor='pointer';
- pic.addEventListener('click',()=>openProfile(a.owner_id));
+ pic.addEventListener('click',()=>pulseMemberOpen(a.owner_id));
  const title=el('div','post-author');
- title.append(btn(personName(person),()=>openProfile(a.owner_id)),
+ title.append(btn(personName(person),()=>pulseMemberOpen(a.owner_id)),
    el('small','',personHandle(person)+' · '+stamp(a.created_at)));
  head.append(pic,title,el('span','post-label',a.kind==='video'?'VIDEO UPLOADED':'PHOTO UPLOADED'));
  node.append(head);
@@ -1013,7 +1013,7 @@ function selectProfileFeedPosts(posts,assets,follows,userId,mode,worlds=[]){
 }
 // BLACKCELL PULSE uses only the signed-in Network catalog and existing RLS-backed actions.
 const pulseCinema=a=>['movie','series','documentary','tv','tv show','tv_show'].includes(String(a?.video_category||'').trim().toLowerCase());
-function clearPulse(){pulseViewObserver?.disconnect();pulseViewObserver=null;stopFeedPlayback();pulseRevision++;pulseObserver?.disconnect();pulseObserver=null;pulseVideos?.disconnect();pulseVideos=null;pulseVisible.clear();for(const v of $('pulseView')?.querySelectorAll('video')||[])v.pause();}
+function clearPulse(){pulseActivityToken++;profileWorlds.clear();pulseViewObserver?.disconnect();pulseViewObserver=null;stopFeedPlayback();pulseRevision++;pulseObserver?.disconnect();pulseObserver=null;pulseVideos?.disconnect();pulseVideos=null;pulseVisible.clear();for(const v of $('pulseView')?.querySelectorAll('video')||[])v.pause();}
 function pulseEntries(){
  const mode=pulseMode==='following'?'following':'latest';
  const posts=selectProfileFeedPosts(state.posts,state.assets,state.follows,state.user.id,mode).filter(p=>pulseMode!=='author'||p.author_id===pulseAuthor);
@@ -1055,6 +1055,102 @@ async function loadPulseOlder(){
  }catch(e){if(state.view==='pulse')toast('Older posts unavailable: '+fail(e));pulseEnd=true}
  finally{pulseOlderBusy=false;if(state.view==='pulse'&&rev===pulseRevision)renderPulse()}
 }
+
+/* Tumblr-style member blog and date-organized archive. Metadata pages first;
+   private photo/thumbnail delivery is deferred until a tile is near the viewport. */
+let pulseMemberTab='posts',pulseArchiveState=null,pulseActivityToken=0;
+const pulseProfileMode=()=>pulseMode==='author'&&!!pulseAuthor;
+function pulseMemberOpen(uid){if(state.view==='pulse'&&profile(uid)){switchView('pulse',{pulseWho:uid});return}openProfile(uid)}
+function pulseMonthKey(a){const d=new Date(a.created_at);return Number.isFinite(d.getTime())?d.toISOString().slice(0,7):''}
+function pulseMonthLabel(key){return new Intl.DateTimeFormat(undefined,{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(key+'-01T00:00:00Z'))}
+function pulseArchiveMedia(a){return a&&sharedMedia(a)&&!pulseCinema(a)&&['photo','video'].includes(a.kind)&&['library','post'].includes(a.purpose)}
+function pulseArchiveTile(a){
+ const tile=btn('',()=>{if(a.kind==='photo'){if(!img.hidden&&img.src)profileWorlds.openFeedPhoto(img,a);else toast('Photo preview is still loading.')}else location.assign(pulseLink(pulseTarget(a)))},'bc-pulse-archive-tile');
+ const frame=el('div','bc-pulse-archive-frame'),placeholder=el('span','bc-pw-placeholder',a.kind==='video'?'▶':'Loading…'),img=el('img');
+ img.alt=a.caption||a.title||(a.kind==='video'?'Video thumbnail':'Shared photograph');img.loading='lazy';img.decoding='async';img.hidden=true;
+ frame.append(placeholder,img);tile.append(frame);
+ if(a.kind==='video'){
+  tile.append(el('span','bc-pulse-archive-play','▶'));
+  const known=posterUrl(a);
+  if(known){img.src=known;img.hidden=false;placeholder.hidden=true}
+  else if(a.video_poster_path||a.poster_path){const path=a.video_poster_path||a.poster_path;const load=async()=>{if(!img.isConnected)return;const {data,error}=await bucket.createSignedUrl(path,1800);if(!error&&data?.signedUrl&&img.isConnected){img.src=data.signedUrl;img.hidden=false;placeholder.hidden=true}};if(typeof IntersectionObserver==='function'){const ob=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)){ob.disconnect();void load()}},{rootMargin:'100px'});ob.observe(tile);setTimeout(()=>ob.disconnect(),60000)}else queueMicrotask(load)}
+  else if(isWorldVideo(a)){worldVideoPreviews.mount(a,img);img.addEventListener('load',()=>{placeholder.hidden=true},{once:true})}
+ }else{const known=mediaUrl(a);if(known){img.src=known;img.hidden=false;placeholder.hidden=true}else profileWorlds.mountFeedPhoto(a,img)}
+ tile.setAttribute('aria-label',(a.kind==='photo'?'Open photograph: ':'Open video: ')+(a.caption||a.title||'Shared media')+' · '+stamp(a.created_at));
+ profileWorlds.bindFeedPhoto(tile,a);return tile;
+}
+function pulseArchiveData(owner,month='',kind='all'){return {owner,month,kind,rows:[],cursor:null,done:false,busy:false,error:'',uid:state.user.id}}
+function pulseArchiveQuery(table,a){
+ const stream=table==='corp_stream_videos';
+ let q=client.from(table).select(stream?'id,owner_id,title,filename,created_at,poster_path,video_category,review_status,adult_restricted,upload_status':'id,owner_id,post_id,purpose,kind,filename,caption,created_at,storage_path,bytes,source_provider,bunny_storage_path,video_category,video_poster_path,review_status,adult_restricted').eq('owner_id',a.owner).eq('review_status','approved').eq('adult_restricted',false);
+ if(stream)q=q.in('upload_status',['uploaded','processing','ready']);else{q=q.in('purpose',['library','post']).in('kind',a.kind==='all'?['photo','video']:[a.kind])}
+ if(a.month){const start=new Date(a.month+'-01T00:00:00Z');const next=new Date(start);next.setUTCMonth(next.getUTCMonth()+1);q=q.gte('created_at',start.toISOString()).lt('created_at',next.toISOString())}
+ if(a.cursor)q=q.or('created_at.lt.'+a.cursor.created_at+',and(created_at.eq.'+a.cursor.created_at+',id.lt.'+a.cursor.id+')');
+ return q.order('created_at',{ascending:false}).order('id',{ascending:false}).limit(48);
+}
+async function pulseArchiveNext(a){
+ if(a.busy||a.done||a.uid!==state.user?.id)return;a.busy=true;a.error='';
+ try{
+  const [photosResult,streamResult]=await Promise.all([pulseArchiveQuery('corp_social_assets',a),a.kind==='photo'?Promise.resolve({data:[]}):pulseArchiveQuery('corp_stream_videos',a)]);
+  if(photosResult.error||streamResult.error)throw photosResult.error||streamResult.error;
+  if(a!==pulseArchiveState||a.uid!==state.user?.id)return;
+  const raw=[...(photosResult.data||[]),...(streamResult.data||[]).map(v=>({...v,kind:'video',purpose:'post',bunny_stream:true,video_poster_path:v.poster_path}))].sort((x,y)=>Date.parse(y.created_at)-Date.parse(x.created_at)||y.id.localeCompare(x.id));
+  const page=raw.slice(0,48);a.done=raw.length<48;if(page.length)a.cursor=page[page.length-1];
+  const known=new Set(a.rows.map(x=>pulseKey(pulseTarget(x))));
+  for(const item of page){const key=pulseKey(pulseTarget(item));if(pulseArchiveMedia(item)&&!known.has(key)){a.rows.push(item);known.add(key)}}
+ }catch(e){a.error=fail(e)}finally{a.busy=false;if(state.view==='pulse'&&pulseProfileMode()&&pulseMemberTab==='archive'&&a===pulseArchiveState)renderPulse()}
+}
+function pulseArchivePanel(box){
+ const owner=pulseAuthor;
+ let a=pulseArchiveState;if(!a||a.owner!==owner||a.uid!==state.user.id){a=pulseArchiveData(owner);pulseArchiveState=a}
+ const top=el('div','bc-pulse-archive-controls'),label=el('div','bc-pulse-archive-title');
+ label.append(el('h2','','Archive'),el('p','','All shared uploads · newest first'));
+ const month=el('input');month.type='month';month.value=a.month;month.setAttribute('aria-label','Filter archive by month and year');
+ const change=(m,k)=>{if(m&&!/^\d{4}-\d{2}$/.test(m))return;pulseArchiveState=pulseArchiveData(owner,m,k);renderPulse()};
+ month.addEventListener('change',()=>change(month.value,a.kind));
+ const filters=el('div','bc-pulse-archive-filters');for(const [key,name] of [['all','All media'],['photo','Photos'],['video','Videos']]){const b=btn(name,()=>change(a.month,key),'bc-pulse-member-tab');b.setAttribute('aria-pressed',String(a.kind===key));filters.append(b)}
+ const dateTools=el('div','bc-pulse-archive-date');dateTools.append(month,btn('All months',()=>change('',a.kind),'bc-pulse-member-tab'));
+ top.append(label,dateTools,filters);box.append(top);
+ const groups=new Map();for(const item of a.rows){const key=pulseMonthKey(item);if(!key)continue;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(item)}
+ for(const [key,items] of groups){const section=el('section','bc-pulse-archive-month'),head=el('div','bc-pulse-archive-month-head'),grid=el('div','bc-pulse-archive-grid');head.append(el('h3','',pulseMonthLabel(key)),el('span','',items.length+' loaded'));for(const item of items)grid.append(pulseArchiveTile(item));section.append(head,grid);box.append(section)}
+ if(a.error)box.append(el('p','bc-pulse-end','Archive could not be loaded: '+a.error));
+ if(!groups.size&&a.done&&!a.error)box.append(empty('No shared media','No approved photographs or personal videos in this period.'));
+ if(a.busy||(!a.cursor&&!a.done&&!a.error)){box.append(el('p','bc-pulse-end','Loading archive…'));if(!a.busy)queueMicrotask(()=>{if(a===pulseArchiveState&&!a.busy)void pulseArchiveNext(a)})}
+ else if(!a.done||a.error)box.append(btn(a.error?'Retry':'Load earlier uploads',()=>void pulseArchiveNext(a),'bc-pulse-more'));
+ else if(groups.size)box.append(el('p','bc-pulse-end','Beginning of archive.'));
+}
+function pulseMemberHeader(scroll){
+ const p=profile(pulseAuthor);if(!p)return;
+ const section=el('section','bc-pulse-member'),hero=el('div','bc-pulse-member-cover');cover(hero,p);
+ const overlay=el('div','bc-pulse-cover-top');overlay.append(el('span','bc-pulse-handle',personHandle(p)),btn('⋯',()=>openProfile(p.user_id),'bc-pulse-member-icon'));hero.append(overlay);
+ const identity=el('div','bc-pulse-member-identity'),pic=avatar(p,'gigantic');identity.append(pic,el('h1','',personName(p)),el('p','bc-pulse-member-bio',p.bio?.trim()||p.headline?.trim()||'Verified BLACKCELL member'));
+ const buttons=el('div','bc-pulse-member-buttons');
+ if(p.user_id===state.user.id)buttons.append(btn('Edit profile',()=>openProfile(p.user_id),'bc-pulse-member-primary'));
+ else{buttons.append(btn(following(p.user_id)?'Following':'Follow',()=>void toggleFollow(p.user_id),'bc-pulse-member-primary'));if(state.member?.role==='owner'||state.member?.can_chat===true)buttons.append(btn('Message',()=>window.dispatchEvent(new CustomEvent('blackcell-open-imessage',{detail:{peerId:p.user_id,source:'pulse'}})),'bc-pulse-member-secondary'))}
+ buttons.append(btn('Archive',()=>pulseSetMemberTab('archive'),'bc-pulse-member-secondary'));identity.append(buttons);
+ const navigation=el('nav','bc-pulse-member-nav');navigation.setAttribute('aria-label','Member blog sections');
+ for(const [key,name] of [['posts','Posts'],['likes','Likes'],['following','Following'],['comments','Comments'],['archive','Archive']]){const tab=btn(name,()=>pulseSetMemberTab(key),'bc-pulse-member-tab');tab.setAttribute('aria-pressed',String(pulseMemberTab===key));navigation.append(tab)}
+ section.append(hero,identity,navigation);
+ if(pulseMemberTab==='posts'){const recent=[...state.assets,...state.streamVideos].filter(a=>a.owner_id===p.user_id&&pulseArchiveMedia(a)).sort((a,b)=>Date.parse(b.created_at)-Date.parse(a.created_at)).slice(0,3);if(recent.length){const strip=el('div','bc-pulse-member-preview');for(const a of recent)strip.append(pulseArchiveTile(a));section.append(strip)}}
+ scroll.append(section);
+}
+function pulseSetMemberTab(tab){if(!pulseProfileMode())return;if(pulseMemberTab===tab)return;pulseMemberTab=tab;pulseLimit=12;pulseEnd=false;pulseAutoPages=0;if(pulseScroll)pulseScroll.scrollTop=0;renderPulse()}
+async function pulseMemberActivity(box){
+ const token=++pulseActivityToken,owner=pulseAuthor,tab=pulseMemberTab,uid=state.user.id;
+ const valid=()=>box.isConnected&&token===pulseActivityToken&&state.view==='pulse'&&pulseProfileMode()&&pulseAuthor===owner&&pulseMemberTab===tab&&state.user?.id===uid;
+ let offset=0;const list=el('div','bc-pulse-member-activity'),status=el('p','bc-pulse-end','Loading…');box.append(list,status);
+ const more=async()=>{status.textContent='Loading…';status.hidden=false;try{
+  if(tab==='following'){const {data,error}=await client.from('corp_social_follows').select('following_id').eq('follower_id',owner).order('following_id').range(offset,offset+49);if(error)throw error;if(!valid())return;for(const f of data||[]){const p=profile(f.following_id);if(!p)continue;const card=el('div','bc-pulse-activity-person');card.append(avatar(p,'small'),btn(personName(p),()=>pulseMemberOpen(p.user_id),'bc-pulse-member-secondary'));list.append(card)}offset+=50;finish((data||[]).length===50);return}
+  const likes=tab==='likes',table=likes?'corp_social_likes':'corp_social_comments',fields=likes?'post_id,created_at':'post_id,body,created_at',action=likes?'like':'comment';
+  const [posts,media]=await Promise.all([client.from(table).select(fields).eq('user_id',owner).order('created_at',{ascending:false}).range(0,offset+49),client.from('corp_pulse_interactions').select('target_kind,target_id,body,created_at').eq('user_id',owner).eq('action',action).order('created_at',{ascending:false}).range(0,offset+49)]);
+  if(posts.error||media.error)throw posts.error||media.error;if(!valid())return;
+  const records=[...(posts.data||[]).map(x=>({...x,target_kind:'post',target_id:x.post_id})),...(media.data||[])].sort((a,b)=>Date.parse(b.created_at)-Date.parse(a.created_at));
+  const page=records.slice(offset,offset+50);for(const x of page){if(!UUID.test(x.target_id)||!['post','asset','stream'].includes(x.target_kind))continue;const item=el('div','bc-pulse-activity-item');item.append(el('strong','',likes?'Liked shared '+(x.target_kind==='post'?'post':'media'):'Commented on a shared item'),el('small','',stamp(x.created_at)));if(!likes)item.append(el('p','',x.body));item.append(btn('Open original ↗',()=>location.assign(pulseLink({kind:x.target_kind,id:x.target_id})),'bc-pulse-member-secondary'));list.append(item)}offset+=50;finish(records.length>offset||(posts.data||[]).length===offset||(media.data||[]).length===offset);
+ }catch(e){if(valid())status.textContent='Activity unavailable: '+fail(e)}};
+ const finish=hasMore=>{status.replaceChildren();if(!list.children.length){status.textContent='No visible activity yet.';return}if(hasMore)status.append(btn('Load more',()=>void more(),'bc-pulse-more'));else status.hidden=true};
+ await more();
+}
+
 function renderPulse(){
  if(state.view!=='pulse')return;
  const root=$('pulseView'),savedScroll=pulseScroll?.scrollTop||0;clearPulse();root.replaceChildren();
@@ -1063,11 +1159,13 @@ function renderPulse(){
  head.append(btn('‹ Profile',()=>openProfile(pulseAuthor||state.user.id),'bc-pulse-back'),brand,btn('＋ Post',()=>{openProfile(state.user.id,'posts');focusProfileComposer()},'bc-pulse-create'));
  const tabs=el('nav','bc-pulse-tabs');tabs.setAttribute('aria-label','PULSE feeds');
  for(const [key,label] of [['for-you','For You'],['following','Following'],['latest','Explore'],['saved','Saved'],['muted','Muted'],['author',pulseAuthor&&pulseAuthor!==state.user.id?personName(profile(pulseAuthor)):'My Feed']]){
-  const tab=btn(label,async()=>{pulseMode=key;if(key==='author'&&!pulseAuthor)pulseAuthor=state.user.id;pulseLimit=12;pulseEnd=key==='saved'||key==='muted';pulseAutoPages=0;if(pulseScroll)pulseScroll.scrollTop=0;if(key==='saved'){tab.disabled=true;tab.textContent='Loading saved…';try{await loadPulsePersonal();await loadSavedTargets()}catch(e){toast('Saved items unavailable: '+fail(e))}finally{tab.disabled=false;tab.textContent=label}}if(state.view==='pulse'&&pulseMode===key)renderPulse()},'bc-pulse-tab');tab.setAttribute('aria-pressed',String(pulseMode===key));tabs.append(tab)
+  const tab=btn(label,async()=>{pulseMode=key;if(key==='author'&&!pulseAuthor){pulseAuthor=state.user.id;pulseMemberTab='posts';}pulseLimit=12;pulseEnd=key==='saved'||key==='muted';pulseAutoPages=0;if(pulseScroll)pulseScroll.scrollTop=0;if(key==='saved'){tab.disabled=true;tab.textContent='Loading saved…';try{await loadPulsePersonal();await loadSavedTargets()}catch(e){toast('Saved items unavailable: '+fail(e))}finally{tab.disabled=false;tab.textContent=label}}if(state.view==='pulse'&&pulseMode===key)renderPulse()},'bc-pulse-tab');tab.setAttribute('aria-pressed',String(pulseMode===key));tabs.append(tab)
  }
  const auto=btn(pulseAutoplay?'Autoplay on':'Autoplay off',()=>{pulseAutoplay=!pulseAutoplay;auto.textContent=pulseAutoplay?'Autoplay on':'Autoplay off';pulsePlay()},'bc-pulse-auto');tabs.append(auto);
- const scroll=el('div','bc-pulse-scroll');pulseScroll=scroll;const timeline=el('div','bc-pulse-timeline');scroll.append(timeline);pulseViewSetup(scroll);
+ const scroll=el('div','bc-pulse-scroll');pulseScroll=scroll;const timeline=el('div','bc-pulse-timeline');if(pulseProfileMode())pulseMemberHeader(scroll);scroll.append(timeline);pulseViewSetup(scroll);
  root.append(head,tabs,scroll);scroll.scrollTop=savedScroll;
+ if(pulseProfileMode()&&pulseMemberTab==='archive'){pulseArchivePanel(timeline);return}
+ if(pulseProfileMode()&&pulseMemberTab!=='posts'){void pulseMemberActivity(timeline);return}
  if(pulseMode==='muted'){for(const id of pulseMutes){const row=el('div','panel post');row.append(el('strong','',personName(profile(id))),btn('Unmute',()=>void pulseMute(id)));timeline.append(row)}if(!pulseMutes.size)timeline.append(empty('No muted members','Members you mute will appear here.'));return}
  if(pulseMode==='saved'&&!pulsePersonalReady){timeline.append(empty('Saved items unavailable','Refresh to load your private bookmarks.'));return}
  const entries=pulseEntries();let rendered=0;
