@@ -198,11 +198,21 @@ export function mountPrivatePhotos(host,{client,userId,preview,alive,onBusy}){
     const check=button('Check Kling connection',async()=>{if(preview||!studioOpen||!usable())return;check.disabled=true;providerStatus.textContent='Checking Kling securely…';try{const {data,error}=await client.functions.invoke('blackcell-kling-status',{body:{}});if(!studioOpen||!usable()||seq!==viewerGeneration)return;providerStatus.textContent=!error&&data?.ok?'Kling AI connected · '+data.activePackages+' active resource package(s)':data?.code==='SECRET_MISSING'?'Kling API key not configured':data?.code==='KEY_REJECTED'?'Kling rejected the API key':error?'Connection check unavailable · owner session required':'Kling connection not verified · '+String(data?.code||'Unknown status');}catch{if(studioOpen&&usable()&&seq===viewerGeneration)providerStatus.textContent='Connection check failed. Try again.'}finally{check.disabled=preview}});check.disabled=preview;stage.append(check);
     const panel=studio,active=()=>studioOpen&&studio===panel&&seq===viewerGeneration&&usable();
     const relative=row.path.slice((userId||'').length+1),source=memberIdFor(row);
-    const pilotEligible=!preview&&/\.(?:jpe?g|png)$/i.test(row.name)&&row.size<=8*1024*1024&&viewerPhoto.naturalWidth>=300&&viewerPhoto.naturalHeight>=300&&viewerPhoto.naturalWidth/viewerPhoto.naturalHeight>=.4&&viewerPhoto.naturalWidth/viewerPhoto.naturalHeight<=2.5&&(!source||source===userId)&&(/^Photos\/[^/]+\.(?:jpe?g|png)$/i.test(relative)&&!/^Photos\/BLACKCELL-[0-9a-f-]{36}\./i.test(relative)||source===userId&&relative.split('/').length===4&&/^BLACKCELL-[0-9a-f-]{36}\.(?:jpe?g|png)$/i.test(row.name));
+    const w=viewerPhoto.naturalWidth,h=viewerPhoto.naturalHeight,ratio=w/h;
+    const ownedPath=/^Photos\/[^/]+\.(?:jpe?g|png)$/i.test(relative)&&!/^Photos\/BLACKCELL-[0-9a-f-]{36}\./i.test(relative)||source===userId&&relative.startsWith('Photos/From Members/'+userId+'/')&&relative.split('/').length===4&&/^BLACKCELL-[0-9a-f-]{36}\.(?:jpe?g|png)$/i.test(row.name);
+    const reasons=[];
+    if(preview)reasons.push('Sign in as the BLACKCELL owner.');
+    if(!/\.(?:jpe?g|png)$/i.test(row.name))reasons.push('Unsupported format: choose a JPEG or PNG.');
+    if(Number(row.size)>8*1024*1024)reasons.push('File is '+(Number(row.size)/1048576).toFixed(1)+' MB; the pilot limit is 8 MB.');
+    if(w<300||h<300)reasons.push('Image is '+w+' × '+h+' px; each side must be at least 300 px.');
+    if(ratio<.4||ratio>2.5)reasons.push('Image is too tall or wide for this pilot ('+w+' × '+h+' px).');
+    if(source&&source!==userId)reasons.push('Transferred from another creator; the pilot requires your own original.');
+    else if(!ownedPath&&/\.(?:jpe?g|png)$/i.test(row.name))reasons.push('This file is not in the supported original Photos location. Import your own new test photo directly into Photos.');
+    const pilotEligible=reasons.length===0;
     const field=make('label','ap-ai-field','Pilot motion');const motion=make('select');for(const [value,label] of [['gentle','Natural subtle movement'],['camera','Gentle cinematic camera'],['ambient','Environment movement']]){const option=make('option','',label);option.value=value;motion.append(option)}field.append(motion);
     const rightsLabel=make('label','ap-ai-rights'),rights=make('input');rights.type='checkbox';rightsLabel.append(rights,make('span','','I own or have explicit permission to animate this nonsexual image and consent from any person depicted. I agree to send it to Kling AI.'));
     const note=make('p','ap-ai-note',pilotEligible?'Owner-only pilot · Kling 3.0 · 5 seconds · 720p · silent · estimated 3 units. One submission for this project. Package compatibility and actual billing are subject to Kling.':'Pilot requires your own authorized JPEG/PNG in Photos, up to 8 MB, at least 300 px per side, with supported proportions. Other creators require a separate permission workflow.');
-    const jobStatus=make('p','ap-ai-job-status',pilotEligible?'Checking pilot availability…':'This photo is not eligible for the pilot.');jobStatus.setAttribute('role','status');
+    const jobStatus=make('p','ap-ai-job-status',pilotEligible?'Checking pilot availability…':reasons.join(' '));jobStatus.setAttribute('role','status');
     const album=make('p','ap-ai-destination','Destination: '+memberName(userId||'preview')+' / AI Creations');
     let state='checking',pollCount=0,timer=null,outputBlob=null,outputURL=null,outputVideo=null,jobId=null,destination=null,working=false,saved=false,attemptedOutput=false;
     const controls=()=>{generate.disabled=!pilotEligible||!rights.checked||working||state!=='ready';transfer.disabled=!active()||working||!outputBlob||!destination||saved;refreshJob.disabled=!pilotEligible||working;motion.disabled=rights.disabled=working||state!=='ready'};
@@ -245,7 +255,7 @@ export function mountPrivatePhotos(host,{client,userId,preview,alive,onBusy}){
       try{const ch=new BroadcastChannel('bc-private-photos-transfer');ch.postMessage({type:'photos-changed',uid:userId});ch.close()}catch{}
      }catch(e){if(active())jobStatus.textContent=privateUploadError(e)}finally{busy=false;working=false;onBusy(false);if(active()){controls();if(saved){closeViewer();mode='member:'+userId+':ai';page=0;view='all';dateScope='';search.value='';void refresh(true)}}}
     });
-    const tools=make('div','ap-ai-actions');tools.append(generate,refreshJob,transfer);
+    const tools=make('div','ap-ai-actions');tools.append(generate,refreshJob,transfer);if(!pilotEligible&&!preview){const importTest=button('Import a test photo',()=>{closeViewer();input.click()});tools.append(importTest)}
     rights.onchange=controls;studio.append(top,stage,field,rightsLabel,note,jobStatus,album,tools);area.append(studio);area.classList.add('ap-ai-split');controls();if(pilotEligible)void poll();
 
    };
