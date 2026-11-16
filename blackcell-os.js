@@ -687,7 +687,7 @@ async function requestClose(r){
   if(typeof save==='function'){
    const result=await save();
    if(windows.get(r.id)!==r)return;
-   if(result?.ok===true&&!result?.retain&&!r.reopened){dispose(r,true);return}
+   if(result?.ok===true&&!r.reopened){let cleanNetwork=false;try{const child=r.frame.contentWindow;cleanNetwork=child.location.pathname.endsWith('/corporate-network.html')&&child.BLACKCELL_OS_CAN_RELOAD?.()===true}catch(_){}if(!result?.retain||cleanNetwork){dispose(r,true);return}}
    if(result?.ok===false)osNotice(result.message||'Changes could not be saved. Reopen the app to retry; your work is retained.');
    else if(result?.retain)osNotice(result.message||'Your work is retained. Reopen the app to continue.');
   }
@@ -751,6 +751,8 @@ function showApp(id,initialState=null,passwordVerified=null){
  if(chatPopout&&!windows.has(id)&&(!initialState||initialState.peerId!==id.slice(8)||[...windows.values()].filter(r=>r.chatPopout).length>=8)){osNotice('Close a chat pop-out before opening another.');return;}
  if(windows.has(id)){const existing=windows.get(id);restoreWorldInstance(existing);raise(existing);if(id==='files'&&initialState?.path){if(existing.openFolder)existing.openFolder(initialState.path);else{existing.fileState={path:[...initialState.path],layout:initialState.layout||'grid'};saveWorkspace()}}if(id==='settings'&&initialState?.section)existing.selectSettings?.(initialState.section);if(id==='store'){if(initialState?.category)existing.selectCategory?.(initialState.category);if(!preview&&!storeMutating)void storeRequest('catalog').then(()=>existing.refreshStore?.())}return}
  const url=new URL(worldLaunchPages[id]||tile.dataset.url,location.href);if(worldLaunchPages[id]||id==='forces')url.searchParams.set('v','20261115-world-theater');if(url.origin!==location.origin)return;
+ const networkWindow=url.pathname.endsWith('/corporate-network.html');
+ if(networkWindow)url.searchParams.set('_bc_release',String(Date.now()));
  const windowTitle=chatPopout?String(initialState.name||'Conversation').slice(0,70):tile.dataset.title;
  if(chatPopout){url.searchParams.set('popout','1');url.searchParams.set('peer',initialState.peerId);url.searchParams.set('osApp','chat');url.searchParams.set('embed','1')}
  const w=document.createElement('section');w.className='os-window'+(chatPopout?' os-chat-popout':'');w.dataset.osApp=id;w.setAttribute('aria-label',windowTitle+' window');
@@ -758,6 +760,16 @@ function showApp(id,initialState=null,passwordVerified=null){
  const bar=document.createElement('div');bar.className='os-window-head';const controls=document.createElement('div');controls.className='traffic';
  const title=document.createElement('span');title.textContent=windowTitle;
  const external=document.createElement('a');external.href=url.href;external.target='_blank';external.rel='noopener';external.textContent='Open full page ↗';bar.append(controls,title);if(!chatPopout)bar.append(external);
+ if(networkWindow&&!chatPopout){const refresh=document.createElement('button');refresh.type='button';refresh.className='os-network-refresh';refresh.textContent='↻ Refresh app';refresh.title='Load the current deployed Network release';refresh.style.cssText='background:transparent;border:0;color:inherit;font:inherit;font-size:11px;cursor:pointer;padding:4px 8px';refresh.addEventListener('click',()=>{
+  const record=windows.get(id);if(!record?.frame)return;
+  if(appBusy(record)){osNotice('Finish the current operation before refreshing.');return}
+  try{const child=record.frame.contentWindow;const doc=record.frame.contentDocument;const safe=child.BLACKCELL_OS_CAN_RELOAD;
+   if(typeof safe==='function'&&!safe()){osNotice('Finish or save your draft, profile edits or active chat before refreshing.');return}
+   if(typeof safe!=='function'&&(doc?.querySelector('#postBody')?.value?.trim()||Array.from(doc?.querySelectorAll('input[type=file]')||[]).some(x=>x.files?.length)||doc?.querySelector('#editOverlay:not([hidden])'))){osNotice('Save or clear your current draft before refreshing.');return}
+   if(!confirm('Refresh this app from the website? Finish and save any work first. Your sign-in and stored account data are not changed.'))return;
+   const next=new URL(child.location.href);if(next.origin!==location.origin||!next.pathname.endsWith('/corporate-network.html')){osNotice('Return to Network before refreshing.');return}next.searchParams.set('_bc_release',String(Date.now()));record.frameLoading?.begin();record.frame.src=next.href;external.href=next.href;
+  }catch(e){osNotice('Refresh unavailable. Open the full page to check the release.');}
+ });bar.insertBefore(refresh,external);}
  const content=document.createElement('div');content.className='os-window-body';w.append(bar,content);
  const r={id,title:windowTitle,chatPopout,el:w,frame:null,release:null,fileState:id==='files'?initialState:null,storeState:id==='store'?initialState:null,storeBusy:false,settingsSection:initialState?.section||'general'};windows.set(id,r);
  for(const [label,symbol,fn] of [['Close','×',()=>void requestClose(r)],['Minimize','−',()=>{w.hidden=true;selectedWindow=null;syncStoreUpdateHold();syncChatVisibility();saveWorkspace()}],['Maximize or restore','+',()=>{w.classList.toggle('is-max');saveWorkspace()}]]){const btn=document.createElement('button');btn.type='button';btn.setAttribute('aria-label',label+' '+r.title);btn.title=label;btn.textContent=symbol;btn.addEventListener('click',fn);controls.append(btn)}

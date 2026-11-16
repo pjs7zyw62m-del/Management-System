@@ -1581,6 +1581,15 @@ async function bcLiveOriginal_saveProfile(){
 }
 /* BLACKCELL OS close integration: only submit explicit profile edits,
  never publish posts, send messages, or submit unrelated forms on close. */
+window.BLACKCELL_OS_CAN_RELOAD=()=>{
+ if(state.busy||profileSavePromise||formFiles.length||$('postBody')?.value.trim())return false;
+ const visible=n=>!!(n.getClientRects().length&&!n.closest('[hidden],[aria-hidden=true]')&&getComputedStyle(n).visibility!=='hidden');
+ if(Array.from(document.querySelectorAll('dialog[open],[aria-modal=true],#editOverlay,.bc-chat-pane')).some(visible))return false;
+ if(Array.from(document.querySelectorAll('input[type=file]')).some(n=>n.files?.length))return false;
+ if(Array.from(document.querySelectorAll('video,audio')).some(n=>!n.paused&&!n.ended))return false;
+ if(Array.from(document.querySelectorAll('textarea')).some(n=>visible(n)&&n.value.trim()&&n.value!==n.defaultValue))return false;
+ return true;
+};
 window.BLACKCELL_OS_BEFORE_CLOSE=async()=>{
  if(!state.user||$('app').hidden)return {ok:true,retain:true};
  if(profileSavePromise){const ok=await profileSavePromise;if(!ok)return {ok:false,retain:true,message:'Profile save failed. Reopen My Profile to retry.'}}
