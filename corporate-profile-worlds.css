@@ -1,0 +1,41 @@
+/* Select Your Worlds — existing My Profile only. */
+#profileView #profileWorlds[hidden],#profileView #profileTabs [hidden],#profileView .bc-pw [hidden],#profileView .bc-pw-feed [hidden]{display:none!important}
+#profileView #profileWorlds{padding:18px 24px;border-top:1px solid #ffffff12;background:#121214;color:#f4f4f6}
+#profileView .bc-pw-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+#profileView .bc-pw-heading h2,#profileView .bc-pw-heading h3{font-size:16px;color:#f5f5f7;letter-spacing:-.02em;margin:0}
+#profileView .bc-pw-quiet,#profileView .bc-pw-primary{border:1px solid #ffffff1c;border-radius:9px;min-height:38px;background:#28282d;color:#f5f5f7;padding:9px 13px;font-size:12px;letter-spacing:0;text-transform:none;cursor:pointer}
+#profileView .bc-pw-primary{background:#e33449;border-color:#e33449;font-weight:650}
+#profileView .bc-pw-primary:disabled{opacity:.5;cursor:wait}
+#profileView .bc-pw-empty{border:1px solid #ffffff15;border-radius:12px;background:#151518;text-align:center;padding:22px;color:#f5f5f7}
+#profileView .bc-pw-empty p{margin:7px 0 14px;color:#a1a1aa;font-size:13px}
+#profileView .bc-pw-picker{max-width:460px;margin:0 auto 14px;background:#19191c;border:1px solid #ffffff1f;border-radius:16px;padding:20px}
+#profileView .bc-pw-picker h3{margin:0;font-size:20px}
+#profileView .bc-pw-picker p{color:#aaaab3;font-size:13px;margin:7px 0 13px}
+#profileView .bc-pw-choice{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #ffffff10;cursor:pointer;color:#eee;font-size:14px}
+#profileView .bc-pw-choice input{margin-left:auto;width:20px;height:20px;accent-color:#e33449;cursor:pointer}
+#profileView .bc-pw-symbol{width:36px;height:36px;display:grid;place-items:center;border-radius:50%;background:#29292e;font-size:20px;flex:none}
+#profileView .bc-pw-buttons{display:flex;gap:8px}
+#profileView .bc-pw-buttons button{flex:1}
+#profileView .bc-pw-bubbles{display:flex;align-items:flex-start;gap:15px;flex-wrap:wrap}
+#profileView .bc-pw-bubble{width:76px;min-width:0;background:none;border:0;color:#c6c6cc;display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;padding:2px;font-size:11px;line-height:1.3;text-align:center;white-space:normal}
+#profileView .bc-pw-circle{display:grid;place-items:center;width:63px;height:63px;border:2px solid #3c3c42;border-radius:50%;background:#17171a!important;color:var(--world-color);font-size:29px;transition:border-color .22s,box-shadow .22s;flex:none}
+#profileView .bc-pw-bubble[aria-pressed=true]{color:#fff}
+#profileView .bc-pw-bubble[aria-pressed=true] .bc-pw-circle{border-color:var(--world-color);box-shadow:0 0 0 3px #ffffff09,0 0 17px color-mix(in srgb,var(--world-color) 20%,transparent)}
+#profileView #profileCover[data-world-cover]{background-position:center 29%!important}
+#profileView .bc-pw-filter{display:flex;gap:4px;padding:3px;background:#19191c;border-radius:9px}
+#profileView .bc-pw-filter button{border:0;background:none;color:#aaaab1;padding:7px 12px;border-radius:7px;font-size:12px;cursor:pointer}
+#profileView .bc-pw-filter button[aria-pressed=true]{background:#333338;color:white}
+#profileView .bc-pw-feed{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+#profileView .bc-pw-card{display:flex;flex-direction:column;gap:7px;background:#121214;border:1px solid #ffffff18;border-radius:13px;overflow:hidden;padding:0 0 12px;min-width:0}
+#profileView .bc-pw-card strong,#profileView .bc-pw-card small{padding:0 12px;overflow-wrap:anywhere}
+#profileView .bc-pw-card strong{font-size:13px;color:#f0f0f4}
+#profileView .bc-pw-card small,#profileView .bc-pw-caption{color:#a1a1aa;font-size:11px}
+#profileView .bc-pw-media{padding:0;border:0;background:#141417;width:100%;cursor:pointer}
+#profileView .bc-pw-frame{width:100%;aspect-ratio:4/3;display:grid;place-items:center;position:relative;overflow:hidden}
+#profileView .bc-pw-frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#profileView .bc-pw-placeholder{color:#aaa;font-size:12px;position:relative;z-index:1;background:#0008;padding:5px 8px;border-radius:8px}
+.bc-pw-viewer{position:fixed;max-width:min(95vw,1100px);max-height:94vh;border:1px solid #444;border-radius:15px;background:#0a0a0b;color:#fff;padding:12px}
+.bc-pw-viewer::backdrop{background:#000d}
+.bc-pw-viewer img{display:block;max-width:100%;max-height:80vh;object-fit:contain;margin:8px auto 0}
+.bc-pw-viewer button{background:#28282c;color:white;padding:8px 12px;border:1px solid #444;border-radius:8px}
+@media(max-width:620px){#profileView #profileWorlds{padding:14px}#profileView .bc-pw-bubbles{gap:8px}#profileView .bc-pw-bubble{width:66px}#profileView .bc-pw-circle{width:58px;height:58px}#profileView .bc-pw-feed{grid-template-columns:repeat(2,minmax(0,1fr))}}
