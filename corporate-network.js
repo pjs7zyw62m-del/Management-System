@@ -7,7 +7,7 @@ import {createPhotoRediscovery} from './corporate-photo-rediscovery.js?v=2026111
 import {createVisualDiscovery} from './corporate-visual-discovery.js?v=20261111-mediareset1';
 import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phonecheck2';
 import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261115-world-catalog1';
-import {isWorldVideo,readWorldVideo,createWorldVideoPreviews} from './blackcell-world-video-catalog.js?v=1';
+import {isWorldVideo,worldVideoTitle,readWorldVideo,createWorldVideoPreviews} from './blackcell-world-video-catalog.js?v=1';
 const client=corporateClient(),bucket=client.storage.from('corp-social-media');
 const worldVideoPreviews=createWorldVideoPreviews(client);
 const $=id=>document.getElementById(id);
@@ -83,7 +83,9 @@ function liking(id){return state.likes.some(l=>l.post_id===id&&l.user_id===state
 const sharedMedia=a=>a?.review_status==='approved'&&a?.adult_restricted!==true;
 function postedAssets(id){return state.assets.filter(a=>a.post_id===id&&a.purpose==='post'&&sharedMedia(a))}
 function countPosts(id){return state.posts.filter(p=>p.author_id===id).length}
-function countVideos(id){return state.assets.filter(a=>a.owner_id===id&&a.kind==='video'&&a.purpose==='post'&&sharedMedia(a)).length}
+function profileVideos(id,includePending=false){const list=[...state.assets,...(state.streamVideos||[])].filter(a=>a.owner_id===id&&a.kind==='video'&&['post','library'].includes(a.purpose)&&(sharedMedia(a)||(includePending&&id===state.user?.id&&isWorldVideo(a)&&a.review_status==='pending')));return [...new Map(list.map(a=>[a.id,a])).values()].sort((a,b)=>Date.parse(b.created_at||0)-Date.parse(a.created_at||0))}
+function countVideos(id){return profileVideos(id,id===state.user?.id&&!state.profilePreview).length}
+function renderFusionVideos(p,isMine){const list=profileVideos(p.user_id,isMine);if(!list.length)return empty('No videos yet','Videos from this member will appear here and in BLACKCELL Tube.');const grid=el('div','bc-fusion-tube-grid');for(const a of list){const name=isWorldVideo(a)?worldVideoTitle(a):String(a.title||a.caption||state.posts.find(x=>x.id===a.post_id)?.body||'Untitled video').slice(0,135);const card=btn('',()=>{const u=new URL(location.href);u.search='';u.hash='';u.searchParams.set('view','videos');u.searchParams.set('video',a.id);location.assign(u.href)},'bc-fusion-tube-card');const frame=el('div','bc-fusion-tube-frame');const src=posterUrl(a);if(src||isWorldVideo(a)){const img=el('img');img.alt='';img.loading='lazy';frame.append(img);if(src)img.src=src;else{img.hidden=true;worldVideoPreviews.mount(a,img)}}frame.append(el('span','','▶'));card.append(frame,el('strong','',name),el('small','',a.review_status==='pending'?'PRIVATE · PENDING REVIEW':'BLACKCELL TUBE'));grid.append(card)}return grid}
 /* An expandable, keyboard-accessible section menu avoids scrolling through
    the long Military Library. It never alters member uploads or permissions. */
 function setLibraryMenuExpanded(expanded){
@@ -504,6 +506,7 @@ function renderProfile(){
  const p=profile(state.profileUserId)||myProfile();
  if(!p)return;
  state.profileUserId=p.user_id;
+ cover($('profileCover'),p);
  const av=avatar(p,'gigantic');av.id='profileAvatar';
  $('profileAvatar').replaceWith(av);
  $('profileName').textContent=personName(p);
@@ -520,6 +523,7 @@ function renderProfile(){
  const isMine=p.user_id===state.user.id&&!state.profilePreview;
  const isOwnProfile=p.user_id===state.user.id;
  const isPreview=isOwnProfile&&state.profilePreview;
+ $('profileCoverAction').hidden=!isMine;
  document.body.classList.toggle('bc-profile-view-as',isPreview);
  $('profileViewAs').hidden=!isOwnProfile||isPreview;
  $('profileThemeQuick').hidden=!isMine;
@@ -548,9 +552,10 @@ function renderProfile(){
  renderProfileSidePreviews(p);
  renderSecurityHighlights(p);
  const tabCopy={
-  posts:['Network Timeline','Updates shared with verified BLACKCELL members.'],
+  posts:['Timeline','Your story, updates and conversations.'],
+  reblogs:['Reblogs','Posts this member has shared from the Network.'],
   photos:['Photo Archive','Approved photographs shared by this member.'],
-  videos:['Reels & Videos','Videos shared in the BLACKCELL Network.'],
+  videos:['Videos','Videos shared by this member across BLACKCELL.'],
   albums:['Albums','Organized photo collections.'],
   about:['About','Personal introduction and verified account details.'],
   friends:['Friends & Following','Real network connections and verified members.'],
@@ -561,8 +566,8 @@ function renderProfile(){
  $('profileSectionIntro').textContent=sectionInfo[1];
  const actions=$('profileActions');actions.replaceChildren();
  if(isMine){
-  actions.append(btn('＋ CREATE POST',focusProfileComposer,'bc-security-create-post'));
-  actions.append(btn('✎ EDIT PROFILE',openEdit,'bc-security-edit-profile'));
+  actions.append(btn('＋ Create post',focusProfileComposer,'bc-security-create-post'));
+  actions.append(btn('✎ Edit profile',openEdit,'bc-security-edit-profile'));
  }
  else if(!isOwnProfile){
   actions.append(btn(following(p.user_id)?'✓ FOLLOWING':'+ FOLLOW',()=>void toggleFollow(p.user_id)));
@@ -576,7 +581,7 @@ function renderProfile(){
   b.setAttribute('aria-current',b.dataset.tab===state.profileTab?'page':'false');
  });
  const more=$('profileMoreDropdown');
- if(more)more.classList.toggle('selected',['albums','groups'].includes(state.profileTab));
+ if(more)more.classList.toggle('selected',['albums','groups','friends'].includes(state.profileTab));
  $('profilePostControls').hidden=state.profileTab!=='posts';
  $('profilePostLayout').textContent=state.profilePostGrid?'☷ LIST VIEW':'▦ GRID VIEW';
  $('profilePostLayout').setAttribute('aria-pressed',String(state.profilePostGrid));
@@ -591,6 +596,12 @@ function renderProfile(){
  }
  if(state.profileTab==='groups'){
   box.append(renderProfileGroups());return;
+ }
+ if(state.profileTab==='reblogs'){
+  const items=state.posts.filter(x=>x.author_id===p.user_id&&reblogReference(x.body));
+  if(!items.length)box.append(empty('No reblogs yet','Share a Network post using Reblog to start this collection.'));
+  else for(const post of items)box.append(renderPost(post));
+  return;
  }
  if(state.profileTab==='posts'){
   const posts=state.posts.filter(x=>{
@@ -630,9 +641,8 @@ function renderProfile(){
  if(state.profileTab==='albums'){
   box.append(photos.renderProfileAlbums(p.user_id));return;
  }
- if(state.profileTab==='photos'||state.profileTab==='videos'){
-  box.append(photos.renderProfilePhotos(p.user_id,state.profileTab==='videos'?'video':'photo'));return;
- }
+ if(state.profileTab==='videos'){box.append(renderFusionVideos(p,isMine));return;}
+ if(state.profileTab==='photos'){box.append(photos.renderProfilePhotos(p.user_id,'photo'));return;}
  const media=state.assets.filter(a=>sharedMedia(a)&&a.owner_id===p.user_id&&a.purpose==='post'&&
     a.kind===(state.profileTab==='videos'?'video':'photo'));
  const grid=el('div',state.profileTab==='videos'?'video-grid':'directory-grid');
@@ -659,6 +669,16 @@ function postType(p){
  if(p.kind==='photo')return 'PHOTO';
  return 'UPDATE';
 }
+function reblogReference(body){const match=String(body||'').match(/(?:^|\n)BLACKCELL REBLOG: ([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\s*$/i);return match?{id:match[1],comment:String(body).slice(0,match.index).trim()}:null}
+function prepareReblog(p){
+ if(!state.user||state.busy)return;
+ const field=$('postBody'),line='BLACKCELL REBLOG: '+p.id;
+ if(field.value.includes(line)){switchView('profile',{who:state.user.id,tab:'posts'});focusProfileComposer();return}
+ if(reblogReference(field.value)){toast('Finish or remove the existing reblog reference first.');return}
+ const body=(field.value.trim()?field.value.trim()+'\n\n':'')+line;
+ if(body.length>1000){toast('Shorten your draft before adding a reblog.');return}
+ switchView('profile',{who:state.user.id,tab:'posts'});field.value=body;updateCounter();focusProfileComposer();toast('Reblog added to your draft. Publish when ready.');
+}
 function renderPost(p){
  const node=el('article','panel post');node.id='post-'+p.id;
  const person=profile(p.author_id);
@@ -670,7 +690,15 @@ function renderPost(p){
  title.append(name,el('small','',personHandle(person)+' · '+stamp(p.created_at)));
  head.append(pic,title,el('span','post-label',postType(p)));
  node.append(head);
- if(p.body)node.append(el('div','post-body',p.body));
+ const reference=reblogReference(p.body);
+ if(reference){
+  if(reference.comment)node.append(el('div','post-body',reference.comment));
+  const original=state.posts.find(x=>x.id===reference.id&&x.id!==p.id);
+  const card=el('div','bc-fusion-reblog');card.append(el('small','','↻ REBLOGGED FROM BLACKCELL NETWORK'));
+  // Only display an original already visible to this session; never copy its media or bypass RLS.
+  if(original){const sourcePerson=profile(original.author_id);card.append(el('strong','',personName(sourcePerson)),el('p','',String(reblogReference(original.body)?.comment||original.body||'Media post').slice(0,300)));}else card.append(el('p','','Original post may be unavailable or outside the current feed.'));
+  const open=btn('View original post ↗',()=>{const u=new URL(location.href);u.search='';u.hash='';u.searchParams.set('post',reference.id);location.assign(u.href)});card.append(open);node.append(card);
+ }else if(p.body)node.append(el('div','post-body',p.body));
  const files=postedAssets(p.id);
  if(files.length){
   const wrap=el('div','post-media post-media-original'+(files.length===2?' two':files.length>=3?' three':''));
@@ -720,7 +748,9 @@ function renderPost(p){
   renderAll();
  });
  const share=btn('↗  COPY LINK',()=>void copyPostLink(p.id));
- actions.append(like,replies,share);
+ actions.append(like,replies);
+ if(!(state.view==='profile'&&state.profilePreview))actions.append(btn('↻ REBLOG',()=>prepareReblog(p),'bc-fusion-reblog-action'));
+ actions.append(share);
  if(p.author_id===state.user.id&&!(state.view==='profile'&&state.profilePreview))actions.append(btn('DELETE',()=>void deletePost(p),'post-delete'));
  node.append(actions);
  if(state.openComments.has(p.id)){
@@ -1520,7 +1550,7 @@ function openEdit(){
  const p=myProfile();if(!p)return;
  $('editHeadline').value=p.headline||'';
  $('editBio').value=p.bio||'';
- $('editAvatar').value='';
+ $('editAvatar').value='';$('editCover').value='';
  $('editFeedback').hidden=true;$('editOverlay').hidden=false;
 }
 function closeEdit(){$('editOverlay').hidden=true}
@@ -1542,9 +1572,10 @@ async function bcLiveOriginal_saveProfile(){
    bio:$('editBio').value.trim().slice(0,1000)};
   const ava=$('editAvatar').files?.[0];
   if(ava){const img=await uploadAsset(ava,'avatar');changes.avatar_asset_id=img.id}
+  const coverFile=$('editCover').files?.[0];if(coverFile){const img=await uploadAsset(coverFile,'cover');changes.cover_asset_id=img.id}
   const {error}=await client.from('corp_social_profiles').update(changes).eq('user_id',state.user.id);
   if(error)throw error;
-  $('editAvatar').value='';closeEdit();try{await refresh();openProfile(state.user.id)}catch(_){}toast('Your corporate social profile was updated.');return true;
+  $('editAvatar').value='';$('editCover').value='';closeEdit();try{await refresh();openProfile(state.user.id)}catch(_){}toast('Your corporate social profile was updated.');return true;
  }catch(e){$('editFeedback').textContent='Could not save profile: '+fail(e);return false}
  finally{state.busy=false;b.disabled=false;b.textContent='SAVE PROFILE ↗'}
 }
@@ -1556,7 +1587,7 @@ window.BLACKCELL_OS_BEFORE_CLOSE=async()=>{
  if(state.busy)return {ok:true,retain:true,message:'An operation is still running. Your window has been retained.'};
  if(!$('editOverlay').hidden){
   const p=myProfile();if(!p)return {ok:false,retain:true,message:'Profile changes are retained. Reopen My Profile to retry.'};
-  const changed=$('editHeadline').value.trim()!==(p.headline||'')||$('editBio').value.trim()!==(p.bio||'')||!!$('editAvatar').files?.length;
+  const changed=$('editHeadline').value.trim()!==(p.headline||'')||$('editBio').value.trim()!==(p.bio||'')||!!$('editAvatar').files?.length||!!$('editCover').files?.length;
   if(changed){const saved=await saveProfile();if(!saved)return {ok:false,retain:true,message:'Profile save failed. Reopen My Profile to retry.'};return {ok:true,retain:true,message:'Profile changes saved.'}}
   closeEdit();
  }
@@ -1616,6 +1647,8 @@ function setupEvents(){
   document.querySelectorAll('#feedFilter [data-filter]').forEach(x=>x.classList.toggle('selected',x===n));
   renderFeed();
  }));
+ $('profileCoverAction').addEventListener('click',()=>{openEdit();$('editCover').focus()});
+ document.querySelectorAll('[data-profile-stat]').forEach(n=>n.addEventListener('click',()=>{const value=n.dataset.profileStat;if(value==='followers'||value==='following'){state.profileFriendsMode=value;state.profileFriendsQuery='';state.profileTab='friends'}else state.profileTab=value;renderProfile()}));
  document.querySelectorAll('#profileTabs [data-tab]').forEach(n=>n.addEventListener('click',()=>{
   state.profileTab=n.dataset.tab;
   $('profileMoreDropdown')?.removeAttribute('open');
