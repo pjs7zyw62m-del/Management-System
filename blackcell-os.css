@@ -666,3 +666,8 @@ dialog.bc-app-lock-dialog::backdrop{background:#0009;backdrop-filter:blur(7px)}
 .traffic:hover button:nth-child(-n+3){line-height:13.160448px}
 @media(min-width:621px){html:not(.bc-os-phone):not(.bc-os-tablet) #desktop>.os-chat-popout:not(.is-max)>.os-window-head .traffic button:nth-child(-n+3){width:14.257152px;height:14.257152px;min-width:14.257152px;line-height:14.257152px}}
 html:is(.bc-os-phone,.bc-os-tablet) #desktop .os-window-head .traffic button:nth-child(-n+3){width:37.287936px;height:39.481344px;min-width:37.287936px;line-height:1}
+
+/* Private Photos: click/tap the original to toggle a scrollable close-up. */
+.bc-apple-photos .ap-zoomable-photo{cursor:zoom-in;user-select:none;-webkit-user-select:none}
+.bc-apple-photos .ap-view-area .bc-pm-view-body.ap-photo-zoomed{display:block;overflow:auto;overscroll-behavior:contain;padding:0}
+.bc-apple-photos .ap-view-area .bc-pm-view-body.ap-photo-zoomed img.ap-zoomable-photo{display:block;max-width:none;max-height:none;min-width:0;min-height:0;margin:auto;object-fit:contain;cursor:zoom-out;touch-action:pan-x pan-y}
