@@ -17,8 +17,8 @@
 #profileView .bc-pw-buttons{display:flex;gap:8px}
 #profileView .bc-pw-buttons button{flex:1}
 #profileView .bc-pw-bubbles{display:flex;align-items:flex-start;gap:15px;flex-wrap:wrap}
-#profileView .bc-pw-bubble{width:76px;min-width:0;background:none;border:0;color:#c6c6cc;display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;padding:2px;font-size:11px;line-height:1.3;text-align:center;white-space:normal}
-#profileView .bc-pw-circle{display:grid;place-items:center;width:63px;height:63px;border:2px solid #3c3c42;border-radius:50%;background:#17171a!important;color:var(--world-color);font-size:29px;transition:border-color .22s,box-shadow .22s;flex:none}
+#profileView .bc-pw-bubble{width:98px;min-width:0;background:none;border:0;color:#c6c6cc;display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;padding:2px;font-size:11px;line-height:1.3;text-align:center;white-space:normal}
+#profileView .bc-pw-circle{display:grid;place-items:center;width:84px;height:84px;border:2px solid #3c3c42;border-radius:50%;background:#17171a!important;color:var(--world-color);font-size:29px;transition:border-color .22s,box-shadow .22s;flex:none}
 #profileView .bc-pw-bubble[aria-pressed=true]{color:#fff}
 #profileView .bc-pw-bubble[aria-pressed=true] .bc-pw-circle{border-color:var(--world-color);box-shadow:0 0 0 3px #ffffff09,0 0 17px color-mix(in srgb,var(--world-color) 20%,transparent)}
 #profileView #profileCover[data-world-cover]{background-position:center 29%!important}
@@ -38,7 +38,7 @@
 .bc-pw-viewer::backdrop{background:#000d}
 .bc-pw-viewer img{display:block;max-width:100%;max-height:80vh;object-fit:contain;margin:8px auto 0}
 .bc-pw-viewer button{background:#28282c;color:white;padding:8px 12px;border:1px solid #444;border-radius:8px}
-@media(max-width:620px){#profileView #profileWorlds{padding:14px}#profileView .bc-pw-bubbles{gap:8px}#profileView .bc-pw-bubble{width:66px}#profileView .bc-pw-circle{width:58px;height:58px}#profileView .bc-pw-feed{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){#profileView #profileWorlds{padding:14px}#profileView .bc-pw-bubbles{gap:8px}#profileView .bc-pw-bubble{width:82px}#profileView .bc-pw-circle{width:74px;height:74px}#profileView .bc-pw-feed{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 /* Wide artwork is composed from the approved World portraits instead of
    zooming a vertical portrait until the face is outside the cover. */
