@@ -1,6 +1,6 @@
 /* Personal media only. Never writes to public/social storage. */
 export const PRIVATE_BUCKET='blackcell-os-files';
-import {createPrivateDrive,PRIVATE_FILE_LIMIT} from './blackcell-private-drive.js?v=2-album-list';
+import {createPrivateDrive,PRIVATE_FILE_LIMIT} from './blackcell-private-drive.js?v=3-cloud-thumbnails';
 export {PRIVATE_FILE_LIMIT};
 export function privateUploadError(error){
  const raw=String(error?.message||error||'Upload failed.');
@@ -14,7 +14,10 @@ export async function uploadPrivateFile(storage,path,file,onProgress){
  if(!file.size)throw Error('The file is empty.');
  if(file.size>PRIVATE_FILE_LIMIT)throw Error('File exceeds the 256 MB private upload limit.');
  const result=await storage.upload(path,file,{upsert:false,contentType:'application/octet-stream',cacheControl:'0',onProgress});
- if(result.error)throw result.error;return result.data
+ if(result.error)throw result.error;
+ // Generate one private cloud thumbnail while the new photo is already available.
+ if(result.data?.id&&storage.writePreview&&mediaType(path).startsWith('image/')&&!/heic|heif/i.test(mediaType(path))){try{const frame=await imageFrame(file);if(frame.small)await storage.writePreview(result.data.id,frame)}catch(_){} }
+ return result.data
 }
 
 const formats={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',gif:'image/gif',heic:'image/heic',heif:'image/heif',mp4:'video/mp4',m4v:'video/x-m4v',mov:'video/quicktime',webm:'video/webm'};
@@ -29,7 +32,7 @@ export async function privateFiles(storage,uid,alive=()=>true){
   const prefix=queue.shift();
   for(let offset=0;alive();offset+=100){
    const page=checked(await storage.list(prefix,{limit:100,offset,sortBy:{column:'name',order:'asc'}}))||[];
-   for(const r of page){if(r.name==='.blackcell-folder')continue;const path=prefix+'/'+r.name;if(!r.id){queue.push(path);continue}const type=mediaType(r.name);if(type)rows.push({path,name:r.name,type,date:r.created_at||r.updated_at||'',size:r.metadata?.size||0});if(rows.length>=1000){limited=true;break}}
+   for(const r of page){if(r.name==='.blackcell-folder')continue;const path=prefix+'/'+r.name;if(!r.id){queue.push(path);continue}const type=mediaType(r.name);if(type)rows.push({path,name:r.name,type,date:r.created_at||r.updated_at||'',size:r.metadata?.size||0,provider:r.provider||'legacy',objectId:r.provider==='bunny'?r.id:null});if(rows.length>=1000){limited=true;break}}
    if(page.length<100||limited||offset>=4900)break;
   }
   if(limited)break;
@@ -84,6 +87,33 @@ async function privateVideoFrame(file){
   if(!blob)throw Error('No preview generated');
   return {blob,ratio:video.videoWidth/video.videoHeight,duration:video.duration};
  }finally{video.pause();video.removeAttribute('src');video.load();URL.revokeObjectURL(url)}
+}
+// Preview metadata is part of the authenticated encrypted thumbnail payload.
+async function cloudFrame(storage,row){
+ if(!row.objectId||!storage.readPreview)return null;
+ try{
+  const packed=await storage.readPreview(row.objectId);
+  if(!packed||packed.size<20||packed.size>524288)return null;
+  const header=new DataView(await packed.slice(0,16).arrayBuffer()),ratio=header.getFloat64(0),duration=header.getFloat64(8);
+  if(!Number.isFinite(ratio)||ratio<.01||ratio>100)return null;
+  return {blob:packed.slice(16,packed.size,'image/jpeg'),ratio,duration,small:true};
+ }catch(_){return null}
+}
+async function imageFrame(file){
+ let bitmap=null,image=null,url=null;
+ try{
+  if(typeof createImageBitmap==='function'){try{bitmap=await createImageBitmap(file)}catch(_){}}
+  if(!bitmap){url=URL.createObjectURL(file);image=new Image();image.src=url;await image.decode()}
+  const src=bitmap||image,width=bitmap?.width||image?.naturalWidth,height=bitmap?.height||image?.naturalHeight;
+  if(!width||!height)throw Error('Image preview unavailable');
+  const scale=Math.min(1,640/Math.max(width,height)),canvas=document.createElement('canvas');
+  canvas.width=Math.max(1,Math.round(width*scale));canvas.height=Math.max(1,Math.round(height*scale));
+  const ctx=canvas.getContext('2d');if(!ctx)throw Error('Canvas unavailable');
+  ctx.drawImage(src,0,0,canvas.width,canvas.height);
+  const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.80));
+  if(!blob)throw Error('Preview unavailable');
+  return {blob,ratio:width/height,small:true};
+ }finally{bitmap?.close();if(url)URL.revokeObjectURL(url)}
 }
 export function justifiedPhotoRows(ratios,width,target,gap=3){
  const result=[];let batch=[],sum=0;
@@ -215,22 +245,16 @@ export function mountPrivatePhotos(host,{client,userId,preview,alive,onBusy}){
   if(photoFrames.has(key)){const frame=photoFrames.get(key);photoFrames.delete(key);photoFrames.set(key,frame);return frame}
   if(photoPending.has(key))return photoPending.get(key);
   const job=(async()=>{
+   const cloud=await cloudFrame(storage,row);
+   if(!usable())throw Error('Photos closed');
+   if(cloud){cachePhoto(key,cloud);return cloud}
    const file=await getPrivateMedia(storage,row);if(!usable())throw Error('Photos closed');
-   let bitmap=null,image=null,url=null;
    try{
-    if(typeof createImageBitmap==='function'){try{bitmap=await createImageBitmap(file)}catch(_){}}
-    if(!bitmap){url=URL.createObjectURL(file);image=new Image();image.src=url;await image.decode()}
-    const src=bitmap||image,width=bitmap?.width||image?.naturalWidth,height=bitmap?.height||image?.naturalHeight;
-    if(!width||!height)throw Error('Image preview unavailable');
-    const scale=Math.min(1,640/Math.max(width,height)),canvas=document.createElement('canvas');
-    canvas.width=Math.max(1,Math.round(width*scale));canvas.height=Math.max(1,Math.round(height*scale));
-    const context=canvas.getContext('2d');if(!context)throw Error('Canvas unavailable');
-    context.drawImage(src,0,0,canvas.width,canvas.height);
-    const small=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',.80));
-    const frame=small?{blob:small,ratio:width/height,small:true}:{blob:file,ratio:width/height,small:false};
-    cachePhoto(key,frame);return frame;
+    const frame=await imageFrame(file);cachePhoto(key,frame);
+    // Visible legacy assets are backfilled once, with the original left intact.
+    if(row.objectId&&usable())void storage.writePreview?.(row.objectId,frame).catch(()=>{});
+    return frame;
    }catch(_){return {blob:file,ratio:null,small:false}}
-   finally{bitmap?.close();if(url)URL.revokeObjectURL(url)}
   })();
   photoPending.set(key,job);
   try{return await job}finally{if(photoPending.get(key)===job)photoPending.delete(key)}
@@ -298,8 +322,8 @@ export function mountPrivatePhotos(host,{client,userId,preview,alive,onBusy}){
    const run=async()=>{
     if(!valid())return;
     try{
-     const file=await getPrivateMedia(storage,row);if(!valid())return;
-     const frame=await privateVideoFrame(file);if(!valid())return;
+     let frame=await cloudFrame(storage,row);if(!valid())return;
+     if(!frame){const file=await getPrivateMedia(storage,row);if(!valid())return;frame=await privateVideoFrame(file);if(!valid())return;if(row.objectId)void storage.writePreview?.(row.objectId,frame).catch(()=>{})}
      videoFrames.set(key,frame);
      while(videoFrames.size>48)videoFrames.delete(videoFrames.keys().next().value);
      paint(frame);
