@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="corporate-chat-media-bubble-host.css?v=20261109-independent-media1"><link rel="stylesheet" href="corporate-chat-media-responsive.css?v=20261109-sidebyside2"><link rel="stylesheet" href="corporate-chat-media-flip-focus.css?v=20261109-flip-focus1">
 <script src="corporate-chat-media-bubble-host.js?v=20261109-large-media1" defer></script>
 <script src="corp-config.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js" defer></script><script type="module" src="corporate-network.js?v=20261116-pulse1"></script><link rel="stylesheet" href="corp-adaptive-layout.css?v=20261109-device2">
+<script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js" defer></script><script type="module" src="corporate-network.js?v=20261116-pulse-video2"></script><link rel="stylesheet" href="corp-adaptive-layout.css?v=20261109-device2">
 <link rel="stylesheet" href="corp-adaptive-chat.css?v=20261109-device2">
 <link rel="stylesheet" href="corporate-network-feed-media.css?v=20261109-uncropped2">
 <link rel="stylesheet" href="corporate-chat-compact-media.css?v=20261109-mobile-gallery4">
@@ -56,7 +56,15 @@ body.bc-pulse-mode .workspace{min-width:0}
 .bc-pulse-footer{text-align:center;padding:22px;color:#9999a2}.bc-pulse-end{font-size:13px}
 @media(max-width:600px){.bc-pulse-header{padding:12px 9px;gap:7px}.bc-pulse-brand{gap:2px 5px}.bc-pulse-brand small{display:none}.bc-pulse-glyph{font-size:28px}.bc-pulse-back,.bc-pulse-create{padding:8px}.bc-pulse-tabs{justify-content:flex-start}.bc-pulse-scroll{padding:8px 5px 24px}}
 </style>
-</head>
+<style>
+.bc-feed-video-frame{position:relative;display:grid;grid-template-columns:minmax(0,1fr);align-items:center;justify-items:center;min-height:clamp(180px,34vh,360px);width:100%;background:#050506;border:1px solid #29292e;border-radius:12px;overflow:hidden;isolation:isolate}
+.bc-feed-video-frame [hidden]{display:none!important}
+.bc-feed-video-poster{display:block;grid-area:1/1;width:100%;height:auto;max-height:65vh;object-fit:contain}
+.bc-feed-video-play{grid-area:1/1;z-index:2;background:#151518dc;border:1px solid #ffffff42;border-radius:24px;color:#fff;padding:14px 23px;font:600 15px system-ui;cursor:pointer;box-shadow:0 8px 30px #0008}
+.bc-feed-inline-video{grid-area:1/1;z-index:3;width:100%;height:auto;min-height:180px;max-height:72vh;object-fit:contain;background:#000}
+.bc-feed-video-quality{z-index:4;justify-self:end;margin:6px 10px;color:#fff;background:#222228;border:1px solid #444;border-radius:7px;padding:6px}
+.bc-feed-video-status{justify-self:stretch;color:#aaa;padding:9px 12px;margin:0;font-size:12px;text-align:left;border-top:1px solid #ffffff12}
+</style></head>
 <body class="bc-network">
 <header class="masthead">
  <div class="brand"><span class="brand-mark">B</span><div><strong>BLACKCELL CORPORATION</strong><small>PRIVATE SOCIAL NETWORK</small></div></div>
