@@ -2,7 +2,7 @@
    Shorts and private Plex-style library. All videos come from already
    approved Network assets; personal likes/history are device-local. */
 import {isWorldVideo,worldVideoTitle} from './blackcell-world-video-catalog.js?v=3-playback-priority';
-export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,bindTransfer,loadVideoComments,addVideoComment,shareVideoInside,followChannel,channelAvatar,state,mediaUrl,posterUrl,posterVersions,sharedMedia,profile,personName,stamp,switchView,openProfile,uploadVideo,playStream,reviewStream,refreshStream,toast}){
+export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,attachRenderedWorld,bindTransfer,loadVideoComments,addVideoComment,shareVideoInside,followChannel,channelAvatar,state,mediaUrl,posterUrl,posterVersions,sharedMedia,profile,personName,stamp,switchView,openProfile,uploadVideo,playStream,reviewStream,refreshStream,toast}){
  const $=id=>document.getElementById(id);
  const make=(tag,cls='',value=null)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(value!==null)el.textContent=String(value);return el};
  const button=(label,cls,callback)=>{const b=make('button',cls,label);b.type='button';b.addEventListener('click',callback);return b};
@@ -578,7 +578,7 @@ export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,b
   $('bcCinemaPrev').disabled=i<1;
   $('bcCinemaNext').disabled=i<0||i>=cinemaQueue.length-1;
  }
- let bcCinemaUpdateRelease=null,watchMode='default',commentEpoch=0,watchComments=[],commentBusy=false;
+ let activeRender=null,bcCinemaUpdateRelease=null,watchMode='default',commentEpoch=0,watchComments=[],commentBusy=false;
  function setWatchMode(mode){watchMode=mode==='theater'?'theater':'default';$('bcVideoCinema').classList.toggle('is-theater',watchMode==='theater');for(const [id,yes] of [['bcCinemaDefault',watchMode==='default'],['bcCinemaTheater',watchMode==='theater'],['bcWatchMode',watchMode==='theater']])$(id).setAttribute('aria-pressed',String(yes));$('bcWatchMode').setAttribute('aria-label',watchMode==='theater'?'Switch to default mode':'Switch to theater mode')}
  function renderWatchRecommendations(a){const root=$('bcCinemaRecommended');root.replaceChildren();const all=allVideos().filter(v=>v.id!==a.id);for(const item of [...all.filter(v=>v.owner_id===a.owner_id),...all.filter(v=>v.owner_id!==a.owner_id)].slice(0,20)){const row=button('','bc-watch-item',()=>openCinema(item,allVideos()));row.setAttribute('aria-label','Watch '+title(item));const art=make('span','bc-watch-art','▶'),cover=posterUrl(item);if(cover){const img=make('img');img.loading='lazy';img.decoding='async';img.alt='';img.src=cover;art.append(img)}const info=make('span');info.append(make('strong','',title(item)),make('small','',creator(item)),make('small','',when(item)));row.append(art,info);root.append(row)}if(!root.childElementCount)root.append(make('p','','No other authorized videos yet.'))}
  function paintWatchComments(){const root=$('bcWatchCommentList');root.replaceChildren();$('bcWatchCommentCount').textContent=watchComments.length+' Comments';const sorted=watchComments.slice().sort((a,b)=>($('bcWatchCommentSort').value==='oldest'?1:-1)*(Date.parse(a.created_at)-Date.parse(b.created_at)));for(const c of sorted){const row=make('div','bc-watch-comment'),name=personName(profile(c.user_id)),avatar=make('span','bc-yt-creator-avatar',String(name||'B').slice(0,1).toUpperCase()),main=make('div');main.append(make('strong','',name),make('small','',stamp(c.created_at)),make('p','',c.body));row.append(avatar,main);root.append(row)}}
@@ -594,6 +594,7 @@ export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,b
   if(!a.bunny_stream&&!isWorldVideo(a)&&!src){toast('Video temporarily unavailable. Refresh the channel.');return}
   if(!bcCinemaUpdateRelease){try{bcCinemaUpdateRelease=window.top.BLACKCELL_LIVE_UPDATE?.hold('cinema',window)}catch(_){}}
   const player=$('bcCinemaPlayer'),streamPlayer=$('bcCinemaStreamPlayer');
+  if(activeRender){activeRender.destroy();activeRender=null}
   if(activeCinema){track(activeCinema,player,true);player.pause();player.removeAttribute('src');player.load()}
   releaseObject('cinema');
   streamPlayer.src='about:blank';streamPlayer.hidden=true;
@@ -623,7 +624,17 @@ export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,b
    }
   }else{
    player.hidden=false;
-   if(isWorldVideo(a)){const description=$('bcCinemaDescription');description.textContent='Loading private World video…';try{const blob=await readWorldVideo(a);if(request!==cinemaRequest||activeCinema?.id!==a.id)return;cinemaObject=URL.createObjectURL(blob);src=cinemaObject;description.textContent=a.review_status==='pending'?'Private upload · pending review':'Approved private World video.'}catch(e){if(request===cinemaRequest){toast('Private video unavailable: '+String(e.message||e));closeCinema()}return}}
+   const qualityMenu=$('bcWatchQuality');qualityMenu.replaceChildren(new Option('Original','original'));qualityMenu.disabled=true;
+   if(isWorldVideo(a)){
+    const description=$('bcCinemaDescription'),alive=()=>request===cinemaRequest&&activeCinema?.id===a.id;
+    const original=async(position)=>{if(!alive())return;activeRender=null;description.textContent='Loading original video…';try{const blob=await readWorldVideo(a);if(!alive())return;releaseObject('cinema');cinemaObject=URL.createObjectURL(blob);player.onloadedmetadata=()=>{if(position>=0&&position<player.duration)try{player.currentTime=position}catch{}};player.src=cinemaObject;player.load();description.textContent=a.review_status==='pending'?'Private upload · pending review':'Original private World video.';void player.play().catch(()=>{});syncWatchControls()}catch(e){if(alive()){description.textContent='Video could not start. Please reopen it.';toast('Private video unavailable: '+String(e.message||e))}}};
+    if(typeof attachRenderedWorld==='function'&&window.BLACKCELL_ENABLE_RENDER_PLAYBACK===true){
+     description.textContent='Checking available video qualities…';
+     const rendered=await attachRenderedWorld({asset:a,video:player,qualityMenu,alive,startPosition:Number(resume[a.id]?.time||0),onReady:()=>{if(alive())description.textContent='Adaptive quality · BLACKCELL private stream'},onFatal:position=>void original(position),onOriginal:position=>void original(position)});
+     if(!alive()){rendered?.destroy();return}if(rendered){activeRender=rendered;syncWatchControls();return}
+    }
+    await original(Number(resume[a.id]?.time||0));return;
+   }
    player.src=src;player.load();
    const last=Number(resume[a.id]?.time||0);
    player.onloadedmetadata=()=>{if(last>=5&&last<player.duration-8)try{player.currentTime=last}catch{}};
@@ -633,6 +644,7 @@ export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,b
  }
  function closeCinema(restore=true){
   cinemaRequest++;
+  if(activeRender){activeRender.destroy();activeRender=null}
   bcCinemaUpdateRelease?.();bcCinemaUpdateRelease=null;
   if(!activeCinema||$('bcVideoCinema').hidden)return;
   const p=$('bcCinemaPlayer'),iframe=$('bcCinemaStreamPlayer');
