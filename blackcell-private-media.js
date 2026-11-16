@@ -27,13 +27,25 @@ const button=(label,fn)=>{const n=make('button','bc-pm-button',label);n.type='bu
 function checked(r){if(r.error)throw Error(r.error.message);return r.data}
 export async function privateFiles(storage,uid,alive=()=>true){
  const queue=[uid],rows=[];let scanned=0,limited=false;
- while(queue.length&&alive()){
-  if(scanned++>=150||rows.length>=1000){limited=true;break}
-  const prefix=queue.shift();
+ async function scan(prefix){
+  const items=[],folders=[];let capped=false;
   for(let offset=0;alive();offset+=100){
    const page=checked(await storage.list(prefix,{limit:100,offset,sortBy:{column:'name',order:'asc'}}))||[];
-   for(const r of page){if(r.name==='.blackcell-folder')continue;const path=prefix+'/'+r.name;if(!r.id){queue.push(path);continue}const type=mediaType(r.name);if(type)rows.push({path,name:r.name,type,date:r.created_at||r.updated_at||'',size:r.metadata?.size||0,provider:r.provider||'legacy',objectId:r.provider==='bunny'?r.id:null});if(rows.length>=1000){limited=true;break}}
-   if(page.length<100||limited||offset>=4900)break;
+   for(const r of page){if(r.name==='.blackcell-folder')continue;const path=prefix+'/'+r.name;if(!r.id){folders.push(path);continue}const type=mediaType(r.name);if(type)items.push({path,name:r.name,type,date:r.created_at||r.updated_at||'',size:r.metadata?.size||0,provider:r.provider||'legacy',objectId:r.provider==='bunny'?r.id:null});if(items.length>=1000){capped=true;break}}
+   if(page.length<100||capped||offset>=4900)break;
+  }
+  return {items,folders,capped};
+ }
+ while(queue.length&&alive()){
+  if(scanned>=150||rows.length>=1000){limited=true;break}
+  const batch=queue.splice(0,Math.min(4,150-scanned));scanned+=batch.length;
+  const results=await Promise.all(batch.map(scan));
+  if(!alive())break;
+  for(const result of results){
+   queue.push(...result.folders);
+   const remaining=1000-rows.length;
+   rows.push(...result.items.slice(0,remaining));
+   if(result.capped||result.items.length>remaining||rows.length>=1000){limited=true;break}
   }
   if(limited)break;
  }
@@ -389,7 +401,10 @@ export async function choosePrivateMedia({client,userId,onSelect,actionLabel='At
  function paint(tile,url,label){const img=make('img');img.alt='';img.decoding='async';img.src=url;img.onerror=()=>{if(!disposed&&tile.isConnected)tile.replaceChildren(make('span','bc-pm-picker-placeholder','Preview unavailable'),tile.querySelector('.bc-pm-picker-check')||make('span','bc-pm-picker-check'))};tile.replaceChildren(img,label)}
  async function thumbnail(row,tile,check,seq){
   try{
+   const stored=await cloudFrame(storage,row);if(disposed||seq!==generation||preparing)return;
+   if(stored){const url=URL.createObjectURL(stored.blob);urls.set(row.path,url);paint(tile,url,check);return}
    const file=await getPrivateMedia(storage,row);if(disposed||seq!==generation||preparing)return;
+   if(row.objectId){const frame=await imageFrame(file);if(disposed||seq!==generation||preparing)return;void storage.writePreview?.(row.objectId,frame).catch(()=>{});const url=URL.createObjectURL(frame.blob);urls.set(row.path,url);paint(tile,url,check);return}
    let bitmap,temp,source;
    try{
     if(typeof createImageBitmap==='function'){try{bitmap=await createImageBitmap(file);source=bitmap}catch(_){}}
