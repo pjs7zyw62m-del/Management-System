@@ -21,7 +21,7 @@ create policy pulse_read on public.corp_pulse_interactions for select to authent
  when 'post' then exists(select 1 from public.corp_social_posts p where p.id=target_id)
  when 'asset' then exists(select 1 from public.corp_social_assets a where a.id=target_id and a.purpose in ('library','post') and a.kind in ('photo','video') and a.review_status='approved' and a.adult_restricted=false and lower(coalesce(a.video_category,'')) not in ('movie','series','documentary','tv','tv show','tv_show'))
  when 'stream' then exists(select 1 from public.corp_stream_videos v where v.id=target_id and v.review_status='approved' and v.adult_restricted=false and v.upload_status in ('uploaded','processing','ready') and lower(coalesce(v.video_category,'')) not in ('movie','series','documentary','tv','tv show','tv_show'))
- else false end) and (action in ('like','comment') or user_id=(select auth.uid())));
+ else false end) and (action in ('like','comment') or user_id=(select auth.uid()) or (action='report' and corp_private.is_owner((select auth.uid())))));
 create policy pulse_insert on public.corp_pulse_interactions for insert to authenticated with check ((select corp_private.social_verified()) and not (select corp_private.is_ledger_only()) and user_id=(select auth.uid()) and (case target_kind
  when 'post' then exists(select 1 from public.corp_social_posts p where p.id=target_id)
  when 'asset' then exists(select 1 from public.corp_social_assets a where a.id=target_id and a.purpose in ('library','post') and a.kind in ('photo','video') and a.review_status='approved' and a.adult_restricted=false and lower(coalesce(a.video_category,'')) not in ('movie','series','documentary','tv','tv show','tv_show'))
