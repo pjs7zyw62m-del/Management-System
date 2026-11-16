@@ -181,3 +181,14 @@ html body.bc-network.bc-profile-mode #profileView.bc-fusion-profile .bc-pw-video
    available; Network masthead returns automatically when leaving this view. */
 html body.bc-network.bc-profile-mode > header.masthead{display:none!important;height:0!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important}
 html body.bc-network.bc-profile-mode #app.app{padding-top:clamp(12px,1.4vw,24px)!important}
+
+/* Social feed navigation: additive to the approved profile header. */
+#profileView .bc-profile-feed-modes{display:flex;align-items:stretch;gap:4px;flex-wrap:wrap;padding:3px 8px 0;background:#121214;border:1px solid #ffffff15;border-radius:13px;margin-bottom:2px}
+#profileView .bc-profile-feed-mode{flex:1;min-width:70px;white-space:nowrap;border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent;color:#a6a6af;font-size:13px;font-weight:650;min-height:44px;padding:8px 10px;cursor:pointer}
+#profileView .bc-profile-feed-mode[aria-pressed=true]{border-bottom-color:#ee3548;color:#fff;background:linear-gradient(0deg,#ed354b0b,transparent)}
+#profileView .bc-profile-feed-mode:hover{color:#fff;background:#ffffff05}
+#profileView .bc-profile-feed-refresh{border:0;background:transparent;color:#a6a6af;font-size:11px;padding:8px;cursor:pointer}
+#profileView .bc-profile-social-timeline{display:flex;flex-direction:column;gap:12px;min-width:0}
+#profileView .bc-profile-world-gallery{min-width:0;display:flex;flex-direction:column;gap:10px}
+#profileView .bc-profile-feed-more{align-self:center;margin:6px auto 10px}
+@media(max-width:480px){#profileView .bc-profile-feed-modes{gap:0;padding:0 3px}#profileView .bc-profile-feed-mode{min-width:0;flex:1 1 24%;font-size:11px;padding:8px 3px}#profileView .bc-profile-feed-refresh{margin-left:auto;min-height:30px}}
