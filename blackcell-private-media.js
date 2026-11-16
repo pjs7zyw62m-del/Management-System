@@ -202,7 +202,7 @@ export function mountPrivatePhotos(host,{client,userId,preview,alive,onBusy}){
     const tools=make('div','ap-ai-actions');tools.append(generate,transfer);
     studio.append(top,stage,field,note,album,tools);area.append(studio);area.classList.add('ap-ai-split');
    };
-   aiButton=button('✧ AI Video',showStudio);aiButton.classList.add('ap-ai-toggle');aiButton.disabled=true;aiButton.setAttribute('aria-pressed','false');actions.insertBefore(aiButton,download);
+   aiButton=button('✧ AI Video',showStudio);aiButton.title='Open the AI Video Studio beside this photograph';aiButton.classList.add('ap-ai-toggle');aiButton.disabled=true;aiButton.setAttribute('aria-pressed','false');actions.prepend(aiButton);
   }
   viewerOverlay.append(top,area);host.append(viewerOverlay);viewerOverlay.tabIndex=-1;viewerOverlay.focus();
   viewerOverlay.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();closeViewer()}else if(e.key==='ArrowLeft'&&index>0&&e.target?.tagName!=='VIDEO'){e.preventDefault();void openViewer(visible[index-1])}else if(e.key==='ArrowRight'&&index>=0&&index+1<visible.length&&e.target?.tagName!=='VIDEO'){e.preventDefault();void openViewer(visible[index+1])}});
