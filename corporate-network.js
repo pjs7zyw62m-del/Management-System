@@ -6,9 +6,9 @@ import {createNetworkPersonalization} from './corporate-network-personalization.
 import {createPhotoRediscovery} from './corporate-photo-rediscovery.js?v=20261113-auto-suggest1';
 import {createVisualDiscovery} from './corporate-visual-discovery.js?v=20261111-mediareset1';
 import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phonecheck2';
-import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261115-world-catalog1';
+import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261116-video-transfer2';
 import {isWorldVideo,worldVideoTitle,readWorldVideo,createWorldVideoPreviews} from './blackcell-world-video-catalog.js?v=1';
-import {createProfileWorlds} from './corporate-profile-worlds.js?v=16-member-album-repair';
+import {createProfileWorlds} from './corporate-profile-worlds.js?v=17-video-transfer';
 const client=corporateClient(),bucket=client.storage.from('corp-social-media');
 const worldVideoPreviews=createWorldVideoPreviews(client);
 const $=id=>document.getElementById(id);
@@ -20,7 +20,7 @@ const state={
  attached:[],openComments:new Set(),busy:false,sort:'newest',deepPost:null,
  chatPeers:[],signedAt:0,profilePreview:false,profileFeedMode:'for-you',profileFeedLimit:12,profileFeedRefreshing:false,profilePostFilter:'all',profilePostGrid:false,profileFriendsMode:'following',profileFriendsQuery:''
 };
-const profileWorlds=createProfileWorlds({client,state,previews:worldVideoPreviews,title:worldVideoTitle,render:()=>renderProfile(),toast});
+const profileWorlds=createProfileWorlds({client,state,previews:worldVideoPreviews,title:worldVideoTitle,render:()=>renderProfile(),toast,readVideo:a=>readWorldVideo(client,a)});
 const fields=['profileView','discoverView','videosView','photosView'];
 let gunnerDock=null;
 function el(tag,cls='',content=null){
@@ -726,7 +726,7 @@ function renderPost(p){
     v.style.setProperty('height','auto','important');
     v.style.setProperty('max-height','none','important');
     v.style.setProperty('object-fit','contain','important');
-    wrap.append(v);
+    profileWorlds.bindFeedPhoto(v,f);wrap.append(v);
    }else{
     const link=btn('',()=>void photos.openAsset(f));
     link.classList.add('post-media-original-open');
@@ -822,7 +822,7 @@ function renderLibraryActivity(a){
    const v=el('video','post-media-original-video');
    v.src=src;v.controls=true;v.playsInline=true;v.preload='none';
    v.style.width='100%';v.style.height='auto';v.style.objectFit='contain';
-   wrap.append(v);
+   profileWorlds.bindFeedPhoto(v,a);wrap.append(v);
   }else{
    const link=btn('',()=>void photos.openAsset(a),'post-media-original-open');
    link.style.setProperty('height','auto','important');
@@ -838,7 +838,7 @@ function renderLibraryActivity(a){
   node.append(wrap);
  }
  if(!src&&a.source_provider==='world-bunny-v1'&&a.kind==='photo'){const frame=el('div','bc-pw-frame');const img=el('img');img.hidden=true;img.alt=caption||'World photo';img.loading='lazy';frame.append(el('span','bc-pw-placeholder','Loading photograph…'),img);const open=btn('',()=>profileWorlds.openFeedPhoto(img,a),'bc-pw-media');open.append(frame);node.append(open);profileWorlds.bindFeedPhoto(open,a);profileWorlds.mountFeedPhoto(a,img)}
- if(!src&&a.kind==='video'){const frame=el('div','bc-pw-frame');const img=el('img');img.hidden=true;img.alt='';const poster=posterUrl(a);frame.append(el('span','bc-pw-placeholder','▶'),img);if(poster){img.src=poster;img.hidden=false}const open=btn('',()=>{const u=new URL(location.href);u.search='';u.searchParams.set('view','videos');u.searchParams.set('video',a.id);location.assign(u.href)},'bc-pw-media');open.append(frame);node.append(open)}
+ if(!src&&a.kind==='video'){const frame=el('div','bc-pw-frame');const img=el('img');img.hidden=true;img.alt='';const poster=posterUrl(a);frame.append(el('span','bc-pw-placeholder','▶'),img);if(poster){img.src=poster;img.hidden=false}const open=btn('',()=>{const u=new URL(location.href);u.search='';u.searchParams.set('view','videos');u.searchParams.set('video',a.id);location.assign(u.href)},'bc-pw-media');open.append(frame);node.append(open);profileWorlds.bindFeedPhoto(open,a)}
  const actions=el('div','post-actions');
  if(a.kind==='video')actions.append(btn('▶ WATCH IN BLACKCELL TUBE',()=>{const u=new URL(location.href);u.search='';u.searchParams.set('view','videos');u.searchParams.set('video',a.id);location.assign(u.href)}));else if(a.source_provider!=='world-bunny-v1')actions.append(btn('▧ VIEW ORIGINAL',()=>void photos.openAsset(a)));
  actions.append(btn('◌  VIEW PROFILE',()=>openProfile(a.owner_id)));
@@ -903,7 +903,7 @@ function videoTile(a){
  const url=mediaUrl(a);
  if(url){
   const vid=el('video');vid.src=url;vid.controls=true;vid.playsInline=true;vid.preload='metadata';vid.setAttribute('aria-label',a.filename);
-  card.append(vid);
+  profileWorlds.bindFeedPhoto(vid,a);card.append(vid);
  }else card.append(el('div','empty-state','Preview temporarily unavailable.'));
  const footer=el('div','video-card-footer');
  footer.append(el('strong','',p?.body||a.filename),el('small','',personName(person)+' · '+stamp(a.created_at)),
@@ -1365,7 +1365,7 @@ async function bcLiveOriginal_publishDirectVideo(event){
 }
 const videoChannel=createBlackcellVideoChannel({
  state,mediaUrl,posterUrl,posterVersions,sharedMedia,profile,personName,stamp,switchView,openProfile,toast,
- worldVideoPreviews,readWorldVideo:a=>readWorldVideo(client,a),
+ worldVideoPreviews,readWorldVideo:a=>readWorldVideo(client,a),bindTransfer:profileWorlds.bindFeedPhoto,
  uploadVideo:openDirectVideoUpload,
  playStream:async a=>{
   const data=await videoStreamApi('play',{catalogId:a.id});

@@ -2,7 +2,7 @@
    Shorts and private Plex-style library. All videos come from already
    approved Network assets; personal likes/history are device-local. */
 import {isWorldVideo,worldVideoTitle} from './blackcell-world-video-catalog.js?v=1';
-export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,state,mediaUrl,posterUrl,posterVersions,sharedMedia,profile,personName,stamp,switchView,openProfile,uploadVideo,playStream,reviewStream,refreshStream,toast}){
+export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,bindTransfer,state,mediaUrl,posterUrl,posterVersions,sharedMedia,profile,personName,stamp,switchView,openProfile,uploadVideo,playStream,reviewStream,refreshStream,toast}){
  const $=id=>document.getElementById(id);
  const make=(tag,cls='',value=null)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(value!==null)el.textContent=String(value);return el};
  const button=(label,cls,callback)=>{const b=make('button',cls,label);b.type='button';b.addEventListener('click',callback);return b};
@@ -235,6 +235,7 @@ export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,s
   if(film)card.classList.add('bc-film-video-card');
   const thumbnail=button('', 'bc-yt-thumb',()=>openCinema(a,queue));
   thumbnail.setAttribute('aria-label','Watch '+title(a));
+  if(!film)bindTransfer?.(thumbnail,a);
   const url=source(a),cover=posterUrl(a);
   if(cover){
    appendNativeArtwork(thumbnail,cover,'Cover for '+title(a),'bc-video-custom-poster',film);

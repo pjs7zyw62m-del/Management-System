@@ -225,3 +225,6 @@ html body.bc-network.bc-profile-mode #app.app{padding-top:clamp(12px,1.4vw,24px)
    and fitted to the available window height instead of a 4:3 crop. */
 #profileView .bc-profile-social-timeline .bc-pw-transfer-target .bc-pw-frame:has(img:not([hidden])){aspect-ratio:auto;max-height:none;min-height:0;display:flex;align-items:center;justify-content:center}
 #profileView .bc-profile-social-timeline .bc-pw-transfer-target .bc-pw-frame img:not([hidden]){position:static;inset:auto;display:block;width:auto;height:auto;max-width:100%;max-height:min(82dvh,1000px);object-fit:contain;object-position:center}
+
+/* Same single-option media transfer menu on video previews. */
+.bc-pw-video-transfer-target,.bc-pw-video-transfer-target img{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}

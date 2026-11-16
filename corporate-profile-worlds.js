@@ -24,7 +24,7 @@ export function worldScope(active,raw){const ids=normalizeWorlds(raw);return act
 const worldLabel=id=>labels.get(id)?.[1]||'Uniform';
 const mediaWorld=a=>{const tag=(Array.isArray(a.military_tags)?a.military_tags:[]).find(t=>typeof t==='string'&&labels.has(t.slice(4))&&t.startsWith('maf:'));return tag?worldLabel(tag.slice(4)):'Uniform'};
 const uniformTerms='source_provider.eq.world-bunny-v1,military_tags.cs.{maf:military},military_tags.cs.{maf:police},military_tags.cs.{maf:fire},military_tags.cs.{maf:security},military_tags.cs.{maf:medical},military_tags.cs.{maf:professional},military_tags.cs.{maf:unsorted}';
-export function createProfileWorlds({client,state,previews,title,render,toast}){
+export function createProfileWorlds({client,state,previews,title,render,toast,readVideo}){
  let dismissFeedMenu=null,feedTransferBusy=false;
  const root=()=>document.getElementById('profileWorlds');
  let selected=[],active='',filter='all',open=false,draft=[],saving=false,ready=false,uid='',generation=0,urls=new Set(),disposeLiveCover=null;
@@ -139,20 +139,35 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
  // Save an authorized original to the active member's private Photos folder.
  async function transferFeedPhoto(a){
   const account=state.user?.id;
-  if(!account||!a||a.kind!=='photo'||!/^\w[\w-]{0,80}$/.test(String(a.id||'')))throw Error('Photo unavailable');
+  if(!account||!a||!['photo','video'].includes(a.kind)||!/^\w[\w-]{0,80}$/.test(String(a.id||'')))throw Error('Media unavailable');
+  if(a.bunny_stream)throw Error('This streaming video does not have an authorized original-file transfer yet.');
+  if(a.review_status!=='approved'&&a.owner_id!==account)throw Error('Media is not available for transfer.');
+  if(a.adult_restricted===true&&a.owner_id!==account)throw Error('Media is not available for transfer.');
   const session=(await client.auth.getSession()).data?.session;
   if(!session?.access_token||session.user.id!==account)throw Error('Sign in again');
   const [m,drive]=await Promise.all([import('./blackcell-private-media.js?v=12-member-album-repair'),import('./blackcell-private-drive.js?v=2-album-list')]);
-  const source=await photoUrl(a);
   let blob;
-  try{
-   const response=await fetch(source.url,{cache:'no-store'});
-   if(!response.ok)throw Error('Original photo could not be read');
-   blob=await response.blob();
-  }finally{if(source.object)URL.revokeObjectURL(source.url)}
-  const ext={'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif','image/heic':'heic','image/heif':'heif'}[blob.type.toLowerCase().split(';')[0]];
-  if(!ext||!blob.size)throw Error('Unsupported photo format');
-  if(blob.size>m.PRIVATE_FILE_LIMIT)throw Error('Photo exceeds private storage upload limit');
+  if(a.kind==='video'&&a.source_provider==='world-bunny-v1'){
+   if(typeof readVideo!=='function')throw Error('Private video transfer unavailable.');
+   blob=await readVideo(a);
+  }else{
+   const source=await photoUrl(a);
+   try{
+    const response=await fetch(source.url,{cache:'no-store'});
+    if(!response.ok)throw Error('Original media could not be read');
+    const length=Number(response.headers.get('content-length'));
+    if(length>m.PRIVATE_FILE_LIMIT)throw Error('Original exceeds the 256 MB private upload limit.');
+    blob=await response.blob();
+   }finally{if(source.object)URL.revokeObjectURL(source.url)}
+  }
+  const types=a.kind==='video'?{'video/mp4':'mp4','video/webm':'webm','video/quicktime':'mov','video/x-m4v':'m4v'}:{'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif','image/heic':'heic','image/heif':'heif'};
+  let mime=String(blob.type||'').toLowerCase().split(';')[0],ext=types[mime];
+  if(!ext&&a.kind==='video'&&(!mime||mime==='application/octet-stream')){
+   const suffix=String(a.filename||a.storage_path||'').split('.').pop().toLowerCase();
+   mime=Object.keys(types).find(k=>types[k]===suffix)||'';ext=types[mime];
+  }
+  if(!ext||!blob.size)throw Error('Unsupported media format');
+  if(blob.size>m.PRIVATE_FILE_LIMIT)throw Error('Media exceeds the 256 MB private storage upload limit.');
   const current=(await client.auth.getSession()).data?.session;
   if(current?.user?.id!==account||state.user?.id!==account)throw Error('Session changed');
   const name='BLACKCELL-'+a.id+'.'+ext;
@@ -174,9 +189,9 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
   if(existing.error)throw Error(m.privateUploadError(existing.error));
   if(existing.data?.some(row=>row.id&&row.name===name)){notify();return 'Already saved · linked to the uploader’s album.'}
   try{
-   await m.uploadPrivateFile(storage,destination,new File([blob],name,{type:blob.type}));
+   await m.uploadPrivateFile(storage,destination,new File([blob],name,{type:mime}));
   }catch(e){
-   if(/duplicate|already exists|resource already exists|\b409\b/i.test(String(e?.message||e?.statusCode||e))){notify();return 'This photo is already in the uploader’s album.'}
+   if(/duplicate|already exists|resource already exists|\b409\b/i.test(String(e?.message||e?.statusCode||e))){notify();return 'This media is already in the uploader’s album.'}
    throw Error(m.privateUploadError(e));
   }
   notify();
@@ -186,8 +201,10 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
  // original asset, not a thumbnail or browser download.
 
  function bindFeedPhoto(target,a){
-  if(!target||!a||a.kind!=='photo')return;
+  if(!target||!a||!['photo','video'].includes(a.kind))return;
   target.classList.add('bc-pw-transfer-target');
+  // Keep video thumbnails out of the photo-only aspect-ratio CSS.
+  if(a.kind==='video'){target.classList.remove('bc-pw-transfer-target');target.classList.add('bc-pw-video-transfer-target');if(target.tagName==='VIDEO')target.tabIndex=0}
   target.setAttribute('aria-haspopup','menu');
   target.setAttribute('aria-keyshortcuts','Shift+F10');
   let hold=null,start=null,suppress=false;
@@ -288,7 +305,7 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
     const card=make('article','bc-pw-card'),frame=make('div','bc-pw-frame');const placeholder=make('span','bc-pw-placeholder',a.kind==='video'?'▶':'Loading photograph…');const img=make('img');img.hidden=true;img.alt=a.caption||label+' media';img.loading='lazy';frame.append(placeholder,img);
     const open=button('',()=>{if(a.kind==='photo')showPhoto(img,a);else{const u=new URL('corporate-network.html',location.href);u.searchParams.set('view','videos');u.searchParams.set('video',a.id);location.assign(u.href)}},'bc-pw-media');open.append(frame);
     card.append(open,make('strong','',a.kind==='video'?title(a):a.caption||label+' photograph'),make('small','',label+' · '+(a.review_status==='pending'?'Private · pending review':unsorted?'Awaiting World assignment':a.kind==='video'?'BLACKCELL TUBE':'WORLD PHOTO')));target.append(card);
-    if(a.kind==='photo'){bindFeedPhoto(open,a);mountPhoto(a,img,gen)}else if(a.source_provider==='world-bunny-v1')previews.mount(a,img);
+    bindFeedPhoto(open,a);if(a.kind==='photo')mountPhoto(a,img,gen);else if(a.source_provider==='world-bunny-v1')previews.mount(a,img);
   }
   async function loadUnsorted(){
    if(!unassigned.isConnected)return;
