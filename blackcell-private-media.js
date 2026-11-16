@@ -49,6 +49,42 @@ export function createPrivateViewer(host,storage,alive=()=>true,onDelete=null){
 }
 // Natural-aspect rows: fill completed rows exactly, leave the final row
 // at a readable height rather than stretching one portrait across the window.
+export function videoDurationLabel(seconds){
+ if(!Number.isFinite(seconds)||seconds<0)return 'VIDEO';
+ const n=Math.floor(seconds),h=Math.floor(n/3600),m=Math.floor(n%3600/60),sec=String(n%60).padStart(2,'0');
+ return h?h+':'+String(m).padStart(2,'0')+':'+sec:m+':'+sec;
+}
+// Decode a frame locally from the authorized original. No video or frame
+// leaves the private Photos app; the temporary object URL is always freed.
+async function privateVideoFrame(file){
+ const video=document.createElement('video'),url=URL.createObjectURL(file);
+ video.muted=true;video.playsInline=true;video.preload='auto';
+ async function wait(event,ready,begin,timeout=15000){
+  if(ready?.())return;
+  await new Promise((resolve,reject)=>{
+   let timer;const finish=e=>{clearTimeout(timer);video.removeEventListener(event,done);video.removeEventListener('error',fail);e?reject(e):resolve()};
+   const done=()=>finish(),fail=()=>finish(Error('Video preview unavailable'));
+   video.addEventListener(event,done,{once:true});video.addEventListener('error',fail,{once:true});
+   timer=setTimeout(()=>finish(Error('Video preview timed out')),timeout);
+   try{begin?.();if(ready?.())finish()}catch(e){finish(e)}
+  });
+ }
+ try{
+  await wait('loadeddata',()=>video.readyState>=2,()=>{video.src=url;video.load()});
+  if(!video.videoWidth||!video.videoHeight)throw Error('No video frame');
+  if(Number.isFinite(video.duration)&&video.duration>.8){
+   const point=Math.min(4,video.duration*.18,video.duration-.1);
+   try{await wait('seeked',null,()=>{video.currentTime=point},3500)}catch(_){}
+  }
+  const canvas=document.createElement('canvas'),scale=Math.min(1,640/Math.max(video.videoWidth,video.videoHeight));
+  canvas.width=Math.max(1,Math.round(video.videoWidth*scale));canvas.height=Math.max(1,Math.round(video.videoHeight*scale));
+  const ctx=canvas.getContext('2d');if(!ctx)throw Error('Preview unavailable');
+  ctx.drawImage(video,0,0,canvas.width,canvas.height);
+  const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.85));
+  if(!blob)throw Error('No preview generated');
+  return {blob,ratio:video.videoWidth/video.videoHeight,duration:video.duration};
+ }finally{video.pause();video.removeAttribute('src');video.load();URL.revokeObjectURL(url)}
+}
 export function justifiedPhotoRows(ratios,width,target,gap=3){
  const result=[];let batch=[],sum=0;
  if(width<=0)return result;
@@ -144,7 +180,7 @@ export function mountPrivatePhotos(host,{client,userId,preview,alive,onBusy}){
  function newAlbum(paths=[]){if(preview||busy||loading)return;const name=prompt('Name the new album:');if(!name?.trim())return;const album={id:'album-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),name:name.trim().slice(0,80),paths:[...new Set(paths)]};prefs.albums.push(album);savePrefs();switchMode(album.id)}
  function addToAlbum(paths){if(preview||busy||loading||!paths.length)return;if(!prefs.albums.length){newAlbum(paths);return}const choice=prompt('Choose an album number, or enter a new album name:\n'+prefs.albums.map((a,i)=>(i+1)+'. '+a.name).join('\n'));if(!choice?.trim())return;const a=prefs.albums[Number(choice)-1];if(a){a.paths=[...new Set([...a.paths,...paths])];savePrefs();status.textContent=paths.length+' added to '+a.name;render()}else{const album={id:'album-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),name:choice.trim().slice(0,80),paths:[...new Set(paths)]};prefs.albums.push(album);savePrefs();render()}}
  function renderSidebar(){sidemenu.replaceChildren();const group=(label,entries)=>{sidemenu.append(make('div','ap-section-label',label));for(const [m,icon,name] of entries){const b=button('',()=>switchMode(m));b.className='ap-nav-item'+(mode===m?' selected':'');b.append(make('span','ap-nav-icon',icon),make('span','',name));b.setAttribute('aria-current',mode===m?'page':'false');sidemenu.append(b)}};group('Photos',[['all','▧','Library'],['recent','◷','Recently Added'],['favorites','♡','Favorites']]);group('Media Types',[['photos','▨','Photos'],['videos','▷','Videos']]);const members=memberAlbums().sort((a,b)=>memberName(a).localeCompare(memberName(b)));group('My Albums',[...prefs.albums.map(a=>[a.id,'▱',a.name]),...members.map(id=>['member:'+id,'▱',memberName(id)+' · '+rows.filter(r=>memberIdFor(r)===id).length])]);const create=button('+ New Album',()=>newAlbum());create.className='ap-nav-item ap-create';create.disabled=preview||busy||loading;sidemenu.append(create);const folders=[...new Set(rows.map(r=>r.path.slice((userId||'').length+1).split('/').slice(0,-1).join('/')).filter(folder=>folder&&!folder.startsWith('Photos/From Members')))].sort();if(folders.length)group('Files Folders',folders.slice(0,60).map(f=>['folder:'+f,'▰',f.split('/').at(-1)]));sidemenu.append(make('p','ap-org-note','Member albums sync through your private drive. Manual albums and favorites are saved in this browser.'))}
- const ratios=new Map();let layoutFrame=0;
+ const ratios=new Map(),videoFrames=new Map();let layoutFrame=0,videoObserver=null,videoQueue=[],videoWorkerRunning=false;
  function queuePhotoLayout(){
   if(layoutFrame||closed)return;
   layoutFrame=requestAnimationFrame(()=>{layoutFrame=0;if(!usable())return;
@@ -159,7 +195,11 @@ export function mountPrivatePhotos(host,{client,userId,preview,alive,onBusy}){
  }
  const photoResize=typeof ResizeObserver!=='undefined'?new ResizeObserver(queuePhotoLayout):null;
  photoResize?.observe(grid);
- function clearThumbs(){for(const u of urls)URL.revokeObjectURL(u);urls=[]}
+ async function drainVideoQueue(){
+  if(videoWorkerRunning)return;videoWorkerRunning=true;
+  try{while(usable()&&videoQueue.length)await videoQueue.shift()()}finally{videoWorkerRunning=false}
+ }
+ function clearThumbs(){videoObserver?.disconnect();videoObserver=null;videoQueue=[];for(const u of urls)URL.revokeObjectURL(u);urls=[]}
  function filteredRows(){const q=search.value.trim().toLowerCase(),album=prefs.albums.find(a=>a.id===mode);return rows.filter(r=>{const folder=r.path.slice((userId||'').length+1).split('/').slice(0,-1).join('/');return (mode==='all'||mode==='recent'||mode==='favorites'&&favorites.has(r.path)||mode==='photos'&&r.type.startsWith('image/')||mode==='videos'&&r.type.startsWith('video/')||album?.paths.includes(r.path)||mode.startsWith('member:')&&memberIdFor(r)===mode.slice(7)||mode.startsWith('folder:')&&folder===mode.slice(7))&&(!dateScope||(dateScope==='Unknown date'?!r.date:String(r.date).startsWith(dateScope)))&&(!q||r.name.toLowerCase().includes(q)||String(r.date).toLowerCase().includes(q)||folder.toLowerCase().includes(q))})}
  function visibleRows(){return filteredRows().slice(page*36,page*36+36)}
  function syncControls(){add.disabled=busy||loading;refreshBtn.disabled=busy||loading;selectBtn.disabled=preview||busy||loading||!rows.length;selectBtn.textContent=selecting?'Done':'Select';selectionBar.hidden=!selecting;selectionCount.textContent=selected.size+' selected';const visible=visibleRows();selectPage.disabled=busy||loading||!visible.length;selectPage.textContent=visible.length&&visible.every(r=>selected.has(r.path))?'Deselect page':'Select page';deleteSelected.disabled=favoriteSelected.disabled=albumSelected.disabled=busy||loading||!selected.size;}
@@ -199,7 +239,39 @@ export function mountPrivatePhotos(host,{client,userId,preview,alive,onBusy}){
   page=Math.max(0,Math.min(page,Math.max(0,Math.ceil(filtered.length/36)-1)));syncControls();
   if(!filtered.length){const empty=make('div','ap-empty');empty.append(make('span','ap-empty-icon','▧'),make('h3','',preview?'Your Photos library':mode==='favorites'?'No favorites yet':album?'This album is empty':'No photos or videos'),make('p','',preview?'Sign in to view private media.':mode==='favorites'?'Choose the heart while viewing a photo.':album?'Select photos in your library and add them to this album.':'Import media to your private library. Nothing is shared automatically.'));if(mode==='all'||mode==='recent')empty.append(button('Import Photos',()=>input.click()));grid.append(empty);return}
   const jobs=[];
-  function thumbnail(row,thumb){if(row.type.startsWith('image/')&&!/heic|heif/.test(row.type))jobs.push(async()=>{try{const f=await getPrivateMedia(storage,row);if(seq!==version||!usable())return;let thumbnailFile=f;if(typeof createImageBitmap==='function'){let bitmap;try{bitmap=await createImageBitmap(f,{resizeWidth:420,resizeQuality:'medium'});if(seq!==version||!usable())return;const canvas=document.createElement('canvas');canvas.width=bitmap.width;canvas.height=bitmap.height;const context=canvas.getContext('2d');if(context){context.drawImage(bitmap,0,0);const small=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',.84));if(small)thumbnailFile=small}}catch(_){}finally{bitmap?.close()}}if(seq!==version||!usable())return;const u=URL.createObjectURL(thumbnailFile);urls.push(u);const img=make('img');img.loading='lazy';img.alt=row.name;img.src=u;const card=thumb.parentElement;const decoded=()=>{if(seq!==version||!usable()||!img.naturalHeight)return;const ratio=img.naturalWidth/img.naturalHeight;ratios.set(row.path,ratio);if(card?.classList.contains('ap-photo')){card.dataset.ratio=String(ratio);queuePhotoLayout()}};img.addEventListener('load',decoded,{once:true});thumb.replaceChildren(img);if(img.complete)decoded();if(favorites.has(row.path))thumb.append(make('span','ap-favmark','♥'))}catch(_){}})}
+  function videoThumbnail(row,thumb){
+   const key=row.path+'|'+String(row.date||'')+'|'+String(row.size||'');
+   const valid=()=>seq===version&&usable()&&thumb.isConnected;
+   function paint(frame){
+    if(!valid())return;
+    const url=URL.createObjectURL(frame.blob);urls.push(url);
+    const img=make('img');img.alt='Video preview';img.src=url;
+    const play=make('span','ap-video-play','▶');play.setAttribute('aria-hidden','true');
+    const label=make('span','ap-video-label',videoDurationLabel(frame.duration));
+    thumb.replaceChildren(img,play,label);
+    if(favorites.has(row.path))thumb.append(make('span','ap-favmark','♥'));
+    ratios.set(row.path,frame.ratio);
+    const card=thumb.parentElement;if(card?.classList.contains('ap-photo')){card.dataset.ratio=String(frame.ratio);queuePhotoLayout()}
+   }
+   if(videoFrames.has(key)){const frame=videoFrames.get(key);videoFrames.delete(key);videoFrames.set(key,frame);paint(frame);return}
+   const run=async()=>{
+    if(!valid())return;
+    try{
+     const file=await getPrivateMedia(storage,row);if(!valid())return;
+     const frame=await privateVideoFrame(file);if(!valid())return;
+     videoFrames.set(key,frame);
+     while(videoFrames.size>48)videoFrames.delete(videoFrames.keys().next().value);
+     paint(frame);
+    }catch(_){/* Keep the playable video tile if its codec cannot be decoded. */}
+   };
+   const enqueue=()=>{if(!valid())return;videoQueue.push(run);void drainVideoQueue()};
+   if(typeof IntersectionObserver==='undefined'){enqueue();return}
+   if(!videoObserver)videoObserver=new IntersectionObserver(entries=>{
+    for(const entry of entries)if(entry.isIntersecting){videoObserver?.unobserve(entry.target);const task=entry.target._bcPreviewTask;delete entry.target._bcPreviewTask;task?.()}
+   },{root:grid,rootMargin:'150px'});
+   thumb._bcPreviewTask=enqueue;videoObserver.observe(thumb);
+  }
+  function thumbnail(row,thumb){if(row.type.startsWith('video/')){videoThumbnail(row,thumb);return}if(row.type.startsWith('image/')&&!/heic|heif/.test(row.type))jobs.push(async()=>{try{const f=await getPrivateMedia(storage,row);if(seq!==version||!usable())return;let thumbnailFile=f;if(typeof createImageBitmap==='function'){let bitmap;try{bitmap=await createImageBitmap(f,{resizeWidth:420,resizeQuality:'medium'});if(seq!==version||!usable())return;const canvas=document.createElement('canvas');canvas.width=bitmap.width;canvas.height=bitmap.height;const context=canvas.getContext('2d');if(context){context.drawImage(bitmap,0,0);const small=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',.84));if(small)thumbnailFile=small}}catch(_){}finally{bitmap?.close()}}if(seq!==version||!usable())return;const u=URL.createObjectURL(thumbnailFile);urls.push(u);const img=make('img');img.loading='lazy';img.alt=row.name;img.src=u;const card=thumb.parentElement;const decoded=()=>{if(seq!==version||!usable()||!img.naturalHeight)return;const ratio=img.naturalWidth/img.naturalHeight;ratios.set(row.path,ratio);if(card?.classList.contains('ap-photo')){card.dataset.ratio=String(ratio);queuePhotoLayout()}};img.addEventListener('load',decoded,{once:true});thumb.replaceChildren(img);if(img.complete)decoded();if(favorites.has(row.path))thumb.append(make('span','ap-favmark','♥'))}catch(_){}})}
   function tile(row,parent){const card=button('',()=>{if(busy||loading)return;if(selecting){if(selected.has(row.path))selected.delete(row.path);else selected.add(row.path);card.classList.toggle('is-selected',selected.has(row.path));card.setAttribute('aria-pressed',String(selected.has(row.path)));check.textContent=selected.has(row.path)?'✓':'';syncControls()}else void viewer.open(row)});card.className='bc-pm-photo ap-photo';card.dataset.ratio=String(ratios.get(row.path)||(row.type.startsWith('video/')?16/9:1));card.setAttribute('aria-label',(selecting?'Select ':'Open ')+row.name);const thumb=make('div','bc-pm-thumb',row.type.startsWith('video/')?'▶':'▧');card.title=row.name;card.append(thumb);if(row.type.startsWith('video/'))thumb.append(make('span','ap-video-label','VIDEO'));const check=make('span','bc-pm-selection-check',selected.has(row.path)?'✓':'');if(selecting){card.append(check);card.classList.toggle('is-selected',selected.has(row.path));card.setAttribute('aria-pressed',String(selected.has(row.path)))}parent.append(card);thumbnail(row,thumb)}
   if(view!=='all'&&!selecting){const groups=new Map();for(const row of filtered){const k=String(row.date||'').slice(0,view==='years'?4:7)||'Unknown date';if(!groups.has(k))groups.set(k,[]);groups.get(k).push(row)}const entries=[...groups.entries()];page=Math.min(page,Math.max(0,Math.ceil(entries.length/36)-1));const collection=make('div','ap-collection-grid');for(const [k,items] of entries.slice(page*36,page*36+36)){const row=items[0],card=button('',()=>{dateScope=k;view='all';page=0;render()});card.className='ap-period';const thumb=make('div','bc-pm-thumb',row.type.startsWith('video/')?'▶':'▧');card.append(thumb,make('strong','',k),make('small','',items.length+' items'));collection.append(card);thumbnail(row,thumb)}grid.append(collection);if(entries.length>36)renderPager(entries.length)}
   else{const visible=visibleRows(),collection=make('div','ap-photo-grid ap-justified-grid');grid.append(collection);for(const row of visible)tile(row,collection);queuePhotoLayout();if(filtered.length>36)renderPager(filtered.length)}
@@ -207,7 +279,7 @@ export function mountPrivatePhotos(host,{client,userId,preview,alive,onBusy}){
   let jobIndex=0;async function worker(){while(seq===version&&usable()&&jobIndex<jobs.length){const fn=jobs[jobIndex++];await fn()}}for(let i=0;i<Math.min(4,jobs.length);i++)void worker();
  }
  input.onchange=async()=>{const list=Array.from(input.files||[]);input.value='';if(preview){status.textContent='Sign in to import private media.';return}if(busy||loading||!usable()||!list.length||deleteDialog)return;busy=true;syncControls();onBusy(true);let n=0,failed=[];try{for(const [i,file] of list.entries()){if(!usable())break;const type=mediaType(file.name),name=file.name.normalize('NFKD').replace(/[^a-zA-Z0-9_. -]/g,'_').replace(/^\.+/,'').slice(0,100);if(!type||!name){failed.push(file.name+': Unsupported format or file name.');continue}if(!file.size||file.size>PRIVATE_FILE_LIMIT){failed.push(name+': '+(!file.size?'Empty file.':'Exceeds 256 MB ('+(file.size/1048576).toFixed(1)+' MB).'));continue}status.textContent='Importing '+(i+1)+' of '+list.length+' · '+name+' ('+(file.size/1048576).toFixed(1)+' MB)…';try{await uploadPrivateFile(storage,userId+'/Photos/'+name,file,(sent,total)=>{status.textContent='Importing '+name+' · '+Math.round(sent/total*100)+'%'});n++}catch(e){failed.push(name+': '+privateUploadError(e))}}await refresh();if(n)window.dispatchEvent(new CustomEvent('bc-private-files-changed',{detail:{source:'photos'}}));status.textContent=n+' imported privately'+(failed.length?' · '+failed.length+' failed · '+failed.slice(0,3).join(' | '):'')}catch(e){status.textContent=privateUploadError(e)}finally{busy=false;onBusy(false);if(usable())syncControls()}};
- const moved=event=>{if(event.detail?.source==='photos'||(event.detail?.uid&&event.detail.uid!==userId)||busy)return;viewer.close();closeDelete();void refresh(true)};window.addEventListener('bc-private-files-changed',moved);let transferChannel=null;try{transferChannel=new BroadcastChannel('bc-private-photos-transfer');transferChannel.onmessage=e=>{if(e.data?.type==='photos-changed'&&e.data.uid===userId&&!busy)void refresh(true)}}catch(_){}search.oninput=()=>{page=0;dateScope='';view='all';render()};void refresh();return {dispose(){closed=true;version++;refreshSeq++;photoResize?.disconnect();if(layoutFrame)cancelAnimationFrame(layoutFrame);ratios.clear();closeDelete();window.removeEventListener('bc-private-files-changed',moved);transferChannel?.close();legacyOwners.clear();memberLabels.clear();viewer.close();clearThumbs()},refresh,closeViewer:viewer.close};
+ const moved=event=>{if(event.detail?.source==='photos'||(event.detail?.uid&&event.detail.uid!==userId)||busy)return;viewer.close();closeDelete();void refresh(true)};window.addEventListener('bc-private-files-changed',moved);let transferChannel=null;try{transferChannel=new BroadcastChannel('bc-private-photos-transfer');transferChannel.onmessage=e=>{if(e.data?.type==='photos-changed'&&e.data.uid===userId&&!busy)void refresh(true)}}catch(_){}search.oninput=()=>{page=0;dateScope='';view='all';render()};void refresh();return {dispose(){closed=true;version++;refreshSeq++;photoResize?.disconnect();if(layoutFrame)cancelAnimationFrame(layoutFrame);ratios.clear();videoFrames.clear();closeDelete();window.removeEventListener('bc-private-files-changed',moved);transferChannel?.close();legacyOwners.clear();memberLabels.clear();viewer.close();clearThumbs()},refresh,closeViewer:viewer.close};
 }
 export async function choosePrivateMedia({client,userId,onSelect,actionLabel='Attach selected',max=6}){
  if(!userId)return;
