@@ -45,7 +45,7 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
    if(out.error||out.data?.user?.id!==uid||uid!==state.user?.id)throw Error(out.error?.message||'Account save not confirmed');
    selected=normalizeWorlds(out.data.user.user_metadata?.blackcell_profile_worlds_v1);
    active=initialWorld(selected);filter='all';
-   open=false;state.profileTab='worldfeed';toast('My Worlds saved to your account.');
+   open=false;state.profileTab='worldfeed';state.profileFeedMode='worlds';state.profileFeedLimit=12;toast('My Worlds saved to your account.');
   }catch(e){toast('World selection not saved: '+e.message)}finally{saving=false;render()}
  }
  function mountLiveCover(cover,art,source){
@@ -117,7 +117,7 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
   }
   if(selected.length){const bubbles=make('div','bc-pw-bubbles');for(const id of worldBubbles(selected)){
    const [_,name,icon,art,color]=labels.get(id);
-   const b=isMine?button('',()=>{active=active===id&&selected.length>1?initialWorld(selected):id;filter='all';state.profileTab='worldfeed';render()},'bc-pw-bubble'):make('div','bc-pw-bubble bc-pw-readonly');
+   const b=isMine?button('',()=>{active=state.profileFeedMode==='worlds'&&active===id&&selected.length>1?initialWorld(selected):id;filter='all';state.profileTab='worldfeed';state.profileFeedMode='worlds';state.profileFeedLimit=12;render()},'bc-pw-bubble'):make('div','bc-pw-bubble bc-pw-readonly');
    if(isMine){b.setAttribute('aria-pressed',String(active===id||active==='hybrid'));b.title=name+' World · filter feed'}else{b.dataset.selected='true';b.title=name+' World'}
    b.style.setProperty('--world-color',color);
    const image=make('span','bc-pw-circle'),portrait=make('img');portrait.src=art;portrait.alt='';portrait.decoding='async';image.append(portrait);
@@ -139,7 +139,7 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
  function feed(box){
   clear();const gen=generation,id=active,scope=worldScope(id,selected);
   if(!scope.length){box.append(make('p','bc-pw-empty','Select your Worlds above to start your personalized feed.'));return}
-  const top=make('div','bc-pw-heading');const heading=make('div','bc-pw-feed-heading');heading.append(make('h3','',id==='hybrid'?'My Worlds Feed':worldLabel(id)+' World'));if(id==='hybrid')heading.append(make('p','bc-pw-caption',scope.map(worldLabel).join(' · ')));if(selected.length>1&&id!=='hybrid')heading.append(button('View all selected Worlds',()=>{active=initialWorld(selected);filter='all';render()},'bc-pw-quiet'));top.append(heading);
+  const top=make('div','bc-pw-heading');const heading=make('div','bc-pw-feed-heading');heading.append(make('h3','',id==='hybrid'?'My Worlds Feed':worldLabel(id)+' World'));if(id==='hybrid')heading.append(make('p','bc-pw-caption',scope.map(worldLabel).join(' · ')));if(selected.length>1&&id!=='hybrid')heading.append(button('View all selected Worlds',()=>{active=initialWorld(selected);filter='all';state.profileFeedLimit=12;render()},'bc-pw-quiet'));top.append(heading);
   const controls=make('div','bc-pw-filter');for(const [key,label] of [['all','All'],['photo','Photos'],['video','Videos']]){const b=button(label,()=>{filter=key;render()});b.setAttribute('aria-pressed',String(filter===key));controls.append(b)}top.append(controls);box.append(top);
   const grid=make('div','bc-pw-feed'),status=make('p','bc-pw-caption','Loading World media…');box.append(grid,status);
   const unassigned=make('section','bc-pw-unsorted');unassigned.hidden=true;if(id==='hybrid'&&!scope.includes('uniform')&&filter!=='video')box.append(unassigned);
@@ -185,5 +185,5 @@ export function createProfileWorlds({client,state,previews,title,render,toast}){
   void next().catch(()=>{if(gen===generation)status.textContent='Unable to load World media. Try again.'});
   if(unassigned.isConnected)void loadUnsorted().catch(()=>{if(gen===generation){unassigned.hidden=false;unassigned.append(make('p','bc-pw-caption','Unsorted photographs could not load.'))}});
  }
- return {load,header,feed,clear,reset:()=>{active=initialWorld(selected);filter='all'},hasActive:()=>!!active,busy:()=>open||saving};
+ return {load,header,feed,clear,currentScope:()=>worldScope(active,selected),reset:()=>{active=initialWorld(selected);filter='all'},hasActive:()=>!!active,busy:()=>open||saving};
 }
