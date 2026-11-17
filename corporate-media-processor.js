@@ -104,6 +104,27 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
 
   $('bcReviewEditor').hidden=false;setBusy(false);updateCards();
   status('Loading secure preview…');
+  // Auto-sort suggestions are private drafts. Load them without auto-approval.
+  if(item.kind==='photo'){
+   void (async()=>{
+    try{
+     const {data:hint,error:hintError}=await client.from('corp_social_ai_analysis')
+      .select('status,country_code,military_branch,military_category,uniform_type,camouflage_pattern,confidence,nudity_level,tags,notes')
+      .eq('asset_id',item.id).eq('owner_id',item.owner_id).maybeSingle();
+     if(hintError||!hint||hint.status!=='suggested'||seq!==previewEpoch||current?.id!==item.id)return;
+     const tags=Array.isArray(hint.tags)?hint.tags:[];
+     const taggedWorld=worldFrom({military_tags:tags,military_branch:hint.military_branch});
+     const pick=(id,v)=>{const select=$(id);if(select&&[...select.options].some(o=>o.value===v))select.value=v};
+     pick('bcReviewWorld',taggedWorld);
+     pick('bcReviewCountry',hint.country_code);
+     pick('bcReviewBranch',hint.military_branch);
+     pick('bcReviewCategory',hint.military_category);
+     $('bcReviewTags').value=tags.join(', ');
+     syncWorld();
+     status('Private AI suggestion loaded ('+String(hint.confidence||'unknown')+' confidence). Confirm country, uniform, rights and age before approval.');
+    }catch(_){/* manual review remains available */}
+   })();
+  }
   if(!native())$('bcReviewEditor').scrollIntoView({behavior:'smooth',block:'start'});
   const valid=()=>active()&&seq===previewEpoch&&current?.id===item.id;
   let failed=false;const fail=(reason)=>{if(!valid()||failed)return;failed=true;releasePreview();previewReady=false;if(!busy)setBusy(false);const retry=el('button','bc-review-retry','Retry preview');retry.type='button';retry.onclick=()=>void open(item);host.replaceChildren(el('p','bc-review-preview-message','Private preview unavailable. This item remains pending.'+(typeof reason==='string'?' '+reason:'')),retry);status('Preview is required before approval. '+(typeof reason==='string'?reason:'Retry the preview.'))};
