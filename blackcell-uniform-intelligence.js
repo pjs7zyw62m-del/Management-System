@@ -11,7 +11,7 @@ const SOURCES=[
  ["post","corp_social_posts","created_at","id,author_id,body,kind,created_at"],
  ["saved","corp_social_tiktok_saves","saved_at","id,user_id,title,military_branch,creator_handle,saved_at"]
 ];
-const data={user:null,owner:false,items:[],learning:[],ai:[],page:"catalog",selected:null,frame:0,blob:"",previewGeneration:0,loading:false,saving:false,videoFrame:null,videoSuggestions:new Map(),videoBusy:false};
+const data={user:null,owner:false,items:[],learning:[],ai:[],page:"catalog",selected:null,frame:0,blob:"",previewGeneration:0,loading:false,saving:false,videoFrame:null,videoSuggestions:new Map(),videoBusy:false,streamPlayback:null};
 let gunnerCommand=null;
 const index=SOURCES.map(([type,table,order,fields])=>({type,table,order,fields,skip:0,done:false,error:""}));
 const COUNTRY=typeof Intl.DisplayNames==="function"?new Intl.DisplayNames(["en"],{type:"region"}):null;
@@ -38,12 +38,38 @@ function labels(item){const r=ref(item),a=ai(item);return{world:r?.world||worldT
  category:r?.category||a?.military_category||item.category,uniform:r?.uniform_name||a?.uniform_type||"",
  memory:r?.reference_status||a?.status||"none",confidence:a?.confidence||"unverified"}}
 const canTeach=x=>data.owner&&x&&(x.type==="asset"||x.type==="stream_video")&&(x.kind==="photo"||x.kind==="video")&&x.status!=="rejected";
+function renderStreamEmbed(){
+ const record=data.streamPlayback,item=data.selected;
+ if(!item||item.type!=="stream_video"||!record||record.key!==item.key)return;
+ const active=data.page==="catalog"?"bcPreview":data.page==="teach"?"bcTeachPreview":null;
+ if(active&&Number(record.expires||0)*1000<Date.now()+5000){
+  data.streamPlayback=null;void preview(item);return;
+ }
+ for(const id of ["bcPreview","bcTeachPreview"]){
+  const box=$(id),current=box.querySelector("iframe");
+  if(id===active&&current?.dataset.streamUrl===record.url)continue;
+  if(current){current.src="about:blank";current.remove()}
+  if(id===active){
+   const frame=document.createElement("iframe");
+   frame.title="Secure BLACKCELL Tube playback";
+   frame.src=record.url;frame.dataset.streamUrl=record.url;
+   frame.referrerPolicy="no-referrer";
+   frame.allow="autoplay; encrypted-media; picture-in-picture; fullscreen";
+   frame.allowFullscreen=true;box.replaceChildren(frame);
+  }else{
+   const hint=E("div","bc-preview-empty");
+   hint.append(E("span","","▷"),E("b","","Secure BLACKCELL Tube video"));
+   box.replaceChildren(hint);
+  }
+ }
+}
 function switchTab(page){
  if(!data.owner&&page!=="uploads")return;
  data.page=page;
  for(const b of document.querySelectorAll(".bc-tab"))b.setAttribute("aria-selected",String(b.dataset.tab===page));
  for(const n of ["catalog","teach","atlas","gunner","uploads"])$("bcPage"+n[0].toUpperCase()+n.slice(1)).hidden=n!==page;
  if(page==="teach")fillForm();
+ if(data.selected?.type==="stream_video")renderStreamEmbed();
  if(page==="atlas"){drawAtlas();drawPatterns()}
  if(page==="gunner")gunnerCommand?.open();
  if(page==="uploads"&&!$("bcUploadFrame").getAttribute("src")){$("bcUploadFrame").src="blackcell-upload-queue.html?v=20261117-ai-autosort-r3"}
@@ -110,7 +136,7 @@ function list(){
 }
 function clearPreview(){
  ++data.previewGeneration;
- data.videoFrame=null;
+ data.videoFrame=null;data.streamPlayback=null;
  $("bcFrameStillPreview").hidden=true;$("bcFrameStillPreview").removeAttribute("src");$("bcFrameStillInput").value="";
  for(const box of ["bcPreview","bcTeachPreview"]){
   for(const frame of $(box).querySelectorAll("iframe")){frame.src="about:blank"}
@@ -132,14 +158,9 @@ async function preview(item){
    if(!r.data?.ok||typeof r.data.url!=="string"||!/^https:\/\/player\.mediadelivery\.net\/embed\//.test(r.data.url))
     throw Error("Secure streaming URL is not available.");
    if(seq!==data.previewGeneration||data.selected?.key!==item.key)return;
-   for(const id of ["bcPreview","bcTeachPreview"]){
-    const frame=document.createElement("iframe");
-    frame.title="Secure BLACKCELL Tube playback";frame.src=r.data.url;frame.referrerPolicy="no-referrer";
-    frame.allow="autoplay; encrypted-media; picture-in-picture; fullscreen";
-    frame.allowFullscreen=true;frame.loading="lazy";
-    $(id).replaceChildren(frame);
-   }
-   text("bcFrameStatus","BLACKCELL Tube playback uses a secure embedded player. Browser protection prevents automatic still capture here; pause at a desired timestamp, take a screenshot, choose that still below, then analyze it.");
+   data.streamPlayback={key:item.key,url:r.data.url,expires:r.data.expires||0};
+   renderStreamEmbed();
+   text("bcFrameStatus","BLACKCELL Tube uses one secure embedded player. Choose a frame timestamp, take a screenshot, and use Choose Still Image before analyzing.");
   }catch(err){
    if(seq===data.previewGeneration)placeholder("Bunny Stream preview unavailable: "+String(err.message||err).slice(0,130));
   }
