@@ -8,10 +8,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="BLACKCELL INTELLIGENCE">
 <title>BLACKCELL | Uniform Intelligence Center</title>
-<link rel="stylesheet" href="blackcell-uniform-intelligence.css?v=20261117-learning-video-r1">
+<link rel="stylesheet" href="blackcell-uniform-intelligence.css?v=20261117-visual-memory-r1">
 <link rel="stylesheet" href="blackcell-uniform-approval.css?v=20261117-integrated-r1">
 <script src="corp-config.js" defer></script>
-<script type="module" src="blackcell-uniform-intelligence.js?v=20261117-learning-video-r1"></script>
+<script type="module" src="blackcell-uniform-intelligence.js?v=20261117-visual-memory-r1"></script>
 </head>
 <body>
 <div class="bc-shell">
@@ -184,7 +184,19 @@
     <section class="bc-panel bc-learning-panel"><div class="bc-panel-top"><strong>LEARNING EFFECTIVENESS</strong></div><div id="bcLearningDetails" class="bc-learning-content" role="status" aria-live="polite">Loading correction memory…</div></section>
     <section class="bc-panel bc-learning-panel"><div class="bc-panel-top"><strong>REFERENCE COVERAGE &amp; GAPS</strong></div><div id="bcLearningCoverage" class="bc-learning-content">Checking reference coverage…</div></section>
   </div>
-  <p class="bc-note">This dashboard measures examples, reference use, changes to classifications and coverage. True accuracy requires blind tests on a separate verified evaluation set. It does not alter publication approval, media files or training references.</p>
+  <section class="bc-panel bc-visual-memory-panel" aria-label="Private visual memory index">
+  <div class="bc-panel-top"><strong>VISUAL MEMORY · NEAR-DUPLICATE RECOGNITION</strong><span id="bcVisualMemoryCount">0 INDEXED</span></div>
+  <div class="bc-visual-memory-controls">
+   <p>Compare pixels from your own non-restricted photographs. A 64-bit perceptual fingerprint can tolerate resizing and modest compression; this is not a semantic image embedding.</p>
+   <div class="bc-visual-memory-buttons">
+    <button class="bc-btn bc-btn-primary" type="button" id="bcIndexVisualBatch">Index Next 10 Photos</button>
+    <button class="bc-btn bc-btn-outline" type="button" id="bcFindVisualPairs">Find Similar Photos</button>
+   </div>
+   <p id="bcVisualMemoryStatus" class="bc-note" role="status" aria-live="polite">Ready to index protected photos. No originals are uploaded to new providers.</p>
+   <div id="bcVisualMemoryPairs" class="bc-visual-memory-pairs" aria-label="Similar photograph candidates"></div>
+  </div>
+ </section>
+ <p class="bc-note">Learning metrics are not calibrated AI accuracy. Visual fingerprints detect near-duplicates, not uniforms, identities, or permission to publish. Semantic image embeddings and server-side video processing are separate stages.</p>
  </section>
  <section class="bc-page" id="bcPageAtlas" hidden>
   <div class="bc-section-head"><div><h2>Uniform Reference Atlas</h2><p>Verified reference examples, global country distinctions, and your own corrections. The AI reads these as labeled guidance, not as unquestionable proof.</p></div><span class="bc-scope">CORRECTION MEMORY</span></div>
