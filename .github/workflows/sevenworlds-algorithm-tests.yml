@@ -1,0 +1,35 @@
+name: BLACKCELL Seven Worlds Algorithm Integration
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20261117_seven_worlds_video_interest.sql'
+      - 'blackcell-world-algorithm.js'
+      - 'blackcell-adaptive-ranker.js'
+      - 'corporate-network-personalization.js'
+      - 'mans-armed-forces.js'
+      - 'mans-armed-forces.css'
+      - '*world.html'
+      - 'mans-armed-forces.html'
+      - 'tests/blackcell-sevenworlds-algorithm.test.mjs'
+      - '.github/workflows/sevenworlds-algorithm-tests.yml'
+  workflow_dispatch:
+jobs:
+  sevenworlds-learning:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate code modules
+        run: |
+          node --check blackcell-world-algorithm.js
+          node --check blackcell-adaptive-ranker.js
+          node --check corporate-network-personalization.js
+          node --check mans-armed-forces.js
+      - name: Validate private video and world algorithm behavior
+        run: node --test tests/blackcell-sevenworlds-algorithm.test.mjs
+      - name: Regression-test existing algorithm
+        run: node --test tests/blackcell-adaptive-ranker.test.mjs

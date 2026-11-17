@@ -180,3 +180,17 @@ button:focus-visible,a:focus-visible{outline:2px solid #ef8e98;outline-offset:4p
 .mf-queue-categories button{background:#21131c;border:1px solid #694151;border-radius:9px;color:#fff;padding:10px 6px;min-height:43px;font-size:10px;letter-spacing:.04em;font-weight:800}
 #mfQueueError{color:#f39cae;font-size:11px}
 @media(max-width:600px){.mf-sort-panel{padding:15px}.mf-sort-panel>.mf-primary{width:100%}.mf-queue-categories{grid-template-columns:repeat(2,minmax(0,1fr))}#mfPendingPanel{flex-wrap:wrap}.mf-queue-controls{padding:9px}}
+
+/* Seven Worlds / member-directed adaptive recommendations */
+.mf-lightbox .mf-algorithm-actions{display:flex;flex:1 1 100%;gap:9px;align-items:center;
+ flex-wrap:wrap;border-top:1px solid #ffffff1d;padding:10px 0 0;margin-top:6px}
+.mf-lightbox .mf-algorithm-actions[hidden]{display:none!important}
+.mf-lightbox .mf-algorithm-button{min-height:38px;border-radius:9px;border:1px solid #64505b;
+ padding:8px 12px;color:#f3e8ed;background:#26191f;font-size:11px;letter-spacing:.045em;
+ cursor:pointer;white-space:normal}
+.mf-lightbox .mf-algorithm-button[aria-pressed="true"]{background:#5e2839;border-color:#b26c83}
+.mf-lightbox .mf-algorithm-button:disabled{opacity:.55;cursor:wait}
+.mf-lightbox .mf-algorithm-status{display:block;flex:1 1 180px;color:#c6b3bb;
+ font-size:10px;line-height:1.5}
+@media(max-width:540px){.mf-lightbox .mf-algorithm-actions{gap:6px}
+ .mf-lightbox .mf-algorithm-button{flex:1 1 120px;letter-spacing:0}}
