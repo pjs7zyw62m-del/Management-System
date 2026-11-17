@@ -651,6 +651,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   if(error){toast('Could not update favorites: '+error.message);return}
   if(was)meta.favorites=meta.favorites.filter(x=>x.asset_id!==id||x.user_id!==ownId());
   else meta.favorites.push({asset_id:id,user_id:ownId()});
+   window.dispatchEvent(new CustomEvent('bc:algorithm-signal',{detail:{kind:'photo-favorite'}}));
   render();
   if(!$('applePhotoViewer').hidden){
    const b=$('appleViewerFavorite'),liked=favorited(id);
