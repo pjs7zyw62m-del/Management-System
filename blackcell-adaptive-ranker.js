@@ -5,7 +5,7 @@ const dims=[["military_category",4],["military_branch",3],["military_era",2],["m
 const invalid=new Set(["","unknown","other","unspecified","unsorted","general","none"]);
 const key=(name,value)=>{const v=String(value||"").trim().toLowerCase();return invalid.has(v)?"":name+":"+v};
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
-export function buildBehavioralAffinity(assets=[],tastes=[],favorites=new Set(),engagements=new Map()){
+export function buildBehavioralAffinity(assets=[],tastes=[],favorites=new Set(),engagements=new Map(),videoSignals=new Map()){
  const byId=new Map(assets.map(a=>[a.id,a]));
  const votes=new Map();
  for(const t of tastes){
@@ -28,10 +28,17 @@ export function buildBehavioralAffinity(assets=[],tastes=[],favorites=new Set(),
    if(passive)votes.set(id,(votes.get(id)||0)+passive);
   }
  }
+ // Video playback is weak evidence; an explicit choice is strongest.
+ // All signals remain local to the signed-in member's own authorized rows.
+ for(const [id,signal] of videoSignals){
+  const w=(signal.reaction==="more"?7:signal.reaction==="less"?-11:0)+
+   (signal.reaction==="less"?0:clamp(Number(signal.engaged_views)||0,0,3)*.8);
+  if(w)votes.set(id,(votes.get(id)||0)+w);
+ }
  const scores=new Map();
  for(const [id,weight] of votes){
   const asset=byId.get(id);
-  if(!asset||asset.kind!=="photo"||asset.review_status!=="approved"||asset.adult_restricted===true)continue;
+  if(!asset||!["photo","video"].includes(asset.kind)||asset.review_status!=="approved"||asset.adult_restricted===true)continue;
   for(const [dimension,multiplier] of dims){
    const k=key(dimension,asset[dimension]);if(!k)continue;
    scores.set(k,clamp((scores.get(k)||0)+weight*multiplier,-120,120));
