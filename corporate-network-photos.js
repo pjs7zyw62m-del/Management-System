@@ -1,4 +1,4 @@
-import {placePhotoTransfer} from './blackcell-photo-transfer.js?v=1';
+import {placePhotoTransfer} from './blackcell-photo-transfer.js?v=20261117-parallel-read1';
 /* BLACKCELL NETWORK / Apple Photos × Flickr private corporate library */
 import {createWorldForces} from './corporate-world-forces.js?v=20261110-countries1';
 import {createMilitaryPhotoAI} from './corporate-military-ai.js?v=20261111-adminmove1';

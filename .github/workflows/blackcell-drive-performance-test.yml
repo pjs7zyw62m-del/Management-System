@@ -1,0 +1,35 @@
+name: BLACKCELL Private Drive Download Integrity
+on:
+  pull_request:
+    paths:
+      - 'blackcell-private-drive.js'
+      - 'blackcell-photo-transfer.js'
+      - 'mans-armed-forces.js'
+      - 'corporate-profile-worlds.js'
+      - 'corporate-network-photos.js'
+      - 'corporate-network.js'
+      - 'corporate-network.html'
+      - 'mans-armed-forces.html'
+      - 'tests/blackcell-private-drive.test.mjs'
+      - '.github/workflows/blackcell-drive-performance-test.yml'
+  workflow_dispatch:
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify changed module syntax
+        run: |
+          node --check blackcell-private-drive.js
+          node --check blackcell-photo-transfer.js
+          node --check mans-armed-forces.js
+          node --check corporate-profile-worlds.js
+          node --check corporate-network-photos.js
+          node --check corporate-network.js
+      - name: Verify chunk ordering, bounded parallelism and fail-closed behavior
+        run: node --test tests/blackcell-private-drive.test.mjs
