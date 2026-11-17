@@ -19,7 +19,7 @@ test("Private journal is protected by verified owner access",()=>{
 test("Gunner only gets relevant excerpts, never the full archive",()=>{
  assert.match(backend,/blackcell_gunner_journal_recall/);
  assert.match(backend,/p_limit:entryNo\?1:2/);
- assert.match(backend,/\.slice\(0,400\)/);
+ assert.match(backend,/\.slice\(0,450\)/);
  assert.match(backend,/PRIVATE FICTIONAL JOURNAL EXCERPT/);
  assert.match(backend,/NOT a real historical record/);
 });
