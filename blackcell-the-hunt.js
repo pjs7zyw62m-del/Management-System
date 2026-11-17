@@ -3,6 +3,7 @@
 import {corporateClient,corporateAuthorize} from "./corp-auth.js?v=20261114-transport-classification";
 import {planGunnerProduction} from "./blackcell-gunner-production.js?v=20261117-pulse-r1";
 import {createMissions} from "./blackcell-gunner-command.js?v=20261117-hunt-v1";
+import {chooseHuntGoal,makeDiscoveryChain,makeCollectorRank,makeLivingAtlas,recommendPhotoPace,HUNT_MODES} from "./blackcell-the-hunt-engine.js?v=20261117-h2";
 const client=corporateClient();
 const $=id=>document.getElementById(id);
 const num=v=>Math.max(0,Math.round(Number(v)||0));
@@ -14,7 +15,7 @@ const make=(tag,cls,value)=>{
  if(value!==undefined)node.textContent=String(value);
  return node;
 };
-const state={user:null,snapshot:null,pulse:null,plan:null,goals:[],missions:[],busy:false,day:null,lastFetch:0};
+const state={user:null,snapshot:null,pulse:null,plan:null,goals:[],missions:[],busy:false,day:null,lastFetch:0,mode:"focused",goalId:"",verifiedMatchCount:null,verifySeq:0};
 const day=()=>new Date().toLocaleDateString("en-CA",{timeZone:"America/Los_Angeles"});
 function fail(message){
  $("huntApp").hidden=true;$("huntGate").hidden=false;
@@ -60,9 +61,10 @@ function renderQuotas(){
  }
  const photos=p.photo,videos=p.video;
  set("huntTodayPhotos",fmt(p.photoToday));
- set("huntTarget",photos.ready?fmt(photos.daily):"—");
+ const pace=recommendPhotoPace(p,state.mode);
+ set("huntTarget",pace.ready?fmt(pace.target):"—");
  set("missionDate",photos.ready?"LIVE OWNER ACTIVITY · "+(state.pulse?.timezone||"ACCOUNT TIME"):"WAITING FOR 7+ COMPLETED DAYS");
- set("huntPhotoStatus",photos.ready?"Today's suggested quota: "+fmt(photos.daily):photos.reason);
+ set("huntPhotoStatus",pace.ready?"Mode-adjusted, optional daily target: "+fmt(pace.target):pace.reason);
  set("huntVideoTarget",videos.ready?fmt(videos.weekly)+" / WK":"—");
  set("huntVideoStatus",videos.ready?"Uploaded this week: "+fmt(p.videoThisWeek)+". "+videos.reason:videos.reason);
  set("huntCatchup",photos.ready?fmt(photos.carryover):"—");
@@ -71,10 +73,10 @@ function renderQuotas(){
   (photos.carryover?"Suggested catch-up photos: "+fmt(photos.carryover)+". ":"No photo carryover. ")+
   (photos.pausedByBacklog?"Review backlog is high. ":""):
   "A reliable baseline is not available yet.");
- const label=photos.ready?fmt(p.photoToday)+" / "+fmt(photos.daily)+" complete":"Baseline not yet established";
+ const label=pace.ready?fmt(p.photoToday)+" / "+fmt(pace.target)+" uploaded":"No active daily target";
  set("huntProgressText",label);
- $("huntProgressFill").style.width=photos.ready?Math.min(100,Math.round(p.photoToday/Math.max(1,photos.daily)*100))+"%":"0%";
- set("huntPacingNote",p.method+" "+p.warning);
+ $("huntProgressFill").style.width=pace.ready?Math.min(100,Math.round(p.photoToday/Math.max(1,pace.target)*100))+"%":"0%";
+ set("huntPacingNote",pace.reason+" "+p.method+" "+p.warning);
 }
 function renderBrief(){
  const current=state.missions[0],m=state.snapshot?.media||{},p=state.plan;
@@ -122,11 +124,115 @@ function renderSignals(){
   root.append(card);
  }
 }
+
+/* Hunt 2.0 rewards verified references, not unverified upload volume. */
+function buildRank(){
+ const rank=makeCollectorRank(state.snapshot);
+ set("huntRank","LVL "+rank.level);
+ set("huntRankTitle",rank.title);
+ set("huntXp",fmt(rank.points)+" research points · "+fmt(rank.verified)+" verified references");
+ set("huntRankProgressText",rank.progress+" / "+rank.perRank+" toward next rank");
+ set("huntRankRemaining",rank.needed+" to next");
+ $("huntRankProgress").style.width=rank.percent+"%";
+}
+function buildAtlas(){
+ const a=makeLivingAtlas(state.snapshot),root=$("huntAtlas");
+ root.replaceChildren();
+ set("huntAtlasCoverage",a.worldsRepresented+" / 6 LABELED WORLDS");
+ const largest=Math.max(1,...a.worlds.map(w=>w.count));
+ for(const world of a.worlds){
+  const card=make("article","hunt-card atlas-world"),head=make("div","atlas-world-head");
+  head.append(make("h3","",world.name),make("strong","",fmt(world.count)));
+  const track=make("div","focus-track"),fill=make("span","");
+  fill.style.width=Math.round(100*world.count/largest)+"%";track.append(fill);
+  card.append(head,track,make("small","",world.count?"Catalog records tagged to this world":"No labeled catalog records"));
+  root.append(card);
+ }
+ for(const [id,items] of [["huntAtlasCountries",a.countries],["huntAtlasBranches",a.branches],["huntAtlasEras",a.eras]]){
+  const box=$(id);box.replaceChildren();
+  if(!items.length){box.append(make("p","muted","No labels recorded yet."));continue}
+  for(const item of items){
+   const row=make("div","atlas-tag");
+   row.append(make("span","",item.label),make("strong","",fmt(item.count)));
+   box.append(row);
+  }
+ }
+}
+function buildGoalPicker(){
+ const selected=chooseHuntGoal(state.goals,state.goalId),root=$("huntGoalSelect");
+ root.replaceChildren();
+ const eligible=state.goals.filter(g=>g?.enabled!==false&&["country","world","branch","era"].includes(g?.dimension));
+ if(!selected){
+  const opt=make("option","","No collection goals yet");opt.value="";root.append(opt);root.disabled=true;
+  return null;
+ }
+ root.disabled=false;
+ for(const goal of eligible){
+  const option=make("option","",goal.dimension.toUpperCase()+" / "+goal.value+" · target "+fmt(goal.target_count));
+  option.value=goal.id;option.selected=goal.id===selected.id;root.append(option);
+ }
+ return selected;
+}
+function buildChain(){
+ const goal=buildGoalPicker();
+ const chain=makeDiscoveryChain(state.snapshot,goal,state.verifiedMatchCount);
+ set("huntChainTitle",chain.title);
+ set("huntChainStatus",chain.complete?"CAMPAIGN COMPLETE":!goal?"GOAL REQUIRED":"OPERATION ACTIVE");
+ $("huntChainStatus").dataset.status=chain.complete?"complete":!goal?"empty":"active";
+ const root=$("huntChainSteps");root.replaceChildren();
+ for(const [index,stage] of chain.stages.entries()){
+  const card=make("li","chain-step");card.dataset.state=stage.status;
+  card.append(make("span","chain-stage-num","STAGE "+String(index+1).padStart(2,"0")),
+   make("h3","",stage.name),make("p","",stage.detail),
+   make("small","",stage.status==="done"?"COMPLETE":stage.status==="active"?"IN PROGRESS":"LOCKED"));
+  root.append(card);
+ }
+}
+function currentGoal(){
+ return chooseHuntGoal(state.goals,state.goalId);
+}
+async function loadMatchingVerification(){
+ const goal=currentGoal();
+ const seq=++state.verifySeq;
+ state.verifiedMatchCount=null;
+ if(!goal){buildChain();return}
+ const col={country:"country_code",branch:"branch",world:"world",era:"era"}[goal.dimension];
+ if(!col){buildChain();return}
+ try{
+  const value=goal.dimension==="country"?String(goal.value).toUpperCase():String(goal.value);
+  const result=await client.from("corp_uniform_training_references")
+   .select("id",{count:"exact",head:true})
+   .eq("owner_id",state.user.id)
+   .eq("reference_status","verified").eq(col,value);
+  if(seq!==state.verifySeq)return;
+  state.verifiedMatchCount=result.error?null:Math.max(0,Number(result.count)||0);
+ }catch{if(seq!==state.verifySeq)return;state.verifiedMatchCount=null}
+ buildChain();
+}
+function readMode(){
+ try{
+  const key="bc_hunt_mode_v2_"+state.user.id;
+  const stored=localStorage.getItem(key);
+  state.mode=HUNT_MODES.includes(stored)?stored:"focused";
+ }catch{state.mode="focused"}
+ $("huntMode").value=state.mode;
+}
+function changeMode(mode){
+ if(!HUNT_MODES.includes(mode))return;
+ state.mode=mode;$("huntMode").value=mode;
+ try{localStorage.setItem("bc_hunt_mode_v2_"+state.user.id,mode)}catch{}
+ set("huntModeNote",mode==="paused"?
+  "Campaign paused. Your verified references and collection progress stay intact.":
+  "Using "+mode.toUpperCase()+" optional target pacing. No forced uploads, penalties, or background spending.");
+ $("huntPause").textContent=mode==="paused"?"RESUME CAMPAIGN":"PAUSE CAMPAIGN";
+ if(state.snapshot)renderQuotas();
+}
+
 function draw(){
  const s=state.snapshot;if(!s)return;
  state.plan=state.pulse?planGunnerProduction(state.pulse,s):null;
  state.missions=createMissions(s,state.goals);
- paintFocus(s);renderQuotas();renderBrief();renderMissions();renderSignals();
+ paintFocus(s);renderQuotas();renderBrief();renderMissions();renderSignals();buildRank();buildAtlas();buildChain();
  const updated=s.generated_at?new Date(s.generated_at).toLocaleString():"now";
  set("huntLastRefresh","UPDATED "+updated);
  set("huntConnection",state.pulse?"LEVEL 7 VERIFIED":"LEVEL 7 · PARTIAL DATA");
@@ -147,6 +253,7 @@ async function refresh(){
   state.snapshot=stats.data;state.goals=goals.data||[];
   state.pulse=!pulse.error&&Array.isArray(pulse.data?.daily)?pulse.data:null;
   state.day=day();state.lastFetch=Date.now();draw();
+  await loadMatchingVerification();
  }catch(error){
   set("huntConnection","DATA UNAVAILABLE");
   set("huntLastRefresh","REFRESH FAILED");
@@ -161,7 +268,7 @@ async function boot(){
   if(!auth.ok||!auth.user||auth.member?.role!=="owner"||Number(auth.member?.clearance_level)!==7)throw Error("Level 7 owner authorization is required.");
   const check=await client.rpc("corp_code_status");
   if(check.error||check.data?.ok!==true||check.data?.verified!==true)throw Error("Corporate session verification is required.");
-  state.user=auth.user;
+  state.user=auth.user;readMode();changeMode(state.mode);
   $("huntGate").hidden=true;$("huntApp").hidden=false;
   await refresh();
  }catch(error){fail(error.message||error)}
@@ -170,6 +277,12 @@ $("huntGateRetry").addEventListener("click",()=>void boot());
 $("huntRecalculate").addEventListener("click",()=>void refresh());
 $("huntOpenMission").addEventListener("click",()=>openMission(0));
 $("huntCloseMission").addEventListener("click",()=>{$("huntMissionDetails").hidden=true});
+$("huntMode").addEventListener("change",event=>changeMode(event.target.value));
+$("huntPause").addEventListener("click",()=>changeMode(state.mode==="paused"?"focused":"paused"));
+$("huntGoalSelect").addEventListener("change",()=>{
+ state.goalId=$("huntGoalSelect").value;
+ state.verifiedMatchCount=null;buildChain();void loadMatchingVerification();
+});
 document.addEventListener("visibilitychange",()=>{
  if(!document.hidden&&state.user&&(state.day!==day()||Date.now()-state.lastFetch>180000))void refresh();
 });
