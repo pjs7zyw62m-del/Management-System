@@ -68,7 +68,7 @@ class ChatRequest(BaseModel):
 
 def authorize(authorization: str | None = Header(default=None)) -> None:
     token = os.environ.get("BLACKCELL_AI_INTERNAL_TOKEN", "")
-    if len(token) < 32:
+    if len(token) < 32 or token.startswith("REPLACE_"):
         raise HTTPException(status_code=503, detail="Internal service token not configured")
     if not authorization or not authorization.startswith("Bearer ") or not hmac.compare_digest(
         authorization[len("Bearer "):], token
@@ -105,7 +105,7 @@ async def infer(upstream_env: str, model_env: str, messages: list[dict], max_tok
         raise HTTPException(status_code=503, detail="Private model name is not configured")
     headers = {"Content-Type": "application/json"}
     gpu_key = os.environ.get("BLACKCELL_GPU_API_KEY", "")
-    if gpu_key:
+    if gpu_key and not gpu_key.startswith("REPLACE_"):
         headers["Authorization"] = "Bearer " + gpu_key
     try:
         async with httpx.AsyncClient(timeout=httpx.Timeout(75.0), follow_redirects=False) as client:
