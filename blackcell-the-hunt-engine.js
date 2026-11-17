@@ -85,3 +85,21 @@ export function recommendPhotoPace(plan,mode="focused"){
  return {ready:true,target,mode,
   reason:"Optional "+mode+" pace based on existing quota history. This is not a mandatory obligation."};
 }
+
+
+/** Build only non-sensitive public search terms; never submit filenames or media. */
+export function getHuntSourceQuery(goal){
+ if(!goal||!["country","branch","era","world"].includes(goal.dimension))return "military uniform historical photograph";
+ const value=String(goal.value||"").replace(/[^a-zA-Z0-9 .-]/g," ").trim().slice(0,65);
+ if(!value)return "military uniform historical photograph";
+ if(goal.dimension==="country"){
+  const codes={US:"United States",GB:"United Kingdom",JP:"Japan",DE:"Germany",FR:"France",CA:"Canada",AU:"Australia",IT:"Italy"};
+  return (codes[value.toUpperCase()]||value)+" military uniform";
+ }
+ if(goal.dimension==="branch")return value+" military uniform";
+ if(goal.dimension==="era")return "military uniform "+value;
+ const worlds={military:"military service uniform",police:"police officer uniform",
+  fire:"firefighter uniform",medical:"paramedic uniform",security:"corrections officer uniform",
+  professional:"airline pilot uniform"};
+ return worlds[value.toLowerCase()]||"uniform "+value;
+}

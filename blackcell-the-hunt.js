@@ -3,7 +3,8 @@
 import {corporateClient,corporateAuthorize} from "./corp-auth.js?v=20261114-transport-classification";
 import {planGunnerProduction} from "./blackcell-gunner-production.js?v=20261117-pulse-r1";
 import {createMissions} from "./blackcell-gunner-command.js?v=20261117-hunt-v1";
-import {chooseHuntGoal,makeDiscoveryChain,makeCollectorRank,makeLivingAtlas,recommendPhotoPace,HUNT_MODES} from "./blackcell-the-hunt-engine.js?v=20261117-h2";
+import {chooseHuntGoal,makeDiscoveryChain,makeCollectorRank,makeLivingAtlas,recommendPhotoPace,HUNT_MODES,getHuntSourceQuery} from "./blackcell-the-hunt-engine.js?v=20261117-scout-r1";
+import {mountMilitaryGunner} from "./military-gunner.js?v=20261117-journal-r1";
 const client=corporateClient();
 const $=id=>document.getElementById(id);
 const num=v=>Math.max(0,Math.round(Number(v)||0));
@@ -15,7 +16,7 @@ const make=(tag,cls,value)=>{
  if(value!==undefined)node.textContent=String(value);
  return node;
 };
-const state={user:null,snapshot:null,pulse:null,plan:null,goals:[],missions:[],busy:false,day:null,lastFetch:0,mode:"focused",goalId:"",verifiedMatchCount:null,verifySeq:0};
+const state={user:null,snapshot:null,pulse:null,plan:null,goals:[],missions:[],busy:false,day:null,lastFetch:0,mode:"focused",goalId:"",verifiedMatchCount:null,verifySeq:0,scoutItems:[],scoutBusy:false,scoutLastQuery:"",scoutLastRun:0,companion:null};
 const day=()=>new Date().toLocaleDateString("en-CA",{timeZone:"America/Los_Angeles"});
 function fail(message){
  $("huntApp").hidden=true;$("huntGate").hidden=false;
@@ -126,6 +127,112 @@ function renderSignals(){
 }
 
 /* Hunt 2.0 rewards verified references, not unverified upload volume. */
+
+/* Public-source discovery: opt-in, foreground-only, rate bounded, and read-only. */
+const SCOUT_COOLDOWN=30*60*1000;
+const validUrl=(raw,hosts)=>{
+ try{const u=new URL(raw);return u.protocol==="https:"&&hosts.some(h=>u.hostname===h||u.hostname.endsWith("."+h))?u.href:null}catch{return null}
+};
+function sourcePhrase(){
+ const goal=currentGoal();
+ return getHuntSourceQuery(goal).slice(0,110);
+}
+function syncSourcePhrase(force=false){
+ const input=$("huntScoutQuery");
+ if(force||!input.value.trim()||input.dataset.generated==="yes"){
+  input.value=sourcePhrase();
+  input.dataset.generated="yes";
+ }
+}
+function setScoutState(message,status=""){
+ set("huntScoutStatus",message);
+ $("huntScoutStatus").dataset.state=status;
+}
+function renderSources(){
+ const root=$("huntScoutResults");root.replaceChildren();
+ const records=state.scoutItems;
+ if(!records.length)return;
+ for(const item of records){
+  const page=validUrl(item.source_url,["commons.wikimedia.org"]);
+  const preview=validUrl(item.thumbnail_url,["wikimedia.org","wikipedia.org"]);
+  if(!page||!preview)continue;
+  const card=make("article","scout-result");
+  const img=make("img","");
+  img.src=preview;img.alt="Public archive candidate: "+String(item.title||"Image").slice(0,100);
+  img.loading="lazy";img.referrerPolicy="no-referrer";
+  const body=make("div","scout-result-body");
+  body.append(make("strong","",String(item.title||"Untitled public archive file").slice(0,160)),
+   make("p","","Reported license: "+String(item.license||"Unverified").slice(0,90)),
+   make("small","","Credit: "+String(item.author||"See source page").slice(0,120)));
+  const links=make("div","scout-links"),open=make("a","","REVIEW FILE ↗");
+  open.href=page;open.target="_blank";open.rel="noopener noreferrer";
+  links.append(open);
+  const license=validUrl(item.license_url,["creativecommons.org","wikimedia.org"]);
+  if(license){const a=make("a","","LICENSE ↗");a.href=license;a.target="_blank";a.rel="noopener noreferrer";links.append(a)}
+  body.append(links);card.append(img,body);root.append(card);
+ }
+}
+async function scout({automatic=false}={}){
+ if(state.scoutBusy||!state.user||document.hidden)return;
+ if(automatic&&(!$("huntScoutAuto").checked||state.mode==="paused"))return;
+ const now=Date.now(),query=$("huntScoutQuery").value.replace(/\s+/g," ").trim().slice(0,110);
+ if(query.length<3){setScoutState("Enter at least three public research characters.","error");return}
+ if(automatic&&state.scoutLastQuery===query&&now-state.scoutLastRun<SCOUT_COOLDOWN)return;
+ state.scoutBusy=true;$("huntScoutSearch").disabled=true;
+ setScoutState("Searching public Wikimedia Commons file metadata…");
+ try{
+  const {data,error}=await client.functions.invoke("blackcell-hunt-scout",{body:{query}});
+  if(error){
+   let message=error.message||"Scout request failed";
+   try{const body=await error.context?.json?.();message=body?.error||message}catch{}
+   throw Error(message)
+  }
+  if(!data?.ok||!Array.isArray(data.results))throw Error(data?.error||"Source Scout returned no valid results");
+  state.scoutItems=data.results.slice(0,8);
+  state.scoutLastQuery=query;state.scoutLastRun=Date.now();
+  renderSources();
+  setScoutState(state.scoutItems.length?
+    state.scoutItems.length+" external candidate file"+(state.scoutItems.length===1?"":"s")+
+    " located. Review source, license, attribution, and rights individually. Nothing was imported.":
+    "No licensed metadata candidates found for this query. Try a broader uniform or era.",state.scoutItems.length?"success":"");
+ }catch(error){
+  state.scoutItems=[];renderSources();
+  setScoutState("Source Scout unavailable: "+String(error?.message||error).slice(0,220),"error");
+ }finally{state.scoutBusy=false;$("huntScoutSearch").disabled=false}
+}
+function sourceAutopilotSetting(){
+ try{return localStorage.getItem("bc_hunt_scout_v1_"+state.user.id)==="on"}catch{return false}
+}
+function saveSourceAutopilot(on){
+ try{localStorage.setItem("bc_hunt_scout_v1_"+state.user.id,on?"on":"off")}catch{}
+}
+function initializeGunnerCompanion(){
+ if(state.companion)return;
+ state.companion=mountMilitaryGunner({client,mount:document.body,visible:false,
+  getContext:()=>({
+   page_title:"BLACKCELL THE HUNT / Source Scout / Discovery Chains",
+   collection_mode:true,
+   countries:(state.snapshot?.countries||[]).slice(0,10).map(x=>x.code).filter(x=>/^[A-Z]{2}$/.test(String(x)))
+  })
+ });
+}
+function briefGunner(aboutSources=false){
+ if(!state.companion)return;
+ const goal=currentGoal(),plan=state.plan;
+ const active=goal?"Current operation "+goal.dimension+" "+goal.value+
+  ", target "+num(goal.target_count)+" records. ":"No saved collection goal yet. ";
+ const quota=plan?.photo?.ready?"Today's optional photo target "+num(plan.photo.daily)+
+  ", uploaded today "+num(plan.photoToday)+", pending approval "+num(plan.pending)+". ":"Upload baseline unavailable. ";
+ const results=aboutSources&&state.scoutItems.length?
+  " Commons source candidates (unverified license and identity): "+
+  state.scoutItems.slice(0,3).map(x=>x.title+" ["+x.license+"]").join("; ")+". ":"";
+ const question=aboutSources?
+  "Gunner, prioritize what to investigate from these public archive candidates. Do not claim to have inspected pixels or verified license. ":
+  "Gunner, give me your strongest next collection mission based on these numbers. Only suggest lawful, verified source research. ";
+ state.companion.setPrompt((question+active+quota+results+
+  "I will approve any import, publication or spending.").slice(0,1600));
+}
+
 function buildRank(){
  const rank=makeCollectorRank(state.snapshot);
  set("huntRank","LVL "+rank.level);
@@ -252,8 +359,9 @@ async function refresh(){
   if(goals.error)throw Error("Private collection goals unavailable: "+goals.error.message);
   state.snapshot=stats.data;state.goals=goals.data||[];
   state.pulse=!pulse.error&&Array.isArray(pulse.data?.daily)?pulse.data:null;
-  state.day=day();state.lastFetch=Date.now();draw();
+  state.day=day();state.lastFetch=Date.now();draw();syncSourcePhrase();
   await loadMatchingVerification();
+  if($("huntScoutAuto").checked)void scout({automatic:true});
  }catch(error){
   set("huntConnection","DATA UNAVAILABLE");
   set("huntLastRefresh","REFRESH FAILED");
@@ -269,6 +377,8 @@ async function boot(){
   const check=await client.rpc("corp_code_status");
   if(check.error||check.data?.ok!==true||check.data?.verified!==true)throw Error("Corporate session verification is required.");
   state.user=auth.user;readMode();changeMode(state.mode);
+  $("huntScoutAuto").checked=sourceAutopilotSetting();
+  initializeGunnerCompanion();
   $("huntGate").hidden=true;$("huntApp").hidden=false;
   await refresh();
  }catch(error){fail(error.message||error)}
@@ -277,11 +387,19 @@ $("huntGateRetry").addEventListener("click",()=>void boot());
 $("huntRecalculate").addEventListener("click",()=>void refresh());
 $("huntOpenMission").addEventListener("click",()=>openMission(0));
 $("huntCloseMission").addEventListener("click",()=>{$("huntMissionDetails").hidden=true});
+$("huntScoutSearch").addEventListener("click",()=>void scout());
+$("huntScoutQuery").addEventListener("input",()=>{$("huntScoutQuery").dataset.generated="no"});
+$("huntScoutAuto").addEventListener("change",event=>{
+ saveSourceAutopilot(event.target.checked);
+ if(event.target.checked&&state.snapshot)void scout({automatic:true});
+});
+$("huntGunnerBrief").addEventListener("click",()=>briefGunner(false));
+$("huntScoutGunner").addEventListener("click",()=>briefGunner(true));
 $("huntMode").addEventListener("change",event=>changeMode(event.target.value));
 $("huntPause").addEventListener("click",()=>changeMode(state.mode==="paused"?"focused":"paused"));
 $("huntGoalSelect").addEventListener("change",()=>{
  state.goalId=$("huntGoalSelect").value;
- state.verifiedMatchCount=null;buildChain();void loadMatchingVerification();
+ state.verifiedMatchCount=null;buildChain();syncSourcePhrase(true);void loadMatchingVerification();
 });
 document.addEventListener("visibilitychange",()=>{
  if(!document.hidden&&state.user&&(state.day!==day()||Date.now()-state.lastFetch>180000))void refresh();

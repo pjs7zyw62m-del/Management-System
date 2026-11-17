@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import {
  chooseHuntGoal,goalCatalogCount,makeDiscoveryChain,makeCollectorRank,
- makeLivingAtlas,recommendPhotoPace
+ makeLivingAtlas,getHuntSourceQuery,recommendPhotoPace
 } from "../blackcell-the-hunt-engine.js";
 const stats={
  media:{photos:9,pending:0},references:{verified:7},
@@ -31,3 +31,7 @@ assert.equal(recommendPhotoPace(p,"steady").target,15);
 assert.equal(recommendPhotoPace(p,"paused").ready,false);
 assert.equal(recommendPhotoPace(null).ready,false);
 console.log("The Hunt 2.0 progression tests passed.");
+
+assert.equal(getHuntSourceQuery({dimension:"country",value:"US"}),"United States military uniform");
+assert.equal(getHuntSourceQuery({dimension:"world",value:"police"}),"police officer uniform");
+console.log("Source Scout query tests passed.");
