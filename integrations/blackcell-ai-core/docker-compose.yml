@@ -1,0 +1,18 @@
+services:
+  blackcell-ai-core:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      # Never publicly publish the pilot gateway.
+      - "127.0.0.1:8188:8080"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 64
+    mem_limit: 512m
