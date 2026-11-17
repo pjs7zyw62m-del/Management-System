@@ -11,7 +11,7 @@ const SOURCES=[
  ["post","corp_social_posts","created_at","id,author_id,body,kind,created_at"],
  ["saved","corp_social_tiktok_saves","saved_at","id,user_id,title,military_branch,creator_handle,saved_at"]
 ];
-const data={user:null,owner:false,items:[],learning:[],ai:[],page:"catalog",selected:null,frame:0,blob:"",previewGeneration:0,loading:false,saving:false,videoFrame:null,videoSuggestions:new Map(),videoBusy:false,streamPlayback:null};
+const data={user:null,owner:false,items:[],learning:[],ai:[],page:"catalog",selected:null,frame:0,blob:"",previewGeneration:0,loading:false,saving:false,videoFrame:null,videoSuggestions:new Map(),videoBusy:false,streamPlayback:null,memoryLoaded:false,autopilot:null};
 let gunnerCommand=null;
 const index=SOURCES.map(([type,table,order,fields])=>({type,table,order,fields,skip:0,done:false,error:""}));
 const COUNTRY=typeof Intl.DisplayNames==="function"?new Intl.DisplayNames(["en"],{type:"region"}):null;
@@ -38,6 +38,79 @@ function labels(item){const r=ref(item),a=ai(item);return{world:r?.world||worldT
  category:r?.category||a?.military_category||item.category,uniform:r?.uniform_name||a?.uniform_type||"",
  memory:r?.reference_status||a?.status||"none",confidence:a?.confidence||"unverified"}}
 const canTeach=x=>data.owner&&x&&(x.type==="asset"||x.type==="stream_video")&&(x.kind==="photo"||x.kind==="video")&&x.status!=="rejected";
+
+const BC_AUTOPILOT_STATE="BLACKCELL_AUTOPILOT_STATE_V1";
+const BC_AUTOPILOT_COMMAND="BLACKCELL_AUTOPILOT_COMMAND_V1";
+function postAutopilotCommand(action){
+ const frame=$("bcUploadFrame");
+ if(!data.owner||!frame?.contentWindow)return;
+ frame.contentWindow.postMessage({type:BC_AUTOPILOT_COMMAND,action},location.origin);
+}
+function updateAutopilot(){
+ const x=data.autopilot,on=!!x?.enabled;
+ $("bcAutopilotState").textContent=!x?.ready?"CONNECTING":x.busy?"ANALYZING":on?"ACTIVE":"PAUSED";
+ $("bcAutopilotState").dataset.autopilot=!x?.ready?"connecting":on?"active":"paused";
+ $("bcAutopilotMetrics").textContent=x?.ready?
+  "Unclassified "+Number(x.unclassified||0)+" · AI suggestions "+Number(x.analyzed||0)+
+  " · Requests today "+Number(x.dailyUsed||0)+"/"+Number(x.dailyMax||20):
+  "Waiting for verified private queue";
+ $("bcAutopilotSwitch").disabled=!x?.ready||!data.owner;
+ $("bcAutopilotSwitch").textContent=on?"Pause AI":"Enable AutoPilot";
+ $("bcAutopilotRun").disabled=!x?.ready||!data.owner||!!x.busy;
+}
+function receiveAutopilot(event){
+ const frame=$("bcUploadFrame");
+ if(!data.owner||!frame?.contentWindow||event.source!==frame.contentWindow||event.origin!==location.origin)return;
+ const x=event.data;
+ if(!x||x.type!==BC_AUTOPILOT_STATE||!x.owner||!x.ready)return;
+ const before=data.autopilot;
+ data.autopilot={ready:true,enabled:!!x.enabled,busy:!!x.busy,paused:!!x.paused,
+  unclassified:Math.max(0,Number(x.unclassified)||0),
+  analyzed:Math.max(0,Number(x.analyzed)||0),
+  dailyUsed:Math.max(0,Number(x.dailyUsed)||0),
+  dailyMax:20};
+ updateAutopilot();
+ if(before?.busy&&!x.busy&&data.owner){
+  void loadMemory().catch(()=>{});
+  if(gunnerCommand)void gunnerCommand.refresh();
+ }
+}
+function startAutopilot(){
+ if(!data.owner)return;
+ $("bcAutopilot").hidden=false;
+ const frame=$("bcUploadFrame");
+ if(!frame.getAttribute("src")){
+  frame.addEventListener("load",()=>postAutopilotCommand("status"));
+  frame.src="blackcell-upload-queue.html?v=20261117-autopilot-r4";
+ }else postAutopilotCommand("status");
+ updateAutopilot();
+}
+function classificationStage(item){
+ if(!item||!["asset","stream_video"].includes(item.type)||!["photo","video"].includes(item.kind))return "not_applicable";
+ if(!data.memoryLoaded)return "loading";
+ const references=data.learning.filter(x=>x.source_kind===item.type&&x.source_id===item.id);
+ if(references.some(x=>x.reference_status==="verified"))return "verified";
+ if(item.type==="stream_video")return references.length?"ai_suggested":"needs_ai";
+ const a=ai(item);
+ if(a?.status==="approved")return "verified";
+ if(a?.status==="suggested"){
+  const world=worldTags(a.tags);
+  if(a.confidence==="low"||world==="unsorted"||!world)return "needs_verification";
+  return "ai_suggested";
+ }
+ if(references.length)return "ai_suggested";
+ return "needs_ai";
+}
+const CLASSIFICATION_LABELS={
+ loading:"AI STATUS LOADING",needs_ai:"NEEDS AI ANALYSIS",
+ ai_suggested:"AI CLASSIFIED · UNVERIFIED",
+ needs_verification:"NEEDS VERIFICATION",verified:"CLASSIFICATION VERIFIED",
+ not_applicable:"—"
+};
+const publicationLabel=item=>item.status==="pending"?"PENDING PUBLICATION APPROVAL":
+ item.status==="approved"?"PUBLICATION APPROVED":
+ item.status==="rejected"?"PUBLICATION REJECTED":item.status.toUpperCase();
+
 function renderStreamEmbed(){
  const record=data.streamPlayback,item=data.selected;
  if(!item||item.type!=="stream_video"||!record||record.key!==item.key)return;
@@ -105,7 +178,7 @@ async function loadMemory(){
   db.from("corp_social_ai_analysis").select("asset_id,status,country_code,military_branch,military_category,uniform_type,camouflage_pattern,confidence,tags,notes,original_suggestion").eq("owner_id",data.user.id).limit(1000)
  ]);
  if(r.error)throw Error(r.error.message);
- data.learning=r.data||[];data.ai=a.data||[];
+ data.learning=r.data||[];data.ai=a.data||[];data.memoryLoaded=!a.error;
  if(a.error)text("bcCatalogMeta","AI analysis source unavailable: "+a.error.message);
  render();
 }
@@ -118,12 +191,20 @@ function stats(){
  $("bcLoadMore").hidden=!extra;
  text("bcPagingStatus",items.length+" records indexed"+(extra?" · more available":""));
  text("bcCatalogScope",failed.length?"PARTIAL · "+failed.length+" UNAVAILABLE":"LIVE PRIVATE CATALOG");
- text("bcCatalogMeta",failed.length?failed.map(x=>x.table+": "+x.error).join(" | ").slice(0,170):"Four site catalog sources connected");
+ const stageSummary=data.memoryLoaded?
+  "AI classified "+items.filter(x=>classificationStage(x)==="ai_suggested").length+
+  " · Needs AI "+items.filter(x=>classificationStage(x)==="needs_ai").length+
+  " · Needs verification "+items.filter(x=>classificationStage(x)==="needs_verification").length:
+  "AI classification index loading";
+ text("bcCatalogMeta",failed.length?failed.map(x=>x.table+": "+x.error).join(" | ").slice(0,170):stageSummary);
 }
 function match(item){
  const lab=labels(item),q=$("bcSearch").value.toLowerCase().trim();
  if($("bcFilterKind").value!=="all"&&$("bcFilterKind").value!==item.kind)return false;
- if($("bcFilterStatus").value!=="all"&&$("bcFilterStatus").value!==item.status)return false;
+ const statusFilter=$("bcFilterStatus").value;
+ if(statusFilter!=="all"&&
+   (["needs_ai","ai_suggested","needs_verification","verified"].includes(statusFilter)?
+   classificationStage(item)!==statusFilter:item.status!==statusFilter))return false;
  if($("bcFilterWorld").value!=="all"&&$("bcFilterWorld").value!==lab.world)return false;
  if($("bcFilterSource").value!=="all"&&$("bcFilterSource").value!==item.source)return false;
  return !q||[item.title,item.desc,item.status,item.source,item.category,lab.country,country(lab.country),lab.branch,lab.uniform,...item.tags].join(" ").toLowerCase().includes(q);
@@ -137,7 +218,13 @@ function list(){
   b.type="button";b.dataset.itemKey=item.key;b.setAttribute("role","option");b.setAttribute("aria-selected",String(item.key===data.selected?.key));
   ico.dataset.kind=item.kind;
   name.append(E("strong","",item.title),E("small","",[item.source.toUpperCase(),W[v.world],v.country||"COUNTRY UNKNOWN",v.branch!=="Unspecified"?v.branch:""].filter(Boolean).join(" · ")));
-  const status=E("span","bc-pill",item.status);status.dataset.status=item.status;chips.append(status);
+  const stage=classificationStage(item);
+  if(stage!=="not_applicable"){
+   const label=E("span","bc-pill bc-classification-pill",CLASSIFICATION_LABELS[stage]);
+   label.dataset.status=stage;chips.append(label);
+  }
+  const status=E("span","bc-pill bc-publication-pill",publicationLabel(item));
+  status.dataset.status=item.status;chips.append(status);
   const r=ref(item);if(r){const c=E("span","bc-pill",r.reference_status.toUpperCase());c.dataset.status=r.reference_status;chips.append(c)}
   b.append(ico,name,chips);b.onclick=()=>select(item);h.append(b);
  }
@@ -237,11 +324,11 @@ function select(item){
  text("bcFrameStatus",item.type==="stream_video"?"Loading secure video player… You can choose a still image taken from any frame.":"Pause the video at the frame you want to classify, then select Capture Current Frame.");
  for(const n of $("bcInventory").querySelectorAll("[data-item-key]"))n.setAttribute("aria-selected",String(n.dataset.itemKey===item.key));
  const v=labels(item);
- text("bcSelectionStatus",item.kind.toUpperCase());text("bcItemTitle",item.title);
- text("bcItemSource",item.source.toUpperCase()+" · "+item.status);
+ text("bcSelectionStatus",item.kind.toUpperCase()+" · "+CLASSIFICATION_LABELS[classificationStage(item)]);text("bcItemTitle",item.title);
+ text("bcItemSource",item.source.toUpperCase()+" · "+publicationLabel(item)+" · "+CLASSIFICATION_LABELS[classificationStage(item)]);
  $("bcItemFacts").replaceChildren(fact("UNIFORM WORLD",W[v.world]),fact("COUNTRY",country(v.country)),fact("BRANCH",v.branch),
  fact("CATEGORY",v.category),fact("UNIFORM",v.uniform||"Unidentified"),fact("REFERENCE",v.memory),
- fact("AI CONFIDENCE",v.confidence),fact("ERA",item.era||"Unknown"),fact("FILE SIZE",item.size?(item.size/1048576).toFixed(1)+" MB":"N/A"));
+ fact("AI CONFIDENCE",v.confidence),fact("CLASSIFICATION",CLASSIFICATION_LABELS[classificationStage(item)]),fact("PUBLICATION",publicationLabel(item)),fact("ERA",item.era||"Unknown"),fact("FILE SIZE",item.size?(item.size/1048576).toFixed(1)+" MB":"N/A"));
  $("bcTeachSelected").disabled=!canTeach(item);
  const analyze=$("bcAnalyzeSelected");if(analyze)analyze.disabled=!(item.type==="asset"&&item.kind==="photo"&&item.owner===data.user.id&&!item.adult);
  void preview(item);
@@ -562,10 +649,14 @@ async function boot(){
   $("bcGate").hidden=true;$("bcApp").hidden=false;$("bcConnection").dataset.ready="true";text("bcConnection",data.owner?"LEVEL 7 VERIFIED":"VERIFIED MEMBER");
   if(!data.owner){for(const n of document.querySelectorAll(".bc-tab"))if(n.dataset.tab!=="uploads")n.hidden=true;switchTab("uploads");return}
   gunnerCommand=initGunnerCommand({client:db,userId:a.user.id});
+  startAutopilot();
   switchTab("catalog");await Promise.all([loadCatalog(true),loadMemory().catch(err=>text("bcCatalogMeta","Reference memory unavailable: "+err.message))]);
  }catch(err){$("bcApp").hidden=true;$("bcGate").hidden=false;text("bcGateMessage",err.message||"Access restricted");text("bcConnection","ACCESS REQUIRED")}
 }
 function init(){
+ window.addEventListener("message",receiveAutopilot);
+ $("bcAutopilotSwitch").onclick=()=>postAutopilotCommand(data.autopilot?.enabled?"pause":"enable");
+ $("bcAutopilotRun").onclick=()=>postAutopilotCommand("run");
  for(const b of document.querySelectorAll(".bc-tab"))b.onclick=()=>switchTab(b.dataset.tab);
  for(const id of ["bcSearch","bcFilterKind","bcFilterStatus","bcFilterWorld","bcFilterSource"])$(id).addEventListener(id==="bcSearch"?"input":"change",list);
  $("bcRefreshAll").onclick=()=>{if(data.owner)void Promise.all([loadCatalog(true),loadMemory(),...(gunnerCommand?[gunnerCommand.refresh()]:[])])};
