@@ -14,7 +14,7 @@ async function bounded(req:Request,limit:number){
 function pathFor(uid:string,id:string,mime:string){if(!uuid.test(uid)||!uuid.test(id)||!Object.hasOwn(types,mime))throw Error("INVALID_PATH");return uid+"/"+id+"."+types[mime]}
 Deno.serve(async req=>{
  const origin=req.headers.get("origin")||"";
- const headers={"Access-Control-Allow-Origin":origins.has(origin)?origin:"https://blackcellcorp.com","Access-Control-Allow-Methods":"POST,OPTIONS","Access-Control-Allow-Headers":"authorization,apikey,content-type,x-client-info,x-bc-name,x-bc-category,x-bc-branch,x-bc-orientation","Cache-Control":"private, no-store","Vary":"Origin","X-Content-Type-Options":"nosniff"};
+ const headers={"Access-Control-Allow-Origin":origins.has(origin)?origin:"https://blackcellcorp.com","Access-Control-Allow-Methods":"POST,OPTIONS","Access-Control-Allow-Headers":"authorization,apikey,content-type,x-client-info,x-bc-name,x-bc-category,x-bc-branch,x-bc-orientation,x-bc-rights","Cache-Control":"private, no-store","Vary":"Origin","X-Content-Type-Options":"nosniff"};
  const send=(status:number,body:Record<string,unknown>)=>new Response(JSON.stringify(body),{status,headers:{...headers,"Content-Type":"application/json"}});
  if(req.method==="OPTIONS")return new Response(null,{status:204,headers});
  if(req.method!=="POST"||(origin&&!origins.has(origin)))return send(403,{ok:false,code:"REQUEST_DENIED"});
@@ -60,7 +60,7 @@ Deno.serve(async req=>{
   if(put.status!==201)return send(502,{ok:false,code:"BUNNY_UPLOAD_FAILED"});
   const kind=mime.startsWith("image/")?"photo":"video",tags=["maf:"+category],orientation=req.headers.get("x-bc-orientation")||"unknown";
   if(kind==="video"&&["short","standard","unknown"].includes(orientation))tags.push("bc-video-orientation:"+orientation);
-  const record={id,owner_id:uid,purpose:"library",kind,mime_type:mime,filename,storage_path:path,bytes:bytes.byteLength,source_provider:provider,military_category:category==="unsorted"?"Unsorted":"Uniforms",military_branch:category==="military"?(req.headers.get("x-bc-branch")||"Unspecified").slice(0,60):"Unspecified",military_tags:tags,review_status:"pending",adult_restricted:false,rights_confirmed:false,...(kind==="video"?{video_category:"standard"}:{})};
+  const record={id,owner_id:uid,purpose:"library",kind,mime_type:mime,filename,storage_path:path,bytes:bytes.byteLength,source_provider:provider,military_category:category==="unsorted"?"Unsorted":"Uniforms",military_branch:category==="military"?(req.headers.get("x-bc-branch")||"Unspecified").slice(0,60):"Unspecified",military_tags:tags,review_status:"pending",adult_restricted:false,rights_confirmed:role==="owner"&&Number(member.data?.clearance_level)===7&&req.headers.get("x-bc-rights")==="1",...(kind==="video"?{video_category:"standard"}:{})};
   const added=await db.from("corp_social_assets").insert(record).select("id,review_status,created_at").single();
   if(added.error)return send(502,{ok:false,code:"CATALOG_SAVE_UNCONFIRMED",detail:added.error.message.slice(0,180)});
   return send(200,{ok:true,duplicate:false,record:{...record,...added.data}});
