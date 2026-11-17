@@ -1,6 +1,6 @@
-import {attachPhotoTransfer} from './blackcell-photo-transfer.js?v=1';
+import {attachPhotoTransfer} from './blackcell-photo-transfer.js?v=20261117-parallel-read1';
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261117-os-perf1';
-import {setupBlackcellPhotos} from './corporate-network-photos.js?v=20261114-photos-only';
+import {setupBlackcellPhotos} from './corporate-network-photos.js?v=20261117-parallel-read1';
 import {setupBlackcellStorageStatus} from './corporate-storage-status.js?v=20261111-storage1';
 import {mountMilitaryGunner} from './military-gunner.js?v=20261110-fast4';
 import {createNetworkPersonalization} from './corporate-network-personalization.js?v=20261112-themes5';
@@ -10,7 +10,7 @@ import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phoneche
 import {attachRenderedWorld} from './blackcell-render-player.js?v=4';
 import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261116-render-recovery43';
 import {isWorldVideo,worldVideoTitle,readWorldVideo,createWorldVideoPreviews} from './blackcell-world-video-catalog.js?v=3-playback-priority';
-import {createProfileWorlds} from './corporate-profile-worlds.js?v=20-progressive-previews';
+import {createProfileWorlds} from './corporate-profile-worlds.js?v=20261117-parallel-read1';
 // Pilot only: the private manifest must exist and authorization must pass; otherwise use original playback.
 window.BLACKCELL_ENABLE_RENDER_PLAYBACK=true;
 const client=corporateClient(),bucket=client.storage.from('corp-social-media');
