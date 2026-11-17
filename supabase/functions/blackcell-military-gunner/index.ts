@@ -139,13 +139,45 @@ Deno.serve(async req=>{
    "Recommend the next lawful, accurately sourced uniform uploads from real gaps; if insufficient evidence, say so. Your suggestions are private and need owner approval."
   ].join(" ");
  }
- // Preserve the owner's actual question within Dolphin's payload limit even
- // when additional collection statistics are supplied.
- const question=message.slice(0,420);
- const questionSuffix="\nOwner question: "+question;
- const richMessage=collectionBrief?
-  collectionBrief.slice(0,Math.max(0,1540-questionSuffix.length))+questionSuffix:
-  message;
+ // Fictional journal retrieval: Supabase RLS + owner verified access enforce
+ // privacy. We send only a short relevant excerpt to Gunner's existing Dolphin
+ // service. No new model, paid embedding call, or live media access.
+ let journalBrief="";
+ const journalCue=/\\b(1999|journal|diary|memory|remember|recall|history|first met|we met|meet|meeting|veterans|marines?|corps|sheriff|corrections|uniforms?|ledger|quota|missed|catch.?up|collection)\\b/i;
+ if(journalCue.test(message)){
+  const isMeeting=/\\b(meet|met|meeting|first time|first contact)\\b/i.test(message);
+  const isMissed=/\\b(miss(?:ed|ing)?|catch.?up|quota|target)\\b/i.test(message);
+  const numbered=message.match(/\\b(?:journal\\s*)?(?:page|entry)\\s*(\\d{1,2})\\b/i);
+  const requested=numbered?Number(numbered[1]):null;
+  const entryNo=requested&&requested>=1&&requested<=60?requested:
+   isMeeting?1:isMissed?14:null;
+  const terms=isMeeting?"The Man at the Display Case":
+   isMissed?"The First Missed Target":message.slice(0,240);
+  try{
+   const {data:memories,error:recallError}=await client.rpc("blackcell_gunner_journal_recall",{
+    p_question:terms,p_limit:entryNo?1:2,p_entry_no:entryNo
+   });
+   if(recallError)console.warn("Gunner journal recall unavailable",{code:recallError.code||"UNKNOWN"});
+   else if(Array.isArray(memories)&&memories.length){
+    const fragments=memories.slice(0,2).map(row=>
+     "Entry "+Number(row.entry_no)+" ("+cut(row.entry_date,12)+"), "+
+     cut(row.title,110)+": "+String(row.excerpt||"").replace(/\\s+/g," ").slice(0,400));
+    journalBrief="[PRIVATE FICTIONAL JOURNAL EXCERPT: Proposed Gunner 1999 story canon, NOT a real historical record of the owner. Remain in Gunner's established voice. Modern upload counts and quotas must come from verified live BLACKCELL stats, not fictional 1999 ledger numbers.] "+
+     fragments.join(" | ");
+   }
+  }catch(e){console.warn("Gunner journal retrieval issue",{kind:e?.name||"Error"})}
+ }
+ // Always preserve the owner's question and keep existing collection metrics.
+ // Context is bounded for Dolphin's established message-size limit.
+ const messageTail="\\nOwner question: "+message.slice(0,500);
+ const space=Math.max(0,1540-messageTail.length);
+ const contextParts=collectionBrief||journalBrief?[
+  ...(collectionBrief?[collectionBrief.slice(0,journalBrief?Math.min(620,space):space)]:[]),
+  ...(journalBrief?[journalBrief.slice(0,collectionBrief?Math.min(520,Math.max(0,space-620)):space)]:[])
+ ]:[];
+ const context=contextParts.join("\\n");
+ const richMessage=context?
+  context.slice(0,space)+messageTail:message;
  const payload={action:"start",message:richMessage,photo_context:photoContext,
   page_title:cut(input.page_title||"Military Library",100),
   countries:Array.isArray(input.countries)?input.countries.filter(c=>typeof c==="string"&&/^[A-Z]{2}$/.test(c)).slice(0,12):[],
