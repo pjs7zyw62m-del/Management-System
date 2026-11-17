@@ -129,7 +129,8 @@ export function mountMilitaryGunner({client,getContext,mount=document.body,visib
     action:'start',message:value,
     page_title:String(ctx.page_title||'Military Library').slice(0,100),
     countries:Array.isArray(ctx.countries)?ctx.countries.slice(0,12):[],
-    photo_id:ctx.photo_id||null
+    photo_id:ctx.photo_id||null,
+    collection_mode:ctx.collection_mode===true
    });
    if(started.status!=='pending'||!started.bridge_job_id)throw Error('Dolphin did not return a processing job.');
    await pollJob(started.bridge_job_id,placeholder);
