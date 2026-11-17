@@ -96,3 +96,17 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}a{color:#e6b0bf}
 .bc-pattern-sources h3:not(:first-child){margin-top:14px}
 .bc-reference-help{font-size:10px;color:#afa7b4;line-height:1.6}
 @media(max-width:600px){.bc-atlas-tools{flex-wrap:wrap}.bc-atlas-tools input{flex:1 1 100%}.bc-atlas-tools select{width:100%;max-width:none}.bc-pattern-list{grid-template-columns:1fr;max-height:53vh}}
+
+/* Provisional user-submitted uniform comparison lessons. */
+.bc-comparison-lessons{grid-column:1/-1;border:1px solid #ffffff20;border-radius:13px;padding:15px;background:#18151c}
+.bc-comparison-lessons h3{color:#eee7ed;font-size:12px;letter-spacing:.07em;margin:0 0 8px}
+.bc-comparison-note{font-size:11px;line-height:1.55;color:#b6a8b3;margin:0 0 12px}
+.bc-comparison-group{border-top:1px solid #ffffff1c;padding:13px 0}
+.bc-comparison-group h4{font-size:12px;margin:0 0 5px;font-weight:740}
+.bc-comparison-group>p{font-size:11px;color:#aaa3ae;margin:0 0 10px;line-height:1.55}
+.bc-comparison-countries{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.bc-comparison-country{border:1px solid #ffffff1a;background:#0c0b11;border-radius:11px;padding:11px;min-width:0}
+.bc-comparison-country strong{display:block;font-size:11px;line-height:1.5}
+.bc-comparison-country p{font-size:10px;color:#cac3cb;line-height:1.55;margin:7px 0}
+.bc-comparison-country small{display:block;font-size:9px;color:#c595a2;line-height:1.5}
+@media(max-width:650px){.bc-comparison-countries{grid-template-columns:1fr}}
