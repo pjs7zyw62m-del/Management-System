@@ -1,0 +1,31 @@
+name: Gunner Private Journal Checks
+on:
+  pull_request:
+    paths:
+      - 'supabase/functions/blackcell-military-gunner/index.ts'
+      - 'supabase/migrations/20261117_gunner_private_journal_memory.sql'
+      - 'military-gunner.js'
+      - 'military-gunner.css'
+      - 'blackcell-gunner-command.js'
+      - 'blackcell-uniform-intelligence.js'
+      - 'tests/gunner-journal.test.mjs'
+      - '.github/workflows/gunner-private-journal-test.yml'
+  workflow_dispatch:
+jobs:
+  journal-security:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check UI script syntax
+        run: node --check military-gunner.js
+      - name: Static memory-isolation tests
+        run: node --test tests/gunner-journal.test.mjs
+      - name: Check Deno Edge Function TypeScript syntax
+        run: |
+          npm install --no-save --ignore-scripts esbuild@0.25.12
+          ./node_modules/.bin/esbuild supabase/functions/blackcell-military-gunner/index.ts --bundle --platform=neutral --external:npm:* --outfile=/tmp/blackcell-gunner-check.js
