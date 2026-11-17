@@ -8,9 +8,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="BLACKCELL INTELLIGENCE">
 <title>BLACKCELL | Uniform Intelligence Center</title>
-<link rel="stylesheet" href="blackcell-uniform-intelligence.css?v=20261117-r1">
+<link rel="stylesheet" href="blackcell-uniform-intelligence.css?v=20261117-r2">
 <script src="corp-config.js" defer></script>
-<script type="module" src="blackcell-uniform-intelligence.js?v=20261117-r1"></script>
+<script type="module" src="blackcell-uniform-intelligence.js?v=20261117-r2"></script>
 </head>
 <body>
 <div class="bc-shell">
@@ -84,6 +84,7 @@
       <label><span>EXACT SERVICE / BRANCH</span><input id="bcTrainBranch" maxlength="70" placeholder="e.g. Royal Marines, Bundeswehr Heer"></label>
       <label><span>SUBJECT CATEGORY</span><select id="bcTrainCategory"><option>Unsorted</option><option>Uniforms</option><option>Personnel</option><option>Insignia</option><option>Equipment</option><option>Training</option><option>Operations</option><option>Historical</option><option>Fitness / Exercise</option><option>Ceremonies</option><option>Aircraft</option><option>Ground Vehicles</option><option>Naval Vessels</option><option>Facilities</option><option>Other</option></select></label>
       <label class="bc-col-full"><span>PRECISE UNIFORM DESIGNATION</span><input id="bcTrainUniform" maxlength="160" placeholder="e.g. Royal Marines Commando No. 1 Dress"></label>
+      <label class="bc-col-full"><span>CAMOUFLAGE PATTERN</span><input id="bcTrainPattern" maxlength="130" list="bcPatternOptions" placeholder="e.g. MARPAT, M81 Woodland, Flecktarn"><datalist id="bcPatternOptions"></datalist><small class="bc-reference-help">Pattern alone never proves a country or branch. Check insignia, garment design, provenance and era.</small></label>
       <label><span>ERA (ONLY IF KNOWN)</span><input id="bcTrainEra" maxlength="90" placeholder="e.g. 1990s or 2010–present"></label>
       <label><span>VIDEO FRAME TIME</span><input id="bcTrainTime" type="text" inputmode="numeric" placeholder="00:00 / 01:35" value="00:00"></label>
       <label class="bc-col-full"><span>VISIBLE EVIDENCE — WHY THIS IDENTIFICATION?</span><textarea id="bcTrainEvidence" rows="3" maxlength="1200" placeholder="Describe a legible patch, distinct insignia, construction details, name tape, or official reference supporting this uniform. No guessing from a person's appearance."></textarea></label>
@@ -105,7 +106,7 @@
  <div class="bc-panel bc-pattern-reference">
   <div class="bc-panel-top"><strong>CAMOUFLAGE REFERENCE INDEX · INTERNATIONAL</strong><a href="https://en.wikipedia.org/wiki/List_of_military_clothing_camouflage_patterns" target="_blank" rel="noopener noreferrer">Source / Wikipedia</a></div>
   <p class="bc-note" style="margin:12px 15px 7px">Starter directory summarized from Wikipedia. Patterns may be shared, copied or adapted across national forces; they are clues, not proof of the wearer's country or branch. Each visual claim should be confirmed against markings and a reliable source.</p>
-  <div id="bcPatternReference" class="bc-pattern-list"></div>
+  <div class="bc-atlas-tools"><input type="search" id="bcPatternSearch" placeholder="Find pattern, country, era, variant…" aria-label="Search camouflage pattern index"><select id="bcPatternCountry" aria-label="Filter camouflage country"><option value="all">All origin countries</option></select></div><div id="bcPatternReference" class="bc-pattern-list"></div>
  </div>
   <div class="bc-panel bc-atlas-panel"><div class="bc-panel-top"><strong>REFERENCE KNOWLEDGE BASE</strong><span id="bcAtlasCount">—</span></div><div id="bcAtlas" class="bc-atlas"></div></div>
  </section>

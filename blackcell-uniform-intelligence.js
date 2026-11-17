@@ -1,5 +1,6 @@
 /* BLACKCELL Uniform Intelligence Center | owner-only catalog and learning */
 import {corporateClient,corporateAuthorize} from "./corp-auth.js?v=20261114-transport-classification";
+import {PATTERNS,SOURCES as CAMO_SOURCES,EXTERNAL_SAMPLES} from "./blackcell-camouflage-atlas.js?v=20261117-r2";
 const db=corporateClient();
 const $=id=>document.getElementById(id), E=(tag,cls,value)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(value!==undefined)n.textContent=String(value);return n;};
 const W={military:"Military",police:"Law Enforcement",fire:"Fire & Rescue",medical:"Medical",security:"Corrections / Security",professional:"Aviation / Professional",unsorted:"Unsorted"};
@@ -21,7 +22,7 @@ function wrap(type,r){
  if(type==="asset")return{key:type+":"+r.id,type,id:r.id,title:r.filename||"Media",kind:r.kind,
   owner:r.owner_id,source:r.source_provider==="world-bunny-v1"?"worlds":r.purpose==="post"?"network":"library",
   provider:r.source_provider,path:r.storage_path,date:r.created_at,status:r.review_status||"unknown",adult:!!r.adult_restricted,
-  desc:r.caption||"",world:worldTags(r.military_tags)||(r.military_branch!=="Unspecified"?"military":"unsorted"),
+  desc:r.caption||"",world:worldTags(r.military_tags)||(r.military_branch&&r.military_branch!=="Unspecified"?"military":"unsorted"),
   country:r.military_country_code||"",branch:r.military_branch||"Unspecified",category:r.military_category||"Unsorted",
   era:r.military_era||"",tags:r.military_tags||[],size:Number(r.bytes)||0};
  if(type==="stream_video")return{key:type+":"+r.id,type,id:r.id,title:r.title||r.filename||"Tube video",kind:"video",owner:r.owner_id,source:"tube",date:r.created_at,status:r.review_status||"unknown",adult:!!r.adult_restricted,desc:r.video_synopsis||"",world:"unsorted",country:"",branch:"Unspecified",category:r.video_category||"Unsorted",era:"",tags:[],size:Number(r.bytes)||0};
@@ -41,8 +42,8 @@ function switchTab(page){
  for(const b of document.querySelectorAll(".bc-tab"))b.setAttribute("aria-selected",String(b.dataset.tab===page));
  for(const n of ["catalog","teach","atlas","uploads"])$("bcPage"+n[0].toUpperCase()+n.slice(1)).hidden=n!==page;
  if(page==="teach")fillForm();
- if(page==="atlas")drawAtlas();
- if(page==="uploads"&&!$("bcUploadFrame").src){$("bcUploadFrame").src="blackcell-upload-queue.html?v=20261117-ai-autosort-r3"}
+ if(page==="atlas"){drawAtlas();drawPatterns()}
+ if(page==="uploads"&&!$("bcUploadFrame").getAttribute("src")){$("bcUploadFrame").src="blackcell-upload-queue.html?v=20261117-ai-autosort-r3"}
 }
 async function loadCatalog(reset=false){
  if(data.loading)return;data.loading=true;$("bcRefreshAll").disabled=true;
@@ -182,7 +183,7 @@ function drawAtlas(){
 }
 function render(){stats();list();drawAtlas()}
 function formBlank(){
- for(const id of ["bcTrainCountry","bcTrainUniform","bcTrainEra","bcTrainEvidence","bcTrainLookalikeCountry","bcTrainLookalikeBranch","bcTrainDifferences","bcTrainTags"])$(id).value="";
+ for(const id of ["bcTrainCountry","bcTrainUniform","bcTrainPattern","bcTrainEra","bcTrainEvidence","bcTrainLookalikeCountry","bcTrainLookalikeBranch","bcTrainDifferences","bcTrainTags"])$(id).value="";
  $("bcTrainWorld").value="unsorted";$("bcTrainBranch").value="Unspecified";$("bcTrainCategory").value="Unsorted";$("bcTrainTime").value="00:00";$("bcTrainConfirmed").checked=false;
 }
 function fillForm(exact){
@@ -199,6 +200,7 @@ function fillForm(exact){
  const category=r?.category||current.category;
  $("bcTrainCategory").value=[...$("bcTrainCategory").options].some(o=>o.value===category)?category:"Unsorted";
  $("bcTrainUniform").value=r?.uniform_name||aiResult?.uniform_type||"";
+ $("bcTrainPattern").value=r?.camouflage_pattern||"";
  $("bcTrainEra").value=r?.era||item.era||"";
  $("bcTrainEvidence").value=r?.visual_evidence||aiResult?.notes||"";
  $("bcTrainLookalikeCountry").value=r?.lookalike_country||"";
@@ -220,7 +222,7 @@ function formPayload(status){
   throw Error("Verify the World, add visible evidence (15+ characters), and confirm the annotation. Restricted media stays draft-only.");
  return {owner_id:data.user.id,source_kind:item.type,source_id:item.id,frame_seconds:item.kind==="video"?secs($("bcTrainTime").value):0,
   world,country_code:c,branch:world==="military"?$("bcTrainBranch").value.trim().slice(0,70)||"Unspecified":"Unspecified",
-  category:$("bcTrainCategory").value,uniform_name:$("bcTrainUniform").value.trim().slice(0,160),era:$("bcTrainEra").value.trim().slice(0,90),
+  category:$("bcTrainCategory").value,uniform_name:$("bcTrainUniform").value.trim().slice(0,160),camouflage_pattern:$("bcTrainPattern").value.trim().slice(0,130),era:$("bcTrainEra").value.trim().slice(0,90),
   visual_evidence:evidence.slice(0,1200),lookalike_country:l,lookalike_branch:$("bcTrainLookalikeBranch").value.trim().slice(0,70),
   distinguishing_features:$("bcTrainDifferences").value.trim().slice(0,1000),
   tags:[...new Set($("bcTrainTags").value.split(",").map(x=>x.trim().slice(0,40)).filter(Boolean))].slice(0,15),
