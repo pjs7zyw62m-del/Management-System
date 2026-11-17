@@ -499,7 +499,7 @@ Deno.serve(async req=>{
   const result=await fetch("https://api.openai.com/v1/responses",{
    method:"POST",signal:AbortSignal.timeout(45000),
    headers:{"Authorization":"Bearer "+KEY,"Content-Type":"application/json"},
-   body:JSON.stringify({model:MODEL,store:false,max_output_tokens:1450,
+   body:JSON.stringify({model:MODEL,store:false,max_output_tokens:3000,
     input:[{role:"user",content:[{type:"input_text",text:input.action==="analyze_uniform" ? "Catalog the visible UNIFORM or clothing, without identifying any person, assuming their real employment, or inferring sensitive traits. Choose EXACTLY ONE classification tag from maf:military, maf:police, maf:fire, maf:medical, maf:security (corrections or security), maf:professional (airline pilot or other civilian professional uniform), maf:unsorted. Use maf:unsorted for ordinary clothes, ambiguous uniforms, conflicting cues, or low confidence. Distinguish a firefighter from a paramedic and a police uniform from a corrections uniform using visible markings. Return the selected maf tag in tags; set confidence high only for clear visual evidence, medium for reasonable visual clues, low when unsure. If the image is not a clearly clothed non-explicit uniform photograph, set maf:unsorted and low confidence. For nonmilitary uniforms set military_branch Unspecified and country_code empty. Describe the clothing only in uniform_type; do not infer identity or private characteristics. Return the required schema fields, using empty strings and Unsorted or unknown for irrelevant values." : instructions+memory.text+referenceText+"\nCAMOUFLAGE CANDIDATE COMPARISON: Independently inspect the camouflage fabric, not the background flag or apparent wearer. Report camouflage_visibility=clear, partial, not_visible or not_camouflage. Provide up to THREE distinct plausible named patterns in camouflage_candidates, ranked by approximate visual resemblance (match_score integer 0-100). Explain pattern geometry, scale and color arrangement for each in visual_evidence, and how to distinguish its lookalikes in distinguishing_clue. A model self-score is NOT a calibrated probability and cannot prove country, branch or true issue status. Do not force three alternatives: zero is correct for no identifiable camouflage. Avoid generic names masquerading as a specific pattern. Be conservative for partial/obscured or common woodland camouflage; do not score above 90. If no defensible candidate, camouflage_pattern must be empty. The single camouflage_pattern field is the best proposed name only, never a verified label. If a pattern is merely similar to a known national pattern, state that it is an estimate; no country or branch inference from pattern alone."},
       {type:"input_image",image_url:"data:"+mime+";base64,"+Buffer.from(file).toString("base64"),detail:"auto"}]}],
     text:{format:{type:"json_schema",name:"blackcell_military_photo",strict:true,schema}}})
@@ -516,8 +516,31 @@ Deno.serve(async req=>{
     return response({error:"OpenAI API usage/spending limit reached. Review your OpenAI Platform organization and project limits before retrying.",code:"AI_SPEND_LIMIT"},429,origin);
    return response({error:result.status===401?"AI provider key rejected":result.status===429?"OpenAI API request rate limit reached; try again later.":"AI provider could not analyze this image",code:"AI_PROVIDER_ERROR"},502,origin);
   }
-  const output=payload.output_text||payload.output?.flatMap(x=>x.content||[]).filter(x=>x.type==="output_text").map(x=>x.text).join("")||"";
-  if(!output)return response({error:"AI returned no classification"},502,origin);
+  // HTTP 200 can still contain an incomplete response or a refusal.
+  // Do not invent metadata, publish, or save partial JSON.
+  const state=String(payload?.status||"unknown");
+  const reason=String(payload?.incomplete_details?.reason||"");
+  const refused=payload?.output?.some((part:any)=>
+   (part?.content||[]).some((piece:any)=>piece?.type==="refusal"))||false;
+  const output=(typeof payload?.output_text==="string"&&payload.output_text.trim())||
+   payload?.output?.flatMap((part:any)=>part?.content||[])
+    .filter((part:any)=>part?.type==="output_text"&&typeof part.text==="string")
+    .map((part:any)=>part.text).join("")||"";
+  if(state==="incomplete"||state==="failed"||refused||!output){
+   // Only nonsensitive diagnostic metadata: no image, prompt, filename or output text.
+   console.warn("Uniform vision response not usable",{
+    state,reason:reason||null,refused,
+    output_tokens:payload?.usage?.output_tokens??null,
+    output_item_types:(payload?.output||[]).map((part:any)=>String(part?.type||"unknown")).slice(0,5)
+   });
+   if(refused||reason==="content_filter")
+    return response({error:"AI could not provide a classification for this photograph. It remains private; use Manual Review.",code:"AI_MANUAL_REVIEW_REQUIRED"},422,origin);
+   if(reason==="max_output_tokens")
+    return response({error:"AI response ran out of space before finishing this classification. Retry AI Suggest Uniform; no labels were changed.",code:"AI_OUTPUT_INCOMPLETE"},502,origin);
+   if(state==="failed")
+    return response({error:"AI provider did not complete the classification. Retry or use Manual Review.",code:"AI_RESPONSE_FAILED"},502,origin);
+   return response({error:"AI returned no structured uniform classification. Retry or use Manual Review; your photo remains private.",code:"AI_EMPTY_CLASSIFICATION"},502,origin);
+  }
   const parsed=JSON.parse(output);
   ai=normalized(parsed);
   patternResult=patternMatches(parsed);
