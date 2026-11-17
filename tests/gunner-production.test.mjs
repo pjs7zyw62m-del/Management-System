@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {planGunnerProduction} from '../blackcell-gunner-production.js';
 
 const calculate=(photos, videos=photos.map(()=>0),pending=0)=>planGunnerProduction({
-  daily:photos.map((n,i)=>({day:'2026-11-'+String(i+4).padStart(2,'0'),photos:n,videos:videos[i]})),
+  daily:photos.map((n,i)=>({day:'2026-11-'+String(i+4).padStart(2,'0'),photos:n,videos:(Array.isArray(videos)?videos[i]:0)})),
   summary:{bytes_14d:0}
 },{media:{pending}});
 
