@@ -50,6 +50,7 @@ function onParentMessage(event){
 }
 async function processSafely(options={}){
  if(!owner||!ownerId)return;
+ if(options.manual&&!busy)paused=false;
  const task=()=>process(options);
  if(navigator.locks?.request){
   await navigator.locks.request("blackcell-ai-autopilot-"+ownerId,{ifAvailable:true,mode:"exclusive"},async lock=>{
@@ -101,7 +102,7 @@ function showState(){
   if(!folders.has(key))folders.set(key,[]);
   folders.get(key).push({asset:a,analysis});
  }
- if(!folders.size){list.append(text("p","bc-ai-empty","No private photographs are awaiting sorting."));informParent();return}
+ if(!folders.size){list.append(text("p","bc-ai-empty","No eligible owned photographs need private AI sorting."));informParent();return}
  for(const [folder,items] of [...folders].sort((a,b)=>a[0].localeCompare(b[0]))){
   const details=text("details","bc-ai-folder");
   details.open=folder!=="Pending AI Analysis";
@@ -137,7 +138,7 @@ async function refresh(){
   const {data,error}=await client.from("corp_social_assets")
    .select("id,filename,kind,mime_type,bytes,adult_restricted,source_provider,created_at,review_status")
    .eq("owner_id",ownerId).eq("purpose","library").eq("source_provider","world-bunny-v1")
-   .eq("kind","photo").eq("review_status","pending")
+   .eq("kind","photo").in("review_status",["pending","approved"])
    .order("created_at",{ascending:true}).limit(120);
   if(error)throw error;
   pending=data||[];
@@ -211,10 +212,10 @@ async function process(options={}){
  if(busy||!owner||!ownerId)return;
  busy=true;failures=0;showState();
  const limit=options.manual?Math.max(0,AUTO_LIMIT-dailyCount()):Math.max(0,AUTO_LIMIT-dailyCount());
- if(!limit){busy=false;note("The automatic AI budget (20 analyses today) has been reached. Your photos remain private for manual review.");showState();return}
+ if(!limit){busy=false;paused=!enabled;note("The automatic AI budget (20 analyses today) has been reached. Your photos remain private for manual review.");showState();return}
  await refresh();
  const work=pending.filter(a=>!a.adult_restricted&&!analyses.has(a.id)).slice(0,limit);
- if(!work.length){busy=false;note("All eligible pending photos have AI suggestions, or no photos remain.");showState();return}
+ if(!work.length){busy=false;paused=!enabled;note("All eligible photos have AI suggestions, or no photos remain.");showState();return}
  let completed=0;let skipped=0;
  for(const asset of work){
   if(paused||!ownerId)break;
@@ -234,8 +235,8 @@ async function process(options={}){
   }
   await refresh();
  }
- busy=false;paused=false;activeTask=null;showState();
- if(!failures)note(completed+" photograph(s) sorted into private AI folders. Uncertain items remain in Needs Human Review. Final approval is still yours.");
+ busy=false;paused=!enabled;activeTask=null;showState();
+ if(!failures)note(completed+" photograph(s) classified privately. Uncertain patterns remain unverified; publication approval is separate.");
  else note(completed+" sorted; "+failures+" AI request(s) failed. No original files or publishing status changed.",true);
 }
 function schedule(){
