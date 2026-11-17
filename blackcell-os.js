@@ -587,17 +587,148 @@ window.addEventListener('pagehide',saveWorkspace);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)saveWorkspace()});
 
 const menus=$('osMenu'),menuButtons=[...document.querySelectorAll('[data-menu]')];
+let lastMenuTrigger=null;
+function currentMenuWindow(){
+ if(selectedWindow&&windows.get(selectedWindow.id)===selectedWindow&&!selectedWindow.el.hidden&&!selectedWindow.suspended)return selectedWindow;
+ return [...windows.values()].filter(r=>!r.el.hidden&&!r.suspended&&!r.chatParked).sort((a,b)=>(Number(b.el.style.zIndex)||0)-(Number(a.el.style.zIndex)||0))[0]||null;
+}
+function updateActiveAppMenu(){
+ const button=$('activeAppMenu');if(!button)return;
+ const r=currentMenuWindow();button.textContent=r?(r.title||'Application'):'Desktop';
+ button.title=r?'Active application: '+(r.title||'Application'):'BLACKCELL desktop';
+}
 function closeMenu(){menus.hidden=true;for(const btn of menuButtons)btn.setAttribute('aria-expanded','false')}
-function menuAction(label,fn){const button=document.createElement('button');button.type='button';button.textContent=label;button.onclick=()=>{closeMenu();fn()};menus.append(button)}
-function menu(name,trigger){const was=trigger.getAttribute('aria-expanded')==='true';closeMenu();if(was)return;menus.replaceChildren();trigger.setAttribute('aria-expanded','true');
- if(name==='apps'){for(const tile of document.querySelectorAll('[data-app]'))if(!tile.hidden&&!tile.disabled)menuAction(tile.dataset.title,()=>showApp(tile.dataset.app))}
- else if(name==='window'){menuAction('Show Desktop',showDesktop);for(const record of windows.values())if(!document.querySelector('.app[data-app="'+(record.chatPopout?'chat':record.id)+'"]')?.hidden)menuAction(record.title+(record.suspended?' · Resume':''),()=>showApp(record.id))}
- else{if(owner&&installedApp('administration'))menuAction('Administration',returnAdmin);if(preview||installedApp('settings'))menuAction('Settings',()=>showApp('settings'));menuAction('Show Desktop',showDesktop);if(preview||installedApp('person'))menuAction('My Profile',()=>showApp('person'));menuAction('Lock Screen',()=>lockWorkspace());menuAction('Log Off',()=>lockWorkspace('logoff'));menuAction('Restart',restartWorkspace);menuAction(preview?'Exit Preview':'Sign Out',()=>void signOut())}
+function menuAction(label,fn,{disabled=false}={}){
+ const button=document.createElement('button');button.type='button';button.textContent=label;button.setAttribute('role','menuitem');button.disabled=!!disabled;
+ button.onclick=()=>{closeMenu();try{const result=fn();if(result&&typeof result.catch==='function')void result.catch(()=>osNotice('This action is unavailable. Please try within the application.'))}catch(_){osNotice('This action is unavailable. Please try within the application.')}};
+ menus.append(button);return button;
+}
+function menuDivider(){const el=document.createElement('div');el.className='bc-os-menu-divider';el.setAttribute('role','separator');menus.append(el)}
+function menuOpenApp(id,section=null){openAppOrStore(id,section)}
+function editDocument(){try{const doc=currentMenuWindow()?.frame?.contentDocument;if(doc)return doc}catch(_){}return document}
+function editTarget(doc){const node=doc.activeElement;return node&&(node.matches?.('input:not([type=hidden]),textarea')||node.isContentEditable)?node:null}
+function editTextSelection(){
+ const d=editDocument(),el=editTarget(d);
+ if(el&&typeof el.selectionStart==='number'&&typeof el.value==='string')return el.value.slice(el.selectionStart,el.selectionEnd);
+ try{return d.getSelection()?.toString()||''}catch(_){return ''}
+}
+async function copyMenuSelection(){
+ const text=editTextSelection();if(!text){osNotice('Select text in an application first.');return}
+ if(!navigator.clipboard?.writeText){osNotice('Clipboard access is unavailable. Use Ctrl/Command + C inside the app.');return}
+ try{await navigator.clipboard.writeText(text);osNotice('Selected text copied.')}catch(_){osNotice('Use Ctrl/Command + C inside the app to copy text.')}
+}
+async function pasteMenuClipboard(){
+ const d=editDocument(),el=editTarget(d);
+ if(!el){osNotice('Select an editable field inside the application before pasting.');return}
+ if(!navigator.clipboard?.readText){osNotice('Use Ctrl/Command + V inside the app to paste.');return}
+ try{
+  const text=await navigator.clipboard.readText();
+  el.focus();
+  if(typeof el.setRangeText==='function'&&typeof el.selectionStart==='number'){
+   const start=el.selectionStart,end=el.selectionEnd;el.setRangeText(text,start,end,'end');
+   el.dispatchEvent(new Event('input',{bubbles:true}));
+  }else if(el.isContentEditable){
+   if(!d.execCommand?.('insertText',false,text))osNotice('Use Ctrl/Command + V inside the application.');
+  }
+ }catch(_){osNotice('Browser permissions require using Ctrl/Command + V inside the app.')}
+}
+function selectAllMenuText(){
+ const d=editDocument(),el=editTarget(d);
+ if(!el){osNotice('Select a text field in the application first.');return}
+ el.focus();
+ if(typeof el.select==='function')el.select();
+ else{const sel=d.getSelection(),range=d.createRange();range.selectNodeContents(el);sel.removeAllRanges();sel.addRange(range)}
+}
+function openShortcutsGuide(){
+ let d=$('bcOSMenuHelpDialog');
+ if(!d){
+  d=document.createElement('dialog');d.id='bcOSMenuHelpDialog';d.className='bc-os-help-dialog';
+  const content=document.createElement('div');content.className='bc-os-help-content';
+  const title=document.createElement('h2');title.textContent='BLACKCELL OS · Desktop Help';
+  const description=document.createElement('p');description.textContent='Use the top menu bar to navigate your desktop. App-specific editing tools remain inside each application.';
+  const list=document.createElement('ul');
+  for(const item of ['File — open BLACKCELL Files and Photos','Edit — copy, paste, and select text where permitted','View — show desktop, widgets, or appearance settings','Go — open installed BLACKCELL applications','Window — switch, minimize, or close application windows','System — settings, lock, restart, and sign out','Escape — close an open menu']){
+   const li=document.createElement('li');li.textContent=item;list.append(li);
+  }
+  const done=document.createElement('button');done.type='button';done.textContent='Done';done.onclick=()=>d.close();
+  content.append(title,description,list,done);d.append(content);d.setAttribute('aria-label','BLACKCELL OS desktop help');document.body.append(d);
+ }
+ if(!d.open)d.showModal();
+}
+function menu(name,trigger){
+ const was=trigger.getAttribute('aria-expanded')==='true';closeMenu();if(was)return;
+ menus.replaceChildren();trigger.setAttribute('aria-expanded','true');lastMenuTrigger=trigger;
+ const activeWindow=currentMenuWindow();
+ if(name==='system'){
+  if(owner&&installedApp('administration'))menuAction('Administration',returnAdmin);
+  if(preview||installedApp('settings'))menuAction('System Settings…',()=>showApp('settings'));
+  menuDivider();menuAction('Show Desktop',showDesktop);
+  if(preview||installedApp('person'))menuAction('My Profile',()=>showApp('person'));
+  menuDivider();menuAction('Lock Screen',()=>lockWorkspace());menuAction('Log Off',()=>lockWorkspace('logoff'));menuAction('Restart…',restartWorkspace);
+  menuDivider();menuAction(preview?'Exit Preview':'Sign Out',()=>void signOut());
+ }else if(name==='application'){
+  if(activeWindow){
+   menuAction(activeWindow.title||'Application',()=>raise(activeWindow));menuDivider();
+   menuAction('Minimize '+(activeWindow.title||'Window'),()=>suspend(activeWindow));
+   menuAction('Close '+(activeWindow.title||'Window'),()=>void requestClose(activeWindow));
+  }else{
+   menuAction('About BLACKCELL OS',()=>menuOpenApp('settings','about'));
+   menuAction('Desktop Appearance…',()=>menuOpenApp('settings','appearance'));
+  }
+ }else if(name==='file'){
+  menuAction('Open BLACKCELL Files',()=>menuOpenApp('files'));
+  menuAction('Open BLACKCELL Photos',()=>menuOpenApp('personalphotos'));
+  menuAction('Manage Storage…',()=>menuOpenApp('settings','storage'));
+  if(activeWindow){menuDivider();menuAction('Close Active Window',()=>void requestClose(activeWindow))}
+ }else if(name==='edit'){
+  menuAction('Copy Selected Text',copyMenuSelection);
+  menuAction('Paste into Selected Field',pasteMenuClipboard);
+  menuAction('Select All Text',selectAllMenuText);
+  menuDivider();menuAction('Desktop Preferences…',()=>menuOpenApp('settings','appearance'));
+ }else if(name==='view'){
+  menuAction('Show Desktop',showDesktop);
+  menuAction($('desktop').classList.contains('bc-widgets-hidden')?'Show Widgets':'Hide Widgets',()=>$('bcWidgetsToggle')?.click());
+  menuDivider();menuAction('Appearance Settings…',()=>menuOpenApp('settings','appearance'));
+  menuAction('Full Screen',async()=>{
+   if(!document.fullscreenElement){
+    if(!document.documentElement.requestFullscreen){osNotice('Full-screen mode is unavailable on this device.');return}
+    try{await document.documentElement.requestFullscreen()}catch(_){osNotice('Full-screen mode was blocked by the browser.')}
+   }else if(document.exitFullscreen)await document.exitFullscreen();
+  });
+ }else if(name==='go'||name==='apps'){
+  menuAction('Desktop',showDesktop);
+  menuAction('BLACKCELL Files',()=>menuOpenApp('files'));
+  menuAction('Photos',()=>menuOpenApp('personalphotos'));
+  menuAction('My Profile',()=>menuOpenApp('person'));
+  menuAction('App Store',()=>showApp('store'));
+  menuDivider();
+  for(const tile of document.querySelectorAll('.app[data-app]'))if(!tile.hidden&&!tile.disabled&&!['files','personalphotos','person','store'].includes(tile.dataset.app))menuAction(tile.dataset.title||tile.dataset.app,()=>showApp(tile.dataset.app));
+ }else if(name==='window'){
+  if(activeWindow){menuAction('Minimize '+(activeWindow.title||'Window'),()=>suspend(activeWindow));menuAction('Close Active Window',()=>void requestClose(activeWindow));menuDivider()}
+  menuAction('Show Desktop',showDesktop);
+  for(const record of windows.values())if(!document.querySelector('.app[data-app="'+(record.chatPopout?'chat':record.id)+'"]')?.hidden)menuAction((record===activeWindow?'✓ ':'')+(record.title||'Window')+(record.suspended?' · Resume':''),()=>showApp(record.id));
+ }else if(name==='help'){
+  menuAction('BLACKCELL OS Desktop Help…',openShortcutsGuide);
+  menuAction('System Information…',()=>menuOpenApp('settings','about'));
+ }else if(name==='more'){
+  menuAction('File · Open Files',()=>menuOpenApp('files'));
+  menuAction('Edit · Desktop Preferences',()=>menuOpenApp('settings','appearance'));
+  menuAction('View · Show/Hide Widgets',()=>$('bcWidgetsToggle')?.click());
+  menuAction('Go · Applications',()=>showApp('store'));
+  menuAction('Window · Show Desktop',showDesktop);
+  menuAction('Help · Desktop Guide',openShortcutsGuide);
+ }
  menus.style.left=trigger.offsetLeft+'px';menus.hidden=false;
+ menus.style.left=Math.max(0,Math.min(trigger.offsetLeft,Math.max(0,innerWidth-menus.getBoundingClientRect().width-document.querySelector('.menubar').getBoundingClientRect().left-10)))+'px';
 }
 for(const btn of menuButtons)btn.addEventListener('click',()=>menu(btn.dataset.menu,btn));
 document.addEventListener('pointerdown',e=>{if(!e.target.closest('.menubar'))closeMenu()});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu()});
+document.addEventListener('keydown',e=>{
+ if(e.key==='Escape'&&!menus.hidden){e.preventDefault();closeMenu();lastMenuTrigger?.focus();return}
+ if(menus.hidden||!menus.contains(document.activeElement))return;
+ const options=[...menus.querySelectorAll('button:not(:disabled)')];const idx=options.indexOf(document.activeElement);
+ if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();options[(idx+(e.key==='ArrowDown'?1:-1)+options.length)%options.length]?.focus()}
+});
 function markDock(id,on){document.querySelector('[data-open="'+id+'"]')?.classList.toggle('is-running',on)}
 function chatFrameMessage(r,type,data={}){if(!r?.frame)return;try{r.frame.contentWindow.postMessage({type,...data},location.origin)}catch(_){}}
 function resizeChatForMedia(r,open){
@@ -682,11 +813,11 @@ function parkChat(r){
  r.chatParked=true;r.el.hidden=true;if(selectedWindow===r)selectedWindow=null;
  pauseFrameMedia(r.frame);syncParkedChatBubbles();syncChatVisibility();saveWorkspace();
 }
-function raise(r){if(r.chatParked){applyParkedGeometry(r,r.parkedGeometry);r.parkedGeometry=null;}r.chatParked=false;syncParkedChatBubbles();if(r.closing)r.reopened=true;r.suspended=false;r.el.hidden=false;r.el.style.zIndex=String(++layer);selectedWindow=r;markDock(r.id,true);syncStoreUpdateHold();syncChatVisibility();saveWorkspace()}
-function showDesktop(){closeRecycleBin();for(const r of windows.values())r.el.hidden=true;selectedWindow=null;syncStoreUpdateHold();syncChatVisibility();saveWorkspace()}
-function dispose(r,force=false){if(!force){void requestClose(r);return;}r.updateHold?.();r.updateHold=null;r.cleanup?.();r.frame?.remove();r.el.remove();r.release?.();windows.delete(r.id);syncParkedChatBubbles();markDock(r.id,false);if(selectedWindow===r)selectedWindow=null;syncChatVisibility();saveWorkspace()}
+function raise(r){if(r.chatParked){applyParkedGeometry(r,r.parkedGeometry);r.parkedGeometry=null;}r.chatParked=false;syncParkedChatBubbles();if(r.closing)r.reopened=true;r.suspended=false;r.el.hidden=false;r.el.style.zIndex=String(++layer);selectedWindow=r;markDock(r.id,true);updateActiveAppMenu();syncStoreUpdateHold();syncChatVisibility();saveWorkspace()}
+function showDesktop(){closeRecycleBin();for(const r of windows.values())r.el.hidden=true;selectedWindow=null;updateActiveAppMenu();syncStoreUpdateHold();syncChatVisibility();saveWorkspace()}
+function dispose(r,force=false){if(!force){void requestClose(r);return;}r.updateHold?.();r.updateHold=null;r.cleanup?.();r.frame?.remove();r.el.remove();r.release?.();windows.delete(r.id);syncParkedChatBubbles();markDock(r.id,false);if(selectedWindow===r)selectedWindow=null;updateActiveAppMenu();syncChatVisibility();saveWorkspace()}
 function osNotice(message){let n=$('osCloseNotice');if(!n){n=document.createElement('div');n.id='osCloseNotice';n.className='os-close-notice';n.setAttribute('role','status');$('desktop').append(n)}n.textContent=message;n.hidden=false;clearTimeout(osNotice.timer);osNotice.timer=setTimeout(()=>{n.hidden=true},6000)}
-function suspend(r){r.el.hidden=true;r.suspended=true;markDock(r.id,false);if(selectedWindow===r)selectedWindow=null;syncStoreUpdateHold();syncChatVisibility();saveWorkspace()}
+function suspend(r){r.el.hidden=true;r.suspended=true;markDock(r.id,false);if(selectedWindow===r)selectedWindow=null;updateActiveAppMenu();syncStoreUpdateHold();syncChatVisibility();saveWorkspace()}
 window.addEventListener('message',event=>{if(event.origin!==location.origin)return;const r=windows.get('administration');if(!r?.frame||event.source!==r.frame.contentWindow)return;if(event.data?.type==='blackcell-admin-app-return'){void requestClose(r)}else if(event.data?.type==='blackcell-admin-app-activity'){void activity()}else if(event.data?.type==='blackcell-admin-app-signed-out'){blocked('Your corporate session has ended.');window.top.location.replace('login.html')}});
 function pauseFrameMedia(frame){try{frame.contentWindow?.BLACKCELL_OS_PAUSE_MEDIA?.();for(const m of frame.contentDocument?.querySelectorAll('video,audio')||[])if(!m.paused)m.pause()}catch(_){}}
 async function requestClose(r){
