@@ -62,3 +62,25 @@ export const WORLD_DIRECTORY=Object.freeze([
 /* User-supplied external image exemplar. Classification intentionally unknown.
  * Browser UI opens this link; no media is copied or used for embeddings. */
 export const EXTERNAL_SAMPLES=Object.freeze([{label:"User-supplied camouflage image · unverified",url:"https://i.imgur.com/PfLuTUR.jpeg",status:"unknown",note:"Do not assign country, branch, or pattern without viewing and verifying the image."}]);
+
+/* Candidate examples transcribed from user-submitted three-panel illustration charts.
+ * These labels come from the charts, not from independent verification.
+ * Do not use as verified AI memory or publish source images automatically.
+ */
+export const COUNTRY_COMPARISON_LESSONS=Object.freeze([
+ {group:"Europe · three-country comparison",description:"Composite charts label Germany, Italy, and Spain. Similar tactical silhouettes and camouflage require distinguishing sleeve flags and authenticated insignia.",countries:[
+   {code:"DE",label:"Germany",visualClues:"German tricolor on background and sleeve; camo appears flecked or woodland-style.",warning:"Do not identify Flecktarn or a Bundeswehr branch from this illustration alone."},
+   {code:"IT",label:"Italy",visualClues:"Italian tricolor on background and sleeve; green-brown mottled uniform.",warning:"Exact Italian pattern and branch are unconfirmed."},
+   {code:"ES",label:"Spain",visualClues:"Spanish flag on background and sleeve; darker multicolor camouflage.",warning:"Exact Spanish pattern, force and period are unconfirmed."}
+ ]},
+ {group:"North Africa · three-country comparison",description:"Composite charts label Algeria, Morocco, and Tunisia. Differences in sleeve flags and headgear are more informative than general woodland or arid camouflage.",countries:[
+   {code:"DZ",label:"Algeria",visualClues:"Algerian flag and a green beret; brown-green woodland-style uniform.",warning:"The chart does not authenticate a particular Algerian service or pattern."},
+   {code:"MA",label:"Morocco",visualClues:"Moroccan flag patch and green beret; green-brown woodland-style uniform.",warning:"Similar gear and colors are not proof of Moroccan service."},
+   {code:"TN",label:"Tunisia",visualClues:"Tunisian flag patch, red beret and arid camouflage.",warning:"No verified exact model, uniform issue year or service branch."}
+ ]},
+ {group:"Africa · three-country comparison",description:"Composite charts label Libya, South Africa, and Nigeria. Flag patches differ, while body armor, rifles and gear resemble one another.",countries:[
+   {code:"LY",label:"Libya",visualClues:"Libyan flag patch, black beret, tan desert-style camouflage.",warning:"Specific military organization and historical date not verified."},
+   {code:"ZA",label:"South Africa",visualClues:"South African flag patch, maroon beret, green-brown camouflage.",warning:"Cannot confirm SANDF unit or national issue from this illustration."},
+   {code:"NG",label:"Nigeria",visualClues:"Nigerian flag patch, green beret, green-brown camouflage.",warning:"Cannot confirm a particular Nigerian service or pattern."}
+ ]}
+]);
