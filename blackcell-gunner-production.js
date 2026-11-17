@@ -104,7 +104,8 @@ export function planGunnerProduction(pulse,collection){
   "At least 5 GB of source files were added in 14 days. Review Bunny storage and delivery metrics.");
  return {photo,video,photo7,video7,photo14,video14,pending,previous7:prev7,
   current7,bytes14:byte14,
-  photoToday:whole(days[days.length-1]?.photos),videoToday:whole(days[days.length-1]?.videos),\n  videoThisWeek:whole(video.thisWeekCount),
+  photoToday:whole(days[days.length-1]?.photos),videoToday:whole(days[days.length-1]?.videos),
+  videoThisWeek:whole(video.thisWeekCount),
   alerts,health:alerts.length?"REVIEW GROWTH":"NO CAPACITY ALERTS",
   billingKnown:false,
   warning:"This tracks collection activity, not a provider invoice. Bunny bandwidth, Supabase usage and GPU billing are not connected.",
