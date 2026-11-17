@@ -57,14 +57,29 @@ function videoQuota(days,pending){
  // Videos are often less frequent than photos. Never mark a video day missed
  // simply because no video was uploaded yesterday.
  const baseline=clip(Math.round(count/completed.length*7),1,30);
- const uploadedLast7=sum(completed.slice(-7),"videos");
- const priorWeek=completed.slice(-14,-7);
- const priorCount=sum(priorWeek,"videos");
- const overdue=priorWeek.length>=7?Math.max(0,baseline-priorCount):0;
+ // Compare complete Monday–Sunday calendar weeks, not arbitrary rolling
+ // windows that could falsely classify a partly completed week as "missed".
+ const today=String(days[days.length-1]?.day||"");
+ let priorCount=null,thisWeekCount=0;
+ if(/^\\d{4}-\\d{2}-\\d{2}$/.test(today)){
+  const ms=Date.parse(today+"T00:00:00Z"),oneDay=86400000;
+  const currentMonday=ms-((new Date(ms).getUTCDay()+6)%7)*oneDay;
+  const previousMonday=currentMonday-7*oneDay;
+  const previous=days.filter(x=>{
+   const t=Date.parse(String(x.day)+"T00:00:00Z");
+   return t>=previousMonday&&t<currentMonday;
+  });
+  if(previous.length===7)priorCount=sum(previous,"videos");
+  thisWeekCount=sum(days.filter(x=>{
+   const t=Date.parse(String(x.day)+"T00:00:00Z");
+   return t>=currentMonday&&t<currentMonday+7*oneDay;
+  }),"videos");
+ }
+ const overdue=priorCount===null?0:Math.max(0,baseline-priorCount);
  const overloaded=pending>=Math.max(12,sum(completed.slice(-7),"photos")*2);
  const carryover=overloaded?0:Math.min(baseline,overdue);
  return {ready:true,weekly:baseline+carryover,baseWeekly:baseline,carryover,
-  uploadedLast7,reason:overloaded?
+  thisWeekCount,reason:overloaded?
    "Backlog is high. Review existing media before increasing new video intake.":
    carryover?"The preceding completed week fell short. The suggested weekly video target includes "+
     carryover+" catch-up video"+(carryover===1?"":"s")+". ":
@@ -89,7 +104,7 @@ export function planGunnerProduction(pulse,collection){
   "At least 5 GB of source files were added in 14 days. Review Bunny storage and delivery metrics.");
  return {photo,video,photo7,video7,photo14,video14,pending,previous7:prev7,
   current7,bytes14:byte14,
-  photoToday:whole(days[days.length-1]?.photos),videoToday:whole(days[days.length-1]?.videos),
+  photoToday:whole(days[days.length-1]?.photos),videoToday:whole(days[days.length-1]?.videos),\n  videoThisWeek:whole(video.thisWeekCount),
   alerts,health:alerts.length?"REVIEW GROWTH":"NO CAPACITY ALERTS",
   billingKnown:false,
   warning:"This tracks collection activity, not a provider invoice. Bunny bandwidth, Supabase usage and GPU billing are not connected.",
