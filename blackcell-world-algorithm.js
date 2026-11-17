@@ -51,9 +51,9 @@ export function createWorldAlgorithm({client,getUser,getCurrent,dialog,image,vid
    if(r.error)console.warn('Seven Worlds feedback unavailable',r.error.message);
   paint(active);
  }
- function rank(assets){
+ function rank(assets,catalog=assets){
   if(!enabled())return [...assets];
-  const affinity=buildBehavioralAffinity(assets,[...tastes.values()],favorites,photoSignals,videoSignals);
+  const affinity=buildBehavioralAffinity(catalog,[...tastes.values()],favorites,photoSignals,videoSignals);
   const score=a=>{
    const row=a.kind==='video'?videoSignals.get(a.id):tastes.get(a.id);
    let v=affinity(a);
