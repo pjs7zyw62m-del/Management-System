@@ -149,7 +149,7 @@ export function initGunnerCommand({client,userId}){
    if(quota.ready&&!isVideo&&quota.missedYesterday&&quota.carryover>0)
     card.append(el("b","bc-gunner-missed","MISSED YESTERDAY · QUOTA RECALCULATED"));
    card.append(el("small","",quota.ready?
-    (isVideo?"This week (rolling 7 days): ":"Uploaded today: ")+fmt(progress)+". "+quota.reason:
+    (isVideo?"This calendar week: ":"Uploaded today: ")+fmt(progress)+". "+quota.reason:
     quota.reason));
    if(quota.ready){
     const bar=el("div","bc-gunner-progress"),fill=el("div","bc-gunner-progress-fill");
@@ -159,7 +159,7 @@ export function initGunnerCommand({client,userId}){
    return card;
   };
   root.append(item("PHOTO UPLOAD TARGET",p.photo,p.photoToday,"photo"),
-   item("VIDEO UPLOAD TARGET",p.video,p.video7,"video"));
+   item("VIDEO UPLOAD TARGET",p.video,p.videoThisWeek,"video"));
   const watch=el("div","bc-gunner-production-card bc-gunner-capacity");
   watch.append(el("span","","CAPACITY WATCH"),el("strong","",p.health));
   watch.append(el("small","","Last 7 days: "+fmt(p.current7)+" uploaded assets · Prior 7: "+fmt(p.previous7)+
@@ -252,12 +252,15 @@ export function initGunnerCommand({client,userId}){
  function openGunner(prompt){
   const plan=state.pulse?planGunnerProduction(state.pulse,state.snapshot):null;
   const production=plan?
-   " Production plan from private asset upload history: last 7 days photos "+plan.photo7+
-   ", videos "+plan.video7+", pending review "+plan.pending+
-   ", photo suggested daily quota "+(plan.photo.ready?plan.photo.daily:"baseline unavailable")+
-   ", video suggested daily quota "+(plan.video.ready?plan.video.daily:"baseline unavailable")+
-   ". These are proposals not owner commitments, not verified unique counts or billing. "+plan.warning:"";
-  companion.setPrompt(prompt||("Gunner, evaluate my BLACKCELL uniform collection and give me the top three evidence-based upload missions. Show the real counts, identify missing country and branch examples, and explain your choices."+production).slice(0,1550));
+   "Production: yesterday was "+(plan.photo.missedYesterday?"a missed photo-upload day":"not a missed photo-upload day")+
+   ", today photo quota "+(plan.photo.ready?plan.photo.daily:"baseline unavailable")+
+   ", unfinished photo carryover "+plan.photo.carryover+
+   ", video weekly target "+(plan.video.ready?plan.video.weekly:"baseline unavailable")+
+   ", photos uploaded today "+plan.photoToday+", videos this week "+plan.videoThisWeek+
+   ", review backlog "+plan.pending+". Counts are suggested, not mandatory and not verified as unique. ":"";
+  companion.setPrompt(prompt||("Gunner, "+production+
+   "Tell me what today's realistic photo and video production targets should be and explain any missed-day catch-up. "+
+   "Give three evidence-based upload missions. No mandatory claims or spending without approval.").slice(0,420));
  }
  $("bcGunnerRefresh").onclick=()=>void refresh();
  $("bcGunnerAsk").onclick=()=>openGunner();
