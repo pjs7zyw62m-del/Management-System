@@ -240,3 +240,37 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}a{color:#e6b0bf}
 .bc-tech-queue-item small{color:#b2a9b3;font-size:8px;letter-spacing:.04em}
 .bc-tech-queue-item[aria-pressed=true]{border-color:#c24b6b;background:#60233c66}
 .bc-tech-queue-empty{font-size:10px;color:#a6a2ac;align-self:center;padding:8px 4px}
+
+/* AI learning observability and opt-in video timeline sampling */
+.bc-learning-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;flex:none}
+.bc-learning-metric{border:1px solid #ffffff22;background:linear-gradient(125deg,#17141b,#0e0e13);padding:14px;border-radius:13px;min-width:0}
+.bc-learning-metric strong{display:block;font-size:clamp(18px,2.2vw,29px);color:#eae6ed;line-height:1.2;font-weight:760;letter-spacing:-.04em}
+.bc-learning-metric span{display:block;margin-top:8px;color:#d5aab9;font-size:9px;letter-spacing:.08em;font-weight:770}
+.bc-learning-metric small{display:block;margin-top:5px;color:#9695a0;font-size:10px;line-height:1.55}
+.bc-learning-split{display:grid;grid-template-columns:1fr 1fr;gap:10px;min-height:0;flex:1}
+.bc-learning-panel{display:flex;flex-direction:column}
+.bc-learning-content{flex:1;overflow:auto;padding:12px 15px;min-height:0;scrollbar-width:none}
+.bc-learning-content::-webkit-scrollbar{display:none}
+.bc-learning-detail-row{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #ffffff12;padding:10px 0;font-size:11px}
+.bc-learning-detail-row span{color:#a7a3ae}.bc-learning-detail-row strong{color:#e9e4ec;font-variant-numeric:tabular-nums}
+.bc-learning-note{padding:13px;border-radius:11px;margin-top:13px;border:1px solid #aa4c6742;background:#6b273314;color:#aca6b3;font-size:11px;line-height:1.65}
+.bc-learning-note strong{display:block;color:#e8b5c7;font-size:10px;letter-spacing:.065em}
+.bc-learning-note p{margin:6px 0 0}
+.bc-learning-world-row{display:grid;grid-template-columns:minmax(95px,1fr) minmax(60px,1.4fr) 30px;gap:10px;align-items:center;padding:9px 0;font-size:10px;color:#c5c2cb}
+.bc-learning-world-row strong{text-align:right;font-variant-numeric:tabular-nums}
+.bc-learning-bar{height:7px;border-radius:999px;background:#ffffff12;overflow:hidden}
+.bc-learning-bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#8d2845,#c76480)}
+.bc-video-scan-status{margin:5px 0;color:#a8a4ae;font-size:10px;line-height:1.55}
+.bc-timeline-results{display:flex;gap:7px;overflow:auto;scrollbar-width:none}
+.bc-timeline-results::-webkit-scrollbar{display:none}
+.bc-timeline-result{display:flex;flex-direction:column;min-width:160px;max-width:200px;min-height:65px;padding:10px;gap:5px;border:1px solid #ffffff2a;border-radius:10px;text-align:left;background:#ffffff08;color:#eae5ed}
+.bc-timeline-result:hover{border-color:#bc5473}
+.bc-timeline-result strong{color:#ded5e0;font-size:11px}
+.bc-timeline-result span{font-size:9px;color:#bbb8c1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bc-timeline-result small{font-size:8px;color:#d39ab0}
+@media(max-width:760px){
+ .bc-learning-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .bc-learning-split{grid-template-columns:1fr;overflow:auto}
+ .bc-learning-content{min-height:170px;max-height:35vh}
+ #bcPageLearning{overflow:auto}
+}
