@@ -51,8 +51,8 @@ function updateAutopilot(){
  $("bcAutopilotState").textContent=!x?.ready?"CONNECTING":x.busy?"ANALYZING":on?"ACTIVE":"PAUSED";
  $("bcAutopilotState").dataset.autopilot=!x?.ready?"connecting":on?"active":"paused";
  $("bcAutopilotMetrics").textContent=x?.ready?
-  "Unclassified "+Number(x.unclassified||0)+" · AI suggestions "+Number(x.analyzed||0)+
-  " · Requests today "+Number(x.dailyUsed||0)+"/"+Number(x.dailyMax||20):
+  "Queued for AI "+Number(x.unclassified||0)+" · Loaded AI suggestions "+Number(x.analyzed||0)+
+  " · This browser today "+Number(x.dailyUsed||0)+"/"+Number(x.dailyMax||20):
   "Waiting for verified private queue";
  $("bcAutopilotSwitch").disabled=!x?.ready||!data.owner;
  $("bcAutopilotSwitch").textContent=on?"Pause AI":"Enable AutoPilot";
