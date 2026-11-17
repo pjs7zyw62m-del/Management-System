@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#050507">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BLACKCELL INTELLIGENCE">
+<title>BLACKCELL | Uniform Intelligence Center</title>
+<link rel="stylesheet" href="blackcell-uniform-intelligence.css?v=20261117-r1">
+<script src="corp-config.js" defer></script>
+<script type="module" src="blackcell-uniform-intelligence.js?v=20261117-r1"></script>
+</head>
+<body>
+<div class="bc-shell">
+<header class="bc-head">
+ <div class="bc-identity"><span class="bc-insignia" aria-hidden="true">B</span>
+ <div><small>BLACKCELL OS / VISUAL INTELLIGENCE</small><h1>Uniform Intelligence <em>Center</em></h1>
+ <p>Global uniform recognition · Reference learning · Private media catalog</p></div></div>
+ <div class="bc-head-actions"><span id="bcConnection" class="bc-status">VERIFYING</span><button type="button" id="bcRefreshAll" class="bc-btn bc-btn-outline">↻ Refresh</button></div>
+</header>
+<div id="bcGate" class="bc-gate" role="status"><b>Verifying secure corporate access</b><p id="bcGateMessage">Connecting to your BLACKCELL media and training library…</p><a href="login.html">Corporate Access</a></div>
+<main id="bcApp" hidden>
+ <section class="bc-summary" aria-label="Catalog totals">
+  <article><span>MEDIA RECORDS</span><strong id="bcTotal">—</strong><small>Available inventory</small></article>
+  <article><span>PHOTOGRAPHS</span><strong id="bcPhotos">—</strong><small>Classifiable frames</small></article>
+  <article><span>VIDEOS</span><strong id="bcVideos">—</strong><small>Media + stream</small></article>
+  <article><span>REVIEW QUEUE</span><strong id="bcPending">—</strong><small>Not yet published</small></article>
+  <article><span>TRAINING REFERENCES</span><strong id="bcTrained">—</strong><small>Owner-verified examples</small></article>
+  <article><span>COUNTRIES</span><strong id="bcCountriesCount">—</strong><small>In verified references</small></article>
+ </section>
+ <nav class="bc-tabs" aria-label="Intelligence Center sections">
+  <button type="button" class="bc-tab" data-tab="catalog" aria-selected="true">▦ Content Inventory</button>
+  <button type="button" class="bc-tab" data-tab="teach" aria-selected="false">✧ Teach AI</button>
+  <button type="button" class="bc-tab" data-tab="atlas" aria-selected="false">◎ Uniform Reference Atlas</button>
+  <button type="button" class="bc-tab" data-tab="uploads" aria-selected="false">⇧ Upload Media</button>
+ </nav>
+ <section class="bc-page" id="bcPageCatalog">
+  <div class="bc-section-head"><div><h2>Website Media Inventory</h2><p>Live catalog records: World libraries, BLACKCELL Photos and Network attachments, Tube streams, and Social posts. Private messages and unrelated OS files are not indexed.</p></div><span id="bcCatalogScope" class="bc-scope">SYNCING</span></div>
+  <div class="bc-filters">
+   <label class="bc-search-label"><span>SEARCH</span><input id="bcSearch" type="search" placeholder="Filename, uniform, country, branch or description…" autocomplete="off"></label>
+   <label><span>TYPE</span><select id="bcFilterKind"><option value="all">All content</option><option value="photo">Photos</option><option value="video">Videos</option><option value="post">Posts</option></select></label>
+   <label><span>STATUS</span><select id="bcFilterStatus"><option value="all">Any status</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select></label>
+   <label><span>WORLD</span><select id="bcFilterWorld"><option value="all">All worlds</option><option value="military">Military</option><option value="police">Law Enforcement</option><option value="fire">Fire &amp; Rescue</option><option value="medical">Medical</option><option value="security">Corrections</option><option value="professional">Aviation</option><option value="unsorted">Unsorted</option></select></label>
+   <label><span>SOURCE</span><select id="bcFilterSource"><option value="all">All sources</option><option value="worlds">Worlds / Bunny</option><option value="library">Photo Library</option><option value="network">Network Posts</option><option value="tube">BLACKCELL Tube</option><option value="social">Social Text</option><option value="saved">Saved Clips</option></select></label>
+  </div>
+  <div class="bc-split">
+   <section class="bc-panel bc-inventory-panel" aria-label="Media inventory">
+    <div class="bc-panel-top"><strong>CONTENT INDEX <span id="bcResultCount"></span></strong><span id="bcCatalogMeta">Connecting…</span></div>
+    <div class="bc-inventory" id="bcInventory" role="listbox" aria-label="Available site content"></div>
+    <div class="bc-paging"><button type="button" id="bcLoadMore" class="bc-btn bc-btn-outline" hidden>Load more records</button><small id="bcPagingStatus"></small></div>
+   </section>
+   <section class="bc-panel bc-inspector" aria-label="Selected content details">
+    <div class="bc-panel-top"><strong>CONTENT INSPECTOR</strong><span id="bcSelectionStatus">NONE SELECTED</span></div>
+    <div class="bc-inspector-content">
+     <div id="bcPreview" class="bc-preview"><div class="bc-preview-empty"><span>▧</span><b>Select a photograph or video</b><small>Private files are opened only on demand, under your BLACKCELL session.</small></div></div>
+     <h3 id="bcItemTitle">Select a record</h3>
+     <p id="bcItemSource" class="bc-secondary">Your catalog includes all accessible media records from connected BLACKCELL sources.</p>
+     <div id="bcItemFacts" class="bc-facts"></div>
+     <div class="bc-inspect-actions"><button type="button" id="bcTeachSelected" class="bc-btn bc-btn-primary" disabled>Teach AI · Keep Private</button><button type="button" id="bcOpenAdmin" class="bc-btn bc-btn-outline">Review &amp; Publish</button></div>
+     <p class="bc-note">Adding a training reference does not approve or publish the media. Only the existing Media Administration workflow can change publication status.</p>
+    </div>
+   </section>
+  </div>
+ </section>
+ <section class="bc-page" id="bcPageTeach" hidden>
+  <div class="bc-section-head"><div><h2>Teach BLACKCELL's AI</h2><p>Correct the country, exact service and uniform. Describe what visually distinguishes it from similar uniforms elsewhere in the world.</p></div><span class="bc-scope">PRIVATE TRAINING ONLY</span></div>
+  <div class="bc-teach-layout">
+   <section class="bc-panel bc-teach-source">
+    <div class="bc-panel-top"><strong>REFERENCE PHOTOGRAPH / VIDEO</strong></div>
+    <div id="bcTeachPreview" class="bc-preview"><div class="bc-preview-empty"><span>◎</span><b>Select a catalog item first</b><small>Use Content Inventory → Teach AI.</small></div></div>
+    <h3 id="bcTeachTitle">No reference selected</h3>
+    <p class="bc-secondary" id="bcTeachSourceHint">Only verified owner accounts can teach BLACKCELL.</p>
+    <div id="bcTeachExisting" class="bc-existing">No saved training reference for this item.</div>
+    <p class="bc-note">This uses human-confirmed metadata and does not send the photograph to an external provider. The image stays in its original protected storage.</p>
+   </section>
+   <section class="bc-panel bc-form-panel">
+    <div class="bc-panel-top"><strong>COUNTRY &amp; UNIFORM ANNOTATION</strong><span id="bcReferenceMode">NEW REFERENCE</span></div>
+    <form id="bcTrainForm" autocomplete="off">
+     <div class="bc-form-grid">
+      <label><span>UNIFORM WORLD</span><select id="bcTrainWorld" required><option value="unsorted">Unknown / Unsorted</option><option value="military">Military</option><option value="police">Law Enforcement</option><option value="fire">Firefighter</option><option value="medical">Paramedic / Medical</option><option value="security">Corrections / Security</option><option value="professional">Pilot / Professional</option></select></label>
+      <label><span>COUNTRY OF THE UNIFORM</span><input id="bcTrainCountry" maxlength="2" list="bcCountryOptions" placeholder="US / GB / DE / JP…"><datalist id="bcCountryOptions"></datalist></label>
+      <label><span>EXACT SERVICE / BRANCH</span><input id="bcTrainBranch" maxlength="70" placeholder="e.g. Royal Marines, Bundeswehr Heer"></label>
+      <label><span>SUBJECT CATEGORY</span><select id="bcTrainCategory"><option>Unsorted</option><option>Uniforms</option><option>Personnel</option><option>Insignia</option><option>Equipment</option><option>Training</option><option>Operations</option><option>Historical</option><option>Fitness / Exercise</option><option>Ceremonies</option><option>Aircraft</option><option>Ground Vehicles</option><option>Naval Vessels</option><option>Facilities</option><option>Other</option></select></label>
+      <label class="bc-col-full"><span>PRECISE UNIFORM DESIGNATION</span><input id="bcTrainUniform" maxlength="160" placeholder="e.g. Royal Marines Commando No. 1 Dress"></label>
+      <label><span>ERA (ONLY IF KNOWN)</span><input id="bcTrainEra" maxlength="90" placeholder="e.g. 1990s or 2010–present"></label>
+      <label><span>VIDEO FRAME TIME</span><input id="bcTrainTime" type="text" inputmode="numeric" placeholder="00:00 / 01:35" value="00:00"></label>
+      <label class="bc-col-full"><span>VISIBLE EVIDENCE — WHY THIS IDENTIFICATION?</span><textarea id="bcTrainEvidence" rows="3" maxlength="1200" placeholder="Describe a legible patch, distinct insignia, construction details, name tape, or official reference supporting this uniform. No guessing from a person's appearance."></textarea></label>
+      <label><span>LOOKS SIMILAR TO COUNTRY</span><input id="bcTrainLookalikeCountry" maxlength="2" list="bcCountryOptions" placeholder="Other country's code"></label>
+      <label><span>LOOKS SIMILAR TO BRANCH</span><input id="bcTrainLookalikeBranch" maxlength="70" placeholder="Other service name"></label>
+      <label class="bc-col-full"><span>CRITICAL DIFFERENCES — HOW CAN AI TELL THEM APART?</span><textarea id="bcTrainDifferences" rows="3" maxlength="1000" placeholder="e.g. Distinctive shoulder patch shape, specific badge layout, insignia lettering, tunic cut; if ambiguous, mark Unknown."></textarea></label>
+      <label class="bc-col-full"><span>ADDITIONAL SEARCHABLE TAGS</span><input id="bcTrainTags" maxlength="500" placeholder="insignia, dress blues, shoulder patch, beret, name tape…"></label>
+     </div>
+     <label class="bc-confirm"><input type="checkbox" id="bcTrainConfirmed"><span>I have checked this identification against visible evidence or an authoritative source. Uncertain information should remain a draft.</span></label>
+     <div class="bc-form-actions"><button type="button" id="bcSaveDraft" class="bc-btn bc-btn-outline">Save Suggestion · Draft</button><button type="submit" id="bcVerifyReference" class="bc-btn bc-btn-primary">Verify &amp; Teach AI · Keep Private</button><button type="button" id="bcDeleteReference" class="bc-btn bc-btn-danger" hidden>Remove Reference</button></div>
+     <p id="bcTrainStatus" role="status" class="bc-form-status">References are private annotations. Training does not change publication status or retrain model weights.</p>
+    </form>
+   </section>
+  </div>
+ </section>
+ <section class="bc-page" id="bcPageAtlas" hidden>
+  <div class="bc-section-head"><div><h2>Uniform Reference Atlas</h2><p>Verified reference examples, global country distinctions, and your own corrections. The AI reads these as labeled guidance, not as unquestionable proof.</p></div><span class="bc-scope">CORRECTION MEMORY</span></div>
+  <div class="bc-atlas-totals" id="bcAtlasStats"></div>
+  <div class="bc-panel bc-atlas-panel"><div class="bc-panel-top"><strong>REFERENCE KNOWLEDGE BASE</strong><span id="bcAtlasCount">—</span></div><div id="bcAtlas" class="bc-atlas"></div></div>
+ </section>
+ <section class="bc-page" id="bcPageUploads" hidden>
+  <div class="bc-section-head"><div><h2>Private Media Intake</h2><p>The original Upload Queue is retained inside Uniform Intelligence. Full-resolution originals are preserved; AI sorting remains private.</p></div><span class="bc-scope">UPLOAD / HOLD / SORT</span></div>
+  <div class="bc-upload-panel"><iframe id="bcUploadFrame" title="BLACKCELL private Upload Queue" loading="lazy"></iframe></div>
+ </section>
+ <footer class="bc-footer"><span>BLACKCELL CORPORATION / CONTROL IS EVERYTHING</span><span>Owner-only verification · No automatic public publishing · Verified labels improve future AI suggestions</span></footer>
+</main>
+</div>
+</body>
+</html>
