@@ -292,3 +292,23 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}a{color:#e6b0bf}
 .bc-visual-pair-actions{display:flex;gap:5px;flex-wrap:wrap}
 .bc-visual-pair-actions button{min-height:28px;font-size:9px;padding:5px 8px;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 @media(max-width:680px){.bc-visual-memory-pairs{grid-template-columns:1fr}.bc-visual-memory-buttons button{flex:1}}
+
+/* Phase 2 semantic uniform descriptors — private search, never identification proof. */
+.bc-semantic-panel{flex:none;min-height:0;overflow:visible}
+.bc-semantic-controls{padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.bc-semantic-controls>p:first-child{margin:0;color:#aaa7b2;line-height:1.6;font-size:11px}
+.bc-semantic-actions{display:flex;align-items:flex-end;gap:9px;flex-wrap:wrap}
+.bc-semantic-choose{flex:1 1 260px;display:flex;flex-direction:column;gap:6px;min-width:190px}
+.bc-semantic-choose span{font-size:9px;letter-spacing:.1em;color:#9b9aa6;font-weight:760}
+.bc-semantic-choose select{background:#131319;border:1px solid #ffffff2c;color:#f0eaf0;border-radius:10px;min-height:38px;padding:8px 12px;max-width:100%;font-size:11px}
+.bc-semantic-actions>button{flex:0 1 auto;min-height:38px}
+.bc-semantic-controls>.bc-note{margin:0}
+.bc-semantic-matches{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:9px;max-height:230px;overflow:auto;scrollbar-width:none}
+.bc-semantic-matches::-webkit-scrollbar{display:none}
+.bc-semantic-summary,.bc-semantic-empty{grid-column:1/-1;color:#b3adb9;line-height:1.6;font-size:10px;margin:0}
+.bc-semantic-result{background:linear-gradient(130deg,#211720,#101015);border:1px solid #ffffff22;border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:7px;min-width:0}
+.bc-semantic-result strong{font-size:11px;color:#f0e9ed;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.bc-semantic-score{color:#cd9daf;font-size:10px;font-variant-numeric:tabular-nums}
+.bc-semantic-note{font-size:9px;color:#999}
+.bc-semantic-result button{align-self:flex-start;max-width:100%;min-height:30px;padding:7px 11px}
+@media(max-width:680px){.bc-semantic-actions>button{flex:1 1 auto}.bc-semantic-matches{grid-template-columns:1fr}}

@@ -8,10 +8,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="BLACKCELL INTELLIGENCE">
 <title>BLACKCELL | Uniform Intelligence Center</title>
-<link rel="stylesheet" href="blackcell-uniform-intelligence.css?v=20261117-visual-memory-r1">
+<link rel="stylesheet" href="blackcell-uniform-intelligence.css?v=20261117-semantic-memory-r1">
 <link rel="stylesheet" href="blackcell-uniform-approval.css?v=20261117-integrated-r1">
 <script src="corp-config.js" defer></script>
-<script type="module" src="blackcell-uniform-intelligence.js?v=20261117-visual-memory-r1"></script>
+<script type="module" src="blackcell-uniform-intelligence.js?v=20261117-semantic-memory-r1"></script>
 </head>
 <body>
 <div class="bc-shell">
@@ -196,7 +196,20 @@
    <div id="bcVisualMemoryPairs" class="bc-visual-memory-pairs" aria-label="Similar photograph candidates"></div>
   </div>
  </section>
- <p class="bc-note">Learning metrics are not calibrated AI accuracy. Visual fingerprints detect near-duplicates, not uniforms, identities, or permission to publish. Semantic image embeddings and server-side video processing are separate stages.</p>
+ <section class="bc-panel bc-semantic-panel" aria-label="Semantic uniform similarity memory">
+  <div class="bc-panel-top"><strong>SEMANTIC UNIFORM MEMORY · FIND SIMILAR UNIFORMS</strong><span id="bcSemanticCount">0 INDEXED</span></div>
+  <div class="bc-semantic-controls">
+   <p>Compare uniform, camouflage, insignia, and equipment descriptions from BLACKCELL's existing photo analyses. This uses private text embeddings rather than direct pixel embeddings, so results are suggestions—not verified identifications.</p>
+   <div class="bc-semantic-actions">
+    <button type="button" class="bc-btn bc-btn-primary" id="bcSemanticIndex">Index Next 10 Uniforms</button>
+    <label class="bc-semantic-choose"><span>REFERENCE PHOTO</span><select id="bcSemanticSource" aria-label="Choose an indexed photo to find similar uniforms"><option value="">Select an indexed photo</option></select></label>
+    <button type="button" class="bc-btn bc-btn-outline" id="bcSemanticFind">Find Similar Uniforms</button>
+   </div>
+   <p class="bc-note" id="bcSemanticStatus" role="status" aria-live="polite">Index only when you approve sending existing uniform descriptions to the external embedding provider. Original photos are not sent.</p>
+   <div id="bcSemanticMatches" class="bc-semantic-matches" aria-label="Semantically similar uniform photographs"></div>
+  </div>
+ </section>
+ <p class="bc-note">Similarity scores compare existing AI descriptions—not identities, statistical probabilities, or country/branch verification. Automatic server-side video processing and direct image embeddings are still separate enhancements.</p>
  </section>
  <section class="bc-page" id="bcPageAtlas" hidden>
   <div class="bc-section-head"><div><h2>Uniform Reference Atlas</h2><p>Verified reference examples, global country distinctions, and your own corrections. The AI reads these as labeled guidance, not as unquestionable proof.</p></div><span class="bc-scope">CORRECTION MEMORY</span></div>
