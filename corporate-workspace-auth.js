@@ -1,4 +1,4 @@
-import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-clearance5';
+import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261117-os-perf1';
 
 const gate=document.getElementById('opGate');
 const gateMessage=document.getElementById('opGateMessage');
