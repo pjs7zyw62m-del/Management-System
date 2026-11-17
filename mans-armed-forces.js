@@ -226,7 +226,7 @@ async function openViewer(a,{queue=false}={}){
 async function render(){
  const token=++renderToken,grid=$('mfPhotoGrid');if(!grid)return;
  worldPhotoObserver?.disconnect();worldPhotoObserver=null;worldPhotoJobs=[];
- shown=worldAlgorithm.rank(approved.filter(matches));
+ shown=worldAlgorithm.rank(approved.filter(matches),approved);
  const pages=Math.max(1,Math.ceil(shown.length/sizeLimit));
  page=Math.max(0,Math.min(page,pages-1));
  const visible=shown.slice(page*sizeLimit,(page+1)*sizeLimit);
