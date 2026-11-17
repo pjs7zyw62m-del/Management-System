@@ -198,3 +198,28 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}a{color:#e6b0bf}
 #bcFrameStillPreview[hidden]{display:none}
 #bcAnalyzeVideoFrame{width:100%;min-height:36px;font-size:11px}
 @media(max-width:760px){.bc-video-frame-actions{flex-direction:column}.bc-preview iframe{min-height:170px}.bc-video-still-picker{min-height:38px}}
+
+/* BLACKCELL AUTO-PILOT · ownership-protected classification, independent publication review */
+.bc-autopilot-bar{display:flex;align-items:center;gap:16px;min-width:0;flex:none;border:1px solid #7a3554aa;border-radius:13px;padding:11px 13px;background:linear-gradient(120deg,#2d161f,#101017 52%,#17151b)}
+.bc-autopilot-bar[hidden]{display:none}
+.bc-autopilot-brand{display:flex;align-items:center;gap:11px;min-width:200px;flex:1}
+.bc-autopilot-brand>div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.bc-autopilot-brand strong{font-size:11px;letter-spacing:.10em;color:#f3d3df}
+.bc-autopilot-brand small{font-size:9px;line-height:1.45;color:#aaa1ae}
+.bc-autopilot-mark{display:grid;place-items:center;width:35px;height:35px;flex:none;border-radius:10px;background:#68283c;color:#ffe1ed;font-size:19px}
+.bc-autopilot-readout{display:flex;flex-direction:column;align-items:flex-end;min-width:150px;max-width:280px;gap:5px}
+.bc-autopilot-readout strong{font-size:10px;letter-spacing:.1em;color:#e4adbd}
+.bc-autopilot-readout strong[data-autopilot=active]{color:#9ed9b5}
+.bc-autopilot-readout strong[data-autopilot=paused]{color:#eecaa0}
+.bc-autopilot-readout small{font-size:9px;line-height:1.4;text-align:right;color:#b6aab7}
+.bc-autopilot-actions{display:flex;gap:6px;flex:none;align-items:center}
+.bc-autopilot-actions .bc-btn{font-size:10px;min-height:35px;padding:8px 12px}
+.bc-review-explainer{margin:-4px 0 0;min-width:0;font-size:9px;color:#aca3af;line-height:1.5}
+.bc-review-explainer strong{color:#dfbdc9}
+.bc-pill.bc-classification-pill{max-width:170px;overflow:hidden;text-overflow:ellipsis;font-size:8px;letter-spacing:.025em}
+.bc-pill.bc-publication-pill{max-width:170px;overflow:hidden;text-overflow:ellipsis;font-size:8px;letter-spacing:.025em}
+.bc-pill[data-status=needs_ai]{color:#d7b1a2;border-color:#9c644e;background:#4e33247a}
+.bc-pill[data-status=ai_suggested]{color:#c6d9ec;border-color:#54738b;background:#2238476e}
+.bc-pill[data-status=needs_verification]{color:#f3c289;border-color:#896335;background:#4130177d}
+@media(max-width:1150px){.bc-autopilot-bar{flex-wrap:wrap;gap:10px}.bc-autopilot-brand{flex-basis:65%}.bc-autopilot-readout{margin-left:auto}.bc-autopilot-actions{width:100%;justify-content:flex-end}}
+@media(max-width:680px){.bc-autopilot-bar{padding:10px;gap:7px}.bc-autopilot-brand{flex-basis:100%}.bc-autopilot-readout{max-width:100%;align-items:flex-start;margin:0;min-width:0}.bc-autopilot-readout small{text-align:left}.bc-autopilot-actions{margin-left:auto;width:auto}.bc-autopilot-actions .bc-btn{font-size:9px;padding:7px 8px}.bc-pill.bc-classification-pill,.bc-pill.bc-publication-pill{max-width:104px;font-size:7px}.bc-list-row{grid-template-columns:30px minmax(0,1fr) auto;gap:7px}.bc-list-icon{width:30px;height:30px}.bc-list-main strong{font-size:10px}.bc-list-tags{max-width:108px}}
