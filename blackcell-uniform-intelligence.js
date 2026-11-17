@@ -181,7 +181,34 @@ function drawAtlas(){
   right.append(badge,edit);c.append(left,right);root.append(c);
  }
 }
-function render(){stats();list();drawAtlas()}
+function drawPatterns(){
+ const root=$("bcPatternReference");if(!root)return;
+ const q=$("bcPatternSearch").value.toLowerCase().trim(),filter=$("bcPatternCountry").value;
+ const hits=PATTERNS.filter(p=>(filter==="all"||p.origin===filter)&&
+  [p.name,p.family,p.uses,p.era,p.origin,p.distinguish].join(" ").toLowerCase().includes(q));
+ root.replaceChildren(E("p","bc-pattern-total",hits.length+" source-indexed camouflage patterns. Human verification required."));
+ for(const p of hits){
+  const row=E("article","bc-pattern-item"),head=E("div","bc-pattern-top"),lhs=E("div");
+  lhs.append(E("h3","",p.name),E("small","",[p.family,p.era,p.origin==="multiple"?"Multinational":country(p.origin)].join(" · ")));
+  const source=E("a","bc-pattern-source","View source");source.href=CAMO_SOURCES[p.source].url;
+  source.target="_blank";source.rel="noopener noreferrer";head.append(lhs,source);
+  row.append(head,E("p","","Reported uses: "+p.uses),E("p","bc-pattern-diff","Distinguishing clues: "+p.distinguish),E("span","bc-pattern-flag",p.status));
+  root.append(row);
+ }
+ if(!hits.length)root.append(E("p","bc-empty","No indexed camouflage patterns match this filter."));
+ const sources=E("section","bc-pattern-sources");sources.append(E("h3","","RESEARCH SOURCES"));
+ for(const source of Object.values(CAMO_SOURCES)){
+  const link=E("a","bc-pattern-source",source.name);link.href=source.url;link.target="_blank";link.rel="noopener noreferrer";
+  sources.append(link,E("p","",source.note));
+ }
+ sources.append(E("h3","","SUBMITTED IMAGE · UNVERIFIED"));
+ for(const sample of EXTERNAL_SAMPLES){
+  const link=E("a","bc-pattern-source","Open original reference image");link.href=sample.url;link.target="_blank";link.rel="noopener noreferrer";
+  sources.append(link,E("p","",sample.note));
+ }
+ root.append(sources);
+}
+function render(){stats();list();drawAtlas();drawPatterns()}
 function formBlank(){
  for(const id of ["bcTrainCountry","bcTrainUniform","bcTrainPattern","bcTrainEra","bcTrainEvidence","bcTrainLookalikeCountry","bcTrainLookalikeBranch","bcTrainDifferences","bcTrainTags"])$(id).value="";
  $("bcTrainWorld").value="unsorted";$("bcTrainBranch").value="Unspecified";$("bcTrainCategory").value="Unsorted";$("bcTrainTime").value="00:00";$("bcTrainConfirmed").checked=false;
@@ -290,6 +317,11 @@ function init(){
  window.addEventListener("pagehide",clearPreview);
  const names="US GB CA AU NZ FR DE NL PL UA RU CN TW JP KR SG IN ID PH TH VN TR IL SE FI NO DK CH AT BE IT ES PT GR CZ RO RS BR AR ZA EG PK AE SA MX".split(" ");
  for(const code of names){const option=document.createElement("option");option.value=code;option.label=country(code);$("bcCountryOptions").append(option)}
+ const namesUsed=new Set();
+ for(const pattern of PATTERNS)if(!namesUsed.has(pattern.name)){namesUsed.add(pattern.name);const opt=document.createElement("option");opt.value=pattern.name;$("bcPatternOptions").append(opt)}
+ for(const origin of [...new Set(PATTERNS.map(p=>p.origin))].sort()){const opt=document.createElement("option");opt.value=origin;opt.textContent=origin==="multiple"?"Multinational":country(origin);$("bcPatternCountry").append(opt)}
+ $("bcPatternSearch").addEventListener("input",drawPatterns);
+ $("bcPatternCountry").addEventListener("change",drawPatterns);
  void boot();
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
