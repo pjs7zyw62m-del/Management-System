@@ -96,7 +96,7 @@ test('Every Seven Worlds page loads the updated signed-in algorithm',()=>{
  assert.match(src,/worldAlgorithm\.mount\(\)/);
  assert.match(src,/worldAlgorithm\.open\(a\)/);
  assert.match(src,/worldAlgorithm\.close\(\)/);
- assert.match(src,/worldAlgorithm\.rank\(approved\.filter\(matches\)\)/);
+ assert.match(src,/worldAlgorithm\.rank\(approved\.filter\(matches\),approved\)/);
  const personal=readFileSync('corporate-network-personalization.js','utf8');
  assert.match(personal,/corp_social_video_interest/);
  assert.match(personal,/videoSignals/);
