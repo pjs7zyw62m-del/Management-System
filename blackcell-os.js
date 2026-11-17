@@ -299,7 +299,7 @@ function setDockPin(id,pinned){
  let saved=false;const record=JSON.stringify(Object.fromEntries(dockOverrides));void cloudWorkspaceSave('dock',record);for(const {name,store} of preferenceStores()){try{store.setItem(dockPreferenceKey(),record);if(name==='localStorage'&&store.getItem(dockPreferenceKey())===record)saved=true}catch(_){}}
  syncDockTile(tile);osNotice((tile.dataset.title||'App')+(pinned?' added to Dock.':' removed from Dock.')+(saved?'':' Preference could not be saved permanently on this device.'));if(pinned&&desktopPrefs.dockAutoHide)dockReveal(true)
 }
-function initStore(uid){storeProfile=uid;readWorldInstalls();readAppLocks();readDockPreferences();readAppLayout();clearStore('Checking app permissions…')}
+function initStore(uid){storeProfile=uid;readWorldInstalls();readAppLocks();readDockPreferences();readAppLayout();clearStore('Checking app permissions…');window.dispatchEvent(new Event('blackcell:widget-sync'))}
 function syncStore(){
  if(preview)return;
  for(const tile of document.querySelectorAll('.app[data-app]')){
