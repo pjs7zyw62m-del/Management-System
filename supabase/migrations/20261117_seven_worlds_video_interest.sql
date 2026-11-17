@@ -47,7 +47,7 @@ create or replace function public.corp_record_video_engagement(p_asset_id uuid)
 returns boolean
 language plpgsql security invoker set search_path to ''
 as $fn$
-declare v_uid uuid := (select auth.uid()); v_saved boolean := false;
+declare v_uid uuid := (select auth.uid()); v_rows integer := 0;
 begin
  if v_uid is null or not (select corp_private.social_verified())
   or (select corp_private.is_ledger_only()) then return false; end if;
@@ -64,8 +64,8 @@ begin
      last_engaged_at=now(),updated_at=now()
  where public.corp_social_video_interest.last_engaged_at is null
     or public.corp_social_video_interest.last_engaged_at<=now()-interval '15 seconds';
- get diagnostics v_saved = row_count;
- return v_saved;
+ get diagnostics v_rows = row_count;
+ return v_rows > 0;
 end
 $fn$;
 revoke all on function public.corp_record_video_engagement(uuid) from public,anon;
