@@ -9,6 +9,7 @@ import {uploadPrivateFile,mediaType,privateUploadError} from './blackcell-privat
 
 import {installWorldPlayer} from './blackcell-world-player.js?v=2';
 import {isWorldVideo,worldVideoTitle,createWorldVideoPreviews} from './blackcell-world-video-catalog.js?v=1';
+import {createWorldAlgorithm} from './blackcell-world-algorithm.js?v=20261117-sevenworlds-r1';
 const $=id=>document.getElementById(id);
 let approved=[],shown=[],filterBranch='all',filterStyle='all',filterCategory='all',lastSigned=0,authorized=null;
 let authBusy=false;
@@ -23,6 +24,13 @@ const uploadState={user:null,assets:[]};
 const bucket=corporate.storage.from('corp-social-media');
 const worldProvider='world-bunny-v1';
 const worldVideoPreviews=createWorldVideoPreviews(corporate);
+const worldAlgorithm=createWorldAlgorithm({
+ client:corporate,getUser:()=>authorized?.user,getCurrent:()=>viewerAsset,
+ dialog:document.getElementById('mfLightbox'),
+ image:document.getElementById('mfViewerImage'),
+ video:document.getElementById('mfViewerVideo'),
+ onUpdated:()=>{if(authorized)void render()}
+});
 const mediaTitle=a=>a.kind==='video'?worldVideoTitle(a):(safe(a.caption)||safe(a.filename)||'Uniform photograph');
 const worldObjects=new Map();
 let worldPhotoObserver=null,worldPhotoJobs=[],worldPhotoActive=0;
@@ -202,6 +210,7 @@ async function openViewer(a,{queue=false}={}){
  if(queue)text($('mfQueuePosition'),(queueIndex+1)+' / '+unsortedQueue().length+' · POSTED · NEEDS CATEGORY');
  $('mfMoveCategory').value=inferCategory(a);
  if(!dialog.open)dialog.showModal();
+ worldAlgorithm.open(a);
  if(isVideo){
   video._blackcellPlayer?.message('Loading private video…');
   try{
@@ -217,7 +226,7 @@ async function openViewer(a,{queue=false}={}){
 async function render(){
  const token=++renderToken,grid=$('mfPhotoGrid');if(!grid)return;
  worldPhotoObserver?.disconnect();worldPhotoObserver=null;worldPhotoJobs=[];
- shown=approved.filter(matches);
+ shown=worldAlgorithm.rank(approved.filter(matches));
  const pages=Math.max(1,Math.ceil(shown.length/sizeLimit));
  page=Math.max(0,Math.min(page,pages-1));
  const visible=shown.slice(page*sizeLimit,(page+1)*sizeLimit);
@@ -597,6 +606,7 @@ function ensureMediaUI(){
 }
 function wire(){
  ensureMediaUI();
+ worldAlgorithm.mount();
  installWorldPlayer($('mfViewerVideo'),$('mfLightbox'));
  const rename=document.createElement('button');rename.type='button';rename.id='mfRenameVideo';rename.className='mf-secondary';rename.textContent='Edit title';rename.hidden=true;
  $('mfViewerTitle')?.parentElement?.append(rename);
@@ -649,7 +659,7 @@ function wire(){
  $('mfCloseViewer')?.addEventListener('click',()=>dialog?.close());
  dialog?.addEventListener('click',e=>{if(e.target===dialog)dialog.close()});
  $('mfViewerVideo')?.addEventListener('error',()=>{if(viewerAsset?.kind==='video'&&$('mfViewerVideo').getAttribute('src'))text($('mfTransferStatus'),'This video could not be played on this device. Try an MP4 encoded in H.264.')});
- dialog?.addEventListener('close',()=>{viewerRequest++;const v=$('mfViewerVideo');v.pause();v.removeAttribute('src');v.load();v._blackcellPlayer?.show(false);v.hidden=true;$('mfViewerImage').hidden=false;$('mfViewerImage').removeAttribute('src');sortingQueue=false;viewerAsset=null;$('mfQueueControls').hidden=true;$('mfTransferPhotos').hidden=false;});
+ dialog?.addEventListener('close',()=>{worldAlgorithm.close();viewerRequest++;const v=$('mfViewerVideo');v.pause();v.removeAttribute('src');v.load();v._blackcellPlayer?.show(false);v.hidden=true;$('mfViewerImage').hidden=false;$('mfViewerImage').removeAttribute('src');sortingQueue=false;viewerAsset=null;$('mfQueueControls').hidden=true;$('mfTransferPhotos').hidden=false;});
  document.querySelectorAll('.mf-portrait img').forEach(image=>{
   image.addEventListener('error',()=>{
    image.style.opacity='0';
@@ -709,7 +719,8 @@ async function boot(){
  $('mfPortal').href=authorized.member.role==='owner'?'dashboard.html':'employee.html';
  uploadState.user=authorized.user;
  $('mfAiOption').hidden=!!worldScope||!owner();$('mfDirectOption').hidden=!owner();
- await loadApproved();
+ await Promise.all([loadApproved(),worldAlgorithm.load()]);
+ if(worldAlgorithm.enabled())await render();
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)void securityCheck()});
  window.addEventListener('focus',()=>void securityCheck());
  corporate.auth.onAuthStateChange(event=>{
