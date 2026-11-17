@@ -609,12 +609,27 @@ async function save(status){
  if(data.saving)return;data.saving=true;
  try{
   const payload=formPayload(status);
-  if(status==="verified"&&!confirm("Verify this evidence-based uniform reference for BLACKCELL AI? Your original photo or video stays private and publication status will NOT change."))return;
+  if(status==="verified"&&!confirm("Verify this uniform reference? For a rights-confirmed, non-restricted photograph, BLACKCELL will also check whether all five automatic-publication requirements are met. A 100% verified checklist may publish it; otherwise it remains pending. Videos are not auto-published."))return;
   const r=await db.from("corp_uniform_training_references").upsert(payload,{onConflict:"owner_id,source_kind,source_id,frame_seconds"}).select("*").single();
   if(r.error)throw r.error;
   const i=data.learning.findIndex(x=>x.id===r.data.id);if(i<0)data.learning.unshift(r.data);else data.learning[i]=r.data;
   data.frame=r.data.frame_seconds;render();$("bcDeleteReference").hidden=false;text("bcReferenceMode",status.toUpperCase());
-  text("bcTrainStatus",status==="verified"?"Verified reference saved. Future photo AI may consult this evidence. Nothing was published.":"Private draft saved. It won't affect AI until verified.");
+  let publishingNote="";
+  if(status==="verified"&&payload.source_kind==="asset"&&data.selected?.kind==="photo"&&data.selected?.status==="pending"){
+   try{
+    const result=await db.rpc("blackcell_uniform_auto_publish_100",{p_asset_id:payload.source_id});
+    if(result.error)throw result.error;
+    if(result.data?.approved){
+     data.selected.status="approved";
+     const row=data.ai.find(x=>x.asset_id===payload.source_id);if(row)row.status="approved";
+     publishingNote=" 100/100 verification checks passed: publication approved and filed automatically.";
+     render();
+    }else if(result.data?.ok){
+     publishingNote=" Auto-publish readiness "+Number(result.data.readiness||0)+"/100; remains pending for your publication approval.";
+    }
+   }catch(err){publishingNote=" Auto-publish check unavailable; photo remains pending. "+String(err.message||err).slice(0,110)}
+  }
+  text("bcTrainStatus",status==="verified"?"Verified reference saved. Future photo AI may consult this evidence."+publishingNote:"Private draft saved. It won't affect AI until verified.");
  }catch(err){text("bcTrainStatus","Save failed: "+String(err.message||err).slice(0,200))}
  finally{data.saving=false}
 }
@@ -636,7 +651,19 @@ async function analyze(){
   if(!r.data?.analysis)throw Error(r.data?.error||"AI returned no classification");
   const i=data.ai.findIndex(x=>x.asset_id===item.id);
   if(i<0)data.ai.push(r.data.analysis);else data.ai[i]=r.data.analysis;
-  render();switchTab("teach");text("bcTrainStatus","AI suggestions loaded. Review and correct visible evidence before saving as a verified example.");
+  let approvalText="AI suggestions loaded. Review and correct visible evidence before saving as a verified example.";
+  if(item.status==="pending"){
+   try{
+    const gate=await db.rpc("blackcell_uniform_auto_publish_100",{p_asset_id:item.id});
+    if(gate.error)throw gate.error;
+    if(gate.data?.approved){
+     item.status="approved";
+     const row=data.ai.find(x=>x.asset_id===item.id);if(row)row.status="approved";
+     approvalText="All five verification checks passed (100/100). Photo automatically published to its approved album.";
+    }else if(gate.data?.ok)approvalText="AI analyzed privately; publication checklist "+Number(gate.data.readiness||0)+"/100. Approval remains yours until 100/100. AI confidence alone is not proof.";
+   }catch(error){approvalText="AI suggestions saved. Auto-publication check unavailable; photo remains pending: "+String(error.message||error).slice(0,115)}
+  }
+  render();switchTab("teach");text("bcTrainStatus",approvalText);
  }catch(err){alert("AI classification unavailable: "+String(err.message||err).slice(0,200))}
  finally{if(button)button.disabled=false}
 }
