@@ -81,7 +81,7 @@ function startAutopilot(){
  const frame=$("bcUploadFrame");
  if(!frame.getAttribute("src")){
   frame.addEventListener("load",()=>postAutopilotCommand("status"));
-  frame.src="blackcell-upload-queue.html?v=20261117-autopilot-r5";
+  frame.src="blackcell-upload-queue.html?v=20261117-verified100-r1";
  }else postAutopilotCommand("status");
  updateAutopilot();
 }
