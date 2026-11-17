@@ -4,7 +4,7 @@
  * Shared visibility remains subject to existing review policy.
  */
 import {authorizeUniformHub,corporate} from './uniform-hub-auth.js?v=20261112-access2';
-import {createPrivateDrive,PRIVATE_FILE_LIMIT} from './blackcell-private-drive.js?v=1';
+import {createPrivateDrive,PRIVATE_FILE_LIMIT} from './blackcell-private-drive.js?v=20261117-throughput1';
 import {uploadPrivateFile,mediaType,privateUploadError} from './blackcell-private-media.js?v=8-transfer';
 
 import {installWorldPlayer} from './blackcell-world-player.js?v=2';
