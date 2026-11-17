@@ -223,3 +223,20 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}a{color:#e6b0bf}
 .bc-pill[data-status=needs_verification]{color:#f3c289;border-color:#896335;background:#4130177d}
 @media(max-width:1150px){.bc-autopilot-bar{flex-wrap:wrap;gap:10px}.bc-autopilot-brand{flex-basis:65%}.bc-autopilot-readout{margin-left:auto}.bc-autopilot-actions{width:100%;justify-content:flex-end}}
 @media(max-width:680px){.bc-autopilot-bar{padding:10px;gap:7px}.bc-autopilot-brand{flex-basis:100%}.bc-autopilot-readout{max-width:100%;align-items:flex-start;margin:0;min-width:0}.bc-autopilot-readout small{text-align:left}.bc-autopilot-actions{margin-left:auto;width:auto}.bc-autopilot-actions .bc-btn{font-size:9px;padding:7px 8px}.bc-pill.bc-classification-pill,.bc-pill.bc-publication-pill{max-width:104px;font-size:7px}.bc-list-row{grid-template-columns:30px minmax(0,1fr) auto;gap:7px}.bc-list-icon{width:30px;height:30px}.bc-list-main strong{font-size:10px}.bc-list-tags{max-width:108px}}
+
+/* Stage navigation: incoming -> Tech AI -> review -> completed. No new media copies. */
+.bc-tabs{overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain}
+.bc-tabs::-webkit-scrollbar{display:none}
+.bc-flow-arrow{flex:none;color:#955063;font-size:21px;line-height:1;user-select:none}
+.bc-stage-tab{flex:1 0 auto;min-width:max-content}
+.bc-stage-count{display:inline-flex;align-items:center;justify-content:center;min-width:22px;padding:2px 6px;border:1px solid #ffffff26;border-radius:999px;background:#ffffff10;color:#e7e2e9;font-variant-numeric:tabular-nums;font-size:10px}
+.bc-tech-queue-panel{flex:none;display:flex;flex-direction:column;gap:9px;padding:10px 13px;border:1px solid #ffffff20;border-radius:13px;background:linear-gradient(120deg,#1a151d,#0d0c11);min-height:0}
+.bc-tech-queue-panel>strong{font-size:9px;letter-spacing:.09em;color:#c7b6c4}
+.bc-tech-queue-panel>strong span{color:#e7e5e9;margin-left:6px}
+.bc-tech-queue{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;min-height:57px;align-items:stretch}
+.bc-tech-queue::-webkit-scrollbar{display:none}
+.bc-tech-queue-item{width:184px;min-width:184px;max-width:184px;border:1px solid #ffffff22;border-radius:10px;background:#ffffff08;color:#e9e6ed;padding:9px 10px;text-align:left;display:flex;flex-direction:column;gap:5px;font-size:10px}
+.bc-tech-queue-item span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%}
+.bc-tech-queue-item small{color:#b2a9b3;font-size:8px;letter-spacing:.04em}
+.bc-tech-queue-item[aria-pressed=true]{border-color:#c24b6b;background:#60233c66}
+.bc-tech-queue-empty{font-size:10px;color:#a6a2ac;align-self:center;padding:8px 4px}
