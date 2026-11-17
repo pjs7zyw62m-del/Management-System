@@ -1,0 +1,97 @@
+/* BLACKCELL OS desktop refresh — Nov 2026. Visual-only, respects existing app/window state. */
+#desktop{
+  --bc-shell-stroke:rgba(255,255,255,.14);
+  --bc-shell-soft:rgba(255,255,255,.07);
+}
+#desktop .topbar{
+  border-bottom:1px solid rgba(255,255,255,.09);
+  background:linear-gradient(180deg,rgba(25,25,29,.86),rgba(10,10,12,.76));
+  box-shadow:0 2px 15px rgba(0,0,0,.25);
+}
+#desktop .brand{font-weight:740;letter-spacing:.025em;color:#f0f0f2}
+#desktop .brand:before{
+  border-color:#e8b3ba;background:linear-gradient(145deg,#c73d50,#540c19);
+  box-shadow:inset 0 0 2px #fff9,0 0 6px #a5263740;
+}
+#desktop .menubar>button{font-weight:510;color:#dddde3}
+#desktop .menubar>button:hover,#desktop .menubar>button[aria-expanded="true"]{
+  background:rgba(255,255,255,.12);
+}
+#desktop .workspace{scrollbar-width:none}
+#desktop .workspace::-webkit-scrollbar{width:0;height:0}
+#desktop .hero{
+  margin:0 0 18px;
+  padding:0 0 12px;
+  border-bottom:1px solid rgba(255,255,255,.065);
+}
+#desktop .hero #welcome,#desktop .hero p{display:none!important}
+#desktop .hero .overline{
+  font-size:10px;letter-spacing:.18em;font-weight:650;color:#c9c9cf;
+}
+#desktop .sectionhead{margin-bottom:12px}
+#desktop .sectionhead h2{font-size:10px;letter-spacing:.15em;font-weight:680;color:#b8b8c0}
+#desktop .app{
+  border-radius:14px;
+  transition:background .2s ease,border-color .2s ease;
+}
+#desktop .app:hover{background:rgba(255,255,255,.065)}
+#desktop .app:focus-visible{outline:2px solid #e28692;outline-offset:3px}
+#desktop .app-icon{
+  border-radius:16px;
+  border-color:rgba(255,255,255,.22);
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.34),0 5px 15px #0008;
+}
+#desktop .app-name{font-weight:560;letter-spacing:-.005em}
+#desktop .side.bc-system-panel .glass{
+  border-color:rgba(255,255,255,.14);
+  background:linear-gradient(145deg,rgba(35,35,40,.74),rgba(13,13,16,.77));
+  backdrop-filter:blur(22px) saturate(120%);
+  -webkit-backdrop-filter:blur(22px) saturate(120%);
+  box-shadow:0 13px 40px #0005,inset 0 1px #ffffff08;
+  border-radius:18px;
+}
+#desktop .side.bc-system-panel{gap:11px}
+#desktop .dock{
+  background:linear-gradient(180deg,rgba(81,81,89,.32),rgba(20,20,26,.66));
+  border-color:rgba(255,255,255,.28);
+  box-shadow:0 14px 42px #000a,inset 0 1px rgba(255,255,255,.19);
+  backdrop-filter:blur(32px) saturate(120%);
+  -webkit-backdrop-filter:blur(32px) saturate(120%);
+}
+#desktop .dock button{box-shadow:inset 0 1px rgba(255,255,255,.18)}
+#desktop .dock button:focus-visible{outline:2px solid #e28692;outline-offset:3px}
+#desktop .wallpaper:before{filter:saturate(.62);opacity:.77}
+#desktop .wallpaper:after{filter:saturate(.52);opacity:.65}
+#desktop .bc-desktop-widget-toggle{
+  display:inline-flex;align-items:center;gap:6px;padding:5px 9px;
+  color:#dadade;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);
+  border-radius:8px;font-size:11px;min-height:26px;
+}
+#desktop .bc-desktop-widget-toggle:hover,#desktop .bc-desktop-widget-toggle[aria-expanded="false"]{
+  background:rgba(151,35,54,.24);border-color:rgba(195,78,96,.45);
+}
+#desktop .bc-desktop-widget-toggle svg{width:15px;height:15px;flex:none}
+#desktop .bc-desktop-widget-toggle:focus-visible{outline:2px solid #e28692;outline-offset:2px}
+#desktop.bc-widgets-hidden .workspace{grid-template-columns:minmax(0,1fr)!important}
+#desktop.bc-widgets-hidden .bc-system-panel{display:none!important}
+@media(min-width:901px){
+  #desktop .workspace{
+    padding:clamp(22px,3.4vh,42px) clamp(22px,4.5vw,70px) 15px;
+    gap:clamp(18px,2.8vw,38px);
+    grid-template-columns:minmax(0,1fr) minmax(214px,245px);
+    align-items:start;
+  }
+  #desktop .apps:not(.bc-free-app-canvas){max-width:none;grid-template-columns:repeat(auto-fill,minmax(95px,1fr));gap:18px 7px;justify-items:center}
+}
+@media(max-width:900px){
+  #desktop .bc-desktop-widget-toggle span{display:none}
+  #desktop .bc-desktop-widget-toggle{padding:6px}
+}
+@media(max-width:620px){
+  #desktop .hero{margin-bottom:12px;padding-bottom:8px}
+  #desktop .topright .bc-desktop-widget-toggle{min-width:28px;justify-content:center}
+  #desktop .side.bc-system-panel .glass{backdrop-filter:none;-webkit-backdrop-filter:none}
+}
+@media(prefers-reduced-motion:reduce){
+  #desktop .app{transition:none!important}
+}
