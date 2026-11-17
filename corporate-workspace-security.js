@@ -1,4 +1,4 @@
-import {getSecuritySnapshot,securityLabels} from './blackcell-soc-client.js?v=1';
+import {getSecuritySnapshot,securityLabels} from './blackcell-soc-client.js?v=20261117-os-perf1';
 /* BLACKCELL SOC — owner-verified, read-only snapshots; no client-generated attack claims. */
 export function setup(client,u){
  const {root,E,add,button,metrics,panel,info,rpc,status,toolbar,date,timeout}=u;

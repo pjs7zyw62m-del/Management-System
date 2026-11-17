@@ -30,7 +30,7 @@ export function mountSecurityNotifications(client,{host,accountId,usable,openAdm
  pane.append(title,state,list,footer);document.getElementById('desktop').append(pane);
  const key='bc.os.soc.read.v1:'+accountId;
  let read=0;try{const n=Number(localStorage.getItem(key));if(Number.isSafeInteger(n)&&n>=0)read=n}catch(_){}
- let current=null,announced=read,generation=0,inflight=false,disposed=false,first=true;
+ let current=null,announced=read,generation=0,inflight=false,disposed=false,first=true,lastRefreshAt=0;
  const available=()=>!disposed&&usable()&&!document.hidden;
  const clear=()=>{pane.hidden=true;bell.setAttribute('aria-expanded','false')};
  const reset=()=>{generation++;current=null;clear();list.replaceChildren();badge.hidden=true;bell.hidden=true;bell.removeAttribute('data-state');state.textContent='Checking security collector…'};
@@ -52,8 +52,11 @@ export function mountSecurityNotifications(client,{host,accountId,usable,openAdm
    }
    if(!pane.hidden)acknowledge();
  }
- async function refresh(){
+ async function refresh(force=false){
    if(!available()){reset();return}if(inflight)return;
+   // Visibility and focus events often fire together; avoid duplicate requests.
+   if(!force&&Date.now()-lastRefreshAt<12000)return;
+   lastRefreshAt=Date.now();
    inflight=true;const id=generation;let timer;
    try{
      const result=await Promise.race([getSecuritySnapshot(client),new Promise(resolve=>{timer=setTimeout(()=>resolve(null),20000)})]);
@@ -71,13 +74,13 @@ export function mountSecurityNotifications(client,{host,accountId,usable,openAdm
    }catch(_){if(id===generation&&available()){current=null;render()}}
    finally{clearTimeout(timer);inflight=false}
  }
- bell.onclick=()=>{if(!available())return;if(!pane.hidden){clear();return}pane.hidden=false;bell.setAttribute('aria-expanded','true');render();acknowledge();void refresh()};
+ bell.onclick=()=>{if(!available())return;if(!pane.hidden){clear();return}pane.hidden=false;bell.setAttribute('aria-expanded','true');render();acknowledge();void refresh(true)};
  close.onclick=clear;footer.onclick=()=>{if(!available())return;clear();openAdmin()};
  const outside=e=>{if(!pane.hidden&&!pane.contains(e.target)&&!bell.contains(e.target))clear()};
  const keydown=e=>{if(e.key==='Escape')clear()};
  const focus=()=>void refresh();
  document.addEventListener('pointerdown',outside,true);document.addEventListener('keydown',keydown);document.addEventListener('visibilitychange',focus);window.addEventListener('focus',focus);
- const interval=setInterval(focus,30000);
+ const interval=setInterval(focus,60000);
  void refresh();
  return {pause:reset,refresh,dispose(){disposed=true;clearInterval(interval);document.removeEventListener('pointerdown',outside,true);document.removeEventListener('keydown',keydown);document.removeEventListener('visibilitychange',focus);window.removeEventListener('focus',focus);reset();bell.remove();pane.remove()}}
 }

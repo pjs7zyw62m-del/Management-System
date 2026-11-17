@@ -1,5 +1,5 @@
 import {attachPhotoTransfer} from './blackcell-photo-transfer.js?v=1';
-import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
+import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261117-os-perf1';
 import {setupBlackcellPhotos} from './corporate-network-photos.js?v=20261114-photos-only';
 import {setupBlackcellStorageStatus} from './corporate-storage-status.js?v=20261111-storage1';
 import {mountMilitaryGunner} from './military-gunner.js?v=20261110-fast4';
@@ -206,7 +206,12 @@ async function loadAll({show=true}={}){
  state.profiles=pr.data||[];state.posts=po.data||[];
  state.assets=as.data||[];state.follows=fo.data||[];
  // The general feed has a 1000-row cap; enumerate the separate World video catalog without it.
- const worldVideos=[];for(let offset=0;;offset+=500){const out=await client.from('corp_social_assets').select('*').eq('source_provider','world-bunny-v1').eq('purpose','library').eq('kind','video').or('and(review_status.eq.approved,adult_restricted.eq.false),and(review_status.eq.pending,owner_id.eq.'+state.user.id+')').order('id').range(offset,offset+499);if(out.error){console.warn('World video catalog unavailable',out.error.message);break}worldVideos.push(...(out.data||[]));if((out.data||[]).length<500)break}
+ const worldVideos=[];
+ // Fetch the separate World-video catalog only when the main catalog reaches
+ // its row cap; below that cap, all visible records are already present.
+ if((as.data||[]).length>=1000){
+  for(let offset=0;;offset+=500){const out=await client.from('corp_social_assets').select('*').eq('source_provider','world-bunny-v1').eq('purpose','library').eq('kind','video').or('and(review_status.eq.approved,adult_restricted.eq.false),and(review_status.eq.pending,owner_id.eq.'+state.user.id+')').order('id').range(offset,offset+499);if(out.error){console.warn('World video catalog unavailable',out.error.message);break}worldVideos.push(...(out.data||[]));if((out.data||[]).length<500)break}
+ }
  const catalog=new Map(state.assets.map(a=>[a.id,a]));for(const a of worldVideos)catalog.set(a.id,a);state.assets=[...catalog.values()];
  state.streamVideos=(stream.data||[]).map(a=>({...a,
   kind:'video',purpose:'post',filename:a.filename,video_poster_path:a.poster_path,
@@ -2039,8 +2044,15 @@ window.BLACKCELL_OS_BEFORE_CLOSE=async()=>{
  // Preserve all remaining drafts, selected files, and other network features.
  return {ok:true,retain:true};
 };
+let refreshPending=null,refreshAgain=false;
 async function refresh(){
- await loadAll({show:true});
+ // Coalesce concurrent reload triggers; one final refresh catches updates
+ // arriving during an in-flight request without a burst of parallel fetches.
+ if(refreshPending){refreshAgain=true;return refreshPending}
+ refreshPending=(async()=>{
+  do{refreshAgain=false;await loadAll({show:true})}while(refreshAgain);
+ })();
+ try{return await refreshPending}finally{refreshPending=null}
 }
 function setupEvents(){
  videoChannel.init();
@@ -2147,7 +2159,7 @@ function setupEvents(){
  });
 }
 
-let networkSecurityChecksInstalled=false,networkSecurityChecking=false;
+let networkSecurityChecksInstalled=false,networkSecurityChecking=false,networkLastCheckAt=0;
 function closeNetworkForSecurity(reason){
  videoChannel.close();
  $('bcVideoUploadDialog').hidden=true;
@@ -2165,6 +2177,10 @@ function closeNetworkForSecurity(reason){
 }
 async function verifyNetworkSession(){
  if(networkSecurityChecking||!state.user||$('app').hidden||document.hidden)return;
+ // Focus, visibility and interval events can fire together; avoid duplicate
+ // authorization requests while retaining server-side RLS for data access.
+ if(Date.now()-networkLastCheckAt<15000)return;
+ networkLastCheckAt=Date.now();
  networkSecurityChecking=true;
  try{
   const {data,error}=await client.auth.getUser();
@@ -2187,10 +2203,11 @@ async function verifyNetworkSession(){
 }
 function installNetworkSecurityChecks(){
  if(networkSecurityChecksInstalled)return;networkSecurityChecksInstalled=true;
- window.setInterval(()=>void verifyNetworkSession(),20000);
+ window.setInterval(()=>void verifyNetworkSession(),45000);
  document.addEventListener('visibilitychange',()=>{
   if(!document.hidden)void verifyNetworkSession()
  });
+ window.addEventListener('focus',()=>void verifyNetworkSession());
  client.auth.onAuthStateChange(event=>{
   if(event==='SIGNED_OUT'&&state.user)
    closeNetworkForSecurity('You have signed out. Sign in to re-enter the private network.');

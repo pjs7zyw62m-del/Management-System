@@ -1,10 +1,10 @@
-import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-clearance5';
+import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261117-os-perf1';
 
 const gate=document.getElementById('opGate');
 const gateMessage=document.getElementById('opGateMessage');
 const loginLink=document.getElementById('opLogin');
 const app=document.getElementById('opApp');
-let client,closed=false,lastActivity=Date.now(),lastTouch=0,touching=false;
+let client,closed=false,lastActivity=Date.now(),lastTouch=0,touching=false,verifying=false,verificationPaused=false;
 const idleLimit=60*60*1000;
 let embedded=false;try{embedded=parent!==window&&parent.location.origin===location.origin&&parent.document.documentElement.classList.contains('corp-ok')&&[...parent.document.querySelectorAll('iframe[data-bc-admin-workspace]')].some(f=>f.contentWindow===window)}catch(_){}
 const notify=type=>{if(embedded)parent.postMessage({type},location.origin)};
@@ -22,13 +22,24 @@ async function signOut(){
   try{await client?.auth.signOut({scope:'local'})}catch(_){}
   if(embedded)notify('blackcell-admin-workspace-signed-out');else location.replace('login.html');
 }
+function pauseForTransport(){
+  if(closed)return;
+  // Fail closed visually, but don't destroy a valid session on a network error.
+  verificationPaused=true;
+  deny('Secure verification is temporarily unavailable. Your session is preserved while BLACKCELL retries.');
+  if(loginLink)loginLink.hidden=true;
+}
 async function verifySession(){
-  if(closed||!client)return;
+  if(closed||!client||verifying)return;
   if(!embedded&&Date.now()-lastActivity>=idleLimit){await signOut();return;}
+  verifying=true;
   try{
     const {data,error}=await client.rpc('corp_code_status');
-    if(error||data?.ok!==true||data?.verified!==true){await signOut();}
-  }catch(_){await signOut();}
+    if(error){pauseForTransport();return;}
+    if(data?.ok!==true||data?.verified!==true){await signOut();return;}
+    if(verificationPaused){verificationPaused=false;gate.hidden=true;app.hidden=false;}
+  }catch(_){pauseForTransport();}
+  finally{verifying=false;}
 }
 async function extendSession(){
   if(closed||touching||Date.now()-lastTouch<60000)return;
@@ -36,8 +47,9 @@ async function extendSession(){
   touching=true;lastTouch=Date.now();
   try{
     const {data,error}=await client.rpc('corp_touch_session');
-    if(error||data?.ok!==true)await signOut();
-  }catch(_){await signOut()}
+    if(error){pauseForTransport();return;}
+    if(data?.ok!==true)await signOut();
+  }catch(_){pauseForTransport()}
   finally{touching=false}
 }
 try{

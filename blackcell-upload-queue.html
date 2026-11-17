@@ -23,7 +23,7 @@
 <p class="bc-ai-sort-disclosure" id="bcAutoSortDisclosure">Private AI suggestions do not change publication approval. Country and branch require visible evidence; uncertain photos stay in Needs Human Review. Corrected labels become examples for later photos, not model weight training. Automatic publication requires complete owner-verified rights, classification and safety checks. Anything below 100% checklist readiness stays in manual review.</p>
 </div></section></main>
 <section class="gate" id="gate"><h2>Secure access required</h2><p id="gateText">Verifying BLACKCELL session…</p><a href="login.html">Corporate Access</a></section><footer><span>BLACKCELL CORPORATION</span><span>UPLOAD / HOLD / SORT LATER</span></footer><script type="module">
-import {corporateClient,corporateAuthorize} from "./corp-auth.js?v=20261114-transport-classification";
+import {corporateClient,corporateAuthorize} from "./corp-auth.js?v=20261117-os-perf1";
 const $=s=>document.getElementById(s),db=corporateClient(),limit=45*1048576;
 const allowed=new Set(["image/jpeg","image/png","image/webp","image/gif","image/heic","video/mp4","video/webm","video/quicktime","video/x-m4v"]);
 const jobs=[];let uid="",running=false,stop=false,active=null,tab="pending",page=0,cloud=[],epoch=0;
@@ -115,4 +115,4 @@ async function boot(){try{
  uid=auth.user.id;const isOwner=auth.member.role==="owner"&&Number(auth.member.clearance_level)===7;$("review").hidden=!isOwner;$("bcUploadRightsPanel").hidden=!isOwner;
  $("main").hidden=false;$("gate").hidden=true;$("connection").textContent="● VERIFIED SESSION";render();window.BLACKCELL_UPLOAD_QUEUE_CONTEXT={userId:uid,isOwner:auth.member.role==="owner"&&Number(auth.member.clearance_level)===7};window.dispatchEvent(new CustomEvent("blackcell:upload-queue-ready",{detail:window.BLACKCELL_UPLOAD_QUEUE_CONTEXT}));await refreshCloud();
  }catch(e){$("connection").textContent="ACCESS REQUIRED";$("gateText").textContent=String(e.message||e)}}
-void boot();</script><script type="module" src="blackcell-upload-auto-sort.js?v=20261117-verified100-r1"></script><script type="module" src="blackcell-upload-visual-search.js?v=20261117-v1"></script></body></html>
+void boot();</script><script type="module" src="blackcell-upload-auto-sort.js?v=20261117-os-perf1"></script><script type="module" src="blackcell-upload-visual-search.js?v=20261117-v1"></script></body></html>

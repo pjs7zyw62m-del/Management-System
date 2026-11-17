@@ -1,0 +1,38 @@
+name: BLACKCELL OS Performance Regression
+on:
+  pull_request:
+    paths:
+      - 'corp-auth.js'
+      - 'corporate-network.js'
+      - 'corporate-network.html'
+      - 'corporate-workspace-auth.js'
+      - 'corporate-workspace-*.js'
+      - 'corporate-*.html'
+      - 'blackcell-soc-client.js'
+      - 'blackcell-upload-auto-sort.js'
+      - 'blackcell-upload-queue.html'
+      - 'tests/blackcell-os-performance.test.mjs'
+      - '.github/workflows/blackcell-os-performance-test.yml'
+  workflow_dispatch:
+jobs:
+  optimization-tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate all modified JavaScript modules
+        run: |
+          node --check corp-auth.js
+          node --check corporate-network.js
+          node --check corporate-workspace-auth.js
+          node --check corporate-media-admin.js
+          node --check corporate-workspace-app.js
+          node --check corporate-workspace-security.js
+          node --check blackcell-soc-client.js
+          node --check blackcell-upload-auto-sort.js
+      - name: Verify security and performance regressions
+        run: node --test tests/blackcell-os-performance.test.mjs
