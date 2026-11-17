@@ -61,6 +61,7 @@ export function createPhotoVoting({client,userId,toast=()=>{},onChange=()=>{}}){
    if(eligible)next.award_vote_count=Math.max(0,Number(old.award_vote_count||0)+(wasVoted?-1:1));
    counts.set(id,next);
    updateControls();onChange(id);
+   window.dispatchEvent(new CustomEvent('bc:algorithm-signal',{detail:{kind:'photo-vote'}}));
    toast(wasVoted?'Your vote was withdrawn.':'Your vote has been saved.');
   }catch(error){
    toast('Could not save vote: '+(error?.message||'Please try again.'));
