@@ -71,6 +71,17 @@
    <section class="bc-panel bc-teach-source">
     <div class="bc-panel-top"><strong>REFERENCE PHOTOGRAPH / VIDEO</strong></div>
     <div id="bcTeachPreview" class="bc-preview"><div class="bc-preview-empty"><span>◎</span><b>Select a catalog item first</b><small>Use Content Inventory → Teach AI.</small></div></div>
+    <div id="bcVideoFrameControls" class="bc-video-frames" hidden>
+     <strong>VIDEO FRAME INTELLIGENCE</strong>
+     <p id="bcFrameStatus" role="status">Pause an uploaded video on the frame you want to classify. For secure Bunny Stream playback, choose a still image from that timestamp.</p>
+     <div class="bc-video-frame-actions">
+      <button type="button" id="bcCaptureFrame" class="bc-btn bc-btn-outline">Capture Current Frame</button>
+      <label class="bc-video-still-picker">Choose Still Image <input type="file" id="bcFrameStillInput" accept="image/jpeg,image/png,image/webp" aria-label="Choose video still image"></label>
+     </div>
+     <img id="bcFrameStillPreview" alt="Selected private video still to be analyzed" hidden>
+     <button type="button" id="bcAnalyzeVideoFrame" class="bc-btn bc-btn-primary" disabled>✦ Analyze This Frame with AI</button>
+     <small>One frame only. Your original video stays private. External analysis requires your consent and may use API credits. Results are drafts, not verified labels.</small>
+    </div>
     <h3 id="bcTeachTitle">No reference selected</h3>
     <p class="bc-secondary" id="bcTeachSourceHint">Only verified owner accounts can teach BLACKCELL.</p>
     <div id="bcTeachExisting" class="bc-existing">No saved training reference for this item.</div>
