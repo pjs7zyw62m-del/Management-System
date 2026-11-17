@@ -62,3 +62,22 @@ test('growth alert is not mistaken for an invoice',()=>{
   assert.equal(p.billingKnown,false);
   assert.match(p.warning,/not a provider invoice/);
 });
+
+test('a fully completed missed video week adds a bounded weekly catch-up target',()=>{
+  const videos=Array(14).fill(0);
+  videos[0]=2; // earlier than previous complete Mon–Sun week
+  videos[12]=1; // Monday of current calendar week
+  const p=calculate(Array(14).fill(10),videos);
+  assert.equal(p.video.ready,true);
+  assert.equal(p.video.thisWeekCount,1);
+  assert.ok(p.video.carryover>0);
+  assert.equal(p.video.weekly,p.video.baseWeekly+p.video.carryover);
+  assert.match(p.video.reason,/preceding completed week fell short/);
+});
+
+test('video has no daily catch-up penalty for a zero-upload yesterday',()=>{
+  const p=calculate(Array(12).fill(10).concat([0,0]),Array(13).fill(1).concat(0));
+  assert.equal(p.photo.missedYesterday,true);
+  assert.equal(p.video.daily,undefined);
+  assert.equal(p.video.thisWeekCount,1);
+});
