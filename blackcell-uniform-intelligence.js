@@ -81,7 +81,7 @@ function startAutopilot(){
  const frame=$("bcUploadFrame");
  if(!frame.getAttribute("src")){
   frame.addEventListener("load",()=>postAutopilotCommand("status"));
-  frame.src="blackcell-upload-queue.html?v=20261117-autopilot-r4";
+  frame.src="blackcell-upload-queue.html?v=20261117-autopilot-r5";
  }else postAutopilotCommand("status");
  updateAutopilot();
 }
@@ -659,7 +659,7 @@ function init(){
  $("bcAutopilotRun").onclick=()=>postAutopilotCommand("run");
  for(const b of document.querySelectorAll(".bc-tab"))b.onclick=()=>switchTab(b.dataset.tab);
  for(const id of ["bcSearch","bcFilterKind","bcFilterStatus","bcFilterWorld","bcFilterSource"])$(id).addEventListener(id==="bcSearch"?"input":"change",list);
- $("bcRefreshAll").onclick=()=>{if(data.owner)void Promise.all([loadCatalog(true),loadMemory(),...(gunnerCommand?[gunnerCommand.refresh()]:[])])};
+ $("bcRefreshAll").onclick=()=>{if(data.owner){postAutopilotCommand("refresh");void Promise.all([loadCatalog(true),loadMemory(),...(gunnerCommand?[gunnerCommand.refresh()]:[])])}};
  $("bcLoadMore").onclick=()=>void loadCatalog();
  $("bcTeachSelected").onclick=()=>{data.frame=0;switchTab("teach")};
  $("bcOpenAdmin").onclick=()=>{location.href="corporate-media-admin.html"};
