@@ -61,7 +61,7 @@ function videoQuota(days,pending){
  // windows that could falsely classify a partly completed week as "missed".
  const today=String(days[days.length-1]?.day||"");
  let priorCount=null,thisWeekCount=0;
- if(/^\\d{4}-\\d{2}-\\d{2}$/.test(today)){
+ if(/^\d{4}-\d{2}-\d{2}$/.test(today)){
   const ms=Date.parse(today+"T00:00:00Z"),oneDay=86400000;
   const currentMonday=ms-((new Date(ms).getUTCDay()+6)%7)*oneDay;
   const previousMonday=currentMonday-7*oneDay;
