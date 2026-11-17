@@ -8,9 +8,18 @@ export const SOURCES=Object.freeze({
  camopedia_usa:{name:"Camopedia · United States",url:"https://www.camopedia.org/index.php/USA",kind:"national reference",note:"US pattern histories and variants. Confirm dates and use against current documents."},
  wiki:{name:"Wikipedia · Military camouflage patterns",url:"https://en.wikipedia.org/wiki/List_of_military_clothing_camouflage_patterns",kind:"cross-country index",note:"Pattern families and multinational usage; information requires corroboration."},
  militarymachine:{name:"Military Machine · 20 military patterns",url:"https://militarymachine.com/military-camouflage-patterns",kind:"overview",note:"Accessible overview; cross-check claims against Camopedia and primary records."},
- epochs:{name:"Epochs · Field Guide to Camouflage",url:"https://epochs.co/features/epochs-field-guide-to-camouflage",kind:"historical and fashion context",note:"Explains historic fabric families and civilian fashion use, so a pattern is not proof of affiliation."}
+ epochs:{name:"Epochs · Field Guide to Camouflage",url:"https://epochs.co/features/epochs-field-guide-to-camouflage",kind:"historical and fashion context",note:"Explains historic fabric families and civilian fashion use, so a pattern is not proof of affiliation."},
+ militaire:{name:"Militaire-Uitrusting.nl · Camouflage patterns",url:"https://www.militaire-uitrusting.nl/en/camouflage-patterns",kind:"international pattern directory",note:"Pattern names and illustrated country-specific references, linked only. Verify national service against insignia and dates."}
 });
 export const PATTERNS=Object.freeze([
+ {name:"Netherlands Fractal Pattern (NFP)",family:"Fractal multiterrain",origin:"NL",uses:"Royal Netherlands Armed Forces",era:"Modern",distinguish:"National fractal family with separate woodland and desert/multiterrain variants; verify markings.",source:"militaire",status:"regional"},
+ {name:"Bariolage Multi-Environnement (BME)",family:"Multi-environment",origin:"FR",uses:"France · Armed Forces",era:"Modern",distinguish:"French next-generation multi-environment scheme, distinguish from earlier CCE patterns.",source:"militaire",status:"regional"},
+ {name:"Camouflage Centre-Europe (CCE)",family:"Woodland organic",origin:"FR",uses:"France · Armed Forces",era:"1990s onwards",distinguish:"French woodland pattern; overlaps with other national designs; confirm French service context.",source:"militaire",status:"shared"},
+ {name:"MM-14",family:"Digital multiterrain",origin:"UA",uses:"Ukraine · Armed Forces",era:"2010s onwards",distinguish:"Ukrainian digital family, verify recognizable Ukrainian insignia and garments.",source:"militaire",status:"lookalike"},
+ {name:"Type 07",family:"Digital multienvironment",origin:"CN",uses:"China · People's Liberation Army",era:"2000s onwards",distinguish:"Chinese family of multiple environment variants; pixels alone cannot confirm PLA service.",source:"militaire",status:"regional"},
+ {name:"Disruptive Pattern Camouflage Uniform (DPCU)",family:"Disruptive arid/woodland",origin:"AU",uses:"Australia · Defence Force",era:"1980s onwards",distinguish:"Australian historic 'jellybean' family; distinct from Australian Multicam derivatives.",source:"militaire",status:"regional"},
+ {name:"Jigsaw Pattern",family:"Angular geometric",origin:"BE",uses:"Belgium · Armed Forces",era:"1950s onwards",distinguish:"Highly geometric Belgian family; era-specific versions need verification.",source:"militaire",status:"regional"},
+ {name:"M/84",family:"Digital woodland",origin:"DK",uses:"Denmark · Armed Forces",era:"1980s onwards",distinguish:"Danish spot family; can resemble Flecktarn at a glance but has distinct shapes.",source:"militaire",status:"lookalike"},
  {name:"Telo Mimetico",family:"Historical splinter / geometric",origin:"IT",uses:"Italy; historically also used by some German and Czechoslovak forces",era:"1929 onwards",distinguish:"Italian 1929-pattern family; modified variants and postwar civilian use; uniform cut and historical proof matter.",source:"epochs",status:"historical"},
  {name:"Denison Smock / brushstroke",family:"Brushstroke",origin:"GB",uses:"United Kingdom and other historic European airborne forces",era:"1940s onwards",distinguish:"Large brush-applied forms; similar-looking French lizard pattern descendants require further evidence.",source:"epochs",status:"historical"},
  {name:"French Lizard / Leopard",family:"Horizontal brushstroke",origin:"FR",uses:"France; derivatives used internationally",era:"1950s onwards",distinguish:"Striped brushstroke family with many international derivatives, do not equate the pattern to France.",source:"epochs",status:"shared"},
@@ -46,7 +55,8 @@ export const WORLD_DIRECTORY=Object.freeze([
  {name:"United States historical pattern catalog",source:"camopedia_usa"},
  {name:"Cross-country patterns and users",source:"wiki"},
  {name:"Pattern introduction and broad overview",source:"militarymachine"},
- {name:"Historical camouflage and civilian fashion use",source:"epochs"}
+ {name:"Historical camouflage and civilian fashion use",source:"epochs"},
+ {name:"Illustrated international country-by-country pattern references",source:"militaire"}
 ]);
 
 /* User-supplied external image exemplar. Classification intentionally unknown.
