@@ -11,7 +11,7 @@ const SOURCES=[
  ["post","corp_social_posts","created_at","id,author_id,body,kind,created_at"],
  ["saved","corp_social_tiktok_saves","saved_at","id,user_id,title,military_branch,creator_handle,saved_at"]
 ];
-const data={user:null,owner:false,items:[],learning:[],ai:[],page:"catalog",selected:null,frame:0,blob:"",previewGeneration:0,loading:false,saving:false,videoFrame:null,videoSuggestions:new Map(),videoBusy:false,streamPlayback:null,memoryLoaded:false,autopilot:null};
+const data={user:null,owner:false,items:[],learning:[],ai:[],page:"catalog",selected:null,frame:0,blob:"",previewGeneration:0,loading:false,saving:false,videoFrame:null,videoSuggestions:new Map(),videoBusy:false,streamPlayback:null,memoryLoaded:false,autopilot:null,videoUsageToday:null};
 let gunnerCommand=null,publicationReview=null,publicationReviewLoading=false;
 const index=SOURCES.map(([type,table,order,fields])=>({type,table,order,fields,skip:0,done:false,error:""}));
 const COUNTRY=typeof Intl.DisplayNames==="function"?new Intl.DisplayNames(["en"],{type:"region"}):null;
@@ -212,7 +212,7 @@ function switchTab(page,keepSelection=false){
  }
  data.page=page;
  for(const b of document.querySelectorAll(".bc-tab"))b.setAttribute("aria-selected",String(b.dataset.tab===page));
- for(const n of ["catalog","teach","atlas","gunner","review","uploads"])
+ for(const n of ["catalog","teach","learning","atlas","gunner","review","uploads"])
   $("bcPage"+n[0].toUpperCase()+n.slice(1)).hidden=!(n===page||(n==="catalog"&&page==="completed"));
  if(page==="catalog"||page==="completed"){
   const completed=page==="completed";
@@ -229,6 +229,7 @@ function switchTab(page,keepSelection=false){
   renderTechQueue();fillForm();
  }
  if(data.selected?.type==="stream_video")renderStreamEmbed();
+ if(page==="learning")renderLearningDashboard();
  if(page==="atlas"){drawAtlas();drawPatterns()}
  if(page==="gunner")gunnerCommand?.open();
  if(page==="review")void ensurePublicationReview();
@@ -256,10 +257,13 @@ async function loadMemory(){
  if(!data.owner)return;
  const [r,a]=await Promise.all([
   db.from("corp_uniform_training_references").select("*").eq("owner_id",data.user.id).order("updated_at",{ascending:false}).limit(1000),
-  db.from("corp_social_ai_analysis").select("asset_id,status,country_code,military_branch,military_category,uniform_type,camouflage_pattern,confidence,tags,notes,original_suggestion").eq("owner_id",data.user.id).limit(1000)
+  db.from("corp_social_ai_analysis").select("asset_id,status,country_code,military_branch,military_category,uniform_type,camouflage_pattern,confidence,tags,notes,original_suggestion,learned_from_count,model,attempts,updated_at").eq("owner_id",data.user.id).limit(1000)
  ]);
  if(r.error)throw Error(r.error.message);
  data.learning=r.data||[];data.ai=a.data||[];data.memoryLoaded=!a.error;
+ // Optional usage counters must never block normal media loading.
+ const usage=await db.from("corp_uniform_video_ai_usage").select("requests").eq("owner_id",data.user.id).eq("usage_day",new Date().toISOString().slice(0,10)).maybeSingle();
+ data.videoUsageToday=usage.error?null:Number(usage.data?.requests||0);
  if(a.error)text("bcCatalogMeta","AI analysis source unavailable: "+a.error.message);
  render();
 }
@@ -516,7 +520,7 @@ function render(){
   const old=data.selected;selectNextTechItem();fillForm();
   text("bcTechQueueStatus",old.title+" moved out of Tech AI. Active queue refreshed.");
  }
- stats();list();renderTechQueue();drawAtlas();drawPatterns();
+ stats();list();renderTechQueue();renderLearningDashboard();drawAtlas();drawPatterns();
 }
 function formBlank(){
  for(const id of ["bcTrainCountry","bcTrainUniform","bcTrainPattern","bcTrainEra","bcTrainEvidence","bcTrainLookalikeCountry","bcTrainLookalikeBranch","bcTrainDifferences","bcTrainTags"])$(id).value="";
