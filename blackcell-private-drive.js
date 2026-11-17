@@ -2,6 +2,34 @@
    Browser receives no storage-zone credentials or encryption keys. */
 export const PRIVATE_FILE_LIMIT=256*1024*1024;
 const BUCKET='blackcell-os-files',MARK='.blackcell-folder',CHUNK=4*1024*1024;
+/** Retrieve encrypted-private-drive chunks with bounded concurrency.
+ * Chunks are still authorized, AES-GCM authenticated and decrypted by the
+ * existing private Edge Function. We only parallelize independent reads and
+ * rebuild the output in its original byte order.
+ */
+export async function readPrivateDriveChunks({size,chunkBytes,maxParallel=3,fetchChunk}){
+ if(!Number.isSafeInteger(size)||size<1||size>PRIVATE_FILE_LIMIT||
+    !Number.isSafeInteger(chunkBytes)||chunkBytes<1||typeof fetchChunk!=='function')
+  throw Error('Invalid private file transfer parameters.');
+ const total=Math.ceil(size/chunkBytes),chunks=new Array(total);
+ const concurrency=Math.min(3,Math.max(1,Math.trunc(Number(maxParallel)||1)),total);
+ let next=0,failed=null;
+ async function worker(){
+  while(!failed&&next<total){
+   const index=next++;
+   try{
+    const chunk=await fetchChunk(index);
+    const expected=Math.min(chunkBytes,size-index*chunkBytes);
+    if(!(chunk instanceof Blob)||chunk.size!==expected)throw Error('Incomplete private file chunk.');
+    chunks[index]=chunk;
+   }catch(error){if(!failed)failed=error;return}
+  }
+ }
+ await Promise.all(Array.from({length:concurrency},()=>worker()));
+ if(failed)throw failed;
+ if(chunks.some(x=>!x))throw Error('Private file download is incomplete.');
+ return new Blob(chunks,{type:'application/octet-stream'});
+}
 const ok=data=>({data,error:null}),err=e=>({data:null,error:{message:String(e?.message||e||'Private drive error').slice(0,220)}});
 export function createPrivateDrive(client,uid){
  const legacy=client?.storage.from(BUCKET);
@@ -56,8 +84,25 @@ export function createPrivateDrive(client,uid){
  }
  async function download(full){
   try{const row=await lookup(full);if(!row)return await legacy.download(full);if(row.state!=='ready')throw Error('File unavailable; retry its removal.');
-   const parts=[];for(let index=0;index<Math.ceil(Number(row.size_bytes)/CHUNK);index++){let got=null;for(let attempt=0;attempt<3;attempt++){try{got=await request('read',{id:row.id,index},null,null,null,true);break}catch(e){if(attempt===2)throw e}}const expected=Math.min(CHUNK,Number(row.size_bytes)-index*CHUNK);if(!got||got.size!==expected)throw Error('Incomplete file download.');parts.push(got)}
-   return ok(new Blob(parts,{type:'application/octet-stream'}))
+   const data=await readPrivateDriveChunks({
+    size:Number(row.size_bytes),chunkBytes:CHUNK,maxParallel:3,
+    fetchChunk:async index=>{
+     const expected=Math.min(CHUNK,Number(row.size_bytes)-index*CHUNK);
+     let failure=null;
+     for(let attempt=0;attempt<3;attempt++){
+      try{
+       const got=await request('read',{id:row.id,index},null,null,null,true);
+       if(!got||got.size!==expected)throw Error('Incomplete private file download.');
+       return got;
+      }catch(error){
+       failure=error;
+       if(attempt<2)await new Promise(resolve=>setTimeout(resolve,250*(attempt+1)));
+      }
+     }
+     throw failure||Error('Private file download failed.');
+    }
+   });
+   return ok(data)
   }catch(e){return err(e)}
  }
  async function move(from,to){
