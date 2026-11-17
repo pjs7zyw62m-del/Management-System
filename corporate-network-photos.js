@@ -2,9 +2,9 @@ import {placePhotoTransfer} from './blackcell-photo-transfer.js?v=20261117-paral
 /* BLACKCELL NETWORK / Apple Photos × Flickr private corporate library */
 import {createWorldForces} from './corporate-world-forces.js?v=20261110-countries1';
 import {createMilitaryPhotoAI} from './corporate-military-ai.js?v=20261111-adminmove1';
-import {createPhotoTaste} from './corporate-photo-taste.js?v=20261110-trigger2';
+import {createPhotoTaste} from './corporate-photo-taste.js?v=20261117-adaptive-r1';
 import {createPhotoPredict} from './corporate-photo-predict.js?v=20261110-pred1';
-import {createPhotoVoting} from './corporate-photo-votes.js?v=20261111-votes2';
+import {createPhotoVoting} from './corporate-photo-votes.js?v=20261117-adaptive-r1';
 import {createPhotoZoom} from './corporate-photo-zoom.js?v=20261111-pointer2';
 import {createPrivatePhotoThumbnails} from './corporate-photo-thumbnails.js?v=20261112-speed2';
 export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadAsset,refresh,profile,openProfile,ensureSigned,switchView,personalization,rediscovery,dedupe}){
