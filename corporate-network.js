@@ -2324,8 +2324,10 @@ async function boot(){
 }
 const personalization=createNetworkPersonalization({client,state,toast,
  onChanged:()=>{
-  photos.render();rediscovery.refresh();
+  if(state.view==='photos'&&$('applePhotoViewer')?.hidden!==false)photos.render();
+  rediscovery.refresh();
   if(state.view==='profile')renderProfile();
+  if(state.view==='pulse')renderPulse();
  }});
 const rediscovery=createPhotoRediscovery({client,state,personalization,mediaUrl,toast,
  openPhoto:a=>photos.openAsset(a)});
