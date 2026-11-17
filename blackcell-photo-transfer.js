@@ -1,6 +1,6 @@
 import {createChatBunnyTransport} from './blackcell-chat-bunny.js?v=1';
 /* Shared control for the approved Military Library photo saving action. */
-import {createPrivateDrive,PRIVATE_FILE_LIMIT} from './blackcell-private-drive.js?v=1';
+import {createPrivateDrive,PRIVATE_FILE_LIMIT} from './blackcell-private-drive.js?v=20261117-parallel-read1';
 import {uploadPrivateFile,mediaType,privateUploadError} from './blackcell-private-media.js?v=8-transfer';
 import {corporateAuthorize} from './corp-auth.js?v=20261114-transport-classification';
 const transferUUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
