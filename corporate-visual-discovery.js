@@ -421,11 +421,12 @@ export function createVisualDiscovery({client,state,mediaUrl,toast,closeViewer,o
    },{onConflict:'user_id,asset_id'}).select('asset_id');
    if(error||!data?.length)throw error||Error('Permission rejected');
    reactions.set(asset.id,reaction);
+    window.dispatchEvent(new CustomEvent('bc:algorithm-signal',{detail:{kind:'visual-feedback'}}));
    control.classList.add('selected');other.classList.remove('selected');
    control.setAttribute('aria-pressed','true');other.setAttribute('aria-pressed','false');
    status(reaction==='more'?'Saved to your private preferences: show more like this.':
     'Saved: show less like this. This is not a competition vote.');
-   if(personalization?.load)void personalization.load();
+   // Personalization refresh is debounced by the algorithm event.
    // Rated photographs become triggers for a NEW search, never recurring cards.
    // Another paid API search still requires the normal user confirmation.
    if(reaction==='more'&&sourceRegion&&inUse()){
