@@ -8,9 +8,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="BLACKCELL INTELLIGENCE">
 <title>BLACKCELL | Uniform Intelligence Center</title>
-<link rel="stylesheet" href="blackcell-uniform-intelligence.css?v=20261117-r3">
+<link rel="stylesheet" href="blackcell-uniform-intelligence.css?v=20261117-gunner-r1">
 <script src="corp-config.js" defer></script>
-<script type="module" src="blackcell-uniform-intelligence.js?v=20261117-startup-r4"></script>
+<script type="module" src="blackcell-uniform-intelligence.js?v=20261117-gunner-r1"></script>
 </head>
 <body>
 <div class="bc-shell">
@@ -34,6 +34,7 @@
   <button type="button" class="bc-tab" data-tab="catalog" aria-selected="true">▦ Content Inventory</button>
   <button type="button" class="bc-tab" data-tab="teach" aria-selected="false">✧ Teach AI</button>
   <button type="button" class="bc-tab" data-tab="atlas" aria-selected="false">◎ Uniform Reference Atlas</button>
+  <button type="button" class="bc-tab" data-tab="gunner" aria-selected="false">✦ Gunner Command</button>
   <button type="button" class="bc-tab" data-tab="uploads" aria-selected="false">⇧ Upload Media</button>
  </nav>
  <section class="bc-page" id="bcPageCatalog">
@@ -110,7 +111,56 @@
  </div>
   <div class="bc-panel bc-atlas-panel"><div class="bc-panel-top"><strong>REFERENCE KNOWLEDGE BASE</strong><span id="bcAtlasCount">—</span></div><div id="bcAtlas" class="bc-atlas"></div></div>
  </section>
- <section class="bc-page" id="bcPageUploads" hidden>
+ <section class="bc-page" id="bcPageGunner" hidden>
+ <div class="bc-section-head bc-gunner-head">
+  <div><h2>Gunner Thompson · Collection Command</h2>
+  <p>Live numerical intelligence, private collection targets, and ranked upload missions. The original Gunner Dolphin 3.0 model explains the results. No media is published or changed by recommendations.</p></div>
+  <div class="bc-gunner-tools"><button type="button" class="bc-btn bc-btn-outline" id="bcGunnerRefresh">↻ Recalculate</button><button type="button" class="bc-btn bc-btn-primary" id="bcGunnerAsk">✦ Talk to Gunner</button></div>
+ </div>
+ <div class="bc-gunner-overview" id="bcGunnerMetrics" aria-label="Gunner collection statistics">
+  <p class="bc-empty">Preparing collection intelligence…</p>
+ </div>
+ <div class="bc-gunner-toolbar"><span id="bcGunnerState" role="status">Gunner analytics will load after Level 7 verification.</span><span id="bcGunnerGenerated"></span></div>
+ <div class="bc-gunner-content">
+  <div class="bc-gunner-col">
+   <section class="bc-panel bc-gunner-missions-panel">
+    <div class="bc-panel-top"><strong>GUNNER'S NEXT UPLOAD MISSIONS</strong><span>DATA-DRIVEN PRIORITIES</span></div>
+    <div id="bcGunnerMissions" class="bc-gunner-missions" aria-live="polite"><p class="bc-empty">Run collection analysis to generate missions.</p></div>
+   </section>
+   <section class="bc-panel bc-gunner-goals-panel">
+    <div class="bc-panel-top"><strong>PRIVATE COLLECTION TARGETS</strong><span>SEPARATE FROM VERIFIED FACTS</span></div>
+    <form id="bcGunnerGoalForm" class="bc-gunner-goal-form">
+     <label><span>GOAL TYPE</span><select id="bcGunnerGoalType"><option value="country">Country</option><option value="branch">Branch</option><option value="world">Uniform World</option><option value="era">Era</option></select></label>
+     <label><span>COUNTRY / BRANCH / WORLD</span><input id="bcGunnerGoalValue" maxlength="90" placeholder="US, JP, GB…" required></label>
+     <label><span>TARGET RECORDS</span><input id="bcGunnerGoalTarget" type="number" min="1" max="10000" step="1" value="10" required></label>
+     <label><span>PRIORITY</span><select id="bcGunnerGoalPriority"><option value="5">5 · Urgent</option><option value="4">4 · High</option><option value="3" selected>3 · Standard</option><option value="2">2 · Low</option><option value="1">1 · Optional</option></select></label>
+     <button type="submit" class="bc-btn bc-btn-primary" id="bcGunnerAddGoal">+ Save Goal</button>
+    </form>
+    <div id="bcGunnerGoals" class="bc-gunner-goals"><p class="bc-gunner-no-data">No private collection targets yet.</p></div>
+   </section>
+  </div>
+  <div class="bc-gunner-col">
+   <section class="bc-panel bc-gunner-distribution-panel">
+    <div class="bc-panel-top"><strong>COUNTRY DISTRIBUTION</strong><span>CATALOG LABELS · NOT VERIFIED</span></div>
+    <div id="bcGunnerCountries" class="bc-gunner-bars"></div>
+   </section>
+   <section class="bc-panel bc-gunner-distribution-panel">
+    <div class="bc-panel-top"><strong>SERVICE BRANCH DISTRIBUTION</strong><span>CATALOG LABELS</span></div>
+    <div id="bcGunnerBranches" class="bc-gunner-bars"></div>
+   </section>
+   <section class="bc-panel bc-gunner-distribution-panel">
+    <div class="bc-panel-top"><strong>UNIFORM WORLD COVERAGE</strong><span>WORLD TAGS</span></div>
+    <div id="bcGunnerWorlds" class="bc-gunner-bars"></div>
+   </section>
+   <section class="bc-panel bc-gunner-signals">
+    <div class="bc-panel-top"><strong>YOUR PERSONAL PREFERENCE SIGNALS</strong><span>AGGREGATE TOTALS ONLY</span></div>
+    <p id="bcGunnerSignals">Waiting for private metrics…</p>
+    <p class="bc-note">Gunner's priorities and saved goals are separate from your favorites and ratings. Similar-looking uniforms remain unverified unless confirmed from credible evidence.</p>
+   </section>
+  </div>
+ </div>
+</section>
+<section class="bc-page" id="bcPageUploads" hidden>
   <div class="bc-section-head"><div><h2>Private Media Intake</h2><p>The original Upload Queue is retained inside Uniform Intelligence. Full-resolution originals are preserved; AI sorting remains private.</p></div><span class="bc-scope">UPLOAD / HOLD / SORT</span></div>
   <div class="bc-upload-panel"><iframe id="bcUploadFrame" title="BLACKCELL private Upload Queue" loading="lazy"></iframe></div>
  </section>
