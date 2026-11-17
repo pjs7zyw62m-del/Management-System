@@ -65,6 +65,16 @@ function renderStreamEmbed(){
 }
 function switchTab(page){
  if(!data.owner&&page!=="uploads")return;
+ if(page==="teach"&&data.selected?.kind==="video"&&data.selected?.type==="asset"){
+  const source=$("bcPreview").querySelector("video"),target=$("bcTeachPreview").querySelector("video");
+  if(source&&target&&Number.isFinite(source.currentTime)){
+   source.pause();
+   const position=source.currentTime;
+   if(target.readyState>0){try{target.currentTime=position}catch{}}
+   else target.addEventListener("loadedmetadata",()=>{try{target.currentTime=position}catch{}},{once:true});
+   data.frame=Math.max(0,Math.floor(position));
+  }
+ }
  data.page=page;
  for(const b of document.querySelectorAll(".bc-tab"))b.setAttribute("aria-selected",String(b.dataset.tab===page));
  for(const n of ["catalog","teach","atlas","gunner","uploads"])$("bcPage"+n[0].toUpperCase()+n.slice(1)).hidden=n!==page;
@@ -187,9 +197,11 @@ async function preview(item){
   if(seq!==data.previewGeneration||data.selected?.key!==item.key){if(url.startsWith("blob:"))URL.revokeObjectURL(url);return}
   if(url.startsWith("blob:"))data.blob=url;
   for(const id of ["bcPreview","bcTeachPreview"]){
-   const node=document.createElement(item.kind==="video"?"video":"img");node.src=url;
+   const node=document.createElement(item.kind==="video"?"video":"img");
+   if(item.kind==="video"&&!url.startsWith("blob:"))node.crossOrigin="anonymous";
+   node.src=url;
    if(item.kind==="video"){
-    node.controls=true;node.preload="metadata";node.playsInline=true;node.crossOrigin=url.startsWith("blob:")?"":"anonymous";
+    node.controls=true;node.preload="metadata";node.playsInline=true;
     node.addEventListener("play",()=>{const other=id==="bcPreview"?"bcTeachPreview":"bcPreview";
       const peer=$(other).querySelector("video");if(peer&&!peer.paused)peer.pause()});
     if(id==="bcTeachPreview"){
@@ -207,6 +219,7 @@ async function preview(item){
        ". Capture current frame, then request AI suggestions.");
      };
      node.addEventListener("pause",sync);node.addEventListener("seeked",sync);
+     node.addEventListener("error",()=>{if(data.selected?.key===item.key)text("bcFrameStatus","This video codec or signed playback link cannot be decoded here. Use Choose Still Image from the video as a fallback.");});
     }
    }else node.alt="Protected BLACKCELL image";
    $(id).replaceChildren(node);
