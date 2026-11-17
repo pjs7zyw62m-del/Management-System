@@ -1,0 +1,31 @@
+name: BLACKCELL OMEGA Integrity
+on:
+  pull_request:
+    paths:
+      - 'blackcell-omega.html'
+      - 'blackcell-omega.css'
+      - 'blackcell-omega.js'
+      - 'blackcell-omega-core.js'
+      - 'blackcell-os.js'
+      - 'blackcell-os.html'
+      - 'supabase/migrations/20261117111000_omega_live_private_cases.sql'
+      - 'tests/blackcell-omega.test.mjs'
+      - '.github/workflows/blackcell-omega-test.yml'
+  workflow_dispatch:
+jobs:
+  omega-integrity:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check OMEGA and OS scripts
+        run: |
+          node --check blackcell-omega.js
+          node --check blackcell-omega-core.js
+          node --check blackcell-os.js
+      - name: Test OMEGA collections, cases and security
+        run: node --test tests/blackcell-omega.test.mjs
