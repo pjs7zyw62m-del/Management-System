@@ -695,6 +695,70 @@ async function analyzeVideoFrame(){
  }catch(err){text("bcFrameStatus","Video AI unavailable: "+String(err.message||err).slice(0,210)+". Existing video and references were not changed.")}
  finally{data.videoBusy=false;$("bcAnalyzeVideoFrame").disabled=!canVideoAnalyze(data.selected)}
 }
+// Opt-in timeline sampling: browser-decoded video frames, no automatic verification or publication.
+async function seekPreviewForScan(player,seconds){
+ if(!Number.isFinite(player.duration)||player.duration<=0||!player.seekable?.length)throw Error("Video cannot be seeked here. Choose a still instead.");
+ if(Math.abs(player.currentTime-seconds)<.1&&player.readyState>=2)return;
+ await new Promise((resolve,reject)=>{
+  let timer;
+  const clean=()=>{clearTimeout(timer);player.removeEventListener("seeked",done);player.removeEventListener("error",fail)};
+  const done=()=>{clean();resolve()};
+  const fail=()=>{clean();reject(Error("Cannot seek to "+fmtTime(seconds)))};
+  timer=setTimeout(()=>{clean();reject(Error("Seek timed out; use a shorter local video."))},12000);
+  player.addEventListener("seeked",done,{once:true});player.addEventListener("error",fail,{once:true});
+  try{player.currentTime=seconds}catch(err){clean();reject(err)}
+ });
+ if(player.readyState<2)throw Error("This frame did not decode.");
+}
+function renderTimelineResults(item,results){
+ const host=$("bcTimelineResults");host.replaceChildren();
+ for(const frame of results){
+  const row=E("button","bc-timeline-result");row.type="button";
+  row.append(E("strong","",fmtTime(frame.seconds)),E("span","",[frame.analysis.military_branch||"Unspecified",frame.analysis.camouflage_pattern||"Pattern unknown"].join(" · ")),E("small","","REVIEW UNVERIFIED"));
+  row.onclick=()=>{
+   if(data.selected?.key!==item.key)return;
+   const image=data.timelineFrames.get(item.key+":"+frame.seconds);if(!image)return;
+   setVideoStill(image,frame.seconds,"sampled video frame");fillForm(ref(item,frame.seconds));
+   $("bcTrainConfirmed").checked=false;
+   text("bcFrameStatus","Sample "+fmtTime(frame.seconds)+" selected. Review and correct before saving; nothing was published.");
+  };
+  host.append(row);
+ }
+}
+async function scanVideoTimeline(){
+ const item=data.selected;if(data.videoBusy||!canVideoAnalyze(item))return;
+ if(item.type!=="asset"){text("bcTimelineStatus","Bunny Stream is cross-origin; this feature currently needs a directly playable upload.");return}
+ const player=$("bcTeachPreview").querySelector("video");
+ if(!player||!Number.isFinite(player.duration)||player.duration<=0){text("bcTimelineStatus","Start video playback to load metadata, then try Scan 4 Video Moments.");return}
+ const duration=Math.min(player.duration,86400);
+ const times=[...new Set([.15,.38,.62,.85].map(x=>Math.max(0,Math.floor(Math.min(duration-0.15,duration*x)))))];
+ if(!times.length)return;
+ if(!confirm("Send up to "+times.length+" sampled video frames for private external AI analysis? This may consume "+times.length+" paid frame requests (daily server limit applies). The original video is not uploaded, and nothing is approved or published."))return;
+ data.videoBusy=true;$("bcAnalyzeVideoFrame").disabled=true;$("bcScanVideoTimeline").disabled=true;
+ const oldTime=player.currentTime,results=[];player.pause();
+ $("bcTimelineResults").replaceChildren();
+ try{
+  for(let i=0;i<times.length;i++){
+   if(data.selected?.key!==item.key)throw Error("Selected media changed.");
+   const seconds=times[i];
+   text("bcTimelineStatus","Scanning "+(i+1)+"/"+times.length+" at "+fmtTime(seconds)+"…");
+   await seekPreviewForScan(player,seconds);
+   const jpeg=encodeStill(player,player.videoWidth,player.videoHeight);
+   const r=await db.functions.invoke("blackcell-military-ai",{body:{action:"analyze_frame",source_kind:item.type,source_id:item.id,frame_seconds:seconds,preview_image:jpeg}});
+   if(r.error){let msg=r.error.message;try{msg=(await r.error.context?.json?.())?.error||msg}catch{}throw Error(msg)}
+   if(!r.data?.ok||!r.data.analysis)throw Error(r.data?.error||"AI returned no classification");
+   data.videoSuggestions.set(item.key+":"+seconds,r.data);data.timelineFrames.set(item.key+":"+seconds,jpeg);
+   results.push({seconds,analysis:r.data.analysis});renderTimelineResults(item,results);
+  }
+  text("bcTimelineStatus",results.length+" sampled frames analyzed. Select timestamps to review. All suggestions remain unverified.");
+ }catch(err){
+  text("bcTimelineStatus","Scanned "+results.length+"/"+times.length+" frames. Stopped: "+String(err?.message||err).slice(0,170)+". Existing results remain available.");
+ }finally{
+  if(data.selected?.key===item.key){try{player.currentTime=oldTime}catch{}}
+  data.videoBusy=false;$("bcAnalyzeVideoFrame").disabled=!canVideoAnalyze(data.selected);
+  $("bcScanVideoTimeline").disabled=!(canVideoAnalyze(data.selected)&&data.selected.type==="asset");
+ }
+}
 function drawPatternMatches(item){
  const root=$("bcPatternMatches");
  root.replaceChildren();
