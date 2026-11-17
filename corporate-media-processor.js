@@ -240,6 +240,22 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
    const {data,error}=await client.from('corp_social_assets').update(update).eq('id',id)
     .eq('review_status','pending').select('id').single();
    if(error||!data)throw Error('Media approval failed: '+errText(error));
+   // Human-corrected country, branch, World and tags become the next AI
+   // examples only AFTER the owner has approved the private suggestion.
+   // Preserve original_suggestion for a before/after correction audit.
+   let learningWarning=false;
+   if(current.kind==='photo'&&current.owner_id===state.user.id){
+    try{
+     const correction={
+      status:'approved',country_code:country,military_branch:branch,
+      military_category:subject,tags,updated_at:new Date().toISOString()
+     };
+     const {error:feedbackError}=await client.from('corp_social_ai_analysis')
+      .update(correction).eq('asset_id',id).eq('owner_id',state.user.id)
+      .eq('status','suggested');
+     if(feedbackError)learningWarning=true;
+    }catch(_){learningWarning=true}
+   }
    // New approved Military Library photos are archived to Bunny automatically.
    // Archiving is separate from approval: an archive error must never undo or
    // misrepresent the already-approved asset. The owner can retry from the
@@ -255,7 +271,7 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
    resetEditor();await refresh();await reload(true);
    if(archivePending)
     status('Photo approved and filed. Bunny copy not yet verified; use Connect Existing Military Library Photos to finish archival.');
-   toast(adult?'Approved to OWNER-ONLY private media archive.':'Media approved and filed in the selected World album.');
+   toast((adult?'Approved to OWNER-ONLY private media archive.':'Media approved and filed in the selected World album.')+(learningWarning?' AI correction memory could not be updated.':''));
   }catch(e){status('Media remains pending: '+errText(e))}
   finally{setBusy(false)}
  }
