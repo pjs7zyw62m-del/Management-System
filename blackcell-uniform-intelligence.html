@@ -86,6 +86,12 @@
       <label><span>SUBJECT CATEGORY</span><select id="bcTrainCategory"><option>Unsorted</option><option>Uniforms</option><option>Personnel</option><option>Insignia</option><option>Equipment</option><option>Training</option><option>Operations</option><option>Historical</option><option>Fitness / Exercise</option><option>Ceremonies</option><option>Aircraft</option><option>Ground Vehicles</option><option>Naval Vessels</option><option>Facilities</option><option>Other</option></select></label>
       <label class="bc-col-full"><span>PRECISE UNIFORM DESIGNATION</span><input id="bcTrainUniform" maxlength="160" placeholder="e.g. Royal Marines Commando No. 1 Dress"></label>
       <label class="bc-col-full"><span>CAMOUFLAGE PATTERN</span><input id="bcTrainPattern" maxlength="130" list="bcPatternOptions" placeholder="e.g. MARPAT, M81 Woodland, Flecktarn"><datalist id="bcPatternOptions"></datalist><small class="bc-reference-help">Pattern alone never proves a country or branch. Check insignia, garment design, provenance and era.</small></label>
+      <div class="bc-col-full bc-pattern-ai-panel">
+       <div class="bc-pattern-ai-toolbar"><button id="bcSuggestPattern" type="button" class="bc-btn bc-btn-outline" disabled>✦ Suggest Top 3 Patterns</button><small>Uses one paid photo-classification request with your consent. Results are private and remain unverified.</small></div>
+       <div id="bcPatternMatches" class="bc-pattern-match-results" aria-live="polite">
+        <p class="bc-pattern-ai-empty">Select one of your photos and ask AI to rank possible camouflage patterns. Scores are estimates, not measured probabilities.</p>
+       </div>
+      </div>
       <label><span>ERA (ONLY IF KNOWN)</span><input id="bcTrainEra" maxlength="90" placeholder="e.g. 1990s or 2010–present"></label>
       <label><span>VIDEO FRAME TIME</span><input id="bcTrainTime" type="text" inputmode="numeric" placeholder="00:00 / 01:35" value="00:00"></label>
       <label class="bc-col-full"><span>VISIBLE EVIDENCE — WHY THIS IDENTIFICATION?</span><textarea id="bcTrainEvidence" rows="3" maxlength="1200" placeholder="Describe a legible patch, distinct insignia, construction details, name tape, or official reference supporting this uniform. No guessing from a person's appearance."></textarea></label>
