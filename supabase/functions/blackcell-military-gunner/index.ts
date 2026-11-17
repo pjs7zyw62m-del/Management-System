@@ -139,8 +139,12 @@ Deno.serve(async req=>{
    "Recommend the next lawful, accurately sourced uniform uploads from real gaps; if insufficient evidence, say so. Your suggestions are private and need owner approval."
   ].join(" ");
  }
+ // Preserve the owner's actual question within Dolphin's payload limit even
+ // when additional collection statistics are supplied.
+ const question=message.slice(0,420);
+ const questionSuffix="\nOwner question: "+question;
  const richMessage=collectionBrief?
-  (collectionBrief+"\nOwner question: "+message.slice(0,420)).slice(0,1540):
+  collectionBrief.slice(0,Math.max(0,1540-questionSuffix.length))+questionSuffix:
   message;
  const payload={action:"start",message:richMessage,photo_context:photoContext,
   page_title:cut(input.page_title||"Military Library",100),
