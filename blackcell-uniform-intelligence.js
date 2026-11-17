@@ -285,6 +285,107 @@ function formBlank(){
 }
 const canVideoAnalyze=item=>!!item&&canTeach(item)&&item.kind==="video"&&item.owner===data.user?.id&&!item.adult;
 const videoSuggestion=item=>item?data.videoSuggestions.get(item.key+":"+data.frame)||null:null;
+// Video-frame JPEGs exist only in browser memory until explicit AI consent.
+// Bunny Stream iframes are cross-origin: owners can supply a local still instead.
+function encodeStill(element,width,height){
+ if(!width||!height||width<3||height<3)throw Error("This video frame is not decoded yet. Pause the video after playback starts.");
+ const canvas=document.createElement("canvas");
+ let ratio=Math.min(1,1280/Math.max(width,height));
+ for(let i=0;i<3;i++){
+  canvas.width=Math.max(1,Math.round(width*ratio));
+  canvas.height=Math.max(1,Math.round(height*ratio));
+  const context=canvas.getContext("2d");
+  if(!context)throw Error("Your browser cannot capture this frame.");
+  context.drawImage(element,0,0,canvas.width,canvas.height);
+  const jpeg=canvas.toDataURL("image/jpeg",i===0?.83:.66);
+  if(jpeg.length<4_150_000)return jpeg;
+  ratio*=.7;
+ }
+ throw Error("Selected still is larger than the private AI limit. Choose a smaller screenshot.");
+}
+function setVideoStill(url,seconds,kind){
+ const item=data.selected;
+ if(!canVideoAnalyze(item))throw Error("Select a non-restricted video that belongs to you.");
+ if(!Number.isInteger(seconds)||seconds<0||seconds>86400)throw Error("Video frame time must be 0–24 hours.");
+ data.frame=seconds;
+ $("bcTrainTime").value=fmtTime(seconds);
+ data.videoFrame={key:item.key,seconds,url,kind};
+ $("bcFrameStillPreview").src=url;$("bcFrameStillPreview").hidden=false;
+ $("bcAnalyzeVideoFrame").disabled=false;
+ text("bcFrameStatus","Selected "+kind+" at "+fmtTime(seconds)+". Ready for private AI suggestions; no frame has been uploaded yet.");
+ drawPatternMatches(item);
+}
+async function captureCurrentFrame(){
+ const item=data.selected;
+ if(!canVideoAnalyze(item)||item.type!=="asset"){
+  text("bcFrameStatus","Bunny Stream is an isolated player. Pause at the desired timestamp, save a still image, then choose it using the still-image control.");return false;
+ }
+ const player=$("bcTeachPreview").querySelector("video");
+ if(!player){text("bcFrameStatus","Video preview is not yet available. Select a screenshot using Choose Still Image.");return false}
+ try{
+  if(player.readyState<2)throw Error("Allow playback to start and pause at a visible frame first.");
+  player.pause();
+  const frame=Math.max(0,Math.floor(player.currentTime||0));
+  const jpeg=encodeStill(player,player.videoWidth,player.videoHeight);
+  setVideoStill(jpeg,frame,"captured frame");
+  return true;
+ }catch(err){text("bcFrameStatus","Frame capture unavailable: "+String(err.message||err).slice(0,190)+". Choose a still image instead.");return false}
+}
+async function pickVideoStill(file){
+ const item=data.selected;
+ if(!canVideoAnalyze(item))return;
+ if(!file)return;
+ if(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size<=0||file.size>12*1048576){
+  text("bcFrameStatus","Choose a JPEG, PNG or WEBP still image under 12 MB.");return;
+ }
+ let blobUrl;
+ try{
+  const seconds=secs($("bcTrainTime").value);
+  if(seconds>86400)throw Error("Frame timestamp exceeds 24 hours.");
+  blobUrl=URL.createObjectURL(file);
+  const image=new Image();image.src=blobUrl;
+  await image.decode();
+  if(data.selected?.key!==item.key)return;
+  const jpeg=encodeStill(image,image.naturalWidth,image.naturalHeight);
+  setVideoStill(jpeg,seconds,"local still");
+ }catch(err){text("bcFrameStatus","Could not read this video still: "+String(err.message||err).slice(0,170))}
+ finally{if(blobUrl)URL.revokeObjectURL(blobUrl)}
+}
+async function analyzeVideoFrame(){
+ const item=data.selected;
+ if(data.videoBusy||!canVideoAnalyze(item))return;
+ let seconds;
+ try{seconds=secs($("bcTrainTime").value);if(seconds>86400)throw Error("Time exceeds 24 hours")}catch(err){text("bcFrameStatus",String(err.message||err));return}
+ if(!data.videoFrame||data.videoFrame.key!==item.key||data.videoFrame.seconds!==seconds){
+  if(item.type==="asset"){
+   if(!(await captureCurrentFrame()))return;
+   seconds=data.videoFrame.seconds;
+  }else{
+   text("bcFrameStatus","For secure Bunny Stream, select a still image from "+fmtTime(seconds)+" before analyzing. The embedded player cannot share pixels across websites.");
+   return;
+  }
+ }
+ const frame=data.videoFrame;
+ if(!confirm("Send ONE still image at "+fmtTime(seconds)+" to BLACKCELL's external vision provider for private AI suggestions? This uses API credits (maximum 20 video frames/day). The video is never sent, and nothing is approved or published."))return;
+ data.videoBusy=true;$("bcAnalyzeVideoFrame").disabled=true;
+ text("bcFrameStatus","Analyzing one selected video frame. Your original stays private…");
+ try{
+  const r=await db.functions.invoke("blackcell-military-ai",{body:{
+   action:"analyze_frame",source_kind:item.type,source_id:item.id,
+   frame_seconds:seconds,preview_image:frame.url
+  }});
+  if(r.error){let details=r.error.message;try{const body=await r.error.context?.json?.();details=body?.error||details}catch{}throw Error(details)}
+  if(!r.data?.ok||!r.data.analysis)throw Error(r.data?.error||"AI returned no frame classification");
+  data.videoSuggestions.set(item.key+":"+seconds,r.data);
+  if(data.selected?.key===item.key&&data.frame===seconds){
+   fillForm(ref(item,seconds));
+   $("bcTrainConfirmed").checked=false;
+   text("bcTrainStatus","Unverified video frame suggestions loaded for "+fmtTime(seconds)+". Review country, branch, pattern, tags and evidence before saving a draft or verifying.");
+   text("bcFrameStatus","AI suggestions loaded. "+r.data.remaining+" video-frame requests remain today. Nothing was published.");
+  }
+ }catch(err){text("bcFrameStatus","Video AI unavailable: "+String(err.message||err).slice(0,210)+". Existing video and references were not changed.")}
+ finally{data.videoBusy=false;$("bcAnalyzeVideoFrame").disabled=!canVideoAnalyze(data.selected)}
+}
 function drawPatternMatches(item){
  const root=$("bcPatternMatches");
  root.replaceChildren();
@@ -337,7 +438,7 @@ function drawPatternMatches(item){
 function fillForm(exact){
  const item=data.selected;formBlank();text("bcTeachTitle",item?.title||"No media selected");
  text("bcTeachSourceHint",item?[item.source,item.kind,item.status].join(" · "):"Select a photo or video in the inventory");
- const allowed=canTeach(item),r=exact||ref(item,data.frame)||ref(item,0);
+ const allowed=canTeach(item),r=exact||ref(item,data.frame)||(item?.kind==="video"?null:ref(item,0));
  $("bcSaveDraft").disabled=!allowed;$("bcVerifyReference").disabled=!allowed||!!item?.adult;
  $("bcTrainTime").disabled=!allowed||item?.kind!=="video";$("bcDeleteReference").hidden=!r;
  $("bcVideoFrameControls").hidden=!canVideoAnalyze(item);
@@ -439,11 +540,22 @@ function init(){
  $("bcOpenAdmin").onclick=()=>{location.href="corporate-media-admin.html"};
  const aiButton=$("bcAnalyzeSelected");if(aiButton)aiButton.onclick=()=>void analyze();
  $("bcSuggestPattern").onclick=()=>void analyze();
+ $("bcCaptureFrame").onclick=()=>void captureCurrentFrame();
+ $("bcFrameStillInput").onchange=()=>void pickVideoStill($("bcFrameStillInput").files?.[0]);
+ $("bcAnalyzeVideoFrame").onclick=()=>void analyzeVideoFrame();
  $("bcSaveDraft").onclick=()=>void save("draft");
  $("bcTrainForm").onsubmit=ev=>{ev.preventDefault();void save("verified")};
  $("bcDeleteReference").onclick=()=>void removeRef();
  $("bcTrainWorld").onchange=()=>{if($("bcTrainWorld").value!=="military")$("bcTrainBranch").value="Unspecified"};
- $("bcTrainTime").onchange=()=>{if(data.selected?.kind==="video"){try{data.frame=secs($("bcTrainTime").value);fillForm(ref(data.selected,data.frame))}catch(err){text("bcTrainStatus",err.message)}}};
+ $("bcTrainTime").onchange=()=>{if(data.selected?.kind==="video"){
+  try{
+   const seconds=secs($("bcTrainTime").value);if(seconds>86400)throw Error("Frame timestamp exceeds 24 hours.");
+   data.frame=seconds;data.videoFrame=null;$("bcFrameStillPreview").hidden=true;
+   const player=$("bcTeachPreview").querySelector("video");
+   if(player&&Number.isFinite(player.duration)&&seconds<player.duration){player.currentTime=seconds;player.pause()}
+   fillForm(ref(data.selected,seconds));text("bcFrameStatus","Frame "+fmtTime(seconds)+" selected. Capture it or choose a matching still image.");
+  }catch(err){text("bcFrameStatus",err.message)}
+ }};
  window.addEventListener("pagehide",clearPreview);
  const names="US GB CA AU NZ FR DE NL PL UA RU CN TW JP KR SG IN ID PH TH VN TR IL SE FI NO DK CH AT BE IT ES PT GR CZ RO RS BR AR ZA EG PK AE SA MX".split(" ");
  for(const code of names){const option=document.createElement("option");option.value=code;option.label=country(code);$("bcCountryOptions").append(option)}
