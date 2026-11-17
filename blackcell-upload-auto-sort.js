@@ -4,7 +4,7 @@
  * Existing approved corrections serve as few-shot memory in blackcell-military-ai.
  * Auto-processing has an account-local daily cap in addition to the server cap.
  */
-import {corporateClient} from "./corp-auth.js?v=20261114-transport-classification";
+import {corporateClient} from "./corp-auth.js?v=20261117-os-perf1";
 const client=corporateClient(),$=id=>document.getElementById(id);
 const WORLDS={
  military:"Military World",police:"Law Enforcement World",fire:"Fire & Rescue World",
