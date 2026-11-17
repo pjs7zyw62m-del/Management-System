@@ -3,7 +3,7 @@
    Manual photo ratings and favorites are private; no sensitive-trait inference,
    cross-member profiling, facial identification, or automatic AI spending.
 */
-import {buildBehavioralAffinity,rankWithDiversity} from './blackcell-adaptive-ranker.js?v=20261117-aggressive-r1';
+import {buildBehavioralAffinity,rankWithDiversity} from './blackcell-adaptive-ranker.js?v=20261117-sevenworlds-r1';
 export function createNetworkPersonalization({client,state,toast,onChanged}){
  const id=value=>document.getElementById(value);
  const FOCUS={
@@ -30,12 +30,12 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
  const DEFAULT=()=>({user_id:state.user?.id,enabled:false,personalize_feed:false,service_focus:'all',
    rediscovery_enabled:false,rediscovery_frequency:'occasional',
    preferred_topics:[],muted_topics:[]});
- let current=DEFAULT(),tastes=[],favorites=new Set(),interestSignals=new Map(),loaded=false,saving=false;
+ let current=DEFAULT(),tastes=[],favorites=new Set(),interestSignals=new Map(),videoSignals=new Map(),loaded=false,saving=false;
  let affinityFn=null,affinitySource=null,signalRefreshTimer=null,signalRefreshing=false,signalAgain=false;
  function affinity(asset){
   if(affinitySource!==state.assets||!affinityFn){
    affinitySource=state.assets;
-   affinityFn=buildBehavioralAffinity(state.assets||[],tastes,favorites,interestSignals);
+   affinityFn=buildBehavioralAffinity(state.assets||[],tastes,favorites,interestSignals,videoSignals);
   }
   return affinityFn(asset);
  }
@@ -95,6 +95,12 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
    if(direct.rating&&direct.rating<=2)score-=34;
   }
   if(favorites.has(asset?.id))score+=52;
+  if(asset?.kind==='video'){
+   const video=videoSignals.get(asset.id);
+   if(video?.reaction==='more')score+=75;
+   if(video?.reaction==='less')score-=130;
+   if(video?.reaction!=='less')score+=Math.min(3,Number(video?.engaged_views)||0)*12;
+  }
   // Explicit Rediscovery/Trigger feedback is stronger than passive viewing.
   const signal=interestSignals.get(asset?.id);
   if(current.rediscovery_enabled&&signal?.rediscovery_feedback==='dislike')score-=180;
@@ -141,7 +147,7 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
  async function load(){
   if(!state.user?.id)return;
   const uid=state.user.id;
-  const [options,reactions,liked,engagements]=await Promise.all([
+  const [options,reactions,liked,engagements,videos]=await Promise.all([
    client.from('corp_social_personalization_settings')
      .select('user_id,enabled,personalize_feed,rediscovery_enabled,rediscovery_frequency,preferred_topics,muted_topics,service_focus')
      .eq('user_id',uid).maybeSingle(),
@@ -151,12 +157,15 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
      .select('asset_id').eq('user_id',uid).limit(2000),
    client.from('corp_social_photo_rediscovery')
      .select('asset_id,engaged_views,zoom_engaged_views,rediscovery_feedback')
-     .eq('user_id',uid).limit(2000)
+     .eq('user_id',uid).limit(2000),
+   client.from('corp_social_video_interest')
+     .select('asset_id,reaction,engaged_views').eq('user_id',uid).limit(2000)
   ]);
   if(options.error)console.warn('Personalization settings could not be loaded:',options.error.message);
   if(reactions.error)console.warn('Photo feedback unavailable:',reactions.error.message);
   if(liked.error)console.warn('Personalized favorites unavailable:',liked.error.message);
   if(engagements.error)console.warn('Private photo interest signals unavailable:',engagements.error.message);
+  if(videos.error)console.warn('Private video preferences unavailable:',videos.error.message);
   current=options.data?{
    ...DEFAULT(),...options.data,
    service_focus:FOCUS[options.data.service_focus]?options.data.service_focus:'all',
@@ -166,6 +175,7 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
   tastes=reactions.data||[];
   favorites=new Set((liked.data||[]).map(a=>a.asset_id));
   interestSignals=new Map((engagements.data||[]).map(row=>[row.asset_id,row]));
+  videoSignals=new Map((videos.data||[]).map(row=>[row.asset_id,row]));
   affinityFn=null;affinitySource=null;
   loaded=true;updateButtons();
  }
@@ -180,7 +190,8 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
   const label=id('personalizationCurrentStatus');
   if(label)label.textContent=enabled()?
    'LIVE ADAPTIVE RANKING · '+(tastes.length+favorites.size+
-    [...interestSignals.values()].filter(x=>x.engaged_views||x.zoom_engaged_views||x.rediscovery_feedback).length)+
+    [...interestSignals.values()].filter(x=>x.engaged_views||x.zoom_engaged_views||x.rediscovery_feedback).length+
+    videoSignals.size)+
    ' PRIVATE FEEDBACK SIGNALS':'OFF · PRIVATE UNTIL YOU OPT IN';
  }
  function renderChoices(){
