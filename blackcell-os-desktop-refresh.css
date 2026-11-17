@@ -95,3 +95,49 @@
 @media(prefers-reduced-motion:reduce){
   #desktop .app{transition:none!important}
 }
+
+
+/* BLACKCELL OS: move individual widgets while retaining their live data/buttons. */
+#desktop .workspace{position:relative}
+#desktop .bc-widget-handle{display:flex;align-items:center;width:100%;min-height:27px;padding:2px 5px 8px;
+ margin:0 0 9px;border:0;border-bottom:1px solid #ffffff19;background:transparent;color:#bfc0c7;
+ text-align:left;font:600 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+ letter-spacing:.025em;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+#desktop .bc-widget-handle:hover{color:#f9f9fb}
+#desktop .bc-widget-handle:focus-visible{outline:2px solid #ed8b99;outline-offset:1px}
+#desktop .bc-widget-dragging{z-index:100!important;box-shadow:0 18px 64px #000b,0 0 0 1px #d4516380!important}
+#desktop .bc-widget-dragging .bc-widget-handle{cursor:grabbing}
+#desktop .bc-widget-target{outline:2px solid #ce6070;outline-offset:3px}
+#desktop .bc-widget-reset{min-height:26px;padding:4px 8px;background:#ffffff0e;border:1px solid #ffffff20;
+ border-radius:7px;color:#cdd0d5;font:600 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+#desktop .bc-widget-reset:hover{background:#ffffff1b}
+#desktop .bc-widget-reset[hidden]{display:none!important}
+@media(min-width:901px){
+ #desktop .workspace.bc-widget-free-mode{grid-template-columns:minmax(0,1fr)!important}
+ #desktop .workspace.bc-widget-free-mode>.side.bc-system-panel{position:absolute;inset:0;width:100%;height:100%;
+  min-height:0;display:block;z-index:12;pointer-events:none;margin:0;padding:0;overflow:visible}
+ #desktop .workspace.bc-widget-free-mode>.side.bc-system-panel>.bc-panel-heading,
+ #desktop .workspace.bc-widget-free-mode>.side.bc-system-panel>.release{display:none!important}
+ #desktop .workspace.bc-widget-free-mode>.side.bc-system-panel>.bc-draggable-widget{
+  position:absolute;max-width:min(245px,calc(100% - 24px));width:245px;margin:0;pointer-events:auto;z-index:1}
+}
+@media(max-width:900px){#desktop .bc-widget-handle{min-height:38px}}
+@media(prefers-reduced-motion:reduce){#desktop .bc-widget-dragging{transition:none!important}}
+/* Apple-like restart confirmation with accessible Cancel/Restart controls. */
+.bc-restart-dialog{width:min(420px,calc(100vw - 32px));margin:auto;padding:0;border-radius:22px;
+ background:linear-gradient(140deg,#2c2c33,#141418);border:1px solid #ffffff40;color:#f5f5fa;
+ box-shadow:0 26px 110px #000d;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.bc-restart-dialog:not([open]){display:none}
+.bc-restart-dialog::backdrop{background:#0009;backdrop-filter:blur(9px)}
+.bc-restart-card{padding:29px 30px 25px;display:flex;flex-direction:column;align-items:center;gap:11px;text-align:center}
+.bc-restart-symbol{width:55px;height:55px;display:grid;place-items:center;border-radius:17px;
+ background:linear-gradient(135deg,#45454e,#1d1d23);border:1px solid #ffffff27;font-size:35px}
+.bc-restart-card h2{font-size:19px;margin:3px 0 0;letter-spacing:-.025em}
+.bc-restart-card p{margin:0;max-width:330px;font-size:13px;line-height:1.6;color:#c1c1cb}
+.bc-restart-actions{display:flex;gap:9px;width:100%;margin-top:12px}
+.bc-restart-actions button{flex:1;min-height:41px;border-radius:11px;border:1px solid #ffffff25;
+ color:#f5f5f9;font:600 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.bc-restart-cancel{background:#3b3b43}.bc-restart-confirm{background:linear-gradient(145deg,#b53548,#892034);border-color:#e16b7e!important}
+.bc-restart-actions button:hover{filter:brightness(1.12)}
+.bc-restart-actions button:focus-visible{outline:2px solid #e68695;outline-offset:2px}
+@media(max-width:620px){.bc-restart-card{padding:25px 20px}.bc-restart-actions button{min-height:44px}}
