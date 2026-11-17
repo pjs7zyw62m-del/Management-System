@@ -14,7 +14,7 @@ import os
 from urllib.parse import urlsplit
 
 import httpx
-from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException, Request\nfrom fastapi.exceptions import RequestValidationError\nfrom fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
@@ -25,6 +25,13 @@ app = FastAPI(
     redoc_url=None,
     openapi_url=None,
 )
+
+
+@app.exception_handler(RequestValidationError)
+async def private_validation_error(_request: Request, _error: RequestValidationError):
+    # FastAPI's default 422 can echo invalid request inputs, including base64 images.
+    # Never return or log sensitive image bytes or prompt text in validation errors.
+    return JSONResponse(status_code=422, content={"detail": "Invalid private inference request"})
 
 
 class VisionRequest(BaseModel):
