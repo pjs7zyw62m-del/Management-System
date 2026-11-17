@@ -225,10 +225,7 @@ function switchTab(page,keepSelection=false){
   list();
  }
  if(page==="teach"){
-  if(!keepSelection&&flowStage(data.selected)!=="teach"){
-   const next=data.items.find(item=>flowStage(item)==="teach");
-   if(next)select(next);
-  }
+  if(!keepSelection&&flowStage(data.selected)!=="teach")selectNextTechItem();
   renderTechQueue();fillForm();
  }
  if(data.selected?.type==="stream_video")renderStreamEmbed();
@@ -320,6 +317,12 @@ function list(){
    $("bcTeachSelected").disabled=true;$("bcAnalyzeSelected").disabled=true;
   }
  }
+}
+function selectNextTechItem(){
+ const next=data.items.find(item=>flowStage(item)==="teach");
+ if(next){select(next);return}
+ data.selected=null;data.frame=0;clearPreview();
+ placeholder("Tech AI queue is clear · completed records have moved right");
 }
 function renderTechQueue(){
  const host=$("bcTechQueue");if(!host)return;
@@ -734,7 +737,12 @@ async function save(status){
     }
    }catch(err){publishingNote=" Auto-publish check unavailable; photo remains pending. "+String(err.message||err).slice(0,110)}
   }
-  text("bcTrainStatus",status==="verified"?"Verified reference saved. Future photo AI may consult this evidence."+publishingNote:"Private draft saved. It won't affect AI until verified.");
+  const completedMessage=status==="verified"?"Verified reference saved. Future photo AI may consult this evidence."+publishingNote:"Private draft saved. It won't affect AI until verified.";
+  if(status==="verified"&&data.page==="teach"&&flowStage(data.selected)!=="teach"){
+   const nextStage=flowStage(data.selected);
+   selectNextTechItem();fillForm();render();
+   text("bcTechQueueStatus","Verified reference moved to "+(nextStage==="completed"?"Completed Inventory":"Review & Approve")+". Tech AI now shows the next unfinished record.");
+  }else text("bcTrainStatus",completedMessage);
  }catch(err){text("bcTrainStatus","Save failed: "+String(err.message||err).slice(0,200))}
  finally{data.saving=false}
 }
@@ -768,7 +776,16 @@ async function analyze(){
     }else if(gate.data?.ok)approvalText="AI analyzed privately; publication checklist "+Number(gate.data.readiness||0)+"/100. Approval remains yours until 100/100. AI confidence alone is not proof.";
    }catch(error){approvalText="AI suggestions saved. Auto-publication check unavailable; photo remains pending: "+String(error.message||error).slice(0,115)}
   }
-  switchTab("teach",true);render();text("bcTrainStatus",approvalText);
+  const nextStage=flowStage(item);
+  if(nextStage==="completed"){
+   switchTab("completed");render();
+   text("bcCatalogMeta",approvalText);
+  }else if(nextStage==="review"){
+   switchTab("review");render();
+   text("bcProcessStatus",approvalText);
+  }else{
+   switchTab("teach",true);render();text("bcTrainStatus",approvalText);
+  }
  }catch(err){alert("AI classification unavailable: "+String(err.message||err).slice(0,200))}
  finally{if(button)button.disabled=false}
 }
