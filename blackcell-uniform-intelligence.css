@@ -160,3 +160,24 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}a{color:#e6b0bf}
 @media(max-width:1300px){.bc-gunner-overview{grid-template-columns:repeat(3,minmax(0,1fr))}.bc-gunner-goal-form{grid-template-columns:repeat(2,minmax(0,1fr))}.bc-gunner-goal-form .bc-btn{grid-column:span 2}}
 @media(max-width:820px){#bcPageGunner{overflow:auto}.bc-gunner-content{display:flex;flex-direction:column;overflow:visible}.bc-gunner-col{overflow:visible}.bc-gunner-overview{grid-template-columns:repeat(3,minmax(0,1fr))}.bc-gunner-missions{max-height:65vh}.bc-gunner-bars{max-height:34vh}.bc-gunner-goals{max-height:40vh}.bc-gunner-distribution-panel{min-height:180px}.bc-gunner-head{align-items:flex-start}.bc-gunner-tools{align-self:start}}
 @media(max-width:490px){.bc-gunner-overview{grid-template-columns:repeat(2,minmax(0,1fr))}.bc-gunner-head{flex-wrap:wrap}.bc-gunner-tools{width:100%}.bc-gunner-tools .bc-btn{flex:1}.bc-gunner-toolbar #bcGunnerState{max-width:100%;white-space:normal}.bc-gunner-toolbar #bcGunnerGenerated{display:none}}
+
+/* AI camouflage candidate matching: unverified scores, owner-controlled draft only. */
+.bc-pattern-ai-panel{display:flex;flex-direction:column;gap:9px;min-width:0}
+.bc-pattern-ai-toolbar{display:flex;align-items:center;gap:10px}
+.bc-pattern-ai-toolbar .bc-btn{flex:none;padding:8px 11px;min-height:34px}
+.bc-pattern-ai-toolbar small{font-size:9px;line-height:1.5;color:#b7adb7}
+.bc-pattern-match-results{display:flex;flex-direction:column;gap:8px;min-width:0}
+.bc-pattern-ai-empty{font-size:10px;color:#aaa1ad;line-height:1.6;margin:0;padding:10px 12px;border-radius:10px;background:#19151d;border:1px solid #ffffff1f}
+.bc-pattern-match-summary{font-size:10px;line-height:1.65;color:#d8bec8;margin:0;padding:10px 12px;border:1px solid #ffffff25;border-radius:10px;background:#251a21}
+.bc-pattern-match-card{display:flex;flex-direction:column;align-items:flex-start;gap:7px;min-width:0;padding:11px 12px;border:1px solid #ffffff20;border-radius:12px;background:linear-gradient(145deg,#15131a,#0c0b10)}
+.bc-pattern-match-card.bc-pattern-best{border-color:#9b5267a8;background:linear-gradient(140deg,#2a1721,#100d14)}
+.bc-pattern-match-head{display:flex;align-items:flex-start;justify-content:space-between;width:100%;gap:12px}
+.bc-pattern-match-title{display:flex;flex-direction:column;min-width:0;gap:3px}
+.bc-pattern-match-title strong{font-size:13px;color:#eee4eb;line-height:1.5;overflow-wrap:anywhere}
+.bc-pattern-match-rank{font-size:8px;font-weight:800;letter-spacing:.1em;color:#c3869b}
+.bc-pattern-match-score{font-size:13px;font-weight:800;color:#f2c0cf;white-space:nowrap;font-variant-numeric:tabular-nums}
+.bc-pattern-match-reason,.bc-pattern-match-difference{font-size:10px;line-height:1.6;color:#c6bac5;margin:0}
+.bc-pattern-match-difference{color:#a8a0af}
+.bc-pattern-use{font-size:10px!important;min-height:29px;padding:7px 11px!important}
+.bc-pattern-match-warning{font-size:9px;line-height:1.55;color:#aaa0ab}
+@media(max-width:550px){.bc-pattern-ai-toolbar{flex-wrap:wrap}.bc-pattern-ai-toolbar .bc-btn{width:100%}}
