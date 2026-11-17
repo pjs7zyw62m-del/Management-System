@@ -36,7 +36,7 @@ function priorityScore(stats,goal){
  const verified=goal.dimension==="country"&&N(stats.references?.verified)<N(stats.media?.photos)?1:0.4;
  const fresh=N(stats.media?.uploaded_week)>0?1:0.5;
  const total=0.35*gap+0.25*preferred+0.20*variety+0.10*verified+0.10*fresh;
- return Math.min(99,Math.max(1,Math.round(100*total)));
+ return Math.min(99,Math.max(1,Math.round(100*total+(N(goal.priority)-3)*6)));
 }
 function createMissions(stats,goals){
  const media=stats.media||{},video=stats.stream||{},refs=stats.references||{},dupes=stats.duplicates||{},taste=stats.interest||{};
