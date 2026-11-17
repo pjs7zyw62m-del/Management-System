@@ -18,4 +18,4 @@ jobs:
         with:
           node-version: '24'
       - name: Validate Gunner production quota calculations
-        run: node --experimental-default-type=module --test tests/gunner-production.test.mjs
+        run: node --test tests/gunner-production.test.mjs
