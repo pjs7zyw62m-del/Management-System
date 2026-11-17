@@ -66,7 +66,7 @@ async function loadMemory(){
  if(!data.owner)return;
  const [r,a]=await Promise.all([
   db.from("corp_uniform_training_references").select("*").eq("owner_id",data.user.id).order("updated_at",{ascending:false}).limit(1000),
-  db.from("corp_social_ai_analysis").select("asset_id,status,country_code,military_branch,military_category,uniform_type,confidence,tags,notes").eq("owner_id",data.user.id).limit(1000)
+  db.from("corp_social_ai_analysis").select("asset_id,status,country_code,military_branch,military_category,uniform_type,camouflage_pattern,confidence,tags,notes,original_suggestion").eq("owner_id",data.user.id).limit(1000)
  ]);
  if(r.error)throw Error(r.error.message);
  data.learning=r.data||[];data.ai=a.data||[];
@@ -230,12 +230,60 @@ function formBlank(){
  for(const id of ["bcTrainCountry","bcTrainUniform","bcTrainPattern","bcTrainEra","bcTrainEvidence","bcTrainLookalikeCountry","bcTrainLookalikeBranch","bcTrainDifferences","bcTrainTags"])$(id).value="";
  $("bcTrainWorld").value="unsorted";$("bcTrainBranch").value="Unspecified";$("bcTrainCategory").value="Unsorted";$("bcTrainTime").value="00:00";$("bcTrainConfirmed").checked=false;
 }
+function drawPatternMatches(item){
+ const root=$("bcPatternMatches");
+ root.replaceChildren();
+ const photoAllowed=!!item&&item.type==="asset"&&item.kind==="photo"&&item.owner===data.user?.id&&!item.adult;
+ $("bcSuggestPattern").disabled=!photoAllowed;
+ if(!photoAllowed){
+  root.append(E("p","bc-pattern-ai-empty","Automatic pattern ranking requires one of your own non-restricted photos. For video, verify a selected frame manually."));
+  return;
+ }
+ const row=ai(item),saved=row?.original_suggestion?.camouflage_matches;
+ if(!saved||!Array.isArray(saved.candidates)){
+  if(row?.camouflage_pattern)root.append(E("p","bc-pattern-ai-empty","Previous AI pattern guess: "+row.camouflage_pattern+". This is unranked; run a fresh AI suggestion for comparison."));
+  else root.append(E("p","bc-pattern-ai-empty","No ranked camouflage analysis yet. Choose Suggest Top 3 Patterns to inspect the photo and compare possible patterns."));
+  return;
+ }
+ const visibility=String(saved.visibility||"not_visible");
+ const candidates=saved.candidates.slice(0,3).filter(x=>x&&typeof x.name==="string"&&x.name.length);
+ const lead=E("p","bc-pattern-match-summary",
+  "Visibility: "+visibility.replaceAll("_"," ")+" · "+
+  (saved.summary||"AI reviewed visible camouflage details.")+
+  " Ranked match scores are estimates, not calibrated probabilities.");
+ root.append(lead);
+ if(!candidates.length){
+  root.append(E("p","bc-pattern-ai-empty","No defensible named camouflage pattern identified. Leave the field blank or enter a manually verified designation."));
+  return;
+ }
+ candidates.sort((a,b)=>(Number(b.score)||0)-(Number(a.score)||0));
+ candidates.forEach((x,i)=>{
+  const card=E("article","bc-pattern-match-card"+(i===0?" bc-pattern-best":""));
+  const top=E("div","bc-pattern-match-head");
+  const title=E("div","bc-pattern-match-title");
+  title.append(E("span","bc-pattern-match-rank",i===0?"BEST VISUAL MATCH":"POSSIBILITY "+(i+1)),E("strong","",x.name));
+  const score=E("span","bc-pattern-match-score",Math.max(0,Math.min(100,Math.round(Number(x.score)||0)))+"/100");
+  top.append(title,score);
+  const reason=E("p","bc-pattern-match-reason",x.visual_evidence||"No distinguishing visual evidence reported.");
+  const clue=E("p","bc-pattern-match-difference",x.distinguishing_clue||"Check insignia and official issue patterns for this design.");
+  const use=E("button","bc-btn bc-btn-outline bc-pattern-use","Use as draft");
+  use.type="button";
+  use.onclick=()=>{
+   $("bcTrainPattern").value=String(x.name).slice(0,130);
+   $("bcTrainConfirmed").checked=false;
+   text("bcTrainStatus","Selected an unverified AI pattern suggestion. Check a reliable pattern reference and visible features before approving this label; no record has been saved.");
+  };
+  card.append(top,reason,clue,use);root.append(card);
+ });
+ root.append(E("small","bc-pattern-match-warning","Pattern resemblance cannot prove nationality, branch, rank, service history, or the authenticity of a uniform. Compare against source imagery and verify manually."));
+}
 function fillForm(exact){
  const item=data.selected;formBlank();text("bcTeachTitle",item?.title||"No media selected");
  text("bcTeachSourceHint",item?[item.source,item.kind,item.status].join(" · "):"Select a photo or video in the inventory");
  const allowed=canTeach(item),r=exact||ref(item,data.frame)||ref(item,0);
  $("bcSaveDraft").disabled=!allowed;$("bcVerifyReference").disabled=!allowed||!!item?.adult;
  $("bcTrainTime").disabled=!allowed||item?.kind!=="video";$("bcDeleteReference").hidden=!r;
+ drawPatternMatches(item);
  if(!allowed){text("bcTrainStatus","Only photos and video records can be used as training references.");return}
  const aiResult=ai(item),current=labels(item);
  $("bcTrainWorld").value=r?.world||current.world;
@@ -244,7 +292,7 @@ function fillForm(exact){
  const category=r?.category||current.category;
  $("bcTrainCategory").value=[...$("bcTrainCategory").options].some(o=>o.value===category)?category:"Unsorted";
  $("bcTrainUniform").value=r?.uniform_name||aiResult?.uniform_type||"";
- $("bcTrainPattern").value=r?.camouflage_pattern||"";
+ $("bcTrainPattern").value=r?.camouflage_pattern||aiResult?.camouflage_pattern||"";
  $("bcTrainEra").value=r?.era||item.era||"";
  $("bcTrainEvidence").value=r?.visual_evidence||aiResult?.notes||"";
  $("bcTrainLookalikeCountry").value=r?.lookalike_country||"";
@@ -295,7 +343,7 @@ async function removeRef(){
 }
 async function analyze(){
  const item=data.selected;if(!item||item.type!=="asset"||item.kind!=="photo"||item.owner!==data.user.id||item.adult)return;
- if(!confirm("Send a private photo to an external AI provider for uniform suggestions? This may use API credits; the photo will not be published."))return;
+ if(!confirm("Send this privately stored photo to an external AI provider for uniform and top-three camouflage suggestions? This uses API credits; nothing is published."+(data.page==="teach"?" Any unsaved form values will be refreshed by the result.":"")))return;
  const button=$("bcAnalyzeSelected");if(button)button.disabled=true;
  try{
   const r=await db.functions.invoke("blackcell-military-ai",{body:{action:"analyze",asset_id:item.id}});
@@ -327,6 +375,7 @@ function init(){
  $("bcTeachSelected").onclick=()=>{data.frame=0;switchTab("teach")};
  $("bcOpenAdmin").onclick=()=>{location.href="corporate-media-admin.html"};
  const aiButton=$("bcAnalyzeSelected");if(aiButton)aiButton.onclick=()=>void analyze();
+ $("bcSuggestPattern").onclick=()=>void analyze();
  $("bcSaveDraft").onclick=()=>void save("draft");
  $("bcTrainForm").onsubmit=ev=>{ev.preventDefault();void save("verified")};
  $("bcDeleteReference").onclick=()=>void removeRef();
