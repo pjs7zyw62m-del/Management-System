@@ -45,7 +45,7 @@ function onParentMessage(event){
  if(command.action==="status"){informParent();return}
  if(command.action==="enable"){setAutomation(true);return}
  if(command.action==="pause"){setAutomation(false);return}
- if(command.action==="refresh"){void refresh();return}
+ if(command.action==="refresh"){void refresh().then(schedule);return}
  if(command.action==="run"){void processSafely({manual:true})}
 }
 async function processSafely(options={}){
@@ -271,6 +271,13 @@ function init(){
  window.addEventListener("blackcell:upload-queue-ready",ready);
  if(window.BLACKCELL_UPLOAD_QUEUE_CONTEXT)void ready({detail:window.BLACKCELL_UPLOAD_QUEUE_CONTEXT});
  window.addEventListener("blackcell:upload-saved",ev=>void saved(ev));
- window.addEventListener("pagehide",()=>{paused=true;clearTimeout(refreshTimer)});
+ // Low-frequency discovery of newly uploaded photos from other BLACKCELL pages.
+ // Runs only while the site remains open and the owner enabled automatic sorting.
+ // Existing photo classifiers and the daily budget check prevent repeat paid work.
+ const discovery=setInterval(()=>{
+  if(!owner||!enabled||paused||busy||!loaded||refreshInFlight||dailyCount()>=AUTO_LIMIT)return;
+  void refresh().then(schedule);
+ },120000);
+ window.addEventListener("pagehide",()=>{paused=true;clearTimeout(refreshTimer);clearInterval(discovery)});
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
