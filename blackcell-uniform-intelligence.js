@@ -515,6 +515,70 @@ function drawPatterns(){
  }
  root.append(lessons);
 }
+// Read-only measurements. This never implies image-embedding or weight training.
+function renderLearningDashboard(){
+ const kpis=$("bcLearningKpis"),details=$("bcLearningDetails"),coverage=$("bcLearningCoverage");
+ if(!kpis||!details||!coverage)return;
+ kpis.replaceChildren();details.replaceChildren();coverage.replaceChildren();
+ if(!data.memoryLoaded){
+  details.append(E("p","bc-note","Loading owner-only AI analysis and reference data…"));
+  coverage.append(E("p","bc-note","Waiting for catalog records and correction memory."));
+  return;
+ }
+ const verified=data.learning.filter(r=>r.reference_status==="verified"),drafts=data.learning.filter(r=>r.reference_status!=="verified");
+ const analyzed=data.ai.length,used=data.ai.filter(x=>Number(x.learned_from_count)>0).length;
+ const totalConsultations=data.ai.reduce((n,x)=>n+Math.max(0,Number(x.learned_from_count)||0),0);
+ const videoRefs=verified.filter(r=>r.source_kind==="stream_video"||data.items.some(i=>i.id===r.source_id&&i.kind==="video")).length;
+ const changes=[];
+ for(const ref of verified){
+  if(ref.source_kind!=="asset")continue;
+  const record=data.ai.find(x=>x.asset_id===ref.source_id),original=record?.original_suggestion;
+  if(!original||typeof original!=="object")continue;
+  const pairs=[["country_code","country_code"],["branch","military_branch"],["category","military_category"],["uniform_name","uniform_type"],["camouflage_pattern","camouflage_pattern"]];
+  const differing=pairs.filter(([left,right])=>String(ref[left]||"").trim().toLowerCase()!==String(original[right]||"").trim().toLowerCase());
+  if(differing.length)changes.push({ref,fields:differing.map(x=>x[0])});
+ }
+ const metric=(value,name,note)=>{
+  const card=E("article","bc-learning-metric");
+  card.append(E("strong","",value),E("span","",name),E("small","",note));
+  kpis.append(card);
+ };
+ metric(verified.length,"VERIFIED REFERENCES","Owner-confirmed training examples");
+ metric(used+" / "+analyzed,"ANALYSES WITH RECALL","Saved analyses using earlier examples");
+ metric(changes.length,"CHANGED IDENTIFICATIONS","Verified references differing from original AI output");
+ metric(videoRefs,"VERIFIED VIDEO FRAMES","Timestamped reference examples");
+ metric(data.videoUsageToday===null?"—":data.videoUsageToday,"VIDEO AI REQUESTS TODAY","UTC day · server-logged requests");
+ metric("NOT MEASURED","BLIND-TEST ACCURACY","Needs independent held-out evaluation");
+ const metricRow=(label,value)=>{
+  const row=E("div","bc-learning-detail-row");
+  row.append(E("span","",label),E("strong","",value));
+  details.append(row);
+ };
+ metricRow("AI analysis records",String(analyzed));
+ metricRow("Verified / draft reference entries",verified.length+" / "+drafts.length);
+ metricRow("Recorded reference consultations",String(totalConsultations));
+ metricRow("Saved original AI suggestions",String(data.ai.filter(a=>a.original_suggestion&&typeof a.original_suggestion==="object").length));
+ metricRow("Confirmed references with changed fields",String(changes.length));
+ metricRow("Measured predictive accuracy","Not available");
+ const note=E("div","bc-learning-note");
+ note.append(E("strong","","WHAT THESE NUMBERS MEAN"),E("p","","Verified examples can inform future classifications. Changes are counted by comparing human-verified metadata with a saved original AI suggestion, when available. This is not an error rate or proof that the model is retraining its weights."));
+ details.append(note);
+ const worlds=Object.entries(W).map(([world,name])=>({world,name,count:verified.filter(r=>r.world===world).length})).filter(x=>x.world!=="unsorted").sort((a,b)=>b.count-a.count);
+ const max=Math.max(1,...worlds.map(x=>x.count));
+ for(const w of worlds){
+  const row=E("div","bc-learning-world-row");
+  row.append(E("span","",w.name));
+  const bar=E("div","bc-learning-bar"),fill=E("div","bc-learning-bar-fill");
+  fill.style.width=(w.count/max*100).toFixed(2)+"%";bar.append(fill);
+  row.append(bar,E("strong","",w.count));coverage.append(row);
+ }
+ const noCountry=verified.filter(r=>!r.country_code).length;
+ const noUniform=verified.filter(r=>!r.uniform_name).length;
+ const noCamo=verified.filter(r=>r.world==="military"&&!r.camouflage_pattern).length;
+ const summary=E("div","bc-learning-note");
+ summary.append(E("strong","","GAPS IN VERIFIED METADATA"),E("p","","No confirmed country: "+noCountry+" · No uniform designation: "+noUniform+" · Military references without named camouflage: "+noCamo+"."),E("p","","No named pattern can also be correct for plain-color uniforms. Avoid inferring labels without visual evidence."));
+ coverage.append(summary);
+}
 function render(){
  if(data.page==="teach"&&!data.saving&&data.selected&&flowStage(data.selected)!=="teach"){
   const old=data.selected;selectNextTechItem();fillForm();
