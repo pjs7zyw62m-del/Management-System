@@ -3,7 +3,7 @@ export function mountMilitaryGunner({client,getContext,mount=document.body,visib
  if(!mount)return {open:()=>{},setVisible:()=>{}};
  if(!document.getElementById('militaryGunnerStyle')){
   const tag=document.createElement('link');tag.id='militaryGunnerStyle';
-  tag.rel='stylesheet';tag.href='military-gunner.css?v=20261110-fast4';document.head.append(tag);
+  tag.rel='stylesheet';tag.href='military-gunner.css?v=20261117-journal-r1';document.head.append(tag);
  }
  const $=id=>document.getElementById(id);
  const root=document.createElement('aside');root.id='bcGunner';root.hidden=!visible;
@@ -14,7 +14,7 @@ export function mountMilitaryGunner({client,getContext,mount=document.body,visib
  launcher.append(badge,label);
  const panel=document.createElement('section');panel.id='bcGunnerPanel';panel.hidden=true;
  panel.setAttribute('aria-label','Gunner Thompson Military Library chat');
- panel.innerHTML='<div class="gunner-head"><div class="gunner-badge">G</div><div><strong>Gunner Thompson</strong><small>ORIGINAL GUNNER / DOLPHIN 3.0</small></div><button type="button" id="bcGunnerClose" aria-label="Close Gunner chat">✕</button></div><div class="gunner-intro">The original Gunner Thompson from your Dolphin/RunPod project. His personality and memory vault are preserved. His thoughts about the Military Library are proposals for your approval, not automatic changes.</div><div id="bcGunnerMessages" class="gunner-messages" role="log" aria-live="polite"></div><form id="bcGunnerForm" class="gunner-input"><textarea id="bcGunnerText" maxlength="1600" placeholder="Ask Gunner something…" aria-label="Message Gunner"></textarea><div class="gunner-actions"><button id="bcGunnerVision" type="button">✦ GUNNER\'S VISION</button><button id="bcGunnerCheck" type="button" hidden>↻ CHECK REPLY</button><small id="bcGunnerStatus">DOLPHIN 3.0 · READY</small><button id="bcGunnerSend" type="submit">SEND ↗</button></div></form>';
+ panel.innerHTML='<div class="gunner-head"><div class="gunner-badge">G</div><div><strong>Gunner Thompson</strong><small>ORIGINAL GUNNER / DOLPHIN 3.0</small></div><button type="button" id="bcGunnerClose" aria-label="Close Gunner chat">✕</button></div><div class="gunner-intro">The original Gunner Thompson from your Dolphin/RunPod project. His personality and memory vault are preserved. His thoughts about the Military Library are proposals for your approval, not automatic changes.</div><div id="bcGunnerMessages" class="gunner-messages" role="log" aria-live="polite"></div><form id="bcGunnerForm" class="gunner-input"><textarea id="bcGunnerText" maxlength="1600" placeholder="Ask Gunner something…" aria-label="Message Gunner"></textarea><div class="gunner-actions"><button id="bcGunnerVision" type="button">✦ GUNNER\'S VISION</button><button id="bcGunnerJournal" type="button" title="Recall private fictional 1999 journal">↶ 1999 JOURNAL</button><button id="bcGunnerCheck" type="button" hidden>↻ CHECK REPLY</button><small id="bcGunnerStatus">DOLPHIN 3.0 · READY</small><button id="bcGunnerSend" type="submit">SEND ↗</button></div></form>';
  root.append(launcher,panel);mount.append(root);
  let loaded=false,busy=false,activeJob=null,pendingPlaceholder=null;
  const messages=$('bcGunnerMessages'),input=$('bcGunnerText'),status=$('bcGunnerStatus');
@@ -24,7 +24,7 @@ export function mountMilitaryGunner({client,getContext,mount=document.body,visib
   messages.append(node);messages.scrollTop=messages.scrollHeight;return node;
  }
  function setStatus(text){status.textContent=text}
- function setBusy(next){busy=next;$('bcGunnerSend').disabled=next;$('bcGunnerVision').disabled=next;$('bcGunnerCheck').disabled=next}
+ function setBusy(next){busy=next;$('bcGunnerSend').disabled=next;$('bcGunnerVision').disabled=next;$('bcGunnerJournal').disabled=next;$('bcGunnerCheck').disabled=next}
  function errorText(error){
   return String(error?.message||error||'Dolphin service unavailable').slice(0,300)
  }
@@ -108,6 +108,10 @@ export function mountMilitaryGunner({client,getContext,mount=document.body,visib
   if(busy||!activeJob)return;
   const placeholder=pendingPlaceholder||append('assistant','Checking Dolphin…');
   void pollJob(activeJob,placeholder);
+ });
+ $('bcGunnerJournal').addEventListener('click',()=>{
+  input.value="Gunner, tell me about the first time we met in your fictional 1999 journal. What did you see at the veterans' hall, and how did you start teaching me to collect uniforms?";
+  input.focus();setStatus('PRIVATE 1999 JOURNAL · READY TO ASK');
  });
  $('bcGunnerVision').addEventListener('click',()=>{
   const ctx=typeof getContext==='function'?getContext()||{}:{};

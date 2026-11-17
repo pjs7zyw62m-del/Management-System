@@ -2,7 +2,7 @@
  * Separate live aggregate analytics, evidence-based upload missions, and
  * Gunner's original Dolphin 3.0 personality (no replacement model).
  */
-import {mountMilitaryGunner} from "./military-gunner.js?v=20261117-analytics-r1";
+import {mountMilitaryGunner} from "./military-gunner.js?v=20261117-journal-r1";
 import {planGunnerProduction} from "./blackcell-gunner-production.js?v=20261117-pulse-r1";
 const N=v=>Math.max(0,Math.round(Number(v)||0));
 const fmt=v=>N(v).toLocaleString("en-US");
