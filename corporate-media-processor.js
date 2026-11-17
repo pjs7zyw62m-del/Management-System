@@ -244,16 +244,30 @@ export function createBlackcellMediaProcessor({client,bucket,state,refresh,media
    // examples only AFTER the owner has approved the private suggestion.
    // Preserve original_suggestion for a before/after correction audit.
    let learningWarning=false;
-   if(current.kind==='photo'&&current.owner_id===state.user.id){
+   if(current.kind==='photo'&&!adult&&current.owner_id===state.user.id){
     try{
+     const existing=await client.from('corp_social_ai_analysis')
+      .select('id').eq('asset_id',id).eq('owner_id',state.user.id).maybeSingle();
+     if(existing.error)throw existing.error;
      const correction={
       status:'approved',country_code:country,military_branch:branch,
       military_category:subject,tags,updated_at:new Date().toISOString()
      };
-     const {error:feedbackError}=await client.from('corp_social_ai_analysis')
-      .update(correction).eq('asset_id',id).eq('owner_id',state.user.id)
-      .eq('status','suggested');
-     if(feedbackError)learningWarning=true;
+     if(existing.data){
+      const {error:feedbackError}=await client.from('corp_social_ai_analysis')
+       .update(correction).eq('id',existing.data.id).eq('owner_id',state.user.id);
+      if(feedbackError)throw feedbackError;
+     }else{
+      // Manual classifications are valuable seed examples too, even before
+      // the first AI prediction. Keep them separate from paid model attempts.
+      const record={owner_id:state.user.id,asset_id:id,...correction,
+       model:'manual-review',attempts:0,confidence:'high',focus:'All',
+       nudity_level:'none',visual_focus:'unknown',uniform_type:'',
+       camouflage_pattern:'',notes:'Owner-confirmed photo classification'};
+      const {error:memoryError}=await client.from('corp_social_ai_analysis')
+       .insert(record);
+      if(memoryError)throw memoryError;
+     }
     }catch(_){learningWarning=true}
    }
    // New approved Military Library photos are archived to Bunny automatically.
