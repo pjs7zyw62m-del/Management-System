@@ -245,6 +245,10 @@ async function loadCatalog(reset=false){
    for(const raw of r.data||[]){const v=wrap(spec.type,raw);if(!data.items.some(x=>x.key===v.key))data.items.push(v)}
    spec.skip+=(r.data||[]).length;spec.done=(r.data||[]).length<100||spec.skip>=r.count;
   }));
+  if(data.selected){
+   const updated=data.items.find(item=>item.key===data.selected.key);
+   data.selected=updated||null;
+  }
   render();
  }finally{data.loading=false;$("bcRefreshAll").disabled=false}
 }
@@ -507,7 +511,13 @@ function drawPatterns(){
  }
  root.append(lessons);
 }
-function render(){stats();list();renderTechQueue();drawAtlas();drawPatterns()}
+function render(){
+ if(data.page==="teach"&&!data.saving&&data.selected&&flowStage(data.selected)!=="teach"){
+  const old=data.selected;selectNextTechItem();fillForm();
+  text("bcTechQueueStatus",old.title+" moved out of Tech AI. Active queue refreshed.");
+ }
+ stats();list();renderTechQueue();drawAtlas();drawPatterns();
+}
 function formBlank(){
  for(const id of ["bcTrainCountry","bcTrainUniform","bcTrainPattern","bcTrainEra","bcTrainEvidence","bcTrainLookalikeCountry","bcTrainLookalikeBranch","bcTrainDifferences","bcTrainTags"])$(id).value="";
  $("bcTrainWorld").value="unsorted";$("bcTrainBranch").value="Unspecified";$("bcTrainCategory").value="Unsorted";$("bcTrainTime").value="00:00";$("bcTrainConfirmed").checked=false;
