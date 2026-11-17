@@ -2,7 +2,7 @@
  * Independent Level-7 corporate access checks; no secret keys in public code.
  * The same existing photo/video intake controller is mounted on an admin-only page.
  */
-import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261109-clearance5';
+import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261117-os-perf1';
 import {createCorporateMediaWorkspace} from './corporate-admin-workspace.js?v=20261117-review-r1';
 
 const $=id=>document.getElementById(id);
