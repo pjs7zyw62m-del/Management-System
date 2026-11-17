@@ -45,6 +45,28 @@ function normalized(input){
   })()
  };
 }
+
+/* Model-ranked visual candidates are uncalibrated similarity estimates, never
+   a measured probability of national origin or a verified uniform ID.
+   Empty array means the pattern is not distinctive or cannot be seen.
+   The photo owner must confirm all results manually. */
+function patternMatches(raw){
+ const visibility=["clear","partial","not_visible","not_camouflage"].includes(raw?.camouflage_visibility)?raw.camouflage_visibility:"not_visible";
+ const summary=clip(raw?.camouflage_visual_summary,300);
+ const maxScore=visibility==="clear"?90:visibility==="partial"?70:0;
+ const matches=[];
+ if(maxScore)for(const x of Array.isArray(raw?.camouflage_candidates)?raw.camouflage_candidates:[]){
+  const name=clip(x?.name,130);
+  if(!name||/^(none|unknown|unclear|not visible|n\/a)$/i.test(name)||matches.some(a=>a.name.toLowerCase()===name.toLowerCase()))continue;
+  const n=Number(x?.match_score);
+  const score=Number.isFinite(n)?Math.min(maxScore,Math.max(0,Math.round(n))):0;
+  if(score<15)continue;
+  matches.push({name,score,visual_evidence:clip(x?.visual_evidence,240),distinguishing_clue:clip(x?.distinguishing_clue,200)});
+  if(matches.length>=3)break;
+ }
+ matches.sort((a,b)=>b.score-a.score);
+ return {visibility,summary,candidates:matches,scale:"Approximate model visual-match scores only, NOT statistical probabilities or verified identifications.",verified:false};
+}
 const schema={
  type:"object",additionalProperties:false,
  properties:{
@@ -54,9 +76,14 @@ const schema={
   confidence:{type:"string",enum:["low","medium","high"]},
   nudity_level:{type:"string",enum:["none","partial","genitals_visible","unknown"]},
   visual_focus:{type:"string",enum:["unknown","full_body","portrait","rear_view_clothed","front_waist_clothed","uniform_detail","other"]},
-  notes:{type:"string"},tags:{type:"array",items:{type:"string"}}
+  notes:{type:"string"},tags:{type:"array",items:{type:"string"}},
+  camouflage_visibility:{type:"string",enum:["clear","partial","not_visible","not_camouflage"]},
+  camouflage_visual_summary:{type:"string"},
+  camouflage_candidates:{type:"array",items:{type:"object",additionalProperties:false,properties:{
+   name:{type:"string"},match_score:{type:"integer"},visual_evidence:{type:"string"},distinguishing_clue:{type:"string"}
+  },required:["name","match_score","visual_evidence","distinguishing_clue"]}}
  },
- required:["country_code","military_branch","military_category","uniform_type","camouflage_pattern","focus","confidence","nudity_level","visual_focus","notes","tags"]
+ required:["country_code","military_branch","military_category","uniform_type","camouflage_pattern","focus","confidence","nudity_level","visual_focus","notes","tags","camouflage_visibility","camouflage_visual_summary","camouflage_candidates"]
 };
 const instructions="Classify each photograph into exactly one BLACKCELL uniform World based only on VISIBLE clothing and markings, never identity or assumed employment. Include EXACTLY ONE tag: maf:military (armed forces), maf:police (law enforcement), maf:fire (firefighter), maf:medical (paramedic or emergency medicine), maf:security (corrections or security), maf:professional (airline pilot or clearly identified professional uniform), or maf:unsorted (ordinary clothes, uncertain or conflicting cues). Describe the actual visible clothing, insignia, equipment, and environment in uniform_type, notes, and objective metadata tags. Country_code means the visible uniform's originating country, NOT the photographed person's nationality. Only assign a country or service branch when supported by legible insignia, markings or distinctive corroborated evidence; if uncertain leave country_code empty and branch Unspecified. Set military_branch only for maf:military. Uniform era must remain unknown unless strong visual evidence establishes a period; never use image quality or colors to guess a date. Do not infer actual military service, sex life, sexuality, ethnicity, age, or personal history. Use maf:unsorted when World identification is uncertain. Explicit/ambiguous content always stays for manual review. AI suggestions never imply permission to publish. Act as a careful visual military uniform cataloguer, using visible evidence only. Return only structured field values. Allowed branch values: Unspecified, Army, Navy, Marine Corps, Naval Infantry, Special Operations, Air Force, Space Force, Coast Guard, National Guard, Joint / Multinational, Other. Allowed category values: Unsorted, Personnel, Uniforms, Insignia, Equipment, Ground Vehicles, Aircraft, Naval Vessels, Facilities, Training, Fitness / Exercise, Operations, Ceremonies, Historical, Other. Allowed focus: All, Tactical, Dress, Portraits, Training, Fitness, Operations. Fitness / Exercise is for visible workouts such as pull-ups, running, weightlifting and stretching, even when military-style clothing is worn. Training is ONLY for recognizable military drills or confirmed training activities, not generic exercise. Prioritize what the image visibly shows over inferred military context. A person doing pull-ups near tents is performing exercise; do not assume those are military tents or military training. Describe generic camo clothing as military-style clothing unless a real uniform has clear identifying evidence. Prefer Fitness / Exercise when the image shows exercise without evidence of military-specific training. Do not infer military affiliation from clothing. Describe the activity and clothing separately. Country and branch are separate decisions: a generic Marine Corps designation does NOT prove that a photograph shows the United States, because many countries have marine forces. However, do not miss specific and clearly readable U.S. Marine Corps markers. If the image clearly displays a United States Marine Corps Eagle Globe and Anchor insignia, an identifiable U.S. Marine Corps emblem or a readable USMC / U.S. Marines / United States Marines uniform marking, use military_branch Marine Corps and country_code US for the uniform or unit depicted, explaining precisely which visible marking supports it. A U.S. flag together with unambiguous Marine Corps identifiers is also strong supporting evidence. USMC distinctive MARPAT and the Marine Corps Combat Utility Uniform can corroborate a U.S. uniform identification, but camouflage color, generic digital patterns, combat boots, plain green shirts, or the word Marines on their own cannot establish country with confidence. If a marking is too small, distorted, or ambiguous, do not pretend it is readable: leave country_code empty and state why. Classify the uniform or depicted military symbol only, never claim the photographed person actually serves in the military. ISO 3166 two-letter country_code or empty string when uncertain. Separate older US BDU from MCCUU and MARPAT, which are not interchangeable. Uniform may be cosplay, fashion, reenactment, or airsoft. Don't identify a real person, guess actual service status, age, sexuality, ethnicity, affiliation, or identity. Don't provide operational detail, sensitive installations, or tactics. Don't infer country, unit, or branch from camouflage alone. Prefer unknowns and low confidence. Concise notes should explain only visible evidence, ambiguity, and uncertainty. For neutral content metadata, nudity_level must be none when none is visible, partial when non-genital nudity is visible, genitals_visible only when distinctly visible, or unknown when unclear. This is a visual label and never verifies age or consent. Keep nudity descriptions strictly factual, non-erotic, and brief. Do not comment on sexual attractiveness or invent sexual activity. If visual-content identification cannot be done, select unknown; do not invent evidence. For neutral clothing and photo composition, visual_focus must be one of unknown, full_body, portrait, rear_view_clothed (back view with clothing), front_waist_clothed (front of clothing around waist), uniform_detail, other. This is a visual description of composition, not a statement about the person or viewers\u0027 arousal, interests, or sexuality. Avoid applying these anatomical focus labels to photographs of minors or when age is uncertain; use unknown instead. Use 5-12 concise evidence-based tags covering visible activity (e.g. pull-ups), clothing, camouflage if discernible, equipment, setting, pose and camera view. If clearly visible, include a factual hairstyle tag distinguishing 'bald head', 'shaved head', 'high-and-tight haircut', 'buzz cut', 'crew cut', or 'fade haircut'. Only use a specific hairstyle label when image detail independently supports it; otherwise prefer 'short hair' or omit hairstyle. Also describe visible clothing details as separate neutral tags when clearly identifiable: 'belt', 'belt buckle', 'shirt', 'uniform shirt', 'shirt fit', 'tucked shirt', 'rolled-up sleeves', 'sleeves down', and 'clothed rear view'. A military uniform shirt and rolled-up sleeves are different attributes and can both be true in one image. A belt does not prove a uniform, and a uniform does not prove a specific country. When these details are unclear, omit the tag rather than guessing. A bald scalp and a closely shaved head can look similar, so do not pretend to know the cause of hairlessness. Haircuts do not prove military affiliation or nationality. Do not infer the viewer's preferences from image content; personal preference is provided only by the user. Do not place user preference, perceived attractiveness, sexuality or ethnicity in photo tags. When a camouflage pattern cannot be securely identified, use a generic pattern description rather than a precise unsupported name. In notes, first explain concrete visible features; then state important uncertainties. Tags: generic descriptive terms.";
 function detectMime(buffer){
@@ -408,13 +435,13 @@ Deno.serve(async req=>{
   mime=detectMime(file);
   if(!mime)return response({error:"Unsupported image format"},422,origin);
  }
- let ai;
+ let ai,patternResult;
  try{
   const result=await fetch("https://api.openai.com/v1/responses",{
    method:"POST",signal:AbortSignal.timeout(45000),
    headers:{"Authorization":"Bearer "+KEY,"Content-Type":"application/json"},
-   body:JSON.stringify({model:MODEL,store:false,max_output_tokens:700,
-    input:[{role:"user",content:[{type:"input_text",text:input.action==="analyze_uniform" ? "Catalog the visible UNIFORM or clothing, without identifying any person, assuming their real employment, or inferring sensitive traits. Choose EXACTLY ONE classification tag from maf:military, maf:police, maf:fire, maf:medical, maf:security (corrections or security), maf:professional (airline pilot or other civilian professional uniform), maf:unsorted. Use maf:unsorted for ordinary clothes, ambiguous uniforms, conflicting cues, or low confidence. Distinguish a firefighter from a paramedic and a police uniform from a corrections uniform using visible markings. Return the selected maf tag in tags; set confidence high only for clear visual evidence, medium for reasonable visual clues, low when unsure. If the image is not a clearly clothed non-explicit uniform photograph, set maf:unsorted and low confidence. For nonmilitary uniforms set military_branch Unspecified and country_code empty. Describe the clothing only in uniform_type; do not infer identity or private characteristics. Return the required schema fields, using empty strings and Unsorted or unknown for irrelevant values." : instructions+memory.text+referenceText},
+   body:JSON.stringify({model:MODEL,store:false,max_output_tokens:1450,
+    input:[{role:"user",content:[{type:"input_text",text:input.action==="analyze_uniform" ? "Catalog the visible UNIFORM or clothing, without identifying any person, assuming their real employment, or inferring sensitive traits. Choose EXACTLY ONE classification tag from maf:military, maf:police, maf:fire, maf:medical, maf:security (corrections or security), maf:professional (airline pilot or other civilian professional uniform), maf:unsorted. Use maf:unsorted for ordinary clothes, ambiguous uniforms, conflicting cues, or low confidence. Distinguish a firefighter from a paramedic and a police uniform from a corrections uniform using visible markings. Return the selected maf tag in tags; set confidence high only for clear visual evidence, medium for reasonable visual clues, low when unsure. If the image is not a clearly clothed non-explicit uniform photograph, set maf:unsorted and low confidence. For nonmilitary uniforms set military_branch Unspecified and country_code empty. Describe the clothing only in uniform_type; do not infer identity or private characteristics. Return the required schema fields, using empty strings and Unsorted or unknown for irrelevant values." : instructions+memory.text+referenceText+"\nCAMOUFLAGE CANDIDATE COMPARISON: Independently inspect the camouflage fabric, not the background flag or apparent wearer. Report camouflage_visibility=clear, partial, not_visible or not_camouflage. Provide up to THREE distinct plausible named patterns in camouflage_candidates, ranked by approximate visual resemblance (match_score integer 0-100). Explain pattern geometry, scale and color arrangement for each in visual_evidence, and how to distinguish its lookalikes in distinguishing_clue. A model self-score is NOT a calibrated probability and cannot prove country, branch or true issue status. Do not force three alternatives: zero is correct for no identifiable camouflage. Avoid generic names masquerading as a specific pattern. Be conservative for partial/obscured or common woodland camouflage; do not score above 90. If no defensible candidate, camouflage_pattern must be empty. The single camouflage_pattern field is the best proposed name only, never a verified label. If a pattern is merely similar to a known national pattern, state that it is an estimate; no country or branch inference from pattern alone."},
       {type:"input_image",image_url:"data:"+mime+";base64,"+Buffer.from(file).toString("base64"),detail:"auto"}]}],
     text:{format:{type:"json_schema",name:"blackcell_military_photo",strict:true,schema}}})
   });
@@ -432,19 +459,23 @@ Deno.serve(async req=>{
   }
   const output=payload.output_text||payload.output?.flatMap(x=>x.content||[]).filter(x=>x.type==="output_text").map(x=>x.text).join("")||"";
   if(!output)return response({error:"AI returned no classification"},502,origin);
-  ai=normalized(JSON.parse(output));
+  const parsed=JSON.parse(output);
+  ai=normalized(parsed);
+  patternResult=patternMatches(parsed);
+  if(patternResult.candidates.length===0)ai.camouflage_pattern="";
+  else ai.camouflage_pattern=patternResult.candidates[0].name;
  }catch(e){
   console.error("Vision analysis failed",{kind:e?.name||"Error"});
   return response({error:"Analysis failed or timed out; no classifications changed"},502,origin);
  }
  const record={owner_id:user.id,asset_id:asset.id,status:"suggested",...ai,model:MODEL,
-  original_suggestion:ai,learned_from_count:memory.used,
+  original_suggestion:{...ai,camouflage_matches:patternResult},learned_from_count:memory.used,
   attempts:(previous?.attempts||0)+1,updated_at:new Date().toISOString()};
  const {data:saved,error:saveError}=await client.from("corp_social_ai_analysis").upsert(record,{onConflict:"owner_id,asset_id"})
-  .select("id,asset_id,owner_id,status,country_code,military_branch,military_category,uniform_type,camouflage_pattern,focus,confidence,nudity_level,visual_focus,notes,tags,model,attempts,created_at,updated_at").single();
+  .select("id,asset_id,owner_id,status,country_code,military_branch,military_category,uniform_type,camouflage_pattern,focus,confidence,nudity_level,visual_focus,notes,tags,model,attempts,created_at,updated_at,original_suggestion").single();
  if(saveError){
   console.error("Could not store AI review",{message:saveError.message});
   return response({error:"AI result could not be saved. Approved classification remains untouched."},500,origin);
  }
- return response({ok:true,analysis:saved,learning:{approved_examples_available:memory.approved,examples_consulted:memory.used,prior_corrected_examples:memory.corrections},notice:"Owner-approved examples guide suggestions, but model weights are not retrained."},200,origin);
+ return response({ok:true,analysis:saved,pattern_suggestions:patternResult,learning:{approved_examples_available:memory.approved,examples_consulted:memory.used,prior_corrected_examples:memory.corrections},notice:"Owner-approved examples guide suggestions, but model weights are not retrained."},200,origin);
 });
