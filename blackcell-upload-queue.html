@@ -10,7 +10,7 @@
 <p class="note" id="localStatus" role="status">Selected files are not backed up until uploaded. Keep this window open during transfers.</p><div class="items" id="localItems"><div class="empty">No files selected yet.</div></div></section>
 <section class="panel"><div class="panelHead"><div><h2>Awaiting Sort</h2><p>Previously uploaded items saved privately in BLACKCELL cloud storage.</p></div><button id="refresh">Refresh</button></div>
 <div class="tabs" role="tablist"><button id="pendingTab" role="tab" aria-selected="true">Waiting for review</button><button id="approvedTab" role="tab" aria-selected="false">Reviewed</button></div>
-<p class="note" id="cloudStatus" role="status">Checking private catalog…</p><div class="items" id="cloudItems"></div><div class="bottom"><button id="more" hidden>Load More</button><a id="review" href="corporate-media-admin.html" hidden>Review & Sort Media</a></div></section></div></main>
+<p class="note" id="cloudStatus" role="status">Checking private catalog…</p><div class="items" id="cloudItems"></div><div class="bottom"><button id="more" hidden>Load More</button><a id="review" href="corporate-media-admin.html" target="_blank" rel="noopener" hidden>Review & Sort Media</a></div></section></div></main>
 <section class="gate" id="gate"><h2>Secure access required</h2><p id="gateText">Verifying BLACKCELL session…</p><a href="login.html">Corporate Access</a></section><footer><span>BLACKCELL CORPORATION</span><span>UPLOAD / HOLD / SORT LATER</span></footer><script type="module">
 import {corporateClient,corporateAuthorize} from "./corp-auth.js?v=20261114-transport-classification";
 const $=s=>document.getElementById(s),db=corporateClient(),limit=45*1048576;
