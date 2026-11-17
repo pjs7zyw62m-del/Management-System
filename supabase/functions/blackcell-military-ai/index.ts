@@ -281,6 +281,64 @@ async function predictInterest({client,user,asset,input,origin}){
  return response({ok:true,prediction:saved,note:"Image-based predictions are approximate and may be incorrect. Confirm or reject each region to improve later suggestions."},200,origin);
 }
 
+/* Private, consented analysis of ONE video still. Original video stays in BLACKCELL. */
+async function analyzeVideoFrame({client,user,input,origin}){
+ const kind=clip(input?.source_kind,30),id=clip(input?.source_id,50),seconds=Number(input?.frame_seconds);
+ if(!["asset","stream_video"].includes(kind)||!UUID.test(id)||!Number.isInteger(seconds)||seconds<0||seconds>86400)
+  return response({error:"Select a valid video and timestamp"},422,origin);
+ const {data:member,error:memberErr}=await client.from("corp_access_members")
+  .select("role,active,clearance_level").eq("user_id",user.id).eq("active",true).maybeSingle();
+ const verification=await client.rpc("corp_code_status");
+ if(memberErr||member?.role!=="owner"||!member.active||Number(member.clearance_level)!==7||
+   verification.error||verification.data?.ok!==true||verification.data?.verified!==true)
+  return response({error:"Verified Level 7 owner required for video AI"},403,origin);
+ const table=kind==="asset"?"corp_social_assets":"corp_stream_videos";
+ const fields=kind==="asset"?"id,owner_id,kind,purpose,review_status,adult_restricted":"id,owner_id,review_status,adult_restricted";
+ const {data:video,error:videoErr}=await client.from(table).select(fields).eq("id",id).eq("owner_id",user.id).maybeSingle();
+ if(videoErr||!video||video.adult_restricted||video.review_status==="rejected"||
+  (kind==="asset"&&(video.kind!=="video"||!["library","post"].includes(video.purpose))))
+  return response({error:"Owned non-restricted non-rejected video required"},403,origin);
+ const still=String(input?.preview_image||""),prefix="data:image/jpeg;base64,";
+ if(!still.startsWith(prefix)||still.length>4_200_000)
+  return response({error:"A JPEG frame under 3 MB is required"},422,origin);
+ const encoded=still.slice(prefix.length);
+ if(!encoded||!/^[A-Za-z0-9+/]*={0,2}$/.test(encoded))return response({error:"Invalid JPEG encoding"},422,origin);
+ const bytes=Buffer.from(encoded,"base64");
+ if(bytes.length<100||bytes.length>3_000_000||bytes[0]!==255||bytes[1]!==216||bytes[2]!==255)
+  return response({error:"Valid JPEG still frame required"},422,origin);
+ if(!KEY)return response({error:"Vision AI is not configured",code:"AI_NOT_CONFIGURED"},503,origin);
+ const budget=await client.rpc("blackcell_uniform_video_frame_consume");
+ if(budget.error)return response({error:"Video AI budget control is unavailable",code:"BUDGET_UNAVAILABLE"},503,origin);
+ if(budget.data?.ok!==true)return response({
+   error:budget.data?.code==="DAILY_LIMIT"?"Daily limit of 20 video frame analyses reached; try again after UTC reset.":"Owner verification required.",
+   code:budget.data?.code||"ACCESS_DENIED"},budget.data?.code==="DAILY_LIMIT"?429:403,origin);
+ const prompt="Inspect ONLY this ONE video still for visible uniform details. Choose one maf: world tag as specified. Never guess the actual person's employer or military service. Country and branch are separate; camouflage alone never proves either. Return up to 3 candidate named camouflage patterns with estimated VISUAL resemblance scores 0-100 (not calibrated probability). For clear visibility score no more than 90, partial no more than 70; use an empty candidate list if no reliable named match. Describe pattern geometry and visible distinctions without fabricating insignia, history or dates. Return the exact structured schema and state uncertain country as empty string and branch Unspecified. " + instructions.slice(0,3200);
+ let result;
+ try{result=await fetch("https://api.openai.com/v1/responses",{
+  method:"POST",signal:AbortSignal.timeout(45000),
+  headers:{"Authorization":"Bearer "+KEY,"Content-Type":"application/json"},
+  body:JSON.stringify({model:MODEL,store:false,max_output_tokens:1400,
+   input:[{role:"user",content:[{type:"input_text",text:prompt},{type:"input_image",image_url:still,detail:"high"}]}],
+   text:{format:{type:"json_schema",name:"blackcell_uniform_video_still",strict:true,schema}}})
+ })}catch(e){return response({error:e?.name==="TimeoutError"?"Video AI timed out":"Video AI connection unavailable",code:"VIDEO_AI_TIMEOUT"},503,origin)}
+ const payload=await result.json().catch(()=>({}));
+ if(!result.ok){
+  const code=clip(payload?.error?.code,80);
+  if(code==="credit_balance_exhausted")return response({error:"OpenAI API credits exhausted",code:"AI_CREDITS_EXHAUSTED"},402,origin);
+  if(result.status===429)return response({error:"AI provider spending or rate limit reached",code:"AI_LIMIT"},429,origin);
+  return response({error:"Vision provider could not inspect video still",code:"VIDEO_AI_PROVIDER_ERROR"},502,origin);
+ }
+ const output=payload.output_text||payload.output?.flatMap(x=>x.content||[]).filter(x=>x.type==="output_text").map(x=>x.text).join("")||"";
+ if(!output)return response({error:"Video AI returned no classification"},502,origin);
+ let parsed;
+ try{parsed=JSON.parse(output)}catch(_){return response({error:"Video AI returned an invalid classification"},502,origin)}
+ const analysis=normalized(parsed),matches=patternMatches(parsed);
+ analysis.camouflage_pattern=matches.candidates[0]?.name||"";
+ return response({ok:true,source_kind:kind,source_id:id,frame_seconds:seconds,
+  analysis,pattern_suggestions:matches,remaining:budget.data.remaining,
+  notice:"One unverified frame suggestion. No media, approved labels, reference or publication status was changed."},200,origin);
+}
+
 Deno.serve(async req=>{
  const origin=req.headers.get("origin");
  if(req.method==="OPTIONS")return new Response(null,{status:204,headers:cors(origin)});
@@ -297,6 +355,7 @@ Deno.serve(async req=>{
  if(req.method==="GET")return response({ok:true,configured:!!KEY},200,origin);
  let input;
  try{input=await req.json()}catch(_){return response({error:"Valid JSON required"},400,origin)}
+ if(input?.action==="analyze_frame")return await analyzeVideoFrame({client,user,input,origin});
  if(!["analyze","predict_interest","analyze_uniform"].includes(String(input?.action||""))||!UUID.test(String(input?.asset_id||"")))return response({error:"Select a valid photograph and action"},400,origin);
  const assetId=String(input.asset_id);
  const {data:asset,error:findError}=await client.from("corp_social_assets").select("id,owner_id,kind,purpose,mime_type,bytes,storage_path,filename,adult_restricted,review_status,source_provider")
