@@ -1,6 +1,6 @@
 /* BLACKCELL Uniform Intelligence Center | owner-only catalog and learning */
 import {corporateClient,corporateAuthorize} from "./corp-auth.js?v=20261114-transport-classification";
-import {PATTERNS,SOURCES as CAMO_SOURCES,EXTERNAL_SAMPLES} from "./blackcell-camouflage-atlas.js?v=20261117-r2";
+import {PATTERNS,SOURCES as CAMO_SOURCES,EXTERNAL_SAMPLES,COUNTRY_COMPARISON_LESSONS} from "./blackcell-camouflage-atlas.js?v=20261117-r3";
 const db=corporateClient();
 const $=id=>document.getElementById(id), E=(tag,cls,value)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(value!==undefined)n.textContent=String(value);return n;};
 const W={military:"Military",police:"Law Enforcement",fire:"Fire & Rescue",medical:"Medical",security:"Corrections / Security",professional:"Aviation / Professional",unsorted:"Unsorted"};
@@ -207,6 +207,20 @@ function drawPatterns(){
   sources.append(link,E("p","",sample.note));
  }
  root.append(sources);
+ const lessons=E("section","bc-comparison-lessons");
+ lessons.append(E("h3","","COUNTRY COMPARISON LESSONS · UNVERIFIED"),
+ E("p","bc-comparison-note","Based on illustrated charts submitted for BLACKCELL reference. These are label-reading exercises, not authenticated national uniform examples. Verify individual insignia and official issue histories before using them as AI training labels."));
+ for(const group of COUNTRY_COMPARISON_LESSONS){
+  const panel=E("article","bc-comparison-group");panel.append(E("h4","",group.group),E("p","",group.description));
+  const countryList=E("div","bc-comparison-countries");
+  for(const info of group.countries){
+   const card=E("div","bc-comparison-country"),title=E("strong","",country(info.code)+" · "+info.code);
+   card.append(title,E("p","",info.visualClues),E("small","",info.warning));
+   countryList.append(card);
+  }
+  panel.append(countryList);lessons.append(panel);
+ }
+ root.append(lessons);
 }
 function render(){stats();list();drawAtlas();drawPatterns()}
 function formBlank(){
