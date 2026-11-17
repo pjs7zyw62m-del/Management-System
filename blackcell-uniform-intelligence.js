@@ -12,7 +12,7 @@ const SOURCES=[
  ["saved","corp_social_tiktok_saves","saved_at","id,user_id,title,military_branch,creator_handle,saved_at"]
 ];
 const data={user:null,owner:false,items:[],learning:[],ai:[],page:"catalog",selected:null,frame:0,blob:"",previewGeneration:0,loading:false,saving:false,videoFrame:null,videoSuggestions:new Map(),videoBusy:false,streamPlayback:null,memoryLoaded:false,autopilot:null};
-let gunnerCommand=null;
+let gunnerCommand=null,publicationReview=null,publicationReviewLoading=false;
 const index=SOURCES.map(([type,table,order,fields])=>({type,table,order,fields,skip:0,done:false,error:""}));
 const COUNTRY=typeof Intl.DisplayNames==="function"?new Intl.DisplayNames(["en"],{type:"region"}):null;
 const country=c=>{if(!c)return"Unconfirmed";try{return(COUNTRY?.of(c)||c)+" ("+c+")"}catch{return c}};
@@ -136,6 +136,56 @@ function renderStreamEmbed(){
   }
  }
 }
+
+/* Owner-only integrated manual review; the old Media Import Processor page
+ * is no longer required to approve, reject, classify or file media. */
+const reviewState={user:null,member:null,assets:[],bunnyWaitingCount:0};
+const REVIEW_COUNTRIES="US CN GB CA AU FR DE IN JP KR BR RU UA IT ES MX ZA EG NG KE TR IL PK ID PH TH VN NZ SE NO FI DK NL BE PL CZ GR RO CH AT SG MY AR CL CO PE AE SA QA JO IQ IR AF BD LK NP MM KH LA TW KP MN KZ UZ GE AM AZ LT LV EE RS HR SI SK HU BG PT IE IS MA DZ TN LY ET GH CM CI SN UG TZ RW ZW ZM AO MZ NA BW MW MG CD CG GA GQ SO SD SS YE OM KW BH CY MT LU AL BA ME MK MD BY AD AE AG AI AO AQ AS AW AX BB BF BI BJ BL BM BN BO BQ BS BT BV BZ CC CD CF CG CI CK CL CM CO CR CU CV CW CX CY DJ DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO GA GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT ID IE IM IO IS JE JM JO KE KG KH KI KM KN KP KW KY KZ LA LB LC LI LR LS LT LU LV LY MA MC MD ME MF MG MH ML MM MO MP MQ MR MS MT MU MV MX MY MZ NC NE NF NG NI NL NO NP NR NU OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR ST SV SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UG UM UY UZ VA VC VE VG VI VU WF WS YT ZA ZM ZW".split(/\s+/);
+function populateReviewOptions(){
+ const sel=$("militaryUploadCountry");
+ if(!sel||sel.options.length>1)return;
+ const names=typeof Intl.DisplayNames==="function"?new Intl.DisplayNames(["en"],{type:"region"}):null;
+ const values=[...new Set(REVIEW_COUNTRIES)].sort((a,b)=>(names?.of(a)||a).localeCompare(names?.of(b)||b));
+ for(const code of values)sel.add(new Option((names?.of(code)||code)+" ("+code+")",code));
+}
+async function syncApprovalSources(){
+ const r=await db.from("corp_social_assets").select("*").eq("review_status","pending")
+  .in("kind",["photo","video"]).order("created_at",{ascending:true}).limit(1000);
+ if(r.error)throw r.error;
+ reviewState.assets=r.data||[];
+}
+async function ensurePublicationReview(){
+ if(!data.owner||publicationReviewLoading)return;
+ if(publicationReview){await publicationReview.refresh();return}
+ publicationReviewLoading=true;
+ text("bcProcessStatus","Loading verified photo and video publication workbench…");
+ try{
+  populateReviewOptions();
+  reviewState.user=data.user;
+  reviewState.member={role:"owner",clearance_level:7};
+  await syncApprovalSources();
+  const [{createBlackcellUniformApproval},{setupBlackcellBunnyReview},{createUniformReviewAI}]=await Promise.all([
+   import("./blackcell-uniform-approval.js?v=20261117-integrated-r1"),
+   import("./corporate-bunny-review.js?v=20261112-command1"),
+   import("./blackcell-uniform-approval-ai.js?v=20261117-integrated-r1")
+  ]);
+  const bucket=db.storage.from("corp-social-media");
+  const toast=message=>text("bcProcessStatus",String(message||"").slice(0,250));
+  const refresh=async()=>{
+   await Promise.allSettled([loadCatalog(true),loadMemory(),syncApprovalSources()]);
+   if(gunnerCommand)void gunnerCommand.refresh();
+  };
+  publicationReview=createBlackcellUniformApproval({
+   client:db,bucket,state:reviewState,refresh,toast,
+   mediaUrl:()=>"",openAIReview:createUniformReviewAI({client:db,bucket,userId:data.user.id})
+  });
+  publicationReview.setup();
+  setupBlackcellBunnyReview({client:db,state:reviewState,refresh:async()=>{await refresh();await publicationReview.refresh()},toast});
+ }catch(err){
+  text("bcProcessStatus","Could not load the private review workbench: "+String(err?.message||err).slice(0,240));
+ }finally{publicationReviewLoading=false}
+}
+
 function switchTab(page){
  if(!data.owner&&page!=="uploads")return;
  if(page==="teach"&&data.selected?.kind==="video"&&data.selected?.type==="asset"){
@@ -150,11 +200,12 @@ function switchTab(page){
  }
  data.page=page;
  for(const b of document.querySelectorAll(".bc-tab"))b.setAttribute("aria-selected",String(b.dataset.tab===page));
- for(const n of ["catalog","teach","atlas","gunner","uploads"])$("bcPage"+n[0].toUpperCase()+n.slice(1)).hidden=n!==page;
+ for(const n of ["catalog","teach","atlas","gunner","review","uploads"])$("bcPage"+n[0].toUpperCase()+n.slice(1)).hidden=n!==page;
  if(page==="teach")fillForm();
  if(data.selected?.type==="stream_video")renderStreamEmbed();
  if(page==="atlas"){drawAtlas();drawPatterns()}
  if(page==="gunner")gunnerCommand?.open();
+ if(page==="review")void ensurePublicationReview();
  if(page==="uploads"&&!$("bcUploadFrame").getAttribute("src")){$("bcUploadFrame").src="blackcell-upload-queue.html?v=20261117-ai-autosort-r3"}
 }
 async function loadCatalog(reset=false){
@@ -677,7 +728,7 @@ async function boot(){
   if(!data.owner){for(const n of document.querySelectorAll(".bc-tab"))if(n.dataset.tab!=="uploads")n.hidden=true;switchTab("uploads");return}
   gunnerCommand=initGunnerCommand({client:db,userId:a.user.id});
   startAutopilot();
-  switchTab("catalog");await Promise.all([loadCatalog(true),loadMemory().catch(err=>text("bcCatalogMeta","Reference memory unavailable: "+err.message))]);
+  switchTab(location.hash==="#review"?"review":"catalog");await Promise.all([loadCatalog(true),loadMemory().catch(err=>text("bcCatalogMeta","Reference memory unavailable: "+err.message))]);
  }catch(err){$("bcApp").hidden=true;$("bcGate").hidden=false;text("bcGateMessage",err.message||"Access restricted");text("bcConnection","ACCESS REQUIRED")}
 }
 function init(){
@@ -686,10 +737,11 @@ function init(){
  $("bcAutopilotRun").onclick=()=>postAutopilotCommand("run");
  for(const b of document.querySelectorAll(".bc-tab"))b.onclick=()=>switchTab(b.dataset.tab);
  for(const id of ["bcSearch","bcFilterKind","bcFilterStatus","bcFilterWorld","bcFilterSource"])$(id).addEventListener(id==="bcSearch"?"input":"change",list);
- $("bcRefreshAll").onclick=()=>{if(data.owner){postAutopilotCommand("refresh");void Promise.all([loadCatalog(true),loadMemory(),...(gunnerCommand?[gunnerCommand.refresh()]:[])])}};
+ $("bcRefreshAll").onclick=()=>{if(data.owner){postAutopilotCommand("refresh");void Promise.all([loadCatalog(true),loadMemory(),...(publicationReview?[publicationReview.refresh()]:[]),...(gunnerCommand?[gunnerCommand.refresh()]:[])])}};
  $("bcLoadMore").onclick=()=>void loadCatalog();
  $("bcTeachSelected").onclick=()=>{data.frame=0;switchTab("teach")};
- $("bcOpenAdmin").onclick=()=>{location.href="corporate-media-admin.html"};
+ $("bcOpenAdmin").onclick=()=>switchTab("review");
+ $("bcReviewBackToCatalog").onclick=()=>switchTab("catalog");
  const aiButton=$("bcAnalyzeSelected");if(aiButton)aiButton.onclick=()=>void analyze();
  $("bcSuggestPattern").onclick=()=>void analyze();
  $("bcCaptureFrame").onclick=()=>void captureCurrentFrame();
