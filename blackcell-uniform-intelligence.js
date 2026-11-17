@@ -43,6 +43,8 @@ const pipelineMedia=item=>!!item&&["asset","stream_video"].includes(item.type)&&
 function flowStage(item){
  if(!pipelineMedia(item))return "outside";
  if(["approved","rejected"].includes(item.status))return "completed";
+ // Restricted content bypasses external AI and remains in owner-only manual review.
+ if(item.adult)return "review";
  const classification=classificationStage(item);
  if(classification==="verified")return "review";
  if(classification==="ai_suggested"||classification==="needs_verification")return "teach";
