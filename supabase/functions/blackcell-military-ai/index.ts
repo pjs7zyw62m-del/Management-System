@@ -313,7 +313,7 @@ Deno.serve(async req=>{
   if(memberError||member?.role!=="owner"||member.active!==true||Number(member.clearance_level)!==7||verified.error||verified.data?.verified!==true||asset.purpose!=="library"||asset.adult_restricted!==false||asset.review_status!=="approved")
    return response({error:"Uniform sorting requires an approved non-restricted photo owned by the verified Level 7 administrator."},403,origin);
  }
- const {data:previous,error:oldErr}=await client.from("corp_social_ai_analysis").select("id,attempts,updated_at")
+ const {data:previous,error:oldErr}=await client.from("corp_social_ai_analysis").select("id,asset_id,owner_id,status,country_code,military_branch,military_category,uniform_type,camouflage_pattern,focus,confidence,nudity_level,visual_focus,notes,tags,model,attempts,created_at,updated_at,original_suggestion")
   .eq("asset_id",assetId).eq("owner_id",user.id).maybeSingle();
  if(oldErr)return response({error:"Could not read analysis history"},500,origin);
  if(previous){
@@ -467,6 +467,21 @@ Deno.serve(async req=>{
  }catch(e){
   console.error("Vision analysis failed",{kind:e?.name||"Error"});
   return response({error:"Analysis failed or timed out; no classifications changed"},502,origin);
+ }
+ // Preserve owner-approved AI labels during a new visual-pattern ranking.
+ // Only the separate unverified suggestion JSON and billing counters change.
+ if(previous?.status==="approved"){
+  const history=previous.original_suggestion&&typeof previous.original_suggestion==="object"&&!Array.isArray(previous.original_suggestion)?previous.original_suggestion:{};
+  const {data:retained,error:retainError}=await client.from("corp_social_ai_analysis")
+   .update({original_suggestion:{...history,camouflage_matches:patternResult},
+    attempts:(previous.attempts||0)+1,updated_at:new Date().toISOString()})
+   .eq("asset_id",assetId).eq("owner_id",user.id).eq("status","approved")
+   .select("id,asset_id,owner_id,status,country_code,military_branch,military_category,uniform_type,camouflage_pattern,focus,confidence,nudity_level,visual_focus,notes,tags,model,attempts,created_at,updated_at,original_suggestion")
+   .single();
+  if(retainError)return response({error:"Pattern ranking completed but could not safely store it. Approved metadata was not modified."},500,origin);
+  return response({ok:true,analysis:retained,pattern_suggestions:patternResult,
+   learning:{approved_examples_available:memory.approved,examples_consulted:memory.used,prior_corrected_examples:memory.corrections},
+   notice:"New pattern candidates saved separately. Approved country, branch, uniform and other classification fields remain unchanged."},200,origin);
  }
  const record={owner_id:user.id,asset_id:asset.id,status:"suggested",...ai,model:MODEL,
   original_suggestion:{...ai,camouflage_matches:patternResult},learned_from_count:memory.used,
