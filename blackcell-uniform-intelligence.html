@@ -8,10 +8,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="BLACKCELL INTELLIGENCE">
 <title>BLACKCELL | Uniform Intelligence Center</title>
-<link rel="stylesheet" href="blackcell-uniform-intelligence.css?v=20261117-autopilot-r1">
+<link rel="stylesheet" href="blackcell-uniform-intelligence.css?v=20261117-pipeline-r1">
 <link rel="stylesheet" href="blackcell-uniform-approval.css?v=20261117-integrated-r1">
 <script src="corp-config.js" defer></script>
-<script type="module" src="blackcell-uniform-intelligence.js?v=20261117-review-r1"></script>
+<script type="module" src="blackcell-uniform-intelligence.js?v=20261117-pipeline-r1"></script>
 </head>
 <body>
 <div class="bc-shell">
@@ -38,9 +38,13 @@
  </section>
  <p class="bc-review-explainer"><strong>100/100 publication rule:</strong> All five independent checks, including your rights confirmation and a verified matching photo reference, must pass for automatic approval. <strong>Any missing check means manual approval.</strong> This is a checklist, not an AI accuracy percentage. Restricted images never auto-publish.</p>
  <nav class="bc-tabs" aria-label="Intelligence Center sections">
-  <button type="button" class="bc-tab" data-tab="catalog" aria-selected="true">▦ Content Inventory</button>
-  <button type="button" class="bc-tab" data-tab="teach" aria-selected="false">✧ Teach AI</button>
-  <button type="button" class="bc-tab" data-tab="review" aria-selected="false">✓ Review & Approve <span id="bcReviewTabCount" class="bc-review-tab-count"></span></button>
+  <button type="button" class="bc-tab bc-stage-tab" data-tab="catalog" aria-selected="true">▦ Content Inventory <span id="bcInventoryTabCount" class="bc-stage-count">0</span></button>
+  <span class="bc-flow-arrow" aria-hidden="true">›</span>
+  <button type="button" class="bc-tab bc-stage-tab" data-tab="teach" aria-selected="false">✧ Tech AI <span id="bcTechTabCount" class="bc-stage-count">0</span></button>
+  <span class="bc-flow-arrow" aria-hidden="true">›</span>
+  <button type="button" class="bc-tab bc-stage-tab" data-tab="review" aria-selected="false">✓ Review & Approve <span id="bcReviewTabCount" class="bc-stage-count">0</span></button>
+  <span class="bc-flow-arrow" aria-hidden="true">›</span>
+  <button type="button" class="bc-tab bc-stage-tab" data-tab="completed" aria-selected="false">▣ Completed Inventory <span id="bcCompletedTabCount" class="bc-stage-count">0</span></button>
   <button type="button" class="bc-tab" data-tab="atlas" aria-selected="false">◎ Uniform Reference Atlas</button>
   <button type="button" class="bc-tab" data-tab="gunner" aria-selected="false">✦ Gunner Command</button>
   <button type="button" class="bc-tab" data-tab="uploads" aria-selected="false">⇧ Upload Media</button>
@@ -88,7 +92,7 @@
         </div></div></div></section></div><small class="bc-proc-note">Auto-publication is available only after the complete server-side verification checklist; otherwise approval remains manual. Restricted media stays owner-only.</small></section>
 </section>
 <section class="bc-page" id="bcPageCatalog">
-  <div class="bc-section-head"><div><h2>Website Media Inventory</h2><p>Live catalog records: World libraries, BLACKCELL Photos and Network attachments, Tube streams, and Social posts. Private messages and unrelated OS files are not indexed.</p></div><span id="bcCatalogScope" class="bc-scope">SYNCING</span></div>
+  <div class="bc-section-head"><div><h2 id="bcInventoryTitle">Content Inventory</h2><p id="bcInventoryDescription">New photos and videos awaiting Tech AI. Items leave this active queue after classification; nothing is deleted.</p></div><span id="bcCatalogScope" class="bc-scope">SYNCING</span></div>
   <div class="bc-filters">
    <label class="bc-search-label"><span>SEARCH</span><input id="bcSearch" type="search" placeholder="Filename, uniform, country, branch or description…" autocomplete="off"></label>
    <label><span>TYPE</span><select id="bcFilterKind"><option value="all">All content</option><option value="photo">Photos</option><option value="video">Videos</option><option value="post">Posts</option></select></label>
@@ -98,8 +102,8 @@
   </div>
   <div class="bc-split">
    <section class="bc-panel bc-inventory-panel" aria-label="Media inventory">
-    <div class="bc-panel-top"><strong>CONTENT INDEX <span id="bcResultCount"></span></strong><span id="bcCatalogMeta">Connecting…</span></div>
-    <div class="bc-inventory" id="bcInventory" role="listbox" aria-label="Available site content"></div>
+    <div class="bc-panel-top"><strong><span id="bcInventoryListTitle">AWAITING TECH AI</span> <span id="bcResultCount"></span></strong><span id="bcCatalogMeta">Connecting…</span></div>
+    <div class="bc-inventory" id="bcInventory" role="listbox" aria-label="Items in the selected inventory stage"></div>
     <div class="bc-paging"><button type="button" id="bcLoadMore" class="bc-btn bc-btn-outline" hidden>Load more records</button><small id="bcPagingStatus"></small></div>
    </section>
    <section class="bc-panel bc-inspector" aria-label="Selected content details">
@@ -110,17 +114,18 @@
      <p id="bcItemSource" class="bc-secondary">Your catalog includes all accessible media records from connected BLACKCELL sources.</p>
      <div id="bcItemFacts" class="bc-facts"></div>
      <div class="bc-inspect-actions"><button type="button" id="bcTeachSelected" class="bc-btn bc-btn-primary" disabled>Teach AI · Keep Private</button><button type="button" id="bcAnalyzeSelected" class="bc-btn bc-btn-outline" disabled>AI Suggest Uniform</button><button type="button" id="bcOpenAdmin" class="bc-btn bc-btn-outline">Review &amp; Publish</button></div>
-     <p class="bc-note">Adding a training reference does not approve or publish the media. Only the existing Media Administration workflow can change publication status.</p>
+     <p class="bc-note">Training references remain private. Publication is controlled by Review &amp; Approve. Completed records remain in protected storage.</p>
     </div>
    </section>
   </div>
  </section>
  <section class="bc-page" id="bcPageTeach" hidden>
-  <div class="bc-section-head"><div><h2>Teach BLACKCELL's AI</h2><p>Correct the country, exact service and uniform. Describe what visually distinguishes it from similar uniforms elsewhere in the world.</p></div><span class="bc-scope">PRIVATE TRAINING ONLY</span></div>
+  <div class="bc-section-head"><div><h2>Tech AI · Classification &amp; Learning</h2><p>Review AI classifications and correct the country, service, uniform and distinctive evidence. Verified references advance to publication review.</p></div><span class="bc-scope">PRIVATE TRAINING ONLY</span></div>
+  <div class="bc-tech-queue-panel" aria-label="Tech AI classification queue"><strong>WAITING FOR CLASSIFICATION VERIFICATION <span id="bcTechQueueCount">0</span></strong><div id="bcTechQueue" class="bc-tech-queue" role="group" aria-label="Select media for Tech AI"></div></div>
   <div class="bc-teach-layout">
    <section class="bc-panel bc-teach-source">
     <div class="bc-panel-top"><strong>REFERENCE PHOTOGRAPH / VIDEO</strong></div>
-    <div id="bcTeachPreview" class="bc-preview"><div class="bc-preview-empty"><span>◎</span><b>Select a catalog item first</b><small>Use Content Inventory → Teach AI.</small></div></div>
+    <div id="bcTeachPreview" class="bc-preview"><div class="bc-preview-empty"><span>◎</span><b>Select a catalog item first</b><small>Choose a record from Tech AI or Content Inventory.</small></div></div>
     <div id="bcVideoFrameControls" class="bc-video-frames" hidden>
      <strong>VIDEO FRAME INTELLIGENCE</strong>
      <p id="bcFrameStatus" role="status">Pause an uploaded video on the frame you want to classify. For secure Bunny Stream playback, choose a still image from that timestamp.</p>
