@@ -39,11 +39,54 @@
  <nav class="bc-tabs" aria-label="Intelligence Center sections">
   <button type="button" class="bc-tab" data-tab="catalog" aria-selected="true">▦ Content Inventory</button>
   <button type="button" class="bc-tab" data-tab="teach" aria-selected="false">✧ Teach AI</button>
+  <button type="button" class="bc-tab" data-tab="review" aria-selected="false">✓ Review & Approve <span id="bcReviewTabCount" class="bc-review-tab-count"></span></button>
   <button type="button" class="bc-tab" data-tab="atlas" aria-selected="false">◎ Uniform Reference Atlas</button>
   <button type="button" class="bc-tab" data-tab="gunner" aria-selected="false">✦ Gunner Command</button>
   <button type="button" class="bc-tab" data-tab="uploads" aria-selected="false">⇧ Upload Media</button>
  </nav>
- <section class="bc-page" id="bcPageCatalog">
+ <section class="bc-page" id="bcPageReview" hidden>
+ <div class="bc-section-head"><div><h2>Publication & Private Intake</h2><p>Review pending photos and videos, confirm classification and rights, prepare Bunny originals, and approve or reject without leaving Uniform Intelligence.</p></div><button type="button" class="bc-btn bc-btn-outline" id="bcReviewBackToCatalog">↶ Back to inventory</button></div>
+ <section class="panel bc-media-processor bc-native-review" id="bcProcessorPanel" hidden aria-label="BLACKCELL Uniform Intelligence approval workbench">
+<div class="bc-native-review-top"><div><span class="bc-review-kicker">PRIVATE INTAKE</span><h2>Review & Approve Media</h2><p>Inspect, classify and approve before publication.</p></div><div class="bc-review-top-tools"><strong class="bc-proc-count"><span id="bcProcessCount">0</span><small>TOTAL WAITING</small></strong><button type="button" id="bcProcessRefresh">↻ Refresh queue</button></div></div>
+<p id="bcProcessStatus" role="status" aria-live="polite">Checking import queue…</p><div class="bc-native-review-layout"><aside class="bc-review-rail" aria-label="Private review queue"><div class="bc-review-rail-title"><h3>Review queue</h3><span>Prepared files</span></div>
+        <div id="bcProcessQueue" class="bc-proc-queue"></div>
+        <div class="bc-proc-pagination"><button id="bcQueuePrev" type="button">‹ Previous</button><span id="bcQueuePage">1 / 1</span><button id="bcQueueNext" type="button">Next ›</button></div>
+        <details class="bc-bunny-review-panel" id="bcBunnyStagingPanel" aria-label="Bunny private media waiting for Military Library review">
+          <summary class="bc-review-bunny-summary"><span aria-hidden="true">☁</span><strong>Bunny incoming</strong><span id="bcBunnyStagingCount">0</span></summary><p>Prepare private review copies. Originals remain in Bunny.</p>
+          <div class="bc-bunny-stage-actions">
+            <button type="button" id="bcBunnyStagingRefresh">Refresh intake</button>
+            <button type="button" id="bcBunnyPrepareBatch" disabled>Prepare next 10</button>
+          </div>
+          <p id="bcBunnyStagingStatus" role="status" aria-live="polite">Checking your private Bunny originals…</p>
+          <div id="bcBunnyStagingQueue" class="bc-bunny-stage-queue"></div>
+          <small>Files over 32 MiB and unsupported formats remain safely in Bunny.</small>
+        </details></aside><section class="bc-review-main" aria-label="Media inspection"><div class="bc-review-idle"><div aria-hidden="true">▧</div><h3>Select media to review</h3><p>Choose a prepared photo or video to inspect and classify.</p></div><div id="bcReviewEditor" class="bc-review-editor" hidden>
+          <div class="bc-proc-editor-head"><strong id="bcReviewName">MEDIA TO REVIEW</strong><button type="button" id="bcReviewCancel">Close</button></div>
+          <div class="bc-review-workbench"><div class="bc-review-canvas"><div id="bcReviewPreview" class="bc-review-preview"></div><div class="bc-review-canvas-note">Private preview · Not yet published</div></div><div class="bc-review-inspector"><h3>Classification</h3>
+          <div class="bc-review-grid">
+           <label class="bc-review-album">UNIFORM WORLD <select id="bcReviewWorld"></select></label>
+           <label>VERIFIED COUNTRY <select id="bcReviewCountry"></select></label>
+           <label id="bcReviewBranchLabel">MILITARY BRANCH <select id="bcReviewBranch"></select></label>
+           <label>SUBJECT CATEGORY <select id="bcReviewCategory"></select></label>
+           <label>ERA <select id="bcReviewEra"></select></label>
+           <label id="bcReviewUnitLabel">UNIT / FORMATION <input id="bcReviewUnit" maxlength="120" placeholder="Only when known"></label>
+           <label>TAGS <input id="bcReviewTags" maxlength="350" placeholder="Visible details, comma separated"></label>
+           <label class="bc-review-album">DESTINATION ALBUM <select id="bcReviewAlbum"></select></label>
+          </div>
+          <h3>Publication checks</h3><div class="bc-review-checks">
+           <label><input id="bcReviewAdult" type="checkbox"> ADULT / EXPLICIT — RESTRICT TO OWNER ONLY</label>
+           <label><input id="bcReviewRights" type="checkbox"> I confirm I have the necessary rights and consent to store and display this media.</label>
+           <label><input id="bcReviewAges" type="checkbox"> If explicit: all depicted people are adults, and I have appropriate authority to hold the material.</label>
+          </div>
+          <p class="bc-proc-warning">Country and unit or agency must be supported by evidence. Branch is required only for Military World. If uncertain, leave pending. Explicit media stays owner-only and is never added to a shared album. AI is optional for verified non-explicit photos only.</p>
+          <div class="bc-proc-toolbar">
+           <button id="bcReviewAI" type="button">AI suggestions</button>
+           <button id="bcReviewReject" type="button">Reject…</button>
+           <p id="bcReviewStatus" role="status" aria-live="polite" style="grid-column:1/-1;font-size:12px;line-height:1.4;color:#d8d8e2;margin:4px 0"></p><button id="bcReviewApprove" type="button" class="bc-proc-approve">Approve &amp; file…</button>
+          </div>
+        </div></div></div></section></div><small class="bc-proc-note">Auto-publication is available only after the complete server-side verification checklist; otherwise approval remains manual. Restricted media stays owner-only.</small></section>
+</section>
+<section class="bc-page" id="bcPageCatalog">
   <div class="bc-section-head"><div><h2>Website Media Inventory</h2><p>Live catalog records: World libraries, BLACKCELL Photos and Network attachments, Tube streams, and Social posts. Private messages and unrelated OS files are not indexed.</p></div><span id="bcCatalogScope" class="bc-scope">SYNCING</span></div>
   <div class="bc-filters">
    <label class="bc-search-label"><span>SEARCH</span><input id="bcSearch" type="search" placeholder="Filename, uniform, country, branch or description…" autocomplete="off"></label>
@@ -189,6 +232,12 @@
  </section>
  <footer class="bc-footer"><span>BLACKCELL CORPORATION / CONTROL IS EVERYTHING</span><span>Owner-only verification · No automatic public publishing · Verified labels improve future AI suggestions</span></footer>
 </main>
+</div>
+<div id="bcMediaOptionSources" hidden aria-hidden="true">
+ <select id="militaryUploadCountry"><option value="">Not specified</option></select>
+ <select id="militaryUploadBranch"><option value="Unspecified">Unspecified</option><option value="Army">Army</option><option value="Navy">Navy</option><option value="Marine Corps">Marine Corps</option><option value="Air Force">Air Force</option><option value="Space Force">Space Force</option><option value="Coast Guard">Coast Guard</option><option value="National Guard">National Guard</option><option value="Special Operations">Special Operations</option><option value="Joint / Multinational">Joint / Multinational</option><option value="Other">Other</option><option value="Naval Infantry">Naval Infantry / Marines</option></select>
+ <select id="militaryUploadCategory"><option value="Unsorted">Unsorted</option><option value="Personnel">Personnel</option><option value="Uniforms">Uniforms</option><option value="Insignia">Insignia</option><option value="Equipment">Equipment</option><option value="Ground Vehicles">Ground Vehicles</option><option value="Aircraft">Aircraft</option><option value="Naval Vessels">Naval Vessels</option><option value="Facilities">Facilities</option><option value="Training">Training</option><option value="Fitness / Exercise">Fitness / Exercise</option><option value="Operations">Operations</option><option value="Ceremonies">Ceremonies</option><option value="Historical">Historical</option><option value="Other">Other</option></select>
+ <select id="militaryUploadEra"><option value="">Unspecified</option><option value="Contemporary">Contemporary</option><option value="2000–Present">2000–Present</option><option value="1990s">1990s</option><option value="1980s">1980s</option><option value="Cold War">Cold War</option><option value="World War II">World War II</option><option value="World War I">World War I</option><option value="Historical">Historical</option><option value="Other">Other</option></select>
 </div>
 </body>
 </html>
