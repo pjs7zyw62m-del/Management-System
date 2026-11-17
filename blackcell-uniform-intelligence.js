@@ -283,19 +283,23 @@ function formBlank(){
  for(const id of ["bcTrainCountry","bcTrainUniform","bcTrainPattern","bcTrainEra","bcTrainEvidence","bcTrainLookalikeCountry","bcTrainLookalikeBranch","bcTrainDifferences","bcTrainTags"])$(id).value="";
  $("bcTrainWorld").value="unsorted";$("bcTrainBranch").value="Unspecified";$("bcTrainCategory").value="Unsorted";$("bcTrainTime").value="00:00";$("bcTrainConfirmed").checked=false;
 }
+const canVideoAnalyze=item=>!!item&&canTeach(item)&&item.kind==="video"&&item.owner===data.user?.id&&!item.adult;
+const videoSuggestion=item=>item?data.videoSuggestions.get(item.key+":"+data.frame)||null:null;
 function drawPatternMatches(item){
  const root=$("bcPatternMatches");
  root.replaceChildren();
  const photoAllowed=!!item&&item.type==="asset"&&item.kind==="photo"&&item.owner===data.user?.id&&!item.adult;
  $("bcSuggestPattern").disabled=!photoAllowed;
- if(!photoAllowed){
-  root.append(E("p","bc-pattern-ai-empty","Automatic pattern ranking requires one of your own non-restricted photos. For video, verify a selected frame manually."));
+ const videoAllowed=canVideoAnalyze(item);
+ if(!photoAllowed&&!videoAllowed){
+  root.append(E("p","bc-pattern-ai-empty","Select one of your own non-restricted photos or video frames for AI pattern ranking."));
   return;
  }
- const row=ai(item),saved=row?.original_suggestion?.camouflage_matches;
+ const row=photoAllowed?ai(item):null,video=videoAllowed?videoSuggestion(item):null;
+ const saved=video?video.pattern_suggestions:row?.original_suggestion?.camouflage_matches;
  if(!saved||!Array.isArray(saved.candidates)){
-  if(row?.camouflage_pattern)root.append(E("p","bc-pattern-ai-empty","Previous AI pattern guess: "+row.camouflage_pattern+". This is unranked; run a fresh AI suggestion for comparison."));
-  else root.append(E("p","bc-pattern-ai-empty","No ranked camouflage analysis yet. Choose Suggest Top 3 Patterns to inspect the photo and compare possible patterns."));
+  if(row?.camouflage_pattern)root.append(E("p","bc-pattern-ai-empty","Earlier AI guess: "+row.camouflage_pattern+". Run new suggestions to compare alternatives."));
+  else root.append(E("p","bc-pattern-ai-empty",videoAllowed?"No ranked suggestions yet for this frame. Capture a video still or choose a still image, then select Analyze This Frame with AI.":"No ranked camouflage analysis yet. Select Suggest Top 3 Patterns."));
   return;
  }
  const visibility=String(saved.visibility||"not_visible");
@@ -336,22 +340,28 @@ function fillForm(exact){
  const allowed=canTeach(item),r=exact||ref(item,data.frame)||ref(item,0);
  $("bcSaveDraft").disabled=!allowed;$("bcVerifyReference").disabled=!allowed||!!item?.adult;
  $("bcTrainTime").disabled=!allowed||item?.kind!=="video";$("bcDeleteReference").hidden=!r;
+ $("bcVideoFrameControls").hidden=!canVideoAnalyze(item);
+ $("bcCaptureFrame").disabled=!(canVideoAnalyze(item)&&item.type==="asset");
+ $("bcAnalyzeVideoFrame").disabled=!canVideoAnalyze(item);
+ if(data.videoFrame?.key!==item?.key||data.videoFrame?.seconds!==data.frame){
+  $("bcFrameStillPreview").hidden=true;$("bcFrameStillPreview").removeAttribute("src");
+ }
  drawPatternMatches(item);
  if(!allowed){text("bcTrainStatus","Only photos and video records can be used as training references.");return}
- const aiResult=ai(item),current=labels(item);
- $("bcTrainWorld").value=r?.world||current.world;
- $("bcTrainCountry").value=r?.country_code||current.country;
- $("bcTrainBranch").value=r?.branch||current.branch;
- const category=r?.category||current.category;
+ const aiResult=ai(item),current=labels(item),videoResult=item?.kind==="video"?videoSuggestion(item)?.analysis:null;
+ $("bcTrainWorld").value=r?.world||videoResult?.tags?.find(t=>String(t).startsWith("maf:"))?.slice(4)||current.world;
+ $("bcTrainCountry").value=r?.country_code||videoResult?.country_code||current.country;
+ $("bcTrainBranch").value=r?.branch||videoResult?.military_branch||current.branch;
+ const category=r?.category||videoResult?.military_category||current.category;
  $("bcTrainCategory").value=[...$("bcTrainCategory").options].some(o=>o.value===category)?category:"Unsorted";
- $("bcTrainUniform").value=r?.uniform_name||aiResult?.uniform_type||"";
- $("bcTrainPattern").value=r?.camouflage_pattern||aiResult?.camouflage_pattern||"";
+ $("bcTrainUniform").value=r?.uniform_name||videoResult?.uniform_type||aiResult?.uniform_type||"";
+ $("bcTrainPattern").value=r?.camouflage_pattern||videoResult?.camouflage_pattern||aiResult?.camouflage_pattern||"";
  $("bcTrainEra").value=r?.era||item.era||"";
- $("bcTrainEvidence").value=r?.visual_evidence||aiResult?.notes||"";
+ $("bcTrainEvidence").value=r?.visual_evidence||videoResult?.notes||aiResult?.notes||"";
  $("bcTrainLookalikeCountry").value=r?.lookalike_country||"";
  $("bcTrainLookalikeBranch").value=r?.lookalike_branch||"";
  $("bcTrainDifferences").value=r?.distinguishing_features||"";
- $("bcTrainTags").value=(r?.tags||aiResult?.tags||item.tags||[]).filter(x=>!String(x).startsWith("maf:")).join(", ");
+ $("bcTrainTags").value=(r?.tags||videoResult?.tags||aiResult?.tags||item.tags||[]).filter(x=>!String(x).startsWith("maf:")).join(", ");
  data.frame=r?.frame_seconds||data.frame;$("bcTrainTime").value=fmtTime(data.frame);
  $("bcDeleteReference").hidden=!r;
  text("bcReferenceMode",r?r.reference_status.toUpperCase():"NEW REFERENCE");
