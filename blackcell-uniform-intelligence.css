@@ -181,3 +181,20 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}a{color:#e6b0bf}
 .bc-pattern-use{font-size:10px!important;min-height:29px;padding:7px 11px!important}
 .bc-pattern-match-warning{font-size:9px;line-height:1.55;color:#aaa0ab}
 @media(max-width:550px){.bc-pattern-ai-toolbar{flex-wrap:wrap}.bc-pattern-ai-toolbar .bc-btn{width:100%}}
+
+/* VIDEO INTELLIGENCE — embedded private Bunny Stream player and local stills */
+.bc-preview iframe{display:block;width:100%;height:100%;min-height:220px;border:0;background:#050507;aspect-ratio:16/9}
+.bc-video-frames{margin:10px 14px 8px;border:1px solid #8a3d58aa;border-radius:13px;padding:12px;background:linear-gradient(150deg,#26161e,#0c0d11);display:flex;flex-direction:column;gap:9px;min-width:0}
+.bc-video-frames[hidden]{display:none}
+.bc-video-frames>strong{font-size:10px;letter-spacing:.10em;color:#f1c9d6}
+.bc-video-frames>p{font-size:10px;line-height:1.55;color:#bbb2be;margin:0}
+.bc-video-frames>small{font-size:9px;line-height:1.55;color:#a89ba9}
+.bc-video-frame-actions{display:flex;align-items:stretch;gap:7px;flex-wrap:wrap}
+.bc-video-frame-actions .bc-btn{flex:1;min-width:155px;font-size:10px;padding:9px}
+.bc-video-still-picker{display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;position:relative;flex:1;min-width:160px;border:1px solid #ffffff45;border-radius:9px;background:#1d1922;font-size:10px;font-weight:750;color:#e9c5d1;padding:9px}
+.bc-video-still-picker input{position:absolute;opacity:0;width:1px;height:1px;overflow:hidden}
+.bc-video-still-picker:focus-within{outline:2px solid #bd738b;outline-offset:2px}
+#bcFrameStillPreview{align-self:center;max-width:100%;max-height:170px;object-fit:contain;border:1px solid #ffffff25;border-radius:9px;background:#060609}
+#bcFrameStillPreview[hidden]{display:none}
+#bcAnalyzeVideoFrame{width:100%;min-height:36px;font-size:11px}
+@media(max-width:760px){.bc-video-frame-actions{flex-direction:column}.bc-preview iframe{min-height:170px}.bc-video-still-picker{min-height:38px}}
