@@ -224,6 +224,7 @@ function init(){
  $("bcAutoSortPause").onclick=()=>{paused=true;note("Finishing the current photo then pausing AI sorting.");showState()};
  $("bcAutoSortRefresh").onclick=()=>void refresh();
  window.addEventListener("blackcell:upload-queue-ready",ready);
+ if(window.BLACKCELL_UPLOAD_QUEUE_CONTEXT)void ready({detail:window.BLACKCELL_UPLOAD_QUEUE_CONTEXT});
  window.addEventListener("blackcell:upload-saved",ev=>void saved(ev));
  window.addEventListener("pagehide",()=>{paused=true;clearTimeout(refreshTimer)});
 }

@@ -111,6 +111,6 @@ async function boot(){try{
  const {data,error}=await db.rpc(auth.member.role==="owner"?"corp_code_status":"corp_employee_code_status");
  if(error||data?.ok!==true||data?.verified!==true)throw Error("Verify corporate access first.");
  uid=auth.user.id;$("review").hidden=!(auth.member.role==="owner"&&Number(auth.member.clearance_level)===7);
- $("main").hidden=false;$("gate").hidden=true;$("connection").textContent="● VERIFIED SESSION";render();window.dispatchEvent(new CustomEvent("blackcell:upload-queue-ready",{detail:{userId:uid,isOwner:auth.member.role==="owner"&&Number(auth.member.clearance_level)===7}}));await refreshCloud();
+ $("main").hidden=false;$("gate").hidden=true;$("connection").textContent="● VERIFIED SESSION";render();window.BLACKCELL_UPLOAD_QUEUE_CONTEXT={userId:uid,isOwner:auth.member.role==="owner"&&Number(auth.member.clearance_level)===7};window.dispatchEvent(new CustomEvent("blackcell:upload-queue-ready",{detail:window.BLACKCELL_UPLOAD_QUEUE_CONTEXT}));await refreshCloud();
  }catch(e){$("connection").textContent="ACCESS REQUIRED";$("gateText").textContent=String(e.message||e)}}
-void boot();</script><script type="module" src="blackcell-upload-auto-sort.js?v=20261117-r1"></script><script type="module" src="blackcell-upload-visual-search.js?v=20261117-v1"></script></body></html>
+void boot();</script><script type="module" src="blackcell-upload-auto-sort.js?v=20261117-r2"></script><script type="module" src="blackcell-upload-visual-search.js?v=20261117-v1"></script></body></html>
