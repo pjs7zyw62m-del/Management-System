@@ -135,13 +135,15 @@ async function refresh(){
  if(!ownerId||refreshInFlight)return;
  refreshInFlight=true;
  try{
-  const {data,error}=await client.from("corp_social_assets")
+  const [recent,queued]=await Promise.all([client.from("corp_social_assets")
    .select("id,filename,kind,mime_type,bytes,adult_restricted,source_provider,created_at,review_status")
    .eq("owner_id",ownerId).eq("purpose","library").eq("source_provider","world-bunny-v1")
    .eq("kind","photo").in("review_status",["pending","approved"])
-   .order("created_at",{ascending:true}).limit(120);
-  if(error)throw error;
-  pending=data||[];
+   .order("created_at",{ascending:false}).limit(120),
+   client.rpc("blackcell_autopilot_photo_queue",{p_limit:60})]);
+  if(recent.error)throw recent.error;
+  if(queued.error)throw queued.error;
+  pending=[...new Map([...(recent.data||[]),...(queued.data||[])].map(x=>[x.id,x])).values()];
   const ids=pending.map(a=>a.id);
   analyses=new Map();
   if(ids.length){
