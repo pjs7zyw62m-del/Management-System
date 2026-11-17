@@ -11,7 +11,7 @@ const SOURCES=[
  ["post","corp_social_posts","created_at","id,author_id,body,kind,created_at"],
  ["saved","corp_social_tiktok_saves","saved_at","id,user_id,title,military_branch,creator_handle,saved_at"]
 ];
-const data={user:null,owner:false,items:[],learning:[],ai:[],page:"catalog",selected:null,frame:0,blob:"",previewGeneration:0,loading:false,saving:false,videoFrame:null,videoSuggestions:new Map(),videoBusy:false,streamPlayback:null,memoryLoaded:false,autopilot:null,videoUsageToday:null};
+const data={user:null,owner:false,items:[],learning:[],ai:[],page:"catalog",selected:null,frame:0,blob:"",previewGeneration:0,loading:false,saving:false,videoFrame:null,videoSuggestions:new Map(),videoBusy:false,streamPlayback:null,memoryLoaded:false,autopilot:null,videoUsageToday:null,timelineFrames:new Map()};
 let gunnerCommand=null,publicationReview=null,publicationReviewLoading=false;
 const index=SOURCES.map(([type,table,order,fields])=>({type,table,order,fields,skip:0,done:false,error:""}));
 const COUNTRY=typeof Intl.DisplayNames==="function"?new Intl.DisplayNames(["en"],{type:"region"}):null;
@@ -431,11 +431,13 @@ async function preview(item){
 }
 function fact(label,value){const box=E("div","bc-fact");box.append(E("small","",label),E("b","",value||"—"));return box}
 function select(item){
- data.selected=item;data.frame=0;data.videoFrame=null;
+ data.selected=item;data.frame=0;data.videoFrame=null;data.timelineFrames.clear();
+ $("bcTimelineResults").replaceChildren();text("bcTimelineStatus","Optional scan: up to 4 video frames, only after you approve an external AI request.");
  const videoCanUse=canTeach(item)&&item.owner===data.user?.id&&!item.adult&&item.kind==="video";
  $("bcVideoFrameControls").hidden=!videoCanUse;
  $("bcCaptureFrame").disabled=!(videoCanUse&&item.type==="asset");
  $("bcAnalyzeVideoFrame").disabled=!videoCanUse;
+ $("bcScanVideoTimeline").disabled=!(videoCanUse&&item.type==="asset");
  $("bcFrameStillPreview").hidden=true;$("bcFrameStillPreview").removeAttribute("src");$("bcFrameStillInput").value="";
  text("bcFrameStatus",item.type==="stream_video"?"Loading secure video player… You can choose a still image taken from any frame.":"Pause the video at the frame you want to classify, then select Capture Current Frame.");
  for(const n of $("bcInventory").querySelectorAll("[data-item-key]"))n.setAttribute("aria-selected",String(n.dataset.itemKey===item.key));
@@ -896,6 +898,7 @@ function init(){
  $("bcCaptureFrame").onclick=()=>void captureCurrentFrame();
  $("bcFrameStillInput").onchange=()=>void pickVideoStill($("bcFrameStillInput").files?.[0]);
  $("bcAnalyzeVideoFrame").onclick=()=>void analyzeVideoFrame();
+ $("bcScanVideoTimeline").onclick=()=>void scanVideoTimeline();
  $("bcSaveDraft").onclick=()=>void save("draft");
  $("bcTrainForm").onsubmit=ev=>{ev.preventDefault();void save("verified")};
  $("bcDeleteReference").onclick=()=>void removeRef();
