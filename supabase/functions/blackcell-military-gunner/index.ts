@@ -108,6 +108,22 @@ Deno.serve(async req=>{
     .map(x=>cut(x.code,2)+":"+n(x.count)).join(",");
   const branches=(Array.isArray(collection.branches)?collection.branches:[]).slice(0,6)
     .map(x=>cut(x.branch,38)+":"+n(x.count)).join(",");
+  // Read-only, owner-RLS filtered coverage statistics. This supplements
+  // Gunner's collection awareness; it does not share image bytes or grant writes.
+  // Report unavailable rather than invent a zero when a query fails.
+  const [analyses,high,semantic,visual]=await Promise.allSettled([
+   client.from("corp_social_ai_analysis").select("asset_id",{count:"exact",head:true}).eq("owner_id",user.id),
+   client.from("corp_social_ai_analysis").select("asset_id",{count:"exact",head:true}).eq("owner_id",user.id).eq("confidence","high"),
+   client.from("corp_uniform_semantic_vectors").select("asset_id",{count:"exact",head:true}).eq("owner_id",user.id),
+   client.from("corp_uniform_visual_fingerprints").select("asset_id",{count:"exact",head:true}).eq("owner_id",user.id)
+  ]);
+  const covered=result=>result.status==="fulfilled"&&!result.value.error?
+   String(n(result.value.count)):"unavailable";
+  const visionBrief="AI_analysis_records="+covered(analyses)+
+   ",high_confidence_model_labels="+covered(high)+
+   ",semantic_text_vectors="+covered(semantic)+
+   ",near_duplicate_visual_fingerprints="+covered(visual)+
+   ". These coverage counters are not verified model accuracy or evidence of true military service.";
   collectionBrief=[
    "[BLACKCELL VERIFIED LIVE COLLECTION AGGREGATES. All counts are authorized database results, not estimates. Record counts may overlap across separate tables. Never call unverified country labels definitive.]",
    "Assets="+n(m.total)+",photos="+n(m.photos)+",videos="+n(m.videos)+
@@ -119,11 +135,16 @@ Deno.serve(async req=>{
    "Favorites="+n(i.favorites)+",rated="+n(i.rated)+",positive_ratings="+n(i.positive_ratings)+
     ",engaged_views="+n(i.engaged_views)+",exact_duplicate_extra_copies="+n(d.extra_copies)+".",
    "Country_record_counts:"+countries+"; Branch_record_counts:"+branches+".",
+   visionBrief,
    "Recommend the next lawful, accurately sourced uniform uploads from real gaps; if insufficient evidence, say so. Your suggestions are private and need owner approval."
   ].join(" ");
  }
+ // Preserve the owner's actual question within Dolphin's payload limit even
+ // when additional collection statistics are supplied.
+ const question=message.slice(0,420);
+ const questionSuffix="\nOwner question: "+question;
  const richMessage=collectionBrief?
-  (collectionBrief+"\nOwner question: "+message.slice(0,420)).slice(0,1540):
+  collectionBrief.slice(0,Math.max(0,1540-questionSuffix.length))+questionSuffix:
   message;
  const payload={action:"start",message:richMessage,photo_context:photoContext,
   page_title:cut(input.page_title||"Military Library",100),
