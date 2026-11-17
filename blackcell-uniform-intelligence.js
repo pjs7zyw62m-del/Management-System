@@ -1,6 +1,7 @@
 /* BLACKCELL Uniform Intelligence Center | owner-only catalog and learning */
 import {corporateClient,corporateAuthorize} from "./corp-auth.js?v=20261114-transport-classification";
 import {PATTERNS,SOURCES as CAMO_SOURCES,EXTERNAL_SAMPLES,COUNTRY_COMPARISON_LESSONS} from "./blackcell-camouflage-atlas.js?v=20261117-r3";
+import {initGunnerCommand} from "./blackcell-gunner-command.js?v=20261117-r1";
 const db=corporateClient();
 const $=id=>document.getElementById(id), E=(tag,cls,value)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(value!==undefined)n.textContent=String(value);return n;};
 const W={military:"Military",police:"Law Enforcement",fire:"Fire & Rescue",medical:"Medical",security:"Corrections / Security",professional:"Aviation / Professional",unsorted:"Unsorted"};
@@ -11,6 +12,7 @@ const SOURCES=[
  ["saved","corp_social_tiktok_saves","saved_at","id,user_id,title,military_branch,creator_handle,saved_at"]
 ];
 const data={user:null,owner:false,items:[],learning:[],ai:[],page:"catalog",selected:null,frame:0,blob:"",previewGeneration:0,loading:false,saving:false};
+let gunnerCommand=null;
 const index=SOURCES.map(([type,table,order,fields])=>({type,table,order,fields,skip:0,done:false,error:""}));
 const COUNTRY=typeof Intl.DisplayNames==="function"?new Intl.DisplayNames(["en"],{type:"region"}):null;
 const country=c=>{if(!c)return"Unconfirmed";try{return(COUNTRY?.of(c)||c)+" ("+c+")"}catch{return c}};
@@ -40,9 +42,10 @@ function switchTab(page){
  if(!data.owner&&page!=="uploads")return;
  data.page=page;
  for(const b of document.querySelectorAll(".bc-tab"))b.setAttribute("aria-selected",String(b.dataset.tab===page));
- for(const n of ["catalog","teach","atlas","uploads"])$("bcPage"+n[0].toUpperCase()+n.slice(1)).hidden=n!==page;
+ for(const n of ["catalog","teach","atlas","gunner","uploads"])$("bcPage"+n[0].toUpperCase()+n.slice(1)).hidden=n!==page;
  if(page==="teach")fillForm();
  if(page==="atlas"){drawAtlas();drawPatterns()}
+ if(page==="gunner")gunnerCommand?.open();
  if(page==="uploads"&&!$("bcUploadFrame").getAttribute("src")){$("bcUploadFrame").src="blackcell-upload-queue.html?v=20261117-ai-autosort-r3"}
 }
 async function loadCatalog(reset=false){
@@ -312,13 +315,14 @@ async function boot(){
   data.user=a.user;data.owner=a.member.role==="owner"&&Number(a.member.clearance_level)===7;
   $("bcGate").hidden=true;$("bcApp").hidden=false;$("bcConnection").dataset.ready="true";text("bcConnection",data.owner?"LEVEL 7 VERIFIED":"VERIFIED MEMBER");
   if(!data.owner){for(const n of document.querySelectorAll(".bc-tab"))if(n.dataset.tab!=="uploads")n.hidden=true;switchTab("uploads");return}
+  gunnerCommand=initGunnerCommand({client:db,userId:a.user.id});
   switchTab("catalog");await Promise.all([loadCatalog(true),loadMemory().catch(err=>text("bcCatalogMeta","Reference memory unavailable: "+err.message))]);
  }catch(err){$("bcApp").hidden=true;$("bcGate").hidden=false;text("bcGateMessage",err.message||"Access restricted");text("bcConnection","ACCESS REQUIRED")}
 }
 function init(){
  for(const b of document.querySelectorAll(".bc-tab"))b.onclick=()=>switchTab(b.dataset.tab);
  for(const id of ["bcSearch","bcFilterKind","bcFilterStatus","bcFilterWorld","bcFilterSource"])$(id).addEventListener(id==="bcSearch"?"input":"change",list);
- $("bcRefreshAll").onclick=()=>{if(data.owner)void Promise.all([loadCatalog(true),loadMemory()])};
+ $("bcRefreshAll").onclick=()=>{if(data.owner)void Promise.all([loadCatalog(true),loadMemory(),...(gunnerCommand?[gunnerCommand.refresh()]:[])])};
  $("bcLoadMore").onclick=()=>void loadCatalog();
  $("bcTeachSelected").onclick=()=>{data.frame=0;switchTab("teach")};
  $("bcOpenAdmin").onclick=()=>{location.href="corporate-media-admin.html"};
