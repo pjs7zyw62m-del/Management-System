@@ -56,7 +56,26 @@ export function createPrivateDrive(client,uid){
  }
  async function download(full){
   try{const row=await lookup(full);if(!row)return await legacy.download(full);if(row.state!=='ready')throw Error('File unavailable; retry its removal.');
-   const parts=[];for(let index=0;index<Math.ceil(Number(row.size_bytes)/CHUNK);index++){let got=null;for(let attempt=0;attempt<3;attempt++){try{got=await request('read',{id:row.id,index},null,null,null,true);break}catch(e){if(attempt===2)throw e}}const expected=Math.min(CHUNK,Number(row.size_bytes)-index*CHUNK);if(!got||got.size!==expected)throw Error('Incomplete file download.');parts.push(got)}
+   // Bounded parallel chunk reads reduce latency while preserving byte order.
+   // Private Edge Function still re-verifies the same owner/employee for EACH
+   // chunk and decrypts with its original AES-GCM index AAD.
+   const total=Math.ceil(Number(row.size_bytes)/CHUNK);
+   const parts=new Array(total),parallel=Math.min(3,total);
+   let nextIndex=0;
+   const worker=async()=>{
+    while(nextIndex<total){
+     const index=nextIndex++;
+     let got=null;
+     for(let attempt=0;attempt<3;attempt++){
+      try{got=await request('read',{id:row.id,index},null,null,null,true);break}
+      catch(e){if(attempt===2)throw e}
+     }
+     const expected=Math.min(CHUNK,Number(row.size_bytes)-index*CHUNK);
+     if(!got||got.size!==expected)throw Error('Incomplete file download.');
+     parts[index]=got;
+    }
+   };
+   await Promise.all(Array.from({length:parallel},worker));
    return ok(new Blob(parts,{type:'application/octet-stream'}))
   }catch(e){return err(e)}
  }
