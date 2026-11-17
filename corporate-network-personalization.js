@@ -3,6 +3,7 @@
    Manual photo ratings and favorites are private; no sensitive-trait inference,
    cross-member profiling, facial identification, or automatic AI spending.
 */
+import {buildBehavioralAffinity,rankWithDiversity} from './blackcell-adaptive-ranker.js?v=20261117-aggressive-r1';
 export function createNetworkPersonalization({client,state,toast,onChanged}){
  const id=value=>document.getElementById(value);
  const FOCUS={
@@ -30,6 +31,31 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
    rediscovery_enabled:false,rediscovery_frequency:'occasional',
    preferred_topics:[],muted_topics:[]});
  let current=DEFAULT(),tastes=[],favorites=new Set(),interestSignals=new Map(),loaded=false,saving=false;
+ let affinityFn=null,affinitySource=null,signalRefreshTimer=null,signalRefreshing=false,signalAgain=false;
+ function affinity(asset){
+  if(affinitySource!==state.assets||!affinityFn){
+   affinitySource=state.assets;
+   affinityFn=buildBehavioralAffinity(state.assets||[],tastes,favorites,interestSignals);
+  }
+  return affinityFn(asset);
+ }
+ function scheduleSignalRefresh(){
+  if(!state.user?.id||!enabled()){return}
+  if(document.hidden){signalAgain=true;return}
+  clearTimeout(signalRefreshTimer);
+  signalRefreshTimer=setTimeout(async()=>{
+   if(signalRefreshing){signalAgain=true;return}
+   signalRefreshing=true;
+   try{
+    await load();
+    if(typeof onChanged==='function')onChanged();
+   }catch(e){console.warn('Live algorithm feedback unavailable:',e?.message||e)}
+   finally{
+    signalRefreshing=false;
+    if(signalAgain){signalAgain=false;scheduleSignalRefresh()}
+   }
+  },650);
+ }
  const get=()=>({...current,preferred_topics:[...current.preferred_topics],muted_topics:[...current.muted_topics]});
  const enabled=()=>current.enabled===true;
  const feedEnabled=()=>enabled()&&current.personalize_feed===true;
@@ -63,54 +89,32 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
   for(const key of current.muted_topics||[])if(match.has(key))score-=50;
   const direct=tastes.find(t=>t.asset_id===asset?.id);
   if(direct){
-   if(direct.reaction==='less')score-=55;
-   else if(direct.reaction==='more')score+=20;
-   if(direct.rating>=4)score+=8;
-   if(direct.rating&&direct.rating<=2)score-=12;
+   if(direct.reaction==='less')score-=110;
+   else if(direct.reaction==='more')score+=65;
+   if(direct.rating>=4)score+=22;
+   if(direct.rating&&direct.rating<=2)score-=34;
   }
-  if(favorites.has(asset?.id))score+=19;
+  if(favorites.has(asset?.id))score+=52;
   // Explicit Rediscovery/Trigger feedback is stronger than passive viewing.
   const signal=interestSignals.get(asset?.id);
-  if(current.rediscovery_enabled&&signal?.rediscovery_feedback==='dislike')score-=120;
-  else if(current.rediscovery_enabled&&signal?.rediscovery_feedback==='like')score+=30;
-  else if(current.rediscovery_enabled&&signal?.rediscovery_feedback==='more')score+=25;
+  if(current.rediscovery_enabled&&signal?.rediscovery_feedback==='dislike')score-=180;
+  else if(current.rediscovery_enabled&&signal?.rediscovery_feedback==='like')score+=75;
+  else if(current.rediscovery_enabled&&signal?.rediscovery_feedback==='more')score+=65;
   // Long viewing or zooming is a *possible* preference; it is never a vote.
   if(current.rediscovery_enabled&&signal?.rediscovery_feedback!=='dislike'&&direct?.reaction!=='less'&&!(direct?.rating>0&&direct.rating<=2)){
-   if(signal)score+=Math.min(3,signal.engaged_views||0)*8+Math.min(3,signal.zoom_engaged_views||0)*12;
+   if(signal)score+=Math.min(3,signal.engaged_views||0)*10+Math.min(3,signal.zoom_engaged_views||0)*18;
   }
   return score;
  }
- function relatedScore(asset){
-  if(!enabled())return 0;
-  let score=0;
-  const source=state.assets||[];
-  const byId=new Map(source.map(a=>[a.id,a]));
-  const liked=tastes.filter(t=>t.reaction==='more'||t.rating>=4).slice(0,80);
-  for(const item of liked){
-   const match=byId.get(item.asset_id);
-   if(!match||match.id===asset?.id)continue;
-   if(match.military_category && match.military_category!=='Unsorted' &&
-      match.military_category===asset?.military_category)score+=2;
-   if(match.military_branch && match.military_branch!=='Unspecified' &&
-      match.military_branch===asset?.military_branch)score+=1;
-  }
-  if(current.rediscovery_enabled){
-   for(const [id,signal] of interestSignals){
-    const match=byId.get(id);
-    if(!match||match.id===asset?.id||signal.rediscovery_feedback==='dislike'||(!signal.engaged_views&&!signal.zoom_engaged_views&&!['like','more'].includes(signal.rediscovery_feedback)))continue;
-    if(match.military_category&&match.military_category!=='Unsorted'&&match.military_category===asset?.military_category)score+=3;
-    if(match.military_branch&&match.military_branch!=='Unspecified'&&match.military_branch===asset?.military_branch)score+=2;
-    if(match.military_era&&match.military_era===asset?.military_era)score+=1;
-   }
-  }
-  return Math.min(score,25);
- }
+ // Adapt instantly to the signed-in user's own feedback only.
+ // Classified uniform labels, not appearance/identity/sensitive traits.
+ function relatedScore(asset){return enabled()?affinity(asset):0}
  function rankAssets(assets){
   if(!enabled())return [...assets];
-  const base=new Map(assets.map((a,i)=>[a.id,i]));
-  return [...assets].sort((a,b)=>{
-   const sa=preferenceScore(a)+relatedScore(a),sb=preferenceScore(b)+relatedScore(b);
-   return sb-sa||base.get(a.id)-base.get(b.id);
+  const scored=a=>preferenceScore(a)+relatedScore(a);
+  return rankWithDiversity(assets,scored,{
+   top:Math.min(36,assets.length),
+   label:a=>a.military_branch||a.military_category||''
   });
  }
  function rankFeed(entries){
@@ -162,6 +166,7 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
   tastes=reactions.data||[];
   favorites=new Set((liked.data||[]).map(a=>a.asset_id));
   interestSignals=new Map((engagements.data||[]).map(row=>[row.asset_id,row]));
+  affinityFn=null;affinitySource=null;
   loaded=true;updateButtons();
  }
  function updateButtons(){
@@ -174,7 +179,9 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
   if(profileLabel)profileLabel.textContent=enabled()?focusLabel(serviceFocus()):'All uniforms';
   const label=id('personalizationCurrentStatus');
   if(label)label.textContent=enabled()?
-   'ON · RECOMMENDATIONS ONLY FOR YOU':'OFF · PRIVATE UNTIL YOU OPT IN';
+   'LIVE ADAPTIVE RANKING · '+(tastes.length+favorites.size+
+    [...interestSignals.values()].filter(x=>x.engaged_views||x.zoom_engaged_views||x.rediscovery_feedback).length)+
+   ' PRIVATE FEEDBACK SIGNALS':'OFF · PRIVATE UNTIL YOU OPT IN';
  }
  function renderChoices(){
   const root=id('personalizationTopics');if(!root)return;
@@ -293,6 +300,10 @@ export function createNetworkPersonalization({client,state,toast,onChanged}){
   }finally{saving=false}
  }
  function setup(){
+  window.addEventListener('bc:algorithm-signal',scheduleSignalRefresh);
+  document.addEventListener('visibilitychange',()=>{
+   if(!document.hidden&&signalAgain){signalAgain=false;scheduleSignalRefresh()}
+  });
   document.querySelectorAll('[data-personalization-open]').forEach(b=>b.addEventListener('click',open));
   id('personalizationSave')?.addEventListener('click',()=>void save());
   id('personalizationServiceFocus')?.addEventListener('change',()=>{

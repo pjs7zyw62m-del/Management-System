@@ -403,6 +403,7 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
     .upsert(data,{onConflict:"user_id,asset_id"});
    if(error)throw error;
    meta.tastes=[...current().filter(t=>t.asset_id!==active.id),data];
+   window.dispatchEvent(new CustomEvent('bc:algorithm-signal',{detail:{kind:'photo-taste'}}));
    toast("✓ Preference saved: "+data.regions.length+" highlighted area"+(data.regions.length===1?"":"s")+". Opening For You recommendations.");
    $("tasteOverlay").hidden=true;active=null;
    try{if(typeof onSaved==="function")onSaved({reaction,areas:data.regions.length,rating:data.rating,cues:data.cues,regions:data.regions})}catch(e){console.warn("Recommendation navigation unavailable",e)}
@@ -417,6 +418,7 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
    const {error}=await client.from("corp_social_photo_tastes").delete().eq("user_id",ownId()).eq("asset_id",active.id);
    if(error)throw error;
    meta.tastes=current().filter(t=>t.asset_id!==active.id);
+   window.dispatchEvent(new CustomEvent('bc:algorithm-signal',{detail:{kind:'photo-taste-clear'}}));
    $("tasteOverlay").hidden=true;active=null;render();
    toast("Preference for this photo cleared.");
   }catch(e){$("tasteStatus").textContent="Couldn't clear preference: "+(e?.message||"Unknown error")}
@@ -429,7 +431,9 @@ export function createPhotoTaste({client,state,meta,toast,viewerCurrent,mediaUrl
   try{
    const {error}=await client.from("corp_social_photo_tastes").delete().eq("user_id",ownId());
    if(error)throw error;
-   meta.tastes=[];render();toast("Personal photo preference feedback reset. Favorites are unchanged.");
+   meta.tastes=[];
+   window.dispatchEvent(new CustomEvent('bc:algorithm-signal',{detail:{kind:'photo-taste-reset'}}));
+   render();toast("Personal photo preference feedback reset. Favorites are unchanged.");
   }catch(e){toast("Couldn't reset preferences: "+(e?.message||"Unknown error"))}
   finally{setBusy(false)}
  }

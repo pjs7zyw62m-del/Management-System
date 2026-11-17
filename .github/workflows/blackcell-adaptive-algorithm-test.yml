@@ -1,0 +1,38 @@
+name: BLACKCELL Adaptive Recommendation Tests
+on:
+  pull_request:
+    paths:
+      - 'blackcell-adaptive-ranker.js'
+      - 'corporate-network-personalization.js'
+      - 'corporate-photo-rediscovery.js'
+      - 'corporate-photo-taste.js'
+      - 'corporate-photo-votes.js'
+      - 'corporate-network-photos.js'
+      - 'corporate-visual-discovery.js'
+      - 'corporate-network.js'
+      - 'corporate-network.html'
+      - 'tests/blackcell-adaptive-ranker.test.mjs'
+      - '.github/workflows/blackcell-adaptive-algorithm-test.yml'
+  workflow_dispatch:
+jobs:
+  algorithm-regression:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate algorithm and frontend syntax
+        run: |
+          node --check blackcell-adaptive-ranker.js
+          node --check corporate-network-personalization.js
+          node --check corporate-photo-rediscovery.js
+          node --check corporate-photo-taste.js
+          node --check corporate-photo-votes.js
+          node --check corporate-network-photos.js
+          node --check corporate-visual-discovery.js
+          node --check corporate-network.js
+      - name: Run adaptive recommendation behavior tests
+        run: node --test tests/blackcell-adaptive-ranker.test.mjs

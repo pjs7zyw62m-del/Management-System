@@ -114,7 +114,10 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
     void client.rpc('corp_record_photo_rediscovery_engagement',{p_asset_id:assetId})
       .then(({data,error})=>{
        if(error)console.warn('15-second photo signal could not be recorded:',error.message);
-       else if(data===true)console.info('Photo rediscovery: long-view interest signal recorded.');
+       else if(data===true){
+         console.info('Photo rediscovery: long-view interest signal recorded.');
+         window.dispatchEvent(new CustomEvent('bc:algorithm-signal',{detail:{kind:'long-view'}}));
+        }
       }).catch(error=>console.warn('Photo engagement request failed:',error?.message));
    }
   },500);
@@ -125,6 +128,7 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
   try{
    const {data,error}=await client.rpc('corp_record_photo_zoom_engagement',{p_asset_id:asset.id});
    if(error){console.warn('Private zoom interest was not saved:',error.message);return false}
+   if(data===true)window.dispatchEvent(new CustomEvent('bc:algorithm-signal',{detail:{kind:'zoom-hold'}}));
    return data===true;
   }catch(error){console.warn('Zoom engagement unavailable:',error?.message);return false}
  }
@@ -239,9 +243,7 @@ export function createPhotoRediscovery({client,state,personalization,mediaUrl,op
      .insert({user_id:uid,asset_id:seed.id,view_count:0,...fields});
     if(insertError)throw insertError;
    }
-   if(typeof personalization.load==='function'){
-    void personalization.load().catch(e=>console.warn('Private recommendation refresh:',e));
-   }
+   window.dispatchEvent(new CustomEvent('bc:algorithm-signal',{detail:{kind:'rediscovery-feedback'}}));
    return true;
   }catch(e){
    toast('Could not save your choice: '+(e?.message||'Connection error'));
