@@ -159,9 +159,16 @@ Deno.serve(async req=>{
    });
    if(recallError)console.warn("Gunner journal recall unavailable",{code:recallError.code||"UNKNOWN"});
    else if(Array.isArray(memories)&&memories.length){
-    const fragments=memories.slice(0,2).map(row=>
-     "Entry "+Number(row.entry_no)+" ("+cut(row.entry_date,12)+"), "+
-     cut(row.title,110)+": "+String(row.excerpt||"").replace(/\s+/g," ").slice(0,400));
+    const fragments=memories.slice(0,2).map(row=>{
+     // Stored PDF page includes a masthead, dated heading and opening epigraph.
+     // Favor story prose over repeated mastheads within the limited model context.
+     const raw=String(row.excerpt||"");
+     const afterEpigraph=raw.indexOf("”");
+     const prose=(afterEpigraph>=0?raw.slice(afterEpigraph+1):raw)
+      .replace(/\s+/g," ").trim().slice(0,450);
+     return "Entry "+Number(row.entry_no)+" ("+cut(row.entry_date,12)+"), "+
+      cut(row.title,110)+": "+prose;
+    });
     journalBrief="[PRIVATE FICTIONAL JOURNAL EXCERPT: Proposed Gunner 1999 story canon, NOT a real historical record of the owner. Remain in Gunner's established voice. Modern upload counts and quotas must come from verified live BLACKCELL stats, not fictional 1999 ledger numbers.] "+
      fragments.join(" | ");
    }
