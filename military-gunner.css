@@ -39,3 +39,10 @@ body.bc-network #bcGunnerPanel{left:0;right:auto}
 #bcGunnerCheck{background:#171d2a!important;border:1px solid #91a1b5!important;color:#e5f1ff!important;font-size:9px!important;white-space:nowrap}
 #bcGunnerCheck:hover{background:#2d3e58!important}
 #bcGunnerCheck[hidden]{display:none!important}
+
+/* Private 1999 journal: prompt-only control. Journal text is never in the DOM. */
+#bcGunnerJournal{background:linear-gradient(105deg,#282128,#4c2f39)!important;
+ border:1px solid #876878!important;color:#f0d5dd!important;
+ font-size:9px!important;letter-spacing:.025em!important;
+ padding:9px 10px!important;white-space:nowrap}
+#bcGunnerJournal:hover{background:linear-gradient(110deg,#352a38,#70405a)!important}
