@@ -274,3 +274,21 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}a{color:#e6b0bf}
  .bc-learning-content{min-height:170px;max-height:35vh}
  #bcPageLearning{overflow:auto}
 }
+
+/* Visual Memory pilot. Private dHash near-duplicate fingerprints, not semantic embeddings. */
+#bcPageLearning{overflow:auto;scrollbar-width:none}
+#bcPageLearning::-webkit-scrollbar{display:none}
+.bc-visual-memory-panel{flex:none;min-height:0;overflow:visible}
+.bc-visual-memory-controls{padding:11px 14px;display:flex;flex-direction:column;gap:8px}
+.bc-visual-memory-controls>p:first-child{color:#aba9b4;line-height:1.5;font-size:10px;margin:0}
+.bc-visual-memory-buttons{display:flex;flex-wrap:wrap;gap:8px}
+.bc-visual-memory-buttons button{flex:0 1 auto}
+.bc-visual-memory-controls .bc-note{margin:0}
+.bc-visual-memory-pairs{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:7px;max-height:210px;overflow:auto;scrollbar-width:none}
+.bc-visual-memory-pairs::-webkit-scrollbar{display:none}
+.bc-visual-memory-pair{background:#ffffff08;border:1px solid #ffffff20;padding:10px 12px;border-radius:10px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.bc-visual-memory-pair>strong{color:#ded8e1;font-size:10px}
+.bc-visual-memory-pair>span{font-size:9px;color:#96929f;overflow-wrap:anywhere}
+.bc-visual-pair-actions{display:flex;gap:5px;flex-wrap:wrap}
+.bc-visual-pair-actions button{min-height:28px;font-size:9px;padding:5px 8px;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+@media(max-width:680px){.bc-visual-memory-pairs{grid-template-columns:1fr}.bc-visual-memory-buttons button{flex:1}}
