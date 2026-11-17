@@ -15,6 +15,51 @@ const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]
 let ownerId="",owner=false,enabled=false,paused=false,busy=false,loaded=false,refreshInFlight=false;
 let pending=[],analyses=new Map(),activeTask=null,version=0,refreshTimer=0,failures=0;
 const $status=()=>$("bcAutoSortStatus");
+const BC_PARENT_STATE="BLACKCELL_AUTOPILOT_STATE_V1";
+const BC_PARENT_COMMAND="BLACKCELL_AUTOPILOT_COMMAND_V1";
+function informParent(){
+ if(window.parent===window)return;
+ try{
+  window.parent.postMessage({type:BC_PARENT_STATE,
+   owner:!!owner,ready:!!loaded,enabled:!!enabled,paused:!!paused,busy:!!busy,
+   pending:pending.length,analyzed:pending.filter(a=>analyses.has(a.id)).length,
+   unclassified:pending.filter(a=>!a.adult_restricted&&!analyses.has(a.id)).length,
+   dailyUsed:ownerId?dailyCount():0,dailyMax:AUTO_LIMIT,
+   status:$status()?.textContent?.slice(0,240)||""
+  },location.origin);
+ }catch(_){}
+}
+function setAutomation(on){
+ if(!loaded||!owner||!ownerId){note("Automatic AI needs Level 7 owner access.");return}
+ enabled=!!on;paused=!enabled;
+ safeStore(CHOICE_KEY+ownerId,enabled?"1":"0");
+ clearTimeout(refreshTimer);
+ if(enabled){note("AutoPilot enabled. Sorting new eligible private photos while BLACKCELL is open.");schedule()}
+ else note("AutoPilot paused. No more automatic analyses will start; your photos and suggestions remain private.");
+ showState();
+}
+function onParentMessage(event){
+ if(window.parent===window||event.source!==window.parent||event.origin!==location.origin)return;
+ const command=event.data;
+ if(!command||command.type!==BC_PARENT_COMMAND||!owner||!loaded)return;
+ if(command.action==="status"){informParent();return}
+ if(command.action==="enable"){setAutomation(true);return}
+ if(command.action==="pause"){setAutomation(false);return}
+ if(command.action==="refresh"){void refresh();return}
+ if(command.action==="run"){void processSafely({manual:true})}
+}
+async function processSafely(options={}){
+ if(!owner||!ownerId)return;
+ const task=()=>process(options);
+ if(navigator.locks?.request){
+  await navigator.locks.request("blackcell-ai-autopilot-"+ownerId,{ifAvailable:true,mode:"exclusive"},async lock=>{
+   if(lock)await task();
+   else note("AutoPilot is already analyzing photos in another BLACKCELL window.");
+  });
+ }else await task();
+ informParent();
+}
+window.addEventListener("message",onParentMessage);
 function safeStore(key,value){
  try{if(value===undefined)return localStorage.getItem(key);localStorage.setItem(key,value)}catch(_){return null}
  return value;
@@ -24,7 +69,7 @@ function dailyCount(){
  try{const value=JSON.parse(raw||"null");return value?.day===new Date().toISOString().slice(0,10)?Math.max(0,Number(value.count)||0):0}catch{return 0}
 }
 function bumpCount(){safeStore(DAILY_KEY+ownerId,JSON.stringify({day:new Date().toISOString().slice(0,10),count:dailyCount()+1}))}
-const note=(message,error=false)=>{const n=$status();if(!n)return;n.textContent=message;n.dataset.error=String(error)};
+const note=(message,error=false)=>{const n=$status();if(n){n.textContent=message;n.dataset.error=String(error)}informParent()};
 const text=(type,cls,content)=>{const n=document.createElement(type);if(cls)n.className=cls;if(content!==undefined)n.textContent=String(content);return n};
 function worldFrom(a){
  const tag=Array.isArray(a.tags)?a.tags.find(t=>typeof t==="string"&&/^maf:(military|police|fire|medical|security|professional|unsorted)$/.test(t)):"";
@@ -41,6 +86,7 @@ function route(a){
  return parts.join(" / ");
 }
 function showState(){
+ informParent();
  const button=$("bcAutoSortRun"),toggle=$("bcAutoSortEnabled"),pause=$("bcAutoSortPause"),count=$("bcAutoSortCount");
  if(toggle)toggle.checked=enabled;
  if(button)button.disabled=busy||!ownerId;
@@ -55,7 +101,7 @@ function showState(){
   if(!folders.has(key))folders.set(key,[]);
   folders.get(key).push({asset:a,analysis});
  }
- if(!folders.size){list.append(text("p","bc-ai-empty","No private photographs are awaiting sorting."));return}
+ if(!folders.size){list.append(text("p","bc-ai-empty","No private photographs are awaiting sorting."));informParent();return}
  for(const [folder,items] of [...folders].sort((a,b)=>a[0].localeCompare(b[0]))){
   const details=text("details","bc-ai-folder");
   details.open=folder!=="Pending AI Analysis";
@@ -82,6 +128,7 @@ function showState(){
   }
   details.append(contents);list.append(details);
  }
+ informParent();
 }
 async function refresh(){
  if(!ownerId||refreshInFlight)return;
@@ -105,7 +152,7 @@ async function refresh(){
   }
   showState();
  }catch(e){note("Could not update private AI folders: "+String(e.message||e).slice(0,150),true)}
- finally{refreshInFlight=false}
+ finally{refreshInFlight=false;informParent()}
 }
 function previewFromFile(file){
  return new Promise((resolve,reject)=>{
@@ -161,8 +208,8 @@ async function classify(asset,localFile=null){
  analyses.set(asset.id,data.analysis);return true;
 }
 async function process(options={}){
- if(busy||!ownerId)return;
- busy=true;paused=false;failures=0;showState();
+ if(busy||!owner||!ownerId)return;
+ busy=true;failures=0;showState();
  const limit=options.manual?Math.max(0,AUTO_LIMIT-dailyCount()):Math.max(0,AUTO_LIMIT-dailyCount());
  if(!limit){busy=false;note("The automatic AI budget (20 analyses today) has been reached. Your photos remain private for manual review.");showState();return}
  await refresh();
@@ -192,8 +239,8 @@ async function process(options={}){
  else note(completed+" sorted; "+failures+" AI request(s) failed. No original files or publishing status changed.",true);
 }
 function schedule(){
- if(!enabled||busy||!loaded||!ownerId)return;
- clearTimeout(refreshTimer);refreshTimer=setTimeout(()=>void process(),1500);
+ if(!owner||!enabled||paused||busy||!loaded||!ownerId)return;
+ clearTimeout(refreshTimer);refreshTimer=setTimeout(()=>void processSafely(),1500);
 }
 async function saved(ev){
  const id=String(ev.detail?.id||"");
@@ -206,7 +253,7 @@ async function ready(ev){
  if(!UUID.test(id))return;
  ownerId=id;owner=!!ev.detail?.isOwner;
  const stored=safeStore(CHOICE_KEY+id);
- enabled=stored===null?owner:stored==="1";
+ enabled=stored===null?owner:stored==="1";paused=!enabled;
  loaded=true;showState();await refresh();
  note(enabled?"Automatic private AI sorting enabled. Photos will be grouped using their visible uniform details.":"Auto-sort is off. Enable it to send private photo previews for AI suggestions.");
  if(enabled)schedule();
@@ -214,14 +261,9 @@ async function ready(ev){
 function init(){
  const toggle=$("bcAutoSortEnabled");
  if(!toggle)return;
- toggle.addEventListener("change",()=>{
-  enabled=!!toggle.checked;safeStore(CHOICE_KEY+ownerId,enabled?"1":"0");
-  if(!enabled){paused=true;clearTimeout(refreshTimer);note("Automatic AI sorting paused. Existing suggestions remain saved privately.");}
-  else {note("Automatic AI sorting enabled for this account. Each analysis uses external AI credits.");schedule();}
-  showState();
- });
- $("bcAutoSortRun").onclick=()=>void process({manual:true});
- $("bcAutoSortPause").onclick=()=>{paused=true;note("Finishing the current photo then pausing AI sorting.");showState()};
+ toggle.addEventListener("change",()=>setAutomation(toggle.checked));
+ $("bcAutoSortRun").onclick=()=>void processSafely({manual:true});
+ $("bcAutoSortPause").onclick=()=>setAutomation(false);
  $("bcAutoSortRefresh").onclick=()=>void refresh();
  window.addEventListener("blackcell:upload-queue-ready",ready);
  if(window.BLACKCELL_UPLOAD_QUEUE_CONTEXT)void ready({detail:window.BLACKCELL_UPLOAD_QUEUE_CONTEXT});
