@@ -7,9 +7,14 @@ export const SOURCES=Object.freeze({
  camopedia_world:{name:"Camopedia · International country index",url:"https://www.camopedia.org/index.php/Main_Page",kind:"historical reference",note:"Country-organized scholarly camouflage index; copyrighted source, link/attribute only."},
  camopedia_usa:{name:"Camopedia · United States",url:"https://www.camopedia.org/index.php/USA",kind:"national reference",note:"US pattern histories and variants. Confirm dates and use against current documents."},
  wiki:{name:"Wikipedia · Military camouflage patterns",url:"https://en.wikipedia.org/wiki/List_of_military_clothing_camouflage_patterns",kind:"cross-country index",note:"Pattern families and multinational usage; information requires corroboration."},
- militarymachine:{name:"Military Machine · 20 military patterns",url:"https://militarymachine.com/military-camouflage-patterns",kind:"overview",note:"Accessible overview, lower priority than official service and specialist material."}
+ militarymachine:{name:"Military Machine · 20 military patterns",url:"https://militarymachine.com/military-camouflage-patterns",kind:"overview",note:"Accessible overview; cross-check claims against Camopedia and primary records."},
+ epochs:{name:"Epochs · Field Guide to Camouflage",url:"https://epochs.co/features/epochs-field-guide-to-camouflage",kind:"historical and fashion context",note:"Explains historic fabric families and civilian fashion use, so a pattern is not proof of affiliation."}
 });
 export const PATTERNS=Object.freeze([
+ {name:"Telo Mimetico",family:"Historical splinter / geometric",origin:"IT",uses:"Italy; historically also used by some German and Czechoslovak forces",era:"1929 onwards",distinguish:"Italian 1929-pattern family; modified variants and postwar civilian use; uniform cut and historical proof matter.",source:"epochs",status:"historical"},
+ {name:"Denison Smock / brushstroke",family:"Brushstroke",origin:"GB",uses:"United Kingdom and other historic European airborne forces",era:"1940s onwards",distinguish:"Large brush-applied forms; similar-looking French lizard pattern descendants require further evidence.",source:"epochs",status:"historical"},
+ {name:"French Lizard / Leopard",family:"Horizontal brushstroke",origin:"FR",uses:"France; derivatives used internationally",era:"1950s onwards",distinguish:"Striped brushstroke family with many international derivatives, do not equate the pattern to France.",source:"epochs",status:"shared"},
+ {name:"Strichtarn / Raindrop",family:"Raindrop over olive",origin:"DE",uses:"Historical East Germany and other former Warsaw Pact users",era:"1960s onwards",distinguish:"Fine rain streaks associated with East German historical designs; other countries used or adapted related materials.",source:"epochs",status:"historical"},
  {name:"Frogskin / M1942 reversible spot",family:"Spotted / reversible",origin:"US",uses:"United States, WWII, predominantly USMC; limited Army use",era:"1942 onwards",distinguish:"Reversible green-dominant and tan-dominant sides; distinguish from other spot camouflage using garments and provenance.",source:"camopedia_usa",status:"historical"},
  {name:"USMC Mitchell / Wine Leaf",family:"Leaf / cloud reversible",origin:"US",uses:"USMC covers and shelter halves, historical; variants appeared elsewhere",era:"1950s–1970s",distinguish:"Leaf and cloud sides of vintage helmet-cover/shelter patterns; not direct proof of USMC membership.",source:"camopedia_usa",status:"historical"},
  {name:"ERDL",family:"Woodland organic",origin:"US",uses:"United States and internationally copied variants; historical Vietnam-era use",era:"1960s onwards",distinguish:"Four-color organic forms and dark branches; other countries adopted derivative designs.",source:"camopedia_usa",status:"historical"},
@@ -40,5 +45,10 @@ export const WORLD_DIRECTORY=Object.freeze([
  {name:"Global country and region index",source:"camopedia_world"},
  {name:"United States historical pattern catalog",source:"camopedia_usa"},
  {name:"Cross-country patterns and users",source:"wiki"},
- {name:"Pattern introduction and broad overview",source:"militarymachine"}
+ {name:"Pattern introduction and broad overview",source:"militarymachine"},
+ {name:"Historical camouflage and civilian fashion use",source:"epochs"}
 ]);
+
+/* User-supplied external image exemplar. Classification intentionally unknown.
+ * Browser UI opens this link; no media is copied or used for embeddings. */
+export const EXTERNAL_SAMPLES=Object.freeze([{label:"User-supplied camouflage image · unverified",url:"https://i.imgur.com/PfLuTUR.jpeg",status:"unknown",note:"Do not assign country, branch, or pattern without viewing and verifying the image."}]);
