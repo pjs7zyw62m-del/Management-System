@@ -6,10 +6,10 @@
 <meta name="theme-color" content="#090b10">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>BLACKCELL // THE HUNT 2.0 | Gunner Collection Operations</title>
-<link rel="stylesheet" href="blackcell-the-hunt.css?v=20261117-scout-r1">
+<title>BLACKCELL // THE HUNT 3.0 | Gunner Collection Operations</title>
+<link rel="stylesheet" href="blackcell-the-hunt.css?v=20261117-hunt3-r1">
 <script src="corp-config.js" defer></script>
-<script type="module" src="blackcell-the-hunt.js?v=20261117-scout-r1"></script>
+<script type="module" src="blackcell-the-hunt.js?v=20261117-hunt3-r1"></script>
 </head>
 <body>
 <div id="huntGate" class="hunt-gate" role="status" aria-live="polite">
@@ -37,14 +37,32 @@
   <a href="#mission" class="selected" aria-current="location"><i></i>The Hunt</a>
   <a href="uniform-world.html"><i></i>Uniform Library</a>
   <a href="blackcell-uniform-intelligence.html#learning"><i></i>Visual Discovery</a>
-  <a href="#discovery"><i></i>Discovery Chains</a><a href="#atlas"><i></i>Living Atlas</a><a href="#scout"><i></i>Source Scout</a><a href="#gunner-brief"><i></i>Gunner AI Brief</a><a href="#quotas"><i></i>Daily Quotas</a>
+  <a href="#discovery"><i></i>Discovery Chains</a><a href="#atlas"><i></i>Living Atlas</a><a href="#research-next"><i></i>Research Paths</a><a href="#scout"><i></i>Source Scout</a><a href="#gunner-brief"><i></i>Gunner AI Brief</a><a href="#quotas"><i></i>Daily Quotas</a>
   <a href="#logs"><i></i>Intelligence Logs</a>
   <div class="rail-end"><a href="#signals">PREFERENCES & SIGNALS</a><small>LEVEL 7 / OWNER OPERATIONS</small></div>
  </aside>
  <main class="hunt-workspace">
   <div id="overview" class="eyebrow intro">01 / GUNNER ASSIGNS A MISSION <span>OWNER-VERIFIED CATALOG</span></div>
-  <h1 id="mission">Daily collection operations <span class="v2-label">2.0</span></h1>
+  <h1 id="mission">Daily collection operations <span class="v2-label">3.0</span></h1>
   <p class="lead">An operational view of your real BLACKCELL photo and video collection—not sample counters or AI-generated claims.</p>
+  
+  <section id="huntWelcome" class="hunt-welcome hunt-card" aria-label="Personalized Gunner command briefing">
+    <div class="hunt-welcome-head"><span class="eyebrow">BLACKCELL / THE HUNT 3.0 · PRIVATE BRIEFING</span><span class="quiet" id="huntBriefDate">CONNECTED CATALOG</span></div>
+    <div class="hunt-welcome-grid">
+     <div class="hunt-welcome-copy">
+      <h2 id="huntWelcomeTitle">Preparing your next operation…</h2>
+      <p id="huntWelcomeBody" role="status" aria-live="polite">Reading your saved collection goals and verified research statistics.</p>
+      <div class="hunt-welcome-tags"><span id="huntReturnDelta">No previous session snapshot</span><span id="huntSavedPosition">Resume position not yet saved</span></div>
+     </div>
+     <div class="hunt-welcome-actions">
+      <button id="huntResume" type="button" class="scout-primary" disabled>RESUME OPERATION ↗</button>
+      <button id="huntSavePosition" type="button" class="subtle-button" disabled>SAVE MY PLACE</button>
+      <a id="huntNextAction" class="v2-outline-link" href="#discovery">VIEW NEXT ACTION ↗</a>
+      <small>Resume state stays in this browser. No automatic AI generation, background alerts or upload requests.</small>
+     </div>
+    </div>
+  </section>
+
   <div class="mission-layout">
    <section class="hunt-card mission-card" aria-labelledby="missionLabel">
     <div class="mission-card-top"><span id="missionLabel" class="mission-pill">ACTIVE MISSION</span><span id="missionDate" class="quiet">AWAITING BASELINE</span></div>
@@ -68,7 +86,7 @@
   </section>
   
   <section id="campaigns" class="hunt-section hunt-v2" aria-label="Collector progression and discovery chains">
-   <div class="section-top"><div><span class="eyebrow">02 / CAMPAIGN INTELLIGENCE</span><h2>The Obsession Engine <small class="v2-label">2.0</small></h2></div><span class="quiet">REAL DATA · OPT-IN PACING</span></div>
+   <div class="section-top"><div><span class="eyebrow">02 / CAMPAIGN INTELLIGENCE</span><h2>The Living Command System <small class="v2-label">3.0</small></h2></div><span class="quiet">REAL DATA · OPT-IN PACING</span></div>
    <div class="v2-grid">
     <article class="hunt-card v2-rank">
      <span class="eyebrow">COLLECTOR RANK</span><div class="rank-main"><strong id="huntRank">—</strong><div><h3 id="huntRankTitle">Verifying rank</h3><span id="huntXp">— research points</span></div></div>
@@ -93,7 +111,7 @@
     <div class="detail-head"><div><span class="eyebrow">DISCOVERY CHAIN / THREE STAGES</span><h2 id="huntChainTitle">Choose your first campaign</h2></div><span id="huntChainStatus" class="chain-state">AWAITING OBJECTIVE</span></div>
     <div class="goal-choice"><label for="huntGoalSelect">CURRENT OBJECTIVE</label><select id="huntGoalSelect" aria-label="Select existing private collection goal"><option value="">Checking saved goals…</option></select></div>
     <ol id="huntChainSteps" class="chain-steps"><li>Verifying private collection objectives…</li></ol>
-    <div class="chain-actions"><a class="primary-link" href="blackcell-uniform-intelligence.html#gunner">CREATE OR EDIT GOALS ↗</a><a class="v2-outline-link" href="blackcell-uniform-intelligence.html#learning">VERIFY REFERENCES ↗</a></div>
+    <div class="chain-next"><strong>NEXT VERIFIED STEP</strong><p id="huntChainNextDetail">Awaiting mission baseline…</p></div><div class="chain-actions"><a class="v2-outline-link" id="huntChainNext" href="#discovery">VIEW NEXT STEP ↗</a><a class="primary-link" href="blackcell-uniform-intelligence.html#gunner">CREATE OR EDIT GOALS ↗</a><a class="v2-outline-link" href="blackcell-uniform-intelligence.html#learning">VERIFY REFERENCES ↗</a></div>
     <p class="advisory">A chain completes only when the saved catalog target is reached <strong>and</strong> a matching owner-verified reference exists. Catalog counts can include duplicates; no publication is triggered by a completed chain.</p>
    </section>
   </section>
@@ -107,9 +125,16 @@
   </section>
 
   
+  
+  <section id="research-next" class="hunt-section hunt-research" aria-label="Next research discoveries">
+   <div class="section-top"><div><span class="eyebrow">04 / CURATED DISCOVERY</span><h2>Your next three research paths</h2></div><a href="blackcell-uniform-intelligence.html#learning" class="v2-outline-link">OPEN VISUAL & SEMANTIC DISCOVERY ↗</a></div>
+   <p class="advisory">Suggestions prioritize the least-represented catalog labels, not what the archive lacks in the real world. Existing similarity tools work from whole photographs and text descriptions; precise click-on-uniform-area matching still requires separate validation.</p>
+   <div id="huntResearchPaths" class="hunt-research-cards" aria-live="polite"><p class="muted">Analyzing catalog distribution…</p></div>
+  </section>
+
   <section id="scout" class="hunt-section scout-section" aria-label="Gunner autonomous source scouting">
     <div class="section-top">
-     <div><span class="eyebrow">04 / SOURCE INTELLIGENCE</span><h2>Gunner's Source Scout</h2></div>
+     <div><span class="eyebrow">05 / SOURCE INTELLIGENCE</span><h2>Gunner's Source Scout</h2></div>
      <span class="quiet">WIKIMEDIA COMMONS · EXTERNAL SOURCE CANDIDATES</span>
     </div>
     <div class="hunt-card scout-panel">
@@ -128,14 +153,14 @@
   </section>
   <section id="gunner-brief" class="hunt-section gunner-brief-section">
    <div class="hunt-card gunner-live-panel">
-    <div><span class="eyebrow">05 / GUNNER THOMPSON · PERSONAL INTELLIGENCE</span><h2>Talk through your next operation</h2>
+    <div><span class="eyebrow">06 / GUNNER THOMPSON · PERSONAL INTELLIGENCE</span><h2>Talk through your next operation</h2>
      <p>Gunner's original Dolphin 3.0 service can review your live collection counts, current mission, and the public candidate details you choose to discuss.</p></div>
     <div><button type="button" id="huntGunnerBrief" class="scout-primary">BRIEF GUNNER ↗</button><small>Opens chat with a prepared prompt. An external AI request starts only when you press Send.</small></div>
    </div>
   </section>
 
   <section id="quotas" class="hunt-section">
-   <div class="section-top"><div><span class="eyebrow">06 / ACTIVITY PACING</span><h2>Daily quotas & recovery</h2></div><button id="huntRecalculate" type="button" class="subtle-button">↻ RECALCULATE</button></div>
+   <div class="section-top"><div><span class="eyebrow">07 / ACTIVITY PACING</span><h2>Daily quotas & recovery</h2></div><button id="huntRecalculate" type="button" class="subtle-button">↻ RECALCULATE</button></div>
    <div class="quota-grid">
     <article class="hunt-card quota-card"><span>PHOTOS UPLOADED TODAY</span><strong id="huntTodayPhotos">—</strong><small id="huntPhotoStatus">Loading owner-authorized history</small></article>
     <article class="hunt-card quota-card"><span>SUGGESTED VIDEO TARGET</span><strong id="huntVideoTarget">—</strong><small id="huntVideoStatus">Weekly production, not daily penalties</small></article>
@@ -145,11 +170,11 @@
    <p class="advisory" id="huntPacingNote">Targets are optional recommendations. Duplicate files and billing are not verified by upload counts.</p>
   </section>
   <section id="logs" class="hunt-section">
-   <div class="section-top"><div><span class="eyebrow">07 / COLLECTION INTELLIGENCE</span><h2>Priority mission log</h2></div><span class="quiet" id="huntLastRefresh">NOT YET LOADED</span></div>
+   <div class="section-top"><div><span class="eyebrow">08 / COLLECTION INTELLIGENCE</span><h2>Priority mission log</h2></div><span class="quiet" id="huntLastRefresh">NOT YET LOADED</span></div>
    <div id="huntMissions" class="mission-list" aria-live="polite"><p class="muted">Connecting to existing mission priorities…</p></div>
   </section>
   <section id="signals" class="hunt-section">
-   <div class="section-top"><div><span class="eyebrow">08 / PERSONAL LEARNING</span><h2>Preference & uniform signals</h2></div></div>
+   <div class="section-top"><div><span class="eyebrow">09 / PERSONAL LEARNING</span><h2>Preference & uniform signals</h2></div></div>
    <div id="huntSignals" class="signals-grid"><p class="muted">Signals are private to the verified owner.</p></div>
    <p class="advisory">Explicit favorites and ratings guide recommendations. Passive interactions are weak evidence, and unknown uniforms remain unverified until confirmed.</p>
   </section>

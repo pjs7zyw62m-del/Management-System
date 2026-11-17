@@ -5,6 +5,7 @@ import {planGunnerProduction} from "./blackcell-gunner-production.js?v=20261117-
 import {createMissions} from "./blackcell-gunner-command.js?v=20261117-hunt-v1";
 import {chooseHuntGoal,makeDiscoveryChain,makeCollectorRank,makeLivingAtlas,recommendPhotoPace,HUNT_MODES,getHuntSourceQuery} from "./blackcell-the-hunt-engine.js?v=20261117-scout-r1";
 import {mountMilitaryGunner} from "./military-gunner.js?v=20261117-journal-r1";
+import {normalizeHuntSession,makeHuntBrief,suggestHuntWorlds,nextHuntStep,HUNT_RESUME_SECTIONS} from "./blackcell-the-hunt-retention.js?v=20261117-hunt3-r1";
 const client=corporateClient();
 const $=id=>document.getElementById(id);
 const num=v=>Math.max(0,Math.round(Number(v)||0));
@@ -16,7 +17,7 @@ const make=(tag,cls,value)=>{
  if(value!==undefined)node.textContent=String(value);
  return node;
 };
-const state={user:null,snapshot:null,pulse:null,plan:null,goals:[],missions:[],busy:false,day:null,lastFetch:0,mode:"focused",goalId:"",verifiedMatchCount:null,verifySeq:0,scoutItems:[],scoutBusy:false,scoutLastQuery:"",scoutLastRun:0,companion:null};
+const state={user:null,snapshot:null,pulse:null,plan:null,goals:[],missions:[],busy:false,day:null,lastFetch:0,mode:"focused",goalId:"",verifiedMatchCount:null,verifySeq:0,scoutItems:[],scoutBusy:false,scoutLastQuery:"",scoutLastRun:0,companion:null,savedProgress:null,lastSection:"#discovery"};
 const day=()=>new Date().toLocaleDateString("en-CA",{timeZone:"America/Los_Angeles"});
 function fail(message){
  $("huntApp").hidden=true;$("huntGate").hidden=false;
@@ -233,6 +234,96 @@ function briefGunner(aboutSources=false){
   "I will approve any import, publication or spending.").slice(0,1600));
 }
 
+
+/* Hunt 3.0: resumable progress uses per-owner, same-browser storage.
+ * No private filenames, original images, or media URLs are persisted. */
+const resumeKey=()=>state.user?"bc_hunt_resume_v3_"+state.user.id:"";
+function loadSavedProgress(){
+ let raw=null;
+ try{raw=JSON.parse(localStorage.getItem(resumeKey())||"null")}catch{}
+ state.savedProgress=normalizeHuntSession(raw,state.goals);
+ state.lastSection=state.savedProgress.section;
+ state.goalId=state.savedProgress.goalId;
+}
+function persistProgress({section="",snapshot=false}={}){
+ if(!state.user)return;
+ const prior=state.savedProgress||normalizeHuntSession(null,[]);
+ const next={
+  ...prior,
+  goalId:currentGoal()?.id||"",
+  section:HUNT_RESUME_SECTIONS.includes(section)?section:(HUNT_RESUME_SECTIONS.includes(state.lastSection)?state.lastSection:"#discovery"),
+  savedAt:Date.now()
+ };
+ if(snapshot&&state.snapshot)next.seen={
+  total:num(state.snapshot.media?.total),
+  verified:num(state.snapshot.references?.verified)
+ };
+ state.lastSection=next.section;
+ state.savedProgress=next;
+ try{localStorage.setItem(resumeKey(),JSON.stringify(next))}catch{}
+}
+function saveMyPlace(){
+ persistProgress({section:HUNT_RESUME_SECTIONS.includes(location.hash)?location.hash:state.lastSection,snapshot:true});
+ renderWelcome();
+ set("huntSavedPosition","Saved in this browser · "+state.lastSection.slice(1).replace(/-/g," "));
+}
+function resumeOperation(){
+ const target=state.savedProgress?.section||"#discovery";
+ const section=HUNT_RESUME_SECTIONS.includes(target)?target:"#discovery";
+ location.hash=section;
+ $(section.slice(1))?.scrollIntoView({behavior:"smooth",block:"start"});
+}
+function jumpToResearch(query){
+ if(!state.user||!state.snapshot)return;
+ const input=$("huntScoutQuery");input.value=query;input.dataset.generated="no";
+ state.lastSection="#scout";
+ persistProgress({section:"#scout"});
+ location.hash="#scout";
+ $("scout").scrollIntoView({behavior:"smooth",block:"start"});
+ setScoutState("Research terms prepared. Press SCAN PUBLIC ARCHIVES to search; no files will be imported.");
+ input.focus({preventScroll:true});
+}
+function renderResearchPaths(){
+ const root=$("huntResearchPaths");root.replaceChildren();
+ const options=suggestHuntWorlds(state.snapshot,3);
+ for(const option of options){
+  const card=make("article","hunt-card hunt-research-card");
+  card.append(make("span","eyebrow","LOW COVERAGE / LABELED CATALOG"),
+   make("h3","",option.label),
+   make("p","",fmt(option.count)+" catalog records currently tagged for this Uniform World. These counts do not establish historical availability."));
+  const button=make("button","subtle-button","EXPLORE SOURCES ↗");
+  button.type="button";
+  button.addEventListener("click",()=>jumpToResearch(option.query));
+  card.append(button);root.append(card);
+ }
+}
+function renderWelcome(){
+ if(!state.snapshot)return;
+ const briefing=makeHuntBrief(state.snapshot,state.goals,currentGoal()?.id||"",state.verifiedMatchCount,state.savedProgress?.seen);
+ set("huntWelcomeTitle",briefing.heading);
+ set("huntWelcomeBody",briefing.summary);
+ set("huntBriefDate","UPDATED FROM AUTHORIZED CATALOG");
+ $("huntResume").disabled=false;$("huntSavePosition").disabled=false;
+ const change=briefing.changes;
+ set("huntReturnDelta",change.available?
+  "Since saved snapshot: "+
+  (change.catalog>=0?"+":"")+change.catalog+" catalog / "+
+  (change.verified>=0?"+":"")+change.verified+" verified references":
+  "First session here · no prior snapshot");
+ set("huntSavedPosition",state.savedProgress?.savedAt?
+  "Resumes "+(state.savedProgress.section||"#discovery").slice(1).replace(/-/g," "):
+  "No saved operation yet · begin at Discovery Chains");
+ const action=$("huntNextAction");action.href=briefing.priorityHref;
+ action.textContent=briefing.priorityLabel+" ↗";
+ $("huntResume").textContent=state.savedProgress?.savedAt?"RESUME SAVED OPERATION ↗":"OPEN DISCOVERY CHAIN ↗";
+}
+function renderChainNext(){
+ const next=nextHuntStep(state.snapshot,currentGoal(),state.verifiedMatchCount);
+ const item=$("huntChainNext");
+ if(item){item.href=next.href;item.textContent=next.label+" ↗"}
+ const detail=$("huntChainNextDetail");if(detail)detail.textContent=next.description;
+}
+
 function buildRank(){
  const rank=makeCollectorRank(state.snapshot);
  set("huntRank","LVL "+rank.level);
@@ -294,6 +385,7 @@ function buildChain(){
    make("small","",stage.status==="done"?"COMPLETE":stage.status==="active"?"IN PROGRESS":"LOCKED"));
   root.append(card);
  }
+ renderChainNext();
 }
 function currentGoal(){
  return chooseHuntGoal(state.goals,state.goalId);
@@ -302,7 +394,7 @@ async function loadMatchingVerification(){
  const goal=currentGoal();
  const seq=++state.verifySeq;
  state.verifiedMatchCount=null;
- if(!goal){buildChain();return}
+ if(!goal){buildChain();renderWelcome();return}
  const col={country:"country_code",branch:"branch",world:"world",era:"era"}[goal.dimension];
  if(!col){buildChain();return}
  try{
@@ -314,7 +406,7 @@ async function loadMatchingVerification(){
   if(seq!==state.verifySeq)return;
   state.verifiedMatchCount=result.error?null:Math.max(0,Number(result.count)||0);
  }catch{if(seq!==state.verifySeq)return;state.verifiedMatchCount=null}
- buildChain();
+ buildChain();renderWelcome();
 }
 function readMode(){
  try{
@@ -339,7 +431,7 @@ function draw(){
  const s=state.snapshot;if(!s)return;
  state.plan=state.pulse?planGunnerProduction(state.pulse,s):null;
  state.missions=createMissions(s,state.goals);
- paintFocus(s);renderQuotas();renderBrief();renderMissions();renderSignals();buildRank();buildAtlas();buildChain();
+ paintFocus(s);renderQuotas();renderBrief();renderMissions();renderSignals();buildRank();buildAtlas();buildChain();renderResearchPaths();renderWelcome();
  const updated=s.generated_at?new Date(s.generated_at).toLocaleString():"now";
  set("huntLastRefresh","UPDATED "+updated);
  set("huntConnection",state.pulse?"LEVEL 7 VERIFIED":"LEVEL 7 · PARTIAL DATA");
@@ -358,6 +450,7 @@ async function refresh(){
   if(stats.error||!stats.data?.media)throw Error(stats.error?.message||"No collection statistics returned");
   if(goals.error)throw Error("Private collection goals unavailable: "+goals.error.message);
   state.snapshot=stats.data;state.goals=goals.data||[];
+  if(!state.savedProgress)loadSavedProgress();
   state.pulse=!pulse.error&&Array.isArray(pulse.data?.daily)?pulse.data:null;
   state.day=day();state.lastFetch=Date.now();draw();syncSourcePhrase();
   await loadMatchingVerification();
@@ -399,8 +492,21 @@ $("huntMode").addEventListener("change",event=>changeMode(event.target.value));
 $("huntPause").addEventListener("click",()=>changeMode(state.mode==="paused"?"focused":"paused"));
 $("huntGoalSelect").addEventListener("change",()=>{
  state.goalId=$("huntGoalSelect").value;
- state.verifiedMatchCount=null;buildChain();syncSourcePhrase(true);void loadMatchingVerification();
+ state.verifiedMatchCount=null;persistProgress({section:"#discovery"});buildChain();renderWelcome();syncSourcePhrase(true);void loadMatchingVerification();
 });
+$("huntResume").addEventListener("click",resumeOperation);
+$("huntSavePosition").addEventListener("click",saveMyPlace);
+document.querySelectorAll('#huntApp a[href^="#"]').forEach(link=>{
+ link.addEventListener("click",()=>{
+  const hash=link.getAttribute("href");
+  if(HUNT_RESUME_SECTIONS.includes(hash))persistProgress({section:hash});
+ });
+});
+window.addEventListener("hashchange",()=>{
+ if(!state.user)return;
+ if(HUNT_RESUME_SECTIONS.includes(location.hash))persistProgress({section:location.hash});
+});
+window.addEventListener("pagehide",()=>{if(state.user&&state.snapshot)persistProgress({snapshot:true})});
 document.addEventListener("visibilitychange",()=>{
  if(!document.hidden&&state.user&&(state.day!==day()||Date.now()-state.lastFetch>180000))void refresh();
 });

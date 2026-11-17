@@ -75,3 +75,29 @@
 @media(max-width:1100px){.scout-results{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.scout-controls{flex-direction:column;align-items:stretch}.scout-results{grid-template-columns:repeat(2,minmax(0,1fr))}.gunner-live-panel{grid-template-columns:1fr}.gunner-live-panel>div:last-child{max-width:none}}
 @media(max-width:420px){.scout-results{grid-template-columns:1fr}.scout-panel{padding:17px}}
+
+
+/* BLACKCELL // THE HUNT 3.0 — daily briefing, resumable campaigns, curated research */
+.hunt-welcome{padding:24px 28px;margin:0 0 17px;border-color:#652536;background:linear-gradient(110deg,#1e141e,#12151d 64%,#17151d);position:relative;overflow:hidden}
+.hunt-welcome::after{content:"";pointer-events:none;position:absolute;right:-120px;top:-80px;width:260px;height:260px;border:1px solid #8c2a4240;border-radius:50%;box-shadow:0 0 0 45px #7d1b3210,0 0 0 90px #7d1b3209}
+.hunt-welcome-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.hunt-welcome-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,275px);gap:22px;margin-top:13px;position:relative;z-index:1}
+.hunt-welcome-copy h2{font-size:clamp(22px,2.2vw,30px);line-height:1.2;letter-spacing:-.035em;margin:8px 0 9px}
+.hunt-welcome-copy p{color:#c0c5cf;font-size:13px;line-height:1.6;max-width:680px;margin:0}
+.hunt-welcome-tags{display:flex;flex-wrap:wrap;gap:9px;margin-top:18px}
+.hunt-welcome-tags span{font-size:10px;padding:7px 10px;background:#241c26;border:1px solid #49313b;border-radius:8px;color:#e7bcc7}
+.hunt-welcome-actions{display:grid;align-content:center;gap:9px}.hunt-welcome-actions>.scout-primary,.hunt-welcome-actions>.subtle-button,.hunt-welcome-actions>.v2-outline-link{width:100%;text-align:center}
+.hunt-welcome-actions small{font-size:10px;line-height:1.5;color:#8e97a4}
+.hunt-research-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.hunt-research-card{padding:19px 21px;display:flex;flex-direction:column;gap:13px;min-height:177px}
+.hunt-research-card .eyebrow{font-size:10px;color:#f36d81}
+.hunt-research-card h3{font-size:17px;letter-spacing:-.025em;margin:0}
+.hunt-research-card p{color:#9da8b7;line-height:1.55;font-size:12px;margin:0}
+.hunt-research-card button{width:100%;margin-top:auto}
+.hunt-research .section-top{align-items:center}
+.hunt-research .section-top a{font-size:10px}
+@media(max-width:960px){.hunt-welcome-grid{grid-template-columns:1fr}.hunt-welcome-actions{grid-template-columns:repeat(2,minmax(0,1fr))}.hunt-welcome-actions small{grid-column:span 2}}
+@media(max-width:780px){.hunt-research-cards{grid-template-columns:1fr}.hunt-welcome{padding:21px}.hunt-research .section-top{align-items:start;flex-direction:column}}
+@media(max-width:520px){.hunt-welcome-actions{grid-template-columns:1fr}.hunt-welcome-actions small{grid-column:auto}}
+
+.chain-next{border-left:3px solid #c3354c;background:#231923;padding:11px 16px;margin:10px 0 17px;border-radius:0 9px 9px 0}.chain-next strong{color:#f47a8c;font-size:10px;letter-spacing:.04em}.chain-next p{color:#b7bec9;font-size:12px;line-height:1.55;margin:6px 0 0}
