@@ -56,7 +56,7 @@ async function loadCatalog(reset=false){
    for(const raw of r.data||[]){const v=wrap(spec.type,raw);if(!data.items.some(x=>x.key===v.key))data.items.push(v)}
    spec.skip+=(r.data||[]).length;spec.done=(r.data||[]).length<100||spec.skip>=r.count;
   }));
-  renderAll();
+  render();
  }finally{data.loading=false;$("bcRefreshAll").disabled=false}
 }
 async function loadMemory(){
@@ -68,7 +68,7 @@ async function loadMemory(){
  if(r.error)throw Error(r.error.message);
  data.learning=r.data||[];data.ai=a.data||[];
  if(a.error)text("bcCatalogMeta","AI analysis source unavailable: "+a.error.message);
- renderAll();
+ render();
 }
 function stats(){
  const items=data.items,confirmed=data.learning.filter(x=>x.reference_status==="verified");
