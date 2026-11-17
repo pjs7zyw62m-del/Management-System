@@ -3,6 +3,7 @@
  * Gunner's original Dolphin 3.0 personality (no replacement model).
  */
 import {mountMilitaryGunner} from "./military-gunner.js?v=20261117-analytics-r1";
+import {planGunnerProduction} from "./blackcell-gunner-production.js?v=20261117-pulse-r1";
 const N=v=>Math.max(0,Math.round(Number(v)||0));
 const fmt=v=>N(v).toLocaleString("en-US");
 const el=(tag,cls,content)=>{
@@ -84,7 +85,8 @@ function createMissions(stats,goals){
 }
 export function initGunnerCommand({client,userId}){
  const $=id=>document.getElementById(id);
- const state={snapshot:null,goals:[],refreshing:false,loaded:false};
+ const localDay=()=>new Date().toLocaleDateString("en-US",{timeZone:"America/Los_Angeles"});
+ const state={snapshot:null,pulse:null,goals:[],refreshing:false,loaded:false,lastDay:null};
  const companion=mountMilitaryGunner({
   client,mount:document.body,visible:false,
   getContext:()=>({
@@ -132,6 +134,41 @@ export function initGunnerCommand({client,userId}){
    box.append(left,remove);root.append(box);
   }
  }
+ function drawProduction(){
+  const root=$("bcGunnerProduction");root.replaceChildren();
+  if(!state.pulse){
+   root.append(el("p","bc-gunner-no-data","Production history is unavailable. No quota has been assigned."));
+   return;
+  }
+  const p=planGunnerProduction(state.pulse,state.snapshot);
+  const item=(label,quota,progress,kind)=>{
+   const card=el("div","bc-gunner-production-card");
+   const isVideo=kind==="video",target=isVideo?quota.weekly:quota.daily;
+   card.append(el("span","",label),
+    el("strong","",quota.ready?fmt(target)+(isVideo?"/week":"/day"):"BASELINE NEEDED"));
+   if(quota.ready&&!isVideo&&quota.missedYesterday&&quota.carryover>0)
+    card.append(el("b","bc-gunner-missed","MISSED YESTERDAY · QUOTA RECALCULATED"));
+   card.append(el("small","",quota.ready?
+    (isVideo?"This calendar week: ":"Uploaded today: ")+fmt(progress)+". "+quota.reason:
+    quota.reason));
+   if(quota.ready){
+    const bar=el("div","bc-gunner-progress"),fill=el("div","bc-gunner-progress-fill");
+    fill.style.width=Math.min(100,Math.round(100*progress/Math.max(1,target)))+"%";
+    bar.append(fill);card.append(bar);
+   }
+   return card;
+  };
+  root.append(item("PHOTO UPLOAD TARGET",p.photo,p.photoToday,"photo"),
+   item("VIDEO UPLOAD TARGET",p.video,p.videoThisWeek,"video"));
+  const watch=el("div","bc-gunner-production-card bc-gunner-capacity");
+  watch.append(el("span","","CAPACITY WATCH"),el("strong","",p.health));
+  watch.append(el("small","","Last 7 days: "+fmt(p.current7)+" uploaded assets · Prior 7: "+fmt(p.previous7)+
+   " · Review queue: "+fmt(p.pending)));
+  for(const note of p.alerts)watch.append(el("p","",note));
+  watch.append(el("small","bc-gunner-cost-warning",p.warning));
+  root.append(watch);
+  $("bcGunnerProductionNote").textContent=p.method+" Targets are suggestions, not mandatory quotas. Updated when you recalculate.";
+ }
  function draw(){
   const s=state.snapshot;if(!s)return;
   const m=s.media||{},stream=s.stream||{},refs=s.references||{},taste=s.interest||{},dupes=s.duplicates||{};
@@ -165,7 +202,7 @@ export function initGunnerCommand({client,userId}){
    " · Engaged views "+fmt(taste.engaged_views)+
    " · Zoom engagements "+fmt(taste.zoom_engagements)+
    " · Exact duplicate candidates "+fmt(dupes.extra_copies);
-  drawGoals();
+  drawGoals();drawProduction();
   $("bcGunnerGenerated").textContent=s.generated_at?"Recalculated "+new Date(s.generated_at).toLocaleString():"Live aggregate results";
   error("Connected to BLACKCELL's private statistics. Gunner can explain these results using the original Dolphin 3.0 chat.");
  }
@@ -173,13 +210,16 @@ export function initGunnerCommand({client,userId}){
   if(state.refreshing)return;state.refreshing=true;
   $("bcGunnerRefresh").disabled=true;error("Calculating authorized collection statistics…");
   try{
-   const [res,goals]=await Promise.all([
+   const [res,goals,pulse]=await Promise.all([
     client.rpc("blackcell_gunner_collection_stats"),
-    client.from("corp_gunner_collection_goals").select("*").eq("owner_id",userId).order("priority",{ascending:false}).limit(100)
+    client.from("corp_gunner_collection_goals").select("*").eq("owner_id",userId).order("priority",{ascending:false}).limit(100),
+    client.rpc("blackcell_gunner_production_pulse")
    ]);
    if(res.error||!res.data?.media)throw Error(res.error?.message||"No numeric analytics returned");
    if(goals.error)throw Error("Collection goals cannot be read: "+goals.error.message);
-   state.snapshot=res.data;state.goals=goals.data||[];state.loaded=true;draw();
+   state.snapshot=res.data;
+   state.pulse=(!pulse.error&&Array.isArray(pulse.data?.daily))?pulse.data:null;
+   state.goals=goals.data||[];state.loaded=true;state.lastDay=localDay();draw();
   }catch(e){error("Analytics unavailable: "+String(e.message||e).slice(0,230))}
   finally{state.refreshing=false;$("bcGunnerRefresh").disabled=false}
  }
@@ -210,7 +250,17 @@ export function initGunnerCommand({client,userId}){
   state.goals=state.goals.filter(x=>x.id!==goal.id);draw();error("Collection target removed. Verified uniform facts were unchanged.");
  }
  function openGunner(prompt){
-  companion.setPrompt(prompt||"Gunner, evaluate my BLACKCELL uniform collection and give me the top three evidence-based upload missions. Show the real counts, identify missing country and branch examples, and explain your choices.");
+  const plan=state.pulse?planGunnerProduction(state.pulse,state.snapshot):null;
+  const production=plan?
+   "Production: yesterday was "+(plan.photo.missedYesterday?"a missed photo-upload day":"not a missed photo-upload day")+
+   ", today photo quota "+(plan.photo.ready?plan.photo.daily:"baseline unavailable")+
+   ", unfinished photo carryover "+plan.photo.carryover+
+   ", video weekly target "+(plan.video.ready?plan.video.weekly:"baseline unavailable")+
+   ", photos uploaded today "+plan.photoToday+", videos this week "+plan.videoThisWeek+
+   ", review backlog "+plan.pending+". Counts are suggested, not mandatory and not verified as unique. ":"";
+  companion.setPrompt(prompt||("Gunner, "+production+
+   "Tell me what today's realistic photo and video production targets should be and explain any missed-day catch-up. "+
+   "Give three evidence-based upload missions. No mandatory claims or spending without approval.").slice(0,420));
  }
  $("bcGunnerRefresh").onclick=()=>void refresh();
  $("bcGunnerAsk").onclick=()=>openGunner();
@@ -219,5 +269,10 @@ export function initGunnerCommand({client,userId}){
   const type=$("bcGunnerGoalType").value;
   $("bcGunnerGoalValue").placeholder=type==="country"?"US, JP, GB…":type==="branch"?"Army, Marine Corps, Navy…":type==="era"?"1990s, 2010s…":"military, police, fire…";
  });
- return {open:()=>{if(!state.loaded)void refresh()},refresh,ask:openGunner,getSnapshot:()=>state.snapshot};
+ // A previously open tab detects the next calendar day without expensive
+ // background model requests. A tab reopened on a later day refreshes on entry.
+ const refreshOnNewDay=()=>{if(state.loaded&&state.lastDay!==localDay())void refresh()};
+ document.addEventListener("visibilitychange",()=>{if(!document.hidden)refreshOnNewDay()});
+ window.setInterval(refreshOnNewDay,5*60*1000);
+ return {open:()=>{if(!state.loaded||state.lastDay!==localDay())void refresh()},refresh,ask:openGunner,getSnapshot:()=>state.snapshot};
 }

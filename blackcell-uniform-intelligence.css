@@ -112,6 +112,20 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}a{color:#e6b0bf}
 @media(max-width:650px){.bc-comparison-countries{grid-template-columns:1fr}}
 
 /* GUNNER COLLECTION COMMAND — private statistical review, no autonomous writes */
+/* Lightweight collection production and capacity signals; not a cost meter. */
+.bc-gunner-production-panel{flex:none;display:flex;flex-direction:column;min-width:0}
+.bc-gunner-production{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,.9fr) minmax(0,1.3fr);gap:8px;padding:8px 10px 4px}
+.bc-gunner-production-card{min-width:0;padding:9px 11px;border:1px solid #ffffff25;background:linear-gradient(140deg,#1a141d,#0d0c11);border-radius:11px;display:flex;flex-direction:column;gap:4px}
+.bc-gunner-production-card>span{font-size:8px;font-weight:800;letter-spacing:.08em;color:#d1a3b5}
+.bc-gunner-production-card>strong{font-size:clamp(13px,1.25vw,19px);color:#f1e9ef;line-height:1.2}
+.bc-gunner-production-card>small{font-size:9px;color:#a8a2ab;line-height:1.4}
+.bc-gunner-production-card>p{margin:2px 0 0;font-size:9px;color:#f2becc;line-height:1.45}
+.bc-gunner-production-card .bc-gunner-cost-warning{font-size:8px;color:#b9b3bd;line-height:1.4}
+.bc-gunner-progress{height:5px;background:#ffffff16;border-radius:8px;overflow:hidden;margin-top:4px}
+.bc-gunner-progress-fill{height:100%;border-radius:8px;background:linear-gradient(90deg,#983e58,#da8a9d)}
+.bc-gunner-production-note{margin:0 12px 8px!important;color:#a89ba8;font-size:8px;line-height:1.4}
+@media(max-width:900px){.bc-gunner-production{grid-template-columns:repeat(2,minmax(0,1fr))}.bc-gunner-capacity{grid-column:1/-1}}
+@media(max-width:550px){.bc-gunner-production{grid-template-columns:minmax(0,1fr)}.bc-gunner-capacity{grid-column:auto}}
 .bc-gunner-head{align-items:center}.bc-gunner-tools{display:flex;gap:7px;flex:none}
 .bc-gunner-overview{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;flex:none}
 .bc-gunner-stat{display:flex;flex-direction:column;gap:3px;padding:11px 12px;border:1px solid #ffffff23;border-radius:12px;background:linear-gradient(137deg,#211820bf,#0c0b11ed)}

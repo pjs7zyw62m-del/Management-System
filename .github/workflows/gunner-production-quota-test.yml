@@ -1,0 +1,21 @@
+name: Gunner Production Quota Checks
+on:
+  pull_request:
+    paths:
+      - 'blackcell-gunner-production.js'
+      - 'blackcell-gunner-command.js'
+      - 'tests/gunner-production.test.mjs'
+      - '.github/workflows/gunner-production-quota-test.yml'
+  workflow_dispatch:
+jobs:
+  quota-recalculation:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate Gunner production quota calculations
+        run: node --test tests/gunner-production.test.mjs

@@ -1,7 +1,7 @@
 /* BLACKCELL Uniform Intelligence Center | owner-only catalog and learning */
 import {corporateClient,corporateAuthorize} from "./corp-auth.js?v=20261114-transport-classification";
 import {PATTERNS,SOURCES as CAMO_SOURCES,EXTERNAL_SAMPLES,COUNTRY_COMPARISON_LESSONS} from "./blackcell-camouflage-atlas.js?v=20261117-r3";
-import {initGunnerCommand} from "./blackcell-gunner-command.js?v=20261117-r1";
+import {initGunnerCommand} from "./blackcell-gunner-command.js?v=20261117-production-r1";
 import {mountBlackcellVisualMemory} from "./blackcell-visual-memory.js?v=20261117-visual-memory-r1";
 import {mountBlackcellUniformSemantic} from "./blackcell-uniform-semantic.js?v=20261117-semantic-memory-r1";
 const db=corporateClient();
