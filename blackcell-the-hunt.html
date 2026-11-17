@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#090b10">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>BLACKCELL // THE HUNT | Gunner Collection Operations</title>
+<link rel="stylesheet" href="blackcell-the-hunt.css?v=20261117-h1">
+<script src="corp-config.js" defer></script>
+<script type="module" src="blackcell-the-hunt.js?v=20261117-h1"></script>
+</head>
+<body>
+<div id="huntGate" class="hunt-gate" role="status" aria-live="polite">
+ <div class="hunt-gate-card">
+  <span class="hunt-mark">B</span><p class="kicker">BLACKCELL CORPORATION / PRIVATE OWNER APPLICATION</p>
+  <h1>THE HUNT</h1><p id="huntGateMessage">Verifying Level 7 corporate access…</p>
+  <div class="gate-links"><a href="blackcell-os.html">BACK TO OS</a><a href="login.html">CORPORATE ACCESS</a></div>
+  <button id="huntGateRetry" type="button" hidden>RETRY VERIFICATION</button>
+ </div>
+</div>
+<div id="huntApp" class="hunt-app" hidden>
+<header class="hunt-header">
+ <a class="identity" href="blackcell-os.html" aria-label="Return to BLACKCELL operating system"><span class="hunt-mark">B</span><span><strong>BLACKCELL</strong><small>OPERATING SYSTEM</small></span></a>
+ <nav class="header-links" aria-label="Collection applications">
+  <a href="#mission" class="active" aria-current="page">THE HUNT</a>
+  <a href="blackcell-uniform-intelligence.html#gunner">UNIFORM INTELLIGENCE</a>
+  <a href="blackcell-uniform-intelligence.html#gunner">GUNNER AI</a>
+ </nav>
+ <div class="header-status"><span class="verified-dot"></span><span id="huntConnection" role="status" aria-live="polite">VERIFYING</span><a href="blackcell-os.html" class="return-os">OS ↗</a></div>
+</header>
+<div class="hunt-body">
+ <aside class="hunt-sidebar" aria-label="Gunner command navigation">
+  <h2>GUNNER / COMMAND</h2>
+  <a href="#overview"><i></i>Command Center</a>
+  <a href="#mission" class="selected" aria-current="location"><i></i>The Hunt</a>
+  <a href="uniform-world.html"><i></i>Uniform Library</a>
+  <a href="blackcell-uniform-intelligence.html#learning"><i></i>Visual Discovery</a>
+  <a href="#quotas"><i></i>Daily Quotas</a>
+  <a href="#logs"><i></i>Intelligence Logs</a>
+  <div class="rail-end"><a href="#signals">PREFERENCES & SIGNALS</a><small>LEVEL 7 / OWNER OPERATIONS</small></div>
+ </aside>
+ <main class="hunt-workspace">
+  <div id="overview" class="eyebrow intro">01 / GUNNER ASSIGNS A MISSION <span>OWNER-VERIFIED CATALOG</span></div>
+  <h1 id="mission">Daily collection operations</h1>
+  <p class="lead">An operational view of your real BLACKCELL photo and video collection—not sample counters or AI-generated claims.</p>
+  <div class="mission-layout">
+   <section class="hunt-card mission-card" aria-labelledby="missionLabel">
+    <div class="mission-card-top"><span id="missionLabel" class="mission-pill">ACTIVE MISSION</span><span id="missionDate" class="quiet">AWAITING BASELINE</span></div>
+    <div class="hero-total"><strong id="huntTarget" class="numeric">—</strong><span>NEW UNIFORM IMAGES <small>Suggested daily photo target</small></span></div>
+    <div class="focus-intro">COLLECTION FOCUS <small>Catalog counts, not daily completions</small></div>
+    <div id="huntFocus" class="focus-grid" aria-label="Current collection focus">
+     <div class="focus-empty">Verifying catalog distribution…</div>
+    </div>
+    <div class="overall-progress"><div><span>Today's progress</span><strong id="huntProgressText">Waiting for statistics</strong></div><div class="progress-track"><span id="huntProgressFill"></span></div></div>
+   </section>
+   <section class="hunt-card gunner-card" aria-labelledby="gunnerSays">
+    <h2 id="gunnerSays">GUNNER SAYS</h2><blockquote id="huntBrief">“Give me verified numbers before we set a mission.”</blockquote>
+    <button type="button" class="outline-red" id="huntOpenMission" disabled>OPEN MISSION</button>
+    <small>Suggested goals can be changed in Gunner Command.</small>
+   </section>
+  </div>
+  <section class="hunt-details hunt-card" id="huntMissionDetails" aria-label="Selected mission details" hidden>
+   <div class="detail-head"><div><span class="eyebrow">MISSION BRIEF / VERIFIED COUNTS</span><h2 id="huntDetailTitle">Next assignment</h2></div><button id="huntCloseMission" type="button" class="icon-button" aria-label="Close mission details">✕</button></div>
+   <p id="huntDetailReason"></p><strong id="huntDetailValue"></strong><p id="huntDetailAction"></p>
+   <a class="primary-link" href="blackcell-uniform-intelligence.html#gunner">OPEN UNIFORM INTELLIGENCE ↗</a>
+  </section>
+  <section id="quotas" class="hunt-section">
+   <div class="section-top"><div><span class="eyebrow">02 / ACTIVITY PACING</span><h2>Daily quotas & recovery</h2></div><button id="huntRecalculate" type="button" class="subtle-button">↻ RECALCULATE</button></div>
+   <div class="quota-grid">
+    <article class="hunt-card quota-card"><span>PHOTOS UPLOADED TODAY</span><strong id="huntTodayPhotos">—</strong><small id="huntPhotoStatus">Loading owner-authorized history</small></article>
+    <article class="hunt-card quota-card"><span>SUGGESTED VIDEO TARGET</span><strong id="huntVideoTarget">—</strong><small id="huntVideoStatus">Weekly production, not daily penalties</small></article>
+    <article class="hunt-card quota-card"><span>MISSED-DAY CATCH-UP</span><strong id="huntCatchup">—</strong><small id="huntCatchupStatus">Calculated from completed days only</small></article>
+    <article class="hunt-card quota-card"><span>PRIVATE REVIEW QUEUE</span><strong id="huntPending">—</strong><small>Pending media must pass existing approval controls</small></article>
+   </div>
+   <p class="advisory" id="huntPacingNote">Targets are optional recommendations. Duplicate files and billing are not verified by upload counts.</p>
+  </section>
+  <section id="logs" class="hunt-section">
+   <div class="section-top"><div><span class="eyebrow">03 / COLLECTION INTELLIGENCE</span><h2>Priority mission log</h2></div><span class="quiet" id="huntLastRefresh">NOT YET LOADED</span></div>
+   <div id="huntMissions" class="mission-list" aria-live="polite"><p class="muted">Connecting to existing mission priorities…</p></div>
+  </section>
+  <section id="signals" class="hunt-section">
+   <div class="section-top"><div><span class="eyebrow">04 / PERSONAL LEARNING</span><h2>Preference & uniform signals</h2></div></div>
+   <div id="huntSignals" class="signals-grid"><p class="muted">Signals are private to the verified owner.</p></div>
+   <p class="advisory">Explicit favorites and ratings guide recommendations. Passive interactions are weak evidence, and unknown uniforms remain unverified until confirmed.</p>
+  </section>
+  <footer>BLACKCELL // THE HUNT <span>LIVE CATALOG DATA · NO AUTOMATIC UPLOADS, SPENDING OR PUBLICATION</span></footer>
+ </main>
+</div>
+</div>
+</body></html>

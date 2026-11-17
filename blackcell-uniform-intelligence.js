@@ -1,7 +1,7 @@
 /* BLACKCELL Uniform Intelligence Center | owner-only catalog and learning */
 import {corporateClient,corporateAuthorize} from "./corp-auth.js?v=20261114-transport-classification";
 import {PATTERNS,SOURCES as CAMO_SOURCES,EXTERNAL_SAMPLES,COUNTRY_COMPARISON_LESSONS} from "./blackcell-camouflage-atlas.js?v=20261117-r3";
-import {initGunnerCommand} from "./blackcell-gunner-command.js?v=20261117-journal-r1";
+import {initGunnerCommand} from "./blackcell-gunner-command.js?v=20261117-hunt-v1";
 import {mountBlackcellVisualMemory} from "./blackcell-visual-memory.js?v=20261117-visual-memory-r1";
 import {mountBlackcellUniformSemantic} from "./blackcell-uniform-semantic.js?v=20261117-semantic-memory-r1";
 const db=corporateClient();
@@ -963,7 +963,7 @@ async function boot(){
    onChoose:item=>{select(item);const stage=flowStage(item);switchTab(stage==="completed"?"completed":stage==="catalog"?"catalog":"teach",true)}
   });
   startAutopilot();
-  switchTab(location.hash==="#review"?"review":"catalog");await Promise.all([loadCatalog(true),loadMemory().catch(err=>text("bcCatalogMeta","Reference memory unavailable: "+err.message))]);
+  switchTab(["catalog","review","gunner","learning","atlas","uploads"].includes(location.hash.slice(1))?location.hash.slice(1):"catalog");await Promise.all([loadCatalog(true),loadMemory().catch(err=>text("bcCatalogMeta","Reference memory unavailable: "+err.message))]);
  }catch(err){$("bcApp").hidden=true;$("bcGate").hidden=false;text("bcGateMessage",err.message||"Access restricted");text("bcConnection","ACCESS REQUIRED")}
 }
 function init(){

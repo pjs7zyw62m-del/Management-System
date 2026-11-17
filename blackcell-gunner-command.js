@@ -39,7 +39,7 @@ function priorityScore(stats,goal){
  const total=0.35*gap+0.25*preferred+0.20*variety+0.10*verified+0.10*fresh;
  return Math.min(99,Math.max(1,Math.round(100*total+(N(goal.priority)-3)*6)));
 }
-function createMissions(stats,goals){
+export function createMissions(stats,goals){
  const media=stats.media||{},video=stats.stream||{},refs=stats.references||{},dupes=stats.duplicates||{},taste=stats.interest||{};
  const missions=[];
  const add=(title,reason,value,points,action)=>missions.push({title,reason,value,score:points,action});
