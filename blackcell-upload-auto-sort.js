@@ -1,5 +1,6 @@
 /* BLACKCELL OS / private media auto-sort.
- * Runs only within an authenticated Upload Queue window and never publishes.
+ * Runs only within an authenticated Upload Queue window. It may invoke the owner-only
+ * atomic 100%-verification publication gate; AI predictions alone never publish.
  * Existing approved corrections serve as few-shot memory in blackcell-military-ai.
  * Auto-processing has an account-local daily cap in addition to the server cap.
  */
