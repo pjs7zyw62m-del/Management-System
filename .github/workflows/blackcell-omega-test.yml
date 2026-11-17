@@ -6,6 +6,9 @@ on:
       - 'blackcell-omega.css'
       - 'blackcell-omega.js'
       - 'blackcell-omega-core.js'
+      - 'blackcell-omega-unified.js'
+      - 'blackcell-omega-media.js'
+      - 'tests/blackcell-omega-unified.test.mjs'
       - 'blackcell-os.js'
       - 'blackcell-os.html'
       - 'supabase/migrations/20261117111000_omega_live_private_cases.sql'
@@ -26,6 +29,8 @@ jobs:
         run: |
           node --check blackcell-omega.js
           node --check blackcell-omega-core.js
+          node --check blackcell-omega-unified.js
+          node --check blackcell-omega-media.js
           node --check blackcell-os.js
       - name: Test OMEGA collections, cases and security
-        run: node --test tests/blackcell-omega.test.mjs
+        run: node --test tests/blackcell-omega.test.mjs tests/blackcell-omega-unified.test.mjs

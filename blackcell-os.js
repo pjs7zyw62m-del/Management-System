@@ -122,7 +122,7 @@ let dockOverrides=new Map();
 let storeModule,storeProfile=null,widgetState=null,storeInstalled=new Set(),storeRules=new Map(),storeAdmin=false,storeLevel=null,storeError='',storeSequence=0,storeMutating=false,catalogPending=null;
 // Catalog metadata for recently released apps. Permissions always come from corp_app_store.
 const releasedApps={
- omega:{title:'BLACKCELL OMEGA',sub:'LIVE · Seven Worlds · Gunner Missions',url:'blackcell-omega.html?v=20261117-o1',
+ omega:{title:'OMEGA // THE HUNT',sub:'Explore · Worlds · Dossiers · Operations',url:'blackcell-omega.html?v=20261117-unified-r1',
   desc:'BLACKCELL LIVE curated photo/video channels, seven specialized archive desks, private evidence case files, and real-count Gunner collection missions. Uses existing approved media; no paid AI or autonomous publication.',
   path:'M12 2l8 4v12l-8 4-8-4V6z M12 6l5 2.8v6.4L12 18l-5-2.8V8.8z M8 12h8 M12 8v8'},
  uploadqueue:{title:'Uniform Intelligence',sub:'Global uniform recognition & AI Training',url:'blackcell-uniform-intelligence.html?v=20261117-review-r12',desc:'Site-wide media inventory, private AI teaching and corrections, international camouflage references, lookalike-country comparison, and original Upload Queue. Verified examples remain private; public publishing requires separate approval.',path:'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h3v3h-3z M19 14h2v7h-7v-2'},

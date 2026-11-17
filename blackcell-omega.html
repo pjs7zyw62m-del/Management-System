@@ -4,33 +4,33 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070709">
-<title>BLACKCELL OMEGA | LIVE Intelligence Network</title>
-<link rel="stylesheet" href="blackcell-omega.css?v=20261117-bunnyfix-r1">
+<title>BLACKCELL | OMEGA // THE HUNT</title>
+<link rel="stylesheet" href="blackcell-omega.css?v=20261117-unified-r1">
 <script src="corp-config.js" defer></script>
-<script type="module" src="blackcell-omega.js?v=20261117-bunnyfix-r1"></script>
+<script type="module" src="blackcell-omega.js?v=20261117-unified-r1"></script>
 </head>
 <body>
 <div id="omegaGate" class="gate" role="status" aria-live="polite">
  <div class="gate-card"><div class="brandmark">◈</div><div class="eyebrow">BLACKCELL CORPORATION / VERIFIED NETWORK</div>
-  <h1>OMEGA PROTOCOL</h1><p id="gateText">Verifying your corporate session and protected media catalog…</p>
+  <h1>OMEGA // THE HUNT</h1><p id="gateText">Verifying your corporate session and protected media catalog…</p>
   <div class="gate-actions"><a href="blackcell-os.html">BACK TO OS</a><button id="gateRetry" hidden type="button">RETRY VERIFICATION</button></div>
  </div>
 </div>
 <div id="omegaApp" class="app" hidden>
 <header class="topbar">
  <div class="identity"><div class="mark">◈</div><div><div class="corp">BLACKCELL CORPORATION <span>// SECURE APPLICATION</span></div>
- <div class="brand">OMEGA <span>PROTOCOL</span></div></div></div>
+ <div class="brand">OMEGA <span>// THE HUNT</span></div></div></div>
  <nav class="tabs" aria-label="OMEGA sections">
-  <button type="button" data-tab="live" class="active">LIVE</button>
-  <button type="button" data-tab="atlas">SEVEN WORLDS</button>
-  <button type="button" data-tab="cases">CASE FILES</button>
-  <button type="button" data-tab="missions">GUNNER MISSIONS</button>
+  <button type="button" data-tab="live" class="active">DISCOVER</button>
+  <button type="button" data-tab="atlas">WORLDS</button>
+  <button type="button" data-tab="cases">DOSSIERS</button>
+  <button type="button" data-tab="missions">OPERATIONS</button>
  </nav>
  <div class="header-right"><span class="live-dot"></span><span id="connectionStatus">PRIVATE NETWORK</span><button type="button" id="refreshOmega" title="Refresh current records">↻</button><a class="os-return" href="blackcell-os.html">OS ↗</a></div>
 </header>
 <main class="frame">
  <aside class="rail" aria-label="Seven World channels">
-  <p class="rail-label">WORLD FREQUENCIES</p>
+  <p class="rail-label">UNIFORM WORLDS</p>
   <div id="worldButtons" class="world-list"></div>
   <div class="rail-bottom">
    <p class="rail-label">ARCHIVE SIGNAL</p>
@@ -42,8 +42,8 @@
  </aside>
  <section class="workspace" aria-live="off">
   <section id="panel-live" data-panel="live" class="page">
-   <div class="page-heading"><div><p class="eyebrow">OMEGA / INTELLIGENT BROADCAST</p><h1>BLACKCELL <span>LIVE</span></h1>
-    <p class="subheading">Your media becomes a living documentary channel.</p></div><div class="page-tuner"><span class="on-air">● ON AIR · CURATED</span><div class="mode-controls" role="group" aria-label="Channel media filter"><button data-mode="mix" class="active">ALL</button><button data-mode="photos">PHOTOS</button><button data-mode="videos">VIDEOS</button></div></div></div>
+   <div class="page-heading"><div><p class="eyebrow">OMEGA // THE HUNT · THE LIVING ARCHIVE</p><h1>EVERY PHOTO <span>STARTS A STORY.</span></h1>
+    <p class="subheading">Discover details, follow connections and investigate with Gunner—no paperwork required.</p></div><div class="page-tuner"><span class="on-air">● LIVE · PRIVATE ARCHIVE</span><div class="mode-controls" role="group" aria-label="Channel media filter"><button data-mode="mix" class="active">ALL</button><button data-mode="photos">PHOTOS</button><button data-mode="videos">VIDEOS</button></div></div></div>
    <div class="live-theater">
     <div class="screen" id="liveScreen">
      <div id="screenBackground" class="screen-background"></div>
@@ -54,9 +54,16 @@
     </div>
     <div class="now-playing"><div class="playing-copy"><div class="eyebrow">NOW EXPLORING <span id="broadcastState">· STANDBY</span></div>
      <h2 id="screenTitle">Archive awaiting transmission</h2><p id="screenMeta">No file is loaded</p></div>
-     <div class="player-controls"><button type="button" id="screenPrev" aria-label="Previous media">‹</button><button type="button" id="screenPlay" aria-label="Start or pause photo broadcast">▶</button><button type="button" id="screenNext" aria-label="Next media">›</button><button type="button" id="screenWatch" class="accent" hidden>PLAY VIDEO</button><button type="button" id="screenCase" class="outline">+ CASE FILE</button></div>
+     <div class="player-controls"><button type="button" id="screenPrev" aria-label="Previous media">‹</button><button type="button" id="screenPlay" aria-label="Start or pause photo broadcast">▶</button><button type="button" id="screenNext" aria-label="Next media">›</button><button type="button" id="screenWatch" class="accent" hidden>PLAY VIDEO</button><button type="button" id="screenCase" class="outline">⊕ BUILD DOSSIER</button></div>
     </div>
    </div>
+   
+   <div class="omega-action-deck"><button type="button" id="omegaSurprise" class="omega-primary">✧ SURPRISE ME</button><button type="button" id="omegaResume" class="omega-secondary" hidden>↶ RESUME LAST DISCOVERY</button><button type="button" id="omegaCluesToggle" class="omega-secondary">◎ EXPLORE CLUES</button><button type="button" id="omegaGunnerTalk" class="omega-secondary">✦ TALK TO GUNNER</button></div>
+   <section id="omegaCluePanel" class="omega-clues" hidden aria-label="Interactive discovery">
+    <div class="omega-clue-head"><div><span class="eyebrow">VISUAL INVESTIGATION / CATALOG EVIDENCE</span><h2 id="omegaClueTitle">Follow the clues</h2></div><button id="omegaClueClose" type="button" aria-label="Close discovery clues">×</button></div>
+    <p class="omega-explainer">These clues come from saved catalog labels—not AI-confirmed visual analysis. Exact image-region recognition requires a validated vision model.</p>
+    <div id="omegaClueTags" class="omega-clue-tags"></div><h3 class="omega-related-heading">MORE TO DISCOVER</h3><div id="omegaConnections" class="omega-connections"></div>
+   </section>
    <div class="section-heading"><div><span class="eyebrow">CURATED FROM YOUR NETWORK</span><h3 id="queueHeading">CHANNEL QUEUE</h3></div><span id="queueCount" class="subtle-label">—</span></div>
    <div id="channelGrid" class="media-grid"></div>
   </section>
@@ -66,12 +73,23 @@
    <div id="atlasGrid" class="atlas-grid"></div>
   </section>
   <section id="panel-cases" data-panel="cases" class="page" hidden>
-   <div class="page-heading"><div><p class="eyebrow">OMEGA / PRIVATE RESEARCH</p><h1>EVIDENCE <span>CASE FILES</span></h1><p class="subheading">Save an investigation against a verified media record. Your notes remain private.</p></div></div>
+   <div class="page-heading"><div><p class="eyebrow">OMEGA / PRIVATE RESEARCH</p><h1>YOUR <span>DISCOVERY DOSSIERS</span></h1><p class="subheading">Reopen a visual dossier with the photograph, your notes and the clues that connect it to your archive.</p></div></div>
    <div id="caseList" class="case-list"></div>
   </section>
   <section id="panel-missions" data-panel="missions" class="page" hidden>
-   <div class="page-heading"><div><p class="eyebrow">OMEGA / COLLECTION COMMAND</p><h1>GUNNER'S <span>OPERATIONS</span></h1><p class="subheading">Evidence-led missions and production pacing, using actual catalog counts.</p></div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap"><a href="blackcell-the-hunt.html?v=20261117-hunt3-r1" class="action-link">OPEN THE HUNT ↗</a><a href="blackcell-uniform-intelligence.html#gunner" class="action-link">OPEN GUNNER AI ↗</a></div></div>
+   <div class="page-heading"><div><p class="eyebrow">OMEGA / COLLECTION COMMAND</p><h1>GUNNER'S <span>OPERATIONS</span></h1><p class="subheading">Discover, verify and advance with real evidence from your collection.</p></div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap"><button type="button" id="omegaOperationGunner" class="action-link">ASK GUNNER ↗</button><a href="blackcell-uniform-intelligence.html#gunner" class="action-link">OPEN GUNNER AI ↗</a></div></div>
+   
+   <section class="omega-campaign" aria-label="Unified Hunt progression">
+     <div class="omega-campaign-head"><div><span class="eyebrow">THE HUNT / COLLECTION MILESTONES</span><h2 id="omegaGoalTitle">Reading your current campaign…</h2></div><strong id="omegaRank">RANK —</strong></div>
+     <p id="omegaGoalDescription">Verifying saved goals and real catalog numbers.</p>
+     <div id="omegaStages" class="omega-stages"></div>
+     <p class="omega-explainer">Progress and ranks come from verified references. Neither browsing time nor unverified uploads increase your rank.</p>
+   </section>
    <div id="quotaPanel" class="quota-panel"></div><div id="missionGrid" class="mission-grid"></div>
+   <section class="omega-scout"><span class="eyebrow">SOURCE SCOUT / PUBLIC ARCHIVE RESEARCH</span><h2>FOLLOW A NEW LEAD</h2><p>Search Wikimedia Commons for possible historical uniform photographs. Nothing is downloaded, imported or published automatically.</p>
+   <div class="omega-scout-controls"><input id="omegaScoutQuery" maxlength="110" aria-label="Historical uniform research terms" placeholder="US Air Force uniform 1980s"><button id="omegaScoutSearch" class="omega-primary" type="button">SCAN PUBLIC SOURCES ↗</button></div>
+   <p id="omegaScoutStatus" role="status">On-demand research · verified owner only</p><div id="omegaScoutResults" class="omega-scout-results"></div></section>
+
   </section>
  </section>
  <aside class="insight" aria-label="Gunner intelligence panel">
@@ -87,11 +105,15 @@
  <form method="dialog" id="omegaCaseForm">
   <div class="dialog-header"><div><p class="eyebrow">OMEGA / PRIVATE INTELLIGENCE FILE</p><h2 id="caseDialogTitle">NEW INVESTIGATION</h2></div><button type="button" id="caseDialogClose" aria-label="Close">✕</button></div>
   <p id="caseEvidence" class="case-evidence"></p>
-  <label>CASE TITLE <input id="caseTitleInput" required maxlength="160" autocomplete="off"></label>
+  <div class="omega-dossier-hero"><div id="omegaCaseVisual" class="omega-dossier-image"><span>◈</span><small>LOADING EVIDENCE PHOTO…</small></div>
+   <div class="omega-dossier-context"><span class="eyebrow">CURRENT EVIDENCE</span><div id="omegaCaseClues" class="omega-clue-tags"></div><p id="omegaCaseSuggestion">Observe the uniform and choose something to investigate.</p><button id="omegaCaseGunner" class="omega-secondary" type="button">✦ ASK GUNNER</button></div>
+  </div>
+
+  <label>DISCOVERY TITLE <input id="caseTitleInput" required maxlength="160" autocomplete="off"></label>
   <label>RESEARCH STAGE <select id="caseStageInput"><option value="research">RESEARCH</option><option value="evidence">VERIFYING EVIDENCE</option><option value="complete">COMPLETE</option></select></label>
-  <label>INVESTIGATOR'S NOTES <textarea id="caseNoteInput" maxlength="4000" rows="6" placeholder="Record source references, uniform details, era, and what to verify next…"></textarea></label>
+  <label>YOUR OBSERVATIONS (OPTIONAL) <textarea id="caseNoteInput" maxlength="4000" rows="6" placeholder="What caught your eye? Save a question, observation, or historical clue here."></textarea></label>
   <p id="caseMessage" role="status"></p>
-  <footer><button type="button" class="muted" id="caseDelete" hidden>DELETE CASE</button><button type="button" class="muted" id="caseCancel">CANCEL</button><button type="submit" class="save">SAVE CASE FILE</button></footer>
+  <footer><button type="button" class="muted" id="caseDelete" hidden>DELETE CASE</button><button type="button" class="muted" id="caseCancel">CANCEL</button><button type="submit" class="save">SAVE DOSSIER</button></footer>
  </form>
 </dialog>
 </body></html>

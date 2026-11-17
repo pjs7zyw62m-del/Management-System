@@ -7,6 +7,7 @@ import {WORLDS,eligibleOmegaAsset,assetWorld,getWorld,buildWorldDesk,makeChannel
 import {buildBehavioralAffinity} from './blackcell-adaptive-ranker.js?v=20261117-aggressive-r1';
 import {planGunnerProduction} from './blackcell-gunner-production.js?v=20261117-pulse-r1';
 import {createOmegaMediaReader,isWorldMedia} from './blackcell-omega-media.js?v=20261117-bunnyfix-r1';
+import {mountOmegaUnified} from './blackcell-omega-unified.js?v=20261117-unified-r1';
 const $=id=>document.getElementById(id);
 const client=corporateClient(),bucket=client.storage.from('corp-social-media'),bunny=createOmegaMediaReader(client);
 const e=(tag,cls='',value=null)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(value!==null)n.textContent=String(value);return n};
@@ -15,6 +16,7 @@ const short=s=>String(s||'').trim();
 const state={user:null,member:null,assets:[],pending:0,cases:[],prefs:[],pulse:null,
  world:'all',mode:'mix',tab:'live',items:[],index:0,playing:false,playTimer:null,
  signed:new Map(),loading:false,rank:()=>0,caseAsset:null,caseRecord:null,renderSeq:0,previewObserver:null,previewAbort:null,viewAbort:null,viewUrl:null,viewSeq:0};
+let unified=null;
 const visibleAssets=()=>state.assets.filter(eligibleOmegaAsset);
 const current=()=>state.items[state.index]||null;
 const safeTitle=a=>short(a?.caption||a?.filename)||'Untitled uniform record';
@@ -182,6 +184,7 @@ function renderMediaGrid(){
 async function showCurrent(){
  clearView();
  const a=current(),seq=state.viewSeq,image=$("screenImage"),blank=$("screenEmpty");
+ unified?.onCurrent(a);
  $("screenChannel").textContent=getWorld(state.world).name;
  $("screenCounter").textContent=state.items.length?(state.index+1)+" / "+state.items.length:"0 / 0";
  $("screenTitle").textContent=a?safeTitle(a):"No eligible media";
@@ -221,8 +224,11 @@ async function showCurrent(){
 }
 function updateChannel(){
  stopPlayback();
+ const previously=current()?.id;
  state.items=makeChannel(state.assets,state.world,state.mode,state.rank);
- state.index=0;renderMediaGrid();void showCurrent();updateGunner();
+ const existing=state.items.findIndex(a=>a.id===previously);
+ state.index=existing>=0?existing:0;
+ renderMediaGrid();void showCurrent();updateGunner();
 }
 function goNext(step){if(!state.items.length)return;state.index=(state.index+step+state.items.length)%state.items.length;void showCurrent().then(schedulePlayback)}
 async function playVideo(){
@@ -265,11 +271,11 @@ function renderCases(){
  const root=$('caseList');clearNode(root);
  const source=new Map(visibleAssets().map(a=>[a.id,a]));
  const entries=[...state.cases].filter(c=>source.has(c.asset_id)).sort((a,b)=>Date.parse(b.updated_at||0)-Date.parse(a.updated_at||0));
- if(!entries.length){const box=e('div','case-empty');box.append(e('strong','','NO INVESTIGATIONS OPENED YET'),e('p','','Select a photograph or video in BLACKCELL LIVE, then choose + CASE FILE to begin a private investigation.'));root.append(box);return}
+ if(!entries.length){const box=e('div','case-empty');box.append(e('strong','','YOUR FIRST DISCOVERY IS ONE PHOTO AWAY'),e('p','','Open Discover, choose an interesting photograph, then explore clues and save a visual dossier whenever you like.'));root.append(box);return}
  for(const c of entries){
   const box=e('div','case-entry'),left=e('div');left.append(e('span','eyebrow',c.stage.toUpperCase()),e('h3','',c.title),
    e('p','',evidenceSummary(source.get(c.asset_id))+' · Updated '+dateLabel(c.updated_at)));
-  const edit=e('button','','OPEN CASE');edit.type='button';edit.addEventListener('click',()=>openCase(source.get(c.asset_id)));box.append(left,edit);root.append(box);
+  const edit=e('button','','OPEN DOSSIER ↗');edit.type='button';edit.addEventListener('click',()=>openCase(source.get(c.asset_id)));box.append(left,edit);root.append(box);
  }
 }
 function openCase(a){
@@ -281,7 +287,7 @@ function openCase(a){
  $('caseTitleInput').value=existing?.title||safeCaseTitle(a).slice(0,160);
  $('caseNoteInput').value=existing?.note||'';
  $('caseStageInput').value=existing?.stage||'research';$('caseDelete').hidden=!existing;
- $('caseMessage').textContent='';$('omegaCaseDialog').showModal();$('caseTitleInput').focus();
+ $('caseMessage').textContent='';$('omegaCaseDialog').showModal();unified?.onCase(a);$('caseTitleInput').focus();
 }
 async function saveCase(ev){
  ev.preventDefault();const a=state.caseAsset;if(!a||!state.user)return;
@@ -295,7 +301,7 @@ async function saveCase(ev){
     {onConflict:'user_id,asset_id'}).select('id,user_id,asset_id,title,note,stage,updated_at').single();
   if(error||!data)throw error||Error('No saved case returned');
   state.cases=[data,...state.cases.filter(c=>c.asset_id!==a.id)];
-  $('omegaCaseDialog').close();metrics();renderCases();renderMissions();setStatus('PRIVATE CASE SAVED');
+  $('omegaCaseDialog').close();metrics();renderCases();renderMissions();updateGunner();setStatus('PRIVATE DOSSIER SAVED');
  }catch(error){$('caseMessage').textContent='Could not save: '+(error?.message||'Verification failed')}
  finally{submit.disabled=false}
 }
@@ -384,6 +390,7 @@ async function loadCatalog(){
   }
   await loadPersonalRanking();
   renderWorlds();renderAtlas();metrics();renderCases();renderMissions();updateChannel();
+  if(unified)void unified.updateCampaign();
   setStatus('PRIVATE NETWORK · READY');
  }catch(error){setStatus('ARCHIVE UNAVAILABLE');console.warn('OMEGA catalog unavailable:',error?.message||error);
   $('gunnerBrief').textContent='The protected archive is unavailable. Refresh to try again. No private media is shown until verification succeeds.'}
@@ -403,7 +410,22 @@ async function boot(){
   if(!omega?.allowed||!omega?.installed)throw Error('OMEGA is not installed or authorized. Open the BLACKCELL OS App Store.');
   $('omegaGate').hidden=true;$('omegaApp').hidden=false;
   await loadCatalog();
+  unified=mountOmegaUnified({client,state,$,e,bunny,visibleAssets,assetWorld,sourceUrl,signPreviews,
+   safeTitle,evidenceSummary,showTab,selectAsset:openAssetUnified});
+  unified.setup();
  }catch(error){gate('Access restricted: '+(error?.message||'Corporate verification unavailable.'),true)}
+}
+function openAssetUnified(a,alreadyInCurrent=false){
+ if(!a||!eligibleOmegaAsset(a))return;
+ if(!alreadyInCurrent){
+  state.world="all";state.mode="mix";
+  for(const btn of document.querySelectorAll("[data-mode]"))btn.classList.toggle("active",btn.dataset.mode==="mix");
+  renderWorlds();renderAtlas();updateChannel();
+ }
+ const index=state.items.findIndex(item=>item.id===a.id);
+ if(index<0)return;
+ state.index=index;showTab("live");void showCurrent();
+ $("liveScreen").scrollIntoView({behavior:"smooth",block:"nearest"});
 }
 function events(){
  for(const btn of document.querySelectorAll('[data-tab]'))btn.addEventListener('click',()=>showTab(btn.dataset.tab));
