@@ -1,5 +1,5 @@
 import {attachPhotoTransfer} from './blackcell-photo-transfer.js?v=1';
-import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
+import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261117-os-perf1';
 import {setupBlackcellPhotos} from './corporate-network-photos.js?v=20261114-photos-only';
 import {setupBlackcellStorageStatus} from './corporate-storage-status.js?v=20261111-storage1';
 import {mountMilitaryGunner} from './military-gunner.js?v=20261110-fast4';
