@@ -26,10 +26,16 @@
   <article><span>MEDIA RECORDS</span><strong id="bcTotal">—</strong><small>Available inventory</small></article>
   <article><span>PHOTOGRAPHS</span><strong id="bcPhotos">—</strong><small>Classifiable frames</small></article>
   <article><span>VIDEOS</span><strong id="bcVideos">—</strong><small>Media + stream</small></article>
-  <article><span>REVIEW QUEUE</span><strong id="bcPending">—</strong><small>Not yet published</small></article>
+  <article><span>PUBLICATION REVIEW</span><strong id="bcPending">—</strong><small>Separate from AI labeling</small></article>
   <article><span>TRAINING REFERENCES</span><strong id="bcTrained">—</strong><small>Owner-verified examples</small></article>
   <article><span>COUNTRIES</span><strong id="bcCountriesCount">—</strong><small>In verified references</small></article>
  </section>
+ <section id="bcAutopilot" class="bc-autopilot-bar" aria-label="Automatic private uniform intelligence" hidden>
+  <div class="bc-autopilot-brand"><span class="bc-autopilot-mark">✦</span><div><strong>BLACKCELL INTELLIGENCE AUTOPILOT</strong><small>Automatically classify eligible private photos while this app stays open. AI labeling never publishes media.</small></div></div>
+  <div class="bc-autopilot-readout"><strong id="bcAutopilotState" role="status">CONNECTING</strong><small id="bcAutopilotMetrics">Verifying private queue…</small></div>
+  <div class="bc-autopilot-actions"><button id="bcAutopilotSwitch" class="bc-btn bc-btn-primary" type="button" disabled>Pause AI</button><button id="bcAutopilotRun" class="bc-btn bc-btn-outline" type="button" disabled>Classify Pending</button></div>
+ </section>
+ <p class="bc-review-explainer"><strong>Two independent statuses:</strong> AI classification organizes your private library. <strong>Pending Publication Approval</strong> only means the photograph has not been approved for public display.</p>
  <nav class="bc-tabs" aria-label="Intelligence Center sections">
   <button type="button" class="bc-tab" data-tab="catalog" aria-selected="true">▦ Content Inventory</button>
   <button type="button" class="bc-tab" data-tab="teach" aria-selected="false">✧ Teach AI</button>
@@ -42,7 +48,7 @@
   <div class="bc-filters">
    <label class="bc-search-label"><span>SEARCH</span><input id="bcSearch" type="search" placeholder="Filename, uniform, country, branch or description…" autocomplete="off"></label>
    <label><span>TYPE</span><select id="bcFilterKind"><option value="all">All content</option><option value="photo">Photos</option><option value="video">Videos</option><option value="post">Posts</option></select></label>
-   <label><span>STATUS</span><select id="bcFilterStatus"><option value="all">Any status</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select></label>
+   <label><span>STATUS</span><select id="bcFilterStatus"><option value="all">Any status</option><option value="pending">Pending Publication Approval</option><option value="approved">Published / Approved</option><option value="rejected">Rejected</option><option value="needs_ai">Needs AI Analysis</option><option value="ai_suggested">AI Classified · Unverified</option><option value="needs_verification">Needs Verification</option><option value="verified">Verified Reference</option></select></label>
    <label><span>WORLD</span><select id="bcFilterWorld"><option value="all">All worlds</option><option value="military">Military</option><option value="police">Law Enforcement</option><option value="fire">Fire &amp; Rescue</option><option value="medical">Medical</option><option value="security">Corrections</option><option value="professional">Aviation</option><option value="unsorted">Unsorted</option></select></label>
    <label><span>SOURCE</span><select id="bcFilterSource"><option value="all">All sources</option><option value="worlds">Worlds / Bunny</option><option value="library">Photo Library</option><option value="network">Network Posts</option><option value="tube">BLACKCELL Tube</option><option value="social">Social Text</option><option value="saved">Saved Clips</option></select></label>
   </div>
@@ -179,7 +185,7 @@
 </section>
 <section class="bc-page" id="bcPageUploads" hidden>
   <div class="bc-section-head"><div><h2>Private Media Intake</h2><p>The original Upload Queue is retained inside Uniform Intelligence. Full-resolution originals are preserved; AI sorting remains private.</p></div><span class="bc-scope">UPLOAD / HOLD / SORT</span></div>
-  <div class="bc-upload-panel"><iframe id="bcUploadFrame" title="BLACKCELL private Upload Queue" loading="lazy"></iframe></div>
+  <div class="bc-upload-panel"><iframe id="bcUploadFrame" title="BLACKCELL private Upload Queue" loading="eager"></iframe></div>
  </section>
  <footer class="bc-footer"><span>BLACKCELL CORPORATION / CONTROL IS EVERYTHING</span><span>Owner-only verification · No automatic public publishing · Verified labels improve future AI suggestions</span></footer>
 </main>
