@@ -22,6 +22,13 @@ async function signOut(){
   try{await client?.auth.signOut({scope:'local'})}catch(_){}
   if(embedded)notify('blackcell-admin-workspace-signed-out');else location.replace('login.html');
 }
+function isDefiniteRejection(response){
+  // A denied/expired credential is different from a disconnected network.
+  // Keep explicit server-side denials fail-closed and end the local session.
+  const status=Number(response?.status)||0;
+  const code=String(response?.error?.code||'');
+  return status===401||status===403||code==='42501'||code==='PGRST301';
+}
 function pauseForTransport(){
   if(closed)return;
   // Fail closed visually, but don't destroy a valid session on a network error.
@@ -34,8 +41,9 @@ async function verifySession(){
   if(!embedded&&Date.now()-lastActivity>=idleLimit){await signOut();return;}
   verifying=true;
   try{
-    const {data,error}=await client.rpc('corp_code_status');
-    if(error){pauseForTransport();return;}
+    const result=await client.rpc('corp_code_status');
+    const {data,error}=result;
+    if(error){if(isDefiniteRejection(result))await signOut();else pauseForTransport();return;}
     if(data?.ok!==true||data?.verified!==true){await signOut();return;}
     if(verificationPaused){verificationPaused=false;gate.hidden=true;app.hidden=false;}
   }catch(_){pauseForTransport();}
@@ -46,8 +54,9 @@ async function extendSession(){
   if(!embedded&&Date.now()-lastActivity>=idleLimit){await signOut();return;}
   touching=true;lastTouch=Date.now();
   try{
-    const {data,error}=await client.rpc('corp_touch_session');
-    if(error){pauseForTransport();return;}
+    const result=await client.rpc('corp_touch_session');
+    const {data,error}=result;
+    if(error){if(isDefiniteRejection(result))await signOut();else pauseForTransport();return;}
     if(data?.ok!==true)await signOut();
   }catch(_){pauseForTransport()}
   finally{touching=false}
