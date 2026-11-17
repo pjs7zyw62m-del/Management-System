@@ -290,10 +290,24 @@ function init(){
  // Low-frequency discovery of newly uploaded photos from other BLACKCELL pages.
  // Runs only while the site remains open and the owner enabled automatic sorting.
  // Existing photo classifiers and the daily budget check prevent repeat paid work.
- const discovery=setInterval(()=>{
-  if(!owner||!enabled||paused||busy||!loaded||refreshInFlight||dailyCount()>=AUTO_LIMIT)return;
+ // Upload events refresh immediately. The fallback discovers uploads from
+ // other tabs. Hidden tabs must never generate unnecessary database traffic.
+ let discoveryAt=0;
+ const discoveryTick=()=>{
+  if(document.hidden||!owner||!enabled||paused||busy||!loaded||
+    refreshInFlight||dailyCount()>=AUTO_LIMIT)return;
+  if(Date.now()-discoveryAt<120000)return;
+  discoveryAt=Date.now();
   void refresh().then(schedule);
- },120000);
- window.addEventListener("pagehide",()=>{paused=true;clearTimeout(refreshTimer);clearInterval(discovery)});
+ };
+ const discovery=setInterval(discoveryTick,300000);
+ const activeDiscovery=()=>{if(!document.hidden)discoveryTick()};
+ document.addEventListener("visibilitychange",activeDiscovery);
+ window.addEventListener("focus",activeDiscovery);
+ window.addEventListener("pagehide",()=>{
+  paused=true;clearTimeout(refreshTimer);clearInterval(discovery);
+  document.removeEventListener("visibilitychange",activeDiscovery);
+  window.removeEventListener("focus",activeDiscovery);
+ });
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
