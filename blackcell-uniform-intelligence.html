@@ -8,10 +8,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="BLACKCELL INTELLIGENCE">
 <title>BLACKCELL | Uniform Intelligence Center</title>
-<link rel="stylesheet" href="blackcell-uniform-intelligence.css?v=20261117-pipeline-r1">
+<link rel="stylesheet" href="blackcell-uniform-intelligence.css?v=20261117-learning-video-r1">
 <link rel="stylesheet" href="blackcell-uniform-approval.css?v=20261117-integrated-r1">
 <script src="corp-config.js" defer></script>
-<script type="module" src="blackcell-uniform-intelligence.js?v=20261117-pipeline-r2"></script>
+<script type="module" src="blackcell-uniform-intelligence.js?v=20261117-learning-video-r1"></script>
 </head>
 <body>
 <div class="bc-shell">
@@ -45,6 +45,7 @@
   <button type="button" class="bc-tab bc-stage-tab" data-tab="review" aria-selected="false">✓ Review & Approve <span id="bcReviewTabCount" class="bc-stage-count">0</span></button>
   <span class="bc-flow-arrow" aria-hidden="true">›</span>
   <button type="button" class="bc-tab bc-stage-tab" data-tab="completed" aria-selected="false">▣ Completed Inventory <span id="bcCompletedTabCount" class="bc-stage-count">0</span></button>
+  <button type="button" class="bc-tab" data-tab="learning" aria-selected="false">◈ AI Learning</button>
   <button type="button" class="bc-tab" data-tab="atlas" aria-selected="false">◎ Uniform Reference Atlas</button>
   <button type="button" class="bc-tab" data-tab="gunner" aria-selected="false">✦ Gunner Command</button>
   <button type="button" class="bc-tab" data-tab="uploads" aria-selected="false">⇧ Upload Media</button>
@@ -135,6 +136,9 @@
      </div>
      <img id="bcFrameStillPreview" alt="Selected private video still to be analyzed" hidden>
      <button type="button" id="bcAnalyzeVideoFrame" class="bc-btn bc-btn-primary" disabled>✦ Analyze This Frame with AI</button>
+      <button type="button" id="bcScanVideoTimeline" class="bc-btn bc-btn-outline" disabled>◷ Scan 4 Video Moments</button>
+      <p id="bcTimelineStatus" class="bc-video-scan-status" role="status" aria-live="polite">Optional timeline sampling for your own playable videos. Requires one explicit approval, consumes up to four paid frame requests, and cannot read Bunny Stream embedded players.</p>
+      <div id="bcTimelineResults" class="bc-timeline-results" aria-label="Unverified timeline AI suggestions"></div>
      <small>One frame only. Your original video stays private. External analysis requires your consent and may use API credits. Results are drafts, not verified labels.</small>
     </div>
     <h3 id="bcTeachTitle">No reference selected</h3>
@@ -172,6 +176,15 @@
     </form>
    </section>
   </div>
+ </section>
+ <section class="bc-page" id="bcPageLearning" hidden>
+  <div class="bc-section-head"><div><h2>AI Learning &amp; Quality Dashboard</h2><p>Real measurements from your protected catalog and verified references. A stored example or confidence label is not proof of model accuracy.</p></div><span class="bc-scope">OWNER-ONLY · LIVE RECORDS</span></div>
+  <section id="bcLearningKpis" class="bc-learning-kpis" aria-label="Learning and classification statistics"></section>
+  <div class="bc-learning-split">
+    <section class="bc-panel bc-learning-panel"><div class="bc-panel-top"><strong>LEARNING EFFECTIVENESS</strong></div><div id="bcLearningDetails" class="bc-learning-content" role="status" aria-live="polite">Loading correction memory…</div></section>
+    <section class="bc-panel bc-learning-panel"><div class="bc-panel-top"><strong>REFERENCE COVERAGE &amp; GAPS</strong></div><div id="bcLearningCoverage" class="bc-learning-content">Checking reference coverage…</div></section>
+  </div>
+  <p class="bc-note">This dashboard measures examples, reference use, changes to classifications and coverage. True accuracy requires blind tests on a separate verified evaluation set. It does not alter publication approval, media files or training references.</p>
  </section>
  <section class="bc-page" id="bcPageAtlas" hidden>
   <div class="bc-section-head"><div><h2>Uniform Reference Atlas</h2><p>Verified reference examples, global country distinctions, and your own corrections. The AI reads these as labeled guidance, not as unquestionable proof.</p></div><span class="bc-scope">CORRECTION MEMORY</span></div>

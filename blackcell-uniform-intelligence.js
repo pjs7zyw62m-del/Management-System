@@ -11,7 +11,7 @@ const SOURCES=[
  ["post","corp_social_posts","created_at","id,author_id,body,kind,created_at"],
  ["saved","corp_social_tiktok_saves","saved_at","id,user_id,title,military_branch,creator_handle,saved_at"]
 ];
-const data={user:null,owner:false,items:[],learning:[],ai:[],page:"catalog",selected:null,frame:0,blob:"",previewGeneration:0,loading:false,saving:false,videoFrame:null,videoSuggestions:new Map(),videoBusy:false,streamPlayback:null,memoryLoaded:false,autopilot:null};
+const data={user:null,owner:false,items:[],learning:[],ai:[],page:"catalog",selected:null,frame:0,blob:"",previewGeneration:0,loading:false,saving:false,videoFrame:null,videoSuggestions:new Map(),videoBusy:false,streamPlayback:null,memoryLoaded:false,autopilot:null,videoUsageToday:null,timelineFrames:new Map()};
 let gunnerCommand=null,publicationReview=null,publicationReviewLoading=false;
 const index=SOURCES.map(([type,table,order,fields])=>({type,table,order,fields,skip:0,done:false,error:""}));
 const COUNTRY=typeof Intl.DisplayNames==="function"?new Intl.DisplayNames(["en"],{type:"region"}):null;
@@ -212,7 +212,7 @@ function switchTab(page,keepSelection=false){
  }
  data.page=page;
  for(const b of document.querySelectorAll(".bc-tab"))b.setAttribute("aria-selected",String(b.dataset.tab===page));
- for(const n of ["catalog","teach","atlas","gunner","review","uploads"])
+ for(const n of ["catalog","teach","learning","atlas","gunner","review","uploads"])
   $("bcPage"+n[0].toUpperCase()+n.slice(1)).hidden=!(n===page||(n==="catalog"&&page==="completed"));
  if(page==="catalog"||page==="completed"){
   const completed=page==="completed";
@@ -229,6 +229,7 @@ function switchTab(page,keepSelection=false){
   renderTechQueue();fillForm();
  }
  if(data.selected?.type==="stream_video")renderStreamEmbed();
+ if(page==="learning")renderLearningDashboard();
  if(page==="atlas"){drawAtlas();drawPatterns()}
  if(page==="gunner")gunnerCommand?.open();
  if(page==="review")void ensurePublicationReview();
@@ -256,10 +257,13 @@ async function loadMemory(){
  if(!data.owner)return;
  const [r,a]=await Promise.all([
   db.from("corp_uniform_training_references").select("*").eq("owner_id",data.user.id).order("updated_at",{ascending:false}).limit(1000),
-  db.from("corp_social_ai_analysis").select("asset_id,status,country_code,military_branch,military_category,uniform_type,camouflage_pattern,confidence,tags,notes,original_suggestion").eq("owner_id",data.user.id).limit(1000)
+  db.from("corp_social_ai_analysis").select("asset_id,status,country_code,military_branch,military_category,uniform_type,camouflage_pattern,confidence,tags,notes,original_suggestion,learned_from_count,model,attempts,updated_at").eq("owner_id",data.user.id).limit(1000)
  ]);
  if(r.error)throw Error(r.error.message);
  data.learning=r.data||[];data.ai=a.data||[];data.memoryLoaded=!a.error;
+ // Optional usage counters must never block normal media loading.
+ const usage=await db.from("corp_uniform_video_ai_usage").select("requests").eq("owner_id",data.user.id).eq("usage_day",new Date().toISOString().slice(0,10)).maybeSingle();
+ data.videoUsageToday=usage.error?null:Number(usage.data?.requests||0);
  if(a.error)text("bcCatalogMeta","AI analysis source unavailable: "+a.error.message);
  render();
 }
@@ -427,11 +431,13 @@ async function preview(item){
 }
 function fact(label,value){const box=E("div","bc-fact");box.append(E("small","",label),E("b","",value||"—"));return box}
 function select(item){
- data.selected=item;data.frame=0;data.videoFrame=null;
+ data.selected=item;data.frame=0;data.videoFrame=null;data.timelineFrames.clear();
+ $("bcTimelineResults").replaceChildren();text("bcTimelineStatus","Optional scan: up to 4 video frames, only after you approve an external AI request.");
  const videoCanUse=canTeach(item)&&item.owner===data.user?.id&&!item.adult&&item.kind==="video";
  $("bcVideoFrameControls").hidden=!videoCanUse;
  $("bcCaptureFrame").disabled=!(videoCanUse&&item.type==="asset");
  $("bcAnalyzeVideoFrame").disabled=!videoCanUse;
+ $("bcScanVideoTimeline").disabled=!(videoCanUse&&item.type==="asset");
  $("bcFrameStillPreview").hidden=true;$("bcFrameStillPreview").removeAttribute("src");$("bcFrameStillInput").value="";
  text("bcFrameStatus",item.type==="stream_video"?"Loading secure video player… You can choose a still image taken from any frame.":"Pause the video at the frame you want to classify, then select Capture Current Frame.");
  for(const n of $("bcInventory").querySelectorAll("[data-item-key]"))n.setAttribute("aria-selected",String(n.dataset.itemKey===item.key));
@@ -511,12 +517,76 @@ function drawPatterns(){
  }
  root.append(lessons);
 }
+// Read-only measurements. This never implies image-embedding or weight training.
+function renderLearningDashboard(){
+ const kpis=$("bcLearningKpis"),details=$("bcLearningDetails"),coverage=$("bcLearningCoverage");
+ if(!kpis||!details||!coverage)return;
+ kpis.replaceChildren();details.replaceChildren();coverage.replaceChildren();
+ if(!data.memoryLoaded){
+  details.append(E("p","bc-note","Loading owner-only AI analysis and reference data…"));
+  coverage.append(E("p","bc-note","Waiting for catalog records and correction memory."));
+  return;
+ }
+ const verified=data.learning.filter(r=>r.reference_status==="verified"),drafts=data.learning.filter(r=>r.reference_status!=="verified");
+ const analyzed=data.ai.length,used=data.ai.filter(x=>Number(x.learned_from_count)>0).length;
+ const totalConsultations=data.ai.reduce((n,x)=>n+Math.max(0,Number(x.learned_from_count)||0),0);
+ const videoRefs=verified.filter(r=>r.source_kind==="stream_video"||data.items.some(i=>i.id===r.source_id&&i.kind==="video")).length;
+ const changes=[];
+ for(const ref of verified){
+  if(ref.source_kind!=="asset")continue;
+  const record=data.ai.find(x=>x.asset_id===ref.source_id),original=record?.original_suggestion;
+  if(!original||typeof original!=="object")continue;
+  const pairs=[["country_code","country_code"],["branch","military_branch"],["category","military_category"],["uniform_name","uniform_type"],["camouflage_pattern","camouflage_pattern"]];
+  const differing=pairs.filter(([left,right])=>String(ref[left]||"").trim().toLowerCase()!==String(original[right]||"").trim().toLowerCase());
+  if(differing.length)changes.push({ref,fields:differing.map(x=>x[0])});
+ }
+ const metric=(value,name,note)=>{
+  const card=E("article","bc-learning-metric");
+  card.append(E("strong","",value),E("span","",name),E("small","",note));
+  kpis.append(card);
+ };
+ metric(verified.length,"VERIFIED REFERENCES","Owner-confirmed training examples");
+ metric(used+" / "+analyzed,"ANALYSES WITH RECALL","Saved analyses using earlier examples");
+ metric(changes.length,"CHANGED IDENTIFICATIONS","Verified references differing from original AI output");
+ metric(videoRefs,"VERIFIED VIDEO FRAMES","Timestamped reference examples");
+ metric(data.videoUsageToday===null?"—":data.videoUsageToday,"VIDEO AI REQUESTS TODAY","UTC day · server-logged requests");
+ metric("NOT MEASURED","BLIND-TEST ACCURACY","Needs independent held-out evaluation");
+ const metricRow=(label,value)=>{
+  const row=E("div","bc-learning-detail-row");
+  row.append(E("span","",label),E("strong","",value));
+  details.append(row);
+ };
+ metricRow("AI analysis records",String(analyzed));
+ metricRow("Verified / draft reference entries",verified.length+" / "+drafts.length);
+ metricRow("Recorded reference consultations",String(totalConsultations));
+ metricRow("Saved original AI suggestions",String(data.ai.filter(a=>a.original_suggestion&&typeof a.original_suggestion==="object").length));
+ metricRow("Confirmed references with changed fields",String(changes.length));
+ metricRow("Measured predictive accuracy","Not available");
+ const note=E("div","bc-learning-note");
+ note.append(E("strong","","WHAT THESE NUMBERS MEAN"),E("p","","Verified examples can inform future classifications. Changes are counted by comparing human-verified metadata with a saved original AI suggestion, when available. This is not an error rate or proof that the model is retraining its weights."));
+ details.append(note);
+ const worlds=Object.entries(W).map(([world,name])=>({world,name,count:verified.filter(r=>r.world===world).length})).filter(x=>x.world!=="unsorted").sort((a,b)=>b.count-a.count);
+ const max=Math.max(1,...worlds.map(x=>x.count));
+ for(const w of worlds){
+  const row=E("div","bc-learning-world-row");
+  row.append(E("span","",w.name));
+  const bar=E("div","bc-learning-bar"),fill=E("div","bc-learning-bar-fill");
+  fill.style.width=(w.count/max*100).toFixed(2)+"%";bar.append(fill);
+  row.append(bar,E("strong","",w.count));coverage.append(row);
+ }
+ const noCountry=verified.filter(r=>!r.country_code).length;
+ const noUniform=verified.filter(r=>!r.uniform_name).length;
+ const noCamo=verified.filter(r=>r.world==="military"&&!r.camouflage_pattern).length;
+ const summary=E("div","bc-learning-note");
+ summary.append(E("strong","","GAPS IN VERIFIED METADATA"),E("p","","No confirmed country: "+noCountry+" · No uniform designation: "+noUniform+" · Military references without named camouflage: "+noCamo+"."),E("p","","No named pattern can also be correct for plain-color uniforms. Avoid inferring labels without visual evidence."));
+ coverage.append(summary);
+}
 function render(){
  if(data.page==="teach"&&!data.saving&&data.selected&&flowStage(data.selected)!=="teach"){
   const old=data.selected;selectNextTechItem();fillForm();
   text("bcTechQueueStatus",old.title+" moved out of Tech AI. Active queue refreshed.");
  }
- stats();list();renderTechQueue();drawAtlas();drawPatterns();
+ stats();list();renderTechQueue();renderLearningDashboard();drawAtlas();drawPatterns();
 }
 function formBlank(){
  for(const id of ["bcTrainCountry","bcTrainUniform","bcTrainPattern","bcTrainEra","bcTrainEvidence","bcTrainLookalikeCountry","bcTrainLookalikeBranch","bcTrainDifferences","bcTrainTags"])$(id).value="";
@@ -624,6 +694,70 @@ async function analyzeVideoFrame(){
   }
  }catch(err){text("bcFrameStatus","Video AI unavailable: "+String(err.message||err).slice(0,210)+". Existing video and references were not changed.")}
  finally{data.videoBusy=false;$("bcAnalyzeVideoFrame").disabled=!canVideoAnalyze(data.selected)}
+}
+// Opt-in timeline sampling: browser-decoded video frames, no automatic verification or publication.
+async function seekPreviewForScan(player,seconds){
+ if(!Number.isFinite(player.duration)||player.duration<=0||!player.seekable?.length)throw Error("Video cannot be seeked here. Choose a still instead.");
+ if(Math.abs(player.currentTime-seconds)<.1&&player.readyState>=2)return;
+ await new Promise((resolve,reject)=>{
+  let timer;
+  const clean=()=>{clearTimeout(timer);player.removeEventListener("seeked",done);player.removeEventListener("error",fail)};
+  const done=()=>{clean();resolve()};
+  const fail=()=>{clean();reject(Error("Cannot seek to "+fmtTime(seconds)))};
+  timer=setTimeout(()=>{clean();reject(Error("Seek timed out; use a shorter local video."))},12000);
+  player.addEventListener("seeked",done,{once:true});player.addEventListener("error",fail,{once:true});
+  try{player.currentTime=seconds}catch(err){clean();reject(err)}
+ });
+ if(player.readyState<2)throw Error("This frame did not decode.");
+}
+function renderTimelineResults(item,results){
+ const host=$("bcTimelineResults");host.replaceChildren();
+ for(const frame of results){
+  const row=E("button","bc-timeline-result");row.type="button";
+  row.append(E("strong","",fmtTime(frame.seconds)),E("span","",[frame.analysis.military_branch||"Unspecified",frame.analysis.camouflage_pattern||"Pattern unknown"].join(" · ")),E("small","","REVIEW UNVERIFIED"));
+  row.onclick=()=>{
+   if(data.selected?.key!==item.key)return;
+   const image=data.timelineFrames.get(item.key+":"+frame.seconds);if(!image)return;
+   setVideoStill(image,frame.seconds,"sampled video frame");fillForm(ref(item,frame.seconds));
+   $("bcTrainConfirmed").checked=false;
+   text("bcFrameStatus","Sample "+fmtTime(frame.seconds)+" selected. Review and correct before saving; nothing was published.");
+  };
+  host.append(row);
+ }
+}
+async function scanVideoTimeline(){
+ const item=data.selected;if(data.videoBusy||!canVideoAnalyze(item))return;
+ if(item.type!=="asset"){text("bcTimelineStatus","Bunny Stream is cross-origin; this feature currently needs a directly playable upload.");return}
+ const player=$("bcTeachPreview").querySelector("video");
+ if(!player||!Number.isFinite(player.duration)||player.duration<=0){text("bcTimelineStatus","Start video playback to load metadata, then try Scan 4 Video Moments.");return}
+ const duration=Math.min(player.duration,86400);
+ const times=[...new Set([.15,.38,.62,.85].map(x=>Math.max(0,Math.floor(Math.min(duration-0.15,duration*x)))))];
+ if(!times.length)return;
+ if(!confirm("Send up to "+times.length+" sampled video frames for private external AI analysis? This may consume "+times.length+" paid frame requests (daily server limit applies). The original video is not uploaded, and nothing is approved or published."))return;
+ data.videoBusy=true;$("bcAnalyzeVideoFrame").disabled=true;$("bcScanVideoTimeline").disabled=true;
+ const oldTime=player.currentTime,results=[];player.pause();
+ $("bcTimelineResults").replaceChildren();
+ try{
+  for(let i=0;i<times.length;i++){
+   if(data.selected?.key!==item.key)throw Error("Selected media changed.");
+   const seconds=times[i];
+   text("bcTimelineStatus","Scanning "+(i+1)+"/"+times.length+" at "+fmtTime(seconds)+"…");
+   await seekPreviewForScan(player,seconds);
+   const jpeg=encodeStill(player,player.videoWidth,player.videoHeight);
+   const r=await db.functions.invoke("blackcell-military-ai",{body:{action:"analyze_frame",source_kind:item.type,source_id:item.id,frame_seconds:seconds,preview_image:jpeg}});
+   if(r.error){let msg=r.error.message;try{msg=(await r.error.context?.json?.())?.error||msg}catch{}throw Error(msg)}
+   if(!r.data?.ok||!r.data.analysis)throw Error(r.data?.error||"AI returned no classification");
+   data.videoSuggestions.set(item.key+":"+seconds,r.data);data.timelineFrames.set(item.key+":"+seconds,jpeg);
+   results.push({seconds,analysis:r.data.analysis});renderTimelineResults(item,results);
+  }
+  text("bcTimelineStatus",results.length+" sampled frames analyzed. Select timestamps to review. All suggestions remain unverified.");
+ }catch(err){
+  text("bcTimelineStatus","Scanned "+results.length+"/"+times.length+" frames. Stopped: "+String(err?.message||err).slice(0,170)+". Existing results remain available.");
+ }finally{
+  if(data.selected?.key===item.key){try{player.currentTime=oldTime}catch{}}
+  data.videoBusy=false;$("bcAnalyzeVideoFrame").disabled=!canVideoAnalyze(data.selected);
+  $("bcScanVideoTimeline").disabled=!(canVideoAnalyze(data.selected)&&data.selected.type==="asset");
+ }
 }
 function drawPatternMatches(item){
  const root=$("bcPatternMatches");
@@ -828,6 +962,7 @@ function init(){
  $("bcCaptureFrame").onclick=()=>void captureCurrentFrame();
  $("bcFrameStillInput").onchange=()=>void pickVideoStill($("bcFrameStillInput").files?.[0]);
  $("bcAnalyzeVideoFrame").onclick=()=>void analyzeVideoFrame();
+ $("bcScanVideoTimeline").onclick=()=>void scanVideoTimeline();
  $("bcSaveDraft").onclick=()=>void save("draft");
  $("bcTrainForm").onsubmit=ev=>{ev.preventDefault();void save("verified")};
  $("bcDeleteReference").onclick=()=>void removeRef();
