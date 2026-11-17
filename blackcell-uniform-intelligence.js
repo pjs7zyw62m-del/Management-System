@@ -38,6 +38,16 @@ function labels(item){const r=ref(item),a=ai(item);return{world:r?.world||worldT
  category:r?.category||a?.military_category||item.category,uniform:r?.uniform_name||a?.uniform_type||"",
  memory:r?.reference_status||a?.status||"none",confidence:a?.confidence||"unverified"}}
 const canTeach=x=>data.owner&&x&&(x.type==="asset"||x.type==="stream_video")&&(x.kind==="photo"||x.kind==="video")&&x.status!=="rejected";
+// Stage tabs are read-only views of persisted classification and review status, not media copies.
+const pipelineMedia=item=>!!item&&["asset","stream_video"].includes(item.type)&&["photo","video"].includes(item.kind);
+function flowStage(item){
+ if(!pipelineMedia(item))return "outside";
+ if(["approved","rejected"].includes(item.status))return "completed";
+ const classification=classificationStage(item);
+ if(classification==="verified")return "review";
+ if(classification==="ai_suggested"||classification==="needs_verification")return "teach";
+ return "catalog";
+}
 
 const BC_AUTOPILOT_STATE="BLACKCELL_AUTOPILOT_STATE_V1";
 const BC_AUTOPILOT_COMMAND="BLACKCELL_AUTOPILOT_COMMAND_V1";
@@ -71,7 +81,7 @@ function receiveAutopilot(event){
   dailyMax:20};
  updateAutopilot();
  if(before?.busy&&!x.busy&&data.owner){
-  void loadMemory().catch(()=>{});
+  void Promise.allSettled([loadCatalog(true),loadMemory()]);
   if(gunnerCommand)void gunnerCommand.refresh();
  }
 }
@@ -186,7 +196,7 @@ async function ensurePublicationReview(){
  }finally{publicationReviewLoading=false}
 }
 
-function switchTab(page){
+function switchTab(page,keepSelection=false){
  if(!data.owner&&page!=="uploads")return;
  if(page==="teach"&&data.selected?.kind==="video"&&data.selected?.type==="asset"){
   const source=$("bcPreview").querySelector("video"),target=$("bcTeachPreview").querySelector("video");
@@ -200,8 +210,25 @@ function switchTab(page){
  }
  data.page=page;
  for(const b of document.querySelectorAll(".bc-tab"))b.setAttribute("aria-selected",String(b.dataset.tab===page));
- for(const n of ["catalog","teach","atlas","gunner","review","uploads"])$("bcPage"+n[0].toUpperCase()+n.slice(1)).hidden=n!==page;
- if(page==="teach")fillForm();
+ for(const n of ["catalog","teach","atlas","gunner","review","uploads"])
+  $("bcPage"+n[0].toUpperCase()+n.slice(1)).hidden=!(n===page||(n==="catalog"&&page==="completed"));
+ if(page==="catalog"||page==="completed"){
+  const completed=page==="completed";
+  text("bcInventoryTitle",completed?"Completed Inventory":"Content Inventory");
+  text("bcInventoryDescription",completed?
+   "Approved and rejected photos and videos are archived here after publication review. Records stay in their protected source libraries; this is not a second copy.":
+   "Incoming photos and videos awaiting Tech AI. Analyzed records leave this queue automatically. Nothing is deleted.");
+  text("bcInventoryListTitle",completed?"COMPLETED RECORDS":"AWAITING TECH AI");
+  $("bcFilterStatus").value="all";
+  list();
+ }
+ if(page==="teach"){
+  if(!keepSelection&&flowStage(data.selected)!=="teach"){
+   const next=data.items.find(item=>flowStage(item)==="teach");
+   if(next)select(next);
+  }
+  renderTechQueue();fillForm();
+ }
  if(data.selected?.type==="stream_video")renderStreamEmbed();
  if(page==="atlas"){drawAtlas();drawPatterns()}
  if(page==="gunner")gunnerCommand?.open();
