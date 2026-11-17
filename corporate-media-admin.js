@@ -9,7 +9,7 @@ const $=id=>document.getElementById(id);
 const state={user:null,member:null,assets:[],bunnyWaitingCount:0};
 const client=corporateClient();
 const bucket=client.storage.from('corp-social-media');
-let processor=null,verifying=false,expires=false,toastTimeout=0;
+let verifying=false,expires=false,toastTimeout=0;
 const regionCodes=[...new Set("US CN GB CA AU FR DE IN JP KR BR RU UA IT ES MX ZA EG NG KE TR IL PK ID PH TH VN NZ SE NO FI DK NL BE PL CZ GR RO CH AT SG MY AR CL CO PE AE SA QA JO IQ IR AF BD LK NP MM KH LA TW KP MN KZ UZ GE AM AZ LT LV EE RS HR SI SK HU BG PT IE IS MA DZ TN LY ET GH CM CI SN UG TZ RW ZW ZM AO MZ NA BW MW MG CD CG GA GQ SO SD SS YE OM KW BH CY MT LU AL BA ME MK MD BY AD AE AG AI AO AQ AS AW AX BB BF BI BJ BL BM BN BO BQ BS BT BV BZ CC CD CF CG CI CK CL CM CO CR CU CV CW CX CY DJ DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO GA GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT ID IE IM IO IS JE JM JO KE KG KH KI KM KN KP KW KY KZ LA LB LC LI LR LS LT LU LV LY MA MC MD ME MF MG MH ML MM MO MP MQ MR MS MT MU MV MX MY MZ NC NE NF NG NI NL NO NP NR NU OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR ST SV SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UG UM UY UZ VA VC VE VG VI VU WF WS YT ZA ZM ZW".split(/\s+/))];
 const regions=typeof Intl.DisplayNames==='function'?new Intl.DisplayNames(['en'],{type:'region'}):null;
 
@@ -236,29 +236,12 @@ function setupIcloudTest(){
 
 /* On-demand modules ensure the command center loads without querying dormant
  * legacy providers or opening the image-heavy review and upload workers. */
-let reviewReady=false,stagingReady=false,bunnyReady=false,diagnosticReady=false,legacyReady=false;
+let bunnyReady=false,diagnosticReady=false,legacyReady=false;
 let workspace=null,bootDuration=0;
 async function enterWorkspace(tab){
  if(tab==='review'){
-  if(reviewReady)return;
-  await loadAssets();
-  const [{createBlackcellMediaProcessor},{setupBlackcellBunnyReview}]=await Promise.all([
-   import('./corporate-media-processor.js?v=20261117-ai-autosort-r1'),
-   import('./corporate-bunny-review.js?v=20261112-command1')
-  ]);
-  if(!processor){
-   processor=createBlackcellMediaProcessor({client,bucket,state,refresh:loadAssets,
-    mediaUrl:()=>'',toast,openAIReview:makePreview});
-   processor.setup();
-   // The reset control is in the Advanced / Danger Zone and stays disabled
-   // until the protected, double-confirmation handler has been registered.
-   const reset=$('bcMediaReset');if(reset)reset.disabled=false;
-  }
-  if(!stagingReady){
-   setupBlackcellBunnyReview({client,state,refresh:loadAssets,toast});
-   stagingReady=true;
-  }
-  reviewReady=true;
+  // Review & Approve is now native to Uniform Intelligence.
+  location.assign('blackcell-uniform-intelligence.html?v=20261117-review-r12#review');
   return;
  }
  if(tab==='bunny'){
@@ -283,10 +266,7 @@ async function enterWorkspace(tab){
  }
  if(tab==='legacy'){
   if(legacyReady)return;
-  // The reset control belongs in Advanced Settings, but the old protected
-  // approval controller still owns its two-confirmation event handler.
-  // Ensure that controller is initialized before allowing a reset.
-  await enterWorkspace('review');
+  // Legacy storage settings remain available without the retired approval controller.
   const {setupBlackcellBulk}=await import('./corporate-b2-bulk.js?v=20261112-diag1');
   setupBlackcellBulk({client,toast});
   setupIcloudTest();
@@ -312,7 +292,6 @@ async function boot(){
    onEnter:enterWorkspace,
    onRefresh:async()=>{
     await refreshCounts();
-    if(reviewReady)await processor?.refresh();
    }
   });
   $('bcMediaAdminApp').hidden=false;$('bcAdminGate').hidden=true;
