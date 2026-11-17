@@ -58,7 +58,7 @@
      <h3 id="bcItemTitle">Select a record</h3>
      <p id="bcItemSource" class="bc-secondary">Your catalog includes all accessible media records from connected BLACKCELL sources.</p>
      <div id="bcItemFacts" class="bc-facts"></div>
-     <div class="bc-inspect-actions"><button type="button" id="bcTeachSelected" class="bc-btn bc-btn-primary" disabled>Teach AI · Keep Private</button><button type="button" id="bcOpenAdmin" class="bc-btn bc-btn-outline">Review &amp; Publish</button></div>
+     <div class="bc-inspect-actions"><button type="button" id="bcTeachSelected" class="bc-btn bc-btn-primary" disabled>Teach AI · Keep Private</button><button type="button" id="bcAnalyzeSelected" class="bc-btn bc-btn-outline" disabled>AI Suggest Uniform</button><button type="button" id="bcOpenAdmin" class="bc-btn bc-btn-outline">Review &amp; Publish</button></div>
      <p class="bc-note">Adding a training reference does not approve or publish the media. Only the existing Media Administration workflow can change publication status.</p>
     </div>
    </section>
@@ -102,6 +102,11 @@
  <section class="bc-page" id="bcPageAtlas" hidden>
   <div class="bc-section-head"><div><h2>Uniform Reference Atlas</h2><p>Verified reference examples, global country distinctions, and your own corrections. The AI reads these as labeled guidance, not as unquestionable proof.</p></div><span class="bc-scope">CORRECTION MEMORY</span></div>
   <div class="bc-atlas-totals" id="bcAtlasStats"></div>
+ <div class="bc-panel bc-pattern-reference">
+  <div class="bc-panel-top"><strong>CAMOUFLAGE REFERENCE INDEX · INTERNATIONAL</strong><a href="https://en.wikipedia.org/wiki/List_of_military_clothing_camouflage_patterns" target="_blank" rel="noopener noreferrer">Source / Wikipedia</a></div>
+  <p class="bc-note" style="margin:12px 15px 7px">Starter directory summarized from Wikipedia. Patterns may be shared, copied or adapted across national forces; they are clues, not proof of the wearer's country or branch. Each visual claim should be confirmed against markings and a reliable source.</p>
+  <div id="bcPatternReference" class="bc-pattern-list"></div>
+ </div>
   <div class="bc-panel bc-atlas-panel"><div class="bc-panel-top"><strong>REFERENCE KNOWLEDGE BASE</strong><span id="bcAtlasCount">—</span></div><div id="bcAtlas" class="bc-atlas"></div></div>
  </section>
  <section class="bc-page" id="bcPageUploads" hidden>
