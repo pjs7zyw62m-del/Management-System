@@ -27,7 +27,7 @@ export function createWorldAlgorithm({client,getUser,getCurrent,dialog,image,vid
   more.setAttribute('aria-pressed',String(reaction==='more'));
   less.setAttribute('aria-pressed',String(reaction==='less'));
   more.disabled=less.disabled=changing;
-  note(loaded&&settings?.enabled?'PRIVATE ADAPTIVE RECOMMENDATIONS':'Enable your private recommendations in Network');
+  if(status&&!status.textContent)note(loaded&&settings?.enabled?'PRIVATE ADAPTIVE RECOMMENDATIONS':'Enable your private recommendations in Network');
  }
  async function load(){
   const uid=getUser()?.id;
@@ -109,7 +109,7 @@ export function createWorldAlgorithm({client,getUser,getCurrent,dialog,image,vid
   }).catch(()=>{});
  }
  function open(a){
-  resetTracking();active=a;paint(a);
+  resetTracking();active=a;if(status)status.textContent='';paint(a);
   if(!allowed(a)||!passiveOn())return;
   if(a.kind==='photo'){
    // Only a decoded, visible image starts the 15-second attention clock.
