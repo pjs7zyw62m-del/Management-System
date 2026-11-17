@@ -11,7 +11,7 @@ const SOURCES=[
  ["post","corp_social_posts","created_at","id,author_id,body,kind,created_at"],
  ["saved","corp_social_tiktok_saves","saved_at","id,user_id,title,military_branch,creator_handle,saved_at"]
 ];
-const data={user:null,owner:false,items:[],learning:[],ai:[],page:"catalog",selected:null,frame:0,blob:"",previewGeneration:0,loading:false,saving:false};
+const data={user:null,owner:false,items:[],learning:[],ai:[],page:"catalog",selected:null,frame:0,blob:"",previewGeneration:0,loading:false,saving:false,videoFrame:null,videoSuggestions:new Map(),videoBusy:false};
 let gunnerCommand=null;
 const index=SOURCES.map(([type,table,order,fields])=>({type,table,order,fields,skip:0,done:false,error:""}));
 const COUNTRY=typeof Intl.DisplayNames==="function"?new Intl.DisplayNames(["en"],{type:"region"}):null;
@@ -110,6 +110,11 @@ function list(){
 }
 function clearPreview(){
  ++data.previewGeneration;
+ data.videoFrame=null;
+ $("bcFrameStillPreview").hidden=true;$("bcFrameStillPreview").removeAttribute("src");$("bcFrameStillInput").value="";
+ for(const box of ["bcPreview","bcTeachPreview"]){
+  for(const frame of $(box).querySelectorAll("iframe")){frame.src="about:blank"}
+ }
  if(data.blob){URL.revokeObjectURL(data.blob);data.blob=""}
  for(const id of ["bcPreview","bcTeachPreview"]){const target=$(id);for(const v of target.querySelectorAll("video")){v.pause();v.removeAttribute("src");v.load()}target.replaceChildren()}
 }
@@ -118,7 +123,29 @@ function placeholder(s){
 }
 async function preview(item){
  clearPreview();const seq=data.previewGeneration;
- if(item.type!=="asset"){placeholder(item.kind==="video"?"Video record indexed; open BLACKCELL Tube for playback":"Catalog record has no attached media");return}
+ if(item.type==="stream_video"){
+  placeholder("Opening authorized BLACKCELL Tube stream…");
+  try{
+   const r=await db.functions.invoke("blackcell-video-stream-api",{body:{action:"play",catalogId:item.id}});
+   if(r.error){let details=r.error.message;try{const b=await r.error.context?.json?.();details=b?.error||details}catch{}
+    throw Error(details==="video_still_processing"?"Video is still processing. Try Refresh after encoding completes.":details)}
+   if(!r.data?.ok||typeof r.data.url!=="string"||!/^https:\/\/player\.mediadelivery\.net\/embed\//.test(r.data.url))
+    throw Error("Secure streaming URL is not available.");
+   if(seq!==data.previewGeneration||data.selected?.key!==item.key)return;
+   for(const id of ["bcPreview","bcTeachPreview"]){
+    const frame=document.createElement("iframe");
+    frame.title="Secure BLACKCELL Tube playback";frame.src=r.data.url;frame.referrerPolicy="no-referrer";
+    frame.allow="autoplay; encrypted-media; picture-in-picture; fullscreen";
+    frame.allowFullscreen=true;frame.loading="lazy";
+    $(id).replaceChildren(frame);
+   }
+   text("bcFrameStatus","BLACKCELL Tube playback uses a secure embedded player. Browser protection prevents automatic still capture here; pause at a desired timestamp, take a screenshot, choose that still below, then analyze it.");
+  }catch(err){
+   if(seq===data.previewGeneration)placeholder("Bunny Stream preview unavailable: "+String(err.message||err).slice(0,130));
+  }
+  return;
+ }
+ if(item.type!=="asset"){placeholder("Catalog record has no attached media");return}
  placeholder("Opening protected file…");
  try{
   let url="";
@@ -140,14 +167,40 @@ async function preview(item){
   if(url.startsWith("blob:"))data.blob=url;
   for(const id of ["bcPreview","bcTeachPreview"]){
    const node=document.createElement(item.kind==="video"?"video":"img");node.src=url;
-   if(item.kind==="video"){node.controls=true;node.preload="metadata";node.playsInline=true}else node.alt="Protected BLACKCELL image";
+   if(item.kind==="video"){
+    node.controls=true;node.preload="metadata";node.playsInline=true;node.crossOrigin=url.startsWith("blob:")?"":"anonymous";
+    node.addEventListener("play",()=>{const other=id==="bcPreview"?"bcTeachPreview":"bcPreview";
+      const peer=$(other).querySelector("video");if(peer&&!peer.paused)peer.pause()});
+    if(id==="bcTeachPreview"){
+     const sync=()=>{
+      if(data.selected?.key!==item.key)return;
+      const seconds=Math.max(0,Math.floor(node.currentTime||0));
+      if(seconds!==data.frame){
+       data.frame=seconds;$("bcTrainTime").value=fmtTime(seconds);
+       data.videoFrame=null;$("bcFrameStillPreview").hidden=true;
+       $("bcAnalyzeVideoFrame").disabled=!canVideoAnalyze(item);
+       drawPatternMatches(item);
+      }
+      text("bcFrameStatus","Paused/selected frame at "+fmtTime(seconds)+
+       (Number.isFinite(node.duration)?" / "+fmtTime(node.duration):"")+
+       ". Capture current frame, then request AI suggestions.");
+     };
+     node.addEventListener("pause",sync);node.addEventListener("seeked",sync);
+    }
+   }else node.alt="Protected BLACKCELL image";
    $(id).replaceChildren(node);
   }
  }catch(err){if(seq===data.previewGeneration)placeholder("Preview unavailable · "+String(err.message||err).slice(0,100))}
 }
 function fact(label,value){const box=E("div","bc-fact");box.append(E("small","",label),E("b","",value||"—"));return box}
 function select(item){
- data.selected=item;data.frame=0;
+ data.selected=item;data.frame=0;data.videoFrame=null;
+ const videoCanUse=canTeach(item)&&item.owner===data.user?.id&&!item.adult&&item.kind==="video";
+ $("bcVideoFrameControls").hidden=!videoCanUse;
+ $("bcCaptureFrame").disabled=!(videoCanUse&&item.type==="asset");
+ $("bcAnalyzeVideoFrame").disabled=!videoCanUse;
+ $("bcFrameStillPreview").hidden=true;$("bcFrameStillPreview").removeAttribute("src");$("bcFrameStillInput").value="";
+ text("bcFrameStatus",item.type==="stream_video"?"Loading secure video player… You can choose a still image taken from any frame.":"Pause the video at the frame you want to classify, then select Capture Current Frame.");
  for(const n of $("bcInventory").querySelectorAll("[data-item-key]"))n.setAttribute("aria-selected",String(n.dataset.itemKey===item.key));
  const v=labels(item);
  text("bcSelectionStatus",item.kind.toUpperCase());text("bcItemTitle",item.title);
