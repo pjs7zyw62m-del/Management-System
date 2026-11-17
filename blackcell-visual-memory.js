@@ -58,7 +58,7 @@ async function protectedPhoto(client,item,ownerId){
   blob=r.data;
  }
  if(!blob.size||blob.size>MAX_PHOTO)throw Error("Photo is outside the safe fingerprint size limit");
- if(blob.type&&!blob.type.startsWith("image/"))throw Error("Not an image");
+ if(blob.type&&!blob.type.startsWith("image/")&&blob.type!=="application/octet-stream")throw Error("Not an image");
  return blob;
 }
 export function mountBlackcellVisualMemory({client,getUser,getItems,onChoose}){
