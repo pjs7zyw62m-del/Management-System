@@ -143,11 +143,11 @@ Deno.serve(async req=>{
  // privacy. We send only a short relevant excerpt to Gunner's existing Dolphin
  // service. No new model, paid embedding call, or live media access.
  let journalBrief="";
- const journalCue=/\\b(1999|journal|diary|memory|remember|recall|history|first met|we met|meet|meeting|veterans|marines?|corps|sheriff|corrections|uniforms?|ledger|quota|missed|catch.?up|collection)\\b/i;
+ const journalCue=/\b(1999|journal|diary|memory|remember|recall|history|first met|we met|meet|meeting|veterans|marines?|corps|sheriff|corrections|uniforms?|ledger|quota|missed|catch.?up|collection)\b/i;
  if(journalCue.test(message)){
-  const isMeeting=/\\b(meet|met|meeting|first time|first contact)\\b/i.test(message);
-  const isMissed=/\\b(miss(?:ed|ing)?|catch.?up|quota|target)\\b/i.test(message);
-  const numbered=message.match(/\\b(?:journal\\s*)?(?:page|entry)\\s*(\\d{1,2})\\b/i);
+  const isMeeting=/\b(meet|met|meeting|first time|first contact)\b/i.test(message);
+  const isMissed=/\b(miss(?:ed|ing)?|catch.?up|quota|target)\b/i.test(message);
+  const numbered=message.match(/\b(?:journal\s*)?(?:page|entry)\s*(\d{1,2})\b/i);
   const requested=numbered?Number(numbered[1]):null;
   const entryNo=requested&&requested>=1&&requested<=60?requested:
    isMeeting?1:isMissed?14:null;
@@ -161,7 +161,7 @@ Deno.serve(async req=>{
    else if(Array.isArray(memories)&&memories.length){
     const fragments=memories.slice(0,2).map(row=>
      "Entry "+Number(row.entry_no)+" ("+cut(row.entry_date,12)+"), "+
-     cut(row.title,110)+": "+String(row.excerpt||"").replace(/\\s+/g," ").slice(0,400));
+     cut(row.title,110)+": "+String(row.excerpt||"").replace(/\s+/g," ").slice(0,400));
     journalBrief="[PRIVATE FICTIONAL JOURNAL EXCERPT: Proposed Gunner 1999 story canon, NOT a real historical record of the owner. Remain in Gunner's established voice. Modern upload counts and quotas must come from verified live BLACKCELL stats, not fictional 1999 ledger numbers.] "+
      fragments.join(" | ");
    }
@@ -169,13 +169,13 @@ Deno.serve(async req=>{
  }
  // Always preserve the owner's question and keep existing collection metrics.
  // Context is bounded for Dolphin's established message-size limit.
- const messageTail="\\nOwner question: "+message.slice(0,500);
+ const messageTail="\nOwner question: "+message.slice(0,500);
  const space=Math.max(0,1540-messageTail.length);
  const contextParts=collectionBrief||journalBrief?[
   ...(collectionBrief?[collectionBrief.slice(0,journalBrief?Math.min(620,space):space)]:[]),
   ...(journalBrief?[journalBrief.slice(0,collectionBrief?Math.min(520,Math.max(0,space-620)):space)]:[])
  ]:[];
- const context=contextParts.join("\\n");
+ const context=contextParts.join("\n");
  const richMessage=context?
   context.slice(0,space)+messageTail:message;
  const payload={action:"start",message:richMessage,photo_context:photoContext,
