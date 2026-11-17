@@ -208,7 +208,22 @@ async function classify(asset,localFile=null){
   throw Error(String(detail).slice(0,220));
  }
  if(!data?.ok||!data.analysis)throw Error(String(data?.error||"No AI classification returned"));
- analyses.set(asset.id,data.analysis);return true;
+ analyses.set(asset.id,data.analysis);
+ // A server-side, owner-only atomic gate decides publication; never trust a client
+ // or model-provided percentage. No auto-release unless all five checks pass.
+ try{
+  const result=await client.rpc("blackcell_uniform_auto_publish_100",{p_asset_id:asset.id});
+  if(result.error)throw result.error;
+  if(result.data?.approved){
+   analyses.set(asset.id,{...data.analysis,status:"approved"});
+   note("100% verification checklist complete: photo filed and published automatically. "+(asset.filename||""));
+  }else if(result.data?.ok){
+   note("AI classified "+(asset.filename||"photo")+"; auto-publication readiness "+Number(result.data.readiness||0)+"/100. Your publication approval is still required.");
+  }
+ }catch(e){
+  note("AI classified privately; automatic publication check unavailable: "+String(e.message||e).slice(0,140),true);
+ }
+ return true;
 }
 async function process(options={}){
  if(busy||!owner||!ownerId)return;
