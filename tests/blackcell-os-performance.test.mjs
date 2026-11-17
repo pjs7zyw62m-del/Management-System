@@ -76,8 +76,8 @@ test("transient auth network errors lock the workspace but do not log out",()=>{
  assert.match(workspace,/verificationPaused=true/);
  assert.match(workspace,/deny\('Secure verification is temporarily unavailable/);
  assert.match(workspace,/function isDefiniteRejection/);
- assert.match(workspace,/status===401\\|\\|status===403/);
- assert.match(workspace,/if\\(error\\)\\{if\\(isDefiniteRejection\\(result\\)\\)await signOut\\(\\);else pauseForTransport\\(\\);return;\\}/);
+ assert.ok(workspace.includes("status===401||status===403"));
+ assert.ok(workspace.includes("if(error){if(isDefiniteRejection(result))await signOut();else pauseForTransport();return;}"));
  assert.match(workspace,/if\(data\?\.ok!==true\|\|data\?\.verified!==true\)\{await signOut\(\);return;\}/);
  assert.match(workspace,/verificationPaused\)\{verificationPaused=false;gate\.hidden=true;app\.hidden=false;/);
  assert.match(workspace,/if\(closed\|\|!client\|\|verifying\)return/);
