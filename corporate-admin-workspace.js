@@ -8,7 +8,7 @@ export function createCorporateMediaWorkspace({onEnter,onRefresh,member}){
  if(!main)throw Error('ADMIN_SHELL_MISSING');
  const definitions=[
   {id:'overview',icon:'⌂',name:'Command Center',label:'OVERVIEW',
-   title:'Media Import Processor',subtitle:'Manage uploads, review incoming media, and maintain your private library.'},
+   title:'Media Administration',subtitle:'Manage uploads, review incoming media, and maintain your private library.'},
   {id:'review',icon:'▣',name:'Review & Approval',label:'INTAKE',
    title:'Review & Approval',subtitle:'Prepare private Bunny originals, classify content, and authorize library publication.'},
   {id:'bunny',icon:'◈',name:'Bunny Storage',label:'PRIMARY CLOUD',
@@ -25,9 +25,7 @@ export function createCorporateMediaWorkspace({onEnter,onRefresh,member}){
   return node;
  };
  const originalChildren=[...main.children];
- // Capture existing controls before moving their parent sections into the
- // detached app workspace; document.getElementById won't find them mid-move.
- const resetButton=document.getElementById('bcMediaReset');
+ // Preserve existing administration sections while moving them into the workspace.
  const lookup=new Map(originalChildren.filter(e=>e.id).map(e=>[e.id,e]));
  const required=id=>{
   const node=lookup.get(id);
@@ -59,7 +57,7 @@ export function createCorporateMediaWorkspace({onEnter,onRefresh,member}){
  const header=el('div','bc-workspace-context');
  const description=el('div','bc-workspace-context-text');
  const crumb=el('div','bc-workspace-overline','BLACKCELL / MEDIA ADMINISTRATION');
- const headline=el('h2','bc-workspace-headline','Media Import Processor');
+ const headline=el('h2','bc-workspace-headline','Media Administration');
  const subtitle=el('p','bc-workspace-subtitle','');
  description.append(crumb,headline,subtitle);header.append(description);
  const tools=el('div','bc-workspace-header-tools');
@@ -180,20 +178,9 @@ export function createCorporateMediaWorkspace({onEnter,onRefresh,member}){
 
  const reviewNotice=el('div','bc-workspace-review-note');
  reviewNotice.append(el('span','','PRIVATE INTAKE'),
-  el('strong','','Owner approval is required for publication.'),
-  el('p','','Prepare originals from Bunny, verify country and subject labels, confirm rights and age restrictions when relevant, and then approve. Unsure? Keep media pending.'));
+  el('strong','','Publication review is now in Uniform Intelligence.'),
+  el('p','','Open Uniform Intelligence → Review & Approve to prepare Bunny originals, verify media, approve or reject publication, and file albums.'));
  paneMap.get('review').prepend(reviewNotice);
-
- const btnToDanger=resetButton;
- if(btnToDanger){
-  // Prevent clicking a destructive control before its protected handler is loaded.
-  btnToDanger.disabled=true;
-  const danger=el('details','bc-workspace-danger');
-  const summaryDanger=el('summary','','Danger Zone · Reset Media Library');
-  const explanation=el('p','','This destructive action is separate from routine review. It permanently removes original Supabase files and associated records after multiple confirmations. Do not use it for performance troubleshooting or Bunny sync.');
-  danger.append(summaryDanger,explanation,btnToDanger);
-  paneMap.get('legacy').append(danger);
- }
 
  main.replaceChildren(shell);
 
