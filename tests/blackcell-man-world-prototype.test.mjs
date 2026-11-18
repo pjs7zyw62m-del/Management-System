@@ -19,16 +19,20 @@ test("Exactly ten requested worlds are preserved",()=>{
  assert.equal(new Set(worlds.map(x=>x[1])).size,10);
 });
 
-test("Prominent male-photography hero and editorial-first layout replace simulated OS desktop",()=>{
- assert.match(html,/CINEMATIC EDITORIAL 4\.0/);
- assert.match(html,/MEN\. COMMUNITY\. CONNECTION\./);
- assert.match(html,/FIND YOUR <span>WORLD/);
- assert.match(html,/class="hero-art"/);
+test("NOCTURNE 5.0 uses a black, restrained male-photo hero without promo cards",()=>{
+ assert.match(html,/NOCTURNE 5\.0/);
+ assert.match(html,/BLACKCELL \/ PRIVATE NETWORK/);
+ assert.match(html,/ENTER<br><span>MAN WORLD\.<\/span>/);
+ assert.match(html,/class="hero-visual"/);
+ assert.match(html,/class="hero-portrait hero-portrait-back"/);
+ assert.match(html,/class="hero-portrait hero-portrait-front"/);
  assert.match(html,/assets\/maf\/portrait-law-enforcement\.png/);
  assert.match(html,/assets\/maf\/portrait-military\.png/);
- assert.match(html,/assets\/maf\/portrait-fire-rescue\.png/);
- assert.match(html,/class="site-head"/);
- assert.match(html,/class="section-head"/);
+ assert.match(html,/Choose your worlds\./);
+ assert.match(html,/radial-gradient/);
+ assert.match(html,/brightness\(\.42\)/);
+ assert.match(html,/brightness\(\.64\)/);
+ assert.doesNotMatch(html,/hero-shot one|hero-shot two|hero-shot three|content:"MAN"/);
  assert.doesNotMatch(html,/class="os-menubar"|class="os-window"|class="sidebar"/);
 });
 
