@@ -19,19 +19,20 @@ test("Exactly ten requested worlds are preserved",()=>{
  assert.equal(new Set(worlds.map(x=>x[1])).size,10);
 });
 
-test("NOCTURNE 5.0 uses a black, restrained male-photo hero without promo cards",()=>{
- assert.match(html,/NOCTURNE 5\.0/);
- assert.match(html,/BLACKCELL \/ PRIVATE NETWORK/);
- assert.match(html,/ENTER<br><span>MAN WORLD\.<\/span>/);
- assert.match(html,/class="hero-visual"/);
- assert.match(html,/class="hero-portrait hero-portrait-back"/);
- assert.match(html,/class="hero-portrait hero-portrait-front"/);
+test("VISUAL HIERARCHY 6.0 gives male imagery immediate full-width presence",()=>{
+ assert.match(html,/VISUAL HIERARCHY 6\.0/);
+ assert.match(html,/class="hero-panorama"/);
+ for(const cls of ["a","b","c","d","e"]){
+  assert.match(html,new RegExp('class="hero-panel hero-panel-'+cls+'"'));
+ }
  assert.match(html,/assets\/maf\/portrait-law-enforcement\.png/);
+ assert.match(html,/assets\/maf\/portrait-corrections\.png/);
  assert.match(html,/assets\/maf\/portrait-military\.png/);
- assert.match(html,/Choose your worlds\./);
- assert.match(html,/radial-gradient/);
- assert.match(html,/brightness\(\.42\)/);
- assert.match(html,/brightness\(\.64\)/);
+ assert.match(html,/assets\/maf\/portrait-fire-rescue\.png/);
+ assert.match(html,/assets\/maf\/portrait-airline-captain\.png/);
+ assert.match(html,/class="hero-panorama-shade"/);
+ assert.match(html,/Discover what<br><span>draws you in\.<\/span>/);
+ assert.match(html,/Your worlds begin here\./);
  assert.doesNotMatch(html,/hero-shot one|hero-shot two|hero-shot three|content:"MAN"/);
  assert.doesNotMatch(html,/class="os-menubar"|class="os-window"|class="sidebar"/);
 });
@@ -56,6 +57,9 @@ test("Working category search, multi-select, navigation, skip and home return",(
  assert.match(html,/selected=new Set\(\)/);
  assert.match(html,/selected\.has\(w\.id\)\?selected\.delete\(w\.id\):selected\.add\(w\.id\)/);
  assert.match(html,/id="search"/);
+ assert.match(html,/id="exploreButton"/);
+ assert.match(html,/id="discoverWorlds"/);
+ assert.match(html,/scrollIntoView/);
  assert.match(html,/id="selectedCount"/);
  assert.match(html,/id="continue" disabled/);
  assert.match(html,/id="skip"/);
