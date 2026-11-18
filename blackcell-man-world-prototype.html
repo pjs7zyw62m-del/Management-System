@@ -175,6 +175,102 @@ footer{margin-top:auto;padding:19px clamp(18px,4.5vw,68px) 27px;border-top:1px s
 @media(max-width:370px){.world-circle{width:134px;height:134px}.world-circle-title{font-size:14px}}
 @media(prefers-reduced-motion:reduce){.world-image{transition:none}}
 
+
+/* BLACKCELL OS / OBSIDIAN RED EDITION · 2026-11-18
+   Pitch-black interface and photo bubbles. The bubble border alone conveys selection. */
+:root{
+ --bg:#000000;--ink:#f5f5f7;--muted:#919098;
+ --line:rgba(255,255,255,.10);--red:#aa1730;--glass:rgba(7,7,9,.96);
+}
+html,body{background:#000!important;color:#f5f5f7}
+.background{
+ background:radial-gradient(ellipse at 51% -23%,rgba(103,9,27,.13),transparent 43%),#000!important;
+}
+.background::after{opacity:.06;background-size:80px 80px}
+.top{
+ background:rgba(2,2,3,.93)!important;
+ border-bottom:1px solid rgba(160,38,56,.16);
+ backdrop-filter:blur(18px) saturate(.7);
+}
+.brand-mark{
+ border:1px solid rgba(207,48,76,.38);
+ background:linear-gradient(135deg,#2c0810,#030304 78%);
+ box-shadow:0 2px 20px rgba(111,12,31,.22),inset 0 1px 1px #ffffff16;
+}
+.brand small{color:#c83b51}
+.top-right .tag{border-color:#ffffff12;background:#0b0b0d;color:#89898e}
+.back{color:#a2a2a8}
+main{background:transparent}
+.intro h1{color:#f4f4f7;font-weight:760;letter-spacing:-.065em}
+.intro h1 span{color:#c32b43}
+.intro .eyebrow{color:#bd3047}
+.intro p{color:#94949b}
+.toolbar strong{color:#bcbcc2;letter-spacing:.15em}
+.toolbar small{color:#6e6f75}
+.search input{
+ background:#09090b;color:#efeff2;
+ border:1px solid rgba(255,255,255,.12);
+ box-shadow:inset 0 1px 8px #000;
+}
+.search input:focus{border-color:#aa2e47}
+.world-circle{
+ background:#08080a!important;
+ border:1.5px solid rgba(255,255,255,.20);
+ box-shadow:0 12px 28px #000,inset 0 0 22px #000c;
+}
+.world-circle::before{
+ background:linear-gradient(180deg,rgba(0,0,0,.36) 0%,rgba(0,0,0,.38) 35%,rgba(0,0,0,.84) 83%,rgba(0,0,0,.94) 100%);
+}
+.world-circle::after{inset:6px;border-color:rgba(255,255,255,.055)}
+.world-image{
+ filter:grayscale(.18) saturate(.55) contrast(1.1) brightness(.51);
+ transition:filter .2s ease;
+}
+.world:not([aria-pressed=true]):hover .world-image{
+ filter:grayscale(.07) saturate(.66) contrast(1.11) brightness(.59);
+}
+.world-symbol{color:#c22b43;text-shadow:0 0 14px #21050a}
+.world-circle-title{color:#e9e7e9;font-weight:760;letter-spacing:.012em}
+.world-name{color:#8a8990!important;font-weight:640;letter-spacing:.09em}
+.world-sub{color:#707078}
+.world:hover .world-circle,.world:focus-visible .world-circle{
+ border-color:rgba(219,75,98,.7);
+ box-shadow:0 0 0 1px rgba(197,33,61,.28),0 0 20px rgba(124,20,38,.26);
+}
+.world[aria-pressed=true] .world-circle{
+ border:2px solid #cd2946;
+ box-shadow:0 0 0 2px rgba(166,28,50,.23),0 0 22px rgba(183,31,56,.44),inset 0 0 19px rgba(114,13,35,.27);
+}
+.world[aria-pressed=true] .world-image{
+ filter:grayscale(0) saturate(.85) contrast(1.13) brightness(.76);
+}
+.world[aria-pressed=true] .world-circle::before{
+ background:linear-gradient(180deg,rgba(0,0,0,.13),rgba(0,0,0,.20) 42%,rgba(0,0,0,.67) 84%,rgba(0,0,0,.83));
+}
+.world[aria-pressed=true] .world-circle-title{color:#fff}
+.world[aria-pressed=true] .world-name{color:#e4c0c5!important}
+.world[aria-pressed=true] .world-symbol{color:#f44965}
+.world-check{display:none!important}
+.selection{
+ background:rgba(7,7,9,.96);border:1px solid rgba(255,255,255,.13);
+ box-shadow:0 16px 44px #000,inset 0 1px 0 rgba(255,255,255,.035);
+ backdrop-filter:blur(26px);
+}
+.selection strong{color:#f5f5f7}
+.selection p{color:#797981}
+.primary{background:#a5223b;border-color:#b92b46;box-shadow:inset 0 1px 0 #ffffff14}
+.primary:not(:disabled):hover{background:#c02c47}
+.primary:disabled{background:#42131e;border-color:#58202d;color:#99939a}
+.secondary{background:#0d0d0f;border:1px solid rgba(255,255,255,.17);color:#c0c0c5}
+.secondary:hover{background:#17171a}
+.request-hub button{color:#ba6576;border-color:#79283b}
+.request-hub button:hover{background:#14070b}
+.home-head{border-color:rgba(255,255,255,.12)}
+.home h2 span{color:#c32b43!important}
+.home-card .emblem{border-color:rgba(255,255,255,.20);background:#050507}
+footer{border-color:rgba(255,255,255,.08);color:#69696f}
+@media(prefers-reduced-motion:reduce){.world-image{transition:none}}
+
 </style>
 </head><body>
 <div class="background" aria-hidden="true"></div>
@@ -260,9 +356,7 @@ function render(){
   const copy=create("span","world-circle-copy"),symbol=create("span","world-symbol",w.symbol);
   symbol.setAttribute("aria-hidden","true");
   copy.append(symbol,create("span","world-circle-title",w.name));
-  const check=create("span","world-check",selected.has(w.id)?"✓":"");
-  check.setAttribute("aria-hidden","true");
-  circle.append(hubImage(w),copy,check);
+  circle.append(hubImage(w),copy);
   button.append(circle,create("span","world-name","EXPLORE "+w.name.toUpperCase()),create("span","world-sub",w.sub));
   button.onclick=()=>{selected.has(w.id)?selected.delete(w.id):selected.add(w.id);render()};
   root.append(button);
