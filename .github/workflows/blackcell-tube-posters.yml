@@ -6,6 +6,8 @@ on:
       - 'blackcell-world-video-catalog.js'
       - 'corporate-network-videos.js'
       - 'corporate-network.js'
+      - 'blackcell-tube-comments.js'
+      - 'tests/blackcell-tube-comments.test.mjs'
       - 'corporate-network.html'
       - 'mans-armed-forces.js'
       - 'mans-armed-forces.html'
@@ -18,6 +20,8 @@ on:
       - 'blackcell-world-video-catalog.js'
       - 'corporate-network-videos.js'
       - 'corporate-network.js'
+      - 'blackcell-tube-comments.js'
+      - 'tests/blackcell-tube-comments.test.mjs'
       - 'corporate-network.html'
       - 'mans-armed-forces.js'
       - 'mans-armed-forces.html'
@@ -43,4 +47,4 @@ jobs:
           node --check corporate-network.js
           node --check mans-armed-forces.js
       - name: Verify poster auth, caching, backfill, and upload flow
-        run: node --test tests/blackcell-tube-posters.test.mjs
+        run: node --test tests/blackcell-tube-posters.test.mjs tests/blackcell-tube-comments.test.mjs

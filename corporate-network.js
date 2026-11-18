@@ -8,7 +8,8 @@ import {createPhotoRediscovery} from './corporate-photo-rediscovery.js?v=2026111
 import {createVisualDiscovery} from './corporate-visual-discovery.js?v=20261117-adaptive-r1';
 import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phonecheck2';
 import {attachRenderedWorld} from './blackcell-render-player.js?v=4';
-import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261117-watch-posters-r2';
+import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261117-watch-comments-r1';
+import {tubeCommentTarget} from './blackcell-tube-comments.js?v=20261117-r1';
 import {isWorldVideo,worldVideoTitle,readWorldVideo,createWorldVideoPreviews} from './blackcell-world-video-catalog.js?v=20261117-watch-posters-r2';
 import {createProfileWorlds} from './corporate-profile-worlds.js?v=20261117-parallel-read1';
 // Pilot only: the private manifest must exist and authorization must pass; otherwise use original playback.
@@ -1767,8 +1768,22 @@ const videoChannel=createBlackcellVideoChannel({
  worldVideoPreviews,readWorldVideo:a=>readWorldVideo(client,a),bindTransfer:profileWorlds.bindFeedPhoto,
  attachRenderedWorld:opts=>attachRenderedWorld({client,...opts}),
  shareVideoInside:prepareVideoShare,followChannel:toggleFollow,channelAvatar:p=>mediaUrl(asset(p?.avatar_asset_id)),
- loadVideoComments:async a=>{if(!a.post_id)throw Error('Video has no linked post');const {data,error}=await client.from('corp_social_comments').select('id,post_id,user_id,body,created_at').eq('post_id',a.post_id).order('created_at',{ascending:false}).limit(250);if(error)throw error;return data||[]},
- addVideoComment:async(a,body)=>{if(!state.user?.id||!a.post_id||typeof body!=='string'||!body.trim()||body.length>1000)throw Error('Invalid comment');const {error}=await client.from('corp_social_comments').insert({post_id:a.post_id,user_id:state.user.id,body:body.trim()});if(error)throw error},
+ loadVideoComments:async a=>{
+  const target=tubeCommentTarget(a);
+  if(!target)throw Error('No valid video comment target');
+  const {data,error}=await client.from(target.table)
+   .select('id,user_id,body,created_at').eq(target.field,target.id)
+   .order('created_at',{ascending:false}).limit(250);
+  if(error)throw error;
+  return data||[];
+ },
+ addVideoComment:async(a,body)=>{
+  const target=tubeCommentTarget(a);
+  if(!state.user?.id||!target||typeof body!=='string'||!body.trim()||body.length>1000)throw Error('Invalid comment');
+  const {error}=await client.from(target.table)
+   .insert({[target.field]:target.id,user_id:state.user.id,body:body.trim()});
+  if(error)throw error;
+ },
  uploadVideo:openDirectVideoUpload,
  playStream:async a=>{
   const data=await videoStreamApi('play',{catalogId:a.id});
