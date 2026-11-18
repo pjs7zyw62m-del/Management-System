@@ -57,3 +57,14 @@ test("Embedded JavaScript parses",()=>{
  assert.equal(scripts.length,1);
  assert.doesNotThrow(()=>new Function(scripts[0][1]));
 });
+
+
+test("MAN WORLD silver/crimson headline preserves full italic N and D glyphs",()=>{
+ assert.match(html,/HEADLINE GLYPH SAFETY FIX/);
+ assert.match(html,/<h1><span class="silver">MAN<\/span> <span class="crimson">WORLD<\/span><\/h1>/);
+ assert.match(html,/\.hero h1 \.silver,\.hero h1 \.crimson\{/);
+ assert.match(html,/display:inline-block;/);
+ assert.match(html,/padding:\.10em \.115em \.10em \.115em;/);
+ assert.match(html,/letter-spacing:-\.036em!important;/);
+ assert.match(html,/@media\(max-width:365px\)\{\.hero h1\{font-size:clamp\(34px,11vw,43px\)!important\}\}/);
+});
