@@ -25,6 +25,13 @@ BLACKCELL MAN WORLD is a standalone, opt-in, post-signup **SELECT YOUR WORLD** p
 - Desktop uses five columns, tablets three or four, phones two.
 - The personalized second-screen choices use the same stationary circular language.
 
+## BLACKCELL OS shell redesign · 2.0
+- The approved 10 photographic bubble hub designs are retained **unchanged**: same circular images, dark overlays, labels, static layout, multi-select and crimson selected state.
+- Everything around the bubbles has been redesigned to draw from the current BLACKCELL OS desktop styling: a slimmer unified app header, BLACKCELL OS / MAN WORLD identity, native-style navigation, glass welcome section, refined type and spacing, a world directory frame, and a dock-like translucent selection control bar.
+- The header's Discover and My Worlds controls work; a selected-count indicator and optional preview chips update immediately. Continue, Not now, and Change my worlds still work.
+- The second screen has a redesigned BLACKCELL OS summary and uses the existing image circles.
+- CSS is self-contained on this preview page; no production OS files or member records were modified.
+
 ## Prototype behavior
 - Standalone `blackcell-man-world-prototype.html`, with searchable categories, multi-select, skip, continue, and edit choices.
 - These names are interest-based discovery spaces, **not** assumptions about a user's identity or participation.
