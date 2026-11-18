@@ -10,7 +10,7 @@ test("World selection is a standalone nonindexed demonstration",()=>{
  assert.match(html,/id="selectedCount"/);
  assert.match(html,/id="homeGrid"/);
  assert.match(html,/id="editSelection"/);
- assert.match(html,/No user account is created/);
+ assert.match(html,/No account created/);
 });
 test("All ten requested worlds have unique identifiers and meaningful labels",()=>{
  const ids=[...html.matchAll(/\{id:"([a-z]+)",name:"([^"]+)"/g)];
@@ -87,4 +87,33 @@ test("BLACKCELL OS pitch black selected-world styling has no checkmark UI",()=>{
  assert.match(html,/\.world-check\{display:none!important\}/);
  assert.doesNotMatch(html,/const check=create\("span","world-check"/);
  assert.match(html,/aria-pressed/);
+});
+
+test("BLACKCELL OS 2.0 shell redesign preserves bubble interaction",()=>{
+ assert.match(html,/MAN WORLD CHROME 2\.0/);
+ assert.match(html,/class="top os-header"/);
+ assert.match(html,/class="os-title-group"/);
+ assert.match(html,/id="discoverNav"/);
+ assert.match(html,/id="myWorldsNav"/);
+ assert.match(html,/id="navSelected"/);
+ assert.match(html,/class="intro os-intro"/);
+ assert.match(html,/class="os-worlds-surface"/);
+ assert.match(html,/class="selection os-selection"/);
+ assert.match(html,/id="selectionHint"/);
+ assert.match(html,/id="selectedPills"/);
+ assert.match(html,/class="home os-home"/);
+ assert.match(html,/function setNavCurrent\(isHome\)/);
+ assert.match(html,/function showChooser\(\)/);
+ assert.match(html,/selected\.size===0/);
+ assert.match(html,/circle\.append\(hubImage\(w\),copy\)/);
+ assert.doesNotMatch(html,/const check=create\("span","world-check"/);
+});
+test("Header navigation, selected-count preview, and second screen are wired",()=>{
+ assert.match(html,/\$\("navSelected"\)\.textContent=String\(selected\.size\)/);
+ assert.match(html,/\$\("discoverNav"\)\.onclick=showChooser/);
+ assert.match(html,/\$\("myWorldsNav"\)\.onclick=openHome/);
+ assert.match(html,/\$\("selectedPills"\)/);
+ assert.match(html,/\$\("editSelection"\)\.onclick=showChooser/);
+ assert.match(html,/id="homeGrid"/);
+ assert.match(html,/id="skip"/);
 });
