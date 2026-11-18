@@ -5,6 +5,8 @@ BLACKCELL MEN is an **original** adult-media community design for BLACKCELL OS, 
 ## Scope completed
 - Responsive private-concept landing page at blackcell-men-prototype.html.
 - Non-explicit sample gallery with category navigation, search, and trending/saved views.
+- Mobile-friendly featured Gallery Images carousel with previous/next controls and swipe gestures.
+- Community Forums concept with collapse/expand control, fictional sample discussions, local-only topic drafting, and a fixed mobile navigation bar.
 - Media detail dialogs with clear no-real-streaming notices.
 - Local-only image/video picker; no upload is performed.
 - Session-based 18+ confirmation for prototype presentation only, not legal age verification.
