@@ -71,6 +71,190 @@ main{width:100%;max-width:1520px;margin:0 auto;flex:1;padding:0 clamp(18px,4.3vw
 @media(max-width:620px){.site-head{height:61px;padding:0 17px}.brand-sign{width:35px;height:35px;font-size:22px}.brand-copy strong{font-size:13px}.hero{min-height:auto;display:flex;flex-direction:column;align-items:stretch;gap:0;padding:31px 0 19px}.hero-copy{z-index:2}.hero h1{font-size:clamp(53px,11vw,78px);margin:18px 0 13px}.hero p{font-size:13px;max-width:520px}.hero-stamp{margin-top:16px}.hero-art{margin-top:15px;width:100%;height:228px;overflow:hidden}.hero-art:before{font-size:180px;top:-9%;right:9%}.hero-art:after{width:70%;height:160px;right:8%;top:65px}.hero-shot.one{width:38%;height:210px;left:12%;top:10px}.hero-shot.two{width:42%;height:230px;right:13%;top:0}.hero-micro{bottom:7px;right:6%}.discover{padding-top:24px}.section-head{flex-direction:column;align-items:stretch;gap:15px}.section-head-right{justify-content:flex-start}.search,.search input{width:100%;min-width:0}.worlds{grid-template-columns:repeat(2,minmax(0,1fr));gap:21px 8px;margin-top:22px}.world-circle{width:min(100%,clamp(132px,42vw,188px))}.world-circle-copy{padding-bottom:21px;gap:5px}.world-circle-title{font-size:clamp(15px,4.2vw,21px)}.world-sub{font-size:10px}.selection{bottom:8px;padding:10px 11px;gap:10px;border-radius:16px}.selection-icon{display:none}.selection-copy p{display:none}.selected-pills{display:none}.selection-actions{gap:6px}.primary,.secondary{min-height:42px;padding:0 11px;font-size:11px}.primary span{margin-left:3px}.footer{flex-direction:column;align-items:flex-start;font-size:9px}.home{padding:40px 0}.home-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.home-card .emblem{max-width:170px}}
 @media(max-width:370px){.hero h1{font-size:52px}.world-circle{width:min(100%,145px)}.world-circle-title{font-size:15px}.hero-stamp span{font-size:9px}}
 @media(prefers-reduced-motion:reduce){.world-image,.world-circle,.site-nav button{transition:none!important}}
+
+/* BLACKCELL MAN WORLD / NOCTURNE 5.0
+   Intimate male-forward editorial art direction: BLACK, SHADOW, SMOKED GLASS.
+   Keep the approved circular image hubs and their one-tap crimson selected state. */
+:root{
+ --text:#eeedef;--muted:#89848a;--red:#7f172d;--line:rgba(255,255,255,.085)
+}
+html,body{background:#000}
+.background{
+ background:radial-gradient(ellipse 27% 38% at 93% 3%,rgba(67,5,18,.11),transparent 75%),#000
+}
+.site-head{
+ height:64px;
+ background:rgba(2,2,3,.97);
+ border-bottom:1px solid #ffffff17;
+ box-shadow:0 4px 29px #0009
+}
+.brand-sign{
+ width:32px;height:32px;border-radius:9px;
+ border-color:rgba(138,36,58,.48);
+ background:linear-gradient(142deg,#230910,#050405 75%);
+ box-shadow:inset 0 1px #ffffff1b;color:#eae6e8;font-size:20px
+}
+.brand-copy strong{font-size:13px;letter-spacing:.12em;font-weight:760}
+.brand-copy small{font-size:9px;color:#9a394e;letter-spacing:.2em}
+.site-nav button{font-weight:570;color:#77737a;font-size:12px;border-radius:8px;padding:9px 18px}
+.site-nav button[aria-current=page]{
+ background:rgba(255,255,255,.065);border-color:#ffffff12;
+ box-shadow:none
+}
+.site-nav small{background:#4b192741;color:#b66778}
+.head-private{color:#77727a;font-size:9px;letter-spacing:.13em}
+.head-private:before{background:#8e1c35;box-shadow:0 0 6px #680d23a6}
+.exit{border-color:#ffffff19;background:#09080a;color:#99939a}
+.exit:hover{color:white;background:#171216}
+main{max-width:1510px}
+.hero{
+ display:flex;align-items:center;min-height:410px;padding:59px 0 55px;
+ margin:0;border-bottom:1px solid #ffffff16;
+ isolation:isolate;overflow:hidden;
+ background:#000
+}
+.hero:before{
+ content:"";position:absolute;inset:0;z-index:-1;
+ background:radial-gradient(ellipse at 79% 51%,rgba(92,7,26,.20),transparent 32%);
+}
+.hero-copy{z-index:3;position:relative;width:65%;padding:0 0 0 1px}
+.eyebrow{color:#a7475a;font-size:10px;letter-spacing:.22em;font-weight:700}
+.eyebrow:before{background:#7b172b;box-shadow:none;width:24px;height:1px}
+.hero h1{
+ font-size:clamp(62px,6.45vw,97px);line-height:.99;max-width:850px;
+ letter-spacing:-.071em;font-weight:740;margin:26px 0 25px;
+ text-shadow:0 4px 25px #000;
+ text-transform:uppercase
+}
+.hero h1 span{color:#a22b42;font-weight:700}
+.hero p{
+ max-width:420px;font-size:clamp(14px,1.12vw,16px);
+ font-weight:400;line-height:1.82;color:#a59ca4;
+ margin-bottom:0
+}
+.hero-stamp{margin-top:28px;gap:12px}
+.hero-stamp i{width:22px;height:1px;background:#852238}
+.hero-stamp span{color:#726e74;font-size:9px;letter-spacing:.155em;font-weight:690}
+.hero-stamp b{color:#8e2d44;padding:0 5px}
+.hero-visual{
+ position:absolute;inset:0 -7% 0 auto;z-index:1;width:65%;
+ overflow:hidden;pointer-events:none;
+ background:radial-gradient(ellipse 36% 46% at 67% 50%,rgba(98,7,30,.18),transparent 80%);
+ -webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 27%,#000 82%,transparent 100%);
+ mask-image:linear-gradient(90deg,transparent 0%,#000 27%,#000 82%,transparent 100%);
+}
+.hero-portrait{position:absolute;bottom:-3px;height:99%;overflow:hidden}
+.hero-portrait img{
+ width:100%;height:100%;object-fit:contain;object-position:center bottom;display:block;
+ -webkit-mask-image:linear-gradient(180deg,#000 8%,#000 74%,transparent 100%);
+ mask-image:linear-gradient(180deg,#000 8%,#000 74%,transparent 100%);
+}
+.hero-portrait-back{width:45%;right:41%;height:91%;z-index:1}
+.hero-portrait-back img{filter:grayscale(.33) saturate(.36) contrast(1.17) brightness(.42)}
+.hero-portrait-front{width:49%;right:5%;z-index:2}
+.hero-portrait-front img{filter:grayscale(.28) saturate(.43) contrast(1.2) brightness(.64)}
+.hero-darken{
+ position:absolute;inset:0;z-index:3;
+ background:linear-gradient(90deg,#000 0%,rgba(0,0,0,.45) 24%,transparent 57%),
+ linear-gradient(0deg,#000 0%,transparent 26%,transparent 82%,rgba(0,0,0,.27));
+}
+.discover{padding-top:36px}
+.section-head{align-items:end;margin-bottom:12px}
+.section-index{font-size:9px;color:#773246;letter-spacing:.17em}
+.section-head h2{
+ font-weight:680;font-size:clamp(29px,3.4vw,43px);
+ letter-spacing:-.052em;color:#e8e6e8;margin-bottom:7px
+}
+.section-head p{color:#817b83;font-size:12px}
+.search input{
+ background:linear-gradient(135deg,rgba(25,22,26,.8),rgba(7,6,8,.95));
+ border:1px solid #ffffff16;
+ box-shadow:inset 0 1px #ffffff08;
+ border-radius:11px;min-height:41px
+}
+.search svg{stroke:#77717b}
+.search input:focus{border-color:#732338}
+.worlds{gap:28px 12px;margin-top:32px}
+.world-circle{
+ background:#050405;border-color:#ffffff24;
+ box-shadow:0 20px 36px #000c,inset 0 0 27px #000a;
+}
+.world-circle:before{
+ background:linear-gradient(180deg,rgba(0,0,0,.16) 0%,rgba(0,0,0,.24) 33%,rgba(0,0,0,.74) 74%,rgba(0,0,0,.95))
+}
+.world-circle:after{border-color:#ffffff13}
+.world-image{filter:grayscale(.20) saturate(.55) contrast(1.2) brightness(.65)}
+.world-symbol{color:#ad354e;filter:none;font-size:20px}
+.world-circle-title{font-weight:770;color:#e7e0e4;letter-spacing:.025em}
+.world-name{color:#a89ba2;font-size:10px;letter-spacing:.13em}
+.world-sub{color:#777179;font-size:10px}
+.world:not([aria-pressed=true]):hover .world-circle,.world:focus-visible .world-circle{
+ border-color:#893148;
+ box-shadow:0 0 0 1px #a02c4a4a,0 0 23px #8c1b3842,0 18px 40px #000b
+}
+.world:not([aria-pressed=true]):hover .world-image{filter:grayscale(.1) saturate(.70) contrast(1.15) brightness(.8)}
+.world[aria-pressed=true] .world-circle{
+ border-color:#b32d4b;box-shadow:0 0 0 2px #9f26413f,0 0 26px #92253e60,0 20px 39px #000d
+}
+.world[aria-pressed=true] .world-image{filter:grayscale(.06) saturate(.83) contrast(1.14) brightness(.88)}
+.world[aria-pressed=true] .world-name{color:#c88091}
+.request-hub{border-top-color:#ffffff0b;margin-top:20px}
+.request-hub button{color:#716a73}
+.selection{
+ width:min(100%,870px);
+ border-color:#ffffff27;border-radius:17px;
+ background:linear-gradient(140deg,rgba(25,22,26,.94),rgba(7,7,9,.98));
+ box-shadow:0 18px 65px #000,inset 0 1px #ffffff17;
+}
+.selection-icon{
+ background:linear-gradient(145deg,#39121e,#0a0709);
+ border-color:#782c406b;color:#af465e;box-shadow:none
+}
+.selection-copy strong{font-size:12px}
+.selection-copy p{color:#817a82}
+.selected-pills span{background:#ffffff08;border-color:#ffffff12;color:#a89aa2}
+.primary{
+ background:linear-gradient(150deg,#8b263e,#591225);
+ border:1px solid #b2445a;color:#f2ebee;
+ box-shadow:inset 0 1px #ffffff18,0 6px 23px #24070f67
+}
+.primary:not(:disabled):hover{filter:brightness(1.25)}
+.secondary{border-color:#ffffff1d;background:#1b181d;color:#c6bec4}
+.secondary:hover{background:#262127}
+.home-title{font-size:clamp(48px,5.6vw,77px);font-weight:720}
+.home-title span{color:#9a2c44}
+.home-section{border-top-color:#ffffff16}
+.footer{border-top-color:#ffffff0e;color:#686168}
+@media(max-width:1160px){
+ .hero{min-height:380px}
+ .hero h1{font-size:clamp(60px,6.6vw,86px)}
+ .hero-visual{right:-8%;width:70%}
+}
+@media(max-width:850px){
+ .hero{min-height:345px}
+ .hero-copy{width:66%}
+ .hero h1{font-size:clamp(51px,7vw,72px)}
+ .hero-visual{right:-13%;width:73%}
+}
+@media(max-width:620px){
+ .site-head{height:59px}
+ .hero{min-height:405px;padding:35px 0 0;align-items:flex-start}
+ .hero-copy{width:100%;padding:0 0 155px;z-index:4}
+ .hero h1{font-size:clamp(51px,10.8vw,75px);margin:17px 0 13px}
+ .hero p{max-width:85%;font-size:12px;line-height:1.65}
+ .hero-stamp{margin-top:14px}
+ .hero-visual{inset:auto -15% 0 0;width:120%;height:230px;opacity:.9;-webkit-mask-image:linear-gradient(90deg,transparent,#000 15%,#000 86%,transparent);mask-image:linear-gradient(90deg,transparent,#000 15%,#000 86%,transparent)}
+ .hero-portrait-back{right:51%;width:43%;height:100%}
+ .hero-portrait-front{right:15%;width:47%;height:110%}
+ .hero-darken{background:linear-gradient(0deg,#000 0%,transparent 43%),linear-gradient(90deg,#0007,transparent 40%)}
+ .discover{padding-top:26px}
+ .worlds{gap:20px 8px;margin-top:24px}
+ .world-circle-title{font-size:clamp(15px,4.2vw,20px)}
+ .world-sub{font-size:10px}
+ .selection{border-radius:15px}
+}
+@media(max-width:370px){.hero{min-height:390px}.hero h1{font-size:48px}.hero-visual{height:210px}}
+
 </style>
 </head>
 <body>
@@ -88,23 +272,22 @@ main{width:100%;max-width:1520px;margin:0 auto;flex:1;padding:0 clamp(18px,4.3vw
 <section id="chooser" aria-labelledby="chooseHeading">
  <div class="hero">
   <div class="hero-copy">
-   <div class="eyebrow">MEN. COMMUNITY. CONNECTION.</div>
-   <h1 id="chooseHeading">FIND YOUR <span>WORLD<em>.</em></span></h1>
-   <p>Leather. Gear. Uniforms. And everything that makes you, you. Discover the communities built around the men and interests you love.</p>
-   <div class="hero-stamp"><i aria-hidden="true"></i><span><strong>10 WORLDS</strong> &nbsp; / &nbsp; ONE NETWORK</span></div>
+   <div class="eyebrow">BLACKCELL / PRIVATE NETWORK</div>
+   <h1 id="chooseHeading">ENTER<br><span>MAN WORLD.</span></h1>
+   <p>Leather. Rubber. Gear. Uniforms. Discover the men and communities that share your interests.</p>
+   <div class="hero-stamp"><i aria-hidden="true"></i><span>MADE FOR MEN <b>·</b> DEFINED BY YOU</span></div>
   </div>
-  <div class="hero-art" aria-hidden="true">
-   <div class="hero-shot one"><img src="assets/maf/portrait-law-enforcement.png" alt="" loading="eager"><span class="hero-shot-label">MEN IN UNIFORM</span></div>
-   <div class="hero-shot two"><img src="assets/maf/portrait-military.png" alt="" loading="eager"><span class="hero-shot-label">BLACKCELL MEN</span></div>
-   <div class="hero-shot three"><img src="assets/maf/portrait-fire-rescue.png" alt="" loading="eager"></div>
-   <span class="hero-micro">WELCOME TO MAN WORLD</span>
+  <div class="hero-visual" aria-hidden="true">
+   <div class="hero-portrait hero-portrait-back"><img src="assets/maf/portrait-law-enforcement.png" alt="" decoding="async"></div>
+   <div class="hero-portrait hero-portrait-front"><img src="assets/maf/portrait-military.png" alt="" decoding="async"></div>
+   <div class="hero-darken"></div>
   </div>
  </div>
  <section class="discover" aria-labelledby="worldSectionHeading">
-  <div class="section-head"><div><span class="section-index">DISCOVER / 001</span><h2 id="worldSectionHeading">What are you into?</h2><p>Choose one world or several. The experience is yours.</p></div><div class="section-head-right"><label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg><input id="search" type="search" autocomplete="off" placeholder="Search worlds" aria-label="Search worlds"></label></div></div>
+  <div class="section-head"><div><span class="section-index">YOUR INTERESTS / 01</span><h2 id="worldSectionHeading">Choose your worlds.</h2><p>Explore what draws you in. Select one or more.</p></div><div class="section-head-right"><label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg><input id="search" type="search" autocomplete="off" placeholder="Search worlds" aria-label="Search worlds"></label></div></div>
   <div class="worlds" id="worldGrid" aria-label="Choose your worlds"></div>
   <div class="empty" id="empty" hidden>No worlds match your search.</div>
-  <div class="request-hub"><button type="button" id="requestHub">＋ Suggest another world</button></div>
+  <div class="request-hub"><button type="button" id="requestHub">＋ Suggest a world</button></div>
  </section>
  <div class="selection" id="selectionDock">
   <div class="selection-left"><span class="selection-icon" aria-hidden="true">✦</span><div class="selection-copy"><strong id="selectedCount" aria-live="polite">No worlds selected</strong><p id="selectionHint">Choose your own experience.</p><div class="selected-pills" id="selectedPills" hidden></div></div></div>
