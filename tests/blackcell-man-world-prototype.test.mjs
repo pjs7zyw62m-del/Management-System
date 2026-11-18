@@ -54,7 +54,17 @@ test("Search, selection, Enter My World and editing are interactive",()=>{
 });
 
 test("Polished mobile/desktop layout and reduced motion support",()=>{
- assert.match(html,/grid-template-columns:repeat\(10,minmax\(0,1fr\)\)/);
+ assert.match(html,/MAN WORLD 7\.0 — APPROVED PHOTO BUBBLES/);
+ assert.match(html,/grid-template-columns:repeat\(5,minmax\(0,1fr\)\)/);
+ assert.match(html,/\.world-portrait\{/);
+ assert.match(html,/aspect-ratio:1/);
+ assert.match(html,/border-radius:50%/);
+ assert.match(html,/button\.append\(portrait,create\('span','world-name',w\.name\)\)/);
+ assert.match(html,/button\.setAttribute\('aria-pressed'/);
+ assert.match(html,/\.world\[aria-pressed=true\] \.world-portrait\{/);
+ assert.doesNotMatch(html,/const check=create\(/);
+ assert.match(html,/\.home-portrait\{/);
+ assert.match(html,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
  assert.match(html,/@media\(max-width:1440px\)/);
  assert.match(html,/@media\(max-width:1050px\)/);
  assert.match(html,/@media\(max-width:700px\)/);
