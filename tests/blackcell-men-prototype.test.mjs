@@ -34,3 +34,27 @@ test("OS preview app uses existing server-side catalog authorization",()=>{
  assert.match(os,/if\(!storeRules\.has\(id\)\)continue/);
  assert.match(os,/function authorizedApp\(id\)/);
 });
+
+
+test("Gallery carousel and mobile navigation are implemented",()=>{
+ assert.match(page,/id="featuredGallery"/);
+ assert.match(page,/id="galleryRail"/);
+ assert.match(page,/id="galleryPrev"/);
+ assert.match(page,/id="galleryNext"/);
+ assert.match(page,/function moveGallery\(dir\)/);
+ assert.match(page,/scroll-snap-type:x mandatory/);
+ assert.match(page,/class="mobile-dock"/);
+ assert.match(page,/data-mobile="forums"/);
+ assert.match(page,/function mobileNavigate\(to\)/);
+});
+test("Forum and new topic interactions are local-only demo",()=>{
+ assert.match(page,/id="communityForums"/);
+ assert.match(page,/id="forumGrid"/);
+ assert.match(page,/id="newTopic"/);
+ assert.match(page,/id="toggleForum"/);
+ assert.match(page,/function renderForums\(\)/);
+ assert.match(page,/function newTopic\(\)/);
+ assert.match(page,/draftTopics\.unshift/);
+ assert.match(page,/No message has been published/);
+ assert.match(page,/fictional demonstration topics/);
+});
