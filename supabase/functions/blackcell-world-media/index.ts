@@ -3,6 +3,7 @@ const zone="https://la.storage.bunnycdn.com/blackcell-media-vault/blackcell-worl
 const origins=new Set(["https://blackcellcorp.com","https://www.blackcellcorp.com","https://pjs7zyw62m-del.github.io"]);
 const types:Record<string,string>={"image/jpeg":"jpg","image/png":"png","image/webp":"webp","image/gif":"gif","image/heic":"heic","video/mp4":"mp4","video/webm":"webm","video/quicktime":"mov","video/x-m4v":"m4v"};
 const categories=new Set(["military","police","fire","medical","security","professional","unsorted"]);
+const posterMax=512*1024,posterType="image/jpeg";
 const max=45*1024*1024,provider="world-bunny-v1",uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const digest=async(a:BufferSource)=>Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",a)),x=>x.toString(16).padStart(2,"0")).join("");
 async function bounded(req:Request,limit:number){
@@ -14,7 +15,7 @@ async function bounded(req:Request,limit:number){
 function pathFor(uid:string,id:string,mime:string){if(!uuid.test(uid)||!uuid.test(id)||!Object.hasOwn(types,mime))throw Error("INVALID_PATH");return uid+"/"+id+"."+types[mime]}
 Deno.serve(async req=>{
  const origin=req.headers.get("origin")||"";
- const headers={"Access-Control-Allow-Origin":origins.has(origin)?origin:"https://blackcellcorp.com","Access-Control-Allow-Methods":"POST,OPTIONS","Access-Control-Allow-Headers":"authorization,apikey,content-type,x-client-info,x-bc-name,x-bc-category,x-bc-branch,x-bc-orientation,x-bc-rights","Cache-Control":"private, no-store","Vary":"Origin","X-Content-Type-Options":"nosniff"};
+ const headers={"Access-Control-Allow-Origin":origins.has(origin)?origin:"https://blackcellcorp.com","Access-Control-Allow-Methods":"POST,OPTIONS","Access-Control-Allow-Headers":"authorization,apikey,content-type,x-client-info,x-bc-name,x-bc-category,x-bc-branch,x-bc-orientation,x-bc-rights,x-bc-media-id","Cache-Control":"private, no-store","Vary":"Origin","X-Content-Type-Options":"nosniff"};
  const send=(status:number,body:Record<string,unknown>)=>new Response(JSON.stringify(body),{status,headers:{...headers,"Content-Type":"application/json"}});
  if(req.method==="OPTIONS")return new Response(null,{status:204,headers});
  if(req.method!=="POST"||(origin&&!origins.has(origin)))return send(403,{ok:false,code:"REQUEST_DENIED"});
@@ -31,6 +32,44 @@ Deno.serve(async req=>{
   const verify=await db.rpc(role==="owner"?"corp_code_status":"corp_employee_code_status");
   if(verify.error||verify.data?.verified!==true)return send(403,{ok:false,code:"VERIFY_CORPORATE_SESSION"});
   const action=new URL(req.url).searchParams.get("action");
+  /* Private thumbnail transport for World videos. Unlike full-size reads,
+   * this returns a small persisted JPEG, never the original video stream.
+   * Every request enforces the same member, review and adult restrictions.
+   * Poster writing is only allowed by the owning verified account. */
+  if(action==="poster"||action==="poster-write"){
+   let mediaId="";
+   if(action==="poster"){
+    let payload:Record<string,unknown>;
+    try{payload=JSON.parse(new TextDecoder().decode(await bounded(req,4096)))}catch{return send(400,{ok:false,code:"INVALID_REQUEST"})}
+    mediaId=typeof payload.id==="string"?payload.id:"";
+   }else mediaId=req.headers.get("x-bc-media-id")||"";
+   if(!uuid.test(mediaId))return send(400,{ok:false,code:"INVALID_ID"});
+   const query=await db.from("corp_social_assets").select("id,owner_id,kind,mime_type,storage_path,source_provider,purpose,review_status,adult_restricted").eq("id",mediaId).maybeSingle();
+   const asset=query.data;
+   if(query.error||!asset||asset.kind!=="video"||asset.source_provider!==provider||asset.purpose!=="library"||asset.review_status==="rejected")return send(404,{ok:false,code:"MEDIA_UNAVAILABLE"});
+   const canView=asset.owner_id===uid||(asset.review_status==="approved"&&!asset.adult_restricted)||(role==="owner"&&Number(member.data?.clearance_level)===7&&asset.review_status==="pending");
+   if(!canView||asset.storage_path!==pathFor(asset.owner_id,asset.id,asset.mime_type))return send(404,{ok:false,code:"MEDIA_UNAVAILABLE"});
+   const keyPath=asset.owner_id+"/"+asset.id+".poster.jpg";
+   if(action==="poster"){
+    const image=await fetch(zone+keyPath,{headers:{AccessKey:key},redirect:"error",signal:AbortSignal.timeout(12000)});
+    if(image.status===404)return send(404,{ok:false,code:"POSTER_MISSING"});
+    if(!image.ok||!image.body)return send(502,{ok:false,code:"POSTER_READ_FAILED"});
+    const declared=Number(image.headers.get("content-length")||"0");
+    if(declared>posterMax)return send(502,{ok:false,code:"POSTER_INVALID"});
+    const data=await image.arrayBuffer();
+    if(!data.byteLength||data.byteLength>posterMax)return send(502,{ok:false,code:"POSTER_INVALID"});
+    return new Response(data,{status:200,headers:{...headers,"Content-Type":posterType,"Content-Disposition":"inline; filename=poster.jpg"}});
+   }
+   if(asset.owner_id!==uid)return send(403,{ok:false,code:"POSTER_WRITE_FORBIDDEN"});
+   if(req.headers.get("content-type")?.toLowerCase().split(";")[0].trim()!==posterType)return send(415,{ok:false,code:"POSTER_MUST_BE_JPEG"});
+   if(Number(req.headers.get("content-length")||0)>posterMax)return send(413,{ok:false,code:"POSTER_TOO_LARGE"});
+   let bytes:Uint8Array;
+   try{bytes=await bounded(req,posterMax)}catch{return send(413,{ok:false,code:"POSTER_TOO_LARGE"})}
+   if(bytes.byteLength<80||bytes[0]!==255||bytes[1]!==216||bytes[2]!==255||bytes[bytes.length-2]!==255||bytes[bytes.length-1]!==217)return send(422,{ok:false,code:"POSTER_INVALID_JPEG"});
+   const uploaded=await fetch(zone+keyPath,{method:"PUT",headers:{AccessKey:key,"Content-Type":posterType},body:bytes,redirect:"error",signal:AbortSignal.timeout(20000)});
+   if(uploaded.status!==201)return send(502,{ok:false,code:"POSTER_SAVE_FAILED"});
+   return send(200,{ok:true,id:asset.id,saved:true});
+  }
   if(action==="read"){
    let payload;try{payload=JSON.parse(new TextDecoder().decode(await bounded(req,4096)))}catch{return send(400,{ok:false,code:"INVALID_REQUEST"})}
    if(typeof payload.id!=="string"||!uuid.test(payload.id))return send(400,{ok:false,code:"INVALID_ID"});

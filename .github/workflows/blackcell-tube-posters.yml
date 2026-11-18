@@ -1,0 +1,46 @@
+name: BLACKCELL Tube Poster Performance
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'blackcell-world-video-catalog.js'
+      - 'corporate-network-videos.js'
+      - 'corporate-network.js'
+      - 'corporate-network.html'
+      - 'mans-armed-forces.js'
+      - 'mans-armed-forces.html'
+      - 'blackcell-upload-queue.html'
+      - 'supabase/functions/blackcell-world-media/index.ts'
+      - 'tests/blackcell-tube-posters.test.mjs'
+      - '.github/workflows/blackcell-tube-posters.yml'
+  pull_request:
+    paths:
+      - 'blackcell-world-video-catalog.js'
+      - 'corporate-network-videos.js'
+      - 'corporate-network.js'
+      - 'corporate-network.html'
+      - 'mans-armed-forces.js'
+      - 'mans-armed-forces.html'
+      - 'blackcell-upload-queue.html'
+      - 'supabase/functions/blackcell-world-media/index.ts'
+      - 'tests/blackcell-tube-posters.test.mjs'
+      - '.github/workflows/blackcell-tube-posters.yml'
+  workflow_dispatch:
+jobs:
+  poster-integrity:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate Tube UI modules
+        run: |
+          node --check blackcell-world-video-catalog.js
+          node --check corporate-network-videos.js
+          node --check corporate-network.js
+          node --check mans-armed-forces.js
+      - name: Verify poster auth, caching, backfill, and upload flow
+        run: node --test tests/blackcell-tube-posters.test.mjs

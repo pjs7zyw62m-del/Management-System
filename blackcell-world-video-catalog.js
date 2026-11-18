@@ -1,6 +1,6 @@
 /* Private World video presentation shared by the Worlds and Video channel.
  * Never sends frames to an external AI service or changes sharing status.
- * Preview frames are generated on-device and kept only in this page's memory.
+ * Thumbnail JPEGs are generated once and saved privately by the media owner, and reused.
  */
 export const isWorldMedia=a=>a?.source_provider==='world-bunny-v1'&&['photo','video'].includes(a.kind)&&a.purpose==='library';
 export const isWorldVideo=a=>isWorldMedia(a)&&a.kind==='video';
@@ -32,7 +32,7 @@ export async function readWorldVideo(client,a,options={}){
  if(!isWorldVideo(a))throw Error('Not a World video');
  return readWorldMedia(client,a,options);
 }
-async function frameFromBlob(blob,signal){
+export async function createWorldVideoPoster(blob,signal){
  signal?.throwIfAborted();
  const url=URL.createObjectURL(blob),video=document.createElement('video');
  video.muted=true;video.playsInline=true;video.preload='auto';
@@ -64,34 +64,94 @@ async function frameFromBlob(blob,signal){
   return jpeg;
  }finally{video.pause();video.removeAttribute('src');video.load();URL.revokeObjectURL(url)}
 }
+
+async function posterRequest(client,id,action,blob=null,signal){
+ const session=(await client.auth.getSession()).data?.session;
+ const cfg=window.BLACKCELL_CORP_CONFIG||{};
+ if(!session?.access_token||!cfg.url||!cfg.publishableKey)throw Error("Corporate session required for preview");
+ const write=action==="poster-write";
+ const response=await fetch(cfg.url.replace(/\/$/,"")+"/functions/v1/blackcell-world-media?action="+action,{
+  method:"POST",cache:"no-store",signal,
+  headers:{Authorization:"Bearer "+session.access_token,apikey:cfg.publishableKey,
+   "Content-Type":write?"image/jpeg":"application/json",...(write?{"x-bc-media-id":id}:{})},
+  body:write?blob:JSON.stringify({id})
+ });
+ if(response.status===404&&!write){
+  const data=await response.json().catch(()=>({}));
+  if(data?.code==="POSTER_MISSING")return null;
+ }
+ if(!response.ok){const data=await response.json().catch(()=>({}));throw Error(String(data?.code||"POSTER_UNAVAILABLE").slice(0,80))}
+ if((await client.auth.getSession()).data?.session?.user?.id!==session.user.id)throw Error("Corporate session changed");
+ return write?true:response.blob();
+}
+export async function saveWorldVideoPoster(client,id,jpeg,signal){
+ if(!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(id))throw Error("Invalid asset id");
+ if(!(jpeg instanceof Blob)||jpeg.type!=="image/jpeg"||jpeg.size<80||jpeg.size>512*1024)throw Error("Invalid poster dimensions or size");
+ return posterRequest(client,id,"poster-write",jpeg,signal);
+}
+export async function readWorldVideoPoster(client,id,signal){
+ return posterRequest(client,id,"poster",null,signal);
+}
 export function createWorldVideoPreviews(client){
- const cache=new Map(),queued=new Map();let tail=Promise.resolve(),epoch=0,paused=false,controller=null;
- const clear=()=>{epoch++;controller?.abort();for(const value of cache.values())URL.revokeObjectURL(value);cache.clear();queued.clear()};
- window.addEventListener('pagehide',clear);
- client.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT')clear()});
- function setPaused(value){const next=!!value;if(next===paused)return;paused=next;if(paused){epoch++;controller?.abort();queued.clear()}}
- async function get(a){
-  if(cache.has(a.id))return cache.get(a.id);
-  if(paused)throw Error('Preview paused for playback');
+ const cache=new Map(),queued=new Map(),controllers=new Set();
+ let tail=Promise.resolve(),epoch=0,paused=false;
+ function clear(){
+  epoch++;
+  for(const ctl of controllers)ctl.abort();
+  controllers.clear();
+  for(const url of cache.values())URL.revokeObjectURL(url);
+  cache.clear();queued.clear();tail=Promise.resolve();
+ }
+ window.addEventListener("pagehide",clear);
+ client.auth.onAuthStateChange(event=>{if(event==="SIGNED_OUT")clear()});
+ function setPaused(value){
+  const next=!!value;if(next===paused)return;
+  paused=next;
+  if(paused){epoch++;for(const ctl of controllers)ctl.abort();queued.clear();tail=Promise.resolve()}
+ }
+ function get(a){
+  if(cache.has(a.id))return Promise.resolve(cache.get(a.id));
+  if(paused)return Promise.reject(Error("Preview paused for playback"));
   if(queued.has(a.id))return queued.get(a.id);
-  const version=epoch;
-  const job=tail.then(async()=>{
-   if(version!==epoch||paused)throw Error('Preview session changed');
-   const task=new AbortController();controller=task;
-   try{const blob=await readWorldVideo(client,a,{signal:task.signal}),jpeg=await frameFromBlob(blob,task.signal);
-   if(version!==epoch||paused)throw Error('Preview session changed');
-   const url=URL.createObjectURL(jpeg);cache.set(a.id,url);return url;}finally{if(controller===task)controller=null}
-  });
-  tail=job.catch(()=>{});queued.set(a.id,job);
-  try{return await job}finally{if(queued.get(a.id)===job)queued.delete(a.id)}
+  const ticket=epoch,ctl=new AbortController();controllers.add(ctl);
+  const task=(async()=>{
+   let jpeg=await readWorldVideoPoster(client,a.id,ctl.signal);
+   if(!jpeg){
+    const session=(await client.auth.getSession()).data?.session;
+    if(a.owner_id!==session?.user?.id)throw Error("Poster pending owner generation");
+    // Old videos are backfilled once by their authorized owner.
+    // New uploads generate this image from the local file, no download.
+    const generate=tail.then(async()=>{
+     if(ticket!==epoch||paused||ctl.signal.aborted)throw Error("Preview session changed");
+     const original=await readWorldVideo(client,a,{signal:ctl.signal});
+     const image=await createWorldVideoPoster(original,ctl.signal);
+     await saveWorldVideoPoster(client,a.id,image,ctl.signal);
+     return image;
+    });
+    tail=generate.catch(()=>{});
+    jpeg=await generate;
+   }
+   if(ticket!==epoch||paused||ctl.signal.aborted)throw Error("Preview session changed");
+   if(!(jpeg instanceof Blob)||!jpeg.size||jpeg.size>512*1024||!jpeg.type.startsWith("image/"))throw Error("Poster invalid");
+   const url=URL.createObjectURL(jpeg);cache.set(a.id,url);return url;
+  })().finally(()=>{controllers.delete(ctl);if(queued.get(a.id)===task)queued.delete(a.id)});
+  queued.set(a.id,task);return task;
  }
  function mount(a,img){
-  const run=()=>{if(!img.isConnected)return;get(a).then(url=>{if(img.isConnected){img.src=url;img.hidden=false}}).catch(()=>{if(img.isConnected)img.dataset.previewUnavailable='true'})};
+  const run=()=>{
+   if(!img.isConnected)return;
+   get(a).then(url=>{
+    if(img.isConnected){img.src=url;img.hidden=false;img.removeAttribute("data-preview-unavailable")}
+   }).catch(error=>{
+    if(img.isConnected){img.dataset.previewUnavailable="true";img.dataset.previewReason=String(error?.message||"Preview unavailable").slice(0,90)}
+   });
+  };
   if(cache.has(a.id)){img.src=cache.get(a.id);img.hidden=false;return}
-  if(!('IntersectionObserver' in window)){requestAnimationFrame(run);return}
-  const observer=new IntersectionObserver(entries=>{for(const entry of entries)if(entry.isIntersecting){observer.disconnect();run()}},{rootMargin:'60px'});
+  if(!("IntersectionObserver" in window)){requestAnimationFrame(run);return}
+  const observer=new IntersectionObserver(entries=>{
+   for(const entry of entries)if(entry.isIntersecting){observer.disconnect();run()}
+  },{rootMargin:"120px"});
   observer.observe(img.parentElement||img);
-  // Detached tile observers are cleaned up even when they never enter view.
   setTimeout(()=>observer.disconnect(),30000);
  }
  return {mount,get,clear,setPaused};

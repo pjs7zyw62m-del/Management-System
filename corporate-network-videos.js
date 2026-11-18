@@ -1,7 +1,7 @@
 /* BLACKCELL Video Channel: content-first, YouTube-like navigation,
    Shorts and private Plex-style library. All videos come from already
    approved Network assets; personal likes/history are device-local. */
-import {isWorldVideo,worldVideoTitle} from './blackcell-world-video-catalog.js?v=3-playback-priority';
+import {isWorldVideo,worldVideoTitle} from './blackcell-world-video-catalog.js?v=20261117-persisted-posters1';
 export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,attachRenderedWorld,bindTransfer,loadVideoComments,addVideoComment,shareVideoInside,followChannel,channelAvatar,state,mediaUrl,posterUrl,posterVersions,sharedMedia,profile,personName,stamp,switchView,openProfile,uploadVideo,playStream,reviewStream,refreshStream,toast}){
  const $=id=>document.getElementById(id);
  const make=(tag,cls='',value=null)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(value!==null)el.textContent=String(value);return el};
