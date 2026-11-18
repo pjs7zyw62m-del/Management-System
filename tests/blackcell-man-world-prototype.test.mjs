@@ -32,3 +32,21 @@ test("Sensitive member world preferences are not persisted in this prototype",()
  assert.doesNotMatch(html,/\blocalStorage\b|\bsessionStorage\b|\bfetch\s*\(|\bXMLHttpRequest\b/);
  assert.doesNotMatch(html,/supabase|service_role|process\.env/i);
 });
+
+test("All worlds render as selectable, floating circular glass bubbles",()=>{
+ assert.match(html,/FLOATING GLASS BUBBLE UNIVERSE/);
+ assert.match(html,/\.world\{[\s\S]*?border-radius:50%/);
+ assert.match(html,/\.world\[aria-pressed=true\]/);
+ assert.match(html,/@keyframes worldDrift/);
+ assert.match(html,/const orbit=\{/);
+ assert.match(html,/button\.dataset\.world=w\.id/);
+ assert.match(html,/--diameter/);
+ assert.match(html,/\.home-card\{[\s\S]*?border-radius:50%/);
+});
+test("Bubbles reflow on tablets and phones, with reduced-motion support",()=>{
+ assert.match(html,/@media\(max-width:1100px\)/);
+ assert.match(html,/@media\(max-width:600px\)/);
+ assert.match(html,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+ assert.match(html,/prefers-reduced-motion:reduce/);
+ assert.match(html,/root\.classList\.toggle\("is-filtering",query\.length>0\)/);
+});
