@@ -1,52 +1,30 @@
-# BLACKCELL MAN WORLD — Onboarding Concept
+# BLACKCELL MAN WORLD — Realistic HTML Preview
 
-BLACKCELL MAN WORLD is a standalone, opt-in, post-signup **SELECT YOUR WORLD** prototype. The rejected gallery-first BLACKCELL MEN design was not merged into production.
+## Purpose
 
-## Chosen worlds (10)
-1. Leather
-2. Rubber
-3. Pup Play
-4. BDSM
-5. Findom
-6. Underwear
-7. Bondage
-8. Gear
-9. Sportswear
-10. Uniform
+Standalone post-signup community discovery proof of concept for the BLACKCELL Corporation MAN WORLD brand. The latest design was approved visually in a conceptual render, then converted into a functioning HTML/CSS/JavaScript preview. It is **not** a production deployment or live membership app.
 
-## Visual design
-- Reuses the **concept** of the existing BLACKCELL profile world's selection bubbles: evenly sized stationary circles in a responsive grid, with the icon inside and labels **below** the circle.
-- Each circle has a muted outline by default; **selection is indicated exclusively by a crimson border, soft red glow, and a slightly brighter image. No checkmarks appear.**
-- The page uses the pitch-black, minimal silver-and-crimson BLACKCELL OS aesthetic with restrained glass surfaces and near-black controls.
-- **Photo-led hubs:** full-bleed photo inside every circle, dark bottom fade, category symbol and large text overlaid, with a short teaser below; never a rectangular card.
-- Temporary preview photos load from third-party Unsplash/Pexels editorial/free-license sources; a missing image reveals the built-in category graphic. Before production replace all external images with reviewed BLACKCELL-hosted media, verify each applicable image license and consent, and eliminate third-party requests.
-- The reference sites also show a private paid media archive called The Vault. Payment/creator-vault functionality is **not** implemented by this visual onboarding change.
-- No floating, orbiting, bouncing, or layout-shifting motion.
-- Desktop uses five columns, tablets three or four, phones two.
-- The personalized second-screen choices use the same stationary circular language.
+## Design
 
-## Visual Hierarchy 6.0 · Photographic impact with BLACKCELL restraint
-
-The user's comparison to the reference page highlighted a specific gap: BLACKCELL's page had too much empty black space and its two hero men were too hidden to establish the intended male-focused attraction. This version uses the reference only for general hierarchy, **not copied art or markup**.
-
-- Full-bleed, multi-portrait male hero with five existing BLACKCELL-owned/repository uniform-world portrait assets, subtle crimson dividers and a black editorial gradient for readable copy. The portrait panels are full-height with no rotation, no standalone cards and no giant outlined lettering.
-- Polished, Apple-influenced interface treatment with understated smoked glass and a strong but concise CTA that scrolls to the worlds.
-- More legible, brighter approved circular photo bubbles; unselected bubbles stay subtle, a selected bubble only gets a red ring and image lift, no checkmark.
-- Tighter content spacing to bring the world directory higher into view with bold but professional typography.
-- All 10 original categories, multi-select, search, skip, subsequent home preview and editing remain intact.
-- The actual production BLACKCELL OS is not touched, and no member interests are saved in this prototype. Reference page images are **not copied**.
-- Existing third-party images inside individual category circles remain temporary preview assets, subject to image licensing, consent, and BLACKCELL-owned media review before live use.
+- Uses the user's approved **black/steel/red hexagonal BLACKCELL Corporation logo**, not a fictional umbrella corporate symbol.
+- Renders a full-width cinematic corporate sci-fi hero with armored adult male figures and a laboratory environment.
+- Embedded, rights-controlled-for-prototype-only image crops originate from the user-approved AI-generated preview graphic. The logo is also embedded, so external image hosting is unnecessary.
+- True-black, brushed-metal and silver styling, red accents, responsive card directory, chrome effect and Level 04 footer.
+- Ten discoverable category tiles: **Leather, Rubber, Pup Play, BDSM, Findom, Underwear, Bondage, Gear, Sportswear, Uniform.**
+- The latest approved design uses **rectangular photo tiles**, not the older circular category-selection variant.
+- The self-contained HTML is approximately 0.84 MB. It embeds one logo PNG and compressed WebP imagery to prevent broken external assets.
 
 ## Prototype behavior
-- Standalone `blackcell-man-world-prototype.html`, with searchable categories, multi-select, skip, continue, and edit choices.
-- These names are interest-based discovery spaces, **not** assumptions about a user's identity or participation.
-- No image catalog or explicit content is included, and no account or media is created.
-- No personal selections are transmitted, saved, or linked to the existing profile. The production OS, App Store, auth, and database remain unchanged.
 
-## Before a public release
-- Confirm category naming, images, any opt-in adult-content areas, and how this will integrate with profile worlds.
-- Build a voluntary, editable, private preference system with authorization safeguards.
-- Add appropriate age/identity gating, user consent, rules, reporting, moderation and rights checks.
-- Findom may involve money or financial power dynamics: discussions must be voluntary and clearly distinguished from payment handling; do not add payment features without specialized compliance review.
+- Selecting a world toggles its visual red highlight; multiple worlds can be selected. No checkmarks.
+- Search filters choices; Enter My World transitions to a local personalized selection screen; Change Worlds returns to the directory.
+- Some other menus show explicit preview-only notifications instead of pretending there are working backend features.
+- All selections are in memory. The prototype does not persist user interests or create accounts.
+- Personal preferences, payment handling, social posting, adult-media serving, authentication, moderation, and age verification are **not implemented**.
+- Private, adult-only, permission-based participation and accurate age assurance are required before any real public adult release.
 
-Preview branch: `man-world-preview`. It serves the same static HTML preview URL after updates, subject to preview cache timing.
+## Review and deployment
+
+Updated on branch `man-world-preview`, at `blackcell-man-world-prototype.html`. The persistent branch-based preview URL can be refreshed after each update, subject to third-party preview cache delays.
+
+The real production BLACKCELL OS is unchanged. Do not merge this draft into `main` until the user explicitly authorizes release.
