@@ -25,17 +25,16 @@ BLACKCELL MAN WORLD is a standalone, opt-in, post-signup **SELECT YOUR WORLD** p
 - Desktop uses five columns, tablets three or four, phones two.
 - The personalized second-screen choices use the same stationary circular language.
 
-## BLACKCELL OS native-window redesign · 3.0
-- The 10 approved **photographic bubbles are retained** as static, circular, darkened photo hubs, with their existing category copy and crimson ring/highlight when selected. No checkmarks.
-- Replaced the web-landing-page approach with a **BLACKCELL OS desktop application** pattern based on the repository's actual OS UI:
-  - A compact top system/menu bar, clock, and exit to BLACKCELL OS.
-  - A self-contained app window with a slim titlebar, translucent Finder-like navigation sidebar (Discover, My Worlds) and concise native toolbar.
-  - A clean black workspace showing the original photo-bubble directory directly, with no promotional hero card or layered marketing panels.
-  - A dock-like bottom selection strip for counts and continue/not-now actions; a subtle status strip under it.
-  - A corresponding "My Worlds" screen that uses the user's selected circular image hubs.
-  - Mobile navigation tabs when the sidebar is hidden, internal scrolling with hidden scrollbars, and constrained responsive bubble sizing.
-- The sidebar/toolbar and bottom dock follow existing `blackcell-os-desktop-refresh.css` desktop visual language (near-black charcoal, restrained glass, soft silver typography and limited crimson).
-- The initial preview is an isolated standalone page. No production code, account data or real preferences have been changed.
+## Cinematic editorial experience · 4.0
+The user rejected the simulated desktop-app styling because the page needed to be *visually attractive to men*, not simply resemble an operating system. The new preview is a full-width cinematic BLACKCELL MAN WORLD landing/onboarding experience:
+
+- Bold editorial hero: **FIND YOUR WORLD.**, strong contrast, prominent BLACKCELL-branded male portrait collage using locally available Man's Armed Forces artwork.
+- High-impact black + crimson styling and clean, Apple-inspired typography and control polish, without a fake macOS menu or sidebar.
+- The 10 approved photo **world bubbles remain circles**, with red outline/glow for multi-selection, stronger photo visibility, and no checkmarks or floating motion.
+- The world selection screen is the primary attraction; a premium glass control bar shows the selection count, selected names and *Enter My World* action.
+- A clean second screen summarizes selected communities and allows editing.
+- Responsive and mobile friendly. User preferences remain in memory only, not saved or transmitted.
+- Editorial example photo URLs for individual hubs are temporary third-party sources. Before production, replace them with verified rights-cleared, consensual, BLACKCELL-hosted photography. The three hero portraits use existing repository assets.
 
 ## Prototype behavior
 - Standalone `blackcell-man-world-prototype.html`, with searchable categories, multi-select, skip, continue, and edit choices.
