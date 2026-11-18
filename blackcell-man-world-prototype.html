@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#08090b"><meta name="robots" content="noindex,nofollow">
+<title>BLACKCELL MAN WORLD — Select Your World</title>
+<style>
+:root{color-scheme:dark;--bg:#060609;--ink:#f5f5f7;--muted:#9a9aa3;--line:#ffffff1b;--red:#d2354b;--glass:#1a1b20e8;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink)}body{overflow-x:hidden}button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible{outline:2px solid #fa8898;outline-offset:3px}button:disabled{cursor:not-allowed;opacity:.4}a{color:inherit;text-decoration:none}[hidden]{display:none!important}
+.background{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse at 80% -15%,#64243739,transparent 50%),radial-gradient(ellipse at 10% 75%,#49253619,transparent 42%),#08090c}
+.background:after{content:"";position:absolute;inset:0;opacity:.22;background-image:linear-gradient(#ffffff07 1px,transparent 1px),linear-gradient(90deg,#ffffff07 1px,transparent 1px);background-size:66px 66px;mask-image:linear-gradient(to bottom,transparent,black 35%,transparent)}
+.shell{position:relative;z-index:1;min-height:100dvh;display:flex;flex-direction:column;width:min(100%,1580px);margin:0 auto}
+.top{min-height:74px;border-bottom:1px solid var(--line);padding:13px clamp(18px,4.5vw,68px);display:flex;align-items:center;justify-content:space-between;gap:16px;background:#090a0dbb;backdrop-filter:blur(15px)}
+.brand{display:flex;align-items:center;gap:12px}.brand-mark{display:grid;place-items:center;width:38px;height:38px;border-radius:11px;background:linear-gradient(145deg,#6a2433,#1b1219);border:1px solid #ec70833b;font-size:23px;box-shadow:0 6px 25px #f0445318;font-weight:850}.brand b{font-size:13px;letter-spacing:.11em;white-space:nowrap}.brand small{display:block;font-size:9px;color:#ea6b7e;letter-spacing:.23em;margin-top:5px}
+.top-right{display:flex;gap:12px;align-items:center}.tag{font-size:10px;font-weight:750;letter-spacing:.13em;color:#bdbfc8;border:1px solid #ffffff2a;border-radius:7px;padding:6px 9px}.back{font-size:12px;color:#afb0b8;padding:9px}.back:hover{text-decoration:underline}
+main{flex:1;padding:clamp(27px,4.5vw,66px) clamp(17px,4.5vw,68px) 48px;max-width:1530px;width:100%;margin:0 auto}
+.intro{display:flex;justify-content:space-between;gap:16px;align-items:flex-end;margin-bottom:31px}.eyebrow{font-size:10px;color:#f28c9b;letter-spacing:.24em;font-weight:800;text-transform:uppercase}.intro h1{font-size:clamp(38px,5.6vw,73px);line-height:1.04;letter-spacing:-.06em;margin:12px 0 12px;font-weight:800}.intro h1 span{color:#e14b61}.intro p{font-size:14px;line-height:1.7;max-width:600px;margin:0;color:#aaaab4}.step{display:flex;gap:9px;align-items:center;white-space:nowrap;font-size:11px;letter-spacing:.06em;color:#a2a3ac}.step i{width:55px;height:3px;background:#a42e42;border-radius:4px;display:block}.step i+ i{background:#ffffff1b}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:13px;margin-bottom:14px}.toolbar strong{font-size:12px;letter-spacing:.1em}.toolbar small{color:#858893;font-size:11px;margin-left:11px}.search{position:relative}.search input{border:1px solid #ffffff25;border-radius:11px;color:#e9e9ee;background:#15161b;padding:11px 14px 11px 34px;font-size:12px;min-width:230px;max-width:100%}.search:before{content:"⌕";position:absolute;left:12px;top:0px;font-size:25px;color:#a1a1aa}
+.worlds{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}.world{position:relative;overflow:hidden;min-height:180px;display:flex;flex-direction:column;align-items:start;text-align:left;padding:20px;border:1px solid #ffffff20;border-radius:18px;color:var(--ink);background:radial-gradient(ellipse at 95% 8%,var(--glow),transparent 63%),linear-gradient(143deg,#1d2026,#0c0d10);transition:transform .2s,border-color .2s,background .2s}.world:before{content:"";position:absolute;right:-22px;bottom:-38px;width:151px;height:151px;border:1px solid #ffffff12;transform:rotate(27deg);border-radius:42px;box-shadow:0 0 0 24px #ffffff05,0 0 0 49px #ffffff04}
+.world:hover{border-color:#e16a7d65;transform:translateY(-3px)}.world[aria-pressed=true]{border-color:#f37082;box-shadow:inset 0 0 0 1px #f3708247,0 8px 30px #b92a4124;background:radial-gradient(ellipse at 95% 8%,var(--glow),transparent 64%),linear-gradient(140deg,#341e28,#151317)}
+.world-top{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;position:relative;z-index:1}.world-number{font-size:10px;font-weight:750;letter-spacing:.2em;color:#a9a3aa}.check{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;border:1px solid #ffffff43;font-size:14px;color:transparent}.world[aria-pressed=true] .check{background:#da435a;color:white;border-color:#e8798b}.symbol{font-size:27px;margin:auto 0 12px;position:relative;z-index:1;color:#f6c1c9;font-weight:500}.world-name{position:relative;z-index:1;font-size:17px;letter-spacing:-.035em;font-weight:800;margin-bottom:6px}.world-sub{position:relative;z-index:1;font-size:11px;line-height:1.5;color:#b0adb7;max-width:260px}
+.selection{position:sticky;bottom:10px;z-index:5;margin-top:26px;border:1px solid #ffffff29;border-radius:18px;background:#1b1c22ef;backdrop-filter:blur(20px);box-shadow:0 20px 80px #0009;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:15px}
+.selection strong{font-size:14px}.selection p{font-size:11px;color:#aaaab6;margin:6px 0 0}.selection-actions{display:flex;align-items:center;gap:10px}.primary,.secondary{border:1px solid #b9364d;background:#bf3149;color:#fff;border-radius:12px;font-size:12px;min-height:43px;padding:0 20px;font-weight:750}.primary:not(:disabled):hover{background:#de465b}.secondary{background:#22242a;border-color:#ffffff2a}.secondary:hover{background:#32343a}
+footer{margin-top:auto;padding:19px clamp(18px,4.5vw,68px) 27px;border-top:1px solid #ffffff0e;display:flex;justify-content:space-between;gap:15px;color:#878994;font-size:10px}
+.empty{border:1px dashed #ffffff2c;border-radius:13px;padding:25px;text-align:center;color:#a5a5ae}
+.home{max-width:1000px;margin:0 auto;min-height:70dvh}.home-head{border-bottom:1px solid var(--line);padding-bottom:28px}.home h2{font-size:clamp(35px,5vw,58px);margin:12px 0;letter-spacing:-.045em}.home p{color:#aaabb4;line-height:1.7;font-size:14px}.home-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:27px}.home-card{border:1px solid #ffffff25;border-radius:17px;background:#16171dcc;padding:24px;min-height:190px}.home-card b{display:block;font-size:22px;margin:16px 0 8px}.home-card small{font-size:12px;color:#a5a4ad;line-height:1.5}.home-card .emblem{font-size:27px;color:#e66a7c}
+.notice{font-size:11px!important;color:#8f919b!important}
+@media(max-width:1150px){.worlds{grid-template-columns:repeat(3,minmax(0,1fr))}.world{min-height:175px}.home-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:680px){.top{min-height:64px}.top-right .tag,.step{display:none}.brand b{font-size:11px}.intro{margin-bottom:26px}.intro h1{font-size:40px}.intro p{font-size:12px}.toolbar{align-items:flex-start;flex-direction:column}.search,.search input{width:100%;max-width:none}.worlds{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.world{min-height:165px;padding:15px;border-radius:15px}.world-name{font-size:15px}.world-sub{font-size:10px}.symbol{font-size:24px}.selection{padding:13px;bottom:7px}.selection strong{font-size:12px}.selection p{font-size:10px;max-width:185px}.selection .primary{padding:0 13px}.home-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.home-card{min-height:155px;padding:16px}.home-card b{font-size:17px}footer{display:block;line-height:2}}
+@media(max-width:400px){.world-name{font-size:14px}.world-sub{font-size:10px}.world{min-height:165px}.home-grid{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head><body>
+<div class="background" aria-hidden="true"></div>
+<div class="shell">
+<header class="top">
+ <div class="brand"><span class="brand-mark">B</span><span><b>BLACKCELL</b><small>MAN WORLD</small></span></div>
+ <div class="top-right"><span class="tag">ONBOARDING PROTOTYPE</span><a href="blackcell-os.html" class="back">Exit preview ↗</a></div>
+</header>
+<main>
+<section id="chooser" aria-labelledby="chooseHeading">
+ <div class="intro"><div><span class="eyebrow">WELCOME TO BLACKCELL MAN WORLD · STEP 01</span><h1 id="chooseHeading">SELECT <span>YOUR WORLD.</span></h1><p>Every man has his interests. Choose the worlds you want to explore. Select as many as you like. You can always discover more later.</p></div><div class="step" aria-hidden="true">01 <i></i><i></i> 02</div></div>
+ <div class="toolbar"><div><strong>DISCOVER YOUR COMMUNITIES</strong><small>12 worlds available</small></div><label class="search"><input id="search" type="search" autocomplete="off" placeholder="Search for a world…" aria-label="Search worlds"></label></div>
+ <div class="worlds" id="worldGrid" aria-label="Choose your worlds"></div>
+ <div class="empty" id="empty" hidden>No worlds match that search.</div>
+ <div class="selection"><div><strong id="selectedCount" aria-live="polite">No worlds selected</strong><p>Choose your own experience. Your selections remain on this page only.</p></div><div class="selection-actions"><button type="button" class="secondary" id="skip">Skip</button><button type="button" class="primary" id="continue" disabled>Enter My World →</button></div></div>
+</section>
+<section class="home" id="home" hidden aria-labelledby="homeTitle">
+ <div class="home-head"><span class="eyebrow">BLACKCELL MAN WORLD / PERSONAL EXPERIENCE</span><h2 id="homeTitle">Welcome to <span style="color:#e34d63">your world.</span></h2><p id="homeIntro">Your selected communities appear here. A real member homepage would bring together galleries, media, discussions, events and creators from these interests.</p><button type="button" id="editSelection" class="secondary">← Change my worlds</button></div>
+ <div class="home-grid" id="homeGrid"></div>
+ <p class="notice">Demonstration only. No user account is created, no interests are uploaded, and no adult media is served.</p>
+</section>
+</main>
+<footer><span>© BLACKCELL CORPORATION · MAN WORLD PRIVATE CONCEPT</span><span>Adults 18+ envisioned · Content verification, moderation and real account storage not implemented</span></footer>
+</div>
+<script>
+(function(){
+"use strict";
+const worlds=[
+{id:"uniform",name:"Uniform World",sub:"Military, police, fire, corrections and workwear",symbol:"♜",glow:"#993b5380"},
+{id:"bear",name:"Bear World",sub:"Bears, cubs, otters, wolves and admirers",symbol:"◆",glow:"#84604470"},
+{id:"daddy",name:"Daddy World",sub:"Mature men, silver foxes and admirers",symbol:"♛",glow:"#94704e70"},
+{id:"muscle",name:"Muscle World",sub:"Fitness, gym culture, bodybuilders and jocks",symbol:"✚",glow:"#51587f80"},
+{id:"leather",name:"Leather World",sub:"Leather, gear, bikers and consensual kink",symbol:"✥",glow:"#762a327d"},
+{id:"twink",name:"Twink World",sub:"Adult twinks, twunks and young-adult styles",symbol:"✧",glow:"#6c517d75"},
+{id:"sports",name:"Sports World",sub:"Athletes, teams, sport and competition",symbol:"◈",glow:"#3f6c6b70"},
+{id:"rugged",name:"Rugged World",sub:"Outdoorsmen, blue-collar styles and workwear",symbol:"⛰",glow:"#6554438a"},
+{id:"nightlife",name:"Nightlife World",sub:"Music, clubs, drag, bars and events",symbol:"♫",glow:"#7b3f8d83"},
+{id:"creator",name:"Creator World",sub:"Photographers, performers and artists",symbol:"▣",glow:"#7b4f6a70"},
+{id:"connection",name:"Connection World",sub:"Friends, relationships and conversations",symbol:"♡",glow:"#a54b6570"},
+{id:"pride",name:"Pride World",sub:"LGBTQ+ culture, history and community",symbol:"✦",glow:"#4a668e70"}
+];
+const $=id=>document.getElementById(id),selected=new Set();let query="";
+function create(tag,cls,txt){const el=document.createElement(tag);if(cls)el.className=cls;if(txt!==undefined)el.textContent=txt;return el}
+function updateSelection(){
+$("selectedCount").textContent=selected.size?selected.size+" world"+(selected.size===1?"":"s")+" selected":"No worlds selected";
+$("continue").disabled=selected.size===0;
+$("continue").textContent=selected.size?"Enter My World →":"Select a World →";
+}
+function render(){
+ const root=$("worldGrid");root.replaceChildren();
+ const subset=worlds.filter(w=>(w.name+" "+w.sub).toLowerCase().includes(query.toLowerCase()));
+ $("empty").hidden=subset.length>0;
+ for(const [index,w] of worlds.entries()){
+  if(!subset.includes(w))continue;
+  const button=create("button","world");button.type="button";button.style.setProperty("--glow",w.glow);
+  button.setAttribute("aria-pressed",String(selected.has(w.id)));
+  button.setAttribute("aria-label","Select "+w.name+" — "+w.sub);
+  const upper=create("span","world-top"),no=create("span","world-number",String(index+1).padStart(2,"0")+" / WORLD"),check=create("span","check",selected.has(w.id)?"✓":"");
+  check.setAttribute("aria-hidden","true");upper.append(no,check);
+  const symbol=create("span","symbol",w.symbol);symbol.setAttribute("aria-hidden","true");
+  button.append(upper,symbol,create("span","world-name",w.name),create("span","world-sub",w.sub));
+  button.onclick=()=>{selected.has(w.id)?selected.delete(w.id):selected.add(w.id);render()};
+  root.append(button);
+ }
+ updateSelection();
+}
+function openHome(){
+ $("chooser").hidden=true;$("home").hidden=false;window.scrollTo({top:0,behavior:"instant"});
+ const list=worlds.filter(w=>selected.has(w.id)),root=$("homeGrid");root.replaceChildren();
+ $("homeIntro").textContent=list.length?"You selected "+list.length+" world"+(list.length===1?"":"s")+". These become the foundations of your personalized BLACKCELL homepage.":"You can explore all worlds now and choose favorites later.";
+ const chosen=list.length?list:worlds;
+ for(const w of chosen){
+  const tile=create("article","home-card"),symbol=create("span","emblem",w.symbol);
+  tile.append(symbol,create("b","",w.name),create("small","",w.sub));root.append(tile);
+ }
+}
+$("search").addEventListener("input",e=>{query=e.target.value.trim().slice(0,100);render()});
+$("continue").onclick=openHome;$("skip").onclick=openHome;
+$("editSelection").onclick=()=>{$("chooser").hidden=false;$("home").hidden=true;window.scrollTo({top:0,behavior:"instant"});render()};
+render();
+})();
+</script>
+</body></html>
