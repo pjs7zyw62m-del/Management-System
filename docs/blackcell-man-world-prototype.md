@@ -1,35 +1,36 @@
 # BLACKCELL MAN WORLD — Onboarding Concept
 
-This replaces the rejected BLACKCELL MEN direction **as a new concept**, not an update to the live OS.
+BLACKCELL MAN WORLD is a standalone, opt-in, post-signup **SELECT YOUR WORLD** prototype. The rejected gallery-first BLACKCELL MEN design was not merged into production.
 
-A post-signup selection experience: **SELECT YOUR WORLD**. Members may choose more than one community. World selections personalize the **Your World** home screen with each community's photos, videos, creators, discussion spaces and recommendations once a real backend is built.
+## Chosen worlds (10)
+1. Leather
+2. Rubber
+3. Pup Play
+4. BDSM
+5. Findom
+6. Underwear
+7. Bondage
+8. Gear
+9. Sportswear
+10. Uniform
 
-## Proposed launch worlds
-1. Uniform World
-2. Bear World
-3. Daddy World
-4. Muscle World
-5. Leather World
-6. Twink World
-7. Sports World
-8. Rugged World
-9. Nightlife World
-10. Creator World
-11. Connection World
-12. Pride World
+## Visual design
+- Reuses the **concept** of the existing BLACKCELL profile world's selection bubbles: evenly sized stationary circles in a responsive grid, with the icon inside and labels **below** the circle.
+- Each circle has a muted outline by default and a colored outline plus check when selected.
+- No floating, orbiting, bouncing, or layout-shifting motion.
+- Desktop uses five columns, tablets three or four, phones two.
+- The personalized second-screen choices use the same stationary circular language.
 
-These worlds represent interests and subcultures; they are not eligibility tests, rigid identities or automatic inferences. Members can opt out or change their choices.
+## Prototype behavior
+- Standalone `blackcell-man-world-prototype.html`, with searchable categories, multi-select, skip, continue, and edit choices.
+- These names are interest-based discovery spaces, **not** assumptions about a user's identity or participation.
+- No image catalog or explicit content is included, and no account or media is created.
+- No personal selections are transmitted, saved, or linked to the existing profile. The production OS, App Store, auth, and database remain unchanged.
 
-## Prototype
-- `blackcell-man-world-prototype.html` is a standalone, responsive static page.
-- Selection, search, skip, continue and editing the chosen worlds are functional in-memory.
-- No media is embedded, no account is created, and no interests are transmitted, persisted or linked to an authenticated user.
-- Visual style follows the ultra-dark BLACKCELL OS direction and uses no third-party images.
-- The existing OS App Store and auth remain unchanged. The concept is **not deployed to production**.
+## Before a public release
+- Confirm category naming, images, any opt-in adult-content areas, and how this will integrate with profile worlds.
+- Build a voluntary, editable, private preference system with authorization safeguards.
+- Add appropriate age/identity gating, user consent, rules, reporting, moderation and rights checks.
+- Findom may involve money or financial power dynamics: discussions must be voluntary and clearly distinguished from payment handling; do not add payment features without specialized compliance review.
 
-## Before a real launch
-- Decide whether the 12 world names/categories match the intended community.
-- Link onboarding to authenticated account registration only after the privacy policy and choices are approved.
-- Use voluntary, editable preference records with appropriate database permissions and consent.
-- Build distinct community pages and content models with opt-in adult-content visibility.
-- Add verified age gating, copyright and consent controls, moderation, reporting, blocking and applicable local legal compliance before hosting adult media.
+Preview branch: `man-world-preview`. It serves the same static HTML preview URL after updates, subject to preview cache timing.
