@@ -1,0 +1,44 @@
+name: BLACKCELL App Catalog Integrity
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'blackcell-os.js'
+      - 'blackcell-os.html'
+      - 'blackcell-os.css'
+      - 'blackcell-app-store.js'
+      - 'blackcell-the-hunt.html'
+      - 'blackcell-omega.html'
+      - 'blackcell-site-version.json'
+      - 'site-update-test-v2.html'
+      - 'tests/blackcell-app-catalog-integrity.test.mjs'
+      - '.github/workflows/blackcell-app-catalog-integrity.yml'
+  pull_request:
+    paths:
+      - 'blackcell-os.js'
+      - 'blackcell-os.html'
+      - 'blackcell-os.css'
+      - 'blackcell-app-store.js'
+      - 'blackcell-the-hunt.html'
+      - 'blackcell-omega.html'
+      - 'blackcell-site-version.json'
+      - 'site-update-test-v2.html'
+      - 'tests/blackcell-app-catalog-integrity.test.mjs'
+      - '.github/workflows/blackcell-app-catalog-integrity.yml'
+  workflow_dispatch:
+jobs:
+  app-catalog:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate desktop and App Store JavaScript
+        run: |
+          node --check blackcell-os.js
+          node --check blackcell-app-store.js
+      - name: Verify all app launch paths and safe retirement rules
+        run: node --test tests/blackcell-app-catalog-integrity.test.mjs

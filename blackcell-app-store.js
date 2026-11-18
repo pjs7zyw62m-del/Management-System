@@ -8,11 +8,50 @@ export function mountStore(host,api){
  const brand=make('div','bc-store-brand','App Store');rail.append(brand);
  const body=make('div','bc-store-body'),header=make('header','bc-store-header'),headline=make('h1','','Discover'),search=make('input','bc-store-search');
  search.type='search';search.placeholder='Search apps';search.setAttribute('aria-label','Search apps');search.autocomplete='off';
- const results=make('div','bc-store-results'),banner=make('div','bc-store-feedback');banner.setAttribute('role','status');const controls=make('div','bc-store-release-controls');const refresh=button('Refresh catalog','bc-store-get',async()=>{if(busy||disposed)return;refresh.disabled=true;try{const r=await api.refreshCatalog?.();banner.textContent=r?.ok?'Catalog refreshed.':r?.error||'Catalog refresh unavailable.';render()}catch(_){banner.textContent='Unable to refresh catalog.'}finally{refresh.disabled=false}});const release=button('Check OS update','bc-store-get',()=>{if(!busy)api.checkRelease?.()});controls.append(search,refresh,release);header.append(headline,controls);body.append(header,banner,results);host.append(rail,body);
+ const results=make('div','bc-store-results'),banner=make('div','bc-store-feedback');banner.setAttribute('role','status');const controls=make('div','bc-store-release-controls');const refresh=button('Refresh catalog','bc-store-get',async()=>{if(busy||disposed)return;refresh.disabled=true;try{const r=await api.refreshCatalog?.();banner.textContent=r?.ok?'Catalog refreshed.':r?.error||'Catalog refresh unavailable.';render()}catch(_){banner.textContent='Unable to refresh catalog.'}finally{refresh.disabled=false}});const release=button('Check OS update','bc-store-get',()=>{if(!busy)api.checkRelease?.()});const audit=button('Audit installed apps','bc-store-get',()=>{if(!busy)void auditInstalled()});const auditReport=make('section','bc-store-audit');auditReport.hidden=true;auditReport.setAttribute('aria-live','polite');controls.append(search,refresh,audit,release);header.append(headline,controls);body.append(header,banner,auditReport,results);host.append(rail,body);
  const initial=api.initialState||{};let category=['discover','installed','optional','upcoming'].includes(initial.category)?initial.category:'discover',detail=typeof initial.detail==='string'&&/^[a-z]{1,40}$/.test(initial.detail)?initial.detail:null,scrollTarget=Number.isFinite(initial.scroll)?Math.max(0,Math.min(100000,initial.scroll)):0,restoring=true,busy=false,disposed=false,scrollTimer=0,draft=null;search.value=typeof initial.search==='string'?initial.search.slice(0,160):'';
  function persist(){if(!disposed)api.onState?.({category,detail,search:search.value.slice(0,160),scroll:restoring?scrollTarget:body.scrollTop})}
  function navigate(fn){draft=null;bulkConfirm=false;restoring=false;fn();body.scrollTop=0;render();persist()}
  async function perform(fn,success){if(busy||disposed)return;busy=true;api.onBusy?.(true);host.setAttribute('aria-busy','true');try{const result=await fn();if(!disposed){banner.textContent=result.ok?success:result.error||'Operation failed.';if(result.ok)draft=null}}catch(_){if(!disposed)banner.textContent='Operation failed. Try again.'}finally{busy=false;host.removeAttribute('aria-busy');if(!disposed){render();api.onBusy?.(false)}}}
+ /* Check availability of currently installed same-origin app launch pages.
+  * A successful probe does not verify application features or cloud access.
+  * Never automatically uninstall, delete, or publish content. */
+ async function auditInstalled(){
+  if(busy||disposed)return;
+  audit.disabled=true;auditReport.hidden=false;
+  const installed=[...api.catalog().filter(a=>a.installed),...(api.worldCatalog?.()||[])];
+  auditReport.replaceChildren(make('strong','','CHECKING INSTALLED APP LAUNCH PAGES…'),
+   make('p','','This checks whether the deployed launch pages respond. Internal apps need manual functional tests.'));
+  const probe=new Map();
+  const statuses=installed.map(app=>{
+   if(!app.url)return Promise.resolve({app,status:'internal'});
+   let url;try{url=new URL(app.url,location.href)}catch{return Promise.resolve({app,status:'invalid route'})}
+   if(url.origin!==location.origin)return Promise.resolve({app,status:'external route'});
+   if(url.pathname.endsWith('/blackcell-os.html'))return Promise.resolve({app,status:'internal'});
+   if(!probe.has(url.pathname)){
+    probe.set(url.pathname,(async()=>{
+     const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),6000);
+     try{
+      const response=await fetch(url.pathname+'?_bc_app_audit='+Date.now(),{method:'HEAD',cache:'no-store',credentials:'same-origin',redirect:'follow',signal:controller.signal});
+      if(new URL(response.url,location.href).origin!==location.origin)return 'unexpected redirect';
+      return response.ok?'reachable':'HTTP '+response.status;
+     }catch{return 'unreachable'}
+     finally{clearTimeout(timer)}
+    })());
+   }
+   return probe.get(url.pathname).then(status=>({app,status}));
+  });
+  try{
+   const checked=await Promise.all(statuses);
+   if(disposed)return;
+   const ok=checked.filter(x=>x.status==='reachable').length,internal=checked.filter(x=>x.status==='internal').length;
+   const bad=checked.filter(x=>!['reachable','internal'].includes(x.status));
+   auditReport.replaceChildren(make('strong','',checked.length+' INSTALLED · '+ok+' ROUTES REACHABLE · '+internal+' INTERNAL · '+bad.length+' TO REVIEW'),
+    make('p','','Launch-page availability only. A reachable page may still have broken features. No apps, account records or media were changed.'));
+   if(bad.length)for(const item of bad)auditReport.append(make('p','','CHECK '+item.app.title+' · '+item.status));
+   else auditReport.append(make('p','','No missing launch pages detected. Open each app to verify its features.'));
+  }finally{audit.disabled=false}
+ }
  const categories=[['discover','Discover','✦'],['installed','Installed','▦'],['optional','All add-ons','⊕'],['upcoming','Coming Soon','◷']];
  const navButtons=categories.map(([id,name,icon])=>{const b=button(icon+'  '+name,'bc-store-nav',()=>navigate(()=>{category=id;detail=null;search.value=''}));rail.append(b);return [id,b]});
  rail.append(make('p','bc-store-railnote','BLACKCELL CORPORATION\nRestricted distribution'));
