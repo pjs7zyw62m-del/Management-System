@@ -1,0 +1,41 @@
+name: BLACKCELL Branded Private Media
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'media/**'
+      - 'corporate-network.html'
+      - 'corporate-network.js'
+      - 'corporate-network-photos.js'
+      - 'corporate-photos-original.html'
+      - 'corporate-photos-original.js'
+      - 'tests/blackcell-branded-media.test.mjs'
+      - '.github/workflows/blackcell-branded-media.yml'
+  pull_request:
+    paths:
+      - 'media/**'
+      - 'corporate-network.html'
+      - 'corporate-network.js'
+      - 'corporate-network-photos.js'
+      - 'corporate-photos-original.html'
+      - 'corporate-photos-original.js'
+      - 'tests/blackcell-branded-media.test.mjs'
+      - '.github/workflows/blackcell-branded-media.yml'
+  workflow_dispatch:
+jobs:
+  branded-media-integrity:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check browser scripts
+        run: |
+          node --check corporate-photos-original.js
+          node --check corporate-network-photos.js
+          node --check corporate-network.js
+      - name: Test branded private media links and checks
+        run: node --test tests/blackcell-branded-media.test.mjs

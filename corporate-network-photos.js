@@ -902,7 +902,7 @@ export function setupBlackcellPhotos({client,bucket,state,toast,mediaUrl,uploadA
   const a=viewerCurrent();if(!a)return;
   // This is a separate authenticated page, not a public link.
   const anchor=document.createElement('a');
-  anchor.href='corporate-photos-original.html?id='+encodeURIComponent(a.id);
+  anchor.href='media/?id='+encodeURIComponent(a.id);
   anchor.target='_blank';anchor.rel='noopener';
   document.body.append(anchor);anchor.click();anchor.remove();
  }
