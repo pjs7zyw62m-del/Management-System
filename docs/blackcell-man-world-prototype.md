@@ -25,16 +25,17 @@ BLACKCELL MAN WORLD is a standalone, opt-in, post-signup **SELECT YOUR WORLD** p
 - Desktop uses five columns, tablets three or four, phones two.
 - The personalized second-screen choices use the same stationary circular language.
 
-## Cinematic editorial experience · 4.0
-The user rejected the simulated desktop-app styling because the page needed to be *visually attractive to men*, not simply resemble an operating system. The new preview is a full-width cinematic BLACKCELL MAN WORLD landing/onboarding experience:
+## NOCTURNE 5.0 · BLACKCELL dark editorial
 
-- Bold editorial hero: **FIND YOUR WORLD.**, strong contrast, prominent BLACKCELL-branded male portrait collage using locally available Man's Armed Forces artwork.
-- High-impact black + crimson styling and clean, Apple-inspired typography and control polish, without a fake macOS menu or sidebar.
-- The 10 approved photo **world bubbles remain circles**, with red outline/glow for multi-selection, stronger photo visibility, and no checkmarks or floating motion.
-- The world selection screen is the primary attraction; a premium glass control bar shows the selection count, selected names and *Enter My World* action.
-- A clean second screen summarizes selected communities and allows editing.
-- Responsive and mobile friendly. User preferences remain in memory only, not saved or transmitted.
-- Editorial example photo URLs for individual hubs are temporary third-party sources. Before production, replace them with verified rights-cleared, consensual, BLACKCELL-hosted photography. The three hero portraits use existing repository assets.
+The previous oversized red/white poster headline and angled photo cards were rejected as too cheesy and promotional. This version preserves the approved circular world selector while rebuilding the hero to feel pitch black, masculine, seductive, and restrained.
+
+- Headline **ENTER MAN WORLD.** with a black-first palette and muted blood-crimson accent.
+- Two male portraits from existing `assets/maf` appear as low-light, unframed silhouettes blending into black via gradients/masks. The enormous outlined "M," tilted portraits, card borders, and promo labels are removed.
+- The photographic circular hubs remain stationary and fully clickable, with the existing 10 choices, red active ring, no checkmark, and a darker photographic treatment.
+- Section copy is now **Choose your worlds.** rather than a casual/salesy question.
+- Header, search and glass selection bar are pared back: black, dark smoke glass and restrained red, without simulated OS chrome.
+- No change to authentication, user preferences, backend, real content, or production site. The demo uses in-memory preferences only.
+- Photo backgrounds in hub bubbles still use temporary third-party references requiring rights/licensing, consent and quality review before public launch.
 
 ## Prototype behavior
 - Standalone `blackcell-man-world-prototype.html`, with searchable categories, multi-select, skip, continue, and edit choices.
