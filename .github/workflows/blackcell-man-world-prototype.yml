@@ -1,0 +1,24 @@
+name: BLACKCELL MAN WORLD Prototype Integrity
+on:
+  push:
+    paths:
+      - 'blackcell-man-world-prototype.html'
+      - 'tests/blackcell-man-world-prototype.test.mjs'
+      - '.github/workflows/blackcell-man-world-prototype.yml'
+  pull_request:
+    paths:
+      - 'blackcell-man-world-prototype.html'
+      - 'tests/blackcell-man-world-prototype.test.mjs'
+      - '.github/workflows/blackcell-man-world-prototype.yml'
+permissions:
+  contents: read
+jobs:
+  prototype:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test MAN WORLD onboarding
+        run: node --test tests/blackcell-man-world-prototype.test.mjs
