@@ -25,17 +25,17 @@ BLACKCELL MAN WORLD is a standalone, opt-in, post-signup **SELECT YOUR WORLD** p
 - Desktop uses five columns, tablets three or four, phones two.
 - The personalized second-screen choices use the same stationary circular language.
 
-## NOCTURNE 5.0 · BLACKCELL dark editorial
+## Visual Hierarchy 6.0 · Photographic impact with BLACKCELL restraint
 
-The previous oversized red/white poster headline and angled photo cards were rejected as too cheesy and promotional. This version preserves the approved circular world selector while rebuilding the hero to feel pitch black, masculine, seductive, and restrained.
+The user's comparison to the reference page highlighted a specific gap: BLACKCELL's page had too much empty black space and its two hero men were too hidden to establish the intended male-focused attraction. This version uses the reference only for general hierarchy, **not copied art or markup**.
 
-- Headline **ENTER MAN WORLD.** with a black-first palette and muted blood-crimson accent.
-- Two male portraits from existing `assets/maf` appear as low-light, unframed silhouettes blending into black via gradients/masks. The enormous outlined "M," tilted portraits, card borders, and promo labels are removed.
-- The photographic circular hubs remain stationary and fully clickable, with the existing 10 choices, red active ring, no checkmark, and a darker photographic treatment.
-- Section copy is now **Choose your worlds.** rather than a casual/salesy question.
-- Header, search and glass selection bar are pared back: black, dark smoke glass and restrained red, without simulated OS chrome.
-- No change to authentication, user preferences, backend, real content, or production site. The demo uses in-memory preferences only.
-- Photo backgrounds in hub bubbles still use temporary third-party references requiring rights/licensing, consent and quality review before public launch.
+- Full-bleed, multi-portrait male hero with five existing BLACKCELL-owned/repository uniform-world portrait assets, subtle crimson dividers and a black editorial gradient for readable copy. The portrait panels are full-height with no rotation, no standalone cards and no giant outlined lettering.
+- Polished, Apple-influenced interface treatment with understated smoked glass and a strong but concise CTA that scrolls to the worlds.
+- More legible, brighter approved circular photo bubbles; unselected bubbles stay subtle, a selected bubble only gets a red ring and image lift, no checkmark.
+- Tighter content spacing to bring the world directory higher into view with bold but professional typography.
+- All 10 original categories, multi-select, search, skip, subsequent home preview and editing remain intact.
+- The actual production BLACKCELL OS is not touched, and no member interests are saved in this prototype. Reference page images are **not copied**.
+- Existing third-party images inside individual category circles remain temporary preview assets, subject to image licensing, consent, and BLACKCELL-owned media review before live use.
 
 ## Prototype behavior
 - Standalone `blackcell-man-world-prototype.html`, with searchable categories, multi-select, skip, continue, and edit choices.
