@@ -28,6 +28,114 @@ footer{margin-top:auto;padding:19px clamp(18px,4.5vw,68px) 27px;border-top:1px s
 @media(max-width:680px){.top{min-height:64px}.top-right .tag,.step{display:none}.brand b{font-size:11px}.intro{margin-bottom:26px}.intro h1{font-size:40px}.intro p{font-size:12px}.toolbar{align-items:flex-start;flex-direction:column}.search,.search input{width:100%;max-width:none}.worlds{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.world{min-height:165px;padding:15px;border-radius:15px}.world-name{font-size:15px}.world-sub{font-size:10px}.symbol{font-size:24px}.selection{padding:13px;bottom:7px}.selection strong{font-size:12px}.selection p{font-size:10px;max-width:185px}.selection .primary{padding:0 13px}.home-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.home-card{min-height:155px;padding:16px}.home-card b{font-size:17px}footer{display:block;line-height:2}}
 @media(max-width:400px){.world-name{font-size:14px}.world-sub{font-size:10px}.world{min-height:165px}.home-grid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* BLACKCELL MAN WORLD / FLOATING GLASS BUBBLE UNIVERSE */
+.intro{margin-bottom:23px}.intro p{max-width:640px}
+.toolbar{margin-bottom:5px}
+.worlds{
+ position:relative;display:block;isolation:isolate;max-width:1130px;
+ height:750px;margin:4px auto 0;overflow:visible;
+ background:radial-gradient(ellipse at 51% 46%,rgba(151,32,57,.20),transparent 60%);
+}
+.worlds::before,.worlds::after{
+ content:"";position:absolute;inset:8% 13%;border:1px solid rgba(219,72,104,.13);
+ border-radius:50%;transform:rotate(-13deg);pointer-events:none;z-index:-1;
+}
+.worlds::after{inset:21% 28%;border-color:rgba(255,255,255,.11);transform:rotate(17deg)}
+.world{
+ --diameter:158px;--x:50%;--y:50%;--phase:0s;
+ position:absolute;left:var(--x);top:var(--y);width:var(--diameter);height:var(--diameter);
+ min-height:0;padding:21px 12px 17px;border-radius:50%;
+ display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;
+ border:1px solid rgba(242,226,234,.43);
+ background:
+ radial-gradient(ellipse at 28% 12%,rgba(255,255,255,.19),transparent 46%),
+ radial-gradient(ellipse at 73% 20%,var(--glow),transparent 74%),
+ linear-gradient(155deg,rgba(49,46,54,.91),rgba(8,8,13,.91) 72%);
+ box-shadow:inset 3px 6px 12px rgba(255,255,255,.07),inset -8px -13px 25px rgba(0,0,0,.54),0 18px 43px rgba(0,0,0,.52),0 0 28px rgba(148,40,64,.18);
+ backdrop-filter:blur(8px);
+ animation:worldDrift 7s ease-in-out infinite;
+ animation-delay:var(--phase);
+ transform:translate(-50%,-50%);
+ transition:border-color .2s,box-shadow .2s,background .2s;
+}
+.world::before{
+ content:"";position:absolute;inset:7px;border-radius:50%;
+ border:1px solid rgba(255,255,255,.075);box-shadow:inset 0 7px 22px rgba(255,255,255,.035);
+ pointer-events:none;transform:none;
+}
+.world::after{
+ content:"";position:absolute;top:12%;left:20%;width:38%;height:15%;border-radius:50%;
+ background:linear-gradient(180deg,rgba(255,255,255,.16),transparent);
+ filter:blur(7px);transform:rotate(-22deg);pointer-events:none;
+}
+.world:hover,.world:focus-visible{border-color:#f6a0ae;box-shadow:0 0 0 2px #c6445a59,0 0 42px #cc385276,0 24px 52px #000a;z-index:3}
+.world[aria-pressed=true]{
+ border-color:#ff7e94;
+ background:radial-gradient(circle at 47% 56%,rgba(203,44,75,.38),transparent 70%),radial-gradient(ellipse at 22% 11%,rgba(255,255,255,.18),transparent 50%),linear-gradient(145deg,#572432,#160c13 74%);
+ box-shadow:inset 0 0 22px #f0577340,0 0 0 2px #f15d784d,0 0 42px #ce2f58a1,0 22px 52px #000a;
+ z-index:2;
+}
+.world-top{position:absolute;inset:0;display:block;pointer-events:none}
+.world-number{position:absolute;left:50%;top:17%;transform:translateX(-50%);color:#b7afb8;font-size:8px;letter-spacing:.18em;white-space:nowrap}
+.check{position:absolute;top:13%;right:16%;height:23px;width:23px;border-radius:50%;font-size:13px;background:transparent;border:1px solid #ffffff38;display:grid;place-items:center;color:transparent}
+.world[aria-pressed=true] .check{background:#d84059;border-color:#ffb6c2;color:white}
+.symbol{margin:8px 0 8px;font-size:31px;color:#f1c0c9;line-height:1;position:relative;z-index:1;filter:drop-shadow(0 0 12px #c74d617d)}
+.world-name{font-size:clamp(12px,1.5vw,18px);line-height:1.16;letter-spacing:-.025em;margin:0 0 7px;font-weight:790;position:relative;z-index:1}
+.world-sub{font-size:10px;line-height:1.38;color:#bbb4bd;max-width:86%;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;position:relative;z-index:1}
+.world[data-world="uniform"] .world-name{font-size:23px}
+.world[data-world="uniform"] .symbol{font-size:41px}
+.world[data-world="uniform"] .world-sub{font-size:11px}
+.worlds.is-filtering{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:25px;height:auto;min-height:240px;padding:28px 12px}
+.worlds.is-filtering::before,.worlds.is-filtering::after{display:none}
+.worlds.is-filtering .world{position:relative;left:auto;top:auto;transform:none;animation:filteredDrift 7s ease-in-out infinite;flex-shrink:0}
+.home-grid{display:flex;flex-wrap:wrap;gap:23px;align-items:center;justify-content:center}
+.home-card{
+ display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+ width:190px;height:190px;min-height:0;aspect-ratio:1;border-radius:50%;padding:24px;
+ background:radial-gradient(circle at 30% 14%,#ffffff1e,transparent 48%),radial-gradient(circle at 70% 77%,#7e2c4862,transparent 65%),linear-gradient(145deg,#25232b,#111117);
+ box-shadow:inset 0 5px 12px #ffffff10,inset -9px -10px 24px #0008,0 20px 50px #0007;
+ border:1px solid #eac4cf56;
+}
+.home-card b{font-size:17px;line-height:1.15;margin:9px 0}
+.home-card small{font-size:10px;max-width:140px;line-height:1.42}
+.home-card .emblem{font-size:28px;margin:0}
+@keyframes worldDrift{0%,100%{transform:translate(-50%,-50%)}50%{transform:translate(-50%,calc(-50% - 8px))}}
+@keyframes filteredDrift{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@media(max-width:1100px){
+ .worlds{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));height:auto;gap:19px 13px;max-width:880px;margin:20px auto 0}
+ .worlds::before,.worlds::after{display:none}
+ .world,.worlds.is-filtering .world{
+  position:relative;left:auto;top:auto;width:100%;height:auto;aspect-ratio:1;padding:18px 13px;
+  transform:none;min-width:0;animation:filteredDrift 7s ease-in-out infinite;
+ }
+ .worlds.is-filtering{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:19px 13px;padding:0;min-height:0}
+ .world[data-world="uniform"] .world-name{font-size:18px}
+ .world[data-world="uniform"] .symbol{font-size:31px}
+ .world[data-world="uniform"] .world-sub{font-size:10px}
+}
+@media(max-width:850px){
+ .worlds,.worlds.is-filtering{grid-template-columns:repeat(3,minmax(0,1fr));max-width:670px}
+ .world-name{font-size:16px}
+ .world-sub{font-size:10px}
+}
+@media(max-width:600px){
+ .worlds,.worlds.is-filtering{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px 11px;max-width:430px;margin-top:20px}
+ .world,.worlds.is-filtering .world{min-height:0;padding:16px 11px}
+ .world-name{font-size:15px}
+ .world-sub,.world[data-world="uniform"] .world-sub{font-size:9px;line-height:1.32;-webkit-line-clamp:2}
+ .world[data-world="uniform"] .world-name{font-size:17px}
+ .world-number{font-size:8px;top:15%}
+ .symbol,.world[data-world="uniform"] .symbol{font-size:27px;margin:10px 0 6px}
+ .check{width:20px;height:20px;font-size:12px;top:12%}
+ .home-grid{gap:12px}
+ .home-card{width:calc(50% - 9px);height:auto;max-width:190px;padding:15px;aspect-ratio:1}
+ .home-card b{font-size:15px}
+ .home-card small{font-size:9px}
+}
+@media(max-width:360px){.world-sub{display:none}.world-name{font-size:14px}.world[data-world="uniform"] .world-name{font-size:16px}}
+@media(prefers-reduced-motion:reduce){.world,.worlds.is-filtering .world{animation:none!important;transform:translate(-50%,-50%)}.worlds.is-filtering .world,.worlds .world:not([style*="--x"]){transform:none}}
+
 </style>
 </head><body>
 <div class="background" aria-hidden="true"></div>
@@ -70,6 +178,7 @@ const worlds=[
 {id:"pride",name:"Pride World",sub:"LGBTQ+ culture, history and community",symbol:"✦",glow:"#4a668e70"}
 ];
 const $=id=>document.getElementById(id),selected=new Set();let query="";
+const orbit={uniform:[50,46,214],bear:[24,17,170],daddy:[47,12,170],muscle:[28,48,172],leather:[75,16,174],twink:[12,74,146],sports:[9,42,148],rugged:[82,42,153],nightlife:[92,69,146],creator:[34,79,145],connection:[55,83,156],pride:[76,77,156]};
 function create(tag,cls,txt){const el=document.createElement(tag);if(cls)el.className=cls;if(txt!==undefined)el.textContent=txt;return el}
 function updateSelection(){
 $("selectedCount").textContent=selected.size?selected.size+" world"+(selected.size===1?"":"s")+" selected":"No worlds selected";
@@ -79,10 +188,14 @@ $("continue").textContent=selected.size?"Enter My World →":"Select a World →
 function render(){
  const root=$("worldGrid");root.replaceChildren();
  const subset=worlds.filter(w=>(w.name+" "+w.sub).toLowerCase().includes(query.toLowerCase()));
+ root.classList.toggle("is-filtering",query.length>0);
  $("empty").hidden=subset.length>0;
  for(const [index,w] of worlds.entries()){
   if(!subset.includes(w))continue;
   const button=create("button","world");button.type="button";button.style.setProperty("--glow",w.glow);
+  const pos=orbit[w.id];button.style.setProperty("--x",pos[0]+"%");button.style.setProperty("--y",pos[1]+"%");
+  button.style.setProperty("--diameter",pos[2]+"px");button.style.setProperty("--phase",((index%6)*-.81)+"s");
+  button.dataset.world=w.id;
   button.setAttribute("aria-pressed",String(selected.has(w.id)));
   button.setAttribute("aria-label","Select "+w.name+" — "+w.sub);
   const upper=create("span","world-top"),no=create("span","world-number",String(index+1).padStart(2,"0")+" / WORLD"),check=create("span","check",selected.has(w.id)?"✓":"");
