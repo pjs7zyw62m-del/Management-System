@@ -16,7 +16,8 @@ BLACKCELL MAN WORLD is a standalone, opt-in, post-signup **SELECT YOUR WORLD** p
 
 ## Visual design
 - Reuses the **concept** of the existing BLACKCELL profile world's selection bubbles: evenly sized stationary circles in a responsive grid, with the icon inside and labels **below** the circle.
-- Each circle has a muted outline by default and a colored outline plus check when selected.
+- Each circle has a muted outline by default; **selection is indicated exclusively by a crimson border, soft red glow, and a slightly brighter image. No checkmarks appear.**
+- The page uses the pitch-black, minimal silver-and-crimson BLACKCELL OS aesthetic with restrained glass surfaces and near-black controls.
 - **Photo-led hubs:** full-bleed photo inside every circle, dark bottom fade, category symbol and large text overlaid, with a short teaser below; never a rectangular card.
 - Temporary preview photos load from third-party Unsplash/Pexels editorial/free-license sources; a missing image reveals the built-in category graphic. Before production replace all external images with reviewed BLACKCELL-hosted media, verify each applicable image license and consent, and eliminate third-party requests.
 - The reference sites also show a private paid media archive called The Vault. Payment/creator-vault functionality is **not** implemented by this visual onboarding change.
