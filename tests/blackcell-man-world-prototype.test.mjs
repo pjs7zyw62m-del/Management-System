@@ -68,3 +68,15 @@ test("MAN WORLD silver/crimson headline preserves full italic N and D glyphs",()
  assert.match(html,/letter-spacing:-\.036em!important;/);
  assert.match(html,/@media\(max-width:365px\)\{\.hero h1\{font-size:clamp\(34px,11vw,43px\)!important\}\}/);
 });
+
+
+test("MAN WORLD 8.0 title uses non-italic skewed words with unclipped N and D",()=>{
+ assert.match(html,/MAN WORLD 8\.0 \/ FULL GLYPH FIX/);
+ assert.match(html,/\.hero-words h1\{/);
+ assert.match(html,/font-style:normal!important;letter-spacing:0!important;/);
+ assert.match(html,/\.hero-words h1 \.silver,\.hero-words h1 \.crimson\{/);
+ assert.match(html,/transform:skewX\(-8deg\)/);
+ assert.match(html,/padding:\.055em \.13em \.065em \.13em!important;/);
+ assert.match(html,/overflow:visible!important;/);
+ assert.match(html,/@media\(max-width:630px\)\{\.hero-words h1\{/);
+});
