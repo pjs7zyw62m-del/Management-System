@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#08090b">
+<title>BLACKCELL MEN | Private Prototype</title>
+<style>
+:root{color-scheme:dark;--bg:#08090b;--panel:#121418;--glass:rgba(23,25,30,.91);--muted:#969aa4;--line:#ffffff17;--red:#bb3349;--bright:#e3495c;--white:#f5f5f8;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*{box-sizing:border-box}html,body{margin:0;height:100%;background:var(--bg);color:var(--white)}body{overflow:hidden}button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #ff8a99;outline-offset:3px}
+a{color:inherit;text-decoration:none}[hidden]{display:none!important}.shell{display:grid;grid-template-columns:224px minmax(0,1fr);height:100dvh;overflow:hidden;background:radial-gradient(ellipse at 72% -25%,#421b2827,transparent 45%),#08090b}
+aside{background:#0d0e11;border-right:1px solid var(--line);display:flex;flex-direction:column;padding:27px 14px 16px;min-width:0;gap:22px}
+.logo{display:flex;gap:11px;align-items:center;padding:0 12px}.logo-mark{width:37px;height:37px;display:grid;place-items:center;border:1px solid #d25c6d77;border-radius:11px;background:linear-gradient(145deg,#401821,#130d11);font-size:25px;font-weight:900;box-shadow:0 0 24px #9b1c3325}.logo b{font-size:15px;letter-spacing:.12em}.logo small{display:block;font-size:10px;color:#e2707e;letter-spacing:.22em;margin-top:3px}.navlabel{font-size:10px;color:#6e707a;font-weight:750;letter-spacing:.18em;padding:0 15px;margin-bottom:-11px}
+.nav{display:grid;gap:5px}.nav button{width:100%;display:flex;align-items:center;gap:12px;border:0;background:transparent;color:#b7b7c0;border-radius:11px;min-height:43px;padding:0 14px;text-align:left;font-size:13px;font-weight:600}.nav button:hover{background:#ffffff0c}.nav button.active{background:linear-gradient(90deg,#6c20304d,#45182316);color:#fff;border:1px solid #d95b6a32}.nav .glyph{font-size:17px;width:22px;text-align:center;color:#e3828f}
+.sidefoot{margin-top:auto;border-top:1px solid var(--line);padding:16px 10px 0;display:grid;gap:10px;color:#7e828a;font-size:11px;line-height:1.5}.sidefoot b{font-size:12px;color:#eee}
+main{min-width:0;min-height:0;display:flex;flex-direction:column}header{min-height:80px;display:flex;gap:16px;align-items:center;padding:14px clamp(17px,3vw,39px);border-bottom:1px solid #ffffff10;background:#0a0b0edf;backdrop-filter:blur(18px);position:relative;z-index:2}
+.header-title{font-weight:800;white-space:nowrap;letter-spacing:.02em;font-size:13px}.search{position:relative;flex:1;max-width:580px;margin:auto}.search input{width:100%;height:43px;border:1px solid var(--line);background:#17191e;border-radius:12px;color:white;padding:0 14px 0 39px;font-size:13px}.search:before{content:"⌕";position:absolute;left:13px;top:4px;font-size:27px;color:#999}
+.head-actions{display:flex;gap:9px;align-items:center}.pill,.primary{border-radius:11px;min-height:40px;border:1px solid #ffffff24;padding:0 15px;color:#f8f8f9;background:#202126;font-weight:700;font-size:12px;white-space:nowrap}.primary{background:#b12a41;border-color:#dd5368}.pill:hover{background:#32343a}.primary:hover{background:#c7344c}.mini-tag{font-size:10px;border:1px solid #ffffff25;border-radius:6px;color:#bdbfc5;padding:5px 7px;letter-spacing:.08em;white-space:nowrap}
+.scroll{min-height:0;overflow-y:auto;scrollbar-width:none;padding:0 clamp(16px,3vw,40px) 30px}.scroll::-webkit-scrollbar{display:none}
+.hero{margin-top:24px;min-height:295px;position:relative;overflow:hidden;border:1px solid #ffffff22;border-radius:22px;background:radial-gradient(circle at 82% 45%,#7b233e68,transparent 35%),linear-gradient(117deg,#1b151b 5%,#2d1722 56%,#0a0b10 100%);display:flex;align-items:center}
+.hero:after{content:"";position:absolute;right:7%;bottom:-105px;width:280px;height:350px;transform:rotate(-24deg);border:1px solid #ff7c8b24;border-radius:70px;box-shadow:0 0 0 32px #ff4b6a08,0 0 0 67px #ff4b6a07;pointer-events:none}
+.hero-art{position:absolute;right:2%;bottom:-9%;height:127%;width:40%;display:flex;gap:0;justify-content:center;opacity:.9;pointer-events:none;mask-image:linear-gradient(to right,transparent,black 22%,black 85%,transparent)}
+.hero-art img{width:54%;object-fit:contain;object-position:bottom center;filter:contrast(1.13) saturate(.8) drop-shadow(-20px 0 25px #0009);min-width:0}.hero-art img+img{margin-left:-18%;transform:translateY(17px);opacity:.66}
+.hero-content{position:relative;z-index:1;padding:35px clamp(25px,5vw,62px);max-width:640px}.eyebrow{display:inline-block;color:#ff9ba7;letter-spacing:.25em;text-transform:uppercase;font-size:10px;font-weight:850}.hero h1{font-size:clamp(34px,5.4vw,64px);line-height:1.04;letter-spacing:-.05em;margin:14px 0 13px;max-width:600px}.hero h1 span{color:#ef6477}.hero p{font-size:14px;max-width:420px;line-height:1.65;color:#c3b9be;margin-bottom:21px}.hero-actions{display:flex;gap:10px;flex-wrap:wrap}
+.stats{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:22px 2px 25px;border-bottom:1px solid #ffffff13;padding-bottom:20px}.stats strong{display:block;font-size:18px}.stats small{display:block;color:#92959e;font-size:10px;letter-spacing:.09em;margin-top:5px}.stats .stat-note{font-size:11px;color:#92959e;text-align:right}
+.section-head{display:flex;align-items:end;justify-content:space-between;gap:15px;margin:20px 1px 12px}.section-head h2{font-size:21px;margin:0;letter-spacing:-.035em}.section-head p{color:var(--muted);font-size:12px;margin:5px 0 0}
+.filters{display:flex;gap:8px;overflow-x:auto;padding:7px 0 19px;scrollbar-width:none}.filters::-webkit-scrollbar{display:none}.chip{border:1px solid #ffffff19;color:#c5c6cc;background:#181a1e;border-radius:20px;padding:9px 14px;font-size:11px;font-weight:700;white-space:nowrap}.chip.active{background:#6b2232;color:#fff;border-color:#b94059}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}.card{min-width:0}.cover{position:relative;aspect-ratio:16/10;background:radial-gradient(circle at 65% 26%,#722d476e,transparent 50%),linear-gradient(140deg,#23282e,#171318);border:1px solid #ffffff16;border-radius:13px;overflow:hidden;cursor:pointer;width:100%;padding:0;display:block;text-align:left}.cover:focus-visible{outline-offset:4px}.cover img{height:100%;width:100%;object-fit:cover;object-position:center 21%;filter:saturate(.76) contrast(1.1);opacity:.86;transition:transform .28s}.cover:hover img{transform:scale(1.06)}.cover .placeholder{font-size:40px;position:absolute;inset:0;display:grid;place-items:center;opacity:.45}.cover img:not([hidden])~.placeholder{display:none}.play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#0505069e;border:1px solid #ffffff90;border-radius:50%;width:43px;height:43px;display:grid;place-items:center;font-size:18px;opacity:0;transition:opacity .2s}.cover:hover .play,.cover:focus-visible .play{opacity:1}.duration{position:absolute;bottom:9px;right:9px;font-size:10px;border-radius:5px;background:#050507cc;padding:4px 7px}.flag{position:absolute;top:9px;left:9px;color:#fff;font-size:9px;font-weight:800;letter-spacing:.08em;background:#b22e47e5;border-radius:5px;padding:5px 8px}.card-meta{display:flex;align-items:start;justify-content:space-between;gap:5px;padding-top:11px}.card h3{font-size:13px;line-height:1.4;font-weight:750;margin:0 0 4px}.card p{font-size:11px;line-height:1.5;color:#92949c;margin:0}.save{border:1px solid #ffffff23;background:#191b20;color:#bdbfc6;border-radius:9px;width:32px;height:32px;flex:0 0 auto}.save[aria-pressed=true]{border-color:#d94c65;background:#4d1e2d;color:#ff9ea9}.empty{padding:28px;border:1px dashed #ffffff36;border-radius:15px;color:#a6a9b1;text-align:center;font-size:13px}
+.bottom{padding:23px 0 10px;display:flex;align-items:center;justify-content:space-between;gap:10px;color:#858894;font-size:11px;border-top:1px solid var(--line);margin-top:32px}.bottom a{text-decoration:underline}
+.overlay{position:fixed;inset:0;z-index:20;background:#000c;backdrop-filter:blur(14px);display:grid;place-items:center;padding:15px}.dialog{width:min(100%,620px);max-height:min(92dvh,840px);overflow:auto;background:linear-gradient(155deg,#232228,#0e1013 60%);border:1px solid #ffffff32;box-shadow:0 30px 100px #000b;border-radius:23px;padding:27px}.dialog h2{font-size:27px;letter-spacing:-.035em;margin:8px 0 10px}.dialog p{color:#acaeb5;font-size:13px;line-height:1.7}.dialog .row{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:19px}.dialog input,.dialog select{width:100%;background:#14161b;border:1px solid #ffffff25;color:white;border-radius:10px;padding:12px}.age{width:min(100%,440px);text-align:center}.age .logo-mark{margin:0 auto 15px;width:55px;height:55px;font-size:35px}.age h2{font-size:30px}.age .row{justify-content:center}.age .row button{min-width:140px}.stage{height:255px;display:grid;place-items:center;border:1px solid #ffffff20;border-radius:15px;background:radial-gradient(ellipse at 65% 30%,#552039,transparent 45%),#0a0a0e;position:relative;text-align:center}.stage strong{font-size:20px}.stage small{display:block;color:#979aa3;margin-top:8px}.stage-tag{position:absolute;bottom:14px;left:16px;color:#b9bbc4;font-size:11px}.upload-area{border:1px dashed #777681;border-radius:12px;text-align:center;padding:30px 15px;background:#ffffff05;margin-top:12px}.upload-area input{margin-top:13px}.upload-preview img,.upload-preview video{max-width:100%;max-height:220px;border-radius:12px;margin-top:14px}.mobile-brand{display:none}
+@media(max-width:1180px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.hero-art{right:-7%;width:48%}.hero-content{max-width:580px}}
+@media(max-width:850px){.shell{grid-template-columns:70px minmax(0,1fr)}aside{padding:20px 8px}.logo b,.logo small,.navlabel,.nav button .navtext,.sidefoot{display:none}.logo{padding:0;justify-content:center}.nav button{justify-content:center;padding:0}.hero-content{max-width:450px}.hero-art{opacity:.42;right:-16%;width:64%}}
+@media(max-width:640px){.shell{display:block}aside{display:none}header{padding:11px 14px;min-height:65px;gap:9px}.header-title{display:none}.mobile-brand{display:block;font-weight:900;letter-spacing:.11em;font-size:12px}.mini-tag{display:none}.search{max-width:unset;min-width:0}.search input{height:37px;font-size:12px}.head-actions .pill{display:none}.head-actions .primary{padding:0 10px;min-height:37px}.scroll{padding:0 14px 22px}.hero{min-height:275px;margin-top:14px}.hero-content{padding:25px 20px}.hero h1{font-size:39px}.hero p{font-size:12px;max-width:270px}.hero-art{width:85%;right:-45%;opacity:.32}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.stats{gap:7px}.stats strong{font-size:15px}.stats .stat-note{display:none}.card h3{font-size:12px}.section-head h2{font-size:19px}.dialog{padding:19px}.bottom{display:block;line-height:2}}
+@media(max-width:360px){.grid{grid-template-columns:1fr 1fr;gap:9px}.card h3{font-size:11px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<section class="shell">
+<aside aria-label="BLACKCELL MEN navigation">
+ <div class="logo"><div class="logo-mark">B</div><div><b>BLACKCELL</b><small>MEN / PROTOTYPE</small></div></div>
+ <span class="navlabel">DISCOVER</span>
+ <nav class="nav" id="sidebar">
+  <button data-nav="all" class="active"><span class="glyph">◈</span><span class="navtext">Explore</span></button>
+  <button data-nav="trending"><span class="glyph">↗</span><span class="navtext">Trending</span></button>
+  <button data-nav="videos"><span class="glyph">▷</span><span class="navtext">Videos</span></button>
+  <button data-nav="photos"><span class="glyph">▧</span><span class="navtext">Photos</span></button>
+  <button data-nav="uniforms"><span class="glyph">✦</span><span class="navtext">Men in Uniform</span></button>
+  <button data-nav="creators"><span class="glyph">♙</span><span class="navtext">Creators</span></button>
+  <button data-nav="saved"><span class="glyph">♡</span><span class="navtext">Saved</span></button>
+ </nav>
+ <span class="navlabel">MY SPACE</span>
+ <nav class="nav">
+  <button id="uploadSide"><span class="glyph">＋</span><span class="navtext">Upload studio</span></button>
+  <button id="prototypeInfo"><span class="glyph">ⓘ</span><span class="navtext">Prototype details</span></button>
+  <a class="nav" href="blackcell-os.html" style="display:block"><span style="display:block;padding:13px;color:#b7b7c0;font-size:12px">↗ Return to OS</span></a>
+ </nav>
+ <div class="sidefoot"><b>BLACKCELL CORPORATION</b><span>Private interactive concept. Sample cards only. Not a public media service.</span><span>18+ platform concept · v0.1</span></div>
+</aside>
+<main>
+ <header>
+  <div class="header-title">BLACKCELL <span style="color:#e76c7e">MEN</span></div><div class="mobile-brand">B//MEN</div>
+  <label class="search"><input id="search" type="search" aria-label="Search videos, creators and collections" placeholder="Search videos, creators, uniforms…"></label>
+  <div class="head-actions"><span class="mini-tag">PROTOTYPE</span><button class="pill" id="savedTop">♡ Saved</button><button class="primary" id="uploadTop">＋ Upload</button></div>
+ </header>
+ <div class="scroll" id="pageScroll">
+  <section class="hero">
+   <div class="hero-art" aria-hidden="true"><img src="assets/maf/portrait-military.png" alt=""><img src="assets/maf/portrait-corrections.png" alt=""></div>
+   <div class="hero-content"><span class="eyebrow">BLACKCELL ORIGINAL / PRIVATE PREVIEW</span><h1>THE WORLD OF <span>MEN.</span></h1><p>Discover creators, build private collections, and explore photos and videos in one cinematic, creator-first experience.</p><div class="hero-actions"><button class="primary" id="heroExplore">Explore the collection ↗</button><button class="pill" id="heroCreator">Become a creator</button></div></div>
+  </section>
+  <div class="stats"><div><strong>ONE</strong><small>UNIFIED EXPERIENCE</small></div><div><strong>PHOTO + VIDEO</strong><small>SEAMLESS BROWSING</small></div><div><strong>PRIVATE</strong><small>PERSONAL COLLECTIONS</small></div><div class="stat-note">All media shown here is demonstrative.<br>Nothing is published or streamed.</div></div>
+  <div class="section-head" id="catalog"><div><h2 id="sectionTitle">Discover the collection</h2><p id="sectionSub">Original browsing concept · sample media cards</p></div><span id="count" style="font-size:11px;color:#898c96"></span></div>
+  <nav class="filters" id="filters" aria-label="Filter content">
+   <button class="chip active" data-filter="all">All</button>
+   <button class="chip" data-filter="uniforms">Uniform World</button>
+   <button class="chip" data-filter="creators">Creators</button>
+   <button class="chip" data-filter="videos">Videos</button>
+   <button class="chip" data-filter="photos">Photos</button>
+   <button class="chip" data-filter="trending">Trending</button>
+  </nav>
+  <section class="grid" id="mediaGrid" aria-live="polite"></section>
+  <div class="empty" id="empty" hidden>No sample cards match that search. Try another category.</div>
+  <div class="bottom"><span>© BLACKCELL CORPORATION · MEN CONCEPT · PRIVATE PROTOTYPE</span><span>Adult-only concept · <a href="#" id="safetyInfo">Safety & content requirements</a> · <a href="blackcell-os.html">Return to OS</a></span></div>
+ </div>
+</main>
+</section>
+<div class="overlay" id="ageGate" aria-labelledby="gateTitle" role="dialog" aria-modal="true">
+ <div class="dialog age"><div class="logo-mark">B</div><span class="eyebrow">BLACKCELL CORPORATION / RESTRICTED CONCEPT</span><h2 id="gateTitle">Adults only.</h2><p>This private prototype is designed for an adult-oriented media community. Confirm you are at least 18 to view the demonstration. This confirmation is not a production-grade age verification system.</p><div class="row"><button class="pill" id="exitGate">Exit</button><button class="primary" id="enterGate">I am 18 or older</button></div><p style="font-size:11px">No explicit media or real user accounts are included in this demonstration.</p></div>
+</div>
+<div class="overlay" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+ <div class="dialog"><span class="eyebrow" id="modalEyebrow">BLACKCELL MEN</span><h2 id="modalTitle">Media preview</h2><div id="modalBody"></div><div class="row"><button class="pill" id="modalClose">Close</button></div></div>
+</div>
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const covers={
+military:"assets/maf/portrait-military.png",law:"assets/maf/portrait-law-enforcement.png",fire:"assets/maf/portrait-fire-rescue.png",
+corrections:"assets/maf/portrait-corrections.png",ems:"assets/maf/portrait-ems.png",pilot:"assets/maf/portrait-airline-pilot.png",uniform:"assets/maf/portrait-uniform.png"
+};
+const items=[
+{id:1,title:"The Uniform Collection",who:"BLACKCELL Archive",type:"photos",category:"uniforms",image:"military",badge:"FEATURED",time:"24 images",trend:true},
+{id:2,title:"On Duty · A Film Series",who:"BLACKCELL Studios",type:"videos",category:"uniforms",image:"law",badge:"NEW",time:"08:42",trend:true},
+{id:3,title:"Firehouse Portraits",who:"The Uniform Society",type:"photos",category:"uniforms",image:"fire",badge:"COLLECTION",time:"18 images",trend:false},
+{id:4,title:"Off the Clock",who:"Studio Member",type:"videos",category:"creators",image:"corrections",badge:"TRENDING",time:"11:26",trend:true},
+{id:5,title:"Men Behind the Camera",who:"Creator Showcase",type:"videos",category:"creators",image:"pilot",badge:"FEATURED",time:"06:15",trend:true},
+{id:6,title:"The Classic Archive",who:"BLACKCELL Archive",type:"photos",category:"uniforms",image:"uniform",badge:"ARCHIVE",time:"32 images",trend:false},
+{id:7,title:"First Response",who:"The Uniform Society",type:"videos",category:"uniforms",image:"ems",badge:"NEW",time:"04:58",trend:false},
+{id:8,title:"Editorial: Modern Masculinity",who:"Independent Creators",type:"photos",category:"creators",image:"military",badge:"EDITORIAL",time:"12 images",trend:false},
+{id:9,title:"Behind the Scenes",who:"Studio Member",type:"videos",category:"creators",image:"fire",badge:"POPULAR",time:"09:40",trend:true},
+{id:10,title:"The Aviator Collection",who:"BLACKCELL Archive",type:"photos",category:"uniforms",image:"pilot",badge:"COLLECTION",time:"20 images",trend:false},
+{id:11,title:"Creator Spotlight",who:"Featured Member",type:"videos",category:"creators",image:"law",badge:"PREMIERE",time:"07:12",trend:false},
+{id:12,title:"Workwear & Details",who:"BLACKCELL Editorial",type:"photos",category:"creators",image:"corrections",badge:"EDITORIAL",time:"15 images",trend:false}
+];
+const savedKey="bc-men-prototype-saved-v1";let saved=new Set();try{saved=new Set(JSON.parse(localStorage.getItem(savedKey)||"[]"))}catch(_){}
+let filter="all",term="";const grid=$("mediaGrid");
+function h(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
+function updateNav(){document.querySelectorAll("[data-nav]").forEach(b=>b.classList.toggle("active",b.dataset.nav===filter));document.querySelectorAll("[data-filter]").forEach(b=>b.classList.toggle("active",b.dataset.filter===filter))}
+function render(){
+updateNav();grid.replaceChildren();const q=term.toLowerCase();
+const subset=items.filter(x=>(filter==="all"||(filter==="saved"?saved.has(x.id):filter==="trending"?x.trend:filter===x.type||filter===x.category))&&[x.title,x.who,x.type,x.category].join(" ").toLowerCase().includes(q));
+$("count").textContent=subset.length+" SAMPLE ITEMS";$("empty").hidden=subset.length>0;
+$("sectionTitle").textContent=filter==="all"?"Discover the collection":filter==="saved"?"Your saved collection":filter.charAt(0).toUpperCase()+filter.slice(1);
+for(const x of subset){
+const card=h("article","card"),cover=h("button","cover");cover.type="button";cover.setAttribute("aria-label","Preview "+x.title);cover.onclick=()=>preview(x);
+const im=h("img");im.src=covers[x.image]||"";im.alt="Illustrative non-explicit photograph";im.loading="lazy";im.onerror=()=>{im.hidden=true};cover.append(im,h("span","placeholder","◈"));
+cover.append(h("span","flag",x.badge),h("span","play","▶"),h("span","duration",x.time));
+const meta=h("div","card-meta"),copy=h("div");copy.append(h("h3","",x.title),h("p","",x.who+"  ·  "+(x.type==="videos"?"Video concept":"Photo collection")));
+const save=h("button","save",saved.has(x.id)?"♥":"♡");save.type="button";save.title="Save to private collection";save.setAttribute("aria-label","Save "+x.title);save.setAttribute("aria-pressed",String(saved.has(x.id)));save.onclick=()=>{saved.has(x.id)?saved.delete(x.id):saved.add(x.id);try{localStorage.setItem(savedKey,JSON.stringify([...saved]))}catch(_){}render()};meta.append(copy,save);card.append(cover,meta);grid.append(card);
+}}
+function showDialog(title,eyebrow,build){$("modalTitle").textContent=title;$("modalEyebrow").textContent=eyebrow||"BLACKCELL MEN";$("modalBody").replaceChildren();build($("modalBody"));$("modal").hidden=false;$("modalClose").focus()}
+function para(root,txt){root.append(h("p","",txt))}
+function preview(item){showDialog(item.title,item.who+" / DEMONSTRATION",root=>{
+const stage=h("div","stage");const c=h("div");c.append(h("strong","",item.type==="videos"?"Video preview":"Photo gallery preview"),h("small","",item.type==="videos"?"No video stream connected yet. This is a design demonstration.":"Sample photos only. A production gallery would open here."));stage.append(c,h("span","stage-tag","BLACKCELL / SAMPLE CONTENT"));root.append(stage);
+para(root,"Production version: original-quality viewing, creator profiles, collections, playback controls, personal recommendations and approved uploads.");const actions=h("div","row");const add=h("button","primary",saved.has(item.id)?"♥ Saved":"♡ Save");add.onclick=()=>{saved.add(item.id);try{localStorage.setItem(savedKey,JSON.stringify([...saved]))}catch(_){}render();add.textContent="♥ Saved"};const report=h("button","pill","Report content");report.onclick=()=>showInfo("Report content","A production report system must record the selected content, user reason, moderation status and appeal workflow. No report was sent from this prototype.");actions.append(add,report);root.append(actions);
+})}
+function showInfo(title,message){showDialog(title,"PRIVATE PROTOTYPE",root=>para(root,message))}
+function uploader(){showDialog("Creator upload studio","LOCAL PREVIEW · NOT PUBLISHED",root=>{
+para(root,"Choose a photo or video to preview it locally on this device. This demonstration does not upload, publish or store the file on BLACKCELL servers.");
+const area=h("div","upload-area"),p=h("div","", "Drop-in experience · Photos and videos");const input=h("input");input.type="file";input.accept="image/*,video/*";input.setAttribute("aria-label","Choose local photo or video");const previewRoot=h("div","upload-preview");let objectURL=null;
+input.onchange=()=>{if(objectURL)URL.revokeObjectURL(objectURL);previewRoot.replaceChildren();const f=input.files?.[0];if(!f)return;if(!/^image\/|^video\//.test(f.type)){para(previewRoot,"Unsupported file type.");return}objectURL=URL.createObjectURL(f);const el=h(f.type.startsWith("video/")?"video":"img");el.src=objectURL;if(el.tagName==="VIDEO")el.controls=true;el.onload=()=>{};previewRoot.append(el,h("p","","Local preview: "+f.name+". Nothing has been uploaded."))};
+area.append(p,input,previewRoot);root.append(area);const note=h("p","", "Before production: verified age and consent, rights confirmation, moderation, secure upload pipeline, copyright reporting and provider approval are required.");root.append(note);
+$("modal").addEventListener("close",()=>{if(objectURL)URL.revokeObjectURL(objectURL)},{once:true});
+})}
+function closeModal(){const vid=$("modalBody").querySelector("video");if(vid){vid.pause();vid.removeAttribute("src");vid.load()}$("modal").hidden=true;$("modal").dispatchEvent(new Event("close"))}
+$("modalClose").onclick=closeModal;$("modal").addEventListener("click",e=>{if(e.target===$("modal"))closeModal()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("modal").hidden)closeModal()});
+document.querySelectorAll("[data-filter]").forEach(b=>b.onclick=()=>{filter=b.dataset.filter;render()});
+document.querySelectorAll("[data-nav]").forEach(b=>b.onclick=()=>{filter=b.dataset.nav;render();$("pageScroll").scrollTop=0});
+$("search").oninput=e=>{term=e.target.value.trim().slice(0,120);render()};
+$("savedTop").onclick=()=>{filter="saved";render();$("pageScroll").scrollTop=250};
+$("uploadTop").onclick=uploader;$("uploadSide").onclick=uploader;
+$("heroExplore").onclick=()=>{filter="all";render();$("catalog").scrollIntoView({behavior:"smooth",block:"start"})};
+$("heroCreator").onclick=uploader;
+$("prototypeInfo").onclick=()=>showInfo("About this prototype","BLACKCELL MEN is a separate adult-community website concept inside BLACKCELL OS. It reuses existing public-facing uniform artwork for non-explicit sample cards, but does not change current OS applications, existing user data, media libraries or infrastructure. Filters, saved samples, local upload preview and detail dialogs are demonstrative.");
+$("safetyInfo").onclick=e=>{e.preventDefault();showInfo("Before a public launch","An actual adult media platform requires age and identity verification where applicable; uploader consent, rights and recordkeeping; copyright notices and takedowns; child-safety and non-consensual imagery prevention; report/block systems; a human moderation workflow; and written hosting/CDN approval. This prototype does not implement those protections.")};
+$("enterGate").onclick=()=>{$("ageGate").hidden=true;try{sessionStorage.setItem("bc-men-prototype-ageconfirmed","yes")}catch(_){}};$("exitGate").onclick=()=>location.assign("blackcell-os.html");
+try{if(sessionStorage.getItem("bc-men-prototype-ageconfirmed")==="yes")$("ageGate").hidden=true}catch(_){}
+render();
+})();
+</script>
+</body>
+</html>
