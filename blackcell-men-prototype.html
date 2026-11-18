@@ -27,6 +27,28 @@ main{min-width:0;min-height:0;display:flex;flex-direction:column}header{min-heig
 .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}.card{min-width:0}.cover{position:relative;aspect-ratio:16/10;background:radial-gradient(circle at 65% 26%,#722d476e,transparent 50%),linear-gradient(140deg,#23282e,#171318);border:1px solid #ffffff16;border-radius:13px;overflow:hidden;cursor:pointer;width:100%;padding:0;display:block;text-align:left}.cover:focus-visible{outline-offset:4px}.cover img{height:100%;width:100%;object-fit:cover;object-position:center 21%;filter:saturate(.76) contrast(1.1);opacity:.86;transition:transform .28s}.cover:hover img{transform:scale(1.06)}.cover .placeholder{font-size:40px;position:absolute;inset:0;display:grid;place-items:center;opacity:.45}.cover img:not([hidden])~.placeholder{display:none}.play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#0505069e;border:1px solid #ffffff90;border-radius:50%;width:43px;height:43px;display:grid;place-items:center;font-size:18px;opacity:0;transition:opacity .2s}.cover:hover .play,.cover:focus-visible .play{opacity:1}.duration{position:absolute;bottom:9px;right:9px;font-size:10px;border-radius:5px;background:#050507cc;padding:4px 7px}.flag{position:absolute;top:9px;left:9px;color:#fff;font-size:9px;font-weight:800;letter-spacing:.08em;background:#b22e47e5;border-radius:5px;padding:5px 8px}.card-meta{display:flex;align-items:start;justify-content:space-between;gap:5px;padding-top:11px}.card h3{font-size:13px;line-height:1.4;font-weight:750;margin:0 0 4px}.card p{font-size:11px;line-height:1.5;color:#92949c;margin:0}.save{border:1px solid #ffffff23;background:#191b20;color:#bdbfc6;border-radius:9px;width:32px;height:32px;flex:0 0 auto}.save[aria-pressed=true]{border-color:#d94c65;background:#4d1e2d;color:#ff9ea9}.empty{padding:28px;border:1px dashed #ffffff36;border-radius:15px;color:#a6a9b1;text-align:center;font-size:13px}
 .bottom{padding:23px 0 10px;display:flex;align-items:center;justify-content:space-between;gap:10px;color:#858894;font-size:11px;border-top:1px solid var(--line);margin-top:32px}.bottom a{text-decoration:underline}
 .overlay{position:fixed;inset:0;z-index:20;background:#000c;backdrop-filter:blur(14px);display:grid;place-items:center;padding:15px}.dialog{width:min(100%,620px);max-height:min(92dvh,840px);overflow:auto;background:linear-gradient(155deg,#232228,#0e1013 60%);border:1px solid #ffffff32;box-shadow:0 30px 100px #000b;border-radius:23px;padding:27px}.dialog h2{font-size:27px;letter-spacing:-.035em;margin:8px 0 10px}.dialog p{color:#acaeb5;font-size:13px;line-height:1.7}.dialog .row{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:19px}.dialog input,.dialog select{width:100%;background:#14161b;border:1px solid #ffffff25;color:white;border-radius:10px;padding:12px}.age{width:min(100%,440px);text-align:center}.age .logo-mark{margin:0 auto 15px;width:55px;height:55px;font-size:35px}.age h2{font-size:30px}.age .row{justify-content:center}.age .row button{min-width:140px}.stage{height:255px;display:grid;place-items:center;border:1px solid #ffffff20;border-radius:15px;background:radial-gradient(ellipse at 65% 30%,#552039,transparent 45%),#0a0a0e;position:relative;text-align:center}.stage strong{font-size:20px}.stage small{display:block;color:#979aa3;margin-top:8px}.stage-tag{position:absolute;bottom:14px;left:16px;color:#b9bbc4;font-size:11px}.upload-area{border:1px dashed #777681;border-radius:12px;text-align:center;padding:30px 15px;background:#ffffff05;margin-top:12px}.upload-area input{margin-top:13px}.upload-preview img,.upload-preview video{max-width:100%;max-height:220px;border-radius:12px;margin-top:14px}.mobile-brand{display:none}
+
+/* Gallery + community forum concept — original BLACKCELL MEN presentation. */
+.featured,.community{margin:26px 0 26px}.section-action{background:transparent;border:1px solid #ffffff28;color:#d5d6dc;border-radius:10px;padding:9px 14px;min-height:38px;font-size:12px;font-weight:700;white-space:nowrap}.section-action:hover{background:#ffffff0c}.carousel-controls{display:flex;gap:7px}.carousel-controls button{width:38px;height:38px;border-radius:11px;border:1px solid #ffffff24;background:#1b1c21;color:#f0f0f3;font-size:19px}.carousel-controls button:hover{background:#3b242d}
+.gallery-rail{display:flex;gap:13px;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-inline:contain;scrollbar-width:none;padding:2px 1px 8px}.gallery-rail::-webkit-scrollbar{display:none}
+.gallery-feature{flex:0 0 clamp(225px,34vw,380px);scroll-snap-align:start;border:1px solid #ffffff1b;border-radius:15px;background:#15161a;overflow:hidden}
+.gallery-feature button{width:100%;display:block;position:relative;border:0;padding:0;background:#221c25;color:#fff;aspect-ratio:4/2.8;text-align:left;overflow:hidden}.gallery-feature button:focus-visible{outline-offset:-4px}
+.gallery-feature img{width:100%;height:100%;object-fit:cover;object-position:50% 19%;filter:contrast(1.12) saturate(.79);opacity:.88;transition:transform .25s}.gallery-feature:hover img{transform:scale(1.05)}
+.gallery-feature .gallery-shade{position:absolute;inset:28% 0 0;background:linear-gradient(transparent,#000d)}.gallery-feature .gallery-title{position:absolute;left:14px;bottom:13px;right:14px;color:#fff;z-index:1;font-weight:800;font-size:15px;text-shadow:0 2px 9px #000b}
+.gallery-meta{padding:11px 13px 13px}.gallery-meta strong{font-size:12px;display:block}.gallery-meta small{display:block;font-size:11px;color:#999ca7;margin-top:6px}
+.forum-banner{border:1px solid #ffffff2b;background:radial-gradient(ellipse at 85% 10%,#7931474d,transparent 48%),linear-gradient(116deg,#1e1822,#0d0e11);border-radius:15px;padding:19px 21px;display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:13px}
+.forum-banner b{font-size:17px;letter-spacing:-.02em}.forum-banner span{display:block;color:#a9a1aa;font-size:12px;margin-top:5px}.forum-banner .circle-toggle{border:1px solid #ffffff28;width:35px;height:35px;border-radius:9px;background:#24232a;color:white;font-size:21px}
+.forum-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.forum-topic{display:flex;gap:11px;align-items:center;padding:12px;border:1px solid #ffffff18;background:#13151a;border-radius:14px;min-height:102px}.forum-thumb{width:76px;height:76px;flex:0 0 76px;object-fit:cover;object-position:center 17%;border-radius:10px;background:#29212a}.forum-copy{min-width:0;flex:1}.forum-label{font-size:10px;font-weight:750;letter-spacing:.13em;color:#ed8c9b}.forum-topic button{font-weight:750;font-size:13px;line-height:1.35;background:transparent;border:0;color:#f5f5f7;text-align:left;padding:5px 0}.forum-topic button:hover{text-decoration:underline}.forum-topic p{font-size:11px;color:#9ea0ab;line-height:1.5;margin:2px 0 0}.forum-notice{font-size:11px;color:#91949f;margin:11px 0 0}
+.mobile-dock{display:none}
+@media(max-width:850px){.forum-grid{grid-template-columns:1fr}.gallery-feature{flex-basis:clamp(245px,43vw,360px)}}
+@media(max-width:640px){
+.scroll{padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))}
+.featured,.community{margin:21px 0}.forum-banner{padding:15px}.forum-banner b{font-size:15px}.forum-topic{min-height:95px}.gallery-feature{flex-basis:76%;max-width:330px}.section-head h2{font-size:19px}
+.mobile-dock{display:flex;position:fixed;z-index:12;left:0;right:0;bottom:0;min-height:63px;padding:7px 8px calc(7px + env(safe-area-inset-bottom,0px));background:#16171cf5;border-top:1px solid #ffffff25;backdrop-filter:blur(20px);justify-content:space-around;gap:4px}
+.mobile-dock button{flex:1;min-width:0;background:transparent;border:0;color:#a9abb6;font-size:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:46px}
+.mobile-dock button span{font-size:19px;color:#cacbd3}.mobile-dock button.active{color:#fff}.mobile-dock button.active span{color:#f0788b}
+}
+
 @media(max-width:1180px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.hero-art{right:-7%;width:48%}.hero-content{max-width:580px}}
 @media(max-width:850px){.shell{grid-template-columns:70px minmax(0,1fr)}aside{padding:20px 8px}.logo b,.logo small,.navlabel,.nav button .navtext,.sidefoot{display:none}.logo{padding:0;justify-content:center}.nav button{justify-content:center;padding:0}.hero-content{max-width:450px}.hero-art{opacity:.42;right:-16%;width:64%}}
 @media(max-width:640px){.shell{display:block}aside{display:none}header{padding:11px 14px;min-height:65px;gap:9px}.header-title{display:none}.mobile-brand{display:block;font-weight:900;letter-spacing:.11em;font-size:12px}.mini-tag{display:none}.search{max-width:unset;min-width:0}.search input{height:37px;font-size:12px}.head-actions .pill{display:none}.head-actions .primary{padding:0 10px;min-height:37px}.scroll{padding:0 14px 22px}.hero{min-height:275px;margin-top:14px}.hero-content{padding:25px 20px}.hero h1{font-size:39px}.hero p{font-size:12px;max-width:270px}.hero-art{width:85%;right:-45%;opacity:.32}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.stats{gap:7px}.stats strong{font-size:15px}.stats .stat-note{display:none}.card h3{font-size:12px}.section-head h2{font-size:19px}.dialog{padding:19px}.bottom{display:block;line-height:2}}
@@ -47,6 +69,7 @@ main{min-width:0;min-height:0;display:flex;flex-direction:column}header{min-heig
   <button data-nav="uniforms"><span class="glyph">✦</span><span class="navtext">Men in Uniform</span></button>
   <button data-nav="creators"><span class="glyph">♙</span><span class="navtext">Creators</span></button>
   <button data-nav="saved"><span class="glyph">♡</span><span class="navtext">Saved</span></button>
+  <button type="button" id="forumsSide"><span class="glyph">☰</span><span class="navtext">Community Forums</span></button>
  </nav>
  <span class="navlabel">MY SPACE</span>
  <nav class="nav">
@@ -68,6 +91,16 @@ main{min-width:0;min-height:0;display:flex;flex-direction:column}header{min-heig
    <div class="hero-content"><span class="eyebrow">BLACKCELL ORIGINAL / PRIVATE PREVIEW</span><h1>THE WORLD OF <span>MEN.</span></h1><p>Discover creators, build private collections, and explore photos and videos in one cinematic, creator-first experience.</p><div class="hero-actions"><button class="primary" id="heroExplore">Explore the collection ↗</button><button class="pill" id="heroCreator">Become a creator</button></div></div>
   </section>
   <div class="stats"><div><strong>ONE</strong><small>UNIFIED EXPERIENCE</small></div><div><strong>PHOTO + VIDEO</strong><small>SEAMLESS BROWSING</small></div><div><strong>PRIVATE</strong><small>PERSONAL COLLECTIONS</small></div><div class="stat-note">All media shown here is demonstrative.<br>Nothing is published or streamed.</div></div>
+
+  <section class="featured" id="featuredGallery" aria-labelledby="galleryTitle">
+   <div class="section-head"><div><h2 id="galleryTitle">Gallery Images</h2><p>Featured photo collections from the BLACKCELL community · concept</p></div><div class="carousel-controls"><button type="button" id="galleryPrev" aria-label="Previous gallery images">‹</button><button type="button" id="galleryNext" aria-label="Next gallery images">›</button></div></div>
+   <div class="gallery-rail" id="galleryRail" aria-label="Featured images carousel" tabindex="0"></div>
+  </section>
+  <section class="community" id="communityForums" aria-labelledby="forumHeading">
+   <div class="section-head"><div><h2 id="forumHeading">Forums</h2><p>Share stories, discuss collections, meet creators.</p></div><button class="primary" type="button" id="newTopic">✎ Start new topic</button></div>
+   <div class="forum-banner"><div><b>BLACKCELL Community Forum</b><span>Member discussions · gallery showcases · creator conversations</span></div><button class="circle-toggle" type="button" id="toggleForum" aria-controls="forumTopics" aria-expanded="true" aria-label="Collapse forum topics">−</button></div>
+   <div id="forumTopics"><div class="forum-grid" id="forumGrid"></div><p class="forum-notice">All discussions shown are fictional demonstration topics. Drafts are local only and aren't published to other members.</p></div>
+  </section>
   <div class="section-head" id="catalog"><div><h2 id="sectionTitle">Discover the collection</h2><p id="sectionSub">Original browsing concept · sample media cards</p></div><span id="count" style="font-size:11px;color:#898c96"></span></div>
   <nav class="filters" id="filters" aria-label="Filter content">
    <button class="chip active" data-filter="all">All</button>
@@ -83,6 +116,13 @@ main{min-width:0;min-height:0;display:flex;flex-direction:column}header{min-heig
  </div>
 </main>
 </section>
+<nav class="mobile-dock" aria-label="BLACKCELL MEN mobile navigation">
+ <button type="button" data-mobile="explore" class="active"><span>⌂</span>Explore</button>
+ <button type="button" data-mobile="gallery"><span>▧</span>Gallery</button>
+ <button type="button" data-mobile="forums"><span>☰</span>Forums</button>
+ <button type="button" data-mobile="saved"><span>♡</span>Saved</button>
+ <button type="button" data-mobile="upload"><span>＋</span>Upload</button>
+</nav>
 <div class="overlay" id="ageGate" aria-labelledby="gateTitle" role="dialog" aria-modal="true">
  <div class="dialog age"><div class="logo-mark">B</div><span class="eyebrow">BLACKCELL CORPORATION / RESTRICTED CONCEPT</span><h2 id="gateTitle">Adults only.</h2><p>This private prototype is designed for an adult-oriented media community. Confirm you are at least 18 to view the demonstration. This confirmation is not a production-grade age verification system.</p><div class="row"><button class="pill" id="exitGate">Exit</button><button class="primary" id="enterGate">I am 18 or older</button></div><p style="font-size:11px">No explicit media or real user accounts are included in this demonstration.</p></div>
 </div>
@@ -155,6 +195,68 @@ $("prototypeInfo").onclick=()=>showInfo("About this prototype","BLACKCELL MEN is
 $("safetyInfo").onclick=e=>{e.preventDefault();showInfo("Before a public launch","An actual adult media platform requires age and identity verification where applicable; uploader consent, rights and recordkeeping; copyright notices and takedowns; child-safety and non-consensual imagery prevention; report/block systems; a human moderation workflow; and written hosting/CDN approval. This prototype does not implement those protections.")};
 $("enterGate").onclick=()=>{$("ageGate").hidden=true;try{sessionStorage.setItem("bc-men-prototype-ageconfirmed","yes")}catch(_){}};$("exitGate").onclick=()=>location.assign("blackcell-os.html");
 try{if(sessionStorage.getItem("bc-men-prototype-ageconfirmed")==="yes")$("ageGate").hidden=true}catch(_){}
+
+/* Gallery carousel and discussion demo: independent UI only; no backend changes or publishing. */
+const galleryRail=$("galleryRail");
+for(const x of items.filter(item=>item.type==="photos").slice(0,6)){
+ const card=h("article","gallery-feature"),button=h("button");button.type="button";button.setAttribute("aria-label","Open "+x.title);
+ const image=h("img");image.src=covers[x.image];image.alt="Demonstration gallery image";image.loading="lazy";image.onerror=()=>{image.hidden=true};
+ button.append(image,h("span","gallery-shade"),h("span","gallery-title",x.title));button.onclick=()=>preview(x);
+ const byline=h("div","gallery-meta");byline.append(h("strong","",x.who),h("small","","Photo collection · Concept gallery"));
+ card.append(button,byline);galleryRail.append(card)
+}
+function moveGallery(dir){galleryRail.scrollBy({left:dir*(galleryRail.querySelector(".gallery-feature")?.getBoundingClientRect().width+13||265),behavior:"smooth"})}
+$("galleryPrev").onclick=()=>moveGallery(-1);$("galleryNext").onclick=()=>moveGallery(1);
+const topicSamples=[
+{id:"t1",title:"Show us your favorite uniform photography",tag:"GALLERY DISCUSSION",author:"BLACKCELL Archive",image:"military",replies:12,text:"Share the styles and collections you find most interesting."},
+{id:"t2",title:"Meet the creators — introduction thread",tag:"CREATOR LOUNGE",author:"Community Team",image:"law",replies:8,text:"Introduce your creative work, interests and ideas."},
+{id:"t3",title:"Photo and video filming techniques",tag:"PRODUCTION",author:"BLACKCELL Studios",image:"fire",replies:6,text:"Lighting, editing and camera techniques for creators."},
+{id:"t4",title:"What should BLACKCELL MEN build next?",tag:"COMMUNITY IDEAS",author:"BLACKCELL Team",image:"ems",replies:19,text:"Suggest features for this private concept."}
+];
+const draftTopics=[];
+function topicDetail(item){showDialog(item.title,item.tag+" · SAMPLE FORUM",root=>{
+ para(root,item.text||"Your locally drafted topic is ready for review.");
+ para(root,(item.demo?"This draft exists only in this device's current session. No message has been published.":"Started by "+item.author+" · "+item.replies+" fictional replies in this design demonstration."));
+ const box=h("div","upload-area");box.append(h("strong","","Discussion preview"),h("p","","Replies, moderation, mentions and notifications would appear here when a real forum backend is approved."));root.append(box)
+})}
+function renderForums(){
+ const forum=$("forumGrid");forum.replaceChildren();
+ for(const item of [...draftTopics,...topicSamples]){
+  const topic=h("article","forum-topic"),thumb=h("img","forum-thumb");thumb.src=covers[item.image]||covers.military;thumb.alt="Sample forum cover";thumb.loading="lazy";
+  const content=h("div","forum-copy");content.append(h("span","forum-label",item.tag));
+  const open=h("button","",item.title);open.type="button";open.onclick=()=>topicDetail(item);
+  content.append(open,h("p","",(item.demo?"Your draft":"By "+item.author+" · "+item.replies+" sample replies")));topic.append(thumb,content);forum.append(topic)
+ }
+}
+function newTopic(){
+ showDialog("Start a new topic","COMMUNITY / LOCAL DRAFT",root=>{
+  para(root,"Create a demonstration discussion topic. No account, server, or other member will receive it.");
+  const titleLabel=h("label","", "Topic title");titleLabel.style.display="block";titleLabel.style.margin="8px 0";const input=h("input");input.maxLength=100;input.placeholder="What would you like to discuss?";input.setAttribute("aria-label","Discussion topic title");
+  const catLabel=h("label","","Forum category");catLabel.style.display="block";catLabel.style.margin="14px 0 8px";const select=h("select");for(const category of ["Gallery Discussion","Creator Lounge","Production","Community Ideas"]){const option=h("option","",category);option.value=category;select.append(option)}
+  const note=h("p","","Nothing will be posted publicly. This is a design prototype.");
+  const actions=h("div","row"),cancel=h("button","pill","Cancel"),create=h("button","primary","Create demo topic");
+  cancel.onclick=closeModal;create.onclick=()=>{
+   const title=input.value.trim();
+   if(title.length<3){input.setCustomValidity("Enter at least 3 characters");input.reportValidity();return}
+   input.setCustomValidity("");
+   draftTopics.unshift({id:"draft-"+draftTopics.length,title,tag:select.value.toUpperCase(),author:"You",image:"military",replies:0,text:"Locally drafted discussion.",demo:true});
+   renderForums();closeModal();$("communityForums").scrollIntoView({behavior:"smooth"});};
+  actions.append(cancel,create);root.append(titleLabel,input,catLabel,select,note,actions);input.focus()
+ })
+}
+$("newTopic").onclick=newTopic;$("forumsSide").onclick=()=>$("communityForums").scrollIntoView({behavior:"smooth"});
+$("toggleForum").onclick=()=>{const panel=$("forumTopics"),collapsed=!panel.hidden;panel.hidden=collapsed;$("toggleForum").textContent=collapsed?"+":"−";$("toggleForum").setAttribute("aria-expanded",String(!collapsed))};
+function mobileNavigate(to){
+ document.querySelectorAll("[data-mobile]").forEach(b=>b.classList.toggle("active",b.dataset.mobile===to));
+ if(to==="upload"){uploader();return}
+ if(to==="saved"){filter="saved";render();$("catalog").scrollIntoView({behavior:"smooth"});return}
+ if(to==="gallery"){$("featuredGallery").scrollIntoView({behavior:"smooth"});return}
+ if(to==="forums"){$("communityForums").scrollIntoView({behavior:"smooth"});return}
+ filter="all";term="";$("search").value="";render();$("pageScroll").scrollTo({top:0,behavior:"smooth"});
+}
+document.querySelectorAll("[data-mobile]").forEach(button=>button.onclick=()=>mobileNavigate(button.dataset.mobile));
+renderForums();
+
 render();
 })();
 </script>
