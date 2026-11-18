@@ -9,9 +9,9 @@ Standalone post-signup community discovery proof of concept for the BLACKCELL Co
 - Uses the user's approved **black/steel/red hexagonal BLACKCELL Corporation logo**, not a fictional umbrella corporate symbol.
 - Renders a full-width cinematic corporate sci-fi hero with armored adult male figures and a laboratory environment.
 - Embedded, rights-controlled-for-prototype-only image crops originate from the user-approved AI-generated preview graphic. The logo is also embedded, so external image hosting is unnecessary.
-- True-black, brushed-metal and silver styling, red accents, responsive card directory, chrome effect and Level 04 footer.
+- True-black, brushed-metal and silver styling, red accents, responsive **circular world directory**, chrome effect and Level 04 footer.
 - Ten discoverable category tiles: **Leather, Rubber, Pup Play, BDSM, Findom, Underwear, Bondage, Gear, Sportswear, Uniform.**
-- The latest approved design uses **rectangular photo tiles**, not the older circular category-selection variant.
+- **Latest requested revision:** Every world displays as a stationary **round photo bubble**, with its world name beneath it. The user's selection is shown only by a crimson ring and clearer photo (no checkmarks). The selected-world preview screen also uses circular images.
 - The self-contained HTML is approximately 0.84 MB. It embeds one logo PNG and compressed WebP imagery to prevent broken external assets.
 
 ## Prototype behavior
