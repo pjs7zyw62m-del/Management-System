@@ -25,12 +25,17 @@ BLACKCELL MAN WORLD is a standalone, opt-in, post-signup **SELECT YOUR WORLD** p
 - Desktop uses five columns, tablets three or four, phones two.
 - The personalized second-screen choices use the same stationary circular language.
 
-## BLACKCELL OS shell redesign · 2.0
-- The approved 10 photographic bubble hub designs are retained **unchanged**: same circular images, dark overlays, labels, static layout, multi-select and crimson selected state.
-- Everything around the bubbles has been redesigned to draw from the current BLACKCELL OS desktop styling: a slimmer unified app header, BLACKCELL OS / MAN WORLD identity, native-style navigation, glass welcome section, refined type and spacing, a world directory frame, and a dock-like translucent selection control bar.
-- The header's Discover and My Worlds controls work; a selected-count indicator and optional preview chips update immediately. Continue, Not now, and Change my worlds still work.
-- The second screen has a redesigned BLACKCELL OS summary and uses the existing image circles.
-- CSS is self-contained on this preview page; no production OS files or member records were modified.
+## BLACKCELL OS native-window redesign · 3.0
+- The 10 approved **photographic bubbles are retained** as static, circular, darkened photo hubs, with their existing category copy and crimson ring/highlight when selected. No checkmarks.
+- Replaced the web-landing-page approach with a **BLACKCELL OS desktop application** pattern based on the repository's actual OS UI:
+  - A compact top system/menu bar, clock, and exit to BLACKCELL OS.
+  - A self-contained app window with a slim titlebar, translucent Finder-like navigation sidebar (Discover, My Worlds) and concise native toolbar.
+  - A clean black workspace showing the original photo-bubble directory directly, with no promotional hero card or layered marketing panels.
+  - A dock-like bottom selection strip for counts and continue/not-now actions; a subtle status strip under it.
+  - A corresponding "My Worlds" screen that uses the user's selected circular image hubs.
+  - Mobile navigation tabs when the sidebar is hidden, internal scrolling with hidden scrollbars, and constrained responsive bubble sizing.
+- The sidebar/toolbar and bottom dock follow existing `blackcell-os-desktop-refresh.css` desktop visual language (near-black charcoal, restrained glass, soft silver typography and limited crimson).
+- The initial preview is an isolated standalone page. No production code, account data or real preferences have been changed.
 
 ## Prototype behavior
 - Standalone `blackcell-man-world-prototype.html`, with searchable categories, multi-select, skip, continue, and edit choices.
