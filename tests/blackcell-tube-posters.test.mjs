@@ -83,3 +83,40 @@ test("Tube render prioritizes saved covers and no longer transcodes World videos
  assert.match(queue,/await createWorldVideoPoster\(j\.file\)/);
  assert.match(queue,/await saveWorldVideoPoster\(db,j\.asset_id,jpeg\)/);
 });
+
+test("watch sidebar can fetch a saved private JPEG while full-video previews are paused",async()=>{
+ const h=harness("viewer");
+ try{
+  h.patch(()=>new Response(jpg,{status:200,headers:{"Content-Type":"image/jpeg"}}));
+  const previews=createWorldVideoPreviews(h.client);
+  const a={id:"123e4567-e89b-12d3-a456-426614174000",owner_id:"different-account",kind:"video"};
+  previews.setPaused(true);
+  await assert.rejects(previews.get(a),/Preview paused for playback/);
+  const poster=await previews.get(a,{posterOnly:true});
+  assert.ok(typeof poster==="string"&&poster.startsWith("blob:"));
+  assert.equal(h.calls.length,1);
+  assert.ok(h.calls[0].url.endsWith("action=poster"));
+  assert.equal(previews.get(a) instanceof Promise,true);
+  previews.clear();
+ }finally{h.restore()}
+});
+test("missing saved poster in watch sidebar does not download full original",async()=>{
+ const h=harness("owner");
+ try{
+  h.patch(()=>new Response(JSON.stringify({ok:false,code:"POSTER_MISSING"}),{status:404,headers:{"Content-Type":"application/json"}}));
+  const previews=createWorldVideoPreviews(h.client);
+  previews.setPaused(true);
+  const a={id:"123e4567-e89b-12d3-a456-426614174000",owner_id:"owner",kind:"video"};
+  await assert.rejects(previews.get(a,{posterOnly:true}),/Poster not generated yet/);
+  assert.equal(h.calls.length,1);
+  assert.ok(h.calls.every(c=>c.url.endsWith("action=poster")));
+  previews.clear();
+ }finally{h.restore()}
+});
+test("watch recommendations mount private posters without triggering legacy video downloads",()=>{
+ const tube=readFileSync(base+"/corporate-network-videos.js","utf8");
+ assert.match(tube,/function renderWatchRecommendations/);
+ assert.match(tube,/else if\(isWorldVideo\(item\)\)/);
+ assert.match(tube,/worldVideoPreviews\.mount\(item,img,\{posterOnly:true\}\)/);
+ assert.match(tube,/function suspendBrowsePreviews\(\)/);
+});

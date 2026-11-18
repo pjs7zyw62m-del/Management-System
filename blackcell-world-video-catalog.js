@@ -109,14 +109,19 @@ export function createWorldVideoPreviews(client){
   paused=next;
   if(paused){epoch++;for(const ctl of controllers)ctl.abort();queued.clear();tail=Promise.resolve()}
  }
- function get(a){
+ function get(a,{posterOnly=false}={}){
   if(cache.has(a.id))return Promise.resolve(cache.get(a.id));
-  if(paused)return Promise.reject(Error("Preview paused for playback"));
-  if(queued.has(a.id))return queued.get(a.id);
+  // Opening the cinema suspends expensive full-video poster generation,
+  // but the sidebar may still retrieve already-persisted lightweight JPEGs.
+  if(paused&&!posterOnly)return Promise.reject(Error("Preview paused for playback"));
+  const queueKey=a.id+(posterOnly?":poster":":full");
+  if(queued.has(queueKey))return queued.get(queueKey);
   const ticket=epoch,ctl=new AbortController();controllers.add(ctl);
   const task=(async()=>{
    let jpeg=await readWorldVideoPoster(client,a.id,ctl.signal);
    if(!jpeg){
+    // Never download and decode a 30 MB video while another one is playing.
+    if(posterOnly||paused)throw Error("Poster not generated yet");
     const session=(await client.auth.getSession()).data?.session;
     if(a.owner_id!==session?.user?.id)throw Error("Poster pending owner generation");
     // Old videos are backfilled once by their authorized owner.
@@ -131,16 +136,16 @@ export function createWorldVideoPreviews(client){
     tail=generate.catch(()=>{});
     jpeg=await generate;
    }
-   if(ticket!==epoch||paused||ctl.signal.aborted)throw Error("Preview session changed");
+   if(ticket!==epoch||ctl.signal.aborted||(paused&&!posterOnly))throw Error("Preview session changed");
    if(!(jpeg instanceof Blob)||!jpeg.size||jpeg.size>512*1024||!jpeg.type.startsWith("image/"))throw Error("Poster invalid");
    const url=URL.createObjectURL(jpeg);cache.set(a.id,url);return url;
-  })().finally(()=>{controllers.delete(ctl);if(queued.get(a.id)===task)queued.delete(a.id)});
-  queued.set(a.id,task);return task;
+  })().finally(()=>{controllers.delete(ctl);if(queued.get(queueKey)===task)queued.delete(queueKey)});
+  queued.set(queueKey,task);return task;
  }
- function mount(a,img){
+ function mount(a,img,{posterOnly=false}={}){
   const run=()=>{
    if(!img.isConnected)return;
-   get(a).then(url=>{
+   get(a,{posterOnly}).then(url=>{
     if(img.isConnected){img.src=url;img.hidden=false;img.removeAttribute("data-preview-unavailable")}
    }).catch(error=>{
     if(img.isConnected){img.dataset.previewUnavailable="true";img.dataset.previewReason=String(error?.message||"Preview unavailable").slice(0,90)}
