@@ -114,6 +114,67 @@ footer{margin-top:auto;padding:19px clamp(18px,4.5vw,68px) 27px;border-top:1px s
 @media(max-width:350px){.world-circle{width:109px;height:109px}.world-sub{font-size:9px}}
 @media(prefers-reduced-motion:reduce){.world-circle{transition:none}}
 
+
+/* BLACKCELL MAN WORLD / PHOTO HUB BUBBLES · Reference-inspired, original layout */
+.top{background:#08080bcf}
+.intro{justify-content:center;text-align:center;margin:16px auto 22px}
+.intro>div:first-child{margin:auto}
+.intro h1{font-size:clamp(37px,4.8vw,61px);line-height:1.05}
+.intro p{margin:auto;max-width:650px;color:#b3b3b8}
+.intro .eyebrow{color:#e54d60;font-size:11px;letter-spacing:.3em}
+.step{display:none}
+.toolbar{max-width:1260px;margin:15px auto 16px}
+.worlds,.worlds.is-filtering{max-width:1290px;grid-template-columns:repeat(5,minmax(0,1fr));gap:27px 14px;margin:19px auto 37px}
+.world,.worlds.is-filtering .world{max-width:255px;padding:0 3px 6px;gap:8px;background:transparent!important;cursor:pointer}
+.world-circle{
+ position:relative;display:block;width:clamp(155px,16.2vw,222px);height:clamp(155px,16.2vw,222px);
+ border-radius:50%;border:2px solid #54505a;
+ overflow:hidden;background:radial-gradient(circle at 55% 28%,color-mix(in srgb,var(--world-color) 36%,transparent),transparent 65%),#111014;
+ box-shadow:inset 0 0 32px #0006,0 10px 32px #0009;
+ isolation:isolate;
+}
+.world-circle::before{
+ content:"";position:absolute;inset:0;z-index:1;border-radius:inherit;pointer-events:none;
+ background:linear-gradient(180deg,#06060822 0%,#05050724 35%,#050507c5 80%,#050507e5 100%);
+}
+.world-circle::after{content:"";position:absolute;inset:6px;border-radius:inherit;border:1px solid #ffffff19;z-index:4;pointer-events:none}
+.world-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 25%;filter:grayscale(.1) contrast(1.15) saturate(.82) brightness(.86);z-index:0;display:block;transition:filter .2s}
+.world-image[hidden]{display:none}
+.world:hover .world-image{filter:grayscale(0) contrast(1.16) saturate(.92) brightness(1)}
+.world-circle-copy{
+ position:absolute;z-index:2;inset:0;display:flex;flex-direction:column;
+ align-items:center;justify-content:flex-end;gap:7px;padding:0 11px 27px;
+ pointer-events:none;text-shadow:0 2px 10px #000;
+}
+.world-symbol{font-size:23px;color:#fc5369;line-height:1;text-shadow:0 0 12px #000d}
+.world-circle-title{font-weight:900;font-size:clamp(14px,1.65vw,21px);line-height:1.05;letter-spacing:-.02em;text-transform:uppercase;color:#fff;max-width:95%}
+.world-check{top:10px;right:10px;width:25px;height:25px;background:#131216e0;z-index:5}
+.world[aria-pressed=true] .world-circle{border-color:#ff748b;box-shadow:0 0 0 3px #bd2c4560,0 0 27px #c02a4e85,0 13px 32px #0008}
+.world[aria-pressed=true] .world-circle-title{color:#fff}
+.world-name{font-size:12px;color:#e5e1e5!important;font-weight:700;letter-spacing:.025em}
+.world-sub{font-size:11px;color:#9ea0aa;max-width:202px;min-height:32px;line-height:1.46}
+.selection{max-width:1250px;margin-left:auto;margin-right:auto}
+.home-card .emblem{position:relative;overflow:hidden;isolation:isolate}
+.home-card .emblem img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 25%;filter:brightness(.69) saturate(.8)}
+.home-card .emblem .emblem-letter{position:relative;z-index:2;color:#fff;text-shadow:0 2px 8px #000}
+.home-card .emblem::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent,#07050788);z-index:1}
+.request-hub{display:flex;justify-content:center;margin:0 auto 20px;text-align:center}
+.request-hub button{background:transparent;border:1px solid #cf354b7c;border-radius:999px;color:#f4a1ac;min-height:40px;padding:9px 18px;font-size:12px;font-weight:700}
+.request-hub button:hover{background:#42151e}
+@media(max-width:1180px){.worlds,.worlds.is-filtering{grid-template-columns:repeat(4,minmax(0,1fr));gap:20px 12px}.world-circle{width:clamp(144px,19vw,215px);height:clamp(144px,19vw,215px)}}
+@media(max-width:840px){.worlds,.worlds.is-filtering{grid-template-columns:repeat(3,minmax(0,1fr));gap:17px 10px}.world-circle{width:clamp(140px,23vw,207px);height:clamp(140px,23vw,207px)}}
+@media(max-width:600px){
+ .intro{margin:6px auto 24px}.intro h1{font-size:clamp(31px,8vw,44px)}
+ .intro .eyebrow{font-size:9px;letter-spacing:.19em}
+ .worlds,.worlds.is-filtering{grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 10px}
+ .world-circle{width:clamp(132px,40vw,190px);height:clamp(132px,40vw,190px)}
+ .world-circle-copy{padding-bottom:20px}.world-circle-title{font-size:clamp(14px,4.2vw,19px)}
+ .world-symbol{font-size:20px}.world-sub{font-size:10px;min-height:28px}
+ .world-name{font-size:11px}
+}
+@media(max-width:370px){.world-circle{width:134px;height:134px}.world-circle-title{font-size:14px}}
+@media(prefers-reduced-motion:reduce){.world-image{transition:none}}
+
 </style>
 </head><body>
 <div class="background" aria-hidden="true"></div>
@@ -124,10 +185,11 @@ footer{margin-top:auto;padding:19px clamp(18px,4.5vw,68px) 27px;border-top:1px s
 </header>
 <main>
 <section id="chooser" aria-labelledby="chooseHeading">
- <div class="intro"><div><span class="eyebrow">WELCOME TO BLACKCELL MAN WORLD · STEP 01</span><h1 id="chooseHeading">SELECT <span>YOUR WORLD.</span></h1><p>Choose the communities you want to explore. Select as many as you like; you can change your choices later.</p></div><div class="step" aria-hidden="true">01 <i></i><i></i> 02</div></div>
+ <div class="intro"><div><span class="eyebrow">FIND YOUR WORLD. FIND YOUR COMMUNITY.</span><h1 id="chooseHeading">EXPLORE <span>YOUR WORLDS.</span></h1><p>Choose the communities you want to explore. Select as many as you like; you can change your choices later.</p></div><div class="step" aria-hidden="true">01 <i></i><i></i> 02</div></div>
  <div class="toolbar"><div><strong>DISCOVER YOUR COMMUNITIES</strong><small>10 worlds available</small></div><label class="search"><input id="search" type="search" autocomplete="off" placeholder="Search for a world…" aria-label="Search worlds"></label></div>
  <div class="worlds" id="worldGrid" aria-label="Choose your worlds"></div>
  <div class="empty" id="empty" hidden>No worlds match that search.</div>
+ <div class="request-hub"><button id="requestHub" type="button">＋ More worlds coming · Suggest a hub</button></div>
  <div class="selection"><div><strong id="selectedCount" aria-live="polite">No worlds selected</strong><p>Choose your own experience. Your selections remain on this page only.</p></div><div class="selection-actions"><button type="button" class="secondary" id="skip">Skip</button><button type="button" class="primary" id="continue" disabled>Enter My World →</button></div></div>
 </section>
 <section class="home" id="home" hidden aria-labelledby="homeTitle">
@@ -155,6 +217,27 @@ const worlds=[
 ];
 const $=id=>document.getElementById(id),selected=new Set();let query="";
 
+
+// Temporary original/free-license editorial imagery for the preview; replace with BLACKCELL-owned assets before production.
+// Site sources: Unsplash and Pexels. If an external CDN image fails to load, show the category graphic.
+const hubArt=Object.freeze({
+ leather:"https://images.unsplash.com/photo-1637696468103-99df968d27ef?auto=format&fit=crop&w=600&q=80",
+ rubber:"https://images.pexels.com/photos/18731362/pexels-photo-18731362.jpeg?auto=compress&cs=tinysrgb&w=600",
+ pup:"https://unsplash.com/photos/5FDUYnZSwgo/download?force=true&w=600",
+ bdsm:"https://unsplash.com/photos/9LguPtwZwqU/download?force=true&w=600",
+ findom:"https://images.pexels.com/photos/17783373/pexels-photo-17783373.jpeg?auto=compress&cs=tinysrgb&w=600",
+ underwear:"https://images.pexels.com/photos/17864091/pexels-photo-17864091.jpeg?auto=compress&cs=tinysrgb&w=600",
+ bondage:"https://images.pexels.com/photos/194548/pexels-photo-194548.jpeg?auto=compress&cs=tinysrgb&w=600",
+ gear:"https://images.pexels.com/photos/18171625/pexels-photo-18171625.jpeg?auto=compress&cs=tinysrgb&w=600",
+ sportswear:"https://images.pexels.com/photos/7672100/pexels-photo-7672100.jpeg?auto=compress&cs=tinysrgb&w=600",
+ uniform:"assets/maf/portrait-military.png"
+});
+function hubImage(world){
+ const img=create("img","world-image");img.src=hubArt[world.id];img.alt="";img.loading="lazy";img.decoding="async";img.referrerPolicy="no-referrer";
+ img.onerror=()=>{img.hidden=true};
+ return img;
+}
+
 function create(tag,cls,txt){const el=document.createElement(tag);if(cls)el.className=cls;if(txt!==undefined)el.textContent=txt;return el}
 function updateSelection(){
 $("selectedCount").textContent=selected.size?selected.size+" world"+(selected.size===1?"":"s")+" selected":"No worlds selected";
@@ -174,10 +257,13 @@ function render(){
   button.setAttribute("aria-pressed",String(selected.has(w.id)));
   button.setAttribute("aria-label","Select "+w.name+" — "+w.sub);
   const circle=create("span","world-circle");
-  const symbol=create("span","world-symbol",w.symbol);symbol.setAttribute("aria-hidden","true");
-  const check=create("span","world-check",selected.has(w.id)?"✓":"");check.setAttribute("aria-hidden","true");
-  circle.append(symbol,check);
-  button.append(circle,create("span","world-name",w.name),create("span","world-sub",w.sub));
+  const copy=create("span","world-circle-copy"),symbol=create("span","world-symbol",w.symbol);
+  symbol.setAttribute("aria-hidden","true");
+  copy.append(symbol,create("span","world-circle-title",w.name));
+  const check=create("span","world-check",selected.has(w.id)?"✓":"");
+  check.setAttribute("aria-hidden","true");
+  circle.append(hubImage(w),copy,check);
+  button.append(circle,create("span","world-name","EXPLORE "+w.name.toUpperCase()),create("span","world-sub",w.sub));
   button.onclick=()=>{selected.has(w.id)?selected.delete(w.id):selected.add(w.id);render()};
   root.append(button);
  }
@@ -189,13 +275,19 @@ function openHome(){
  $("homeIntro").textContent=list.length?"You selected "+list.length+" world"+(list.length===1?"":"s")+". These become the foundations of your personalized BLACKCELL homepage.":"You can explore all worlds now and choose favorites later.";
  const chosen=list.length?list:worlds;
  for(const w of chosen){
-  const tile=create("article","home-card"),symbol=create("span","emblem",w.symbol);tile.style.setProperty("--world-color",w.color);
+  const tile=create("article","home-card"),symbol=create("span","emblem");tile.style.setProperty("--world-color",w.color);symbol.append(hubImage(w),create("span","emblem-letter",w.symbol));
   tile.append(symbol,create("b","",w.name),create("small","",w.sub));root.append(tile);
  }
 }
 $("search").addEventListener("input",e=>{query=e.target.value.trim().slice(0,100);render()});
 $("continue").onclick=openHome;$("skip").onclick=openHome;
 $("editSelection").onclick=()=>{$("chooser").hidden=false;$("home").hidden=true;window.scrollTo({top:0,behavior:"instant"});render()};
+
+$("requestHub").onclick=()=>{
+ const text=prompt("Suggest a new world (demo only — suggestions are not sent):","");
+ if(text?.trim())alert("Preview only: "+text.trim().slice(0,70)+". No suggestion was sent to BLACKCELL.");
+};
+
 render();
 })();
 </script>
