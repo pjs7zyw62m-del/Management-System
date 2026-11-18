@@ -122,7 +122,6 @@ let dockOverrides=new Map();
 let storeModule,storeProfile=null,widgetState=null,storeInstalled=new Set(),storeRules=new Map(),storeAdmin=false,storeLevel=null,storeError='',storeSequence=0,storeMutating=false,catalogPending=null;
 // Catalog metadata for recently released apps. Permissions always come from corp_app_store.
 const releasedApps={
- blackcellmen:{title:'BLACKCELL MEN · Prototype',sub:'Adult community concept · Private preview',url:'blackcell-men-prototype.html?v=20261118-r1',desc:'Original 18+ media community prototype: sample photo and video collection, saved items, creator concept, local-only upload preview and content safety requirements. Demo only; no real uploads, publication, payments or streaming.',path:'M4 3h16v18H4z M8 7h8 M8 12h8 M8 17h8 M3 7h2 M3 12h2 M3 17h2'},
  omega:{title:'OMEGA // THE HUNT',sub:'Explore · Worlds · Dossiers · Operations',url:'blackcell-omega.html?v=20261117-unified-r1',
   desc:'One combined discovery app for photos and videos, connected catalog clues, visual dossiers, seven worlds and verified collection missions. Original media and research are preserved; vision-model identification remains pending.',
   path:'M12 2l8 4v12l-8 4-8-4V6z M12 6l5 2.8v6.4L12 18l-5-2.8V8.8z M8 12h8 M12 8v8'},
