@@ -66,7 +66,7 @@ test("Photo-led bubbles preserve ten selectable hubs and show readable labels",(
   assert.match(html,new RegExp("\\b"+id+":"));
  }
  assert.match(html,/const circle=create\("span","world-circle"\)/);
- assert.match(html,/circle\.append\(hubImage\(w\),copy,check\)/);
+ assert.match(html,/circle\.append\(hubImage\(w\),copy\)/);
  assert.match(html,/world-circle-title/);
  assert.match(html,/\.world-image\{/);
  assert.match(html,/object-fit:cover/);
@@ -77,4 +77,14 @@ test("Image bubbles remain stationary and offer a fallback for missing imagery",
  assert.match(html,/img\.onerror=\(\)=>\{img\.hidden=true\}/);
  assert.match(html,/\.world\[aria-pressed=true\] \.world-circle/);
  assert.doesNotMatch(html,/@keyframes worldDrift|@keyframes filteredDrift|const orbit=\{/);
+});
+
+test("BLACKCELL OS pitch black selected-world styling has no checkmark UI",()=>{
+ assert.match(html,/OBSIDIAN RED EDITION/);
+ assert.match(html,/--bg:#000000/);
+ assert.match(html,/\.world\[aria-pressed=true\] \.world-circle\{/);
+ assert.match(html,/\.world\[aria-pressed=true\] \.world-image\{/);
+ assert.match(html,/\.world-check\{display:none!important\}/);
+ assert.doesNotMatch(html,/const check=create\("span","world-check"/);
+ assert.match(html,/aria-pressed/);
 });
