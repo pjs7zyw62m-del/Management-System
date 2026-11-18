@@ -57,3 +57,24 @@ test("The inline prototype script parses",()=>{
  assert.equal(scripts.length,1);
  assert.doesNotThrow(()=>new Function(scripts[0][1]));
 });
+
+
+test("Photo-led bubbles preserve ten selectable hubs and show readable labels",()=>{
+ assert.match(html,/PHOTO HUB BUBBLES/);
+ assert.match(html,/const hubArt=Object.freeze\(\{/);
+ for(const id of ["leather","rubber","pup","bdsm","findom","underwear","bondage","gear","sportswear","uniform"]){
+  assert.match(html,new RegExp("\\b"+id+":"));
+ }
+ assert.match(html,/const circle=create\("span","world-circle"\)/);
+ assert.match(html,/circle\.append\(hubImage\(w\),copy,check\)/);
+ assert.match(html,/world-circle-title/);
+ assert.match(html,/\.world-image\{/);
+ assert.match(html,/object-fit:cover/);
+ assert.match(html,/button\.setAttribute\("aria-pressed",String\(selected\.has\(w\.id\)\)\)/);
+ assert.match(html,/id="requestHub"/);
+});
+test("Image bubbles remain stationary and offer a fallback for missing imagery",()=>{
+ assert.match(html,/img\.onerror=\(\)=>\{img\.hidden=true\}/);
+ assert.match(html,/\.world\[aria-pressed=true\] \.world-circle/);
+ assert.doesNotMatch(html,/@keyframes worldDrift|@keyframes filteredDrift|const orbit=\{/);
+});
