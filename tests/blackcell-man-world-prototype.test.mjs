@@ -12,13 +12,14 @@ test("World selection is a standalone nonindexed demonstration",()=>{
  assert.match(html,/id="editSelection"/);
  assert.match(html,/No user account is created/);
 });
-test("All 12 worlds have unique identifiers and meaningful labels",()=>{
+test("All ten requested worlds have unique identifiers and meaningful labels",()=>{
  const ids=[...html.matchAll(/\{id:"([a-z]+)",name:"([^"]+)"/g)];
- assert.equal(ids.length,12);
- assert.equal(new Set(ids.map(x=>x[1])).size,12);
- for(const expected of ["Uniform World","Bear World","Daddy World","Muscle World","Leather World","Twink World","Sports World","Rugged World","Nightlife World","Creator World","Connection World","Pride World"]){
+ assert.equal(ids.length,10);
+ assert.equal(new Set(ids.map(x=>x[1])).size,10);
+ for(const expected of ["Leather","Rubber","Pup Play","BDSM","Findom","Underwear","Bondage","Gear","Sportswear","Uniform"]){
   assert.ok(ids.some(x=>x[2]===expected),expected+" is missing");
  }
+ assert.match(html,/10 worlds available/);
 });
 test("World selection is multi-select and has a skip path",()=>{
  assert.match(html,/selected=new Set\(\)/);
@@ -33,20 +34,26 @@ test("Sensitive member world preferences are not persisted in this prototype",()
  assert.doesNotMatch(html,/supabase|service_role|process\.env/i);
 });
 
-test("All worlds render as selectable, floating circular glass bubbles",()=>{
- assert.match(html,/FLOATING GLASS BUBBLE UNIVERSE/);
- assert.match(html,/\.world\{[\s\S]*?border-radius:50%/);
- assert.match(html,/\.world\[aria-pressed=true\]/);
- assert.match(html,/@keyframes worldDrift/);
- assert.match(html,/const orbit=\{/);
+test("Worlds use the existing profile-style stationary circular selector",()=>{
+ assert.match(html,/PROFILE-STYLE STATIC WORLD CIRCLES/);
+ assert.match(html,/classList\.toggle\("is-filtering",query\.length>0\)/);
+ assert.match(html,/\.world-circle\{/);
+ assert.match(html,/border-radius:50%/);
+ assert.match(html,/\.world\[aria-pressed=true\] \.world-circle\{/);
+ assert.match(html,/const circle=create\("span","world-circle"\)/);
  assert.match(html,/button\.dataset\.world=w\.id/);
- assert.match(html,/--diameter/);
- assert.match(html,/\.home-card\{[\s\S]*?border-radius:50%/);
+ assert.doesNotMatch(html,/const orbit=\{|@keyframes worldDrift|@keyframes filteredDrift/);
+ assert.match(html,/animation:none!important/);
 });
-test("Bubbles reflow on tablets and phones, with reduced-motion support",()=>{
- assert.match(html,/@media\(max-width:1100px\)/);
- assert.match(html,/@media\(max-width:600px\)/);
- assert.match(html,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+test("Ten circular worlds reflow responsively",()=>{
+ assert.match(html,/grid-template-columns:repeat\(5,minmax\(0,1fr\)\)/);
+ assert.match(html,/@media\(max-width:990px\)/);
+ assert.match(html,/@media\(max-width:710px\)/);
+ assert.match(html,/@media\(max-width:500px\)/);
  assert.match(html,/prefers-reduced-motion:reduce/);
- assert.match(html,/root\.classList\.toggle\("is-filtering",query\.length>0\)/);
+});
+test("The inline prototype script parses",()=>{
+ const scripts=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
+ assert.equal(scripts.length,1);
+ assert.doesNotThrow(()=>new Function(scripts[0][1]));
 });
