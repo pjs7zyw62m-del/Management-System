@@ -580,7 +580,29 @@ export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,a
  }
  let activeRender=null,bcCinemaUpdateRelease=null,watchMode='default',commentEpoch=0,watchComments=[],commentBusy=false;
  function setWatchMode(mode){watchMode=mode==='theater'?'theater':'default';$('bcVideoCinema').classList.toggle('is-theater',watchMode==='theater');for(const [id,yes] of [['bcCinemaDefault',watchMode==='default'],['bcCinemaTheater',watchMode==='theater'],['bcWatchMode',watchMode==='theater']])$(id).setAttribute('aria-pressed',String(yes));$('bcWatchMode').setAttribute('aria-label',watchMode==='theater'?'Switch to default mode':'Switch to theater mode')}
- function renderWatchRecommendations(a){const root=$('bcCinemaRecommended');root.replaceChildren();const all=allVideos().filter(v=>v.id!==a.id);for(const item of [...all.filter(v=>v.owner_id===a.owner_id),...all.filter(v=>v.owner_id!==a.owner_id)].slice(0,20)){const row=button('','bc-watch-item',()=>openCinema(item,allVideos()));row.setAttribute('aria-label','Watch '+title(item));const art=make('span','bc-watch-art','▶'),cover=posterUrl(item);if(cover){const img=make('img');img.loading='lazy';img.decoding='async';img.alt='';img.src=cover;art.append(img)}const info=make('span');info.append(make('strong','',title(item)),make('small','',creator(item)),make('small','',when(item)));row.append(art,info);root.append(row)}if(!root.childElementCount)root.append(make('p','','No other authorized videos yet.'))}
+ function renderWatchRecommendations(a){
+  const root=$('bcCinemaRecommended');root.replaceChildren();
+  const all=allVideos().filter(v=>v.id!==a.id);
+  const suggestions=[...all.filter(v=>v.owner_id===a.owner_id),...all.filter(v=>v.owner_id!==a.owner_id)].slice(0,20);
+  for(const item of suggestions){
+   const row=button('','bc-watch-item',()=>openCinema(item,allVideos()));
+   row.setAttribute('aria-label','Watch '+title(item));
+   const art=make('span','bc-watch-art','▶'),cover=posterUrl(item);
+   if(cover){
+    const img=make('img');img.loading='lazy';img.decoding='async';img.alt='';img.src=cover;art.append(img);
+   }else if(isWorldVideo(item)){
+    // During playback read the saved private JPEG, never the full video.
+    const img=make('img');img.loading='lazy';img.decoding='async';img.alt='';img.hidden=true;
+    art.append(img);worldVideoPreviews.mount(item,img,{posterOnly:true});
+   }else{
+    art.title='Thumbnail not available for this video';
+   }
+   const info=make('span');
+   info.append(make('strong','',title(item)),make('small','',creator(item)),make('small','',when(item)));
+   row.append(art,info);root.append(row);
+  }
+  if(!root.childElementCount)root.append(make('p','','No other authorized videos yet.'));
+ }
  function paintWatchComments(){const root=$('bcWatchCommentList');root.replaceChildren();$('bcWatchCommentCount').textContent=watchComments.length+' Comments';const sorted=watchComments.slice().sort((a,b)=>($('bcWatchCommentSort').value==='oldest'?1:-1)*(Date.parse(a.created_at)-Date.parse(b.created_at)));for(const c of sorted){const row=make('div','bc-watch-comment'),name=personName(profile(c.user_id)),avatar=make('span','bc-yt-creator-avatar',String(name||'B').slice(0,1).toUpperCase()),main=make('div');main.append(make('strong','',name),make('small','',stamp(c.created_at)),make('p','',c.body));row.append(avatar,main);root.append(row)}}
  async function refreshWatchComments(a){const epoch=++commentEpoch;watchComments=[];commentBusy=false;paintWatchComments();const field=$('bcWatchCommentInput'),submit=$('bcWatchCommentSubmit'),status=$('bcWatchCommentStatus');field.value='';field.disabled=submit.disabled=true;status.textContent='Loading comments…';if(!a.post_id||!loadVideoComments){status.textContent='Comments are not available for this library video yet.';return}try{const rows=await loadVideoComments(a);if(epoch!==commentEpoch||activeCinema?.id!==a.id)return;watchComments=rows;paintWatchComments();status.textContent=rows.length?'':'Be the first to comment.';field.disabled=submit.disabled=false}catch{if(epoch===commentEpoch)status.textContent='Comments could not load. Reopen the video to retry.'}}
  let lastWatchTick=-1;
