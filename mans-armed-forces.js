@@ -8,7 +8,7 @@ import {createPrivateDrive,PRIVATE_FILE_LIMIT} from './blackcell-private-drive.j
 import {uploadPrivateFile,mediaType,privateUploadError} from './blackcell-private-media.js?v=8-transfer';
 
 import {installWorldPlayer} from './blackcell-world-player.js?v=2';
-import {isWorldVideo,worldVideoTitle,createWorldVideoPreviews,createWorldVideoPoster,saveWorldVideoPoster} from './blackcell-world-video-catalog.js?v=20261117-persisted-posters1';
+import {isWorldVideo,worldVideoTitle,createWorldVideoPreviews,createWorldVideoPoster,saveWorldVideoPoster} from './blackcell-world-video-catalog.js?v=20261117-watch-posters-r2';
 import {createWorldAlgorithm} from './blackcell-world-algorithm.js?v=20261117-sevenworlds-r1';
 const $=id=>document.getElementById(id);
 let approved=[],shown=[],filterBranch='all',filterStyle='all',filterCategory='all',lastSigned=0,authorized=null;

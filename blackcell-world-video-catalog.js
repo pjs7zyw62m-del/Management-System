@@ -92,7 +92,7 @@ export async function saveWorldVideoPoster(client,id,jpeg,signal){
 export async function readWorldVideoPoster(client,id,signal){
  return posterRequest(client,id,"poster",null,signal);
 }
-export function createWorldVideoPreviews(client){
+export function createWorldVideoPreviews(client,{posterFactory}={}){
  const cache=new Map(),queued=new Map(),controllers=new Set();
  let tail=Promise.resolve(),epoch=0,paused=false;
  function clear(){
@@ -109,43 +109,55 @@ export function createWorldVideoPreviews(client){
   paused=next;
   if(paused){epoch++;for(const ctl of controllers)ctl.abort();queued.clear();tail=Promise.resolve()}
  }
- function get(a,{posterOnly=false}={}){
+ function get(a,{posterOnly=false,repairMissing=false}={}){
   if(cache.has(a.id))return Promise.resolve(cache.get(a.id));
   // Opening the cinema suspends expensive full-video poster generation,
   // but the sidebar may still retrieve already-persisted lightweight JPEGs.
   if(paused&&!posterOnly)return Promise.reject(Error("Preview paused for playback"));
-  const queueKey=a.id+(posterOnly?":poster":":full");
+  const queueKey=a.id+(repairMissing?":repair":posterOnly?":poster":":full");
   if(queued.has(queueKey))return queued.get(queueKey);
   const ticket=epoch,ctl=new AbortController();controllers.add(ctl);
   const task=(async()=>{
    let jpeg=await readWorldVideoPoster(client,a.id,ctl.signal);
    if(!jpeg){
-    // Never download and decode a 30 MB video while another one is playing.
-    if(posterOnly||paused)throw Error("Poster not generated yet");
+    // Saved poster first. Legacy missing posters are generated once by
+    // their verified owner; no repeat download after the JPEG is saved.
+    // A watch-sidebar repair is explicitly opted into and serialized to
+    // prevent parallel multi-megabyte video downloads.
+    if((posterOnly||paused)&&!repairMissing)throw Error("Poster not generated yet");
     const session=(await client.auth.getSession()).data?.session;
     if(a.owner_id!==session?.user?.id)throw Error("Poster pending owner generation");
     // Old videos are backfilled once by their authorized owner.
     // New uploads generate this image from the local file, no download.
     const generate=tail.then(async()=>{
-     if(ticket!==epoch||paused||ctl.signal.aborted)throw Error("Preview session changed");
-     const original=await readWorldVideo(client,a,{signal:ctl.signal});
-     const image=await createWorldVideoPoster(original,ctl.signal);
+     if(ticket!==epoch||ctl.signal.aborted||(paused&&!repairMissing))throw Error("Preview session changed");
+     // Let active playback start before beginning a one-time background repair.
+     if(repairMissing)await new Promise((resolve,reject)=>{
+      const timer=setTimeout(()=>{ctl.signal.removeEventListener("abort",abort);resolve()},1600);
+      function abort(){clearTimeout(timer);reject(Error("Poster repair cancelled"))}
+      ctl.signal.addEventListener("abort",abort,{once:true});
+      if(ctl.signal.aborted)abort();
+     });
+     if(ticket!==epoch||ctl.signal.aborted||(paused&&!repairMissing))throw Error("Preview session changed");
+     const image=typeof posterFactory==="function"
+      ?await posterFactory(a,ctl.signal)
+      :await createWorldVideoPoster(await readWorldVideo(client,a,{signal:ctl.signal}),ctl.signal);
      await saveWorldVideoPoster(client,a.id,image,ctl.signal);
      return image;
     });
     tail=generate.catch(()=>{});
     jpeg=await generate;
    }
-   if(ticket!==epoch||ctl.signal.aborted||(paused&&!posterOnly))throw Error("Preview session changed");
+   if(ticket!==epoch||ctl.signal.aborted||(paused&&!posterOnly&&!repairMissing))throw Error("Preview session changed");
    if(!(jpeg instanceof Blob)||!jpeg.size||jpeg.size>512*1024||!jpeg.type.startsWith("image/"))throw Error("Poster invalid");
    const url=URL.createObjectURL(jpeg);cache.set(a.id,url);return url;
   })().finally(()=>{controllers.delete(ctl);if(queued.get(queueKey)===task)queued.delete(queueKey)});
   queued.set(queueKey,task);return task;
  }
- function mount(a,img,{posterOnly=false}={}){
+ function mount(a,img,{posterOnly=false,repairMissing=false}={}){
   const run=()=>{
    if(!img.isConnected)return;
-   get(a,{posterOnly}).then(url=>{
+   get(a,{posterOnly,repairMissing}).then(url=>{
     if(img.isConnected){img.src=url;img.hidden=false;img.removeAttribute("data-preview-unavailable")}
    }).catch(error=>{
     if(img.isConnected){img.dataset.previewUnavailable="true";img.dataset.previewReason=String(error?.message||"Preview unavailable").slice(0,90)}

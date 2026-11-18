@@ -1,7 +1,7 @@
 /* BLACKCELL Video Channel: content-first, YouTube-like navigation,
    Shorts and private Plex-style library. All videos come from already
    approved Network assets; personal likes/history are device-local. */
-import {isWorldVideo,worldVideoTitle} from './blackcell-world-video-catalog.js?v=20261117-watch-posters-r1';
+import {isWorldVideo,worldVideoTitle} from './blackcell-world-video-catalog.js?v=20261117-watch-posters-r2';
 export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,attachRenderedWorld,bindTransfer,loadVideoComments,addVideoComment,shareVideoInside,followChannel,channelAvatar,state,mediaUrl,posterUrl,posterVersions,sharedMedia,profile,personName,stamp,switchView,openProfile,uploadVideo,playStream,reviewStream,refreshStream,toast}){
  const $=id=>document.getElementById(id);
  const make=(tag,cls='',value=null)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(value!==null)el.textContent=String(value);return el};
@@ -580,26 +580,55 @@ export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,a
  }
  let activeRender=null,bcCinemaUpdateRelease=null,watchMode='default',commentEpoch=0,watchComments=[],commentBusy=false;
  function setWatchMode(mode){watchMode=mode==='theater'?'theater':'default';$('bcVideoCinema').classList.toggle('is-theater',watchMode==='theater');for(const [id,yes] of [['bcCinemaDefault',watchMode==='default'],['bcCinemaTheater',watchMode==='theater'],['bcWatchMode',watchMode==='theater']])$(id).setAttribute('aria-pressed',String(yes));$('bcWatchMode').setAttribute('aria-label',watchMode==='theater'?'Switch to default mode':'Switch to theater mode')}
+ let watchPosterObserver=null;
  function renderWatchRecommendations(a){
+  watchPosterObserver?.disconnect();watchPosterObserver=null;
   const root=$('bcCinemaRecommended');root.replaceChildren();
   const all=allVideos().filter(v=>v.id!==a.id);
   const suggestions=[...all.filter(v=>v.owner_id===a.owner_id),...all.filter(v=>v.owner_id!==a.owner_id)].slice(0,20);
-  for(const item of suggestions){
+  const lazy=[];
+  suggestions.forEach((item,index)=>{
    const row=button('','bc-watch-item',()=>openCinema(item,allVideos()));
    row.setAttribute('aria-label','Watch '+title(item));
    const art=make('span','bc-watch-art','▶'),cover=posterUrl(item);
+   let hydrate=null;
    if(cover){
-    const img=make('img');img.loading='lazy';img.decoding='async';img.alt='';img.src=cover;art.append(img);
+    const img=make('img');img.loading=index<8?'eager':'lazy';img.decoding='async';img.alt='';
+    img.src=cover;art.append(img);
    }else if(isWorldVideo(item)){
-    // During playback read the saved private JPEG, never the full video.
-    const img=make('img');img.loading='lazy';img.decoding='async';img.alt='';img.hidden=true;
-    art.append(img);worldVideoPreviews.mount(item,img,{posterOnly:true});
-   }else{
-    art.title='Thumbnail not available for this video';
-   }
+    // Start only after row is attached; top cards load directly without an observer.
+    const img=make('img');img.loading='eager';img.decoding='async';img.alt='';img.hidden=true;
+    const status=make('span','bc-watch-poster-status','LOADING THUMBNAIL');
+    art.append(img,status);
+    hydrate=()=>{
+     if(!row.isConnected)return;
+     const valid=()=>row.isConnected&&root.contains(row);
+     img.onload=()=>{if(valid()){img.hidden=false;status.remove()}};
+     img.onerror=()=>{if(valid()){img.hidden=true;status.textContent='PREVIEW UNAVAILABLE'}};
+     // If the original uploader has not yet generated a saved private JPEG,
+     // make one thumbnail in a serialized owner-only repair queue.
+     worldVideoPreviews.get(item,{posterOnly:true,repairMissing:true}).then(url=>{
+      if(valid())img.src=url;
+     }).catch(error=>{
+      if(!valid())return;
+      status.textContent=/owner generation|not generated/i.test(String(error?.message||error))
+       ?'THUMBNAIL PENDING UPLOADER':'THUMBNAIL UNAVAILABLE';
+     });
+    };
+   }else art.title='Thumbnail not available for this video';
    const info=make('span');
    info.append(make('strong','',title(item)),make('small','',creator(item)),make('small','',when(item)));
    row.append(art,info);root.append(row);
+   if(hydrate){if(index<8||!('IntersectionObserver' in window))hydrate();else lazy.push({row,hydrate})}
+  });
+  if(lazy.length){
+   watchPosterObserver=new IntersectionObserver(entries=>{
+    for(const entry of entries)if(entry.isIntersecting){
+     watchPosterObserver?.unobserve(entry.target);
+     lazy.find(v=>v.row===entry.target)?.hydrate();
+    }
+   },{rootMargin:'220px'});
+   for(const item of lazy)watchPosterObserver.observe(item.row);
   }
   if(!root.childElementCount)root.append(make('p','','No other authorized videos yet.'));
  }
@@ -668,6 +697,7 @@ export function createBlackcellVideoChannel({worldVideoPreviews,readWorldVideo,a
   syncWatchControls();$('bcCinemaClose').focus({preventScroll:true});
  }
  function closeCinema(restore=true){
+  watchPosterObserver?.disconnect();watchPosterObserver=null;
   cinemaRequest++;
   if(activeRender){activeRender.destroy();activeRender=null}
   bcCinemaUpdateRelease?.();bcCinemaUpdateRelease=null;

@@ -117,6 +117,50 @@ test("watch recommendations mount private posters without triggering legacy vide
  const tube=readFileSync(base+"/corporate-network-videos.js","utf8");
  assert.match(tube,/function renderWatchRecommendations/);
  assert.match(tube,/else if\(isWorldVideo\(item\)\)/);
- assert.match(tube,/worldVideoPreviews\.mount\(item,img,\{posterOnly:true\}\)/);
+ assert.match(tube,/worldVideoPreviews\.get\(item,\{posterOnly:true,repairMissing:true\}\)/);
+ assert.match(tube,/row\.append\(art,info\);root\.append\(row\)/);
+ assert.match(tube,/if\(index<8\|\|!\('IntersectionObserver' in window\)\)hydrate\(\)/);
  assert.match(tube,/function suspendBrowsePreviews\(\)/);
+});
+
+test("watch sidebar repairs a missing private thumbnail once for its verified owner",async()=>{
+ const h=harness("owner");
+ const id="123e4567-e89b-12d3-a456-426614174000";
+ const video={id,owner_id:"owner",kind:"video"};
+ let generated=0;
+ try{
+  h.patch((url,options)=>{
+   if(url.endsWith("action=poster"))
+    return new Response(JSON.stringify({code:"POSTER_MISSING"}),{status:404,headers:{"Content-Type":"application/json"}});
+   if(url.endsWith("action=poster-write"))
+    return new Response(JSON.stringify({ok:true,saved:true}),{status:200,headers:{"Content-Type":"application/json"}});
+   throw Error("Unexpected full-video request: "+url);
+  });
+  const previews=createWorldVideoPreviews(h.client,{posterFactory:async()=>{generated++;return jpg}});
+  previews.setPaused(true);
+  const value=await previews.get(video,{posterOnly:true,repairMissing:true});
+  assert.match(value,/^blob:/);
+  assert.equal(generated,1);
+  assert.equal(h.calls.filter(x=>x.url.endsWith("action=poster")).length,1);
+  assert.equal(h.calls.filter(x=>x.url.endsWith("action=poster-write")).length,1);
+  assert.equal(await previews.get(video,{posterOnly:true,repairMissing:true}),value);
+  assert.equal(generated,1);
+  previews.clear();
+ }finally{h.restore()}
+});
+test("sidebar repair does not generate thumbnails for media owned by another account",async()=>{
+ const h=harness("viewer");
+ try{
+  h.patch(()=>new Response(JSON.stringify({code:"POSTER_MISSING"}),{status:404,headers:{"Content-Type":"application/json"}}));
+  let generated=0;
+  const previews=createWorldVideoPreviews(h.client,{posterFactory:async()=>{generated++;return jpg}});
+  previews.setPaused(true);
+  await assert.rejects(
+   previews.get({id:"123e4567-e89b-12d3-a456-426614174000",owner_id:"owner",kind:"video"},{posterOnly:true,repairMissing:true}),
+   /Poster pending owner generation/
+  );
+  assert.equal(generated,0);
+  assert.equal(h.calls.length,1);
+  previews.clear();
+ }finally{h.restore()}
 });
