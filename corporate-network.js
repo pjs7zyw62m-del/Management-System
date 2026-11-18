@@ -8,7 +8,7 @@ import {createPhotoRediscovery} from './corporate-photo-rediscovery.js?v=2026111
 import {createVisualDiscovery} from './corporate-visual-discovery.js?v=20261117-adaptive-r1';
 import {createPhotoDedupe} from './corporate-photo-dedupe.js?v=20261111-phonecheck2';
 import {attachRenderedWorld} from './blackcell-render-player.js?v=4';
-import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261116-render-recovery43';
+import {createBlackcellVideoChannel} from './corporate-network-videos.js?v=20261117-tube-posters-r1';
 import {isWorldVideo,worldVideoTitle,readWorldVideo,createWorldVideoPreviews} from './blackcell-world-video-catalog.js?v=20261117-persisted-posters1';
 import {createProfileWorlds} from './corporate-profile-worlds.js?v=20261117-parallel-read1';
 // Pilot only: the private manifest must exist and authorization must pass; otherwise use original playback.
