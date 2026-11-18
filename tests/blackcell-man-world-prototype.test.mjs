@@ -24,7 +24,7 @@ test("All ten user-selected worlds are displayed",()=>{
 });
 
 test("Approved hexagonal corporate emblem and cinematic hero are embedded",()=>{
- assert.match(html,/blackcell-corporate-logo/);
+ assert.match(html,/alt="BLACKCELL Corporation hexagon emblem"/);
  assert.match(html,/class="hero-emblem"/);
  assert.match(html,/class="hero-picture"/);
  assert.match(html,/class="hero-contents"/);
