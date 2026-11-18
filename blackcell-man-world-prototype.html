@@ -59,6 +59,40 @@
  box-decoration-break:clone;
 }
 @media(max-width:365px){.hero h1{font-size:clamp(34px,11vw,43px)!important}}
+
+/* MAN WORLD 8.0 / FULL GLYPH FIX
+   Word-level, non-italic text with a controlled slant: no browser-italic glyph clipping.
+   There is no negative inline margin or letter-span masking. */
+.hero-words h1{
+ display:flex!important;align-items:baseline;justify-content:flex-start;flex-wrap:nowrap;
+ width:max-content;max-width:100%;
+ gap:.08em!important;
+ font-style:normal!important;letter-spacing:0!important;
+ line-height:1.15!important;
+ font-size:clamp(43px,4.6vw,73px)!important;
+ white-space:normal!important;
+ padding:.1em .18em .12em .11em!important;
+ margin:0 0 10px!important;
+ overflow:visible!important;
+}
+.hero-words h1 .silver,.hero-words h1 .crimson{
+ display:block!important;
+ flex:0 0 auto;
+ font-style:normal!important;
+ font-weight:900;
+ letter-spacing:-.04em!important;
+ transform:skewX(-8deg);
+ transform-origin:center;
+ padding:.055em .13em .065em .13em!important;
+ margin:0!important;
+ overflow:visible!important;
+ -webkit-text-fill-color:transparent;
+ background-clip:text;-webkit-background-clip:text;
+}
+@media(max-width:860px){.hero-words h1{font-size:clamp(36px,6.0vw,57px)!important}}
+@media(max-width:630px){.hero-words h1{font-size:clamp(29px,7.2vw,40px)!important;gap:.01em!important;padding-right:.10em!important}}
+@media(max-width:365px){.hero-words h1{font-size:28px!important}}
+
 </style>
 </head>
 <body>
