@@ -1,30 +1,45 @@
-# BLACKCELL MAN WORLD — Realistic HTML Preview
+# BLACKCELL MAN WORLD — Seven Worlds Visual Prototype
 
-## Purpose
+## Design approval and scope
 
-Standalone post-signup community discovery proof of concept for the BLACKCELL Corporation MAN WORLD brand. The latest design was approved visually in a conceptual render, then converted into a functioning HTML/CSS/JavaScript preview. It is **not** a production deployment or live membership app.
+Updated from the latest BLACKCELL-approved visual concept: a photorealistic dark corporate military-facility banner with two fully clothed adult men, the BLACKCELL Corporation hexagonal emblem, metallic silver-and-crimson MAN WORLD branding, and seven circular world categories.
 
-## Design
+**Preview only.** This is a self-contained responsive HTML experience in `blackcell-man-world-prototype.html` on branch `man-world-preview`. It does not change production BLACKCELL OS.
 
-- Uses the user's approved **black/steel/red hexagonal BLACKCELL Corporation logo**, not a fictional umbrella corporate symbol.
-- Renders a full-width cinematic corporate sci-fi hero with armored adult male figures and a laboratory environment.
-- Embedded, rights-controlled-for-prototype-only image crops originate from the user-approved AI-generated preview graphic. The logo is also embedded, so external image hosting is unnecessary.
-- True-black, brushed-metal and silver styling, red accents, responsive **circular world directory**, chrome effect and Level 04 footer.
-- Ten discoverable category tiles: **Leather, Rubber, Pup Play, BDSM, Findom, Underwear, Bondage, Gear, Sportswear, Uniform.**
-- **Latest requested revision:** Every world displays as a stationary **round photo bubble**, with its world name beneath it. The user's selection is shown only by a crimson ring and clearer photo (no checkmarks). The selected-world preview screen also uses circular images.
-- The self-contained HTML is approximately 0.84 MB. It embeds one logo PNG and compressed WebP imagery to prevent broken external assets.
+## Seven photo worlds
 
-## Prototype behavior
+1. Military World
+2. Law Enforcement World
+3. Firefighter World
+4. Paramedic World
+5. Corrections World
+6. Airline Pilot World
+7. Uniform World
 
-- Selecting a world toggles its visual red highlight; multiple worlds can be selected. No checkmarks.
-- Search filters choices; Enter My World transitions to a local personalized selection screen; Change Worlds returns to the directory.
-- Some other menus show explicit preview-only notifications instead of pretending there are working backend features.
-- All selections are in memory. The prototype does not persist user interests or create accounts.
-- Personal preferences, payment handling, social posting, adult-media serving, authentication, moderation, and age verification are **not implemented**.
-- Private, adult-only, permission-based participation and accurate age assurance are required before any real public adult release.
+All bubbles display photographic art cropped from the user-approved concept image, with labels, "0 MEDIA" preview metadata, and a crimson selected-state halo. No checkmarks, no floating motion. Desktop shows seven in a row; tablet and phone adapt to fewer columns.
 
-## Review and deployment
+## Visual system
 
-Updated on branch `man-world-preview`, at `blackcell-man-world-prototype.html`. The persistent branch-based preview URL can be refreshed after each update, subject to third-party preview cache delays.
+- Black and brushed steel, bright crimson, subtle reflections and tactical-industrial architectural motifs
+- Official user-provided BLACKCELL Corporation transparent hexagon logo
+- Low-key black-glass navigation and Level 04 corporate footer
+- Responsive, accessible selection buttons with `aria-pressed`, keyboard focus treatment, and reduced-motion support
+- Hero image and world photographs embedded in the standalone HTML as compressed WebP, so the preview does not rely on external image hosting
+- Edited crop assets come from the user-approved AI-generated visual mockup; they are concept imagery, **not photographs of real BLACKCELL personnel**
 
-The real production BLACKCELL OS is unchanged. Do not merge this draft into `main` until the user explicitly authorizes release.
+## Functionality
+
+- Click one or more circles to highlight and select a world; click again to remove
+- Search the seven worlds
+- Enter My World previews the selected worlds in a modal without creating accounts
+- Clear removes local selections
+- Other navigation entries explicitly identify themselves as design placeholders
+- No authentication, media uploads, persistent preferences, payments, or real-world memberships
+
+This is a proof of concept and should not be merged into production until separately approved. All content and access controls for a real public community still need implementation.
+
+## Stable preview
+
+`https://raw.githack.com/pjs7zyw62m-del/Management-System/man-world-preview/blackcell-man-world-prototype.html`
+
+The branch URL is stable across preview updates; the third-party static preview service may occasionally cache changes. Refresh with Ctrl + Shift + R where supported.
