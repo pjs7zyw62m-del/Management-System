@@ -399,3 +399,12 @@
 @media(min-width:621px) and (max-width:1023px){
  #desktop.bc-three-device-os .workspace{padding-bottom:108px!important}
 }
+
+/* Portrait iPad: use the full applications grid; a second quick-launch
+   panel crowds the right-hand live widgets without adding functionality. */
+@media(min-width:621px) and (max-width:1023px){
+ #desktop.bc-three-device-os .bc-concept-quick{display:none!important}
+ #desktop.bc-three-device-os .workspace>.bc-exec-stage{min-height:250px!important;align-self:start}
+ #desktop.bc-three-device-os .workspace>section:first-of-type{grid-row:2!important}
+ #desktop.bc-three-device-os .workspace>.side.bc-system-panel{grid-row:2!important}
+}
