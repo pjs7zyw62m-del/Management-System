@@ -1,0 +1,18 @@
+/* Device-specific names, without changing any responsive OS layout. */
+#desktop .bc-topbrand .bc-device-suffix{
+  font:inherit;letter-spacing:.025em;color:#f0d2da;
+  opacity:.91;white-space:nowrap;
+}
+#desktop .bc-exec-brand .bc-device-label{
+  font-size:clamp(9px,.82vw,12px);font-weight:750;letter-spacing:.15em;
+  color:#e5c9d1;margin:11px auto 0;text-shadow:0 2px 9px #000a;
+}
+@media(max-width:1023px){
+  #desktop .bc-exec-brand .bc-device-label{font-size:10px;letter-spacing:.13em;margin-top:7px}
+}
+@media(max-width:620px){
+  html.bc-os-phone #desktop .bc-sb-status-brand{
+    font-size:9px;letter-spacing:.075em;white-space:nowrap;
+  }
+  #desktop .bc-exec-brand .bc-device-label{font-size:9px}
+}
