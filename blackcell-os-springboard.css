@@ -1,0 +1,368 @@
+/* BLACKCELL OS / Version A iPhone SpringBoard
+   iOS-inspired presentation, not a claim to replace Apple's operating system.
+   Authenticated original app windows and APIs remain the only source of behavior.
+ */
+#desktop .bc-sb{display:none}
+html.bc-os-phone #desktop.bc-springboard-ready{
+ position:relative!important;isolation:isolate;
+ background:#030407!important;overflow:hidden!important;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .topbar,
+html.bc-os-phone #desktop.bc-springboard-ready .workspace,
+html.bc-os-phone #desktop.bc-springboard-ready .dockwrap,
+html.bc-os-phone #desktop.bc-springboard-ready .os-dock-edge,
+html.bc-os-phone #desktop.bc-springboard-ready .bc-concept-mobile-nav,
+html.bc-os-phone #desktop.bc-springboard-ready .bc-phone-toolbar{
+ visibility:hidden!important;pointer-events:none!important;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb{
+ display:flex;position:absolute;inset:0;z-index:40;
+ flex-direction:column;min-width:0;min-height:0;
+ color:#fff;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;
+ overflow:hidden;background:#020306;
+ -webkit-font-smoothing:antialiased;
+}
+html.bc-os-phone #desktop.bc-springboard-ready:has(>.os-window:not([hidden])) .bc-sb{display:none!important}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb:before{
+ content:"";position:absolute;z-index:-2;inset:0;pointer-events:none;
+ background-image:linear-gradient(180deg,rgba(3,4,11,.19),rgba(4,5,10,.09) 29%,rgba(2,2,9,.64) 83%,rgba(1,2,7,.98) 100%),
+ url('blackcell-os-cinematic-wallpaper.svg');
+ background-position:center center,58% 59%;
+ background-size:cover,auto 125%;
+ background-repeat:no-repeat;
+ opacity:.98;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb:after{
+ content:"";position:absolute;z-index:-1;inset:0;pointer-events:none;
+ background:radial-gradient(ellipse at 50% 12%,#ae23431e,transparent 56%),
+ linear-gradient(120deg,#01020435,transparent 60%),linear-gradient(180deg,transparent 70%,#02020777);
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb button{
+ -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb button:focus-visible{
+ outline:2px solid #ffb4c5;outline-offset:3px;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-status{
+ position:relative;z-index:2;display:flex;flex:none;align-items:center;justify-content:space-between;
+ gap:7px;height:calc(43px + env(safe-area-inset-top));min-height:43px;
+ padding:max(7px,env(safe-area-inset-top)) 21px 2px;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-time{
+ flex:none;font-size:15px;letter-spacing:-.025em;font-weight:660;
+ color:#f8f8fb;text-shadow:0 2px 8px #0009;font-variant-numeric:tabular-nums;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-status-brand{
+ font-size:10px;letter-spacing:.17em;font-weight:780;color:#f7e7ed;
+ text-shadow:0 2px 10px #000d;white-space:nowrap;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-status-actions{display:flex;gap:7px;align-items:center}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-status-button{
+ width:33px;height:33px;display:grid;place-items:center;border-radius:12px;
+ color:#f4f4f7;background:#2526318c;border:1px solid #ffffff38;
+ box-shadow:inset 0 1px #ffffff26,0 5px 11px #0008;
+ backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-status-button svg{width:17px;height:17px}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-home{
+ position:relative;z-index:1;display:flex;flex:1;min-height:0;
+ flex-direction:column;align-items:stretch;
+ padding:clamp(8px,1.5vh,16px) clamp(14px,4.2vw,23px) max(9px,env(safe-area-inset-bottom));
+ overflow:hidden;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-widgets{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:12px;flex:none;min-height:0;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-widget{
+ min-width:0;height:clamp(100px,15vh,135px);
+ padding:clamp(11px,1.8vh,15px);border-radius:24px;
+ background:linear-gradient(140deg,rgba(48,47,62,.68),rgba(16,17,27,.83));
+ border:1px solid #ffffff30;
+ box-shadow:0 11px 32px #0007,inset 0 1px #ffffff28;
+ backdrop-filter:blur(28px) saturate(135%);-webkit-backdrop-filter:blur(28px) saturate(135%);
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-date{
+ display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-weekday{
+ font-size:11px;color:#f17085;letter-spacing:.09em;font-weight:800;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-day{
+ font-size:clamp(40px,7vh,63px);line-height:1;font-weight:330;letter-spacing:-.065em;
+ color:#fff;text-shadow:0 2px 14px #0006;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-month{
+ font-size:9px;letter-spacing:.05em;font-weight:650;color:#dcd7e0;margin-top:5px;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-system{
+ display:flex;flex-direction:column;justify-content:space-between;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-widget-label{
+ font-size:9px;letter-spacing:.20em;font-weight:790;color:#faebee;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-widget-big{
+ font-size:clamp(21px,4.7vw,29px);font-weight:760;letter-spacing:.06em;
+ background:linear-gradient(#fff,#adb2bf);background-clip:text;-webkit-background-clip:text;color:transparent;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-widget-row{
+ display:flex;gap:6px;align-items:center;color:#bce9d1;font-size:9px;letter-spacing:.05em;font-weight:700;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-green-dot{
+ width:6px;height:6px;flex:none;background:#41e7a2;border-radius:50%;box-shadow:0 0 9px #35d58fa0;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-widget-bottom{
+ color:#cccdd7;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-identity{
+ margin:clamp(10px,2vh,24px) 0 8px;display:flex;align-items:center;justify-content:center;
+ gap:9px;opacity:.82;flex:none;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-diamond{
+ display:grid;place-items:center;width:21px;height:21px;
+ color:#fff;font-size:11px;font-weight:850;text-shadow:0 1px #000b;
+ border:2px solid #f1b4bf;background:linear-gradient(135deg,#ef2d52,#620819);
+ transform:rotate(45deg);border-radius:3px;box-shadow:0 0 14px #c517405c;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-diamond::first-letter{transform:rotate(-45deg)}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-identity-text{
+ font-size:11px;letter-spacing:.27em;font-weight:800;color:#e6e6ed;text-shadow:0 3px 9px #000c;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-page{
+ flex:1;display:flex;flex-direction:column;min-height:0;
+ padding:2px 0 0;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-grid{
+ flex:1;min-height:0;display:grid;
+ grid-template-columns:repeat(4,minmax(0,1fr));
+ grid-template-rows:repeat(3,minmax(0,1fr));
+ gap:clamp(5px,1.2vh,13px) clamp(7px,2.6vw,15px);
+ justify-items:center;align-items:start;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-icon{
+ min-width:0;width:100%;max-width:85px;
+ display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:6px;
+ padding:3px 0;border:0;color:#fff;background:transparent;text-align:center;
+ cursor:pointer;position:relative;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-app-art{
+ width:clamp(52px,15.8vw,66px);height:clamp(52px,15.8vw,66px);
+ display:grid;place-items:center;flex:none;
+ border-radius:clamp(13px,4vw,18px);
+ background:linear-gradient(135deg,rgba(72,73,87,.92),rgba(13,15,24,.96) 80%);
+ border:1px solid #ffffff2d;
+ box-shadow:inset 0 1px #ffffff5a,0 4px 11px #0009,0 0 14px #c82a3a0c;
+ overflow:hidden;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-app-art .app-icon{all:unset;display:contents}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-app-art svg{
+ width:32px;height:32px;max-width:64%;max-height:64%;
+ color:#f3f3f7;fill:none;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-icon[data-id="personalphotos"] .bc-sb-app-art,
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-icon[data-id="photos"] .bc-sb-app-art{
+ background:linear-gradient(145deg,#52536e,#1a1b29 70%);
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-icon[data-id="chat"] .bc-sb-app-art{
+ background:linear-gradient(140deg,#1a9b79,#064b3c);
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-icon[data-id="browser"] .bc-sb-app-art{
+ background:linear-gradient(140deg,#35618b,#112038);
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-icon[data-id="film"] .bc-sb-app-art,
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-icon[data-id="shorts"] .bc-sb-app-art{
+ background:linear-gradient(145deg,#bd1e42,#3d0b22);
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-icon[data-id="files"] .bc-sb-app-art{
+ background:linear-gradient(140deg,#526777,#17222d);
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-icon[data-id="forces"] .bc-sb-app-art{
+ background:linear-gradient(145deg,#7c2b38,#231921);
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-app-label{
+ width:100%;max-width:88px;font-size:clamp(9px,2.8vw,11px);
+ font-weight:550;line-height:1.16;letter-spacing:-.015em;
+ text-shadow:0 1px 5px #000,0 2px 9px #000b;
+ overflow-wrap:anywhere;text-align:center;max-height:2.5em;overflow:hidden;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-icon[data-picked="true"] .bc-sb-app-art{
+ outline:2px solid #fa9cab;box-shadow:0 0 0 4px #be234a44,0 8px 26px #000a;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-page-controls{
+ flex:none;display:flex;justify-content:center;align-items:center;position:relative;
+ height:22px;margin:3px 0 4px;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-dots{display:flex;gap:10px;align-items:center;justify-content:center}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-dot{
+ width:7px;height:7px;min-width:7px;min-height:7px;padding:0;
+ border:0;border-radius:50%;background:rgba(255,255,255,.28);
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-dot.selected{
+ background:#f4eff4;box-shadow:0 0 8px #ffffff50;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-library-link{
+ position:absolute;right:0;top:0;display:flex;align-items:center;gap:3px;
+ height:22px;padding:0 2px;background:none;border:0;color:#ebdfe5;font-size:9px;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-library-link svg{width:12px;height:12px}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-search-pill{
+ display:flex;align-items:center;justify-content:center;gap:6px;align-self:center;
+ flex:none;min-height:27px;padding:4px 18px;border-radius:16px;
+ background:rgba(106,107,122,.33);border:1px solid #ffffff1b;color:#f1f0f5;
+ backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+ font-size:11px;font-weight:650;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-search-pill svg{width:13px;height:13px}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-dock{
+ flex:none;align-self:center;width:100%;max-width:480px;
+ padding:9px 10px;margin-top:clamp(9px,1.9vh,21px);
+ border-radius:27px;
+ background:linear-gradient(130deg,rgba(109,105,125,.51),rgba(35,33,48,.64));
+ border:1px solid #ffffff33;
+ box-shadow:0 8px 32px #0009,inset 0 1px #ffffff2e;
+ backdrop-filter:blur(35px) saturate(135%);-webkit-backdrop-filter:blur(35px) saturate(135%);
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-dock-icons{
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:center;justify-items:center;gap:6px;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-dock-icon{width:100%;max-width:72px;gap:0;padding:0}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-dock-icon .bc-sb-app-label{display:none}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-dock-icon .bc-sb-app-art{
+ width:clamp(51px,15.4vw,64px);height:clamp(51px,15.4vw,64px);
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-home-indicator{
+ width:100px;height:4px;flex:none;align-self:center;margin:12px 0 0;
+ border-radius:4px;background:#f1eef4;opacity:.9;
+ box-shadow:0 1px 3px #0007;
+}
+html.bc-os-phone.bc-os-installed #desktop.bc-springboard-ready .bc-sb-home-indicator{opacity:.0;margin:4px 0 0;height:2px}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-edit-done{
+ position:absolute;z-index:5;right:18px;top:max(57px,calc(env(safe-area-inset-top) + 52px));
+ padding:8px 16px;border-radius:15px;border:1px solid #ffffff45;
+ background:#535564ba;color:#fff;font-weight:720;font-size:13px;
+ backdrop-filter:blur(23px);-webkit-backdrop-filter:blur(23px);
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-edit-done[hidden]{display:none!important}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-editing .bc-sb-wiggle{
+ animation:bc-sb-jiggle .18s ease-in-out infinite alternate;transform-origin:50% 45%;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-editing .bc-sb-icon:nth-child(even){animation-direction:alternate-reverse}
+@keyframes bc-sb-jiggle{from{transform:rotate(-1.9deg)}to{transform:rotate(1.9deg)}}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-overlay{
+ position:absolute;z-index:15;inset:0;display:flex;flex-direction:column;
+ background:rgba(3,4,10,.83);backdrop-filter:blur(25px) saturate(120%);-webkit-backdrop-filter:blur(25px) saturate(120%);
+ padding:max(48px,calc(env(safe-area-inset-top) + 42px)) 18px max(15px,env(safe-area-inset-bottom));
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-overlay[hidden]{display:none!important}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-sheet{
+ display:flex;min-height:0;flex:1;flex-direction:column;gap:13px;
+ max-width:650px;width:100%;align-self:center;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-modal-head{
+ display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-modal-head h2{
+ font-size:25px;letter-spacing:-.04em;font-weight:720;margin:0;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-close{
+ width:39px;height:39px;display:grid;place-items:center;border-radius:50%;
+ border:1px solid #ffffff28;background:#55535e9c;color:#fff;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-close svg{width:20px;height:20px}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-input{
+ min-height:46px;width:100%;padding:0 16px;font-size:16px;outline:0;
+ color:#fff;border:1px solid #ffffff35;border-radius:15px;
+ background:#7474804d;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-input::placeholder{color:#e3e0e8ab}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-input:focus{border-color:#ee7894}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-results{
+ display:flex;flex:1;min-height:0;flex-direction:column;gap:8px;
+ padding:2px 0 24px;overflow-y:auto;overscroll-behavior:contain;
+ scrollbar-width:none;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-results::-webkit-scrollbar{display:none}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-result{
+ width:100%;min-height:64px;display:flex;align-items:center;gap:13px;
+ text-align:left;padding:9px 13px;border:1px solid #ffffff21;
+ border-radius:18px;background:#4b4b5d4d;color:#fff;font-size:14px;font-weight:610;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-result-icon{
+ display:grid;place-items:center;flex:none;width:42px;height:42px;
+ border-radius:12px;background:linear-gradient(140deg,#5c5c73,#24232e);
+ border:1px solid #ffffff27;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-result-icon svg{width:24px;height:24px}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-result-title{flex:1}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-result-chevron svg{width:17px;height:17px;opacity:.7}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-no-results{color:#c4c2ca;text-align:center;padding:25px 0;font-size:13px}
+
+/* Tall and shorter phones: preserve the Apple-like structure without overflow. */
+@media(max-height:750px) and (orientation:portrait){
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-status{height:42px;padding-top:7px}
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-widget{height:88px;padding:10px;border-radius:19px}
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-day{font-size:39px}
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-widget-big{font-size:21px}
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-identity{margin:6px 0 3px}
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-app-art{width:min(14.7vw,56px);height:min(14.7vw,56px);border-radius:14px}
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-app-art svg{width:29px;height:29px}
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-grid{gap:3px 7px}
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-dock{margin-top:6px;padding:6px 10px}
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-dock-icon .bc-sb-app-art{height:50px;width:50px}
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-home-indicator{margin-top:5px}
+}
+@media(orientation:landscape) and (max-height:600px){
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-status{
+  height:39px;min-height:39px;padding:4px max(18px,env(safe-area-inset-right)) 0 max(18px,env(safe-area-inset-left));
+ }
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-home{
+  display:grid;grid-template-columns:minmax(110px,200px) minmax(0,1fr);
+  grid-template-rows:minmax(0,1fr) 17px 63px;column-gap:16px;row-gap:3px;
+  padding:2px max(15px,env(safe-area-inset-right)) 8px max(15px,env(safe-area-inset-left));
+ }
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-widgets{
+  grid-column:1;grid-row:1;display:grid;grid-template-columns:1fr;gap:7px;
+ }
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-widget{height:clamp(68px,24vh,102px);padding:9px 12px;border-radius:16px}
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-day{font-size:36px}
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-weekday{font-size:9px}
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-identity{display:none}
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-page{
+  grid-column:2;grid-row:1;min-height:0;
+ }
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-grid{
+  grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));
+  gap:3px 9px;align-items:start;
+ }
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-icon{gap:3px}
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-app-art{width:45px;height:45px;border-radius:12px}
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-app-art svg{width:24px;height:24px}
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-app-label{font-size:9px;max-height:2.2em}
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-page-controls{
+  grid-column:2;grid-row:2;height:17px;margin:0;
+ }
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-search-pill{
+  grid-column:1;grid-row:2;min-height:24px;padding:2px 10px;font-size:10px;
+ }
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-dock{
+  grid-column:1/-1;grid-row:3;max-width:min(440px,67vw);height:63px;
+  padding:7px 11px;margin:0;justify-self:center;align-self:end;border-radius:22px;
+ }
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-dock-icon .bc-sb-app-art{width:45px;height:45px}
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-home-indicator{display:none}
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-edit-done{top:42px}
+}
+@media(prefers-reduced-motion:reduce){
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-wiggle{animation:none!important}
+}
+
+
+/* Landscape phone fix: v3's authenticated desktop dock used an exceptionally
+   specific auto-hide selector. Explicitly suppress that dock on iPhone only,
+   so the separate four-app translucent SpringBoard dock remains the sole dock.
+ */
+html.bc-os-phone #desktop.bc-three-device-os.bc-springboard-ready.os-dock-auto-hide:not(:has(>.os-window:not([hidden]))) > .dockwrap,
+html.bc-os-phone #desktop.bc-three-device-os.bc-springboard-ready > .dockwrap,
+html.bc-os-phone #desktop.bc-three-device-os.bc-springboard-ready > .os-dock-edge{
+ display:none!important;visibility:hidden!important;pointer-events:none!important;
+}
