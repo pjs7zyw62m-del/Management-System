@@ -1,0 +1,103 @@
+name: BLACKCELL Photo Ledger Device Experience
+on:
+  pull_request:
+    paths:
+      - 'private-photo-ledger.html'
+      - 'private-photo-ledger-responsive.css'
+      - 'private-photo-ledger-responsive.js'
+      - 'tests/private-photo-ledger-responsive.test.mjs'
+      - '.github/workflows/private-photo-ledger-responsive.yml'
+  workflow_dispatch:
+jobs:
+  private-ledger-versions:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Static code and privacy checks
+        run: |
+          node --check private-photo-ledger-responsive.js
+          node --check private-photo-ledger.js
+          node --test tests/private-photo-ledger-responsive.test.mjs
+      - name: Render desktop, iPad and iPhone
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v google-chrome >/dev/null 2>&1 && BROWSER=google-chrome || { command -v chromium >/dev/null 2>&1 && BROWSER=chromium || BROWSER=; }
+          [ -n "$BROWSER" ] || { echo "Chromium required for Ledger visual tests"; exit 1; }
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          html=Path('private-photo-ledger.html').read_text()
+          # UI-only test fixture. No corporate auth or private data is accessed.
+          html=re.sub(r'<script type="module" src="private-photo-ledger.js[^"]*"></script>', '',html)
+          html=re.sub(r'<script src="corp-config.js"></script>', '',html)
+          html=re.sub(r'<script src="blackcell-live-update.js[^"]*></script>', '',html)
+          html=html.replace('<section id="accessGate" class="gate">','<section id="accessGate" class="gate" hidden>')
+          html=html.replace('<main id="ledgerApp" class="shell" hidden>','<main id="ledgerApp" class="shell">')
+          html=html.replace('<section id="activeRoom" hidden>','<section id="activeRoom">')
+          html=html.replace('aria-label="Photo review queue" hidden>','aria-label="Photo review queue">')
+          assert 'id="ledgerApp" class="shell">' in html
+          assert 'id="activeRoom">' in html
+          assert '<script type="module" src="private-photo-ledger.js' not in html
+          probe="""<script>
+          setTimeout(()=>{
+            const body=document.body;
+            const nav=document.querySelector('.bc-ledger-phone-nav');
+            const rail=document.querySelector('.bc-ledger-rail');
+            const metrics=document.querySelector('.metrics');
+            body.dataset.testMode=body.dataset.ledgerDevice||'missing';
+            body.dataset.testNav=nav?getComputedStyle(nav).display:'missing';
+            body.dataset.testRail=rail?getComputedStyle(rail).display:'missing';
+            body.dataset.testMetrics=metrics?getComputedStyle(metrics).gridTemplateColumns:'missing';
+            if(new URLSearchParams(location.search).has('action')){
+              document.querySelector('.bc-ledger-phone-tab[data-ledger-navigate="photos"]')?.click();
+              body.dataset.testPhotos=body.dataset.ledgerView;
+              document.querySelector('.bc-ledger-phone-tab[data-ledger-navigate="review"]')?.click();
+              body.dataset.testReview=body.dataset.ledgerView;
+            }
+          },1100);
+          </script>"""
+          html=html.replace('</body>',probe+'</body>')
+          Path('private-photo-ledger-layout-smoke.html').write_text(html)
+          PY
+          python3 -m http.server 8765 >/tmp/ledger-ui-server.log 2>&1 &
+          HTTP_PID=$!
+          trap 'kill "$HTTP_PID" 2>/dev/null || true; rm -f private-photo-ledger-layout-smoke.html' EXIT
+          sleep 2
+          mkdir -p /tmp/ledger-device-previews
+          for device in desktop tablet mobile; do
+            case "$device" in
+              desktop) width=1440; height=900; mode=os; label='BLACKCELL OS'; set -- ;;
+              tablet) width=820; height=1180; mode=tablet; label='BLACKCELL OS Tablet'; set -- '--user-agent=Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' ;;
+              mobile) width=390; height=844; mode=mobile; label='BLACKCELL OS Mobile'; set -- '--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' ;;
+            esac
+            URL="http://127.0.0.1:8765/private-photo-ledger-layout-smoke.html"
+            "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-background-networking --virtual-time-budget=6500 --window-size="$width,$height" "$@" --dump-dom "$URL" > "/tmp/ledger-$device.html" 2>/tmp/ledger-chrome-errors.log
+            grep -q "data-test-mode=\"$mode\"" "/tmp/ledger-$device.html"
+            grep -Fq "<title>$label · Private Photo Ledger</title>" "/tmp/ledger-$device.html"
+            if [ "$device" = mobile ]; then
+              grep -q 'data-test-nav="grid"' "/tmp/ledger-$device.html"
+              grep -q 'data-test-rail="none"' "/tmp/ledger-$device.html"
+            else
+              grep -q 'data-test-nav="none"' "/tmp/ledger-$device.html"
+            fi
+            "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-background-networking --virtual-time-budget=6500 --window-size="$width,$height" "$@" --screenshot="/tmp/ledger-device-previews/$device.png" "$URL" > /dev/null 2>/tmp/ledger-chrome-errors.log
+            echo "$device: Ledger layout rendered"
+          done
+          "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-background-networking --virtual-time-budget=6500 --window-size=390,844 '--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' --dump-dom 'http://127.0.0.1:8765/private-photo-ledger-layout-smoke.html?action=1' >/tmp/ledger-mobile-actions.html 2>/tmp/ledger-chrome-errors.log
+          grep -q 'data-test-photos="photos"' /tmp/ledger-mobile-actions.html
+          grep -q 'data-test-review="review"' /tmp/ledger-mobile-actions.html
+          echo "iPhone: Photos and Review navigation passed"
+      - name: Upload device preview screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blackcell-ledger-three-device-preview
+          path: /tmp/ledger-device-previews/*.png
+          if-no-files-found: ignore
+          retention-days: 7

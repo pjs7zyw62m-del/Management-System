@@ -1,0 +1,55 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const read=f=>readFileSync(f,'utf8');
+const html=read('private-photo-ledger.html');
+const js=read('private-photo-ledger-responsive.js');
+const css=read('private-photo-ledger-responsive.css');
+const auth=read('private-photo-ledger.js');
+test('new shell layers on top of the original fully authenticated Ledger',()=>{
+ assert.match(html,/private-photo-ledger\.js\?v=/);
+ assert.match(html,/private-photo-ledger-responsive\.js\?v=20261119-1/);
+ assert.match(html,/private-photo-ledger\.css\?v=/);
+ assert.match(html,/private-photo-ledger-responsive\.css\?v=20261119-1/);
+ for(const selector of ['id="accessGate"','id="ledgerApp"','id="activeRoom"','id="ownerReviewQueue"','id="employeeUpload"','id="photoEntries"','id="photoLightbox"','id="totalOwed"'])assert.ok(html.includes(selector),selector);
+ assert.match(auth,/corporateAuthorize/);
+ assert.match(auth,/verify\(\)/);
+ assert.match(auth,/corp_private_photo_rooms/);
+ assert.match(auth,/corp_private_photo_entries/);
+});
+test('desktop, tablet, and phone versions use one Ledger',()=>{
+ for(const name of ['bc-ledger-desktop','bc-ledger-tablet','bc-ledger-mobile'])assert.ok(js.includes(name)&&css.includes(name),name);
+ assert.match(js,/BLACKCELL OS Mobile/);
+ assert.match(js,/BLACKCELL OS Tablet/);
+ assert.match(js,/BLACKCELL OS'/);
+ assert.match(css,/grid-template-columns:220px minmax\(0,1fr\)/);
+ assert.match(css,/bc-ledger-phone-nav/);
+});
+test('mobile navigation reveals only permission-authorized views',()=>{
+ assert.match(js,/isShown\(\$\('#ownerReviewQueue'\)\)/);
+ assert.match(js,/isShown\(\$\('#employeeUpload'\)\)/);
+ assert.match(js,/isShown\(room\)/);
+ assert.match(js,/isShown\(app\)/);
+ assert.match(js,/attributeFilter:\['hidden'\]/);
+ assert.match(js,/setAttribute\('aria-current','page'\)/);
+ assert.match(js,/nav\.hidden=!isShown\(app\)\|\|!isShown\(room\)\|\|!isMobile/);
+ assert.match(css,/#ownerSetup:not\(\[hidden\]\)/);
+ assert.match(css,/#ownerReviewQueue\{display:none!important\}/);
+});
+test('all existing photo, amount and filter handlers remain untouched',()=>{
+ assert.match(auth,/uploadPhotoForm/);
+ assert.match(auth,/data-photo-filter/);
+ assert.match(auth,/submitPhoto/);
+ assert.match(auth,/closeLightbox/);
+ assert.ok(!js.includes('fetch('));
+ assert.ok(!js.includes('db.rpc('));
+ assert.ok(!js.includes('localStorage'));
+ assert.ok(!js.includes('supabase'));
+});
+test('mobile editing and private-photo viewer stay usable',()=>{
+ assert.match(css,/#uploadPhotoForm button\{width:100%\}/);
+ assert.match(css,/#photoEntries/);
+ assert.match(css,/\.lightbox\{z-index:200/);
+ assert.match(css,/max-width:1050px/);
+ assert.match(css,/prefers-reduced-motion/);
+});
