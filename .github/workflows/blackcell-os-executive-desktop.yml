@@ -39,6 +39,11 @@ jobs:
           assert.match(html,/class="dock"/);
           assert.match(js,/\.click\(\)/);
           assert.match(js,/\.app\[data-app\]/);
-          assert.match(css,/@media\(min-width:1180px\)/);
+          assert.match(css,/@media\(min-width:1024px\)/);
+          assert.match(css,/@media\(max-width:1023px\)/);
+          assert.match(js,/stage\.dataset\.version='2'/);
+          assert.match(js,/prepend\(stage\)/);
+          assert.match(html,/executive-20261119\.css\?v=2/);
+          assert.match(html,/executive-20261119\.js\?v=2/);
           console.log('BLACKCELL executive desktop integrity checks passed');
           EOF
