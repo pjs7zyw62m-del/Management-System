@@ -378,3 +378,24 @@
  html.bc-os-phone #desktop.bc-three-device-os .topright #osLockButton{min-width:27px;width:27px;padding:2px;display:grid!important;place-items:center}
  html.bc-os-phone.bc-os-keyboard #desktop.bc-three-device-os .bc-concept-mobile-nav{display:none!important}
 }
+
+/* v3.2: the approved Apple-like application dock is visible on the home
+   screen and returns to the member's auto-hide behavior inside app windows. */
+@media(min-width:621px){
+ #desktop.bc-three-device-os.os-dock-auto-hide:not(:has(>.os-window:not([hidden])))>.dockwrap{
+  display:flex!important;position:absolute!important;left:0!important;right:0!important;bottom:0!important;
+  z-index:2147480000!important;transform:translate3d(0,0,0)!important;
+  opacity:1!important;visibility:visible!important;
+  pointer-events:none!important;
+  transition:none!important;
+ }
+ #desktop.bc-three-device-os.os-dock-auto-hide:not(:has(>.os-window:not([hidden])))>.dockwrap .dock{
+  pointer-events:auto!important;
+ }
+}
+@media(min-width:1024px){
+ html:not(.bc-os-phone) #desktop.bc-three-device-os .workspace>.bc-exec-stage{bottom:88px!important}
+}
+@media(min-width:621px) and (max-width:1023px){
+ #desktop.bc-three-device-os .workspace{padding-bottom:108px!important}
+}
