@@ -164,7 +164,7 @@ function start(){
  }
  function setPage(next){
   const all=ordered(),dockIds=['chat','browser','personalphotos','files'].filter(id=>all.some(x=>x.id===id));
-  const pages=Math.max(1,Math.ceil(Math.max(0,all.length-Math.min(4,dockIds.length))/pageSize()));
+  const count=Math.min(4,all.length),pages=Math.max(1,Math.ceil(Math.max(0,all.length-count)/pageSize()));
   if(next>=pages){openModal('library');return}
   if(next<0)return;pageIndex=next;render();
  }
@@ -226,6 +226,7 @@ function start(){
  window.addEventListener('resize',()=>{if(document.documentElement.classList.contains('bc-os-phone'))render()},{passive:true});
  const obs=new MutationObserver(()=>{if(!shell.hidden)requestAnimationFrame(render)});
  obs.observe(src,{childList:true,attributes:true,subtree:true,attributeFilter:['hidden','disabled','class']});
+ obs.observe(shell,{attributes:true,attributeFilter:['hidden']});
  const member=$('#memberName',shell);if(member)obs.observe(member,{childList:true,characterData:true,subtree:true});
  clock();render();
  const timer=setInterval(()=>{if(!shell.hidden)clock()},30000);
