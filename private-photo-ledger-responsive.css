@@ -1,0 +1,247 @@
+/* PRIVATE PHOTO LEDGER — BLACKCELL OS responsive design.
+ * One authenticated app with desktop, iPad and iPhone interfaces.
+ * Never overrides [hidden] access controls or modifies private content.
+ */
+:root{--ledger-glass:rgba(22,24,32,.84);--ledger-edge:rgba(239,237,248,.16);--ledger-crimson:#e24b6e}
+html{scrollbar-width:none}html::-webkit-scrollbar,body::-webkit-scrollbar{display:none}
+body{background:
+  radial-gradient(ellipse 52% 45% at 60% 0%,rgba(127,25,53,.14),transparent 80%),
+  radial-gradient(ellipse 46% 35% at 8% 76%,rgba(27,28,45,.19),transparent 80%),#05060a;
+ -webkit-font-smoothing:antialiased}
+body .topbar{background:linear-gradient(160deg,rgba(17,18,25,.97),rgba(5,6,11,.97));border-color:#ffffff1f}
+body .brand-b{background:linear-gradient(140deg,#a32645,#350a19);border-color:#e47a92;box-shadow:0 0 23px #ae173a3b,inset 0 1px #ffffff43}
+body .brand-label strong{font-weight:800}
+body .brand-label small{color:#c9a4b0}
+.bc-ledger-top-edition{display:inline-block;color:#dcb5c4;font-size:9px;font-weight:750;letter-spacing:.15em;opacity:.86}
+body .shell{max-width:1720px}
+body .panel{background:linear-gradient(145deg,rgba(32,33,44,.89),rgba(12,13,20,.97));border-color:var(--ledger-edge);box-shadow:0 15px 49px #0007,inset 0 1px #ffffff0d;border-radius:19px}
+body .metric{background:linear-gradient(140deg,rgba(30,32,41,.88),rgba(13,14,21,.95));border-color:#ffffff22;border-radius:17px;box-shadow:0 9px 33px #0005,inset 0 1px #ffffff11}
+body .metric-owed{background:radial-gradient(ellipse at 100% 0%,#af284337,transparent 78%),linear-gradient(140deg,#2c1c29,#121218);border-color:#df62865e}
+body .metric strong{font-variant-numeric:tabular-nums}
+body .room-toolbar{background:linear-gradient(140deg,rgba(42,35,45,.92),rgba(14,15,21,.96));border-color:#ffffff21}
+body .button-main{background:linear-gradient(140deg,#b5284e,#70172f);border-color:#e16b89}
+body .button-outline{background:linear-gradient(140deg,#282934,#14151b);border-color:#ffffff37}
+body .photo-entry{box-shadow:0 14px 33px #0005;background:linear-gradient(140deg,#1d1e28,#0b0d14);border-color:#ffffff2c;border-radius:19px}
+body .photo-image-btn{background:#050608}
+body .photo-entry img{object-fit:contain}
+body .owner-review-queue{background:linear-gradient(145deg,#231b28,#0c0f16 75%)!important;border-color:#ba627886!important}
+body .filter-buttons button{border-radius:11px}
+body .filter-buttons button[aria-pressed=true]{background:#6a2440;border-color:#d86989}
+body input:not([type=file]),body select,body textarea{border-radius:11px;background:#0a0b13;border-color:#ffffff2d}
+body .lightbox{z-index:200}
+body .lightbox img{max-height:calc(100dvh - 88px)}
+body .bc-ledger-edition{
+ display:inline-flex;margin:7px 0 0;padding:6px 10px;
+ font-size:9px;letter-spacing:.13em;font-weight:800;color:#d3bfcc;
+ border:1px solid #ffffff23;border-radius:7px;background:#211924a8
+}
+/* Desktop and tablet navigation cards, connected to actual Ledger sections. */
+.bc-ledger-rail{display:flex;flex-direction:column;gap:15px;min-width:0;padding:18px;
+ border:1px solid #ffffff25;border-radius:20px;
+ background:linear-gradient(145deg,rgba(40,41,52,.87),rgba(10,11,17,.94));
+ box-shadow:0 22px 50px #0008,inset 0 1px #ffffff15;
+ backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px)
+}
+.bc-ledger-rail-brand{display:flex;align-items:center;gap:10px}
+.bc-ledger-rail-emblem{display:grid;place-items:center;flex:none;width:40px;height:40px;border:1px solid #f08ca1;
+ background:linear-gradient(140deg,#af3155,#300916);border-radius:11px;color:#f7f5fa;font:800 25px Georgia,serif}
+.bc-ledger-rail-titles{display:flex;flex-direction:column;gap:4px;min-width:0}
+.bc-ledger-rail-titles strong{font-size:13px;letter-spacing:.14em}
+.bc-ledger-rail-titles small{font-size:9px;letter-spacing:.12em;color:#d8aabb}
+.bc-ledger-rail-caption{font-size:9px;font-weight:800;letter-spacing:.16em;color:#b4a6b2;padding:3px 0 0}
+.bc-ledger-rail-items{display:flex;flex-direction:column;gap:7px}
+.bc-ledger-rail-button{width:100%;display:flex;align-items:center;gap:11px;min-height:43px;
+ padding:10px 12px;text-align:left;border:1px solid transparent;border-radius:11px;
+ background:transparent;color:#d7d6e0;font-size:12px;font-weight:675;
+ transition:background .15s,border-color .15s;cursor:pointer}
+.bc-ledger-rail-button svg{height:19px;width:19px;flex:none;color:#d2c1c9}
+.bc-ledger-rail-button:hover{background:#ffffff0e;border-color:#ffffff15}
+.bc-ledger-rail-button.is-current{background:linear-gradient(90deg,#a22b4c62,#3b172565);border-color:#e1537670;color:#fff}
+.bc-ledger-rail-footer{margin-top:auto;border-top:1px solid #ffffff1c;padding-top:14px;
+ font-size:9px;color:#bfb7c3;letter-spacing:.08em;line-height:1.6}
+.bc-ledger-rail-button[hidden]{display:none!important}
+.bc-ledger-phone-nav{display:none}
+body.bc-ledger-desktop #ledgerApp.shell{
+ display:grid;grid-template-columns:220px minmax(0,1fr);column-gap:25px;align-items:start;
+ padding-top:28px;padding-bottom:58px
+}
+body.bc-ledger-desktop #ledgerApp.shell>.bc-ledger-rail{
+ grid-column:1;grid-row:1/span 5;position:sticky;top:110px;min-height:410px
+}
+body.bc-ledger-desktop #ledgerApp.shell>.page-heading,
+body.bc-ledger-desktop #ledgerApp.shell>#ownerSetup,
+body.bc-ledger-desktop #ledgerApp.shell>#noRoom,
+body.bc-ledger-desktop #ledgerApp.shell>#activeRoom{grid-column:2;min-width:0}
+body.bc-ledger-desktop #ledgerApp .page-heading h1{font-size:clamp(33px,3vw,50px)}
+body.bc-ledger-desktop #activeRoom .metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
+body.bc-ledger-desktop #activeRoom .room-body{grid-template-columns:minmax(270px,330px) minmax(0,1fr);gap:17px}
+body.bc-ledger-desktop #activeRoom .timeline-column{min-width:0}
+body.bc-ledger-desktop #activeRoom .side-column{min-width:0}
+body.bc-ledger-desktop #activeRoom .owner-review-queue .photo-entry{grid-template-columns:minmax(0,1fr)}
+body.bc-ledger-desktop #activeRoom .owner-review-queue .photo-entry img{max-height:540px}
+body.bc-ledger-desktop #activeRoom .timeline-toolbar{position:relative}
+body.bc-ledger-desktop #activeRoom .photo-entry{grid-template-columns:minmax(195px,36%) minmax(0,1fr)}
+body.bc-ledger-desktop .filter-buttons{gap:6px}
+body.bc-ledger-desktop .filter-buttons button{min-height:40px}
+body.bc-ledger-desktop .topbar{padding-inline:clamp(24px,3vw,50px)}
+/* iPad / tablet: the controls are thumb-friendly and the same private
+   authorization continues to control both columns. */
+body.bc-ledger-tablet #ledgerApp.shell{display:block;max-width:1450px;padding:24px clamp(18px,3vw,35px) 70px}
+body.bc-ledger-tablet .bc-ledger-rail{flex-direction:row;align-items:center;gap:14px;position:static;padding:12px 14px;margin:0 0 22px}
+body.bc-ledger-tablet .bc-ledger-rail-brand{flex:none}
+body.bc-ledger-tablet .bc-ledger-rail-caption,body.bc-ledger-tablet .bc-ledger-rail-footer{display:none}
+body.bc-ledger-tablet .bc-ledger-rail-items{flex:1;min-width:0;display:flex;flex-flow:row wrap;justify-content:flex-end;gap:6px}
+body.bc-ledger-tablet .bc-ledger-rail-button{min-height:45px;width:auto;flex:0 0 auto;padding:10px 11px;font-size:11px;gap:6px}
+body.bc-ledger-tablet .bc-ledger-rail-button svg{width:16px;height:16px}
+body.bc-ledger-tablet .page-heading h1{font-size:clamp(29px,3.6vw,43px)}
+body.bc-ledger-tablet .metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
+body.bc-ledger-tablet .metric{padding:clamp(12px,1.8vw,19px)}
+body.bc-ledger-tablet .room-body{grid-template-columns:minmax(230px,34%) minmax(0,1fr);gap:14px}
+body.bc-ledger-tablet .side-column{display:flex;flex-direction:column}
+body.bc-ledger-tablet .timeline-column{min-width:0}
+body.bc-ledger-tablet .filter-buttons{overflow-x:auto;scrollbar-width:none}
+body.bc-ledger-tablet .filter-buttons::-webkit-scrollbar{display:none}
+body.bc-ledger-tablet .filter-buttons button{white-space:nowrap;min-height:45px}
+body.bc-ledger-tablet button,body.bc-ledger-tablet select{touch-action:manipulation}
+body.bc-ledger-tablet .owner-review-queue .photo-entry{grid-template-columns:minmax(0,1fr)}
+body.bc-ledger-tablet .owner-review-queue .photo-entry img{max-height:480px}
+@media(max-width:1050px){
+ body.bc-ledger-tablet .room-body{display:flex;flex-direction:column}
+ body.bc-ledger-tablet .side-column{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ body.bc-ledger-tablet .side-column .upload-card{grid-column:1/-1}
+ body.bc-ledger-tablet .timeline-column{width:100%}
+}
+@media(max-width:830px){
+ body.bc-ledger-tablet .bc-ledger-rail{flex-direction:column;align-items:stretch;gap:10px}
+ body.bc-ledger-tablet .bc-ledger-rail-items{justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+ body.bc-ledger-tablet .bc-ledger-rail-items::-webkit-scrollbar{display:none}
+ body.bc-ledger-tablet .bc-ledger-rail-button{min-width:85px;justify-content:center}
+ body.bc-ledger-tablet .room-toolbar{align-items:flex-start}
+ body.bc-ledger-tablet .room-controls{justify-content:flex-start;width:100%}
+}
+/* Phone: iOS-like summary and action screens with one clear bottom tab bar.
+   Hidden room, review, or upload sections are NEVER forced visible. */
+body.bc-ledger-mobile{overscroll-behavior-y:contain}
+body.bc-ledger-mobile .topbar{
+ position:sticky;top:0;z-index:70;min-height:58px;
+ padding:calc(8px + env(safe-area-inset-top)) 13px 10px;gap:8px;
+ backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);
+ background:rgba(9,10,16,.94)
+}
+body.bc-ledger-mobile .brand{gap:8px}
+body.bc-ledger-mobile .brand-b{width:34px;height:34px;border-radius:10px;font-size:21px}
+body.bc-ledger-mobile .brand-label strong{font-size:10px;letter-spacing:.07em}
+body.bc-ledger-mobile .brand-label small{display:none}
+body.bc-ledger-mobile .brand-label .bc-ledger-top-edition{font-size:8px;letter-spacing:.10em;color:#e8bdcb}
+body.bc-ledger-mobile .top-actions{margin-left:auto;gap:6px}
+body.bc-ledger-mobile .top-actions .privacy-pill{display:none}
+body.bc-ledger-mobile .top-actions .navlink{font-size:9px;padding:9px 10px;min-height:35px;white-space:nowrap}
+body.bc-ledger-mobile .shell{width:100%;max-width:none;padding:18px 13px max(110px,calc(92px + env(safe-area-inset-bottom)))}
+body.bc-ledger-mobile .page-heading{display:flex;flex-direction:column;gap:12px;margin-bottom:15px;align-items:flex-start}
+body.bc-ledger-mobile .page-heading h1{font-size:clamp(27px,8vw,37px);letter-spacing:-.052em;margin:5px 0}
+body.bc-ledger-mobile .page-heading p{font-size:11px;line-height:1.55}
+body.bc-ledger-mobile .page-heading .eyebrow{font-size:8px;letter-spacing:.12em}
+body.bc-ledger-mobile .workspace-actions{width:100%;gap:8px}
+body.bc-ledger-mobile #refreshLedger{min-height:37px;padding:9px 11px}
+body.bc-ledger-mobile .verified-mark{font-size:9px}
+body.bc-ledger-mobile #ledgerLiveStatus{flex:1;font-size:8px;padding:8px;letter-spacing:.06em}
+body.bc-ledger-mobile .bc-ledger-rail{display:none!important}
+body.bc-ledger-mobile .bc-ledger-edition{font-size:8px;margin-top:5px}
+body.bc-ledger-mobile .panel{border-radius:19px}
+body.bc-ledger-mobile .room-toolbar{padding:16px;margin:0 0 12px;gap:13px}
+body.bc-ledger-mobile .room-identity h2{font-size:24px}
+body.bc-ledger-mobile .room-controls{width:100%;justify-content:flex-start}
+body.bc-ledger-mobile .room-controls label,body.bc-ledger-mobile .room-controls select{min-width:0;max-width:100%;width:100%}
+body.bc-ledger-mobile .room-state{min-height:37px}
+body.bc-ledger-mobile .upload-access-status{gap:10px;padding:13px;border-radius:16px}
+body.bc-ledger-mobile .upload-access-copy p{font-size:10px}
+body.bc-ledger-mobile #activeRoom .metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:0}
+body.bc-ledger-mobile #activeRoom .metric{padding:14px;min-width:0;border-radius:17px}
+body.bc-ledger-mobile #activeRoom .metric-owed{grid-column:1/-1;padding:19px 17px}
+body.bc-ledger-mobile #activeRoom .metric span{font-size:8px;line-height:1.4;letter-spacing:.07em}
+body.bc-ledger-mobile #activeRoom .metric strong{font-size:clamp(23px,7vw,32px);margin:7px 0 3px}
+body.bc-ledger-mobile #activeRoom .metric-owed strong{font-size:clamp(37px,10vw,48px)}
+body.bc-ledger-mobile #activeRoom .metric small{font-size:10px}
+body.bc-ledger-mobile #activeRoom .room-body{display:none!important;width:100%;min-width:0}
+body.bc-ledger-mobile #activeRoom .room-body .side-column{display:none!important}
+body.bc-ledger-mobile #activeRoom .room-body .timeline-column{display:none!important}
+body.bc-ledger-mobile[data-ledger-view="review"] #activeRoom .room-body,
+body.bc-ledger-mobile[data-ledger-view="upload"] #activeRoom .room-body,
+body.bc-ledger-mobile[data-ledger-view="photos"] #activeRoom .room-body,
+body.bc-ledger-mobile[data-ledger-view="room"] #activeRoom .room-body{display:flex!important;flex-direction:column;gap:12px}
+body.bc-ledger-mobile[data-ledger-view="review"] #activeRoom .room-body .timeline-column,
+body.bc-ledger-mobile[data-ledger-view="photos"] #activeRoom .room-body .timeline-column{display:flex!important;width:100%;min-width:0}
+body.bc-ledger-mobile[data-ledger-view="upload"] #activeRoom .room-body .side-column,
+body.bc-ledger-mobile[data-ledger-view="room"] #activeRoom .room-body .side-column{display:flex!important;width:100%;flex-direction:column;gap:12px}
+body.bc-ledger-mobile #activeRoom .room-body .side-column>.panel{width:100%;padding:17px}
+body.bc-ledger-mobile[data-ledger-view="review"] #activeRoom .timeline-toolbar,
+body.bc-ledger-mobile[data-ledger-view="review"] #activeRoom #photoEntries,
+body.bc-ledger-mobile[data-ledger-view="review"] #activeRoom #entriesFeedback{display:none!important}
+body.bc-ledger-mobile[data-ledger-view="photos"] #activeRoom #ownerReviewQueue{display:none!important}
+body.bc-ledger-mobile[data-ledger-view="upload"] #activeRoom .side-column>.panel:not(#employeeUpload){display:none!important}
+body.bc-ledger-mobile[data-ledger-view="room"] #activeRoom .side-column>#employeeUpload{display:none!important}
+body.bc-ledger-mobile:not([data-ledger-view="summary"]) #activeRoom>.metrics,
+body.bc-ledger-mobile:not([data-ledger-view="summary"]) #activeRoom>.upload-access-status{display:none!important}
+body.bc-ledger-mobile:not([data-ledger-view="summary"]):not([data-ledger-view="room"]) #activeRoom>.room-toolbar{display:none!important}
+body.bc-ledger-mobile #ledgerApp:has(#activeRoom:not([hidden])) #ownerSetup{display:none!important}
+body.bc-ledger-mobile[data-ledger-view="room"] #ledgerApp:has(#activeRoom:not([hidden])) #ownerSetup:not([hidden]){display:block!important}
+body.bc-ledger-mobile .owner-review-queue{padding:14px}
+body.bc-ledger-mobile .owner-review-heading{gap:8px}
+body.bc-ledger-mobile .owner-review-heading h2{font-size:24px}
+body.bc-ledger-mobile .owner-review-heading p{font-size:11px}
+body.bc-ledger-mobile .owner-review-queue .photo-entry{display:flex;flex-direction:column;border-radius:15px}
+body.bc-ledger-mobile .owner-review-queue .photo-image-btn{min-height:200px}
+body.bc-ledger-mobile .owner-review-queue .photo-entry img{height:auto;min-height:0;max-height:55dvh;object-fit:contain}
+body.bc-ledger-mobile .owner-review-queue .amount-row button{flex:1 1 100%;min-height:47px;font-size:11px}
+body.bc-ledger-mobile .timeline-toolbar{padding:15px;gap:12px}
+body.bc-ledger-mobile .timeline-toolbar h2{font-size:22px}
+body.bc-ledger-mobile .filter-buttons{width:100%;display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain}
+body.bc-ledger-mobile .filter-buttons::-webkit-scrollbar{display:none}
+body.bc-ledger-mobile .filter-buttons button{flex:none;min-width:73px;min-height:40px;white-space:nowrap;font-size:9px}
+body.bc-ledger-mobile .photo-entry{display:flex;flex-direction:column}
+body.bc-ledger-mobile .photo-entry .photo-image-btn{min-height:170px}
+body.bc-ledger-mobile .photo-entry img{width:100%;height:auto;min-height:0;max-height:50dvh;object-fit:contain}
+body.bc-ledger-mobile .photo-entry-content{padding:16px}
+body.bc-ledger-mobile .entry-amount{font-size:25px}
+body.bc-ledger-mobile .amount-row{gap:8px}
+body.bc-ledger-mobile .amount-row input{min-height:48px;width:100%;max-width:none;flex:1 1 100%}
+body.bc-ledger-mobile .amount-row button{min-height:47px;flex:1 1 100%;font-size:11px}
+body.bc-ledger-mobile .file-drop{min-height:140px}
+body.bc-ledger-mobile #uploadPhoto{min-height:48px;max-width:100%}
+body.bc-ledger-mobile #uploadPhotoForm button{width:100%}
+body.bc-ledger-mobile #ledgerApp:not([hidden]) #activeRoom:not([hidden])>.bc-ledger-phone-nav:not([hidden]){
+ display:grid;position:fixed;z-index:91;
+ left:10px;right:10px;bottom:max(10px,env(safe-area-inset-bottom));
+ grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;
+ padding:7px 6px;border-radius:22px;
+ background:linear-gradient(145deg,rgba(73,68,80,.89),rgba(12,13,21,.98));
+ border:1px solid #ffffff3f;box-shadow:0 16px 45px #000c,inset 0 1px #ffffff28;
+ backdrop-filter:blur(30px) saturate(140%);-webkit-backdrop-filter:blur(30px) saturate(140%)
+}
+body.bc-ledger-mobile .bc-ledger-phone-tab{
+ min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+ min-height:54px;padding:7px 0;border:0;border-radius:14px;background:transparent;color:#d7d3dc;
+ cursor:pointer;font-size:10px;font-weight:650
+}
+body.bc-ledger-mobile .bc-ledger-phone-tab svg{width:19px;height:19px}
+body.bc-ledger-mobile .bc-ledger-phone-tab.is-current{background:linear-gradient(145deg,#ab304fbe,#58172cac);color:#fff;box-shadow:inset 0 1px #ffffff23}
+body.bc-ledger-mobile .bc-ledger-phone-tab[hidden]{display:none!important}
+body.bc-ledger-mobile .bc-ledger-phone-nav:has(.bc-ledger-phone-tab:nth-child(2):not([hidden])):has(.bc-ledger-phone-tab:nth-child(3):not([hidden])){grid-template-columns:repeat(5,minmax(0,1fr))}
+body.bc-ledger-mobile .lightbox{z-index:200;padding:72px 10px 15px}
+body.bc-ledger-mobile footer{padding:15px 20px 113px;font-size:8px}
+body.bc-ledger-mobile .empty-room{padding:35px 20px}
+body.bc-ledger-mobile .owner-setup{padding:17px}
+body.bc-ledger-mobile .setup-form{display:flex;flex-direction:column;gap:11px}
+body.bc-ledger-mobile .setup-form>*{width:100%}
+@media(orientation:landscape) and (max-height:560px){
+ body.bc-ledger-mobile #ledgerApp.shell{padding-bottom:85px}
+ body.bc-ledger-mobile #activeRoom .metric-owed strong{font-size:34px}
+ body.bc-ledger-mobile #ledgerApp:not([hidden]) #activeRoom:not([hidden])>.bc-ledger-phone-nav:not([hidden]){padding:4px 6px}
+ body.bc-ledger-mobile .bc-ledger-phone-tab{min-height:43px;gap:2px}
+}
+/* Accessibility, touch and motion */
+.bc-ledger-rail-button:focus-visible,.bc-ledger-phone-tab:focus-visible{outline:2px solid #f090a8;outline-offset:2px}
+body.bc-ledger-mobile button,body.bc-ledger-tablet button{touch-action:manipulation}
+@media(prefers-reduced-motion:reduce){
+ .bc-ledger-rail-button{transition:none}
+}
