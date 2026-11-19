@@ -123,7 +123,7 @@
       window.scrollTo({top:0,behavior:'instant'});
       return;
     }
-    const destination=targets[key];
+    const destination=key==='room'?(isShown($('#ownerSetup'))?$('#ownerSetup'):$('.side-column')):targets[key];
     if(destination&&scroll)destination.scrollIntoView({behavior:'smooth',block:'start'});
   }
   // Owner and employee upload permissions are preserved by the original
