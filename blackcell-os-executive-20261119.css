@@ -14,38 +14,107 @@
 #desktop .os-window{box-shadow:0 30px 95px #000d,0 0 0 1px #0a0a0a;border-color:rgba(255,255,255,.18)}
 #desktop .os-window-head{background:linear-gradient(180deg,rgba(41,42,50,.98),rgba(18,19,25,.98))}
 #desktop .bc-exec-stage{display:none}
-@media(min-width:1180px){
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .workspace{position:relative!important;display:grid;grid-template-columns:250px minmax(300px,1fr) minmax(290px,342px)!important;gap:clamp(12px,2vw,28px);padding:clamp(20px,3vh,30px) clamp(18px,2.2vw,35px) 15px!important;align-items:start;overflow:hidden}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .workspace>section:first-child{grid-column:3;grid-row:1;min-width:0;z-index:3}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .workspace:not(.bc-widget-free-mode)>.side.bc-system-panel{grid-column:1;grid-row:1}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .hero{margin:0 0 14px;border-color:#ffffff13}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .workspace .apps:not(.bc-free-app-canvas){grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px 5px}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .workspace .apps>.app{border:0;background:transparent;box-shadow:none;align-items:center;text-align:center;min-height:101px;padding:6px 2px}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .workspace .apps>.app:hover{background:rgba(255,255,255,.055);border-radius:14px}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .workspace .apps>.app .app-icon{width:56px;height:56px;border-radius:16px;margin:0 0 8px;background:linear-gradient(140deg,#353844,#15151d);border:1px solid #ffffff30;box-shadow:0 8px 23px #0008,inset 0 1px #ffffff30}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .workspace .apps>.app .app-icon svg{height:28px;width:28px}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .workspace .apps>.app .app-name{font-size:11px;font-weight:650;line-height:1.2}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .workspace .apps>.app .app-sub{display:none}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-stage{display:flex;position:absolute;z-index:2;left:calc(250px + clamp(18px,2.2vw,35px) + 12px);right:calc(342px + clamp(18px,2.2vw,35px) + 12px);top:clamp(28px,4vh,45px);bottom:25px;flex-direction:column;align-items:center;pointer-events:none}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-search{display:flex;position:relative;width:min(490px,100%);min-height:51px;align-items:center;gap:10px;padding:0 15px;border-radius:17px;background:rgba(24,25,33,.84);border:1px solid #ec587547;box-shadow:0 13px 45px #0009,0 0 26px #a9102b29,inset 0 1px #ffffff10;backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);pointer-events:auto}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-search:focus-within{border-color:#f26984;box-shadow:0 0 0 3px #b82d4424,0 18px 50px #000b}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-search>svg{width:18px;height:18px;color:#bfc1ca;flex:none}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-search input{min-width:0;width:100%;height:48px;border:0;background:transparent;color:#f6f6fa;outline:0;font-size:13px}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-search input::placeholder{color:#999ca7}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-shortcut{font-size:10px;color:#989aa3;white-space:nowrap;padding:3px 5px;border-radius:5px;border:1px solid #ffffff27}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-results{display:none;position:absolute;top:59px;left:0;right:0;max-height:42vh;overflow:auto;padding:6px;background:rgba(22,23,30,.98);border:1px solid #ffffff29;border-radius:15px;box-shadow:0 23px 70px #000d;z-index:100}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-results[data-open=true]{display:block}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-results button{display:flex;justify-content:space-between;align-items:center;width:100%;padding:11px 12px;text-align:left;color:#f0f1f5;border:0;border-radius:8px;background:transparent;font-size:12px}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-results button:hover,#desktop .bc-exec-results button:focus-visible{background:#c22d492e}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-results small{font-size:10px;color:#9fa1ab}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-results p{margin:8px;color:#aaa;font-size:12px}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-brand{position:relative;margin:auto 0;text-align:center;opacity:.96;user-select:none;filter:drop-shadow(0 10px 36px #000a)}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-mark{width:clamp(115px,13vw,185px);height:clamp(115px,13vw,185px);margin:0 auto 10px;filter:drop-shadow(0 0 28px #df244347)}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-name{font-size:clamp(23px,2.6vw,44px);font-weight:790;letter-spacing:.19em;margin-right:-.19em;line-height:1.2;background:linear-gradient(#fff,#b0b4bd 55%,#686c77);background-clip:text;-webkit-background-clip:text;color:transparent}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-company{font-size:clamp(9px,.83vw,13px);letter-spacing:.37em;margin:7px 0 0;color:#b6b7bf}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-tagline{font-size:9px;letter-spacing:.25em;margin:28px 0 0;color:#dc9aa6}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-brand:before{content:"";position:absolute;left:-15%;top:-8%;width:130%;height:100%;border:1px solid #e3294922;box-shadow:0 0 70px #a8132f20;border-radius:50%;transform:rotate(-22deg);pointer-events:none}
- html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .workspace.bc-widget-free-mode>.side.bc-system-panel{z-index:4;pointer-events:none}
+@media(min-width:1024px){
+ html:not(.bc-os-phone) #desktop .workspace{position:relative!important;display:grid;grid-template-columns:250px minmax(300px,1fr) minmax(290px,342px)!important;gap:clamp(12px,2vw,28px);padding:clamp(20px,3vh,30px) clamp(18px,2.2vw,35px) 15px!important;align-items:start;overflow:hidden}
+ html:not(.bc-os-phone) #desktop .workspace>section:first-child{grid-column:3;grid-row:1;min-width:0;z-index:3}
+ html:not(.bc-os-phone) #desktop .workspace:not(.bc-widget-free-mode)>.side.bc-system-panel{grid-column:1;grid-row:1}
+ html:not(.bc-os-phone) #desktop .hero{margin:0 0 14px;border-color:#ffffff13}
+ html:not(.bc-os-phone) #desktop .workspace .apps:not(.bc-free-app-canvas){grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px 5px}
+ html:not(.bc-os-phone) #desktop .workspace .apps>.app{border:0;background:transparent;box-shadow:none;align-items:center;text-align:center;min-height:101px;padding:6px 2px}
+ html:not(.bc-os-phone) #desktop .workspace .apps>.app:hover{background:rgba(255,255,255,.055);border-radius:14px}
+ html:not(.bc-os-phone) #desktop .workspace .apps>.app .app-icon{width:56px;height:56px;border-radius:16px;margin:0 0 8px;background:linear-gradient(140deg,#353844,#15151d);border:1px solid #ffffff30;box-shadow:0 8px 23px #0008,inset 0 1px #ffffff30}
+ html:not(.bc-os-phone) #desktop .workspace .apps>.app .app-icon svg{height:28px;width:28px}
+ html:not(.bc-os-phone) #desktop .workspace .apps>.app .app-name{font-size:11px;font-weight:650;line-height:1.2}
+ html:not(.bc-os-phone) #desktop .workspace .apps>.app .app-sub{display:none}
+ html:not(.bc-os-phone) #desktop .bc-exec-stage{display:flex;position:absolute;z-index:2;left:calc(250px + clamp(18px,2.2vw,35px) + 12px);right:calc(342px + clamp(18px,2.2vw,35px) + 12px);top:clamp(28px,4vh,45px);bottom:25px;flex-direction:column;align-items:center;pointer-events:none}
+ html:not(.bc-os-phone) #desktop .bc-exec-search{display:flex;position:relative;width:min(490px,100%);min-height:51px;align-items:center;gap:10px;padding:0 15px;border-radius:17px;background:rgba(24,25,33,.84);border:1px solid #ec587547;box-shadow:0 13px 45px #0009,0 0 26px #a9102b29,inset 0 1px #ffffff10;backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);pointer-events:auto}
+ html:not(.bc-os-phone) #desktop .bc-exec-search:focus-within{border-color:#f26984;box-shadow:0 0 0 3px #b82d4424,0 18px 50px #000b}
+ html:not(.bc-os-phone) #desktop .bc-exec-search>svg{width:18px;height:18px;color:#bfc1ca;flex:none}
+ html:not(.bc-os-phone) #desktop .bc-exec-search input{min-width:0;width:100%;height:48px;border:0;background:transparent;color:#f6f6fa;outline:0;font-size:13px}
+ html:not(.bc-os-phone) #desktop .bc-exec-search input::placeholder{color:#999ca7}
+ html:not(.bc-os-phone) #desktop .bc-exec-shortcut{font-size:10px;color:#989aa3;white-space:nowrap;padding:3px 5px;border-radius:5px;border:1px solid #ffffff27}
+ html:not(.bc-os-phone) #desktop .bc-exec-results{display:none;position:absolute;top:59px;left:0;right:0;max-height:42vh;overflow:auto;padding:6px;background:rgba(22,23,30,.98);border:1px solid #ffffff29;border-radius:15px;box-shadow:0 23px 70px #000d;z-index:100}
+ html:not(.bc-os-phone) #desktop .bc-exec-results[data-open=true]{display:block}
+ html:not(.bc-os-phone) #desktop .bc-exec-results button{display:flex;justify-content:space-between;align-items:center;width:100%;padding:11px 12px;text-align:left;color:#f0f1f5;border:0;border-radius:8px;background:transparent;font-size:12px}
+ html:not(.bc-os-phone) #desktop .bc-exec-results button:hover,#desktop .bc-exec-results button:focus-visible{background:#c22d492e}
+ html:not(.bc-os-phone) #desktop .bc-exec-results small{font-size:10px;color:#9fa1ab}
+ html:not(.bc-os-phone) #desktop .bc-exec-results p{margin:8px;color:#aaa;font-size:12px}
+ html:not(.bc-os-phone) #desktop .bc-exec-brand{position:relative;margin:auto 0;text-align:center;opacity:.96;user-select:none;filter:drop-shadow(0 10px 36px #000a)}
+ html:not(.bc-os-phone) #desktop .bc-exec-mark{width:clamp(115px,13vw,185px);height:clamp(115px,13vw,185px);margin:0 auto 10px;filter:drop-shadow(0 0 28px #df244347)}
+ html:not(.bc-os-phone) #desktop .bc-exec-name{font-size:clamp(23px,2.6vw,44px);font-weight:790;letter-spacing:.19em;margin-right:-.19em;line-height:1.2;background:linear-gradient(#fff,#b0b4bd 55%,#686c77);background-clip:text;-webkit-background-clip:text;color:transparent}
+ html:not(.bc-os-phone) #desktop .bc-exec-company{font-size:clamp(9px,.83vw,13px);letter-spacing:.37em;margin:7px 0 0;color:#b6b7bf}
+ html:not(.bc-os-phone) #desktop .bc-exec-tagline{font-size:9px;letter-spacing:.25em;margin:28px 0 0;color:#dc9aa6}
+ html:not(.bc-os-phone) #desktop .bc-exec-brand:before{content:"";position:absolute;left:-15%;top:-8%;width:130%;height:100%;border:1px solid #e3294922;box-shadow:0 0 70px #a8132f20;border-radius:50%;transform:rotate(-22deg);pointer-events:none}
+ html:not(.bc-os-phone) #desktop .workspace.bc-widget-free-mode>.side.bc-system-panel{z-index:4;pointer-events:none}
 }
 @media(max-height:680px) and (min-width:1180px){#desktop .bc-exec-mark{height:98px!important;width:98px!important}#desktop .bc-exec-tagline{margin-top:13px!important}}
 @media(prefers-reduced-motion:reduce){#desktop .bc-exec-search *{transition:none!important}}
+
+/* v2: consistent corporate OS visual identity on tablets and phones.
+   Native responsive controls and the existing authenticated desktop remain intact. */
+@media(min-width:1024px){
+ html:not(.bc-os-phone) #desktop .workspace{
+  grid-template-columns:clamp(200px,20vw,250px) minmax(0,1fr) clamp(255px,27vw,342px)!important;
+  gap:clamp(10px,1.5vw,25px);
+ }
+ html:not(.bc-os-phone) #desktop .workspace>section:first-child{
+  max-height:calc(100dvh - 155px);
+  overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
+  scrollbar-width:none;
+ }
+ html:not(.bc-os-phone) #desktop .workspace>section:first-child::-webkit-scrollbar{display:none}
+ html:not(.bc-os-phone) #desktop .bc-exec-stage{
+  left:calc(clamp(200px,20vw,250px) + clamp(18px,2.2vw,35px) + 11px);
+  right:calc(clamp(255px,27vw,342px) + clamp(18px,2.2vw,35px) + 11px);
+ }
+ html:not(.bc-os-phone) #desktop .bc-exec-brand .bc-exec-name{font-size:clamp(24px,2.65vw,42px)}
+ html:not(.bc-os-phone) #desktop .bc-exec-brand .bc-exec-mark{width:clamp(105px,12vw,185px);height:clamp(105px,12vw,185px)}
+}
+@media(max-width:1023px){
+ #desktop .workspace{overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
+ #desktop .workspace::-webkit-scrollbar{display:none}
+ #desktop .bc-exec-stage{
+  display:flex!important;position:relative;inset:auto!important;
+  width:100%;min-height:0;gap:12px;flex-direction:column;
+  align-items:center;padding:12px 0 19px;pointer-events:auto;
+  border-bottom:1px solid rgba(255,255,255,.10);margin:0 0 16px;
+ }
+ #desktop .bc-exec-brand{display:flex;order:0;position:relative;margin:0;
+  flex-direction:column;align-items:center;gap:0;text-align:center;
+  filter:drop-shadow(0 5px 18px #0009);pointer-events:none}
+ #desktop .bc-exec-brand:before{display:none}
+ #desktop .bc-exec-mark{width:96px;height:96px;margin:0 auto 4px;filter:drop-shadow(0 0 17px #e21e3d42)}
+ #desktop .bc-exec-name{font-size:clamp(20px,4.2vw,30px);letter-spacing:.20em;margin-right:-.20em}
+ #desktop .bc-exec-company{font-size:9px;letter-spacing:.28em;margin-top:1px}
+ #desktop .bc-exec-tagline{font-size:8px;letter-spacing:.18em;margin:8px 0 0}
+ #desktop .bc-exec-search{order:1;width:min(560px,100%);min-height:44px;
+  position:relative;display:flex;align-items:center;gap:10px;
+  padding:0 13px;background:rgba(25,26,34,.90);
+  border:1px solid rgba(222,63,95,.45);border-radius:14px;
+  box-shadow:0 10px 35px #0009,inset 0 1px #ffffff12}
+ #desktop .bc-exec-search>svg{width:17px;height:17px;flex:none}
+ #desktop .bc-exec-search input{height:44px;width:100%;min-width:0;border:0;
+  background:transparent;color:#f6f6fa;outline:0;font-size:12px}
+ #desktop .bc-exec-search input::placeholder{color:#a2a3af}
+ #desktop .bc-exec-shortcut{display:none}
+ #desktop .bc-exec-results{display:none;position:absolute;z-index:999;
+  top:calc(100% + 5px);left:0;right:0;max-height:40vh;overflow-y:auto;
+  background:#171820;border:1px solid #ffffff2b;border-radius:13px;
+  box-shadow:0 20px 46px #000c;padding:5px}
+ #desktop .bc-exec-results[data-open=true]{display:block}
+ #desktop .bc-exec-results button{display:flex;align-items:center;justify-content:space-between;
+  padding:11px;width:100%;border:0;border-radius:8px;background:transparent;
+  color:#f4f4f6;font-size:12px;text-align:left}
+ #desktop .bc-exec-results button:hover,#desktop .bc-exec-results button:focus-visible{background:#87304355}
+ #desktop .bc-exec-results small,#desktop .bc-exec-results p{font-size:10px;color:#a7a8b3}
+ #desktop .hero{display:none}
+}
+@media(max-width:620px){
+ #desktop .bc-exec-stage{padding:6px 0 14px;margin-bottom:12px;gap:9px}
+ #desktop .bc-exec-mark{width:68px;height:68px;margin-bottom:0}
+ #desktop .bc-exec-name{font-size:21px}
+ #desktop .bc-exec-company{font-size:8px}
+ #desktop .bc-exec-tagline{display:none}
+ #desktop .bc-exec-search{min-height:42px}
+ #desktop .bc-exec-search input{height:42px}
+}
