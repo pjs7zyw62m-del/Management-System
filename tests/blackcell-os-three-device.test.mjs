@@ -53,3 +53,10 @@ test('original branded wallpaper contains BLACKCELL motif, no external assets',(
  assert.match(wallpaper,/<svg/);
  assert.ok(!/href="https?:/.test(wallpaper));
 });
+
+test('stage is a workspace-level layer rather than a child of the app panel',()=>{
+ assert.match(ux,/work\.prepend\(stage\)/);
+ assert.match(skin,/>section:first-of-type/);
+ assert.match(skin,/workspace>\.bc-exec-stage/);
+ assert.match(skin,/bc-phone-toolbar/);
+});
