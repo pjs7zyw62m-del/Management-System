@@ -1,0 +1,44 @@
+name: BLACKCELL OS Executive Desktop
+on:
+  pull_request:
+    paths:
+      - 'blackcell-os.html'
+      - 'blackcell-os-executive-20261119.css'
+      - 'blackcell-os-executive-20261119.js'
+      - 'blackcell-os-widget-layout.js'
+      - '.github/workflows/blackcell-os-executive-desktop.yml'
+  workflow_dispatch:
+jobs:
+  validate-executive-desktop:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Syntax verification
+        run: |
+          node --check blackcell-os-executive-20261119.js
+          node --check blackcell-os-widget-layout.js
+          node --check blackcell-os.js
+      - name: Ensure real app wiring remains intact
+        run: |
+          node --input-type=module <<'EOF'
+          import {readFileSync} from 'node:fs';
+          import assert from 'node:assert/strict';
+          const html=readFileSync('blackcell-os.html','utf8');
+          const js=readFileSync('blackcell-os-executive-20261119.js','utf8');
+          const css=readFileSync('blackcell-os-executive-20261119.css','utf8');
+          assert.match(html,/blackcell-os-executive-20261119\.css/);
+          assert.match(html,/blackcell-os-executive-20261119\.js/);
+          assert.match(html,/blackcell-os\.js/);
+          assert.match(html,/id="gate"/);
+          assert.match(html,/id="desktop"/);
+          assert.match(html,/class="dock"/);
+          assert.match(js,/\.click\(\)/);
+          assert.match(js,/\.app\[data-app\]/);
+          assert.match(css,/@media\(min-width:1180px\)/);
+          console.log('BLACKCELL executive desktop integrity checks passed');
+          EOF

@@ -50,7 +50,7 @@
    if(drag||shell.hidden||!work.clientWidth)return;
    const free=wide();work.classList.toggle("bc-widget-free-mode",free);
    if(!free){for(const it of items){it.el.style.left="";it.el.style.top=""}return}
-   let x=Math.max(12,work.clientWidth-265),y=24;
+   let x=(work.clientWidth>=1180?16:Math.max(12,work.clientWidth-265)),y=24;
    for(const it of items){
     if(it.el.hidden||getComputedStyle(it.el).display==="none")continue;
     const h=it.el.offsetHeight;

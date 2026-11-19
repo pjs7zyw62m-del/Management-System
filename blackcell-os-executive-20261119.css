@@ -1,0 +1,51 @@
+/* BLACKCELL OS Executive Desktop // Obsidian Glass, Nov 2026.
+   Presentation only. Retains existing application windows, authentication,
+   permissions, dock behavior, saved icon positions and widget layout. */
+#desktop.shell{--bc-exec-red:#d62748;background:radial-gradient(ellipse 42% 50% at 50% 49%,rgba(86,12,28,.26),transparent 82%),radial-gradient(ellipse 60% 35% at 58% 102%,rgba(140,12,35,.19),transparent 82%),#050608}
+#desktop .wallpaper{background:radial-gradient(ellipse at 48% 53%,rgba(57,10,24,.12),transparent 66%)}
+#desktop .wallpaper:before{opacity:.54;filter:saturate(.72);background:linear-gradient(165deg,#1d1d25 0%,#1b1a22 20%,#030306 60%,#450d1d 100%)}
+#desktop .wallpaper:after{opacity:.48;filter:saturate(.60)}
+#desktop .topbar{background:rgba(8,9,14,.8);border-bottom:1px solid rgba(255,255,255,.095);box-shadow:0 1px 14px #0006;backdrop-filter:blur(30px) saturate(135%);-webkit-backdrop-filter:blur(30px) saturate(135%)}
+#desktop .brand:before{background:linear-gradient(135deg,#f95470,#970c29);box-shadow:inset 0 1px #ffffff44,0 0 12px #ed21465c}
+#desktop .glass,#desktop .side.bc-system-panel .glass{background:linear-gradient(156deg,rgba(34,36,46,.77),rgba(14,15,21,.87));border-color:rgba(255,255,255,.135);border-radius:18px;box-shadow:0 16px 52px #0007,inset 0 1px rgba(255,255,255,.07);backdrop-filter:blur(26px) saturate(120%);-webkit-backdrop-filter:blur(26px) saturate(120%)}
+#desktop .dock{background:linear-gradient(150deg,rgba(59,61,72,.53),rgba(15,16,23,.87));border-color:rgba(255,255,255,.24);border-radius:22px;box-shadow:0 19px 57px #000a,inset 0 1px #ffffff23,0 0 25px #bb1a3417}
+#desktop .dock button{border-radius:13px;border-color:#ffffff29;background:linear-gradient(145deg,#353741,#15151b);box-shadow:inset 0 1px #ffffff2b,0 5px 16px #0008}
+#desktop .dock button:hover{border-color:#ec456388;box-shadow:0 8px 25px #bd103035,inset 0 1px #ffffff33}
+#desktop .os-window{box-shadow:0 30px 95px #000d,0 0 0 1px #0a0a0a;border-color:rgba(255,255,255,.18)}
+#desktop .os-window-head{background:linear-gradient(180deg,rgba(41,42,50,.98),rgba(18,19,25,.98))}
+#desktop .bc-exec-stage{display:none}
+@media(min-width:1180px){
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .workspace{position:relative!important;display:grid;grid-template-columns:250px minmax(300px,1fr) minmax(290px,342px)!important;gap:clamp(12px,2vw,28px);padding:clamp(20px,3vh,30px) clamp(18px,2.2vw,35px) 15px!important;align-items:start;overflow:hidden}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .workspace>section:first-child{grid-column:3;grid-row:1;min-width:0;z-index:3}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .workspace:not(.bc-widget-free-mode)>.side.bc-system-panel{grid-column:1;grid-row:1}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .hero{margin:0 0 14px;border-color:#ffffff13}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .workspace .apps:not(.bc-free-app-canvas){grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px 5px}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .workspace .apps>.app{border:0;background:transparent;box-shadow:none;align-items:center;text-align:center;min-height:101px;padding:6px 2px}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .workspace .apps>.app:hover{background:rgba(255,255,255,.055);border-radius:14px}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .workspace .apps>.app .app-icon{width:56px;height:56px;border-radius:16px;margin:0 0 8px;background:linear-gradient(140deg,#353844,#15151d);border:1px solid #ffffff30;box-shadow:0 8px 23px #0008,inset 0 1px #ffffff30}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .workspace .apps>.app .app-icon svg{height:28px;width:28px}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .workspace .apps>.app .app-name{font-size:11px;font-weight:650;line-height:1.2}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .workspace .apps>.app .app-sub{display:none}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-stage{display:flex;position:absolute;z-index:2;left:calc(250px + clamp(18px,2.2vw,35px) + 12px);right:calc(342px + clamp(18px,2.2vw,35px) + 12px);top:clamp(28px,4vh,45px);bottom:25px;flex-direction:column;align-items:center;pointer-events:none}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-search{display:flex;position:relative;width:min(490px,100%);min-height:51px;align-items:center;gap:10px;padding:0 15px;border-radius:17px;background:rgba(24,25,33,.84);border:1px solid #ec587547;box-shadow:0 13px 45px #0009,0 0 26px #a9102b29,inset 0 1px #ffffff10;backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);pointer-events:auto}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-search:focus-within{border-color:#f26984;box-shadow:0 0 0 3px #b82d4424,0 18px 50px #000b}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-search>svg{width:18px;height:18px;color:#bfc1ca;flex:none}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-search input{min-width:0;width:100%;height:48px;border:0;background:transparent;color:#f6f6fa;outline:0;font-size:13px}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-search input::placeholder{color:#999ca7}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-shortcut{font-size:10px;color:#989aa3;white-space:nowrap;padding:3px 5px;border-radius:5px;border:1px solid #ffffff27}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-results{display:none;position:absolute;top:59px;left:0;right:0;max-height:42vh;overflow:auto;padding:6px;background:rgba(22,23,30,.98);border:1px solid #ffffff29;border-radius:15px;box-shadow:0 23px 70px #000d;z-index:100}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-results[data-open=true]{display:block}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-results button{display:flex;justify-content:space-between;align-items:center;width:100%;padding:11px 12px;text-align:left;color:#f0f1f5;border:0;border-radius:8px;background:transparent;font-size:12px}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-results button:hover,#desktop .bc-exec-results button:focus-visible{background:#c22d492e}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-results small{font-size:10px;color:#9fa1ab}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-results p{margin:8px;color:#aaa;font-size:12px}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-brand{position:relative;margin:auto 0;text-align:center;opacity:.96;user-select:none;filter:drop-shadow(0 10px 36px #000a)}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-mark{width:clamp(115px,13vw,185px);height:clamp(115px,13vw,185px);margin:0 auto 10px;filter:drop-shadow(0 0 28px #df244347)}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-name{font-size:clamp(23px,2.6vw,44px);font-weight:790;letter-spacing:.19em;margin-right:-.19em;line-height:1.2;background:linear-gradient(#fff,#b0b4bd 55%,#686c77);background-clip:text;-webkit-background-clip:text;color:transparent}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-company{font-size:clamp(9px,.83vw,13px);letter-spacing:.37em;margin:7px 0 0;color:#b6b7bf}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-tagline{font-size:9px;letter-spacing:.25em;margin:28px 0 0;color:#dc9aa6}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .bc-exec-brand:before{content:"";position:absolute;left:-15%;top:-8%;width:130%;height:100%;border:1px solid #e3294922;box-shadow:0 0 70px #a8132f20;border-radius:50%;transform:rotate(-22deg);pointer-events:none}
+ html:not(.bc-os-phone):not(.bc-os-tablet) #desktop .workspace.bc-widget-free-mode>.side.bc-system-panel{z-index:4;pointer-events:none}
+}
+@media(max-height:680px) and (min-width:1180px){#desktop .bc-exec-mark{height:98px!important;width:98px!important}#desktop .bc-exec-tagline{margin-top:13px!important}}
+@media(prefers-reduced-motion:reduce){#desktop .bc-exec-search *{transition:none!important}}
