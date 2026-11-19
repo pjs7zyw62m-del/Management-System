@@ -1,0 +1,101 @@
+name: BLACKCELL iPhone SpringBoard
+on:
+  pull_request:
+    paths:
+      - 'blackcell-os.html'
+      - 'blackcell-os-springboard.css'
+      - 'blackcell-os-springboard.js'
+      - 'tests/blackcell-os-springboard.test.mjs'
+      - '.github/workflows/blackcell-os-springboard.yml'
+  workflow_dispatch:
+jobs:
+  iphone-springboard:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate existing OS and SpringBoard scripts
+        run: |
+          node --check blackcell-os-springboard.js
+          node --check blackcell-os.js
+          node --check blackcell-os-three-device.js
+          node --check blackcell-os-executive-20261119.js
+      - name: Verify secure launch and responsive layout invariants
+        run: node --test tests/blackcell-os-springboard.test.mjs
+      - name: Browser render and interaction smoke checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v google-chrome >/dev/null 2>&1 && CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && CHROME=chromium || CHROME=; }
+          [ -n "$CHROME" ] || { echo "Chromium unavailable"; exit 1; }
+          python3 - <<'PY'
+          from pathlib import Path
+          html=Path('blackcell-os.html').read_text()
+          assert 'data-preview="false"' in html
+          html=html.replace('data-preview="false"','data-preview="true"',1)
+          probe="""<script>
+          setTimeout(()=>{
+            const shell=document.querySelector('#desktop');
+            const sb=document.querySelector('.bc-sb');
+            const grid=document.querySelector('.bc-sb-grid');
+            const dock=document.querySelectorAll('.bc-sb-dock-icons .bc-sb-icon');
+            const isPhone=document.documentElement.classList.contains('bc-os-phone');
+            document.body.dataset.sbReady=sb?'yes':'no';
+            document.body.dataset.sbVisible=sb?getComputedStyle(sb).display:'absent';
+            document.body.dataset.sbCols=grid?getComputedStyle(grid).gridTemplateColumns.trim().split(/\\s+/).length:0;
+            document.body.dataset.sbDock=String(dock.length);
+            document.body.dataset.sbUnlocked=String(!shell.hidden);
+            if(new URLSearchParams(location.search).has('probe')&&isPhone){
+              document.querySelector('.bc-sb-status-button')?.click();
+              const modal=document.querySelector('.bc-sb-overlay');
+              document.body.dataset.sbSearch=String(Boolean(modal&&!modal.hidden));
+              document.querySelector('.bc-sb-close')?.click();
+              document.querySelector('.bc-sb-dock-icon')?.click();
+              setTimeout(()=>document.body.dataset.sbLaunched=String(document.querySelectorAll('#desktop .os-window:not([hidden])').length>0),700);
+            }
+          },7400);
+          </script>"""
+          html=html.replace('</body></html>',probe+'</body></html>')
+          Path('blackcell-os-springboard-smoke.html').write_text(html)
+          PY
+          python3 -m http.server 8765 >/tmp/blackcell-phone-http.log 2>&1 &
+          HTTP_PID=$!
+          trap 'kill "$HTTP_PID" 2>/dev/null || true; rm -f blackcell-os-springboard-smoke.html' EXIT
+          sleep 2
+          mkdir -p /tmp/blackcell-springboard-shots
+          for device in desktop ipad iphone iphone-landscape; do
+            case "$device" in
+              desktop) width=1440; height=900; set -- ;;
+              ipad) width=820; height=1180; set -- ;;
+              iphone) width=390; height=844; set -- '--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' ;;
+              iphone-landscape) width=956; height=440; set -- '--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' ;;
+            esac
+            "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-background-networking --virtual-time-budget=11000 --window-size="$width,$height" "$@" --dump-dom "http://127.0.0.1:8765/blackcell-os-springboard-smoke.html" > "/tmp/bc-$device.html" 2>/tmp/bc-phone-errors.log
+            grep -q 'data-sb-ready="yes"' "/tmp/bc-$device.html"
+            grep -q 'data-sb-unlocked="true"' "/tmp/bc-$device.html"
+            if [[ "$device" = iphone* ]]; then
+              grep -q 'data-sb-visible="flex"' "/tmp/bc-$device.html"
+              grep -q 'data-sb-cols="4"' "/tmp/bc-$device.html"
+              ! grep -q 'data-sb-dock="0"' "/tmp/bc-$device.html"
+            else
+              grep -q 'data-sb-visible="none"' "/tmp/bc-$device.html"
+            fi
+            "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-background-networking --virtual-time-budget=11000 --window-size="$width,$height" "$@" --screenshot="/tmp/blackcell-springboard-shots/$device.png" "http://127.0.0.1:8765/blackcell-os-springboard-smoke.html" > /dev/null 2>/tmp/bc-phone-errors.log
+            echo "$device: correct SpringBoard appearance"
+          done
+          "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-background-networking --virtual-time-budget=11500 --window-size=390,844 '--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' --dump-dom 'http://127.0.0.1:8765/blackcell-os-springboard-smoke.html?probe=1' >/tmp/bc-springboard-actions.html 2>/tmp/bc-phone-errors.log
+          grep -q 'data-sb-search="true"' /tmp/bc-springboard-actions.html
+          grep -q 'data-sb-launched="true"' /tmp/bc-springboard-actions.html
+          echo 'iPhone search and secure app launcher passed'
+      - name: Upload reviewed screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blackcell-iphone-version-a
+          path: /tmp/blackcell-springboard-shots/*.png
+          retention-days: 7
+          if-no-files-found: ignore
