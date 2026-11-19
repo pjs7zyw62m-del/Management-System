@@ -1,0 +1,63 @@
+name: BLACKCELL OS Three Device UI
+on:
+  pull_request:
+    paths:
+      - 'blackcell-os.html'
+      - 'blackcell-os-three-device.js'
+      - 'blackcell-os-three-device.css'
+      - 'blackcell-os-cinematic-wallpaper.svg'
+      - 'tests/blackcell-os-three-device.test.mjs'
+      - '.github/workflows/blackcell-os-three-device.yml'
+  workflow_dispatch:
+jobs:
+  three-device-integrity:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate JavaScript without modifying existing OS
+        run: |
+          node --check blackcell-os-three-device.js
+          node --check blackcell-os-executive-20261119.js
+          node --check blackcell-os.js
+          node --check blackcell-os-widget-layout.js
+      - name: Validate XML wallpaper
+        run: python3 -c "import xml.etree.ElementTree as E; E.parse('blackcell-os-cinematic-wallpaper.svg')"
+      - name: Device behavior and security invariants
+        run: node --test tests/blackcell-os-three-device.test.mjs
+      - name: Headless render smoke tests (where Chrome is available)
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v google-chrome >/dev/null 2>&1 && BROWSER=google-chrome || { command -v chromium >/dev/null 2>&1 && BROWSER=chromium || BROWSER=; }
+          if [ -z "$BROWSER" ]; then
+            echo "No headless browser installed; DOM smoke test skipped"
+            exit 0
+          fi
+          python3 - <<'PY'
+          from pathlib import Path
+          source=Path('blackcell-os.html').read_text()
+          assert 'data-preview="false"' in source
+          source=source.replace('data-preview="false"','data-preview="true"',1)
+          Path('blackcell-os-visual-smoke.html').write_text(source)
+          PY
+          python3 -m http.server 8765 > /tmp/blackcell-http.log 2>&1 &
+          HTTP_PID=$!
+          trap 'kill "$HTTP_PID" 2>/dev/null || true; rm -f blackcell-os-visual-smoke.html' EXIT
+          sleep 2
+          for device in desktop ipad iphone; do
+            case "$device" in
+              desktop) width=1440; height=900 ;;
+              ipad) width=820; height=1180 ;;
+              iphone) width=390; height=844 ;;
+            esac
+            "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-background-networking --virtual-time-budget=11000 --window-size="$width,$height" --dump-dom "http://127.0.0.1:8765/blackcell-os-visual-smoke.html" > "/tmp/blackcell-$device.html" 2>/tmp/blackcell-chrome-err.log
+            grep -q 'bc-three-device-os' "/tmp/blackcell-$device.html"
+            grep -q 'bc-concept-mobile-nav' "/tmp/blackcell-$device.html"
+            grep -q 'bc-concept-quick' "/tmp/blackcell-$device.html"
+            echo "$device: OS interface mounted successfully"
+          done
