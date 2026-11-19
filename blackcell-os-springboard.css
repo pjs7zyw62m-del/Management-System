@@ -355,3 +355,14 @@ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-no-results{color:#c4c2ca;t
 @media(prefers-reduced-motion:reduce){
  html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-wiggle{animation:none!important}
 }
+
+
+/* Landscape phone fix: v3's authenticated desktop dock used an exceptionally
+   specific auto-hide selector. Explicitly suppress that dock on iPhone only,
+   so the separate four-app translucent SpringBoard dock remains the sole dock.
+ */
+html.bc-os-phone #desktop.bc-three-device-os.bc-springboard-ready.os-dock-auto-hide:not(:has(>.os-window:not([hidden]))) > .dockwrap,
+html.bc-os-phone #desktop.bc-three-device-os.bc-springboard-ready > .dockwrap,
+html.bc-os-phone #desktop.bc-three-device-os.bc-springboard-ready > .os-dock-edge{
+ display:none!important;visibility:hidden!important;pointer-events:none!important;
+}
