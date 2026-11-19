@@ -122,7 +122,7 @@
   gap:clamp(12px,1.8vw,28px)!important;
   padding:clamp(18px,3vh,32px) clamp(16px,2.1vw,34px) 14px!important;
  }
- html:not(.bc-os-phone) #desktop.bc-three-device-os .workspace>section:first-child{
+ html:not(.bc-os-phone) #desktop.bc-three-device-os .workspace>section:first-of-type{
   grid-column:3!important;grid-row:1!important;
   max-height:calc(100dvh - 133px);min-height:0;
   padding:14px 12px;
@@ -132,7 +132,7 @@
   backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
   overflow-y:auto!important;overflow-x:hidden!important;
  }
- html:not(.bc-os-phone) #desktop.bc-three-device-os .workspace>section:first-child .sectionhead h2{font-size:10px;letter-spacing:.18em}
+ html:not(.bc-os-phone) #desktop.bc-three-device-os .workspace>section:first-of-type .sectionhead h2{font-size:10px;letter-spacing:.18em}
  html:not(.bc-os-phone) #desktop.bc-three-device-os .workspace .apps>.app{
   background:none;box-shadow:none;border:0;min-height:93px!important;
  }
@@ -164,14 +164,17 @@
  html:not(.bc-os-phone) #desktop.bc-three-device-os .bc-concept-quick-btn{min-height:38px}
 }
 @media(min-width:621px) and (max-width:1023px){
+ #desktop.bc-three-device-os .bc-exec-stage{grid-column:1/-1;grid-row:1}
+ #desktop.bc-three-device-os .workspace>.bc-exec-stage{margin-bottom:0!important}
+
  /* iPad portrait: keep the established app windows and widgets, add a hero and large taps. */
  #desktop.bc-three-device-os .workspace{
   display:grid!important;grid-template-columns:minmax(0,1fr) minmax(216px,30%)!important;
   gap:15px!important;align-items:start!important;padding:20px clamp(15px,3vw,30px)!important;
  }
- #desktop.bc-three-device-os .workspace>section:first-child{min-width:0;grid-column:1;grid-row:1}
+ #desktop.bc-three-device-os .workspace>section:first-of-type{min-width:0;grid-column:1;grid-row:2}
  #desktop.bc-three-device-os .workspace>.side.bc-system-panel{
-  position:relative!important;grid-column:2;grid-row:1;
+  position:relative!important;grid-column:2;grid-row:2;
   display:grid!important;width:auto!important;height:auto!important;
   padding:0!important;margin:0!important;inset:auto!important;
   pointer-events:auto!important;
@@ -211,7 +214,7 @@
   -webkit-overflow-scrolling:touch;
  }
  html.bc-os-phone #desktop.bc-three-device-os .workspace::-webkit-scrollbar{display:none}
- html.bc-os-phone #desktop.bc-three-device-os .workspace>section:first-child{min-width:0;width:100%;max-height:none!important;overflow:visible!important;display:block}
+ html.bc-os-phone #desktop.bc-three-device-os .workspace>section:first-of-type{min-width:0;width:100%;max-height:none!important;overflow:visible!important;display:block}
  html.bc-os-phone #desktop.bc-three-device-os .bc-exec-stage{
   display:flex!important;position:relative;
   min-height:260px;width:100%;margin:0 0 13px!important;
@@ -344,4 +347,34 @@
 }
 @media(prefers-reduced-motion:reduce){
  #desktop.bc-three-device-os *{scroll-behavior:auto!important}
+}
+
+/* v3.1: independent central workspace stage, real phone chrome. */
+#desktop.bc-three-device-os .bc-phone-toolbar{display:none}
+@media(min-width:1024px){
+ html:not(.bc-os-phone) #desktop.bc-three-device-os .workspace{position:relative!important}
+ html:not(.bc-os-phone) #desktop.bc-three-device-os .workspace>.bc-exec-stage{
+  position:absolute!important;z-index:2;pointer-events:none;
+  left:calc(clamp(210px,20vw,262px) + clamp(16px,2.1vw,34px) + clamp(12px,1.8vw,28px));
+  right:calc(clamp(245px,25vw,338px) + clamp(16px,2.1vw,34px) + clamp(12px,1.8vw,28px));
+  width:auto!important;
+ }
+}
+@media(max-width:620px){
+ html.bc-os-phone #desktop.bc-three-device-os .menubar>button:not(.bc-topbrand){display:none!important}
+ html.bc-os-phone #desktop.bc-three-device-os .topright>:is(.bc-desktop-widget-toggle,.bc-widget-reset,.status,.clock,#osTouchHome,#signOut){display:none!important}
+ html.bc-os-phone #desktop.bc-three-device-os .topbar{
+  display:flex!important;justify-content:space-between;gap:8px;
+ }
+ html.bc-os-phone #desktop.bc-three-device-os .menubar{flex:0 1 auto;max-width:calc(100% - 135px);min-width:0}
+ html.bc-os-phone #desktop.bc-three-device-os .topright{margin-left:auto;gap:0}
+ html.bc-os-phone #desktop.bc-three-device-os .bc-phone-toolbar{display:flex!important;align-items:center;gap:6px;margin-left:0}
+ html.bc-os-phone #desktop.bc-three-device-os .bc-phone-toolbar-btn{
+  width:29px;height:29px;display:grid;place-items:center;flex:none;
+  border:1px solid #ffffff31;color:#eaeaf0;
+  background:linear-gradient(140deg,#2b2c38,#111219);border-radius:9px;
+ }
+ html.bc-os-phone #desktop.bc-three-device-os .bc-phone-toolbar-btn svg{width:16px;height:16px}
+ html.bc-os-phone #desktop.bc-three-device-os .topright #osLockButton{min-width:27px;width:27px;padding:2px;display:grid!important;place-items:center}
+ html.bc-os-phone.bc-os-keyboard #desktop.bc-three-device-os .bc-concept-mobile-nav{display:none!important}
 }
