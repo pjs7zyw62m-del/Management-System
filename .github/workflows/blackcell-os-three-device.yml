@@ -43,6 +43,17 @@ jobs:
           source=Path('blackcell-os.html').read_text()
           assert 'data-preview="false"' in source
           source=source.replace('data-preview="false"','data-preview="true"',1)
+          # Probe computed layout, not just the presence of HTML elements.
+          source=source.replace('</body></html>', """<script>
+          setTimeout(()=>{
+            const stage=document.querySelector('.bc-exec-stage');
+            const nav=document.querySelector('.bc-concept-mobile-nav');
+            const os=document.querySelector('#desktop');
+            document.body.setAttribute('data-smoke-stage',stage?getComputedStyle(stage).display:'absent');
+            document.body.setAttribute('data-smoke-nav',nav?getComputedStyle(nav).display:'absent');
+            document.body.setAttribute('data-smoke-active',os&&!os.hidden?'yes':'no');
+          },6500);
+          </script></body></html>""")
           Path('blackcell-os-visual-smoke.html').write_text(source)
           PY
           python3 -m http.server 8765 > /tmp/blackcell-http.log 2>&1 &
@@ -59,5 +70,22 @@ jobs:
             grep -q 'bc-three-device-os' "/tmp/blackcell-$device.html"
             grep -q 'bc-concept-mobile-nav' "/tmp/blackcell-$device.html"
             grep -q 'bc-concept-quick' "/tmp/blackcell-$device.html"
-            echo "$device: OS interface mounted successfully"
+            grep -q 'data-smoke-stage="flex"' "/tmp/blackcell-$device.html"
+            grep -q 'data-smoke-active="yes"' "/tmp/blackcell-$device.html"
+            if [ "$device" = iphone ]; then
+              grep -q 'data-smoke-nav="grid"' "/tmp/blackcell-$device.html"
+            else
+              grep -q 'data-smoke-nav="none"' "/tmp/blackcell-$device.html"
+            fi
+            mkdir -p /tmp/blackcell-screens
+            "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-background-networking --virtual-time-budget=11000 --window-size="$width,$height" --screenshot="/tmp/blackcell-screens/$device.png" "http://127.0.0.1:8765/blackcell-os-visual-smoke.html" > /dev/null 2>/tmp/blackcell-chrome-err.log
+            echo "$device: visible branded OS + expected mobile navigation"
           done
+      - name: Upload visual validation screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blackcell-os-three-device-render
+          path: /tmp/blackcell-screens/*.png
+          if-no-files-found: ignore
+          retention-days: 7
