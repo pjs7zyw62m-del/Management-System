@@ -60,3 +60,8 @@ test('stage is a workspace-level layer rather than a child of the app panel',()=
  assert.match(skin,/workspace>\.bc-exec-stage/);
  assert.match(skin,/bc-phone-toolbar/);
 });
+
+test('approved OS dock remains discoverable on tablet and desktop home screens',()=>{
+ assert.match(skin,/\.os-dock-auto-hide:not\(:has\(>\.os-window:not\(\[hidden\]\)\)\)>\.dockwrap/);
+ assert.match(skin,/bottom:88px!important/);
+});
