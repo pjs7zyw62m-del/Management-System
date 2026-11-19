@@ -1,0 +1,347 @@
+/* BLACKCELL OS // Approved desktop · iPad · iPhone concept v3
+ * Progressive enhancement of authenticated BLACKCELL OS, not a parallel app.
+ * All source widgets, app launch buttons, windows and saved desktop positions stay in use.
+ */
+#desktop.bc-three-device-os{
+ --bc-c3-ruby:#e4294b;--bc-c3-silver:#e2e3eb;
+ --bc-c3-glass:rgba(19,21,28,.82);--bc-c3-border:rgba(227,228,242,.17);
+ background:radial-gradient(ellipse at 53% 77%,#480b1c33,transparent 59%),#030407;
+}
+#desktop.bc-three-device-os .wallpaper{
+ background-image:linear-gradient(180deg,rgba(2,2,7,.20),rgba(3,3,8,.16) 42%,rgba(1,1,5,.28)),
+ url('blackcell-os-cinematic-wallpaper.svg');
+ background-position:center center,center bottom;
+ background-size:cover,cover;background-repeat:no-repeat;
+ opacity:.92;
+}
+#desktop.bc-three-device-os .wallpaper:before,
+#desktop.bc-three-device-os .wallpaper:after{opacity:.12!important;filter:saturate(.58)}
+#desktop.bc-three-device-os .topbar{
+ background:linear-gradient(180deg,rgba(15,16,22,.97),rgba(7,8,12,.92));
+ border-bottom:1px solid #d72a412a;box-shadow:0 1px 18px #0009,inset 0 -1px #ffffff09;
+}
+#desktop.bc-three-device-os .menubar>.bc-topbrand,
+#desktop.bc-three-device-os .brand{letter-spacing:.07em;color:#f3f2f7}
+#desktop.bc-three-device-os .menubar>.bc-topbrand:before{
+ width:12px;height:12px;border-radius:2px;transform:rotate(45deg);
+ background:linear-gradient(140deg,#c51638,#520914);
+ border:1px solid #f57a8caa;
+ box-shadow:inset 0 1px #fff6,0 0 13px #ef19465b;
+}
+#desktop.bc-three-device-os .os-window{
+ border:1px solid #ffffff2b;
+ background:#0f1016;box-shadow:0 35px 100px #000c,0 0 42px #ac19311a;
+ backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+}
+#desktop.bc-three-device-os .os-window-head{
+ background:linear-gradient(180deg,#252630fa,#14151dff);
+ border-bottom:1px solid #ffffff16;
+}
+#desktop.bc-three-device-os .glass,
+#desktop.bc-three-device-os .side.bc-system-panel .glass{
+ color:#ededf2;
+ border-radius:17px;
+ background:linear-gradient(140deg,rgba(36,38,49,.86),rgba(13,14,21,.91));
+ border:1px solid var(--bc-c3-border);
+ box-shadow:0 18px 44px #0008,inset 0 1px #ffffff13;
+ backdrop-filter:blur(26px) saturate(123%);
+ -webkit-backdrop-filter:blur(26px) saturate(123%);
+}
+#desktop.bc-three-device-os .glass .chip{background:#0c2a1ce8;border-color:#1a704d;color:#8be4ba}
+#desktop.bc-three-device-os .dock{
+ background:linear-gradient(140deg,rgba(69,69,79,.40),rgba(9,10,16,.88));
+ border:1px solid #ffffff34;
+ box-shadow:0 15px 49px #000b,0 0 31px #e0243922,inset 0 1px #ffffff39;
+ border-radius:22px;
+ -webkit-backdrop-filter:blur(36px) saturate(140%);
+ backdrop-filter:blur(36px) saturate(140%);
+}
+#desktop.bc-three-device-os .dock button,
+#desktop.bc-three-device-os .workspace .apps>.app .app-icon{
+ background:linear-gradient(148deg,#31323f,#101118 81%);
+ border:1px solid #ffffff31;
+ box-shadow:inset 0 1px #ffffff27,0 8px 23px #0009;
+}
+#desktop.bc-three-device-os .workspace .apps>.app:hover .app-icon,
+#desktop.bc-three-device-os .dock button:hover{
+ border-color:#e05570aa;
+ box-shadow:inset 0 1px #ffffff35,0 9px 25px #3a030fac,0 0 24px #e7324b27;
+}
+#desktop.bc-three-device-os .workspace .apps>.app .app-name{color:#f1f1f7;text-shadow:0 2px 8px #0009}
+#desktop.bc-three-device-os .workspace .apps>.app .app-sub{color:#a2a4ae}
+#desktop.bc-three-device-os .bc-exec-name{
+ background:linear-gradient(#f8f9ff,#bcc0cd 60%,#70747e);
+ color:transparent;-webkit-background-clip:text;background-clip:text;
+ text-shadow:none;filter:drop-shadow(0 8px 15px #0009);
+}
+#desktop.bc-three-device-os .bc-exec-company{letter-spacing:.35em;color:#d7d4dc}
+#desktop.bc-three-device-os .bc-exec-tagline{color:#d5a6b0}
+#desktop.bc-three-device-os .bc-exec-mark{filter:drop-shadow(0 12px 35px #c51b3f65)}
+#desktop.bc-three-device-os .bc-exec-brand:before{border-color:#fc314616}
+#desktop.bc-three-device-os .bc-exec-search{
+ border-color:#cf2e4a88;
+ background:linear-gradient(150deg,rgba(37,38,47,.87),rgba(12,13,19,.90));
+ box-shadow:0 0 0 1px #0006,0 13px 47px #000a,0 0 30px #ba112833,inset 0 1px #ffffff20;
+}
+#desktop.bc-three-device-os .bc-exec-search:focus-within{border-color:#fa627c;box-shadow:0 0 0 3px #ed294b2e,0 18px 45px #000b}
+#desktop.bc-three-device-os .bc-exec-results[data-open=true]{box-shadow:0 26px 75px #000e}
+#desktop.bc-three-device-os .bc-concept-quick{
+ width:100%;max-width:580px;min-width:0;margin:0 auto 14px;
+ display:grid;gap:10px;padding:14px;border-radius:17px;
+ border:1px solid #ffffff27;background:linear-gradient(148deg,rgba(32,34,42,.82),rgba(12,13,20,.93));
+ box-shadow:0 15px 50px #0009,inset 0 1px #ffffff19;
+ backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);
+ pointer-events:auto;
+}
+#desktop.bc-three-device-os .bc-concept-quick-head{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#e9e8ef;font-size:10px;font-weight:700;letter-spacing:.12em}
+#desktop.bc-three-device-os .bc-concept-live{display:inline-flex;align-items:center;gap:6px;font-size:9px;letter-spacing:.07em;color:#9abdab;white-space:nowrap}
+#desktop.bc-three-device-os .bc-concept-live:before{content:"";width:6px;height:6px;border-radius:50%;background:#3cce90;box-shadow:0 0 8px #38db91aa}
+#desktop.bc-three-device-os .bc-concept-quick-links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+#desktop.bc-three-device-os .bc-concept-quick-btn{
+ min-width:0;min-height:49px;padding:7px;display:flex;align-items:center;gap:7px;
+ color:#e8e9ee;background:linear-gradient(155deg,#33344082,#15161edb);
+ border:1px solid #ffffff25;border-radius:10px;font-size:10px;font-weight:600;cursor:pointer;
+}
+#desktop.bc-three-device-os .bc-concept-quick-btn:focus-visible{outline:2px solid #e86679;outline-offset:2px}
+#desktop.bc-three-device-os .bc-concept-quick-btn:hover{background:#9e193334;border-color:#d53d5d88}
+#desktop.bc-three-device-os .bc-concept-quick-btn svg{width:19px;height:19px;color:#f0adba;flex:none}
+#desktop.bc-three-device-os .bc-concept-quick-btn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#desktop.bc-three-device-os .bc-concept-overview{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;
+ padding-top:14px;margin-top:16px;border-top:1px solid #ffffff12;
+}
+#desktop.bc-three-device-os .bc-concept-metric{min-width:0;padding:11px 10px;border:1px solid #ffffff24;border-radius:12px;background:#16171fbe}
+#desktop.bc-three-device-os .bc-concept-metric small{display:block;color:#aaaebc;font-size:8px;letter-spacing:.09em;font-weight:650}
+#desktop.bc-three-device-os .bc-concept-metric strong{display:block;margin-top:5px;color:#f4f4f7;font-weight:660;font-size:13px;line-height:1.25;overflow-wrap:anywhere}
+#desktop.bc-three-device-os .bc-concept-mobile-nav{display:none}
+#desktop.bc-three-device-os .bc-concept-overlay{display:none}
+@media(min-width:1024px){
+ /* True OS desktop and wide iPad landscape: three calm work zones. */
+ html:not(.bc-os-phone) #desktop.bc-three-device-os .workspace{
+  grid-template-columns:clamp(210px,20vw,262px) minmax(0,1fr) clamp(245px,25vw,338px)!important;
+  gap:clamp(12px,1.8vw,28px)!important;
+  padding:clamp(18px,3vh,32px) clamp(16px,2.1vw,34px) 14px!important;
+ }
+ html:not(.bc-os-phone) #desktop.bc-three-device-os .workspace>section:first-child{
+  grid-column:3!important;grid-row:1!important;
+  max-height:calc(100dvh - 133px);min-height:0;
+  padding:14px 12px;
+  background:linear-gradient(140deg,rgba(28,30,41,.68),rgba(8,9,17,.79));
+  border:1px solid #ffffff25;border-radius:18px;
+  box-shadow:0 18px 58px #0009,inset 0 1px #ffffff17;
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  overflow-y:auto!important;overflow-x:hidden!important;
+ }
+ html:not(.bc-os-phone) #desktop.bc-three-device-os .workspace>section:first-child .sectionhead h2{font-size:10px;letter-spacing:.18em}
+ html:not(.bc-os-phone) #desktop.bc-three-device-os .workspace .apps>.app{
+  background:none;box-shadow:none;border:0;min-height:93px!important;
+ }
+ html:not(.bc-os-phone) #desktop.bc-three-device-os .workspace .apps>.app .app-icon{width:53px;height:53px;border-radius:15px}
+ html:not(.bc-os-phone) #desktop.bc-three-device-os .workspace .apps>.app .app-sub{display:none}
+ html:not(.bc-os-phone) #desktop.bc-three-device-os .bc-exec-stage{
+  left:calc(clamp(210px,20vw,262px) + clamp(16px,2.1vw,34px) + clamp(12px,1.8vw,28px));
+  right:calc(clamp(245px,25vw,338px) + clamp(16px,2.1vw,34px) + clamp(12px,1.8vw,28px));
+  top:clamp(30px,4vh,51px);bottom:15px;
+  display:flex;align-items:center;justify-content:flex-start;
+ }
+ html:not(.bc-os-phone) #desktop.bc-three-device-os .bc-exec-search{flex:none;width:100%;max-width:550px}
+ html:not(.bc-os-phone) #desktop.bc-three-device-os .bc-exec-brand{
+  margin:clamp(34px,8vh,95px) 0 auto!important;max-width:100%;z-index:1;
+ }
+ html:not(.bc-os-phone) #desktop.bc-three-device-os .bc-exec-mark{width:clamp(110px,11vw,182px);height:clamp(110px,11vw,182px)}
+ html:not(.bc-os-phone) #desktop.bc-three-device-os .bc-exec-name{font-size:clamp(24px,2.6vw,44px)}
+ html:not(.bc-os-phone) #desktop.bc-three-device-os .bc-exec-tagline{margin-top:15px}
+ html:not(.bc-os-phone) #desktop.bc-three-device-os .bc-concept-quick{margin-bottom:12px;flex:none}
+ html:not(.bc-os-phone) #desktop.bc-three-device-os .bc-concept-overview{display:none}
+ html:not(.bc-os-phone) #desktop.bc-three-device-os .workspace.bc-widget-free-mode>.side.bc-system-panel{z-index:3!important}
+ html:not(.bc-os-phone) #desktop.bc-three-device-os .side.bc-system-panel .bc-draggable-widget{max-width:clamp(210px,20vw,262px)!important}
+}
+@media(min-width:1024px) and (max-height:720px){
+ html:not(.bc-os-phone) #desktop.bc-three-device-os .bc-exec-brand{margin:21px 0 auto!important}
+ html:not(.bc-os-phone) #desktop.bc-three-device-os .bc-exec-mark{width:100px;height:100px}
+ html:not(.bc-os-phone) #desktop.bc-three-device-os .bc-exec-tagline{display:none}
+ html:not(.bc-os-phone) #desktop.bc-three-device-os .bc-concept-quick{padding:9px}
+ html:not(.bc-os-phone) #desktop.bc-three-device-os .bc-concept-quick-btn{min-height:38px}
+}
+@media(min-width:621px) and (max-width:1023px){
+ /* iPad portrait: keep the established app windows and widgets, add a hero and large taps. */
+ #desktop.bc-three-device-os .workspace{
+  display:grid!important;grid-template-columns:minmax(0,1fr) minmax(216px,30%)!important;
+  gap:15px!important;align-items:start!important;padding:20px clamp(15px,3vw,30px)!important;
+ }
+ #desktop.bc-three-device-os .workspace>section:first-child{min-width:0;grid-column:1;grid-row:1}
+ #desktop.bc-three-device-os .workspace>.side.bc-system-panel{
+  position:relative!important;grid-column:2;grid-row:1;
+  display:grid!important;width:auto!important;height:auto!important;
+  padding:0!important;margin:0!important;inset:auto!important;
+  pointer-events:auto!important;
+ }
+ #desktop.bc-three-device-os .workspace>.side.bc-system-panel>.bc-draggable-widget{position:relative!important;left:auto!important;top:auto!important;width:100%!important;max-width:100%!important;margin:0!important}
+ #desktop.bc-three-device-os .workspace .apps>.app .app-icon{height:52px;width:52px;border-radius:15px}
+ #desktop.bc-three-device-os .bc-exec-stage{
+  min-height:230px;padding:16px 10px 19px!important;margin:0 0 14px!important;
+  overflow:visible;
+ }
+ #desktop.bc-three-device-os .bc-exec-stage:before{
+  content:"";position:absolute;inset:0;z-index:-2;pointer-events:none;
+  background:url('blackcell-os-cinematic-wallpaper.svg') center 71%/cover no-repeat;opacity:.42;border-radius:17px;
+ }
+ #desktop.bc-three-device-os .bc-exec-stage:after{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(180deg,#04040744,#04040888 90%);border-radius:17px;
+ }
+ #desktop.bc-three-device-os .bc-exec-brand{order:0}
+ #desktop.bc-three-device-os .bc-exec-mark{width:110px;height:110px}
+ #desktop.bc-three-device-os .bc-exec-search{order:1}
+ #desktop.bc-three-device-os .bc-concept-quick{order:2;margin:8px 0 0!important}
+ #desktop.bc-three-device-os .bc-concept-quick-links{grid-template-columns:repeat(3,minmax(0,1fr))}
+ #desktop.bc-three-device-os .bc-concept-quick-btn{min-height:43px}
+}
+@media(max-width:620px){
+ /* iPhone: compact cinematic home screen + five-item real app launcher. */
+ html.bc-os-phone #desktop.bc-three-device-os.shell{
+  grid-template-rows:37px minmax(0,1fr) 0px!important;
+  min-height:100dvh;height:100dvh;overflow:hidden;
+ }
+ html.bc-os-phone #desktop.bc-three-device-os .workspace{
+  position:relative;display:block!important;
+  height:100%!important;overflow-y:auto!important;overflow-x:hidden!important;
+  overscroll-behavior-y:contain;scrollbar-width:none;
+  padding:15px clamp(12px,4vw,20px) max(98px,env(safe-area-inset-bottom))!important;
+  -webkit-overflow-scrolling:touch;
+ }
+ html.bc-os-phone #desktop.bc-three-device-os .workspace::-webkit-scrollbar{display:none}
+ html.bc-os-phone #desktop.bc-three-device-os .workspace>section:first-child{min-width:0;width:100%;max-height:none!important;overflow:visible!important;display:block}
+ html.bc-os-phone #desktop.bc-three-device-os .bc-exec-stage{
+  display:flex!important;position:relative;
+  min-height:260px;width:100%;margin:0 0 13px!important;
+  padding:14px 10px 18px!important;gap:10px;
+  border:1px solid #ffffff28;border-radius:19px;
+  background:linear-gradient(155deg,#15141fa5,#0a0b12dc);
+  isolation:isolate;overflow:visible;
+  box-shadow:0 17px 45px #0008,inset 0 1px #ffffff18;
+ }
+ html.bc-os-phone #desktop.bc-three-device-os .bc-exec-stage:before{
+  content:"";position:absolute;z-index:-2;inset:0;
+  background:url('blackcell-os-cinematic-wallpaper.svg') center 72%/cover no-repeat;
+  opacity:.62;pointer-events:none;border-radius:19px;
+ }
+ html.bc-os-phone #desktop.bc-three-device-os .bc-exec-stage:after{
+  content:"";position:absolute;z-index:-1;inset:0;
+  background:linear-gradient(180deg,#07060b2c,#08091355 63%,#030309db);
+  border-radius:19px;pointer-events:none;
+ }
+ html.bc-os-phone #desktop.bc-three-device-os .bc-exec-brand{
+  order:0;margin:0!important;display:flex;flex-direction:column;align-items:center;
+ }
+ html.bc-os-phone #desktop.bc-three-device-os .bc-exec-mark{width:103px!important;height:103px!important;margin:0 auto 6px!important}
+ html.bc-os-phone #desktop.bc-three-device-os .bc-exec-name{font-size:clamp(24px,7.3vw,32px)!important;letter-spacing:.18em}
+ html.bc-os-phone #desktop.bc-three-device-os .bc-exec-company{font-size:9px!important}
+ html.bc-os-phone #desktop.bc-three-device-os .bc-exec-tagline{display:block!important;margin:8px 0 0;font-size:8px;letter-spacing:.16em}
+ html.bc-os-phone #desktop.bc-three-device-os .bc-exec-search{order:1;margin:6px 0 0!important;max-width:100%;border-radius:13px}
+ html.bc-os-phone #desktop.bc-three-device-os .bc-concept-quick{display:none}
+ html.bc-os-phone #desktop.bc-three-device-os .sectionhead{margin:9px 2px}
+ html.bc-os-phone #desktop.bc-three-device-os .workspace .apps>.app .app-icon{
+  width:58px;height:58px;border-radius:16px;margin:0 0 5px;
+ }
+ html.bc-os-phone #desktop.bc-three-device-os .workspace .apps>.app{
+  border-radius:13px;background:transparent;box-shadow:none;
+  align-items:center;text-align:center;
+ }
+ html.bc-os-phone #desktop.bc-three-device-os .workspace .apps>.app:focus-visible{
+  outline:2px solid #db5266;outline-offset:1px;
+ }
+ html.bc-os-phone #desktop.bc-three-device-os .workspace .apps>.app .app-name{font-size:11px;line-height:1.18}
+ html.bc-os-phone #desktop.bc-three-device-os .workspace .apps>.app .app-sub{display:none}
+ html.bc-os-phone #desktop.bc-three-device-os .bc-concept-overview{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:16px 0;padding-top:10px;
+ }
+ html.bc-os-phone #desktop.bc-three-device-os .bc-concept-overview .bc-concept-metric:first-child{grid-column:1/-1}
+ html.bc-os-phone #desktop.bc-three-device-os .bc-concept-metric{padding:13px}
+ html.bc-os-phone #desktop.bc-three-device-os .bc-concept-metric strong{font-size:15px}
+ html.bc-os-phone #desktop.bc-three-device-os .side.bc-system-panel{
+  width:100%!important;max-width:none!important;margin:14px 0 0!important;position:relative!important;
+  display:grid!important;grid-template-columns:1fr!important;gap:11px;inset:auto!important;
+  height:auto!important;pointer-events:auto!important;padding:0!important;
+ }
+ html.bc-os-phone #desktop.bc-three-device-os .side.bc-system-panel>.bc-draggable-widget{
+  width:100%!important;max-width:none!important;position:relative!important;
+  left:auto!important;top:auto!important;margin:0!important;
+ }
+ html.bc-os-phone #desktop.bc-three-device-os .dockwrap,
+ html.bc-os-phone #desktop.bc-three-device-os .os-dock-edge{display:none!important}
+ html.bc-os-phone #desktop.bc-three-device-os .bc-concept-mobile-nav{
+  position:absolute;bottom:max(9px,env(safe-area-inset-bottom));left:10px;right:10px;
+  z-index:2147481000;
+  display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;
+  padding:7px 4px;border-radius:22px;
+  background:linear-gradient(140deg,rgba(54,55,69,.92),rgba(9,9,18,.97));
+  border:1px solid #ffffff40;box-shadow:0 12px 34px #000e,0 0 20px #b41d3524,inset 0 1px #ffffff25;
+  backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);
+ }
+ html.bc-os-phone #desktop.bc-three-device-os .bc-concept-nav-item{
+  min-width:0;min-height:53px;border-radius:14px;background:transparent;border:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;color:#d6d7e0;font-size:9px;cursor:pointer;
+ }
+ html.bc-os-phone #desktop.bc-three-device-os .bc-concept-nav-item svg{
+  width:21px;height:21px;flex:none;
+ }
+ html.bc-os-phone #desktop.bc-three-device-os .bc-concept-nav-item[data-active=true]{
+  background:linear-gradient(145deg,#a1172f9c,#4d0c1ebf);color:#fff;
+  box-shadow:inset 0 1px #ffffff1b,0 0 19px #bb1b3938;
+ }
+ html.bc-os-phone #desktop.bc-three-device-os:has(>.os-window:not([hidden])) .bc-concept-mobile-nav{display:none!important}
+ html.bc-os-phone #desktop.bc-three-device-os .bc-concept-overlay{
+  position:absolute;inset:37px 0 0;z-index:2147482000;
+  display:flex;align-items:flex-end;justify-content:center;
+  background:rgba(0,0,0,.65);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+  padding:12px 11px max(10px,env(safe-area-inset-bottom));
+ }
+ html.bc-os-phone #desktop.bc-three-device-os .bc-concept-overlay[hidden]{display:none!important}
+ html.bc-os-phone #desktop.bc-three-device-os .bc-concept-sheet{
+  width:100%;max-height:min(81dvh,760px);display:flex;flex-direction:column;overflow:hidden;
+  border-radius:23px;border:1px solid #ffffff39;
+  background:linear-gradient(150deg,#262632fa,#111118fd);
+  box-shadow:0 29px 90px #000f,inset 0 1px #ffffff25;
+ }
+ html.bc-os-phone #desktop.bc-three-device-os .bc-concept-sheet-head{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:18px 17px 9px;border-bottom:1px solid #ffffff18;
+ }
+ html.bc-os-phone #desktop.bc-three-device-os .bc-concept-sheet-head h2{
+  font-size:12px;letter-spacing:.15em;margin:0;color:#f2f0f5;
+ }
+ html.bc-os-phone #desktop.bc-three-device-os .bc-concept-sheet-close{
+  width:36px;height:36px;border-radius:10px;background:#262735;border:1px solid #ffffff2a;
+  color:#fff;display:grid;place-items:center;cursor:pointer;
+ }
+ html.bc-os-phone #desktop.bc-three-device-os .bc-concept-sheet-close svg{width:19px;height:19px}
+ html.bc-os-phone #desktop.bc-three-device-os .bc-concept-sheet-content{
+  overflow:auto;overscroll-behavior:contain;display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;
+  padding:15px;
+ }
+ html.bc-os-phone #desktop.bc-three-device-os .bc-concept-menu-tile{
+  display:flex;flex-direction:column;justify-content:flex-start;align-items:center;gap:7px;
+  min-width:0;min-height:99px;padding:10px 4px;border-radius:13px;
+  background:linear-gradient(148deg,#31313d,#171820);
+  color:#f5f6f9;border:1px solid #ffffff27;text-align:center;
+  font-size:11px;line-height:1.2;
+ }
+ html.bc-os-phone #desktop.bc-three-device-os .bc-concept-menu-tile .app-icon{
+  display:grid;place-items:center;min-height:45px;width:45px;margin:0;border-radius:12px;
+  border:1px solid #ffffff27;background:#1e202b;
+ }
+ html.bc-os-phone #desktop.bc-three-device-os .bc-concept-menu-tile .app-icon svg{width:24px;height:24px}
+ html.bc-os-phone #desktop.bc-three-device-os .bc-concept-sheet-empty{
+  grid-column:1/-1;padding:20px 10px;color:#bfc0cc;font-size:12px;line-height:1.5;text-align:center;
+ }
+ html.bc-os-phone #desktop.bc-three-device-os .bc-concept-nav-item:focus-visible,
+ html.bc-os-phone #desktop.bc-three-device-os .bc-concept-menu-tile:focus-visible{
+  outline:2px solid #f17c93;outline-offset:2px;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ #desktop.bc-three-device-os *{scroll-behavior:auto!important}
+}
