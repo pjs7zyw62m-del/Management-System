@@ -38,3 +38,8 @@ test('no fake data was introduced',()=>{
  assert.match(js,/Intl\.DateTimeFormat/);
  assert.match(js,/all\.length\+' available app'/);
 });
+
+test('iPhone landscape hides original desktop dock to avoid double docks',()=>{
+ assert.match(css,/bc-springboard-ready\.os-dock-auto-hide:not\(:has\(>\.os-window:not\(\[hidden\]\)\)\)/);
+ assert.match(css,/display:none!important;visibility:hidden!important;pointer-events:none!important/);
+});
