@@ -30,6 +30,9 @@
     if(!shell||!work||!stage||!tiles)return;
     initialized=true;
     shell.classList.add('bc-three-device-os');
+    // Position the hero relative to the OS workspace, not the right-hand app panel.
+    // The former placement silently pushed the desktop emblem offscreen.
+    if(stage.parentElement!==work)work.prepend(stage);
     const launch=(id)=>{
       const tile=$('.workspace .apps>.app[data-app="'+id+'"]',shell);
       if(!tile||tile.hidden||tile.disabled||!tile.isConnected||getComputedStyle(tile).display==='none')return false;
@@ -80,6 +83,17 @@
     const shelf=mk('div','bc-concept-sheet-content');
     shead.append(heading,close);sheet.append(shead,shelf);overlay.append(sheet);
     shell.append(nav,overlay);
+    const topActions=mk('div','bc-phone-toolbar');
+    const searchButton=mk('button','bc-phone-toolbar-btn');
+    searchButton.type='button';searchButton.setAttribute('aria-label','Search BLACKCELL applications');
+    searchButton.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4.7 4.7"/></svg>';
+    searchButton.addEventListener('click',()=>{hideOverlay();$('.bc-exec-search input',stage)?.focus({preventScroll:false})});
+    const accountButton=mk('button','bc-phone-toolbar-btn');accountButton.type='button';
+    accountButton.setAttribute('aria-label','Open my profile');
+    accountButton.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg>';
+    accountButton.addEventListener('click',()=>{hideOverlay();if(!launch('person'))showOverlay('apps',accountButton)});
+    topActions.append(searchButton,accountButton);
+    shell.querySelector('.topbar')?.append(topActions);
     function hideOverlay(){if(overlay.hidden)return;overlay.hidden=true;document.body.classList.remove('bc-concept-menu-open');priorFocus?.focus?.({preventScroll:true});priorFocus=null}
     function addMenuTile(tile){
       const b=mk('button','bc-concept-menu-tile');b.type='button';
