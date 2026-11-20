@@ -65,7 +65,7 @@ test('OMEGA authorization and private media access are mandatory',()=>{
  assert.match(sql,/rights_confirmed=true/);
  assert.match(sql,/adult_restricted=false/);
  assert.match(sql,/revoke all .* public,anon,authenticated/i);
- assert.match(os,/omega:\{title:'BLACKCELL OMEGA'/);
+ assert.match(os,/omega:\{title:'OMEGA \/\/ THE HUNT'/);
 });
 test('No paid inference, background scraping, or automatic media publication introduced',()=>{
  const src=readFileSync('blackcell-omega.js','utf8');

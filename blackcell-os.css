@@ -720,3 +720,22 @@ html .bc-apple-photos .ap-justified-grid .bc-pm-thumb img{width:100%;height:100%
 .bc-store-audit{border:1px solid #70475d;border-radius:12px;background:linear-gradient(125deg,#251825,#15161b);padding:14px 17px;margin:9px 16px 13px;color:#efe5eb}
 .bc-store-audit strong{font-size:12px;letter-spacing:.025em}
 .bc-store-audit p{font-size:11px;line-height:1.55;color:#c9b5c4;margin:7px 0 0}
+
+/* BLACKCELL OS UX2: lifecycle status and responsive App Store navigation. */
+.bc-store-status{display:inline-block;margin-top:6px;padding:3px 7px;font-size:9px;font-weight:750;letter-spacing:.12em;border-radius:6px;color:#e6bcc6;border:1px solid #8e3046;background:#35101d}
+.bc-store-nav[hidden]{display:none!important}
+.bc-store-header{flex-wrap:wrap}
+.bc-store-release-controls{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.bc-store-search{min-height:40px}
+.bc-store .bc-store-get,.bc-store .bc-store-remove,.bc-store .bc-store-back{min-height:38px}
+@media(max-width:620px){
+  .bc-store-rail{justify-content:flex-start;overflow-x:auto;scrollbar-width:thin;gap:4px;overscroll-behavior-inline:contain}
+  .bc-store-nav{flex:0 0 auto;min-height:44px;padding:9px 11px;font-size:12px}
+  .bc-store-release-controls{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .bc-store-release-controls>*{min-width:0!important;width:100%;min-height:44px}
+  .bc-store-release-controls input{grid-column:span 2}
+  .bc-store-copy p{font-size:12px}
+  .bc-store-link{font-size:14px}
+  .bc-store-app{flex-wrap:wrap}
+  .bc-store-app-actions{margin-left:auto}
+}
