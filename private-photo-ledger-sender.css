@@ -1,0 +1,105 @@
+/* BLACKCELL REDLINE // Sender-first Liquid Glass UI.
+   Presentation only: restricted room permissions and backend controls remain in charge. */
+.bc-sender-hero[hidden],.bc-sender-preview[hidden]{display:none!important}
+.bc-sender-hero{
+ position:relative;overflow:hidden;isolation:isolate;
+ border:1px solid rgba(230,129,154,.42);border-radius:23px;
+ padding:clamp(20px,3vw,30px);margin-bottom:17px;
+ background:radial-gradient(ellipse at 100% 0%,rgba(199,55,99,.28),transparent 66%),
+ linear-gradient(138deg,rgba(52,27,43,.98),rgba(13,14,22,.98) 75%);
+ box-shadow:0 14px 43px #0008,inset 0 1px #ffffff20;color:#fff;
+}
+.bc-sender-hero:after{
+ content:"";position:absolute;z-index:-1;right:-155px;top:-180px;
+ width:350px;height:350px;border:1px solid #ffffff1a;border-radius:50%;
+ box-shadow:0 0 0 25px #ffffff05,0 0 0 55px #bb1b4908;pointer-events:none
+}
+.bc-sender-eyebrow{font-size:10px;font-weight:830;letter-spacing:.16em;color:#e8a9ba}
+.bc-sender-headline{font-size:clamp(28px,4vw,41px);font-weight:790;line-height:1.08;letter-spacing:-.05em;margin:15px 0 9px}
+.bc-sender-intro{font-size:12px;line-height:1.65;color:#d7c5cf;max-width:620px;margin:0 0 18px}
+.bc-sender-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.bc-sender-fact{min-width:0;padding:14px;border:1px solid #ffffff23;border-radius:14px;
+ background:linear-gradient(135deg,#ffffff0d,#120b160b)}
+.bc-sender-fact span{display:block;font-size:9px;color:#ccb3c0;line-height:1.5;font-weight:780;letter-spacing:.11em}
+.bc-sender-fact strong{display:block;font-size:28px;line-height:1.15;margin-top:7px;font-weight:780;letter-spacing:-.04em;overflow-wrap:anywhere}
+.bc-sender-hero-actions{display:flex;gap:9px;margin:16px 0 0}
+.bc-sender-hero-actions button{min-height:49px;flex:1 1 0;min-width:0;
+ padding:12px 11px;font-size:11px;font-weight:850;letter-spacing:.03em;
+ border-radius:12px;cursor:pointer;touch-action:manipulation}
+.bc-sender-primary{background:linear-gradient(130deg,#e64d71,#a22649);border:1px solid #f08ca6;color:#fff;
+ box-shadow:0 7px 20px #db2f5550}
+.bc-sender-secondary{background:#ffffff09;border:1px solid #ffffff35;color:#ece1e9}
+.bc-sender-hero-actions button:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.bc-sender-room-line{display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+ margin-top:16px;padding-top:12px;border-top:1px solid #ffffff20;
+ color:#d4cbd3;font-size:9px;font-weight:740;letter-spacing:.05em}
+.bc-sender-dot{width:7px;height:7px;flex:none;background:#7dd9b0;border-radius:50%;box-shadow:0 0 12px #7dd9b066}
+.bc-sender-room-name{max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bc-sender-restricted{margin-left:auto;color:#a99aa6;font-size:8px;letter-spacing:.12em}
+.bc-sender-preview{display:flex;align-items:center;flex-direction:column;gap:6px;
+ width:100%;max-width:100%;min-width:0;overflow:hidden;margin:0 0 10px;
+ padding:10px;border:1px solid #e6a0b17a;border-radius:12px;background:#090910}
+.bc-sender-preview-image{display:block;max-width:100%;width:100%;height:auto;max-height:340px;object-fit:contain;border-radius:7px}
+.bc-sender-preview-image[hidden]{display:none!important}
+.bc-sender-preview-state{color:#dba4b7;font-size:9px;font-weight:800;letter-spacing:.14em}
+.bc-sender-preview-filename{color:#ebe0e7;font-size:10px;font-weight:650;line-height:1.4;overflow-wrap:anywhere}
+body.bc-ledger-sender #employeeUpload .file-drop.bc-sender-has-file{border-color:#e885a0;background:linear-gradient(135deg,#3b1f33,#141019)}
+body.bc-ledger-sender #employeeUpload #submitPhoto{min-height:53px;border-radius:13px;letter-spacing:.035em;font-weight:800}
+body.bc-ledger-sender #employeeUpload #submitPhoto:disabled{opacity:.7}
+body.bc-ledger-sender.bc-ledger-mobile{background:#09090e}
+body.bc-ledger-sender.bc-ledger-mobile #ledgerApp.shell{padding-top:13px}
+body.bc-ledger-sender.bc-ledger-mobile .page-heading{gap:6px;margin-bottom:10px}
+body.bc-ledger-sender.bc-ledger-mobile .page-heading h1{font-size:clamp(25px,7.4vw,31px);margin:3px 0 0;line-height:1.1}
+body.bc-ledger-sender.bc-ledger-mobile .page-heading p,
+body.bc-ledger-sender.bc-ledger-mobile .page-heading .bc-ledger-edition{display:none}
+body.bc-ledger-sender.bc-ledger-mobile .workspace-actions{gap:6px;margin-top:3px}
+body.bc-ledger-sender.bc-ledger-mobile .workspace-actions #refreshLedger{min-height:35px}
+body.bc-ledger-sender.bc-ledger-mobile #activeRoom>.bc-ledger-mobile-view-heading{display:none}
+body.bc-ledger-sender.bc-ledger-mobile #activeRoom>.bc-sender-hero{display:none}
+body.bc-ledger-sender.bc-ledger-mobile[data-ledger-view="upload"] #activeRoom>.bc-sender-hero:not([hidden]){display:block;
+ margin:0 0 11px;padding:18px 16px 16px;border-radius:20px}
+body.bc-ledger-sender.bc-ledger-mobile .bc-sender-headline{font-size:clamp(27px,8vw,36px);margin:12px 0 7px}
+body.bc-ledger-sender.bc-ledger-mobile .bc-sender-intro{font-size:11px;line-height:1.55;margin:0 0 14px}
+body.bc-ledger-sender.bc-ledger-mobile .bc-sender-fact{padding:11px}
+body.bc-ledger-sender.bc-ledger-mobile .bc-sender-fact strong{font-size:clamp(21px,7vw,29px)}
+body.bc-ledger-sender.bc-ledger-mobile .bc-sender-hero-actions{margin-top:13px}
+body.bc-ledger-sender.bc-ledger-mobile .bc-sender-hero-actions button{font-size:10px}
+body.bc-ledger-sender.bc-ledger-mobile #employeeUpload{
+ width:100%;max-width:100%;padding:15px;
+ background:linear-gradient(150deg,rgba(42,29,42,.95),#0e0e16 85%);
+ border:1px solid #ffffff34;border-radius:20px;box-shadow:0 18px 39px #0008,inset 0 1px #ffffff11;
+}
+body.bc-ledger-sender.bc-ledger-mobile #employeeUpload .card-title{gap:9px;margin-bottom:12px}
+body.bc-ledger-sender.bc-ledger-mobile #employeeUpload .card-icon{display:none}
+body.bc-ledger-sender.bc-ledger-mobile #employeeUpload .card-title h3{font-size:19px}
+body.bc-ledger-sender.bc-ledger-mobile #employeeUpload .file-drop{
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ min-height:138px;gap:7px;padding:16px 12px;border-radius:15px;
+ border:1px dashed #d18ca3;background:radial-gradient(ellipse at 50% 0%,#bb365842,transparent 82%),#151119
+}
+body.bc-ledger-sender.bc-ledger-mobile #employeeUpload .file-symbol{font-size:36px;line-height:1}
+body.bc-ledger-sender.bc-ledger-mobile #employeeUpload .file-drop strong{font-size:12px;letter-spacing:.03em}
+body.bc-ledger-sender.bc-ledger-mobile #employeeUpload .file-drop small{font-size:10px}
+body.bc-ledger-sender.bc-ledger-mobile #employeeUpload .native-upload-label{font-size:9px;line-height:1.5}
+body.bc-ledger-sender.bc-ledger-mobile #employeeUpload textarea{min-height:80px;font-size:16px!important;border-radius:11px}
+body.bc-ledger-sender.bc-ledger-mobile #employeeUpload .upload-native-file{font-size:12px!important}
+body.bc-ledger-sender.bc-ledger-mobile #employeeUpload #submitPhoto{min-height:54px;width:100%;font-size:11px}
+body.bc-ledger-sender.bc-ledger-mobile .bc-ledger-phone-tab[data-ledger-navigate="upload"]{order:-1}
+body.bc-ledger-sender.bc-ledger-mobile .bc-ledger-phone-tab[data-ledger-navigate="upload"].is-current{
+ background:linear-gradient(130deg,#c83d61,#74203e);border:1px solid #ed8ca4;
+ box-shadow:0 5px 15px #a31d4059}
+body.bc-ledger-sender.bc-ledger-mobile #activeRoom .room-body .side-column>#employeeUpload{order:-10}
+body.bc-ledger-sender.bc-ledger-mobile #uploadFeedback:not(:empty){font-size:11px;line-height:1.6;padding-top:7px}
+body.bc-ledger-sender.bc-ledger-tablet .bc-sender-hero{max-width:980px;margin-inline:auto}
+body.bc-ledger-sender.bc-ledger-tablet #employeeUpload{max-width:980px;margin-inline:auto}
+body.bc-ledger-sender.bc-ledger-tablet #employeeUpload .file-drop{min-height:190px}
+@media(max-width:370px){
+ body.bc-ledger-sender.bc-ledger-mobile .bc-sender-hero{padding-inline:12px!important}
+ body.bc-ledger-sender.bc-ledger-mobile #employeeUpload{padding-inline:11px}
+ body.bc-ledger-sender.bc-ledger-mobile .bc-sender-hero-actions button{font-size:9px}
+ body.bc-ledger-sender.bc-ledger-mobile .bc-sender-eyebrow{font-size:8px}
+ body.bc-ledger-sender.bc-ledger-mobile .bc-sender-restricted{font-size:7px}
+}
+@media(prefers-reduced-motion:reduce){
+ body.bc-ledger-sender #employeeUpload .file-drop{transition:none}
+}
