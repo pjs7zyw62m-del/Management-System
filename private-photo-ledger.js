@@ -136,7 +136,7 @@ function renderLedgerScope(){
  show('ledgerScopeIndicator',limited?'RESTRICTED':'STANDARD ACCESS');
  show('ledgerScopeDescription',limited
   ?'The assigned employee can only use BLACKCELL REDLINE. Network, chat and other corporate applications are blocked by server-side permissions. You may restore normal access.'
-  :'This employee currently has regular corporate access. Restrict them to this photo ledger to block Network, chat and other authorized corporate apps.');
+  :'This employee currently has regular corporate access. Restrict them to BLACKCELL REDLINE to block Network, chat and other authorized corporate apps.');
  const btn=$('ledgerScopeToggle');
  btn.disabled=state.scopeLoading;
  btn.textContent=limited?'RESTORE FULL CORPORATE ACCESS':'RESTRICT EMPLOYEE TO LEDGER ONLY';
