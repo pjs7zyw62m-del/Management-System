@@ -28,7 +28,7 @@
   }
   const labels={os:'BLACKCELL OS',tablet:'BLACKCELL OS Tablet',mobile:'BLACKCELL OS Mobile'};
   const captions={os:'DESKTOP EDITION',tablet:'TABLET EDITION',mobile:'MOBILE EDITION'};
-  let current='summary',first=true;
+  let current='summary';
   const app=$('#ledgerApp'),room=$('#activeRoom'),heading=$('.page-heading',app);
   if(!app||!room||!heading)return;
   const rail=node('aside','bc-ledger-rail');
@@ -52,6 +52,13 @@
   const nav=node('nav','bc-ledger-phone-nav');
   nav.setAttribute('aria-label','Private Photo Ledger mobile sections');
   room.append(nav);
+  // A visible, lightweight section heading keeps the selected action
+  // understandable even when the owner/employee sees different permissions.
+  const sectionHeading=node('h2','bc-ledger-mobile-view-heading','Overview');
+  sectionHeading.id='ledgerMobileViewHeading';
+  sectionHeading.tabIndex=-1;
+  room.insertBefore(sectionHeading,room.querySelector('.room-toolbar'));
+  nav.setAttribute('aria-label','Private Photo Ledger mobile sections');
   const buttons=new Map();
   const ids=[
     ['summary','Summary'],
@@ -82,6 +89,10 @@
     photos:$('#photoEntries'),
     room:$('#ownerSetup')||$('.side-column')
   };
+  const sectionNames={
+    summary:'Overview',review:'Review Pending Photos',upload:'Upload a Photo',
+    photos:'Photo History',room:'Private Room'
+  };
   function isAvailable(key){
     if(key==='summary')return true;
     if(key==='review')return isShown(room)&&isShown($('#ownerReviewQueue'));
@@ -96,7 +107,9 @@
     document.body.classList.toggle('bc-ledger-tablet',mode==='tablet');
     document.body.classList.toggle('bc-ledger-desktop',mode==='os');
     document.body.dataset.ledgerDevice=mode;
+    if(!isAvailable(current))current='summary';
     const edition=captions[mode];
+    sectionHeading.textContent=sectionNames[current]||'Overview';
     version.textContent=edition;
     topLabel.textContent=mode==='os'?'OS':mode==='tablet'?'OS TABLET':'OS MOBILE';
     const title=labels[mode]+' · Private Photo Ledger';
@@ -109,28 +122,57 @@
         else button.removeAttribute('aria-current');
       }
     }
-    if(!isAvailable(current))current='summary';
     document.body.dataset.ledgerView=current;
     // The mobile tab bar is meaningful only after room access is verified.
     nav.hidden=!isShown(app)||!isShown(room)||!isMobile;
-    if(first){first=false;current='summary';document.body.dataset.ledgerView=current}
+    nav.style.setProperty('--ledger-visible-tabs',String([...buttons.keys()].filter(isAvailable).length));
   }
   function activate(key,{scroll=true}={}){
     if(!isAvailable(key))return;
     current=key;reflect();
     const mobile=document.body.classList.contains('bc-ledger-mobile');
-    if(mobile){
-      window.scrollTo({top:0,behavior:'instant'});
-      return;
+    // Changing views must reveal the selected content, not return users to
+    // the very top of the page (which previously concealed Review / Upload).
+    const destination=mobile?(
+      key==='summary'?($('.room-toolbar',room)||summaryAnchor):
+      key==='room'?($('.room-toolbar',room)||$('.side-column',room)):
+      key==='photos'?($('#photoEntries')||$('.timeline-toolbar',room)):targets[key]
+    ):(key==='room'?(isShown($('#ownerSetup'))?$('#ownerSetup'):$('.side-column')):targets[key]);
+    if(destination&&scroll){
+      requestAnimationFrame(()=>{
+        if(!isShown(app)||!isShown(room)||!isAvailable(key))return;
+        destination.scrollIntoView({behavior:mobile?'auto':'smooth',block:'start'});
+      });
     }
-    const destination=key==='room'?(isShown($('#ownerSetup'))?$('#ownerSetup'):$('.side-column')):targets[key];
-    if(destination&&scroll)destination.scrollIntoView({behavior:'smooth',block:'start'});
   }
   // Owner and employee upload permissions are preserved by the original
   // ledger code; this handler only opens the Upload tab before the file picker.
   $('#uploadAccessAction')?.addEventListener('click',()=>{
     if(document.body.classList.contains('bc-ledger-mobile')&&isAvailable('upload'))activate('upload');
   },{capture:true});
+  // The owner review queue's "View Reviewed Photos" control is rendered
+  // dynamically by the real ledger. On phones switch to the Photos view
+  // first; otherwise the original click moves to history while CSS hides it.
+  $('#ownerReviewQueue')?.addEventListener('click',(event)=>{
+    if(!document.body.classList.contains('bc-ledger-mobile'))return;
+    const btn=event.target.closest?.('button');
+    if(!btn||!btn.textContent?.trim().toUpperCase().includes('VIEW REVIEWED PHOTOS'))return;
+    if(isAvailable('photos'))activate('photos');
+  },true);
+  // Do not let a fixed navigation bar overlap the on-screen keyboard, photo
+  // caption input, payment amount, or select controls on mobile Safari.
+  app.addEventListener('focusin',(event)=>{
+    if(event.target.matches?.('input:not([type=button]),textarea,select,[contenteditable=true]')){
+      document.body.classList.add('bc-ledger-keyboard-active');
+    }
+  });
+  app.addEventListener('focusout',()=>{
+    requestAnimationFrame(()=>{
+      if(!app.contains(document.activeElement)||!document.activeElement.matches?.('input:not([type=button]),textarea,select,[contenteditable=true]')){
+        document.body.classList.remove('bc-ledger-keyboard-active');
+      }
+    });
+  });
   // A room assignment, room closure, or owner/employee role switch can
   // reveal/hide sections. Refresh navigation without leaking hidden panels.
   const observer=new MutationObserver(()=>requestAnimationFrame(reflect));
