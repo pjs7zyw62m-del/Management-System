@@ -1,4 +1,4 @@
-name: BLACKCELL Photo Ledger Device Experience
+name: BLACKCELL REDLINE Device Experience
 on:
   pull_request:
     paths:
@@ -79,7 +79,7 @@ jobs:
             URL="http://127.0.0.1:8765/private-photo-ledger-layout-smoke.html"
             "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-background-networking --virtual-time-budget=6500 --window-size="$width,$height" "$@" --dump-dom "$URL" > "/tmp/ledger-$device.html" 2>/tmp/ledger-chrome-errors.log
             grep -q "data-test-mode=\"$mode\"" "/tmp/ledger-$device.html"
-            grep -Fq "<title>$label · Private Photo Ledger</title>" "/tmp/ledger-$device.html"
+            grep -Fq "<title>$label · BLACKCELL REDLINE</title>" "/tmp/ledger-$device.html"
             if [ "$device" = mobile ]; then
               grep -q 'data-test-nav="grid"' "/tmp/ledger-$device.html"
               grep -q 'data-test-rail="none"' "/tmp/ledger-$device.html"
