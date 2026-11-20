@@ -162,3 +162,27 @@ body.redline-sender-simple .redline-activity-teaser,.redline-earnings-box,.redli
 @media(prefers-reduced-motion:reduce){
  .redline-simple-home *, .redline-owner-chat-dialog *{animation:none!important;transition:none!important}
 }
+
+
+/* Keep the sender brand visible below the sticky BLACKCELL mobile toolbar. */
+.redline-simple-home{scroll-margin-top:calc(85px + env(safe-area-inset-top))}
+.redline-owner-chat-dialog .redline-chat-photo[hidden]{display:none!important}
+/* Owner Preview Sender View reflects the approved three tabs, not the old four. */
+.bc-redline-sender-preview .bc-redline-preview-nav{grid-template-columns:repeat(3,minmax(0,1fr))}
+.bc-redline-preview-moneyrows{margin:5px 0 13px}
+.bc-redline-preview-moneyrow{display:flex;align-items:center;justify-content:space-between;gap:12px;
+ padding:10px 3px;border-bottom:1px solid #343434;font-size:12px}
+.bc-redline-preview-moneyrow strong{font-size:14px;color:#fff}
+.bc-redline-preview-moneyrow:last-child{font-weight:800;border-bottom:0}
+.bc-redline-preview-bubble{max-width:85%;width:fit-content;padding:11px 13px;border-radius:14px;
+ margin:11px 0;color:#fff;font-size:12px;line-height:1.5}
+.bc-redline-preview-bubble.is-sender{margin-left:auto;background:#b90026}
+.bc-redline-preview-bubble.is-owner{margin-right:auto;background:#292929}
+.bc-redline-preview-system-card{padding:10px;border:1px solid #ae001f;background:#130005;
+ border-radius:10px;font-size:12px;text-align:center;color:#fff;margin-top:15px}
+.bc-redline-preview-sample-composer{margin-top:25px;padding:12px;border:1px solid #525252;
+ border-radius:12px;font-size:12px;color:#aaa;background:#0b0b0b}
+.bc-redline-sender-preview .bc-redline-preview-phone[data-device=tablet] .bc-redline-preview-body{
+ display:block;max-width:740px;margin-inline:auto}
+.bc-redline-sender-preview .bc-redline-preview-phone[data-device=tablet] .bc-redline-preview-identity{
+ margin-bottom:14px}
