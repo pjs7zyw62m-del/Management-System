@@ -1,0 +1,138 @@
+name: BLACKCELL REDLINE Sender Earnings and Messages
+on:
+  pull_request:
+    paths:
+      - 'private-photo-ledger.html'
+      - 'private-photo-ledger.js'
+      - 'private-photo-ledger-simple-sender.js'
+      - 'private-photo-ledger-simple-sender.css'
+      - 'tests/private-photo-ledger-simple-sender.test.mjs'
+      - '.github/workflows/private-photo-ledger-simple-sender.yml'
+      - 'supabase/migrations/20261120184611_blackcell_redline_private_room_messages.sql'
+  workflow_dispatch:
+jobs:
+  sender-and-chat:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Syntax, earnings sourcing, privacy and messaging tests
+        run: |
+          node --check private-photo-ledger.js
+          node --check private-photo-ledger-simple-sender.js
+          node --test tests/private-photo-ledger-simple-sender.test.mjs
+          node --test tests/private-photo-ledger-responsive.test.mjs
+          node --test tests/private-photo-ledger-solid-red.test.mjs
+      - name: Simulated 3-tab sender and 2-person chat on iPhones
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v google-chrome >/dev/null 2>&1 && CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && CHROME=chromium || CHROME=; }
+          [ -n "$CHROME" ] || { echo "Chrome required"; exit 1; }
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          page=Path('private-photo-ledger.html').read_text()
+          page=re.sub(r'<script type="module" src="private-photo-ledger.js[^"]*"></script>','',page)
+          page=re.sub(r'<script src="corp-config.js"></script>','',page)
+          page=re.sub(r'<script src="blackcell-live-update.js[^"]*"[^>]*></script>','',page)
+          assert 'src="private-photo-ledger.js' not in page
+          probe="""<script>
+          const options=new URLSearchParams(location.search);
+          const role=options.get('role')==='owner'?'owner':'sender';
+          const messageView=options.get('view')==='messages';
+          const doc=document;
+          doc.querySelector('#accessGate').hidden=true;
+          doc.querySelector('#ledgerApp').hidden=false;
+          doc.querySelector('#activeRoom').hidden=false;
+          doc.querySelector('#noRoom').hidden=true;
+          doc.querySelector('#ownerSetup').hidden=role!=='owner';
+          doc.querySelector('#ownerUploadInfo').hidden=role!=='owner';
+          doc.querySelector('#ownerReviewQueue').hidden=role!=='owner';
+          doc.querySelector('#employeeUpload').hidden=role!=='sender';
+          doc.querySelector('#totalOwed').textContent='$85.00';
+          doc.querySelector('#totalPaid').textContent='$120.00';
+          doc.querySelector('#totalAssigned').textContent='$205.00';
+          doc.querySelector('#pendingCount').textContent='3';
+          const fakeEntry={id:'12345678-1111-2222-3333-123456789012',created_at:'2026-11-20T10:15:00Z',
+            decided_at:'2026-11-20T10:25:00Z',settled_at:null,decision_status:'accepted',amount_cents:2500,caption:'Test'};
+          let sent=[];
+          window.BLACKCELL_REDLINE_API={
+            snapshot:()=>({roomId:'room-test',userId:role==='owner'?'owner-test':'sender-test',
+              isOwner:role==='owner',roomActive:true,roomTitle:'Private Room',
+              pending:3,owed:'$85.00',paid:'$120.00',assigned:'$205.00',entries:[fakeEntry]}),
+            loadMessages:async()=>[
+              {id:'1',room_id:'room-test',sender_id:'sender-test',body:'Just sent 2 photos.',created_at:'2026-11-20T10:40:00Z'},
+              {id:'2',room_id:'room-test',sender_id:'owner-test',body:'Received. Reviewing now.',created_at:'2026-11-20T10:41:00Z'},
+              ...sent
+            ],
+            sendMessage:async(body)=>{sent.push({id:String(sent.length+3),sender_id:role==='owner'?'owner-test':'sender-test',
+               body,created_at:'2026-11-20T10:42:00Z'});return true;}
+          };
+          setTimeout(async()=>{
+            const home=doc.querySelector('#redlineSimpleSender');
+            const b=doc.body;
+            b.dataset.qaRole=role;
+            b.dataset.qaSenderVisible=home&&!home.hidden?'yes':'no';
+            b.dataset.qaMainTabs=String(doc.querySelectorAll('.redline-simple-tab').length);
+            b.dataset.qaOwed=doc.querySelector('.redline-summary-stat strong')?.textContent||'';
+            b.dataset.qaPaid=doc.querySelectorAll('.redline-summary-stat strong')[1]?.textContent||'';
+            b.dataset.qaPreviewForm=doc.querySelectorAll('#uploadPhotoForm').length?'yes':'no';
+            if(role==='sender'){
+              doc.querySelector('[data-simple-tab=messages]').click();
+            }else doc.querySelector('#redlineOwnerMessageLaunch').click();
+            await new Promise(resolve=>setTimeout(resolve,400));
+            const feed=doc.querySelector('.redline-message-feed');
+            b.dataset.qaBubbles=String(feed.querySelectorAll('.redline-chat-bubble').length);
+            b.dataset.qaSystem=feed.querySelector('.redline-chat-event')?'yes':'no';
+            b.dataset.qaChatVisible=feed.getBoundingClientRect().height>0?'yes':'no';
+            if(role==='sender'&&!messageView){
+              doc.querySelector('[data-simple-tab=upload]').click();
+            }
+            b.dataset.qaOverflow=String(Math.max(0,document.documentElement.scrollWidth-document.documentElement.clientWidth));
+          },1800);
+          </script>"""
+          Path('redline-simple-sender-qa.html').write_text(page.replace('</body>',probe+'</body>'))
+          PY
+          python3 -m http.server 8765 >/tmp/redline-chat-qa-server.log 2>&1 &
+          PID=$!
+          trap 'kill "$PID" 2>/dev/null || true; rm -f redline-simple-sender-qa.html' EXIT
+          sleep 2
+          mkdir -p /tmp/redline-simple-sender-screenshots
+          for role in sender owner; do
+            for width in 320 375 390 430; do
+              url="http://127.0.0.1:8765/redline-simple-sender-qa.html?role=$role&view=messages"
+              "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-background-networking --virtual-time-budget=8000 --window-size="$width,844" '--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' --dump-dom "$url" >"/tmp/redline-sender-$role-$width.html" 2>/tmp/redline-chat-qa.log
+              f="/tmp/redline-sender-$role-$width.html"
+              grep -q 'data-qa-role="'$role'"' "$f"
+              grep -q 'data-qa-preview-form="yes"' "$f"
+              grep -q 'data-qa-main-tabs="3"' "$f"
+              grep -q 'data-qa-bubbles="2"' "$f"
+              grep -q 'data-qa-system="yes"' "$f"
+              grep -q 'data-qa-chat-visible="yes"' "$f"
+              grep -q 'data-qa-overflow="0"' "$f"
+              if [ "$role" = sender ]; then
+                grep -q 'data-qa-sender-visible="yes"' "$f"
+                grep -q 'data-qa-owed="$85.00"' "$f"
+                grep -q 'data-qa-paid="$120.00"' "$f"
+              else
+                grep -q 'data-qa-sender-visible="no"' "$f"
+              fi
+              echo "$role at width $width: private messages and status updates displayed, no overflow"
+            done
+          done
+          for view in upload messages; do
+            "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-background-networking --virtual-time-budget=8000 --window-size=390,844 '--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' --screenshot="/tmp/redline-simple-sender-screenshots/sender-$view.png" "http://127.0.0.1:8765/redline-simple-sender-qa.html?role=sender&view=$view" >/dev/null 2>/tmp/redline-chat-qa.log
+          done
+          "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-background-networking --virtual-time-budget=8000 --window-size=390,844 '--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' --screenshot=/tmp/redline-simple-sender-screenshots/owner-chat.png 'http://127.0.0.1:8765/redline-simple-sender-qa.html?role=owner&view=messages' >/dev/null 2>/tmp/redline-chat-qa.log
+      - name: Export sender screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: redline-approved-sender-ui
+          path: /tmp/redline-simple-sender-screenshots/*.png
+          retention-days: 7
+          if-no-files-found: ignore

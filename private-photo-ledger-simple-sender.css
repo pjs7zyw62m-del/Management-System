@@ -1,0 +1,204 @@
+/* REDLINE 4 — sender-first black / red, mobile native, actual room state */
+.redline-simple-home[hidden],.redline-simple-pane[hidden],.redline-owner-chat-dialog:not([open]){display:none!important}
+body.redline-sender-simple{background:#000!important;color:#fff}
+body.redline-sender-simple .bc-ledger-rail,
+body.redline-sender-simple #ledgerApp>.page-heading,
+body.redline-sender-simple #activeRoom>.bc-ledger-mobile-view-heading,
+body.redline-sender-simple #activeRoom>.bc-sender-hero,
+body.redline-sender-simple #activeRoom>.room-toolbar,
+body.redline-sender-simple #activeRoom>.upload-access-status,
+body.redline-sender-simple #activeRoom>.metrics,
+body.redline-sender-simple #activeRoom>.room-body,
+body.redline-sender-simple #activeRoom>.bc-ledger-phone-nav{display:none!important}
+body.redline-sender-simple #ledgerApp.shell{display:block!important;width:100%;max-width:900px;padding:16px 16px 65px}
+body.redline-sender-simple #activeRoom{grid-column:auto!important}
+.redline-simple-home{max-width:690px;margin:0 auto;color:#fff}
+.redline-simple-header{display:flex;align-items:center;justify-content:space-between;padding:8px 0 19px;gap:9px}
+.redline-simple-brand{display:flex;align-items:center;gap:12px}
+.redline-simple-mark{display:grid;place-items:center;width:44px;height:44px;border:1px solid #f11736;
+ border-radius:12px;color:#fff;background:#850018;font:750 27px Georgia,serif}
+.redline-simple-wordmark{display:flex;flex-direction:column;font-size:18px;line-height:1.02;letter-spacing:.01em}
+.redline-simple-wordmark .redline-accent{color:#e00025;font-size:23px}
+.redline-sender-badge{padding:10px 11px;border:1px solid #666;border-radius:10px;
+ font-weight:800;font-size:9px;letter-spacing:.13em;white-space:nowrap}
+.redline-simple-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;
+ margin-bottom:15px;padding:5px;border:1px solid #383838;border-radius:14px;background:#0c0c0c}
+.redline-simple-tab{min-height:45px;border:1px solid transparent;border-radius:10px;background:#090909;
+ color:#bfbfbf;font-size:12px;font-weight:820;letter-spacing:.035em}
+.redline-simple-tab.is-current{background:#cb0026!important;border-color:#fa3b53;color:#fff}
+.redline-simple-panes{min-width:0}
+.redline-kicker,.redline-heading-kicker{color:#f42647;font-size:10px;letter-spacing:.13em;font-weight:850}
+.redline-upload-intro{margin:8px 0 12px}
+.redline-upload-intro h2{font-size:28px;letter-spacing:-.045em;margin:8px 0 5px;color:#fff}
+.redline-upload-intro p{font-size:12px;line-height:1.55;color:#bdbdbd;margin:0}
+.redline-upload-mount{min-width:0}
+body.redline-sender-simple #employeeUpload{display:block!important;width:100%;max-width:100%;padding:19px!important;
+ border:1px solid #b70023!important;border-radius:17px!important;background:#0c0c0c!important;
+ box-shadow:none!important}
+body.redline-sender-simple #employeeUpload .card-title{display:none!important}
+body.redline-sender-simple #employeeUpload .file-drop{
+ min-height:160px;border:1px dashed #e6002c!important;border-radius:13px;
+ background:#080808!important;color:#fff!important;
+ display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px;padding:14px!important}
+body.redline-sender-simple #employeeUpload .file-symbol,
+body.redline-sender-simple #employeeUpload .file-symbol svg{stroke:#f52348!important;color:#f52348!important}
+body.redline-sender-simple #employeeUpload .file-drop strong{font-size:14px!important;color:#fff!important}
+body.redline-sender-simple #employeeUpload .file-drop small,
+body.redline-sender-simple #employeeUpload #selectedPhotoName{color:#c1c1c1!important}
+body.redline-sender-simple #employeeUpload .native-upload-label{font-size:10px!important;color:#888!important}
+body.redline-sender-simple #employeeUpload .upload-native-file{background:#121212!important;border:1px solid #414141!important;color:#fff!important}
+body.redline-sender-simple #employeeUpload .upload-native-file::file-selector-button{background:#bd0020!important;color:white!important}
+body.redline-sender-simple #employeeUpload textarea{width:100%;min-height:70px;background:#0a0a0a!important;
+ border:1px solid #555!important;border-radius:10px;font-size:16px!important;color:#fff!important}
+body.redline-sender-simple #employeeUpload #submitPhoto{min-height:52px;border-radius:11px;background:#cd0024!important;
+ border:1px solid #f21740!important;color:#fff!important;font-size:12px;letter-spacing:.05em;font-weight:850}
+body.redline-sender-simple #employeeUpload .upload-helper{color:#999!important}
+body.redline-sender-simple .redline-upload-summary,
+body.redline-sender-simple .redline-activity-teaser,.redline-earnings-box,.redline-activity-box{
+ margin-top:13px;padding:18px 18px 16px;border:1px solid #484848;border-radius:15px;background:#090909;
+ box-shadow:none}
+.redline-upload-summary h3,.redline-activity-teaser h3,.redline-activity-box h3{
+ font-size:17px;font-weight:790;letter-spacing:-.02em;margin:0 0 12px}
+.redline-summary-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.redline-summary-stat{padding:12px;border-radius:11px;border:1px solid #363636;background:#101010;min-width:0}
+.redline-summary-stat span{display:block;font-size:10px;letter-spacing:.06em;color:#b3b3b3;font-weight:750}
+.redline-summary-stat strong{display:block;font-size:clamp(24px,6vw,32px);color:#fff;letter-spacing:-.055em;margin-top:6px}
+.redline-summary-stat:first-child{border-color:#ad0020}
+.redline-earnings-box{border-color:#ac001c}
+.redline-earnings-fields{margin-top:10px}
+.redline-earnings-row{display:flex;align-items:center;justify-content:space-between;gap:12px;
+ padding:11px 1px;border-bottom:1px solid #3d3d3d;font-size:14px;color:#dedede}
+.redline-earnings-row:last-child{border:0;font-weight:850;color:#fff}
+.redline-earnings-row strong{color:#fff;font-variant-numeric:tabular-nums;white-space:nowrap}
+.redline-earnings-hint{font-size:11px;line-height:1.55;color:#a7a7a7;margin:14px 0 0}
+.redline-activity-list,.redline-activity-teaser-list{display:flex;flex-direction:column;gap:0}
+.redline-activity-item{display:flex;gap:11px;align-items:flex-start;border-bottom:1px solid #292929;padding:10px 0}
+.redline-activity-item:last-child{border:0}
+.redline-activity-dot{display:block;flex:none;width:7px;height:7px;margin-top:7px;background:#ef0030;border-radius:50%}
+.redline-activity-item div{display:flex;flex-direction:column;min-width:0;gap:5px}
+.redline-activity-item strong{font-size:12px;color:#f2f2f2;font-weight:680;overflow-wrap:anywhere}
+.redline-activity-item small{color:#919191;font-size:10px}
+.redline-no-activity{color:#aaa;font-size:12px;line-height:1.6}
+.redline-main-action{width:100%;min-height:50px;background:#bd0024;color:#fff;border:1px solid #f21e3e;
+ border-radius:12px;margin-top:14px;font-size:12px;font-weight:850}
+.redline-link-action{border:0;background:transparent;color:#ff2b4d;font-size:10px;
+ font-weight:840;letter-spacing:.12em;margin-top:12px;padding:9px 0}
+.redline-message-card{display:flex;flex-direction:column;height:min(75dvh,740px);min-height:420px;
+ background:#000;border:1px solid #4b4b4b;border-radius:15px;overflow:hidden}
+.redline-message-header{display:flex;align-items:center;justify-content:center;min-height:64px;
+ padding:10px 16px;border-bottom:1px solid #d50023;background:#050505;text-align:center}
+.redline-message-header>div{display:flex;flex-direction:column;gap:5px}
+.redline-message-header strong{font-size:14px;letter-spacing:.04em;color:#fff}
+.redline-message-header small{font-size:11px;color:#b8b8b8}
+.redline-message-feed{flex:1;overflow-y:auto;overscroll-behavior:contain;display:flex;
+ flex-direction:column;gap:12px;padding:18px 15px;background:#000}
+.redline-chat-empty{margin:auto;text-align:center;color:#999;font-size:13px;line-height:1.6}
+.redline-chat-bubble{width:fit-content;max-width:min(85%,430px);padding:11px 14px;border-radius:15px;overflow-wrap:anywhere}
+.redline-chat-bubble p{color:#fff;font-size:14px;line-height:1.55;margin:0;white-space:pre-wrap}
+.redline-chat-bubble time{display:block;margin-top:6px;color:#d1d1d1;font-size:9px;text-align:right}
+.redline-chat-bubble.is-mine{align-self:flex-end;border-bottom-right-radius:4px;background:#b80021}
+.redline-chat-bubble.is-theirs{align-self:flex-start;border:1px solid #393939;
+ border-bottom-left-radius:4px;background:#242424}
+.redline-chat-event{max-width:95%;align-self:center;text-align:center;border:1px solid #a4001e;
+ border-radius:10px;padding:9px 14px;background:#140008}
+.redline-chat-event strong{display:block;color:#fff;font-size:12px;font-weight:790;line-height:1.4}
+.redline-chat-event small{display:block;color:#999;font-size:9px;margin-top:6px}
+.redline-message-composer{display:flex;align-items:end;gap:8px;padding:10px;
+ border-top:1px solid #3a3a3a;background:#080808}
+.redline-chat-photo{flex:none;min-height:43px;border:1px solid #555;border-radius:10px;
+ background:#121212;color:#f2f2f2;font-size:10px;font-weight:750;padding:8px}
+.redline-message-entry{flex:1;min-width:0;max-height:110px;min-height:43px;padding:10px 11px;
+ background:#111!important;color:#fff!important;border:1px solid #686868!important;
+ border-radius:12px;font-size:16px!important;resize:vertical}
+.redline-chat-send{flex:none;min-height:43px;padding:10px 12px;border:1px solid #e6002d;
+ border-radius:10px;background:#be0025;color:#fff;font-size:11px;font-weight:850}
+.redline-chat-send:disabled{opacity:.6}
+.redline-message-error{margin:0;padding:0 12px;min-height:8px;font-size:11px;line-height:1.5;color:#f2a7bb}
+.redline-message-error:empty{display:none}
+.redline-owner-open-messages{width:100%;min-height:50px;margin-top:13px;
+ border:1px solid #e60029;background:#b90020;color:#fff;border-radius:11px;
+ font-size:11px;font-weight:830;letter-spacing:.06em}
+.redline-owner-chat-dialog:not([open]){display:none!important}
+.redline-owner-chat-dialog{position:fixed;inset:0;max-width:min(660px,96vw);
+ width:min(660px,96vw);height:min(850px,92dvh);max-height:92dvh;
+ padding:0;margin:auto;background:#050505;color:#fff;border:1px solid #aa0020;
+ border-radius:17px;box-shadow:0 30px 100px #000b;overflow:hidden}
+.redline-owner-chat-dialog::backdrop{background:#000d;backdrop-filter:blur(8px)}
+.redline-owner-chat-top{min-height:56px;padding:10px 14px;display:flex;align-items:center;
+ justify-content:space-between;gap:9px;border-bottom:1px solid #9d001e}
+.redline-owner-chat-top strong{font-size:12px;letter-spacing:.06em}
+.redline-owner-chat-top button{background:#151515;color:#fff;border:1px solid #555;border-radius:8px;
+ padding:10px;font-size:11px}
+.redline-owner-chat-mount{height:calc(100% - 57px);padding:8px}
+.redline-owner-chat-mount .redline-message-card{height:100%}
+@media(max-width:650px){
+ body.redline-sender-simple #ledgerApp.shell{padding:11px 12px 35px}
+ body.redline-sender-simple .topbar{min-height:58px}
+ .redline-simple-header{padding:4px 0 14px}
+ .redline-simple-mark{width:39px;height:39px;font-size:25px}
+ .redline-simple-wordmark{font-size:15px}
+ .redline-simple-wordmark .redline-accent{font-size:21px}
+ .redline-sender-badge{padding:9px 8px;font-size:8px}
+ .redline-simple-tabs{margin-bottom:13px}
+ body.redline-sender-simple #employeeUpload{padding:13px!important}
+ body.redline-sender-simple #employeeUpload .file-drop{min-height:126px}
+ body.redline-sender-simple .redline-upload-summary,
+ body.redline-sender-simple .redline-activity-teaser,
+ .redline-earnings-box,.redline-activity-box{padding:14px}
+ .redline-message-card{height:calc(100dvh - 215px);min-height:370px}
+ .redline-message-feed{padding:12px 10px}
+ .redline-message-composer{gap:5px;padding:9px 6px}
+ .redline-chat-photo{padding:8px 6px;font-size:9px}
+ .redline-chat-send{padding:8px;font-size:10px}
+ .redline-owner-chat-dialog{width:100vw;height:100dvh;max-width:none;max-height:none;border-radius:0}
+}
+@media(max-width:365px){
+ .redline-simple-wordmark{font-size:14px}
+ .redline-simple-wordmark .redline-accent{font-size:19px}
+ .redline-simple-tab{font-size:11px}
+ .redline-sender-badge{font-size:7px}
+ .redline-summary-stat strong{font-size:23px}
+}
+@media(prefers-reduced-motion:reduce){
+ .redline-simple-home *, .redline-owner-chat-dialog *{animation:none!important;transition:none!important}
+}
+
+
+/* Keep the sender brand visible below the sticky BLACKCELL mobile toolbar. */
+.redline-simple-home{scroll-margin-top:calc(85px + env(safe-area-inset-top))}
+.redline-owner-chat-dialog .redline-chat-photo[hidden]{display:none!important}
+/* Owner Preview Sender View reflects the approved three tabs, not the old four. */
+.bc-redline-sender-preview .bc-redline-preview-nav{grid-template-columns:repeat(3,minmax(0,1fr))}
+.bc-redline-preview-moneyrows{margin:5px 0 13px}
+.bc-redline-preview-moneyrow{display:flex;align-items:center;justify-content:space-between;gap:12px;
+ padding:10px 3px;border-bottom:1px solid #343434;font-size:12px}
+.bc-redline-preview-moneyrow strong{font-size:14px;color:#fff}
+.bc-redline-preview-moneyrow:last-child{font-weight:800;border-bottom:0}
+.bc-redline-preview-bubble{max-width:85%;width:fit-content;padding:11px 13px;border-radius:14px;
+ margin:11px 0;color:#fff;font-size:12px;line-height:1.5}
+.bc-redline-preview-bubble.is-sender{margin-left:auto;background:#b90026}
+.bc-redline-preview-bubble.is-owner{margin-right:auto;background:#292929}
+.bc-redline-preview-system-card{padding:10px;border:1px solid #ae001f;background:#130005;
+ border-radius:10px;font-size:12px;text-align:center;color:#fff;margin-top:15px}
+.bc-redline-preview-sample-composer{margin-top:25px;padding:12px;border:1px solid #525252;
+ border-radius:12px;font-size:12px;color:#aaa;background:#0b0b0b}
+.bc-redline-sender-preview .bc-redline-preview-phone[data-device=tablet] .bc-redline-preview-body{
+ display:block;max-width:740px;margin-inline:auto}
+.bc-redline-sender-preview .bc-redline-preview-phone[data-device=tablet] .bc-redline-preview-identity{
+ margin-bottom:14px}
+
+
+/* Override legacy mobile tab visibility with greater specificity. This
+   eliminates the old four-tab footer and duplicate room sections for senders. */
+body.redline-sender-simple.bc-ledger-mobile[data-ledger-view] #ledgerApp:not([hidden])
+ #activeRoom:not([hidden])>.bc-ledger-phone-nav:not([hidden]),
+body.redline-sender-simple.bc-ledger-mobile[data-ledger-view] #ledgerApp:not([hidden])
+ #activeRoom:not([hidden])>.room-body,
+body.redline-sender-simple.bc-ledger-mobile[data-ledger-view] #ledgerApp:not([hidden])
+ #activeRoom:not([hidden])>.metrics,
+body.redline-sender-simple.bc-ledger-mobile[data-ledger-view] #ledgerApp:not([hidden])
+ #activeRoom:not([hidden])>.room-toolbar,
+body.redline-sender-simple.bc-ledger-mobile[data-ledger-view] #ledgerApp:not([hidden])
+ #activeRoom:not([hidden])>.upload-access-status,
+body.redline-sender-simple.bc-ledger-sender.bc-ledger-mobile[data-ledger-view]
+ #activeRoom>.bc-sender-hero:not([hidden]){display:none!important}

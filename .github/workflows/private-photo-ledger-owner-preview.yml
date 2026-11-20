@@ -69,9 +69,9 @@ jobs:
             body.dataset.qaTitle=document.getElementById('redlinePreviewHeading').textContent;
             body.dataset.qaAmount=dialog.querySelector('.bc-redline-preview-facts').textContent.includes('$85.00')?'yes':'no';
             body.dataset.qaNoSubmit=dialog.querySelector('.bc-redline-preview-submit').disabled?'yes':'no';
-            const photos=dialog.querySelector('[data-tab=photos]');
-            photos.click();
-            body.dataset.qaPhotos=photos.classList.contains('is-active')?'yes':'no';
+            const earnings=dialog.querySelector('[data-tab=earnings]');
+            earnings.click();
+            body.dataset.qaEarnings=earnings.classList.contains('is-active')?'yes':'no';
             const tablet=dialog.querySelector('.bc-redline-preview-devices button:last-child');
             tablet.click();
             body.dataset.qaTablet=dialog.querySelector('.bc-redline-preview-phone').dataset.device;
@@ -92,11 +92,13 @@ jobs:
           for width in 375 390 430; do
             "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-background-networking --virtual-time-budget=5500 --window-size="$width,844" '--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' --dump-dom 'http://127.0.0.1:8765/redline-owner-preview-qa.html?role=owner' > "/tmp/redline-preview-$width.html" 2>/tmp/redline-preview-browser.log
             f="/tmp/redline-preview-$width.html"
+            echo "OWNER PREVIEW QA at ${width}px:"
+            grep -oE 'data-qa-[A-Za-z-]+="[^"]*"' "$f" | tail -18 || true
             grep -q 'data-qa-role="owner"' "$f"
             grep -q 'data-qa-buttons="true"' "$f"
             grep -q 'data-qa-opened="yes"' "$f"
             grep -q 'data-qa-no-submit="yes"' "$f"
-            grep -q 'data-qa-photos="yes"' "$f"
+            grep -q 'data-qa-earnings="yes"' "$f"
             grep -q 'data-qa-tablet="tablet"' "$f"
             grep -q 'data-qa-phone="phone"' "$f"
             grep -q 'data-qa-amount="yes"' "$f"
