@@ -8,7 +8,7 @@ const css=read('private-photo-ledger-responsive.css');
 const auth=read('private-photo-ledger.js');
 test('new shell layers on top of the original fully authenticated Ledger',()=>{
  assert.match(html,/private-photo-ledger\.js\?v=/);
- assert.match(html,/private-photo-ledger-responsive\.js\?v=20261120-redline/);
+ assert.match(html,/private-photo-ledger-responsive\.js\?v=20261120-sender-v3/);
  assert.match(html,/private-photo-ledger\.css\?v=/);
  assert.match(html,/private-photo-ledger-responsive\.css\?v=20261120-mobile2/);
  for(const selector of ['id="accessGate"','id="ledgerApp"','id="activeRoom"','id="ownerReviewQueue"','id="employeeUpload"','id="photoEntries"','id="photoLightbox"','id="totalOwed"'])assert.ok(html.includes(selector),selector);
@@ -78,5 +78,5 @@ test('BLACKCELL REDLINE is the unified public name while IDs and existing links 
  assert.match(auth,/corp-private-photo-ledger/);
  assert.match(os,/private-photo-ledger\.html\?osApp=photoledger/);
  assert.match(html,/private-photo-ledger\.js\?v=20261120-redline/);
- assert.match(html,/private-photo-ledger-responsive\.js\?v=20261120-redline/);
+ assert.match(html,/private-photo-ledger-responsive\.js\?v=20261120-sender-v3/);
 });

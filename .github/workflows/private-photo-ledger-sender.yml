@@ -1,0 +1,111 @@
+name: BLACKCELL REDLINE Sender Experience
+on:
+  pull_request:
+    paths:
+      - 'private-photo-ledger.html'
+      - 'private-photo-ledger-sender.js'
+      - 'private-photo-ledger-sender.css'
+      - 'private-photo-ledger-responsive.js'
+      - 'tests/private-photo-ledger-sender.test.mjs'
+      - '.github/workflows/private-photo-ledger-sender.yml'
+  workflow_dispatch:
+jobs:
+  sender-mobile:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify original permissions and new sender UI
+        run: |
+          node --check private-photo-ledger-sender.js
+          node --check private-photo-ledger-responsive.js
+          node --test tests/private-photo-ledger-sender.test.mjs
+      - name: Browser test at phone, tablet and desktop sizes
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v google-chrome >/dev/null 2>&1 && BROWSER=google-chrome || { command -v chromium >/dev/null 2>&1 && BROWSER=chromium || BROWSER=; }
+          [ -n "$BROWSER" ] || { echo "Missing browser"; exit 1; }
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('private-photo-ledger.html').read_text()
+          s=re.sub(r'<script type="module" src="private-photo-ledger.js[^"]*"></script>','',s)
+          s=re.sub(r'<script src="corp-config.js"></script>','',s)
+          s=re.sub(r'<script src="blackcell-live-update.js[^"]*"[^>]*></script>','',s)
+          assert 'src="private-photo-ledger.js' not in s
+          # Static fixtures represent role-based CSS only; no login bypass in
+          # production, no private images, account data, or Supabase requests.
+          injection="""<script>
+          const params=new URLSearchParams(location.search);
+          const sender=params.get('role')==='sender';
+          document.querySelector('#accessGate').hidden=true;
+          document.querySelector('#ledgerApp').hidden=false;
+          document.querySelector('#activeRoom').hidden=false;
+          document.querySelector('#employeeUpload').hidden=!sender;
+          document.querySelector('#ownerReviewQueue').hidden=sender;
+          document.querySelector('#ownerSetup').hidden=true;
+          document.querySelector('#noRoom').hidden=true;
+          setTimeout(()=>{
+            const body=document.body;
+            const hero=document.querySelector('#redlineSenderHero');
+            const drop=document.querySelector('#employeeUpload .file-drop');
+            body.dataset.qaRole=sender?'sender':'owner';
+            body.dataset.qaView=body.dataset.ledgerView||'none';
+            body.dataset.qaSender=body.classList.contains('bc-ledger-sender')?'yes':'no';
+            body.dataset.qaHero=hero&&!hero.hidden&&getComputedStyle(hero).display!=='none'?'yes':'no';
+            body.dataset.qaUpload=drop&&getComputedStyle(document.querySelector('#employeeUpload')).display!=='none'?'yes':'no';
+            body.dataset.qaOverflow=String(Math.max(0,document.documentElement.scrollWidth-document.documentElement.clientWidth));
+            if(sender&&params.get('sample')!=='0'){
+              const img=Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL/nwAAAABJRU5ErkJggg=='),c=>c.charCodeAt(0));
+              const dt=new DataTransfer();
+              dt.items.add(new File([img],'redline-qa.png',{type:'image/png'}));
+              const input=document.querySelector('#uploadPhoto');
+              input.files=dt.files;
+              input.dispatchEvent(new Event('change',{bubbles:true}));
+              setTimeout(()=>{
+                body.dataset.qaPreview=!document.querySelector('#redlineSenderPreview').hidden?'yes':'no';
+                body.dataset.qaFile=document.querySelector('.bc-sender-preview-filename').textContent;
+              },200);
+            }
+          },1500);
+          </script>"""
+          Path('redline-sender-qa.html').write_text(s.replace('</body>',injection+'</body>'))
+          PY
+          python3 -m http.server 8765 >/tmp/redline-sender-server.log 2>&1 &
+          PID=$!
+          trap 'kill "$PID" 2>/dev/null || true; rm -f redline-sender-qa.html' EXIT
+          sleep 2
+          mkdir -p /tmp/redline-sender-preview
+          for width in 320 375 390 430; do
+            "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-background-networking --virtual-time-budget=6500 --window-size="$width,844" '--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' --dump-dom 'http://127.0.0.1:8765/redline-sender-qa.html?role=sender' >"/tmp/redline-sender-$width.html" 2>/tmp/redline-browser.log
+            f="/tmp/redline-sender-$width.html"
+            grep -q 'data-qa-role="sender"' "$f"
+            grep -q 'data-qa-view="upload"' "$f"
+            grep -q 'data-qa-sender="yes"' "$f"
+            grep -q 'data-qa-hero="yes"' "$f"
+            grep -q 'data-qa-upload="yes"' "$f"
+            grep -q 'data-qa-preview="yes"' "$f"
+            grep -q 'data-qa-file="redline-qa.png"' "$f"
+            grep -q 'data-qa-overflow="0"' "$f"
+            echo "Sender at width $width: upload first, preview working, no overflow"
+          done
+          "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-background-networking --virtual-time-budget=6000 --window-size=390,844 '--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' --dump-dom 'http://127.0.0.1:8765/redline-sender-qa.html?role=owner' >/tmp/redline-owner.html 2>/tmp/redline-browser.log
+          grep -q 'data-qa-sender="no"' /tmp/redline-owner.html
+          grep -q 'data-qa-hero="no"' /tmp/redline-owner.html
+          grep -q 'data-qa-upload="no"' /tmp/redline-owner.html
+          "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-background-networking --virtual-time-budget=6000 --window-size=390,844 '--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' --screenshot=/tmp/redline-sender-preview/iphone-sender.png 'http://127.0.0.1:8765/redline-sender-qa.html?role=sender&sample=0' >/dev/null 2>/tmp/redline-browser.log
+          "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-background-networking --virtual-time-budget=6000 --window-size=820,1180 '--user-agent=Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' --screenshot=/tmp/redline-sender-preview/ipad-sender.png 'http://127.0.0.1:8765/redline-sender-qa.html?role=sender&sample=0' >/dev/null 2>/tmp/redline-browser.log
+          echo "Owner isolation checks passed; iPhone and iPad preview captured"
+      - name: Upload sender screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blackcell-redline-sender-refresh
+          path: /tmp/redline-sender-preview/*.png
+          retention-days: 7
+          if-no-files-found: ignore
