@@ -103,3 +103,5 @@ body.bc-ledger-sender.bc-ledger-tablet #employeeUpload .file-drop{min-height:190
 @media(prefers-reduced-motion:reduce){
  body.bc-ledger-sender #employeeUpload .file-drop{transition:none}
 }
+
+body.bc-ledger-sender.bc-ledger-mobile #redlineSenderHero{scroll-margin-top:calc(74px + env(safe-area-inset-top))}
