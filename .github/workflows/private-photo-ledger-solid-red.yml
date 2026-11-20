@@ -1,0 +1,103 @@
+name: BLACKCELL REDLINE Solid Sender Black Red
+on:
+  pull_request:
+    paths:
+      - 'private-photo-ledger.html'
+      - 'private-photo-ledger-solid-red.css'
+      - 'private-photo-ledger-solid-red.js'
+      - 'tests/private-photo-ledger-solid-red.test.mjs'
+      - '.github/workflows/private-photo-ledger-solid-red.yml'
+  workflow_dispatch:
+jobs:
+  sender-flat-theme:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Syntax and role invariants
+        run: |
+          node --check private-photo-ledger-solid-red.js
+          node --test tests/private-photo-ledger-solid-red.test.mjs
+      - name: Render real sender and owner shells on mobile
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v google-chrome >/dev/null 2>&1 && BROWSER=google-chrome || { command -v chromium >/dev/null 2>&1 && BROWSER=chromium || BROWSER=; }
+          [ -n "$BROWSER" ] || { echo "Chrome browser unavailable"; exit 1; }
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          source=Path('private-photo-ledger.html').read_text()
+          source=re.sub(r'<script type="module" src="private-photo-ledger.js[^"]*"></script>', '',source)
+          source=re.sub(r'<script src="corp-config.js"></script>','',source)
+          source=re.sub(r'<script src="blackcell-live-update.js[^"]*"[^>]*></script>','',source)
+          assert 'src="private-photo-ledger.js' not in source
+          fixture="""<script>
+            // Static browser layout fixture with no credentials or back-end calls.
+            const params=new URLSearchParams(location.search);
+            const role=params.get('role')==='owner'?'owner':'sender';
+            const hasRoom=params.get('room')==='yes';
+            const app=document.getElementById('ledgerApp');
+            document.getElementById('accessGate').hidden=true;
+            app.hidden=false;
+            document.getElementById('ownerSetup').hidden=role!=='owner';
+            document.getElementById('activeRoom').hidden=!hasRoom;
+            document.getElementById('noRoom').hidden=hasRoom;
+            document.getElementById('employeeUpload').hidden=!(role==='sender'&&hasRoom);
+            document.getElementById('ownerUploadInfo').hidden=!(role==='owner'&&hasRoom);
+            document.getElementById('ownerReviewQueue').hidden=role!=='owner';
+            document.getElementById('ownerLedgerScope').hidden=role!=='owner';
+            setTimeout(()=>{
+              const b=document.body;
+              b.dataset.qaRole=role;
+              b.dataset.qaSender=b.classList.contains('bc-redline-solid-sender')?'yes':'no';
+              b.dataset.qaBackground=getComputedStyle(b).backgroundColor;
+              const empty=document.getElementById('noRoom');
+              b.dataset.qaEmptyBorder=getComputedStyle(empty).borderTopColor;
+              const upload=document.getElementById('employeeUpload');
+              b.dataset.qaUploadBackground=getComputedStyle(upload).backgroundColor;
+              b.dataset.qaOverflow=String(Math.max(0,document.documentElement.scrollWidth-document.documentElement.clientWidth));
+            },1400);
+          </script>"""
+          Path('redline-solid-sender-qa.html').write_text(source.replace('</body>',fixture+'</body>'))
+          PY
+          python3 -m http.server 8765 >/tmp/redline-solid-server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true; rm -f redline-solid-sender-qa.html' EXIT
+          sleep 2
+          mkdir -p /tmp/redline-solid-sender-screenshots
+          for role in sender owner; do
+            for room in no yes; do
+              for width in 320 390 430; do
+                url="http://127.0.0.1:8765/redline-solid-sender-qa.html?role=$role&room=$room"
+                "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-background-networking --virtual-time-budget=7000 --window-size="$width,844" '--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' --dump-dom "$url" >"/tmp/redline-$role-$room-$width.html" 2>/tmp/redline-solid-chrome.log
+                f="/tmp/redline-$role-$room-$width.html"
+                grep -q 'data-qa-overflow="0"' "$f"
+                if [ "$role" = sender ]; then
+                  grep -q 'data-qa-sender="yes"' "$f"
+                  grep -q 'data-qa-background="rgb(0, 0, 0)"' "$f"
+                  grep -q 'data-qa-empty-border="rgb(224, 0, 27)"' "$f"
+                  if [ "$room" = yes ]; then
+                    grep -q 'data-qa-upload-background="rgb(8, 8, 8)"' "$f"
+                  fi
+                else
+                  grep -q 'data-qa-sender="no"' "$f"
+                fi
+                echo "$role room=$room width=$width: no overflow and role-specific theme correct"
+              done
+            done
+          done
+          for room in no yes; do
+            "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-background-networking --virtual-time-budget=6500 --window-size=390,844 '--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' --screenshot="/tmp/redline-solid-sender-screenshots/sender-room-$room.png" "http://127.0.0.1:8765/redline-solid-sender-qa.html?role=sender&room=$room" >/dev/null 2>/tmp/redline-solid-chrome.log
+          done
+      - name: Export phone preview artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: redline-solid-black-red-sender
+          path: /tmp/redline-solid-sender-screenshots/*.png
+          retention-days: 7
+          if-no-files-found: ignore
