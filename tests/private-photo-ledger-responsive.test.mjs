@@ -8,9 +8,9 @@ const css=read('private-photo-ledger-responsive.css');
 const auth=read('private-photo-ledger.js');
 test('new shell layers on top of the original fully authenticated Ledger',()=>{
  assert.match(html,/private-photo-ledger\.js\?v=/);
- assert.match(html,/private-photo-ledger-responsive\.js\?v=20261119-1/);
+ assert.match(html,/private-photo-ledger-responsive\.js\?v=20261120-mobile2/);
  assert.match(html,/private-photo-ledger\.css\?v=/);
- assert.match(html,/private-photo-ledger-responsive\.css\?v=20261119-1/);
+ assert.match(html,/private-photo-ledger-responsive\.css\?v=20261120-mobile2/);
  for(const selector of ['id="accessGate"','id="ledgerApp"','id="activeRoom"','id="ownerReviewQueue"','id="employeeUpload"','id="photoEntries"','id="photoLightbox"','id="totalOwed"'])assert.ok(html.includes(selector),selector);
  assert.match(auth,/corporateAuthorize/);
  assert.match(auth,/verify\(\)/);
