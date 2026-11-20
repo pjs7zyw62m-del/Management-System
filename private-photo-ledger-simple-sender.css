@@ -186,3 +186,19 @@ body.redline-sender-simple .redline-activity-teaser,.redline-earnings-box,.redli
  display:block;max-width:740px;margin-inline:auto}
 .bc-redline-sender-preview .bc-redline-preview-phone[data-device=tablet] .bc-redline-preview-identity{
  margin-bottom:14px}
+
+
+/* Override legacy mobile tab visibility with greater specificity. This
+   eliminates the old four-tab footer and duplicate room sections for senders. */
+body.redline-sender-simple.bc-ledger-mobile[data-ledger-view] #ledgerApp:not([hidden])
+ #activeRoom:not([hidden])>.bc-ledger-phone-nav:not([hidden]),
+body.redline-sender-simple.bc-ledger-mobile[data-ledger-view] #ledgerApp:not([hidden])
+ #activeRoom:not([hidden])>.room-body,
+body.redline-sender-simple.bc-ledger-mobile[data-ledger-view] #ledgerApp:not([hidden])
+ #activeRoom:not([hidden])>.metrics,
+body.redline-sender-simple.bc-ledger-mobile[data-ledger-view] #ledgerApp:not([hidden])
+ #activeRoom:not([hidden])>.room-toolbar,
+body.redline-sender-simple.bc-ledger-mobile[data-ledger-view] #ledgerApp:not([hidden])
+ #activeRoom:not([hidden])>.upload-access-status,
+body.redline-sender-simple.bc-ledger-sender.bc-ledger-mobile[data-ledger-view]
+ #activeRoom>.bc-sender-hero:not([hidden]){display:none!important}
