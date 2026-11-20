@@ -1,0 +1,250 @@
+/* BLACKCELL REDLINE // SOLID BLACK + CRIMSON / Sender edition
+   Deliberately no gradients, purple haze or cosmetic glows.
+   Scope: only the authorized sender's REDLINE screen. No access changes.
+*/
+body.bc-redline-solid-sender{
+  --background:#000;--panel:#0a0a0a;--panel2:#111;
+  --stroke:#414141;--ink:#fafafa;--muted:#a9a9a9;--red:#e0001b;
+  background:#000!important;color:#f7f7f7;
+}
+body.bc-redline-solid-sender .topbar{
+  background:#000!important;border-bottom:2px solid #d50019!important;
+  box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+}
+body.bc-redline-solid-sender .brand-b,
+body.bc-redline-solid-sender .bc-ledger-rail-emblem{
+  background:#140004!important;border:1px solid #f10b28!important;
+  box-shadow:none!important;color:#fff!important;
+}
+body.bc-redline-solid-sender .brand-label small,
+body.bc-redline-solid-sender .bc-ledger-top-edition,
+body.bc-redline-solid-sender .eyebrow,
+body.bc-redline-solid-sender .page-heading h1 em{
+  color:#f1112e!important;
+}
+body.bc-redline-solid-sender .navlink,
+body.bc-redline-solid-sender .button-outline{
+  background:#090909!important;color:#f2f2f2!important;
+  border:1px solid #c5001c!important;box-shadow:none!important;
+}
+body.bc-redline-solid-sender .navlink span{color:#fb233e!important}
+body.bc-redline-solid-sender .navlink:hover,
+body.bc-redline-solid-sender .button-outline:hover{background:#210004!important}
+body.bc-redline-solid-sender .verified-mark{color:#eaeaea!important}
+body.bc-redline-solid-sender .verified-mark .status-dot{box-shadow:none}
+body.bc-redline-solid-sender #ledgerLiveStatus{
+  background:#0d0d0d!important;border:1px solid #4b4b4b!important;
+  box-shadow:none!important;color:#c9c9c9!important;
+}
+body.bc-redline-solid-sender .page-heading{color:#fff}
+body.bc-redline-solid-sender .page-heading h1{color:#f7f7f7}
+body.bc-redline-solid-sender .page-heading p{color:#b9b9b9}
+body.bc-redline-solid-sender .bc-ledger-edition,
+body.bc-redline-solid-sender .bc-ledger-mobile-view-heading{
+  background:#101010!important;border:1px solid #bb0019!important;color:#fff!important;
+}
+body.bc-redline-solid-sender .panel,
+body.bc-redline-solid-sender .room-toolbar,
+body.bc-redline-solid-sender .timeline-toolbar{
+  background:#0b0b0b!important;border:1px solid #383838!important;
+  box-shadow:none!important;
+}
+body.bc-redline-solid-sender #noRoom.empty-room{
+  background:#050505!important;border:2px solid #e0001b!important;
+  border-radius:24px!important;
+  box-shadow:none!important;
+}
+body.bc-redline-solid-sender #noRoom .empty-icon{
+  color:#ee1733!important;border-color:#df001e!important;
+  background:transparent!important;box-shadow:none!important;
+}
+body.bc-redline-solid-sender #noRoom h2{color:#f8f8f8!important}
+body.bc-redline-solid-sender #noRoom p{color:#bbbbbb!important}
+body.bc-redline-solid-sender #noRoom .no-room-upload-hint{
+  background:#0b0b0b!important;border:1.5px dashed #ee132e!important;
+  border-radius:15px!important;box-shadow:none!important;color:#f3f3f3!important;
+}
+body.bc-redline-solid-sender #noRoom .no-room-upload-hint>span{
+  color:#ea142e!important;text-shadow:none!important;
+}
+body.bc-redline-solid-sender #noRoom .no-room-upload-hint strong{color:#fff!important}
+body.bc-redline-solid-sender #noRoom .no-room-upload-hint small{color:#bdbdbd!important}
+body.bc-redline-solid-sender .room-state{
+  background:#0d0d0d!important;border:1px solid #a4001b!important;color:#eee!important;
+}
+body.bc-redline-solid-sender #activeRoom .metric,
+body.bc-redline-solid-sender #activeRoom .metric-owed{
+  background:#0b0b0b!important;border:1px solid #3c3c3c!important;
+  box-shadow:none!important;
+}
+body.bc-redline-solid-sender #activeRoom .metric-owed{border-color:#dd0022!important}
+body.bc-redline-solid-sender #activeRoom .metric strong{color:#f7f7f7!important}
+body.bc-redline-solid-sender #activeRoom .metric-owed strong{color:#ff2540!important}
+body.bc-redline-solid-sender #activeRoom .metric span{color:#bdbdbd!important}
+body.bc-redline-solid-sender #activeRoom .metric small{color:#aaa!important}
+body.bc-redline-solid-sender #activeRoom .upload-access-status{
+  background:#090909!important;border:1px solid #df001e!important;
+  box-shadow:none!important;
+}
+body.bc-redline-solid-sender #activeRoom .upload-access-icon,
+body.bc-redline-solid-sender #activeRoom .card-icon{
+  background:#130005!important;color:#ff2642!important;border-color:#d8001e!important;
+}
+body.bc-redline-solid-sender #activeRoom .upload-access-copy strong{color:#fff!important}
+body.bc-redline-solid-sender #activeRoom .upload-access-copy p{color:#b5b5b5!important}
+body.bc-redline-solid-sender #activeRoom .button-main,
+body.bc-redline-solid-sender #activeRoom .bc-sender-primary,
+body.bc-redline-solid-sender #activeRoom #submitPhoto{
+  background:#d50020!important;color:#fff!important;
+  border:1px solid #ff1736!important;box-shadow:none!important;
+}
+body.bc-redline-solid-sender #activeRoom .button-main:hover,
+body.bc-redline-solid-sender #activeRoom .bc-sender-primary:hover{background:#b5001b!important}
+body.bc-redline-solid-sender #activeRoom .bc-sender-hero{
+  background:#080808!important;border:2px solid #d5001e!important;
+  box-shadow:none!important;
+}
+body.bc-redline-solid-sender #activeRoom .bc-sender-hero::after{display:none!important}
+body.bc-redline-solid-sender #activeRoom .bc-sender-eyebrow{color:#f3213c!important}
+body.bc-redline-solid-sender #activeRoom .bc-sender-headline{color:#fff!important}
+body.bc-redline-solid-sender #activeRoom .bc-sender-intro{color:#bcbcbc!important}
+body.bc-redline-solid-sender #activeRoom .bc-sender-fact{
+  background:#111!important;border:1px solid #424242!important;
+}
+body.bc-redline-solid-sender #activeRoom .bc-sender-fact:first-child{border-color:#bf0019!important}
+body.bc-redline-solid-sender #activeRoom .bc-sender-fact span{color:#bbb!important}
+body.bc-redline-solid-sender #activeRoom .bc-sender-fact strong{color:#fff!important}
+body.bc-redline-solid-sender #activeRoom .bc-sender-secondary{
+  background:#101010!important;color:#f5f5f5!important;border:1px solid #ae0019!important;
+}
+body.bc-redline-solid-sender #activeRoom .bc-sender-room-line{border-color:#b5001a!important;color:#c8c8c8!important}
+body.bc-redline-solid-sender #activeRoom .bc-sender-restricted{color:#b7b7b7!important}
+body.bc-redline-solid-sender #activeRoom #employeeUpload,
+body.bc-redline-solid-sender #activeRoom .upload-card{
+  background:#080808!important;border:1px solid #cc001d!important;
+  box-shadow:none!important;
+}
+body.bc-redline-solid-sender #activeRoom #employeeUpload .file-drop{
+  background:#0c0c0c!important;border:2px dashed #d50021!important;
+  box-shadow:none!important;
+}
+body.bc-redline-solid-sender #activeRoom #employeeUpload .file-symbol,
+body.bc-redline-solid-sender #activeRoom #employeeUpload .file-symbol svg{
+  color:#ef1836!important;stroke:#ef1836!important;
+}
+body.bc-redline-solid-sender #activeRoom #employeeUpload .file-drop strong{color:#fff!important}
+body.bc-redline-solid-sender #activeRoom #employeeUpload .file-drop small,
+body.bc-redline-solid-sender #activeRoom #employeeUpload #selectedPhotoName{color:#bcbcbc!important}
+body.bc-redline-solid-sender #activeRoom #employeeUpload .native-upload-label,
+body.bc-redline-solid-sender #activeRoom #employeeUpload .stack-label{color:#ddd!important}
+body.bc-redline-solid-sender #activeRoom #employeeUpload .upload-native-file,
+body.bc-redline-solid-sender #activeRoom #employeeUpload textarea,
+body.bc-redline-solid-sender #activeRoom input,
+body.bc-redline-solid-sender #activeRoom select,
+body.bc-redline-solid-sender #activeRoom textarea{
+  background:#0b0b0b!important;color:#fff!important;border:1px solid #626262!important;
+  box-shadow:none!important;
+}
+body.bc-redline-solid-sender #activeRoom #employeeUpload .upload-native-file::file-selector-button{
+  background:#b9001b!important;border-color:#ed001f!important;color:#fff!important;
+}
+body.bc-redline-solid-sender #activeRoom .bc-sender-preview{
+  background:#050505!important;border:1px solid #e0001d!important;
+}
+body.bc-redline-solid-sender #activeRoom .bc-sender-preview-state{color:#ff2b44!important}
+body.bc-redline-solid-sender #activeRoom .bc-sender-preview-filename{color:#ddd!important}
+body.bc-redline-solid-sender #activeRoom .upload-helper,
+body.bc-redline-solid-sender #activeRoom .privacy-note,
+body.bc-redline-solid-sender #activeRoom .info-card p{color:#bdbdbd!important}
+body.bc-redline-solid-sender #activeRoom .explainer{border-color:#343434!important}
+body.bc-redline-solid-sender #activeRoom .explainer>span{color:#ee1738!important}
+body.bc-redline-solid-sender #activeRoom .link-card .button-outline{border-color:#b8001a!important}
+body.bc-redline-solid-sender #activeRoom .timeline-toolbar{background:#080808!important}
+body.bc-redline-solid-sender #activeRoom .filter-buttons button{
+  background:#0c0c0c!important;color:#dedede!important;border:1px solid #444!important;
+}
+body.bc-redline-solid-sender #activeRoom .filter-buttons button[aria-pressed=true]{
+  background:#c9001d!important;color:#fff!important;border-color:#f52039!important;
+}
+body.bc-redline-solid-sender #activeRoom .photo-entry,
+body.bc-redline-solid-sender #activeRoom .empty-entries{
+  background:#090909!important;border:1px solid #454545!important;color:#bfbfbf!important;
+}
+body.bc-redline-solid-sender #activeRoom .photo-entry .photo-image-btn{background:#000!important}
+body.bc-redline-solid-sender #activeRoom .entry-badge,
+body.bc-redline-solid-sender #activeRoom .entry-badge.pending{
+  background:#170004!important;border:1px solid #b6001c!important;color:#fff!important;
+}
+body.bc-redline-solid-sender #activeRoom .entry-meta{color:#bcbcbc!important}
+body.bc-redline-solid-sender #activeRoom .bc-ledger-phone-nav{
+  background:#000!important;border:1px solid #c7001d!important;
+  box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+}
+body.bc-redline-solid-sender #activeRoom .bc-ledger-phone-tab{
+  background:#090909!important;border:1px solid transparent!important;color:#cfcfcf!important;
+  box-shadow:none!important;
+}
+body.bc-redline-solid-sender #activeRoom .bc-ledger-phone-tab.is-current{
+  background:#d50020!important;border-color:#ff1d38!important;color:#fff!important;
+}
+body.bc-redline-solid-sender .bc-ledger-rail{
+  background:#050505!important;border-color:#d0001e!important;box-shadow:none!important;
+}
+body.bc-redline-solid-sender .bc-ledger-rail-button{
+  background:#090909!important;border-color:transparent!important;color:#d1d1d1!important;
+}
+body.bc-redline-solid-sender .bc-ledger-rail-button.is-current{
+  background:#bd001b!important;color:#fff!important;border-color:#e30023!important;
+}
+body.bc-redline-solid-sender footer{
+  background:#000!important;border-top:1px solid #cf001b!important;
+  color:#999!important;box-shadow:none!important;
+}
+body.bc-redline-solid-sender #photoLightbox{background:#000!important}
+body.bc-redline-solid-sender #photoLightbox .lightbox-close{
+  background:#0a0a0a!important;border-color:#e0001d!important;color:#fff!important;
+}
+/* When the owner previews what the sender sees, the preview must match:
+   flat black, crimson red and silver. Its submit stays disabled. */
+.bc-redline-sender-preview .bc-redline-preview-top,
+.bc-redline-sender-preview .bc-redline-preview-controls,
+.bc-redline-sender-preview .bc-redline-preview-stage,
+.bc-redline-sender-preview .bc-redline-preview-phone,
+.bc-redline-sender-preview .bc-redline-preview-chrome{
+  background:#030303!important;box-shadow:none!important;
+}
+.bc-redline-sender-preview .bc-redline-preview-phone,
+.bc-redline-sender-preview .bc-redline-preview-identity,
+.bc-redline-sender-preview .bc-redline-preview-section{border-color:#c7001d!important}
+.bc-redline-sender-preview .bc-redline-preview-identity,
+.bc-redline-sender-preview .bc-redline-preview-section,
+.bc-redline-sender-preview .bc-redline-preview-facts>div,
+.bc-redline-sender-preview .bc-redline-preview-file-area,
+.bc-redline-sender-preview .bc-redline-preview-devices,
+.bc-redline-sender-preview .bc-redline-preview-caption textarea{
+  background:#0a0a0a!important;box-shadow:none!important;
+}
+.bc-redline-sender-preview .bc-redline-preview-choose,
+.bc-redline-sender-preview .bc-redline-preview-nav button.is-active,
+.bc-redline-sender-preview .bc-redline-preview-devices button.is-active{
+  background:#d0001b!important;box-shadow:none!important;color:white!important;
+}
+.bc-redline-sender-preview .bc-redline-preview-identity>span,
+.bc-redline-sender-preview .bc-redline-preview-kicker,
+.bc-redline-sender-preview .bc-redline-preview-camera{color:#ed1632!important}
+.bc-redline-sender-preview .bc-redline-preview-file-area{border-color:#e0001d!important}
+.bc-redline-sender-preview .bc-redline-preview-nav{
+  background:#050505!important;border-top:1px solid #cf001b!important;
+}
+.bc-redline-sender-preview .bc-redline-preview-submit{
+  background:#151515!important;border-color:#6e6e6e!important;color:#bdbdbd!important;
+}
+@media(max-width:580px){
+ body.bc-redline-solid-sender .topbar{background:#000!important}
+ body.bc-redline-solid-sender #noRoom.empty-room{border-width:1.5px!important}
+ body.bc-redline-solid-sender .no-room-upload-hint{padding:16px!important}
+ body.bc-redline-solid-sender #activeRoom .bc-sender-hero{border-width:1.5px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ body.bc-redline-solid-sender *, .bc-redline-sender-preview *{transition:none!important;animation:none!important}
+}
