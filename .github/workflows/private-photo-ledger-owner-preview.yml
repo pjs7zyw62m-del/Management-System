@@ -1,0 +1,120 @@
+name: BLACKCELL REDLINE Owner Sender Preview
+on:
+  pull_request:
+    paths:
+      - 'private-photo-ledger.html'
+      - 'private-photo-ledger-owner-preview.js'
+      - 'private-photo-ledger-owner-preview.css'
+      - 'tests/private-photo-ledger-owner-preview.test.mjs'
+      - '.github/workflows/private-photo-ledger-owner-preview.yml'
+  workflow_dispatch:
+jobs:
+  sender-preview:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Static checks and access control invariants
+        run: |
+          node --check private-photo-ledger-owner-preview.js
+          node --test tests/private-photo-ledger-owner-preview.test.mjs
+      - name: Owner Preview phone and tablet browser checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v google-chrome >/dev/null 2>&1 && CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && CHROME=chromium || CHROME=; }
+          [ -n "$CHROME" ] || { echo "Chromium not available"; exit 1; }
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('private-photo-ledger.html').read_text()
+          s=re.sub(r'<script type="module" src="private-photo-ledger.js[^"]*"></script>','',s)
+          s=re.sub(r'<script src="corp-config.js"></script>','',s)
+          s=re.sub(r'<script src="blackcell-live-update.js[^"]*"[^>]*></script>','',s)
+          assert 'src="private-photo-ledger.js' not in s
+          probe="""<script>
+          // Backend-free browser fixture. No session, private user data,
+          // Supabase calls, authorization bypass, or persistent effects.
+          const mode=new URLSearchParams(location.search).get('role')||'owner';
+          const room=new URLSearchParams(location.search).get('room')!=='0';
+          document.getElementById('accessGate').hidden=true;
+          document.getElementById('ledgerApp').hidden=false;
+          document.getElementById('ownerSetup').hidden=mode!=='owner';
+          document.getElementById('activeRoom').hidden=!room;
+          document.getElementById('ownerUploadInfo').hidden=!(mode==='owner'&&room);
+          document.getElementById('employeeUpload').hidden=mode!=='sender';
+          document.getElementById('ownerReviewQueue').hidden=mode!=='owner';
+          document.getElementById('noRoom').hidden=room;
+          document.getElementById('pendingCount').textContent='4';
+          document.getElementById('totalOwed').textContent='$85.00';
+          document.getElementById('activeRoomTitle').textContent='Private Arrangement';
+          setTimeout(()=>{
+            const body=document.body;
+            const ownerButton=document.getElementById('redlineSetupPreviewButton');
+            const employeeButton=document.getElementById('redlineOwnerPreviewButton');
+            const dialog=document.getElementById('redlineSenderPreviewDialog');
+            body.dataset.qaRole=mode;
+            body.dataset.qaButtons=String(!!ownerButton&&!!employeeButton);
+            if(mode==='sender'){
+              ownerButton?.click();
+              body.dataset.qaOwnerBlocked=dialog.open?'no':'yes';
+              return;
+            }
+            (room?employeeButton:ownerButton).click();
+            body.dataset.qaOpened=dialog.open?'yes':'no';
+            body.dataset.qaTitle=document.getElementById('redlinePreviewHeading').textContent;
+            body.dataset.qaAmount=dialog.querySelector('.bc-redline-preview-facts').textContent.includes('$85.00')?'yes':'no';
+            body.dataset.qaNoSubmit=dialog.querySelector('.bc-redline-preview-submit').disabled?'yes':'no';
+            const photos=dialog.querySelector('[data-tab=photos]');
+            photos.click();
+            body.dataset.qaPhotos=photos.classList.contains('is-active')?'yes':'no';
+            const tablet=dialog.querySelector('.bc-redline-preview-devices button:last-child');
+            tablet.click();
+            body.dataset.qaTablet=dialog.querySelector('.bc-redline-preview-phone').dataset.device;
+            const phone=dialog.querySelector('.bc-redline-preview-devices button:first-child');
+            phone.click();
+            dialog.querySelector('[data-tab=upload]').click();
+            body.dataset.qaPhone=dialog.querySelector('.bc-redline-preview-phone').dataset.device;
+            body.dataset.qaOverflow=String(Math.max(0,document.documentElement.scrollWidth-document.documentElement.clientWidth));
+          },1200);
+          </script>"""
+          Path('redline-owner-preview-qa.html').write_text(s.replace('</body>',probe+'</body>'))
+          PY
+          python3 -m http.server 8765 > /tmp/redline-owner-preview-server.log 2>&1 &
+          PID=$!
+          trap 'kill "$PID" 2>/dev/null || true; rm -f redline-owner-preview-qa.html' EXIT
+          sleep 2
+          mkdir -p /tmp/redline-owner-preview-shots
+          for width in 375 390 430; do
+            "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-background-networking --virtual-time-budget=5500 --window-size="$width,844" '--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' --dump-dom 'http://127.0.0.1:8765/redline-owner-preview-qa.html?role=owner' > "/tmp/redline-preview-$width.html" 2>/tmp/redline-preview-browser.log
+            f="/tmp/redline-preview-$width.html"
+            grep -q 'data-qa-role="owner"' "$f"
+            grep -q 'data-qa-buttons="true"' "$f"
+            grep -q 'data-qa-opened="yes"' "$f"
+            grep -q 'data-qa-no-submit="yes"' "$f"
+            grep -q 'data-qa-photos="yes"' "$f"
+            grep -q 'data-qa-tablet="tablet"' "$f"
+            grep -q 'data-qa-phone="phone"' "$f"
+            grep -q 'data-qa-amount="yes"' "$f"
+            grep -q 'data-qa-overflow="0"' "$f"
+            echo "Owner $width px: preview opens, tabs work, no upload, no horizontal scroll"
+          done
+          "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-background-networking --virtual-time-budget=5500 --window-size=390,844 '--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' --dump-dom 'http://127.0.0.1:8765/redline-owner-preview-qa.html?role=owner&room=0' > /tmp/redline-preview-no-room.html 2>/tmp/redline-preview-browser.log
+          grep -q 'data-qa-opened="yes"' /tmp/redline-preview-no-room.html
+          "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-background-networking --virtual-time-budget=5500 --window-size=390,844 '--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' --dump-dom 'http://127.0.0.1:8765/redline-owner-preview-qa.html?role=sender' > /tmp/redline-preview-sender.html 2>/tmp/redline-preview-browser.log
+          grep -q 'data-qa-owner-blocked="yes"' /tmp/redline-preview-sender.html
+          "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-background-networking --virtual-time-budget=5500 --window-size=390,844 '--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' --screenshot=/tmp/redline-owner-preview-shots/owner-phone-sender-preview.png 'http://127.0.0.1:8765/redline-owner-preview-qa.html?role=owner' >/dev/null 2>/tmp/redline-preview-browser.log
+          "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-background-networking --virtual-time-budget=5500 --window-size=820,1180 '--user-agent=Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' --screenshot=/tmp/redline-owner-preview-shots/owner-ipad-sender-preview.png 'http://127.0.0.1:8765/redline-owner-preview-qa.html?role=owner' >/dev/null 2>/tmp/redline-preview-browser.log
+          echo "No-room owner and sender non-escalation verified"
+      - name: Upload preview screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blackcell-redline-owner-sender-preview
+          path: /tmp/redline-owner-preview-shots/*.png
+          if-no-files-found: ignore
+          retention-days: 7
