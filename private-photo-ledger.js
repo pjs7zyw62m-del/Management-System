@@ -135,8 +135,8 @@ function renderLedgerScope(){
  show('ledgerScopeStatus',limited?'LEDGER-ONLY ACCESS':'FULL CORPORATE ACCESS');
  show('ledgerScopeIndicator',limited?'RESTRICTED':'STANDARD ACCESS');
  show('ledgerScopeDescription',limited
-  ?'The assigned employee can only use this private photo ledger. Network, chat and other corporate applications are blocked by server-side permissions. You may restore normal access.'
-  :'This employee currently has regular corporate access. Restrict them to this photo ledger to block Network, chat and other authorized corporate apps.');
+  ?'The assigned employee can only use BLACKCELL REDLINE. Network, chat and other corporate applications are blocked by server-side permissions. You may restore normal access.'
+  :'This employee currently has regular corporate access. Restrict them to BLACKCELL REDLINE to block Network, chat and other authorized corporate apps.');
  const btn=$('ledgerScopeToggle');
  btn.disabled=state.scopeLoading;
  btn.textContent=limited?'RESTORE FULL CORPORATE ACCESS':'RESTRICT EMPLOYEE TO LEDGER ONLY';
@@ -164,7 +164,7 @@ async function toggleLedgerScope(){
  const restrict=state.scopeValue!=='ledger_only';
  const who=participantName(room.member_id);
  const message=restrict
-  ?'RESTRICT '+who+' to the Private Photo Ledger ONLY?\n\nThe employee will no longer be able to use Blackcell Network, chat, or other corporate apps. Existing private ledger photos stay available.'
+  ?'RESTRICT '+who+' to the BLACKCELL REDLINE ONLY?\n\nThe employee will no longer be able to use Blackcell Network, chat, or other corporate apps. Existing private ledger photos stay available.'
   :'RESTORE FULL CORPORATE ACCESS for '+who+'?\n\nThis will re-enable their other permitted BLACKCELL applications.';
  if(!window.confirm(message))return;
  state.scopeLoading=true;

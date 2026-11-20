@@ -1,4 +1,4 @@
-/* BLACKCELL // Private Photo Ledger responsive OS shell.
+/* BLACKCELL // REDLINE responsive OS shell.
  * Visual navigation only: existing corporate auth, photo submissions, review
  * decisions, settlement records, and private-room access stay authoritative.
  */
@@ -32,11 +32,11 @@
   const app=$('#ledgerApp'),room=$('#activeRoom'),heading=$('.page-heading',app);
   if(!app||!room||!heading)return;
   const rail=node('aside','bc-ledger-rail');
-  rail.setAttribute('aria-label','Private Photo Ledger navigation');
+  rail.setAttribute('aria-label','BLACKCELL REDLINE navigation');
   const railHead=node('div','bc-ledger-rail-brand');
   const emblem=node('span','bc-ledger-rail-emblem','B');
   const railTitles=node('div','bc-ledger-rail-titles');
-  railTitles.append(node('strong','', 'BLACKCELL'),node('small','', 'PHOTO LEDGER'));
+  railTitles.append(node('strong','', 'BLACKCELL'),node('small','', 'REDLINE'));
   railHead.append(emblem,railTitles);
   const railCaption=node('div','bc-ledger-rail-caption','PRIVATE WORKSPACE');
   const railItems=node('nav','bc-ledger-rail-items');
@@ -50,7 +50,7 @@
   const brandLabels=$('#ledgerBrand .brand-label');
   if(brandLabels)brandLabels.append(topLabel);
   const nav=node('nav','bc-ledger-phone-nav');
-  nav.setAttribute('aria-label','Private Photo Ledger mobile sections');
+  nav.setAttribute('aria-label','BLACKCELL REDLINE mobile sections');
   room.append(nav);
   // A visible, lightweight section heading keeps the selected action
   // understandable even when the owner/employee sees different permissions.
@@ -58,7 +58,7 @@
   sectionHeading.id='ledgerMobileViewHeading';
   sectionHeading.tabIndex=-1;
   room.insertBefore(sectionHeading,room.querySelector('.room-toolbar'));
-  nav.setAttribute('aria-label','Private Photo Ledger mobile sections');
+  nav.setAttribute('aria-label','BLACKCELL REDLINE mobile sections');
   const buttons=new Map();
   const ids=[
     ['summary','Summary'],
@@ -112,7 +112,7 @@
     sectionHeading.textContent=sectionNames[current]||'Overview';
     version.textContent=edition;
     topLabel.textContent=mode==='os'?'OS':mode==='tablet'?'OS TABLET':'OS MOBILE';
-    const title=labels[mode]+' · Private Photo Ledger';
+    const title=labels[mode]+' · BLACKCELL REDLINE';
     if(document.title!==title)document.title=title;
     for(const[key,pair]of buttons){
       for(const button of pair){
