@@ -39,7 +39,7 @@ test('preview includes phone/tablet and read-only sender tabs',()=>{
  assert.match(code,/dataset\.device='phone'/);
  assert.match(code,/setDevice\('tablet'\)/);
  assert.match(code,/selectTab\('photos'\)/);
- assert.match(code,/label','Phone'/);
+ assert.match(code,/make\('button','is-active','Phone'\)/);
  assert.match(css,/data-device=tablet/);
  assert.match(css,/bc-redline-preview-nav/);
  assert.match(css,/bc-redline-sender-preview::backdrop/);
