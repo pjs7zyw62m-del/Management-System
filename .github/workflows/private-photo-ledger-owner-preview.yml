@@ -69,9 +69,9 @@ jobs:
             body.dataset.qaTitle=document.getElementById('redlinePreviewHeading').textContent;
             body.dataset.qaAmount=dialog.querySelector('.bc-redline-preview-facts').textContent.includes('$85.00')?'yes':'no';
             body.dataset.qaNoSubmit=dialog.querySelector('.bc-redline-preview-submit').disabled?'yes':'no';
-            const photos=dialog.querySelector('[data-tab=earnings]');
-            photos.click();
-            body.dataset.qaPhotos=photos.classList.contains('is-active')?'yes':'no';
+            const earnings=dialog.querySelector('[data-tab=earnings]');
+            earnings.click();
+            body.dataset.qaEarnings=earnings.classList.contains('is-active')?'yes':'no';
             const tablet=dialog.querySelector('.bc-redline-preview-devices button:last-child');
             tablet.click();
             body.dataset.qaTablet=dialog.querySelector('.bc-redline-preview-phone').dataset.device;
