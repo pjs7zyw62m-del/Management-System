@@ -131,10 +131,11 @@
     if(!isAvailable(key))return;
     current=key;reflect();
     const mobile=document.body.classList.contains('bc-ledger-mobile');
-    // Changing views must reveal the selected content, not return users to
-    // the very top of the page (which previously concealed Review / Upload).
+    // Sender first opens the authorized submission header on a phone.
+    const senderHero=$('#redlineSenderHero');
     const destination=mobile?(
       key==='summary'?($('.room-toolbar',room)||summaryAnchor):
+      key==='upload'&&senderHero&&!senderHero.hidden?senderHero:
       key==='room'?($('.room-toolbar',room)||$('.side-column',room)):
       key==='photos'?($('#photoEntries')||$('.timeline-toolbar',room)):targets[key]
     ):(key==='room'?(isShown($('#ownerSetup'))?$('#ownerSetup'):$('.side-column')):targets[key]);
