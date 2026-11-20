@@ -1,0 +1,123 @@
+name: BLACKCELL Photo Ledger Mobile Repair
+on:
+  pull_request:
+    paths:
+      - 'private-photo-ledger.html'
+      - 'private-photo-ledger-responsive.css'
+      - 'private-photo-ledger-responsive.js'
+      - 'tests/private-photo-ledger-mobile.test.mjs'
+      - '.github/workflows/private-photo-ledger-mobile.yml'
+  workflow_dispatch:
+jobs:
+  phone-ux:
+    runs-on: ubuntu-latest
+    permissions: {contents: read}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Syntax and privacy
+        run: |
+          node --check private-photo-ledger-responsive.js
+          node --check private-photo-ledger.js
+          node --test tests/private-photo-ledger-mobile.test.mjs
+      - name: Owner and employee phone usability test
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v google-chrome >/dev/null 2>&1 && BROWSER=google-chrome || { command -v chromium >/dev/null 2>&1 && BROWSER=chromium || BROWSER=; }
+          [ -n "$BROWSER" ] || { echo "Chrome is needed"; exit 1; }
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          html=Path('private-photo-ledger.html').read_text()
+          html=re.sub(r'<script[^>]+src="(?:corp-config\.js|private-photo-ledger\.js|blackcell-live-update\.js)[^"]*"[^>]*></script>','',html)
+          assert 'src="private-photo-ledger.js' not in html
+          probe="""<script>
+          // Standalone static roles: NO backend fetch, credentials or user data.
+          const q=new URLSearchParams(location.search);
+          const owner=q.get('role')==='owner';
+          document.querySelector('#accessGate').hidden=true;
+          document.querySelector('#ledgerApp').hidden=false;
+          document.querySelector('#activeRoom').hidden=false;
+          document.querySelector('#ownerReviewQueue').hidden=!owner;
+          document.querySelector('#employeeUpload').hidden=owner;
+          document.querySelector('#ownerSetup').hidden=true;
+          document.querySelector('#noRoom').hidden=true;
+          const historyButton=document.createElement('button');
+          historyButton.type='button';historyButton.id='testReviewedHistory';
+          historyButton.textContent='VIEW REVIEWED PHOTOS';
+          document.querySelector('#reviewQueueCurrent').append(historyButton);
+          setTimeout(()=>{
+            const b=document.body;
+            const nav=document.querySelector('.bc-ledger-phone-nav');
+            const tabs=[...nav.querySelectorAll('button:not([hidden])')];
+            b.dataset.qaMode=b.dataset.ledgerDevice||'none';
+            b.dataset.qaRole=owner?'owner':'employee';
+            b.dataset.qaTabs=String(tabs.length);
+            b.dataset.qaNav=getComputedStyle(nav).display;
+            b.dataset.qaOverflow=String(Math.max(0,document.documentElement.scrollWidth-document.documentElement.clientWidth));
+            const key=owner?'review':'upload';
+            nav.querySelector('[data-ledger-navigate="'+key+'"]')?.click();
+            setTimeout(()=>{
+              const focusTarget=document.querySelector(owner?'#ownerReviewQueue':'#employeeUpload');
+              const box=focusTarget?.getBoundingClientRect();
+              b.dataset.qaAction=b.dataset.ledgerView;
+              b.dataset.qaFocus=box&&box.top>=0&&box.top<innerHeight*.74?'visible':'offscreen';
+              const shown=getComputedStyle(focusTarget).display!=='none';
+              b.dataset.qaPanel=shown?'visible':'hidden';
+              if(owner){
+                document.querySelector('#testReviewedHistory')?.click();
+                setTimeout(()=>{
+                  b.dataset.qaHistory=b.dataset.ledgerView;
+                  const photos=document.querySelector('#photoEntries');
+                  b.dataset.qaHistoryVisible=getComputedStyle(photos).display==='none'?'no':'yes';
+                },280);
+              }else{
+                nav.querySelector('[data-ledger-navigate="photos"]')?.click();
+                setTimeout(()=>b.dataset.qaPhotos=b.dataset.ledgerView,200);
+              }
+            },300);
+          },1100);
+          </script>"""
+          html=html.replace('</body>',probe+'</body>')
+          Path('blackcell-ledger-mobile-qa.html').write_text(html)
+          PY
+          python3 -m http.server 8765 >/tmp/ledger-mobile-server.log 2>&1 &
+          PID=$!
+          trap 'kill "$PID" 2>/dev/null || true; rm -f blackcell-ledger-mobile-qa.html' EXIT
+          sleep 2
+          mkdir -p /tmp/photo-ledger-mobile-shots
+          for role in owner employee; do
+            for width in 320 375 390 430; do
+              url="http://127.0.0.1:8765/blackcell-ledger-mobile-qa.html?role=$role"
+              "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-background-networking --virtual-time-budget=8000 --window-size="$width,844" '--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' --dump-dom "$url" >"/tmp/ledger-qa-$role-$width.html" 2>/tmp/ledger-qa-err.log
+              file="/tmp/ledger-qa-$role-$width.html"
+              grep -q 'data-qa-mode="mobile"' "$file"
+              grep -q 'data-qa-nav="grid"' "$file"
+              grep -q 'data-qa-tabs="4"' "$file"
+              grep -q 'data-qa-panel="visible"' "$file"
+              grep -q 'data-qa-focus="visible"' "$file"
+              grep -q 'data-qa-overflow="0"' "$file"
+              if [ "$role" = owner ]; then
+                grep -q 'data-qa-action="review"' "$file"
+                grep -q 'data-qa-history="photos"' "$file"
+                grep -q 'data-qa-history-visible="yes"' "$file"
+              else
+                grep -q 'data-qa-action="upload"' "$file"
+                grep -q 'data-qa-photos="photos"' "$file"
+              fi
+              if [ "$width" = 390 ]; then
+                "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-background-networking --virtual-time-budget=8000 --window-size="$width,844" '--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' --screenshot="/tmp/photo-ledger-mobile-shots/$role-iphone.png" "$url" >/dev/null 2>/tmp/ledger-qa-err.log
+              fi
+              echo "$role on $width px: navigation, selected action and no horizontal overflow"
+            done
+          done
+      - name: Upload mobile review screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ledger-mobile-ux-20261120
+          path: /tmp/photo-ledger-mobile-shots/*.png
+          if-no-files-found: ignore
+          retention-days: 7
