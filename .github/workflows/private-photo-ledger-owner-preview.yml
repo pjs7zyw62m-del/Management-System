@@ -69,7 +69,7 @@ jobs:
             body.dataset.qaTitle=document.getElementById('redlinePreviewHeading').textContent;
             body.dataset.qaAmount=dialog.querySelector('.bc-redline-preview-facts').textContent.includes('$85.00')?'yes':'no';
             body.dataset.qaNoSubmit=dialog.querySelector('.bc-redline-preview-submit').disabled?'yes':'no';
-            const photos=dialog.querySelector('[data-tab=photos]');
+            const photos=dialog.querySelector('[data-tab=earnings]');
             photos.click();
             body.dataset.qaPhotos=photos.classList.contains('is-active')?'yes':'no';
             const tablet=dialog.querySelector('.bc-redline-preview-devices button:last-child');
@@ -96,7 +96,7 @@ jobs:
             grep -q 'data-qa-buttons="true"' "$f"
             grep -q 'data-qa-opened="yes"' "$f"
             grep -q 'data-qa-no-submit="yes"' "$f"
-            grep -q 'data-qa-photos="yes"' "$f"
+            grep -q 'data-qa-earnings="yes"' "$f"
             grep -q 'data-qa-tablet="tablet"' "$f"
             grep -q 'data-qa-phone="phone"' "$f"
             grep -q 'data-qa-amount="yes"' "$f"
