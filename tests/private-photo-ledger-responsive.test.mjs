@@ -53,3 +53,30 @@ test('mobile editing and private-photo viewer stay usable',()=>{
  assert.match(css,/max-width:1050px/);
  assert.match(css,/prefers-reduced-motion/);
 });
+
+test('BLACKCELL REDLINE is the unified public name while IDs and existing links remain valid',()=>{
+ const os=read('blackcell-os.html');
+ const osJs=read('blackcell-os.js');
+ const appStore=read('blackcell-app-store.js');
+ const dashboard=read('dashboard.html');
+ const admin=read('blackcell-administration-app.html');
+ const network=read('corporate-network.html');
+ assert.match(html,/<title>BLACKCELL REDLINE \| Private Exchange<\/title>/);
+ assert.match(html,/<small>REDLINE · PRIVATE EXCHANGE<\/small>/);
+ assert.match(html,/<h1>BLACKCELL <em>REDLINE\.<\/em><\/h1>/);
+ assert.match(js,/BLACKCELL REDLINE/);
+ assert.match(auth,/BLACKCELL REDLINE/);
+ assert.match(os,/data-app="photoledger" data-title="BLACKCELL REDLINE"/);
+ assert.match(os,/<span class="app-name">REDLINE<\/span>/);
+ assert.match(osJs,/photoledger:\{title:'BLACKCELL REDLINE'/);
+ assert.match(appStore,/title:'BLACKCELL REDLINE'/);
+ assert.match(dashboard,/BLACKCELL REDLINE/);
+ assert.match(admin,/BLACKCELL REDLINE/);
+ assert.match(network,/>REDLINE ↗<\/a>/);
+ assert.match(auth,/corp_private_photo_rooms/);
+ assert.match(auth,/corp_private_photo_entries/);
+ assert.match(auth,/corp-private-photo-ledger/);
+ assert.match(os,/private-photo-ledger\.html\?osApp=photoledger/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261120-redline/);
+ assert.match(html,/private-photo-ledger-responsive\.js\?v=20261120-redline/);
+});
