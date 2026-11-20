@@ -83,17 +83,33 @@
   const submit=make('button','bc-redline-preview-submit','PREVIEW ONLY — SENDING DISABLED');
   submit.type='button';submit.disabled=true;
   upload.append(title,fileArea,caption,submit);
-  const historyPanel=make('section','bc-redline-preview-message');historyPanel.hidden=true;
-  historyPanel.append(make('h4','','Photo History'),make('p','','The sender sees photographs submitted to this private room, along with their review and payment status. The actual records stay in the authorized REDLINE page.'));
-  const summaryPanel=make('section','bc-redline-preview-message');summaryPanel.hidden=true;
-  summaryPanel.append(make('h4','','Private Summary'),make('p','','The sender can see the amount owed to them, assigned amounts, paid amounts, and pending decisions. This preview does not expose or duplicate records.'));
-  const roomPanel=make('section','bc-redline-preview-message');roomPanel.hidden=true;
-  roomPanel.append(make('h4','','Private Room'),make('p','','Only the owner and the assigned sender can access this arrangement. The owner can close the room; the sender cannot change its permissions.'));
-  section.append(upload,historyPanel,summaryPanel,roomPanel);
+  // Preview matches the approved three-section sender screen. All values
+  // are read-only and the sample conversation never accesses real messages.
+  const earningsPanel=make('section','bc-redline-preview-message bc-redline-preview-earnings');earningsPanel.hidden=true;
+  earningsPanel.append(make('h4','','What You Earn'));
+  const lines=make('div','bc-redline-preview-moneyrows');
+  const earnedValues={};
+  for(const [key,label] of [['pending','Pending review'],['owed','Approved / owed'],
+                            ['paid','Recorded paid'],['total','Total approved']]){
+    const row=make('div','bc-redline-preview-moneyrow');
+    row.append(make('span','',label));
+    const amount=make('strong','','—');
+    earnedValues[key]=amount;row.append(amount);lines.append(row);
+  }
+  earningsPanel.append(lines,make('p','','Amounts are taken from this selected private room when available. No transfers happen in REDLINE.'));
+  const messagesPanel=make('section','bc-redline-preview-message bc-redline-preview-messages');messagesPanel.hidden=true;
+  messagesPanel.append(make('h4','','REDLINE Messages'));
+  messagesPanel.append(make('p','','EXAMPLE ONLY — private sender and owner chat appears here after the room is assigned.'));
+  const sampleIncoming=make('div','bc-redline-preview-bubble is-owner','Received. Reviewing now.');
+  const sampleOutgoing=make('div','bc-redline-preview-bubble is-sender','Just sent two photos.');
+  const sampleCard=make('div','bc-redline-preview-system-card','Photo approved — amount appears here');
+  messagesPanel.append(sampleOutgoing,sampleIncoming,sampleCard);
+  const sampleComposer=make('div','bc-redline-preview-sample-composer','Message REDLINE…    ·    Preview only');
+  messagesPanel.append(sampleComposer);
+  section.append(upload,earningsPanel,messagesPanel);
   const nav=make('nav','bc-redline-preview-nav');nav.setAttribute('aria-label','Preview sender navigation');
   const tabs=[
-    ['upload','Upload',upload],['summary','Summary',summaryPanel],
-    ['photos','Photos',historyPanel],['room','Room',roomPanel]
+    ['upload','Upload',upload],['earnings','Earnings',earningsPanel],['messages','Messages',messagesPanel]
   ];
   function selectTab(key){
     for(const [id,label,panel] of tabs){
@@ -123,7 +139,8 @@
   phone.addEventListener('click',()=>setDevice('phone'));
   tablet.addEventListener('click',()=>setDevice('tablet'));
   choose.addEventListener('click',()=>{selectTab('upload');fileInput.click()});
-  history.addEventListener('click',()=>selectTab('photos'));
+  history.textContent='VIEW EARNINGS';
+  history.addEventListener('click',()=>selectTab('earnings'));
   let url=null;
   function resetLocalPhoto(){
     if(url){URL.revokeObjectURL(url);url=null}
@@ -146,6 +163,10 @@
     const activeRoom=visible($('#activeRoom'));
     pendingValue.textContent=activeRoom?$('#pendingCount')?.textContent?.trim()||'0':'0';
     owedValue.textContent=activeRoom?$('#totalOwed')?.textContent?.trim()||'$0.00':'$0.00';
+    earnedValues.pending.textContent=pendingValue.textContent;
+    earnedValues.owed.textContent=owedValue.textContent;
+    earnedValues.paid.textContent=activeRoom?$('#totalPaid')?.textContent?.trim()||'$0.00':'$0.00';
+    earnedValues.total.textContent=activeRoom?$('#totalAssigned')?.textContent?.trim()||'$0.00':'$0.00';
     setDevice('phone');selectTab('upload');dialog.showModal();
   }
   for(const [host,name] of [[setup,'redlineSetupPreviewButton'],[ownerInfo,'redlineOwnerPreviewButton']]){
