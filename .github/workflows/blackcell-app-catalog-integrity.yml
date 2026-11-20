@@ -7,6 +7,9 @@ on:
       - 'blackcell-os.html'
       - 'blackcell-os.css'
       - 'blackcell-app-store.js'
+      - 'blackcell-live-update.js'
+      - 'blackcell-os-settings.js'
+      - 'tests/blackcell-os-ux2-update.test.mjs'
       - 'blackcell-the-hunt.html'
       - 'blackcell-omega.html'
       - 'blackcell-site-version.json'
@@ -19,6 +22,9 @@ on:
       - 'blackcell-os.html'
       - 'blackcell-os.css'
       - 'blackcell-app-store.js'
+      - 'blackcell-live-update.js'
+      - 'blackcell-os-settings.js'
+      - 'tests/blackcell-os-ux2-update.test.mjs'
       - 'blackcell-the-hunt.html'
       - 'blackcell-omega.html'
       - 'blackcell-site-version.json'
@@ -40,5 +46,7 @@ jobs:
         run: |
           node --check blackcell-os.js
           node --check blackcell-app-store.js
+          node --check blackcell-live-update.js
+          node --check blackcell-os-settings.js
       - name: Verify all app launch paths and safe retirement rules
-        run: node --test tests/blackcell-app-catalog-integrity.test.mjs
+        run: node --test tests/blackcell-app-catalog-integrity.test.mjs tests/blackcell-os-ux2-update.test.mjs
