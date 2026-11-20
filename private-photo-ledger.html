@@ -11,12 +11,14 @@
 <link rel="stylesheet" href="private-photo-ledger-sender.css?v=20261120-sender-v3">
 <link rel="stylesheet" href="private-photo-ledger-owner-preview.css?v=20261120-preview1">
 <link rel="stylesheet" href="private-photo-ledger-solid-red.css?v=20261120-solid-red1">
+<link rel="stylesheet" href="private-photo-ledger-simple-sender.css?v=20261120-redline-chat1">
 <script src="corp-config.js"></script>
-<script type="module" src="private-photo-ledger.js?v=20261120-redline"></script>
+<script type="module" src="private-photo-ledger.js?v=20261120-redline-chat1"></script>
 <script src="private-photo-ledger-responsive.js?v=20261120-sender-v3" defer></script>
 <script src="private-photo-ledger-sender.js?v=20261120-sender-v3" defer></script>
 <script src="private-photo-ledger-owner-preview.js?v=20261120-preview1" defer></script>
 <script src="private-photo-ledger-solid-red.js?v=20261120-solid-red1" defer></script>
+<script src="private-photo-ledger-simple-sender.js?v=20261120-redline-chat1" defer></script>
 <script src="blackcell-live-update.js?v=20261114-auto3" defer data-mode="auto"></script>
 </head>
 <body>
@@ -119,7 +121,7 @@
      <p id="ledgerScopeFeedback" class="form-note" role="status" aria-live="polite"></p>
     </section>
     <section id="employeeUpload" class="panel upload-card" hidden>
-     <div class="card-title"><span class="card-icon">▧</span><div><div class="eyebrow">EMPLOYEE / PHOTO SUBMISSION</div><h3>Post a Private Photo</h3></div></div>
+     <div class="card-title"><span class="card-icon">▧</span><div><div class="eyebrow">EMPLOYEE / PHOTO SUBMISSION</div><h3>Upload a Photo</h3></div></div>
      <form id="uploadPhotoForm">
       <label class="file-drop" for="uploadPhoto"><span class="file-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" width="38" height="38" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 6h3l1.5-2h6l1.5 2h3A2.5 2.5 0 0 1 22 8.5v10A2.5 2.5 0 0 1 19.5 21h-15A2.5 2.5 0 0 1 2 18.5v-10A2.5 2.5 0 0 1 4.5 6Z"/><circle cx="12" cy="13" r="4"/></svg></span><strong>CHOOSE A PHOTO</strong><small>JPEG, PNG, WebP or HEIC · up to 12 MB</small><span id="selectedPhotoName">No photo selected</span></label>
       <label class="native-upload-label" for="uploadPhoto">OR USE YOUR DEVICE'S FILE PICKER</label>
@@ -127,7 +129,7 @@
       <label class="stack-label">CAPTION / NOTE
        <textarea id="uploadCaption" maxlength="500" placeholder="Describe this photo, or add a short note…" rows="4"></textarea>
       </label>
-      <button id="submitPhoto" type="submit" class="button-main">POST TO OUR PRIVATE ROOM ↗</button>
+      <button id="submitPhoto" type="submit" class="button-main">SEND TO REDLINE ↗</button>
      </form>
      <p class="upload-helper">On iPad, tap <strong>Choose a Photo</strong> or <strong>Choose File</strong> to select from Photos or Files.</p>
      <p id="uploadFeedback" class="form-note" role="status"></p>
@@ -185,6 +187,6 @@
 <div id="photoLightbox" class="lightbox" hidden role="dialog" aria-modal="true" aria-label="Private original photograph">
  <button id="closeLightbox" class="lightbox-close" type="button">✕ CLOSE</button><img id="lightboxImage" alt="Private photo, full size">
 </div>
-<footer>BLACKCELL CORPORATION · PRIVATE TWO-PARTY LEDGER · VERIFIED OWNER AND SELECTED EMPLOYEE ONLY</footer>
+<footer>BLACKCELL CORPORATION · REDLINE PRIVATE ROOM · VERIFIED OWNER AND SELECTED SENDER ONLY</footer>
 </body>
 </html>
