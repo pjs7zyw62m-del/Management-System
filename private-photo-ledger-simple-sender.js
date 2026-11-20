@@ -112,10 +112,11 @@ ownerButton.addEventListener('click',()=>{
  const snap=window.BLACKCELL_REDLINE_API?.snapshot?.();
  if(!snap?.isOwner)return;
  ownerMount.append(messageCard);
+ photoAction.hidden=true; // Owners cannot upload sender-only photos.
  ownerDialog.showModal();
  void loadMessages();
 });
-ownerDialog.addEventListener('close',()=>{messagesPane.append(messageCard);entry.value=''});
+ownerDialog.addEventListener('close',()=>{messagesPane.append(messageCard);photoAction.hidden=false;entry.value=''});
 ownerDialog.addEventListener('click',e=>{if(e.target===ownerDialog)ownerDialog.close()});
 let currentTab='upload',lastRoom=null,messages=[],loading=false,posting=false,roomReady=false;
 let lastSync=0;
