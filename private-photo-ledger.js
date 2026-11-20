@@ -384,6 +384,7 @@ function updateTotals(){
  show('pendingCount',String(pending));
  show('rejectedCount',String(rejected));
  show('freeCount',String(complimentary));
+ window.dispatchEvent(new Event('blackcell:redline:state'));
 }
 async function signImages(items){
  const now=Date.now();
@@ -718,4 +719,55 @@ function wireEvents(){
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('photoLightbox').hidden)closeLightbox()});
  document.querySelectorAll('[data-photo-filter]').forEach(b=>b.addEventListener('click',()=>setFilter(b.dataset.photoFilter)));
 }
+/* REDLINE two-party chat / earnings bridge.
+ * Exposes only the currently authenticated private room. The database RLS
+ * verifies both sides independently; this interface does not alter identity.
+ */
+const REDLINE_MESSAGES='corp_private_photo_messages';
+window.BLACKCELL_REDLINE_API=Object.freeze({
+ snapshot(){
+  if(state.closed||!state.user||!state.room||$('ledgerApp').hidden)return null;
+  return {
+   roomId:state.room.id,
+   userId:state.user.id,
+   isOwner:state.isOwner,
+   roomActive:state.room.active===true,
+   roomTitle:state.room.title,
+   pending:state.entries.filter(e=>e.decision_status==='pending').length,
+   owed:$('totalOwed').textContent,
+   assigned:$('totalAssigned').textContent,
+   paid:$('totalPaid').textContent,
+   entries:state.entries.slice(0,200).map(e=>({
+    id:e.id,created_at:e.created_at,decided_at:e.decided_at,
+    settled_at:e.settled_at,decision_status:e.decision_status,
+    amount_cents:e.amount_cents,
+    caption:e.caption||''
+   }))
+  };
+ },
+ async loadMessages(){
+  const roomId=state.room?.id;
+  if(state.closed||!state.user||!roomId)return [];
+  const result=await db.from(REDLINE_MESSAGES)
+   .select('id,room_id,sender_id,body,created_at')
+   .eq('room_id',roomId).order('created_at',{ascending:false}).limit(150);
+  if(result.error)throw result.error;
+  if(state.closed||state.room?.id!==roomId)return [];
+  return (result.data||[]).reverse();
+ },
+ async sendMessage(message){
+  const body=String(message||'').trim();
+  if(!body||body.length>2000)throw Error('Enter a message of 1 to 2,000 characters.');
+  const room=state.room;
+  if(state.closed||!room?.active||!state.user)throw Error('No active private room is available.');
+  await verify();
+  if(state.closed||state.room?.id!==room.id||!state.room.active)throw Error('Private room changed; try again.');
+  const result=await db.from(REDLINE_MESSAGES).insert({
+   room_id:room.id,sender_id:state.user.id,body
+  });
+  if(result.error)throw result.error;
+  return true;
+ }
+});
+window.dispatchEvent(new Event('blackcell:redline:bridge'));
 void initialize();
