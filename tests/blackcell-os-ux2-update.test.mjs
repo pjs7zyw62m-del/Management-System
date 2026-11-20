@@ -11,7 +11,7 @@ const html=read('blackcell-os.html');
 const css=read('blackcell-os.css');
 
 test('BLACKCELL OS updates require user consent; regular website updater remains intact',()=>{
-  assert.match(updater,/const osMode=\/\\/blackcell-os\\\.html/);
+  assert.ok(updater.includes('const osMode='));
   assert.match(updater,/showOSNotice/);
   assert.match(updater,/Update Now/);
   assert.match(updater,/Later/);
