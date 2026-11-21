@@ -256,7 +256,7 @@ function renderChat(){
    const status=make('strong','redline-chat-timer-title',
     isStop?'■ TIMER STOPPED':isActive?'● TIMER STARTED · RUNNING':'▶ TIMER STARTED');
    const label=make('span','redline-chat-timer-rate',money(e.timer.rate_cents)+'/minute');
-   const numbers=timerNumbers(e.timer,isActive);
+   const numbers=e.phase==='start'?{seconds:0,cents:0n}:timerNumbers(e.timer,isActive);
    const details=make('div','redline-chat-timer-values');
    details.append(make('span','redline-chat-timer-clock',clockText(numbers.seconds)+' elapsed'),
     make('span','redline-chat-timer-amount',money(numbers.cents)+(isStop?' final':' earned')));
@@ -391,8 +391,8 @@ window.addEventListener('blackcell:redline:session-mode',sync);
 window.addEventListener('blackcell:redline:reset',()=>{lastSessionKey=null;messages=[];lastSync=0;sync()});
 window.addEventListener('pageshow',sync);
 window.addEventListener('visibilitychange',()=>{if(!document.hidden&&((isSender()&&currentTab==='upload')||ownerDialog.open||(receiverChatPanel()&&!receiverChatPanel().hidden)))void loadMessages()});
+window.setInterval(updateTimerCards,1000);
 window.setInterval(()=>{
- updateTimerCards();
  const active=(isSender()&&currentTab==='upload')||ownerDialog.open||(receiverChatPanel()&&!receiverChatPanel().hidden);
  if(!document.hidden&&active&&Date.now()-lastSync>9500)void loadMessages();
 },10000);
