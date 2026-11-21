@@ -170,6 +170,13 @@ function isSender(){
  return Boolean(snap&&!snap.isOwner&&!app.hidden&&!room.hidden);
 }
 function money(value){const n=BigInt(value||0);return '$'+(n/100n).toLocaleString('en-US')+'.'+(n%100n).toString().padStart(2,'0')}
+// Show sub-cent earnings live without rounding every second into a charge.
+function liveMoney(rateCents,elapsedSeconds){
+ const seconds=BigInt(Math.max(0,Math.floor(Number(elapsedSeconds)||0)));
+ const units=(BigInt(rateCents||0)*seconds*100n+30n)/60n;
+ return '$'+(units/10000n).toLocaleString('en-US')+'.'+
+  (units%10000n).toString().padStart(4,'0');
+}
 function dateText(iso){const d=new Date(iso);return Number.isNaN(d.valueOf())?'':d.toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}
 function createEvents(entries){
  const all=[];
@@ -331,8 +338,9 @@ function timerNumbers(row,active){
   ?Math.min(Date.now()+timerOffset,Number.isFinite(heartbeat)?heartbeat+45000:Date.now()+timerOffset)
   :Date.parse(row.stopped_at);
  const seconds=Number.isFinite(start)&&Number.isFinite(end)?Math.max(0,Math.floor((end-start)/1000)):0;
- const cents=active?BigInt(Math.floor(seconds/60))*BigInt(row.rate_cents||0):BigInt(row.earned_cents||0);
- return {seconds,cents};
+ const cents=active?(BigInt(seconds)*BigInt(row.rate_cents||0)+30n)/60n:BigInt(row.earned_cents||0);
+ const display=active?liveMoney(row.rate_cents,seconds):money(cents);
+ return {seconds,cents,display};
 }
 function updateTimerCards(){
  if(!timerStatus||!snapshot()||app.hidden||room.hidden)return;
@@ -343,7 +351,7 @@ function updateTimerCards(){
   const clock=card.querySelector('.redline-chat-timer-clock');
   const amount=card.querySelector('.redline-chat-timer-amount');
   if(clock)clock.textContent=clockText(data.seconds)+' elapsed';
-  if(amount)amount.textContent=money(data.cents)+' earned';
+  if(amount)amount.textContent=data.display+' earned';
  }
 }
 function renderChat(){
@@ -393,13 +401,13 @@ function renderChat(){
    card.dataset.timerPhase=e.phase;
    const status=make('strong','redline-chat-timer-title',
     isStop?'■ TIMER STOPPED':isActive?'● TIMER STARTED · RUNNING':'▶ TIMER STARTED');
-   const label=make('span','redline-chat-timer-rate',money(e.timer.rate_cents)+'/minute');
-   const numbers=e.phase==='start'?{seconds:0,cents:0n}:timerNumbers(e.timer,isActive);
+   const label=make('span','redline-chat-timer-rate',money(e.timer.rate_cents)+'/minute · '+liveMoney(e.timer.rate_cents,1)+'/second');
+   const numbers=e.phase==='start'?{seconds:0,cents:0n,display:liveMoney(e.timer.rate_cents,0)}:timerNumbers(e.timer,isActive);
    const details=make('div','redline-chat-timer-values');
    details.append(make('span','redline-chat-timer-clock',clockText(numbers.seconds)+' elapsed'),
-    make('span','redline-chat-timer-amount',money(numbers.cents)+(isStop?' final':' earned')));
+    make('span','redline-chat-timer-amount',numbers.display+(isStop?' final':' earned')));
    const foot=make('small','',isStop
-    ?'Photo '+String(e.timer.photo_id||'').slice(0,8).toUpperCase()+' · Final completed-minute amount recorded'
+    ?'Photo '+String(e.timer.photo_id||'').slice(0,8).toUpperCase()+' · Final elapsed-second amount recorded'
     :'Photo '+String(e.timer.photo_id||'').slice(0,8).toUpperCase()+' · '+dateText(e.at));
    card.append(status,label,details,foot);
    feed.append(card);continue;
