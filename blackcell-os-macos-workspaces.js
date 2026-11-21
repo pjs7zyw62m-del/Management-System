@@ -165,6 +165,14 @@
   const searchButton=action('⌕',openSpotlight,'bc-mac-spotlight-button');
   searchButton.title='BLACKCELL Spotlight';searchButton.setAttribute('aria-label','Open Spotlight Search');
   right.insertBefore(searchButton,controlButton);
+  const dock=shell.querySelector('.dock');
+  if(dock&&!dock.querySelector('.bc-mac-dock-launchpad')){
+   const launch=action('▦',()=>begin('launchpad'),'bc-mac-dock-launchpad');
+   launch.setAttribute('aria-label','Open BLACKCELL Applications');
+   launch.title='Applications · Launchpad';launch.setAttribute('aria-haspopup','dialog');
+   const home=dock.querySelector('#showDesktop');
+   if(home?.nextSibling)dock.insertBefore(launch,home.nextSibling);else dock.prepend(launch);
+  }
     document.addEventListener('pointerdown',e=>{
    if(control&&!control.contains(e.target)&&!controlButton.contains(e.target))closeControl();
   },{passive:true});
