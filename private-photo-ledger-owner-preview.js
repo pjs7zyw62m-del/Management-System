@@ -66,17 +66,13 @@
   const fileArea=make('label','bc-redline-preview-file-area');
   const fileInput=make('input','bc-redline-preview-file-input');
   fileInput.type='file';fileInput.accept='image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif';
-  fileInput.setAttribute('aria-label','Select a local photo for preview only');
+  fileInput.setAttribute('aria-label','Try choosing a photo in this read-only demo; no upload occurs');
   const camera=make('span','bc-redline-preview-camera');
   camera.innerHTML='<svg width="37" height="37" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 6h3l1.5-2h6l1.5 2h3A2.5 2.5 0 0 1 22 8.5v10A2.5 2.5 0 0 1 19.5 21h-15A2.5 2.5 0 0 1 2 18.5v-10A2.5 2.5 0 0 1 4.5 6Z"/><circle cx="12" cy="13" r="4"/></svg>';
-  const previewImg=make('img','bc-redline-preview-photo');
-  previewImg.hidden=true;previewImg.alt='Locally selected photo — preview only';
-  const selectLabel=make('strong','','CHOOSE A PHOTO');
-  const fileHelp=make('small','','JPEG, PNG, WebP or HEIC · up to 12 MB');
-  const fileName=make('small','','No photo selected');
-  fileArea.append(fileInput,camera,previewImg,selectLabel,fileHelp,fileName);
-  const submit=make('button','bc-redline-preview-submit','POST PHOTO — PREVIEW ONLY');
-  submit.type='button';submit.disabled=true;
+  const selectLabel=make('strong','','CHOOSE PHOTO · AUTO SEND');
+  const fileHelp=make('small','','Live senders upload immediately · this preview never uploads');
+  const fileName=make('small','','No file sent in this preview');
+  fileArea.append(fileInput,camera,selectLabel,fileHelp,fileName);
   const thread=make('div','bc-redline-preview-thread');
   thread.append(make('h4','','Private Chat'),make('small','','OWNER + SENDER · TWO-WAY MESSAGES'));
   thread.append(make('div','bc-redline-preview-bubble is-sender','I just posted a new photo.'));
@@ -85,7 +81,7 @@
   const composerSample=make('div','bc-redline-preview-chat-input');
   composerSample.append(make('span','','Write a reply…'),make('span','','SEND'));
   thread.append(composerSample);
-  upload.append(title,fileArea,submit,thread);
+  upload.append(title,fileArea,thread);
   // Preview matches the approved three-section sender screen. All values
   // are read-only and the sample conversation never accesses real messages.
   const earningsPanel=make('section','bc-redline-preview-message bc-redline-preview-earnings');earningsPanel.hidden=true;
@@ -144,21 +140,16 @@
 
   history.textContent='VIEW EARNINGS';
   history.addEventListener('click',()=>selectTab('earnings'));
-  let url=null;
-  function resetLocalPhoto(){
-    if(url){URL.revokeObjectURL(url);url=null}
-    previewImg.removeAttribute('src');previewImg.hidden=true;
-  }
+  // Read-only design example: never upload or display a local photo.
   fileInput.addEventListener('change',()=>{
-    resetLocalPhoto();
-    const f=fileInput.files?.[0];
-    fileName.textContent=f?f.name:'No photo selected';
-    if(!f)return;
-    url=URL.createObjectURL(f);
-    previewImg.src=url;previewImg.hidden=false;
-    previewImg.onerror=()=>{previewImg.hidden=true};
+    fileName.textContent=fileInput.files?.length
+      ?'PREVIEW ONLY — live REDLINE would send immediately. Nothing was uploaded here.'
+      :'No file sent in this preview';
+    fileInput.value='';
   });
-  dialog.addEventListener('close',()=>{resetLocalPhoto();fileInput.value='';fileName.textContent='No photo selected'});
+  dialog.addEventListener('close',()=>{
+    fileInput.value='';fileName.textContent='No file sent in this preview';
+  });
   dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close()});
   function open(){
     if(!ownerVisible())return; // Never a bypass to the real sender role.
