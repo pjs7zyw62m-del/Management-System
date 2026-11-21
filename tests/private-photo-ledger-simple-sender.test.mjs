@@ -6,7 +6,7 @@ const html=read('private-photo-ledger.html'),bridge=read('private-photo-ledger.j
 const ui=read('private-photo-ledger-simple-sender.js'),css=read('private-photo-ledger-simple-sender.css');
 const migration=read('supabase/migrations/20261120184611_blackcell_redline_private_room_messages.sql');
 test('approved Upload, Earnings, Messages surfaces load after old sender shell',()=>{
- assert.match(html,/private-photo-ledger-simple-sender\.css\?v=20261121-mobile-bottom3/);
+ assert.match(html,/private-photo-ledger-simple-sender\.css\?v=20261121-room-presence1/);
  assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-inline-owner-chat1/);
  assert.ok(html.indexOf('private-photo-ledger-sender.js')<html.indexOf('private-photo-ledger-simple-sender.js'));
  assert.match(ui,/redline-simple-home/);
