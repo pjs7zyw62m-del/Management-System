@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import {runInNewContext} from 'node:vm';
 
 const read=p=>readFileSync(p,'utf8');
 const html=read('private-photo-ledger.html');
@@ -511,4 +512,56 @@ test('Manually accepting a photo always advances to the next pending image',()=>
  assert.match(timer,/committed\?\.photo_id&&keepPhotoSelected/);
  assert.match(timer,/photo_id===e\.detail\?\.photoId\)void stopTimer\(false\)/);
  assert.match(timer,/selectedId=id;[\s\S]*?void stopTimer\(false\)/);
+});
+
+test('Receiver manual price advances actual review state without sender refresh',async()=>{
+ const begin=ledger.indexOf('async function assignAmount(');
+ const end=ledger.indexOf('async function acceptZero(',begin);
+ assert.ok(begin>0&&end>begin);
+ const fnSource=ledger.slice(begin,end);
+ const photos=[
+  {id:'first',decision_status:'pending',amount_cents:null},
+  {id:'second',decision_status:'pending',amount_cents:null},
+  {id:'timed',decision_status:'accepted',amount_cents:25,auto_timer_session_id:'session'}
+ ];
+ const state={
+  isOwner:true,busy:false,room:{id:'room'},
+  reviewSidebarPhotoId:'timed',entryFingerprint:'cached'
+ };
+ let shown='timed';
+ const dispatched=[];
+ const context={
+  state,ENTRIES:'entries',
+  parseDollars:()=>10,
+  dollars:()=>'$0.10',
+  verify:async()=>{},
+  fail:err=>String(err),
+  show:()=>{},
+  db:{from:()=>({
+   update(value){this.patch=value;return this},
+   eq(){return this},
+   select(){return this},
+   async single(){Object.assign(photos[0],this.patch);return {error:null,data:photos[0]}}
+  })},
+  loadEntries:async({force})=>{
+   assert.equal(force,true);
+   // Same selection rule as the actual viewer: a saved timed photo wins
+   // unless approval clears its pin before loading the next pending one.
+   const old=state.reviewSidebarPhotoId==='timed'?'timed':null;
+   shown=old||photos.find(photo=>photo.decision_status==='pending')?.id||null;
+  },
+  window:{dispatchEvent(event){dispatched.push(event.type)}},
+  Event:class{constructor(type){this.type=type}},
+  CustomEvent:class{constructor(type,options){this.type=type;this.detail=options?.detail}}
+ };
+ const approve=runInNewContext(fnSource+'; assignAmount',context);
+ const submit={disabled:false,textContent:'✓ ACCEPT'};
+ const success=await approve(photos[0],{value:'0.10'},submit);
+ assert.equal(success,true);
+ assert.equal(photos[0].decision_status,'accepted');
+ assert.equal(photos[0].amount_cents,10);
+ assert.equal(shown,'second');
+ assert.equal(state.reviewSidebarPhotoId,null);
+ assert.ok(dispatched.includes('blackcell:redline:next-incoming'));
+ assert.equal(submit.disabled,false);
 });
