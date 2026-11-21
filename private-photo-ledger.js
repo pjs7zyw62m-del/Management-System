@@ -591,7 +591,6 @@ async function assignAmount(entry,input,submit){
  if(!state.isOwner||state.busy||entry.decision_status!=='pending')return;
  let amount;
  try{amount=parseDollars(input.value)}catch(e){show('entriesFeedback',fail(e));return}
- if(!window.confirm('ACCEPT this photo for '+dollars(amount)+'? This acceptance and amount are final.'))return;
  state.busy=true;submit.disabled=true;submit.textContent='SAVING…';
  try{
   await verify();
