@@ -103,6 +103,139 @@
   const amount=BigInt(String(value??0));
   return '$'+(amount/100n).toLocaleString('en-US')+'.'+(amount%100n).toString().padStart(2,'0');
  };
+
+ // A receiver-only payment tab. The authenticated backend owns all balances.
+ // This dialog only records verified external payments; never moves funds.
+ const partialDialog=make('dialog','rr-partial-payment-dialog');
+ partialDialog.id='redlinePartialPaymentDialog';
+ partialDialog.setAttribute('aria-labelledby','rrPartialPaymentTitle');
+ const partialForm=make('form','rr-partial-payment-form');
+ const partialHeading=make('header','rr-partial-payment-heading');
+ const partialTitle=make('h3','','Record Partial Payment');
+ partialTitle.id='rrPartialPaymentTitle';
+ const partialClose=button('✕ CLOSE',()=>partialDialog.close(),'rr-partial-close');
+ partialHeading.append(partialTitle,partialClose);
+ const partialIntro=make('p','rr-partial-intro',
+  'Record an external payment already made. REDLINE does not send or charge funds.');
+ const partialBalance=make('div','rr-partial-balance');
+ const partialOwed=make('strong','','$0.00');
+ const partialPaid=make('strong','','$0.00');
+ const partialRemaining=make('strong','','$0.00');
+ for(const [label,value] of [['OUTSTANDING NOW',partialOwed],['ALREADY RECORDED PAID',partialPaid],
+  ['REMAINING AFTER PAYMENT',partialRemaining]]){
+  const line=make('div','rr-partial-balance-line');
+  line.append(make('span','',label),value);partialBalance.append(line);
+ }
+ const amountLabel=make('label','rr-partial-field','PARTIAL PAYMENT AMOUNT · USD');
+ const partialAmount=make('input','rr-partial-amount');
+ partialAmount.type='text';partialAmount.inputMode='decimal';partialAmount.maxLength=22;
+ partialAmount.placeholder='0.00';partialAmount.autocomplete='off';partialAmount.required=true;
+ partialAmount.setAttribute('aria-label','Partial payment amount in US dollars');
+ amountLabel.append(partialAmount);
+ const noteLabel=make('label','rr-partial-field','NOTE (OPTIONAL)');
+ const partialNote=make('input','rr-partial-note');
+ partialNote.type='text';partialNote.maxLength=180;
+ partialNote.placeholder='Example: First installment';
+ noteLabel.append(partialNote);
+ const partialFeedback=make('p','rr-partial-feedback');partialFeedback.setAttribute('role','status');
+ const partialActions=make('div','rr-partial-actions');
+ const cancel=button('CANCEL',()=>partialDialog.close(),'rr-partial-cancel');
+ const savePartial=make('button','rr-partial-confirm','RECORD PAYMENT');savePartial.type='submit';
+ partialActions.append(cancel,savePartial);
+ const paymentHistoryTitle=make('h4','rr-partial-history-heading','RECORDED ROOM PAYMENTS');
+ const paymentHistoryList=make('div','rr-partial-history');
+ partialForm.append(partialHeading,partialIntro,partialBalance,amountLabel,noteLabel,
+  partialFeedback,partialActions,paymentHistoryTitle,paymentHistoryList);
+ partialDialog.append(partialForm);document.body.append(partialDialog);
+ let partialRoom=null,partialOutstanding=0n;
+ function parsePaymentCents(value){
+  const text=String(value||'').trim().replace(/[$,]/g,'');
+  if(!/^\d+(?:\.\d{1,2})?$/.test(text))
+   throw Error('Enter a USD amount such as 0.50 or 10.25.');
+  const [whole,decimals='']=text.split('.');
+  const result=BigInt(whole)*100n+BigInt(decimals.padEnd(2,'0'));
+  if(result<1n||result>BigInt(Number.MAX_SAFE_INTEGER))
+   throw Error('Enter at least $0.01 without exceeding the supported limit.');
+  return result;
+ }
+ partialAmount.addEventListener('input',()=>{
+  if(partialAmount.value.startsWith('.'))partialAmount.value='0'+partialAmount.value;
+  try{
+   const amount=parsePaymentCents(partialAmount.value);
+   partialRemaining.textContent=moneyCents(partialOutstanding>amount?partialOutstanding-amount:0n);
+   partialFeedback.textContent=amount>partialOutstanding?'Amount exceeds the outstanding balance.':'';
+  }catch(_){partialRemaining.textContent=moneyCents(partialOutstanding)}
+ });
+ function renderPaymentHistory(summary){
+  paymentHistoryList.replaceChildren();
+  const records=Array.isArray(summary?.payment_history)?summary.payment_history:[];
+  if(!records.length){
+   paymentHistoryList.append(make('p','rr-partial-empty','No room payments recorded in this session yet.'));
+   return;
+  }
+  for(const payment of records.slice(0,50)){
+   const row=make('article','rr-partial-history-item');
+   const info=make('div','');
+   info.append(make('strong','',payment.kind==='full'?'FINAL BALANCE':'PARTIAL PAYMENT'),
+    make('small','',new Date(payment.created_at).toLocaleString()));
+   if(payment.note)info.append(make('small','',payment.note));
+   row.append(info,make('strong','',moneyCents(payment.amount_cents)));
+   paymentHistoryList.append(row);
+  }
+ }
+ function renderPartialBalance(summary){
+  partialOutstanding=BigInt(String(summary?.remaining_cents??0));
+  partialOwed.textContent=moneyCents(partialOutstanding);
+  partialPaid.textContent=moneyCents(summary?.paid_cents||0);
+  partialRemaining.textContent=moneyCents(partialOutstanding);
+  savePartial.disabled=partialOutstanding<=0n;
+  renderPaymentHistory(summary);
+ }
+ async function openPartialPayment(){
+  const api=window.BLACKCELL_REDLINE_API,current=api?.snapshot?.();
+  if(payBusy||!current?.isOwner||!current.roomActive||current.archiveMode)return;
+  partialRoom=current.roomId;partialAmount.value='';partialNote.value='';
+  partialFeedback.textContent='Loading verified room balance…';
+  partialDialog.showModal();
+  try{
+   const status=await api.roomPaymentStatus(current.roomId,false);
+   if(api.snapshot()?.roomId!==current.roomId)throw Error('Room changed. Reopen Payments.');
+   renderPartialBalance(status);
+   partialFeedback.textContent=partialOutstanding>0n?'':'Nothing is outstanding in this room.';
+   if(partialOutstanding>0n)partialAmount.focus({preventScroll:true});
+  }catch(e){savePartial.disabled=true;partialFeedback.textContent='Cannot load payment balance: '+String(e?.message||e)}
+ }
+ partialForm.addEventListener('submit',async event=>{
+  event.preventDefault();
+  const api=window.BLACKCELL_REDLINE_API,current=api?.snapshot?.();
+  if(payBusy||!partialDialog.open||!current?.isOwner||!current.roomActive||
+     current.roomId!==partialRoom||current.archiveMode)return;
+  let amount;
+  try{amount=parsePaymentCents(partialAmount.value)}
+  catch(e){partialFeedback.textContent=String(e?.message||e);return}
+  if(amount>partialOutstanding){partialFeedback.textContent='Cannot exceed the outstanding balance.';return}
+  if(!window.confirm('Record '+moneyCents(amount)+' as a PARTIAL PAYMENT?\n\n'+
+   'This is an external payment record only. REDLINE will not transfer funds.'))return;
+  payBusy=true;savePartial.disabled=true;partialPay.disabled=true;payFull.disabled=true;
+  partialFeedback.textContent='Recording external payment…';
+  try{
+   const result=await api.recordPartialPayment(partialRoom,Number(amount),partialNote.value);
+   if(api.snapshot()?.roomId!==partialRoom)throw Error('Room changed after recording. Reopen to verify.');
+   const status=await api.roomPaymentStatus(partialRoom,false);
+   renderPartialBalance(status);
+   partialAmount.value='';partialNote.value='';
+   partialFeedback.textContent='Recorded '+moneyCents(amount)+' · Remaining '+
+    moneyCents(result.remaining_cents)+(result.refreshUnavailable?' · Refresh to verify.':'');
+   setPayFeedback('Partial payment '+moneyCents(amount)+' recorded · Remaining '+moneyCents(result.remaining_cents));
+  }catch(e){partialFeedback.textContent='Payment not recorded: '+String(e?.message||e)}
+  finally{
+   payBusy=false;savePartial.disabled=partialOutstanding<=0n;
+   partialPay.disabled=false;payFull.disabled=false;sync();
+  }
+ });
+ partialDialog.addEventListener('click',event=>{
+  if(event.target===partialDialog)partialDialog.close();
+ });
  async function recordPaidInFull(){
   const api=window.BLACKCELL_REDLINE_API;
   const current=api?.snapshot?.();
