@@ -179,7 +179,7 @@
  photos.setAttribute('aria-label','Incoming photos from selected sender');
  const incomingHeader=make('div','rr-incoming-header');
  incomingHeader.append(make('h3','','Incoming Photos'),
-  make('small','','New submissions appear automatically in the review queue.'));
+  make('small','','Price each incoming photo without leaving the conversation.'));
  photos.append(incomingHeader);
  workspace.append(chatPanel,photos);
  // Match BLACKCELL iMessage: chat is permanent, while the real photo-review
@@ -188,6 +188,24 @@
  photoClose.setAttribute('aria-label','Close photo review and return to full-width chat');
  photoClose.title='Close Photos';
  incomingHeader.append(photoClose);
+ // BLACKCELL iMessage-style two-level media viewer: live submission above,
+ // reviewed/priced library below. Reparent the SAME ledger elements.
+ const reviewStage=make('div','rr-review-stage');reviewStage.id='redlineReceiverReviewStage';
+ reviewStage.setAttribute('aria-label','Incoming photo and price decisions');
+ const heightDivider=make('div','rr-media-height-edge');heightDivider.id='redlineReceiverHeightEdge';
+ heightDivider.setAttribute('role','separator');
+ heightDivider.setAttribute('aria-label','Resize incoming photo viewer and priced photo list');
+ heightDivider.setAttribute('aria-orientation','horizontal');
+ heightDivider.setAttribute('aria-controls','redlineReceiverReviewStage redlineReceiverPricedStage');
+ heightDivider.title='Drag up or down to resize the incoming photo and priced photo list. Double-click to reset.';
+ heightDivider.tabIndex=0;
+ const pricedStage=make('section','rr-priced-stage');pricedStage.id='redlineReceiverPricedStage';
+ pricedStage.setAttribute('aria-label','Priced photos in a separately scrolling list');
+ photos.append(reviewStage,heightDivider,pricedStage);
+ const originalReview=$('#ownerReviewQueue');
+ const historyToolbar=timeline?.querySelector('.timeline-toolbar');
+ const photoEntries=$('#photoEntries');
+ const entriesFeedback=$('#entriesFeedback');
  const divider=make('div','rr-media-edge');
  divider.id='redlineReceiverMediaEdge';
  divider.setAttribute('role','separator');
@@ -208,6 +226,10 @@
  // On a narrow OS window, the photo pane behaves like iMessage's overlay;
  // on desktop/tablet it sits beside chat. No horizontal size slider.
  let mediaOpen=true,mediaInitialised=false;
+ const HEIGHT_KEY='blackcell:redline:receiver:imessage-height-v1';
+ const DEFAULT_HEIGHT=.63;
+ const readHeight=()=>{try{const n=Number(window.localStorage.getItem(HEIGHT_KEY));return n>=.34&&n<=.82?n:DEFAULT_HEIGHT}catch{return DEFAULT_HEIGHT}};
+ let heightRatio=readHeight(),heightPointer=null;
  const usableWidth=()=>workspace.getBoundingClientRect().width||window.innerWidth;
  function range(){
   const width=Math.max(1,usableWidth());
@@ -244,11 +266,63 @@
   }
   mediaOpen=true;showPane();applyWidth(mediaRatio);
   if(history){
-   const entries=$('#photoEntries');
-   if(entries)window.requestAnimationFrame(()=>entries.scrollIntoView({block:'nearest',behavior:'smooth'}));
+   const priced=pricedStage.querySelector('#photoEntries');
+   if(priced){priced.scrollTop=0;priced.focus?.({preventScroll:true})}
   }
  }
  function closeMedia(){mediaOpen=false;showPane()}
+ // Resize the upper incoming-photo stage independently from the lower
+ // priced-photo library, just like iMessage's media stage and filmstrip.
+ function verticalBounds(){
+  const area=Math.max(220,photos.getBoundingClientRect().height
+   -(incomingHeader.getBoundingClientRect().height||49)-10);
+  const min=Math.max(.32,Math.min(180,area*.36)/area);
+  const max=Math.min(.81,1-Math.min(125,area*.26)/area);
+  return {area,min,max:Math.max(min,max)};
+ }
+ function applyHeight(ratio,persist=false){
+  const {area,min,max}=verticalBounds();
+  heightRatio=Math.min(max,Math.max(min,ratio));
+  photos.style.setProperty('--rr-review-height',Math.round(heightRatio*area)+'px');
+  heightDivider.setAttribute('aria-valuemin',String(Math.round(min*100)));
+  heightDivider.setAttribute('aria-valuemax',String(Math.round(max*100)));
+  heightDivider.setAttribute('aria-valuenow',String(Math.round(heightRatio*100)));
+  heightDivider.setAttribute('aria-valuetext','Incoming photos '+Math.round(heightRatio*100)+' percent, priced photos '+Math.round((1-heightRatio)*100)+' percent');
+  if(persist)try{window.localStorage.setItem(HEIGHT_KEY,String(heightRatio))}catch{}
+ }
+ function moveHeight(event){
+  const bounds=verticalBounds();
+  const start=reviewStage.getBoundingClientRect().top;
+  applyHeight((event.clientY-start)/bounds.area);
+ }
+ heightDivider.addEventListener('pointerdown',event=>{
+  if(event.pointerType==='mouse'&&event.button!==0||workspace.hidden||!mediaOpen)return;
+  heightPointer=event.pointerId;
+  try{heightDivider.setPointerCapture(heightPointer)}catch{}
+  document.body.classList.add('rr-height-resizing');
+  moveHeight(event);event.preventDefault();
+ });
+ heightDivider.addEventListener('pointermove',event=>{
+  if(heightPointer===event.pointerId)moveHeight(event);
+ });
+ function stopHeight(event){
+  if(heightPointer===null||event?.pointerId!==undefined&&event.pointerId!==heightPointer)return;
+  const id=heightPointer;heightPointer=null;
+  try{if(heightDivider.hasPointerCapture(id))heightDivider.releasePointerCapture(id)}catch{}
+  document.body.classList.remove('rr-height-resizing');
+  applyHeight(heightRatio,true);
+ }
+ for(const evt of ['pointerup','pointercancel','lostpointercapture'])heightDivider.addEventListener(evt,stopHeight);
+ heightDivider.addEventListener('dblclick',()=>applyHeight(DEFAULT_HEIGHT,true));
+ heightDivider.addEventListener('keydown',event=>{
+  let ratio=heightRatio;
+  if(event.key==='ArrowUp')ratio-=event.shiftKey?.10:.03;
+  else if(event.key==='ArrowDown')ratio+=event.shiftKey?.10:.03;
+  else if(event.key==='Home')ratio=verticalBounds().min;
+  else if(event.key==='End')ratio=verticalBounds().max;
+  else return;
+  event.preventDefault();applyHeight(ratio,true);
+ });
  const position=event=>{
   const rect=workspace.getBoundingClientRect();
   if(rect.width<=0)return;
@@ -287,7 +361,7 @@
   event.preventDefault();applyWidth(ratio,true);
  });
  if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{
-  if(!workspace.hidden&&mediaOpen)applyWidth(mediaRatio);
+  if(!workspace.hidden&&mediaOpen){applyWidth(mediaRatio);applyHeight(heightRatio)}
  }).observe(workspace);
  function placeWorkspace(hasRoom){
   // Keep the original telephone-sized REDLINE view stacked. A narrower
@@ -300,17 +374,27 @@
   document.body.classList.remove('rr-split-active','rr-is-split-resizing');
   if(combined){
    if(chatPanel.parentNode!==workspace)workspace.insertBefore(chatPanel,divider);
+   if(originalReview&&originalReview.parentNode!==reviewStage)reviewStage.append(originalReview);
+   for(const element of [historyToolbar,photoEntries,entriesFeedback]){
+    if(element&&element.parentNode!==pricedStage)pricedStage.append(element);
+   }
    if(timeline.parentNode!==photos)photos.append(timeline);
+   timeline.classList.add('rr-source-timeline');
    if(!mediaInitialised){
     mediaInitialised=true;
     // Like iMessage Shared Media: show side-by-side on wide screens.
     // On smaller OS windows keep chat visible until Photos is opened.
-    mediaOpen=window.innerWidth>=700;
+    mediaOpen=true;
    }
-   showPane();applyWidth(mediaRatio);
+   showPane();applyWidth(mediaRatio);applyHeight(heightRatio);
   }else{
    if(dragPointer!==null)endDrag();
+   if(heightPointer!==null)stopHeight();
    if(chatPanel.previousElementSibling!==nav)nav.after(chatPanel);
+   for(const element of [originalReview,historyToolbar,photoEntries,entriesFeedback]){
+    if(element&&element.parentNode!==timeline)timeline.append(element);
+   }
+   timeline?.classList.remove('rr-source-timeline');
    if(timeline&&roomBody&&timeline.parentNode!==roomBody)roomBody.append(timeline);
    mediaInitialised=false;
   }
