@@ -607,3 +607,17 @@ test('Receiver star ratings are private and sender chat shows rated photo and ra
  assert.match(senderCSS,/\.redline-top-picks-box/);
  assert.match(workspaceCSS,/\.rr-photo-rating-star\.is-filled/);
 });
+
+test('Rating buttons do not mutate the original financial ledger',()=>{
+ const begin=ledger.indexOf('async function saveRating(stars)');
+ const end=ledger.indexOf('// Full-screen inspection uses the existing authenticated decision handlers',begin);
+ assert.ok(begin>0&&end>begin);
+ const rating=ledger.slice(begin,end);
+ assert.match(rating,/db\.from\(RATINGS\)\.upsert/);
+ assert.match(rating,/stars===5\?'Saved · 5 STARS · TOP PICK'/);
+ assert.doesNotMatch(rating,/db\.from\(ENTRIES\)/);
+ assert.doesNotMatch(rating,/timerStart|timerStop|amount_cents/);
+ const sender=read('private-photo-ledger-simple-sender.js');
+ assert.match(sender,/topPicksList\.replaceChildren\(\)/);
+ assert.match(sender,/star[s]?Text\(photo\.stars\)/);
+});
