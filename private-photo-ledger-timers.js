@@ -114,6 +114,7 @@ function currentPhoto(){
  return card?.dataset.redlinePhotoId||null;
 }
 function selectIncoming(){
+ window.dispatchEvent(new Event('blackcell:redline:next-incoming'));
  selectedId=currentPhoto();
  note.textContent=selectedId?'Selected '+labelPhoto(selectedId)+'.':'Waiting for an incoming photo.';
  render();
@@ -183,7 +184,22 @@ async function startTimer(){
 async function stopTimer(){
  const id=latest?.active?.id;
  if(!id||!snap()?.isOwner)return;
- await callAction(async()=>{await bridge().timerStop(id)},'Stopping and recording completed minutes…');
+ let committed=null;
+ await callAction(async()=>{
+  committed=await bridge().timerStop(id);
+  // Keep the photo whose timer just stopped visible with its final price,
+  // instead of immediately switching to another pending photograph.
+  if(committed?.photo_id){
+   selectedId=committed.photo_id;
+   window.dispatchEvent(new CustomEvent('blackcell:redline:photo-selected',
+    {detail:{photoId:committed.photo_id}}));
+  }
+ },'Stopping, pricing and submitting selected photo…');
+ if(committed?.ok){
+  note.textContent=committed.photo_auto_submitted||committed.photo_has_timer_price
+   ?'PHOTO AUTO-SUBMITTED · '+money(committed.earned_cents)+' · '+committed.completed_minutes+' completed minute(s)'
+   :'Timer stopped · '+money(committed.earned_cents)+' saved as timed earnings for this photo.';
+ }
 }
 async function markPaid(id){
  if(!uuid(id)||!snap()?.isOwner||acting)return;
@@ -269,8 +285,12 @@ function render(){
  const next=currentPhoto();
  const img=priced?$('[data-redline-photo-id="'+selectedId+'"] .photo-image-btn img'):null;
  const imageReady=Boolean(img?.src&&img.src.startsWith('https://'));
- preview.hidden=!priced||!owner||!imageReady;
- document.body.classList.toggle('rr-timing-priced-photo',priced&&owner&&imageReady);
+ // The large normal viewer may already show this same timed photo. Avoid
+ // a second preview covering the photo or creating an empty side pane.
+ const displayedPhoto=$('#reviewQueueCurrent .photo-entry[data-redline-photo-id]');
+ const alreadyVisible=displayedPhoto?.dataset.redlinePhotoId===selectedId;
+ preview.hidden=!priced||!owner||!imageReady||alreadyVisible;
+ document.body.classList.toggle('rr-timing-priced-photo',priced&&owner&&imageReady&&!alreadyVisible);
  if(imageReady&&previewImg.src!==img.src)previewImg.src=img.src;
  if(!running&&latest?.active&&!latest.active.running){
   note.textContent='Timer lease expired. Start again after the previous session is finalized.';
