@@ -287,3 +287,6 @@ body.bc-redline-receiver.bc-redline-archive-view.rr-imessage-mode #redlineReceiv
 @media(prefers-reduced-motion:reduce){
  body.bc-redline-receiver.rr-imessage-mode #redlineReceiverLiveWorkspace.rr-media-open>.rr-incoming-photos{animation:none!important}
 }
+
+/* Horizontal resize remains available on the narrow separator. */
+body.bc-redline-receiver.rr-imessage-mode #redlineReceiverMediaEdge{cursor:col-resize!important;touch-action:none!important}
