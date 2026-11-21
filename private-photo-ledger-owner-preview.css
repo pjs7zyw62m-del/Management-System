@@ -122,3 +122,8 @@
  .bc-redline-preview-stage:has(.bc-redline-preview-phone[data-device=tablet]){justify-content:flex-start}
 }
 @media(prefers-reduced-motion:reduce){.bc-redline-sender-preview *{scroll-behavior:auto!important}}
+
+/* Compact sender summary: no redundant heading/description before the statistics. */
+.bc-redline-sender-preview .bc-redline-preview-identity{padding:14px 16px 12px}
+.bc-redline-sender-preview .bc-redline-preview-identity>span{display:block;margin-bottom:12px}
+@media(max-width:600px){.bc-redline-sender-preview .bc-redline-preview-identity{padding:13px 13px 11px}}
