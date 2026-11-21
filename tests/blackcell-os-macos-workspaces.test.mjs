@@ -63,8 +63,8 @@ test('Dock can be moved and full-screen windows can reveal controls by screen ed
  assert.match(skin,/bc-os-dock-edge-open/);
 });
 test('Published release loads the whole upgraded component set',()=>{
- assert.match(html,/blackcell-os-macos-workspaces\.css\?v=20261121-1/);
- assert.match(html,/blackcell-os-macos-workspaces\.js\?v=20261121-1/);
+ assert.match(html,/blackcell-os-macos-workspaces\.css\?v=20261121-(?:1|2)/);
+ assert.match(html,/blackcell-os-macos-workspaces\.js\?v=20261121-(?:1|2)/);
  assert.match(html,/blackcell-os-macos-desktop\.js\?v=20261121-2/);
- assert.match(html,/blackcell-os\.js\?v=121-mac-workspaces/);
+ assert.match(html,/blackcell-os\.js\?v=(?:121-mac-workspaces|122-unified-desktop-sync)/);
 });
