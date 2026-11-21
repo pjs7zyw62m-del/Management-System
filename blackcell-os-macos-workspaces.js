@@ -178,7 +178,7 @@
   },{passive:true});
  }
 
- let spotlight=null,spotlightInput=null,spotlightList=null;
+ let spotlight=null,spotlightInput=null,spotlightList=null,spotlightFiles=[];
  function evalArithmetic(raw){
   if(!/^[0-9.\s()+*\/-]{1,64}$/.test(raw)||!/[+*/()-]/.test(raw))return null;
   const values=[],ops=[];let pending='',unary=true;
@@ -208,7 +208,7 @@
   while(ops.length){if(ops.at(-1)==='('||!reduce())return null}
   return values.length===1?Number(values[0].toPrecision(10)):null;
  }
- function closeSpotlight(){spotlight?.remove();spotlight=null;spotlightInput=null;spotlightList=null}
+ function closeSpotlight(){spotlight?.remove();spotlight=null;spotlightInput=null;spotlightList=null;spotlightFiles=[]}
  function renderSpotlight(){
   if(!spotlight||!spotlightInput)return;
   const q=spotlightInput.value.trim().toLowerCase();spotlightList.replaceChildren();
@@ -222,7 +222,11 @@
    const item=action(app.title,()=>{closeSpotlight();if(!app.tile.hidden&&!app.tile.disabled)app.tile.click()},'bc-mac-spotlight-result');
    spotlightList.append(item);
   }
-  if(!spotlightList.children.length)spotlightList.append(el('p','bc-mac-empty','No matching installed applications.'));
+  for(const file of spotlightFiles.filter(f=>f.name.toLowerCase().includes(q)).slice(0,6)){
+   const item=action('Desktop · '+file.name,()=>{closeSpotlight();bridge()?.openDesktopFiles()},'bc-mac-spotlight-result');
+   item.title='Open the Desktop folder in BLACKCELL Files';spotlightList.append(item);
+  }
+  if(!spotlightList.children.length)spotlightList.append(el('p','bc-mac-empty','No matching applications or Desktop files.'));
  }
  function openSpotlight(){
   if(!allowed()||bridge()?.isPhone())return;
@@ -242,7 +246,12 @@
   });
   inner.append(spotlightInput,spotlightList);spotlight.append(inner);shell.append(spotlight);
   spotlight.addEventListener('pointerdown',e=>{if(e.target===spotlight)closeSpotlight()});
-  renderSpotlight();spotlightInput.focus();
+  spotlightFiles=[];renderSpotlight();spotlightInput.focus();
+  const ref=spotlight;
+  if(bridge()?.listDesktopFiles)void bridge().listDesktopFiles().then(items=>{
+   if(ref===spotlight){spotlightFiles=Array.isArray(items)?items:[];renderSpotlight()}
+  }).catch(()=>{});
+
  }
  let stageEnabled=false,stageRail=null;
  function stageSync(){
