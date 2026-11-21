@@ -76,7 +76,7 @@ test('Currently Viewing has authenticated selected-photo presence and photo bene
  assert.match(ui,/bridge\(\)\.currentlyViewingStatus\(roomId\)/);
  assert.match(ui,/redline-chat-timer-photo/);
  assert.match(ui,/photo\.image_url/);
- assert.match(ui,/photo_id===e\.timer\.photo_id/);
+ assert.match(ui,/p\.id===e\.timer\.photo_id/);
  assert.match(css,/redline-chat-timer-image/);
  assert.match(css,/repeat\(5,minmax\(0,1fr\)\)/);
  assert.match(bridge,/async setCurrentlyViewing\(photoId\)/);
@@ -86,6 +86,6 @@ test('Currently Viewing has authenticated selected-photo presence and photo bene
  assert.match(migration,/revoke all on corp_private\.redline_currently_viewing from public,anon,authenticated/);
  assert.match(migration,/owner_id=v_user and active/);
  assert.match(migration,/owner_id=v_user or member_id=v_user/);
- assert.match(migration,/updated_at<clock_timestamp\(\)-interval '45 seconds'/);
+ assert.match(migration,/v_updated<clock_timestamp\(\)-interval '45 seconds'/);
  assert.match(migration,/revoke all on function public\.corp_redline_currently_viewing_status\(uuid\)/);
 });
