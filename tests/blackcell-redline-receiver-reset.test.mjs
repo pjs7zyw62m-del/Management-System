@@ -88,8 +88,8 @@ test('Sender gets archived earnings and chat without permission to upload while 
  assert.match(ledger,/state\.showArchive\)throw Error\('Return to the current session/);
 });
 test('REDLINE receiver resources are versioned and original form and security remain intact',()=>{
- assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-imessage-photos3/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-imessage-photos3/);
+ assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-imessage-two-axis4/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-imessage-two-axis4/);
  assert.match(html,/private-photo-ledger\.js\?v=20261121-room-presence1/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=20261121-stable-brand1/);
  assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-inline-owner-chat1/);
@@ -132,7 +132,7 @@ test('REDLINE OS receiver keeps the narrow chat left and the real incoming photo
  assert.match(receiver,/window\.innerWidth>=420/);
  assert.match(css,/grid-template-columns:minmax\(300px,370px\) minmax\(0,1fr\)/);
  assert.match(css,/rr-incoming-photos #ownerReviewQueue/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-imessage-photos3/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-imessage-two-axis4/);
 });
 
 test('Owner can inspect large photo and set price while viewing it',()=>{
@@ -175,8 +175,8 @@ test('Receiver toolbar is compact, room controls expand on demand and live actio
  assert.match(css,/body\.bc-redline-receiver\.rr-room-tools-open #redlineSessionTools:not\(\[hidden\]\)/);
  assert.match(css,/min-height:34px!important/);
  assert.match(css,/grid-template-columns:minmax\(0,1\.7fr\) minmax\(465px,1fr\)!important/);
- assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-imessage-photos3/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-imessage-photos3/);
+ assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-imessage-two-axis4/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-imessage-two-axis4/);
 });
 
 
@@ -198,8 +198,8 @@ test('REDLINE uses iMessage-style slide-in Photo Review, not resize buttons or a
  assert.match(css,/grid-template-columns:minmax\(0,1fr\) 11px minmax\(0,var\(--rr-media-width\)\)!important/);
  assert.match(css,/@media\(min-width:420px\) and \(max-width:699px\)/);
  assert.match(css,/rr-media-open>\.rr-incoming-photos/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-imessage-photos3/);
- assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-imessage-photos3/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-imessage-two-axis4/);
+ assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-imessage-two-axis4/);
 });
 
 test('Photo Review retains full photo pricing and phone navigation',()=>{
@@ -214,4 +214,47 @@ test('Photo Review retains full photo pricing and phone navigation',()=>{
  assert.match(ledger,/await assignAmount\(entry,input,accept\)/);
  assert.match(ledger,/await rejectPhoto\(entry,reject\)/);
  assert.match(css,/object-fit:contain!important/);
+});
+
+
+test('One iMessage-style workspace has two independent resizers and a fixed-height shell',()=>{
+ const layout=read('private-photo-ledger-imessage-workspace.css');
+ assert.match(receiver,/const reviewStage=make\('div','rr-review-stage'\)/);
+ assert.match(receiver,/const pricedStage=make\('section','rr-priced-stage'\)/);
+ assert.match(receiver,/photos\.append\(reviewStage,heightDivider,pricedStage\)/);
+ assert.match(receiver,/heightDivider\.setAttribute\('aria-orientation','horizontal'\)/);
+ assert.match(receiver,/divider\.setAttribute\('aria-orientation','vertical'\)/);
+ assert.match(receiver,/heightDivider\.addEventListener\('pointerdown'/);
+ assert.match(receiver,/heightDivider\.addEventListener\('pointermove'/);
+ assert.match(receiver,/heightDivider\.addEventListener\('dblclick'/);
+ assert.match(receiver,/heightDivider\.addEventListener\('keydown'/);
+ assert.match(receiver,/divider\.addEventListener\('pointermove'/);
+ assert.match(receiver,/window\.localStorage\.setItem\(HEIGHT_KEY/);
+ assert.match(receiver,/window\.localStorage\.setItem\(MEDIA_KEY/);
+ assert.match(layout,/#redlineReceiverLiveWorkspace\{/);
+ assert.match(layout,/height:clamp\(420px,calc\(100dvh - 178px\),1080px\)!important/);
+ assert.match(layout,/max-height:calc\(100dvh - 105px\)!important/);
+ assert.match(layout,/#redlineReceiverHeightEdge/);
+ assert.match(layout,/cursor:row-resize!important/);
+ assert.match(layout,/cursor:col-resize/);
+ assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-imessage-two-axis4/);
+});
+test('Incoming photo decisions and priced photo records stay separate and scroll internally',()=>{
+ const layout=read('private-photo-ledger-imessage-workspace.css');
+ assert.match(receiver,/reviewStage\.append\(originalReview\)/);
+ assert.match(receiver,/pricedStage\.append\(element\)/);
+ assert.match(receiver,/timeline\.append\(element\)/);
+ assert.match(receiver,/timeline\.classList\.add\('rr-source-timeline'\)/);
+ assert.match(layout,/#redlineReceiverReviewStage/);
+ assert.match(layout,/overflow-y:auto!important/);
+ assert.match(layout,/#redlineReceiverPricedStage #photoEntries/);
+ assert.match(layout,/height:0!important;min-height:0!important;max-height:none!important/);
+ assert.match(layout,/#redlineReceiverPricedStage #photoEntries>\.photo-entry/);
+ assert.match(layout,/grid-template-columns:72px minmax\(0,1fr\)!important/);
+ assert.match(ledger,/state\.filter=state\.isOwner\?'priced':'all'/);
+ assert.match(ledger,/state\.filter==='priced'&&e\.decision_status==='accepted'/);
+ assert.match(html,/data-photo-filter="priced"/);
+ assert.match(ledger,/async function assignAmount\(/);
+ assert.match(ledger,/async function rejectPhoto\(/);
+ assert.match(ledger,/async function settle\(/);
 });
