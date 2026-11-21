@@ -1046,3 +1046,39 @@ body.bc-redline-receiver #redlineLightboxReview .rr-current-session-finished{
  font-size:11px!important;
  line-height:1.4!important;
 }
+
+/* REDLINE stars: receiver-only 1–5 star choice inside the normal right rail. */
+body.bc-redline-receiver #redlineLightboxReview .rr-photo-rating-panel{
+ display:flex!important;flex-direction:column!important;gap:9px!important;
+ width:100%!important;min-width:0!important;flex:0 0 auto!important;
+ padding:13px 0!important;margin:4px 0!important;
+ border-top:1px solid #572337!important;border-bottom:1px solid #572337!important;
+}
+body.bc-redline-receiver #redlineLightboxReview .rr-photo-rating-title{
+ color:#f0cbd5;font-size:10px;font-weight:850;letter-spacing:.1em;
+}
+body.bc-redline-receiver #redlineLightboxReview .rr-photo-rating-buttons{
+ display:flex!important;align-items:center!important;gap:4px!important;
+ width:100%!important;min-width:0!important;
+}
+body.bc-redline-receiver #redlineLightboxReview .rr-photo-rating-star{
+ flex:1 1 0!important;min-width:0!important;min-height:46px!important;
+ border-radius:8px!important;border:1px solid #5c3b3e!important;
+ padding:3px!important;color:#796569!important;background:#160f13!important;
+ font-size:clamp(23px,2.4vw,30px)!important;line-height:1!important;
+ cursor:pointer!important;
+}
+body.bc-redline-receiver #redlineLightboxReview .rr-photo-rating-star.is-filled{
+ color:#ffc453!important;border-color:#9d6d25!important;background:#251a12!important;
+}
+body.bc-redline-receiver #redlineLightboxReview .rr-photo-rating-star:focus-visible{
+ outline:2px solid #fff!important;outline-offset:2px!important;
+}
+body.bc-redline-receiver #redlineLightboxReview .rr-photo-rating-hint,
+body.bc-redline-receiver #redlineLightboxReview .rr-photo-rating-feedback{
+ color:#d5b3be;font-size:11px;line-height:1.4;margin:0;
+}
+body.bc-redline-receiver .rr-photo-star-summary{
+ color:#ffc453!important;font-size:12px!important;font-weight:800!important;
+ letter-spacing:.04em!important;margin:6px 0!important;
+}
