@@ -121,18 +121,30 @@ const ownerPanel=$('#ownerUploadInfo');
 const ownerButton=make('button','redline-owner-open-messages','MESSAGE SENDER');
 ownerButton.id='redlineOwnerMessageLaunch';ownerButton.type='button';
 ownerPanel?.append(ownerButton);
+const receiverChatMount=()=>$('#redlineReceiverChatMount');
+const receiverChatPanel=()=>$('#redlineReceiverChat');
 ownerButton.addEventListener('click',()=>{
  const snap=window.BLACKCELL_REDLINE_API?.snapshot?.();
  if(!snap?.isOwner)return;
+ const panel=receiverChatPanel();
+ if(panel&&!panel.hidden&&receiverChatMount()){
+  panel.scrollIntoView({behavior:'smooth',block:'start'});
+  entry.focus({preventScroll:true});return;
+ }
  ownerMount.append(messageCard);
- photoAction.hidden=true; // Owners cannot upload sender-only photos.
- ownerDialog.showModal();
- void loadMessages();
+ photoAction.hidden=true;
+ ownerDialog.showModal();void loadMessages();
 });
-ownerDialog.addEventListener('close',()=>{uploadPane.append(messageCard);photoAction.hidden=false;entry.value=''});
+ownerDialog.addEventListener('close',()=>{
+ const inline=receiverChatMount(),panel=receiverChatPanel();
+ if(inline&&panel&&!panel.hidden)inline.append(messageCard);
+ else uploadPane.append(messageCard);
+ photoAction.hidden=Boolean(inline&&panel&&!panel.hidden);
+ entry.value='';
+});
 ownerDialog.addEventListener('click',e=>{if(e.target===ownerDialog)ownerDialog.close()});
 let currentTab='upload',lastRoom=null,lastSessionKey=null,messages=[],loading=false,posting=false,roomReady=false;
-let lastSync=0;
+let lastSync=0,lastOwnerSession=null;
 function bridge(){return window.BLACKCELL_REDLINE_API}
 const snapshot=()=>bridge()?.snapshot?.()||null;
 function isSender(){
@@ -243,6 +255,28 @@ function switchTab(tab){
  if(tab==='upload')void loadMessages();
  home.scrollIntoView({behavior:'auto',block:'start'});
 }
+function syncOwnerChat(snap){
+ const mount=receiverChatMount(),panel=receiverChatPanel();
+ const ready=Boolean(snap?.isOwner&&!app.hidden&&!room.hidden&&mount&&panel&&!panel.hidden);
+ if(!ready){
+  lastOwnerSession=null;
+  if(!ownerDialog.open&&messageCard.parentNode!==uploadPane){
+   uploadPane.append(messageCard);photoAction.hidden=false;
+  }
+  return;
+ }
+ if(ownerDialog.open)return;
+ if(messageCard.parentNode!==mount)mount.append(messageCard);
+ photoAction.hidden=true;
+ const key=snap.roomId+'|'+(snap.resetAt||'')+'|'+String(snap.archiveMode);
+ if(key!==lastOwnerSession){
+  lastOwnerSession=key;messages=[];lastSync=0;renderChat();void loadMessages();
+ }
+ send.disabled=Boolean(!snap.roomActive||snap.archiveMode);
+ entry.disabled=Boolean(!snap.roomActive||snap.archiveMode);
+ entry.placeholder=snap.archiveMode?'Return to current session to reply…':
+  snap.roomActive?'Message your sender…':'This private room is closed';
+}
 function sync(){
  const snap=snapshot(),sender=isSender();
  home.hidden=!sender;
@@ -269,19 +303,20 @@ function sync(){
   }
   if(!roomReady){roomReady=true;switchTab('upload')}
   if(currentTab==='upload')renderChat();
- }else{roomReady=false}
+ }else{roomReady=false;syncOwnerChat(snap)}
 }
 const observer=new MutationObserver(()=>requestAnimationFrame(sync));
 for(const el of [app,room,upload,ownerSetup])observer.observe(el,{attributes:true,attributeFilter:['hidden']});
-window.addEventListener('blackcell:redline:messages-changed',()=>{if((isSender()&&currentTab==='upload')||ownerDialog.open)void loadMessages()});
+window.addEventListener('blackcell:redline:messages-changed',()=>{if((isSender()&&currentTab==='upload')||ownerDialog.open||(receiverChatPanel()&&!receiverChatPanel().hidden))void loadMessages()});
+window.addEventListener('blackcell:redline:receiver-ready',sync);
 window.addEventListener('blackcell:redline:bridge',sync);
 window.addEventListener('blackcell:redline:state',sync);
 window.addEventListener('blackcell:redline:session-mode',sync);
 window.addEventListener('blackcell:redline:reset',()=>{lastSessionKey=null;messages=[];lastSync=0;sync()});
 window.addEventListener('pageshow',sync);
-window.addEventListener('visibilitychange',()=>{if(!document.hidden&&((isSender()&&currentTab==='upload')||ownerDialog.open))void loadMessages()});
+window.addEventListener('visibilitychange',()=>{if(!document.hidden&&((isSender()&&currentTab==='upload')||ownerDialog.open||(receiverChatPanel()&&!receiverChatPanel().hidden)))void loadMessages()});
 window.setInterval(()=>{
- const active=(isSender()&&currentTab==='upload')||ownerDialog.open;
+ const active=(isSender()&&currentTab==='upload')||ownerDialog.open||(receiverChatPanel()&&!receiverChatPanel().hidden);
  if(!document.hidden&&active&&Date.now()-lastSync>9500)void loadMessages();
 },10000);
 sync();
