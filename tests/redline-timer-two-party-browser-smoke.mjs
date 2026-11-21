@@ -59,6 +59,7 @@ const setup=String.raw`<script>
     box.textContent.includes('$0.0100/second')));
    document.body.dataset.timerCorrectRoom=String(Boolean(
     box&&(owner?box.closest('#redlineReceiverChatMount'):box.closest('#redlineSimpleSender'))));
+   document.body.dataset.timerPinnedDuring=String(Boolean(box?.classList.contains('redline-chat-timer-pinned')));
   },3800);
   setTimeout(()=>{
    const stoppedAt=new Date().toISOString();
@@ -75,6 +76,7 @@ const setup=String.raw`<script>
    document.body.dataset.timerStopVisible=String(Boolean(box&&box.textContent.includes('TIMER STOPPED')&&box.textContent.includes('$0.15 final')));
    document.body.dataset.timerStartPreserved=String(Boolean(document.querySelector('.redline-message-feed .redline-chat-timer[data-timer-phase="start"]')));
    document.body.dataset.timerNoDuplicate=String(document.querySelectorAll('.redline-message-feed .redline-chat-timer[data-timer-phase="stop"]').length===1);
+   document.body.dataset.timerUnpinnedAfter=String(!document.querySelector('.redline-message-feed .redline-chat-timer-pinned'));
   },7200);
  });
  </script>
@@ -111,7 +113,7 @@ try{
   });
   assert.equal(exit,0,role+' Chrome failed: '+stderr.slice(-950));
   for(const flag of ['timer-start-visible','timer-correct-room','timer-stop-visible',
-    'timer-start-preserved','timer-no-duplicate']){
+    'timer-start-preserved','timer-no-duplicate','timer-pinned-during','timer-unpinned-after']){
    assert.match(stdout,new RegExp('data-'+flag+'="true"'),role+' '+flag+' missing');
   }
   assert.doesNotMatch(stdout,/data-timer-error="[^"]+"/,role+' uncaught exception');

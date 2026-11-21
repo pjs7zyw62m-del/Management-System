@@ -78,6 +78,8 @@
   thread.append(make('div','bc-redline-preview-bubble is-sender','I just posted a new photo.'));
   thread.append(make('div','bc-redline-preview-bubble is-owner','Got it. I’ll review it now.'));
   thread.append(make('div','bc-redline-preview-bubble is-sender','Thanks! Let me know what you think.'));
+  thread.append(make('div','bc-redline-preview-receipt','✓✓ Read · Example only'),
+   make('div','bc-redline-preview-typing','Sender is typing… · Example only'));
   const composerSample=make('div','bc-redline-preview-chat-input');
   composerSample.append(make('span','','Write a reply…'),make('span','','SEND'));
   thread.append(composerSample);
@@ -96,6 +98,16 @@
     earnedValues[key]=amount;row.append(amount);lines.append(row);
   }
   earningsPanel.append(lines,make('p','','Amounts are taken from this selected private room when available. No transfers happen in REDLINE.'));
+  const historyPanel=make('section','bc-redline-preview-message bc-redline-preview-history');historyPanel.hidden=true;
+  historyPanel.append(make('h4','','Photo History'),
+   make('p','','Every sent photo with ratings and prices. Resend needs 5 stars AND at least $0.01.'));
+  const historyPreviewList=make('div','bc-redline-preview-photo-list');
+  historyPanel.append(historyPreviewList);
+  const topPicksPanel=make('section','bc-redline-preview-message bc-redline-preview-history');topPicksPanel.hidden=true;
+  topPicksPanel.append(make('h4','','5-Star Photos'),
+   make('p','','Receiver-rated top picks. Approved originals priced $0.01 or more are eligible to resend.'));
+  const picksPreviewList=make('div','bc-redline-preview-photo-list');
+  topPicksPanel.append(picksPreviewList);
   const messagesPanel=make('section','bc-redline-preview-message bc-redline-preview-messages');messagesPanel.hidden=true;
   messagesPanel.append(make('h4','','REDLINE Messages'));
   messagesPanel.append(make('p','','EXAMPLE ONLY — private sender and owner chat appears here after the room is assigned.'));
@@ -105,10 +117,11 @@
   messagesPanel.append(sampleOutgoing,sampleIncoming,sampleCard);
   const sampleComposer=make('div','bc-redline-preview-sample-composer','Message REDLINE…    ·    Preview only');
   messagesPanel.append(sampleComposer);
-  section.append(upload,earningsPanel,messagesPanel);
+  section.append(upload,earningsPanel,historyPanel,topPicksPanel);
   const nav=make('nav','bc-redline-preview-nav');nav.setAttribute('aria-label','Preview sender navigation');
   const tabs=[
-    ['upload','Photos & Chat',upload],['earnings','Earnings',earningsPanel]
+    ['upload','Photos & Chat',upload],['earnings','Earnings',earningsPanel],
+    ['history','Photo History',historyPanel],['five-star','5-Star Photos',topPicksPanel]
   ];
   function selectTab(key){
     for(const [id,label,panel] of tabs){
@@ -138,8 +151,9 @@
   phone.addEventListener('click',()=>setDevice('phone'));
   tablet.addEventListener('click',()=>setDevice('tablet'));
 
-  history.textContent='VIEW EARNINGS';
-  history.addEventListener('click',()=>selectTab('earnings'));
+  history.textContent='VIEW PHOTO HISTORY';
+  history.addEventListener('click',()=>selectTab('history'));
+  // A sender can also reach Earnings through the dedicated preview tab.
   // Read-only design example: never upload or display a local photo.
   fileInput.addEventListener('change',()=>{
     fileName.textContent=fileInput.files?.length
@@ -151,7 +165,40 @@
     fileInput.value='';fileName.textContent='No file sent in this preview';
   });
   dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close()});
-  function open(){
+  function renderPreviewPhotoHistory(){
+   const snap=window.BLACKCELL_REDLINE_API?.snapshot?.();
+   const real=Array.isArray(snap?.photoHistory)?snap.photoHistory:[];
+   const samples=visible($('#activeRoom'))?real:[
+    {id:'SAMPLE001',stars:5,amount_cents:75,decision_status:'accepted',resubmissionAllowed:true,caption:'Sample top pick'},
+    {id:'SAMPLE002',stars:3,amount_cents:25,decision_status:'accepted',resubmissionAllowed:false,caption:'Sample photo'},
+    {id:'SAMPLE003',stars:5,amount_cents:0,decision_status:'accepted',resubmissionAllowed:false,caption:'Below minimum'}
+   ];
+   for(const [target,items] of [[historyPreviewList,samples],[picksPreviewList,samples.filter(p=>p.stars===5)]]){
+    target.replaceChildren();
+    if(!items.length){target.append(make('p','bc-redline-preview-history-empty','No photos have been sent in this room yet.'));continue}
+    for(const p of items.slice(0,60)){
+     const row=make('div','bc-redline-preview-history-row');
+     if(typeof p.image_url==='string'&&p.image_url.startsWith('https://')){
+      const img=make('img','bc-redline-preview-history-photo');
+      img.src=p.image_url;img.alt='Private photo '+String(p.id).slice(0,8);
+      img.loading='lazy';img.addEventListener('error',()=>{img.hidden=true});row.append(img);
+     }else row.append(make('div','bc-redline-preview-history-placeholder','PRIVATE PHOTO'));
+     const info=make('div','bc-redline-preview-history-details');
+     const amount=Number(p.amount_cents||0);
+     const price=p.decision_status==='accepted'?'$'+(amount/100).toFixed(2):String(p.decision_status||'pending').toUpperCase();
+     info.append(make('strong','','PHOTO '+String(p.id||'').slice(0,8).toUpperCase()),
+      make('span','bc-redline-preview-history-stars',p.stars?'★'.repeat(p.stars)+'☆'.repeat(5-p.stars):'NOT RATED'),
+      make('small','',price+(p.caption?' · '+String(p.caption).slice(0,60):'')));
+     const allowed=p.resubmissionAllowed===true&&p.stars===5&&amount>=1;
+     const btn=make('button','bc-redline-preview-resend',
+      allowed?'↻ RESEND · SENDER ONLY':p.stars!==5?'NEEDS 5 STARS':
+       amount<1?'NEEDS $0.01 MINIMUM':'RESEND UNAVAILABLE');
+     btn.type='button';btn.disabled=true;info.append(btn);row.append(info);target.append(row);
+    }
+    if(items.length>60)target.append(make('small','','Preview shows 60; sender can browse full history.'));
+   }
+  }
+function open(){
     if(!ownerVisible())return; // Never a bypass to the real sender role.
     roomName.textContent=visible($('#activeRoom'))?$('#activeRoomTitle')?.textContent?.trim()||'PRIVATE ROOM':'Example private room';
     const activeRoom=visible($('#activeRoom'));
@@ -161,7 +208,7 @@
     earnedValues.owed.textContent=owedValue.textContent;
     earnedValues.paid.textContent=activeRoom?$('#totalPaid')?.textContent?.trim()||'$0.00':'$0.00';
     earnedValues.total.textContent=activeRoom?$('#totalAssigned')?.textContent?.trim()||'$0.00':'$0.00';
-    setDevice('phone');selectTab('upload');dialog.showModal();
+    renderPreviewPhotoHistory();setDevice('phone');selectTab('upload');dialog.showModal();
   }
   for(const [host,name] of [[setup,'redlineSetupPreviewButton'],[ownerInfo,'redlineOwnerPreviewButton']]){
     const button=make('button','bc-redline-open-sender-preview','👁  PREVIEW SENDER VIEW');

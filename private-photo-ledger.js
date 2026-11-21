@@ -396,31 +396,36 @@ function ratedPhotoData(e){
   image_url:state.images.get(e.image_path)?.url||''
  };
 }
-function fiveStarResubmissionData(){
- if(state.showArchive)return [];
+function photoHistoryData(){
+ if(!state.room)return [];
  const copies=new Map();
  for(const e of state.entries){
   if(!e.resubmission_origin_id)continue;
-  const old=copies.get(e.resubmission_origin_id)||[];
-  old.push(e);copies.set(e.resubmission_origin_id,old);
+  const prior=copies.get(e.resubmission_origin_id)||[];
+  prior.push(e);copies.set(e.resubmission_origin_id,prior);
  }
- return state.entries
-  .filter(e=>!e.resubmission_origin_id&&
-   state.ratings.get(e.id)?.stars===5&&e.uploaded_by===state.room?.member_id)
-  .map(e=>{
-   const attempts=copies.get(e.id)||[];
-   const rejected=e.decision_status==='rejected'||
-    attempts.some(x=>x.decision_status==='rejected');
-   const pending=attempts.some(x=>x.decision_status==='pending');
-   const originalPending=e.decision_status==='pending';
-   return {...ratedPhotoData(e),resubmissionCount:attempts.length,
-    resubmissionStatus:rejected?'rejected':originalPending?'original-pending':
-     pending?'pending':'ready',
-    resubmissionAllowed:e.decision_status==='accepted'&&!rejected&&!pending&&
-     state.room?.active===true&&state.room?.photo_sending_paused!==true};
-  })
+ return state.entries.filter(e=>e.uploaded_by===state.room.member_id).map(e=>{
+  const attempts=copies.get(e.id)||[];
+  const rejected=e.decision_status==='rejected'||attempts.some(x=>x.decision_status==='rejected');
+  const pending=attempts.some(x=>x.decision_status==='pending');
+  const eligibleOriginal=!e.resubmission_origin_id&&e.decision_status==='accepted'&&
+   cents(e.amount_cents)>=1n&&state.ratings.get(e.id)?.stars===5;
+  const resubmissionStatus=e.resubmission_origin_id?'resubmitted':
+   rejected?'rejected':e.decision_status==='pending'?'original-pending':
+   pending?'pending':state.ratings.get(e.id)?.stars!==5?'not-five-star':
+   cents(e.amount_cents)<1n?'below-minimum':'ready';
+  return {...ratedPhotoData(e),decision_status:e.decision_status,settled_at:e.settled_at,
+   resubmission_origin_id:e.resubmission_origin_id||null,
+   resubmissionCount:attempts.length,resubmissionStatus,
+   resubmissionAllowed:eligibleOriginal&&!rejected&&!pending&&
+    !state.showArchive&&state.room.active===true&&state.room.photo_sending_paused!==true};
+ }).sort((a,b)=>Date.parse(b.created_at||0)-Date.parse(a.created_at||0));
+}
+function fiveStarResubmissionData(){
+ if(state.showArchive)return [];
+ return photoHistoryData().filter(p=>!p.resubmission_origin_id&&p.stars===5)
   .sort((a,b)=>(b.resubmissionCount-a.resubmissionCount)||
-    (Number(b.amount_cents||0)-Number(a.amount_cents||0)));
+   (Number(b.amount_cents||0)-Number(a.amount_cents||0)));
 }
 async function loadEntries({force=false}={}){
  const selectedRoom=state.room;
@@ -1394,7 +1399,8 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
      Number(cents(a.amount_cents)<cents(b.amount_cents))-Number(cents(a.amount_cents)>cents(b.amount_cents))||
      Date.parse(state.ratings.get(b.id)?.rated_at||0)-Date.parse(state.ratings.get(a.id)?.rated_at||0))
     .slice(0,5).map(ratedPhotoData),
-   fiveStarPhotos:fiveStarResubmissionData()
+   fiveStarPhotos:fiveStarResubmissionData(),
+   photoHistory:photoHistoryData()
   };
  },
  async resubmitFiveStarPhoto(photoId){
@@ -1402,10 +1408,10 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
   if(state.closed||state.isOwner||state.showArchive||!state.user||
     !room?.active||room.photo_sending_paused||!validId(photoId))
    throw Error('Return to an active sender room with photo sending enabled.');
-  if(state.resubmittingPhotoId)throw Error('A five-star photo is already being resubmitted.');
+  if(state.resubmittingPhotoId)throw Error('A private photo is already being resubmitted.');
   const source=state.entries.find(e=>e.id===photoId&&e.room_id===room.id);
   const allowed=fiveStarResubmissionData().find(p=>p.id===photoId&&p.resubmissionAllowed);
-  if(!source||!allowed)throw Error('This five-star photo is not eligible for another resubmission.');
+  if(!source||!allowed)throw Error('Resend requires an original approved at $0.01 or more, rated 5 stars, with no pending or rejected resend.');
   const extension=source.image_path.match(/\.(jpg|jpeg|png|webp|heic|heif)$/i)?.[1]?.toLowerCase();
   if(!extension)throw Error('Original photo type is unsupported.');
   state.resubmittingPhotoId=photoId;
@@ -1469,6 +1475,21 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
   if(result.error)throw result.error;
   if(state.closed||state.room?.id!==roomId)return [];
   return (result.data||[]).reverse();
+ },
+ async chatSignal(roomId,action,messageId=null){
+  if(state.closed||!state.user||!state.room||state.room.id!==roomId||!validId(roomId)||
+   state.showArchive||!['typing','stopped','read'].includes(action))
+   throw Error('A verified current REDLINE room is required.');
+  const result=await db.rpc('corp_redline_chat_signal',{p_room_id:roomId,p_action:action,p_message_id:messageId});
+  if(result.error||result.data?.ok!==true)throw Error(fail(result.error||result.data?.reason||'Chat signal unavailable.'));
+  return true;
+ },
+ async chatStatus(roomId){
+  if(state.closed||!state.user||!state.room||state.room.id!==roomId||!validId(roomId)||
+   state.showArchive)throw Error('A verified current REDLINE room is required.');
+  const result=await db.rpc('corp_redline_chat_status',{p_room_id:roomId});
+  if(result.error||result.data?.ok!==true)throw Error(fail(result.error||result.data?.reason||'Chat status unavailable.'));
+  return {peerReadAt:result.data.peer_read_at||null,peerTyping:result.data.peer_typing===true};
  },
  async sendMessage(message){
   const body=String(message||'').trim();

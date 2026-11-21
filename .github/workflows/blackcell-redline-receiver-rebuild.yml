@@ -12,6 +12,8 @@ on:
       - 'supabase/sql/blackcell_redline_start_fresh_archive.sql'
       - 'tests/redline-timer-chat-browser-smoke.mjs'
       - 'tests/redline-per-second-earnings.test.mjs'
+      - 'tests/redline-history-chat-signals.test.mjs'
+      - 'tests/redline-chat-read-typing-browser-smoke.mjs'
       - 'tests/redline-timer-two-party-browser-smoke.mjs'
       - 'tests/redline-next-photo-visual-smoke.mjs'
       - 'tests/redline-photo-history-browser-smoke.mjs'
@@ -34,6 +36,8 @@ on:
       - 'tests/private-photo-ledger-simple-sender.test.mjs'
       - 'tests/redline-timer-chat-browser-smoke.mjs'
       - 'tests/redline-per-second-earnings.test.mjs'
+      - 'tests/redline-history-chat-signals.test.mjs'
+      - 'tests/redline-chat-read-typing-browser-smoke.mjs'
       - 'tests/redline-timer-two-party-browser-smoke.mjs'
       - 'tests/redline-next-photo-visual-smoke.mjs'
       - 'tests/redline-photo-history-browser-smoke.mjs'
@@ -62,6 +66,7 @@ jobs:
           node --test \
             tests/blackcell-redline-receiver-reset.test.mjs \
             tests/redline-per-second-earnings.test.mjs \
+            tests/redline-history-chat-signals.test.mjs \
             tests/private-photo-ledger-responsive.test.mjs \
             tests/private-photo-ledger-mobile.test.mjs \
             tests/private-photo-ledger-sender.test.mjs \
@@ -152,6 +157,13 @@ jobs:
           command -v google-chrome >/dev/null 2>&1 && CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && CHROME=chromium || CHROME=; }
           [ -n "$CHROME" ] || { echo "Chromium unavailable"; exit 1; }
           CHROME="$CHROME" node tests/redline-timer-two-party-browser-smoke.mjs
+      - name: Receiver and sender see read receipts and live typing
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v google-chrome >/dev/null 2>&1 && CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && CHROME=chromium || CHROME=; }
+          [ -n "$CHROME" ] || { echo "Chromium unavailable"; exit 1; }
+          CHROME="$CHROME" node tests/redline-chat-read-typing-browser-smoke.mjs
       - name: Verify NEXT pending photo stays visible after previous timed selection
         shell: bash
         run: |

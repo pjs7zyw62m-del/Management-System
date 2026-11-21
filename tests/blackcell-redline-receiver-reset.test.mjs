@@ -93,7 +93,7 @@ test('REDLINE receiver resources are versioned and original form and security re
  assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-history-visible1/);
  assert.match(html,/private-photo-ledger\.js\?v=20261121-photo-queue-single-view3/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=20261121-stable-brand1/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-per-second1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-photo-history-typing2/);
  assert.match(ledger,/corporateAuthorize\(db,\{allowLedgerOnly:true\}\)/);
  assert.match(ledger,/const BUCKET='corp-private-photo-ledger'/);
  assert.match(ledger,/db\.storage\.from\(BUCKET\)\.upload/);
@@ -409,7 +409,7 @@ test('Sender chat receives verified start and stop messages with a live clock an
  assert.match(sender,/window\.setInterval\(\(\)=>\{/);
  assert.match(sender,/BigInt\(seconds\)\*BigInt\(row\.rate_cents\|\|0\)/);
  assert.match(style,/\.redline-chat-timer/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-per-second1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-photo-history-typing2/);
 });
 
 test('Auto leading zero, verified timed price, and reject confirmation are supported',()=>{
@@ -457,7 +457,7 @@ test('REDLINE pause belongs only to verified receiver and applies across devices
  assert.match(migration,/NOT r\.photo_sending_paused/g);
  assert.match(style,/#redlineReceiverSendingPause|rr-receiver-pause-button/);
  assert.match(html,/private-photo-ledger-sender\.js\?v=20261121-receiver-owned-pause1/);
- assert.match(html,/private-photo-ledger-simple-sender\.css\?v=20261121-photo-queue-single-view3/);
+ assert.match(html,/private-photo-ledger-simple-sender\.css\?v=20261121-photo-history-typing2/);
 });
 
 test('Selected reviewed photo stays beside sidebar instead of caught-up queue',()=>{
@@ -655,18 +655,20 @@ test('Five-star originals can be resubmitted until receiver rejects the copied p
  assert.match(ledger,/async resubmitFiveStarPhoto\(photoId\)/);
  assert.match(ledger,/db\.storage\.from\(BUCKET\)\.download\(source\.image_path\)/);
  assert.match(ledger,/resubmission_origin_id:photoId,decision_status:'pending'/);
- assert.match(ledger,/resubmissionAllowed:e\.decision_status==='accepted'/);
- assert.match(ledger,/resubmissionStatus:rejected\?'rejected'/);
+ assert.match(ledger,/const eligibleOriginal=/);
+ assert.match(ledger,/cents\(e.amount_cents\)>=1n/);
+ assert.match(ledger,/stars===5/);
+ assert.match(ledger,/const resubmissionStatus=/);
  assert.match(ledger,/if\(options\.keepPhotoSelected!==false\)state\.reviewSidebarPhotoId=result\.data\.photo_id/);
  assert.match(sender,/\['five-star','5-Star Photos'\]/);
  assert.match(sender,/function renderFiveStarPhotos\(snap\)/);
  assert.match(sender,/resubmissionStatus==='pending'/);
  assert.match(sender,/resubmissionStatus==='rejected'/);
  assert.match(sender,/bridge\(\)\?\.resubmitFiveStarPhoto\?\.\(photo\.id\)/);
- assert.match(style,/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)!important/);
+ assert.match(style,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)!important/);
  assert.match(style,/\.redline-five-star-photo/);
  assert.match(html,/private-photo-ledger\.js\?v=20261121-photo-queue-single-view3/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-per-second1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-photo-history-typing2/);
 });
 
 test('After a server-confirmed price, the next photo is shown before network refresh',()=>{

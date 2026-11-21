@@ -7,8 +7,8 @@ const code=read('private-photo-ledger-owner-preview.js');
 const css=read('private-photo-ledger-owner-preview.css');
 const core=read('private-photo-ledger.js');
 test('owner preview is linked to existing authenticated REDLINE',()=>{
- assert.match(html,/private-photo-ledger-owner-preview\.css\?v=20261121-compact-summary4/);
- assert.match(html,/private-photo-ledger-owner-preview\.js\?v=20261121-auto-photo1/);
+ assert.match(html,/private-photo-ledger-owner-preview\.css\?v=20261121-photo-history-typing2/);
+ assert.match(html,/private-photo-ledger-owner-preview\.js\?v=20261121-photo-history-typing2/);
  assert.ok(html.indexOf('private-photo-ledger-sender.js')<html.indexOf('private-photo-ledger-owner-preview.js'));
  assert.match(html,/id="ownerSetup"/);
  assert.match(html,/id="ownerUploadInfo"/);
@@ -37,7 +37,9 @@ test('preview is isolated from upload/approval/financial APIs',()=>{
 test('preview includes phone/tablet and read-only sender tabs',()=>{
  assert.match(code,/dataset\.device='phone'/);
  assert.match(code,/setDevice\('tablet'\)/);
- assert.match(code,/selectTab\('earnings'\)/);
+ assert.match(code,/selectTab\('history'\)/);
+ assert.match(code,/renderPreviewPhotoHistory\(\)/);
+ assert.match(code,/\.disabled=true/);
  assert.match(code,/make\('button','is-active','Phone'\)/);
  assert.match(css,/data-device=tablet/);
  assert.match(css,/bc-redline-preview-nav/);

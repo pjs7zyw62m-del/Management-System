@@ -28,10 +28,12 @@ const tabs=make('nav','redline-simple-tabs');tabs.setAttribute('aria-label','Sen
 const panes=make('div','redline-simple-panes');
 const uploadPane=make('section','redline-simple-pane');uploadPane.dataset.redlinePane='upload';
 const earningsPane=make('section','redline-simple-pane');earningsPane.dataset.redlinePane='earnings';earningsPane.hidden=true;
+const historyPane=make('section','redline-simple-pane redline-photo-history-pane');
+historyPane.dataset.redlinePane='history';historyPane.hidden=true;
 const fiveStarPane=make('section','redline-simple-pane redline-five-star-pane');
 fiveStarPane.dataset.redlinePane='five-star';fiveStarPane.hidden=true;
-const messagesPane=make('section','redline-simple-pane');messagesPane.dataset.redlinePane='messages';messagesPane.hidden=true;
-for(const [key,label] of [['upload','Photos & Chat'],['earnings','Earnings'],['five-star','5-Star Photos']]){
+// Private chat stays in Photos & Chat.
+for(const [key,label] of [['upload','Photos & Chat'],['earnings','Earnings'],['history','Photo History'],['five-star','5-Star Photos']]){
  const b=make('button','redline-simple-tab',label);b.type='button';b.dataset.simpleTab=key;
  b.addEventListener('click',()=>switchTab(key));
  tabs.append(b);
@@ -78,6 +80,22 @@ const topPicksNote=make('p','redline-top-picks-note',
 const topPicksList=make('div','redline-top-picks-list');
 topPicksBox.append(topPicksNote,topPicksList);
 earningsPane.append(earningsBox,topPicksBox,activityBox,returnUpload);
+const historyIntro=make('header','redline-photo-history-intro');
+historyIntro.append(make('span','redline-kicker','PRIVATE SENDER COLLECTION'),
+ make('h2','','Photo History'),
+ make('p','','All submitted photos, prices and ratings. Resend requires 5 stars AND an approved price of at least $0.01.'));
+const historyControls=make('div','redline-history-controls');
+const historyAll=make('button','redline-history-filter is-current','ALL PHOTOS');
+const historyPicks=make('button','redline-history-filter','5-STAR TOP PICKS');
+const historyArchive=make('button','redline-history-archive','PREVIOUS RECORDS');
+for(const b of [historyAll,historyPicks,historyArchive])b.type='button';
+historyControls.append(historyAll,historyPicks,historyArchive);
+const historyCount=make('small','redline-history-count');
+const historyFeedback=make('p','redline-photo-history-feedback');historyFeedback.setAttribute('role','status');
+const historyList=make('div','redline-photo-history-list');
+const historyMore=make('button','redline-history-more','LOAD MORE PHOTOS');
+historyMore.type='button';historyMore.hidden=true;
+historyPane.append(historyIntro,historyControls,historyCount,historyFeedback,historyList,historyMore);
 const fiveStarIntro=make('header','redline-five-star-intro');
 fiveStarIntro.append(make('span','redline-kicker','RECEIVER-RATED PHOTOS'),
  make('h2','','Your 5-Star Photos'),
@@ -119,10 +137,12 @@ photoAction.addEventListener('click',()=>{if(!home.hidden)switchTab('upload')});
 const entry=make('textarea','redline-message-entry');entry.maxLength=2000;entry.rows=1;entry.placeholder='Message REDLINE…';entry.setAttribute('aria-label','Private room message');
 const send=make('button','redline-chat-send','SEND');send.type='submit';
 composer.append(photoAction,entry,send);
+const typingNotice=make('div','redline-peer-typing','');typingNotice.hidden=true;
+typingNotice.setAttribute('role','status');typingNotice.setAttribute('aria-live','polite');
 const msgError=make('p','redline-message-error');msgError.setAttribute('role','status');
-messageCard.append(msgHeader,feed,composer,msgError);
+messageCard.append(msgHeader,feed,typingNotice,composer,msgError);
 uploadPane.append(messageCard);
-panes.append(uploadPane,earningsPane,fiveStarPane);
+panes.append(uploadPane,earningsPane,historyPane,fiveStarPane);
 home.append(heading,tabs,panes);
 room.insertBefore(home,$('.room-toolbar',room));
 const ownerDialog=make('dialog','redline-owner-chat-dialog');
@@ -149,7 +169,7 @@ ownerButton.addEventListener('click',()=>{
  }
  ownerMount.append(messageCard);
  photoAction.hidden=true;
- ownerDialog.showModal();void loadMessages();
+ ownerDialog.showModal();void loadMessages();void pollChatStatus(true);
 });
 ownerDialog.addEventListener('close',()=>{
  const inline=receiverChatMount(),panel=receiverChatPanel();
@@ -163,6 +183,8 @@ let currentTab='upload',lastRoom=null,lastSessionKey=null,messages=[],loading=fa
 let lastSync=0,lastOwnerSession=null;
 let timerStatus=null,timerRoomId=null,timerFingerprint='',timerOffset=0;
 let timerPollInFlight=false,timerLastPoll=0,timerLoadError='';
+let peerReadAt=null,peerTyping=false,markedReadId=null;
+let typingRoom=null,lastTypingAt=0,chatStatusInFlight=false,lastChatStatusAt=0;
 function bridge(){return window.BLACKCELL_REDLINE_API}
 const snapshot=()=>bridge()?.snapshot?.()||null;
 function isSender(){
@@ -184,7 +206,7 @@ function createEvents(entries){
   const id=String(e.id||'').slice(0,8).toUpperCase();
   if(e.created_at)all.push({kind:'event',at:e.created_at,
    text:e.resubmission_origin_id
-    ?'5-STAR PHOTO RESUBMITTED · '+id+' · Waiting for receiver review'
+    ?'TOP-PICK PHOTO RESUBMITTED · '+id+' · Waiting for receiver review'
     :'Photo '+id+' submitted',
    status:'sent'});
   if(e.decision_status==='rejected'&&e.decided_at)all.push({kind:'event',at:e.decided_at,text:'Photo '+id+' rejected',status:'rejected'});
@@ -240,6 +262,78 @@ function renderTopPicks(snap){
   );
   card.append(details);topPicksList.append(card);
  }
+}
+let historyFilter='all',historyVisible=40;
+historyAll.addEventListener('click',()=>{historyFilter='all';historyVisible=40;renderPhotoHistory(snapshot())});
+historyPicks.addEventListener('click',()=>{historyFilter='picks';historyVisible=40;renderPhotoHistory(snapshot())});
+historyMore.addEventListener('click',()=>{historyVisible+=40;renderPhotoHistory(snapshot())});
+historyArchive.addEventListener('click',async()=>{
+ if(historyArchive.disabled)return;
+ historyArchive.disabled=true;historyFeedback.textContent='Opening photo records…';
+ try{await bridge()?.toggleArchive?.();historyVisible=40;historyFeedback.textContent='';renderPhotoHistory(snapshot())}
+ catch(e){historyFeedback.textContent=String(e?.message||e).slice(0,200)}
+ finally{historyArchive.disabled=false}
+});
+function historyResendLabel(p,snap){
+ if(p.resubmissionAllowed)return '↻ RESEND FOR REVIEW';
+ if(p.resubmission_origin_id)return 'ALREADY RESUBMITTED COPY';
+ if(snap?.archiveMode)return 'ARCHIVED · RESEND UNAVAILABLE';
+ if(!snap?.roomActive)return 'ROOM CLOSED';
+ if(snap?.photoSendingPaused)return 'SENDING PAUSED';
+ if(p.resubmissionStatus==='rejected')return 'REJECTED · RESEND CLOSED';
+ if(p.resubmissionStatus==='pending')return 'AWAITING RECEIVER REVIEW';
+ if(p.decision_status==='pending')return 'AWAITING FIRST REVIEW';
+ if(p.stars!==5)return 'REQUIRES 5 STARS';
+ if(BigInt(p.amount_cents||0)<1n)return 'REQUIRES $0.01 MINIMUM';
+ return 'RESEND UNAVAILABLE';
+}
+async function resendHistoryPhoto(p,button,status,roomId){
+ if(resubmittingId||!p.resubmissionAllowed)return;
+ if(!window.confirm('Resend this 5-star original for another private review? Original price and stars remain unchanged.'))return;
+ resubmittingId=p.id;button.disabled=true;button.textContent='RESENDING PRIVATELY…';
+ status.textContent='Creating a new pending review copy…';
+ try{
+  const result=await bridge()?.resubmitFiveStarPhoto?.(p.id);
+  if(result?.ok!==true)throw Error('Resubmission failed.');
+  historyFeedback.textContent='Top pick resent; new review is pending.';
+ }catch(e){historyFeedback.textContent='Resend failed: '+String(e?.message||e).slice(0,200)}
+ finally{
+  resubmittingId=null;const fresh=snapshot();
+  if(fresh?.roomId===roomId){renderPhotoHistory(fresh);renderFiveStarPhotos(fresh)}
+ }
+}
+function renderPhotoHistory(snap){
+ historyList.replaceChildren();
+ const all=Array.isArray(snap?.photoHistory)?snap.photoHistory:[];
+ const photos=historyFilter==='picks'?all.filter(p=>p.stars===5):all;
+ historyAll.classList.toggle('is-current',historyFilter==='all');
+ historyPicks.classList.toggle('is-current',historyFilter==='picks');
+ historyAll.setAttribute('aria-pressed',String(historyFilter==='all'));
+ historyPicks.setAttribute('aria-pressed',String(historyFilter==='picks'));
+ historyCount.textContent=(snap?.archiveMode?'ARCHIVED · ':'CURRENT SESSION · ')+photos.length+
+  (photos.length===1?' photo':' photos');
+ historyArchive.hidden=!snap?.resetAt;
+ historyArchive.textContent=snap?.archiveMode?'← RETURN TO CURRENT PHOTOS':'VIEW PREVIOUS RECORDS';
+ if(!photos.length)historyList.append(make('p','redline-history-empty',
+  historyFilter==='picks'?'No 5-star photos here.':'No photos sent in this '+(snap?.archiveMode?'archive.':'session yet.')));
+ for(const p of photos.slice(0,historyVisible)){
+  const card=make('article','redline-photo-history-row');
+  appendRatingImage(card,p.image_url,p.caption);
+  const info=make('div','redline-photo-history-details');
+  const decision=p.decision_status==='accepted'?'APPROVED · '+money(p.amount_cents):
+   p.decision_status==='rejected'?'REJECTED':'AWAITING REVIEW';
+  info.append(make('strong','redline-history-title','PHOTO '+String(p.id||'').slice(0,8).toUpperCase()),
+   make('span','redline-photo-history-stars',p.stars?starsText(p.stars)+' · '+p.stars+'/5':'NOT YET RATED'),
+   make('small','redline-history-review',decision+' · '+dateText(p.created_at)));
+  if(p.caption)info.append(make('p','redline-history-caption',p.caption));
+  if(p.resubmissionCount)info.append(make('small','',p.resubmissionCount+' previous resend(s)'));
+  const button=make('button','redline-photo-history-resend',historyResendLabel(p,snap));
+  button.type='button';button.disabled=!p.resubmissionAllowed||Boolean(resubmittingId);
+  const status=make('p','redline-five-star-row-status');status.setAttribute('role','status');
+  button.addEventListener('click',()=>void resendHistoryPhoto(p,button,status,snap.roomId));
+  info.append(button,status);card.append(info);historyList.append(card);
+ }
+ historyMore.hidden=photos.length<=historyVisible;
 }
 let resubmittingId=null;
 function renderFiveStarPhotos(snap){
@@ -321,8 +415,7 @@ function timedEvents(snap){
   if(row.started_at)result.push({kind:'timer',phase:'start',at:row.started_at,timer:row});
   if(row.stopped_at)result.push({kind:'timer',phase:'stop',at:row.stopped_at,timer:row});
  }
- const active=timerStatus.active;
- if(active?.started_at)result.push({kind:'timer',phase:'active',at:active.started_at,timer:active});
+ // The active timer is pinned separately ABOVE messages; no duplicate card.
  return result;
 }
 const clockText=seconds=>{
@@ -354,9 +447,91 @@ function updateTimerCards(){
   if(amount)amount.textContent=data.display+' earned';
  }
 }
+function makeTimerCard(e){
+ const isActive=e.phase==='active',isStop=e.phase==='stop';
+ const card=make('article','redline-chat-timer');
+ card.dataset.timerId=e.timer.id;
+ card.dataset.timerPhase=e.phase;
+ const status=make('strong','redline-chat-timer-title',
+  isStop?'■ TIMER STOPPED':isActive?'● TIMER STARTED · RUNNING':'▶ TIMER STARTED');
+ const label=make('span','redline-chat-timer-rate',money(e.timer.rate_cents)+'/minute · '+liveMoney(e.timer.rate_cents,1)+'/second');
+ const numbers=e.phase==='start'?{seconds:0,cents:0n,display:liveMoney(e.timer.rate_cents,0)}:timerNumbers(e.timer,isActive);
+ const details=make('div','redline-chat-timer-values');
+ details.append(make('span','redline-chat-timer-clock',clockText(numbers.seconds)+' elapsed'),
+  make('span','redline-chat-timer-amount',numbers.display+(isStop?' final':' earned')));
+ const foot=make('small','',isStop
+  ?'Photo '+String(e.timer.photo_id||'').slice(0,8).toUpperCase()+' · Final elapsed-second amount recorded'
+  :'Photo '+String(e.timer.photo_id||'').slice(0,8).toUpperCase()+' · '+dateText(e.at));
+ card.append(status,label,details,foot);
+ return card;
+}
+function chatVisible(snap=snapshot()){
+ if(!snap||snap.archiveMode||app.hidden||room.hidden||document.hidden)return false;
+ return snap.isOwner
+  ?Boolean(ownerDialog.open||(receiverChatPanel()&&!receiverChatPanel().hidden))
+  :currentTab==='upload'&&!home.hidden;
+}
+function updateTypingIndicator(){
+ const snap=snapshot();
+ typingNotice.hidden=!peerTyping||!chatVisible(snap);
+ typingNotice.textContent=typingNotice.hidden?'':(snap?.peerName||'Other participant')+' is typing…';
+}
+async function pollChatStatus(force=false){
+ const snap=snapshot();
+ if(!chatVisible(snap)||!bridge()?.chatStatus){peerTyping=false;updateTypingIndicator();return}
+ if(chatStatusInFlight||(!force&&Date.now()-lastChatStatusAt<2500))return;
+ const roomId=snap.roomId;chatStatusInFlight=true;lastChatStatusAt=Date.now();
+ try{
+  const status=await bridge().chatStatus(roomId);
+  if(snapshot()?.roomId!==roomId||!chatVisible(snapshot()))return;
+  const readChanged=peerReadAt!==status.peerReadAt;
+  peerReadAt=status.peerReadAt;peerTyping=status.peerTyping===true;
+  updateTypingIndicator();
+  if(readChanged)renderChat();
+ }catch(_){peerTyping=false;updateTypingIndicator()}
+ finally{chatStatusInFlight=false}
+}
+function reportRead(){
+ const snap=snapshot();
+ if(!chatVisible(snap)||!bridge()?.chatSignal)return;
+ const latest=[...messages].reverse().find(m=>m.sender_id!==snap.userId);
+ if(!latest||markedReadId===latest.id)return;
+ markedReadId=latest.id;
+ void bridge().chatSignal(snap.roomId,'read',latest.id).catch(()=>{
+  if(markedReadId===latest.id)markedReadId=null;
+ });
+}
+function stopTyping(){
+ const roomId=typingRoom;typingRoom=null;
+ if(roomId&&bridge()?.chatSignal)void bridge().chatSignal(roomId,'stopped').catch(()=>{});
+}
+function resetChatSignals(){
+ if(typingRoom)stopTyping();
+ peerReadAt=null;peerTyping=false;markedReadId=null;lastChatStatusAt=0;
+ updateTypingIndicator();
+}
+entry.addEventListener('input',()=>{
+ const snap=snapshot();
+ if(!entry.value.trim()){stopTyping();return}
+ if(!chatVisible(snap)||!snap.roomActive||!bridge()?.chatSignal)return;
+ if(typingRoom===snap.roomId&&Date.now()-lastTypingAt<2500)return;
+ typingRoom=snap.roomId;lastTypingAt=Date.now();
+ void bridge().chatSignal(snap.roomId,'typing').catch(()=>{});
+});
+entry.addEventListener('blur',stopTyping);
 function renderChat(){
  const snap=snapshot();feed.replaceChildren();
  const events=createEvents(snap?.entries).slice(0,80);
+ const latestOwn=[...messages].reverse().find(m=>m.sender_id===snap?.userId)?.id;
+ const pinned=timerRoomId===snap?.roomId&&!snap?.archiveMode&&timerStatus?.active?.started_at
+  ?{kind:'timer',phase:'active',at:timerStatus.active.started_at,timer:timerStatus.active}:null;
+ if(pinned){
+  const card=makeTimerCard(pinned);
+  card.classList.add('redline-chat-timer-pinned');
+  card.setAttribute('aria-label','Active private timer pinned in the chat until it stops');
+  card.setAttribute('aria-live','off');
+  feed.append(card);
+ }
  const combined=[
   ...events.map(e=>({kind:'event',at:e.at,body:e.text,status:e.status})),
   ...timedEvents(snap),
@@ -370,7 +545,7 @@ function renderChat(){
   feed.append(warning);
  }
  if(!combined.length){
-  if(!timerLoadError)feed.append(make('div','redline-chat-empty','No messages or photo updates yet.'));
+  if(!timerLoadError&&!pinned)feed.append(make('div','redline-chat-empty','No messages or photo updates yet.'));
   return;
  }
  for(const e of combined){
@@ -394,27 +569,16 @@ function renderChat(){
    if(photo.caption)content.append(make('p','redline-chat-rated-caption',photo.caption));
    rating.append(content);feed.append(rating);continue;
   }
-  if(e.kind==='timer'){
-   const isActive=e.phase==='active',isStop=e.phase==='stop';
-   const card=make('article','redline-chat-timer');
-   card.dataset.timerId=e.timer.id;
-   card.dataset.timerPhase=e.phase;
-   const status=make('strong','redline-chat-timer-title',
-    isStop?'■ TIMER STOPPED':isActive?'● TIMER STARTED · RUNNING':'▶ TIMER STARTED');
-   const label=make('span','redline-chat-timer-rate',money(e.timer.rate_cents)+'/minute · '+liveMoney(e.timer.rate_cents,1)+'/second');
-   const numbers=e.phase==='start'?{seconds:0,cents:0n,display:liveMoney(e.timer.rate_cents,0)}:timerNumbers(e.timer,isActive);
-   const details=make('div','redline-chat-timer-values');
-   details.append(make('span','redline-chat-timer-clock',clockText(numbers.seconds)+' elapsed'),
-    make('span','redline-chat-timer-amount',numbers.display+(isStop?' final':' earned')));
-   const foot=make('small','',isStop
-    ?'Photo '+String(e.timer.photo_id||'').slice(0,8).toUpperCase()+' · Final elapsed-second amount recorded'
-    :'Photo '+String(e.timer.photo_id||'').slice(0,8).toUpperCase()+' · '+dateText(e.at));
-   card.append(status,label,details,foot);
-   feed.append(card);continue;
-  }
+  if(e.kind==='timer'){feed.append(makeTimerCard(e));continue;}
   const own=e.sender===snap?.userId;
   const bubble=make('article','redline-chat-bubble '+(own?'is-mine':'is-theirs'));
   bubble.append(make('p','',e.body),make('time','',dateText(e.at)));
+  if(own&&e.id===latestOwn){
+   const read=Number.isFinite(Date.parse(peerReadAt||''))&&Date.parse(peerReadAt)>=Date.parse(e.at);
+   const receipt=make('small','redline-chat-read-receipt',read?'✓✓ Read':'✓ Sent');
+   receipt.setAttribute('aria-label',read?'Read by recipient':'Message sent');
+   bubble.append(receipt);
+  }
   feed.append(bubble);
  }
  feed.scrollTop=feed.scrollHeight;
@@ -430,6 +594,8 @@ async function loadMessages(){
   messages=items;lastSync=Date.now();
   msgError.textContent='';
   renderChat();
+  reportRead();
+  void pollChatStatus();
  }catch(err){
   msgError.textContent='Messages could not be loaded. '+String(err?.message||'Try again.').slice(0,180);
  }finally{loading=false}
@@ -444,7 +610,7 @@ composer.addEventListener('submit',async e=>{
  posting=true;send.disabled=true;msgError.textContent='Sending securely to the private room…';
  try{
   await bridge().sendMessage(text);
-  entry.value='';msgError.textContent='';
+  entry.value='';msgError.textContent='';stopTyping();
   await loadMessages();
  }catch(err){
   msgError.textContent='Message not sent: '+String(err?.message||'Please try again.').slice(0,200);
@@ -460,7 +626,8 @@ function switchTab(tab){
   b.setAttribute('aria-selected',String(selected));
  }
  for(const pane of panes.children)pane.hidden=pane.dataset.redlinePane!==tab;
- if(tab==='upload'){void loadMessages();void pollSenderTimers(true)}
+ if(tab==='upload'){void loadMessages();void pollSenderTimers(true);void pollChatStatus(true)}
+ else{stopTyping();peerTyping=false;updateTypingIndicator()}
  home.scrollIntoView({behavior:'auto',block:'start'});
 }
 function syncOwnerChat(snap){
@@ -478,7 +645,7 @@ function syncOwnerChat(snap){
  photoAction.hidden=true;
  const key=snap.roomId+'|'+(snap.resetAt||'')+'|'+String(snap.archiveMode);
  if(key!==lastOwnerSession){
-  lastOwnerSession=key;messages=[];lastSync=0;renderChat();void loadMessages();void pollSenderTimers(true);
+  lastOwnerSession=key;messages=[];lastSync=0;resetChatSignals();renderChat();void loadMessages();void pollSenderTimers(true);void pollChatStatus(true);
  }
  send.disabled=Boolean(!snap.roomActive||snap.archiveMode);
  entry.disabled=Boolean(!snap.roomActive||snap.archiveMode);
@@ -493,7 +660,7 @@ function sync(){
   if(upload.parentNode!==uploadMount)uploadMount.append(upload);
   const sessionKey=snap.roomId+'|'+(snap.resetAt||'')+'|'+String(snap.archiveMode);
   if(sessionKey!==lastSessionKey){
-   lastSessionKey=sessionKey;messages=[];lastSync=0;
+   lastSessionKey=sessionKey;messages=[];lastSync=0;resetChatSignals();
    timerRoomId=null;timerStatus=null;timerFingerprint='';timerLastPoll=0;timerLoadError='';
    renderChat();
    if(currentTab==='upload')void loadMessages();
@@ -507,12 +674,13 @@ function sync(){
   entry.placeholder=snap.archiveMode?'Return to the current session to send…':'Message REDLINE…';
   renderEarnings(snap);
   renderFiveStarPhotos(snap);
+  renderPhotoHistory(snap);
   if(snap.roomId!==lastRoom){
-   lastRoom=snap.roomId;messages=[];lastSync=0;
+   lastRoom=snap.roomId;messages=[];lastSync=0;resetChatSignals();
    renderChat();
   }
   if(!roomReady){roomReady=true;switchTab('upload')}
-  if(currentTab==='upload'){renderChat();void pollSenderTimers()}
+  if(currentTab==='upload'){renderChat();void pollSenderTimers();void pollChatStatus()}
  }else{roomReady=false;syncOwnerChat(snap)}
 }
 const observer=new MutationObserver(()=>requestAnimationFrame(sync));
@@ -564,19 +732,20 @@ window.addEventListener('blackcell:redline:receiver-ready',sync);
 window.addEventListener('blackcell:redline:bridge',sync);
 window.addEventListener('blackcell:redline:state',sync);
 window.addEventListener('blackcell:redline:session-mode',sync);
-window.addEventListener('blackcell:redline:reset',()=>{lastSessionKey=null;messages=[];lastSync=0;sync()});
+window.addEventListener('blackcell:redline:reset',()=>{lastSessionKey=null;messages=[];lastSync=0;resetChatSignals();sync()});
 window.addEventListener('pageshow',()=>{sync();void pollSenderTimers(true)});
 window.addEventListener('visibilitychange',()=>{if(!document.hidden){
  if((isSender()&&currentTab==='upload')||ownerDialog.open||(receiverChatPanel()&&!receiverChatPanel().hidden))void loadMessages();
- void pollSenderTimers(true);
+ void pollSenderTimers(true);void pollChatStatus(true);
 }});
 window.setInterval(()=>{
  updateTimerCards();
  if(!document.hidden)void pollSenderTimers();
 },1000);
+window.setInterval(()=>{if(!document.hidden)void pollChatStatus()},1500);
 window.setInterval(()=>{
  const active=(isSender()&&currentTab==='upload')||ownerDialog.open||(receiverChatPanel()&&!receiverChatPanel().hidden);
- if(!document.hidden&&active&&Date.now()-lastSync>9500)void loadMessages();
-},10000);
+ if(!document.hidden&&active&&Date.now()-lastSync>3800)void loadMessages();
+},4000);
 sync();
 })();
