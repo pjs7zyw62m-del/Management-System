@@ -486,9 +486,10 @@ function renderEntry(e){
   if(!src)return;
   $('lightboxImage').src=src;
   $('lightboxImage').alt=e.caption||'Private uploaded photograph';
+  preparePhotoReviewLightbox(e);
   $('photoLightbox').hidden=false;document.body.style.overflow='hidden';
  },'photo-image-btn');
- imageButton.setAttribute('aria-label','View original private photo');
+ imageButton.setAttribute('aria-label',state.isOwner&&status==='pending'?'Enlarge this photo and choose an approval price':'View original private photo');
  const img=node('img');
  img.loading='lazy';img.alt=e.caption||e.file_name;
  const signed=state.images.get(e.image_path)?.url;
@@ -496,14 +497,19 @@ function renderEntry(e){
   img.alt='Image preview unavailable. Select Refresh to retry.';
   imageButton.title='Private preview unavailable — refresh';
  }
- imageButton.append(img);card.append(imageButton);
+ imageButton.append(img);
+ if(state.isOwner&&status==='pending'){
+  imageButton.classList.add('review-image-button');
+  imageButton.append(node('span','review-photo-enlarge','⤢  ENLARGE PHOTO & SET PRICE'));
+ }
+ card.append(imageButton);
  const body=node('div','photo-entry-content');
  const meta=node('div','entry-meta');
  meta.append(node('span','',when(e.created_at)));
  const statusBadge=node('span','entry-badge '+status,status==='pending'?'AWAITING YOUR REVIEW':status==='rejected'?'REJECTED':status==='free'?'ACCEPTED · $0.00':status==='owed'?'AMOUNT OWED':'RECORDED PAID');
  meta.append(statusBadge);
  body.append(meta,node('h3','','PHOTO '+e.id.slice(0,8).toUpperCase()));
- body.append(node('p','caption',e.caption||'No caption provided.'));
+ if(e.caption?.trim())body.append(node('p','caption',e.caption.trim()));
  const ctrl=node('div','entry-controls');
  if(status==='rejected'){
   body.append(node('div','entry-amount','REJECTED'));
@@ -522,6 +528,7 @@ function renderEntry(e){
  }else{
   body.append(node('div','entry-amount','PENDING OWNER REVIEW'));
   if(state.isOwner){
+   body.append(node('strong','review-price-heading','SET YOUR PRICE'));
    const row=node('div','amount-row');
    const input=node('input');
    input.type='text';input.inputMode='decimal';input.placeholder='USD 0.00';input.maxLength=23;
@@ -536,6 +543,49 @@ function renderEntry(e){
   }
  }
  body.append(ctrl);card.append(body);return card;
+}
+// Full-screen inspection uses the same authenticated owner-only decision
+// handlers as the review card; no second ledger record is created.
+function preparePhotoReviewLightbox(entry){
+ const panel=$('redlineLightboxReview');
+ if(!panel)return;
+ panel.replaceChildren();
+ const review=state.isOwner&&entry.decision_status==='pending'&&!state.showArchive;
+ panel.hidden=!review;
+ $('photoLightbox').classList.toggle('is-review',review);
+ if(!review)return;
+ panel.append(node('span','redline-review-kicker','VERIFIED OWNER · PRIVATE REVIEW'));
+ panel.append(node('h3','','Inspect & Price'));
+ panel.append(node('p','redline-review-help','Examine the full photograph before making your final decision.'));
+ const label=node('label','redline-review-label','ACCEPTANCE AMOUNT · USD');
+ const input=node('input','redline-review-amount');
+ input.type='text';input.inputMode='decimal';input.placeholder='0.00';input.maxLength=23;
+ input.setAttribute('aria-label','Acceptance amount in US dollars');
+ label.append(input);panel.append(label);
+ const controls=node('div','redline-review-actions');
+ const accept=button('✓ ACCEPT FOR AMOUNT',()=>void decision('accept'),'button-main');
+ const zero=button('✓ ACCEPT $0.00',()=>void decision('zero'),'button-outline');
+ const reject=button('✕ REJECT PHOTO',()=>void decision('reject'),'button-outline reject-photo');
+ controls.append(accept,zero,reject);
+ panel.append(controls,node('p','redline-review-hint','Decisions are final. No actual payment is transferred.'));
+ const statusLine=node('p','redline-review-status');
+ statusLine.setAttribute('role','status');
+ panel.append(statusLine);
+ const allButtons=[accept,zero,reject];
+ let running=false;
+ async function decision(kind){
+  if(running)return;
+  running=true;for(const b of allButtons)b.disabled=true;
+  statusLine.textContent='Verifying and saving your decision…';
+  try{
+   const result=kind==='reject'?await rejectPhoto(entry,reject):
+    kind==='zero'?await assignAmount(entry,{value:'0.00'},zero):
+     await assignAmount(entry,input,accept);
+   if(result===true){closeLightbox();return}
+   statusLine.textContent='No decision was saved. Check the amount, or try again.';
+  }catch(error){statusLine.textContent='Decision not saved: '+fail(error)}
+  finally{running=false;for(const b of allButtons)b.disabled=false}
+ }
 }
 async function assignAmount(entry,input,submit){
  if(!state.isOwner||state.busy||entry.decision_status!=='pending')return;
@@ -552,7 +602,8 @@ async function assignAmount(entry,input,submit){
   state.entryFingerprint='';await loadEntries({force:true});
   show('entriesFeedback','Photo accepted for '+dollars(amount)+'. Both screens will update automatically.');
   show('reviewQueueFeedback','Accepted for '+dollars(amount)+' · Showing the next pending photo.');
- }catch(e){show('entriesFeedback','Could not assign amount: '+fail(e))}
+  return true;
+ }catch(e){show('entriesFeedback','Could not assign amount: '+fail(e));return false}
  finally{state.busy=false;submit.disabled=false;submit.textContent='✓ ACCEPT PHOTO'}
 }
 async function acceptZero(entry,trigger){
@@ -573,7 +624,8 @@ async function rejectPhoto(entry,trigger){
   state.entryFingerprint='';await loadEntries({force:true});
   show('entriesFeedback','Photo rejected. Both participants will see the decision automatically.');
   show('reviewQueueFeedback','Photo rejected · Showing the next pending photo.');
- }catch(e){show('entriesFeedback','Could not reject photo: '+fail(e))}
+  return true;
+ }catch(e){show('entriesFeedback','Could not reject photo: '+fail(e));return false}
  finally{state.busy=false;trigger.disabled=false}
 }
 async function settle(entry){
@@ -779,7 +831,10 @@ async function copyLink(){
  }catch(_){window.prompt('Copy this private link:',link)}
 }
 function closeLightbox(){
- $('photoLightbox').hidden=true;$('lightboxImage').removeAttribute('src');
+ $('photoLightbox').hidden=true;
+ $('photoLightbox').classList.remove('is-review');
+ $('lightboxImage').removeAttribute('src');
+ $('redlineLightboxReview')?.replaceChildren();
  document.body.style.overflow='';
 }
 function wireEvents(){
