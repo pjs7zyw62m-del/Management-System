@@ -1286,7 +1286,7 @@ window.BLACKCELL_OS_UNIFIED_LAYOUT=Object.freeze({
   if(preview){window.dispatchEvent(new Event('blackcell:desktop-layout-updated'));return {ok:true,message:'Preview desktop updated. Sign in to synchronize.'}}
   const hasCloud=workspaceCloudReady;
   const ok=saveAppLayout();
-  return {ok,message:!ok?'Desktop changed locally; saving is unavailable.':hasCloud?'Desktop changes saved. Your other devices will receive the same apps and widgets.':'Saved on this device. Cloud synchronization will resume when connected.'};
+  return {ok,message:!ok?'Desktop changed locally; saving is unavailable.':hasCloud?'Desktop layout saved locally. Synchronizing with your BLACKCELL account…':'Saved on this device. Cloud synchronization will resume when connected.'};
  },
  launch:id=>{
   if(typeof id!=='string'||!validAppId(id)||!installedApp(id)||recycledApps.has(id))return false;
