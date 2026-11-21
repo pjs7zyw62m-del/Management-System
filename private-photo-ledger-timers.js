@@ -32,6 +32,7 @@ const uuid=value=>typeof value==='string'&&/^[a-f0-9-]{36}$/i.test(value);
 const labelPhoto=id=>id?'Photo '+id.slice(0,8).toUpperCase():'No photo selected';
 let roomId=null,selectedId=null,latest=null,fetching=false,acting=false;
 let lastStatusAt=0,lastHeartbeatAt=0,clockOffset=0,lastHistorySignature='';
+let sidebarPreviousOpen=null;
 const ownerPanel=make('details','rr-timer-panel');ownerPanel.id='redlinePhotoTimerPanel';
 ownerPanel.setAttribute('aria-label','Selected photo timed earnings');
 const title=make('summary','rr-timer-heading');
@@ -102,17 +103,41 @@ window.addEventListener('blackcell:redline:photo-decided',e=>{
  if(latest?.active?.running&&latest.active.photo_id===e.detail?.photoId)void stopTimer();
  if(selectedId===e.detail?.photoId){selectedId=null;selectIncoming()}
 });
+// The full-size photo sidebar reuses these exact owner-only rate/timer buttons.
+// Moving the node does not create a second timer or bypass room verification.
+window.addEventListener('blackcell:redline:lightbox-open',e=>{
+ const s=snap();
+ if(!s?.isOwner||s.archiveMode)return;
+ if(sidebarPreviousOpen===null)sidebarPreviousOpen=ownerPanel.open;
+ ownerPanel.open=true;
+ if(uuid(e.detail?.photoId))pickPhoto(e.detail.photoId);
+ mount(s);
+ render();
+ void refresh(true);
+});
+window.addEventListener('blackcell:redline:lightbox-close',()=>{
+ if(sidebarPreviousOpen!==null){
+  ownerPanel.open=sidebarPreviousOpen;
+  sidebarPreviousOpen=null;
+ }
+ const s=snap();
+ if(s)mount(s);
+ render();
+});
 function mount(s){
  if(!s)return;
  const stage=$('#redlineReceiverReviewStage');
  const workspace=$('#redlineReceiverLiveWorkspace');
  const combined=!!workspace&&!workspace.hidden;
  const fallback=$('#activeRoom .timeline-column');
- // The timer remains accessible OUTSIDE the standalone photo display.
- // This is important so an already-running timer can always be stopped.
+ const fullPhoto=$('#photoLightbox'),sidebar=$('#redlineLightboxReview');
+ const insidePhoto=Boolean(fullPhoto&&!fullPhoto.hidden&&sidebar&&!sidebar.hidden&&!s.archiveMode);
+ // Keep the original timer functional outside the full-screen photo.
+ // While the image is enlarged, reuse that same control in the right sidebar.
  if(s.isOwner){
-  if(combined&&workspace&&ownerPanel.previousElementSibling!==workspace)workspace.after(ownerPanel);
-  else if(!combined&&fallback&&ownerPanel.parentNode!==fallback)fallback.prepend(ownerPanel);
+  if(insidePhoto&&ownerPanel.parentNode!==sidebar)sidebar.append(ownerPanel);
+  else if(!insidePhoto&&combined&&workspace&&ownerPanel.previousElementSibling!==workspace)workspace.after(ownerPanel);
+  else if(!insidePhoto&&!combined&&fallback&&ownerPanel.parentNode!==fallback)fallback.prepend(ownerPanel);
   const photoHost=combined?stage:fallback;
   if(photoHost&&preview.parentNode!==photoHost)photoHost.prepend(preview);
  }
