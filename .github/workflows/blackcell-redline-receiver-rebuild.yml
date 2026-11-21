@@ -66,6 +66,7 @@ jobs:
             const room=document.getElementById('activeRoom');
             const gate=document.getElementById('accessGate');
             gate.hidden=true;app.hidden=false;owner.hidden=false;room.hidden=false;
+            window.dispatchEvent(new Event('blackcell:redline:state'));
             const badge=document.getElementById('roomStateLabel');
             if(badge)badge.textContent='PREVIEW ONLY';
             setTimeout(()=>{
