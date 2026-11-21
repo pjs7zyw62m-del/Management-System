@@ -169,7 +169,7 @@ ownerButton.addEventListener('click',()=>{
  }
  ownerMount.append(messageCard);
  photoAction.hidden=true;
- ownerDialog.showModal();void loadMessages();
+ ownerDialog.showModal();void loadMessages();void pollChatStatus(true);
 });
 ownerDialog.addEventListener('close',()=>{
  const inline=receiverChatMount(),panel=receiverChatPanel();
@@ -626,7 +626,8 @@ function switchTab(tab){
   b.setAttribute('aria-selected',String(selected));
  }
  for(const pane of panes.children)pane.hidden=pane.dataset.redlinePane!==tab;
- if(tab==='upload'){void loadMessages();void pollSenderTimers(true)}
+ if(tab==='upload'){void loadMessages();void pollSenderTimers(true);void pollChatStatus(true)}
+ else{stopTyping();peerTyping=false;updateTypingIndicator()}
  home.scrollIntoView({behavior:'auto',block:'start'});
 }
 function syncOwnerChat(snap){
@@ -644,7 +645,7 @@ function syncOwnerChat(snap){
  photoAction.hidden=true;
  const key=snap.roomId+'|'+(snap.resetAt||'')+'|'+String(snap.archiveMode);
  if(key!==lastOwnerSession){
-  lastOwnerSession=key;messages=[];lastSync=0;renderChat();void loadMessages();void pollSenderTimers(true);
+  lastOwnerSession=key;messages=[];lastSync=0;resetChatSignals();renderChat();void loadMessages();void pollSenderTimers(true);void pollChatStatus(true);
  }
  send.disabled=Boolean(!snap.roomActive||snap.archiveMode);
  entry.disabled=Boolean(!snap.roomActive||snap.archiveMode);
@@ -659,7 +660,7 @@ function sync(){
   if(upload.parentNode!==uploadMount)uploadMount.append(upload);
   const sessionKey=snap.roomId+'|'+(snap.resetAt||'')+'|'+String(snap.archiveMode);
   if(sessionKey!==lastSessionKey){
-   lastSessionKey=sessionKey;messages=[];lastSync=0;
+   lastSessionKey=sessionKey;messages=[];lastSync=0;resetChatSignals();
    timerRoomId=null;timerStatus=null;timerFingerprint='';timerLastPoll=0;timerLoadError='';
    renderChat();
    if(currentTab==='upload')void loadMessages();
@@ -675,11 +676,11 @@ function sync(){
   renderFiveStarPhotos(snap);
   renderPhotoHistory(snap);
   if(snap.roomId!==lastRoom){
-   lastRoom=snap.roomId;messages=[];lastSync=0;
+   lastRoom=snap.roomId;messages=[];lastSync=0;resetChatSignals();
    renderChat();
   }
   if(!roomReady){roomReady=true;switchTab('upload')}
-  if(currentTab==='upload'){renderChat();void pollSenderTimers()}
+  if(currentTab==='upload'){renderChat();void pollSenderTimers();void pollChatStatus()}
  }else{roomReady=false;syncOwnerChat(snap)}
 }
 const observer=new MutationObserver(()=>requestAnimationFrame(sync));
@@ -731,19 +732,20 @@ window.addEventListener('blackcell:redline:receiver-ready',sync);
 window.addEventListener('blackcell:redline:bridge',sync);
 window.addEventListener('blackcell:redline:state',sync);
 window.addEventListener('blackcell:redline:session-mode',sync);
-window.addEventListener('blackcell:redline:reset',()=>{lastSessionKey=null;messages=[];lastSync=0;sync()});
+window.addEventListener('blackcell:redline:reset',()=>{lastSessionKey=null;messages=[];lastSync=0;resetChatSignals();sync()});
 window.addEventListener('pageshow',()=>{sync();void pollSenderTimers(true)});
 window.addEventListener('visibilitychange',()=>{if(!document.hidden){
  if((isSender()&&currentTab==='upload')||ownerDialog.open||(receiverChatPanel()&&!receiverChatPanel().hidden))void loadMessages();
- void pollSenderTimers(true);
+ void pollSenderTimers(true);void pollChatStatus(true);
 }});
 window.setInterval(()=>{
  updateTimerCards();
  if(!document.hidden)void pollSenderTimers();
 },1000);
+window.setInterval(()=>{if(!document.hidden)void pollChatStatus()},1500);
 window.setInterval(()=>{
  const active=(isSender()&&currentTab==='upload')||ownerDialog.open||(receiverChatPanel()&&!receiverChatPanel().hidden);
- if(!document.hidden&&active&&Date.now()-lastSync>9500)void loadMessages();
-},10000);
+ if(!document.hidden&&active&&Date.now()-lastSync>3800)void loadMessages();
+},4000);
 sync();
 })();
