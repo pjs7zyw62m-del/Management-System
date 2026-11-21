@@ -51,6 +51,20 @@ for(const [id,label] of [['pending','Pending review'],['owed','Approved / owed']
 }
 earningsBox.append(earnedFields);
 earningsBox.append(make('p','redline-earnings-hint','REDLINE records amounts and owner-confirmed settlements. It does not transfer money.'));
+const archiveNotice=make('p','redline-archive-sender-notice');
+const archiveButton=make('button','redline-archive-sender-button','VIEW PREVIOUS RECORDS');
+archiveButton.type='button';archiveButton.hidden=true;
+archiveButton.addEventListener('click',async()=>{
+ archiveButton.disabled=true;
+ try{
+  await bridge()?.toggleArchive?.();
+  messages=[];lastSync=0;
+  renderChat();
+  if(currentTab==='messages')await loadMessages();
+ }catch(err){msgError.textContent='Archive is unavailable: '+String(err?.message||err)}
+ finally{archiveButton.disabled=false}
+});
+earningsBox.append(archiveNotice,archiveButton);
 const activityBox=make('section','redline-activity-box');
 activityBox.append(make('h3','','Recent activity'));
 const activityList=make('div','redline-activity-list');activityBox.append(activityList);
@@ -118,7 +132,7 @@ ownerButton.addEventListener('click',()=>{
 });
 ownerDialog.addEventListener('close',()=>{messagesPane.append(messageCard);photoAction.hidden=false;entry.value=''});
 ownerDialog.addEventListener('click',e=>{if(e.target===ownerDialog)ownerDialog.close()});
-let currentTab='upload',lastRoom=null,messages=[],loading=false,posting=false,roomReady=false;
+let currentTab='upload',lastRoom=null,lastSessionKey=null,messages=[],loading=false,posting=false,roomReady=false;
 let lastSync=0;
 function bridge(){return window.BLACKCELL_REDLINE_API}
 const snapshot=()=>bridge()?.snapshot?.()||null;
@@ -205,6 +219,7 @@ composer.addEventListener('submit',async e=>{
  e.preventDefault();
  if(posting)return;
  const text=entry.value.trim(),snap=snapshot();
+ if(snap?.archiveMode){msgError.textContent='Return to the current session before sending a message.';return}
  if(!snap?.roomActive){msgError.textContent='This private room is closed.';return}
  if(!text||text.length>2000){msgError.textContent='Write a message up to 2,000 characters.';return}
  posting=true;send.disabled=true;msgError.textContent='Sending securely to the private room…';
@@ -235,6 +250,19 @@ function sync(){
  document.body.classList.toggle('redline-sender-simple',sender);
  if(sender){
   if(upload.parentNode!==uploadMount)uploadMount.append(upload);
+  const sessionKey=snap.roomId+'|'+(snap.resetAt||'')+'|'+String(snap.archiveMode);
+  if(sessionKey!==lastSessionKey){
+   lastSessionKey=sessionKey;messages=[];lastSync=0;
+   renderChat();
+   if(currentTab==='messages')void loadMessages();
+  }
+  archiveButton.hidden=!snap.resetAt;
+  archiveButton.textContent=snap.archiveMode?'← RETURN TO CURRENT SESSION':'VIEW PREVIOUS RECORDS';
+  archiveNotice.textContent=snap.archiveMode
+   ?'ARCHIVE · Earlier earnings and messages are preserved. Return to the current session to send.'
+   :snap.resetAt?'CURRENT SESSION · Earlier records and balances remain available in Archive.':'';
+  send.disabled=Boolean(snap.archiveMode);
+  entry.placeholder=snap.archiveMode?'Return to the current session to send…':'Message REDLINE…';
   renderEarnings(snap);
   if(snap.roomId!==lastRoom){
    lastRoom=snap.roomId;messages=[];lastSync=0;
@@ -248,6 +276,8 @@ const observer=new MutationObserver(()=>requestAnimationFrame(sync));
 for(const el of [app,room,upload,ownerSetup])observer.observe(el,{attributes:true,attributeFilter:['hidden']});
 window.addEventListener('blackcell:redline:bridge',sync);
 window.addEventListener('blackcell:redline:state',sync);
+window.addEventListener('blackcell:redline:session-mode',sync);
+window.addEventListener('blackcell:redline:reset',()=>{lastSessionKey=null;messages=[];lastSync=0;sync()});
 window.addEventListener('pageshow',sync);
 window.addEventListener('visibilitychange',()=>{if(!document.hidden&&(currentTab==='messages'||ownerDialog.open))void loadMessages()});
 window.setInterval(()=>{
