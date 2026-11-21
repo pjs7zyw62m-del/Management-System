@@ -241,7 +241,7 @@
  function renderDesktop(){
   if(!ensureLayer())return;
   layer.replaceChildren();
-  const data=snap();const seen=new Set();
+  const data=snap();const seen=new Set();let visiblePinCount=0;
   for(const p of data.pins){
    if(seen.has(p.id)||!available().some(x=>x.id===p.id))continue;seen.add(p.id);
    const b=makeButton('',()=>{
@@ -254,14 +254,14 @@
      ['Open '+titleFor(p.id),()=>service()?.launch?.(p.id)],
      ['Remove from Desktop',()=>removeApp(p.id)],
      ['Add Applications…',()=>showGallery('apps')]]);});
-   layer.append(b);desktopItemPosition(b,p);attachDrag(b,p.id,'pin');
+   layer.append(b);visiblePinCount++;desktopItemPosition(b,p);attachDrag(b,p.id,'pin');
   }
   for(const w of data.widgets){
    if(!widgets[w.id])continue;
    const card=widgetCard(w);layer.append(card);
    desktopItemPosition(card,w);attachDrag(card,w.id,'widget');
   }
-  const empty=data.pins.length===0&&data.widgets.length===0;
+  const empty=visiblePinCount===0;
   if(empty){
    const begin=makeButton('+ Add Apps and Widgets',()=>showGallery('apps'),'bc-home-empty-cta');
    layer.append(begin);
