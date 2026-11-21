@@ -202,7 +202,7 @@
    : $('#reviewQueueCurrent .photo-image-btn');
   if(target)target.click();
  },'rr-photo-fullscreen');
- fullPhoto.setAttribute('aria-label','Open the entire original photo with pricing controls');
+ fullPhoto.setAttribute('aria-label','View the entire original photograph without controls');
  incomingHeader.append(fullPhoto,expandPhoto,photoClose);
  // BLACKCELL iMessage-style two-level media viewer: live submission above,
  // reviewed/priced library below. Reparent the SAME ledger elements.
@@ -219,6 +219,9 @@
  pricedStage.setAttribute('aria-label','Priced photos in a separately scrolling list');
  photos.append(reviewStage,heightDivider,pricedStage);
  const originalReview=$('#ownerReviewQueue');
+ // The verified bid/timer panel stays beside the normal photo viewer.
+ // Full-screen inspection is always the photograph alone.
+ const bidTimerPanel=$('#redlineLightboxReview');
  const historyToolbar=timeline?.querySelector('.timeline-toolbar');
  const photoEntries=$('#photoEntries');
  const entriesFeedback=$('#entriesFeedback');
@@ -407,6 +410,7 @@
   if(combined){
    if(chatPanel.parentNode!==workspace)workspace.insertBefore(chatPanel,divider);
    if(originalReview&&originalReview.parentNode!==reviewStage)reviewStage.append(originalReview);
+   if(bidTimerPanel&&bidTimerPanel.parentNode!==reviewStage)reviewStage.append(bidTimerPanel);
    for(const element of [historyToolbar,photoEntries,entriesFeedback]){
     if(element&&element.parentNode!==pricedStage)pricedStage.append(element);
    }
@@ -426,6 +430,7 @@
    for(const element of [originalReview,historyToolbar,photoEntries,entriesFeedback]){
     if(element&&element.parentNode!==timeline)timeline.append(element);
    }
+   if(bidTimerPanel&&originalReview&&bidTimerPanel.parentNode!==originalReview)originalReview.append(bidTimerPanel);
    timeline?.classList.remove('rr-source-timeline');
    if(timeline&&roomBody&&timeline.parentNode!==roomBody)roomBody.append(timeline);
    mediaInitialised=false;
