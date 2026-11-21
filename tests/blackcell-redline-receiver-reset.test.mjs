@@ -89,8 +89,8 @@ test('Sender gets archived earnings and chat without permission to upload while 
 });
 test('REDLINE receiver resources are versioned and original form and security remain intact',()=>{
  assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-photo-large-timed1/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-fullscreen1/);
- assert.match(html,/private-photo-ledger\.js\?v=20261121-photo-bid-timer-sidebar2/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-sidebar-release3/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261121-photo-bid-timer-sidebar3/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=20261121-stable-brand1/);
  assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-inline-owner-chat1/);
  assert.match(ledger,/corporateAuthorize\(db,\{allowLedgerOnly:true\}\)/);
@@ -132,7 +132,7 @@ test('REDLINE OS receiver keeps the narrow chat left and the real incoming photo
  assert.match(receiver,/window\.innerWidth>=420/);
  assert.match(css,/grid-template-columns:minmax\(300px,370px\) minmax\(0,1fr\)/);
  assert.match(css,/rr-incoming-photos #ownerReviewQueue/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-fullscreen1/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-sidebar-release3/);
 });
 
 test('Owner can inspect large photo and set price while viewing it',()=>{
@@ -176,7 +176,7 @@ test('Receiver toolbar is compact, room controls expand on demand and live actio
  assert.match(css,/min-height:34px!important/);
  assert.match(css,/grid-template-columns:minmax\(0,1\.7fr\) minmax\(465px,1fr\)!important/);
  assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-photo-large-timed1/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-fullscreen1/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-sidebar-release3/);
 });
 
 
@@ -198,7 +198,7 @@ test('REDLINE uses iMessage-style slide-in Photo Review, not resize buttons or a
  assert.match(css,/grid-template-columns:minmax\(0,1fr\) 11px minmax\(0,var\(--rr-media-width\)\)!important/);
  assert.match(css,/@media\(min-width:420px\) and \(max-width:699px\)/);
  assert.match(css,/rr-media-open>\.rr-incoming-photos/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-fullscreen1/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-sidebar-release3/);
  assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-photo-large-timed1/);
 });
 
@@ -237,7 +237,7 @@ test('One iMessage-style workspace has two independent resizers and a fixed-heig
  assert.match(layout,/#redlineReceiverHeightEdge/);
  assert.match(layout,/cursor:row-resize!important/);
  assert.match(layout,/cursor:col-resize/);
- assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-photo-bid-timer-sidebar2/);
+ assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-photo-bid-timer-sidebar3/);
 });
 test('Incoming photo decisions and priced photo records stay separate and scroll internally',()=>{
  const layout=read('private-photo-ledger-imessage-workspace.css');
@@ -267,7 +267,7 @@ test('Incoming photo viewer expands without crop and keeps priced records access
  assert.match(layout,/object-fit:contain!important/);
  assert.match(layout,/#redlineReceiverIncomingPhotos\.rr-photo-expanded/);
  assert.match(layout,/height:clamp\(480px,75dvh,1040px\)!important/);
- assert.match(html,/private-photo-ledger-timers\.js\?v=20261121-photo-bid-timer-sidebar2/);
+ assert.match(html,/private-photo-ledger-timers\.js\?v=20261121-photo-bid-timer-sidebar3/);
  assert.match(html,/private-photo-ledger-timers\.css\?v=20261121-photo-large-timed1/);
 });
 test('Per-minute timer selection and secure RPC bridge do not alter original photo decision amounts',()=>{
@@ -311,8 +311,8 @@ test('Incoming photo is visible above the short pricing footer, not buried under
 });
 test('Photo is wider on load, with an explicit full-screen option and intact pricing',()=>{
  const layout=read('private-photo-ledger-imessage-workspace.css');
- assert.match(receiver,/const DEFAULT_MEDIA=\.67/);
- assert.match(receiver,/const MEDIA_KEY='blackcell:redline:receiver:photo-first-width-v2'/);
+ assert.match(receiver,/const DEFAULT_MEDIA=\.78/);
+ assert.match(receiver,/const MEDIA_KEY='blackcell:redline:receiver:photo-first-width-v3'/);
  assert.match(receiver,/const DEFAULT_HEIGHT=\.80/);
  assert.match(receiver,/const fullPhoto=button\('⛶ VIEW FULL PHOTO'/);
  assert.match(layout,/var\(--rr-media-width,67%\)/);
@@ -373,4 +373,14 @@ test('Full-size REDLINE photo shows receiver bid and the existing authenticated 
  assert.match(layout,/flex-direction:row!important/);
  assert.match(layout,/#photoLightbox #redlineLightboxReview \.rr-timer-controls/);
  assert.match(layout,/object-fit:contain!important/);
+});
+
+test('BLACKCELL OS loads the REDLINE sidebar release rather than a stale iframe version',()=>{
+ const os=read('blackcell-os.html');
+ const runtime=read('blackcell-os.js');
+ assert.match(os,/receiver-bid-timer-sidebar3-20261121/);
+ assert.match(runtime,/receiver-bid-timer-sidebar3-20261121/);
+ assert.match(os,/blackcell-os\.js\?v=146-redline-bid-timer-sidebar3/);
+ const layout=read('private-photo-ledger-imessage-workspace.css');
+ assert.match(layout,/body\.bc-redline-receiver:not\(\.rr-imessage-mode\) #photoLightbox/);
 });
