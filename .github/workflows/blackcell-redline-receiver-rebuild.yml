@@ -12,7 +12,6 @@ on:
       - 'supabase/sql/blackcell_redline_start_fresh_archive.sql'
       - 'tests/redline-timer-chat-browser-smoke.mjs'
       - 'tests/blackcell-redline-receiver-reset.test.mjs'
-      - 'tests/redline-timer-chat-browser-smoke.mjs'
       - '.github/workflows/blackcell-redline-receiver-rebuild.yml'
   push:
     branches: [main]
@@ -29,6 +28,7 @@ on:
       - 'tests/blackcell-redline-receiver-reset.test.mjs'
       - 'tests/private-photo-ledger-sender.test.mjs'
       - 'tests/private-photo-ledger-simple-sender.test.mjs'
+      - 'tests/redline-timer-chat-browser-smoke.mjs'
       - '.github/workflows/blackcell-redline-receiver-rebuild.yml'
   workflow_dispatch:
 jobs:
