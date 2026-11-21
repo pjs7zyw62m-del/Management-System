@@ -234,8 +234,15 @@
   review.setAttribute('aria-expanded',String(mediaOpen));
  }
  function openMedia(history=false){
-  mediaOpen=true;showPane();
-  applyWidth(mediaRatio);
+  // Original small-phone navigation remains in charge of its own panels.
+  if(workspace.hidden){
+   const key=history?'photos':'review';
+   const tab=app.querySelector('.bc-ledger-phone-tab[data-ledger-navigate="'+key+'"]:not([hidden])');
+   if(tab)tab.click();
+   else goTo(history?'#photoEntries':'#ownerReviewQueue');
+   return;
+  }
+  mediaOpen=true;showPane();applyWidth(mediaRatio);
   if(history){
    const entries=$('#photoEntries');
    if(entries)window.requestAnimationFrame(()=>entries.scrollIntoView({block:'nearest',behavior:'smooth'}));
