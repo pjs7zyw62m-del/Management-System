@@ -347,6 +347,7 @@
  window.addEventListener('blackcell:desktop-files-refresh',renderDesktopCanvas);
  window.addEventListener('bc-private-files-changed',renderDesktopCanvas);
  window.addEventListener('blackcell:spaces-updated',stageSync);
+ window.addEventListener('blackcell:windows-updated',()=>{stageSync();if(kind==='mission')renderMission()});
  window.addEventListener('blackcell:mac-shell-ready',renderDesktopCanvas);
  const stageObserver=new MutationObserver(stageSync);
  stageObserver.observe(shell,{childList:true,subtree:false});
