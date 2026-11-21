@@ -752,3 +752,8 @@ body.bc-redline-receiver.rr-imessage-mode #photoLightbox #redlineLightboxReview 
   right:max(12px,env(safe-area-inset-right))!important;top:max(12px,env(safe-area-inset-top))!important;
  }
 }
+
+/* Honor the existing owner-only hidden state even inside the styled sidebar. */
+body.bc-redline-receiver #photoLightbox #redlineLightboxReview .rr-timer-panel[hidden]{
+ display:none!important;
+}
