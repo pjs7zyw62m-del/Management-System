@@ -91,9 +91,9 @@ test('Sender gets archived earnings and chat without permission to upload while 
 test('REDLINE receiver resources are versioned and original form and security remain intact',()=>{
  assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-photo-large-timed1/);
  assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-right-popup-only1/);
- assert.match(html,/private-photo-ledger\.js\?v=20261121-compact-bid-controls1/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261121-five-star-resubmit-next2/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=20261121-stable-brand1/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-photo-stars-top-picks1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-five-star-resubmit-next2/);
  assert.match(ledger,/corporateAuthorize\(db,\{allowLedgerOnly:true\}\)/);
  assert.match(ledger,/const BUCKET='corp-private-photo-ledger'/);
  assert.match(ledger,/db\.storage\.from\(BUCKET\)\.upload/);
@@ -238,7 +238,7 @@ test('One iMessage-style workspace has two independent resizers and a fixed-heig
  assert.match(layout,/#redlineReceiverHeightEdge/);
  assert.match(layout,/cursor:row-resize!important/);
  assert.match(layout,/cursor:col-resize/);
- assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-compact-bid-controls1/);
+ assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-five-star-resubmit-next2/);
 });
 test('Incoming photo decisions and priced photo records stay separate and scroll internally',()=>{
  const layout=read('private-photo-ledger-imessage-workspace.css');
@@ -268,7 +268,7 @@ test('Incoming photo viewer expands without crop and keeps priced records access
  assert.match(layout,/object-fit:contain!important/);
  assert.match(layout,/#redlineReceiverIncomingPhotos\.rr-photo-expanded/);
  assert.match(layout,/height:clamp\(480px,75dvh,1040px\)!important/);
- assert.match(html,/private-photo-ledger-timers\.js\?v=20261121-price-next-photo1/);
+ assert.match(html,/private-photo-ledger-timers\.js\?v=20261121-five-star-resubmit-next2/);
  assert.match(html,/private-photo-ledger-timers\.css\?v=20261121-sender-live-chat-timer1/);
 });
 test('Per-minute timer selection and secure RPC bridge do not alter original photo decision amounts',()=>{
@@ -285,7 +285,7 @@ test('Per-minute timer selection and secure RPC bridge do not alter original pho
  assert.match(timer,/Completed minutes only/);
  assert.match(timer,/bridge\(\)\.timerStart\(selectedId,cents\)/);
  assert.match(timer,/bridge\(\)\.timerHeartbeat\(active\.id\)/);
- assert.match(timer,/bridge\(\)\.timerStop\(id\)/);
+ assert.match(timer,/bridge\(\)\.timerStop\(id,\{keepPhotoSelected\}\)/);
  assert.match(timer,/bridge\(\)\.timerMarkPaid\(id\)/);
  assert.match(migration,/redline_timer_one_running_per_room/);
  assert.match(migration,/45 seconds/);
@@ -384,9 +384,9 @@ test('Bid and timed-photo controls stay right of the normal photo; fullscreen co
 test('BLACKCELL OS loads the REDLINE sidebar release rather than a stale iframe version',()=>{
  const os=read('blackcell-os.html');
  const runtime=read('blackcell-os.js');
- assert.match(os,/receiver-compact-bid-controls1-20261121/);
- assert.match(runtime,/receiver-compact-bid-controls1-20261121/);
- assert.match(os,/blackcell-os\.js\?v=155-redline-compact-bid-controls1/);
+ assert.match(os,/receiver-five-star-resubmit-next2-20261121/);
+ assert.match(runtime,/receiver-five-star-resubmit-next2-20261121/);
+ assert.match(os,/blackcell-os\.js\?v=156-redline-five-star-resubmit-next2/);
  const layout=read('private-photo-ledger-imessage-workspace.css');
  assert.match(layout,/body\.bc-redline-receiver:not\(\.rr-imessage-mode\) #photoLightbox/);
 });
@@ -409,7 +409,7 @@ test('Sender chat receives verified start and stop messages with a live clock an
  assert.match(sender,/window\.setInterval\(\(\)=>\{/);
  assert.match(sender,/Math\.floor\(seconds\/60\)/);
  assert.match(style,/\.redline-chat-timer/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-photo-stars-top-picks1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-five-star-resubmit-next2/);
 });
 
 test('Auto leading zero, verified timed price, and reject confirmation are supported',()=>{
@@ -457,7 +457,7 @@ test('REDLINE pause belongs only to verified receiver and applies across devices
  assert.match(migration,/NOT r\.photo_sending_paused/g);
  assert.match(style,/#redlineReceiverSendingPause|rr-receiver-pause-button/);
  assert.match(html,/private-photo-ledger-sender\.js\?v=20261121-receiver-owned-pause1/);
- assert.match(html,/private-photo-ledger-simple-sender\.css\?v=20261121-photo-stars-top-picks1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.css\?v=20261121-five-star-resubmit-next2/);
 });
 
 test('Selected reviewed photo stays beside sidebar instead of caught-up queue',()=>{
@@ -494,7 +494,7 @@ test('Stop Timer atomically submits one priced photo; other timed earnings never
  assert.match(chat,/async function pollSenderTimers\(force=false\)/);
  assert.match(chat,/bridge\(\).timerStatus\(id\)/);
  assert.match(chat,/window.setInterval\(\(\)=>\{/);
- assert.match(os,/name="blackcell-os-client-build" content="20261121-compact-bid-controls1"/);
+ assert.match(os,/name="blackcell-os-client-build" content="20261121-five-star-resubmit-next2"/);
 });
 
 test('Manually accepting a photo always advances to the next pending image',()=>{
@@ -636,6 +636,6 @@ test('Compact receiver buttons retain stars and every bid decision without headi
  assert.match(css,/\.rr-photo-rating-star/);
  assert.match(css,/\.redline-review-actions button/);
  assert.match(css,/min-height:37px!important/);
- assert.match(html,/private-photo-ledger\.js\?v=20261121-compact-bid-controls1/);
- assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-compact-bid-controls1/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261121-five-star-resubmit-next2/);
+ assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-five-star-resubmit-next2/);
 });
