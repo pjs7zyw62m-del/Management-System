@@ -34,9 +34,10 @@ CREATE TRIGGER redline_resubmission_immutable
 CREATE OR REPLACE FUNCTION corp_private.redline_validate_five_star_resubmission()
 RETURNS trigger LANGUAGE plpgsql SECURITY INVOKER SET search_path=''
 AS $$
-DECLARE v_source public.corp_private_photo_entries%ROWTYPE;
-DECLARE v_room public.corp_private_photo_rooms%ROWTYPE;
-DECLARE v_rating smallint;
+DECLARE
+ v_source public.corp_private_photo_entries%ROWTYPE;
+ v_room public.corp_private_photo_rooms%ROWTYPE;
+ v_rating smallint;
 BEGIN
  IF NEW.resubmission_origin_id IS NULL THEN RETURN NEW; END IF;
  IF NEW.resubmission_origin_id=NEW.id THEN
@@ -64,6 +65,8 @@ BEGIN
   RAISE EXCEPTION 'Only five-star photographs may be resubmitted'
     USING ERRCODE='23514';
  END IF;
+ -- Serialize simultaneous duplicate submissions of this same source photo.
+ PERFORM pg_advisory_xact_lock(hashtextextended(v_source.id::text,0));
  IF EXISTS(
   SELECT 1 FROM public.corp_private_photo_entries prior
   WHERE prior.room_id=NEW.room_id
