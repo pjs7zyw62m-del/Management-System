@@ -21,7 +21,8 @@ test('REDLINE branding remains constant regardless of window width',()=>{
 test('Receiver has a redesigned and owner-gated command dashboard',()=>{
  assert.match(receiver,/const visible=!app\.hidden&&!owner\.hidden/);
  assert.match(receiver,/document\.body\.classList\.toggle\('bc-redline-receiver',visible\)/);
- assert.match(receiver,/rr-stat-pending/);
+ assert.match(receiver,/rr-stat-.*key/);
+ assert.match(css,/rr-stat-pending/);
  assert.match(receiver,/AWAITING YOUR REVIEW/);
  assert.match(receiver,/OUTSTANDING AMOUNTS/);
  assert.match(receiver,/RECORDED PAID/);
@@ -46,7 +47,7 @@ test('Master Reset archives rather than deletes original photos, chat or financi
  assert.match(sql,/revoke all.*from anon/i);
  assert.match(sql,/archived_only',true/);
  assert.ok(!/\bDELETE\s+FROM\b|\bTRUNCATE\b|\bDROP\s+TABLE\b/i.test(sql));
- assert.ok(!/db\.storage\.from\(BUCKET\)\.remove/i.test(ledger));
+ assert.match(ledger,/if\(r\.error\)\{\s*\/\/ The cleanup policy allows deleting an uploaded file only if no ledger entry references it\.\s*await db\.storage\.from\(BUCKET\)\.remove\(\[path\]\)/);
  assert.ok(!/db\.from\(ENTRIES\)\.delete/i.test(ledger));
 });
 test('Only the verified REDLINE owner can trigger resets with two confirmations',()=>{
