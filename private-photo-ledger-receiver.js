@@ -203,7 +203,7 @@
  splitControls.append(splitLabel,smallerChat,splitRange,largerChat,splitReadout,defaultSplit);
  workspace.insertBefore(splitControls,chatPanel);
  roomBody?.before(workspace);
- const splitWorkspace=window.matchMedia('(min-width:480px)');
+ const splitWorkspace=window.matchMedia('(min-width:420px)');
  const SPLIT_KEY='blackcell:redline:receiver:split-v1';
  const DEFAULT_SPLIT=.36;
  function readSplit(){
@@ -284,7 +284,9 @@
  function placeWorkspace(hasRoom){
   // BLACKCELL OS may host REDLINE in a narrow iframe that the legacy
   // responsive code labels "mobile"; that must not disable this workspace.
-  const combined=splitWorkspace.matches&&Boolean(hasRoom&&timeline&&roomBody);
+  const handheld=/iPhone|iPod|Android.*Mobile|Windows Phone/i.test(navigator.userAgent||'');
+  const combined=splitWorkspace.matches&&(!handheld||window.innerWidth>=720)
+   &&Boolean(hasRoom&&timeline&&roomBody);
   document.body.classList.toggle('rr-split-active',combined);
   workspace.hidden=!combined;
   if(combined){
