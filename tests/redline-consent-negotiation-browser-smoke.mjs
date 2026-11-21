@@ -84,6 +84,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     !document.getElementById('redlineSenderTimerApproval')?.open);
    offerStatus={photo_id:photo,original_cents:900,offer_cents:null,
     offer_count:0,status:'awaiting_sender',updated_at:new Date().toISOString()};
+   window.dispatchEvent(new Event('blackcell:redline:negotiation-changed'));
   },2800);
   setTimeout(()=>{
    const dlg=document.getElementById('redlinePriceNegotiation');
