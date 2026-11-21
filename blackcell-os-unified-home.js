@@ -349,7 +349,9 @@
   if(!accountReady())return;
   e.preventDefault();e.stopImmediatePropagation();showGallery('widgets');
  },true);
- window.addEventListener('blackcell:desktop-layout-updated',schedule);
+ // Apply edits immediately: deferred frames in installed mobile web apps can be
+ // delayed when the shell is waking or the browser throttles rendering.
+ window.addEventListener('blackcell:desktop-layout-updated',()=>{renderQueued=false;draw()});
  window.addEventListener('blackcell:home-sync-status',e=>{
   if(!accountReady())return;
   showNotice(e.detail?.ok?'Home layout synced to your BLACKCELL account.':'Account sync failed. Your local layout is kept; reconnect to retry.');
