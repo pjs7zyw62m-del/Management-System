@@ -56,7 +56,7 @@ function refresh(){
 function sendSelectedPhoto(){
  if(!active()||!form||file.disabled||!file.files?.length)return;
  // requestSubmit fires the existing form submit event with its validation,
- // authorization and private Storage controls. form.submit() would bypass it.
+ // authorization and private Storage controls. Direct form submission would bypass it.
  if(typeof form.requestSubmit==='function')form.requestSubmit();
  else form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
 }
