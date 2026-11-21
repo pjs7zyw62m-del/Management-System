@@ -268,7 +268,7 @@ test('Incoming photo viewer expands without crop and keeps priced records access
  assert.match(layout,/#redlineReceiverIncomingPhotos\.rr-photo-expanded/);
  assert.match(layout,/height:clamp\(480px,75dvh,1040px\)!important/);
  assert.match(html,/private-photo-ledger-timers\.js\?v=20261121-photo-right-popup-only1/);
- assert.match(html,/private-photo-ledger-timers\.css\?v=20261121-photo-right-popup-only1/);
+ assert.match(html,/private-photo-ledger-timers\.css\?v=20261121-sender-live-chat-timer1/);
 });
 test('Per-minute timer selection and secure RPC bridge do not alter original photo decision amounts',()=>{
  const timer=read('private-photo-ledger-timers.js');
@@ -338,7 +338,7 @@ test('Step 1: only the uncropped photograph remains in the standalone display',(
  assert.match(layout,/object-fit:contain!important/);
  assert.match(layout,/#redlineReceiverReviewStage>#redlineLightboxReview/);
  assert.match(timer,/sidebar\.append\(ownerPanel\)/);
- assert.match(ledger,/preparePhotoReviewLightbox\(current\)/);
+ assert.match(ledger,/preparePhotoReviewLightbox\(selected&&document\.body\.classList/);
 });
 
 
