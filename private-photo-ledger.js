@@ -782,7 +782,8 @@ async function bcLiveOriginal_uploadPhoto(event){
   show('uploadFeedback','Photo not sent: '+fail(e)+'. Choose a photo again to retry.');
  }
  finally{
-  state.busy=false;btn.disabled=false;picker.disabled=false;
+  state.busy=false;btn.disabled=false;
+  picker.disabled=document.body.dataset.redlineUploadPaused==='true';
   $('employeeUpload').classList.remove('bc-photo-sending');
   btn.textContent='POST TO OUR PRIVATE ROOM ↗';
  }
