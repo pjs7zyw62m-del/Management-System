@@ -186,7 +186,7 @@ async function stopTimer(keepPhotoSelected=true){
  if(!id||!snap()?.isOwner)return;
  let committed=null;
  await callAction(async()=>{
-  committed=await bridge().timerStop(id);
+  committed=await bridge().timerStop(id,{keepPhotoSelected});
   // Keep the photo whose timer just stopped visible with its final price,
   // instead of immediately switching to another pending photograph.
   if(committed?.photo_id&&keepPhotoSelected){
