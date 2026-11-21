@@ -177,15 +177,101 @@
   make('small','','New submissions appear automatically in the review queue.'));
  photos.append(incomingHeader);
  workspace.append(chatPanel,photos);
+ // One live chat and one real review timeline share an adjustable split pane.
+ // The separator works with mouse, touch, pen and keyboard.
+ const divider=make('div','rr-split-divider');
+ divider.id='redlineReceiverSplitDivider';
+ divider.setAttribute('role','separator');
+ divider.setAttribute('aria-label','Resize REDLINE chat and incoming photos');
+ divider.setAttribute('aria-orientation','vertical');
+ divider.setAttribute('aria-controls','redlineReceiverChat redlineReceiverIncomingPhotos');
+ divider.title='Drag to resize chat and photos. Double-click to reset. Arrow keys also resize.';
+ divider.tabIndex=0;
+ divider.append(make('span','rr-split-grip','⋮⋮'));
+ workspace.insertBefore(divider,photos);
  roomBody?.before(workspace);
- const desktopWorkspace=window.matchMedia('(min-width:960px)');
+ const splitWorkspace=window.matchMedia('(min-width:720px)');
+ const SPLIT_KEY='blackcell:redline:receiver:split-v1';
+ const DEFAULT_SPLIT=.36;
+ function readSplit(){
+  try{
+   const saved=Number(window.localStorage.getItem(SPLIT_KEY));
+   return Number.isFinite(saved)&&saved>=.2&&saved<=.76?saved:DEFAULT_SPLIT;
+  }catch{return DEFAULT_SPLIT}
+ }
+ let splitRatio=readSplit(),activePointer=null;
+ function bounds(){
+  const width=Math.max(400,workspace.getBoundingClientRect().width||window.innerWidth);
+  const minChat=Math.min(280,Math.max(220,width*.32));
+  const minPhotos=Math.min(390,Math.max(290,width*.42));
+  const min=Math.max(.20,minChat/width);
+  const max=Math.max(min,Math.min(.76,1-(minPhotos+20)/width));
+  return {width,min,max};
+ }
+ function applySplit(ratio,persist=false){
+  const {min,max}=bounds();
+  splitRatio=Math.max(min,Math.min(max,ratio));
+  workspace.style.setProperty('--rr-chat-width',(splitRatio*100).toFixed(2)+'%');
+  divider.setAttribute('aria-valuemin',String(Math.round(min*100)));
+  divider.setAttribute('aria-valuemax',String(Math.round(max*100)));
+  divider.setAttribute('aria-valuenow',String(Math.round(splitRatio*100)));
+  divider.setAttribute('aria-valuetext','Chat '+Math.round(splitRatio*100)+' percent, photos '+Math.round((1-splitRatio)*100)+' percent');
+  if(persist){
+   try{window.localStorage.setItem(SPLIT_KEY,String(splitRatio))}catch{}
+  }
+ }
+ const moveFromPointer=event=>{
+  const rect=workspace.getBoundingClientRect();
+  if(!rect.width)return;
+  applySplit((event.clientX-rect.left)/rect.width);
+ };
+ divider.addEventListener('pointerdown',event=>{
+  if(event.pointerType==='mouse'&&event.button!==0)return;
+  if(workspace.hidden)return;
+  activePointer=event.pointerId;
+  try{divider.setPointerCapture(activePointer)}catch{}
+  document.body.classList.add('rr-is-split-resizing');
+  moveFromPointer(event);
+  event.preventDefault();
+ });
+ divider.addEventListener('pointermove',event=>{
+  if(activePointer===event.pointerId)moveFromPointer(event);
+ });
+ const stopResize=event=>{
+  if(activePointer===null||event?.pointerId!==undefined&&event.pointerId!==activePointer)return;
+  try{if(divider.hasPointerCapture(activePointer))divider.releasePointerCapture(activePointer)}catch{}
+  activePointer=null;
+  document.body.classList.remove('rr-is-split-resizing');
+  applySplit(splitRatio,true);
+ };
+ divider.addEventListener('pointerup',stopResize);
+ divider.addEventListener('pointercancel',stopResize);
+ divider.addEventListener('lostpointercapture',stopResize);
+ window.addEventListener('blur',()=>{if(activePointer!==null)stopResize()});
+ divider.addEventListener('dblclick',()=>applySplit(DEFAULT_SPLIT,true));
+ divider.addEventListener('keydown',event=>{
+  let value=splitRatio;
+  if(event.key==='ArrowLeft'||event.key==='ArrowDown')value-=event.shiftKey?.10:.03;
+  else if(event.key==='ArrowRight'||event.key==='ArrowUp')value+=event.shiftKey?.10:.03;
+  else if(event.key==='Home')value=bounds().min;
+  else if(event.key==='End')value=bounds().max;
+  else return;
+  event.preventDefault();
+  applySplit(value,true);
+ });
+ if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{
+  if(!workspace.hidden)applySplit(splitRatio);
+ }).observe(workspace);
  function placeWorkspace(hasRoom){
-  const desktop=desktopWorkspace.matches&&Boolean(hasRoom&&timeline&&roomBody);
-  workspace.hidden=!desktop;
-  if(desktop){
+  const combined=splitWorkspace.matches&&!document.body.classList.contains('bc-ledger-mobile')
+   &&Boolean(hasRoom&&timeline&&roomBody);
+  workspace.hidden=!combined;
+  if(combined){
    if(chatPanel.parentNode!==workspace)workspace.prepend(chatPanel);
    if(timeline.parentNode!==photos)photos.append(timeline);
+   applySplit(splitRatio);
   }else{
+   if(activePointer!==null)stopResize();
    if(chatPanel.previousElementSibling!==nav)nav.after(chatPanel);
    if(timeline&&roomBody&&timeline.parentNode!==roomBody)roomBody.append(timeline);
   }
