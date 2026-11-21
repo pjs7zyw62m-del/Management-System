@@ -38,9 +38,16 @@ const mock=String.raw`<script>
       id:photoId,stars:5,rated_at:new Date(first-20000).toISOString(),
       caption:'A top-rated private photo',amount_cents:25,
       image_url:'https://example.com/private-photo.jpg'
+    }],
+    fiveStarPhotos:[{
+      id:photoId,stars:5,resubmissionCount:1,
+      resubmissionStatus:'ready',resubmissionAllowed:true,
+      caption:'A five-star original',amount_cents:25,
+      image_url:'https://example.com/private-photo.jpg'
     }]
   }),
   loadMessages:async()=>[],
+  resubmitFiveStarPhoto:async id=>{window.__resendCalled=id;return {ok:true,photoId:'new-photo-id'}},
   timerStatus:async()=>({...timer,server_now:new Date().toISOString()})
  };
  document.addEventListener('DOMContentLoaded',()=>{
@@ -74,7 +81,19 @@ const mock=String.raw`<script>
    document.body.dataset.senderPhotoWithStars=String(Boolean(rated&&rated.querySelector('img[src^="https://"]')));
    document.body.dataset.senderTopPicks=String(Boolean(document.querySelector(
      '.redline-top-picks-list .redline-top-pick-row')?.textContent.includes('★★★★★')));
+   const tab=document.querySelector('[data-simple-tab="five-star"]');
+   document.body.dataset.senderFiveStarTab=String(Boolean(tab?.textContent.includes('5-Star Photos')));
+   tab?.click();
+   const card=document.querySelector('.redline-five-star-list .redline-five-star-photo');
+   document.body.dataset.senderFiveStarPhoto=String(Boolean(
+     card?.querySelector('img[src^="https://"]')&&card.textContent.includes('TOP PICK')));
+   const resend=card?.querySelector('.redline-five-star-resubmit');
+   document.body.dataset.senderFiveStarResendEnabled=String(Boolean(resend&&!resend.disabled));
+   resend?.click();
   },3300);
+  setTimeout(()=>{
+    document.body.dataset.senderResubmitInvoked=String(window.__resendCalled===photoId);
+  },4300);
  });
  </script>
  <script src="/private-photo-ledger-simple-sender.js" defer></script>`;
@@ -109,7 +128,8 @@ try{
  });
  assert.equal(exit,0,'Headless Chrome failed: '+errors.slice(-1300));
  for(const flag of ['sender-timer-started','sender-timer-earned','sender-timer-stopped','sender-timer-final','sender-chat-mounted',
-  'sender-star-message','sender-photo-with-stars','sender-top-picks']){
+  'sender-star-message','sender-photo-with-stars','sender-top-picks',
+  'sender-five-star-tab','sender-five-star-photo','sender-five-star-resend-enabled','sender-resubmit-invoked']){
   assert.match(output,new RegExp('data-'+flag+'="true"'),flag+' missing from sender chat browser fixture');
  }
  assert.doesNotMatch(output,/data-timer-js-error="[^"]+"/,'Sender chat JS uncaught exception');
