@@ -85,7 +85,10 @@ function selectIncoming(){
 function pickPhoto(id){
  if(!uuid(id))return;
  if(latest?.active?.running&&latest.active.photo_id!==id){
-  note.textContent='Stop the running timer before selecting another photo.';
+  // Leaving one selected photo stops its timed accrual before the next is used.
+  selectedId=id;
+  note.textContent='Stopping the previous photo timer before switching…';
+  void stopTimer();
   return;
  }
  selectedId=id;render();
