@@ -174,7 +174,20 @@
    const remove=makeButton('×',()=>removeWidget(info.id),'bc-home-widget-remove');
    remove.title='Remove widget';remove.setAttribute('aria-label','Remove '+w.title+' widget');
    actions.append(resize,remove);
-  }else actions.append(edit);
+  }else{
+   const menuOpen=makeButton('⋯',()=>{
+    const all=snap().widgets,index=all.findIndex(x=>x.id===info.id),r=menuOpen.getBoundingClientRect();
+    popupAt(r.left,r.bottom+5,[
+     ['Move Earlier',()=>{if(index>0)reorderPhone(info.id,all[index-1].id,true)}],
+     ['Move Later',()=>{if(index>=0&&index<all.length-1)reorderPhone(info.id,all[index+1].id,true)}],
+     ['Resize Widget',()=>resizeWidget(info.id)],
+     ['Remove Widget',()=>removeWidget(info.id)],
+     ['Widget Gallery…',()=>showGallery('widgets')]
+    ]);
+   },'bc-home-widget-manage');
+   menuOpen.setAttribute('aria-label','Arrange '+w.title+' widget');
+   actions.append(menuOpen);
+  }
   const header=create('header','bc-home-widget-header');header.append(title,actions);
   card.append(header,display);
   updateLiveValues(card);return card;
@@ -273,6 +286,35 @@
   let wrap=target.querySelector('.bc-home-phone-widget-strip');
   if(!wrap){wrap=create('div','bc-home-phone-widget-strip');target.append(wrap)}
   wrap.replaceChildren(...snap().widgets.filter(w=>widgets[w.id]).map(w=>widgetCard(w,true)));
+  for(const card of wrap.querySelectorAll('.bc-home-phone-widget')){
+   const handle=card.querySelector('.bc-home-widget-header'),id=card.dataset.widget;
+   let pointer=null;
+   handle?.addEventListener('pointerdown',e=>{
+    if(e.button!==0||e.target.closest('button'))return;
+    pointer={id:e.pointerId,x:e.clientX,y:e.clientY,dx:0};
+    handle.setPointerCapture(e.pointerId);
+   });
+   handle?.addEventListener('pointermove',e=>{
+    if(!pointer||pointer.id!==e.pointerId)return;
+    pointer.dx=e.clientX-pointer.x;
+    if(Math.abs(pointer.dx)>8){
+     card.classList.add('bc-home-phone-widget-moving');
+     card.style.transform='translateX('+pointer.dx+'px)';
+    }
+   });
+   function end(e){
+    if(!pointer||pointer.id!==e.pointerId)return;
+    const dx=pointer.dx;pointer=null;card.style.removeProperty('transform');
+    card.classList.remove('bc-home-phone-widget-moving');
+    try{handle.releasePointerCapture(e.pointerId)}catch(_){}
+    if(Math.abs(dx)<38)return;
+    const current=snap().widgets,i=current.findIndex(w=>w.id===id);
+    const j=Math.max(0,Math.min(current.length-1,i+(dx<0?1:-1)));
+    if(i>=0&&j!==i)reorderPhone(id,current[j].id,true);
+   }
+   handle?.addEventListener('pointerup',end);
+   handle?.addEventListener('pointercancel',end);
+  }
   target.classList.toggle('bc-home-custom-phone-widgets',!!snap().widgets.length);
   if(!phoneButton||!phoneButton.isConnected){
    const actions=root.querySelector('.bc-sb-status-actions');
