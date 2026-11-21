@@ -650,3 +650,105 @@ body.bc-redline-receiver.rr-imessage-mode #photoLightbox #closeLightbox{
  top:max(14px,env(safe-area-inset-top))!important;
  right:max(14px,env(safe-area-inset-right))!important;
 }
+
+/* REDLINE STEP 4 — full-size photograph LEFT, original bid/timer controls RIGHT.
+   Both actions use the existing verified room handlers, not duplicate accounts. */
+@media(min-width:720px){
+ body.bc-redline-receiver.rr-imessage-mode #photoLightbox .redline-review-lightbox-layout{
+  flex-direction:row!important;align-items:stretch!important;
+  height:100dvh!important;max-height:100dvh!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #photoLightbox .redline-review-large-image{
+  flex:1 1 0!important;width:auto!important;height:100dvh!important;
+  min-width:0!important;min-height:0!important;max-height:100dvh!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #photoLightbox #redlineLightboxReview:not([hidden]){
+  display:flex!important;flex:0 0 clamp(300px,29vw,390px)!important;
+  width:clamp(300px,29vw,390px)!important;max-width:42vw!important;
+  height:100dvh!important;max-height:100dvh!important;min-height:0!important;
+  border:0!important;border-left:1px solid #71243a!important;border-radius:0!important;
+  overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain!important;
+  padding:clamp(60px,8dvh,85px) 18px 28px!important;margin:0!important;
+  background:#100b10!important;gap:13px!important;
+ }
+}
+body.bc-redline-receiver.rr-imessage-mode #photoLightbox #redlineLightboxReview:not([hidden]){
+ color:#f8f4f6!important;
+}
+body.bc-redline-receiver.rr-imessage-mode #photoLightbox #redlineLightboxReview .rr-timer-panel{
+ display:flex!important;flex-direction:column!important;flex:0 0 auto!important;
+ gap:12px!important;min-width:0!important;width:100%!important;
+ margin:12px 0 0!important;padding:14px 0 0!important;
+ border:0!important;border-top:1px solid #803047!important;border-radius:0!important;
+ background:transparent!important;
+}
+body.bc-redline-receiver.rr-imessage-mode #photoLightbox #redlineLightboxReview .rr-timer-controls{
+ display:flex!important;flex-direction:column!important;align-items:stretch!important;
+ gap:10px!important;
+}
+body.bc-redline-receiver.rr-imessage-mode #photoLightbox #redlineLightboxReview .rr-timer-rate-label{
+ display:flex!important;flex-direction:column!important;align-items:stretch!important;
+ gap:7px!important;white-space:normal!important;
+}
+body.bc-redline-receiver.rr-imessage-mode #photoLightbox #redlineLightboxReview .rr-timer-rate{
+ width:100%!important;min-height:44px!important;font-size:17px!important;
+}
+body.bc-redline-receiver.rr-imessage-mode #photoLightbox #redlineLightboxReview .rr-timer-start,
+body.bc-redline-receiver.rr-imessage-mode #photoLightbox #redlineLightboxReview .rr-timer-stop{
+ width:100%!important;min-height:47px!important;font-size:12px!important;
+}
+body.bc-redline-receiver.rr-imessage-mode #photoLightbox #redlineLightboxReview .rr-timer-select-incoming{
+ display:none!important;
+}
+body.bc-redline-receiver.rr-imessage-mode #photoLightbox #redlineLightboxReview .rr-timer-selected{
+ max-width:100%!important;white-space:normal!important;
+}
+body.bc-redline-receiver.rr-imessage-mode #photoLightbox #redlineLightboxReview .redline-review-amount{
+ min-height:48px!important;
+}
+/* Narrow phones cannot fit a readable original and a usable right rail.
+   Keep the entire photo visible above its independently scrolling controls. */
+@media(max-width:719px){
+ body.bc-redline-receiver #photoLightbox:not([hidden]){
+  position:fixed!important;inset:0!important;z-index:10000!important;
+  display:flex!important;align-items:stretch!important;justify-content:center!important;
+  width:100vw!important;height:100dvh!important;overflow:hidden!important;
+  padding:0!important;background:#000!important;
+ }
+ body.bc-redline-receiver #photoLightbox .redline-review-lightbox-layout{
+  display:flex!important;flex-direction:column!important;align-items:stretch!important;
+  width:100%!important;height:100dvh!important;max-height:100dvh!important;
+  min-height:0!important;gap:0!important;overflow:hidden!important;padding:0!important;
+ }
+ body.bc-redline-receiver #photoLightbox .redline-review-large-image{
+  flex:1 1 0!important;width:100%!important;height:auto!important;
+  max-height:none!important;min-height:0!important;overflow:hidden!important;
+  padding:0!important;border:0!important;border-radius:0!important;background:#000!important;
+ }
+ body.bc-redline-receiver #photoLightbox #lightboxImage{
+  width:100%!important;height:100%!important;max-width:100%!important;
+  max-height:100%!important;min-height:0!important;object-fit:contain!important;
+ }
+ body.bc-redline-receiver #photoLightbox #redlineLightboxReview:not([hidden]){
+  display:flex!important;flex:0 0 auto!important;
+  width:100%!important;height:auto!important;max-height:42dvh!important;
+  padding:14px 16px 20px!important;gap:10px!important;margin:0!important;
+  overflow-y:auto!important;border:0!important;border-top:1px solid #71243a!important;
+  border-radius:0!important;background:#100b10!important;
+ }
+ body.bc-redline-receiver #photoLightbox #redlineLightboxReview .rr-timer-panel{
+  display:flex!important;flex-direction:column!important;
+  width:100%!important;margin:0!important;padding:10px 0!important;
+  background:transparent!important;border:0!important;border-top:1px solid #71243a!important;
+ }
+ body.bc-redline-receiver #photoLightbox #redlineLightboxReview .rr-timer-rate{
+  min-height:40px!important;width:100%!important;
+ }
+ body.bc-redline-receiver #photoLightbox #redlineLightboxReview .rr-timer-select-incoming{
+  display:none!important;
+ }
+ body.bc-redline-receiver #photoLightbox #closeLightbox{
+  z-index:10001!important;position:fixed!important;
+  right:max(12px,env(safe-area-inset-right))!important;top:max(12px,env(safe-area-inset-top))!important;
+ }
+}
