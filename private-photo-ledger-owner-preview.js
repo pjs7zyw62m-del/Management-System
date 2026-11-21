@@ -45,7 +45,7 @@
   const main=make('div','bc-redline-preview-body');
   const identity=make('div','bc-redline-preview-identity');
   identity.append(make('span','','BLACKCELL / PRIVATE CHANNEL'),make('h3','','Your next submission.'));
-  const description=make('p','','Choose one photo, add a note if you wish, and send it privately to your assigned owner.');
+  const description=make('p','','Post a private photo or send a private message, together in one place.');
   const facts=make('div','bc-redline-preview-facts');
   const pending=make('div','',''),owed=make('div','','');
   const pendingValue=make('strong','','0'),owedValue=make('strong','','$0.00');
@@ -57,7 +57,7 @@
   const choose=make('button','bc-redline-preview-choose','+ ADD PHOTO');
   const history=make('button','bc-redline-preview-history','VIEW HISTORY');
   for(const el of [choose,history])el.type='button';
-  actions.append(choose,history);
+  actions.append(history);
   const room=make('div','bc-redline-preview-room');
   const roomName=make('span','','PRIVATE ROOM');
   room.append(make('span','','●'),roomName,make('span','','TWO-PERSON ACCESS'));
@@ -76,13 +76,14 @@
   const fileHelp=make('small','','JPEG, PNG, WebP or HEIC · up to 12 MB');
   const fileName=make('small','','No photo selected');
   fileArea.append(fileInput,camera,previewImg,selectLabel,fileHelp,fileName);
-  const caption=make('label','bc-redline-preview-caption','CAPTION / NOTE');
-  const textarea=make('textarea','','');textarea.rows=3;textarea.maxLength=500;
-  textarea.placeholder='Describe this photo, or add a short note…';
+  const caption=make('label','bc-redline-preview-caption','SEND A PRIVATE MESSAGE');
+  const textarea=make('textarea','','');textarea.rows=3;textarea.maxLength=2000;
+  textarea.placeholder='Write a private message…';
   caption.append(textarea);
   const submit=make('button','bc-redline-preview-submit','PREVIEW ONLY — SENDING DISABLED');
   submit.type='button';submit.disabled=true;
-  upload.append(title,fileArea,caption,submit);
+  const messageOnly=make('button','bc-redline-preview-submit','MESSAGE ONLY — PREVIEW');messageOnly.type='button';messageOnly.disabled=true;
+  upload.append(title,fileArea,caption,messageOnly,submit);
   // Preview matches the approved three-section sender screen. All values
   // are read-only and the sample conversation never accesses real messages.
   const earningsPanel=make('section','bc-redline-preview-message bc-redline-preview-earnings');earningsPanel.hidden=true;
@@ -138,7 +139,7 @@
   }
   phone.addEventListener('click',()=>setDevice('phone'));
   tablet.addEventListener('click',()=>setDevice('tablet'));
-  choose.addEventListener('click',()=>{selectTab('upload');fileInput.click()});
+
   history.textContent='VIEW EARNINGS';
   history.addEventListener('click',()=>selectTab('earnings'));
   let url=null;
