@@ -262,7 +262,8 @@ function start(){
    const art=E('span','bc-sb-result-icon'),copy=E('span','bc-sb-result-title',x.label),chev=E('span','bc-sb-result-chevron');
    const source=$('.app-icon',x.tile);if(source)for(const node of source.childNodes)art.append(node.cloneNode(true));
    chev.innerHTML=S(GLYPHS.chevron);b.append(art,copy,chev);
-   b.addEventListener('click',()=>safeLaunch(x.id));resultList.append(b);
+   b.addEventListener('click',()=>safeLaunch(x.id));
+    const resultRow=E('div','bc-sb-result-row');resultRow.append(b);
     const added=pins().some(p=>p.id===x.id);
     const place=E('button','bc-sb-result-add',added?'On Home':'+ Home');
     place.type='button';place.disabled=added;
@@ -273,7 +274,7 @@ function start(){
      window.dispatchEvent(new CustomEvent('blackcell:desktop-add-app',{detail:{id:x.id}}));
      drawResults();
     });
-    resultList.append(place);
+    resultRow.append(place);resultList.append(resultRow);
   }
  }
  function openModal(kind){
