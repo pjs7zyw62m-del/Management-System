@@ -90,7 +90,7 @@ test('Sender gets archived earnings and chat without permission to upload while 
 test('REDLINE receiver resources are versioned and original form and security remain intact',()=>{
  assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-photo-large-timed1/);
  assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-right-popup-only1/);
- assert.match(html,/private-photo-ledger\.js\?v=20261121-timer-chat-price-dialog2/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261121-reviewed-photo-viewport1/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=20261121-stable-brand1/);
  assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-timer-chat-price-dialog2/);
  assert.match(ledger,/corporateAuthorize\(db,\{allowLedgerOnly:true\}\)/);
@@ -237,7 +237,7 @@ test('One iMessage-style workspace has two independent resizers and a fixed-heig
  assert.match(layout,/#redlineReceiverHeightEdge/);
  assert.match(layout,/cursor:row-resize!important/);
  assert.match(layout,/cursor:col-resize/);
- assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-timer-chat-price-dialog2/);
+ assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-reviewed-photo-viewport1/);
 });
 test('Incoming photo decisions and priced photo records stay separate and scroll internally',()=>{
  const layout=read('private-photo-ledger-imessage-workspace.css');
@@ -383,9 +383,9 @@ test('Bid and timed-photo controls stay right of the normal photo; fullscreen co
 test('BLACKCELL OS loads the REDLINE sidebar release rather than a stale iframe version',()=>{
  const os=read('blackcell-os.html');
  const runtime=read('blackcell-os.js');
- assert.match(os,/receiver-timer-chat-price2-20261121/);
- assert.match(runtime,/receiver-timer-chat-price2-20261121/);
- assert.match(os,/blackcell-os\.js\?v=149-redline-timer-chat-price2/);
+ assert.match(os,/receiver-reviewed-photo-viewport1-20261121/);
+ assert.match(runtime,/receiver-reviewed-photo-viewport1-20261121/);
+ assert.match(os,/blackcell-os\.js\?v=150-redline-reviewed-photo-viewport1/);
  const layout=read('private-photo-ledger-imessage-workspace.css');
  assert.match(layout,/body\.bc-redline-receiver:not\(\.rr-imessage-mode\) #photoLightbox/);
 });
@@ -457,4 +457,15 @@ test('REDLINE pause belongs only to verified receiver and applies across devices
  assert.match(style,/#redlineReceiverSendingPause|rr-receiver-pause-button/);
  assert.match(html,/private-photo-ledger-sender\.js\?v=20261121-receiver-owned-pause1/);
  assert.match(html,/private-photo-ledger-simple-sender\.css\?v=20261121-timer-chat-price-dialog2/);
+});
+
+test('Selected reviewed photo stays beside sidebar instead of caught-up queue',()=>{
+ const queue=ledger.slice(ledger.indexOf('function renderReviewQueue(){'),ledger.indexOf('function renderEntries(){'));
+ const layout=read('private-photo-ledger-imessage-workspace.css');
+ assert.match(queue,/parent\\.append\\(renderEntry\\(reviewed\\)\\)/);
+ assert.match(queue,/preparePhotoReviewLightbox\\(reviewed\\|\\|null\\)/);
+ assert.doesNotMatch(queue,/ALL CAUGHT UP/);
+ assert.match(layout,/REDLINE reviewed-photo viewport/);
+ assert.match(layout,/#redlineReceiverReviewStage:has/);
+ assert.match(layout,/#redlineReceiverReviewStage>#redlineLightboxReview/);
 });
