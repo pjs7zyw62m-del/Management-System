@@ -435,7 +435,11 @@ function entryState(e){
 function renderReviewQueue(){
  const queue=$('ownerReviewQueue');
  queue.hidden=!state.isOwner||!state.room||state.showArchive;
- if(queue.hidden)return;
+ if(queue.hidden){
+  const sidebar=$('redlineLightboxReview');
+  if(sidebar)sidebar.hidden=true;
+  return;
+ }
  const pending=state.entries
   .filter(e=>entryState(e)==='pending')
   .sort((a,b)=>new Date(a.created_at)-new Date(b.created_at)||a.id.localeCompare(b.id));
@@ -451,6 +455,12 @@ function renderReviewQueue(){
   },'button-outline');
   empty.append(history);
   parent.append(empty);
+  const lastAccepted=state.entries.find(e=>e.decision_status==='accepted');
+  if(lastAccepted)preparePhotoReviewLightbox(lastAccepted);
+  else{
+   const sidebar=$('redlineLightboxReview');
+   if(sidebar)sidebar.hidden=true;
+  }
   return;
  }
  const current=pending[0];
@@ -461,6 +471,11 @@ function renderReviewQueue(){
   node('span','','1 OF '+pending.length+' · OLDEST FIRST')
  );
  parent.append(progress,renderEntry(current));
+ // Always keep the verified bid/timer rail beside the normal single image.
+ // A priced-photo preview uses its own selected entry instead.
+ const selected=state.reviewSidebarPhotoId?
+  state.entries.find(e=>e.id===state.reviewSidebarPhotoId):null;
+ preparePhotoReviewLightbox(selected&&document.body.classList.contains('rr-timing-priced-photo')?selected:current);
 }
 function renderEntries(){
  const parent=$('photoEntries');parent.replaceChildren();
@@ -494,10 +509,9 @@ function renderEntry(e){
   if(!src)return;
   $('lightboxImage').src=src;
   $('lightboxImage').alt=e.caption||'Private uploaded photograph';
-  preparePhotoReviewLightbox(e);
+  // Full-screen inspection is a separate photo-only overlay.
+  // All verified bid and timer controls remain alongside the normal viewer.
   $('photoLightbox').hidden=false;document.body.style.overflow='hidden';
-  // Use the same verified timer controls beside the enlarged photograph.
-  window.dispatchEvent(new CustomEvent('blackcell:redline:lightbox-open',{detail:{photoId:e.id}}));
  },'photo-image-btn');
  imageButton.setAttribute('aria-label',state.isOwner&&status==='pending'?'Enlarge this photo and choose an approval price':'View original private photo');
  const img=node('img');
@@ -562,22 +576,35 @@ function renderEntry(e){
  }
  body.append(ctrl);card.append(body);return card;
 }
-// Full-screen inspection uses the same authenticated owner-only decision
-// handlers as the review card; no second ledger record is created.
+// Changing the visible photo updates its matching bid/timer sidebar.
+window.addEventListener('blackcell:redline:photo-selected',event=>{
+ const id=event.detail?.photoId;
+ if(!state.isOwner||!id)return;
+ const selected=state.entries.find(e=>e.id===id);
+ if(!selected)return;
+ state.reviewSidebarPhotoId=id;
+ preparePhotoReviewLightbox(selected);
+});
+// Full-screen inspection uses the existing authenticated decision handlers
+// in the NORMAL viewer sidebar, never in the full-screen photo-only popup.
 function preparePhotoReviewLightbox(entry){
  const panel=$('redlineLightboxReview');
  if(!panel)return;
+ // Preserve the same authenticated timer node when refreshing the bid UI.
+ const liveTimer=$('redlinePhotoTimerPanel');
+ if(liveTimer?.parentNode===panel)liveTimer.remove();
  panel.replaceChildren();
+ const restoreTimer=()=>{if(liveTimer&&state.isOwner)panel.append(liveTimer)};
  const review=state.isOwner&&entry.decision_status==='pending'&&!state.showArchive;
  // The sidebar is visible to the verified receiver for both pending and
  // accepted photographs. Only pending images can receive a final price.
  const receiverActions=state.isOwner&&!state.showArchive;
  panel.hidden=!receiverActions;
- $('photoLightbox').classList.toggle('is-review',review);
  if(!receiverActions)return;
  if(!review){
   panel.append(node('span','redline-review-kicker','VERIFIED RECEIVER'));
   panel.append(node('h3','','PHOTO CONTROLS'));
+  restoreTimer();
   return;
  }
  panel.append(node('span','redline-review-kicker','VERIFIED OWNER · PRIVATE REVIEW'));
@@ -597,6 +624,7 @@ function preparePhotoReviewLightbox(entry){
  const statusLine=node('p','redline-review-status');
  statusLine.setAttribute('role','status');
  panel.append(statusLine);
+ restoreTimer();
  const allButtons=[accept,zero,reject];
  let running=false;
  async function decision(kind){
@@ -607,7 +635,7 @@ function preparePhotoReviewLightbox(entry){
    const result=kind==='reject'?await rejectPhoto(entry,reject):
     kind==='zero'?await assignAmount(entry,{value:'0.00'},zero):
      await assignAmount(entry,input,accept);
-   if(result===true){closeLightbox();return}
+   if(result===true){if(!$('photoLightbox').hidden)closeLightbox();return}
    statusLine.textContent='No decision was saved. Check the amount, or try again.';
   }catch(error){statusLine.textContent='Decision not saved: '+fail(error)}
   finally{running=false;for(const b of allButtons)b.disabled=false}
@@ -859,12 +887,9 @@ async function copyLink(){
 }
 function closeLightbox(){
  $('photoLightbox').hidden=true;
- // Return the live timer controls to their original home before clearing
- // the photo's sidebar; any running timer remains under the same room RPC.
- window.dispatchEvent(new Event('blackcell:redline:lightbox-close'));
  $('photoLightbox').classList.remove('is-review');
  $('lightboxImage').removeAttribute('src');
- $('redlineLightboxReview')?.replaceChildren();
+ // The persistent bid/timer sidebar is NOT part of this image-only popup.
  document.body.style.overflow='';
 }
 function wireEvents(){
