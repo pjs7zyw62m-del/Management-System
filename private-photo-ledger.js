@@ -613,11 +613,15 @@ async function bcLiveOriginal_uploadPhoto(event){
  if(state.showArchive){show('uploadFeedback','Return to the current REDLINE session before uploading new photos.');return}
  const file=$('uploadPhoto').files?.[0];
  if(!file){show('uploadFeedback','Choose a photo first.');return}
- if(file.size>MAX_IMAGE_BYTES||file.size===0){show('uploadFeedback','Choose a non-empty image no larger than 12 MB.');return}
+ if(file.size>MAX_IMAGE_BYTES||file.size===0){$('uploadPhoto').value='';show('uploadFeedback','Choose a non-empty image no larger than 12 MB. Select a different photo to try again.');return}
  let info;
- try{info=imageType(file)}catch(e){show('uploadFeedback',fail(e));return}
+ try{info=imageType(file)}catch(e){$('uploadPhoto').value='';show('uploadFeedback',fail(e)+' Choose a supported photo to try again.');return}
  state.busy=true;
- const btn=$('submitPhoto');btn.disabled=true;btn.textContent='UPLOADING PRIVATELY…';
+ const btn=$('submitPhoto'),picker=$('uploadPhoto');
+ btn.disabled=true;picker.disabled=true;$('employeeUpload').classList.add('bc-photo-sending');
+ btn.textContent='UPLOADING PRIVATELY…';
+ show('selectedPhotoName','Sending photo privately…');
+ show('uploadFeedback','Sending privately to your assigned REDLINE room…');
  const room=state.room;
  const id=crypto.randomUUID();
  const path=room.id+'/'+id+'.'+info.ext;
@@ -636,7 +640,7 @@ async function bcLiveOriginal_uploadPhoto(event){
   }
   const accompanyingMessage=$('uploadCaption').value.trim();
   $('uploadPhoto').value='';
-  show('selectedPhotoName','No photo selected');
+  show('selectedPhotoName','Select another photo to send automatically.');
   if(accompanyingMessage){
    try{
     await window.BLACKCELL_REDLINE_API.sendMessage(accompanyingMessage);
@@ -651,8 +655,16 @@ async function bcLiveOriginal_uploadPhoto(event){
   }
   state.entryFingerprint='';
   await loadEntries({force:true});
- }catch(e){show('uploadFeedback','Could not post photo: '+fail(e))}
- finally{state.busy=false;btn.disabled=false;btn.textContent='POST TO OUR PRIVATE ROOM ↗'}
+ }catch(e){
+  picker.value='';
+  show('selectedPhotoName','Select a photo to try again.');
+  show('uploadFeedback','Photo not sent: '+fail(e)+'. Choose a photo again to retry.');
+ }
+ finally{
+  state.busy=false;btn.disabled=false;picker.disabled=false;
+  $('employeeUpload').classList.remove('bc-photo-sending');
+  btn.textContent='POST TO OUR PRIVATE ROOM ↗';
+ }
 }
 async function createRoom(event){
  event.preventDefault();
