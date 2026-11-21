@@ -3,8 +3,8 @@
 'use strict';
 if(window.top!==window.self||window.BLACKCELL_LIVE_UPDATE)return;
 const testMode=document.currentScript?.dataset.test==='true'&&/\/site-update-test(?:-v2)?\.html$/.test(location.pathname), KEY='bc.live-update.v1';
-const osMode=/\/blackcell-os\.html$/.test(location.pathname);
-const OS_APPLIED='bc.os.applied-release.v1', OS_TARGET='bc.os.update-target.v1';
+const osMode=/\/blackcell-os(?:\.html)?\/?$/.test(location.pathname)||Boolean(document.getElementById('desktop')?.classList.contains('shell'));
+const OS_APPLIED='bc.os.applied-release.v1', OS_TARGET='bc.os.update-target.v1', OS_EXPECTED_BUILD='bc.os.expected-build.v1';
 let osDeferred='',osRequested=false,osNotice=null;
 let testing=false,baseline='',pending='',checking=false,refreshing=false,last=Date.now(),interrupted=false,screen=null;
 const dirty=new Map(),original=new WeakMap(),holds=new Map(),$=id=>document.getElementById(id);
@@ -74,6 +74,17 @@ function styles(){const s=document.createElement('style');s.textContent=
 '@keyframes bcupdspin{to{transform:rotate(360deg)}}@keyframes bcupdscan{0%{transform:translateX(-100%)}100%{transform:translateX(380%)}}@media(prefers-reduced-motion:reduce){#bc-update-overlay .bc-up-ring,#bc-update-overlay .bc-up-track i{animation:none}}';document.head.append(s)}
 styles();
 function overlay(message,prepareOnly=false){if(!screen){screen=document.createElement('div');screen.id='bc-update-overlay';screen.setAttribute('role','status');screen.innerHTML='<div class="bc-up-body"><div class="bc-up-brand">BLACKCELL</div><div class="bc-up-corp">CORPORATION</div><div class="bc-up-ring" aria-hidden="true"></div><h2>SITE UPDATING</h2><p id="bc-up-message"></p><div class="bc-up-track" aria-hidden="true"><i></i></div><p>Preserving your current location</p><div class="bc-up-foot">CONTROL IS EVERYTHING.</div></div>';screen.hidden=prepareOnly;document.body.append(screen)}screen.hidden=prepareOnly;$('bc-up-message').textContent=message}
+async function latestOSBuild(){
+ if(!osMode)return '';
+ try{
+  const uri=new URL(location.pathname,location.href);
+  uri.searchParams.set('_bc_os_html',String(Date.now()));
+  const response=await fetch(uri,{cache:'no-store',credentials:'same-origin'});
+  if(!response.ok)return '';
+  const markup=await response.text();
+  return markup.match(/<meta\s+name=["']blackcell-os-client-build["']\s+content=["']([a-zA-Z0-9._-]{4,100})["']/i)?.[1]||'';
+ }catch(_){return ''}
+}
 function save(){try{const scroll=Array.from(document.querySelectorAll('[id]')).filter(t=>t.clientHeight>0&&t.scrollHeight>t.clientHeight+4&&t.scrollTop>0).slice(0,30).map(t=>({id:t.id,top:t.scrollTop,left:t.scrollLeft}));sessionStorage.setItem(KEY,JSON.stringify({path:location.pathname,at:Date.now(),x:scrollX,y:scrollY,scroll}))}catch(_){}}
 function restore(){let r;try{r=JSON.parse(sessionStorage.getItem(KEY)||'null');sessionStorage.removeItem(KEY)}catch(_){return}if(!r||r.path!==location.pathname||Date.now()-r.at>60000||performance.getEntriesByType('navigation')[0]?.type!=='reload')return;
 interrupted=false;overlay('Restoring your corporate workspace…');const move=()=>{if(interrupted||location.pathname!==r.path)return;scrollTo(r.x||0,r.y||0);for(const item of r.scroll||[]){const el=$(item.id);if(el){el.scrollTop=item.top;el.scrollLeft=item.left}}};
@@ -87,7 +98,11 @@ async function refresh(){
  save();
  if(testing){try{sessionStorage.setItem('bc.live-update.test-complete',location.pathname+location.search+location.hash)}catch(_){}}
  if(osMode){
-  try{sessionStorage.setItem(OS_TARGET,pending)}catch(_){}
+  const expectedBuild=await latestOSBuild();
+  try{
+   sessionStorage.setItem(OS_TARGET,pending);
+   if(expectedBuild)sessionStorage.setItem(OS_EXPECTED_BUILD,expectedBuild);
+  }catch(_){}
   const url=new URL(location.href);url.searchParams.set('bc_os_release',pending.replace(/[^a-z0-9_-]/gi,'').slice(0,48));
   location.replace(url.href);return;
  }
@@ -102,20 +117,28 @@ async function check(){
   if(osMode){
    try{
     const target=sessionStorage.getItem(OS_TARGET);
-    if(target===v){localStorage.setItem(OS_APPLIED,v);sessionStorage.removeItem(OS_TARGET)}
+    const expected=sessionStorage.getItem(OS_EXPECTED_BUILD);
+    const current=document.querySelector('meta[name="blackcell-os-client-build"]')?.content||'';
+    if(target===v&&(!expected||expected===current)){
+     localStorage.setItem(OS_APPLIED,v);
+     sessionStorage.removeItem(OS_TARGET);sessionStorage.removeItem(OS_EXPECTED_BUILD);
+    }
    }catch(_){}
   }
   if(!baseline){
    baseline=v;
    if(osMode){
     try{const applied=localStorage.getItem(OS_APPLIED);if(!applied)localStorage.setItem(OS_APPLIED,v);else if(applied!==v)pending=v}catch(_){}
+    if(sessionStorage.getItem(OS_TARGET)===v&&sessionStorage.getItem(OS_EXPECTED_BUILD)&&sessionStorage.getItem(OS_EXPECTED_BUILD)!==(document.querySelector('meta[name="blackcell-os-client-build"]')?.content||''))pending=v;
     if(pending)maybeRefresh();
    }
    return;
   }
   let storedDifferent=false;
   if(osMode)try{storedDifferent=!!localStorage.getItem(OS_APPLIED)&&localStorage.getItem(OS_APPLIED)!==v}catch(_){}
-  const next=v!==baseline||storedDifferent?v:'';
+  const target=sessionStorage.getItem(OS_TARGET),expected=sessionStorage.getItem(OS_EXPECTED_BUILD),current=document.querySelector('meta[name="blackcell-os-client-build"]')?.content||'';
+  const buildMismatch=target===v&&!!expected&&expected!==current;
+  const next=v!==baseline||storedDifferent||buildMismatch?v:'';
   if(next!==pending){osRequested=false;osDeferred='';if(!next&&osNotice)osNotice.hidden=true}
   pending=next;if(pending)maybeRefresh();
  }catch(_){/* Do not interrupt the user's session when release checks fail */}finally{checking=false}

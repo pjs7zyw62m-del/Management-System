@@ -64,6 +64,21 @@ jobs:
               document.body.dataset.homeWidgets=String(Boolean((phone?strip:layer)?.querySelector('.bc-home-widget')));
               document.body.dataset.homeApp=String(Boolean(phone?document.querySelector('.bc-sb-icon,.bc-home-phone-app-picker'):layer?.querySelector('.bc-home-desktop-app,.bc-home-empty-cta')));
               document.body.dataset.homeGalleryAvailable=String(Boolean(document.querySelector('.bc-home-phone-widget-picker')||document.querySelector('#bcWidgetsToggle')));
+              document.body.dataset.homeMobileReady=String(!phone||Boolean(document.querySelector('.bc-sb.bc-springboard-ready, .bc-sb')&&document.querySelector('.bc-home-phone-widget-picker')&&document.querySelector('.bc-home-phone-app-picker')&&document.querySelector('.bc-home-phone-widget-strip .bc-home-widget')));
+              const icon=layer?.querySelector('.bc-home-desktop-app');
+              if(!phone&&icon){
+               try{
+                const rect=icon.getBoundingClientRect(),id=icon.dataset.id;
+                const before=api.read().pins.find(p=>p.id===id)?.x;
+                const args=(x,y)=>({bubbles:true,composed:true,pointerId:77,pointerType:'mouse',isPrimary:true,button:0,clientX:x,clientY:y});
+                icon.dispatchEvent(new PointerEvent('pointerdown',args(rect.left+24,rect.top+24)));
+                icon.dispatchEvent(new PointerEvent('pointermove',args(rect.left+104,rect.top+42)));
+                icon.dispatchEvent(new PointerEvent('pointerup',args(rect.left+104,rect.top+42)));
+                const after=api.read().pins.find(p=>p.id===id)?.x;
+                document.body.dataset.homeDrag=String(Number.isFinite(before)&&Number.isFinite(after)&&Math.abs(after-before)>.01);
+                document.body.dataset.homeDragDetail='before_'+before+'_after_'+after+'_layer_'+layer.clientWidth+'_left_'+icon.style.left+'_app_'+id;
+               }catch(err){document.body.dataset.homeDrag=false;document.body.dataset.homeDragDetail='exception_'+String(err?.message||err).replace(/[^a-z0-9_]/gi,'_').slice(0,100)}
+              }else {document.body.dataset.homeDrag=String(phone||apps.length===0);document.body.dataset.homeDragDetail=phone?'phone':('no_icon_'+apps.length+'_saved_'+api.read().pins.map(p=>p.id).join('_')+'_list_'+apps.map(p=>p.id).join('_')+'_dom_'+(layer?.querySelectorAll('.bc-home-desktop-app').length||0)+'_clean_'+shell.classList.contains('bc-macos-desktop'))}
               document.body.dataset.homeDevice=phone?'phone':'desktop';
             },350);
           },7000);
@@ -86,9 +101,9 @@ jobs:
               --virtual-time-budget=10600 --window-size="$w,$h" --dump-dom \
               "http://127.0.0.1:8883/blackcell-os-unified-home-probe.html" \
               >"/tmp/bc-home-$device.html" 2>"/tmp/bc-home-$device-errors.log"
-            for check in home-ready home-defaults home-saved home-widgets home-app home-gallery-available; do
+            for check in home-ready home-defaults home-saved home-widgets home-app home-gallery-available home-mobile-ready home-drag; do
               grep -q "data-$check=\"true\"" "/tmp/bc-home-$device.html" || {
-                echo "$device failed $check"; tail -n 25 "/tmp/bc-home-$device-errors.log"; exit 1;
+                echo "$device failed $check"; grep -o "data-home-drag-detail=\\\"[^\\\"]*\\\"" "/tmp/bc-home-$device.html" | head -1 || true; tail -n 25 "/tmp/bc-home-$device-errors.log"; exit 1;
               }
             done
             "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage \

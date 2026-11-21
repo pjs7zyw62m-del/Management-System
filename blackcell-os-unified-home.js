@@ -195,7 +195,9 @@
   if(!handle)return;
   let origin=null;
   handle.addEventListener('pointerdown',e=>{
-   if(e.button!==0||e.target.closest('button')||!accountReady()||!!gallery)return;
+   // Desktop app shortcuts ARE buttons; only ignore nested widget controls.
+   // The previous unconditional closest('button') rejected every app drag.
+   if(e.button!==0||(type==='widget'&&e.target.closest('button'))||!accountReady()||!!gallery)return;
    const item=snap()[type==='widget'?'widgets':'pins'].find(p=>p.id===id);
    if(!item)return;
    const rect=element.getBoundingClientRect(),host=layer.getBoundingClientRect();
@@ -317,7 +319,7 @@
   if(!phoneButton||!phoneButton.isConnected){
    const actions=root.querySelector('.bc-sb-status-actions');
    if(actions){
-    phoneButton=makeButton('▦',()=>showGallery('widgets'),'bc-home-phone-widget-picker');
+    phoneButton=makeButton('Widgets',()=>showGallery('widgets'),'bc-home-phone-widget-picker');
     phoneButton.setAttribute('aria-label','Add or edit home screen widgets');
     phoneButton.title='Widget Gallery';actions.prepend(phoneButton);
    }
@@ -347,12 +349,18 @@
   if(!accountReady())return;
   e.preventDefault();e.stopImmediatePropagation();showGallery('widgets');
  },true);
- window.addEventListener('blackcell:desktop-layout-updated',schedule);
+ // Apply edits immediately: deferred frames in installed mobile web apps can be
+ // delayed when the shell is waking or the browser throttles rendering.
+ window.addEventListener('blackcell:desktop-layout-updated',()=>{renderQueued=false;draw()});
  window.addEventListener('blackcell:home-sync-status',e=>{
   if(!accountReady())return;
   showNotice(e.detail?.ok?'Home layout synced to your BLACKCELL account.':'Account sync failed. Your local layout is kept; reconnect to retry.');
  });
  window.addEventListener('blackcell:desktop-ready',schedule);
+ window.addEventListener('blackcell:springboard-ready',schedule);
+ // Auth and mobile shell activation can follow DOMContentLoaded.
+ const shellReadyObserver=new MutationObserver(schedule);
+ shellReadyObserver.observe(shell,{attributes:true,attributeFilter:['hidden','class']});
  window.addEventListener('blackcell:home-apps-open',()=>showGallery('apps'));
  window.addEventListener('blackcell:home-widgets-open',()=>showGallery('widgets'));
  window.addEventListener('blackcell:desktop-add-app',e=>addApp(e.detail?.id));
