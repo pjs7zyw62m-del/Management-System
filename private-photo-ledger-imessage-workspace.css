@@ -757,3 +757,63 @@ body.bc-redline-receiver.rr-imessage-mode #photoLightbox #redlineLightboxReview 
 body.bc-redline-receiver #photoLightbox #redlineLightboxReview .rr-timer-panel[hidden]{
  display:none!important;
 }
+
+/* REDLINE release resilience: the verified receiver can open the original
+   outside iMessage/combined mode (e.g. a BLACKCELL OS popout or a standalone
+   REDLINE browser tab). Do not require .rr-imessage-mode to show its sidebar. */
+@media (min-width:720px){
+ body.bc-redline-receiver:not(.rr-imessage-mode) #photoLightbox:not([hidden]){
+  position:fixed!important;inset:0!important;z-index:10000!important;
+  width:100vw!important;height:100dvh!important;
+  padding:0!important;margin:0!important;overflow:hidden!important;background:#000!important;
+ }
+ body.bc-redline-receiver:not(.rr-imessage-mode) #photoLightbox .redline-review-lightbox-layout{
+  display:flex!important;flex-direction:row!important;align-items:stretch!important;
+  width:100vw!important;height:100dvh!important;max-width:100vw!important;
+  max-height:100dvh!important;min-height:0!important;gap:0!important;
+  padding:0!important;margin:0!important;overflow:hidden!important;
+ }
+ body.bc-redline-receiver:not(.rr-imessage-mode) #photoLightbox .redline-review-large-image{
+  display:flex!important;flex:1 1 0!important;min-width:0!important;
+  height:100dvh!important;max-height:100dvh!important;min-height:0!important;
+  overflow:hidden!important;align-items:center!important;justify-content:center!important;
+  border:0!important;border-radius:0!important;background:#000!important;
+ }
+ body.bc-redline-receiver:not(.rr-imessage-mode) #photoLightbox #lightboxImage{
+  width:100%!important;height:100%!important;max-height:100%!important;
+  max-width:100%!important;min-width:0!important;min-height:0!important;
+  object-fit:contain!important;object-position:center!important;
+ }
+ body.bc-redline-receiver:not(.rr-imessage-mode) #photoLightbox #redlineLightboxReview:not([hidden]){
+  display:flex!important;flex:0 0 clamp(300px,29vw,390px)!important;
+  flex-direction:column!important;gap:13px!important;
+  width:clamp(300px,29vw,390px)!important;max-width:42vw!important;
+  height:100dvh!important;max-height:100dvh!important;min-height:0!important;
+  padding:65px 18px 25px!important;margin:0!important;
+  overflow-y:auto!important;overflow-x:hidden!important;
+  border:0!important;border-left:1px solid #71243a!important;
+  border-radius:0!important;background:#100b10!important;
+ }
+ body.bc-redline-receiver:not(.rr-imessage-mode) #photoLightbox #redlineLightboxReview .rr-timer-panel:not([hidden]){
+  display:flex!important;flex-direction:column!important;gap:12px!important;
+  width:100%!important;margin:12px 0 0!important;padding:14px 0 0!important;
+  border:0!important;border-top:1px solid #803047!important;
+  background:transparent!important;
+ }
+ body.bc-redline-receiver:not(.rr-imessage-mode) #photoLightbox #redlineLightboxReview .rr-timer-controls{
+  display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:10px!important;
+ }
+ body.bc-redline-receiver:not(.rr-imessage-mode) #photoLightbox #redlineLightboxReview .rr-timer-rate-label{
+  display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:7px!important;
+ }
+ body.bc-redline-receiver:not(.rr-imessage-mode) #photoLightbox #redlineLightboxReview .rr-timer-rate,
+ body.bc-redline-receiver:not(.rr-imessage-mode) #photoLightbox #redlineLightboxReview .rr-timer-start,
+ body.bc-redline-receiver:not(.rr-imessage-mode) #photoLightbox #redlineLightboxReview .rr-timer-stop{
+  width:100%!important;min-height:44px!important;
+ }
+ body.bc-redline-receiver:not(.rr-imessage-mode) #photoLightbox #closeLightbox{
+  position:fixed!important;z-index:10001!important;
+  top:max(14px,env(safe-area-inset-top))!important;
+  right:max(14px,env(safe-area-inset-right))!important;
+ }
+}
