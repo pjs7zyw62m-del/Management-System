@@ -428,6 +428,8 @@ async function loadEntries({force=false}={}){
   await signImages(all);
   renderEntries();
   renderReviewQueue();
+  // Chat photo previews become available only after the signed URLs load.
+  window.dispatchEvent(new Event('blackcell:redline:state'));
  }
  if(all.length>=5000)show('entriesFeedback','Showing up to 5,000 latest submissions; ask administration to archive older records.');
  else show('entriesFeedback','');
@@ -1321,7 +1323,7 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
    topPicks:state.entries.filter(e=>state.ratings.has(e.id))
     .sort((a,b)=>
      (state.ratings.get(b.id)?.stars||0)-(state.ratings.get(a.id)?.stars||0)||
-     Number(cents(b.amount_cents)>cents(a.amount_cents))-Number(cents(b.amount_cents)<cents(a.amount_cents))||
+     Number(cents(a.amount_cents)<cents(b.amount_cents))-Number(cents(a.amount_cents)>cents(b.amount_cents))||
      Date.parse(state.ratings.get(b.id)?.rated_at||0)-Date.parse(state.ratings.get(a.id)?.rated_at||0))
     .slice(0,5).map(ratedPhotoData)
   };
