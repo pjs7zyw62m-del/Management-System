@@ -11,11 +11,11 @@ const html=read('blackcell-os.html');
 const manifest=read('blackcell-site-version.json');
 
 test('the new visual layer is included after existing responsive styles',()=>{
- assert.match(html,/blackcell-os-obsidian-v2\.css\?v=20261120-obsidian2/);
+ assert.match(html,/blackcell-os-obsidian-v2\.css\?v=20261120-(?:obsidian2|dock-autohide)/);
  assert.ok(html.indexOf('blackcell-os-device-label.css')<html.indexOf('blackcell-os-obsidian-v2.css'));
  assert.match(html,/blackcell-os-springboard\.js\?v=ios-a-20261119/);
  assert.match(html,/blackcell-os\.js\?v=119-os-update-ux2/);
- assert.match(manifest,/obsidian2/);
+ assert.match(manifest,/(?:obsidian2|dock-auto-hide)/);
 });
 
 test('iPhone default artwork is an original lightweight same-origin SVG',()=>{
