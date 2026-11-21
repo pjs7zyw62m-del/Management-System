@@ -91,7 +91,7 @@ test('Sender gets archived earnings and chat without permission to upload while 
 test('REDLINE receiver resources are versioned and original form and security remain intact',()=>{
  assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-photo-large-timed1/);
  assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-right-popup-only1/);
- assert.match(html,/private-photo-ledger\.js\?v=20261121-price-next-photo1/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261121-queue-complete-message1/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=20261121-stable-brand1/);
  assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-verified-timer-auto-submit3/);
  assert.match(ledger,/corporateAuthorize\(db,\{allowLedgerOnly:true\}\)/);
@@ -238,7 +238,7 @@ test('One iMessage-style workspace has two independent resizers and a fixed-heig
  assert.match(layout,/#redlineReceiverHeightEdge/);
  assert.match(layout,/cursor:row-resize!important/);
  assert.match(layout,/cursor:col-resize/);
- assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-verified-timer-auto-submit3/);
+ assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-queue-complete-message1/);
 });
 test('Incoming photo decisions and priced photo records stay separate and scroll internally',()=>{
  const layout=read('private-photo-ledger-imessage-workspace.css');
@@ -384,9 +384,9 @@ test('Bid and timed-photo controls stay right of the normal photo; fullscreen co
 test('BLACKCELL OS loads the REDLINE sidebar release rather than a stale iframe version',()=>{
  const os=read('blackcell-os.html');
  const runtime=read('blackcell-os.js');
- assert.match(os,/receiver-price-next-photo1-20261121/);
- assert.match(runtime,/receiver-price-next-photo1-20261121/);
- assert.match(os,/blackcell-os\.js\?v=152-redline-price-next-photo1/);
+ assert.match(os,/receiver-queue-complete-message1-20261121/);
+ assert.match(runtime,/receiver-queue-complete-message1-20261121/);
+ assert.match(os,/blackcell-os\.js\?v=153-redline-queue-complete-message1/);
  const layout=read('private-photo-ledger-imessage-workspace.css');
  assert.match(layout,/body\.bc-redline-receiver:not\(\.rr-imessage-mode\) #photoLightbox/);
 });
@@ -494,7 +494,7 @@ test('Stop Timer atomically submits one priced photo; other timed earnings never
  assert.match(chat,/async function pollSenderTimers\(force=false\)/);
  assert.match(chat,/bridge\(\).timerStatus\(id\)/);
  assert.match(chat,/window.setInterval\(\(\)=>\{/);
- assert.match(os,/name="blackcell-os-client-build" content="20261121-price-next-photo1"/);
+ assert.match(os,/name="blackcell-os-client-build" content="20261121-queue-complete-message1"/);
 });
 
 test('Manually accepting a photo always advances to the next pending image',()=>{
@@ -564,4 +564,16 @@ test('Receiver manual price advances actual review state without sender refresh'
  assert.equal(state.reviewSidebarPhotoId,null);
  assert.ok(dispatched.includes('blackcell:redline:next-incoming'));
  assert.equal(submit.disabled,false);
+});
+
+test('End of current-session queue clearly tells receiver why there is no next photo',()=>{
+ const ledger=read('private-photo-ledger.js');
+ const style=read('private-photo-ledger-imessage-workspace.css');
+ const sidebar=ledger.slice(ledger.indexOf('function preparePhotoReviewLightbox(entry){'),ledger.indexOf('async function assignAmount('));
+ assert.match(sidebar,/const pendingInCurrent=state\.entries\.some/);
+ assert.match(sidebar,/rr-current-session-finished/);
+ assert.match(sidebar,/NO NEXT PHOTO/);
+ assert.match(sidebar,/All photographs in this current session have been reviewed/);
+ assert.match(style,/rr-current-session-finished/);
+ assert.match(ledger,/query\.gte\('created_at',selectedRoom\.current_session_started_at\)/);
 });
