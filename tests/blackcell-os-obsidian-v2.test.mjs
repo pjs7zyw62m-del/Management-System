@@ -15,7 +15,7 @@ test('the new visual layer is included after existing responsive styles',()=>{
  assert.ok(html.indexOf('blackcell-os-device-label.css')<html.indexOf('blackcell-os-obsidian-v2.css'));
  assert.match(html,/blackcell-os-springboard\.js\?v=ios-a-20261119/);
  assert.match(html,/blackcell-os\.js\?v=(?:119-os-update-ux2|120-macos-personal-wallpaper|121-mac-workspaces|122-unified-desktop-sync|123-mobile-ready-drag-fix|124-auto-save-updates|125-level-r-window-drag)/);
- assert.match(manifest,/(?:obsidian2|dock-auto-hide|macos-personal-wallpaper|mac-workspaces-mission-control|unified-home-three-devices|mobile-ready-drag-fix|quiet-auto-save-updates|level-r-window-drag)/);
+ assert.match(manifest,/(?:obsidian2|dock-auto-hide|macos-personal-wallpaper|mac-workspaces-mission-control|unified-home-three-devices|mobile-ready-drag-fix|quiet-auto-save-updates|level-r-window-drag|redline-receiver-reset)/);
 });
 
 test('iPhone default artwork is an original lightweight same-origin SVG',()=>{
