@@ -23,7 +23,9 @@
  const header=make('header','rr-command-header');
  const intro=make('div','rr-command-intro');
  const title=make('h2','rr-title');title.append(document.createTextNode('REDLINE '),make('span','','CONTROL'));
- intro.append(title);
+ const roomSummary=make('span','rr-room-summary','No private room selected');
+ roomSummary.id='redlineReceiverRoomSummary';
+ intro.append(title,roomSummary);
  const status=make('span','rr-status','RECEIVER VERIFIED');status.id='redlineReceiverStatus';
  header.append(intro,status);
  const stats=make('div','rr-stats');
@@ -57,12 +59,16 @@
   $('#redlineReceiverChat .redline-message-entry')?.focus({preventScroll:true});
  },'rr-nav-button');
  const manage=button('Rooms & Access',()=>goTo('#ownerSetup'),'rr-nav-button');
- const archive=button('Archive',()=>{
-  const control=$('#redlineArchiveToggle');
-  if(control&&!control.hidden)control.click();
-  goTo('#redlineSessionTools');
- },'rr-nav-button rr-nav-archive');
- nav.append(review,history,message,manage,archive);
+ const tools=button('Room Tools',()=>{
+  const expanded=!document.body.classList.contains('rr-room-tools-open');
+  document.body.classList.toggle('rr-room-tools-open',expanded);
+  tools.setAttribute('aria-expanded',String(expanded));
+  tools.textContent=expanded?'Hide Room Tools':'Room Tools';
+  if(expanded)goTo('#activeRoom .room-toolbar');
+ },'rr-nav-button rr-nav-tools');
+ tools.setAttribute('aria-expanded','false');
+ tools.setAttribute('aria-controls','redlineSessionTools');
+ nav.append(review,history,message,manage,tools);
  // Reuse the authenticated, room-scoped thread from the sender's chat module.
  const chatPanel=make('section','rr-chat-panel');chatPanel.id='redlineReceiverChat';
  chatPanel.hidden=true;chatPanel.setAttribute('aria-label','Private chat with sender');
@@ -144,7 +150,19 @@
  line.append(make('span','rr-security-dot',''),make('strong','','RECEIVER ONLY'),
   make('span','','Owner-verification required for decisions, resets and payment records'));
  dashboard.append(header,stats,nav,chatPanel);
- app.querySelector('.page-heading')?.after(dashboard);
+ const pageHeading=app.querySelector('.page-heading');
+ pageHeading?.after(dashboard);
+ const workspaceActions=pageHeading?.querySelector('.workspace-actions');
+ // The same Refresh and Live Updates controls move into the compact
+ // desktop header. They are never copied or disabled.
+ function placeHeaderActions(){
+  if(!workspaceActions||!pageHeading)return;
+  if(window.matchMedia('(min-width:960px)').matches){
+   if(workspaceActions.parentNode!==header)header.append(workspaceActions);
+  }else if(workspaceActions.parentNode!==pageHeading){
+   pageHeading.append(workspaceActions);
+  }
+ }
  // Desktop: chat on the LEFT, the actual live photo review and history
  // on the RIGHT. Never clone review entries or create a second data source.
  const roomBody=$('#activeRoom .room-body');
@@ -180,9 +198,23 @@
   const visible=!app.hidden&&!owner.hidden;
   dashboard.hidden=!visible;
   document.body.classList.toggle('bc-redline-receiver',visible);
-  if(!visible)return;
+  if(!visible){
+   document.body.classList.remove('rr-room-tools-open');
+   if(workspaceActions&&pageHeading&&workspaceActions.parentNode!==pageHeading)pageHeading.append(workspaceActions);
+   return;
+  }
+  placeHeaderActions();
   void loadAccess();
   const hasRoom=!room.hidden;
+  roomSummary.textContent=hasRoom
+   ?($('#activeRoomTitle')?.textContent?.trim()||'Private room')+' · '+($('#roomPeople')?.textContent?.trim()||'Two-person access')
+   :'No private room selected';
+  roomSummary.title=roomSummary.textContent;
+  tools.disabled=!hasRoom;
+  if(!hasRoom){
+   document.body.classList.remove('rr-room-tools-open');
+   tools.textContent='Room Tools';tools.setAttribute('aria-expanded','false');
+  }
   placeWorkspace(hasRoom);
   const wasChatHidden=chatPanel.hidden;
   chatPanel.hidden=!hasRoom;
@@ -195,8 +227,6 @@
    if(value)output.textContent=value.textContent||'—';
   }
   review.disabled=history.disabled=message.disabled=!hasRoom;
-  archive.disabled=!hasRoom||Boolean($('#redlineArchiveToggle')?.hidden);
-  archive.textContent=document.body.classList.contains('bc-redline-archive-view')?'← Current Session':'Archive';
   const mode=document.body.classList.contains('bc-redline-archive-view');
   dashboard.classList.toggle('rr-is-archive',mode);
   const count=$('#reviewQueueCount')?.textContent||'';
@@ -206,7 +236,7 @@
  for(const item of [app,owner,room]){
   observe.observe(item,{attributes:true,attributeFilter:['hidden']});
  }
- for(const id of ['totalOwed','totalPaid','totalAssigned','pendingCount','reviewQueueCount','activeRoomTitle']){
+ for(const id of ['totalOwed','totalPaid','totalAssigned','pendingCount','reviewQueueCount','activeRoomTitle','roomPeople']){
   const element=document.getElementById(id);
   if(element)observe.observe(element,{childList:true,characterData:true,subtree:true});
  }
