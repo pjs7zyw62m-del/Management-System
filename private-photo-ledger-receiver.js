@@ -207,7 +207,7 @@
   void loadAccess();
   const hasRoom=!room.hidden;
   roomSummary.textContent=hasRoom
-   ?($('#activeRoomTitle')?.textContent?.trim()||'Private room')+' · '+($('#roomPeople')?.textContent?.trim()||'Two-person access')
+   ?($('#activeRoomTitle')?.textContent?.trim()||'Private room')+' · '+($('#roomPeople')?.textContent?.trim()||'Two-person access')+' · '+($('#roomStateLabel')?.textContent?.trim()||'ACTIVE')
    :'No private room selected';
   roomSummary.title=roomSummary.textContent;
   tools.disabled=!hasRoom;
@@ -236,7 +236,7 @@
  for(const item of [app,owner,room]){
   observe.observe(item,{attributes:true,attributeFilter:['hidden']});
  }
- for(const id of ['totalOwed','totalPaid','totalAssigned','pendingCount','reviewQueueCount','activeRoomTitle','roomPeople']){
+ for(const id of ['totalOwed','totalPaid','totalAssigned','pendingCount','reviewQueueCount','activeRoomTitle','roomPeople','roomStateLabel']){
   const element=document.getElementById(id);
   if(element)observe.observe(element,{childList:true,characterData:true,subtree:true});
  }
