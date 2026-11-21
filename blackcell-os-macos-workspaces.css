@@ -56,6 +56,25 @@ html.bc-os-phone #desktop .dock>.bc-mac-dock-launchpad{display:none!important}
 #desktop .bc-mac-mission-footer button{min-height:40px;border-radius:11px;border:1px solid #ffffff29;background:#21222b;color:#eee;padding:9px 16px}
 #desktop .bc-mac-mission-footer button:disabled{opacity:.4}
 #desktop .bc-mac-empty{text-align:center;color:#c9c3ce;font-size:14px;padding:25px;grid-column:1/-1}
+#desktop .clock[role="button"]{cursor:pointer;padding:6px 8px;border-radius:8px}
+#desktop .clock[role="button"]:hover,#desktop .clock[role="button"]:focus-visible{background:#ffffff20;outline:0}
+#desktop .bc-mac-notifications{
+ position:absolute;top:39px;right:10px;z-index:2147481870;
+ display:flex;flex-direction:column;gap:13px;
+ width:min(362px,calc(100vw - 20px));max-height:min(70vh,750px);
+ border:1px solid rgba(245,235,242,.30);border-radius:23px;
+ padding:18px;background:linear-gradient(150deg,rgba(58,59,72,.95),rgba(11,12,20,.98));
+ backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);
+ box-shadow:0 23px 65px #000c,inset 0 1px #ffffff28;color:#f3eef4;
+}
+#desktop .bc-mac-notifications-head{display:flex;align-items:center;justify-content:space-between;gap:9px}
+#desktop .bc-mac-notifications-head h3{margin:0;font-size:19px;font-weight:650}
+#desktop .bc-mac-notifications button{border:1px solid #ffffff2c;border-radius:10px;background:#ffffff16;color:#f3f1f5;padding:9px 12px}
+#desktop .bc-mac-notifications-list{display:flex;flex-direction:column;gap:9px;overflow:auto;scrollbar-width:none}
+#desktop .bc-mac-notification{border-radius:15px;border:1px solid #ffffff21;background:#ffffff12;padding:11px 14px}
+#desktop .bc-mac-notification p{font-size:12px;line-height:1.45;margin:0 0 5px;overflow-wrap:anywhere}
+#desktop .bc-mac-notification small{font-size:10px;color:#b8b4bd}
+#desktop .bc-mac-notifications-empty{font-size:13px;line-height:1.5;color:#c5c0c9}
 #desktop .bc-mac-control-button{display:grid;place-items:center;min-width:37px;min-height:35px;border:1px solid #ffffff25;border-radius:10px;background:#35354266;color:#eeedf4;font-size:20px;cursor:pointer}
 #desktop .bc-mac-control{position:absolute;z-index:2147481890;top:40px;right:12px;width:min(295px,calc(100vw - 24px));display:flex;flex-direction:column;gap:9px;padding:18px;border:1px solid #ffffff33;border-radius:22px;background:linear-gradient(145deg,rgba(53,54,67,.93),rgba(9,10,16,.97));box-shadow:0 24px 55px #000c;backdrop-filter:blur(33px)}
 #desktop .bc-mac-control h3{font-size:18px;margin:0}
