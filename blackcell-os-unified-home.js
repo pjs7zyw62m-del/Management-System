@@ -355,6 +355,10 @@
   showNotice(e.detail?.ok?'Home layout synced to your BLACKCELL account.':'Account sync failed. Your local layout is kept; reconnect to retry.');
  });
  window.addEventListener('blackcell:desktop-ready',schedule);
+ window.addEventListener('blackcell:springboard-ready',schedule);
+ // Auth and mobile shell activation can follow DOMContentLoaded.
+ const shellReadyObserver=new MutationObserver(schedule);
+ shellReadyObserver.observe(shell,{attributes:true,attributeFilter:['hidden','class']});
  window.addEventListener('blackcell:home-apps-open',()=>showGallery('apps'));
  window.addEventListener('blackcell:home-widgets-open',()=>showGallery('widgets'));
  window.addEventListener('blackcell:desktop-add-app',e=>addApp(e.detail?.id));
