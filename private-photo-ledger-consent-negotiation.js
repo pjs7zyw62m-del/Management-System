@@ -248,7 +248,7 @@ async function actOnNegotiation(photoId,action,amount=null){
 }
 function renderNegotiation(offer){
  const s=snap(),key=offer.photo_id+':'+offer.status+':'+offer.offer_count;
- if(negotiationShownKey===key&&negotiateDlg.open)return;
+ if(negotiatingShownKey===key&&negotiateDlg.open)return;
  negotiatingShownKey=key;
  negotiateDlg.replaceChildren();
  const header=make('div','redline-consent-heading');
@@ -299,11 +299,9 @@ async function pollNegotiations(force=false){
   if(snap()?.roomId!==id)return;
   negotiatingRoom=id;negotiations=Array.isArray(data.offers)?data.offers:[];
   const pending=negotiations.find(n=>n.status===(s.isOwner?'awaiting_owner':'awaiting_sender'));
-  document.body.dataset.redlineNegDebug=String(data.enabled)+'_'+String(Boolean(pending))+'_'+String(timerDlg.open)+'_'+String(settingsDlg.open);
   if(data.enabled&&pending&&!timerDlg.open&&!settingsDlg.open)renderNegotiation(pending);
   else if(!pending&&negotiateDlg.open){negotiateDlg.close();negotiatingShownKey=null}
  }catch(e){
-  document.body.dataset.redlineNegError=safeError(e).replace(/[^a-z0-9]/gi,'_');
   const el=$('.redline-negotiation-feedback',negotiateDlg);
   if(el)el.textContent=safeError(e);
  }
