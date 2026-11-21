@@ -46,10 +46,11 @@ test('Background and hidden UI are not false-positive auto-update blockers',()=>
 
 test('Automatic OS updates are enabled by default but can be disabled per device',()=>{
  const body=extract('function autoEnabled(){','let osDeferred');
- const autoEnabled=new Function('localStorage',body+';return autoEnabled;');
- assert.equal(autoEnabled({getItem:()=>null})(),true);
- assert.equal(autoEnabled({getItem:()=> 'on'})(),true);
- assert.equal(autoEnabled({getItem:()=> 'off'})(),false);
+ const autoEnabled=new Function('localStorage','OS_AUTO',body+';return autoEnabled;');
+ const key='bc.os.auto-updates.v1';
+ assert.equal(autoEnabled({getItem:()=>null},key)(),true);
+ assert.equal(autoEnabled({getItem:()=> 'on'},key)(),true);
+ assert.equal(autoEnabled({getItem:()=> 'off'},key)(),false);
  assert.match(settings,/row\(p,'Automatic updates',auto/);
  assert.match(settings,/auto\.onchange=/);
 });
