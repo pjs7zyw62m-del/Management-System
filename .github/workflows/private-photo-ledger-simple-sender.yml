@@ -26,7 +26,7 @@ jobs:
           node --test tests/private-photo-ledger-simple-sender.test.mjs
           node --test tests/private-photo-ledger-responsive.test.mjs
           node --test tests/private-photo-ledger-solid-red.test.mjs
-      - name: Simulated four-tab sender with Photo History and private chat on iPhones
+      - name: Simulated five-tab sender with Photo History and private chat on iPhones
         shell: bash
         run: |
           set -euo pipefail
@@ -114,7 +114,7 @@ jobs:
               f="/tmp/redline-sender-$role-$width.html"
               grep -q 'data-qa-role="'$role'"' "$f"
               grep -q 'data-qa-preview-form="yes"' "$f"
-              grep -q 'data-qa-main-tabs="4"' "$f"
+              grep -q 'data-qa-main-tabs="5"' "$f"
               grep -q 'data-qa-bubbles="2"' "$f"
               grep -q 'data-qa-system="yes"' "$f"
               grep -q 'data-qa-chat-visible="yes"' "$f"
