@@ -595,3 +595,16 @@ body.redline-sender-simple .redline-simple-tab{
  .redline-chat-timer-image{max-height:min(24dvh,185px)}
  .redline-chat-timer-photo{padding-top:7px;margin-top:5px}
 }
+
+/* External partial payments appear in sender Earnings with an auditable record. */
+.redline-sender-payment-history{display:flex;flex-direction:column;gap:8px;
+ margin-top:15px;padding-top:13px;border-top:1px solid #583340}
+.redline-sender-payment-history>h3{margin:0!important;color:#ffacc1!important;
+ font-size:11px!important;letter-spacing:.09em!important}
+.redline-sender-payment-rows{display:flex;flex-direction:column;gap:5px;
+ max-height:min(38dvh,360px);overflow-y:auto;overscroll-behavior:contain}
+.redline-sender-payment-line{display:flex;align-items:center;justify-content:space-between;
+ gap:10px;background:#0b0809;border:1px solid #572a38;border-radius:8px;padding:9px}
+.redline-sender-payment-line>div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.redline-sender-payment-line strong{color:#fff;font-size:12px}
+.redline-sender-payment-line small{color:#c0a7b0;font-size:10px;overflow-wrap:anywhere}

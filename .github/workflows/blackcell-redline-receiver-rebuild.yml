@@ -18,6 +18,7 @@ on:
       - 'tests/redline-currently-viewing-browser-smoke.mjs'
       - 'tests/redline-next-photo-visual-smoke.mjs'
       - 'tests/redline-timer-stop-next-photo.test.mjs'
+      - 'tests/redline-partial-payments.test.mjs'
       - 'tests/redline-photo-history-browser-smoke.mjs'
       - 'tests/blackcell-redline-receiver-reset.test.mjs'
       - '.github/workflows/blackcell-redline-receiver-rebuild.yml'
@@ -44,6 +45,7 @@ on:
       - 'tests/redline-currently-viewing-browser-smoke.mjs'
       - 'tests/redline-next-photo-visual-smoke.mjs'
       - 'tests/redline-timer-stop-next-photo.test.mjs'
+      - 'tests/redline-partial-payments.test.mjs'
       - 'tests/redline-photo-history-browser-smoke.mjs'
       - '.github/workflows/blackcell-redline-receiver-rebuild.yml'
   workflow_dispatch:
@@ -71,6 +73,7 @@ jobs:
             tests/blackcell-redline-receiver-reset.test.mjs \
             tests/redline-per-second-earnings.test.mjs \
             tests/redline-timer-stop-next-photo.test.mjs \
+            tests/redline-partial-payments.test.mjs \
             tests/redline-history-chat-signals.test.mjs \
             tests/private-photo-ledger-responsive.test.mjs \
             tests/private-photo-ledger-mobile.test.mjs \

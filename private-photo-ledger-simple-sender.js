@@ -61,6 +61,10 @@ for(const [id,label] of [['pending','Pending review'],['owed','Approved / owed']
  dataValues[id]=val;line.append(val);earnedFields.append(line);
 }
 earningsBox.append(earnedFields);
+ const partialPayments=make('section','redline-sender-payment-history');
+ partialPayments.append(make('h3','','RECORDED PAYMENTS'));
+ const paymentRows=make('div','redline-sender-payment-rows');
+ partialPayments.append(paymentRows);
 earningsBox.append(make('p','redline-earnings-hint','REDLINE records amounts and owner-confirmed settlements. It does not transfer money.'));
 const archiveNotice=make('p','redline-archive-sender-notice');
 const archiveButton=make('button','redline-archive-sender-button','VIEW PREVIOUS RECORDS');
@@ -75,7 +79,7 @@ archiveButton.addEventListener('click',async()=>{
  }catch(err){msgError.textContent='Archive is unavailable: '+String(err?.message||err)}
  finally{archiveButton.disabled=false}
 });
-earningsBox.append(archiveNotice,archiveButton);
+earningsBox.append(archiveNotice,archiveButton,partialPayments);
 const activityBox=make('section','redline-activity-box');
 activityBox.append(make('h3','','Recent activity'));
 const activityList=make('div','redline-activity-list');activityBox.append(activityList);
@@ -227,8 +231,17 @@ function createEvents(entries){
  }
  return all.sort((a,b)=>new Date(b.at)-new Date(a.at));
 }
+function paymentHistoryEvents(snap){
+ if(!Array.isArray(snap?.paymentHistory))return [];
+ return snap.paymentHistory.map(p=>({
+  kind:'event',at:p.created_at,status:'paid',
+  text:(p.kind==='full'?'FINAL PAYMENT RECORDED · ':'PARTIAL PAYMENT RECORDED · ')+money(p.amount_cents)
+   +(p.note?' · '+p.note:'')
+ }));
+}
 function renderActivity(snap){
- const events=createEvents(snap?.entries);
+ const events=[...createEvents(snap?.entries),...paymentHistoryEvents(snap)]
+  .sort((a,b)=>Date.parse(b.at)-Date.parse(a.at));
  const show=(element,list)=>{
   element.replaceChildren();
   if(!list.length){element.append(make('p','redline-no-activity','No photo activity yet.'));return}
@@ -454,6 +467,18 @@ function photoRatingEvents(snap){
  }));
 }
 function renderEarnings(snap){
+ paymentRows.replaceChildren();
+ const payments=Array.isArray(snap.paymentHistory)?snap.paymentHistory:[];
+ if(!payments.length){
+  paymentRows.append(make('p','redline-no-activity','No partial payments recorded in this session.'));
+ }else for(const p of payments.slice(0,30)){
+  const line=make('div','redline-sender-payment-line');
+  const info=make('div','');
+  info.append(make('strong','',p.kind==='full'?'FINAL BALANCE PAYMENT':'PARTIAL PAYMENT'),
+   make('small','',dateText(p.created_at)+(p.note?' · '+p.note:'')));
+  line.append(info,make('strong','',money(p.amount_cents)));
+  paymentRows.append(line);
+ }
  dataValues.pending.textContent=String(snap.pending);
  dataValues.owed.textContent=snap.owed;
  dataValues.paid.textContent=snap.paid;
@@ -603,6 +628,7 @@ function renderChat(){
  }
  const combined=[
   ...events.map(e=>({kind:'event',at:e.at,body:e.text,status:e.status})),
+  ...paymentHistoryEvents(snap).map(e=>({kind:'event',at:e.at,body:e.text,status:e.status})),
   ...timedEvents(snap),
   ...photoRatingEvents(snap),
   ...messages.map(m=>({kind:'chat',at:m.created_at,body:m.body,sender:m.sender_id,id:m.id}))
