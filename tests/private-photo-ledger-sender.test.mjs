@@ -10,7 +10,7 @@ const original=read('private-photo-ledger.js');
 test('sender enhancement loads only on existing REDLINE page',()=>{
  assert.match(html,/private-photo-ledger-sender\.css\?v=20261120-sender-v3/);
  assert.match(html,/private-photo-ledger-sender\.js\?v=20261120-sender-v3/);
- assert.match(html,/private-photo-ledger-responsive\.js\?v=20261120-sender-v3/);
+ assert.match(html,/private-photo-ledger-responsive\.js\?v=(?:20261120-sender-v3|20261121-stable-brand1)/);
  assert.ok(html.indexOf('private-photo-ledger-responsive.js')<html.indexOf('private-photo-ledger-sender.js'));
 });
 test('sender mode requires the original verified room and upload permission',()=>{
