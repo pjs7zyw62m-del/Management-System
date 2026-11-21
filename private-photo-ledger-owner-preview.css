@@ -127,3 +127,51 @@
 .bc-redline-sender-preview .bc-redline-preview-identity{padding:14px 16px 12px}
 .bc-redline-sender-preview .bc-redline-preview-identity>span{display:block;margin-bottom:12px}
 @media(max-width:600px){.bc-redline-sender-preview .bc-redline-preview-identity{padding:13px 13px 11px}}
+
+/* Sender owner-preview mirrors all four live tabs; every resend button is inert. */
+.bc-redline-sender-preview .bc-redline-preview-nav{
+ grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:3px!important;
+}
+.bc-redline-sender-preview .bc-redline-preview-nav button{
+ min-width:0!important;font-size:clamp(8px,1.7vw,10px)!important;
+ padding:8px 3px!important;line-height:1.25!important;
+}
+.bc-redline-sender-preview .bc-redline-preview-history p{
+ font-size:11px;color:#d5b9c4;line-height:1.55;margin:0 0 12px;
+}
+.bc-redline-preview-photo-list{
+ display:flex;flex-direction:column;gap:9px;max-height:380px;
+ overflow-y:auto;-webkit-overflow-scrolling:touch;
+}
+.bc-redline-preview-history-row{
+ display:flex;align-items:center;gap:10px;min-width:0;
+ padding:9px;border:1px solid #79354a;border-radius:10px;background:#13080e;
+}
+.bc-redline-preview-history-photo,.bc-redline-preview-history-placeholder{
+ width:87px;height:106px;object-fit:contain;border-radius:6px;flex:none;
+ background:#250b15;border:1px solid #6d2e42;
+}
+.bc-redline-preview-history-placeholder{
+ display:grid;place-items:center;text-align:center;color:#d57b97;
+ font-size:10px;font-weight:850;
+}
+.bc-redline-preview-history-details{
+ display:flex;flex-direction:column;gap:5px;flex:1;min-width:0;
+}
+.bc-redline-preview-history-details strong{font-size:11px;color:#fff}
+.bc-redline-preview-history-details small{
+ font-size:10px;color:#c1aab4;overflow-wrap:anywhere;
+}
+.bc-redline-preview-history-stars{color:#ffd369;font-size:17px}
+.bc-redline-preview-resend{
+ border:1px solid #80384b;border-radius:7px;background:#33131e;
+ padding:8px 5px;color:#e3bdc8;font-weight:820;font-size:9px;
+}
+.bc-redline-preview-resend:disabled{opacity:.8}
+.bc-redline-preview-history-empty{font-size:11px;color:#c5a8b4}
+.bc-redline-preview-receipt{margin-left:auto;width:max-content;color:#faa6bb;font-size:10px}
+.bc-redline-preview-typing{color:#fbaac2;font-size:11px;padding:8px 0}
+@media(max-width:450px){
+ .bc-redline-preview-history-photo,.bc-redline-preview-history-placeholder{width:70px;height:95px}
+ .bc-redline-preview-history-stars{font-size:14px}
+}
