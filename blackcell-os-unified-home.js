@@ -86,11 +86,9 @@
  function reorderPhone(id,target,isWidget=false){
   const data=snap(),key=isWidget?'widgets':'pins',arr=data[key],i=arr.findIndex(x=>x.id===id),j=arr.findIndex(x=>x.id===target);
   if(i<0||j<0||i===j)return;
+  const originalSlots=arr.map(v=>({x:v.x,y:v.y}));
   const [moved]=arr.splice(i,1);arr.splice(j,0,moved);
-  for(let n=0;n<arr.length;n++){
-   arr[n].x=clamp((n%4)*.24+.06);
-   arr[n].y=clamp(Math.floor(n/4)*.16+.1);
-  }
+  arr.forEach((v,n)=>{v.x=originalSlots[n].x;v.y=originalSlots[n].y});
   write(data);
  }
  function closeMenu(){menu?.remove();menu=null}
