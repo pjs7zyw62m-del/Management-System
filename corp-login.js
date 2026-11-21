@@ -99,7 +99,7 @@ function clearMessage(element){element.hidden=true;element.textContent='';}
 
 function applyClearance(member){
   const level=Number(member?.clearance_level);
-  if(!Number.isInteger(level)||level<1||level>7)return false;
+  if(!Number.isInteger(level)||level<0||level>7)return false;
   clearanceLevel.textContent='LEVEL '+String(level);
   executivePass.setAttribute('aria-label','Blackcell Level '+level+' employee access pass');
   return true;
