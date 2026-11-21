@@ -141,7 +141,7 @@ test('Owner can inspect large photo and set price while viewing it',()=>{
  assert.match(ledger,/ACCEPT \$0\.00/);
  assert.match(ledger,/REJECT PHOTO/);
  assert.match(ledger,/await assignAmount\(entry,input,accept\)/);
- assert.match(ledger,/const review=state\.isOwner&&entry\.decision_status==='pending'/);
+ assert.match(ledger,/const review=state\.isOwner&&entry\?\.decision_status==='pending'/);
  assert.match(html,/id="redlineLightboxReview"/);
  assert.match(css,/max-height:none!important;min-height:0!important/);
  assert.match(css,/height:clamp\(560px,76dvh,850px\)!important/);
