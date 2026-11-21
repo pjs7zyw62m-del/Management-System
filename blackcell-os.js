@@ -106,7 +106,7 @@ function openAppOrStore(id,section=null){if(preview||installedApp(id)){showApp(i
 
 let corporateClient,corporateAuthorize;
 const $=id=>document.getElementById(id),preview=document.body.dataset.preview==='true';
-wallpaperManager=createWallpaperController({getClient:()=>client,getAccount:()=>storeProfile,getPrefs:()=>desktopPrefs,setPreference:setDesktopPref,isPreview:()=>preview});
+wallpaperManager=createWallpaperController({getClient:()=>client,getAccount:()=>storeProfile,getPrefs:()=>desktopPrefs,setPreference:setDesktopPref,isPreview:()=>preview,getCloudReady:()=>workspaceCloudReady,awaitSync:()=>cloudDesktopWrites});
 /* Responsive presentation only; authentication and application permissions are independent. */
 function osDeviceMode({ua='',touches=0,screenWidth=0,screenHeight=0,width=0}){
  const short=Math.min(screenWidth||Infinity,screenHeight||Infinity),phone=/iPhone|iPod|Windows Phone|Android.*Mobile/i.test(ua)||(touches>0&&short<650),tablet=/iPad/i.test(ua)||(/Macintosh|MacIntel/i.test(ua)&&touches>1)||(/Android/i.test(ua)&&!phone);
@@ -120,7 +120,7 @@ function syncOSDeviceLayout(){
  else{root.style.removeProperty('--bc-touch-height');root.classList.remove('bc-os-keyboard')}
 }
 const touchOS=()=>document.documentElement.classList.contains('bc-os-phone')||document.documentElement.classList.contains('bc-os-tablet');
-syncOSDeviceLayout();window.addEventListener('resize',syncOSDeviceLayout,{passive:true});window.addEventListener('orientationchange',syncOSDeviceLayout,{passive:true});window.visualViewport?.addEventListener('resize',syncOSDeviceLayout,{passive:true});
+syncOSDeviceLayout();window.addEventListener('resize',syncOSDeviceLayout,{passive:true});window.addEventListener('resize',()=>void wallpaperManager?.sync(),{passive:true});window.addEventListener('orientationchange',syncOSDeviceLayout,{passive:true});window.visualViewport?.addEventListener('resize',syncOSDeviceLayout,{passive:true});
 let client,embeddedAdmin=false,owner=false,active=false,leaving=false,last=Date.now(),touched=Date.now(),touching=false,checking=false;
 const IDLE=60*60*1000;
 let workspaceLock=null,bootComplete=false;
