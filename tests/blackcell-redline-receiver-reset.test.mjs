@@ -485,7 +485,7 @@ test('Stop Timer atomically submits one priced photo; other timed earnings never
  assert.match(migration,/redline_timer_photo_link_guard/);
  assert.match(ledger,/auto_timer_session_id/);
  assert.match(ledger,/loadEntries\(\{force:true\}\)/);
- assert.match(ledger,/state.reviewSidebarPhotoId=result.data.photo_id/);
+ assert.match(ledger,/state.reviewSidebarPhotoId=null/);
  assert.match(ledger,/const combinedPrice=baseCents\+extraTimedCents/);
  assert.match(ledger,/rr-photo-price-amount/);
  assert.match(controller,/committed=await bridge\(\).timerStop\(id,\{keepPhotoSelected\}\)/);
@@ -508,7 +508,7 @@ test('Manually accepting a photo always advances to the next pending image',()=>
  assert.match(complimentary,/return await assignAmount\(entry,field,trigger\)/);
  assert.match(reject,/state\.reviewSidebarPhotoId=null/);
  assert.match(reject,/renderReviewQueue\(\)/);
- assert.match(timer,/async function stopTimer\(keepPhotoSelected=true\)/);
+ assert.match(timer,/async function stopTimer\(keepPhotoSelected=false\)/);
  assert.match(timer,/committed\?\.photo_id&&keepPhotoSelected/);
  assert.match(timer,/photo_id===e\.detail\?\.photoId\)void stopTimer\(false\)/);
  assert.match(timer,/selectedId=id;[\s\S]*?void stopTimer\(false\)/);
@@ -659,7 +659,7 @@ test('Five-star originals can be resubmitted until receiver rejects the copied p
  assert.match(ledger,/cents\(e.amount_cents\)>=1n/);
  assert.match(ledger,/stars===5/);
  assert.match(ledger,/const resubmissionStatus=/);
- assert.match(ledger,/if\(options\.keepPhotoSelected!==false\)state\.reviewSidebarPhotoId=result\.data\.photo_id/);
+ assert.match(ledger,/if\(options\.keepPhotoSelected===true\)/);
  assert.match(sender,/\['five-star','5-Star Photos'\]/);
  assert.match(sender,/function renderFiveStarPhotos\(snap\)/);
  assert.match(sender,/resubmissionStatus==='pending'/);
