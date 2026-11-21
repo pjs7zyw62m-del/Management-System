@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+<title>BLACKCELL Obsidian Arc — Desktop</title>
+<defs>
+ <radialGradient id="base"><stop stop-color="#25121d"/><stop offset=".58" stop-color="#0b0b13"/><stop offset="1" stop-color="#020305"/></radialGradient>
+ <linearGradient id="outer" x1=".12" y1=".06" x2=".9" y2=".98"><stop stop-color="#090b0f"/><stop offset=".22" stop-color="#454551"/><stop offset=".38" stop-color="#101019"/><stop offset=".58" stop-color="#1b1c28"/><stop offset=".72" stop-color="#63606c"/><stop offset="1" stop-color="#080a11"/></linearGradient>
+ <linearGradient id="glint" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e4e3e6" stop-opacity=".04"/><stop offset=".25" stop-color="#fff0f5" stop-opacity=".48"/><stop offset=".55" stop-color="#ffffff" stop-opacity=".03"/><stop offset=".8" stop-color="#ffffff" stop-opacity=".32"/><stop offset="1" stop-color="#e2e3ed" stop-opacity=".05"/></linearGradient>
+ <linearGradient id="crimson" x1=".04" y1=".1" x2=".94" y2=".9"><stop stop-color="#420716"/><stop offset=".26" stop-color="#e63155"/><stop offset=".55" stop-color="#6b0b23"/><stop offset=".86" stop-color="#f13c62"/><stop offset="1" stop-color="#4d0717"/></linearGradient>
+ <radialGradient id="wash"><stop stop-color="#b91640" stop-opacity=".24"/><stop offset=".5" stop-color="#650b2e" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+ <linearGradient id="vignette" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#010205" stop-opacity=".28"/><stop offset=".5" stop-color="#010205" stop-opacity="0"/><stop offset="1" stop-color="#010205" stop-opacity=".78"/></linearGradient>
+ <filter id="soft"><feGaussianBlur stdDeviation="28"/></filter>
+</defs>
+<rect width="1600" height="900" fill="#020305"/>
+<rect width="1600" height="900" fill="url(#base)"/>
+<ellipse cx="1125" cy="510" rx="680" ry="570" fill="url(#wash)"/>
+<ellipse cx="1200" cy="660" rx="410" ry="350" fill="#c10a38" opacity=".17" filter="url(#soft)"/>
+<g transform="translate(1010 445) rotate(26)">
+ <ellipse cx="0" cy="0" rx="385" ry="265" fill="none" stroke="#05060c" stroke-width="218"/>
+ <ellipse cx="0" cy="0" rx="385" ry="265" fill="none" stroke="url(#outer)" stroke-width="180"/>
+ <ellipse cx="-2" cy="-4" rx="375" ry="252" fill="none" stroke="url(#glint)" stroke-width="14"/>
+ <ellipse cx="0" cy="0" rx="277" ry="168" fill="none" stroke="#05060b" stroke-width="47"/>
+ <ellipse cx="0" cy="0" rx="279" ry="170" fill="none" stroke="url(#crimson)" stroke-width="5"/>
+ <path d="M-312-154C-385 5-278 171-97 188" fill="none" stroke="#f44b73" stroke-width="5" opacity=".75"/>
+ <path d="M212-165C353-150 405-71 395 6" fill="none" stroke="#f6f1f5" stroke-width="2" opacity=".38"/>
+</g>
+<path d="M470 881C790 690 1110 367 1695 225" fill="none" stroke="#dc2f56" stroke-width="3" opacity=".48"/>
+<path d="M470 885C790 695 1110 371 1695 229" fill="none" stroke="#be1e48" stroke-width="24" opacity=".24" filter="url(#soft)"/>
+<rect width="1600" height="900" fill="url(#vignette)"/>
+</svg>

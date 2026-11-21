@@ -4,6 +4,10 @@ on:
     paths:
       - 'blackcell-os.html'
       - 'blackcell-os-springboard.css'
+      - 'blackcell-os-obsidian-v2.css'
+      - 'blackcell-os-wallpaper-obsidian.svg'
+      - 'blackcell-os-wallpaper-obsidian-mobile.svg'
+      - 'tests/blackcell-os-obsidian-v2.test.mjs'
       - 'blackcell-os-springboard.js'
       - 'tests/blackcell-os-springboard.test.mjs'
       - '.github/workflows/blackcell-os-springboard.yml'
@@ -25,7 +29,9 @@ jobs:
           node --check blackcell-os-three-device.js
           node --check blackcell-os-executive-20261119.js
       - name: Verify secure launch and responsive layout invariants
-        run: node --test tests/blackcell-os-springboard.test.mjs
+        run: node --test tests/blackcell-os-springboard.test.mjs tests/blackcell-os-obsidian-v2.test.mjs
+      - name: Validate custom wallpaper SVGs
+        run: python3 -c "import xml.etree.ElementTree as E; E.parse('blackcell-os-wallpaper-obsidian.svg'); E.parse('blackcell-os-wallpaper-obsidian-mobile.svg')"
       - name: Browser render and interaction smoke checks
         shell: bash
         run: |
@@ -95,7 +101,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: blackcell-iphone-version-a
+          name: blackcell-iphone-obsidian-v2
           path: /tmp/blackcell-springboard-shots/*.png
           retention-days: 7
           if-no-files-found: ignore

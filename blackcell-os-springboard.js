@@ -31,16 +31,22 @@ function start(){
  const weekday=E('span','bc-sb-weekday'),dateNum=E('strong','bc-sb-day'),month=E('span','bc-sb-month');
  dateWidget.append(weekday,dateNum,month);
  const systemWidget=E('div','bc-sb-widget bc-sb-system');
- const sysTiny=E('span','bc-sb-widget-label','BLACKCELL');
+ const sysTiny=E('span','bc-sb-widget-label','YOUR PRIVATE OS');
  const sysBig=E('strong','bc-sb-widget-big','OS');
- const sysRow=E('div','bc-sb-widget-row'),sysDot=E('span','bc-sb-green-dot'),sysText=E('span','bc-sb-widget-meta','SECURE WORKSPACE');
+ const sysRow=E('div','bc-sb-widget-row'),sysDot=E('span','bc-sb-green-dot'),sysText=E('span','bc-sb-widget-meta','VERIFIED WORKSPACE');
  sysRow.append(sysDot,sysText);
  const sysCount=E('span','bc-sb-widget-bottom','Applications');
  systemWidget.append(sysTiny,sysBig,sysRow,sysCount);
  widgets.append(dateWidget,systemWidget);
  const identity=E('div','bc-sb-identity');
- const jewel=E('span','bc-sb-diamond','B'),name=E('span','bc-sb-identity-text','BLACKCELL');
- identity.append(jewel,name);
+ const jewel=E('span','bc-sb-diamond');
+ jewel.innerHTML='<svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M32 3 61 32 32 61 3 32Z" fill="#350915" stroke="#F47A90" stroke-width="1.6"/><path d="M23 16h13c7.8 0 12 3.5 12 9 0 3.5-2.1 6-4.8 7.2 4.2 1.4 6.1 4.5 6.1 8.5 0 6.7-5.6 10.3-13.7 10.3H23V16Zm8 6v8h5c2.8 0 4.4-1.5 4.4-4s-1.6-4-4.4-4h-5Zm0 13.7v9h5.9c3 0 4.7-1.7 4.7-4.5s-1.7-4.5-4.7-4.5H31Z" fill="#F9F6F7"/></svg>';
+ const name=E('span','bc-sb-identity-text','BLACKCELL');
+ const headline=E('strong','bc-sb-identity-headline','Your world.');
+ const subtitle=E('span','bc-sb-identity-subtitle','ONE PRIVATE EXPERIENCE');
+ const identityCopy=E('div','bc-sb-identity-copy');
+ identityCopy.append(name,headline,subtitle);
+ identity.append(jewel,identityCopy);
  const page=E('section','bc-sb-page');page.setAttribute('aria-label','Home Screen applications');
  const grid=E('div','bc-sb-grid');
  const pageControls=E('div','bc-sb-page-controls');
@@ -53,7 +59,7 @@ function start(){
  const dockItems=E('div','bc-sb-dock-icons');dock.append(dockItems);
  const editButton=E('button','bc-sb-edit-done','Done');editButton.type='button';editButton.hidden=true;
  const indicator=E('div','bc-sb-home-indicator');indicator.setAttribute('aria-hidden','true');
- page.append(grid);home.append(widgets,identity,page,pageControls,searchPill,dock,indicator);
+ page.append(grid);home.append(identity,widgets,page,pageControls,searchPill,dock,indicator);
  const modal=E('div','bc-sb-overlay');modal.hidden=true;
  const sheet=E('section','bc-sb-sheet');sheet.setAttribute('role','dialog');sheet.setAttribute('aria-modal','true');sheet.setAttribute('aria-label','BLACKCELL App Library');
  const modalBar=E('div','bc-sb-modal-head');
@@ -67,6 +73,7 @@ function start(){
  shell.classList.add('bc-springboard-ready');
  let pageIndex=0,edit=false,picked=null,pressed=null,longTimer=0,suppressUntil=0,modalOpen=false,returnFocus=null,knownAccount=null,order=[];
  let renderedIds=[];
+ const priority=['network','forces','photos','film','shorts','person','omega','settings','store','photoledger','photobattle','usa','awards','care','innovations'];
  const account=()=>{try{return window.BLACKCELL_OS_WIDGET_LAYOUT?.account?.()||null}catch(_){return null}};
  const storageKey=()=>{const id=account();return id&&id!=='preview'?'bc.os.iphone-springboard.v1:'+id:null};
  function readOrder(){
@@ -83,7 +90,7 @@ function start(){
  }
  function ordered(){
   readOrder();const found=available(),map=new Map(found.map(x=>[x.id,x]));
-  return [...order,...found.map(x=>x.id)].filter((id,i,all)=>all.indexOf(id)===i&&map.has(id)).map(id=>map.get(id));
+  return [...order,...priority,...found.map(x=>x.id)].filter((id,i,all)=>all.indexOf(id)===i&&map.has(id)).map(id=>map.get(id));
  }
  function safeLaunch(id){
   if(shell.hidden)return;
