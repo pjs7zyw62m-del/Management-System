@@ -97,7 +97,9 @@ test('Running timer stays pinned in conversation until server STOP',()=>{
  assert.match(sender,/card.classList.add\('redline-chat-timer-pinned'\)/);
  assert.match(sender,/if\(pinned\)\{/);
  assert.match(sender,/The active timer is pinned separately ABOVE messages/);
- assert.match(css,/\.redline-message-feed>\.redline-chat-timer-pinned/);
+ assert.match(css,/\.redline-message-card > \.redline-chat-timer-slot/);
+ assert.match(sender,/timerSlot\.append\(card\)/);
+ assert.match(sender,/messageCard\.append\(msgHeader,timerSlot,feed/);
  assert.match(css,/position:sticky!important/);
  assert.match(sender,/if\(e.kind==='timer'\)\{feed.append\(makeTimerCard\(e\)\);continue;\}/);
 });
