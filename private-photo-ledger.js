@@ -627,16 +627,28 @@ async function bcLiveOriginal_uploadPhoto(event){
   if(upload.error)throw upload.error;
   const r=await db.from(ENTRIES).insert({
     id,room_id:room.id,uploaded_by:state.user.id,image_path:path,decision_status:'pending',
-    file_name:file.name.slice(0,180),caption:$('uploadCaption').value.trim().slice(0,500)
+    file_name:file.name.slice(0,180),caption:''
   }).select('id').single();
   if(r.error){
    // The cleanup policy allows deleting an uploaded file only if no ledger entry references it.
    await db.storage.from(BUCKET).remove([path]);
    throw r.error;
   }
-  $('uploadPhoto').value='';$('uploadCaption').value='';
+  const accompanyingMessage=$('uploadCaption').value.trim();
+  $('uploadPhoto').value='';
   show('selectedPhotoName','No photo selected');
-  show('uploadFeedback','Photo saved privately. The owner can now assign an amount.');
+  if(accompanyingMessage){
+   try{
+    await window.BLACKCELL_REDLINE_API.sendMessage(accompanyingMessage);
+    $('uploadCaption').value='';
+    window.dispatchEvent(new Event('blackcell:redline:messages-changed'));
+    show('uploadFeedback','Photo and private message sent successfully.');
+   }catch(messageError){
+    show('uploadFeedback','Photo saved, but the message was not sent: '+fail(messageError)+'. Your message is still in the box; select Send Message Only to retry.');
+   }
+  }else{
+   show('uploadFeedback','Photo saved privately. The owner can now assign an amount.');
+  }
   state.entryFingerprint='';
   await loadEntries({force:true});
  }catch(e){show('uploadFeedback','Could not post photo: '+fail(e))}
