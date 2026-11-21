@@ -1,10 +1,16 @@
-/* BLACKCELL site update system. Same-origin only; no credentials or drafts are saved. */
+/* BLACKCELL site update system. Saves OS workspace state, not credentials or arbitrary form drafts. */
 (function(){
 'use strict';
 if(window.top!==window.self||window.BLACKCELL_LIVE_UPDATE)return;
 const testMode=document.currentScript?.dataset.test==='true'&&/\/site-update-test(?:-v2)?\.html$/.test(location.pathname), KEY='bc.live-update.v1';
 const osMode=/\/blackcell-os(?:\.html)?\/?$/.test(location.pathname)||Boolean(document.getElementById('desktop')?.classList.contains('shell'));
-const OS_APPLIED='bc.os.applied-release.v1', OS_TARGET='bc.os.update-target.v1', OS_EXPECTED_BUILD='bc.os.expected-build.v1';
+const OS_APPLIED='bc.os.applied-release.v1', OS_TARGET='bc.os.update-target.v1', OS_EXPECTED_BUILD='bc.os.expected-build.v1', OS_AUTO='bc.os.auto-updates.v1';
+function autoEnabled(){try{return localStorage.getItem(OS_AUTO)!=='off'}catch(_){return true}}
+function setAutoEnabled(on){
+ try{localStorage.setItem(OS_AUTO,on?'on':'off')}catch(_){}
+ if(on&&pending)maybeRefresh();
+ return autoEnabled();
+}
 let osDeferred='',osRequested=false,osNotice=null;
 let testing=false,baseline='',pending='',checking=false,refreshing=false,last=Date.now(),interrupted=false,screen=null;
 const dirty=new Map(),original=new WeakMap(),holds=new Map(),$=id=>document.getElementById(id);
@@ -15,32 +21,89 @@ function defaultValue(t){if(t.type==='file')return 0;if(t.type==='checkbox'||t.t
 document.addEventListener('focusin',e=>{const t=e.target;if(editable(t)&&!dirty.has(t))original.set(t,value(t))},true);
 function track(e){const t=e.target;if(editable(t)){if(!dirty.has(t))dirty.set(t,original.has(t)?original.get(t):defaultValue(t));if(value(t)===dirty.get(t))dirty.delete(t)}}
 document.addEventListener('input',track,true);document.addEventListener('change',track,true);
-window.BLACKCELL_LIVE_UPDATE=Object.freeze({hold(reason='operation',owner=window){const t=Symbol(reason);holds.set(t,owner);return()=>holds.delete(t)},clean(element){if(element&&typeof element.contains==='function')for(const t of dirty.keys())if(t===element||element.contains(t)){dirty.delete(t);original.set(t,value(t))}},check:()=>void check(),show:async()=>{await check();if(!osMode)return {available:false};if(pending){osDeferred='';showOSNotice();return {available:true}}return {available:false}}});
+window.BLACKCELL_LIVE_UPDATE=Object.freeze({
+ hold(reason='operation',owner=window){const t=Symbol(reason);holds.set(t,owner);return()=>holds.delete(t)},
+ clean(element){if(element&&typeof element.contains==='function')for(const t of dirty.keys())if(t===element||element.contains(t)){dirty.delete(t);original.set(t,value(t))}},
+ check:()=>void check(),autoEnabled,setAutoEnabled,
+ status:()=>({available:!!pending,automatic:osMode&&autoEnabled(),blockedBy:pending?blockingReason():''}),
+ show:async()=>{
+  await check();
+  if(!osMode)return {available:false};
+  if(pending){
+   osDeferred='';
+   if(autoEnabled()){maybeRefresh();return {available:true,automatic:true,blockedBy:blockingReason()}}
+   showOSNotice();return {available:true,automatic:false};
+  }
+  return {available:false,automatic:autoEnabled()};
+ }
+});
+/* Hidden/minimized apps, cached input controls and decorative players must not
+   block an idle update. Explicit active-operation holds still block every update. */
+function visible(el){
+ if(!el||!el.isConnected||el.closest('[hidden],[inert],[aria-hidden="true"]'))return false;
+ try{
+  if(!el.getClientRects().length)return false;
+  const style=el.ownerDocument.defaultView.getComputedStyle(el);
+  return style.display!=='none'&&style.visibility!=='hidden'&&Number(style.opacity)!==0;
+ }catch(_){return false}
+}
 function activityDoc(doc,depth=0){
  if(!doc||depth>3)return false;
- // Visible App Store windows must never be interrupted by background updates.
- if(doc.querySelector('.os-window[data-os-app="store"]:not([hidden])'))return true;
- if(doc.querySelector('[aria-busy=true],.is-uploading,[data-busy=true],progress:not([value])'))return true;
- const visible=e=>!!(e.getClientRects().length&&!e.closest('[hidden],[aria-hidden=true]')&&e.ownerDocument.defaultView.getComputedStyle(e).visibility!=='hidden');
+ if(visible(doc.querySelector('.os-window[data-os-app="store"]:not([hidden])')))return true;
+ if([...doc.querySelectorAll('[aria-busy="true"],.is-uploading,[data-busy="true"],progress:not([value])')].some(visible))return true;
  for(const el of doc.querySelectorAll('video,audio')){
-  if(el.ended)continue;
-  if(!el.paused||((el.currentTime>0||el.id==='bcCinemaPlayer')&&visible(el)&&!!(el.currentSrc||el.getAttribute('src'))))return true;
+  if(!visible(el)||el.paused||el.ended||(!el.currentSrc&&!el.getAttribute('src')))continue;
+  return true;
  }
  for(const frame of doc.querySelectorAll('iframe')){
+  if(!visible(frame))continue;
   const src=frame.getAttribute('src')||'';
-  if(src&&src!=='about:blank'&&visible(frame)&&(/stream|player|youtube|vimeo|video|bunny/i.test(src)||frame.id==='bcCinemaStreamPlayer'))return true;
+  if(src&&src!=='about:blank'&&/stream|player|youtube|vimeo|video|bunny/i.test(src)&&frame.dataset.bcActiveStream==='true')return true;
   try{if(frame.contentDocument&&activityDoc(frame.contentDocument,depth+1))return true}catch(_){}
  }
  return false;
 }
-function busy(){for(const [token,owner] of holds){try{if(owner.closed||owner!==window&&owner.top!==window)holds.delete(token)}catch(_){holds.delete(token)}}return holds.size>0||activityDoc(document)}
-
-function modified(){for(const [t,initial] of dirty){if(!t.isConnected||value(t)===initial){dirty.delete(t);original.delete(t)}}return dirty.size>0||Array.from(document.querySelectorAll('input[type=file]')).some(t=>t.files?.length)}
-function openModal(){return Array.from(document.querySelectorAll('dialog[open],[aria-modal=true]:not([hidden]):not([aria-hidden=true])')).some(t=>t.getClientRects().length)}
-function safe(explicit=false){return !document.hidden&&navigator.onLine&&!busy()&&!modified()&&!openModal()&&(explicit||Date.now()-last>=12000)}
+function busy(){
+ for(const [token,owner] of holds){
+  try{if(owner.closed||(owner!==window&&owner.top!==window)||owner instanceof Element&&!owner.isConnected)holds.delete(token)}
+  catch(_){holds.delete(token)}
+ }
+ return holds.size>0||activityDoc(document);
+}
+function modified(){
+ for(const [t,initial] of dirty){
+  if(!t.isConnected||value(t)===initial){dirty.delete(t);original.delete(t)}
+ }
+ return [...dirty].some(([t])=>visible(t)&&!t.closest('.bc-settings'))||
+  [...document.querySelectorAll('input[type=file]')].some(t=>visible(t)&&t.files?.length);
+}
+function openModal(){
+ return [...document.querySelectorAll('dialog[open],[aria-modal="true"]:not([hidden]):not([aria-hidden="true"])')]
+  .some(t=>visible(t)&&!t.closest('#bc-os-update-notice,#bc-update-overlay'));
+}
+function blockingReason(){
+ if(document.hidden)return 'Device is inactive.';
+ if(!navigator.onLine)return 'Waiting for internet connection.';
+ if(busy())return 'An active upload, media session or operation is running.';
+ if(modified())return 'An unsaved form or selected file still needs attention.';
+ if(openModal())return 'A dialog is open.';
+ return '';
+}
+function safe(explicit=false){return !blockingReason()&&(explicit||Date.now()-last>=12000)}
 function maybeRefresh(){
  if(!pending||refreshing)return;
- if(osMode){if(osRequested){if(safe(true))void refresh();else setOSNoticeStatus('Save unfinished work and close active uploads, videos or App Store windows to continue.')}else showOSNotice();return}
+ if(osMode){
+  if(autoEnabled()){
+   if(osNotice)osNotice.hidden=true;
+   if(safe())void refresh();
+   return;
+  }
+  if(osRequested){
+   if(safe(true))void refresh();
+   else setOSNoticeStatus(blockingReason()||'Finish the current action to continue.');
+  }else showOSNotice();
+  return;
+ }
  if(safe())void refresh();
 }
 function setOSNoticeStatus(message){const p=osNotice?.querySelector('[data-bc-update-status]');if(p)p.textContent=message}
@@ -90,11 +153,24 @@ function restore(){let r;try{r=JSON.parse(sessionStorage.getItem(KEY)||'null');s
 interrupted=false;overlay('Restoring your corporate workspace…');const move=()=>{if(interrupted||location.pathname!==r.path)return;scrollTo(r.x||0,r.y||0);for(const item of r.scroll||[]){const el=$(item.id);if(el){el.scrollTop=item.top;el.scrollLeft=item.left}}};
 move();setTimeout(move,300);setTimeout(move,1100);setTimeout(()=>{screen?.remove();screen=null;move()},400);setTimeout(move,2600)}
 async function refresh(){
- if(refreshing||!pending||(testing?busy():!safe(osMode&&osRequested)))return;
+ if(refreshing||!pending||(testing?busy():!safe(osMode&&osRequested&&!autoEnabled())))return;
  refreshing=true;if(osNotice)osNotice.hidden=true;
- overlay(osMode?'Applying the approved BLACKCELL OS update…':'Applying the latest corporate system update…');
+ overlay(osMode?'Saving your BLACKCELL workspace and installing the update…':'Applying the latest corporate system update…');
  await new Promise(r=>setTimeout(r,850));
- if(testing?busy():!safe(osMode&&osRequested)){screen?.remove();screen=null;refreshing=false;if(osMode)showOSNotice();return}
+ if(testing?busy():!safe(osMode&&osRequested&&!autoEnabled())){
+  screen?.remove();screen=null;refreshing=false;
+  if(osMode&&!autoEnabled())showOSNotice();
+  return;
+ }
+ if(osMode&&typeof window.BLACKCELL_OS_AUTOSAVE_WORKSPACE==='function'){
+  let preserved=false;
+  try{preserved=(await window.BLACKCELL_OS_AUTOSAVE_WORKSPACE())===true}catch(_){}
+  if(!preserved){
+   screen?.remove();screen=null;refreshing=false;
+   if(osMode&&!autoEnabled())showOSNotice();
+   return;
+  }
+ }
  save();
  if(testing){try{sessionStorage.setItem('bc.live-update.test-complete',location.pathname+location.search+location.hash)}catch(_){}}
  if(osMode){
