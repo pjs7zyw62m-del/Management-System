@@ -82,3 +82,54 @@
  .rr-timer-clock,.rr-timer-money{font-size:15px}
  .rr-timer-panel{padding:8px}
 }
+
+
+/* Live timer receipt inside the sender's existing private chat, not a
+   separate screen or message stream. Hidden when the verified room has no
+   current/recent timer. Elapsed clock and completed-minute amount update in place. */
+.redline-message-card > #redlineSenderTimedEarnings:not([hidden]){
+ display:flex!important;flex:0 0 auto!important;flex-direction:column!important;
+ width:100%!important;margin:0!important;padding:12px 15px!important;
+ gap:8px!important;border:0!important;border-bottom:1px solid #951a36!important;
+ border-radius:0!important;background:#13080c!important;
+ color:#fff!important;min-height:0!important;
+}
+#redlineSenderTimedEarnings[hidden]{display:none!important}
+#redlineSenderTimedEarnings .rr-timer-sender-head{
+ display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
+ gap:6px;min-width:0;
+}
+#redlineSenderTimedEarnings .rr-timer-sender-status{
+ color:#ff4d6e;font-size:11px;font-weight:850;letter-spacing:.07em;
+}
+#redlineSenderTimedEarnings .rr-timer-sender-rate{
+ color:#dbbdc6;font-size:11px;font-weight:700;
+}
+#redlineSenderTimedEarnings .rr-timer-sender-metrics{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;min-width:0;
+}
+#redlineSenderTimedEarnings .rr-timer-sender-metric{
+ display:flex;flex-direction:column;gap:3px;min-width:0;
+}
+#redlineSenderTimedEarnings .rr-timer-sender-metric small{
+ font-size:9px;letter-spacing:.12em;color:#b9a7af;font-weight:800;
+}
+#redlineSenderTimedEarnings .rr-timer-sender-metric strong{
+ font-size:clamp(21px,3vw,27px);line-height:1.15;
+ font-weight:800;color:#fff;letter-spacing:-.02em;
+ font-variant-numeric:tabular-nums;overflow-wrap:anywhere;
+}
+#redlineSenderTimedEarnings .rr-timer-sender-amount{
+ color:#ff4669!important;
+}
+#redlineSenderTimedEarnings .rr-timer-sender-detail{
+ color:#c1afb6;font-size:10px;line-height:1.35;margin:0;
+}
+@media(max-width:520px){
+ .redline-message-card > #redlineSenderTimedEarnings:not([hidden]){
+  padding:10px 12px!important;gap:7px!important;
+ }
+ #redlineSenderTimedEarnings .rr-timer-sender-metric strong{
+  font-size:21px!important;
+ }
+}
