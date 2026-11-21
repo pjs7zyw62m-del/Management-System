@@ -1082,3 +1082,42 @@ body.bc-redline-receiver .rr-photo-star-summary{
  color:#ffc453!important;font-size:12px!important;font-weight:800!important;
  letter-spacing:.04em!important;margin:6px 0!important;
 }
+
+/* REDLINE receiver compact controls — keep full functionality, reduce only
+   the visual button size and vertical padding in the normal right sidebar. */
+body.bc-redline-receiver #redlineLightboxReview:not([hidden]){
+ gap:7px!important;
+}
+body.bc-redline-receiver #redlineLightboxReview .rr-receiver-photo-pause{
+ gap:5px!important;padding:6px 0 10px!important;margin:0 0 5px!important;
+}
+body.bc-redline-receiver #redlineLightboxReview .rr-receiver-pause-button{
+ min-height:37px!important;height:37px!important;padding:6px 9px!important;
+ border-radius:8px!important;font-size:10px!important;
+}
+body.bc-redline-receiver #redlineLightboxReview .rr-photo-rating-panel{
+ gap:6px!important;padding:9px 0!important;margin:2px 0!important;
+}
+body.bc-redline-receiver #redlineLightboxReview .rr-photo-rating-buttons{
+ gap:4px!important;
+}
+body.bc-redline-receiver #redlineLightboxReview .rr-photo-rating-star{
+ min-height:37px!important;height:37px!important;
+ font-size:21px!important;padding:2px!important;border-radius:7px!important;
+}
+body.bc-redline-receiver #redlineLightboxReview .redline-review-actions{
+ gap:6px!important;
+}
+body.bc-redline-receiver #redlineLightboxReview .redline-review-actions button{
+ min-height:37px!important;height:37px!important;width:100%!important;
+ padding:6px 8px!important;border-radius:8px!important;
+ font-size:10px!important;font-weight:800!important;
+}
+body.bc-redline-receiver #redlineLightboxReview .redline-review-amount{
+ min-height:36px!important;height:36px!important;padding:7px 10px!important;
+}
+body.bc-redline-receiver #redlineLightboxReview .rr-timer-start,
+body.bc-redline-receiver #redlineLightboxReview .rr-timer-stop{
+ min-height:37px!important;height:37px!important;
+ padding:6px 9px!important;border-radius:8px!important;font-size:10px!important;
+}
