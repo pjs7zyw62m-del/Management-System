@@ -132,7 +132,8 @@ function pickPhoto(id){
 }
 window.addEventListener('blackcell:redline:photo-selected',e=>pickPhoto(e.detail?.photoId));
 window.addEventListener('blackcell:redline:review-photo',e=>{
- if(!selectedId&&!latest?.active?.running)pickPhoto(e.detail?.photoId);
+ const id=e.detail?.photoId;
+ if(uuid(id)&&!latest?.active?.running&&selectedId!==id)pickPhoto(id);
 });
 window.addEventListener('blackcell:redline:photo-decided',e=>{
  if(latest?.active?.running&&latest.active.photo_id===e.detail?.photoId)void stopTimer(false);
@@ -280,18 +281,18 @@ function render(){
  start.disabled=acting||!owner||!s.roomActive||!selectedId||running;
  stop.disabled=acting||!owner||!running;
  rate.disabled=running||acting||!owner;
- const chosenEntry=s.entries?.find(e=>e.id===selectedId);
- const priced=Boolean(chosenEntry&&chosenEntry.decision_status==='accepted');
- const next=currentPhoto();
- const img=priced?$('[data-redline-photo-id="'+selectedId+'"] .photo-image-btn img'):null;
- const imageReady=Boolean(img?.src&&img.src.startsWith('https://'));
- // The large normal viewer may already show this same timed photo. Avoid
- // a second preview covering the photo or creating an empty side pane.
- const displayedPhoto=$('#reviewQueueCurrent .photo-entry[data-redline-photo-id]');
- const alreadyVisible=displayedPhoto?.dataset.redlinePhotoId===selectedId;
- preview.hidden=!priced||!owner||!imageReady||alreadyVisible;
- document.body.classList.toggle('rr-timing-priced-photo',priced&&owner&&imageReady&&!alreadyVisible);
- if(imageReady&&previewImg.src!==img.src)previewImg.src=img.src;
+ // The owner has ONE canonical photograph viewer: #reviewQueueCurrent.
+ // Legacy timer preview could remain active after pricing and CSS hid the
+ // newly pending photograph. Keep that preview permanently out of the
+ // layout; the original photo and all timer controls remain in the receiver
+ // queue and right-hand sidebar.
+ preview.hidden=true;
+ document.body.classList.remove('rr-timing-priced-photo');
+ const displayedPhoto=currentPhoto();
+ if(owner&&!running&&displayedPhoto&&selectedId!==displayedPhoto){
+  selectedId=displayedPhoto;
+  chosen.textContent=labelPhoto(selectedId);
+ }
  if(!running&&latest?.active&&!latest.active.running){
   note.textContent='Timer lease expired. Start again after the previous session is finalized.';
  }
