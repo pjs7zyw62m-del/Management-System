@@ -139,10 +139,10 @@ function updateLedgerNavigation(){
 }
 function renderLedgerScope(){
  const limited=state.scopeValue==='ledger_only';
- show('ledgerScopeStatus',limited?'LEDGER-ONLY ACCESS':'FULL CORPORATE ACCESS');
+ show('ledgerScopeStatus',limited?'LEVEL 0 · REDLINE ONLY':'STANDARD CORPORATE ACCESS');
  show('ledgerScopeIndicator',limited?'RESTRICTED':'STANDARD ACCESS');
  show('ledgerScopeDescription',limited
-  ?'The assigned employee can only use BLACKCELL REDLINE. Network, chat and other corporate applications are blocked by server-side permissions. You may restore normal access.'
+  ?'Level 0: this employee can only use BLACKCELL REDLINE. Network, chat and other corporate applications are blocked by server-side permissions. You may restore normal access.'
   :'This employee currently has regular corporate access. Restrict them to BLACKCELL REDLINE to block Network, chat and other authorized corporate apps.');
  const btn=$('ledgerScopeToggle');
  btn.disabled=state.scopeLoading;
@@ -186,7 +186,7 @@ async function toggleLedgerScope(){
   if(state.room?.member_id!==room.member_id)return;
   state.scopeValue=r.data.access_scope==='ledger_only'?'ledger_only':'full';
   show('ledgerScopeFeedback',restrict
-   ?'Ledger-only restriction saved. Other corporate data access is now blocked for that employee.'
+   ?'Level 0 saved. Only REDLINE remains available.'
    :'Full access restored to the employee’s otherwise authorized applications.');
  }catch(e){show('ledgerScopeFeedback','Permission change failed: '+fail(e))}
  finally{state.scopeLoading=false;renderLedgerScope()}
@@ -842,7 +842,7 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
    state.scopeValue=restricted?'ledger_only':'full';
    renderLedgerScope();
   }
-  return {accessScope:result.data.access_scope};
+  return {accessScope:result.data.access_scope,clearanceLevel:result.data.clearance_level};
  },
  snapshot(){
   if(state.closed||!state.user||!state.room||$('ledgerApp').hidden)return null;
