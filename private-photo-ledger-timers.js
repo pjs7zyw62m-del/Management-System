@@ -220,6 +220,8 @@ async function refresh(force=false){
   roomId=null;latest=null;render();return;
  }
  if(s.roomId!==roomId){
+  const oldTimer=latest?.active?.running&&snap()?.isOwner?latest.active.id:null;
+  if(oldTimer)void bridge()?.timerStop?.(oldTimer).catch(()=>{});
   roomId=s.roomId;selectedId=null;latest=null;lastHeartbeatAt=0;lastStatusAt=0;lastHistorySignature='';
   selectIncoming();
  }
@@ -254,7 +256,10 @@ window.addEventListener('pagehide',()=>{
  if(snap()?.isOwner&&latest?.active?.running)void bridge()?.timerStop?.(latest.active.id).catch(()=>{});
 });
 for(const evt of ['blackcell:redline:bridge','blackcell:redline:state','blackcell:redline:reset','blackcell:redline:session-mode']){
- window.addEventListener(evt,()=>void refresh(true));
+ window.addEventListener(evt,()=>{
+  if(snap()?.archiveMode&&snap()?.isOwner&&latest?.active?.running)void stopTimer();
+  void refresh(true);
+ });
 }
 window.setInterval(()=>{render();void pulse()},1000);
 void refresh(true);
