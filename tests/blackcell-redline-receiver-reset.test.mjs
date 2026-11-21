@@ -90,7 +90,7 @@ test('Sender gets archived earnings and chat without permission to upload while 
 test('REDLINE receiver resources are versioned and original form and security remain intact',()=>{
  assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-photo-large-timed1/);
  assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-right-popup-only1/);
- assert.match(html,/private-photo-ledger\.js\?v=20261121-verified-timer-auto-submit3/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261121-price-next-photo1/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=20261121-stable-brand1/);
  assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-verified-timer-auto-submit3/);
  assert.match(ledger,/corporateAuthorize\(db,\{allowLedgerOnly:true\}\)/);
@@ -267,7 +267,7 @@ test('Incoming photo viewer expands without crop and keeps priced records access
  assert.match(layout,/object-fit:contain!important/);
  assert.match(layout,/#redlineReceiverIncomingPhotos\.rr-photo-expanded/);
  assert.match(layout,/height:clamp\(480px,75dvh,1040px\)!important/);
- assert.match(html,/private-photo-ledger-timers\.js\?v=20261121-verified-timer-auto-submit3/);
+ assert.match(html,/private-photo-ledger-timers\.js\?v=20261121-price-next-photo1/);
  assert.match(html,/private-photo-ledger-timers\.css\?v=20261121-sender-live-chat-timer1/);
 });
 test('Per-minute timer selection and secure RPC bridge do not alter original photo decision amounts',()=>{
@@ -383,9 +383,9 @@ test('Bid and timed-photo controls stay right of the normal photo; fullscreen co
 test('BLACKCELL OS loads the REDLINE sidebar release rather than a stale iframe version',()=>{
  const os=read('blackcell-os.html');
  const runtime=read('blackcell-os.js');
- assert.match(os,/receiver-verified-timer-auto-submit3-20261121/);
- assert.match(runtime,/receiver-verified-timer-auto-submit3-20261121/);
- assert.match(os,/blackcell-os\.js\?v=151-redline-verified-timer-auto-submit3/);
+ assert.match(os,/receiver-price-next-photo1-20261121/);
+ assert.match(runtime,/receiver-price-next-photo1-20261121/);
+ assert.match(os,/blackcell-os\.js\?v=152-redline-price-next-photo1/);
  const layout=read('private-photo-ledger-imessage-workspace.css');
  assert.match(layout,/body\.bc-redline-receiver:not\(\.rr-imessage-mode\) #photoLightbox/);
 });
@@ -493,7 +493,7 @@ test('Stop Timer atomically submits one priced photo; other timed earnings never
  assert.match(chat,/async function pollSenderTimers\(force=false\)/);
  assert.match(chat,/bridge\(\).timerStatus\(id\)/);
  assert.match(chat,/window.setInterval\(\(\)=>\{/);
- assert.match(os,/name="blackcell-os-client-build" content="20261121-verified-timer-auto-submit3"/);
+ assert.match(os,/name="blackcell-os-client-build" content="20261121-price-next-photo1"/);
 });
 
 test('Manually accepting a photo always advances to the next pending image',()=>{
