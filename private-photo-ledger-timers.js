@@ -41,6 +41,14 @@ const chosen=make('span','rr-timer-selected','Select a photo');
 const rateLabel=make('label','rr-timer-rate-label','RATE / MIN');
 const rate=make('input','rr-timer-rate');rate.type='text';rate.inputMode='decimal';
 rate.maxLength=14;rate.placeholder='0.50';rate.value='0.50';
+// A leading decimal point becomes 0. automatically: .10 -> 0.10.
+rate.addEventListener('input',()=>{
+ if(!rate.value.startsWith('.'))return;
+ const start=rate.selectionStart,end=rate.selectionEnd;
+ rate.value='0'+rate.value;
+ try{rate.setSelectionRange(start===null?rate.value.length:start+1,
+  end===null?rate.value.length:end+1)}catch(_){}
+});
 rate.setAttribute('aria-label','Timed earnings dollars per completed minute');
 rateLabel.append(rate);
 const start=btn('▶ START TIMER',()=>void startTimer(),'rr-timer-start');
@@ -151,13 +159,9 @@ function mount(s){
   const records=combined?$('#redlineReceiverPricedStage'):fallback;
   if(records&&lower.parentNode!==records)records.append(lower);
  }else{
-  // The same chat DOM is shared by sender, owner and BLACKCELL OS popouts.
-  // Mount before the message feed so message refreshes never erase the timer.
-  const chat=$('#redlineMessageComposer')?.closest('.redline-message-card');
-  const feed=chat?.querySelector('.redline-message-feed');
-  const fallback=$('#redlineSimpleSender .redline-upload-summary');
-  if(chat&&feed&&senderPanel.parentNode!==chat)chat.insertBefore(senderPanel,feed);
-  else if(!chat&&fallback&&senderPanel.parentNode!==fallback)fallback.append(senderPanel);
+  // Sender timer activity is rendered directly IN the chat message stream
+  // by private-photo-ledger-simple-sender.js, rather than in a second panel.
+  senderPanel.hidden=true;
  }
 }
 function err(text){note.textContent=String(text?.message||text||'Unable to save timer.').slice(0,230)}
@@ -227,7 +231,7 @@ function render(){
  const stoppedAt=Date.parse(stopped?.stopped_at||'');
  const recentStop=Boolean(stopped&&Number.isFinite(stoppedAt)&&
   nowMs>=stoppedAt&&nowMs-stoppedAt<600000);
- senderPanel.hidden=s.isOwner||s.archiveMode||(!active&&!recentStop);
+ senderPanel.hidden=true;
  if(!senderPanel.hidden){
   const session=active||stopped;
   const startMs=Date.parse(session.started_at);
@@ -300,6 +304,16 @@ async function refresh(force=false){
  fetching=true;lastStatusAt=Date.now();
  try{
   latest=await bridge().timerStatus(roomId);
+  // One authenticated status snapshot feeds the sender chat and the
+  // original photograph's final timed-price display without extra RPCs.
+  if(snap()?.roomId===roomId){
+   window.dispatchEvent(new CustomEvent('blackcell:redline:timer-status',{
+    detail:{roomId,status:latest}
+   }));
+   window.dispatchEvent(new CustomEvent('blackcell:redline:timed-photo-summary',{
+    detail:{roomId,photoTotals:latest.photo_totals||[]}
+   }));
+  }
   clockOffset=new Date(latest.server_now).getTime()-Date.now();
   if(latest.active?.running&&s.isOwner)selectedId=latest.active.photo_id;
   if(!selectedId)selectedId=currentPhoto()||s.entries?.find(e=>e.decision_status==='accepted')?.id||null;
