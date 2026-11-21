@@ -1254,3 +1254,51 @@ body.bc-redline-receiver.rr-imessage-mode
   max-height:90px!important;min-height:43px!important;
  }
 }
+
+/* Actual iPhones use the receiver's stacked dashboard even below 420px.
+   On rotated iPhones the viewport may be >719px while deviceMode stays mobile.
+   Both orientations must receive the same tall, independently scrolling chat. */
+body.bc-redline-receiver.bc-ledger-mobile #redlineReceiverCommand > #redlineReceiverChat{
+ display:flex!important;flex-direction:column!important;
+ height:max(690px,calc(100dvh - 96px))!important;
+ min-height:690px!important;max-height:none!important;
+ overflow:hidden!important;
+}
+body.bc-redline-receiver.bc-ledger-mobile #redlineReceiverLiveWorkspace:not([hidden]){
+ height:max(690px,calc(100dvh - 96px))!important;
+ min-height:690px!important;max-height:none!important;
+}
+body.bc-redline-receiver.bc-ledger-mobile #redlineReceiverChat{
+ min-height:0!important;overflow:hidden!important;
+}
+body.bc-redline-receiver.bc-ledger-mobile #redlineReceiverChat .rr-chat-mount{
+ display:flex!important;flex:1 1 0!important;flex-direction:column!important;
+ min-height:0!important;max-height:none!important;
+ width:100%!important;overflow:hidden!important;
+}
+body.bc-redline-receiver.bc-ledger-mobile #redlineReceiverChat .rr-chat-mount>.redline-message-card{
+ display:flex!important;flex:1 1 0!important;flex-direction:column!important;
+ min-height:0!important;max-height:none!important;
+ height:100%!important;width:100%!important;overflow:hidden!important;
+}
+body.bc-redline-receiver.bc-ledger-mobile #redlineReceiverChat .redline-chat-timer-slot:not([hidden]){
+ max-height:min(29dvh,215px)!important;overflow-y:auto!important;flex:0 0 auto!important;
+}
+body.bc-redline-receiver.bc-ledger-mobile #redlineReceiverChat .redline-chat-timer-image{
+ max-height:min(12dvh,100px)!important;
+}
+body.bc-redline-receiver.bc-ledger-mobile #redlineReceiverChat .redline-message-feed{
+ display:flex!important;flex-direction:column!important;flex:1 1 0!important;
+ min-height:180px!important;max-height:none!important;
+ overflow-y:auto!important;overflow-x:hidden!important;
+ overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch;
+}
+body.bc-redline-receiver.bc-ledger-mobile #redlineReceiverChat .redline-message-header,
+body.bc-redline-receiver.bc-ledger-mobile #redlineReceiverChat .redline-message-composer,
+body.bc-redline-receiver.bc-ledger-mobile #redlineReceiverChat .redline-peer-typing,
+body.bc-redline-receiver.bc-ledger-mobile #redlineReceiverChat .redline-message-error{
+ flex:0 0 auto!important;
+}
+body.bc-redline-receiver.bc-ledger-mobile #redlineReceiverChat .redline-message-composer{
+ padding-bottom:max(9px,env(safe-area-inset-bottom))!important;
+}
