@@ -24,9 +24,8 @@
   const widgets=button('Widgets','Show or hide your desktop widgets',()=>{
    const active=!shell.classList.contains('bc-macos-widgets-open');close();shell.classList.toggle('bc-macos-widgets-open',active);update();
   });
-  button('Wallpaper','Change your wallpaper in BLACKCELL Settings',()=>{
-   close();const tile=shell.querySelector('.workspace .app[data-app="settings"]');
-   if(tile&&!tile.hidden&&!tile.disabled)tile.click();
+  button('Wallpaper','Open Wallpaper Studio in BLACKCELL Settings',()=>{
+   close();window.dispatchEvent(new Event('blackcell:open-wallpaper-settings'));
   });
   stage.append(group);update();
   const observer=new MutationObserver(update);observer.observe(shell,{attributes:true,attributeFilter:['class']});
