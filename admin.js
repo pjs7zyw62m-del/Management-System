@@ -82,6 +82,12 @@ function corporateUsername(name){
  return ('bc_'+(cleaned||'employee').slice(0,17)+'_'+corporateRandomDigits(5)).slice(0,32);
 }
 
+function memberSecurityLabel(member){
+ return member?.role==='employee'&&member?.access_scope==='ledger_only'
+  ?'LEVEL R · REDLINE ONLY'
+  :'Level '+String(member?.clearance_level??'—');
+}
+function memberSecurityAccess(member){return member?.role==='employee'&&member?.access_scope==='ledger_only'?'REDLINE ONLY — RESTRICTED':'Full corporate access'}
 function employeeCardView(member,sample=false){
   const blockEl=el('div','employee-profile-layout');
   const card=el('article','employee-profile-pass');
@@ -92,7 +98,7 @@ function employeeCardView(member,sample=false){
     el('div','employee-profile-network','NETWORK'),
     el('div','employee-profile-stripe',''));
   const pass=el('div','employee-profile-clearance');
-  pass.append(el('strong','','LEVEL '+(member.clearance_level||1)),el('span','','ACCESS PASS'));
+  pass.append(el('strong','',memberSecurityLabel(member)),el('span','','ACCESS PASS'));
   card.append(pass,el('div','employee-profile-name',member.display_name||'Sample Employee'),
     el('div','employee-profile-username',(member.username||'USERNAME NOT ASSIGNED').toUpperCase()));
   if(sample)card.append(el('div','employee-profile-watermark','PREVIEW ONLY'));
@@ -108,10 +114,11 @@ function employeeCardView(member,sample=false){
   field('EMAIL',member.email||'Not assigned');
   field('ACCOUNT TYPE',member.role==='owner'?'Corporate Owner':'Employee');
   field('CLEARANCE LEVEL','Level '+(member.clearance_level||1));
+  if(member.role==='employee'&&!sample)field('SECURITY ACCESS',memberSecurityAccess(member));
   field('ACCOUNT STATUS',sample?'Preview / not registered':
     !member.active?'Disabled':member.role==='owner'?'Owner account':
     member.password_activated?'Activated':'Pending employee activation');
-  field('EMPLOYEE CHAT',sample?'Not activated':member.can_chat?'Enabled':'Disabled');
+  field('EMPLOYEE CHAT',sample?'Not activated':member.access_scope==='ledger_only'?'Blocked · REDLINE ONLY':member.can_chat?'Enabled':'Disabled');
   field('ACCESS CODE','4 digits — never displayed');
   field('SECURITY CODE','12 digits — never displayed');
   const noteEl=p(sample?
@@ -313,7 +320,7 @@ async function employeeProfiles(){
        const status=!member.active?'disabled':member.role==='owner'||member.password_activated?'active':'pending';
        const pill=el('span','um3-status',status==='active'?'Active':status==='pending'?'Invited':'Disabled');pill.dataset.state=status;
        const role=el('span','um3-role',member.role==='owner'?'Owner':'Employee');role.append(el('span','um3-chevron','›'));
-       item.append(identity,el('span','um3-level','Level '+String(member.clearance_level??'—')),pill,role);item.addEventListener('click',()=>showEmployeeProfile(member));list.append(item)
+       item.append(identity,el('span','um3-level',memberSecurityLabel(member)),pill,role);item.addEventListener('click',()=>showEmployeeProfile(member));list.append(item)
       }
     };
     search.addEventListener('input',paint);
