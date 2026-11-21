@@ -211,6 +211,18 @@
 </div>
 <!-- The existing verified bid/timer sidebar is reparented alongside the normal photo viewer. -->
 <aside id="redlineLightboxReview" class="redline-review-lightbox-controls" hidden aria-label="Photo bid and timer controls"></aside>
+<dialog id="redlineRejectPhotoConfirm" class="redline-reject-confirm" aria-labelledby="redlineRejectPhotoHeading" aria-describedby="redlineRejectPhotoDetail">
+ <div class="redline-reject-confirm-body">
+  <span class="redline-reject-eyebrow">BLACKCELL REDLINE · PHOTO DECISION</span>
+  <h2 id="redlineRejectPhotoHeading">Reject this photograph?</h2>
+  <p id="redlineRejectPhotoDetail">This will reject the selected photograph without adding a one-time bid. This decision cannot be undone.</p>
+  <p id="redlineRejectPhotoRef"></p>
+  <form method="dialog" class="redline-reject-confirm-actions">
+   <button type="submit" value="cancel" class="redline-reject-cancel">KEEP PHOTO</button>
+   <button type="submit" value="reject" class="redline-reject-approve">CONFIRM REJECTION</button>
+  </form>
+ </div>
+</dialog>
 <footer>BLACKCELL CORPORATION · REDLINE PRIVATE ROOM · VERIFIED OWNER AND SELECTED SENDER ONLY</footer>
 </body>
 </html>
