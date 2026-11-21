@@ -196,3 +196,23 @@ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-result-add:disabled{opacit
 @media(prefers-reduced-motion:reduce){
  #desktop .bc-home-widget,#desktop .bc-home-desktop-app,#desktop .bc-home-gallery{transition:none!important}
 }
+
+
+/* Launchpad remains a true application launcher, with a small independent
+   "add to desktop" control instead of requiring drag-out of a modal. */
+#desktop .bc-mac-launch-app-cell{
+ position:relative;display:flex;flex-direction:column;align-items:center;
+ width:100%;min-width:0;max-width:146px;
+}
+#desktop .bc-mac-launch-app-cell .bc-mac-app{width:100%}
+#desktop .bc-mac-launch-app-cell .bc-mac-pin-shortcut{
+ position:absolute;right:clamp(1px,1vw,14px);top:1px;
+ display:grid;place-items:center;z-index:1;
+ min-width:30px;min-height:30px;border-radius:50%;
+ border:1px solid #ffffff76;background:rgba(128,28,56,.94);
+ color:#fff;font-size:19px;font-weight:710;box-shadow:0 4px 15px #0008;
+ cursor:pointer;
+}
+#desktop .bc-mac-launch-app-cell .bc-mac-pin-shortcut:disabled{
+ background:rgba(32,69,51,.88);color:#baf5cd;opacity:.74;cursor:default;
+}
