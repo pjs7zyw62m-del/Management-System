@@ -1,0 +1,111 @@
+name: BLACKCELL REDLINE Receiver and Fresh Session
+on:
+  pull_request:
+    paths:
+      - 'private-photo-ledger.html'
+      - 'private-photo-ledger.js'
+      - 'private-photo-ledger-receiver.js'
+      - 'private-photo-ledger-receiver.css'
+      - 'private-photo-ledger-responsive.js'
+      - 'private-photo-ledger-simple-sender.js'
+      - 'supabase/sql/blackcell_redline_start_fresh_archive.sql'
+      - 'tests/blackcell-redline-receiver-reset.test.mjs'
+      - '.github/workflows/blackcell-redline-receiver-rebuild.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'private-photo-ledger-receiver.js'
+      - 'private-photo-ledger-receiver.css'
+  workflow_dispatch:
+jobs:
+  redline-receiver-reset:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate REDLINE application JavaScript
+        run: |
+          node --check private-photo-ledger.js
+          node --check private-photo-ledger-responsive.js
+          node --check private-photo-ledger-simple-sender.js
+          node --check private-photo-ledger-receiver.js
+      - name: Receiver redesign, owner-only fresh session and existing sender tests
+        run: |
+          node --test \
+            tests/blackcell-redline-receiver-reset.test.mjs \
+            tests/private-photo-ledger-responsive.test.mjs \
+            tests/private-photo-ledger-mobile.test.mjs \
+            tests/private-photo-ledger-sender.test.mjs \
+            tests/private-photo-ledger-simple-sender.test.mjs \
+            tests/private-photo-ledger-solid-red.test.mjs \
+            tests/blackcell-redline-only-security-level.test.mjs
+      - name: Browser smoke for receiver desktop, iPad and iPhone
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v google-chrome >/dev/null 2>&1 && CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && CHROME=chromium || CHROME=; }
+          [ -n "$CHROME" ] || { echo "Chromium unavailable"; exit 1; }
+          python3 - <<'PY'
+          from pathlib import Path
+          html=Path('private-photo-ledger.html').read_text()
+          probe=r"""<script>
+          setTimeout(()=>{
+            // Unauthenticated visual-only preview: no Supabase writes, no form submissions.
+            const app=document.getElementById('ledgerApp');
+            const owner=document.getElementById('ownerSetup');
+            const room=document.getElementById('activeRoom');
+            const gate=document.getElementById('accessGate');
+            gate.hidden=true;app.hidden=false;owner.hidden=false;room.hidden=false;
+            const badge=document.getElementById('roomStateLabel');
+            if(badge)badge.textContent='PREVIEW ONLY';
+            setTimeout(()=>{
+              const deck=document.getElementById('redlineReceiverCommand');
+              document.body.dataset.receiverVisible=String(Boolean(deck&&!deck.hidden));
+              document.body.dataset.receiverCards=String(deck?.querySelectorAll('.rr-stat').length===4);
+              document.body.dataset.receiverOwner=String(document.body.classList.contains('bc-redline-receiver'));
+              document.body.dataset.receiverArchiveControl=String(Boolean(document.getElementById('redlineMasterReset')&&document.getElementById('redlineArchiveToggle')));
+              document.body.dataset.receiverBrand=String(Boolean(document.querySelector('.bc-ledger-edition')?.textContent==='PRIVATE EXCHANGE'));
+            },350);
+          },1600);
+          </script>"""
+          html=html.replace('</body>',probe+'</body>')
+          Path('private-photo-ledger-receiver-probe.html').write_text(html)
+          PY
+          python3 -m http.server 8876 >/tmp/bc-redline-http.log 2>&1 &
+          PID=$!
+          trap 'kill "$PID" 2>/dev/null || true; rm -f private-photo-ledger-receiver-probe.html' EXIT
+          sleep 2
+          mkdir -p /tmp/bc-redline-receiver-screens
+          for device in desktop ipad iphone; do
+            case "$device" in
+              desktop) w=1440;h=900 ;;
+              ipad) w=820;h=1090 ;;
+              iphone) w=390;h=844 ;;
+            esac
+            "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage \
+              --virtual-time-budget=7000 --window-size="$w,$h" --dump-dom \
+              "http://127.0.0.1:8876/private-photo-ledger-receiver-probe.html" \
+              >"/tmp/redline-$device.html" 2>"/tmp/redline-$device-errors.log"
+            for check in receiver-visible receiver-cards receiver-owner receiver-archive-control receiver-brand; do
+              grep -q "data-$check=\"true\"" "/tmp/redline-$device.html" || {
+                echo "$device missing $check"; tail -n 30 "/tmp/redline-$device-errors.log"; exit 1;
+              }
+            done
+            "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage \
+              --virtual-time-budget=7000 --window-size="$w,$h" \
+              --screenshot="/tmp/bc-redline-receiver-screens/$device.png" \
+              "http://127.0.0.1:8876/private-photo-ledger-receiver-probe.html" >/dev/null 2>&1
+            echo "REDLINE $device: receiver dashboard and stable branding passed"
+          done
+      - name: Archive REDLINE receiver previews
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blackcell-redline-receiver-preview
+          path: /tmp/bc-redline-receiver-screens/*.png
+          if-no-files-found: ignore
+          retention-days: 7
