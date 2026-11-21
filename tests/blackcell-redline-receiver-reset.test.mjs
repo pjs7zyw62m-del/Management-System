@@ -186,7 +186,7 @@ test('REDLINE uses iMessage-style slide-in Photo Review, not resize buttons or a
  assert.match(receiver,/const showMedia=button\('▣ Photos',\(\)=>openMedia\(\)/);
  assert.match(receiver,/const photoClose=button\('✕',\(\)=>closeMedia\(\)/);
  assert.match(receiver,/function openMedia\(history=false\)/);
- assert.match(receiver,/function closeMedia\(\)\{mediaOpen=false;showPane\(\)\}/);
+ assert.match(receiver,/function closeMedia\(\)\{setHistoryOpen\(false\);mediaOpen=false;showPane\(\)\}/);
  assert.match(receiver,/workspace\.insertBefore\(divider,photos\)/);
  assert.match(receiver,/photos\.append\(timeline\)/);
  assert.match(receiver,/const combined=window\.innerWidth>=420&&\(!handheld\|\|window\.innerWidth>=720\)/);
@@ -222,7 +222,7 @@ test('One iMessage-style workspace has two independent resizers and a fixed-heig
  const layout=read('private-photo-ledger-imessage-workspace.css');
  assert.match(receiver,/const reviewStage=make\('div','rr-review-stage'\)/);
  assert.match(receiver,/const pricedStage=make\('section','rr-priced-stage'\)/);
- assert.match(receiver,/photos\.append\(reviewStage,heightDivider,pricedStage\)/);
+ assert.match(receiver,/photos\.append\(reviewStage,heightDivider,pricedStage,historyToggle\)/);
  assert.match(receiver,/heightDivider\.setAttribute\('aria-orientation','horizontal'\)/);
  assert.match(receiver,/divider\.setAttribute\('aria-orientation','vertical'\)/);
  assert.match(receiver,/heightDivider\.addEventListener\('pointerdown'/);
