@@ -71,9 +71,35 @@ const total=make('div','rr-timer-totals','Timed earned: $0.00 · Owed: $0.00 · 
 const history=make('div','rr-timer-history');
 const ledgerSummary=make('summary','','TIMED EARNINGS · VIEW RECORD');
 lower.append(ledgerSummary,total,history);
-const senderPanel=make('section','rr-timer-sender');
+// One pinned live timer status in the authenticated sender chat. No extra
+// database writes or duplicate chat messages are created for the clock ticks.
+const senderPanel=make('section','rr-timer-sender rr-timer-chat-status');
 senderPanel.id='redlineSenderTimedEarnings';
-senderPanel.append(make('strong','','TIMED PHOTO EARNINGS'),make('p','','Waiting for the receiver to start a timed photo.'));
+senderPanel.setAttribute('aria-label','Live REDLINE timer in private chat');
+const senderHead=make('div','rr-timer-sender-head');
+const senderStatus=make('strong','rr-timer-sender-status','TIMER STARTED');
+senderStatus.setAttribute('aria-live','polite');
+const senderRate=make('span','rr-timer-sender-rate','');
+senderHead.append(senderStatus,senderRate);
+const senderMetrics=make('div','rr-timer-sender-metrics');
+const senderTimeMetric=make('div','rr-timer-sender-metric');
+senderTimeMetric.append(make('small','','TIME ELAPSED'));
+const senderClock=make('strong','rr-timer-sender-clock','00:00');
+senderTimeMetric.append(senderClock);
+const senderAmountMetric=make('div','rr-timer-sender-metric');
+senderAmountMetric.append(make('small','','EARNED SO FAR'));
+const senderAmount=make('strong','rr-timer-sender-amount','$0.00');
+senderAmountMetric.append(senderAmount);
+senderMetrics.append(senderTimeMetric,senderAmountMetric);
+const senderDetail=make('p','rr-timer-sender-detail','Amount increases for each completed minute.');
+senderPanel.append(senderHead,senderMetrics,senderDetail);
+senderPanel.hidden=true;
+const duration=seconds=>{
+ const n=Math.max(0,Math.floor(seconds));
+ const pad=x=>String(x).padStart(2,'0');
+ return n>=3600?Math.floor(n/3600)+':'+pad(Math.floor(n/60)%60)+':'+pad(n%60):
+  pad(Math.floor(n/60))+':'+pad(n%60);
+};
 function snap(){return bridge()?.snapshot?.()||null}
 function currentPhoto(){
  const card=$('#reviewQueueCurrent .photo-entry[data-redline-photo-id]');
@@ -145,8 +171,13 @@ function mount(s){
   const records=combined?$('#redlineReceiverPricedStage'):fallback;
   if(records&&lower.parentNode!==records)records.append(lower);
  }else{
-  const summary=$('#redlineSimpleSender .redline-upload-summary');
-  if(summary&&senderPanel.parentNode!==summary)summary.append(senderPanel);
+  // The same chat DOM is shared by sender, owner and BLACKCELL OS popouts.
+  // Mount before the message feed so message refreshes never erase the timer.
+  const chat=$('#redlineMessageComposer')?.closest('.redline-message-card');
+  const feed=chat?.querySelector('.redline-message-feed');
+  const fallback=$('#redlineSimpleSender .redline-upload-summary');
+  if(chat&&feed&&senderPanel.parentNode!==chat)chat.insertBefore(senderPanel,feed);
+  else if(!chat&&fallback&&senderPanel.parentNode!==fallback)fallback.append(senderPanel);
  }
 }
 function err(text){note.textContent=String(text?.message||text||'Unable to save timer.').slice(0,230)}
@@ -202,13 +233,44 @@ function renderHistory(s){
 }
 function render(){
  const s=snap();
- if(!s||s.roomId!==roomId)return;
+ if(!s||s.roomId!==roomId){senderPanel.hidden=true;return}
  mount(s);
  const owner=s.isOwner&&!s.archiveMode;
  ownerPanel.hidden=!owner;
  lower.hidden=s.archiveMode;
- senderPanel.hidden=s.isOwner||s.archiveMode;
  const running=latest?.active?.running===true;
+ // A stopped timer comes from the same authenticated status RPC; show the
+ // result briefly so the sender also knows their timer has ended.
+ const nowMs=Date.now()+clockOffset;
+ const active=latest?.active;
+ const stopped=(!active&&Array.isArray(latest?.recent))?latest.recent[0]:null;
+ const stoppedAt=Date.parse(stopped?.stopped_at||'');
+ const recentStop=Boolean(stopped&&Number.isFinite(stoppedAt)&&
+  nowMs>=stoppedAt&&nowMs-stoppedAt<600000);
+ senderPanel.hidden=s.isOwner||s.archiveMode||(!active&&!recentStop);
+ if(!senderPanel.hidden){
+  const session=active||stopped;
+  const startMs=Date.parse(session.started_at);
+  const heartbeatMs=Date.parse(active?.heartbeat_at||'');
+  const validStart=Number.isFinite(startMs);
+  const isRunning=Boolean(active?.running&&validStart&&
+   Number.isFinite(heartbeatMs)&&nowMs<=heartbeatMs+75000);
+  const displayUntil=active
+   ? Math.min(nowMs,Number.isFinite(heartbeatMs)?heartbeatMs+45000:nowMs)
+   : stoppedAt;
+  const seconds=validStart?Math.max(0,Math.floor((displayUntil-startMs)/1000)):0;
+  const amount=active&&isRunning?tickAmount():active?tickAmount():BigInt(stopped?.earned_cents||0);
+  senderStatus.textContent=isRunning?'● TIMER RUNNING':active?'TIMER DISCONNECTED':'■ TIMER STOPPED';
+  senderRate.textContent=money(session.rate_cents)+'/minute';
+  senderClock.textContent=duration(seconds);
+  senderAmount.textContent=money(amount);
+  senderDetail.textContent=isRunning
+   ?'Photo '+String(session.photo_id||'').slice(0,8).toUpperCase()+
+    ' · Earned amount increases each completed minute.'
+   :active?'Timer connection lost. Amount shown is capped at the last verified heartbeat.'
+   :'Final completed-minute amount · Timer stopped.';
+ }
+
  const elapsedSec=running?Math.max(0,Math.floor((Date.now()+clockOffset-new Date(latest.active.started_at).getTime())/1000)):0;
  const m=Math.floor(elapsedSec/60),secs=elapsedSec%60;
  elapsed.textContent=running?String(m).padStart(2,'0')+':'+String(secs).padStart(2,'0'):'00:00';
@@ -235,21 +297,14 @@ function render(){
    const signature=JSON.stringify(latest.recent||[]);
    if(signature!==lastHistorySignature){renderHistory(s);lastHistorySignature=signature}
   }
-  if(!s.isOwner){
-   senderPanel.replaceChildren(
-    make('strong','','TIMED PHOTO EARNINGS'),
-    make('p','',running?'Timer running · '+money(latest.active.rate_cents)+'/minute':
-      'No timed photo currently running'),
-    make('p','','Accrued '+money(latest.assigned_cents)+' · Owed '+money(latest.owed_cents)+' · Recorded paid '+money(latest.paid_cents)),
-    make('small','','Recorded earnings only. Payment is handled separately.')
-   );
-  }
+  // Sender's pinned chat status is updated in place above, once per second.
+  // Existing earnings remain available in the sender's Earnings section.
  }
 }
 async function refresh(force=false){
  const s=snap();
  if(!s||!room||room.hidden||!bridge()?.timerStatus){
-  roomId=null;latest=null;render();return;
+  roomId=null;latest=null;senderPanel.hidden=true;render();return;
  }
  if(s.roomId!==roomId){
   const oldTimer=latest?.active?.running&&snap()?.isOwner?latest.active.id:null;
@@ -258,7 +313,10 @@ async function refresh(force=false){
   selectIncoming();
  }
  mount(s);
- if(fetching||!force&&Date.now()-lastStatusAt<12000)return;
+ // Sender polls only while its authenticated room is in the foreground.
+ // A five-second check picks up timer start/stop without creating chat spam.
+ const pollMs=!s.isOwner&&s.roomActive&&!s.archiveMode?5000:12000;
+ if(fetching||!force&&Date.now()-lastStatusAt<pollMs)return;
  fetching=true;lastStatusAt=Date.now();
  try{
   latest=await bridge().timerStatus(roomId);
