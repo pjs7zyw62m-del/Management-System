@@ -236,7 +236,7 @@
  // to the unchanged chat + one-photo workspace via the existing close handler.
  const fullSizeImage=$('#lightboxImage');
  fullSizeImage?.addEventListener('click',()=>{
-  if(document.body.classList.contains('rr-imessage-mode')&&!$('#photoLightbox')?.hidden){
+  if(document.body.classList.contains('bc-redline-receiver')&&!$('#photoLightbox')?.hidden){
    $('#closeLightbox')?.click();
   }
  });
