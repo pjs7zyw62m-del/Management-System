@@ -125,7 +125,7 @@ function pickPhoto(id){
   // Leaving one selected photo stops its timed accrual before the next is used.
   selectedId=id;
   note.textContent='Stopping the previous photo timer before switching…';
-  void stopTimer();
+  void stopTimer(false);
   return;
  }
  selectedId=id;render();
@@ -135,7 +135,7 @@ window.addEventListener('blackcell:redline:review-photo',e=>{
  if(!selectedId&&!latest?.active?.running)pickPhoto(e.detail?.photoId);
 });
 window.addEventListener('blackcell:redline:photo-decided',e=>{
- if(latest?.active?.running&&latest.active.photo_id===e.detail?.photoId)void stopTimer();
+ if(latest?.active?.running&&latest.active.photo_id===e.detail?.photoId)void stopTimer(false);
  if(selectedId===e.detail?.photoId){selectedId=null;selectIncoming()}
 });
 // The verified timer stays in the normal photo viewer's bid sidebar.
@@ -181,7 +181,7 @@ async function startTimer(){
   await bridge().timerStart(selectedId,cents);
  },'Starting authenticated timed photo session…');
 }
-async function stopTimer(){
+async function stopTimer(keepPhotoSelected=true){
  const id=latest?.active?.id;
  if(!id||!snap()?.isOwner)return;
  let committed=null;
@@ -189,7 +189,7 @@ async function stopTimer(){
   committed=await bridge().timerStop(id);
   // Keep the photo whose timer just stopped visible with its final price,
   // instead of immediately switching to another pending photograph.
-  if(committed?.photo_id){
+  if(committed?.photo_id&&keepPhotoSelected){
    selectedId=committed.photo_id;
    window.dispatchEvent(new CustomEvent('blackcell:redline:photo-selected',
     {detail:{photoId:committed.photo_id}}));
