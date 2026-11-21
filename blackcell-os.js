@@ -1,9 +1,13 @@
 import {mountWorldMonitor} from './blackcell-os-world-monitor.js?v=1';
 import {createWorkspaceLock,verifyWorkspacePassword} from './blackcell-os-session.js?v=1';
 import {mountStorageWidget} from './blackcell-os-storage-widget.js?v=1';
+import {createWallpaperController} from './blackcell-os-wallpaper.js?v=1';
 let stopStorageWidget=()=>{},securityNotifications=null;
 let browserModule,filesModule,personalPhotosModule;
-let settingsModule,desktopPrefs={reduceMotion:false,dockLabels:true,dockAutoHide:true,autoLockMinutes:5,wallpaper:'obsidian'};
+const BASE_OS_PREFS={reduceMotion:false,dockLabels:true,dockAutoHide:true,autoLockMinutes:5,wallpaper:'midnight',
+ wallpaperSchemaVersion:2,wallpaperMode:'all',wallpaperFit:'cover',wallpaperPosition:'center',
+ wallpaperDim:12,wallpaperBlur:0,wallpaperImages:{all:'',phone:'',tablet:'',desktop:''},wallpaperHistory:[],desktopClean:true};
+let settingsModule,desktopPrefs={...BASE_OS_PREFS},wallpaperManager=null;
 function prefKey(){return 'bc.os.preferences.v1:'+String(storeProfile||'preview')}
 let dockHideTimer=null,dockIdleTimer=null;
 function dockReveal(show){
@@ -39,23 +43,56 @@ function setupAutoHideDock(){
  window.addEventListener('blur',()=>{if(desktopPrefs.dockAutoHide)dockReveal(false)});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&shell.classList.contains('os-dock-revealed')){dockReveal(false);if(dock.contains(document.activeElement)||document.activeElement===edge)shell.querySelector('.menubar button')?.focus({preventScroll:true})}});
 }
-function applyDesktopPrefs(){const shell=$('desktop');setupAutoHideDock();shell.dataset.bcWallpaper=desktopPrefs.wallpaper==='skyline'?'skyline':'obsidian';shell.classList.toggle('os-reduce-motion',desktopPrefs.reduceMotion);shell.classList.toggle('os-hide-dock-labels',!desktopPrefs.dockLabels);shell.classList.toggle('os-dock-auto-hide',desktopPrefs.dockAutoHide);dockReveal(false)}
+function applyDesktopPrefs(){
+ const shell=$('desktop');if(!shell)return;setupAutoHideDock();
+ shell.dataset.bcWallpaper=['midnight','obsidian','skyline','custom'].includes(desktopPrefs.wallpaper)?desktopPrefs.wallpaper:'midnight';
+ shell.classList.toggle('os-reduce-motion',desktopPrefs.reduceMotion);
+ shell.classList.toggle('os-hide-dock-labels',!desktopPrefs.dockLabels);
+ shell.classList.toggle('os-dock-auto-hide',desktopPrefs.dockAutoHide);
+ shell.classList.toggle('bc-macos-desktop',desktopPrefs.desktopClean!==false);
+ dockReveal(false);void wallpaperManager?.sync();
+}
 const cloudDesktopCache=new Map();let cloudDesktopAccount=null;let cloudDesktopWrites=Promise.resolve();let cloudDesktopRevision=0;let cloudDesktopReading=false;
 const cloudDesktopStore={getItem:key=>cloudDesktopCache.get(key)??null,setItem:(key,value)=>cloudDesktopCache.set(key,String(value)),removeItem:key=>cloudDesktopCache.delete(key)};
 function preferenceStores(){const stores=cloudDesktopAccount===storeProfile&&storeProfile?[{name:'cloud',store:cloudDesktopStore}]:[];for(const name of ['localStorage','sessionStorage']){try{stores.push({name,store:window[name]})}catch(_){}}return stores}
 function readDesktopPrefs(){
- const defaults={reduceMotion:false,dockLabels:true,dockAutoHide:true,autoLockMinutes:5,wallpaper:'obsidian'};
+ const defaults={...BASE_OS_PREFS,wallpaperImages:{...BASE_OS_PREFS.wallpaperImages},wallpaperHistory:[]};
  const options=[];
  for(const {name,store} of preferenceStores()){try{const raw=JSON.parse(store.getItem(prefKey())||'null');if(raw&&typeof raw==='object')options.push({raw,name})}catch(_){}}
  options.sort((a,b)=>a.name==='cloud'?-1:b.name==='cloud'?1:(Number(b.raw.savedAt)||0)-(Number(a.raw.savedAt)||0));
- const p=options[0]?.raw;if(p){for(const key of Object.keys(defaults))if(key==='autoLockMinutes'){if([0,1,5,10,15,30,60].includes(p[key]))defaults[key]=p[key]}else if(key==='wallpaper'){if(['obsidian','skyline'].includes(p[key]))defaults[key]=p[key]}else if(typeof p[key]==='boolean')defaults[key]=p[key]}
+ const p=options[0]?.raw;
+ if(p){
+  for(const key of Object.keys(defaults)){
+   const v=p[key];
+   if(key==='autoLockMinutes'){if([0,1,5,10,15,30,60].includes(v))defaults[key]=v}
+   else if(key==='wallpaper'){if(['midnight','obsidian','skyline','custom'].includes(v))defaults[key]=v}
+   else if(key==='wallpaperSchemaVersion'){defaults[key]=Number(v)===2?2:1}
+   else if(key==='wallpaperMode'){if(['all','separate'].includes(v))defaults[key]=v}
+   else if(key==='wallpaperFit'){if(['cover','contain','center'].includes(v))defaults[key]=v}
+   else if(key==='wallpaperPosition'){if(['center','top','bottom'].includes(v))defaults[key]=v}
+   else if(key==='wallpaperDim'){if(Number.isInteger(v)&&v>=0&&v<=75)defaults[key]=v}
+   else if(key==='wallpaperBlur'){if(Number.isInteger(v)&&v>=0&&v<=14)defaults[key]=v}
+   else if(key==='wallpaperImages'){if(v&&typeof v==='object'&&!Array.isArray(v))for(const t of ['all','phone','tablet','desktop'])if(typeof v[t]==='string'&&v[t].length<=220)defaults.wallpaperImages[t]=v[t]}
+   else if(key==='wallpaperHistory'){if(Array.isArray(v))defaults.wallpaperHistory=v.filter(e=>e&&typeof e.path==='string'&&e.path.length<=220).slice(0,8)}
+   else if(typeof v==='boolean')defaults[key]=v;
+  }
+  if(!p.wallpaperSchemaVersion&&defaults.wallpaper==='obsidian')defaults.wallpaper='midnight';
+ }
+ defaults.wallpaperSchemaVersion=2;
  return {prefs:defaults,savedAt:Number(p?.savedAt)||0,source:options[0]?.name||null};
 }
 let desktopPrefsSavedAt=0;
 function initDesktopPrefs(){const saved=readDesktopPrefs();desktopPrefs=saved.prefs;desktopPrefsSavedAt=saved.savedAt;applyDesktopPrefs()}
 function setDesktopPref(key,value){
- if(!['reduceMotion','dockLabels','dockAutoHide','autoLockMinutes','wallpaper'].includes(key)||key==='autoLockMinutes'&&![0,1,5,10,15,30,60].includes(value)||key==='wallpaper'&&!['obsidian','skyline'].includes(value))return {ok:false,message:'Unknown preference.'};
- desktopPrefs[key]=key==='autoLockMinutes'||key==='wallpaper'?value:!!value;applyDesktopPrefs();
+ const choices={autoLockMinutes:[0,1,5,10,15,30,60],wallpaper:['midnight','obsidian','skyline','custom'],wallpaperMode:['all','separate'],wallpaperFit:['cover','contain','center'],wallpaperPosition:['center','top','bottom']};
+ const flags=['reduceMotion','dockLabels','dockAutoHide','desktopClean'],ranges={wallpaperDim:75,wallpaperBlur:14};
+ if(![...Object.keys(choices),...flags,...Object.keys(ranges),'wallpaperImages','wallpaperHistory'].includes(key))return {ok:false,message:'Unknown preference.'};
+ if(Object.hasOwn(choices,key)&&!choices[key].includes(value))return {ok:false,message:'Invalid selection.'};
+ if(Object.hasOwn(ranges,key)&&(!Number.isInteger(value)||value<0||value>ranges[key]))return {ok:false,message:'Invalid intensity.'};
+ if(key==='wallpaperImages'&&(!value||typeof value!=='object'||Array.isArray(value)||['all','phone','tablet','desktop'].some(t=>typeof value[t]!=='string'||value[t].length>220)))return {ok:false,message:'Invalid wallpaper file.'};
+ if(key==='wallpaperHistory'&&(!Array.isArray(value)||value.length>8))return {ok:false,message:'Invalid wallpaper history.'};
+ desktopPrefs[key]=flags.includes(key)?!!value:value;
+ desktopPrefs.wallpaperSchemaVersion=2;applyDesktopPrefs();
  desktopPrefsSavedAt=Math.max(Date.now(),desktopPrefsSavedAt+1);
  const record=JSON.stringify({...desktopPrefs,savedAt:desktopPrefsSavedAt});void cloudWorkspaceSave('settings',record);
  const saved=[];
