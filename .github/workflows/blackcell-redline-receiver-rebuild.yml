@@ -8,8 +8,11 @@ on:
       - 'private-photo-ledger-receiver.css'
       - 'private-photo-ledger-responsive.js'
       - 'private-photo-ledger-simple-sender.js'
+      - 'private-photo-ledger-timers.js'
       - 'supabase/sql/blackcell_redline_start_fresh_archive.sql'
+      - 'tests/redline-timer-chat-browser-smoke.mjs'
       - 'tests/blackcell-redline-receiver-reset.test.mjs'
+      - 'tests/redline-timer-chat-browser-smoke.mjs'
       - '.github/workflows/blackcell-redline-receiver-rebuild.yml'
   push:
     branches: [main]
@@ -126,6 +129,13 @@ jobs:
               "http://127.0.0.1:8876/private-photo-ledger-receiver-probe.html" >/dev/null 2>&1
             echo "REDLINE $device: receiver dashboard and stable branding passed"
           done
+      - name: Sender chat timer START and STOP browser integration
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v google-chrome >/dev/null 2>&1 && CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && CHROME=chromium || CHROME=; }
+          [ -n "$CHROME" ] || { echo "Chromium unavailable"; exit 1; }
+          CHROME="$CHROME" node tests/redline-timer-chat-browser-smoke.mjs
       - name: Archive REDLINE receiver previews
         if: always()
         uses: actions/upload-artifact@v4
