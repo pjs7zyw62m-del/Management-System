@@ -102,6 +102,7 @@ function setDesktopPref(key,value){
  return {ok:false,message:'Browser storage is blocked. This change is active but cannot be saved after refresh.'};
 }
 function openStoreSection(category='discover'){showApp('store',{category});windows.get('store')?.selectCategory?.(category)}
+window.addEventListener('blackcell:open-wallpaper-settings',()=>{if(active||preview)openAppOrStore('settings','appearance')});
 function openAppOrStore(id,section=null){if(preview||installedApp(id)){showApp(id,section?{section}:null);if(section)windows.get(id)?.selectSettings?.(section)}else{openStoreSection('discover');if(!preview)osNotice('Reinstall this application from the App Store.')}}
 
 let corporateClient,corporateAuthorize;
