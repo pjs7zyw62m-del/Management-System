@@ -83,9 +83,9 @@ test('Launchpad has explicit Add to Desktop and saved state, without bypassing a
 });
 
 test('Release serves unified home CSS and JavaScript and invalidates old caches',()=>{
- assert.match(html,/blackcell-os-unified-home\.css\?v=20261121-1/);
- assert.match(html,/blackcell-os-unified-home\.js\?v=20261121-1/);
- assert.match(html,/blackcell-os-springboard\.js\?v=ios-a-20261119&amp;rev=unified-home/);
- assert.match(html,/blackcell-os\.js\?v=122-unified-desktop-sync/);
- assert.match(read('blackcell-site-version.json'),/unified-home-three-devices/);
+ assert.match(html,/blackcell-os-unified-home\.css\?v=20261121-2/);
+ assert.match(html,/blackcell-os-unified-home\.js\?v=20261121-2/);
+ assert.match(html,/blackcell-os-springboard\.js\?v=ios-a-20261119&amp;rev=mobile-ready2/);
+ assert.match(html,/blackcell-os\.js\?v=123-mobile-ready-drag-fix/);
+ assert.match(read('blackcell-site-version.json'),/mobile-ready-drag-fix/);
 });
