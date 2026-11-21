@@ -38,7 +38,7 @@
  }
  function write(state,message){
   const response=service()?.save?.(state)||{ok:false,message:'Desktop layout could not be saved.'};
-  if(message)showNotice(response.ok?message:response.message);
+  if(message)showNotice(response.ok&&response.message?.includes('Saved on this device')?response.message:(response.ok?message:response.message));
   return response;
  }
  function showNotice(text){
@@ -58,24 +58,24 @@
   const data=snap();if(data.pins.some(x=>x.id===id))return showNotice('That app is already on your desktop.');
   const pos=positionInitial('pin',data.pins);
   data.pins.push({id,...pos});
-  const result=write(data,titleFor(id)+' added to your desktop on all devices.');
+  const result=write(data,titleFor(id)+' added to Desktop. Synchronizing…');
   if(result.ok)closeGallery();
  }
  function removeApp(id){
   const data=snap();data.pins=data.pins.filter(x=>x.id!==id);
-  write(data,titleFor(id)+' removed from your desktop shortcuts. The app is still installed.');
+  write(data,titleFor(id)+' removed from Desktop. App data remains safe. Synchronizing…');
  }
  function addWidget(id){
   if(!accountReady()||!Object.hasOwn(widgets,id))return;
   const data=snap();if(data.widgets.some(x=>x.id===id))return showNotice('This widget is already on your desktop.');
   const pos=positionInitial('widget',data.widgets);
   data.widgets.push({id,...pos,size:'medium'});
-  const result=write(data,widgets[id].title+' widget added on all devices.');
+  const result=write(data,widgets[id].title+' widget added. Synchronizing…');
   if(result.ok)closeGallery();
  }
  function removeWidget(id){
   const data=snap();data.widgets=data.widgets.filter(x=>x.id!==id);
-  write(data,widgets[id].title+' widget removed on all devices.');
+  write(data,widgets[id].title+' widget removed. Synchronizing…');
  }
  function resizeWidget(id){
   const data=snap(),item=data.widgets.find(x=>x.id===id);if(!item)return;
@@ -348,6 +348,10 @@
   e.preventDefault();e.stopImmediatePropagation();showGallery('widgets');
  },true);
  window.addEventListener('blackcell:desktop-layout-updated',schedule);
+ window.addEventListener('blackcell:home-sync-status',e=>{
+  if(!accountReady())return;
+  showNotice(e.detail?.ok?'Home layout synced to your BLACKCELL account.':'Account sync failed. Your local layout is kept; reconnect to retry.');
+ });
  window.addEventListener('blackcell:desktop-ready',schedule);
  window.addEventListener('blackcell:home-apps-open',()=>showGallery('apps'));
  window.addEventListener('blackcell:home-widgets-open',()=>showGallery('widgets'));
