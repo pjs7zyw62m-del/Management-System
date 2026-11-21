@@ -95,7 +95,7 @@
   const count=$('#reviewQueueCount')?.textContent||'';
   review.title=count?'Review queue: '+count:'Open review queue';
  }
- const observe=new MutationObserver(()=>requestAnimationFrame(sync));
+ const observe=new MutationObserver(sync);
  for(const item of [app,owner,room]){
   observe.observe(item,{attributes:true,attributeFilter:['hidden']});
  }
