@@ -302,7 +302,11 @@ async function pollNegotiations(force=false){
   document.body.dataset.redlineNegDebug=String(data.enabled)+'_'+String(Boolean(pending))+'_'+String(timerDlg.open)+'_'+String(settingsDlg.open);
   if(data.enabled&&pending&&!timerDlg.open&&!settingsDlg.open)renderNegotiation(pending);
   else if(!pending&&negotiateDlg.open){negotiateDlg.close();negotiatingShownKey=null}
- }catch(e){const el=$('.redline-negotiation-feedback',negotiateDlg);if(el)el.textContent=safeError(e)}
+ }catch(e){
+  document.body.dataset.redlineNegError=safeError(e).replace(/[^a-z0-9]/gi,'_');
+  const el=$('.redline-negotiation-feedback',negotiateDlg);
+  if(el)el.textContent=safeError(e);
+ }
  finally{
   negotiationBusy=false;
   if(negotiationRefreshQueued){negotiationRefreshQueued=false;void pollNegotiations(true)}
