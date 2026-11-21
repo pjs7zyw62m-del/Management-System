@@ -1375,7 +1375,7 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
   const source=state.entries.find(e=>e.id===photoId&&e.room_id===room.id);
   const allowed=fiveStarResubmissionData().find(p=>p.id===photoId&&p.resubmissionAllowed);
   if(!source||!allowed)throw Error('This five-star photo is not eligible for another resubmission.');
-  const extension=source.image_path.match(/\\.(jpg|jpeg|png|webp|heic|heif)$/i)?.[1]?.toLowerCase();
+  const extension=source.image_path.match(/\.(jpg|jpeg|png|webp|heic|heif)$/i)?.[1]?.toLowerCase();
   if(!extension)throw Error('Original photo type is unsupported.');
   state.resubmittingPhotoId=photoId;
   let newPath=null,posted=false;
