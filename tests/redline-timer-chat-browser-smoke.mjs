@@ -17,10 +17,10 @@ const mock=String.raw`<script>
  const roomId='00000000-0000-4000-8000-000000000003';
  let timer={
   ok:true,server_now:new Date(first).toISOString(),recent:[],
-  active:{id:timerId,photo_id:photoId,rate_cents:25,
-    started_at:new Date(first-75000).toISOString(),
+  active:{id:timerId,photo_id:photoId,rate_cents:60,
+    started_at:new Date(first-15000).toISOString(),
     heartbeat_at:new Date(first).toISOString(),running:true,
-    earned_cents:25}
+    earned_cents:15}
  };
  window.BLACKCELL_REDLINE_API={
   snapshot:()=>({
@@ -60,11 +60,13 @@ const mock=String.raw`<script>
   setTimeout(()=>{
    const active=document.querySelector('.redline-message-feed .redline-chat-timer[data-timer-phase="active"]');
    document.body.dataset.senderTimerStarted=String(Boolean(active&&active.textContent.includes('TIMER STARTED')));
-   document.body.dataset.senderTimerEarned=String(Boolean(active&&active.textContent.includes('$0.25')));
+   document.body.dataset.senderTimerEarned=String(Boolean(active&&/^\$0\.\d{4} earned$/.test(
+    active.querySelector('.redline-chat-timer-amount')?.textContent||'')&&
+    !active.querySelector('.redline-chat-timer-amount')?.textContent.includes('$0.0000')));
    const stopped_at=new Date().toISOString();
    timer={ok:true,server_now:stopped_at,active:null,recent:[{
-     id:timerId,photo_id:photoId,rate_cents:25,started_at:new Date(first-75000).toISOString(),
-     stopped_at,earned_cents:25,completed_minutes:1,settled_at:null
+     id:timerId,photo_id:photoId,rate_cents:60,started_at:new Date(first-15000).toISOString(),
+     stopped_at,earned_cents:15,completed_minutes:0,elapsed_seconds:15,settled_at:null
    }]};
    window.dispatchEvent(new CustomEvent('blackcell:redline:timer-status',{
      detail:{roomId,status:timer}
@@ -73,7 +75,7 @@ const mock=String.raw`<script>
   setTimeout(()=>{
    const stopped=document.querySelector('.redline-message-feed .redline-chat-timer[data-timer-phase="stop"]');
    document.body.dataset.senderTimerStopped=String(Boolean(stopped&&stopped.textContent.includes('TIMER STOPPED')));
-   document.body.dataset.senderTimerFinal=String(Boolean(stopped&&stopped.textContent.includes('$0.25')));
+   document.body.dataset.senderTimerFinal=String(Boolean(stopped&&stopped.textContent.includes('$0.15 final')));
    document.body.dataset.senderChatMounted=String(Boolean(document.querySelector('#redlineSimpleSender .redline-message-feed')));
    const rated=document.querySelector('.redline-message-feed .redline-chat-rated-photo');
    document.body.dataset.senderStarMessage=String(Boolean(rated&&
