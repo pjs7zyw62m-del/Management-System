@@ -23,7 +23,7 @@ test('all launches still go through authorized OS application tiles',()=>{
  assert.match(js,/if\(!tile\|\|tile\.hidden\|\|tile\.disabled/);
  assert.match(js,/tile\.click\(\)/);
  assert.match(js,/MutationObserver/);
- assert.match(js,/attributeFilter:\\['hidden','class'\\]/);
+ assert.match(js,/attributeFilter:\['hidden','class'\]/);
  assert.match(js,/window\.BLACKCELL_OS_WIDGET_LAYOUT/);
  assert.match(js,/bc\.os\.iphone-springboard\.v1:/);
  assert.match(js,/if\(!key\|\|shell\.hidden\)return/);
