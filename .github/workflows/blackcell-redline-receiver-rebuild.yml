@@ -11,6 +11,7 @@ on:
       - 'private-photo-ledger-timers.js'
       - 'supabase/sql/blackcell_redline_start_fresh_archive.sql'
       - 'tests/redline-timer-chat-browser-smoke.mjs'
+      - 'tests/redline-timer-two-party-browser-smoke.mjs'
       - 'tests/redline-next-photo-visual-smoke.mjs'
       - 'tests/redline-photo-history-browser-smoke.mjs'
       - 'tests/blackcell-redline-receiver-reset.test.mjs'
@@ -31,6 +32,7 @@ on:
       - 'tests/private-photo-ledger-sender.test.mjs'
       - 'tests/private-photo-ledger-simple-sender.test.mjs'
       - 'tests/redline-timer-chat-browser-smoke.mjs'
+      - 'tests/redline-timer-two-party-browser-smoke.mjs'
       - 'tests/redline-next-photo-visual-smoke.mjs'
       - 'tests/redline-photo-history-browser-smoke.mjs'
       - '.github/workflows/blackcell-redline-receiver-rebuild.yml'
@@ -140,6 +142,13 @@ jobs:
           command -v google-chrome >/dev/null 2>&1 && CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && CHROME=chromium || CHROME=; }
           [ -n "$CHROME" ] || { echo "Chromium unavailable"; exit 1; }
           CHROME="$CHROME" node tests/redline-timer-chat-browser-smoke.mjs
+      - name: Receiver and sender see timer START/STOP in their own chat
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v google-chrome >/dev/null 2>&1 && CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && CHROME=chromium || CHROME=; }
+          [ -n "$CHROME" ] || { echo "Chromium unavailable"; exit 1; }
+          CHROME="$CHROME" node tests/redline-timer-two-party-browser-smoke.mjs
       - name: Verify NEXT pending photo stays visible after previous timed selection
         shell: bash
         run: |
