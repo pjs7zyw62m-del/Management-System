@@ -87,6 +87,19 @@ document.addEventListener('DOMContentLoaded',()=>{
    window.dispatchEvent(new Event('blackcell:redline:negotiation-changed'));
   },2800);
   setTimeout(()=>{
+   document.getElementById('redlineConsentSettingsOpen')?.click();
+  },4400);
+  setTimeout(()=>{
+   document.body.dataset.senderAutoDefaultOff=String(Boolean(
+    document.querySelector('.redline-feature-toggle[data-feature="sender_auto_accept"]:not(:checked)')));
+   document.querySelector('.redline-feature-toggle[data-feature="sender_auto_accept"]')?.click();
+  },5400);
+  setTimeout(()=>{
+   document.body.dataset.senderAutoEnabled=String(auto&&toggles>=1);
+   document.querySelector('dialog[aria-label="REDLINE feature settings"]')?.close();
+   window.dispatchEvent(new Event('blackcell:redline:negotiation-changed'));
+  },6600);
+  setTimeout(()=>{
    const dlg=document.getElementById('redlinePriceNegotiation');
    document.body.dataset.senderNegDebug=String(Boolean(dlg))+'_'+String(dlg?.open)+'_'+
     String(offerStatus?.status)+'_'+String(dlg?.textContent?.slice(0,80));
@@ -94,19 +107,10 @@ document.addEventListener('DOMContentLoaded',()=>{
     dlg.textContent.includes('RECEIVER ORIGINAL PRICE')));
    const input=dlg?.querySelector('.redline-consent-amount');
    if(input){input.value='2.00';dlg.querySelectorAll('.redline-consent-action')[1]?.click();}
-  },4900);
+  },7900);
   setTimeout(()=>{
    document.body.dataset.senderCounter=String(counters===1&&offerStatus?.offer_cents===200);
-   document.getElementById('redlineConsentSettingsOpen')?.click();
-  },6200);
-  setTimeout(()=>{
-   document.body.dataset.senderAutoDefaultOff=String(Boolean(
-    document.querySelector('.redline-feature-toggle[data-feature="sender_auto_accept"]:not(:checked)')));
-   document.querySelector('.redline-feature-toggle[data-feature="sender_auto_accept"]')?.click();
-  },7200);
-  setTimeout(()=>{
-   document.body.dataset.senderAutoEnabled=String(auto&&toggles>=1);
-  },8300);
+  },9300);
  }
 });
 </script>
@@ -127,7 +131,7 @@ try{
  for(const role of ['sender','owner']){
   const child=spawn(process.env.CHROME||'chromium',[
    '--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage',
-   '--virtual-time-budget=10500','--window-size=390,844','--dump-dom',
+   '--virtual-time-budget=11600','--window-size=390,844','--dump-dom',
    'http://127.0.0.1:'+server.address().port+'/test.html?role='+role
   ]);
   let stdout='',stderr='';
