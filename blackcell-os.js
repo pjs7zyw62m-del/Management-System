@@ -680,6 +680,28 @@ function saveWorkspace(){
  }catch(_){}
  window.dispatchEvent(new Event('blackcell:windows-updated'));
 }
+/* Save real OS workspace state before a verified software-update reload.
+   Window positions, open app IDs and existing account layout are retained.
+   No password, message draft, uploaded file or media content is copied. */
+window.BLACKCELL_OS_AUTOSAVE_WORKSPACE=async()=>{
+ if(leaving||workspaceRestoring||(!active&&!preview)||!workspaceReady)return false;
+ saveWorkspace();
+ try{
+  if(!sessionStorage.getItem(workspaceKey()))return false;
+ }catch(_){return false}
+ // Wait for an already-started preference write, without initiating new
+ // storage mutations or silently dropping a pending cloud save.
+ if(!preview&&workspaceCloudReady){
+  let timeout;
+  const settled=await Promise.race([
+   cloudDesktopWrites.then(()=>true,()=>false),
+   new Promise(resolve=>{timeout=setTimeout(()=>resolve(false),5000)})
+  ]);
+  clearTimeout(timeout);
+  if(!settled)return false;
+ }
+ return true;
+};
 function clearWorkspace(){pendingRestore=[];deferredParkedChats.clear();workspaceReady=false;try{sessionStorage.removeItem(workspaceKey());if(embeddedAdmin)sessionStorage.removeItem('bc.os.host.v1')}catch(_){}}
 function safePixels(value){return typeof value==='string'&&/^\d{1,5}(?:\.\d+)?px$/.test(value)?Number.parseFloat(value):null}
 function captureParkedGeometry(r){
