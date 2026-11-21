@@ -54,7 +54,7 @@ test('SQL authorization forbids activity disclosure beyond the verified two-pers
 });
 
 test('BLACKCELL OS launches the newly versioned REDLINE online presence app',()=>{
- assert.match(os,/redlineBuild=receiver-large-timer-20261121/);
- assert.match(catalog,/redlineBuild=receiver-large-timer-20261121/);
- assert.match(os,/blackcell-os\.js\?v=139-redline-large-timer/);
+ assert.match(os,/redlineBuild=receiver-large-timer-final-20261121/);
+ assert.match(catalog,/redlineBuild=receiver-large-timer-final-20261121/);
+ assert.match(os,/blackcell-os\.js\?v=140-redline-large-timer-final/);
 });
