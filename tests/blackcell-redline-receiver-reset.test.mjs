@@ -91,9 +91,9 @@ test('Sender gets archived earnings and chat without permission to upload while 
 test('REDLINE receiver resources are versioned and original form and security remain intact',()=>{
  assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-photo-large-timed1/);
  assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-right-popup-only1/);
- assert.match(html,/private-photo-ledger\.js\?v=20261121-queue-complete-message1/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261121-photo-stars-top-picks1/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=20261121-stable-brand1/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-verified-timer-auto-submit3/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-photo-stars-top-picks1/);
  assert.match(ledger,/corporateAuthorize\(db,\{allowLedgerOnly:true\}\)/);
  assert.match(ledger,/const BUCKET='corp-private-photo-ledger'/);
  assert.match(ledger,/db\.storage\.from\(BUCKET\)\.upload/);
@@ -238,7 +238,7 @@ test('One iMessage-style workspace has two independent resizers and a fixed-heig
  assert.match(layout,/#redlineReceiverHeightEdge/);
  assert.match(layout,/cursor:row-resize!important/);
  assert.match(layout,/cursor:col-resize/);
- assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-queue-complete-message1/);
+ assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-photo-stars-top-picks1/);
 });
 test('Incoming photo decisions and priced photo records stay separate and scroll internally',()=>{
  const layout=read('private-photo-ledger-imessage-workspace.css');
@@ -384,9 +384,9 @@ test('Bid and timed-photo controls stay right of the normal photo; fullscreen co
 test('BLACKCELL OS loads the REDLINE sidebar release rather than a stale iframe version',()=>{
  const os=read('blackcell-os.html');
  const runtime=read('blackcell-os.js');
- assert.match(os,/receiver-queue-complete-message1-20261121/);
- assert.match(runtime,/receiver-queue-complete-message1-20261121/);
- assert.match(os,/blackcell-os\.js\?v=153-redline-queue-complete-message1/);
+ assert.match(os,/receiver-photo-stars-top-picks1-20261121/);
+ assert.match(runtime,/receiver-photo-stars-top-picks1-20261121/);
+ assert.match(os,/blackcell-os\.js\?v=154-redline-photo-stars-top-picks1/);
  const layout=read('private-photo-ledger-imessage-workspace.css');
  assert.match(layout,/body\.bc-redline-receiver:not\(\.rr-imessage-mode\) #photoLightbox/);
 });
@@ -409,7 +409,7 @@ test('Sender chat receives verified start and stop messages with a live clock an
  assert.match(sender,/window\.setInterval\(\(\)=>\{/);
  assert.match(sender,/Math\.floor\(seconds\/60\)/);
  assert.match(style,/\.redline-chat-timer/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-verified-timer-auto-submit3/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-photo-stars-top-picks1/);
 });
 
 test('Auto leading zero, verified timed price, and reject confirmation are supported',()=>{
@@ -457,7 +457,7 @@ test('REDLINE pause belongs only to verified receiver and applies across devices
  assert.match(migration,/NOT r\.photo_sending_paused/g);
  assert.match(style,/#redlineReceiverSendingPause|rr-receiver-pause-button/);
  assert.match(html,/private-photo-ledger-sender\.js\?v=20261121-receiver-owned-pause1/);
- assert.match(html,/private-photo-ledger-simple-sender\.css\?v=20261121-verified-timer-auto-submit3/);
+ assert.match(html,/private-photo-ledger-simple-sender\.css\?v=20261121-photo-stars-top-picks1/);
 });
 
 test('Selected reviewed photo stays beside sidebar instead of caught-up queue',()=>{
@@ -494,7 +494,7 @@ test('Stop Timer atomically submits one priced photo; other timed earnings never
  assert.match(chat,/async function pollSenderTimers\(force=false\)/);
  assert.match(chat,/bridge\(\).timerStatus\(id\)/);
  assert.match(chat,/window.setInterval\(\(\)=>\{/);
- assert.match(os,/name="blackcell-os-client-build" content="20261121-queue-complete-message1"/);
+ assert.match(os,/name="blackcell-os-client-build" content="20261121-photo-stars-top-picks1"/);
 });
 
 test('Manually accepting a photo always advances to the next pending image',()=>{
@@ -577,4 +577,33 @@ test('End of current-session queue clearly tells receiver why there is no next p
  assert.match(sidebar,/Waiting for the first photograph in this session/);
  assert.match(style,/rr-current-session-finished/);
  assert.match(ledger,/query\.gte\('created_at',selectedRoom\.current_session_started_at\)/);
+});
+
+test('Receiver star ratings are private and sender chat shows rated photo and ranked Top Picks',()=>{
+ const migration=read('supabase/migrations/20261121134300_redline_photo_star_ratings.sql');
+ const sender=read('private-photo-ledger-simple-sender.js');
+ const senderCSS=read('private-photo-ledger-simple-sender.css');
+ const workspaceCSS=read('private-photo-ledger-imessage-workspace.css');
+ assert.match(migration,/CHECK \(stars BETWEEN 1 AND 5\)/);
+ assert.match(migration,/ENABLE ROW LEVEL SECURITY/);
+ assert.match(migration,/REVOKE ALL ON TABLE public\.corp_redline_photo_ratings FROM PUBLIC, anon, authenticated/);
+ assert.match(migration,/redline_photo_ratings_room_read/);
+ assert.match(migration,/redline_photo_ratings_owner_add/);
+ assert.match(migration,/redline_photo_ratings_owner_change/);
+ assert.match(ledger,/const RATINGS='corp_redline_photo_ratings'/);
+ assert.match(ledger,/async function loadPhotoRatings\(items,roomId\)/);
+ assert.match(ledger,/async function saveRating\(stars\)/);
+ assert.match(ledger,/onConflict:'photo_id'/);
+ assert.match(ledger,/appendPhotoRatingControl\(panel,entry\)/);
+ assert.match(ledger,/ratingEvents:state\.entries\.filter/);
+ assert.match(ledger,/topPicks:state\.entries\.filter/);
+ assert.match(ledger,/image_url:state\.images\.get\(e\.image_path\)/);
+ assert.match(sender,/\.\.\.photoRatingEvents\(snap\)/);
+ assert.match(sender,/if\(e\.kind==='rating'\)/);
+ assert.match(sender,/★ TOP PICK · 5 STARS/);
+ assert.match(sender,/appendRatingImage\(rating,photo\.image_url,photo\.caption\)/);
+ assert.match(sender,/function renderTopPicks\(snap\)/);
+ assert.match(senderCSS,/\.redline-chat-rated-photo/);
+ assert.match(senderCSS,/\.redline-top-picks-box/);
+ assert.match(workspaceCSS,/\.rr-photo-rating-star\.is-filled/);
 });
