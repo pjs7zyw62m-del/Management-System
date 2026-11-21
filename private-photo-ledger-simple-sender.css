@@ -274,3 +274,13 @@ body.redline-sender-simple .redline-chat-photo{display:none}
  }
  body.redline-sender-simple .redline-message-feed{min-height:0;}
 }
+
+/* Sender automatic private photo upload — no preview or secondary Send button. */
+body.redline-sender-simple #employeeUpload #submitPhoto{display:none!important}
+body.redline-sender-simple #employeeUpload.bc-photo-sending .file-drop{
+ pointer-events:none!important;opacity:.68;
+}
+body.redline-sender-simple #employeeUpload #uploadFeedback{
+ min-height:19px;margin:10px 0 0;font-size:12px;line-height:1.55;
+ overflow-wrap:anywhere;
+}
