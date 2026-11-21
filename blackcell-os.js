@@ -1,9 +1,13 @@
 import {mountWorldMonitor} from './blackcell-os-world-monitor.js?v=1';
 import {createWorkspaceLock,verifyWorkspacePassword} from './blackcell-os-session.js?v=1';
 import {mountStorageWidget} from './blackcell-os-storage-widget.js?v=1';
+import {createWallpaperController} from './blackcell-os-wallpaper.js?v=1';
 let stopStorageWidget=()=>{},securityNotifications=null;
 let browserModule,filesModule,personalPhotosModule;
-let settingsModule,desktopPrefs={reduceMotion:false,dockLabels:true,dockAutoHide:true,autoLockMinutes:5,wallpaper:'obsidian'};
+const BASE_OS_PREFS={reduceMotion:false,dockLabels:true,dockAutoHide:true,autoLockMinutes:5,wallpaper:'midnight',
+ wallpaperSchemaVersion:2,wallpaperMode:'all',wallpaperFit:'cover',wallpaperPosition:'center',
+ wallpaperDim:12,wallpaperBlur:0,wallpaperImages:{all:'',phone:'',tablet:'',desktop:''},wallpaperHistory:[],desktopClean:true};
+let settingsModule,desktopPrefs={...BASE_OS_PREFS},wallpaperManager=null;
 function prefKey(){return 'bc.os.preferences.v1:'+String(storeProfile||'preview')}
 let dockHideTimer=null,dockIdleTimer=null;
 function dockReveal(show){
@@ -39,23 +43,56 @@ function setupAutoHideDock(){
  window.addEventListener('blur',()=>{if(desktopPrefs.dockAutoHide)dockReveal(false)});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&shell.classList.contains('os-dock-revealed')){dockReveal(false);if(dock.contains(document.activeElement)||document.activeElement===edge)shell.querySelector('.menubar button')?.focus({preventScroll:true})}});
 }
-function applyDesktopPrefs(){const shell=$('desktop');setupAutoHideDock();shell.dataset.bcWallpaper=desktopPrefs.wallpaper==='skyline'?'skyline':'obsidian';shell.classList.toggle('os-reduce-motion',desktopPrefs.reduceMotion);shell.classList.toggle('os-hide-dock-labels',!desktopPrefs.dockLabels);shell.classList.toggle('os-dock-auto-hide',desktopPrefs.dockAutoHide);dockReveal(false)}
+function applyDesktopPrefs(){
+ const shell=$('desktop');if(!shell)return;setupAutoHideDock();
+ shell.dataset.bcWallpaper=['midnight','obsidian','skyline','custom'].includes(desktopPrefs.wallpaper)?desktopPrefs.wallpaper:'midnight';
+ shell.classList.toggle('os-reduce-motion',desktopPrefs.reduceMotion);
+ shell.classList.toggle('os-hide-dock-labels',!desktopPrefs.dockLabels);
+ shell.classList.toggle('os-dock-auto-hide',desktopPrefs.dockAutoHide);
+ shell.classList.toggle('bc-macos-desktop',desktopPrefs.desktopClean!==false);
+ dockReveal(false);void wallpaperManager?.sync();
+}
 const cloudDesktopCache=new Map();let cloudDesktopAccount=null;let cloudDesktopWrites=Promise.resolve();let cloudDesktopRevision=0;let cloudDesktopReading=false;
 const cloudDesktopStore={getItem:key=>cloudDesktopCache.get(key)??null,setItem:(key,value)=>cloudDesktopCache.set(key,String(value)),removeItem:key=>cloudDesktopCache.delete(key)};
 function preferenceStores(){const stores=cloudDesktopAccount===storeProfile&&storeProfile?[{name:'cloud',store:cloudDesktopStore}]:[];for(const name of ['localStorage','sessionStorage']){try{stores.push({name,store:window[name]})}catch(_){}}return stores}
 function readDesktopPrefs(){
- const defaults={reduceMotion:false,dockLabels:true,dockAutoHide:true,autoLockMinutes:5,wallpaper:'obsidian'};
+ const defaults={...BASE_OS_PREFS,wallpaperImages:{...BASE_OS_PREFS.wallpaperImages},wallpaperHistory:[]};
  const options=[];
  for(const {name,store} of preferenceStores()){try{const raw=JSON.parse(store.getItem(prefKey())||'null');if(raw&&typeof raw==='object')options.push({raw,name})}catch(_){}}
  options.sort((a,b)=>a.name==='cloud'?-1:b.name==='cloud'?1:(Number(b.raw.savedAt)||0)-(Number(a.raw.savedAt)||0));
- const p=options[0]?.raw;if(p){for(const key of Object.keys(defaults))if(key==='autoLockMinutes'){if([0,1,5,10,15,30,60].includes(p[key]))defaults[key]=p[key]}else if(key==='wallpaper'){if(['obsidian','skyline'].includes(p[key]))defaults[key]=p[key]}else if(typeof p[key]==='boolean')defaults[key]=p[key]}
+ const p=options[0]?.raw;
+ if(p){
+  for(const key of Object.keys(defaults)){
+   const v=p[key];
+   if(key==='autoLockMinutes'){if([0,1,5,10,15,30,60].includes(v))defaults[key]=v}
+   else if(key==='wallpaper'){if(['midnight','obsidian','skyline','custom'].includes(v))defaults[key]=v}
+   else if(key==='wallpaperSchemaVersion'){defaults[key]=Number(v)===2?2:1}
+   else if(key==='wallpaperMode'){if(['all','separate'].includes(v))defaults[key]=v}
+   else if(key==='wallpaperFit'){if(['cover','contain','center'].includes(v))defaults[key]=v}
+   else if(key==='wallpaperPosition'){if(['center','top','bottom'].includes(v))defaults[key]=v}
+   else if(key==='wallpaperDim'){if(Number.isInteger(v)&&v>=0&&v<=75)defaults[key]=v}
+   else if(key==='wallpaperBlur'){if(Number.isInteger(v)&&v>=0&&v<=14)defaults[key]=v}
+   else if(key==='wallpaperImages'){if(v&&typeof v==='object'&&!Array.isArray(v))for(const t of ['all','phone','tablet','desktop'])if(typeof v[t]==='string'&&v[t].length<=220)defaults.wallpaperImages[t]=v[t]}
+   else if(key==='wallpaperHistory'){if(Array.isArray(v))defaults.wallpaperHistory=v.filter(e=>e&&typeof e.path==='string'&&e.path.length<=220).slice(0,8)}
+   else if(typeof v==='boolean')defaults[key]=v;
+  }
+  if(!p.wallpaperSchemaVersion&&defaults.wallpaper==='obsidian')defaults.wallpaper='midnight';
+ }
+ defaults.wallpaperSchemaVersion=2;
  return {prefs:defaults,savedAt:Number(p?.savedAt)||0,source:options[0]?.name||null};
 }
 let desktopPrefsSavedAt=0;
 function initDesktopPrefs(){const saved=readDesktopPrefs();desktopPrefs=saved.prefs;desktopPrefsSavedAt=saved.savedAt;applyDesktopPrefs()}
 function setDesktopPref(key,value){
- if(!['reduceMotion','dockLabels','dockAutoHide','autoLockMinutes','wallpaper'].includes(key)||key==='autoLockMinutes'&&![0,1,5,10,15,30,60].includes(value)||key==='wallpaper'&&!['obsidian','skyline'].includes(value))return {ok:false,message:'Unknown preference.'};
- desktopPrefs[key]=key==='autoLockMinutes'||key==='wallpaper'?value:!!value;applyDesktopPrefs();
+ const choices={autoLockMinutes:[0,1,5,10,15,30,60],wallpaper:['midnight','obsidian','skyline','custom'],wallpaperMode:['all','separate'],wallpaperFit:['cover','contain','center'],wallpaperPosition:['center','top','bottom']};
+ const flags=['reduceMotion','dockLabels','dockAutoHide','desktopClean'],ranges={wallpaperDim:75,wallpaperBlur:14};
+ if(![...Object.keys(choices),...flags,...Object.keys(ranges),'wallpaperImages','wallpaperHistory'].includes(key))return {ok:false,message:'Unknown preference.'};
+ if(Object.hasOwn(choices,key)&&!choices[key].includes(value))return {ok:false,message:'Invalid selection.'};
+ if(Object.hasOwn(ranges,key)&&(!Number.isInteger(value)||value<0||value>ranges[key]))return {ok:false,message:'Invalid intensity.'};
+ if(key==='wallpaperImages'&&(!value||typeof value!=='object'||Array.isArray(value)||['all','phone','tablet','desktop'].some(t=>typeof value[t]!=='string'||value[t].length>220)))return {ok:false,message:'Invalid wallpaper file.'};
+ if(key==='wallpaperHistory'&&(!Array.isArray(value)||value.length>8))return {ok:false,message:'Invalid wallpaper history.'};
+ desktopPrefs[key]=flags.includes(key)?!!value:value;
+ desktopPrefs.wallpaperSchemaVersion=2;applyDesktopPrefs();
  desktopPrefsSavedAt=Math.max(Date.now(),desktopPrefsSavedAt+1);
  const record=JSON.stringify({...desktopPrefs,savedAt:desktopPrefsSavedAt});void cloudWorkspaceSave('settings',record);
  const saved=[];
@@ -65,10 +102,12 @@ function setDesktopPref(key,value){
  return {ok:false,message:'Browser storage is blocked. This change is active but cannot be saved after refresh.'};
 }
 function openStoreSection(category='discover'){showApp('store',{category});windows.get('store')?.selectCategory?.(category)}
+window.addEventListener('blackcell:open-wallpaper-settings',()=>{if(active||preview)openAppOrStore('settings','appearance')});
 function openAppOrStore(id,section=null){if(preview||installedApp(id)){showApp(id,section?{section}:null);if(section)windows.get(id)?.selectSettings?.(section)}else{openStoreSection('discover');if(!preview)osNotice('Reinstall this application from the App Store.')}}
 
 let corporateClient,corporateAuthorize;
 const $=id=>document.getElementById(id),preview=document.body.dataset.preview==='true';
+wallpaperManager=createWallpaperController({getClient:()=>client,getAccount:()=>storeProfile,getPrefs:()=>desktopPrefs,setPreference:setDesktopPref,isPreview:()=>preview,getCloudReady:()=>workspaceCloudReady,awaitSync:()=>cloudDesktopWrites});
 /* Responsive presentation only; authentication and application permissions are independent. */
 function osDeviceMode({ua='',touches=0,screenWidth=0,screenHeight=0,width=0}){
  const short=Math.min(screenWidth||Infinity,screenHeight||Infinity),phone=/iPhone|iPod|Windows Phone|Android.*Mobile/i.test(ua)||(touches>0&&short<650),tablet=/iPad/i.test(ua)||(/Macintosh|MacIntel/i.test(ua)&&touches>1)||(/Android/i.test(ua)&&!phone);
@@ -82,7 +121,7 @@ function syncOSDeviceLayout(){
  else{root.style.removeProperty('--bc-touch-height');root.classList.remove('bc-os-keyboard')}
 }
 const touchOS=()=>document.documentElement.classList.contains('bc-os-phone')||document.documentElement.classList.contains('bc-os-tablet');
-syncOSDeviceLayout();window.addEventListener('resize',syncOSDeviceLayout,{passive:true});window.addEventListener('orientationchange',syncOSDeviceLayout,{passive:true});window.visualViewport?.addEventListener('resize',syncOSDeviceLayout,{passive:true});
+syncOSDeviceLayout();window.addEventListener('resize',syncOSDeviceLayout,{passive:true});window.addEventListener('resize',()=>void wallpaperManager?.sync(),{passive:true});window.addEventListener('orientationchange',syncOSDeviceLayout,{passive:true});window.visualViewport?.addEventListener('resize',syncOSDeviceLayout,{passive:true});
 let client,embeddedAdmin=false,owner=false,active=false,leaving=false,last=Date.now(),touched=Date.now(),touching=false,checking=false;
 const IDLE=60*60*1000;
 let workspaceLock=null,bootComplete=false;
@@ -318,7 +357,7 @@ function setDockPin(id,pinned){
  let saved=false;const record=JSON.stringify(Object.fromEntries(dockOverrides));void cloudWorkspaceSave('dock',record);for(const {name,store} of preferenceStores()){try{store.setItem(dockPreferenceKey(),record);if(name==='localStorage'&&store.getItem(dockPreferenceKey())===record)saved=true}catch(_){}}
  syncDockTile(tile);osNotice((tile.dataset.title||'App')+(pinned?' added to Dock.':' removed from Dock.')+(saved?'':' Preference could not be saved permanently on this device.'));if(pinned&&desktopPrefs.dockAutoHide)dockReveal(true)
 }
-function initStore(uid){storeProfile=uid;readWorldInstalls();readAppLocks();readDockPreferences();readAppLayout();clearStore('Checking app permissions…');window.dispatchEvent(new Event('blackcell:widget-sync'))}
+function initStore(uid){wallpaperManager?.dispose();storeProfile=uid;readWorldInstalls();readAppLocks();readDockPreferences();readAppLayout();clearStore('Checking app permissions…');window.dispatchEvent(new Event('blackcell:widget-sync'))}
 function syncStore(){
  if(preview)return;
  for(const tile of document.querySelectorAll('.app[data-app]')){
@@ -943,7 +982,7 @@ function showApp(id,initialState=null,passwordVerified=null){
  if(id==='personalphotos'){external.hidden=true;const msg=document.createElement('p');msg.textContent='Loading private Photos…';content.append(msg);(personalPhotosModule??=import('./blackcell-private-media.js?v=29-blackcell-corp-ai')).then(module=>{if(windows.get(id)!==r)return;content.replaceChildren();const app=module.mountPrivatePhotos(content,{client,userId:storeProfile,preview,alive:()=>windows.get(id)===r&&(active||preview),onBusy:busy=>{r.filesBusy=busy;if(busy&&!r.release){try{r.release=window.top.BLACKCELL_LIVE_UPDATE?.hold('Private Photos operation',window)}catch(_){}}else if(!busy){r.release?.();r.release=null}}});r.cleanup=()=>app.dispose();}).catch(()=>{personalPhotosModule=null;if(windows.get(id)===r){content.replaceChildren(msg);msg.textContent='Photos could not load. Reopen to try again.'}});}
  else if(id==='photobattle'){external.hidden=true;w.classList.add('is-max');const message=document.createElement('p');message.textContent='Entering Photo Battle…';message.style.padding='20px';content.append(message);import('./blackcell-photo-battle.js?v=3-transfer').then(module=>{if(windows.get(id)!==r)return;content.replaceChildren();const app=module.mountPhotoBattle(content,{client,userId:storeProfile,preview,alive:()=>windows.get(id)===r&&(active||preview)});r.cleanup=()=>app.dispose()}).catch(()=>{if(windows.get(id)===r){content.replaceChildren(message);message.textContent='Photo Battle could not start. Close and reopen.'}});}
  else if(id==='files'){external.hidden=true;const msg=document.createElement('p');msg.textContent='Opening private drive…';msg.style.padding='20px';content.append(msg);(filesModule??=import('./blackcell-files.js?v=9-photos-only')).then(module=>{if(windows.get(id)!==r)return;content.replaceChildren();const app=module.mountFiles(content,{client,userId:storeProfile,preview,initialState:r.fileState,onState:state=>{r.fileState=state;saveWorkspace()},onPin:pinFolder,onFolderDrag:beginFolderDrag,onFolderDragEnd:endFolderDrag,onOpenPhotos:()=>showApp('personalphotos'),alive:()=>windows.get(id)===r&&(active||preview),onBusy:busy=>{r.filesBusy=busy;if(busy&&!r.release){try{r.release=window.top.BLACKCELL_LIVE_UPDATE?.hold('BLACKCELL Files transfer',window)}catch(_){}}else if(!busy){r.release?.();r.release=null}}});r.openFolder=app.openFolder;r.cleanup=()=>app.dispose();}).catch(()=>{filesModule=null;if(windows.get(id)===r){content.replaceChildren(msg);msg.textContent='Files could not load. Reopen to try again.'}});}
- else if(id==='settings'){external.hidden=true;const msg=document.createElement('p');msg.textContent='Opening Settings…';msg.style.padding='20px';content.append(msg);(settingsModule??=import('./blackcell-os-settings.js?v=5-session-lock-30-60&rev=obsidian2')).then(module=>{if(windows.get(id)!==r)return;content.replaceChildren();const app=module.mountSettings(content,{client,preview,alive:()=>windows.get(id)===r&&(active||preview),initialSection:r.settingsSection,onSection:section=>{r.settingsSection=section;saveWorkspace()},account:()=>({name:$('memberName').textContent,username:$('memberUser').textContent,access:$('accessLabel').textContent,clearance:$('clearance').textContent}),catalog:()=>preview?[...document.querySelectorAll('.app[data-app]')].filter(t=>t.dataset.app!=='store'&&!t.hidden).map(t=>({id:t.dataset.app,title:t.dataset.title,installed:true})):storeCatalog(),preferences:()=>({...desktopPrefs}),setPreference:setDesktopPref,lock:()=>lockWorkspace(),logOff:()=>lockWorkspace('logoff'),restart:restartWorkspace,openOrStore:openAppOrStore,openStore:openStoreSection,signOut:()=>void signOut()});r.selectSettings=app.select;r.refreshSettings=app.refresh;r.cleanup=app.dispose;}).catch(()=>{settingsModule=null;if(windows.get(id)===r){content.replaceChildren(msg);msg.textContent='Settings could not load. Reopen to retry.'}});}
+ else if(id==='settings'){external.hidden=true;const msg=document.createElement('p');msg.textContent='Opening Settings…';msg.style.padding='20px';content.append(msg);(settingsModule??=import('./blackcell-os-settings.js?v=6-personal-wallpaper-macos')).then(module=>{if(windows.get(id)!==r)return;content.replaceChildren();const app=module.mountSettings(content,{client,preview,alive:()=>windows.get(id)===r&&(active||preview),initialSection:r.settingsSection,onSection:section=>{r.settingsSection=section;saveWorkspace()},account:()=>({name:$('memberName').textContent,username:$('memberUser').textContent,access:$('accessLabel').textContent,clearance:$('clearance').textContent}),catalog:()=>preview?[...document.querySelectorAll('.app[data-app]')].filter(t=>t.dataset.app!=='store'&&!t.hidden).map(t=>({id:t.dataset.app,title:t.dataset.title,installed:true})):storeCatalog(),preferences:()=>({...desktopPrefs}),setPreference:setDesktopPref,wallpaper:wallpaperManager,lock:()=>lockWorkspace(),logOff:()=>lockWorkspace('logoff'),restart:restartWorkspace,openOrStore:openAppOrStore,openStore:openStoreSection,signOut:()=>void signOut()});r.selectSettings=app.select;r.refreshSettings=app.refresh;r.cleanup=app.dispose;}).catch(()=>{settingsModule=null;if(windows.get(id)===r){content.replaceChildren(msg);msg.textContent='Settings could not load. Reopen to retry.'}});}
  else if(id==='store'){external.hidden=true;const message=document.createElement('p');message.textContent='Opening App Store…';message.style.padding='20px';content.append(message);(storeModule??=import('./blackcell-app-store.js?v=13-ux2-lifecycle')).then(module=>{if(windows.get(id)!==r)return;content.replaceChildren();const store=module.mountStore(content,{catalog:storeCatalog,worldCatalog:()=>Object.values(worldApps).filter(id=>installedApp(id)).map(id=>{const tile=document.querySelector('.app[data-app="'+id+'"]');return {id,title:tile?.dataset.title||id,url:tile?.dataset.url,installed:true}}),reauthorize:()=>{window.open(new URL('login.html',location.href).href,'_blank','noopener')},refreshCatalog:async()=>{if(preview)return {ok:false,error:'Sign in to refresh approved applications.'};const result=await storeRequest('catalog');return result},checkRelease:()=>{if(r.storeBusy)return;if(!confirm('Reload BLACKCELL OS to check for the newest release? Finish and save any work in open applications before continuing.'))return;saveWorkspace();const u=new URL(window.location.href);u.searchParams.set('releaseCheck',String(Date.now()));window.location.replace(u.href)},install:installApp,removeAll:removeAllApps,open:showApp,info:storeInfo,setRule:setStoreRule,initialState:r.storeState,onState:state=>{r.storeState=state;saveWorkspace()},onBusy:busy=>{r.storeBusy=busy;syncStoreUpdateHold();if(!busy&&r.suspended)dispose(r,true)}});r.refreshStore=store.render;r.selectCategory=store.selectCategory;r.cleanup=store.dispose;if(!preview)void storeRequest('catalog').then(()=>{if(windows.get(id)===r)store.render()});}).catch(()=>{storeModule=null;if(windows.get(id)===r){content.replaceChildren(message);message.textContent='App Store could not start. Close this window and try again.'}});}
  else if(id==='browser'){if(!preview)r.release=window.BLACKCELL_LIVE_UPDATE?.hold('BLACKCELL Browser window');const message=document.createElement('p');message.className='os-window-status';message.textContent='Opening BLACKCELL Browser…';message.style.padding='20px';content.append(message);(browserModule??=import('./blackcell-browser.js?v=3')).then(module=>{if(windows.get(id)!==r)return;content.replaceChildren();module.mountBrowser(content,r,external,activity)}).catch(()=>{browserModule=null;if(windows.get(id)===r)message.textContent='Browser could not load. Close this window and try again.'});}
  else if(preview){const demo=document.createElement('div');demo.className='os-demo';const box=document.createElement('div');box.append(tile.querySelector('.app-icon').cloneNode(true));const h=document.createElement('h2');h.textContent=r.title;const p=document.createElement('p');p.textContent=tile.dataset.desc;const status=document.createElement('p');status.textContent='DESIGN PREVIEW · No private account data loaded.';status.className='os-window-status';box.append(h,p,status);demo.append(box);content.append(demo)}
@@ -1193,7 +1232,7 @@ window.addEventListener('resize',()=>{cancelAppHold();closeAppContext()},{passiv
 for(const button of document.querySelectorAll('[data-app]')){button.addEventListener('click',()=>showApp(button.dataset.app));bindAppContext(button)}
 for(const button of document.querySelectorAll('[data-open]'))button.addEventListener('click',()=>showApp(button.dataset.open));
 $('showDesktop').addEventListener('click',showDesktop);$('osTouchHome')?.addEventListener('click',()=>{closeMenu();showDesktop();if(desktopPrefs.dockAutoHide)dockReveal(true)});$('bcStorageManage')?.addEventListener('click',()=>openAppOrStore('settings','storage'));
-async function signOut(force=false){if(preview){clearWorkspace();location.assign('login.html');return}if(leaving)return;if(!force&&windows.size&&!confirm('Sign out and close your open applications? Finish uploads, playback and unsaved work first.'))return;leaving=true;active=false;blocked('Ending your corporate session…');try{await client.rpc(owner?'corp_end_session':'corp_employee_end_session')}catch(_){}try{const result=await client.auth.signOut({scope:'local'});if(!result?.error)workspaceLock?.clear()}catch(_){}if(embeddedAdmin)window.top.location.replace('login.html');else location.replace('login.html')}
+async function signOut(force=false){if(preview){clearWorkspace();location.assign('login.html');return}if(leaving)return;if(!force&&windows.size&&!confirm('Sign out and close your open applications? Finish uploads, playback and unsaved work first.'))return;leaving=true;active=false;wallpaperManager?.dispose();blocked('Ending your corporate session…');try{await client.rpc(owner?'corp_end_session':'corp_employee_end_session')}catch(_){}try{const result=await client.auth.signOut({scope:'local'});if(!result?.error)workspaceLock?.clear()}catch(_){}if(embeddedAdmin)window.top.location.replace('login.html');else location.replace('login.html')}
 $('signOut').addEventListener('click',()=>void signOut());$('osLockButton')?.addEventListener('click',()=>lockWorkspace());document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.key.toLowerCase()==='l'&&(active||preview)){e.preventDefault();lockWorkspace()}});
 $('adminReturn').addEventListener('click',e=>{e.preventDefault();returnAdmin()});
 function memberAllowed(m){return !!m&&(m.role==='owner'&&Number(m.clearance_level)===7||m.role==='employee'&&!!m.password_activated_at)}

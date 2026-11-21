@@ -5,6 +5,12 @@ on:
       - 'blackcell-os.html'
       - 'blackcell-os-springboard.css'
       - 'blackcell-os-obsidian-v2.css'
+      - 'blackcell-os-macos-midnight.css'
+      - 'blackcell-os-wallpaper-midnight-mobile.svg'
+      - 'blackcell-os-wallpaper-midnight.svg'
+      - 'blackcell-os-wallpaper.js'
+      - 'blackcell-os-wallpaper-settings.js'
+      - 'tests/blackcell-os-macos-wallpaper.test.mjs'
       - 'blackcell-os-wallpaper-obsidian.svg'
       - 'blackcell-os-wallpaper-obsidian-mobile.svg'
       - 'tests/blackcell-os-obsidian-v2.test.mjs'
@@ -26,13 +32,16 @@ jobs:
       - name: Validate existing OS and SpringBoard scripts
         run: |
           node --check blackcell-os-springboard.js
+          node --check blackcell-os-wallpaper.js
+          node --check blackcell-os-wallpaper-settings.js
+          node --check blackcell-os-macos-desktop.js
           node --check blackcell-os.js
           node --check blackcell-os-three-device.js
           node --check blackcell-os-executive-20261119.js
       - name: Verify secure launch and responsive layout invariants
         run: node --test tests/blackcell-os-springboard.test.mjs tests/blackcell-os-obsidian-v2.test.mjs tests/blackcell-os-dock-autohide.test.mjs
       - name: Validate custom wallpaper SVGs
-        run: python3 -c "import xml.etree.ElementTree as E; E.parse('blackcell-os-wallpaper-obsidian.svg'); E.parse('blackcell-os-wallpaper-obsidian-mobile.svg')"
+        run: python3 -c "import xml.etree.ElementTree as E; [E.parse(p) for p in ['blackcell-os-wallpaper-obsidian.svg','blackcell-os-wallpaper-obsidian-mobile.svg','blackcell-os-wallpaper-midnight.svg','blackcell-os-wallpaper-midnight-mobile.svg']]"
       - name: Browser render and interaction smoke checks
         shell: bash
         run: |

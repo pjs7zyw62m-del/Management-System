@@ -1,0 +1,228 @@
+/* BLACKCELL OS — Midnight / Mac Workspace
+   All desktop presentation is layered over the existing authenticated OS.
+   No user app or data deletion; classic desktop remains opt-in. */
+#desktop[data-bc-wallpaper="midnight"] .wallpaper{
+ background-image:linear-gradient(180deg,rgba(0,0,0,.10),rgba(0,0,0,.12)),
+ url('blackcell-os-wallpaper-midnight.svg')!important;
+ background-position:center,center!important;
+ background-size:cover,cover!important;background-repeat:no-repeat!important;
+ opacity:1!important;
+}
+html.bc-os-phone #desktop.bc-springboard-ready[data-bc-wallpaper="midnight"] .bc-sb:before{
+ background-image:linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.32)),
+ url('blackcell-os-wallpaper-midnight-mobile.svg')!important;
+ background-size:cover,cover!important;
+ background-position:center,center!important;opacity:1!important;
+}
+#desktop[data-bc-wallpaper="custom"] .wallpaper{
+ background-color:#020205!important;
+ background-image:linear-gradient(rgba(0,0,0,var(--bc-wallpaper-dim,.12)),rgba(0,0,0,var(--bc-wallpaper-dim,.12))),
+ var(--bc-user-wallpaper,none)!important;
+ background-size:cover,var(--bc-wallpaper-fit,cover)!important;
+ background-position:center,var(--bc-wallpaper-position,center center)!important;
+ background-repeat:no-repeat!important;
+ filter:blur(var(--bc-wallpaper-blur,0px))!important;
+ opacity:1!important;
+}
+html.bc-os-phone #desktop.bc-springboard-ready[data-bc-wallpaper="custom"] .bc-sb:before{
+ background-color:#020205!important;
+ background-image:linear-gradient(rgba(0,0,0,var(--bc-wallpaper-dim,.12)),rgba(0,0,0,var(--bc-wallpaper-dim,.12))),
+ var(--bc-user-wallpaper,none)!important;
+ background-size:cover,var(--bc-wallpaper-fit,cover)!important;
+ background-position:center,var(--bc-wallpaper-position,center center)!important;
+ background-repeat:no-repeat!important;
+ filter:blur(var(--bc-wallpaper-blur,0px))!important;
+ opacity:1!important;
+}
+html.bc-os-phone #desktop.bc-springboard-ready[data-bc-wallpaper="custom"] .bc-sb:after{
+ background:linear-gradient(180deg,#01020436,transparent 32%,transparent 65%,#01020499)!important;
+}
+#desktop[data-bc-wallpaper="midnight"] .wallpaper:before,
+#desktop[data-bc-wallpaper="midnight"] .wallpaper:after,
+#desktop[data-bc-wallpaper="custom"] .wallpaper:before,
+#desktop[data-bc-wallpaper="custom"] .wallpaper:after{opacity:.03!important}
+#desktop.bc-macos-desktop .topbar{
+ background:rgba(9,10,15,.64)!important;
+ border-bottom:1px solid rgba(255,255,255,.12)!important;
+ box-shadow:0 4px 18px rgba(0,0,0,.15)!important;
+ backdrop-filter:blur(40px) saturate(145%)!important;
+ -webkit-backdrop-filter:blur(40px) saturate(145%)!important;
+}
+#desktop.bc-macos-desktop .menubar{gap:clamp(6px,.55vw,14px)!important}
+#desktop.bc-macos-desktop .menubar button{
+ font-size:12px!important;font-weight:540!important;letter-spacing:-.01em;
+ color:#e7e5e8;
+}
+#desktop.bc-macos-desktop .menubar .bc-topbrand{
+ font-size:12px!important;font-weight:800!important;letter-spacing:.025em!important;
+ color:#fff!important;
+}
+#desktop.bc-macos-desktop .os-window{
+ background:rgba(11,12,19,.90)!important;
+ border:1px solid rgba(238,235,244,.20)!important;
+ box-shadow:0 32px 96px rgba(0,0,0,.68),inset 0 1px rgba(255,255,255,.11)!important;
+}
+#desktop.bc-macos-desktop .os-window-head{
+ background:linear-gradient(180deg,rgba(61,61,73,.70),rgba(18,18,25,.77))!important;
+ backdrop-filter:blur(38px) saturate(130%)!important;
+ -webkit-backdrop-filter:blur(38px) saturate(130%)!important;
+}
+#desktop.bc-macos-desktop .dock{
+ background:linear-gradient(150deg,rgba(97,97,110,.40),rgba(21,22,31,.64))!important;
+ border:1px solid rgba(255,255,255,.25)!important;
+ box-shadow:0 18px 46px #000a,inset 0 1px #ffffff40!important;
+ backdrop-filter:blur(44px) saturate(130%)!important;
+ -webkit-backdrop-filter:blur(44px) saturate(130%)!important;
+}
+/* Calm Mac-style desktop: user apps, documents and account data remain loaded,
+   but the original oversize dashboard is hidden until opened. */
+@media(min-width:621px){
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .workspace>.bc-exec-stage{
+  position:absolute!important;left:50%!important;right:auto!important;
+  top:clamp(27px,4.2vh,65px)!important;bottom:auto!important;
+  width:min(570px,calc(100% - 48px))!important;max-width:570px!important;
+  margin:0!important;padding:0!important;
+  min-height:0!important;height:auto!important;
+  transform:translateX(-50%)!important;
+  align-items:stretch!important;justify-content:flex-start!important;
+  flex-direction:column!important;gap:15px!important;
+  z-index:10!important;pointer-events:none;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-exec-stage::before,
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-exec-stage::after{
+  content:none!important;display:none!important;background:none!important;box-shadow:none!important;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-exec-stage .bc-exec-search{order:0!important}
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-exec-stage .bc-macos-actions{order:1!important}
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-exec-stage .bc-exec-brand,
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-exec-stage .bc-concept-quick{
+  display:none!important;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-exec-search{
+  width:min(510px,100%)!important;max-width:510px!important;
+  min-height:50px!important;margin:0 auto!important;
+  border:1px solid rgba(255,255,255,.21)!important;
+  border-radius:17px!important;
+  background:rgba(30,31,40,.56)!important;
+  box-shadow:0 12px 42px #0007,inset 0 1px #ffffff22!important;
+  backdrop-filter:blur(38px) saturate(125%)!important;
+  -webkit-backdrop-filter:blur(38px) saturate(125%)!important;
+  pointer-events:auto;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-exec-search input{
+  font-size:14px!important;height:50px!important;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-exec-search input::placeholder{
+  color:#c0c0ca!important;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .workspace>section:first-of-type,
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .workspace>.side.bc-system-panel{
+  opacity:0!important;visibility:hidden!important;pointer-events:none!important;
+  transition:opacity .23s ease,visibility 0s linear .23s!important;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop.bc-macos-apps-open .workspace>section:first-of-type,
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop.bc-macos-widgets-open .workspace>.side.bc-system-panel{
+  opacity:1!important;visibility:visible!important;pointer-events:auto!important;
+  transition-delay:0s!important;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .workspace .apps>.app{
+  background:transparent!important;border:0!important;box-shadow:none!important;
+  border-radius:17px!important;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .workspace .apps>.app:hover{
+  background:rgba(255,255,255,.065)!important;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .workspace .apps>.app .app-icon{
+  border-radius:18px!important;box-shadow:0 9px 22px #000a,inset 0 1px #ffffff45!important;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-macos-actions{
+  display:flex;justify-content:center;flex-wrap:wrap;gap:9px;
+  width:100%;pointer-events:auto;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-macos-actions[hidden]{display:none!important}
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-macos-action{
+  border:1px solid rgba(239,237,248,.21);border-radius:13px;
+  background:linear-gradient(156deg,rgba(62,63,75,.48),rgba(16,17,26,.58));
+  color:#f0eef2;min-height:42px;min-width:108px;padding:8px 17px;
+  font:600 12px -apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;
+  box-shadow:inset 0 1px #ffffff20,0 8px 18px #0004;
+  backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);
+  transition:transform .19s ease,background .2s ease,border-color .2s ease;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-macos-action:hover{
+  transform:translateY(-2px);border-color:#e4dce57c;background:rgba(73,75,90,.60);
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-macos-action[aria-pressed="true"]{
+  background:rgba(175,27,55,.33);border-color:rgba(244,123,149,.65);
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-macos-action:focus-visible{
+  outline:2px solid #f7e4ed;outline-offset:3px;
+ }
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-macos-actions{display:none!important}
+/* Wallpaper Studio is an actual upload interface with previews and clear choices. */
+#desktop .bc-wallpaper-gallery{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;
+ margin:10px 0 18px;
+}
+#desktop .bc-wallpaper-card{
+ position:relative;display:flex;min-width:0;min-height:143px;
+ flex-direction:column;justify-content:flex-end;align-items:flex-start;
+ padding:14px!important;text-align:left;color:#f5f4f8;
+ border-radius:17px!important;border:1px solid #ffffff34!important;
+ box-shadow:inset 0 1px #fff3,0 12px 28px #0006;
+ background:#030408;overflow:hidden;
+}
+#desktop .bc-wallpaper-card::before{
+ content:"";position:absolute;inset:0;
+ background:url('blackcell-os-wallpaper-midnight.svg') center/cover no-repeat;z-index:0;
+}
+#desktop .bc-wallpaper-card[data-wallpaper="obsidian"]::before{
+ background-image:url('blackcell-os-wallpaper-obsidian.svg')
+}
+#desktop .bc-wallpaper-card[data-wallpaper="skyline"]::before{
+ background-image:url('blackcell-os-cinematic-wallpaper.svg')
+}
+#desktop .bc-wallpaper-card::after{
+ content:"";position:absolute;inset:40% 0 0;
+ background:linear-gradient(180deg,transparent,rgba(0,0,0,.90));z-index:0;
+}
+#desktop .bc-wallpaper-card>*{position:relative;z-index:1}
+#desktop .bc-wallpaper-card strong{font:700 13px -apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;text-shadow:0 2px 7px #000}
+#desktop .bc-wallpaper-card small{color:#d4cfd6;font-size:10px;margin-top:4px}
+#desktop .bc-wallpaper-card[aria-pressed="true"]{
+ border-color:#e75f7e!important;box-shadow:0 0 0 2px #f05b7d66,0 8px 20px #0008!important;
+}
+#desktop .bc-wallpaper-upload{display:flex;flex-direction:column;gap:12px;margin:14px 0}
+#desktop .bc-wallpaper-pick{min-height:47px!important;background:#a51b35!important;color:#fff!important}
+#desktop .bc-wallpaper-upload-preview{
+ background:rgba(15,16,24,.8);border:1px solid #ffffff2b;border-radius:18px;
+ padding:15px;box-shadow:inset 0 1px #ffffff19;
+}
+#desktop .bc-wallpaper-upload-preview[hidden]{display:none!important}
+#desktop .bc-wallpaper-upload-preview img{
+ display:block;max-width:100%;max-height:300px;width:auto;height:auto;
+ margin:0 auto 13px;object-fit:contain;border-radius:10px;
+}
+#desktop .bc-wallpaper-preview-actions{display:flex;flex-wrap:wrap;gap:10px}
+#desktop .bc-wallpaper-preview-actions button{min-height:44px}
+#desktop .bc-wallpaper-slider-wrap{display:flex;align-items:center;gap:12px;min-width:160px}
+#desktop .bc-wallpaper-slider{min-width:90px;flex:1;accent-color:#ce3457}
+#desktop .bc-wallpaper-recents{display:flex;gap:9px;flex-wrap:wrap}
+#desktop .bc-wallpaper-recent{
+ max-width:210px;min-height:41px;padding:10px 12px;border:1px solid #ffffff31;
+ border-radius:12px;background:rgba(35,35,47,.74);color:#dddbe5;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+#desktop .bc-wallpaper-recent-title{margin:18px 0 10px;color:#eee;font-size:14px}
+#desktop .bc-wallpaper-feedback{min-height:28px;line-height:1.45}
+@media(max-width:700px){
+ #desktop .bc-wallpaper-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #desktop .bc-wallpaper-card{min-height:112px}
+ #desktop .bc-wallpaper-slider-wrap{min-width:110px}
+}
+@media(prefers-reduced-motion:reduce){
+ #desktop.bc-macos-desktop .workspace>section:first-of-type,
+ #desktop.bc-macos-desktop .workspace>.side.bc-system-panel,
+ #desktop .bc-macos-action{transition:none!important}
+}

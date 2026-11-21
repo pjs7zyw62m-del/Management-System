@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1950" preserveAspectRatio="xMidYMid slice">
+<title>BLACKCELL Midnight Silk — Phone</title><defs>
+<linearGradient id="base" x1="0" y1="0" x2=".65" y2="1"><stop stop-color="#000000"/><stop offset=".48" stop-color="#030407"/><stop offset="1" stop-color="#000000"/></linearGradient>
+<linearGradient id="smoke" x1="0" y1="0" x2=".9" y2="1"><stop stop-color="#141519"/><stop offset=".36" stop-color="#07080b"/><stop offset=".76" stop-color="#26272c"/><stop offset="1" stop-color="#050507"/></linearGradient>
+<linearGradient id="silk" x1=".28" y1="0" x2=".65" y2="1"><stop stop-color="#090a0c"/><stop offset=".34" stop-color="#27282d"/><stop offset=".58" stop-color="#0e0f12"/><stop offset=".85" stop-color="#25262a"/><stop offset="1" stop-color="#040506"/></linearGradient>
+<linearGradient id="rim" x1="0" y1="1" x2=".9" y2="0"><stop stop-color="#77777e" stop-opacity=".04"/><stop offset=".38" stop-color="#bbbbc3" stop-opacity=".24"/><stop offset=".69" stop-color="#f1f0f4" stop-opacity=".47"/><stop offset="1" stop-color="#aaa8b1" stop-opacity=".06"/></linearGradient>
+<filter id="soft"><feGaussianBlur stdDeviation="20"/></filter>
+</defs>
+<rect width="900" height="1950" fill="url(#base)"/>
+<path d="M270-250C-60 230 22 700 255 855c185 123 400 64 760-170V-260Z" fill="url(#smoke)" opacity=".8"/>
+<path d="M-190 1288C192 940 396 616 1088 549V1150C641 1252 318 1531-190 1643Z" fill="url(#silk)"/>
+<path d="M-160 1288C194 967 469 614 1060 550" fill="none" stroke="url(#rim)" stroke-width="3.8"/>
+<path d="M-110 1345C199 1002 483 665 1040 610" fill="none" stroke="#b7b5be" opacity=".07" stroke-width="30" filter="url(#soft)"/>
+<path d="M-190 1674C172 1569 413 1345 939 1313L1060 1634C582 1647 250 1808-190 1940Z" fill="url(#smoke)" opacity=".9"/>
+<path d="M-110 1697C205 1592 475 1320 1030 1323" fill="none" stroke="url(#rim)" opacity=".62" stroke-width="2.5"/>
+<path d="M0 1856C295 1760 520 1720 920 1690V2000H0Z" fill="#010102" opacity=".82"/>
+</svg>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+<title>BLACKCELL Midnight Silk — Desktop</title><defs>
+<radialGradient id="base"><stop stop-color="#111115"/><stop offset=".55" stop-color="#060609"/><stop offset="1" stop-color="#000001"/></radialGradient>
+<linearGradient id="satin" x1="0" y1="0" x2=".92" y2=".88"><stop stop-color="#050507"/><stop offset=".28" stop-color="#14151b"/><stop offset=".49" stop-color="#29292f"/><stop offset=".68" stop-color="#101115"/><stop offset="1" stop-color="#020204"/></linearGradient>
+<linearGradient id="glint" x1=".15" y1="1" x2=".84" y2=".05"><stop stop-color="#929096" stop-opacity=".02"/><stop offset=".35" stop-color="#a6a6af" stop-opacity=".17"/><stop offset=".58" stop-color="#f0eff3" stop-opacity=".45"/><stop offset="1" stop-color="#aaaaaf" stop-opacity=".04"/></linearGradient>
+<filter id="blur"><feGaussianBlur stdDeviation="17"/></filter>
+</defs>
+<rect width="1600" height="900" fill="url(#base)"/>
+<path d="M-180-100C380 142 520 361 824 409s605-42 974-265V-100Z" fill="#111216" opacity=".66"/>
+<path d="M-175 875C187 560 533 280 1017 277c247-2 458 88 780 205V1000H-175Z" fill="url(#satin)"/>
+<path d="M-160 877C207 543 538 289 1015 278c248-6 458 93 772 211" fill="none" stroke="url(#glint)" stroke-width="3.5"/>
+<path d="M-155 889C214 562 546 313 1022 309c248-3 469 93 767 215" fill="none" stroke="#f5eff5" opacity=".05" stroke-width="36" filter="url(#blur)"/>
+<path d="M-160 974C403 762 751 721 1112 662c239-38 490-31 674-17V980Z" fill="#040508" opacity=".88"/>
+<path d="M-100 888C423 727 748 747 1074 684c240-46 463-43 704-22" fill="none" stroke="url(#glint)" stroke-width="2.4" opacity=".55"/>
+</svg>
