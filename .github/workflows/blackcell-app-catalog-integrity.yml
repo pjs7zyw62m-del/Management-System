@@ -9,6 +9,11 @@ on:
       - 'blackcell-app-store.js'
       - 'blackcell-live-update.js'
       - 'blackcell-os-settings.js'
+      - 'blackcell-os-wallpaper.js'
+      - 'blackcell-os-wallpaper-settings.js'
+      - 'blackcell-os-macos-desktop.js'
+      - 'blackcell-os-macos-midnight.css'
+      - 'tests/blackcell-os-macos-wallpaper.test.mjs'
       - 'tests/blackcell-os-ux2-update.test.mjs'
       - 'blackcell-the-hunt.html'
       - 'blackcell-omega.html'
@@ -24,6 +29,11 @@ on:
       - 'blackcell-app-store.js'
       - 'blackcell-live-update.js'
       - 'blackcell-os-settings.js'
+      - 'blackcell-os-wallpaper.js'
+      - 'blackcell-os-wallpaper-settings.js'
+      - 'blackcell-os-macos-desktop.js'
+      - 'blackcell-os-macos-midnight.css'
+      - 'tests/blackcell-os-macos-wallpaper.test.mjs'
       - 'tests/blackcell-os-ux2-update.test.mjs'
       - 'blackcell-the-hunt.html'
       - 'blackcell-omega.html'
@@ -48,5 +58,8 @@ jobs:
           node --check blackcell-app-store.js
           node --check blackcell-live-update.js
           node --check blackcell-os-settings.js
+          node --check blackcell-os-wallpaper.js
+          node --check blackcell-os-wallpaper-settings.js
+          node --check blackcell-os-macos-desktop.js
       - name: Verify all app launch paths and safe retirement rules
-        run: node --test tests/blackcell-app-catalog-integrity.test.mjs tests/blackcell-os-ux2-update.test.mjs
+        run: node --test tests/blackcell-app-catalog-integrity.test.mjs tests/blackcell-os-ux2-update.test.mjs tests/blackcell-os-macos-wallpaper.test.mjs
