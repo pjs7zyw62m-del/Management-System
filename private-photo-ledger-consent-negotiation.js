@@ -63,7 +63,7 @@ let timerRoom=null,lastTimerCheck=0,timerBusy=false,timerResponseBusy=false;
 let timerLatest=null,serverOffset=0,lastTimerDialogId=null,lastTimerStage=0;
 const dispatched=new Set();
 let negotiatingRoom=null,lastNegotiationCheck=0,negotiationBusy=false;
-let negotiations=[],negotiatingShownKey=null,negotiationActionBusy=false;
+let negotiations=[],negotiatingShownKey=null,negotiationActionBusy=false,negotiationRefreshQueued=false;
 
 function roomActive(){
  const s=snap();
@@ -291,7 +291,8 @@ function renderNegotiation(offer){
 async function pollNegotiations(force=false){
  const s=snap();
  if(!roomActive()||!api()?.priceNegotiationStatus)return;
- if(negotiationBusy||(!force&&Date.now()-lastNegotiationCheck<3400))return;
+ if(negotiationBusy){if(force)negotiationRefreshQueued=true;return;}
+ if(!force&&Date.now()-lastNegotiationCheck<3400)return;
  negotiationBusy=true;lastNegotiationCheck=Date.now();const id=s.roomId;
  try{
   const data=await api().priceNegotiationStatus(id);
@@ -302,7 +303,10 @@ async function pollNegotiations(force=false){
   if(data.enabled&&pending&&!timerDlg.open&&!settingsDlg.open)renderNegotiation(pending);
   else if(!pending&&negotiateDlg.open){negotiateDlg.close();negotiatingShownKey=null}
  }catch(e){const el=$('.redline-negotiation-feedback',negotiateDlg);if(el)el.textContent=safeError(e)}
- finally{negotiationBusy=false}
+ finally{
+  negotiationBusy=false;
+  if(negotiationRefreshQueued){negotiationRefreshQueued=false;void pollNegotiations(true)}
+ }
 }
 function resetIfRoomChanged(){
  const id=roomActive()?snap()?.roomId:null;
@@ -323,6 +327,7 @@ function tick(){
 }
 window.addEventListener('blackcell:redline:photo-decided',()=>{void pollNegotiations(true)});
 window.addEventListener('blackcell:redline:negotiation-changed',()=>{void pollNegotiations(true)});
+settingsDlg.addEventListener('close',()=>{void pollNegotiations(true)});
 window.addEventListener('blackcell:redline:bridge',tick);
 window.addEventListener('blackcell:redline:state',tick);
 window.addEventListener('blackcell:redline:reset',tick);
