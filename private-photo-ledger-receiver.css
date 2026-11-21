@@ -1327,3 +1327,56 @@ body.bc-redline-receiver .rr-pay-partial:focus-visible{
  .rr-partial-payment-form{padding:14px;gap:11px}
  .rr-partial-balance-line strong{font-size:16px}
 }
+
+/* 2026-11-21 Receiver payment visibility repair.
+   The primary action is independently visible in the control header,
+   even when OS windows, tablet or phone widths clip compact navigation. */
+body.bc-redline-receiver .rr-partial-quick-access{
+ display:flex!important;align-items:center!important;justify-content:space-between!important;
+ gap:10px!important;flex:0 1 258px!important;min-width:170px!important;
+ padding:7px 9px!important;margin-left:auto!important;
+ border:1px solid #7c2a44!important;border-radius:10px!important;
+ background:#13060c!important;visibility:visible!important;opacity:1!important;
+}
+body.bc-redline-receiver .rr-partial-quick-label{
+ color:#ff91ad!important;font-size:9px!important;font-weight:850!important;
+ letter-spacing:.11em!important;white-space:nowrap!important;
+}
+body.bc-redline-receiver #redlinePartialPaymentQuickAccess{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ flex:1 1 auto!important;min-height:41px!important;min-width:125px!important;
+ padding:9px 12px!important;background:#ad002a!important;
+ border:1px solid #f34267!important;border-radius:9px!important;
+ color:#fff!important;font-size:11px!important;font-weight:850!important;
+ line-height:1.25!important;white-space:normal!important;
+ cursor:pointer!important;visibility:visible!important;opacity:1!important;
+}
+body.bc-redline-receiver #redlinePartialPaymentQuickAccess:disabled{
+ opacity:.5!important;cursor:not-allowed!important;
+}
+body.bc-redline-receiver #redlinePartialPaymentQuickAccess:focus-visible{
+ outline:2px solid white!important;outline-offset:2px!important;
+}
+body.bc-redline-receiver .rr-nav{
+ flex-wrap:wrap!important;min-width:0!important;
+}
+body.bc-redline-receiver .rr-pay-column{
+ flex:1 1 176px!important;min-width:0!important;
+}
+@media(max-width:780px){
+ body.bc-redline-receiver .rr-partial-quick-access{
+  width:100%!important;max-width:none!important;flex:1 1 100%!important;
+  margin:2px 0 0!important;min-width:0!important;
+ }
+ body.bc-redline-receiver #redlinePartialPaymentQuickAccess{
+  min-height:44px!important;font-size:12px!important;
+ }
+}
+@media(max-width:490px){
+ body.bc-redline-receiver .rr-nav-dropdown{
+  flex:1 1 130px!important;min-width:0!important;max-width:none!important;
+ }
+ body.bc-redline-receiver .rr-pay-column{
+  flex:1 1 138px!important;min-width:0!important;
+ }
+}
