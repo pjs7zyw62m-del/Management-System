@@ -151,6 +151,7 @@
   control.append(title,status);
   toggle('Automatically hide Dock','dockAutoHide',prefs.dockAutoHide);
   toggle('Clean Desktop','desktopClean',prefs.desktopClean);
+  const stage=action('Stage Manager',()=>{toggleStage();closeControl();showControl()},'bc-mac-switch');stage.setAttribute('aria-pressed',String(stageEnabled));control.append(stage);
   control.append(action('Wallpaper & Appearance',()=>{closeControl();bridge()?.openSettings('appearance')},'bc-mac-control-link'));
   control.append(action('Lock Workspace',()=>{closeControl();bridge()?.lock()},'bc-mac-control-link'));
   shell.append(control);controlButton?.setAttribute('aria-expanded','true');
@@ -161,13 +162,139 @@
   controlButton.title='BLACKCELL Control Center';controlButton.setAttribute('aria-label','Open Control Center');
   controlButton.setAttribute('aria-haspopup','dialog');controlButton.setAttribute('aria-expanded','false');
   controlButton.addEventListener('click',showControl);right.insertBefore(controlButton,right.firstChild);
-  document.addEventListener('pointerdown',e=>{
+  const searchButton=action('⌕',openSpotlight,'bc-mac-spotlight-button');
+  searchButton.title='BLACKCELL Spotlight';searchButton.setAttribute('aria-label','Open Spotlight Search');
+  right.insertBefore(searchButton,controlButton);
+    document.addEventListener('pointerdown',e=>{
    if(control&&!control.contains(e.target)&&!controlButton.contains(e.target))closeControl();
   },{passive:true});
+ }
+
+ let spotlight=null,spotlightInput=null,spotlightList=null;
+ function evalArithmetic(raw){
+  if(!/^[0-9.\s()+*\/-]{1,64}$/.test(raw)||!/[+*/()-]/.test(raw))return null;
+  const values=[],ops=[];let pending='',unary=true;
+  const precedence=op=>op==='+'||op==='-'?1:2;
+  const reduce=()=>{
+   const op=ops.pop(),b=values.pop(),a=values.pop();
+   if(!Number.isFinite(a)||!Number.isFinite(b))return false;
+   const x=op==='+'?a+b:op==='-'?a-b:op==='*'?a*b:b===0?NaN:a/b;
+   if(!Number.isFinite(x))return false;values.push(x);return true;
+  };
+  const commit=()=>{
+   if(!pending)return true;
+   if(!/^-?(?:\d+\.?\d*|\.\d+)$/.test(pending))return false;
+   values.push(Number(pending));pending='';unary=false;return true;
+  };
+  for(const ch of raw.replace(/\s+/g,'')){
+   if(/[\d.]/.test(ch)){pending+=ch;unary=false;continue}
+   if(ch==='-'&&unary){pending='-';continue}
+   if(!commit())return null;
+   if(ch==='('){ops.push(ch);unary=true;continue}
+   if(ch===')'){while(ops.length&&ops.at(-1)!=='(')if(!reduce())return null;if(ops.pop()!=='(')return null;continue}
+   if(!'+-*/'.includes(ch))return null;
+   while(ops.length&&ops.at(-1)!=='('&&precedence(ops.at(-1))>=precedence(ch))if(!reduce())return null;
+   ops.push(ch);unary=true;
+  }
+  if(!commit())return null;
+  while(ops.length){if(ops.at(-1)==='('||!reduce())return null}
+  return values.length===1?Number(values[0].toPrecision(10)):null;
+ }
+ function closeSpotlight(){spotlight?.remove();spotlight=null;spotlightInput=null;spotlightList=null}
+ function renderSpotlight(){
+  if(!spotlight||!spotlightInput)return;
+  const q=spotlightInput.value.trim().toLowerCase();spotlightList.replaceChildren();
+  if(!q){spotlightList.append(el('p','bc-mac-empty','Find apps or calculate an expression.'));return}
+  const value=evalArithmetic(q);
+  if(value!==null){
+   const item=action(q+' = '+String(value),()=>{navigator.clipboard?.writeText(String(value));closeSpotlight()},'bc-mac-spotlight-result');
+   item.title='Copy calculated result';spotlightList.append(item);
+  }
+  for(const app of getApps().filter(a=>a.title.toLowerCase().includes(q)||a.id.toLowerCase().includes(q)).slice(0,8)){
+   const item=action(app.title,()=>{closeSpotlight();if(!app.tile.hidden&&!app.tile.disabled)app.tile.click()},'bc-mac-spotlight-result');
+   spotlightList.append(item);
+  }
+  if(!spotlightList.children.length)spotlightList.append(el('p','bc-mac-empty','No matching installed applications.'));
+ }
+ function openSpotlight(){
+  if(!allowed()||bridge()?.isPhone())return;
+  if(spotlight){spotlightInput?.focus();return}
+  dismiss();closeControl();spotlight=el('section','bc-mac-spotlight');
+  spotlight.setAttribute('role','dialog');spotlight.setAttribute('aria-modal','true');
+  spotlight.setAttribute('aria-label','BLACKCELL Spotlight Search');
+  const inner=el('div','bc-mac-spotlight-panel');
+  spotlightInput=el('input');spotlightInput.type='search';spotlightInput.autocomplete='off';
+  spotlightInput.setAttribute('aria-label','Search installed applications or calculate');
+  spotlightInput.placeholder='Search BLACKCELL…';
+  spotlightList=el('div','bc-mac-spotlight-results');
+  spotlightInput.addEventListener('input',renderSpotlight);
+  spotlightInput.addEventListener('keydown',e=>{
+   if(e.key==='Escape'){e.preventDefault();closeSpotlight()}
+   if(e.key==='Enter'&&spotlightList.querySelector('button')){e.preventDefault();spotlightList.querySelector('button').click()}
+  });
+  inner.append(spotlightInput,spotlightList);spotlight.append(inner);shell.append(spotlight);
+  spotlight.addEventListener('pointerdown',e=>{if(e.target===spotlight)closeSpotlight()});
+  renderSpotlight();spotlightInput.focus();
+ }
+ let stageEnabled=false,stageRail=null;
+ function stageSync(){
+  if(!stageEnabled||!allowed()){shell.classList.remove('bc-stage-manager');shell.querySelectorAll('.os-window.bc-stage-background').forEach(n=>n.classList.remove('bc-stage-background'));stageRail?.remove();stageRail=null;return}
+  const state=bridge()?.windows()||[];
+  shell.classList.add('bc-stage-manager');
+  if(!stageRail){stageRail=el('nav','bc-mac-stage-rail');stageRail.setAttribute('aria-label','Stage Manager windows');shell.append(stageRail)}
+  stageRail.replaceChildren();
+  for(const item of state){
+   const element=[...shell.querySelectorAll('.os-window')].find(n=>n.dataset.osApp===item.id);
+   if(!element||element.hidden||item.minimized||element.classList.contains('bc-os-fullscreen')){element?.classList.remove('bc-stage-background');continue}
+   element.classList.toggle('bc-stage-background',!item.active);
+   if(item.active)continue;
+   const button=action(item.title,()=>bridge().focusWindow(item.id),'bc-mac-stage-thumb');
+   button.title='Switch to '+item.title;stageRail.append(button);
+  }
+ }
+ function toggleStage(){
+  stageEnabled=!stageEnabled;stageSync();
+  return stageEnabled;
+ }
+ function renderDesktopCanvas(){
+  if(!allowed()||bridge()?.isPhone())return;
+  let desktop=shell.querySelector('.bc-mac-desktop-canvas');
+  if(!desktop){
+   desktop=el('section','bc-mac-desktop-canvas');
+   desktop.setAttribute('aria-label','BLACKCELL Desktop folder');
+   const heading=el('div','bc-mac-desktop-caption','DESKTOP');
+   const contents=el('div','bc-mac-desktop-items');
+   desktop.append(heading,contents);shell.querySelector('.workspace')?.append(desktop);
+   desktop.addEventListener('contextmenu',e=>{
+    if(e.target.closest('.bc-mac-desktop-item'))return;
+    e.preventDefault();
+    const stacks=!desktop.classList.contains('bc-mac-desktop-stacks');
+    desktop.classList.toggle('bc-mac-desktop-stacks',stacks);
+    desktop.setAttribute('aria-label',stacks?'BLACKCELL Desktop folder (Stacks)':'BLACKCELL Desktop folder');
+   });
+  }
+  const list=desktop.querySelector('.bc-mac-desktop-items');
+  const view=items=>{
+   if(!list.isConnected)return;
+   list.replaceChildren();
+   const folder=action('Desktop',()=>bridge()?.openDesktopFiles(),'bc-mac-desktop-item bc-mac-desktop-folder');
+   const folderIcon=el('span','bc-mac-desktop-file-icon','▣');folder.prepend(folderIcon);folder.setAttribute('aria-label','Open Desktop folder in BLACKCELL Files');list.append(folder);
+   for(const file of items){
+    const item=action(file.name,()=>bridge()?.openDesktopFiles(),'bc-mac-desktop-item');
+    item.setAttribute('aria-label','Open '+file.name+' in BLACKCELL Files');
+    item.prepend(el('span','bc-mac-desktop-file-icon',file.folder?'▣':/\.(jpe?g|png|webp|gif|heic)$/i.test(file.name)?'▧':/\.pdf$/i.test(file.name)?'▤':'▤'));
+    item.dataset.group=file.folder?'Folders':/\.(jpe?g|png|webp|gif|heic)$/i.test(file.name)?'Images':'Documents';
+    list.append(item);
+   }
+  };
+  view([]);
+  if(!bridge()?.listDesktopFiles)return;
+  void bridge().listDesktopFiles().then(view).catch(()=>{});
  }
  function keybind(e){
   if(!allowed()||e.target.closest?.('input,textarea,[contenteditable]'))return;
   const ctrl=e.ctrlKey||e.metaKey;
+  if(ctrl&&e.key===' '){e.preventDefault();openSpotlight();return}
   if(ctrl&&e.altKey&&e.key==='Tab'){e.preventDefault();begin('mission');return}
   if(ctrl&&e.key==='ArrowUp'){e.preventDefault();begin('mission');return}
   if(ctrl&&(e.key==='ArrowLeft'||e.key==='ArrowRight')&&!overlay){
@@ -178,7 +305,15 @@
   }
   if(e.key==='F3'){e.preventDefault();begin('mission')}
  }
- window.addEventListener('blackcell:launchpad-open',()=>begin('launchpad'));
+ window.addEventListener('blackcell:spotlight-open',openSpotlight);
+ window.addEventListener('blackcell:stage-toggle',()=>{toggleStage();stageSync()});
+ window.addEventListener('blackcell:desktop-files-refresh',renderDesktopCanvas);
+ window.addEventListener('bc-private-files-changed',renderDesktopCanvas);
+ window.addEventListener('blackcell:spaces-updated',stageSync);
+ window.addEventListener('blackcell:mac-shell-ready',renderDesktopCanvas);
+ const stageObserver=new MutationObserver(stageSync);
+ stageObserver.observe(shell,{childList:true,subtree:false});
+  window.addEventListener('blackcell:launchpad-open',()=>begin('launchpad'));
  window.addEventListener('blackcell:mission-open',()=>begin('mission'));
  window.addEventListener('blackcell:spaces-updated',()=>{if(kind==='mission')renderMission()});
  window.addEventListener('resize',()=>{if(kind==='launchpad')renderLaunchpad()},{passive:true});
@@ -188,4 +323,7 @@
   if(shell.classList.contains('bc-os-fullscreen-active'))shell.classList.toggle('bc-os-menu-edge-open',e.clientY<7);
  },{passive:true});
  controls();
+ const renderWhenReady=()=>{if(allowed())renderDesktopCanvas()};
+ window.addEventListener('blackcell:desktop-ready',renderWhenReady);
+ setTimeout(renderWhenReady,1200);
 })();
