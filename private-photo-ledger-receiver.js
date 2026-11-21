@@ -264,7 +264,7 @@
    else goTo(history?'#photoEntries':'#ownerReviewQueue');
    return;
   }
-  mediaOpen=true;showPane();applyWidth(mediaRatio);
+  mediaOpen=true;showPane();applyWidth(mediaRatio);applyHeight(heightRatio);
   if(history){
    const priced=pricedStage.querySelector('#photoEntries');
    if(priced){priced.scrollTop=0;priced.focus?.({preventScroll:true})}
