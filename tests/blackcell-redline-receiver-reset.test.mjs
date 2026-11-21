@@ -639,3 +639,44 @@ test('Compact receiver buttons retain stars and every bid decision without headi
  assert.match(html,/private-photo-ledger\.js\?v=20261121-five-star-resubmit-next2/);
  assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-five-star-resubmit-next2/);
 });
+
+test('Five-star originals can be resubmitted until receiver rejects the copied photo',()=>{
+ const migration=read('supabase/migrations/20261121135000_redline_five_star_resubmissions.sql');
+ const sender=read('private-photo-ledger-simple-sender.js');
+ const style=read('private-photo-ledger-simple-sender.css');
+ assert.match(migration,/resubmission_origin_id uuid/);
+ assert.match(migration,/redline_resubmission_immutable/);
+ assert.match(migration,/redline_validate_five_star_resubmission/);
+ assert.match(migration,/v_rating IS DISTINCT FROM 5/);
+ assert.match(migration,/prior\.decision_status IN \('pending','rejected'\)/);
+ assert.match(migration,/pg_advisory_xact_lock/);
+ assert.match(migration,/NOT photo_sending_paused/);
+ assert.match(ledger,/resubmission_origin_id,decision_status/);
+ assert.match(ledger,/async resubmitFiveStarPhoto\(photoId\)/);
+ assert.match(ledger,/db\.storage\.from\(BUCKET\)\.download\(source\.image_path\)/);
+ assert.match(ledger,/resubmission_origin_id:photoId,decision_status:'pending'/);
+ assert.match(ledger,/resubmissionAllowed:e\.decision_status==='accepted'/);
+ assert.match(ledger,/resubmissionStatus:rejected\?'rejected'/);
+ assert.match(ledger,/if\(options\.keepPhotoSelected!==false\)state\.reviewSidebarPhotoId=result\.data\.photo_id/);
+ assert.match(sender,/\['five-star','5-Star Photos'\]/);
+ assert.match(sender,/function renderFiveStarPhotos\(snap\)/);
+ assert.match(sender,/resubmissionStatus==='pending'/);
+ assert.match(sender,/resubmissionStatus==='rejected'/);
+ assert.match(sender,/bridge\(\)\?\.resubmitFiveStarPhoto\?\.\(photo\.id\)/);
+ assert.match(style,/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)!important/);
+ assert.match(style,/\.redline-five-star-photo/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261121-five-star-resubmit-next2/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-five-star-resubmit-next2/);
+});
+
+test('After a server-confirmed price, the next photo is shown before network refresh',()=>{
+ const approve=ledger.slice(ledger.indexOf('async function assignAmount('),ledger.indexOf('async function acceptZero('));
+ const accept=approve.indexOf("if(r.error)throw r.error;");
+ const live=approve.indexOf('renderReviewQueue();',accept);
+ const refresh=approve.indexOf('await loadEntries({force:true})',accept);
+ assert.ok(accept>=0&&live>accept&&refresh>live);
+ assert.match(approve,/Object\.assign\(entry,\{amount_cents:amount,decision_status:'accepted'/);
+ assert.match(approve,/state\.reviewSidebarPhotoId=null/);
+ assert.match(approve,/try\{await loadEntries\(\{force:true\}\)\}/);
+ assert.match(approve,/Photo price saved and next photo displayed/);
+});
