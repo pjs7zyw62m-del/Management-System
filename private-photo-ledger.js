@@ -39,6 +39,17 @@ function parseDollars(value){
  if(n<0n||n>MAX_SAFE)throw Error('Amount must be $0.00 or more, within the supported limit.');
  return Number(n);
 }
+// Typing or pasting .10 in any price field immediately displays 0.10.
+function attachCurrencyLeadingZero(input){
+ input.addEventListener('input',()=>{
+  if(!input.value.startsWith('.'))return;
+  const start=input.selectionStart,end=input.selectionEnd;
+  input.value='0'+input.value;
+  try{input.setSelectionRange(start===null?input.value.length:start+1,
+   end===null?input.value.length:end+1)}catch(_){}
+ });
+ return input;
+}
 function show(id,text){$(id).textContent=String(text||'')}
 function when(date){
  if(!date)return '—';
@@ -558,7 +569,7 @@ function renderEntry(e){
    body.append(node('strong','review-price-heading','SET YOUR PRICE'));
    const row=node('div','amount-row');
    const input=node('input');
-   input.type='text';input.inputMode='decimal';input.placeholder='USD 0.00';input.maxLength=23;
+   input.type='text';input.inputMode='decimal';input.placeholder='USD 0.00';input.maxLength=23;attachCurrencyLeadingZero(input);
    input.setAttribute('aria-label','Amount to accept in USD for photo '+e.id.slice(0,8));
    const submit=button('✓ ACCEPT PHOTO',()=>void assignAmount(e,input,submit),'button-main');
    const zero=button('✓ ACCEPT $0.00',()=>void acceptZero(e,zero),'button-outline');
@@ -664,7 +675,7 @@ function preparePhotoReviewLightbox(entry){
  panel.append(node('p','redline-review-help','Examine the full photograph before making your final decision.'));
  const label=node('label','redline-review-label','YOUR BID · USD');
  const input=node('input','redline-review-amount');
- input.type='text';input.inputMode='decimal';input.placeholder='0.00';input.maxLength=23;
+ input.type='text';input.inputMode='decimal';input.placeholder='0.00';input.maxLength=23;attachCurrencyLeadingZero(input);
  input.setAttribute('aria-label','Acceptance amount in US dollars');
  label.append(input);panel.append(label);
  const controls=node('div','redline-review-actions');
