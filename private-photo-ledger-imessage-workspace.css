@@ -497,3 +497,15 @@ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverMediaEdge{cursor:col-r
   flex:1 1 auto!important;
  }
 }
+
+/* Selected priced-photo preview replaces the pending queue (never overlays it). */
+body.bc-redline-receiver.rr-imessage-mode.rr-timing-priced-photo
+ #redlineReceiverReviewStage #ownerReviewQueue{
+ display:none!important;
+}
+body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage
+ .rr-timer-selected-preview[hidden]{display:none!important}
+body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage
+ .rr-timer-selected-preview:not([hidden]){
+ display:flex!important;flex:1 1 0!important;min-height:0!important;
+}
