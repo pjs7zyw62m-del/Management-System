@@ -71,7 +71,7 @@
  const access=make('section','rr-access-panel');
  access.id='redlineReceiverAccessPanel';
  access.append(make('span','rr-kicker','OWNER SECURITY · EMPLOYEE RESTRICTIONS'),make('h3','','REDLINE ONLY ACCESS'));
- access.append(make('p','','Choose an employee, including a Level 1 account. REDLINE Only restricts which apps they can use without changing their numeric clearance level.'));
+ access.append(make('p','','Choose an employee and assign Level 0. Level 0 grants access to REDLINE only; returning to standard access restores Level 1.'));
  const accessRow=make('div','rr-access-row');
  const selector=make('select','rr-access-select');
  selector.setAttribute('aria-label','Employee to manage');selector.id='rrAccessEmployee';
@@ -89,7 +89,7 @@
   action.disabled=accessBusy||!selected;
   if(!selected){action.textContent='SELECT AN EMPLOYEE';if(accessLoaded)accessState.textContent='Select an employee to view their access.';return}
   const restricted=selected.accessScope==='ledger_only';
-  action.textContent=restricted?'RESTORE STANDARD ACCESS':'SET REDLINE ONLY';
+  action.textContent=restricted?'RESTORE LEVEL 1 ACCESS':'SET LEVEL 0 · REDLINE ONLY';
   accessState.textContent=(selected.name||'Employee')+' · Level '+(selected.clearance??'—')+
    ' · '+(restricted?'REDLINE ONLY':'STANDARD APP ACCESS')+
    (selected.active?'':' · INACTIVE');
@@ -118,13 +118,13 @@
   if(!account||accessBusy)return;
   const restrict=account.accessScope!=='ledger_only';
   const ask=restrict
-   ?'Set '+account.name+' (Level '+account.clearance+') to REDLINE ONLY? Their numeric clearance stays the same, but other apps will be blocked.'
-   :'Restore normal application access for '+account.name+'? Their clearance remains Level '+account.clearance+'.';
+   ?'Set '+account.name+' (Level '+account.clearance+') to REDLINE ONLY? Their clearance changes to Level 0 and all other apps will be blocked.'
+   :'Restore normal application access for '+account.name+'? Their clearance returns to Level 1.';
   if(!window.confirm(ask))return;
   accessBusy=true;action.disabled=true;accessState.textContent='Saving verified security access…';
   try{
    const response=await window.BLACKCELL_REDLINE_API.ownerSetRedlineOnly(account.userId,restrict);
-   account.accessScope=response.accessScope;
+   account.accessScope=response.accessScope;account.clearance=response.clearanceLevel;
    accessState.textContent='Access updated successfully.';
    await loadAccessAfterChange();
   }catch(error){accessState.textContent='Change failed: '+String(error?.message||error)}
