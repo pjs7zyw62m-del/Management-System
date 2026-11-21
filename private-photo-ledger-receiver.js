@@ -198,7 +198,7 @@
  const fullPhoto=button('⛶ VIEW FULL PHOTO',()=>{
   const pricedMode=document.body.classList.contains('rr-timing-priced-photo');
   const target=pricedMode
-   ? $('#redlinePhotoTimerPanel .rr-timer-full')
+   ? $('#redlineReceiverReviewStage .rr-timer-selected-preview .rr-timer-full')
    : $('#reviewQueueCurrent .photo-image-btn');
   if(target)target.click();
  },'rr-photo-fullscreen');
