@@ -7,8 +7,8 @@ const code=read('private-photo-ledger-owner-preview.js');
 const css=read('private-photo-ledger-owner-preview.css');
 const core=read('private-photo-ledger.js');
 test('owner preview is linked to existing authenticated REDLINE',()=>{
- assert.match(html,/private-photo-ledger-owner-preview\.css\?v=20261120-preview1/);
- assert.match(html,/private-photo-ledger-owner-preview\.js\?v=20261120-preview1/);
+ assert.match(html,/private-photo-ledger-owner-preview\.css\?v=20261121-compact-summary4/);
+ assert.match(html,/private-photo-ledger-owner-preview\.js\?v=20261121-auto-photo1/);
  assert.ok(html.indexOf('private-photo-ledger-sender.js')<html.indexOf('private-photo-ledger-owner-preview.js'));
  assert.match(html,/id="ownerSetup"/);
  assert.match(html,/id="ownerUploadInfo"/);
@@ -24,11 +24,10 @@ test('preview launchers exist only within owner-only sections',()=>{
  assert.match(code,/dialog\.close\(\)/);
 });
 test('preview is isolated from upload/approval/financial APIs',()=>{
- assert.match(code,/PREVIEW ONLY — SENDING DISABLED/);
- assert.match(code,/submit\.disabled=true/);
+ assert.match(code,/Live senders upload immediately/);
  assert.match(code,/fileInput\.type='file'/);
- assert.match(code,/URL\.createObjectURL\(f\)/);
- assert.match(code,/URL\.revokeObjectURL\(url\)/);
+ assert.match(code,/fileInput\.value=''/);
+ assert.doesNotMatch(code,/previewImg|URL\.createObjectURL|submit\.disabled=true/);
  assert.doesNotMatch(code,/\.upload\(|\.insert\(|\.update\(|\.delete\(|client\.rpc\(|fetch\(/);
  assert.doesNotMatch(code,/supabase|localStorage|#submitPhoto|\.click\(\)\s*;\s*document\.querySelector\('#submitPhoto'\)/i);
  assert.match(core,/const BUCKET='corp-private-photo-ledger'/);
