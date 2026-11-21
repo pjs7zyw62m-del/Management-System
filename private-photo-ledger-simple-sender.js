@@ -138,6 +138,9 @@ const msgHeader=make('header','redline-message-header');
 const msgTitle=make('div');
 msgTitle.append(make('strong','','PRIVATE CHAT — REDLINE'),make('small','','Two-way conversation · Owner + Sender only'));
 msgHeader.append(msgTitle);
+// Keep the running timer above, not inside, the independent message scroller.
+const timerSlot=make('div','redline-chat-timer-slot');timerSlot.hidden=true;
+timerSlot.setAttribute('aria-label','Active private photo timer');
 const feed=make('div','redline-message-feed');feed.setAttribute('role','log');feed.setAttribute('aria-live','polite');
 const empty=make('div','redline-chat-empty','No messages yet. Your conversation and photo-review updates will appear here.');
 feed.append(empty);
@@ -152,7 +155,7 @@ composer.append(photoAction,entry,send);
 const typingNotice=make('div','redline-peer-typing','');typingNotice.hidden=true;
 typingNotice.setAttribute('role','status');typingNotice.setAttribute('aria-live','polite');
 const msgError=make('p','redline-message-error');msgError.setAttribute('role','status');
-messageCard.append(msgHeader,feed,typingNotice,composer,msgError);
+messageCard.append(msgHeader,timerSlot,feed,typingNotice,composer,msgError);
 uploadPane.append(messageCard);
 panes.append(uploadPane,viewingPane,earningsPane,historyPane,fiveStarPane);
 home.append(heading,tabs,panes);
@@ -520,7 +523,7 @@ function timerNumbers(row,active){
 function updateTimerCards(){
  if(!timerStatus||!snapshot()||app.hidden||room.hidden)return;
  const running=timerStatus.active;
- for(const card of feed.querySelectorAll('.redline-chat-timer[data-timer-phase="active"]')){
+ for(const card of timerSlot.querySelectorAll('.redline-chat-timer[data-timer-phase="active"]')){
   if(card.dataset.timerId!==running?.id)continue;
   const data=timerNumbers(running,true);
   const clock=card.querySelector('.redline-chat-timer-clock');
@@ -614,17 +617,18 @@ entry.addEventListener('input',()=>{
 });
 entry.addEventListener('blur',stopTyping);
 function renderChat(){
- const snap=snapshot();feed.replaceChildren();
+ const snap=snapshot();feed.replaceChildren();timerSlot.replaceChildren();
  const events=createEvents(snap?.entries).slice(0,80);
  const latestOwn=[...messages].reverse().find(m=>m.sender_id===snap?.userId)?.id;
  const pinned=timerRoomId===snap?.roomId&&!snap?.archiveMode&&timerStatus?.active?.started_at
   ?{kind:'timer',phase:'active',at:timerStatus.active.started_at,timer:timerStatus.active}:null;
+ timerSlot.hidden=!pinned;
  if(pinned){
   const card=makeTimerCard(pinned);
   card.classList.add('redline-chat-timer-pinned');
   card.setAttribute('aria-label','Active private timer pinned in the chat until it stops');
   card.setAttribute('aria-live','off');
-  feed.append(card);
+  timerSlot.append(card);
  }
  const combined=[
   ...events.map(e=>({kind:'event',at:e.at,body:e.text,status:e.status})),
