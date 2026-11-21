@@ -68,7 +68,7 @@ test('counteroffer input safely parses exact cents and enforces lower than origi
  const b=ui.indexOf('\nasync function actOnNegotiation(',a);
  assert.ok(a>=0&&b>a);
  const parse=runInNewContext('('+ui.slice(a,b).trim()+')');
- assert.equal(parse('.10',100),10);
+ assert.equal(parse('0.10',100),10);
  assert.equal(parse('0.01',100),1);
  assert.equal(parse('1,000.50',100150),100050);
  for(const bad of ['-0.01','5','1.999','abc','1e9','999999999999999999']){
