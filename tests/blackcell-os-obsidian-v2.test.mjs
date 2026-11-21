@@ -14,8 +14,8 @@ test('the new visual layer is included after existing responsive styles',()=>{
  assert.match(html,/blackcell-os-obsidian-v2\.css\?v=20261120-(?:obsidian2|dock-autohide)/);
  assert.ok(html.indexOf('blackcell-os-device-label.css')<html.indexOf('blackcell-os-obsidian-v2.css'));
  assert.match(html,/blackcell-os-springboard\.js\?v=ios-a-20261119/);
- assert.match(html,/blackcell-os\.js\?v=119-os-update-ux2/);
- assert.match(manifest,/(?:obsidian2|dock-auto-hide)/);
+ assert.match(html,/blackcell-os\.js\?v=(?:119-os-update-ux2|120-macos-personal-wallpaper)/);
+ assert.match(manifest,/(?:obsidian2|dock-auto-hide|macos-personal-wallpaper)/);
 });
 
 test('iPhone default artwork is an original lightweight same-origin SVG',()=>{
@@ -55,13 +55,13 @@ test('new app chrome is glass layered and controls have practical touch targets'
 });
 
 test('wallpaper choice persists as an account preference, without changing permissions',()=>{
- assert.match(shell,/wallpaper:'obsidian'/);
+ assert.match(shell,/wallpaper:'midnight'/);
  assert.match(shell,/shell\.dataset\.bcWallpaper/);
- assert.match(shell,/\['obsidian','skyline'\]\.includes/);
+ assert.match(shell,/\['midnight','obsidian','skyline','custom'\]/);
  assert.match(shell,/cloudWorkspaceSave\('settings',record\)/);
- assert.match(settings,/Home screen wallpaper/);
- assert.match(settings,/Obsidian Arc · New/);
- assert.match(settings,/Cinematic Skyline · Classic/);
+ assert.match(settings,/Wallpaper Studio/);
+ assert.match(read('blackcell-os-wallpaper-settings.js'),/Obsidian Arc/);
+ assert.match(read('blackcell-os-wallpaper-settings.js'),/Cinematic Skyline/);
  assert.match(shell,/const IDLE=60\*60\*1000/);
  assert.match(shell,/function authorizedApp\(/);
 });
