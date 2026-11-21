@@ -123,8 +123,16 @@
    if(!confirmed)return;
    const result=await api.recordPaidInFull(current.roomId);
    if(api.snapshot()?.roomId!==current.roomId)throw Error('Recorded for the prior room; reopen that room to verify.');
-   setPayFeedback('Recorded paid in full · Outstanding $0.00 · '+
-    Number(result.photo_count||0)+' photo record(s), '+Number(result.timer_count||0)+' timer record(s).');
+   const remaining=BigInt(String(result.remaining_photo_cents??0))+
+    BigInt(String(result.remaining_timer_cents??0));
+   if(remaining>0n){
+    setPayFeedback('Payment recorded. New activity is still outstanding; refresh the balance.');
+   }else if(result.refreshUnavailable){
+    setPayFeedback('Payment recorded. Refresh REDLINE to verify the updated $0.00 balance.');
+   }else{
+    setPayFeedback('Recorded paid in full · Outstanding $0.00 · '+
+     Number(result.photo_count||0)+' photo record(s), '+Number(result.timer_count||0)+' timer record(s).');
+   }
    window.dispatchEvent(new Event('blackcell:redline:state'));
   }catch(error){
    setPayFeedback('Payment record not changed: '+String(error?.message||error));
