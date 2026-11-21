@@ -14,6 +14,35 @@
  const action=(text,fn,cls='')=>{const b=el('button',cls,text);b.type='button';b.addEventListener('click',fn);return b};
  let overlay=null,lastFocus=null,page=0,query='',kind='',grid=null,head=null,subtitle=null,back=null,next=null;
  let control=null,controlButton=null;
+ let notificationsPanel=null;
+ function closeNotifications(){notificationsPanel?.remove();notificationsPanel=null}
+ function showNotifications(){
+  if(!allowed())return;
+  if(notificationsPanel){closeNotifications();return}
+  closeControl();
+  notificationsPanel=el('aside','bc-mac-notifications');
+  notificationsPanel.setAttribute('role','dialog');
+  notificationsPanel.setAttribute('aria-label','BLACKCELL Notification Center');
+  const header=el('div','bc-mac-notifications-head');
+  header.append(el('h3','','Notification Center'),
+    action('Close',closeNotifications,'bc-mac-notifications-close'));
+  notificationsPanel.append(header);
+  const items=bridge()?.notifications?.()||[];
+  if(!items.length)notificationsPanel.append(el('p','bc-mac-notifications-empty','No recent BLACKCELL OS notifications.'));
+  else{
+   const list=el('div','bc-mac-notifications-list');
+   for(const note of items.slice(0,35)){
+    const card=el('article','bc-mac-notification');
+    const stamp=el('small','',new Date(note.at).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}));
+    card.append(el('p','',note.message),stamp);list.append(card);
+   }
+   notificationsPanel.append(list,action('Clear Notifications',()=>{
+    bridge()?.clearNotifications?.();closeNotifications();
+   },'bc-mac-notifications-clear'));
+  }
+  shell.append(notificationsPanel);
+ }
+
  const getApps=()=>{
   const apps=new Map();
   for(const tile of shell.querySelectorAll('.workspace .apps .app[data-app]')){
@@ -162,7 +191,17 @@
   controlButton.title='BLACKCELL Control Center';controlButton.setAttribute('aria-label','Open Control Center');
   controlButton.setAttribute('aria-haspopup','dialog');controlButton.setAttribute('aria-expanded','false');
   controlButton.addEventListener('click',showControl);right.insertBefore(controlButton,right.firstChild);
-  const searchButton=action('⌕',openSpotlight,'bc-mac-spotlight-button');
+  const clock=shell.querySelector('#clock');
+  if(clock){
+   clock.setAttribute('role','button');clock.tabIndex=0;
+   clock.setAttribute('aria-label','Open Notification Center');
+   clock.title='Notification Center';
+   clock.addEventListener('click',showNotifications);
+   clock.addEventListener('keydown',e=>{
+    if(e.key==='Enter'||e.key===' '){e.preventDefault();showNotifications()}
+   });
+  }
+   const searchButton=action('⌕',openSpotlight,'bc-mac-spotlight-button');
   searchButton.title='BLACKCELL Spotlight';searchButton.setAttribute('aria-label','Open Spotlight Search');
   right.insertBefore(searchButton,controlButton);
   const dock=shell.querySelector('.dock');
@@ -175,6 +214,7 @@
   }
     document.addEventListener('pointerdown',e=>{
    if(control&&!control.contains(e.target)&&!controlButton.contains(e.target))closeControl();
+   if(notificationsPanel&&!notificationsPanel.contains(e.target)&&!shell.querySelector('#clock')?.contains(e.target))closeNotifications();
   },{passive:true});
  }
 
@@ -342,7 +382,13 @@
   }
   if(e.key==='F3'){e.preventDefault();begin('mission')}
  }
- window.addEventListener('blackcell:spotlight-open',openSpotlight);
+ window.addEventListener('blackcell:notification',()=>{
+  if(notificationsPanel){closeNotifications();showNotifications()}
+ });
+ document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&notificationsPanel){e.preventDefault();closeNotifications()}
+ });
+  window.addEventListener('blackcell:spotlight-open',openSpotlight);
  window.addEventListener('blackcell:stage-toggle',()=>{toggleStage();stageSync()});
  window.addEventListener('blackcell:desktop-files-refresh',renderDesktopCanvas);
  window.addEventListener('bc-private-files-changed',renderDesktopCanvas);
