@@ -408,3 +408,106 @@ body.bc-redline-receiver .rr-chat-mount .redline-chat-send{min-height:46px}
  body.bc-redline-receiver .rr-stat{flex-direction:column!important;align-items:flex-start!important;min-height:60px!important;gap:4px!important}
  body.bc-redline-receiver .rr-stat-value{font-size:20px!important}
 }
+
+/* Receiver workstation: the chat stays narrow, incoming photos stay visible.
+   The original review queue and photo-history nodes are moved, not duplicated. */
+body.bc-redline-receiver .rr-live-workspace[hidden]{display:none!important}
+@media(min-width:960px){
+ body.bc-redline-receiver .rr-live-workspace{
+  display:grid;grid-template-columns:minmax(300px,370px) minmax(0,1fr);
+  gap:13px;align-items:start;width:100%;min-width:0;
+  margin:0 0 14px;
+ }
+ body.bc-redline-receiver .rr-live-workspace>.rr-chat-panel{
+  width:100%;min-width:0;max-width:370px;padding:11px!important;
+  margin:0!important;align-self:start;
+ }
+ body.bc-redline-receiver .rr-live-workspace .rr-chat-heading{
+  align-items:flex-start;gap:6px;
+ }
+ body.bc-redline-receiver .rr-live-workspace .rr-chat-room{
+  font-size:10px;padding:6px 8px;
+ }
+ body.bc-redline-receiver .rr-live-workspace .rr-chat-mount>.redline-message-card{
+  width:100%;height:clamp(335px,49dvh,470px)!important;
+  max-height:470px!important;min-height:0!important;
+ }
+ body.bc-redline-receiver .rr-live-workspace .redline-message-header{
+  min-height:48px!important;padding:8px 10px!important;
+ }
+ body.bc-redline-receiver .rr-live-workspace .redline-message-header strong{
+  font-size:12px!important;
+ }
+ body.bc-redline-receiver .rr-live-workspace .redline-message-header small{
+  font-size:10px!important;
+ }
+ body.bc-redline-receiver .rr-live-workspace .redline-message-feed{
+  padding:10px!important;min-height:0!important;
+ }
+ body.bc-redline-receiver .rr-incoming-photos{
+  min-width:0;border:1px solid #8d263d;border-radius:14px;
+  padding:10px;background:#09090b;
+ }
+ body.bc-redline-receiver .rr-incoming-header{
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;margin:0 2px 10px;
+ }
+ body.bc-redline-receiver .rr-incoming-header h3{
+  color:#fff;font-size:18px;letter-spacing:-.03em;margin:0;
+ }
+ body.bc-redline-receiver .rr-incoming-header small{
+  color:#aaa;font-size:10px;line-height:1.4;
+ }
+ body.bc-redline-receiver .rr-incoming-photos>.timeline-column{
+  min-width:0;width:100%!important;
+  display:flex!important;flex-direction:column!important;gap:10px!important;
+  grid-column:auto!important;grid-row:auto!important;
+  max-height:calc(100dvh - 230px);min-height:360px;
+  overflow-y:auto;overscroll-behavior:contain;
+ }
+ body.bc-redline-receiver .rr-incoming-photos #ownerReviewQueue{
+  padding:12px!important;margin:0!important;
+ }
+ body.bc-redline-receiver .rr-incoming-photos #ownerReviewQueue h2{
+  font-size:19px!important;
+ }
+ body.bc-redline-receiver .rr-incoming-photos .owner-review-heading p{
+  display:none!important;
+ }
+ body.bc-redline-receiver .rr-incoming-photos .photo-entry img{
+  max-height:330px!important;object-fit:contain!important;
+ }
+ body.bc-redline-receiver .rr-incoming-photos .timeline-toolbar{
+  padding:12px!important;
+ }
+ body.bc-redline-receiver .rr-incoming-photos .timeline-toolbar h2{
+  font-size:19px!important;
+ }
+ body.bc-redline-receiver .rr-incoming-photos .timeline-toolbar p{
+  display:none!important;
+ }
+ body.bc-redline-receiver .rr-incoming-photos .photo-entries{
+  min-width:0;
+ }
+ body.bc-redline-receiver #activeRoom>.room-body,
+ body.bc-redline-receiver.bc-ledger-desktop #activeRoom>.room-body,
+ body.bc-redline-receiver.bc-ledger-tablet #activeRoom>.room-body{
+  display:block!important;grid-template-columns:none!important;
+ }
+ body.bc-redline-receiver #activeRoom>.room-body>.side-column{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:12px!important;width:100%!important;
+  grid-column:auto!important;grid-row:auto!important;
+ }
+ body.bc-redline-receiver #activeRoom>.room-body>.side-column>.panel{
+  min-width:0;
+ }
+}
+@media(min-width:960px) and (max-height:720px){
+ body.bc-redline-receiver .rr-incoming-photos>.timeline-column{
+  max-height:calc(100dvh - 172px);min-height:290px;
+ }
+ body.bc-redline-receiver .rr-live-workspace .rr-chat-mount>.redline-message-card{
+  height:clamp(310px,55dvh,420px)!important;
+ }
+}
