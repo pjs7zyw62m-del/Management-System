@@ -187,7 +187,15 @@
  const photoClose=button('✕',()=>closeMedia(),'rr-photo-close');
  photoClose.setAttribute('aria-label','Close photo review and return to full-width chat');
  photoClose.title='Close Photos';
- incomingHeader.append(photoClose);
+ const expandPhoto=button('⤢ EXPAND PHOTO',()=>{
+  const expanded=photos.classList.toggle('rr-photo-expanded');
+  expandPhoto.textContent=expanded?'↙ SHOW PRICED LIST':'⤢ EXPAND PHOTO';
+  expandPhoto.setAttribute('aria-pressed',String(expanded));
+  if(!expanded)applyHeight(heightRatio);
+ },'rr-photo-expand');
+ expandPhoto.setAttribute('aria-pressed','false');
+ expandPhoto.setAttribute('aria-label','Expand incoming photo to use all available photo viewer height');
+ incomingHeader.append(expandPhoto,photoClose);
  // BLACKCELL iMessage-style two-level media viewer: live submission above,
  // reviewed/priced library below. Reparent the SAME ledger elements.
  const reviewStage=make('div','rr-review-stage');reviewStage.id='redlineReceiverReviewStage';
@@ -227,7 +235,7 @@
  // on desktop/tablet it sits beside chat. No horizontal size slider.
  let mediaOpen=true,mediaInitialised=false;
  const HEIGHT_KEY='blackcell:redline:receiver:imessage-height-v1';
- const DEFAULT_HEIGHT=.63;
+ const DEFAULT_HEIGHT=.73;
  const readHeight=()=>{try{const n=Number(window.localStorage.getItem(HEIGHT_KEY));return n>=.34&&n<=.82?n:DEFAULT_HEIGHT}catch{return DEFAULT_HEIGHT}};
  let heightRatio=readHeight(),heightPointer=null;
  const usableWidth=()=>workspace.getBoundingClientRect().width||window.innerWidth;
