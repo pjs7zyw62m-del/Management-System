@@ -74,6 +74,16 @@ function updatePreview(){
  objectURL=URL.createObjectURL(selected);
  picture.onerror=()=>{picture.hidden=true;state.textContent='SELECTED · PREVIEW NOT SUPPORTED ON THIS DEVICE'};
  picture.src=objectURL;
+ // After the native Photos/Files picker closes, reveal the real upload button
+ // on short phone screens without stealing focus or posting automatically.
+ if(mobile())window.setTimeout(()=>{
+   if(!file.files?.length||!active())return;
+   const button=$('#submitPhoto');if(!button)return;
+   const bounds=button.getBoundingClientRect();
+   const viewport=window.visualViewport;
+   const bottom=(viewport?.offsetTop||0)+(viewport?.height||window.innerHeight);
+   if(bounds.bottom>bottom-18)button.scrollIntoView({block:'end',behavior:'smooth'});
+ },180);
 }
 function navigate(key){
  if(!active())return;
