@@ -717,6 +717,13 @@ async function uploadPhoto(...args){
 async function bcLiveOriginal_uploadPhoto(event){
  event.preventDefault();
  if(state.isOwner||state.busy||!state.room?.active)return;
+ // Sender pause is voluntary and local. Never begin an authenticated storage
+ // upload after the sender has paused, including form-submit fallbacks.
+ if(document.body.dataset.redlineUploadPaused==='true'){
+  $('uploadPhoto').value='';
+  show('uploadFeedback','Photo sending is paused. Select Resume to send again.');
+  return;
+ }
  if(state.showArchive){show('uploadFeedback','Return to the current REDLINE session before uploading new photos.');return}
  const file=$('uploadPhoto').files?.[0];
  if(!file){show('uploadFeedback','Choose a photo first.');return}
