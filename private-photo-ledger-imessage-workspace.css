@@ -509,3 +509,9 @@ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage
  .rr-timer-selected-preview:not([hidden]){
  display:flex!important;flex:1 1 0!important;min-height:0!important;
 }
+
+body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage .rr-photo-unavailable{
+ display:block;max-width:95%;padding:12px 16px;
+ font-size:13px;color:#f6e8ed;text-align:center;line-height:1.5;
+ background:#32121e;border:1px solid #a13552;border-radius:9px;
+}
