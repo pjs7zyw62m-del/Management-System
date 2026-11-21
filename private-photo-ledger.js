@@ -11,7 +11,7 @@ const $=id=>document.getElementById(id);
 const state={
  user:null,member:null,isOwner:false,rooms:[],room:null,employees:[],
  entries:[],filter:'all',busy:false,refreshing:false,closed:false,
- images:new Map(),entryFingerprint:'',liveStarted:false,roomChannel:null,roomsChannel:null,liveRoomId:null,liveQueued:false,liveTimer:null,liveConnected:false,scopeMemberId:null,scopeValue:'full',scopeLoading:false
+ images:new Map(),entryFingerprint:'',liveStarted:false,roomChannel:null,roomsChannel:null,liveRoomId:null,liveQueued:false,liveTimer:null,liveConnected:false,scopeMemberId:null,scopeValue:'full',scopeLoading:false,showArchive:false
 };
 const node=(tag,klass,content)=>{
  const n=document.createElement(tag);
@@ -206,7 +206,7 @@ async function refresh({initial=false,force=false}={}){
  if(state.refreshing){state.liveQueued=true;return}
  state.refreshing=true;
  try{
-  const result=await db.from(ROOMS).select('id,owner_id,member_id,title,active,created_at')
+  const result=await db.from(ROOMS).select('id,owner_id,member_id,title,active,created_at,current_session_started_at')
    .order('created_at',{ascending:false}).limit(100);
   if(result.error)throw result.error;
   state.rooms=result.data||[];
@@ -215,6 +215,7 @@ async function refresh({initial=false,force=false}={}){
   const preferred=(validId(requested)?state.rooms.find(x=>x.id===requested):null)
      ||state.rooms.find(x=>x.id===currentId)
      ||state.rooms[0]||null;
+  if(currentId!==preferred?.id)state.showArchive=false;
   state.room=preferred;
   if(state.liveStarted)subscribeEntries(preferred);
   $('noRoom').hidden=!!preferred;
@@ -232,6 +233,7 @@ async function refresh({initial=false,force=false}={}){
     'No private room has been assigned to your employee account yet. Only the BLACKCELL owner can grant access.';
    $('roomPickerWrap').hidden=true;
    state.entries=[];
+   updateRedlineResetControls();
    return;
   }
   fillRoomPicker();
@@ -257,6 +259,7 @@ async function refresh({initial=false,force=false}={}){
   show('roomNumber',String(idx+1).padStart(2,'0'));
   const u=new URL(location.href);u.searchParams.set('room',preferred.id);
   history.replaceState(null,'',u.pathname+u.search);
+  updateRedlineResetControls();
   await loadEntries({force:force||initial||currentId!==preferred.id});
  }finally{
   state.refreshing=false;
@@ -352,15 +355,21 @@ async function loadEntries({force=false}={}){
  if(!selectedRoom)return;
  const all=[];
  for(let from=0;from<5000;from+=250){
-  const result=await db.from(ENTRIES)
+  let query=db.from(ENTRIES)
    .select('id,room_id,uploaded_by,image_path,file_name,caption,amount_cents,decision_status,decided_at,priced_at,settled_at,created_at')
-   .eq('room_id',selectedRoom.id).order('created_at',{ascending:false}).range(from,from+249);
+   .eq('room_id',selectedRoom.id);
+  if(selectedRoom.current_session_started_at){
+   query=state.showArchive
+    ?query.lt('created_at',selectedRoom.current_session_started_at)
+    :query.gte('created_at',selectedRoom.current_session_started_at);
+  }else if(state.showArchive){state.showArchive=false;updateRedlineResetControls()}
+  const result=await query.order('created_at',{ascending:false}).range(from,from+249);
   if(result.error)throw result.error;
   all.push(...(result.data||[]));
   if((result.data||[]).length<250)break;
  }
  if(state.room?.id!==selectedRoom.id)return;
- const signature=JSON.stringify(all.map(e=>[e.id,e.amount_cents,e.decision_status,e.decided_at,e.priced_at,e.settled_at,e.caption]));
+ const signature=String(state.showArchive)+'|'+JSON.stringify(all.map(e=>[e.id,e.amount_cents,e.decision_status,e.decided_at,e.priced_at,e.settled_at,e.caption]));
  state.entries=all;
  updateTotals();
  const needsSignedRefresh=all.some(e=>!state.images.has(e.image_path)
@@ -423,7 +432,7 @@ function entryState(e){
 }
 function renderReviewQueue(){
  const queue=$('ownerReviewQueue');
- queue.hidden=!state.isOwner||!state.room;
+ queue.hidden=!state.isOwner||!state.room||state.showArchive;
  if(queue.hidden)return;
  const pending=state.entries
   .filter(e=>entryState(e)==='pending')
@@ -462,7 +471,7 @@ function renderEntries(){
   const message=state.filter==='reviewed'
    ?'No reviewed photos yet. Accept or reject a picture above and it will appear here.'
    :state.filter==='all'
-     ?'No photos yet. The selected employee can upload the first picture here.'
+     ?state.showArchive?'No archived photos in this room.':'No photos yet. The selected employee can upload the first picture here.'
      :'No photo entries match this filter.';
   parent.append(node('div','empty-entries',message));
   return;
@@ -740,6 +749,8 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
    isOwner:state.isOwner,
    roomActive:state.room.active===true,
    roomTitle:state.room.title,
+   archiveMode:state.showArchive,
+   resetAt:state.room.current_session_started_at||null,
    pending:state.entries.filter(e=>e.decision_status==='pending').length,
    owed:$('totalOwed').textContent,
    assigned:$('totalAssigned').textContent,
@@ -755,9 +766,11 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
  async loadMessages(){
   const roomId=state.room?.id;
   if(state.closed||!state.user||!roomId)return [];
-  const result=await db.from(REDLINE_MESSAGES)
-   .select('id,room_id,sender_id,body,created_at')
-   .eq('room_id',roomId).order('created_at',{ascending:false}).limit(150);
+  let query=db.from(REDLINE_MESSAGES)
+   .select('id,room_id,sender_id,body,created_at').eq('room_id',roomId);
+  const cutoff=state.room?.current_session_started_at;
+  if(cutoff)query=state.showArchive?query.lt('created_at',cutoff):query.gte('created_at',cutoff);
+  const result=await query.order('created_at',{ascending:false}).limit(150);
   if(result.error)throw result.error;
   if(state.closed||state.room?.id!==roomId)return [];
   return (result.data||[]).reverse();
@@ -766,7 +779,7 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
   const body=String(message||'').trim();
   if(!body||body.length>2000)throw Error('Enter a message of 1 to 2,000 characters.');
   const room=state.room;
-  if(state.closed||!room?.active||!state.user)throw Error('No active private room is available.');
+  if(state.closed||!room?.active||!state.user||state.showArchive)throw Error('Return to the current session before sending messages.');
   await verify();
   if(state.closed||state.room?.id!==room.id||!state.room.active)throw Error('Private room changed; try again.');
   const result=await db.from(REDLINE_MESSAGES).insert({
