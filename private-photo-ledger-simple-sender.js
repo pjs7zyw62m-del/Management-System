@@ -28,10 +28,12 @@ const tabs=make('nav','redline-simple-tabs');tabs.setAttribute('aria-label','Sen
 const panes=make('div','redline-simple-panes');
 const uploadPane=make('section','redline-simple-pane');uploadPane.dataset.redlinePane='upload';
 const earningsPane=make('section','redline-simple-pane');earningsPane.dataset.redlinePane='earnings';earningsPane.hidden=true;
+const historyPane=make('section','redline-simple-pane redline-photo-history-pane');
+historyPane.dataset.redlinePane='history';historyPane.hidden=true;
 const fiveStarPane=make('section','redline-simple-pane redline-five-star-pane');
 fiveStarPane.dataset.redlinePane='five-star';fiveStarPane.hidden=true;
-const messagesPane=make('section','redline-simple-pane');messagesPane.dataset.redlinePane='messages';messagesPane.hidden=true;
-for(const [key,label] of [['upload','Photos & Chat'],['earnings','Earnings'],['five-star','5-Star Photos']]){
+// Private chat stays in Photos & Chat.
+for(const [key,label] of [['upload','Photos & Chat'],['earnings','Earnings'],['history','Photo History'],['five-star','5-Star Photos']]){
  const b=make('button','redline-simple-tab',label);b.type='button';b.dataset.simpleTab=key;
  b.addEventListener('click',()=>switchTab(key));
  tabs.append(b);
@@ -78,6 +80,22 @@ const topPicksNote=make('p','redline-top-picks-note',
 const topPicksList=make('div','redline-top-picks-list');
 topPicksBox.append(topPicksNote,topPicksList);
 earningsPane.append(earningsBox,topPicksBox,activityBox,returnUpload);
+const historyIntro=make('header','redline-photo-history-intro');
+historyIntro.append(make('span','redline-kicker','PRIVATE SENDER COLLECTION'),
+ make('h2','','Photo History'),
+ make('p','','All submitted photos, prices and ratings. Resend requires 5 stars AND an approved price of at least $0.01.'));
+const historyControls=make('div','redline-history-controls');
+const historyAll=make('button','redline-history-filter is-current','ALL PHOTOS');
+const historyPicks=make('button','redline-history-filter','5-STAR TOP PICKS');
+const historyArchive=make('button','redline-history-archive','PREVIOUS RECORDS');
+for(const b of [historyAll,historyPicks,historyArchive])b.type='button';
+historyControls.append(historyAll,historyPicks,historyArchive);
+const historyCount=make('small','redline-history-count');
+const historyFeedback=make('p','redline-photo-history-feedback');historyFeedback.setAttribute('role','status');
+const historyList=make('div','redline-photo-history-list');
+const historyMore=make('button','redline-history-more','LOAD MORE PHOTOS');
+historyMore.type='button';historyMore.hidden=true;
+historyPane.append(historyIntro,historyControls,historyCount,historyFeedback,historyList,historyMore);
 const fiveStarIntro=make('header','redline-five-star-intro');
 fiveStarIntro.append(make('span','redline-kicker','RECEIVER-RATED PHOTOS'),
  make('h2','','Your 5-Star Photos'),
@@ -122,7 +140,7 @@ composer.append(photoAction,entry,send);
 const msgError=make('p','redline-message-error');msgError.setAttribute('role','status');
 messageCard.append(msgHeader,feed,composer,msgError);
 uploadPane.append(messageCard);
-panes.append(uploadPane,earningsPane,fiveStarPane);
+panes.append(uploadPane,earningsPane,historyPane,fiveStarPane);
 home.append(heading,tabs,panes);
 room.insertBefore(home,$('.room-toolbar',room));
 const ownerDialog=make('dialog','redline-owner-chat-dialog');
@@ -184,7 +202,7 @@ function createEvents(entries){
   const id=String(e.id||'').slice(0,8).toUpperCase();
   if(e.created_at)all.push({kind:'event',at:e.created_at,
    text:e.resubmission_origin_id
-    ?'5-STAR PHOTO RESUBMITTED · '+id+' · Waiting for receiver review'
+    ?'TOP-PICK PHOTO RESUBMITTED · '+id+' · Waiting for receiver review'
     :'Photo '+id+' submitted',
    status:'sent'});
   if(e.decision_status==='rejected'&&e.decided_at)all.push({kind:'event',at:e.decided_at,text:'Photo '+id+' rejected',status:'rejected'});
@@ -240,6 +258,78 @@ function renderTopPicks(snap){
   );
   card.append(details);topPicksList.append(card);
  }
+}
+let historyFilter='all',historyVisible=40;
+historyAll.addEventListener('click',()=>{historyFilter='all';historyVisible=40;renderPhotoHistory(snapshot())});
+historyPicks.addEventListener('click',()=>{historyFilter='picks';historyVisible=40;renderPhotoHistory(snapshot())});
+historyMore.addEventListener('click',()=>{historyVisible+=40;renderPhotoHistory(snapshot())});
+historyArchive.addEventListener('click',async()=>{
+ if(historyArchive.disabled)return;
+ historyArchive.disabled=true;historyFeedback.textContent='Opening photo records…';
+ try{await bridge()?.toggleArchive?.();historyVisible=40;historyFeedback.textContent='';renderPhotoHistory(snapshot())}
+ catch(e){historyFeedback.textContent=String(e?.message||e).slice(0,200)}
+ finally{historyArchive.disabled=false}
+});
+function historyResendLabel(p,snap){
+ if(p.resubmissionAllowed)return '↻ RESEND FOR REVIEW';
+ if(p.resubmission_origin_id)return 'ALREADY RESUBMITTED COPY';
+ if(snap?.archiveMode)return 'ARCHIVED · RESEND UNAVAILABLE';
+ if(!snap?.roomActive)return 'ROOM CLOSED';
+ if(snap?.photoSendingPaused)return 'SENDING PAUSED';
+ if(p.resubmissionStatus==='rejected')return 'REJECTED · RESEND CLOSED';
+ if(p.resubmissionStatus==='pending')return 'AWAITING RECEIVER REVIEW';
+ if(p.decision_status==='pending')return 'AWAITING FIRST REVIEW';
+ if(p.stars!==5)return 'REQUIRES 5 STARS';
+ if(BigInt(p.amount_cents||0)<1n)return 'REQUIRES $0.01 MINIMUM';
+ return 'RESEND UNAVAILABLE';
+}
+async function resendHistoryPhoto(p,button,status,roomId){
+ if(resubmittingId||!p.resubmissionAllowed)return;
+ if(!window.confirm('Resend this 5-star original for another private review? Original price and stars remain unchanged.'))return;
+ resubmittingId=p.id;button.disabled=true;button.textContent='RESENDING PRIVATELY…';
+ status.textContent='Creating a new pending review copy…';
+ try{
+  const result=await bridge()?.resubmitFiveStarPhoto?.(p.id);
+  if(result?.ok!==true)throw Error('Resubmission failed.');
+  historyFeedback.textContent='Top pick resent; new review is pending.';
+ }catch(e){historyFeedback.textContent='Resend failed: '+String(e?.message||e).slice(0,200)}
+ finally{
+  resubmittingId=null;const fresh=snapshot();
+  if(fresh?.roomId===roomId){renderPhotoHistory(fresh);renderFiveStarPhotos(fresh)}
+ }
+}
+function renderPhotoHistory(snap){
+ historyList.replaceChildren();
+ const all=Array.isArray(snap?.photoHistory)?snap.photoHistory:[];
+ const photos=historyFilter==='picks'?all.filter(p=>p.stars===5):all;
+ historyAll.classList.toggle('is-current',historyFilter==='all');
+ historyPicks.classList.toggle('is-current',historyFilter==='picks');
+ historyAll.setAttribute('aria-pressed',String(historyFilter==='all'));
+ historyPicks.setAttribute('aria-pressed',String(historyFilter==='picks'));
+ historyCount.textContent=(snap?.archiveMode?'ARCHIVED · ':'CURRENT SESSION · ')+photos.length+
+  (photos.length===1?' photo':' photos');
+ historyArchive.hidden=!snap?.resetAt;
+ historyArchive.textContent=snap?.archiveMode?'← RETURN TO CURRENT PHOTOS':'VIEW PREVIOUS RECORDS';
+ if(!photos.length)historyList.append(make('p','redline-history-empty',
+  historyFilter==='picks'?'No 5-star photos here.':'No photos sent in this '+(snap?.archiveMode?'archive.':'session yet.')));
+ for(const p of photos.slice(0,historyVisible)){
+  const card=make('article','redline-photo-history-row');
+  appendRatingImage(card,p.image_url,p.caption);
+  const info=make('div','redline-photo-history-details');
+  const decision=p.decision_status==='accepted'?'APPROVED · '+money(p.amount_cents):
+   p.decision_status==='rejected'?'REJECTED':'AWAITING REVIEW';
+  info.append(make('strong','redline-history-title','PHOTO '+String(p.id||'').slice(0,8).toUpperCase()),
+   make('span','redline-photo-history-stars',p.stars?starsText(p.stars)+' · '+p.stars+'/5':'NOT YET RATED'),
+   make('small','redline-history-review',decision+' · '+dateText(p.created_at)));
+  if(p.caption)info.append(make('p','redline-history-caption',p.caption));
+  if(p.resubmissionCount)info.append(make('small','',p.resubmissionCount+' previous resend(s)'));
+  const button=make('button','redline-photo-history-resend',historyResendLabel(p,snap));
+  button.type='button';button.disabled=!p.resubmissionAllowed||Boolean(resubmittingId);
+  const status=make('p','redline-five-star-row-status');status.setAttribute('role','status');
+  button.addEventListener('click',()=>void resendHistoryPhoto(p,button,status,snap.roomId));
+  info.append(button,status);card.append(info);historyList.append(card);
+ }
+ historyMore.hidden=photos.length<=historyVisible;
 }
 let resubmittingId=null;
 function renderFiveStarPhotos(snap){
@@ -507,6 +597,7 @@ function sync(){
   entry.placeholder=snap.archiveMode?'Return to the current session to send…':'Message REDLINE…';
   renderEarnings(snap);
   renderFiveStarPhotos(snap);
+  renderPhotoHistory(snap);
   if(snap.roomId!==lastRoom){
    lastRoom=snap.roomId;messages=[];lastSync=0;
    renderChat();
