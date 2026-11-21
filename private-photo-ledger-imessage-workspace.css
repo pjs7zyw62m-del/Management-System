@@ -1205,8 +1205,8 @@ body.bc-redline-receiver.rr-imessage-mode
 @media(max-width:719px){
  body.bc-redline-receiver #redlineReceiverLiveWorkspace:not([hidden]),
  body.bc-redline-receiver.rr-imessage-mode #redlineReceiverLiveWorkspace:not([hidden]){
-  height:max(690px,calc(100dvh - 96px))!important;
-  min-height:690px!important;max-height:none!important;
+  height:max(880px,calc(100dvh - 44px))!important;
+  min-height:880px!important;max-height:none!important;
   overflow:hidden!important;align-items:stretch!important;
  }
  body.bc-redline-receiver #redlineReceiverLiveWorkspace>.rr-chat-panel{
@@ -1260,13 +1260,13 @@ body.bc-redline-receiver.rr-imessage-mode
    Both orientations must receive the same tall, independently scrolling chat. */
 body.bc-redline-receiver.bc-ledger-mobile #redlineReceiverCommand > #redlineReceiverChat{
  display:flex!important;flex-direction:column!important;
- height:max(690px,calc(100dvh - 96px))!important;
- min-height:690px!important;max-height:none!important;
+ height:max(880px,calc(100dvh - 44px))!important;
+ min-height:880px!important;max-height:none!important;
  overflow:hidden!important;
 }
 body.bc-redline-receiver.bc-ledger-mobile #redlineReceiverLiveWorkspace:not([hidden]){
- height:max(690px,calc(100dvh - 96px))!important;
- min-height:690px!important;max-height:none!important;
+ height:max(880px,calc(100dvh - 44px))!important;
+ min-height:880px!important;max-height:none!important;
 }
 body.bc-redline-receiver.bc-ledger-mobile #redlineReceiverChat{
  min-height:0!important;overflow:hidden!important;
