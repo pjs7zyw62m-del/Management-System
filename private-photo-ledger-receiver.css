@@ -305,3 +305,32 @@ body.bc-redline-receiver .rr-access-action{min-height:48px;min-width:185px;paddi
 body.bc-redline-receiver .rr-access-action:disabled{opacity:.55;cursor:not-allowed}
 body.bc-redline-receiver .rr-access-state{min-height:20px;margin:9px 0 0;color:#d9cbd0}
 @media(max-width:560px){body.bc-redline-receiver .rr-access-row{flex-direction:column}body.bc-redline-receiver .rr-access-action{width:100%}}
+
+/* Owner receiver: the same private two-way thread appears inside the dashboard. */
+body.bc-redline-receiver .rr-chat-panel[hidden]{display:none!important}
+body.bc-redline-receiver .rr-chat-panel{
+ min-width:0;display:flex;flex-direction:column;gap:11px;
+ background:#070708;border:1px solid #a5213c;border-radius:17px;
+ padding:clamp(12px,1.6vw,19px);scroll-margin-top:90px;
+}
+body.bc-redline-receiver .rr-chat-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+body.bc-redline-receiver .rr-chat-kicker{font-size:9px;letter-spacing:.13em;font-weight:800;color:#f03c5a}
+body.bc-redline-receiver .rr-chat-heading h3{margin:5px 0 0;color:#fff;font-size:clamp(19px,2vw,24px)}
+body.bc-redline-receiver .rr-chat-room{font-size:11px;color:#ddd3d5;padding:8px 11px;border-radius:9px;background:#17171a;border:1px solid #464048;max-width:100%;overflow-wrap:anywhere}
+body.bc-redline-receiver .rr-chat-mount{min-width:0}
+body.bc-redline-receiver .rr-chat-mount>.redline-message-card{
+ height:clamp(345px,49dvh,545px);min-height:0;margin:0;border-color:#50363e;border-radius:13px;
+}
+body.bc-redline-receiver .rr-chat-mount .redline-message-feed{min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+body.bc-redline-receiver .rr-chat-mount .redline-chat-photo{display:none!important}
+body.bc-redline-receiver .rr-chat-mount .redline-message-composer{
+ background:#0b0b0d;padding:10px;padding-bottom:max(10px,env(safe-area-inset-bottom));
+}
+body.bc-redline-receiver .rr-chat-mount .redline-message-entry{min-width:0;min-height:46px;font-size:16px!important}
+body.bc-redline-receiver .rr-chat-mount .redline-chat-send{min-height:46px}
+@media(max-width:650px){
+ body.bc-redline-receiver .rr-chat-panel{padding:11px;scroll-margin-top:calc(73px + env(safe-area-inset-top))}
+ body.bc-redline-receiver .rr-chat-mount>.redline-message-card{height:clamp(315px,55dvh,485px)}
+ body.bc-redline-receiver .rr-chat-mount .redline-message-composer{gap:6px}
+ body.bc-redline-receiver .rr-chat-mount .redline-chat-send{min-width:56px}
+}
