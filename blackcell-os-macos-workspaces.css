@@ -1,3 +1,22 @@
+/* Mac-like desktop keeps the wallpaper clean. Applications lives in the Dock,
+   Spotlight in the menu bar, and menus provide the remaining system actions. */
+@media(min-width:621px){
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-exec-stage{
+  display:none!important;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .workspace>.bc-exec-stage{
+  display:none!important;
+ }
+}
+#desktop .dock>.bc-mac-dock-launchpad{
+ color:#f5f3f6;display:grid;place-items:center;
+ font-size:27px;min-width:47px;min-height:47px;
+ border-radius:13px;border:1px solid #ffffff31;
+ background:linear-gradient(148deg,#444552,#131620);cursor:pointer;
+ box-shadow:inset 0 1px #ffffff3a,0 7px 18px #0008;
+}
+#desktop .dock>.bc-mac-dock-launchpad:hover{transform:translateY(-5px);border-color:#e15c79}
+html.bc-os-phone #desktop .dock>.bc-mac-dock-launchpad{display:none!important}
 /* BLACKCELL macOS workstation / Launchpad, Mission Control, Control Center, Spaces.
    Original layout, auth policies and application windows are preserved. */
 #desktop .bc-mac-overlay{position:absolute;inset:0;z-index:2147481900;display:grid;place-items:center;isolation:isolate;color:#f6f5f8}
