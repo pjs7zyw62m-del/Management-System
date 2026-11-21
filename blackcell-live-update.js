@@ -58,7 +58,10 @@ function activityDoc(doc,depth=0){
  for(const frame of doc.querySelectorAll('iframe')){
   if(!visible(frame))continue;
   const src=frame.getAttribute('src')||'';
-  if(src&&src!=='about:blank'&&/stream|player|youtube|vimeo|video|bunny/i.test(src)&&frame.dataset.bcActiveStream==='true')return true;
+  // Visible streaming apps remain protected even if the player is cross-origin.
+  // Hidden/minimized media iframes do not block an otherwise idle desktop.
+  if(src&&src!=='about:blank'&&/stream|player|youtube|vimeo|video|bunny/i.test(src)
+    &&(frame.closest('.os-window')||frame.id==='bcCinemaStreamPlayer'||frame.dataset.bcActiveStream==='true'))return true;
   try{if(frame.contentDocument&&activityDoc(frame.contentDocument,depth+1))return true}catch(_){}
  }
  return false;
