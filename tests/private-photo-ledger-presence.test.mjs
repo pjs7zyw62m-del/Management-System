@@ -28,7 +28,7 @@ test('Presence is visible in chat, not a corporate-wide logged-in indicator',()=
  assert.match(presence,/STATUS UNAVAILABLE/);
  assert.match(style,/redline-peer-presence\[data-state="online"\]/);
  assert.match(style,/redline-peer-presence\[data-state="offline"\]/);
- assert.match(html,/private-photo-ledger-presence\.js\?v=20261121-priced-history4/);
+ assert.match(html,/private-photo-ledger-presence\.js\?v=20261121-room-presence1/);
  assert.match(html,/private-photo-ledger\.js\?v=20261121-priced-history4/);
  assert.match(html,/private-photo-ledger-simple-sender\.css\?v=20261121-room-presence1/);
 });
@@ -54,7 +54,7 @@ test('SQL authorization forbids activity disclosure beyond the verified two-pers
 });
 
 test('BLACKCELL OS launches the newly versioned REDLINE online presence app',()=>{
- assert.match(os,/redlineBuild=room-online-status-20261121/);
- assert.match(catalog,/redlineBuild=room-online-status-20261121/);
+ assert.match(os,/redlineBuild=receiver-imessage-two-axis-20261121/);
+ assert.match(catalog,/redlineBuild=receiver-imessage-two-axis-20261121/);
  assert.match(os,/blackcell-os\.js\?v=133-redline-online-status/);
 });
