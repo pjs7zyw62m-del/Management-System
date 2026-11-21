@@ -66,7 +66,9 @@ test('Cross-device updates refresh automatically when member returns or while ac
  assert.match(shell,/window\.addEventListener\('focus'/);
  assert.match(shell,/document\.addEventListener\('visibilitychange'/);
  assert.match(shell,/setInterval\(\(\)=>\{if\(!document\.hidden\)void refreshCloudHome\(\)\},30000\)/);
- assert.match(shell,/incoming\.changedAt<=unifiedHome\.changedAt/);
+ assert.match(shell,/incoming\.changedAt<unifiedHome\.changedAt/);
+ assert.match(shell,/await cloudWorkspaceSave\('layout',localValue\)/);
+  assert.match(shell,/incoming\.changedAt<=unifiedHome\.changedAt/);
  assert.match(shell,/uid!==storeProfile\|\|revision!==cloudDesktopRevision/);
  assert.match(shell,/window\.dispatchEvent\(new Event\('blackcell:desktop-layout-updated'\)\)/);
  assert.ok(!/service_role|SUPABASE_SERVICE_ROLE/.test(home));
