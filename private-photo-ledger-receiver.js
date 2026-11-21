@@ -238,11 +238,21 @@
  // When the receiver opens the original photograph, clicking it again returns
  // to the unchanged chat + one-photo workspace via the existing close handler.
  const fullSizeImage=$('#lightboxImage');
- fullSizeImage?.addEventListener('click',()=>{
+ const leaveFullPhoto=()=>{
   if(document.body.classList.contains('bc-redline-receiver')&&!$('#photoLightbox')?.hidden){
    $('#closeLightbox')?.click();
   }
- });
+ };
+ fullSizeImage?.addEventListener('click',leaveFullPhoto);
+ // Keep the image-only popup keyboard accessible without adding controls.
+ if(fullSizeImage){
+  fullSizeImage.tabIndex=0;
+  fullSizeImage.setAttribute('aria-label','Full-size photograph. Press Enter to return.');
+  fullSizeImage.addEventListener('keydown',event=>{
+   if(event.key!=='Enter'&&event.key!==' ')return;
+   event.preventDefault();leaveFullPhoto();
+  });
+ }
  // A timed/previously priced photo uses the same original-photo viewer.
  workspace.addEventListener('click',event=>{
   const image=event.target?.closest?.('.rr-timer-selected-preview > img');
