@@ -123,7 +123,11 @@ function updateLedgerNavigation(){
  const scoped=!state.isOwner&&state.member?.access_scope==='ledger_only';
  document.documentElement.classList.toggle('bc-redline-only-security',scoped);
  const badge=document.querySelector('.privacy-pill');
- if(badge)badge.setAttribute('aria-label',scoped?'LEVEL R · BLACKCELL REDLINE ONLY':'Private two-person REDLINE room');
+ if(badge){
+  badge.setAttribute('aria-label',scoped?'LEVEL R · BLACKCELL REDLINE ONLY':'Private two-person REDLINE room');
+  const light=badge.querySelector('.status-dot');
+  badge.replaceChildren(light||document.createElement('span'),document.createTextNode(scoped?' LEVEL R · REDLINE ONLY':' RESTRICTED · 2 PERSONS'));
+ }
  $('backLink').hidden=scoped;
  $('ledgerSignOut').hidden=state.isOwner;
  $('ledgerBrand').href=scoped?'private-photo-ledger.html':
