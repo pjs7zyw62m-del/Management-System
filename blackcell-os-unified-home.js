@@ -319,7 +319,7 @@
   if(!phoneButton||!phoneButton.isConnected){
    const actions=root.querySelector('.bc-sb-status-actions');
    if(actions){
-    phoneButton=makeButton('▦',()=>showGallery('widgets'),'bc-home-phone-widget-picker');
+    phoneButton=makeButton('Widgets',()=>showGallery('widgets'),'bc-home-phone-widget-picker');
     phoneButton.setAttribute('aria-label','Add or edit home screen widgets');
     phoneButton.title='Widget Gallery';actions.prepend(phoneButton);
    }
