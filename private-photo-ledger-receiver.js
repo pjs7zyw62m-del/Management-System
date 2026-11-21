@@ -237,42 +237,40 @@
   if(event.target===partialDialog)partialDialog.close();
  });
  async function recordPaidInFull(){
-  const api=window.BLACKCELL_REDLINE_API;
-  const current=api?.snapshot?.();
-  if(payBusy||!current?.isOwner||!current.roomId||current.archiveMode)return;
-  payBusy=true;payFull.disabled=true;setPayFeedback('');
+  const api=window.BLACKCELL_REDLINE_API,current=api?.snapshot?.();
+  if(payBusy||!current?.isOwner||!current.roomActive||!current.roomId||current.archiveMode)return;
+  payBusy=true;payFull.disabled=true;partialPay.disabled=true;setPayFeedback('');
   try{
    const timed=await api.timerStatus(current.roomId);
    if(api.snapshot()?.roomId!==current.roomId)throw Error('Room changed. Select the room again.');
    if(timed.active)throw Error('Stop the active photo timer before recording payment in full.');
-   const photoOwed=$('#totalOwed')?.textContent?.trim()||'$0.00';
-   const timedOwed=moneyCents(timed.owed_cents);
-   if(photoOwed==='$0.00'&&BigInt(String(timed.owed_cents??0))===0n){
+   const financial=await api.roomPaymentStatus(current.roomId,false);
+   if(api.snapshot()?.roomId!==current.roomId)throw Error('Room changed. Select the room again.');
+   const due=BigInt(String(financial.remaining_cents??0));
+   if(due<=0n){
     setPayFeedback('This room already has a $0.00 outstanding balance.');return;
    }
    const confirmed=window.confirm(
-    'Record the FULL outstanding balance as PAID for this private room?\n\n'+
-    'Photo balance: '+photoOwed+'\n'+
-    'Timed earnings: '+timedOwed+' (some amounts may already appear in photo balance)\n\n'+
-    'This records an external payment only. REDLINE will NOT send or charge any money. '+
-    'Payment and photo history will be preserved.');
+    'Record the FULL REMAINING balance as PAID for this private room?\n\n'+
+    'Outstanding: '+moneyCents(due)+'\n'+
+    'Already recorded paid: '+moneyCents(financial.paid_cents)+'\n\n'+
+    'This records an external payment ONLY. REDLINE will not send or charge any money. '+
+    'Your earlier partial payments and photo history will be preserved.');
    if(!confirmed)return;
    const result=await api.recordPaidInFull(current.roomId);
-   if(api.snapshot()?.roomId!==current.roomId)throw Error('Recorded for the prior room; reopen that room to verify.');
-   const remaining=BigInt(String(result.remaining_photo_cents??0))+
-    BigInt(String(result.remaining_timer_cents??0));
-   if(remaining>0n){
-    setPayFeedback('Payment recorded. New activity is still outstanding; refresh the balance.');
-   }else if(result.refreshUnavailable){
-    setPayFeedback('Payment recorded. Refresh REDLINE to verify the updated $0.00 balance.');
+   if(api.snapshot()?.roomId!==current.roomId)
+    throw Error('Payment recorded for prior room; reopen that room to verify.');
+   if(result.refreshUnavailable){
+    setPayFeedback('Payment recorded. Refresh REDLINE to verify the updated balance.');
    }else{
-    setPayFeedback('Recorded paid in full · Outstanding $0.00 · '+
-     Number(result.photo_count||0)+' photo record(s), '+Number(result.timer_count||0)+' timer record(s).');
+    const latest=api.snapshot()?.paymentSummary;
+    const remaining=BigInt(String(latest?.remaining_cents??result.total_owed_cents??0));
+    setPayFeedback('Recorded remaining '+moneyCents(result.recorded_total_cents)+
+     ' · Outstanding '+moneyCents(remaining)+
+     (result.payment_ledger?' · Previous installments preserved.':' · Photo and timer records updated.'));
    }
-   window.dispatchEvent(new Event('blackcell:redline:state'));
-  }catch(error){
-   setPayFeedback('Payment record not changed: '+String(error?.message||error));
-  }finally{payBusy=false;sync()}
+  }catch(error){setPayFeedback('Payment record not changed: '+String(error?.message||error))}
+  finally{payBusy=false;sync()}
  }
  document.addEventListener('pointerdown',event=>{
   if(!menuItems.hidden&&!menuShell.contains(event.target))setMenuOpen(false);
@@ -720,6 +718,7 @@
   review.disabled=history.disabled=message.disabled=!hasRoom;
   const mode=document.body.classList.contains('bc-redline-archive-view');
   dashboard.classList.toggle('rr-is-archive',mode);
+  payFull.disabled=partialPay.disabled=!hasRoom||mode||payBusy;
   const count=$('#reviewQueueCount')?.textContent||'';
   review.title=count?'Review queue: '+count:'Open review queue';
   historyToggle.hidden=!hasRoom||!mediaOpen;
