@@ -280,7 +280,7 @@ window.addEventListener('blackcell:redline:state',sync);
 window.addEventListener('blackcell:redline:session-mode',sync);
 window.addEventListener('blackcell:redline:reset',()=>{lastSessionKey=null;messages=[];lastSync=0;sync()});
 window.addEventListener('pageshow',sync);
-window.addEventListener('visibilitychange',()=>{if(!document.hidden&&(currentTab==='messages'||ownerDialog.open))void loadMessages()});
+window.addEventListener('visibilitychange',()=>{if(!document.hidden&&((isSender()&&currentTab==='upload')||ownerDialog.open))void loadMessages()});
 window.setInterval(()=>{
  const active=(isSender()&&currentTab==='upload')||ownerDialog.open;
  if(!document.hidden&&active&&Date.now()-lastSync>9500)void loadMessages();
