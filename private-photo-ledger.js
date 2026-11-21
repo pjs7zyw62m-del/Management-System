@@ -756,11 +756,15 @@ function renderEntry(e){
    e.auto_timer_session_id
     ?'Automatically submitted from timer '+dollars(baseCents)+(extraTimedCents>0n?' + other timed earnings '+dollars(extraTimedCents):'')
     :'One-time bid '+dollars(baseCents)+' + timed earnings '+dollars(extraTimedCents)));
+  const credited=state.paymentAllocations.get(e.id)||0n;
   ctrl.append(node('small','',e.settled_at
    ?'Manually recorded as paid on '+when(e.settled_at)
+   :credited>0n?'Room payment allocated '+dollars(credited)+' · Remaining '+dollars(cents(e.amount_cents)-credited)+'.'
    :'Accepted by the owner on '+when(e.decided_at)+'.'));
   if(state.isOwner&&!e.settled_at&&cents(e.amount_cents)>0n){
-   ctrl.append(button('✓ RECORD AS PAID',()=>void settle(e),'button-outline'));
+   if(cents(authoritativePaymentStatus()?.payment_credit_cents)>0n)
+    ctrl.append(node('small','','Record further payments using PARTIAL PAYMENT or PAY IN FULL above.'));
+   else ctrl.append(button('✓ RECORD AS PAID',()=>void settle(e),'button-outline'));
   }
  }else{
   body.append(node('div','entry-amount','PENDING OWNER REVIEW'));
@@ -1069,7 +1073,8 @@ async function rejectPhoto(entry,trigger){
  finally{state.busy=false;trigger.disabled=false}
 }
 async function settle(entry){
- if(!state.isOwner||state.busy||entry.decision_status!=='accepted'||cents(entry.amount_cents)<=0n||entry.settled_at)return;
+ if(!state.isOwner||state.busy||entry.decision_status!=='accepted'||cents(entry.amount_cents)<=0n||entry.settled_at||
+    cents(authoritativePaymentStatus()?.payment_credit_cents)>0n)return;
  const message='Record '+dollars(entry.amount_cents)+' as paid?\n\nThis is only a ledger record; no money will move. Only continue if you actually settled the amount.';
  if(!window.confirm(message))return;
  state.busy=true;
@@ -1445,6 +1450,32 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
   if(result.error||result.data?.ok!==true)throw Error(fail(result.error||result.data?.reason||'Timed payment could not be recorded.'));
   return result.data;
  },
+ async roomPaymentStatus(roomId,archive=state.showArchive){
+  if(state.closed||!state.user||!state.room||state.room.id!==roomId||!validId(roomId))
+   throw Error('A verified REDLINE room is required.');
+  return await loadRoomPayments(roomId,archive);
+ },
+ async recordPartialPayment(roomId,amountCents,note=''){
+  if(state.closed||!state.isOwner||state.busy||state.showArchive||!state.room?.active||
+     state.room.id!==roomId||!validId(roomId)||$('ledgerApp').hidden)
+   throw Error('An active, verified receiver room is required to record a payment.');
+  if(!Number.isSafeInteger(amountCents)||amountCents<1)
+   throw Error('Enter a valid partial payment of at least $0.01.');
+  if(String(note).length>180)throw Error('Payment note is too long.');
+  state.busy=true;
+  try{
+   await verify();
+   if(state.room?.id!==roomId||state.showArchive)throw Error('Room changed. Payment was not recorded.');
+   const response=await db.rpc('corp_redline_record_partial_payment',{
+    p_room_id:roomId,p_amount_cents:amountCents,p_note:String(note).trim()
+   });
+   if(response.error||response.data?.ok!==true)
+    throw Error(fail(response.error||response.data?.reason||'Partial payment could not be recorded.'));
+   let refreshUnavailable=false;
+   try{await loadRoomPayments(roomId,false)}catch(_){refreshUnavailable=true}
+   return {...response.data,refreshUnavailable};
+  }finally{state.busy=false}
+ },
  async recordPaidInFull(roomId){
   if(state.closed||!state.isOwner||state.busy||state.showArchive||!state.room
    ||state.room.id!==roomId||!validId(roomId)||$('ledgerApp').hidden)
@@ -1511,6 +1542,8 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
    owed:$('totalOwed').textContent,
    assigned:$('totalAssigned').textContent,
    paid:$('totalPaid').textContent,
+   paymentSummary:authoritativePaymentStatus(),
+   paymentHistory:authoritativePaymentStatus()?.payment_history||[],
    entries:state.entries.slice(0,200).map(e=>({
     id:e.id,created_at:e.created_at,decided_at:e.decided_at,
     settled_at:e.settled_at,decision_status:e.decision_status,
