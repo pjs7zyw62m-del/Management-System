@@ -610,6 +610,7 @@ async function uploadPhoto(...args){
 async function bcLiveOriginal_uploadPhoto(event){
  event.preventDefault();
  if(state.isOwner||state.busy||!state.room?.active)return;
+ if(state.showArchive){show('uploadFeedback','Return to the current REDLINE session before uploading new photos.');return}
  const file=$('uploadPhoto').files?.[0];
  if(!file){show('uploadFeedback','Choose a photo first.');return}
  if(file.size>MAX_IMAGE_BYTES||file.size===0){show('uploadFeedback','Choose a non-empty image no larger than 12 MB.');return}
