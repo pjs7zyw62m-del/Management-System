@@ -374,7 +374,7 @@ async function loadEntries({force=false}={}){
  const all=[];
  for(let from=0;from<5000;from+=250){
   let query=db.from(ENTRIES)
-   .select('id,room_id,uploaded_by,image_path,file_name,caption,amount_cents,decision_status,decided_at,priced_at,settled_at,created_at')
+   .select('id,room_id,uploaded_by,image_path,file_name,caption,amount_cents,auto_timer_session_id,decision_status,decided_at,priced_at,settled_at,created_at')
    .eq('room_id',selectedRoom.id);
   if(selectedRoom.current_session_started_at){
    query=state.showArchive
@@ -387,7 +387,7 @@ async function loadEntries({force=false}={}){
   if((result.data||[]).length<250)break;
  }
  if(state.room?.id!==selectedRoom.id)return;
- const signature=String(state.showArchive)+'|'+JSON.stringify(all.map(e=>[e.id,e.amount_cents,e.decision_status,e.decided_at,e.priced_at,e.settled_at,e.caption]));
+ const signature=String(state.showArchive)+'|'+JSON.stringify(all.map(e=>[e.id,e.amount_cents,e.auto_timer_session_id,e.decision_status,e.decided_at,e.priced_at,e.settled_at,e.caption]));
  state.entries=all;
  updateTotals();
  const needsSignedRefresh=all.some(e=>!state.images.has(e.image_path)
@@ -526,7 +526,7 @@ function renderEntries(){
 window.addEventListener('blackcell:redline:timed-photo-summary',event=>{
  if(!state.room||event.detail?.roomId!==state.room.id)return;
  const rows=Array.isArray(event.detail.photoTotals)?event.detail.photoTotals:[];
- const signature=JSON.stringify(rows.map(r=>[r.photo_id,r.timed_cents,r.timed_paid_cents,r.timed_owed_cents,r.completed_minutes]));
+ const signature=JSON.stringify(rows.map(r=>[r.photo_id,r.timed_cents,r.credited_to_photo_cents,r.additional_timed_cents,r.timed_paid_cents,r.timed_owed_cents,r.completed_minutes]));
  if(signature===state.timedPhotoFingerprint)return;
  state.timedPhotoFingerprint=signature;
  state.timedPhotoTotals=new Map(rows.filter(r=>validId(r.photo_id)).map(r=>[r.photo_id,r]));
@@ -536,8 +536,13 @@ function renderEntry(e){
  const status=entryState(e);
  const timed=state.timedPhotoTotals.get(e.id);
  const timedCents=cents(timed?.timed_cents??0);
+ const creditedCents=cents(timed?.credited_to_photo_cents??0);
+ const extraTimedCents=timed?.additional_timed_cents!==undefined
+  ?cents(timed.additional_timed_cents):(timedCents>creditedCents?timedCents-creditedCents:0n);
  const baseCents=cents(e.amount_cents);
- const combinedPrice=baseCents+timedCents;
+ // The STOP amount exists in BOTH the timer ledger and photo price. Only
+ // other timed sessions are added on top of that auto-submitted photo price.
+ const combinedPrice=baseCents+extraTimedCents;
  const card=node('article','photo-entry');
  card.dataset.redlinePhotoId=e.id;
  const imageButton=button('',()=>{
@@ -582,14 +587,16 @@ function renderEntry(e){
    :'The owner rejected this photo on '+when(e.decided_at)+'. No amount was added.'));
  }else if(status==='free'){
   body.append(node('div','entry-amount',dollars(combinedPrice)));
-  if(timedCents>0n)body.append(node('div','rr-photo-timed-summary','Automatic timer price '+dollars(timedCents)+' · One-time bid $0.00'));
+  if(timedCents>0n)body.append(node('div','rr-photo-timed-summary','Timed earnings '+dollars(timedCents)+' · One-time bid $0.00'));
   ctrl.append(node('small','',timedCents>0n
    ?'Completed-minute earnings have been saved automatically. No one-time bid.'
    :'Accepted at no charge on '+when(e.decided_at)+'. No payment is owed.'));
  }else if(e.decision_status==='accepted'){
   body.append(node('div','entry-amount',dollars(combinedPrice)));
   if(timedCents>0n)body.append(node('div','rr-photo-timed-summary',
-   'One-time bid '+dollars(baseCents)+' + automatic timed price '+dollars(timedCents)));
+   e.auto_timer_session_id
+    ?'Automatically submitted from timer '+dollars(baseCents)+(extraTimedCents>0n?' + other timed earnings '+dollars(extraTimedCents):'')
+    :'One-time bid '+dollars(baseCents)+' + timed earnings '+dollars(extraTimedCents)));
   ctrl.append(node('small','',e.settled_at
    ?'Manually recorded as paid on '+when(e.settled_at)
    :'Accepted by the owner on '+when(e.decided_at)+'.'));
@@ -700,8 +707,23 @@ function preparePhotoReviewLightbox(entry){
  if(!receiverActions)return;
  appendReceiverPauseControl(panel);
  if(!review){
+  const summary=entry?state.timedPhotoTotals.get(entry.id):null;
+  const timed=cents(summary?.timed_cents||0),credited=cents(summary?.credited_to_photo_cents||0);
+  const extra=summary?.additional_timed_cents!==undefined
+   ?cents(summary.additional_timed_cents):(timed>credited?timed-credited:0n);
   panel.append(node('span','redline-review-kicker','VERIFIED RECEIVER'));
   panel.append(node('h3','','PHOTO CONTROLS'));
+  if(entry){
+   panel.append(node('p','rr-photo-price-title',
+    entry.decision_status==='accepted'?'ACCEPTED PHOTO PRICE':'COMPLETED TIMER PRICE'));
+   panel.append(node('strong','rr-photo-price-amount',dollars(cents(entry.amount_cents)+extra)));
+   if(timed>0n)panel.append(node('p','rr-photo-price-breakdown',
+    entry.auto_timer_session_id
+     ?'Auto-submitted on Stop Timer · '+dollars(timed)+' total timed earnings'
+     :entry.decision_status==='accepted'
+      ?'Original bid '+dollars(entry.amount_cents)+' + timed earnings '+dollars(timed)
+      :'Saved timer earnings '+dollars(timed)));
+  }
   restoreTimer();
   return;
  }
@@ -1122,6 +1144,13 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
   await verify();
   const result=await db.rpc('corp_redline_photo_timer_stop',{p_session_id:sessionId});
   if(result.error||result.data?.ok!==true)throw Error(fail(result.error||result.data?.reason||'Timer could not stop.'));
+  // The stop and price acceptance were atomic on the server. Refresh the
+  // photo record now so the accepted price and reviewed selection appear.
+  if(result.data.photo_id&&state.room?.id){
+   state.reviewSidebarPhotoId=result.data.photo_id;
+   state.entryFingerprint='';
+   await loadEntries({force:true});
+  }
   return result.data;
  },
  async timerMarkPaid(sessionId){
