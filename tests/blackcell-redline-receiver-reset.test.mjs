@@ -495,3 +495,20 @@ test('Stop Timer atomically submits one priced photo; other timed earnings never
  assert.match(chat,/window.setInterval\(\(\)=>\{/);
  assert.match(os,/name="blackcell-os-client-build" content="20261121-verified-timer-auto-submit3"/);
 });
+
+test('Manually accepting a photo always advances to the next pending image',()=>{
+ const timer=read('private-photo-ledger-timers.js');
+ const approve=ledger.slice(ledger.indexOf('async function assignAmount('),ledger.indexOf('async function acceptZero('));
+ const complimentary=ledger.slice(ledger.indexOf('async function acceptZero('),ledger.indexOf('async function confirmRejectPhoto('));
+ const reject=ledger.slice(ledger.indexOf('async function rejectPhoto('),ledger.indexOf('async function settle('));
+ assert.match(approve,/state\.reviewSidebarPhotoId=null/);
+ assert.match(approve,/await loadEntries\(\{force:true\}\)/);
+ assert.match(approve,/blackcell:redline:next-incoming/);
+ assert.match(complimentary,/return await assignAmount\(entry,field,trigger\)/);
+ assert.match(reject,/state\.reviewSidebarPhotoId=null/);
+ assert.match(reject,/blackcell:redline:next-incoming/);
+ assert.match(timer,/async function stopTimer\(keepPhotoSelected=true\)/);
+ assert.match(timer,/committed\?\.photo_id&&keepPhotoSelected/);
+ assert.match(timer,/photo_id===e\.detail\?\.photoId\)void stopTimer\(false\)/);
+ assert.match(timer,/selectedId=id;[\s\S]*?void stopTimer\(false\)/);
+});
