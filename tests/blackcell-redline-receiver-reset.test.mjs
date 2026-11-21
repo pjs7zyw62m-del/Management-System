@@ -237,7 +237,7 @@ test('One iMessage-style workspace has two independent resizers and a fixed-heig
  assert.match(layout,/#redlineReceiverHeightEdge/);
  assert.match(layout,/cursor:row-resize!important/);
  assert.match(layout,/cursor:col-resize/);
- assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-photo-large-timed1/);
+ assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-photo-visible6/);
 });
 test('Incoming photo decisions and priced photo records stay separate and scroll internally',()=>{
  const layout=read('private-photo-ledger-imessage-workspace.css');
@@ -267,7 +267,7 @@ test('Incoming photo viewer expands without crop and keeps priced records access
  assert.match(layout,/object-fit:contain!important/);
  assert.match(layout,/#redlineReceiverIncomingPhotos\.rr-photo-expanded/);
  assert.match(layout,/height:clamp\(480px,75dvh,1040px\)!important/);
- assert.match(html,/private-photo-ledger-timers\.js\?v=20261121-photo-large-timed3/);
+ assert.match(html,/private-photo-ledger-timers\.js\?v=20261121-photo-visible6/);
  assert.match(html,/private-photo-ledger-timers\.css\?v=20261121-photo-large-timed1/);
 });
 test('Per-minute timer selection and secure RPC bridge do not alter original photo decision amounts',()=>{
@@ -293,4 +293,29 @@ test('Per-minute timer selection and secure RPC bridge do not alter original pho
  assert.match(migration,/revoke all on public\.corp_private_photo_timers from public,anon,authenticated/);
  assert.match(migration,/v_user<>v_owner/);
  assert.match(migration,/grant execute on function public\.corp_redline_photo_timer_status/);
+});
+
+test('Incoming photo is visible above the short pricing footer, not buried under the timer',()=>{
+ const layout=read('private-photo-ledger-imessage-workspace.css');
+ const timer=read('private-photo-ledger-timers.js');
+ assert.match(layout,/#redlineReceiverReviewStage #reviewQueueCurrent>\.photo-entry>\.photo-image-btn/);
+ assert.match(layout,/#redlineReceiverReviewStage #reviewQueueCurrent>\.photo-entry>\.photo-entry-content/);
+ assert.match(layout,/max-height:152px!important/);
+ assert.match(layout,/#redlinePhotoTimerPanel:not\(\[open\]\)>:not\(summary\)/);
+ assert.match(timer,/const ownerPanel=make\('details','rr-timer-panel'\)/);
+ assert.match(timer,/const title=make\('summary','rr-timer-heading'\)/);
+ assert.match(timer,/ownerPanel\.append\(title,controls,note\)/);
+ assert.doesNotMatch(timer,/ownerPanel\.append\(title,controls,note,preview\)/);
+ assert.match(timer,/ownerHost\.insertBefore\(preview,ownerPanel\.nextSibling\)/);
+ assert.match(ledger,/img\.loading=state\.isOwner&&status==='pending'\?'eager':'lazy'/);
+});
+test('Photo is wider on load, with an explicit full-screen option and intact pricing',()=>{
+ const layout=read('private-photo-ledger-imessage-workspace.css');
+ assert.match(receiver,/const DEFAULT_MEDIA=\.67/);
+ assert.match(receiver,/const MEDIA_KEY='blackcell:redline:receiver:photo-first-width-v2'/);
+ assert.match(receiver,/const DEFAULT_HEIGHT=\.80/);
+ assert.match(receiver,/const fullPhoto=button\('⛶ VIEW FULL PHOTO'/);
+ assert.match(layout,/var\(--rr-media-width,67%\)/);
+ assert.match(ledger,/function preparePhotoReviewLightbox\(entry\)/);
+ assert.match(ledger,/await assignAmount\(entry,input,accept\)/);
 });
