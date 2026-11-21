@@ -45,6 +45,6 @@ test('manual always-visible preference remains operational and no user data is e
 });
 test('new assets are cache-busted for installed OS updates',()=>{
  assert.match(html,/blackcell-os-obsidian-v2\.css\?v=20261120-dock-autohide/);
- assert.match(html,/blackcell-os-springboard\.js\?v=ios-a-20261119&amp;rev=(?:dock-autohide|unified-home)/);
- assert.match(html,/blackcell-os\.js\?v=(?:119-os-update-ux2&amp;rev=dock-autohide|120-macos-personal-wallpaper|121-mac-workspaces|122-unified-desktop-sync)/);
+ assert.match(html,/blackcell-os-springboard\.js\?v=ios-a-20261119&amp;rev=(?:dock-autohide|unified-home|mobile-ready2)/);
+ assert.match(html,/blackcell-os\.js\?v=(?:119-os-update-ux2&amp;rev=dock-autohide|120-macos-personal-wallpaper|121-mac-workspaces|122-unified-desktop-sync|123-mobile-ready-drag-fix)/);
 });
