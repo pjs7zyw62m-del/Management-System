@@ -641,6 +641,8 @@ function renderEntry(e){
  const statusBadge=node('span','entry-badge '+status,status==='pending'?'AWAITING YOUR REVIEW':status==='rejected'?'REJECTED':status==='free'&&timedCents>0n?'ACCEPTED · TIMED EARNED':status==='free'?'ACCEPTED · $0.00':status==='owed'?'AMOUNT OWED':'RECORDED PAID');
  meta.append(statusBadge);
  body.append(meta,node('h3','','PHOTO '+e.id.slice(0,8).toUpperCase()));
+ if(e.resubmission_origin_id)body.append(node('div','rr-photo-resubmission-tag',
+  '↻ RESUBMITTED 5-STAR PHOTO · ORIGINAL '+e.resubmission_origin_id.slice(0,8).toUpperCase()));
  if(rating){
   body.append(node('div','rr-photo-star-summary',
    '★'.repeat(rating.stars)+'☆'.repeat(5-rating.stars)+
@@ -1355,6 +1357,7 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
     id:e.id,created_at:e.created_at,decided_at:e.decided_at,
     settled_at:e.settled_at,decision_status:e.decision_status,
     amount_cents:e.amount_cents,
+    resubmission_origin_id:e.resubmission_origin_id||null,
     caption:e.caption||''
    })),
    ratingEvents:state.entries.filter(e=>state.ratings.has(e.id))
