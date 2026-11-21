@@ -9,7 +9,7 @@ const responsive=read('private-photo-ledger-responsive.js');
 const original=read('private-photo-ledger.js');
 test('sender enhancement loads only on existing REDLINE page',()=>{
  assert.match(html,/private-photo-ledger-sender\.css\?v=20261120-sender-v3/);
- assert.match(html,/private-photo-ledger-sender\.js\?v=20261120-sender-v3/);
+ assert.match(html,/private-photo-ledger-sender\.js\?v=20261121-auto-photo1/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=(?:20261120-sender-v3|20261121-stable-brand1)/);
  assert.ok(html.indexOf('private-photo-ledger-responsive.js')<html.indexOf('private-photo-ledger-sender.js'));
 });
@@ -23,10 +23,12 @@ test('sender mode requires the original verified room and upload permission',()=
 });
 test('sender upload is native and points only to existing form',()=>{
  assert.match(sender,/file\.click\(\)/);
- assert.match(sender,/file\.addEventListener\('change',updatePreview\)/);
- assert.match(sender,/URL\.createObjectURL\(selected\)/);
- assert.match(sender,/URL\.revokeObjectURL\(objectURL\)/);
- assert.match(sender,/if\(!file\.files\?\.length\)updatePreview\(\)/);
+ assert.match(sender,/file\.addEventListener\('change',sendSelectedPhoto\)/);
+ assert.match(sender,/form\.requestSubmit\(\)/);
+ assert.doesNotMatch(sender,/URL\.createObjectURL|bc-sender-preview-image/);
+ assert.match(original,/picker\.disabled=true/);
+ assert.match(original,/picker\.disabled=false/);
+ assert.match(html,/id="submitPhoto"[^>]*hidden/);
  assert.doesNotMatch(sender,/fetch\(|db\.from\(|\.upload\(|supabase|localStorage/i);
  assert.match(original,/const BUCKET='corp-private-photo-ledger'/);
  assert.match(original,/const ROOMS='corp_private_photo_rooms'/);
@@ -48,4 +50,14 @@ test('media and privacy hints remain accessible to sender',()=>{
  assert.match(style,/scroll-margin-top/);
  assert.match(style,/@media\(max-width:370px\)/);
  assert.match(style,/prefers-reduced-motion/);
+});
+
+test('Sender photo selection submits only through authenticated REDLINE handler',()=>{
+ assert.match(original,/async function bcLiveOriginal_uploadPhoto\(event\)/);
+ assert.match(original,/event\.preventDefault\(\)/);
+ assert.match(original,/await verify\(\)/);
+ assert.match(original,/db\.storage\.from\(BUCKET\)\.upload\(path,file/);
+ assert.match(original,/db\.from\(ENTRIES\)\.insert/);
+ assert.match(original,/picker\.value=''/);
+ assert.doesNotMatch(sender,/form\.submit\(\)/);
 });
