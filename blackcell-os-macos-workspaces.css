@@ -86,6 +86,99 @@
 #desktop.bc-os-fullscreen-active>.os-dock-edge{display:none!important}
 #desktop .os-window.bc-os-fullscreen{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;border-radius:0!important;max-width:none!important;max-height:none!important;z-index:800!important}
 #desktop .os-window.bc-os-fullscreen .os-window-head{border-radius:0!important}
+/* Spotlight lives in a centered sheet; it does not permanently occupy the desktop. */
+#desktop .bc-mac-spotlight{
+ position:absolute;inset:0;z-index:2147482000;
+ display:flex;align-items:flex-start;justify-content:center;
+ padding:clamp(68px,14vh,165px) 15px 15px;box-sizing:border-box;
+ background:rgba(1,2,6,.38);backdrop-filter:blur(16px);
+ -webkit-backdrop-filter:blur(16px);
+}
+#desktop .bc-mac-spotlight-panel{
+ width:min(660px,100%);max-height:65vh;overflow:hidden;display:flex;flex-direction:column;
+ background:linear-gradient(145deg,rgba(54,55,65,.93),rgba(11,12,19,.97));
+ border:1px solid #ffffff44;border-radius:22px;
+ box-shadow:0 20px 80px #000b,inset 0 1px #ffffff25;
+}
+#desktop .bc-mac-spotlight-panel>input{
+ box-sizing:border-box;width:100%;height:70px;flex-shrink:0;outline:0;
+ padding:13px 25px;background:transparent;border:0;border-bottom:1px solid #ffffff22;
+ font:500 21px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:white;
+}
+#desktop .bc-mac-spotlight-results{display:flex;flex-direction:column;gap:3px;padding:10px;overflow:auto}
+#desktop .bc-mac-spotlight-result{
+ min-height:46px;width:100%;text-align:left;border:0;border-radius:12px;
+ padding:12px 16px;color:#f1eef3;background:#ffffff0d;font-size:14px;
+}
+#desktop .bc-mac-spotlight-result:hover,#desktop .bc-mac-spotlight-result:focus-visible{
+ background:#9d23416e;outline:0;
+}
+#desktop .bc-mac-spotlight-button{
+ min-width:34px;min-height:34px;display:grid;place-items:center;
+ border:1px solid #ffffff22;border-radius:9px;
+ background:#ffffff0e;color:#f5f3f7;font-size:24px;cursor:pointer;
+}
+/* The Desktop folder draws authenticated files directly on the desktop canvas.
+   The names are rendered as plain text; no unsafe file HTML is ever injected. */
+#desktop .bc-mac-desktop-canvas{
+ position:absolute;top:clamp(85px,11vh,140px);right:clamp(12px,1.8vw,35px);
+ width:min(280px,24vw);max-height:65vh;z-index:7;pointer-events:none;
+}
+#desktop .bc-mac-desktop-caption{
+ color:#e5e4e9;font-size:10px;font-weight:770;letter-spacing:.18em;
+ margin:0 0 13px 4px;text-shadow:0 2px 10px #000c;
+}
+#desktop .bc-mac-desktop-items{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:9px;align-content:start;max-height:57vh;overflow:hidden;pointer-events:auto;
+}
+#desktop .bc-mac-desktop-item{
+ border:1px solid transparent;border-radius:16px;background:transparent;
+ padding:9px 3px;min-height:93px;display:flex;flex-direction:column;
+ gap:7px;align-items:center;justify-content:center;color:#f0eef3;
+ font:570 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+ text-align:center;overflow:hidden;text-overflow:ellipsis;
+ text-shadow:0 2px 10px #000c;cursor:pointer;
+}
+#desktop .bc-mac-desktop-item:hover,#desktop .bc-mac-desktop-item:focus-visible{
+ background:rgba(82,85,102,.35);border-color:#ffffff35;outline:0;
+}
+#desktop .bc-mac-desktop-file-icon{
+ display:grid;place-items:center;width:55px;height:55px;font-size:31px;
+ border-radius:14px;border:1px solid #ffffff40;
+ background:linear-gradient(145deg,#555765ad,#0b1025d9);
+ box-shadow:0 8px 24px #000a,inset 0 1px #ffffff30;
+}
+#desktop .bc-mac-desktop-folder .bc-mac-desktop-file-icon{background:linear-gradient(145deg,#4d82a7e0,#10182fbf)}
+#desktop .bc-mac-desktop-stacks .bc-mac-desktop-item:not(.bc-mac-desktop-folder){
+ transform:scale(.92);box-shadow:-4px 4px 0 -1px #ffffff15;
+}
+/* Stage Manager keeps the active window usable while placing other windows
+   into the left rail, without suspending or destroying any iframe content. */
+#desktop.bc-stage-manager>.os-window.bc-stage-background:not([hidden]){
+ opacity:0!important;visibility:hidden!important;pointer-events:none!important;
+}
+#desktop .bc-mac-stage-rail{
+ position:absolute;z-index:900;left:9px;top:50%;
+ transform:translateY(-50%);width:112px;max-height:70vh;
+ display:flex;flex-direction:column;gap:11px;overflow:auto;
+ padding:6px;scrollbar-width:none;
+}
+#desktop .bc-mac-stage-thumb{
+ display:grid;place-items:center;min-height:89px;
+ padding:12px 8px;border:1px solid #ffffff33;border-radius:16px;
+ color:#f0eef5;font-size:11px;font-weight:650;
+ background:linear-gradient(145deg,#444454bb,#11111edc);
+ box-shadow:0 9px 22px #000a;overflow:hidden;
+}
+#desktop.bc-stage-manager>.os-window:not(.bc-stage-background):not([hidden]):not(.bc-os-fullscreen){
+ left:max(135px,calc(50% - 37vw))!important;
+}
+#desktop .side.bc-system-panel:has(.glass):not([hidden]){transition:filter .22s ease,opacity .22s ease}
+#desktop:has(>.os-window:not([hidden])) .side.bc-system-panel{
+ filter:grayscale(.92);opacity:.78;
+}
+#desktop:has(>.os-window:not([hidden])) .side.bc-system-panel:hover{filter:none;opacity:1}
 @media(max-width:1000px){
  #desktop .bc-mac-launch-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
  #desktop .bc-mac-window-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
