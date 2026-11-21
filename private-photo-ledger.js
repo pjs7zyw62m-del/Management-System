@@ -726,6 +726,15 @@ function preparePhotoReviewLightbox(entry){
    ?cents(summary.additional_timed_cents):(timed>credited?timed-credited:0n);
   panel.append(node('span','redline-review-kicker','VERIFIED RECEIVER'));
   panel.append(node('h3','','PHOTO CONTROLS'));
+  // Keep the last reviewed photograph visible, but explain why there is no
+  // next photo. Archived photos must not cross the Start Fresh boundary.
+  const pendingInCurrent=state.entries.some(e=>e.decision_status==='pending');
+  if(!pendingInCurrent){
+   panel.append(node('p','rr-current-session-finished',
+    state.entries.length
+     ?'NO NEXT PHOTO · All photographs in this current session have been reviewed. New uploads will appear automatically.'
+     :'NO NEXT PHOTO · Waiting for the first photograph in this session.'));
+  }
   if(entry){
    panel.append(node('p','rr-photo-price-title',
     entry.decision_status==='accepted'?'ACCEPTED PHOTO PRICE':'COMPLETED TIMER PRICE'));
