@@ -188,13 +188,28 @@ async function startTimer(){
  if(!s?.isOwner||!s.roomActive||s.archiveMode||!selectedId)return;
  let cents;
  try{cents=parseRate(rate.value)}catch(e){err(e);return}
- let started=false;
+ let requested=false;
  await callAction(async()=>{
-  await bridge().timerStart(selectedId,cents);
-  started=true;
- },'Starting authenticated timed photo session…');
- if(started)note.textContent='TIMER STARTED · The receiver chat updates now; the sender chat updates automatically.';
+  await bridge().timerRequest(selectedId,cents);
+  requested=true;
+ },'Sending the sender a 30-second consent request…');
+ if(requested)note.textContent='REQUEST SENT · Three opportunities to decline. The timer is not charging yet.';
 }
+// An explicit ACCEPT, or a previously enabled sender auto-accept preference
+// after 30 seconds, is required before the original server timer can start.
+let startingApprovedId=null;
+window.addEventListener('blackcell:redline:timer-consent-approved',event=>{
+ const data=event.detail||{},s=snap();
+ if(!s?.isOwner||s.roomId!==data.roomId||!uuid(data.id)||
+    startingApprovedId===data.id||acting||latest?.active?.running)return;
+ startingApprovedId=data.id;
+ void callAction(async()=>{
+  await bridge().timerStart(data.photoId,data.rateCents);
+ },'Sender consent verified · Starting timed photo session…')
+ .then(()=>{
+  if(latest?.active?.running)note.textContent='TIMER STARTED · Sender consent confirmed.';
+ }).finally(()=>{startingApprovedId=null});
+});
 async function stopTimer(keepPhotoSelected=false){
  const id=latest?.active?.id;
  if(!id||!snap()?.isOwner)return;

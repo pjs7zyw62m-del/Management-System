@@ -1377,6 +1377,75 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
   }
   return {accessScope:result.data.access_scope,clearanceLevel:result.data.clearance_level};
  },
+ async roomFeatureStatus(roomId){
+  if(state.closed||!state.user||!state.room||state.room.id!==roomId||state.showArchive)
+   throw Error('Verified current room required.');
+  const r=await db.rpc('corp_redline_room_feature_status',{p_room_id:roomId});
+  if(r.error||r.data?.ok!==true)throw Error(fail(r.error||r.data?.reason||'Feature settings unavailable.'));
+  return r.data;
+ },
+ async setRoomFeature(roomId,key,enabled){
+  if(state.closed||!state.user||!state.room||state.room.id!==roomId||state.showArchive)
+   throw Error('Verified current room required.');
+  if(!['timer_requests_enabled','negotiation_enabled','sender_auto_accept'].includes(key))
+   throw Error('Invalid setting.');
+  const r=await db.rpc('corp_redline_set_room_feature',{
+   p_room_id:roomId,p_key:key,p_enabled:enabled===true
+  });
+  if(r.error||r.data?.ok!==true)throw Error(fail(r.error||r.data?.reason||'Setting could not be saved.'));
+  return r.data;
+ },
+ async timerRequest(photoId,rateCents){
+  if(state.closed||!state.isOwner||state.showArchive||!state.room?.active||!validId(photoId)
+    ||!Number.isSafeInteger(rateCents)||rateCents<1||rateCents>100000)
+   throw Error('Verified receiver, photo and valid rate required.');
+  const roomId=state.room.id;
+  await verify();
+  if(state.room?.id!==roomId)throw Error('Room changed. Request not sent.');
+  const r=await db.rpc('corp_redline_timer_request',{
+   p_room_id:roomId,p_photo_id:photoId,p_rate_cents:rateCents
+  });
+  if(r.error||r.data?.ok!==true)throw Error(fail(r.error||r.data?.reason||'Timer request could not be sent.'));
+  return r.data;
+ },
+ async timerRequestStatus(roomId){
+  if(state.closed||!state.user||!state.room||state.room.id!==roomId||state.showArchive)
+   throw Error('Verified current room required.');
+  const r=await db.rpc('corp_redline_timer_request_status',{p_room_id:roomId});
+  if(r.error||r.data?.ok!==true)throw Error(fail(r.error||r.data?.reason||'Timer request unavailable.'));
+  return r.data;
+ },
+ async timerRequestRespond(requestId,accept){
+  if(state.closed||state.isOwner||!state.room?.active||state.showArchive||!validId(requestId))
+   throw Error('Only the verified sender may respond to a timer request.');
+  const r=await db.rpc('corp_redline_timer_request_respond',{
+   p_request_id:requestId,p_accept:accept===true
+  });
+  if(r.error||r.data?.ok!==true)throw Error(fail(r.error||r.data?.reason||'Timer response failed.'));
+  return r.data;
+ },
+ async priceNegotiationStatus(roomId){
+  if(state.closed||!state.user||!state.room||state.room.id!==roomId||state.showArchive)
+   throw Error('Verified current room required.');
+  const r=await db.rpc('corp_redline_price_negotiation_status',{p_room_id:roomId});
+  if(r.error||r.data?.ok!==true)throw Error(fail(r.error||r.data?.reason||'Negotiations unavailable.'));
+  return r.data;
+ },
+ async priceNegotiationAction(photoId,action,amountCents=null){
+  if(state.closed||!state.user||!state.room?.active||state.showArchive||!validId(photoId))
+   throw Error('Verified active room required.');
+  if(!['counter','accept_original','accept_counter','reject_counter','finalize_original'].includes(action))
+   throw Error('Invalid negotiation action.');
+  const r=await db.rpc('corp_redline_price_negotiation_act',{
+   p_photo_id:photoId,p_action:action,p_amount_cents:amountCents
+  });
+  if(r.error||r.data?.ok!==true)throw Error(fail(r.error||r.data?.reason||'Negotiation response failed.'));
+  if(action==='accept_counter'&&state.isOwner){
+   state.entryFingerprint='';
+   try{await loadEntries({force:true})}catch(_){/* Next room refresh will pick up price. */}
+  }
+  return r.data;
+ },
  async timerStatus(roomId){
   if(state.closed||!state.user||!state.room||state.room.id!==roomId||!validId(roomId))throw Error('Verified private room required.');
   const result=await db.rpc('corp_redline_photo_timer_status',{p_room_id:roomId});

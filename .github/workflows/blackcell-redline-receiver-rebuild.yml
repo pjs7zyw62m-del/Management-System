@@ -15,6 +15,10 @@ on:
       - 'tests/redline-history-chat-signals.test.mjs'
       - 'tests/redline-chat-read-typing-browser-smoke.mjs'
       - 'tests/redline-timer-two-party-browser-smoke.mjs'
+      - 'private-photo-ledger-consent-negotiation.js'
+      - 'private-photo-ledger-consent-negotiation.css'
+      - 'tests/redline-timer-consent-negotiation.test.mjs'
+      - 'tests/redline-consent-negotiation-browser-smoke.mjs'
       - 'tests/redline-mobile-receiver-timer-chat-height.browser.mjs'
       - 'tests/redline-currently-viewing-browser-smoke.mjs'
       - 'tests/redline-next-photo-visual-smoke.mjs'
@@ -43,6 +47,10 @@ on:
       - 'tests/redline-history-chat-signals.test.mjs'
       - 'tests/redline-chat-read-typing-browser-smoke.mjs'
       - 'tests/redline-timer-two-party-browser-smoke.mjs'
+      - 'private-photo-ledger-consent-negotiation.js'
+      - 'private-photo-ledger-consent-negotiation.css'
+      - 'tests/redline-timer-consent-negotiation.test.mjs'
+      - 'tests/redline-consent-negotiation-browser-smoke.mjs'
       - 'tests/redline-mobile-receiver-timer-chat-height.browser.mjs'
       - 'tests/redline-currently-viewing-browser-smoke.mjs'
       - 'tests/redline-next-photo-visual-smoke.mjs'
@@ -69,6 +77,7 @@ jobs:
           node --check private-photo-ledger-receiver.js
           node --check private-photo-ledger-sender.js
           node --check private-photo-ledger-timers.js
+          node --check private-photo-ledger-consent-negotiation.js
       - name: Receiver redesign, owner-only fresh session and existing sender tests
         run: |
           node --test \
@@ -76,6 +85,7 @@ jobs:
             tests/redline-per-second-earnings.test.mjs \
             tests/redline-timer-stop-next-photo.test.mjs \
             tests/redline-partial-payments.test.mjs \
+            tests/redline-timer-consent-negotiation.test.mjs \
             tests/redline-history-chat-signals.test.mjs \
             tests/private-photo-ledger-responsive.test.mjs \
             tests/private-photo-ledger-mobile.test.mjs \
@@ -181,6 +191,13 @@ jobs:
           command -v google-chrome >/dev/null 2>&1 && CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && CHROME=chromium || CHROME=; }
           [ -n "$CHROME" ] || { echo "Chromium unavailable"; exit 1; }
           CHROME="$CHROME" node tests/redline-mobile-receiver-timer-chat-height.browser.mjs
+      - name: Sender consent, price negotiation and ON OFF settings browser smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v google-chrome >/dev/null 2>&1 && CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && CHROME=chromium || CHROME=; }
+          [ -n "$CHROME" ] || { echo "Chromium unavailable"; exit 1; }
+          CHROME="$CHROME" node tests/redline-consent-negotiation-browser-smoke.mjs
       - name: Receiver and sender see read receipts and live typing
         shell: bash
         run: |

@@ -283,7 +283,8 @@ test('Per-minute timer selection and secure RPC bridge do not alter original pho
  assert.match(ledger,/corp_redline_photo_timer_mark_paid/);
  assert.match(timer,/Rate ÷ 60 every second/);
  assert.match(timer,/Every second counts/);
- assert.match(timer,/bridge\(\)\.timerStart\(selectedId,cents\)/);
+ assert.match(timer,/bridge\(\)\.timerRequest\(selectedId,cents\)/);
+ assert.match(timer,/timer-consent-approved/);
  assert.match(timer,/bridge\(\)\.timerHeartbeat\(active\.id\)/);
  assert.match(timer,/bridge\(\)\.timerStop\(id,\{keepPhotoSelected\}\)/);
  assert.match(timer,/bridge\(\)\.timerMarkPaid\(id\)/);
@@ -369,7 +370,8 @@ test('Bid and timed-photo controls stay right of the normal photo; fullscreen co
  assert.match(timer,/besidePhoto&&ownerPanel\.parentNode!==sidebar/);
  assert.match(timer,/sidebar\.append\(ownerPanel\)/);
  assert.match(timer,/ownerPanel\.open=true/);
- assert.match(timer,/await bridge\(\)\.timerStart\(selectedId,cents\)/);
+ assert.match(timer,/await bridge\(\)\.timerRequest\(selectedId,cents\)/);
+ assert.match(timer,/await bridge\(\)\.timerStart\(data.photoId,data.rateCents\)/);
  assert.match(layout,/#redlineReceiverReviewStage>#redlineLightboxReview:not\(\[hidden\]\)/);
  assert.match(layout,/#photoLightbox #lightboxImage/);
  assert.match(layout,/#photoLightbox #closeLightbox\{display:none!important\}/);
