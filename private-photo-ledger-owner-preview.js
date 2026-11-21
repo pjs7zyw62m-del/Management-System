@@ -98,6 +98,11 @@
     earnedValues[key]=amount;row.append(amount);lines.append(row);
   }
   earningsPanel.append(lines,make('p','','Amounts are taken from this selected private room when available. No transfers happen in REDLINE.'));
+  const viewingPanel=make('section','bc-redline-preview-message bc-redline-preview-current-viewing');viewingPanel.hidden=true;
+  viewingPanel.append(make('h4','','Currently Viewing'),
+   make('p','','The receiver-selected private photo is visible here on the real sender device.'));
+  const viewingPreview=make('div','bc-redline-preview-current-photo');
+  viewingPanel.append(viewingPreview);
   const historyPanel=make('section','bc-redline-preview-message bc-redline-preview-history');historyPanel.hidden=true;
   historyPanel.append(make('h4','','Photo History'),
    make('p','','Every sent photo with ratings and prices. Resend needs 5 stars AND at least $0.01.'));
@@ -117,11 +122,12 @@
   messagesPanel.append(sampleOutgoing,sampleIncoming,sampleCard);
   const sampleComposer=make('div','bc-redline-preview-sample-composer','Message REDLINE…    ·    Preview only');
   messagesPanel.append(sampleComposer);
-  section.append(upload,earningsPanel,historyPanel,topPicksPanel);
+  section.append(upload,viewingPanel,earningsPanel,historyPanel,topPicksPanel);
   const nav=make('nav','bc-redline-preview-nav');nav.setAttribute('aria-label','Preview sender navigation');
   const tabs=[
-    ['upload','Photos & Chat',upload],['earnings','Earnings',earningsPanel],
-    ['history','Photo History',historyPanel],['five-star','5-Star Photos',topPicksPanel]
+    ['upload','Photos & Chat',upload],['viewing','Currently Viewing',viewingPanel],
+    ['earnings','Earnings',earningsPanel],['history','Photo History',historyPanel],
+    ['five-star','5-Star Photos',topPicksPanel]
   ];
   function selectTab(key){
     for(const [id,label,panel] of tabs){
@@ -165,6 +171,23 @@
     fileInput.value='';fileName.textContent='No file sent in this preview';
   });
   dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close()});
+  function renderPreviewCurrentlyViewing(){
+   viewingPreview.replaceChildren();
+   const snap=window.BLACKCELL_REDLINE_API?.snapshot?.();
+   const id=$('#reviewQueueCurrent .photo-entry[data-redline-photo-id]')?.dataset.redlinePhotoId;
+   const photo=Array.isArray(snap?.photoHistory)?snap.photoHistory.find(p=>p.id===id):null;
+   if(!id||!photo){
+    viewingPreview.append(make('p','','PREVIEW ONLY · No live photo selected for this room.'));
+    return;
+   }
+   viewingPreview.append(make('strong','','RECEIVER VIEWING · PHOTO '+id.slice(0,8).toUpperCase()));
+   if(typeof photo.image_url==='string'&&photo.image_url.startsWith('https://')){
+    const img=make('img','bc-redline-preview-current-image');img.src=photo.image_url;
+    img.alt='Receiver-selected private photograph';
+    img.loading='lazy';img.addEventListener('error',()=>{img.hidden=true});
+    viewingPreview.append(img);
+   }else viewingPreview.append(make('p','','Private photo preview loading…'));
+  }
   function renderPreviewPhotoHistory(){
    const snap=window.BLACKCELL_REDLINE_API?.snapshot?.();
    const real=Array.isArray(snap?.photoHistory)?snap.photoHistory:[];
@@ -208,7 +231,8 @@ function open(){
     earnedValues.owed.textContent=owedValue.textContent;
     earnedValues.paid.textContent=activeRoom?$('#totalPaid')?.textContent?.trim()||'$0.00':'$0.00';
     earnedValues.total.textContent=activeRoom?$('#totalAssigned')?.textContent?.trim()||'$0.00':'$0.00';
-    renderPreviewPhotoHistory();setDevice('phone');selectTab('upload');dialog.showModal();
+    renderPreviewPhotoHistory();renderPreviewCurrentlyViewing();
+    setDevice('phone');selectTab('upload');dialog.showModal();
   }
   for(const [host,name] of [[setup,'redlineSetupPreviewButton'],[ownerInfo,'redlineOwnerPreviewButton']]){
     const button=make('button','bc-redline-open-sender-preview','👁  PREVIEW SENDER VIEW');

@@ -24,7 +24,8 @@ const setup=String.raw`<script>
   snapshot:()=>({roomId,userId:owner?'00000000-0000-4000-8000-000000000004':'00000000-0000-4000-8000-000000000005',
    peerName:owner?'Sender':'Receiver',isOwner:owner,roomActive:true,
    archiveMode:false,resetAt:null,pending:0,owed:'$0.15',
-   paid:'$0.00',assigned:'$0.15',entries:[],ratingEvents:[],topPicks:[],fiveStarPhotos:[]}),
+   paid:'$0.00',assigned:'$0.15',entries:[],ratingEvents:[],topPicks:[],fiveStarPhotos:[],
+    photoHistory:[{id:photoId,image_url:'https://example.com/private-timer-photo.jpg',caption:'Timed photograph'}]}),
   loadMessages:async()=>[],
   timerStatus:async()=>({...state,server_now:new Date().toISOString()})
  };
@@ -60,6 +61,10 @@ const setup=String.raw`<script>
    document.body.dataset.timerCorrectRoom=String(Boolean(
     box&&(owner?box.closest('#redlineReceiverChatMount'):box.closest('#redlineSimpleSender'))));
    document.body.dataset.timerPinnedDuring=String(Boolean(box?.classList.contains('redline-chat-timer-pinned')));
+   const img=box?.querySelector('.redline-chat-timer-photo .redline-chat-timer-image');
+   document.body.dataset.timerPhotoUnderneath=String(Boolean(img&&
+    img.src==='https://example.com/private-timer-photo.jpg'&&
+    box?.textContent.includes('PHOTOGRAPH BEING TIMED')));
   },3800);
   setTimeout(()=>{
    const stoppedAt=new Date().toISOString();
@@ -113,7 +118,8 @@ try{
   });
   assert.equal(exit,0,role+' Chrome failed: '+stderr.slice(-950));
   for(const flag of ['timer-start-visible','timer-correct-room','timer-stop-visible',
-    'timer-start-preserved','timer-no-duplicate','timer-pinned-during','timer-unpinned-after']){
+    'timer-start-preserved','timer-no-duplicate','timer-pinned-during','timer-unpinned-after',
+     'timer-photo-underneath']){
    assert.match(stdout,new RegExp('data-'+flag+'="true"'),role+' '+flag+' missing');
   }
   assert.doesNotMatch(stdout,/data-timer-error="[^"]+"/,role+' uncaught exception');

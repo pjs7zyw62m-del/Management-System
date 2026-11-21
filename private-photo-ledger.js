@@ -515,6 +515,42 @@ function entryState(e){
  if(e.settled_at)return 'settled';
  return 'owed';
 }
+// Owner-selected photo presence, confined to this verified two-person room.
+// This reflects the image displayed, not whether anyone read a chat message.
+let viewingLastRoom=null,viewingLastId=undefined,viewingLastAt=0;
+let viewingInFlight=false,viewingQueued=undefined;
+function ownerVisiblePhotoId(){
+ if(!$('photoLightbox')?.hidden&&validId(state.reviewSidebarPhotoId))return state.reviewSidebarPhotoId;
+ return document.querySelector('#reviewQueueCurrent .photo-entry[data-redline-photo-id]')?.dataset.redlinePhotoId||null;
+}
+async function publishOwnerViewing(photoId){
+ if(!state.isOwner||state.closed||state.showArchive||!state.room?.active||
+    $('ledgerApp').hidden||document.hidden)return;
+ const id=validId(photoId)?photoId:null,roomId=state.room.id;
+ if(viewingLastRoom!==roomId){viewingLastRoom=roomId;viewingLastId=undefined;viewingLastAt=0}
+ if(viewingInFlight){viewingQueued=id;return}
+ if(viewingLastId===id&&Date.now()-viewingLastAt<12000)return;
+ if(!window.BLACKCELL_REDLINE_API?.setCurrentlyViewing)return;
+ viewingInFlight=true;
+ try{
+  await window.BLACKCELL_REDLINE_API.setCurrentlyViewing(id);
+  if(state.room?.id===roomId){viewingLastId=id;viewingLastAt=Date.now()}
+ }catch(_){/* Presence expires automatically when no longer refreshed. */}
+ finally{
+  viewingInFlight=false;
+  if(viewingQueued!==undefined){
+   const queued=viewingQueued;viewingQueued=undefined;
+   if(queued!==viewingLastId)void publishOwnerViewing(queued);
+  }
+ }
+}
+window.setInterval(()=>{
+ if(state.isOwner&&!document.hidden&&!state.showArchive&&state.room?.active)
+  void publishOwnerViewing(ownerVisiblePhotoId());
+},15000);
+document.addEventListener('visibilitychange',()=>{
+ if(!document.hidden&&state.isOwner)void publishOwnerViewing(ownerVisiblePhotoId());
+});
 function renderReviewQueue(){
  const queue=$('ownerReviewQueue');
  queue.hidden=!state.isOwner||!state.room||state.showArchive;
@@ -553,6 +589,7 @@ function renderReviewQueue(){
   // Receiver's pause and timer controls remain available even when all
   // received photos were already reviewed.
   preparePhotoReviewLightbox(reviewed||null);
+  void publishOwnerViewing(ownerVisiblePhotoId());
   return;
  }
  const current=pending[0];
@@ -573,6 +610,7 @@ function renderReviewQueue(){
  // Mount the next image BEFORE telling timer controls about it.
  // Otherwise the old timed image can be reselected from stale DOM.
  window.dispatchEvent(new CustomEvent('blackcell:redline:review-photo',{detail:{photoId:shown.id}}));
+ void publishOwnerViewing(ownerVisiblePhotoId());
 }
 function renderEntries(){
  const parent=$('photoEntries');parent.replaceChildren();
@@ -727,6 +765,7 @@ window.addEventListener('blackcell:redline:photo-selected',event=>{
  if(!selected)return;
  state.reviewSidebarPhotoId=id;
  preparePhotoReviewLightbox(selected);
+ void publishOwnerViewing(id);
 });
 // This owner-only control is located in the receiver's bid/timer sidebar.
 function appendReceiverPauseControl(panel){
@@ -1217,6 +1256,9 @@ function closeLightbox(){
  $('lightboxImage').removeAttribute('src');
  // The persistent bid/timer sidebar is NOT part of this image-only popup.
  document.body.style.overflow='';
+ // The sender should see the main viewer photo immediately after full-size
+ // inspection closes, rather than waiting for the 15-second presence pulse.
+ void publishOwnerViewing(ownerVisiblePhotoId());
 }
 function wireEvents(){
  $('createRoomForm').addEventListener('submit',e=>void createRoom(e));
@@ -1390,6 +1432,25 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
   const result=await db.rpc('corp_redline_presence_touch',{p_room_id:roomId,p_session_id:sessionId,p_active:active});
   if(result.error||result.data?.ok!==true)throw Error(fail(result.error||result.data?.reason||'Presence update failed.'));
   return true;
+ },
+ async setCurrentlyViewing(photoId){
+  if(state.closed||!state.isOwner||state.showArchive||!state.room?.active||
+     (photoId!==null&&!validId(photoId)))
+   throw Error('Active verified owner room required to share selected photo.');
+  const roomId=state.room.id;
+  const result=await db.rpc('corp_redline_set_currently_viewing',{
+   p_room_id:roomId,p_photo_id:photoId
+  });
+  if(result.error||result.data?.ok!==true)throw Error(fail(result.error||result.data?.reason||'Viewing presence not saved.'));
+  return true;
+ },
+ async currentlyViewingStatus(roomId){
+  if(state.closed||!state.user||!state.room||state.room.id!==roomId||!validId(roomId))
+   throw Error('A verified room is required to view receiver activity.');
+  const result=await db.rpc('corp_redline_currently_viewing_status',{p_room_id:roomId});
+  if(result.error||result.data?.ok!==true)throw Error(fail(result.error||result.data?.reason||'Viewing status unavailable.'));
+  return {photoId:result.data.photo_id||null,active:result.data.active===true,
+   updatedAt:result.data.updated_at||null};
  },
  async presenceStatus(roomId){
   if(state.closed||!state.user||!state.room||state.room.id!==roomId||!validId(roomId))throw Error('Verified REDLINE room required.');

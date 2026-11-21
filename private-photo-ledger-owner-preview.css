@@ -175,3 +175,19 @@
  .bc-redline-preview-history-photo,.bc-redline-preview-history-placeholder{width:70px;height:95px}
  .bc-redline-preview-history-stars{font-size:14px}
 }
+
+/* The owner preview exactly reflects the sender's fifth viewing tab. */
+.bc-redline-sender-preview .bc-redline-preview-nav{
+ grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:2px!important;
+}
+.bc-redline-sender-preview .bc-redline-preview-nav button{
+ min-width:0!important;min-height:45px!important;font-size:9px!important;
+ padding:5px 2px!important;white-space:normal!important;overflow-wrap:break-word;
+}
+.bc-redline-preview-current-viewing{display:flex;flex-direction:column;gap:12px}
+.bc-redline-preview-current-photo{display:flex;flex-direction:column;gap:8px;
+ padding:12px;min-height:160px;border:1px solid #683246;border-radius:12px;
+ color:#e4cbd5;font-size:11px;text-align:center;background:#050305}
+.bc-redline-preview-current-photo strong{font-size:12px;color:#ffbdcf}
+.bc-redline-preview-current-image{display:block;width:100%;height:auto;
+ max-height:390px;object-fit:contain;border-radius:8px;background:#000}
