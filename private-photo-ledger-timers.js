@@ -105,13 +105,17 @@ window.addEventListener('blackcell:redline:photo-decided',e=>{
 function mount(s){
  if(!s)return;
  const stage=$('#redlineReceiverReviewStage');
- const combined=!$('#redlineReceiverLiveWorkspace')?.hidden;
+ const workspace=$('#redlineReceiverLiveWorkspace');
+ const combined=!!workspace&&!workspace.hidden;
  const fallback=$('#activeRoom .timeline-column');
- const ownerHost=combined?stage:fallback;
- if(s.isOwner&&ownerHost&&ownerPanel.parentNode!==ownerHost)ownerHost.prepend(ownerPanel);
- // The selected-photo viewer must NEVER be inside the collapsible timer;
- // otherwise the photo disappears whenever the timer controls are closed.
- if(s.isOwner&&ownerHost&&preview.parentNode!==ownerHost)ownerHost.insertBefore(preview,ownerPanel.nextSibling);
+ // The timer remains accessible OUTSIDE the standalone photo display.
+ // This is important so an already-running timer can always be stopped.
+ if(s.isOwner){
+  if(combined&&workspace&&ownerPanel.previousElementSibling!==workspace)workspace.after(ownerPanel);
+  else if(!combined&&fallback&&ownerPanel.parentNode!==fallback)fallback.prepend(ownerPanel);
+  const photoHost=combined?stage:fallback;
+  if(photoHost&&preview.parentNode!==photoHost)photoHost.prepend(preview);
+ }
  if(s.isOwner){
   const records=combined?$('#redlineReceiverPricedStage'):fallback;
   if(records&&lower.parentNode!==records)records.append(lower);
