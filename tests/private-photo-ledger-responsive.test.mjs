@@ -77,6 +77,6 @@ test('BLACKCELL REDLINE is the unified public name while IDs and existing links 
  assert.match(auth,/corp_private_photo_entries/);
  assert.match(auth,/corp-private-photo-ledger/);
  assert.match(os,/private-photo-ledger\.html\?osApp=photoledger/);
- assert.match(html,/private-photo-ledger\.js\?v=(?:20261120-redline-chat1|20261121-level-r-only1|20261121-fresh-session2)/);
+ assert.match(html,/private-photo-ledger\.js\?v=(?:20261121-auto-photo2)/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=(?:20261120-sender-v3|20261121-stable-brand1)/);
 });
