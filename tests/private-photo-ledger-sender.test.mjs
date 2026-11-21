@@ -9,7 +9,7 @@ const responsive=read('private-photo-ledger-responsive.js');
 const original=read('private-photo-ledger.js');
 test('sender enhancement loads only on existing REDLINE page',()=>{
  assert.match(html,/private-photo-ledger-sender\.css\?v=20261120-sender-v3/);
- assert.match(html,/private-photo-ledger-sender\.js\?v=20261121-auto-photo1/);
+ assert.match(html,/private-photo-ledger-sender\.js\?v=20261121-pause-sender1/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=(?:20261120-sender-v3|20261121-stable-brand1)/);
  assert.ok(html.indexOf('private-photo-ledger-responsive.js')<html.indexOf('private-photo-ledger-sender.js'));
 });
@@ -27,7 +27,7 @@ test('sender upload is native and points only to existing form',()=>{
  assert.match(sender,/form\.requestSubmit\(\)/);
  assert.doesNotMatch(sender,/URL\.createObjectURL|bc-sender-preview-image/);
  assert.match(original,/picker\.disabled=true/);
- assert.match(original,/picker\.disabled=false/);
+ assert.match(original,/picker\.disabled=document\.body\.dataset\.redlineUploadPaused==='true'/);
  assert.match(html,/id="submitPhoto"[^>]*hidden/);
  assert.doesNotMatch(sender,/fetch\(|db\.from\(|\.upload\(|supabase|localStorage/i);
  assert.match(original,/const BUCKET='corp-private-photo-ledger'/);
