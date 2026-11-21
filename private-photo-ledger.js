@@ -786,11 +786,14 @@ async function assignAmount(entry,input,submit){
    .eq('id',entry.id).eq('room_id',state.room.id).eq('decision_status','pending')
    .select('id,amount_cents,decision_status').single();
   if(r.error)throw r.error;
-  if(state.reviewSidebarPhotoId===entry.id)state.reviewSidebarPhotoId=null;
+  // Manual pricing always advances the receiver to the next pending photo.
+  // A previously auto-priced timer photo must not remain pinned over the queue.
+  state.reviewSidebarPhotoId=null;
   state.entryFingerprint='';await loadEntries({force:true});
   show('entriesFeedback','Photo accepted for '+dollars(amount)+'. Both screens will update automatically.');
   show('reviewQueueFeedback','Accepted for '+dollars(amount)+' · Showing the next pending photo.');
   window.dispatchEvent(new CustomEvent('blackcell:redline:photo-decided',{detail:{photoId:entry.id}}));
+  window.dispatchEvent(new Event('blackcell:redline:next-incoming'));
   return true;
  }catch(e){show('entriesFeedback','Could not assign amount: '+fail(e));return false}
  finally{state.busy=false;submit.disabled=false;submit.textContent='✓ ACCEPT PHOTO'}
@@ -798,7 +801,7 @@ async function assignAmount(entry,input,submit){
 async function acceptZero(entry,trigger){
  const field=document.createElement('input');
  field.value='0.00';
- await assignAmount(entry,field,trigger);
+ return await assignAmount(entry,field,trigger);
 }
 async function confirmRejectPhoto(entry){
  const dialog=$('redlineRejectPhotoConfirm');
@@ -820,10 +823,12 @@ async function rejectPhoto(entry,trigger){
     .eq('id',entry.id).eq('room_id',state.room.id).eq('decision_status','pending')
     .select('id,decision_status').single();
   if(r.error)throw r.error;
+  state.reviewSidebarPhotoId=null;
   state.entryFingerprint='';await loadEntries({force:true});
   show('entriesFeedback','Photo rejected. Both participants will see the decision automatically.');
   show('reviewQueueFeedback','Photo rejected · Showing the next pending photo.');
   window.dispatchEvent(new CustomEvent('blackcell:redline:photo-decided',{detail:{photoId:entry.id}}));
+  window.dispatchEvent(new Event('blackcell:redline:next-incoming'));
   return true;
  }catch(e){show('entriesFeedback','Could not reject photo: '+fail(e));return false}
  finally{state.busy=false;trigger.disabled=false}
