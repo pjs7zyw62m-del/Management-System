@@ -845,8 +845,6 @@ function preparePhotoReviewLightbox(entry){
   return;
  }
  panel.append(node('span','redline-review-kicker','VERIFIED OWNER · PRIVATE REVIEW'));
- panel.append(node('h3','','PLACE YOUR BID'));
- panel.append(node('p','redline-review-help','Examine the full photograph before making your final decision.'));
  const label=node('label','redline-review-label','YOUR BID · USD');
  const input=node('input','redline-review-amount');
  input.type='text';input.inputMode='decimal';input.placeholder='0.00';input.maxLength=23;attachCurrencyLeadingZero(input);
