@@ -312,3 +312,30 @@ body.redline-sender-simple #employeeUpload #uploadFeedback{
 @media(max-width:490px){
  .redline-message-header .redline-peer-presence{font-size:9px;padding:6px 8px}
 }
+
+/* REDLINE sender: one visible Pause / Resume control. The existing upload
+   form stays intact, and the paused state blocks new automatic submissions. */
+body.redline-sender-simple #employeeUpload .redline-sender-upload-pause-wrap{
+ display:flex!important;flex-direction:column!important;
+ align-items:stretch!important;gap:6px!important;
+ width:100%!important;min-width:0!important;
+ margin:0 0 13px!important;
+}
+body.redline-sender-simple #redlineSenderUploadPause{
+ display:block!important;width:100%!important;min-height:46px!important;
+ border-radius:10px!important;border:1px solid #bb2c45!important;
+ padding:10px 14px!important;background:#220b11!important;
+ font-size:12px!important;font-weight:850!important;letter-spacing:.045em!important;
+ color:#fff!important;cursor:pointer!important;
+}
+body.redline-sender-simple #redlineSenderUploadPause[aria-pressed="true"]{
+ background:#b50025!important;border-color:#f65173!important;
+}
+body.redline-sender-simple #redlineSenderUploadPauseStatus{
+ display:block;font-size:11px;color:#ffc1cb;line-height:1.35;
+}
+body.redline-sender-simple #redlineSenderUploadPauseStatus:empty{display:none!important}
+body.redline-sender-simple #redlineSenderChoose:disabled{opacity:.45;cursor:not-allowed}
+body.redline-sender-simple[data-redline-upload-paused="true"] #employeeUpload .file-drop{
+ opacity:.45!important;cursor:not-allowed!important;pointer-events:none!important;
+}
