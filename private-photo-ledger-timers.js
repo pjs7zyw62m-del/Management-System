@@ -128,6 +128,9 @@ function selectIncoming(){
 }
 function pickPhoto(id){
  if(!uuid(id))return;
+ // During STOP the server is authoritative; never use stale active state to
+ // interrupt the newly mounted next photo with an implicit second STOP.
+ if(acting){selectedId=id;render();return}
  if(latest?.active?.running&&latest.active.photo_id!==id){
   // Leaving one selected photo stops its timed accrual before the next is used.
   selectedId=id;
@@ -192,23 +195,26 @@ async function startTimer(){
  },'Starting authenticated timed photo session…');
  if(started)note.textContent='TIMER STARTED · The receiver chat updates now; the sender chat updates automatically.';
 }
-async function stopTimer(keepPhotoSelected=true){
+async function stopTimer(keepPhotoSelected=false){
  const id=latest?.active?.id;
  if(!id||!snap()?.isOwner)return;
  let committed=null;
  await callAction(async()=>{
   committed=await bridge().timerStop(id,{keepPhotoSelected});
-  // Keep the photo whose timer just stopped visible with its final price,
-  // instead of immediately switching to another pending photograph.
+  // After STOP the next pending photo is now the visible selection.
+  // Keep a stopped photo only when specifically requested in a history view.
   if(committed?.photo_id&&keepPhotoSelected){
    selectedId=committed.photo_id;
    window.dispatchEvent(new CustomEvent('blackcell:redline:photo-selected',
     {detail:{photoId:committed.photo_id}}));
+  }else if(committed?.photo_id){
+   selectedId=currentPhoto();
   }
  },'Stopping, pricing and submitting selected photo…');
  if(committed?.ok){
   note.textContent=committed.photo_auto_submitted||committed.photo_has_timer_price
-   ?'PHOTO AUTO-SUBMITTED · '+money(committed.earned_cents)+' · '+duration(committed.elapsed_seconds||0)+' elapsed'
+   ?'PHOTO AUTO-SUBMITTED · '+money(committed.earned_cents)+' · '+duration(committed.elapsed_seconds||0)+' elapsed'+
+      (!keepPhotoSelected&&currentPhoto()!==committed.photo_id?' · NEXT PHOTO READY':'')
    :'Timer stopped · '+money(committed.earned_cents)+' saved as timed earnings for this photo.';
  }
 }
