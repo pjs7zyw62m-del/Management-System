@@ -88,8 +88,8 @@ test('Sender gets archived earnings and chat without permission to upload while 
  assert.match(ledger,/state\.showArchive\)throw Error\('Return to the current session/);
 });
 test('REDLINE receiver resources are versioned and original form and security remain intact',()=>{
- assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-compact-desktop2/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-compact-desktop2/);
+ assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-photo-chat-columns3/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-chat-columns3/);
  assert.match(html,/private-photo-ledger\.js\?v=20261121-level-zero2/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=20261121-stable-brand1/);
  assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-inline-owner-chat1/);
@@ -115,11 +115,22 @@ test('Receiver can view and reply in the selected private room without opening a
 
 test('Desktop receiver is compact with photo review beside private chat',()=>{
  assert.match(receiver,/intro\.append\(title\)/);
- assert.match(receiver,/sidebar\.prepend\(chatPanel\)/);
- assert.match(receiver,/nav\.after\(chatPanel\)/);
+ assert.match(receiver,/workspace\.append\(chatPanel,photos\)/);
+ assert.match(receiver,/photos\.append\(timeline\)/);
  assert.match(receiver,/owner\.append\(access\)/);
  assert.match(css,/REDLINE desktop compact receiver/);
  assert.match(css,/min-height:51px!important/);
  assert.match(css,/min-height:32px!important/);
  assert.match(css,/grid-template-columns:minmax\(0,1\.3fr\) minmax\(320px,1fr\)/);
+});
+
+test('REDLINE OS receiver keeps the narrow chat left and the real incoming photo queue right',()=>{
+ assert.match(receiver,/workspace\.id='redlineReceiverLiveWorkspace'/);
+ assert.match(receiver,/workspace\.append\(chatPanel,photos\)/);
+ assert.match(receiver,/photos\.append\(timeline\)/);
+ assert.match(receiver,/roomBody\.append\(timeline\)/);
+ assert.match(receiver,/desktopWorkspace=window\.matchMedia\('\(min-width:960px\)'\)/);
+ assert.match(css,/grid-template-columns:minmax\(300px,370px\) minmax\(0,1fr\)/);
+ assert.match(css,/rr-incoming-photos #ownerReviewQueue/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-chat-columns3/);
 });
