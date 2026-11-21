@@ -989,3 +989,30 @@ body.bc-redline-receiver #redlineLightboxReview .rr-receiver-pause-status{
 #redlineRejectPhotoConfirm .redline-reject-approve{
  border:1px solid #fd5a77;background:#b50029;
 }
+
+/* REDLINE reviewed-photo viewport: the former ALL CAUGHT UP element must
+   NEVER occupy a second column beside an already-visible selected image.
+   This intentionally wins over the legacy #ownerReviewQueue:not([hidden])
+   flex display rules; the original-only fullscreen popup is unchanged. */
+@media(min-width:420px){
+ body.bc-redline-receiver.rr-imessage-mode.rr-timing-priced-photo
+  #redlineReceiverReviewStage>#ownerReviewQueue:not([hidden]),
+ body.bc-redline-receiver.rr-imessage-mode
+  #redlineReceiverReviewStage:has(>.rr-timer-selected-preview:not([hidden]))>#ownerReviewQueue:not([hidden]){
+  display:none!important;
+  flex:0 0 0!important;width:0!important;min-width:0!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode
+  #redlineReceiverReviewStage>.rr-timer-selected-preview:not([hidden]){
+  flex:1 1 0!important;width:0!important;min-width:0!important;
+  max-width:none!important;height:100%!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode
+  #redlineReceiverReviewStage>#redlineLightboxReview:not([hidden]){
+  display:flex!important;flex-direction:column!important;
+  flex:0 0 clamp(188px,30%,340px)!important;
+  width:clamp(188px,30%,340px)!important;
+  min-width:0!important;max-height:100%!important;
+  overflow-y:auto!important;
+ }
+}
