@@ -11,6 +11,8 @@ on:
       - 'private-photo-ledger.html'
       - 'supabase/migrations/20261121075604_blackcell_redline_only_owner_security_access.sql'
       - 'tests/blackcell-redline-only-security-level.test.mjs'
+      - 'tests/blackcell-os-window-drag.test.mjs'
+      - 'blackcell-os.js'
       - '.github/workflows/blackcell-redline-only-security.yml'
   push:
     branches: [main]
@@ -36,4 +38,4 @@ jobs:
           node --check employee.js
           node --check corp-auth.js
       - name: Verify Level R access, owner-only assignment and no other app navigation
-        run: node --test tests/blackcell-redline-only-security-level.test.mjs
+        run: node --test tests/blackcell-redline-only-security-level.test.mjs tests/blackcell-os-window-drag.test.mjs
