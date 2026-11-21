@@ -259,7 +259,7 @@ function render(){
    ? Math.min(nowMs,Number.isFinite(heartbeatMs)?heartbeatMs+45000:nowMs)
    : stoppedAt;
   const seconds=validStart?Math.max(0,Math.floor((displayUntil-startMs)/1000)):0;
-  const amount=active&&isRunning?tickAmount():active?tickAmount():BigInt(stopped?.earned_cents||0);
+  const amount=active?(isRunning?tickAmount():BigInt(active.earned_cents||0)):BigInt(stopped?.earned_cents||0);
   senderStatus.textContent=isRunning?'● TIMER RUNNING':active?'TIMER DISCONNECTED':'■ TIMER STOPPED';
   senderRate.textContent=money(session.rate_cents)+'/minute';
   senderClock.textContent=duration(seconds);
