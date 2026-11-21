@@ -104,9 +104,12 @@ window.addEventListener('blackcell:redline:photo-decided',e=>{
 function mount(s){
  if(!s)return;
  const stage=$('#redlineReceiverReviewStage');
- if(s.isOwner&&stage&&ownerPanel.parentNode!==stage)stage.prepend(ownerPanel);
+ const combined=!$('#redlineReceiverLiveWorkspace')?.hidden;
+ const fallback=$('#activeRoom .timeline-column');
+ const ownerHost=combined?stage:fallback;
+ if(s.isOwner&&ownerHost&&ownerPanel.parentNode!==ownerHost)ownerHost.prepend(ownerPanel);
  if(s.isOwner){
-  const records=$('#redlineReceiverPricedStage');
+  const records=combined?$('#redlineReceiverPricedStage'):fallback;
   if(records&&lower.parentNode!==records)records.append(lower);
  }else{
   const summary=$('#redlineSimpleSender .redline-upload-summary');
