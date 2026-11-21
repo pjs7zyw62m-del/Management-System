@@ -1,0 +1,37 @@
+/* BLACKCELL Corporation — Level R: BLACKCELL REDLINE only.
+   Displays account authorization granted by the server, not a CSS-only permission. */
+.bc-redline-security-section{
+ position:relative;
+ overflow:hidden;
+ border:1px solid rgba(200,37,66,.42)!important;
+ border-radius:19px;
+ background:linear-gradient(145deg,rgba(41,9,17,.55),rgba(8,9,13,.84))!important;
+ padding:clamp(17px,2.1vw,27px)!important;
+ box-shadow:inset 0 1px rgba(255,255,255,.11);
+}
+.bc-redline-security-section::before{
+ content:'LEVEL R · RESTRICTED';
+ display:block;
+ color:#ed738b;
+ font:780 10px/1.4 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+ letter-spacing:.16em;
+ margin-bottom:10px;
+}
+.bc-redline-security-section .um3-field{display:grid;gap:9px;min-width:0;margin:17px 0 9px;color:#e6e1e9;font-weight:670}
+.bc-redline-security-select{
+ display:block;width:min(100%,560px);min-height:49px;padding:10px 14px;
+ color:#f9f4f7;background:#16141c;
+ border:1px solid rgba(255,255,255,.34);border-radius:12px;
+ font:600 14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+.bc-redline-security-select option{color:#fff;background:#15151c}
+.bc-redline-security-state{font-size:12px;letter-spacing:.09em;font-weight:750;color:#f19aad;margin:9px 0 14px}
+.bc-redline-security-section button{
+ min-height:45px;border-radius:12px!important;
+ border:1px solid rgba(231,69,105,.7)!important;
+ background:linear-gradient(145deg,#a11e39,#5c0c23)!important;
+ color:#fff!important;padding:11px 17px!important;
+}
+.bc-redline-security-section [aria-busy=true],.bc-redline-security-section[aria-busy=true]{opacity:.8}
+.bc-redline-security-section button:disabled{opacity:.58;cursor:progress}
+.bc-redline-security-section select:focus-visible,.bc-redline-security-section button:focus-visible{outline:2px solid #ef7993;outline-offset:3px}

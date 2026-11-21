@@ -1,0 +1,41 @@
+name: BLACKCELL Level R REDLINE Security
+on:
+  pull_request:
+    paths:
+      - 'admin.js'
+      - 'corp-guard.js'
+      - 'dashboard.html'
+      - 'blackcell-administration-app.html'
+      - 'blackcell-redline-security-level.css'
+      - 'private-photo-ledger.js'
+      - 'private-photo-ledger.html'
+      - 'supabase/migrations/20261121075604_blackcell_redline_only_owner_security_access.sql'
+      - 'tests/blackcell-redline-only-security-level.test.mjs'
+      - 'tests/blackcell-os-window-drag.test.mjs'
+      - 'blackcell-os.js'
+      - '.github/workflows/blackcell-redline-only-security.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'admin.js'
+      - 'blackcell-redline-security-level.css'
+  workflow_dispatch:
+jobs:
+  redline-security:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Parse owner console, REDLINE app, corporate guard
+        run: |
+          node --check admin.js
+          node --check corp-guard.js
+          node --check private-photo-ledger.js
+          node --check employee.js
+          node --check corp-auth.js
+      - name: Verify Level R access, owner-only assignment and no other app navigation
+        run: node --test tests/blackcell-redline-only-security-level.test.mjs tests/blackcell-os-window-drag.test.mjs

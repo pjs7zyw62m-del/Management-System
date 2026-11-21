@@ -82,6 +82,12 @@ function corporateUsername(name){
  return ('bc_'+(cleaned||'employee').slice(0,17)+'_'+corporateRandomDigits(5)).slice(0,32);
 }
 
+function memberSecurityLabel(member){
+ return member?.role==='employee'&&member?.access_scope==='ledger_only'
+  ?'LEVEL R · REDLINE ONLY'
+  :'Level '+String(member?.clearance_level??'—');
+}
+function memberSecurityAccess(member){return member?.role==='employee'&&member?.access_scope==='ledger_only'?'REDLINE ONLY — RESTRICTED':'Full corporate access'}
 function employeeCardView(member,sample=false){
   const blockEl=el('div','employee-profile-layout');
   const card=el('article','employee-profile-pass');
@@ -92,7 +98,7 @@ function employeeCardView(member,sample=false){
     el('div','employee-profile-network','NETWORK'),
     el('div','employee-profile-stripe',''));
   const pass=el('div','employee-profile-clearance');
-  pass.append(el('strong','','LEVEL '+(member.clearance_level||1)),el('span','','ACCESS PASS'));
+  pass.append(el('strong','',memberSecurityLabel(member)),el('span','','ACCESS PASS'));
   card.append(pass,el('div','employee-profile-name',member.display_name||'Sample Employee'),
     el('div','employee-profile-username',(member.username||'USERNAME NOT ASSIGNED').toUpperCase()));
   if(sample)card.append(el('div','employee-profile-watermark','PREVIEW ONLY'));
@@ -108,10 +114,11 @@ function employeeCardView(member,sample=false){
   field('EMAIL',member.email||'Not assigned');
   field('ACCOUNT TYPE',member.role==='owner'?'Corporate Owner':'Employee');
   field('CLEARANCE LEVEL','Level '+(member.clearance_level||1));
+  if(member.role==='employee'&&!sample)field('SECURITY ACCESS',memberSecurityAccess(member));
   field('ACCOUNT STATUS',sample?'Preview / not registered':
     !member.active?'Disabled':member.role==='owner'?'Owner account':
     member.password_activated?'Activated':'Pending employee activation');
-  field('EMPLOYEE CHAT',sample?'Not activated':member.can_chat?'Enabled':'Disabled');
+  field('EMPLOYEE CHAT',sample?'Not activated':member.access_scope==='ledger_only'?'Blocked · REDLINE ONLY':member.can_chat?'Enabled':'Disabled');
   field('ACCESS CODE','4 digits — never displayed');
   field('SECURITY CODE','12 digits — never displayed');
   const noteEl=p(sample?
@@ -264,6 +271,61 @@ function showEmployeeProfile(member,sample=false){
     level.value=String(member.clearance_level);cardPanel.replaceChildren(el('h3','','Digital access pass'),employeeCardView(member));save.disabled=level.disabled=enabled.disabled=chat.disabled=false;panel.removeAttribute('aria-busy');
    });
    panel.append(fields,save,feedback);content.append(panel);
+
+   const security=block('Security access · BLACKCELL REDLINE');
+   security.classList.add('um3-profile-panel','bc-redline-security-section');
+   security.append(p('Special Level R restricts this employee to BLACKCELL REDLINE only. All other BLACKCELL apps, Network, messaging, Dock and OS access are blocked. Existing photos and the employee’s numeric clearance remain unchanged.'));
+   const accessRow=el('label','um3-field','Application access level');
+   const access=el('select','bc-redline-security-select');
+   access.setAttribute('aria-label','Security access level for '+(member.display_name||'employee'));
+   access.add(new Option('Full corporate access (current clearance)','full'));
+   access.add(new Option('Level R · REDLINE ONLY','ledger_only'));
+   access.value=member.access_scope==='ledger_only'?'ledger_only':'full';
+   accessRow.append(access);
+   const stateText=el('p','bc-redline-security-state',memberSecurityAccess(member));
+   const changeStatus=el('p','muted','');
+   changeStatus.setAttribute('role','status');
+   changeStatus.setAttribute('aria-live','polite');
+   const saveAccess=action('Save security access',async()=>{
+    if(saveAccess.disabled)return;
+    const api=window.BLACKCELL_CORPORATE_ADMIN_API?.client;
+    if(!api){changeStatus.textContent='Verified Level 7 owner session required.';return}
+    const restrict=access.value==='ledger_only';
+    if(restrict===(member.access_scope==='ledger_only')){changeStatus.textContent='Security level already saved.';return}
+    const explanation=restrict
+     ?'Assign LEVEL R · REDLINE ONLY to '+(member.display_name||'this employee')+'?\n\nThis blocks every other BLACKCELL application. The private REDLINE photo exchange remains available.'
+     :'Restore full corporate access for '+(member.display_name||'this employee')+'?\n\nThis restores only the permissions allowed by their existing clearance.';
+    if(!window.confirm(explanation)){access.value=member.access_scope==='ledger_only'?'ledger_only':'full';return}
+    saveAccess.disabled=access.disabled=true;security.setAttribute('aria-busy','true');
+    changeStatus.textContent='Verifying Level 7 authorization and saving…';
+    try{
+     const {data:current,error:readError}=await api.rpc('corp_admin_members');
+     const found=current?.members?.find(m=>m.user_id===member.user_id);
+     if(readError||current?.ok!==true||!found||found.role!=='employee')throw Error('Unable to verify employee permissions.');
+     if((found.access_scope==='ledger_only')!==(member.access_scope==='ledger_only'))
+      throw Error('Permissions changed in another session. Reopen the employee profile.');
+     const {data,error}=await api.rpc('corp_owner_redline_access',{
+      p_member_id:member.user_id,p_redline_only:restrict
+     });
+     if(error||data?.ok!==true||data.access_scope!==(restrict?'ledger_only':'full'))
+      throw Error('The security server did not confirm the change.');
+     member={...member,access_scope:data.access_scope};
+     stateText.textContent=memberSecurityAccess(member);
+     cardPanel.replaceChildren(el('h3','','Digital access pass'),employeeCardView(member));
+     changeStatus.textContent=restrict
+      ?'Level R active. BLACKCELL REDLINE is the only accessible application.'
+      :'Full access restored within the employee’s existing clearance.';
+    }catch(e){
+     access.value=member.access_scope==='ledger_only'?'ledger_only':'full';
+     changeStatus.textContent=String(e?.message||'Security access could not be changed.');
+    }finally{
+     saveAccess.disabled=access.disabled=false;
+     security.removeAttribute('aria-busy');
+    }
+   },false,true);
+   security.append(accessRow,stateText,saveAccess,changeStatus);
+   content.append(security);
+
    const danger=block('Account removal');danger.classList.add('um3-danger');danger.append(p('Permanently delete this employee only after confirming their email.'),action('Delete employee profile',()=>confirmEmployeeDelete(member,'profiles')));danger.querySelector('button').classList.add('delete-employee-button');content.append(danger)
   }
 }
@@ -313,7 +375,7 @@ async function employeeProfiles(){
        const status=!member.active?'disabled':member.role==='owner'||member.password_activated?'active':'pending';
        const pill=el('span','um3-status',status==='active'?'Active':status==='pending'?'Invited':'Disabled');pill.dataset.state=status;
        const role=el('span','um3-role',member.role==='owner'?'Owner':'Employee');role.append(el('span','um3-chevron','›'));
-       item.append(identity,el('span','um3-level','Level '+String(member.clearance_level??'—')),pill,role);item.addEventListener('click',()=>showEmployeeProfile(member));list.append(item)
+       item.append(identity,el('span','um3-level',memberSecurityLabel(member)),pill,role);item.addEventListener('click',()=>showEmployeeProfile(member));list.append(item)
       }
     };
     search.addEventListener('input',paint);
