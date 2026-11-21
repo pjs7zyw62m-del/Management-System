@@ -189,8 +189,21 @@
  divider.tabIndex=0;
  divider.append(make('span','rr-split-grip','⋮⋮'));
  workspace.insertBefore(divider,photos);
+ const splitControls=make('div','rr-split-controls');
+ splitControls.id='redlineReceiverSplitControls';
+ const splitLabel=make('strong','rr-split-title','CHAT + PHOTOS · ONE WORKSPACE');
+ const splitReadout=make('span','rr-split-readout','CHAT 36% · PHOTOS 64%');
+ const splitRange=make('input','rr-split-range');
+ splitRange.type='range';splitRange.min='20';splitRange.max='78';splitRange.step='1';
+ splitRange.setAttribute('aria-label','Adjust the width of chat and photo viewer');
+ splitRange.setAttribute('aria-controls','redlineReceiverChat redlineReceiverIncomingPhotos');
+ const smallerChat=button('More Photo',()=>applySplit(splitRatio-.10,true),'rr-split-adjust');
+ const largerChat=button('More Chat',()=>applySplit(splitRatio+.10,true),'rr-split-adjust');
+ const defaultSplit=button('Reset',()=>applySplit(DEFAULT_SPLIT,true),'rr-split-reset');
+ splitControls.append(splitLabel,smallerChat,splitRange,largerChat,splitReadout,defaultSplit);
+ workspace.insertBefore(splitControls,chatPanel);
  roomBody?.before(workspace);
- const splitWorkspace=window.matchMedia('(min-width:720px)');
+ const splitWorkspace=window.matchMedia('(min-width:480px)');
  const SPLIT_KEY='blackcell:redline:receiver:split-v1';
  const DEFAULT_SPLIT=.36;
  function readSplit(){
@@ -201,11 +214,11 @@
  }
  let splitRatio=readSplit(),activePointer=null;
  function bounds(){
-  const width=Math.max(400,workspace.getBoundingClientRect().width||window.innerWidth);
-  const minChat=Math.min(280,Math.max(220,width*.32));
-  const minPhotos=Math.min(390,Math.max(290,width*.42));
-  const min=Math.max(.20,minChat/width);
-  const max=Math.max(min,Math.min(.76,1-(minPhotos+20)/width));
+  const width=Math.max(300,workspace.getBoundingClientRect().width||window.innerWidth);
+  const minChat=Math.max(140,Math.min(260,width*.30));
+  const minPhotos=Math.max(170,Math.min(330,width*.34));
+  const min=Math.max(.18,minChat/width);
+  const max=Math.max(min,Math.min(.78,1-(minPhotos+20)/width));
   return {width,min,max};
  }
  function applySplit(ratio,persist=false){
@@ -216,10 +229,16 @@
   divider.setAttribute('aria-valuemax',String(Math.round(max*100)));
   divider.setAttribute('aria-valuenow',String(Math.round(splitRatio*100)));
   divider.setAttribute('aria-valuetext','Chat '+Math.round(splitRatio*100)+' percent, photos '+Math.round((1-splitRatio)*100)+' percent');
+  splitRange.min=String(Math.round(min*100));
+  splitRange.max=String(Math.round(max*100));
+  splitRange.value=String(Math.round(splitRatio*100));
+  splitReadout.textContent='CHAT '+Math.round(splitRatio*100)+'% · PHOTOS '+Math.round((1-splitRatio)*100)+'%';
   if(persist){
    try{window.localStorage.setItem(SPLIT_KEY,String(splitRatio))}catch{}
   }
  }
+ splitRange.addEventListener('input',()=>applySplit(Number(splitRange.value)/100));
+ splitRange.addEventListener('change',()=>applySplit(Number(splitRange.value)/100,true));
  const moveFromPointer=event=>{
   const rect=workspace.getBoundingClientRect();
   if(!rect.width)return;
@@ -263,11 +282,13 @@
   if(!workspace.hidden)applySplit(splitRatio);
  }).observe(workspace);
  function placeWorkspace(hasRoom){
-  const combined=splitWorkspace.matches&&!document.body.classList.contains('bc-ledger-mobile')
-   &&Boolean(hasRoom&&timeline&&roomBody);
+  // BLACKCELL OS may host REDLINE in a narrow iframe that the legacy
+  // responsive code labels "mobile"; that must not disable this workspace.
+  const combined=splitWorkspace.matches&&Boolean(hasRoom&&timeline&&roomBody);
+  document.body.classList.toggle('rr-split-active',combined);
   workspace.hidden=!combined;
   if(combined){
-   if(chatPanel.parentNode!==workspace)workspace.prepend(chatPanel);
+   if(chatPanel.parentNode!==workspace)workspace.insertBefore(chatPanel,divider);
    if(timeline.parentNode!==photos)photos.append(timeline);
    applySplit(splitRatio);
   }else{
