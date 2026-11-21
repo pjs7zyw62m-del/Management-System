@@ -29,31 +29,16 @@ const panes=make('div','redline-simple-panes');
 const uploadPane=make('section','redline-simple-pane');uploadPane.dataset.redlinePane='upload';
 const earningsPane=make('section','redline-simple-pane');earningsPane.dataset.redlinePane='earnings';earningsPane.hidden=true;
 const messagesPane=make('section','redline-simple-pane');messagesPane.dataset.redlinePane='messages';messagesPane.hidden=true;
-for(const [key,label] of [['upload','Upload'],['earnings','Earnings'],['messages','Messages']]){
+for(const [key,label] of [['upload','Photos & Chat'],['earnings','Earnings']]){
  const b=make('button','redline-simple-tab',label);b.type='button';b.dataset.simpleTab=key;
  b.addEventListener('click',()=>switchTab(key));
  tabs.append(b);
 }
 const uploadTitle=make('div','redline-upload-intro');
 uploadTitle.append(make('span','redline-kicker','PRIVATE MEDIA'),make('h2','','Send a photo'));
-uploadTitle.append(make('p','','Post a private photo, send a message, or send both together in one place.'));
+uploadTitle.append(make('p','','Post a private photo and continue your two-way private conversation below.'));
 uploadPane.append(uploadTitle);
 const uploadMount=make('div','redline-upload-mount');uploadPane.append(uploadMount);
-const sendTextOnly=$('#sendRedlineTextOnly');
-sendTextOnly?.addEventListener('click',async()=>{
- const field=$('#uploadCaption'),feedback=$('#uploadFeedback');
- const message=field?.value.trim()||'',snap=snapshot();
- if(!message){feedback.textContent='Write a message first.';return}
- if(!snap?.roomActive||snap.archiveMode){feedback.textContent='Return to an active private room to send messages.';return}
- sendTextOnly.disabled=true;feedback.textContent='Sending private message…';
- try{
-  await bridge().sendMessage(message);
-  field.value='';feedback.textContent='Private message sent.';
-  messages=[];lastSync=0;
-  window.dispatchEvent(new Event('blackcell:redline:messages-changed'));
- }catch(err){feedback.textContent='Message not sent: '+String(err?.message||'Try again.').slice(0,180)}
- finally{sendTextOnly.disabled=false}
-});
 const earningsBox=make('section','redline-earnings-box');
 earningsBox.append(make('div','redline-heading-kicker','WHAT YOU EARN'));
 const earnedFields=make('div','redline-earnings-fields');
@@ -75,7 +60,7 @@ archiveButton.addEventListener('click',async()=>{
   await bridge()?.toggleArchive?.();
   messages=[];lastSync=0;
   renderChat();
-  if(currentTab==='messages')await loadMessages();
+  if(currentTab==='upload')await loadMessages();
  }catch(err){msgError.textContent='Archive is unavailable: '+String(err?.message||err)}
  finally{archiveButton.disabled=false}
 });
@@ -106,14 +91,14 @@ activityTeaser.append(seeActivity);uploadPane.append(activityTeaser);
 const messageCard=make('section','redline-message-card');
 const msgHeader=make('header','redline-message-header');
 const msgTitle=make('div');
-msgTitle.append(make('strong','','PRIVATE ROOM — REDLINE'),make('small','','Owner + Sender only'));
+msgTitle.append(make('strong','','PRIVATE CHAT — REDLINE'),make('small','','Two-way conversation · Owner + Sender only'));
 msgHeader.append(msgTitle);
 const feed=make('div','redline-message-feed');feed.setAttribute('role','log');feed.setAttribute('aria-live','polite');
 const empty=make('div','redline-chat-empty','No messages yet. Your conversation and photo-review updates will appear here.');
 feed.append(empty);
 const composer=make('form','redline-message-composer');
 composer.id='redlineMessageComposer';
-const photoAction=make('button','redline-chat-photo','+ PHOTO');
+const photoAction=make('button','redline-chat-photo','PHOTO ABOVE');
 photoAction.type='button';photoAction.setAttribute('aria-label','Open photo upload');
 photoAction.addEventListener('click',()=>{if(!home.hidden)switchTab('upload')});
 const entry=make('textarea','redline-message-entry');entry.maxLength=2000;entry.rows=1;entry.placeholder='Message REDLINE…';entry.setAttribute('aria-label','Private room message');
@@ -121,8 +106,8 @@ const send=make('button','redline-chat-send','SEND');send.type='submit';
 composer.append(photoAction,entry,send);
 const msgError=make('p','redline-message-error');msgError.setAttribute('role','status');
 messageCard.append(msgHeader,feed,composer,msgError);
-messagesPane.append(messageCard);
-panes.append(uploadPane,earningsPane,messagesPane);
+uploadPane.append(messageCard);
+panes.append(uploadPane,earningsPane);
 home.append(heading,tabs,panes);
 room.insertBefore(home,$('.room-toolbar',room));
 const ownerDialog=make('dialog','redline-owner-chat-dialog');
@@ -145,7 +130,7 @@ ownerButton.addEventListener('click',()=>{
  ownerDialog.showModal();
  void loadMessages();
 });
-ownerDialog.addEventListener('close',()=>{messagesPane.append(messageCard);photoAction.hidden=false;entry.value=''});
+ownerDialog.addEventListener('close',()=>{uploadPane.append(messageCard);photoAction.hidden=false;entry.value=''});
 ownerDialog.addEventListener('click',e=>{if(e.target===ownerDialog)ownerDialog.close()});
 let currentTab='upload',lastRoom=null,lastSessionKey=null,messages=[],loading=false,posting=false,roomReady=false;
 let lastSync=0;
@@ -256,7 +241,7 @@ function switchTab(tab){
   b.setAttribute('aria-selected',String(selected));
  }
  for(const pane of panes.children)pane.hidden=pane.dataset.redlinePane!==tab;
- if(tab==='messages')void loadMessages();
+ if(tab==='upload')void loadMessages();
  home.scrollIntoView({behavior:'auto',block:'start'});
 }
 function sync(){
@@ -269,7 +254,7 @@ function sync(){
   if(sessionKey!==lastSessionKey){
    lastSessionKey=sessionKey;messages=[];lastSync=0;
    renderChat();
-   if(currentTab==='messages')void loadMessages();
+   if(currentTab==='upload')void loadMessages();
   }
   archiveButton.hidden=!snap.resetAt;
   archiveButton.textContent=snap.archiveMode?'← RETURN TO CURRENT SESSION':'VIEW PREVIOUS RECORDS';
@@ -284,12 +269,12 @@ function sync(){
    renderChat();
   }
   if(!roomReady){roomReady=true;switchTab('upload')}
-  if(currentTab==='messages')renderChat();
+  if(currentTab==='upload')renderChat();
  }else{roomReady=false}
 }
 const observer=new MutationObserver(()=>requestAnimationFrame(sync));
 for(const el of [app,room,upload,ownerSetup])observer.observe(el,{attributes:true,attributeFilter:['hidden']});
-window.addEventListener('blackcell:redline:messages-changed',()=>{if(currentTab==='messages'||ownerDialog.open)void loadMessages()});
+window.addEventListener('blackcell:redline:messages-changed',()=>{if((isSender()&&currentTab==='upload')||ownerDialog.open)void loadMessages()});
 window.addEventListener('blackcell:redline:bridge',sync);
 window.addEventListener('blackcell:redline:state',sync);
 window.addEventListener('blackcell:redline:session-mode',sync);
@@ -297,7 +282,7 @@ window.addEventListener('blackcell:redline:reset',()=>{lastSessionKey=null;messa
 window.addEventListener('pageshow',sync);
 window.addEventListener('visibilitychange',()=>{if(!document.hidden&&(currentTab==='messages'||ownerDialog.open))void loadMessages()});
 window.setInterval(()=>{
- const active=(isSender()&&currentTab==='messages')||ownerDialog.open;
+ const active=(isSender()&&currentTab==='upload')||ownerDialog.open;
  if(!document.hidden&&active&&Date.now()-lastSync>9500)void loadMessages();
 },10000);
 sync();
