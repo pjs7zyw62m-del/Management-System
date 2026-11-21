@@ -13,7 +13,7 @@ const $=id=>document.getElementById(id);
 const state={
  user:null,member:null,isOwner:false,rooms:[],room:null,employees:[],
  entries:[],ratings:new Map(),resubmittingPhotoId:null,filter:'all',timedPhotoTotals:new Map(),timedPhotoFingerprint:'',busy:false,refreshing:false,closed:false,
- images:new Map(),entryFingerprint:'',liveStarted:false,roomChannel:null,roomsChannel:null,liveRoomId:null,liveQueued:false,liveTimer:null,liveConnected:false,scopeMemberId:null,scopeValue:'full',scopeLoading:false,showArchive:false
+ images:new Map(),entryFingerprint:'',liveStarted:false,roomChannel:null,roomsChannel:null,liveRoomId:null,liveQueued:false,liveTimer:null,liveConnected:false,scopeMemberId:null,scopeValue:'full',scopeLoading:false,showArchive:false,paymentStatus:null,paymentAllocations:new Map()
 };
 const node=(tag,klass,content)=>{
  const n=document.createElement(tag);
@@ -427,6 +427,24 @@ function fiveStarResubmissionData(){
   .sort((a,b)=>(b.resubmissionCount-a.resubmissionCount)||
    (Number(b.amount_cents||0)-Number(a.amount_cents||0)));
 }
+function roomPaymentScope(){
+ return state.room?.id+'|'+String(state.showArchive)+'|'+String(state.room?.current_session_started_at||'');
+}
+function authoritativePaymentStatus(){
+ const p=state.paymentStatus;
+ return p?.scope===roomPaymentScope()?p:null;
+}
+async function loadRoomPayments(roomId,archive=state.showArchive){
+ if(!validId(roomId))return null;
+ const scope=roomId+'|'+String(archive)+'|'+String(state.room?.current_session_started_at||'');
+ const response=await db.rpc('corp_redline_room_payment_status',{p_room_id:roomId,p_archive:archive});
+ if(response.error||response.data?.ok!==true)throw Error(fail(response.error||response.data?.reason||'Payment balances unavailable.'));
+ if(state.room?.id!==roomId||roomPaymentScope()!==scope)return null;
+ state.paymentStatus={...response.data,scope};
+ updateTotals();renderEntries();
+ window.dispatchEvent(new Event('blackcell:redline:state'));
+ return state.paymentStatus;
+}
 async function loadEntries({force=false}={}){
  const selectedRoom=state.room;
  if(!selectedRoom)return;
@@ -465,6 +483,8 @@ async function loadEntries({force=false}={}){
  }
  if(all.length>=5000)show('entriesFeedback','Showing up to 5,000 latest submissions; ask administration to archive older records.');
  else show('entriesFeedback','');
+ try{await loadRoomPayments(selectedRoom.id,state.showArchive)}
+ catch(e){show('entriesFeedback','Photos loaded. Payment balance could not refresh: '+fail(e))}
 }
 function updateTotals(){
  let assigned=0n,paid=0n,owed=0n,pending=0;
@@ -476,6 +496,22 @@ function updateTotals(){
   if(amount===0n)complimentary++;
   assigned+=amount;
   if(e.settled_at)paid+=amount;else owed+=amount;
+ }
+ // Room-level payment records are applied to oldest unpaid photos before
+ // extra timed earnings. The authoritative RPC also deduplicates timer
+ // charges already priced into auto-accepted photographs.
+ state.paymentAllocations.clear();
+ const summary=authoritativePaymentStatus();
+ if(summary){
+  let available=cents(summary.payment_credit_cents);
+  const oldest=state.entries.filter(e=>e.decision_status==='accepted'&&!e.settled_at&&cents(e.amount_cents)>0n)
+   .sort((a,b)=>Date.parse(a.decided_at||a.created_at)-Date.parse(b.decided_at||b.created_at)||a.id.localeCompare(b.id));
+  for(const e of oldest){
+   const applied=available<cents(e.amount_cents)?available:cents(e.amount_cents);
+   if(applied>0n){state.paymentAllocations.set(e.id,applied);available-=applied}
+   if(available<=0n)break;
+  }
+  assigned=cents(summary.assigned_cents);paid=cents(summary.paid_cents);owed=cents(summary.remaining_cents);
  }
  show('totalAssigned',dollars(assigned));
  show('totalPaid',dollars(paid));
@@ -513,7 +549,8 @@ function entryState(e){
  if(e.decision_status!=='accepted')return 'pending';
  if(cents(e.amount_cents)===0n)return 'free';
  if(e.settled_at)return 'settled';
- return 'owed';
+ const credit=state.paymentAllocations.get(e.id)||0n;
+ return credit>=cents(e.amount_cents)?'settled':credit>0n?'partial':'owed';
 }
 // Owner-selected photo presence, confined to this verified two-person room.
 // This reflects the image displayed, not whether anyone read a chat message.
@@ -689,7 +726,7 @@ function renderEntry(e){
  const body=node('div','photo-entry-content');
  const meta=node('div','entry-meta');
  meta.append(node('span','',when(e.created_at)));
- const statusBadge=node('span','entry-badge '+status,status==='pending'?'AWAITING YOUR REVIEW':status==='rejected'?'REJECTED':status==='free'&&timedCents>0n?'ACCEPTED · TIMED EARNED':status==='free'?'ACCEPTED · $0.00':status==='owed'?'AMOUNT OWED':'RECORDED PAID');
+ const statusBadge=node('span','entry-badge '+status,status==='pending'?'AWAITING YOUR REVIEW':status==='rejected'?'REJECTED':status==='free'&&timedCents>0n?'ACCEPTED · TIMED EARNED':status==='free'?'ACCEPTED · $0.00':status==='owed'?'AMOUNT OWED':status==='partial'?'PARTIALLY PAID':'RECORDED PAID');
  meta.append(statusBadge);
  body.append(meta,node('h3','','PHOTO '+e.id.slice(0,8).toUpperCase()));
  if(e.resubmission_origin_id)body.append(node('div','rr-photo-resubmission-tag',
