@@ -19,9 +19,9 @@ test('new shell layers on top of the original fully authenticated Ledger',()=>{
 });
 test('desktop, tablet, and phone versions use one Ledger',()=>{
  for(const name of ['bc-ledger-desktop','bc-ledger-tablet','bc-ledger-mobile'])assert.ok(js.includes(name)&&css.includes(name),name);
- assert.match(js,/BLACKCELL OS Mobile/);
- assert.match(js,/BLACKCELL OS Tablet/);
- assert.match(js,/BLACKCELL OS'/);
+ assert.match(js,/const labels=\{os:'BLACKCELL REDLINE',tablet:'BLACKCELL REDLINE',mobile:'BLACKCELL REDLINE'\}/);
+ assert.match(js,/const captions=\{os:'PRIVATE EXCHANGE',tablet:'PRIVATE EXCHANGE',mobile:'PRIVATE EXCHANGE'\}/);
+ assert.match(js,/topLabel\.textContent='REDLINE'/);
  assert.match(css,/grid-template-columns:220px minmax\(0,1fr\)/);
  assert.match(css,/bc-ledger-phone-nav/);
 });
