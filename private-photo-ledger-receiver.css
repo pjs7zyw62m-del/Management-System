@@ -50,6 +50,11 @@ body.bc-redline-receiver .room-toolbar{padding:19px 23px!important;margin-bottom
 body.bc-redline-receiver .room-toolbar h2{color:#f5f5f6!important;letter-spacing:-.035em}
 body.bc-redline-receiver .room-state{background:#09150f!important;color:#d6f1db!important;border-color:#22563a!important}
 body.bc-redline-receiver .metrics{display:none!important}
+/* Owners receive and review; they cannot upload. Remove the legacy
+   employee-upload banner and its misleading GO TO UPLOAD button entirely. */
+body.bc-redline-receiver #uploadAccessStatus{display:none!important}
+body.bc-redline-receiver .owner-upload-info .owner-upload-example{display:none!important}
+
 body.bc-redline-receiver #ownerSetup{
  margin:24px 0 0!important;padding:24px!important;
  border-left:3px solid #b91a35!important;
