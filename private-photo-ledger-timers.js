@@ -1,5 +1,5 @@
 /* REDLINE timed photo earnings — one selected photo, server clock and room RPCs.
-   Complete minutes are accrued as a ledger obligation, not a funds transfer.
+   Elapsed seconds are prorated from the per-minute rate; this ledger does not move funds.
    Owner alone can start, stop or record paid; sender can read room status. */
 (()=>{
 'use strict';
@@ -20,6 +20,13 @@ const money=c=>{
   return '$'+(v/100n).toLocaleString('en-US')+'.'+(v%100n).toString().padStart(2,'0');
  }catch{return '$0.00'}
 };
+// Running balance in 4-decimal dollars; final cents round once on the server.
+const liveMoney=(rateCents,elapsedSeconds)=>{
+ const seconds=BigInt(Math.max(0,Math.floor(Number(elapsedSeconds)||0)));
+ const units=(BigInt(rateCents||0)*seconds*100n+30n)/60n;
+ return '$'+(units/10000n).toLocaleString('en-US')+'.'+
+  (units%10000n).toString().padStart(4,'0');
+};
 const parseRate=value=>{
  const s=String(value||'').trim().replace(/[$,]/g,'');
  if(!/^\d+(?:\.\d{1,2})?$/.test(s))throw Error('Enter a dollar rate, such as 0.50.');
@@ -36,7 +43,7 @@ const ownerPanel=make('details','rr-timer-panel');ownerPanel.id='redlinePhotoTim
 ownerPanel.open=true;
 ownerPanel.setAttribute('aria-label','Selected photo timed earnings');
 const title=make('summary','rr-timer-heading');
-title.append(make('strong','','TIMED PHOTO EARNINGS'),make('small','','Completed minutes only · owner controlled'));
+title.append(make('strong','','TIMED PHOTO EARNINGS'),make('small','','Every second counts · owner controlled'));
 const chosen=make('span','rr-timer-selected','Select a photo');
 const rateLabel=make('label','rr-timer-rate-label','RATE / MIN');
 const rate=make('input','rr-timer-rate');rate.type='text';rate.inputMode='decimal';
@@ -49,17 +56,17 @@ rate.addEventListener('input',()=>{
  try{rate.setSelectionRange(start===null?rate.value.length:start+1,
   end===null?rate.value.length:end+1)}catch(_){}
 });
-rate.setAttribute('aria-label','Timed earnings dollars per completed minute');
+rate.setAttribute('aria-label','Timed earnings dollars per minute, prorated by elapsed second');
 rateLabel.append(rate);
 const start=btn('▶ START TIMER',()=>void startTimer(),'rr-timer-start');
 const stop=btn('■ STOP TIMER',()=>void stopTimer(),'rr-timer-stop');
 const elapsed=make('strong','rr-timer-clock','00:00');
-const earned=make('strong','rr-timer-money','$0.00');
+const earned=make('strong','rr-timer-money','$0.0000');
 const resetPick=btn('NEXT INCOMING',()=>selectIncoming(),'rr-timer-select-incoming');
 const controls=make('div','rr-timer-controls');
 controls.append(chosen,rateLabel,start,stop,resetPick);
 title.append(elapsed,earned);
-const note=make('p','rr-timer-note','Timer credits are tracked separately. They are not automatic money transfers.');
+const note=make('p','rr-timer-note','Rate ÷ 60 every second. Final cents round once when stopped; REDLINE does not transfer money.');
 note.setAttribute('role','status');
 const preview=make('div','rr-timer-selected-preview');
 const previewImg=make('img','');previewImg.alt='Selected private photo for timed viewing';
@@ -99,7 +106,7 @@ senderAmountMetric.append(make('small','','EARNED SO FAR'));
 const senderAmount=make('strong','rr-timer-sender-amount','$0.00');
 senderAmountMetric.append(senderAmount);
 senderMetrics.append(senderTimeMetric,senderAmountMetric);
-const senderDetail=make('p','rr-timer-sender-detail','Amount increases for each completed minute.');
+const senderDetail=make('p','rr-timer-sender-detail','Amount increases every elapsed second.');
 senderPanel.append(senderHead,senderMetrics,senderDetail);
 senderPanel.hidden=true;
 const duration=seconds=>{
@@ -201,7 +208,7 @@ async function stopTimer(keepPhotoSelected=true){
  },'Stopping, pricing and submitting selected photo…');
  if(committed?.ok){
   note.textContent=committed.photo_auto_submitted||committed.photo_has_timer_price
-   ?'PHOTO AUTO-SUBMITTED · '+money(committed.earned_cents)+' · '+committed.completed_minutes+' completed minute(s)'
+   ?'PHOTO AUTO-SUBMITTED · '+money(committed.earned_cents)+' · '+duration(committed.elapsed_seconds||0)+' elapsed'
    :'Timer stopped · '+money(committed.earned_cents)+' saved as timed earnings for this photo.';
  }
 }
@@ -210,14 +217,14 @@ async function markPaid(id){
  if(!window.confirm('Record this timed earning as paid? REDLINE does not send money.'))return;
  await callAction(async()=>{await bridge().timerMarkPaid(id)},'Recording external payment confirmation…');
 }
-function tickAmount(){
+function tickSeconds(){
  const a=latest?.active;
- if(!a?.running)return 0n;
+ if(!a?.running)return 0;
  const now=Date.now()+clockOffset;
- const startMs=new Date(a.started_at).getTime();
- const until=Math.min(now,new Date(a.heartbeat_at).getTime()+45000);
- const minutes=Math.max(0,Math.floor((until-startMs)/60000));
- return BigInt(minutes)*BigInt(a.rate_cents||0);
+ const startMs=Date.parse(a.started_at),heartbeatMs=Date.parse(a.heartbeat_at);
+ if(!Number.isFinite(startMs))return 0;
+ const until=Math.min(now,Number.isFinite(heartbeatMs)?heartbeatMs+45000:now);
+ return Math.max(0,Math.floor((until-startMs)/1000));
 }
 function renderHistory(s){
  if(!latest)return;
@@ -227,7 +234,7 @@ function renderHistory(s){
  history.append(t);
  for(const row of recent.slice(0,15)){
   const item=make('div','rr-timer-history-item');
-  item.append(make('span','',labelPhoto(row.photo_id)+' · '+row.completed_minutes+' min × '+money(row.rate_cents)+'/min'),
+  item.append(make('span','',labelPhoto(row.photo_id)+' · '+duration(row.elapsed_seconds??((row.completed_minutes||0)*60))+' × '+money(row.rate_cents)+'/min'),
    make('strong','',money(row.earned_cents)+(row.settled_at?' · PAID':' · OWED')));
   if(s?.isOwner&&!row.settled_at&&Number(row.earned_cents)>0){
    item.append(btn('RECORD PAID',()=>void markPaid(row.id),'rr-timer-paid'));
@@ -263,23 +270,23 @@ function render(){
    ? Math.min(nowMs,Number.isFinite(heartbeatMs)?heartbeatMs+45000:nowMs)
    : stoppedAt;
   const seconds=validStart?Math.max(0,Math.floor((displayUntil-startMs)/1000)):0;
-  const amount=active?(isRunning?tickAmount():BigInt(active.earned_cents||0)):BigInt(stopped?.earned_cents||0);
+  const amount=active&&isRunning?liveMoney(active.rate_cents,seconds):money((active||stopped)?.earned_cents);
   senderStatus.textContent=isRunning?'● TIMER RUNNING':active?'TIMER DISCONNECTED':'■ TIMER STOPPED';
   senderRate.textContent=money(session.rate_cents)+'/minute';
   senderClock.textContent=duration(seconds);
-  senderAmount.textContent=money(amount);
+  senderAmount.textContent=amount;
   senderDetail.textContent=isRunning
    ?'Photo '+String(session.photo_id||'').slice(0,8).toUpperCase()+
-    ' · Earned amount increases each completed minute.'
+    ' · Earned amount increases every second.'
    :active?'Timer connection lost. Amount shown is capped at the last verified heartbeat.'
-   :'Final completed-minute amount · Timer stopped.';
+   :'Final elapsed-second amount · Timer stopped.';
  }
 
  const elapsedSec=running?Math.max(0,Math.floor((Date.now()+clockOffset-new Date(latest.active.started_at).getTime())/1000)):0;
  const m=Math.floor(elapsedSec/60),secs=elapsedSec%60;
  elapsed.textContent=running?String(m).padStart(2,'0')+':'+String(secs).padStart(2,'0'):'00:00';
- const activePay=tickAmount();
- earned.textContent=money(activePay);
+ const activeSeconds=tickSeconds();
+ earned.textContent=running?liveMoney(latest.active.rate_cents,activeSeconds):'$0.0000';
  chosen.textContent=running?labelPhoto(latest.active.photo_id)+' · RUNNING':labelPhoto(selectedId);
  start.disabled=acting||!owner||!s.roomActive||!selectedId||running;
  stop.disabled=acting||!owner||!running;
