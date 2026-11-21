@@ -7,7 +7,7 @@
 #desktop .bc-unified-home-layer[hidden]{display:none!important}
 #desktop .bc-home-desktop-app{
  position:absolute;display:flex;flex-direction:column;align-items:center;
- justify-content:flex-start;gap:8px;width:91px;height:102px;padding:5px;
+ justify-content:flex-start;gap:7px;width:110px;min-height:126px;height:auto;padding:7px 5px 10px;box-sizing:border-box;
  color:#f9f7fb;font:580 12px/1.2 -apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;
  background:transparent;border:1px solid transparent;border-radius:18px;
  text-align:center;text-shadow:0 2px 8px #000a;
@@ -25,8 +25,10 @@
 }
 #desktop .bc-home-app-icon svg{width:39px;height:39px;color:#f2eef4}
 #desktop .bc-home-desktop-label{
- display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
- overflow:hidden;max-width:94px;font-size:11px;font-weight:650;
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;
+ overflow:hidden;max-width:100%;height:auto;min-height:28px;
+ font-size:11px;line-height:1.32;font-weight:650;
+ white-space:normal;overflow-wrap:break-word;word-break:normal;text-overflow:clip;
 }
 #desktop .bc-home-widget{
  position:absolute;width:218px;height:138px;min-width:152px;
@@ -134,7 +136,7 @@
 @media(min-width:621px) and (max-width:920px){
  #desktop .bc-home-widget{width:195px;height:128px}
  #desktop .bc-home-widget[data-size="large"]{width:250px;height:183px}
- #desktop .bc-home-desktop-app{width:80px;height:91px}
+ #desktop .bc-home-desktop-app{width:103px;min-height:122px;height:auto}
  #desktop .bc-home-app-icon{width:57px;height:57px}
 }
 /* iPhone presents the same synced selections in an iOS-style responsive
