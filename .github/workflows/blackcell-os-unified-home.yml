@@ -78,7 +78,7 @@ jobs:
                 document.body.dataset.homeDrag=String(Number.isFinite(before)&&Number.isFinite(after)&&Math.abs(after-before)>.01);
                 document.body.dataset.homeDragDetail='before_'+before+'_after_'+after+'_layer_'+layer.clientWidth+'_left_'+icon.style.left+'_app_'+id;
                }catch(err){document.body.dataset.homeDrag=false;document.body.dataset.homeDragDetail='exception_'+String(err?.message||err).replace(/[^a-z0-9_]/gi,'_').slice(0,100)}
-              }else {document.body.dataset.homeDrag=String(phone||apps.length===0);document.body.dataset.homeDragDetail=phone?'phone':'no_icon_'+apps.length}
+              }else {document.body.dataset.homeDrag=String(phone||apps.length===0);document.body.dataset.homeDragDetail=phone?'phone':('no_icon_'+apps.length+'_saved_'+api.read().pins.map(p=>p.id).join('_')+'_list_'+apps.map(p=>p.id).join('_')+'_dom_'+(layer?.querySelectorAll('.bc-home-desktop-app').length||0)+'_clean_'+shell.classList.contains('bc-macos-desktop'))}
               document.body.dataset.homeDevice=phone?'phone':'desktop';
             },350);
           },7000);
