@@ -57,9 +57,15 @@ function start(){
  const searchPill=E('button','bc-sb-search-pill');searchPill.type='button';searchPill.innerHTML=S(GLYPHS.search)+'<span>Search</span>';
  const dock=E('nav','bc-sb-dock');dock.setAttribute('aria-label','Favorite apps');
  const dockItems=E('div','bc-sb-dock-icons');dock.append(dockItems);
+ const dockHandle=E('button','bc-sb-dock-handle','Show Dock');
+ dockHandle.type='button';
+ dockHandle.setAttribute('aria-label','Show Favorite Apps Dock');
+ dockHandle.setAttribute('aria-controls','bcSpringboardDock');
+ dockHandle.setAttribute('aria-expanded','false');
+ dock.id='bcSpringboardDock';
  const editButton=E('button','bc-sb-edit-done','Done');editButton.type='button';editButton.hidden=true;
  const indicator=E('div','bc-sb-home-indicator');indicator.setAttribute('aria-hidden','true');
- page.append(grid);home.append(identity,widgets,page,pageControls,searchPill,dock,indicator);
+ page.append(grid);home.append(identity,widgets,page,pageControls,searchPill,dock,dockHandle,indicator);
  const modal=E('div','bc-sb-overlay');modal.hidden=true;
  const sheet=E('section','bc-sb-sheet');sheet.setAttribute('role','dialog');sheet.setAttribute('aria-modal','true');sheet.setAttribute('aria-label','BLACKCELL App Library');
  const modalBar=E('div','bc-sb-modal-head');
@@ -72,7 +78,57 @@ function start(){
  root.append(status,editButton,home,modal);shell.append(root);
  shell.classList.add('bc-springboard-ready');
  let pageIndex=0,edit=false,picked=null,pressed=null,longTimer=0,suppressUntil=0,modalOpen=false,returnFocus=null,knownAccount=null,order=[];
- let renderedIds=[];
+ let renderedIds=[],dockIdleTimer=0;
+ const dockAuto=()=>shell.classList.contains('os-dock-auto-hide');
+ function stopDockIdle(){clearTimeout(dockIdleTimer);dockIdleTimer=0}
+ function hideDock(){
+  stopDockIdle();root.classList.remove('bc-sb-dock-shown');
+  dockHandle.setAttribute('aria-expanded','false');
+  dock.setAttribute('aria-hidden',dockAuto()?'true':'false');
+  dock.toggleAttribute('inert',dockAuto());
+ }
+ function scheduleDockIdle(){
+  stopDockIdle();
+  if(!dockAuto()||!root.classList.contains('bc-sb-dock-shown'))return;
+  dockIdleTimer=setTimeout(()=>{
+   if(dock.matches(':hover')||dock.contains(document.activeElement)){scheduleDockIdle();return}
+   hideDock();
+  },4500);
+ }
+ function showDock(){
+  if(!dockAuto())return;
+  root.classList.add('bc-sb-dock-shown');
+  dockHandle.setAttribute('aria-expanded','true');
+  dock.setAttribute('aria-hidden','false');dock.removeAttribute('inert');
+  scheduleDockIdle();
+ }
+ function syncDockPreference(){
+  const auto=dockAuto();root.classList.toggle('bc-sb-dock-auto-hide',auto);
+  dockHandle.hidden=!auto;
+  if(!auto){stopDockIdle();root.classList.remove('bc-sb-dock-shown');dock.removeAttribute('inert');dock.setAttribute('aria-hidden','false')}
+  else if(!root.classList.contains('bc-sb-dock-shown'))hideDock();
+  else scheduleDockIdle();
+ }
+ dockHandle.addEventListener('click',showDock);
+ dock.addEventListener('pointerdown',()=>scheduleDockIdle(),{passive:true});
+ dock.addEventListener('pointerenter',stopDockIdle);
+ dock.addEventListener('pointerleave',scheduleDockIdle);
+ dock.addEventListener('focusin',stopDockIdle);
+ dock.addEventListener('focusout',scheduleDockIdle);
+ root.addEventListener('pointerdown',e=>{
+  if(dockAuto()&&root.classList.contains('bc-sb-dock-shown')&&!dock.contains(e.target)&&!dockHandle.contains(e.target))hideDock();
+ },{capture:true,passive:true});
+ let dockSwipeStart=null;
+ home.addEventListener('touchstart',e=>{
+  if(e.touches.length!==1)return;const p=e.touches[0],bounds=home.getBoundingClientRect();
+  dockSwipeStart=dockAuto()&&p.clientY>bounds.bottom-105?{x:p.clientX,y:p.clientY}:null;
+ },{passive:true});
+ home.addEventListener('touchend',e=>{
+  if(!dockSwipeStart||e.changedTouches.length!==1)return;const p=e.changedTouches[0],dy=p.clientY-dockSwipeStart.y;
+  if(dy< -32&&Math.abs(p.clientX-dockSwipeStart.x)<105)showDock();
+  dockSwipeStart=null;
+ },{passive:true});
+ window.addEventListener('pagehide',stopDockIdle,{once:true});
  const priority=['network','forces','photos','film','shorts','person','omega','settings','store','photoledger','photobattle','usa','awards','care','innovations'];
  const account=()=>{try{return window.BLACKCELL_OS_WIDGET_LAYOUT?.account?.()||null}catch(_){return null}};
  const storageKey=()=>{const id=account();return id&&id!=='preview'?'bc.os.iphone-springboard.v1:'+id:null};
@@ -149,6 +205,7 @@ function start(){
  }
  function render(){
   if(shell.hidden)return;
+  syncDockPreference();
   const all=ordered(), ids=all.map(x=>x.id);
   renderedIds=ids;
   sysCount.textContent=all.length+' available app'+(all.length===1?'':'s');
@@ -233,7 +290,7 @@ function start(){
  window.addEventListener('resize',()=>{if(document.documentElement.classList.contains('bc-os-phone'))render()},{passive:true});
  const obs=new MutationObserver(()=>{if(!shell.hidden)requestAnimationFrame(render)});
  obs.observe(src,{childList:true,attributes:true,subtree:true,attributeFilter:['hidden','disabled','class']});
- obs.observe(shell,{attributes:true,attributeFilter:['hidden']});
+ obs.observe(shell,{attributes:true,attributeFilter:['hidden','class']});
  const member=$('#memberName',shell);if(member)obs.observe(member,{childList:true,characterData:true,subtree:true});
  clock();render();
  const timer=setInterval(()=>{if(!shell.hidden)clock()},30000);

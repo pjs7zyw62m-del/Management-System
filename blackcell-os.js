@@ -5,8 +5,22 @@ let stopStorageWidget=()=>{},securityNotifications=null;
 let browserModule,filesModule,personalPhotosModule;
 let settingsModule,desktopPrefs={reduceMotion:false,dockLabels:true,dockAutoHide:true,autoLockMinutes:5,wallpaper:'obsidian'};
 function prefKey(){return 'bc.os.preferences.v1:'+String(storeProfile||'preview')}
-let dockHideTimer=null;
-function dockReveal(show){const shell=$('desktop');if(!shell)return;clearTimeout(dockHideTimer);shell.classList.toggle('os-dock-revealed',!!show&&desktopPrefs.dockAutoHide);const edge=shell.querySelector('.os-dock-edge');edge?.setAttribute('aria-expanded',String(!!show&&desktopPrefs.dockAutoHide))}
+let dockHideTimer=null,dockIdleTimer=null;
+function dockReveal(show){
+ const shell=$('desktop');if(!shell)return;
+ clearTimeout(dockHideTimer);clearTimeout(dockIdleTimer);
+ const revealed=!!show&&desktopPrefs.dockAutoHide;
+ shell.classList.toggle('os-dock-revealed',revealed);
+ const edge=shell.querySelector('.os-dock-edge');
+ edge?.setAttribute('aria-expanded',String(revealed));
+ // Touch devices do not generate a reliable mouseleave after tapping the reveal handle.
+ // Collapse after a short idle interval, unless a pointer or keyboard focus is within the dock.
+ if(revealed)dockIdleTimer=setTimeout(()=>{
+  const dock=shell.querySelector('.dockwrap .dock');
+  if(dock?.matches(':hover')||dock?.contains(document.activeElement)){dockReveal(true);return}
+  dockReveal(false);
+ },4800);
+}
 function setupAutoHideDock(){
  const shell=$('desktop'),wrap=shell?.querySelector('.dockwrap'),dock=wrap?.querySelector('.dock');if(!dock||shell.querySelector('.os-dock-edge'))return;
  const edge=document.createElement('button');edge.type='button';edge.className='os-dock-edge';edge.setAttribute('aria-label','Show application dock');edge.setAttribute('aria-expanded','false');dock.id='osApplicationDock';edge.setAttribute('aria-controls',dock.id);wrap.before(edge);
