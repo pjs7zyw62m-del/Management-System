@@ -1256,6 +1256,9 @@ function closeLightbox(){
  $('lightboxImage').removeAttribute('src');
  // The persistent bid/timer sidebar is NOT part of this image-only popup.
  document.body.style.overflow='';
+ // The sender should see the main viewer photo immediately after full-size
+ // inspection closes, rather than waiting for the 15-second presence pulse.
+ void publishOwnerViewing(ownerVisiblePhotoId());
 }
 function wireEvents(){
  $('createRoomForm').addEventListener('submit',e=>void createRoom(e));
