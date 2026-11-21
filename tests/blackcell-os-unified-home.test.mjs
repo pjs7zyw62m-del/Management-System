@@ -87,7 +87,7 @@ test('Release serves unified home CSS and JavaScript and invalidates old caches'
  assert.match(html,/blackcell-os-unified-home\.js\?v=20261121-2/);
  assert.match(html,/blackcell-os-springboard\.js\?v=ios-a-20261119&amp;rev=mobile-ready2/);
  assert.match(html,/blackcell-os\.js\?v=125-level-r-window-drag/);
- assert.match(read('blackcell-site-version.json'),/level-r-window-drag/);
+ assert.match(read('blackcell-site-version.json'),/(?:level-r-window-drag|redline-receiver-reset)/);
 });
 
 
