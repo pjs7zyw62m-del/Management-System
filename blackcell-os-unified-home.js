@@ -195,7 +195,9 @@
   if(!handle)return;
   let origin=null;
   handle.addEventListener('pointerdown',e=>{
-   if(e.button!==0||e.target.closest('button')||!accountReady()||!!gallery)return;
+   // Desktop app shortcuts ARE buttons; only ignore nested widget controls.
+   // The previous unconditional closest('button') rejected every app drag.
+   if(e.button!==0||(type==='widget'&&e.target.closest('button'))||!accountReady()||!!gallery)return;
    const item=snap()[type==='widget'?'widgets':'pins'].find(p=>p.id===id);
    if(!item)return;
    const rect=element.getBoundingClientRect(),host=layer.getBoundingClientRect();
