@@ -30,7 +30,7 @@ const parseRate=value=>{
 };
 const uuid=value=>typeof value==='string'&&/^[a-f0-9-]{36}$/i.test(value);
 const labelPhoto=id=>id?'Photo '+id.slice(0,8).toUpperCase():'No photo selected';
-let roomId=null,selectedId=null,latest=null,fetching=false,acting=false;
+let roomId=null,selectedId=null,latest=null,fetching=false,acting=false,refreshQueued=false;
 let lastStatusAt=0,lastHeartbeatAt=0,clockOffset=0,lastHistorySignature='';
 const ownerPanel=make('details','rr-timer-panel');ownerPanel.id='redlinePhotoTimerPanel';
 ownerPanel.open=true;
@@ -178,9 +178,12 @@ async function startTimer(){
  if(!s?.isOwner||!s.roomActive||s.archiveMode||!selectedId)return;
  let cents;
  try{cents=parseRate(rate.value)}catch(e){err(e);return}
+ let started=false;
  await callAction(async()=>{
   await bridge().timerStart(selectedId,cents);
+  started=true;
  },'Starting authenticated timed photo session…');
+ if(started)note.textContent='TIMER STARTED · The receiver chat updates now; the sender chat updates automatically.';
 }
 async function stopTimer(keepPhotoSelected=true){
  const id=latest?.active?.id;
@@ -321,7 +324,12 @@ async function refresh(force=false){
  // Sender polls only while its authenticated room is in the foreground.
  // A five-second check picks up timer start/stop without creating chat spam.
  const pollMs=!s.isOwner&&s.roomActive&&!s.archiveMode?5000:12000;
- if(fetching||!force&&Date.now()-lastStatusAt<pollMs)return;
+ if(fetching){
+  // Don't lose the forced post-START/STOP snapshot to an in-flight poll.
+  if(force)refreshQueued=true;
+  return;
+ }
+ if(!force&&Date.now()-lastStatusAt<pollMs)return;
  fetching=true;lastStatusAt=Date.now();
  try{
   latest=await bridge().timerStatus(roomId);
@@ -339,7 +347,13 @@ async function refresh(force=false){
   if(latest.active?.running&&s.isOwner)selectedId=latest.active.photo_id;
   if(!selectedId)selectedId=currentPhoto()||s.entries?.find(e=>e.decision_status==='accepted')?.id||null;
  }catch(e){err(e)}
- finally{fetching=false;render()}
+ finally{
+  fetching=false;render();
+  if(refreshQueued){
+   refreshQueued=false;
+   void refresh(true);
+  }
+ }
 }
 async function pulse(){
  const s=snap();
