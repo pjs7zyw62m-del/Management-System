@@ -232,6 +232,24 @@
  divider.title='Drag to resize Photos. Double-click to reset.';
  workspace.insertBefore(divider,photos);
  roomBody?.before(workspace);
+ // When the receiver opens the original photograph, clicking it again returns
+ // to the unchanged chat + one-photo workspace via the existing close handler.
+ const fullSizeImage=$('#lightboxImage');
+ fullSizeImage?.addEventListener('click',()=>{
+  if(document.body.classList.contains('rr-imessage-mode')&&!$('#photoLightbox')?.hidden){
+   $('#closeLightbox')?.click();
+  }
+ });
+ // A timed/previously priced photo uses the same original-photo viewer.
+ workspace.addEventListener('click',event=>{
+  const image=event.target?.closest?.('.rr-timer-selected-preview > img');
+  if(!image||!document.body.classList.contains('rr-imessage-mode'))return;
+  const source=document.querySelector('#redlineReceiverPricedStage .photo-entry .photo-image-btn');
+  // The timer already renders the selected preview. Open the matching source
+  // through the existing verified lightbox when its signed URL matches.
+  const matched=[...document.querySelectorAll('#redlineReceiverPricedStage .photo-entry .photo-image-btn')].find(b=>b.querySelector('img')?.src===image.src);
+  (matched||source&&source.querySelector('img')?.src===image.src?source:null)?.click();
+ });
  const MEDIA_KEY='blackcell:redline:receiver:photo-first-width-v3';
  const DEFAULT_MEDIA=.78;
  const readWidth=()=>{
