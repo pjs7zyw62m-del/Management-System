@@ -69,6 +69,8 @@
 #desktop .os-window-head .traffic button:nth-child(3){--dot:#31c965}
 #desktop .os-window-head .traffic button:nth-child(-n+3):hover::before{transform:scale(1.12);filter:brightness(1.08)}
 #desktop .os-window-head .traffic button:nth-child(-n+3):focus-visible{outline:2px solid #f5c3cf;outline-offset:-3px}
+/* The native phone window is already full-screen; keep Maximize suppressed. */
+html.bc-os-phone #desktop .os-window-head .traffic button:nth-child(3){display:none!important}
 #desktop .dock{
  background:linear-gradient(135deg,rgba(72,73,86,.55),rgba(17,18,29,.69))!important;
  border:1px solid rgba(248,233,246,.23)!important;
