@@ -68,8 +68,7 @@ export function mountWallpaperControls(panel,{api,prefs,el,btn,row}){
  const cancel=btn('Cancel',clearPreview,'bc-settings-button');
  actions.append(apply,cancel);previewBox.append(previewImage,details,actions);
  input.onchange=()=>{
-  clearPreview();
-  const file=input.files?.[0];if(!file)return;
+  const file=input.files?.[0];clearPreview();if(!file)return;
   if(!api.wallpaper.validImage(file)){inform('Use a JPG, PNG, WebP, GIF, AVIF or supported HEIC image under 8 MB.',false);return}
   selected=file;previewUrl=URL.createObjectURL(file);previewImage.src=previewUrl;
   details.textContent=file.name+' · '+(file.size/1048576).toFixed(1)+' MB · '+(dest.selectedOptions[0]?.textContent||'');
