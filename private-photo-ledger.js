@@ -518,6 +518,12 @@ function renderReviewQueue(){
   if(sidebar)sidebar.hidden=true;
   return;
  }
+ // The live review queue is the ONE canonical photo viewer. An earlier
+ // timed-photo feature added a second preview and its CSS hid this queue.
+ // Clear both stale visibility paths SYNCHRONOUSLY on every review render.
+ document.body.classList.remove('rr-timing-priced-photo');
+ for(const stale of document.querySelectorAll('.rr-timer-selected-preview'))
+  stale.hidden=true;
  const pending=state.entries
   .filter(e=>entryState(e)==='pending')
   .sort((a,b)=>new Date(a.created_at)-new Date(b.created_at)||a.id.localeCompare(b.id));
