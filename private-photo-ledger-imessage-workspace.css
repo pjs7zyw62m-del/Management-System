@@ -339,3 +339,161 @@ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverMediaEdge{cursor:col-r
   display:none!important;
  }
 }
+
+
+/* PHOTO-FIRST OVERRIDE — fixes the image being pushed below the timer.
+   The image owns remaining viewer height; pricing is a short visible footer.
+   Timed earnings fold to one status row until their controls are requested. */
+@media (min-width:420px){
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverLiveWorkspace{
+  height:calc(100dvh - 74px)!important;
+  max-height:calc(100dvh - 74px)!important;
+  min-height:0!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverLiveWorkspace.rr-media-open{
+  grid-template-columns:minmax(0,1fr) 11px minmax(0,var(--rr-media-width,67%))!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverIncomingPhotos{
+  grid-template-rows:auto minmax(0,var(--rr-review-height,80%)) 11px minmax(0,1fr)!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage{
+  display:flex!important;flex-direction:column!important;align-items:stretch!important;
+  padding:3px!important;overflow:hidden!important;min-height:0!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage>.rr-timer-panel{
+  flex:0 0 auto!important;min-height:0!important;
+  max-height:170px!important;overflow-y:auto!important;
+  padding:4px 7px!important;margin:0 0 3px!important;
+  border-radius:6px!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlinePhotoTimerPanel summary.rr-timer-heading{
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  min-height:27px!important;gap:6px!important;
+  cursor:pointer!important;list-style:none;
+  flex-wrap:wrap!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlinePhotoTimerPanel summary.rr-timer-heading::-webkit-details-marker{display:none!important}
+ body.bc-redline-receiver.rr-imessage-mode #redlinePhotoTimerPanel summary.rr-timer-heading::before{
+  content:'⏱';font-size:14px;color:#ed4f72;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlinePhotoTimerPanel summary.rr-timer-heading::after{
+  content:'RATE / MIN ▾';font-size:9px;font-weight:800;color:#e7dbe0;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlinePhotoTimerPanel[open] summary.rr-timer-heading::after{
+  content:'HIDE TIMER ▴';
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlinePhotoTimerPanel:not([open])>:not(summary){
+  display:none!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlinePhotoTimerPanel summary .rr-timer-clock,
+ body.bc-redline-receiver.rr-imessage-mode #redlinePhotoTimerPanel summary .rr-timer-money{
+  font-size:12px!important;white-space:nowrap;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlinePhotoTimerPanel summary small{
+  display:none!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage #ownerReviewQueue:not([hidden]){
+  flex:1 1 0!important;min-height:0!important;min-width:0!important;
+  height:100%!important;max-height:none!important;
+  padding:2px!important;margin:0!important;
+  display:flex!important;flex-direction:column!important;
+  overflow:hidden!important;background:#050506!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage #ownerReviewQueue .owner-review-heading{
+  display:none!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage #reviewQueueCurrent{
+  flex:1 1 0!important;min-height:0!important;min-width:0!important;
+  display:flex!important;flex-direction:column!important;
+  overflow:hidden!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage #reviewQueueCurrent>.queue-progress{
+  display:none!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage #reviewQueueCurrent>.photo-entry{
+  flex:1 1 0!important;min-height:0!important;min-width:0!important;
+  max-height:none!important;height:100%!important;
+  display:flex!important;flex-direction:column!important;
+  overflow:hidden!important;gap:0!important;
+  background:#050506!important;
+  border:0!important;box-shadow:none!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage #reviewQueueCurrent>.photo-entry>.photo-image-btn{
+  flex:1 1 0!important;min-height:0!important;max-height:none!important;
+  height:auto!important;width:100%!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  overflow:hidden!important;padding:0!important;
+  background:#020203!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage #reviewQueueCurrent>.photo-entry>.photo-image-btn>img{
+  width:100%!important;height:100%!important;
+  min-height:0!important;max-height:100%!important;
+  min-width:0!important;object-fit:contain!important;object-position:center!important;
+  display:block!important;background:#020203!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage #reviewQueueCurrent>.photo-entry>.photo-entry-content{
+  flex:0 0 auto!important;min-height:0!important;
+  width:100%!important;max-height:152px!important;
+  display:flex!important;flex-direction:column!important;
+  overflow-y:auto!important;overflow-x:hidden!important;
+  padding:6px 8px!important;gap:4px!important;
+  border-top:1px solid #543040!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage #reviewQueueCurrent .entry-meta,
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage #reviewQueueCurrent h3,
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage #reviewQueueCurrent .review-price-heading,
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage #reviewQueueCurrent .entry-controls>small,
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage #reviewQueueCurrent .caption{
+  display:none!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage #reviewQueueCurrent .entry-controls,
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage #reviewQueueCurrent .amount-row{
+  display:flex!important;flex-wrap:wrap!important;align-items:center!important;
+  gap:5px!important;margin:0!important;padding:0!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage #reviewQueueCurrent .amount-row input{
+  flex:1 1 125px!important;max-width:100%!important;
+  min-width:100px!important;min-height:38px!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage #reviewQueueCurrent .amount-row button{
+  flex:1 1 auto!important;min-height:36px!important;
+  padding:6px 8px!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage #reviewQueueCurrent .redline-photo-timer-pick{
+  display:none!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage #reviewQueueCurrent .review-photo-enlarge{
+  font-size:10px!important;bottom:8px!important;max-width:95%!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode .rr-photo-fullscreen{
+  min-height:31px!important;padding:5px 10px!important;
+  font-size:10px!important;font-weight:850!important;white-space:nowrap;
+  border:1px solid #e24365!important;color:#fff!important;
+  background:#a01939!important;border-radius:8px!important;cursor:pointer;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage .rr-timer-selected-preview:not([hidden]){
+  display:flex!important;flex:1 1 0!important;min-width:0!important;min-height:0!important;
+  flex-direction:column!important;overflow:hidden!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage .rr-timer-selected-preview>img{
+  flex:1 1 0!important;width:100%!important;height:100%!important;
+  min-height:0!important;max-height:100%!important;object-fit:contain!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage .rr-timer-selected-preview>div{
+  flex:0 0 auto!important;min-height:0!important;padding:5px 8px!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage .rr-timer-selected-preview small{
+  display:none!important;
+ }
+}
+@media (min-width:420px) and (max-width:699px){
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverIncomingPhotos{
+  grid-template-rows:auto minmax(0,var(--rr-review-height,80%)) 11px minmax(0,1fr)!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage #reviewQueueCurrent>.photo-entry>.photo-entry-content{
+  max-height:175px!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode .rr-photo-fullscreen{
+  flex:1 1 auto!important;
+ }
+}
