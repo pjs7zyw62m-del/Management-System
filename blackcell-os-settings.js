@@ -68,6 +68,8 @@ export function mountSettings(host,api){
       finally{check.disabled=false}
     });
     row(p,'Platform','BLACKCELL OS web app','Updates are for the BLACKCELL interface, not Apple iOS.');
+    const build=document.querySelector('meta[name="blackcell-os-client-build"]')?.content||'Legacy interface';
+    row(p,'Installed interface build',build,'This is the exact interface code loaded on this device. If it differs from your computer, the device may still be showing an older cached version.');
     row(p,'Published release',check,'Check for a new version.');
     p.append(notice);
    }else{const p=panel('BLACKCELL OS','Obsidian Edition');row(p,'Platform','Cloud workspace');row(p,'Version','Obsidian');row(p,'Storage','BLACKCELL Storage');p.append(el('p','bc-settings-motto','CONTROL IS EVERYTHING.'))}
