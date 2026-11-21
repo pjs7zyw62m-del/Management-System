@@ -511,3 +511,139 @@ body.bc-redline-receiver .rr-live-workspace[hidden]{display:none!important}
   height:clamp(310px,55dvh,420px)!important;
  }
 }
+
+/* REDLINE large-photo pricing workspace — desktop receiver only.
+   No scroll-trapped pricing controls; full image and owner decision stay visible. */
+@media(min-width:960px){
+ body.bc-redline-receiver .rr-incoming-photos>.timeline-column{
+  max-height:none!important;min-height:0!important;
+  overflow:visible!important;
+ }
+ body.bc-redline-receiver .rr-incoming-photos #ownerReviewQueue{
+  padding:13px!important;overflow:visible!important;
+ }
+ body.bc-redline-receiver .rr-incoming-photos #ownerReviewQueue .photo-entry,
+ body.bc-redline-receiver.bc-ledger-desktop #ownerReviewQueue .photo-entry,
+ body.bc-redline-receiver.bc-ledger-tablet #ownerReviewQueue .photo-entry{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.45fr) minmax(260px,1fr)!important;
+  align-items:stretch!important;
+  min-width:0!important;
+ }
+ body.bc-redline-receiver .rr-incoming-photos #ownerReviewQueue .photo-image-btn{
+  position:relative;min-height:560px!important;
+  align-self:stretch;overflow:hidden;display:flex!important;
+  align-items:center;justify-content:center;
+  background:#050507!important;
+ }
+ body.bc-redline-receiver .rr-incoming-photos #ownerReviewQueue .photo-entry img{
+  display:block!important;width:100%!important;
+  height:clamp(560px,76dvh,850px)!important;
+  min-height:560px!important;max-height:none!important;
+  object-fit:contain!important;object-position:center!important;
+ }
+ body.bc-redline-receiver .rr-incoming-photos #ownerReviewQueue .photo-entry-content{
+  min-width:0!important;padding:16px!important;
+  display:flex!important;flex-direction:column!important;
+  justify-content:flex-start!important;gap:13px!important;
+  background:#0e0d10!important;
+ }
+ body.bc-redline-receiver .rr-incoming-photos #ownerReviewQueue .entry-controls{
+  margin-top:0!important;
+ }
+ body.bc-redline-receiver .rr-incoming-photos #ownerReviewQueue .amount-row input{
+  min-height:52px!important;font-size:20px!important;
+ }
+ body.bc-redline-receiver .rr-incoming-photos #ownerReviewQueue .amount-row button{
+  min-height:48px!important;
+ }
+ body.bc-redline-receiver .rr-incoming-photos #ownerReviewQueue .review-price-heading{
+  color:#fff;font-size:12px;font-weight:850;letter-spacing:.11em;
+  padding-top:10px;border-top:1px solid #4f2835;width:100%;
+ }
+ body.bc-redline-receiver .rr-incoming-photos #ownerReviewQueue .review-photo-enlarge{
+  position:absolute;bottom:13px;left:50%;transform:translateX(-50%);
+  color:#fff;background:#af002b;padding:10px 12px;
+  font-size:10px;font-weight:850;white-space:nowrap;border-radius:9px;
+  box-shadow:0 2px 18px #000b;pointer-events:none;
+ }
+}
+@media(min-width:960px) and (max-width:1280px){
+ body.bc-redline-receiver .rr-incoming-photos #ownerReviewQueue .photo-entry,
+ body.bc-redline-receiver.bc-ledger-desktop #ownerReviewQueue .photo-entry,
+ body.bc-redline-receiver.bc-ledger-tablet #ownerReviewQueue .photo-entry{
+  grid-template-columns:minmax(0,1fr)!important;
+ }
+ body.bc-redline-receiver .rr-incoming-photos #ownerReviewQueue .photo-entry img{
+  height:clamp(480px,70dvh,740px)!important;
+  min-height:480px!important;
+ }
+ body.bc-redline-receiver .rr-incoming-photos #ownerReviewQueue .photo-image-btn{
+  min-height:480px!important;
+ }
+}
+body.bc-redline-receiver .redline-review-lightbox-layout{
+ display:grid;grid-template-columns:minmax(0,1fr) minmax(275px,330px);
+ gap:16px;align-items:stretch;width:min(98vw,1800px);height:calc(100dvh - 110px);
+ min-height:0;
+}
+body.bc-redline-receiver .redline-review-large-image{
+ min-width:0;min-height:0;overflow:auto;display:flex;
+ align-items:center;justify-content:center;background:#030304;
+ border:1px solid #5a2534;border-radius:11px;
+}
+body.bc-redline-receiver .redline-review-large-image img{
+ max-width:100%!important;max-height:100%!important;
+ width:auto;height:auto;min-width:0;object-fit:contain;
+}
+body.bc-redline-receiver .redline-review-lightbox-controls{
+ background:#0b0a0d;border:1px solid #ab2342;border-radius:12px;
+ padding:18px;min-width:0;overflow-y:auto;
+ display:flex;flex-direction:column;gap:14px;
+ color:#fff;
+}
+body.bc-redline-receiver .redline-review-lightbox-controls[hidden]{display:none!important}
+body.bc-redline-receiver .redline-review-lightbox-controls h3{
+ font-size:25px;margin:0;line-height:1.1;
+}
+body.bc-redline-receiver .redline-review-kicker{
+ font-size:9px;color:#fa3b62;letter-spacing:.11em;font-weight:850;
+}
+body.bc-redline-receiver .redline-review-help,
+body.bc-redline-receiver .redline-review-hint{
+ font-size:12px;color:#c5b9be;line-height:1.5;margin:0;
+}
+body.bc-redline-receiver .redline-review-label{
+ font-size:10px;color:#ddd;letter-spacing:.09em;font-weight:800;
+ display:flex;flex-direction:column;gap:8px;
+}
+body.bc-redline-receiver .redline-review-amount{
+ width:100%;min-height:54px;background:#181619;color:#fff;
+ border:1px solid #aa5266;border-radius:9px;padding:12px;
+ font-size:23px;font-weight:750;letter-spacing:0;
+}
+body.bc-redline-receiver .redline-review-actions{display:flex;flex-direction:column;gap:9px}
+body.bc-redline-receiver .redline-review-actions button{
+ width:100%;min-height:50px;padding:10px;font-weight:850;
+ border-radius:9px;
+}
+body.bc-redline-receiver .redline-review-actions button:disabled{opacity:.55}
+body.bc-redline-receiver .redline-review-status{font-size:12px;color:#f9b7c9;margin:0}
+body.bc-redline-receiver .redline-review-lightbox-layout:has(.redline-review-lightbox-controls[hidden]){
+ grid-template-columns:minmax(0,1fr);
+}
+@media(max-width:959px){
+ body.bc-redline-receiver .redline-review-lightbox-layout{
+  display:flex;flex-direction:column;overflow:auto;max-height:calc(100dvh - 95px);
+  width:min(100%,800px);height:auto;gap:9px;
+ }
+ body.bc-redline-receiver .redline-review-large-image{
+  min-height:38dvh;max-height:55dvh;
+ }
+ body.bc-redline-receiver .redline-review-large-image img{
+  max-height:55dvh!important;
+ }
+ body.bc-redline-receiver .redline-review-lightbox-controls{
+  flex-shrink:0;max-height:none;
+ }
+}
