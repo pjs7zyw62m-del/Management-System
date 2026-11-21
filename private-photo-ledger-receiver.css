@@ -274,3 +274,18 @@ body.bc-redline-receiver #ownerSetup{scroll-margin-top:100px}
 @media(prefers-reduced-motion:reduce){
  body.bc-redline-receiver .rr-nav-button{transition:none}
 }
+
+/* Sender's existing black/red Earnings view gets a matching history switch. */
+body.redline-sender-simple .redline-archive-sender-notice{
+ margin:10px 0 7px;color:#c6b7bc;font-size:11px;line-height:1.6;
+}
+body.redline-sender-simple .redline-archive-sender-notice:empty{display:none}
+body.redline-sender-simple .redline-archive-sender-button{
+ display:block;width:100%;min-height:46px;margin:12px 0 5px;
+ padding:12px 14px;background:#16070b;color:#fff;
+ border:1px solid #cb1737;border-radius:12px;
+ font-size:11px;font-weight:770;letter-spacing:.08em;
+}
+body.redline-sender-simple .redline-archive-sender-button:hover{
+ background:#310b14;border-color:#ff3154;
+}
