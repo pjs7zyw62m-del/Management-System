@@ -90,7 +90,7 @@ test('Sender gets archived earnings and chat without permission to upload while 
 test('REDLINE receiver resources are versioned and original form and security remain intact',()=>{
  assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-photo-large-timed1/);
  assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-sidebar-release3/);
- assert.match(html,/private-photo-ledger\.js\?v=20261121-photo-bid-timer-sidebar3/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261121-photo-bid-timer-sidebar2/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=20261121-stable-brand1/);
  assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-inline-owner-chat1/);
  assert.match(ledger,/corporateAuthorize\(db,\{allowLedgerOnly:true\}\)/);
@@ -267,7 +267,7 @@ test('Incoming photo viewer expands without crop and keeps priced records access
  assert.match(layout,/object-fit:contain!important/);
  assert.match(layout,/#redlineReceiverIncomingPhotos\.rr-photo-expanded/);
  assert.match(layout,/height:clamp\(480px,75dvh,1040px\)!important/);
- assert.match(html,/private-photo-ledger-timers\.js\?v=20261121-photo-bid-timer-sidebar3/);
+ assert.match(html,/private-photo-ledger-timers\.js\?v=20261121-photo-bid-timer-sidebar2/);
  assert.match(html,/private-photo-ledger-timers\.css\?v=20261121-photo-large-timed1/);
 });
 test('Per-minute timer selection and secure RPC bridge do not alter original photo decision amounts',()=>{
@@ -315,7 +315,7 @@ test('Photo is wider on load, with an explicit full-screen option and intact pri
  assert.match(receiver,/const MEDIA_KEY='blackcell:redline:receiver:photo-first-width-v3'/);
  assert.match(receiver,/const DEFAULT_HEIGHT=\.80/);
  assert.match(receiver,/const fullPhoto=button\('⛶ VIEW FULL PHOTO'/);
- assert.match(layout,/var\(--rr-media-width,67%\)/);
+ assert.match(layout,/var\(--rr-media-width,78%\)/);
  assert.match(ledger,/function preparePhotoReviewLightbox\(entry\)/);
  assert.match(ledger,/await assignAmount\(entry,input,accept\)/);
 });
