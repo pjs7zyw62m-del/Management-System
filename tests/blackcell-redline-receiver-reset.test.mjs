@@ -574,6 +574,7 @@ test('End of current-session queue clearly tells receiver why there is no next p
  assert.match(sidebar,/rr-current-session-finished/);
  assert.match(sidebar,/NO NEXT PHOTO/);
  assert.match(sidebar,/All photographs in this current session have been reviewed/);
+ assert.match(sidebar,/Waiting for the first photograph in this session/);
  assert.match(style,/rr-current-session-finished/);
  assert.match(ledger,/query\.gte\('created_at',selectedRoom\.current_session_started_at\)/);
 });
