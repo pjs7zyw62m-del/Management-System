@@ -325,6 +325,7 @@ function start(){
  obs.observe(shell,{attributes:true,attributeFilter:['hidden','class']});
  const member=$('#memberName',shell);if(member)obs.observe(member,{childList:true,characterData:true,subtree:true});
  clock();render();
+ window.dispatchEvent(new Event('blackcell:springboard-ready'));
  const timer=setInterval(()=>{if(!shell.hidden)clock()},30000);
  window.addEventListener('pagehide',()=>clearInterval(timer),{once:true});
 }
