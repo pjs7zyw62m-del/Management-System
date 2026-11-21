@@ -232,8 +232,8 @@
  divider.title='Drag to resize Photos. Double-click to reset.';
  workspace.insertBefore(divider,photos);
  roomBody?.before(workspace);
- const MEDIA_KEY='blackcell:redline:receiver:photo-first-width-v2';
- const DEFAULT_MEDIA=.67;
+ const MEDIA_KEY='blackcell:redline:receiver:photo-first-width-v3';
+ const DEFAULT_MEDIA=.78;
  const readWidth=()=>{
   try{const n=Number(window.localStorage.getItem(MEDIA_KEY));return n>=.28&&n<=.85?n:DEFAULT_MEDIA}
   catch{return DEFAULT_MEDIA}
