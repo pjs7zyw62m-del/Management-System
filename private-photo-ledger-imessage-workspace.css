@@ -1197,3 +1197,60 @@ body.bc-redline-receiver.rr-imessage-mode
 }
 /* Archives keep their existing timeline and show the same history control
    without unlocking or mixing old photos into the current pending queue. */
+
+/* REDLINE receiver MOBILE: the timer is a compact stationary card above the
+   entire independent message history. Grow the chat well beyond the prior
+   ~55dvh cap; never let the photo/timer clip the conversation or composer.
+   Portrait and short landscape phones can scroll the page to this full card. */
+@media(max-width:719px){
+ body.bc-redline-receiver #redlineReceiverLiveWorkspace:not([hidden]),
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverLiveWorkspace:not([hidden]){
+  height:max(690px,calc(100dvh - 96px))!important;
+  min-height:690px!important;max-height:none!important;
+  overflow:hidden!important;align-items:stretch!important;
+ }
+ body.bc-redline-receiver #redlineReceiverLiveWorkspace>.rr-chat-panel{
+  display:flex!important;flex-direction:column!important;min-height:0!important;
+  height:100%!important;max-height:none!important;
+  min-width:0!important;overflow:hidden!important;
+ }
+ body.bc-redline-receiver #redlineReceiverLiveWorkspace .rr-chat-mount{
+  display:flex!important;flex-direction:column!important;
+  flex:1 1 0!important;min-height:0!important;max-height:none!important;
+  width:100%!important;overflow:hidden!important;
+ }
+ body.bc-redline-receiver #redlineReceiverLiveWorkspace .rr-chat-mount>.redline-message-card{
+  display:flex!important;flex-direction:column!important;
+  flex:1 1 0!important;min-height:0!important;max-height:none!important;
+  width:100%!important;height:100%!important;overflow:hidden!important;
+ }
+ body.bc-redline-receiver #redlineReceiverLiveWorkspace .redline-message-header{
+  flex:0 0 auto!important;min-height:40px!important;padding:7px 10px!important;
+ }
+ body.bc-redline-receiver #redlineReceiverLiveWorkspace .redline-chat-timer-slot:not([hidden]){
+  flex:0 0 auto!important;max-height:min(29dvh,220px)!important;
+  overflow-y:auto!important;
+ }
+ body.bc-redline-receiver #redlineReceiverLiveWorkspace .redline-chat-timer-image{
+  max-height:min(12dvh,100px)!important;
+ }
+ body.bc-redline-receiver #redlineReceiverLiveWorkspace .redline-message-feed{
+  display:flex!important;flex-direction:column!important;
+  flex:1 1 0!important;min-height:180px!important;max-height:none!important;
+  height:auto!important;overflow-y:auto!important;overflow-x:hidden!important;
+  overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch;
+  padding:12px 11px!important;
+ }
+ body.bc-redline-receiver #redlineReceiverLiveWorkspace .redline-peer-typing,
+ body.bc-redline-receiver #redlineReceiverLiveWorkspace .redline-message-composer,
+ body.bc-redline-receiver #redlineReceiverLiveWorkspace .redline-message-error{
+  flex:0 0 auto!important;
+ }
+ body.bc-redline-receiver #redlineReceiverLiveWorkspace .redline-message-composer{
+  position:relative!important;bottom:auto!important;
+  padding:8px 9px max(9px,env(safe-area-inset-bottom))!important;
+ }
+ body.bc-redline-receiver #redlineReceiverLiveWorkspace .redline-message-entry{
+  max-height:90px!important;min-height:43px!important;
+ }
+}
