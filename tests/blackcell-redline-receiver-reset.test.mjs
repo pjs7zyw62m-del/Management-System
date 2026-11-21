@@ -237,7 +237,7 @@ test('One iMessage-style workspace has two independent resizers and a fixed-heig
  assert.match(layout,/#redlineReceiverHeightEdge/);
  assert.match(layout,/cursor:row-resize!important/);
  assert.match(layout,/cursor:col-resize/);
- assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-photo-visible6/);
+ assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-photo-only-step1b/);
 });
 test('Incoming photo decisions and priced photo records stay separate and scroll internally',()=>{
  const layout=read('private-photo-ledger-imessage-workspace.css');
@@ -267,7 +267,7 @@ test('Incoming photo viewer expands without crop and keeps priced records access
  assert.match(layout,/object-fit:contain!important/);
  assert.match(layout,/#redlineReceiverIncomingPhotos\.rr-photo-expanded/);
  assert.match(layout,/height:clamp\(480px,75dvh,1040px\)!important/);
- assert.match(html,/private-photo-ledger-timers\.js\?v=20261121-photo-visible6/);
+ assert.match(html,/private-photo-ledger-timers\.js\?v=20261121-photo-only-step1b/);
  assert.match(html,/private-photo-ledger-timers\.css\?v=20261121-photo-large-timed1/);
 });
 test('Per-minute timer selection and secure RPC bridge do not alter original photo decision amounts',()=>{
@@ -306,7 +306,7 @@ test('Incoming photo is visible above the short pricing footer, not buried under
  assert.match(timer,/const title=make\('summary','rr-timer-heading'\)/);
  assert.match(timer,/ownerPanel\.append\(title,controls,note\)/);
  assert.doesNotMatch(timer,/ownerPanel\.append\(title,controls,note,preview\)/);
- assert.match(timer,/ownerHost\.insertBefore\(preview,ownerPanel\.nextSibling\)/);
+ assert.match(timer,/photoHost&&preview.parentNode!==photoHost/);
  assert.match(ledger,/img\.loading=state\.isOwner&&status==='pending'\?'eager':'lazy'/);
 });
 test('Photo is wider on load, with an explicit full-screen option and intact pricing',()=>{
@@ -324,4 +324,19 @@ test('Full-screen button can open both a pending photo and a priced-photo previe
  assert.match(receiver,/const fullPhoto=button\('⛶ VIEW FULL PHOTO'/);
  assert.match(receiver,/#redlineReceiverReviewStage \.rr-timer-selected-preview \.rr-timer-full/);
  assert.match(receiver,/#reviewQueueCurrent \.photo-image-btn/);
+});
+
+test('Step 1: only the uncropped photograph remains in the standalone display',()=>{
+ const layout=read('private-photo-ledger-imessage-workspace.css');
+ const timer=read('private-photo-ledger-timers.js');
+ assert.match(layout,/REDLINE STEP 1 — standalone photo-only viewer/);
+ assert.match(layout,/#redlineReceiverLiveWorkspace\.rr-media-open>#redlineReceiverIncomingPhotos/);
+ assert.match(layout,/#redlineReceiverIncomingPhotos>\.rr-incoming-header/);
+ assert.match(layout,/#redlineReceiverIncomingPhotos>#redlineReceiverPricedStage/);
+ assert.match(layout,/#redlineReceiverReviewStage #reviewQueueCurrent>\.photo-entry>\.photo-entry-content/);
+ assert.match(layout,/#redlineReceiverReviewStage #reviewQueueCurrent>\.photo-entry>\.photo-image-btn>img/);
+ assert.match(layout,/object-fit:contain!important/);
+ assert.match(layout,/#redlineReceiverReviewStage>#redlinePhotoTimerPanel/);
+ assert.match(timer,/workspace\.after\(ownerPanel\)/);
+ assert.match(ledger,/preparePhotoReviewLightbox\(e\)/);
 });
