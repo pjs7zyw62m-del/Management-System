@@ -391,3 +391,59 @@ body.redline-sender-simple #employeeUpload:has(#uploadPhoto:disabled) .file-drop
  .redline-chat-rated-photo{gap:8px;padding:8px}
  .redline-chat-rated-stars{font-size:18px}
 }
+
+/* Separate 5-Star Photos tab beside Earnings on sender devices. */
+body.redline-sender-simple .redline-simple-tabs{
+ grid-template-columns:repeat(3,minmax(0,1fr))!important;
+}
+body.redline-sender-simple .redline-simple-tab{
+ min-height:42px!important;padding:7px 4px!important;
+ font-size:clamp(9px,2.4vw,12px)!important;white-space:normal!important;
+ line-height:1.2!important;
+}
+.redline-five-star-pane{display:flex;flex-direction:column;gap:12px;min-width:0}
+.redline-five-star-pane[hidden]{display:none!important}
+.redline-five-star-intro{
+ display:flex;flex-direction:column;gap:8px;margin:4px 0 6px;
+}
+.redline-five-star-intro h2{font-size:clamp(23px,4vw,30px);line-height:1.1;margin:0}
+.redline-five-star-intro p{
+ color:#ccbfc6;font-size:12px;line-height:1.5;margin:0;
+}
+.redline-five-star-list{display:flex;flex-direction:column;gap:12px;min-width:0}
+.redline-five-star-photo{
+ display:flex;gap:14px;align-items:center;min-width:0;
+ padding:12px;background:#0c070a;border:1px solid #75304a;border-radius:14px;
+}
+.redline-five-star-photo .redline-rated-photo-image{
+ width:clamp(110px,24vw,175px);height:clamp(150px,28vw,205px);
+ max-width:42%;object-fit:contain;flex:0 0 auto;
+}
+.redline-five-star-details{
+ display:flex;flex:1;flex-direction:column;align-items:stretch;gap:8px;min-width:0;
+}
+.redline-five-star-title{font-size:13px;color:#fff;letter-spacing:.03em}
+.redline-five-star-stars{font-size:clamp(17px,3vw,24px);color:#ffc453;font-weight:850}
+.redline-five-star-details small{font-size:10px;color:#a99ba2}
+.redline-five-star-caption{margin:0;font-size:11px;color:#dfcdd4;overflow-wrap:anywhere}
+.redline-five-star-resubmit{
+ width:100%;min-height:42px;padding:8px 11px;
+ background:#b50026;border:1px solid #fa4068;color:#fff;
+ border-radius:9px;font-size:11px;font-weight:850;cursor:pointer;
+}
+.redline-five-star-resubmit:disabled{
+ background:#261b21;border-color:#5e3d4c;color:#b8a2ad;cursor:not-allowed;
+}
+.redline-five-star-row-status,.redline-five-star-feedback,.redline-five-star-empty{
+ color:#e3c8d2;font-size:11px;line-height:1.5;margin:0;overflow-wrap:anywhere;
+}
+.redline-five-star-empty{
+ border:1px dashed #75304a;border-radius:12px;padding:24px 16px;text-align:center;
+}
+@media(max-width:520px){
+ .redline-five-star-photo{gap:9px;padding:9px}
+ .redline-five-star-photo .redline-rated-photo-image{
+  width:35%;max-width:35%;height:150px;
+ }
+ .redline-five-star-resubmit{font-size:10px}
+}
