@@ -27,15 +27,9 @@ const roomName=make('span','bc-sender-room-name','PRIVATE ROOM');
 roomLine.append(make('span','bc-sender-dot',''),roomName,make('span','bc-sender-restricted','TWO-PERSON ACCESS'));
 hero.append(eyebrow,stats,actions,roomLine);
 room.insertBefore(hero,$('.room-toolbar',room));
-const drop=$('.file-drop',upload);
-const preview=make('div','bc-sender-preview');preview.id='redlineSenderPreview';preview.hidden=true;
-const picture=make('img','bc-sender-preview-image');
-picture.alt='Selected photo preview';
-const state=make('span','bc-sender-preview-state','SELECTED PHOTO');
-const name=make('strong','bc-sender-preview-filename','');
-preview.append(picture,state,name);
-drop?.insertBefore(preview,drop.firstChild);
-let objectURL=null,landed=false;
+// Selecting a file starts the existing verified room upload immediately.
+const form=$('#uploadPhotoForm');
+let landed=false;
 const active=()=>!app.hidden&&!room.hidden&&!upload.hidden;
 const mobile=()=>document.body.classList.contains('bc-ledger-mobile');
 const tab=key=>$('.bc-ledger-phone-tab[data-ledger-navigate="'+key+'"]');
@@ -59,29 +53,12 @@ function refresh(){
  }
  if(!sender)landed=false;
 }
-function releaseURL(){if(objectURL){URL.revokeObjectURL(objectURL);objectURL=null}picture.removeAttribute('src')}
-function updatePreview(){
- releaseURL();
- const selected=file.files?.[0];
- preview.hidden=!selected;
- drop?.classList.toggle('bc-sender-has-file',!!selected);
- if(!selected){name.textContent='';return}
- name.textContent=selected.name;
- state.textContent=selected.size>12*1024*1024?'EXCEEDS 12 MB LIMIT':'READY TO SEND';
- picture.hidden=false;
- objectURL=URL.createObjectURL(selected);
- picture.onerror=()=>{picture.hidden=true;state.textContent='SELECTED · PREVIEW NOT SUPPORTED ON THIS DEVICE'};
- picture.src=objectURL;
- // After the native Photos/Files picker closes, reveal the real upload button
- // on short phone screens without stealing focus or posting automatically.
- if(mobile())window.setTimeout(()=>{
-   if(!file.files?.length||!active())return;
-   const button=$('#submitPhoto');if(!button)return;
-   const bounds=button.getBoundingClientRect();
-   const viewport=window.visualViewport;
-   const bottom=(viewport?.offsetTop||0)+(viewport?.height||window.innerHeight);
-   if(bounds.bottom>bottom-18)button.scrollIntoView({block:'end',behavior:'smooth'});
- },180);
+function sendSelectedPhoto(){
+ if(!active()||!form||file.disabled||!file.files?.length)return;
+ // requestSubmit fires the existing form submit event with its validation,
+ // authorization and private Storage controls. form.submit() would bypass it.
+ if(typeof form.requestSubmit==='function')form.requestSubmit();
+ else form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
 }
 function navigate(key){
  if(!active())return;
@@ -95,8 +72,7 @@ choose.addEventListener('click',()=>{
  file.click();
 });
 history.addEventListener('click',()=>navigate('photos'));
-file.addEventListener('change',updatePreview);
-if(feedback)new MutationObserver(()=>{if(!file.files?.length)updatePreview()}).observe(feedback,{subtree:true,childList:true,characterData:true});
+file.addEventListener('change',sendSelectedPhoto);
 for(const id of ['#pendingCount','#totalOwed','#activeRoomTitle']){
  const el=$(id);if(el)new MutationObserver(refreshStats).observe(el,{childList:true,characterData:true,subtree:true});
 }
@@ -104,6 +80,5 @@ const observer=new MutationObserver(()=>requestAnimationFrame(refresh));
 for(const el of [app,room,upload])observer.observe(el,{attributes:true,attributeFilter:['hidden']});
 window.addEventListener('resize',refresh,{passive:true});
 window.addEventListener('pageshow',refresh);
-window.addEventListener('pagehide',releaseURL);
 refresh();
 })();
