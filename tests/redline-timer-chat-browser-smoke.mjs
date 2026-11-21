@@ -86,7 +86,7 @@ try{
  ]);
  child.stdout.on('data',d=>{output+=d.toString()});
  child.stderr.on('data',d=>{errors+=d.toString()});
- const exit=await Promise(resolve=>{
+ const exit=await new Promise(resolve=>{
   const timer=setTimeout(()=>{child.kill('SIGKILL');resolve(124)},25000);
   child.once('exit',code=>{clearTimeout(timer);resolve(code??1)});
   child.once('error',()=>{clearTimeout(timer);resolve(1)});
