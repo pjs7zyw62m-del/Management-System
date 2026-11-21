@@ -447,3 +447,88 @@ body.redline-sender-simple .redline-simple-tab{
  }
  .redline-five-star-resubmit{font-size:10px}
 }
+
+/* Sender: four clear sections; Photo History sits directly beside Earnings. */
+body.redline-sender-simple .redline-simple-tabs{
+ grid-template-columns:repeat(4,minmax(0,1fr))!important;
+ gap:4px!important;
+}
+body.redline-sender-simple .redline-simple-tab{
+ min-width:0!important;min-height:40px!important;
+ padding:7px 3px!important;font-size:clamp(9px,2vw,12px)!important;
+ letter-spacing:0!important;
+}
+.redline-photo-history-pane{display:flex;flex-direction:column;gap:12px;min-width:0}
+.redline-photo-history-pane[hidden]{display:none!important}
+.redline-photo-history-intro{display:flex;flex-direction:column;gap:8px}
+.redline-photo-history-intro h2{color:#fff;font-size:clamp(22px,4vw,30px);margin:0}
+.redline-photo-history-intro p{color:#c9bac2;font-size:12px;line-height:1.6;margin:0}
+.redline-history-controls{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.redline-history-controls button,.redline-history-more{
+ min-height:37px;border-radius:8px;border:1px solid #79364a;
+ padding:7px 10px;background:#14080d;color:#f6d7df;
+ font-size:10px;font-weight:850;cursor:pointer;
+}
+.redline-history-filter.is-current{background:#be0028;color:white;border-color:#ff486b}
+.redline-history-archive{margin-left:auto}
+.redline-history-count,.redline-photo-history-feedback{
+ color:#bbabb2;font-size:11px;overflow-wrap:anywhere;margin:0;
+}
+.redline-photo-history-feedback:not(:empty){color:#f7afc1}
+.redline-photo-history-list{
+ display:flex;flex-direction:column;gap:10px;
+ min-height:0;max-height:min(67dvh,760px);overflow-y:auto;
+ overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+ padding-right:3px;
+}
+.redline-photo-history-row{
+ display:flex;gap:13px;align-items:center;min-width:0;
+ padding:11px;border:1px solid #733244;border-radius:12px;background:#0f080b;
+}
+.redline-photo-history-row>.redline-rated-photo-image{
+ width:clamp(95px,22vw,165px);height:clamp(130px,26vw,200px);
+ max-width:42%;object-fit:contain;flex:none;border-radius:8px;
+}
+.redline-photo-history-details{display:flex;flex:1;flex-direction:column;gap:7px;min-width:0}
+.redline-history-title{color:#fff;font-size:12px;font-weight:850}
+.redline-photo-history-stars{color:#f8be4e;font-size:clamp(13px,2.5vw,19px);font-weight:800}
+.redline-history-review,.redline-photo-history-details small{color:#c8acb7;font-size:10px}
+.redline-history-caption{margin:0;font-size:11px;color:#eee3e7;overflow-wrap:anywhere}
+.redline-photo-history-resend{
+ width:100%;min-height:39px;border-radius:9px;
+ border:1px solid #f84c6c;background:#b40025;color:#fff;
+ font-size:10px;font-weight:850;cursor:pointer;padding:7px;
+}
+.redline-photo-history-resend:disabled{
+ color:#a998a0;background:#1c1317;border-color:#4f3039;cursor:not-allowed;
+}
+.redline-history-empty{padding:24px 12px;border:1px dashed #6e3142;border-radius:12px;
+ text-align:center;color:#c4b5bb;font-size:12px}
+.redline-history-more{background:#330c18;border-color:#e03b61}
+@media(max-width:490px){
+ .redline-photo-history-row{gap:8px;padding:9px}
+ .redline-photo-history-row>.redline-rated-photo-image{width:34%;max-width:34%;height:146px}
+ .redline-history-controls{gap:5px}
+ .redline-history-controls button{font-size:9px;padding:6px 8px}
+ .redline-simple-tab{font-size:9px!important}
+}
+
+/* The running timer remains visible INSIDE chat until STOP is confirmed.
+   On STOP the pinned card disappears and both START/STOP enter the chat log. */
+.redline-message-feed>.redline-chat-timer-pinned{
+ position:sticky!important;top:0!important;z-index:5!important;
+ margin-top:0!important;border-color:#f33565!important;
+ border-left:5px solid #ff3158!important;
+ background:#260a14!important;
+ box-shadow:0 10px 20px #000c;
+ flex-shrink:0!important;
+}
+.redline-peer-typing{
+ color:#f0a3b8;font-size:11px;font-weight:760;
+ padding:8px 14px;background:#10070b;border-top:1px solid #54293a;
+}
+.redline-peer-typing[hidden]{display:none!important}
+.redline-chat-read-receipt{
+ display:block;margin-top:6px;text-align:right;
+ color:#f5a3bb;font-size:10px;font-weight:700;
+}
