@@ -654,7 +654,8 @@ async function bcLiveOriginal_uploadPhoto(event){
    show('uploadFeedback','Photo saved privately. The owner can now assign an amount.');
   }
   state.entryFingerprint='';
-  await loadEntries({force:true});
+  try{await loadEntries({force:true})}
+  catch(refreshError){show('uploadFeedback','Photo saved privately, but the review list has not refreshed yet: '+fail(refreshError));}
  }catch(e){
   picker.value='';
   show('selectedPhotoName','Select a photo to try again.');
