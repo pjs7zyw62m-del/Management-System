@@ -12,7 +12,7 @@ test('Midnight Silk is the new default and old Obsidian layouts remain available
  assert.match(os,/wallet=|wallpaperManager/);
  assert.match(html,/blackcell-os-macos-midnight\.css\?v=20261121-1/);
  assert.match(html,/blackcell-os-macos-desktop\.js\?v=20261121-(?:1|2)/);
- assert.match(html,/blackcell-os\.js\?v=(?:120-macos-personal-wallpaper|121-mac-workspaces|122-unified-desktop-sync|123-mobile-ready-drag-fix|124-auto-save-updates|125-level-r-window-drag|146-redline-bid-timer-sidebar3|147-redline-photo-right-pause1|148-redline-receiver-controlled-pause1|149-redline-timer-chat-price2|150-redline-reviewed-photo-viewport1|151-redline-verified-timer-auto-submit3|152-redline-price-next-photo1|153-redline-queue-complete-message1|154-redline-photo-stars-top-picks1)/);
+ assert.match(html,/blackcell-os\.js\?v=(?:120-macos-personal-wallpaper|121-mac-workspaces|122-unified-desktop-sync|123-mobile-ready-drag-fix|124-auto-save-updates|125-level-r-window-drag|146-redline-bid-timer-sidebar3|147-redline-photo-right-pause1|148-redline-receiver-controlled-pause1|149-redline-timer-chat-price2|150-redline-reviewed-photo-viewport1|151-redline-verified-timer-auto-submit3|152-redline-price-next-photo1|153-redline-queue-complete-message1|154-redline-photo-stars-top-picks1|155-redline-compact-bid-controls1)/);
  assert.match(skin,/blackcell-os-wallpaper-midnight-mobile\.svg/);
  assert.match(skin,/blackcell-os-wallpaper-midnight\.svg/);
  assert.match(skin,/data-bc-wallpaper="custom"/);
