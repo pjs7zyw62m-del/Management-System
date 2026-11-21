@@ -504,66 +504,67 @@ test('Manually accepting a photo always advances to the next pending image',()=>
  const reject=ledger.slice(ledger.indexOf('async function rejectPhoto('),ledger.indexOf('async function settle('));
  assert.match(approve,/state\.reviewSidebarPhotoId=null/);
  assert.match(approve,/await loadEntries\(\{force:true\}\)/);
- assert.match(approve,/blackcell:redline:next-incoming/);
+ assert.match(approve,/renderReviewQueue\(\)/);
  assert.match(complimentary,/return await assignAmount\(entry,field,trigger\)/);
  assert.match(reject,/state\.reviewSidebarPhotoId=null/);
- assert.match(reject,/blackcell:redline:next-incoming/);
+ assert.match(reject,/renderReviewQueue\(\)/);
  assert.match(timer,/async function stopTimer\(keepPhotoSelected=true\)/);
  assert.match(timer,/committed\?\.photo_id&&keepPhotoSelected/);
  assert.match(timer,/photo_id===e\.detail\?\.photoId\)void stopTimer\(false\)/);
  assert.match(timer,/selectedId=id;[\s\S]*?void stopTimer\(false\)/);
 });
 
-test('Receiver manual price advances actual review state without sender refresh',async()=>{
+test('Receiver manual price immediately shows next pending photo even if refresh fails',async()=>{
  const begin=ledger.indexOf('async function assignAmount(');
  const end=ledger.indexOf('async function acceptZero(',begin);
  assert.ok(begin>0&&end>begin);
- const fnSource=ledger.slice(begin,end);
+ const source=ledger.slice(begin,end);
  const photos=[
   {id:'first',decision_status:'pending',amount_cents:null},
   {id:'second',decision_status:'pending',amount_cents:null},
   {id:'timed',decision_status:'accepted',amount_cents:25,auto_timer_session_id:'session'}
  ];
- const state={
-  isOwner:true,busy:false,room:{id:'room'},
-  reviewSidebarPhotoId:'timed',entryFingerprint:'cached'
- };
- let shown='timed';
- const dispatched=[];
+ const state={isOwner:true,busy:false,room:{id:'room'},entries:photos,
+  reviewSidebarPhotoId:'timed',entryFingerprint:'cached'};
+ let shown='timed',renderedBeforeRefresh=false,refreshFailed=false;
+ const events=[];
  const context={
-  state,ENTRIES:'entries',
-  parseDollars:()=>10,
-  dollars:()=>'$0.10',
-  verify:async()=>{},
-  fail:err=>String(err),
-  show:()=>{},
+  state,ENTRIES:'entries',parseDollars:()=>10,dollars:()=>'$0.10',
+  verify:async()=>{},fail:e=>String(e),show:()=>{},
   db:{from:()=>({
    update(value){this.patch=value;return this},
    eq(){return this},
    select(){return this},
-   async single(){Object.assign(photos[0],this.patch);return {error:null,data:photos[0]}}
+   async single(){return {error:null,data:{id:'first',amount_cents:10,decision_status:'accepted'}}}
   })},
+  renderReviewQueue(){
+   const old=state.reviewSidebarPhotoId==='timed'?'timed':null;
+   shown=old||photos.find(p=>p.decision_status==='pending')?.id||null;
+   renderedBeforeRefresh=true;
+  },
+  renderEntries(){},updateTotals(){},
   loadEntries:async({force})=>{
    assert.equal(force,true);
-   // Same selection rule as the actual viewer: a saved timed photo wins
-   // unless approval clears its pin before loading the next pending one.
-   const old=state.reviewSidebarPhotoId==='timed'?'timed':null;
-   shown=old||photos.find(photo=>photo.decision_status==='pending')?.id||null;
+   assert.equal(renderedBeforeRefresh,true);
+   assert.equal(shown,'second');
+   refreshFailed=true;
+   throw Error('simulated transient refresh failure');
   },
-  window:{dispatchEvent(event){dispatched.push(event.type)}},
+  window:{dispatchEvent(e){events.push(e.type)}},
   Event:class{constructor(type){this.type=type}},
-  CustomEvent:class{constructor(type,options){this.type=type;this.detail=options?.detail}}
+  CustomEvent:class{constructor(type,opt){this.type=type;this.detail=opt?.detail}}
  };
- const approve=runInNewContext(fnSource+'; assignAmount',context);
- const submit={disabled:false,textContent:'✓ ACCEPT'};
- const success=await approve(photos[0],{value:'0.10'},submit);
- assert.equal(success,true);
- assert.equal(photos[0].decision_status,'accepted');
- assert.equal(photos[0].amount_cents,10);
+ const approve=runInNewContext(source+'; assignAmount',context);
+ const button={disabled:false,textContent:'✓ ACCEPT'};
+ const result=await approve(photos[0],{value:'0.10'},button);
+ assert.equal(result,true);
  assert.equal(shown,'second');
  assert.equal(state.reviewSidebarPhotoId,null);
- assert.ok(dispatched.includes('blackcell:redline:next-incoming'));
- assert.equal(submit.disabled,false);
+ assert.equal(photos[0].decision_status,'accepted');
+ assert.equal(photos[0].amount_cents,10);
+ assert.equal(refreshFailed,true);
+ assert.ok(events.includes('blackcell:redline:photo-decided'));
+ assert.equal(button.disabled,false);
 });
 
 test('End of current-session queue clearly tells receiver why there is no next photo',()=>{
