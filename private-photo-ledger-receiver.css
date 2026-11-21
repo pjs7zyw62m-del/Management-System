@@ -894,3 +894,116 @@ body.bc-redline-receiver .rr-room-summary{display:none}
 
 /* Hidden workspaces must stay hidden even when the resizable grid is enabled. */
 body.bc-redline-receiver .rr-live-workspace[hidden]{display:none!important}
+
+
+/* REDLINE visible split controls — fixes BLACKCELL OS embedded-frame sizing.
+   Split behavior is determined by available receiver workspace width, not by
+   the legacy "bc-ledger-mobile" flag inherited from the outer OS iframe. */
+@media(min-width:480px){
+ body.bc-redline-receiver.rr-split-active .rr-live-workspace{
+  --rr-chat-width:36%;
+  display:grid!important;
+  grid-template-columns:minmax(0,var(--rr-chat-width)) 20px minmax(0,1fr)!important;
+  grid-template-rows:auto minmax(0,1fr)!important;
+  gap:0!important;padding:9px!important;width:100%!important;
+  border:1px solid #ab2644!important;border-radius:14px!important;
+  background:#060608!important;min-width:0!important;
+ }
+ body.bc-redline-receiver.rr-split-active .rr-split-controls{
+  grid-column:1/-1!important;grid-row:1!important;
+  display:flex!important;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;column-gap:9px;row-gap:7px;
+  min-width:0;padding:5px 8px 12px;margin-bottom:8px;
+  border-bottom:1px solid #4b2430;
+ }
+ body.bc-redline-receiver.rr-split-active .rr-split-title{
+  color:#ff4c70;font-size:10px;letter-spacing:.07em;font-weight:850;
+ }
+ body.bc-redline-receiver.rr-split-active .rr-split-readout{
+  color:#ded7da;font-size:10px;font-weight:750;min-width:130px;text-align:right;
+ }
+ body.bc-redline-receiver.rr-split-active .rr-split-adjust,
+ body.bc-redline-receiver.rr-split-active .rr-split-reset{
+  background:#181216!important;color:#f5f2f3!important;
+  border:1px solid #9e3248!important;border-radius:8px;
+  min-height:32px;padding:6px 10px;font-size:10px;font-weight:800;
+  cursor:pointer;
+ }
+ body.bc-redline-receiver.rr-split-active .rr-split-adjust:hover,
+ body.bc-redline-receiver.rr-split-active .rr-split-reset:hover{
+  background:#3f0b1b!important;
+ }
+ body.bc-redline-receiver.rr-split-active .rr-split-range{
+  flex:1 1 120px;width:clamp(90px,18vw,230px);min-width:90px;
+  height:24px;accent-color:#e7234a;cursor:ew-resize;
+  touch-action:pan-y;
+ }
+ body.bc-redline-receiver.rr-split-active .rr-live-workspace>.rr-chat-panel{
+  grid-column:1!important;grid-row:2!important;
+  display:flex!important;flex-direction:column!important;
+  width:100%!important;max-width:none!important;min-width:0!important;
+  align-self:start!important;margin:0!important;
+ }
+ body.bc-redline-receiver.rr-split-active .rr-live-workspace>.rr-split-divider{
+  grid-column:2!important;grid-row:2!important;
+  display:flex!important;align-self:stretch!important;
+  min-height:310px!important;cursor:col-resize!important;
+  touch-action:none!important;z-index:3;
+ }
+ body.bc-redline-receiver.rr-split-active .rr-live-workspace>.rr-incoming-photos{
+  grid-column:3!important;grid-row:2!important;
+  display:block!important;width:100%!important;min-width:0!important;
+  margin:0!important;padding:9px!important;
+  container-type:inline-size;container-name:redline-photo-pane;
+ }
+ body.bc-redline-receiver.rr-split-active .rr-incoming-photos>.timeline-column{
+  display:flex!important;flex-direction:column!important;
+  width:100%!important;min-width:0!important;gap:9px!important;
+ }
+ body.bc-redline-receiver.rr-split-active .rr-incoming-photos #ownerReviewQueue,
+ body.bc-redline-receiver.rr-split-active .rr-incoming-photos #photoEntries,
+ body.bc-redline-receiver.rr-split-active .rr-incoming-photos .timeline-toolbar,
+ body.bc-redline-receiver.rr-split-active .rr-incoming-photos #entriesFeedback{
+  display:block!important;min-width:0!important;
+ }
+ body.bc-redline-receiver.rr-split-active .rr-live-workspace .rr-chat-mount>.redline-message-card{
+  min-width:0!important;width:100%!important;
+  height:clamp(355px,56dvh,700px)!important;
+  max-height:none!important;min-height:0!important;
+ }
+ body.bc-redline-receiver.rr-split-active .rr-incoming-photos #ownerReviewQueue .photo-entry img{
+  object-fit:contain!important;max-width:100%!important;
+ }
+}
+@media(min-width:480px) and (max-width:719px){
+ body.bc-redline-receiver.rr-split-active .rr-live-workspace{
+  padding:5px!important;
+ }
+ body.bc-redline-receiver.rr-split-active .rr-split-controls{
+  padding:6px 5px 10px!important;
+ }
+ body.bc-redline-receiver.rr-split-active .rr-split-title{
+  width:100%;
+ }
+ body.bc-redline-receiver.rr-split-active .rr-split-readout{
+  width:100%;text-align:left;
+ }
+ body.bc-redline-receiver.rr-split-active .rr-split-adjust{
+  font-size:9px!important;padding:5px!important;
+ }
+ body.bc-redline-receiver.rr-split-active .rr-live-workspace>.rr-chat-panel,
+ body.bc-redline-receiver.rr-split-active .rr-live-workspace>.rr-incoming-photos{
+  padding:6px!important;
+ }
+ body.bc-redline-receiver.rr-split-active .rr-live-workspace>.rr-chat-panel .rr-chat-heading h3{
+  font-size:15px!important;
+ }
+ body.bc-redline-receiver.rr-split-active .rr-incoming-header h3{
+  font-size:15px!important;
+ }
+ body.bc-redline-receiver.rr-split-active .rr-incoming-header small{
+  display:none!important;
+ }
+}
+/* A hidden owner workspace must remain hidden regardless of CSS grid rules. */
+body.bc-redline-receiver .rr-live-workspace[hidden]{display:none!important}
