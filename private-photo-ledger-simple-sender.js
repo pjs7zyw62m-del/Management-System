@@ -411,8 +411,7 @@ function timedEvents(snap){
   if(row.started_at)result.push({kind:'timer',phase:'start',at:row.started_at,timer:row});
   if(row.stopped_at)result.push({kind:'timer',phase:'stop',at:row.stopped_at,timer:row});
  }
- const active=timerStatus.active;
- if(active?.started_at)result.push({kind:'timer',phase:'active',at:active.started_at,timer:active});
+ // The active timer is pinned separately ABOVE messages; no duplicate card.
  return result;
 }
 const clockText=seconds=>{
@@ -444,9 +443,36 @@ function updateTimerCards(){
   if(amount)amount.textContent=data.display+' earned';
  }
 }
+function makeTimerCard(e){
+ const isActive=e.phase==='active',isStop=e.phase==='stop';
+ const card=make('article','redline-chat-timer');
+ card.dataset.timerId=e.timer.id;
+ card.dataset.timerPhase=e.phase;
+ const status=make('strong','redline-chat-timer-title',
+  isStop?'■ TIMER STOPPED':isActive?'● TIMER STARTED · RUNNING':'▶ TIMER STARTED');
+ const label=make('span','redline-chat-timer-rate',money(e.timer.rate_cents)+'/minute · '+liveMoney(e.timer.rate_cents,1)+'/second');
+ const numbers=e.phase==='start'?{seconds:0,cents:0n,display:liveMoney(e.timer.rate_cents,0)}:timerNumbers(e.timer,isActive);
+ const details=make('div','redline-chat-timer-values');
+ details.append(make('span','redline-chat-timer-clock',clockText(numbers.seconds)+' elapsed'),
+  make('span','redline-chat-timer-amount',numbers.display+(isStop?' final':' earned')));
+ const foot=make('small','',isStop
+  ?'Photo '+String(e.timer.photo_id||'').slice(0,8).toUpperCase()+' · Final elapsed-second amount recorded'
+  :'Photo '+String(e.timer.photo_id||'').slice(0,8).toUpperCase()+' · '+dateText(e.at));
+ card.append(status,label,details,foot);
+ return card;
+}
 function renderChat(){
  const snap=snapshot();feed.replaceChildren();
  const events=createEvents(snap?.entries).slice(0,80);
+ const pinned=timerRoomId===snap?.roomId&&!snap?.archiveMode&&timerStatus?.active?.started_at
+  ?{kind:'timer',phase:'active',at:timerStatus.active.started_at,timer:timerStatus.active}:null;
+ if(pinned){
+  const card=makeTimerCard(pinned);
+  card.classList.add('redline-chat-timer-pinned');
+  card.setAttribute('aria-label','Active private timer pinned in the chat until it stops');
+  card.setAttribute('aria-live','off');
+  feed.append(card);
+ }
  const combined=[
   ...events.map(e=>({kind:'event',at:e.at,body:e.text,status:e.status})),
   ...timedEvents(snap),
@@ -460,7 +486,7 @@ function renderChat(){
   feed.append(warning);
  }
  if(!combined.length){
-  if(!timerLoadError)feed.append(make('div','redline-chat-empty','No messages or photo updates yet.'));
+  if(!timerLoadError&&!pinned)feed.append(make('div','redline-chat-empty','No messages or photo updates yet.'));
   return;
  }
  for(const e of combined){
@@ -484,24 +510,7 @@ function renderChat(){
    if(photo.caption)content.append(make('p','redline-chat-rated-caption',photo.caption));
    rating.append(content);feed.append(rating);continue;
   }
-  if(e.kind==='timer'){
-   const isActive=e.phase==='active',isStop=e.phase==='stop';
-   const card=make('article','redline-chat-timer');
-   card.dataset.timerId=e.timer.id;
-   card.dataset.timerPhase=e.phase;
-   const status=make('strong','redline-chat-timer-title',
-    isStop?'■ TIMER STOPPED':isActive?'● TIMER STARTED · RUNNING':'▶ TIMER STARTED');
-   const label=make('span','redline-chat-timer-rate',money(e.timer.rate_cents)+'/minute · '+liveMoney(e.timer.rate_cents,1)+'/second');
-   const numbers=e.phase==='start'?{seconds:0,cents:0n,display:liveMoney(e.timer.rate_cents,0)}:timerNumbers(e.timer,isActive);
-   const details=make('div','redline-chat-timer-values');
-   details.append(make('span','redline-chat-timer-clock',clockText(numbers.seconds)+' elapsed'),
-    make('span','redline-chat-timer-amount',numbers.display+(isStop?' final':' earned')));
-   const foot=make('small','',isStop
-    ?'Photo '+String(e.timer.photo_id||'').slice(0,8).toUpperCase()+' · Final elapsed-second amount recorded'
-    :'Photo '+String(e.timer.photo_id||'').slice(0,8).toUpperCase()+' · '+dateText(e.at));
-   card.append(status,label,details,foot);
-   feed.append(card);continue;
-  }
+  if(e.kind==='timer'){feed.append(makeTimerCard(e));continue;}
   const own=e.sender===snap?.userId;
   const bubble=make('article','redline-chat-bubble '+(own?'is-mine':'is-theirs'));
   bubble.append(make('p','',e.body),make('time','',dateText(e.at)));
