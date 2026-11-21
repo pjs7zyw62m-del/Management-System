@@ -271,6 +271,7 @@
     const stacks=!desktop.classList.contains('bc-mac-desktop-stacks');
     desktop.classList.toggle('bc-mac-desktop-stacks',stacks);
     desktop.setAttribute('aria-label',stacks?'BLACKCELL Desktop folder (Stacks)':'BLACKCELL Desktop folder');
+    desktop.dataset.expandedStack='';renderDesktopCanvas();
    });
   }
   const list=desktop.querySelector('.bc-mac-desktop-items');
@@ -278,14 +279,31 @@
    if(!list.isConnected)return;
    list.replaceChildren();
    const folder=action('Desktop',()=>bridge()?.openDesktopFiles(),'bc-mac-desktop-item bc-mac-desktop-folder');
-   const folderIcon=el('span','bc-mac-desktop-file-icon','▣');folder.prepend(folderIcon);folder.setAttribute('aria-label','Open Desktop folder in BLACKCELL Files');list.append(folder);
-   for(const file of items){
+   folder.prepend(el('span','bc-mac-desktop-file-icon','▣'));
+   folder.setAttribute('aria-label','Open Desktop folder in BLACKCELL Files');
+   list.append(folder);
+   const fileIcon=file=>file.folder?'▣':/\\.(jpe?g|png|webp|gif|heic|avif)$/i.test(file.name)?'▧':/\\.pdf$/i.test(file.name)?'▤':'▤';
+   const groupOf=file=>file.folder?'Folders':/\\.(jpe?g|png|webp|gif|heic|avif)$/i.test(file.name)?'Images':/\\.pdf$/i.test(file.name)?'PDFs':'Documents';
+   const addFile=file=>{
     const item=action(file.name,()=>bridge()?.openDesktopFiles(),'bc-mac-desktop-item');
     item.setAttribute('aria-label','Open '+file.name+' in BLACKCELL Files');
-    item.prepend(el('span','bc-mac-desktop-file-icon',file.folder?'▣':/\.(jpe?g|png|webp|gif|heic)$/i.test(file.name)?'▧':/\.pdf$/i.test(file.name)?'▤':'▤'));
-    item.dataset.group=file.folder?'Folders':/\.(jpe?g|png|webp|gif|heic)$/i.test(file.name)?'Images':'Documents';
+    item.prepend(el('span','bc-mac-desktop-file-icon',fileIcon(file)));
+    item.dataset.group=groupOf(file);
     list.append(item);
-   }
+   };
+   if(desktop.classList.contains('bc-mac-desktop-stacks')){
+    const groups=new Map();
+    for(const file of items){const group=groupOf(file);if(!groups.has(group))groups.set(group,[]);groups.get(group).push(file)}
+    for(const [name,files] of groups){
+     const button=action(name+' ('+files.length+')',()=>{
+      desktop.dataset.expandedStack=desktop.dataset.expandedStack===name?'':name;
+      view(items);
+     },'bc-mac-desktop-item bc-mac-stack');
+     button.setAttribute('aria-expanded',String(desktop.dataset.expandedStack===name));
+     button.prepend(el('span','bc-mac-desktop-file-icon','▦'));list.append(button);
+     if(desktop.dataset.expandedStack===name)for(const file of files)addFile(file);
+    }
+   }else for(const file of items)addFile(file);
   };
   view([]);
   if(!bridge()?.listDesktopFiles)return;
@@ -295,6 +313,8 @@
   if(!allowed()||e.target.closest?.('input,textarea,[contenteditable]'))return;
   const ctrl=e.ctrlKey||e.metaKey;
   if(ctrl&&e.key===' '){e.preventDefault();openSpotlight();return}
+  if(ctrl&&e.key==='Tab'&&!e.altKey){const visible=bridge()?.windows().filter(w=>!w.minimized)||[];if(visible.length>1){e.preventDefault();const i=visible.findIndex(w=>w.active);bridge().focusWindow(visible[(i+1)%visible.length].id)}return}
+  if(ctrl&&(e.key==='\`'||e.key==='~')){const list=bridge()?.windows().filter(w=>!w.minimized)||[];if(list.length>1){e.preventDefault();const i=list.findIndex(w=>w.active);bridge().focusWindow(list[(i+1)%list.length].id)}return}
   if(ctrl&&e.altKey&&e.key==='Tab'){e.preventDefault();begin('mission');return}
   if(ctrl&&e.key==='ArrowUp'){e.preventDefault();begin('mission');return}
   if(ctrl&&(e.key==='ArrowLeft'||e.key==='ArrowRight')&&!overlay){
@@ -320,7 +340,10 @@
  document.addEventListener('keydown',keybind);
  document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement)shell.classList.remove('bc-os-menu-edge-open')});
  shell.addEventListener('pointermove',e=>{
-  if(shell.classList.contains('bc-os-fullscreen-active'))shell.classList.toggle('bc-os-menu-edge-open',e.clientY<7);
+  if(shell.classList.contains('bc-os-fullscreen-active')){
+   shell.classList.toggle('bc-os-menu-edge-open',e.clientY<9);
+   shell.classList.toggle('bc-os-dock-edge-open',e.clientY>window.innerHeight-12);
+  }
  },{passive:true});
  controls();
  const renderWhenReady=()=>{if(allowed())renderDesktopCanvas()};
