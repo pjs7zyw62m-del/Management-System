@@ -211,6 +211,7 @@ async function refresh({initial=false,force=false}={}){
   if(result.error)throw result.error;
   state.rooms=result.data||[];
   const currentId=state.room?.id;
+  const previousPause=state.room?.photo_sending_paused===true;
   const requested=new URLSearchParams(location.search).get('room');
   const preferred=(validId(requested)?state.rooms.find(x=>x.id===requested):null)
      ||state.rooms.find(x=>x.id===currentId)
@@ -260,7 +261,8 @@ async function refresh({initial=false,force=false}={}){
   const u=new URL(location.href);u.searchParams.set('room',preferred.id);
   history.replaceState(null,'',u.pathname+u.search);
   updateRedlineResetControls();
-  await loadEntries({force:force||initial||currentId!==preferred.id});
+  await loadEntries({force:force||initial||currentId!==preferred.id||
+   previousPause!==(preferred.photo_sending_paused===true)});
  }finally{
   state.refreshing=false;
   if(state.liveQueued){state.liveQueued=false;queueLiveRefresh()}
