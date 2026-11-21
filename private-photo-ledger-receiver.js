@@ -216,8 +216,13 @@
  heightDivider.title='Drag up or down to resize the incoming photo and priced photo list. Double-click to reset.';
  heightDivider.tabIndex=0;
  const pricedStage=make('section','rr-priced-stage');pricedStage.id='redlineReceiverPricedStage';
- pricedStage.setAttribute('aria-label','Priced photos in a separately scrolling list');
- photos.append(reviewStage,heightDivider,pricedStage);
+ pricedStage.setAttribute('aria-label','Photo history in a separately scrolling list');
+ const historyToggle=button('▤ PHOTO HISTORY',()=>togglePhotoHistory(),'rr-history-toggle');
+ historyToggle.id='redlinePhotoHistoryToggle';
+ historyToggle.setAttribute('aria-controls','redlineReceiverPricedStage');
+ historyToggle.setAttribute('aria-expanded','false');
+ historyToggle.setAttribute('aria-label','Open the scrollable REDLINE photo history');
+ photos.append(reviewStage,heightDivider,pricedStage,historyToggle);
  const originalReview=$('#ownerReviewQueue');
  // The verified bid/timer panel stays beside the normal photo viewer.
  // Full-screen inspection is always the photograph alone.
@@ -294,11 +299,24 @@
   divider.setAttribute('aria-valuetext','Photos '+Math.round(mediaRatio*100)+' percent');
   if(persist)try{window.localStorage.setItem(MEDIA_KEY,String(mediaRatio))}catch{}
  }
+ let historyOpen=false;
+ function setHistoryOpen(open){
+  historyOpen=Boolean(open);
+  photos.classList.toggle('rr-history-open',historyOpen);
+  historyToggle.textContent=historyOpen?'✕ CLOSE HISTORY':'▤ PHOTO HISTORY';
+  historyToggle.setAttribute('aria-expanded',String(historyOpen));
+  historyToggle.setAttribute('aria-label',historyOpen?'Close REDLINE photo history':'Open the scrollable REDLINE photo history');
+  history.setAttribute('aria-expanded',String(historyOpen));
+  const count=pricedStage.querySelectorAll('#photoEntries>.photo-entry').length;
+  historyToggle.title=historyOpen?'Close photo history':count+' photo records in this room';
+ }
+ function togglePhotoHistory(){setHistoryOpen(!historyOpen)}
  function showPane(){
   workspace.classList.toggle('rr-media-open',mediaOpen);
   workspace.classList.toggle('rr-media-closed',!mediaOpen);
   showMedia.setAttribute('aria-expanded',String(mediaOpen));
   review.setAttribute('aria-expanded',String(mediaOpen));
+  historyToggle.hidden=!mediaOpen;
  }
  function openMedia(history=false){
   // Original small-phone navigation remains in charge of its own panels.
@@ -310,12 +328,13 @@
    return;
   }
   mediaOpen=true;showPane();applyWidth(mediaRatio);applyHeight(heightRatio);
+  setHistoryOpen(history);
   if(history){
    const priced=pricedStage.querySelector('#photoEntries');
    if(priced){priced.scrollTop=0;priced.focus?.({preventScroll:true})}
   }
  }
- function closeMedia(){mediaOpen=false;showPane()}
+ function closeMedia(){setHistoryOpen(false);mediaOpen=false;showPane()}
  // Resize the upper incoming-photo stage independently from the lower
  // priced-photo library, just like iMessage's media stage and filmstrip.
  function verticalBounds(){
@@ -420,6 +439,7 @@
   if(combined){
    if(chatPanel.parentNode!==workspace)workspace.insertBefore(chatPanel,divider);
    if(originalReview&&originalReview.parentNode!==reviewStage)reviewStage.append(originalReview);
+   if(historyToggle.parentNode!==photos)photos.append(historyToggle);
    if(bidTimerPanel&&bidTimerPanel.parentNode!==reviewStage)reviewStage.append(bidTimerPanel);
    for(const element of [historyToolbar,photoEntries,entriesFeedback]){
     if(element&&element.parentNode!==pricedStage)pricedStage.append(element);
@@ -444,6 +464,7 @@
    timeline?.classList.remove('rr-source-timeline');
    if(timeline&&roomBody&&timeline.parentNode!==roomBody)roomBody.append(timeline);
    mediaInitialised=false;
+   setHistoryOpen(false);
   }
  }
  // Security and room controls remain available beneath active conversations.
@@ -487,6 +508,10 @@
   dashboard.classList.toggle('rr-is-archive',mode);
   const count=$('#reviewQueueCount')?.textContent||'';
   review.title=count?'Review queue: '+count:'Open review queue';
+  historyToggle.hidden=!hasRoom||!mediaOpen;
+  if(historyOpen&&hasRoom){
+   historyToggle.title=pricedStage.querySelectorAll('#photoEntries>.photo-entry').length+' photo records in this room';
+  }
  }
  const observe=new MutationObserver(sync);
  for(const item of [app,owner,room]){
