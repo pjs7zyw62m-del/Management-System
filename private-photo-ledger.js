@@ -206,7 +206,7 @@ async function refresh({initial=false,force=false}={}){
  if(state.refreshing){state.liveQueued=true;return}
  state.refreshing=true;
  try{
-  const result=await db.from(ROOMS).select('id,owner_id,member_id,title,active,created_at,current_session_started_at')
+  const result=await db.from(ROOMS).select('id,owner_id,member_id,title,active,photo_sending_paused,created_at,current_session_started_at')
    .order('created_at',{ascending:false}).limit(100);
   if(result.error)throw result.error;
   state.rooms=result.data||[];
@@ -267,28 +267,29 @@ async function refresh({initial=false,force=false}={}){
  }
 }
 function updateUploadAccess(room){
- const available=Boolean(room?.active);
+ const available=Boolean(room?.active),paused=Boolean(room?.photo_sending_paused);
  $('uploadAccessStatus').hidden=!room;
  if(!room)return;
  $('ownerUploadInfo').hidden=!state.isOwner;
  const action=$('uploadAccessAction');
  if(state.isOwner){
-  show('uploadAccessTitle','PHOTO UPLOAD · ASSIGNED EMPLOYEE');
-  show('uploadAccessDetail',available
-   ?'The selected employee has the working Upload Photo control on his account. You can copy the private link and see each photo here before assigning an amount.'
-   :'This room is closed. Reopen it before the employee can upload.');
-  show('ownerUploadDescription',available
-   ?'The photo upload form is available when the selected employee signs in with his own corporate account. Your Level 7 account controls amounts and settlement records.'
-   :'This room is closed. Existing photos remain available, but new employee uploads are paused.');
+  show('uploadAccessTitle','PHOTO UPLOAD · ASSIGNED SENDER');
+  show('uploadAccessDetail',!available?'Room closed. Reopen it to allow photos.':
+   paused?'You have paused this sender’s new photo uploads. Chat remains available.':
+   'Sender photo uploads are enabled. You can pause sending from your receiver photo sidebar.');
+  show('ownerUploadDescription',paused?
+   'Photo uploads are paused by you. Existing photos, chat and timed earnings remain available.':
+   'Your receiver-side Pause / Resume Sending button controls future photo uploads.');
   action.textContent=available?'COPY EMPLOYEE UPLOAD LINK':'REOPEN ROOM TO UPLOAD';
   action.disabled=false;
  }else{
-  show('uploadAccessTitle',available?'UPLOAD A PRIVATE PHOTO':'PHOTO UPLOAD PAUSED');
-  show('uploadAccessDetail',available
-   ?'Your private room is active. Tap the button to open the photo picker on this iPad or choose a photo in the upload panel below.'
-   :'The owner has closed this room. Previous submissions remain visible, but uploading is temporarily disabled.');
-  action.textContent=available?'＋ UPLOAD PHOTO':'ROOM CLOSED';
-  action.disabled=!available;
+  show('uploadAccessTitle',available&&!paused?'UPLOAD A PRIVATE PHOTO':'PHOTO UPLOAD PAUSED');
+  show('uploadAccessDetail',!available?
+   'The receiver has closed this room. Previous submissions remain visible.':
+   paused?'The receiver paused new photo sending. Private chat remains available.':
+   'Choose a photo to send it automatically to your private room.');
+  action.textContent=!available?'ROOM CLOSED':paused?'SENDING PAUSED':'＋ UPLOAD PHOTO';
+  action.disabled=!available||paused;
  }
 }
 function liveStatus(message,connected=false){
@@ -457,11 +458,8 @@ function renderReviewQueue(){
   parent.append(empty);
   const lastAccepted=state.entries.find(e=>e.id===state.reviewSidebarPhotoId&&e.decision_status==='accepted')||
    state.entries.find(e=>e.decision_status==='accepted');
-  if(lastAccepted)preparePhotoReviewLightbox(lastAccepted);
-  else{
-   const sidebar=$('redlineLightboxReview');
-   if(sidebar)sidebar.hidden=true;
-  }
+  // Receiver pause must remain available even if the photo queue is empty.
+  preparePhotoReviewLightbox(lastAccepted||null);
   return;
  }
  const current=pending[0];
@@ -586,27 +584,73 @@ window.addEventListener('blackcell:redline:photo-selected',event=>{
  state.reviewSidebarPhotoId=id;
  preparePhotoReviewLightbox(selected);
 });
+// This owner-only control is located in the receiver's bid/timer sidebar.
+function appendReceiverPauseControl(panel){
+ if(!state.isOwner||!state.room||state.showArchive)return;
+ const wrapper=node('section','rr-receiver-photo-pause');
+ const paused=state.room.photo_sending_paused===true;
+ const label=node('strong','rr-receiver-pause-heading','PHOTO SENDING');
+ const action=button(paused?'▶ RESUME SENDING':'⏸ PAUSE SENDING',
+  ()=>void toggleReceiverPause(),'rr-receiver-pause-button');
+ action.id='redlineReceiverSendingPause';
+ action.type='button';
+ action.setAttribute('aria-pressed',String(paused));
+ const status=node('p','rr-receiver-pause-status',paused?
+  'Sender photo uploads paused. Chat remains available.':'Sender may send new photographs.');
+ status.setAttribute('role','status');
+ wrapper.append(label,action,status);
+ panel.append(wrapper);
+ async function toggleReceiverPause(){
+  if(!state.room||!state.isOwner||state.showArchive)return;
+  const roomId=state.room.id;
+  action.disabled=true;status.textContent='Saving receiver setting…';
+  try{
+   await verify();
+   if(state.room?.id!==roomId)throw Error('The selected room changed.');
+   const target=!Boolean(state.room.photo_sending_paused);
+   const result=await db.from(ROOMS)
+    .update({photo_sending_paused:target})
+    .eq('id',roomId).eq('owner_id',state.user.id)
+    .select('id,photo_sending_paused').single();
+   if(result.error||!result.data)throw Error(fail(result.error||'Could not save receiver setting.'));
+   if(state.room?.id!==roomId)return;
+   const saved=result.data.photo_sending_paused===true;
+   state.room.photo_sending_paused=saved;
+   for(const r of state.rooms)if(r.id===roomId)r.photo_sending_paused=saved;
+   panel.dataset.redlinePause=String(saved);
+   action.textContent=saved?'▶ RESUME SENDING':'⏸ PAUSE SENDING';
+   action.setAttribute('aria-pressed',String(saved));
+   status.textContent=saved?'New photo uploads are paused. Chat stays active.':'Sender photo uploads resumed.';
+   updateUploadAccess(state.room);
+   window.dispatchEvent(new Event('blackcell:redline:state'));
+  }catch(error){status.textContent='Could not change sending: '+fail(error)}
+  finally{action.disabled=false}
+ }
+}
 // Full-screen inspection uses the existing authenticated decision handlers
 // in the NORMAL viewer sidebar, never in the full-screen photo-only popup.
 function preparePhotoReviewLightbox(entry){
  const panel=$('redlineLightboxReview');
  if(!panel)return;
  // Keep entered bid values stable while the room refreshes or timer ticks.
- if(panel.dataset.redlinePhotoId===entry.id&&
-    panel.dataset.redlineDecision===entry.decision_status&&!panel.hidden)return;
- panel.dataset.redlinePhotoId=entry.id;
- panel.dataset.redlineDecision=entry.decision_status;
+ if(panel.dataset.redlinePhotoId===(entry?.id||'none')&&
+    panel.dataset.redlineDecision===(entry?.decision_status||'empty')&&
+    panel.dataset.redlinePause===String(Boolean(state.room?.photo_sending_paused))&&!panel.hidden)return;
+ panel.dataset.redlinePhotoId=entry?.id||'none';
+ panel.dataset.redlineDecision=entry?.decision_status||'empty';
+ panel.dataset.redlinePause=String(Boolean(state.room?.photo_sending_paused));
  // Preserve the same authenticated timer node when refreshing the bid UI.
  const liveTimer=$('redlinePhotoTimerPanel');
  if(liveTimer?.parentNode===panel)liveTimer.remove();
  panel.replaceChildren();
  const restoreTimer=()=>{if(liveTimer&&state.isOwner)panel.append(liveTimer)};
- const review=state.isOwner&&entry.decision_status==='pending'&&!state.showArchive;
+ const review=state.isOwner&&entry?.decision_status==='pending'&&!state.showArchive;
  // The sidebar is visible to the verified receiver for both pending and
  // accepted photographs. Only pending images can receive a final price.
  const receiverActions=state.isOwner&&!state.showArchive;
  panel.hidden=!receiverActions;
  if(!receiverActions)return;
+ appendReceiverPauseControl(panel);
  if(!review){
   panel.append(node('span','redline-review-kicker','VERIFIED RECEIVER'));
   panel.append(node('h3','','PHOTO CONTROLS'));
@@ -723,11 +767,9 @@ async function uploadPhoto(...args){
 async function bcLiveOriginal_uploadPhoto(event){
  event.preventDefault();
  if(state.isOwner||state.busy||!state.room?.active)return;
- // Sender pause is voluntary and local. Never begin an authenticated storage
- // upload after the sender has paused, including form-submit fallbacks.
- if(document.body.dataset.redlineUploadPaused==='true'){
+ if(state.room.photo_sending_paused){
   $('uploadPhoto').value='';
-  show('uploadFeedback','Photo sending is paused. Select Resume to send again.');
+  show('uploadFeedback','Photo sending was paused by the receiver.');
   return;
  }
  if(state.showArchive){show('uploadFeedback','Return to the current REDLINE session before uploading new photos.');return}
@@ -747,6 +789,17 @@ async function bcLiveOriginal_uploadPhoto(event){
  const path=room.id+'/'+id+'.'+info.ext;
  try{
   await verify();
+  // Read the current server-side room flag before sending. A receiver may
+  // pause from another device; database policies also guard against races.
+  const permission=await db.from(ROOMS).select('id,active,photo_sending_paused')
+   .eq('id',room.id).single();
+  if(permission.error||!permission.data)throw Error('Could not verify photo sending permission.');
+  if(state.room?.id!==room.id)throw Error('Private room changed. Photo not sent.');
+  state.room.photo_sending_paused=permission.data.photo_sending_paused===true;
+  if(!permission.data.active||permission.data.photo_sending_paused){
+   window.dispatchEvent(new Event('blackcell:redline:state'));
+   throw Error(permission.data.photo_sending_paused?'The receiver paused photo sending.':'Private room closed.');
+  }
   const upload=await db.storage.from(BUCKET).upload(path,file,{contentType:info.mime,upsert:false,cacheControl:'60'});
   if(upload.error)throw upload.error;
   const r=await db.from(ENTRIES).insert({
@@ -783,7 +836,7 @@ async function bcLiveOriginal_uploadPhoto(event){
  }
  finally{
   state.busy=false;btn.disabled=false;
-  picker.disabled=document.body.dataset.redlineUploadPaused==='true';
+  picker.disabled=Boolean(state.room?.photo_sending_paused);
   $('employeeUpload').classList.remove('bc-photo-sending');
   btn.textContent='POST TO OUR PRIVATE ROOM ↗';
  }
@@ -1039,6 +1092,7 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
    peerName:state.isOwner?participantName(state.room.member_id):participantName(state.room.owner_id),
    isOwner:state.isOwner,
    roomActive:state.room.active===true,
+   photoSendingPaused:state.room.photo_sending_paused===true,
    roomTitle:state.room.title,
    archiveMode:state.showArchive,
    resetAt:state.room.current_session_started_at||null,
