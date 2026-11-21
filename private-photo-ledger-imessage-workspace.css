@@ -590,3 +590,12 @@ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage .rr-photo-
   background:#000!important;
  }
 }
+
+/* Override the legacy photo-grid's higher-specificity display declaration. */
+@media(min-width:420px){
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverLiveWorkspace.rr-media-open>#redlineReceiverIncomingPhotos{
+  display:flex!important;flex-direction:column!important;
+  grid-template-rows:none!important;
+  height:100%!important;min-height:0!important;overflow:hidden!important;
+ }
+}
