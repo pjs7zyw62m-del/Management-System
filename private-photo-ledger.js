@@ -699,6 +699,7 @@ function preparePhotoReviewLightbox(entry){
     kind==='zero'?await assignAmount(entry,{value:'0.00'},zero):
      await assignAmount(entry,input,accept);
    if(result===true){if(!$('photoLightbox').hidden)closeLightbox();return}
+   if(kind==='reject'&&result===null){statusLine.textContent='Rejection cancelled. The photo remains pending.';return}
    statusLine.textContent='No decision was saved. Check the amount, or try again.';
   }catch(error){statusLine.textContent='Decision not saved: '+fail(error)}
   finally{running=false;for(const b of allButtons)b.disabled=false}
@@ -728,9 +729,19 @@ async function acceptZero(entry,trigger){
  field.value='0.00';
  await assignAmount(entry,field,trigger);
 }
+async function confirmRejectPhoto(entry){
+ const dialog=$('redlineRejectPhotoConfirm');
+ if(!dialog||dialog.open)return false;
+ $('redlineRejectPhotoRef').textContent='PHOTO '+entry.id.slice(0,8).toUpperCase();
+ dialog.returnValue='';
+ return new Promise(resolve=>{
+  dialog.addEventListener('close',()=>resolve(dialog.returnValue==='reject'),{once:true});
+  dialog.showModal();
+ });
+}
 async function rejectPhoto(entry,trigger){
  if(!state.isOwner||state.busy||entry.decision_status!=='pending')return;
- if(!window.confirm('Reject this photo? It will remain in the private record as REJECTED with no amount owed. This cannot be undone.'))return;
+ if(!await confirmRejectPhoto(entry))return null;
  state.busy=true;trigger.disabled=true;
  try{
   await verify();
