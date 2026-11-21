@@ -67,3 +67,25 @@ test('Owner receiver mounts the same authenticated thread inline without cloning
  assert.match(ui,/window\.addEventListener\('blackcell:redline:receiver-ready',sync\)/);
  assert.match(ui,/await bridge\(\)\.sendMessage\(text\)/);
 });
+
+test('Currently Viewing has authenticated selected-photo presence and photo beneath pinned timer',()=>{
+ const migration=read('supabase/migrations/20261121201500_redline_currently_viewing_photo.sql');
+ assert.match(ui,/\['viewing','Currently Viewing'\]/);
+ assert.match(ui,/function renderCurrentlyViewing\(snap\)/);
+ assert.match(ui,/async function pollCurrentlyViewing\(force=false\)/);
+ assert.match(ui,/bridge\(\)\.currentlyViewingStatus\(roomId\)/);
+ assert.match(ui,/redline-chat-timer-photo/);
+ assert.match(ui,/photo\.image_url/);
+ assert.match(ui,/photo_id===e\.timer\.photo_id/);
+ assert.match(css,/redline-chat-timer-image/);
+ assert.match(css,/repeat\(5,minmax\(0,1fr\)\)/);
+ assert.match(bridge,/async setCurrentlyViewing\(photoId\)/);
+ assert.match(bridge,/async currentlyViewingStatus\(roomId\)/);
+ assert.match(migration,/create table if not exists corp_private\.redline_currently_viewing/);
+ assert.match(migration,/alter table corp_private\.redline_currently_viewing enable row level security/);
+ assert.match(migration,/revoke all on corp_private\.redline_currently_viewing from public,anon,authenticated/);
+ assert.match(migration,/owner_id=v_user and active/);
+ assert.match(migration,/owner_id=v_user or member_id=v_user/);
+ assert.match(migration,/updated_at<clock_timestamp\(\)-interval '45 seconds'/);
+ assert.match(migration,/revoke all on function public\.corp_redline_currently_viewing_status\(uuid\)/);
+});
