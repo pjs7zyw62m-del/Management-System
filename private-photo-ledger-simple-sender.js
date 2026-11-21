@@ -697,6 +697,7 @@ function switchTab(tab){
  for(const pane of panes.children)pane.hidden=pane.dataset.redlinePane!==tab;
  if(tab==='upload'){void loadMessages();void pollSenderTimers(true);void pollChatStatus(true)}
  else{stopTyping();peerTyping=false;updateTypingIndicator()}
+ if(tab==='viewing'){renderCurrentlyViewing(snapshot());void pollCurrentlyViewing(true)}
  home.scrollIntoView({behavior:'auto',block:'start'});
 }
 function syncOwnerChat(snap){
@@ -730,6 +731,7 @@ function sync(){
   const sessionKey=snap.roomId+'|'+(snap.resetAt||'')+'|'+String(snap.archiveMode);
   if(sessionKey!==lastSessionKey){
    lastSessionKey=sessionKey;messages=[];lastSync=0;resetChatSignals();
+   viewingStatus=null;viewingRoomId=null;viewingError='';viewingLastPoll=0;
    timerRoomId=null;timerStatus=null;timerFingerprint='';timerLastPoll=0;timerLoadError='';
    renderChat();
    if(currentTab==='upload')void loadMessages();
@@ -744,6 +746,7 @@ function sync(){
   renderEarnings(snap);
   renderFiveStarPhotos(snap);
   renderPhotoHistory(snap);
+  if(currentTab==='viewing')renderCurrentlyViewing(snap);
   if(snap.roomId!==lastRoom){
    lastRoom=snap.roomId;messages=[];lastSync=0;resetChatSignals();
    renderChat();
@@ -801,8 +804,11 @@ window.addEventListener('blackcell:redline:receiver-ready',sync);
 window.addEventListener('blackcell:redline:bridge',sync);
 window.addEventListener('blackcell:redline:state',sync);
 window.addEventListener('blackcell:redline:session-mode',sync);
-window.addEventListener('blackcell:redline:reset',()=>{lastSessionKey=null;messages=[];lastSync=0;resetChatSignals();sync()});
-window.addEventListener('pageshow',()=>{sync();void pollSenderTimers(true)});
+window.addEventListener('blackcell:redline:reset',()=>{
+ lastSessionKey=null;messages=[];lastSync=0;resetChatSignals();
+ viewingStatus=null;viewingRoomId=null;viewingError='';viewingLastPoll=0;sync();
+});
+window.addEventListener('pageshow',()=>{sync();void pollSenderTimers(true);void pollCurrentlyViewing(true)});
 window.addEventListener('visibilitychange',()=>{if(!document.hidden){
  if((isSender()&&currentTab==='upload')||ownerDialog.open||(receiverChatPanel()&&!receiverChatPanel().hidden))void loadMessages();
  void pollSenderTimers(true);void pollChatStatus(true);
@@ -812,6 +818,7 @@ window.setInterval(()=>{
  if(!document.hidden)void pollSenderTimers();
 },1000);
 window.setInterval(()=>{if(!document.hidden)void pollChatStatus()},1500);
+window.setInterval(()=>{if(!document.hidden)void pollCurrentlyViewing()},2600);
 window.setInterval(()=>{
  const active=(isSender()&&currentTab==='upload')||ownerDialog.open||(receiverChatPanel()&&!receiverChatPanel().hidden);
  if(!document.hidden&&active&&Date.now()-lastSync>3800)void loadMessages();
