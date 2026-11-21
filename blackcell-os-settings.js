@@ -61,13 +61,25 @@ export function mountSettings(host,api){
   }else if(section==='updates'){
     const p=panel('BLACKCELL OS Software Update','Published releases update the web-app interface and catalog. Your account, photos, videos and files are preserved.');
     const notice=el('p','bc-settings-muted');notice.setAttribute('role','status');notice.setAttribute('aria-live','polite');
+    const auto=el('input','bc-settings-autoupdate');
+    auto.type='checkbox';auto.checked=window.BLACKCELL_LIVE_UPDATE?.autoEnabled?.()??true;
+    auto.setAttribute('aria-label','Automatically save the OS workspace and install updates when idle');
+    auto.onchange=()=>{
+      auto.checked=window.BLACKCELL_LIVE_UPDATE?.setAutoEnabled?.(auto.checked)??auto.checked;
+      notice.textContent=auto.checked?'Automatic updates enabled. BLACKCELL installs when idle and saves your workspace first.':'Automatic updates disabled. You can still install updates manually.';
+    };
     const check=btn('Check for updates',async()=>{
       check.disabled=true;notice.textContent='Checking the published release…';
-      try{const result=await window.BLACKCELL_LIVE_UPDATE?.show?.();notice.textContent=result?.available?'An update is available. Use the Update Now notification.':'Your BLACKCELL OS is up to date.'}
-      catch(_){notice.textContent='Unable to check for updates. Retry.'}
+      try{
+       const result=await window.BLACKCELL_LIVE_UPDATE?.show?.();
+       notice.textContent=result?.available
+        ?result.automatic?(result.blockedBy?'An update is waiting safely: '+result.blockedBy:'An update will install automatically when the workspace is idle.'):'An update is available. Choose Update Now.'
+        :'Your BLACKCELL OS is up to date.';
+      }catch(_){notice.textContent='Unable to check for updates. Retry.'}
       finally{check.disabled=false}
     });
     row(p,'Platform','BLACKCELL OS web app','Updates are for the BLACKCELL interface, not Apple iOS.');
+    row(p,'Automatic updates',auto,'On by default. Saves desktop positions, open windows and settings before updating without extra prompts. Real uploads and unsaved app forms are not interrupted.');
     const build=document.querySelector('meta[name="blackcell-os-client-build"]')?.content||'Legacy interface';
     row(p,'Installed interface build',build,'This is the exact interface code loaded on this device. If it differs from your computer, the device may still be showing an older cached version.');
     row(p,'Published release',check,'Check for a new version.');
