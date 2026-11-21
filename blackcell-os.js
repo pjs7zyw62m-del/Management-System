@@ -637,7 +637,7 @@ function workspaceKey(){return 'bc.os.workspace.v1:'+String(storeProfile||'previ
 function saveWorkspace(){
  if(!workspaceReady||workspaceRestoring||(!active&&!preview)||leaving)return;
  try{
-  const records=[...windows.values()].filter(r=>!r.suspended&&!r.chatPopout).map(r=>({id:r.id,minimized:r.el.hidden,maximized:r.el.classList.contains('is-max'),left:r.el.style.left,top:r.el.style.top,width:r.el.style.width,height:r.el.style.height,order:Number(r.el.style.zIndex)||0,...(r.id==='files'?{files:r.fileState||{path:[],layout:'grid'}}:r.id==='store'?{store:r.storeState||null}:r.id==='settings'?{settings:{section:r.settingsSection||'general'}}:{})}));
+  const records=[...windows.values()].filter(r=>!r.suspended&&!r.chatPopout).map(r=>({id:r.id,minimized:r.spaceShown===false||r.suspended===true,maximized:r.el.classList.contains('is-max'),spaceId:r.spaceId||'1',left:r.el.style.left,top:r.el.style.top,width:r.el.style.width,height:r.el.style.height,order:Number(r.el.style.zIndex)||0,...(r.id==='files'?{files:r.fileState||{path:[],layout:'grid'}}:r.id==='store'?{store:r.storeState||null}:r.id==='settings'?{settings:{section:r.settingsSection||'general'}}:{})}));
   for(const pending of pendingRestore)if(!records.some(r=>r.id===pending.id))records.push(pending);
   // Store only parked conversation shortcuts and window geometry, never message data or drafts.
   const parkedChats=[...windows.values()].filter(r=>r.chatPopout&&r.chatParked&&r.el.hidden).slice(0,8).map(r=>{
@@ -683,6 +683,7 @@ function restoreRecord(saved,parked=false){
  const previous=selectedWindow;
  showApp(saved.id,parked?{peerId:saved.id.slice(8),name:saved.name.slice(0,70)||'Conversation'}:saved.id==='store'?saved.store:saved.id==='settings'?saved.settings:saved.files);
  const r=windows.get(saved.id);if(!r)return;
+ if(!parked){r.spaceId=spaceValid(saved.spaceId)?String(saved.spaceId):'1';r.spaceShown=saved.minimized!==true}
  if(parked){applyParkedGeometry(r,saved);r.chatKeepOnTop=saved.keepOnTop===true;}
  else if(innerWidth>620&&!touchOS()){
   const width=safePixels(saved.width),height=safePixels(saved.height),left=safePixels(saved.left),top=safePixels(saved.top);
@@ -707,7 +708,7 @@ function restoreWorkspace(){
    }
    if(Array.isArray(saved.parkedChats))for(const entry of saved.parkedChats.slice(0,8))restoreRecord(entry,true);
   }
- }finally{workspaceRestoring=false;workspaceReady=true;syncParkedChatBubbles();saveWorkspace()}
+ }finally{workspaceRestoring=false;workspaceReady=true;spaceVisibility();syncParkedChatBubbles();saveWorkspace()}
 }
 function restoreOptionalWorkspace(){
  if(!active||!pendingRestore.length)return;
@@ -796,7 +797,7 @@ function menu(name,trigger){
   if(preview||installedApp('settings'))menuAction('System Settings…',()=>showApp('settings'));
   menuDivider();menuAction('Show Desktop',showDesktop);
   if(preview||installedApp('person'))menuAction('My Profile',()=>showApp('person'));
-  menuDivider();menuAction('Lock Screen',()=>lockWorkspace());menuAction('Log Off',()=>lockWorkspace('logoff'));menuAction('Restart…',restartWorkspace);
+  menuDivider();menuAction('Lock Screen',()=>lockWorkspace());menuAction('Force Quit / Windows…',()=>window.dispatchEvent(new Event('blackcell:mission-open')));menuAction('Log Off',()=>lockWorkspace('logoff'));menuAction('Restart…',restartWorkspace);
   menuDivider();menuAction(preview?'Exit Preview':'Sign Out',()=>void signOut());
  }else if(name==='application'){
   if(activeWindow){
@@ -819,6 +820,8 @@ function menu(name,trigger){
   menuDivider();menuAction('Desktop Preferences…',()=>menuOpenApp('settings','appearance'));
  }else if(name==='view'){
   menuAction('Show Desktop',showDesktop);
+  menuAction('Applications / Launchpad…',()=>window.dispatchEvent(new Event('blackcell:launchpad-open')));
+  menuAction('Mission Control…',()=>window.dispatchEvent(new Event('blackcell:mission-open')));
   menuAction($('desktop').classList.contains('bc-widgets-hidden')?'Show Widgets':'Hide Widgets',()=>$('bcWidgetsToggle')?.click());
   menuDivider();menuAction('Appearance Settings…',()=>menuOpenApp('settings','appearance'));
   menuAction('Full Screen',async()=>{
@@ -829,6 +832,7 @@ function menu(name,trigger){
   });
  }else if(name==='go'||name==='apps'){
   menuAction('Desktop',showDesktop);
+  menuAction('Applications / Launchpad…',()=>window.dispatchEvent(new Event('blackcell:launchpad-open')));
   menuAction('BLACKCELL Files',()=>menuOpenApp('files'));
   menuAction('Photos',()=>menuOpenApp('personalphotos'));
   menuAction('My Profile',()=>menuOpenApp('person'));
@@ -838,7 +842,12 @@ function menu(name,trigger){
  }else if(name==='window'){
   if(activeWindow){menuAction('Minimize '+(activeWindow.title||'Window'),()=>suspend(activeWindow));menuAction('Close Active Window',()=>void requestClose(activeWindow));menuDivider()}
   menuAction('Show Desktop',showDesktop);
+  for(const sp of bcSpaces)menuAction((sp.id===bcSpace?'✓ ':'')+sp.name,()=>spaceSwitch(sp.id));
+  menuDivider();
   for(const record of windows.values())if(!document.querySelector('.app[data-app="'+(record.chatPopout?'chat':record.id)+'"]')?.hidden)menuAction((record===activeWindow?'✓ ':'')+(record.title||'Window')+(record.suspended?' · Resume':''),()=>showApp(record.id));
+  menuDivider();menuAction('Mission Control…',()=>window.dispatchEvent(new Event('blackcell:mission-open')));
+  menuAction('New Desktop',()=>{const id=spaceAdd();if(id)spaceSwitch(id)});
+  menuAction('Next Desktop',()=>{const n=bcSpaces.findIndex(x=>x.id===bcSpace);spaceSwitch(bcSpaces[(n+1)%bcSpaces.length].id)});
  }else if(name==='help'){
   menuAction('BLACKCELL OS Desktop Help…',openShortcutsGuide);
   menuAction('System Information…',()=>menuOpenApp('settings','about'));
@@ -945,11 +954,11 @@ function parkChat(r){
  r.chatParked=true;r.el.hidden=true;if(selectedWindow===r)selectedWindow=null;
  pauseFrameMedia(r.frame);syncParkedChatBubbles();syncChatVisibility();saveWorkspace();
 }
-function raise(r){if(r.chatParked){applyParkedGeometry(r,r.parkedGeometry);r.parkedGeometry=null;}r.chatParked=false;syncParkedChatBubbles();if(r.closing)r.reopened=true;r.suspended=false;r.el.hidden=false;r.el.style.zIndex=String(++layer);selectedWindow=r;markDock(r.id,true);updateActiveAppMenu();syncStoreUpdateHold();syncChatVisibility();saveWorkspace()}
-function showDesktop(){closeRecycleBin();for(const r of windows.values())r.el.hidden=true;selectedWindow=null;updateActiveAppMenu();syncStoreUpdateHold();syncChatVisibility();saveWorkspace()}
-function dispose(r,force=false){if(!force){void requestClose(r);return;}r.updateHold?.();r.updateHold=null;r.cleanup?.();r.frame?.remove();r.el.remove();r.release?.();windows.delete(r.id);syncParkedChatBubbles();markDock(r.id,false);if(selectedWindow===r)selectedWindow=null;updateActiveAppMenu();syncChatVisibility();saveWorkspace()}
+function raise(r){if(!r.chatPopout&&r.spaceId&&r.spaceId!==bcSpace)spaceSwitch(r.spaceId);r.spaceShown=true;if(r.chatParked){applyParkedGeometry(r,r.parkedGeometry);r.parkedGeometry=null;}r.chatParked=false;syncParkedChatBubbles();if(r.closing)r.reopened=true;r.suspended=false;r.el.hidden=false;r.el.style.zIndex=String(++layer);selectedWindow=r;markDock(r.id,true);updateActiveAppMenu();syncStoreUpdateHold();syncChatVisibility();saveWorkspace()}
+function showDesktop(){closeRecycleBin();for(const r of windows.values()){if(r.spaceId===bcSpace)r.spaceShown=false;r.el.hidden=true}selectedWindow=null;updateActiveAppMenu();syncStoreUpdateHold();syncChatVisibility();saveWorkspace()}
+function dispose(r,force=false){if(r?.el?.classList?.contains('bc-os-fullscreen'))$('desktop').classList.remove('bc-os-fullscreen-active','bc-os-menu-edge-open');if(!force){void requestClose(r);return;}r.updateHold?.();r.updateHold=null;r.cleanup?.();r.frame?.remove();r.el.remove();r.release?.();windows.delete(r.id);syncParkedChatBubbles();markDock(r.id,false);if(selectedWindow===r)selectedWindow=null;updateActiveAppMenu();syncChatVisibility();saveWorkspace()}
 function osNotice(message){let n=$('osCloseNotice');if(!n){n=document.createElement('div');n.id='osCloseNotice';n.className='os-close-notice';n.setAttribute('role','status');$('desktop').append(n)}n.textContent=message;n.hidden=false;clearTimeout(osNotice.timer);osNotice.timer=setTimeout(()=>{n.hidden=true},6000)}
-function suspend(r){r.el.hidden=true;r.suspended=true;markDock(r.id,false);if(selectedWindow===r)selectedWindow=null;updateActiveAppMenu();syncStoreUpdateHold();syncChatVisibility();saveWorkspace()}
+function suspend(r){r.el.hidden=true;r.spaceShown=false;r.suspended=true;markDock(r.id,false);if(selectedWindow===r)selectedWindow=null;updateActiveAppMenu();syncStoreUpdateHold();syncChatVisibility();saveWorkspace()}
 window.addEventListener('message',event=>{if(event.origin!==location.origin)return;const r=windows.get('administration');if(!r?.frame||event.source!==r.frame.contentWindow)return;if(event.data?.type==='blackcell-admin-app-return'){void requestClose(r)}else if(event.data?.type==='blackcell-admin-app-activity'){void activity()}else if(event.data?.type==='blackcell-admin-app-signed-out'){blocked('Your corporate session has ended.');window.top.location.replace('login.html')}});
 function pauseFrameMedia(frame){try{frame.contentWindow?.BLACKCELL_OS_PAUSE_MEDIA?.();for(const m of frame.contentDocument?.querySelectorAll('video,audio')||[])if(!m.paused)m.pause()}catch(_){}}
 async function requestClose(r){
@@ -1050,8 +1059,8 @@ function showApp(id,initialState=null,passwordVerified=null){
   }catch(e){osNotice('Refresh unavailable. Open the full page to check the release.');}
  });bar.insertBefore(refresh,external);}
  const content=document.createElement('div');content.className='os-window-body';w.append(bar,content);
- const r={id,title:windowTitle,chatPopout,el:w,frame:null,release:null,fileState:id==='files'?initialState:null,storeState:id==='store'?initialState:null,storeBusy:false,settingsSection:initialState?.section||'general'};windows.set(id,r);
- for(const [label,symbol,fn] of [['Close','×',()=>void requestClose(r)],['Minimize','−',()=>{w.hidden=true;selectedWindow=null;syncStoreUpdateHold();syncChatVisibility();saveWorkspace()}],['Maximize or restore','+',()=>{w.classList.toggle('is-max');saveWorkspace()}]]){const btn=document.createElement('button');btn.type='button';btn.setAttribute('aria-label',label+' '+r.title);btn.title=label;btn.textContent=symbol;btn.addEventListener('click',fn);controls.append(btn)}
+ const r={id,title:windowTitle,chatPopout,el:w,frame:null,release:null,fileState:id==='files'?initialState:null,storeState:id==='store'?initialState:null,storeBusy:false,settingsSection:initialState?.section||'general',spaceId:bcSpace,spaceShown:true};windows.set(id,r);
+ for(const [label,symbol,fn] of [['Close','×',()=>void requestClose(r)],['Minimize','−',()=>{w.hidden=true;r.spaceShown=false;selectedWindow=null;syncStoreUpdateHold();syncChatVisibility();saveWorkspace()}],['Maximize or restore','+',()=>{if(!touchOS())fullscreenWindow(r.id);else{w.classList.toggle('is-max');saveWorkspace()}}]]){const btn=document.createElement('button');btn.type='button';btn.setAttribute('aria-label',label+' '+r.title);btn.title=label;btn.textContent=symbol;btn.addEventListener('click',fn);controls.append(btn)}
  if(chatPopout){const blue=document.createElement('button');blue.type='button';blue.className='os-chat-park-button';blue.title='Park as chat bubble';blue.setAttribute('aria-label','Park '+r.title+' as a desktop chat bubble');blue.textContent='•';blue.addEventListener('click',()=>parkChat(r));controls.append(blue)}
  if(id==='personalphotos'){external.hidden=true;const msg=document.createElement('p');msg.textContent='Loading private Photos…';content.append(msg);(personalPhotosModule??=import('./blackcell-private-media.js?v=29-blackcell-corp-ai')).then(module=>{if(windows.get(id)!==r)return;content.replaceChildren();const app=module.mountPrivatePhotos(content,{client,userId:storeProfile,preview,alive:()=>windows.get(id)===r&&(active||preview),onBusy:busy=>{r.filesBusy=busy;if(busy&&!r.release){try{r.release=window.top.BLACKCELL_LIVE_UPDATE?.hold('Private Photos operation',window)}catch(_){}}else if(!busy){r.release?.();r.release=null}}});r.cleanup=()=>app.dispose();}).catch(()=>{personalPhotosModule=null;if(windows.get(id)===r){content.replaceChildren(msg);msg.textContent='Photos could not load. Reopen to try again.'}});}
  else if(id==='photobattle'){external.hidden=true;w.classList.add('is-max');const message=document.createElement('p');message.textContent='Entering Photo Battle…';message.style.padding='20px';content.append(message);import('./blackcell-photo-battle.js?v=3-transfer').then(module=>{if(windows.get(id)!==r)return;content.replaceChildren();const app=module.mountPhotoBattle(content,{client,userId:storeProfile,preview,alive:()=>windows.get(id)===r&&(active||preview)});r.cleanup=()=>app.dispose()}).catch(()=>{if(windows.get(id)===r){content.replaceChildren(message);message.textContent='Photo Battle could not start. Close and reopen.'}});}
