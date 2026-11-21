@@ -500,7 +500,16 @@ window.BLACKCELL_MAC_BRIDGE=Object.freeze({
  setPreference:setDesktopPref,
  openSettings:section=>openAppOrStore('settings',section),
  lock:()=>lockWorkspace(),
- toggleWidgets:()=>$('bcWidgetsToggle')?.click(),isPhone:touchOS
+ toggleWidgets:()=>$('bcWidgetsToggle')?.click(),isPhone:touchOS,
+ listDesktopFiles:async()=>{
+  if(!storeProfile||preview)return [];
+  if(!window.BLACKCELL_MAC_BRIDGE.ready()||!installedApp('files')||!client?.storage)return [];
+  const {data,error}=await client.storage.from('blackcell-os-files').list(storeProfile+'/Desktop',{limit:100});
+  if(error)throw error;
+  return (Array.isArray(data)?data:[]).filter(x=>x&&typeof x.name==='string'&&x.name!=='.blackcell-folder'&&x.name.length<=255)
+   .map(x=>({name:x.name,folder:!x.id,size:x.metadata?.size||0})).slice(0,100);
+ },
+ openDesktopFiles:()=>showApp('files',{path:['Desktop'],layout:'grid'})
 });
 let workspaceReady=false,workspaceRestoring=false,pendingRestore=[];
 /* Account-scoped device privacy preference; the corporate backend still enforces access. */
