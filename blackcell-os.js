@@ -656,6 +656,7 @@ function saveWorkspace(){
   for(const saved of deferredParkedChats.values())if(!parkedChats.some(r=>r.id===saved.id))parkedChats.push(saved);
   sessionStorage.setItem(workspaceKey(),JSON.stringify({version:1,at:Date.now(),windows:records.slice(0,24),parkedChats:parkedChats.slice(0,8)}));
  }catch(_){}
+ window.dispatchEvent(new Event('blackcell:windows-updated'));
 }
 function clearWorkspace(){pendingRestore=[];deferredParkedChats.clear();workspaceReady=false;try{sessionStorage.removeItem(workspaceKey());if(embeddedAdmin)sessionStorage.removeItem('bc.os.host.v1')}catch(_){}}
 function safePixels(value){return typeof value==='string'&&/^\d{1,5}(?:\.\d+)?px$/.test(value)?Number.parseFloat(value):null}
