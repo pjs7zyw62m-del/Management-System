@@ -82,7 +82,7 @@ jobs:
             b.dataset.qaPaid=doc.querySelectorAll('.redline-summary-stat strong')[1]?.textContent||'';
             b.dataset.qaPreviewForm=doc.querySelectorAll('#uploadPhotoForm').length?'yes':'no';
             if(role==='sender'){
-              doc.querySelector('[data-simple-tab=messages]').click();
+              doc.querySelector('[data-simple-tab=upload]').click();
             }else doc.querySelector('#redlineOwnerMessageLaunch').click();
             await new Promise(resolve=>setTimeout(resolve,400));
             const feed=doc.querySelector('.redline-message-feed');
