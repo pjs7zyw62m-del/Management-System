@@ -12,6 +12,7 @@ on:
       - 'supabase/sql/blackcell_redline_start_fresh_archive.sql'
       - 'tests/redline-timer-chat-browser-smoke.mjs'
       - 'tests/redline-per-second-earnings.test.mjs'
+      - 'tests/redline-history-chat-signals.test.mjs'
       - 'tests/redline-timer-two-party-browser-smoke.mjs'
       - 'tests/redline-next-photo-visual-smoke.mjs'
       - 'tests/redline-photo-history-browser-smoke.mjs'
@@ -34,6 +35,7 @@ on:
       - 'tests/private-photo-ledger-simple-sender.test.mjs'
       - 'tests/redline-timer-chat-browser-smoke.mjs'
       - 'tests/redline-per-second-earnings.test.mjs'
+      - 'tests/redline-history-chat-signals.test.mjs'
       - 'tests/redline-timer-two-party-browser-smoke.mjs'
       - 'tests/redline-next-photo-visual-smoke.mjs'
       - 'tests/redline-photo-history-browser-smoke.mjs'
@@ -62,6 +64,7 @@ jobs:
           node --test \
             tests/blackcell-redline-receiver-reset.test.mjs \
             tests/redline-per-second-earnings.test.mjs \
+            tests/redline-history-chat-signals.test.mjs \
             tests/private-photo-ledger-responsive.test.mjs \
             tests/private-photo-ledger-mobile.test.mjs \
             tests/private-photo-ledger-sender.test.mjs \
