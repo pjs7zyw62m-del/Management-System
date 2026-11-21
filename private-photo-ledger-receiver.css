@@ -294,3 +294,14 @@ body.redline-sender-simple .redline-archive-sender-button{
 body.redline-sender-simple .redline-archive-sender-button:hover{
  background:#310b14;border-color:#ff3154;
 }
+
+/* Owner-only Level 1 → REDLINE Only security control, always on receiver dashboard. */
+body.bc-redline-receiver .rr-access-panel{margin:17px 0;padding:20px;border:1px solid #9e1832;border-left:4px solid #e60027;border-radius:16px;background:#0b0b0d}
+body.bc-redline-receiver .rr-access-panel h3{color:#fff;margin:7px 0;font-size:21px;letter-spacing:-.03em}
+body.bc-redline-receiver .rr-access-panel>p{color:#c1b6ba;font-size:13px;line-height:1.5}
+body.bc-redline-receiver .rr-access-row{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap;margin:16px 0 8px}
+body.bc-redline-receiver .rr-access-select{flex:1;min-width:min(100%,220px);min-height:48px;color:#fff;background:#111;border:1px solid #555;border-radius:10px;padding:10px;font-size:15px}
+body.bc-redline-receiver .rr-access-action{min-height:48px;min-width:185px;padding:10px 16px;background:#c90025;border:1px solid #ec3153;border-radius:10px;color:#fff;font-size:12px;font-weight:850;cursor:pointer}
+body.bc-redline-receiver .rr-access-action:disabled{opacity:.55;cursor:not-allowed}
+body.bc-redline-receiver .rr-access-state{min-height:20px;margin:9px 0 0;color:#d9cbd0}
+@media(max-width:560px){body.bc-redline-receiver .rr-access-row{flex-direction:column}body.bc-redline-receiver .rr-access-action{width:100%}}
