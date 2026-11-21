@@ -1141,3 +1141,59 @@ body.bc-redline-receiver.rr-imessage-mode
  padding:6px 8px!important;border-radius:8px!important;
  font-size:10px!important;
 }
+
+/* REDLINE PHOTO HISTORY RESTORED — older photo-only rules hid the entire
+   priced-stage. The history is now a real, independently scrolling overlay.
+   Closed: one large current photograph and receiver controls remain intact.
+   Open: the authentic room-scoped photo history sits above the lower portion
+   of the viewer; no cloned records, no document-height growth. */
+@media(min-width:420px){
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverLiveWorkspace
+  #redlineReceiverIncomingPhotos{
+  position:relative!important;isolation:isolate;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverLiveWorkspace
+  #redlineReceiverIncomingPhotos>#redlinePhotoHistoryToggle:not([hidden]){
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  position:absolute!important;left:12px!important;top:12px!important;
+  right:auto!important;bottom:auto!important;z-index:90!important;
+  min-height:36px!important;width:auto!important;max-width:calc(100% - 24px)!important;
+  padding:7px 11px!important;margin:0!important;
+  border-radius:9px!important;border:1px solid #aa3b59!important;
+  background:#310e1b!important;color:#fff!important;
+  font-size:11px!important;font-weight:850!important;letter-spacing:.04em!important;
+  cursor:pointer!important;box-shadow:0 4px 16px #000a!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverLiveWorkspace
+  #redlineReceiverIncomingPhotos>#redlinePhotoHistoryToggle[hidden]{
+  display:none!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverLiveWorkspace
+  #redlineReceiverIncomingPhotos>#redlineReceiverPricedStage{
+  display:none!important;
+  position:absolute!important;inset:auto 0 0 0!important;
+  width:100%!important;height:min(54%,450px)!important;max-height:70%!important;
+  min-height:170px!important;z-index:80!important;
+  flex-direction:column!important;overflow:hidden!important;
+  border:1px solid #9d3653!important;border-bottom:0!important;
+  border-radius:14px 14px 0 0!important;
+  background:#0d090d!important;box-shadow:0 -14px 44px #000d!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverLiveWorkspace
+  #redlineReceiverIncomingPhotos.rr-history-open>#redlineReceiverPricedStage{
+  display:flex!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverPricedStage>.timeline-toolbar{
+  display:flex!important;flex:0 0 auto!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverPricedStage>#photoEntries{
+  display:flex!important;flex:1 1 0!important;
+  min-height:0!important;height:0!important;overflow-y:auto!important;
+  overscroll-behavior:contain!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverPricedStage>.empty-entries{
+  display:block!important;
+ }
+}
+/* Archives keep their existing timeline and show the same history control
+   without unlocking or mixing old photos into the current pending queue. */
