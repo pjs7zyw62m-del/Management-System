@@ -88,8 +88,8 @@ test('Sender gets archived earnings and chat without permission to upload while 
  assert.match(ledger,/state\.showArchive\)throw Error\('Return to the current session/);
 });
 test('REDLINE receiver resources are versioned and original form and security remain intact',()=>{
- assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-visible-resize2/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-visible-resize2/);
+ assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-imessage-photos3/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-imessage-photos3/);
  assert.match(html,/private-photo-ledger\.js\?v=20261121-room-presence1/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=20261121-stable-brand1/);
  assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-inline-owner-chat1/);
@@ -114,7 +114,7 @@ test('Receiver can view and reply in the selected private room without opening a
 });
 
 test('Desktop receiver is compact with photo review beside private chat',()=>{
- assert.match(receiver,/intro\.append\(title\)/);
+ assert.match(receiver,/intro\.append\(title,roomSummary\)/);
  assert.match(receiver,/workspace\.append\(chatPanel,photos\)/);
  assert.match(receiver,/photos\.append\(timeline\)/);
  assert.match(receiver,/owner\.append\(access\)/);
@@ -129,10 +129,10 @@ test('REDLINE OS receiver keeps the narrow chat left and the real incoming photo
  assert.match(receiver,/workspace\.append\(chatPanel,photos\)/);
  assert.match(receiver,/photos\.append\(timeline\)/);
  assert.match(receiver,/roomBody\.append\(timeline\)/);
- assert.match(receiver,/desktopWorkspace=window\.matchMedia\('\(min-width:960px\)'\)/);
+ assert.match(receiver,/window\.innerWidth>=420/);
  assert.match(css,/grid-template-columns:minmax\(300px,370px\) minmax\(0,1fr\)/);
  assert.match(css,/rr-incoming-photos #ownerReviewQueue/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-visible-resize2/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-imessage-photos3/);
 });
 
 test('Owner can inspect large photo and set price while viewing it',()=>{
@@ -175,46 +175,43 @@ test('Receiver toolbar is compact, room controls expand on demand and live actio
  assert.match(css,/body\.bc-redline-receiver\.rr-room-tools-open #redlineSessionTools:not\(\[hidden\]\)/);
  assert.match(css,/min-height:34px!important/);
  assert.match(css,/grid-template-columns:minmax\(0,1\.7fr\) minmax\(465px,1fr\)!important/);
- assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-visible-resize2/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-visible-resize2/);
+ assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-imessage-photos3/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-imessage-photos3/);
 });
 
-test('Web OS and tablets share a live resizable chat and photo review workspace',()=>{
- assert.match(receiver,/workspace\.append\(chatPanel,photos\)/);
+
+test('REDLINE uses iMessage-style slide-in Photo Review, not resize buttons or a percentage slider',()=>{
+ assert.match(receiver,/const review=button\('Open Photos',\(\)=>openMedia\(\)/);
+ assert.match(receiver,/const showMedia=button\('▣ Photos',\(\)=>openMedia\(\)/);
+ assert.match(receiver,/const photoClose=button\('✕',\(\)=>closeMedia\(\)/);
+ assert.match(receiver,/function openMedia\(history=false\)/);
+ assert.match(receiver,/function closeMedia\(\)\{mediaOpen=false;showPane\(\)\}/);
  assert.match(receiver,/workspace\.insertBefore\(divider,photos\)/);
  assert.match(receiver,/photos\.append\(timeline\)/);
- assert.match(receiver,/const splitWorkspace=window\.matchMedia\('\(min-width:420px\)'\)/);
- assert.match(receiver,/divider\.addEventListener\('pointerdown'/);
- assert.match(receiver,/divider\.addEventListener\('pointermove'/);
- assert.match(receiver,/divider\.addEventListener\('keydown'/);
- assert.match(receiver,/divider\.setPointerCapture/);
- assert.match(receiver,/divider\.addEventListener\('dblclick'/);
- assert.match(receiver,/aria-valuenow/);
- assert.match(receiver,/aria-orientation','vertical'/);
- assert.match(receiver,/window\.localStorage\.setItem\(SPLIT_KEY/);
- assert.match(css,/grid-template-columns:minmax\(0,var\(--rr-chat-width\)\) 20px minmax\(0,1fr\)!important/);
- assert.match(css,/touch-action:none/);
- assert.match(css,/@container redline-photo-pane \(max-width:840px\)/);
- assert.match(css,/body\.bc-redline-receiver \.rr-live-workspace\[hidden\]\{display:none!important\}/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-visible-resize2/);
- assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-visible-resize2/);
+ assert.match(receiver,/const combined=window\.innerWidth>=420&&\(!handheld\|\|window\.innerWidth>=720\)/);
+ assert.match(receiver,/workspace\.classList\.toggle\('rr-media-open',mediaOpen\)/);
+ assert.doesNotMatch(receiver,/splitRange|splitControls|splitReadout|smallerChat|largerChat/);
+ assert.match(css,/REDLINE Shared Photos — match the in-window BLACKCELL iMessage/);
+ assert.match(css,/animation:redlineMediaSlideIn \.25s ease-out both/);
+ assert.match(css,/\.rr-photo-close/);
+ assert.match(css,/\.rr-chat-open-media/);
+ assert.match(css,/grid-template-columns:minmax\(0,1fr\) 11px minmax\(0,var\(--rr-media-width\)\)!important/);
+ assert.match(css,/@media\(min-width:420px\) and \(max-width:699px\)/);
+ assert.match(css,/rr-media-open>\.rr-incoming-photos/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-imessage-photos3/);
+ assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-imessage-photos3/);
 });
 
-test('Embedded OS window never hides split workspace because of the mobile device class',()=>{
- assert.match(receiver,/const combined=splitWorkspace\.matches&&\(!handheld\|\|window\.innerWidth>=720\)/);
- assert.match(receiver,/document\.body\.classList\.toggle\('rr-split-active',combined\)/);
- assert.match(receiver,/workspace\.insertBefore\(splitControls,chatPanel\)/);
- assert.match(receiver,/const splitRange=make\('input','rr-split-range'\)/);
- assert.match(receiver,/splitRange\.addEventListener\('input'/);
- assert.match(receiver,/splitRange\.addEventListener\('change'/);
- assert.match(receiver,/More Photo/);
- assert.match(receiver,/More Chat/);
- assert.match(receiver,/splitReadout\.textContent/);
- assert.match(receiver,/workspace\.insertBefore\(chatPanel,divider\)/);
- assert.match(css,/REDLINE visible split controls/);
- assert.match(css,/body\.bc-redline-receiver\.rr-split-active \.rr-live-workspace/);
- assert.match(css,/grid-template-rows:auto minmax\(0,1fr\)!important/);
- assert.match(css,/\.rr-split-controls/);
- assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-visible-resize2/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-visible-resize2/);
+test('Photo Review retains full photo pricing and phone navigation',()=>{
+ assert.match(receiver,/window\.localStorage\.setItem\(MEDIA_KEY/);
+ assert.match(receiver,/divider\.addEventListener\('pointerdown'/);
+ assert.match(receiver,/divider\.addEventListener\('pointermove'/);
+ assert.match(receiver,/divider\.addEventListener\('dblclick'/);
+ assert.match(receiver,/divider\.addEventListener\('keydown'/);
+ assert.match(receiver,/app\.querySelector\('\.bc-ledger-phone-tab\[data-ledger-navigate="/);
+ assert.match(receiver,/goTo\(history\?'#photoEntries':'#ownerReviewQueue'\)/);
+ assert.match(ledger,/function preparePhotoReviewLightbox\(entry\)/);
+ assert.match(ledger,/await assignAmount\(entry,input,accept\)/);
+ assert.match(ledger,/await rejectPhoto\(entry,reject\)/);
+ assert.match(css,/object-fit:contain!important/);
 });
