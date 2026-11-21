@@ -7,8 +7,8 @@ const code=read('private-photo-ledger-owner-preview.js');
 const css=read('private-photo-ledger-owner-preview.css');
 const core=read('private-photo-ledger.js');
 test('owner preview is linked to existing authenticated REDLINE',()=>{
- assert.match(html,/private-photo-ledger-owner-preview\.css\?v=20261121-photo-history-typing2/);
- assert.match(html,/private-photo-ledger-owner-preview\.js\?v=20261121-photo-history-typing2/);
+ assert.match(html,/private-photo-ledger-owner-preview\.css\?v=20261121-current-viewing1/);
+ assert.match(html,/private-photo-ledger-owner-preview\.js\?v=20261121-current-viewing1/);
  assert.ok(html.indexOf('private-photo-ledger-sender.js')<html.indexOf('private-photo-ledger-owner-preview.js'));
  assert.match(html,/id="ownerSetup"/);
  assert.match(html,/id="ownerUploadInfo"/);
