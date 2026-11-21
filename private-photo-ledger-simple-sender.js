@@ -28,8 +28,10 @@ const tabs=make('nav','redline-simple-tabs');tabs.setAttribute('aria-label','Sen
 const panes=make('div','redline-simple-panes');
 const uploadPane=make('section','redline-simple-pane');uploadPane.dataset.redlinePane='upload';
 const earningsPane=make('section','redline-simple-pane');earningsPane.dataset.redlinePane='earnings';earningsPane.hidden=true;
+const fiveStarPane=make('section','redline-simple-pane redline-five-star-pane');
+fiveStarPane.dataset.redlinePane='five-star';fiveStarPane.hidden=true;
 const messagesPane=make('section','redline-simple-pane');messagesPane.dataset.redlinePane='messages';messagesPane.hidden=true;
-for(const [key,label] of [['upload','Photos & Chat'],['earnings','Earnings']]){
+for(const [key,label] of [['upload','Photos & Chat'],['earnings','Earnings'],['five-star','5-Star Photos']]){
  const b=make('button','redline-simple-tab',label);b.type='button';b.dataset.simpleTab=key;
  b.addEventListener('click',()=>switchTab(key));
  tabs.append(b);
@@ -76,6 +78,14 @@ const topPicksNote=make('p','redline-top-picks-note',
 const topPicksList=make('div','redline-top-picks-list');
 topPicksBox.append(topPicksNote,topPicksList);
 earningsPane.append(earningsBox,topPicksBox,activityBox,returnUpload);
+const fiveStarIntro=make('header','redline-five-star-intro');
+fiveStarIntro.append(make('span','redline-kicker','RECEIVER-RATED PHOTOS'),
+ make('h2','','Your 5-Star Photos'),
+ make('p','','Resubmit a top-rated original for another review. Each resubmission is a new pending photo; the original rating and price remain unchanged.'));
+const fiveStarStatus=make('p','redline-five-star-feedback');
+fiveStarStatus.setAttribute('role','status');
+const fiveStarList=make('div','redline-five-star-list');
+fiveStarPane.append(fiveStarIntro,fiveStarStatus,fiveStarList);
 const summary=make('section','redline-upload-summary');
 const summaryTitle=make('h3','','Your earnings');
 const summaryRows=make('div','redline-summary-stats');
@@ -112,7 +122,7 @@ composer.append(photoAction,entry,send);
 const msgError=make('p','redline-message-error');msgError.setAttribute('role','status');
 messageCard.append(msgHeader,feed,composer,msgError);
 uploadPane.append(messageCard);
-panes.append(uploadPane,earningsPane);
+panes.append(uploadPane,earningsPane,fiveStarPane);
 home.append(heading,tabs,panes);
 room.insertBefore(home,$('.room-toolbar',room));
 const ownerDialog=make('dialog','redline-owner-chat-dialog');
@@ -218,6 +228,59 @@ function renderTopPicks(snap){
    make('small','',p.amount_cents===null?'Awaiting photo bid':'Approved bid '+money(p.amount_cents))
   );
   card.append(details);topPicksList.append(card);
+ }
+}
+let resubmittingId=null;
+function renderFiveStarPhotos(snap){
+ fiveStarList.replaceChildren();
+ if(!snap||!Array.isArray(snap.fiveStarPhotos)||!snap.fiveStarPhotos.length){
+  fiveStarList.append(make('p','redline-five-star-empty',
+   'No approved five-star photographs in this session yet.'));
+  return;
+ }
+ for(const photo of snap.fiveStarPhotos){
+  const card=make('article','redline-five-star-photo');
+  appendRatingImage(card,photo.image_url,photo.caption);
+  const details=make('div','redline-five-star-details');
+  details.append(
+   make('strong','redline-five-star-title','PHOTO '+photo.id.slice(0,8).toUpperCase()),
+   make('span','redline-five-star-stars','★★★★★ · TOP PICK'),
+   make('small','',photo.resubmissionCount+
+    (photo.resubmissionCount===1?' previous resend':' previous resends')));
+  if(photo.caption)details.append(make('p','redline-five-star-caption',photo.caption));
+  let label='↻ RESUBMIT PHOTO';
+  if(photo.resubmissionStatus==='pending')label='AWAITING RECEIVER REVIEW';
+  if(photo.resubmissionStatus==='rejected')label='REJECTED · RESENDS CLOSED';
+  if(snap.photoSendingPaused&&photo.resubmissionStatus==='ready')label='SENDING PAUSED BY RECEIVER';
+  if(!snap.roomActive&&photo.resubmissionStatus==='ready')label='ROOM CLOSED';
+  const action=make('button','redline-five-star-resubmit',label);
+  action.type='button';
+  action.disabled=Boolean(!photo.resubmissionAllowed||resubmittingId);
+  action.dataset.photoId=photo.id;
+  const status=make('p','redline-five-star-row-status');
+  status.setAttribute('role','status');
+  action.addEventListener('click',async()=>{
+   if(resubmittingId||!photo.resubmissionAllowed)return;
+   resubmittingId=photo.id;
+   action.disabled=true;action.textContent='RESUBMITTING PRIVATELY…';
+   status.textContent='Copying this five-star original to a new private review entry…';
+   try{
+    const result=await bridge()?.resubmitFiveStarPhoto?.(photo.id);
+    if(result?.ok!==true)throw Error('New review entry was not created.');
+    status.textContent='Photo resubmitted. Waiting for the receiver to accept or reject it.';
+    fiveStarStatus.textContent='Five-star photo sent again for receiver review.';
+   }catch(error){
+    status.textContent='Unable to resend: '+String(error?.message||error).slice(0,240);
+    action.textContent='↻ TRY RESUBMITTING AGAIN';
+    fiveStarStatus.textContent='';
+   }finally{
+    resubmittingId=null;
+    const fresh=snapshot();
+    if(fresh?.roomId===snap.roomId)renderFiveStarPhotos(fresh);
+   }
+  });
+  details.append(action,status);
+  card.append(details);fiveStarList.append(card);
  }
 }
 function photoRatingEvents(snap){
@@ -429,6 +492,7 @@ function sync(){
   send.disabled=Boolean(snap.archiveMode);
   entry.placeholder=snap.archiveMode?'Return to the current session to send…':'Message REDLINE…';
   renderEarnings(snap);
+  renderFiveStarPhotos(snap);
   if(snap.roomId!==lastRoom){
    lastRoom=snap.roomId;messages=[];lastSync=0;
    renderChat();
