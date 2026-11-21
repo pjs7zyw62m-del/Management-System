@@ -298,6 +298,7 @@ async function pollNegotiations(force=false){
   if(snap()?.roomId!==id)return;
   negotiatingRoom=id;negotiations=Array.isArray(data.offers)?data.offers:[];
   const pending=negotiations.find(n=>n.status===(s.isOwner?'awaiting_owner':'awaiting_sender'));
+  document.body.dataset.redlineNegDebug=String(data.enabled)+'_'+String(Boolean(pending))+'_'+String(timerDlg.open)+'_'+String(settingsDlg.open);
   if(data.enabled&&pending&&!timerDlg.open&&!settingsDlg.open)renderNegotiation(pending);
   else if(!pending&&negotiateDlg.open){negotiateDlg.close();negotiatingShownKey=null}
  }catch(e){const el=$('.redline-negotiation-feedback',negotiateDlg);if(el)el.textContent=safeError(e)}
