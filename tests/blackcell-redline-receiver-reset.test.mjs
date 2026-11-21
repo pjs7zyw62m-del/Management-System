@@ -89,7 +89,7 @@ test('Sender gets archived earnings and chat without permission to upload while 
 });
 test('REDLINE receiver resources are versioned and original form and security remain intact',()=>{
  assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-photo-large-timed1/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-visible6/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-visible7/);
  assert.match(html,/private-photo-ledger\.js\?v=20261121-photo-visible6/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=20261121-stable-brand1/);
  assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-inline-owner-chat1/);
@@ -132,7 +132,7 @@ test('REDLINE OS receiver keeps the narrow chat left and the real incoming photo
  assert.match(receiver,/window\.innerWidth>=420/);
  assert.match(css,/grid-template-columns:minmax\(300px,370px\) minmax\(0,1fr\)/);
  assert.match(css,/rr-incoming-photos #ownerReviewQueue/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-visible6/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-visible7/);
 });
 
 test('Owner can inspect large photo and set price while viewing it',()=>{
@@ -176,7 +176,7 @@ test('Receiver toolbar is compact, room controls expand on demand and live actio
  assert.match(css,/min-height:34px!important/);
  assert.match(css,/grid-template-columns:minmax\(0,1\.7fr\) minmax\(465px,1fr\)!important/);
  assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-photo-large-timed1/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-visible6/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-visible7/);
 });
 
 
@@ -198,7 +198,7 @@ test('REDLINE uses iMessage-style slide-in Photo Review, not resize buttons or a
  assert.match(css,/grid-template-columns:minmax\(0,1fr\) 11px minmax\(0,var\(--rr-media-width\)\)!important/);
  assert.match(css,/@media\(min-width:420px\) and \(max-width:699px\)/);
  assert.match(css,/rr-media-open>\.rr-incoming-photos/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-visible6/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-visible7/);
  assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-photo-large-timed1/);
 });
 
@@ -318,4 +318,10 @@ test('Photo is wider on load, with an explicit full-screen option and intact pri
  assert.match(layout,/var\(--rr-media-width,67%\)/);
  assert.match(ledger,/function preparePhotoReviewLightbox\(entry\)/);
  assert.match(ledger,/await assignAmount\(entry,input,accept\)/);
+});
+
+test('Full-screen button can open both a pending photo and a priced-photo preview',()=>{
+ assert.match(receiver,/const fullPhoto=button\('⛶ VIEW FULL PHOTO'/);
+ assert.match(receiver,/#redlineReceiverReviewStage \.rr-timer-selected-preview \.rr-timer-full/);
+ assert.match(receiver,/#reviewQueueCurrent \.photo-image-btn/);
 });
