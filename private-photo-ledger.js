@@ -1331,6 +1331,25 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
   if(result.error||result.data?.ok!==true)throw Error(fail(result.error||result.data?.reason||'Timed payment could not be recorded.'));
   return result.data;
  },
+ async recordPaidInFull(roomId){
+  if(state.closed||!state.isOwner||state.busy||state.showArchive||!state.room
+   ||state.room.id!==roomId||!validId(roomId)||$('ledgerApp').hidden)
+   throw Error('An active, verified receiver room is required to record full payment.');
+  state.busy=true;
+  try{
+   await verify();
+   if(state.closed||state.room?.id!==roomId||state.showArchive)
+    throw Error('Room changed. Payment was not recorded.');
+   const response=await db.rpc('corp_redline_record_paid_in_full',{p_room_id:roomId});
+   if(response.error||response.data?.ok!==true)
+    throw Error(fail(response.error||response.data?.reason||'Full payment could not be recorded.'));
+   state.entryFingerprint='';
+   let refreshUnavailable=false;
+   try{await loadEntries({force:true})}catch(_){refreshUnavailable=true}
+   window.dispatchEvent(new Event('blackcell:redline:state'));
+   return {...response.data,refreshUnavailable};
+  }finally{state.busy=false}
+ },
  async presenceTouch(roomId,sessionId,active=true){
   if(state.closed||!state.user||!validId(roomId)||!validId(sessionId)||typeof active!=='boolean'||(active&&state.room?.id!==roomId))throw Error('REDLINE room presence unavailable.');
   const result=await db.rpc('corp_redline_presence_touch',{p_room_id:roomId,p_session_id:sessionId,p_active:active});

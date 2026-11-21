@@ -1195,3 +1195,69 @@ body.bc-redline-receiver.rr-media-resizing .rr-incoming-photos{
   animation:none!important;
  }
 }
+
+/* REDLINE compact command dropdown + adjacent pay-in-full ledger control.
+   A single accessible popup replaces the five inline navigation buttons. */
+body.bc-redline-receiver .redline-receiver-command{overflow:visible!important;position:relative;z-index:15}
+body.bc-redline-receiver .rr-nav{
+ display:flex!important;grid-template-columns:none!important;align-items:flex-start!important;
+ gap:8px!important;flex-wrap:nowrap!important;overflow:visible!important;position:relative;z-index:25;
+}
+body.bc-redline-receiver .rr-nav-dropdown{
+ position:relative;flex:0 1 174px;min-width:125px;max-width:220px;
+}
+body.bc-redline-receiver .rr-menu-toggle{
+ width:100%!important;min-height:35px!important;display:flex!important;
+ justify-content:space-between!important;align-items:center!important;
+ gap:14px!important;text-align:left!important;background:#161518!important;
+ border:1px solid #5a4149!important;color:#faf5f7!important;
+}
+body.bc-redline-receiver .rr-menu-toggle:after{
+ content:'⌄';color:#f33154;font-size:16px;line-height:1;
+}
+body.bc-redline-receiver .rr-menu-toggle[aria-expanded="true"]{
+ background:#310c17!important;border-color:#e7294b!important;
+}
+body.bc-redline-receiver .rr-nav-menu-items{
+ position:absolute;top:calc(100% + 6px);left:0;z-index:120;
+ width:min(286px,calc(100vw - 36px));max-height:min(65dvh,430px);
+ overflow-y:auto;overscroll-behavior:contain;
+ padding:7px;display:flex;flex-direction:column;gap:4px;
+ border:1px solid #734053;border-radius:11px;background:#0c0b0d;
+ box-shadow:0 14px 36px rgba(0,0,0,.85);
+}
+body.bc-redline-receiver .rr-nav-menu-items[hidden]{display:none!important}
+body.bc-redline-receiver .rr-nav-menu-items .rr-nav-button{
+ display:flex!important;width:100%!important;flex:0 0 auto!important;
+ min-height:39px!important;justify-content:flex-start!important;
+ text-align:left!important;padding:8px 12px!important;
+ font-size:11px!important;white-space:normal!important;
+}
+body.bc-redline-receiver .rr-pay-column{
+ display:flex;flex:0 1 176px;flex-direction:column;gap:5px;min-width:120px;
+}
+body.bc-redline-receiver .rr-pay-full{
+ width:100%!important;flex:0 0 auto!important;min-height:35px!important;
+ background:#ac102e!important;border-color:#e23356!important;
+ color:#fff!important;font-weight:820!important;letter-spacing:.02em;
+ white-space:nowrap!important;
+}
+body.bc-redline-receiver .rr-pay-full:hover:not(:disabled){
+ background:#d51d43!important;border-color:#ff5271!important;
+}
+body.bc-redline-receiver .rr-pay-feedback{
+ display:block;max-width:275px;font-size:10px;line-height:1.4;color:#ddcbd0;
+ overflow-wrap:anywhere;
+}
+body.bc-redline-receiver .rr-pay-feedback[hidden]{display:none!important}
+body.bc-redline-receiver .rr-menu-toggle:focus-visible,
+body.bc-redline-receiver .rr-pay-full:focus-visible,
+body.bc-redline-receiver .rr-nav-menu-items .rr-nav-button:focus-visible{
+ outline:2px solid #ff6f89!important;outline-offset:3px;
+}
+@media(max-width:490px){
+ body.bc-redline-receiver .rr-nav-dropdown{flex:1 1 50%;max-width:none;min-width:0}
+ body.bc-redline-receiver .rr-pay-column{flex:1 1 50%;min-width:0}
+ body.bc-redline-receiver .rr-menu-toggle,
+ body.bc-redline-receiver .rr-pay-full{min-height:40px!important}
+}

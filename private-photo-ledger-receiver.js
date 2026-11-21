@@ -67,7 +67,85 @@
  },'rr-nav-button rr-nav-tools');
  tools.setAttribute('aria-expanded','false');
  tools.setAttribute('aria-controls','redlineSessionTools');
- nav.append(review,history,message,manage,tools);
+ // Keep navigation actions together while the payment action stays visible.
+ const menuShell=make('div','rr-nav-dropdown');
+ const menuToggle=button('MENU',()=>setMenuOpen(menuItems.hidden),'rr-nav-button rr-menu-toggle');
+ menuToggle.setAttribute('aria-expanded','false');
+ menuToggle.setAttribute('aria-controls','redlineReceiverMenuItems');
+ menuToggle.setAttribute('aria-haspopup','true');
+ const menuItems=make('div','rr-nav-menu-items');menuItems.id='redlineReceiverMenuItems';
+ menuItems.hidden=true;
+ const setMenuOpen=open=>{
+  menuItems.hidden=!open;
+  menuToggle.setAttribute('aria-expanded',String(open));
+ };
+ menuItems.append(review,history,message,manage,tools);
+ for(const option of [review,history,message,manage,tools]){
+  option.addEventListener('click',()=>setMenuOpen(false));
+ }
+ menuShell.append(menuToggle,menuItems);
+ const payColumn=make('div','rr-pay-column');
+ const payFull=button('PAY IN FULL',()=>void recordPaidInFull(),'rr-nav-button rr-pay-full');
+ payFull.setAttribute('aria-label','Record REDLINE room balance paid in full');
+ payFull.title='Record an external payment in the room ledger. REDLINE does not transfer money.';
+ const payFeedback=make('span','rr-pay-feedback','');
+ payFeedback.setAttribute('role','status');payFeedback.hidden=true;
+ payColumn.append(payFull,payFeedback);
+ nav.append(menuShell,payColumn);
+ let payBusy=false;
+ function setPayFeedback(message){
+  payFeedback.textContent=message;payFeedback.hidden=!message;
+ }
+ const moneyCents=value=>{
+  const amount=BigInt(String(value??0));
+  return '$'+(amount/100n).toLocaleString('en-US')+'.'+(amount%100n).toString().padStart(2,'0');
+ };
+ async function recordPaidInFull(){
+  const api=window.BLACKCELL_REDLINE_API;
+  const current=api?.snapshot?.();
+  if(payBusy||!current?.isOwner||!current.roomId||current.archiveMode)return;
+  payBusy=true;payFull.disabled=true;setPayFeedback('');
+  try{
+   const timed=await api.timerStatus(current.roomId);
+   if(api.snapshot()?.roomId!==current.roomId)throw Error('Room changed. Select the room again.');
+   if(timed.active)throw Error('Stop the active photo timer before recording payment in full.');
+   const photoOwed=$('#totalOwed')?.textContent?.trim()||'$0.00';
+   const timedOwed=moneyCents(timed.owed_cents);
+   if(photoOwed==='$0.00'&&BigInt(String(timed.owed_cents??0))===0n){
+    setPayFeedback('This room already has a $0.00 outstanding balance.');return;
+   }
+   const confirmed=window.confirm(
+    'Record the FULL outstanding balance as PAID for this private room?\n\n'+
+    'Photo balance: '+photoOwed+'\n'+
+    'Timed earnings: '+timedOwed+' (some amounts may already appear in photo balance)\n\n'+
+    'This records an external payment only. REDLINE will NOT send or charge any money. '+
+    'Payment and photo history will be preserved.');
+   if(!confirmed)return;
+   const result=await api.recordPaidInFull(current.roomId);
+   if(api.snapshot()?.roomId!==current.roomId)throw Error('Recorded for the prior room; reopen that room to verify.');
+   const remaining=BigInt(String(result.remaining_photo_cents??0))+
+    BigInt(String(result.remaining_timer_cents??0));
+   if(remaining>0n){
+    setPayFeedback('Payment recorded. New activity is still outstanding; refresh the balance.');
+   }else if(result.refreshUnavailable){
+    setPayFeedback('Payment recorded. Refresh REDLINE to verify the updated $0.00 balance.');
+   }else{
+    setPayFeedback('Recorded paid in full · Outstanding $0.00 · '+
+     Number(result.photo_count||0)+' photo record(s), '+Number(result.timer_count||0)+' timer record(s).');
+   }
+   window.dispatchEvent(new Event('blackcell:redline:state'));
+  }catch(error){
+   setPayFeedback('Payment record not changed: '+String(error?.message||error));
+  }finally{payBusy=false;sync()}
+ }
+ document.addEventListener('pointerdown',event=>{
+  if(!menuItems.hidden&&!menuShell.contains(event.target))setMenuOpen(false);
+ });
+ nav.addEventListener('keydown',event=>{
+  if(event.key==='Escape'&&!menuItems.hidden){
+   setMenuOpen(false);menuToggle.focus();event.preventDefault();
+  }
+ });
  // Reuse the authenticated, room-scoped thread from the sender's chat module.
  const chatPanel=make('section','rr-chat-panel');chatPanel.id='redlineReceiverChat';
  chatPanel.hidden=true;chatPanel.setAttribute('aria-label','Private chat with sender');
