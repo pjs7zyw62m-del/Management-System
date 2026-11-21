@@ -254,7 +254,7 @@
     'Record the FULL REMAINING balance as PAID for this private room?\n\n'+
     'Outstanding: '+moneyCents(due)+'\n'+
     'Already recorded paid: '+moneyCents(financial.paid_cents)+'\n\n'+
-    'This records an external payment ONLY. REDLINE will not send or charge any money. '+
+    'This records an external payment ONLY. REDLINE will NOT send or charge any money. '+
     'Your earlier partial payments and photo history will be preserved.');
    if(!confirmed)return;
    const result=await api.recordPaidInFull(current.roomId);
