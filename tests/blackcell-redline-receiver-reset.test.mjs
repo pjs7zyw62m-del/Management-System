@@ -156,7 +156,7 @@ test('Owner photo pricing commits immediately without a browser confirm dialog',
  assert.ok(approve.includes("loadEntries({force:true})"));
  assert.doesNotMatch(approve,/window\.confirm\(/);
  // Distinct high-impact actions still retain their own confirmation controls.
- assert.match(ledger.slice(ledger.indexOf('async function rejectPhoto('),ledger.indexOf('async function settle(')),/window\.confirm/);
+  assert.match(ledger.slice(ledger.indexOf('async function confirmRejectPhoto('),ledger.indexOf('async function settle(')),/dialog[.]showModal[(][)]/);
 });
 
 test('Receiver toolbar is compact, room controls expand on demand and live actions persist',()=>{
