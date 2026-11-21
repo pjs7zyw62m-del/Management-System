@@ -246,6 +246,54 @@ function starsText(count){
  const n=Number.isInteger(count)?Math.max(0,Math.min(5,count)):0;
  return '★'.repeat(n)+'☆'.repeat(5-n);
 }
+function renderCurrentlyViewing(snap){
+ viewingPreview.replaceChildren();
+ const id=viewingRoomId===snap?.roomId&&viewingStatus?.active?viewingStatus.photoId:null;
+ if(snap?.archiveMode){viewingStatusLine.textContent='ARCHIVE · Live viewing only appears in the current session.';return}
+ if(!snap?.roomActive){viewingStatusLine.textContent='ROOM CLOSED · No live photo selected.';return}
+ if(viewingError){viewingStatusLine.textContent='VIEWING STATUS UNAVAILABLE · '+viewingError;return}
+ if(!id){
+  viewingStatusLine.textContent='WAITING · The receiver is not currently viewing a REDLINE photograph.';
+  viewingPreview.append(make('p','redline-current-viewing-empty',
+   'The receiver’s selected photograph will automatically appear here when they start reviewing.'));
+  return;
+ }
+ const photo=Array.isArray(snap.photoHistory)?snap.photoHistory.find(p=>p.id===id):null;
+ viewingStatusLine.textContent='● RECEIVER VIEWING NOW · PHOTO '+String(id).slice(0,8).toUpperCase();
+ if(photo?.image_url?.startsWith('https://')){
+  const img=make('img','redline-current-viewing-image');
+  img.src=photo.image_url;img.alt=photo.caption||'Photograph selected by the REDLINE receiver';
+  img.loading='eager';img.decoding='async';img.addEventListener('error',()=>{img.hidden=true});
+  viewingPreview.append(img);
+ }else viewingPreview.append(make('p','redline-current-viewing-empty',
+  'The receiver selected this photograph. Loading its private preview…'));
+ if(photo?.caption)viewingPreview.append(make('p','redline-current-viewing-caption',photo.caption));
+ if(photo?.decision_status==='accepted')
+  viewingPreview.append(make('small','redline-current-viewing-price','Approved price '+money(photo.amount_cents)));
+ else if(photo?.decision_status==='pending')
+  viewingPreview.append(make('small','redline-current-viewing-price','AWAITING RECEIVER REVIEW'));
+}
+async function pollCurrentlyViewing(force=false){
+ const snap=snapshot();
+ if(!isSender()||!snap?.roomId||snap.archiveMode||document.hidden||
+    !bridge()?.currentlyViewingStatus)return;
+ if(viewingInFlight||(!force&&Date.now()-viewingLastPoll<2600))return;
+ viewingLastPoll=Date.now();viewingInFlight=true;
+ const roomId=snap.roomId;
+ try{
+  const result=await bridge().currentlyViewingStatus(roomId);
+  if(snapshot()?.roomId!==roomId)return;
+  const changed=viewingStatus?.photoId!==result.photoId||viewingStatus?.active!==result.active;
+  viewingStatus=result;viewingRoomId=roomId;viewingError='';
+  if(currentTab==='viewing'&&changed)renderCurrentlyViewing(snapshot());
+ }catch(e){
+  if(snapshot()?.roomId===roomId){
+   viewingStatus=null;viewingRoomId=roomId;
+   viewingError=String(e?.message||'Please try again.').slice(0,140);
+   if(currentTab==='viewing')renderCurrentlyViewing(snapshot());
+  }
+ }finally{viewingInFlight=false}
+}
 function appendRatingImage(parent,url,caption){
  if(typeof url!=='string'||!url.startsWith('https://'))return;
  const img=make('img','redline-rated-photo-image');
