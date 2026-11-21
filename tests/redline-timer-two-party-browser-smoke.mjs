@@ -14,17 +14,17 @@ const setup=String.raw`<script>
  const photoId='00000000-0000-4000-8000-000000000001';
  const timerId='00000000-0000-4000-8000-000000000002';
  const first=Date.now();
- const startedAt=new Date(first-70000).toISOString();
+ const startedAt=new Date(first-15000).toISOString();
  const active={
-  id:timerId,photo_id:photoId,rate_cents:50,started_at:startedAt,
-  heartbeat_at:new Date(first+4000).toISOString(),running:true,earned_cents:50
+  id:timerId,photo_id:photoId,rate_cents:60,started_at:startedAt,
+  heartbeat_at:new Date(first+4000).toISOString(),running:true,earned_cents:15
  };
  let state={ok:true,server_now:new Date().toISOString(),active:null,recent:[]};
  window.BLACKCELL_REDLINE_API={
   snapshot:()=>({roomId,userId:owner?'00000000-0000-4000-8000-000000000004':'00000000-0000-4000-8000-000000000005',
    peerName:owner?'Sender':'Receiver',isOwner:owner,roomActive:true,
-   archiveMode:false,resetAt:null,pending:0,owed:'$0.50',
-   paid:'$0.00',assigned:'$0.50',entries:[],ratingEvents:[],topPicks:[],fiveStarPhotos:[]}),
+   archiveMode:false,resetAt:null,pending:0,owed:'$0.15',
+   paid:'$0.00',assigned:'$0.15',entries:[],ratingEvents:[],topPicks:[],fiveStarPhotos:[]}),
   loadMessages:async()=>[],
   timerStatus:async()=>({...state,server_now:new Date().toISOString()})
  };
@@ -53,15 +53,18 @@ const setup=String.raw`<script>
   },1000);
   setTimeout(()=>{
    const box=document.querySelector('.redline-message-feed .redline-chat-timer[data-timer-phase="active"]');
-   document.body.dataset.timerStartVisible=String(Boolean(box&&box.textContent.includes('TIMER STARTED')&&box.textContent.includes('$0.50')));
+   document.body.dataset.timerStartVisible=String(Boolean(box&&box.textContent.includes('TIMER STARTED')&&
+    /^\$0\.\d{4} earned$/.test(box.querySelector('.redline-chat-timer-amount')?.textContent||'')&&
+    !box.querySelector('.redline-chat-timer-amount')?.textContent.includes('$0.0000')&&
+    box.textContent.includes('$0.0100/second')));
    document.body.dataset.timerCorrectRoom=String(Boolean(
     box&&(owner?box.closest('#redlineReceiverChatMount'):box.closest('#redlineSimpleSender'))));
   },3800);
   setTimeout(()=>{
    const stoppedAt=new Date().toISOString();
    state={ok:true,server_now:stoppedAt,active:null,recent:[{
-    id:timerId,photo_id:photoId,rate_cents:50,started_at:startedAt,
-    stopped_at:stoppedAt,earned_cents:50,completed_minutes:1,settled_at:null
+    id:timerId,photo_id:photoId,rate_cents:60,started_at:startedAt,
+    stopped_at:stoppedAt,earned_cents:15,completed_minutes:0,elapsed_seconds:15,settled_at:null
    }]};
    if(owner)window.dispatchEvent(new CustomEvent('blackcell:redline:timer-status',{
     detail:{roomId,status:state}
@@ -69,7 +72,7 @@ const setup=String.raw`<script>
   },4250);
   setTimeout(()=>{
    const box=document.querySelector('.redline-message-feed .redline-chat-timer[data-timer-phase="stop"]');
-   document.body.dataset.timerStopVisible=String(Boolean(box&&box.textContent.includes('TIMER STOPPED')&&box.textContent.includes('$0.50')));
+   document.body.dataset.timerStopVisible=String(Boolean(box&&box.textContent.includes('TIMER STOPPED')&&box.textContent.includes('$0.15 final')));
    document.body.dataset.timerStartPreserved=String(Boolean(document.querySelector('.redline-message-feed .redline-chat-timer[data-timer-phase="start"]')));
    document.body.dataset.timerNoDuplicate=String(document.querySelectorAll('.redline-message-feed .redline-chat-timer[data-timer-phase="stop"]').length===1);
   },7200);
