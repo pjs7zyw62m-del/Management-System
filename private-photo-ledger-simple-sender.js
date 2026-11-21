@@ -27,13 +27,14 @@ heading.append(branding,make('span','redline-sender-badge','SENDER ACCESS'));
 const tabs=make('nav','redline-simple-tabs');tabs.setAttribute('aria-label','Sender sections');
 const panes=make('div','redline-simple-panes');
 const uploadPane=make('section','redline-simple-pane');uploadPane.dataset.redlinePane='upload';
+const viewingPane=make('section','redline-simple-pane redline-current-viewing-pane');viewingPane.dataset.redlinePane='viewing';viewingPane.hidden=true;
 const earningsPane=make('section','redline-simple-pane');earningsPane.dataset.redlinePane='earnings';earningsPane.hidden=true;
 const historyPane=make('section','redline-simple-pane redline-photo-history-pane');
 historyPane.dataset.redlinePane='history';historyPane.hidden=true;
 const fiveStarPane=make('section','redline-simple-pane redline-five-star-pane');
 fiveStarPane.dataset.redlinePane='five-star';fiveStarPane.hidden=true;
 // Private chat stays in Photos & Chat.
-for(const [key,label] of [['upload','Photos & Chat'],['earnings','Earnings'],['history','Photo History'],['five-star','5-Star Photos']]){
+for(const [key,label] of [['upload','Photos & Chat'],['viewing','Currently Viewing'],['earnings','Earnings'],['history','Photo History'],['five-star','5-Star Photos']]){
  const b=make('button','redline-simple-tab',label);b.type='button';b.dataset.simpleTab=key;
  b.addEventListener('click',()=>switchTab(key));
  tabs.append(b);
@@ -42,6 +43,13 @@ const uploadTitle=make('div','redline-upload-intro');
 uploadTitle.append(make('span','redline-kicker','PRIVATE MEDIA'),make('h2','','Send a photo'));
 uploadPane.append(uploadTitle);
 const uploadMount=make('div','redline-upload-mount');uploadPane.append(uploadMount);
+const viewingIntro=make('header','redline-current-viewing-intro');
+viewingIntro.append(make('span','redline-kicker','LIVE PRIVATE PHOTO'),
+ make('h2','','Currently Viewing'),
+ make('p','','The exact photo the receiver has selected in REDLINE. Updates automatically.'));
+const viewingStatusLine=make('p','redline-current-viewing-status');viewingStatusLine.setAttribute('role','status');
+const viewingPreview=make('div','redline-current-viewing-photo');
+viewingPane.append(viewingIntro,viewingStatusLine,viewingPreview);
 const earningsBox=make('section','redline-earnings-box');
 earningsBox.append(make('div','redline-heading-kicker','WHAT YOU EARN'));
 const earnedFields=make('div','redline-earnings-fields');
@@ -142,7 +150,7 @@ typingNotice.setAttribute('role','status');typingNotice.setAttribute('aria-live'
 const msgError=make('p','redline-message-error');msgError.setAttribute('role','status');
 messageCard.append(msgHeader,feed,typingNotice,composer,msgError);
 uploadPane.append(messageCard);
-panes.append(uploadPane,earningsPane,historyPane,fiveStarPane);
+panes.append(uploadPane,viewingPane,earningsPane,historyPane,fiveStarPane);
 home.append(heading,tabs,panes);
 room.insertBefore(home,$('.room-toolbar',room));
 const ownerDialog=make('dialog','redline-owner-chat-dialog');
@@ -184,6 +192,7 @@ let lastSync=0,lastOwnerSession=null;
 let timerStatus=null,timerRoomId=null,timerFingerprint='',timerOffset=0;
 let timerPollInFlight=false,timerLastPoll=0,timerLoadError='';
 let peerReadAt=null,peerTyping=false,markedReadId=null;
+let viewingStatus=null,viewingRoomId=null,viewingInFlight=false,viewingLastPoll=0,viewingError='';
 let typingRoom=null,lastTypingAt=0,chatStatusInFlight=false,lastChatStatusAt=0;
 function bridge(){return window.BLACKCELL_REDLINE_API}
 const snapshot=()=>bridge()?.snapshot?.()||null;
@@ -463,6 +472,18 @@ function makeTimerCard(e){
   ?'Photo '+String(e.timer.photo_id||'').slice(0,8).toUpperCase()+' · Final elapsed-second amount recorded'
   :'Photo '+String(e.timer.photo_id||'').slice(0,8).toUpperCase()+' · '+dateText(e.at));
  card.append(status,label,details,foot);
+ // The pinned timer has the actual photo directly below its live figures.
+ if(isActive){
+  const photo=snapshot()?.photoHistory?.find(p=>p.id===e.timer.photo_id);
+  const frame=make('div','redline-chat-timer-photo');
+  frame.append(make('strong','','PHOTOGRAPH BEING TIMED'));
+  if(photo?.image_url?.startsWith('https://')){
+   const img=make('img','redline-chat-timer-image');img.src=photo.image_url;
+   img.alt=photo.caption||'Photo currently being timed';img.loading='eager';img.decoding='async';
+   img.addEventListener('error',()=>{img.hidden=true});frame.append(img);
+  }else frame.append(make('small','','Private photo preview is loading…'));
+  card.append(frame);
+ }
  return card;
 }
 function chatVisible(snap=snapshot()){
