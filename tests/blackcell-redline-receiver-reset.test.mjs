@@ -93,7 +93,7 @@ test('REDLINE receiver resources are versioned and original form and security re
  assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-history-visible1/);
  assert.match(html,/private-photo-ledger\.js\?v=20261121-photo-queue-single-view3/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=20261121-stable-brand1/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-timer-chat-both-sides1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-per-second1/);
  assert.match(ledger,/corporateAuthorize\(db,\{allowLedgerOnly:true\}\)/);
  assert.match(ledger,/const BUCKET='corp-private-photo-ledger'/);
  assert.match(ledger,/db\.storage\.from\(BUCKET\)\.upload/);
@@ -268,7 +268,7 @@ test('Incoming photo viewer expands without crop and keeps priced records access
  assert.match(layout,/object-fit:contain!important/);
  assert.match(layout,/#redlineReceiverIncomingPhotos\.rr-photo-expanded/);
  assert.match(layout,/height:clamp\(480px,75dvh,1040px\)!important/);
- assert.match(html,/private-photo-ledger-timers\.js\?v=20261121-timer-chat-both-sides1/);
+ assert.match(html,/private-photo-ledger-timers\.js\?v=20261121-per-second1/);
  assert.match(html,/private-photo-ledger-timers\.css\?v=20261121-sender-live-chat-timer1/);
 });
 test('Per-minute timer selection and secure RPC bridge do not alter original photo decision amounts',()=>{
@@ -281,8 +281,8 @@ test('Per-minute timer selection and secure RPC bridge do not alter original pho
  assert.match(ledger,/corp_redline_photo_timer_stop/);
  assert.match(ledger,/corp_redline_photo_timer_heartbeat/);
  assert.match(ledger,/corp_redline_photo_timer_mark_paid/);
- assert.match(timer,/Timer credits are tracked separately/);
- assert.match(timer,/Completed minutes only/);
+ assert.match(timer,/Rate ÷ 60 every second/);
+ assert.match(timer,/Every second counts/);
  assert.match(timer,/bridge\(\)\.timerStart\(selectedId,cents\)/);
  assert.match(timer,/bridge\(\)\.timerHeartbeat\(active\.id\)/);
  assert.match(timer,/bridge\(\)\.timerStop\(id,\{keepPhotoSelected\}\)/);
@@ -407,9 +407,9 @@ test('Sender chat receives verified start and stop messages with a live clock an
  assert.match(sender,/TIMER STOPPED/);
  assert.match(sender,/redline-chat-timer-amount/);
  assert.match(sender,/window\.setInterval\(\(\)=>\{/);
- assert.match(sender,/Math\.floor\(seconds\/60\)/);
+ assert.match(sender,/BigInt\(seconds\)\*BigInt\(row\.rate_cents\|\|0\)/);
  assert.match(style,/\.redline-chat-timer/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-timer-chat-both-sides1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-per-second1/);
 });
 
 test('Auto leading zero, verified timed price, and reject confirmation are supported',()=>{
@@ -666,7 +666,7 @@ test('Five-star originals can be resubmitted until receiver rejects the copied p
  assert.match(style,/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)!important/);
  assert.match(style,/\.redline-five-star-photo/);
  assert.match(html,/private-photo-ledger\.js\?v=20261121-photo-queue-single-view3/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-timer-chat-both-sides1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-per-second1/);
 });
 
 test('After a server-confirmed price, the next photo is shown before network refresh',()=>{
