@@ -88,9 +88,9 @@ test('Sender gets archived earnings and chat without permission to upload while 
  assert.match(ledger,/state\.showArchive\)throw Error\('Return to the current session/);
 });
 test('REDLINE receiver resources are versioned and original form and security remain intact',()=>{
- assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-photo-chat-columns3/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-chat-columns3/);
- assert.match(html,/private-photo-ledger\.js\?v=20261121-auto-photo2/);
+ assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-price-photo-zoom1/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-price-photo-zoom1/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261121-price-photo-zoom1/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=20261121-stable-brand1/);
  assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-inline-owner-chat1/);
  assert.match(ledger,/corporateAuthorize\(db,\{allowLedgerOnly:true\}\)/);
@@ -132,5 +132,18 @@ test('REDLINE OS receiver keeps the narrow chat left and the real incoming photo
  assert.match(receiver,/desktopWorkspace=window\.matchMedia\('\(min-width:960px\)'\)/);
  assert.match(css,/grid-template-columns:minmax\(300px,370px\) minmax\(0,1fr\)/);
  assert.match(css,/rr-incoming-photos #ownerReviewQueue/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-chat-columns3/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-price-photo-zoom1/);
+});
+
+test('Owner can inspect large photo and set price while viewing it',()=>{
+ assert.match(ledger,/function preparePhotoReviewLightbox\(entry\)/);
+ assert.match(ledger,/ACCEPT FOR AMOUNT/);
+ assert.match(ledger,/ACCEPT \$0\.00/);
+ assert.match(ledger,/REJECT PHOTO/);
+ assert.match(ledger,/await assignAmount\(entry,input,accept\)/);
+ assert.match(ledger,/const review=state\.isOwner&&entry\.decision_status==='pending'/);
+ assert.match(html,/id="redlineLightboxReview"/);
+ assert.match(css,/max-height:none!important;min-height:0!important/);
+ assert.match(css,/height:clamp\(560px,76dvh,850px\)!important/);
+ assert.match(css,/grid-template-columns:minmax\(0,1\.45fr\) minmax\(260px,1fr\)!important/);
 });
