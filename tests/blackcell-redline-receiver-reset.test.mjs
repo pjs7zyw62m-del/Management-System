@@ -26,7 +26,7 @@ test('Receiver has a redesigned and owner-gated command dashboard',()=>{
  assert.match(receiver,/AWAITING YOUR REVIEW/);
  assert.match(receiver,/OUTSTANDING AMOUNTS/);
  assert.match(receiver,/RECORDED PAID/);
- assert.match(receiver,/Message Sender/);
+ assert.match(receiver,/Chat with your sender/);
  assert.match(receiver,/Manage Rooms/);
  assert.match(receiver,/document\.getElementById\(source\)/);
  assert.match(css,/body\.bc-redline-receiver\{/);
@@ -88,11 +88,11 @@ test('Sender gets archived earnings and chat without permission to upload while 
  assert.match(ledger,/state\.showArchive\)throw Error\('Return to the current session/);
 });
 test('REDLINE receiver resources are versioned and original form and security remain intact',()=>{
- assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-receiver2/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-receiver2/);
- assert.match(html,/private-photo-ledger\.js\?v=20261121-fresh-session2/);
+ assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-inline-owner-chat1/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-inline-owner-chat1/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261121-level-zero2/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=20261121-stable-brand1/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-archive-sender1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-inline-owner-chat1/);
  assert.match(ledger,/corporateAuthorize\(db,\{allowLedgerOnly:true\}\)/);
  assert.match(ledger,/const BUCKET='corp-private-photo-ledger'/);
  assert.match(ledger,/db\.storage\.from\(BUCKET\)\.upload/);
@@ -100,4 +100,15 @@ test('REDLINE receiver resources are versioned and original form and security re
  assert.match(ledger,/async function assignAmount\(/);
  assert.match(ledger,/async function settle\(/);
  assert.match(ledger,/async function uploadPhoto\(/);
+});
+
+test('Receiver can view and reply in the selected private room without opening a second popup',()=>{
+ assert.match(receiver,/chatPanel\.id='redlineReceiverChat'/);
+ assert.match(receiver,/chatPanel\.hidden=!hasRoom/);
+ assert.match(receiver,/blackcell:redline:receiver-ready/);
+ assert.match(sender,/function syncOwnerChat\(snap\)/);
+ assert.match(sender,/if\(messageCard\.parentNode!==mount\)mount\.append\(messageCard\)/);
+ assert.match(sender,/photoAction\.hidden=true/);
+ assert.match(sender,/Message your sender/);
+ assert.match(css,/rr-chat-mount/);
 });
