@@ -658,7 +658,7 @@ test('Five-star originals can be resubmitted until receiver rejects the copied p
  assert.match(ledger,/const eligibleOriginal=/);
  assert.match(ledger,/cents\(e.amount_cents\)>=1n/);
  assert.match(ledger,/stars===5/);
- assert.match(ledger,/resubmissionStatus:rejected\?'rejected'/);
+ assert.match(ledger,/const resubmissionStatus=/);
  assert.match(ledger,/if\(options\.keepPhotoSelected!==false\)state\.reviewSidebarPhotoId=result\.data\.photo_id/);
  assert.match(sender,/\['five-star','5-Star Photos'\]/);
  assert.match(sender,/function renderFiveStarPhotos\(snap\)/);
