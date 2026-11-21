@@ -277,7 +277,29 @@ async function cloudWorkspaceLoad(){
   if(error||uid!==storeProfile)return;
   workspaceCloudReady=true;
   const seen=new Set();
-  for(const row of data||[]){if(!Object.hasOwn(keys,row.kind))continue;seen.add(row.kind);for(const {store} of preferenceStores())try{store.setItem(keys[row.kind],JSON.stringify(row.value))}catch(_){}}
+  for(const row of data||[]){
+   if(!Object.hasOwn(keys,row.kind))continue;
+   seen.add(row.kind);
+   if(row.kind==='layout'){
+    // Offline edits must not be discarded by an older server snapshot.
+    // Keep the newest member-scoped home layout and upload it on reconnect.
+    let local=null,localTime=0;
+    for(const {store} of preferenceStores())try{
+     const value=store.getItem(keys.layout);if(!value)continue;
+     const parsed=JSON.parse(value),time=Number(parsed?.unifiedHome?.changedAt)||0;
+     if(time>localTime&&Number.isFinite(time)){local=value;localTime=time}
+    }catch(_){}
+    const serverTime=Number(row.value?.unifiedHome?.changedAt)||0;
+    if(local&&localTime>serverTime){
+     for(const {store} of preferenceStores())try{store.setItem(keys.layout,local)}catch(_){}
+     await cloudWorkspaceSave('layout',local);
+     continue;
+    }
+   }
+   const value=JSON.stringify(row.value);
+   cloudDesktopCache.set(keys[row.kind],value);
+   for(const {store} of preferenceStores())try{store.setItem(keys[row.kind],value)}catch(_){}
+  }
   for(const [kind,key] of Object.entries(keys))if(!seen.has(kind)){for(const {store} of preferenceStores()){try{const record=store.getItem(key);if(record){await cloudWorkspaceSave(kind,record);break}}catch(_){}}}
   readWorldInstalls();readDockPreferences();readAppLayout();initDesktopPrefs();
  }catch(_){}
@@ -1242,7 +1264,7 @@ function saveAppLayout(){
  if(!contextAllowed()||!storeProfile)return false;
  const record=JSON.stringify({order:appLayout,positions:[...appPositions],recycled:[...recycledApps],bin:recyclePosition,widgets:widgetState,unifiedHome});
  const cloud=cloudWorkspaceSave('layout',record);
- void cloud.then(ok=>{if(!ok&&!preview)window.dispatchEvent(new CustomEvent('blackcell:home-sync-status',{detail:{ok:false}}));});
+ void cloud.then(ok=>{if(!preview)window.dispatchEvent(new CustomEvent('blackcell:home-sync-status',{detail:{ok:!!ok}}));});
  let saved=false;
  for(const {name,store} of preferenceStores())try{store.setItem(layoutKey(),record);if(name==='localStorage'&&store.getItem(layoutKey())===record)saved=true}catch(_){}
  if(!saved)osNotice('Layout changed for this session. Persistent device storage is unavailable.');window.dispatchEvent(new Event('blackcell:desktop-layout-updated'));return saved;
