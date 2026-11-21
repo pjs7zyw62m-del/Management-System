@@ -455,7 +455,8 @@ function renderReviewQueue(){
   },'button-outline');
   empty.append(history);
   parent.append(empty);
-  const lastAccepted=state.entries.find(e=>e.decision_status==='accepted');
+  const lastAccepted=state.entries.find(e=>e.id===state.reviewSidebarPhotoId&&e.decision_status==='accepted')||
+   state.entries.find(e=>e.decision_status==='accepted');
   if(lastAccepted)preparePhotoReviewLightbox(lastAccepted);
   else{
    const sidebar=$('redlineLightboxReview');
@@ -513,7 +514,7 @@ function renderEntry(e){
   // All verified bid and timer controls remain alongside the normal viewer.
   $('photoLightbox').hidden=false;document.body.style.overflow='hidden';
  },'photo-image-btn');
- imageButton.setAttribute('aria-label',state.isOwner&&status==='pending'?'Enlarge this photo and choose an approval price':'View original private photo');
+ imageButton.setAttribute('aria-label','Open the full-size photograph without other controls');
  const img=node('img');
  img.loading=state.isOwner&&status==='pending'?'eager':'lazy';
  img.decoding='async';img.alt=e.caption||e.file_name;
@@ -526,7 +527,7 @@ function renderEntry(e){
  imageButton.append(img);
  if(state.isOwner&&status==='pending'){
   imageButton.classList.add('review-image-button');
-  imageButton.append(node('span','review-photo-enlarge','⤢  ENLARGE PHOTO & SET PRICE'));
+  imageButton.append(node('span','review-photo-enlarge','⤢  VIEW FULL PHOTO'));
  }
  card.append(imageButton);
  const body=node('div','photo-entry-content');
@@ -590,6 +591,11 @@ window.addEventListener('blackcell:redline:photo-selected',event=>{
 function preparePhotoReviewLightbox(entry){
  const panel=$('redlineLightboxReview');
  if(!panel)return;
+ // Keep entered bid values stable while the room refreshes or timer ticks.
+ if(panel.dataset.redlinePhotoId===entry.id&&
+    panel.dataset.redlineDecision===entry.decision_status&&!panel.hidden)return;
+ panel.dataset.redlinePhotoId=entry.id;
+ panel.dataset.redlineDecision=entry.decision_status;
  // Preserve the same authenticated timer node when refreshing the bid UI.
  const liveTimer=$('redlinePhotoTimerPanel');
  if(liveTimer?.parentNode===panel)liveTimer.remove();
