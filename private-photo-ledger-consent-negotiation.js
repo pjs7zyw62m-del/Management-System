@@ -320,6 +320,8 @@ function tick(){
  displayTimerStatus();
  void pollTimer();void pollFeatures();void pollNegotiations();
 }
+window.addEventListener('blackcell:redline:photo-decided',()=>{void pollNegotiations(true)});
+window.addEventListener('blackcell:redline:negotiation-changed',()=>{void pollNegotiations(true)});
 window.addEventListener('blackcell:redline:bridge',tick);
 window.addEventListener('blackcell:redline:state',tick);
 window.addEventListener('blackcell:redline:reset',tick);
