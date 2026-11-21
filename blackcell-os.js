@@ -1130,10 +1130,41 @@ function showApp(id,initialState=null,passwordVerified=null){
  frame.addEventListener('load',()=>{try{const child=frame.contentDocument;if(!child)return;const childURL=new URL(frame.contentWindow.location.href);if(childURL.protocol==='about:')return;if(childURL.origin!==location.origin){loader.finish();return;}if(id==='photoledger'&&childURL.pathname.endsWith('/private-photo-ledger.html')){child.documentElement.classList.add('bc-admin-workspace-embedded');if(!child.querySelector('link[data-os-ledger-style]')){const sheet=child.createElement('link');sheet.rel='stylesheet';sheet.href='blackcell-admin-workspace-embedded.css?v=2-native-admin';sheet.dataset.osLedgerStyle='true';child.head.append(sheet)}}if(id==='administration'){if(childURL.pathname.endsWith('/dashboard.html')){loader.begin();frame.contentWindow.location.replace(url.href);return}if(r.adminHome)r.adminHome.hidden=childURL.pathname.endsWith('/blackcell-administration-app.html')}if(childURL.pathname.endsWith('/blackcell-os.html')||childURL.pathname.endsWith('/blackcell-os-preview.html')){dispose(r,true);return}if(id==='administration'&&childURL.pathname.endsWith('/login.html')){if(active)void recheck();loader.finish();return}for(const event of ['pointerdown','keydown','touchstart','wheel'])child.addEventListener(event,()=>void activity(),{passive:true});loader.finish();}catch(_){loader.finish();}});if(chatPopout||id==='chat')frame.addEventListener('load',syncChatVisibility);frame.src=url.href;content.prepend(frame);
  }
  $('desktop').append(w);if(deferred){applyParkedGeometry(r,deferred);r.chatKeepOnTop=deferred.keepOnTop===true;deferredParkedChats.delete(id);}raise(r);w.addEventListener('pointerdown',()=>raise(r),true);bar.addEventListener('dblclick',e=>{if(!e.target.closest('button,a')){w.classList.toggle('is-max');saveWorkspace()}});
+ // A titlebar drag restores and moves even windows opened maximized by
+ // default (REDLINE, Administration and Photo Battle). Phone/tablet windows
+ // retain their dedicated responsive full-screen presentation.
  let drag=null;
- bar.addEventListener('pointerdown',e=>{if(e.target.closest('button,a')||w.classList.contains('is-max')||touchOS()||innerWidth<=620)return;const rect=w.getBoundingClientRect();drag={x:e.clientX-rect.left,y:e.clientY-rect.top};bar.setPointerCapture(e.pointerId)});
- bar.addEventListener('pointermove',e=>{if(!drag)return;w.style.left=Math.max(0,Math.min(innerWidth-w.offsetWidth,e.clientX-drag.x))+'px';w.style.top=Math.max(34,Math.min(innerHeight-100,e.clientY-drag.y))+'px'});
- for(const event of ['pointerup','pointercancel','lostpointercapture'])bar.addEventListener(event,()=>{drag=null;saveWorkspace()});
+ bar.title='Drag to move · Double-click to maximize or restore';
+ const bounded=(value,min,max)=>Math.max(min,Math.min(Math.max(min,max),value));
+ bar.addEventListener('pointerdown',e=>{
+  if(e.button!==0||e.target.closest('button,a')||touchOS()||innerWidth<=620||w.hidden)return;
+  const current=w.getBoundingClientRect();
+  let offsetX=e.clientX-current.left,offsetY=e.clientY-current.top;
+  if(w.classList.contains('is-max')||w.classList.contains('bc-os-fullscreen')){
+   const fraction=bounded(offsetX/Math.max(current.width,1),.06,.94);
+   w.classList.remove('is-max','bc-os-fullscreen');
+   const width=Math.max(300,Math.min(innerWidth-24,Math.min(1040,Math.round(current.width*.8))));
+   const height=Math.max(260,Math.min(innerHeight-72,Math.min(740,Math.round(current.height*.82))));
+   w.style.width=width+'px';w.style.height=height+'px';
+   offsetX=Math.round(width*fraction);
+   offsetY=bounded(offsetY,12,48);
+   w.style.left=bounded(e.clientX-offsetX,0,innerWidth-width)+'px';
+   w.style.top=bounded(e.clientY-offsetY,34,innerHeight-height-12)+'px';
+   syncFullscreenShell();
+  }
+  drag={id:e.pointerId,x:offsetX,y:offsetY};
+  try{bar.setPointerCapture(e.pointerId)}catch(_){drag=null;return}
+  e.preventDefault();
+ });
+ bar.addEventListener('pointermove',e=>{
+  if(!drag||e.pointerId!==drag.id)return;
+  w.style.left=bounded(e.clientX-drag.x,0,Math.max(0,innerWidth-w.offsetWidth))+'px';
+  w.style.top=bounded(e.clientY-drag.y,34,Math.max(34,innerHeight-w.offsetHeight-12))+'px';
+ });
+ for(const event of ['pointerup','pointercancel','lostpointercapture'])bar.addEventListener(event,e=>{
+  if(!drag||(e.pointerId!==undefined&&e.pointerId!==drag.id))return;
+  drag=null;saveWorkspace();
+ });
 }
 let appContext=null,contextTrigger=null,appHold=null,suppressedAppClick=null;
 function contextAllowed(){return active&&!preview&&!leaving&&!workspaceLock?.isLocked()&&!$('desktop').hidden}
