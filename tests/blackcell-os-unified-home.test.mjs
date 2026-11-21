@@ -116,4 +116,5 @@ test('Software Update confirms actual loaded HTML build before saying an update 
  assert.match(updater,/cache:'no-store'/);
  assert.match(updater,/expected===current/);
  assert.match(updater,/buildMismatch/);
+ assert.match(read('blackcell-os-settings.js'),/Installed interface build/);
 });
