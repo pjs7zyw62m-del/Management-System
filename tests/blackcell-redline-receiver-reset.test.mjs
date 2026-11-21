@@ -488,7 +488,7 @@ test('Stop Timer atomically submits one priced photo; other timed earnings never
  assert.match(ledger,/state.reviewSidebarPhotoId=result.data.photo_id/);
  assert.match(ledger,/const combinedPrice=baseCents\+extraTimedCents/);
  assert.match(ledger,/rr-photo-price-amount/);
- assert.match(controller,/committed=await bridge\(\).timerStop\(id\)/);
+ assert.match(controller,/committed=await bridge\(\).timerStop\(id,\{keepPhotoSelected\}\)/);
  assert.match(controller,/PHOTO AUTO-SUBMITTED/);
  assert.match(controller,/window.dispatchEvent\(new CustomEvent\('blackcell:redline:photo-selected'/);
  assert.match(chat,/async function pollSenderTimers\(force=false\)/);
