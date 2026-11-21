@@ -91,7 +91,7 @@ async function initialize(){
   if(!a.ok)throw Error('Your corporate account is not approved or active.');
   state.user=a.user;state.member=a.member;
   state.isOwner=a.member.role==='owner'&&a.member.clearance_level===7;
-  state.filter=state.isOwner?'reviewed':'all';
+  state.filter=state.isOwner?'priced':'all';
   if(!state.isOwner&&a.member.role!=='employee')throw Error('This private area is available only to verified owner and selected employees.');
   await verify();
   updateLedgerNavigation();
@@ -419,6 +419,8 @@ async function signImages(items){
 }
 function setFilter(name){
  state.filter=name;
+ const title=document.querySelector('#activeRoom .timeline-toolbar h2');
+ if(title)title.textContent=name==='priced'?'Priced Photos':'Photo History';
  document.querySelectorAll('[data-photo-filter]').forEach(b=>
   b.setAttribute('aria-pressed',String(b.dataset.photoFilter===name)));
  renderEntries();
@@ -465,10 +467,13 @@ function renderEntries(){
  const list=state.entries.filter(e=>
   state.filter==='all'
   ||(state.filter==='reviewed'&&entryState(e)!=='pending')
+  ||(state.filter==='priced'&&e.decision_status==='accepted')
   ||entryState(e)===state.filter
  );
  if(!list.length){
-  const message=state.filter==='reviewed'
+  const message=state.filter==='priced'
+   ?'No priced photos yet. Once a photo is accepted, it appears in this list.'
+   :state.filter==='reviewed'
    ?'No reviewed photos yet. Accept or reject a picture above and it will appear here.'
    :state.filter==='all'
      ?state.showArchive?'No archived photos in this room.':'No photos yet. The selected employee can upload the first picture here.'
