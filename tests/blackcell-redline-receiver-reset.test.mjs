@@ -462,8 +462,8 @@ test('REDLINE pause belongs only to verified receiver and applies across devices
 test('Selected reviewed photo stays beside sidebar instead of caught-up queue',()=>{
  const queue=ledger.slice(ledger.indexOf('function renderReviewQueue(){'),ledger.indexOf('function renderEntries(){'));
  const layout=read('private-photo-ledger-imessage-workspace.css');
- assert.match(queue,/parent\\.append\\(renderEntry\\(reviewed\\)\\)/);
- assert.match(queue,/preparePhotoReviewLightbox\\(reviewed\\|\\|null\\)/);
+ assert.match(queue,/parent\.append\(renderEntry\(reviewed\)\)/);
+ assert.match(queue,/preparePhotoReviewLightbox\(reviewed\|\|null\)/);
  assert.doesNotMatch(queue,/ALL CAUGHT UP/);
  assert.match(layout,/REDLINE reviewed-photo viewport/);
  assert.match(layout,/#redlineReceiverReviewStage:has/);
