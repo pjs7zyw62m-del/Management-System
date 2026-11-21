@@ -10,7 +10,7 @@ const VALID_ID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const $=id=>document.getElementById(id);
 const state={
  user:null,member:null,isOwner:false,rooms:[],room:null,employees:[],
- entries:[],filter:'all',busy:false,refreshing:false,closed:false,
+ entries:[],filter:'all',timedPhotoTotals:new Map(),timedPhotoFingerprint:'',busy:false,refreshing:false,closed:false,
  images:new Map(),entryFingerprint:'',liveStarted:false,roomChannel:null,roomsChannel:null,liveRoomId:null,liveQueued:false,liveTimer:null,liveConnected:false,scopeMemberId:null,scopeValue:'full',scopeLoading:false,showArchive:false
 };
 const node=(tag,klass,content)=>{
@@ -227,7 +227,11 @@ async function refresh({initial=false,force=false}={}){
   const preferred=(validId(requested)?state.rooms.find(x=>x.id===requested):null)
      ||state.rooms.find(x=>x.id===currentId)
      ||state.rooms[0]||null;
-  if(currentId!==preferred?.id)state.showArchive=false;
+  if(currentId!==preferred?.id){
+   state.showArchive=false;
+   state.timedPhotoTotals.clear();
+   state.timedPhotoFingerprint='';
+  }
   state.room=preferred;
   if(state.liveStarted)subscribeEntries(preferred);
   $('noRoom').hidden=!!preferred;
@@ -511,8 +515,24 @@ function renderEntries(){
  }
  for(const e of list)parent.append(renderEntry(e));
 }
+// Status RPC is verified for the same two-person room. The per-photo total
+// appears automatically after STOP, without rewriting an immutable bid or
+// adding the same money a second time to the separate timer ledger.
+window.addEventListener('blackcell:redline:timed-photo-summary',event=>{
+ if(!state.room||event.detail?.roomId!==state.room.id)return;
+ const rows=Array.isArray(event.detail.photoTotals)?event.detail.photoTotals:[];
+ const signature=JSON.stringify(rows.map(r=>[r.photo_id,r.timed_cents,r.timed_paid_cents,r.timed_owed_cents,r.completed_minutes]));
+ if(signature===state.timedPhotoFingerprint)return;
+ state.timedPhotoFingerprint=signature;
+ state.timedPhotoTotals=new Map(rows.filter(r=>validId(r.photo_id)).map(r=>[r.photo_id,r]));
+ if(state.entries.length){renderEntries();renderReviewQueue()}
+});
 function renderEntry(e){
  const status=entryState(e);
+ const timed=state.timedPhotoTotals.get(e.id);
+ const timedCents=cents(timed?.timed_cents??0);
+ const baseCents=cents(e.amount_cents);
+ const combinedPrice=baseCents+timedCents;
  const card=node('article','photo-entry');
  card.dataset.redlinePhotoId=e.id;
  const imageButton=button('',()=>{
@@ -544,19 +564,27 @@ function renderEntry(e){
  const body=node('div','photo-entry-content');
  const meta=node('div','entry-meta');
  meta.append(node('span','',when(e.created_at)));
- const statusBadge=node('span','entry-badge '+status,status==='pending'?'AWAITING YOUR REVIEW':status==='rejected'?'REJECTED':status==='free'?'ACCEPTED · $0.00':status==='owed'?'AMOUNT OWED':'RECORDED PAID');
+ const statusBadge=node('span','entry-badge '+status,status==='pending'?'AWAITING YOUR REVIEW':status==='rejected'?'REJECTED':status==='free'&&timedCents>0n?'ACCEPTED · TIMED EARNED':status==='free'?'ACCEPTED · $0.00':status==='owed'?'AMOUNT OWED':'RECORDED PAID');
  meta.append(statusBadge);
  body.append(meta,node('h3','','PHOTO '+e.id.slice(0,8).toUpperCase()));
  if(e.caption?.trim())body.append(node('p','caption',e.caption.trim()));
  const ctrl=node('div','entry-controls');
  if(status==='rejected'){
   body.append(node('div','entry-amount','REJECTED'));
-  ctrl.append(node('small','','The owner rejected this photo on '+when(e.decided_at)+'. Nothing was added to the balance.'));
+  if(timedCents>0n)body.append(node('div','rr-photo-timed-summary','Timed earnings recorded: '+dollars(timedCents)));
+  ctrl.append(node('small','',timedCents>0n
+   ?'One-time bid rejected. Completed timed earnings remain recorded separately.'
+   :'The owner rejected this photo on '+when(e.decided_at)+'. No amount was added.'));
  }else if(status==='free'){
-  body.append(node('div','entry-amount','$0.00'));
-  ctrl.append(node('small','','Accepted at no charge on '+when(e.decided_at)+'. No payment is owed.'));
+  body.append(node('div','entry-amount',dollars(combinedPrice)));
+  if(timedCents>0n)body.append(node('div','rr-photo-timed-summary','Automatic timer price '+dollars(timedCents)+' · One-time bid $0.00'));
+  ctrl.append(node('small','',timedCents>0n
+   ?'Completed-minute earnings have been saved automatically. No one-time bid.'
+   :'Accepted at no charge on '+when(e.decided_at)+'. No payment is owed.'));
  }else if(e.decision_status==='accepted'){
-  body.append(node('div','entry-amount',dollars(e.amount_cents)));
+  body.append(node('div','entry-amount',dollars(combinedPrice)));
+  if(timedCents>0n)body.append(node('div','rr-photo-timed-summary',
+   'One-time bid '+dollars(baseCents)+' + automatic timed price '+dollars(timedCents)));
   ctrl.append(node('small','',e.settled_at
    ?'Manually recorded as paid on '+when(e.settled_at)
    :'Accepted by the owner on '+when(e.decided_at)+'.'));
@@ -565,6 +593,8 @@ function renderEntry(e){
   }
  }else{
   body.append(node('div','entry-amount','PENDING OWNER REVIEW'));
+  if(timedCents>0n)body.append(node('div','rr-photo-timed-summary',
+   'Automatic timed price: '+dollars(timedCents)+' · Saved after timer stopped'));
   if(state.isOwner){
    body.append(node('strong','review-price-heading','SET YOUR PRICE'));
    const row=node('div','amount-row');
