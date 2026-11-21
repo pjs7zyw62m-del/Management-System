@@ -18,8 +18,7 @@
   };
   const close=()=>{shell.classList.remove('bc-macos-apps-open','bc-macos-widgets-open');update()};
   const apps=button('Applications','Show or hide desktop application shortcuts',()=>{
-   const active=!shell.classList.contains('bc-macos-apps-open');close();shell.classList.toggle('bc-macos-apps-open',active);
-   if(active)window.dispatchEvent(new Event('resize'));update();
+   close();window.dispatchEvent(new Event('blackcell:launchpad-open'));update();
   });
   const widgets=button('Widgets','Show or hide your desktop widgets',()=>{
    const active=!shell.classList.contains('bc-macos-widgets-open');close();shell.classList.toggle('bc-macos-widgets-open',active);update();
@@ -32,7 +31,7 @@
   const appsGroup=shell.querySelector('.workspace .apps');
   appsGroup?.addEventListener('click',e=>{if(e.target.closest('.app[data-app]'))close()});
   document.addEventListener('keydown',e=>{
-   if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.key.toLowerCase()==='a'&&!e.target.closest('input,textarea,[contenteditable]')&&!shell.hidden&&shell.classList.contains('bc-macos-desktop')){
+   if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.key.toLowerCase()==='a'&&!e.target.closest?.('input,textarea,[contenteditable]')&&!shell.hidden&&shell.classList.contains('bc-macos-desktop')){
     e.preventDefault();apps.click();
    }else if(e.key==='Escape'&&(shell.classList.contains('bc-macos-apps-open')||shell.classList.contains('bc-macos-widgets-open')))close();
   });
