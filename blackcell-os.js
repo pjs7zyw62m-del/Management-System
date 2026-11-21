@@ -1132,9 +1132,10 @@ function contextSource(target){
    Neither operation uninstalls apps, grants access, nor deletes user data. */
 const HOMES_WIDGET_IDS=['clock','calendar','applications','session'];
 const homeClamp=n=>Math.max(0,Math.min(1,n));
-const emptyUnifiedHome=()=>({version:1,pins:[],widgets:[],changedAt:0});
+const emptyUnifiedHome=()=>({version:1,pins:[],widgets:[{id:'clock',x:.04,y:.12,size:'medium'},{id:'calendar',x:.04,y:.37,size:'medium'}],changedAt:0});
 function normalizeUnifiedHome(input){
- const raw=input&&typeof input==='object'&&!Array.isArray(input)?input:{};
+ if(!input||typeof input!=='object'||Array.isArray(input))return emptyUnifiedHome();
+ const raw=input;
  const pins=[];const pinned=new Set();
  for(const p of Array.isArray(raw.pins)?raw.pins.slice(0,80):[]){
   if(!p||!validAppId(p.id)||pinned.has(p.id))continue;
