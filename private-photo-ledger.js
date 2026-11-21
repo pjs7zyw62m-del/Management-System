@@ -146,7 +146,7 @@ function renderLedgerScope(){
   :'This employee currently has regular corporate access. Restrict them to BLACKCELL REDLINE to block Network, chat and other authorized corporate apps.');
  const btn=$('ledgerScopeToggle');
  btn.disabled=state.scopeLoading;
- btn.textContent=limited?'RESTORE FULL CORPORATE ACCESS':'RESTRICT EMPLOYEE TO LEDGER ONLY';
+ btn.textContent=limited?'RESTORE STANDARD APPLICATION ACCESS':'SET REDLINE ONLY ACCESS';
  btn.classList.toggle('scope-restricted',limited);
 }
 async function loadLedgerScope(memberId){
@@ -818,6 +818,32 @@ function wireEvents(){
  */
 const REDLINE_MESSAGES='corp_private_photo_messages';
 window.BLACKCELL_REDLINE_API=Object.freeze({
+ async ownerAccessMembers(){
+  if(!state.isOwner||state.closed||!state.user||$('ledgerApp').hidden)throw Error('Verified owner access required.');
+  await verify();
+  const result=await db.rpc('corp_admin_members');
+  if(result.error||result.data?.ok!==true||!Array.isArray(result.data.members))throw Error('Unable to load employee permissions.');
+  return result.data.members.filter(member=>member.role==='employee').map(member=>({
+   userId:member.user_id,name:member.display_name||member.username||'Employee',
+   username:member.username||'',clearance:member.clearance_level,
+   accessScope:member.access_scope==='ledger_only'?'ledger_only':'full',
+   active:member.active===true
+  }));
+ },
+ async ownerSetRedlineOnly(userId,restricted){
+  if(!state.isOwner||state.closed||!state.user||$('ledgerApp').hidden)throw Error('Verified owner access required.');
+  if(!validId(userId)||typeof restricted!=='boolean'||userId===state.user.id)throw Error('Invalid employee selection.');
+  await verify();
+  const result=await db.rpc('corp_owner_redline_access',{
+   p_member_id:userId,p_redline_only:restricted
+  });
+  if(result.error||result.data?.ok!==true)throw Error(fail(result.error||result.data?.reason||'Access update declined.'));
+  if(state.room?.member_id===userId){
+   state.scopeValue=restricted?'ledger_only':'full';
+   renderLedgerScope();
+  }
+  return {accessScope:result.data.access_scope};
+ },
  snapshot(){
   if(state.closed||!state.user||!state.room||$('ledgerApp').hidden)return null;
   return {
