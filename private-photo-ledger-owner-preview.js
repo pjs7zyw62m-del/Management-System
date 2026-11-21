@@ -44,8 +44,7 @@
   chrome.append(make('strong','','REDLINE'),make('span','','SECURE · 2 PERSONS'));
   const main=make('div','bc-redline-preview-body');
   const identity=make('div','bc-redline-preview-identity');
-  identity.append(make('span','','BLACKCELL / PRIVATE CHANNEL'),make('h3','','Your next submission.'));
-  const description=make('p','','Post a private photo or send a private message, together in one place.');
+  identity.append(make('span','','BLACKCELL / PRIVATE CHANNEL'));
   const facts=make('div','bc-redline-preview-facts');
   const pending=make('div','',''),owed=make('div','','');
   const pendingValue=make('strong','','0'),owedValue=make('strong','','$0.00');
@@ -61,7 +60,7 @@
   const room=make('div','bc-redline-preview-room');
   const roomName=make('span','','PRIVATE ROOM');
   room.append(make('span','','●'),roomName,make('span','','TWO-PERSON ACCESS'));
-  identity.append(description,facts,actions,room);
+  identity.append(facts,actions,room);
   const upload=make('section','bc-redline-preview-upload');
   const title=make('h4','','Post a Private Photo');
   const fileArea=make('label','bc-redline-preview-file-area');
