@@ -88,8 +88,8 @@ test('Sender gets archived earnings and chat without permission to upload while 
  assert.match(ledger,/state\.showArchive\)throw Error\('Return to the current session/);
 });
 test('REDLINE receiver resources are versioned and original form and security remain intact',()=>{
- assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-compact-toolbar1/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-compact-toolbar1/);
+ assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-resizable-split1/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-resizable-split1/);
  assert.match(html,/private-photo-ledger\.js\?v=20261121-room-presence1/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=20261121-stable-brand1/);
  assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-inline-owner-chat1/);
@@ -132,7 +132,7 @@ test('REDLINE OS receiver keeps the narrow chat left and the real incoming photo
  assert.match(receiver,/desktopWorkspace=window\.matchMedia\('\(min-width:960px\)'\)/);
  assert.match(css,/grid-template-columns:minmax\(300px,370px\) minmax\(0,1fr\)/);
  assert.match(css,/rr-incoming-photos #ownerReviewQueue/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-compact-toolbar1/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-resizable-split1/);
 });
 
 test('Owner can inspect large photo and set price while viewing it',()=>{
@@ -175,6 +175,28 @@ test('Receiver toolbar is compact, room controls expand on demand and live actio
  assert.match(css,/body\.bc-redline-receiver\.rr-room-tools-open #redlineSessionTools:not\(\[hidden\]\)/);
  assert.match(css,/min-height:34px!important/);
  assert.match(css,/grid-template-columns:minmax\(0,1\.7fr\) minmax\(465px,1fr\)!important/);
- assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-compact-toolbar1/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-compact-toolbar1/);
+ assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-resizable-split1/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-resizable-split1/);
+});
+
+test('Web OS and tablets share a live resizable chat and photo review workspace',()=>{
+ assert.match(receiver,/workspace\.append\(chatPanel,photos\)/);
+ assert.match(receiver,/workspace\.insertBefore\(divider,photos\)/);
+ assert.match(receiver,/photos\.append\(timeline\)/);
+ assert.match(receiver,/const splitWorkspace=window\.matchMedia\('\(min-width:720px\)'\)/);
+ assert.match(receiver,/!document\.body\.classList\.contains\('bc-ledger-mobile'\)/);
+ assert.match(receiver,/divider\.addEventListener\('pointerdown'/);
+ assert.match(receiver,/divider\.addEventListener\('pointermove'/);
+ assert.match(receiver,/divider\.addEventListener\('keydown'/);
+ assert.match(receiver,/divider\.setPointerCapture/);
+ assert.match(receiver,/divider\.addEventListener\('dblclick'/);
+ assert.match(receiver,/aria-valuenow/);
+ assert.match(receiver,/aria-orientation','vertical'/);
+ assert.match(receiver,/window\.localStorage\.setItem\(SPLIT_KEY/);
+ assert.match(css,/grid-template-columns:minmax\(0,var\(--rr-chat-width\)\) 20px minmax\(0,1fr\)!important/);
+ assert.match(css,/touch-action:none/);
+ assert.match(css,/@container redline-photo-pane \(max-width:840px\)/);
+ assert.match(css,/body\.bc-redline-receiver \.rr-live-workspace\[hidden\]\{display:none!important\}/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-resizable-split1/);
+ assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-resizable-split1/);
 });
