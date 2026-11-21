@@ -1,7 +1,7 @@
 /* BLACKCELL OS / member wallpaper storage. No public object URLs or service-role credentials.
    All images are private Supabase Storage blobs under the signed-in member's UID folder.
    Preferences only contain object paths and non-sensitive presentation settings. */
-export function createWallpaperController({getClient,getAccount,getPrefs,setPreference,isPreview}){
+export function createWallpaperController({getClient,getAccount,getPrefs,setPreference,isPreview,getCloudReady,awaitSync}){
  const BUCKET='blackcell-os-wallpapers';
  const types=new Map([['image/jpeg','jpg'],['image/png','png'],['image/webp','webp'],['image/gif','gif'],['image/avif','avif'],['image/heic','heic'],['image/heif','heif']]);
  const MAX_BYTES=8*1024*1024;
@@ -51,6 +51,7 @@ export function createWallpaperController({getClient,getAccount,getPrefs,setPref
   if(!TARGETS.has(target))return {ok:false,message:'Choose a valid wallpaper destination.'};
   const uid=getAccount(),client=getClient();
   if(!/^[a-f0-9-]{36}$/i.test(String(uid||''))||!client?.storage)return {ok:false,message:'Verify your BLACKCELL session first.'};
+  if(!getCloudReady())return {ok:false,message:'Account synchronization is temporarily unavailable. Please retry when your BLACKCELL workspace reconnects.'};
   if(!(file instanceof Blob)||!types.has(file.type))return {ok:false,message:'Choose a JPG, PNG, WebP, GIF, AVIF or supported HEIC photograph. SVG and executable files are not supported.'};
   if(file.size<1||file.size>MAX_BYTES)return {ok:false,message:'Wallpaper images must be smaller than 8 MB.'};
   const path=uid+'/'+target+'/'+crypto.randomUUID()+'.'+types.get(file.type);
@@ -68,7 +69,8 @@ export function createWallpaperController({getClient,getAccount,getPrefs,setPref
    if(target!=='all')setPreference('wallpaperMode','separate');
    setPreference('wallpaper','custom');
    await sync();
-   return {ok:true,message:'Wallpaper saved privately to your account. Other devices will use it after workspace preferences synchronize.'};
+   const synchronized=await awaitSync();
+   return {ok:true,message:synchronized?'Wallpaper saved privately to your account. Other devices will use it when their workspace preferences refresh.':'Wallpaper image uploaded privately, but account preferences could not synchronize. Retry in Settings on this device.'};
   }catch(e){return {ok:false,message:'Wallpaper upload failed. '+String(e?.message||'Try again.').slice(0,180)}}
   finally{release?.()}
  }
