@@ -15,6 +15,7 @@ on:
       - 'tests/redline-history-chat-signals.test.mjs'
       - 'tests/redline-chat-read-typing-browser-smoke.mjs'
       - 'tests/redline-timer-two-party-browser-smoke.mjs'
+      - 'tests/redline-mobile-receiver-timer-chat-height.browser.mjs'
       - 'tests/redline-currently-viewing-browser-smoke.mjs'
       - 'tests/redline-next-photo-visual-smoke.mjs'
       - 'tests/redline-timer-stop-next-photo.test.mjs'
@@ -42,6 +43,7 @@ on:
       - 'tests/redline-history-chat-signals.test.mjs'
       - 'tests/redline-chat-read-typing-browser-smoke.mjs'
       - 'tests/redline-timer-two-party-browser-smoke.mjs'
+      - 'tests/redline-mobile-receiver-timer-chat-height.browser.mjs'
       - 'tests/redline-currently-viewing-browser-smoke.mjs'
       - 'tests/redline-next-photo-visual-smoke.mjs'
       - 'tests/redline-timer-stop-next-photo.test.mjs'
@@ -172,6 +174,13 @@ jobs:
           command -v google-chrome >/dev/null 2>&1 && CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && CHROME=chromium || CHROME=; }
           [ -n "$CHROME" ] || { echo "Chromium unavailable"; exit 1; }
           CHROME="$CHROME" node tests/redline-currently-viewing-browser-smoke.mjs
+      - name: Mobile receiver keeps long chat visible beneath running timer
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v google-chrome >/dev/null 2>&1 && CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && CHROME=chromium || CHROME=; }
+          [ -n "$CHROME" ] || { echo "Chromium unavailable"; exit 1; }
+          CHROME="$CHROME" node tests/redline-mobile-receiver-timer-chat-height.browser.mjs
       - name: Receiver and sender see read receipts and live typing
         shell: bash
         run: |
