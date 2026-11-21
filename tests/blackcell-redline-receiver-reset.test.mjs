@@ -715,3 +715,27 @@ test('Photo History is accessible despite the old photo-only layout rules',()=>{
  const workflow=read('.github/workflows/blackcell-redline-receiver-rebuild.yml');
  assert.match(workflow,/node tests\/redline-photo-history-browser-smoke\.mjs/);
 });
+
+
+test('REDLINE puts quick actions in a menu with Pay in Full beside it',()=>{
+ const sql=read('supabase/migrations/20261121144033_blackcell_redline_record_paid_in_full.sql');
+ assert.match(receiver,/menuItems\.append\(review,history,message,manage,tools\)/);
+ assert.match(receiver,/nav\.append\(menuShell,payColumn\)/);
+ assert.match(receiver,/menuToggle\.setAttribute\('aria-expanded',String\(open\)\)/);
+ assert.match(receiver,/menuItems\.hidden=!open/);
+ assert.match(receiver,/const payFull=button\('PAY IN FULL'/);
+ assert.match(receiver,/api\.recordPaidInFull\(current\.roomId\)/);
+ assert.match(receiver,/REDLINE will NOT send or charge any money/);
+ assert.match(css,/rr-nav-menu-items\[hidden\]\{display:none!important\}/);
+ assert.match(css,/rr-pay-full/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-history-visible1-menu1/);
+ assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-photo-large-timed1-menu1/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261121-photo-queue-single-view3-payfull1/);
+ assert.match(ledger,/async recordPaidInFull\(roomId\)/);
+ assert.match(ledger,/db\.rpc\('corp_redline_record_paid_in_full'/);
+ assert.match(sql,/v_room\.owner_id IS DISTINCT FROM v_user/);
+ assert.match(sql,/v_room\.current_session_started_at/);
+ assert.match(sql,/t\.stopped_at IS NULL/);
+ assert.match(sql,/REVOKE ALL ON FUNCTION public\.corp_redline_record_paid_in_full/);
+ assert.match(sql,/GRANT EXECUTE ON FUNCTION public\.corp_redline_record_paid_in_full/);
+});
