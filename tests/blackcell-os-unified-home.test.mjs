@@ -32,7 +32,7 @@ test('Desktop app placement honors installation and permissions, never installs 
  assert.match(home,/attachDrag\(b,p\.id,'pin'\)/);
  assert.match(home,/popupAt\(e\.clientX,e\.clientY/);
  assert.match(home,/Remove from Desktop/);
- assert.match(home,/The app is still installed/);
+ assert.match(home,/App data remains safe/);
  for(const src of [shell,home])assert.ok(!src.includes('localStorage.clear('));
 });
 
