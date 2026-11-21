@@ -1,0 +1,84 @@
+/* BLACKCELL REDLINE timed-photo earnings control, not a payment gateway. */
+.rr-timer-panel{
+ display:flex;flex-direction:column;gap:6px;min-width:0;
+ padding:9px 10px;margin:0 0 8px;background:#151015;
+ color:#f7f4f6;border:1px solid #863249;border-radius:10px;
+}
+.rr-timer-panel[hidden],.rr-timer-sender[hidden],.rr-timer-ledger[hidden],
+.rr-timer-selected-preview[hidden]{display:none!important}
+.rr-timer-heading{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;
+ flex-wrap:wrap;color:#e8d9e0;
+}
+.rr-timer-heading strong{font-size:10px;font-weight:850;letter-spacing:.08em;color:#f65072}
+.rr-timer-heading small{font-size:9px;color:#b9adb4}
+.rr-timer-controls{display:flex;align-items:center;flex-wrap:wrap;gap:6px;min-width:0}
+.rr-timer-selected{
+ display:block;max-width:180px;min-width:0;overflow:hidden;
+ white-space:nowrap;text-overflow:ellipsis;
+ color:#fff;font-size:10px;font-weight:750;
+}
+.rr-timer-rate-label{
+ display:flex;align-items:center;gap:6px;font-size:9px;
+ font-weight:750;color:#cdc2c7;white-space:nowrap;
+}
+.rr-timer-rate{
+ width:74px;max-width:100%;min-height:35px;border-radius:7px;
+ border:1px solid #865266;background:#0b0a0d;color:#fff;
+ padding:7px;font-size:14px;font-weight:700;
+}
+.rr-timer-start,.rr-timer-stop,.rr-timer-select-incoming,.rr-timer-full,
+.rr-timer-paid{
+ border:1px solid #a83956;border-radius:8px;cursor:pointer;
+ color:#fff;background:#331020;min-height:34px;padding:7px 9px;
+ font-size:10px;font-weight:800;white-space:normal;
+}
+.rr-timer-start{background:#ae183a;border-color:#f04b6e}
+.rr-timer-stop{background:#211a1d;border-color:#a45462}
+.rr-timer-start:disabled,.rr-timer-stop:disabled,
+.rr-timer-paid:disabled,.rr-timer-select-incoming:disabled{opacity:.4;cursor:default}
+.rr-timer-clock{font-size:18px;letter-spacing:.01em;font-variant-numeric:tabular-nums}
+.rr-timer-money{font-size:18px;color:#f65072;font-variant-numeric:tabular-nums}
+.rr-timer-note{margin:0!important;font-size:10px;color:#b7acb3;line-height:1.45}
+.rr-timer-selected-preview{
+ display:grid;grid-template-columns:minmax(0,1fr);
+ gap:10px;min-width:0;background:#050508;
+}
+.rr-timer-selected-preview img{width:100%;object-fit:contain}
+.rr-timer-selected-preview>div{
+ display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:8px;
+}
+.rr-timer-selected-preview strong{font-size:11px}
+.rr-timer-selected-preview small{font-size:10px;color:#aaa}
+.rr-timer-ledger{
+ flex:0 0 auto;min-width:0;
+ border-top:1px solid #693244;background:#161216;color:#eee;
+ padding:5px 8px;font-size:10px;max-height:128px;overflow-y:auto;
+}
+.rr-timer-ledger summary{
+ font-size:10px;color:#f6d8df;font-weight:850;cursor:pointer;line-height:1.6;
+}
+.rr-timer-totals{font-size:10px;color:#c9bcc2;padding:5px 0}
+.rr-timer-history{display:flex;flex-direction:column;gap:4px}
+.rr-timer-history>small{color:#ada1a8}
+.rr-timer-history-item{
+ display:flex;align-items:center;flex-wrap:wrap;gap:4px;
+ padding:5px 2px;border-top:1px solid #ffffff1a;
+}
+.rr-timer-history-item span{flex:1 1 130px;min-width:0;line-height:1.4}
+.rr-timer-history-item strong{font-size:10px;white-space:nowrap}
+.rr-timer-paid{min-height:27px;font-size:9px;padding:4px 7px}
+.rr-timer-sender{
+ display:flex;flex-direction:column;gap:5px;margin-top:9px;
+ padding:12px;background:#100c11;border:1px solid #8b2f48;
+ border-radius:10px;color:#f3edf0;
+}
+.rr-timer-sender strong{font-size:11px;color:#fa5275}
+.rr-timer-sender p{font-size:12px;line-height:1.5;margin:0}
+.rr-timer-sender small{font-size:10px;color:#b6a5ad}
+@media(max-width:700px){
+ .rr-timer-controls{gap:6px}
+ .rr-timer-selected{max-width:100%}
+ .rr-timer-clock,.rr-timer-money{font-size:15px}
+ .rr-timer-panel{padding:8px}
+}
