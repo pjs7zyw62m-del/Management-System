@@ -87,6 +87,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   },2800);
   setTimeout(()=>{
    const dlg=document.getElementById('redlinePriceNegotiation');
+   document.body.dataset.senderNegDebug=String(Boolean(dlg))+'_'+String(dlg?.open)+'_'+
+    String(offerStatus?.status)+'_'+String(dlg?.textContent?.slice(0,80));
    document.body.dataset.senderNegotiation=String(Boolean(dlg?.open&&
     dlg.textContent.includes('RECEIVER ORIGINAL PRICE')));
    const input=dlg?.querySelector('.redline-consent-amount');
