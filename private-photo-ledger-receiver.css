@@ -774,3 +774,120 @@ body.bc-redline-receiver .rr-room-summary{display:none}
  }
  body.bc-redline-receiver .rr-stat-value{font-size:16px!important}
 }
+
+
+/* BLACKCELL OS + tablet: interactive two-pane REDLINE receiver workspace.
+   The photo side is the real review queue; image fit stays contain. */
+@media(min-width:720px){
+ body.bc-redline-receiver:not(.bc-ledger-mobile) .rr-live-workspace{
+  --rr-chat-width:36%;
+  display:grid!important;
+  grid-template-columns:minmax(0,var(--rr-chat-width)) 20px minmax(0,1fr)!important;
+  column-gap:0!important;
+  align-items:stretch!important;
+  min-width:0!important;width:100%!important;
+  border:1px solid #702033;border-radius:15px;
+  padding:8px!important;background:#070709;
+ }
+ body.bc-redline-receiver:not(.bc-ledger-mobile) .rr-live-workspace>.rr-chat-panel{
+  min-width:0!important;max-width:none!important;width:100%!important;
+  border-radius:11px!important;margin:0!important;
+  align-self:stretch!important;
+ }
+ body.bc-redline-receiver:not(.bc-ledger-mobile) .rr-live-workspace>.rr-incoming-photos{
+  min-width:0!important;width:100%!important;
+  border-radius:11px!important;margin:0!important;
+  container-type:inline-size;container-name:redline-photo-pane;
+  background:#09090b;border:1px solid #823049;padding:10px;
+ }
+ body.bc-redline-receiver:not(.bc-ledger-mobile) .rr-split-divider{
+  display:flex;justify-content:center;align-items:center;align-self:stretch;
+  position:relative;min-width:20px;min-height:300px;
+  cursor:col-resize;touch-action:none;user-select:none;-webkit-user-select:none;
+  color:#ff5473;outline-offset:-2px;
+ }
+ body.bc-redline-receiver:not(.bc-ledger-mobile) .rr-split-divider::before{
+  content:'';position:absolute;left:calc(50% - 2px);top:12px;bottom:12px;
+  width:4px;border-radius:6px;background:#713047;transition:background .12s;
+ }
+ body.bc-redline-receiver:not(.bc-ledger-mobile) .rr-split-grip{
+  position:relative;z-index:1;border-radius:10px;
+  font-size:16px;line-height:1;font-weight:900;letter-spacing:-3px;
+  background:#34101c;border:1px solid #af2a49;padding:13px 6px 14px 3px;
+  transform:translateX(-1px);
+ }
+ body.bc-redline-receiver:not(.bc-ledger-mobile) .rr-split-divider:hover::before,
+ body.bc-redline-receiver:not(.bc-ledger-mobile) .rr-split-divider:focus-visible::before,
+ body.bc-redline-receiver.rr-is-split-resizing .rr-split-divider::before{
+  background:#fa3157;
+ }
+ body.bc-redline-receiver:not(.bc-ledger-mobile) .rr-split-divider:focus-visible{
+  outline:2px solid #ff4b6c;border-radius:10px;
+ }
+ body.bc-redline-receiver.rr-is-split-resizing{
+  cursor:col-resize!important;user-select:none!important;-webkit-user-select:none!important;
+ }
+ body.bc-redline-receiver:not(.bc-ledger-mobile) .rr-live-workspace>.rr-chat-panel .redline-message-card,
+ body.bc-redline-receiver:not(.bc-ledger-mobile) .rr-live-workspace>.rr-chat-panel .rr-chat-mount{
+  min-width:0!important;width:100%!important;max-width:none!important;
+ }
+ body.bc-redline-receiver:not(.bc-ledger-mobile) .rr-incoming-photos>.timeline-column{
+  width:100%!important;min-width:0!important;
+ }
+ body.bc-redline-receiver:not(.bc-ledger-mobile) .rr-live-workspace>.rr-chat-panel .redline-message-feed{
+  overflow-y:auto!important;min-width:0!important;
+ }
+}
+/* On iPad/tablet widths the original 960px-only desktop grid was absent.
+   Reuse the same timeline and chat module with a touch-friendly divider. */
+@media(min-width:720px) and (max-width:959px){
+ body.bc-redline-receiver:not(.bc-ledger-mobile) .rr-incoming-photos>.timeline-column{
+  display:flex!important;flex-direction:column!important;gap:10px;
+ }
+ body.bc-redline-receiver:not(.bc-ledger-mobile) .rr-live-workspace>.rr-chat-panel{
+  padding:10px!important;
+ }
+ body.bc-redline-receiver:not(.bc-ledger-mobile) .rr-live-workspace .rr-chat-mount>.redline-message-card{
+  height:clamp(360px,62dvh,650px)!important;max-height:none!important;
+  min-height:0!important;margin:0!important;
+ }
+ body.bc-redline-receiver:not(.bc-ledger-mobile) .rr-incoming-header{
+  display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin:0 0 10px;
+ }
+ body.bc-redline-receiver:not(.bc-ledger-mobile) .rr-incoming-header h3{
+  font-size:17px;margin:0;color:#fff;
+ }
+ body.bc-redline-receiver:not(.bc-ledger-mobile) .rr-incoming-header small{
+  font-size:10px;color:#aaa;
+ }
+ body.bc-redline-receiver:not(.bc-ledger-mobile) .rr-incoming-photos #ownerReviewQueue{
+  padding:10px!important;
+ }
+}
+/* As the user gives more space to chat, review photos stack naturally
+   instead of forcing their pricing buttons off the side. */
+@container redline-photo-pane (max-width:840px){
+ body.bc-redline-receiver .rr-incoming-photos #ownerReviewQueue .photo-entry,
+ body.bc-redline-receiver.bc-ledger-desktop #ownerReviewQueue .photo-entry,
+ body.bc-redline-receiver.bc-ledger-tablet #ownerReviewQueue .photo-entry{
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+ }
+ body.bc-redline-receiver .rr-incoming-photos #ownerReviewQueue .photo-image-btn{
+  width:100%!important;min-height:330px!important;
+ }
+ body.bc-redline-receiver .rr-incoming-photos #ownerReviewQueue .photo-entry img{
+  display:block!important;max-width:100%!important;width:100%!important;
+  height:clamp(340px,58dvh,720px)!important;
+  min-height:340px!important;max-height:none!important;object-fit:contain!important;
+ }
+ body.bc-redline-receiver .rr-incoming-photos #ownerReviewQueue .photo-entry-content{
+  width:100%!important;min-width:0!important;
+ }
+ body.bc-redline-receiver .rr-incoming-photos #ownerReviewQueue .amount-row{
+  flex-wrap:wrap!important;min-width:0!important;
+ }
+}
+/* Normal phone layout is unchanged; it keeps stacked controls. */
+@media(max-width:719px){
+ body.bc-redline-receiver .rr-split-divider{display:none!important}
+}
