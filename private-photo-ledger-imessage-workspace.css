@@ -1016,3 +1016,19 @@ body.bc-redline-receiver #redlineLightboxReview .rr-receiver-pause-status{
   overflow-y:auto!important;
  }
 }
+
+/* REDLINE final timed price: always visible in the normal receiver sidebar. */
+body.bc-redline-receiver #redlineLightboxReview .rr-photo-price-title{
+ margin:10px 0 0!important;color:#eda4b7!important;
+ font-size:10px!important;font-weight:850!important;letter-spacing:.12em!important;
+}
+body.bc-redline-receiver #redlineLightboxReview .rr-photo-price-amount{
+ display:block!important;max-width:100%!important;
+ font-size:clamp(25px,3vw,36px)!important;line-height:1.15!important;
+ font-weight:850!important;color:#fff!important;letter-spacing:-.035em!important;
+ font-variant-numeric:tabular-nums!important;overflow-wrap:anywhere!important;
+}
+body.bc-redline-receiver #redlineLightboxReview .rr-photo-price-breakdown{
+ font-size:11px!important;color:#dabac5!important;line-height:1.4!important;
+ margin:0 0 8px!important;overflow-wrap:anywhere!important;
+}
