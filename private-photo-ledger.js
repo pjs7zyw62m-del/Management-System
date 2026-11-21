@@ -888,14 +888,22 @@ async function assignAmount(entry,input,submit){
    .eq('id',entry.id).eq('room_id',state.room.id).eq('decision_status','pending')
    .select('id,amount_cents,decision_status').single();
   if(r.error)throw r.error;
-  // Manual pricing always advances the receiver to the next pending photo.
-  // A previously auto-priced timer photo must not remain pinned over the queue.
+  // Server has CONFIRMED the decision. Advance immediately from local state
+  // before any follow-up network request can delay or undo the next image.
+  Object.assign(entry,{amount_cents:amount,decision_status:'accepted',
+   decided_at:new Date().toISOString(),priced_at:new Date().toISOString()});
+  const saved=state.entries.find(e=>e.id===entry.id);
+  if(saved&&saved!==entry)Object.assign(saved,entry);
   state.reviewSidebarPhotoId=null;
-  state.entryFingerprint='';await loadEntries({force:true});
-  show('entriesFeedback','Photo accepted for '+dollars(amount)+'. Both screens will update automatically.');
-  show('reviewQueueFeedback','Accepted for '+dollars(amount)+' · Showing the next pending photo.');
   window.dispatchEvent(new CustomEvent('blackcell:redline:photo-decided',{detail:{photoId:entry.id}}));
-  window.dispatchEvent(new Event('blackcell:redline:next-incoming'));
+  renderReviewQueue();
+  renderEntries();
+  updateTotals();
+  show('reviewQueueFeedback','Accepted for '+dollars(amount)+' · Showing the next pending photo.');
+  state.entryFingerprint='';
+  try{await loadEntries({force:true})}
+  catch(refreshError){show('entriesFeedback',
+   'Photo price saved and next photo displayed. Background refresh unavailable: '+fail(refreshError));}
   return true;
  }catch(e){show('entriesFeedback','Could not assign amount: '+fail(e));return false}
  finally{state.busy=false;submit.disabled=false;submit.textContent='✓ ACCEPT PHOTO'}
@@ -925,12 +933,19 @@ async function rejectPhoto(entry,trigger){
     .eq('id',entry.id).eq('room_id',state.room.id).eq('decision_status','pending')
     .select('id,decision_status').single();
   if(r.error)throw r.error;
+  Object.assign(entry,{decision_status:'rejected',decided_at:new Date().toISOString()});
+  const saved=state.entries.find(e=>e.id===entry.id);
+  if(saved&&saved!==entry)Object.assign(saved,entry);
   state.reviewSidebarPhotoId=null;
-  state.entryFingerprint='';await loadEntries({force:true});
-  show('entriesFeedback','Photo rejected. Both participants will see the decision automatically.');
-  show('reviewQueueFeedback','Photo rejected · Showing the next pending photo.');
   window.dispatchEvent(new CustomEvent('blackcell:redline:photo-decided',{detail:{photoId:entry.id}}));
-  window.dispatchEvent(new Event('blackcell:redline:next-incoming'));
+  renderReviewQueue();
+  renderEntries();
+  updateTotals();
+  show('reviewQueueFeedback','Photo rejected · Showing the next pending photo.');
+  state.entryFingerprint='';
+  try{await loadEntries({force:true})}
+  catch(refreshError){show('entriesFeedback',
+   'Photo rejection saved. Next photo displayed; background refresh unavailable: '+fail(refreshError));}
   return true;
  }catch(e){show('entriesFeedback','Could not reject photo: '+fail(e));return false}
  finally{state.busy=false;trigger.disabled=false}
