@@ -22,10 +22,8 @@
  dashboard.setAttribute('aria-label','BLACKCELL REDLINE receiver command center');
  const header=make('header','rr-command-header');
  const intro=make('div','rr-command-intro');
- const kicker=make('span','rr-kicker','BLACKCELL / SECURE PRIVATE EXCHANGE');
- const title=make('h2','rr-title');title.append(document.createTextNode('REDLINE '),make('span','','CONTROL.'));
- const copy=make('p','rr-subtitle','Private submissions. Clear decisions. Every photograph stays within its verified two-person room.');
- intro.append(kicker,title,copy);
+ const title=make('h2','rr-title');title.append(document.createTextNode('REDLINE '),make('span','','CONTROL'));
+ intro.append(title);
  const status=make('span','rr-status','RECEIVER VERIFIED');status.id='redlineReceiverStatus';
  header.append(intro,status);
  const stats=make('div','rr-stats');
@@ -41,8 +39,6 @@
   card.append(make('span','rr-stat-name',name));
   const value=make('strong','rr-stat-value',fallback);value.dataset.source=source;
   card.append(value);
-  if(key==='owed')card.append(make('small','rr-stat-foot','Previous archived balances remain in the record.'));
-  else if(key==='pending')card.append(make('small','rr-stat-foot','One photo at a time'));
   outputs.set(source,value);stats.append(card);
  }
  const nav=make('nav','rr-nav');nav.setAttribute('aria-label','Receiver quick actions');
@@ -52,15 +48,15 @@
   target.scrollIntoView({behavior:'smooth',block:'start'});
   if(target.matches('section[tabindex]'))target.focus({preventScroll:true});
  };
- const review=button('01  Review Photos',()=>goTo('#ownerReviewQueue'),'rr-nav-button is-primary');
- const history=button('02  Photo History',()=>{
+ const review=button('Review Photos',()=>goTo('#ownerReviewQueue'),'rr-nav-button is-primary');
+ const history=button('Photo History',()=>{
   $('#photoEntries')?.scrollIntoView({behavior:'smooth',block:'start'});
  },'rr-nav-button');
- const message=button('03  Private Chat',()=>{
+ const message=button('Private Chat',()=>{
   goTo('#redlineReceiverChat');
   $('#redlineReceiverChat .redline-message-entry')?.focus({preventScroll:true});
  },'rr-nav-button');
- const manage=button('04  Manage Rooms',()=>goTo('#ownerSetup'),'rr-nav-button');
+ const manage=button('Rooms & Access',()=>goTo('#ownerSetup'),'rr-nav-button');
  const archive=button('Archive',()=>{
   const control=$('#redlineArchiveToggle');
   if(control&&!control.hidden)control.click();
@@ -147,9 +143,19 @@
  const line=make('div','rr-security-line');
  line.append(make('span','rr-security-dot',''),make('strong','','RECEIVER ONLY'),
   make('span','','Owner-verification required for decisions, resets and payment records'));
- dashboard.append(header,stats,nav,chatPanel,access,line);
+ dashboard.append(header,stats,nav,chatPanel);
  app.querySelector('.page-heading')?.after(dashboard);
- // Move configuration below current room without recreating forms or listeners.
+ // Review and chat share the actual room area on desktop. The existing
+ // authenticated form is moved, never cloned, preserving the live thread.
+ const sidebar=$('#activeRoom .room-body .side-column');
+ const desktopChat=window.matchMedia('(min-width:781px)');
+ function placeChat(){
+  if(desktopChat.matches&&sidebar){if(chatPanel.parentNode!==sidebar)sidebar.prepend(chatPanel)}
+  else if(chatPanel.previousElementSibling!==nav)nav.after(chatPanel);
+ }
+ // Security and room controls remain available beneath active conversations.
+ access.append(line);
+ owner.append(access);
  if(owner.parentNode===app)app.append(owner);
  function sync(){
   const visible=!app.hidden&&!owner.hidden;
@@ -157,6 +163,7 @@
   document.body.classList.toggle('bc-redline-receiver',visible);
   if(!visible)return;
   void loadAccess();
+  placeChat();
   const hasRoom=!room.hidden;
   const wasChatHidden=chatPanel.hidden;
   chatPanel.hidden=!hasRoom;
