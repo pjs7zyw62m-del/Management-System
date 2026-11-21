@@ -28,7 +28,17 @@ const mock=String.raw`<script>
     peerName:'Receiver',isOwner:false,roomActive:true,
     archiveMode:false,resetAt:null,pending:1,
     owed:'$0.00',paid:'$0.00',assigned:'$0.00',
-    photoSendingPaused:false,entries:[]
+    photoSendingPaused:false,entries:[],
+    ratingEvents:[{
+      id:photoId,stars:5,rated_at:new Date(first-20000).toISOString(),
+      caption:'A top-rated private photo',amount_cents:25,
+      image_url:'https://example.com/private-photo.jpg'
+    }],
+    topPicks:[{
+      id:photoId,stars:5,rated_at:new Date(first-20000).toISOString(),
+      caption:'A top-rated private photo',amount_cents:25,
+      image_url:'https://example.com/private-photo.jpg'
+    }]
   }),
   loadMessages:async()=>[],
   timerStatus:async()=>({...timer,server_now:new Date().toISOString()})
@@ -58,6 +68,12 @@ const mock=String.raw`<script>
    document.body.dataset.senderTimerStopped=String(Boolean(stopped&&stopped.textContent.includes('TIMER STOPPED')));
    document.body.dataset.senderTimerFinal=String(Boolean(stopped&&stopped.textContent.includes('$0.25')));
    document.body.dataset.senderChatMounted=String(Boolean(document.querySelector('#redlineSimpleSender .redline-message-feed')));
+   const rated=document.querySelector('.redline-message-feed .redline-chat-rated-photo');
+   document.body.dataset.senderStarMessage=String(Boolean(rated&&
+     rated.textContent.includes('TOP PICK')&&rated.textContent.includes('★★★★★')));
+   document.body.dataset.senderPhotoWithStars=String(Boolean(rated&&rated.querySelector('img[src^="https://"]')));
+   document.body.dataset.senderTopPicks=String(Boolean(document.querySelector(
+     '.redline-top-picks-list .redline-top-pick-row')?.textContent.includes('★★★★★')));
   },3300);
  });
  </script>
@@ -92,11 +108,12 @@ try{
   child.once('error',()=>{clearTimeout(timer);resolve(1)});
  });
  assert.equal(exit,0,'Headless Chrome failed: '+errors.slice(-1300));
- for(const flag of ['sender-timer-started','sender-timer-earned','sender-timer-stopped','sender-timer-final','sender-chat-mounted']){
+ for(const flag of ['sender-timer-started','sender-timer-earned','sender-timer-stopped','sender-timer-final','sender-chat-mounted',
+  'sender-star-message','sender-photo-with-stars','sender-top-picks']){
   assert.match(output,new RegExp('data-'+flag+'="true"'),flag+' missing from sender chat browser fixture');
  }
  assert.doesNotMatch(output,/data-timer-js-error="[^"]+"/,'Sender chat JS uncaught exception');
- console.log('REDLINE sender chat: START, earned amount, STOP and final price visible in headless browser.');
+ console.log('REDLINE sender chat: START/STOP, earned amount, five-star photo and top-picks verified in headless browser.');
 }finally{
  await new Promise(resolve=>server.close(resolve));
 }
