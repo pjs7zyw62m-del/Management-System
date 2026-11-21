@@ -338,7 +338,7 @@ test('Step 1: only the uncropped photograph remains in the standalone display',(
  assert.match(layout,/object-fit:contain!important/);
  assert.match(layout,/#redlineReceiverReviewStage>#redlineLightboxReview/);
  assert.match(timer,/sidebar\.append\(ownerPanel\)/);
- assert.match(ledger,/preparePhotoReviewLightbox\(selected&&document\.body\.classList/);
+ assert.match(ledger,/preparePhotoReviewLightbox\(shown\)/);
 });
 
 
