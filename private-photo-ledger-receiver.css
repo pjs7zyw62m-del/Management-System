@@ -891,3 +891,6 @@ body.bc-redline-receiver .rr-room-summary{display:none}
 @media(max-width:719px){
  body.bc-redline-receiver .rr-split-divider{display:none!important}
 }
+
+/* Hidden workspaces must stay hidden even when the resizable grid is enabled. */
+body.bc-redline-receiver .rr-live-workspace[hidden]{display:none!important}
