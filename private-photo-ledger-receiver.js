@@ -56,10 +56,9 @@
  const history=button('02  Photo History',()=>{
   $('#photoEntries')?.scrollIntoView({behavior:'smooth',block:'start'});
  },'rr-nav-button');
- const message=button('03  Message Sender',()=>{
-  const b=$('#redlineOwnerMessageLaunch');
-  if(b&&!b.hidden)b.click();
-  else goTo('#ownerUploadInfo');
+ const message=button('03  Private Chat',()=>{
+  goTo('#redlineReceiverChat');
+  $('#redlineReceiverChat .redline-message-entry')?.focus({preventScroll:true});
  },'rr-nav-button');
  const manage=button('04  Manage Rooms',()=>goTo('#ownerSetup'),'rr-nav-button');
  const archive=button('Archive',()=>{
@@ -68,6 +67,16 @@
   goTo('#redlineSessionTools');
  },'rr-nav-button rr-nav-archive');
  nav.append(review,history,message,manage,archive);
+ // Reuse the authenticated, room-scoped thread from the sender's chat module.
+ const chatPanel=make('section','rr-chat-panel');chatPanel.id='redlineReceiverChat';
+ chatPanel.hidden=true;chatPanel.setAttribute('aria-label','Private chat with sender');
+ const chatHeader=make('div','rr-chat-heading'),chatTitle=make('div');
+ chatTitle.append(make('span','rr-chat-kicker','PRIVATE TWO-WAY CONVERSATION'),
+  make('h3','','Chat with your sender'));
+ const chatRoom=make('span','rr-chat-room','Selected private room');
+ chatHeader.append(chatTitle,chatRoom);
+ const chatMount=make('div','rr-chat-mount');chatMount.id='redlineReceiverChatMount';
+ chatPanel.append(chatHeader,chatMount);
  const access=make('section','rr-access-panel');
  access.id='redlineReceiverAccessPanel';
  access.append(make('span','rr-kicker','OWNER SECURITY · EMPLOYEE RESTRICTIONS'),make('h3','','REDLINE ONLY ACCESS'));
@@ -138,7 +147,7 @@
  const line=make('div','rr-security-line');
  line.append(make('span','rr-security-dot',''),make('strong','','RECEIVER ONLY'),
   make('span','','Owner-verification required for decisions, resets and payment records'));
- dashboard.append(header,stats,nav,access,line);
+ dashboard.append(header,stats,nav,chatPanel,access,line);
  app.querySelector('.page-heading')?.after(dashboard);
  // Move configuration below current room without recreating forms or listeners.
  if(owner.parentNode===app)app.append(owner);
@@ -149,6 +158,8 @@
   if(!visible)return;
   void loadAccess();
   const hasRoom=!room.hidden;
+  chatPanel.hidden=!hasRoom;
+  chatRoom.textContent=hasRoom?($('#activeRoomTitle')?.textContent?.trim()||'Current private room'):'Select a private room';
   status.textContent=hasRoom?'RECEIVER VERIFIED · PRIVATE ROOM':'RECEIVER VERIFIED · NO ROOM';
   status.classList.toggle('is-waiting',!hasRoom);
   for(const [source,output] of outputs){
@@ -167,7 +178,7 @@
  for(const item of [app,owner,room]){
   observe.observe(item,{attributes:true,attributeFilter:['hidden']});
  }
- for(const id of ['totalOwed','totalPaid','totalAssigned','pendingCount','reviewQueueCount']){
+ for(const id of ['totalOwed','totalPaid','totalAssigned','pendingCount','reviewQueueCount','activeRoomTitle']){
   const element=document.getElementById(id);
   if(element)observe.observe(element,{childList:true,characterData:true,subtree:true});
  }
@@ -175,5 +186,6 @@
  window.addEventListener('blackcell:redline:session-mode',sync);
  window.addEventListener('pageshow',sync);
  window.addEventListener('resize',sync,{passive:true});
+ window.dispatchEvent(new Event('blackcell:redline:receiver-ready'));
  sync();
 })();
