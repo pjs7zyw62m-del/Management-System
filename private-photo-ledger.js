@@ -496,6 +496,8 @@ function renderEntry(e){
   $('lightboxImage').alt=e.caption||'Private uploaded photograph';
   preparePhotoReviewLightbox(e);
   $('photoLightbox').hidden=false;document.body.style.overflow='hidden';
+  // Use the same verified timer controls beside the enlarged photograph.
+  window.dispatchEvent(new CustomEvent('blackcell:redline:lightbox-open',{detail:{photoId:e.id}}));
  },'photo-image-btn');
  imageButton.setAttribute('aria-label',state.isOwner&&status==='pending'?'Enlarge this photo and choose an approval price':'View original private photo');
  const img=node('img');
@@ -567,13 +569,21 @@ function preparePhotoReviewLightbox(entry){
  if(!panel)return;
  panel.replaceChildren();
  const review=state.isOwner&&entry.decision_status==='pending'&&!state.showArchive;
- panel.hidden=!review;
+ // The sidebar is visible to the verified receiver for both pending and
+ // accepted photographs. Only pending images can receive a final price.
+ const receiverActions=state.isOwner&&!state.showArchive;
+ panel.hidden=!receiverActions;
  $('photoLightbox').classList.toggle('is-review',review);
- if(!review)return;
+ if(!receiverActions)return;
+ if(!review){
+  panel.append(node('span','redline-review-kicker','VERIFIED RECEIVER'));
+  panel.append(node('h3','','PHOTO CONTROLS'));
+  return;
+ }
  panel.append(node('span','redline-review-kicker','VERIFIED OWNER · PRIVATE REVIEW'));
- panel.append(node('h3','','Inspect & Price'));
+ panel.append(node('h3','','PLACE YOUR BID'));
  panel.append(node('p','redline-review-help','Examine the full photograph before making your final decision.'));
- const label=node('label','redline-review-label','ACCEPTANCE AMOUNT · USD');
+ const label=node('label','redline-review-label','YOUR BID · USD');
  const input=node('input','redline-review-amount');
  input.type='text';input.inputMode='decimal';input.placeholder='0.00';input.maxLength=23;
  input.setAttribute('aria-label','Acceptance amount in US dollars');
@@ -849,6 +859,9 @@ async function copyLink(){
 }
 function closeLightbox(){
  $('photoLightbox').hidden=true;
+ // Return the live timer controls to their original home before clearing
+ // the photo's sidebar; any running timer remains under the same room RPC.
+ window.dispatchEvent(new Event('blackcell:redline:lightbox-close'));
  $('photoLightbox').classList.remove('is-review');
  $('lightboxImage').removeAttribute('src');
  $('redlineLightboxReview')?.replaceChildren();
