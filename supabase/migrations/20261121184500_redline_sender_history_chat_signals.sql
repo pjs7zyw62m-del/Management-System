@@ -1,6 +1,6 @@
--- REDLINE: any APPROVED sender original can be resent, not only rated five-star
--- originals. Pending originals and rejected photos remain locked; a rejected
--- resubmission closes that original's resend loop. Old records remain intact.
+-- REDLINE: resends require BOTH an approved original priced $0.01 or above
+-- AND a genuine 5-star receiver rating. Other photos remain visible in history.
+-- Pending, rejected or archived photos are never eligible to resend.
 CREATE OR REPLACE FUNCTION corp_private.redline_validate_five_star_resubmission()
  RETURNS trigger
  LANGUAGE plpgsql
@@ -9,6 +9,7 @@ AS $function$
 DECLARE
  v_source public.corp_private_photo_entries%ROWTYPE;
  v_room public.corp_private_photo_rooms%ROWTYPE;
+ v_rating smallint;
 BEGIN
  IF NEW.resubmission_origin_id IS NULL THEN RETURN NEW; END IF;
  IF NEW.resubmission_origin_id=NEW.id THEN
@@ -18,8 +19,9 @@ BEGIN
  WHERE id=NEW.resubmission_origin_id AND room_id=NEW.room_id;
  IF NOT FOUND OR v_source.resubmission_origin_id IS NOT NULL
     OR v_source.uploaded_by IS DISTINCT FROM (SELECT auth.uid())
-    OR v_source.decision_status <> 'accepted' THEN
-  RAISE EXCEPTION 'Only your approved original photograph can be resubmitted'
+    OR v_source.decision_status <> 'accepted'
+    OR coalesce(v_source.amount_cents,0)<1 THEN
+  RAISE EXCEPTION 'Resend requires an original photo approved for at least $0.01'
     USING ERRCODE='23514';
  END IF;
  SELECT * INTO v_room FROM public.corp_private_photo_rooms
@@ -29,6 +31,11 @@ BEGIN
    AND v_source.created_at < v_room.current_session_started_at) THEN
   RAISE EXCEPTION 'Resubmissions are unavailable in this room or session'
     USING ERRCODE='23514';
+ END IF;
+ SELECT stars INTO v_rating FROM public.corp_redline_photo_ratings
+ WHERE photo_id=v_source.id;
+ IF v_rating IS DISTINCT FROM 5 THEN
+  RAISE EXCEPTION 'Resend requires an approved photo rated exactly 5 stars' USING ERRCODE='23514';
  END IF;
  -- Serialize simultaneous duplicate submissions of this same source photo.
  PERFORM pg_advisory_xact_lock(hashtextextended(v_source.id::text,0));
