@@ -52,6 +52,11 @@ jobs:
           document.getElementById('pendingCount').textContent='4';
           document.getElementById('totalOwed').textContent='$85.00';
           document.getElementById('activeRoomTitle').textContent='Private Arrangement';
+          window.BLACKCELL_REDLINE_API={snapshot:()=>({
+            photoHistory:[{id:'11111111-1111-4111-8111-111111111111',stars:5,
+             amount_cents:100,caption:'Previously submitted top pick',decision_status:'accepted',
+             resubmissionAllowed:true}]
+          })};
           setTimeout(()=>{
             const body=document.body;
             const ownerButton=document.getElementById('redlineSetupPreviewButton');
@@ -72,6 +77,11 @@ jobs:
             const earnings=dialog.querySelector('[data-tab=earnings]');
             earnings.click();
             body.dataset.qaEarnings=earnings.classList.contains('is-active')?'yes':'no';
+            const historyTab=dialog.querySelector('[data-tab=history]');
+            historyTab?.click();
+            body.dataset.qaHistory=historyTab?.classList.contains('is-active')?'yes':'no';
+            body.dataset.qaHistoryRows=String(!!dialog.querySelector('.bc-redline-preview-history-row'));
+            body.dataset.qaResendReadOnly=String(!!dialog.querySelector('.bc-redline-preview-resend:disabled'));
             const tablet=dialog.querySelector('.bc-redline-preview-devices button:last-child');
             tablet.click();
             body.dataset.qaTablet=dialog.querySelector('.bc-redline-preview-phone').dataset.device;
@@ -99,6 +109,9 @@ jobs:
             grep -q 'data-qa-opened="yes"' "$f"
             grep -q 'data-qa-no-submit="yes"' "$f"
             grep -q 'data-qa-earnings="yes"' "$f"
+            grep -q 'data-qa-history="yes"' "$f"
+            grep -q 'data-qa-history-rows="true"' "$f"
+            grep -q 'data-qa-resend-read-only="true"' "$f"
             grep -q 'data-qa-tablet="tablet"' "$f"
             grep -q 'data-qa-phone="phone"' "$f"
             grep -q 'data-qa-amount="yes"' "$f"
