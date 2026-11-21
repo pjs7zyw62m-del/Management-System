@@ -1,0 +1,98 @@
+name: BLACKCELL Mac Workspaces
+on:
+  pull_request:
+    paths:
+      - 'blackcell-os.js'
+      - 'blackcell-os.html'
+      - 'blackcell-os-macos-desktop.js'
+      - 'blackcell-os-macos-workspaces.js'
+      - 'blackcell-os-macos-workspaces.css'
+      - 'blackcell-files.js'
+      - 'blackcell-os-settings.js'
+      - 'tests/blackcell-os-macos-workspaces.test.mjs'
+      - '.github/workflows/blackcell-os-mac-workspaces.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'blackcell-os-macos-workspaces.js'
+      - 'blackcell-os-macos-workspaces.css'
+  workflow_dispatch:
+jobs:
+  mac-workspaces:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate all Mac workspace scripts
+        run: |
+          node --check blackcell-os.js
+          node --check blackcell-os-macos-desktop.js
+          node --check blackcell-os-macos-workspaces.js
+          node --check blackcell-files.js
+          node --check blackcell-os-settings.js
+          node --test tests/blackcell-os-macos-workspaces.test.mjs
+      - name: Browser smoke test Launchpad and Mission Control
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v google-chrome >/dev/null 2>&1 && CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && CHROME=chromium || CHROME=; }
+          [ -n "$CHROME" ] || { echo "Chromium unavailable"; exit 1; }
+          python3 - <<'PY'
+          from pathlib import Path
+          html=Path('blackcell-os.html').read_text()
+          html=html.replace('data-preview="false"','data-preview="true"',1)
+          probe=r"""<script>
+          setTimeout(()=>{
+            const body=document.body;
+            const bridge=window.BLACKCELL_MAC_BRIDGE;
+            body.dataset.macBridge=String(Boolean(bridge));
+            if(!bridge||!bridge.ready())return;
+            window.dispatchEvent(new Event('blackcell:launchpad-open'));
+            setTimeout(()=>{
+              body.dataset.macLaunchpad=String(Boolean(document.querySelector('.bc-mac-launchpad .bc-mac-app')));
+              document.querySelector('.bc-mac-launchpad .bc-mac-close')?.click();
+              const id=bridge.addSpace();
+              body.dataset.macSpace=String(Boolean(id&&bridge.switchSpace(id)&&bridge.spaces().active===id));
+              window.dispatchEvent(new Event('blackcell:mission-open'));
+              setTimeout(()=>{
+                body.dataset.macMission=String(Boolean(document.querySelector('.bc-mac-mission .bc-mac-space')));
+                body.dataset.macDock=String(Boolean(document.querySelector('#desktop .dock')));
+                document.querySelector('.bc-mac-mission .bc-mac-close')?.click();
+              },160);
+            },160);
+          },6500);
+          </script>"""
+          html=html.replace('</body></html>',probe+'</body></html>')
+          Path('blackcell-os-mac-probe.html').write_text(html)
+          PY
+          python3 -m http.server 8872 >/tmp/blackcell-mac-http.log 2>&1 &
+          HTTP_PID=$!
+          trap 'kill "$HTTP_PID" 2>/dev/null || true; rm -f blackcell-os-mac-probe.html' EXIT
+          sleep 2
+          mkdir -p /tmp/blackcell-mac-shots
+          for device in desktop ipad; do
+            if [ "$device" = desktop ]; then w=1440; h=900; else w=820; h=1100; fi
+            "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=10800 \
+              --window-size="$w,$h" --dump-dom "http://127.0.0.1:8872/blackcell-os-mac-probe.html" \
+              >"/tmp/bc-mac-$device.html" 2>"/tmp/bc-mac-errors-$device.log"
+            for key in mac-bridge mac-launchpad mac-space mac-mission mac-dock; do
+              grep -q "data-$key=\"true\"" "/tmp/bc-mac-$device.html" || {
+                echo "$device missing $key"; tail -n 40 "/tmp/bc-mac-errors-$device.log"; exit 1;
+              }
+            done
+            "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=10000 \
+              --window-size="$w,$h" --screenshot="/tmp/blackcell-mac-shots/$device.png" \
+              "http://127.0.0.1:8872/blackcell-os-mac-probe.html" >/dev/null 2>&1
+          done
+      - name: Archive Mac desktop previews
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blackcell-mac-workspaces-browser
+          path: /tmp/blackcell-mac-shots/*.png
+          if-no-files-found: ignore
+          retention-days: 7
