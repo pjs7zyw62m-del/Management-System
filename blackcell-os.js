@@ -1305,6 +1305,20 @@ async function refreshCloudHome(){
   const saved=data.value;
   if(!saved.unifiedHome)return false;
   const incoming=normalizeUnifiedHome(saved.unifiedHome);
+  if(incoming.changedAt<unifiedHome.changedAt){
+   // Local edits made during an outage are retried when the connection returns.
+   // Only push the full account layout when this device has the newer change.
+   const localValue=cloudDesktopCache.get(layoutKey())||localStorage.getItem(layoutKey());
+   if(localValue){
+    const parsed=JSON.parse(localValue);
+    if(Number(parsed?.unifiedHome?.changedAt)===unifiedHome.changedAt){
+     const ok=await cloudWorkspaceSave('layout',localValue);
+     window.dispatchEvent(new CustomEvent('blackcell:home-sync-status',{detail:{ok:!!ok}}));
+     return !!ok;
+    }
+   }
+   return false;
+  }
   if(incoming.changedAt<=starting||incoming.changedAt<=unifiedHome.changedAt)return false;
   const merged=JSON.stringify(saved);
   cloudDesktopCache.set(layoutKey(),merged);
