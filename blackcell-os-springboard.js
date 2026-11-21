@@ -174,8 +174,9 @@ function start(){
     const a=synced.findIndex(p=>p.id===from),b=synced.findIndex(p=>p.id===to);
     if(a>=0&&b>=0&&a!==b){
      const data=unified()?.read?.();if(!data)return;
+     const slots=data.pins.map(p=>({x:p.x,y:p.y}));
      const [moved]=data.pins.splice(a,1);data.pins.splice(b,0,moved);
-     data.pins.forEach((p,i)=>{p.x=Math.min(1,(i%4)*.24+.06);p.y=Math.min(1,Math.floor(i/4)*.16+.1)});
+     data.pins.forEach((p,i)=>{p.x=slots[i].x;p.y=slots[i].y});
      unified()?.save?.(data);render();return;
     }
    }
