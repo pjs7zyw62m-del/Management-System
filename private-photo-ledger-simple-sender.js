@@ -36,7 +36,6 @@ for(const [key,label] of [['upload','Photos & Chat'],['earnings','Earnings']]){
 }
 const uploadTitle=make('div','redline-upload-intro');
 uploadTitle.append(make('span','redline-kicker','PRIVATE MEDIA'),make('h2','','Send a photo'));
-uploadTitle.append(make('p','','Post a private photo and continue your two-way private conversation below.'));
 uploadPane.append(uploadTitle);
 const uploadMount=make('div','redline-upload-mount');uploadPane.append(uploadMount);
 const earningsBox=make('section','redline-earnings-box');
