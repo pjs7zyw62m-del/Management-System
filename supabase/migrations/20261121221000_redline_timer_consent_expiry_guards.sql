@@ -43,7 +43,7 @@ BEGIN
   responded_at=clock_timestamp()
  WHERE room_id=p_room_id AND status='accepted'
    AND (responded_at IS NULL OR responded_at<clock_timestamp()-interval '2 minutes');
-END;$;
+END;$$;
 
 REVOKE ALL ON FUNCTION corp_private.redline_resolve_timer_request(uuid)
  FROM public,anon,authenticated;
