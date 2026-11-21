@@ -953,3 +953,39 @@ body.bc-redline-receiver #redlineLightboxReview .rr-receiver-pause-status{
  font-size:10px!important;color:#cfc0c6!important;margin:0!important;
  line-height:1.4!important;
 }
+
+/* REDLINE photo rejection requires explicit in-app confirmation. */
+#redlineRejectPhotoConfirm:not([open]){display:none!important}
+#redlineRejectPhotoConfirm[open]{
+ position:fixed;inset:0;margin:auto;
+ width:min(450px,92vw);max-width:92vw;max-height:min(90dvh,640px);
+ border:1px solid #8a2a45;border-radius:18px;
+ padding:0;background:#100a0d;color:#fff;
+ box-shadow:0 20px 80px #000d;overflow-y:auto;
+}
+#redlineRejectPhotoConfirm::backdrop{background:#000c;backdrop-filter:blur(5px)}
+#redlineRejectPhotoConfirm .redline-reject-confirm-body{
+ display:flex;flex-direction:column;gap:14px;padding:28px 24px;
+}
+#redlineRejectPhotoConfirm .redline-reject-eyebrow{
+ font-size:10px;letter-spacing:.11em;color:#f26c83;font-weight:800;
+}
+#redlineRejectPhotoConfirm h2{font-size:21px;color:#fff;line-height:1.25;margin:0}
+#redlineRejectPhotoConfirm p{color:#cdbec4;font-size:13px;line-height:1.5;margin:0}
+#redlineRejectPhotoConfirm #redlineRejectPhotoRef{
+ font-size:11px;letter-spacing:.07em;font-weight:800;color:#fa92a5;
+}
+#redlineRejectPhotoConfirm .redline-reject-confirm-actions{
+ display:flex;flex-wrap:wrap;gap:9px;margin-top:3px;
+}
+#redlineRejectPhotoConfirm .redline-reject-confirm-actions button{
+ flex:1 1 150px;min-height:47px;border-radius:10px;
+ padding:10px 12px;color:#fff;font-size:12px;font-weight:800;
+ cursor:pointer;
+}
+#redlineRejectPhotoConfirm .redline-reject-cancel{
+ border:1px solid #686066;background:#282227;
+}
+#redlineRejectPhotoConfirm .redline-reject-approve{
+ border:1px solid #fd5a77;background:#b50029;
+}
