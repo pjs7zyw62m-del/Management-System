@@ -282,7 +282,7 @@ function render(){
    :'Final elapsed-second amount · Timer stopped.';
  }
 
- const elapsedSec=running?Math.max(0,Math.floor((Date.now()+clockOffset-new Date(latest.active.started_at).getTime())/1000)):0;
+ const elapsedSec=running?tickSeconds():0;
  const m=Math.floor(elapsedSec/60),secs=elapsedSec%60;
  elapsed.textContent=running?String(m).padStart(2,'0')+':'+String(secs).padStart(2,'0'):'00:00';
  const activeSeconds=tickSeconds();
