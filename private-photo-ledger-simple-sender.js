@@ -137,8 +137,10 @@ photoAction.addEventListener('click',()=>{if(!home.hidden)switchTab('upload')});
 const entry=make('textarea','redline-message-entry');entry.maxLength=2000;entry.rows=1;entry.placeholder='Message REDLINE…';entry.setAttribute('aria-label','Private room message');
 const send=make('button','redline-chat-send','SEND');send.type='submit';
 composer.append(photoAction,entry,send);
+const typingNotice=make('div','redline-peer-typing','');typingNotice.hidden=true;
+typingNotice.setAttribute('role','status');typingNotice.setAttribute('aria-live','polite');
 const msgError=make('p','redline-message-error');msgError.setAttribute('role','status');
-messageCard.append(msgHeader,feed,composer,msgError);
+messageCard.append(msgHeader,feed,typingNotice,composer,msgError);
 uploadPane.append(messageCard);
 panes.append(uploadPane,earningsPane,historyPane,fiveStarPane);
 home.append(heading,tabs,panes);
@@ -181,6 +183,8 @@ let currentTab='upload',lastRoom=null,lastSessionKey=null,messages=[],loading=fa
 let lastSync=0,lastOwnerSession=null;
 let timerStatus=null,timerRoomId=null,timerFingerprint='',timerOffset=0;
 let timerPollInFlight=false,timerLastPoll=0,timerLoadError='';
+let peerReadAt=null,peerTyping=false,markedReadId=null;
+let typingRoom=null,lastTypingAt=0,chatStatusInFlight=false,lastChatStatusAt=0;
 function bridge(){return window.BLACKCELL_REDLINE_API}
 const snapshot=()=>bridge()?.snapshot?.()||null;
 function isSender(){
@@ -461,9 +465,64 @@ function makeTimerCard(e){
  card.append(status,label,details,foot);
  return card;
 }
+function chatVisible(snap=snapshot()){
+ if(!snap||snap.archiveMode||app.hidden||room.hidden||document.hidden)return false;
+ return snap.isOwner
+  ?Boolean(ownerDialog.open||(receiverChatPanel()&&!receiverChatPanel().hidden))
+  :currentTab==='upload'&&!home.hidden;
+}
+function updateTypingIndicator(){
+ const snap=snapshot();
+ typingNotice.hidden=!peerTyping||!chatVisible(snap);
+ typingNotice.textContent=typingNotice.hidden?'':(snap?.peerName||'Other participant')+' is typing…';
+}
+async function pollChatStatus(force=false){
+ const snap=snapshot();
+ if(!chatVisible(snap)||!bridge()?.chatStatus){peerTyping=false;updateTypingIndicator();return}
+ if(chatStatusInFlight||(!force&&Date.now()-lastChatStatusAt<2500))return;
+ const roomId=snap.roomId;chatStatusInFlight=true;lastChatStatusAt=Date.now();
+ try{
+  const status=await bridge().chatStatus(roomId);
+  if(snapshot()?.roomId!==roomId||!chatVisible(snapshot()))return;
+  const readChanged=peerReadAt!==status.peerReadAt;
+  peerReadAt=status.peerReadAt;peerTyping=status.peerTyping===true;
+  updateTypingIndicator();
+  if(readChanged)renderChat();
+ }catch(_){peerTyping=false;updateTypingIndicator()}
+ finally{chatStatusInFlight=false}
+}
+function reportRead(){
+ const snap=snapshot();
+ if(!chatVisible(snap)||!bridge()?.chatSignal)return;
+ const latest=[...messages].reverse().find(m=>m.sender_id!==snap.userId);
+ if(!latest||markedReadId===latest.id)return;
+ markedReadId=latest.id;
+ void bridge().chatSignal(snap.roomId,'read',latest.id).catch(()=>{
+  if(markedReadId===latest.id)markedReadId=null;
+ });
+}
+function stopTyping(){
+ const roomId=typingRoom;typingRoom=null;
+ if(roomId&&bridge()?.chatSignal)void bridge().chatSignal(roomId,'stopped').catch(()=>{});
+}
+function resetChatSignals(){
+ if(typingRoom)stopTyping();
+ peerReadAt=null;peerTyping=false;markedReadId=null;lastChatStatusAt=0;
+ updateTypingIndicator();
+}
+entry.addEventListener('input',()=>{
+ const snap=snapshot();
+ if(!entry.value.trim()){stopTyping();return}
+ if(!chatVisible(snap)||!snap.roomActive||!bridge()?.chatSignal)return;
+ if(typingRoom===snap.roomId&&Date.now()-lastTypingAt<2500)return;
+ typingRoom=snap.roomId;lastTypingAt=Date.now();
+ void bridge().chatSignal(snap.roomId,'typing').catch(()=>{});
+});
+entry.addEventListener('blur',stopTyping);
 function renderChat(){
  const snap=snapshot();feed.replaceChildren();
  const events=createEvents(snap?.entries).slice(0,80);
+ const latestOwn=[...messages].reverse().find(m=>m.sender_id===snap?.userId)?.id;
  const pinned=timerRoomId===snap?.roomId&&!snap?.archiveMode&&timerStatus?.active?.started_at
   ?{kind:'timer',phase:'active',at:timerStatus.active.started_at,timer:timerStatus.active}:null;
  if(pinned){
@@ -514,6 +573,12 @@ function renderChat(){
   const own=e.sender===snap?.userId;
   const bubble=make('article','redline-chat-bubble '+(own?'is-mine':'is-theirs'));
   bubble.append(make('p','',e.body),make('time','',dateText(e.at)));
+  if(own&&e.id===latestOwn){
+   const read=Number.isFinite(Date.parse(peerReadAt||''))&&Date.parse(peerReadAt)>=Date.parse(e.at);
+   const receipt=make('small','redline-chat-read-receipt',read?'✓✓ Read':'✓ Sent');
+   receipt.setAttribute('aria-label',read?'Read by recipient':'Message sent');
+   bubble.append(receipt);
+  }
   feed.append(bubble);
  }
  feed.scrollTop=feed.scrollHeight;
@@ -529,6 +594,8 @@ async function loadMessages(){
   messages=items;lastSync=Date.now();
   msgError.textContent='';
   renderChat();
+  reportRead();
+  void pollChatStatus();
  }catch(err){
   msgError.textContent='Messages could not be loaded. '+String(err?.message||'Try again.').slice(0,180);
  }finally{loading=false}
@@ -543,7 +610,7 @@ composer.addEventListener('submit',async e=>{
  posting=true;send.disabled=true;msgError.textContent='Sending securely to the private room…';
  try{
   await bridge().sendMessage(text);
-  entry.value='';msgError.textContent='';
+  entry.value='';msgError.textContent='';stopTyping();
   await loadMessages();
  }catch(err){
   msgError.textContent='Message not sent: '+String(err?.message||'Please try again.').slice(0,200);
