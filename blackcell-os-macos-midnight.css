@@ -88,6 +88,12 @@ html.bc-os-phone #desktop.bc-springboard-ready[data-bc-wallpaper="custom"] .bc-s
   flex-direction:column!important;gap:15px!important;
   z-index:10!important;pointer-events:none;
  }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-exec-stage::before,
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-exec-stage::after{
+  content:none!important;display:none!important;background:none!important;box-shadow:none!important;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-exec-stage .bc-exec-search{order:0!important}
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-exec-stage .bc-macos-actions{order:1!important}
  html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-exec-stage .bc-exec-brand,
  html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-exec-stage .bc-concept-quick{
   display:none!important;
