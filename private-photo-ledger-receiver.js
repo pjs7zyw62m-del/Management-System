@@ -158,7 +158,9 @@
   if(!visible)return;
   void loadAccess();
   const hasRoom=!room.hidden;
+  const wasChatHidden=chatPanel.hidden;
   chatPanel.hidden=!hasRoom;
+  if(hasRoom&&wasChatHidden)window.dispatchEvent(new Event('blackcell:redline:receiver-ready'));
   chatRoom.textContent=hasRoom?($('#activeRoomTitle')?.textContent?.trim()||'Current private room'):'Select a private room';
   status.textContent=hasRoom?'RECEIVER VERIFIED · PRIVATE ROOM':'RECEIVER VERIFIED · NO ROOM';
   status.classList.toggle('is-waiting',!hasRoom);
@@ -186,6 +188,5 @@
  window.addEventListener('blackcell:redline:session-mode',sync);
  window.addEventListener('pageshow',sync);
  window.addEventListener('resize',sync,{passive:true});
- window.dispatchEvent(new Event('blackcell:redline:receiver-ready'));
  sync();
 })();
