@@ -1250,19 +1250,21 @@ function saveAppLayout(){
 
 window.BLACKCELL_OS_UNIFIED_LAYOUT=Object.freeze({
  account:()=>storeProfile,
- ready:()=>contextAllowed()&&!!storeProfile,
+ ready:()=>((preview&&!$('desktop').hidden)||contextAllowed())&&!!storeProfile,
  available:()=>[...document.querySelectorAll('#desktop .workspace .apps .app[data-app]')]
   .filter(t=>!t.hidden&&!t.disabled&&installedApp(t.dataset.app)&&!recycledApps.has(t.dataset.app))
   .map(t=>({id:t.dataset.app,title:t.dataset.title||t.dataset.app})),
  read:()=>({version:1,pins:unifiedHome.pins.map(p=>({...p})),widgets:unifiedHome.widgets.map(w=>({...w})),changedAt:unifiedHome.changedAt}),
  save:value=>{
-  if(!contextAllowed()||!storeProfile)return {ok:false,message:'Sign in and unlock your workspace to edit the desktop.'};
+  if((!preview&&!contextAllowed())||!storeProfile)return {ok:false,message:'Sign in and unlock your workspace to edit the desktop.'};
   const next=normalizeUnifiedHome(value);
   next.pins=next.pins.filter(p=>installedApp(p.id)&&!recycledApps.has(p.id));
   next.changedAt=Math.max(Date.now(),unifiedHome.changedAt+1);
   unifiedHome=next;
+  if(preview){window.dispatchEvent(new Event('blackcell:desktop-layout-updated'));return {ok:true,message:'Preview desktop updated. Sign in to synchronize.'}}
+  const hasCloud=workspaceCloudReady;
   const ok=saveAppLayout();
-  return {ok,message:ok?'Desktop changes saved. Your other devices will receive the same apps and widgets.':'Desktop changed locally; account synchronization is unavailable.'};
+  return {ok,message:!ok?'Desktop changed locally; saving is unavailable.':hasCloud?'Desktop changes saved. Your other devices will receive the same apps and widgets.':'Saved on this device. Cloud synchronization will resume when connected.'};
  },
  launch:id=>{
   if(typeof id!=='string'||!validAppId(id)||!installedApp(id)||recycledApps.has(id))return false;
