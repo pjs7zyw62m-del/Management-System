@@ -83,6 +83,12 @@
 #desktop.bc-os-fullscreen-active .topbar{transform:translateY(-110%)!important;opacity:0!important;pointer-events:none!important;transition:transform .22s ease,opacity .22s ease!important;position:absolute!important;z-index:2147481800;top:0;left:0;right:0}
 #desktop.bc-os-fullscreen-active.bc-os-menu-edge-open .topbar{transform:translateY(0)!important;opacity:1!important;pointer-events:auto!important}
 #desktop.bc-os-fullscreen-active>.dockwrap{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+#desktop.bc-os-fullscreen-active.bc-os-dock-edge-open>.dockwrap{
+ opacity:1!important;visibility:visible!important;pointer-events:auto!important;
+ z-index:2147481799!important;transform:translate3d(0,0,0)!important;
+}
+#desktop.bc-os-fullscreen-active.bc-os-dock-edge-open>.dockwrap .dock{pointer-events:auto!important}
+
 #desktop.bc-os-fullscreen-active>.os-dock-edge{display:none!important}
 #desktop .os-window.bc-os-fullscreen{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;border-radius:0!important;max-width:none!important;max-height:none!important;z-index:800!important}
 #desktop .os-window.bc-os-fullscreen .os-window-head{border-radius:0!important}
