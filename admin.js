@@ -271,6 +271,61 @@ function showEmployeeProfile(member,sample=false){
     level.value=String(member.clearance_level);cardPanel.replaceChildren(el('h3','','Digital access pass'),employeeCardView(member));save.disabled=level.disabled=enabled.disabled=chat.disabled=false;panel.removeAttribute('aria-busy');
    });
    panel.append(fields,save,feedback);content.append(panel);
+
+   const security=block('Security access · BLACKCELL REDLINE');
+   security.classList.add('um3-profile-panel','bc-redline-security-section');
+   security.append(p('Special Level R restricts this employee to BLACKCELL REDLINE only. All other BLACKCELL apps, Network, messaging, Dock and OS access are blocked. Existing photos and the employee’s numeric clearance remain unchanged.'));
+   const accessRow=el('label','um3-field','Application access level');
+   const access=el('select','bc-redline-security-select');
+   access.setAttribute('aria-label','Security access level for '+(member.display_name||'employee'));
+   access.add(new Option('Full corporate access (current clearance)','full'));
+   access.add(new Option('Level R · REDLINE ONLY','ledger_only'));
+   access.value=member.access_scope==='ledger_only'?'ledger_only':'full';
+   accessRow.append(access);
+   const stateText=el('p','bc-redline-security-state',memberSecurityAccess(member));
+   const changeStatus=el('p','muted','');
+   changeStatus.setAttribute('role','status');
+   changeStatus.setAttribute('aria-live','polite');
+   const saveAccess=action('Save security access',async()=>{
+    if(saveAccess.disabled)return;
+    const api=window.BLACKCELL_CORPORATE_ADMIN_API?.client;
+    if(!api){changeStatus.textContent='Verified Level 7 owner session required.';return}
+    const restrict=access.value==='ledger_only';
+    if(restrict===(member.access_scope==='ledger_only')){changeStatus.textContent='Security level already saved.';return}
+    const explanation=restrict
+     ?'Assign LEVEL R · REDLINE ONLY to '+(member.display_name||'this employee')+'?\n\nThis blocks every other BLACKCELL application. The private REDLINE photo exchange remains available.'
+     :'Restore full corporate access for '+(member.display_name||'this employee')+'?\n\nThis restores only the permissions allowed by their existing clearance.';
+    if(!window.confirm(explanation)){access.value=member.access_scope==='ledger_only'?'ledger_only':'full';return}
+    saveAccess.disabled=access.disabled=true;security.setAttribute('aria-busy','true');
+    changeStatus.textContent='Verifying Level 7 authorization and saving…';
+    try{
+     const {data:current,error:readError}=await api.rpc('corp_admin_members');
+     const found=current?.members?.find(m=>m.user_id===member.user_id);
+     if(readError||current?.ok!==true||!found||found.role!=='employee')throw Error('Unable to verify employee permissions.');
+     if((found.access_scope==='ledger_only')!==(member.access_scope==='ledger_only'))
+      throw Error('Permissions changed in another session. Reopen the employee profile.');
+     const {data,error}=await api.rpc('corp_owner_redline_access',{
+      p_member_id:member.user_id,p_redline_only:restrict
+     });
+     if(error||data?.ok!==true||data.access_scope!==(restrict?'ledger_only':'full'))
+      throw Error('The security server did not confirm the change.');
+     member={...member,access_scope:data.access_scope};
+     stateText.textContent=memberSecurityAccess(member);
+     cardPanel.replaceChildren(el('h3','','Digital access pass'),employeeCardView(member));
+     changeStatus.textContent=restrict
+      ?'Level R active. BLACKCELL REDLINE is the only accessible application.'
+      :'Full access restored within the employee’s existing clearance.';
+    }catch(e){
+     access.value=member.access_scope==='ledger_only'?'ledger_only':'full';
+     changeStatus.textContent=String(e?.message||'Security access could not be changed.');
+    }finally{
+     saveAccess.disabled=access.disabled=false;
+     security.removeAttribute('aria-busy');
+    }
+   },false,true);
+   security.append(accessRow,stateText,saveAccess,changeStatus);
+   content.append(security);
+
    const danger=block('Account removal');danger.classList.add('um3-danger');danger.append(p('Permanently delete this employee only after confirming their email.'),action('Delete employee profile',()=>confirmEmployeeDelete(member,'profiles')));danger.querySelector('button').classList.add('delete-employee-button');content.append(danger)
   }
 }
