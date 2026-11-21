@@ -244,11 +244,9 @@
  workspace.addEventListener('click',event=>{
   const image=event.target?.closest?.('.rr-timer-selected-preview > img');
   if(!image||!document.body.classList.contains('rr-imessage-mode'))return;
-  const source=document.querySelector('#redlineReceiverPricedStage .photo-entry .photo-image-btn');
-  // The timer already renders the selected preview. Open the matching source
-  // through the existing verified lightbox when its signed URL matches.
+  // Open only the exact selected image through the existing verified lightbox.
   const matched=[...document.querySelectorAll('#redlineReceiverPricedStage .photo-entry .photo-image-btn')].find(b=>b.querySelector('img')?.src===image.src);
-  (matched||source&&source.querySelector('img')?.src===image.src?source:null)?.click();
+  matched?.click();
  });
  const MEDIA_KEY='blackcell:redline:receiver:photo-first-width-v3';
  const DEFAULT_MEDIA=.78;
