@@ -44,7 +44,15 @@ export function mountSettings(host,api){
    clear.setAttribute('aria-label','Clean macOS-style desktop');
    clear.onchange=()=>{const r=api.setPreference('desktopClean',clear.checked);clear.checked=api.preferences().desktopClean!==false;savedStatus.textContent=r.message||'Desktop appearance updated.'};
    row(p,'Clean macOS-style desktop',clear,'Show a quiet wallpaper-first desktop; open apps from the Dock, search or Applications. Disable to restore the full classic dashboard.');
-   row(p,'Glass appearance','BLACKCELL Midnight','Dark translucent windows, a floating Dock, and silver typography.');
+   const dockPosition=el('select','bc-settings-button');dockPosition.setAttribute('aria-label','Dock position');
+   for(const [value,label] of [['bottom','Bottom'],['left','Left side'],['right','Right side']]){const o=el('option','',label);o.value=value;dockPosition.append(o)}
+   dockPosition.value=['bottom','left','right'].includes(prefs.dockPosition)?prefs.dockPosition:'bottom';
+   dockPosition.onchange=()=>{
+    const r=api.setPreference('dockPosition',dockPosition.value);dockPosition.value=api.preferences().dockPosition||'bottom';
+    savedStatus.textContent=r.message||'Dock position updated.';
+   };
+   row(p,'Dock position',dockPosition,'Place the Dock at the bottom, left or right on desktop and tablet. Phones keep the bottom Dock.');
+      row(p,'Glass appearance','BLACKCELL Midnight','Dark translucent windows, a floating Dock, and silver typography.');
    p.append(savedStatus);
    const wallpapers=panel('Wallpaper Studio','Choose a BLACKCELL wallpaper or use your own photograph. Pictures remain private to your account.');
    mountWallpaperControls(wallpapers,{api,prefs,el,btn,row});
