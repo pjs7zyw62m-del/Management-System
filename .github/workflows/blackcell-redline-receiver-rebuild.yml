@@ -58,6 +58,7 @@ jobs:
           scripts='<script src="private-photo-ledger-responsive.js?v=20261121-stable-brand1" defer></script><script src="private-photo-ledger-receiver.js?v=20261121-receiver2" defer></script>'
           html=html.replace('</head>',scripts+'</head>')
           probe=r"""<script>
+          window.addEventListener('error',e=>{document.body.dataset.previewError=String(e?.message||'error').replace(/[^a-z0-9_]/gi,'_').slice(0,140)});
           setTimeout(()=>{
             // Unauthenticated visual-only preview: no Supabase writes, no form submissions.
             const app=document.getElementById('ledgerApp');
@@ -97,7 +98,12 @@ jobs:
               >"/tmp/redline-$device.html" 2>"/tmp/redline-$device-errors.log"
             for check in receiver-visible receiver-cards receiver-owner receiver-archive-control receiver-brand; do
               grep -q "data-$check=\"true\"" "/tmp/redline-$device.html" || {
-                echo "$device missing $check"; tail -n 30 "/tmp/redline-$device-errors.log"; exit 1;
+                echo "$device missing $check"
+                grep -o 'data-receiver-[a-z-]*="[^"]*"' "/tmp/redline-$device.html" | head -n 15 || true
+                grep -o '<section[^>]*id="redlineReceiverCommand"[^>]*>' "/tmp/redline-$device.html" | head -n 2 || true
+                grep -o 'data-preview-error="[^"]*"' "/tmp/redline-$device.html" | head -n 2 || true
+                tail -n 20 "/tmp/redline-$device-errors.log"
+                exit 1;
               }
             done
             "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage \
