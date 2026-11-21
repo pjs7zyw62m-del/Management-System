@@ -118,7 +118,6 @@ function syncOSDeviceLayout(){
  const viewport=window.visualViewport,scaled=viewport&&Math.abs(viewport.scale-1)<.02;
  if(mode!=='desktop'&&scaled&&viewport.height>0){root.style.setProperty('--bc-touch-height',Math.round(viewport.height)+'px');root.classList.toggle('bc-os-keyboard',innerHeight-viewport.height>120)}
  else{root.style.removeProperty('--bc-touch-height');root.classList.remove('bc-os-keyboard')}
- void wallpaperManager?.sync();
 }
 const touchOS=()=>document.documentElement.classList.contains('bc-os-phone')||document.documentElement.classList.contains('bc-os-tablet');
 syncOSDeviceLayout();window.addEventListener('resize',syncOSDeviceLayout,{passive:true});window.addEventListener('orientationchange',syncOSDeviceLayout,{passive:true});window.visualViewport?.addEventListener('resize',syncOSDeviceLayout,{passive:true});
