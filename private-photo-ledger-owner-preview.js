@@ -76,14 +76,17 @@
   const fileHelp=make('small','','JPEG, PNG, WebP or HEIC · up to 12 MB');
   const fileName=make('small','','No photo selected');
   fileArea.append(fileInput,camera,previewImg,selectLabel,fileHelp,fileName);
-  const caption=make('label','bc-redline-preview-caption','SEND A PRIVATE MESSAGE');
-  const textarea=make('textarea','','');textarea.rows=3;textarea.maxLength=2000;
-  textarea.placeholder='Write a private message…';
-  caption.append(textarea);
-  const submit=make('button','bc-redline-preview-submit','PREVIEW ONLY — SENDING DISABLED');
+  const submit=make('button','bc-redline-preview-submit','POST PHOTO — PREVIEW ONLY');
   submit.type='button';submit.disabled=true;
-  const messageOnly=make('button','bc-redline-preview-submit','MESSAGE ONLY — PREVIEW');messageOnly.type='button';messageOnly.disabled=true;
-  upload.append(title,fileArea,caption,messageOnly,submit);
+  const thread=make('div','bc-redline-preview-thread');
+  thread.append(make('h4','','Private Chat'),make('small','','OWNER + SENDER · TWO-WAY MESSAGES'));
+  thread.append(make('div','bc-redline-preview-bubble is-sender','I just posted a new photo.'));
+  thread.append(make('div','bc-redline-preview-bubble is-owner','Got it. I’ll review it now.'));
+  thread.append(make('div','bc-redline-preview-bubble is-sender','Thanks! Let me know what you think.'));
+  const composerSample=make('div','bc-redline-preview-chat-input');
+  composerSample.append(make('span','','Write a reply…'),make('span','','SEND'));
+  thread.append(composerSample);
+  upload.append(title,fileArea,submit,thread);
   // Preview matches the approved three-section sender screen. All values
   // are read-only and the sample conversation never accesses real messages.
   const earningsPanel=make('section','bc-redline-preview-message bc-redline-preview-earnings');earningsPanel.hidden=true;
@@ -110,7 +113,7 @@
   section.append(upload,earningsPanel,messagesPanel);
   const nav=make('nav','bc-redline-preview-nav');nav.setAttribute('aria-label','Preview sender navigation');
   const tabs=[
-    ['upload','Upload',upload],['earnings','Earnings',earningsPanel],['messages','Messages',messagesPanel]
+    ['upload','Photos & Chat',upload],['earnings','Earnings',earningsPanel]
   ];
   function selectTab(key){
     for(const [id,label,panel] of tabs){
