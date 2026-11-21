@@ -464,19 +464,24 @@ function renderReviewQueue(){
  show('reviewQueueCount',pending.length+' WAITING');
  const parent=$('reviewQueueCurrent');parent.replaceChildren();
  if(!pending.length){
-  const empty=node('div','queue-empty');
-  empty.append(node('strong','','ALL CAUGHT UP'));
-  empty.append(node('p','','Every submitted photo has been accepted or rejected. The next upload will appear here automatically.'));
-  const history=button('VIEW REVIEWED PHOTOS',()=>{
-   setFilter('reviewed');
-   document.querySelector('.timeline-toolbar')?.scrollIntoView({behavior:'smooth',block:'start'});
-  },'button-outline');
-  empty.append(history);
-  parent.append(empty);
-  const lastAccepted=state.entries.find(e=>e.id===state.reviewSidebarPhotoId&&e.decision_status==='accepted')||
-   state.entries.find(e=>e.decision_status==='accepted');
-  // Receiver pause must remain available even if the photo queue is empty.
-  preparePhotoReviewLightbox(lastAccepted||null);
+  // A finished review queue is NOT an empty viewer. Keep the currently
+  // selected reviewed photograph in the same one-photo viewport and keep
+  // its authenticated controls to the right.
+  const selected=state.entries.find(e=>e.id===state.reviewSidebarPhotoId);
+  const reviewed=selected&&selected.decision_status!=='pending'?selected:
+   state.entries.find(e=>e.decision_status==='accepted')||
+   state.entries.find(e=>e.decision_status==='rejected');
+  if(reviewed){
+   parent.append(renderEntry(reviewed));
+  }else{
+   const empty=node('div','queue-empty');
+   empty.append(node('strong','','WAITING FOR FIRST PHOTO'));
+   empty.append(node('p','','Incoming photos will appear here one at a time.'));
+   parent.append(empty);
+  }
+  // Receiver's pause and timer controls remain available even when all
+  // received photos were already reviewed.
+  preparePhotoReviewLightbox(reviewed||null);
   return;
  }
  const current=pending[0];
