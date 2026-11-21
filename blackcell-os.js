@@ -453,7 +453,7 @@ function spaceVisibility(){
   r.el.hidden=r.spaceId!==bcSpace||r.spaceShown===false||!!r.suspended||!!r.chatParked;
  }
  selectedWindow=[...windows.values()].filter(r=>!r.el.hidden&&!r.suspended).sort((a,b)=>(Number(b.el.style.zIndex)||0)-(Number(a.el.style.zIndex)||0))[0]||null;
- updateActiveAppMenu();syncStoreUpdateHold();syncChatVisibility();spaceNotify();
+ updateActiveAppMenu();syncStoreUpdateHold();syncChatVisibility();syncFullscreenShell();spaceNotify();
 }
 function spaceSwitch(id){
  id=String(id);if(!spaceValid(id)||id===bcSpace)return false;
@@ -480,14 +480,14 @@ function spaceMove(id,dest){
  if(!r||r.chatPopout||!spaceValid(dest))return false;
  r.spaceId=dest;r.spaceShown=true;spaceVisibility();saveWorkspace();return true;
 }
+function syncFullscreenShell(){const activeFull=[...windows.values()].some(r=>r.el.classList.contains('bc-os-fullscreen')&&!r.el.hidden&&!r.suspended);$('desktop').classList.toggle('bc-os-fullscreen-active',activeFull);if(!activeFull)$('desktop').classList.remove('bc-os-menu-edge-open','bc-os-dock-edge-open')}
 function fullscreenWindow(id){
  const r=windows.get(id);if(!r||touchOS())return false;
  const expand=!r.el.classList.contains('bc-os-fullscreen');
- for(const other of windows.values())if(other!==r){other.el.classList.remove('bc-os-fullscreen')}
+ for(const other of windows.values())if(other!==r&&other.el.classList.contains('bc-os-fullscreen')){other.el.classList.remove('bc-os-fullscreen','is-max')}
  r.el.classList.toggle('bc-os-fullscreen',expand);r.el.classList.toggle('is-max',expand);
- $('desktop').classList.toggle('bc-os-fullscreen-active',expand);
- $('desktop').classList.remove('bc-os-menu-edge-open');
- raise(r);saveWorkspace();return true;
+ $('desktop').classList.remove('bc-os-menu-edge-open','bc-os-dock-edge-open');
+ raise(r);syncFullscreenShell();saveWorkspace();return true;
 }
 window.BLACKCELL_MAC_BRIDGE=Object.freeze({
  ready:()=> (active||preview)&&!leaving&&!$('desktop').hidden&&!workspaceLock?.isLocked(),
@@ -806,7 +806,7 @@ function menu(name,trigger){
   if(preview||installedApp('settings'))menuAction('System Settings…',()=>showApp('settings'));
   menuDivider();menuAction('Show Desktop',showDesktop);
   if(preview||installedApp('person'))menuAction('My Profile',()=>showApp('person'));
-  menuDivider();menuAction('Lock Screen',()=>lockWorkspace());menuAction('Force Quit / Windows…',()=>window.dispatchEvent(new Event('blackcell:mission-open')));menuAction('Log Off',()=>lockWorkspace('logoff'));menuAction('Restart…',restartWorkspace);
+  menuDivider();menuAction('Lock Screen',()=>lockWorkspace());menuAction('Window Manager…',()=>window.dispatchEvent(new Event('blackcell:mission-open')));menuAction('Log Off',()=>lockWorkspace('logoff'));menuAction('Restart…',restartWorkspace);
   menuDivider();menuAction(preview?'Exit Preview':'Sign Out',()=>void signOut());
  }else if(name==='application'){
   if(activeWindow){
@@ -963,11 +963,11 @@ function parkChat(r){
  r.chatParked=true;r.el.hidden=true;if(selectedWindow===r)selectedWindow=null;
  pauseFrameMedia(r.frame);syncParkedChatBubbles();syncChatVisibility();saveWorkspace();
 }
-function raise(r){if(!r.chatPopout&&r.spaceId&&r.spaceId!==bcSpace)spaceSwitch(r.spaceId);r.spaceShown=true;if(r.chatParked){applyParkedGeometry(r,r.parkedGeometry);r.parkedGeometry=null;}r.chatParked=false;syncParkedChatBubbles();if(r.closing)r.reopened=true;r.suspended=false;r.el.hidden=false;r.el.style.zIndex=String(++layer);selectedWindow=r;markDock(r.id,true);updateActiveAppMenu();syncStoreUpdateHold();syncChatVisibility();saveWorkspace()}
-function showDesktop(){closeRecycleBin();for(const r of windows.values()){if(r.spaceId===bcSpace)r.spaceShown=false;r.el.hidden=true}selectedWindow=null;updateActiveAppMenu();syncStoreUpdateHold();syncChatVisibility();saveWorkspace()}
-function dispose(r,force=false){if(r?.el?.classList?.contains('bc-os-fullscreen'))$('desktop').classList.remove('bc-os-fullscreen-active','bc-os-menu-edge-open');if(!force){void requestClose(r);return;}r.updateHold?.();r.updateHold=null;r.cleanup?.();r.frame?.remove();r.el.remove();r.release?.();windows.delete(r.id);syncParkedChatBubbles();markDock(r.id,false);if(selectedWindow===r)selectedWindow=null;updateActiveAppMenu();syncChatVisibility();saveWorkspace()}
+function raise(r){if(!r.chatPopout&&r.spaceId&&r.spaceId!==bcSpace)spaceSwitch(r.spaceId);r.spaceShown=true;if(r.chatParked){applyParkedGeometry(r,r.parkedGeometry);r.parkedGeometry=null;}r.chatParked=false;syncParkedChatBubbles();if(r.closing)r.reopened=true;r.suspended=false;r.el.hidden=false;r.el.style.zIndex=String(++layer);selectedWindow=r;markDock(r.id,true);updateActiveAppMenu();syncFullscreenShell();syncStoreUpdateHold();syncChatVisibility();saveWorkspace()}
+function showDesktop(){closeRecycleBin();for(const r of windows.values()){if(r.spaceId===bcSpace)r.spaceShown=false;r.el.hidden=true}selectedWindow=null;updateActiveAppMenu();syncFullscreenShell();syncStoreUpdateHold();syncChatVisibility();saveWorkspace()}
+function dispose(r,force=false){if(r?.el?.classList?.contains('bc-os-fullscreen'))$('desktop').classList.remove('bc-os-fullscreen-active','bc-os-menu-edge-open');if(!force){void requestClose(r);return;}r.updateHold?.();r.updateHold=null;r.cleanup?.();r.frame?.remove();r.el.remove();r.release?.();windows.delete(r.id);syncParkedChatBubbles();markDock(r.id,false);if(selectedWindow===r)selectedWindow=null;updateActiveAppMenu();syncFullscreenShell();syncChatVisibility();saveWorkspace()}
 function osNotice(message){let n=$('osCloseNotice');if(!n){n=document.createElement('div');n.id='osCloseNotice';n.className='os-close-notice';n.setAttribute('role','status');$('desktop').append(n)}n.textContent=message;n.hidden=false;clearTimeout(osNotice.timer);osNotice.timer=setTimeout(()=>{n.hidden=true},6000)}
-function suspend(r){r.el.hidden=true;r.spaceShown=false;r.suspended=true;markDock(r.id,false);if(selectedWindow===r)selectedWindow=null;updateActiveAppMenu();syncStoreUpdateHold();syncChatVisibility();saveWorkspace()}
+function suspend(r){r.el.hidden=true;r.spaceShown=false;r.suspended=true;markDock(r.id,false);if(selectedWindow===r)selectedWindow=null;updateActiveAppMenu();syncFullscreenShell();syncStoreUpdateHold();syncChatVisibility();saveWorkspace()}
 window.addEventListener('message',event=>{if(event.origin!==location.origin)return;const r=windows.get('administration');if(!r?.frame||event.source!==r.frame.contentWindow)return;if(event.data?.type==='blackcell-admin-app-return'){void requestClose(r)}else if(event.data?.type==='blackcell-admin-app-activity'){void activity()}else if(event.data?.type==='blackcell-admin-app-signed-out'){blocked('Your corporate session has ended.');window.top.location.replace('login.html')}});
 function pauseFrameMedia(frame){try{frame.contentWindow?.BLACKCELL_OS_PAUSE_MEDIA?.();for(const m of frame.contentDocument?.querySelectorAll('video,audio')||[])if(!m.paused)m.pause()}catch(_){}}
 async function requestClose(r){
