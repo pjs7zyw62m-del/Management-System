@@ -499,11 +499,13 @@ function renderEntry(e){
  },'photo-image-btn');
  imageButton.setAttribute('aria-label',state.isOwner&&status==='pending'?'Enlarge this photo and choose an approval price':'View original private photo');
  const img=node('img');
- img.loading='lazy';img.alt=e.caption||e.file_name;
+ img.loading=state.isOwner&&status==='pending'?'eager':'lazy';
+ img.decoding='async';img.alt=e.caption||e.file_name;
  const signed=state.images.get(e.image_path)?.url;
  if(signed)img.src=signed;else{
   img.alt='Image preview unavailable. Select Refresh to retry.';
   imageButton.title='Private preview unavailable — refresh';
+  if(state.isOwner&&status==='pending')imageButton.append(node('span','rr-photo-unavailable','Image unavailable — use Refresh to load the private photo.'));
  }
  imageButton.append(img);
  if(state.isOwner&&status==='pending'){
