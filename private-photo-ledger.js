@@ -5,13 +5,14 @@ const BUCKET='corp-private-photo-ledger';
 const ROOMS='corp_private_photo_rooms';
 const ENTRIES='corp_private_photo_entries';
 const RATINGS='corp_redline_photo_ratings';
+const RESUBMISSION_UPLOADS='corp-private-photo-ledger';
 const MAX_IMAGE_BYTES=12*1024*1024;
 const MAX_SAFE=BigInt(Number.MAX_SAFE_INTEGER);
 const VALID_ID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const $=id=>document.getElementById(id);
 const state={
  user:null,member:null,isOwner:false,rooms:[],room:null,employees:[],
- entries:[],ratings:new Map(),filter:'all',timedPhotoTotals:new Map(),timedPhotoFingerprint:'',busy:false,refreshing:false,closed:false,
+ entries:[],ratings:new Map(),resubmittingPhotoId:null,filter:'all',timedPhotoTotals:new Map(),timedPhotoFingerprint:'',busy:false,refreshing:false,closed:false,
  images:new Map(),entryFingerprint:'',liveStarted:false,roomChannel:null,roomsChannel:null,liveRoomId:null,liveQueued:false,liveTimer:null,liveConnected:false,scopeMemberId:null,scopeValue:'full',scopeLoading:false,showArchive:false
 };
 const node=(tag,klass,content)=>{
@@ -395,13 +396,36 @@ function ratedPhotoData(e){
   image_url:state.images.get(e.image_path)?.url||''
  };
 }
+function fiveStarResubmissionData(){
+ if(state.showArchive)return [];
+ const copies=new Map();
+ for(const e of state.entries){
+  if(!e.resubmission_origin_id)continue;
+  const old=copies.get(e.resubmission_origin_id)||[];
+  old.push(e);copies.set(e.resubmission_origin_id,old);
+ }
+ return state.entries
+  .filter(e=>!e.resubmission_origin_id&&e.decision_status==='accepted'&&
+   state.ratings.get(e.id)?.stars===5&&e.uploaded_by===state.room?.member_id)
+  .map(e=>{
+   const attempts=copies.get(e.id)||[];
+   const rejected=attempts.some(x=>x.decision_status==='rejected');
+   const pending=attempts.some(x=>x.decision_status==='pending');
+   return {...ratedPhotoData(e),resubmissionCount:attempts.length,
+    resubmissionStatus:rejected?'rejected':pending?'pending':'ready',
+    resubmissionAllowed:!rejected&&!pending&&state.room?.active===true&&
+     state.room?.photo_sending_paused!==true};
+  })
+  .sort((a,b)=>(b.resubmissionCount-a.resubmissionCount)||
+    (Number(b.amount_cents||0)-Number(a.amount_cents||0)));
+}
 async function loadEntries({force=false}={}){
  const selectedRoom=state.room;
  if(!selectedRoom)return;
  const all=[];
  for(let from=0;from<5000;from+=250){
   let query=db.from(ENTRIES)
-   .select('id,room_id,uploaded_by,image_path,file_name,caption,amount_cents,auto_timer_session_id,decision_status,decided_at,priced_at,settled_at,created_at')
+   .select('id,room_id,uploaded_by,image_path,file_name,caption,amount_cents,auto_timer_session_id,resubmission_origin_id,decision_status,decided_at,priced_at,settled_at,created_at')
    .eq('room_id',selectedRoom.id);
   if(selectedRoom.current_session_started_at){
    query=state.showArchive
@@ -418,7 +442,7 @@ async function loadEntries({force=false}={}){
  if(!ratings||state.room?.id!==selectedRoom.id)return;
  state.ratings=ratings;
  const ratingsSig=JSON.stringify([...ratings.values()].map(r=>[r.photo_id,r.stars,r.rated_at]).sort((a,b)=>a[0].localeCompare(b[0])));
- const signature=ratingsSig+'|'+String(state.showArchive)+'|'+JSON.stringify(all.map(e=>[e.id,e.amount_cents,e.auto_timer_session_id,e.decision_status,e.decided_at,e.priced_at,e.settled_at,e.caption]));
+ const signature=ratingsSig+'|'+String(state.showArchive)+'|'+JSON.stringify(all.map(e=>[e.id,e.amount_cents,e.auto_timer_session_id,e.resubmission_origin_id,e.decision_status,e.decided_at,e.priced_at,e.settled_at,e.caption]));
  state.entries=all;
  updateTotals();
  const needsSignedRefresh=all.some(e=>!state.images.has(e.image_path)
@@ -1338,8 +1362,66 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
      (state.ratings.get(b.id)?.stars||0)-(state.ratings.get(a.id)?.stars||0)||
      Number(cents(a.amount_cents)<cents(b.amount_cents))-Number(cents(a.amount_cents)>cents(b.amount_cents))||
      Date.parse(state.ratings.get(b.id)?.rated_at||0)-Date.parse(state.ratings.get(a.id)?.rated_at||0))
-    .slice(0,5).map(ratedPhotoData)
+    .slice(0,5).map(ratedPhotoData),
+   fiveStarPhotos:fiveStarResubmissionData()
   };
+ },
+ async resubmitFiveStarPhoto(photoId){
+  const room=state.room;
+  if(state.closed||state.isOwner||state.showArchive||!state.user||
+    !room?.active||room.photo_sending_paused||!validId(photoId))
+   throw Error('Return to an active sender room with photo sending enabled.');
+  if(state.resubmittingPhotoId)throw Error('A five-star photo is already being resubmitted.');
+  const source=state.entries.find(e=>e.id===photoId&&e.room_id===room.id);
+  const allowed=fiveStarResubmissionData().find(p=>p.id===photoId&&p.resubmissionAllowed);
+  if(!source||!allowed)throw Error('This five-star photo is not eligible for another resubmission.');
+  const extension=source.image_path.match(/\\.(jpg|jpeg|png|webp|heic|heif)$/i)?.[1]?.toLowerCase();
+  if(!extension)throw Error('Original photo type is unsupported.');
+  state.resubmittingPhotoId=photoId;
+  let newPath=null,posted=false;
+  try{
+   await verify();
+   const permission=await db.from(ROOMS)
+    .select('id,active,photo_sending_paused,current_session_started_at')
+    .eq('id',room.id).single();
+   if(permission.error||!permission.data)throw Error('Unable to verify receiver photo sending permission.');
+   if(!permission.data.active||permission.data.photo_sending_paused)
+    throw Error('The receiver paused photo sending or closed this room.');
+   if(permission.data.current_session_started_at&&
+     Date.parse(source.created_at)<Date.parse(permission.data.current_session_started_at))
+    throw Error('An archived photo cannot be resubmitted to the current session.');
+   if(state.room?.id!==room.id)throw Error('The selected REDLINE room changed.');
+   const download=await db.storage.from(BUCKET).download(source.image_path);
+   if(download.error||!download.data)throw Error(fail(download.error||'Unable to retrieve original photo.'));
+   const blob=download.data;
+   if(!blob.size||blob.size>MAX_IMAGE_BYTES)throw Error('The stored original exceeds the supported photo limit.');
+   const id=crypto.randomUUID();
+   newPath=room.id+'/'+id+'.'+extension;
+   const mime={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',
+    webp:'image/webp',heic:'image/heic',heif:'image/heif'}[extension];
+   const storage=await db.storage.from(BUCKET).upload(newPath,blob,{
+    contentType:mime,upsert:false,cacheControl:'60'
+   });
+   if(storage.error)throw Error(fail(storage.error));
+   const created=await db.from(ENTRIES).insert({
+    id,room_id:room.id,uploaded_by:state.user.id,image_path:newPath,
+    resubmission_origin_id:photoId,decision_status:'pending',
+    file_name:source.file_name,caption:source.caption||''
+   }).select('id').single();
+   if(created.error||!created.data)throw Error(fail(created.error||'The receiver has blocked another resend.'));
+   posted=true;
+   // The original (and its accepted price) are untouched. The fresh copy is
+   // a pending review with NO price until this receiver decides again.
+   state.entryFingerprint='';
+   try{await loadEntries({force:true})}catch(_){}
+   window.dispatchEvent(new Event('blackcell:redline:state'));
+   return {ok:true,photoId:created.data.id,originId:photoId};
+  }catch(error){
+   // Safely remove only an unposted temporary storage copy. Never delete
+   // the original or any successful ledger resubmission.
+   if(newPath&&!posted)try{await db.storage.from(BUCKET).remove([newPath])}catch(_){}
+   throw error;
+  }finally{state.resubmittingPhotoId=null}
  },
  async toggleArchive(){
   await setRedlineArchiveView(!state.showArchive);
