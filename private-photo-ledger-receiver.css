@@ -1261,3 +1261,69 @@ body.bc-redline-receiver .rr-nav-menu-items .rr-nav-button:focus-visible{
  body.bc-redline-receiver .rr-menu-toggle,
  body.bc-redline-receiver .rr-pay-full{min-height:40px!important}
 }
+
+/* REDLINE payment navigation: an explicit partial-payment tab beside FULL. */
+body.bc-redline-receiver .rr-pay-partial{
+ width:100%!important;flex:0 0 auto!important;min-height:35px!important;
+ color:#ffbdce!important;background:#210911!important;
+ border:1px solid #ad3452!important;font-size:10px!important;
+ font-weight:850!important;letter-spacing:.035em!important;
+ white-space:normal!important;line-height:1.25!important;
+}
+body.bc-redline-receiver .rr-pay-partial:hover:not(:disabled){
+ color:#fff!important;background:#451321!important;border-color:#f14368!important;
+}
+body.bc-redline-receiver .rr-pay-partial:focus-visible{
+ outline:2px solid #ff7992!important;outline-offset:2px!important;
+}
+.rr-partial-payment-dialog{
+ width:min(530px,calc(100vw - 22px));max-height:min(90dvh,840px);
+ max-width:none;border:1px solid #aa3655;border-radius:17px;
+ padding:0;background:#050305;color:#fff;
+ box-shadow:0 30px 90px #000d;overflow-y:auto;overscroll-behavior:contain;
+}
+.rr-partial-payment-dialog::backdrop{background:rgba(0,0,0,.88)}
+.rr-partial-payment-form{display:flex;flex-direction:column;gap:14px;padding:clamp(16px,3vw,26px)}
+.rr-partial-payment-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.rr-partial-payment-heading h3{margin:0;color:#fff;font-size:clamp(20px,3vw,27px);letter-spacing:-.04em}
+.rr-partial-close{min-height:36px;padding:6px 10px;border:1px solid #724254;
+ border-radius:8px;color:#fff;background:#180b10;white-space:nowrap;font-size:10px;font-weight:800}
+.rr-partial-intro{margin:0;color:#d3c4c9;font-size:12px;line-height:1.65}
+.rr-partial-balance{display:grid;gap:2px;padding:9px 13px;border:1px solid #633342;
+ border-radius:12px;background:#0d080a}
+.rr-partial-balance-line{display:flex;align-items:center;justify-content:space-between;
+ gap:12px;min-height:39px;border-bottom:1px solid #30252a}
+.rr-partial-balance-line:last-child{border-bottom:0}
+.rr-partial-balance-line span{color:#bdb2b8;font-size:10px;letter-spacing:.035em;font-weight:700}
+.rr-partial-balance-line strong{color:#fff;font-variant-numeric:tabular-nums;font-size:18px}
+.rr-partial-balance-line:last-child strong{color:#ffb0c2}
+.rr-partial-field{display:flex;flex-direction:column;gap:7px;color:#f6b5c6;
+ font-size:11px;font-weight:850;letter-spacing:.045em}
+.rr-partial-field input{width:100%;min-height:47px;border:1px solid #67424d;
+ background:#131014;color:#fff;border-radius:10px;padding:11px 12px;
+ font-size:16px;font-weight:600;outline:0}
+.rr-partial-field input:focus{border-color:#fb4a71;box-shadow:0 0 0 2px #f72d5429}
+.rr-partial-feedback{min-height:15px;margin:0;color:#f7a7bd;
+ font-size:11px;line-height:1.6;overflow-wrap:anywhere}
+.rr-partial-actions{display:flex;gap:8px}
+.rr-partial-actions button{min-height:43px;flex:1;border-radius:10px;
+ font-size:11px;font-weight:850;cursor:pointer}
+.rr-partial-cancel{border:1px solid #60414c;background:#1c1519;color:#e7d4dd}
+.rr-partial-confirm{border:1px solid #ff3a60;background:#b5002a;color:#fff}
+.rr-partial-confirm:disabled{opacity:.45;cursor:not-allowed}
+.rr-partial-history-heading{font-size:11px;letter-spacing:.09em;color:#ffafc4;
+ margin:3px 0 0}
+.rr-partial-history{display:flex;flex-direction:column;gap:6px;max-height:210px;
+ overflow-y:auto;overscroll-behavior:contain}
+.rr-partial-history-item{display:flex;align-items:center;justify-content:space-between;
+ gap:14px;padding:9px 11px;border:1px solid #342229;border-radius:9px;background:#10090d}
+.rr-partial-history-item div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.rr-partial-history-item strong{color:#fff;font-size:12px;white-space:nowrap}
+.rr-partial-history-item small{color:#bca6b0;font-size:10px;overflow-wrap:anywhere}
+.rr-partial-empty{color:#b9a8b1;font-size:12px;padding:11px}
+@media(max-width:490px){
+ body.bc-redline-receiver .rr-pay-partial{min-height:40px!important}
+ .rr-partial-payment-dialog{width:calc(100vw - 14px);max-height:calc(100dvh - 22px)}
+ .rr-partial-payment-form{padding:14px;gap:11px}
+ .rr-partial-balance-line strong{font-size:16px}
+}
