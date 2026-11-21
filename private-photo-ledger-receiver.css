@@ -899,7 +899,7 @@ body.bc-redline-receiver .rr-live-workspace[hidden]{display:none!important}
 /* REDLINE visible split controls — fixes BLACKCELL OS embedded-frame sizing.
    Split behavior is determined by available receiver workspace width, not by
    the legacy "bc-ledger-mobile" flag inherited from the outer OS iframe. */
-@media(min-width:480px){
+@media(min-width:420px){
  body.bc-redline-receiver.rr-split-active .rr-live-workspace{
   --rr-chat-width:36%;
   display:grid!important;
@@ -975,7 +975,7 @@ body.bc-redline-receiver .rr-live-workspace[hidden]{display:none!important}
   object-fit:contain!important;max-width:100%!important;
  }
 }
-@media(min-width:480px) and (max-width:719px){
+@media(min-width:420px) and (max-width:719px){
  body.bc-redline-receiver.rr-split-active .rr-live-workspace{
   padding:5px!important;
  }
