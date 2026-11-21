@@ -59,7 +59,7 @@ test('Owner receiver mounts the same authenticated thread inline without cloning
  const receiver=read('private-photo-ledger-receiver.js');
  assert.match(receiver,/chatMount\.id='redlineReceiverChatMount'/);
  assert.match(receiver,/chatPanel\.id='redlineReceiverChat'/);
- assert.match(receiver,/dashboard\.append\(header,stats,nav,chatPanel,access,line\)/);
+ assert.match(receiver,/dashboard\\.append\\(header,stats,nav,chatPanel\\)/);
  assert.match(ui,/function syncOwnerChat\(snap\)/);
  assert.match(ui,/if\(messageCard\.parentNode!==mount\)mount\.append\(messageCard\)/);
  assert.match(ui,/const key=snap\.roomId\+/);
