@@ -238,7 +238,7 @@ test('One iMessage-style workspace has two independent resizers and a fixed-heig
  assert.match(layout,/#redlineReceiverHeightEdge/);
  assert.match(layout,/cursor:row-resize!important/);
  assert.match(layout,/cursor:col-resize/);
- assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-photo-queue-single-view3/);
+ assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-history-visible1/);
 });
 test('Incoming photo decisions and priced photo records stay separate and scroll internally',()=>{
  const layout=read('private-photo-ledger-imessage-workspace.css');
@@ -384,9 +384,9 @@ test('Bid and timed-photo controls stay right of the normal photo; fullscreen co
 test('BLACKCELL OS loads the REDLINE sidebar release rather than a stale iframe version',()=>{
  const os=read('blackcell-os.html');
  const runtime=read('blackcell-os.js');
- assert.match(os,/receiver-photo-queue-single-view3-20261121/);
- assert.match(runtime,/receiver-photo-queue-single-view3-20261121/);
- assert.match(os,/blackcell-os\.js\?v=157-redline-photo-queue-single-view3/);
+ assert.match(os,/receiver-photo-history-visible1-20261121/);
+ assert.match(runtime,/receiver-photo-history-visible1-20261121/);
+ assert.match(os,/blackcell-os\.js\?v=158-redline-photo-history-visible1/);
  const layout=read('private-photo-ledger-imessage-workspace.css');
  assert.match(layout,/body\.bc-redline-receiver:not\(\.rr-imessage-mode\) #photoLightbox/);
 });
@@ -494,7 +494,7 @@ test('Stop Timer atomically submits one priced photo; other timed earnings never
  assert.match(chat,/async function pollSenderTimers\(force=false\)/);
  assert.match(chat,/bridge\(\).timerStatus\(id\)/);
  assert.match(chat,/window.setInterval\(\(\)=>\{/);
- assert.match(os,/name="blackcell-os-client-build" content="20261121-photo-queue-single-view3"/);
+ assert.match(os,/name="blackcell-os-client-build" content="20261121-photo-history-visible1"/);
 });
 
 test('Manually accepting a photo always advances to the next pending image',()=>{
@@ -637,7 +637,7 @@ test('Compact receiver buttons retain stars and every bid decision without headi
  assert.match(css,/\.redline-review-actions button/);
  assert.match(css,/min-height:37px!important/);
  assert.match(html,/private-photo-ledger\.js\?v=20261121-photo-queue-single-view3/);
- assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-photo-queue-single-view3/);
+ assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-history-visible1/);
 });
 
 test('Five-star originals can be resubmitted until receiver rejects the copied photo',()=>{
@@ -694,4 +694,24 @@ test('Receiver single photo view never allows stale timer preview to cover a pen
  assert.match(approval,/try\{await loadEntries\(\{force:true\}\)\}/);
  const workflow=read('.github/workflows/blackcell-redline-receiver-rebuild.yml');
  assert.match(workflow,/node tests\/redline-next-photo-visual-smoke\.mjs/);
+});
+
+test('Photo History is accessible despite the old photo-only layout rules',()=>{
+ const receiver=read('private-photo-ledger-receiver.js');
+ const style=read('private-photo-ledger-imessage-workspace.css');
+ assert.match(receiver,/historyToggle\.id='redlinePhotoHistoryToggle'/);
+ assert.match(receiver,/function setHistoryOpen\(open\)/);
+ assert.match(receiver,/historyToggle\.setAttribute\('aria-expanded',String\(historyOpen\)\)/);
+ assert.match(receiver,/setHistoryOpen\(history\)/);
+ assert.match(receiver,/photos\.classList\.toggle\('rr-history-open',historyOpen\)/);
+ assert.match(receiver,/const history=button\('Photo History',\(\)=>openMedia\(true\)/);
+ assert.match(style,/REDLINE PHOTO HISTORY RESTORED/);
+ assert.match(style,/#redlineReceiverIncomingPhotos\.rr-history-open>#redlineReceiverPricedStage/);
+ assert.match(style,/#redlineReceiverPricedStage>#photoEntries/);
+ assert.match(style,/overflow-y:auto!important/);
+ assert.match(style,/position:absolute!important/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-history-visible1/);
+ assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-history-visible1/);
+ const workflow=read('.github/workflows/blackcell-redline-receiver-rebuild.yml');
+ assert.match(workflow,/node tests\/redline-photo-history-browser-smoke\.mjs/);
 });
