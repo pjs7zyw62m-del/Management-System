@@ -284,3 +284,31 @@ body.redline-sender-simple #employeeUpload #uploadFeedback{
  min-height:19px;margin:10px 0 0;font-size:12px;line-height:1.55;
  overflow-wrap:anywhere;
 }
+
+/* Authenticated, room-scoped presence for REDLINE's two-person chat. */
+.redline-message-header .redline-peer-presence{
+ display:inline-flex;align-items:center;justify-content:center;gap:7px;
+ max-width:100%;border:1px solid #555056;border-radius:9px;
+ padding:8px 10px;color:#bdb4b8;background:#141215;
+ font-weight:800;font-size:10px;letter-spacing:.025em;line-height:1.3;
+ text-align:right;white-space:normal;overflow-wrap:anywhere;
+}
+.redline-message-header .redline-peer-presence::before{
+ content:'';display:inline-block;flex:0 0 8px;width:8px;height:8px;
+ border-radius:50%;background:#817981;
+}
+.redline-message-header .redline-peer-presence[data-state="online"]{
+ color:#b4f4d0;border-color:#1d8253;background:#0c1d16;
+}
+.redline-message-header .redline-peer-presence[data-state="online"]::before{
+ background:#35d68b;box-shadow:0 0 0 3px #35d68b21;
+}
+.redline-message-header .redline-peer-presence[data-state="offline"]{
+ color:#c1bac0;background:#151416;border-color:#494348;
+}
+.redline-message-header .redline-peer-presence[data-state="checking"]::before{
+ background:#d7af50;
+}
+@media(max-width:490px){
+ .redline-message-header .redline-peer-presence{font-size:9px;padding:6px 8px}
+}
