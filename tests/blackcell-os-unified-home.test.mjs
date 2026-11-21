@@ -89,3 +89,31 @@ test('Release serves unified home CSS and JavaScript and invalidates old caches'
  assert.match(html,/blackcell-os\.js\?v=123-mobile-ready-drag-fix/);
  assert.match(read('blackcell-site-version.json'),/mobile-ready-drag-fix/);
 });
+
+
+test('Desktop application buttons accept pointer dragging and do not clip their labels',()=>{
+ assert.match(home,/type==='widget'&&e\.target\.closest\('button'\)/);
+ assert.match(home,/attachDrag\(b,p\.id,'pin'\)/);
+ assert.match(home,/element\.style\.left=/);
+ assert.match(home,/item\.x=clamp\(/);
+ assert.match(style,/width:110px;min-height:126px;height:auto/);
+ assert.match(style,/-webkit-line-clamp:3/);
+ assert.match(style,/overflow-wrap:break-word/);
+});
+test('Phone widget gallery redraws after SpringBoard and session activation',()=>{
+ assert.match(phone,/blackcell:springboard-ready/);
+ assert.match(home,/blackcell:springboard-ready/);
+ assert.match(home,/attributeFilter:\['hidden','class'\]/);
+ assert.match(home,/makeButton\('Widgets'/);
+ assert.match(home,/bc-home-phone-widget-strip/);
+ assert.match(home,/bc-home-phone-app-picker/);
+});
+test('Software Update confirms actual loaded HTML build before saying an update succeeded',()=>{
+ const updater=read('blackcell-live-update.js');
+ assert.match(html,/meta name="blackcell-os-client-build"/);
+ assert.match(updater,/OS_EXPECTED_BUILD/);
+ assert.match(updater,/async function latestOSBuild\(/);
+ assert.match(updater,/cache:'no-store'/);
+ assert.match(updater,/expected===current/);
+ assert.match(updater,/buildMismatch/);
+});
