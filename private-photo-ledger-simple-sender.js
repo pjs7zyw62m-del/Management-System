@@ -145,6 +145,7 @@ ownerDialog.addEventListener('close',()=>{
 ownerDialog.addEventListener('click',e=>{if(e.target===ownerDialog)ownerDialog.close()});
 let currentTab='upload',lastRoom=null,lastSessionKey=null,messages=[],loading=false,posting=false,roomReady=false;
 let lastSync=0,lastOwnerSession=null;
+let timerStatus=null,timerRoomId=null,timerFingerprint='',timerOffset=0;
 function bridge(){return window.BLACKCELL_REDLINE_API}
 const snapshot=()=>bridge()?.snapshot?.()||null;
 function isSender(){
@@ -190,11 +191,54 @@ function renderEarnings(snap){
  sOwed.textContent=snap.owed;sPaid.textContent=snap.paid;
  renderActivity(snap);
 }
+// The server's authenticated timer snapshot is already polled in the timer
+// controller. Show the start and stop events IN the existing chat feed.
+function timedEvents(snap){
+ if(!isSender()||!snap||snap.archiveMode||timerRoomId!==snap.roomId||!timerStatus)return [];
+ const result=[];
+ const items=Array.isArray(timerStatus.recent)?timerStatus.recent.slice(0,30):[];
+ for(const row of items){
+  if(row.started_at)result.push({kind:'timer',phase:'start',at:row.started_at,timer:row});
+  if(row.stopped_at)result.push({kind:'timer',phase:'stop',at:row.stopped_at,timer:row});
+ }
+ const active=timerStatus.active;
+ if(active?.started_at)result.push({kind:'timer',phase:'active',at:active.started_at,timer:active});
+ return result;
+}
+const clockText=seconds=>{
+ const v=Math.max(0,Math.floor(seconds)),pad=n=>String(n).padStart(2,'0');
+ return Math.floor(v/60)>=60
+  ?Math.floor(v/3600)+':'+pad(Math.floor(v/60)%60)+':'+pad(v%60)
+  :pad(Math.floor(v/60))+':'+pad(v%60);
+};
+function timerNumbers(row,active){
+ const start=Date.parse(row.started_at);
+ const heartbeat=Date.parse(row.heartbeat_at||'');
+ const end=active
+  ?Math.min(Date.now()+timerOffset,Number.isFinite(heartbeat)?heartbeat+45000:Date.now()+timerOffset)
+  :Date.parse(row.stopped_at);
+ const seconds=Number.isFinite(start)&&Number.isFinite(end)?Math.max(0,Math.floor((end-start)/1000)):0;
+ const cents=active?BigInt(Math.floor(seconds/60))*BigInt(row.rate_cents||0):BigInt(row.earned_cents||0);
+ return {seconds,cents};
+}
+function updateTimerCards(){
+ if(!timerStatus||!isSender())return;
+ const running=timerStatus.active;
+ for(const card of feed.querySelectorAll('.redline-chat-timer[data-timer-phase="active"]')){
+  if(card.dataset.timerId!==running?.id)continue;
+  const data=timerNumbers(running,true);
+  const clock=card.querySelector('.redline-chat-timer-clock');
+  const amount=card.querySelector('.redline-chat-timer-amount');
+  if(clock)clock.textContent=clockText(data.seconds)+' elapsed';
+  if(amount)amount.textContent=money(data.cents)+' earned';
+ }
+}
 function renderChat(){
  const snap=snapshot();feed.replaceChildren();
  const events=createEvents(snap?.entries).slice(0,80);
  const combined=[
   ...events.map(e=>({kind:'event',at:e.at,body:e.text,status:e.status})),
+  ...timedEvents(snap),
   ...messages.map(m=>({kind:'chat',at:m.created_at,body:m.body,sender:m.sender_id,id:m.id}))
  ].sort((a,b)=>new Date(a.at)-new Date(b.at)).slice(-130);
  if(!combined.length){feed.append(make('div','redline-chat-empty','No messages or photo updates yet.'));return}
@@ -202,6 +246,24 @@ function renderChat(){
   if(e.kind==='event'){
    const card=make('div','redline-chat-event');
    card.append(make('strong','',e.body),make('small','',dateText(e.at)));
+   feed.append(card);continue;
+  }
+  if(e.kind==='timer'){
+   const isActive=e.phase==='active',isStop=e.phase==='stop';
+   const card=make('article','redline-chat-timer');
+   card.dataset.timerId=e.timer.id;
+   card.dataset.timerPhase=e.phase;
+   const status=make('strong','redline-chat-timer-title',
+    isStop?'■ TIMER STOPPED':isActive?'● TIMER STARTED · RUNNING':'▶ TIMER STARTED');
+   const label=make('span','redline-chat-timer-rate',money(e.timer.rate_cents)+'/minute');
+   const numbers=timerNumbers(e.timer,isActive);
+   const details=make('div','redline-chat-timer-values');
+   details.append(make('span','redline-chat-timer-clock',clockText(numbers.seconds)+' elapsed'),
+    make('span','redline-chat-timer-amount',money(numbers.cents)+(isStop?' final':' earned')));
+   const foot=make('small','',isStop
+    ?'Photo '+String(e.timer.photo_id||'').slice(0,8).toUpperCase()+' · Final completed-minute amount recorded'
+    :'Photo '+String(e.timer.photo_id||'').slice(0,8).toUpperCase()+' · '+dateText(e.at));
+   card.append(status,label,details,foot);
    feed.append(card);continue;
   }
   const own=e.sender===snap?.userId;
@@ -307,6 +369,20 @@ function sync(){
 }
 const observer=new MutationObserver(()=>requestAnimationFrame(sync));
 for(const el of [app,room,upload,ownerSetup])observer.observe(el,{attributes:true,attributeFilter:['hidden']});
+window.addEventListener('blackcell:redline:timer-status',event=>{
+ const snap=snapshot(),detail=event.detail;
+ if(!snap||!detail||detail.roomId!==snap.roomId)return;
+ const next=detail.status;
+ const fingerprint=JSON.stringify([next.active?.id||null,next.active?.running||null,
+  ...(Array.isArray(next.recent)?next.recent.map(x=>[x.id,x.stopped_at]):[])]);
+ timerRoomId=detail.roomId;timerStatus=next;
+ const serverMs=Date.parse(next.server_now);
+ if(Number.isFinite(serverMs))timerOffset=serverMs-Date.now();
+ if(fingerprint!==timerFingerprint){
+  timerFingerprint=fingerprint;
+  if(isSender())renderChat();
+ }else updateTimerCards();
+});
 window.addEventListener('blackcell:redline:messages-changed',()=>{if((isSender()&&currentTab==='upload')||ownerDialog.open||(receiverChatPanel()&&!receiverChatPanel().hidden))void loadMessages()});
 window.addEventListener('blackcell:redline:receiver-ready',sync);
 window.addEventListener('blackcell:redline:bridge',sync);
@@ -316,6 +392,7 @@ window.addEventListener('blackcell:redline:reset',()=>{lastSessionKey=null;messa
 window.addEventListener('pageshow',sync);
 window.addEventListener('visibilitychange',()=>{if(!document.hidden&&((isSender()&&currentTab==='upload')||ownerDialog.open||(receiverChatPanel()&&!receiverChatPanel().hidden)))void loadMessages()});
 window.setInterval(()=>{
+ updateTimerCards();
  const active=(isSender()&&currentTab==='upload')||ownerDialog.open||(receiverChatPanel()&&!receiverChatPanel().hidden);
  if(!document.hidden&&active&&Date.now()-lastSync>9500)void loadMessages();
 },10000);
