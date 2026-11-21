@@ -20,7 +20,7 @@ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverLiveWorkspace[hidden]{
   background:#08080b!important;
  }
  body.bc-redline-receiver.rr-imessage-mode #redlineReceiverLiveWorkspace.rr-media-open{
-  grid-template-columns:minmax(0,1fr) 11px minmax(0,var(--rr-media-width,48%))!important;
+  grid-template-columns:minmax(0,1fr) 11px minmax(0,var(--rr-media-width,78%))!important;
  }
  body.bc-redline-receiver.rr-imessage-mode #redlineReceiverLiveWorkspace.rr-media-closed{
   grid-template-columns:minmax(0,1fr) 0 0!important;
@@ -351,7 +351,7 @@ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverMediaEdge{cursor:col-r
   min-height:0!important;
  }
  body.bc-redline-receiver.rr-imessage-mode #redlineReceiverLiveWorkspace.rr-media-open{
-  grid-template-columns:minmax(0,1fr) 11px minmax(0,var(--rr-media-width,67%))!important;
+  grid-template-columns:minmax(0,1fr) 11px minmax(0,var(--rr-media-width,78%))!important;
  }
  body.bc-redline-receiver.rr-imessage-mode #redlineReceiverIncomingPhotos{
   grid-template-rows:auto minmax(0,var(--rr-review-height,80%)) 11px minmax(0,1fr)!important;
@@ -597,5 +597,20 @@ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage .rr-photo-
   display:flex!important;flex-direction:column!important;
   grid-template-rows:none!important;
   height:100%!important;min-height:0!important;overflow:hidden!important;
+ }
+}
+
+/* REDLINE STEP 2 — one large photograph at a time, with chat unchanged.
+   The authenticated queue already provides the next pending entry. Keep that
+   image filling the photo pane without cropping; no thumbnail grid. */
+@media(min-width:420px){
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage #reviewQueueCurrent>.photo-entry:not(:first-of-type){
+  display:none!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage #reviewQueueCurrent>.photo-entry>.photo-image-btn>img,
+ body.bc-redline-receiver.rr-imessage-mode #redlineReceiverReviewStage .rr-timer-selected-preview>img{
+  width:100%!important;height:100%!important;
+  min-width:0!important;min-height:0!important;max-width:100%!important;max-height:100%!important;
+  object-fit:contain!important;object-position:center center!important;
  }
 }
