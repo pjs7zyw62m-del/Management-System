@@ -1,0 +1,239 @@
+/* Mac-like desktop keeps the wallpaper clean. Applications lives in the Dock,
+   Spotlight in the menu bar, and menus provide the remaining system actions. */
+@media(min-width:621px){
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-exec-stage{
+  display:none!important;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .workspace>.bc-exec-stage{
+  display:none!important;
+ }
+}
+#desktop .dock>.bc-mac-dock-launchpad{
+ color:#f5f3f6;display:grid;place-items:center;
+ font-size:27px;min-width:47px;min-height:47px;
+ border-radius:13px;border:1px solid #ffffff31;
+ background:linear-gradient(148deg,#444552,#131620);cursor:pointer;
+ box-shadow:inset 0 1px #ffffff3a,0 7px 18px #0008;
+}
+#desktop .dock>.bc-mac-dock-launchpad:hover{transform:translateY(-5px);border-color:#e15c79}
+html.bc-os-phone #desktop .dock>.bc-mac-dock-launchpad{display:none!important}
+/* BLACKCELL macOS workstation / Launchpad, Mission Control, Control Center, Spaces.
+   Original layout, auth policies and application windows are preserved. */
+#desktop .bc-mac-overlay{position:absolute;inset:0;z-index:2147481900;display:grid;place-items:center;isolation:isolate;color:#f6f5f8}
+#desktop .bc-mac-shade{position:absolute;inset:0;background:rgba(2,3,8,.64);border:0;cursor:default;backdrop-filter:blur(44px) saturate(108%);-webkit-backdrop-filter:blur(44px) saturate(108%)}
+#desktop .bc-mac-panel{position:relative;z-index:1;display:flex;flex-direction:column;gap:12px;width:min(1140px,calc(100vw - 44px));max-height:calc(100dvh - 46px);min-height:min(660px,calc(100dvh - 46px));padding:clamp(18px,2.4vw,36px);border:1px solid #ffffff32;border-radius:31px;box-sizing:border-box;background:linear-gradient(150deg,rgba(53,54,67,.38),rgba(7,8,16,.64) 76%);box-shadow:0 30px 110px #000a,inset 0 1px #ffffff35;backdrop-filter:blur(35px);-webkit-backdrop-filter:blur(35px)}
+#desktop .bc-mac-overlay-heading{display:grid;grid-template-columns:1fr auto;align-items:center;gap:3px 15px;text-align:center;position:relative}
+#desktop .bc-mac-overlay-heading h2{font-size:clamp(24px,3vw,36px);font-weight:660;letter-spacing:-.04em;margin:0;grid-column:1/3}
+#desktop .bc-mac-subtitle{font-size:12px;color:#d2cbd1;grid-column:1/3;margin:0 0 4px}
+#desktop .bc-mac-close{position:absolute;right:0;top:0;min-width:44px;min-height:44px;border:1px solid #ffffff30;border-radius:18px;color:#f5eaf1;background:#ffffff16;font-size:27px;cursor:pointer}
+#desktop .bc-mac-search{display:block;width:min(490px,90%);height:49px;flex-shrink:0;align-self:center;padding:11px 20px;border-radius:16px;border:1px solid #ffffff35;background:rgba(13,14,22,.72);color:#f6f4f7;font:500 15px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;outline:none}
+#desktop .bc-mac-search:focus{border-color:#e87b98;box-shadow:0 0 0 3px #e87b9833}
+#desktop .bc-mac-panel-body{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center}
+#desktop .bc-mac-launch-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:minmax(95px,auto);align-content:center;justify-items:center;gap:clamp(5px,1.8vh,17px) clamp(8px,1.6vw,22px);max-height:100%;overflow:hidden}
+#desktop .bc-mac-app{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:10px;min-width:0;width:100%;max-width:146px;padding:6px 3px;border:0;border-radius:19px;background:transparent;color:#f8f6fa;cursor:pointer;transition:transform .18s ease,background .18s ease}
+#desktop .bc-mac-app:hover,#desktop .bc-mac-app:focus-visible{background:#ffffff15;transform:translateY(-3px)}
+#desktop .bc-mac-app-art{display:grid;place-items:center;width:clamp(53px,6vw,80px);height:clamp(53px,6vw,80px);overflow:hidden;border:1px solid #ffffff30;border-radius:21px;background:linear-gradient(145deg,#333746,#11121c);box-shadow:inset 0 1px #ffffff45,0 10px 22px #0009}
+#desktop .bc-mac-app-art .app-icon{display:grid;place-items:center;width:100%!important;height:100%!important;max-width:100%;max-height:100%;margin:0!important;border:0!important;background:transparent!important;box-shadow:none!important;filter:none!important}
+#desktop .bc-mac-app-art svg{width:36px;height:36px;color:#f0eef4}
+#desktop .bc-mac-app-name{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.25;text-align:center;font-size:12px;font-weight:580;max-width:100%;text-shadow:0 2px 6px #000a}
+#desktop .bc-mac-paging{display:flex;gap:18px;justify-content:center;align-items:center;min-height:43px}
+#desktop .bc-mac-page-button{background:rgba(50,51,62,.63);border:1px solid #ffffff2b;color:#f0eff4;border-radius:12px;min-height:39px;min-width:95px;cursor:pointer}
+#desktop .bc-mac-page-button:disabled{opacity:.28;cursor:default}
+#desktop .bc-mac-page-status{font-size:12px;color:#cac5cc;min-width:80px;text-align:center}
+#desktop .bc-mac-mission-body{display:flex;flex-direction:column;gap:18px;min-height:0}
+#desktop .bc-mac-spaces{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:10px;padding-bottom:13px;border-bottom:1px solid #ffffff21}
+#desktop .bc-mac-spaces button{min-width:105px;min-height:56px;max-width:170px;padding:9px 14px;border:1px solid #ffffff35;border-radius:15px;color:#eae8ef;background:linear-gradient(155deg,#3a3b4baf,#0b0c15c7);font:620 12px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+#desktop .bc-mac-spaces button.active{border-color:#f17b96;background:linear-gradient(135deg,#612035,#1b0a15)}
+#desktop .bc-mac-window-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;align-content:start;overflow:auto;scrollbar-width:none;padding:4px}
+#desktop .bc-mac-window-grid::-webkit-scrollbar{display:none}
+#desktop .bc-mac-window{display:flex;flex-direction:column;gap:9px;min-width:0;min-height:184px;background:linear-gradient(145deg,#242632a8,#0a0c16d9);border:1px solid #ffffff25;border-radius:19px;padding:18px;box-shadow:0 11px 26px #0004}
+#desktop .bc-mac-window-icon{font-size:24px}
+#desktop .bc-mac-window strong{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#desktop .bc-mac-window small{font-size:11px;color:#c2bdc7}
+#desktop .bc-mac-window-open{min-height:38px;border-radius:10px;background:#a32140;color:#fff;border:1px solid #e46884}
+#desktop .bc-mac-window-move{min-height:34px;border-radius:9px;background:#1a1b25;color:#f5f2f7;border:1px solid #ffffff40;max-width:100%}
+#desktop .bc-mac-mission-footer{display:flex;gap:12px;align-items:center;justify-content:center}
+#desktop .bc-mac-mission-footer button{min-height:40px;border-radius:11px;border:1px solid #ffffff29;background:#21222b;color:#eee;padding:9px 16px}
+#desktop .bc-mac-mission-footer button:disabled{opacity:.4}
+#desktop .bc-mac-empty{text-align:center;color:#c9c3ce;font-size:14px;padding:25px;grid-column:1/-1}
+#desktop .clock[role="button"]{cursor:pointer;padding:6px 8px;border-radius:8px}
+#desktop .clock[role="button"]:hover,#desktop .clock[role="button"]:focus-visible{background:#ffffff20;outline:0}
+#desktop .bc-mac-notifications{
+ position:absolute;top:39px;right:10px;z-index:2147481870;
+ display:flex;flex-direction:column;gap:13px;
+ width:min(362px,calc(100vw - 20px));max-height:min(70vh,750px);
+ border:1px solid rgba(245,235,242,.30);border-radius:23px;
+ padding:18px;background:linear-gradient(150deg,rgba(58,59,72,.95),rgba(11,12,20,.98));
+ backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);
+ box-shadow:0 23px 65px #000c,inset 0 1px #ffffff28;color:#f3eef4;
+}
+#desktop .bc-mac-notifications-head{display:flex;align-items:center;justify-content:space-between;gap:9px}
+#desktop .bc-mac-notifications-head h3{margin:0;font-size:19px;font-weight:650}
+#desktop .bc-mac-notifications button{border:1px solid #ffffff2c;border-radius:10px;background:#ffffff16;color:#f3f1f5;padding:9px 12px}
+#desktop .bc-mac-notifications-list{display:flex;flex-direction:column;gap:9px;overflow:auto;scrollbar-width:none}
+#desktop .bc-mac-notification{border-radius:15px;border:1px solid #ffffff21;background:#ffffff12;padding:11px 14px}
+#desktop .bc-mac-notification p{font-size:12px;line-height:1.45;margin:0 0 5px;overflow-wrap:anywhere}
+#desktop .bc-mac-notification small{font-size:10px;color:#b8b4bd}
+#desktop .bc-mac-notifications-empty{font-size:13px;line-height:1.5;color:#c5c0c9}
+#desktop .bc-mac-control-button{display:grid;place-items:center;min-width:37px;min-height:35px;border:1px solid #ffffff25;border-radius:10px;background:#35354266;color:#eeedf4;font-size:20px;cursor:pointer}
+#desktop .bc-mac-control{position:absolute;z-index:2147481890;top:40px;right:12px;width:min(295px,calc(100vw - 24px));display:flex;flex-direction:column;gap:9px;padding:18px;border:1px solid #ffffff33;border-radius:22px;background:linear-gradient(145deg,rgba(53,54,67,.93),rgba(9,10,16,.97));box-shadow:0 24px 55px #000c;backdrop-filter:blur(33px)}
+#desktop .bc-mac-control h3{font-size:18px;margin:0}
+#desktop .bc-mac-control small{color:#bcb8bf}
+#desktop .bc-mac-switch,#desktop .bc-mac-control-link{min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 13px;border:1px solid #ffffff25;border-radius:13px;background:#ffffff0f;color:#f5f4f6;text-align:left}
+#desktop .bc-mac-switch:after{content:"Off";font-size:11px;color:#aaa;white-space:nowrap}
+#desktop .bc-mac-switch[aria-pressed=true]:after{content:"On";color:#7af0ad}
+#desktop .bc-mac-switch[aria-pressed=true]{background:#2c3840c2;border-color:#56967880}
+#desktop .bc-mac-overlay button:focus-visible,#desktop .bc-mac-control button:focus-visible{outline:2px solid #f7bbcb;outline-offset:2px}
+/* Dock placement on desktops and non-phone tablets. The same Dock preferences
+   remain browser-account scoped; touch phones retain their iOS-like bottom dock. */
+@media(min-width:621px){
+ #desktop[data-bc-dock-position="left"]>.dockwrap,
+ #desktop[data-bc-dock-position="right"]>.dockwrap{
+  position:absolute!important;z-index:850;top:50%!important;bottom:auto!important;
+  width:auto!important;max-height:80vh;padding:8px!important;display:flex!important;
+  transform:translate3d(0,-50%,0)!important;opacity:1;
+ }
+ #desktop[data-bc-dock-position="left"]>.dockwrap{left:7px!important;right:auto!important}
+ #desktop[data-bc-dock-position="right"]>.dockwrap{right:7px!important;left:auto!important}
+ #desktop[data-bc-dock-position="left"]>.dockwrap .dock,
+ #desktop[data-bc-dock-position="right"]>.dockwrap .dock{
+  display:flex;flex-direction:column!important;max-height:78vh;overflow:auto;scrollbar-width:none;padding:11px!important;
+ }
+ #desktop[data-bc-dock-position="left"]>.dockwrap .dock::-webkit-scrollbar,
+ #desktop[data-bc-dock-position="right"]>.dockwrap .dock::-webkit-scrollbar{display:none}
+ #desktop[data-bc-dock-position="left"].os-dock-auto-hide:not(.os-dock-revealed)>.dockwrap{
+  transform:translate3d(calc(-100% - 18px),-50%,0)!important;opacity:0!important;pointer-events:none!important
+ }
+ #desktop[data-bc-dock-position="right"].os-dock-auto-hide:not(.os-dock-revealed)>.dockwrap{
+  transform:translate3d(calc(100% + 18px),-50%,0)!important;opacity:0!important;pointer-events:none!important
+ }
+ #desktop[data-bc-dock-position="left"].os-dock-auto-hide.os-dock-revealed>.dockwrap,
+ #desktop[data-bc-dock-position="right"].os-dock-auto-hide.os-dock-revealed>.dockwrap{
+  transform:translate3d(0,-50%,0)!important;opacity:1!important;visibility:visible!important;pointer-events:auto!important
+ }
+ #desktop[data-bc-dock-position="left"].os-dock-auto-hide>.os-dock-edge,
+ #desktop[data-bc-dock-position="right"].os-dock-auto-hide>.os-dock-edge{
+  position:absolute!important;top:0!important;bottom:0!important;height:100%!important;width:10px!important;transform:none!important
+ }
+ #desktop[data-bc-dock-position="left"].os-dock-auto-hide>.os-dock-edge{left:0!important;right:auto!important}
+ #desktop[data-bc-dock-position="right"].os-dock-auto-hide>.os-dock-edge{right:0!important;left:auto!important}
+}
+#desktop.bc-os-fullscreen-active .topbar{transform:translateY(-110%)!important;opacity:0!important;pointer-events:none!important;transition:transform .22s ease,opacity .22s ease!important;position:absolute!important;z-index:2147481800;top:0;left:0;right:0}
+#desktop.bc-os-fullscreen-active.bc-os-menu-edge-open .topbar{transform:translateY(0)!important;opacity:1!important;pointer-events:auto!important}
+#desktop.bc-os-fullscreen-active>.dockwrap{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+#desktop.bc-os-fullscreen-active.bc-os-dock-edge-open>.dockwrap{
+ opacity:1!important;visibility:visible!important;pointer-events:auto!important;
+ z-index:2147481799!important;transform:translate3d(0,0,0)!important;
+}
+#desktop.bc-os-fullscreen-active.bc-os-dock-edge-open>.dockwrap .dock{pointer-events:auto!important}
+
+#desktop.bc-os-fullscreen-active>.os-dock-edge{display:none!important}
+#desktop .os-window.bc-os-fullscreen{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;border-radius:0!important;max-width:none!important;max-height:none!important;z-index:800!important}
+#desktop .os-window.bc-os-fullscreen .os-window-head{border-radius:0!important}
+/* Spotlight lives in a centered sheet; it does not permanently occupy the desktop. */
+#desktop .bc-mac-spotlight{
+ position:absolute;inset:0;z-index:2147482000;
+ display:flex;align-items:flex-start;justify-content:center;
+ padding:clamp(68px,14vh,165px) 15px 15px;box-sizing:border-box;
+ background:rgba(1,2,6,.38);backdrop-filter:blur(16px);
+ -webkit-backdrop-filter:blur(16px);
+}
+#desktop .bc-mac-spotlight-panel{
+ width:min(660px,100%);max-height:65vh;overflow:hidden;display:flex;flex-direction:column;
+ background:linear-gradient(145deg,rgba(54,55,65,.93),rgba(11,12,19,.97));
+ border:1px solid #ffffff44;border-radius:22px;
+ box-shadow:0 20px 80px #000b,inset 0 1px #ffffff25;
+}
+#desktop .bc-mac-spotlight-panel>input{
+ box-sizing:border-box;width:100%;height:70px;flex-shrink:0;outline:0;
+ padding:13px 25px;background:transparent;border:0;border-bottom:1px solid #ffffff22;
+ font:500 21px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:white;
+}
+#desktop .bc-mac-spotlight-results{display:flex;flex-direction:column;gap:3px;padding:10px;overflow:auto}
+#desktop .bc-mac-spotlight-result{
+ min-height:46px;width:100%;text-align:left;border:0;border-radius:12px;
+ padding:12px 16px;color:#f1eef3;background:#ffffff0d;font-size:14px;
+}
+#desktop .bc-mac-spotlight-result:hover,#desktop .bc-mac-spotlight-result:focus-visible{
+ background:#9d23416e;outline:0;
+}
+#desktop .bc-mac-spotlight-button{
+ min-width:34px;min-height:34px;display:grid;place-items:center;
+ border:1px solid #ffffff22;border-radius:9px;
+ background:#ffffff0e;color:#f5f3f7;font-size:24px;cursor:pointer;
+}
+/* The Desktop folder draws authenticated files directly on the desktop canvas.
+   The names are rendered as plain text; no unsafe file HTML is ever injected. */
+#desktop .bc-mac-desktop-canvas{
+ position:absolute;top:clamp(85px,11vh,140px);right:clamp(12px,1.8vw,35px);
+ width:min(280px,24vw);max-height:65vh;z-index:7;pointer-events:none;
+}
+#desktop .bc-mac-desktop-caption{
+ color:#e5e4e9;font-size:10px;font-weight:770;letter-spacing:.18em;
+ margin:0 0 13px 4px;text-shadow:0 2px 10px #000c;
+}
+#desktop .bc-mac-desktop-items{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:9px;align-content:start;max-height:57vh;overflow:hidden;pointer-events:auto;
+}
+#desktop .bc-mac-desktop-item{
+ border:1px solid transparent;border-radius:16px;background:transparent;
+ padding:9px 3px;min-height:93px;display:flex;flex-direction:column;
+ gap:7px;align-items:center;justify-content:center;color:#f0eef3;
+ font:570 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+ text-align:center;overflow:hidden;text-overflow:ellipsis;
+ text-shadow:0 2px 10px #000c;cursor:pointer;
+}
+#desktop .bc-mac-desktop-item:hover,#desktop .bc-mac-desktop-item:focus-visible{
+ background:rgba(82,85,102,.35);border-color:#ffffff35;outline:0;
+}
+#desktop .bc-mac-desktop-file-icon{
+ display:grid;place-items:center;width:55px;height:55px;font-size:31px;
+ border-radius:14px;border:1px solid #ffffff40;
+ background:linear-gradient(145deg,#555765ad,#0b1025d9);
+ box-shadow:0 8px 24px #000a,inset 0 1px #ffffff30;
+}
+#desktop .bc-mac-desktop-folder .bc-mac-desktop-file-icon{background:linear-gradient(145deg,#4d82a7e0,#10182fbf)}
+#desktop .bc-mac-desktop-stacks .bc-mac-desktop-item:not(.bc-mac-desktop-folder){
+ transform:scale(.92);box-shadow:-4px 4px 0 -1px #ffffff15;
+}
+/* Stage Manager keeps the active window usable while placing other windows
+   into the left rail, without suspending or destroying any iframe content. */
+#desktop.bc-stage-manager>.os-window.bc-stage-background:not([hidden]){
+ opacity:0!important;visibility:hidden!important;pointer-events:none!important;
+}
+#desktop .bc-mac-stage-rail{
+ position:absolute;z-index:900;left:9px;top:50%;
+ transform:translateY(-50%);width:112px;max-height:70vh;
+ display:flex;flex-direction:column;gap:11px;overflow:auto;
+ padding:6px;scrollbar-width:none;
+}
+#desktop .bc-mac-stage-thumb{
+ display:grid;place-items:center;min-height:89px;
+ padding:12px 8px;border:1px solid #ffffff33;border-radius:16px;
+ color:#f0eef5;font-size:11px;font-weight:650;
+ background:linear-gradient(145deg,#444454bb,#11111edc);
+ box-shadow:0 9px 22px #000a;overflow:hidden;
+}
+#desktop.bc-stage-manager>.os-window:not(.bc-stage-background):not([hidden]):not(.bc-os-fullscreen){
+ left:max(135px,calc(50% - 37vw))!important;
+}
+#desktop .side.bc-system-panel:has(.glass):not([hidden]){transition:filter .22s ease,opacity .22s ease}
+#desktop:has(>.os-window:not([hidden])) .side.bc-system-panel{
+ filter:grayscale(.92);opacity:.78;
+}
+#desktop:has(>.os-window:not([hidden])) .side.bc-system-panel:hover{filter:none;opacity:1}
+@media(max-width:1000px){
+ #desktop .bc-mac-launch-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+ #desktop .bc-mac-window-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:620px){
+ #desktop .bc-mac-launch-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+ #desktop .bc-mac-window-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #desktop .bc-mac-panel{min-height:auto;height:calc(100dvh - 26px);padding:16px}
+ #desktop .bc-mac-app-art{width:54px;height:54px}
+ #desktop .bc-mac-app-name{font-size:11px}
+ #desktop .bc-mac-control-button{display:none}
+}
+@media(max-height:750px){#desktop .bc-mac-app-art{width:clamp(48px,5.4vw,68px);height:clamp(48px,5.4vw,68px)}#desktop .bc-mac-launch-grid{gap:4px 9px}#desktop .bc-mac-app{gap:5px}}
+@media(prefers-reduced-motion:reduce){#desktop .bc-mac-app,#desktop .bc-mac-control,#desktop .bc-mac-overlay,#desktop .topbar{transition:none!important}}

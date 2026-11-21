@@ -70,7 +70,14 @@ jobs:
             grep -q 'bc-three-device-os' "/tmp/blackcell-$device.html"
             grep -q 'bc-concept-mobile-nav' "/tmp/blackcell-$device.html"
             grep -q 'bc-concept-quick' "/tmp/blackcell-$device.html"
-            grep -q 'data-smoke-stage="flex"' "/tmp/blackcell-$device.html"
+            # The Mac-workstation intentionally hides the legacy dashboard; on desktop/iPad
+            # a hidden stage is correct, while the iPhone is validated by SpringBoard CI.
+            if [[ "$device" = iphone ]]; then
+              grep -Eq 'data-smoke-stage="(flex|none)"' "/tmp/blackcell-$device.html"
+            else
+              grep -q 'data-smoke-stage="none"' "/tmp/blackcell-$device.html"
+              grep -q 'bc-mac-dock-launchpad' "/tmp/blackcell-$device.html"
+            fi
             grep -q 'data-smoke-active="yes"' "/tmp/blackcell-$device.html"
             if [ "$device" = iphone ]; then
               grep -q 'data-smoke-nav="grid"' "/tmp/blackcell-$device.html"

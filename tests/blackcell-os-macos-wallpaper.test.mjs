@@ -11,8 +11,8 @@ test('Midnight Silk is the new default and old Obsidian layouts remain available
  assert.match(os,/desktopClean:true/);
  assert.match(os,/wallet=|wallpaperManager/);
  assert.match(html,/blackcell-os-macos-midnight\.css\?v=20261121-1/);
- assert.match(html,/blackcell-os-macos-desktop\.js\?v=20261121-1/);
- assert.match(html,/blackcell-os\.js\?v=120-macos-personal-wallpaper/);
+ assert.match(html,/blackcell-os-macos-desktop\.js\?v=20261121-(?:1|2)/);
+ assert.match(html,/blackcell-os\.js\?v=(?:120-macos-personal-wallpaper|121-mac-workspaces)/);
  assert.match(skin,/blackcell-os-wallpaper-midnight-mobile\.svg/);
  assert.match(skin,/blackcell-os-wallpaper-midnight\.svg/);
  assert.match(skin,/data-bc-wallpaper="custom"/);
