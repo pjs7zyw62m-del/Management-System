@@ -682,6 +682,67 @@ async function toggleRoom(){
  }catch(e){show('entriesFeedback','Could not change room access: '+fail(e))}
  finally{state.busy=false}
 }
+function updateRedlineResetControls(){
+ const room=state.room,hasArchive=!!room?.current_session_started_at;
+ const tools=$('redlineSessionTools'),actions=$('redlineResetActions');
+ if(tools)tools.hidden=!room;
+ if(actions)actions.hidden=!state.isOwner||!room;
+ const archive=$('redlineArchiveToggle');
+ if(archive){
+  archive.hidden=!hasArchive;
+  archive.textContent=state.showArchive?'← RETURN TO CURRENT SESSION':'VIEW PREVIOUS RECORDS ↗';
+  archive.setAttribute('aria-pressed',String(state.showArchive));
+ }
+ const description=$('redlineSessionDescription');
+ if(description)description.textContent=state.showArchive
+  ?'ARCHIVE · Earlier photos, messages and payment records are preserved. They have not been deleted or cancelled.'
+  :hasArchive
+   ?'CURRENT SESSION · A fresh REDLINE workspace. Previous records and unpaid balances remain in the archive.'
+   :'CURRENT SESSION · Your verified private REDLINE room.';
+ document.body.classList.toggle('bc-redline-archive-view',state.showArchive);
+ window.dispatchEvent(new Event('blackcell:redline:session-mode'));
+}
+async function setRedlineArchiveView(archive){
+ if(!state.room)return;
+ if(archive&&!state.room.current_session_started_at)return;
+ state.showArchive=!!archive;state.entryFingerprint='';state.images.clear();
+ updateRedlineResetControls();
+ setFilter(state.showArchive?'all':state.isOwner?'reviewed':'all');
+ await loadEntries({force:true});
+ window.dispatchEvent(new Event('blackcell:redline:state'));
+}
+async function startRedlineFresh(all=false){
+ if(!state.isOwner||!state.room||state.busy)return;
+ const title=all?'ALL YOUR REDLINE ROOMS':'THIS PRIVATE ROOM';
+ const phrase=all?'RESET REDLINE':'START FRESH';
+ const entered=window.prompt(
+  'START FRESH · '+title+'\n\nThe active workspace will appear blank. Older photos, messages and financial records will be archived—not deleted. Previous unpaid amounts remain owed and accessible in Archive.\n\nType '+phrase+' to confirm:',''
+ );
+ if(entered!==phrase)return;
+ if(!window.confirm('Confirm '+title+'? Old history remains accessible in Archive, including outstanding balances.'))return;
+ state.busy=true;
+ const status=$('redlineResetStatus');
+ if(status)status.textContent='Verifying owner authorization and starting a fresh session…';
+ $('redlineStartFreshRoom').disabled=$('redlineMasterReset').disabled=true;
+ try{
+  await verify();
+  const {data,error}=await db.rpc('corp_owner_redline_start_fresh',{
+   p_confirmation:phrase,p_room_id:all?null:state.room.id
+  });
+  if(error||data?.ok!==true||(!all&&data.rooms_reset!==1)){
+   throw Error(data?.reason||error?.message||'The server did not confirm the reset.');
+  }
+  state.showArchive=false;state.entryFingerprint='';state.images.clear();
+  await refresh({force:true});
+  if(status)status.textContent='Fresh REDLINE session ready. '+data.rooms_reset+' room(s) archived. No financial records or photos deleted.';
+  window.dispatchEvent(new Event('blackcell:redline:reset'));
+ }catch(e){
+  if(status)status.textContent='Unable to start fresh: '+fail(e);
+ }finally{
+  state.busy=false;
+  $('redlineStartFreshRoom').disabled=$('redlineMasterReset').disabled=false;
+ }
+}
 async function copyLink(){
  if(!state.room)return;
  const link=roomLink(state.room);
@@ -711,6 +772,9 @@ function wireEvents(){
   void refresh({force:true}).catch(e=>show('entriesFeedback',fail(e)));
  });
  $('closeRoomBtn').addEventListener('click',()=>void toggleRoom());
+ $('redlineArchiveToggle').addEventListener('click',()=>void setRedlineArchiveView(!state.showArchive));
+ $('redlineStartFreshRoom').addEventListener('click',()=>void startRedlineFresh(false));
+ $('redlineMasterReset').addEventListener('click',()=>void startRedlineFresh(true));
  $('copyRoomLink').addEventListener('click',()=>void copyLink());
  $('ledgerScopeToggle').addEventListener('click',()=>void toggleLedgerScope());
  $('ledgerSignOut').addEventListener('click',async()=>{
@@ -763,7 +827,11 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
    }))
   };
  },
- async loadMessages(){
+ async toggleArchive(){
+  await setRedlineArchiveView(!state.showArchive);
+  return {archiveMode:state.showArchive};
+ },
+  async loadMessages(){
   const roomId=state.room?.id;
   if(state.closed||!state.user||!roomId)return [];
   let query=db.from(REDLINE_MESSAGES)
