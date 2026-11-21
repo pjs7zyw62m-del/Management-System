@@ -27,7 +27,7 @@ test('Receiver has a redesigned and owner-gated command dashboard',()=>{
  assert.match(receiver,/OUTSTANDING AMOUNTS/);
  assert.match(receiver,/RECORDED PAID/);
  assert.match(receiver,/Chat with your sender/);
- assert.match(receiver,/Manage Rooms/);
+ assert.match(receiver,/Rooms & Access/);
  assert.match(receiver,/document\.getElementById\(source\)/);
  assert.match(css,/body\.bc-redline-receiver\{/);
  assert.match(css,/background:#000!important/);
@@ -88,8 +88,8 @@ test('Sender gets archived earnings and chat without permission to upload while 
  assert.match(ledger,/state\.showArchive\)throw Error\('Return to the current session/);
 });
 test('REDLINE receiver resources are versioned and original form and security remain intact',()=>{
- assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-inline-owner-chat1/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-inline-owner-chat1/);
+ assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-compact-desktop2/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-compact-desktop2/);
  assert.match(html,/private-photo-ledger\.js\?v=20261121-level-zero2/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=20261121-stable-brand1/);
  assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-inline-owner-chat1/);
@@ -111,4 +111,15 @@ test('Receiver can view and reply in the selected private room without opening a
  assert.match(sender,/photoAction\.hidden=true/);
  assert.match(sender,/Message your sender/);
  assert.match(css,/rr-chat-mount/);
+});
+
+test('Desktop receiver is compact with photo review beside private chat',()=>{
+ assert.match(receiver,/intro\.append\(title\)/);
+ assert.match(receiver,/sidebar\.prepend\(chatPanel\)/);
+ assert.match(receiver,/nav\.after\(chatPanel\)/);
+ assert.match(receiver,/owner\.append\(access\)/);
+ assert.match(css,/REDLINE desktop compact receiver/);
+ assert.match(css,/min-height:51px!important/);
+ assert.match(css,/min-height:32px!important/);
+ assert.match(css,/grid-template-columns:minmax\(0,1\.3fr\) minmax\(320px,1fr\)/);
 });
