@@ -88,9 +88,12 @@
  const payFull=button('PAY IN FULL',()=>void recordPaidInFull(),'rr-nav-button rr-pay-full');
  payFull.setAttribute('aria-label','Record REDLINE room balance paid in full');
  payFull.title='Record an external payment in the room ledger. REDLINE does not transfer money.';
+ const partialPay=button('PARTIAL PAYMENT',()=>void openPartialPayment(),'rr-nav-button rr-pay-partial');
+ partialPay.setAttribute('aria-label','Record partial payment of the private room balance');
+ partialPay.title='Record a smaller external payment; no actual money is transferred.';
  const payFeedback=make('span','rr-pay-feedback','');
  payFeedback.setAttribute('role','status');payFeedback.hidden=true;
- payColumn.append(payFull,payFeedback);
+ payColumn.append(payFull,partialPay,payFeedback);
  nav.append(menuShell,payColumn);
  let payBusy=false;
  function setPayFeedback(message){
