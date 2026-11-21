@@ -608,3 +608,52 @@ body.redline-sender-simple .redline-simple-tab{
 .redline-sender-payment-line>div{display:flex;flex-direction:column;gap:4px;min-width:0}
 .redline-sender-payment-line strong{color:#fff;font-size:12px}
 .redline-sender-payment-line small{color:#c0a7b0;font-size:10px;overflow-wrap:anywhere}
+
+/* Running timers live above the message scroller, not as a sticky overlay
+   obscuring chat bubbles. Preserve the actual timed photo beneath the values. */
+.redline-message-card > .redline-chat-timer-slot[hidden]{display:none!important}
+.redline-message-card > .redline-chat-timer-slot:not([hidden]){
+ display:block!important;flex:0 0 auto!important;min-height:0!important;
+ max-height:min(38dvh,340px);overflow-y:auto;overscroll-behavior:contain;
+ padding:8px 10px;border-bottom:1px solid #873047;background:#170910;
+}
+.redline-message-card > .redline-chat-timer-slot .redline-chat-timer-pinned{
+ display:flex!important;position:static!important;top:auto!important;
+ width:100%!important;margin:0!important;box-shadow:none!important;
+ padding:9px 10px!important;gap:5px!important;
+ border:1px solid #f33565!important;border-left:4px solid #ff3158!important;
+ background:#260a14!important;
+}
+.redline-message-card > .redline-message-feed{
+ flex:1 1 0!important;min-height:0!important;overflow-y:auto!important;
+ overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch;
+}
+@media(max-width:719px){
+ .redline-message-card > .redline-chat-timer-slot:not([hidden]){
+  max-height:min(30dvh,230px)!important;padding:6px 7px!important;
+ }
+ .redline-message-card > .redline-chat-timer-slot .redline-chat-timer-pinned{
+  gap:3px!important;padding:7px 8px!important;
+ }
+ .redline-message-card > .redline-chat-timer-slot .redline-chat-timer-title{
+  font-size:11px!important;
+ }
+ .redline-message-card > .redline-chat-timer-slot .redline-chat-timer-rate{
+  font-size:10px!important;
+ }
+ .redline-message-card > .redline-chat-timer-slot .redline-chat-timer-values{
+  gap:4px!important;font-size:12px!important;
+ }
+ .redline-message-card > .redline-chat-timer-slot .redline-chat-timer-amount{
+  font-size:14px!important;
+ }
+ .redline-message-card > .redline-chat-timer-slot .redline-chat-timer-pinned>small{
+  display:none!important;
+ }
+ .redline-message-card > .redline-chat-timer-slot .redline-chat-timer-photo{
+  gap:3px!important;padding-top:5px!important;margin-top:3px!important;
+ }
+ .redline-message-card > .redline-chat-timer-slot .redline-chat-timer-image{
+  max-height:min(12dvh,100px)!important;
+ }
+}

@@ -53,14 +53,17 @@ const setup=String.raw`<script>
    }));
   },1000);
   setTimeout(()=>{
-   const box=document.querySelector('.redline-message-feed .redline-chat-timer[data-timer-phase="active"]');
+   const box=document.querySelector('.redline-chat-timer-slot .redline-chat-timer[data-timer-phase="active"]');
    document.body.dataset.timerStartVisible=String(Boolean(box&&box.textContent.includes('TIMER STARTED')&&
     /^\$0\.\d{4} earned$/.test(box.querySelector('.redline-chat-timer-amount')?.textContent||'')&&
     !box.querySelector('.redline-chat-timer-amount')?.textContent.includes('$0.0000')&&
     box.textContent.includes('$0.0100/second')));
    document.body.dataset.timerCorrectRoom=String(Boolean(
     box&&(owner?box.closest('#redlineReceiverChatMount'):box.closest('#redlineSimpleSender'))));
-   document.body.dataset.timerPinnedDuring=String(Boolean(box?.classList.contains('redline-chat-timer-pinned')));
+   document.body.dataset.timerPinnedDuring=String(Boolean(
+    box?.classList.contains('redline-chat-timer-pinned')&&
+    box.closest('.redline-chat-timer-slot')&&
+    !box.closest('.redline-message-feed')));
    const img=box?.querySelector('.redline-chat-timer-photo .redline-chat-timer-image');
    document.body.dataset.timerPhotoUnderneath=String(Boolean(img&&
     img.src==='https://example.com/private-timer-photo.jpg'&&
@@ -81,7 +84,7 @@ const setup=String.raw`<script>
    document.body.dataset.timerStopVisible=String(Boolean(box&&box.textContent.includes('TIMER STOPPED')&&box.textContent.includes('$0.15 final')));
    document.body.dataset.timerStartPreserved=String(Boolean(document.querySelector('.redline-message-feed .redline-chat-timer[data-timer-phase="start"]')));
    document.body.dataset.timerNoDuplicate=String(document.querySelectorAll('.redline-message-feed .redline-chat-timer[data-timer-phase="stop"]').length===1);
-   document.body.dataset.timerUnpinnedAfter=String(!document.querySelector('.redline-message-feed .redline-chat-timer-pinned'));
+   document.body.dataset.timerUnpinnedAfter=String(!document.querySelector('.redline-chat-timer-slot .redline-chat-timer-pinned'));
   },7200);
  });
  </script>

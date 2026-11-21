@@ -58,7 +58,7 @@ const mock=String.raw`<script>
   window.dispatchEvent(new Event('blackcell:redline:bridge'));
   window.dispatchEvent(new Event('blackcell:redline:state'));
   setTimeout(()=>{
-   const active=document.querySelector('.redline-message-feed .redline-chat-timer[data-timer-phase="active"]');
+   const active=document.querySelector('.redline-chat-timer-slot .redline-chat-timer[data-timer-phase="active"]');
    document.body.dataset.senderTimerStarted=String(Boolean(active&&active.textContent.includes('TIMER STARTED')));
    document.body.dataset.senderTimerEarned=String(Boolean(active&&/^\$0\.\d{4} earned$/.test(
     active.querySelector('.redline-chat-timer-amount')?.textContent||'')&&
