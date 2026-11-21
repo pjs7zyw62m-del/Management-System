@@ -911,11 +911,24 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
   }
   return {accessScope:result.data.access_scope,clearanceLevel:result.data.clearance_level};
  },
+ async presenceTouch(roomId,sessionId,active=true){
+  if(state.closed||!state.user||!validId(roomId)||!validId(sessionId)||typeof active!=='boolean'||(active&&state.room?.id!==roomId))throw Error('REDLINE room presence unavailable.');
+  const result=await db.rpc('corp_redline_presence_touch',{p_room_id:roomId,p_session_id:sessionId,p_active:active});
+  if(result.error||result.data?.ok!==true)throw Error(fail(result.error||result.data?.reason||'Presence update failed.'));
+  return true;
+ },
+ async presenceStatus(roomId){
+  if(state.closed||!state.user||!state.room||state.room.id!==roomId||!validId(roomId))throw Error('Verified REDLINE room required.');
+  const result=await db.rpc('corp_redline_presence_status',{p_room_id:roomId});
+  if(result.error||result.data?.ok!==true)throw Error(fail(result.error||result.data?.reason||'Presence status unavailable.'));
+  return {online:result.data.online===true,lastActiveAt:result.data.last_active_at||null};
+ },
  snapshot(){
   if(state.closed||!state.user||!state.room||$('ledgerApp').hidden)return null;
   return {
    roomId:state.room.id,
    userId:state.user.id,
+   peerName:state.isOwner?participantName(state.room.member_id):participantName(state.room.owner_id),
    isOwner:state.isOwner,
    roomActive:state.room.active===true,
    roomTitle:state.room.title,
