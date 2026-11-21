@@ -195,7 +195,15 @@
  },'rr-photo-expand');
  expandPhoto.setAttribute('aria-pressed','false');
  expandPhoto.setAttribute('aria-label','Expand incoming photo to use all available photo viewer height');
- incomingHeader.append(expandPhoto,photoClose);
+ const fullPhoto=button('⛶ VIEW FULL PHOTO',()=>{
+  const pricedMode=document.body.classList.contains('rr-timing-priced-photo');
+  const target=pricedMode
+   ? $('#redlinePhotoTimerPanel .rr-timer-full')
+   : $('#reviewQueueCurrent .photo-image-btn');
+  if(target)target.click();
+ },'rr-photo-fullscreen');
+ fullPhoto.setAttribute('aria-label','Open the entire original photo with pricing controls');
+ incomingHeader.append(fullPhoto,expandPhoto,photoClose);
  // BLACKCELL iMessage-style two-level media viewer: live submission above,
  // reviewed/priced library below. Reparent the SAME ledger elements.
  const reviewStage=make('div','rr-review-stage');reviewStage.id='redlineReceiverReviewStage';
@@ -224,19 +232,19 @@
  divider.title='Drag to resize Photos. Double-click to reset.';
  workspace.insertBefore(divider,photos);
  roomBody?.before(workspace);
- const MEDIA_KEY='blackcell:redline:receiver:imessage-width-v1';
- const DEFAULT_MEDIA=.48;
+ const MEDIA_KEY='blackcell:redline:receiver:photo-first-width-v2';
+ const DEFAULT_MEDIA=.67;
  const readWidth=()=>{
-  try{const n=Number(window.localStorage.getItem(MEDIA_KEY));return n>=.30&&n<=.74?n:DEFAULT_MEDIA}
+  try{const n=Number(window.localStorage.getItem(MEDIA_KEY));return n>=.28&&n<=.85?n:DEFAULT_MEDIA}
   catch{return DEFAULT_MEDIA}
  };
  let mediaRatio=readWidth(),dragPointer=null;
  // On a narrow OS window, the photo pane behaves like iMessage's overlay;
  // on desktop/tablet it sits beside chat. No horizontal size slider.
  let mediaOpen=true,mediaInitialised=false;
- const HEIGHT_KEY='blackcell:redline:receiver:imessage-height-v1';
- const DEFAULT_HEIGHT=.73;
- const readHeight=()=>{try{const n=Number(window.localStorage.getItem(HEIGHT_KEY));return n>=.34&&n<=.82?n:DEFAULT_HEIGHT}catch{return DEFAULT_HEIGHT}};
+ const HEIGHT_KEY='blackcell:redline:receiver:photo-first-height-v2';
+ const DEFAULT_HEIGHT=.80;
+ const readHeight=()=>{try{const n=Number(window.localStorage.getItem(HEIGHT_KEY));return n>=.32&&n<=.90?n:DEFAULT_HEIGHT}catch{return DEFAULT_HEIGHT}};
  let heightRatio=readHeight(),heightPointer=null;
  const usableWidth=()=>workspace.getBoundingClientRect().width||window.innerWidth;
  function range(){
@@ -244,7 +252,7 @@
   const left=Math.min(260,Math.max(205,width*.27));
   const right=Math.min(380,Math.max(270,width*.36));
   const min=Math.max(.28,right/width);
-  const max=Math.max(min,Math.min(.74,1-(left+12)/width));
+  const max=Math.max(min,Math.min(.85,1-(left+12)/width));
   return {min,max};
  }
  function applyWidth(ratio,persist=false){
@@ -285,7 +293,7 @@
   const area=Math.max(220,photos.getBoundingClientRect().height
    -(incomingHeader.getBoundingClientRect().height||49)-10);
   const min=Math.max(.32,Math.min(180,area*.36)/area);
-  const max=Math.min(.81,1-Math.min(125,area*.26)/area);
+  const max=Math.min(.90,1-Math.min(90,area*.20)/area);
   return {area,min,max:Math.max(min,max)};
  }
  function applyHeight(ratio,persist=false){
