@@ -68,10 +68,77 @@
   goTo('#redlineSessionTools');
  },'rr-nav-button rr-nav-archive');
  nav.append(review,history,message,manage,archive);
+ const access=make('section','rr-access-panel');
+ access.id='redlineReceiverAccessPanel';
+ access.append(make('span','rr-kicker','OWNER SECURITY · EMPLOYEE RESTRICTIONS'),make('h3','','REDLINE ONLY ACCESS'));
+ access.append(make('p','','Choose an employee, including a Level 1 account. REDLINE Only restricts which apps they can use without changing their numeric clearance level.'));
+ const accessRow=make('div','rr-access-row');
+ const selector=make('select','rr-access-select');
+ selector.setAttribute('aria-label','Employee to manage');selector.id='rrAccessEmployee';
+ selector.append(new Option('Loading employee accounts…',''));
+ const action=button('LOADING ACCESS…',()=>void changeAccess(),'rr-access-action');
+ action.disabled=true;
+ accessRow.append(selector,action);
+ const accessState=make('p','rr-access-state','Verifying owner permissions…');
+ accessState.setAttribute('role','status');
+ access.append(accessRow,accessState);
+ let accounts=[],accessBusy=false,accessLoaded=false,accessRefreshAt=0;
+ const currentAccount=()=>accounts.find(x=>x.userId===selector.value);
+ function renderAccess(){
+  const selected=currentAccount();
+  action.disabled=accessBusy||!selected;
+  if(!selected){action.textContent='SELECT AN EMPLOYEE';if(accessLoaded)accessState.textContent='Select an employee to view their access.';return}
+  const restricted=selected.accessScope==='ledger_only';
+  action.textContent=restricted?'RESTORE STANDARD ACCESS':'SET REDLINE ONLY';
+  accessState.textContent=(selected.name||'Employee')+' · Level '+(selected.clearance??'—')+
+   ' · '+(restricted?'REDLINE ONLY':'STANDARD APP ACCESS')+
+   (selected.active?'':' · INACTIVE');
+ }
+ selector.addEventListener('change',renderAccess);
+ async function loadAccess(force=false){
+  if(accessBusy||app.hidden||owner.hidden)return;
+  if(!force&&accessLoaded&&Date.now()-accessRefreshAt<30000)return;
+  accessBusy=true;action.disabled=true;
+  const previous=selector.value;
+  try{
+   const api=window.BLACKCELL_REDLINE_API;
+   if(!api?.ownerAccessMembers)throw Error('REDLINE security controls are still loading.');
+   accounts=await api.ownerAccessMembers();
+   selector.replaceChildren(new Option('Select an employee…',''));
+   for(const account of accounts){
+    selector.append(new Option(account.name+' · Level '+(account.clearance??'—'),account.userId));
+   }
+   if(accounts.some(x=>x.userId===previous))selector.value=previous;
+   accessLoaded=true;accessRefreshAt=Date.now();renderAccess();
+  }catch(error){accessLoaded=false;accessState.textContent='Could not load security access: '+String(error?.message||error)}
+  finally{accessBusy=false;renderAccess()}
+ }
+ async function changeAccess(){
+  const account=currentAccount();
+  if(!account||accessBusy)return;
+  const restrict=account.accessScope!=='ledger_only';
+  const ask=restrict
+   ?'Set '+account.name+' (Level '+account.clearance+') to REDLINE ONLY? Their numeric clearance stays the same, but other apps will be blocked.'
+   :'Restore normal application access for '+account.name+'? Their clearance remains Level '+account.clearance+'.';
+  if(!window.confirm(ask))return;
+  accessBusy=true;action.disabled=true;accessState.textContent='Saving verified security access…';
+  try{
+   const response=await window.BLACKCELL_REDLINE_API.ownerSetRedlineOnly(account.userId,restrict);
+   account.accessScope=response.accessScope;
+   accessState.textContent='Access updated successfully.';
+   await loadAccessAfterChange();
+  }catch(error){accessState.textContent='Change failed: '+String(error?.message||error)}
+  finally{accessBusy=false;renderAccess()}
+ }
+ async function loadAccessAfterChange(){
+  // Refresh from the server to display authoritative access state.
+  const fresh=await window.BLACKCELL_REDLINE_API.ownerAccessMembers();
+  accounts=fresh;accessRefreshAt=Date.now();
+ }
  const line=make('div','rr-security-line');
  line.append(make('span','rr-security-dot',''),make('strong','','RECEIVER ONLY'),
   make('span','','Owner-verification required for decisions, resets and payment records'));
- dashboard.append(header,stats,nav,line);
+ dashboard.append(header,stats,nav,access,line);
  app.querySelector('.page-heading')?.after(dashboard);
  // Move configuration below current room without recreating forms or listeners.
  if(owner.parentNode===app)app.append(owner);
@@ -80,6 +147,7 @@
   dashboard.hidden=!visible;
   document.body.classList.toggle('bc-redline-receiver',visible);
   if(!visible)return;
+  void loadAccess();
   const hasRoom=!room.hidden;
   status.textContent=hasRoom?'RECEIVER VERIFIED · PRIVATE ROOM':'RECEIVER VERIFIED · NO ROOM';
   status.classList.toggle('is-waiting',!hasRoom);
