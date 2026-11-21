@@ -50,11 +50,10 @@
   target.scrollIntoView({behavior:'smooth',block:'start'});
   if(target.matches('section[tabindex]'))target.focus({preventScroll:true});
  };
- const review=button('Review Photos',()=>goTo('#ownerReviewQueue'),'rr-nav-button is-primary');
- const history=button('Photo History',()=>{
-  $('#photoEntries')?.scrollIntoView({behavior:'smooth',block:'start'});
- },'rr-nav-button');
+ const review=button('Open Photos',()=>openMedia(),'rr-nav-button is-primary');
+ const history=button('Photo History',()=>openMedia(true),'rr-nav-button');
  const message=button('Private Chat',()=>{
+  closeMedia();
   goTo('#redlineReceiverChat');
   $('#redlineReceiverChat .redline-message-entry')?.focus({preventScroll:true});
  },'rr-nav-button');
@@ -76,7 +75,13 @@
  chatTitle.append(make('span','rr-chat-kicker','PRIVATE TWO-WAY CONVERSATION'),
   make('h3','','Chat with your sender'));
  const chatRoom=make('span','rr-chat-room','Selected private room');
- chatHeader.append(chatTitle,chatRoom);
+ const headerActions=make('div','rr-chat-head-actions');
+ const showMedia=button('▣ Photos',()=>openMedia(),'rr-chat-open-media');
+ showMedia.setAttribute('aria-label','Open REDLINE photo review beside chat');
+ showMedia.setAttribute('aria-expanded','true');
+ showMedia.setAttribute('aria-controls','redlineReceiverIncomingPhotos');
+ headerActions.append(chatRoom,showMedia);
+ chatHeader.append(chatTitle,headerActions);
  const chatMount=make('div','rr-chat-mount');chatMount.id='redlineReceiverChatMount';
  chatPanel.append(chatHeader,chatMount);
  const access=make('section','rr-access-panel');
@@ -177,126 +182,130 @@
   make('small','','New submissions appear automatically in the review queue.'));
  photos.append(incomingHeader);
  workspace.append(chatPanel,photos);
- // One live chat and one real review timeline share an adjustable split pane.
- // The separator works with mouse, touch, pen and keyboard.
- const divider=make('div','rr-split-divider');
- divider.id='redlineReceiverSplitDivider';
+ // Match BLACKCELL iMessage: chat is permanent, while the real photo-review
+ // panel slides in from the right. Its left edge resizes by dragging.
+ const photoClose=button('✕',()=>closeMedia(),'rr-photo-close');
+ photoClose.setAttribute('aria-label','Close photo review and return to full-width chat');
+ photoClose.title='Close Photos';
+ incomingHeader.append(photoClose);
+ const divider=make('div','rr-media-edge');
+ divider.id='redlineReceiverMediaEdge';
  divider.setAttribute('role','separator');
- divider.setAttribute('aria-label','Resize REDLINE chat and incoming photos');
  divider.setAttribute('aria-orientation','vertical');
+ divider.setAttribute('aria-label','Resize chat and photo review by dragging the edge');
  divider.setAttribute('aria-controls','redlineReceiverChat redlineReceiverIncomingPhotos');
- divider.title='Drag to resize chat and photos. Double-click to reset. Arrow keys also resize.';
  divider.tabIndex=0;
- divider.append(make('span','rr-split-grip','⋮⋮'));
+ divider.title='Drag to resize Photos. Double-click to reset.';
  workspace.insertBefore(divider,photos);
- const splitControls=make('div','rr-split-controls');
- splitControls.id='redlineReceiverSplitControls';
- const splitLabel=make('strong','rr-split-title','CHAT + PHOTOS · ONE WORKSPACE');
- const splitReadout=make('span','rr-split-readout','CHAT 36% · PHOTOS 64%');
- const splitRange=make('input','rr-split-range');
- splitRange.type='range';splitRange.min='20';splitRange.max='78';splitRange.step='1';
- splitRange.setAttribute('aria-label','Adjust the width of chat and photo viewer');
- splitRange.setAttribute('aria-controls','redlineReceiverChat redlineReceiverIncomingPhotos');
- const smallerChat=button('More Photo',()=>applySplit(splitRatio-.10,true),'rr-split-adjust');
- const largerChat=button('More Chat',()=>applySplit(splitRatio+.10,true),'rr-split-adjust');
- const defaultSplit=button('Reset',()=>applySplit(DEFAULT_SPLIT,true),'rr-split-reset');
- splitControls.append(splitLabel,smallerChat,splitRange,largerChat,splitReadout,defaultSplit);
- workspace.insertBefore(splitControls,chatPanel);
  roomBody?.before(workspace);
- const splitWorkspace=window.matchMedia('(min-width:420px)');
- const SPLIT_KEY='blackcell:redline:receiver:split-v1';
- const DEFAULT_SPLIT=.36;
- function readSplit(){
-  try{
-   const saved=Number(window.localStorage.getItem(SPLIT_KEY));
-   return Number.isFinite(saved)&&saved>=.2&&saved<=.76?saved:DEFAULT_SPLIT;
-  }catch{return DEFAULT_SPLIT}
+ const MEDIA_KEY='blackcell:redline:receiver:imessage-width-v1';
+ const DEFAULT_MEDIA=.48;
+ const readWidth=()=>{
+  try{const n=Number(window.localStorage.getItem(MEDIA_KEY));return n>=.30&&n<=.74?n:DEFAULT_MEDIA}
+  catch{return DEFAULT_MEDIA}
+ };
+ let mediaRatio=readWidth(),dragPointer=null;
+ // On a narrow OS window, the photo pane behaves like iMessage's overlay;
+ // on desktop/tablet it sits beside chat. No horizontal size slider.
+ let mediaOpen=true,mediaInitialised=false;
+ const usableWidth=()=>workspace.getBoundingClientRect().width||window.innerWidth;
+ function range(){
+  const width=Math.max(1,usableWidth());
+  const left=Math.min(260,Math.max(205,width*.27));
+  const right=Math.min(380,Math.max(270,width*.36));
+  const min=Math.max(.28,right/width);
+  const max=Math.max(min,Math.min(.74,1-(left+12)/width));
+  return {min,max};
  }
- let splitRatio=readSplit(),activePointer=null;
- function bounds(){
-  const width=Math.max(300,workspace.getBoundingClientRect().width||window.innerWidth);
-  const minChat=Math.max(140,Math.min(260,width*.30));
-  const minPhotos=Math.max(170,Math.min(330,width*.34));
-  const min=Math.max(.18,minChat/width);
-  const max=Math.max(min,Math.min(.78,1-(minPhotos+20)/width));
-  return {width,min,max};
- }
- function applySplit(ratio,persist=false){
-  const {min,max}=bounds();
-  splitRatio=Math.max(min,Math.min(max,ratio));
-  workspace.style.setProperty('--rr-chat-width',(splitRatio*100).toFixed(2)+'%');
+ function applyWidth(ratio,persist=false){
+  const {min,max}=range();
+  mediaRatio=Math.min(max,Math.max(min,ratio));
+  workspace.style.setProperty('--rr-media-width',(mediaRatio*100).toFixed(2)+'%');
   divider.setAttribute('aria-valuemin',String(Math.round(min*100)));
   divider.setAttribute('aria-valuemax',String(Math.round(max*100)));
-  divider.setAttribute('aria-valuenow',String(Math.round(splitRatio*100)));
-  divider.setAttribute('aria-valuetext','Chat '+Math.round(splitRatio*100)+' percent, photos '+Math.round((1-splitRatio)*100)+' percent');
-  splitRange.min=String(Math.round(min*100));
-  splitRange.max=String(Math.round(max*100));
-  splitRange.value=String(Math.round(splitRatio*100));
-  splitReadout.textContent='CHAT '+Math.round(splitRatio*100)+'% · PHOTOS '+Math.round((1-splitRatio)*100)+'%';
-  if(persist){
-   try{window.localStorage.setItem(SPLIT_KEY,String(splitRatio))}catch{}
+  divider.setAttribute('aria-valuenow',String(Math.round(mediaRatio*100)));
+  divider.setAttribute('aria-valuetext','Photos '+Math.round(mediaRatio*100)+' percent');
+  if(persist)try{window.localStorage.setItem(MEDIA_KEY,String(mediaRatio))}catch{}
+ }
+ function showPane(){
+  workspace.classList.toggle('rr-media-open',mediaOpen);
+  workspace.classList.toggle('rr-media-closed',!mediaOpen);
+  showMedia.setAttribute('aria-expanded',String(mediaOpen));
+  review.setAttribute('aria-expanded',String(mediaOpen));
+ }
+ function openMedia(history=false){
+  mediaOpen=true;showPane();
+  applyWidth(mediaRatio);
+  if(history){
+   const entries=$('#photoEntries');
+   if(entries)window.requestAnimationFrame(()=>entries.scrollIntoView({block:'nearest',behavior:'smooth'}));
   }
  }
- splitRange.addEventListener('input',()=>applySplit(Number(splitRange.value)/100));
- splitRange.addEventListener('change',()=>applySplit(Number(splitRange.value)/100,true));
- const moveFromPointer=event=>{
+ function closeMedia(){mediaOpen=false;showPane()}
+ const position=event=>{
   const rect=workspace.getBoundingClientRect();
-  if(!rect.width)return;
-  applySplit((event.clientX-rect.left)/rect.width);
+  if(rect.width<=0)return;
+  applyWidth((rect.right-event.clientX)/rect.width);
  };
  divider.addEventListener('pointerdown',event=>{
-  if(event.pointerType==='mouse'&&event.button!==0)return;
-  if(workspace.hidden)return;
-  activePointer=event.pointerId;
-  try{divider.setPointerCapture(activePointer)}catch{}
-  document.body.classList.add('rr-is-split-resizing');
-  moveFromPointer(event);
+  if(event.pointerType==='mouse'&&event.button!==0||!mediaOpen)return;
+  dragPointer=event.pointerId;
+  try{divider.setPointerCapture(dragPointer)}catch{}
+  document.body.classList.add('rr-media-resizing');
+  position(event);
   event.preventDefault();
  });
  divider.addEventListener('pointermove',event=>{
-  if(activePointer===event.pointerId)moveFromPointer(event);
+  if(dragPointer===event.pointerId)position(event);
  });
- const stopResize=event=>{
-  if(activePointer===null||event?.pointerId!==undefined&&event.pointerId!==activePointer)return;
-  try{if(divider.hasPointerCapture(activePointer))divider.releasePointerCapture(activePointer)}catch{}
-  activePointer=null;
-  document.body.classList.remove('rr-is-split-resizing');
-  applySplit(splitRatio,true);
- };
- divider.addEventListener('pointerup',stopResize);
- divider.addEventListener('pointercancel',stopResize);
- divider.addEventListener('lostpointercapture',stopResize);
- window.addEventListener('blur',()=>{if(activePointer!==null)stopResize()});
- divider.addEventListener('dblclick',()=>applySplit(DEFAULT_SPLIT,true));
+ function endDrag(event){
+  if(dragPointer===null||event?.pointerId!==undefined&&event.pointerId!==dragPointer)return;
+  const captured=dragPointer;dragPointer=null;
+  try{if(divider.hasPointerCapture(captured))divider.releasePointerCapture(captured)}catch{}
+  document.body.classList.remove('rr-media-resizing');
+  applyWidth(mediaRatio,true);
+ }
+ divider.addEventListener('pointerup',endDrag);
+ divider.addEventListener('pointercancel',endDrag);
+ divider.addEventListener('lostpointercapture',endDrag);
+ window.addEventListener('blur',()=>{if(dragPointer!==null)endDrag()});
+ divider.addEventListener('dblclick',()=>applyWidth(DEFAULT_MEDIA,true));
  divider.addEventListener('keydown',event=>{
-  let value=splitRatio;
-  if(event.key==='ArrowLeft'||event.key==='ArrowDown')value-=event.shiftKey?.10:.03;
-  else if(event.key==='ArrowRight'||event.key==='ArrowUp')value+=event.shiftKey?.10:.03;
-  else if(event.key==='Home')value=bounds().min;
-  else if(event.key==='End')value=bounds().max;
+  let ratio=mediaRatio;
+  if(event.key==='ArrowLeft')ratio+=event.shiftKey?.10:.03;
+  else if(event.key==='ArrowRight')ratio-=event.shiftKey?.10:.03;
+  else if(event.key==='Home')ratio=range().max;
+  else if(event.key==='End')ratio=range().min;
   else return;
-  event.preventDefault();
-  applySplit(value,true);
+  event.preventDefault();applyWidth(ratio,true);
  });
  if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{
-  if(!workspace.hidden)applySplit(splitRatio);
+  if(!workspace.hidden&&mediaOpen)applyWidth(mediaRatio);
  }).observe(workspace);
  function placeWorkspace(hasRoom){
-  // BLACKCELL OS may host REDLINE in a narrow iframe that the legacy
-  // responsive code labels "mobile"; that must not disable this workspace.
+  // Keep the original telephone-sized REDLINE view stacked. A narrower
+  // BLACKCELL OS window uses the sliding photo panel without losing chat.
   const handheld=/iPhone|iPod|Android.*Mobile|Windows Phone/i.test(navigator.userAgent||'');
-  const combined=splitWorkspace.matches&&(!handheld||window.innerWidth>=720)
+  const combined=window.innerWidth>=420&&(!handheld||window.innerWidth>=720)
    &&Boolean(hasRoom&&timeline&&roomBody);
-  document.body.classList.toggle('rr-split-active',combined);
   workspace.hidden=!combined;
+  document.body.classList.toggle('rr-imessage-mode',combined);
+  document.body.classList.remove('rr-split-active','rr-is-split-resizing');
   if(combined){
    if(chatPanel.parentNode!==workspace)workspace.insertBefore(chatPanel,divider);
    if(timeline.parentNode!==photos)photos.append(timeline);
-   applySplit(splitRatio);
+   if(!mediaInitialised){
+    mediaInitialised=true;
+    // Like iMessage Shared Media: show side-by-side on wide screens.
+    // On smaller OS windows keep chat visible until Photos is opened.
+    mediaOpen=window.innerWidth>=700;
+   }
+   showPane();applyWidth(mediaRatio);
   }else{
-   if(activePointer!==null)stopResize();
+   if(dragPointer!==null)endDrag();
    if(chatPanel.previousElementSibling!==nav)nav.after(chatPanel);
    if(timeline&&roomBody&&timeline.parentNode!==roomBody)roomBody.append(timeline);
+   mediaInitialised=false;
   }
  }
  // Security and room controls remain available beneath active conversations.
