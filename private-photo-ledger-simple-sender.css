@@ -202,3 +202,18 @@ body.redline-sender-simple.bc-ledger-mobile[data-ledger-view] #ledgerApp:not([hi
  #activeRoom:not([hidden])>.upload-access-status,
 body.redline-sender-simple.bc-ledger-sender.bc-ledger-mobile[data-ledger-view]
  #activeRoom>.bc-sender-hero:not([hidden]){display:none!important}
+
+/* Unified REDLINE composer: one photo selector, optional private message. */
+body.redline-sender-simple #employeeUpload .upload-native-file{
+ position:absolute!important;width:1px!important;height:1px!important;
+ padding:0!important;margin:0!important;overflow:hidden!important;
+ clip-path:inset(50%)!important;white-space:nowrap!important;border:0!important;
+}
+body.redline-sender-simple #employeeUpload .file-drop:focus-within{
+ outline:2px solid #f52348;outline-offset:3px;
+}
+body.redline-sender-simple #sendRedlineTextOnly{
+ display:block;width:100%;margin:9px 0 12px;min-height:42px;
+ background:#141414!important;color:#fff!important;border:1px solid #a40020!important;
+ border-radius:10px;font-size:12px;font-weight:800;
+}
