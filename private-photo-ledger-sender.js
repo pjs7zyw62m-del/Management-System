@@ -12,8 +12,6 @@ function make(tag,cls,text){
 const hero=make('section','bc-sender-hero');hero.id='redlineSenderHero';hero.hidden=true;
 hero.setAttribute('aria-label','Sender private room overview');
 const eyebrow=make('div','bc-sender-eyebrow','●  BLACKCELL / SECURE CHANNEL');
-const h=make('h2','bc-sender-headline','Your next submission.');
-const intro=make('p','bc-sender-intro','Choose one photo, add a note if you wish, and send it privately to your assigned owner.');
 const stats=make('div','bc-sender-facts');
 const pending=make('div','bc-sender-fact'),owed=make('div','bc-sender-fact');
 const pendingValue=make('strong','','0'),owedValue=make('strong','','$0.00');
@@ -27,7 +25,7 @@ actions.append(choose,history);
 const roomLine=make('div','bc-sender-room-line');
 const roomName=make('span','bc-sender-room-name','PRIVATE ROOM');
 roomLine.append(make('span','bc-sender-dot',''),roomName,make('span','bc-sender-restricted','TWO-PERSON ACCESS'));
-hero.append(eyebrow,h,intro,stats,actions,roomLine);
+hero.append(eyebrow,stats,actions,roomLine);
 room.insertBefore(hero,$('.room-toolbar',room));
 const drop=$('.file-drop',upload);
 const preview=make('div','bc-sender-preview');preview.id='redlineSenderPreview';preview.hidden=true;
