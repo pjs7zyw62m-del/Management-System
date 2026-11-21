@@ -183,7 +183,7 @@ test('Web OS and tablets share a live resizable chat and photo review workspace'
  assert.match(receiver,/workspace\.append\(chatPanel,photos\)/);
  assert.match(receiver,/workspace\.insertBefore\(divider,photos\)/);
  assert.match(receiver,/photos\.append\(timeline\)/);
- assert.match(receiver,/const splitWorkspace=window\.matchMedia\('\(min-width:480px\)'\)/);
+ assert.match(receiver,/const splitWorkspace=window\.matchMedia\('\(min-width:420px\)'\)/);
  assert.match(receiver,/divider\.addEventListener\('pointerdown'/);
  assert.match(receiver,/divider\.addEventListener\('pointermove'/);
  assert.match(receiver,/divider\.addEventListener\('keydown'/);
@@ -201,7 +201,7 @@ test('Web OS and tablets share a live resizable chat and photo review workspace'
 });
 
 test('Embedded OS window never hides split workspace because of the mobile device class',()=>{
- assert.match(receiver,/const combined=splitWorkspace\.matches&&Boolean\(hasRoom&&timeline&&roomBody\)/);
+ assert.match(receiver,/const combined=splitWorkspace\.matches&&\(!handheld\|\|window\.innerWidth>=720\)/);
  assert.match(receiver,/document\.body\.classList\.toggle\('rr-split-active',combined\)/);
  assert.match(receiver,/workspace\.insertBefore\(splitControls,chatPanel\)/);
  assert.match(receiver,/const splitRange=make\('input','rr-split-range'\)/);
