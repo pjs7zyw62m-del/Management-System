@@ -90,7 +90,7 @@ test('Sender gets archived earnings and chat without permission to upload while 
 test('REDLINE receiver resources are versioned and original form and security remain intact',()=>{
  assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-photo-chat-columns3/);
  assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-chat-columns3/);
- assert.match(html,/private-photo-ledger\.js\?v=20261121-level-zero2/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261121-auto-photo2/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=20261121-stable-brand1/);
  assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-inline-owner-chat1/);
  assert.match(ledger,/corporateAuthorize\(db,\{allowLedgerOnly:true\}\)/);
