@@ -405,16 +405,19 @@ function fiveStarResubmissionData(){
   old.push(e);copies.set(e.resubmission_origin_id,old);
  }
  return state.entries
-  .filter(e=>!e.resubmission_origin_id&&e.decision_status==='accepted'&&
+  .filter(e=>!e.resubmission_origin_id&&
    state.ratings.get(e.id)?.stars===5&&e.uploaded_by===state.room?.member_id)
   .map(e=>{
    const attempts=copies.get(e.id)||[];
-   const rejected=attempts.some(x=>x.decision_status==='rejected');
+   const rejected=e.decision_status==='rejected'||
+    attempts.some(x=>x.decision_status==='rejected');
    const pending=attempts.some(x=>x.decision_status==='pending');
+   const originalPending=e.decision_status==='pending';
    return {...ratedPhotoData(e),resubmissionCount:attempts.length,
-    resubmissionStatus:rejected?'rejected':pending?'pending':'ready',
-    resubmissionAllowed:!rejected&&!pending&&state.room?.active===true&&
-     state.room?.photo_sending_paused!==true};
+    resubmissionStatus:rejected?'rejected':originalPending?'original-pending':
+     pending?'pending':'ready',
+    resubmissionAllowed:e.decision_status==='accepted'&&!rejected&&!pending&&
+     state.room?.active===true&&state.room?.photo_sending_paused!==true};
   })
   .sort((a,b)=>(b.resubmissionCount-a.resubmissionCount)||
     (Number(b.amount_cents||0)-Number(a.amount_cents||0)));
