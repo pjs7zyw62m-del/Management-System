@@ -146,11 +146,12 @@ ownerDialog.addEventListener('click',e=>{if(e.target===ownerDialog)ownerDialog.c
 let currentTab='upload',lastRoom=null,lastSessionKey=null,messages=[],loading=false,posting=false,roomReady=false;
 let lastSync=0,lastOwnerSession=null;
 let timerStatus=null,timerRoomId=null,timerFingerprint='',timerOffset=0;
+let timerPollInFlight=false,timerLastPoll=0,timerLoadError='';
 function bridge(){return window.BLACKCELL_REDLINE_API}
 const snapshot=()=>bridge()?.snapshot?.()||null;
 function isSender(){
  const snap=snapshot();
- return Boolean(snap&&!snap.isOwner&&!app.hidden&&!room.hidden&&!upload.hidden);
+ return Boolean(snap&&!snap.isOwner&&!app.hidden&&!room.hidden);
 }
 function money(value){const n=BigInt(value||0);return '$'+(n/100n).toLocaleString('en-US')+'.'+(n%100n).toString().padStart(2,'0')}
 function dateText(iso){const d=new Date(iso);return Number.isNaN(d.valueOf())?'':d.toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}
@@ -241,7 +242,16 @@ function renderChat(){
   ...timedEvents(snap),
   ...messages.map(m=>({kind:'chat',at:m.created_at,body:m.body,sender:m.sender_id,id:m.id}))
  ].sort((a,b)=>new Date(a.at)-new Date(b.at)).slice(-130);
- if(!combined.length){feed.append(make('div','redline-chat-empty','No messages or photo updates yet.'));return}
+ if(timerLoadError&&isSender()&&!snap?.archiveMode){
+  const warning=make('div','redline-chat-event redline-chat-timer-error');
+  warning.append(make('strong','','TIMER STATUS UNAVAILABLE'),
+   make('small','',timerLoadError+' · REDLINE will retry automatically.'));
+  feed.append(warning);
+ }
+ if(!combined.length){
+  if(!timerLoadError)feed.append(make('div','redline-chat-empty','No messages or photo updates yet.'));
+  return;
+ }
  for(const e of combined){
   if(e.kind==='event'){
    const card=make('div','redline-chat-event');
@@ -314,7 +324,7 @@ function switchTab(tab){
   b.setAttribute('aria-selected',String(selected));
  }
  for(const pane of panes.children)pane.hidden=pane.dataset.redlinePane!==tab;
- if(tab==='upload')void loadMessages();
+ if(tab==='upload'){void loadMessages();void pollSenderTimers(true)}
  home.scrollIntoView({behavior:'auto',block:'start'});
 }
 function syncOwnerChat(snap){
@@ -348,6 +358,7 @@ function sync(){
   const sessionKey=snap.roomId+'|'+(snap.resetAt||'')+'|'+String(snap.archiveMode);
   if(sessionKey!==lastSessionKey){
    lastSessionKey=sessionKey;messages=[];lastSync=0;
+   timerRoomId=null;timerStatus=null;timerFingerprint='';timerLastPoll=0;timerLoadError='';
    renderChat();
    if(currentTab==='upload')void loadMessages();
   }
@@ -364,24 +375,48 @@ function sync(){
    renderChat();
   }
   if(!roomReady){roomReady=true;switchTab('upload')}
-  if(currentTab==='upload')renderChat();
+  if(currentTab==='upload'){renderChat();void pollSenderTimers()}
  }else{roomReady=false;syncOwnerChat(snap)}
 }
 const observer=new MutationObserver(()=>requestAnimationFrame(sync));
 for(const el of [app,room,upload,ownerSetup])observer.observe(el,{attributes:true,attributeFilter:['hidden']});
-window.addEventListener('blackcell:redline:timer-status',event=>{
- const snap=snapshot(),detail=event.detail;
- if(!snap||!detail||detail.roomId!==snap.roomId)return;
- const next=detail.status;
+// Sender reads its OWN verified room timer status. A notification cannot
+// depend on the receiver tab being open or on an event from another script.
+function receiveTimerStatus(roomId,next){
+ const snap=snapshot();
+ if(!snap||snap.roomId!==roomId||snap.isOwner||!next?.ok)return;
  const fingerprint=JSON.stringify([next.active?.id||null,next.active?.running||null,
   ...(Array.isArray(next.recent)?next.recent.map(x=>[x.id,x.stopped_at]):[])]);
- timerRoomId=detail.roomId;timerStatus=next;
+ const hadError=Boolean(timerLoadError);
+ timerLoadError='';
+ timerRoomId=roomId;timerStatus=next;
  const serverMs=Date.parse(next.server_now);
  if(Number.isFinite(serverMs))timerOffset=serverMs-Date.now();
- if(fingerprint!==timerFingerprint){
+ if(fingerprint!==timerFingerprint||hadError){
   timerFingerprint=fingerprint;
-  if(isSender())renderChat();
+  renderChat();
  }else updateTimerCards();
+}
+async function pollSenderTimers(force=false){
+ const snap=snapshot();
+ if(!snap||snap.isOwner||snap.archiveMode||!isSender()||!bridge()?.timerStatus)return;
+ const id=snap.roomId,now=Date.now();
+ if(timerPollInFlight||(!force&&now-timerLastPoll<3500))return;
+ timerLastPoll=now;timerPollInFlight=true;
+ try{
+  const status=await bridge().timerStatus(id);
+  receiveTimerStatus(id,status);
+ }catch(error){
+  if(snapshot()?.roomId!==id)return;
+  const message=String(error?.message||'Could not contact the timed-photo ledger').slice(0,160);
+  if(timerLoadError!==message){
+   timerLoadError=message;
+   renderChat();
+  }
+ }finally{timerPollInFlight=false}
+}
+window.addEventListener('blackcell:redline:timer-status',event=>{
+ if(event.detail)receiveTimerStatus(event.detail.roomId,event.detail.status);
 });
 window.addEventListener('blackcell:redline:messages-changed',()=>{if((isSender()&&currentTab==='upload')||ownerDialog.open||(receiverChatPanel()&&!receiverChatPanel().hidden))void loadMessages()});
 window.addEventListener('blackcell:redline:receiver-ready',sync);
@@ -389,9 +424,15 @@ window.addEventListener('blackcell:redline:bridge',sync);
 window.addEventListener('blackcell:redline:state',sync);
 window.addEventListener('blackcell:redline:session-mode',sync);
 window.addEventListener('blackcell:redline:reset',()=>{lastSessionKey=null;messages=[];lastSync=0;sync()});
-window.addEventListener('pageshow',sync);
-window.addEventListener('visibilitychange',()=>{if(!document.hidden&&((isSender()&&currentTab==='upload')||ownerDialog.open||(receiverChatPanel()&&!receiverChatPanel().hidden)))void loadMessages()});
-window.setInterval(updateTimerCards,1000);
+window.addEventListener('pageshow',()=>{sync();void pollSenderTimers(true)});
+window.addEventListener('visibilitychange',()=>{if(!document.hidden){
+ if((isSender()&&currentTab==='upload')||ownerDialog.open||(receiverChatPanel()&&!receiverChatPanel().hidden))void loadMessages();
+ void pollSenderTimers(true);
+}});
+window.setInterval(()=>{
+ updateTimerCards();
+ if(!document.hidden&&isSender()&&currentTab==='upload')void pollSenderTimers();
+},1000);
 window.setInterval(()=>{
  const active=(isSender()&&currentTab==='upload')||ownerDialog.open||(receiverChatPanel()&&!receiverChatPanel().hidden);
  if(!document.hidden&&active&&Date.now()-lastSync>9500)void loadMessages();
