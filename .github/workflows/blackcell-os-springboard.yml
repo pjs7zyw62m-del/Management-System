@@ -8,6 +8,7 @@ on:
       - 'blackcell-os-wallpaper-obsidian.svg'
       - 'blackcell-os-wallpaper-obsidian-mobile.svg'
       - 'tests/blackcell-os-obsidian-v2.test.mjs'
+      - 'tests/blackcell-os-dock-autohide.test.mjs'
       - 'blackcell-os-springboard.js'
       - 'tests/blackcell-os-springboard.test.mjs'
       - '.github/workflows/blackcell-os-springboard.yml'
@@ -29,7 +30,7 @@ jobs:
           node --check blackcell-os-three-device.js
           node --check blackcell-os-executive-20261119.js
       - name: Verify secure launch and responsive layout invariants
-        run: node --test tests/blackcell-os-springboard.test.mjs tests/blackcell-os-obsidian-v2.test.mjs
+        run: node --test tests/blackcell-os-springboard.test.mjs tests/blackcell-os-obsidian-v2.test.mjs tests/blackcell-os-dock-autohide.test.mjs
       - name: Validate custom wallpaper SVGs
         run: python3 -c "import xml.etree.ElementTree as E; E.parse('blackcell-os-wallpaper-obsidian.svg'); E.parse('blackcell-os-wallpaper-obsidian-mobile.svg')"
       - name: Browser render and interaction smoke checks
@@ -60,6 +61,10 @@ jobs:
               const modal=document.querySelector('.bc-sb-overlay');
               document.body.dataset.sbSearch=String(Boolean(modal&&!modal.hidden));
               document.querySelector('.bc-sb-close')?.click();
+              const handle=document.querySelector('.bc-sb-dock-handle');
+              document.body.dataset.sbDockHidden=String(Boolean(handle&&!handle.hidden));
+              handle?.click();
+              document.body.dataset.sbDockShown=String(Boolean(document.querySelector('.bc-sb')?.classList.contains('bc-sb-dock-shown')));
               document.querySelector('.bc-sb-dock-icon')?.click();
               setTimeout(()=>document.body.dataset.sbLaunched=String(document.querySelectorAll('#desktop .os-window:not([hidden])').length>0),700);
             }
@@ -95,6 +100,8 @@ jobs:
           done
           "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-background-networking --virtual-time-budget=11500 --window-size=390,844 '--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' --dump-dom 'http://127.0.0.1:8765/blackcell-os-springboard-smoke.html?probe=1' >/tmp/bc-springboard-actions.html 2>/tmp/bc-phone-errors.log
           grep -q 'data-sb-search="true"' /tmp/bc-springboard-actions.html
+          grep -q 'data-sb-dock-hidden="true"' /tmp/bc-springboard-actions.html
+          grep -q 'data-sb-dock-shown="true"' /tmp/bc-springboard-actions.html
           grep -q 'data-sb-launched="true"' /tmp/bc-springboard-actions.html
           echo 'iPhone search and secure app launcher passed'
       - name: Upload reviewed screenshots
