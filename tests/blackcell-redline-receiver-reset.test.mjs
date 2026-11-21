@@ -267,8 +267,8 @@ test('Incoming photo viewer expands without crop and keeps priced records access
  assert.match(layout,/object-fit:contain!important/);
  assert.match(layout,/#redlineReceiverIncomingPhotos\.rr-photo-expanded/);
  assert.match(layout,/height:clamp\(480px,75dvh,1040px\)!important/);
- assert.match(html,/private-photo-ledger-timers\.js\?v=20261121-photo-bid-timer-sidebar2/);
- assert.match(html,/private-photo-ledger-timers\.css\?v=20261121-photo-large-timed1/);
+ assert.match(html,/private-photo-ledger-timers\.js\?v=20261121-sender-live-chat-timer1/);
+ assert.match(html,/private-photo-ledger-timers\.css\?v=20261121-sender-live-chat-timer1/);
 });
 test('Per-minute timer selection and secure RPC bridge do not alter original photo decision amounts',()=>{
  const timer=read('private-photo-ledger-timers.js');
@@ -383,4 +383,23 @@ test('BLACKCELL OS loads the REDLINE sidebar release rather than a stale iframe 
  assert.match(os,/blackcell-os\.js\?v=146-redline-bid-timer-sidebar3/);
  const layout=read('private-photo-ledger-imessage-workspace.css');
  assert.match(layout,/body\.bc-redline-receiver:not\(\.rr-imessage-mode\) #photoLightbox/);
+});
+
+
+test('Sender chat shows a live verified timer and completed-minute earnings without extra chat messages',()=>{
+ const timer=read('private-photo-ledger-timers.js');
+ const style=read('private-photo-ledger-timers.css');
+ assert.match(timer,/const chat=\$\('#redlineMessageComposer'\)\?\.closest\('\.redline-message-card'\)/);
+ assert.match(timer,/chat\.insertBefore\(senderPanel,feed\)/);
+ assert.match(timer,/senderStatus\.textContent=isRunning\?'● TIMER RUNNING'/);
+ assert.match(timer,/senderClock\.textContent=duration\(seconds\)/);
+ assert.match(timer,/senderAmount\.textContent=money\(amount\)/);
+ assert.match(timer,/const pollMs=!s\.isOwner&&s\.roomActive&&!s\.archiveMode\?5000:12000/);
+ assert.match(timer,/nowMs<=heartbeatMs\+75000/);
+ assert.match(timer,/Math\.min\(nowMs,Number\.isFinite\(heartbeatMs\)\?heartbeatMs\+45000:nowMs\)/);
+ assert.match(timer,/TIMER STOPPED/);
+ assert.doesNotMatch(timer,/senderPanel\.replaceChildren\(/);
+ assert.match(style,/#redlineSenderTimedEarnings\[hidden\]/);
+ assert.match(style,/\.redline-message-card > #redlineSenderTimedEarnings:not\(\[hidden\]\)/);
+ assert.match(style,/font-variant-numeric:tabular-nums/);
 });
