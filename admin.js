@@ -249,7 +249,7 @@ function showEmployeeProfile(member,sample=false){
      if(current.clearance_level!==member.clearance_level||current.active!==member.active||current.can_chat!==member.can_chat)throw Error('Permissions changed elsewhere. Return to the directory and reopen this profile.');
      const {data,error}=await api.rpc('corp_admin_update_employee',{p_user_id:member.user_id,p_level:Number(level.value),p_can_chat:chat.checked,p_active:enabled.checked});
      if(error||data?.ok!==true)throw Error('The server did not save the changes.');
-     member={...member,clearance_level:Number(level.value),access_scope:Number(level.value)===0?'ledger_only':'full',active:enabled.checked,can_chat:Number(level.value)===0?false:chat.checked};
+     member={...member,clearance_level:Number(level.value),access_scope:Number(level.value)===0?'ledger_only':'full',active:enabled.checked,can_chat:Number(level.value)===0?false:chat.checked};chat.checked=member.can_chat;
      cardPanel.replaceChildren(el('h3','','Digital access pass'),employeeCardView(member));feedback.textContent='Changes saved.';
     }catch(e){feedback.textContent=String(e?.message||'Unable to save.')}finally{save.disabled=false;level.disabled=enabled.disabled=chat.disabled=false;panel.removeAttribute('aria-busy')}
    },false,true);
@@ -260,7 +260,7 @@ function showEmployeeProfile(member,sample=false){
     try{
       const {data,error}=await api.rpc('corp_set_clearance_level',{p_user_id:member.user_id,p_level:next});
       if(error||data?.ok!==true)throw Error('Not confirmed');
-      member={...member,clearance_level:next,access_scope:next===0?'ledger_only':'full',can_chat:next===0?false:member.can_chat};access.value=member.access_scope==='ledger_only'?'ledger_only':'full';stateText.textContent=memberSecurityAccess(member);clearanceFeedback.dataset.state='saved';clearanceFeedback.textContent='Saved ✓';
+      member={...member,clearance_level:next,access_scope:next===0?'ledger_only':'full',can_chat:next===0?false:member.can_chat};chat.checked=member.can_chat;access.value=member.access_scope==='ledger_only'?'ledger_only':'full';stateText.textContent=memberSecurityAccess(member);clearanceFeedback.dataset.state='saved';clearanceFeedback.textContent='Saved ✓';
     }catch(_){
       clearanceFeedback.dataset.state='error';clearanceFeedback.textContent='Not confirmed';
       try{const {data:fresh,error}=await api.rpc('corp_list_clearance');const actual=fresh?.members?.find(m=>m.user_id===member.user_id);
