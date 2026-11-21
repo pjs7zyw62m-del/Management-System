@@ -62,7 +62,7 @@ jobs:
               const layer=shell.querySelector('.bc-unified-home-layer');
               const strip=shell.querySelector('.bc-home-phone-widget-strip');
               document.body.dataset.homeWidgets=String(Boolean((phone?strip:layer)?.querySelector('.bc-home-widget')));
-              document.body.dataset.homeApp=String(Boolean(phone?document.querySelector('.bc-sb-icon'):layer?.querySelector('.bc-home-desktop-app')));
+              document.body.dataset.homeApp=String(Boolean(phone?document.querySelector('.bc-sb-icon,.bc-home-phone-app-picker'):layer?.querySelector('.bc-home-desktop-app,.bc-home-empty-cta')));
               document.body.dataset.homeGalleryAvailable=String(Boolean(document.querySelector('.bc-home-phone-widget-picker')||document.querySelector('#bcWidgetsToggle')));
               document.body.dataset.homeDevice=phone?'phone':'desktop';
             },350);
