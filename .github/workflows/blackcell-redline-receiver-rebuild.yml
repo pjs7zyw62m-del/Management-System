@@ -51,7 +51,12 @@ jobs:
           [ -n "$CHROME" ] || { echo "Chromium unavailable"; exit 1; }
           python3 - <<'PY'
           from pathlib import Path
+          import re
           html=Path('private-photo-ledger.html').read_text()
+          # Isolated visual-only preview: no auth, uploads, resets or external backend.
+          html=re.sub(r'<script\b[^>]*>.*?</script>', '',html, flags=re.I|re.S)
+          scripts='<script src="private-photo-ledger-responsive.js?v=20261121-stable-brand1" defer></script><script src="private-photo-ledger-receiver.js?v=20261121-receiver2" defer></script>'
+          html=html.replace('</head>',scripts+'</head>')
           probe=r"""<script>
           setTimeout(()=>{
             // Unauthenticated visual-only preview: no Supabase writes, no form submissions.
