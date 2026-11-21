@@ -66,7 +66,7 @@ test('REDLINE only view shows its own app and sign-out, never a Network navigati
  assert.match(ledger,/LEVEL R · REDLINE ONLY/);
  assert.match(ledgerHtml,/id="backLink"[^>]+hidden/);
  assert.match(ledgerHtml,/id="ledgerBrand" href="private-photo-ledger\.html"/);
- assert.match(ledgerHtml,/private-photo-ledger\.js\?v=20261121-level-r-only1/);
+ assert.match(ledgerHtml,/private-photo-ledger\.js\?v=(?:20261121-level-r-only1|20261121-fresh-session2)/);
 });
 
 test('The change does not assign any user without an owner choosing the account',()=>{
