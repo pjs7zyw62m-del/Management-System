@@ -90,7 +90,7 @@ test('Sender gets archived earnings and chat without permission to upload while 
 test('REDLINE receiver resources are versioned and original form and security remain intact',()=>{
  assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-photo-large-timed1/);
  assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-right-popup-only1/);
- assert.match(html,/private-photo-ledger\.js\?v=20261121-photo-right-popup-only1/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261121-receiver-owned-pause1/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=20261121-stable-brand1/);
  assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-inline-owner-chat1/);
  assert.match(ledger,/corporateAuthorize\(db,\{allowLedgerOnly:true\}\)/);
@@ -237,7 +237,7 @@ test('One iMessage-style workspace has two independent resizers and a fixed-heig
  assert.match(layout,/#redlineReceiverHeightEdge/);
  assert.match(layout,/cursor:row-resize!important/);
  assert.match(layout,/cursor:col-resize/);
- assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-photo-right-popup-only1/);
+ assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-receiver-owned-pause1/);
 });
 test('Incoming photo decisions and priced photo records stay separate and scroll internally',()=>{
  const layout=read('private-photo-ledger-imessage-workspace.css');
@@ -383,9 +383,9 @@ test('Bid and timed-photo controls stay right of the normal photo; fullscreen co
 test('BLACKCELL OS loads the REDLINE sidebar release rather than a stale iframe version',()=>{
  const os=read('blackcell-os.html');
  const runtime=read('blackcell-os.js');
- assert.match(os,/receiver-photo-right-pause1-20261121/);
- assert.match(runtime,/receiver-photo-right-pause1-20261121/);
- assert.match(os,/blackcell-os\.js\?v=147-redline-photo-right-pause1/);
+ assert.match(os,/receiver-controlled-pause1-20261121/);
+ assert.match(runtime,/receiver-controlled-pause1-20261121/);
+ assert.match(os,/blackcell-os\.js\?v=148-redline-receiver-controlled-pause1/);
  const layout=read('private-photo-ledger-imessage-workspace.css');
  assert.match(layout,/body\.bc-redline-receiver:not\(\.rr-imessage-mode\) #photoLightbox/);
 });
@@ -409,19 +409,26 @@ test('Sender chat shows a live verified timer and completed-minute earnings with
  assert.match(style,/font-variant-numeric:tabular-nums/);
 });
 
-test('Sender may pause new photo sends and resume without affecting authenticated chat or in-flight work',()=>{
+test('REDLINE pause belongs only to verified receiver and applies across devices',()=>{
  const sender=read('private-photo-ledger-sender.js');
- const style=read('private-photo-ledger-simple-sender.css');
- assert.match(sender,/redlineSenderUploadPause/);
- assert.match(sender,/PAUSE SENDING/);
- assert.match(sender,/RESUME SENDING/);
- assert.match(sender,/sessionStorage\.setItem\(pauseKey/);
- assert.match(sender,/pauseKey=key/);
- assert.match(sender,/if\(paused\|\|document\.body\.dataset\.redlineUploadPaused==='true'\)/);
- assert.match(sender,/file\.addEventListener\('change',sendSelectedPhoto\)/);
- assert.match(ledger,/if\(document\.body\.dataset\.redlineUploadPaused==='true'\)/);
- assert.match(ledger,/picker\.disabled=document\.body\.dataset\.redlineUploadPaused==='true'/);
- assert.match(style,/#redlineSenderUploadPause\[aria-pressed="true"\]/);
- assert.match(html,/private-photo-ledger-sender\.js\?v=20261121-pause-sender1/);
- assert.match(html,/private-photo-ledger-simple-sender\.css\?v=20261121-pause-sender1/);
+ const style=read('private-photo-ledger-imessage-workspace.css');
+ const migration=read('supabase/migrations/20261121123000_redline_receiver_photo_pause.sql');
+ assert.doesNotMatch(sender,/redlineSenderUploadPause|sessionStorage\.setItem|pause\.addEventListener/);
+ assert.match(sender,/const receiverPaused=/);
+ assert.match(sender,/if\(receiverPaused\(\)\)/);
+ assert.match(ledger,/function appendReceiverPauseControl\(panel\)/);
+ assert.match(ledger,/action\.id='redlineReceiverSendingPause'/);
+ assert.match(ledger,/appendReceiverPauseControl\(panel\)/);
+ assert.match(ledger,/photoSendingPaused:state\.room\.photo_sending_paused===true/);
+ assert.match(ledger,/\.update\(\{photo_sending_paused:target\}\)/);
+ assert.match(ledger,/\.eq\('owner_id',state\.user\.id\)/);
+ assert.match(ledger,/\.select\('id,active,photo_sending_paused'\)/);
+ assert.match(ledger,/if\(state\.room\.photo_sending_paused\)/);
+ assert.match(ledger,/picker\.disabled=Boolean\(state\.room\?\.photo_sending_paused\)/);
+ assert.match(migration,/ADD COLUMN IF NOT EXISTS photo_sending_paused boolean NOT NULL DEFAULT false/);
+ assert.match(migration,/BEFORE INSERT ON public\.corp_private_photo_entries/);
+ assert.match(migration,/NOT r\.photo_sending_paused/g);
+ assert.match(style,/#redlineReceiverSendingPause|rr-receiver-pause-button/);
+ assert.match(html,/private-photo-ledger-sender\.js\?v=20261121-receiver-owned-pause1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.css\?v=20261121-receiver-owned-pause1/);
 });
