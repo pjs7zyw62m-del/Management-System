@@ -37,5 +37,5 @@ test('sender active room, photo upload, history and owner preview share flat pal
  assert.match(core,/const ROOMS='corp_private_photo_rooms'/);
  assert.match(core,/const ENTRIES='corp_private_photo_entries'/);
  assert.match(core,/const BUCKET='corp-private-photo-ledger'/);
- assert.match(html,/private-photo-ledger\.js\?v=(?:20261120-redline-chat1|20261121-level-r-only1|20261121-fresh-session2)/);
+ assert.match(html,/private-photo-ledger\.js\?v=(?:20261121-auto-photo2)/);
 });
