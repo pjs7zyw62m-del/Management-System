@@ -924,3 +924,32 @@ body.bc-redline-receiver #photoLightbox #redlineLightboxReview .rr-timer-panel[h
   max-height:100%!important;object-fit:contain!important;cursor:zoom-out!important;
  }
 }
+
+/* Receiver-only room pause, kept above the bid/timer controls. */
+body.bc-redline-receiver #redlineLightboxReview .rr-receiver-photo-pause{
+ display:flex!important;flex-direction:column!important;gap:8px!important;
+ width:100%!important;min-width:0!important;flex:0 0 auto!important;
+ padding:10px 0 14px!important;margin:0 0 10px!important;
+ border-bottom:1px solid #77243b!important;
+}
+body.bc-redline-receiver #redlineLightboxReview .rr-receiver-pause-heading{
+ font-size:10px!important;font-weight:850!important;letter-spacing:.12em!important;
+ color:#f5b1c0!important;
+}
+body.bc-redline-receiver #redlineLightboxReview .rr-receiver-pause-button{
+ display:block!important;width:100%!important;min-height:49px!important;
+ padding:10px 12px!important;white-space:normal!important;
+ background:#ba0028!important;color:white!important;
+ border:1px solid #f24970!important;border-radius:10px!important;
+ font-size:12px!important;font-weight:850!important;cursor:pointer!important;
+}
+body.bc-redline-receiver #redlineLightboxReview .rr-receiver-pause-button[aria-pressed="true"]{
+ background:#142419!important;border-color:#42b77d!important;color:#eafff0!important;
+}
+body.bc-redline-receiver #redlineLightboxReview .rr-receiver-pause-button:disabled{
+ opacity:.6!important;cursor:wait!important;
+}
+body.bc-redline-receiver #redlineLightboxReview .rr-receiver-pause-status{
+ font-size:10px!important;color:#cfc0c6!important;margin:0!important;
+ line-height:1.4!important;
+}
