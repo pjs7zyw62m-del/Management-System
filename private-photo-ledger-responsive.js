@@ -112,7 +112,7 @@
     sectionHeading.textContent=sectionNames[current]||'Overview';
     version.textContent=edition;
     topLabel.textContent='REDLINE';
-    const title=labels[mode]+' · BLACKCELL REDLINE';
+    const title=labels[mode]+' · PRIVATE EXCHANGE';
     if(document.title!==title)document.title=title;
     for(const[key,pair]of buttons){
       for(const button of pair){
