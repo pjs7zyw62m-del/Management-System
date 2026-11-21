@@ -4,7 +4,7 @@ import {mountStorageWidget} from './blackcell-os-storage-widget.js?v=1';
 import {createWallpaperController} from './blackcell-os-wallpaper.js?v=1';
 let stopStorageWidget=()=>{},securityNotifications=null;
 let browserModule,filesModule,personalPhotosModule;
-const BASE_OS_PREFS={reduceMotion:false,dockLabels:true,dockAutoHide:true,autoLockMinutes:5,wallpaper:'midnight',
+const BASE_OS_PREFS={reduceMotion:false,dockLabels:true,dockAutoHide:true,dockPosition:'bottom',autoLockMinutes:5,wallpaper:'midnight',
  wallpaperSchemaVersion:2,wallpaperMode:'all',wallpaperFit:'cover',wallpaperPosition:'center',
  wallpaperDim:12,wallpaperBlur:0,wallpaperImages:{all:'',phone:'',tablet:'',desktop:''},wallpaperHistory:[],desktopClean:true};
 let settingsModule,desktopPrefs={...BASE_OS_PREFS},wallpaperManager=null;
@@ -48,7 +48,7 @@ function applyDesktopPrefs(){
  shell.dataset.bcWallpaper=['midnight','obsidian','skyline','custom'].includes(desktopPrefs.wallpaper)?desktopPrefs.wallpaper:'midnight';
  shell.classList.toggle('os-reduce-motion',desktopPrefs.reduceMotion);
  shell.classList.toggle('os-hide-dock-labels',!desktopPrefs.dockLabels);
- shell.classList.toggle('os-dock-auto-hide',desktopPrefs.dockAutoHide);
+ shell.classList.toggle('os-dock-auto-hide',desktopPrefs.dockAutoHide);shell.dataset.bcDockPosition=desktopPrefs.dockPosition||'bottom';
  shell.classList.toggle('bc-macos-desktop',desktopPrefs.desktopClean!==false);
  dockReveal(false);void wallpaperManager?.sync();
 }
@@ -67,6 +67,7 @@ function readDesktopPrefs(){
    if(key==='autoLockMinutes'){if([0,1,5,10,15,30,60].includes(v))defaults[key]=v}
    else if(key==='wallpaper'){if(['midnight','obsidian','skyline','custom'].includes(v))defaults[key]=v}
    else if(key==='wallpaperSchemaVersion'){defaults[key]=Number(v)===2?2:1}
+   else if(key==='dockPosition'){if(['bottom','left','right'].includes(v))defaults[key]=v}
    else if(key==='wallpaperMode'){if(['all','separate'].includes(v))defaults[key]=v}
    else if(key==='wallpaperFit'){if(['cover','contain','center'].includes(v))defaults[key]=v}
    else if(key==='wallpaperPosition'){if(['center','top','bottom'].includes(v))defaults[key]=v}
@@ -84,7 +85,7 @@ function readDesktopPrefs(){
 let desktopPrefsSavedAt=0;
 function initDesktopPrefs(){const saved=readDesktopPrefs();desktopPrefs=saved.prefs;desktopPrefsSavedAt=saved.savedAt;applyDesktopPrefs()}
 function setDesktopPref(key,value){
- const choices={autoLockMinutes:[0,1,5,10,15,30,60],wallpaper:['midnight','obsidian','skyline','custom'],wallpaperMode:['all','separate'],wallpaperFit:['cover','contain','center'],wallpaperPosition:['center','top','bottom']};
+ const choices={dockPosition:['bottom','left','right'],autoLockMinutes:[0,1,5,10,15,30,60],wallpaper:['midnight','obsidian','skyline','custom'],wallpaperMode:['all','separate'],wallpaperFit:['cover','contain','center'],wallpaperPosition:['center','top','bottom']};
  const flags=['reduceMotion','dockLabels','dockAutoHide','desktopClean'],ranges={wallpaperDim:75,wallpaperBlur:14};
  if(![...Object.keys(choices),...flags,...Object.keys(ranges),'wallpaperImages','wallpaperHistory'].includes(key))return {ok:false,message:'Unknown preference.'};
  if(Object.hasOwn(choices,key)&&!choices[key].includes(value))return {ok:false,message:'Invalid selection.'};
@@ -357,7 +358,7 @@ function setDockPin(id,pinned){
  let saved=false;const record=JSON.stringify(Object.fromEntries(dockOverrides));void cloudWorkspaceSave('dock',record);for(const {name,store} of preferenceStores()){try{store.setItem(dockPreferenceKey(),record);if(name==='localStorage'&&store.getItem(dockPreferenceKey())===record)saved=true}catch(_){}}
  syncDockTile(tile);osNotice((tile.dataset.title||'App')+(pinned?' added to Dock.':' removed from Dock.')+(saved?'':' Preference could not be saved permanently on this device.'));if(pinned&&desktopPrefs.dockAutoHide)dockReveal(true)
 }
-function initStore(uid){wallpaperManager?.dispose();storeProfile=uid;readWorldInstalls();readAppLocks();readDockPreferences();readAppLayout();clearStore('Checking app permissions…');window.dispatchEvent(new Event('blackcell:widget-sync'))}
+function initStore(uid){wallpaperManager?.dispose();storeProfile=uid;spaceLoad();readWorldInstalls();readAppLocks();readDockPreferences();readAppLayout();clearStore('Checking app permissions…');window.dispatchEvent(new Event('blackcell:widget-sync'))}
 function syncStore(){
  if(preview)return;
  for(const tile of document.querySelectorAll('.app[data-app]')){
@@ -428,6 +429,79 @@ function pauseVerification(message){
  scheduleRecovery(delay);
 }
 const windows=new Map();let layer=25,selectedWindow=null;
+const MAX_BC_SPACES=6;let bcSpaces=[{id:'1',name:'Desktop 1'}],bcSpace='1';
+const spaceKey=()=> 'bc.os.spaces.v1:'+String(storeProfile||'preview');
+const spaceValid=id=>bcSpaces.some(x=>x.id===String(id));
+function spaceNotify(){window.dispatchEvent(new CustomEvent('blackcell:spaces-updated',{detail:{active:bcSpace}}))}
+function spaceSave(){try{localStorage.setItem(spaceKey(),JSON.stringify({spaces:bcSpaces,active:bcSpace}))}catch(_){}spaceNotify()}
+function spaceLoad(){
+ bcSpaces=[{id:'1',name:'Desktop 1'}];bcSpace='1';
+ try{
+  const data=JSON.parse(localStorage.getItem(spaceKey())||'null');
+  if(Array.isArray(data?.spaces)){
+   const filtered=new Map();
+   for(const item of data.spaces)if(item&&/^[1-6]$/.test(String(item.id))&&typeof item.name==='string'&&item.name.trim().length<=36)filtered.set(String(item.id),{id:String(item.id),name:item.name.trim()});
+   filtered.set('1',{id:'1',name:filtered.get('1')?.name||'Desktop 1'});
+   bcSpaces=[...filtered.values()].sort((a,b)=>Number(a.id)-Number(b.id)).slice(0,MAX_BC_SPACES);
+  }
+  if(spaceValid(data?.active))bcSpace=String(data.active);
+ }catch(_){}
+ spaceNotify();
+}
+function spaceVisibility(){
+ for(const r of windows.values())if(!r.chatPopout){
+  r.el.hidden=r.spaceId!==bcSpace||r.spaceShown===false||!!r.suspended||!!r.chatParked;
+ }
+ selectedWindow=[...windows.values()].filter(r=>!r.el.hidden&&!r.suspended).sort((a,b)=>(Number(b.el.style.zIndex)||0)-(Number(a.el.style.zIndex)||0))[0]||null;
+ updateActiveAppMenu();syncStoreUpdateHold();syncChatVisibility();spaceNotify();
+}
+function spaceSwitch(id){
+ id=String(id);if(!spaceValid(id)||id===bcSpace)return false;
+ for(const r of windows.values())if(!r.chatPopout&&r.spaceId===bcSpace)r.spaceShown=!r.el.hidden&&!r.suspended;
+ bcSpace=id;spaceVisibility();spaceSave();saveWorkspace();return true;
+}
+function spaceAdd(){
+ if(bcSpaces.length>=MAX_BC_SPACES)return null;
+ const id=String(Array.from({length:MAX_BC_SPACES},(_,i)=>i+1).find(n=>!spaceValid(n)));
+ bcSpaces.push({id,name:'Desktop '+id});bcSpaces.sort((a,b)=>Number(a.id)-Number(b.id));spaceSave();return id;
+}
+function spaceRemove(id){
+ id=String(id);if(id==='1'||!spaceValid(id))return false;
+ for(const r of windows.values())if(r.spaceId===id){r.spaceId='1';r.spaceShown=true}
+ bcSpaces=bcSpaces.filter(x=>x.id!==id);if(bcSpace===id)bcSpace='1';
+ spaceVisibility();spaceSave();saveWorkspace();return true;
+}
+function spaceRename(id,name){
+ if(!spaceValid(id)||typeof name!=='string'||!name.trim()||name.trim().length>36)return false;
+ bcSpaces.find(x=>x.id===String(id)).name=name.trim();spaceSave();return true;
+}
+function spaceMove(id,dest){
+ const r=windows.get(id);dest=String(dest);
+ if(!r||r.chatPopout||!spaceValid(dest))return false;
+ r.spaceId=dest;r.spaceShown=true;spaceVisibility();saveWorkspace();return true;
+}
+function fullscreenWindow(id){
+ const r=windows.get(id);if(!r||touchOS())return false;
+ const expand=!r.el.classList.contains('bc-os-fullscreen');
+ for(const other of windows.values())if(other!==r){other.el.classList.remove('bc-os-fullscreen')}
+ r.el.classList.toggle('bc-os-fullscreen',expand);r.el.classList.toggle('is-max',expand);
+ $('desktop').classList.toggle('bc-os-fullscreen-active',expand);
+ $('desktop').classList.remove('bc-os-menu-edge-open');
+ raise(r);saveWorkspace();return true;
+}
+window.BLACKCELL_MAC_BRIDGE=Object.freeze({
+ ready:()=> (active||preview)&&!leaving&&!$('desktop').hidden&&!workspaceLock?.isLocked(),
+ spaces:()=>({items:bcSpaces.map(x=>({...x})),active:bcSpace}),
+ windows:()=>[...windows.values()].filter(r=>!r.chatPopout).map(r=>({id:r.id,title:r.title,spaceId:r.spaceId||'1',minimized:!!r.suspended||r.spaceShown===false,active:!r.el.hidden&&selectedWindow===r})),
+ switchSpace:spaceSwitch,addSpace:spaceAdd,removeSpace:spaceRemove,renameSpace:spaceRename,moveWindow:spaceMove,
+ focusWindow:id=>{if(!windows.has(id))return false;showApp(id);return true},
+ fullscreen:fullscreenWindow,
+ preferences:()=>({dockPosition:desktopPrefs.dockPosition||'bottom',dockAutoHide:desktopPrefs.dockAutoHide,desktopClean:desktopPrefs.desktopClean}),
+ setPreference:setDesktopPref,
+ openSettings:section=>openAppOrStore('settings',section),
+ lock:()=>lockWorkspace(),
+ toggleWidgets:()=>$('bcWidgetsToggle')?.click(),isPhone:touchOS
+});
 let workspaceReady=false,workspaceRestoring=false,pendingRestore=[];
 /* Account-scoped device privacy preference; the corporate backend still enforces access. */
 const protectedApps=new Set(),customAppLocks=new Map(),deferredParkedChats=new Map(),appPasswordPermit=Symbol('app-password-verified');
