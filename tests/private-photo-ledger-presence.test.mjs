@@ -39,7 +39,7 @@ test('Inactivity expires and separate browser tabs do not clobber one another',(
  assert.match(presence,/visibilitychange/);
  assert.match(presence,/pagehide/);
  assert.match(presence,/presenceTouch\?\.\(oldRoom,sessionId,false\)/);
- assert.match(migration,/primary key \(room_id,user_id,session_id\)/);
+ assert.match(migration,/primary key\s*\(room_id,user_id,session_id\)/);
  assert.match(migration,/105 seconds/);
 });
 
@@ -56,5 +56,5 @@ test('SQL authorization forbids activity disclosure beyond the verified two-pers
 test('BLACKCELL OS launches the newly versioned REDLINE online presence app',()=>{
  assert.match(os,/redlineBuild=receiver-imessage-two-axis-20261121/);
  assert.match(catalog,/redlineBuild=receiver-imessage-two-axis-20261121/);
- assert.match(os,/blackcell-os\.js\?v=133-redline-online-status/);
+ assert.match(os,/blackcell-os\.js\?v=138-redline-imessage-two-axis/);
 });
