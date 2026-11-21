@@ -90,7 +90,7 @@ test('Sender gets archived earnings and chat without permission to upload while 
 test('REDLINE receiver resources are versioned and original form and security remain intact',()=>{
  assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-price-photo-zoom1/);
  assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-price-photo-zoom1/);
- assert.match(html,/private-photo-ledger\.js\?v=20261121-price-photo-zoom1/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261121-one-click-accept1/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=20261121-stable-brand1/);
  assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-inline-owner-chat1/);
  assert.match(ledger,/corporateAuthorize\(db,\{allowLedgerOnly:true\}\)/);
@@ -146,4 +146,15 @@ test('Owner can inspect large photo and set price while viewing it',()=>{
  assert.match(css,/max-height:none!important;min-height:0!important/);
  assert.match(css,/height:clamp\(560px,76dvh,850px\)!important/);
  assert.match(css,/grid-template-columns:minmax\(0,1\.45fr\) minmax\(260px,1fr\)!important/);
+});
+
+test('Owner photo pricing commits immediately without a browser confirm dialog',()=>{
+ const approve=ledger.slice(ledger.indexOf('async function assignAmount('),ledger.indexOf('async function acceptZero('));
+ assert.ok(approve.includes("parseDollars(input.value)"));
+ assert.ok(approve.includes("await verify()"));
+ assert.ok(approve.includes(".eq('decision_status','pending')"));
+ assert.ok(approve.includes("loadEntries({force:true})"));
+ assert.doesNotMatch(approve,/window\.confirm\(/);
+ // Distinct high-impact actions still retain their own confirmation controls.
+ assert.match(ledger.slice(ledger.indexOf('async function rejectPhoto('),ledger.indexOf('async function settle(')),/window\.confirm/);
 });
