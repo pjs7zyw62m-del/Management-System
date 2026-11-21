@@ -1032,3 +1032,17 @@ body.bc-redline-receiver #redlineLightboxReview .rr-photo-price-breakdown{
  font-size:11px!important;color:#dabac5!important;line-height:1.4!important;
  margin:0 0 8px!important;overflow-wrap:anywhere!important;
 }
+
+/* Current-session queue completion: show one line in the existing receiver
+   sidebar, never cover or shrink the full-size photograph. */
+body.bc-redline-receiver #redlineLightboxReview .rr-current-session-finished{
+ display:block!important;
+ margin:0 0 10px!important;
+ padding:10px 11px!important;
+ border:1px solid #6d2840!important;
+ border-radius:8px!important;
+ background:#1d1015!important;
+ color:#ead8df!important;
+ font-size:11px!important;
+ line-height:1.4!important;
+}
