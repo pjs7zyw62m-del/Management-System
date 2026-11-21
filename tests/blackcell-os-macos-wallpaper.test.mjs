@@ -25,8 +25,8 @@ test('A genuine desktop, not an always-on dashboard',()=>{
  assert.match(skin,/\.bc-exec-stage \.bc-exec-brand/);
  assert.match(mac,/Applications/);
  assert.match(mac,/Widgets/);
- assert.match(mac,/\.workspace \.app\[data-app="settings"\]/);
- assert.match(mac,/if\(tile&&!tile\.hidden&&!tile\.disabled\)tile\.click\(\)/);
+ assert.match(mac,/blackcell:open-wallpaper-settings/);
+ assert.match(os,/openAppOrStore\('settings','appearance'\)/);
  assert.ok(!/window\.location\s*=|localStorage\.clear\(/.test(mac));
 });
 
