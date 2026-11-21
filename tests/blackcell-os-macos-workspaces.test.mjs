@@ -66,5 +66,5 @@ test('Published release loads the whole upgraded component set',()=>{
  assert.match(html,/blackcell-os-macos-workspaces\.css\?v=20261121-(?:1|2)/);
  assert.match(html,/blackcell-os-macos-workspaces\.js\?v=20261121-(?:1|2)/);
  assert.match(html,/blackcell-os-macos-desktop\.js\?v=20261121-2/);
- assert.match(html,/blackcell-os\.js\?v=(?:121-mac-workspaces|122-unified-desktop-sync|123-mobile-ready-drag-fix)/);
+ assert.match(html,/blackcell-os\.js\?v=(?:121-mac-workspaces|122-unified-desktop-sync|123-mobile-ready-drag-fix|124-auto-save-updates)/);
 });
