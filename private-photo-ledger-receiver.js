@@ -145,13 +145,32 @@
   make('span','','Owner-verification required for decisions, resets and payment records'));
  dashboard.append(header,stats,nav,chatPanel);
  app.querySelector('.page-heading')?.after(dashboard);
- // Review and chat share the actual room area on desktop. The existing
- // authenticated form is moved, never cloned, preserving the live thread.
- const sidebar=$('#activeRoom .room-body .side-column');
- const desktopChat=window.matchMedia('(min-width:781px)');
- function placeChat(){
-  if(desktopChat.matches&&sidebar){if(chatPanel.parentNode!==sidebar)sidebar.prepend(chatPanel)}
-  else if(chatPanel.previousElementSibling!==nav)nav.after(chatPanel);
+ // Desktop: chat on the LEFT, the actual live photo review and history
+ // on the RIGHT. Never clone review entries or create a second data source.
+ const roomBody=$('#activeRoom .room-body');
+ const timeline=$('#activeRoom .timeline-column');
+ const workspace=make('section','rr-live-workspace');workspace.id='redlineReceiverLiveWorkspace';
+ workspace.setAttribute('aria-label','REDLINE private chat and incoming photo workspace');
+ workspace.hidden=true;
+ const photos=make('section','rr-incoming-photos');photos.id='redlineReceiverIncomingPhotos';
+ photos.setAttribute('aria-label','Incoming photos from selected sender');
+ const incomingHeader=make('div','rr-incoming-header');
+ incomingHeader.append(make('h3','','Incoming Photos'),
+  make('small','','New submissions appear automatically in the review queue.'));
+ photos.append(incomingHeader);
+ workspace.append(chatPanel,photos);
+ roomBody?.before(workspace);
+ const desktopWorkspace=window.matchMedia('(min-width:960px)');
+ function placeWorkspace(hasRoom){
+  const desktop=desktopWorkspace.matches&&Boolean(hasRoom&&timeline&&roomBody);
+  workspace.hidden=!desktop;
+  if(desktop){
+   if(chatPanel.parentNode!==workspace)workspace.prepend(chatPanel);
+   if(timeline.parentNode!==photos)photos.append(timeline);
+  }else{
+   if(chatPanel.previousElementSibling!==nav)nav.after(chatPanel);
+   if(timeline&&roomBody&&timeline.parentNode!==roomBody)roomBody.append(timeline);
+  }
  }
  // Security and room controls remain available beneath active conversations.
  access.append(line);
@@ -163,8 +182,8 @@
   document.body.classList.toggle('bc-redline-receiver',visible);
   if(!visible)return;
   void loadAccess();
-  placeChat();
   const hasRoom=!room.hidden;
+  placeWorkspace(hasRoom);
   const wasChatHidden=chatPanel.hidden;
   chatPanel.hidden=!hasRoom;
   if(hasRoom&&wasChatHidden)window.dispatchEvent(new Event('blackcell:redline:receiver-ready'));
