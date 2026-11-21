@@ -454,6 +454,7 @@ function renderReviewQueue(){
   return;
  }
  const current=pending[0];
+ window.dispatchEvent(new CustomEvent('blackcell:redline:review-photo',{detail:{photoId:current.id}}));
  const progress=node('div','queue-progress');
  progress.append(
   node('strong','','NEXT PHOTO TO REVIEW'),
@@ -486,7 +487,9 @@ function renderEntries(){
 function renderEntry(e){
  const status=entryState(e);
  const card=node('article','photo-entry');
+ card.dataset.redlinePhotoId=e.id;
  const imageButton=button('',()=>{
+  window.dispatchEvent(new CustomEvent('blackcell:redline:photo-selected',{detail:{photoId:e.id}}));
   const src=state.images.get(e.image_path)?.url;
   if(!src)return;
   $('lightboxImage').src=src;
@@ -547,6 +550,12 @@ function renderEntry(e){
    ctrl.append(node('small','','Waiting for the BLACKCELL owner to accept or reject this photograph.'));
   }
  }
+ if(state.isOwner&&status!=='rejected'){
+  ctrl.append(button('⏱ TIME THIS PHOTO',()=>{
+   window.dispatchEvent(new CustomEvent('blackcell:redline:photo-selected',{detail:{photoId:e.id},bubbles:false}));
+   document.querySelector('#redlineReceiverReviewStage')?.scrollIntoView({block:'nearest',behavior:'smooth'});
+  },'redline-photo-timer-pick'));
+ }
  body.append(ctrl);card.append(body);return card;
 }
 // Full-screen inspection uses the same authenticated owner-only decision
@@ -606,6 +615,7 @@ async function assignAmount(entry,input,submit){
   state.entryFingerprint='';await loadEntries({force:true});
   show('entriesFeedback','Photo accepted for '+dollars(amount)+'. Both screens will update automatically.');
   show('reviewQueueFeedback','Accepted for '+dollars(amount)+' · Showing the next pending photo.');
+  window.dispatchEvent(new CustomEvent('blackcell:redline:photo-decided',{detail:{photoId:entry.id}}));
   return true;
  }catch(e){show('entriesFeedback','Could not assign amount: '+fail(e));return false}
  finally{state.busy=false;submit.disabled=false;submit.textContent='✓ ACCEPT PHOTO'}
@@ -628,6 +638,7 @@ async function rejectPhoto(entry,trigger){
   state.entryFingerprint='';await loadEntries({force:true});
   show('entriesFeedback','Photo rejected. Both participants will see the decision automatically.');
   show('reviewQueueFeedback','Photo rejected · Showing the next pending photo.');
+  window.dispatchEvent(new CustomEvent('blackcell:redline:photo-decided',{detail:{photoId:entry.id}}));
   return true;
  }catch(e){show('entriesFeedback','Could not reject photo: '+fail(e));return false}
  finally{state.busy=false;trigger.disabled=false}
@@ -915,6 +926,44 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
    renderLedgerScope();
   }
   return {accessScope:result.data.access_scope,clearanceLevel:result.data.clearance_level};
+ },
+ async timerStatus(roomId){
+  if(state.closed||!state.user||!state.room||state.room.id!==roomId||!validId(roomId))throw Error('Verified private room required.');
+  const result=await db.rpc('corp_redline_photo_timer_status',{p_room_id:roomId});
+  if(result.error||result.data?.ok!==true)throw Error(fail(result.error||result.data?.reason||'Timed photo ledger unavailable.'));
+  return result.data;
+ },
+ async timerStart(photoId,rateCents){
+  if(state.closed||!state.isOwner||state.showArchive||!state.room?.active||!validId(photoId)
+     ||!Number.isSafeInteger(rateCents)||rateCents<1||rateCents>100000)throw Error('Select a photo and a valid rate up to $1,000 per minute.');
+  const roomId=state.room.id;
+  await verify();
+  if(state.room?.id!==roomId)throw Error('Room changed; timer not started.');
+  const result=await db.rpc('corp_redline_photo_timer_start',{
+   p_room_id:roomId,p_photo_id:photoId,p_rate_cents:rateCents
+  });
+  if(result.error||result.data?.ok!==true)throw Error(fail(result.error||result.data?.reason||'Timer could not start.'));
+  return result.data;
+ },
+ async timerHeartbeat(sessionId){
+  if(state.closed||!state.isOwner||!validId(sessionId)||document.hidden)throw Error('Visible owner session required.');
+  const result=await db.rpc('corp_redline_photo_timer_heartbeat',{p_session_id:sessionId});
+  if(result.error||result.data?.ok!==true)throw Error(fail(result.error||result.data?.reason||'Timer expired.'));
+  return true;
+ },
+ async timerStop(sessionId){
+  if(state.closed||!state.isOwner||!validId(sessionId))throw Error('Owner timer session required.');
+  await verify();
+  const result=await db.rpc('corp_redline_photo_timer_stop',{p_session_id:sessionId});
+  if(result.error||result.data?.ok!==true)throw Error(fail(result.error||result.data?.reason||'Timer could not stop.'));
+  return result.data;
+ },
+ async timerMarkPaid(sessionId){
+  if(state.closed||!state.isOwner||!validId(sessionId))throw Error('Verified owner required.');
+  await verify();
+  const result=await db.rpc('corp_redline_photo_timer_mark_paid',{p_session_id:sessionId});
+  if(result.error||result.data?.ok!==true)throw Error(fail(result.error||result.data?.reason||'Timed payment could not be recorded.'));
+  return result.data;
  },
  async presenceTouch(roomId,sessionId,active=true){
   if(state.closed||!state.user||!validId(roomId)||!validId(sessionId)||typeof active!=='boolean'||(active&&state.room?.id!==roomId))throw Error('REDLINE room presence unavailable.');
