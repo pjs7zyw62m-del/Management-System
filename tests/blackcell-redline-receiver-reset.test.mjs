@@ -88,8 +88,8 @@ test('Sender gets archived earnings and chat without permission to upload while 
  assert.match(ledger,/state\.showArchive\)throw Error\('Return to the current session/);
 });
 test('REDLINE receiver resources are versioned and original form and security remain intact',()=>{
- assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-price-photo-zoom1/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-price-photo-zoom1/);
+ assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-compact-toolbar1/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-compact-toolbar1/);
  assert.match(html,/private-photo-ledger\.js\?v=20261121-room-presence1/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=20261121-stable-brand1/);
  assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-inline-owner-chat1/);
@@ -132,7 +132,7 @@ test('REDLINE OS receiver keeps the narrow chat left and the real incoming photo
  assert.match(receiver,/desktopWorkspace=window\.matchMedia\('\(min-width:960px\)'\)/);
  assert.match(css,/grid-template-columns:minmax\(300px,370px\) minmax\(0,1fr\)/);
  assert.match(css,/rr-incoming-photos #ownerReviewQueue/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-price-photo-zoom1/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-compact-toolbar1/);
 });
 
 test('Owner can inspect large photo and set price while viewing it',()=>{
@@ -157,4 +157,24 @@ test('Owner photo pricing commits immediately without a browser confirm dialog',
  assert.doesNotMatch(approve,/window\.confirm\(/);
  // Distinct high-impact actions still retain their own confirmation controls.
  assert.match(ledger.slice(ledger.indexOf('async function rejectPhoto('),ledger.indexOf('async function settle(')),/window\.confirm/);
+});
+
+test('Receiver toolbar is compact, room controls expand on demand and live actions persist',()=>{
+ assert.match(receiver,/const roomSummary=make\('span','rr-room-summary'/);
+ assert.match(receiver,/const tools=button\('Room Tools'/);
+ assert.match(receiver,/rr-room-tools-open/);
+ assert.match(receiver,/tools\.setAttribute\('aria-expanded'/);
+ assert.match(receiver,/pageHeading\?\.querySelector\('\.workspace-actions'\)/);
+ assert.match(receiver,/header\.append\(workspaceActions\)/);
+ assert.match(receiver,/pageHeading\.append\(workspaceActions\)/);
+ assert.match(receiver,/roomSummary\.textContent=hasRoom/);
+ assert.match(receiver,/workspace\.append\(chatPanel,photos\)/);
+ assert.match(receiver,/photos\.append\(timeline\)/);
+ assert.match(css,/REDLINE compact desktop toolbar/);
+ assert.match(css,/body\.bc-redline-receiver #activeRoom>\.room-toolbar/);
+ assert.match(css,/body\.bc-redline-receiver\.rr-room-tools-open #redlineSessionTools:not\(\[hidden\]\)/);
+ assert.match(css,/min-height:34px!important/);
+ assert.match(css,/grid-template-columns:minmax\(0,1\.7fr\) minmax\(465px,1fr\)!important/);
+ assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-compact-toolbar1/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-compact-toolbar1/);
 });
