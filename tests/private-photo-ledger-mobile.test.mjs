@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 const read=p=>readFileSync(p,'utf8');
 const html=read('private-photo-ledger.html'),js=read('private-photo-ledger-responsive.js'),css=read('private-photo-ledger-responsive.css'),core=read('private-photo-ledger.js');
 test('mobile revision assets are cache-busted and original backend is retained',()=>{
- assert.match(html,/private-photo-ledger-responsive\.js\?v=20261120-sender-v3/);
+ assert.match(html,/private-photo-ledger-responsive\.js\?v=(?:20261120-sender-v3|20261121-stable-brand1)/);
  assert.match(html,/private-photo-ledger-responsive\.css\?v=20261120-mobile2/);
  assert.match(html,/private-photo-ledger\.js\?v=/);
  assert.match(core,/corp_private_photo_rooms/);

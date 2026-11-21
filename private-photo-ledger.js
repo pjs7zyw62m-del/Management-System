@@ -11,7 +11,7 @@ const $=id=>document.getElementById(id);
 const state={
  user:null,member:null,isOwner:false,rooms:[],room:null,employees:[],
  entries:[],filter:'all',busy:false,refreshing:false,closed:false,
- images:new Map(),entryFingerprint:'',liveStarted:false,roomChannel:null,roomsChannel:null,liveRoomId:null,liveQueued:false,liveTimer:null,liveConnected:false,scopeMemberId:null,scopeValue:'full',scopeLoading:false
+ images:new Map(),entryFingerprint:'',liveStarted:false,roomChannel:null,roomsChannel:null,liveRoomId:null,liveQueued:false,liveTimer:null,liveConnected:false,scopeMemberId:null,scopeValue:'full',scopeLoading:false,showArchive:false
 };
 const node=(tag,klass,content)=>{
  const n=document.createElement(tag);
@@ -206,7 +206,7 @@ async function refresh({initial=false,force=false}={}){
  if(state.refreshing){state.liveQueued=true;return}
  state.refreshing=true;
  try{
-  const result=await db.from(ROOMS).select('id,owner_id,member_id,title,active,created_at')
+  const result=await db.from(ROOMS).select('id,owner_id,member_id,title,active,created_at,current_session_started_at')
    .order('created_at',{ascending:false}).limit(100);
   if(result.error)throw result.error;
   state.rooms=result.data||[];
@@ -215,6 +215,7 @@ async function refresh({initial=false,force=false}={}){
   const preferred=(validId(requested)?state.rooms.find(x=>x.id===requested):null)
      ||state.rooms.find(x=>x.id===currentId)
      ||state.rooms[0]||null;
+  if(currentId!==preferred?.id)state.showArchive=false;
   state.room=preferred;
   if(state.liveStarted)subscribeEntries(preferred);
   $('noRoom').hidden=!!preferred;
@@ -232,6 +233,7 @@ async function refresh({initial=false,force=false}={}){
     'No private room has been assigned to your employee account yet. Only the BLACKCELL owner can grant access.';
    $('roomPickerWrap').hidden=true;
    state.entries=[];
+   updateRedlineResetControls();
    return;
   }
   fillRoomPicker();
@@ -257,6 +259,7 @@ async function refresh({initial=false,force=false}={}){
   show('roomNumber',String(idx+1).padStart(2,'0'));
   const u=new URL(location.href);u.searchParams.set('room',preferred.id);
   history.replaceState(null,'',u.pathname+u.search);
+  updateRedlineResetControls();
   await loadEntries({force:force||initial||currentId!==preferred.id});
  }finally{
   state.refreshing=false;
@@ -352,15 +355,21 @@ async function loadEntries({force=false}={}){
  if(!selectedRoom)return;
  const all=[];
  for(let from=0;from<5000;from+=250){
-  const result=await db.from(ENTRIES)
+  let query=db.from(ENTRIES)
    .select('id,room_id,uploaded_by,image_path,file_name,caption,amount_cents,decision_status,decided_at,priced_at,settled_at,created_at')
-   .eq('room_id',selectedRoom.id).order('created_at',{ascending:false}).range(from,from+249);
+   .eq('room_id',selectedRoom.id);
+  if(selectedRoom.current_session_started_at){
+   query=state.showArchive
+    ?query.lt('created_at',selectedRoom.current_session_started_at)
+    :query.gte('created_at',selectedRoom.current_session_started_at);
+  }else if(state.showArchive){state.showArchive=false;updateRedlineResetControls()}
+  const result=await query.order('created_at',{ascending:false}).range(from,from+249);
   if(result.error)throw result.error;
   all.push(...(result.data||[]));
   if((result.data||[]).length<250)break;
  }
  if(state.room?.id!==selectedRoom.id)return;
- const signature=JSON.stringify(all.map(e=>[e.id,e.amount_cents,e.decision_status,e.decided_at,e.priced_at,e.settled_at,e.caption]));
+ const signature=String(state.showArchive)+'|'+JSON.stringify(all.map(e=>[e.id,e.amount_cents,e.decision_status,e.decided_at,e.priced_at,e.settled_at,e.caption]));
  state.entries=all;
  updateTotals();
  const needsSignedRefresh=all.some(e=>!state.images.has(e.image_path)
@@ -423,7 +432,7 @@ function entryState(e){
 }
 function renderReviewQueue(){
  const queue=$('ownerReviewQueue');
- queue.hidden=!state.isOwner||!state.room;
+ queue.hidden=!state.isOwner||!state.room||state.showArchive;
  if(queue.hidden)return;
  const pending=state.entries
   .filter(e=>entryState(e)==='pending')
@@ -462,7 +471,7 @@ function renderEntries(){
   const message=state.filter==='reviewed'
    ?'No reviewed photos yet. Accept or reject a picture above and it will appear here.'
    :state.filter==='all'
-     ?'No photos yet. The selected employee can upload the first picture here.'
+     ?state.showArchive?'No archived photos in this room.':'No photos yet. The selected employee can upload the first picture here.'
      :'No photo entries match this filter.';
   parent.append(node('div','empty-entries',message));
   return;
@@ -601,6 +610,7 @@ async function uploadPhoto(...args){
 async function bcLiveOriginal_uploadPhoto(event){
  event.preventDefault();
  if(state.isOwner||state.busy||!state.room?.active)return;
+ if(state.showArchive){show('uploadFeedback','Return to the current REDLINE session before uploading new photos.');return}
  const file=$('uploadPhoto').files?.[0];
  if(!file){show('uploadFeedback','Choose a photo first.');return}
  if(file.size>MAX_IMAGE_BYTES||file.size===0){show('uploadFeedback','Choose a non-empty image no larger than 12 MB.');return}
@@ -673,6 +683,67 @@ async function toggleRoom(){
  }catch(e){show('entriesFeedback','Could not change room access: '+fail(e))}
  finally{state.busy=false}
 }
+function updateRedlineResetControls(){
+ const room=state.room,hasArchive=!!room?.current_session_started_at;
+ const tools=$('redlineSessionTools'),actions=$('redlineResetActions');
+ if(tools)tools.hidden=!room;
+ if(actions)actions.hidden=!state.isOwner||!room;
+ const archive=$('redlineArchiveToggle');
+ if(archive){
+  archive.hidden=!hasArchive;
+  archive.textContent=state.showArchive?'← RETURN TO CURRENT SESSION':'VIEW PREVIOUS RECORDS ↗';
+  archive.setAttribute('aria-pressed',String(state.showArchive));
+ }
+ const description=$('redlineSessionDescription');
+ if(description)description.textContent=state.showArchive
+  ?'ARCHIVE · Earlier photos, messages and payment records are preserved. They have not been deleted or cancelled.'
+  :hasArchive
+   ?'CURRENT SESSION · A fresh REDLINE workspace. Previous records and unpaid balances remain in the archive.'
+   :'CURRENT SESSION · Your verified private REDLINE room.';
+ document.body.classList.toggle('bc-redline-archive-view',state.showArchive);
+ window.dispatchEvent(new Event('blackcell:redline:session-mode'));
+}
+async function setRedlineArchiveView(archive){
+ if(!state.room)return;
+ if(archive&&!state.room.current_session_started_at)return;
+ state.showArchive=!!archive;state.entryFingerprint='';state.images.clear();
+ updateRedlineResetControls();
+ setFilter(state.showArchive?'all':state.isOwner?'reviewed':'all');
+ await loadEntries({force:true});
+ window.dispatchEvent(new Event('blackcell:redline:state'));
+}
+async function startRedlineFresh(all=false){
+ if(!state.isOwner||!state.room||state.busy)return;
+ const title=all?'ALL YOUR REDLINE ROOMS':'THIS PRIVATE ROOM';
+ const phrase=all?'RESET REDLINE':'START FRESH';
+ const entered=window.prompt(
+  'START FRESH · '+title+'\n\nThe active workspace will appear blank. Older photos, messages and financial records will be archived—not deleted. Previous unpaid amounts remain owed and accessible in Archive.\n\nType '+phrase+' to confirm:',''
+ );
+ if(entered!==phrase)return;
+ if(!window.confirm('Confirm '+title+'? Old history remains accessible in Archive, including outstanding balances.'))return;
+ state.busy=true;
+ const status=$('redlineResetStatus');
+ if(status)status.textContent='Verifying owner authorization and starting a fresh session…';
+ $('redlineStartFreshRoom').disabled=$('redlineMasterReset').disabled=true;
+ try{
+  await verify();
+  const {data,error}=await db.rpc('corp_owner_redline_start_fresh',{
+   p_confirmation:phrase,p_room_id:all?null:state.room.id
+  });
+  if(error||data?.ok!==true||(!all&&data.rooms_reset!==1)){
+   throw Error(data?.reason||error?.message||'The server did not confirm the reset.');
+  }
+  state.showArchive=false;state.entryFingerprint='';state.images.clear();
+  await refresh({force:true});
+  if(status)status.textContent='Fresh REDLINE session ready. '+data.rooms_reset+' room(s) archived. No financial records or photos deleted.';
+  window.dispatchEvent(new Event('blackcell:redline:reset'));
+ }catch(e){
+  if(status)status.textContent='Unable to start fresh: '+fail(e);
+ }finally{
+  state.busy=false;
+  $('redlineStartFreshRoom').disabled=$('redlineMasterReset').disabled=false;
+ }
+}
 async function copyLink(){
  if(!state.room)return;
  const link=roomLink(state.room);
@@ -702,6 +773,9 @@ function wireEvents(){
   void refresh({force:true}).catch(e=>show('entriesFeedback',fail(e)));
  });
  $('closeRoomBtn').addEventListener('click',()=>void toggleRoom());
+ $('redlineArchiveToggle').addEventListener('click',()=>void setRedlineArchiveView(!state.showArchive));
+ $('redlineStartFreshRoom').addEventListener('click',()=>void startRedlineFresh(false));
+ $('redlineMasterReset').addEventListener('click',()=>void startRedlineFresh(true));
  $('copyRoomLink').addEventListener('click',()=>void copyLink());
  $('ledgerScopeToggle').addEventListener('click',()=>void toggleLedgerScope());
  $('ledgerSignOut').addEventListener('click',async()=>{
@@ -740,6 +814,8 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
    isOwner:state.isOwner,
    roomActive:state.room.active===true,
    roomTitle:state.room.title,
+   archiveMode:state.showArchive,
+   resetAt:state.room.current_session_started_at||null,
    pending:state.entries.filter(e=>e.decision_status==='pending').length,
    owed:$('totalOwed').textContent,
    assigned:$('totalAssigned').textContent,
@@ -752,12 +828,18 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
    }))
   };
  },
- async loadMessages(){
+ async toggleArchive(){
+  await setRedlineArchiveView(!state.showArchive);
+  return {archiveMode:state.showArchive};
+ },
+  async loadMessages(){
   const roomId=state.room?.id;
   if(state.closed||!state.user||!roomId)return [];
-  const result=await db.from(REDLINE_MESSAGES)
-   .select('id,room_id,sender_id,body,created_at')
-   .eq('room_id',roomId).order('created_at',{ascending:false}).limit(150);
+  let query=db.from(REDLINE_MESSAGES)
+   .select('id,room_id,sender_id,body,created_at').eq('room_id',roomId);
+  const cutoff=state.room?.current_session_started_at;
+  if(cutoff)query=state.showArchive?query.lt('created_at',cutoff):query.gte('created_at',cutoff);
+  const result=await query.order('created_at',{ascending:false}).limit(150);
   if(result.error)throw result.error;
   if(state.closed||state.room?.id!==roomId)return [];
   return (result.data||[]).reverse();
@@ -766,7 +848,7 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
   const body=String(message||'').trim();
   if(!body||body.length>2000)throw Error('Enter a message of 1 to 2,000 characters.');
   const room=state.room;
-  if(state.closed||!room?.active||!state.user)throw Error('No active private room is available.');
+  if(state.closed||!room?.active||!state.user||state.showArchive)throw Error('Return to the current session before sending messages.');
   await verify();
   if(state.closed||state.room?.id!==room.id||!state.room.active)throw Error('Private room changed; try again.');
   const result=await db.from(REDLINE_MESSAGES).insert({

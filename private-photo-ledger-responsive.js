@@ -26,8 +26,8 @@
     if(phone||innerWidth<=650)return'mobile';
     return tablet||innerWidth<1180?'tablet':'os';
   }
-  const labels={os:'BLACKCELL OS',tablet:'BLACKCELL OS Tablet',mobile:'BLACKCELL OS Mobile'};
-  const captions={os:'DESKTOP EDITION',tablet:'TABLET EDITION',mobile:'MOBILE EDITION'};
+  const labels={os:'BLACKCELL REDLINE',tablet:'BLACKCELL REDLINE',mobile:'BLACKCELL REDLINE'};
+  const captions={os:'PRIVATE EXCHANGE',tablet:'PRIVATE EXCHANGE',mobile:'PRIVATE EXCHANGE'};
   let current='summary';
   const app=$('#ledgerApp'),room=$('#activeRoom'),heading=$('.page-heading',app);
   if(!app||!room||!heading)return;
@@ -111,8 +111,8 @@
     const edition=captions[mode];
     sectionHeading.textContent=sectionNames[current]||'Overview';
     version.textContent=edition;
-    topLabel.textContent=mode==='os'?'OS':mode==='tablet'?'OS TABLET':'OS MOBILE';
-    const title=labels[mode]+' · BLACKCELL REDLINE';
+    topLabel.textContent='REDLINE';
+    const title=labels[mode]+' · PRIVATE EXCHANGE';
     if(document.title!==title)document.title=title;
     for(const[key,pair]of buttons){
       for(const button of pair){

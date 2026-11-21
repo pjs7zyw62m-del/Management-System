@@ -8,7 +8,7 @@ const css=read('private-photo-ledger-responsive.css');
 const auth=read('private-photo-ledger.js');
 test('new shell layers on top of the original fully authenticated Ledger',()=>{
  assert.match(html,/private-photo-ledger\.js\?v=/);
- assert.match(html,/private-photo-ledger-responsive\.js\?v=20261120-sender-v3/);
+ assert.match(html,/private-photo-ledger-responsive\.js\?v=(?:20261120-sender-v3|20261121-stable-brand1)/);
  assert.match(html,/private-photo-ledger\.css\?v=/);
  assert.match(html,/private-photo-ledger-responsive\.css\?v=20261120-mobile2/);
  for(const selector of ['id="accessGate"','id="ledgerApp"','id="activeRoom"','id="ownerReviewQueue"','id="employeeUpload"','id="photoEntries"','id="photoLightbox"','id="totalOwed"'])assert.ok(html.includes(selector),selector);
@@ -19,9 +19,9 @@ test('new shell layers on top of the original fully authenticated Ledger',()=>{
 });
 test('desktop, tablet, and phone versions use one Ledger',()=>{
  for(const name of ['bc-ledger-desktop','bc-ledger-tablet','bc-ledger-mobile'])assert.ok(js.includes(name)&&css.includes(name),name);
- assert.match(js,/BLACKCELL OS Mobile/);
- assert.match(js,/BLACKCELL OS Tablet/);
- assert.match(js,/BLACKCELL OS'/);
+ assert.match(js,/const labels=\{os:'BLACKCELL REDLINE',tablet:'BLACKCELL REDLINE',mobile:'BLACKCELL REDLINE'\}/);
+ assert.match(js,/const captions=\{os:'PRIVATE EXCHANGE',tablet:'PRIVATE EXCHANGE',mobile:'PRIVATE EXCHANGE'\}/);
+ assert.match(js,/topLabel\.textContent='REDLINE'/);
  assert.match(css,/grid-template-columns:220px minmax\(0,1fr\)/);
  assert.match(css,/bc-ledger-phone-nav/);
 });
@@ -77,6 +77,6 @@ test('BLACKCELL REDLINE is the unified public name while IDs and existing links 
  assert.match(auth,/corp_private_photo_entries/);
  assert.match(auth,/corp-private-photo-ledger/);
  assert.match(os,/private-photo-ledger\.html\?osApp=photoledger/);
- assert.match(html,/private-photo-ledger\.js\?v=(?:20261120-redline-chat1|20261121-level-r-only1)/);
- assert.match(html,/private-photo-ledger-responsive\.js\?v=20261120-sender-v3/);
+ assert.match(html,/private-photo-ledger\.js\?v=(?:20261120-redline-chat1|20261121-level-r-only1|20261121-fresh-session2)/);
+ assert.match(html,/private-photo-ledger-responsive\.js\?v=(?:20261120-sender-v3|20261121-stable-brand1)/);
 });

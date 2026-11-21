@@ -12,18 +12,20 @@
 <link rel="stylesheet" href="private-photo-ledger-owner-preview.css?v=20261120-preview1">
 <link rel="stylesheet" href="private-photo-ledger-solid-red.css?v=20261120-solid-red1">
 <link rel="stylesheet" href="private-photo-ledger-simple-sender.css?v=20261120-redline-chat1">
+<link rel="stylesheet" href="private-photo-ledger-receiver.css?v=20261121-receiver2">
 <script src="corp-config.js"></script>
-<script type="module" src="private-photo-ledger.js?v=20261121-level-r-only1"></script>
-<script src="private-photo-ledger-responsive.js?v=20261120-sender-v3" defer></script>
+<script type="module" src="private-photo-ledger.js?v=20261121-fresh-session2"></script>
+<script src="private-photo-ledger-responsive.js?v=20261121-stable-brand1" defer></script>
 <script src="private-photo-ledger-sender.js?v=20261120-sender-v3" defer></script>
 <script src="private-photo-ledger-owner-preview.js?v=20261120-preview1" defer></script>
 <script src="private-photo-ledger-solid-red.js?v=20261120-solid-red1" defer></script>
-<script src="private-photo-ledger-simple-sender.js?v=20261120-redline-chat1" defer></script>
+<script src="private-photo-ledger-simple-sender.js?v=20261121-archive-sender1" defer></script>
+<script src="private-photo-ledger-receiver.js?v=20261121-receiver2" defer></script>
 <script src="blackcell-live-update.js?v=20261114-auto3" defer data-mode="auto"></script>
 </head>
 <body>
 <header class="topbar">
- <a class="brand" id="ledgerBrand" href="private-photo-ledger.html" aria-label="Return to Blackcell Network">
+ <a class="brand" id="ledgerBrand" href="private-photo-ledger.html" aria-label="BLACKCELL REDLINE home">
   <span class="brand-b">B</span><span class="brand-label"><strong>BLACKCELL CORPORATION</strong><small>REDLINE · PRIVATE EXCHANGE</small></span>
  </a>
  <div class="top-actions">
@@ -100,6 +102,20 @@
    <article class="metric"><span>ACCEPTED AT $0.00</span><strong id="freeCount">0</strong><small>Accepted, nothing owed</small></article>
    <article class="metric"><span>REJECTED PHOTOS</span><strong id="rejectedCount">0</strong><small>Not included in amounts owed</small></article>
   </div>
+  <section id="redlineSessionTools" class="redline-session-panel panel" aria-label="REDLINE current session and archive" hidden>
+   <div class="redline-session-text">
+    <span class="eyebrow">REDLINE / SESSION RECORDS</span>
+    <strong id="redlineSessionDescription">CURRENT SESSION · Your verified private REDLINE room.</strong>
+   </div>
+   <div class="redline-session-actions">
+    <button id="redlineArchiveToggle" class="button-outline" type="button" hidden aria-pressed="false">VIEW PREVIOUS RECORDS ↗</button>
+    <div id="redlineResetActions" hidden>
+     <button id="redlineStartFreshRoom" class="button-outline" type="button">START FRESH · THIS ROOM</button>
+     <button id="redlineMasterReset" class="button-outline redline-danger" type="button">MASTER RESET · ALL ROOMS</button>
+    </div>
+   </div>
+   <p id="redlineResetStatus" role="status" aria-live="polite"></p>
+  </section>
   <div class="room-body">
    <aside class="side-column">
     <section id="ownerUploadInfo" class="panel owner-upload-info" hidden>

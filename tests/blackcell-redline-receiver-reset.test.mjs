@@ -1,0 +1,103 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+
+const read=p=>readFileSync(p,'utf8');
+const html=read('private-photo-ledger.html');
+const ledger=read('private-photo-ledger.js');
+const responsive=read('private-photo-ledger-responsive.js');
+const receiver=read('private-photo-ledger-receiver.js');
+const css=read('private-photo-ledger-receiver.css');
+const sender=read('private-photo-ledger-simple-sender.js');
+const sql=read('supabase/sql/blackcell_redline_start_fresh_archive.sql');
+
+test('REDLINE branding remains constant regardless of window width',()=>{
+ assert.match(responsive,/const labels=\{os:'BLACKCELL REDLINE',tablet:'BLACKCELL REDLINE',mobile:'BLACKCELL REDLINE'\}/);
+ assert.match(responsive,/const captions=\{os:'PRIVATE EXCHANGE',tablet:'PRIVATE EXCHANGE',mobile:'PRIVATE EXCHANGE'\}/);
+ assert.match(responsive,/topLabel\.textContent='REDLINE'/);
+ assert.doesNotMatch(responsive,/topLabel\.textContent=mode==='os'/);
+ assert.match(html,/BLACKCELL REDLINE \| Private Exchange/);
+});
+test('Receiver has a redesigned and owner-gated command dashboard',()=>{
+ assert.match(receiver,/const visible=!app\.hidden&&!owner\.hidden/);
+ assert.match(receiver,/document\.body\.classList\.toggle\('bc-redline-receiver',visible\)/);
+ assert.match(receiver,/rr-stat-.*key/);
+ assert.match(css,/rr-stat-pending/);
+ assert.match(receiver,/AWAITING YOUR REVIEW/);
+ assert.match(receiver,/OUTSTANDING AMOUNTS/);
+ assert.match(receiver,/RECORDED PAID/);
+ assert.match(receiver,/Message Sender/);
+ assert.match(receiver,/Manage Rooms/);
+ assert.match(receiver,/document\.getElementById\(source\)/);
+ assert.match(css,/body\.bc-redline-receiver\{/);
+ assert.match(css,/background:#000!important/);
+ assert.match(css,/rr-stats/);
+ assert.match(css,/rr-nav-button/);
+ assert.match(css,/object-fit:contain!important/);
+ assert.match(css,/body\.bc-redline-receiver\.bc-ledger-tablet/);
+ assert.match(css,/@media\(max-width:490px\)/);
+});
+test('Master Reset archives rather than deletes original photos, chat or financial amounts',()=>{
+ assert.match(sql,/current_session_started_at timestamptz/);
+ assert.match(sql,/corp_owner_redline_start_fresh/);
+ assert.match(sql,/public\.corp_owner_validated\(\)/);
+ assert.match(sql,/p_confirmation <> 'RESET REDLINE'/);
+ assert.match(sql,/p_confirmation <> 'START FRESH'/);
+ assert.match(sql,/where owner_id=v_owner/);
+ assert.match(sql,/revoke all.*from anon/i);
+ assert.match(sql,/archived_only',true/);
+ assert.ok(!/\bDELETE\s+FROM\b|\bTRUNCATE\b|\bDROP\s+TABLE\b/i.test(sql));
+ assert.match(ledger,/if\(r\.error\)\{\s*\/\/ The cleanup policy allows deleting an uploaded file only if no ledger entry references it\.\s*await db\.storage\.from\(BUCKET\)\.remove\(\[path\]\)/);
+ assert.ok(!/db\.from\(ENTRIES\)\.delete/i.test(ledger));
+});
+test('Only the verified REDLINE owner can trigger resets with two confirmations',()=>{
+ assert.match(ledger,/if\(!state\.isOwner\|\|!state\.room\|\|state\.busy\)return/);
+ assert.match(ledger,/window\.prompt\(/);
+ assert.match(ledger,/window\.confirm\(/);
+ assert.match(ledger,/await verify\(\)/);
+ assert.match(ledger,/db\.rpc\('corp_owner_redline_start_fresh'/);
+ assert.match(ledger,/p_room_id:all\?null:state\.room\.id/);
+ assert.match(ledger,/data\.rooms_reset!==1/);
+ assert.match(html,/id="redlineResetActions" hidden/);
+ assert.match(html,/id="redlineMasterReset"/);
+ assert.match(html,/id="redlineStartFreshRoom"/);
+ assert.match(html,/id="redlineResetStatus" role="status"/);
+});
+test('Current and Archive use server timestamps rather than cached or invented fake data',()=>{
+ assert.match(ledger,/current_session_started_at/);
+ assert.match(ledger,/state\.showArchive/);
+ assert.match(ledger,/query\.lt\('created_at',selectedRoom\.current_session_started_at\)/);
+ assert.match(ledger,/query\.gte\('created_at',selectedRoom\.current_session_started_at\)/);
+ assert.match(ledger,/query\.lt\('created_at',cutoff\)/);
+ assert.match(ledger,/query\.gte\('created_at',cutoff\)/);
+ assert.match(ledger,/archiveMode:state\.showArchive/);
+ assert.match(ledger,/resetAt:state\.room\.current_session_started_at/);
+ assert.match(ledger,/state\.entryFingerprint=''/);
+ assert.match(ledger,/state\.images\.clear\(\)/);
+ assert.match(ledger,/No archived photos/);
+ assert.match(html,/id="redlineArchiveToggle"[^>]*hidden/);
+});
+test('Sender gets archived earnings and chat without permission to upload while browsing history',()=>{
+ assert.match(sender,/VIEW PREVIOUS RECORDS/);
+ assert.match(sender,/bridge\(\)\?\.toggleArchive\?\.\(\)/);
+ assert.match(sender,/archiveButton\.hidden=!snap\.resetAt/);
+ assert.match(sender,/sessionKey=snap\.roomId/);
+ assert.match(sender,/Return to the current session before sending a message/);
+ assert.match(sender,/send\.disabled=Boolean\(snap\.archiveMode\)/);
+ assert.match(ledger,/if\(state\.showArchive\)\{show\('uploadFeedback'/);
+ assert.match(ledger,/state\.showArchive\)throw Error\('Return to the current session/);
+});
+test('REDLINE receiver resources are versioned and original form and security remain intact',()=>{
+ assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-receiver2/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-receiver2/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261121-fresh-session2/);
+ assert.match(html,/private-photo-ledger-responsive\.js\?v=20261121-stable-brand1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-archive-sender1/);
+ assert.match(ledger,/corporateAuthorize\(db,\{allowLedgerOnly:true\}\)/);
+ assert.match(ledger,/const BUCKET='corp-private-photo-ledger'/);
+ assert.match(ledger,/db\.storage\.from\(BUCKET\)\.upload/);
+ assert.match(ledger,/function renderReviewQueue\(/);
+ assert.match(ledger,/async function assignAmount\(/);
+ assert.match(ledger,/async function settle\(/);
+ assert.match(ledger,/async function uploadPhoto\(/);
+});

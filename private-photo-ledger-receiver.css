@@ -1,0 +1,296 @@
+/* BLACKCELL REDLINE 2.0 — RECEIVER COMMAND CENTER
+   Pure pitch-black, red and polished graphite. No fake data or mirrored content.
+   Scopes every redesign rule to the verified owner receiver view only. */
+body.bc-redline-receiver{
+ --rr-black:#000;--rr-panel:#09090b;--rr-panel2:#101013;
+ --rr-red:#e60027;--rr-white:#f6f6f7;--rr-muted:#aaa9ad;
+ color:var(--rr-white)!important;background:#000!important;
+}
+body.bc-redline-receiver .topbar{
+ min-height:65px!important;background:#030303!important;
+ border-bottom:1px solid #e60027!important;box-shadow:0 2px 25px #000b!important;
+ backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+}
+body.bc-redline-receiver .brand-b{border:1px solid var(--rr-red)!important;background:#190007!important;color:#fff!important;box-shadow:none!important}
+body.bc-redline-receiver .brand-label small{color:#fa3456!important}
+body.bc-redline-receiver .privacy-pill{background:#0b0b0c!important;border:1px solid #6a2834!important;color:#d1c4c9!important}
+body.bc-redline-receiver .navlink,body.bc-redline-receiver .button-outline{
+ border:1px solid #3b3b40!important;background:#101013!important;color:#f1f1f3!important;
+ box-shadow:none!important;backdrop-filter:none!important;
+}
+body.bc-redline-receiver .button-outline:hover,body.bc-redline-receiver .navlink:hover{
+ background:#1b060b!important;border-color:var(--rr-red)!important;
+}
+body.bc-redline-receiver .button-main{background:#d90024!important;border:1px solid #f02b4d!important;color:#fff!important;box-shadow:none!important}
+body.bc-redline-receiver .eyebrow{color:#ed3655!important;font-weight:780;letter-spacing:.13em}
+body.bc-redline-receiver #ledgerApp.shell,
+body.bc-redline-receiver.bc-ledger-desktop #ledgerApp.shell,
+body.bc-redline-receiver.bc-ledger-tablet #ledgerApp.shell{
+ display:block!important;max-width:1590px!important;width:100%!important;
+ margin-inline:auto!important;padding:clamp(15px,2.5vw,35px) clamp(14px,3vw,44px) 75px!important;
+}
+body.bc-redline-receiver .bc-ledger-rail{display:none!important}
+body.bc-redline-receiver #ledgerApp>.page-heading{
+ display:flex!important;justify-content:flex-end!important;align-items:center!important;
+ margin:0 0 13px!important;min-height:24px!important;
+}
+body.bc-redline-receiver #ledgerApp>.page-heading>div:first-child{display:none!important}
+body.bc-redline-receiver #ledgerApp>.page-heading .workspace-actions{gap:11px;flex-wrap:wrap}
+body.bc-redline-receiver #ledgerApp>.page-heading #ledgerLiveStatus{
+ font-size:10px!important;color:#bbbbc0!important;
+ background:#121215!important;border:1px solid #363638!important;border-radius:9px!important;
+}
+body.bc-redline-receiver .panel{
+ color:#f5f5f6!important;background:#0c0c0f!important;
+ border:1px solid #39393d!important;box-shadow:none!important;
+ backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+ border-radius:18px!important;
+}
+body.bc-redline-receiver .room-toolbar{padding:19px 23px!important;margin-bottom:14px!important;border-left:3px solid #dd1235!important}
+body.bc-redline-receiver .room-toolbar h2{color:#f5f5f6!important;letter-spacing:-.035em}
+body.bc-redline-receiver .room-state{background:#09150f!important;color:#d6f1db!important;border-color:#22563a!important}
+body.bc-redline-receiver .metrics{display:none!important}
+/* Owners receive and review; they cannot upload. Remove the legacy
+   employee-upload banner and its misleading GO TO UPLOAD button entirely. */
+body.bc-redline-receiver #uploadAccessStatus{display:none!important}
+body.bc-redline-receiver .owner-upload-info .owner-upload-example{display:none!important}
+
+body.bc-redline-receiver #ownerSetup{
+ margin:24px 0 0!important;padding:24px!important;
+ border-left:3px solid #b91a35!important;
+}
+body.bc-redline-receiver #ownerSetup h2{font-size:23px;letter-spacing:-.04em}
+body.bc-redline-receiver #ownerSetup .mini-tag{background:#24060e!important;border:1px solid #c73351!important;color:#fff!important}
+body.bc-redline-receiver #ownerSetup input,
+body.bc-redline-receiver #ownerSetup select{
+ min-height:48px;border-radius:12px!important;border:1px solid #48474b!important;
+ color:#f6f6f6!important;background:#111114!important;
+}
+body.bc-redline-receiver .redline-receiver-command{
+ display:flex;flex-direction:column;gap:19px;
+ background:#050506;border:1px solid #444247;border-top:3px solid var(--rr-red);
+ border-radius:20px;padding:clamp(19px,2.6vw,35px);
+ margin-bottom:17px;box-shadow:0 21px 52px #000b;
+}
+body.bc-redline-receiver .rr-command-header{display:flex;align-items:flex-start;justify-content:space-between;gap:19px;flex-wrap:wrap}
+body.bc-redline-receiver .rr-command-intro{min-width:0;flex:1}
+body.bc-redline-receiver .rr-kicker{
+ display:block;color:#ef425e;font-size:10px;font-weight:780;
+ letter-spacing:.16em;margin-bottom:13px;
+}
+body.bc-redline-receiver .rr-title{
+ margin:0;color:#f9f7f9;font-size:clamp(33px,4.5vw,60px);
+ font-weight:830;letter-spacing:-.065em;line-height:1.08;
+}
+body.bc-redline-receiver .rr-title span{color:#f32346}
+body.bc-redline-receiver .rr-subtitle{
+ margin:12px 0 0;color:#b7b4b8;font-size:clamp(12px,1.25vw,14px);
+ line-height:1.6;max-width:620px;
+}
+body.bc-redline-receiver .rr-status{
+ display:inline-flex;align-items:center;justify-content:center;
+ color:#f5bcc6;font-size:10px;font-weight:780;letter-spacing:.11em;
+ background:#21060b;border:1px solid #a0243b;border-radius:999px;
+ min-height:36px;padding:8px 14px;white-space:normal;
+}
+body.bc-redline-receiver .rr-status.is-waiting{border-color:#514b4e;color:#b6b0b4;background:#151316}
+body.bc-redline-receiver .rr-stats{
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;
+}
+body.bc-redline-receiver .rr-stat{
+ display:flex;flex-direction:column;gap:9px;min-width:0;
+ padding:clamp(14px,1.5vw,21px);
+ min-height:120px;background:#111113;border:1px solid #333236;border-radius:15px;
+}
+body.bc-redline-receiver .rr-stat-pending{
+ background:#200609;border:1px solid #b9213d;
+}
+body.bc-redline-receiver .rr-stat-name{
+ font-size:9px;color:#aaa6aa;font-weight:760;letter-spacing:.115em;line-height:1.45;
+}
+body.bc-redline-receiver .rr-stat-pending .rr-stat-name{color:#f0a5b3}
+body.bc-redline-receiver .rr-stat-value{
+ font-size:clamp(24px,3vw,43px);font-weight:780;line-height:1.13;
+ letter-spacing:-.052em;color:#fff;
+ font-variant-numeric:tabular-nums;overflow-wrap:anywhere;
+}
+body.bc-redline-receiver .rr-stat-pending .rr-stat-value{color:#ff3a5d}
+body.bc-redline-receiver .rr-stat-foot{margin-top:auto;font-size:10px;color:#939095;line-height:1.5}
+body.bc-redline-receiver .rr-nav{
+ display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;
+}
+body.bc-redline-receiver .rr-nav-button{
+ display:flex;align-items:center;justify-content:center;text-align:center;
+ padding:11px 9px;min-height:47px;min-width:0;
+ color:#eae8eb;background:#17171a;border:1px solid #474347;
+ border-radius:12px;font-size:11px;line-height:1.4;font-weight:730;
+ cursor:pointer;transition:background .15s,border-color .15s;
+}
+body.bc-redline-receiver .rr-nav-button:hover{background:#2b0a12;border-color:#d52a49}
+body.bc-redline-receiver .rr-nav-button.is-primary{
+ background:#d5082b;border-color:#e92047;color:#fff;
+}
+body.bc-redline-receiver .rr-nav-button:disabled{opacity:.4;cursor:default}
+body.bc-redline-receiver .rr-security-line{
+ display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+ padding-top:12px;border-top:1px solid #363337;
+ color:#a9a6aa;font-size:10px;line-height:1.4;letter-spacing:.02em;
+}
+body.bc-redline-receiver .rr-security-line strong{color:#e6e2e4;letter-spacing:.12em}
+body.bc-redline-receiver .rr-security-dot{
+ width:7px;height:7px;border-radius:50%;background:#e71e43;
+ box-shadow:0 0 0 4px #e71e4321;
+}
+body.bc-redline-receiver .room-body,
+body.bc-redline-receiver.bc-ledger-desktop #activeRoom .room-body,
+body.bc-redline-receiver.bc-ledger-tablet #activeRoom .room-body{
+ display:grid!important;grid-template-columns:minmax(0,1.7fr) minmax(260px,.85fr)!important;
+ gap:15px!important;align-items:start!important;
+}
+body.bc-redline-receiver .timeline-column{
+ grid-column:1!important;grid-row:1!important;min-width:0!important;
+ display:flex!important;flex-direction:column!important;gap:14px!important;width:auto!important;
+}
+body.bc-redline-receiver .side-column{
+ grid-column:2!important;grid-row:1!important;min-width:0!important;
+ display:flex!important;flex-direction:column!important;gap:13px!important;width:auto!important;
+}
+body.bc-redline-receiver #ownerReviewQueue{
+ padding:clamp(16px,2.2vw,25px)!important;
+ border:1px solid #a6223c!important;border-top:3px solid #ef2448!important;
+ background:#10070a!important;border-radius:18px!important;
+}
+body.bc-redline-receiver #ownerReviewQueue h2{font-size:clamp(23px,2.7vw,32px);letter-spacing:-.05em;color:#fff}
+body.bc-redline-receiver .owner-review-heading p{color:#b9b2b5!important;line-height:1.55}
+body.bc-redline-receiver .queue-counter{
+ background:#330810!important;border:1px solid #bd2742!important;color:#fcd8df!important;
+}
+body.bc-redline-receiver .review-queue-current .queue-progress{
+ background:#1c090e!important;border-color:#76263a!important;color:#f0bcc8!important;
+}
+body.bc-redline-receiver .photo-entry{
+ background:#0b0b0e!important;border:1px solid #37363b!important;border-radius:15px!important;
+ color:#f6f6f6!important;box-shadow:none!important;
+}
+body.bc-redline-receiver .photo-entry img{
+ width:100%;max-height:520px;object-fit:contain!important;background:#050505!important;
+}
+body.bc-redline-receiver .photo-entry-content h3{color:#f7f7f8!important}
+body.bc-redline-receiver .entry-badge{
+ background:#220910!important;border:1px solid #9b3048!important;color:#f5c5d1!important;
+}
+body.bc-redline-receiver .entry-amount{color:#f83154!important}
+body.bc-redline-receiver .timeline-toolbar{
+ border-top:2px solid #7f2536!important;padding:21px!important;
+}
+body.bc-redline-receiver .timeline-toolbar h2{font-size:clamp(21px,2.8vw,29px);letter-spacing:-.04em;color:#fff!important}
+body.bc-redline-receiver .filter-buttons button{
+ background:#161518!important;color:#c4c0c5!important;border:1px solid #3d393e!important;
+ border-radius:10px!important;min-height:39px!important;
+}
+body.bc-redline-receiver .filter-buttons button[aria-pressed=true]{
+ background:#ab1230!important;border-color:#f03356!important;color:#fff!important;
+}
+body.bc-redline-receiver .side-column .panel{padding:19px!important}
+body.bc-redline-receiver .owner-upload-example{display:none!important}
+body.bc-redline-receiver .side-column .card-title{align-items:center}
+body.bc-redline-receiver .side-column h3{font-size:17px;letter-spacing:-.025em;color:#f4f4f6!important}
+body.bc-redline-receiver .side-column .card-icon{background:#2a0b13!important;color:#f73c5c!important;border:1px solid #8f2c43!important}
+body.bc-redline-receiver .side-column .privacy-note{color:#aaa7ab!important}
+body.bc-redline-receiver .side-column input,
+body.bc-redline-receiver .side-column textarea,
+body.bc-redline-receiver .side-column select{
+ background:#101013!important;border:1px solid #49464a!important;color:#fff!important;
+}
+body.bc-redline-receiver #ownerLedgerScope{border-left:3px solid #c52340!important}
+body.bc-redline-receiver #noRoom{padding:55px 30px!important;background:#070709!important;border:1px dashed #a52740!important}
+body.bc-redline-receiver #noRoom h2{font-size:28px}
+body.bc-redline-receiver .empty-entries,
+body.bc-redline-receiver .queue-empty{
+ background:#0c0c0f!important;border:1px dashed #6c3340!important;color:#bab5b9!important;
+}
+body.bc-redline-receiver footer{border-top:1px solid #3a141e;color:#a7a2a5;background:#000}
+body.bc-redline-receiver .bc-ledger-edition,
+body.bc-redline-receiver .bc-ledger-top-edition{color:#f34260!important;background:#21080e!important;border-color:#772538!important}
+.redline-session-panel{
+ display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;
+ gap:12px;margin:0 0 17px;padding:17px 19px;
+}
+.redline-session-text{display:flex;flex-direction:column;gap:6px;flex:1;min-width:180px}
+.redline-session-text strong{font-size:12px;line-height:1.5;font-weight:570;color:#c9c7cb}
+.redline-session-actions,.redline-session-actions>div{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#redlineSessionTools .redline-danger{
+ color:#ff6b83!important;border-color:#9b2a40!important;
+ background:#22070c!important;
+}
+#redlineSessionTools #redlineResetStatus{
+ flex-basis:100%;margin:0;min-height:0;
+ font-size:11px;line-height:1.6;color:#f5b3c2;
+}
+#redlineSessionTools #redlineResetStatus:empty{display:none}
+body.bc-redline-archive-view #redlineSessionTools{
+ border-color:#b33b55!important;background:#20090e!important;
+}
+body.bc-redline-archive-view .timeline-toolbar .eyebrow::after{
+ content:' · ARCHIVE';color:#ff4668;
+}
+body.bc-redline-receiver .room-toolbar,
+body.bc-redline-receiver #ownerReviewQueue,
+body.bc-redline-receiver .timeline-toolbar,
+body.bc-redline-receiver #ownerSetup{scroll-margin-top:100px}
+@media(max-width:1100px){
+ body.bc-redline-receiver .rr-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body.bc-redline-receiver .rr-nav{grid-template-columns:repeat(3,minmax(0,1fr))}
+ body.bc-redline-receiver .room-body,
+ body.bc-redline-receiver.bc-ledger-tablet #activeRoom .room-body,
+ body.bc-redline-receiver.bc-ledger-desktop #activeRoom .room-body{
+  grid-template-columns:minmax(0,1.5fr) minmax(225px,.95fr)!important;
+ }
+}
+@media(max-width:780px){
+ body.bc-redline-receiver .room-body,
+ body.bc-redline-receiver.bc-ledger-tablet #activeRoom .room-body,
+ body.bc-redline-receiver.bc-ledger-desktop #activeRoom .room-body{
+  display:flex!important;flex-direction:column!important;gap:12px!important;
+ }
+ body.bc-redline-receiver .timeline-column,
+ body.bc-redline-receiver .side-column{width:100%!important;grid-column:auto!important;grid-row:auto!important}
+ body.bc-redline-receiver .rr-nav{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body.bc-redline-receiver .rr-command-header{flex-direction:column}
+ body.bc-redline-receiver .rr-title{font-size:clamp(33px,8vw,50px)}
+ body.bc-redline-receiver .rr-stat-value{font-size:clamp(25px,6vw,35px)}
+}
+@media(max-width:490px){
+ body.bc-redline-receiver #ledgerApp.shell,
+ body.bc-redline-receiver.bc-ledger-tablet #ledgerApp.shell{padding:12px 11px 100px!important}
+ body.bc-redline-receiver .redline-receiver-command{padding:16px 13px;gap:13px}
+ body.bc-redline-receiver .rr-stats{gap:8px}
+ body.bc-redline-receiver .rr-stat{padding:13px 11px;min-height:100px}
+ body.bc-redline-receiver .rr-stat-name{font-size:8px}
+ body.bc-redline-receiver .rr-stat-foot{font-size:9px}
+ body.bc-redline-receiver .rr-nav{gap:8px}
+ body.bc-redline-receiver .rr-nav-button{min-height:43px;font-size:10px}
+ body.bc-redline-receiver #ledgerApp>.page-heading{justify-content:flex-start!important}
+ body.bc-redline-receiver #ledgerApp>.page-heading .workspace-actions{width:100%}
+ .redline-session-panel{padding:14px}
+ .redline-session-actions>div{width:100%}
+ .redline-session-actions button{width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+ body.bc-redline-receiver .rr-nav-button{transition:none}
+}
+
+/* Sender's existing black/red Earnings view gets a matching history switch. */
+body.redline-sender-simple .redline-archive-sender-notice{
+ margin:10px 0 7px;color:#c6b7bc;font-size:11px;line-height:1.6;
+}
+body.redline-sender-simple .redline-archive-sender-notice:empty{display:none}
+body.redline-sender-simple .redline-archive-sender-button{
+ display:block;width:100%;min-height:46px;margin:12px 0 5px;
+ padding:12px 14px;background:#16070b;color:#fff;
+ border:1px solid #cb1737;border-radius:12px;
+ font-size:11px;font-weight:770;letter-spacing:.08em;
+}
+body.redline-sender-simple .redline-archive-sender-button:hover{
+ background:#310b14;border-color:#ff3154;
+}

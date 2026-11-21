@@ -72,14 +72,14 @@ jobs:
           mkdir -p /tmp/ledger-device-previews
           for device in desktop tablet mobile; do
             case "$device" in
-              desktop) width=1440; height=900; mode=os; label='BLACKCELL OS'; set -- ;;
-              tablet) width=820; height=1180; mode=tablet; label='BLACKCELL OS Tablet'; set -- '--user-agent=Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' ;;
-              mobile) width=390; height=844; mode=mobile; label='BLACKCELL OS Mobile'; set -- '--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' ;;
+              desktop) width=1440; height=900; mode=os; label='BLACKCELL REDLINE'; set -- ;;
+              tablet) width=820; height=1180; mode=tablet; label='BLACKCELL REDLINE'; set -- '--user-agent=Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' ;;
+              mobile) width=390; height=844; mode=mobile; label='BLACKCELL REDLINE'; set -- '--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' ;;
             esac
             URL="http://127.0.0.1:8765/private-photo-ledger-layout-smoke.html"
             "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-background-networking --virtual-time-budget=6500 --window-size="$width,$height" "$@" --dump-dom "$URL" > "/tmp/ledger-$device.html" 2>/tmp/ledger-chrome-errors.log
             grep -q "data-test-mode=\"$mode\"" "/tmp/ledger-$device.html"
-            grep -Fq "<title>$label · BLACKCELL REDLINE</title>" "/tmp/ledger-$device.html"
+            grep -Fq "<title>$label · PRIVATE EXCHANGE</title>" "/tmp/ledger-$device.html"
             if [ "$device" = mobile ]; then
               grep -q 'data-test-nav="grid"' "/tmp/ledger-$device.html"
               grep -q 'data-test-rail="none"' "/tmp/ledger-$device.html"
