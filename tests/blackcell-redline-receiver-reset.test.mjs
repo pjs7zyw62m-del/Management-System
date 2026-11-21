@@ -88,9 +88,9 @@ test('Sender gets archived earnings and chat without permission to upload while 
  assert.match(ledger,/state\.showArchive\)throw Error\('Return to the current session/);
 });
 test('REDLINE receiver resources are versioned and original form and security remain intact',()=>{
- assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-imessage-two-axis4/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-imessage-two-axis4/);
- assert.match(html,/private-photo-ledger\.js\?v=20261121-priced-history4/);
+ assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-photo-large-timed1/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-large-timed1/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261121-photo-large-timed1/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=20261121-stable-brand1/);
  assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-inline-owner-chat1/);
  assert.match(ledger,/corporateAuthorize\(db,\{allowLedgerOnly:true\}\)/);
@@ -132,7 +132,7 @@ test('REDLINE OS receiver keeps the narrow chat left and the real incoming photo
  assert.match(receiver,/window\.innerWidth>=420/);
  assert.match(css,/grid-template-columns:minmax\(300px,370px\) minmax\(0,1fr\)/);
  assert.match(css,/rr-incoming-photos #ownerReviewQueue/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-imessage-two-axis4/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-large-timed1/);
 });
 
 test('Owner can inspect large photo and set price while viewing it',()=>{
@@ -175,8 +175,8 @@ test('Receiver toolbar is compact, room controls expand on demand and live actio
  assert.match(css,/body\.bc-redline-receiver\.rr-room-tools-open #redlineSessionTools:not\(\[hidden\]\)/);
  assert.match(css,/min-height:34px!important/);
  assert.match(css,/grid-template-columns:minmax\(0,1\.7fr\) minmax\(465px,1fr\)!important/);
- assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-imessage-two-axis4/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-imessage-two-axis4/);
+ assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-photo-large-timed1/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-large-timed1/);
 });
 
 
@@ -198,8 +198,8 @@ test('REDLINE uses iMessage-style slide-in Photo Review, not resize buttons or a
  assert.match(css,/grid-template-columns:minmax\(0,1fr\) 11px minmax\(0,var\(--rr-media-width\)\)!important/);
  assert.match(css,/@media\(min-width:420px\) and \(max-width:699px\)/);
  assert.match(css,/rr-media-open>\.rr-incoming-photos/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-imessage-two-axis4/);
- assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-imessage-two-axis4/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-photo-large-timed1/);
+ assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-photo-large-timed1/);
 });
 
 test('Photo Review retains full photo pricing and phone navigation',()=>{
@@ -237,7 +237,7 @@ test('One iMessage-style workspace has two independent resizers and a fixed-heig
  assert.match(layout,/#redlineReceiverHeightEdge/);
  assert.match(layout,/cursor:row-resize!important/);
  assert.match(layout,/cursor:col-resize/);
- assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-imessage-two-axis4/);
+ assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-photo-large-timed1/);
 });
 test('Incoming photo decisions and priced photo records stay separate and scroll internally',()=>{
  const layout=read('private-photo-ledger-imessage-workspace.css');
@@ -257,4 +257,40 @@ test('Incoming photo decisions and priced photo records stay separate and scroll
  assert.match(ledger,/async function assignAmount\(/);
  assert.match(ledger,/async function rejectPhoto\(/);
  assert.match(ledger,/async function settle\(/);
+});
+
+test('Incoming photo viewer expands without crop and keeps priced records accessible',()=>{
+ const layout=read('private-photo-ledger-imessage-workspace.css');
+ assert.match(receiver,/const expandPhoto=button\('⤢ EXPAND PHOTO'/);
+ assert.match(receiver,/photos\.classList\.toggle\('rr-photo-expanded'\)/);
+ assert.match(layout,/height:clamp\(390px,67dvh,920px\)!important/);
+ assert.match(layout,/object-fit:contain!important/);
+ assert.match(layout,/#redlineReceiverIncomingPhotos\.rr-photo-expanded/);
+ assert.match(layout,/height:clamp\(480px,75dvh,1040px\)!important/);
+ assert.match(html,/private-photo-ledger-timers\.js\?v=20261121-photo-large-timed1/);
+ assert.match(html,/private-photo-ledger-timers\.css\?v=20261121-photo-large-timed1/);
+});
+test('Per-minute timer selection and secure RPC bridge do not alter original photo decision amounts',()=>{
+ const timer=read('private-photo-ledger-timers.js');
+ const migration=read('supabase/migrations/20261121162000_blackcell_redline_photo_timed_earnings.sql');
+ assert.match(ledger,/card\.dataset\.redlinePhotoId=e\.id/);
+ assert.match(ledger,/blackcell:redline:photo-selected/);
+ assert.match(ledger,/corp_redline_photo_timer_start/);
+ assert.match(ledger,/corp_redline_photo_timer_status/);
+ assert.match(ledger,/corp_redline_photo_timer_stop/);
+ assert.match(ledger,/corp_redline_photo_timer_heartbeat/);
+ assert.match(ledger,/corp_redline_photo_timer_mark_paid/);
+ assert.match(timer,/Set a rate, select an image and start/);
+ assert.match(timer,/Completed minutes only/);
+ assert.match(timer,/bridge\(\)\.timerStart\(selectedId,cents\)/);
+ assert.match(timer,/bridge\(\)\.timerHeartbeat\(active\.id\)/);
+ assert.match(timer,/bridge\(\)\.timerStop\(id\)/);
+ assert.match(timer,/bridge\(\)\.timerMarkPaid\(id\)/);
+ assert.match(migration,/redline_timer_one_running_per_room/);
+ assert.match(migration,/45 seconds/);
+ assert.match(migration,/75 seconds/);
+ assert.match(migration,/enable row level security/);
+ assert.match(migration,/revoke all on public\.corp_private_photo_timers from public,anon,authenticated/);
+ assert.match(migration,/v_user<>v_owner/);
+ assert.match(migration,/grant execute on function public\.corp_redline_photo_timer_status/);
 });
