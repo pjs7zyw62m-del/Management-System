@@ -175,7 +175,11 @@ function createEvents(entries){
  const all=[];
  for(const e of entries||[]){
   const id=String(e.id||'').slice(0,8).toUpperCase();
-  if(e.created_at)all.push({kind:'event',at:e.created_at,text:'Photo '+id+' submitted',status:'sent'});
+  if(e.created_at)all.push({kind:'event',at:e.created_at,
+   text:e.resubmission_origin_id
+    ?'5-STAR PHOTO RESUBMITTED · '+id+' · Waiting for receiver review'
+    :'Photo '+id+' submitted',
+   status:'sent'});
   if(e.decision_status==='rejected'&&e.decided_at)all.push({kind:'event',at:e.decided_at,text:'Photo '+id+' rejected',status:'rejected'});
   if(e.decision_status==='accepted'&&e.decided_at){
    const amount=money(e.amount_cents);
@@ -250,6 +254,7 @@ function renderFiveStarPhotos(snap){
   if(photo.caption)details.append(make('p','redline-five-star-caption',photo.caption));
   let label='↻ RESUBMIT PHOTO';
   if(photo.resubmissionStatus==='pending')label='AWAITING RECEIVER REVIEW';
+  if(photo.resubmissionStatus==='original-pending')label='AWAITING FIRST APPROVAL';
   if(photo.resubmissionStatus==='rejected')label='REJECTED · RESENDS CLOSED';
   if(snap.photoSendingPaused&&photo.resubmissionStatus==='ready')label='SENDING PAUSED BY RECEIVER';
   if(!snap.roomActive&&photo.resubmissionStatus==='ready')label='ROOM CLOSED';
@@ -270,9 +275,10 @@ function renderFiveStarPhotos(snap){
     status.textContent='Photo resubmitted. Waiting for the receiver to accept or reject it.';
     fiveStarStatus.textContent='Five-star photo sent again for receiver review.';
    }catch(error){
-    status.textContent='Unable to resend: '+String(error?.message||error).slice(0,240);
+    const message='Unable to resend: '+String(error?.message||error).slice(0,240);
+    status.textContent=message;
     action.textContent='↻ TRY RESUBMITTING AGAIN';
-    fiveStarStatus.textContent='';
+    fiveStarStatus.textContent=message;
    }finally{
     resubmittingId=null;
     const fresh=snapshot();
