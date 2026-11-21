@@ -69,7 +69,13 @@ activityBox.append(make('h3','','Recent activity'));
 const activityList=make('div','redline-activity-list');activityBox.append(activityList);
 const returnUpload=make('button','redline-main-action','+ UPLOAD ANOTHER PHOTO');
 returnUpload.type='button';returnUpload.addEventListener('click',()=>switchTab('upload'));
-earningsPane.append(earningsBox,activityBox,returnUpload);
+const topPicksBox=make('section','redline-top-picks-box');
+topPicksBox.append(make('h3','','YOUR TOP PICKS'));
+const topPicksNote=make('p','redline-top-picks-note',
+ 'Ranked by receiver stars, then approved bid when ratings match.');
+const topPicksList=make('div','redline-top-picks-list');
+topPicksBox.append(topPicksNote,topPicksList);
+earningsPane.append(earningsBox,topPicksBox,activityBox,returnUpload);
 const summary=make('section','redline-upload-summary');
 const summaryTitle=make('h3','','Your earnings');
 const summaryRows=make('div','redline-summary-stats');
@@ -184,6 +190,42 @@ function renderActivity(snap){
  };
  show(activityList,events.slice(0,20));show(teaserList,events.slice(0,3));
 }
+function starsText(count){
+ const n=Number.isInteger(count)?Math.max(0,Math.min(5,count)):0;
+ return '★'.repeat(n)+'☆'.repeat(5-n);
+}
+function appendRatingImage(parent,url,caption){
+ if(typeof url!=='string'||!url.startsWith('https://'))return;
+ const img=make('img','redline-rated-photo-image');
+ img.src=url;img.alt=caption||'Receiver-rated private photo';
+ img.loading='lazy';img.decoding='async';
+ img.addEventListener('error',()=>{img.hidden=true});
+ parent.append(img);
+}
+function renderTopPicks(snap){
+ topPicksList.replaceChildren();
+ if(!Array.isArray(snap?.topPicks)||!snap.topPicks.length){
+  topPicksList.append(make('p','redline-top-picks-empty','No photo ratings yet.'));
+  return;
+ }
+ for(const [index,p] of snap.topPicks.entries()){
+  const card=make('article','redline-top-pick-row');
+  appendRatingImage(card,p.image_url,p.caption);
+  const details=make('div','redline-top-pick-details');
+  details.append(
+   make('strong','',((p.stars===5)?'TOP PICK · ':'')+'#'+(index+1)+' · PHOTO '+String(p.id||'').slice(0,8).toUpperCase()),
+   make('span','redline-top-pick-stars',starsText(p.stars)+' · '+p.stars+'/5'),
+   make('small','',p.amount_cents===null?'Awaiting photo bid':'Approved bid '+money(p.amount_cents))
+  );
+  card.append(details);topPicksList.append(card);
+ }
+}
+function photoRatingEvents(snap){
+ if(!isSender()||snap?.archiveMode||!Array.isArray(snap?.ratingEvents))return [];
+ return snap.ratingEvents.filter(p=>p&&p.rated_at&&p.stars>=1&&p.stars<=5).map(p=>({
+  kind:'rating',at:p.rated_at,photo:p
+ }));
+}
 function renderEarnings(snap){
  dataValues.pending.textContent=String(snap.pending);
  dataValues.owed.textContent=snap.owed;
@@ -191,6 +233,7 @@ function renderEarnings(snap){
  dataValues.total.textContent=snap.assigned;
  sOwed.textContent=snap.owed;sPaid.textContent=snap.paid;
  renderActivity(snap);
+ renderTopPicks(snap);
 }
 // The server's authenticated timer snapshot is already polled in the timer
 // controller. Show the start and stop events IN the existing chat feed.
@@ -240,6 +283,7 @@ function renderChat(){
  const combined=[
   ...events.map(e=>({kind:'event',at:e.at,body:e.text,status:e.status})),
   ...timedEvents(snap),
+  ...photoRatingEvents(snap),
   ...messages.map(m=>({kind:'chat',at:m.created_at,body:m.body,sender:m.sender_id,id:m.id}))
  ].sort((a,b)=>new Date(a.at)-new Date(b.at)).slice(-130);
  if(timerLoadError&&isSender()&&!snap?.archiveMode){
@@ -257,6 +301,21 @@ function renderChat(){
    const card=make('div','redline-chat-event');
    card.append(make('strong','',e.body),make('small','',dateText(e.at)));
    feed.append(card);continue;
+  }
+  if(e.kind==='rating'){
+   const photo=e.photo;
+   const rating=make('article','redline-chat-rated-photo');
+   rating.setAttribute('aria-label',photo.stars+' of 5 stars for a private photograph');
+   appendRatingImage(rating,photo.image_url,photo.caption);
+   const content=make('div','redline-chat-rated-content');
+   content.append(
+    make('strong','redline-chat-rated-heading',
+     photo.stars===5?'★ TOP PICK · 5 STARS':'RECEIVER RATED YOUR PHOTO'),
+    make('div','redline-chat-rated-stars',starsText(photo.stars)),
+    make('small','','PHOTO '+String(photo.id||'').slice(0,8).toUpperCase()+' · '+dateText(e.at))
+   );
+   if(photo.caption)content.append(make('p','redline-chat-rated-caption',photo.caption));
+   rating.append(content);feed.append(rating);continue;
   }
   if(e.kind==='timer'){
    const isActive=e.phase==='active',isStop=e.phase==='stop';
