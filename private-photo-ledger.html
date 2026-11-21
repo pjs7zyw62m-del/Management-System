@@ -100,6 +100,20 @@
    <article class="metric"><span>ACCEPTED AT $0.00</span><strong id="freeCount">0</strong><small>Accepted, nothing owed</small></article>
    <article class="metric"><span>REJECTED PHOTOS</span><strong id="rejectedCount">0</strong><small>Not included in amounts owed</small></article>
   </div>
+  <section id="redlineSessionTools" class="redline-session-panel panel" aria-label="REDLINE current session and archive" hidden>
+   <div class="redline-session-text">
+    <span class="eyebrow">REDLINE / SESSION RECORDS</span>
+    <strong id="redlineSessionDescription">CURRENT SESSION · Your verified private REDLINE room.</strong>
+   </div>
+   <div class="redline-session-actions">
+    <button id="redlineArchiveToggle" class="button-outline" type="button" hidden aria-pressed="false">VIEW PREVIOUS RECORDS ↗</button>
+    <div id="redlineResetActions" hidden>
+     <button id="redlineStartFreshRoom" class="button-outline" type="button">START FRESH · THIS ROOM</button>
+     <button id="redlineMasterReset" class="button-outline redline-danger" type="button">MASTER RESET · ALL ROOMS</button>
+    </div>
+   </div>
+   <p id="redlineResetStatus" role="status" aria-live="polite"></p>
+  </section>
   <div class="room-body">
    <aside class="side-column">
     <section id="ownerUploadInfo" class="panel owner-upload-info" hidden>
