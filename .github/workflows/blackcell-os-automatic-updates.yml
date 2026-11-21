@@ -1,0 +1,35 @@
+name: BLACKCELL Automatic OS Updates
+on:
+  pull_request:
+    paths:
+      - 'blackcell-live-update.js'
+      - 'blackcell-os.js'
+      - 'blackcell-os-settings.js'
+      - 'blackcell-os.html'
+      - 'blackcell-site-version.json'
+      - 'tests/blackcell-os-auto-update.test.mjs'
+      - 'tests/blackcell-os-ux2-update.test.mjs'
+      - '.github/workflows/blackcell-os-automatic-updates.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'blackcell-live-update.js'
+      - 'blackcell-os-settings.js'
+  workflow_dispatch:
+jobs:
+  auto-updates:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Syntax-check OS auto-update and snapshot sources
+        run: |
+          node --check blackcell-live-update.js
+          node --check blackcell-os.js
+          node --check blackcell-os-settings.js
+      - name: Regression test blockers, default automatic install and data safety
+        run: node --test tests/blackcell-os-auto-update.test.mjs tests/blackcell-os-ux2-update.test.mjs

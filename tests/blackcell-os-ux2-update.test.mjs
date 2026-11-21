@@ -10,25 +10,34 @@ const store=read('blackcell-app-store.js');
 const html=read('blackcell-os.html');
 const css=read('blackcell-os.css');
 
-test('BLACKCELL OS updates require user consent; regular website updater remains intact',()=>{
-  assert.ok(updater.includes('const osMode='));
-  assert.match(updater,/showOSNotice/);
-  assert.match(updater,/Update Now/);
-  assert.match(updater,/Later/);
-  assert.match(updater,/if\(osMode\)\{if\(osRequested\)/);
-  assert.match(updater,/if\(safe\(\)\)void refresh\(\)/);
-  assert.match(updater,/sessionStorage\.setItem\(OS_TARGET,pending\)/);
-  assert.match(updater,/location\.replace\(url\.href\)/);
+test('BLACKCELL OS auto-installs by default while preserving a manual opt-out',()=>{
+ assert.match(updater,/function autoEnabled\(/);
+ assert.match(updater,/localStorage\.getItem\(OS_AUTO\)!=='off'/);
+ assert.match(updater,/function setAutoEnabled\(/);
+ assert.match(updater,/if\(autoEnabled\(\)\)/);
+ assert.match(updater,/if\(safe\(\)\)void refresh\(\)/);
+ assert.match(updater,/Update Now/);
+ assert.match(updater,/Later/);
+ assert.match(updater,/sessionStorage\.setItem\(OS_TARGET,pending\)/);
+ assert.match(updater,/location\.replace\(url\.href\)/);
+ assert.match(settings,/Automatic updates/);
+ assert.match(settings,/auto\.onchange/);
 });
-
-test('Update flow checks for busy work and does not clear personal storage',()=>{
-  assert.match(updater,/!busy\(\)/);
-  assert.match(updater,/!modified\(\)/);
-  assert.match(updater,/!openModal\(\)/);
-  assert.match(updater,/BLACKCELL_LIVE_UPDATE=Object\.freeze/);
-  for(const forbidden of ['localStorage.clear(', 'sessionStorage.clear(', 'indexedDB.deleteDatabase(', 'caches.delete(']){
-    assert.ok(!updater.includes(forbidden), forbidden);
-  }
+test('Auto updater saves OS workspace, skips hidden false positives, and blocks real activity',()=>{
+ assert.match(os,/BLACKCELL_OS_AUTOSAVE_WORKSPACE/);
+ assert.match(os,/saveWorkspace\(\)/);
+ assert.match(updater,/await window\.BLACKCELL_OS_AUTOSAVE_WORKSPACE\(\)/);
+ assert.match(updater,/function blockingReason\(/);
+ assert.match(updater,/if\(busy\(\)\)return/);
+ assert.match(updater,/if\(modified\(\)\)return/);
+ assert.match(updater,/if\(openModal\(\)\)return/);
+ assert.match(updater,/if\(!visible\(frame\)\)continue/);
+ assert.match(updater,/\.some\(visible\)/);
+ assert.match(updater,/document\.hidden/);
+ assert.match(updater,/navigator\.onLine/);
+ for(const forbidden of ['localStorage.clear(', 'sessionStorage.clear(', 'indexedDB.deleteDatabase(', 'caches.delete(']){
+  assert.ok(!updater.includes(forbidden), forbidden);
+ }
 });
 
 test('Workspace idle lock exposes 30 and 60 minutes without bypassing security session',()=>{
@@ -53,8 +62,8 @@ test('Settings shows Software Update and app lifecycle separates Betas from read
 });
 
 test('OS loads updated assets while keeping regular website update machinery',()=>{
-  assert.match(html,/blackcell-os\.js\?v=(?:119-os-update-ux2|120-macos-personal-wallpaper|121-mac-workspaces|122-unified-desktop-sync|123-mobile-ready-drag-fix)/);
-  assert.match(html,/blackcell-live-update\.js\?v=(?:20261120-os-update-ux2|20261121-verified-mobile-refresh1)/);
+  assert.match(html,/blackcell-os\.js\?v=(?:119-os-update-ux2|120-macos-personal-wallpaper|121-mac-workspaces|122-unified-desktop-sync|123-mobile-ready-drag-fix|124-auto-save-updates)/);
+  assert.match(html,/blackcell-live-update\.js\?v=(?:20261120-os-update-ux2|20261121-verified-mobile-refresh1|20261121-auto-save-updates1)/);
   assert.match(os,/blackcell-app-store\.js\?v=13-ux2-lifecycle/);
-  assert.match(os,/blackcell-os-settings\.js\?v=(?:5-session-lock-30-60|6-personal-wallpaper-macos|7-mobile-version-check)/);
+  assert.match(os,/blackcell-os-settings\.js\?v=(?:5-session-lock-30-60|6-personal-wallpaper-macos|7-mobile-version-check|8-auto-updates)/);
 });
