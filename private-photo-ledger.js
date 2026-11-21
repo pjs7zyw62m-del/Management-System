@@ -485,18 +485,21 @@ function renderReviewQueue(){
   return;
  }
  const current=pending[0];
- window.dispatchEvent(new CustomEvent('blackcell:redline:review-photo',{detail:{photoId:current.id}}));
- const progress=node('div','queue-progress');
- progress.append(
-  node('strong','','NEXT PHOTO TO REVIEW'),
-  node('span','','1 OF '+pending.length+' · OLDEST FIRST')
- );
- parent.append(progress,renderEntry(current));
- // Always keep the verified bid/timer rail beside the normal single image.
- // A priced-photo preview uses its own selected entry instead.
  const selected=state.reviewSidebarPhotoId?
   state.entries.find(e=>e.id===state.reviewSidebarPhotoId):null;
- preparePhotoReviewLightbox(selected&&document.body.classList.contains('rr-timing-priced-photo')?selected:current);
+ // If the owner just stopped a timer, keep that newly accepted photo on
+ // screen with its final price. Do not silently switch to another photo.
+ const timedSelection=selected?.decision_status==='accepted'&&
+  Boolean(state.timedPhotoTotals.get(selected.id)||selected.auto_timer_session_id);
+ const shown=timedSelection?selected:current;
+ window.dispatchEvent(new CustomEvent('blackcell:redline:review-photo',{detail:{photoId:shown.id}}));
+ const progress=node('div','queue-progress');
+ progress.append(
+  node('strong','',timedSelection?'TIMED PHOTO · FINAL PRICE':'NEXT PHOTO TO REVIEW'),
+  node('span','',timedSelection?pending.length+' STILL WAITING':'1 OF '+pending.length+' · OLDEST FIRST')
+ );
+ parent.append(progress,renderEntry(shown));
+ preparePhotoReviewLightbox(shown);
 }
 function renderEntries(){
  const parent=$('photoEntries');parent.replaceChildren();
@@ -630,6 +633,11 @@ function renderEntry(e){
  }
  body.append(ctrl);card.append(body);return card;
 }
+// Moving on after reviewing a timed photo returns to the next pending entry.
+window.addEventListener('blackcell:redline:next-incoming',()=>{
+ state.reviewSidebarPhotoId=null;
+ renderReviewQueue();
+});
 // Changing the visible photo updates its matching bid/timer sidebar.
 window.addEventListener('blackcell:redline:photo-selected',event=>{
  const id=event.detail?.photoId;
@@ -688,12 +696,17 @@ function preparePhotoReviewLightbox(entry){
  const panel=$('redlineLightboxReview');
  if(!panel)return;
  // Keep entered bid values stable while the room refreshes or timer ticks.
+ const photoTimed=entry?state.timedPhotoTotals.get(entry.id):null;
+ const timedSignature=String(photoTimed?.timed_cents||0)+'/'+
+  String(photoTimed?.credited_to_photo_cents||0)+'/'+String(photoTimed?.additional_timed_cents||0);
  if(panel.dataset.redlinePhotoId===(entry?.id||'none')&&
     panel.dataset.redlineDecision===(entry?.decision_status||'empty')&&
-    panel.dataset.redlinePause===String(Boolean(state.room?.photo_sending_paused))&&!panel.hidden)return;
+    panel.dataset.redlinePause===String(Boolean(state.room?.photo_sending_paused))&&
+    panel.dataset.redlineTimed===timedSignature&&!panel.hidden)return;
  panel.dataset.redlinePhotoId=entry?.id||'none';
  panel.dataset.redlineDecision=entry?.decision_status||'empty';
  panel.dataset.redlinePause=String(Boolean(state.room?.photo_sending_paused));
+ panel.dataset.redlineTimed=timedSignature;
  // Preserve the same authenticated timer node when refreshing the bid UI.
  const liveTimer=$('redlinePhotoTimerPanel');
  if(liveTimer?.parentNode===panel)liveTimer.remove();
@@ -773,6 +786,7 @@ async function assignAmount(entry,input,submit){
    .eq('id',entry.id).eq('room_id',state.room.id).eq('decision_status','pending')
    .select('id,amount_cents,decision_status').single();
   if(r.error)throw r.error;
+  if(state.reviewSidebarPhotoId===entry.id)state.reviewSidebarPhotoId=null;
   state.entryFingerprint='';await loadEntries({force:true});
   show('entriesFeedback','Photo accepted for '+dollars(amount)+'. Both screens will update automatically.');
   show('reviewQueueFeedback','Accepted for '+dollars(amount)+' · Showing the next pending photo.');
