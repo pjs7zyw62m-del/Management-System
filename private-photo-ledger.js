@@ -1299,17 +1299,17 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
   if(result.error||result.data?.ok!==true)throw Error(fail(result.error||result.data?.reason||'Timer expired.'));
   return true;
  },
- async timerStop(sessionId){
+ async timerStop(sessionId,options={}){
   if(state.closed||!state.isOwner||!validId(sessionId))throw Error('Owner timer session required.');
   await verify();
   const result=await db.rpc('corp_redline_photo_timer_stop',{p_session_id:sessionId});
   if(result.error||result.data?.ok!==true)throw Error(fail(result.error||result.data?.reason||'Timer could not stop.'));
-  // The stop and price acceptance were atomic on the server. Refresh the
-  // photo record now so the accepted price and reviewed selection appear.
+  // Explicit STOP keeps the final priced photo visible. A timer implicitly
+  // stopped by accepting/advancing must NEVER select the previous photo.
   if(result.data.photo_id&&state.room?.id){
-   state.reviewSidebarPhotoId=result.data.photo_id;
+   if(options.keepPhotoSelected!==false)state.reviewSidebarPhotoId=result.data.photo_id;
    state.entryFingerprint='';
-   await loadEntries({force:true});
+   try{await loadEntries({force:true})}catch(_){}
   }
   return result.data;
  },
