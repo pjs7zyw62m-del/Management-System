@@ -131,6 +131,9 @@ function start(){
  window.addEventListener('pagehide',stopDockIdle,{once:true});
  const priority=['network','forces','photos','film','shorts','person','omega','settings','store','photoledger','photobattle','usa','awards','care','innovations'];
  const account=()=>{try{return window.BLACKCELL_OS_WIDGET_LAYOUT?.account?.()||null}catch(_){return null}};
+  const unified=()=>window.BLACKCELL_OS_UNIFIED_LAYOUT;
+  const pins=()=>unified()?.read?.().pins||[];
+  const homePinned=()=>pins().filter(p=>available().some(x=>x.id===p.id));
  const storageKey=()=>{const id=account();return id&&id!=='preview'?'bc.os.iphone-springboard.v1:'+id:null};
  function readOrder(){
   const id=account();if(id===knownAccount)return;
@@ -146,7 +149,8 @@ function start(){
  }
  function ordered(){
   readOrder();const found=available(),map=new Map(found.map(x=>[x.id,x]));
-  return [...order,...priority,...found.map(x=>x.id)].filter((id,i,all)=>all.indexOf(id)===i&&map.has(id)).map(id=>map.get(id));
+  const synced=homePinned().map(p=>p.id);
+   return [...synced,...order,...priority,...found.map(x=>x.id)].filter((id,i,all)=>all.indexOf(id)===i&&map.has(id)).map(id=>map.get(id));
  }
  function safeLaunch(id){
   if(shell.hidden)return;
@@ -165,7 +169,18 @@ function start(){
  function enterEdit(){if(edit)return;edit=true;picked=null;root.classList.add('bc-sb-editing');editButton.hidden=false;render()}
  function leaveEdit(){edit=false;picked=null;root.classList.remove('bc-sb-editing');editButton.hidden=true;render()}
  function moveIcon(from,to){
-  const all=ordered().map(x=>x.id),a=all.indexOf(from),b=all.indexOf(to);
+  const synced=pins();
+   if(synced.length){
+    const a=synced.findIndex(p=>p.id===from),b=synced.findIndex(p=>p.id===to);
+    if(a>=0&&b>=0&&a!==b){
+     const data=unified()?.read?.();if(!data)return;
+     const slots=data.pins.map(p=>({x:p.x,y:p.y}));
+     const [moved]=data.pins.splice(a,1);data.pins.splice(b,0,moved);
+     data.pins.forEach((p,i)=>{p.x=slots[i].x;p.y=slots[i].y});
+     unified()?.save?.(data);render();return;
+    }
+   }
+   const all=ordered().map(x=>x.id),a=all.indexOf(from),b=all.indexOf(to);
   if(a<0||b<0||a===b)return;
   all.splice(b,0,all.splice(a,1)[0]);order=all;saveOrder();render();
  }
@@ -213,7 +228,10 @@ function start(){
   const dockAll=dockPreferred.map(id=>all.find(x=>x.id===id)).filter(Boolean);
   for(const x of all){if(dockAll.length>=4)break;if(!dockAll.some(y=>y.id===x.id))dockAll.push(x)}
   dockItems.replaceChildren(...dockAll.map(x=>iconFor(x,'dock')));
-  const exclude=new Set(dockAll.map(x=>x.id)),homes=all.filter(x=>!exclude.has(x.id)),size=pageSize();
+  const exclude=new Set(dockAll.map(x=>x.id));
+   const savedPins=homePinned().map(x=>x.id);
+   const allowedHomes=savedPins.length?new Set(savedPins):null;
+   const homes=all.filter(x=>!exclude.has(x.id)&&(!allowedHomes||allowedHomes.has(x.id))),size=pageSize();
   const pages=Math.max(1,Math.ceil(homes.length/size));pageIndex=Math.min(pageIndex,pages-1);
   const chunk=homes.slice(pageIndex*size,(pageIndex+1)*size);
   grid.replaceChildren(...chunk.map(x=>iconFor(x,'home')));
@@ -228,7 +246,8 @@ function start(){
  }
  function setPage(next){
   const all=ordered(),dockIds=['chat','browser','personalphotos','files'].filter(id=>all.some(x=>x.id===id));
-  const count=Math.min(4,all.length),pages=Math.max(1,Math.ceil(Math.max(0,all.length-count)/pageSize()));
+  const pinned=homePinned().map(x=>x.id);
+   const count=Math.min(4,all.length),pages=Math.max(1,Math.ceil((pinned.length?all.filter(x=>pinned.includes(x.id)&&!['chat','browser','personalphotos','files'].includes(x.id)).length:Math.max(0,all.length-count))/pageSize()));
   if(next>=pages){openModal('library');return}
   if(next<0)return;pageIndex=next;render();
  }
@@ -243,7 +262,19 @@ function start(){
    const art=E('span','bc-sb-result-icon'),copy=E('span','bc-sb-result-title',x.label),chev=E('span','bc-sb-result-chevron');
    const source=$('.app-icon',x.tile);if(source)for(const node of source.childNodes)art.append(node.cloneNode(true));
    chev.innerHTML=S(GLYPHS.chevron);b.append(art,copy,chev);
-   b.addEventListener('click',()=>safeLaunch(x.id));resultList.append(b);
+   b.addEventListener('click',()=>safeLaunch(x.id));
+    const resultRow=E('div','bc-sb-result-row');resultRow.append(b);
+    const added=pins().some(p=>p.id===x.id);
+    const place=E('button','bc-sb-result-add',added?'On Home':'+ Home');
+    place.type='button';place.disabled=added;
+    place.setAttribute('aria-label',added?x.label+' is on your desktop':'Add '+x.label+' to your desktop on all devices');
+    place.addEventListener('click',e=>{
+     e.stopPropagation();
+     if(added)return;
+     window.dispatchEvent(new CustomEvent('blackcell:desktop-add-app',{detail:{id:x.id}}));
+     drawResults();
+    });
+    resultRow.append(place);resultList.append(resultRow);
   }
  }
  function openModal(kind){
@@ -288,7 +319,8 @@ function start(){
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)clock()});
  window.addEventListener('focus',clock);
  window.addEventListener('resize',()=>{if(document.documentElement.classList.contains('bc-os-phone'))render()},{passive:true});
- const obs=new MutationObserver(()=>{if(!shell.hidden)requestAnimationFrame(render)});
+ window.addEventListener('blackcell:desktop-layout-updated',()=>{if(!shell.hidden)requestAnimationFrame(render)});
+   const obs=new MutationObserver(()=>{if(!shell.hidden)requestAnimationFrame(render)});
  obs.observe(src,{childList:true,attributes:true,subtree:true,attributeFilter:['hidden','disabled','class']});
  obs.observe(shell,{attributes:true,attributeFilter:['hidden','class']});
  const member=$('#memberName',shell);if(member)obs.observe(member,{childList:true,characterData:true,subtree:true});

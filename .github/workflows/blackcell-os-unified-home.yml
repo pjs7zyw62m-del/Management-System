@@ -1,0 +1,107 @@
+name: BLACKCELL Unified Home Across Devices
+on:
+  pull_request:
+    paths:
+      - 'blackcell-os.js'
+      - 'blackcell-os.html'
+      - 'blackcell-os-springboard.js'
+      - 'blackcell-os-unified-home.js'
+      - 'blackcell-os-unified-home.css'
+      - 'blackcell-os-macos-workspaces.js'
+      - 'blackcell-site-version.json'
+      - 'tests/blackcell-os-unified-home.test.mjs'
+      - '.github/workflows/blackcell-os-unified-home.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'blackcell-os-unified-home.js'
+      - 'blackcell-os-unified-home.css'
+  workflow_dispatch:
+jobs:
+  synchronized-home:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate synchronized desktop and phone code
+        run: |
+          node --check blackcell-os.js
+          node --check blackcell-os-springboard.js
+          node --check blackcell-os-unified-home.js
+          node --check blackcell-os-macos-workspaces.js
+          node --test tests/blackcell-os-unified-home.test.mjs
+      - name: Headless computer tablet and phone home-screen tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v google-chrome >/dev/null 2>&1 && CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && CHROME=chromium || CHROME=; }
+          [ -n "$CHROME" ] || { echo "Chromium unavailable"; exit 1; }
+          python3 - <<'PY'
+          from pathlib import Path
+          html=Path('blackcell-os.html').read_text()
+          html=html.replace('data-preview="false"','data-preview="true"',1)
+          probe=r"""<script>
+          setTimeout(()=>{
+            const api=window.BLACKCELL_OS_UNIFIED_LAYOUT;
+            const shell=document.querySelector('#desktop');
+            const phone=document.documentElement.classList.contains('bc-os-phone');
+            document.body.dataset.homeReady=String(Boolean(api?.ready()));
+            if(!api?.ready())return;
+            const apps=api.available();
+            const current=api.read();
+            document.body.dataset.homeDefaults=String(current.widgets.some(w=>w.id==='clock'));
+            const item=apps[0];
+            const next={...current,pins:item?[{id:item.id,x:.28,y:.22}]:current.pins};
+            const result=api.save(next);
+            document.body.dataset.homeSaved=String(Boolean(result.ok));
+            setTimeout(()=>{
+              const layer=shell.querySelector('.bc-unified-home-layer');
+              const strip=shell.querySelector('.bc-home-phone-widget-strip');
+              document.body.dataset.homeWidgets=String(Boolean((phone?strip:layer)?.querySelector('.bc-home-widget')));
+              document.body.dataset.homeApp=String(Boolean(phone?document.querySelector('.bc-sb-icon,.bc-home-phone-app-picker'):layer?.querySelector('.bc-home-desktop-app,.bc-home-empty-cta')));
+              document.body.dataset.homeGalleryAvailable=String(Boolean(document.querySelector('.bc-home-phone-widget-picker')||document.querySelector('#bcWidgetsToggle')));
+              document.body.dataset.homeDevice=phone?'phone':'desktop';
+            },350);
+          },7000);
+          </script>"""
+          html=html.replace('</body></html>',probe+'</body></html>')
+          Path('blackcell-os-unified-home-probe.html').write_text(html)
+          PY
+          python3 -m http.server 8883 >/tmp/bc-home-http.log 2>&1 &
+          PID=$!
+          trap 'kill "$PID" 2>/dev/null || true; rm -f blackcell-os-unified-home-probe.html' EXIT
+          sleep 2
+          mkdir -p /tmp/blackcell-unified-home-screens
+          for device in desktop ipad iphone; do
+            case "$device" in
+              desktop) w=1440;h=900 ;;
+              ipad) w=820;h=1180 ;;
+              iphone) w=390;h=844 ;;
+            esac
+            "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage \
+              --virtual-time-budget=10600 --window-size="$w,$h" --dump-dom \
+              "http://127.0.0.1:8883/blackcell-os-unified-home-probe.html" \
+              >"/tmp/bc-home-$device.html" 2>"/tmp/bc-home-$device-errors.log"
+            for check in home-ready home-defaults home-saved home-widgets home-app home-gallery-available; do
+              grep -q "data-$check=\"true\"" "/tmp/bc-home-$device.html" || {
+                echo "$device failed $check"; tail -n 25 "/tmp/bc-home-$device-errors.log"; exit 1;
+              }
+            done
+            "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage \
+              --virtual-time-budget=9600 --window-size="$w,$h" \
+              --screenshot="/tmp/blackcell-unified-home-screens/$device.png" \
+              "http://127.0.0.1:8883/blackcell-os-unified-home-probe.html" >/dev/null 2>&1
+            echo "$device: account home layouts and app/widget UI passed"
+          done
+      - name: Archive home-screen screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blackcell-unified-home-three-device-preview
+          path: /tmp/blackcell-unified-home-screens/*.png
+          retention-days: 7
+          if-no-files-found: ignore

@@ -1,0 +1,224 @@
+/* BLACKCELL Unified Home — shared desktop shortcuts + floating widgets.
+   Positions are normalized against the current screen: no off-screen shortcuts
+   on tablets or phones, no scrollbar-heavy widget drawers. */
+#desktop .bc-unified-home-layer{
+ position:absolute;inset:0;z-index:12;overflow:hidden;pointer-events:none;
+}
+#desktop .bc-unified-home-layer[hidden]{display:none!important}
+#desktop .bc-home-desktop-app{
+ position:absolute;display:flex;flex-direction:column;align-items:center;
+ justify-content:flex-start;gap:8px;width:91px;height:102px;padding:5px;
+ color:#f9f7fb;font:580 12px/1.2 -apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;
+ background:transparent;border:1px solid transparent;border-radius:18px;
+ text-align:center;text-shadow:0 2px 8px #000a;
+ cursor:grab;pointer-events:auto;touch-action:none;user-select:none;
+}
+#desktop .bc-home-desktop-app:hover,#desktop .bc-home-desktop-app:focus-visible{
+ background:rgba(133,131,147,.26);border-color:rgba(245,240,248,.32);
+ outline:none;box-shadow:inset 0 1px #ffffff24;
+}
+#desktop .bc-home-app-icon{
+ position:relative;display:grid;place-items:center;flex:none;width:65px;height:65px;
+ border:1px solid rgba(247,240,249,.24);border-radius:18px;
+ background:linear-gradient(155deg,rgba(70,72,89,.94),rgba(15,17,29,.96));
+ box-shadow:0 9px 24px #0009,inset 0 1px #ffffff50;
+}
+#desktop .bc-home-app-icon svg{width:39px;height:39px;color:#f2eef4}
+#desktop .bc-home-desktop-label{
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+ overflow:hidden;max-width:94px;font-size:11px;font-weight:650;
+}
+#desktop .bc-home-widget{
+ position:absolute;width:218px;height:138px;min-width:152px;
+ display:flex;flex-direction:column;justify-content:space-between;
+ padding:13px 15px;border:1px solid rgba(255,255,255,.30);border-radius:21px;
+ background:linear-gradient(153deg,rgba(82,83,95,.54),rgba(16,17,28,.65));
+ box-shadow:inset 0 1px #ffffff38,0 12px 39px #0008;
+ backdrop-filter:blur(37px) saturate(135%);
+ -webkit-backdrop-filter:blur(37px) saturate(135%);
+ color:#f7f5f9;pointer-events:auto;
+}
+#desktop .bc-home-widget[data-size="small"]{width:165px;height:104px}
+#desktop .bc-home-widget[data-size="large"]{width:292px;height:197px}
+#desktop .bc-home-widget-header{
+ display:flex;align-items:center;justify-content:space-between;gap:6px;
+ min-height:31px;cursor:grab;touch-action:none;
+}
+#desktop .bc-home-widget-name{font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:760;color:#d0cad5}
+#desktop .bc-home-widget-actions{display:flex;align-items:center;gap:4px}
+#desktop .bc-home-widget-actions button{
+ min-width:29px;min-height:29px;padding:2px;
+ display:grid;place-items:center;border-radius:9px;border:1px solid #ffffff20;
+ background:#0004;color:#e6e4ea;font-size:17px;cursor:pointer;
+}
+#desktop .bc-home-widget-value{font-size:25px;line-height:1.15;font-weight:630;letter-spacing:-.04em;overflow-wrap:anywhere}
+#desktop .bc-home-widget-clock .bc-home-widget-value{font-variant-numeric:tabular-nums;font-size:clamp(23px,2.8vw,35px)}
+#desktop .bc-home-widget[data-size="small"] .bc-home-widget-value{font-size:19px}
+#desktop .bc-home-widget[data-size="large"] .bc-home-widget-value{font-size:38px}
+#desktop .bc-home-dragging{opacity:.84;cursor:grabbing!important;z-index:25!important;border-color:#f39ab0!important;box-shadow:0 23px 50px #000b!important}
+#desktop .bc-home-empty-cta{
+ position:absolute;left:28px;top:40%;width:auto;min-height:48px;
+ padding:12px 18px;border:1px solid #ffffff45;border-radius:15px;
+ color:#f5eaf0;background:rgba(35,35,45,.68);pointer-events:auto;
+ backdrop-filter:blur(26px);font-size:13px;
+}
+#desktop .bc-home-context-menu{
+ position:fixed;z-index:2147482310;min-width:215px;padding:7px;
+ border:1px solid #ffffff32;border-radius:14px;
+ background:rgba(28,28,39,.96);box-shadow:0 18px 50px #000a;
+ backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px);
+}
+#desktop .bc-home-menu-choice{
+ display:block;min-height:38px;padding:8px 12px;width:100%;border:0;
+ border-radius:9px;background:transparent;text-align:left;
+ color:#f4f1f5;font-size:13px;
+}
+#desktop .bc-home-menu-choice:hover,#desktop .bc-home-menu-choice:focus-visible{
+ background:rgba(179,36,72,.44);outline:0;
+}
+#desktop .bc-home-layout-notice{
+ position:absolute;bottom:clamp(83px,13vh,125px);left:50%;transform:translateX(-50%);
+ z-index:2147482300;padding:12px 19px;border-radius:13px;
+ border:1px solid #ffffff36;color:#f7f5f8;
+ background:rgba(34,35,46,.92);box-shadow:0 12px 35px #0008;
+ font-size:12px;max-width:calc(100vw - 40px);text-align:center;
+ pointer-events:none;
+}
+#desktop .bc-home-layout-notice[hidden]{display:none}
+#desktop .bc-home-gallery-shell{
+ position:absolute;inset:0;z-index:2147482400;display:grid;place-items:center;
+}
+#desktop .bc-home-gallery-shade{
+ position:absolute;inset:0;border:0;background:rgba(0,0,0,.68);
+ backdrop-filter:blur(31px);-webkit-backdrop-filter:blur(31px);
+}
+#desktop .bc-home-gallery{
+ position:relative;z-index:1;box-sizing:border-box;
+ width:min(710px,calc(100vw - 35px));max-height:calc(100dvh - 54px);
+ display:flex;flex-direction:column;gap:13px;padding:clamp(18px,2.5vw,29px);
+ color:#f5f2f6;border:1px solid #ffffff3b;border-radius:25px;
+ background:linear-gradient(149deg,rgba(57,58,72,.96),rgba(10,11,18,.98));
+ box-shadow:0 28px 85px #000b,inset 0 1px #ffffff2c;
+}
+#desktop .bc-home-gallery-header{display:flex;align-items:center;justify-content:space-between;gap:18px}
+#desktop .bc-home-gallery h2{font-size:clamp(20px,3vw,27px);letter-spacing:-.035em;margin:0}
+#desktop .bc-home-gallery>p{font-size:13px;color:#c9c4cd;line-height:1.45;margin:0}
+#desktop .bc-home-gallery-close{
+ min-width:43px;min-height:43px;border:1px solid #ffffff31;border-radius:13px;
+ background:#ffffff17;color:white;font-size:22px;
+}
+#desktop .bc-home-gallery-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;
+ overflow:auto;padding:4px;scrollbar-width:thin;
+}
+#desktop .bc-home-gallery-option{
+ display:flex;align-items:center;gap:11px;min-height:69px;
+ padding:12px;border:1px solid #ffffff24;border-radius:15px;
+ background:#ffffff0f;min-width:0;
+}
+#desktop .bc-home-gallery-option .bc-home-app-icon{
+ width:43px;height:43px;border-radius:12px;
+}
+#desktop .bc-home-gallery-option .bc-home-app-icon svg{width:26px;height:26px}
+#desktop .bc-home-gallery-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:12px;font-weight:650}
+#desktop .bc-home-gallery-symbol{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:#272d3a;font-size:22px}
+#desktop .bc-home-gallery-info{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px}
+#desktop .bc-home-gallery-info strong{font-size:13px}
+#desktop .bc-home-gallery-info small{font-size:11px;color:#c5c0cb}
+#desktop .bc-home-gallery-toggle{
+ min-width:73px;min-height:41px;padding:9px 13px;
+ border-radius:12px;border:1px solid #f290a46b;background:#68213a;
+ color:#fff;font-size:12px;font-weight:670;cursor:pointer;
+}
+#desktop .bc-home-gallery-hint{font-size:11px!important;color:#bdb6c2!important}
+@media(min-width:621px) and (max-width:920px){
+ #desktop .bc-home-widget{width:195px;height:128px}
+ #desktop .bc-home-widget[data-size="large"]{width:250px;height:183px}
+ #desktop .bc-home-desktop-app{width:80px;height:91px}
+ #desktop .bc-home-app-icon{width:57px;height:57px}
+}
+/* iPhone presents the same synced selections in an iOS-style responsive
+   two-across widget strip and paged home apps, avoiding clipped absolute items. */
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-widgets.bc-home-custom-phone-widgets{
+ display:block!important;min-height:clamp(74px,11vh,102px)!important;
+ height:clamp(74px,11vh,102px)!important;
+ padding:0!important;position:relative;overflow:hidden!important;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-widgets.bc-home-custom-phone-widgets>.bc-sb-widget{display:none!important}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-home-phone-widget-strip{
+ height:100%;display:flex;align-items:stretch;gap:0;
+ overflow-x:auto;overflow-y:hidden;scrollbar-width:none;
+ scroll-snap-type:x mandatory;overscroll-behavior-x:contain;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-home-phone-widget-strip::-webkit-scrollbar{display:none}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-home-phone-widget{
+ position:relative!important;left:auto!important;top:auto!important;
+ flex:0 0 50%;width:50%;max-width:none;height:100%!important;min-width:0!important;
+ border:0!important;border-right:1px solid #ffffff25!important;border-radius:0!important;
+ padding:10px 12px!important;box-sizing:border-box;scroll-snap-align:start;
+ background:transparent!important;box-shadow:none!important;backdrop-filter:none!important;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-home-phone-widget .bc-home-widget-header{min-height:24px}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-home-phone-widget .bc-home-widget-name{font-size:9px}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-home-phone-widget .bc-home-widget-value{font-size:clamp(13px,3.7vw,20px)}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-home-phone-widget .bc-home-widget-manage{
+ border:0;background:transparent;min-width:25px;min-height:25px;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-home-phone-widget-picker{
+ min-width:33px;min-height:33px;display:grid;place-items:center;
+ border-radius:11px;border:1px solid #ffffff35;
+ background:#2526318c;color:#f4f4f7;font-size:21px;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-home-phone-app-picker{
+ position:absolute;left:0;top:0;min-height:24px;min-width:55px;
+ border:0;background:#ffffff11;border-radius:9px;
+ color:#f5eaf2;padding:3px 8px;font-size:10px;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-result-row{
+ display:flex;align-items:center;justify-content:space-between;gap:7px;width:100%;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-result-row .bc-sb-result{
+ flex:1;min-width:0;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-result-add{
+ display:inline-grid;place-items:center;min-height:35px;
+ padding:5px 9px;border:1px solid #ffffff35;border-radius:10px;
+ background:#631c35;color:#fff;font-size:11px;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-result-add:disabled{opacity:.55}
+@media(max-width:620px){
+ #desktop .bc-home-gallery-grid{grid-template-columns:1fr}
+ #desktop .bc-home-gallery{max-height:calc(100dvh - 25px);padding:17px}
+ #desktop .bc-home-gallery-option{min-height:60px}
+}
+@media(orientation:landscape) and (max-height:600px){
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-widgets.bc-home-custom-phone-widgets{
+  grid-column:1!important;grid-row:1!important;
+  display:block!important;min-height:55px!important;height:100%!important;overflow:hidden!important;
+ }
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-home-phone-widget{flex-basis:100%;width:100%;padding:5px 8px!important}
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-home-phone-widget .bc-home-widget-value{font-size:13px}
+}
+@media(prefers-reduced-motion:reduce){
+ #desktop .bc-home-widget,#desktop .bc-home-desktop-app,#desktop .bc-home-gallery{transition:none!important}
+}
+
+
+/* Launchpad remains a true application launcher, with a small independent
+   "add to desktop" control instead of requiring drag-out of a modal. */
+#desktop .bc-mac-launch-app-cell{
+ position:relative;display:flex;flex-direction:column;align-items:center;
+ width:100%;min-width:0;max-width:146px;
+}
+#desktop .bc-mac-launch-app-cell .bc-mac-app{width:100%}
+#desktop .bc-mac-launch-app-cell .bc-mac-pin-shortcut{
+ position:absolute;right:clamp(1px,1vw,14px);top:1px;
+ display:grid;place-items:center;z-index:1;
+ min-width:30px;min-height:30px;border-radius:50%;
+ border:1px solid #ffffff76;background:rgba(128,28,56,.94);
+ color:#fff;font-size:19px;font-weight:710;box-shadow:0 4px 15px #0008;
+ cursor:pointer;
+}
+#desktop .bc-mac-launch-app-cell .bc-mac-pin-shortcut:disabled{
+ background:rgba(32,69,51,.88);color:#baf5cd;opacity:.74;cursor:default;
+}

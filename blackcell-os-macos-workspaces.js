@@ -112,7 +112,17 @@
    button.setAttribute('aria-label','Open '+app.title);
    const icon=app.tile.querySelector('.app-icon'),art=el('span','bc-mac-app-art');
    if(icon)art.append(icon.cloneNode(true));else art.textContent='◈';
-   button.append(art,el('span','bc-mac-app-name',app.title));grid.append(button);
+   button.append(art,el('span','bc-mac-app-name',app.title));
+   const cell=el('div','bc-mac-launch-app-cell');
+   const isSaved=window.BLACKCELL_OS_UNIFIED_LAYOUT?.read?.().pins?.some(x=>x.id===app.id);
+   const pin=action(isSaved?'✓':'+',()=>{
+    if(!isSaved)window.dispatchEvent(new CustomEvent('blackcell:desktop-add-app',{detail:{id:app.id}}));
+    pin.textContent='✓';pin.setAttribute('aria-label',app.title+' saved to Desktop');
+    pin.disabled=true;
+   },'bc-mac-pin-shortcut');
+   pin.title=isSaved?'Already on your Desktop':'Add '+app.title+' to Desktop on all devices';
+   pin.setAttribute('aria-label',isSaved?app.title+' already on Desktop':'Add '+app.title+' to Desktop');
+   pin.disabled=!!isSaved;cell.append(button,pin);grid.append(cell);
   }
   if(!apps.length)grid.append(el('p','bc-mac-empty','No installed applications match your search.'));
   const status=overlay.querySelector('.bc-mac-page-status');

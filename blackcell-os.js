@@ -277,7 +277,29 @@ async function cloudWorkspaceLoad(){
   if(error||uid!==storeProfile)return;
   workspaceCloudReady=true;
   const seen=new Set();
-  for(const row of data||[]){if(!Object.hasOwn(keys,row.kind))continue;seen.add(row.kind);for(const {store} of preferenceStores())try{store.setItem(keys[row.kind],JSON.stringify(row.value))}catch(_){}}
+  for(const row of data||[]){
+   if(!Object.hasOwn(keys,row.kind))continue;
+   seen.add(row.kind);
+   if(row.kind==='layout'){
+    // Offline edits must not be discarded by an older server snapshot.
+    // Keep the newest member-scoped home layout and upload it on reconnect.
+    let local=null,localTime=0;
+    for(const {store} of preferenceStores())try{
+     const value=store.getItem(keys.layout);if(!value)continue;
+     const parsed=JSON.parse(value),time=Number(parsed?.unifiedHome?.changedAt)||0;
+     if(time>localTime&&Number.isFinite(time)){local=value;localTime=time}
+    }catch(_){}
+    const serverTime=Number(row.value?.unifiedHome?.changedAt)||0;
+    if(local&&localTime>serverTime){
+     for(const {store} of preferenceStores())try{store.setItem(keys.layout,local)}catch(_){}
+     await cloudWorkspaceSave('layout',local);
+     continue;
+    }
+   }
+   const value=JSON.stringify(row.value);
+   cloudDesktopCache.set(keys[row.kind],value);
+   for(const {store} of preferenceStores())try{store.setItem(keys[row.kind],value)}catch(_){}
+  }
   for(const [kind,key] of Object.entries(keys))if(!seen.has(kind)){for(const {store} of preferenceStores()){try{const record=store.getItem(key);if(record){await cloudWorkspaceSave(kind,record);break}}catch(_){}}}
   readWorldInstalls();readDockPreferences();readAppLayout();initDesktopPrefs();
  }catch(_){}
@@ -1130,20 +1152,44 @@ function contextSource(target){
 }
 /* Desktop placement and Recycle Bin are local shortcut preferences only.
    Neither operation uninstalls apps, grants access, nor deletes user data. */
+const HOMES_WIDGET_IDS=['clock','calendar','applications','session'];
+const homeClamp=n=>Math.max(0,Math.min(1,n));
+const emptyUnifiedHome=()=>({version:1,pins:[],widgets:[{id:'clock',x:.04,y:.12,size:'medium'},{id:'calendar',x:.04,y:.37,size:'medium'}],changedAt:0});
+function normalizeUnifiedHome(input){
+ if(!input||typeof input!=='object'||Array.isArray(input))return emptyUnifiedHome();
+ const raw=input;
+ const pins=[];const pinned=new Set();
+ for(const p of Array.isArray(raw.pins)?raw.pins.slice(0,80):[]){
+  if(!p||!validAppId(p.id)||pinned.has(p.id))continue;
+  if(!Number.isFinite(p.x)||!Number.isFinite(p.y))continue;
+  pinned.add(p.id);pins.push({id:p.id,x:homeClamp(p.x),y:homeClamp(p.y)});
+ }
+ const widgets=[];const added=new Set();
+ for(const w of Array.isArray(raw.widgets)?raw.widgets.slice(0,12):[]){
+  if(!w||!HOMES_WIDGET_IDS.includes(w.id)||added.has(w.id))continue;
+  if(!Number.isFinite(w.x)||!Number.isFinite(w.y))continue;
+  added.add(w.id);widgets.push({id:w.id,x:homeClamp(w.x),y:homeClamp(w.y),size:['small','medium','large'].includes(w.size)?w.size:'medium'});
+ }
+ return {version:1,pins,widgets,changedAt:Number.isSafeInteger(raw.changedAt)&&raw.changedAt>0?raw.changedAt:0};
+}
+let unifiedHome=emptyUnifiedHome(),unifiedHomeSaving=false;
 let appLayout=[],appPositions=new Map(),recycledApps=new Set(),recyclePosition=null,appRearranging=false,appDrag=null,appEditBar=null,appLayoutRelease=null,recycleButton=null,recyclePanel=null,layoutFrame=0,layoutObserver=null,layoutObserved=false,canvasGeometry=null;
 const appGrid=()=>document.querySelector('#desktop .workspace .apps');
 const validAppId=id=>typeof id==='string'&&/^[a-z][a-z0-9_-]{0,63}$/.test(id);
 const clampUnit=x=>Math.max(0,Math.min(1,x));
 function layoutKey(){return 'bc.os.app-layout.v2:'+String(storeProfile)}
 function readAppLayout(){
- appLayout=[];appPositions=new Map();recycledApps=new Set();recyclePosition=null;widgetState=null;if(!storeProfile)return;
+ appLayout=[];appPositions=new Map();recycledApps=new Set();recyclePosition=null;widgetState=null;unifiedHome=emptyUnifiedHome();if(!storeProfile)return;
  for(const {store} of preferenceStores())try{
   const data=JSON.parse(store.getItem(layoutKey())||'null');
   if(data&&typeof data==='object'&&!Array.isArray(data)){
    appLayout=Array.isArray(data.order)?[...new Set(data.order.filter(validAppId))].slice(0,250):[];
    if(Array.isArray(data.positions))appPositions=new Map(data.positions.slice(0,250).filter(p=>Array.isArray(p)&&validAppId(p[0])&&p[1]&&Number.isFinite(p[1].x)&&Number.isFinite(p[1].y)).map(([id,p])=>[id,{x:clampUnit(p.x),y:clampUnit(p.y)}]));
    if(data.bin&&Number.isFinite(data.bin.x)&&Number.isFinite(data.bin.y))recyclePosition={x:clampUnit(data.bin.x),y:clampUnit(data.bin.y)};
-   if(Array.isArray(data.recycled))recycledApps=new Set(data.recycled.filter(validAppId).slice(0,250));widgetState=data.widgets&&typeof data.widgets==='object'?data.widgets:null;window.dispatchEvent(new Event('blackcell:widget-sync'));return;
+   if(Array.isArray(data.recycled))recycledApps=new Set(data.recycled.filter(validAppId).slice(0,250));widgetState=data.widgets&&typeof data.widgets==='object'?data.widgets:null;
+    unifiedHome=normalizeUnifiedHome(data.unifiedHome);
+    window.dispatchEvent(new Event('blackcell:widget-sync'));
+    window.dispatchEvent(new Event('blackcell:desktop-layout-updated'));return;
   }
   const old=JSON.parse(store.getItem('bc.os.app-layout.v1:'+String(storeProfile))||'null');if(Array.isArray(old))appLayout=[...new Set(old.filter(validAppId))].slice(0,250);
  }catch(_){}
@@ -1215,10 +1261,75 @@ function renderFreeLayout(){
  if(!layoutObserved&&typeof ResizeObserver==='function'){layoutObserved=true;layoutObserver=new ResizeObserver(()=>applyAppLayout());layoutObserver.observe(workspace);if(side)layoutObserver.observe(side)}
 }
 function saveAppLayout(){
- if(!contextAllowed()||!storeProfile)return false;const record=JSON.stringify({order:appLayout,positions:[...appPositions],recycled:[...recycledApps],bin:recyclePosition,widgets:widgetState});void cloudWorkspaceSave('layout',record);let saved=false;
+ if(!contextAllowed()||!storeProfile)return false;
+ const record=JSON.stringify({order:appLayout,positions:[...appPositions],recycled:[...recycledApps],bin:recyclePosition,widgets:widgetState,unifiedHome});
+ const cloud=cloudWorkspaceSave('layout',record);
+ void cloud.then(ok=>{if(!preview)window.dispatchEvent(new CustomEvent('blackcell:home-sync-status',{detail:{ok:!!ok}}));});
+ let saved=false;
  for(const {name,store} of preferenceStores())try{store.setItem(layoutKey(),record);if(name==='localStorage'&&store.getItem(layoutKey())===record)saved=true}catch(_){}
- if(!saved)osNotice('Layout changed for this session. Persistent device storage is unavailable.');return saved;
+ if(!saved)osNotice('Layout changed for this session. Persistent device storage is unavailable.');window.dispatchEvent(new Event('blackcell:desktop-layout-updated'));return saved;
 }
+
+window.BLACKCELL_OS_UNIFIED_LAYOUT=Object.freeze({
+ account:()=>storeProfile,
+ ready:()=>((preview&&!$('desktop').hidden)||contextAllowed())&&!!storeProfile,
+ available:()=>[...document.querySelectorAll('#desktop .workspace .apps .app[data-app]')]
+  .filter(t=>!t.hidden&&!t.disabled&&installedApp(t.dataset.app)&&!recycledApps.has(t.dataset.app))
+  .map(t=>({id:t.dataset.app,title:t.dataset.title||t.dataset.app})),
+ read:()=>({version:1,pins:unifiedHome.pins.map(p=>({...p})),widgets:unifiedHome.widgets.map(w=>({...w})),changedAt:unifiedHome.changedAt}),
+ save:value=>{
+  if((!preview&&!contextAllowed())||!storeProfile)return {ok:false,message:'Sign in and unlock your workspace to edit the desktop.'};
+  const next=normalizeUnifiedHome(value);
+  next.pins=next.pins.filter(p=>installedApp(p.id)&&!recycledApps.has(p.id));
+  next.changedAt=Math.max(Date.now(),unifiedHome.changedAt+1);
+  unifiedHome=next;
+  if(preview){window.dispatchEvent(new Event('blackcell:desktop-layout-updated'));return {ok:true,message:'Preview desktop updated. Sign in to synchronize.'}}
+  const hasCloud=workspaceCloudReady;
+  const ok=saveAppLayout();
+  return {ok,message:!ok?'Desktop changed locally; saving is unavailable.':hasCloud?'Desktop layout saved locally. Synchronizing with your BLACKCELL account…':'Saved on this device. Cloud synchronization will resume when connected.'};
+ },
+ launch:id=>{
+  if(typeof id!=='string'||!validAppId(id)||!installedApp(id)||recycledApps.has(id))return false;
+  showApp(id);return true;
+ },
+ refresh:()=>refreshCloudHome()
+});
+async function refreshCloudHome(){
+ if(!active||leaving||!storeProfile||!workspaceCloudReady||!document.visibilityState||document.visibilityState!=='visible'||workspaceLock?.isLocked())return false;
+ const uid=storeProfile,starting=unifiedHome.changedAt,revision=cloudDesktopRevision;
+ try{
+  await cloudDesktopWrites.catch(()=>{});
+  if(uid!==storeProfile||revision!==cloudDesktopRevision)return false;
+  const {data,error}=await client.from('corp_os_workspace_preferences').select('value').eq('user_id',uid).eq('kind','layout').maybeSingle();
+  if(error||uid!==storeProfile||!data?.value||revision!==cloudDesktopRevision)return false;
+  const saved=data.value;
+  if(!saved.unifiedHome)return false;
+  const incoming=normalizeUnifiedHome(saved.unifiedHome);
+  if(incoming.changedAt<unifiedHome.changedAt){
+   // Local edits made during an outage are retried when the connection returns.
+   // Only push the full account layout when this device has the newer change.
+   const localValue=cloudDesktopCache.get(layoutKey())||localStorage.getItem(layoutKey());
+   if(localValue){
+    const parsed=JSON.parse(localValue);
+    if(Number(parsed?.unifiedHome?.changedAt)===unifiedHome.changedAt){
+     const ok=await cloudWorkspaceSave('layout',localValue);
+     window.dispatchEvent(new CustomEvent('blackcell:home-sync-status',{detail:{ok:!!ok}}));
+     return !!ok;
+    }
+   }
+   return false;
+  }
+  if(incoming.changedAt<=starting||incoming.changedAt<=unifiedHome.changedAt)return false;
+  const merged=JSON.stringify(saved);
+  cloudDesktopCache.set(layoutKey(),merged);
+  for(const {store} of preferenceStores())try{store.setItem(layoutKey(),merged)}catch(_){}
+  readAppLayout();applyAppLayout();
+  return true;
+ }catch(_){return false}
+}
+window.addEventListener('focus',()=>{void refreshCloudHome()});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refreshCloudHome()});
+setInterval(()=>{if(!document.hidden)void refreshCloudHome()},30000);
 
 window.BLACKCELL_OS_WIDGET_LAYOUT={
  account:()=>storeProfile,read:()=>widgetState,
