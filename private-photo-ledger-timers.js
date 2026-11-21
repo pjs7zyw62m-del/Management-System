@@ -31,7 +31,7 @@ const parseRate=value=>{
 const uuid=value=>typeof value==='string'&&/^[a-f0-9-]{36}$/i.test(value);
 const labelPhoto=id=>id?'Photo '+id.slice(0,8).toUpperCase():'No photo selected';
 let roomId=null,selectedId=null,latest=null,fetching=false,acting=false;
-let lastStatusAt=0,lastHeartbeatAt=0,clockOffset=0;
+let lastStatusAt=0,lastHeartbeatAt=0,clockOffset=0,lastHistorySignature='';
 const ownerPanel=make('section','rr-timer-panel');ownerPanel.id='redlinePhotoTimerPanel';
 ownerPanel.setAttribute('aria-label','Selected photo timed earnings');
 const title=make('div','rr-timer-heading');
@@ -62,12 +62,13 @@ const openOriginal=btn('VIEW FULL PHOTO',()=>{
 },'rr-timer-full');
 previewInfo.append(openOriginal);preview.append(previewImg,previewInfo);preview.hidden=true;
 ownerPanel.append(title,controls,note,preview);
-const lower=make('section','rr-timer-ledger');
+const lower=make('details','rr-timer-ledger');
 lower.id='redlineTimedEarningsLedger';
 lower.setAttribute('aria-label','Timed photo earnings and payment record');
 const total=make('div','rr-timer-totals','Timed earned: $0.00 · Owed: $0.00 · Recorded paid: $0.00');
 const history=make('div','rr-timer-history');
-lower.append(make('strong','','TIMED EARNINGS RECORD'),total,history);
+const ledgerSummary=make('summary','','TIMED EARNINGS · VIEW RECORD');
+lower.append(ledgerSummary,total,history);
 const senderPanel=make('section','rr-timer-sender');
 senderPanel.id='redlineSenderTimedEarnings';
 senderPanel.append(make('strong','','TIMED PHOTO EARNINGS'),make('p','','Waiting for the receiver to start a timed photo.'));
@@ -192,7 +193,10 @@ function render(){
  }
  if(latest){
   total.textContent='Timed earned: '+money(latest.assigned_cents)+' · Owed: '+money(latest.owed_cents)+' · Recorded paid: '+money(latest.paid_cents);
-  if(s.isOwner)renderHistory(s);
+  if(s.isOwner){
+   const signature=JSON.stringify(latest.recent||[]);
+   if(signature!==lastHistorySignature){renderHistory(s);lastHistorySignature=signature}
+  }
   if(!s.isOwner){
    senderPanel.replaceChildren(
     make('strong','','TIMED PHOTO EARNINGS'),
@@ -210,7 +214,7 @@ async function refresh(force=false){
   roomId=null;latest=null;render();return;
  }
  if(s.roomId!==roomId){
-  roomId=s.roomId;selectedId=null;latest=null;lastHeartbeatAt=0;lastStatusAt=0;
+  roomId=s.roomId;selectedId=null;latest=null;lastHeartbeatAt=0;lastStatusAt=0;lastHistorySignature='';
   selectIncoming();
  }
  mount(s);
