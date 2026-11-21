@@ -26,7 +26,7 @@ jobs:
           node --test tests/private-photo-ledger-simple-sender.test.mjs
           node --test tests/private-photo-ledger-responsive.test.mjs
           node --test tests/private-photo-ledger-solid-red.test.mjs
-      - name: Simulated 3-tab sender and 2-person chat on iPhones
+      - name: Simulated four-tab sender with Photo History and private chat on iPhones
         shell: bash
         run: |
           set -euo pipefail
@@ -63,7 +63,9 @@ jobs:
           window.BLACKCELL_REDLINE_API={
             snapshot:()=>({roomId:'room-test',userId:role==='owner'?'owner-test':'sender-test',
               isOwner:role==='owner',roomActive:true,roomTitle:'Private Room',
-              pending:3,owed:'$85.00',paid:'$120.00',assigned:'$205.00',entries:[fakeEntry]}),
+              pending:3,owed:'$85.00',paid:'$120.00',assigned:'$205.00',entries:[fakeEntry],
+              photoHistory:[{id:fakeEntry.id,created_at:fakeEntry.created_at,caption:'Top pick',stars:5,
+               amount_cents:2500,decision_status:'accepted',resubmissionCount:0,resubmissionAllowed:true}]}),
             loadMessages:async()=>[
               {id:'1',room_id:'room-test',sender_id:'sender-test',body:'Just sent 2 photos.',created_at:'2026-11-20T10:40:00Z'},
               {id:'2',room_id:'room-test',sender_id:'owner-test',body:'Received. Reviewing now.',created_at:'2026-11-20T10:41:00Z'},
@@ -82,6 +84,9 @@ jobs:
             b.dataset.qaPaid=doc.querySelectorAll('.redline-summary-stat strong')[1]?.textContent||'';
             b.dataset.qaPreviewForm=doc.querySelectorAll('#uploadPhotoForm').length?'yes':'no';
             if(role==='sender'){
+              doc.querySelector('[data-simple-tab=history]').click();
+              b.dataset.qaHistory=String(!!doc.querySelector('.redline-photo-history-row'));
+              b.dataset.qaHistoryResend=String(!!doc.querySelector('.redline-photo-history-resend:not(:disabled)'));
               doc.querySelector('[data-simple-tab=upload]').click();
             }else doc.querySelector('#redlineOwnerMessageLaunch').click();
             await new Promise(resolve=>setTimeout(resolve,400));
@@ -109,12 +114,14 @@ jobs:
               f="/tmp/redline-sender-$role-$width.html"
               grep -q 'data-qa-role="'$role'"' "$f"
               grep -q 'data-qa-preview-form="yes"' "$f"
-              grep -q 'data-qa-main-tabs="3"' "$f"
+              grep -q 'data-qa-main-tabs="4"' "$f"
               grep -q 'data-qa-bubbles="2"' "$f"
               grep -q 'data-qa-system="yes"' "$f"
               grep -q 'data-qa-chat-visible="yes"' "$f"
               grep -q 'data-qa-overflow="0"' "$f"
               if [ "$role" = sender ]; then
+                grep -q 'data-qa-history="true"' "$f"
+                grep -q 'data-qa-history-resend="true"' "$f"
                 grep -q 'data-qa-sender-visible="yes"' "$f"
                 grep -q 'data-qa-owed="$85.00"' "$f"
                 grep -q 'data-qa-paid="$120.00"' "$f"
