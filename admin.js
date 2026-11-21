@@ -862,7 +862,7 @@ function users(){
     void employeeProfiles();
   }else if(activeTab==='roles'){
     const section=block('Security Clearance Levels');
-    section.append(p('Level 7 is reserved for the corporate owner. Levels 1–6 are for employees. An employee clearance level alone does not grant access to this Administration dashboard or NEXUS.'));
+    section.append(p('Level 0 — REDLINE ONLY: the employee can access BLACKCELL REDLINE but no other BLACKCELL apps. Levels 1–6 retain their standard permissions. Level 7 is reserved for the corporate owner. Clearance changes are verified by the server.'));
     content.append(section);
     void loadClearanceLevels(section);
   }else{
@@ -963,7 +963,7 @@ async function loadClearanceLevels(container){
       const avatar=el('span','um3-avatar',String(member.display_name||'BC').trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase());
       details.append(el('b','',member.display_name||'Corporate Member'),
         el('small','',String(member.role||'employee').toUpperCase()+
-          ' · Current Level '+String(member.clearance_level)));
+          ' · Current Level '+String(member.clearance_level)+(Number(member.clearance_level)===0?' · REDLINE ONLY':'')));
       identity.append(avatar,details);entry.append(identity);
       if(member.role==='owner'){
         entry.append(el('span','um3-owner-clearance','Level 7 · Owner'));
@@ -971,6 +971,7 @@ async function loadClearanceLevels(container){
         const controls=el('div','um3-clearance-controls');
         const dropdown=el('select','um3-clearance-select');
         dropdown.setAttribute('aria-label','Clearance level for '+(member.display_name||'employee'));
+        dropdown.add(new Option('Level 0 — REDLINE ONLY','0'));
         for(let level=1;level<=6;level++){
           const option=new Option('Level '+level,String(level));
           dropdown.add(option);
@@ -979,20 +980,21 @@ async function loadClearanceLevels(container){
         const feedback=el('span','um3-clearance-status','');feedback.setAttribute('role','status');
         dropdown.addEventListener('change',async()=>{
           const next=Number(dropdown.value),previous=Number(member.clearance_level);
-          if(dropdown.disabled||next===previous||!Number.isInteger(next)||next<1||next>6)return;
+          if(dropdown.disabled||next===previous||!Number.isInteger(next)||next<0||next>6)return;
+           if(next===0&&!window.confirm('Assign LEVEL 0 — REDLINE ONLY to '+(member.display_name||'this employee')+'? This blocks all other BLACKCELL applications.')){dropdown.value=String(previous);return;}
           dropdown.disabled=true;entry.setAttribute('aria-busy','true');feedback.dataset.state='saving';feedback.textContent='Saving…';
           try{
             const {data:changed,error:changeError}=await api.rpc('corp_set_clearance_level',{p_user_id:member.user_id,p_level:next});
             if(changeError||changed?.ok!==true)throw Error('Not confirmed');
-            member.clearance_level=next;feedback.dataset.state='saved';feedback.textContent='Saved ✓';
+            member.clearance_level=next;feedback.dataset.state='saved';feedback.textContent=next===0?'Level 0 · REDLINE ONLY saved ✓':'Saved ✓';
           }catch(_){
             feedback.dataset.state='error';feedback.textContent='Not confirmed';
             try{const {data:fresh,error}=await api.rpc('corp_list_clearance');const actual=fresh?.members?.find(m=>m.user_id===member.user_id);
-              if(error||fresh?.ok!==true||!actual||!Number.isInteger(Number(actual.clearance_level))||Number(actual.clearance_level)<1||Number(actual.clearance_level)>6)throw Error('Unavailable');
+              if(error||fresh?.ok!==true||!actual||!Number.isInteger(Number(actual.clearance_level))||Number(actual.clearance_level)<0||Number(actual.clearance_level)>6)throw Error('Unavailable');
               member.clearance_level=Number(actual.clearance_level);feedback.textContent=member.clearance_level===next?'Saved ✓':'Not saved';feedback.dataset.state=member.clearance_level===next?'saved':'error';
             }catch(_){feedback.textContent='Refresh to verify';dropdown.value=String(previous);entry.removeAttribute('aria-busy');return}
           }
-          dropdown.value=String(member.clearance_level);details.querySelector('small').textContent=String(member.role).toUpperCase()+' · Current Level '+member.clearance_level;
+          dropdown.value=String(member.clearance_level);details.querySelector('small').textContent=String(member.role).toUpperCase()+' · Current Level '+member.clearance_level+(Number(member.clearance_level)===0?' · REDLINE ONLY':'');
           dropdown.disabled=false;entry.removeAttribute('aria-busy');
         });
         controls.append(dropdown,feedback);
