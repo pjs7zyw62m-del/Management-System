@@ -4,13 +4,14 @@ const db=corporateClient();
 const BUCKET='corp-private-photo-ledger';
 const ROOMS='corp_private_photo_rooms';
 const ENTRIES='corp_private_photo_entries';
+const RATINGS='corp_redline_photo_ratings';
 const MAX_IMAGE_BYTES=12*1024*1024;
 const MAX_SAFE=BigInt(Number.MAX_SAFE_INTEGER);
 const VALID_ID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const $=id=>document.getElementById(id);
 const state={
  user:null,member:null,isOwner:false,rooms:[],room:null,employees:[],
- entries:[],filter:'all',timedPhotoTotals:new Map(),timedPhotoFingerprint:'',busy:false,refreshing:false,closed:false,
+ entries:[],ratings:new Map(),filter:'all',timedPhotoTotals:new Map(),timedPhotoFingerprint:'',busy:false,refreshing:false,closed:false,
  images:new Map(),entryFingerprint:'',liveStarted:false,roomChannel:null,roomsChannel:null,liveRoomId:null,liveQueued:false,liveTimer:null,liveConnected:false,scopeMemberId:null,scopeValue:'full',scopeLoading:false,showArchive:false
 };
 const node=(tag,klass,content)=>{
@@ -368,6 +369,32 @@ function fillRoomPicker(){
  sel.value=state.room.id;
  $('roomPickerWrap').hidden=state.rooms.length<=1;
 }
+async function loadPhotoRatings(items,roomId){
+ const next=new Map();
+ // RLS confines responses to the sender and receiver of this private room.
+ // Limit the lookup to the photographs in the selected current/archive view.
+ for(let from=0;from<items.length;from+=150){
+  const ids=items.slice(from,from+150).map(e=>e.id);
+  if(!ids.length)continue;
+  const result=await db.from(RATINGS).select('photo_id,stars,rated_at').in('photo_id',ids);
+  if(result.error)throw result.error;
+  if(state.room?.id!==roomId)return null;
+  for(const rating of result.data||[]){
+   if(validId(rating.photo_id)&&Number.isInteger(rating.stars)&&rating.stars>=1&&rating.stars<=5)
+    next.set(rating.photo_id,rating);
+  }
+ }
+ return next;
+}
+function ratedPhotoData(e){
+ const rating=state.ratings.get(e.id);
+ return {
+  id:e.id,stars:rating?.stars||0,rated_at:rating?.rated_at||null,
+  created_at:e.created_at,caption:e.caption||'',
+  amount_cents:e.amount_cents,
+  image_url:state.images.get(e.image_path)?.url||''
+ };
+}
 async function loadEntries({force=false}={}){
  const selectedRoom=state.room;
  if(!selectedRoom)return;
@@ -387,7 +414,11 @@ async function loadEntries({force=false}={}){
   if((result.data||[]).length<250)break;
  }
  if(state.room?.id!==selectedRoom.id)return;
- const signature=String(state.showArchive)+'|'+JSON.stringify(all.map(e=>[e.id,e.amount_cents,e.auto_timer_session_id,e.decision_status,e.decided_at,e.priced_at,e.settled_at,e.caption]));
+ const ratings=await loadPhotoRatings(all,selectedRoom.id);
+ if(!ratings||state.room?.id!==selectedRoom.id)return;
+ state.ratings=ratings;
+ const ratingsSig=JSON.stringify([...ratings.values()].map(r=>[r.photo_id,r.stars,r.rated_at]).sort((a,b)=>a[0].localeCompare(b[0])));
+ const signature=ratingsSig+'|'+String(state.showArchive)+'|'+JSON.stringify(all.map(e=>[e.id,e.amount_cents,e.auto_timer_session_id,e.decision_status,e.decided_at,e.priced_at,e.settled_at,e.caption]));
  state.entries=all;
  updateTotals();
  const needsSignedRefresh=all.some(e=>!state.images.has(e.image_path)
@@ -548,6 +579,7 @@ function renderEntry(e){
  const combinedPrice=baseCents+extraTimedCents;
  const card=node('article','photo-entry');
  card.dataset.redlinePhotoId=e.id;
+ const rating=state.ratings.get(e.id);
  const imageButton=button('',()=>{
   window.dispatchEvent(new CustomEvent('blackcell:redline:photo-selected',{detail:{photoId:e.id}}));
   const src=state.images.get(e.image_path)?.url;
@@ -580,6 +612,11 @@ function renderEntry(e){
  const statusBadge=node('span','entry-badge '+status,status==='pending'?'AWAITING YOUR REVIEW':status==='rejected'?'REJECTED':status==='free'&&timedCents>0n?'ACCEPTED · TIMED EARNED':status==='free'?'ACCEPTED · $0.00':status==='owed'?'AMOUNT OWED':'RECORDED PAID');
  meta.append(statusBadge);
  body.append(meta,node('h3','','PHOTO '+e.id.slice(0,8).toUpperCase()));
+ if(rating){
+  body.append(node('div','rr-photo-star-summary',
+   '★'.repeat(rating.stars)+'☆'.repeat(5-rating.stars)+
+   (rating.stars===5?' · TOP PICK':' · '+rating.stars+'/5 STARS')));
+ }
  if(e.caption?.trim())body.append(node('p','caption',e.caption.trim()));
  const ctrl=node('div','entry-controls');
  if(status==='rejected'){
@@ -690,6 +727,58 @@ function appendReceiverPauseControl(panel){
   finally{action.disabled=false}
  }
 }
+// Star ratings are not bids, timers, acceptance decisions or payments.
+function appendPhotoRatingControl(panel,entry){
+ if(!state.isOwner||!state.room||state.showArchive||!entry)return;
+ const wrap=node('section','rr-photo-rating-panel');
+ const title=node('strong','rr-photo-rating-title','RATE THIS PHOTOGRAPH');
+ const buttons=node('div','rr-photo-rating-buttons');
+ buttons.setAttribute('role','group');
+ buttons.setAttribute('aria-label','Choose a one to five star rating');
+ const result=node('p','rr-photo-rating-feedback');
+ result.setAttribute('role','status');
+ const current=state.ratings.get(entry.id)?.stars||0;
+ const controls=[];
+ for(let n=1;n<=5;n++){
+  const star=button('★',()=>void saveRating(n),'rr-photo-rating-star'+(n<=current?' is-filled':''));
+  star.setAttribute('aria-label','Rate photo '+n+' out of 5 stars');
+  star.setAttribute('aria-pressed',String(n===current));
+  star.title=n+' of 5 stars';
+  controls.push(star);
+  buttons.append(star);
+ }
+ const hint=node('small','rr-photo-rating-hint',
+  current===5?'TOP PICK · 5 STARS':current?current+' OF 5 STARS':'Choose 1–5 stars · Sender sees your rating in chat');
+ wrap.append(title,buttons,hint,result);panel.append(wrap);
+ let saving=false;
+ async function saveRating(stars){
+  if(saving||!state.isOwner||state.room?.id!==entry.room_id)return;
+  saving=true;for(const item of controls)item.disabled=true;
+  result.textContent='Saving rating…';
+  try{
+   await verify();
+   const response=await db.from(RATINGS).upsert(
+    {photo_id:entry.id,stars},{onConflict:'photo_id'}
+   ).select('photo_id,stars,rated_at').single();
+   if(response.error||!response.data)throw Error(fail(response.error||'Rating not saved'));
+   if(state.room?.id!==entry.room_id)return;
+   state.ratings.set(entry.id,response.data);
+   result.textContent=stars===5?'Saved · 5 STARS · TOP PICK':'Saved · '+stars+' of 5 stars';
+   for(let i=0;i<controls.length;i++){
+    controls[i].classList.toggle('is-filled',i<stars);
+    controls[i].setAttribute('aria-pressed',String(i+1===stars));
+   }
+   hint.textContent=stars===5?'TOP PICK · 5 STARS':stars+' OF 5 STARS';
+   panel.dataset.redlineRating=String(stars);
+   // The signed photo URL stays in the existing verified room snapshot.
+   // The sender's separate device receives the rating through room polling.
+   state.entryFingerprint='';
+   renderEntries();
+   window.dispatchEvent(new Event('blackcell:redline:state'));
+  }catch(error){result.textContent='Could not save rating: '+fail(error)}
+  finally{saving=false;for(const item of controls)item.disabled=false}
+ }
+}
 // Full-screen inspection uses the existing authenticated decision handlers
 // in the NORMAL viewer sidebar, never in the full-screen photo-only popup.
 function preparePhotoReviewLightbox(entry){
@@ -699,14 +788,17 @@ function preparePhotoReviewLightbox(entry){
  const photoTimed=entry?state.timedPhotoTotals.get(entry.id):null;
  const timedSignature=String(photoTimed?.timed_cents||0)+'/'+
   String(photoTimed?.credited_to_photo_cents||0)+'/'+String(photoTimed?.additional_timed_cents||0);
+ const ratingSig=String(entry?state.ratings.get(entry.id)?.stars||0:0);
  if(panel.dataset.redlinePhotoId===(entry?.id||'none')&&
     panel.dataset.redlineDecision===(entry?.decision_status||'empty')&&
     panel.dataset.redlinePause===String(Boolean(state.room?.photo_sending_paused))&&
-    panel.dataset.redlineTimed===timedSignature&&!panel.hidden)return;
+    panel.dataset.redlineTimed===timedSignature&&
+    panel.dataset.redlineRating===ratingSig&&!panel.hidden)return;
  panel.dataset.redlinePhotoId=entry?.id||'none';
  panel.dataset.redlineDecision=entry?.decision_status||'empty';
  panel.dataset.redlinePause=String(Boolean(state.room?.photo_sending_paused));
  panel.dataset.redlineTimed=timedSignature;
+ panel.dataset.redlineRating=ratingSig;
  // Preserve the same authenticated timer node when refreshing the bid UI.
  const liveTimer=$('redlinePhotoTimerPanel');
  if(liveTimer?.parentNode===panel)liveTimer.remove();
@@ -719,6 +811,7 @@ function preparePhotoReviewLightbox(entry){
  panel.hidden=!receiverActions;
  if(!receiverActions)return;
  appendReceiverPauseControl(panel);
+ if(entry)appendPhotoRatingControl(panel,entry);
  if(!review){
   const summary=entry?state.timedPhotoTotals.get(entry.id):null;
   const timed=cents(summary?.timed_cents||0),credited=cents(summary?.credited_to_photo_cents||0);
@@ -1221,7 +1314,16 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
     settled_at:e.settled_at,decision_status:e.decision_status,
     amount_cents:e.amount_cents,
     caption:e.caption||''
-   }))
+   })),
+   ratingEvents:state.entries.filter(e=>state.ratings.has(e.id))
+    .sort((a,b)=>Date.parse(state.ratings.get(b.id)?.rated_at||0)-Date.parse(state.ratings.get(a.id)?.rated_at||0))
+    .slice(0,40).map(ratedPhotoData),
+   topPicks:state.entries.filter(e=>state.ratings.has(e.id))
+    .sort((a,b)=>
+     (state.ratings.get(b.id)?.stars||0)-(state.ratings.get(a.id)?.stars||0)||
+     Number(cents(b.amount_cents)>cents(a.amount_cents))-Number(cents(b.amount_cents)<cents(a.amount_cents))||
+     Date.parse(state.ratings.get(b.id)?.rated_at||0)-Date.parse(state.ratings.get(a.id)?.rated_at||0))
+    .slice(0,5).map(ratedPhotoData)
   };
  },
  async toggleArchive(){
