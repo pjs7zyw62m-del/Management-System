@@ -62,7 +62,7 @@ const openOriginal=btn('VIEW FULL PHOTO',()=>{
  b?.click();
 },'rr-timer-full');
 previewInfo.append(openOriginal);preview.append(previewImg,previewInfo);preview.hidden=true;
-ownerPanel.append(title,controls,note,preview);
+ownerPanel.append(title,controls,note);
 const lower=make('details','rr-timer-ledger');
 lower.id='redlineTimedEarningsLedger';
 lower.setAttribute('aria-label','Timed photo earnings and payment record');
@@ -109,6 +109,9 @@ function mount(s){
  const fallback=$('#activeRoom .timeline-column');
  const ownerHost=combined?stage:fallback;
  if(s.isOwner&&ownerHost&&ownerPanel.parentNode!==ownerHost)ownerHost.prepend(ownerPanel);
+ // The selected-photo viewer must NEVER be inside the collapsible timer;
+ // otherwise the photo disappears whenever the timer controls are closed.
+ if(s.isOwner&&ownerHost&&preview.parentNode!==ownerHost)ownerHost.insertBefore(preview,ownerPanel.nextSibling);
  if(s.isOwner){
   const records=combined?$('#redlineReceiverPricedStage'):fallback;
   if(records&&lower.parentNode!==records)records.append(lower);
@@ -189,12 +192,11 @@ function render(){
  const chosenEntry=s.entries?.find(e=>e.id===selectedId);
  const priced=Boolean(chosenEntry&&chosenEntry.decision_status==='accepted');
  const next=currentPhoto();
- preview.hidden=!priced||!owner;
- document.body.classList.toggle('rr-timing-priced-photo',priced&&owner);
- if(priced){
-  const img=$('[data-redline-photo-id="'+selectedId+'"] .photo-image-btn img');
-  if(img?.src&&img.src.startsWith('https://'))previewImg.src=img.src;
- }
+ const img=priced?$('[data-redline-photo-id="'+selectedId+'"] .photo-image-btn img'):null;
+ const imageReady=Boolean(img?.src&&img.src.startsWith('https://'));
+ preview.hidden=!priced||!owner||!imageReady;
+ document.body.classList.toggle('rr-timing-priced-photo',priced&&owner&&imageReady);
+ if(imageReady&&previewImg.src!==img.src)previewImg.src=img.src;
  if(!running&&latest?.active&&!latest.active.running){
   note.textContent='Timer lease expired. Start again after the previous session is finalized.';
  }
