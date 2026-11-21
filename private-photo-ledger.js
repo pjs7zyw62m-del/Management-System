@@ -563,7 +563,6 @@ function renderReviewQueue(){
  const timedSelection=selected?.decision_status==='accepted'&&
   Boolean(state.timedPhotoTotals.get(selected.id)||selected.auto_timer_session_id);
  const shown=timedSelection?selected:current;
- window.dispatchEvent(new CustomEvent('blackcell:redline:review-photo',{detail:{photoId:shown.id}}));
  const progress=node('div','queue-progress');
  progress.append(
   node('strong','',timedSelection?'TIMED PHOTO · FINAL PRICE':'NEXT PHOTO TO REVIEW'),
@@ -571,6 +570,9 @@ function renderReviewQueue(){
  );
  parent.append(progress,renderEntry(shown));
  preparePhotoReviewLightbox(shown);
+ // Mount the next image BEFORE telling timer controls about it.
+ // Otherwise the old timed image can be reselected from stale DOM.
+ window.dispatchEvent(new CustomEvent('blackcell:redline:review-photo',{detail:{photoId:shown.id}}));
 }
 function renderEntries(){
  const parent=$('photoEntries');parent.replaceChildren();
@@ -1317,15 +1319,43 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
  },
  async timerStop(sessionId,options={}){
   if(state.closed||!state.isOwner||!validId(sessionId))throw Error('Owner timer session required.');
+  const roomId=state.room?.id;
   await verify();
+  if(state.room?.id!==roomId)throw Error('Room changed; timer not stopped in this view.');
   const result=await db.rpc('corp_redline_photo_timer_stop',{p_session_id:sessionId});
   if(result.error||result.data?.ok!==true)throw Error(fail(result.error||result.data?.reason||'Timer could not stop.'));
-  // Explicit STOP keeps the final priced photo visible. A timer implicitly
-  // stopped by accepting/advancing must NEVER select the previous photo.
-  if(result.data.photo_id&&state.room?.id){
-   if(options.keepPhotoSelected!==false)state.reviewSidebarPhotoId=result.data.photo_id;
+  if(result.data.photo_id&&state.room?.id===roomId){
+   const photoId=result.data.photo_id;
+   const photo=state.entries.find(e=>e.id===photoId);
+   // The server committed this price atomically. Reflect that accepted
+   // decision locally BEFORE a network refresh, like manual pricing does.
+   if(result.data.photo_auto_submitted===true&&photo&&photo.decision_status==='pending'){
+    const decided=new Date().toISOString();
+    Object.assign(photo,{
+     amount_cents:result.data.earned_cents,
+     decision_status:'accepted',auto_timer_session_id:sessionId,
+     priced_at:decided,decided_at:decided
+    });
+   }
+   if(options.keepPhotoSelected===true){
+    state.reviewSidebarPhotoId=photoId;
+   }else{
+    // STOP TIMING advances to the OLDEST pending photo, not the one that
+    // was just priced. A new pending upload must not be blocked by a timer.
+    state.reviewSidebarPhotoId=null;
+   }
+   renderReviewQueue();
+   renderEntries();
+   updateTotals();
+   const next=document.querySelector('#reviewQueueCurrent .photo-entry[data-redline-photo-id]');
+   const nextPhotoId=next?.dataset.redlinePhotoId||null;
+   show('reviewQueueFeedback',nextPhotoId&&nextPhotoId!==photoId
+    ?'Timer stopped · '+dollars(result.data.earned_cents)+' recorded · Next pending photo ready.'
+    :'Timer stopped · '+dollars(result.data.earned_cents)+' recorded · Waiting for next photo.');
    state.entryFingerprint='';
-   try{await loadEntries({force:true})}catch(_){}
+   try{await loadEntries({force:true})}
+   catch(refreshError){show('entriesFeedback',
+    'Timer price saved and photo queue advanced. Background refresh unavailable: '+fail(refreshError))}
   }
   return result.data;
  },
