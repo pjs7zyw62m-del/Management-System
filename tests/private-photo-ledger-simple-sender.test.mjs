@@ -6,8 +6,8 @@ const html=read('private-photo-ledger.html'),bridge=read('private-photo-ledger.j
 const ui=read('private-photo-ledger-simple-sender.js'),css=read('private-photo-ledger-simple-sender.css');
 const migration=read('supabase/migrations/20261120184611_blackcell_redline_private_room_messages.sql');
 test('approved Upload, Earnings, Messages surfaces load after old sender shell',()=>{
- assert.match(html,/private-photo-ledger-simple-sender\.css\?v=20261120-redline-chat1/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=(?:20261120-redline-chat1|20261121-archive-sender1)/);
+ assert.match(html,/private-photo-ledger-simple-sender\.css\?v=20261121-mobile-bottom3/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-inline-owner-chat1/);
  assert.ok(html.indexOf('private-photo-ledger-sender.js')<html.indexOf('private-photo-ledger-simple-sender.js'));
  assert.match(ui,/redline-simple-home/);
  for(const term of ['redline-simple-tab','redline-earnings-box','redline-activity-box','redline-message-card'])assert.ok(ui.includes(term),term);
@@ -53,4 +53,17 @@ test('owner can communicate but cannot access sender upload',()=>{
  assert.match(css,/body\.redline-sender-simple #activeRoom>.room-body/);
  assert.match(css,/redline-chat-bubble\.is-mine/);
  assert.match(css,/redline-chat-bubble\.is-theirs/);
+});
+
+test('Owner receiver mounts the same authenticated thread inline without cloning the chat',()=>{
+ const receiver=read('private-photo-ledger-receiver.js');
+ assert.match(receiver,/chatMount\.id='redlineReceiverChatMount'/);
+ assert.match(receiver,/chatPanel\.id='redlineReceiverChat'/);
+ assert.match(receiver,/dashboard\.append\(header,stats,nav,chatPanel,access,line\)/);
+ assert.match(ui,/function syncOwnerChat\(snap\)/);
+ assert.match(ui,/if\(messageCard\.parentNode!==mount\)mount\.append\(messageCard\)/);
+ assert.match(ui,/const key=snap\.roomId\+/);
+ assert.match(ui,/send\.disabled=Boolean\(!snap\.roomActive\|\|snap\.archiveMode\)/);
+ assert.match(ui,/window\.addEventListener\('blackcell:redline:receiver-ready',sync\)/);
+ assert.match(ui,/await bridge\(\)\.sendMessage\(text\)/);
 });
