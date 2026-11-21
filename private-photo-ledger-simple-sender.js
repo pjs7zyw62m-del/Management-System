@@ -36,9 +36,24 @@ for(const [key,label] of [['upload','Upload'],['earnings','Earnings'],['messages
 }
 const uploadTitle=make('div','redline-upload-intro');
 uploadTitle.append(make('span','redline-kicker','PRIVATE MEDIA'),make('h2','','Send a photo'));
-uploadTitle.append(make('p','','Choose a photo, add a note if you want, then send it privately for review.'));
+uploadTitle.append(make('p','','Post a private photo, send a message, or send both together in one place.'));
 uploadPane.append(uploadTitle);
 const uploadMount=make('div','redline-upload-mount');uploadPane.append(uploadMount);
+const sendTextOnly=$('#sendRedlineTextOnly');
+sendTextOnly?.addEventListener('click',async()=>{
+ const field=$('#uploadCaption'),feedback=$('#uploadFeedback');
+ const message=field?.value.trim()||'',snap=snapshot();
+ if(!message){feedback.textContent='Write a message first.';return}
+ if(!snap?.roomActive||snap.archiveMode){feedback.textContent='Return to an active private room to send messages.';return}
+ sendTextOnly.disabled=true;feedback.textContent='Sending private message…';
+ try{
+  await bridge().sendMessage(message);
+  field.value='';feedback.textContent='Private message sent.';
+  messages=[];lastSync=0;
+  window.dispatchEvent(new Event('blackcell:redline:messages-changed'));
+ }catch(err){feedback.textContent='Message not sent: '+String(err?.message||'Try again.').slice(0,180)}
+ finally{sendTextOnly.disabled=false}
+});
 const earningsBox=make('section','redline-earnings-box');
 earningsBox.append(make('div','redline-heading-kicker','WHAT YOU EARN'));
 const earnedFields=make('div','redline-earnings-fields');
@@ -274,6 +289,7 @@ function sync(){
 }
 const observer=new MutationObserver(()=>requestAnimationFrame(sync));
 for(const el of [app,room,upload,ownerSetup])observer.observe(el,{attributes:true,attributeFilter:['hidden']});
+window.addEventListener('blackcell:redline:messages-changed',()=>{if(currentTab==='messages'||ownerDialog.open)void loadMessages()});
 window.addEventListener('blackcell:redline:bridge',sync);
 window.addEventListener('blackcell:redline:state',sync);
 window.addEventListener('blackcell:redline:session-mode',sync);
