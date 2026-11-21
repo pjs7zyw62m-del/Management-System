@@ -91,6 +91,16 @@
  const partialPay=button('PARTIAL PAYMENT',()=>void openPartialPayment(),'rr-nav-button rr-pay-partial');
  partialPay.setAttribute('aria-label','Record partial payment of the private room balance');
  partialPay.title='Record a smaller external payment; no actual money is transferred.';
+ // Prominent top-level shortcut: on narrow OS windows the compact payment
+ // navigation may be clipped. Keep PARTIAL PAYMENT independently discoverable.
+ const partialShortcutBox=make('div','rr-partial-quick-access');
+ const partialShortcutLabel=make('span','rr-partial-quick-label','PAYMENTS');
+ const partialShortcut=button('PARTIAL PAYMENT',()=>void openPartialPayment(),
+  'rr-partial-quick-button');
+ partialShortcut.id='redlinePartialPaymentQuickAccess';
+ partialShortcut.setAttribute('aria-label','Open Partial Payment on the REDLINE receiver');
+ partialShortcutBox.append(partialShortcutLabel,partialShortcut);
+ header.append(partialShortcutBox);
  const payFeedback=make('span','rr-pay-feedback','');
  payFeedback.setAttribute('role','status');payFeedback.hidden=true;
  payColumn.append(payFull,partialPay,payFeedback);
@@ -718,7 +728,7 @@
   review.disabled=history.disabled=message.disabled=!hasRoom;
   const mode=document.body.classList.contains('bc-redline-archive-view');
   dashboard.classList.toggle('rr-is-archive',mode);
-  payFull.disabled=partialPay.disabled=!hasRoom||mode||payBusy;
+  payFull.disabled=partialPay.disabled=partialShortcut.disabled=!hasRoom||mode||payBusy;
   const count=$('#reviewQueueCount')?.textContent||'';
   review.title=count?'Review queue: '+count:'Open review queue';
   historyToggle.hidden=!hasRoom||!mediaOpen;
