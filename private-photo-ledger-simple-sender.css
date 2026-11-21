@@ -319,3 +319,29 @@ body.redline-sender-simple #redlineSenderChoose:disabled{opacity:.45;cursor:not-
 body.redline-sender-simple #employeeUpload:has(#uploadPhoto:disabled) .file-drop{
  opacity:.55;cursor:not-allowed;
 }
+
+/* Timed-photo status is a system event INSIDE the sender's private chat,
+   with a live elapsed clock and server-verified completed-minute balance. */
+.redline-chat-timer{
+ display:flex;flex-direction:column;gap:7px;align-self:stretch;
+ padding:12px 14px;margin:0 3px;border-radius:12px;
+ border:1px solid #9c2648;border-left:4px solid #e42a58;
+ background:#19090f;color:#fff;min-width:0;
+}
+.redline-chat-timer-title{
+ font-size:12px;letter-spacing:.04em;color:#ff6e8c;font-weight:850;
+}
+.redline-chat-timer-rate{
+ font-size:11px;color:#e8d1d8;font-weight:750;
+}
+.redline-chat-timer-values{
+ display:flex;align-items:center;justify-content:space-between;
+ gap:8px;flex-wrap:wrap;font-size:13px;font-weight:850;
+ font-variant-numeric:tabular-nums;
+}
+.redline-chat-timer-clock{color:#fff}
+.redline-chat-timer-amount{color:#ff6e8c;font-size:clamp(14px,2vw,19px)}
+.redline-chat-timer small{font-size:10px;color:#bca8b2;line-height:1.45}
+.rr-photo-timed-summary{
+ color:#ed7b98;font-size:12px;font-weight:750;margin:6px 0 0;
+}
