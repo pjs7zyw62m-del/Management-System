@@ -304,10 +304,10 @@ function renderEarnings(snap){
  renderActivity(snap);
  renderTopPicks(snap);
 }
-// The server's authenticated timer snapshot is already polled in the timer
-// controller. Show the start and stop events IN the existing chat feed.
+// Build timer events from the verified room ledger on BOTH sides.
+// A receiver's start is visible immediately; the sender polls independently.
 function timedEvents(snap){
- if(!isSender()||!snap||snap.archiveMode||timerRoomId!==snap.roomId||!timerStatus)return [];
+ if(!snap||app.hidden||room.hidden||snap.archiveMode||timerRoomId!==snap.roomId||!timerStatus)return [];
  const result=[];
  const items=Array.isArray(timerStatus.recent)?timerStatus.recent.slice(0,30):[];
  for(const row of items){
@@ -335,7 +335,7 @@ function timerNumbers(row,active){
  return {seconds,cents};
 }
 function updateTimerCards(){
- if(!timerStatus||!isSender())return;
+ if(!timerStatus||!snapshot()||app.hidden||room.hidden)return;
  const running=timerStatus.active;
  for(const card of feed.querySelectorAll('.redline-chat-timer[data-timer-phase="active"]')){
   if(card.dataset.timerId!==running?.id)continue;
@@ -355,7 +355,7 @@ function renderChat(){
   ...photoRatingEvents(snap),
   ...messages.map(m=>({kind:'chat',at:m.created_at,body:m.body,sender:m.sender_id,id:m.id}))
  ].sort((a,b)=>new Date(a.at)-new Date(b.at)).slice(-130);
- if(timerLoadError&&isSender()&&!snap?.archiveMode){
+ if(timerLoadError&&snap&&!app.hidden&&!room.hidden&&!snap.archiveMode){
   const warning=make('div','redline-chat-event redline-chat-timer-error');
   warning.append(make('strong','','TIMER STATUS UNAVAILABLE'),
    make('small','',timerLoadError+' · REDLINE will retry automatically.'));
@@ -470,7 +470,7 @@ function syncOwnerChat(snap){
  photoAction.hidden=true;
  const key=snap.roomId+'|'+(snap.resetAt||'')+'|'+String(snap.archiveMode);
  if(key!==lastOwnerSession){
-  lastOwnerSession=key;messages=[];lastSync=0;renderChat();void loadMessages();
+  lastOwnerSession=key;messages=[];lastSync=0;renderChat();void loadMessages();void pollSenderTimers(true);
  }
  send.disabled=Boolean(!snap.roomActive||snap.archiveMode);
  entry.disabled=Boolean(!snap.roomActive||snap.archiveMode);
@@ -509,11 +509,11 @@ function sync(){
 }
 const observer=new MutationObserver(()=>requestAnimationFrame(sync));
 for(const el of [app,room,upload,ownerSetup])observer.observe(el,{attributes:true,attributeFilter:['hidden']});
-// Sender reads its OWN verified room timer status. A notification cannot
-// depend on the receiver tab being open or on an event from another script.
+// Each participant reads authenticated timer status from the room ledger.
+// The receiver also gets immediate in-page status events after START/STOP.
 function receiveTimerStatus(roomId,next){
  const snap=snapshot();
- if(!snap||snap.roomId!==roomId||snap.isOwner||!next?.ok)return;
+ if(!snap||snap.roomId!==roomId||snap.archiveMode||app.hidden||room.hidden||!next?.ok)return;
  const fingerprint=JSON.stringify([next.active?.id||null,next.active?.running||null,
   ...(Array.isArray(next.recent)?next.recent.map(x=>[x.id,x.stopped_at]):[])]);
  const hadError=Boolean(timerLoadError);
@@ -528,9 +528,13 @@ function receiveTimerStatus(roomId,next){
 }
 async function pollSenderTimers(force=false){
  const snap=snapshot();
- if(!snap||snap.isOwner||snap.archiveMode||!isSender()||!bridge()?.timerStatus)return;
+ if(!snap||snap.archiveMode||app.hidden||room.hidden||!bridge()?.timerStatus)return;
+ const chatVisible=snap.isOwner
+  ?Boolean(ownerDialog.open||(receiverChatPanel()&&!receiverChatPanel().hidden))
+  :currentTab==='upload';
+ if(!chatVisible)return;
  const id=snap.roomId,now=Date.now();
- if(timerPollInFlight||(!force&&now-timerLastPoll<3500))return;
+ if(timerPollInFlight||(!force&&now-timerLastPoll<(snap.isOwner?6000:2500)))return;
  timerLastPoll=now;timerPollInFlight=true;
  try{
   const status=await bridge().timerStatus(id);
@@ -560,7 +564,7 @@ window.addEventListener('visibilitychange',()=>{if(!document.hidden){
 }});
 window.setInterval(()=>{
  updateTimerCards();
- if(!document.hidden&&isSender()&&currentTab==='upload')void pollSenderTimers();
+ if(!document.hidden)void pollSenderTimers();
 },1000);
 window.setInterval(()=>{
  const active=(isSender()&&currentTab==='upload')||ownerDialog.open||(receiverChatPanel()&&!receiverChatPanel().hidden);
