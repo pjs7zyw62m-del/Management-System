@@ -92,9 +92,9 @@ test('Sender gets archived earnings and chat without permission to upload while 
 test('REDLINE receiver resources are versioned and original form and security remain intact',()=>{
  assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-photo-large-timed1/);
  assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-history-visible1/);
- assert.match(html,/private-photo-ledger\.js\?v=20261121-photo-queue-single-view3/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261122-redline-android-multisource1/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=20261121-stable-brand1/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-current-viewing1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261122-redline-chat-plus1/);
  assert.match(ledger,/corporateAuthorize\(db,\{allowLedgerOnly:true\}\)/);
  assert.match(ledger,/const BUCKET='corp-private-photo-ledger'/);
  assert.match(ledger,/await uploadBunnyPhoto\(db,room\.id,state\.user\.id,id,file,info\.mime\)/);
@@ -413,7 +413,7 @@ test('Sender chat receives verified start and stop messages with a live clock an
  assert.match(sender,/window\.setInterval\(\(\)=>\{/);
  assert.match(sender,/BigInt\(seconds\)\*BigInt\(row\.rate_cents\|\|0\)/);
  assert.match(style,/\.redline-chat-timer/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-current-viewing1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261122-redline-chat-plus1/);
 });
 
 test('Auto leading zero, verified timed price, and reject confirmation are supported',()=>{
@@ -460,7 +460,7 @@ test('REDLINE pause belongs only to verified receiver and applies across devices
  assert.match(migration,/BEFORE INSERT ON public\.corp_private_photo_entries/);
  assert.match(migration,/NOT r\.photo_sending_paused/g);
  assert.match(style,/#redlineReceiverSendingPause|rr-receiver-pause-button/);
- assert.match(html,/private-photo-ledger-sender\.js\?v=20261121-receiver-owned-pause1/);
+ assert.match(html,/private-photo-ledger-sender\.js\?v=20261122-redline-multi-chooser1/);
  assert.match(html,/private-photo-ledger-simple-sender\.css\?v=20261121-current-viewing1/);
 });
 
@@ -641,7 +641,7 @@ test('Compact receiver buttons retain stars and every bid decision without headi
  assert.match(css,/\.rr-photo-rating-star/);
  assert.match(css,/\.redline-review-actions button/);
  assert.match(css,/min-height:37px!important/);
- assert.match(html,/private-photo-ledger\.js\?v=20261121-photo-queue-single-view3/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261122-redline-android-multisource1/);
  assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-history-visible1/);
 });
 
@@ -672,8 +672,8 @@ test('Five-star originals can be resubmitted until receiver rejects the copied p
  assert.match(sender,/bridge\(\)\?\.resubmitFiveStarPhoto\?\.\(photo\.id\)/);
  assert.match(style,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)!important/);
  assert.match(style,/\.redline-five-star-photo/);
- assert.match(html,/private-photo-ledger\.js\?v=20261121-photo-queue-single-view3/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-current-viewing1/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261122-redline-android-multisource1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261122-redline-chat-plus1/);
 });
 
 test('After a server-confirmed price, the next photo is shown before network refresh',()=>{
@@ -737,7 +737,7 @@ test('REDLINE puts quick actions in a menu with Pay in Full beside it',()=>{
  assert.match(css,/rr-pay-full/);
  assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-history-visible1-menu1/);
  assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-photo-large-timed1-menu1/);
- assert.match(html,/private-photo-ledger\.js\?v=20261121-photo-queue-single-view3-payfull1/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261122-redline-android-multisource1/);
  assert.match(ledger,/async recordPaidInFull\(roomId\)/);
  assert.match(ledger,/db\.rpc\('corp_redline_record_paid_in_full'/);
  assert.match(sql,/v_room\.owner_id IS DISTINCT FROM v_user/);
