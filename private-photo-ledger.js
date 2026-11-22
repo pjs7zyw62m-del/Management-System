@@ -1151,6 +1151,76 @@ async function rejectPhoto(entry,trigger){
  }catch(e){show('entriesFeedback','Could not reject photo: '+fail(e));return false}
  finally{state.busy=false;trigger.disabled=false}
 }
+// Distinct from REJECT PHOTO: this server action irreversibly erases media
+// bytes while retaining the minimum financial/audit ledger record.
+async function confirmPermanentPhotoDeletion(entry){
+ const dialog=$('redlinePurgeConfirm');
+ if(!dialog||dialog.open)return false;
+ const input=$('redlinePurgeType'),approve=$('redlinePurgeSubmit'),cancel=$('redlinePurgeCancel');
+ const note=$('redlinePurgeWarning');
+ $('redlinePurgePhotoRef').textContent='PHOTO '+entry.id.slice(0,8).toUpperCase();
+ note.textContent=entry.photo_removal_status==='pending'
+  ?'REDLINE already blocked this photo. Retry to finish deleting its original file from the server. Prices and payment records will stay in the ledger.'
+  :entry.decision_status==='accepted'
+   ?'Permanently erase this photo from Bunny Storage. The previously recorded price '+dollars(entry.amount_cents)+' and payment history WILL REMAIN in the ledger. No downloaded copies outside REDLINE can be recalled.'
+   :'Permanently erase the original photo from Bunny Storage and reject its pending review. This cannot be undone; the sender will see a removed-photo record.';
+ input.value='';approve.disabled=true;dialog.returnValue='';
+ return await new Promise(resolve=>{
+  input.oninput=()=>{approve.disabled=input.value.trim()!=='DELETE'};
+  cancel.onclick=()=>dialog.close('cancel');
+  approve.onclick=()=>{if(input.value.trim()==='DELETE')dialog.close('delete')};
+  dialog.addEventListener('close',()=>{
+   input.oninput=null;cancel.onclick=null;approve.onclick=null;
+   resolve(dialog.returnValue==='delete');
+  },{once:true});
+  dialog.showModal();
+  input.focus();
+ });
+}
+async function deletePhotoPermanently(entry){
+ if(!state.isOwner||!state.room||state.closed||state.busy||
+    state.deletingPhotoId||!validId(entry?.id)||
+    entry.room_id!==state.room.id||entry.photo_removal_status==='removed')return false;
+ if(!await confirmPermanentPhotoDeletion(entry))return null;
+ const roomId=state.room.id,photoId=entry.id;
+ state.deletingPhotoId=photoId;state.busy=true;
+ try{
+  await verify();
+  if(state.room?.id!==roomId)throw Error('Private room changed. No deletion was authorized.');
+  // The Edge Function first marks a verified room tombstone to deny reads,
+  // then executes Bunny DELETE, then acknowledges the permanent purge.
+  const result=await deleteRedlinePhotoFile(db,roomId,photoId);
+  if(result.status!=='removed')throw Error('Server did not confirm permanent deletion.');
+  const cached=state.images.get(entry.image_path);
+  if(cached?.object&&cached.url?.startsWith('blob:'))
+   try{URL.revokeObjectURL(cached.url)}catch(_){}
+  state.images.delete(entry.image_path);
+  entry.photo_removal_status='removed';
+  if(entry.decision_status==='pending')entry.decision_status='rejected';
+  const existing=state.entries.find(e=>e.id===photoId);
+  if(existing&&existing!==entry){
+   existing.photo_removal_status='removed';
+   if(existing.decision_status==='pending')existing.decision_status='rejected';
+  }
+  state.reviewSidebarPhotoId=null;
+  if(!$('photoLightbox').hidden)closeLightbox();
+  state.entryFingerprint='';
+  renderEntries();renderReviewQueue();updateTotals();
+  window.dispatchEvent(new CustomEvent('blackcell:redline:photo-removed',{detail:{photoId,roomId}}));
+  try{await loadEntries({force:true})}
+  catch(_){/* Server confirmed purge; local client updates above stay visible. */}
+  show('entriesFeedback','PHOTO PERMANENTLY REMOVED FROM SERVER · Original media erased. REDLINE financial and audit records preserved.');
+  return true;
+ }catch(e){
+  // A partial failure leaves the server-side tombstone blocking further reads
+  // until a future RETRY SERVER DELETION completes the physical purge.
+  state.entryFingerprint='';
+  try{await loadEntries({force:true})}catch(_){}
+  show('entriesFeedback','Server deletion was not confirmed: '+fail(e)+
+   ' · If this photo says REMOVAL PENDING, select RETRY SERVER DELETION.');
+  return false;
+ }finally{state.busy=false;state.deletingPhotoId=null}
+}
 async function settle(entry){
  if(!state.isOwner||state.busy||entry.decision_status!=='accepted'||cents(entry.amount_cents)<=0n||entry.settled_at||
     cents(authoritativePaymentStatus()?.payment_credit_cents)>0n)return;
