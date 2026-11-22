@@ -54,3 +54,12 @@ export async function readBunnyPhoto(db,roomId,photoId){
 export async function cleanupUnpostedBunny(db,roomId,photoId){
  return await request(db,'cleanup',{roomId,photoId});
 }
+
+/* Owner-only deletion invokes server-confirmed Bunny removal. No browser
+   access key, direct Bunny delete or local-only hiding is ever accepted. */
+export async function deleteRedlinePhotoFile(db,roomId,photoId){
+ const result=await request(db,'delete',{roomId,photoId});
+ if(result?.status!=='removed'||result.photo_id!==photoId)
+  throw Error('REDLINE did not confirm permanent file deletion.');
+ return result;
+}

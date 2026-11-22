@@ -1,5 +1,5 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
-import {isBunnyPath,uploadBunnyPhoto,readBunnyPhoto,cleanupUnpostedBunny} from './private-photo-ledger-bunny.js?v=20261121-redline-bunny1';
+import {isBunnyPath,uploadBunnyPhoto,readBunnyPhoto,cleanupUnpostedBunny,deleteRedlinePhotoFile} from './private-photo-ledger-bunny.js?v=20261121-redline-bunny1';
 
 const db=corporateClient();
 // Legacy archive photo paths use the old private bucket; new uploads never do.
@@ -14,7 +14,7 @@ const VALID_ID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const $=id=>document.getElementById(id);
 const state={
  user:null,member:null,isOwner:false,rooms:[],room:null,employees:[],
- entries:[],ratings:new Map(),resubmittingPhotoId:null,filter:'all',timedPhotoTotals:new Map(),timedPhotoFingerprint:'',busy:false,refreshing:false,closed:false,
+ entries:[],ratings:new Map(),resubmittingPhotoId:null,deletingPhotoId:null,filter:'all',timedPhotoTotals:new Map(),timedPhotoFingerprint:'',busy:false,refreshing:false,closed:false,
  images:new Map(),entryFingerprint:'',liveStarted:false,roomChannel:null,roomsChannel:null,liveRoomId:null,liveQueued:false,liveTimer:null,liveConnected:false,scopeMemberId:null,scopeValue:'full',scopeLoading:false,showArchive:false,paymentStatus:null,paymentAllocations:new Map()
 };
 const node=(tag,klass,content)=>{
@@ -393,9 +393,11 @@ function ratedPhotoData(e){
  const rating=state.ratings.get(e.id);
  return {
   id:e.id,stars:rating?.stars||0,rated_at:rating?.rated_at||null,
-  created_at:e.created_at,caption:e.caption||'',
+  created_at:e.created_at,caption:e.photo_removal_status?'':e.caption||'',
   amount_cents:e.amount_cents,
-  image_url:state.images.get(e.image_path)?.url||''
+  removed:e.photo_removal_status==='removed',
+  removal_status:e.photo_removal_status||null,
+  image_url:e.photo_removal_status?'':state.images.get(e.image_path)?.url||''
  };
 }
 function photoHistoryData(){
@@ -410,9 +412,10 @@ function photoHistoryData(){
   const attempts=copies.get(e.id)||[];
   const rejected=e.decision_status==='rejected'||attempts.some(x=>x.decision_status==='rejected');
   const pending=attempts.some(x=>x.decision_status==='pending');
-  const eligibleOriginal=!e.resubmission_origin_id&&e.decision_status==='accepted'&&
+  const eligibleOriginal=!e.photo_removal_status&&!e.resubmission_origin_id&&
+   e.decision_status==='accepted'&&
    cents(e.amount_cents)>=1n&&state.ratings.get(e.id)?.stars===5;
-  const resubmissionStatus=e.resubmission_origin_id?'resubmitted':
+  const resubmissionStatus=e.photo_removal_status?'removed':e.resubmission_origin_id?'resubmitted':
    rejected?'rejected':e.decision_status==='pending'?'original-pending':
    pending?'pending':state.ratings.get(e.id)?.stars!==5?'not-five-star':
    cents(e.amount_cents)<1n?'below-minimum':'ready';
@@ -425,7 +428,7 @@ function photoHistoryData(){
 }
 function fiveStarResubmissionData(){
  if(state.showArchive)return [];
- return photoHistoryData().filter(p=>!p.resubmission_origin_id&&p.stars===5)
+ return photoHistoryData().filter(p=>!p.removal_status&&!p.resubmission_origin_id&&p.stars===5)
   .sort((a,b)=>(b.resubmissionCount-a.resubmissionCount)||
    (Number(b.amount_cents||0)-Number(a.amount_cents||0)));
 }
@@ -466,15 +469,32 @@ async function loadEntries({force=false}={}){
   if((result.data||[]).length<250)break;
  }
  if(state.room?.id!==selectedRoom.id)return;
+ // A private server tombstone immediately blocks all future photo reads.
+ // This is checked on both parties' views, including ongoing Bunny deletion.
+ const removal=await db.rpc('corp_redline_photo_removal_status',{p_room_id:selectedRoom.id});
+ if(removal.error||removal.data?.ok!==true)
+  throw Error(fail(removal.error||removal.data?.reason||'Private photo removal status unavailable.'));
+ if(state.room?.id!==selectedRoom.id)return;
+ const removals=new Map((removal.data.photos||[]).filter(x=>validId(x.photo_id))
+  .map(x=>[x.photo_id,x.status]));
+ for(const e of all){
+  e.photo_removal_status=removals.get(e.id)||null;
+  if(e.photo_removal_status){
+   const previous=state.images.get(e.image_path);
+   if(previous?.object&&previous.url?.startsWith('blob:'))
+    try{URL.revokeObjectURL(previous.url)}catch(_){}
+   state.images.delete(e.image_path);
+  }
+ }
  const ratings=await loadPhotoRatings(all,selectedRoom.id);
  if(!ratings||state.room?.id!==selectedRoom.id)return;
  state.ratings=ratings;
  const ratingsSig=JSON.stringify([...ratings.values()].map(r=>[r.photo_id,r.stars,r.rated_at]).sort((a,b)=>a[0].localeCompare(b[0])));
- const signature=ratingsSig+'|'+String(state.showArchive)+'|'+JSON.stringify(all.map(e=>[e.id,e.amount_cents,e.auto_timer_session_id,e.resubmission_origin_id,e.decision_status,e.decided_at,e.priced_at,e.settled_at,e.caption]));
+ const signature=ratingsSig+'|'+String(state.showArchive)+'|'+JSON.stringify(all.map(e=>[e.id,e.amount_cents,e.auto_timer_session_id,e.resubmission_origin_id,e.decision_status,e.decided_at,e.priced_at,e.settled_at,e.photo_removal_status,e.caption]));
  state.entries=all;
  updateTotals();
- const needsSignedRefresh=all.some(e=>!state.images.has(e.image_path)
-   ||state.images.get(e.image_path).expires<Date.now());
+ const needsSignedRefresh=all.some(e=>!e.photo_removal_status&&
+  (!state.images.has(e.image_path)||state.images.get(e.image_path).expires<Date.now()));
  if(signature!==state.entryFingerprint||force||needsSignedRefresh){
   state.entryFingerprint=signature;
   await signImages(all);
@@ -492,7 +512,7 @@ function updateTotals(){
  let assigned=0n,paid=0n,owed=0n,pending=0;
  let rejected=0,complimentary=0;
  for(const e of state.entries){
-  if(e.decision_status==='rejected'){rejected++;continue}
+  if(e.decision_status==='rejected'||(e.photo_removal_status&&e.decision_status==='pending')){rejected++;continue}
   if(e.decision_status!=='accepted'||e.amount_cents===null){pending++;continue}
   const amount=cents(e.amount_cents);
   if(amount===0n)complimentary++;
@@ -536,7 +556,8 @@ function rememberImage(path,url,expires,object=false){
 }
 async function signImages(items){
  const now=Date.now();
- const needed=items.filter(e=>!state.images.has(e.image_path)||state.images.get(e.image_path).expires<now);
+ const needed=items.filter(e=>!e.photo_removal_status&&
+  (!state.images.has(e.image_path)||state.images.get(e.image_path).expires<now));
  const bunny=needed.filter(e=>isBunnyPath(e.image_path));
  const legacy=needed.filter(e=>!isBunnyPath(e.image_path));
  for(let i=0;i<bunny.length;i+=5){
@@ -572,6 +593,7 @@ function setFilter(name){
  renderEntries();
 }
 function entryState(e){
+ if(e.photo_removal_status)return 'removed';
  if(e.decision_status==='rejected')return 'rejected';
  if(e.decision_status!=='accepted')return 'pending';
  if(cents(e.amount_cents)===0n)return 'free';
@@ -630,7 +652,7 @@ function renderReviewQueue(){
  for(const stale of document.querySelectorAll('.rr-timer-selected-preview'))
   stale.hidden=true;
  const pending=state.entries
-  .filter(e=>entryState(e)==='pending')
+  .filter(e=>!e.photo_removal_status&&entryState(e)==='pending')
   .sort((a,b)=>new Date(a.created_at)-new Date(b.created_at)||a.id.localeCompare(b.id));
  show('reviewQueueCount',pending.length+' WAITING');
  const parent=$('reviewQueueCurrent');parent.replaceChildren();
@@ -638,10 +660,10 @@ function renderReviewQueue(){
   // A finished review queue is NOT an empty viewer. Keep the currently
   // selected reviewed photograph in the same one-photo viewport and keep
   // its authenticated controls to the right.
-  const selected=state.entries.find(e=>e.id===state.reviewSidebarPhotoId);
+  const selected=state.entries.find(e=>e.id===state.reviewSidebarPhotoId&&!e.photo_removal_status);
   const reviewed=selected&&selected.decision_status!=='pending'?selected:
-   state.entries.find(e=>e.decision_status==='accepted')||
-   state.entries.find(e=>e.decision_status==='rejected');
+   state.entries.find(e=>!e.photo_removal_status&&e.decision_status==='accepted')||
+   state.entries.find(e=>!e.photo_removal_status&&e.decision_status==='rejected');
   if(reviewed){
    parent.append(renderEntry(reviewed));
   }else{
@@ -658,7 +680,7 @@ function renderReviewQueue(){
  }
  const current=pending[0];
  const selected=state.reviewSidebarPhotoId?
-  state.entries.find(e=>e.id===state.reviewSidebarPhotoId):null;
+  state.entries.find(e=>e.id===state.reviewSidebarPhotoId&&!e.photo_removal_status):null;
  // If the owner just stopped a timer, keep that newly accepted photo on
  // screen with its final price. Do not silently switch to another photo.
  const timedSelection=selected?.decision_status==='accepted'&&
@@ -723,6 +745,34 @@ function renderEntry(e){
  const combinedPrice=baseCents+extraTimedCents;
  const card=node('article','photo-entry');
  card.dataset.redlinePhotoId=e.id;
+ if(e.photo_removal_status){
+  // Only a record marker survives. Never render the image, caption, filename
+  // or an old saved object URL once the owner has begun deletion.
+  card.classList.add('redline-photo-removed');
+  const placeholder=node('div','redline-photo-removed-placeholder');
+  placeholder.append(
+   node('strong','','PHOTO REMOVED FROM REDLINE'),
+   node('small','',e.photo_removal_status==='removed'
+    ?'Original media permanently removed from private storage.'
+    :'Photo access disabled. Server deletion must be retried.'));
+  const content=node('div','photo-entry-content');
+  content.append(node('h3','','PHOTO '+e.id.slice(0,8).toUpperCase()),
+   node('span','entry-badge removed',e.photo_removal_status==='removed'
+    ?'PERMANENTLY REMOVED':'REMOVAL PENDING'));
+  if(e.decision_status==='accepted'){
+   content.append(node('p','redline-removed-ledger-summary',
+    'Recorded ledger price '+dollars(e.amount_cents)+' · Financial history retained.'));
+  }else{
+   content.append(node('p','redline-removed-ledger-summary',
+    'No new bid can be placed on this removed photograph.'));
+  }
+  if(state.isOwner&&e.photo_removal_status!=='removed'){
+   content.append(button('RETRY SERVER DELETION',()=>void deletePhotoPermanently(e),
+    'redline-photo-delete-button'));
+  }
+  card.append(placeholder,content);
+  return card;
+ }
  const rating=state.ratings.get(e.id);
  const imageButton=button('',()=>{
   window.dispatchEvent(new CustomEvent('blackcell:redline:photo-selected',{detail:{photoId:e.id}}));
@@ -818,6 +868,8 @@ function renderEntry(e){
    document.querySelector('#redlineReceiverReviewStage')?.scrollIntoView({block:'nearest',behavior:'smooth'});
   },'redline-photo-timer-pick'));
  }
+ if(state.isOwner)ctrl.append(button('DELETE PHOTO PERMANENTLY',
+  ()=>void deletePhotoPermanently(e),'redline-photo-delete-button'));
  body.append(ctrl);card.append(body);return card;
 }
 // Moving on after reviewing a timed photo returns to the next pending entry.
@@ -830,7 +882,7 @@ window.addEventListener('blackcell:redline:photo-selected',event=>{
  const id=event.detail?.photoId;
  if(!state.isOwner||!id)return;
  const selected=state.entries.find(e=>e.id===id);
- if(!selected)return;
+ if(!selected||selected.photo_removal_status)return;
  state.reviewSidebarPhotoId=id;
  preparePhotoReviewLightbox(selected);
  void publishOwnerViewing(id);
@@ -940,16 +992,19 @@ function preparePhotoReviewLightbox(entry){
  const timedSignature=String(photoTimed?.timed_cents||0)+'/'+
   String(photoTimed?.credited_to_photo_cents||0)+'/'+String(photoTimed?.additional_timed_cents||0);
  const ratingSig=String(entry?state.ratings.get(entry.id)?.stars||0:0);
+ const removalSig=entry?.photo_removal_status||'none';
  if(panel.dataset.redlinePhotoId===(entry?.id||'none')&&
     panel.dataset.redlineDecision===(entry?.decision_status||'empty')&&
     panel.dataset.redlinePause===String(Boolean(state.room?.photo_sending_paused))&&
     panel.dataset.redlineTimed===timedSignature&&
-    panel.dataset.redlineRating===ratingSig&&!panel.hidden)return;
+    panel.dataset.redlineRating===ratingSig&&
+    panel.dataset.redlineRemoval===removalSig&&!panel.hidden)return;
  panel.dataset.redlinePhotoId=entry?.id||'none';
  panel.dataset.redlineDecision=entry?.decision_status||'empty';
  panel.dataset.redlinePause=String(Boolean(state.room?.photo_sending_paused));
  panel.dataset.redlineTimed=timedSignature;
  panel.dataset.redlineRating=ratingSig;
+ panel.dataset.redlineRemoval=removalSig;
  // Preserve the same authenticated timer node when refreshing the bid UI.
  const liveTimer=$('redlinePhotoTimerPanel');
  if(liveTimer?.parentNode===panel)liveTimer.remove();
@@ -990,6 +1045,10 @@ function preparePhotoReviewLightbox(entry){
       ?'Original bid '+dollars(entry.amount_cents)+' + timed earnings '+dollars(timed)
       :'Saved timer earnings '+dollars(timed)));
   }
+  if(entry&&!entry.photo_removal_status){
+   panel.append(button('DELETE PHOTO PERMANENTLY',
+    ()=>void deletePhotoPermanently(entry),'rr-permanent-delete-button'));
+  }
   restoreTimer();
   return;
  }
@@ -1005,6 +1064,8 @@ function preparePhotoReviewLightbox(entry){
  const reject=button('✕ REJECT PHOTO',()=>void decision('reject'),'button-outline reject-photo');
  controls.append(accept,zero,reject);
  panel.append(controls,node('p','redline-review-hint','Decisions are final. No actual payment is transferred.'));
+ panel.append(button('DELETE PHOTO PERMANENTLY',
+  ()=>void deletePhotoPermanently(entry),'rr-permanent-delete-button'));
  const statusLine=node('p','redline-review-status');
  statusLine.setAttribute('role','status');
  panel.append(statusLine);
@@ -1098,6 +1159,76 @@ async function rejectPhoto(entry,trigger){
   return true;
  }catch(e){show('entriesFeedback','Could not reject photo: '+fail(e));return false}
  finally{state.busy=false;trigger.disabled=false}
+}
+// Distinct from REJECT PHOTO: this server action irreversibly erases media
+// bytes while retaining the minimum financial/audit ledger record.
+async function confirmPermanentPhotoDeletion(entry){
+ const dialog=$('redlinePurgeConfirm');
+ if(!dialog||dialog.open)return false;
+ const input=$('redlinePurgeType'),approve=$('redlinePurgeSubmit'),cancel=$('redlinePurgeCancel');
+ const note=$('redlinePurgeWarning');
+ $('redlinePurgePhotoRef').textContent='PHOTO '+entry.id.slice(0,8).toUpperCase();
+ note.textContent=entry.photo_removal_status==='pending'
+  ?'REDLINE already blocked this photo. Retry to finish deleting its original file from the server. Prices and payment records will stay in the ledger; separately uploaded copies must be deleted individually.'
+  :entry.decision_status==='accepted'
+   ?'Permanently erase this photo from Bunny Storage. The previously recorded price '+dollars(entry.amount_cents)+' and payment history WILL REMAIN in the ledger. Already downloaded or separately uploaded copies cannot be recalled by deleting this file.'
+   :'Permanently erase the original photo from Bunny Storage and reject its pending review. This cannot be undone. Other independently uploaded copies are not affected; the sender will see a removed-photo record.';
+ input.value='';approve.disabled=true;dialog.returnValue='';
+ return await new Promise(resolve=>{
+  input.oninput=()=>{approve.disabled=input.value.trim()!=='DELETE'};
+  cancel.onclick=()=>dialog.close('cancel');
+  approve.onclick=()=>{if(input.value.trim()==='DELETE')dialog.close('delete')};
+  dialog.addEventListener('close',()=>{
+   input.oninput=null;cancel.onclick=null;approve.onclick=null;
+   resolve(dialog.returnValue==='delete');
+  },{once:true});
+  dialog.showModal();
+  input.focus();
+ });
+}
+async function deletePhotoPermanently(entry){
+ if(!state.isOwner||!state.room||state.closed||state.busy||
+    state.deletingPhotoId||!validId(entry?.id)||
+    entry.room_id!==state.room.id||entry.photo_removal_status==='removed')return false;
+ if(!await confirmPermanentPhotoDeletion(entry))return null;
+ const roomId=state.room.id,photoId=entry.id;
+ state.deletingPhotoId=photoId;state.busy=true;
+ try{
+  await verify();
+  if(state.room?.id!==roomId)throw Error('Private room changed. No deletion was authorized.');
+  // The Edge Function first marks a verified room tombstone to deny reads,
+  // then executes Bunny DELETE, then acknowledges the permanent purge.
+  const result=await deleteRedlinePhotoFile(db,roomId,photoId);
+  if(result.status!=='removed')throw Error('Server did not confirm permanent deletion.');
+  const cached=state.images.get(entry.image_path);
+  if(cached?.object&&cached.url?.startsWith('blob:'))
+   try{URL.revokeObjectURL(cached.url)}catch(_){}
+  state.images.delete(entry.image_path);
+  entry.photo_removal_status='removed';
+  if(entry.decision_status==='pending')entry.decision_status='rejected';
+  const existing=state.entries.find(e=>e.id===photoId);
+  if(existing&&existing!==entry){
+   existing.photo_removal_status='removed';
+   if(existing.decision_status==='pending')existing.decision_status='rejected';
+  }
+  state.reviewSidebarPhotoId=null;
+  if(!$('photoLightbox').hidden)closeLightbox();
+  state.entryFingerprint='';
+  renderEntries();renderReviewQueue();updateTotals();
+  window.dispatchEvent(new CustomEvent('blackcell:redline:photo-removed',{detail:{photoId,roomId}}));
+  try{await loadEntries({force:true})}
+  catch(_){/* Server confirmed purge; local client updates above stay visible. */}
+  show('entriesFeedback','PHOTO PERMANENTLY REMOVED FROM SERVER · Original media erased. REDLINE financial and audit records preserved.');
+  return true;
+ }catch(e){
+  // A partial failure leaves the server-side tombstone blocking further reads
+  // until a future RETRY SERVER DELETION completes the physical purge.
+  state.entryFingerprint='';
+  try{await loadEntries({force:true})}catch(_){}
+  show('entriesFeedback','Server deletion was not confirmed: '+fail(e)+
+   ' · If this photo says REMOVAL PENDING, select RETRY SERVER DELETION.');
+  return false;
+ }finally{state.busy=false;state.deletingPhotoId=null}
 }
 async function settle(entry){
  if(!state.isOwner||state.busy||entry.decision_status!=='accepted'||cents(entry.amount_cents)<=0n||entry.settled_at||
@@ -1635,7 +1766,7 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
    roomTitle:state.room.title,
    archiveMode:state.showArchive,
    resetAt:state.room.current_session_started_at||null,
-   pending:state.entries.filter(e=>e.decision_status==='pending').length,
+   pending:state.entries.filter(e=>e.decision_status==='pending'&&!e.photo_removal_status).length,
    owed:$('totalOwed').textContent,
    assigned:$('totalAssigned').textContent,
    paid:$('totalPaid').textContent,
@@ -1646,12 +1777,13 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
     settled_at:e.settled_at,decision_status:e.decision_status,
     amount_cents:e.amount_cents,
     resubmission_origin_id:e.resubmission_origin_id||null,
-    caption:e.caption||''
+    removal_status:e.photo_removal_status||null,
+    caption:e.photo_removal_status?'':e.caption||''
    })),
-   ratingEvents:state.entries.filter(e=>state.ratings.has(e.id))
+   ratingEvents:state.entries.filter(e=>!e.photo_removal_status&&state.ratings.has(e.id))
     .sort((a,b)=>Date.parse(state.ratings.get(b.id)?.rated_at||0)-Date.parse(state.ratings.get(a.id)?.rated_at||0))
     .slice(0,40).map(ratedPhotoData),
-   topPicks:state.entries.filter(e=>state.ratings.has(e.id))
+   topPicks:state.entries.filter(e=>!e.photo_removal_status&&state.ratings.has(e.id))
     .sort((a,b)=>
      (state.ratings.get(b.id)?.stars||0)-(state.ratings.get(a.id)?.stars||0)||
      Number(cents(a.amount_cents)<cents(b.amount_cents))-Number(cents(a.amount_cents)>cents(b.amount_cents))||

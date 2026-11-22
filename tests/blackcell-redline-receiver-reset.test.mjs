@@ -602,7 +602,8 @@ test('Receiver star ratings are private and sender chat shows rated photo and ra
  assert.match(ledger,/appendPhotoRatingControl\(panel,entry\)/);
  assert.match(ledger,/ratingEvents:state\.entries\.filter/);
  assert.match(ledger,/topPicks:state\.entries\.filter/);
- assert.match(ledger,/image_url:state\.images\.get\(e\.image_path\)/);
+ assert.match(ledger,/image_url:e\.photo_removal_status\?'':state\.images\.get\(e\.image_path\)/);
+ assert.match(ledger,/if\(e\.photo_removal_status\)/);
  assert.match(sender,/\.\.\.photoRatingEvents\(snap\)/);
  assert.match(sender,/if\(e\.kind==='rating'\)/);
  assert.match(sender,/★ TOP PICK · 5 STARS/);
