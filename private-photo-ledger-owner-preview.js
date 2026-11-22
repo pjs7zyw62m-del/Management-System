@@ -23,14 +23,14 @@
   dialog.setAttribute('aria-labelledby','redlinePreviewHeading');
   const top=make('header','bc-redline-preview-top');
   const topText=make('div','bc-redline-preview-top-text');
-  topText.append(make('span','bc-redline-preview-kicker','BLACKCELL REDLINE · OWNER VIEW'),make('h2','', 'Sender interface preview'));
+  topText.append(make('span','bc-redline-preview-kicker','BLACKCELL REDLINE · OWNER VIEW'),make('h2','', 'Sender Messenger Preview'));
   topText.querySelector('h2').id='redlinePreviewHeading';
   const close=make('button','bc-redline-preview-close','✕ Close');
   close.type='button';close.setAttribute('aria-label','Close sender preview');
   close.addEventListener('click',()=>dialog.close());
   top.append(topText,close);
   const controls=make('div','bc-redline-preview-controls');
-  const note=make('p','bc-redline-preview-notice','PREVIEW ONLY — No photos will be sent. This does not change which account may upload.');
+  const note=make('p','bc-redline-preview-notice','READ-ONLY OS PREVIEW · No photos, messages, payments or requests will be submitted.');
   const views=make('div','bc-redline-preview-devices');
   const phone=make('button','is-active','Phone');
   const tablet=make('button','','Tablet');
@@ -41,7 +41,7 @@
   const device=make('div','bc-redline-preview-phone');
   device.dataset.device='phone';
   const chrome=make('div','bc-redline-preview-chrome');
-  chrome.append(make('strong','','REDLINE'),make('span','','SECURE · 2 PERSONS'));
+  chrome.append(make('strong','','BLACKCELL REDLINE'),make('span','','SENDER · PRIVATE CHAT'));
   const main=make('div','bc-redline-preview-body');
   const identity=make('div','bc-redline-preview-identity');
   identity.append(make('span','','BLACKCELL / PRIVATE CHANNEL'));
@@ -74,14 +74,14 @@
   const fileName=make('small','','No file sent in this preview');
   fileArea.append(fileInput,camera,selectLabel,fileHelp,fileName);
   const thread=make('div','bc-redline-preview-thread');
-  thread.append(make('h4','','Private Chat'),make('small','','OWNER + SENDER · TWO-WAY MESSAGES'));
+  thread.append(make('h4','','Chadwick · Private Chat'),make('small','','● SECURE SESSION · TWO-WAY MESSAGES · PREVIEW ONLY'));
   thread.append(make('div','bc-redline-preview-bubble is-sender','I just posted a new photo.'));
   thread.append(make('div','bc-redline-preview-bubble is-owner','Got it. I’ll review it now.'));
   thread.append(make('div','bc-redline-preview-bubble is-sender','Thanks! Let me know what you think.'));
   thread.append(make('div','bc-redline-preview-receipt','✓✓ Read · Example only'),
    make('div','bc-redline-preview-typing','Sender is typing… · Example only'));
   const composerSample=make('div','bc-redline-preview-chat-input');
-  composerSample.append(make('span','','Write a reply…'),make('span','','SEND'));
+  composerSample.append(make('span','','＋  iMessage (REDLINE)…'),make('span','','➤'));
   thread.append(composerSample);
   upload.append(title,fileArea,thread);
   // Preview matches the approved three-section sender screen. All values
