@@ -102,9 +102,9 @@ test('all new RPCs restrict room membership, prohibit anonymous direct access',(
  assert.match(core,/async priceNegotiationAction\(photoId,action,amountCents=null\)/);
 });
 test('new popups and CSS load with updated cache versions',()=>{
- assert.match(html,/private-photo-ledger-consent-negotiation\.js\?v=20261122-owner-counter-to-sender2/);
- assert.match(html,/private-photo-ledger-consent-negotiation\.css\?v=20261122-negotiation2-custom1/);
- assert.match(html,/private-photo-ledger-timers\.js\?v=20261121-per-second1[^"']*consent-negotiation1/);
+ assert.match(html,/private-photo-ledger-consent-negotiation\.js\?v=20261122-sender-no-10sec-stop3/);
+ assert.match(html,/private-photo-ledger-consent-negotiation\.css\?v=20261122-sender-no-10sec-stop3/);
+ assert.match(html,/private-photo-ledger-timers\.js\?v=20261122-sender-no-10sec-stop3/);
  assert.match(html,/private-photo-ledger\.js\?v=20261122-redline-android-multisource1/);
 });
 
@@ -160,5 +160,5 @@ test('owner custom counteroffer waits for sender approval; reviewed photos stay 
  assert.match(ui,/reject_owner_offer/);
  assert.match(ui,/awaiting_sender_owner/);
  assert.match(styles,/#redlinePriceNegotiation\.redline-negotiation-ui/);
- assert.match(html,/private-photo-ledger\.js\?v=20261122-redline-android-multisource1-instant-timer1-sender-owner-counter2/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261122-sender-no-10sec-stop3/);
 });
