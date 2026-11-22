@@ -56,29 +56,32 @@ test('three counters max; receiver original wins on third rejection',()=>{
  assert.match(ui,/REJECT COUNTER/);
  assert.match(ui,/KEEP MY ORIGINAL PRICE/);
 });
-test('sender counteroffers ask for higher earnings, with exact cents and server-side enforcement',()=>{
- const upgrade=read('supabase/migrations/20261122150000_redline_sender_higher_counteroffers.sql');
- assert.match(upgrade,/p_amount_cents<=v_n.original_cents/);
- assert.match(upgrade,/counter_must_be_higher_than_original/);
+test('sender may counteroffer HIGHER or LOWER amounts with exact cents and room-owner approval',()=>{
+ const upgrade=read('supabase/migrations/20261122161000_redline_bidirectional_counteroffers.sql');
+ assert.match(upgrade,/p_amount_cents<0 OR p_amount_cents=v_n.original_cents/);
+ assert.match(upgrade,/counter_must_differ_from_original/);
  assert.match(upgrade,/v_n.offer_count>=3/);
  assert.match(upgrade,/v_user=v_room.member_id/);
  assert.match(upgrade,/v_user=v_room.owner_id/);
  assert.match(upgrade,/SET amount_cents=v_n.offer_cents/);
  assert.match(upgrade,/REVOKE ALL ON FUNCTION public.corp_redline_price_negotiation_act/);
- assert.doesNotMatch(upgrade,/counter_must_be_lower_than_original/);
+ assert.doesNotMatch(upgrade,/counter_must_be_(lower|higher)_than_original/);
  const a=ui.indexOf('function parseCounter(value,original){');
  const b=ui.indexOf('\nasync function actOnNegotiation(',a);
  assert.ok(a>=0&&b>a);
  const parse=runInNewContext('('+ui.slice(a,b).trim()+')');
  assert.equal(parse('1.01',100),101);
+ assert.equal(parse('0.99',100),99);
+ assert.equal(parse('0',100),0);
  assert.equal(parse('15',1000),1500);
+ assert.equal(parse('7.00',1000),700);
  assert.equal(parse('1,000.50',100000),100050);
- for(const bad of ['-0.01','0.99','1.00','1.999','abc','1e9','999999999999999999']){
+ for(const bad of ['-0.01','1.00','1.999','abc','1e9','999999999999999999']){
   assert.throws(()=>parse(bad,100),bad);
  }
- assert.match(ui,/ask for a higher amount/);
- assert.match(ui,/Your higher counteroffer amount/);
- assert.match(ui,/The sender requests a higher payment/);
+ assert.match(ui,/request a higher or lower amount/);
+ assert.match(ui,/Your counteroffer amount in dollars, higher or lower/);
+ assert.match(ui,/The sender proposes/);
 });
 
 test('all new RPCs restrict room membership, prohibit anonymous direct access',()=>{
