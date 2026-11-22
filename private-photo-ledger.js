@@ -1383,6 +1383,38 @@ async function drainRedlinePhotoQueue(){
   show('selectedPhotoName','Choose photos from your device or BLACKCELL Photos.');
  }
 }
+function redlineDevicePicker(){
+ let picker=$('redlineDevicePicker');
+ if(picker)return picker;
+ // A separate input attached to body is necessary on older Android Chrome:
+ // REDLINE's original form can live inside a collapsed <details> drawer.
+ picker=node('input');picker.id='redlineDevicePicker';picker.type='file';
+ picker.accept='image/jpeg,image/png,image/webp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.heic,.heif';
+ picker.multiple=true;picker.tabIndex=-1;
+ picker.setAttribute('aria-label','Choose multiple REDLINE photos from your device');
+ Object.assign(picker.style,{
+  position:'fixed',left:'-9999px',top:'0',width:'1px',height:'1px',
+  opacity:'0',pointerEvents:'none'
+ });
+ picker.addEventListener('change',()=>{
+  const files=Array.from(picker.files||[]);
+  picker.value='';
+  if(files.length)enqueueRedlineFiles(files.map(file=>({file,label:file.name})));
+ });
+ document.body.append(picker);
+ return picker;
+}
+function openRedlinePhonePicker(){
+ if(!redlinePhotoEligible()){
+  show('uploadFeedback','REDLINE photo sending is paused or this private room is unavailable.');
+  return;
+ }
+ const picker=redlineDevicePicker();
+ picker.value='';
+ try{picker.click()}catch(_){
+  show('uploadFeedback','Could not open Android Photos. Try the REDLINE + button again.');
+ }
+}
 let redlineSourceOverlay=null;
 function closeRedlinePhotoChooser(){
  if(!redlineSourceOverlay)return;
@@ -1407,10 +1439,8 @@ function openRedlinePhotoChooser(){
    'Choose photos from your phone or BLACKCELL Photos. All selected photos upload automatically to this private room.'));
   const device=button('＋  Upload from Phone',()=>{
    closeRedlinePhotoChooser();
-   const picker=$('uploadPhoto');
-   // Must happen synchronously in the tap event for Android 11 Chrome.
-   picker.disabled=false;picker.multiple=true;picker.value='';
-   try{picker.click()}catch(e){show('uploadFeedback','The phone photo picker could not open. Try again.')}
+   // Triggered directly within the Android user's tap (not after an await).
+   openRedlinePhonePicker();
   },'redline-source-device');
   device.id='redlineSourceDevice';
   const library=button('▣  BLACKCELL Photos',()=>{
@@ -1429,9 +1459,7 @@ function openRedlinePhotoChooser(){
       },
       onDeviceUpload:()=>{
        if(!redlinePhotoEligible()||state.room?.id!==roomId)return;
-       const picker=$('uploadPhoto');
-       picker.disabled=false;picker.multiple=true;picker.value='';
-       picker.click();
+       openRedlinePhonePicker();
       }
      });
     }catch(error){show('uploadFeedback','BLACKCELL Photos could not open: '+fail(error))}
