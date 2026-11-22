@@ -16,7 +16,7 @@ test('Android composer + exists and never submits or navigates',()=>{
  assert.match(plus,/type="button"/);
  assert.match(chat,/mediaToggle\.addEventListener\('click',event=>\{\s*event\.preventDefault\(\);\s*event\.stopPropagation\(\);\s*sharedMedia\.toggleMediaTray\(\)/);
  assert.match(chat,/bc-chat-android/);
- assert.match(chat,/corporate-chat-media\.js\?v=20261122-android-attachment-inpage1/);
+ assert.match(chat,/corporate-chat-media\.js\?v=20261122-contact-bootstrap2/);
  assert.match(html,/corporate-chat-compact-media\.css\?v=20261122-android-attachment-visibility1/);
  assert.match(html,/corporate-chat\.js\?v=20261122-android-session-preserve6/);
 });
