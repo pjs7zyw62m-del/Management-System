@@ -33,7 +33,7 @@ test('visible Retry Contacts fallback survives ESM startup failure and keeps aut
  assert.match(html,/id="chatStartupRecovery" class="chat-startup-recovery" role="status" hidden/);
  assert.match(html,/id="retryContacts"/);
  assert.match(html,/corporate-chat-inbox-watchdog\.js\?v=20261122-android11-retry1/);
- assert.match(html,/corporate-chat\.js\?v=20261122-android11-resume-caret9/);
+ assert.match(html,/corporate-chat\.js\?v=20261122-android-keyboard-return10/);
  assert.match(watchdog,/if\(typeof window\.BLACKCELL_CHAT_RETRY==='function'\)/);
  assert.match(watchdog,/location\.reload\(\)/);
  assert.doesNotMatch(watchdog,/auth\.signOut|localStorage\.clear|sessionStorage\.clear|corp_chat_messages/);
