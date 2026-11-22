@@ -161,12 +161,28 @@
   messagesPanel.append(sampleOutgoing,sampleIncoming,sampleCard);
   const sampleComposer=make('div','bc-redline-preview-sample-composer','Message REDLINE…    ·    Preview only');
   messagesPanel.append(sampleComposer);
-  section.append(upload,viewingPanel,earningsPanel,historyPanel,topPicksPanel);
+
+  const paydayPanel=make('section','bc-redline-preview-message bc-redline-preview-payday');
+  paydayPanel.hidden=true;
+  paydayPanel.append(make('h4','','Payday & Withdrawals'),
+    make('p','','PREVIEW ONLY - payday and withdrawal rules are not yet configured.'));
+  const paydayGrid=make('div','bc-redline-preview-payday-grid');
+  for(const [label,value] of [['Example payday','Every Friday'],['Next payday','Not configured'],['Example minimum','$25.00'],['Example maximum','$200.00']]){
+    const item=make('div','bc-redline-preview-payday-fact');
+    item.append(make('small','',label),make('strong','',value));
+    paydayGrid.append(item);
+  }
+  const paymentDates=make('div','bc-redline-preview-payment-dates');
+  paydayPanel.append(paydayGrid,make('h5','','RECORDED PAYMENT DATES'),paymentDates);
+  const request=make('button','bc-redline-preview-request','REQUEST WITHDRAWAL - PREVIEW ONLY');
+  request.type='button';request.disabled=true;
+  paydayPanel.append(request,make('small','','REDLINE does not transfer funds or enforce withdrawal limits.'));
+  section.append(upload,viewingPanel,earningsPanel,historyPanel,topPicksPanel,paydayPanel);
   const nav=make('nav','bc-redline-preview-nav');nav.setAttribute('aria-label','Preview sender navigation');
   const tabs=[
-    ['upload','Photos & Chat',upload],['viewing','Currently Viewing',viewingPanel],
-    ['earnings','Earnings',earningsPanel],['history','Photo History',historyPanel],
-    ['five-star','5-Star Photos',topPicksPanel]
+    ['upload','Messages',upload],['viewing','Viewing',viewingPanel],
+    ['earnings','Earnings',earningsPanel],['history','History',historyPanel],
+    ['five-star','5 Stars',topPicksPanel],['payday','Payday',paydayPanel]
   ];
   function selectTab(key){
     for(const [id,label,panel] of tabs){
