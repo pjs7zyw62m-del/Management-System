@@ -393,9 +393,11 @@ function ratedPhotoData(e){
  const rating=state.ratings.get(e.id);
  return {
   id:e.id,stars:rating?.stars||0,rated_at:rating?.rated_at||null,
-  created_at:e.created_at,caption:e.caption||'',
+  created_at:e.created_at,caption:e.photo_removal_status?'':e.caption||'',
   amount_cents:e.amount_cents,
-  image_url:state.images.get(e.image_path)?.url||''
+  removed:e.photo_removal_status==='removed',
+  removal_status:e.photo_removal_status||null,
+  image_url:e.photo_removal_status?'':state.images.get(e.image_path)?.url||''
  };
 }
 function photoHistoryData(){
@@ -410,9 +412,10 @@ function photoHistoryData(){
   const attempts=copies.get(e.id)||[];
   const rejected=e.decision_status==='rejected'||attempts.some(x=>x.decision_status==='rejected');
   const pending=attempts.some(x=>x.decision_status==='pending');
-  const eligibleOriginal=!e.resubmission_origin_id&&e.decision_status==='accepted'&&
+  const eligibleOriginal=!e.photo_removal_status&&!e.resubmission_origin_id&&
+   e.decision_status==='accepted'&&
    cents(e.amount_cents)>=1n&&state.ratings.get(e.id)?.stars===5;
-  const resubmissionStatus=e.resubmission_origin_id?'resubmitted':
+  const resubmissionStatus=e.photo_removal_status?'removed':e.resubmission_origin_id?'resubmitted':
    rejected?'rejected':e.decision_status==='pending'?'original-pending':
    pending?'pending':state.ratings.get(e.id)?.stars!==5?'not-five-star':
    cents(e.amount_cents)<1n?'below-minimum':'ready';
@@ -425,7 +428,7 @@ function photoHistoryData(){
 }
 function fiveStarResubmissionData(){
  if(state.showArchive)return [];
- return photoHistoryData().filter(p=>!p.resubmission_origin_id&&p.stars===5)
+ return photoHistoryData().filter(p=>!p.removal_status&&!p.resubmission_origin_id&&p.stars===5)
   .sort((a,b)=>(b.resubmissionCount-a.resubmissionCount)||
    (Number(b.amount_cents||0)-Number(a.amount_cents||0)));
 }
@@ -649,7 +652,7 @@ function renderReviewQueue(){
  for(const stale of document.querySelectorAll('.rr-timer-selected-preview'))
   stale.hidden=true;
  const pending=state.entries
-  .filter(e=>entryState(e)==='pending')
+  .filter(e=>!e.photo_removal_status&&entryState(e)==='pending')
   .sort((a,b)=>new Date(a.created_at)-new Date(b.created_at)||a.id.localeCompare(b.id));
  show('reviewQueueCount',pending.length+' WAITING');
  const parent=$('reviewQueueCurrent');parent.replaceChildren();
@@ -657,10 +660,10 @@ function renderReviewQueue(){
   // A finished review queue is NOT an empty viewer. Keep the currently
   // selected reviewed photograph in the same one-photo viewport and keep
   // its authenticated controls to the right.
-  const selected=state.entries.find(e=>e.id===state.reviewSidebarPhotoId);
+  const selected=state.entries.find(e=>e.id===state.reviewSidebarPhotoId&&!e.photo_removal_status);
   const reviewed=selected&&selected.decision_status!=='pending'?selected:
-   state.entries.find(e=>e.decision_status==='accepted')||
-   state.entries.find(e=>e.decision_status==='rejected');
+   state.entries.find(e=>!e.photo_removal_status&&e.decision_status==='accepted')||
+   state.entries.find(e=>!e.photo_removal_status&&e.decision_status==='rejected');
   if(reviewed){
    parent.append(renderEntry(reviewed));
   }else{
@@ -677,7 +680,7 @@ function renderReviewQueue(){
  }
  const current=pending[0];
  const selected=state.reviewSidebarPhotoId?
-  state.entries.find(e=>e.id===state.reviewSidebarPhotoId):null;
+  state.entries.find(e=>e.id===state.reviewSidebarPhotoId&&!e.photo_removal_status):null;
  // If the owner just stopped a timer, keep that newly accepted photo on
  // screen with its final price. Do not silently switch to another photo.
  const timedSelection=selected?.decision_status==='accepted'&&
@@ -849,7 +852,7 @@ window.addEventListener('blackcell:redline:photo-selected',event=>{
  const id=event.detail?.photoId;
  if(!state.isOwner||!id)return;
  const selected=state.entries.find(e=>e.id===id);
- if(!selected)return;
+ if(!selected||selected.photo_removal_status)return;
  state.reviewSidebarPhotoId=id;
  preparePhotoReviewLightbox(selected);
  void publishOwnerViewing(id);
@@ -1654,7 +1657,7 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
    roomTitle:state.room.title,
    archiveMode:state.showArchive,
    resetAt:state.room.current_session_started_at||null,
-   pending:state.entries.filter(e=>e.decision_status==='pending').length,
+   pending:state.entries.filter(e=>e.decision_status==='pending'&&!e.photo_removal_status).length,
    owed:$('totalOwed').textContent,
    assigned:$('totalAssigned').textContent,
    paid:$('totalPaid').textContent,
@@ -1665,12 +1668,13 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
     settled_at:e.settled_at,decision_status:e.decision_status,
     amount_cents:e.amount_cents,
     resubmission_origin_id:e.resubmission_origin_id||null,
-    caption:e.caption||''
+    removal_status:e.photo_removal_status||null,
+    caption:e.photo_removal_status?'':e.caption||''
    })),
-   ratingEvents:state.entries.filter(e=>state.ratings.has(e.id))
+   ratingEvents:state.entries.filter(e=>!e.photo_removal_status&&state.ratings.has(e.id))
     .sort((a,b)=>Date.parse(state.ratings.get(b.id)?.rated_at||0)-Date.parse(state.ratings.get(a.id)?.rated_at||0))
     .slice(0,40).map(ratedPhotoData),
-   topPicks:state.entries.filter(e=>state.ratings.has(e.id))
+   topPicks:state.entries.filter(e=>!e.photo_removal_status&&state.ratings.has(e.id))
     .sort((a,b)=>
      (state.ratings.get(b.id)?.stars||0)-(state.ratings.get(a.id)?.stars||0)||
      Number(cents(a.amount_cents)<cents(b.amount_cents))-Number(cents(a.amount_cents)>cents(b.amount_cents))||
