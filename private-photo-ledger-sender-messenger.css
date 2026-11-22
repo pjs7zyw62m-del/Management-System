@@ -1,6 +1,9 @@
 /* REDLINE sender chat: native-style conversation, real-time session strip.
  * Loaded after the legacy responsive rules so the composer stays visible. */
 body.redline-sender-messenger .redline-simple-home{max-width:860px}
+body.redline-chat-immersive #redlineSimpleSender[hidden]{display:none!important}
+body.redline-sender-messenger .redline-message-feed{scrollbar-width:none!important}
+body.redline-sender-messenger .redline-message-feed::-webkit-scrollbar{display:none!important}
 .redline-messenger-live-strip[hidden],.redline-messenger-quick[hidden]{display:none!important}
 body.redline-sender-messenger .redline-simple-tabs{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:4px!important}
 body.redline-sender-messenger .redline-simple-tab{min-width:0!important;overflow-wrap:break-word!important;
