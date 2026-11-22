@@ -3,7 +3,7 @@
 'use strict';
 if(window.top!==window.self||window.BLACKCELL_LIVE_UPDATE)return;
 // Track verified website visits once per visible browser tab, not per OS application.
-if(!/\\/login\\.html$/i.test(location.pathname)){
+if(!location.pathname.endsWith('/login.html')){
  const presenceScript=document.createElement('script');
  presenceScript.src='blackcell-site-presence.js?v=20261122-visit-return1';
  presenceScript.async=true;document.head.appendChild(presenceScript);
