@@ -745,6 +745,34 @@ function renderEntry(e){
  const combinedPrice=baseCents+extraTimedCents;
  const card=node('article','photo-entry');
  card.dataset.redlinePhotoId=e.id;
+ if(e.photo_removal_status){
+  // Only a record marker survives. Never render the image, caption, filename
+  // or an old saved object URL once the owner has begun deletion.
+  card.classList.add('redline-photo-removed');
+  const placeholder=node('div','redline-photo-removed-placeholder');
+  placeholder.append(
+   node('strong','','PHOTO REMOVED FROM REDLINE'),
+   node('small','',e.photo_removal_status==='removed'
+    ?'Original media permanently removed from private storage.'
+    :'Photo access disabled. Server deletion must be retried.'));
+  const content=node('div','photo-entry-content');
+  content.append(node('h3','','PHOTO '+e.id.slice(0,8).toUpperCase()),
+   node('span','entry-badge removed',e.photo_removal_status==='removed'
+    ?'PERMANENTLY REMOVED':'REMOVAL PENDING'));
+  if(e.decision_status==='accepted'){
+   content.append(node('p','redline-removed-ledger-summary',
+    'Recorded ledger price '+dollars(e.amount_cents)+' · Financial history retained.'));
+  }else{
+   content.append(node('p','redline-removed-ledger-summary',
+    'No new bid can be placed on this removed photograph.'));
+  }
+  if(state.isOwner&&e.photo_removal_status!=='removed'){
+   content.append(button('RETRY SERVER DELETION',()=>void deletePhotoPermanently(e),
+    'redline-photo-delete-button'));
+  }
+  card.append(placeholder,content);
+  return card;
+ }
  const rating=state.ratings.get(e.id);
  const imageButton=button('',()=>{
   window.dispatchEvent(new CustomEvent('blackcell:redline:photo-selected',{detail:{photoId:e.id}}));
@@ -840,6 +868,8 @@ function renderEntry(e){
    document.querySelector('#redlineReceiverReviewStage')?.scrollIntoView({block:'nearest',behavior:'smooth'});
   },'redline-photo-timer-pick'));
  }
+ if(state.isOwner)ctrl.append(button('DELETE PHOTO PERMANENTLY',
+  ()=>void deletePhotoPermanently(e),'redline-photo-delete-button'));
  body.append(ctrl);card.append(body);return card;
 }
 // Moving on after reviewing a timed photo returns to the next pending entry.
