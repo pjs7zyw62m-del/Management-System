@@ -5,7 +5,7 @@ if(window.top!==window.self||window.BLACKCELL_LIVE_UPDATE)return;
 // Track verified website visits once per visible browser tab, not per OS application.
 if(!location.pathname.endsWith('/login.html')){
  const presenceScript=document.createElement('script');
- presenceScript.src='blackcell-site-presence.js?v=20261122-visit-return1';
+ presenceScript.src='blackcell-site-presence.js?v=20261122-visit-return2';
  presenceScript.async=true;document.head.appendChild(presenceScript);
 }
 const testMode=document.currentScript?.dataset.test==='true'&&/\/site-update-test(?:-v2)?\.html$/.test(location.pathname), KEY='bc.live-update.v1';
