@@ -1169,10 +1169,10 @@ async function confirmPermanentPhotoDeletion(entry){
  const note=$('redlinePurgeWarning');
  $('redlinePurgePhotoRef').textContent='PHOTO '+entry.id.slice(0,8).toUpperCase();
  note.textContent=entry.photo_removal_status==='pending'
-  ?'REDLINE already blocked this photo. Retry to finish deleting its original file from the server. Prices and payment records will stay in the ledger.'
+  ?'REDLINE already blocked this photo. Retry to finish deleting its original file from the server. Prices and payment records will stay in the ledger; separately uploaded copies must be deleted individually.'
   :entry.decision_status==='accepted'
-   ?'Permanently erase this photo from Bunny Storage. The previously recorded price '+dollars(entry.amount_cents)+' and payment history WILL REMAIN in the ledger. No downloaded copies outside REDLINE can be recalled.'
-   :'Permanently erase the original photo from Bunny Storage and reject its pending review. This cannot be undone; the sender will see a removed-photo record.';
+   ?'Permanently erase this photo from Bunny Storage. The previously recorded price '+dollars(entry.amount_cents)+' and payment history WILL REMAIN in the ledger. Already downloaded or separately uploaded copies cannot be recalled by deleting this file.'
+   :'Permanently erase the original photo from Bunny Storage and reject its pending review. This cannot be undone. Other independently uploaded copies are not affected; the sender will see a removed-photo record.';
  input.value='';approve.disabled=true;dialog.returnValue='';
  return await new Promise(resolve=>{
   input.oninput=()=>{approve.disabled=input.value.trim()!=='DELETE'};
