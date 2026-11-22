@@ -48,7 +48,8 @@ test('Master Reset archives rather than deletes original photos, chat or financi
  assert.match(sql,/revoke all.*from anon/i);
  assert.match(sql,/archived_only',true/);
  assert.ok(!/\bDELETE\s+FROM\b|\bTRUNCATE\b|\bDROP\s+TABLE\b/i.test(sql));
- assert.match(ledger,/if\(r\.error\)\{\s*\/\/ The cleanup policy allows deleting an uploaded file only if no ledger entry references it\.\s*await db\.storage\.from\(BUCKET\)\.remove\(\[path\]\)/);
+ assert.match(ledger,/await cleanupUnpostedBunny\(db,room\.id,id\)/);
+ assert.doesNotMatch(ledger,/db\.storage\.from\(BUCKET\)\.remove\(/);
  assert.ok(!/db\.from\(ENTRIES\)\.delete/i.test(ledger));
 });
 test('Only the verified REDLINE owner can trigger resets with two confirmations',()=>{
@@ -96,7 +97,8 @@ test('REDLINE receiver resources are versioned and original form and security re
  assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-current-viewing1/);
  assert.match(ledger,/corporateAuthorize\(db,\{allowLedgerOnly:true\}\)/);
  assert.match(ledger,/const BUCKET='corp-private-photo-ledger'/);
- assert.match(ledger,/db\.storage\.from\(BUCKET\)\.upload/);
+ assert.match(ledger,/await uploadBunnyPhoto\(db,room\.id,state\.user\.id,id,file,info\.mime\)/);
+ assert.doesNotMatch(ledger,/db\.storage\.from\(BUCKET\)\.upload/);
  assert.match(ledger,/function renderReviewQueue\(/);
  assert.match(ledger,/async function assignAmount\(/);
  assert.match(ledger,/async function settle\(/);
