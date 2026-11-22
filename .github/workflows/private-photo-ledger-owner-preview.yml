@@ -7,6 +7,16 @@ on:
       - 'private-photo-ledger-owner-preview.css'
       - 'tests/private-photo-ledger-owner-preview.test.mjs'
       - '.github/workflows/private-photo-ledger-owner-preview.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'private-photo-ledger.html'
+      - 'private-photo-ledger-owner-preview.js'
+      - 'private-photo-ledger-owner-preview.css'
+      - 'blackcell-os.js'
+      - 'blackcell-os.html'
+      - 'tests/private-photo-ledger-owner-preview.test.mjs'
+      - '.github/workflows/private-photo-ledger-owner-preview.yml'
   workflow_dispatch:
 jobs:
   sender-preview:
