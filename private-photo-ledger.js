@@ -1290,7 +1290,7 @@ async function uploadPhoto(...args){
  try{return await bcLiveOriginal_uploadPhoto.apply(this,args)}finally{release?.()}
 }
 async function bcLiveOriginal_uploadPhoto(event){
- event.preventDefault();
+ event?.preventDefault?.();
  if(state.isOwner||state.busy||!state.room?.active)return;
  if(state.room.photo_sending_paused){
   $('uploadPhoto').value='';
@@ -1298,7 +1298,7 @@ async function bcLiveOriginal_uploadPhoto(event){
   return;
  }
  if(state.showArchive){show('uploadFeedback','Return to the current REDLINE session before uploading new photos.');return}
- const file=$('uploadPhoto').files?.[0];
+ const file=event?.detail?.file||$('uploadPhoto').files?.[0];
  if(!file){show('uploadFeedback','Choose a photo first.');return}
  if(file.size>MAX_IMAGE_BYTES||file.size===0){$('uploadPhoto').value='';show('uploadFeedback','Choose a non-empty image no larger than 12 MB. Select a different photo to try again.');return}
  let info;
@@ -1353,12 +1353,14 @@ async function bcLiveOriginal_uploadPhoto(event){
   state.entryFingerprint='';
   try{await loadEntries({force:true})}
   catch(refreshError){show('uploadFeedback','Photo saved privately, but the review list has not refreshed yet: '+fail(refreshError));}
+  return true;
  }catch(e){
   if(bunnyUploadAttempted&&!posted)
    try{await cleanupUnpostedBunny(db,room.id,id)}catch(_){}
   picker.value='';
   show('selectedPhotoName','Select a photo to try again.');
   show('uploadFeedback','Photo not sent: '+fail(e)+'. Choose a photo again to retry.');
+  return false;
  }
  finally{
   state.busy=false;btn.disabled=false;
@@ -1491,7 +1493,11 @@ function closeLightbox(){
 function wireEvents(){
  $('createRoomForm').addEventListener('submit',e=>void createRoom(e));
  $('uploadPhotoForm').addEventListener('submit',e=>void uploadPhoto(e));
- $('uploadPhoto').addEventListener('change',()=>show('selectedPhotoName',$('uploadPhoto').files?.[0]?.name||'No photo selected'));
+ $('uploadPhoto').addEventListener('change',()=>{
+  const files=Array.from($('uploadPhoto').files||[]);
+  $('uploadPhoto').value='';
+  if(files.length)enqueueRedlineFiles(files.map(file=>({file,label:file.name})));
+ });
  $('refreshLedger').addEventListener('click',()=>{state.entryFingerprint='';void refresh({force:true}).catch(e=>show('entriesFeedback','Refresh failed: '+fail(e)))});
  $('roomPicker').addEventListener('change',()=>{
   state.room=state.rooms.find(r=>r.id===$('roomPicker').value)||null;
@@ -1524,7 +1530,7 @@ function wireEvents(){
   if(!state.room.active)return;
   const panel=$('employeeUpload');
   panel.scrollIntoView({behavior:'smooth',block:'center'});
-  $('uploadPhoto').click();
+  openRedlinePhotoChooser();
  });
  $('closeLightbox').addEventListener('click',closeLightbox);
  $('photoLightbox').addEventListener('click',e=>{if(e.target===$('photoLightbox'))closeLightbox()});
