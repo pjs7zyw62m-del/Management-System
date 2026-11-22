@@ -39,6 +39,7 @@ const uuid=value=>typeof value==='string'&&/^[a-f0-9-]{36}$/i.test(value);
 const labelPhoto=id=>id?'Photo '+id.slice(0,8).toUpperCase():'No photo selected';
 let roomId=null,selectedId=null,latest=null,fetching=false,acting=false,refreshQueued=false;
 let lastStatusAt=0,lastHeartbeatAt=0,clockOffset=0,lastHistorySignature='';
+let senderCanStop=false,senderStopBusy=false,senderFeatureAt=0;
 const ownerPanel=make('details','rr-timer-panel');ownerPanel.id='redlinePhotoTimerPanel';
 ownerPanel.open=true;
 ownerPanel.setAttribute('aria-label','Selected photo timed earnings');
@@ -107,7 +108,10 @@ const senderAmount=make('strong','rr-timer-sender-amount','$0.00');
 senderAmountMetric.append(senderAmount);
 senderMetrics.append(senderTimeMetric,senderAmountMetric);
 const senderDetail=make('p','rr-timer-sender-detail','Amount increases every elapsed second.');
-senderPanel.append(senderHead,senderMetrics,senderDetail);
+const senderStop=btn('✕ DECLINE & STOP TIMER',()=>void senderDeclineStop(),'rr-timer-sender-stop');
+const senderStopStatus=make('p','rr-timer-sender-stop-status','');
+senderStopStatus.setAttribute('role','status');
+senderPanel.append(senderHead,senderMetrics,senderDetail,senderStop,senderStopStatus);
 senderPanel.hidden=true;
 const duration=seconds=>{
  const n=Math.max(0,Math.floor(seconds));
@@ -188,28 +192,11 @@ async function startTimer(){
  if(!s?.isOwner||!s.roomActive||s.archiveMode||!selectedId)return;
  let cents;
  try{cents=parseRate(rate.value)}catch(e){err(e);return}
- let requested=false;
  await callAction(async()=>{
-  await bridge().timerRequest(selectedId,cents);
-  requested=true;
- },'Sending the sender a 30-second consent request…');
- if(requested)note.textContent='REQUEST SENT · Three opportunities to decline. The timer is not charging yet.';
+  await bridge().timerStart(selectedId,cents);
+ },'Starting timed photo immediately…');
+ if(latest?.active?.running)note.textContent='TIMER STARTED · Sender acceptance is not required.';
 }
-// An explicit ACCEPT, or a previously enabled sender auto-accept preference
-// after 30 seconds, is required before the original server timer can start.
-let startingApprovedId=null;
-window.addEventListener('blackcell:redline:timer-consent-approved',event=>{
- const data=event.detail||{},s=snap();
- if(!s?.isOwner||s.roomId!==data.roomId||!uuid(data.id)||
-    startingApprovedId===data.id||acting||latest?.active?.running)return;
- startingApprovedId=data.id;
- void callAction(async()=>{
-  await bridge().timerStart(data.photoId,data.rateCents);
- },'Sender consent verified · Starting timed photo session…')
- .then(()=>{
-  if(latest?.active?.running)note.textContent='TIMER STARTED · Sender consent confirmed.';
- }).finally(()=>{startingApprovedId=null});
-});
 async function stopTimer(keepPhotoSelected=false){
  const id=latest?.active?.id;
  if(!id||!snap()?.isOwner)return;
@@ -232,6 +219,18 @@ async function stopTimer(keepPhotoSelected=false){
       (!keepPhotoSelected&&currentPhoto()!==committed.photo_id?' · NEXT PHOTO READY':'')
    :'Timer stopped · '+money(committed.earned_cents)+' saved as timed earnings for this photo.';
  }
+}
+async function senderDeclineStop(){
+ const s=snap(),id=latest?.active?.id;
+ if(!s||s.isOwner||s.archiveMode||!s.roomActive||!senderCanStop||!uuid(id)||senderStopBusy)return;
+ if(!window.confirm('Decline and stop this running photo timer now? The time already elapsed remains in REDLINE records.'))return;
+ senderStopBusy=true;senderStop.disabled=true;senderStopStatus.textContent='Stopping timer…';
+ try{
+  const result=await bridge().senderStopTimer(id);
+  senderStopStatus.textContent='Timer stopped · '+money(result.earned_cents)+' recorded for elapsed time.';
+  await refresh(true);
+ }catch(e){senderStopStatus.textContent='Could not stop timer: '+String(e?.message||e).slice(0,180)}
+ finally{senderStopBusy=false;render()}
 }
 async function markPaid(id){
  if(!uuid(id)||!snap()?.isOwner||acting)return;
@@ -280,6 +279,14 @@ function render(){
  const recentStop=Boolean(stopped&&Number.isFinite(stoppedAt)&&
   nowMs>=stoppedAt&&nowMs-stoppedAt<600000);
  senderPanel.hidden=true;
+ const canSenderStop=Boolean(!s.isOwner&&!s.archiveMode&&running&&senderCanStop);
+ senderStop.hidden=!canSenderStop;
+ senderStop.disabled=senderStopBusy;
+ const senderChat=document.querySelector('#redlineSimpleSender .redline-message-card');
+ const pinned=senderChat?.querySelector('.redline-chat-timer-slot');
+ if(pinned&&canSenderStop){
+  if(senderStop.parentNode!==pinned)pinned.append(senderStop,senderStopStatus);
+ }else if(senderStop.parentNode!==senderPanel)senderPanel.append(senderStop,senderStopStatus);
  if(!senderPanel.hidden){
   const session=active||stopped;
   const startMs=Date.parse(session.started_at);
@@ -345,7 +352,7 @@ async function refresh(force=false){
  if(s.roomId!==roomId){
   const oldTimer=latest?.active?.running&&snap()?.isOwner?latest.active.id:null;
   if(oldTimer)void bridge()?.timerStop?.(oldTimer).catch(()=>{});
-  roomId=s.roomId;selectedId=null;latest=null;lastHeartbeatAt=0;lastStatusAt=0;lastHistorySignature='';
+  roomId=s.roomId;selectedId=null;latest=null;lastHeartbeatAt=0;lastStatusAt=0;lastHistorySignature='';senderCanStop=false;senderFeatureAt=0;senderStopStatus.textContent='';
   selectIncoming();
  }
  mount(s);
@@ -372,6 +379,13 @@ async function refresh(force=false){
    }));
   }
   clockOffset=new Date(latest.server_now).getTime()-Date.now();
+  if(!s.isOwner&&latest.active?.running&&Date.now()-senderFeatureAt>=12000&&bridge()?.roomFeatureStatus){
+   senderFeatureAt=Date.now();
+   try{
+    const features=await bridge().roomFeatureStatus(roomId);
+    if(snap()?.roomId===roomId)senderCanStop=features.sender_can_stop_timer===true;
+   }catch(_){senderCanStop=false}
+  }else if(!latest.active?.running)senderCanStop=false;
   if(latest.active?.running&&s.isOwner)selectedId=latest.active.photo_id;
   if(!selectedId)selectedId=currentPhoto()||s.entries?.find(e=>e.decision_status==='accepted')?.id||null;
  }catch(e){err(e)}
