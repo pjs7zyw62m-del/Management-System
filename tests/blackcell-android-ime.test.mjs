@@ -1,36 +1,54 @@
-/* Android text direction / composition behavior: no mirrored input or IME reversal. */
+/* BLACKCELL iMessage Android editor regression.
+ * REDLINE works with a plain LTR composer; test the same editing baseline
+ * even when an Android browser inherits a right-to-left page direction.
+ * This browser emulation does not replace testing on a physical Gboard device.
+ */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createServer} from 'node:http';
 import {spawn} from 'node:child_process';
+
 const html=readFileSync('corporate-chat.html','utf8');
 const css=readFileSync('corporate-chat-obsidian.css','utf8');
 const label=readFileSync('blackcell-os-device-label.js','utf8');
+const redline=readFileSync('private-photo-ledger-simple-sender.js','utf8');
 const input=html.match(/<textarea id="messageInput"[^>]*><\/textarea>/)?.[0];
-test('iMessage text direction is automatic; no forced RTL or reversed letters',()=>{
+
+test('iMessage uses REDLINE-like LTR editing, without plaintext bidi override',()=>{
  assert.ok(input,'Existing authenticated message composer must still be present');
- assert.match(input,/\sdir="auto"/);
+ assert.match(input,/\sdir="ltr"/);
  assert.match(input,/\sinputmode="text"/);
  assert.match(input,/\senterkeyhint="send"/);
- assert.match(css,/#messageInput\{/);
- assert.match(css,/unicode-bidi:plaintext!important/);
- assert.match(css,/writing-mode:horizontal-tb!important/);
+ assert.match(css,/body\.bc-chat \.composer \.composer-input-wrap #messageInput\{/);
+ assert.match(css,/direction:ltr!important/);
+ assert.match(css,/unicode-bidi:normal!important/);
+ assert.match(css,/text-align:left!important/);
+ assert.doesNotMatch(css,/unicode-bidi:plaintext!important/);
+ assert.doesNotMatch(input,/\sdir="auto"/);
+ assert.match(html,/corporate-chat-obsidian\.css\?v=20261122-android-ime-ltr2/);
+ assert.match(redline,/make\('textarea','redline-message-entry'\)/);
  assert.match(label,/bc-os-android/);
 });
-test('Android Chromium: English follows LTR and Arabic follows RTL without changing values',async()=>{
+
+test('Android Chrome editor keeps normal English order, cursor position, and LTR alignment',async()=>{
  const fixture=[
-  '<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1">',
+  '<!doctype html><html lang="en" dir="rtl"><head><meta name="viewport" content="width=device-width,initial-scale=1">',
   '<style>',css,'</style></head><body class="bc-chat"><form class="composer"><div class="composer-input-wrap">',
   input,'</div></form><script>',
-  "const box=document.getElementById('messageInput');box.disabled=false;",
-  "function measure(value){box.value=value;box.dispatchEvent(new Event('input',{bubbles:true}));",
-  "return {value:box.value,direction:getComputedStyle(box).direction,mode:getComputedStyle(box).writingMode};}",
-  "const english=measure('Hello Android');const arabic=measure('مرحبا بك');",
-  "document.body.dataset.english=String(english.value==='Hello Android'&&english.direction==='ltr');",
-  "document.body.dataset.arabic=String(arabic.value==='مرحبا بك'&&arabic.direction==='rtl');",
-  "document.body.dataset.horizontal=String(english.mode==='horizontal-tb');",
-  "</script></body></html>"
+  "const box=document.getElementById('messageInput');box.disabled=false;box.focus();",
+  "const start={dir:getComputedStyle(box).direction,align:getComputedStyle(box).textAlign,bidi:getComputedStyle(box).unicodeBidi};",
+  "for(const char of 'hello android'){box.setRangeText(char,box.selectionStart,box.selectionEnd,'end');box.dispatchEvent(new Event('input',{bubbles:true}));}",
+  "const typed={value:box.value,caret:box.selectionStart,end:box.selectionEnd,dir:getComputedStyle(box).direction,align:getComputedStyle(box).textAlign};",
+  "box.value='';box.setSelectionRange(0,0);",
+  "box.dispatchEvent(new CompositionEvent('compositionstart',{data:''}));",
+  "box.setRangeText('hi there',box.selectionStart,box.selectionEnd,'end');",
+  "box.dispatchEvent(new CompositionEvent('compositionend',{data:'hi there'}));",
+  "const composed={value:box.value,caret:box.selectionStart};",
+  "document.body.dataset.androidLtr=String(start.dir==='ltr'&&typed.dir==='ltr'&&start.align==='left'&&typed.align==='left'&&start.bidi==='normal');",
+  "document.body.dataset.androidOrder=String(typed.value==='hello android'&&typed.caret===13&&typed.end===13);",
+  "document.body.dataset.androidComposition=String(composed.value==='hi there'&&composed.caret===8);",
+  '</script></body></html>'
  ].join('');
  const server=createServer((req,res)=>{
   res.writeHead(200,{'content-type':'text/html; charset=utf-8'});
@@ -41,20 +59,22 @@ test('Android Chromium: English follows LTR and Arabic follows RTL without chang
   const url='http://127.0.0.1:'+server.address().port+'/';
   const child=spawn(process.env.CHROME||'chromium',[
    '--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage',
-   '--virtual-time-budget=1200','--window-size=390,844',
+   '--virtual-time-budget=1500','--window-size=390,844',
    '--user-agent=Mozilla/5.0 (Linux; Android 15; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Mobile Safari/537.36',
    '--dump-dom',url
   ]);
-  let out='',err='';
-  child.stdout.on('data',data=>out+=data);
-  child.stderr.on('data',data=>err+=data);
+  let output='',errors='';
+  child.stdout.on('data',d=>{output+=d.toString()});
+  child.stderr.on('data',d=>{errors+=d.toString()});
   const exit=await new Promise(resolve=>{
-   const watchdog=setTimeout(()=>{child.kill('SIGKILL');resolve(124)},20000);
-   child.once('exit',code=>{clearTimeout(watchdog);resolve(code??1)});
-   child.once('error',()=>{clearTimeout(watchdog);resolve(1)});
+   const kill=setTimeout(()=>{child.kill('SIGKILL');resolve(124)},20000);
+   child.once('exit',code=>{clearTimeout(kill);resolve(code??1)});
+   child.once('error',()=>{clearTimeout(kill);resolve(1)});
   });
-  assert.equal(exit,0,'Chromium exited unexpectedly: '+err.slice(-500));
-  for(const signal of ['english','arabic','horizontal'])
-   assert.match(out,new RegExp('data-'+signal+'="true"'),'Android '+signal+' input should not be reversed');
+  assert.equal(exit,0,'Chromium failed: '+errors.slice(-900));
+  for(const flag of ['android-ltr','android-order','android-composition']){
+   assert.match(output,new RegExp('data-'+flag+'="true"'),
+    'Android iMessage input failed: '+flag);
+  }
  }finally{await new Promise(resolve=>server.close(resolve))}
 });
