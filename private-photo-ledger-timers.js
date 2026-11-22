@@ -38,7 +38,7 @@ const parseRate=value=>{
 const uuid=value=>typeof value==='string'&&/^[a-f0-9-]{36}$/i.test(value);
 const labelPhoto=id=>id?'Photo '+id.slice(0,8).toUpperCase():'No photo selected';
 let roomId=null,selectedId=null,latest=null,fetching=false,acting=false,refreshQueued=false;
-let lastStatusAt=0,lastHeartbeatAt=0,clockOffset=0,lastHistorySignature='';
+let lastStatusAt=0,lastHeartbeatAt=0,clockOffset=0,lastHistorySignature='',lastAdvancedTimerId=null;
 let senderCanStop=false,senderStopBusy=false,senderFeatureAt=0;
 const ownerPanel=make('details','rr-timer-panel');ownerPanel.id='redlinePhotoTimerPanel';
 ownerPanel.open=true;
@@ -263,7 +263,11 @@ async function requestStopWithVeto(){
  let result=null;
  await callAction(async()=>{
   result=await bridge().timerStopRequest(id);
-  if(result?.status==='stopped')selectedId=currentPhoto();
+  if(result?.status==='stopped'){
+   // Bridge has already reconciled the finished photograph and rendered the next.
+   lastAdvancedTimerId=id;
+   selectedId=currentPhoto();
+  }
  },'Requesting to stop timer…');
  if(!result?.ok)return;
  if(result.status==='pending'){
@@ -438,7 +442,7 @@ async function refresh(force=false){
  if(s.roomId!==roomId){
   const oldTimer=latest?.active?.running&&snap()?.isOwner?latest.active.id:null;
   if(oldTimer)void bridge()?.timerStop?.(oldTimer).catch(()=>{});
-  roomId=s.roomId;selectedId=null;latest=null;lastHeartbeatAt=0;lastStatusAt=0;lastHistorySignature='';senderCanStop=false;senderFeatureAt=0;senderStopStatus.textContent='';
+  roomId=s.roomId;selectedId=null;latest=null;lastHeartbeatAt=0;lastStatusAt=0;lastHistorySignature='';lastAdvancedTimerId=null;senderCanStop=false;senderFeatureAt=0;senderStopStatus.textContent='';
   selectIncoming();
  }
  mount(s);
@@ -456,12 +460,19 @@ async function refresh(force=false){
  if(!force&&Date.now()-lastStatusAt<pollMs)return;
  fetching=true;lastStatusAt=Date.now();
  try{
-  const previousRunning=latest?.active?.running===true;
+  const previousActive=latest?.active?.running?latest.active:null;
   latest=await bridge().timerStatus(roomId);
-  if(previousRunning&&!latest?.active?.running){
-   void bridge()?.refreshTimerPhoto?.();
-   selectedId=currentPhoto();
-   note.textContent='STOP CONFIRMED · Final timed earnings recorded on the photo.';
+  if(previousActive&&!latest?.active?.running&&s.isOwner&&
+     lastAdvancedTimerId!==previousActive.id){
+   // Expiry of the 10-second response window is finalized by the status
+   // RPC. It must also update the owner queue, just like the third STOP.
+   const completed=latest?.recent?.find(x=>x.id===previousActive.id);
+   if(completed){
+    lastAdvancedTimerId=previousActive.id;
+    await bridge()?.refreshTimerPhoto?.(completed,previousActive.id);
+    selectedId=currentPhoto();
+    note.textContent='STOP CONFIRMED · Final price saved · Next pending photo ready.';
+   }
   }
   // One authenticated status snapshot feeds the sender chat and the
   // original photograph's final timed-price display without extra RPCs.
