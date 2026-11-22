@@ -1873,9 +1873,9 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
   if(result.error||result.data?.ok!==true)
    throw Error(fail(result.error||result.data?.reason||'Timer stop request failed.'));
   if(result.data.status==='stopped'){
-   state.entryFingerprint='';
-   try{await loadEntries({force:true})}catch(_){}
-   window.dispatchEvent(new Event('blackcell:redline:state'));
+   // Third STOP (or a 10-second timeout) must follow the exact same
+   // finished-photo/next-photo path as the original immediate STOP.
+   await window.BLACKCELL_REDLINE_API.refreshTimerPhoto(result.data,sessionId);
   }
   return result.data;
  },
@@ -1890,10 +1890,42 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
    throw Error(fail(result.error||result.data?.reason||'Stop response failed.'));
   return result.data;
  },
- async refreshTimerPhoto(){
+ async refreshTimerPhoto(completed=null,sessionId=null){
   if(state.closed||!state.user||!state.room?.active||state.showArchive)return false;
+  const roomId=state.room.id,owner=state.isOwner;
+  const finishedId=completed?.photo_id;
+  if(owner&&validId(finishedId)){
+   // Never keep the stopped photo pinned over the NEXT pending submission.
+   // Make the server-authoritative completion visible before awaiting a
+   // potentially slow/failed Android data refresh.
+   const photo=state.entries.find(e=>e.id===finishedId);
+   if(photo&&photo.decision_status==='pending'&&Number(completed.earned_cents)>0){
+    const decided=new Date().toISOString();
+    Object.assign(photo,{
+     amount_cents:completed.earned_cents,decision_status:'accepted',
+     auto_timer_session_id:validId(sessionId)?sessionId:photo.auto_timer_session_id,
+     priced_at:decided,decided_at:decided
+    });
+   }
+   state.reviewSidebarPhotoId=null;
+   renderReviewQueue();
+   renderEntries();
+   updateTotals();
+   const next=document.querySelector('#reviewQueueCurrent .photo-entry[data-redline-photo-id]');
+   const nextId=next?.dataset.redlinePhotoId||null;
+   show('reviewQueueFeedback',nextId&&nextId!==finishedId
+    ?'Timer completed · '+dollars(completed.earned_cents)+' recorded · Next pending photo ready.'
+    :'Timer completed · '+dollars(completed.earned_cents)+' recorded · Waiting for next pending photo.');
+  }
   state.entryFingerprint='';
-  try{await loadEntries({force:true});return true}catch(_){return false}
+  try{
+   await loadEntries({force:true});
+   return state.room?.id===roomId;
+  }catch(e){
+   if(owner&&validId(finishedId))show('entriesFeedback',
+    'Timer completed; next photo selected. Background refresh unavailable: '+fail(e));
+   return false;
+  }
  },
  async senderStopTimer(sessionId){
   if(state.closed||state.isOwner||state.showArchive||!state.room?.active||!validId(sessionId))
