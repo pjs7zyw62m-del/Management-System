@@ -67,6 +67,6 @@ test('Employee access portal preserves token on temporary errors, expires revoke
  assert.match(employee,/window\.addEventListener\('online'/);
  assert.match(employee,/async function expireSession\(\)/);
  assert.match(employee,/await client\.auth\.signOut\(\{scope:'local'\}\)/);
- assert.match(chatHtml,/corporate-chat\.js\?v=20261122-android11-resume-caret9/);
+ assert.match(chatHtml,/corporate-chat\.js\?v=20261122-android-keyboard-return10/);
  assert.match(employeeHtml,/employee\.js\?v=20261122-android-session-preserve1/);
 });
