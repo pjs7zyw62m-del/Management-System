@@ -217,6 +217,14 @@ function parseCounter(value,original){
  if(cents>BigInt(Number.MAX_SAFE_INTEGER))throw Error('Amount is too large.');
  return Number(cents);
 }
+function parseFinalAmount(value){
+ const clean=String(value||'').trim().replace(/[$,]/g,'');
+ if(!/^\d+(?:\.\d{1,2})?$/.test(clean))throw Error('Enter a valid price in dollars, such as 12.50.');
+ const [whole,decimal='']=clean.split('.');
+ const cents=BigInt(whole)*100n+BigInt(decimal.padEnd(2,'0'));
+ if(cents>BigInt(Number.MAX_SAFE_INTEGER))throw Error('Amount is too large.');
+ return Number(cents);
+}
 async function actOnNegotiation(photoId,action,amount=null){
  if(negotiationActionBusy)return;
  negotiationActionBusy=true;
@@ -234,42 +242,86 @@ function renderNegotiation(offer){
  const s=snap(),key=offer.photo_id+':'+offer.status+':'+offer.offer_count;
  if(negotiatingShownKey===key&&negotiateDlg.open)return;
  negotiatingShownKey=key;
+ negotiateDlg.classList.add('redline-negotiation-ui');
  negotiateDlg.replaceChildren();
- const header=make('div','redline-consent-heading');
- header.append(make('h2','','PRICE NEGOTIATION'),
-  make('span','redline-consent-counter',offer.offer_count+'/3 COUNTEROFFERS'));
- negotiateDlg.append(header);
- photoPreview(negotiateDlg,offer.photo_id);
- negotiateDlg.append(make('p','redline-consent-warning',
-  'RECEIVER ORIGINAL PRICE · '+cash(offer.original_cents)));
- const actions=make('div','redline-consent-actions');
- if(!s.isOwner){
-  negotiateDlg.append(make('p','redline-consent-muted',
-   'You may accept the receiver’s original price or request a higher or lower amount. '+
-   'The receiver may accept or reject your request. After the third rejected offer, '+
-   'their original price is final.'));
-  const input=make('input','redline-consent-amount');input.inputMode='decimal';
-  input.placeholder='Offer more or less (e.g. 7.00 or 15.00)';
-  input.setAttribute('aria-label','Your counteroffer amount in dollars, higher or lower');
-  input.addEventListener('input',()=>{if(input.value.startsWith('.'))input.value='0'+input.value;});
-  negotiateDlg.append(input);
-  actions.append(action('ACCEPT ORIGINAL PRICE',()=>void actOnNegotiation(offer.photo_id,'accept_original'),'redline-consent-yes'),
-   action('SEND COUNTEROFFER',()=>{
-    try{void actOnNegotiation(offer.photo_id,'counter',parseCounter(input.value,offer.original_cents))}
-    catch(e){const el=$('.redline-negotiation-feedback',negotiateDlg);if(el)el.textContent=safeError(e)}
-   },'redline-consent-no'));
- }else{
-  negotiateDlg.append(make('p','redline-consent-muted',
-   'The sender proposes '+cash(offer.offer_cents)+
-   '. You can accept it, reject it, or finish at your original price.'));
-  actions.append(action('ACCEPT '+cash(offer.offer_cents),
-    ()=>void actOnNegotiation(offer.photo_id,'accept_counter'),'redline-consent-yes'),
-   action(offer.offer_count>=3?'REJECT · YOUR PRICE FINAL':'REJECT COUNTER',
-    ()=>void actOnNegotiation(offer.photo_id,'reject_counter'),'redline-consent-no'),
-   action('KEEP MY ORIGINAL PRICE',
-    ()=>void actOnNegotiation(offer.photo_id,'finalize_original'),'redline-consent-neutral'));
+ const heading=make('div','redline-negotiation-heading');
+ const brand=make('div','redline-negotiation-brand');
+ brand.append(make('small','','BLACKCELL / PRIVATE AGREEMENT'),
+  make('h2','','PRICE NEGOTIATION'));
+ heading.append(brand,make('span','redline-negotiation-progress',
+  offer.offer_count+' OF 3 · COUNTEROFFERS'));
+ negotiateDlg.append(heading);
+ const comparison=make('div','redline-negotiation-prices');
+ const priceCard=(label,amount,cls)=>{
+  const card=make('div','redline-negotiation-price '+cls);
+  card.append(make('span','',label),make('strong','',cash(amount)));
+  return card;
+ };
+ comparison.append(priceCard('YOUR ORIGINAL PRICE',offer.original_cents,'is-original'));
+ if(offer.status==='awaiting_owner'){
+  comparison.append(priceCard('SENDER COUNTEROFFER',offer.offer_cents,'is-proposed'));
  }
- negotiateDlg.append(actions,make('p','redline-negotiation-feedback redline-consent-feedback'));
+ negotiateDlg.append(comparison);
+ if(signedPhoto(offer.photo_id)){
+  const visual=make('div','redline-negotiation-photo');
+  photoPreview(visual,offer.photo_id);
+  negotiateDlg.append(visual);
+ }
+ const actions=make('div','redline-negotiation-actions redline-consent-actions');
+ if(!s.isOwner){
+  negotiateDlg.append(make('p','redline-negotiation-explain',
+   'Accept the original amount, or propose any higher or lower price. '+
+   'The receiver makes the final decision. Up to three counteroffers are permitted.'));
+  const field=make('label','redline-negotiation-field');
+  field.append(make('span','','YOUR COUNTEROFFER · USD'));
+  const input=make('input','redline-consent-amount');
+  input.type='text';input.inputMode='decimal';input.autocomplete='off';
+  input.placeholder='Enter your proposed price';
+  input.setAttribute('aria-label','Your counteroffer amount in dollars, higher or lower');
+  field.append(input);negotiateDlg.append(field);
+  actions.append(action('SEND COUNTEROFFER',()=>{
+   try{void actOnNegotiation(offer.photo_id,'counter',parseCounter(input.value,offer.original_cents))}
+   catch(e){const el=$('.redline-negotiation-feedback',negotiateDlg);if(el)el.textContent=safeError(e)}
+  },'redline-negotiation-primary'),
+  action('ACCEPT ORIGINAL PRICE',()=>void actOnNegotiation(offer.photo_id,'accept_original'),
+   'redline-negotiation-secondary'));
+ }else{
+  negotiateDlg.append(make('p','redline-negotiation-explain',
+   'Accept the sender’s amount, keep your original price, or choose a new final amount yourself. '+
+   'The photo’s review decision stays unchanged.'));
+  actions.append(action('ACCEPT '+cash(offer.offer_cents),
+   ()=>void actOnNegotiation(offer.photo_id,'accept_counter'),'redline-negotiation-primary'),
+   action('KEEP MY ORIGINAL PRICE',()=>void actOnNegotiation(offer.photo_id,'finalize_original'),
+   'redline-negotiation-secondary'),
+   action(offer.offer_count>=3?'REJECT · YOUR PRICE FINAL':'REJECT COUNTER',
+   ()=>void actOnNegotiation(offer.photo_id,'reject_counter'),'redline-negotiation-tertiary'));
+ }
+ negotiateDlg.append(actions);
+ if(s.isOwner){
+  const editor=make('div','redline-negotiation-custom');
+  editor.append(make('h3','','SET YOUR OWN FINAL PRICE'));
+  editor.append(make('p','',
+   'Changed your mind? Enter the amount you want to award. This becomes the final photo price.'));
+  const row=make('div','redline-negotiation-custom-row');
+  const input=make('input','redline-consent-amount');
+  input.type='text';input.inputMode='decimal';input.autocomplete='off';
+  input.placeholder='Custom amount · USD';
+  input.setAttribute('aria-label','Your custom final price in US dollars');
+  input.addEventListener('keydown',event=>{
+   if(event.key==='Enter'){
+    event.preventDefault();
+    try{void actOnNegotiation(offer.photo_id,'set_owner_price',parseFinalAmount(input.value))}
+    catch(e){const el=$('.redline-negotiation-feedback',negotiateDlg);if(el)el.textContent=safeError(e)}
+   }
+  });
+  const save=action('CONFIRM CUSTOM PRICE',()=>{
+   try{void actOnNegotiation(offer.photo_id,'set_owner_price',parseFinalAmount(input.value))}
+   catch(e){const el=$('.redline-negotiation-feedback',negotiateDlg);if(el)el.textContent=safeError(e)}
+  },'redline-negotiation-primary');
+  row.append(input,save);editor.append(row);negotiateDlg.append(editor);
+ }
+ const feedback=make('p','redline-negotiation-feedback redline-consent-feedback');
+ feedback.setAttribute('role','status');negotiateDlg.append(feedback);
  openDialog(negotiateDlg);
 }
 async function pollNegotiations(force=false){
