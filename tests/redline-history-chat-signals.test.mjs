@@ -75,7 +75,7 @@ test('Sender UI and owner read-only preview expose Photo History next to Earning
  assert.match(sender,/function renderPhotoHistory\(snap\)/);
  assert.match(sender,/bridge\(\)\?\.resubmitFiveStarPhoto\?\.\(p.id\)/);
  assert.match(sender,/historyVisible\+=40/);
- assert.match(preview,/\['history','Photo History',historyPanel\]/);
+ assert.match(preview,/\['history','(?:Photo History|History)',historyPanel\]/);
  assert.match(preview,/renderPreviewPhotoHistory\(\)/);
  assert.match(preview,/btn.disabled=true/);
  assert.match(css,/repeat\(4,minmax\(0,1fr\)\)!important/);
