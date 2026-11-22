@@ -1,6 +1,7 @@
 /* REDLINE sender chat: native-style conversation, real-time session strip.
  * Loaded after the legacy responsive rules so the composer stays visible. */
 body.redline-sender-messenger .redline-simple-home{max-width:860px}
+.redline-messenger-live-strip[hidden],.redline-messenger-quick[hidden]{display:none!important}
 body.redline-sender-messenger .redline-simple-tabs{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:4px!important}
 body.redline-sender-messenger .redline-simple-tab{min-width:0!important;overflow-wrap:break-word!important;
  min-height:43px!important;font-size:clamp(10px,1.9vw,13px)!important;padding:8px 3px!important}
@@ -62,8 +63,8 @@ body.redline-sender-messenger .redline-message-feed>.redline-chat-event{flex-shr
  html:has(body.redline-chat-immersive){height:100%!important;overflow:hidden!important}
  body.redline-chat-immersive{height:100dvh!important;min-height:0!important;
  max-height:100dvh!important;overflow:hidden!important}
- body.redline-chat-immersive #ledgerApp.shell{display:block!important;height:calc(100dvh - 60px)!important;
- min-height:0!important;max-height:calc(100dvh - 60px)!important;overflow:hidden!important;
+ body.redline-chat-immersive #ledgerApp.shell{display:block!important;height:calc(100dvh - 78px)!important;
+ min-height:0!important;max-height:calc(100dvh - 78px)!important;overflow:hidden!important;
  padding:5px 8px max(8px,env(safe-area-inset-bottom))!important}
  body.redline-chat-immersive #activeRoom{height:100%!important;max-height:100%!important;
  min-height:0!important;overflow:hidden!important}
