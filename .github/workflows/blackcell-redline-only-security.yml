@@ -22,6 +22,10 @@ on:
     paths:
       - 'admin.js'
       - 'blackcell-redline-security-level.css'
+      - 'blackcell-os-window-controls.css'
+      - 'blackcell-os.html'
+      - 'tests/blackcell-os-window-controls.test.mjs'
+      - '.github/workflows/blackcell-redline-only-security.yml'
   workflow_dispatch:
 jobs:
   redline-security:
