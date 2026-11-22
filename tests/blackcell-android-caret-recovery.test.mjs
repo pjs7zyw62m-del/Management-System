@@ -82,5 +82,5 @@ test('Integration loads guarded helper before live typing and busts asset cache'
  assert.match(chat,/installAndroidChatCaretGuard\(composerText\)/);
  assert.ok(chat.indexOf('installAndroidChatCaretGuard(composerText)')<chat.indexOf("composerText.addEventListener('input'"));
  assert.match(chat,/androidChatCaretGuard\.reset\(\)/);
- assert.match(html,/corporate-chat\.js\?v=20261122-android-caret-recovery4/);
+ assert.match(html,/corporate-chat\.js\?v=20261122-android-attachment-inpage5/);
 });
