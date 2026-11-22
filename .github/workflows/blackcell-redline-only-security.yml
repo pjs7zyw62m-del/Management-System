@@ -29,6 +29,7 @@ on:
       - 'tests/redline-android-level1-return.test.mjs'
       - 'blackcell-os-window-controls.css'
       - 'blackcell-os.html'
+      - 'blackcell-os.js'
       - 'tests/blackcell-os-window-controls.test.mjs'
       - '.github/workflows/blackcell-redline-only-security.yml'
   workflow_dispatch:
