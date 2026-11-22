@@ -99,6 +99,7 @@ test('Android Chrome preserves active editing geometry through typing and compos
  assert.ok(start>=0&&end>start&&events>end&&after>events,'Actual live editor handlers must be loaded in the fixture');
  const script=[
   "const $=id=>document.getElementById(id);",
+  "const installAndroidChatCaretGuard=()=>({enabled:false,reset(){}});",
   "const liveCalls=[];const live={onInput:s=>liveCalls.push(s),stopTyping:()=>{}};",
   "let chatBlocked=false,blockKnown=true,blockBusy=false;",
   chatCode.slice(start,end),chatCode.slice(events,after),
