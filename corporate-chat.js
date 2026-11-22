@@ -379,65 +379,155 @@ composerText.addEventListener('keydown',e=>{
  }
 });
 function text(tag,cls,value){const el=document.createElement(tag);if(cls)el.className=cls;el.textContent=value;return el}
+let bootRunning=false,bootAttempt=0,bootRetryTimer=null;
+function showInboxStartupProblem(message,{retry=false,link=null}={}){
+ if(ready)return;
+ const note=String(message||'iMessage contacts are unavailable.');
+ $('peers').replaceChildren(text('p','empty',note));
+ const panel=$('chatStartupRecovery');
+ const messageElement=$('chatStartupRecoveryMessage');
+ if(messageElement)messageElement.textContent=note;
+ if(panel)panel.hidden=false;
+ if($('retryContacts'))$('retryContacts').hidden=!retry;
+ if(link){
+  $('returnLink').href=link;
+  $('returnLink').textContent=link==='dashboard.html'?'ADMINISTRATION':'EMPLOYEE ACCESS';
+ }
+ status(note);
+ if(retry&&bootAttempt<4&&!bootRetryTimer){
+  const delay=Math.min(18000,3500*bootAttempt);
+  bootRetryTimer=setTimeout(()=>{
+   bootRetryTimer=null;
+   if(!ready&&!bootRunning&&!document.hidden)void boot();
+  },delay);
+ }
+}
+function startInboxCheck(){
+ if(ready)return;
+ $('peers').replaceChildren(text('p','empty','Checking authorized contacts…'));
+ const panel=$('chatStartupRecovery');if(panel)panel.hidden=true;
+ status('');
+}
+function withInboxDeadline(promise,ms=18000){
+ return new Promise((resolve,reject)=>{
+  const timeout=setTimeout(()=>reject(Error('BLACKCELL contact verification timed out')),ms);
+  Promise.resolve(promise).then(value=>{clearTimeout(timeout);resolve(value)},error=>{clearTimeout(timeout);reject(error)});
+ });
+}
 async function boot(){
+ if(ready||bootRunning)return;
+ bootRunning=true;bootAttempt++;
+ startInboxCheck();
  try{
-   await client.auth.getSession();
-   const member=await corporateAuthorize(client);
-   if(!member.ok&&member.reason==='ledger-only'){location.replace('private-photo-ledger.html');return}
-   if(!member.ok){status('Sign in and activate your employee account to access chat.');return}
-   self=member.user.id;
-   const m=member.member;
-   if(m.role==='owner'){
-     $('returnLink').href='dashboard.html';$('returnLink').textContent='ADMINISTRATION';
-     const {data,error}=await client.rpc('corp_code_status');
-     if(error||data?.ok!==true||data.verified!==true){status('Level 7 security verification required. Return to Administration and authenticate.');return}
-   }else if(m.role==='employee'){
-     if(m.can_chat!==true){status('Chat is not enabled for your employee account.');return}
-     const {data:employeeStatus,error:employeeError}=await client.rpc('corp_employee_code_status');
-     if(employeeError||employeeStatus?.ok!==true||employeeStatus?.verified!==true){
-       $('returnLink').href='employee.html';$('returnLink').textContent='EMPLOYEE ACCESS';
-       status('Sign in with your activated employee account to use authorized chat.');
-       return;
-     }
-     employeeSession=true;lastActivity=Date.now();lastTouch=Date.now();
-   }else{status('This account cannot access Employee Chat.');return}
-   const {data,error}=await client.rpc('corp_chat_peers');
-   if(error||data?.ok!==true||!Array.isArray(data.peers)){status('Contacts cannot be loaded. Contact your corporate administrator.');return}
-   contacts=data.peers;ready=true;inboxPins=readInboxPins();status('');if(osChat){sidebarClosed=readSidebarPreference();applySidebarPreference()}
+  // Do not alter local auth state or clear any messages on transport failure.
+  const session=await withInboxDeadline(client.auth.getSession());
+  if(session.error)throw session.error;
+  const member=await withInboxDeadline(corporateAuthorize(client,{classifyTransport:true}));
+  if(!member.ok&&member.reason==='ledger-only'){location.replace('private-photo-ledger.html');return}
+  if(!member.ok){
+   if(member.reason==='verification-error')throw Error('BLACKCELL authentication service could not be reached.');
+   if(member.reason==='signed-out'){
+    showInboxStartupProblem('This browser is not signed in to BLACKCELL. Open Employee Access to sign in; your saved messages have not been deleted.',{link:'employee.html'});return;
+   }
+   showInboxStartupProblem('This account is not authorized for BLACKCELL iMessage. Return to your access portal.',{link:'employee.html'});return;
+  }
+  self=member.user.id;
+  const m=member.member;
+  if(m.role==='owner'){
+   $('returnLink').href='dashboard.html';$('returnLink').textContent='ADMINISTRATION';
+   const {data,error}=await withInboxDeadline(client.rpc('corp_code_status'));
+   if(error)throw error;
+   if(data?.ok!==true||data?.verified!==true){
+    showInboxStartupProblem('Level 7 security verification is required. Return to Administration and verify your session.',{link:'dashboard.html'});return;
+   }
+  }else if(m.role==='employee'){
+   if(m.can_chat!==true){
+    showInboxStartupProblem('Chat is not enabled for this employee account.',{link:'employee.html'});return;
+   }
+   const {data:employeeStatus,error:employeeError}=await withInboxDeadline(client.rpc('corp_employee_code_status'));
+   if(employeeError)throw employeeError;
+   if(employeeStatus?.ok!==true||employeeStatus?.verified!==true){
+    showInboxStartupProblem('BLACKCELL employee authorization needs verification. Return to Employee Access; your messages are still stored.',{link:'employee.html'});return;
+   }
+   employeeSession=true;lastActivity=Date.now();lastTouch=Date.now();
+  }else{
+   showInboxStartupProblem('This account cannot access BLACKCELL iMessage.',{link:'employee.html'});return;
+  }
+  const {data,error}=await withInboxDeadline(client.rpc('corp_chat_peers'));
+  if(error)throw error;
+  if(data?.ok!==true||!Array.isArray(data.peers)){
+   showInboxStartupProblem('The secure contact service did not authorize this session. Return to BLACKCELL Access to verify it.',{link:m.role==='owner'?'dashboard.html':'employee.html'});return;
+  }
+  contacts=data.peers;ready=true;inboxPins=readInboxPins();
+  clearTimeout(bootRetryTimer);bootRetryTimer=null;
+  $('chatStartupRecovery').hidden=true;
+  status('');
+  if(osChat){sidebarClosed=readSidebarPreference();applySidebarPreference()}
+  // Display the authenticated contact list FIRST. An Android 11 WebSocket or
+  // Realtime startup failure must never erase / delay stored conversations.
+  renderPeers();
+  void refreshInboxSummaries();
+  try{
    client.channel('blackcell-chat-'+self)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'corp_chat_messages'},payload=>{
-      const m=payload.new;
-      if(m&&(m.sender_id===self||m.recipient_id===self)){
-       void loadMessages();
-       if(!popout&&!mediaPanelMode)void refreshInboxSummaries();
-      }
+     const m=payload.new;
+     if(m&&(m.sender_id===self||m.recipient_id===self)){
+      void loadMessages();
+      if(!popout&&!mediaPanelMode)void refreshInboxSummaries();
+     }
     })
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'corp_chat_messages'},payload=>{
-      const m=payload.new;
-      if(m&&(m.sender_id===self||m.recipient_id===self)){void loadMessages();if(!popout&&!mediaPanelMode)void refreshInboxSummaries();}
+     const m=payload.new;
+     if(m&&(m.sender_id===self||m.recipient_id===self)){
+      void loadMessages();
+      if(!popout&&!mediaPanelMode)void refreshInboxSummaries();
+     }
     })
     .on('postgres_changes',{event:'*',schema:'public',table:'corp_chat_typing'},payload=>{
-      live.onTypingChange(payload);
+     live.onTypingChange(payload);
     })
     .subscribe();
-   renderPeers();
-   void refreshInboxSummaries();
-   if(embedParams.get('popout')==='1'&&(!popout||!contacts.some(x=>x.user_id===popoutId))){ready=false;status('This conversation is no longer authorized.');$('messages').replaceChildren(text('p','empty','Conversation unavailable.'));return;}
-   if(contacts.length){
-     const requested=embedParams.get('peer');
-     if(!compactChat||requested&&contacts.some(x=>x.user_id===requested))
-      choose(contacts.some(x=>x.user_id===requested)?requested:contacts[0].user_id);
-     if(mediaPanelMode==='share'&&canShowFullMedia())sharedMedia.openShare();
-     else if(mediaPanelMode==='library'&&canShowFullMedia()){
-       const batch=embedParams.get('batch');
-       if(batch&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(batch))
-        void sharedMedia.openBatch(batch);
-       else void sharedMedia.openLibrary();
-     }
+  }catch(_){
+   // Realtime is optional for initial contact and history retrieval.
+   status('Contacts loaded. Live updates are temporarily unavailable; conversations remain accessible.');
+  }
+  if(embedParams.get('popout')==='1'&&(!popout||!contacts.some(x=>x.user_id===popoutId))){
+   ready=false;status('This conversation is no longer authorized.');
+   $('messages').replaceChildren(text('p','empty','Conversation unavailable.'));return;
+  }
+  if(contacts.length){
+   const requested=embedParams.get('peer');
+   if(!compactChat||(requested&&contacts.some(x=>x.user_id===requested)))
+    choose(contacts.some(x=>x.user_id===requested)?requested:contacts[0].user_id);
+   if(mediaPanelMode==='share'&&canShowFullMedia())sharedMedia.openShare();
+   else if(mediaPanelMode==='library'&&canShowFullMedia()){
+    const batch=embedParams.get('batch');
+    if(batch&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(batch))
+     void sharedMedia.openBatch(batch);
+    else void sharedMedia.openLibrary();
    }
-   else $('messages').replaceChildren(text('p','empty',m.role==='owner'?'No employees yet. Invite your first employee from User Management → Accounts.':'Your administrator is not available for chat.'));
- }catch(_){status('Could not connect to secure chat. Check your connection.')}
+  }else $('messages').replaceChildren(text('p','empty',m.role==='owner'?'No employees yet. Invite your first employee from User Management → Accounts.':'Your administrator is not available for chat.'));
+ }catch(error){
+  if(!ready){
+   // The sidebar must never remain stuck on "Checking contacts…" after
+   // a mobile network, auth server, or browser startup error.
+   const message='Unable to load BLACKCELL contacts on this device. Check the connection and tap Retry Contacts. Your messages have not been deleted.';
+   console.warn('[BLACKCELL iMessage] contact startup',String(error?.message||error).slice(0,150));
+   showInboxStartupProblem(message,{retry:true});
+  }
+ }finally{bootRunning=false}
 }
+window.BLACKCELL_CHAT_RETRY=()=>{
+ if(ready)return;
+ clearTimeout(bootRetryTimer);bootRetryTimer=null;
+ if(bootRunning){location.reload();return}
+ bootAttempt=0;
+ void boot();
+};
+window.addEventListener('online',()=>{if(!ready&&!bootRunning&&bootAttempt>0)void boot()});
+window.addEventListener('pageshow',event=>{
+ if(event.persisted&&!ready&&!bootRunning)void boot();
+});
 function formatChatDay(date){
  const today=new Date(),yesterday=new Date();
  yesterday.setDate(today.getDate()-1);
