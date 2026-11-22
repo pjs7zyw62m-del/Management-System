@@ -340,3 +340,27 @@
  .bc-redline-sender-preview .bc-redline-preview-top{padding:11px!important}
  .bc-redline-sender-preview .bc-redline-preview-live-cell strong{font-size:clamp(14px,4.5vw,19px)}
 }
+
+
+/* Keep the preview's Messages/Payday tabs visible while its content scrolls. */
+.bc-redline-sender-preview .bc-redline-preview-phone{
+ height:min(74dvh,790px);min-height:0!important;max-height:100%;
+}
+.bc-redline-sender-preview .bc-redline-preview-body{
+ overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;
+ -webkit-overflow-scrolling:touch;min-height:0;flex:1 1 auto;
+}
+.bc-redline-sender-preview .bc-redline-preview-body::-webkit-scrollbar{
+ display:none;
+}
+.bc-redline-sender-preview .bc-redline-preview-nav{
+ position:relative!important;bottom:auto!important;flex:0 0 auto;
+}
+.bc-redline-sender-preview .bc-redline-preview-phone[data-device=tablet]{
+ height:min(78dvh,860px);max-height:100%;
+}
+@media(max-width:600px){
+ .bc-redline-sender-preview .bc-redline-preview-phone{
+  height:calc(100dvh - 145px);max-height:100%!important;
+ }
+}
