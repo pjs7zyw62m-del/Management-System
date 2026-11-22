@@ -8,9 +8,12 @@ on:
       - 'private-photo-ledger-receiver.css'
       - 'private-photo-ledger-responsive.js'
       - 'private-photo-ledger-simple-sender.js'
+      - 'private-photo-ledger-sender-messenger.js'
+      - 'private-photo-ledger-sender-messenger.css'
       - 'private-photo-ledger-timers.js'
       - 'supabase/sql/blackcell_redline_start_fresh_archive.sql'
       - 'tests/redline-timer-chat-browser-smoke.mjs'
+      - 'tests/redline-sender-messenger-browser-smoke.mjs'
       - 'tests/redline-per-second-earnings.test.mjs'
       - 'tests/redline-history-chat-signals.test.mjs'
       - 'tests/redline-chat-read-typing-browser-smoke.mjs'
@@ -45,10 +48,13 @@ on:
       - 'private-photo-ledger-timers.css'
       - 'private-photo-ledger-sender.js'
       - 'private-photo-ledger-simple-sender.css'
+      - 'private-photo-ledger-sender-messenger.js'
+      - 'private-photo-ledger-sender-messenger.css'
       - 'tests/blackcell-redline-receiver-reset.test.mjs'
       - 'tests/private-photo-ledger-sender.test.mjs'
       - 'tests/private-photo-ledger-simple-sender.test.mjs'
       - 'tests/redline-timer-chat-browser-smoke.mjs'
+      - 'tests/redline-sender-messenger-browser-smoke.mjs'
       - 'tests/redline-per-second-earnings.test.mjs'
       - 'tests/redline-history-chat-signals.test.mjs'
       - 'tests/redline-chat-read-typing-browser-smoke.mjs'
@@ -86,6 +92,7 @@ jobs:
           node --check private-photo-ledger.js
           node --check private-photo-ledger-responsive.js
           node --check private-photo-ledger-simple-sender.js
+          node --check private-photo-ledger-sender-messenger.js
           node --check private-photo-ledger-receiver.js
           node --check private-photo-ledger-sender.js
           node --check private-photo-ledger-timers.js
@@ -178,6 +185,13 @@ jobs:
               "http://127.0.0.1:8876/private-photo-ledger-receiver-probe.html" >/dev/null 2>&1
             echo "REDLINE $device: receiver dashboard and stable branding passed"
           done
+      - name: Sender iMessage-style live session, earnings and uploads
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v google-chrome >/dev/null 2>&1 && CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && CHROME=chromium || CHROME=; }
+          [ -n "$CHROME" ] || { echo "Chromium unavailable"; exit 1; }
+          CHROME="$CHROME" node tests/redline-sender-messenger-browser-smoke.mjs
       - name: Sender chat timer START and STOP browser integration
         shell: bash
         run: |
