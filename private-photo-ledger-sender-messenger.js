@@ -9,7 +9,7 @@ const app=document.getElementById('ledgerApp');
 const room=document.getElementById('activeRoom');
 const home=document.getElementById('redlineSimpleSender');
 if(!app||!room||!home)return;
-const $=(selector,root=document)=>root.querySelector(selector);
+const $=(selector,root=document)=>root?.querySelector?.(selector)||null;
 const pane=$('[data-redline-pane="upload"]',home);
 const chat=$('.redline-message-card',pane);
 const feed=$('.redline-message-feed',chat);
@@ -168,6 +168,7 @@ const observer=new MutationObserver(()=>requestAnimationFrame(update));
 for(const node of [app,room,home,pane])observer.observe(node,{
  attributes:true,attributeFilter:['hidden']
 });
+for(const tab of Object.values(tabs))tab?.addEventListener('click',()=>requestAnimationFrame(update));
 window.addEventListener('pageshow',update);
 window.addEventListener('visibilitychange',()=>{if(!document.hidden)update()});
 window.setInterval(()=>{if(!document.hidden&&sender())update()},1000);
