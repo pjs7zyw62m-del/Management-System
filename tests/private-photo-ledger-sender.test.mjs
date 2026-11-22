@@ -9,7 +9,7 @@ const responsive=read('private-photo-ledger-responsive.js');
 const original=read('private-photo-ledger.js');
 test('sender enhancement loads only on existing REDLINE page',()=>{
  assert.match(html,/private-photo-ledger-sender\.css\?v=20261120-sender-v3/);
- assert.match(html,/private-photo-ledger-sender\.js\?v=20261121-receiver-owned-pause1/);
+ assert.match(html,/private-photo-ledger-sender\.js\?v=20261122-redline-multi-chooser1/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=(?:20261120-sender-v3|20261121-stable-brand1)/);
  assert.ok(html.indexOf('private-photo-ledger-responsive.js')<html.indexOf('private-photo-ledger-sender.js'));
 });
@@ -23,7 +23,8 @@ test('sender mode requires the original verified room and upload permission',()=
 });
 test('sender upload is native and points only to existing form',()=>{
  assert.match(sender,/file\.click\(\)/);
- assert.match(sender,/file\.addEventListener\('change',sendSelectedPhoto\)/);
+ assert.doesNotMatch(sender,/file\.addEventListener\('change',sendSelectedPhoto\)/);
+  assert.match(original,/enqueueRedlineFiles\(files\.map\(file=>\(\{file,label:file\.name\}\)\)\)/);
  assert.match(sender,/form\.requestSubmit\(\)/);
  assert.doesNotMatch(sender,/URL\.createObjectURL|bc-sender-preview-image/);
  assert.match(original,/picker\.disabled=true/);
