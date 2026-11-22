@@ -48,27 +48,46 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const useLargePanels=()=>window.BlackcellChatMedia?.enabled()===true;
  const compactMedia=()=>!useLargePanels();
  function notifyChatMedia(open){if(standalonePanel||window.parent===window)return;window.parent.postMessage({type:'blackcell-chat-popout-media',open:open===true},location.origin)}
+ let activeAttachmentAnchor=attachmentToggle;
  function closeMediaTray(restoreFocus=false){
-  controls.hidden=true;attachmentToggle?.classList.remove('open');
-  attachmentToggle?.setAttribute('aria-expanded','false');
-  if(restoreFocus)attachmentToggle?.focus({preventScroll:true});
+  controls.hidden=true;
+  for(const button of [attachmentToggle,document.getElementById('bcAndroidAttachmentShortcut')]){
+   button?.classList.remove('open');
+   button?.setAttribute('aria-expanded','false');
+  }
+  if(restoreFocus)activeAttachmentAnchor?.focus({preventScroll:true});
  }
  function positionMediaTray(){
-  if(controls.hidden||!attachmentToggle)return;
-  const rect=attachmentToggle.getBoundingClientRect();
+  if(controls.hidden)return;
+  const anchor=activeAttachmentAnchor?.isConnected?activeAttachmentAnchor:attachmentToggle;
+  if(!anchor)return;
+  const rect=anchor.getBoundingClientRect(),viewport=window.visualViewport;
+  const viewTop=viewport?.offsetTop||0;
+  const viewHeight=viewport?.height||window.innerHeight;
+  const viewBottom=viewTop+viewHeight;
+  const viewLeft=viewport?.offsetLeft||0,viewWidth=viewport?.width||document.documentElement.clientWidth;
   const touch=window.matchMedia('(pointer:coarse)').matches;
-  const width=Math.min(touch?230:205,Math.max(0,document.documentElement.clientWidth-20));
-  const left=Math.max(10,Math.min(rect.left,document.documentElement.clientWidth-width-10));
-  controls.style.width=width+'px';controls.style.left=left+'px';
-  controls.style.bottom=Math.max(8,window.innerHeight-rect.top+6)+'px';
-  controls.style.maxHeight=Math.max(80,rect.top-16)+'px';
+  const width=Math.min(touch?244:225,Math.max(150,viewWidth-20));
+  const left=Math.max(viewLeft+8,Math.min(rect.left,viewLeft+viewWidth-width-8));
+  controls.style.width=width+'px';
+  controls.style.left=left+'px';
+  controls.style.bottom='auto';
+  controls.style.maxHeight=Math.max(80,viewHeight-16)+'px';
+  const menuHeight=Math.min(controls.scrollHeight,Math.max(80,viewHeight-16));
+  const above=rect.top-menuHeight-8;
+  const below=rect.bottom+8;
+  const candidate=above>=viewTop+8?above:below;
+  controls.style.top=Math.max(viewTop+8,Math.min(candidate,viewBottom-menuHeight-8))+'px';
  }
- function toggleMediaTray(){
+ function toggleMediaTray(anchor=attachmentToggle){
   if(!controls.hidden){closeMediaTray(true);return}
   if(!requirePeer())return;
-  choosePhotos.disabled=busy||context()?.blocked===true;
-  controls.hidden=false;attachmentToggle?.classList.add('open');
-  attachmentToggle?.setAttribute('aria-expanded','true');positionMediaTray();
+  activeAttachmentAnchor=anchor?.getBoundingClientRect?anchor:attachmentToggle;
+  for(const button of [choosePhotos,chooseBlackcellPhotos,uploadDevice])button.disabled=busy||context()?.blocked===true;
+  controls.hidden=false;
+  activeAttachmentAnchor?.classList.add('open');
+  activeAttachmentAnchor?.setAttribute('aria-expanded','true');
+  positionMediaTray();
  }
  function routeBubble(panel,{batchId=null,pick=null}={}){
   if(!standalonePanel||!useLargePanels())return false;
@@ -126,10 +145,22 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const attachmentToggle=document.getElementById('mediaToggleButton');
  attachmentToggle?.setAttribute('aria-controls',controls.id);
  attachmentToggle?.setAttribute('aria-expanded','false');
- const choosePhotos=button('Photos',()=>openShare(),'bc-attachment-item');choosePhotos.title='Open photo and video uploader';
+ const choosePhotos=button('Photos',()=>openShare(),'bc-attachment-item bc-attachment-desktop-action');choosePhotos.title='Open photo and video uploader';
+ const chooseBlackcellPhotos=button('BLACKCELL Photos',()=>{
+  if(!compactMedia())return openShare();
+  openShare();
+  if(!overlay.hidden&&!privateButton.disabled)privateButton.click();
+ },'bc-attachment-item bc-attachment-mobile-action');
+ chooseBlackcellPhotos.title='Choose from BLACKCELL Photos';
+ const uploadDevice=button('Upload Photo or Video',()=>{
+  if(!compactMedia())return openShare();
+  openShare();
+  if(!overlay.hidden)chooseFiles('image/*,video/*');
+ },'bc-attachment-item bc-attachment-mobile-action');
+ uploadDevice.title='Upload from this device';
  const mediaLibrary=button('Shared Media',()=>void openLibrary(),'bc-attachment-item');mediaLibrary.setAttribute('aria-expanded','false');
- decorateButton(choosePhotos,'photo');decorateButton(mediaLibrary,'library');
- for(const [item,kind] of [[choosePhotos,'photos'],[mediaLibrary,'library']]){
+ decorateButton(choosePhotos,'photo');decorateButton(chooseBlackcellPhotos,'library');decorateButton(uploadDevice,'upload');decorateButton(mediaLibrary,'library');
+ for(const [item,kind] of [[choosePhotos,'photos'],[chooseBlackcellPhotos,'blackcell'],[uploadDevice,'share'],[mediaLibrary,'library']]){
   const glyph=item.querySelector('svg'),badge=el('span','bc-attachment-app-icon bc-attachment-app-'+kind);
   badge.setAttribute('aria-hidden','true');
   if(glyph)badge.append(glyph);
@@ -144,13 +175,14 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   photosBadge.replaceChildren(flower);
  }
 
- controls.append(choosePhotos,mediaLibrary);
+ controls.append(choosePhotos,chooseBlackcellPhotos,uploadDevice,mediaLibrary);
  document.body.append(controls);
  controls.addEventListener('click',e=>{if(e.target.closest('button:not(:disabled)'))closeMediaTray()},true);
- document.addEventListener('pointerdown',e=>{if(!controls.hidden&&!controls.contains(e.target)&&!attachmentToggle?.contains(e.target))closeMediaTray()},true);
+ document.addEventListener('pointerdown',e=>{if(!controls.hidden&&!controls.contains(e.target)&&!attachmentToggle?.contains(e.target)&&!document.getElementById('bcAndroidAttachmentShortcut')?.contains(e.target))closeMediaTray()},true);
  document.addEventListener('keydown',e=>{if(!controls.hidden&&e.key==='Escape'){e.preventDefault();e.stopPropagation();closeMediaTray(true)}},true);
  window.addEventListener('resize',positionMediaTray,{passive:true});
  window.visualViewport?.addEventListener('resize',positionMediaTray,{passive:true});
+ window.visualViewport?.addEventListener('scroll',positionMediaTray,{passive:true});
  const headerLibrary=button('Shared Media',()=>void openLibrary(),'bc-chat-header-media');headerLibrary.title='Open this conversation’s shared media';document.querySelector('.imessage-title-actions')?.prepend(headerLibrary);
  const fileInput=el('input');fileInput.type='file';fileInput.multiple=true;
  fileInput.accept='image/*,video/*';
