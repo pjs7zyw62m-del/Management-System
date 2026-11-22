@@ -181,7 +181,7 @@
     return;
    }
    viewingPreview.append(make('strong','','RECEIVER VIEWING · PHOTO '+id.slice(0,8).toUpperCase()));
-   if(typeof photo.image_url==='string'&&photo.image_url.startsWith('https://')){
+   if(typeof photo.image_url==='string'&&(photo.image_url.startsWith('https://')||photo.image_url.startsWith('blob:'))){
     const img=make('img','bc-redline-preview-current-image');img.src=photo.image_url;
     img.alt='Receiver-selected private photograph';
     img.loading='lazy';img.addEventListener('error',()=>{img.hidden=true});
@@ -201,7 +201,7 @@
     if(!items.length){target.append(make('p','bc-redline-preview-history-empty','No photos have been sent in this room yet.'));continue}
     for(const p of items.slice(0,60)){
      const row=make('div','bc-redline-preview-history-row');
-     if(typeof p.image_url==='string'&&p.image_url.startsWith('https://')){
+     if(typeof p.image_url==='string'&&(p.image_url.startsWith('https://')||p.image_url.startsWith('blob:'))){
       const img=make('img','bc-redline-preview-history-photo');
       img.src=p.image_url;img.alt='Private photo '+String(p.id).slice(0,8);
       img.loading='lazy';img.addEventListener('error',()=>{img.hidden=true});row.append(img);

@@ -1,6 +1,8 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
+import {isBunnyPath,uploadBunnyPhoto,readBunnyPhoto,cleanupUnpostedBunny} from './private-photo-ledger-bunny.js?v=20261121-redline-bunny1';
 
 const db=corporateClient();
+// Legacy archive photo paths use the old private bucket; new uploads never do.
 const BUCKET='corp-private-photo-ledger';
 const ROOMS='corp_private_photo_rooms';
 const ENTRIES='corp_private_photo_entries';
@@ -521,18 +523,43 @@ function updateTotals(){
  show('freeCount',String(complimentary));
  window.dispatchEvent(new Event('blackcell:redline:state'));
 }
+function clearImageCache(){
+ for(const image of state.images.values())if(image?.object&&image.url?.startsWith('blob:'))
+  try{URL.revokeObjectURL(image.url)}catch(_){}
+ state.images.clear();
+}
+function rememberImage(path,url,expires,object=false){
+ const old=state.images.get(path);
+ if(old?.object&&old.url!==url&&old.url?.startsWith('blob:'))
+  try{URL.revokeObjectURL(old.url)}catch(_){}
+ state.images.set(path,{url,expires,object});
+}
 async function signImages(items){
  const now=Date.now();
  const needed=items.filter(e=>!state.images.has(e.image_path)||state.images.get(e.image_path).expires<now);
- for(let i=0;i<needed.length;i+=30){
-  const batch=needed.slice(i,i+30);
+ const bunny=needed.filter(e=>isBunnyPath(e.image_path));
+ const legacy=needed.filter(e=>!isBunnyPath(e.image_path));
+ for(let i=0;i<bunny.length;i+=5){
+  await Promise.all(bunny.slice(i,i+5).map(async e=>{
+   try{
+    const data=await readBunnyPhoto(db,e.room_id,e.id);
+    if(!state.entries.some(x=>x.id===e.id&&x.image_path===e.image_path))return;
+    rememberImage(e.image_path,URL.createObjectURL(data),Date.now()+20*60*1000,true);
+   }catch(error){
+    show('entriesFeedback','Some REDLINE photos could not load from private Bunny storage: '+fail(error));
+   }
+  }));
+ }
+ // Old photo records remain readable if a historical Supabase original
+ // is restored in the future. No new media is uploaded to this bucket.
+ for(let i=0;i<legacy.length;i+=30){
+  const batch=legacy.slice(i,i+30);
   const result=await db.storage.from(BUCKET).createSignedUrls(batch.map(e=>e.image_path),600);
-  if(result.error){show('entriesFeedback','Private photo previews unavailable: '+fail(result.error));continue}
+  if(result.error)continue;
   for(let j=0;j<batch.length;j++){
    const url=result.data?.[j]?.signedUrl;
-   if(url&&typeof url==='string'&&url.startsWith('https://')){
-    state.images.set(batch[j].image_path,{url,expires:Date.now()+4*60*1000});
-   }
+   if(url&&typeof url==='string'&&url.startsWith('https://'))
+    rememberImage(batch[j].image_path,url,Date.now()+4*60*1000);
   }
  }
 }
@@ -1126,7 +1153,7 @@ async function bcLiveOriginal_uploadPhoto(event){
  show('uploadFeedback','Sending privately to your assigned REDLINE room…');
  const room=state.room;
  const id=crypto.randomUUID();
- const path=room.id+'/'+id+'.'+info.ext;
+ let path=null,bunnyUploadAttempted=false,posted=false;
  try{
   await verify();
   // Read the current server-side room flag before sending. A receiver may
@@ -1140,17 +1167,16 @@ async function bcLiveOriginal_uploadPhoto(event){
    window.dispatchEvent(new Event('blackcell:redline:state'));
    throw Error(permission.data.photo_sending_paused?'The receiver paused photo sending.':'Private room closed.');
   }
-  const upload=await db.storage.from(BUCKET).upload(path,file,{contentType:info.mime,upsert:false,cacheControl:'60'});
-  if(upload.error)throw upload.error;
+  // No photo bytes go to Supabase Storage. Verified Bunny write MUST finish
+  // before the corresponding REDLINE metadata record is created.
+  bunnyUploadAttempted=true;
+  path=await uploadBunnyPhoto(db,room.id,state.user.id,id,file,info.mime);
   const r=await db.from(ENTRIES).insert({
     id,room_id:room.id,uploaded_by:state.user.id,image_path:path,decision_status:'pending',
     file_name:file.name.slice(0,180),caption:''
   }).select('id').single();
-  if(r.error){
-   // The cleanup policy allows deleting an uploaded file only if no ledger entry references it.
-   await db.storage.from(BUCKET).remove([path]);
-   throw r.error;
-  }
+  if(r.error)throw r.error;
+  posted=true;
   const accompanyingMessage=$('uploadCaption').value.trim();
   $('uploadPhoto').value='';
   show('selectedPhotoName','Select another photo to send automatically.');
@@ -1170,6 +1196,8 @@ async function bcLiveOriginal_uploadPhoto(event){
   try{await loadEntries({force:true})}
   catch(refreshError){show('uploadFeedback','Photo saved privately, but the review list has not refreshed yet: '+fail(refreshError));}
  }catch(e){
+  if(bunnyUploadAttempted&&!posted)
+   try{await cleanupUnpostedBunny(db,room.id,id)}catch(_){}
   picker.value='';
   show('selectedPhotoName','Select a photo to try again.');
   show('uploadFeedback','Photo not sent: '+fail(e)+'. Choose a photo again to retry.');
@@ -1245,7 +1273,7 @@ function updateRedlineResetControls(){
 async function setRedlineArchiveView(archive){
  if(!state.room)return;
  if(archive&&!state.room.current_session_started_at)return;
- state.showArchive=!!archive;state.entryFingerprint='';state.images.clear();
+ state.showArchive=!!archive;state.entryFingerprint='';clearImageCache();
  updateRedlineResetControls();
  setFilter(state.showArchive?'all':state.isOwner?'reviewed':'all');
  await loadEntries({force:true});
@@ -1272,7 +1300,7 @@ async function startRedlineFresh(all=false){
   if(error||data?.ok!==true||(!all&&data.rooms_reset!==1)){
    throw Error(data?.reason||error?.message||'The server did not confirm the reset.');
   }
-  state.showArchive=false;state.entryFingerprint='';state.images.clear();
+  state.showArchive=false;state.entryFingerprint='';clearImageCache();
   await refresh({force:true});
   if(status)status.textContent='Fresh REDLINE session ready. '+data.rooms_reset+' room(s) archived. No financial records or photos deleted.';
   window.dispatchEvent(new Event('blackcell:redline:reset'));
@@ -1645,7 +1673,7 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
   const extension=source.image_path.match(/\.(jpg|jpeg|png|webp|heic|heif)$/i)?.[1]?.toLowerCase();
   if(!extension)throw Error('Original photo type is unsupported.');
   state.resubmittingPhotoId=photoId;
-  let newPath=null,posted=false;
+  let newPath=null,posted=false,bunnyAttempted=false,resubmitId=null;
   try{
    await verify();
    const permission=await db.from(ROOMS)
@@ -1658,18 +1686,20 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
      Date.parse(source.created_at)<Date.parse(permission.data.current_session_started_at))
     throw Error('An archived photo cannot be resubmitted to the current session.');
    if(state.room?.id!==room.id)throw Error('The selected REDLINE room changed.');
-   const download=await db.storage.from(BUCKET).download(source.image_path);
-   if(download.error||!download.data)throw Error(fail(download.error||'Unable to retrieve original photo.'));
-   const blob=download.data;
+   let blob;
+   if(isBunnyPath(source.image_path))blob=await readBunnyPhoto(db,room.id,source.id);
+   else{
+    const download=await db.storage.from(BUCKET).download(source.image_path);
+    if(download.error||!download.data)
+     throw Error('The archived original is missing from deleted Supabase storage. Re-upload it to Bunny first.');
+    blob=download.data;
+   }
    if(!blob.size||blob.size>MAX_IMAGE_BYTES)throw Error('The stored original exceeds the supported photo limit.');
-   const id=crypto.randomUUID();
-   newPath=room.id+'/'+id+'.'+extension;
+   const id=crypto.randomUUID();resubmitId=id;
    const mime={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',
     webp:'image/webp',heic:'image/heic',heif:'image/heif'}[extension];
-   const storage=await db.storage.from(BUCKET).upload(newPath,blob,{
-    contentType:mime,upsert:false,cacheControl:'60'
-   });
-   if(storage.error)throw Error(fail(storage.error));
+   bunnyAttempted=true;
+   newPath=await uploadBunnyPhoto(db,room.id,state.user.id,id,blob,mime);
    const created=await db.from(ENTRIES).insert({
     id,room_id:room.id,uploaded_by:state.user.id,image_path:newPath,
     resubmission_origin_id:photoId,decision_status:'pending',
@@ -1686,7 +1716,8 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
   }catch(error){
    // Safely remove only an unposted temporary storage copy. Never delete
    // the original or any successful ledger resubmission.
-   if(newPath&&!posted)try{await db.storage.from(BUCKET).remove([newPath])}catch(_){}
+   if(bunnyAttempted&&!posted&&resubmitId)
+    try{await cleanupUnpostedBunny(db,room.id,resubmitId)}catch(_){}
    throw error;
   }finally{state.resubmittingPhotoId=null}
  },

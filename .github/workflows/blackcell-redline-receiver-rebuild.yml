@@ -24,6 +24,9 @@ on:
       - 'tests/redline-next-photo-visual-smoke.mjs'
       - 'tests/redline-timer-stop-next-photo.test.mjs'
       - 'tests/redline-partial-payments.test.mjs'
+      - 'private-photo-ledger-bunny.js'
+      - 'supabase/functions/blackcell-redline-bunny/index.ts'
+      - 'tests/redline-bunny-storage-cutover.test.mjs'
       - 'tests/redline-photo-history-browser-smoke.mjs'
       - 'tests/blackcell-redline-receiver-reset.test.mjs'
       - '.github/workflows/blackcell-redline-receiver-rebuild.yml'
@@ -56,6 +59,9 @@ on:
       - 'tests/redline-next-photo-visual-smoke.mjs'
       - 'tests/redline-timer-stop-next-photo.test.mjs'
       - 'tests/redline-partial-payments.test.mjs'
+      - 'private-photo-ledger-bunny.js'
+      - 'supabase/functions/blackcell-redline-bunny/index.ts'
+      - 'tests/redline-bunny-storage-cutover.test.mjs'
       - 'tests/redline-photo-history-browser-smoke.mjs'
       - '.github/workflows/blackcell-redline-receiver-rebuild.yml'
   workflow_dispatch:
@@ -78,6 +84,7 @@ jobs:
           node --check private-photo-ledger-sender.js
           node --check private-photo-ledger-timers.js
           node --check private-photo-ledger-consent-negotiation.js
+          node --check private-photo-ledger-bunny.js
       - name: Receiver redesign, owner-only fresh session and existing sender tests
         run: |
           node --test \
@@ -85,6 +92,7 @@ jobs:
             tests/redline-per-second-earnings.test.mjs \
             tests/redline-timer-stop-next-photo.test.mjs \
             tests/redline-partial-payments.test.mjs \
+            tests/redline-bunny-storage-cutover.test.mjs \
             tests/redline-timer-consent-negotiation.test.mjs \
             tests/redline-history-chat-signals.test.mjs \
             tests/private-photo-ledger-responsive.test.mjs \

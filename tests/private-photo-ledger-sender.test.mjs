@@ -56,7 +56,7 @@ test('Sender photo selection submits only through authenticated REDLINE handler'
  assert.match(original,/async function bcLiveOriginal_uploadPhoto\(event\)/);
  assert.match(original,/event\.preventDefault\(\)/);
  assert.match(original,/await verify\(\)/);
- assert.match(original,/db\.storage\.from\(BUCKET\)\.upload\(path,file/);
+ assert.match(original,/await uploadBunnyPhoto\(db,room\.id,state\.user\.id,id,file,info\.mime\)/);
  assert.match(original,/db\.from\(ENTRIES\)\.insert/);
  assert.match(original,/picker\.value=''/);
  assert.doesNotMatch(sender,/form\.submit\(\)/);

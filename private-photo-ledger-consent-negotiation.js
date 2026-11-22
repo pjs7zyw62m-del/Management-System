@@ -17,7 +17,7 @@ const cash=c=>{
 const safeError=e=>String(e?.message||e||'Please retry.').slice(0,180);
 const signedPhoto=id=>{
  const p=snap()?.photoHistory?.find(x=>x.id===id);
- return typeof p?.image_url==='string'&&p.image_url.startsWith('https://')?p.image_url:null;
+ return typeof p?.image_url==='string'&&(p.image_url.startsWith('https://')||p.image_url.startsWith('blob:'))?p.image_url:null;
 };
 const photoPreview=(parent,id)=>{
  const url=signedPhoto(id);

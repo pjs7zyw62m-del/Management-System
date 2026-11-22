@@ -16,7 +16,7 @@ test('existing upload form is moved without duplication, preserving backend uplo
  assert.match(ui,/if\(upload\.parentNode!==uploadMount\)uploadMount\.append\(upload\)/);
  assert.match(html,/id="uploadPhotoForm"/);
  assert.match(html,/id="submitPhoto"/);
- assert.match(bridge,/db\.storage\.from\(BUCKET\)\.upload/);
+ assert.match(bridge,/await uploadBunnyPhoto\(db,room\.id,state\.user\.id,id,file,info\.mime\)/);
  assert.match(bridge,/const BUCKET='corp-private-photo-ledger'/);
  assert.doesNotMatch(ui,/\.upload\(|db\.storage\.from\(/);
 });
