@@ -102,8 +102,19 @@ function noteActivity(){
  if(Date.now()-lastTouch>60000){
   lastTouch=Date.now();
   void client.rpc('corp_employee_touch_session').then(({data,error})=>{
-   if(error||data?.ok!==true)void expireSession();
-  }).catch(()=>void expireSession());
+   if(error){
+    // Mobile Chrome may lose connectivity when switching apps.
+    // Suspend the messenger, not the shared corporate sign-in.
+    syncEmployeeMessenger(false);
+    showError('employeeStatus','Connection interrupted. BLACKCELL sign-in is preserved. Reconnect to verify.');
+    return;
+   }
+   if(data?.ok!==true){void expireSession();return}
+   clearError('employeeStatus');
+  }).catch(()=>{
+   syncEmployeeMessenger(false);
+   showError('employeeStatus','Unable to reach BLACKCELL. Sign-in preserved; retry when connected.');
+  });
  }
 }
 function setVerified(isVerified,m){
@@ -306,9 +317,19 @@ document.addEventListener('visibilitychange',()=>{
  if(!document.hidden&&verified){
   if(Date.now()-lastActivity>=IDLE_MS)void expireSession();
   else void client.rpc('corp_employee_code_status').then(({data,error})=>{
-   if(error||data?.verified!==true)void expireSession();
-  }).catch(()=>void expireSession());
+   if(error){
+    syncEmployeeMessenger(false);
+    showError('employeeStatus','Connection interrupted. BLACKCELL sign-in is preserved.');
+    return;
+   }
+   if(data?.verified!==true||data?.ok!==true){void expireSession();return}
+   clearError('employeeStatus');
+  }).catch(()=>{
+   syncEmployeeMessenger(false);
+   showError('employeeStatus','Unable to reverify while offline. BLACKCELL sign-in is preserved.');
+  });
  }
 });
+window.addEventListener('online',()=>{if(verified&&!logoutRunning)void load(true)});
 for(const id of ['signout','activationSignout'])$(id).addEventListener('click',()=>{void expireSession()});
 void load(true);
