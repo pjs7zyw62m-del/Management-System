@@ -1653,7 +1653,17 @@ function closeLightbox(){
 }
 function wireEvents(){
  $('createRoomForm').addEventListener('submit',e=>void createRoom(e));
- $('uploadPhotoForm').addEventListener('submit',e=>void uploadPhoto(e));
+ $('uploadPhotoForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const files=Array.from($('uploadPhoto').files||[]);
+  $('uploadPhoto').value='';
+  if(files.length)enqueueRedlineFiles(files.map(file=>({file,label:file.name})));
+ });
+ const dropLabel=document.querySelector('#employeeUpload label[for="uploadPhoto"]');
+ dropLabel?.addEventListener('click',event=>{
+  event.preventDefault();
+  openRedlinePhotoChooser();
+ });
  $('uploadPhoto').addEventListener('change',()=>{
   const files=Array.from($('uploadPhoto').files||[]);
   $('uploadPhoto').value='';
