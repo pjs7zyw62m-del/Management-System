@@ -1085,6 +1085,25 @@ function warmAppComponents(){
  if(typeof requestIdleCallback==='function')requestIdleCallback(run,{timeout:5000});else setTimeout(run,2500);
 }
 
+// RED / YELLOW / GREEN must work as actual OS window controls.
+// REDLINE opens maximized. Touch devices need a visibly compact restore mode.
+function toggleOSWindowSize(r){
+ if(!r||windows.get(r.id)!==r||r.el.hidden)return false;
+ const w=r.el;
+ if(touchOS()||innerWidth<=620){
+  const compact=!w.classList.contains('bc-os-window-compact');
+  w.classList.toggle('bc-os-window-compact',compact);
+  w.classList.toggle('is-max',!compact);
+  w.classList.remove('bc-os-fullscreen');
+ }else{
+  w.classList.remove('bc-os-window-compact','bc-os-fullscreen');
+  w.classList.toggle('is-max');
+ }
+ $('desktop').classList.remove('bc-os-menu-edge-open','bc-os-dock-edge-open');
+ raise(r);syncFullscreenShell();saveWorkspace();
+ return true;
+}
+
 function showApp(id,initialState=null,passwordVerified=null){
  closeRecycleBin();finishAppRearrange();closeAppContext();if((!active&&!preview)||workspaceLock?.isLocked())return;if(id==='administration'&&!owner&&!preview)return;
  const chatPopout=/^chatpop-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id),baseId=chatPopout?'chat':id;
@@ -1117,7 +1136,28 @@ function showApp(id,initialState=null,passwordVerified=null){
  });bar.insertBefore(refresh,external);}
  const content=document.createElement('div');content.className='os-window-body';w.append(bar,content);
  const r={id,title:windowTitle,chatPopout,el:w,frame:null,release:null,fileState:id==='files'?initialState:null,storeState:id==='store'?initialState:null,storeBusy:false,settingsSection:initialState?.section||'general',spaceId:bcSpace,spaceShown:true};windows.set(id,r);
- for(const [label,symbol,fn] of [['Close','×',()=>void requestClose(r)],['Minimize','−',()=>{w.hidden=true;r.spaceShown=false;selectedWindow=null;syncStoreUpdateHold();syncChatVisibility();saveWorkspace()}],['Maximize or restore','+',()=>{if(!touchOS())fullscreenWindow(r.id);else{w.classList.toggle('is-max');saveWorkspace()}}]]){const btn=document.createElement('button');btn.type='button';btn.setAttribute('aria-label',label+' '+r.title);btn.title=label;btn.textContent=symbol;btn.addEventListener('click',fn);controls.append(btn)}
+ // Same lifecycle as the OS Window menu; native buttons support Enter/Space.
+ // Prevent pointerdown titlebar capture from swallowing touch and mouse clicks.
+ const commands=[
+  ['Close','×',()=>void requestClose(r)],
+  ['Minimize','−',()=>suspend(r)],
+  ['Maximize or restore','+',()=>toggleOSWindowSize(r)]
+ ];
+ for(const [index,[label,symbol,fn]] of commands.entries()){
+  const btn=document.createElement('button');
+  btn.type='button';
+  btn.className='os-traffic-control os-traffic-'+['close','minimize','maximize'][index];
+  btn.setAttribute('aria-label',label+' '+r.title);
+  btn.title=label+' '+r.title;
+  btn.textContent=symbol;
+  btn.addEventListener('pointerdown',event=>event.stopPropagation());
+  btn.addEventListener('click',event=>{
+   event.stopPropagation();
+   if(windows.get(r.id)!==r||w.hidden)return;
+   fn();
+  });
+  controls.append(btn);
+ }
  if(chatPopout){const blue=document.createElement('button');blue.type='button';blue.className='os-chat-park-button';blue.title='Park as chat bubble';blue.setAttribute('aria-label','Park '+r.title+' as a desktop chat bubble');blue.textContent='•';blue.addEventListener('click',()=>parkChat(r));controls.append(blue)}
  if(id==='personalphotos'){external.hidden=true;const msg=document.createElement('p');msg.textContent='Loading private Photos…';content.append(msg);(personalPhotosModule??=import('./blackcell-private-media.js?v=29-blackcell-corp-ai')).then(module=>{if(windows.get(id)!==r)return;content.replaceChildren();const app=module.mountPrivatePhotos(content,{client,userId:storeProfile,preview,alive:()=>windows.get(id)===r&&(active||preview),onBusy:busy=>{r.filesBusy=busy;if(busy&&!r.release){try{r.release=window.top.BLACKCELL_LIVE_UPDATE?.hold('Private Photos operation',window)}catch(_){}}else if(!busy){r.release?.();r.release=null}}});r.cleanup=()=>app.dispose();}).catch(()=>{personalPhotosModule=null;if(windows.get(id)===r){content.replaceChildren(msg);msg.textContent='Photos could not load. Reopen to try again.'}});}
  else if(id==='photobattle'){external.hidden=true;w.classList.add('is-max');const message=document.createElement('p');message.textContent='Entering Photo Battle…';message.style.padding='20px';content.append(message);import('./blackcell-photo-battle.js?v=3-transfer').then(module=>{if(windows.get(id)!==r)return;content.replaceChildren();const app=module.mountPhotoBattle(content,{client,userId:storeProfile,preview,alive:()=>windows.get(id)===r&&(active||preview)});r.cleanup=()=>app.dispose()}).catch(()=>{if(windows.get(id)===r){content.replaceChildren(message);message.textContent='Photo Battle could not start. Close and reopen.'}});}
@@ -1129,7 +1169,12 @@ function showApp(id,initialState=null,passwordVerified=null){
  else{r.release=window.BLACKCELL_LIVE_UPDATE?.hold('BLACKCELL OS application window');const frame=document.createElement('iframe');frame.title=r.title;if(id==='photoledger'){w.classList.add('is-max');frame.id='bcOsPhotoLedgerFrame'}if(id==='administration'){frame.id='bcOsAdministrationFrame';external.hidden=true;external.href='blackcell-administration-app.html';w.classList.add('is-max');const home=document.createElement('button');home.type='button';home.className='os-admin-home';home.textContent='‹ Administration';home.hidden=true;home.onclick=()=>{r.frameLoading?.begin();frame.src=url.href};r.adminHome=home;bar.insertBefore(home,title)}frame.allow=id==='voicememos'?'fullscreen; microphone':id==='community'?'fullscreen; camera':'fullscreen';frame.setAttribute('allowfullscreen','');r.frame=frame;const loader=appFrameLoading(frame,content,r.title,url,()=>windows.get(id)===r);r.frameLoading=loader;r.cleanup=loader.dispose;
  frame.addEventListener('load',()=>{try{const child=frame.contentDocument;if(!child)return;const childURL=new URL(frame.contentWindow.location.href);if(childURL.protocol==='about:')return;if(childURL.origin!==location.origin){loader.finish();return;}if(id==='photoledger'&&childURL.pathname.endsWith('/private-photo-ledger.html')){child.documentElement.classList.add('bc-admin-workspace-embedded');if(!child.querySelector('link[data-os-ledger-style]')){const sheet=child.createElement('link');sheet.rel='stylesheet';sheet.href='blackcell-admin-workspace-embedded.css?v=2-native-admin';sheet.dataset.osLedgerStyle='true';child.head.append(sheet)}}if(id==='administration'){if(childURL.pathname.endsWith('/dashboard.html')){loader.begin();frame.contentWindow.location.replace(url.href);return}if(r.adminHome)r.adminHome.hidden=childURL.pathname.endsWith('/blackcell-administration-app.html')}if(childURL.pathname.endsWith('/blackcell-os.html')||childURL.pathname.endsWith('/blackcell-os-preview.html')){dispose(r,true);return}if(id==='administration'&&childURL.pathname.endsWith('/login.html')){if(active)void recheck();loader.finish();return}for(const event of ['pointerdown','keydown','touchstart','wheel'])child.addEventListener(event,()=>void activity(),{passive:true});loader.finish();}catch(_){loader.finish();}});if(chatPopout||id==='chat')frame.addEventListener('load',syncChatVisibility);frame.src=url.href;content.prepend(frame);
  }
- $('desktop').append(w);if(deferred){applyParkedGeometry(r,deferred);r.chatKeepOnTop=deferred.keepOnTop===true;deferredParkedChats.delete(id);}raise(r);w.addEventListener('pointerdown',()=>raise(r),true);bar.addEventListener('dblclick',e=>{if(!e.target.closest('button,a')){w.classList.toggle('is-max');saveWorkspace()}});
+ $('desktop').append(w);if(deferred){applyParkedGeometry(r,deferred);r.chatKeepOnTop=deferred.keepOnTop===true;deferredParkedChats.delete(id);}raise(r);w.addEventListener('pointerdown',event=>{
+  if(event.target.closest('.traffic button'))return;
+  raise(r);
+ },true);bar.addEventListener('dblclick',e=>{
+  if(!e.target.closest('button,a'))toggleOSWindowSize(r);
+ });
  // A titlebar drag restores and moves even windows opened maximized by
  // default (REDLINE, Administration and Photo Battle). Phone/tablet windows
  // retain their dedicated responsive full-screen presentation.
