@@ -1,4 +1,4 @@
-/* REDLINE live room: opt-in timed requests + 3 counteroffer negotiation.
+/* REDLINE live room: owner-selected instant timers + optional sender stop + 3 counteroffer negotiation.
    All mutations use verified, room-scoped RPCs. Status and countdowns are
    server-authoritative; no payment or charges are created by this UI. */
 (()=>{
@@ -45,6 +45,7 @@ const settingsButton=action('⚙ REDLINE SETTINGS',()=>openSettings(),'redline-s
 settingsButton.id='redlineConsentSettingsOpen';
 const heading=$('#ledgerApp .page-heading');
 if(heading)heading.append(settingsButton);
+settingsButton.hidden=true;
 const settingsDlg=modal('REDLINE feature settings');
 const settingsHead=make('div','redline-consent-heading');
 settingsHead.append(make('h2','','REDLINE SETTINGS'),
@@ -92,7 +93,7 @@ function featureRow(name,description,key,value,owner){
    features=await api().setRoomFeature(s.roomId,key,requested);
    featureRoom=s.roomId;settingsStatus.textContent=name+(requested?' enabled.':' disabled.');
    refreshSettings();
-   await pollTimer(true);await pollNegotiations(true);
+   await pollNegotiations(true);
   }catch(e){toggle.checked=!requested;settingsStatus.textContent=safeError(e)}
   finally{featureBusy=false;refreshSettings()}
  });
@@ -102,28 +103,22 @@ function refreshSettings(){
  const s=snap();
  if(!s||!features||featureRoom!==s.roomId)return;
  toggleList.replaceChildren();
- if(s.isOwner){
-  settingsInfo.textContent='Receiver controls: turn either feature ON or OFF independently. '+
-   'OFF disables new requests; disabling negotiations finalizes pending negotiations at your original price.';
-  toggleList.append(
-   featureRow('Timer consent requests',
-    'Require sender consent before starting a paid photo timer. OFF disables new timers.',
-    'timer_requests_enabled',features.timer_requests_enabled,true),
-   featureRow('Price negotiations',
-    'Allow up to three sender counteroffers. OFF keeps your original price final.',
-    'negotiation_enabled',features.negotiation_enabled,true));
- }else{
-  settingsInfo.textContent='Sender controls: you may decline any timer request. '+
-   'Automatic approval is optional and is OFF unless you explicitly turn it ON.';
-  toggleList.append(featureRow('Auto-approve after 30 seconds',
-   'Only when you opt in: unanswered timer requests become approved after 30 seconds. '+
-   'Decline at any time before the countdown ends.',
-   'sender_auto_accept',features.sender_auto_accept,true));
- }
+ settingsButton.hidden=!s.isOwner;
+ if(!s.isOwner)return;
+ settingsInfo.textContent='Owner controls · START TIMER starts immediately, without sender acceptance. '+
+  'You can choose whether the sender gets a Decline & Stop Timer button. '+
+  'Any time already elapsed remains in the private ledger.';
+ toggleList.append(
+  featureRow('Allow sender to decline and stop timer',
+   'OFF: only you can stop. ON: the sender may immediately stop an active timer from REDLINE.',
+   'sender_can_stop_timer',features.sender_can_stop_timer===true,true),
+  featureRow('Price negotiations',
+   'Allow up to three sender counteroffers. OFF keeps your original price final.',
+   'negotiation_enabled',features.negotiation_enabled,true));
 }
 async function openSettings(){
- const s=snap();if(!roomActive())return;
- settingsStatus.textContent='Loading room controls…';openDialog(settingsDlg);
+ const s=snap();if(!roomActive()||!s.isOwner)return;
+ settingsStatus.textContent='Loading owner room controls…';openDialog(settingsDlg);
  await pollFeatures(true);
  refreshSettings();
 }
@@ -182,29 +177,11 @@ function renderTimerRequest(q){
  timerDlg.append(row,error);
  openDialog(timerDlg);
 }
+// Timers now start immediately when the owner presses START.
+ // The legacy 30-second approval popup is intentionally not displayed.
 function displayTimerStatus(){
- const s=snap(),q=timerLatest?.request;
- if(!roomActive()||!q){
-  if(timerDlg.open)timerDlg.close();
-  lastTimerDialogId=null;return;
- }
- if(!s.isOwner&&q.status==='pending')renderTimerRequest(q);
- else if(timerDlg.open){timerDlg.close();lastTimerDialogId=null}
- if(s.isOwner&&q.status==='accepted'&&!dispatched.has(q.id)){
-  dispatched.add(q.id);
-  window.dispatchEvent(new CustomEvent('blackcell:redline:timer-consent-approved',{
-   detail:{id:q.id,roomId:s.roomId,photoId:q.photo_id,rateCents:q.rate_cents}
-  }));
- }
- const status=$('#redlinePhotoTimerPanel .rr-timer-note');
- if(s.isOwner&&status&&!$('#redlinePhotoTimerPanel')?.hidden){
-  if(q.status==='pending')status.textContent='APPROVAL PENDING · '+Math.max(0,
-   Math.ceil((Date.parse(q.expires_at)-Date.now()-serverOffset)/1000))+
-   's remaining · Sender may decline at any time.';
-  if(q.status==='declined')status.textContent='REQUEST DECLINED · Timer did not start.';
-  if(q.status==='expired')status.textContent='REQUEST EXPIRED · No charge was started.';
-  if(q.status==='cancelled')status.textContent='REQUEST CANCELLED · No charge was started.';
- }
+ if(timerDlg.open)timerDlg.close();
+ lastTimerDialogId=null;
 }
 async function pollTimer(force=false){
  const s=snap();
@@ -324,8 +301,8 @@ function resetIfRoomChanged(){
 function tick(){
  resetIfRoomChanged();
  if(!roomActive())return;
- displayTimerStatus();
- void pollTimer();void pollFeatures();void pollNegotiations();
+ settingsButton.hidden=!snap()?.isOwner;
+ void pollFeatures();void pollNegotiations();
 }
 window.addEventListener('blackcell:redline:photo-decided',()=>{void pollNegotiations(true)});
 window.addEventListener('blackcell:redline:negotiation-changed',()=>{void pollNegotiations(true)});
