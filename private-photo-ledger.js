@@ -1833,13 +1833,13 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
  async priceNegotiationAction(photoId,action,amountCents=null){
   if(state.closed||!state.user||!state.room?.active||state.showArchive||!validId(photoId))
    throw Error('Verified active room required.');
-  if(!['counter','accept_original','accept_counter','reject_counter','finalize_original','set_owner_price'].includes(action))
+  if(!['counter','accept_original','accept_counter','reject_counter','finalize_original','set_owner_price','accept_owner_offer','reject_owner_offer'].includes(action))
    throw Error('Invalid negotiation action.');
   const r=await db.rpc('corp_redline_price_negotiation_act',{
    p_photo_id:photoId,p_action:action,p_amount_cents:amountCents
   });
   if(r.error||r.data?.ok!==true)throw Error(fail(r.error||r.data?.reason||'Negotiation response failed.'));
-  if(['accept_counter','set_owner_price'].includes(action)&&state.isOwner){
+  if(action==='accept_counter'&&state.isOwner||action==='accept_owner_offer'){
    state.entryFingerprint='';
    try{await loadEntries({force:true})}catch(_){/* Next room refresh will pick up price. */}
   }
