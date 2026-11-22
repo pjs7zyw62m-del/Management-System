@@ -2,6 +2,7 @@ import {mountPopoutActions} from './corporate-chat-popout-actions.js?v=20261116-
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
 import {setupCorporateMedia} from './corporate-chat-media.js?v=20261115-cohesive-media1';
 import {setupCorporateChatLive} from './corporate-chat-live.js?v=20261113-no-typing1';
+import {installAndroidChatCaretGuard} from './corporate-chat-android-caret.js?v=20261121-caret-recovery1';
 import {createChatTubeCards,parseTubeReference} from './blackcell-chat-tube-cards.js?v=1';
 import {createChatPulseCards,parsePulseShare} from './blackcell-chat-pulse-cards.js?v=1';
 const client=corporateClient(),$=id=>document.getElementById(id);
@@ -205,6 +206,7 @@ smallWindow.addEventListener('change',()=>{
  applySidebarPreference();renderPeers();
 });
 const composerText=$('messageInput');
+const androidChatCaretGuard=installAndroidChatCaretGuard(composerText);
 // REDLINE intentionally leaves its Android textarea height alone during typing.
 // Reflowing the iMessage textarea on every keystroke can move the caret during
 // Android Chrome/Gboard composition on some devices (including low-end phones).
@@ -600,7 +602,7 @@ $('sendForm').addEventListener('submit',async e=>{
   if(!ready||peer?.user_id!==target)return;
   const {error}=await client.from('corp_chat_messages').insert({sender_id:self,recipient_id:target,body});
   if(error){status('Message not sent. The contact may be blocked or unavailable.');void refreshCurrentBlock();return}
-  $('messageInput').value='';resizeComposer();await loadMessages();
+  $('messageInput').value='';androidChatCaretGuard.reset();resizeComposer();await loadMessages();
  }catch(_){status('Message not sent. Check your connection.')}
  finally{sendingMessage=false;syncBlockControls();if(!$('messageInput').disabled)$('messageInput').focus()}
 });
