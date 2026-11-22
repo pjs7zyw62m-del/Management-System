@@ -1,6 +1,6 @@
 import {mountPopoutActions} from './corporate-chat-popout-actions.js?v=20261116-edit-unsend1';
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
-import {setupCorporateMedia} from './corporate-chat-media.js?v=20261115-cohesive-media1';
+import {setupCorporateMedia} from './corporate-chat-media.js?v=20261122-android-attachment-inpage1';
 import {setupCorporateChatLive} from './corporate-chat-live.js?v=20261113-no-typing1';
 import {installAndroidChatCaretGuard} from './corporate-chat-android-caret.js?v=20261121-caret-recovery1';
 import {createChatTubeCards,parseTubeReference} from './blackcell-chat-tube-cards.js?v=1';
