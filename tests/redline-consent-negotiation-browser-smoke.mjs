@@ -11,9 +11,9 @@ const owner=new URLSearchParams(location.search).get('role')==='owner';
 const room='00000000-0000-4000-8000-000000000013';
 const photo='00000000-0000-4000-8000-000000000014';
 const request='00000000-0000-4000-8000-000000000015';
-let auto=false,negEnabled=true,timerEnabled=true,responses=0,counters=0,rejections=0,toggles=0;
+let senderStop=false,negEnabled=true,timerEnabled=true,responses=0,counters=0,rejections=0,toggles=0;
 let timerStatus={id:request,photo_id:photo,rate_cents:60,
- status:'pending',expires_at:new Date(Date.now()+30000).toISOString()};
+ status:'started',expires_at:new Date(Date.now()+30000).toISOString()};
 let offerStatus=owner?{photo_id:photo,original_cents:900,offer_cents:400,
  offer_count:3,status:'awaiting_owner',updated_at:new Date().toISOString()}:null;
 window.confirm=()=>true;
@@ -22,16 +22,16 @@ window.BLACKCELL_REDLINE_API={
   userId:owner?'00000000-0000-4000-8000-000000000016':'00000000-0000-4000-8000-000000000017',
   photoHistory:[{id:photo,image_url:'https://example.com/private.jpg',caption:'Test'}]}),
  roomFeatureStatus:async()=>({ok:true,timer_requests_enabled:timerEnabled,
-  negotiation_enabled:negEnabled,sender_auto_accept:auto}),
+  negotiation_enabled:negEnabled,sender_can_stop_timer:senderStop}),
  setRoomFeature:async(id,key,val)=>{
-  toggles++;if(key==='sender_auto_accept')auto=val;
+  toggles++;if(key==='sender_can_stop_timer')senderStop=val;
   if(key==='timer_requests_enabled')timerEnabled=val;
   if(key==='negotiation_enabled')negEnabled=val;
   return {ok:true,timer_requests_enabled:timerEnabled,
-   negotiation_enabled:negEnabled,sender_auto_accept:auto};
+   negotiation_enabled:negEnabled,sender_can_stop_timer:senderStop};
  },
  timerRequestStatus:async()=>({ok:true,server_now:new Date().toISOString(),
-  request:timerStatus,sender_auto_accept:auto,timer_requests_enabled:timerEnabled}),
+  request:timerStatus,sender_can_stop_timer:senderStop,timer_requests_enabled:timerEnabled}),
  timerRequestRespond:async(id,accept)=>{if(id===request&&!accept){
   responses++;timerStatus={...timerStatus,status:'declined'};
  }return {ok:true}},
@@ -65,38 +65,30 @@ document.addEventListener('DOMContentLoaded',()=>{
   },3700);
   setTimeout(()=>{
    const switches=[...document.querySelectorAll('.redline-feature-toggle')];
-   document.body.dataset.ownerToggles=String(switches.length===2&&switches.every(x=>x.checked));
+   document.body.dataset.ownerToggles=String(switches.length===2&&
+    switches.some(x=>x.dataset.feature==='sender_can_stop_timer'&&!x.checked));
+   switches.find(x=>x.dataset.feature==='sender_can_stop_timer')?.click();
    switches.find(x=>x.dataset.feature==='negotiation_enabled')?.click();
   },4600);
   setTimeout(()=>{
-   document.body.dataset.ownerDisabled=String(negEnabled===false&&toggles>=1);
+   document.body.dataset.ownerDisabled=String(negEnabled===false&&senderStop===true&&toggles>=2);
   },6800);
  }else{
   setTimeout(()=>{
    const dialog=document.getElementById('redlineSenderTimerApproval');
-   document.body.dataset.senderTimerPrompt=String(Boolean(dialog?.open&&
-    dialog.textContent.includes('DECLINE CHANCE 1 OF 3')&&
-    dialog.textContent.includes('$0.60/minute')));
-   dialog?.querySelector('.redline-consent-no')?.click();
+   document.body.dataset.senderNoTimerPrompt=String(!dialog?.open);
   },1600);
   setTimeout(()=>{
-   document.body.dataset.senderDeclined=String(responses===1&&
-    !document.getElementById('redlineSenderTimerApproval')?.open);
+   document.body.dataset.senderNoApproval=String(responses===0);
    offerStatus={photo_id:photo,original_cents:900,offer_cents:null,
     offer_count:0,status:'awaiting_sender',updated_at:new Date().toISOString()};
    window.dispatchEvent(new Event('blackcell:redline:negotiation-changed'));
   },2800);
   setTimeout(()=>{
-   document.getElementById('redlineConsentSettingsOpen')?.click();
-  },4400);
+   document.body.dataset.senderNoOwnerSettings=String(Boolean(
+    document.getElementById('redlineConsentSettingsOpen')?.hidden));
+  },5200);
   setTimeout(()=>{
-   document.body.dataset.senderAutoDefaultOff=String(Boolean(
-    document.querySelector('.redline-feature-toggle[data-feature="sender_auto_accept"]:not(:checked)')));
-   document.querySelector('.redline-feature-toggle[data-feature="sender_auto_accept"]')?.click();
-  },5400);
-  setTimeout(()=>{
-   document.body.dataset.senderAutoEnabled=String(auto&&toggles>=1);
-   document.querySelector('dialog[aria-label="REDLINE feature settings"]')?.close();
    window.dispatchEvent(new Event('blackcell:redline:negotiation-changed'));
   },6600);
   setTimeout(()=>{
@@ -145,11 +137,11 @@ try{
   assert.equal(exit,0,role+' browser failure '+stderr.slice(-800));
   const checks=role==='owner'
    ?['owner-negotiation','owner-rejected-final','owner-toggles','owner-disabled']
-   :['sender-timer-prompt','sender-declined','sender-negotiation',
-      'sender-counter','sender-auto-default-off','sender-auto-enabled'];
+   :['sender-no-timer-prompt','sender-no-approval','sender-negotiation',
+      'sender-counter','sender-no-owner-settings'];
   for(const flag of checks)
    assert.match(stdout,new RegExp('data-'+flag+'="true"'),role+' '+flag+' missing');
   assert.doesNotMatch(stdout,/data-consent-js-error="[^"]+"/,role+' runtime JS error');
-  console.log(role+': timer consent, counteroffers and feature toggles passed');
+  console.log(role+': immediate timer, owner stop setting and counteroffers passed');
  }
 }finally{await new Promise(resolve=>server.close(resolve))}
