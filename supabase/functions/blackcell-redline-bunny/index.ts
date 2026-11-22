@@ -87,7 +87,7 @@ Deno.serve(async req=>{
  if(req.method!=="POST")return reply(origin,405,"POST_REQUIRED");
  if(origin&&!origins.has(origin))return reply(origin,403,"ORIGIN_DENIED");
  const {host,pub,accessKey}=secretConfig();
- if(!host||!pub||!accessKey)return reply(origin,503,"BUNNY_REDLlNE_NOT_CONFIGURED");
+ if(!host||!pub||!accessKey)return reply(origin,503,"BUNNY_REDLINE_NOT_CONFIGURED");
  const auth=req.headers.get("authorization")||"";
  if(!/^Bearer\s+\S+$/i.test(auth))return reply(origin,401,"SIGN_IN_REQUIRED");
  const jwt=auth.replace(/^Bearer\s+/i,"").trim();
@@ -147,10 +147,12 @@ Deno.serve(async req=>{
     return reply(origin,404,"PRIVATE_PHOTO_NOT_FOUND");
    const file=await bunny(entry.image_path,accessKey,"GET");
    if(!file.ok||!file.body)return reply(origin,404,"BUNNY_PHOTO_UNAVAILABLE");
-   const type=(file.headers.get("content-type")||"image/jpeg").split(";")[0];
+   // Bunny may send application/octet-stream even for image objects.
+   // The verified, immutable file path gives us the approved image MIME.
+   const ext=entry.image_path.split(".").pop();
+   const type=Object.entries(allowed).find(([,suffix])=>suffix===ext)?.[0]||"application/octet-stream";
    return new Response(file.body,{
-    status:200,headers:{...cors(origin),
-     "Content-Type":Object.hasOwn(allowed,type)?type:"application/octet-stream"}
+    status:200,headers:{...cors(origin),"Content-Type":type}
    });
   }
   if(action==="cleanup"){
