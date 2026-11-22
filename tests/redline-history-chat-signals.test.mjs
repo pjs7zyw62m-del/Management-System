@@ -80,7 +80,7 @@ test('Sender UI and owner read-only preview expose Photo History next to Earning
  assert.match(preview,/btn.disabled=true/);
  assert.match(css,/repeat\(4,minmax\(0,1fr\)\)!important/);
  assert.match(html,/private-photo-ledger-owner-preview\.js\?v=20261121-current-viewing1/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-current-viewing1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261122-redline-chat-plus1/);
 });
 test('Read receipts and typing presence only use authenticated current room',()=>{
  assert.match(core,/async chatSignal\(roomId,action,messageId=null\)/);
