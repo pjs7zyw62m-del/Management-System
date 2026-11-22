@@ -1,0 +1,67 @@
+/* BLACKCELL REDLINE owner-only permanent media purge, all screen sizes.
+   Not a rejection or hiding action; the verified server must delete the file. */
+.redline-photo-delete-button,.rr-permanent-delete-button{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ background:#24080d!important;color:#ffb3c5!important;border:1px solid #b5294a!important;
+ border-radius:9px!important;min-height:39px!important;padding:9px 12px!important;
+ font-size:11px!important;font-weight:850!important;letter-spacing:.03em!important;
+ cursor:pointer!important;white-space:normal!important;line-height:1.3!important;
+}
+.redline-photo-delete-button:hover,.rr-permanent-delete-button:hover{
+ background:#790f2e!important;color:#fff!important;
+}
+.redline-photo-delete-button:focus-visible,.rr-permanent-delete-button:focus-visible{
+ outline:2px solid #fff;outline-offset:2px;
+}
+.redline-photo-delete-button:disabled,.rr-permanent-delete-button:disabled{
+ opacity:.55!important;cursor:not-allowed!important;
+}
+.redline-photo-removed-placeholder{
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ text-align:center;gap:9px;min-height:130px;width:100%;padding:16px;
+ background:#0e090b;color:#ffb2c4;border:1px dashed #672a3c;
+ border-radius:10px;
+}
+.redline-photo-removed-placeholder strong{font-size:13px;letter-spacing:.07em}
+.redline-photo-removed-placeholder small{
+ font-size:11px;color:#ae98a2;line-height:1.45;max-width:360px;
+}
+.redline-photo-removed .photo-entry-content{width:100%}
+.redline-photo-removed .entry-badge{background:#49101d!important;color:#ffc1d0!important}
+.redline-purge-confirm{
+ width:min(510px,calc(100vw - 16px));max-width:none;box-sizing:border-box;
+ max-height:calc(100dvh - 24px);overflow-y:auto;
+ border:1px solid #f44163;border-radius:16px;padding:0;
+ background:#090507;color:#fff;box-shadow:0 30px 95px #000e;
+}
+.redline-purge-confirm::backdrop{background:#000e}
+.redline-purge-body{display:flex;flex-direction:column;gap:14px;padding:25px}
+.redline-purge-eyebrow{font-size:10px;font-weight:800;letter-spacing:.14em;color:#ff7998}
+.redline-purge-body h2{font-size:22px;line-height:1.24;margin:0;color:#fff}
+.redline-purge-body p{font-size:13px;line-height:1.58;color:#dfcad1;margin:0}
+#redlinePurgePhotoRef{
+ padding:10px;border:1px solid #663243;border-radius:8px;
+ font-weight:800;font-size:12px;color:#ffb9cb;
+}
+.redline-purge-body label{font-size:12px;font-weight:750}
+#redlinePurgeType{
+ width:100%;box-sizing:border-box;min-height:48px;padding:12px;
+ background:#1b1015;color:#fff;font-size:16px;border:1px solid #ae4662;
+ border-radius:8px;letter-spacing:.08em;outline:none;
+}
+#redlinePurgeType:focus{border-color:#ff85a7}
+.redline-purge-actions{display:flex;gap:9px;flex-wrap:wrap}
+.redline-purge-actions button{
+ flex:1 1 150px;min-height:46px;border-radius:9px;padding:10px;
+ font-weight:850;font-size:12px;cursor:pointer;
+}
+#redlinePurgeCancel{border:1px solid #8a7880;color:#fff;background:#292126}
+#redlinePurgeSubmit{border:1px solid #ff4e72;color:#fff;background:#af002c}
+#redlinePurgeSubmit:disabled{opacity:.38;cursor:not-allowed}
+@media(max-width:480px){
+ .redline-purge-body{padding:17px}
+ .redline-purge-body h2{font-size:19px}
+ .redline-photo-delete-button,.rr-permanent-delete-button{
+  min-height:44px!important;width:100%!important;
+ }
+}
