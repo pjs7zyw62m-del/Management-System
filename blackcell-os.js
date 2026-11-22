@@ -727,8 +727,16 @@ function applyParkedGeometry(r,saved){
  }
  w.classList.toggle('is-max',saved.maximized===true);
 }
+function shouldSkipAndroidRestoredRedline(saved,parked=false){
+ // Level 1+ Android employees should return to BLACKCELL OS home after a
+ // reload, not have the previous REDLINE app silently opened over the OS.
+ // This only affects automatic workspace restore; manual launch is unchanged.
+ return !parked&&!preview&&!owner&&/Android/i.test(navigator.userAgent||'')
+  &&saved?.id==='photoledger';
+}
 function restoreRecord(saved,parked=false){
  if(!saved||typeof saved.id!=='string'||windows.has(saved.id))return;
+ if(shouldSkipAndroidRestoredRedline(saved,parked))return;
  if(parked){
   if(!/^chatpop-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(saved.id)||typeof saved.name!=='string'||(!preview&&!installedApp('chat')))return;
  }else if(!/^[a-z]+$/.test(saved.id)||saved.id.length>40)return;
