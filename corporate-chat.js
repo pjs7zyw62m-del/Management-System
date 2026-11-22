@@ -14,6 +14,7 @@ const mediaPanelMode=['share','library'].includes(embedParams.get('mediaPanel'))
 const osChat=!mediaPanelMode&&(embedParams.get('osApp')==='chat'||(()=>{try{return window.parent!==window&&window.parent.location.origin===location.origin&&/\/blackcell-os(?:-preview)?\.html$/.test(window.parent.location.pathname)}catch(_){return false}})());
 if(embedParams.get('embed')==='1')document.documentElement.classList.add('bc-embedded');
 if(osChat)document.documentElement.classList.add('bc-os-chat');
+if(/Android/i.test(navigator.userAgent||''))document.documentElement.classList.add('bc-chat-android');
 const physicallySmallPhone=/iPhone|iPod/i.test(navigator.userAgent||'')||
  (navigator.maxTouchPoints>0&&Math.min(screen.width||Infinity,screen.height||Infinity)<=650);
 const smallWindow=window.matchMedia(osChat?'(max-width: 550px)':'(max-width: 680px)');
@@ -150,7 +151,11 @@ const mediaToggle=$('mediaToggleButton');
 const canShowFullMedia=()=>window.BlackcellChatMedia?.enabled()===true;
 mediaToggle.hidden=false;mediaToggle.title='Attachments';
 mediaToggle.setAttribute('aria-label','Attachment options');
-mediaToggle.addEventListener('click',()=>sharedMedia.toggleMediaTray());
+mediaToggle.addEventListener('click',event=>{
+ event.preventDefault();
+ event.stopPropagation();
+ sharedMedia.toggleMediaTray();
+});
 window.addEventListener('blackcell-chat-media-capability-change',()=>sharedMedia.closeMediaTray());
 const inboxEdit=$('inboxEdit'),inboxCompose=$('inboxCompose'),inboxMenu=$('inboxFilterMenu'),inboxFilterButton=$('inboxFilter'),inboxMarkRead=$('inboxMarkRead');
 function closeInboxFilter(){inboxMenu.hidden=true;inboxFilterButton.setAttribute('aria-expanded','false')}
