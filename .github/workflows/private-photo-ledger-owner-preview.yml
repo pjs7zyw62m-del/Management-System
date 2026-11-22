@@ -92,6 +92,12 @@ jobs:
             body.dataset.qaHistory=historyTab?.classList.contains('is-active')?'yes':'no';
             body.dataset.qaHistoryRows=String(!!dialog.querySelector('.bc-redline-preview-history-row'));
             body.dataset.qaResendReadOnly=String(!!dialog.querySelector('.bc-redline-preview-resend:disabled'));
+            const payday=dialog.querySelector('[data-tab=payday]');
+            payday?.click();
+            const paydayPanel=dialog.querySelector('.bc-redline-preview-payday');
+            body.dataset.qaPayday=String(Boolean(payday?.classList.contains('is-active')&&
+              paydayPanel&&!paydayPanel.hidden&&paydayPanel.textContent.includes('Sample maximum')));
+            body.dataset.qaWithdrawDisabled=String(Boolean(dialog.querySelector('.bc-redline-preview-request:disabled')));
             const tablet=dialog.querySelector('.bc-redline-preview-devices button:last-child');
             tablet.click();
             body.dataset.qaTablet=dialog.querySelector('.bc-redline-preview-phone').dataset.device;
@@ -122,6 +128,8 @@ jobs:
             grep -q 'data-qa-history="yes"' "$f"
             grep -q 'data-qa-history-rows="true"' "$f"
             grep -q 'data-qa-resend-read-only="true"' "$f"
+            grep -q 'data-qa-payday="true"' "$f"
+            grep -q 'data-qa-withdraw-disabled="true"' "$f"
             grep -q 'data-qa-tablet="tablet"' "$f"
             grep -q 'data-qa-phone="phone"' "$f"
             grep -q 'data-qa-amount="yes"' "$f"
