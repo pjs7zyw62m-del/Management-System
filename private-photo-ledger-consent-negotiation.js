@@ -212,8 +212,8 @@ function parseCounter(value,original){
  if(!/^\d+(?:\.\d{1,2})?$/.test(clean))throw Error('Enter a dollar amount, such as 5.00.');
  const [whole,decimal='']=clean.split('.');
  const cents=BigInt(whole)*100n+BigInt(decimal.padEnd(2,'0'));
- if(cents<0n||cents>=BigInt(original))
-  throw Error('Counteroffer must be lower than the original price.');
+ if(cents<=BigInt(original))
+  throw Error('Ask for more than the receiver’s original price.');
  if(cents>BigInt(Number.MAX_SAFE_INTEGER))throw Error('Amount is too large.');
  return Number(cents);
 }
@@ -245,12 +245,12 @@ function renderNegotiation(offer){
  const actions=make('div','redline-consent-actions');
  if(!s.isOwner){
   negotiateDlg.append(make('p','redline-consent-muted',
-   'You may accept the original price or submit a lower counteroffer. '+
-   'The receiver may reject each counteroffer. After the third rejected offer, '+
+   'You may accept the receiver’s original price or ask for a higher amount. '+
+   'The receiver may accept or reject your request. After the third rejected offer, '+
    'their original price is final.'));
   const input=make('input','redline-consent-amount');input.inputMode='decimal';
-  input.placeholder='Your counteroffer in USD (e.g. 1.50)';
-  input.setAttribute('aria-label','Your lower counteroffer amount in dollars');
+  input.placeholder='Ask for a higher amount in USD (e.g. 15.00)';
+  input.setAttribute('aria-label','Your higher counteroffer amount in dollars');
   input.addEventListener('input',()=>{if(input.value.startsWith('.'))input.value='0'+input.value;});
   negotiateDlg.append(input);
   actions.append(action('ACCEPT ORIGINAL PRICE',()=>void actOnNegotiation(offer.photo_id,'accept_original'),'redline-consent-yes'),
@@ -260,7 +260,7 @@ function renderNegotiation(offer){
    },'redline-consent-no'));
  }else{
   negotiateDlg.append(make('p','redline-consent-muted',
-   'The sender proposes '+cash(offer.offer_cents)+
+   'The sender requests a higher payment of '+cash(offer.offer_cents)+
    '. You can accept it, reject it, or finish at your original price.'));
   actions.append(action('ACCEPT '+cash(offer.offer_cents),
     ()=>void actOnNegotiation(offer.photo_id,'accept_counter'),'redline-consent-yes'),
