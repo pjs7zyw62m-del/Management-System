@@ -75,6 +75,80 @@ test('Desktop/non-Android devices get no typing intervention',()=>{
  for(const ch of 'hello')input(box,ch);
  assert.equal(box.value,'hello');assert.equal(guard.enabled,false);
 });
+// Simulate Android 11 Chrome being backgrounded by another app. The older
+// browser can resume with the textarea's selection reset to position 0.
+function resumedComposer(){
+ const box=new MockEditor(),doc=new EventTarget(),view=new EventTarget();
+ doc.hidden=false;doc.defaultView=view;doc.activeElement=box;
+ box.ownerDocument=doc;
+ const guard=installAndroidChatCaretGuard(box,{userAgent:'Mozilla/5.0 (Linux; Android 11; Neon Smarta 2) AppleWebKit/537.36 Chrome/110.0.0.0 Mobile Safari/537.36'});
+ function background(){
+  doc.hidden=true;doc.dispatchEvent(new Event('visibilitychange'));
+  box.setSelectionRange(0,0);
+  box.dispatchEvent(new Event('blur'));
+ }
+ function resume(){
+  doc.hidden=false;doc.dispatchEvent(new Event('visibilitychange'));
+  view.dispatchEvent(new Event('pageshow'));
+  box.dispatchEvent(new Event('focus'));
+ }
+ return {box,guard,doc,view,background,resume};
+}
+test('Android 11: app switch resets Chrome selection to start and input without beforeinput still appends',()=>{
+ const {box,guard,background,resume}=resumedComposer();
+ for(const ch of 'hello')input(box,ch);
+ background();resume();
+ input(box,'!',{forceStart:true});
+ assert.equal(box.value,'hello!');
+ assert.equal(box.selectionStart,6);
+ assert.ok(guard.correctionCount>=1);
+});
+test('Android 11: beforeinput following app resume restores caret before the keystroke',()=>{
+ const {box,guard,background,resume}=resumedComposer();
+ for(const ch of 'hello')input(box,ch);
+ background();resume();
+ input(box,'!',{forceStart:true,withBefore:true});
+ assert.equal(box.value,'hello!');
+ assert.equal(box.selectionStart,6);
+ assert.ok(guard.correctionCount>=1);
+});
+test('Android 11: user deliberately taps beginning after resume to edit and app does not reorder text',()=>{
+ const {box,background,resume}=resumedComposer();
+ for(const ch of 'hello')input(box,ch);
+ background();resume();
+ box.setSelectionRange(0,0);box.dispatchEvent(new Event('pointerup'));
+ input(box,'X');
+ assert.equal(box.value,'Xhello');
+ assert.equal(box.selectionStart,1);
+});
+test('Android 11: keyboard navigation to a middle insertion point survives backgrounding',()=>{
+ const {box,background,resume}=resumedComposer();
+ for(const ch of 'hello')input(box,ch);
+ box.setSelectionRange(2,2);box.dispatchEvent(event('keyup','',{key:'ArrowLeft'}));
+ background();resume();
+ box.setSelectionRange(2,2);input(box,'X');
+ assert.equal(box.value,'heXllo');
+});
+test('Android 11: a pagehide/pageshow restore with missing inputType still recovers an accidental prepend',()=>{
+ const {box,view,guard}=resumedComposer();
+ for(const ch of 'hi')input(box,ch);
+ view.dispatchEvent(new Event('pagehide'));
+ box.setSelectionRange(0,0);
+ view.dispatchEvent(new Event('pageshow'));
+ input(box,'!',{forceStart:true,inputType:''});
+ assert.equal(box.value,'hi!');
+ assert.ok(guard.correctionCount>=1);
+});
+test('Android 11: sent/cleared draft never leaks back in after returning from another app',()=>{
+ const {box,guard,background,resume}=resumedComposer();
+ for(const ch of 'hello')input(box,ch);
+ background();
+ box.value='';box.setSelectionRange(0,0);guard.reset();
+ resume();
+ input(box,'N',{forceStart:true});
+ input(box,'o',{forceStart:true});
+ assert.equal(box.value,'No');
+});
 test('Integration loads guarded helper before live typing and busts asset cache',()=>{
  const chat=readFileSync('corporate-chat.js','utf8');
  const html=readFileSync('corporate-chat.html','utf8');
