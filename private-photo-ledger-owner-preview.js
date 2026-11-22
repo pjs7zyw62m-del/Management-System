@@ -83,7 +83,46 @@
   const composerSample=make('div','bc-redline-preview-chat-input');
   composerSample.append(make('span','','＋  iMessage (REDLINE)…'),make('span','','➤'));
   thread.append(composerSample);
-  upload.append(title,fileArea,thread);
+  
+  // The OS preview mirrors the real sender conversation-first messenger.
+  // All controls in this owner-only preview are non-transactional.
+  const liveStrip=make('details','bc-redline-preview-live-strip');
+  const liveSummary=make('summary','bc-redline-preview-live-summary');
+  const stripStats={};
+  for(const [key,label] of [['approved','APPROVED'],['owed','OUTSTANDING'],['paid','RECORDED PAID']]){
+   const cell=make('div','bc-redline-preview-live-cell');
+   cell.append(make('small','',label));
+   const value=make('strong','','—');
+   stripStats[key]=value;cell.append(value);liveSummary.append(cell);
+  }
+  const liveDetail=make('div','bc-redline-preview-live-detail');
+  const pendingHint=make('span','','0 photos awaiting review');
+  liveDetail.append(make('span','','Live room summary · tap to expand'),pendingHint);
+  liveStrip.append(liveSummary,liveDetail);
+  const timerDemo=make('div','bc-redline-preview-timer-demo');
+  timerDemo.append(make('span','','◷ DEMO TIMER · $0.50/min'),
+   make('strong','','00:03:27'),
+   make('small','','Sample only · actual timer comes from the room'));
+  const firstBubble=thread.querySelector('.bc-redline-preview-bubble');
+  thread.insertBefore(timerDemo,firstBubble);
+  const photoDrawer=make('details','bc-redline-preview-photo-drawer');
+  photoDrawer.append(make('summary','bc-redline-preview-drawer-heading','＋ SEND PHOTOS ANYTIME'),title,fileArea);
+  const reviewQueue=make('section','bc-redline-preview-review-queue');
+  reviewQueue.append(make('h4','','Photo Submission Status'),
+   make('p','','EXAMPLE ONLY · New photos can be submitted while others await review.'));
+  for(const [number,status,style,description] of [
+    ['001','AWAITING REVIEW','pending','Sent 9:13 PM · Pending'],
+    ['002','APPROVED','approved','$15.00 approved · awaiting payment'],
+    ['003','PAID','paid','$25.00 · see recorded payment date']
+  ]){
+   const row=make('div','bc-redline-preview-queue-row '+style);
+   const icon=make('span','bc-redline-preview-queue-icon',style==='pending'?'◷':style==='approved'?'★':'✓');
+   const info=make('div','bc-redline-preview-queue-info');
+   info.append(make('strong','','PHOTO '+number+' · '+status),make('small','',description));
+   row.append(icon,info);reviewQueue.append(row);
+  }
+  upload.replaceChildren(liveStrip,thread,photoDrawer,reviewQueue);
+
   // Preview matches the approved three-section sender screen. All values
   // are read-only and the sample conversation never accesses real messages.
   const earningsPanel=make('section','bc-redline-preview-message bc-redline-preview-earnings');earningsPanel.hidden=true;
