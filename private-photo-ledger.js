@@ -992,16 +992,19 @@ function preparePhotoReviewLightbox(entry){
  const timedSignature=String(photoTimed?.timed_cents||0)+'/'+
   String(photoTimed?.credited_to_photo_cents||0)+'/'+String(photoTimed?.additional_timed_cents||0);
  const ratingSig=String(entry?state.ratings.get(entry.id)?.stars||0:0);
+ const removalSig=entry?.photo_removal_status||'none';
  if(panel.dataset.redlinePhotoId===(entry?.id||'none')&&
     panel.dataset.redlineDecision===(entry?.decision_status||'empty')&&
     panel.dataset.redlinePause===String(Boolean(state.room?.photo_sending_paused))&&
     panel.dataset.redlineTimed===timedSignature&&
-    panel.dataset.redlineRating===ratingSig&&!panel.hidden)return;
+    panel.dataset.redlineRating===ratingSig&&
+    panel.dataset.redlineRemoval===removalSig&&!panel.hidden)return;
  panel.dataset.redlinePhotoId=entry?.id||'none';
  panel.dataset.redlineDecision=entry?.decision_status||'empty';
  panel.dataset.redlinePause=String(Boolean(state.room?.photo_sending_paused));
  panel.dataset.redlineTimed=timedSignature;
  panel.dataset.redlineRating=ratingSig;
+ panel.dataset.redlineRemoval=removalSig;
  // Preserve the same authenticated timer node when refreshing the bid UI.
  const liveTimer=$('redlinePhotoTimerPanel');
  if(liveTimer?.parentNode===panel)liveTimer.remove();
@@ -1042,6 +1045,10 @@ function preparePhotoReviewLightbox(entry){
       ?'Original bid '+dollars(entry.amount_cents)+' + timed earnings '+dollars(timed)
       :'Saved timer earnings '+dollars(timed)));
   }
+  if(entry&&!entry.photo_removal_status){
+   panel.append(button('DELETE PHOTO PERMANENTLY',
+    ()=>void deletePhotoPermanently(entry),'rr-permanent-delete-button'));
+  }
   restoreTimer();
   return;
  }
@@ -1057,6 +1064,8 @@ function preparePhotoReviewLightbox(entry){
  const reject=button('✕ REJECT PHOTO',()=>void decision('reject'),'button-outline reject-photo');
  controls.append(accept,zero,reject);
  panel.append(controls,node('p','redline-review-hint','Decisions are final. No actual payment is transferred.'));
+ panel.append(button('DELETE PHOTO PERMANENTLY',
+  ()=>void deletePhotoPermanently(entry),'rr-permanent-delete-button'));
  const statusLine=node('p','redline-review-status');
  statusLine.setAttribute('role','status');
  panel.append(statusLine);
