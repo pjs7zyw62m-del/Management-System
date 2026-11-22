@@ -7,6 +7,16 @@ on:
       - 'blackcell-os-device-label.css'
       - 'tests/blackcell-os-device-label.test.mjs'
       - '.github/workflows/blackcell-os-device-label.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'blackcell-os.html'
+      - 'blackcell-os-device-label.js'
+      - 'corporate-chat.html'
+      - 'corporate-chat-obsidian.css'
+      - 'tests/blackcell-android-ime.test.mjs'
+      - 'tests/blackcell-os-device-label.test.mjs'
+      - '.github/workflows/blackcell-os-device-label.yml'
   workflow_dispatch:
 jobs:
   device-naming:
@@ -22,6 +32,13 @@ jobs:
         run: |
           node --check blackcell-os-device-label.js
           node --test tests/blackcell-os-device-label.test.mjs
+      - name: Verify Android iMessage text entry and direction
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v google-chrome >/dev/null 2>&1 && CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && CHROME=chromium || CHROME=; }
+          [ -n "$CHROME" ] || { echo "Chromium unavailable"; exit 1; }
+          CHROME="$CHROME" node --test tests/blackcell-android-ime.test.mjs
       - name: Render device labels with Chromium
         shell: bash
         run: |
@@ -39,11 +56,12 @@ jobs:
           HTTP_PID=$!
           trap 'kill "$HTTP_PID" 2>/dev/null || true; rm -f blackcell-os-device-naming-smoke.html' EXIT
           sleep 2
-          for device in desktop tablet mobile; do
+          for device in desktop tablet mobile android; do
             case "$device" in
               desktop) width=1440; height=900; label="BLACKCELL OS"; set -- ;;
               tablet) width=820; height=1180; label="BLACKCELL OS Tablet"; set -- '--user-agent=Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' ;;
               mobile) width=390; height=844; label="BLACKCELL OS Mobile"; set -- '--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1' ;;
+              android) width=390; height=844; label="BLACKCELL OS Mobile · Android"; set -- '--user-agent=Mozilla/5.0 (Linux; Android 15; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Mobile Safari/537.36' ;;
             esac
             "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-background-networking --virtual-time-budget=11000 --window-size="$width,$height" "$@" --dump-dom "http://127.0.0.1:8765/blackcell-os-device-naming-smoke.html" > "/tmp/blackcell-name-$device.html" 2>/tmp/blackcell-device-errors.log
             grep -Fq "<title>$label</title>" "/tmp/blackcell-name-$device.html"
