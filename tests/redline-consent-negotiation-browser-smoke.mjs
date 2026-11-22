@@ -7,11 +7,12 @@ let html=readFileSync('private-photo-ledger.html','utf8')
  .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'');
 const setup=String.raw`<script>
 window.addEventListener('error',e=>{document.body.dataset.consentJsError=String(e.message||'unknown')});
-const owner=new URLSearchParams(location.search).get('role')==='owner';
+const role=new URLSearchParams(location.search).get('role');
+const owner=role==='owner'||role==='owner_custom';
 const room='00000000-0000-4000-8000-000000000013';
 const photo='00000000-0000-4000-8000-000000000014';
 const request='00000000-0000-4000-8000-000000000015';
-let senderStop=false,negEnabled=true,timerEnabled=true,responses=0,counters=0,rejections=0,toggles=0;
+let senderStop=false,negEnabled=true,timerEnabled=true,responses=0,counters=0,rejections=0,toggles=0,customPrices=0,lastCustom=null;
 let timerStatus={id:request,photo_id:photo,rate_cents:60,
  status:'started',expires_at:new Date(Date.now()+30000).toISOString()};
 let offerStatus=owner?{photo_id:photo,original_cents:900,offer_cents:1200,
@@ -40,6 +41,7 @@ window.BLACKCELL_REDLINE_API={
  priceNegotiationAction:async(id,action,cents)=>{
   if(action==='counter'){counters++;offerStatus={...offerStatus,
    status:'awaiting_owner',offer_count:1,offer_cents:cents};}
+  if(action==='set_owner_price'){customPrices++;lastCustom=cents;offerStatus={...offerStatus,status:'agreed'};}
   if(action==='reject_counter'){rejections++;offerStatus={
    ...offerStatus,status:'original_final'};}
   return {ok:true}
@@ -49,11 +51,23 @@ document.addEventListener('DOMContentLoaded',()=>{
  document.getElementById('ledgerApp').hidden=false;
  document.getElementById('activeRoom').hidden=false;
  window.dispatchEvent(new Event('blackcell:redline:bridge'));
- if(owner){
+ if(role==='owner_custom'){
+  setTimeout(()=>{
+   const dialog=document.getElementById('redlinePriceNegotiation');
+   const input=dialog?.querySelector('.redline-negotiation-custom input');
+   document.body.dataset.ownerCustomVisible=String(Boolean(dialog?.open&&input&&
+    dialog.textContent.includes('SET YOUR OWN FINAL PRICE')));
+   if(input){input.value='13.75';dialog.querySelector('.redline-negotiation-custom button')?.click();}
+  },2500);
+  setTimeout(()=>{
+   document.body.dataset.ownerCustomSaved=String(customPrices===1&&lastCustom===1375&&
+    offerStatus?.status==='agreed');
+  },4200);
+ }else if(owner){
   setTimeout(()=>{
    const dialog=document.getElementById('redlinePriceNegotiation');
    document.body.dataset.ownerNegotiation=String(Boolean(dialog?.open&&
-    dialog.textContent.includes('3/3 COUNTEROFFERS')));
+    dialog.textContent.includes('3 OF 3 · COUNTEROFFERS')));
    const b=[...dialog.querySelectorAll('button')]
     .find(x=>x.textContent.includes('REJECT · YOUR PRICE FINAL'));
    b?.click();
@@ -100,7 +114,7 @@ document.addEventListener('DOMContentLoaded',()=>{
    document.body.dataset.senderNegotiation=String(Boolean(dlg?.open&&
     dlg.textContent.includes('RECEIVER ORIGINAL PRICE')));
    const input=dlg?.querySelector('.redline-consent-amount');
-   if(input){input.value='12.00';dlg.querySelectorAll('.redline-consent-action')[1]?.click();}
+   if(input){input.value='12.00';[...dlg.querySelectorAll('.redline-consent-action')].find(x=>x.textContent.includes('SEND COUNTEROFFER'))?.click();}
   },7900);
   setTimeout(()=>{
    document.body.dataset.senderCounter=String(counters===1&&offerStatus?.offer_cents===1200);
@@ -122,7 +136,7 @@ const server=createServer((req,res)=>{
 });
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 try{
- for(const role of ['sender','owner']){
+ for(const role of ['sender','owner','owner_custom']){
   const child=spawn(process.env.CHROME||'chromium',[
    '--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage',
    '--virtual-time-budget=11600','--window-size=390,844','--dump-dom',
@@ -139,6 +153,7 @@ try{
   assert.equal(exit,0,role+' browser failure '+stderr.slice(-800));
   const checks=role==='owner'
    ?['owner-negotiation','owner-rejected-final','owner-toggles','owner-disabled']
+   :role==='owner_custom'?['owner-custom-visible','owner-custom-saved']
    :['sender-no-timer-prompt','sender-no-approval','sender-negotiation',
       'sender-counter','sender-no-owner-settings'];
   for(const flag of checks)
