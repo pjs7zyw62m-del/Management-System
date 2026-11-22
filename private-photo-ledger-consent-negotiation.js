@@ -44,7 +44,14 @@ function openDialog(dlg){
 const settingsButton=action('⚙ REDLINE SETTINGS',()=>openSettings(),'redline-settings-launch');
 settingsButton.id='redlineConsentSettingsOpen';
 const heading=$('#ledgerApp .page-heading');
-if(heading)heading.append(settingsButton);
+const mountSettingsButton=()=>{
+ // The receiver redesign hides .page-heading, so the old gear was invisible.
+ // Keep one persistent owner button inside the VISIBLE receiver header.
+ const receiverHeader=$('#redlineReceiverCommand .rr-command-header');
+ const host=receiverHeader||heading;
+ if(host&&settingsButton.parentNode!==host)host.append(settingsButton);
+};
+mountSettingsButton();
 settingsButton.hidden=true;
 const settingsDlg=modal('REDLINE feature settings');
 const settingsHead=make('div','redline-consent-heading');
@@ -300,10 +307,15 @@ function resetIfRoomChanged(){
 }
 function tick(){
  resetIfRoomChanged();
- if(!roomActive())return;
- settingsButton.hidden=!snap()?.isOwner;
+ mountSettingsButton();
+ const active=roomActive(),owner=active&&snap()?.isOwner===true;
+ settingsButton.hidden=!owner;
+ if(!active)return;
  void pollFeatures();void pollNegotiations();
 }
+window.addEventListener('blackcell:redline:open-settings',()=>{
+ if(roomActive()&&snap()?.isOwner===true)void openSettings();
+});
 window.addEventListener('blackcell:redline:photo-decided',()=>{void pollNegotiations(true)});
 window.addEventListener('blackcell:redline:negotiation-changed',()=>{void pollNegotiations(true)});
 settingsDlg.addEventListener('close',()=>{void pollNegotiations(true)});
