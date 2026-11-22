@@ -27,7 +27,24 @@ html.bc-chat-popout:not(.bc-media-panel) .composer #mediaToggleButton{background
 html.bc-chat-popout:not(.bc-media-panel) .composer-input-wrap{background:#111113!important;border:1px solid #37373c!important;border-radius:22px!important;box-shadow:none!important;min-height:37px}
 html.bc-chat-popout:not(.bc-media-panel) .composer textarea{color:#f5f5f7!important;caret-color:#0788ef;font-size:14px!important}
 html.bc-chat-popout:not(.bc-media-panel) .composer textarea::placeholder{color:#a3a3ab!important}
-html.bc-chat-popout:not(.bc-media-panel) .composer #sendButton{background:#0788ef!important;border:0!important;color:white!important;box-shadow:none!important;border-radius:50%;width:35px!important;height:35px!important;min-width:35px!important;min-height:35px!important}
+/* Shared native iMessage composer control: match the gray + and blue ↑ exactly. */
+html.bc-chat-popout:not(.bc-media-panel) .composer #mediaToggleButton,
+html.bc-chat-popout:not(.bc-media-panel) .composer #sendButton{
+ width:36px!important;height:36px!important;
+ min-width:36px!important;min-height:36px!important;
+ max-width:36px!important;max-height:36px!important;
+ flex:0 0 36px!important;box-sizing:border-box!important;
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ padding:0!important;margin:0!important;border-radius:50%!important;
+ aspect-ratio:1/1!important;
+}
+html.bc-chat-popout:not(.bc-media-panel) .composer #sendButton{
+ background:#0788ef!important;border:0!important;color:#fff!important;box-shadow:none!important;
+}
+html.bc-chat-popout:not(.bc-media-panel) .composer #sendButton .composer-symbol{
+ display:block;line-height:1!important;font-size:22px!important;
+ transform:translateY(-1px);
+}
 html.bc-chat-popout:not(.bc-media-panel) .composer #sendButton:disabled{background:#26262a!important;color:#92929b!important}
 html.bc-chat-popout:not(.bc-media-panel) .os-chat-empty h2{color:#e1e1e7}
 html.bc-chat-popout:not(.bc-media-panel) .os-chat-empty p,html.bc-chat-popout:not(.bc-media-panel) #messages .empty{color:#808089}
