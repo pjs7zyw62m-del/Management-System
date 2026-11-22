@@ -57,5 +57,5 @@ test('Photo history and chat show whole seconds; old minutes-only billing is abs
  assert.doesNotMatch(controller,/BigInt\(minutes\)\*BigInt\(a\.rate_cents/);
  assert.doesNotMatch(sender,/BigInt\(Math\.floor\(seconds\/60\)\)/);
  assert.match(html,/private-photo-ledger-timers\.js\?v=20261121-per-second1/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261121-current-viewing1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261122-redline-chat-plus1/);
 });
