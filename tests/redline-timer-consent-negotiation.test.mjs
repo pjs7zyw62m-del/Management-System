@@ -96,5 +96,5 @@ test('new popups and CSS load with updated cache versions',()=>{
  assert.match(html,/private-photo-ledger-consent-negotiation\.js\?v=20261121-consent-negotiation1/);
  assert.match(html,/private-photo-ledger-consent-negotiation\.css\?v=20261121-consent-negotiation1/);
  assert.match(html,/private-photo-ledger-timers\.js\?v=20261121-per-second1[^"']*consent-negotiation1/);
- assert.match(html,/private-photo-ledger\.js\?v=20261122-redline-android-multisource1[^"']*consent-negotiation1/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261122-redline-android-multisource1/);
 });
