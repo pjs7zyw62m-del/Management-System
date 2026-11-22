@@ -157,6 +157,64 @@ function update(){
  addPhoto.title=s.photoSendingPaused?'Photo sending paused by receiver':'Add a private photo';
  if(!onChat){uploadDrawer.open=false;recordDrawer.open=false;}
 }
+// Android Chrome 108+ often resizes only its visual viewport for the
+// software keyboard. The fullscreen REDLINE pane uses 100dvh + overflow:hidden
+// and can otherwise cut off the composer when the user starts typing or
+// returns from another Android app.
+const textEntry=$('.redline-message-entry',chat);
+const androidKeyboard=/Android/i.test(navigator.userAgent||'');
+const visual=window.visualViewport;
+let openViewportHeight=Math.max(window.innerHeight||0,visual?.height||0);
+let viewportFrame=0;
+function adjustKeyboard(){
+ if(!androidKeyboard||!textEntry)return;
+ const visible=Math.max(0,Math.round(visual?.height||window.innerHeight||0));
+ const focused=sender()&&!pane.hidden&&document.activeElement===textEntry;
+ const keyboardOpen=focused&&visible>170&&openViewportHeight-visible>105;
+ document.body.classList.toggle('redline-android-keyboard-open',keyboardOpen);
+ if(keyboardOpen){
+  document.documentElement.style.setProperty('--redline-visible-height',visible+'px');
+  document.body.dataset.redlineKeyboardMode='open';
+ }else{
+  document.documentElement.style.removeProperty('--redline-visible-height');
+  document.body.dataset.redlineKeyboardMode='closed';
+  if(!focused&&visible>openViewportHeight-28)openViewportHeight=Math.max(openViewportHeight,visible);
+ }
+}
+function queueKeyboard(){
+ if(!androidKeyboard||viewportFrame)return;
+ viewportFrame=window.requestAnimationFrame(()=>{viewportFrame=0;adjustKeyboard()});
+}
+if(androidKeyboard&&textEntry){
+ textEntry.addEventListener('focus',()=>{
+  queueKeyboard();
+  // Delayed passes cover Android keyboard reveal and app-resume animation.
+  window.setTimeout(queueKeyboard,160);
+  window.setTimeout(queueKeyboard,450);
+ });
+ textEntry.addEventListener('blur',()=>{
+  window.requestAnimationFrame(queueKeyboard);
+  window.setTimeout(queueKeyboard,180);
+ });
+ visual?.addEventListener('resize',queueKeyboard);
+ visual?.addEventListener('scroll',queueKeyboard);
+ window.addEventListener('resize',queueKeyboard,{passive:true});
+ window.addEventListener('pageshow',()=>{
+  queueKeyboard();window.setTimeout(queueKeyboard,260);
+ });
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)queueKeyboard()});
+ window.addEventListener('orientationchange',()=>{
+  // An orientation change establishes a new keyboard-free baseline after
+  // the Android viewport settles, rather than using the old orientation.
+  window.setTimeout(()=>{
+   if(document.activeElement!==textEntry){
+    openViewportHeight=Math.max(window.innerHeight||0,visual?.height||0);
+   }
+   queueKeyboard();
+  },350);
+ });
+ queueKeyboard();
+}
 for(const event of ['blackcell:redline:bridge','blackcell:redline:state',
  'blackcell:redline:reset','blackcell:redline:session-mode',
  'blackcell:redline:timer-status','blackcell:redline:messages-changed'])
