@@ -94,7 +94,7 @@ test('REDLINE receiver resources are versioned and original form and security re
  assert.match(html,/private-photo-ledger-receiver\.js\?v=20261121-history-visible1/);
  assert.match(html,/private-photo-ledger\.js\?v=20261122-redline-android-multisource1/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=20261121-stable-brand1/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261122-redline-chat-plus1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261122-android-keyboard-return1/);
  assert.match(ledger,/corporateAuthorize\(db,\{allowLedgerOnly:true\}\)/);
  assert.match(ledger,/const BUCKET='corp-private-photo-ledger'/);
  assert.match(ledger,/await uploadBunnyPhoto\(db,room\.id,state\.user\.id,id,file,info\.mime\)/);
@@ -413,7 +413,7 @@ test('Sender chat receives verified start and stop messages with a live clock an
  assert.match(sender,/window\.setInterval\(\(\)=>\{/);
  assert.match(sender,/BigInt\(seconds\)\*BigInt\(row\.rate_cents\|\|0\)/);
  assert.match(style,/\.redline-chat-timer/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261122-redline-chat-plus1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261122-android-keyboard-return1/);
 });
 
 test('Auto leading zero, verified timed price, and reject confirmation are supported',()=>{
@@ -673,7 +673,7 @@ test('Five-star originals can be resubmitted until receiver rejects the copied p
  assert.match(style,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)!important/);
  assert.match(style,/\.redline-five-star-photo/);
  assert.match(html,/private-photo-ledger\.js\?v=20261122-redline-android-multisource1/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261122-redline-chat-plus1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261122-android-keyboard-return1/);
 });
 
 test('After a server-confirmed price, the next photo is shown before network refresh',()=>{
