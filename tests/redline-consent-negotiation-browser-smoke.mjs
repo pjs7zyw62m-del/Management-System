@@ -14,7 +14,7 @@ const request='00000000-0000-4000-8000-000000000015';
 let senderStop=false,negEnabled=true,timerEnabled=true,responses=0,counters=0,rejections=0,toggles=0;
 let timerStatus={id:request,photo_id:photo,rate_cents:60,
  status:'started',expires_at:new Date(Date.now()+30000).toISOString()};
-let offerStatus=owner?{photo_id:photo,original_cents:900,offer_cents:400,
+let offerStatus=owner?{photo_id:photo,original_cents:900,offer_cents:1200,
  offer_count:3,status:'awaiting_owner',updated_at:new Date().toISOString()}:null;
 window.confirm=()=>true;
 window.BLACKCELL_REDLINE_API={
@@ -100,10 +100,10 @@ document.addEventListener('DOMContentLoaded',()=>{
    document.body.dataset.senderNegotiation=String(Boolean(dlg?.open&&
     dlg.textContent.includes('RECEIVER ORIGINAL PRICE')));
    const input=dlg?.querySelector('.redline-consent-amount');
-   if(input){input.value='2.00';dlg.querySelectorAll('.redline-consent-action')[1]?.click();}
+   if(input){input.value='12.00';dlg.querySelectorAll('.redline-consent-action')[1]?.click();}
   },7900);
   setTimeout(()=>{
-   document.body.dataset.senderCounter=String(counters===1&&offerStatus?.offer_cents===200);
+   document.body.dataset.senderCounter=String(counters===1&&offerStatus?.offer_cents===1200);
   },9300);
  }
 });
