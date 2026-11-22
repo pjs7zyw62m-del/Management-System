@@ -70,3 +70,129 @@ body.bc-ledger-sender #employeeUpload .file-drop{cursor:pointer;touch-action:man
  #employeeUpload .redline-upload-batch-stop{width:100%}
 }
 @media(prefers-reduced-motion:reduce){.redline-photo-source-overlay,.redline-source-actions button{animation:none!important;transition:none!important}}
+
+/* BLACKCELL Photos -> REDLINE: standalone private library chooser.
+   REDLINE does not load the Network chat stylesheet containing the
+   shared .bc-pm-picker modal layout. Keep it fully on-screen on Android. */
+body .bc-pm-picker{
+ position:fixed!important;
+ inset:0!important;
+ z-index:2147483070!important;
+ box-sizing:border-box!important;
+ display:grid!important;
+ place-items:center!important;
+ min-width:0!important;
+ min-height:0!important;
+ padding:clamp(8px,2.5vw,18px)!important;
+ background:rgba(0,0,0,.92)!important;
+ overflow-y:auto!important;
+ overscroll-behavior:contain!important;
+}
+body .bc-pm-picker .bc-pm-picker-panel{
+ box-sizing:border-box!important;
+ display:flex!important;
+ flex-direction:column!important;
+ gap:11px!important;
+ width:min(580px,100%)!important;
+ min-width:0!important;
+ min-height:0!important;
+ max-height:calc(100dvh - 20px)!important;
+ margin:auto!important;
+ padding:clamp(13px,3vw,20px)!important;
+ overflow:hidden!important;
+ background:#080708!important;
+ border:1px solid #a52d4b!important;
+ border-top:3px solid #ee3554!important;
+ border-radius:14px!important;
+ box-shadow:0 28px 80px #000d!important;
+ color:#fff!important;
+}
+body .bc-pm-picker .bc-pm-header{
+ display:flex!important;
+ align-items:start!important;
+ justify-content:space-between!important;
+ gap:12px!important;
+ flex:0 0 auto!important;
+}
+body .bc-pm-picker .bc-pm-header h2{
+ font:850 clamp(18px,4.4vw,23px)/1.18 system-ui!important;
+ margin:0!important;
+ color:#fff!important;
+}
+body .bc-pm-picker .bc-pm-header p,
+body .bc-pm-picker .bc-pm-picker-panel>p{
+ margin:5px 0 0!important;
+ font:12px/1.5 system-ui!important;
+ color:#d6bdc6!important;
+}
+body .bc-pm-picker .bc-pm-picker-panel input,
+body .bc-pm-picker .bc-pm-picker-panel button:not(.bc-pm-picker-tile){
+ color:#fff!important;
+ border:1px solid #75404f!important;
+ background:#1a1216!important;
+ border-radius:9px!important;
+ font:600 13px/1.3 system-ui!important;
+ padding:9px 11px!important;
+ box-sizing:border-box!important;
+}
+body .bc-pm-picker .bc-pm-picker-panel button:not(.bc-pm-picker-tile){
+ min-height:40px!important;
+ cursor:pointer;
+ touch-action:manipulation;
+}
+body .bc-pm-picker .bc-pm-header button{
+ flex:0 0 auto!important;
+}
+body .bc-pm-picker input[type="search"]{
+ width:100%!important;
+ min-height:44px!important;
+ flex:0 0 auto!important;
+ font-size:16px!important;
+}
+body .bc-pm-picker .bc-pm-pick-list{
+ min-height:120px!important;
+ min-width:0!important;
+ flex:1 1 auto!important;
+ overflow:auto!important;
+ overscroll-behavior:contain!important;
+ background:#0b090b!important;
+ border:1px solid #4e2934!important;
+ border-radius:9px!important;
+ padding:8px!important;
+}
+body .bc-pm-picker .bc-pm-picker-pager{
+ flex:0 0 auto!important;
+}
+body .bc-pm-picker .bc-pm-picker-panel>.bc-pm-button{
+ flex:0 0 auto!important;
+ min-height:48px!important;
+ border:1px solid #eb5d79!important;
+ background:#b51e41!important;
+ font-weight:850!important;
+}
+body .bc-pm-picker .bc-pm-picker-panel>.bc-pm-button:disabled{
+ opacity:.47!important;
+ cursor:default!important;
+}
+body .bc-pm-picker .bc-pm-picker-panel .bc-pm-pick-status{
+ flex:0 0 auto!important;
+ font-size:12px!important;
+ margin:0!important;
+ color:#f6bdcc!important;
+}
+body .bc-pm-picker button:focus-visible,
+body .bc-pm-picker input:focus-visible{
+ outline:2px solid #ff7c97!important;
+ outline-offset:2px!important;
+}
+@media(max-width:520px){
+ body .bc-pm-picker{padding:6px!important;align-items:center!important}
+ body .bc-pm-picker .bc-pm-picker-panel{
+  width:100%!important;
+  max-height:calc(100dvh - 12px)!important;
+  gap:8px!important;
+  padding:12px!important;
+  border-radius:10px!important;
+ }
+ body .bc-pm-picker .bc-pm-pick-list{min-height:90px!important;padding:5px!important}
+}
