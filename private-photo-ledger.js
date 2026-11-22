@@ -1153,7 +1153,7 @@ async function bcLiveOriginal_uploadPhoto(event){
  show('uploadFeedback','Sending privately to your assigned REDLINE room…');
  const room=state.room;
  const id=crypto.randomUUID();
- const path=room.id+'/'+id+'.'+info.ext;
+ let path=null,bunnyUploadAttempted=false,posted=false;
  try{
   await verify();
   // Read the current server-side room flag before sending. A receiver may
@@ -1167,17 +1167,16 @@ async function bcLiveOriginal_uploadPhoto(event){
    window.dispatchEvent(new Event('blackcell:redline:state'));
    throw Error(permission.data.photo_sending_paused?'The receiver paused photo sending.':'Private room closed.');
   }
-  const upload=await db.storage.from(BUCKET).upload(path,file,{contentType:info.mime,upsert:false,cacheControl:'60'});
-  if(upload.error)throw upload.error;
+  // No photo bytes go to Supabase Storage. Verified Bunny write MUST finish
+  // before the corresponding REDLINE metadata record is created.
+  bunnyUploadAttempted=true;
+  path=await uploadBunnyPhoto(db,room.id,state.user.id,id,file,info.mime);
   const r=await db.from(ENTRIES).insert({
     id,room_id:room.id,uploaded_by:state.user.id,image_path:path,decision_status:'pending',
     file_name:file.name.slice(0,180),caption:''
   }).select('id').single();
-  if(r.error){
-   // The cleanup policy allows deleting an uploaded file only if no ledger entry references it.
-   await db.storage.from(BUCKET).remove([path]);
-   throw r.error;
-  }
+  if(r.error)throw r.error;
+  posted=true;
   const accompanyingMessage=$('uploadCaption').value.trim();
   $('uploadPhoto').value='';
   show('selectedPhotoName','Select another photo to send automatically.');
@@ -1197,6 +1196,8 @@ async function bcLiveOriginal_uploadPhoto(event){
   try{await loadEntries({force:true})}
   catch(refreshError){show('uploadFeedback','Photo saved privately, but the review list has not refreshed yet: '+fail(refreshError));}
  }catch(e){
+  if(bunnyUploadAttempted&&!posted)
+   try{await cleanupUnpostedBunny(db,room.id,id)}catch(_){}
   picker.value='';
   show('selectedPhotoName','Select a photo to try again.');
   show('uploadFeedback','Photo not sent: '+fail(e)+'. Choose a photo again to retry.');
