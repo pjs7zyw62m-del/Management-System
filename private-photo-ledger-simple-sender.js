@@ -148,7 +148,7 @@ const composer=make('form','redline-message-composer');
 composer.id='redlineMessageComposer';
 const photoAction=make('button','redline-chat-photo','PHOTO ABOVE');
 photoAction.type='button';photoAction.setAttribute('aria-label','Open photo upload');
-photoAction.addEventListener('click',()=>{if(!home.hidden)switchTab('upload')});
+photoAction.addEventListener('click',()=>{if(home.hidden)return;switchTab('upload');window.BLACKCELL_REDLINE_UPLOAD_UI?.open?.()});
 const entry=make('textarea','redline-message-entry');entry.maxLength=2000;entry.rows=1;entry.placeholder='Message REDLINE…';entry.setAttribute('aria-label','Private room message');
 const send=make('button','redline-chat-send','SEND');send.type='submit';
 composer.append(photoAction,entry,send);
