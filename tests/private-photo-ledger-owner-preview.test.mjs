@@ -45,3 +45,18 @@ test('preview includes phone/tablet and read-only sender tabs',()=>{
  assert.match(css,/bc-redline-preview-nav/);
  assert.match(css,/bc-redline-sender-preview::backdrop/);
 });
+
+
+test('BLACKCELL OS owner preview is messenger-first with safe sample payday and real payment dates',()=>{
+ assert.match(code,/upload\.replaceChildren\(liveStrip,thread,photoDrawer,reviewQueue\)/);
+ assert.match(code,/\['upload','Messages',upload\]/);
+ assert.match(code,/\['payday','Payday',paydayPanel\]/);
+ assert.match(code,/stripStats\.approved\.textContent=earnedValues\.total\.textContent/);
+ assert.match(code,/paymentHistory/);
+ assert.match(code,/paymentDates\.replaceChildren\(\)/);
+ assert.match(code,/PREVIEW ONLY/);
+ assert.match(code,/request\.disabled=true/);
+ assert.match(css,/bc-redline-preview-live-strip/);
+ assert.match(css,/bc-redline-preview-payday-grid/);
+ assert.match(css,/repeat\(6,minmax\(0,1fr\)\)!important/);
+});
