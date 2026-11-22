@@ -461,7 +461,7 @@ test('REDLINE pause belongs only to verified receiver and applies across devices
  assert.match(migration,/NOT r\.photo_sending_paused/g);
  assert.match(style,/#redlineReceiverSendingPause|rr-receiver-pause-button/);
  assert.match(html,/private-photo-ledger-sender\.js\?v=20261122-redline-multi-chooser1/);
- assert.match(html,/private-photo-ledger-simple-sender\.css\?v=20261121-current-viewing1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.css\?v=20261122-android-keyboard-return1/);
 });
 
 test('Selected reviewed photo stays beside sidebar instead of caught-up queue',()=>{
