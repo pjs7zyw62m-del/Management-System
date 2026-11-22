@@ -43,17 +43,26 @@ test('Actual media initializer runs to completion in Chromium so contacts boot m
  const server=createServer((req,res)=>{res.writeHead(200,{'content-type':'text/html; charset=utf-8'});res.end(fixture)});
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  try{
-  const child=spawn(process.env.CHROME||'chromium',[
-   '--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage','--virtual-time-budget=1200',
-   '--window-size=1040,760','--dump-dom','http://127.0.0.1:'+server.address().port+'/'
-  ]);
-  let output='',err='';
-  child.stdout.on('data',d=>{output+=d.toString()});
-  child.stderr.on('data',d=>{err+=d.toString()});
-  const exit=await new Promise(resolve=>{const watchdog=setTimeout(()=>{child.kill('SIGKILL');resolve(124)},20000);child.once('exit',code=>{clearTimeout(watchdog);resolve(code??1)});child.once('error',()=>{clearTimeout(watchdog);resolve(1)})});
-  assert.equal(exit,0,'Chromium failed: '+err.slice(-650));
-  assert.match(output,/data-chat-boot="true"/,'Real media initialization failed: '+output.match(/data-startup-error="[^"]*/)?.[0]);
-  assert.match(output,/data-plus-available="true"/);
-  assert.match(output,/data-header-available="true"/);
+  // UA/device-size emulation exercises BLACKCELL's Android branches. It is
+  // not a substitute for testing a physical Android 11 Chrome/WebView engine.
+  const profiles=[
+   {name:'Desktop',size:'1040,760',ua:null},
+   {name:'Android 11 (Neon Smarta 2)',size:'360,740',ua:'Mozilla/5.0 (Linux; Android 11; Neon Smarta 2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Mobile Safari/537.36'},
+   {name:'Android 15 (modern phone)',size:'390,844',ua:'Mozilla/5.0 (Linux; Android 15; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Mobile Safari/537.36'}
+  ];
+  for(const profile of profiles){
+   const args=['--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage','--virtual-time-budget=1200','--window-size='+profile.size];
+   if(profile.ua)args.push('--user-agent='+profile.ua);
+   args.push('--dump-dom','http://127.0.0.1:'+server.address().port+'/');
+   const child=spawn(process.env.CHROME||'chromium',args);
+   let output='',err='';
+   child.stdout.on('data',d=>{output+=d.toString()});
+   child.stderr.on('data',d=>{err+=d.toString()});
+   const exit=await new Promise(resolve=>{const watchdog=setTimeout(()=>{child.kill('SIGKILL');resolve(124)},20000);child.once('exit',code=>{clearTimeout(watchdog);resolve(code??1)});child.once('error',()=>{clearTimeout(watchdog);resolve(1)})});
+   assert.equal(exit,0,profile.name+' Chromium failed: '+err.slice(-650));
+   assert.match(output,/data-chat-boot="true"/,profile.name+' media startup failed: '+output.match(/data-startup-error="[^"]*/)?.[0]);
+   assert.match(output,/data-plus-available="true"/,profile.name+' missing bottom attachment');
+   assert.match(output,/data-header-available="true"/,profile.name+' missing header attachment');
+  }
  }finally{await new Promise(resolve=>server.close(resolve))}
 });
