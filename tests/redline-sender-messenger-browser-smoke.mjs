@@ -114,7 +114,9 @@ try{
   assert.match(output,new RegExp('data-sender-messenger-'+flag+'="true"'),
    'Sender chat integration failed: '+flag);
  }
- assert.doesNotMatch(output,/data-sender-messenger-error="[^"]+"/,'Unexpected browser JS exception');
+ const browserError=output.match(/data-sender-messenger-error="([^"]+)"/);
+ if(browserError)console.error('REDLINE browser runtime error: '+browserError[1]);
+ assert.equal(browserError,null,'Unexpected browser JS exception');
  console.log('Sender REDLINE: messenger, live timer, earnings, photo upload and chat verified.');
 }finally{
  await new Promise(resolve=>server.close(resolve));
