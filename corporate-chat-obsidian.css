@@ -305,17 +305,18 @@ html.bc-os-chat .composer .composer-input-wrap textarea::-webkit-scrollbar{displ
 }
 
 
-/* Android/other mobile IMEs: let the typed language control direction
-   per paragraph. A new English draft begins left-to-right even when the
-   Android system language is RTL; Arabic/Hebrew retain native direction.
-   Never mirror or reverse the editable text area. */
+/* BLACKCELL iMessage · Android keyboard parity with REDLINE.
+   Keep the editable composer in stable LTR mode for English, with a normal
+   Unicode bidi algorithm. Do not let device locale, inherited text direction
+   or plaintext paragraph reordering move the insertion point to the right. */
 body.bc-chat .composer .composer-input-wrap #messageInput{
- text-align:start!important;
- unicode-bidi:plaintext!important;
+ direction:ltr!important;
+ unicode-bidi:normal!important;
+ text-align:left!important;
  writing-mode:horizontal-tb!important;
  transform:none!important;
- -webkit-text-orientation:mixed;
 }
 body.bc-chat .composer .composer-input-wrap #messageInput::placeholder{
- text-align:start!important;
+ direction:ltr!important;
+ text-align:left!important;
 }
