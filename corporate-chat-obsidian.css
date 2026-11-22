@@ -303,3 +303,19 @@ html.bc-os-chat .composer .composer-input-wrap textarea::-webkit-scrollbar{displ
  html.bc-os-chat:not(.bc-compact-chat) .chat.media-open:not(.os-sidebar-closed){grid-template-columns:clamp(160px,30%,220px) minmax(0,1fr)}
  html.bc-os-chat .chat.media-open>.media-viewer{position:absolute;top:0;bottom:0;right:0;height:100%;max-height:100%}
 }
+
+
+/* Android/other mobile IMEs: let the typed language control direction
+   per paragraph. A new English draft begins left-to-right even when the
+   Android system language is RTL; Arabic/Hebrew retain native direction.
+   Never mirror or reverse the editable text area. */
+body.bc-chat .composer .composer-input-wrap #messageInput{
+ text-align:start!important;
+ unicode-bidi:plaintext!important;
+ writing-mode:horizontal-tb!important;
+ transform:none!important;
+ -webkit-text-orientation:mixed;
+}
+body.bc-chat .composer .composer-input-wrap #messageInput::placeholder{
+ text-align:start!important;
+}
