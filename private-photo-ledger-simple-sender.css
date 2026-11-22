@@ -657,3 +657,13 @@ body.redline-sender-simple .redline-simple-tab{
   max-height:min(12dvh,100px)!important;
  }
 }
+
+/* Android IME: keep REDLINE editable text LTR after switching apps and returning.
+   This affects only the composer, not international chat message display. */
+.redline-message-composer .redline-message-entry{
+ direction:ltr!important;
+ unicode-bidi:normal!important;
+ text-align:left!important;
+ writing-mode:horizontal-tb!important;
+ transform:none!important;
+}
