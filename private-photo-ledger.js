@@ -1284,6 +1284,167 @@ function imageType(file){
  if(!normalized&&fileTypes[ext])return{mime:fileTypes[ext],ext:ext==='jpeg'?'jpg':ext};
  throw Error('Choose a JPEG, PNG, WebP or HEIC image.');
 }
+// Sender upload choices are independent of iMessage. Every selected photo goes
+// through the REDLINE-only server-authorized Bunny pipeline and review queue.
+const redlinePhotoQueue=[];
+let redlineQueueRunning=false,redlineStopAfterCurrent=false;
+let redlineBatchTotal=0,redlineBatchDone=0,redlineBatchFailed=0;
+const redlinePhotoEligible=()=>!state.closed&&!state.isOwner&&!!state.user&&
+ !!state.room?.active&&!state.room.photo_sending_paused&&!state.showArchive;
+function redlineBatchUI(){
+ const host=$('employeeUpload');
+ if(!host)return null;
+ let panel=$('redlineUploadBatch');
+ if(!panel){
+  panel=node('div','redline-upload-batch');
+  panel.id='redlineUploadBatch';panel.hidden=true;panel.setAttribute('role','status');
+  panel.setAttribute('aria-live','polite');
+  const progress=node('p','redline-upload-batch-status');
+  progress.id='redlineUploadBatchStatus';
+  const cancel=button('STOP REMAINING',()=>{
+   redlineStopAfterCurrent=true;redlinePhotoQueue.length=0;
+   progress.textContent='Remaining uploads stopped. An upload already underway can finish.';
+  },'redline-upload-batch-stop');
+  cancel.id='redlineStopUploads';
+  panel.append(progress,cancel);
+  host.append(panel);
+ }
+ return panel;
+}
+function redlineQueueStatus(message,active=false){
+ const panel=redlineBatchUI();
+ if(!panel)return;
+ panel.hidden=false;
+ $('redlineUploadBatchStatus').textContent=message;
+ $('redlineStopUploads').hidden=!active;
+ show('uploadFeedback',message);
+}
+function enqueueRedlineFiles(items){
+ if(!redlinePhotoEligible()){
+  redlineQueueStatus('REDLINE photo sending is unavailable in this room. The receiver may have paused sending.');
+  return false;
+ }
+ if(!Array.isArray(items)||!items.length)return false;
+ // Do not impose an artificial selection count: the 12 MB Bunny limit applies
+ // to EACH image, and selected images are sent one-by-one to reduce Android RAM.
+ if(!redlineQueueRunning){
+  redlineBatchDone=0;redlineBatchFailed=0;redlineBatchTotal=0;
+  redlineStopAfterCurrent=false;
+ }
+ const roomId=state.room.id;
+ for(const item of items)redlinePhotoQueue.push({...item,roomId});
+ redlineBatchTotal+=items.length;
+ redlineQueueStatus('Preparing '+redlineBatchTotal+' REDLINE photo'+(redlineBatchTotal===1?'':'s')+' for private upload…',true);
+ if(!redlineQueueRunning)void drainRedlinePhotoQueue();
+ return true;
+}
+async function drainRedlinePhotoQueue(){
+ if(redlineQueueRunning)return;
+ redlineQueueRunning=true;
+ try{
+  while(redlinePhotoQueue.length&&!redlineStopAfterCurrent){
+   const item=redlinePhotoQueue.shift();
+   if(!redlinePhotoEligible()||state.room?.id!==item.roomId){
+    redlinePhotoQueue.length=0;redlineBatchFailed++;
+    redlineQueueStatus('REDLINE room changed, closed, or sending was paused. Remaining uploads stopped.');
+    break;
+   }
+   if(state.busy){
+    redlinePhotoQueue.unshift(item);
+    await new Promise(resolve=>setTimeout(resolve,350));
+    continue;
+   }
+   const index=redlineBatchDone+redlineBatchFailed+1;
+   redlineQueueStatus('Uploading photo '+index+' of '+redlineBatchTotal+' · '+String(item.label||'Photo').slice(0,65),true);
+   let file=item.file;
+   try{
+    if(!file&&typeof item.readFile==='function')file=await item.readFile();
+    if(!file)throw Error('Could not read the selected photo.');
+    if(!file.size||file.size>MAX_IMAGE_BYTES)throw Error('Each REDLINE photo must be no larger than 12 MB.');
+    imageType(file); // Per-photo validation also runs in uploadPhoto.
+    const success=await uploadPhoto({preventDefault(){},detail:{file}});
+    if(success===true)redlineBatchDone++;
+    else redlineBatchFailed++;
+   }catch(error){
+    redlineBatchFailed++;
+    show('uploadFeedback','Photo '+index+' not sent: '+fail(error));
+   }finally{file=null}
+   redlineQueueStatus('REDLINE photos: '+redlineBatchDone+' uploaded · '+redlineBatchFailed+
+    ' failed · '+redlinePhotoQueue.length+' remaining',redlinePhotoQueue.length>0);
+  }
+ }finally{
+  redlineQueueRunning=false;
+  const note='REDLINE upload finished: '+redlineBatchDone+' photo'+(redlineBatchDone===1?'':'s')+
+   ' sent privately'+(redlineBatchFailed?' · '+redlineBatchFailed+' not sent; select failed photos again':'')+'.';
+  redlineQueueStatus(redlineStopAfterCurrent?'Remaining photo uploads stopped. '+note:note);
+  redlineStopAfterCurrent=false;redlinePhotoQueue.length=0;
+  show('selectedPhotoName','Choose photos from your device or BLACKCELL Photos.');
+ }
+}
+let redlineSourceOverlay=null;
+function closeRedlinePhotoChooser(){
+ if(!redlineSourceOverlay)return;
+ redlineSourceOverlay.hidden=true;
+}
+function openRedlinePhotoChooser(){
+ if(!redlinePhotoEligible()){
+  show('uploadFeedback','Photo sending is unavailable until this REDLINE room is active and the receiver allows uploads.');
+  return;
+ }
+ if(!redlineSourceOverlay){
+  const overlay=node('div','redline-photo-source-overlay');overlay.id='redlinePhotoSourceOverlay';
+  overlay.hidden=true;overlay.setAttribute('role','presentation');
+  const panel=node('section','redline-photo-source-dialog');
+  panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');
+  panel.setAttribute('aria-label','Add photos to REDLINE');
+  const header=node('div','redline-photo-source-head');
+  header.append(node('strong','','ADD PHOTOS TO REDLINE'));
+  const dismiss=button('✕',closeRedlinePhotoChooser,'redline-source-close');
+  dismiss.setAttribute('aria-label','Close photo choices');header.append(dismiss);
+  panel.append(header,node('p','redline-source-intro',
+   'Choose photos from your phone or BLACKCELL Photos. All selected photos upload automatically to this private room.'));
+  const device=button('＋  Upload from Phone',()=>{
+   closeRedlinePhotoChooser();
+   const picker=$('uploadPhoto');
+   // Must happen synchronously in the tap event for Android 11 Chrome.
+   picker.disabled=false;picker.multiple=true;picker.value='';
+   try{picker.click()}catch(e){show('uploadFeedback','The phone photo picker could not open. Try again.')}
+  },'redline-source-device');
+  device.id='redlineSourceDevice';
+  const library=button('▣  BLACKCELL Photos',()=>{
+   closeRedlinePhotoChooser();
+   const roomId=state.room?.id,uid=state.user?.id;
+   void (async()=>{
+    try{
+     const {choosePrivateMedia}=await import('./blackcell-private-media.js?v=20261122-redline-multi1');
+     if(!redlinePhotoEligible()||state.room?.id!==roomId||state.user?.id!==uid)return;
+     await choosePrivateMedia({
+      client:db,userId:uid,max:Number.POSITIVE_INFINITY,
+      actionLabel:'UPLOAD SELECTED TO REDLINE',
+      onSelectRows:async(rows,readFile)=>{
+       if(!redlinePhotoEligible()||state.room?.id!==roomId)return;
+       enqueueRedlineFiles(rows.map(row=>({label:row.name,readFile:()=>readFile(row)})));
+      }
+     });
+    }catch(error){show('uploadFeedback','BLACKCELL Photos could not open: '+fail(error))}
+   })();
+  },'redline-source-library');
+  library.id='redlineSourceLibrary';
+  const actions=node('div','redline-source-actions');actions.append(device,library);
+  panel.append(actions,node('small','redline-source-footnote',
+   'No selection count limit. Images must be JPEG, PNG, WebP or HEIC, up to 12 MB each. The receiver can pause photo sending.'));
+  overlay.append(panel);
+  overlay.addEventListener('click',e=>{if(e.target===overlay)closeRedlinePhotoChooser()});
+  document.addEventListener('keydown',e=>{
+   if(e.key==='Escape'&&!overlay.hidden){e.preventDefault();closeRedlinePhotoChooser()}
+  });
+  document.body.append(overlay);redlineSourceOverlay=overlay;
+ }
+ redlineSourceOverlay.hidden=false;
+ redlineSourceOverlay.querySelector('#redlineSourceDevice')?.focus({preventScroll:true});
+}
+window.BLACKCELL_REDLINE_UPLOAD_UI={open:openRedlinePhotoChooser,
+ enqueue:enqueueRedlineFiles,get pendingCount(){return redlinePhotoQueue.length}};
 async function uploadPhoto(...args){
  let release;
  try{release=window.top.BLACKCELL_LIVE_UPDATE?.hold('uploadPhoto',window)}catch(_){}
