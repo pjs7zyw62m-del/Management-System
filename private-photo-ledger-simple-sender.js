@@ -276,7 +276,7 @@ function renderCurrentlyViewing(snap){
  }
  const photo=Array.isArray(snap.photoHistory)?snap.photoHistory.find(p=>p.id===id):null;
  viewingStatusLine.textContent='● RECEIVER VIEWING NOW · PHOTO '+String(id).slice(0,8).toUpperCase();
- if(photo?.image_url?.startsWith('https://')){
+ if(photo?.image_url&&(photo.image_url.startsWith('https://')||photo.image_url.startsWith('blob:'))){
   const img=make('img','redline-current-viewing-image');
   img.src=photo.image_url;img.alt=photo.caption||'Photograph selected by the REDLINE receiver';
   img.loading='eager';img.decoding='async';img.addEventListener('error',()=>{img.hidden=true});
@@ -311,7 +311,7 @@ async function pollCurrentlyViewing(force=false){
  }finally{viewingInFlight=false}
 }
 function appendRatingImage(parent,url,caption){
- if(typeof url!=='string'||!url.startsWith('https://'))return;
+ if(typeof url!=='string'||!(url.startsWith('https://')||url.startsWith('blob:')))return;
  const img=make('img','redline-rated-photo-image');
  img.src=url;img.alt=caption||'Receiver-rated private photo';
  img.loading='lazy';img.decoding='async';
@@ -553,7 +553,7 @@ function makeTimerCard(e){
   const photo=snapshot()?.photoHistory?.find(p=>p.id===e.timer.photo_id);
   const frame=make('div','redline-chat-timer-photo');
   frame.append(make('strong','','PHOTOGRAPH BEING TIMED'));
-  if(photo?.image_url?.startsWith('https://')){
+  if(photo?.image_url&&(photo.image_url.startsWith('https://')||photo.image_url.startsWith('blob:'))){
    const img=make('img','redline-chat-timer-image');img.src=photo.image_url;
    img.alt=photo.caption||'Photo currently being timed';img.loading='eager';img.decoding='async';
    img.addEventListener('error',()=>{img.hidden=true});frame.append(img);
