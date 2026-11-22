@@ -120,7 +120,7 @@ test('REDLINE sender, timer, top picks and receiver owner preview accept private
  assert.match(consent,/p\.image_url\.startsWith\('blob:'\)/);
 });
 test('HTML loads versioned fresh Bunny cutover and private helper module',()=>{
- assert.match(html,/private-photo-ledger\.js\?v=[^"]+bunny-cutover1/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261122-redline-android-multisource1/);
  assert.match(js,/from '\.\/private-photo-ledger-bunny\.js\?v=20261121-redline-bunny1'/);
  assert.match(transport,/blackcell-redline-bunny/);
  assert.doesNotMatch(transport,/https:\/\/la\.storage\.bunnycdn\.com/);
