@@ -2,7 +2,7 @@
 (() => {
  'use strict';
  if (window.top !== window.self || window.BLACKCELL_SITE_PRESENCE) return;
- if (/\/(?:login|index)\.html$/i.test(location.pathname)) return;
+ if (location.pathname.endsWith('/login.html')) return;
  window.BLACKCELL_SITE_PRESENCE = true;
 
  const randomId=()=>globalThis.crypto?.randomUUID?.() || null;
