@@ -48,7 +48,6 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const useLargePanels=()=>window.BlackcellChatMedia?.enabled()===true;
  const compactMedia=()=>!useLargePanels();
  function notifyChatMedia(open){if(standalonePanel||window.parent===window)return;window.parent.postMessage({type:'blackcell-chat-popout-media',open:open===true},location.origin)}
- let activeAttachmentAnchor=attachmentToggle;
  function closeMediaTray(restoreFocus=false){
   controls.hidden=true;
   for(const button of [attachmentToggle,document.getElementById('bcAndroidAttachmentShortcut')]){
@@ -143,6 +142,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  const controls=el('div','bc-attachment-menu');controls.id='bcAttachmentMenu';controls.hidden=true;
  controls.setAttribute('role','group');controls.setAttribute('aria-label','Attachment options');
  const attachmentToggle=document.getElementById('mediaToggleButton');
+ let activeAttachmentAnchor=attachmentToggle;
  attachmentToggle?.setAttribute('aria-controls',controls.id);
  attachmentToggle?.setAttribute('aria-expanded','false');
  const choosePhotos=button('Photos',()=>openShare(),'bc-attachment-item bc-attachment-desktop-action');choosePhotos.title='Open photo and video uploader';
