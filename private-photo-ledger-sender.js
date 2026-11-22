@@ -85,7 +85,8 @@ function navigate(key){
 choose.addEventListener('click',()=>{
  if(!active()||receiverPaused())return;
  if(mobile()&&document.body.dataset.ledgerView!=='upload')navigate('upload');
- file.click();
+ if(window.BLACKCELL_REDLINE_UPLOAD_UI?.open)window.BLACKCELL_REDLINE_UPLOAD_UI.open();
+ else file.click();
 });
 history.addEventListener('click',()=>navigate('photos'));
 file.addEventListener('click',event=>{
@@ -93,7 +94,7 @@ file.addEventListener('click',event=>{
  event.preventDefault();
  feedback.textContent='Photo sending is paused by the receiver.';
 });
-file.addEventListener('change',sendSelectedPhoto);
+// REDLINE core handles all selected files in its verified Bunny upload queue.
 window.addEventListener('blackcell:redline:bridge',refresh);
 window.addEventListener('blackcell:redline:state',refresh);
 window.addEventListener('blackcell:redline:session-mode',refresh);
