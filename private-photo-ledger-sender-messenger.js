@@ -62,11 +62,8 @@ addPhoto.textContent='＋';
 addPhoto.title='Add a private photo';
 addPhoto.setAttribute('aria-controls',uploadDrawer.id);
 addPhoto.setAttribute('aria-label','Open private photo upload');
-addPhoto.addEventListener('click',()=>{
- if(!sender())return;
- uploadDrawer.open=!uploadDrawer.open;
- if(uploadDrawer.open)uploadHandle.focus({preventScroll:true});
-});
+// The message composer + now opens the REDLINE Phone/BLACKCELL Photos
+// source chooser via the sender module. The drawer remains available below.
 const closeUpload=create('button','redline-messenger-drawer-close','DONE');
 closeUpload.type='button';
 closeUpload.addEventListener('click',()=>{uploadDrawer.open=false;addPhoto.focus({preventScroll:true})});
