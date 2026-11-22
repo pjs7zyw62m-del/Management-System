@@ -136,6 +136,9 @@ test('Bunny image metadata is accepted by row security only for assigned verifie
  assert.match(policy,/image_path ~ \(/);
  assert.match(policy,/redline\/v1\//);
  assert.match(policy,/decision_status = 'pending'/);
- assert.match(policy,/id::text \|\| '[.]\(jpg\|png\|webp\|heic\|heif\)\$'/);
+ assert.ok(policy.includes("id::text || '[.](jpg|png|webp|heic|heif)
+ assert.match(policy,/No archived photos are deleted or altered/);
+});
+"));
  assert.match(policy,/No archived photos are deleted or altered/);
 });
