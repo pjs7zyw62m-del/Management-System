@@ -18,7 +18,7 @@ test('Android composer + exists and never submits or navigates',()=>{
  assert.match(chat,/bc-chat-android/);
  assert.match(chat,/corporate-chat-media\.js\?v=20261122-contact-bootstrap2/);
  assert.match(html,/corporate-chat-compact-media\.css\?v=20261122-android-attachment-visibility1/);
- assert.match(html,/corporate-chat\.js\?v=20261122-android11-resume-caret9/);
+ assert.match(html,/corporate-chat\.js\?v=20261122-android-keyboard-return10/);
 });
 test('Android photo menu exposes BLACKCELL Photos and uploader without navigation',()=>{
  assert.match(media,/button\('BLACKCELL Photos'/);
