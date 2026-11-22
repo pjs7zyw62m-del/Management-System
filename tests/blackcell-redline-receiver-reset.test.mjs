@@ -726,7 +726,7 @@ test('Photo History is accessible despite the old photo-only layout rules',()=>{
 
 test('REDLINE puts quick actions in a menu with Pay in Full beside it',()=>{
  const sql=read('supabase/migrations/20261121144033_blackcell_redline_record_paid_in_full.sql');
- assert.match(receiver,/menuItems\.append\(review,history,message,manage,tools\)/);
+ assert.match(receiver,/menuItems\.append\(review,history,message,settingsMenu,manage,tools\)/);
  assert.match(receiver,/nav\.append\(menuShell,payColumn\)/);
  assert.match(receiver,/menuToggle\.setAttribute\('aria-expanded',String\(open\)\)/);
  assert.match(receiver,/menuItems\.hidden=!open/);
@@ -735,7 +735,7 @@ test('REDLINE puts quick actions in a menu with Pay in Full beside it',()=>{
  assert.match(receiver,/REDLINE will NOT send or charge any money/);
  assert.match(css,/rr-nav-menu-items\[hidden\]\{display:none!important\}/);
  assert.match(css,/rr-pay-full/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261122-settings-visible1-menu1/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261122-settings-visible1/);
  assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-photo-large-timed1-menu1/);
  assert.match(html,/private-photo-ledger\.js\?v=20261122-redline-android-multisource1/);
  assert.match(ledger,/async recordPaidInFull\(roomId\)/);
