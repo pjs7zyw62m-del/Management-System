@@ -35,7 +35,7 @@ test('actual money parser uses integer cents, rejects zero, negatives, excess de
 });
 test('real balance rendering applies $0.60 credit to oldest $0.75 photo and never inflates balance',()=>{
  const a=core.indexOf('function updateTotals(){');
- const b=core.indexOf('async function ',a+25);
+ const b=core.indexOf('\nfunction clearImageCache(){',a+25);
  const fn=core.slice(a,b);
  assert.match(fn,/summary\.payment_credit_cents/);
  const entries=[
