@@ -96,7 +96,7 @@ jobs:
             payday?.click();
             const paydayPanel=dialog.querySelector('.bc-redline-preview-payday');
             body.dataset.qaPayday=String(Boolean(payday?.classList.contains('is-active')&&
-              paydayPanel&&!paydayPanel.hidden&&paydayPanel.textContent.includes('Sample maximum')));
+              paydayPanel&&!paydayPanel.hidden&&paydayPanel.textContent.includes('Example maximum')));
             body.dataset.qaWithdrawDisabled=String(Boolean(dialog.querySelector('.bc-redline-preview-request:disabled')));
             const tablet=dialog.querySelector('.bc-redline-preview-devices button:last-child');
             tablet.click();
