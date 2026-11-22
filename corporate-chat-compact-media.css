@@ -294,7 +294,7 @@ html.bc-chat-lite .bc-chat-inline-play{
 .bc-attachment-menu .bc-attachment-mobile-action{display:none!important}
 html.bc-chat-lite .bc-attachment-menu .bc-attachment-mobile-action{display:flex!important}
 .bc-android-attachment-shortcut{display:none!important}
-html.bc-chat-android .bc-compact-chat .bc-android-attachment-shortcut{
+html.bc-chat-android.bc-compact-chat .bc-android-attachment-shortcut{
  display:grid!important;place-items:center!important;
  flex:0 0 34px!important;
  width:34px!important;height:34px!important;min-width:34px!important;
@@ -304,8 +304,8 @@ html.bc-chat-android .bc-compact-chat .bc-android-attachment-shortcut{
  font:700 26px/1 system-ui!important;
  cursor:pointer!important;touch-action:manipulation;
 }
-html.bc-chat-android .bc-compact-chat .bc-android-attachment-shortcut.open{background:#693347!important}
-html.bc-chat-android .bc-compact-chat .composer #mediaToggleButton{
+html.bc-chat-android.bc-compact-chat .bc-android-attachment-shortcut.open{background:#693347!important}
+html.bc-chat-android.bc-compact-chat .composer #mediaToggleButton{
  display:grid!important;place-items:center!important;
  flex:0 0 42px!important;
  width:42px!important;min-width:42px!important;max-width:42px!important;
@@ -315,11 +315,11 @@ html.bc-chat-android .bc-compact-chat .composer #mediaToggleButton{
  font-size:24px!important;line-height:1!important;
  pointer-events:auto!important;touch-action:manipulation;
 }
-html.bc-chat-android .bc-compact-chat .composer #mediaToggleButton .composer-symbol{
+html.bc-chat-android.bc-compact-chat .composer #mediaToggleButton .composer-symbol{
  display:block!important;visibility:visible!important;
  font:700 26px/1 system-ui!important;pointer-events:none!important;
 }
-html.bc-chat-android .bc-compact-chat .composer .composer-input-wrap{min-width:0!important;flex:1 1 0%!important}
-html.bc-chat-android .bc-compact-chat .composer{min-width:0!important;gap:6px!important;padding-inline:8px!important}
-html.bc-chat-android .bc-compact-chat .chat-title .imessage-title-actions{min-width:0}
+html.bc-chat-android.bc-compact-chat .composer .composer-input-wrap{min-width:0!important;flex:1 1 0%!important}
+html.bc-chat-android.bc-compact-chat .composer{min-width:0!important;gap:6px!important;padding-inline:8px!important}
+html.bc-chat-android.bc-compact-chat .chat-title .imessage-title-actions{min-width:0}
 html.bc-chat-android .bc-attachment-menu{z-index:16000!important;visibility:visible!important}
