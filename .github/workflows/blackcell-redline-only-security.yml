@@ -10,6 +10,12 @@ on:
       - 'private-photo-ledger.js'
       - 'private-photo-ledger.html'
       - 'private-photo-ledger-control-v3.css'
+      - 'private-photo-ledger-sender.js'
+      - 'private-photo-ledger-simple-sender.js'
+      - 'private-photo-ledger-sender-messenger.js'
+      - 'private-photo-ledger-upload-choices.css'
+      - 'blackcell-private-media.js'
+      - 'tests/redline-android-multisource-upload.test.mjs'
       - 'tests/redline-control-v3-web-tablet.test.mjs'
       - 'supabase/migrations/20261121075604_blackcell_redline_only_owner_security_access.sql'
       - 'tests/blackcell-redline-only-security-level.test.mjs'
@@ -28,6 +34,12 @@ on:
       - 'private-photo-ledger.js'
       - 'private-photo-ledger.html'
       - 'private-photo-ledger-control-v3.css'
+      - 'private-photo-ledger-sender.js'
+      - 'private-photo-ledger-simple-sender.js'
+      - 'private-photo-ledger-sender-messenger.js'
+      - 'private-photo-ledger-upload-choices.css'
+      - 'blackcell-private-media.js'
+      - 'tests/redline-android-multisource-upload.test.mjs'
       - 'tests/redline-control-v3-web-tablet.test.mjs'
       - 'tests/blackcell-redline-only-security-level.test.mjs'
       - 'tests/redline-android-level1-return.test.mjs'
@@ -52,10 +64,14 @@ jobs:
           node --check admin.js
           node --check corp-guard.js
           node --check private-photo-ledger.js
+          node --check blackcell-private-media.js
+          node --check private-photo-ledger-sender.js
+          node --check private-photo-ledger-simple-sender.js
+          node --check private-photo-ledger-sender-messenger.js
           node --check blackcell-os.js
           node --check employee.js
           node --check corp-auth.js
       - name: Verify Level R access, owner-only assignment and no other app navigation
         run: |
           command -v google-chrome >/dev/null 2>&1 && export CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && export CHROME=chromium || { echo 'Chromium unavailable'; exit 1; }; }
-          node --test tests/blackcell-redline-only-security-level.test.mjs tests/blackcell-os-window-drag.test.mjs tests/blackcell-os-window-controls.test.mjs tests/redline-android-level1-return.test.mjs tests/redline-control-v3-web-tablet.test.mjs
+          node --test tests/blackcell-redline-only-security-level.test.mjs tests/blackcell-os-window-drag.test.mjs tests/blackcell-os-window-controls.test.mjs tests/redline-android-level1-return.test.mjs tests/redline-control-v3-web-tablet.test.mjs tests/redline-android-multisource-upload.test.mjs
