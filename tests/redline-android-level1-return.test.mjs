@@ -68,3 +68,23 @@ test('Verified REDLINE route offers OS return only for standard access',()=>{
  assert.match(source,/if\(returnRestoredAndroidToOS\(\)\)return;/);
  assert.match(source,/if\(!returnRestoredAndroidToOS\(\)\)return refresh\(\)/);
 });
+
+const osCode=readFileSync('blackcell-os.js','utf8');
+test('Android Level 1 OS restores home instead of automatically reopening REDLINE',()=>{
+ const a=osCode.indexOf('function shouldSkipAndroidRestoredRedline(');
+ const b=osCode.indexOf('\nfunction restoreRecord(',a);
+ assert.ok(a>0&&b>a,'Android auto-restore decision must be explicitly testable');
+ const make=(ua,{owner=false,preview=false}={})=>
+  new Function('navigator','owner','preview',
+   osCode.slice(a,b)+'\nreturn shouldSkipAndroidRestoredRedline;')(
+    {userAgent:ua},owner,preview);
+ const android=make('Mozilla/5.0 (Linux; Android 15; Pixel 8)');
+ assert.equal(android({id:'photoledger'},false),true);
+ assert.equal(android({id:'chat'},false),false);
+ assert.equal(android({id:'photoledger'},true),false);
+ assert.equal(make('Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)')({id:'photoledger'},false),false);
+ assert.equal(make('Mozilla/5.0 (Windows NT 10.0)')({id:'photoledger'},false),false);
+ assert.equal(make('Mozilla/5.0 (Linux; Android 15)',{owner:true})({id:'photoledger'},false),false);
+ assert.equal(make('Mozilla/5.0 (Linux; Android 15)',{preview:true})({id:'photoledger'},false),false);
+ assert.match(osCode,/if\(shouldSkipAndroidRestoredRedline\(saved,parked\)\)return/);
+});
