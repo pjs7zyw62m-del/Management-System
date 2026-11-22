@@ -75,6 +75,29 @@ function roomLink(room){
  return u.href;
 }
 function validId(input){return typeof input==='string'&&VALID_ID.test(input)}
+// A suspended Android tab can reopen REDLINE after Level 0 is restored to
+// Level 1. Remember only the verified restriction of this tab, never a grant.
+const REDLINE_SCOPE_RESTORE_WINDOW_MS=48*60*60*1000;
+function redlineScopeRestoreKey(){return 'bc.redline.level0-entry.v1:'+String(state.user?.id||'')}
+function recordRestrictedRedlineEntry(){
+ if(state.isOwner||state.member?.access_scope!=='ledger_only')return;
+ try{sessionStorage.setItem(redlineScopeRestoreKey(),String(Date.now()))}catch(_){}
+}
+function returnRestoredAndroidToOS(){
+ if(state.isOwner||state.member?.access_scope!=='full'||!/Android/i.test(navigator.userAgent||''))return false;
+ // Only redirect after a verified Level 0 -> full-scope transition. An OS
+ // iframe or an intentional direct REDLINE link must not be redirected.
+ if(window.top!==window)return false;
+ let marker=0;
+ try{marker=Number(sessionStorage.getItem(redlineScopeRestoreKey())||0)}catch(_){}
+ if(!marker||Date.now()-marker>REDLINE_SCOPE_RESTORE_WINDOW_MS){
+  if(marker)try{sessionStorage.removeItem(redlineScopeRestoreKey())}catch(_){}
+  return false;
+ }
+ try{sessionStorage.removeItem(redlineScopeRestoreKey())}catch(_){}
+ location.replace('blackcell-os.html');
+ return true;
+}
 function gate(message){
  state.closed=true;
  if(state.liveTimer)clearTimeout(state.liveTimer);
@@ -95,6 +118,7 @@ async function verify(){
    .select('access_scope').eq('user_id',state.user.id).single();
   if(scopeError)throw Error('Your current employee permissions could not be checked.');
   state.member.access_scope=data?.access_scope==='ledger_only'?'ledger_only':'full';
+  recordRestrictedRedlineEntry();
   updateLedgerNavigation();
  }
 }
@@ -109,6 +133,7 @@ async function initialize(){
   state.filter=state.isOwner?'priced':'all';
   if(!state.isOwner&&a.member.role!=='employee')throw Error('This private area is available only to verified owner and selected employees.');
   await verify();
+  if(returnRestoredAndroidToOS())return;
   updateLedgerNavigation();
   $('accessGate').hidden=true;
   $('ledgerApp').hidden=false;
@@ -127,7 +152,9 @@ async function initialize(){
    try{await verify()}catch(e){gate(fail(e))}
   },60000);
   document.addEventListener('visibilitychange',()=>{
-   if(!document.hidden&&!state.closed)void verify().then(()=>refresh()).catch(e=>gate(fail(e)));
+   if(!document.hidden&&!state.closed)void verify().then(()=>{
+    if(!returnRestoredAndroidToOS())return refresh();
+   }).catch(e=>gate(fail(e)));
   });
   db.auth.onAuthStateChange(event=>{
    if(event==='SIGNED_OUT'&&!state.closed)gate('Signed out. Sign in again to enter this private room.');
@@ -146,10 +173,10 @@ function updateLedgerNavigation(){
  $('backLink').hidden=scoped;
  $('ledgerSignOut').hidden=state.isOwner;
  $('ledgerBrand').href=scoped?'private-photo-ledger.html':
-  state.isOwner?'dashboard.html':'corporate-network.html?view=profile';
+  state.isOwner?'dashboard.html':'blackcell-os.html';
  if(!scoped){
-  $('backLink').href=state.isOwner?'dashboard.html':'corporate-network.html?view=profile';
-  $('backLink').textContent=state.isOwner?'RETURN TO ADMINISTRATION ↗':'RETURN TO NETWORK ↗';
+  $('backLink').href=state.isOwner?'dashboard.html':'blackcell-os.html';
+  $('backLink').textContent=state.isOwner?'RETURN TO ADMINISTRATION ↗':'RETURN TO BLACKCELL OS ↗';
  }
 }
 function renderLedgerScope(){
