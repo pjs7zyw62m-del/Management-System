@@ -13,6 +13,9 @@ on:
       - 'tests/blackcell-redline-only-security-level.test.mjs'
       - 'tests/blackcell-os-window-drag.test.mjs'
       - 'blackcell-os.js'
+      - 'blackcell-os.html'
+      - 'blackcell-os-window-controls.css'
+      - 'tests/blackcell-os-window-controls.test.mjs'
       - '.github/workflows/blackcell-redline-only-security.yml'
   push:
     branches: [main]
@@ -35,7 +38,10 @@ jobs:
           node --check admin.js
           node --check corp-guard.js
           node --check private-photo-ledger.js
+          node --check blackcell-os.js
           node --check employee.js
           node --check corp-auth.js
       - name: Verify Level R access, owner-only assignment and no other app navigation
-        run: node --test tests/blackcell-redline-only-security-level.test.mjs tests/blackcell-os-window-drag.test.mjs
+        run: |
+          command -v google-chrome >/dev/null 2>&1 && export CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && export CHROME=chromium || { echo 'Chromium unavailable'; exit 1; }; }
+          node --test tests/blackcell-redline-only-security-level.test.mjs tests/blackcell-os-window-drag.test.mjs tests/blackcell-os-window-controls.test.mjs
