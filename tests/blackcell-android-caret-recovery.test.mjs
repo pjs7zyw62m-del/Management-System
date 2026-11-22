@@ -149,6 +149,33 @@ test('Android 11: sent/cleared draft never leaks back in after returning from an
  input(box,'o',{forceStart:true});
  assert.equal(box.value,'No');
 });
+test('Android IME that commits every letter as insertCompositionText still appends in order',()=>{
+ const {box,guard}=composer();
+ for(const ch of 'hello')input(box,ch,{forceStart:true,inputType:'insertCompositionText'});
+ assert.equal(box.value,'hello');
+ assert.equal(box.selectionStart,5);
+ assert.ok(guard.correctionCount>=3);
+});
+test('Android keyboard with missing inputType after app switching does not prepend letters',()=>{
+ const {box,background,resume}=resumedComposer();
+ for(const ch of 'hi')input(box,ch);
+ background();resume();
+ for(const ch of ' there')input(box,ch,{forceStart:true,inputType:''});
+ assert.equal(box.value,'hi there');
+ assert.equal(box.selectionStart,8);
+});
+test('REDLINE sender and receiver use the same Android caret guard and preserve composition',()=>{
+ const redline=readFileSync('private-photo-ledger-simple-sender.js','utf8');
+ const html=readFileSync('private-photo-ledger.html','utf8');
+ const css=readFileSync('private-photo-ledger-simple-sender.css','utf8');
+ assert.match(redline,/installAndroidChatCaretGuard\(entry\)/);
+ assert.match(redline,/entry\.setAttribute\('dir','ltr'\)/);
+ assert.match(redline,/!e\.isComposing&&!redlineImeComposing/);
+ assert.match(redline,/androidRedlineCaretGuard\?\.reset\(\)/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261122-android-keyboard-return1/);
+ assert.match(css,/\.redline-message-composer \.redline-message-entry\{/);
+ assert.match(css,/direction:ltr!important/);
+});
 test('Integration loads guarded helper before live typing and busts asset cache',()=>{
  const chat=readFileSync('corporate-chat.js','utf8');
  const html=readFileSync('corporate-chat.html','utf8');
