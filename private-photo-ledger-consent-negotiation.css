@@ -226,3 +226,7 @@ body.bc-redline-receiver .rr-nav-menu-items .rr-settings-menu{
  #redlinePriceNegotiation .redline-negotiation-custom-row{flex-direction:column}
  #redlinePriceNegotiation .redline-negotiation-custom-row>*{width:100%!important;flex:0 0 auto!important}
 }
+
+#redlinePriceNegotiation .redline-negotiation-prices:has(>.redline-negotiation-price:only-child){
+ grid-template-columns:minmax(0,1fr);
+}
