@@ -9,6 +9,8 @@ on:
       - 'blackcell-redline-security-level.css'
       - 'private-photo-ledger.js'
       - 'private-photo-ledger.html'
+      - 'private-photo-ledger-control-v3.css'
+      - 'tests/redline-control-v3-web-tablet.test.mjs'
       - 'supabase/migrations/20261121075604_blackcell_redline_only_owner_security_access.sql'
       - 'tests/blackcell-redline-only-security-level.test.mjs'
       - 'tests/redline-android-level1-return.test.mjs'
@@ -25,6 +27,8 @@ on:
       - 'blackcell-redline-security-level.css'
       - 'private-photo-ledger.js'
       - 'private-photo-ledger.html'
+      - 'private-photo-ledger-control-v3.css'
+      - 'tests/redline-control-v3-web-tablet.test.mjs'
       - 'tests/blackcell-redline-only-security-level.test.mjs'
       - 'tests/redline-android-level1-return.test.mjs'
       - 'blackcell-os-window-controls.css'
@@ -54,4 +58,4 @@ jobs:
       - name: Verify Level R access, owner-only assignment and no other app navigation
         run: |
           command -v google-chrome >/dev/null 2>&1 && export CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && export CHROME=chromium || { echo 'Chromium unavailable'; exit 1; }; }
-          node --test tests/blackcell-redline-only-security-level.test.mjs tests/blackcell-os-window-drag.test.mjs tests/blackcell-os-window-controls.test.mjs tests/redline-android-level1-return.test.mjs
+          node --test tests/blackcell-redline-only-security-level.test.mjs tests/blackcell-os-window-drag.test.mjs tests/blackcell-os-window-controls.test.mjs tests/redline-android-level1-return.test.mjs tests/redline-control-v3-web-tablet.test.mjs
