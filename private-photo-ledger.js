@@ -1341,12 +1341,14 @@ function enqueueRedlineFiles(items){
 async function drainRedlinePhotoQueue(){
  if(redlineQueueRunning)return;
  redlineQueueRunning=true;
+ let interruptedReason='';
  try{
   while(redlinePhotoQueue.length&&!redlineStopAfterCurrent){
    const item=redlinePhotoQueue.shift();
    if(!redlinePhotoEligible()||state.room?.id!==item.roomId){
     redlinePhotoQueue.length=0;redlineBatchFailed++;
-    redlineQueueStatus('REDLINE room changed, closed, or sending was paused. Remaining uploads stopped.');
+    interruptedReason='REDLINE photo sending stopped because the room changed, closed, or the receiver paused uploads.';
+    redlineQueueStatus(interruptedReason);
     break;
    }
    if(state.busy){
@@ -1376,7 +1378,7 @@ async function drainRedlinePhotoQueue(){
   redlineQueueRunning=false;
   const note='REDLINE upload finished: '+redlineBatchDone+' photo'+(redlineBatchDone===1?'':'s')+
    ' sent privately'+(redlineBatchFailed?' · '+redlineBatchFailed+' not sent; select failed photos again':'')+'.';
-  redlineQueueStatus(redlineStopAfterCurrent?'Remaining photo uploads stopped. '+note:note);
+  redlineQueueStatus(redlineStopAfterCurrent?'Remaining photo uploads stopped. '+note:interruptedReason?interruptedReason+' '+note:note);
   redlineStopAfterCurrent=false;redlinePhotoQueue.length=0;
   show('selectedPhotoName','Choose photos from your device or BLACKCELL Photos.');
  }
@@ -1424,6 +1426,12 @@ function openRedlinePhotoChooser(){
       onSelectRows:async(rows,readFile)=>{
        if(!redlinePhotoEligible()||state.room?.id!==roomId)return;
        enqueueRedlineFiles(rows.map(row=>({label:row.name,readFile:()=>readFile(row)})));
+      },
+      onDeviceUpload:()=>{
+       if(!redlinePhotoEligible()||state.room?.id!==roomId)return;
+       const picker=$('uploadPhoto');
+       picker.disabled=false;picker.multiple=true;picker.value='';
+       picker.click();
       }
      });
     }catch(error){show('uploadFeedback','BLACKCELL Photos could not open: '+fail(error))}
