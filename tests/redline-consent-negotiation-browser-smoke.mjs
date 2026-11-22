@@ -12,7 +12,7 @@ const owner=role==='owner'||role==='owner_custom';
 const room='00000000-0000-4000-8000-000000000013';
 const photo='00000000-0000-4000-8000-000000000014';
 const request='00000000-0000-4000-8000-000000000015';
-let senderStop=false,negEnabled=true,timerEnabled=true,responses=0,counters=0,rejections=0,toggles=0,customPrices=0,lastCustom=null;
+let senderStop=false,senderVeto=true,negEnabled=true,timerEnabled=true,responses=0,counters=0,rejections=0,toggles=0,customPrices=0,lastCustom=null;
 let timerStatus={id:request,photo_id:photo,rate_cents:60,
  status:'started',expires_at:new Date(Date.now()+30000).toISOString()};
 let offerStatus=owner?{photo_id:photo,original_cents:900,offer_cents:1200,
@@ -26,13 +26,14 @@ window.BLACKCELL_REDLINE_API={
   userId:owner?'00000000-0000-4000-8000-000000000016':'00000000-0000-4000-8000-000000000017',
   photoHistory:[{id:photo,image_url:'https://example.com/private.jpg',caption:'Test'}]}),
  roomFeatureStatus:async()=>({ok:true,timer_requests_enabled:timerEnabled,
-  negotiation_enabled:negEnabled,sender_can_stop_timer:senderStop}),
+  negotiation_enabled:negEnabled,sender_can_stop_timer:senderStop,sender_can_veto_stop_timer:senderVeto}),
  setRoomFeature:async(id,key,val)=>{
   toggles++;if(key==='sender_can_stop_timer')senderStop=val;
+  if(key==='sender_can_veto_stop_timer')senderVeto=val;
   if(key==='timer_requests_enabled')timerEnabled=val;
   if(key==='negotiation_enabled')negEnabled=val;
   return {ok:true,timer_requests_enabled:timerEnabled,
-   negotiation_enabled:negEnabled,sender_can_stop_timer:senderStop};
+   negotiation_enabled:negEnabled,sender_can_stop_timer:senderStop,sender_can_veto_stop_timer:senderVeto};
  },
  timerRequestStatus:async()=>({ok:true,server_now:new Date().toISOString(),
   request:timerStatus,sender_can_stop_timer:senderStop,timer_requests_enabled:timerEnabled}),
@@ -110,7 +111,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   },3700);
   setTimeout(()=>{
    const switches=[...document.querySelectorAll('.redline-feature-toggle')];
-   document.body.dataset.ownerToggles=String(switches.length===2&&
+   document.body.dataset.ownerToggles=String(switches.length===3&&
     switches.some(x=>x.dataset.feature==='sender_can_stop_timer'&&!x.checked));
    switches.find(x=>x.dataset.feature==='sender_can_stop_timer')?.click();
   },4600);
