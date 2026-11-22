@@ -240,3 +240,16 @@ test('REDLINE Photos chooser lists images, excludes videos, shows counts and use
  assert.match(library,/rows.length\+' photo'/);
  assert.match(html,/private-photo-ledger\.js\?v=20261122-redline-android-multisource1/);
 });
+
+test('REDLINE loads a correctly styled BLACKCELL Photos picker on Android rather than hiding it offscreen',()=>{
+ assert.match(style,/body \.bc-pm-picker\{/);
+ assert.match(style,/position:fixed!important/);
+ assert.match(style,/z-index:2147483070!important/);
+ assert.match(style,/body \.bc-pm-picker \.bc-pm-picker-panel\{/);
+ assert.match(style,/max-height:calc\(100dvh - 20px\)!important/);
+ assert.match(style,/body \.bc-pm-picker \.bc-pm-pick-list\{/);
+ assert.match(style,/overflow:auto!important/);
+ assert.match(style,/body \.bc-pm-picker .bc-pm-picker-panel>.bc-pm-button/);
+ assert.match(core,/photoOnly:true/);
+ assert.match(library,/SEND SELECTED|actionLabel/);
+});
