@@ -137,7 +137,52 @@ Deno.serve(async req=>{
    return success(origin,{path,bytes:bytes.byteLength,photo_id:photoId,provider:"bunny-redline-v1"});
   }
 
+  if(action==="delete"){
+   // Only the verified REDLINE receiver can purge a posted private photo.
+   // Prepare first places a database tombstone that immediately blocks reads.
+   if(uid!==room.owner_id)return reply(origin,403,"RECEIVER_ONLY_DELETE");
+   const begin=await db.rpc("corp_redline_photo_remove_begin",{
+    p_room_id:roomId,p_photo_id:photoId
+   });
+   if(begin.error||begin.data?.ok!==true)
+    return reply(origin,409,String(begin.data?.reason||"DELETE_AUTHORIZATION_FAILED"));
+   if(begin.data.status==="removed")
+    return success(origin,{photo_id:photoId,status:"removed",already_removed:true});
+   const path=begin.data.path;
+   if(typeof path!=="string")return reply(origin,500,"REMOVAL_PATH_UNAVAILABLE");
+   const prefixForPhoto=prefix+roomId+"/"+room.member_id+"/"+photoId+".";
+   if(path.startsWith(prefix)){
+    if(!path.startsWith(prefixForPhoto)||
+      !Object.values(allowed).includes(path.slice(prefixForPhoto.length))||
+      path.slice(prefixForPhoto.length).includes("/"))
+     return reply(origin,400,"DELETE_PATH_MISMATCH");
+    const removed=await bunny(path,accessKey,"DELETE");
+    if(!removed.ok&&removed.status!==404)
+     return reply(origin,502,"BUNNY_DELETE_NOT_CONFIRMED_RETRY");
+   }else{
+    // Old Supabase photos have already been manually erased. If a legacy
+    // object still exists, require confirmed deletion before marking removed.
+    if(!new RegExp("^"+roomId+"/"+photoId+"[.](jpg|jpeg|png|webp|heic|heif)$","i").test(path))
+     return reply(origin,400,"LEGACY_DELETE_PATH_INVALID");
+    if(begin.data.legacy_object_exists===true){
+     const removed=await db.storage.from("corp-private-photo-ledger").remove([path]);
+     if(removed.error)return reply(origin,502,"LEGACY_DELETE_NOT_CONFIRMED_RETRY");
+    }
+   }
+   const final=await db.rpc("corp_redline_photo_remove_finish",{
+    p_room_id:roomId,p_photo_id:photoId
+   });
+   if(final.error||final.data?.ok!==true)
+    return reply(origin,503,"FILE_PURGED_BUT_LEDGER_CONFIRMATION_PENDING_RETRY");
+   return success(origin,{photo_id:photoId,status:"removed",removed_at:final.data.removed_at});
+  }
   if(action==="read"){
+   const guard=await db.rpc("corp_redline_photo_removal_check",{
+    p_room_id:roomId,p_photo_id:photoId
+   });
+   if(guard.error||guard.data?.ok!==true)
+    return reply(origin,403,"PHOTO_REMOVAL_GUARD_UNAVAILABLE");
+   if(guard.data.blocked===true)return reply(origin,410,"PHOTO_PERMANENTLY_REMOVED");
    const {data:entry,error}=await db.from("corp_private_photo_entries")
     .select("id,room_id,uploaded_by,image_path")
     .eq("id",photoId).eq("room_id",roomId).maybeSingle();
