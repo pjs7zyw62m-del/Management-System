@@ -68,8 +68,10 @@ document.addEventListener('DOMContentLoaded',()=>{
    document.body.dataset.ownerToggles=String(switches.length===2&&
     switches.some(x=>x.dataset.feature==='sender_can_stop_timer'&&!x.checked));
    switches.find(x=>x.dataset.feature==='sender_can_stop_timer')?.click();
-   switches.find(x=>x.dataset.feature==='negotiation_enabled')?.click();
   },4600);
+  setTimeout(()=>{
+   document.querySelector('.redline-feature-toggle[data-feature="negotiation_enabled"]')?.click();
+  },5500);
   setTimeout(()=>{
    document.body.dataset.ownerDisabled=String(negEnabled===false&&senderStop===true&&toggles>=2);
   },6800);
