@@ -182,7 +182,11 @@ function adjustKeyboard(){
  }
 }
 function queueKeyboard(){
- if(!androidKeyboard||viewportFrame)return;
+ if(!androidKeyboard)return;
+ // Apply the keyboard inset synchronously. Android can suppress animation
+ // frames during keyboard expansion or while a resumed tab is recovering.
+ adjustKeyboard();
+ if(viewportFrame)return;
  viewportFrame=window.requestAnimationFrame(()=>{viewportFrame=0;adjustKeyboard()});
 }
 if(androidKeyboard&&textEntry){
