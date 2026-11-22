@@ -1786,7 +1786,7 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
  async setRoomFeature(roomId,key,enabled){
   if(state.closed||!state.user||!state.room||state.room.id!==roomId||state.showArchive)
    throw Error('Verified current room required.');
-  if(!['timer_requests_enabled','negotiation_enabled','sender_auto_accept'].includes(key))
+  if(!['timer_requests_enabled','negotiation_enabled','sender_auto_accept','sender_can_stop_timer'].includes(key))
    throw Error('Invalid setting.');
   const r=await db.rpc('corp_redline_set_room_feature',{
    p_room_id:roomId,p_key:key,p_enabled:enabled===true
@@ -1861,6 +1861,20 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
    p_room_id:roomId,p_photo_id:photoId,p_rate_cents:rateCents
   });
   if(result.error||result.data?.ok!==true)throw Error(fail(result.error||result.data?.reason||'Timer could not start.'));
+  return result.data;
+ },
+ async senderStopTimer(sessionId){
+  if(state.closed||state.isOwner||state.showArchive||!state.room?.active||!validId(sessionId))
+   throw Error('A verified sender with an active REDLINE timer is required.');
+  const roomId=state.room.id;
+  await verify();
+  if(state.room?.id!==roomId)throw Error('Room changed; the timer was not stopped.');
+  const result=await db.rpc('corp_redline_sender_stop_timer',{p_session_id:sessionId});
+  if(result.error||result.data?.ok!==true)
+   throw Error(fail(result.error||result.data?.reason||'Timer stop is unavailable.'));
+  state.entryFingerprint='';
+  try{await loadEntries({force:true})}catch(_){/* New status polling will refresh room records. */}
+  window.dispatchEvent(new Event('blackcell:redline:state'));
   return result.data;
  },
  async timerHeartbeat(sessionId){
