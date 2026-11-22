@@ -21,6 +21,7 @@ const timer={
   rate_cents:60,started_at:new Date(now-15000).toISOString(),
   heartbeat_at:new Date(now).toISOString(),running:true,earned_cents:15}
 };
+window.BLACKCELL_REDLINE_UPLOAD_UI={open:()=>{document.body.dataset.senderMessengerSourceRequested='true'}};
 window.BLACKCELL_REDLINE_API={
  snapshot:()=>({
   roomId,userId:senderId,peerName:'Chadwick',isOwner:false,
@@ -62,9 +63,8 @@ document.addEventListener('DOMContentLoaded',()=>{
    chat?.querySelector('.redline-chat-timer-slot [data-timer-phase="active"]')));
   const plus=chat?.querySelector('.redline-chat-photo');
   plus?.click();
-  document.body.dataset.senderMessengerUpload=String(Boolean(
-   document.querySelector('#redlineSenderMessengerUpload')?.open));
-  document.querySelector('.redline-messenger-drawer-close')?.click();
+  document.body.dataset.senderMessengerUpload=String(document.body.dataset.senderMessengerSourceRequested==='true');
+  // The REDLINE + opens the new source chooser, not the legacy upload drawer.
   document.body.dataset.senderMessengerUploadClosed=String(Boolean(
    !document.querySelector('#redlineSenderMessengerUpload')?.open));
   if(entry){
