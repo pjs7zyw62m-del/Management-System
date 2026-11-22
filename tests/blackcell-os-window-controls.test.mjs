@@ -24,6 +24,8 @@ test('OS uses hidden-window CSS and fresh build instead of stale PWA resources',
  assert.match(css,/pointer-events:none!important/);
  assert.match(css,/os-traffic-maximize[\s\S]*display:grid!important/);
  assert.match(css,/bc-os-window-compact/);
+ assert.match(css,/os-chat-park-button::before/);
+ assert.match(css,/background:#0a84ff!important/);
  assert.match(html,/blackcell-os-window-controls\.css\?v=20261121-traffic-controls1/);
  assert.match(html,/blackcell-os\.js\?v=159-redline-window-controls1/);
 });
@@ -74,7 +76,14 @@ test('real browser: hidden windows are actually hidden and green phone restore r
  <button class="os-traffic-control os-traffic-close" type="button">×</button>
  <button class="os-traffic-control os-traffic-minimize" type="button">−</button>
  <button class="os-traffic-control os-traffic-maximize" type="button">+</button>
- </div><span>REDLINE</span></div><div class="os-window-body"></div></section></div>
+ </div><span>REDLINE</span></div><div class="os-window-body"></div></section>
+ <section class="os-window os-chat-popout" style="top:120px;left:20px">
+ <div class="os-window-head"><div class="traffic">
+ <button class="os-traffic-control os-traffic-close" type="button">×</button>
+ <button class="os-traffic-control os-traffic-minimize" type="button">−</button>
+ <button class="os-traffic-control os-traffic-maximize" type="button">+</button>
+ <button class="os-chat-park-button" type="button" aria-label="Park chat as bubble">•</button>
+ </div><span>iMessage</span></div><div class="os-window-body"></div></section></div>
  <script>
  const w=document.querySelector('.os-window');
  const b=[...document.querySelectorAll('.traffic button')];
@@ -101,6 +110,18 @@ test('real browser: hidden windows are actually hidden and green phone restore r
    document.body.dataset.yellowHide=String(w.hidden&&getComputedStyle(w).display==='none');
    w.hidden=false;b[0].click();
    document.body.dataset.redHide=String(w.hidden&&getComputedStyle(w).display==='none');
+   const pop=document.querySelector('.os-chat-popout');
+   const dots=pop.querySelectorAll('.traffic button');
+   const first=getComputedStyle(dots[0],'::before');
+   const blue=getComputedStyle(dots[3],'::before');
+   document.body.dataset.blueDotSize=String(
+    first.width===blue.width&&first.height===blue.height&&first.width==='19px');
+   const redHit=dots[0].getBoundingClientRect(),blueHit=dots[3].getBoundingClientRect();
+   document.body.dataset.blueHitArea=String(
+    Math.abs(redHit.width-blueHit.width)<.5&&Math.abs(redHit.height-blueHit.height)<.5);
+   document.body.dataset.blueColor=String(blue.backgroundColor==='rgb(10, 132, 255)');
+   dots[3].addEventListener('click',()=>document.body.dataset.blueClick='true');
+   dots[3].click();
   },120);
  });
  </script></body></html>`;
@@ -130,7 +151,8 @@ test('real browser: hidden windows are actually hidden and green phone restore r
     child.once('error',()=>{clearTimeout(t);ok(1)});
    });
    assert.equal(exit,0,'Chromium failed: '+err.slice(-450));
-   for(const key of ['green-visible','green-restore','green-max','yellow-hide','red-hide'])
+   for(const key of ['green-visible','green-restore','green-max','yellow-hide','red-hide',
+    'blue-dot-size','blue-hit-area','blue-color','blue-click'])
     assert.match(out,new RegExp('data-'+key+'="true"'),(isPhone?'phone':'desktop')+' '+key);
   }
  }finally{await new Promise(ok=>server.close(ok))}
