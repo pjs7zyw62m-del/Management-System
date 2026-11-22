@@ -14,8 +14,10 @@ on:
       - 'blackcell-os-device-label.js'
       - 'corporate-chat.html'
       - 'corporate-chat.js'
+      - 'corporate-chat-android-caret.js'
       - 'corporate-chat-obsidian.css'
       - 'tests/blackcell-android-ime.test.mjs'
+      - 'tests/blackcell-android-caret-recovery.test.mjs'
       - 'tests/blackcell-os-device-label.test.mjs'
       - '.github/workflows/blackcell-os-device-label.yml'
   workflow_dispatch:
@@ -34,6 +36,8 @@ jobs:
           node --check blackcell-os-device-label.js
           node --test tests/blackcell-os-device-label.test.mjs
           node --check corporate-chat.js
+          node --check corporate-chat-android-caret.js
+          node --test tests/blackcell-android-caret-recovery.test.mjs
       - name: Verify Android iMessage text entry and direction
         shell: bash
         run: |
