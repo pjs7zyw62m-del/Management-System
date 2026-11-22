@@ -21,6 +21,8 @@ on:
       - 'corporate-chat-compact-media.css'
       - 'tests/blackcell-android-attachments.test.mjs'
       - 'tests/blackcell-imessage-contact-boot.test.mjs'
+      - 'corporate-chat-inbox-watchdog.js'
+      - 'tests/blackcell-android-contact-recovery.test.mjs'
       - 'corporate-chat-android-caret.js'
       - 'corporate-chat-obsidian.css'
       - 'tests/blackcell-android-ime.test.mjs'
@@ -43,6 +45,7 @@ jobs:
           node --check blackcell-os-device-label.js
           node --test tests/blackcell-os-device-label.test.mjs
           node --check corporate-chat.js
+          node --check corporate-chat-inbox-watchdog.js
           node --check corporate-chat-media.js
           node --check employee.js
           node --test tests/blackcell-android-session-preserve.test.mjs
@@ -57,6 +60,7 @@ jobs:
           CHROME="$CHROME" node --test tests/blackcell-android-ime.test.mjs
           CHROME="$CHROME" node --test tests/blackcell-android-attachments.test.mjs
           CHROME="$CHROME" node --test tests/blackcell-imessage-contact-boot.test.mjs
+          CHROME="$CHROME" node --test tests/blackcell-android-contact-recovery.test.mjs
       - name: Render device labels with Chromium
         shell: bash
         run: |
