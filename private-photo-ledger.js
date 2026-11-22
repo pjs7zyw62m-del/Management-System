@@ -1673,7 +1673,7 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
   const extension=source.image_path.match(/\.(jpg|jpeg|png|webp|heic|heif)$/i)?.[1]?.toLowerCase();
   if(!extension)throw Error('Original photo type is unsupported.');
   state.resubmittingPhotoId=photoId;
-  let newPath=null,posted=false;
+  let newPath=null,posted=false,bunnyAttempted=false,resubmitId=null;
   try{
    await verify();
    const permission=await db.from(ROOMS)
@@ -1686,18 +1686,20 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
      Date.parse(source.created_at)<Date.parse(permission.data.current_session_started_at))
     throw Error('An archived photo cannot be resubmitted to the current session.');
    if(state.room?.id!==room.id)throw Error('The selected REDLINE room changed.');
-   const download=await db.storage.from(BUCKET).download(source.image_path);
-   if(download.error||!download.data)throw Error(fail(download.error||'Unable to retrieve original photo.'));
-   const blob=download.data;
+   let blob;
+   if(isBunnyPath(source.image_path))blob=await readBunnyPhoto(db,room.id,source.id);
+   else{
+    const download=await db.storage.from(BUCKET).download(source.image_path);
+    if(download.error||!download.data)
+     throw Error('The archived original is missing from deleted Supabase storage. Re-upload it to Bunny first.');
+    blob=download.data;
+   }
    if(!blob.size||blob.size>MAX_IMAGE_BYTES)throw Error('The stored original exceeds the supported photo limit.');
-   const id=crypto.randomUUID();
-   newPath=room.id+'/'+id+'.'+extension;
+   const id=crypto.randomUUID();resubmitId=id;
    const mime={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',
     webp:'image/webp',heic:'image/heic',heif:'image/heif'}[extension];
-   const storage=await db.storage.from(BUCKET).upload(newPath,blob,{
-    contentType:mime,upsert:false,cacheControl:'60'
-   });
-   if(storage.error)throw Error(fail(storage.error));
+   bunnyAttempted=true;
+   newPath=await uploadBunnyPhoto(db,room.id,state.user.id,id,blob,mime);
    const created=await db.from(ENTRIES).insert({
     id,room_id:room.id,uploaded_by:state.user.id,image_path:newPath,
     resubmission_origin_id:photoId,decision_status:'pending',
@@ -1714,7 +1716,8 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
   }catch(error){
    // Safely remove only an unposted temporary storage copy. Never delete
    // the original or any successful ledger resubmission.
-   if(newPath&&!posted)try{await db.storage.from(BUCKET).remove([newPath])}catch(_){}
+   if(bunnyAttempted&&!posted&&resubmitId)
+    try{await cleanupUnpostedBunny(db,room.id,resubmitId)}catch(_){}
    throw error;
   }finally{state.resubmittingPhotoId=null}
  },
