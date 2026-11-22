@@ -102,8 +102,8 @@ test('all new RPCs restrict room membership, prohibit anonymous direct access',(
  assert.match(core,/async priceNegotiationAction\(photoId,action,amountCents=null\)/);
 });
 test('new popups and CSS load with updated cache versions',()=>{
- assert.match(html,/private-photo-ledger-consent-negotiation\.js\?v=20261122-negotiation2-custom1/);
- assert.match(html,/private-photo-ledger-consent-negotiation\.css\?v=20261122-negotiation2-custom1/);
+ assert.match(html,/private-photo-ledger-consent-negotiation\.js\?v=20261122-owner-counter-to-sender2/);
+ assert.match(html,/private-photo-ledger-consent-negotiation\.css\?v=20261122-owner-counter-to-sender2/);
  assert.match(html,/private-photo-ledger-timers\.js\?v=20261121-per-second1[^"']*consent-negotiation1/);
  assert.match(html,/private-photo-ledger\.js\?v=20261122-redline-android-multisource1/);
 });
@@ -121,8 +121,8 @@ test('receiver settings button is mounted in visible control header, with MENU f
  assert.match(html,/private-photo-ledger-receiver\.js\?v=20261122-settings-visible1/);
 });
 
-test('owner can accept a counteroffer or set a custom final price without changing review decisions',()=>{
- const migration=read('supabase/migrations/20261122173000_redline_owner_custom_price_immutable_guard.sql');
+test('owner custom counteroffer waits for sender approval; reviewed photos stay immutable',()=>{
+ const migration=read('supabase/migrations/20261122181000_redline_sender_approval_of_owner_custom_price.sql');
  const styles=read('private-photo-ledger-consent-negotiation.css');
  const a=ui.indexOf('function parseFinalAmount(value){');
  const b=ui.indexOf('\nasync function actOnNegotiation(',a);
@@ -134,21 +134,31 @@ test('owner can accept a counteroffer or set a custom final price without changi
  assert.throws(()=>parse('-1'));
  assert.throws(()=>parse('1.234'));
  assert.throws(()=>parse('900719925474099.99'));
+ assert.match(migration,/owner_offer_cents bigint/);
+ assert.match(migration,/status='awaiting_sender_owner'/);
  assert.match(migration,/p_action='set_owner_price' AND v_user=v_room.owner_id/);
- assert.match(migration,/final_cents=p_amount_cents,finalized_by='owner_custom'/);
- assert.match(migration,/final_cents=v_n.offer_cents,finalized_by='owner_accept_counter'/);
- assert.match(migration,/pg_catalog.set_config\('corp_private.redline_negotiation_price_photo'/);
+ assert.match(migration,/p_action='accept_owner_offer' AND v_user=v_room.member_id/);
+ assert.match(migration,/p_action='reject_owner_offer' AND v_user=v_room.member_id/);
+ assert.match(migration,/finalized_by='sender_accepted_owner'/);
+ assert.match(migration,/final_cents=NULL,finalized_by=NULL/);
+ const ownerBranch=migration.slice(migration.indexOf("ELSIF p_action='set_owner_price'"),
+  migration.indexOf("ELSIF p_action='accept_owner_offer'"));
+ assert.doesNotMatch(ownerBranch,/UPDATE public\.corp_private_photo_entries/);
  assert.match(migration,/old.auto_timer_session_id is null/);
  assert.match(migration,/old.settled_at is null and new.settled_at is null/);
  assert.match(migration,/new.decided_at is distinct from old.decided_at/);
  assert.match(migration,/new.priced_at is distinct from old.priced_at/);
- assert.match(migration,/n.status='awaiting_owner'/);
- assert.doesNotMatch(migration,/priced_at=clock_timestamp\(\)/);
- assert.match(core,/set_owner_price/);
- assert.match(core,/\['accept_counter','set_owner_price'\]/);
- assert.match(ui,/SET YOUR OWN FINAL PRICE/);
- assert.match(ui,/CONFIRM CUSTOM PRICE/);
- assert.match(ui,/parseFinalAmount\(input.value\)/);
+ assert.match(migration,/corp_photo_entry_immutable_trigger/);
+ assert.match(migration,/REVOKE ALL ON FUNCTION public.corp_redline_price_negotiation_act/);
+ assert.match(core,/accept_owner_offer/);
+ assert.match(core,/reject_owner_offer/);
+ assert.match(ui,/SEND YOUR CUSTOM COUNTEROFFER/);
+ assert.match(ui,/SEND TO SENDER/);
+ assert.match(ui,/RECEIVER CUSTOM OFFER/);
+ assert.match(ui,/DECLINE OWNER OFFER/);
+ assert.match(ui,/accept_owner_offer/);
+ assert.match(ui,/reject_owner_offer/);
+ assert.match(ui,/awaiting_sender_owner/);
  assert.match(styles,/#redlinePriceNegotiation\.redline-negotiation-ui/);
- assert.match(html,/private-photo-ledger\.js\?v=20261122-redline-android-multisource1-instant-timer1-custom-price1/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261122-redline-android-multisource1-instant-timer1-sender-owner-counter2/);
 });
