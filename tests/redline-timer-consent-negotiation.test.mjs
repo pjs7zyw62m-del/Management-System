@@ -183,7 +183,7 @@ test('owner STOP waits 10 seconds for sender NO at most twice; third STOP is fin
  assert.match(finalize,/sender_can_veto_stop_timer/);
  assert.match(core,/async timerStopRequest\(sessionId\)/);
  assert.match(core,/async senderVetoTimerStop\(sessionId\)/);
- assert.match(core,/async refreshTimerPhoto\(\)/);
+ assert.match(core,/async refreshTimerPhoto\(completed=null,sessionId=null\)/);
  assert.match(timer,/const stop=btn\('■ STOP TIMER',\(\)=>void requestStopWithVeto\(\)/);
  assert.match(timer,/async function requestStopWithVeto\(\)/);
  assert.match(timer,/async function declineReceiverStop\(\)/);
