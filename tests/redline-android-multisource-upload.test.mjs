@@ -178,3 +178,65 @@ test('Android 11 Chrome: actual REDLINE + menu shows both choices and phone pick
   }
  }finally{await new Promise(resolve=>server.close(resolve))}
 });
+
+test('REDLINE private-library picker uses Bunny catalog when the deleted legacy bucket returns HTTP 404',async()=>{
+ const adapter=readFileSync('blackcell-private-drive.js','utf8');
+ const {createPrivateDrive}=await import('data:text/javascript;base64,'+Buffer.from(adapter).toString('base64'));
+ const id='00000000-0000-4000-8000-000000000101';
+ const photos=['photo-a.jpg','photo-b.png','photo-c.webp','photo-d.heic','photo-e.jpg'];
+ const objects=photos.map((name,i)=>({
+  id:'00000000-0000-4000-8000-'+String(i+200).padStart(12,'0'),
+  path:'Photos/'+name,size_bytes:5,updated_at:'2026-11-22T05:00:00Z',state:'ready'
+ }));
+ let legacyCalls=0,reads=0;
+ const client={
+  storage:{from:bucket=>{
+   assert.equal(bucket,'blackcell-os-files');
+   return {
+    list:async()=>{legacyCalls++;return {data:null,error:{message:'The resource was not found',statusCode:'404'}}},
+    download:async()=>{throw Error('Deleted Supabase Storage must not be used for Bunny photos')}
+   };
+  }},
+  auth:{getSession:async()=>({data:{session:{access_token:'fake-jwt',user:{id}}},error:null})}
+ };
+ const savedWindow=globalThis.window,savedFetch=globalThis.fetch;
+ try{
+  globalThis.window={BLACKCELL_CORP_CONFIG:{url:'https://example.supabase.co',publishableKey:'public-test'}};
+  globalThis.fetch=async(url,opts)=>{
+   const action=new URL(url).searchParams.get('action');
+   assert.match(opts.headers.Authorization,/^Bearer fake-jwt$/);
+   if(action==='list')return Response.json({ok:true,rows:objects});
+   if(action==='lookup'){
+    const body=JSON.parse(opts.body);
+    const row=objects.find(e=>e.path===body.path);
+    return Response.json({ok:true,row:row||null});
+   }
+   if(action==='read'){reads++;return new Response(new Blob(['HELLO']),{status:200})}
+   throw Error('Unexpected private drive action: '+action);
+  };
+  const storage=createPrivateDrive(client,id);
+  const root=await storage.list(id,{limit:100});
+  assert.equal(root.error,null);
+  assert.equal(root.data.find(x=>x.name==='Photos')?.id,null,'Folder present from Bunny catalog');
+  const items=await storage.list(id+'/Photos',{limit:100});
+  assert.equal(items.error,null);
+  assert.deepEqual(items.data.map(x=>x.name),photos);
+  assert.equal(legacyCalls,1,'Missing bucket is only queried once, then Bunny is authoritative');
+  const picture=await storage.download(id+'/Photos/photo-a.jpg');
+  assert.equal(picture.error,null);
+  assert.equal(picture.data.size,5);
+  assert.equal(reads,1);
+ }finally{globalThis.window=savedWindow;globalThis.fetch=savedFetch}
+});
+test('REDLINE Photos chooser lists images, excludes videos, shows counts and uses small Bunny thumbnails',()=>{
+ const adapter=readFileSync('blackcell-private-drive.js','utf8');
+ assert.match(adapter,/absentLegacyBucket/);
+ assert.match(adapter,/legacyBucketMissing=true;break/);
+ assert.match(adapter,/const rows=localRows|rows=localRows/);
+ assert.match(core,/photoOnly:true/);
+ assert.match(core,/redline-bunny-library1/);
+ assert.match(library,/const frame=await cloudFrame\(storage,row\)/);
+ assert.match(library,/rows=photoOnly\?result.rows.filter/);
+ assert.match(library,/rows.length\+' photo'/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261122-redline-android-multisource1/);
+});
