@@ -85,5 +85,5 @@ test('New verified build and update release assets are consistent',()=>{
  assert.match(html,/blackcell-os-client-build" content="20261121-traffic-controls1"/);
  assert.match(html,/blackcell-live-update\.js\?v=20261121-auto-save-updates1/);
  assert.match(html,/blackcell-os\.js\?v=159-redline-window-controls1/);
- assert.match(readFileSync('blackcell-site-version.json','utf8'),/redline-receiver-reset-1/);
+ assert.match(readFileSync('blackcell-site-version.json','utf8'),/traffic-controls1/);
 });
