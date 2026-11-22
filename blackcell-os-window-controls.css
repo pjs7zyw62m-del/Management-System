@@ -1,0 +1,61 @@
+/* BLACKCELL OS native titlebar controls.
+   Critical: authored .os-window { display:grid } overrides UA [hidden].
+   Without this, RED close/yellow minimize update state but stay on screen. */
+#desktop > .os-window[hidden]{
+ display:none!important;
+ visibility:hidden!important;
+ pointer-events:none!important;
+}
+#desktop > .os-window:not([hidden]) > .os-window-head{
+ position:relative;
+}
+#desktop > .os-window:not([hidden]) > .os-window-head > .traffic{
+ z-index:15!important;
+ pointer-events:auto!important;
+}
+#desktop > .os-window:not([hidden]) > .os-window-head > .traffic > button{
+ position:relative;
+ pointer-events:auto!important;
+ touch-action:manipulation!important;
+ user-select:none;
+ -webkit-user-select:none;
+ cursor:pointer!important;
+}
+#desktop > .os-window:not([hidden]) > .os-window-head > .traffic > button:focus-visible{
+ outline:3px solid #fff!important;
+ outline-offset:-3px!important;
+}
+/* Maximize/restore needs a distinct visual result on native touch displays,
+   which otherwise style every app as full-screen regardless of is-max. */
+html.bc-os-tablet #desktop > .os-window.bc-os-window-compact:not([hidden]){
+ left:7vw!important;
+ top:max(64px,8dvh)!important;
+ width:86vw!important;
+ height:min(78dvh,850px)!important;
+ min-width:0!important;
+ min-height:min(320px,68dvh)!important;
+ border-radius:19px!important;
+ resize:none!important;
+ box-shadow:0 35px 100px #000e!important;
+}
+@media(max-width:620px){
+ #desktop > .os-window.bc-os-window-compact:not([hidden]){
+  left:3vw!important;
+  top:max(51px,calc(env(safe-area-inset-top) + 45px))!important;
+  width:94vw!important;
+  height:min(75dvh,calc(100dvh - 137px))!important;
+  min-width:0!important;
+  min-height:min(260px,62dvh)!important;
+  border-radius:15px!important;
+  resize:none!important;
+  box-shadow:0 25px 75px #000e!important;
+ }
+}
+/* Phone users also get a working green restore button, not a hidden decoration. */
+html.bc-os-phone #desktop > .os-window:not([hidden]) > .os-window-head > .traffic > button.os-traffic-maximize{
+ display:grid!important;
+}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop > .os-window:not([hidden]) > .os-window-head > .traffic > button.os-traffic-control{
+ min-width:40px!important;
+ min-height:42px!important;
+}
