@@ -124,3 +124,83 @@ test('Timer controller STOP defaults to advancement and ignores stale in-flight 
  assert.equal(ctx.selectedId,'photo-b');
  assert.equal(duplicateStops,0);
 });
+
+const refreshedPhoto=ledger.slice(ledger.indexOf(' async refreshTimerPhoto(completed=null,sessionId=null){'),
+ ledger.indexOf(' async senderStopTimer(',ledger.indexOf(' async refreshTimerPhoto(completed=null,sessionId=null){')));
+const stopChallenge=ledger.slice(ledger.indexOf(' async timerStopRequest(sessionId){'),
+ ledger.indexOf(' async senderVetoTimerStop(',ledger.indexOf(' async timerStopRequest(sessionId){')));
+test('third STOP uses the same next pending photo handoff as ordinary STOP',async()=>{
+ const first={id:'photo-a',created_at:'2026-11-20T12:00:00Z',decision_status:'pending',amount_cents:null};
+ const second={id:'photo-b',created_at:'2026-11-20T12:01:00Z',decision_status:'pending',amount_cents:null};
+ const state={closed:false,user:{id:'u'},isOwner:true,room:{id:'room',active:true},
+  showArchive:false,entries:[first,second],reviewSidebarPhotoId:first.id,entryFingerprint:'old'};
+ let visible=first.id,refreshes=0,firstRenderedBeforeNetwork=false,feedback='';
+ const ctx={state,validId:()=>true,window:{},document:{
+  querySelector:()=>({dataset:{redlinePhotoId:visible}})
+ },renderReviewQueue(){
+   visible=state.entries.filter(p=>p.decision_status==='pending')
+    .sort((a,b)=>Date.parse(a.created_at)-Date.parse(b.created_at))[0]?.id||null;
+   firstRenderedBeforeNetwork=true;
+ },renderEntries:()=>{},updateTotals:()=>{},
+ show:(id,message)=>{if(id==='reviewQueueFeedback')feedback=message},
+ dollars:x=>'$'+(Number(x)/100).toFixed(2),
+ loadEntries:async({force})=>{
+  assert.equal(force,true);
+  assert.equal(firstRenderedBeforeNetwork,true,'next photo should be visible before network');
+  assert.equal(visible,'photo-b');
+  refreshes++;throw Error('Simulated network loss');
+ },fail:e=>e.message};
+ const refresh=runInNewContext('({'+refreshedPhoto+'}).refreshTimerPhoto',ctx);
+ const out=await refresh({photo_id:'photo-a',earned_cents:50,photo_auto_submitted:true},'timer-id');
+ assert.equal(out,false,'background refresh can fail without blocking the next photo');
+ assert.equal(first.decision_status,'accepted');
+ assert.equal(first.amount_cents,50);
+ assert.equal(first.auto_timer_session_id,'timer-id');
+ assert.equal(state.reviewSidebarPhotoId,null);
+ assert.equal(visible,'photo-b');
+ assert.equal(second.decision_status,'pending');
+ assert.equal(refreshes,1);
+ assert.match(feedback,/Next pending photo ready/);
+});
+test('ten-second timeout uses identical handoff, but never skips an unpriced under-cent photo',async()=>{
+ const photo={id:'photo-a',created_at:'2026-11-20T12:00:00Z',decision_status:'pending',amount_cents:null};
+ const next={id:'photo-b',created_at:'2026-11-20T12:01:00Z',decision_status:'pending',amount_cents:null};
+ const state={closed:false,user:{id:'u'},isOwner:true,room:{id:'room',active:true},
+  showArchive:false,entries:[photo,next],reviewSidebarPhotoId:'photo-a',entryFingerprint:'old'};
+ let visible='photo-a',renders=0;
+ const ctx={state,validId:()=>true,document:{querySelector:()=>({dataset:{redlinePhotoId:visible}})},
+ renderReviewQueue:()=>{renders++;visible=state.entries.find(e=>e.decision_status==='pending')?.id},
+ renderEntries:()=>{},updateTotals:()=>{},show:()=>{},dollars:v=>'$0.00',
+ loadEntries:async()=>{},fail:String};
+ const refresh=runInNewContext('({'+refreshedPhoto+'}).refreshTimerPhoto',ctx);
+ await refresh({photo_id:'photo-a',earned_cents:0},'timer-id');
+ assert.equal(photo.decision_status,'pending');
+ assert.equal(visible,'photo-a');
+ assert.equal(next.decision_status,'pending');
+ assert.equal(renders,1);
+});
+test('third STOP RPC triggers next-photo reconciliation once and never a duplicate STOP',async()=>{
+ let calls=0,advances=0;
+ const context={state:{closed:false,isOwner:true,room:{id:'room',active:true},showArchive:false},
+  validId:()=>true,verify:async()=>{},
+  db:{rpc:async(name,args)=>{
+   calls++;assert.equal(name,'corp_redline_timer_stop_request');
+   assert.equal(args.p_session_id,'timer-id');
+   return {data:{ok:true,status:'stopped',photo_id:'photo-a',earned_cents:50,photo_auto_submitted:true}};
+  }},
+  window:{BLACKCELL_REDLINE_API:{refreshTimerPhoto:async(row,id)=>{
+   advances++;assert.equal(row.photo_id,'photo-a');assert.equal(id,'timer-id');
+  }}}};
+ const req=runInNewContext('({'+stopChallenge+'}).timerStopRequest',context);
+ const result=await req('timer-id');
+ assert.equal(result.status,'stopped');
+ assert.equal(calls,1,'only one stop request, no second timerStop RPC');
+ assert.equal(advances,1,'completed photo advances exactly once');
+});
+test('timeout status sync reconciles completed timer only when it matches active session',()=>{
+ assert.match(timer,/const previousActive=latest\?\.active\?\.running\?latest\.active:null/);
+ assert.match(timer,/const completed=latest\?\.recent\?\.find\(x=>x\.id===previousActive\.id\)/);
+ assert.match(timer,/await bridge\(\)\?\.refreshTimerPhoto\?\.\(completed,previousActive\.id\)/);
+ assert.match(timer,/lastAdvancedTimerId!==previousActive\.id/);
+ assert.match(timer,/lastAdvancedTimerId=id/);
+});
