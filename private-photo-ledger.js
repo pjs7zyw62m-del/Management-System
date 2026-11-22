@@ -1,5 +1,5 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
-import {isBunnyPath,uploadBunnyPhoto,readBunnyPhoto,cleanupUnpostedBunny} from './private-photo-ledger-bunny.js?v=20261121-redline-bunny1';
+import {isBunnyPath,uploadBunnyPhoto,readBunnyPhoto,cleanupUnpostedBunny,deleteRedlinePhotoFile} from './private-photo-ledger-bunny.js?v=20261121-redline-bunny1';
 
 const db=corporateClient();
 // Legacy archive photo paths use the old private bucket; new uploads never do.
@@ -14,7 +14,7 @@ const VALID_ID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const $=id=>document.getElementById(id);
 const state={
  user:null,member:null,isOwner:false,rooms:[],room:null,employees:[],
- entries:[],ratings:new Map(),resubmittingPhotoId:null,filter:'all',timedPhotoTotals:new Map(),timedPhotoFingerprint:'',busy:false,refreshing:false,closed:false,
+ entries:[],ratings:new Map(),resubmittingPhotoId:null,deletingPhotoId:null,filter:'all',timedPhotoTotals:new Map(),timedPhotoFingerprint:'',busy:false,refreshing:false,closed:false,
  images:new Map(),entryFingerprint:'',liveStarted:false,roomChannel:null,roomsChannel:null,liveRoomId:null,liveQueued:false,liveTimer:null,liveConnected:false,scopeMemberId:null,scopeValue:'full',scopeLoading:false,showArchive:false,paymentStatus:null,paymentAllocations:new Map()
 };
 const node=(tag,klass,content)=>{
@@ -466,15 +466,32 @@ async function loadEntries({force=false}={}){
   if((result.data||[]).length<250)break;
  }
  if(state.room?.id!==selectedRoom.id)return;
+ // A private server tombstone immediately blocks all future photo reads.
+ // This is checked on both parties' views, including ongoing Bunny deletion.
+ const removal=await db.rpc('corp_redline_photo_removal_status',{p_room_id:selectedRoom.id});
+ if(removal.error||removal.data?.ok!==true)
+  throw Error(fail(removal.error||removal.data?.reason||'Private photo removal status unavailable.'));
+ if(state.room?.id!==selectedRoom.id)return;
+ const removals=new Map((removal.data.photos||[]).filter(x=>validId(x.photo_id))
+  .map(x=>[x.photo_id,x.status]));
+ for(const e of all){
+  e.photo_removal_status=removals.get(e.id)||null;
+  if(e.photo_removal_status){
+   const previous=state.images.get(e.image_path);
+   if(previous?.object&&previous.url?.startsWith('blob:'))
+    try{URL.revokeObjectURL(previous.url)}catch(_){}
+   state.images.delete(e.image_path);
+  }
+ }
  const ratings=await loadPhotoRatings(all,selectedRoom.id);
  if(!ratings||state.room?.id!==selectedRoom.id)return;
  state.ratings=ratings;
  const ratingsSig=JSON.stringify([...ratings.values()].map(r=>[r.photo_id,r.stars,r.rated_at]).sort((a,b)=>a[0].localeCompare(b[0])));
- const signature=ratingsSig+'|'+String(state.showArchive)+'|'+JSON.stringify(all.map(e=>[e.id,e.amount_cents,e.auto_timer_session_id,e.resubmission_origin_id,e.decision_status,e.decided_at,e.priced_at,e.settled_at,e.caption]));
+ const signature=ratingsSig+'|'+String(state.showArchive)+'|'+JSON.stringify(all.map(e=>[e.id,e.amount_cents,e.auto_timer_session_id,e.resubmission_origin_id,e.decision_status,e.decided_at,e.priced_at,e.settled_at,e.photo_removal_status,e.caption]));
  state.entries=all;
  updateTotals();
- const needsSignedRefresh=all.some(e=>!state.images.has(e.image_path)
-   ||state.images.get(e.image_path).expires<Date.now());
+ const needsSignedRefresh=all.some(e=>!e.photo_removal_status&&
+  (!state.images.has(e.image_path)||state.images.get(e.image_path).expires<Date.now()));
  if(signature!==state.entryFingerprint||force||needsSignedRefresh){
   state.entryFingerprint=signature;
   await signImages(all);
@@ -492,7 +509,7 @@ function updateTotals(){
  let assigned=0n,paid=0n,owed=0n,pending=0;
  let rejected=0,complimentary=0;
  for(const e of state.entries){
-  if(e.decision_status==='rejected'){rejected++;continue}
+  if(e.decision_status==='rejected'||(e.photo_removal_status&&e.decision_status==='pending')){rejected++;continue}
   if(e.decision_status!=='accepted'||e.amount_cents===null){pending++;continue}
   const amount=cents(e.amount_cents);
   if(amount===0n)complimentary++;
@@ -536,7 +553,8 @@ function rememberImage(path,url,expires,object=false){
 }
 async function signImages(items){
  const now=Date.now();
- const needed=items.filter(e=>!state.images.has(e.image_path)||state.images.get(e.image_path).expires<now);
+ const needed=items.filter(e=>!e.photo_removal_status&&
+  (!state.images.has(e.image_path)||state.images.get(e.image_path).expires<now));
  const bunny=needed.filter(e=>isBunnyPath(e.image_path));
  const legacy=needed.filter(e=>!isBunnyPath(e.image_path));
  for(let i=0;i<bunny.length;i+=5){
@@ -572,6 +590,7 @@ function setFilter(name){
  renderEntries();
 }
 function entryState(e){
+ if(e.photo_removal_status)return 'removed';
  if(e.decision_status==='rejected')return 'rejected';
  if(e.decision_status!=='accepted')return 'pending';
  if(cents(e.amount_cents)===0n)return 'free';
