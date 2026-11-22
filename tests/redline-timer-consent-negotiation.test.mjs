@@ -195,5 +195,5 @@ test('owner STOP waits 10 seconds for sender NO at most twice; third STOP is fin
  assert.match(ui,/features\.sender_can_veto_stop_timer!==false/);
  assert.match(style,/#redlineSenderStopVeto\.redline-stop-veto-dialog/);
  assert.match(html,/private-photo-ledger-timers\.js\?v=20261121-per-second1[^"']*sender-no-10sec-stop3/);
- assert.match(html,/private-photo-ledger-timers\.css\?v=20261122-sender-no-10sec-stop3/);
+ assert.match(html,/private-photo-ledger-timers\.css\?v=20261121-sender-live-chat-timer1[^"']*sender-no-10sec-stop3/);
 });
