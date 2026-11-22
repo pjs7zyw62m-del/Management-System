@@ -103,8 +103,8 @@ test('all new RPCs restrict room membership, prohibit anonymous direct access',(
 });
 test('new popups and CSS load with updated cache versions',()=>{
  assert.match(html,/private-photo-ledger-consent-negotiation\.js\?v=20261122-sender-no-10sec-stop3/);
- assert.match(html,/private-photo-ledger-consent-negotiation\.css\?v=20261122-sender-no-10sec-stop3/);
- assert.match(html,/private-photo-ledger-timers\.js\?v=20261122-sender-no-10sec-stop3/);
+ assert.match(html,/private-photo-ledger-consent-negotiation\.css\?v=20261122-negotiation2-custom1/);
+ assert.match(html,/private-photo-ledger-timers\.js\?v=20261121-per-second1[^"']*sender-no-10sec-stop3/);
  assert.match(html,/private-photo-ledger\.js\?v=20261122-redline-android-multisource1/);
 });
 
@@ -160,7 +160,7 @@ test('owner custom counteroffer waits for sender approval; reviewed photos stay 
  assert.match(ui,/reject_owner_offer/);
  assert.match(ui,/awaiting_sender_owner/);
  assert.match(styles,/#redlinePriceNegotiation\.redline-negotiation-ui/);
- assert.match(html,/private-photo-ledger\.js\?v=20261122-sender-no-10sec-stop3/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261122-redline-android-multisource1[^"']*sender-no-10sec-stop3/);
 });
 
 test('owner STOP waits 10 seconds for sender NO at most twice; third STOP is final',()=>{
@@ -194,6 +194,6 @@ test('owner STOP waits 10 seconds for sender NO at most twice; third STOP is fin
  assert.match(ui,/Allow sender to say NO when you press STOP/);
  assert.match(ui,/features\.sender_can_veto_stop_timer!==false/);
  assert.match(style,/#redlineSenderStopVeto\.redline-stop-veto-dialog/);
- assert.match(html,/private-photo-ledger-timers\.js\?v=20261122-sender-no-10sec-stop3/);
+ assert.match(html,/private-photo-ledger-timers\.js\?v=20261121-per-second1[^"']*sender-no-10sec-stop3/);
  assert.match(html,/private-photo-ledger-timers\.css\?v=20261122-sender-no-10sec-stop3/);
 });
