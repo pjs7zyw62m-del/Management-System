@@ -2,6 +2,12 @@
 (function(){
 'use strict';
 if(window.top!==window.self||window.BLACKCELL_LIVE_UPDATE)return;
+// Track verified website visits once per visible browser tab, not per OS application.
+if(!/\\/login\\.html$/i.test(location.pathname)){
+ const presenceScript=document.createElement('script');
+ presenceScript.src='blackcell-site-presence.js?v=20261122-visit-return1';
+ presenceScript.async=true;document.head.appendChild(presenceScript);
+}
 const testMode=document.currentScript?.dataset.test==='true'&&/\/site-update-test(?:-v2)?\.html$/.test(location.pathname), KEY='bc.live-update.v1';
 const osMode=/\/blackcell-os(?:\.html)?\/?$/.test(location.pathname)||Boolean(document.getElementById('desktop')?.classList.contains('shell'));
 const OS_APPLIED='bc.os.applied-release.v1', OS_TARGET='bc.os.update-target.v1', OS_EXPECTED_BUILD='bc.os.expected-build.v1', OS_AUTO='bc.os.auto-updates.v1';
