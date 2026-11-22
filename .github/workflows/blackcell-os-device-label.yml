@@ -14,6 +14,9 @@ on:
       - 'blackcell-os-device-label.js'
       - 'corporate-chat.html'
       - 'corporate-chat.js'
+      - 'employee.js'
+      - 'employee.html'
+      - 'tests/blackcell-android-session-preserve.test.mjs'
       - 'corporate-chat-media.js'
       - 'corporate-chat-compact-media.css'
       - 'tests/blackcell-android-attachments.test.mjs'
@@ -40,6 +43,8 @@ jobs:
           node --test tests/blackcell-os-device-label.test.mjs
           node --check corporate-chat.js
           node --check corporate-chat-media.js
+          node --check employee.js
+          node --test tests/blackcell-android-session-preserve.test.mjs
           node --check corporate-chat-android-caret.js
           node --test tests/blackcell-android-caret-recovery.test.mjs
       - name: Verify Android iMessage text entry and direction
