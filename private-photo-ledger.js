@@ -1448,11 +1448,11 @@ function openRedlinePhotoChooser(){
    const roomId=state.room?.id,uid=state.user?.id;
    void (async()=>{
     try{
-     const {choosePrivateMedia}=await import('./blackcell-private-media.js?v=20261122-redline-multi1');
+     const {choosePrivateMedia}=await import('./blackcell-private-media.js?v=20261122-redline-bunny-library1');
      if(!redlinePhotoEligible()||state.room?.id!==roomId||state.user?.id!==uid)return;
      await choosePrivateMedia({
-      client:db,userId:uid,max:Number.POSITIVE_INFINITY,
-      actionLabel:'UPLOAD SELECTED TO REDLINE',
+      client:db,userId:uid,max:Number.POSITIVE_INFINITY,photoOnly:true,
+      actionLabel:'SEND SELECTED PHOTOS TO REDLINE',
       onSelectRows:async(rows,readFile)=>{
        if(!redlinePhotoEligible()||state.room?.id!==roomId)return;
        enqueueRedlineFiles(rows.map(row=>({label:row.name,readFile:()=>readFile(row)})));
