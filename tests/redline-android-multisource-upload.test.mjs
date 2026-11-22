@@ -29,13 +29,18 @@ test('REDLINE chat plus, hero plus and dropzone reach same two-source chooser',(
  assert.match(core,/function openRedlinePhotoChooser\(\)/);
  assert.match(core,/button\('＋  Upload from Phone'/);
  assert.match(core,/button\('▣  BLACKCELL Photos'/);
- assert.match(core,/picker\.multiple=true;picker\.value=''/);
+ assert.match(core,/picker\.multiple=true;picker\.tabIndex=-1/);
+ assert.match(core,/document\.body\.append\(picker\)/);
+ assert.match(core,/function openRedlinePhonePicker\(\)/);
  assert.match(style,/\.redline-photo-source-overlay\[hidden\]/);
 });
 test('No arbitrary file count limit; media from Photos is streamed one-by-one',()=>{
  assert.match(core,/max:Number\.POSITIVE_INFINITY/);
  assert.match(core,/onSelectRows:async\(rows,readFile\)=>/);
  assert.match(library,/onSelectRows=null/);
+ assert.match(library,/onDeviceUpload=null/);
+ assert.match(library,/No BLACKCELL Photos found for this account/);
+ assert.match(core,/onDeviceUpload:\(\)=>\{/);
  assert.match(library,/if\(typeof onSelectRows==='function'\)/);
  assert.match(core,/if\(!file&&typeof item\.readFile==='function'\)file=await item\.readFile\(\)/);
  assert.match(core,/const success=await uploadPhoto\(\{preventDefault\(\)\{\},detail:\{file\}\}\)/);
