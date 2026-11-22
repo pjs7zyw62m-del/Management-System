@@ -286,6 +286,22 @@ function open(){
     earnedValues.owed.textContent=owedValue.textContent;
     earnedValues.paid.textContent=activeRoom?$('#totalPaid')?.textContent?.trim()||'$0.00':'$0.00';
     earnedValues.total.textContent=activeRoom?$('#totalAssigned')?.textContent?.trim()||'$0.00':'$0.00';
+    stripStats.approved.textContent=earnedValues.total.textContent;
+    stripStats.owed.textContent=earnedValues.owed.textContent;
+    stripStats.paid.textContent=earnedValues.paid.textContent;
+    pendingHint.textContent=pendingValue.textContent+' photos awaiting review';
+    paymentDates.replaceChildren();
+    const payments=activeRoom?window.BLACKCELL_REDLINE_API?.snapshot?.()?.paymentHistory:[];
+    if(Array.isArray(payments)&&payments.length){
+      for(const payment of payments.slice(0,12)){
+        const stamp=new Date(payment.created_at);
+        const label=Number.isNaN(stamp.valueOf())?'Date unavailable':stamp.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
+        const amount=Number(payment.amount_cents||0)/100;
+        const row=make('div','bc-redline-preview-payment-date');
+        row.append(make('span','',label),make('strong','','$'+amount.toFixed(2)));
+        paymentDates.append(row);
+      }
+    }else paymentDates.append(make('p','','No recorded payments for this room yet.'));
     renderPreviewPhotoHistory();renderPreviewCurrentlyViewing();
     setDevice('phone');selectTab('upload');dialog.showModal();
   }
