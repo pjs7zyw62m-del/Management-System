@@ -50,7 +50,7 @@ test('three counters max; receiver original wins on third rejection',()=>{
  assert.match(sql,/SET amount_cents=v_n.offer_cents/);
  assert.match(sql,/AFTER UPDATE OF decision_status,amount_cents/);
  assert.match(sql,/NEW.auto_timer_session_id IS NOT NULL/);
- assert.match(ui,/3 COUNTEROFFERS/);
+ assert.match(ui,/OF 3 · COUNTEROFFERS/);
  assert.match(ui,/ACCEPT ORIGINAL PRICE/);
  assert.match(ui,/SEND COUNTEROFFER/);
  assert.match(ui,/REJECT COUNTER/);
@@ -67,7 +67,7 @@ test('sender may counteroffer HIGHER or LOWER amounts with exact cents and room-
  assert.match(upgrade,/REVOKE ALL ON FUNCTION public.corp_redline_price_negotiation_act/);
  assert.doesNotMatch(upgrade,/counter_must_be_(lower|higher)_than_original/);
  const a=ui.indexOf('function parseCounter(value,original){');
- const b=ui.indexOf('\nasync function actOnNegotiation(',a);
+ const b=ui.indexOf('\nfunction parseFinalAmount(',a);
  assert.ok(a>=0&&b>a);
  const parse=runInNewContext('('+ui.slice(a,b).trim()+')');
  assert.equal(parse('1.01',100),101);
@@ -79,9 +79,9 @@ test('sender may counteroffer HIGHER or LOWER amounts with exact cents and room-
  for(const bad of ['-0.01','1.00','1.999','abc','1e9','999999999999999999']){
   assert.throws(()=>parse(bad,100),bad);
  }
- assert.match(ui,/request a higher or lower amount/);
+ assert.match(ui,/propose any higher or lower price/);
  assert.match(ui,/Your counteroffer amount in dollars, higher or lower/);
- assert.match(ui,/The sender proposes/);
+ assert.match(ui,/SENDER COUNTEROFFER/);
 });
 
 test('all new RPCs restrict room membership, prohibit anonymous direct access',()=>{
@@ -102,8 +102,8 @@ test('all new RPCs restrict room membership, prohibit anonymous direct access',(
  assert.match(core,/async priceNegotiationAction\(photoId,action,amountCents=null\)/);
 });
 test('new popups and CSS load with updated cache versions',()=>{
- assert.match(html,/private-photo-ledger-consent-negotiation\.js\?v=20261122-bidirectional-counter1/);
- assert.match(html,/private-photo-ledger-consent-negotiation\.css\?v=20261122-settings-visible1/);
+ assert.match(html,/private-photo-ledger-consent-negotiation\.js\?v=20261122-negotiation2-custom1/);
+ assert.match(html,/private-photo-ledger-consent-negotiation\.css\?v=20261122-negotiation2-custom1/);
  assert.match(html,/private-photo-ledger-timers\.js\?v=20261121-per-second1[^"']*consent-negotiation1/);
  assert.match(html,/private-photo-ledger\.js\?v=20261122-redline-android-multisource1/);
 });
@@ -119,4 +119,36 @@ test('receiver settings button is mounted in visible control header, with MENU f
  assert.match(receiver,/menuItems\.append\(review,history,message,settingsMenu,manage,tools\)/);
  assert.match(styles,/#redlineConsentSettingsOpen\[hidden\]\{display:none!important\}/);
  assert.match(html,/private-photo-ledger-receiver\.js\?v=20261122-settings-visible1/);
+});
+
+test('owner can accept a counteroffer or set a custom final price without changing review decisions',()=>{
+ const migration=read('supabase/migrations/20261122173000_redline_owner_custom_price_immutable_guard.sql');
+ const styles=read('private-photo-ledger-consent-negotiation.css');
+ const a=ui.indexOf('function parseFinalAmount(value){');
+ const b=ui.indexOf('\nasync function actOnNegotiation(',a);
+ assert.ok(a>=0&&b>a);
+ const parse=runInNewContext('('+ui.slice(a,b).trim()+')');
+ assert.equal(parse('14.75'),1475);
+ assert.equal(parse('0'),0);
+ assert.equal(parse('0.50'),50);
+ assert.throws(()=>parse('-1'));
+ assert.throws(()=>parse('1.234'));
+ assert.throws(()=>parse('900719925474099.99'));
+ assert.match(migration,/p_action='set_owner_price' AND v_user=v_room.owner_id/);
+ assert.match(migration,/final_cents=p_amount_cents,finalized_by='owner_custom'/);
+ assert.match(migration,/final_cents=v_n.offer_cents,finalized_by='owner_accept_counter'/);
+ assert.match(migration,/pg_catalog.set_config\('corp_private.redline_negotiation_price_photo'/);
+ assert.match(migration,/old.auto_timer_session_id is null/);
+ assert.match(migration,/old.settled_at is null and new.settled_at is null/);
+ assert.match(migration,/new.decided_at is distinct from old.decided_at/);
+ assert.match(migration,/new.priced_at is distinct from old.priced_at/);
+ assert.match(migration,/n.status='awaiting_owner'/);
+ assert.doesNotMatch(migration,/priced_at=clock_timestamp\(\)/);
+ assert.match(core,/set_owner_price/);
+ assert.match(core,/\['accept_counter','set_owner_price'\]/);
+ assert.match(ui,/SET YOUR OWN FINAL PRICE/);
+ assert.match(ui,/CONFIRM CUSTOM PRICE/);
+ assert.match(ui,/parseFinalAmount\(input.value\)/);
+ assert.match(styles,/#redlinePriceNegotiation\.redline-negotiation-ui/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261122-redline-android-multisource1-instant-timer1-custom-price1/);
 });
