@@ -162,3 +162,38 @@ test('owner custom counteroffer waits for sender approval; reviewed photos stay 
  assert.match(styles,/#redlinePriceNegotiation\.redline-negotiation-ui/);
  assert.match(html,/private-photo-ledger\.js\?v=20261122-sender-no-10sec-stop3/);
 });
+
+test('owner STOP waits 10 seconds for sender NO at most twice; third STOP is final',()=>{
+ const sql=read('supabase/migrations/20261122200000_redline_receiver_stop_sender_ten_second_veto.sql');
+ const finalize=read('supabase/migrations/20261122200500_redline_timer_veto_status_heartbeat_controls.sql');
+ const style=read('private-photo-ledger-timers.css');
+ assert.match(sql,/stop_attempts smallint NOT NULL DEFAULT 0 CHECK\(stop_attempts BETWEEN 0 AND 3\)/);
+ assert.match(sql,/pending_until=v_now\+interval '10 seconds'/);
+ assert.match(sql,/v_q\.stop_attempts>=3/);
+ assert.match(sql,/RETURN jsonb_build_object\('ok',true,'status','vetoed'/);
+ assert.match(sql,/v_q\.pending_until<=v_now/);
+ assert.match(sql,/corp_private\.redline_finalize_stop_timer\(v_r.timer_id,v_r.pending_until\)/);
+ assert.match(sql,/least\(p_cutoff,v_t\.heartbeat_at\+interval '45 seconds'\)/);
+ assert.match(sql,/photo_auto_submitted/);
+ assert.match(sql,/ALTER TABLE corp_private\.redline_timer_stop_veto ENABLE ROW LEVEL SECURITY/);
+ assert.match(sql,/REVOKE ALL ON FUNCTION public\.corp_redline_timer_stop_request\(uuid\) FROM PUBLIC,anon/);
+ assert.match(sql,/REVOKE ALL ON FUNCTION public\.corp_redline_timer_stop_veto\(uuid\) FROM PUBLIC,anon/);
+ assert.match(finalize,/redline_resolve_expired_timer_stops\(p_room_id\)/);
+ assert.match(finalize,/redline_resolve_expired_timer_stops\(v_timer.room_id\)/);
+ assert.match(finalize,/sender_can_veto_stop_timer/);
+ assert.match(core,/async timerStopRequest\(sessionId\)/);
+ assert.match(core,/async senderVetoTimerStop\(sessionId\)/);
+ assert.match(core,/async refreshTimerPhoto\(\)/);
+ assert.match(timer,/const stop=btn\('■ STOP TIMER',\(\)=>void requestStopWithVeto\(\)/);
+ assert.match(timer,/async function requestStopWithVeto\(\)/);
+ assert.match(timer,/async function declineReceiverStop\(\)/);
+ assert.match(timer,/NO — KEEP TIMER RUNNING/);
+ assert.match(timer,/stopVetoRemaining\(\)/);
+ assert.match(timer,/stopVetoDlg\.showModal\(\)/);
+ assert.match(timer,/stop\.disabled=acting\|\|!owner\|\|!running\|\|awaitingStop/);
+ assert.match(ui,/Allow sender to say NO when you press STOP/);
+ assert.match(ui,/features\.sender_can_veto_stop_timer!==false/);
+ assert.match(style,/#redlineSenderStopVeto\.redline-stop-veto-dialog/);
+ assert.match(html,/private-photo-ledger-timers\.js\?v=20261122-sender-no-10sec-stop3/);
+ assert.match(html,/private-photo-ledger-timers\.css\?v=20261122-sender-no-10sec-stop3/);
+});
