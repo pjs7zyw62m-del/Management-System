@@ -84,6 +84,6 @@ test('Workspace is saved before updating and sensitive arbitrary drafts are not 
 test('New verified build and update release assets are consistent',()=>{
  assert.match(html,/blackcell-os-client-build" content="20261121-redline-receiver-reset-1"/);
  assert.match(html,/blackcell-live-update\.js\?v=20261121-auto-save-updates1/);
- assert.match(html,/blackcell-os\.js\?v=125-level-r-window-drag/);
+ assert.match(html,/blackcell-os\.js\?v=159-redline-window-controls1/);
  assert.match(readFileSync('blackcell-site-version.json','utf8'),/redline-receiver-reset-1/);
 });
