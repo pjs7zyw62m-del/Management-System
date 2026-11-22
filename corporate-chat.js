@@ -205,7 +205,17 @@ smallWindow.addEventListener('change',()=>{
  applySidebarPreference();renderPeers();
 });
 const composerText=$('messageInput');
-function resizeComposer(){composerText.style.height='auto';composerText.style.height=Math.min(composerText.scrollHeight,112)+'px'}
+// REDLINE intentionally leaves its Android textarea height alone during typing.
+// Reflowing the iMessage textarea on every keystroke can move the caret during
+// Android Chrome/Gboard composition on some devices (including low-end phones).
+// Keep the native editor in control; all message/typing actions stay unchanged.
+const androidNativeComposer=/Android/i.test(navigator.userAgent||'');
+let composerCompositionActive=false;
+function resizeComposer(){
+ if(androidNativeComposer||composerCompositionActive)return;
+ composerText.style.height='auto';
+ composerText.style.height=Math.min(composerText.scrollHeight,112)+'px';
+}
 
 let messageMutationBusy=false;
 function ownEditableMessage(m){return ready&&!!self&&peer?.user_id===m.recipient_id&&m.sender_id===self&&!m.media_batch_id&&!m.deleted_at}
@@ -315,13 +325,22 @@ async function toggleCurrentBlock(){
 }
 window.addEventListener('storage',e=>{if(ready&&self&&e.key==='bc.chat.block.changed.'+self)void refreshCurrentBlock()});
 setInterval(()=>{if(ready&&peer&&!document.hidden)void refreshCurrentBlock()},20000);
-composerText.addEventListener('input',()=>{
- resizeComposer();
+composerText.addEventListener('compositionstart',()=>{composerCompositionActive=true});
+composerText.addEventListener('compositionend',()=>{
+ composerCompositionActive=false;
  if(!chatBlocked&&blockKnown&&!blockBusy)live.onInput(composerText.value);
 });
-composerText.addEventListener('blur',()=>live.stopTyping());
+composerText.addEventListener('input',()=>{
+ // Android IMEs own the live caret and composition range. Avoid changing
+ // textarea geometry or reprocessing typing state mid-composition.
+ resizeComposer();
+ if(!composerCompositionActive&&!chatBlocked&&blockKnown&&!blockBusy)live.onInput(composerText.value);
+});
+composerText.addEventListener('blur',()=>{composerCompositionActive=false;live.stopTyping()});
 composerText.addEventListener('keydown',e=>{
- if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();if(!composerText.disabled)$('sendForm').requestSubmit()}
+ if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing&&!composerCompositionActive){
+  e.preventDefault();if(!composerText.disabled)$('sendForm').requestSubmit();
+ }
 });
 function text(tag,cls,value){const el=document.createElement(tag);if(cls)el.className=cls;el.textContent=value;return el}
 async function boot(){
