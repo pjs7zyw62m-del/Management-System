@@ -20,6 +20,7 @@ on:
       - 'corporate-chat-media.js'
       - 'corporate-chat-compact-media.css'
       - 'tests/blackcell-android-attachments.test.mjs'
+      - 'tests/blackcell-imessage-contact-boot.test.mjs'
       - 'corporate-chat-android-caret.js'
       - 'corporate-chat-obsidian.css'
       - 'tests/blackcell-android-ime.test.mjs'
@@ -55,6 +56,7 @@ jobs:
           [ -n "$CHROME" ] || { echo "Chromium unavailable"; exit 1; }
           CHROME="$CHROME" node --test tests/blackcell-android-ime.test.mjs
           CHROME="$CHROME" node --test tests/blackcell-android-attachments.test.mjs
+          CHROME="$CHROME" node --test tests/blackcell-imessage-contact-boot.test.mjs
       - name: Render device labels with Chromium
         shell: bash
         run: |
