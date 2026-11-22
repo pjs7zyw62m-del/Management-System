@@ -86,8 +86,21 @@ test('all new RPCs restrict room membership, prohibit anonymous direct access',(
  assert.match(core,/async priceNegotiationAction\(photoId,action,amountCents=null\)/);
 });
 test('new popups and CSS load with updated cache versions',()=>{
- assert.match(html,/private-photo-ledger-consent-negotiation\.js\?v=20261121-consent-negotiation1/);
- assert.match(html,/private-photo-ledger-consent-negotiation\.css\?v=20261121-consent-negotiation1/);
+ assert.match(html,/private-photo-ledger-consent-negotiation\.js\?v=20261122-settings-visible1/);
+ assert.match(html,/private-photo-ledger-consent-negotiation\.css\?v=20261122-settings-visible1/);
  assert.match(html,/private-photo-ledger-timers\.js\?v=20261121-per-second1[^"']*consent-negotiation1/);
  assert.match(html,/private-photo-ledger\.js\?v=20261122-redline-android-multisource1/);
+});
+
+test('receiver settings button is mounted in visible control header, with MENU fallback',()=>{
+ const receiver=read('private-photo-ledger-receiver.js');
+ const styles=read('private-photo-ledger-consent-negotiation.css');
+ assert.match(ui,/const receiverHeader=\$\('#redlineReceiverCommand \.rr-command-header'\)/);
+ assert.match(ui,/host\.append\(settingsButton\)/);
+ assert.match(ui,/blackcell:redline:open-settings/);
+ assert.match(ui,/settingsButton\.hidden=!owner/);
+ assert.match(receiver,/redlineReceiverMenuSettings/);
+ assert.match(receiver,/menuItems\.append\(review,history,message,settingsMenu,manage,tools\)/);
+ assert.match(styles,/#redlineConsentSettingsOpen\[hidden\]\{display:none!important\}/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261122-settings-visible1/);
 });
