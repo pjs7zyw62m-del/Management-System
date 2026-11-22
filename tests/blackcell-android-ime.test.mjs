@@ -82,7 +82,7 @@ test('Android Chrome editor keeps normal English order, cursor position, and LTR
 
 const chatCode=readFileSync('corporate-chat.js','utf8');
 test('Android native composing handler has no textarea reflow and protects IME enter',()=>{
- assert.match(html,/corporate-chat\.js\?v=20261122-android-session-preserve6/);
+ assert.match(html,/corporate-chat\.js\?v=20261122-contact-bootstrap7/);
  assert.match(chatCode,/const androidNativeComposer=\/Android\/i\.test\(navigator\.userAgent\|\|''\)/);
  assert.match(chatCode,/if\(androidNativeComposer\|\|composerCompositionActive\)return/);
  assert.match(chatCode,/composerText\.addEventListener\('compositionstart'/);
