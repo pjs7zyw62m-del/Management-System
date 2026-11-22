@@ -100,6 +100,7 @@ const pending=create('span','','0 pending photos');
 const rate=create('span','','Timer not running');
 details.append(owed,paid,pending,rate);
 liveStrip.append(stripHead,details);
+liveStrip.hidden=true;
 chat.insertBefore(liveStrip,$('.redline-chat-timer-slot',chat));
 // Currently Viewing is a quick route to the existing signed-image preview;
 // we do not disclose another private image or duplicate server requests.
@@ -110,6 +111,7 @@ for(const button of [currentButton,historyButton])button.type='button';
 currentButton.addEventListener('click',()=>tabs.viewing?.click());
 historyButton.addEventListener('click',()=>tabs.history?.click());
 quick.append(currentButton,historyButton);
+quick.hidden=true;
 chat.insertBefore(quick,composer);
 const headerStrong=$('.redline-message-header strong',chat);
 const headerSmall=$('.redline-message-header small',chat);
@@ -119,6 +121,8 @@ function update(){
  const active=sender();
  const onChat=active&&!pane.hidden;
  document.body.classList.toggle('redline-sender-messenger',active);
+ liveStrip.hidden=!active;
+ quick.hidden=!active;
  document.body.classList.toggle('redline-chat-immersive',onChat);
  if(!active){
   document.body.classList.remove('redline-upload-sheet-open');
@@ -142,8 +146,8 @@ function update(){
  const minuteRate=$('.redline-chat-timer-rate',pinned)?.textContent||'';
  if(pinned&&!s.archiveMode){
   timer.title.textContent='LIVE TIMER EARNED';
-  timer.number.textContent=amount.replace(/\\s*earned.*$/i,'')||'$0.0000';
-  elapsed.number.textContent=clock.replace(/\\s*elapsed.*$/i,'')||'00:00';
+  timer.number.textContent=amount.replace(/\s*earned.*$/i,'')||'$0.0000';
+  elapsed.number.textContent=clock.replace(/\s*elapsed.*$/i,'')||'00:00';
   rate.textContent=minuteRate||'Timer running';
  }else{
   timer.title.textContent='LIVE TIMER';
