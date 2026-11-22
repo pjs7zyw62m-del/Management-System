@@ -356,8 +356,10 @@ async function pollNegotiations(force=false){
   const data=await api().priceNegotiationStatus(id);
   if(snap()?.roomId!==id)return;
   negotiatingRoom=id;negotiations=Array.isArray(data.offers)?data.offers:[];
-  const pending=negotiations.find(n=>s.isOwner?n.status==='awaiting_owner':
-   (n.status==='awaiting_sender'||n.status==='awaiting_sender_owner'));
+  const pending=s.isOwner
+   ?negotiations.find(n=>n.status==='awaiting_owner')
+   :(negotiations.find(n=>n.status==='awaiting_sender_owner')||
+     negotiations.find(n=>n.status==='awaiting_sender'));
   if(data.enabled&&pending&&!timerDlg.open&&!settingsDlg.open)renderNegotiation(pending);
   else if(!pending&&negotiateDlg.open){negotiateDlg.close();negotiatingShownKey=null}
  }catch(e){
