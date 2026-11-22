@@ -1,6 +1,8 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
+import {isBunnyPath,uploadBunnyPhoto,readBunnyPhoto,cleanupUnpostedBunny} from './private-photo-ledger-bunny.js?v=20261121-redline-bunny1';
 
 const db=corporateClient();
+// Legacy archive photo paths use the old private bucket; new uploads never do.
 const BUCKET='corp-private-photo-ledger';
 const ROOMS='corp_private_photo_rooms';
 const ENTRIES='corp_private_photo_entries';
@@ -521,18 +523,43 @@ function updateTotals(){
  show('freeCount',String(complimentary));
  window.dispatchEvent(new Event('blackcell:redline:state'));
 }
+function clearImageCache(){
+ for(const image of state.images.values())if(image?.object&&image.url?.startsWith('blob:'))
+  try{URL.revokeObjectURL(image.url)}catch(_){}
+ state.images.clear();
+}
+function rememberImage(path,url,expires,object=false){
+ const old=state.images.get(path);
+ if(old?.object&&old.url!==url&&old.url?.startsWith('blob:'))
+  try{URL.revokeObjectURL(old.url)}catch(_){}
+ state.images.set(path,{url,expires,object});
+}
 async function signImages(items){
  const now=Date.now();
  const needed=items.filter(e=>!state.images.has(e.image_path)||state.images.get(e.image_path).expires<now);
- for(let i=0;i<needed.length;i+=30){
-  const batch=needed.slice(i,i+30);
+ const bunny=needed.filter(e=>isBunnyPath(e.image_path));
+ const legacy=needed.filter(e=>!isBunnyPath(e.image_path));
+ for(let i=0;i<bunny.length;i+=5){
+  await Promise.all(bunny.slice(i,i+5).map(async e=>{
+   try{
+    const data=await readBunnyPhoto(db,e.room_id,e.id);
+    if(!state.entries.some(x=>x.id===e.id&&x.image_path===e.image_path))return;
+    rememberImage(e.image_path,URL.createObjectURL(data),Date.now()+20*60*1000,true);
+   }catch(error){
+    show('entriesFeedback','Some REDLINE photos could not load from private Bunny storage: '+fail(error));
+   }
+  }));
+ }
+ // Old photo records remain readable if a historical Supabase original
+ // is restored in the future. No new media is uploaded to this bucket.
+ for(let i=0;i<legacy.length;i+=30){
+  const batch=legacy.slice(i,i+30);
   const result=await db.storage.from(BUCKET).createSignedUrls(batch.map(e=>e.image_path),600);
-  if(result.error){show('entriesFeedback','Private photo previews unavailable: '+fail(result.error));continue}
+  if(result.error)continue;
   for(let j=0;j<batch.length;j++){
    const url=result.data?.[j]?.signedUrl;
-   if(url&&typeof url==='string'&&url.startsWith('https://')){
-    state.images.set(batch[j].image_path,{url,expires:Date.now()+4*60*1000});
-   }
+   if(url&&typeof url==='string'&&url.startsWith('https://'))
+    rememberImage(batch[j].image_path,url,Date.now()+4*60*1000);
   }
  }
 }
@@ -1245,7 +1272,7 @@ function updateRedlineResetControls(){
 async function setRedlineArchiveView(archive){
  if(!state.room)return;
  if(archive&&!state.room.current_session_started_at)return;
- state.showArchive=!!archive;state.entryFingerprint='';state.images.clear();
+ state.showArchive=!!archive;state.entryFingerprint='';clearImageCache();
  updateRedlineResetControls();
  setFilter(state.showArchive?'all':state.isOwner?'reviewed':'all');
  await loadEntries({force:true});
@@ -1272,7 +1299,7 @@ async function startRedlineFresh(all=false){
   if(error||data?.ok!==true||(!all&&data.rooms_reset!==1)){
    throw Error(data?.reason||error?.message||'The server did not confirm the reset.');
   }
-  state.showArchive=false;state.entryFingerprint='';state.images.clear();
+  state.showArchive=false;state.entryFingerprint='';clearImageCache();
   await refresh({force:true});
   if(status)status.textContent='Fresh REDLINE session ready. '+data.rooms_reset+' room(s) archived. No financial records or photos deleted.';
   window.dispatchEvent(new Event('blackcell:redline:reset'));
