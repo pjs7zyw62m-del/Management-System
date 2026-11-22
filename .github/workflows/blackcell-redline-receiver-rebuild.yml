@@ -14,6 +14,7 @@ on:
       - 'supabase/sql/blackcell_redline_start_fresh_archive.sql'
       - 'tests/redline-timer-chat-browser-smoke.mjs'
       - 'tests/redline-sender-messenger-browser-smoke.mjs'
+      - 'tests/redline-android-keyboard-layout.test.mjs'
       - 'tests/redline-per-second-earnings.test.mjs'
       - 'tests/redline-history-chat-signals.test.mjs'
       - 'tests/redline-chat-read-typing-browser-smoke.mjs'
@@ -55,6 +56,7 @@ on:
       - 'tests/private-photo-ledger-simple-sender.test.mjs'
       - 'tests/redline-timer-chat-browser-smoke.mjs'
       - 'tests/redline-sender-messenger-browser-smoke.mjs'
+      - 'tests/redline-android-keyboard-layout.test.mjs'
       - 'tests/redline-per-second-earnings.test.mjs'
       - 'tests/redline-history-chat-signals.test.mjs'
       - 'tests/redline-chat-read-typing-browser-smoke.mjs'
@@ -192,6 +194,7 @@ jobs:
           command -v google-chrome >/dev/null 2>&1 && CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && CHROME=chromium || CHROME=; }
           [ -n "$CHROME" ] || { echo "Chromium unavailable"; exit 1; }
           CHROME="$CHROME" node tests/redline-sender-messenger-browser-smoke.mjs
+          CHROME="$CHROME" node --test tests/redline-android-keyboard-layout.test.mjs
       - name: Sender chat timer START and STOP browser integration
         shell: bash
         run: |
