@@ -120,7 +120,7 @@ function refreshSettings(){
    'OFF: only you can stop. ON: the sender may immediately stop an active timer from REDLINE.',
    'sender_can_stop_timer',features.sender_can_stop_timer===true,true),
   featureRow('Price negotiations',
-   'Allow up to three sender counteroffers. OFF keeps your original price final.',
+   'Allow up to three sender counteroffers above or below your original price. OFF keeps it final.',
    'negotiation_enabled',features.negotiation_enabled,true));
 }
 async function openSettings(){
@@ -212,8 +212,8 @@ function parseCounter(value,original){
  if(!/^\d+(?:\.\d{1,2})?$/.test(clean))throw Error('Enter a dollar amount, such as 5.00.');
  const [whole,decimal='']=clean.split('.');
  const cents=BigInt(whole)*100n+BigInt(decimal.padEnd(2,'0'));
- if(cents<=BigInt(original))
-  throw Error('Ask for more than the receiver’s original price.');
+ if(cents===BigInt(original))
+  throw Error('Enter a counteroffer above or below the original price.');
  if(cents>BigInt(Number.MAX_SAFE_INTEGER))throw Error('Amount is too large.');
  return Number(cents);
 }
@@ -245,12 +245,12 @@ function renderNegotiation(offer){
  const actions=make('div','redline-consent-actions');
  if(!s.isOwner){
   negotiateDlg.append(make('p','redline-consent-muted',
-   'You may accept the receiver’s original price or ask for a higher amount. '+
+   'You may accept the receiver’s original price or request a higher or lower amount. '+
    'The receiver may accept or reject your request. After the third rejected offer, '+
    'their original price is final.'));
   const input=make('input','redline-consent-amount');input.inputMode='decimal';
-  input.placeholder='Ask for a higher amount in USD (e.g. 15.00)';
-  input.setAttribute('aria-label','Your higher counteroffer amount in dollars');
+  input.placeholder='Offer more or less (e.g. 7.00 or 15.00)';
+  input.setAttribute('aria-label','Your counteroffer amount in dollars, higher or lower');
   input.addEventListener('input',()=>{if(input.value.startsWith('.'))input.value='0'+input.value;});
   negotiateDlg.append(input);
   actions.append(action('ACCEPT ORIGINAL PRICE',()=>void actOnNegotiation(offer.photo_id,'accept_original'),'redline-consent-yes'),
@@ -260,7 +260,7 @@ function renderNegotiation(offer){
    },'redline-consent-no'));
  }else{
   negotiateDlg.append(make('p','redline-consent-muted',
-   'The sender requests a higher payment of '+cash(offer.offer_cents)+
+   'The sender proposes '+cash(offer.offer_cents)+
    '. You can accept it, reject it, or finish at your original price.'));
   actions.append(action('ACCEPT '+cash(offer.offer_cents),
     ()=>void actOnNegotiation(offer.photo_id,'accept_counter'),'redline-consent-yes'),
