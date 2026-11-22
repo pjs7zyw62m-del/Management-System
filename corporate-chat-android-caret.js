@@ -1,4 +1,4 @@
-/* BLACKCELL iMessage · Android caret recovery
+/* BLACKCELL iMessage and REDLINE · Android caret recovery
  * Android Chrome may resume from another app with the composer selection at
  * the beginning. A native IME can then prepend letters ('olleh') even though
  * the chat is LTR. Preserve the intent to append across app/page switches.
@@ -19,6 +19,9 @@ export function installAndroidChatCaretGuard(field,{userAgent=typeof navigator!=
  const clearResume=()=>{resumeDraft=null;resumePending=false};
  const reset=()=>{previous=String(field.value||'');tail=atEnd()};
  const rememberBackground=()=>{
+  // A suspended Android IME may never emit compositionend. Discard only the
+  // composition bookkeeping, not the user's draft or native selection.
+  if(composing){composing=false;compositionTail=false;previous=String(field.value||'');tail=atEnd()}
   // Android sometimes changes selection while backgrounding. Use the last
   // known user editing intent, rather than the background caret position.
   if(!composing&&previous===String(field.value||'')&&(tail||atEnd())&&previous.length>0){
@@ -43,6 +46,7 @@ export function installAndroidChatCaretGuard(field,{userAgent=typeof navigator!=
   if(doc.hidden)rememberBackground();else onForeground();
  });
  view?.addEventListener('pagehide',rememberBackground);
+ view?.addEventListener('blur',rememberBackground);
  view?.addEventListener('pageshow',onForeground);
  view?.addEventListener('focus',onForeground);
  field.addEventListener('blur',rememberBackground);
@@ -81,12 +85,12 @@ export function installAndroidChatCaretGuard(field,{userAgent=typeof navigator!=
  // Registered before iMessage typing-indicator logic so it sees corrected text.
  field.addEventListener('input',event=>{
   if(composing||event.isComposing)return;
-  // Android keyboards can report a final insertCompositionText after their
-  // compositionend event. Only treat this as an insert on a known resume.
-  if(event.inputType==='insertCompositionText'&&!resumePending)return;
+  // Some Android 11 keyboards send insertCompositionText or no inputType for
+  // EVERY committed character, not only the first one after app resume.
+  // Recover only obvious short ASCII prepends while end-typing was intended.
   const current=String(field.value||'');
   const insert=event.inputType==='insertText'||event.inputType==='insertReplacementText'||
-   (resumePending&&(event.inputType==='insertCompositionText'||!event.inputType));
+   event.inputType==='insertCompositionText'||!event.inputType;
   const expectedTail=tail||(resumePending&&resumeDraft===previous);
   if(insert&&expectedTail&&previous!==current){
    if(!repairPrepend(previous,current)){
