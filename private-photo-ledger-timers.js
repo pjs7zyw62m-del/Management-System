@@ -60,7 +60,7 @@ rate.addEventListener('input',()=>{
 rate.setAttribute('aria-label','Timed earnings dollars per minute, prorated by elapsed second');
 rateLabel.append(rate);
 const start=btn('▶ START TIMER',()=>void startTimer(),'rr-timer-start');
-const stop=btn('■ STOP TIMER',()=>void stopTimer(),'rr-timer-stop');
+const stop=btn('■ STOP TIMER',()=>void requestStopWithVeto(),'rr-timer-stop');
 const elapsed=make('strong','rr-timer-clock','00:00');
 const earned=make('strong','rr-timer-money','$0.0000');
 const resetPick=btn('NEXT INCOMING',()=>selectIncoming(),'rr-timer-select-incoming');
@@ -110,6 +110,66 @@ senderMetrics.append(senderTimeMetric,senderAmountMetric);
 const senderDetail=make('p','rr-timer-sender-detail','Amount increases every elapsed second.');
 const senderStop=btn('✕ DECLINE & STOP TIMER',()=>void senderDeclineStop(),'rr-timer-sender-stop');
 const senderStopStatus=make('p','rr-timer-sender-stop-status','');
+// Receiver STOP: sender receives 10 seconds to say NO on attempts 1 and 2.
+const stopVetoDlg=make('dialog','redline-stop-veto-dialog');
+stopVetoDlg.id='redlineSenderStopVeto';
+stopVetoDlg.setAttribute('aria-label','Receiver asked to stop the timer');
+stopVetoDlg.setAttribute('aria-modal','true');
+const stopVetoKicker=make('small','redline-stop-veto-kicker','BLACKCELL REDLINE / LIVE TIMER');
+const stopVetoTitle=make('h2','','RECEIVER WANTS TO STOP');
+const stopVetoMessage=make('p','','Press NO within 10 seconds to keep the timer running. If you do not respond, the timer stops.');
+const stopVetoCountdown=make('strong','redline-stop-veto-clock','10');
+const stopVetoAttempt=make('p','redline-stop-veto-attempt','STOP ATTEMPT 1 OF 3');
+const stopVetoNo=btn('NO — KEEP TIMER RUNNING',()=>void declineReceiverStop(),'redline-stop-veto-no');
+const stopVetoStatus=make('p','redline-stop-veto-status','');
+stopVetoStatus.setAttribute('role','status');
+stopVetoDlg.append(stopVetoKicker,stopVetoTitle,stopVetoMessage,stopVetoCountdown,
+ stopVetoAttempt,stopVetoNo,stopVetoStatus);
+document.body.append(stopVetoDlg);
+let stopVetoBusy=false;
+stopVetoDlg.addEventListener('cancel',event=>event.preventDefault());
+// The timeout is enforced on the server; closing the popup never counts as NO.
+function stopVetoRemaining(){
+ const d=Date.parse(latest?.stop_prompt?.pending_until||'');
+ if(!Number.isFinite(d))return 0;
+ return Math.max(0,Math.ceil((d-(Date.now()+clockOffset))/1000));
+}
+async function declineReceiverStop(){
+ const s=snap(),id=latest?.active?.id;
+ if(stopVetoBusy||!s||s.isOwner||!s.roomActive||!uuid(id))return;
+ if(stopVetoRemaining()<=0){await refresh(true);return}
+ stopVetoBusy=true;stopVetoNo.disabled=true;stopVetoStatus.textContent='Sending NO…';
+ try{
+  const out=await bridge().senderVetoTimerStop(id);
+  stopVetoStatus.textContent=out.status==='vetoed'
+   ?'NO recorded. Timer continues.'
+   :'Response saved.';
+  if(stopVetoDlg.open)stopVetoDlg.close();
+  await refresh(true);
+ }catch(e){
+  stopVetoStatus.textContent=String(e?.message||e).slice(0,180);
+  await refresh(true);
+ }finally{stopVetoBusy=false;stopVetoNo.disabled=false}
+}
+function renderStopVeto(s){
+ const prompt=latest?.stop_prompt;
+ const waiting=Boolean(s&&!s.isOwner&&!s.archiveMode&&s.roomActive&&
+  !document.hidden&&room&&!room.hidden&&latest?.active?.running&&
+  prompt?.status==='pending'&&stopVetoRemaining()>0);
+ if(!waiting){
+  if(stopVetoDlg.open)stopVetoDlg.close();
+  return;
+ }
+ const left=stopVetoRemaining();
+ stopVetoCountdown.textContent=String(left);
+ stopVetoAttempt.textContent='STOP ATTEMPT '+prompt.attempts+' OF 3 · '+
+  (Math.max(0,2-Number(prompt.attempts))+' MORE NO OPPORTUNITIES AFTER THIS');
+ if(!stopVetoDlg.open){
+  stopVetoStatus.textContent='';
+  try{stopVetoDlg.showModal()}catch(_){stopVetoDlg.setAttribute('open','')}
+ }
+}
+
 senderStopStatus.setAttribute('role','status');
 senderPanel.append(senderHead,senderMetrics,senderDetail,senderStop,senderStopStatus);
 senderPanel.hidden=true;
@@ -197,6 +257,23 @@ async function startTimer(){
  },'Starting timed photo immediately…');
  if(latest?.active?.running)note.textContent='TIMER STARTED · Sender acceptance is not required.';
 }
+async function requestStopWithVeto(){
+ const id=latest?.active?.id;
+ if(!id||!snap()?.isOwner||acting)return;
+ let result=null;
+ await callAction(async()=>{
+  result=await bridge().timerStopRequest(id);
+  if(result?.status==='stopped')selectedId=currentPhoto();
+ },'Requesting to stop timer…');
+ if(!result?.ok)return;
+ if(result.status==='pending'){
+  note.textContent='STOP ATTEMPT '+result.attempts+' OF 3 · Sender has 10 seconds to say NO. '+
+   'If no response, REDLINE stops the timer automatically.';
+ }else if(result.status==='stopped'){
+  note.textContent='TIMER STOPPED · '+money(result.earned_cents)+
+   (result.photo_auto_submitted?' · PHOTO AUTO-SUBMITTED':'');
+ }
+}
 async function stopTimer(keepPhotoSelected=false){
  const id=latest?.active?.id;
  if(!id||!snap()?.isOwner)return;
@@ -264,12 +341,13 @@ function renderHistory(s){
 }
 function render(){
  const s=snap();
- if(!s||s.roomId!==roomId){senderPanel.hidden=true;return}
+ if(!s||s.roomId!==roomId){senderPanel.hidden=true;if(stopVetoDlg.open)stopVetoDlg.close();return}
  mount(s);
  const owner=s.isOwner&&!s.archiveMode;
  ownerPanel.hidden=!owner;
  lower.hidden=s.archiveMode;
  const running=latest?.active?.running===true;
+ renderStopVeto(s);
  // A stopped timer comes from the same authenticated status RPC; show the
  // result briefly so the sender also knows their timer has ended.
  const nowMs=Date.now()+clockOffset;
@@ -317,7 +395,15 @@ function render(){
  earned.textContent=running?liveMoney(latest.active.rate_cents,activeSeconds):'$0.0000';
  chosen.textContent=running?labelPhoto(latest.active.photo_id)+' · RUNNING':labelPhoto(selectedId);
  start.disabled=acting||!owner||!s.roomActive||!selectedId||running;
- stop.disabled=acting||!owner||!running;
+ const awaitingStop=latest?.stop_prompt?.status==='pending'&&stopVetoRemaining()>0;
+ stop.disabled=acting||!owner||!running||awaitingStop;
+ if(owner&&running&&awaitingStop){
+  note.textContent='WAITING '+stopVetoRemaining()+'s · STOP ATTEMPT '+
+   latest.stop_prompt.attempts+' OF 3 · Sender may say NO.';
+ }else if(owner&&running&&latest?.stop_prompt?.status==='vetoed'){
+  note.textContent='SENDER SAID NO · Timer continues. '+latest.stop_prompt.attempts+
+   ' of 3 STOP attempts used.';
+ }
  rate.disabled=running||acting||!owner;
  // The owner has ONE canonical photograph viewer: #reviewQueueCurrent.
  // Legacy timer preview could remain active after pricing and CSS hid the
@@ -358,7 +444,10 @@ async function refresh(force=false){
  mount(s);
  // Sender polls only while its authenticated room is in the foreground.
  // A five-second check picks up timer start/stop without creating chat spam.
- const pollMs=!s.isOwner&&s.roomActive&&!s.archiveMode?5000:12000;
+ const hasLiveTimer=latest?.active?.running===true;
+ const pendingStop=latest?.stop_prompt?.status==='pending';
+ const pollMs=pendingStop?1200:(!s.isOwner&&s.roomActive&&!s.archiveMode
+  ?(hasLiveTimer?1600:5000):12000);
  if(fetching){
   // Don't lose the forced post-START/STOP snapshot to an in-flight poll.
   if(force)refreshQueued=true;
@@ -367,7 +456,13 @@ async function refresh(force=false){
  if(!force&&Date.now()-lastStatusAt<pollMs)return;
  fetching=true;lastStatusAt=Date.now();
  try{
+  const previousRunning=latest?.active?.running===true;
   latest=await bridge().timerStatus(roomId);
+  if(previousRunning&&!latest?.active?.running){
+   void bridge()?.refreshTimerPhoto?.();
+   selectedId=currentPhoto();
+   note.textContent='STOP CONFIRMED · Final timed earnings recorded on the photo.';
+  }
   // One authenticated status snapshot feeds the sender chat and the
   // original photograph's final timed-price display without extra RPCs.
   if(snap()?.roomId===roomId){
