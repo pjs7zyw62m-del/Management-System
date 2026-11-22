@@ -402,7 +402,7 @@ test('Sender chat receives verified start and stop messages with a live clock an
  const style=read('private-photo-ledger-simple-sender.css');
  assert.match(timer,/blackcell:redline:timer-status/);
  assert.match(timer,/detail:\{roomId,status:latest\}/);
- assert.match(timer,/const pollMs=!s\.isOwner&&s\.roomActive&&!s\.archiveMode\?5000:12000/);
+ assert.match(timer,/const pollMs=pendingStop\?1200:/);
  assert.doesNotMatch(timer,/chat\.insertBefore\(senderPanel,feed\)/);
  assert.match(sender,/window\.addEventListener\('blackcell:redline:timer-status'/);
  assert.match(sender,/\.\.\.timedEvents\(snap\)/);
