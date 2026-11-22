@@ -112,6 +112,7 @@ function changeSidebarPreference(){
 }
 if(osChat)$('osSidebarToggle')?.addEventListener('click',changeSidebarPreference);
 let employeeSession=false,sessionEnded=false,lastActivity=Date.now(),lastTouch=Date.now();
+let chatVerificationPaused=false,chatVerificationChecking=false;
 const IDLE_LIMIT_MS=60*60*1000;
 async function endChatAccess(reason){
  if(sessionEnded)return;
@@ -119,9 +120,35 @@ async function endChatAccess(reason){
  $('messageInput').disabled=true;$('sendButton').disabled=true;
  status(reason);
  live.dispose();
- try{await client.rpc('corp_employee_end_session')}catch(_){}
- try{await client.auth.signOut({scope:'local'})}catch(_){}
- $('returnLink').href='employee.html';$('returnLink').textContent='SIGN IN AGAIN';
+ // This embedded app must never revoke the OS-wide auth token. The parent
+ // BLACKCELL OS and Employee portal enforce the server authorization/idle
+ // policy independently. Chat is locked locally on confirmed expiry.
+ $('returnLink').href='blackcell-os.html';$('returnLink').textContent='RETURN TO BLACKCELL OS';
+}
+function pauseChatForNetwork(){
+ if(sessionEnded||!employeeSession)return;
+ chatVerificationPaused=true;ready=false;blockKnown=false;
+ syncInboxControls();syncBlockControls();sharedMedia.closeMediaTray();
+ status('Connection interrupted. Your BLACKCELL sign-in is preserved. Chat will resume after verification.');
+}
+async function reverifyChatOnReturn(){
+ if(sessionEnded||!employeeSession||chatVerificationChecking||document.hidden)return;
+ chatVerificationChecking=true;
+ try{
+  const {data,error}=await client.rpc('corp_employee_code_status');
+  if(error){pauseChatForNetwork();return}
+  if(data?.ok!==true||data?.verified!==true){
+   await endChatAccess('Employee chat authorization expired. Return to BLACKCELL OS to verify access.');
+   return;
+  }
+  if(chatVerificationPaused){
+   chatVerificationPaused=false;ready=true;blockKnown=false;lastTouch=Date.now();
+   syncInboxControls();syncBlockControls();status('');
+   if(peer)void refreshCurrentBlock();
+  }
+  if(ready)void loadMessages();
+ }catch(_){pauseChatForNetwork()}
+ finally{chatVerificationChecking=false}
 }
 function chatActivity(){
  if(sessionEnded)return;
@@ -129,14 +156,16 @@ function chatActivity(){
   window.parent.postMessage({type:'blackcell-chat-activity'},location.origin);
  if(!employeeSession)return;
  if(Date.now()-lastActivity>=IDLE_LIMIT_MS){
-  void endChatAccess('Signed out after 60 minutes of inactivity.');return;
+  void endChatAccess('Chat locked after 60 minutes of inactivity. Return to BLACKCELL OS to verify access.');return;
  }
  lastActivity=Date.now();
  if(Date.now()-lastTouch>60000){
   lastTouch=Date.now();
   void client.rpc('corp_employee_touch_session').then(({data,error})=>{
-   if(error||data?.ok!==true)void endChatAccess('Your employee session expired. Sign in again.');
-  }).catch(()=>void endChatAccess('Security session could not be checked.'));
+   if(error){pauseChatForNetwork();return}
+   if(data?.ok!==true){void endChatAccess('Employee authorization expired. Return to BLACKCELL OS.');return}
+   if(chatVerificationPaused)void reverifyChatOnReturn();
+  }).catch(()=>pauseChatForNetwork());
  }
 }
 
@@ -619,18 +648,19 @@ setInterval(()=>{if(ready&&live.visible())void loadMessages()},5000);
 setInterval(()=>{if(ready&&!mediaPanelMode&&!popout&&!document.hidden&&(inboxFilter==='unread'||!compactChat||!document.querySelector('.chat').classList.contains('bc-thread-active')))void refreshInboxSummaries()},13000);
 setInterval(()=>{
  if(employeeSession&&!sessionEnded&&Date.now()-lastActivity>=IDLE_LIMIT_MS)
-  void endChatAccess('Signed out after 60 minutes of inactivity.');
+  void endChatAccess('Chat locked after 60 minutes of inactivity. Return to BLACKCELL OS to verify access.');
 },15000);
 document.addEventListener('visibilitychange',()=>{
- if(document.hidden||!ready)return;
+ if(document.hidden||sessionEnded)return;
  if(employeeSession){
-  if(Date.now()-lastActivity>=IDLE_LIMIT_MS){void endChatAccess('Signed out after 60 minutes of inactivity.');return}
-  void client.rpc('corp_employee_code_status').then(({data,error})=>{
-   if(error||data?.verified!==true)void endChatAccess('Employee session authorization expired.');
-   else void loadMessages();
-  }).catch(()=>void endChatAccess('Employee session check failed.'));
- }else void loadMessages();
+  if(Date.now()-lastActivity>=IDLE_LIMIT_MS){
+   void endChatAccess('Chat locked after 60 minutes of inactivity. Return to BLACKCELL OS to verify access.');return
+  }
+  void reverifyChatOnReturn();
+ }else if(ready)void loadMessages();
 });
+window.addEventListener('online',()=>{if(chatVerificationPaused)void reverifyChatOnReturn()});
+setInterval(()=>{if(chatVerificationPaused&&!document.hidden)void reverifyChatOnReturn()},12000);
 
 window.addEventListener('message',event=>{
  if(event.origin!==location.origin||event.source!==window.parent)return;
