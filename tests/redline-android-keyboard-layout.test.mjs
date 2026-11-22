@@ -82,6 +82,8 @@ test('Android keyboard open and close keeps the REDLINE composer above the botto
    proc.once('error',()=>{clearTimeout(t);resolve(1)});
   });
   assert.equal(exit,0,'Chromium failure: '+err.slice(-700));
+  const bodyState=out.match(/<body\b[^>]*>/i)?.[0]||'(body missing)';
+  console.log('REDLINE Android viewport probe:',bodyState.slice(0,1200));
   for(const flag of ['found','keyboard','height','composer','restored'])
    assert.match(out,new RegExp('data-probe-'+flag+'="true"'),'Android '+flag+' regression');
   assert.doesNotMatch(out,/data-probe-error="[^"]+"/);
