@@ -13,6 +13,7 @@ on:
       - 'blackcell-os.html'
       - 'blackcell-os-device-label.js'
       - 'corporate-chat.html'
+      - 'corporate-chat.js'
       - 'corporate-chat-obsidian.css'
       - 'tests/blackcell-android-ime.test.mjs'
       - 'tests/blackcell-os-device-label.test.mjs'
@@ -32,6 +33,7 @@ jobs:
         run: |
           node --check blackcell-os-device-label.js
           node --test tests/blackcell-os-device-label.test.mjs
+          node --check corporate-chat.js
       - name: Verify Android iMessage text entry and direction
         shell: bash
         run: |
