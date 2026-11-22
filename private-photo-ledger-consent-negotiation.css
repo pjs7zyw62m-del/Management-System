@@ -68,3 +68,23 @@
  .redline-consent-action{flex:1 1 130px;min-height:47px}
  #redlineConsentSettingsOpen{font-size:10px!important;min-height:44px!important}
 }
+
+/* Receiver redesign hides the legacy page heading: owner settings now sit
+   in the visible command header. Respect the hidden attribute on non-owners. */
+#redlineConsentSettingsOpen[hidden]{display:none!important}
+body.bc-redline-receiver .rr-command-header #redlineConsentSettingsOpen{
+ display:inline-flex!important;flex:0 0 auto!important;
+ margin:0!important;min-height:37px!important;
+ padding:8px 12px!important;white-space:nowrap!important;
+ font-size:10px!important;line-height:1.2!important;
+}
+body.bc-redline-receiver .rr-nav-menu-items .rr-settings-menu{
+ border:1px solid #a52a47!important;background:#260b15!important;
+ color:#ffe3eb!important;font-weight:850!important;
+}
+@media(max-width:780px){
+ body.bc-redline-receiver .rr-command-header #redlineConsentSettingsOpen{
+  min-height:44px!important;max-width:100%!important;
+  white-space:normal!important;align-self:flex-start!important;
+ }
+}
