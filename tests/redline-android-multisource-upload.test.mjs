@@ -4,6 +4,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import {createServer} from 'node:http';
+import {spawn} from 'node:child_process';
 
 const html=readFileSync('private-photo-ledger.html','utf8');
 const core=readFileSync('private-photo-ledger.js','utf8');
@@ -123,4 +125,56 @@ test('Rejected large/unsupported files cannot block good files in a batch',async
  await drain(api);
  assert.deepEqual(sent,['good.jpg','also-good.webp']);
  assert.match(api.status(),/2 not sent/);
+});
+
+
+test('Android 11 Chrome: actual REDLINE + menu shows both choices and phone picker stays on-site',async()=>{
+ const start=core.indexOf('const redlinePhotoQueue=[];'),end=core.indexOf('async function uploadPhoto(...args)',start);
+ assert.ok(start>0&&end>start);
+ const actions=core.slice(start,end);
+ const boot=[
+  'const state={closed:false,isOwner:false,user:{id:"verified-sender"},room:{id:"room-1",active:true,photo_sending_paused:false},showArchive:false,busy:false};',
+  'const MAX_IMAGE_BYTES=12*1024*1024;',
+  'const $=id=>document.getElementById(id);',
+  'const node=(tag,cls,text)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(text!==undefined)el.textContent=text;return el};',
+  'const button=(label,fn,cls)=>{const el=node("button",cls,label);el.type="button";el.onclick=fn;return el};',
+  'const show=(id,msg)=>{const el=$(id);if(el)el.textContent=msg};',
+  'const fail=err=>String(err?.message||err),imageType=()=>({mime:"image/jpeg"});',
+  'const uploadPhoto=async()=>true;',
+  'HTMLInputElement.prototype.click=function(){this.dataset.nativePickerOpened="true"};',
+  'const before=location.href;',
+  actions,
+  'window.BLACKCELL_REDLINE_UPLOAD_UI.open();',
+  'const overlay=$("redlinePhotoSourceOverlay"),phone=$("redlineSourceDevice"),photos=$("redlineSourceLibrary");',
+  'document.body.dataset.chooserVisible=String(!!overlay&&!overlay.hidden&&!!phone&&!!photos&&getComputedStyle(phone).display!=="none");',
+  'document.body.dataset.choices=String(overlay?.querySelectorAll(".redline-source-actions button").length===2);',
+  'phone.click();',
+  'const picker=$("redlineDevicePicker");',
+  'document.body.dataset.pickerReady=String(picker?.parentNode===document.body&&picker.multiple===true&&picker.dataset.nativePickerOpened==="true");',
+  'document.body.dataset.inPage=String(location.href===before);'
+ ].join('\n');
+ const fixture='<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>'+style+'</style></head>'+
+  '<body><section id="employeeUpload"><p id="uploadFeedback"></p><span id="selectedPhotoName"></span></section><script>'+boot+'</script></body></html>';
+ const server=createServer((_req,res)=>{res.writeHead(200,{'content-type':'text/html; charset=utf-8'});res.end(fixture)});
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+ try{
+  const child=spawn(process.env.CHROME||'chromium',[
+   '--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage',
+   '--virtual-time-budget=1300','--window-size=360,740',
+   '--user-agent=Mozilla/5.0 (Linux; Android 11; Neon Smarta 2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Mobile Safari/537.36',
+   '--dump-dom','http://127.0.0.1:'+server.address().port+'/'
+  ]);
+  let output='',stderr='';
+  child.stdout.on('data',d=>output+=d.toString());
+  child.stderr.on('data',d=>stderr+=d.toString());
+  const exit=await new Promise(resolve=>{
+   const cutoff=setTimeout(()=>{child.kill('SIGKILL');resolve(124)},20000);
+   child.once('exit',code=>{clearTimeout(cutoff);resolve(code??1)});
+   child.once('error',()=>{clearTimeout(cutoff);resolve(1)});
+  });
+  assert.equal(exit,0,stderr.slice(-700));
+  for(const key of ['chooser-visible','choices','picker-ready','in-page']){
+   assert.match(output,new RegExp('data-'+key+'="true"'),'REDLINE Android + problem: '+key);
+  }
+ }finally{await new Promise(resolve=>server.close(resolve))}
 });
