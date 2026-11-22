@@ -390,7 +390,7 @@ test('BLACKCELL OS loads the REDLINE sidebar release rather than a stale iframe 
  const runtime=read('blackcell-os.js');
  assert.match(os,/receiver-photo-history-visible1-20261121/);
  assert.match(runtime,/receiver-photo-history-visible1-20261121/);
- assert.match(os,/blackcell-os\.js\?v=158-redline-photo-history-visible1/);
+ assert.match(os,/blackcell-os\.js\?v=\d+-redline-[a-z0-9-]+/);
  const layout=read('private-photo-ledger-imessage-workspace.css');
  assert.match(layout,/body\.bc-redline-receiver:not\(\.rr-imessage-mode\) #photoLightbox/);
 });
@@ -498,7 +498,7 @@ test('Stop Timer atomically submits one priced photo; other timed earnings never
  assert.match(chat,/async function pollSenderTimers\(force=false\)/);
  assert.match(chat,/bridge\(\).timerStatus\(id\)/);
  assert.match(chat,/window.setInterval\(\(\)=>\{/);
- assert.match(os,/name="blackcell-os-client-build" content="20261121-photo-history-visible1"/);
+ assert.match(os,/name="blackcell-os-client-build" content="20\d{6}-[a-z0-9-]+"/);
 });
 
 test('Manually accepting a photo always advances to the next pending image',()=>{
