@@ -150,6 +150,16 @@ const photoAction=make('button','redline-chat-photo','PHOTO ABOVE');
 photoAction.type='button';photoAction.setAttribute('aria-label','Open photo upload');
 photoAction.addEventListener('click',()=>{if(home.hidden)return;switchTab('upload');window.BLACKCELL_REDLINE_UPLOAD_UI?.open?.()});
 const entry=make('textarea','redline-message-entry');entry.maxLength=2000;entry.rows=1;entry.placeholder='Message REDLINE…';entry.setAttribute('aria-label','Private room message');
+entry.setAttribute('dir','ltr');entry.setAttribute('inputmode','text');entry.setAttribute('enterkeyhint','send');
+// Android 11 and other Android browsers can resume a suspended textarea with
+// the caret stuck at the beginning, prepending each letter to the draft.
+let androidRedlineCaretGuard=null;
+if(/Android/i.test(navigator.userAgent||'')){
+ void import('./corporate-chat-android-caret.js?v=20261122-redline-caret1')
+  .then(({installAndroidChatCaretGuard})=>{
+   androidRedlineCaretGuard=installAndroidChatCaretGuard(entry);
+  }).catch(()=>{/* Native editor still remains available if helper cannot load. */});
+}
 const send=make('button','redline-chat-send','SEND');send.type='submit';
 composer.append(photoAction,entry,send);
 const typingNotice=make('div','redline-peer-typing','');typingNotice.hidden=true;
@@ -709,13 +719,21 @@ composer.addEventListener('submit',async e=>{
  posting=true;send.disabled=true;msgError.textContent='Sending securely to the private room…';
  try{
   await bridge().sendMessage(text);
-  entry.value='';msgError.textContent='';stopTyping();
+  entry.value='';androidRedlineCaretGuard?.reset();msgError.textContent='';stopTyping();
   await loadMessages();
  }catch(err){
   msgError.textContent='Message not sent: '+String(err?.message||'Please try again.').slice(0,200);
  }finally{posting=false;send.disabled=false}
 });
-entry.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();composer.requestSubmit()}});
+let redlineImeComposing=false;
+entry.addEventListener('compositionstart',()=>{redlineImeComposing=true});
+entry.addEventListener('compositionend',()=>{redlineImeComposing=false});
+entry.addEventListener('blur',()=>{redlineImeComposing=false});
+entry.addEventListener('keydown',e=>{
+ if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing&&!redlineImeComposing){
+  e.preventDefault();composer.requestSubmit()
+ }
+});
 function switchTab(tab){
  if(!isSender())return;
  currentTab=tab;
