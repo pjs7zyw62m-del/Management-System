@@ -1,6 +1,6 @@
 /* Personal media only. Never writes to public/social storage. */
 export const PRIVATE_BUCKET='blackcell-os-files';
-import {createPrivateDrive,PRIVATE_FILE_LIMIT} from './blackcell-private-drive.js?v=3-cloud-thumbnails';
+import {createPrivateDrive,PRIVATE_FILE_LIMIT} from './blackcell-private-drive.js?v=20261122-missing-legacy-bucket1';
 export {PRIVATE_FILE_LIMIT};
 export function privateUploadError(error){
  const raw=String(error?.message||error||'Upload failed.');
@@ -459,10 +459,10 @@ export function mountPrivatePhotos(host,{client,userId,preview,alive,onBusy}){
  input.onchange=async()=>{const list=Array.from(input.files||[]);input.value='';if(preview){status.textContent='Sign in to import private media.';return}if(busy||loading||!usable()||!list.length||deleteDialog)return;busy=true;syncControls();onBusy(true);let n=0,failed=[];try{for(const [i,file] of list.entries()){if(!usable())break;const type=mediaType(file.name),name=file.name.normalize('NFKD').replace(/[^a-zA-Z0-9_. -]/g,'_').replace(/^\.+/,'').slice(0,100);if(!type||!name){failed.push(file.name+': Unsupported format or file name.');continue}if(!file.size||file.size>PRIVATE_FILE_LIMIT){failed.push(name+': '+(!file.size?'Empty file.':'Exceeds 256 MB ('+(file.size/1048576).toFixed(1)+' MB).'));continue}status.textContent='Importing '+(i+1)+' of '+list.length+' · '+name+' ('+(file.size/1048576).toFixed(1)+' MB)…';try{await uploadPrivateFile(storage,userId+'/Photos/'+name,file,(sent,total)=>{status.textContent='Importing '+name+' · '+Math.round(sent/total*100)+'%'});n++}catch(e){failed.push(name+': '+privateUploadError(e))}}await refresh();if(n)window.dispatchEvent(new CustomEvent('bc-private-files-changed',{detail:{source:'photos'}}));status.textContent=n+' imported privately'+(failed.length?' · '+failed.length+' failed · '+failed.slice(0,3).join(' | '):'')}catch(e){status.textContent=privateUploadError(e)}finally{busy=false;onBusy(false);if(usable())syncControls()}};
  const moved=event=>{if(event.detail?.source==='photos'||(event.detail?.uid&&event.detail.uid!==userId)||busy)return;viewer.close();closeDelete();void refresh(true)};window.addEventListener('bc-private-files-changed',moved);let transferChannel=null;try{transferChannel=new BroadcastChannel('bc-private-photos-transfer');transferChannel.onmessage=e=>{if(e.data?.type==='photos-changed'&&e.data.uid===userId&&!busy)void refresh(true)}}catch(_){}search.oninput=()=>{page=0;dateScope='';view='all';render()};void refresh();return {dispose(){closed=true;version++;refreshSeq++;photoResize?.disconnect();if(layoutFrame)cancelAnimationFrame(layoutFrame);ratios.clear();videoFrames.clear();photoFrames.clear();photoPending.clear();photoFrameBytes=0;closeDelete();window.removeEventListener('bc-private-files-changed',moved);transferChannel?.close();legacyOwners.clear();memberLabels.clear();viewer.close();clearThumbs()},refresh,closeViewer:viewer.close};
 }
-export async function choosePrivateMedia({client,userId,onSelect,onSelectRows=null,onDeviceUpload=null,actionLabel='Attach selected',max=6}){
+export async function choosePrivateMedia({client,userId,onSelect,onSelectRows=null,onDeviceUpload=null,actionLabel='Attach selected',max=6,photoOnly=false}){
  if(!userId)return;
  const storage=createPrivateDrive(client,userId),overlay=make('div','bc-pm-picker'),panel=make('section','bc-pm-picker-panel'),head=make('header','bc-pm-header'),title=make('div');
- title.append(make('h2','','BLACKCELL Photos'),make('p','','Select photos or videos to attach.'));
+ title.append(make('h2','','BLACKCELL Photos'),make('p','',photoOnly?'Select photos from your private library to send to REDLINE.':'Select photos or videos to attach.'));
  let disposed=false,preparing=false,page=0,generation=0,running=0,queue=[],rows=[],limited=false;
  const selected=new Map(),urls=new Map(),pageSize=12;
  const release=()=>{for(const url of urls.values())URL.revokeObjectURL(url);urls.clear()};
@@ -483,10 +483,19 @@ export async function choosePrivateMedia({client,userId,onSelect,onSelectRows=nu
   style.textContent+=' .bc-pm-picker .bc-pm-redline-empty{display:flex;flex-direction:column;align-items:center;gap:13px;justify-content:center;text-align:center;min-height:148px;padding:17px;color:#ddd0d8;font:13px/1.5 system-ui}.bc-pm-picker .bc-pm-redline-device-source{width:100%;min-height:49px;background:#b32245;color:white;font-weight:750;border:1px solid #ec657d;border-radius:11px;touch-action:manipulation}';
  }
  panel.append(head,search,list,pager,status,submit);overlay.append(style,panel);document.body.append(overlay);
- function sync(){submit.disabled=preparing||!selected.size;status.textContent=selected.size+' selected'+(limited?' · Showing up to 1,000 library items':'')}
+ function sync(){submit.disabled=preparing||!selected.size;status.textContent=rows.length+' photo'+(rows.length===1?'':'s')+' available · '+selected.size+' selected'+(limited?' · Showing up to 1,000 library items':'')}
  function paint(tile,url,label){const img=make('img');img.alt='';img.decoding='async';img.src=url;img.onerror=()=>{if(!disposed&&tile.isConnected)tile.replaceChildren(make('span','bc-pm-picker-placeholder','Preview unavailable'),tile.querySelector('.bc-pm-picker-check')||make('span','bc-pm-picker-check'))};tile.replaceChildren(img,label)}
  async function thumbnail(row,tile,check,seq){
   try{
+   // The encrypted Bunny preview is tiny; do not download full originals
+   // just to paint the Android REDLINE chooser.
+   const frame=await cloudFrame(storage,row);
+   if(frame?.blob){
+    if(disposed||seq!==generation||preparing)return;
+    const url=URL.createObjectURL(frame.blob);urls.set(row.path,url);
+    paint(tile,url,check);
+    return;
+   }
    const file=await getPrivateMedia(storage,row);if(disposed||seq!==generation||preparing)return;
    let bitmap,temp,source;
    try{
@@ -515,8 +524,8 @@ export async function choosePrivateMedia({client,userId,onSelect,onSelectRows=nu
   }
   pager.hidden=filtered.length<=pageSize;pageLabel.textContent=(page+1)+' / '+Math.max(1,Math.ceil(filtered.length/pageSize));prev.disabled=preparing||page===0;next.disabled=preparing||(page+1)*pageSize>=filtered.length;sync();pump()
  }
- search.oninput=()=>{page=0;render()};try{const result=await privateFiles(storage,userId,()=>!disposed);if(disposed)return;rows=result.rows;limited=result.limited;render()}catch{if(!disposed){
-   list.replaceChildren(make('p','','Unable to load BLACKCELL Photos.'));
+ search.oninput=()=>{page=0;render()};try{const result=await privateFiles(storage,userId,()=>!disposed);if(disposed)return;rows=photoOnly?result.rows.filter(row=>['image/jpeg','image/png','image/webp','image/heic','image/heif'].includes(row.type)):result.rows;limited=result.limited;render()}catch(error){if(!disposed){
+   list.replaceChildren(make('p','','Unable to load BLACKCELL Photos. '+privateUploadError(error)));
    if(deviceButton)list.append(deviceButton);
   }}
 }
