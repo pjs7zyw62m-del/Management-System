@@ -257,7 +257,7 @@ function renderNegotiation(offer){
   card.append(make('span','',label),make('strong','',cash(amount)));
   return card;
  };
- comparison.append(priceCard('YOUR ORIGINAL PRICE',offer.original_cents,'is-original'));
+ comparison.append(priceCard(s.isOwner?'YOUR ORIGINAL PRICE':'RECEIVER ORIGINAL PRICE',offer.original_cents,'is-original'));
  if(offer.status==='awaiting_owner'){
   comparison.append(priceCard('SENDER COUNTEROFFER',offer.offer_cents,'is-proposed'));
  }
