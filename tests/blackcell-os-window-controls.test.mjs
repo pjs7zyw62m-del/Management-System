@@ -159,12 +159,12 @@ test('real browser: hidden windows are actually hidden and green phone restore r
 });
 
 test('BLACKCELL OS REDLINE can refresh a stale negotiation window safely',()=>{
- assert.match(os,/redlineRelease=sender-no-10sec-stop-next-photo-20261122/);
+ assert.match(os,/redlineRelease=sender-no-10sec-stop-next-photo-20261122-library-bunny1/);
  assert.match(os,/networkWindow\|\|id==='administration'\|\|id==='photoledger'/);
  assert.match(os,/if\(\(networkWindow\|\|id==='administration'\|\|id==='photoledger'\)&&!chatPopout\)/);
  assert.match(os,/id==='photoledger'&&next\.pathname\.endsWith\('\/private-photo-ledger\.html'\)/);
  assert.match(os,/doc\?\.querySelector\('\.redline-message-entry'\)\?\.value\?\.trim\(\)/);
  assert.match(os,/doc\?\.querySelector\('#redlinePriceNegotiation\[open\] input\.redline-consent-amount'\)/);
- assert.match(html,/redlinePriceRefresh=20261122-stop-next-photo4/);
- assert.match(html,/blackcell-os-client-build" content="20261122-redline-stop-next-photo4"/);
+ assert.match(html,/redlinePriceRefresh=20261122-stop-next-photo4&redlineLibrary=20261122-bunny1/);
+ assert.match(html,/blackcell-os-client-build" content="20261122-redline-photos-library-bunny1"/);
 });
