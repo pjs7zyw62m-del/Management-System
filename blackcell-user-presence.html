@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+ <meta name="robots" content="noindex,nofollow">
+ <meta name="theme-color" content="#050505">
+ <title>BLACKCELL | Live User Presence</title>
+ <script src="corp-config.js" defer></script>
+ <script type="module" src="blackcell-user-presence.js?v=20261122-1"></script>
+ <style>
+  :root{color-scheme:dark;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#050506;color:#f6f3f4}
+  *{box-sizing:border-box}html,body{margin:0;min-height:100%;scrollbar-width:none}::-webkit-scrollbar{display:none}
+  body{background:#050506}main{width:min(1150px,100%);padding:clamp(18px,3vw,36px);margin:auto}
+  header{display:flex;flex-wrap:wrap;justify-content:space-between;gap:14px;align-items:center;margin-bottom:25px}
+  .eyebrow{font-size:10px;letter-spacing:.23em;color:#ed4b66;font-weight:800}
+  h1{font-size:clamp(23px,3.4vw,35px);margin:8px 0;font-weight:790;letter-spacing:-.025em}
+  .description{font-size:13px;line-height:1.5;color:#a9a3a7;margin:0}
+  .refresh{background:#3c1019;border:1px solid #8c2438;color:#fff;border-radius:10px;padding:11px 17px;min-height:42px;font-weight:700;cursor:pointer}
+  .refresh:focus-visible{outline:2px solid #fff;outline-offset:3px}
+  .refresh:disabled{opacity:.6}
+  .summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:20px 0}
+  .metric,.panel{background:linear-gradient(135deg,#181419,#0d0b0e);border:1px solid #393037;border-radius:14px}
+  .metric{padding:18px}.metric small{display:block;color:#b6adb1;font-size:11px}.metric strong{display:block;font-size:31px;margin-top:8px}
+  .metric.online strong{color:#7fd5a1}.metric.left strong{color:#ffbc82}
+  .panel{padding:clamp(14px,2vw,21px);margin-bottom:16px}
+  h2{font-size:15px;letter-spacing:.01em;margin:0 0 15px}
+  .entry{display:flex;justify-content:space-between;gap:12px;border-top:1px solid #2d262b;padding:12px 0;flex-wrap:wrap}
+  .entry:first-child{border-top:0}
+  .entry-main{display:flex;align-items:start;gap:11px;min-width:0}
+  .name{font-size:14px;font-weight:730}.detail{font-size:12px;color:#b3aeb2;margin-top:5px;line-height:1.5}
+  .status{font-size:11px;font-weight:780;letter-spacing:.04em;border:1px solid #555;border-radius:100px;padding:5px 10px;white-space:nowrap;align-self:flex-start}
+  .status.online{background:#0a2a1b;color:#80daa5;border-color:#306c4b}
+  .status.left{background:#322115;color:#ffd09f;border-color:#795337}
+  .status.offline{background:#202025;color:#a9a9b2;border-color:#45424b}
+  .dot{width:9px;height:9px;margin-top:5px;background:#79757e;border-radius:100%;flex-shrink:0}
+  .dot.online{background:#55d491;box-shadow:0 0 9px #55d49177}
+  .dot.left{background:#ffc186}.muted{color:#a9a3aa;font-size:12px;line-height:1.6}
+  #notice{font-size:12px;color:#e0a7b6;min-height:20px}
+  #history .entry{align-items:center}time{font-size:11px;color:#aaa1a6}
+  .foot{font-size:11px;color:#8c858d;line-height:1.6;margin:12px 0 0}
+  @media(max-width:560px){.summary{gap:7px}.metric{padding:12px}.metric strong{font-size:26px}.entry{flex-direction:column}.status{align-self:flex-start}}
+ </style>
+</head>
+<body>
+ <main>
+  <header>
+   <div><div class="eyebrow">BLACKCELL CORPORATION / EXECUTIVE ACCESS</div><h1>Live User Presence</h1><p class="description">See when members enter, leave and return to the website without signing out.</p></div>
+   <button id="refresh" class="refresh" type="button">↻ Refresh</button>
+  </header>
+  <div id="notice" role="status" aria-live="polite">Verifying administrator access…</div>
+  <section class="summary" aria-label="User counts">
+   <div class="metric online"><small>ONLINE NOW</small><strong id="online">—</strong></div>
+   <div class="metric left"><small>LEFT WEBSITE</small><strong id="left">—</strong></div>
+   <div class="metric"><small>REGISTERED MEMBERS</small><strong id="total">—</strong></div>
+  </section>
+  <section class="panel"><h2>Member connections</h2><div id="members" class="muted">Waiting for verified records…</div></section>
+  <section class="panel"><h2>Arrival · Departure · Return history</h2><div id="history" class="muted">Waiting for verified records…</div></section>
+  <p class="foot">Activity is based on each browser's visible state and a periodic heartbeat. A closed browser, lost network or suspended device can take up to approximately 105 seconds to appear disconnected. Estimated departures are marked as such. The login session may remain valid while the member is away.</p>
+ </main>
+</body>
+</html>
