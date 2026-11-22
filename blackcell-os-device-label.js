@@ -6,6 +6,8 @@
   'use strict';
   const root=document.documentElement;
   const names={desktop:'BLACKCELL OS',tablet:'BLACKCELL OS Tablet',phone:'BLACKCELL OS Mobile'};
+  const android=/(?:^|[^a-z])Android(?:[^a-z]|$)/i.test(navigator.userAgent||'')||
+    navigator.userAgentData?.platform==='Android';
   function mode(){
     return root.classList.contains('bc-os-phone')?'phone':
       root.classList.contains('bc-os-tablet')?'tablet':'desktop';
@@ -14,7 +16,11 @@
     if(element&&element.textContent!==value)element.textContent=value;
   }
   function update(){
-    const current=mode(),label=names[current];
+    const current=mode();
+    const mobileAndroid=android&&(current==='phone'||current==='tablet');
+    const label=mobileAndroid?names[current]+' · Android':names[current];
+    root.classList.toggle('bc-os-android',mobileAndroid);
+    root.dataset.blackcellOsPlatform=mobileAndroid?'android':'standard';
     root.dataset.blackcellDevice=current;
     root.dataset.blackcellOsName=label;
     if(document.title!==label)document.title=label;
@@ -24,7 +30,7 @@
     if(top){
       let suffix=top.querySelector('.bc-device-suffix');
       if(!suffix){suffix=document.createElement('span');suffix.className='bc-device-suffix';top.append(suffix)}
-      setText(suffix,current==='desktop'?'':current==='phone'?' Mobile':' Tablet');
+      setText(suffix,current==='desktop'?'':(current==='phone'?' Mobile':' Tablet')+(mobileAndroid?' · Android':''));
       top.setAttribute('aria-label',label+' system menu');
     }
     const brand=document.querySelector('#desktop .bc-exec-brand');
