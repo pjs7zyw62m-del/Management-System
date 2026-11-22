@@ -153,9 +153,9 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  },'bc-attachment-item bc-attachment-mobile-action');
  chooseBlackcellPhotos.title='Choose from BLACKCELL Photos';
  const uploadDevice=button('Upload Photo or Video',()=>{
-  if(!compactMedia())return openShare();
+  // Stay inside BLACKCELL iMessage. The Android system picker must only
+  // launch if the user explicitly taps "Choose files" in the uploader.
   openShare();
-  if(!overlay.hidden)chooseFiles('image/*,video/*');
  },'bc-attachment-item bc-attachment-mobile-action');
  uploadDevice.title='Upload from this device';
  const mediaLibrary=button('Shared Media',()=>void openLibrary(),'bc-attachment-item');mediaLibrary.setAttribute('aria-expanded','false');
@@ -184,6 +184,15 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  window.visualViewport?.addEventListener('resize',positionMediaTray,{passive:true});
  window.visualViewport?.addEventListener('scroll',positionMediaTray,{passive:true});
  const headerLibrary=button('Shared Media',()=>void openLibrary(),'bc-chat-header-media');headerLibrary.title='Open this conversation’s shared media';document.querySelector('.imessage-title-actions')?.prepend(headerLibrary);
+ // Redundant accessible attachment entry for Android devices where the IME
+ // obscures the bottom composer. Never navigate outside the conversation.
+ const headerAttachment=button('＋',()=>toggleMediaTray(headerAttachment),'bc-android-attachment-shortcut');
+ headerAttachment.id='bcAndroidAttachmentShortcut';
+ headerAttachment.title='BLACKCELL Photos or upload';
+ headerAttachment.setAttribute('aria-label','Add BLACKCELL Photos or upload photo or video');
+ headerAttachment.setAttribute('aria-controls',controls.id);
+ headerAttachment.setAttribute('aria-expanded','false');
+ document.querySelector('.imessage-title-actions')?.prepend(headerAttachment);
  const fileInput=el('input');fileInput.type='file';fileInput.multiple=true;
  fileInput.accept='image/*,video/*';
  fileInput.setAttribute('aria-label','Select photos or videos for this chat');
