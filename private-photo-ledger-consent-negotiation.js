@@ -113,9 +113,14 @@ function refreshSettings(){
  settingsButton.hidden=!s.isOwner;
  if(!s.isOwner)return;
  settingsInfo.textContent='Owner controls · START TIMER starts immediately, without sender acceptance. '+
-  'You can choose whether the sender gets a Decline & Stop Timer button. '+
-  'Any time already elapsed remains in the private ledger.';
+  'You can enable a 10-second NO response before your first two STOP attempts; '+
+  'the third STOP ends the timer. Existing Decline & Stop remains a separate option. '+
+  'Any time already elapsed stays in the private ledger.';
  toggleList.append(
+  featureRow('Allow sender to say NO when you press STOP',
+   'ON: sender has 10 seconds on the first two STOP attempts. NO continues the timer. '+
+   'No response stops it; your third STOP is final. OFF: your STOP is immediate.',
+   'sender_can_veto_stop_timer',features.sender_can_veto_stop_timer!==false,true),
   featureRow('Allow sender to decline and stop timer',
    'OFF: only you can stop. ON: the sender may immediately stop an active timer from REDLINE.',
    'sender_can_stop_timer',features.sender_can_stop_timer===true,true),
