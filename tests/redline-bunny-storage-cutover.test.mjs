@@ -7,6 +7,7 @@ const read=p=>readFileSync(p,'utf8');
 const js=read('private-photo-ledger.js');
 const transport=read('private-photo-ledger-bunny.js');
 const server=read('supabase/functions/blackcell-redline-bunny/index.ts');
+const policy=read('supabase/migrations/20261122014500_redline_bunny_private_photo_path.sql');
 const html=read('private-photo-ledger.html');
 const sender=read('private-photo-ledger-simple-sender.js');
 const preview=read('private-photo-ledger-owner-preview.js');
@@ -123,4 +124,18 @@ test('HTML loads versioned fresh Bunny cutover and private helper module',()=>{
  assert.match(js,/from '\.\/private-photo-ledger-bunny\.js\?v=20261121-redline-bunny1'/);
  assert.match(transport,/blackcell-redline-bunny/);
  assert.doesNotMatch(transport,/https:\/\/la\.storage\.bunnycdn\.com/);
+});
+
+test('Bunny image metadata is accepted by row security only for assigned verified senders',()=>{
+ assert.match(policy,/ADD CONSTRAINT corp_photo_path_format CHECK/);
+ assert.match(policy,/CREATE POLICY corp_photo_entries_member_bunny_upload/);
+ assert.match(policy,/corp_private\.photo_ledger_verified\(\)/);
+ assert.match(policy,/uploaded_by = \(SELECT auth\.uid\(\)\)/);
+ assert.match(policy,/r\.member_id = \(SELECT auth\.uid\(\)\)/);
+ assert.match(policy,/r\.photo_sending_paused IS NOT TRUE/);
+ assert.match(policy,/image_path ~ \(/);
+ assert.match(policy,/redline\/v1\//);
+ assert.match(policy,/decision_status = 'pending'/);
+ assert.match(policy,/id::text \|\| '[.]\(jpg\|png\|webp\|heic\|heif\)\$'/);
+ assert.match(policy,/No archived photos are deleted or altered/);
 });
