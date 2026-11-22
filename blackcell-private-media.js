@@ -459,7 +459,7 @@ export function mountPrivatePhotos(host,{client,userId,preview,alive,onBusy}){
  input.onchange=async()=>{const list=Array.from(input.files||[]);input.value='';if(preview){status.textContent='Sign in to import private media.';return}if(busy||loading||!usable()||!list.length||deleteDialog)return;busy=true;syncControls();onBusy(true);let n=0,failed=[];try{for(const [i,file] of list.entries()){if(!usable())break;const type=mediaType(file.name),name=file.name.normalize('NFKD').replace(/[^a-zA-Z0-9_. -]/g,'_').replace(/^\.+/,'').slice(0,100);if(!type||!name){failed.push(file.name+': Unsupported format or file name.');continue}if(!file.size||file.size>PRIVATE_FILE_LIMIT){failed.push(name+': '+(!file.size?'Empty file.':'Exceeds 256 MB ('+(file.size/1048576).toFixed(1)+' MB).'));continue}status.textContent='Importing '+(i+1)+' of '+list.length+' · '+name+' ('+(file.size/1048576).toFixed(1)+' MB)…';try{await uploadPrivateFile(storage,userId+'/Photos/'+name,file,(sent,total)=>{status.textContent='Importing '+name+' · '+Math.round(sent/total*100)+'%'});n++}catch(e){failed.push(name+': '+privateUploadError(e))}}await refresh();if(n)window.dispatchEvent(new CustomEvent('bc-private-files-changed',{detail:{source:'photos'}}));status.textContent=n+' imported privately'+(failed.length?' · '+failed.length+' failed · '+failed.slice(0,3).join(' | '):'')}catch(e){status.textContent=privateUploadError(e)}finally{busy=false;onBusy(false);if(usable())syncControls()}};
  const moved=event=>{if(event.detail?.source==='photos'||(event.detail?.uid&&event.detail.uid!==userId)||busy)return;viewer.close();closeDelete();void refresh(true)};window.addEventListener('bc-private-files-changed',moved);let transferChannel=null;try{transferChannel=new BroadcastChannel('bc-private-photos-transfer');transferChannel.onmessage=e=>{if(e.data?.type==='photos-changed'&&e.data.uid===userId&&!busy)void refresh(true)}}catch(_){}search.oninput=()=>{page=0;dateScope='';view='all';render()};void refresh();return {dispose(){closed=true;version++;refreshSeq++;photoResize?.disconnect();if(layoutFrame)cancelAnimationFrame(layoutFrame);ratios.clear();videoFrames.clear();photoFrames.clear();photoPending.clear();photoFrameBytes=0;closeDelete();window.removeEventListener('bc-private-files-changed',moved);transferChannel?.close();legacyOwners.clear();memberLabels.clear();viewer.close();clearThumbs()},refresh,closeViewer:viewer.close};
 }
-export async function choosePrivateMedia({client,userId,onSelect,onSelectRows=null,actionLabel='Attach selected',max=6}){
+export async function choosePrivateMedia({client,userId,onSelect,onSelectRows=null,onDeviceUpload=null,actionLabel='Attach selected',max=6}){
  if(!userId)return;
  const storage=createPrivateDrive(client,userId),overlay=make('div','bc-pm-picker'),panel=make('section','bc-pm-picker-panel'),head=make('header','bc-pm-header'),title=make('div');
  title.append(make('h2','','BLACKCELL Photos'),make('p','','Select photos or videos to attach.'));
@@ -472,6 +472,16 @@ export async function choosePrivateMedia({client,userId,onSelect,onSelectRows=nu
  const list=make('div','bc-pm-pick-list bc-pm-photo-picker-grid','Loading private library…'),status=make('p','bc-pm-pick-status',''),pager=make('div','bc-pm-picker-pager'),pageLabel=make('span');
  const prev=button('‹',()=>{if(page>0&&!preparing){page--;render()}}),next=button('›',()=>{if(!preparing){page++;render()}});prev.setAttribute('aria-label','Previous photos');next.setAttribute('aria-label','Next photos');pager.append(prev,pageLabel,next);pager.hidden=true;
  const submit=button(actionLabel,async()=>{if(!selected.size||disposed||preparing)return;preparing=true;submit.disabled=true;search.disabled=true;prev.disabled=true;next.disabled=true;for(const b of list.querySelectorAll('button'))b.disabled=true;queue=[];status.textContent='Preparing selected files…';try{if(typeof onSelectRows==='function'){const chosen=[...selected.values()];remove();await onSelectRows(chosen,row=>getPrivateMedia(storage,row));return}const files=[];for(const row of selected.values()){if(disposed)return;files.push(await getPrivateMedia(storage,row))}if(disposed)return;remove();await onSelect(files)}catch{if(!disposed){preparing=false;search.disabled=false;render();status.textContent='Could not prepare the selected files.'}}});submit.disabled=true;
+ const deviceButton=typeof onDeviceUpload==='function'?button('＋  Upload from Phone',()=>{
+  if(preparing||disposed)return;
+  // The caller must use the original tap to invoke Android's native gallery.
+  remove();onDeviceUpload();
+ }):null;
+ if(deviceButton){
+  deviceButton.className='bc-pm-redline-device-source';
+  deviceButton.setAttribute('aria-label','Upload photos from this device to the REDLINE room');
+  style.textContent+=' .bc-pm-picker .bc-pm-redline-empty{display:flex;flex-direction:column;align-items:center;gap:13px;justify-content:center;text-align:center;min-height:148px;padding:17px;color:#ddd0d8;font:13px/1.5 system-ui}.bc-pm-picker .bc-pm-redline-device-source{width:100%;min-height:49px;background:#b32245;color:white;font-weight:750;border:1px solid #ec657d;border-radius:11px;touch-action:manipulation}';
+ }
  panel.append(head,search,list,pager,status,submit);overlay.append(style,panel);document.body.append(overlay);
  function sync(){submit.disabled=preparing||!selected.size;status.textContent=selected.size+' selected'+(limited?' · Showing up to 1,000 library items':'')}
  function paint(tile,url,label){const img=make('img');img.alt='';img.decoding='async';img.src=url;img.onerror=()=>{if(!disposed&&tile.isConnected)tile.replaceChildren(make('span','bc-pm-picker-placeholder','Preview unavailable'),tile.querySelector('.bc-pm-picker-check')||make('span','bc-pm-picker-check'))};tile.replaceChildren(img,label)}
@@ -491,11 +501,22 @@ export async function choosePrivateMedia({client,userId,onSelect,onSelectRows=nu
   }catch{if(!disposed&&seq===generation&&tile.isConnected)tile.querySelector('.bc-pm-picker-placeholder').textContent='Preview unavailable'}
  }
  function pump(){if(disposed||preparing)return;while(running<2&&queue.length){const job=queue.shift();if(job.seq!==generation)continue;running++;void thumbnail(job.row,job.tile,job.check,job.seq).finally(()=>{running--;pump()})}}
- function render(){if(disposed)return;const seq=++generation;queue=[];const filtered=rows.filter(r=>r.name.toLowerCase().includes(search.value.trim().toLowerCase()));page=Math.max(0,Math.min(page,Math.ceil(filtered.length/pageSize)-1));const shown=filtered.slice(page*pageSize,(page+1)*pageSize),keep=new Set(shown.map(r=>r.path));for(const [key,url] of urls)if(!keep.has(key)){URL.revokeObjectURL(url);urls.delete(key)}list.replaceChildren();if(!shown.length)list.append(make('p','','No private media found.'));
+ function render(){if(disposed)return;const seq=++generation;queue=[];const filtered=rows.filter(r=>r.name.toLowerCase().includes(search.value.trim().toLowerCase()));page=Math.max(0,Math.min(page,Math.ceil(filtered.length/pageSize)-1));const shown=filtered.slice(page*pageSize,(page+1)*pageSize),keep=new Set(shown.map(r=>r.path));for(const [key,url] of urls)if(!keep.has(key)){URL.revokeObjectURL(url);urls.delete(key)}list.replaceChildren();if(!shown.length){
+    if(deviceButton){
+     const empty=make('div','bc-pm-redline-empty');
+     empty.append(make('strong','',rows.length?'No matching BLACKCELL Photos':'No BLACKCELL Photos found for this account'),
+      make('p','',rows.length?'Try another search or upload from your phone.':'You can still send photos from your phone directly into this private REDLINE conversation.'),
+      deviceButton);
+     list.append(empty);
+    }else list.append(make('p','','No private media found.'));
+   }
   for(const row of shown){
    const tile=make('button','bc-pm-picker-tile'),video=row.type.startsWith('video/'),placeholder=make('span','bc-pm-picker-placeholder',video?'▶ Video':'Loading…'),check=make('span','bc-pm-picker-check');tile.type='button';tile.setAttribute('aria-label',(video?'Select video: ':'Select photo: ')+row.name);check.setAttribute('aria-hidden','true');const mark=()=>{const yes=selected.has(row.path);tile.classList.toggle('is-selected',yes);tile.setAttribute('aria-pressed',String(yes));check.textContent=yes?'✓':''};mark();tile.onclick=()=>{if(preparing||disposed)return;if(selected.has(row.path))selected.delete(row.path);else{if(selected.size>=max){status.textContent='Select up to '+max+' files.';return}selected.set(row.path,row)}mark();sync()};tile.append(placeholder,check);list.append(tile);if(!video){const url=urls.get(row.path);if(url)paint(tile,url,check);else queue.push({row,tile,check,seq})}
   }
   pager.hidden=filtered.length<=pageSize;pageLabel.textContent=(page+1)+' / '+Math.max(1,Math.ceil(filtered.length/pageSize));prev.disabled=preparing||page===0;next.disabled=preparing||(page+1)*pageSize>=filtered.length;sync();pump()
  }
- search.oninput=()=>{page=0;render()};try{const result=await privateFiles(storage,userId,()=>!disposed);if(disposed)return;rows=result.rows;limited=result.limited;render()}catch{if(!disposed)list.textContent='Unable to load private media.'}
+ search.oninput=()=>{page=0;render()};try{const result=await privateFiles(storage,userId,()=>!disposed);if(disposed)return;rows=result.rows;limited=result.limited;render()}catch{if(!disposed){
+   list.replaceChildren(make('p','','Unable to load BLACKCELL Photos.'));
+   if(deviceButton)list.append(deviceButton);
+  }}
 }
