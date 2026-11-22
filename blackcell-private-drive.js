@@ -6,7 +6,17 @@ const ok=data=>({data,error:null}),err=e=>({data:null,error:{message:String(e?.m
 export function createPrivateDrive(client,uid){
  const legacy=client?.storage.from(BUCKET);
  if(!client||!uid)return legacy;
- let cached=null,cacheAt=0,flight=null;const invalid=()=>{cached=null;cacheAt=0;flight=null};
+ let cached=null,cacheAt=0,flight=null,legacyBucketMissing=false;
+ const invalid=()=>{cached=null;cacheAt=0;flight=null};
+ // Supabase's previous blackcell-os-files bucket may have been deleted after
+ // Photos moved to the private Bunny vault. A missing legacy bucket must NOT
+ // hide the owner's valid, encrypted Bunny Photos catalog.
+ const absentLegacyBucket=error=>{
+  const message=String(error?.message||error||'').toLowerCase();
+  const status=String(error?.statusCode||error?.status||error?.code||'');
+  return /bucket.*not found|no such bucket|resource.*not found|storage bucket.*missing|not found.*bucket/.test(message)
+   ||(status==='404'&&/not found|does not exist|missing|resource/.test(message));
+ };
  function relative(full){if(full===uid)return '';if(typeof full!=='string'||!full.startsWith(uid+'/'))throw Error('Private path denied.');const p=full.slice(uid.length+1);if(!p||p.split('/').some(s=>!s||s==='.'||s==='..'||/[\x00-\x1f\x7f\\]/.test(s)))throw Error('Invalid private path.');return p}
  async function request(action,data={},binary=null,id=null,index=null,read=false){
   const cfg=window.BLACKCELL_CORP_CONFIG;
@@ -34,7 +44,15 @@ export function createPrivateDrive(client,uid){
  }
  async function list(full,opts={}){
   try{const p=relative(full),rows=localRows(await catalog(),p);let offset=0;
-   for(;offset<5000;offset+=100){const r=await legacy.list(full,{limit:100,offset,sortBy:{column:'name',order:'asc'}});if(r.error){if(/bucket not found|no such bucket/i.test(String(r.error.message||'')))break;throw r.error}for(const e of r.data||[]){if(!rows.has(e.name))rows.set(e.name,e)}if((r.data||[]).length<100)break}
+   if(!legacyBucketMissing)for(;offset<5000;offset+=100){
+    const r=await legacy.list(full,{limit:100,offset,sortBy:{column:'name',order:'asc'}});
+    if(r.error){
+     if(absentLegacyBucket(r.error)){legacyBucketMissing=true;break}
+     throw r.error;
+    }
+    for(const e of r.data||[])if(!rows.has(e.name))rows.set(e.name,e);
+    if((r.data||[]).length<100)break;
+   }
    let merged=[...rows.values()].sort((a,b)=>a.name.localeCompare(b.name));if(opts.search)merged=merged.filter(r=>r.name.includes(opts.search));if(opts.sortBy?.order==='desc')merged.reverse();
    return ok(merged.slice(opts.offset||0,(opts.offset||0)+(opts.limit||100)))
   }catch(e){return err(e)}
