@@ -358,7 +358,7 @@ test('Clicking the single photo opens the full viewport and returns to chat on a
 });
 
 
-test('Bid and timed-photo controls stay right of the normal photo; fullscreen contains image only',()=>{
+test('Bid and timed-photo controls share verified right deck on Apple layouts; fullscreen remains photo only',()=>{
  const layout=read('private-photo-ledger-imessage-workspace.css');
  const timer=read('private-photo-ledger-timers.js');
  const fullPhoto=html.slice(html.indexOf('<div id="photoLightbox"'),html.indexOf('<!-- The existing verified bid/timer sidebar'));
@@ -368,7 +368,8 @@ test('Bid and timed-photo controls stay right of the normal photo; fullscreen co
  assert.match(ledger,/YOUR BID · USD/);
  assert.match(ledger,/const liveTimer=\$\('redlinePhotoTimerPanel'\)/);
  assert.match(ledger,/restoreTimer\(\)/);
- assert.match(receiver,/reviewStage\.append\(bidTimerPanel\)/);
+ assert.match(receiver,/const reviewControlsHost=appleMode\?appleTimer:reviewStage/);
+ assert.match(receiver,/reviewControlsHost\.append\(bidTimerPanel\)/);
  assert.match(timer,/besidePhoto&&ownerPanel\.parentNode!==sidebar/);
  assert.match(timer,/sidebar\.append\(ownerPanel\)/);
  assert.match(timer,/ownerPanel\.open=true/);
