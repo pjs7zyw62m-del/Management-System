@@ -90,7 +90,7 @@ test('verified trigger ledger remains distinct but included in assigned and outs
  assert.match(migration,/'trigger_owed_cents',v_due/);
  assert.match(migration,/'assigned_cents',v_assigned\+v_total/);
  assert.match(migration,/'remaining_cents',coalesce/);
- assert.match(html,/private-photo-ledger-trigger-words\.js\?v=20261123-trigger-words2-no-cooldown/);
- assert.match(html,/private-photo-ledger-trigger-words\.css\?v=20261123-trigger-words1/);
- assert.match(html,/private-photo-ledger-consent-negotiation\.js\?v=20261123-trigger-words2-no-cooldown/);
+ assert.match(html,/private-photo-ledger-trigger-words\.js\?v=20261123-trigger-visible-controls1/);
+ assert.match(html,/private-photo-ledger-trigger-words\.css\?v=20261123-trigger-visible-controls1/);
+ assert.match(html,/private-photo-ledger-consent-negotiation\.js\?v=20261123-trigger-visible-controls1/);
 });
