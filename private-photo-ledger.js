@@ -2317,6 +2317,7 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
    room_id:room.id,sender_id:state.user.id,body
   });
   if(result.error)throw result.error;
+  if(state.isOwner)window.dispatchEvent(new Event('blackcell:redline:owner-chat-sent'));
   return true;
  }
 });
