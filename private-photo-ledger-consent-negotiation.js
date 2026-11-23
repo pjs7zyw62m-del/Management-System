@@ -271,7 +271,12 @@ function renderNegotiation(offer){
  negotiateDlg.append(comparison);
  if(signedPhoto(offer.photo_id)){
   const visual=make('div','redline-negotiation-photo');
-  photoPreview(visual,offer.photo_id);
+  const enlarge=make('button','redline-negotiation-photo-open');
+  enlarge.type='button';
+  enlarge.setAttribute('aria-label','Enlarge the negotiated photograph to inspect it and zoom');
+  photoPreview(enlarge,offer.photo_id);
+  visual.append(enlarge,make('span','redline-negotiation-photo-caption',
+   '⤢  VIEW FULL PHOTOGRAPH · ZOOM AVAILABLE'));
   negotiateDlg.append(visual);
  }
  const actions=make('div','redline-negotiation-actions redline-consent-actions');

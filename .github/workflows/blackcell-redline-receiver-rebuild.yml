@@ -25,6 +25,7 @@ on:
       - 'tests/redline-apple-workspace-stability.test.mjs'
       - 'tests/redline-timer-two-party-browser-smoke.mjs'
       - 'private-photo-ledger-consent-negotiation.js'
+      - 'private-photo-ledger-negotiation-photo-viewer.js'
       - 'private-photo-ledger-consent-negotiation.css'
       - 'tests/redline-timer-consent-negotiation.test.mjs'
       - 'tests/redline-consent-negotiation-browser-smoke.mjs'
@@ -88,6 +89,7 @@ on:
       - 'tests/redline-apple-workspace-stability.test.mjs'
       - 'tests/redline-timer-two-party-browser-smoke.mjs'
       - 'private-photo-ledger-consent-negotiation.js'
+      - 'private-photo-ledger-negotiation-photo-viewer.js'
       - 'private-photo-ledger-consent-negotiation.css'
       - 'tests/redline-timer-consent-negotiation.test.mjs'
       - 'tests/redline-consent-negotiation-browser-smoke.mjs'
@@ -123,6 +125,7 @@ jobs:
           node --check private-photo-ledger-sender-messenger.js
           node --check private-photo-ledger-receiver.js
           node --check private-photo-ledger-photo-zoom.js
+          node --check private-photo-ledger-negotiation-photo-viewer.js
           node --check private-photo-ledger-sender.js
           node --check private-photo-ledger-timers.js
           node --check private-photo-ledger-consent-negotiation.js

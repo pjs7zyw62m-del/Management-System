@@ -197,3 +197,21 @@ test('owner STOP waits 10 seconds for sender NO at most twice; third STOP is fin
  assert.match(html,/private-photo-ledger-timers\.js\?v=20261121-per-second1[^"']*sender-no-10sec-stop3/);
  assert.match(html,/private-photo-ledger-timers\.css\?v=20261121-sender-live-chat-timer1[^"']*sender-no-10sec-stop3/);
 });
+
+
+test('Negotiation window preserves price controls while allowing a large original photo',()=>{
+ const js=read('private-photo-ledger-consent-negotiation.js');
+ const css=read('private-photo-ledger-consent-negotiation.css');
+ const viewer=read('private-photo-ledger-negotiation-photo-viewer.js');
+ const html=read('private-photo-ledger.html');
+ assert.match(js,/redline-negotiation-photo-open/);
+ assert.match(js,/photoPreview\(enlarge,offer\.photo_id\)/);
+ assert.match(css,/height:clamp\(295px,49dvh,470px\)!important/);
+ assert.match(css,/#redlinePriceNegotiation \.redline-negotiation-photo img/);
+ assert.match(css,/#redlinePriceNegotiation\.redline-negotiation-ui\[open\]/);
+ assert.match(viewer,/viewer\.showModal\(\)/);
+ assert.match(viewer,/stage\.addEventListener\('wheel'/);
+ assert.match(viewer,/pointermove/);
+ assert.match(viewer,/blackcell:redline:reset/);
+ assert.match(html,/private-photo-ledger-negotiation-photo-viewer\.js\?v=20261123-negotiation-photo-focus1/);
+});
