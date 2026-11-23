@@ -101,5 +101,6 @@ test('Running timer stays pinned in conversation until server STOP',()=>{
  assert.match(sender,/timerSlot\.append\(card\)/);
  assert.match(sender,/messageCard\.append\(msgHeader,timerSlot,feed/);
  assert.match(css,/position:sticky!important/);
- assert.match(sender,/if\(e.kind==='timer'\)\{feed.append\(makeTimerCard\(e\)\);continue;\}/);
+ assert.match(sender,/if\(e.kind==='timer'\)return makeTimerCard\(e\)/);
+ assert.match(sender,/if\(timerSlot\.dataset\.redlinePinnedId!==pinId\)\{/);
 });
