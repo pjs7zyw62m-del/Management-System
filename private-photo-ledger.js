@@ -422,6 +422,8 @@ function ratedPhotoData(e){
   id:e.id,stars:rating?.stars||0,rated_at:rating?.rated_at||null,
   created_at:e.created_at,caption:e.photo_removal_status?'':e.caption||'',
   amount_cents:e.amount_cents,
+  settled_at:e.settled_at||null,
+  auto_timer_session_id:e.auto_timer_session_id||null,
   removed:e.photo_removal_status==='removed',
   removal_status:e.photo_removal_status||null,
   image_url:e.photo_removal_status?'':state.images.get(e.image_path)?.url||''
@@ -1914,6 +1916,15 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
    p_request_id:requestId,p_accept:accept===true
   });
   if(r.error||r.data?.ok!==true)throw Error(fail(r.error||r.data?.reason||'Timer response failed.'));
+  return r.data;
+ },
+ async priceNegotiationOpen(photoId){
+  if(state.closed||state.isOwner||!state.user||!state.room?.active||
+   state.showArchive||!validId(photoId))
+   throw Error('Only the verified sender can request an optional counteroffer.');
+  const r=await db.rpc('corp_redline_price_negotiation_open',{p_photo_id:photoId});
+  if(r.error||r.data?.ok!==true)
+   throw Error(fail(r.error||r.data?.reason||'The approved price is final or no longer open.'));
   return r.data;
  },
  async priceNegotiationStatus(roomId){
