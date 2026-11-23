@@ -63,7 +63,40 @@
    }
   }
  }
- function drawLedger(host,status,owner){
+ function actualPhoto(photoId,current=snap()){
+  const row=(current?.photoHistory||[]).find(p=>p.id===photoId&&!p.removal_status);
+  return row?.image_url&&
+    (row.image_url.startsWith('https://')||row.image_url.startsWith('blob:'))
+    ?row.image_url:'';
+ }
+ function makePhotoPreview(photoId,current){
+  const wrap=el('div','redline-repeat-bonus-photo');
+  const url=actualPhoto(photoId,current);
+  if(!url){
+   wrap.append(el('span','redline-repeat-bonus-no-image',
+    'PHOTO LOADING'));
+   return wrap;
+  }
+  const img=el('img');
+  img.loading='lazy';img.decoding='async';
+  img.alt='Private photograph for this bonus';
+  img.referrerPolicy='no-referrer';
+  img.addEventListener('error',()=>{
+   wrap.replaceChildren(el('span','redline-repeat-bonus-no-image',
+    'PHOTO UNAVAILABLE'));
+  });
+  img.src=url;wrap.append(img);
+  return wrap;
+ }
+ function meter(count){
+  const track=el('div','redline-repeat-bonus-meter');
+  const fill=el('span');
+  fill.style.setProperty('--redline-bonus-progress',
+   Math.min(3,Math.max(0,Number(count)||0))/3*100+'%');
+  track.append(fill);
+  return track;
+ }
+ function drawLedger(host,status,owner,current=snap()){
   if(!host)return;
   const awarded=Array.isArray(status.bonuses)?status.bonuses:[];
   const progress=Array.isArray(status.progress)?status.progress:[];
@@ -78,34 +111,48 @@
    'Outstanding '+money(status.bonus_owed_cents)+' · Recorded paid '+
    money(status.bonus_paid_cents)+'. External payments are recorded by the receiver.'));
   for(const b of awarded.slice(0,4)){
-   const line=el('div','redline-repeat-bonus-line');
-   const info=el('span','',
-    'Photo '+String(b.photo_id||'').slice(0,8).toUpperCase()+
-    (b.settled_at?' · Paid':' · Awarded'));
-   line.append(info,el('strong','',money(b.bonus_cents)));
-   host.append(line);
+   const row=el('div','redline-repeat-bonus-award-card');
+   const details=el('div','redline-repeat-bonus-card-body');
+   details.append(
+    el('strong','',money(b.bonus_cents)+' BONUS AWARDED'),
+    el('small','',b.settled_at?'Recorded paid':'Added to outstanding balance')
+   );
+   row.append(makePhotoPreview(b.photo_id,current),details);
+   host.append(row);
   }
   const next=progress.filter(p=>!awarded.some(b=>b.photo_id===p.photo_id))
    .slice(0,2);
-  for(const p of next){
-   host.append(el('div','redline-repeat-bonus-progress',
-    'Photo '+String(p.photo_id||'').slice(0,8).toUpperCase()+
-    ': '+String(p.five_star_prices)+'/3 priced 5-star reviews · '+
-    String(p.completed_timers)+'/3 finished timers'));
+  if(next.length){
+   const tracks=el('div','redline-repeat-bonus-tracks');
+   for(const p of next){
+    const row=el('div','redline-repeat-bonus-progress-card');
+    const details=el('div','redline-repeat-bonus-card-body');
+    details.append(
+      el('strong','', '★ '+String(p.five_star_prices)+'/3 · Priced 5-star reviews'),
+      meter(p.five_star_prices),
+      el('small','', '◷ '+String(p.completed_timers)+'/3 · Finished timers'),
+      meter(p.completed_timers)
+    );
+    row.append(makePhotoPreview(p.photo_id,current),details);
+    tracks.append(row);
+   }
+   host.append(tracks);
   }
  }
  function renderLedgers(status,current){
   ensureLedger();
   const sig=JSON.stringify([
    current.isOwner,status.bonuses,status.progress,
+   (status.progress||[]).map(p=>[p.photo_id,actualPhoto(p.photo_id,current)]),
+   (status.bonuses||[]).map(b=>[b.photo_id,actualPhoto(b.photo_id,current)]),
    status.bonus_assigned_cents,status.bonus_owed_cents,status.bonus_paid_cents
   ]);
   if(sig===ledgerSignature)return;
   ledgerSignature=sig;
-  drawLedger(senderLedger,status,false);
+  drawLedger(senderLedger,status,false,current);
   const commandBonus=$('#redlineRepeatBonusMobile');
   if(commandBonus){
-   if(Array.isArray(status.bonuses)&&status.bonuses.length)drawLedger(commandBonus,status,true);
+   if(Array.isArray(status.bonuses)&&status.bonuses.length)drawLedger(commandBonus,status,true,current);
    else commandBonus.hidden=true;
   }
  }
