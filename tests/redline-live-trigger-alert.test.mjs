@@ -14,7 +14,7 @@ test('Android trigger match popup is wired to REDLINE without changing chat layo
  assert.match(html,/private-photo-ledger-trigger-alerts\.css\?v=20261123-sender-live-alert1/);
  assert.match(css,/\.redline-trigger-earned-overlay\[hidden\]/);
  assert.match(css,/position:fixed!important/);
- assert.match(os,/redlineRelease=20261123-trigger-cost-no-popup2/);
+ assert.match(os,/redlineRelease=20261123-photo-credit-counter-inline1/);
  assert.match(alert,/triggerWordStatus\(target\)/);
  assert.match(alert,/window\.setInterval\(tick,4500\)/);
  assert.match(alert,/response\.enabled/);
