@@ -705,6 +705,44 @@ function chatItemKey(e){
  if(e.kind==='timer')return 'timer:'+String(e.timer?.id||'')+':'+e.phase;
  return 'event:'+String(e.at||'')+'|'+String(e.status||'')+'|'+String(e.body||'');
 }
+// The verified owner writes these messages through the private photo RPC.
+function historyPhotoSignal(e,snap){
+ if(e?.kind!=='chat'||!snap||typeof e.body!=='string')return null;
+ const match=/^REDLINE_PHOTO_SIGNAL:v1:(looking|like):([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.exec(e.body);
+ if(!match)return null;
+ const fromOwner=snap.isOwner?e.sender===snap.userId:e.sender!==snap.userId;
+ if(!fromOwner)return null;
+ const photo=(snap.photoHistory||[]).find(p=>p.id===match[2]&&!p.removal_status);
+ return {action:match[1].toLowerCase(),photo,photoId:match[2]};
+}
+function makeHistoryPhotoSignalCard(e,snap){
+ const signal=historyPhotoSignal(e,snap);
+ if(!signal)return null;
+ const own=e.sender===snap.userId;
+ const card=make('article','redline-chat-photo-signal '+(own?'is-mine':'is-theirs'));
+ card.setAttribute('aria-label',signal.action==='like'?
+  'Receiver likes this specific photograph':'Receiver is looking at this specific photograph');
+ const photoBox=make('div','redline-chat-photo-signal-image');
+ if(signal.photo?.image_url&&
+   (signal.photo.image_url.startsWith('https://')||signal.photo.image_url.startsWith('blob:'))){
+  const img=make('img');img.src=signal.photo.image_url;
+  img.alt=signal.photo.caption||'Photograph referenced by the receiver';
+  img.loading='lazy';img.decoding='async';
+  img.addEventListener('error',()=>{photoBox.replaceChildren(make('span','',
+   'Private photo preview unavailable'))});
+  photoBox.append(img);
+ }else photoBox.append(make('span','','Photo preview loading…'));
+ const content=make('div','redline-chat-photo-signal-content');
+ const heading=signal.action==='like'
+  ?(own?'♥ YOU LIKED THIS PHOTO':'♥ RECEIVER LIKES YOUR PHOTO')
+  :(own?'◉ YOU SHARED WHAT YOU ARE LOOKING AT':'◉ RECEIVER IS LOOKING AT YOUR PHOTO');
+ content.append(make('strong','',heading),make('small','',
+  signal.action==='like'?'Personal photo appreciation':'Private photo viewing notice'));
+ if(signal.photo?.caption)content.append(make('p','',signal.photo.caption));
+ content.append(make('time','',dateText(e.at)));
+ card.append(photoBox,content);
+ return card;
+}
 function renderChat({scrollToLatest=false}={}){
  const snap=snapshot();
  const events=createEvents(snap?.entries).slice(0,80);
@@ -730,7 +768,9 @@ function renderChat({scrollToLatest=false}={}){
    ?[e.kind,e.phase,e.at,e.timer?.id,e.timer?.rate_cents,e.timer?.stopped_at,e.timer?.earned_cents]
    :e.kind==='rating'
     ?[e.kind,e.at,e.photo?.id,e.photo?.stars,e.photo?.caption,Boolean(e.photo?.image_url)]
-    :[e.kind,e.at,e.id,e.body,e.sender,e.status])
+    :e.kind==='chat'&&historyPhotoSignal(e,snap)
+     ?[e.kind,e.at,e.id,e.body,e.sender,Boolean(historyPhotoSignal(e,snap)?.photo?.image_url)]
+     :[e.kind,e.at,e.id,e.body,e.sender,e.status])
  ]);
  // Only a true first opening or the user's own Send may follow the bottom.
  // A background live update must NEVER override a human's reading anchor.
@@ -797,7 +837,7 @@ function renderChat({scrollToLatest=false}={}){
   const own=e.kind==='chat'&&e.sender===snap?.userId;
   const receipt=own&&e.id===latestOwn?(latestRead?'read':'sent'):'';
   const fingerprint=JSON.stringify(e.kind==='chat'
-   ?[e.at,e.body,e.sender,receipt]
+   ?[e.at,e.body,e.sender,receipt,Boolean(historyPhotoSignal(e,snap)?.photo?.image_url)]
    :e.kind==='rating'
     ?[e.photo?.stars,e.photo?.caption,Boolean(e.photo?.image_url)]
     :e.kind==='timer'
@@ -825,6 +865,10 @@ function renderChat({scrollToLatest=false}={}){
     rating.append(content);return rating;
    }
    if(e.kind==='timer')return makeTimerCard(e);
+   if(e.kind==='chat'){
+    const photoNotice=makeHistoryPhotoSignalCard(e,snap);
+    if(photoNotice)return photoNotice;
+   }
    const bubble=make('article','redline-chat-bubble '+(own?'is-mine':'is-theirs'));
    bubble.append(make('p','',e.body),make('time','',dateText(e.at)));
    if(receipt){
