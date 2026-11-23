@@ -13,9 +13,9 @@ test('REDLINE receiver sidebar is collapsible and Settings is not duplicated the
 test('REDLINE chat polling preserves the reader position and avoids page scroll',()=>{
  const js=read('private-photo-ledger-simple-sender.js');
  const css=read('private-photo-ledger-workspace-stability.css');
- assert.match(js,/const scrollBefore=feed\.scrollTop/);
+ assert.match(js,/const scrollBefore=retained\?\.top\?\?feed\.scrollTop/);
  assert.match(js,/feed\.insertBefore\(node,cursor\)/);
- assert.match(js,/if\(scrollToLatest\)feed\.scrollTop=feed\.scrollHeight/);
+ assert.match(js,/if\(followLatest\)feed\.scrollTop=feed\.scrollHeight/);
  assert.match(js,/anchor\.getBoundingClientRect\(\)\.top-anchorTop/);
  assert.match(css,/overflow-anchor:none/);
 });
@@ -42,7 +42,7 @@ test('approved compact REDLINE keeps controls, compresses earnings and expands t
 test('chat does not redraw unchanged messages during background polling',()=>{
  const js=read('private-photo-ledger-simple-sender.js');
  assert.match(js,/lastChatViewSignature/);
- assert.match(js,/if\(chatSignature===lastChatViewSignature&&feed\.dataset\.redlineScrollReady==='true'\)return/);
+ assert.match(js,/if\(signature===lastChatViewSignature&&feed\.dataset\.redlineScrollReady==='true'\)/);
  assert.match(js,/feed\.insertBefore\(node,cursor\)/);
  assert.doesNotMatch(js,/if\(followBottom\)feed\.scrollTop=feed\.scrollHeight/);
 });
@@ -55,7 +55,7 @@ test('REDLINE no-bounce policy forbids automatic jumps on receipt and timer poll
  assert.match(js,/function renderChat\(\{scrollToLatest=false\}=\{\}\)/);
  assert.match(js,/const anchor=\[\.\.\.feed\.children\]\.find/);
  assert.match(js,/const keep=new Set\(desired\)/);
- assert.match(js,/if\(scrollToLatest\)feed\.scrollTop=feed\.scrollHeight/);
+ assert.match(js,/if\(followLatest\)feed\.scrollTop=feed\.scrollHeight/);
  assert.match(js,/chatOwnSendPending=true/);
  assert.match(js,/chatInitialPositionPending=false/);
  assert.match(js,/renderChat\(\{scrollToLatest:chatInitialPositionPending\|\|chatOwnSendPending\}\)/);

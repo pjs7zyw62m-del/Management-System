@@ -18,6 +18,7 @@ on:
       - 'tests/redline-per-second-earnings.test.mjs'
       - 'tests/redline-history-chat-signals.test.mjs'
       - 'tests/redline-chat-read-typing-browser-smoke.mjs'
+      - 'tests/redline-apple-workspace-stability.test.mjs'
       - 'tests/redline-timer-two-party-browser-smoke.mjs'
       - 'private-photo-ledger-consent-negotiation.js'
       - 'private-photo-ledger-consent-negotiation.css'
@@ -76,6 +77,7 @@ on:
       - 'tests/redline-per-second-earnings.test.mjs'
       - 'tests/redline-history-chat-signals.test.mjs'
       - 'tests/redline-chat-read-typing-browser-smoke.mjs'
+      - 'tests/redline-apple-workspace-stability.test.mjs'
       - 'tests/redline-timer-two-party-browser-smoke.mjs'
       - 'private-photo-ledger-consent-negotiation.js'
       - 'private-photo-ledger-consent-negotiation.css'
@@ -120,6 +122,7 @@ jobs:
         run: |
           node --test \
             tests/blackcell-redline-receiver-reset.test.mjs \
+            tests/redline-apple-workspace-stability.test.mjs \
             tests/redline-per-second-earnings.test.mjs \
             tests/redline-timer-stop-next-photo.test.mjs \
             tests/redline-partial-payments.test.mjs \
