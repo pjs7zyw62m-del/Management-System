@@ -141,21 +141,174 @@
  }
  function renderLedgers(status,current){
   ensureLedger();
+  const trackerMoved=ensureTrackerHosts(current);
+  lastTrackerStatus=status;lastTrackerSnap=current;
   const sig=JSON.stringify([
    current.isOwner,status.bonuses,status.progress,
    (status.progress||[]).map(p=>[p.photo_id,actualPhoto(p.photo_id,current)]),
    (status.bonuses||[]).map(b=>[b.photo_id,actualPhoto(b.photo_id,current)]),
    status.bonus_assigned_cents,status.bonus_owed_cents,status.bonus_paid_cents
   ]);
-  if(sig===ledgerSignature)return;
+  if(sig===ledgerSignature&&!trackerMoved)return;
   ledgerSignature=sig;
   drawLedger(senderLedger,status,false,current);
+  if(current.isOwner)renderTracker(receiverTracker,status,current);
+  else renderTracker(senderTracker,status,current);
   const commandBonus=$('#redlineRepeatBonusMobile');
   if(commandBonus){
    if(Array.isArray(status.bonuses)&&status.bonuses.length)drawLedger(commandBonus,status,true,current);
    else commandBonus.hidden=true;
   }
  }
+ // Photo History tracker shares the SAME verified bonus status response as
+ // the celebration. No additional polling, balance mutation, or duplicate
+ // room authorization is introduced. Keep both trackers outside the chat.
+ let senderTracker=null,receiverTracker=null,trackerFilter='closest';
+ let lastTrackerStatus=null,lastTrackerSnap=null;
+ function ensureTrackerHosts(current){
+  let changed=false;
+  if(current.isOwner){
+   const history=$('#photoEntries');
+   const parent=history?.parentElement;
+   if(parent){
+    if(!receiverTracker){
+     receiverTracker=el('section','redline-bonus-tracker');
+     receiverTracker.id='redlineReceiverBonusTracker';
+     receiverTracker.setAttribute('aria-label','Bonus tracker for receiver photo history');
+     changed=true;
+    }
+    if(receiverTracker.parentElement!==parent||
+       receiverTracker.nextElementSibling!==history){
+     parent.insertBefore(receiverTracker,history);changed=true;
+    }
+   }
+  }else{
+   const pane=$('#redlineSimpleSender [data-redline-pane="history"]');
+   const controls=pane?.querySelector('.redline-history-controls');
+   if(pane&&controls){
+    if(!senderTracker){
+     senderTracker=el('section','redline-bonus-tracker');
+     senderTracker.id='redlineSenderBonusTracker';
+     senderTracker.setAttribute('aria-label','Bonus tracker for sender photo history');
+     changed=true;
+    }
+    if(senderTracker.parentElement!==pane||
+       senderTracker.nextElementSibling!==controls){
+     pane.insertBefore(senderTracker,controls);changed=true;
+    }
+   }
+  }
+  return changed;
+ }
+ function trackerCount(value){
+  return Math.max(0,Math.min(3,Number(value)||0));
+ }
+ function trackerRows(status,current){
+  const byId=new Map((current.photoHistory||[])
+   .filter(p=>p&&!p.removal_status&&!p.removed)
+   .map(p=>[p.id,p]));
+  const awarded=(Array.isArray(status.bonuses)?status.bonuses:[])
+   .filter(p=>byId.has(p.photo_id))
+   .map(p=>({photo_id:p.photo_id,bonus:p,photo:byId.get(p.photo_id),
+    reviews:3,timers:3,total:6,awarded:true}));
+  const completed=new Set(awarded.map(p=>p.photo_id));
+  const pending=(Array.isArray(status.progress)?status.progress:[])
+   .filter(p=>byId.has(p.photo_id)&&!completed.has(p.photo_id))
+   .map(p=>{
+    const reviews=trackerCount(p.five_star_prices);
+    const timers=trackerCount(p.completed_timers);
+    return {photo_id:p.photo_id,photo:byId.get(p.photo_id),
+     reviews,timers,total:reviews+timers,awarded:false};
+   }).filter(p=>p.total>0)
+   .sort((a,b)=>b.total-a.total||b.reviews-a.reviews||b.timers-a.timers||
+    String(b.photo.created_at||'').localeCompare(String(a.photo.created_at||'')));
+  return {pending,awarded};
+ }
+ function makeTrackerProgress(label,count){
+  const frag=el('div','redline-bonus-tracker-progress');
+  const top=el('div','redline-bonus-tracker-progress-label');
+  top.append(el('span','',label),el('strong','',trackerCount(count)+'/3'));
+  frag.append(top,meter(count));
+  return frag;
+ }
+ function renderTracker(host,status,current){
+  if(!host)return;
+  host.replaceChildren();
+  const rows=trackerRows(status,current);
+  const oneAway=rows.pending.filter(x=>x.total===5);
+  const head=el('div','redline-bonus-tracker-head');
+  const titleWrap=el('div');
+  titleWrap.append(el('span','redline-bonus-tracker-kicker','BLACKCELL REDLINE · PRIVATE'),
+   el('h3','','PHOTOS CLOSE TO BONUS'));
+  head.append(titleWrap,el('span','redline-bonus-tracker-count',
+   rows.pending.length+' IN PROGRESS'));
+  host.append(head,el('p','redline-bonus-tracker-desc',
+   'Each original needs 3 separately priced 5-star reviews and 3 completed earning timers. The one-time bonus is the average of those 6 amounts.'));
+  const tabs=el('div','redline-bonus-tracker-tabs');
+  for(const [value,label] of [
+   ['closest','CLOSEST FIRST'],
+   ['one','1 AWAY ('+oneAway.length+')'],
+   ['awarded','AWARDED ('+rows.awarded.length+')']
+  ]){
+   const button=el('button','redline-bonus-tracker-tab',label);
+   button.type='button';button.setAttribute('aria-pressed',String(trackerFilter===value));
+   button.addEventListener('click',()=>{
+    trackerFilter=value;
+    const latest=snap();
+    if(lastTrackerStatus&&latest?.roomId===lastTrackerSnap?.roomId)
+     renderTracker(host,lastTrackerStatus,latest);
+   });
+   tabs.append(button);
+  }
+  host.append(tabs);
+  const list=el('div','redline-bonus-tracker-list');
+  const selected=trackerFilter==='one'?oneAway:
+   trackerFilter==='awarded'?rows.awarded:rows.pending;
+  const visible=selected.slice(0,20);
+  if(!visible.length){
+   list.append(el('p','redline-bonus-tracker-empty',
+    trackerFilter==='one'?'No photographs are one qualifying event away yet.':
+    trackerFilter==='awarded'?'No repeat-photo bonuses have been awarded in this session.':
+    'No qualifying priced 5-star reviews or completed paid timers yet.'));
+  }
+  for(const item of visible){
+   const wrap=el('article','redline-bonus-tracker-row'+(item.total>=5?' redline-bonus-tracker-near':''));
+   const info=el('div','redline-bonus-tracker-info');
+   const top=el('div','redline-bonus-tracker-rowtop');
+   const name=(item.photo.caption||'Original photo').trim().slice(0,70)||'Original photo';
+   top.append(el('strong','redline-bonus-tracker-name',name),
+    el('span','redline-bonus-tracker-distance',
+     item.awarded?'BONUS AWARDED':item.total===5?'1 TO GO':
+      item.total===4?'2 TO GO':(6-item.total)+' TO GO'));
+   info.append(top,
+    makeTrackerProgress('★ Priced 5-star reviews',item.reviews),
+    makeTrackerProgress('◷ Completed timers',item.timers));
+   if(item.awarded){
+    info.append(el('strong','redline-bonus-tracker-distance',
+     money(item.bonus.bonus_cents)+(item.bonus.settled_at?' · Recorded paid':' · Added to owed')));
+   }
+   if(actualPhoto(item.photo_id,current)&&window.BLACKCELL_REDLINE_HD_VIEWER?.open){
+    const open=el('button','redline-bonus-tracker-photo-action','⤢ VIEW ORIGINAL');
+    open.type='button';
+    open.setAttribute('aria-label','Open qualifying original photo full screen');
+    open.addEventListener('click',()=>{
+     const fresh=snap();
+     if(fresh?.roomId!==current.roomId)return;
+     window.BLACKCELL_REDLINE_HD_VIEWER?.open(item.photo_id);
+    });
+    info.append(open);
+   }
+   wrap.append(makePhotoPreview(item.photo_id,current),info);
+   list.append(wrap);
+  }
+  host.append(list);
+  if(selected.length>visible.length)
+   host.append(el('p','redline-bonus-tracker-note',
+    'Showing the first 20 photographs of '+selected.length+'.'));
+  host.append(el('p','redline-bonus-tracker-note',
+   'Only completed, positive-earning timer sessions and separately priced 5-star reviews count. Viewing or liking a photo alone does not count.'));
+ }
+
  function ensurePopup(){
   if(popup)return;
   popup=el('div');popup.id='redlineBonusCelebration';popup.hidden=true;
@@ -282,7 +435,7 @@
   }finally{busy=false}
  }
  window.addEventListener('blackcell:redline:state',()=>{void poll()});
- window.addEventListener('blackcell:redline:reset',()=>{closePopup();roomId=null;signature='';ledgerSignature=''});
+ window.addEventListener('blackcell:redline:reset',()=>{closePopup();roomId=null;signature='';ledgerSignature='';lastTrackerStatus=null;lastTrackerSnap=null;trackerFilter='closest';senderTracker?.replaceChildren();receiverTracker?.replaceChildren()});
  window.addEventListener('pageshow',()=>{void poll(true)});
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)void poll(true)});
  window.setInterval(()=>{void poll()},5500);
