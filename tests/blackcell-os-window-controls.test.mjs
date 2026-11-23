@@ -159,7 +159,7 @@ test('real browser: hidden windows are actually hidden and green phone restore r
 });
 
 test('BLACKCELL OS REDLINE can refresh a stale negotiation window safely',()=>{
- assert.match(os,/redlineRelease=20261123-merged-photo-webos3/);
+ assert.match(os,/redlineRelease=20261123-owner-control-hub1/);
  assert.match(os,/networkWindow\|\|id==='administration'\|\|id==='photoledger'/);
  assert.match(os,/if\(\(networkWindow\|\|id==='administration'\|\|id==='photoledger'\)&&!chatPopout\)/);
  assert.match(os,/id==='photoledger'&&next\.pathname\.endsWith\('\/private-photo-ledger\.html'\)/);
