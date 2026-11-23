@@ -1838,11 +1838,46 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
    throw Error('Verified current room required.');
   const r=await db.rpc('corp_redline_room_feature_status',{p_room_id:roomId});
   if(r.error||r.data?.ok!==true)throw Error(fail(r.error||r.data?.reason||'Feature settings unavailable.'));
+  // Receiver settings display the independent server-verified trigger switch
+  // and configured prices. The legacy timer/negotiation RPC stays unchanged.
+  const trigger=await db.rpc('corp_redline_trigger_status',{p_room_id:roomId});
+  if(trigger.error||trigger.data?.ok!==true)
+   throw Error(fail(trigger.error||trigger.data?.reason||'Trigger-word settings unavailable.'));
+  return {...r.data,trigger_words_enabled:trigger.data.enabled===true,
+   trigger_words:trigger.data.words||[]};
+ },
+ async triggerWordStatus(roomId){
+  if(state.closed||!state.user||state.showArchive||state.room?.id!==roomId||!validId(roomId))
+   throw Error('A verified current REDLINE room is required.');
+  const r=await db.rpc('corp_redline_trigger_status',{p_room_id:roomId});
+  if(r.error||r.data?.ok!==true)
+   throw Error(fail(r.error||r.data?.reason||'Trigger words unavailable.'));
+  return r.data;
+ },
+ async triggerWordSave(roomId,word,priceCents,remove=false){
+  if(state.closed||state.isOwner||!state.user||state.showArchive||
+   !state.room?.active||state.room?.id!==roomId||!validId(roomId))
+   throw Error('Only the active sender may configure trigger words.');
+  const r=await db.rpc('corp_redline_trigger_save',{
+   p_room_id:roomId,p_word:word,p_price_cents:priceCents,p_delete:remove===true
+  });
+  if(r.error||r.data?.ok!==true)
+   throw Error(fail(r.error||r.data?.reason||'Word settings could not be saved.'));
   return r.data;
  },
  async setRoomFeature(roomId,key,enabled){
   if(state.closed||!state.user||!state.room||state.room.id!==roomId||state.showArchive)
    throw Error('Verified current room required.');
+  if(key==='trigger_words_enabled'){
+   if(!state.isOwner||!state.room?.active)
+    throw Error('Only the receiver can enable or disable trigger words.');
+   const r=await db.rpc('corp_redline_trigger_enable',{
+    p_room_id:roomId,p_enabled:enabled===true
+   });
+   if(r.error||r.data?.ok!==true)
+    throw Error(fail(r.error||r.data?.reason||'Trigger words could not be enabled.'));
+   return {...(await this.roomFeatureStatus(roomId))};
+  }
   if(!['timer_requests_enabled','negotiation_enabled','sender_auto_accept','sender_can_stop_timer','sender_can_veto_stop_timer'].includes(key))
    throw Error('Invalid setting.');
   const r=await db.rpc('corp_redline_set_room_feature',{
