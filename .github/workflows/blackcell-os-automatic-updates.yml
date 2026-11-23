@@ -15,6 +15,12 @@ on:
     paths:
       - 'blackcell-live-update.js'
       - 'blackcell-os-settings.js'
+      - 'blackcell-os.js'
+      - 'blackcell-os.html'
+      - 'blackcell-site-version.json'
+      - 'tests/blackcell-os-auto-update.test.mjs'
+      - 'tests/blackcell-os-ux2-update.test.mjs'
+      - '.github/workflows/blackcell-os-automatic-updates.yml'
   workflow_dispatch:
 jobs:
   auto-updates:
