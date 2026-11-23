@@ -19,10 +19,11 @@ test('Receiver costs are visible and come only from authenticated server results
  assert.match(src,/price_cents/);
  assert.match(src,/roomPaymentStatus\?\.\(id,false\)/);
  assert.match(core,/blackcell:redline:owner-chat-sent/);
- assert.match(css,/position:fixed!important/);
+ assert.doesNotMatch(css,/redline-receiver-trigger-notice/);
+ assert.doesNotMatch(src,/redline-receiver-trigger-notice|showNotice|showCostToast|setTimeout/);
  assert.doesNotMatch(src,/db\.rpc|db\.from|localStorage|sessionStorage|sendMessage\(/);
 });
-test('Owner sees earlier session cost without replay, then new confirmed cost and updated room balance',async()=>{
+test('Receiver sees ongoing charges in header silently, with no notification popup',async()=>{
  class El{
   constructor(tag='div'){
    this.tag=tag;this.children=[];this.parentNode=null;this.isConnected=true;
@@ -64,19 +65,18 @@ test('Owner sees earlier session cost without replay, then new confirmed cost an
  });
  for(let i=0;i<12;i++)await Promise.resolve();
  assert.equal(header.children.length,1);
- const strip=header.children[0],toast=body.children[0];
+ const strip=header.children[0];
  assert.equal(strip.children[1].textContent,'$0.15');
- assert.equal(toast.hidden,true,'Do not replay an earlier credit as a popup');
+ assert.equal(body.children.length,0,'Do not create an expense popup');
  hits=[hit('new','wonderful',25),...hits];
  window.dispatchEvent({type:'blackcell:redline:owner-chat-sent'});
  for(let i=0;i<20;i++)await Promise.resolve();
  assert.equal(strip.children[1].textContent,'$0.40');
- assert.equal(toast.hidden,false);
- assert.equal(toast.children[1].textContent,'+$0.25');
+ assert.equal(body.children.length,0,'New credits must not display a cost popup');
  assert.equal(payments,1,'A confirmed new cost refreshes owner financial totals once');
  role={...role,isOwner:false};
  window.dispatchEvent({type:'blackcell:redline:state'});
  for(let i=0;i<4;i++)await Promise.resolve();
  assert.equal(strip.isConnected,false,'Sender cannot see receiver cost strip');
- assert.equal(toast.hidden,true,'Receiver-only notice disappears on role change');
+ assert.equal(body.children.length,0,'No cost popup exists at all');
 });
