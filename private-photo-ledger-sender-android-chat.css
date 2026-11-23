@@ -73,7 +73,7 @@
      Never float over or cover rating/photo messages. */
   body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-messenger-live-strip:not([hidden]){
     display:block!important;position:relative!important;inset:auto!important;
-    flex:0 0 auto!important;max-height:100px!important;
+    flex:0 0 auto!important;max-height:none!important;
     margin:0!important;overflow:visible!important;z-index:0!important;
   }
   body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-messenger-live-head{
