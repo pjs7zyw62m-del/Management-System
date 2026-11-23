@@ -799,7 +799,7 @@ test('approved REDLINE desktop controls are three compact sections above growing
  const receiver=read('private-photo-ledger-receiver.js');
  const ledger=read('private-photo-ledger.js');
  const timer=read('private-photo-ledger-timers.js');
- assert.match(html,/private-photo-ledger-approved-deck\.css\?v=20261122-approved-controls-desktop1/);
+ assert.match(html,/private-photo-ledger-approved-deck\.css\?v=20261122-approved-controls-desktop2/);
  assert.match(style,/@media \(min-width:1180px\)/);
  assert.match(style,/bc-ledger-desktop/);
  assert.match(style,/#rrAppleTimerMount>\.rr-timer-panel/);
@@ -814,4 +814,15 @@ test('approved REDLINE desktop controls are three compact sections above growing
  assert.match(ledger,/deletePhotoPermanently\(entry\)/);
  assert.match(timer,/const start=btn\('▶ START TIMER'/);
  assert.match(timer,/const stop=btn\('■ STOP TIMER'/);
+});
+
+
+test('REDLINE desktop timer keeps the title, stopwatch, amount and hide control aligned',()=>{
+ const css=read('private-photo-ledger-approved-deck.css');
+ assert.match(css,/#redlinePhotoTimerPanel summary\.rr-timer-heading::before\{\s*content:none!important/);
+ assert.match(css,/summary\.rr-timer-heading>\.rr-timer-money::before\{\s*content:"⏱"!important/);
+ assert.match(css,/grid-template-columns:minmax\(0,1fr\) max-content!important/);
+ assert.match(css,/grid-template-rows:19px 18px!important/);
+ assert.match(css,/grid-template-columns:max-content minmax\(0,1fr\)!important/);
+ assert.match(css,/min-height:48px!important/);
 });
