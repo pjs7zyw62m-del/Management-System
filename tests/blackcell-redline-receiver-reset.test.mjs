@@ -726,7 +726,7 @@ test('Photo History is accessible despite the old photo-only layout rules',()=>{
 
 test('REDLINE puts quick actions in a menu with Pay in Full beside it',()=>{
  const sql=read('supabase/migrations/20261121144033_blackcell_redline_record_paid_in_full.sql');
- assert.match(receiver,/menuItems\.append\(review,history,message,settingsMenu,manage,tools\)/);
+ assert.match(receiver,/menuItems\.append\(review,history,message,manage,tools\)/);
  assert.match(receiver,/nav\.append\(menuShell,payColumn\)/);
  assert.match(receiver,/menuToggle\.setAttribute\('aria-expanded',String\(open\)\)/);
  assert.match(receiver,/menuItems\.hidden=!open/);
