@@ -760,6 +760,31 @@ window.addEventListener('blackcell:redline:timed-photo-summary',event=>{
  state.timedPhotoTotals=new Map(rows.filter(r=>validId(r.photo_id)).map(r=>[r.photo_id,r]));
  if(state.entries.length){renderEntries();renderReviewQueue()}
 });
+// Receiver-initiated photo-history reactions are explicit private messages.
+ // The server verifies the owner, sender's photo, and current room before posting.
+async function sendHistoryPhotoSignal(e,action,feedback,actions){
+ const roomId=state.room?.id;
+ if(!state.isOwner||!roomId||!state.room?.active||state.showArchive||
+    e.photo_removal_status||!validId(e.id))return;
+ for(const b of actions)b.disabled=true;
+ feedback.textContent='Sending privately to the sender…';
+ try{
+  await verify();
+  if(state.closed||state.room?.id!==roomId||state.showArchive)
+   throw Error('REDLINE room changed. Reopen the photo history.');
+  const result=await db.rpc('corp_redline_history_photo_signal',{
+   p_photo_id:e.id,p_action:action
+  });
+  if(result.error||result.data?.ok!==true)
+   throw Error(fail(result.error||result.data?.reason||'Photo notification unavailable.'));
+  feedback.textContent=result.data.already_sent
+   ?'Already sent to this sender just now.'
+   :action==='like'?'♥ The sender was told you like this photo.':'👁 The sender was told you are looking at this photo.';
+  window.dispatchEvent(new Event('blackcell:redline:messages-changed'));
+ }catch(error){
+  feedback.textContent='Not sent: '+fail(error);
+ }finally{for(const b of actions)b.disabled=false}
+}
 function renderEntry(e){
  const status=entryState(e);
  const timed=state.timedPhotoTotals.get(e.id);
@@ -898,6 +923,22 @@ function renderEntry(e){
  }
  if(state.isOwner)ctrl.append(button('DELETE PHOTO PERMANENTLY',
   ()=>void deletePhotoPermanently(e),'redline-photo-delete-button'));
+ // These controls appear inside Photo History, NOT over the large photograph
+ // or inside the narrow chat. They are never automatic view notifications.
+ if(state.isOwner&&state.room?.active&&!state.showArchive){
+  const historySignals=node('div','redline-history-photo-signals');
+  const feedback=node('small','redline-history-signal-feedback','');
+  feedback.setAttribute('role','status');
+  feedback.setAttribute('aria-live','polite');
+  const look=button('◉ LOOKING AT THIS',()=>void sendHistoryPhotoSignal(e,'looking',feedback,[look,like]),
+   'redline-history-look-btn');
+  const like=button('♥ I LIKE THIS',()=>void sendHistoryPhotoSignal(e,'like',feedback,[look,like]),
+   'redline-history-like-btn');
+  look.setAttribute('aria-label','Notify sender you are viewing this specific photograph');
+  like.setAttribute('aria-label','Notify sender you like this specific photograph');
+  historySignals.append(look,like,feedback);
+  ctrl.append(historySignals);
+ }
  body.append(ctrl);card.append(body);return card;
 }
 // Moving on after reviewing a timed photo returns to the next pending entry.
