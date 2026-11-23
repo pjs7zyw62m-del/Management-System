@@ -439,13 +439,13 @@ function photoHistoryData(){
   const attempts=copies.get(e.id)||[];
   const rejected=e.decision_status==='rejected'||attempts.some(x=>x.decision_status==='rejected');
   const pending=attempts.some(x=>x.decision_status==='pending');
+  // Reuse differs from bonus qualification: an approved original can
+  // be resubmitted unless its earlier copy was rejected or is pending.
   const eligibleOriginal=!e.photo_removal_status&&!e.resubmission_origin_id&&
-   e.decision_status==='accepted'&&
-   cents(e.amount_cents)>=1n&&state.ratings.get(e.id)?.stars===5;
-  const resubmissionStatus=e.photo_removal_status?'removed':e.resubmission_origin_id?'resubmitted':
+   e.decision_status==='accepted';
+  const resubmissionStatus=e.photo_removal_status?'removed':e.resubmission_origin_id?'reused-copy':
    rejected?'rejected':e.decision_status==='pending'?'original-pending':
-   pending?'pending':state.ratings.get(e.id)?.stars!==5?'not-five-star':
-   cents(e.amount_cents)<1n?'below-minimum':'ready';
+   pending?'pending':e.decision_status!=='accepted'?'not-approved':'ready';
   return {...ratedPhotoData(e),decision_status:e.decision_status,settled_at:e.settled_at,
    resubmission_origin_id:e.resubmission_origin_id||null,
    resubmissionCount:attempts.length,resubmissionStatus,
@@ -860,7 +860,7 @@ function renderEntry(e){
  meta.append(statusBadge);
  body.append(meta,node('h3','','PHOTO '+e.id.slice(0,8).toUpperCase()));
  if(e.resubmission_origin_id)body.append(node('div','rr-photo-resubmission-tag',
-  '↻ RESUBMITTED 5-STAR PHOTO · ORIGINAL '+e.resubmission_origin_id.slice(0,8).toUpperCase()));
+  '↻ REUSED PHOTO · ORIGINAL '+e.resubmission_origin_id.slice(0,8).toUpperCase()));
  if(rating){
   body.append(node('div','rr-photo-star-summary',
    '★'.repeat(rating.stars)+'☆'.repeat(5-rating.stars)+
@@ -2183,8 +2183,8 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
    throw Error('Return to an active sender room with photo sending enabled.');
   if(state.resubmittingPhotoId)throw Error('A private photo is already being resubmitted.');
   const source=state.entries.find(e=>e.id===photoId&&e.room_id===room.id);
-  const allowed=fiveStarResubmissionData().find(p=>p.id===photoId&&p.resubmissionAllowed);
-  if(!source||!allowed)throw Error('Resend requires an original approved at $0.01 or more, rated 5 stars, with no pending or rejected resend.');
+  const allowed=photoHistoryData().find(p=>p.id===photoId&&p.resubmissionAllowed);
+  if(!source||!allowed)throw Error('Reuse requires an approved original with no pending or rejected copy in the active private room.');
   const extension=source.image_path.match(/\.(jpg|jpeg|png|webp|heic|heif)$/i)?.[1]?.toLowerCase();
   if(!extension)throw Error('Original photo type is unsupported.');
   state.resubmittingPhotoId=photoId;
@@ -2220,7 +2220,7 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
     resubmission_origin_id:photoId,decision_status:'pending',
     file_name:source.file_name,caption:source.caption||''
    }).select('id').single();
-   if(created.error||!created.data)throw Error(fail(created.error||'The receiver has blocked another resend.'));
+   if(created.error||!created.data)throw Error(fail(created.error||'The receiver has blocked photo reuse.'));
    posted=true;
    // The original (and its accepted price) are untouched. The fresh copy is
    // a pending review with NO price until this receiver decides again.
@@ -2235,6 +2235,10 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
     try{await cleanupUnpostedBunny(db,room.id,resubmitId)}catch(_){}
    throw error;
   }finally{state.resubmittingPhotoId=null}
+ },
+ // New sender UI calls reusePhoto. Keep the previous method for compatibility.
+ async reusePhoto(photoId){
+  return await window.BLACKCELL_REDLINE_API.resubmitFiveStarPhoto(photoId);
  },
  async toggleArchive(){
   await setRedlineArchiveView(!state.showArchive);
