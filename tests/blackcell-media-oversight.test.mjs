@@ -33,7 +33,7 @@ test('Scoped entirely to private Bunny Photos owned by selected member, never RE
 });
 test('Encrypted media decrypted on server only; thumbnails and full files require owner permission',()=>{
  assert.match(edge,/crypto\.subtle\.decrypt/);
- assert.match(edge,/new TextEncoder\(\)\.encode\("blackcell-os-private-v1:"\+fileId\+":thumbnail-v1"\)/);
+ assert.match(edge,/new TextEncoder\(\)\s*\.encode\("blackcell-os-private-v1:"\+fileId\+":thumbnail-v1"\)/);
  assert.match(edge,/additionalData:aad\(fileId,index\)/);
  assert.match(edge,/if\(index===0\)await log\("read"/);
  assert.match(edge,/await log\("preview"/);
