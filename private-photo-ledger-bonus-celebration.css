@@ -1,0 +1,122 @@
+/* BLACKCELL REDLINE · one-time paid-photo bonus celebration.
+   An independently dismissed, short-lived modal, not a permanently pinned chat panel. */
+#redlineBonusCelebration[hidden],#redlineBonusConfetti[hidden]{display:none!important}
+#redlineBonusCelebration{
+ position:fixed!important;inset:0!important;z-index:2147483000!important;
+ display:grid!important;place-items:center!important;
+ padding:18px!important;box-sizing:border-box!important;
+ background:rgba(0,0,0,.60)!important;backdrop-filter:blur(7px);
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+ color:#fff!important;
+}
+.redline-bonus-celebration-card{
+ position:relative;isolation:isolate;display:flex;flex-direction:column;
+ align-items:center;text-align:center;gap:9px;
+ width:min(420px,calc(100vw - 26px));max-height:min(92dvh,730px);
+ overflow-y:auto;overscroll-behavior:contain;
+ padding:23px 21px 20px;box-sizing:border-box;
+ border:1px solid #f24663;border-radius:24px;
+ background:linear-gradient(150deg,#2b0b14 0%,#12080e 57%,#050507 100%);
+ box-shadow:0 18px 80px #000d,0 0 0 4px #ad18331c;
+ animation:redline-bonus-in .43s cubic-bezier(.18,.86,.22,1) both;
+}
+.redline-bonus-celebration-kicker{
+ color:#ff6d87;font-size:11px;letter-spacing:.2em;font-weight:900;
+}
+.redline-bonus-celebration-heading{
+ color:#fff;font-size:clamp(19px,5vw,26px);line-height:1.15;
+ letter-spacing:-.05em;font-weight:880;
+}
+.redline-bonus-celebration-subtitle{
+ color:#d8b3bd;font-size:12px;line-height:1.45;max-width:310px;
+}
+.redline-bonus-celebration-image-wrap{
+ width:min(100%,250px);height:clamp(110px,23dvh,214px);
+ display:flex;justify-content:center;align-items:center;
+ border-radius:15px;border:1px solid #86344a;
+ background:#030303;overflow:hidden;
+}
+.redline-bonus-celebration-image{
+ max-height:100%;max-width:100%;width:100%;height:100%;
+ object-fit:contain;object-position:center;
+}
+.redline-bonus-celebration-no-image{
+ color:#e7b9c7;font-size:11px;max-width:230px;padding:20px;
+}
+.redline-bonus-celebration-money{
+ font-size:clamp(35px,10vw,54px);font-weight:950;letter-spacing:-.06em;
+ color:#ff6486;line-height:1.04;font-variant-numeric:tabular-nums;
+ text-shadow:0 0 25px #d6315850;
+}
+.redline-bonus-celebration-to{
+ display:inline-flex;align-items:center;gap:7px;font-size:10px;
+ letter-spacing:.12em;font-weight:850;color:#ffd7e0;
+ border:1px solid #9e3952;border-radius:999px;padding:7px 12px;background:#430e20;
+}
+.redline-bonus-celebration-math{
+ color:#c8afb8;font-size:10px;line-height:1.5;
+}
+.redline-bonus-celebration-close{
+ position:absolute;right:12px;top:10px;
+ border:1px solid #844456!important;border-radius:999px!important;
+ background:#2d1520!important;color:#fff!important;
+ width:31px;height:31px;min-width:31px;min-height:31px;cursor:pointer;
+ font-size:17px;font-weight:700;
+}
+.redline-bonus-celebration-dismiss{
+ border:1px solid #fa5d7b!important;border-radius:12px!important;
+ background:#c51842!important;color:#fff!important;
+ font-weight:850;font-size:12px!important;
+ padding:11px 22px!important;min-height:41px!important;
+ cursor:pointer;
+}
+#redlineBonusConfetti{
+ position:fixed;inset:0;z-index:2147482999;pointer-events:none;
+ overflow:hidden;
+}
+.redline-bonus-confetti-piece{
+ position:absolute;top:-12px;left:var(--x);
+ width:var(--w);height:var(--h);
+ border-radius:2px;background:var(--c);opacity:.93;
+ animation:redline-bonus-fall var(--d) linear var(--delay) 1 both;
+ transform:rotate(var(--r));
+}
+@keyframes redline-bonus-fall{
+ from{transform:translate3d(0,-5vh,0) rotate(0deg);opacity:1}
+ to{transform:translate3d(var(--wind),110vh,0) rotate(900deg);opacity:0}
+}
+@keyframes redline-bonus-in{
+ from{opacity:0;transform:translateY(18px) scale(.94)}
+ to{opacity:1;transform:translateY(0) scale(1)}
+}
+.redline-repeat-bonus-ledger{
+ margin-top:12px;padding:11px 12px;border:1px solid #84304b;
+ border-radius:12px;background:#150a11;min-width:0;
+}
+.redline-repeat-bonus-ledger[hidden]{display:none!important}
+.redline-repeat-bonus-heading{
+ display:flex;align-items:center;justify-content:space-between;gap:12px;
+ color:#ffb3c5;font-size:11px;font-weight:850;letter-spacing:.045em;
+}
+.redline-repeat-bonus-total{
+ color:#fff;font-variant-numeric:tabular-nums;font-size:16px;white-space:nowrap;
+}
+.redline-repeat-bonus-note{
+ margin:6px 0 0;font-size:10px;line-height:1.4;color:#c7aab6;
+}
+.redline-repeat-bonus-line{
+ display:flex;align-items:center;justify-content:space-between;
+ padding:7px 0;border-top:1px solid #3d222f;margin-top:6px;gap:9px;
+ font-size:10px;color:#f5d4dc;
+}
+.redline-repeat-bonus-line strong{
+ color:#ff8fac;font-size:12px;font-variant-numeric:tabular-nums;
+}
+.redline-repeat-bonus-progress{
+ font-size:10px;color:#bc9da9;margin-top:7px;
+}
+@media(prefers-reduced-motion:reduce){
+ .redline-bonus-celebration-card,.redline-bonus-confetti-piece{
+  animation:none!important;transition:none!important;
+ }
+}
