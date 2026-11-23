@@ -25,34 +25,59 @@ test('Fee events are read-only, authorized, tied to the triggering message and c
  assert.match(core,/return list\.map\(m=>\(\{\.\.\.m,triggerFee:fees\.get\(m\.id\)\|\|null\}\)\)/);
  assert.match(core,/if\(!list\.length\|\|state\.showArchive\)return list/);
 });
-test('Same authorized chat bubble carries word first, then FEE on receiver or EARNED on sender',()=>{
- assert.match(sender,/triggerFee:m\.triggerFee\|\|null/);
- assert.match(sender,/e\.triggerFee\?\.price_cents\?\?null/);
- assert.match(sender,/redline-chat-trigger-fee/);
+test('Verified Trigger Word fee is a separate chat event like photo uploads and reuse',()=>{
+ assert.match(sender,/kind:'trigger'/);
+ assert.match(sender,/messages\.flatMap\(m=>\{/);
+ assert.match(sender,/if\(!fee\|\|!Number\.isInteger\(fee\.price_cents\)/);
+ assert.match(sender,/fee\.price_cents<10\|\|fee\.price_cents>25/);
+ assert.match(sender,/if\(e.kind==='trigger'\)return 'trigger-fee:'\+String\(e.id\|\|''\)/);
+ assert.match(sender,/redline-chat-event redline-chat-trigger-event/);
  assert.match(sender,/snap\?\.isOwner\?'FEE \$':'EARNED \+\$'/);
- assert.match(css,/\.redline-chat-bubble \.redline-chat-trigger-fee/);
- assert.match(css,/border-top:1px solid/);
- assert.match(html,/private-photo-ledger\.js\?v=20261123-trigger-fee-chat1/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261123-trigger-fee-chat1/);
- assert.match(html,/private-photo-ledger-simple-sender\.css\?v=20261123-trigger-fee-chat1/);
- assert.match(os,/redlineRelease=20261123-trigger-cost-no-popup2/);
- const start=sender.indexOf('if(e.triggerFee&&Number.isInteger');
- const end=sender.indexOf('   if(receipt){',start);
+ assert.doesNotMatch(sender,/bubble\.append\(fee\)/);
+ assert.doesNotMatch(css,/\.redline-chat-bubble \.redline-chat-trigger-fee/);
+ assert.match(css,/\.redline-message-feed \.redline-chat-trigger-event/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261123-trigger-separate-event1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261123-trigger-separate-event1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.css\?v=20261123-trigger-separate-event1/);
+ assert.match(os,/redlineRelease=20261123-trigger-separate-event1/);
+});
+test('Each server-recorded hit generates only one separate event after its original message',()=>{
+ const begin=sender.indexOf('...messages.flatMap(m=>{');
+ const end=sender.indexOf('].sort((a,b)=>',begin);
+ assert.ok(begin>0&&end>begin);
+ const text=sender.slice(begin,end).trim();
+ const flatMapCode=text.startsWith('...')?text.slice(3).trim().replace(/,\s*$/,''):text;
+ const makeEvents=new Function('messages','return '+flatMapCode+';');
+ const a={id:'source-message-a',created_at:'2026-11-23T10:00:00Z',
+  body:'Wonderful photo!',sender_id:'owner',triggerFee:{word:'wonderful',price_cents:25}};
+ const b={id:'source-message-b',created_at:'2026-11-23T10:01:00Z',
+  body:'Regular text',sender_id:'owner',triggerFee:null};
+ const events=makeEvents([a,b]);
+ assert.equal(events.length,3);
+ assert.deepEqual(events.map(e=>e.kind),['chat','trigger','chat']);
+ assert.equal(events[0].id,a.id);
+ assert.equal(events[1].id,a.id);
+ assert.equal(events[1].word,'wonderful');
+ assert.equal(events[1].priceCents,25);
+ assert.equal(events[2].id,b.id);
+ assert.deepEqual(makeEvents([b]).map(e=>e.kind),['chat']);
+ assert.deepEqual(makeEvents([a]).map(e=>[e.kind,e.id]),makeEvents([a]).map(e=>[e.kind,e.id]));
+});
+test('Receiver sees FEE and sender sees EARNED on their independent activity cards',()=>{
+ const start=sender.indexOf("   if(e.kind==='trigger'){");
+ const end=sender.indexOf("   if(e.kind==='rating'){",start);
  assert.ok(start>0&&end>start);
- const block=sender.slice(start,end);
+ const renderCard=new Function('e','snap','make','dateText',sender.slice(start,end));
  const make=(tag,cls,text)=>({
-  tag,cls,text,children:[],append(...n){this.children.push(...n)},
+  tag,cls,text,children:[],
+  append(...n){this.children.push(...n)},
   setAttribute(k,v){this[k]=v}
  });
- const display=new Function('e','snap','bubble','make',block);
- const fee={triggerFee:{word:'Wonderful',price_cents:25}};
- const receiver=make('article','');
- display(fee,{isOwner:true},receiver,make);
- assert.deepEqual(receiver.children[0].children.map(n=>n.text),['⚡ Wonderful','FEE $0.25']);
- const employee=make('article','');
- display(fee,{isOwner:false},employee,make);
- assert.deepEqual(employee.children[0].children.map(n=>n.text),['⚡ Wonderful','EARNED +$0.25']);
- const noMatch=make('article','');
- display({triggerFee:null},{isOwner:true},noMatch,make);
- assert.equal(noMatch.children.length,0);
+ const ev={kind:'trigger',id:'one-credit',word:'wonderful',priceCents:25,at:'2026-11-23T10:00:00Z'};
+ const ownerCard=renderCard(ev,{isOwner:true},make,()=> '4:00 AM');
+ const senderCard=renderCard(ev,{isOwner:false},make,()=> '4:00 AM');
+ assert.match(ownerCard.cls,/redline-chat-event redline-chat-trigger-event/);
+ assert.deepEqual(ownerCard.children[0].children.map(n=>n.text),['⚡ wonderful','FEE $0.25']);
+ assert.deepEqual(senderCard.children[0].children.map(n=>n.text),['⚡ wonderful','EARNED +$0.25']);
+ assert.equal(ownerCard.children[1].text,'4:00 AM');
 });
