@@ -649,35 +649,39 @@ test('Compact receiver buttons retain stars and every bid decision without headi
  assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-history-visible1/);
 });
 
-test('Five-star originals can be resubmitted until receiver rejects the copied photo',()=>{
+test('Approved originals can be reused privately until the receiver rejects or another copy is pending',()=>{
  const migration=read('supabase/migrations/20261121135000_redline_five_star_resubmissions.sql');
+ const reuseMigration=read('supabase/migrations/20261123153000_redline_approved_original_photo_reuse.sql');
  const sender=read('private-photo-ledger-simple-sender.js');
  const style=read('private-photo-ledger-simple-sender.css');
  assert.match(migration,/resubmission_origin_id uuid/);
  assert.match(migration,/redline_resubmission_immutable/);
  assert.match(migration,/redline_validate_five_star_resubmission/);
- assert.match(migration,/v_rating IS DISTINCT FROM 5/);
- assert.match(migration,/prior\.decision_status IN \('pending','rejected'\)/);
- assert.match(migration,/pg_advisory_xact_lock/);
- assert.match(migration,/NOT photo_sending_paused/);
+ assert.match(reuseMigration,/v_source.decision_status IS DISTINCT FROM 'accepted'/);
+ assert.doesNotMatch(reuseMigration,/v_rating IS DISTINCT FROM 5/);
+ assert.match(reuseMigration,/prior.decision_status IN \('pending','rejected'\)/);
+ assert.match(reuseMigration,/pg_advisory_xact_lock/);
+ assert.match(reuseMigration,/NOT photo_sending_paused/);
+ assert.match(reuseMigration,/redline_no_removed_resubmission/);
  assert.match(ledger,/resubmission_origin_id,decision_status/);
  assert.match(ledger,/async resubmitFiveStarPhoto\(photoId\)/);
- assert.match(ledger,/db\.storage\.from\(BUCKET\)\.download\(source\.image_path\)/);
+ assert.match(ledger,/async reusePhoto\(photoId\)/);
+ assert.match(ledger,/db.storage.from\(BUCKET\).download\(source.image_path\)/);
  assert.match(ledger,/resubmission_origin_id:photoId,decision_status:'pending'/);
  assert.match(ledger,/const eligibleOriginal=/);
- assert.match(ledger,/cents\(e.amount_cents\)>=1n/);
- assert.match(ledger,/stars===5/);
+ assert.match(ledger,/e.decision_status==='accepted'/);
  assert.match(ledger,/const resubmissionStatus=/);
- assert.match(ledger,/if\(options\.keepPhotoSelected===true\)/);
+ assert.match(ledger,/if\(options.keepPhotoSelected===true\)/);
  assert.match(sender,/\['five-star','5-Star Photos'\]/);
  assert.match(sender,/function renderFiveStarPhotos\(snap\)/);
  assert.match(sender,/resubmissionStatus==='pending'/);
  assert.match(sender,/resubmissionStatus==='rejected'/);
- assert.match(sender,/bridge\(\)\?\.resubmitFiveStarPhoto\?\.\(photo\.id\)/);
+ assert.match(sender,/BLACKCELL_REDLINE_REUSE_UI\?\.open\(photo.id,action\)/);
  assert.match(style,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)!important/);
  assert.match(style,/\.redline-five-star-photo/);
- assert.match(html,/private-photo-ledger\.js\?v=20261122-redline-android-multisource1/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261122-android-keyboard-return1/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261123-reuse-approved-original1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261123-sender-reuse-popup1/);
+ assert.match(html,/private-photo-ledger-sender-reuse\.js\?v=20261123-reuse-popup1/);
 });
 
 test('After a server-confirmed price, the next photo is shown before network refresh',()=>{
