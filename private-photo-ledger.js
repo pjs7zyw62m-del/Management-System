@@ -1235,7 +1235,7 @@ async function rejectPhoto(entry,trigger){
   renderReviewQueue();
   renderEntries();
   updateTotals();
-  show('reviewQueueFeedback','Photo rejected · Showing the next pending photo.');
+  show('reviewQueueFeedback','PHOTO REJECTED · $0.35 BILL CREDIT · Showing next photo.');
   state.entryFingerprint='';
   try{await loadEntries({force:true})}
   catch(refreshError){show('entriesFeedback',
@@ -1257,6 +1257,7 @@ async function confirmPermanentPhotoDeletion(entry){
   :entry.decision_status==='accepted'
    ?'Permanently erase this photo from Bunny Storage. The previously recorded price '+dollars(entry.amount_cents)+' and payment history WILL REMAIN in the ledger. Already downloaded or separately uploaded copies cannot be recalled by deleting this file.'
    :'Permanently erase the original photo from Bunny Storage and reject its pending review. This cannot be undone. Other independently uploaded copies are not affected; the sender will see a removed-photo record.';
+ note.textContent+='\n\nA completed permanent deletion records a one-time $1.00 bill credit.';
  input.value='';approve.disabled=true;dialog.returnValue='';
  return await new Promise(resolve=>{
   input.oninput=()=>{approve.disabled=input.value.trim()!=='DELETE'};
@@ -1302,7 +1303,7 @@ async function deletePhotoPermanently(entry){
   window.dispatchEvent(new CustomEvent('blackcell:redline:photo-removed',{detail:{photoId,roomId}}));
   try{await loadEntries({force:true})}
   catch(_){/* Server confirmed purge; local client updates above stay visible. */}
-  show('entriesFeedback','PHOTO PERMANENTLY REMOVED FROM SERVER · Original media erased. REDLINE financial and audit records preserved.');
+  show('entriesFeedback','PHOTO PERMANENTLY REMOVED FROM SERVER · $1.00 BILL CREDIT · Financial and audit records preserved.');
   return true;
  }catch(e){
   // A partial failure leaves the server-side tombstone blocking further reads
@@ -2190,6 +2191,9 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
    paid:$('totalPaid').textContent,
    paymentSummary:authoritativePaymentStatus(),
    paymentHistory:authoritativePaymentStatus()?.payment_history||[],
+   photoActionBillCreditCents:authoritativePaymentStatus()?.photo_action_bill_credit_cents||0,
+   photoActionBillCreditCarryCents:authoritativePaymentStatus()?.photo_action_bill_credit_carry_cents||0,
+   photoActionBillCreditHistory:authoritativePaymentStatus()?.photo_action_bill_credit_history||[],
    entries:state.entries.slice(0,200).map(e=>({
     id:e.id,created_at:e.created_at,decided_at:e.decided_at,
     settled_at:e.settled_at,decision_status:e.decision_status,
