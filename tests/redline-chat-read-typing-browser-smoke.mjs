@@ -76,19 +76,21 @@ document.addEventListener('DOMContentLoaded',()=>{
  setTimeout(()=>{
   document.body.dataset.chatTypingStopped=String(actions.some(a=>a.action==='stopped'&&a.id===roomId));
  },4000);
- // User has scrolled into history. Simulate a newer message and receipt
- // update; neither may reset the scroller or replace the old message DOM.
+ // First the person reads an older section. Later, while they remain
+ // there, an incoming message and a transient hidden receiver panel arrive.
  setTimeout(()=>{
   const feed=document.querySelector('.redline-message-feed');
   if(!feed)return;
   document.body.dataset.chatLongThread=String(feed.scrollHeight>feed.clientHeight+400);
-  // Real reading gesture (instead of a test-only programmatic scroll)
-  // activates the durable anchor across hidden-panel and size changes.
   feed.dispatchEvent(new WheelEvent('wheel',{deltaY:-180,bubbles:true}));
   feed.scrollTop=142;
   feed.dispatchEvent(new Event('scroll'));
   savedScrollTop=feed.scrollTop;
   savedAnchor=feed.querySelector('[data-redline-item-key="message:historic-10#0"]');
+ },3600);
+ setTimeout(()=>{
+  const feed=document.querySelector('.redline-message-feed');
+  if(!feed)return;
   currentReadAt=new Date(first+1000).toISOString();
   // Simulate the owner chat temporarily losing its verified room snapshot.
   if(owner){
