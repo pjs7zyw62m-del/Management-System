@@ -1080,13 +1080,15 @@ function preparePhotoReviewLightbox(entry){
   return;
  }
  panel.append(node('span','redline-review-kicker','VERIFIED OWNER · PRIVATE REVIEW'));
- const label=node('label','redline-review-label','PHOTO PRICE · USD');
+ const label=node('label','redline-review-label','YOUR BID · USD');
+ if(document.body.classList.contains('bc-redline-apple-mode'))label.textContent='PHOTO PRICE · USD';
  const input=node('input','redline-review-amount');
  input.type='text';input.inputMode='decimal';input.placeholder='0.00';input.maxLength=23;attachCurrencyLeadingZero(input);
  input.setAttribute('aria-label','Acceptance amount in US dollars');
  label.append(input);panel.append(label);
  const controls=node('div','redline-review-actions');
- const accept=button('➤ SUBMIT PRICE & NEXT PHOTO',()=>void decision('accept'),'button-main');
+ const accept=button(document.body.classList.contains('bc-redline-apple-mode')
+  ?'➤ SUBMIT PRICE & NEXT PHOTO':'✓ ACCEPT FOR AMOUNT',()=>void decision('accept'),'button-main');
  const zero=button('✓ ACCEPT $0.00',()=>void decision('zero'),'button-outline');
  const reject=button('✕ REJECT PHOTO',()=>void decision('reject'),'button-outline reject-photo');
  controls.append(accept,zero,reject);
