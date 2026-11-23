@@ -808,7 +808,8 @@ test('approved REDLINE desktop controls are three compact sections above growing
  assert.match(style,/#rrAppleRight>\.rr-chat-panel:not\(\[hidden\]\)/);
  assert.match(style,/min-height:0!important/);
  assert.match(style,/data-redline-decision="pending"/);
- assert.match(receiver,/appleTimer\.append\(bidTimerPanel\)/);
+ assert.match(receiver,/const reviewControlsHost=appleMode\?appleTimer:reviewStage/);
+ assert.match(receiver,/reviewControlsHost\.append\(bidTimerPanel\)/);
  assert.match(ledger,/appendPhotoRatingControl\(panel,entry\)/);
  assert.match(ledger,/deletePhotoPermanently\(entry\)/);
  assert.match(timer,/const start=btn\('▶ START TIMER'/);
