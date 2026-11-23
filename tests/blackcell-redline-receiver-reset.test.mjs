@@ -843,18 +843,21 @@ test('desktop REDLINE panel follows BLACKCELL OS host at narrower iframe width w
 });
 
 
-test('REDLINE desktop command bar keeps title, settings, pause, refresh and presence grouped',()=>{
+test('REDLINE Option 2 removes oversized desktop heading but preserves all four toolbar functions',()=>{
  const html=read('private-photo-ledger.html');
  const css=read('private-photo-ledger-header-refined.css');
  const os=read('blackcell-os.js');
- assert.match(html,/private-photo-ledger-header-refined\.css\?v=20261123-header-balance1/);
- assert.match(css,/#ledgerApp #redlineReceiverCommand>\.rr-command-header/);
- assert.match(css,/max-width:1170px!important/);
- assert.match(css,/flex:0 0 285px!important/);
+ const receiver=read('private-photo-ledger-receiver.js');
+ assert.match(html,/private-photo-ledger-header-refined\.css\?v=20261123-option2-slim1/);
+ assert.match(css,/\.rr-command-header>\.rr-command-intro/);
+ assert.match(css,/display:none!important/);
  assert.match(css,/#redlineConsentSettingsOpen/);
  assert.match(css,/#redlineReceiverSendingPause/);
+ assert.match(css,/#refreshLedger|\.workspace-actions/);
  assert.match(css,/#ledgerLiveStatus/);
  assert.match(css,/\.verified-mark/);
- assert.match(css,/@media \(min-width:960px\) and \(max-width:1199px\)/);
- assert.match(os,/redlineRelease=20261123-compact-header-balanced1/);
+ assert.match(css,/min-height:36px!important/);
+ assert.match(css,/@media \(max-width:900px\)/);
+ assert.match(receiver,/header\.append\(intro,status\)/);
+ assert.match(os,/redlineRelease=20261123-option2-slim-toolbar1/);
 });

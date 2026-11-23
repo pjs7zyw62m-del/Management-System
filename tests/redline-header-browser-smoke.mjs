@@ -38,16 +38,16 @@ function fixture(width){
  '  pause=find("#redlineReceiverSendingPause"),actions=find(".workspace-actions"),',
  '  verified=find(".verified-mark"),live=find("#ledgerLiveStatus"),',
  '  header=find(".rr-command-header"),bar=find("#redlineReceiverCommand");',
- ' const narrow=window.innerWidth<1200;',
+ ' const narrow=window.innerWidth<=900;',
  ' const results={',
- '  "header-constrained":header.width<=1172&&header.width>500,',
- '  "brand-readable":intro.width>=200&&intro.height>=29,',
- '  "settings-close":narrow?settings.top>intro.bottom:settings.left-intro.right<=18&&settings.left>=intro.right,',
- '  "pause-adjacent":pause.left-settings.right<=17&&Math.abs(pause.top-settings.top)<7,',
+ '  "header-constrained":header.width<=bar.width+2&&header.width>500,',
+ '  "brand-removed":intro.width===0&&intro.height===0,',
+ '  "settings-on-left":settings.left>=bar.left&&settings.left<=bar.left+32,',
+ '  "pause-adjacent":Math.abs(pause.left-settings.right)<=16&&Math.abs(pause.top-settings.top)<7,',
  '  "status-readable":verified.width>60&&live.width>130,',
  '  "status-in-bounds":live.right<=bar.right+2&&actions.right<=bar.right+2,',
- '  "header-compact":header.height<130&&bar.height<155,',
- '  "no-title-overlap":narrow?settings.top>=intro.bottom-2:Math.abs(settings.top-intro.top)<40,',
+ '  "header-compact":header.height<90&&bar.height<110,',
+ '  "actions-separate":actions.left>=pause.right-2,',
  ' };',
  ' for(const [k,v] of Object.entries(results))document.body.setAttribute("data-"+k,String(v));',
  ' document.body.setAttribute("data-header-metrics",JSON.stringify({',
@@ -88,12 +88,12 @@ try{
    child.on('error',()=>{clearTimeout(timer);resolve(1)});
   });
   assert.equal(code,0,'Browser failed: '+stderr.slice(-700));
-  for(const name of ['header-constrained','brand-readable','settings-close',
+  for(const name of ['header-constrained','brand-removed','settings-on-left',
    'pause-adjacent','status-readable','status-in-bounds','header-compact',
-   'no-title-overlap']){
+   'actions-separate']){
    assert.match(stdout,new RegExp('data-'+name+'="true"'),
     width+'px header failed '+name+' '+(stdout.match(/data-header-metrics="[^"]*"/)||[])[0]);
   }
-  console.log('REDLINE header '+width+'px: actions grouped, status readable, no stretch.');
+  console.log('REDLINE Option 2 '+width+'px: no title, slim actions and statuses.');
  }
 }finally{await new Promise(resolve=>server.close(resolve));}
