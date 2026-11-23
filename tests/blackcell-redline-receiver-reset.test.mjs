@@ -93,7 +93,7 @@ test('REDLINE receiver resources are versioned and original form and security re
  assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-photo-large-timed1/);
  assert.match(html,/private-photo-ledger-receiver\.js\?v=20261122-settings-visible1/);
  assert.match(html,/private-photo-ledger\.js\?v=20261122-redline-android-multisource1/);
- assert.match(html,/private-photo-ledger-responsive\.js\?v=20261121-stable-brand1/);
+ assert.match(html,/private-photo-ledger-responsive\.js\?v=20261123-os-frame-responsive3/);
  assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261122-android-keyboard-return1/);
  assert.match(ledger,/corporateAuthorize\(db,\{allowLedgerOnly:true\}\)/);
  assert.match(ledger,/const BUCKET='corp-private-photo-ledger'/);
@@ -800,7 +800,7 @@ test('approved REDLINE desktop controls are three compact sections above growing
  const ledger=read('private-photo-ledger.js');
  const timer=read('private-photo-ledger-timers.js');
  assert.match(html,/private-photo-ledger-approved-deck\.css\?v=20261123-os-frame-responsive3/);
- assert.match(style,/@media \(min-width:1180px\)/);
+ assert.match(style,/@media \(min-width:720px\)/);
  assert.match(style,/bc-ledger-desktop/);
  assert.match(style,/#rrAppleTimerMount>\.rr-timer-panel/);
  assert.match(style,/#rrAppleTimerMount>#redlineLightboxReview:not\(\[data-redline-decision="pending"\]\):not\(\[hidden\]\)/);
