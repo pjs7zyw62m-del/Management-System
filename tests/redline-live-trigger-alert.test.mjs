@@ -60,7 +60,7 @@ test('No old notifications replay; new verified credit pops; receiver and disabl
  payload={...payload,recent:[hit('new'),hit('old')]};
  await win.BLACKCELL_REDLINE_TRIGGER_ALERTS.check();
  assert.equal(popup.hidden,false,'Fresh verified credit should popup');
- assert.equal(popup.children[1].children[5].textContent,'+$0.25');
+ assert.equal(popup.children[1].children[4].textContent,'+$0.25');
  popup.children[1].children[0].events.click[0]();
  assert.equal(popup.hidden,true);
  payload={...payload,enabled:false,recent:[hit('disabled'),hit('new'),hit('old')]};
