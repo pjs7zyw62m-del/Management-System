@@ -22,11 +22,17 @@
    'APPROVED PRICE '+money(photo?.amount_cents)));
   const service=window.BLACKCELL_REDLINE_NEGOTIATION_INLINE;
   const offer=service?.offer?.(photo?.id);
+  const knownStatus=service?.status?.(photo?.id);
   const sender=Boolean(snap&&!snap.isOwner&&snap.roomActive&&!snap.archiveMode
-   &&!photo?.removal_status&&!photo?.settled_at);
+   &&!photo?.removal_status&&!photo?.settled_at&&
+   !photo?.auto_timer_session_id);
   const canRespond=Boolean(sender&&offer&&
    ['awaiting_sender','awaiting_sender_owner'].includes(offer.status));
-  const canCounter=Boolean(canRespond&&Number(offer.offer_count)<3);
+  // Eligible approved photos without any negotiation record can open their
+  // first negotiation on demand. Previously agreed/finalized prices cannot.
+  const canOpen=Boolean(sender&&!knownStatus&&!offer&&
+   Array.isArray(snap.paymentHistory)&&snap.paymentHistory.length===0);
+  const canCounter=Boolean((canRespond&&Number(offer.offer_count)<3)||canOpen);
   const counter=make('button','redline-inline-counteroffer-button','↗ COUNTEROFFER');
   counter.type='button';
   counter.disabled=!canCounter;
@@ -35,7 +41,7 @@
    :'This price is final or counteroffers are unavailable.';
   row.append(counter);
   wrapper.append(row);
-  if(!canRespond)return wrapper;
+  if(!canRespond&&!canOpen)return wrapper;
 
   const feedback=make('small','redline-inline-counteroffer-feedback');
   feedback.setAttribute('role','status');feedback.setAttribute('aria-live','polite');
@@ -59,7 +65,16 @@
    for(const b of actions.querySelectorAll('button'))b.disabled=true;
    feedback.textContent='Submitting your response…';
    try{
-    await service.respond(photo.id,action,amount??null);
+    if(canOpen&&action==='counter'){
+     // User-initiated: start a new negotiation ONLY if the server confirms
+     // there has never been a finalized negotiation or recorded room payment.
+     const api=window.BLACKCELL_REDLINE_API;
+     if(!api?.priceNegotiationOpen||!api?.priceNegotiationAction)
+      throw Error('Counteroffers are unavailable in this version of REDLINE.');
+     await api.priceNegotiationOpen(photo.id);
+     await api.priceNegotiationAction(photo.id,'counter',amount??null);
+     await service?.refresh?.();
+    }else await service.respond(photo.id,action,amount??null);
     editor.hidden=true;
     feedback.textContent='Response recorded for the receiver.';
     window.dispatchEvent(new Event('blackcell:redline:negotiation-changed'));
@@ -75,14 +90,14 @@
    b.type='button';b.addEventListener('click',()=>{void act(kind)});
    return b;
   };
-  if(offer.status==='awaiting_sender_owner'&&offer.owner_offer_cents!=null){
+  if(offer?.status==='awaiting_sender_owner'&&offer.owner_offer_cents!=null){
    actions.append(
     make('small','redline-inline-receiver-offer',
      'RECEIVER COUNTEROFFER '+money(offer.owner_offer_cents)),
     action('ACCEPT '+money(offer.owner_offer_cents),'accept_owner_offer'),
     action('DECLINE OFFER','reject_owner_offer')
    );
-  }else actions.append(action('KEEP APPROVED PRICE','accept_original'));
+  }else if(canRespond)actions.append(action('KEEP APPROVED PRICE','accept_original'));
   if(!canCounter)counter.title='Three sender counteroffers used.';
   counter.addEventListener('click',()=>{
    editor.hidden=!editor.hidden;
@@ -98,7 +113,7 @@
    const [whole,fraction='']=raw.split('.');
    const cents=BigInt(whole)*100n+BigInt(fraction.padEnd(2,'0'));
    if(cents>BigInt(Number.MAX_SAFE_INTEGER)||
-      cents===BigInt(offer.original_cents)){
+      cents===BigInt(offer?.original_cents??photo.amount_cents)){
     feedback.textContent='Enter an amount different from the approved price.';
     return;
    }
