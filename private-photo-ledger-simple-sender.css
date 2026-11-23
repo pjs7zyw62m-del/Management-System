@@ -667,3 +667,24 @@ body.redline-sender-simple .redline-simple-tab{
  writing-mode:horizontal-tb!important;
  transform:none!important;
 }
+
+
+/* Verified Trigger Word charge/earning receipt sits inside the existing
+   triggering message. No extra chat item, no scroll-position changes. */
+.redline-chat-bubble .redline-chat-trigger-fee{
+ display:flex!important;align-items:center!important;justify-content:space-between!important;
+ gap:9px!important;flex-wrap:wrap!important;
+ margin-top:9px!important;padding-top:8px!important;
+ border-top:1px solid #ffffff55!important;
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+ line-height:1.35!important;
+}
+.redline-chat-trigger-fee-word{
+ font-size:11px!important;font-weight:800!important;letter-spacing:.01em!important;
+ color:#ffdded!important;overflow-wrap:anywhere!important;
+}
+.redline-chat-trigger-fee-label{
+ font-size:12px!important;font-weight:950!important;
+ color:#fff!important;white-space:nowrap!important;font-variant-numeric:tabular-nums!important;
+}
+.redline-chat-bubble.is-theirs .redline-chat-trigger-fee-label{color:#ffa9c4!important}
