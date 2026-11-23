@@ -156,6 +156,15 @@ jobs:
                 :!document.body.classList.contains('bc-redline-apple-mode'));
               document.body.dataset.receiverArchiveControl=String(Boolean(document.getElementById('redlineMasterReset')&&document.getElementById('redlineArchiveToggle')));
               document.body.dataset.receiverBrand=String(Boolean(document.querySelector('.bc-ledger-edition')?.textContent==='PRIVATE EXCHANGE'));
+              const work=document.getElementById('redlineReceiverLiveWorkspace');
+              const photo=document.getElementById('redlineReceiverIncomingPhotos');
+              const chat=document.getElementById('rrAppleRight');
+              const wide=window.innerWidth>=1500&&document.body.classList.contains('bc-ledger-desktop');
+              const workWidth=work?.getBoundingClientRect().width||0;
+              const photoWidth=photo?.getBoundingClientRect().width||0;
+              const chatWidth=chat?.getBoundingClientRect().width||0;
+              document.body.dataset.receiverBalancedDesktop=String(!wide||
+                Boolean(workWidth>1000&&workWidth<=1700&&photoWidth>400&&chatWidth>photoWidth));
             },350);
           },1600);
           </script>"""
@@ -167,9 +176,10 @@ jobs:
           trap 'kill "$PID" 2>/dev/null || true; rm -f private-photo-ledger-receiver-probe.html' EXIT
           sleep 2
           mkdir -p /tmp/bc-redline-receiver-screens
-          for device in desktop ipad iphone; do
+          for device in desktop widescreen ipad iphone; do
             case "$device" in
               desktop) w=1440;h=900 ;;
+              widescreen) w=1920;h=900 ;;
               ipad) w=820;h=1090 ;;
               iphone) w=390;h=844 ;;
             esac
@@ -177,7 +187,7 @@ jobs:
               --virtual-time-budget=7000 --window-size="$w,$h" --dump-dom \
               "http://127.0.0.1:8876/private-photo-ledger-receiver-probe.html" \
               >"/tmp/redline-$device.html" 2>"/tmp/redline-$device-errors.log"
-            for check in receiver-visible receiver-cards receiver-owner receiver-archive-control receiver-brand receiver-apple-layout; do
+            for check in receiver-visible receiver-cards receiver-owner receiver-archive-control receiver-brand receiver-apple-layout receiver-balanced-desktop; do
               grep -q "data-$check=\"true\"" "/tmp/redline-$device.html" || {
                 echo "$device missing $check"
                 grep -o 'data-receiver-[a-z-]*="[^"]*"' "/tmp/redline-$device.html" | head -n 15 || true

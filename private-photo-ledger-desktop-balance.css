@@ -1,0 +1,56 @@
+/* BLACKCELL REDLINE — large-desktop only: prevent the image canvas from
+   swallowing the conversation. The image continues to use object-fit:contain;
+   real timer, price, sidebar, chat and controls stay connected and untouched.
+   Tablet and mobile layouts are intentionally excluded. */
+@media (min-width:1281px) {
+  body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode:not(.bc-ledger-mobile) #ledgerApp.shell {
+    width:100%!important;
+    max-width:1680px!important;
+    box-sizing:border-box!important;
+    margin-inline:auto!important;
+    padding:10px 14px 28px!important;
+  }
+  body.bc-redline-receiver.bc-ledger-desktop.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+  #redlineReceiverLiveWorkspace:not([hidden]) {
+    /* Sidebar ~156px; portrait photo ~660px; conversation ~820px at 1680. */
+    grid-template-columns:156px minmax(0,.96fr) 8px minmax(0,1.19fr)!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    margin:0!important;
+  }
+  body.bc-redline-receiver.bc-ledger-desktop.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+  #redlineReceiverLiveWorkspace.rr-sidebar-hidden:not([hidden]){
+    /* Hiding navigation gives extra space to the conversation too. */
+    grid-template-columns:0px minmax(0,.96fr) 8px minmax(0,1.19fr)!important;
+  }
+  body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode:not(.bc-ledger-mobile)
+  #redlineReceiverIncomingPhotos.rr-incoming-photos{
+    min-width:0!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+  }
+  body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode:not(.bc-ledger-mobile)
+  #redlineReceiverReviewStage #reviewQueueCurrent>.photo-entry>.photo-image-btn img{
+    width:100%!important;
+    height:100%!important;
+    max-width:100%!important;
+    max-height:100%!important;
+    object-fit:contain!important;
+    object-position:center!important;
+  }
+  body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode:not(.bc-ledger-mobile)
+  #rrAppleRight{
+    min-width:0!important;
+    max-width:100%!important;
+  }
+  body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode:not(.bc-ledger-mobile)
+  #rrAppleRight .redline-message-feed{
+    padding:13px 16px!important;
+  }
+  body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode:not(.bc-ledger-mobile)
+  #rrAppleRight .redline-chat-event strong{
+    font-size:12px!important;
+    line-height:1.45!important;
+  }
+}

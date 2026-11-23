@@ -776,3 +776,18 @@ test('Pause Sending stays server-authorized and appears next to owner REDLINE Se
  assert.match(skin,/#redlineReceiverPauseHeader #redlineReceiverSendingPause/);
  assert.match(ledger,/if\(!receiverActions\)\{/);
 });
+
+
+test('REDLINE widescreen desktop is balanced without changing tablet or mobile layout',()=>{
+ const html=read('private-photo-ledger.html');
+ const layout=read('private-photo-ledger-desktop-balance.css');
+ assert.match(html,/private-photo-ledger-desktop-balance\.css\?v=20261122-balanced-desktop1/);
+ assert.match(layout,/@media \(min-width:1281px\)/);
+ assert.match(layout,/body\.bc-redline-receiver\.bc-ledger-desktop/);
+ assert.match(layout,/max-width:1680px!important/);
+ assert.match(layout,/grid-template-columns:156px minmax\(0,\.96fr\) 8px minmax\(0,1\.19fr\)!important/);
+ assert.match(layout,/\.rr-sidebar-hidden:not\(\[hidden\]\)/);
+ assert.match(layout,/object-fit:contain!important/);
+ const responsive=read('private-photo-ledger-responsive.js');
+ assert.match(responsive,/document\.body\.classList\.toggle\('bc-ledger-desktop',mode==='os'\)/);
+});
