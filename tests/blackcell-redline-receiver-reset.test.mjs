@@ -915,7 +915,7 @@ test('REDLINE Web OS authentic photo supports inline and enlarged zoom without c
  const css=read('private-photo-ledger-photo-zoom.css');
  const receiver=read('private-photo-ledger-receiver.js');
  assert.match(html,/private-photo-ledger-photo-zoom\.js\?v=20261123-photo-canvas-v2/);
- assert.match(html,/private-photo-ledger-photo-zoom\.css\?v=20261123-dual-zoom1/);
+ assert.match(html,/private-photo-ledger-photo-zoom\.css\?v=20261123-photo-canvas-v2/);
  assert.match(zoom,/const MAX=6,FACTOR=1\.5/);
  assert.match(zoom,/redlineReceiverReviewStage #reviewQueueCurrent/);
  assert.match(zoom,/const fullObserver=new MutationObserver/);
