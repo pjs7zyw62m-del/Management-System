@@ -28,6 +28,13 @@
  intro.append(title,roomSummary);
  const status=make('span','rr-status','RECEIVER VERIFIED');status.id='redlineReceiverStatus';
  header.append(intro,status);
+ // Keep Trigger Words visible even when legacy settings are hidden by OS.
+ const triggerQuick=button('⚡ TRIGGER WORDS',()=>{
+  window.dispatchEvent(new Event('blackcell:redline:open-trigger-owner'));
+ },'rr-trigger-quick');
+ triggerQuick.id='redlineReceiverTriggerQuick';
+ triggerQuick.setAttribute('aria-label','Open receiver Trigger Words approval and earnings');
+ header.append(triggerQuick);
  const stats=make('div','rr-stats');
  const fields=[
   ['pending','AWAITING YOUR REVIEW','pendingCount','0'],
@@ -79,8 +86,11 @@
   menuItems.hidden=!open;
   menuToggle.setAttribute('aria-expanded',String(open));
  };
- menuItems.append(review,history,message,manage,tools);
- for(const option of [review,history,message,manage,tools]){
+ const triggerMenu=button('⚡ Trigger Words',()=>{
+  window.dispatchEvent(new Event('blackcell:redline:open-trigger-owner'));
+ },'rr-nav-button rr-trigger-menu');
+ menuItems.append(review,history,message,triggerMenu,manage,tools);
+ for(const option of [review,history,message,triggerMenu,manage,tools]){
   option.addEventListener('click',()=>setMenuOpen(false));
  }
  menuShell.append(menuToggle,menuItems);
