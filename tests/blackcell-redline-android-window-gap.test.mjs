@@ -8,7 +8,7 @@ const os=readFileSync('blackcell-os.js','utf8');
 const block=css.slice(css.indexOf('REDLINE Android fullscreen conversation repair'));
 
 test('REDLINE only: phone app window starts at viewport top, not below an unused black strip',()=>{
- assert.ok(block.startsWith('REDLINE Android fullscreen conversation repair') === false);
+ assert.ok(block.includes('REDLINE Android fullscreen conversation repair'));
  assert.match(block,/@media\(max-width:620px\)/);
  assert.match(block,/html\.bc-os-phone #desktop > \.os-window\[data-os-app="photoledger"\]:not\(\[hidden\]\)/);
  assert.match(block,/left:0!important;top:0!important;right:0!important;bottom:0!important/);
