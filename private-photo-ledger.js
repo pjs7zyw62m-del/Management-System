@@ -1861,6 +1861,14 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
   }
   return r.data;
  },
+ async repeatBonusStatus(roomId){
+  if(state.closed||!state.user||!state.room||state.room.id!==roomId||
+     !validId(roomId)||state.showArchive)throw Error('Verified current REDLINE room required.');
+  const result=await db.rpc('corp_redline_repeat_bonus_status',{p_room_id:roomId});
+  if(result.error||result.data?.ok!==true)
+   throw Error(fail(result.error||result.data?.reason||'Repeat-photo bonus ledger unavailable.'));
+  return result.data;
+ },
  async timerStatus(roomId){
   if(state.closed||!state.user||!state.room||state.room.id!==roomId||!validId(roomId))throw Error('Verified private room required.');
   const result=await db.rpc('corp_redline_photo_timer_status',{p_room_id:roomId});
