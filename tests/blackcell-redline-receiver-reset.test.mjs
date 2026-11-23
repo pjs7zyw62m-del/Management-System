@@ -352,10 +352,12 @@ test('Clicking a photo opens the original and leaves zoom available inside the v
  assert.match(layout,/#photoLightbox #lightboxImage/);
  assert.match(layout,/height:100dvh!important/);
  assert.match(layout,/object-fit:contain!important/);
- assert.match(layout,/#photoLightbox #closeLightbox\{display:none!important\}/);
+ assert.match(read('private-photo-ledger-photo-zoom.css'),/#photoLightbox #closeLightbox/);
+ assert.match(read('private-photo-ledger-photo-zoom.css'),/display:inline-flex!important/);
  assert.match(receiver,/fullSizeImage\.tabIndex=0/);
  assert.doesNotMatch(receiver,/fullSizeImage\?\.addEventListener\('click',leaveFullPhoto\)/);
- assert.match(receiver,/\$\('#closeLightbox'\)\?\.click\(\)/);
+ assert.match(read('private-photo-ledger-photo-zoom.js'),/if\(e\.target===fullImg\)/);
+ assert.match(html,/id="closeLightbox"/);
 });
 
 
