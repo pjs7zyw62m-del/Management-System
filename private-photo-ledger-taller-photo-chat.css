@@ -1,0 +1,141 @@
+/* REDLINE desktop: a full-height paired photo + chat workspace.
+   Both columns share the same grid row and lower edge; independent scroll
+   belongs to the conversation feed, never its composer or the page.
+   This extends the desktop layout only; mobile and stacked tablets remain intact. */
+@media (min-width:1000px) {
+ body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #redlineReceiverLiveWorkspace:not([hidden]){
+  box-sizing:border-box!important;
+  height:max(860px,calc(100dvh - 130px))!important;
+  min-height:860px!important;
+  max-height:none!important;
+  grid-template-rows:minmax(0,1fr)!important;
+  align-items:stretch!important;
+  overflow:hidden!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #redlineReceiverIncomingPhotos.rr-incoming-photos,
+ body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #rrAppleRight {
+  grid-row:1!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:100%!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #redlineReceiverReviewStage{
+  min-height:0!important;
+  overflow:hidden!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #rrAppleRight{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  gap:6px!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #rrAppleRight>#rrAppleTimerMount,
+ body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #rrAppleRight>#rrAppleFinance,
+ body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #rrAppleRight>.rr-apple-negotiation{
+  flex:0 0 auto!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #rrAppleRight>.rr-chat-panel:not([hidden]){
+  display:flex!important;
+  flex-direction:column!important;
+  flex:1 1 0!important;
+  height:auto!important;
+  min-height:360px!important;
+  max-height:none!important;
+  overflow:hidden!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #rrAppleRight .rr-chat-mount,
+ body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #rrAppleRight .redline-message-card{
+  display:flex!important;
+  flex-direction:column!important;
+  flex:1 1 0!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:hidden!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #rrAppleRight .redline-message-feed{
+  flex:1 1 0!important;
+  min-height:0!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  overscroll-behavior:contain!important;
+  scroll-behavior:auto!important;
+  overflow-anchor:none!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #rrAppleRight .redline-message-composer{
+  flex:0 0 auto!important;
+  position:relative!important;
+  bottom:auto!important;
+ }
+}
+/* Bonus history: replace opaque IDs with authenticated photograph previews.
+   Two compact progress entries fit side by side where width allows, preserving
+   the conversation's space inside the receiver's flex column. */
+.redline-repeat-bonus-tracks{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;
+ margin-top:9px;min-width:0;width:100%;
+}
+.redline-repeat-bonus-progress-card,
+.redline-repeat-bonus-award-card{
+ display:flex;align-items:center;gap:9px;min-width:0;
+ border:1px solid #633044;border-radius:10px;background:#130a10;
+ padding:6px!important;box-sizing:border-box;
+}
+.redline-repeat-bonus-photo{
+ display:flex;align-items:center;justify-content:center;flex:0 0 66px;
+ width:66px;height:64px;min-width:0;overflow:hidden;
+ border:1px solid #91415d;border-radius:8px;background:#08080a;
+}
+.redline-repeat-bonus-photo img{
+ display:block;width:100%;height:100%;object-fit:contain;object-position:center;
+}
+.redline-repeat-bonus-no-image{
+ display:flex;align-items:center;justify-content:center;
+ width:100%;height:100%;padding:5px;text-align:center;
+ color:#b9a4af;font-size:9px;font-weight:750;line-height:1.3;
+}
+.redline-repeat-bonus-card-body{
+ display:flex;flex-direction:column;justify-content:center;min-width:0;
+ flex:1 1 0;gap:5px;
+}
+.redline-repeat-bonus-card-body strong{
+ color:#f3d9e2;font-size:10px;font-weight:800;line-height:1.3;
+ overflow-wrap:anywhere;
+}
+.redline-repeat-bonus-card-body small{
+ color:#e1b9c6;font-size:10px;line-height:1.4;
+}
+.redline-repeat-bonus-meter{
+ height:5px;width:100%;background:#30212b;border:1px solid #674456;
+ border-radius:999px;overflow:hidden;
+}
+.redline-repeat-bonus-meter>span{
+ display:block;height:100%;width:var(--redline-bonus-progress,0%);
+ border-radius:999px;background:#ec4169;
+}
+.redline-repeat-bonus-award-card{margin-top:7px}
+.redline-repeat-bonus-award-card .redline-repeat-bonus-card-body strong{
+ color:#ff91af;font-variant-numeric:tabular-nums;
+}
+body.bc-redline-receiver #redlineRepeatBonusMobile.redline-repeat-bonus-ledger,
+body.redline-sender-simple .redline-repeat-bonus-ledger{
+ max-width:100%;box-sizing:border-box;
+}
+@media(max-width:700px){
+ .redline-repeat-bonus-tracks{grid-template-columns:minmax(0,1fr)}
+ .redline-repeat-bonus-photo{flex-basis:54px;width:54px;height:55px}
+}
