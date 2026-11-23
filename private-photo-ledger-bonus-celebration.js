@@ -51,12 +51,8 @@
    senderLedger.setAttribute('aria-label','Repeat-photo bonus awards and balance');
    sender.append(senderLedger);
   }
-  const finance=$('#rrAppleFinance');
-  if(finance&&!receiverLedger){
-   receiverLedger=el('section','redline-repeat-bonus-ledger');
-   receiverLedger.setAttribute('aria-label','Bonus amounts owed to sender');
-   finance.append(receiverLedger);
-  }
+  // The receiver's real owed/paid totals already live above the chat.
+  // Never add a second bonus panel inside the chat rail; it shrinks messages.
   // The small-screen receiver command also keeps a compact bonus line.
   if(!$('#redlineReceiverCommand #redlineRepeatBonusMobile')){
    const stats=$('#redlineReceiverCommand .rr-stats');
@@ -107,8 +103,11 @@
   if(sig===ledgerSignature)return;
   ledgerSignature=sig;
   drawLedger(senderLedger,status,false);
-  drawLedger(receiverLedger,status,true);
-  drawLedger($('#redlineRepeatBonusMobile'),status,true);
+  const commandBonus=$('#redlineRepeatBonusMobile');
+  if(commandBonus){
+   if(Array.isArray(status.bonuses)&&status.bonuses.length)drawLedger(commandBonus,status,true);
+   else commandBonus.hidden=true;
+  }
  }
  function ensurePopup(){
   if(popup)return;
@@ -197,6 +196,7 @@
   popup.hidden=false;shower();fillImage();
   // Signed Bunny thumbnails may still be resolving on a newly loaded room.
   setTimeout(fillImage,1200);
+  setTimeout(fillImage,3800);
   // Celebration clears on its own so it never blocks conversation indefinitely.
   autoClose=setTimeout(closePopup,8500);
  }
