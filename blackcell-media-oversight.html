@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#030303"><meta name="robots" content="noindex,nofollow,noarchive">
+<title>BLACKCELL | Media Oversight · Level 7</title>
+<script src="corp-config.js" defer></script>
+<script type="module" src="blackcell-media-oversight.js?v=20261122-level7-oversight1"></script>
+<style>
+:root{color-scheme:dark;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#030303;color:#f5f3f4}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;max-width:100%;overflow-x:hidden;scrollbar-width:none}
+*::-webkit-scrollbar{display:none}body{background:#030303}
+button,input,select,textarea{font:inherit}button{touch-action:manipulation}
+a{color:#f17b91}main{width:min(1300px,100%);padding:clamp(17px,3vw,37px);margin:auto}
+header{display:flex;gap:16px;justify-content:space-between;align-items:center;flex-wrap:wrap;border-bottom:1px solid #52212c;padding-bottom:20px;margin-bottom:24px}
+.kicker{font:800 10px system-ui;letter-spacing:.18em;color:#ff5576}
+h1{font-size:clamp(23px,3.7vw,37px);letter-spacing:-.035em;margin:6px 0}
+h2{margin:0 0 13px;font-size:18px}h3{margin:0 0 8px;font-size:14px}
+small,.muted{color:#b6aab0;font-size:12px;line-height:1.55}
+.back,.button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:43px;text-decoration:none;border:1px solid #9e3045;border-radius:9px;background:#320d17;color:white;padding:9px 15px;cursor:pointer;font-size:12px;font-weight:750}
+.button.primary{background:#be1f42;border-color:#e55575}
+.button:disabled{opacity:.5;cursor:not-allowed}
+.button.secondary{background:#171215;border-color:#544047}
+.button.danger{background:#600c20;border-color:#d5264d}
+.button:hover:not(:disabled),.back:hover{filter:brightness(1.25)}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid #ff859e;outline-offset:2px}
+.section{margin:18px 0;border:1px solid #483038;border-radius:13px;background:#100c0e;padding:clamp(14px,2.8vw,23px)}
+.topline{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:14px}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.controls select,.controls input{flex:1 1 225px;min-width:0;background:#080608;border:1px solid #71344a;border-radius:9px;color:white;min-height:44px;padding:10px 12px;font-size:14px}
+#fileSummary{margin:9px 0 17px}
+#gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(165px,100%),1fr));gap:12px;min-height:100px}
+.media{background:#090708;border:1px solid #573643;border-radius:10px;overflow:hidden;min-width:0}
+.media button.preview{display:flex;justify-content:center;align-items:center;width:100%;height:auto;aspect-ratio:1;position:relative;background:#090609;border:0;padding:0;overflow:hidden;cursor:pointer;color:#ac8f9a;font-size:12px}
+.media button.preview img{width:100%;height:100%;object-fit:cover}
+.media .details{padding:10px;display:flex;flex-direction:column;gap:6px}
+.media .filename{font-size:11px;font-weight:750;overflow-wrap:anywhere;line-height:1.4}
+.media .meta{font-size:10px;color:#a998a0}
+.media .details .button{min-height:36px;font-size:11px;width:100%}
+#notice{min-height:25px;margin:0 0 10px;color:#f8b0bf;font-size:13px;line-height:1.45}
+#auditRows{display:grid;gap:7px;max-height:220px;overflow:auto}
+.audit{border-top:1px solid #3a222b;padding:10px 0;font-size:11px;line-height:1.6;color:#d7c8ce}
+.audit strong{color:#ff9eb0}
+#more[hidden],#workspace[hidden],dialog:not([open]){display:none!important}
+dialog{width:min(710px,calc(100vw - 20px));max-width:calc(100vw - 20px);max-height:calc(100dvh - 20px);margin:auto;padding:18px;background:#090608;color:#fff;border:1px solid #df3e61;border-radius:14px;overflow:auto;box-shadow:0 30px 110px #000f}
+dialog::backdrop{background:#000e}
+.dialoghead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px}
+.dialoghead h2{margin:0}.viewer{min-height:200px;max-height:70dvh;display:grid;place-items:center;background:#000}
+.viewer img,.viewer video{display:block;max-width:100%;max-height:66dvh;object-fit:contain}
+#deleteDialog textarea,#deleteDialog input{width:100%;background:#161015;color:white;border:1px solid #75404e;border-radius:9px;padding:12px;margin:7px 0;font-size:14px}
+#deleteDialog textarea{min-height:87px;resize:vertical}
+#deleteDialog .warn{color:#ff9bb1;font-size:12px;line-height:1.6}
+#deleteDialog label{display:block;font-size:12px;font-weight:700;margin-top:12px}
+#deleteDialog .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+#deleteDialog .actions>*{flex:1}
+@media(max-width:440px){main{padding:14px}header{align-items:flex-start}#gallery{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.section{padding:12px}.media .details{padding:8px}dialog{padding:12px}}
+</style>
+</head>
+<body>
+<main>
+ <header>
+  <div><div class="kicker">BLACKCELL CORPORATION // RESTRICTED LEVEL 7</div>
+   <h1>MEDIA OVERSIGHT</h1>
+   <p class="muted">Owner moderation · Members' BLACKCELL Photos only · Not private REDLINE messages</p>
+  </div>
+  <a class="back" href="blackcell-administration-app.html">← Administration</a>
+ </header>
+ <p id="notice" role="status">Verifying Level 7 administrative access…</p>
+ <div id="workspace" hidden>
+  <section class="section">
+   <div class="topline"><h2>Member Photo Libraries</h2><span class="kicker">OWNER ACCESS ONLY</span></div>
+   <div class="controls">
+    <select id="members" aria-label="Choose a BLACKCELL member"><option value="">Select a member</option></select>
+    <button class="button secondary" id="reload" type="button">↻ Refresh</button>
+   </div>
+   <p class="muted" id="fileSummary">Choose a member to inspect their Photos.</p>
+   <div id="gallery" aria-live="polite"></div>
+   <div class="controls" style="justify-content:center;margin:18px 0 0">
+    <button class="button secondary" id="more" type="button" hidden>Load more photographs</button>
+   </div>
+  </section>
+  <section class="section">
+   <div class="topline"><h2>Administrative Audit</h2><button class="button secondary" id="auditRefresh" type="button">Refresh log</button></div>
+   <div id="auditRows"><p class="muted">Select Refresh log to view recent oversight activity.</p></div>
+   <p class="muted">Administrative reviews and deletions are logged. Members should be informed of authorized moderation in BLACKCELL's policies.</p>
+  </section>
+ </div>
+</main>
+<dialog id="viewDialog" aria-label="Review selected media">
+ <div class="dialoghead"><div><div class="kicker">PRIVATE PHOTO REVIEW</div><h2 id="viewTitle">Photograph</h2></div><button class="button secondary" id="closeView" type="button">Close</button></div>
+ <div class="viewer" id="viewer"><p class="muted">Preparing verified media…</p></div>
+ <p class="muted" id="viewInfo"></p>
+ <div class="controls"><button class="button danger" id="removeFromViewer" type="button">Remove prohibited content</button></div>
+</dialog>
+<dialog id="deleteDialog" aria-label="Confirm permanent content removal">
+ <div class="dialoghead"><div><div class="kicker">LEVEL 7 / DESTRUCTIVE ACTION</div><h2>PERMANENT CONTENT REMOVAL</h2></div><button class="button secondary" id="closeDelete" type="button">Cancel</button></div>
+ <p id="deleteTarget"></p>
+ <p class="warn">This permanently deletes the chosen original and its thumbnails from Bunny Storage. This cannot be undone. Confirm the file and document why it violates BLACKCELL policy.</p>
+ <label for="deleteReason">Reason for removal (required)</label>
+ <textarea id="deleteReason" maxlength="500" placeholder="Explain the content policy or safety issue; at least 8 characters"></textarea>
+ <label for="deleteConfirm">Type DELETE to authorize permanent removal</label>
+ <input id="deleteConfirm" maxlength="6" autocomplete="off" placeholder="DELETE">
+ <p class="warn" id="deleteStatus" role="status"></p>
+ <div class="actions"><button type="button" class="button secondary" id="cancelDelete">Cancel</button><button type="button" class="button danger" id="confirmDelete" disabled>Delete permanently</button></div>
+</dialog>
+</body></html>
