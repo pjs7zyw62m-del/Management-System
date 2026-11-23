@@ -628,8 +628,9 @@ function makeTimerCard(e){
   ?'Photo '+String(e.timer.photo_id||'').slice(0,8).toUpperCase()+' · Final elapsed-second amount recorded'
   :'Photo '+String(e.timer.photo_id||'').slice(0,8).toUpperCase()+' · '+dateText(e.at));
  card.append(status,label,details,foot);
- // The pinned timer has the actual photo directly below its live figures.
- if(isActive){
+ // The receiver has the full timed photo in its dedicated viewer; do not
+ // insert that photograph again inside the pinned conversation timer.
+ if(isActive&&!snapshot()?.isOwner){
   const photo=snapshot()?.photoHistory?.find(p=>p.id===e.timer.photo_id);
   const frame=make('div','redline-chat-timer-photo');
   frame.append(make('strong','','PHOTOGRAPH BEING TIMED'));
