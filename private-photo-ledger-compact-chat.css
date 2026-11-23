@@ -1,0 +1,173 @@
+/* BLACKCELL REDLINE / approved compact receiver. Keep actual verified
+   timer, rating, price and payment nodes. Saved vertical space goes to chat.
+   Sender and phone-specific interfaces are unchanged. */
+@media (min-width:720px){
+body.bc-redline-receiver.bc-redline-apple-mode:not(.bc-ledger-mobile) #rrAppleRight{
+ gap:5px!important;padding:7px!important;min-height:0!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:not(.bc-ledger-mobile) #rrAppleTimerMount{
+ padding:0!important;margin:0!important;gap:5px!important;
+ border:0!important;background:transparent!important;box-shadow:none!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:not(.bc-ledger-mobile) #rrAppleTimerMount>.rr-timer-panel{
+ gap:4px!important;padding:7px 9px!important;margin:0!important;
+ border:1px solid #a32e47!important;border-radius:11px!important;
+ background:#170c12!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount summary.rr-timer-heading{
+ min-height:21px!important;gap:5px!important;
+ grid-template-columns:minmax(0,1fr) auto auto!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount .rr-timer-heading strong{
+ font-size:10px!important;letter-spacing:.015em!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount :is(.rr-timer-clock,.rr-timer-money){
+ font-size:15px!important;line-height:1.1!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount .rr-timer-controls{
+ grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:4px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount .rr-timer-selected{
+ font-size:9px!important;line-height:1.1!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount .rr-timer-rate-label{
+ font-size:9px!important;line-height:1.15!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount .rr-timer-rate{
+ min-height:28px!important;height:28px!important;width:65px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount :is(.rr-timer-start,.rr-timer-stop,.rr-timer-select-incoming){
+ min-height:31px!important;height:31px!important;
+ padding:4px 5px!important;font-size:9px!important;
+ line-height:1.05!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount>#redlineLightboxReview:not([hidden]){
+ display:grid!important;gap:5px!important;padding:7px 9px!important;
+ margin:0!important;border:1px solid #8c3049!important;border-radius:11px!important;
+ background:#130a10!important;
+ overflow:visible!important;min-height:0!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount>#redlineLightboxReview:not([hidden])>.rr-photo-rating-panel{
+ min-width:0!important;gap:0!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount .rr-photo-rating-title{
+ font-size:8px!important;line-height:1.2!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount .rr-photo-rating-star{
+ width:22px!important;height:27px!important;min-height:27px!important;
+ font-size:22px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount .rr-photo-rating-feedback:empty{display:none!important}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount>#redlineLightboxReview[data-redline-decision="pending"]{
+ grid-template-columns:minmax(0,1.2fr) minmax(83px,1fr)!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount #redlineLightboxReview[data-redline-decision="pending"]>.rr-photo-rating-panel{
+ grid-column:1!important;grid-row:1!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount #redlineLightboxReview[data-redline-decision="pending"]>.redline-review-label{
+ grid-column:2!important;grid-row:1!important;gap:2px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount #redlineLightboxReview[data-redline-decision="pending"]>.redline-review-actions{
+ grid-column:1/-1!important;grid-row:2!important;gap:4px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount .redline-review-actions>.button-main{
+ min-height:33px!important;padding:4px 6px!important;
+ font-size:10px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount .redline-review-actions>.button-outline{
+ min-height:26px!important;padding:3px 5px!important;font-size:9px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount #redlineLightboxReview[data-redline-decision="pending"]>.rr-permanent-delete-button{
+ grid-column:1/-1!important;grid-row:auto!important;
+ justify-self:end!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount>#redlineLightboxReview:not([data-redline-decision="pending"]):not([hidden]){
+ grid-template-columns:minmax(90px,1fr) minmax(60px,auto) auto!important;
+ grid-auto-flow:row!important;align-items:center!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount #redlineLightboxReview:not([data-redline-decision="pending"])>.rr-photo-rating-panel{
+ grid-column:1!important;grid-row:1!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount #redlineLightboxReview:not([data-redline-decision="pending"])>.rr-photo-price-amount{
+ grid-column:2!important;grid-row:1!important;
+ align-self:center!important;font-size:17px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount #redlineLightboxReview:not([data-redline-decision="pending"])>.rr-permanent-delete-button{
+ grid-column:3!important;grid-row:1!important;
+ align-self:center!important;justify-self:end!important;
+ min-height:30px!important;padding:4px 6px!important;
+ font-size:8px!important;white-space:normal!important;
+ max-width:110px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount #redlineLightboxReview:not([data-redline-decision="pending"])>h3,
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount #redlineLightboxReview:not([data-redline-decision="pending"])>.rr-photo-price-title,
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount #redlineLightboxReview:not([data-redline-decision="pending"])>.rr-photo-price-breakdown,
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount #redlineLightboxReview:not([data-redline-decision="pending"])>.rr-current-session-finished,
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount #redlineLightboxReview:not([data-redline-decision="pending"])>.redline-review-kicker{
+ position:absolute!important;width:1px!important;height:1px!important;
+ padding:0!important;margin:-1px!important;overflow:hidden!important;
+ clip-path:inset(50%)!important;white-space:nowrap!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount #redlineLightboxReview .redline-review-status:empty{
+ display:none!important;
+}
+/* Metrics stay live but use small single-row cards when the rail is wide. */
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleFinance>.rr-stats{
+ display:grid!important;grid-template-columns:repeat(auto-fit,minmax(105px,1fr))!important;
+ gap:5px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleFinance .rr-stat{
+ min-height:49px!important;padding:6px 8px!important;gap:3px!important;
+ border-radius:10px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleFinance .rr-stat-name{
+ font-size:8px!important;line-height:1.2!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleFinance .rr-stat-value{
+ font-size:17px!important;line-height:1.1!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight>.rr-chat-panel:not([hidden]){
+ flex:1 1 0!important;min-height:0!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight .rr-chat-heading{
+ min-height:41px!important;padding:7px 10px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight .rr-chat-heading h3{
+ font-size:13px!important;margin:0!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight .rr-chat-kicker{
+ display:none!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight .rr-chat-room{
+ padding:5px 7px!important;font-size:9px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight .redline-message-header{
+ min-height:30px!important;padding:4px 9px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight .redline-message-composer{
+ padding:7px 9px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight .redline-message-feed{
+ overscroll-behavior:contain!important;overflow-anchor:none!important;
+}
+}
+@media (min-width:720px) and (max-width:999px){
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight{
+ height:clamp(740px,calc(100dvh - 175px),1110px)!important;
+ min-height:740px!important;
+ display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+ grid-template-rows:auto auto minmax(0,1fr)!important;
+ align-content:stretch!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount{grid-column:1!important;grid-row:1!important}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleFinance{grid-column:1!important;grid-row:2!important}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight>.rr-chat-panel:not([hidden]){
+ grid-column:1!important;grid-row:3!important;
+ min-height:0!important;height:100%!important;
+}
+}
+@media (min-width:720px) and (max-width:999px) and (max-height:760px){
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight{
+ height:720px!important;min-height:720px!important;
+}
+}

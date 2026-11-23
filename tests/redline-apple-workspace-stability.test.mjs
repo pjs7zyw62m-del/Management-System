@@ -26,3 +26,22 @@ test('REDLINE photo decisions share a scroll-free review strip',()=>{
  assert.match(css,/rr-permanent-delete-button/);
  assert.match(html,/private-photo-ledger-workspace-stability\.css/);
 });
+
+test('approved compact REDLINE keeps controls, compresses earnings and expands the chat',()=>{
+ const html=read('private-photo-ledger.html');
+ const css=read('private-photo-ledger-compact-chat.css');
+ assert.match(html,/private-photo-ledger-compact-chat\.css\?v=20261122-approved-compact-chat1/);
+ assert.match(css,/#rrAppleTimerMount>#redlineLightboxReview:not\(\[hidden\]\)/);
+ assert.match(css,/grid-template-columns:repeat\(auto-fit,minmax\(105px,1fr\)\)/);
+ assert.match(css,/grid-template-rows:auto auto minmax\(0,1fr\)/);
+ assert.match(css,/#rrAppleRight>\.rr-chat-panel:not\(\[hidden\]\)/);
+ assert.match(css,/rr-permanent-delete-button/);
+ assert.match(css,/data-redline-decision="pending"/);
+});
+test('chat does not redraw unchanged messages during background polling',()=>{
+ const js=read('private-photo-ledger-simple-sender.js');
+ assert.match(js,/lastChatViewSignature/);
+ assert.match(js,/if\(chatSignature===lastChatViewSignature&&feed\.dataset\.redlineScrollReady==='true'\)return/);
+ assert.match(js,/feed\.replaceChildren\(\)/);
+ assert.match(js,/if\(followBottom\)feed\.scrollTop=feed\.scrollHeight/);
+});

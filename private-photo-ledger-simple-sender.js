@@ -205,7 +205,7 @@ ownerDialog.addEventListener('close',()=>{
 });
 ownerDialog.addEventListener('click',e=>{if(e.target===ownerDialog)ownerDialog.close()});
 let currentTab='upload',lastRoom=null,lastSessionKey=null,messages=[],loading=false,posting=false,roomReady=false;
-let lastSync=0,lastOwnerSession=null;
+let lastSync=0,lastOwnerSession=null,lastChatViewSignature='';
 let timerStatus=null,timerRoomId=null,timerFingerprint='',timerOffset=0;
 let timerPollInFlight=false,timerLastPoll=0,timerLoadError='';
 let peerReadAt=null,peerTyping=false,markedReadId=null;
@@ -634,11 +634,34 @@ function renderChat(){
  const priorScrollHeight=feed.scrollHeight;
  const followBottom=feed.dataset.redlineScrollReady!=='true'
   ||priorScrollHeight-priorScrollTop-feed.clientHeight<=64;
- feed.replaceChildren();timerSlot.replaceChildren();
+ // Build a fingerprint before touching the live scroll container. Replacing
+ // identical chat nodes on every poll causes visible top-to-bottom jumping.
  const events=createEvents(snap?.entries).slice(0,80);
  const latestOwn=[...messages].reverse().find(m=>m.sender_id===snap?.userId)?.id;
  const pinned=timerRoomId===snap?.roomId&&!snap?.archiveMode&&timerStatus?.active?.started_at
   ?{kind:'timer',phase:'active',at:timerStatus.active.started_at,timer:timerStatus.active}:null;
+ const combined=[
+  ...events.map(e=>({kind:'event',at:e.at,body:e.text,status:e.status})),
+  ...paymentHistoryEvents(snap).map(e=>({kind:'event',at:e.at,body:e.text,status:e.status})),
+  ...timedEvents(snap),
+  ...photoRatingEvents(snap),
+  ...messages.map(m=>({kind:'chat',at:m.created_at,body:m.body,sender:m.sender_id,id:m.id}))
+ ].sort((a,b)=>new Date(a.at)-new Date(b.at)).slice(-130);
+ // Live timer seconds are updated in place by updateTimerCards(), so a
+ // ticking clock or a routine receipt poll must not rebuild the messages.
+ const chatSignature=JSON.stringify([
+  snap?.roomId,snap?.resetAt,snap?.archiveMode,timerLoadError,peerReadAt,
+  pinned?.timer?.id,pinned?.timer?.rate_cents,pinned?.timer?.running,
+  combined.map(e=>e.kind==='timer'
+   ?[e.kind,e.phase,e.at,e.timer?.id,e.timer?.rate_cents,e.timer?.stopped_at,e.timer?.earned_cents]
+   :e.kind==='rating'
+    ?[e.kind,e.at,e.photo?.id,e.photo?.stars,e.photo?.caption,e.photo?.image_url]
+    :[e.kind,e.at,e.id,e.body,e.sender,e.status])
+ ]);
+ if(chatSignature===lastChatViewSignature&&feed.dataset.redlineScrollReady==='true')return;
+ lastChatViewSignature=chatSignature;
+ feed.replaceChildren();
+ timerSlot.replaceChildren();
  timerSlot.hidden=!pinned;
  if(pinned){
   const card=makeTimerCard(pinned);
@@ -647,13 +670,6 @@ function renderChat(){
   card.setAttribute('aria-live','off');
   timerSlot.append(card);
  }
- const combined=[
-  ...events.map(e=>({kind:'event',at:e.at,body:e.text,status:e.status})),
-  ...paymentHistoryEvents(snap).map(e=>({kind:'event',at:e.at,body:e.text,status:e.status})),
-  ...timedEvents(snap),
-  ...photoRatingEvents(snap),
-  ...messages.map(m=>({kind:'chat',at:m.created_at,body:m.body,sender:m.sender_id,id:m.id}))
- ].sort((a,b)=>new Date(a.at)-new Date(b.at)).slice(-130);
  if(timerLoadError&&snap&&!app.hidden&&!room.hidden&&!snap.archiveMode){
   const warning=make('div','redline-chat-event redline-chat-timer-error');
   warning.append(make('strong','','TIMER STATUS UNAVAILABLE'),
@@ -662,6 +678,7 @@ function renderChat(){
  }
  if(!combined.length){
   if(!timerLoadError&&!pinned)feed.append(make('div','redline-chat-empty','No messages or photo updates yet.'));
+  feed.dataset.redlineScrollReady='true';
   return;
  }
  for(const e of combined){
@@ -773,6 +790,7 @@ function syncOwnerChat(snap){
  const key=snap.roomId+'|'+(snap.resetAt||'')+'|'+String(snap.archiveMode);
  if(key!==lastOwnerSession){
   feed.dataset.redlineScrollReady='false';
+  lastChatViewSignature='';
   lastOwnerSession=key;messages=[];lastSync=0;resetChatSignals();renderChat();void loadMessages();void pollSenderTimers(true);void pollChatStatus(true);
  }
  send.disabled=Boolean(!snap.roomActive||snap.archiveMode);
@@ -789,6 +807,7 @@ function sync(){
   const sessionKey=snap.roomId+'|'+(snap.resetAt||'')+'|'+String(snap.archiveMode);
   if(sessionKey!==lastSessionKey){
    feed.dataset.redlineScrollReady='false';
+   lastChatViewSignature='';
    lastSessionKey=sessionKey;messages=[];lastSync=0;resetChatSignals();
    viewingStatus=null;viewingRoomId=null;viewingError='';viewingLastPoll=0;
    timerRoomId=null;timerStatus=null;timerFingerprint='';timerLastPoll=0;timerLoadError='';
@@ -808,6 +827,7 @@ function sync(){
   if(currentTab==='viewing')renderCurrentlyViewing(snap);
   if(snap.roomId!==lastRoom){
    feed.dataset.redlineScrollReady='false';
+   lastChatViewSignature='';
    lastRoom=snap.roomId;messages=[];lastSync=0;resetChatSignals();
    renderChat();
   }
