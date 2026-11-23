@@ -322,12 +322,22 @@ function createEvents(entries){
  return all.sort((a,b)=>new Date(b.at)-new Date(a.at));
 }
 function paymentHistoryEvents(snap){
- if(!Array.isArray(snap?.paymentHistory))return [];
- return snap.paymentHistory.map(p=>({
-  kind:'event',at:p.created_at,status:'paid',
-  text:(p.kind==='full'?'FINAL PAYMENT RECORDED · ':'PARTIAL PAYMENT RECORDED · ')+money(p.amount_cents)
-   +(p.note?' · '+p.note:'')
- }));
+ const payments=Array.isArray(snap?.paymentHistory)?snap.paymentHistory:[];
+ const credits=Array.isArray(snap?.photoActionBillCreditHistory)?snap.photoActionBillCreditHistory:[];
+ return [
+  ...payments.map(p=>({
+   kind:'event',at:p.created_at,status:'paid',
+   text:(p.kind==='full'?'FINAL PAYMENT RECORDED · ':'PARTIAL PAYMENT RECORDED · ')+money(p.amount_cents)
+    +(p.note?' · '+p.note:'')
+  })),
+  ...credits.filter(c=>c.kind==='manual_rejection'||c.kind==='permanent_deletion')
+   .map(c=>({
+    kind:'event',at:c.credited_at,status:'bill-credit',
+    text:'PHOTO '+String(c.photo_id||'').slice(0,8).toUpperCase()+
+     (c.kind==='manual_rejection'?' REJECTED':' PERMANENTLY DELETED')+
+     ' · BILL CREDIT -'+money(-Number(c.amount_cents||0))
+   }))
+ ];
 }
 function renderActivity(snap){
  const events=[...createEvents(snap?.entries),...paymentHistoryEvents(snap)]
@@ -572,6 +582,14 @@ function renderEarnings(snap){
    make('small','',dateText(p.created_at)+(p.note?' · '+p.note:'')));
   line.append(info,make('strong','',money(p.amount_cents)));
   paymentRows.append(line);
+ }
+ if(Number(snap.photoActionBillCreditCents)>0){
+  const credit=make('div','redline-sender-payment-line redline-sender-credit-line');
+  const note=make('div','');
+  note.append(make('strong','','PHOTO ACTION BILL CREDITS'),
+   make('small','', 'Rejections $0.35 · Permanent deletions $1.00 each'));
+  credit.append(note,make('strong','', '-'+money(snap.photoActionBillCreditCents)));
+  paymentRows.prepend(credit);
  }
  dataValues.pending.textContent=String(snap.pending);
  dataValues.owed.textContent=snap.owed;
