@@ -839,7 +839,7 @@ test('desktop REDLINE panel follows BLACKCELL OS host at narrower iframe width w
  assert.match(css,/@media \(min-width:720px\)/);
  assert.match(css,/:is\(\.bc-ledger-desktop,\.bc-os-frame-redline\)/);
  assert.match(html,/private-photo-ledger-approved-deck\.css\?v=20261123-os-frame-responsive3/);
- assert.match(os,/redlineRelease=20261123-merged-photo-webos2/);
+ assert.match(os,/redlineRelease=20261123-merged-photo-webos3/);
 });
 
 
@@ -859,7 +859,7 @@ test('REDLINE Option 2 removes oversized desktop heading but preserves all four 
  assert.match(css,/min-height:36px!important/);
  assert.match(css,/@media \(max-width:900px\)/);
  assert.match(receiver,/header\.append\(intro,status\)/);
- assert.match(os,/redlineRelease=20261123-merged-photo-webos2/);
+ assert.match(os,/redlineRelease=20261123-merged-photo-webos3/);
 });
 
 
@@ -867,7 +867,7 @@ test('merged REDLINE Web OS photo dock has one outer border, inner divider and p
  const css=read('private-photo-ledger-merged-photo-panel.css');
  const html=read('private-photo-ledger.html');
  const receiver=read('private-photo-ledger-receiver.js');
- assert.match(html,/private-photo-ledger-merged-photo-panel\.css\?v=20261123-merged-photo-webos2/);
+ assert.match(html,/private-photo-ledger-merged-photo-panel\.css\?v=20261123-merged-photo-webos3/);
  assert.match(css,/#rrAppleRight #rrAppleTimerMount\{/);
  assert.match(css,/border:1px solid #bc2c50!important/);
  assert.match(css,/#rrAppleTimerMount>\.rr-timer-panel\{/);

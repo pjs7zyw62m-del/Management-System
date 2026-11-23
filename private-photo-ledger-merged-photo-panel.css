@@ -61,25 +61,34 @@ body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-fram
  grid-template-rows:minmax(33px,auto)!important;align-items:center!important;
 }
 body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount #redlineLightboxReview>.rr-photo-rating-panel{
- display:flex!important;flex-direction:row!important;flex-wrap:wrap!important;
- align-items:center!important;justify-content:flex-start!important;
- min-width:0!important;gap:3px 9px!important;margin:0!important;padding:0!important;
+ display:grid!important;
+ grid-template-columns:max-content minmax(0,1fr)!important;
+ grid-template-rows:auto auto!important;
+ align-items:center!important;justify-content:start!important;
+ min-width:0!important;column-gap:7px!important;row-gap:2px!important;
+ margin:0!important;padding:0!important;
  border:0!important;background:transparent!important;
 }
 body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount #redlineLightboxReview .rr-photo-rating-title{
  color:#ffe5ed!important;white-space:nowrap!important;font-size:10px!important;
  font-weight:850!important;letter-spacing:0!important;line-height:1.2!important;
+ grid-column:1!important;grid-row:1!important;
 }
 body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount #redlineLightboxReview .rr-photo-rating-buttons{
  display:flex!important;flex-wrap:nowrap!important;align-items:center!important;
- gap:3px!important;padding:0!important;margin:0!important;
+ gap:2px!important;padding:0!important;margin:0!important;
+ grid-column:2!important;grid-row:1!important;justify-self:start!important;
 }
 body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount #redlineLightboxReview .rr-photo-rating-star{
- width:25px!important;min-width:25px!important;height:31px!important;
- min-height:31px!important;padding:0!important;margin:0!important;
- font-size:25px!important;line-height:1!important;
+ width:23px!important;min-width:23px!important;height:29px!important;
+ min-height:29px!important;padding:0!important;margin:0!important;
+ font-size:23px!important;line-height:1!important;
 }
-body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount #redlineLightboxReview .rr-photo-rating-feedback:empty{display:none!important}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount #redlineLightboxReview .rr-photo-rating-feedback{
+ grid-column:1/-1!important;grid-row:2!important;margin:0!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+#rrAppleRight #rrAppleTimerMount #redlineLightboxReview .rr-photo-rating-feedback:empty{display:none!important}
 body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount #redlineLightboxReview:not([data-redline-decision="pending"])>.rr-photo-price-amount{
  grid-column:2!important;grid-row:1!important;align-self:center!important;justify-self:center!important;
  margin:0!important;font-size:20px!important;font-weight:900!important;
