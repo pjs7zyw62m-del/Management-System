@@ -41,6 +41,13 @@ for(const [key,label] of [['upload','Photos & Chat'],['viewing','Currently Viewi
 }
 const uploadTitle=make('div','redline-upload-intro');
 uploadTitle.append(make('span','redline-kicker','PRIVATE MEDIA'),make('h2','','Send a photo'));
+const triggerShortcut=make('button','redline-sender-trigger-shortcut','⚡ TRIGGER WORDS · SET PRICES');
+triggerShortcut.type='button';
+triggerShortcut.setAttribute('aria-label','Open the sender Trigger Words tutorial and pricing');
+triggerShortcut.addEventListener('click',()=>{
+ window.dispatchEvent(new Event('blackcell:redline:open-trigger-words'));
+});
+uploadTitle.append(triggerShortcut);
 uploadPane.append(uploadTitle);
 const uploadMount=make('div','redline-upload-mount');uploadPane.append(uploadMount);
 const viewingIntro=make('header','redline-current-viewing-intro');
