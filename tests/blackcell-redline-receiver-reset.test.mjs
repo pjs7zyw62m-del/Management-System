@@ -91,7 +91,7 @@ test('Sender gets archived earnings and chat without permission to upload while 
 });
 test('REDLINE receiver resources are versioned and original form and security remain intact',()=>{
  assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-photo-large-timed1/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261122-settings-visible1/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261123-trigger-visible-controls1/);
  assert.match(html,/private-photo-ledger\.js\?v=20261122-redline-android-multisource1/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=20261123-os-frame-responsive3/);
  assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261122-android-keyboard-return1/);
@@ -135,7 +135,7 @@ test('REDLINE OS receiver keeps the narrow chat left and the real incoming photo
  assert.match(receiver,/window\.innerWidth>=420/);
  assert.match(css,/grid-template-columns:minmax\(300px,370px\) minmax\(0,1fr\)/);
  assert.match(css,/rr-incoming-photos #ownerReviewQueue/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261122-settings-visible1/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261123-trigger-visible-controls1/);
 });
 
 test('Owner can inspect large photo and set price while viewing it',()=>{
@@ -179,7 +179,7 @@ test('Receiver toolbar is compact, room controls expand on demand and live actio
  assert.match(css,/min-height:34px!important/);
  assert.match(css,/grid-template-columns:minmax\(0,1\.7fr\) minmax\(465px,1fr\)!important/);
  assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-photo-large-timed1/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261122-settings-visible1/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261123-trigger-visible-controls1/);
 });
 
 
@@ -201,7 +201,7 @@ test('REDLINE uses iMessage-style slide-in Photo Review, not resize buttons or a
  assert.match(css,/grid-template-columns:minmax\(0,1fr\) 11px minmax\(0,var\(--rr-media-width\)\)!important/);
  assert.match(css,/@media\(min-width:420px\) and \(max-width:699px\)/);
  assert.match(css,/rr-media-open>\.rr-incoming-photos/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261122-settings-visible1/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261123-trigger-visible-controls1/);
  assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-photo-large-timed1/);
 });
 
@@ -680,7 +680,7 @@ test('Approved originals can be reused privately until the receiver rejects or a
  assert.match(style,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)!important/);
  assert.match(style,/\.redline-five-star-photo/);
  assert.match(html,/private-photo-ledger\.js\?v=20261123-reuse-approved-original1/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261123-sender-reuse-popup2/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261123-trigger-visible-controls1/);
  assert.match(html,/private-photo-ledger-sender-reuse\.js\?v=20261123-reuse-popup1/);
 });
 
@@ -725,7 +725,7 @@ test('Photo History is accessible despite the old photo-only layout rules',()=>{
  assert.match(style,/#redlineReceiverPricedStage>#photoEntries/);
  assert.match(style,/overflow-y:auto!important/);
  assert.match(style,/position:absolute!important/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261122-settings-visible1/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261123-trigger-visible-controls1/);
  assert.match(html,/private-photo-ledger-imessage-workspace\.css\?v=20261121-history-visible1/);
  const workflow=read('.github/workflows/blackcell-redline-receiver-rebuild.yml');
  assert.match(workflow,/node tests\/redline-photo-history-browser-smoke\.mjs/);
@@ -743,7 +743,7 @@ test('REDLINE puts quick actions in a menu with Pay in Full beside it',()=>{
  assert.match(receiver,/REDLINE will NOT send or charge any money/);
  assert.match(css,/rr-nav-menu-items\[hidden\]\{display:none!important\}/);
  assert.match(css,/rr-pay-full/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261122-settings-visible1/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261123-trigger-visible-controls1/);
  assert.match(html,/private-photo-ledger-receiver\.css\?v=20261121-photo-large-timed1-menu1/);
  assert.match(html,/private-photo-ledger\.js\?v=20261122-redline-android-multisource1/);
  assert.match(ledger,/async recordPaidInFull\(roomId\)/);
