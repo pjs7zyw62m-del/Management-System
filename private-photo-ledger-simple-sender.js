@@ -711,6 +711,7 @@ entry.addEventListener('blur',stopTyping);
 // Stable chat keys keep existing message nodes alive across timers, receipts,
 // photo state refreshes and background server polling.
 function chatItemKey(e){
+ if(e.kind==='trigger')return 'trigger-fee:'+String(e.id||'');
  if(e.kind==='chat')return 'message:'+String(e.id||e.at+'|'+e.sender+'|'+e.body);
  if(e.kind==='rating')return 'rating:'+String(e.photo?.id||'')+'|'+String(e.at||'');
  if(e.kind==='timer')return 'timer:'+String(e.timer?.id||'')+':'+e.phase;
@@ -765,7 +766,16 @@ function renderChat({scrollToLatest=false}={}){
   ...paymentHistoryEvents(snap).map(e=>({kind:'event',at:e.at,body:e.text,status:e.status})),
   ...timedEvents(snap),
   ...photoRatingEvents(snap),
-  ...messages.map(m=>({kind:'chat',at:m.created_at,body:m.body,sender:m.sender_id,id:m.id,triggerFee:m.triggerFee||null}))
+  ...messages.flatMap(m=>{
+   // Independent read-only fee event follows the original message in chat.
+   // The RPC attaches a fee only when that message has a recorded server hit.
+   const normal={kind:'chat',at:m.created_at,body:m.body,sender:m.sender_id,id:m.id};
+   const fee=m.triggerFee;
+   if(!fee||!Number.isInteger(fee.price_cents)||
+    fee.price_cents<10||fee.price_cents>25)return [normal];
+   return [normal,{kind:'trigger',at:m.created_at,id:m.id,
+    word:String(fee.word||'').slice(0,24),priceCents:fee.price_cents}];
+  })
  ].sort((a,b)=>new Date(a.at)-new Date(b.at)).slice(-130);
  const latestMessage=combined.findLast?.(e=>e.kind==='chat'&&e.id===latestOwn);
  const latestRead=Boolean(latestMessage&&Number.isFinite(Date.parse(peerReadAt||''))&&
@@ -781,7 +791,9 @@ function renderChat({scrollToLatest=false}={}){
     ?[e.kind,e.at,e.photo?.id,e.photo?.stars,e.photo?.caption,Boolean(e.photo?.image_url)]
     :e.kind==='chat'&&historyPhotoSignal(e,snap)
      ?[e.kind,e.at,e.id,e.body,e.sender,Boolean(historyPhotoSignal(e,snap)?.photo?.image_url)]
-     :[e.kind,e.at,e.id,e.body,e.sender,e.status,e.triggerFee?.word||null,e.triggerFee?.price_cents??null])
+     :e.kind==='trigger'
+      ?[e.kind,e.at,e.id,e.word,e.priceCents,snap?.isOwner]
+      :[e.kind,e.at,e.id,e.body,e.sender,e.status])
  ]);
  // Only a true first opening or the user's own Send may follow the bottom.
  // A background live update must NEVER override a human's reading anchor.
@@ -848,7 +860,9 @@ function renderChat({scrollToLatest=false}={}){
   const own=e.kind==='chat'&&e.sender===snap?.userId;
   const receipt=own&&e.id===latestOwn?(latestRead?'read':'sent'):'';
   const fingerprint=JSON.stringify(e.kind==='chat'
-   ?[e.at,e.body,e.sender,receipt,Boolean(historyPhotoSignal(e,snap)?.photo?.image_url),e.triggerFee?.word||null,e.triggerFee?.price_cents??null]
+   ?[e.at,e.body,e.sender,receipt,Boolean(historyPhotoSignal(e,snap)?.photo?.image_url)]
+   :e.kind==='trigger'
+    ?[e.at,e.id,e.word,e.priceCents,snap?.isOwner]
    :e.kind==='rating'
     ?[e.photo?.stars,e.photo?.caption,Boolean(e.photo?.image_url)]
     :e.kind==='timer'
@@ -858,6 +872,21 @@ function renderChat({scrollToLatest=false}={}){
    if(e.kind==='event'){
     const card=make('div','redline-chat-event');
     card.append(make('strong','',e.body),make('small','',dateText(e.at)));
+    return card;
+   }
+   if(e.kind==='trigger'){
+    // Independent event, like photo upload/reuse notices. The event key
+    // comes from the triggering message ID, so it is never duplicated.
+    const card=make('div','redline-chat-event redline-chat-trigger-event');
+    const line=make('div','redline-chat-trigger-event-line');
+    line.append(
+     make('span','redline-chat-trigger-event-word','⚡ '+e.word),
+     make('strong','redline-chat-trigger-event-amount',
+      (snap?.isOwner?'FEE $':'EARNED +$')+(e.priceCents/100).toFixed(2))
+    );
+    card.append(line,make('small','',dateText(e.at)));
+    card.setAttribute('aria-label',
+     snap?.isOwner?'Trigger Word FEE recorded':'Trigger Word EARNED recorded');
     return card;
    }
    if(e.kind==='rating'){
@@ -882,19 +911,6 @@ function renderChat({scrollToLatest=false}={}){
    }
    const bubble=make('article','redline-chat-bubble '+(own?'is-mine':'is-theirs'));
    bubble.append(make('p','',e.body),make('time','',dateText(e.at)));
-   // This is the verified server receipt, attached inside the EXISTING bubble.
-   // Chat does not generate or duplicate trigger charges.
-   if(e.triggerFee&&Number.isInteger(e.triggerFee.price_cents)&&
-      e.triggerFee.price_cents>=10&&e.triggerFee.price_cents<=25){
-    const fee=make('div','redline-chat-trigger-fee');
-    const word=make('span','redline-chat-trigger-fee-word',
-     '⚡ '+String(e.triggerFee.word||'').slice(0,24));
-    const label=make('strong','redline-chat-trigger-fee-label',
-     (snap?.isOwner?'FEE $':'EARNED +$')+(e.triggerFee.price_cents/100).toFixed(2));
-    fee.append(word,label);
-    fee.setAttribute('aria-label',snap?.isOwner?'Trigger Word FEE':'Trigger Word EARNED');
-    bubble.append(fee);
-   }
    if(receipt){
     const read=receipt==='read';
     const label=make('small','redline-chat-read-receipt',read?'✓✓ Read':'✓ Sent');
