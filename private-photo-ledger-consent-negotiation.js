@@ -97,7 +97,7 @@ function featureRow(name,description,key,value,owner){
   if(key==='trigger_words_enabled'&&requested&&!window.confirm(
    'ENABLE REDLINE TRIGGER WORDS?\n\n'+
    'The sender sets each word at $0.10 to $0.25. When YOU send a new chat message containing a listed whole word, REDLINE may record one trigger charge (maximum $0.25 per message). '+
-   'Repeated use of the same word has a 60-second cooldown, and the room stops charging after $5.00 per UTC day. '+
+   'There is no cooldown between messages, even for the same word; the room stops charging after $5.00 per UTC day. '+
    'You can turn this OFF at any time. Nothing is charged retroactively. This records an amount owed; no real-world money is transferred.')){
    toggle.checked=false;return;
   }
@@ -135,7 +135,7 @@ function refreshSettings(){
    'Allow up to three sender counteroffers above or below your original price. OFF keeps it final.',
    'negotiation_enabled',features.negotiation_enabled,true),
   featureRow('Trigger words · $0.10–$0.25',
-   'OFF by default. The sender sets words and amounts. Only your new outgoing chat messages can earn a matching word credit: one per message, 60-second cooldown, $5 daily room cap.',
+   'OFF by default. The sender sets words and amounts. Only your new outgoing chat messages can earn a matching word credit: one per message, no cooldown, $5 daily room cap.',
    'trigger_words_enabled',features.trigger_words_enabled===true,true));
  const prices=(features.trigger_words||[]).map(w=>w.word+' '+cash(w.price_cents)).join(' · ');
  toggleList.append(make('p','redline-consent-muted',
