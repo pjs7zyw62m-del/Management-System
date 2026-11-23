@@ -1,5 +1,5 @@
 /* BLACKCELL REDLINE receiver trigger costs (verified, read-only UI).
- * Persistent header cost and short notice for each new recorded trigger hit.
+ * Persistent header cost only; no intrusive per-credit popup.
  * The payment balance comes from the existing authenticated server RPC.
  * No DOM writes within chat; no self-charging or speculative billing. */
 (()=>{
@@ -36,34 +36,11 @@
    e.preventDefault();window.dispatchEvent(new Event('blackcell:redline:open-trigger-owner'));
   }
  });
- const notice=make('aside','redline-receiver-trigger-notice');
- notice.hidden=true;notice.setAttribute('role','status');
- notice.setAttribute('aria-live','assertive');
- const noticeHead=make('strong','redline-receiver-trigger-notice-head','⚡ TRIGGER WORD CHARGE RECORDED');
- const noticeAmount=make('strong','redline-receiver-trigger-notice-amount','+$0.00');
- const noticeWord=make('p','redline-receiver-trigger-notice-word');
- const noticeDescription=make('small','redline-receiver-trigger-notice-description',
-  'Added to your REDLINE balance · No automatic money transfer');
- const dismiss=make('button','redline-receiver-trigger-notice-close','CLOSE');
- dismiss.type='button';dismiss.addEventListener('click',()=>hideNotice());
- notice.append(noticeHead,noticeAmount,noticeWord,noticeDescription,dismiss);
- document.body.append(notice);
- let room=null,ready=false,seen=new Set(),lastPoll=0,inFlight=false,closeTimer=null;
+ let room=null,ready=false,seen=new Set(),lastPoll=0,inFlight=false;
  const idOf=h=>String(h.recorded_at||'')+'|'+String(h.word||'')+'|'+String(h.price_cents||0);
- function hideNotice(){
-  if(closeTimer!==null){clearTimeout(closeTimer);closeTimer=null}
-  notice.hidden=true;
- }
  function clearRoom(next){
   room=next;ready=false;seen.clear();lastPoll=0;
-  hideNotice();strip.remove();
- }
- function showNotice(hit){
-  hideNotice();
-  noticeAmount.textContent='+'+money(hit.price_cents);
-  noticeWord.textContent='“'+String(hit.word||'').slice(0,24)+'” matched in your message';
-  notice.hidden=false;
-  closeTimer=setTimeout(hideNotice,8000);
+  strip.remove();
  }
  function putInHeader(){
   const header=document.querySelector('#redlineReceiverCommand .rr-command-header');
@@ -105,8 +82,8 @@
      if(Number(hit.price_cents)>=10&&Number(hit.price_cents)<=25)news.push(hit);
     }
     if(news.length){
-     showNotice(news[0]);
-     // A verified new expense should update the existing outstanding balance.
+     // Update the recorded balance silently; the original chat bubble
+     // already displays the matched word with FEE/EARNED on each side.
      try{await api()?.roomPaymentStatus?.(id,false)}catch(_){}
     }
    }
