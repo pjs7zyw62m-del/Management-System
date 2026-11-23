@@ -791,3 +791,26 @@ test('REDLINE widescreen desktop is balanced without changing tablet or mobile l
  const responsive=read('private-photo-ledger-responsive.js');
  assert.match(responsive,/document\.body\.classList\.toggle\('bc-ledger-desktop',mode==='os'\)/);
 });
+
+
+test('approved REDLINE desktop controls are three compact sections above growing chat',()=>{
+ const html=read('private-photo-ledger.html');
+ const style=read('private-photo-ledger-approved-deck.css');
+ const receiver=read('private-photo-ledger-receiver.js');
+ const ledger=read('private-photo-ledger.js');
+ const timer=read('private-photo-ledger-timers.js');
+ assert.match(html,/private-photo-ledger-approved-deck\.css\?v=20261122-approved-controls-desktop1/);
+ assert.match(style,/@media \(min-width:1180px\)/);
+ assert.match(style,/bc-ledger-desktop/);
+ assert.match(style,/#rrAppleTimerMount>\.rr-timer-panel/);
+ assert.match(style,/#rrAppleTimerMount>#redlineLightboxReview:not\(\[data-redline-decision="pending"\]\):not\(\[hidden\]\)/);
+ assert.match(style,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)!important/);
+ assert.match(style,/#rrAppleRight>\.rr-chat-panel:not\(\[hidden\]\)/);
+ assert.match(style,/min-height:0!important/);
+ assert.match(style,/data-redline-decision="pending"/);
+ assert.match(receiver,/appleTimer\.append\(bidTimerPanel\)/);
+ assert.match(ledger,/appendPhotoRatingControl\(panel,entry\)/);
+ assert.match(ledger,/deletePhotoPermanently\(entry\)/);
+ assert.match(timer,/const start=btn\('▶ START TIMER'/);
+ assert.match(timer,/const stop=btn\('■ STOP TIMER'/);
+});
