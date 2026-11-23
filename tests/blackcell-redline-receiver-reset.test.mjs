@@ -846,7 +846,7 @@ test('desktop REDLINE panel follows BLACKCELL OS host at narrower iframe width w
  assert.match(css,/@media \(min-width:720px\)/);
  assert.match(css,/:is\(\.bc-ledger-desktop,\.bc-os-frame-redline\)/);
  assert.match(html,/private-photo-ledger-approved-deck\.css\?v=20261123-os-frame-responsive3/);
- assert.match(os,/redlineRelease=20261123-negotiation-photo-focus1/);
+ assert.match(os,/redlineRelease=20261123-trigger-fee-chat1/);
 });
 
 
@@ -866,7 +866,7 @@ test('REDLINE Option 2 removes oversized desktop heading but preserves all four 
  assert.match(css,/min-height:36px!important/);
  assert.match(css,/@media \(max-width:900px\)/);
  assert.match(receiver,/header\.append\(intro,status\)/);
- assert.match(os,/redlineRelease=20261123-negotiation-photo-focus1/);
+ assert.match(os,/redlineRelease=20261123-trigger-fee-chat1/);
 });
 
 
@@ -909,7 +909,7 @@ test('REDLINE Web OS owner permission hub keeps authenticated link, preview and 
  assert.match(ledger,/copyRoomLink/);
  assert.match(preview,/redlineOwnerPreviewButton/);
  assert.match(sender,/redline-owner-open-messages/);
- assert.match(os,/redlineRelease=20261123-negotiation-photo-focus1/);
+ assert.match(os,/redlineRelease=20261123-trigger-fee-chat1/);
 });
 
 
