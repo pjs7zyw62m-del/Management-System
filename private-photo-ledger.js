@@ -2289,7 +2289,29 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
   const result=await query.order('created_at',{ascending:false}).limit(150);
   if(result.error)throw result.error;
   if(state.closed||state.room?.id!==roomId)return [];
-  return (result.data||[]).reverse();
+  const list=(result.data||[]).reverse();
+  // Add ONLY independently verified trigger fees to already-authorized chat.
+  // The existing single charge per message is never created by browser.
+  if(!list.length||state.showArchive)return list;
+  try{
+   const receipt=await db.rpc('corp_redline_trigger_chat_events',{
+    p_room_id:roomId,p_message_ids:list.map(m=>m.id)
+   });
+   if(state.closed||state.room?.id!==roomId||state.showArchive)return [];
+   if(receipt.error||receipt.data?.ok!==true){
+    console.warn('REDLINE chat trigger receipts unavailable',receipt.error||receipt.data?.reason);
+    return list;
+   }
+   const fees=new Map((receipt.data.events||[])
+    .filter(x=>validId(x.message_id)&&Number.isInteger(x.price_cents)&&
+     x.price_cents>=10&&x.price_cents<=25)
+    .map(x=>[x.message_id,x]));
+   return list.map(m=>({...m,triggerFee:fees.get(m.id)||null}));
+  }catch(error){
+   // A fee display outage must never prevent a private chat from loading.
+   console.warn('REDLINE trigger fee receipt unavailable',error);
+   return list;
+  }
  },
  async chatSignal(roomId,action,messageId=null){
   if(state.closed||!state.user||!state.room||state.room.id!==roomId||!validId(roomId)||
