@@ -4,7 +4,7 @@ import {createServer} from 'node:http';
 import {spawn} from 'node:child_process';
 import {basename} from 'node:path';
 const html=readFileSync('private-photo-ledger.html','utf8');
-const tags=[...html.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)].map(x=>x[0]).join('\n');
+const tags=[...html.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)].map(x=>x[0]+'>').join('\n');
 const probe=readFileSync('tests/redline-desktop-deck-probe.js','utf8');
 function makePage(width){
  const stars='<button class="rr-photo-rating-star is-filled">★</button>'.repeat(4)+
