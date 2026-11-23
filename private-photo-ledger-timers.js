@@ -222,10 +222,17 @@ function mount(s){
  const combined=!!workspace&&!workspace.hidden;
  const fallback=$('#activeRoom .timeline-column');
  const sidebar=$('#redlineLightboxReview');
+ const appleTimer=$('#rrAppleTimerMount');
+ const appleMode=!!appleTimer&&document.body.classList.contains('bc-redline-apple-mode');
  const besidePhoto=Boolean(sidebar&&!sidebar.hidden&&!s.archiveMode&&
   sidebar.closest('#redlineReceiverReviewStage, #ownerReviewQueue'));
  if(s.isOwner){
-  if(besidePhoto&&ownerPanel.parentNode!==sidebar)sidebar.append(ownerPanel);
+  if(appleMode){
+   if(ownerPanel.parentNode!==appleTimer)appleTimer.append(ownerPanel);
+   // Display the actual timer controls in the owner workstation.
+   if(!ownerPanel.dataset.appleOpened){ownerPanel.open=true;ownerPanel.dataset.appleOpened='1';}
+  }
+  else if(besidePhoto&&ownerPanel.parentNode!==sidebar)sidebar.append(ownerPanel);
   else if(!besidePhoto&&combined&&workspace&&ownerPanel.previousElementSibling!==workspace)workspace.after(ownerPanel);
   else if(!besidePhoto&&!combined&&fallback&&ownerPanel.parentNode!==fallback)fallback.prepend(ownerPanel);
   const photoHost=combined?stage:fallback;
