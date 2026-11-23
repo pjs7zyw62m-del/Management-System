@@ -18,6 +18,7 @@ on:
       - 'tests/redline-per-second-earnings.test.mjs'
       - 'tests/redline-history-chat-signals.test.mjs'
       - 'tests/redline-chat-read-typing-browser-smoke.mjs'
+      - 'tests/redline-receiver-chat-mount.browser.mjs'
       - 'tests/redline-apple-workspace-stability.test.mjs'
       - 'tests/redline-timer-two-party-browser-smoke.mjs'
       - 'private-photo-ledger-consent-negotiation.js'
@@ -77,6 +78,7 @@ on:
       - 'tests/redline-per-second-earnings.test.mjs'
       - 'tests/redline-history-chat-signals.test.mjs'
       - 'tests/redline-chat-read-typing-browser-smoke.mjs'
+      - 'tests/redline-receiver-chat-mount.browser.mjs'
       - 'tests/redline-apple-workspace-stability.test.mjs'
       - 'tests/redline-timer-two-party-browser-smoke.mjs'
       - 'private-photo-ledger-consent-negotiation.js'
@@ -243,6 +245,13 @@ jobs:
           command -v google-chrome >/dev/null 2>&1 && CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && CHROME=chromium || CHROME=; }
           [ -n "$CHROME" ] || { echo "Chromium unavailable"; exit 1; }
           CHROME="$CHROME" node tests/redline-owner-hub-browser-smoke.mjs
+      - name: Verify chat stays mounted through 24 actual receiver live updates
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v google-chrome >/dev/null 2>&1 && CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && CHROME=chromium || CHROME=; }
+          [ -n "$CHROME" ] || { echo "Chromium unavailable"; exit 1; }
+          CHROME="$CHROME" node tests/redline-receiver-chat-mount.browser.mjs
       - name: Sender iMessage-style live session, earnings and uploads
         shell: bash
         run: |
