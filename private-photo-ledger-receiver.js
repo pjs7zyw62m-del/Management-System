@@ -512,23 +512,12 @@
  appleStatus.append(make('strong','','NEGOTIATIONS'),make('small','','New offers open through the verified price negotiation window.'));
  appleRight.append(appleTimer,appleFinance,appleStatus,appleChatTitle);
  roomBody?.before(workspace);
- // When the receiver opens the original photograph, clicking it again returns
- // to the unchanged chat + one-photo workspace via the existing close handler.
+ // Clicking the original photo now zooms it. CLOSE and Escape return to
+ // REDLINE; the zoom module owns click, wheel, pinch and keyboard zoom.
  const fullSizeImage=$('#lightboxImage');
- const leaveFullPhoto=()=>{
-  if(document.body.classList.contains('bc-redline-receiver')&&!$('#photoLightbox')?.hidden){
-   $('#closeLightbox')?.click();
-  }
- };
- fullSizeImage?.addEventListener('click',leaveFullPhoto);
- // Keep the image-only popup keyboard accessible without adding controls.
  if(fullSizeImage){
   fullSizeImage.tabIndex=0;
-  fullSizeImage.setAttribute('aria-label','Full-size photograph. Press Enter to return.');
-  fullSizeImage.addEventListener('keydown',event=>{
-   if(event.key!=='Enter'&&event.key!==' ')return;
-   event.preventDefault();leaveFullPhoto();
-  });
+  fullSizeImage.setAttribute('aria-label','Full-size photograph. Click or press Enter to zoom. Use Close or Escape to return.');
  }
  // A timed/previously priced photo uses the same original-photo viewer.
  workspace.addEventListener('click',event=>{

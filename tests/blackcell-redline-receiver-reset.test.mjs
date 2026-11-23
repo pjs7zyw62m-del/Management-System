@@ -839,7 +839,7 @@ test('desktop REDLINE panel follows BLACKCELL OS host at narrower iframe width w
  assert.match(css,/@media \(min-width:720px\)/);
  assert.match(css,/:is\(\.bc-ledger-desktop,\.bc-os-frame-redline\)/);
  assert.match(html,/private-photo-ledger-approved-deck\.css\?v=20261123-os-frame-responsive3/);
- assert.match(os,/redlineRelease=20261123-chat-parent-stable1/);
+ assert.match(os,/redlineRelease=20261123-photo-inline-fullscreen-zoom1/);
 });
 
 
@@ -859,7 +859,7 @@ test('REDLINE Option 2 removes oversized desktop heading but preserves all four 
  assert.match(css,/min-height:36px!important/);
  assert.match(css,/@media \(max-width:900px\)/);
  assert.match(receiver,/header\.append\(intro,status\)/);
- assert.match(os,/redlineRelease=20261123-chat-parent-stable1/);
+ assert.match(os,/redlineRelease=20261123-photo-inline-fullscreen-zoom1/);
 });
 
 
@@ -902,5 +902,24 @@ test('REDLINE Web OS owner permission hub keeps authenticated link, preview and 
  assert.match(ledger,/copyRoomLink/);
  assert.match(preview,/redlineOwnerPreviewButton/);
  assert.match(sender,/redline-owner-open-messages/);
- assert.match(os,/redlineRelease=20261123-chat-parent-stable1/);
+ assert.match(os,/redlineRelease=20261123-photo-inline-fullscreen-zoom1/);
+});
+
+
+test('REDLINE Web OS authentic photo supports inline and enlarged zoom without click-to-close',()=>{
+ const html=read('private-photo-ledger.html');
+ const zoom=read('private-photo-ledger-photo-zoom.js');
+ const css=read('private-photo-ledger-photo-zoom.css');
+ const receiver=read('private-photo-ledger-receiver.js');
+ assert.match(html,/private-photo-ledger-photo-zoom\.js\?v=20261123-dual-zoom1/);
+ assert.match(html,/private-photo-ledger-photo-zoom\.css\?v=20261123-dual-zoom1/);
+ assert.match(zoom,/const MAX=6,FACTOR=1\.5/);
+ assert.match(zoom,/redlineReceiverReviewStage #reviewQueueCurrent/);
+ assert.match(zoom,/const fullObserver=new MutationObserver/);
+ assert.match(zoom,/pointermove/);
+ assert.match(zoom,/wheel/);
+ assert.match(zoom,/if\(e\.target===fullImg\)/);
+ assert.match(css,/#photoLightbox #closeLightbox/);
+ assert.match(css,/display:inline-flex!important/);
+ assert.doesNotMatch(receiver,/fullSizeImage\?\.addEventListener\('click',leaveFullPhoto\)/);
 });

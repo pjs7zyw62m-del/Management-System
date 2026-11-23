@@ -5,6 +5,8 @@ on:
       - 'private-photo-ledger.html'
       - 'private-photo-ledger.js'
       - 'private-photo-ledger-receiver.js'
+      - 'private-photo-ledger-photo-zoom.js'
+      - 'private-photo-ledger-photo-zoom.css'
       - 'private-photo-ledger-receiver.css'
       - 'private-photo-ledger-responsive.js'
       - 'private-photo-ledger-simple-sender.js'
@@ -53,6 +55,8 @@ on:
       - 'private-photo-ledger.html'
       - 'private-photo-ledger.js'
       - 'private-photo-ledger-receiver.js'
+      - 'private-photo-ledger-photo-zoom.js'
+      - 'private-photo-ledger-photo-zoom.css'
       - 'private-photo-ledger-receiver.css'
       - 'private-photo-ledger-imessage-workspace.css'
       - 'private-photo-ledger-timers.js'
@@ -116,6 +120,7 @@ jobs:
           node --check private-photo-ledger-simple-sender.js
           node --check private-photo-ledger-sender-messenger.js
           node --check private-photo-ledger-receiver.js
+          node --check private-photo-ledger-photo-zoom.js
           node --check private-photo-ledger-sender.js
           node --check private-photo-ledger-timers.js
           node --check private-photo-ledger-consent-negotiation.js
