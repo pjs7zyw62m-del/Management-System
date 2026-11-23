@@ -1,0 +1,83 @@
+/* BLACKCELL REDLINE: private Android trigger credit celebration.
+   Body-level overlay; never changes chat scroll, height or DOM position. */
+.redline-trigger-earned-overlay[hidden]{display:none!important}
+.redline-trigger-earned-overlay{
+ position:fixed!important;inset:0!important;z-index:13000!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ box-sizing:border-box!important;
+ background:#000b!important;backdrop-filter:blur(11px);
+ -webkit-backdrop-filter:blur(11px);
+ padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom))!important;
+ overflow-y:auto!important;overscroll-behavior:contain;
+}
+.redline-trigger-earned-card{
+ position:relative;isolation:isolate;display:flex;flex-direction:column;
+ align-items:center;text-align:center;gap:11px;
+ width:min(95vw,420px)!important;max-height:calc(100dvh - 24px)!important;
+ min-width:0;box-sizing:border-box;padding:28px 18px 20px;
+ border:1px solid #e95480;border-radius:18px;
+ background:linear-gradient(160deg,#3c0a21,#100910 65%,#09090c);
+ box-shadow:0 22px 78px #000e,0 0 30px #fd225644,
+ inset 0 1px 0 #ffffff1a;
+ overflow-y:auto;overscroll-behavior:contain;color:#fff;
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+.redline-trigger-earned-close{
+ position:absolute;right:10px;top:10px;
+ width:38px;min-height:38px;border:1px solid #89425d;
+ border-radius:10px;background:#160e16;color:#fff;
+ font-size:27px;cursor:pointer;touch-action:manipulation;
+}
+.redline-trigger-earned-eyebrow{font-size:9px;letter-spacing:.10em;color:#ffb1c8;font-weight:900}
+.redline-trigger-earned-symbol{
+ margin-top:12px;width:60px;height:60px;border:1px solid #ff7da4;
+ border-radius:50%;background:#3b0d24;
+ display:flex;align-items:center;justify-content:center;
+ font-size:30px;color:#fff;box-shadow:0 0 25px #df245a66;
+}
+.redline-trigger-earned-title{font-size:clamp(22px,6vw,27px)!important;font-weight:900!important;letter-spacing:-.035em!important;line-height:1.2!important;margin:0!important;color:#fff!important}
+.redline-trigger-earned-amount{
+ display:block;width:100%;box-sizing:border-box;
+ padding:11px;border:1px solid #ee6289;border-radius:12px;
+ background:linear-gradient(90deg,#440c25,#5d0e31,#390b22);
+ color:#ff9bb9;font-size:clamp(37px,11vw,49px)!important;
+ font-weight:950!important;letter-spacing:-.05em;
+ font-variant-numeric:tabular-nums;line-height:1.15;
+ text-shadow:0 0 20px #ff50785e;
+}
+.redline-trigger-earned-word{color:#fff;font-size:15px;font-weight:850;margin:0;overflow-wrap:anywhere}
+.redline-trigger-earned-summary,.redline-trigger-earned-details{color:#e6c6d3;line-height:1.4;font-size:12px;margin:0}
+.redline-trigger-earned-details{color:#aeb8b1;font-size:10px}
+.redline-trigger-earned-dismiss{
+ margin-top:7px;display:block;width:100%;min-height:44px;
+ border:1px solid #ff557c;border-radius:11px;
+ background:#b0133e;color:#fff;font-size:12px;font-weight:850;
+ cursor:pointer;touch-action:manipulation;
+}
+.redline-trigger-earned-close:focus-visible,.redline-trigger-earned-dismiss:focus-visible{
+ outline:2px solid #fff;outline-offset:2px;
+}
+.redline-trigger-earned-confetti{
+ position:absolute;inset:0;pointer-events:none;
+ overflow:hidden;z-index:3;border-radius:15px;
+}
+.redline-trigger-earned-piece{
+ position:absolute;left:var(--x);top:-20px;
+ width:5px;height:15px;border-radius:1px;
+ background:#ff487a;opacity:0;
+ animation:redlineTriggerConfetti 1750ms ease-in var(--delay) 1 forwards;
+}
+.redline-trigger-earned-piece:nth-child(3n){background:#ffd47f}
+.redline-trigger-earned-piece:nth-child(3n + 1){background:#7aed9e}
+@keyframes redlineTriggerConfetti{
+ 0%{transform:translate3d(0,0,0) rotate(0);opacity:0}
+ 8%{opacity:1}
+ 85%{opacity:1}
+ 100%{transform:translate3d(28px,85dvh,0) rotate(570deg);opacity:0}
+}
+@media(max-width:480px){
+ .redline-trigger-earned-card{padding:25px 16px 18px;gap:9px}
+}
+@media(prefers-reduced-motion:reduce){
+ .redline-trigger-earned-piece{animation:none!important;display:none!important}
+}
