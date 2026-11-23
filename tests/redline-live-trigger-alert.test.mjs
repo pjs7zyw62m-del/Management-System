@@ -10,7 +10,7 @@ const html=read('private-photo-ledger.html');
 const os=read('blackcell-os.js');
 
 test('Android trigger match popup is wired to REDLINE without changing chat layout',()=>{
- assert.match(html,/private-photo-ledger-trigger-alerts\.js\?v=20261123-sender-live-alert1/);
+ assert.match(html,/private-photo-ledger-trigger-alerts\.js\?v=20261123-sender-enable-popup1/);
  assert.match(html,/private-photo-ledger-trigger-alerts\.css\?v=20261123-sender-live-alert1/);
  assert.match(css,/\.redline-trigger-earned-overlay\[hidden\]/);
  assert.match(css,/position:fixed!important/);
