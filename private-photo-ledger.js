@@ -1080,7 +1080,7 @@ function preparePhotoReviewLightbox(entry){
   return;
  }
  panel.append(node('span','redline-review-kicker','VERIFIED OWNER · PRIVATE REVIEW'));
- const label=node('label','redline-review-label','YOUR BID · USD');
+ const label=node('label','redline-review-label','PHOTO PRICE · USD');
  const input=node('input','redline-review-amount');
  input.type='text';input.inputMode='decimal';input.placeholder='0.00';input.maxLength=23;attachCurrencyLeadingZero(input);
  input.setAttribute('aria-label','Acceptance amount in US dollars');
