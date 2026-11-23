@@ -12,7 +12,7 @@ test('Receiver costs are visible and come only from authenticated server results
  assert.match(html,/private-photo-ledger-receiver-trigger-costs\.js\?v=20261123-receiver-trigger-cost1/);
  assert.match(html,/private-photo-ledger-receiver-trigger-costs\.css\?v=20261123-receiver-trigger-cost1/);
  assert.match(html,/private-photo-ledger\.js\?v=20261123-receiver-trigger-cost1/);
- assert.match(os,/redlineRelease=20261123-receiver-trigger-cost1/);
+ assert.match(os,/redlineRelease=20261123-trigger-fee-chat1/);
  assert.match(src,/redlineReceiverTriggerCost/);
  assert.match(src,/triggerWordStatus\(id\)/);
  assert.match(src,/session_total_cents/);
