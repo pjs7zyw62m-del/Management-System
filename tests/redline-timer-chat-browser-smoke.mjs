@@ -39,6 +39,12 @@ const mock=String.raw`<script>
       caption:'A top-rated private photo',amount_cents:25,
       image_url:'https://example.com/private-photo.jpg'
     }],
+    photoHistory:[{
+      id:photoId,stars:5,resubmissionCount:1,decision_status:'accepted',
+      resubmissionStatus:'ready',resubmissionAllowed:true,
+      caption:'A five-star original',amount_cents:25,
+      image_url:'https://example.com/private-photo.jpg'
+    }],
     fiveStarPhotos:[{
       id:photoId,stars:5,resubmissionCount:1,
       resubmissionStatus:'ready',resubmissionAllowed:true,
@@ -48,6 +54,7 @@ const mock=String.raw`<script>
   }),
   loadMessages:async()=>[],
   resubmitFiveStarPhoto:async id=>{window.__resendCalled=id;return {ok:true,photoId:'new-photo-id'}},
+  reusePhoto:async id=>{window.__resendCalled=id;return {ok:true,photoId:'new-photo-id'}},
   timerStatus:async()=>({...timer,server_now:new Date().toISOString()})
  };
  document.addEventListener('DOMContentLoaded',()=>{
@@ -92,22 +99,27 @@ const mock=String.raw`<script>
    const resend=card?.querySelector('.redline-five-star-resubmit');
    document.body.dataset.senderFiveStarResendEnabled=String(Boolean(resend&&!resend.disabled));
    resend?.click();
+   document.body.dataset.senderReusePopupVisible=String(
+    document.querySelector('.redline-reuse-overlay')?.hidden===false);
+   document.body.dataset.senderReuseNotSentBeforeConfirm=String(!window.__resendCalled);
+   document.querySelector('.redline-reuse-confirm')?.click();
   },3300);
   setTimeout(()=>{
     document.body.dataset.senderResubmitInvoked=String(window.__resendCalled===photoId);
   },4300);
  });
  </script>
- <script src="/private-photo-ledger-simple-sender.js" defer></script>`;
+ <script src="/private-photo-ledger-simple-sender.js" defer></script>
+ <script src="/private-photo-ledger-sender-reuse.js" defer></script>`;
 page=page.replace('</head>',mock+'</head>');
 const server=createServer((req,res)=>{
  const file=req.url?.split('?')[0];
  if(file==='/test.html'){
   res.writeHead(200,{'content-type':'text/html; charset=utf-8'});res.end(page);return;
  }
- if(file==='/private-photo-ledger-simple-sender.js'){
+ if(file==='/private-photo-ledger-simple-sender.js'||file==='/private-photo-ledger-sender-reuse.js'){
   res.writeHead(200,{'content-type':'text/javascript; charset=utf-8'});
-  res.end(readFileSync('private-photo-ledger-simple-sender.js'));return;
+  res.end(readFileSync(file.slice(1)));return;
  }
  res.writeHead(404);res.end();
 });
@@ -131,7 +143,8 @@ try{
  assert.equal(exit,0,'Headless Chrome failed: '+errors.slice(-1300));
  for(const flag of ['sender-timer-started','sender-timer-earned','sender-timer-stopped','sender-timer-final','sender-chat-mounted',
   'sender-star-message','sender-photo-with-stars','sender-top-picks',
-  'sender-five-star-tab','sender-five-star-photo','sender-five-star-resend-enabled','sender-resubmit-invoked']){
+  'sender-five-star-tab','sender-five-star-photo','sender-five-star-resend-enabled',
+  'sender-reuse-popup-visible','sender-reuse-not-sent-before-confirm','sender-resubmit-invoked']){
   assert.match(output,new RegExp('data-'+flag+'="true"'),flag+' missing from sender chat browser fixture');
  }
  assert.doesNotMatch(output,/data-timer-js-error="[^"]+"/,'Sender chat JS uncaught exception');
