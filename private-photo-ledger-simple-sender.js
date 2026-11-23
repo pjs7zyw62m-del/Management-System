@@ -259,8 +259,12 @@ function markReaderGesture(){
  // Capture after the browser processes the user's real scroll movement.
  requestAnimationFrame(()=>requestAnimationFrame(saveReaderAnchor));
 }
-for(const type of ['wheel','touchstart','pointerdown','keydown'])
+for(const type of ['wheel','touchstart','pointerdown','keydown','touchmove','touchend'])
  feed.addEventListener(type,markReaderGesture,{passive:true});
+feed.addEventListener('pointermove',event=>{
+ if(event.buttons)markReaderGesture();
+},{passive:true});
+feed.addEventListener('pointerup',markReaderGesture,{passive:true});
 feed.addEventListener('scroll',()=>{
  if(!readerRestoring&&Date.now()<readerGestureUntil)
   requestAnimationFrame(saveReaderAnchor);
@@ -927,7 +931,10 @@ function syncOwnerChat(snap){
  // Preserve a previously read position when receiver visibility returns.
  if(readerAnchor)requestAnimationFrame(restoreReaderAnchor);
  photoAction.hidden=true;
- const key=snap.roomId+'|'+(snap.resetAt||'')+'|'+String(snap.archiveMode);
+ // A periodic refresh may normalize session-start metadata. That is NOT a
+ // room change and must never destroy/reinitialize the visible conversation.
+ // Explicit reset events clear the local thread when a new session begins.
+ const key=snap.roomId+'|'+String(Boolean(snap.archiveMode));
  if(key!==lastOwnerSession){
   ownerChatNeedsResume=false;
   feed.dataset.redlineScrollReady='false';
@@ -954,7 +961,7 @@ function sync(){
    uploadPane.append(messageCard);photoAction.hidden=false;
   }
   if(upload.parentNode!==uploadMount)uploadMount.append(upload);
-  const sessionKey=snap.roomId+'|'+(snap.resetAt||'')+'|'+String(snap.archiveMode);
+  const sessionKey=snap.roomId+'|'+String(Boolean(snap.archiveMode));
   if(sessionKey!==lastSessionKey){
    feed.dataset.redlineScrollReady='false';
    lastChatViewSignature='';

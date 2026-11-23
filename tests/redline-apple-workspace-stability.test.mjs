@@ -94,5 +94,15 @@ test('REDLINE saves a user-selected message anchor through receiver hidden/reflo
  assert.match(js,/readerResizeObserver\.observe\(feed\)/);
  assert.match(js,/if\(readerAnchor\)requestAnimationFrame\(restoreReaderAnchor\)/);
  assert.match(js,/const followLatest=Boolean\(scrollToLatest&&\(chatOwnSendPending/);
- assert.match(html,/stableChat=20261123-v6-durable-read-anchor/);
+ assert.match(html,/stableChat=20261123-v7-stable-room-key/);
+});
+
+
+test('REDLINE polling metadata cannot remount/reset the same verified room chat',()=>{
+ const js=read('private-photo-ledger-simple-sender.js');
+ assert.match(js,/const key=snap\.roomId\+'\|'\+String\(Boolean\(snap\.archiveMode\)\)/);
+ assert.match(js,/const sessionKey=snap\.roomId\+'\|'\+String\(Boolean\(snap\.archiveMode\)\)/);
+ assert.doesNotMatch(js,/const key=snap\.roomId\+'\|'\+\(snap\.resetAt/);
+ assert.doesNotMatch(js,/const sessionKey=snap\.roomId\+'\|'\+\(snap\.resetAt/);
+ assert.match(js,/window\.addEventListener\('blackcell:redline:reset'/);
 });

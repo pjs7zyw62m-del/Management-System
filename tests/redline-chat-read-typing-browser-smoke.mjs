@@ -34,10 +34,10 @@ const messages=[
  {id:'00000000-0000-4000-8000-000000000012',sender_id:ownerId,body:'I saw it.',created_at:replyAt}
 ];
 let actions=[],currentReadAt=replyAt,savedAnchor=null,savedScrollTop=0;
-let temporarySnapshotUnavailable=false;
+let temporarySnapshotUnavailable=false,roomMetadataVersion=0;
 window.BLACKCELL_REDLINE_API={
  snapshot:()=>temporarySnapshotUnavailable?null:({roomId,userId:owner?ownerId:senderId,isOwner:owner,roomActive:true,
-  peerName:owner?'Sender':'Receiver',archiveMode:false,resetAt:null,
+  peerName:owner?'Sender':'Receiver',archiveMode:false,resetAt:roomMetadataVersion?'2026-11-23T08:00:00Z':null,
   pending:0,owed:'$0.00',paid:'$0.00',assigned:'$0.00',
   entries:[],ratingEvents:[],topPicks:[],fiveStarPhotos:[],photoHistory:[]}),
  loadMessages:async()=>messages,
@@ -92,6 +92,10 @@ document.addEventListener('DOMContentLoaded',()=>{
   const feed=document.querySelector('.redline-message-feed');
   if(!feed)return;
   currentReadAt=new Date(first+1000).toISOString();
+  // A background room refresh may add session metadata while its room stays
+  // exactly the same. This cannot clear chat or auto-jump to newest.
+  roomMetadataVersion=1;
+  window.dispatchEvent(new Event('blackcell:redline:state'));
   // Simulate the owner chat temporarily losing its verified room snapshot.
   if(owner){
    temporarySnapshotUnavailable=true;
