@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="private-photo-ledger-sender.css?v=20261120-sender-v3">
 <link rel="stylesheet" href="private-photo-ledger-owner-preview.css?v=20261121-current-viewing1-os-preview2">
 <link rel="stylesheet" href="private-photo-ledger-solid-red.css?v=20261120-solid-red1">
-<link rel="stylesheet" href="private-photo-ledger-simple-sender.css?v=20261123-trigger-separate-event1">
+<link rel="stylesheet" href="private-photo-ledger-simple-sender.css?v=20261123-photo-credit-counter-inline1">
 <link rel="stylesheet" href="private-photo-ledger-receiver.css?v=20261121-photo-large-timed1-menu1-partial1">
  <link rel="stylesheet" href="private-photo-ledger-delete.css?v=20261122-permanent-delete1">
 <link rel="stylesheet" href="private-photo-ledger-imessage-workspace.css?v=20261121-history-visible1-mobile-chat-timer2">
@@ -43,19 +43,21 @@
 <link rel="stylesheet" href="private-photo-ledger-trigger-owner.css?v=20261123-trigger-visible-controls1">
 <link rel="stylesheet" href="private-photo-ledger-receiver-trigger-costs.css?v=20261123-trigger-cost-no-popup2">
 <link rel="stylesheet" href="private-photo-ledger-trigger-alerts.css?v=20261123-sender-live-alert1">
+<link rel="stylesheet" href="private-photo-ledger-counteroffer-inline.css?v=20261123-photo-credit-counter-inline1">
 <script src="corp-config.js"></script>
-<script type="module" src="private-photo-ledger.js?v=20261123-trigger-separate-event1&appleDark=20261122-live1&pauseHeader=20261122-v1"></script>
+<script type="module" src="private-photo-ledger.js?v=20261123-photo-credit-counter-inline1&appleDark=20261122-live1&pauseHeader=20261122-v1"></script>
 <script src="private-photo-ledger-responsive.js?v=20261123-os-frame-responsive3" defer></script>
 <script src="private-photo-ledger-sender.js?v=20261122-redline-multi-chooser1" defer></script>
 <script src="private-photo-ledger-owner-preview.js?v=20261121-current-viewing1-os-preview2" defer></script>
 <script src="private-photo-ledger-solid-red.js?v=20261120-solid-red1" defer></script>
-<script src="private-photo-ledger-simple-sender.js?v=20261123-trigger-separate-event1&stableChat=20261123-v7-stable-room-key" defer></script>
+<script src="private-photo-ledger-counteroffer-inline.js?v=20261123-photo-credit-counter-inline1" defer></script>
+<script src="private-photo-ledger-simple-sender.js?v=20261123-photo-credit-counter-inline1&stableChat=20261123-v7-stable-room-key" defer></script>
 <script src="private-photo-ledger-receiver.js?v=20261123-trigger-visible-controls1&appleDark=20261122-live1&tabletPhoneBreakpoint=1&sidebarPricing=20261122-v2&fullPhoto=20261122-v1&noChatReparent=20261123-v1&photoZoom=20261123-v1" defer></script>
 <script src="private-photo-ledger-photo-zoom.js?v=20261123-photo-canvas-v2" defer></script>
 <script src="private-photo-ledger-hd-viewer.js?v=20261123-original-hd1" defer></script>
 <script src="private-photo-ledger-presence.js?v=20261121-room-presence1" defer></script>
 <script src="private-photo-ledger-timers.js?v=20261121-per-second1-timer-next1-consent-negotiation1-instant-timer1-sender-no-10sec-stop3-next-photo4&appleDark=20261122-live1&unified=20261122-v1" defer></script>
- <script src="private-photo-ledger-consent-negotiation.js?v=20261123-trigger-words2-no-cooldown" defer></script>
+ <script src="private-photo-ledger-consent-negotiation.js?v=20261123-photo-credit-counter-inline1" defer></script>
 <script src="private-photo-ledger-negotiation-photo-viewer.js?v=20261123-negotiation-photo-focus1" defer></script>
 <script src="private-photo-ledger-sender-messenger.js?v=20261122-android-visible-keyboard1" defer></script>
 <script src="private-photo-ledger-sender-android-fit.js?v=20261123-android-sender-chat-fit1" defer></script>
@@ -197,7 +199,7 @@
      <div class="card-title"><span class="card-icon">♢</span><div><div class="eyebrow">TWO-PERSON ACCESS</div><h3>How this works</h3></div></div>
      <div class="explainer"><span>01</span><p>The chosen employee uploads a private photograph. It is <strong>not</strong> published to the Network feed or Military Library.</p></div>
      <div class="explainer"><span>02</span><p>The BLACKCELL owner accepts the photo for any amount, including $0.00, or rejects it. The decision is saved and cannot be undone.</p></div>
-     <div class="explainer"><span>03</span><p>Both sides see live updates and the same balance. Accepted $0.00 or rejected photos add nothing owed. The owner can record positive payments as settled.</p></div>
+     <div class="explainer"><span>03</span><p>Both sides see the verified balance. New manual rejections reduce the bill by $0.35 each, and confirmed permanent deletions by $1.00 each. These are ledger credits, not bank refunds.</p></div>
      <p class="privacy-note">This is a private record only. BLACKCELL does not transfer money or automatically make payments here.</p>
     </section>
     <section class="panel link-card">
