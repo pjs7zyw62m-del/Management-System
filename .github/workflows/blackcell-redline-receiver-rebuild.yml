@@ -38,6 +38,8 @@ on:
       - 'tests/blackcell-redline-receiver-reset.test.mjs'
       - 'tests/redline-desktop-deck.browser.mjs'
       - 'tests/redline-desktop-deck-probe.js'
+      - 'tests/redline-header-browser-smoke.mjs'
+      - 'private-photo-ledger-header-refined.css'
       - 'private-photo-ledger-approved-deck.css'
       - '.github/workflows/blackcell-redline-receiver-rebuild.yml'
   push:
@@ -57,6 +59,8 @@ on:
       - 'tests/blackcell-redline-receiver-reset.test.mjs'
       - 'tests/redline-desktop-deck.browser.mjs'
       - 'tests/redline-desktop-deck-probe.js'
+      - 'tests/redline-header-browser-smoke.mjs'
+      - 'private-photo-ledger-header-refined.css'
       - 'private-photo-ledger-approved-deck.css'
       - 'tests/private-photo-ledger-sender.test.mjs'
       - 'tests/private-photo-ledger-simple-sender.test.mjs'
@@ -216,6 +220,13 @@ jobs:
           command -v google-chrome >/dev/null 2>&1 && CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && CHROME=chromium || CHROME=; }
           [ -n "$CHROME" ] || { echo "Chromium unavailable"; exit 1; }
           CHROME="$CHROME" node tests/redline-desktop-deck.browser.mjs
+      - name: Browser-check REDLINE desktop command header at two widths
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v google-chrome >/dev/null 2>&1 && CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && CHROME=chromium || CHROME=; }
+          [ -n "$CHROME" ] || { echo "Chromium unavailable"; exit 1; }
+          CHROME="$CHROME" node tests/redline-header-browser-smoke.mjs
       - name: Sender iMessage-style live session, earnings and uploads
         shell: bash
         run: |
