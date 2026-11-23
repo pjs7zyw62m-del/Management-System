@@ -368,6 +368,14 @@ function renderCurrentlyViewing(snap){
   viewingPreview.append(make('small','redline-current-viewing-price','Approved price '+money(photo.amount_cents)));
  else if(photo?.decision_status==='pending')
   viewingPreview.append(make('small','redline-current-viewing-price','AWAITING RECEIVER REVIEW'));
+ if(photo?.image_url&&!photo.removal_status){
+  const open=make('button','redline-hd-open','⤢ VIEW ORIGINAL QUALITY');
+  open.type='button';open.setAttribute('aria-label','Open receiver-selected photograph at original quality');
+  open.addEventListener('click',()=>{
+   window.BLACKCELL_REDLINE_HD_VIEWER?.open(photo.id);
+  });
+  viewingPreview.append(open);
+ }
 }
 async function pollCurrentlyViewing(force=false){
  const snap=snapshot();
@@ -484,6 +492,14 @@ function renderPhotoHistory(snap){
   button.type='button';button.disabled=!p.resubmissionAllowed||Boolean(resubmittingId);
   const status=make('p','redline-five-star-row-status');status.setAttribute('role','status');
   button.addEventListener('click',()=>void resendHistoryPhoto(p,button,status,snap.roomId));
+  if(p.image_url&&!p.removal_status){
+   const view=make('button','redline-hd-open','⤢ VIEW ORIGINAL');
+   view.type='button';view.setAttribute('aria-label','View this private original photograph full screen');
+   view.addEventListener('click',()=>{
+    window.BLACKCELL_REDLINE_HD_VIEWER?.open(p.id);
+   });
+   info.append(view);
+  }
   info.append(button,status);card.append(info);historyList.append(card);
  }
  historyMore.hidden=photos.length<=historyVisible;
@@ -539,6 +555,14 @@ function renderFiveStarPhotos(snap){
     if(fresh?.roomId===snap.roomId)renderFiveStarPhotos(fresh);
    }
   });
+  if(photo.image_url&&!photo.removal_status){
+   const view=make('button','redline-hd-open','⤢ VIEW ORIGINAL');
+   view.type='button';view.setAttribute('aria-label','View five-star photograph at original quality');
+   view.addEventListener('click',()=>{
+    window.BLACKCELL_REDLINE_HD_VIEWER?.open(photo.id);
+   });
+   details.append(view);
+  }
   details.append(action,status);
   card.append(details);fiveStarList.append(card);
  }
