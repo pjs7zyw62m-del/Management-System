@@ -41,6 +41,7 @@ on:
       - 'tests/redline-header-browser-smoke.mjs'
       - 'private-photo-ledger-header-refined.css'
       - 'private-photo-ledger-approved-deck.css'
+      - 'private-photo-ledger-merged-photo-panel.css'
       - '.github/workflows/blackcell-redline-receiver-rebuild.yml'
   push:
     branches: [main]
@@ -62,6 +63,7 @@ on:
       - 'tests/redline-header-browser-smoke.mjs'
       - 'private-photo-ledger-header-refined.css'
       - 'private-photo-ledger-approved-deck.css'
+      - 'private-photo-ledger-merged-photo-panel.css'
       - 'tests/private-photo-ledger-sender.test.mjs'
       - 'tests/private-photo-ledger-simple-sender.test.mjs'
       - 'tests/redline-timer-chat-browser-smoke.mjs'

@@ -68,7 +68,7 @@ try{
   });
   assert.equal(code,0,'Chrome failed: '+stderr.slice(-900));
   const flags=['no-detached-watch','watch-next-to-money','heading-aligned',
-   'rate-aligned','buttons-balanced','rating-inline','compact-controls',
+   'rate-aligned','buttons-balanced','rating-inline','compact-controls','merged-control-deck',
    'equal-stats','chat-grows','no-overflow'];
   for(const flag of flags){
    assert.match(stdout,new RegExp('data-'+flag+'="true"'),

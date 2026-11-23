@@ -15,6 +15,9 @@
     const watch=getComputedStyle(q('.rr-timer-heading'),'::before');
     const inlineWatch=getComputedStyle(q('.rr-timer-money'),'::before');
     const timer=r('.rr-timer-panel'), review=r('#redlineLightboxReview');
+    const shell=r('#rrAppleTimerMount'),shellStyle=getComputedStyle(q('#rrAppleTimerMount'));
+    const timerStyle=getComputedStyle(q('.rr-timer-panel'));
+    const reviewStyle=getComputedStyle(q('#redlineLightboxReview'));
     const chat=r('.rr-chat-panel'), rail=r('#rrAppleRight');
     const findings={
       'no-detached-watch':watch.content==='none'||watch.display==='none',
@@ -24,6 +27,10 @@
       'buttons-balanced':Math.max(...buttons.map(n=>n.width))-Math.min(...buttons.map(n=>n.width))<6&&Math.max(...buttons.map(n=>n.top))-Math.min(...buttons.map(n=>n.top))<5,
       'rating-inline':Math.abs(rating.top-stars.top)<11,
       'compact-controls':timer.height<=160&&review.height<=82,
+      'merged-control-deck':parseFloat(shellStyle.borderTopWidth)>=1&&
+       parseFloat(timerStyle.borderTopWidth)===0&&parseFloat(reviewStyle.borderTopWidth)>=1&&
+       parseFloat(reviewStyle.borderLeftWidth)===0&&
+       shell.top<=timer.top&&shell.bottom>=review.bottom,
       'equal-stats':Math.max(...stats.map(n=>n.height))-Math.min(...stats.map(n=>n.height))<4,
       'chat-grows':chat.height>260,
       'no-overflow':timer.right<=rail.right+2&&review.right<=rail.right+2&&stats.every(n=>n.right<=rail.right+2)
@@ -32,7 +39,8 @@
     document.body.setAttribute('data-metrics',JSON.stringify({
       titleY:title.top,clockY:clock.top,moneyY:money.top,
       chosenY:chosen.top,rateY:rate.top,ratingY:rating.top,starsY:stars.top,
-      timerH:timer.height,ratingH:review.height,chatH:chat.height,
+      timerH:timer.height,ratingH:review.height,mergedH:shell.height,
+      timerBorder:timerStyle.borderTopWidth,reviewDivider:reviewStyle.borderTopWidth,chatH:chat.height,
       watch:watch.content,inlineWatch:inlineWatch.content
     }));
   },600);
