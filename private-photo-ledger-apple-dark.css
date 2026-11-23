@@ -1,0 +1,557 @@
+/* BLACKCELL REDLINE — approved Apple-dark receiver, web + tablet.
+   Presentation only: all authenticated photo, rating, pricing, timer,
+   payment, negotiation and message actions are the existing real nodes.
+   Sender and handset/mobile REDLINE views intentionally remain unchanged. */
+@media(min-width:720px){
+body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile){
+ --bc-apple-bg:#030304;--bc-apple-card:#101014;--bc-apple-surface:#17171b;
+ --bc-apple-stroke:#393239;--bc-apple-rose:#f22449;
+ --bc-apple-text:#f8f6f8;--bc-apple-muted:#b1adb3;
+ color:var(--bc-apple-text)!important;background:#030304!important;
+ font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:not(.bc-ledger-mobile) .topbar{
+ background:linear-gradient(104deg,#060607 4%,#0d080b 76%,#21030a 100%)!important;
+ border-bottom:1px solid #4d1b29!important;
+ min-height:54px!important;
+ backdrop-filter:blur(18px)!important;-webkit-backdrop-filter:blur(18px)!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:not(.bc-ledger-mobile) #ledgerApp.shell{
+ max-width:2200px!important;width:100%!important;
+ padding:11px clamp(10px,1.1vw,20px) 32px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:not(.bc-ledger-mobile) #ledgerApp>.page-heading{
+ min-height:0!important;margin:0 0 5px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:not(.bc-ledger-mobile) #ledgerApp>.page-heading .workspace-actions{
+ gap:6px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:not(.bc-ledger-mobile) #ledgerApp .redline-receiver-command{
+ padding:12px 18px!important;margin:0 0 10px!important;gap:0!important;
+ background:linear-gradient(110deg,#0a090b,#14080e 80%,#080709)!important;
+ border:1px solid #4b2531!important;border-radius:17px!important;
+ box-shadow:inset 0 1px #ffffff0c,0 7px 25px #0006!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:not(.bc-ledger-mobile) #ledgerApp .rr-command-header{
+ min-height:45px!important;padding:0!important;border:0!important;
+ gap:10px!important;align-items:center!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:not(.bc-ledger-mobile) #ledgerApp .rr-command-intro{
+ flex:1 1 auto!important;gap:4px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:not(.bc-ledger-mobile) .rr-command-intro::before{
+ display:none!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:not(.bc-ledger-mobile) #ledgerApp .rr-title{
+ font-size:clamp(21px,2.2vw,32px)!important;line-height:1.05!important;
+ letter-spacing:-.04em!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:not(.bc-ledger-mobile) #ledgerApp .rr-room-summary{
+ color:#c4bbc0!important;font-size:10px!important;line-height:1.3!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:not(.bc-ledger-mobile) #ledgerApp .rr-status{
+ align-self:center!important;min-height:30px!important;padding:6px 10px!important;
+ font-size:9px!important;border-radius:999px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:not(.bc-ledger-mobile) #activeRoom>.room-toolbar{
+ min-height:37px!important;padding:7px 13px!important;margin:0 0 8px!important;
+ border:1px solid #32272f!important;border-left:3px solid #e02344!important;
+ border-radius:10px!important;box-shadow:none!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:not(.bc-ledger-mobile) #activeRoom>.room-toolbar h2{
+ font-size:14px!important;margin:0!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:not(.bc-ledger-mobile) #activeRoom>.room-toolbar :is(.eyebrow,#roomPeople){
+ font-size:9px!important;line-height:1.2!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:not(.bc-ledger-mobile) #activeRoom>.room-toolbar .room-state{
+ padding:4px 8px!important;font-size:9px!important;
+}
+/* Active room is the only primary viewport; utility and security panels
+   remain available in the page below and are never removed from the DOM. */
+body.bc-redline-receiver.bc-redline-apple-mode:not(.bc-ledger-mobile) #activeRoom .room-body{
+ margin-top:10px!important;
+}
+body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #redlineReceiverLiveWorkspace:not([hidden]){
+ display:grid!important;
+ grid-template-columns:clamp(134px,12vw,196px) minmax(0,1.62fr) 9px minmax(295px,1fr)!important;
+ grid-template-rows:minmax(0,1fr)!important;
+ align-items:stretch!important;gap:0!important;
+ height:clamp(620px,calc(100dvh - 191px),1100px)!important;
+ max-height:none!important;min-height:620px!important;
+ padding:0!important;margin:0!important;width:100%!important;
+ background:#050507!important;
+ border:1px solid #46343b!important;border-radius:20px!important;
+ box-shadow:0 18px 54px #000b,inset 0 1px #ffffff0b!important;
+ overflow:hidden!important;
+}
+/* Real primary sidebar, not a hover-only decorative shell. */
+body.bc-redline-receiver.bc-redline-apple-mode:not(.bc-ledger-mobile) #rrAppleSidebar{
+ grid-column:1!important;grid-row:1!important;min-width:0!important;
+ display:flex!important;flex-direction:column!important;gap:9px!important;
+ padding:18px 11px!important;
+ background:linear-gradient(160deg,#100c10,#070708 64%,#21050d)!important;
+ border-right:1px solid #44323b!important;
+ overflow-y:auto!important;scrollbar-width:none!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleSidebar::-webkit-scrollbar{display:none!important}
+body.bc-redline-receiver.bc-redline-apple-mode .rr-apple-mark{
+ display:grid;gap:5px;padding:6px 6px 18px;margin-bottom:5px;
+ border-bottom:1px solid #403039;
+}
+body.bc-redline-receiver.bc-redline-apple-mode .rr-apple-mark strong{
+ font-size:clamp(10px,1.04vw,14px);font-weight:850;letter-spacing:-.025em;
+ color:#fff;overflow-wrap:anywhere;
+}
+body.bc-redline-receiver.bc-redline-apple-mode .rr-apple-mark small,
+body.bc-redline-receiver.bc-redline-apple-mode .rr-apple-sidebar-foot{
+ font-size:8px;letter-spacing:.10em;font-weight:700;line-height:1.6;color:#e1a0ae;
+}
+body.bc-redline-receiver.bc-redline-apple-mode .rr-apple-menu{
+ display:flex;flex-direction:column;gap:5px;min-width:0;
+}
+body.bc-redline-receiver.bc-redline-apple-mode .rr-apple-link{
+ width:100%;min-height:44px;min-width:0;
+ display:flex;justify-content:flex-start;align-items:center;
+ text-align:left;padding:10px 9px;
+ color:#e5dfe3;background:transparent;border:1px solid transparent;
+ border-radius:12px;cursor:pointer;font-size:11px;
+ font-weight:680;line-height:1.3;white-space:normal;
+}
+body.bc-redline-receiver.bc-redline-apple-mode .rr-apple-link:hover,
+body.bc-redline-receiver.bc-redline-apple-mode .rr-apple-link:focus-visible{
+ background:#260c16;border-color:#98334a;color:#fff;
+}
+body.bc-redline-receiver.bc-redline-apple-mode .rr-apple-link.is-selected{
+ background:linear-gradient(110deg,#b21230,#840d23)!important;
+ border:1px solid #f03756;color:#fff!important;
+ box-shadow:0 4px 20px #a9002738;
+}
+body.bc-redline-receiver.bc-redline-apple-mode .rr-apple-sidebar-divider{
+ border-top:1px solid #43323b;margin-top:auto;padding-top:8px;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleSidebar>.rr-nav{
+ display:flex!important;flex-direction:column!important;gap:7px!important;
+ min-width:0!important;padding:0!important;overflow:visible!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleSidebar .rr-nav-dropdown,
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleSidebar .rr-pay-column{
+ width:100%!important;min-width:0!important;max-width:none!important;
+ display:flex!important;flex-direction:column!important;gap:7px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleSidebar .rr-nav-button{
+ width:100%!important;min-width:0!important;
+ min-height:37px!important;padding:7px 5px!important;
+ font-size:10px!important;border-radius:10px!important;
+ white-space:normal!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleSidebar .rr-menu-toggle{
+ height:40px!important;min-height:40px!important;text-align:center!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleSidebar .rr-nav-menu-items{
+ max-width:100%!important;max-height:245px!important;overflow:auto!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode .rr-apple-sidebar-foot{
+ padding:7px 4px 2px;overflow-wrap:anywhere;
+}
+/* The unchanged full original photo remains the primary visual. */
+body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #redlineReceiverIncomingPhotos.rr-incoming-photos{
+ grid-column:2!important;grid-row:1!important;
+ width:100%!important;height:100%!important;min-height:0!important;
+ display:grid!important;grid-template-rows:62px minmax(0,1fr) 0px 0px!important;
+ background:#08080a!important;border:0!important;
+ padding:0!important;margin:0!important;overflow:hidden!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode .rr-incoming-header{
+ min-height:62px!important;max-height:62px!important;
+ padding:10px 17px!important;gap:7px!important;
+ background:linear-gradient(110deg,#161317,#0f0e11)!important;
+ border-bottom:1px solid #332a30!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode .rr-incoming-header h3{
+ font-size:clamp(17px,1.55vw,23px)!important;letter-spacing:-.035em!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode .rr-incoming-header small{
+ font-size:10px!important;color:#aaa3ac!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode .rr-incoming-header .rr-photo-close,
+body.bc-redline-receiver.bc-redline-apple-mode .rr-incoming-header .rr-photo-expand{
+ display:none!important; /* the permanent media canvas replaces close/expand */
+}
+body.bc-redline-receiver.bc-redline-apple-mode .rr-incoming-header .rr-photo-fullscreen{
+ min-height:37px!important;min-width:37px!important;border-radius:10px!important;
+}
+body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #redlineReceiverReviewStage{
+ display:flex!important;flex-direction:column!important;
+ min-height:0!important;min-width:0!important;height:100%!important;
+ overflow:hidden!important;padding:10px 12px!important;gap:10px!important;
+ background:#09090b!important;
+}
+body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #redlineReceiverReviewStage #ownerReviewQueue:not([hidden]){
+ display:flex!important;flex:1 1 0!important;flex-direction:column!important;
+ width:100%!important;height:0!important;min-width:0!important;
+ min-height:140px!important;max-height:none!important;
+ padding:0!important;margin:0!important;overflow:hidden!important;
+ border:1px solid #43323a!important;border-radius:15px!important;
+ background:#050506!important;box-shadow:none!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #redlineReceiverReviewStage #reviewQueueCurrent{
+ display:flex!important;flex:1 1 0!important;flex-direction:column!important;
+ min-height:0!important;height:100%!important;overflow:hidden!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #redlineReceiverReviewStage #reviewQueueCurrent>.photo-entry{
+ display:flex!important;flex:1 1 0!important;flex-direction:column!important;
+ width:100%!important;height:100%!important;min-height:0!important;
+ overflow:hidden!important;background:#030304!important;
+ border:0!important;box-shadow:none!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #redlineReceiverReviewStage #reviewQueueCurrent>.photo-entry>.photo-image-btn{
+ flex:1 1 0!important;min-height:0!important;height:100%!important;
+ max-height:none!important;padding:0!important;
+ border-radius:14px!important;overflow:hidden!important;background:#030304!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #redlineReceiverReviewStage #reviewQueueCurrent>.photo-entry>.photo-image-btn img{
+ width:100%!important;height:100%!important;max-height:100%!important;
+ object-fit:contain!important;object-position:center!important;
+ background:#030304!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #redlineReceiverReviewStage #reviewQueueCurrent>.photo-entry>.photo-entry-content{
+ display:none!important;/* Bid is available in the real, independent bar below. */
+}
+/* THE REAL owner rating, bid input and immutable decision handlers are the
+   single photo pricing bar. No fabricated amount or second review form. */
+body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #redlineReceiverReviewStage>#redlineLightboxReview:not([hidden]){
+ display:grid!important;flex:0 0 auto!important;align-items:center!important;
+ grid-template-columns:minmax(135px,1.05fr) minmax(104px,.72fr) minmax(167px,1.25fr)!important;
+ gap:9px 13px!important;
+ width:100%!important;min-width:0!important;
+ height:auto!important;min-height:100px!important;max-height:220px!important;
+ overflow-y:auto!important;overflow-x:hidden!important;
+ padding:12px 13px!important;margin:0!important;
+ border:1px solid #ad2946!important;border-radius:15px!important;
+ background:linear-gradient(115deg,#160c12,#100c10 65%,#26080f)!important;
+ box-shadow:0 9px 29px #0005,inset 0 1px #ffffff0d!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #redlineLightboxReview>.rr-photo-rating-panel{
+ grid-column:1!important;grid-row:1 / span 2!important;
+ padding:0!important;margin:0!important;gap:4px!important;border:0!important;
+ min-width:0!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #redlineLightboxReview .rr-photo-rating-title{
+ font-size:10px!important;color:#f8e4e9!important;letter-spacing:.04em!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #redlineLightboxReview .rr-photo-rating-buttons{
+ display:flex!important;gap:2px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #redlineLightboxReview .rr-photo-rating-star{
+ font-size:clamp(19px,2vw,29px)!important;min-height:39px!important;
+ height:39px!important;background:transparent!important;
+ border:0!important;padding:0!important;color:#67575e!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #redlineLightboxReview .rr-photo-rating-star.is-filled{
+ color:#ffc247!important;background:transparent!important;border:0!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #redlineLightboxReview .rr-photo-rating-hint{
+ font-size:9px!important;color:#aaa0a8!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #redlineLightboxReview>.redline-review-kicker{
+ display:none!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #redlineLightboxReview>.redline-review-label{
+ grid-column:2!important;grid-row:1 / span 2!important;
+ align-self:center!important;margin:0!important;
+ color:#f5dfe8!important;font-size:10px!important;font-weight:800!important;
+ display:flex!important;flex-direction:column!important;gap:7px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #redlineLightboxReview .redline-review-amount{
+ width:100%!important;height:43px!important;min-height:43px!important;
+ border-radius:11px!important;font-size:18px!important;font-weight:750!important;
+ border:1px solid #79616b!important;background:#151115!important;color:#fff!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #redlineLightboxReview>.redline-review-actions{
+ grid-column:3!important;grid-row:1 / span 2!important;
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ gap:5px!important;padding:0!important;margin:0!important;align-self:center!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #redlineLightboxReview>.redline-review-actions>.button-main{
+ grid-column:1 / -1!important;min-height:46px!important;height:auto!important;
+ padding:9px 7px!important;border:1px solid #f04b67!important;
+ background:linear-gradient(125deg,#ef123b,#c30d30)!important;
+ border-radius:11px!important;color:white!important;font-size:11px!important;
+ font-weight:850!important;white-space:normal!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #redlineLightboxReview>.redline-review-actions>.button-outline{
+ min-height:30px!important;height:auto!important;padding:6px 4px!important;
+ border-radius:8px!important;font-size:9px!important;white-space:normal!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #redlineLightboxReview>.rr-receiver-photo-pause{
+ grid-column:1 / -1!important;grid-row:auto!important;
+ display:flex!important;flex-direction:row!important;align-items:center!important;
+ gap:10px!important;margin:0!important;padding:7px 0 0!important;
+ border:0!important;border-top:1px solid #4e2b35!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #redlineLightboxReview .rr-receiver-pause-button{
+ max-width:190px!important;min-height:34px!important;height:34px!important;
+ padding:5px 9px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #redlineLightboxReview .rr-receiver-pause-status{
+ flex:1!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #redlineLightboxReview>.redline-review-hint,
+body.bc-redline-receiver.bc-redline-apple-mode #redlineLightboxReview>.redline-review-status,
+body.bc-redline-receiver.bc-redline-apple-mode #redlineLightboxReview>.rr-permanent-delete-button,
+body.bc-redline-receiver.bc-redline-apple-mode #redlineLightboxReview>.rr-current-session-finished,
+body.bc-redline-receiver.bc-redline-apple-mode #redlineLightboxReview>.rr-photo-price-title,
+body.bc-redline-receiver.bc-redline-apple-mode #redlineLightboxReview>.rr-photo-price-amount,
+body.bc-redline-receiver.bc-redline-apple-mode #redlineLightboxReview>.rr-photo-price-breakdown{
+ grid-column:1 / -1!important;margin:0!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #redlineLightboxReview>.rr-permanent-delete-button{
+ justify-self:end!important;max-width:210px!important;
+ min-height:31px!important;font-size:9px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #redlineLightboxReview>.rr-photo-price-amount{
+ font-size:26px!important;
+}
+/* Photo history remains a real, independent scroller, never a cloned queue.
+   Its existing overlay appears when the owner presses Photo History. */
+body.bc-redline-receiver.bc-redline-apple-mode #redlineReceiverHeightEdge{
+ display:none!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #redlineReceiverIncomingPhotos>#redlinePhotoHistoryToggle:not([hidden]){
+ top:auto!important;left:15px!important;bottom:14px!important;
+ min-height:34px!important;max-width:180px!important;
+}
+/* Real divider, right-hand controls and iMessage-like chat. */
+body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #redlineReceiverMediaEdge{
+ grid-column:3!important;grid-row:1!important;height:100%!important;
+ width:9px!important;display:block!important;align-self:stretch!important;
+ border:0!important;background:#090709!important;cursor:col-resize!important;
+ touch-action:none!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight{
+ grid-column:4!important;grid-row:1!important;
+ min-width:0!important;min-height:0!important;
+ display:flex!important;flex-direction:column!important;gap:9px!important;
+ padding:10px!important;
+ background:linear-gradient(180deg,#0d0c0e,#08080b 82%,#15050a)!important;
+ overflow:hidden!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount{
+ flex:0 0 auto!important;min-width:0!important;
+ padding:0!important;margin:0!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount>.rr-timer-panel{
+ display:block!important;max-height:none!important;width:100%!important;
+ margin:0!important;padding:11px 13px!important;
+ border:1px solid #63313e!important;border-radius:14px!important;
+ background:linear-gradient(125deg,#1a0c11,#0e0d10)!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount summary.rr-timer-heading{
+ display:flex!important;align-items:center!important;flex-wrap:wrap!important;
+ min-height:25px!important;gap:7px!important;padding:0 0 7px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount .rr-timer-heading strong{
+ color:#fa5476!important;font-size:11px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount .rr-timer-heading small{
+ color:#b6aab1!important;font-size:9px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount .rr-timer-clock{
+ font-size:clamp(17px,1.6vw,25px)!important;font-weight:800!important;color:#fff!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount .rr-timer-controls{
+ display:flex!important;flex-wrap:wrap!important;gap:7px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount .rr-timer-selected{
+ min-width:0!important;max-width:100%!important;font-size:10px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount .rr-timer-rate-label{
+ flex:1 1 100px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount .rr-timer-start,
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount .rr-timer-stop{
+ flex:1 1 86px!important;min-height:41px!important;height:auto!important;
+ border-radius:10px!important;font-size:11px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount .rr-timer-note{
+ font-size:9px!important;line-height:1.35!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleFinance{
+ flex:0 0 auto!important;min-width:0!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleFinance>.rr-stats{
+ width:100%!important;display:grid!important;
+ grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleFinance .rr-stat{
+ flex-direction:column!important;justify-content:center!important;gap:8px!important;
+ min-height:78px!important;padding:10px 12px!important;
+ border:1px solid #44343b!important;border-radius:13px!important;
+ background:#141216!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleFinance .rr-stat-name{
+ color:#bbb0b8!important;font-size:9px!important;letter-spacing:.025em!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleFinance .rr-stat-value{
+ font-size:clamp(17px,1.55vw,25px)!important;font-variant-numeric:tabular-nums!important;
+ white-space:normal!important;word-break:break-word!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleFinance .rr-stat-pending{
+ background:#210911!important;border-color:#952942!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode .rr-apple-negotiation{
+ display:flex!important;flex-direction:column!important;gap:5px!important;
+ padding:8px 12px!important;border-radius:13px!important;
+ background:#120f13!important;border:1px solid #42323b!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode .rr-apple-negotiation strong{
+ font-size:10px;color:#f5dce5;letter-spacing:.05em;
+}
+body.bc-redline-receiver.bc-redline-apple-mode .rr-apple-negotiation small{
+ font-size:9px!important;color:#a79ca6!important;line-height:1.5!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode .rr-apple-chat-title{
+ display:none!important; /* live chat's own authenticated header is authoritative */
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight>.rr-chat-panel:not([hidden]){
+ flex:1 1 0!important;height:auto!important;max-height:none!important;
+ min-height:185px!important;
+ width:100%!important;min-width:0!important;margin:0!important;
+ padding:0!important;border:1px solid #41323b!important;border-radius:15px!important;
+ background:#0a0a0d!important;box-shadow:none!important;
+ overflow:hidden!important;
+ display:flex!important;flex-direction:column!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight .rr-chat-heading{
+ flex:0 0 auto!important;min-height:54px!important;
+ padding:11px 14px!important;border-bottom:1px solid #4d3743!important;
+ background:linear-gradient(105deg,#201018,#100e12)!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight .rr-chat-heading h3{
+ font-size:15px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight .rr-chat-kicker{
+ font-size:9px!important;color:#da9aad!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight .rr-chat-mount{
+ flex:1 1 0!important;display:flex!important;flex-direction:column!important;
+ min-height:0!important;min-width:0!important;overflow:hidden!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight .redline-message-card{
+ flex:1 1 0!important;display:flex!important;flex-direction:column!important;
+ min-height:0!important;height:100%!important;max-height:none!important;
+ overflow:hidden!important;border:0!important;background:#08080b!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight .redline-message-feed{
+ flex:1 1 0!important;min-height:0!important;max-height:none!important;
+ overflow-y:auto!important;overflow-x:hidden!important;
+ padding:16px 13px!important;scrollbar-width:none!important;
+ background:#09090c!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight .redline-message-feed::-webkit-scrollbar{
+ display:none!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight .redline-message-composer{
+ flex:0 0 auto!important;margin:0!important;padding:12px!important;
+ background:#171216!important;border-top:1px solid #45333d!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight .redline-message-entry{
+ min-height:43px!important;border-radius:999px!important;
+ background:#211d22!important;border:1px solid #62515b!important;
+ color:#fff!important;font-size:14px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight .redline-chat-send{
+ border-radius:50%!important;min-width:43px!important;min-height:43px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight .redline-message-header{
+ flex:0 0 auto!important;min-height:39px!important;
+ border-bottom:1px solid #2e292e!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleSidebar .rr-apple-link:focus-visible,
+body.bc-redline-receiver.bc-redline-apple-mode #redlineReceiverReviewStage button:focus-visible,
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight button:focus-visible{
+ outline:2px solid #ff8299!important;outline-offset:2px!important;
+}
+}
+/* Tablet: meaningful, usable columns rather than a tiny OS replica.
+   A narrower tablet stacks the control/chat rail below the main photo;
+   landscape keeps the familiar approved side-by-side arrangement. */
+@media(min-width:1000px) and (max-width:1280px){
+body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #redlineReceiverLiveWorkspace:not([hidden]){
+ grid-template-columns:118px minmax(0,1.4fr) 8px minmax(280px,1fr)!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode .rr-apple-link{
+ font-size:10px!important;padding:8px 6px!important;
+}
+body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode
+ #redlineReceiverReviewStage>#redlineLightboxReview:not([hidden]){
+ grid-template-columns:minmax(110px,1fr) minmax(92px,.7fr) minmax(145px,1.3fr)!important;
+ gap:8px!important;padding:9px!important;
+}
+}
+@media(min-width:720px) and (max-width:999px){
+body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #redlineReceiverLiveWorkspace:not([hidden]){
+ grid-template-columns:84px minmax(0,1fr)!important;
+ grid-template-rows:minmax(490px,auto) minmax(400px,1fr)!important;
+ height:auto!important;max-height:none!important;min-height:0!important;
+ overflow:visible!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleSidebar{
+ grid-row:1 / span 2!important;grid-column:1!important;
+ border-radius:19px 0 0 19px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode .rr-apple-mark strong{
+ font-size:10px!important;line-height:1.3!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode .rr-apple-mark small,
+body.bc-redline-receiver.bc-redline-apple-mode .rr-apple-sidebar-foot{
+ font-size:7px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode .rr-apple-link{
+ font-size:9px!important;padding:8px 6px!important;
+ overflow-wrap:anywhere!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #redlineReceiverIncomingPhotos.rr-incoming-photos{
+ grid-column:2!important;grid-row:1!important;min-height:500px!important;
+ border-bottom:1px solid #47333a!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #redlineReceiverMediaEdge{
+ display:none!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight{
+ grid-column:2!important;grid-row:2!important;min-height:440px!important;
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ grid-template-rows:auto minmax(260px,1fr)!important;align-items:stretch!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleTimerMount{
+ grid-row:1!important;grid-column:1!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleFinance{
+ grid-row:1!important;grid-column:2!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode .rr-apple-negotiation{
+ display:none!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight>.rr-chat-panel:not([hidden]){
+ grid-row:2!important;grid-column:1 / -1!important;min-height:260px!important;
+}
+body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode
+ #redlineReceiverReviewStage>#redlineLightboxReview:not([hidden]){
+ grid-template-columns:minmax(150px,1fr) minmax(100px,.8fr) minmax(165px,1.3fr)!important;
+}
+}
+/* Reduced motion and enforced accessibility. */
+@media(prefers-reduced-motion:reduce){
+ body.bc-redline-receiver.bc-redline-apple-mode .rr-apple-link{
+  transition:none!important;animation:none!important;
+ }
+}
