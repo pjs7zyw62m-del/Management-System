@@ -95,7 +95,7 @@ earningsPane.append(earningsBox,topPicksBox,activityBox,returnUpload);
 const historyIntro=make('header','redline-photo-history-intro');
 historyIntro.append(make('span','redline-kicker','PRIVATE SENDER COLLECTION'),
  make('h2','','Photo History'),
- make('p','','All submitted photos, prices and ratings. Resend requires 5 stars AND an approved price of at least $0.01.'));
+ make('p','','All submitted photos, prices and ratings. Reuse approved originals for a new private review without changing previous amounts or ratings.'));
 const historyControls=make('div','redline-history-controls');
 const historyAll=make('button','redline-history-filter is-current','ALL PHOTOS');
 const historyPicks=make('button','redline-history-filter','5-STAR TOP PICKS');
@@ -111,7 +111,7 @@ historyPane.append(historyIntro,historyControls,historyCount,historyFeedback,his
 const fiveStarIntro=make('header','redline-five-star-intro');
 fiveStarIntro.append(make('span','redline-kicker','RECEIVER-RATED PHOTOS'),
  make('h2','','Your 5-Star Photos'),
- make('p','','Resubmit a top-rated original for another review. Each resubmission is a new pending photo; the original rating and price remain unchanged.'));
+ make('p','','Reuse an approved original for another review. Each reuse creates a new pending photo; the original rating and price remain unchanged.'));
 const fiveStarStatus=make('p','redline-five-star-feedback');
 fiveStarStatus.setAttribute('role','status');
 const fiveStarList=make('div','redline-five-star-list');
@@ -376,6 +376,15 @@ function renderCurrentlyViewing(snap){
   });
   viewingPreview.append(open);
  }
+ const rootId=photo?.resubmission_origin_id||photo?.id;
+ const original=(snap?.photoHistory||[]).find(p=>p.id===rootId);
+ if(original?.resubmissionAllowed){
+  const reuse=make('button','redline-reuse-photo-button','⟲ REUSE PHOTO');
+  reuse.type='button';
+  reuse.setAttribute('aria-label','Reuse the original for a new private review');
+  reuse.addEventListener('click',()=>window.BLACKCELL_REDLINE_REUSE_UI?.open(rootId,reuse));
+  viewingPreview.append(reuse);
+ }
 }
 async function pollCurrentlyViewing(force=false){
  const snap=snapshot();
@@ -436,32 +445,20 @@ historyArchive.addEventListener('click',async()=>{
  finally{historyArchive.disabled=false}
 });
 function historyResendLabel(p,snap){
- if(p.resubmissionAllowed)return '↻ RESEND FOR REVIEW';
- if(p.resubmission_origin_id)return 'ALREADY RESUBMITTED COPY';
- if(snap?.archiveMode)return 'ARCHIVED · RESEND UNAVAILABLE';
+ if(p.resubmissionAllowed)return '⟲ REUSE PHOTO';
+ if(p.resubmission_origin_id)return 'REUSED COPY · SEE ORIGINAL';
+ if(snap?.archiveMode)return 'ARCHIVED · REUSE UNAVAILABLE';
  if(!snap?.roomActive)return 'ROOM CLOSED';
  if(snap?.photoSendingPaused)return 'SENDING PAUSED';
- if(p.resubmissionStatus==='rejected')return 'REJECTED · RESEND CLOSED';
- if(p.resubmissionStatus==='pending')return 'AWAITING RECEIVER REVIEW';
+ if(p.resubmissionStatus==='rejected')return 'REJECTED · REUSE CLOSED';
+ if(p.resubmissionStatus==='pending')return 'REUSED COPY AWAITING REVIEW';
  if(p.decision_status==='pending')return 'AWAITING FIRST REVIEW';
- if(p.stars!==5)return 'REQUIRES 5 STARS';
- if(BigInt(p.amount_cents||0)<1n)return 'REQUIRES $0.01 MINIMUM';
- return 'RESEND UNAVAILABLE';
+ if(p.decision_status==='rejected')return 'REJECTED · CANNOT REUSE';
+ return 'REUSE UNAVAILABLE';
 }
 async function resendHistoryPhoto(p,button,status,roomId){
  if(resubmittingId||!p.resubmissionAllowed)return;
- if(!window.confirm('Resend this 5-star original for another private review? Original price and stars remain unchanged.'))return;
- resubmittingId=p.id;button.disabled=true;button.textContent='RESENDING PRIVATELY…';
- status.textContent='Creating a new pending review copy…';
- try{
-  const result=await bridge()?.resubmitFiveStarPhoto?.(p.id);
-  if(result?.ok!==true)throw Error('Resubmission failed.');
-  historyFeedback.textContent='Top pick resent; new review is pending.';
- }catch(e){historyFeedback.textContent='Resend failed: '+String(e?.message||e).slice(0,200)}
- finally{
-  resubmittingId=null;const fresh=snapshot();
-  if(fresh?.roomId===roomId){renderPhotoHistory(fresh);renderFiveStarPhotos(fresh)}
- }
+ window.BLACKCELL_REDLINE_REUSE_UI?.open(p.id,button);
 }
 function renderPhotoHistory(snap){
  historyList.replaceChildren();
@@ -522,10 +519,10 @@ function renderFiveStarPhotos(snap){
    make('small','',photo.resubmissionCount+
     (photo.resubmissionCount===1?' previous resend':' previous resends')));
   if(photo.caption)details.append(make('p','redline-five-star-caption',photo.caption));
-  let label='↻ RESUBMIT PHOTO';
+  let label='⟲ REUSE PHOTO';
   if(photo.resubmissionStatus==='pending')label='AWAITING RECEIVER REVIEW';
   if(photo.resubmissionStatus==='original-pending')label='AWAITING FIRST APPROVAL';
-  if(photo.resubmissionStatus==='rejected')label='REJECTED · RESENDS CLOSED';
+  if(photo.resubmissionStatus==='rejected')label='REJECTED · REUSE CLOSED';
   if(snap.photoSendingPaused&&photo.resubmissionStatus==='ready')label='SENDING PAUSED BY RECEIVER';
   if(!snap.roomActive&&photo.resubmissionStatus==='ready')label='ROOM CLOSED';
   const action=make('button','redline-five-star-resubmit',label);
@@ -534,26 +531,9 @@ function renderFiveStarPhotos(snap){
   action.dataset.photoId=photo.id;
   const status=make('p','redline-five-star-row-status');
   status.setAttribute('role','status');
-  action.addEventListener('click',async()=>{
+  action.addEventListener('click',()=>{
    if(resubmittingId||!photo.resubmissionAllowed)return;
-   resubmittingId=photo.id;
-   action.disabled=true;action.textContent='RESUBMITTING PRIVATELY…';
-   status.textContent='Copying this five-star original to a new private review entry…';
-   try{
-    const result=await bridge()?.resubmitFiveStarPhoto?.(photo.id);
-    if(result?.ok!==true)throw Error('New review entry was not created.');
-    status.textContent='Photo resubmitted. Waiting for the receiver to accept or reject it.';
-    fiveStarStatus.textContent='Five-star photo sent again for receiver review.';
-   }catch(error){
-    const message='Unable to resend: '+String(error?.message||error).slice(0,240);
-    status.textContent=message;
-    action.textContent='↻ TRY RESUBMITTING AGAIN';
-    fiveStarStatus.textContent=message;
-   }finally{
-    resubmittingId=null;
-    const fresh=snapshot();
-    if(fresh?.roomId===snap.roomId)renderFiveStarPhotos(fresh);
-   }
+   window.BLACKCELL_REDLINE_REUSE_UI?.open(photo.id,action);
   });
   if(photo.image_url&&!photo.removal_status){
    const view=make('button','redline-hd-open','⤢ VIEW ORIGINAL');
