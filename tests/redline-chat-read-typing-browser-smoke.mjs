@@ -6,6 +6,15 @@ import {spawn} from 'node:child_process';
 
 let page=readFileSync('private-photo-ledger.html','utf8');
 page=page.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'');
+// Fixed-height feed makes repeated scroll checks deterministic in headless
+// Chrome even though this smoke harness does not load production CSS files.
+page=page.replace('</head>',`<style>
+.redline-message-card .redline-message-feed{
+height:220px!important;max-height:220px!important;min-height:220px!important;
+overflow-y:auto!important;display:flex!important;flex-direction:column!important;gap:4px!important;
+}
+.redline-message-feed>*{flex-shrink:0!important;min-height:28px!important}
+</style></head>`);
 const script=String.raw`<script>
 window.addEventListener('error',e=>{document.body.dataset.chatJsError=String(e.message||'error').slice(0,150)});
 const owner=new URLSearchParams(location.search).get('role')==='owner';
@@ -16,17 +25,22 @@ const first=Date.now();
 const sentAt=new Date(first-8000).toISOString();
 const replyAt=new Date(first-7000).toISOString();
 const messages=[
+ ...Array.from({length:65},(_,i)=>({
+  id:'historic-'+i,sender_id:i%2?senderId:ownerId,
+  body:'Historic private photo conversation item '+i,
+  created_at:new Date(first-4200000+i*30000).toISOString()
+ })),
  {id:'00000000-0000-4000-8000-000000000011',sender_id:senderId,body:'Here is the photo.',created_at:sentAt},
  {id:'00000000-0000-4000-8000-000000000012',sender_id:ownerId,body:'I saw it.',created_at:replyAt}
 ];
-let actions=[];
+let actions=[],currentReadAt=replyAt,savedAnchor=null,savedScrollTop=0;
 window.BLACKCELL_REDLINE_API={
  snapshot:()=>({roomId,userId:owner?ownerId:senderId,isOwner:owner,roomActive:true,
   peerName:owner?'Sender':'Receiver',archiveMode:false,resetAt:null,
   pending:0,owed:'$0.00',paid:'$0.00',assigned:'$0.00',
   entries:[],ratingEvents:[],topPicks:[],fiveStarPhotos:[],photoHistory:[]}),
  loadMessages:async()=>messages,
- chatStatus:async()=>({peerReadAt:replyAt,peerTyping:true}),
+ chatStatus:async()=>({peerReadAt:currentReadAt,peerTyping:true}),
  chatSignal:async(id,action,message)=>{actions.push({id,action,message});return true},
  timerStatus:async()=>({ok:true,server_now:new Date().toISOString(),active:null,recent:[]})
 };
@@ -61,6 +75,31 @@ document.addEventListener('DOMContentLoaded',()=>{
  setTimeout(()=>{
   document.body.dataset.chatTypingStopped=String(actions.some(a=>a.action==='stopped'&&a.id===roomId));
  },4000);
+ // User has scrolled into history. Simulate a newer message and receipt
+ // update; neither may reset the scroller or replace the old message DOM.
+ setTimeout(()=>{
+  const feed=document.querySelector('.redline-message-feed');
+  if(!feed)return;
+  document.body.dataset.chatLongThread=String(feed.scrollHeight>feed.clientHeight+400);
+  feed.scrollTop=142;
+  savedScrollTop=feed.scrollTop;
+  savedAnchor=feed.querySelector('[data-redline-item-key="message:historic-10#0"]');
+  currentReadAt=new Date(first+1000).toISOString();
+  messages.push({id:'follow-up-'+(owner?'sender':'owner'),
+   sender_id:owner?senderId:ownerId,
+   body:'Newest private message arrived while reading history',
+   created_at:new Date(first+1400).toISOString()});
+  window.dispatchEvent(new Event('blackcell:redline:messages-changed'));
+ },4400);
+ setTimeout(()=>{
+  const feed=document.querySelector('.redline-message-feed');
+  document.body.dataset.chatScrollStable=String(Boolean(feed&&
+   Math.abs(feed.scrollTop-savedScrollTop)<3));
+  document.body.dataset.chatDomStable=String(Boolean(savedAnchor&&savedAnchor.isConnected&&
+   feed.contains(savedAnchor)));
+  document.body.dataset.chatNewMessage=String(Boolean(feed?.textContent?.includes(
+   'Newest private message arrived while reading history')));
+ },5600);
 });
 </script>
 <script src="/private-photo-ledger-simple-sender.js" defer></script>`;
@@ -92,10 +131,11 @@ try{
   });
   assert.equal(exit,0,role+' browser failed: '+stderr.slice(-1000));
   for(const flag of ['chat-read-receipt','chat-typing-indicator','chat-correct-mount',
-   'chat-typing-sent','chat-read-sent','chat-typing-stopped']){
+   'chat-typing-sent','chat-read-sent','chat-typing-stopped',
+   'chat-long-thread','chat-scroll-stable','chat-dom-stable','chat-new-message']){
    assert.match(stdout,new RegExp('data-'+flag+'="true"'),role+' '+flag+' missing');
   }
   assert.doesNotMatch(stdout,/data-chat-js-error="[^"]+"/,role+' uncaught error');
-  console.log(role+': private read receipt and typing indicator visible, room-scoped signals sent');
+  console.log(role+': read/typing verified and history scroll retained across incoming message');
  }
 }finally{await new Promise(resolve=>server.close(resolve))}
