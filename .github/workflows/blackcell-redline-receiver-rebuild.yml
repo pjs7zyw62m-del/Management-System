@@ -36,6 +36,9 @@ on:
       - 'supabase/migrations/20261122050000_redline_owner_permanent_media_removal.sql'
       - 'tests/redline-photo-history-browser-smoke.mjs'
       - 'tests/blackcell-redline-receiver-reset.test.mjs'
+      - 'tests/redline-desktop-deck.browser.mjs'
+      - 'tests/redline-desktop-deck-probe.js'
+      - 'private-photo-ledger-approved-deck.css'
       - '.github/workflows/blackcell-redline-receiver-rebuild.yml'
   push:
     branches: [main]
@@ -52,6 +55,9 @@ on:
       - 'private-photo-ledger-sender-messenger.js'
       - 'private-photo-ledger-sender-messenger.css'
       - 'tests/blackcell-redline-receiver-reset.test.mjs'
+      - 'tests/redline-desktop-deck.browser.mjs'
+      - 'tests/redline-desktop-deck-probe.js'
+      - 'private-photo-ledger-approved-deck.css'
       - 'tests/private-photo-ledger-sender.test.mjs'
       - 'tests/private-photo-ledger-simple-sender.test.mjs'
       - 'tests/redline-timer-chat-browser-smoke.mjs'
