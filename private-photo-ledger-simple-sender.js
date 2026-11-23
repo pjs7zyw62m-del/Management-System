@@ -842,12 +842,14 @@ function switchTab(tab){
  if(tab==='viewing'){renderCurrentlyViewing(snapshot());void pollCurrentlyViewing(true)}
  // Switching a REDLINE tab must not scroll the entire conversation page.
 }
+let ownerChatNeedsResume=false;
 function syncOwnerChat(snap){
  const mount=receiverChatMount(),panel=receiverChatPanel();
  const ready=Boolean(snap?.isOwner&&!app.hidden&&!room.hidden&&mount&&panel&&!panel.hidden);
  if(!ready){
-  // A room refresh may temporarily hide the owner panel. Never detach the
-  // authenticated chat or clear its room key on a transient hidden state.
+  // Preserve the message DOM and scroll on a temporarily hidden room.
+  // Queue a catch-up fetch for events missed while the panel was hidden.
+  if(lastOwnerSession)ownerChatNeedsResume=true;
   return;
  }
  if(ownerDialog.open)return;
@@ -855,10 +857,14 @@ function syncOwnerChat(snap){
  photoAction.hidden=true;
  const key=snap.roomId+'|'+(snap.resetAt||'')+'|'+String(snap.archiveMode);
  if(key!==lastOwnerSession){
+  ownerChatNeedsResume=false;
   feed.dataset.redlineScrollReady='false';
   lastChatViewSignature='';
   chatInitialPositionPending=true;
   lastOwnerSession=key;messages=[];lastSync=0;resetChatSignals();renderChat();void loadMessages();void pollSenderTimers(true);void pollChatStatus(true);
+ }else if(ownerChatNeedsResume){
+  ownerChatNeedsResume=false;
+  void loadMessages();
  }
  send.disabled=Boolean(!snap.roomActive||snap.archiveMode);
  entry.disabled=Boolean(!snap.roomActive||snap.archiveMode);

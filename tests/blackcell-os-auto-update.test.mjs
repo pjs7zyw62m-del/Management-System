@@ -59,8 +59,8 @@ test('An idle OS updates without a repeated Update Now prompt',()=>{
  const body=extract('function maybeRefresh(){','function setOSNoticeStatus');
  const evaluate=({auto=true,idle=true,osMode=true}={})=>{
   let refreshes=0,prompts=0;
-  const create=new Function('pending','refreshing','osMode','autoEnabled','safe','refresh','osNotice','osRequested','showOSNotice','blockingReason','setOSNoticeStatus',body+';return maybeRefresh;');
-  const maybe=create('new-release',false,osMode,()=>auto,()=>idle,()=>{refreshes++},null,false,()=>{prompts++},()=>'none',()=>{});
+  const create=new Function('pending','refreshing','osMode','redlineLiveThread','autoEnabled','safe','refresh','osNotice','osRequested','showOSNotice','blockingReason','setOSNoticeStatus',body+';return maybeRefresh;');
+  const maybe=create('new-release',false,osMode,false,()=>auto,()=>idle,()=>{refreshes++},null,false,()=>{prompts++},()=>'none',()=>{});
   maybe();return {refreshes,prompts};
  };
  assert.deepEqual(evaluate(),{refreshes:1,prompts:0});
@@ -82,8 +82,8 @@ test('Workspace is saved before updating and sensitive arbitrary drafts are not 
 });
 
 test('New verified build and update release assets are consistent',()=>{
- assert.match(html,/blackcell-os-client-build" content="20261122-android-level1-home1"/);
+ assert.match(html,/blackcell-os-client-build" content="20261122-redline-photos-library-bunny1"/);
  assert.match(html,/blackcell-live-update\.js\?v=20261121-auto-save-updates1/);
  assert.match(html,/blackcell-os\.js\?v=159-redline-window-controls1/);
- assert.match(readFileSync('blackcell-site-version.json','utf8'),/android-level1-home1/);
+ assert.match(readFileSync('blackcell-site-version.json','utf8'),/redline-photos-library-bunny1/);
 });

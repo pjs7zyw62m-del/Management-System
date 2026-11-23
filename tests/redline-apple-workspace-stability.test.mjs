@@ -76,5 +76,7 @@ test('REDLINE transient owner refresh cannot discard the mounted chat or auto-re
  assert.match(js,/if\(messageCard\.parentNode!==uploadPane\)/);
  assert.match(live,/const redlineLiveThread=/);
  assert.match(live,/if\(redlineLiveThread\)return/);
+ assert.match(js,/if\(lastOwnerSession\)ownerChatNeedsResume=true/);
+ assert.match(js,/else if\(ownerChatNeedsResume\)/);
  assert.match(html,/site-presence2-redline-continuity/);
 });
