@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.body.dataset.viewerLayout=JSON.stringify({viewport:innerWidth,photoHeight:bounds.height,imageHeight:imBounds.height,originalHeight:pic.naturalHeight,dialogWidth:dialog.getBoundingClientRect().width});
  },620);
 });
-</script></body></html>\`;
+</script></body></html>`;
 const server=createServer((req,res)=>{
  const path=(req.url||'').split('?')[0];
  if(path==='/test.html'){
