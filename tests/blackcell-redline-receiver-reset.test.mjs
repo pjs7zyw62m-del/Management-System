@@ -680,7 +680,7 @@ test('Approved originals can be reused privately until the receiver rejects or a
  assert.match(style,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)!important/);
  assert.match(style,/\.redline-five-star-photo/);
  assert.match(html,/private-photo-ledger\.js\?v=20261123-reuse-approved-original1/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261123-sender-reuse-popup1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261123-sender-reuse-popup2/);
  assert.match(html,/private-photo-ledger-sender-reuse\.js\?v=20261123-reuse-popup1/);
 });
 
