@@ -1,0 +1,169 @@
+/* REDLINE / Android sender chat repair, 2026-11-23.
+   Native-looking compact conversation without duplicate navigation.
+   Narrow coarse-pointer sender in Messages only. Receiver, iPad and desktop
+   remain untouched. The original verified composer and chat DOM are retained. */
+@media (max-width:719px), (max-width:900px) and (pointer:coarse) {
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive{
+    width:100%!important;max-width:100%!important;
+    overflow:hidden!important;
+  }
+  /* The corporate footer is legal decoration, not chat content. The Android
+     private room already identifies its two-party restricted access above. */
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive > footer{
+    display:none!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive #ledgerApp.shell{
+    display:block!important;
+    box-sizing:border-box!important;
+    height:var(--redline-android-chat-app-height,calc(100dvh - 65px))!important;
+    min-height:0!important;
+    max-height:var(--redline-android-chat-app-height,calc(100dvh - 65px))!important;
+    padding:4px 8px 5px!important;
+    margin:0 auto!important;
+    overflow:hidden!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive #activeRoom{
+    display:block!important;height:100%!important;min-height:0!important;
+    max-height:100%!important;overflow:hidden!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive #redlineSimpleSender{
+    display:flex!important;flex-direction:column!important;
+    height:100%!important;max-height:100%!important;min-height:0!important;
+    min-width:0!important;gap:0!important;overflow:hidden!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-simple-tabs{
+    flex:0 0 auto!important;
+    display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    width:100%!important;min-height:0!important;
+    padding:3px!important;margin:0 0 5px!important;gap:3px!important;
+    border-radius:12px!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-simple-tab{
+    min-height:38px!important;padding:6px 2px!important;
+    font-size:11px!important;line-height:1.15!important;
+    white-space:nowrap!important;overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-simple-panes,
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-simple-pane[data-redline-pane="upload"]:not([hidden]){
+    display:flex!important;flex-direction:column!important;
+    flex:1 1 0!important;height:auto!important;min-height:0!important;
+    max-height:100%!important;min-width:0!important;overflow:hidden!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-message-card{
+    display:flex!important;flex-direction:column!important;
+    flex:1 1 0!important;height:auto!important;min-height:0!important;
+    max-height:100%!important;width:100%!important;min-width:0!important;
+    margin:0!important;overflow:hidden!important;
+    border-radius:14px!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-message-header{
+    display:flex!important;flex:0 0 auto!important;align-items:center!important;
+    min-height:43px!important;max-height:56px!important;
+    padding:5px 9px!important;margin:0!important;
+    overflow:hidden!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-message-header strong{
+    font-size:13px!important;line-height:1.2!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-message-header small{
+    font-size:9px!important;line-height:1.15!important;
+  }
+  /* Compact earnings line remains a separate flex item above the chat log.
+     Never float over or cover rating/photo messages. */
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-messenger-live-strip:not([hidden]){
+    display:block!important;position:relative!important;inset:auto!important;
+    flex:0 0 auto!important;max-height:100px!important;
+    margin:0!important;overflow:visible!important;z-index:0!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-messenger-live-head{
+    display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    min-height:41px!important;
+    padding:5px 21px 5px 4px!important;gap:0!important;
+    align-items:center!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-messenger-live-field{
+    padding:0 5px!important;gap:2px!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-messenger-live-field small{
+    font-size:8px!important;line-height:1.1!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-messenger-live-field strong{
+    font-size:clamp(11px,3.5vw,16px)!important;line-height:1.1!important;
+  }
+  /* Viewing and History already have tabs in the top five-tab row. Remove
+     only their duplicate quick buttons, never the actual navigation tabs. */
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-messenger-quick{
+    display:none!important;height:0!important;min-height:0!important;
+    margin:0!important;padding:0!important;overflow:hidden!important;
+  }
+  /* A running timer is an optional compact status item, not a picture-sized
+     pinned overlay. The original photo remains in Currently Viewing. */
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive
+  .redline-message-card > .redline-chat-timer-slot:not([hidden]){
+    flex:0 0 auto!important;max-height:85px!important;
+    overflow-y:auto!important;position:relative!important;z-index:0!important;
+    padding:3px 6px!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive
+  .redline-chat-timer-slot .redline-chat-timer-photo{display:none!important}
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive
+  .redline-chat-timer-slot .redline-chat-timer-pinned{
+    position:relative!important;top:auto!important;max-height:75px!important;
+    padding:5px 7px!important;overflow:hidden!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-message-feed{
+    display:flex!important;flex:1 1 0!important;flex-direction:column!important;
+    min-height:0!important;max-height:none!important;height:auto!important;
+    position:relative!important;z-index:0!important;
+    overflow-y:auto!important;overflow-x:hidden!important;
+    overscroll-behavior:contain!important;overflow-anchor:none!important;
+    scroll-behavior:auto!important;-webkit-overflow-scrolling:touch;
+    padding:11px 9px 16px!important;
+    border-top:0!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-message-feed>*{
+    flex-shrink:0!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-chat-rated-photo,
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-chat-photo-signal{
+    max-width:96%!important;min-width:0!important;
+    padding:8px!important;gap:9px!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive
+  .redline-chat-rated-photo .redline-rated-photo-image{
+    flex:0 0 68px!important;width:68px!important;height:81px!important;
+    max-height:81px!important;object-fit:contain!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-peer-typing{
+    flex:0 0 auto!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-message-composer{
+    display:flex!important;align-items:center!important;
+    position:relative!important;inset:auto!important;
+    flex:0 0 auto!important;min-height:60px!important;
+    width:100%!important;min-width:0!important;max-width:100%!important;
+    margin:0!important;padding:6px 7px max(7px,env(safe-area-inset-bottom))!important;
+    background:#100b10!important;z-index:2!important;
+    box-sizing:border-box!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-message-entry{
+    flex:1 1 0!important;min-width:0!important;min-height:44px!important;
+    max-height:90px!important;font-size:16px!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-chat-photo,
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-chat-send{
+    flex:0 0 auto!important;min-height:44px!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-message-error{
+    flex:0 0 auto!important;max-height:46px!important;overflow-y:auto!important;
+  }
+  /* When Gboard opens, keep the composer and feed; trim chrome above them. */
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.redline-android-keyboard-open
+  .redline-message-header{min-height:34px!important}
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.redline-android-keyboard-open
+  .redline-messenger-live-strip{display:none!important}
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.redline-android-keyboard-open
+  .redline-chat-timer-slot{display:none!important}
+}
+/* Never override the original sender inputs on tablet/desktop. */
