@@ -21,6 +21,7 @@ on:
       - 'tests/redline-history-chat-signals.test.mjs'
       - 'tests/redline-chat-read-typing-browser-smoke.mjs'
       - 'tests/redline-receiver-chat-mount.browser.mjs'
+      - 'tests/redline-photo-zoom.browser.mjs'
       - 'tests/redline-apple-workspace-stability.test.mjs'
       - 'tests/redline-timer-two-party-browser-smoke.mjs'
       - 'private-photo-ledger-consent-negotiation.js'
@@ -83,6 +84,7 @@ on:
       - 'tests/redline-history-chat-signals.test.mjs'
       - 'tests/redline-chat-read-typing-browser-smoke.mjs'
       - 'tests/redline-receiver-chat-mount.browser.mjs'
+      - 'tests/redline-photo-zoom.browser.mjs'
       - 'tests/redline-apple-workspace-stability.test.mjs'
       - 'tests/redline-timer-two-party-browser-smoke.mjs'
       - 'private-photo-ledger-consent-negotiation.js'
@@ -257,6 +259,13 @@ jobs:
           command -v google-chrome >/dev/null 2>&1 && CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && CHROME=chromium || CHROME=; }
           [ -n "$CHROME" ] || { echo "Chromium unavailable"; exit 1; }
           CHROME="$CHROME" node tests/redline-receiver-chat-mount.browser.mjs
+      - name: Browser-verify inline and full-photo zoom with pinch and wheel
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v google-chrome >/dev/null 2>&1 && CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && CHROME=chromium || CHROME=; }
+          [ -n "$CHROME" ] || { echo "Chromium unavailable"; exit 1; }
+          CHROME="$CHROME" node tests/redline-photo-zoom.browser.mjs
       - name: Sender iMessage-style live session, earnings and uploads
         shell: bash
         run: |
