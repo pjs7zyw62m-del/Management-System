@@ -1,0 +1,33 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const read=p=>readFileSync(p,'utf8');
+const css=read('private-photo-ledger-taller-photo-chat.css');
+const bonus=read('private-photo-ledger-bonus-celebration.js');
+const html=read('private-photo-ledger.html');
+const os=read('blackcell-os.js');
+test('photo and chat share a taller but fixed-height desktop workspace',()=>{
+ assert.match(css,/@media \(min-width:1000px\)/);
+ assert.match(css,/#redlineReceiverLiveWorkspace:not\(\[hidden\]\)/);
+ assert.match(css,/height:max\(860px,calc\(100dvh - 130px\)\)!important/);
+ assert.match(css,/#redlineReceiverIncomingPhotos\.rr-incoming-photos/);
+ assert.match(css,/#rrAppleRight \{/);
+ assert.match(css,/grid-row:1!important/);
+ assert.match(css,/#rrAppleRight>\.rr-chat-panel:not\(\[hidden\]\)/);
+ assert.match(css,/min-height:360px!important/);
+ assert.match(css,/\.redline-message-feed\{/);
+ assert.match(css,/overflow-y:auto!important/);
+ assert.match(css,/\.redline-message-composer\{/);
+});
+test('private original photo thumbnails replace raw ID labels on progress rows',()=>{
+ assert.match(bonus,/function actualPhoto\(photoId,current=snap\(\)\)/);
+ assert.match(bonus,/current\?\.photoHistory/);
+ assert.match(bonus,/function makePhotoPreview\(photoId,current\)/);
+ assert.match(bonus,/makePhotoPreview\(p\.photo_id,current\)/);
+ assert.match(bonus,/makePhotoPreview\(b\.photo_id,current\)/);
+ assert.match(bonus,/function meter\(count\)/);
+ assert.doesNotMatch(bonus,/Photo '\+String\(p\.photo_id\|\|''\)\.slice/);
+ assert.match(html,/private-photo-ledger-taller-photo-chat\.css/);
+ assert.match(html,/private-photo-ledger-bonus-celebration\.js\?v=20261123-bonus-photo-thumbs1/);
+ assert.match(os,/redlineRelease=20261123-taller-chat-bonus-thumbs1/);
+});
