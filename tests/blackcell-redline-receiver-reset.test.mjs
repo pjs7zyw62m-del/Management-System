@@ -841,3 +841,20 @@ test('desktop REDLINE panel follows BLACKCELL OS host at narrower iframe width w
  assert.match(html,/private-photo-ledger-approved-deck\.css\?v=20261123-os-frame-responsive3/);
  assert.match(os,/redlineRelease=20261123-desktop-panel-frame-responsive3/);
 });
+
+
+test('REDLINE desktop command bar keeps title, settings, pause, refresh and presence grouped',()=>{
+ const html=read('private-photo-ledger.html');
+ const css=read('private-photo-ledger-header-refined.css');
+ const os=read('blackcell-os.js');
+ assert.match(html,/private-photo-ledger-header-refined\.css\?v=20261123-header-balance1/);
+ assert.match(css,/#ledgerApp #redlineReceiverCommand>\.rr-command-header/);
+ assert.match(css,/max-width:1170px!important/);
+ assert.match(css,/flex:0 0 285px!important/);
+ assert.match(css,/#redlineConsentSettingsOpen/);
+ assert.match(css,/#redlineReceiverSendingPause/);
+ assert.match(css,/#ledgerLiveStatus/);
+ assert.match(css,/\.verified-mark/);
+ assert.match(css,/@media \(min-width:960px\) and \(max-width:1199px\)/);
+ assert.match(os,/redlineRelease=20261123-compact-header-balanced1/);
+});

@@ -1,0 +1,161 @@
+/* BLACKCELL REDLINE / Apple-black desktop command bar.
+   Keep the original, authenticated Settings, Pause Sending, Refresh, Verified,
+   and live-update controls. This changes only their arrangement. */
+@media (min-width:960px) {
+ body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+ #ledgerApp #redlineReceiverCommand {
+   padding:9px 14px!important;
+   border:1px solid #59303c!important;
+   border-radius:14px!important;
+   margin-bottom:8px!important;
+   background:linear-gradient(110deg,#10090e,#15090f 72%,#0a080c)!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+ #ledgerApp #redlineReceiverCommand>.rr-command-header {
+   display:flex!important;
+   align-items:center!important;
+   justify-content:center!important;
+   flex-direction:row!important;
+   flex-wrap:nowrap!important;
+   column-gap:10px!important;
+   width:100%!important;
+   max-width:1170px!important;
+   margin:0 auto!important;
+   min-height:48px!important;
+   padding:0!important;
+   border:0!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+ #ledgerApp #redlineReceiverCommand .rr-command-intro {
+   display:flex!important;
+   flex-direction:column!important;
+   justify-content:center!important;
+   align-items:flex-start!important;
+   flex:0 0 285px!important;
+   min-width:0!important;
+   max-width:285px!important;
+   gap:4px!important;
+   margin:0!important;
+   padding:0!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+ #ledgerApp #redlineReceiverCommand .rr-title {
+   font-size:25px!important;
+   font-weight:850!important;
+   letter-spacing:-.045em!important;
+   line-height:1!important;
+   white-space:nowrap!important;
+   margin:0!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+ #ledgerApp #redlineReceiverCommand .rr-room-summary {
+   display:block!important;
+   flex:none!important;
+   width:100%!important;
+   max-width:285px!important;
+   margin:0!important;
+   color:#baaeb6!important;
+   font-size:10px!important;
+   line-height:1.3!important;
+   font-weight:500!important;
+   letter-spacing:0!important;
+   overflow:hidden!important;
+   white-space:nowrap!important;
+   text-overflow:ellipsis!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+ #ledgerApp #redlineReceiverCommand .rr-command-header .workspace-actions {
+   display:flex!important;
+   flex:0 1 auto!important;
+   flex-wrap:nowrap!important;
+   align-items:center!important;
+   justify-content:flex-start!important;
+   gap:7px!important;
+   width:auto!important;
+   min-width:0!important;
+   max-width:none!important;
+   margin:0!important;
+   padding:0!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+ #ledgerApp #redlineReceiverCommand .rr-command-header #redlineConsentSettingsOpen,
+ body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+ #ledgerApp #redlineReceiverCommand .rr-command-header #redlineReceiverSendingPause {
+   display:inline-flex!important;
+   min-height:35px!important;
+   height:35px!important;
+   max-height:35px!important;
+   padding:7px 11px!important;
+   margin:0!important;
+   border-radius:9px!important;
+   font-size:10px!important;
+   font-weight:750!important;
+   letter-spacing:0!important;
+   line-height:1!important;
+   white-space:nowrap!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+ #ledgerApp #redlineReceiverCommand .rr-command-header #redlineReceiverPauseHeader {
+   display:flex!important;
+   flex:0 0 auto!important;
+   min-height:35px!important;
+   height:35px!important;
+   margin:0!important;
+   padding:0!important;
+   align-items:center!important;
+   background:transparent!important;
+   border:0!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+ #ledgerApp #redlineReceiverCommand .rr-command-header .workspace-actions>* {
+   display:inline-flex!important;
+   align-items:center!important;
+   justify-content:center!important;
+   flex:0 0 auto!important;
+   min-height:33px!important;
+   margin:0!important;
+   padding:5px 8px!important;
+   font-size:10px!important;
+   line-height:1.15!important;
+   letter-spacing:0!important;
+   white-space:nowrap!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+ #ledgerApp #redlineReceiverCommand .rr-command-header #ledgerLiveStatus {
+   max-width:210px!important;
+   min-height:30px!important;
+   color:#c9d4cd!important;
+   background:#151319!important;
+   border:1px solid #463a43!important;
+   border-radius:9px!important;
+   padding:6px 9px!important;
+   overflow:hidden!important;
+   text-overflow:ellipsis!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+ #ledgerApp #redlineReceiverCommand .rr-command-header .verified-mark {
+   color:#b3d7c3!important;
+   font-size:10px!important;
+   font-weight:700!important;
+ }
+}
+/* Narrow desktop application windows: keep every action usable in two
+   intentional rows, not in a stretched or overlapping single line. */
+@media (min-width:960px) and (max-width:1199px) {
+ body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+ #ledgerApp #redlineReceiverCommand>.rr-command-header {
+   flex-wrap:wrap!important;
+   justify-content:center!important;
+   row-gap:9px!important;
+   padding:3px 0!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+ #ledgerApp #redlineReceiverCommand .rr-command-intro {
+   flex:0 0 100%!important;
+   max-width:100%!important;
+   align-items:center!important;
+   text-align:center!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+ #ledgerApp #redlineReceiverCommand .rr-room-summary {max-width:100%!important;text-align:center!important;}
+}
