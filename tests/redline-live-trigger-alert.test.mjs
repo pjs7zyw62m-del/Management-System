@@ -21,6 +21,17 @@ test('Android trigger match popup is wired to REDLINE without changing chat layo
  assert.doesNotMatch(alert,/(?:sendMessage|INSERT INTO|db\.rpc|triggerWordSave|triggerEnable)\(/);
  assert.doesNotMatch(alert,/scrollTop|appendChild\(messageCard\)|document\.body\.style\.overflow/);
 });
+test('receiver enablement opens sender explanation once, never treats enablement as earned money',()=>{
+ assert.match(alert,/function maybeExplainActivation\(response,room\)/);
+ assert.match(alert,/response\?\.enabled!==true/);
+ assert.match(alert,/!Array\.isArray\(response\.words\)\|\|!response\.words\.length/);
+ assert.match(alert,/markActivationSeen\(room\)/);
+ assert.match(alert,/window\.dispatchEvent\(new Event\('blackcell:redline:open-trigger-words'\)\)/);
+ assert.match(alert,/window\.sessionStorage\?\.setItem\(activationKey\(room\),'yes'\)/);
+ assert.match(alert,/window\.sessionStorage\?\.removeItem\(activationKey\(room\)\)/);
+ assert.match(alert,/focused\?\.matches\?\.\('input,textarea,\[contenteditable="true"\]'\)/);
+});
+
 test('No old notifications replay; new verified credit pops; receiver and disabled rooms never see popup',async()=>{
  class El{
   constructor(tag='div'){
