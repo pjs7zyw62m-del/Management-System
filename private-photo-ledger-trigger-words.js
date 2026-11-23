@@ -219,6 +219,7 @@
   wordInput.value='';priceInput.value='0.10';
   save.textContent='＋ SAVE TRIGGER WORD';
  });
+ window.addEventListener('blackcell:redline:open-trigger-words',()=>{void open()});
  window.addEventListener('blackcell:redline:bridge',tick);
  window.addEventListener('blackcell:redline:state',tick);
  window.addEventListener('blackcell:redline:reset',tick);
