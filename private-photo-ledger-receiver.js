@@ -455,6 +455,48 @@
  divider.tabIndex=0;
  divider.title='Drag to resize Photos. Double-click to reset.';
  workspace.insertBefore(divider,photos);
+ // Native BLACKCELL Apple-dark control workspace: reparent ONLY the existing
+ // verified widgets. Nothing here duplicates bids, timers, ratings or chat.
+ const appleSidebar=make('aside','rr-apple-sidebar');
+ appleSidebar.id='rrAppleSidebar';
+ appleSidebar.setAttribute('aria-label','REDLINE workstation navigation');
+ const appleMark=make('div','rr-apple-mark');
+ appleMark.append(make('strong','','◢ BLACKCELL'),make('small','','REDLINE · LEVEL 04'));
+ const appleMenu=make('nav','rr-apple-menu');
+ appleMenu.setAttribute('aria-label','REDLINE sections');
+ const appleLink=(label,handler,cls='')=>{
+  const item=button(label,handler,'rr-apple-link '+cls);
+  appleMenu.append(item);
+  return item;
+ };
+ appleLink('▧  Photo Review',()=>openMedia(),'is-selected');
+ appleLink('◌  Private Chat',()=>{
+  mediaOpen=true;showPane();
+  $('#redlineReceiverChat .redline-message-entry')?.focus({preventScroll:true});
+ });
+ appleLink('▤  Earnings',()=>{
+  const target=appleRight.querySelector('.rr-stats');
+  target?.scrollIntoView({block:'nearest',behavior:'smooth'});
+ });
+ appleLink('▥  Photo History',()=>openMedia(true));
+ appleLink('◷  Sessions',()=>goTo('#redlineSessionTools'));
+ appleLink('⚙  Settings',()=>settingsMenu.click());
+ const appleDivider=make('div','rr-apple-sidebar-divider');
+ const appleRights=make('small','rr-apple-sidebar-foot','BLACKCELL · VERIFIED ROOM');
+ appleSidebar.append(appleMark,appleMenu,appleDivider,appleRights);
+ const appleRight=make('section','rr-apple-right');
+ appleRight.id='rrAppleRight';
+ appleRight.setAttribute('aria-label','Live session, timer and private messages');
+ const appleTimer=make('section','rr-apple-timer');
+ appleTimer.id='rrAppleTimerMount';
+ appleTimer.setAttribute('aria-label','Verified photo timer');
+ const appleFinance=make('div','rr-apple-finance');
+ appleFinance.id='rrAppleFinance';
+ const appleChatTitle=make('div','rr-apple-chat-title');
+ appleChatTitle.append(make('strong','','PRIVATE CHAT'),make('small','','Verified two-person conversation'));
+ const appleStatus=make('div','rr-apple-negotiation');
+ appleStatus.append(make('strong','','NEGOTIATIONS'),make('small','','New offers open through the verified price negotiation window.'));
+ appleRight.append(appleTimer,appleFinance,appleStatus,appleChatTitle);
  roomBody?.before(workspace);
  // When the receiver opens the original photograph, clicking it again returns
  // to the unchanged chat + one-photo workspace via the existing close handler.
@@ -669,14 +711,30 @@
     mediaOpen=true;
    }
    showPane();applyWidth(mediaRatio);applyHeight(heightRatio);
+   // The same live chat and room counters are displayed in the right column.
+   // Keep the authentic photo/price nodes in the center column.
+   document.body.classList.add('bc-redline-apple-mode');
+   if(appleSidebar.parentNode!==workspace)workspace.prepend(appleSidebar);
+   if(photos.parentNode!==workspace)workspace.append(photos);
+   if(divider.parentNode!==workspace)workspace.append(divider);
+   if(appleRight.parentNode!==workspace)workspace.append(appleRight);
+   if(nav.parentNode!==appleSidebar)appleSidebar.append(nav);
+   if(stats.parentNode!==appleFinance)appleFinance.append(stats);
+   if(chatPanel.parentNode!==appleRight)appleRight.append(chatPanel);
+   if(appleTimer.parentNode!==appleRight)appleRight.prepend(appleTimer);
   }else{
+   document.body.classList.remove('bc-redline-apple-mode');
    if(dragPointer!==null)endDrag();
    if(heightPointer!==null)stopHeight();
-   if(chatPanel.previousElementSibling!==nav)nav.after(chatPanel);
+   // Restore the original phone/handheld markup and event handlers.
+   if(nav.parentNode!==dashboard)dashboard.append(nav);
+   if(stats.parentNode!==dashboard)dashboard.insertBefore(stats,nav);
+   if(chatPanel.parentNode!==dashboard)dashboard.append(chatPanel);
    for(const element of [originalReview,historyToolbar,photoEntries,entriesFeedback]){
     if(element&&element.parentNode!==timeline)timeline.append(element);
    }
    if(bidTimerPanel&&originalReview&&bidTimerPanel.parentNode!==originalReview)originalReview.append(bidTimerPanel);
+   appleSidebar.remove();appleRight.remove();
    timeline?.classList.remove('rr-source-timeline');
    if(timeline&&roomBody&&timeline.parentNode!==roomBody)roomBody.append(timeline);
    mediaInitialised=false;
