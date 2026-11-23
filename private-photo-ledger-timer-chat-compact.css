@@ -1,0 +1,41 @@
+/* Receiver's live timer is a status strip, never a second photo viewer.
+   Keep the independent conversation scroller and composer visible while running. */
+body.bc-redline-receiver #redlineReceiverChat .redline-message-card{min-height:0!important;overflow:hidden!important}
+body.bc-redline-receiver #redlineReceiverChat .redline-chat-timer-slot:not([hidden]){
+ display:block!important;flex:0 0 auto!important;min-height:0!important;height:auto!important;
+ max-height:82px!important;width:100%!important;overflow:hidden!important;
+ padding:5px 8px!important;box-sizing:border-box!important;
+ background:#110a0e!important;border-bottom:1px solid #572332!important}
+body.bc-redline-receiver #redlineReceiverChat .redline-chat-timer-slot .redline-chat-timer-pinned{
+ display:grid!important;grid-template-columns:minmax(0,1fr) max-content!important;
+ grid-template-rows:auto auto!important;align-items:center!important;gap:2px 12px!important;
+ min-height:0!important;max-height:70px!important;width:100%!important;
+ padding:7px 10px!important;margin:0!important;border-radius:9px!important;
+ overflow:hidden!important;box-sizing:border-box!important}
+body.bc-redline-receiver #redlineReceiverChat .redline-chat-timer-slot .redline-chat-timer-title{
+ grid-column:1!important;grid-row:1!important;min-width:0!important;font-size:11px!important;
+ line-height:1.3!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+body.bc-redline-receiver #redlineReceiverChat .redline-chat-timer-slot .redline-chat-timer-rate{
+ grid-column:1!important;grid-row:2!important;min-width:0!important;font-size:10px!important;
+ line-height:1.25!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+body.bc-redline-receiver #redlineReceiverChat .redline-chat-timer-slot .redline-chat-timer-values{
+ grid-column:2!important;grid-row:1 / span 2!important;display:flex!important;
+ flex-direction:column!important;justify-content:center!important;align-items:flex-end!important;
+ flex-wrap:nowrap!important;gap:3px!important;min-width:0!important;line-height:1.15!important}
+body.bc-redline-receiver #redlineReceiverChat .redline-chat-timer-slot .redline-chat-timer-clock{
+ white-space:nowrap!important;font-size:10px!important}
+body.bc-redline-receiver #redlineReceiverChat .redline-chat-timer-slot .redline-chat-timer-amount{
+ white-space:nowrap!important;font-size:14px!important;font-variant-numeric:tabular-nums!important}
+body.bc-redline-receiver #redlineReceiverChat .redline-chat-timer-slot .redline-chat-timer-photo,
+body.bc-redline-receiver #redlineReceiverChat .redline-chat-timer-slot .redline-chat-timer-pinned>small{
+ display:none!important}
+body.bc-redline-receiver #redlineReceiverChat .redline-message-feed{
+ flex:1 1 0!important;min-height:0!important;overflow-y:auto!important;
+ overflow-x:hidden!important;overscroll-behavior:contain!important}
+body.bc-redline-receiver #redlineReceiverChat .redline-message-composer{flex:0 0 auto!important}
+@media(max-width:540px){
+ body.bc-redline-receiver #redlineReceiverChat .redline-chat-timer-slot .redline-chat-timer-pinned{
+  gap:2px 6px!important;padding:7px 8px!important}
+ body.bc-redline-receiver #redlineReceiverChat .redline-chat-timer-slot .redline-chat-timer-amount{
+  font-size:12px!important}
+}
