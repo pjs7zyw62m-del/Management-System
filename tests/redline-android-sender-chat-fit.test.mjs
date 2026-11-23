@@ -37,6 +37,8 @@ test('sender chat consumes remaining viewport while preserving independently scr
  assert.match(css,/\.redline-message-entry\{/);
  assert.match(css,/font-size:16px!important/);
  assert.match(css,/redline-android-keyboard-open/);
+ assert.match(css,/redline-chat-immersive\.redline-android-keyboard-open[\s\S]*?\.redline-simple-tabs\{display:none!important\}/);
+ assert.match(css,/redline-chat-immersive\.redline-android-keyboard-open[\s\S]*?\.redline-message-card > \.redline-chat-timer-slot:not\(\[hidden\]\)\{display:none!important\}/);
 });
 
 test('repeated tabs, footer, and oversized timer/photo do not cover message feed',()=>{
@@ -53,8 +55,8 @@ test('repeated tabs, footer, and oversized timer/photo do not cover message feed
 
 test('new Android assets are loaded last and OS launcher URL refreshes',()=>{
  const oldStyle=html.indexOf('private-photo-ledger-sender-messenger.css');
- const newStyle=html.indexOf('private-photo-ledger-sender-android-chat.css?v=20261123-android-sender-chat-fit1');
+ const newStyle=html.indexOf('private-photo-ledger-sender-android-chat.css?v=20261123-android-sender-chat-fit2');
  assert.ok(newStyle>oldStyle);
  assert.match(html,/private-photo-ledger-sender-android-fit\.js\?v=20261123-android-sender-chat-fit1/);
- assert.match(os,/redlineRelease=20261123-android-sender-chat-fit1/);
+ assert.match(os,/redlineRelease=20261123-android-sender-chat-fit2/);
 });
