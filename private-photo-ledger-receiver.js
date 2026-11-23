@@ -712,7 +712,11 @@
    // The verified timer + rating + price share ONE upper-right control deck.
    // Reparent the real actions instead of cloning any financial controls.
    const appleMode=window.innerWidth>=720&&!document.body.classList.contains('bc-ledger-mobile');
-   if(chatPanel.parentNode!==workspace)workspace.insertBefore(chatPanel,divider);
+   // Important: DO NOT move chatPanel to workspace first on every live
+   // refresh. In Apple desktop mode its permanent parent is appleRight.
+   // The old two-step workspace -> appleRight reparenting detached the
+   // entire conversation every time room totals or live presence changed,
+   // repeatedly resetting scrollTop from history to newest messages.
    if(originalReview&&originalReview.parentNode!==reviewStage)reviewStage.append(originalReview);
    if(historyToggle.parentNode!==photos)photos.append(historyToggle);
    const reviewControlsHost=appleMode?appleTimer:reviewStage;
@@ -754,6 +758,8 @@
     }
    }else{
     // Narrow OS windows keep the prior iMessage sliding photo/chat workspace.
+    // Move the conversation ONLY when the responsive mode actually changes.
+    if(chatPanel.parentNode!==workspace)workspace.insertBefore(chatPanel,divider);
     if(nav.parentNode!==dashboard)dashboard.append(nav);
     if(stats.parentNode!==dashboard)dashboard.insertBefore(stats,nav);
     if(chatPanel.parentNode!==workspace)workspace.insertBefore(chatPanel,divider);

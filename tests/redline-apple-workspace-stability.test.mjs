@@ -106,3 +106,19 @@ test('REDLINE polling metadata cannot remount/reset the same verified room chat'
  assert.doesNotMatch(js,/const sessionKey=snap\.roomId\+'\|'\+\(snap\.resetAt/);
  assert.match(js,/window\.addEventListener\('blackcell:redline:reset'/);
 });
+
+
+test('REDLINE Apple receiver never detaches the chat panel on routine live state updates',()=>{
+ const js=read('private-photo-ledger-receiver.js');
+ const start=js.indexOf('function placeWorkspace(hasRoom){');
+ const end=js.indexOf(' // Security and room controls',start);
+ assert.ok(start>0&&end>start,'receiver workspace function is present');
+ const workspace=js.slice(start,end);
+ const combined=workspace.slice(workspace.indexOf('if(combined){'),workspace.indexOf('if(appleMode){'));
+ assert.doesNotMatch(combined,/workspace\.insertBefore\(chatPanel,divider\)/);
+ const apple=workspace.slice(workspace.indexOf('if(appleMode){'),workspace.indexOf('}else{',workspace.indexOf('if(appleMode){')));
+ assert.match(apple,/if\(chatPanel\.parentNode!==appleRight\)appleRight\.append\(chatPanel\)/);
+ assert.match(workspace,/if\(chatPanel\.parentNode!==workspace\)workspace\.insertBefore\(chatPanel,divider\)/);
+ const html=read('private-photo-ledger.html');
+ assert.match(html,/noChatReparent=20261123-v1/);
+});
