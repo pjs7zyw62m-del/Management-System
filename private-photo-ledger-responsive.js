@@ -18,6 +18,21 @@
     room:'<path d="M4 21V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16"/><path d="M2 21h20"/><path d="M11 9h2"/>'
   };
   const svg=(type)=>'<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+shapes[type]+'</svg>';
+  // REDLINE is often displayed inside the maximized BLACKCELL OS iframe.
+  // Its own innerWidth can be under 1180px even on a desktop monitor. Use
+  // the verified same-origin OS host dimensions to select the desktop deck
+  // without misclassifying standalone tablets or phones.
+  function desktopOsFrame(){
+    try{
+      const frame=window.frameElement;
+      if(frame?.id!=='bcOsPhotoLedgerFrame')return false;
+      const host=window.parent;
+      const agent=navigator.userAgent||'',touch=navigator.maxTouchPoints||0;
+      const tablet=/iPad/i.test(agent)||(/Macintosh|MacIntel/i.test(agent)&&touch>1)||(/Android/i.test(agent)&&!/Mobile/i.test(agent));
+      const phone=/iPhone|iPod|Windows Phone|Android.*Mobile/i.test(agent);
+      return !phone&&!tablet&&host?.innerWidth>=1180&&window.innerWidth>=720;
+    }catch(_){return false}
+  }
   function deviceMode(){
     const agent=navigator.userAgent||'',touch=navigator.maxTouchPoints||0;
     const short=Math.min(screen.width||Infinity,screen.height||Infinity);
@@ -106,6 +121,7 @@
     document.body.classList.toggle('bc-ledger-mobile',isMobile);
     document.body.classList.toggle('bc-ledger-tablet',mode==='tablet');
     document.body.classList.toggle('bc-ledger-desktop',mode==='os');
+    document.body.classList.toggle('bc-os-frame-redline',desktopOsFrame());
     document.body.dataset.ledgerDevice=mode;
     if(!isAvailable(current))current='summary';
     const edition=captions[mode];

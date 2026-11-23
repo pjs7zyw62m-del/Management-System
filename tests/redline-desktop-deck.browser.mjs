@@ -6,17 +6,17 @@ import {basename} from 'node:path';
 const html=readFileSync('private-photo-ledger.html','utf8');
 const tags=[...html.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)].map(x=>x[0]+'>').join('\n');
 const probe=readFileSync('tests/redline-desktop-deck-probe.js','utf8');
-function makePage(width){
+function makePage(width,embedded=false){
  const stars='<button class="rr-photo-rating-star is-filled">★</button>'.repeat(4)+
   '<button class="rr-photo-rating-star">★</button>';
  return [
- '<!doctype html><html><head><meta charset="utf-8">',
+ '<!doctype html><html'+(embedded?' class="bc-admin-workspace-embedded"':'')+'><head><meta charset="utf-8">',
  tags,
  '<style>html,body{margin:0!important;padding:0!important;background:#050507!important}' +
  '#rrAppleRight{width:'+width+'px!important;height:690px!important;max-width:none!important;margin:8px auto!important;box-sizing:border-box!important}' +
  '#rrAppleTimerMount,#rrAppleFinance{width:100%!important;box-sizing:border-box!important}' +
  '.rr-chat-panel{flex:1 1 0!important;min-height:0!important}</style></head>',
- '<body class="bc-redline-receiver bc-ledger-desktop rr-imessage-mode bc-redline-apple-mode">',
+ '<body class="bc-redline-receiver '+(embedded?'bc-ledger-tablet bc-os-frame-redline':'bc-ledger-desktop')+' rr-imessage-mode bc-redline-apple-mode">',
  '<section id="rrAppleRight"><section id="rrAppleTimerMount">',
  '<details id="redlinePhotoTimerPanel" class="rr-timer-panel" open>',
  '<summary class="rr-timer-heading"><strong>TIMED PHOTO EARNINGS</strong><small>Every second counts</small>' +
@@ -42,9 +42,9 @@ function makePage(width){
 }
 const server=createServer((req,res)=>{
  const path=(req.url||'').split('?')[0];
- if(/^\/deck-(620|820)\.html$/.test(path)){
-  const w=Number(path.match(/\d+/)[0]);
-  res.writeHead(200,{'content-type':'text/html; charset=utf-8'});res.end(makePage(w));return;
+ if(/^\/deck-(620|820|760)(-embedded)?\.html$/.test(path)){
+  const w=Number(path.match(/\d+/)[0]),embedded=path.includes('-embedded');
+  res.writeHead(200,{'content-type':'text/html; charset=utf-8'});res.end(makePage(w,embedded));return;
  }
  if(!/^\/[a-zA-Z0-9-]+\.css$/.test(path)){res.writeHead(404);res.end();return}
  try{res.writeHead(200,{'content-type':'text/css'});res.end(readFileSync(basename(path)));}
@@ -53,10 +53,10 @@ const server=createServer((req,res)=>{
 await new Promise(done=>server.listen(0,'127.0.0.1',done));
 const chrome=process.env.CHROME||'chromium';
 try{
- for(const width of [620,820]){
-  const url='http://127.0.0.1:'+server.address().port+'/deck-'+width+'.html';
+ for(const [width,embedded] of [[620,false],[820,false],[760,true]]){
+  const url='http://127.0.0.1:'+server.address().port+'/deck-'+width+(embedded?'-embedded':'')+'.html';
   const child=spawn(chrome,['--headless=new','--no-sandbox','--disable-gpu',
-   '--disable-dev-shm-usage','--window-size=1500,900','--virtual-time-budget=3000',
+   '--disable-dev-shm-usage','--window-size='+(embedded?'960':'1500')+',900','--virtual-time-budget=3000',
    '--dump-dom',url]);
   let stdout='',stderr='';
   child.stdout.on('data',d=>stdout+=d.toString());
@@ -74,6 +74,6 @@ try{
    assert.match(stdout,new RegExp('data-'+flag+'="true"'),
     width+'px failed '+flag+'; '+(stdout.match(/data-metrics="[^"]*"/)||[])[0]);
   }
-  console.log('REDLINE desktop '+width+'px: aligned timer, rating, stats, chat');
+  console.log('REDLINE '+(embedded?'OS frame ':'desktop ')+width+'px: aligned timer, rating, stats, chat');
  }
 }finally{await new Promise(done=>server.close(done));}

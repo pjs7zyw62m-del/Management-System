@@ -799,7 +799,7 @@ test('approved REDLINE desktop controls are three compact sections above growing
  const receiver=read('private-photo-ledger-receiver.js');
  const ledger=read('private-photo-ledger.js');
  const timer=read('private-photo-ledger-timers.js');
- assert.match(html,/private-photo-ledger-approved-deck\.css\?v=20261122-approved-controls-desktop2/);
+ assert.match(html,/private-photo-ledger-approved-deck\.css\?v=20261123-os-frame-responsive3/);
  assert.match(style,/@media \(min-width:1180px\)/);
  assert.match(style,/bc-ledger-desktop/);
  assert.match(style,/#rrAppleTimerMount>\.rr-timer-panel/);
@@ -825,4 +825,19 @@ test('REDLINE desktop timer keeps the title, stopwatch, amount and hide control 
  assert.match(css,/grid-template-rows:19px 18px!important/);
  assert.match(css,/grid-template-columns:max-content minmax\(0,1fr\)!important/);
  assert.match(css,/min-height:48px!important/);
+});
+
+
+test('desktop REDLINE panel follows BLACKCELL OS host at narrower iframe width without changing standalone tablet',()=>{
+ const responsive=read('private-photo-ledger-responsive.js');
+ const css=read('private-photo-ledger-approved-deck.css');
+ const html=read('private-photo-ledger.html');
+ const os=read('blackcell-os.js');
+ assert.match(responsive,/frame\?\.id!=='bcOsPhotoLedgerFrame'/);
+ assert.match(responsive,/host\?\.innerWidth>=1180&&window\.innerWidth>=720/);
+ assert.match(responsive,/classList\.toggle\('bc-os-frame-redline',desktopOsFrame\(\)\)/);
+ assert.match(css,/@media \(min-width:720px\)/);
+ assert.match(css,/:is\(\.bc-ledger-desktop,\.bc-os-frame-redline\)/);
+ assert.match(html,/private-photo-ledger-approved-deck\.css\?v=20261123-os-frame-responsive3/);
+ assert.match(os,/redlineRelease=20261123-desktop-panel-frame-responsive3/);
 });

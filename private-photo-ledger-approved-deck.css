@@ -1,14 +1,15 @@
 /* BLACKCELL REDLINE — approved compact Apple-dark desktop control deck.
-   Responsive only to the OS-sized receiver. Keep the REAL timer, bid, star
+   Responsive to desktop OS frames, even when their inner viewport is narrower.
+   Standalone tablet/mobile editions remain unchanged. Keep REAL timer, bid, star
    rating, delete and finance DOM/handlers; this file changes presentation only.
    The recovered vertical space stays with the chat's flex:1 pane. */
-@media (min-width:1180px) {
+@media (min-width:720px) {
 body.bc-redline-receiver.bc-ledger-desktop.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile) #rrAppleRight{
  gap:6px!important;
  padding:7px!important;
  min-height:0!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount{
  flex:0 0 auto!important;
  width:100%!important;
  min-width:0!important;
@@ -22,7 +23,7 @@ body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMo
  box-shadow:none!important;
 }
 /* FIRST BAND: amounts, timer and the three verified timer actions. */
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount>.rr-timer-panel{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount>.rr-timer-panel{
  display:flex!important;
  flex-direction:column!important;
  gap:5px!important;
@@ -36,7 +37,7 @@ body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMo
  background:linear-gradient(112deg,#210c14,#0e090e 72%)!important;
  box-shadow:inset 0 1px #ffffff12!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount summary.rr-timer-heading{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount summary.rr-timer-heading{
  display:grid!important;
  grid-template-columns:minmax(0,1fr) max-content!important;
  grid-template-rows:19px 18px!important;
@@ -52,16 +53,16 @@ body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMo
  list-style:none!important;
  cursor:pointer!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount summary.rr-timer-heading::-webkit-details-marker{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount summary.rr-timer-heading::-webkit-details-marker{
  display:none!important;
 }
 /* Older REDLINE CSS injected an independent stopwatch as a grid item,
    creating the detached icon under the total in desktop screenshots. */
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #redlinePhotoTimerPanel summary.rr-timer-heading::before{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #redlinePhotoTimerPanel summary.rr-timer-heading::before{
  content:none!important;
  display:none!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount summary.rr-timer-heading>strong:first-child{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount summary.rr-timer-heading>strong:first-child{
  grid-column:1!important;
  grid-row:1!important;
  justify-self:start!important;
@@ -72,7 +73,7 @@ body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMo
  white-space:nowrap!important;
  letter-spacing:.025em!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount summary.rr-timer-heading>.rr-timer-money{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount summary.rr-timer-heading>.rr-timer-money{
  grid-column:1!important;
  grid-row:2!important;
  justify-self:start!important;
@@ -84,7 +85,7 @@ body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMo
  white-space:nowrap!important;
  font-variant-numeric:tabular-nums!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount summary.rr-timer-heading>.rr-timer-money::before{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount summary.rr-timer-heading>.rr-timer-money::before{
  content:"⏱"!important;
  display:inline-block!important;
  margin-right:7px!important;
@@ -93,7 +94,7 @@ body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMo
  line-height:1!important;
  vertical-align:baseline!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount summary.rr-timer-heading>.rr-timer-clock{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount summary.rr-timer-heading>.rr-timer-clock{
  grid-column:2!important;
  grid-row:1!important;
  justify-self:end!important;
@@ -104,7 +105,7 @@ body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMo
  white-space:nowrap!important;
  font-variant-numeric:tabular-nums!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount summary.rr-timer-heading::after{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount summary.rr-timer-heading::after{
  content:"HIDE TIMER  ▲"!important;
  grid-column:2!important;
  grid-row:2!important;
@@ -115,10 +116,10 @@ body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMo
  letter-spacing:.025em!important;
  font-weight:700!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount .rr-timer-panel:not([open]) summary.rr-timer-heading::after{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount .rr-timer-panel:not([open]) summary.rr-timer-heading::after{
  content:"SHOW TIMER  ▼"!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount .rr-timer-controls{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount .rr-timer-controls{
  display:grid!important;
  grid-template-columns:repeat(3,minmax(0,1fr))!important;
  grid-template-rows:27px 32px!important;
@@ -126,7 +127,7 @@ body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMo
  gap:4px!important;
  min-width:0!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount .rr-timer-selected{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount .rr-timer-selected{
  grid-column:1!important;
  grid-row:1!important;
  align-self:center!important;
@@ -142,7 +143,7 @@ body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMo
  text-overflow:ellipsis!important;
  white-space:nowrap!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount .rr-timer-rate-label{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount .rr-timer-rate-label{
  grid-column:2/4!important;
  grid-row:1!important;
  display:flex!important;
@@ -155,7 +156,7 @@ body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMo
  line-height:1.1!important;
  font-weight:800!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount .rr-timer-rate{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount .rr-timer-rate{
  display:block!important;
  box-sizing:border-box!important;
  min-width:0!important;
@@ -170,7 +171,7 @@ body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMo
  font-size:12px!important;
  font-variant-numeric:tabular-nums!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount :is(.rr-timer-start,.rr-timer-stop,.rr-timer-select-incoming){
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount :is(.rr-timer-start,.rr-timer-stop,.rr-timer-select-incoming){
  display:flex!important;
  align-items:center!important;
  justify-content:center!important;
@@ -190,23 +191,23 @@ body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMo
  letter-spacing:0!important;
  white-space:nowrap!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount .rr-timer-start{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount .rr-timer-start{
  grid-column:1!important;grid-row:2!important;
  background:linear-gradient(160deg,#ba2146,#9b1436)!important;
  border-color:#f43a69!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount .rr-timer-stop{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount .rr-timer-stop{
  grid-column:2!important;grid-row:2!important;
  background:#1c1219!important;
  border-color:#62404b!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount .rr-timer-select-incoming{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount .rr-timer-select-incoming{
  grid-column:3!important;grid-row:2!important;
  background:#250d18!important;
  border-color:#a42c50!important;
 }
 /* SECOND BAND: rating + approved price + permanent delete on ONE row. */
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount>#redlineLightboxReview:not([hidden]){
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount>#redlineLightboxReview:not([hidden]){
  box-sizing:border-box!important;
  width:100%!important;
  height:auto!important;
@@ -223,14 +224,14 @@ body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMo
  overflow:visible!important;
  align-items:center!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount>#redlineLightboxReview:not([data-redline-decision="pending"]):not([hidden]){
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount>#redlineLightboxReview:not([data-redline-decision="pending"]):not([hidden]){
  display:grid!important;
  grid-template-columns:minmax(0,1.5fr) minmax(62px,.33fr) minmax(104px,.65fr)!important;
  grid-auto-rows:minmax(0,1fr)!important;
  grid-auto-flow:row!important;
  min-height:48px!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount #redlineLightboxReview>.rr-photo-rating-panel{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount #redlineLightboxReview>.rr-photo-rating-panel{
  min-width:0!important;
  display:grid!important;
  grid-template-columns:max-content minmax(0,1fr)!important;
@@ -242,7 +243,7 @@ body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMo
  padding:0!important;
  margin:0!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount #redlineLightboxReview .rr-photo-rating-title{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount #redlineLightboxReview .rr-photo-rating-title{
  font-size:10px!important;
  font-weight:850!important;
  letter-spacing:0!important;
@@ -252,7 +253,7 @@ body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMo
  grid-column:1!important;
  grid-row:1!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount #redlineLightboxReview .rr-photo-rating-buttons{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount #redlineLightboxReview .rr-photo-rating-buttons{
  display:flex!important;
  align-items:center!important;
  flex-wrap:nowrap!important;
@@ -263,7 +264,7 @@ body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMo
  grid-row:1!important;
  justify-self:start!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount #redlineLightboxReview .rr-photo-rating-star{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount #redlineLightboxReview .rr-photo-rating-star{
  flex:0 0 auto!important;
  width:24px!important;
  min-width:24px!important;
@@ -273,17 +274,17 @@ body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMo
  line-height:1!important;
  font-size:24px!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount #redlineLightboxReview .rr-photo-rating-feedback{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount #redlineLightboxReview .rr-photo-rating-feedback{
  grid-column:1/-1!important;
  grid-row:2!important;
  font-size:9px!important;
  line-height:1.2!important;
  margin:0!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount #redlineLightboxReview .rr-photo-rating-feedback:empty{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount #redlineLightboxReview .rr-photo-rating-feedback:empty{
  display:none!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount #redlineLightboxReview:not([data-redline-decision="pending"])>.rr-photo-price-amount{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount #redlineLightboxReview:not([data-redline-decision="pending"])>.rr-photo-price-amount{
  grid-column:2!important;grid-row:1!important;
  justify-self:center!important;
  align-self:center!important;
@@ -293,7 +294,7 @@ body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMo
  line-height:1!important;
  white-space:nowrap!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount #redlineLightboxReview:not([data-redline-decision="pending"])>.rr-permanent-delete-button{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount #redlineLightboxReview:not([data-redline-decision="pending"])>.rr-permanent-delete-button{
  grid-column:3!important;grid-row:1!important;
  align-self:center!important;justify-self:stretch!important;
  display:flex!important;align-items:center!important;justify-content:center!important;
@@ -314,27 +315,27 @@ body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMo
  text-align:center!important;
 }
 /* Pending photo prices keep the original verified acceptance/rejection actions. */
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount>#redlineLightboxReview[data-redline-decision="pending"]:not([hidden]){
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount>#redlineLightboxReview[data-redline-decision="pending"]:not([hidden]){
  display:grid!important;
  grid-template-columns:minmax(0,1.45fr) minmax(115px,.7fr)!important;
  grid-template-rows:auto auto auto!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount #redlineLightboxReview[data-redline-decision="pending"]>.rr-photo-rating-panel{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount #redlineLightboxReview[data-redline-decision="pending"]>.rr-photo-rating-panel{
  grid-column:1!important;grid-row:1!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount #redlineLightboxReview[data-redline-decision="pending"]>.redline-review-label{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount #redlineLightboxReview[data-redline-decision="pending"]>.redline-review-label{
  grid-column:2!important;grid-row:1!important;
  display:flex!important;flex-direction:column!important;
  justify-content:center!important;
  margin:0!important;gap:3px!important;
  font-size:9px!important;min-width:0!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount #redlineLightboxReview[data-redline-decision="pending"]>.redline-review-actions{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount #redlineLightboxReview[data-redline-decision="pending"]>.redline-review-actions{
  grid-column:1/-1!important;grid-row:2!important;
  display:grid!important;grid-template-columns:minmax(0,1.35fr) repeat(2,minmax(0,.75fr))!important;
  gap:5px!important;align-items:center!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount #redlineLightboxReview[data-redline-decision="pending"] .redline-review-actions>.button-main{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount #redlineLightboxReview[data-redline-decision="pending"] .redline-review-actions>.button-main{
  grid-column:1!important;
  min-height:33px!important;
  height:33px!important;
@@ -342,14 +343,14 @@ body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMo
  font-size:9px!important;
  white-space:normal!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount #redlineLightboxReview[data-redline-decision="pending"] .redline-review-actions>.button-outline{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount #redlineLightboxReview[data-redline-decision="pending"] .redline-review-actions>.button-outline{
  min-height:33px!important;
  height:33px!important;
  padding:5px!important;
  font-size:9px!important;
  white-space:normal!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMount #redlineLightboxReview[data-redline-decision="pending"]>.rr-permanent-delete-button{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleTimerMount #redlineLightboxReview[data-redline-decision="pending"]>.rr-permanent-delete-button{
  grid-column:1/-1!important;grid-row:3!important;
  justify-self:end!important;
  min-height:29px!important;
@@ -357,20 +358,20 @@ body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleTimerMo
  padding:4px 9px!important;
 }
 /* THIRD BAND: four small, equal, well-aligned financial summaries. */
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleFinance{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleFinance{
  flex:0 0 auto!important;
  width:100%!important;
  min-width:0!important;
  margin:0!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleFinance>.rr-stats{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleFinance>.rr-stats{
  display:grid!important;
  grid-template-columns:repeat(4,minmax(0,1fr))!important;
  gap:5px!important;
  width:100%!important;
  min-width:0!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleFinance .rr-stat{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleFinance .rr-stat{
  display:flex!important;
  flex-direction:column!important;
  align-items:flex-start!important;
@@ -383,18 +384,18 @@ body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleFinance
  background:linear-gradient(125deg,#19151a,#0f0d12)!important;
  border:1px solid #48353e!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleFinance .rr-stat-pending{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleFinance .rr-stat-pending{
  background:linear-gradient(110deg,#300b18,#1a0a11)!important;
  border-color:#a62d4b!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleFinance .rr-stat-name{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleFinance .rr-stat-name{
  font-size:9px!important;
  font-weight:750!important;
  letter-spacing:0!important;
  line-height:1.15!important;
  overflow-wrap:normal!important;
 }
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleFinance .rr-stat-value{
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleFinance .rr-stat-value{
  font-size:17px!important;
  font-weight:850!important;
  line-height:1!important;
@@ -403,7 +404,7 @@ body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleFinance
  word-break:normal!important;
 }
 /* Give all recovered vertical space to the same authenticated chat stream. */
-body.bc-redline-receiver.bc-ledger-desktop.bc-redline-apple-mode #rrAppleRight>.rr-chat-panel:not([hidden]){
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline) #rrAppleRight>.rr-chat-panel:not([hidden]){
  flex:1 1 0!important;
  min-height:0!important;
  max-height:none!important;
