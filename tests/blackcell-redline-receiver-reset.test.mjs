@@ -94,7 +94,7 @@ test('REDLINE receiver resources are versioned and original form and security re
  assert.match(html,/private-photo-ledger-receiver\.js\?v=20261123-trigger-visible-controls1/);
  assert.match(html,/private-photo-ledger\.js\?v=20261122-redline-android-multisource1/);
  assert.match(html,/private-photo-ledger-responsive\.js\?v=20261123-os-frame-responsive3/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261123-trigger-fee-chat1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261123-photo-credit-counter-inline1/);
  assert.match(ledger,/corporateAuthorize\(db,\{allowLedgerOnly:true\}\)/);
  assert.match(ledger,/const BUCKET='corp-private-photo-ledger'/);
  assert.match(ledger,/await uploadBunnyPhoto\(db,room\.id,state\.user\.id,id,file,info\.mime\)/);
@@ -417,7 +417,7 @@ test('Sender chat receives verified start and stop messages with a live clock an
  assert.match(sender,/window\.setInterval\(\(\)=>\{/);
  assert.match(sender,/BigInt\(seconds\)\*BigInt\(row\.rate_cents\|\|0\)/);
  assert.match(style,/\.redline-chat-timer/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261123-trigger-fee-chat1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261123-photo-credit-counter-inline1/);
 });
 
 test('Auto leading zero, verified timed price, and reject confirmation are supported',()=>{
@@ -465,7 +465,7 @@ test('REDLINE pause belongs only to verified receiver and applies across devices
  assert.match(migration,/NOT r\.photo_sending_paused/g);
  assert.match(style,/#redlineReceiverSendingPause|rr-receiver-pause-button/);
  assert.match(html,/private-photo-ledger-sender\.js\?v=20261122-redline-multi-chooser1/);
- assert.match(html,/private-photo-ledger-simple-sender\.css\?v=20261123-trigger-fee-chat1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.css\?v=20261123-photo-credit-counter-inline1/);
 });
 
 test('Selected reviewed photo stays beside sidebar instead of caught-up queue',()=>{
@@ -679,8 +679,8 @@ test('Approved originals can be reused privately until the receiver rejects or a
  assert.match(sender,/BLACKCELL_REDLINE_REUSE_UI\?\.open\(photo.id,action\)/);
  assert.match(style,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)!important/);
  assert.match(style,/\.redline-five-star-photo/);
- assert.match(html,/private-photo-ledger\.js\?v=20261123-reuse-approved-original1/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261123-trigger-fee-chat1/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261123-photo-credit-counter-inline1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261123-photo-credit-counter-inline1/);
  assert.match(html,/private-photo-ledger-sender-reuse\.js\?v=20261123-reuse-popup1/);
 });
 
@@ -846,7 +846,7 @@ test('desktop REDLINE panel follows BLACKCELL OS host at narrower iframe width w
  assert.match(css,/@media \(min-width:720px\)/);
  assert.match(css,/:is\(\.bc-ledger-desktop,\.bc-os-frame-redline\)/);
  assert.match(html,/private-photo-ledger-approved-deck\.css\?v=20261123-os-frame-responsive3/);
- assert.match(os,/redlineRelease=20261123-trigger-fee-chat1/);
+ assert.match(os,/redlineRelease=20261123-photo-credit-counter-inline1/);
 });
 
 
@@ -866,7 +866,7 @@ test('REDLINE Option 2 removes oversized desktop heading but preserves all four 
  assert.match(css,/min-height:36px!important/);
  assert.match(css,/@media \(max-width:900px\)/);
  assert.match(receiver,/header\.append\(intro,status\)/);
- assert.match(os,/redlineRelease=20261123-trigger-fee-chat1/);
+ assert.match(os,/redlineRelease=20261123-photo-credit-counter-inline1/);
 });
 
 
@@ -909,7 +909,7 @@ test('REDLINE Web OS owner permission hub keeps authenticated link, preview and 
  assert.match(ledger,/copyRoomLink/);
  assert.match(preview,/redlineOwnerPreviewButton/);
  assert.match(sender,/redline-owner-open-messages/);
- assert.match(os,/redlineRelease=20261123-trigger-fee-chat1/);
+ assert.match(os,/redlineRelease=20261123-photo-credit-counter-inline1/);
 });
 
 
