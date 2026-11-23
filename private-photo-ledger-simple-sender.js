@@ -194,23 +194,83 @@ ownerButton.addEventListener('click',()=>{
  }
  ownerMount.append(messageCard);
  photoAction.hidden=true;
- ownerDialog.showModal();void loadMessages();void pollChatStatus(true);
+ ownerDialog.showModal();requestAnimationFrame(restoreReaderAnchor);
+ void loadMessages();void pollChatStatus(true);
 });
 ownerDialog.addEventListener('close',()=>{
  const inline=receiverChatMount(),panel=receiverChatPanel();
  if(inline&&panel&&!panel.hidden)inline.append(messageCard);
  else uploadPane.append(messageCard);
  photoAction.hidden=Boolean(inline&&panel&&!panel.hidden);
+ requestAnimationFrame(restoreReaderAnchor);
  entry.value='';
 });
 ownerDialog.addEventListener('click',e=>{if(e.target===ownerDialog)ownerDialog.close()});
 let currentTab='upload',lastRoom=null,lastSessionKey=null,messages=[],loading=false,posting=false,roomReady=false;
 let lastSync=0,lastOwnerSession=null,lastChatViewSignature='';
 let chatInitialPositionPending=true,chatOwnSendPending=false;
-// Explicit user scrolling cancels any pending initial jump. Background polling
-// never takes control of the reader's scroll position.
-for(const type of ['wheel','touchstart','pointerdown','keydown']){
- feed.addEventListener(type,()=>{chatInitialPositionPending=false},{passive:true});
+// Keep a durable anchor for a human reading older messages. Chrome may silently
+// reset scrollTop to 0 when the authenticated receiver panel is temporarily
+// hidden/reparented or its flex layout is recalculated. Restoring "scrollBefore"
+// from that zero is the source of the repeated top/bottom conversation jumps.
+let readerAnchor=null,readerGestureUntil=0,readerRestoring=false;
+function readerRoomKey(){
+ const s=snapshot();
+ return s?.roomId?s.roomId+'|'+String(Boolean(s.archiveMode)):null;
+}
+function saveReaderAnchor(){
+ if(!feed.isConnected||feed.clientHeight<24)return;
+ const roomKey=readerRoomKey();
+ if(!roomKey)return;
+ const max=Math.max(0,feed.scrollHeight-feed.clientHeight);
+ if(max<40||max-feed.scrollTop<35){readerAnchor=null;return}
+ const viewport=feed.getBoundingClientRect();
+ const node=[...feed.children].find(el=>{
+  if(!el.dataset.redlineItemKey)return false;
+  const box=el.getBoundingClientRect();
+  return box.bottom>viewport.top+2&&box.top<viewport.bottom;
+ });
+ readerAnchor={roomKey,top:feed.scrollTop,key:node?.dataset.redlineItemKey||'',
+  offset:node?node.getBoundingClientRect().top-viewport.top:0};
+}
+function restoreReaderAnchor(){
+ if(!readerAnchor||readerRestoring||!feed.isConnected||feed.clientHeight<24||
+    readerRoomKey()!==readerAnchor.roomKey)return;
+ // Do not compete with a wheel, drag, swipe or keyboard scroll in progress.
+ if(Date.now()<readerGestureUntil)return;
+ const max=Math.max(0,feed.scrollHeight-feed.clientHeight);
+ let desired=Math.min(readerAnchor.top,max);
+ if(readerAnchor.key){
+  const anchor=[...feed.children].find(el=>el.dataset.redlineItemKey===readerAnchor.key);
+  if(anchor){
+   const top=anchor.getBoundingClientRect().top-feed.getBoundingClientRect().top+feed.scrollTop;
+   desired=Math.max(0,Math.min(max,top-readerAnchor.offset));
+  }
+ }
+ if(Math.abs(feed.scrollTop-desired)>1){
+  readerRestoring=true;
+  feed.scrollTop=desired;
+  requestAnimationFrame(()=>{readerRestoring=false});
+ }
+}
+function markReaderGesture(){
+ chatInitialPositionPending=false;
+ readerGestureUntil=Date.now()+900;
+ // Capture after the browser processes the user's real scroll movement.
+ requestAnimationFrame(()=>requestAnimationFrame(saveReaderAnchor));
+}
+for(const type of ['wheel','touchstart','pointerdown','keydown'])
+ feed.addEventListener(type,markReaderGesture,{passive:true});
+feed.addEventListener('scroll',()=>{
+ if(!readerRestoring&&Date.now()<readerGestureUntil)
+  requestAnimationFrame(saveReaderAnchor);
+},{passive:true});
+if(typeof ResizeObserver!=='undefined'){
+ const readerResizeObserver=new ResizeObserver(()=>{
+  if(readerAnchor)requestAnimationFrame(restoreReaderAnchor);
+ });
+ readerResizeObserver.observe(feed);
+ readerResizeObserver.observe(messageCard);
 }
 let timerStatus=null,timerRoomId=null,timerFingerprint='',timerOffset=0;
 let timerPollInFlight=false,timerLastPoll=0,timerLoadError='';
@@ -667,14 +727,18 @@ function renderChat({scrollToLatest=false}={}){
     ?[e.kind,e.at,e.photo?.id,e.photo?.stars,e.photo?.caption,Boolean(e.photo?.image_url)]
     :[e.kind,e.at,e.id,e.body,e.sender,e.status])
  ]);
+ // Only a true first opening or the user's own Send may follow the bottom.
+ // A background live update must NEVER override a human's reading anchor.
+ const followLatest=Boolean(scrollToLatest&&(chatOwnSendPending||
+  (!readerAnchor&&feed.clientHeight>=24)));
  if(signature===lastChatViewSignature&&feed.dataset.redlineScrollReady==='true'){
-  // The only intentional jumps are the initial room opening and a message
-  // the current user has just sent, never a background refresh.
-  if(scrollToLatest)feed.scrollTop=feed.scrollHeight;
+  if(followLatest)feed.scrollTop=feed.scrollHeight;
+  else restoreReaderAnchor();
   return;
  }
  lastChatViewSignature=signature;
- const scrollBefore=feed.scrollTop;
+ const retained=readerAnchor?.roomKey===readerRoomKey()?readerAnchor:null;
+ const scrollBefore=retained?.top??feed.scrollTop;
  const viewport=feed.getBoundingClientRect();
  // Keep the first visible DOM node stationary even if earlier history arrives.
  const anchor=[...feed.children].find(el=>{
@@ -777,11 +841,15 @@ function renderChat({scrollToLatest=false}={}){
  const keep=new Set(desired);
  for(const node of [...feed.children])if(!keep.has(node))node.remove();
  feed.dataset.redlineScrollReady='true';
- if(scrollToLatest)feed.scrollTop=feed.scrollHeight;
+ if(followLatest)feed.scrollTop=feed.scrollHeight;
+ else if(retained)restoreReaderAnchor();
  else if(anchor&&anchor.isConnected&&feed.contains(anchor)&&Number.isFinite(anchorTop)){
   const shift=anchor.getBoundingClientRect().top-anchorTop;
   feed.scrollTop=Math.max(0,Math.min(scrollBefore+shift,feed.scrollHeight-feed.clientHeight));
  }else feed.scrollTop=Math.max(0,Math.min(scrollBefore,feed.scrollHeight-feed.clientHeight));
+ // Image decoding and Web OS flex reflows can happen after the DOM commit.
+ // Re-anchor after layout, without moving the whole page or message composer.
+ if(retained)requestAnimationFrame(restoreReaderAnchor);
 }
 async function loadMessages(){
  const snap=snapshot();
@@ -813,6 +881,8 @@ composer.addEventListener('submit',async e=>{
  try{
   await bridge().sendMessage(text);
   entry.value='';androidRedlineCaretGuard?.reset();msgError.textContent='';stopTyping();
+  // Sending is an explicit request to see the reply at the bottom.
+  readerAnchor=null;
   chatOwnSendPending=true;
   await loadMessages();
  }catch(err){
@@ -854,13 +924,16 @@ function syncOwnerChat(snap){
  }
  if(ownerDialog.open)return;
  if(messageCard.parentNode!==mount)mount.append(messageCard);
+ // Preserve a previously read position when receiver visibility returns.
+ if(readerAnchor)requestAnimationFrame(restoreReaderAnchor);
  photoAction.hidden=true;
  const key=snap.roomId+'|'+(snap.resetAt||'')+'|'+String(snap.archiveMode);
  if(key!==lastOwnerSession){
   ownerChatNeedsResume=false;
   feed.dataset.redlineScrollReady='false';
   lastChatViewSignature='';
-  chatInitialPositionPending=true;
+  if(readerAnchor?.roomKey!==readerRoomKey())readerAnchor=null;
+  chatInitialPositionPending=!readerAnchor;
   lastOwnerSession=key;messages=[];lastSync=0;resetChatSignals();renderChat();void loadMessages();void pollSenderTimers(true);void pollChatStatus(true);
  }else if(ownerChatNeedsResume){
   ownerChatNeedsResume=false;
@@ -885,7 +958,8 @@ function sync(){
   if(sessionKey!==lastSessionKey){
    feed.dataset.redlineScrollReady='false';
    lastChatViewSignature='';
-   chatInitialPositionPending=true;
+   if(readerAnchor?.roomKey!==readerRoomKey())readerAnchor=null;
+   chatInitialPositionPending=!readerAnchor;
    lastSessionKey=sessionKey;messages=[];lastSync=0;resetChatSignals();
    viewingStatus=null;viewingRoomId=null;viewingError='';viewingLastPoll=0;
    timerRoomId=null;timerStatus=null;timerFingerprint='';timerLastPoll=0;timerLoadError='';
@@ -906,7 +980,8 @@ function sync(){
   if(snap.roomId!==lastRoom){
    feed.dataset.redlineScrollReady='false';
    lastChatViewSignature='';
-   chatInitialPositionPending=true;
+   if(readerAnchor?.roomKey!==readerRoomKey())readerAnchor=null;
+   chatInitialPositionPending=!readerAnchor;
    lastRoom=snap.roomId;messages=[];lastSync=0;resetChatSignals();
    renderChat();
   }
@@ -964,6 +1039,7 @@ window.addEventListener('blackcell:redline:bridge',sync);
 window.addEventListener('blackcell:redline:state',sync);
 window.addEventListener('blackcell:redline:session-mode',sync);
 window.addEventListener('blackcell:redline:reset',()=>{
+ readerAnchor=null;
  chatInitialPositionPending=true;lastChatViewSignature='';
  lastSessionKey=null;messages=[];lastSync=0;resetChatSignals();
  viewingStatus=null;viewingRoomId=null;viewingError='';viewingLastPoll=0;sync();

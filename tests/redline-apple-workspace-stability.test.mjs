@@ -80,3 +80,19 @@ test('REDLINE transient owner refresh cannot discard the mounted chat or auto-re
  assert.match(js,/else if\(ownerChatNeedsResume\)/);
  assert.match(html,/site-presence2-redline-continuity/);
 });
+
+
+test('REDLINE saves a user-selected message anchor through receiver hidden/reflow without forcing bottom',()=>{
+ const js=read('private-photo-ledger-simple-sender.js');
+ const html=read('private-photo-ledger.html');
+ assert.match(js,/let readerAnchor=null,readerGestureUntil=0,readerRestoring=false/);
+ assert.match(js,/function saveReaderAnchor\(\)/);
+ assert.match(js,/function restoreReaderAnchor\(\)/);
+ assert.match(js,/requestAnimationFrame\(\(\)=>requestAnimationFrame\(saveReaderAnchor\)\)/);
+ assert.match(js,/const retained=readerAnchor\?\.roomKey===readerRoomKey\(\)\?readerAnchor:null/);
+ assert.match(js,/else if\(retained\)restoreReaderAnchor\(\)/);
+ assert.match(js,/readerResizeObserver\.observe\(feed\)/);
+ assert.match(js,/if\(readerAnchor\)requestAnimationFrame\(restoreReaderAnchor\)/);
+ assert.match(js,/const followLatest=Boolean\(scrollToLatest&&\(chatOwnSendPending/);
+ assert.match(html,/stableChat=20261123-v6-durable-read-anchor/);
+});

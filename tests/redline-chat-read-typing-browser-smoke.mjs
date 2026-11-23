@@ -82,7 +82,11 @@ document.addEventListener('DOMContentLoaded',()=>{
   const feed=document.querySelector('.redline-message-feed');
   if(!feed)return;
   document.body.dataset.chatLongThread=String(feed.scrollHeight>feed.clientHeight+400);
+  // Real reading gesture (instead of a test-only programmatic scroll)
+  // activates the durable anchor across hidden-panel and size changes.
+  feed.dispatchEvent(new WheelEvent('wheel',{deltaY:-180,bubbles:true}));
   feed.scrollTop=142;
+  feed.dispatchEvent(new Event('scroll'));
   savedScrollTop=feed.scrollTop;
   savedAnchor=feed.querySelector('[data-redline-item-key="message:historic-10#0"]');
   currentReadAt=new Date(first+1000).toISOString();
@@ -91,6 +95,8 @@ document.addEventListener('DOMContentLoaded',()=>{
    temporarySnapshotUnavailable=true;
    document.getElementById('redlineReceiverChat').hidden=true;
    window.dispatchEvent(new Event('blackcell:redline:state'));
+   // Chrome may discard the feed scroll offset while flex box is hidden.
+   feed.scrollTop=0;
    setTimeout(()=>{
     temporarySnapshotUnavailable=false;
     document.getElementById('redlineReceiverChat').hidden=false;
