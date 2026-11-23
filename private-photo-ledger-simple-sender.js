@@ -189,7 +189,7 @@ ownerButton.addEventListener('click',()=>{
  if(!snap?.isOwner)return;
  const panel=receiverChatPanel();
  if(panel&&!panel.hidden&&receiverChatMount()){
-  panel.scrollIntoView({behavior:'smooth',block:'start'});
+  // Focus the composer without jumping the entire receiver page.
   entry.focus({preventScroll:true});return;
  }
  ownerMount.append(messageCard);
@@ -627,7 +627,14 @@ entry.addEventListener('input',()=>{
 });
 entry.addEventListener('blur',stopTyping);
 function renderChat(){
- const snap=snapshot();feed.replaceChildren();timerSlot.replaceChildren();
+ const snap=snapshot();
+ // Background polling and receipt updates should not yank an older message
+ // back down to the newest one. Only follow the bottom if already near it.
+ const priorScrollTop=feed.scrollTop;
+ const priorScrollHeight=feed.scrollHeight;
+ const followBottom=feed.dataset.redlineScrollReady!=='true'
+  ||priorScrollHeight-priorScrollTop-feed.clientHeight<=64;
+ feed.replaceChildren();timerSlot.replaceChildren();
  const events=createEvents(snap?.entries).slice(0,80);
  const latestOwn=[...messages].reverse().find(m=>m.sender_id===snap?.userId)?.id;
  const pinned=timerRoomId===snap?.roomId&&!snap?.archiveMode&&timerStatus?.active?.started_at
@@ -690,7 +697,9 @@ function renderChat(){
   }
   feed.append(bubble);
  }
- feed.scrollTop=feed.scrollHeight;
+ if(followBottom)feed.scrollTop=feed.scrollHeight;
+ else feed.scrollTop=Math.max(0,Math.min(priorScrollTop,feed.scrollHeight-feed.clientHeight));
+ feed.dataset.redlineScrollReady='true';
 }
 async function loadMessages(){
  const snap=snapshot();
@@ -763,6 +772,7 @@ function syncOwnerChat(snap){
  photoAction.hidden=true;
  const key=snap.roomId+'|'+(snap.resetAt||'')+'|'+String(snap.archiveMode);
  if(key!==lastOwnerSession){
+  feed.dataset.redlineScrollReady='false';
   lastOwnerSession=key;messages=[];lastSync=0;resetChatSignals();renderChat();void loadMessages();void pollSenderTimers(true);void pollChatStatus(true);
  }
  send.disabled=Boolean(!snap.roomActive||snap.archiveMode);
@@ -778,6 +788,7 @@ function sync(){
   if(upload.parentNode!==uploadMount)uploadMount.append(upload);
   const sessionKey=snap.roomId+'|'+(snap.resetAt||'')+'|'+String(snap.archiveMode);
   if(sessionKey!==lastSessionKey){
+   feed.dataset.redlineScrollReady='false';
    lastSessionKey=sessionKey;messages=[];lastSync=0;resetChatSignals();
    viewingStatus=null;viewingRoomId=null;viewingError='';viewingLastPoll=0;
    timerRoomId=null;timerStatus=null;timerFingerprint='';timerLastPoll=0;timerLoadError='';
@@ -796,6 +807,7 @@ function sync(){
   renderPhotoHistory(snap);
   if(currentTab==='viewing')renderCurrentlyViewing(snap);
   if(snap.roomId!==lastRoom){
+   feed.dataset.redlineScrollReady='false';
    lastRoom=snap.roomId;messages=[];lastSync=0;resetChatSignals();
    renderChat();
   }

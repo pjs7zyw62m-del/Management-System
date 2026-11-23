@@ -1,0 +1,128 @@
+/* BLACKCELL REDLINE — stable conversation, compact photo decisions and
+   collapsible Apple-dark navigation. Receiver web/tablet only. */
+@media (min-width:720px){
+ body.bc-redline-receiver.bc-redline-apple-mode:not(.bc-ledger-mobile) #redlineReceiverLiveWorkspace{
+  position:relative!important;
+  scroll-behavior:auto!important;
+ }
+ #rrAppleSidebarToggle{display:none}
+ body.bc-redline-receiver.bc-redline-apple-mode:not(.bc-ledger-mobile) #rrAppleSidebarToggle{
+  position:absolute!important;z-index:12!important;top:12px;left:11px;
+  display:flex!important;align-items:center;justify-content:center;
+  width:35px;height:35px;min-width:35px;min-height:35px;
+  border:1px solid #67424d;border-radius:10px;
+  background:#201118;color:#f5e9ee;cursor:pointer;
+  box-shadow:0 4px 14px #0007;font-size:20px;line-height:1;
+  transition:background .15s ease;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode #rrAppleSidebarToggle:hover{
+  background:#542032!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode #rrAppleSidebarToggle:focus-visible{
+  outline:2px solid #ff8299;outline-offset:2px;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode #rrAppleSidebar .rr-apple-mark{
+  padding-top:45px!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode #redlineReceiverLiveWorkspace.rr-sidebar-hidden #rrAppleSidebar{
+  display:none!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #redlineReceiverLiveWorkspace.rr-sidebar-hidden:not([hidden]){
+  grid-template-columns:0 minmax(0,1.62fr) 9px minmax(295px,1fr)!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode #redlineReceiverLiveWorkspace.rr-sidebar-hidden
+ #redlineReceiverIncomingPhotos .rr-incoming-header{
+  padding-left:59px!important;
+ }
+ /* Only the message feed scrolls. New chat events never scroll the page itself. */
+ body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight,
+ body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight .rr-chat-panel,
+ body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight .rr-chat-mount,
+ body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight .redline-message-card,
+ body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight .redline-message-feed{
+  overflow-anchor:none!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight .redline-message-feed{
+  overscroll-behavior:contain!important;
+  scroll-behavior:auto!important;
+ }
+ /* Single, scroll-free decision strip directly under the full photograph. */
+ body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #redlineReceiverReviewStage>#redlineLightboxReview:not([hidden]){
+  max-height:none!important;min-height:0!important;height:auto!important;
+  overflow:visible!important;align-content:center!important;
+  padding:10px 12px!important;gap:7px 10px!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode
+ #redlineLightboxReview[data-redline-decision="pending"]{
+  grid-template-columns:repeat(12,minmax(0,1fr))!important;
+  grid-template-rows:auto auto!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode
+ #redlineLightboxReview[data-redline-decision="pending"]>.rr-photo-rating-panel{
+  grid-column:1 / 5!important;grid-row:1!important;align-self:center!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode
+ #redlineLightboxReview[data-redline-decision="pending"]>.redline-review-label{
+  grid-column:5 / 8!important;grid-row:1!important;
+  align-self:center!important;min-width:0!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode
+ #redlineLightboxReview[data-redline-decision="pending"]>.redline-review-actions{
+  grid-column:8 / 13!important;grid-row:1!important;
+  align-self:center!important;min-width:0!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode
+ #redlineLightboxReview[data-redline-decision="pending"]>.redline-review-actions>.button-main{
+  min-height:40px!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode
+ #redlineLightboxReview[data-redline-decision="pending"]>.rr-receiver-photo-pause{
+  grid-column:1 / 8!important;grid-row:2!important;
+  padding:2px 0 0!important;margin:0!important;
+  border:0!important;gap:8px!important;min-width:0!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode
+ #redlineLightboxReview[data-redline-decision="pending"] .rr-receiver-pause-heading{
+  font-size:9px!important;white-space:nowrap!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode
+ #redlineLightboxReview[data-redline-decision="pending"] .rr-receiver-pause-status{
+  display:none!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode
+ #redlineLightboxReview[data-redline-decision="pending"] .rr-receiver-pause-button{
+  min-height:31px!important;height:31px!important;
+  max-width:none!important;font-size:9px!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode
+ #redlineLightboxReview[data-redline-decision="pending"]>.rr-permanent-delete-button{
+  grid-column:8 / 13!important;grid-row:2!important;
+  justify-self:stretch!important;max-width:none!important;width:100%!important;
+  min-height:31px!important;padding:6px!important;
+  font-size:9px!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode
+ #redlineLightboxReview[data-redline-decision="pending"]>.redline-review-hint{
+  display:none!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode
+ #redlineLightboxReview[data-redline-decision="pending"]>.redline-review-status{
+  grid-column:1 / -1!important;grid-row:3!important;
+  padding:0!important;min-height:0!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode
+ #redlineLightboxReview[data-redline-decision="pending"]>.redline-review-status:empty{
+  display:none!important;
+ }
+}
+@media (min-width:720px) and (max-width:999px){
+ body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #redlineReceiverLiveWorkspace.rr-sidebar-hidden:not([hidden]){
+  grid-template-columns:0 minmax(0,1fr)!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode #rrAppleRight .redline-message-feed{
+  overscroll-behavior-y:contain!important;
+ }
+}

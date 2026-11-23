@@ -476,14 +476,32 @@
  });
  appleLink('▤  Earnings',()=>{
   const target=appleRight.querySelector('.rr-stats');
-  target?.scrollIntoView({block:'nearest',behavior:'smooth'});
+  if(target){target.tabIndex=-1;target.focus({preventScroll:true})}
  });
  appleLink('▥  Photo History',()=>openMedia(true));
  appleLink('◷  Sessions',()=>goTo('#redlineSessionTools'));
- appleLink('⚙  Settings',()=>settingsMenu.click());
  const appleDivider=make('div','rr-apple-sidebar-divider');
  const appleRights=make('small','rr-apple-sidebar-foot','BLACKCELL · VERIFIED ROOM');
  appleSidebar.append(appleMark,appleMenu,appleDivider,appleRights);
+ // Persisted Apple-web/tablet navigation preference. The toggle stays outside
+ // the sidebar so the owner can always reopen it without losing the workspace.
+ const sidebarStorageKey='blackcell:redline:sidebar-hidden-v1';
+ let sidebarHidden=false;
+ try{sidebarHidden=window.localStorage.getItem(sidebarStorageKey)==='true'}catch{}
+ const sidebarToggle=button('‹',()=>setSidebarHidden(!sidebarHidden),'rr-apple-sidebar-toggle');
+ sidebarToggle.id='rrAppleSidebarToggle';
+ sidebarToggle.setAttribute('aria-controls','rrAppleSidebar');
+ function setSidebarHidden(hidden,persist=true){
+  sidebarHidden=Boolean(hidden);
+  workspace.classList.toggle('rr-sidebar-hidden',sidebarHidden);
+  sidebarToggle.setAttribute('aria-expanded',String(!sidebarHidden));
+  sidebarToggle.setAttribute('aria-label',sidebarHidden?'Show REDLINE sidebar':'Hide REDLINE sidebar');
+  sidebarToggle.title=sidebarHidden?'Show sidebar':'Hide sidebar';
+  sidebarToggle.textContent=sidebarHidden?'☰':'‹';
+  if(persist)try{window.localStorage.setItem(sidebarStorageKey,String(sidebarHidden))}catch{}
+ }
+ setSidebarHidden(sidebarHidden,false);
+ workspace.prepend(sidebarToggle);
  const appleRight=make('section','rr-apple-right');
  appleRight.id='rrAppleRight';
  appleRight.setAttribute('aria-label','Live session, timer and private messages');
