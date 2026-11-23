@@ -839,7 +839,7 @@ test('desktop REDLINE panel follows BLACKCELL OS host at narrower iframe width w
  assert.match(css,/@media \(min-width:720px\)/);
  assert.match(css,/:is\(\.bc-ledger-desktop,\.bc-os-frame-redline\)/);
  assert.match(html,/private-photo-ledger-approved-deck\.css\?v=20261123-os-frame-responsive3/);
- assert.match(os,/redlineRelease=20261123-merged-photo-webos3/);
+ assert.match(os,/redlineRelease=20261123-owner-control-hub1/);
 });
 
 
@@ -859,7 +859,7 @@ test('REDLINE Option 2 removes oversized desktop heading but preserves all four 
  assert.match(css,/min-height:36px!important/);
  assert.match(css,/@media \(max-width:900px\)/);
  assert.match(receiver,/header\.append\(intro,status\)/);
- assert.match(os,/redlineRelease=20261123-merged-photo-webos3/);
+ assert.match(os,/redlineRelease=20261123-owner-control-hub1/);
 });
 
 
@@ -877,4 +877,30 @@ test('merged REDLINE Web OS photo dock has one outer border, inner divider and p
  assert.match(css,/#redlineLightboxReview\[data-redline-decision="pending"\]/);
  assert.match(css,/\.rr-permanent-delete-button\{/);
  assert.match(receiver,/const reviewControlsHost=appleMode\?appleTimer:reviewStage/);
+});
+
+
+test('REDLINE Web OS owner permission hub keeps authenticated link, preview and employee actions compact',()=>{
+ const html=read('private-photo-ledger.html');
+ const style=read('private-photo-ledger-owner-hub.css');
+ const preview=read('private-photo-ledger-owner-preview.js');
+ const sender=read('private-photo-ledger-simple-sender.js');
+ const ledger=read('private-photo-ledger.js');
+ const os=read('blackcell-os.js');
+ assert.match(html,/private-photo-ledger-owner-hub\.css\?v=20261123-owner-hub1/);
+ assert.match(style,/#ownerSetup:not\(\[hidden\]\)/);
+ assert.match(style,/#ownerUploadInfo:not\(\[hidden\]\)/);
+ assert.match(style,/#ownerLedgerScope:not\(\[hidden\]\)/);
+ assert.match(style,/#ledgerApp:has\(#ownerUploadInfo:not\(\[hidden\]\)\) #redlineSetupPreviewButton/);
+ assert.match(style,/#ownerUploadInfo>#redlineOwnerPreviewButton/);
+ assert.match(style,/#ownerUploadInfo>\.redline-owner-open-messages/);
+ assert.match(style,/#activeRoom \.side-column>\.link-card/);
+ assert.match(style,/#redlineReceiverAccessPanel/);
+ assert.match(style,/@media\(min-width:720px\) and \(max-width:850px\)/);
+ assert.match(ledger,/ledgerScopeToggle/);
+ assert.match(ledger,/ownerUploadShare/);
+ assert.match(ledger,/copyRoomLink/);
+ assert.match(preview,/redlineOwnerPreviewButton/);
+ assert.match(sender,/redline-owner-open-messages/);
+ assert.match(os,/redlineRelease=20261123-owner-control-hub1/);
 });
