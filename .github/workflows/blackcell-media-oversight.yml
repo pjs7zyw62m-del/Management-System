@@ -1,0 +1,35 @@
+name: BLACKCELL Level 7 Media Oversight
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'blackcell-media-oversight.html'
+      - 'blackcell-media-oversight.js'
+      - 'blackcell-administration-app.html'
+      - 'supabase/functions/blackcell-media-oversight/**'
+      - 'supabase/migrations/*blackcell_media_oversight*'
+      - 'tests/blackcell-media-oversight.test.mjs'
+      - '.github/workflows/blackcell-media-oversight.yml'
+  pull_request:
+    paths:
+      - 'blackcell-media-oversight.html'
+      - 'blackcell-media-oversight.js'
+      - 'blackcell-administration-app.html'
+      - 'supabase/functions/blackcell-media-oversight/**'
+      - 'supabase/migrations/*blackcell_media_oversight*'
+      - 'tests/blackcell-media-oversight.test.mjs'
+      - '.github/workflows/blackcell-media-oversight.yml'
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check owner interface JavaScript
+        run: node --input-type=module --check < blackcell-media-oversight.js
+      - name: Verify secure member Photos moderation and deletion
+        run: node --test tests/blackcell-media-oversight.test.mjs
