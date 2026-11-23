@@ -746,3 +746,31 @@ test('REDLINE puts quick actions in a menu with Pay in Full beside it',()=>{
  assert.match(sql,/REVOKE ALL ON FUNCTION public\.corp_redline_record_paid_in_full/);
  assert.match(sql,/GRANT EXECUTE ON FUNCTION public\.corp_redline_record_paid_in_full/);
 });
+
+
+test('Apple REDLINE keeps full-height incoming photo while verified timer and review controls share right deck',()=>{
+ const receiver=read('private-photo-ledger-receiver.js');
+ const timer=read('private-photo-ledger-timers.js');
+ const ledger=read('private-photo-ledger.js');
+ const skin=read('private-photo-ledger-unified-review.css');
+ assert.match(receiver,/const reviewControlsHost=appleMode\?appleTimer:reviewStage/);
+ assert.match(receiver,/reviewControlsHost\.append\(bidTimerPanel\)/);
+ assert.match(timer,/appleTimer\.prepend\(ownerPanel\)/);
+ assert.match(skin,/#rrAppleTimerMount > #redlineLightboxReview:not\(\[hidden\]\)/);
+ assert.match(skin,/#redlineReceiverReviewStage #ownerReviewQueue:not\(\[hidden\]\)/);
+ assert.match(skin,/grid-template-rows:45px minmax\(0,1fr\) 0px 0px/);
+ assert.match(html,/private-photo-ledger-unified-review\.css/);
+ assert.match(ledger,/function appendPhotoRatingControl\(panel,entry\)/);
+ assert.match(ledger,/async function decision\(kind\)/);
+});
+test('Pause Sending stays server-authorized and appears next to owner REDLINE Settings',()=>{
+ const receiver=read('private-photo-ledger-receiver.js');
+ const ledger=read('private-photo-ledger.js');
+ const skin=read('private-photo-ledger-unified-review.css');
+ assert.match(ledger,/wrapper\.id='redlineReceiverPauseHeader'/);
+ assert.match(ledger,/if\(settings\?\.parentNode===commandHeader\)settings\.after\(wrapper\)/);
+ assert.match(receiver,/settings\.after\(pause\)/);
+ assert.match(ledger,/\.eq\('id',roomId\)\.eq\('owner_id',state\.user\.id\)/);
+ assert.match(skin,/#redlineReceiverPauseHeader #redlineReceiverSendingPause/);
+ assert.match(ledger,/if\(!receiverActions\)\{/);
+});

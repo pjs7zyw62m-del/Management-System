@@ -709,10 +709,15 @@
   document.body.classList.toggle('rr-imessage-mode',combined);
   document.body.classList.remove('rr-split-active','rr-is-split-resizing');
   if(combined){
+   // The verified timer + rating + price share ONE upper-right control deck.
+   // Reparent the real actions instead of cloning any financial controls.
+   const appleMode=window.innerWidth>=720&&!document.body.classList.contains('bc-ledger-mobile');
    if(chatPanel.parentNode!==workspace)workspace.insertBefore(chatPanel,divider);
    if(originalReview&&originalReview.parentNode!==reviewStage)reviewStage.append(originalReview);
    if(historyToggle.parentNode!==photos)photos.append(historyToggle);
-   if(bidTimerPanel&&bidTimerPanel.parentNode!==reviewStage)reviewStage.append(bidTimerPanel);
+   const reviewControlsHost=appleMode?appleTimer:reviewStage;
+   if(bidTimerPanel&&bidTimerPanel.parentNode!==reviewControlsHost)
+    reviewControlsHost.append(bidTimerPanel);
    for(const element of [historyToolbar,photoEntries,entriesFeedback]){
     if(element&&element.parentNode!==pricedStage)pricedStage.append(element);
    }
@@ -727,7 +732,6 @@
    showPane();applyWidth(mediaRatio);applyHeight(heightRatio);
    // The same live chat and room counters are displayed in the right column.
    // Keep the authentic photo/price nodes in the center column.
-   const appleMode=window.innerWidth>=720&&!document.body.classList.contains('bc-ledger-mobile');
    document.body.classList.toggle('bc-redline-apple-mode',appleMode);
    if(appleMode){
     if(appleSidebar.parentNode!==workspace)workspace.prepend(appleSidebar);
@@ -738,6 +742,16 @@
     if(stats.parentNode!==appleFinance)appleFinance.append(stats);
     if(chatPanel.parentNode!==appleRight)appleRight.append(chatPanel);
     if(appleTimer.parentNode!==appleRight)appleRight.prepend(appleTimer);
+    // Header-only Pause Sending, immediately next to REDLINE Settings.
+    // The button keeps its original authenticated handler and room state.
+    const pause=document.querySelector('#redlineReceiverSendingPause')?.closest('.rr-receiver-photo-pause');
+    if(pause){
+     pause.id='redlineReceiverPauseHeader';
+     const settings=document.getElementById('redlineConsentSettingsOpen');
+     if(settings?.parentNode===header){
+      if(pause.previousElementSibling!==settings)settings.after(pause);
+     }else if(pause.parentNode!==header)header.append(pause);
+    }
    }else{
     // Narrow OS windows keep the prior iMessage sliding photo/chat workspace.
     if(nav.parentNode!==dashboard)dashboard.append(nav);

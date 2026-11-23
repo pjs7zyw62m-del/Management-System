@@ -670,6 +670,7 @@ function renderReviewQueue(){
  if(queue.hidden){
   const sidebar=$('redlineLightboxReview');
   if(sidebar)sidebar.hidden=true;
+  $('redlineReceiverPauseHeader')?.remove();
   return;
  }
  // The live review queue is the ONE canonical photo viewer. An earlier
@@ -917,6 +918,9 @@ window.addEventListener('blackcell:redline:photo-selected',event=>{
 // This owner-only control is located in the receiver's bid/timer sidebar.
 function appendReceiverPauseControl(panel){
  if(!state.isOwner||!state.room||state.showArchive)return;
+ // Apple web/tablet: keep the server-authorized pause control next to the
+ // header Settings action, outside the full-height photo review deck.
+ $('redlineReceiverPauseHeader')?.remove();
  const wrapper=node('section','rr-receiver-photo-pause');
  const paused=state.room.photo_sending_paused===true;
  const label=node('strong','rr-receiver-pause-heading','PHOTO SENDING');
@@ -929,7 +933,14 @@ function appendReceiverPauseControl(panel){
   'Sender photo uploads paused. Chat remains available.':'Sender may send new photographs.');
  status.setAttribute('role','status');
  wrapper.append(label,action,status);
- panel.append(wrapper);
+ const commandHeader=document.body.classList.contains('bc-redline-apple-mode')
+  ?document.querySelector('#redlineReceiverCommand .rr-command-header'):null;
+ if(commandHeader){
+  wrapper.id='redlineReceiverPauseHeader';
+  const settings=$('redlineConsentSettingsOpen');
+  if(settings?.parentNode===commandHeader)settings.after(wrapper);
+  else commandHeader.append(wrapper);
+ }else panel.append(wrapper);
  async function toggleReceiverPause(){
   if(!state.room||!state.isOwner||state.showArchive)return;
   const roomId=state.room.id;
@@ -1042,7 +1053,10 @@ function preparePhotoReviewLightbox(entry){
  // accepted photographs. Only pending images can receive a final price.
  const receiverActions=state.isOwner&&!state.showArchive;
  panel.hidden=!receiverActions;
- if(!receiverActions)return;
+ if(!receiverActions){
+  $('redlineReceiverPauseHeader')?.remove();
+  return;
+ }
  appendReceiverPauseControl(panel);
  if(entry)appendPhotoRatingControl(panel,entry);
  if(!review){

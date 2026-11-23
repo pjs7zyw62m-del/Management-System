@@ -228,7 +228,7 @@ function mount(s){
   sidebar.closest('#redlineReceiverReviewStage, #ownerReviewQueue'));
  if(s.isOwner){
   if(appleMode){
-   if(ownerPanel.parentNode!==appleTimer)appleTimer.append(ownerPanel);
+   if(ownerPanel.parentNode!==appleTimer)appleTimer.prepend(ownerPanel);
    // Display the actual timer controls in the owner workstation.
    if(!ownerPanel.dataset.appleOpened){ownerPanel.open=true;ownerPanel.dataset.appleOpened='1';}
   }
