@@ -75,3 +75,18 @@ test('Owner Administration is the only navigation link and member content is loa
  assert.match(html,/id="gallery"/);
  assert.match(html,/id="auditRows"/);
 });
+
+test('Native BLACKCELL Administration sidebar exposes owner Media Oversight, not just hidden legacy cards',()=>{
+ const native=read('blackcell-administration-os.js');
+ const host=read('blackcell-administration-app.html');
+ assert.match(native,/id:'oversight',label:'Media Oversight'/);
+ assert.match(native,/id:'media'.*?\['Media Oversight'/);
+ assert.match(native,/id:'overview'.*?\['Media Oversight'/);
+ assert.match(native,/'blackcell-media-oversight\.html':'oversight'/);
+ assert.match(native,/const allowed=new Set\(sections/);
+ assert.match(host,/blackcell-administration-os\.js\?v=20261122-media-oversight-nav1/);
+ const desktop=read('blackcell-os.js');
+ assert.match(desktop,/blackcell-media-oversight/);
+ const osHost=read('blackcell-os.html');
+ assert.match(osHost,/adminMediaOversight=20261122-native-nav1/);
+});
