@@ -158,12 +158,17 @@
   body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-message-error{
     flex:0 0 auto!important;max-height:46px!important;overflow-y:auto!important;
   }
-  /* When Gboard opens, keep the composer and feed; trim chrome above them. */
+  /* Gboard: this state must be more specific than the regular sender
+     selectors above so tabs/earnings/timer do not push Send beneath the IME. */
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.redline-android-keyboard-open
+  .redline-simple-tabs{display:none!important}
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.redline-android-keyboard-open
+  .redline-messenger-live-strip:not([hidden]){display:none!important}
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.redline-android-keyboard-open
+  .redline-message-card > .redline-chat-timer-slot:not([hidden]){display:none!important}
   body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.redline-android-keyboard-open
   .redline-message-header{min-height:34px!important}
   body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.redline-android-keyboard-open
-  .redline-messenger-live-strip{display:none!important}
-  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.redline-android-keyboard-open
-  .redline-chat-timer-slot{display:none!important}
+  .redline-message-composer{min-height:54px!important}
 }
 /* Never override the original sender inputs on tablet/desktop. */
