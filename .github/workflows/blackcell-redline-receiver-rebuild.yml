@@ -203,6 +203,13 @@ jobs:
               "http://127.0.0.1:8876/private-photo-ledger-receiver-probe.html" >/dev/null 2>&1
             echo "REDLINE $device: receiver dashboard and stable branding passed"
           done
+      - name: Browser-verify compact REDLINE desktop timer and rating controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v google-chrome >/dev/null 2>&1 && CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && CHROME=chromium || CHROME=; }
+          [ -n "$CHROME" ] || { echo "Chromium unavailable"; exit 1; }
+          CHROME="$CHROME" node tests/redline-desktop-deck.browser.mjs
       - name: Sender iMessage-style live session, earnings and uploads
         shell: bash
         run: |
