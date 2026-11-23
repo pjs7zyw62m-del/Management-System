@@ -26,6 +26,7 @@ on:
       - 'tests/redline-timer-two-party-browser-smoke.mjs'
       - 'private-photo-ledger-consent-negotiation.js'
       - 'private-photo-ledger-negotiation-photo-viewer.js'
+      - 'tests/redline-negotiation-photo.browser.mjs'
       - 'private-photo-ledger-consent-negotiation.css'
       - 'tests/redline-timer-consent-negotiation.test.mjs'
       - 'tests/redline-consent-negotiation-browser-smoke.mjs'
@@ -90,6 +91,7 @@ on:
       - 'tests/redline-timer-two-party-browser-smoke.mjs'
       - 'private-photo-ledger-consent-negotiation.js'
       - 'private-photo-ledger-negotiation-photo-viewer.js'
+      - 'tests/redline-negotiation-photo.browser.mjs'
       - 'private-photo-ledger-consent-negotiation.css'
       - 'tests/redline-timer-consent-negotiation.test.mjs'
       - 'tests/redline-consent-negotiation-browser-smoke.mjs'
@@ -269,6 +271,13 @@ jobs:
           command -v google-chrome >/dev/null 2>&1 && CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && CHROME=chromium || CHROME=; }
           [ -n "$CHROME" ] || { echo "Chromium unavailable"; exit 1; }
           CHROME="$CHROME" node tests/redline-photo-zoom.browser.mjs
+      - name: Browser-verify large negotiation photograph and separate zoom viewer
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v google-chrome >/dev/null 2>&1 && CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && CHROME=chromium || CHROME=; }
+          [ -n "$CHROME" ] || { echo "Chromium unavailable"; exit 1; }
+          CHROME="$CHROME" node tests/redline-negotiation-photo.browser.mjs
       - name: Sender iMessage-style live session, earnings and uploads
         shell: bash
         run: |
