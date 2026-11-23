@@ -346,14 +346,15 @@ test('Step 1: only the uncropped photograph remains in the standalone display',(
 });
 
 
-test('Clicking the single photo opens the full viewport and returns to chat on another click',()=>{
+test('Clicking a photo opens the original and leaves zoom available inside the viewer',()=>{
  const layout=read('private-photo-ledger-imessage-workspace.css');
  assert.match(layout,/#photoLightbox:not\(\[hidden\]\)/);
  assert.match(layout,/#photoLightbox #lightboxImage/);
  assert.match(layout,/height:100dvh!important/);
  assert.match(layout,/object-fit:contain!important/);
  assert.match(layout,/#photoLightbox #closeLightbox\{display:none!important\}/);
- assert.match(receiver,/fullSizeImage\?\.addEventListener\('click'/);
+ assert.match(receiver,/fullSizeImage\.tabIndex=0/);
+ assert.doesNotMatch(receiver,/fullSizeImage\?\.addEventListener\('click',leaveFullPhoto\)/);
  assert.match(receiver,/\$\('#closeLightbox'\)\?\.click\(\)/);
 });
 
