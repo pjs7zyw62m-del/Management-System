@@ -118,7 +118,7 @@ test('receiver settings button is mounted in visible control header, without sid
  assert.doesNotMatch(receiver,/redlineReceiverMenuSettings/);
  assert.match(receiver,/menuItems\.append\(review,history,message,manage,tools\)/);
  assert.match(styles,/#redlineConsentSettingsOpen\[hidden\]\{display:none!important\}/);
- assert.match(html,/private-photo-ledger-receiver\.js\?v=20261122-settings-visible1/);
+ assert.match(html,/private-photo-ledger-receiver\.js\?v=20261123-trigger-visible-controls1/);
 });
 
 test('owner custom counteroffer waits for sender approval; reviewed photos stay immutable',()=>{
