@@ -35,6 +35,7 @@ try{
    proc.once('error',()=>{clearTimeout(timeout);done(1)});
   });
   assert.equal(code,0,'Chrome failed '+err.slice(-900));
+  console.log('ZOOM_DEBUG',JSON.stringify({len:out.length,end:out.slice(-760),error:out.match(/data-photo-zoom-error="[^"]*"/)?.[0],flags:out.match(/data-zoom-[A-Za-z]+="[^"]*"/g)?.slice(0,25)}));
 
   for(const key of [
    'inlineControls','inlineWheel','inlineReset','inlinePlus','fullOpens',
