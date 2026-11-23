@@ -35,7 +35,7 @@ test('Same authorized chat bubble carries word first, then FEE on receiver or EA
  assert.match(html,/private-photo-ledger\.js\?v=20261123-trigger-fee-chat1/);
  assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261123-trigger-fee-chat1/);
  assert.match(html,/private-photo-ledger-simple-sender\.css\?v=20261123-trigger-fee-chat1/);
- assert.match(os,/redlineRelease=20261123-trigger-fee-chat1/);
+ assert.match(os,/redlineRelease=20261123-trigger-cost-no-popup2/);
  const start=sender.indexOf('if(e.triggerFee&&Number.isInteger');
  const end=sender.indexOf('   if(receipt){',start);
  assert.ok(start>0&&end>start);
