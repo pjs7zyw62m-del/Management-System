@@ -55,8 +55,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   const largeEnough=bounds.height>=285&&imBounds.height>=250&&
     pic.complete&&pic.naturalWidth===450;
   document.body.dataset.photoBig=String(largeEnough);
-  document.body.dataset.priceControls=String(buttons.length===3&&buttons[0].textContent.includes('ACCEPT $0.50')&&
-   dialog.querySelector('.redline-negotiation-custom input'));
+  document.body.dataset.priceControls=String(Boolean(buttons.length===3&&buttons[0].textContent.includes('ACCEPT $0.50')&&
+   dialog.querySelector('.redline-negotiation-custom input')));
   document.querySelector('.redline-negotiation-photo-open').click();
   const viewer=document.getElementById('redlineNegotiationPhotoViewer');
   const img=viewer?.querySelector('.rn-view-image');
