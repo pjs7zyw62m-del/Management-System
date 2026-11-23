@@ -13,9 +13,10 @@ test('REDLINE receiver sidebar is collapsible and Settings is not duplicated the
 test('REDLINE chat polling preserves the reader position and avoids page scroll',()=>{
  const js=read('private-photo-ledger-simple-sender.js');
  const css=read('private-photo-ledger-workspace-stability.css');
- assert.match(js,/priorScrollTop=feed\.scrollTop/);
- assert.match(js,/if\(followBottom\)feed\.scrollTop=feed\.scrollHeight/);
- assert.match(js,/Math\.min\(priorScrollTop,feed\.scrollHeight-feed\.clientHeight\)/);
+ assert.match(js,/const scrollBefore=feed\.scrollTop/);
+ assert.match(js,/feed\.insertBefore\(node,cursor\)/);
+ assert.match(js,/if\(scrollToLatest\)feed\.scrollTop=feed\.scrollHeight/);
+ assert.match(js,/anchor\.getBoundingClientRect\(\)\.top-anchorTop/);
  assert.match(css,/overflow-anchor:none/);
 });
 test('REDLINE photo decisions share a scroll-free review strip',()=>{
@@ -42,6 +43,24 @@ test('chat does not redraw unchanged messages during background polling',()=>{
  const js=read('private-photo-ledger-simple-sender.js');
  assert.match(js,/lastChatViewSignature/);
  assert.match(js,/if\(chatSignature===lastChatViewSignature&&feed\.dataset\.redlineScrollReady==='true'\)return/);
- assert.match(js,/feed\.replaceChildren\(\)/);
- assert.match(js,/if\(followBottom\)feed\.scrollTop=feed\.scrollHeight/);
+ assert.match(js,/feed\.insertBefore\(node,cursor\)/);
+ assert.doesNotMatch(js,/if\(followBottom\)feed\.scrollTop=feed\.scrollHeight/);
+});
+
+
+test('REDLINE no-bounce policy forbids automatic jumps on receipt and timer polling',()=>{
+ const js=read('private-photo-ledger-simple-sender.js');
+ const html=read('private-photo-ledger.html');
+ const css=read('private-photo-ledger-chat-scroll-fix.css');
+ assert.match(js,/function renderChat\(\{scrollToLatest=false\}=\{\}\)/);
+ assert.match(js,/const anchor=\[\.\.\.feed\.children\]\.find/);
+ assert.match(js,/const keep=new Set\(desired\)/);
+ assert.match(js,/if\(scrollToLatest\)feed\.scrollTop=feed\.scrollHeight/);
+ assert.match(js,/chatOwnSendPending=true/);
+ assert.match(js,/chatInitialPositionPending=false/);
+ assert.match(js,/renderChat\(\{scrollToLatest:chatInitialPositionPending\|\|chatOwnSendPending\}\)/);
+ assert.doesNotMatch(js,/home\.scrollIntoView/);
+ assert.match(css,/scroll-behavior:auto!important/);
+ assert.match(css,/overflow-anchor:none!important/);
+ assert.match(html,/private-photo-ledger-chat-scroll-fix\.css/);
 });

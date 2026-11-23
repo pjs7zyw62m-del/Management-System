@@ -73,7 +73,7 @@ archiveButton.addEventListener('click',async()=>{
  archiveButton.disabled=true;
  try{
   await bridge()?.toggleArchive?.();
-  messages=[];lastSync=0;
+  messages=[];lastSync=0;chatInitialPositionPending=true;lastChatViewSignature='';
   renderChat();
   if(currentTab==='upload')await loadMessages();
  }catch(err){msgError.textContent='Archive is unavailable: '+String(err?.message||err)}
@@ -206,6 +206,12 @@ ownerDialog.addEventListener('close',()=>{
 ownerDialog.addEventListener('click',e=>{if(e.target===ownerDialog)ownerDialog.close()});
 let currentTab='upload',lastRoom=null,lastSessionKey=null,messages=[],loading=false,posting=false,roomReady=false;
 let lastSync=0,lastOwnerSession=null,lastChatViewSignature='';
+let chatInitialPositionPending=true,chatOwnSendPending=false;
+// Explicit user scrolling cancels any pending initial jump. Background polling
+// never takes control of the reader's scroll position.
+for(const type of ['wheel','touchstart','pointerdown','keydown']){
+ feed.addEventListener(type,()=>{chatInitialPositionPending=false},{passive:true});
+}
 let timerStatus=null,timerRoomId=null,timerFingerprint='',timerOffset=0;
 let timerPollInFlight=false,timerLastPoll=0,timerLoadError='';
 let peerReadAt=null,peerTyping=false,markedReadId=null;
@@ -626,16 +632,16 @@ entry.addEventListener('input',()=>{
  void bridge().chatSignal(snap.roomId,'typing').catch(()=>{});
 });
 entry.addEventListener('blur',stopTyping);
-function renderChat(){
+// Stable chat keys keep existing message nodes alive across timers, receipts,
+// photo state refreshes and background server polling.
+function chatItemKey(e){
+ if(e.kind==='chat')return 'message:'+String(e.id||e.at+'|'+e.sender+'|'+e.body);
+ if(e.kind==='rating')return 'rating:'+String(e.photo?.id||'')+'|'+String(e.at||'');
+ if(e.kind==='timer')return 'timer:'+String(e.timer?.id||'')+':'+e.phase;
+ return 'event:'+String(e.at||'')+'|'+String(e.status||'')+'|'+String(e.body||'');
+}
+function renderChat({scrollToLatest=false}={}){
  const snap=snapshot();
- // Background polling and receipt updates should not yank an older message
- // back down to the newest one. Only follow the bottom if already near it.
- const priorScrollTop=feed.scrollTop;
- const priorScrollHeight=feed.scrollHeight;
- const followBottom=feed.dataset.redlineScrollReady!=='true'
-  ||priorScrollHeight-priorScrollTop-feed.clientHeight<=64;
- // Build a fingerprint before touching the live scroll container. Replacing
- // identical chat nodes on every poll causes visible top-to-bottom jumping.
  const events=createEvents(snap?.entries).slice(0,80);
  const latestOwn=[...messages].reverse().find(m=>m.sender_id===snap?.userId)?.id;
  const pinned=timerRoomId===snap?.roomId&&!snap?.archiveMode&&timerStatus?.active?.started_at
@@ -647,76 +653,135 @@ function renderChat(){
   ...photoRatingEvents(snap),
   ...messages.map(m=>({kind:'chat',at:m.created_at,body:m.body,sender:m.sender_id,id:m.id}))
  ].sort((a,b)=>new Date(a.at)-new Date(b.at)).slice(-130);
- // Live timer seconds are updated in place by updateTimerCards(), so a
- // ticking clock or a routine receipt poll must not rebuild the messages.
- const chatSignature=JSON.stringify([
-  snap?.roomId,snap?.resetAt,snap?.archiveMode,timerLoadError,peerReadAt,
-  pinned?.timer?.id,pinned?.timer?.rate_cents,pinned?.timer?.running,
+ const latestMessage=combined.findLast?.(e=>e.kind==='chat'&&e.id===latestOwn);
+ const latestRead=Boolean(latestMessage&&Number.isFinite(Date.parse(peerReadAt||''))&&
+  Date.parse(peerReadAt)>=Date.parse(latestMessage.at));
+ // Exclude changing signed-image URL tokens and receipt timestamps: neither
+ // means the message stream changed. Only the receipt's visible state counts.
+ const signature=JSON.stringify([
+  snap?.roomId,snap?.resetAt,snap?.archiveMode,timerLoadError,latestRead,latestOwn,
+  pinned?.timer?.id,pinned?.timer?.rate_cents,pinned?.timer?.photo_id,
   combined.map(e=>e.kind==='timer'
    ?[e.kind,e.phase,e.at,e.timer?.id,e.timer?.rate_cents,e.timer?.stopped_at,e.timer?.earned_cents]
    :e.kind==='rating'
-    ?[e.kind,e.at,e.photo?.id,e.photo?.stars,e.photo?.caption,e.photo?.image_url]
+    ?[e.kind,e.at,e.photo?.id,e.photo?.stars,e.photo?.caption,Boolean(e.photo?.image_url)]
     :[e.kind,e.at,e.id,e.body,e.sender,e.status])
  ]);
- if(chatSignature===lastChatViewSignature&&feed.dataset.redlineScrollReady==='true')return;
- lastChatViewSignature=chatSignature;
- feed.replaceChildren();
- timerSlot.replaceChildren();
- timerSlot.hidden=!pinned;
- if(pinned){
-  const card=makeTimerCard(pinned);
-  card.classList.add('redline-chat-timer-pinned');
-  card.setAttribute('aria-label','Active private timer pinned in the chat until it stops');
-  card.setAttribute('aria-live','off');
-  timerSlot.append(card);
- }
- if(timerLoadError&&snap&&!app.hidden&&!room.hidden&&!snap.archiveMode){
-  const warning=make('div','redline-chat-event redline-chat-timer-error');
-  warning.append(make('strong','','TIMER STATUS UNAVAILABLE'),
-   make('small','',timerLoadError+' · REDLINE will retry automatically.'));
-  feed.append(warning);
- }
- if(!combined.length){
-  if(!timerLoadError&&!pinned)feed.append(make('div','redline-chat-empty','No messages or photo updates yet.'));
-  feed.dataset.redlineScrollReady='true';
+ if(signature===lastChatViewSignature&&feed.dataset.redlineScrollReady==='true'){
+  // The only intentional jumps are the initial room opening and a message
+  // the current user has just sent, never a background refresh.
+  if(scrollToLatest)feed.scrollTop=feed.scrollHeight;
   return;
  }
- for(const e of combined){
-  if(e.kind==='event'){
-   const card=make('div','redline-chat-event');
-   card.append(make('strong','',e.body),make('small','',dateText(e.at)));
-   feed.append(card);continue;
-  }
-  if(e.kind==='rating'){
-   const photo=e.photo;
-   const rating=make('article','redline-chat-rated-photo');
-   rating.setAttribute('aria-label',photo.stars+' of 5 stars for a private photograph');
-   appendRatingImage(rating,photo.image_url,photo.caption);
-   const content=make('div','redline-chat-rated-content');
-   content.append(
-    make('strong','redline-chat-rated-heading',
-     photo.stars===5?'★ TOP PICK · 5 STARS':'RECEIVER RATED YOUR PHOTO'),
-    make('div','redline-chat-rated-stars',starsText(photo.stars)),
-    make('small','','PHOTO '+String(photo.id||'').slice(0,8).toUpperCase()+' · '+dateText(e.at))
-   );
-   if(photo.caption)content.append(make('p','redline-chat-rated-caption',photo.caption));
-   rating.append(content);feed.append(rating);continue;
-  }
-  if(e.kind==='timer'){feed.append(makeTimerCard(e));continue;}
-  const own=e.sender===snap?.userId;
-  const bubble=make('article','redline-chat-bubble '+(own?'is-mine':'is-theirs'));
-  bubble.append(make('p','',e.body),make('time','',dateText(e.at)));
-  if(own&&e.id===latestOwn){
-   const read=Number.isFinite(Date.parse(peerReadAt||''))&&Date.parse(peerReadAt)>=Date.parse(e.at);
-   const receipt=make('small','redline-chat-read-receipt',read?'✓✓ Read':'✓ Sent');
-   receipt.setAttribute('aria-label',read?'Read by recipient':'Message sent');
-   bubble.append(receipt);
-  }
-  feed.append(bubble);
+ lastChatViewSignature=signature;
+ const scrollBefore=feed.scrollTop;
+ const viewport=feed.getBoundingClientRect();
+ // Keep the first visible DOM node stationary even if earlier history arrives.
+ const anchor=[...feed.children].find(el=>{
+  const box=el.getBoundingClientRect();
+  return box.bottom>viewport.top+2&&box.top<viewport.bottom;
+ });
+ const anchorTop=anchor?.getBoundingClientRect().top;
+ const existing=new Map([...feed.children].filter(n=>n.dataset.redlineItemKey)
+  .map(n=>[n.dataset.redlineItemKey,n]));
+ const desired=[];
+ const duplicateCounts=new Map();
+ function addItem(baseKey,fingerprint,create){
+  const occurrence=duplicateCounts.get(baseKey)||0;
+  duplicateCounts.set(baseKey,occurrence+1);
+  const key=baseKey+'#'+occurrence;
+  let node=existing.get(key);
+  if(!node||node.dataset.redlineItemContent!==fingerprint)node=create();
+  node.dataset.redlineItemKey=key;
+  node.dataset.redlineItemContent=fingerprint;
+  desired.push(node);
  }
- if(followBottom)feed.scrollTop=feed.scrollHeight;
- else feed.scrollTop=Math.max(0,Math.min(priorScrollTop,feed.scrollHeight-feed.clientHeight));
+ // The timer lives above the independent conversation scroller. Don't
+ // recreate its photo and DOM every time a read receipt changes.
+ const pinId=pinned?.timer?.id||'';
+ if(timerSlot.dataset.redlinePinnedId!==pinId){
+  timerSlot.replaceChildren();
+  timerSlot.dataset.redlinePinnedId=pinId;
+  if(pinned){
+   const card=makeTimerCard(pinned);
+   card.classList.add('redline-chat-timer-pinned');
+   card.setAttribute('aria-label','Active private timer pinned in the chat until it stops');
+   card.setAttribute('aria-live','off');
+   timerSlot.append(card);
+  }
+ }
+ timerSlot.hidden=!pinned;
+ if(timerLoadError&&snap&&!app.hidden&&!room.hidden&&!snap.archiveMode){
+  addItem('timer-warning',timerLoadError,()=>{
+   const warning=make('div','redline-chat-event redline-chat-timer-error');
+   warning.append(make('strong','','TIMER STATUS UNAVAILABLE'),
+    make('small','',timerLoadError+' · REDLINE will retry automatically.'));
+   return warning;
+  });
+ }
+ if(!combined.length&&!timerLoadError&&!pinned){
+  addItem('empty-room','',()=>make('div','redline-chat-empty',
+   'No messages or photo updates yet.'));
+ }
+ for(const e of combined){
+  const key=chatItemKey(e);
+  const own=e.kind==='chat'&&e.sender===snap?.userId;
+  const receipt=own&&e.id===latestOwn?(latestRead?'read':'sent'):'';
+  const fingerprint=JSON.stringify(e.kind==='chat'
+   ?[e.at,e.body,e.sender,receipt]
+   :e.kind==='rating'
+    ?[e.photo?.stars,e.photo?.caption,Boolean(e.photo?.image_url)]
+    :e.kind==='timer'
+     ?[e.phase,e.at,e.timer?.id,e.timer?.rate_cents,e.timer?.stopped_at,e.timer?.earned_cents]
+     :[e.at,e.body,e.status]);
+  addItem(key,fingerprint,()=>{
+   if(e.kind==='event'){
+    const card=make('div','redline-chat-event');
+    card.append(make('strong','',e.body),make('small','',dateText(e.at)));
+    return card;
+   }
+   if(e.kind==='rating'){
+    const photo=e.photo;
+    const rating=make('article','redline-chat-rated-photo');
+    rating.setAttribute('aria-label',photo.stars+' of 5 stars for a private photograph');
+    appendRatingImage(rating,photo.image_url,photo.caption);
+    const content=make('div','redline-chat-rated-content');
+    content.append(
+     make('strong','redline-chat-rated-heading',
+      photo.stars===5?'★ TOP PICK · 5 STARS':'RECEIVER RATED YOUR PHOTO'),
+     make('div','redline-chat-rated-stars',starsText(photo.stars)),
+     make('small','','PHOTO '+String(photo.id||'').slice(0,8).toUpperCase()+' · '+dateText(e.at))
+    );
+    if(photo.caption)content.append(make('p','redline-chat-rated-caption',photo.caption));
+    rating.append(content);return rating;
+   }
+   if(e.kind==='timer')return makeTimerCard(e);
+   const bubble=make('article','redline-chat-bubble '+(own?'is-mine':'is-theirs'));
+   bubble.append(make('p','',e.body),make('time','',dateText(e.at)));
+   if(receipt){
+    const read=receipt==='read';
+    const label=make('small','redline-chat-read-receipt',read?'✓✓ Read':'✓ Sent');
+    label.setAttribute('aria-label',read?'Read by recipient':'Message sent');
+    bubble.append(label);
+   }
+   return bubble;
+  });
+ }
+ // Reconcile only added, changed or removed records. Existing DOM elements
+ // remain attached and retain their natural scroll anchor.
+ let cursor=feed.firstChild;
+ for(const node of desired){
+  if(node===cursor)cursor=cursor.nextSibling;
+  else feed.insertBefore(node,cursor);
+ }
+ const keep=new Set(desired);
+ for(const node of [...feed.children])if(!keep.has(node))node.remove();
  feed.dataset.redlineScrollReady='true';
+ if(scrollToLatest)feed.scrollTop=feed.scrollHeight;
+ else if(anchor&&anchor.isConnected&&feed.contains(anchor)&&Number.isFinite(anchorTop)){
+  const shift=anchor.getBoundingClientRect().top-anchorTop;
+  feed.scrollTop=Math.max(0,Math.min(scrollBefore+shift,feed.scrollHeight-feed.clientHeight));
+ }else feed.scrollTop=Math.max(0,Math.min(scrollBefore,feed.scrollHeight-feed.clientHeight));
 }
 async function loadMessages(){
  const snap=snapshot();
@@ -728,7 +793,9 @@ async function loadMessages(){
   if(snapshot()?.roomId!==current)return;
   messages=items;lastSync=Date.now();
   msgError.textContent='';
-  renderChat();
+  renderChat({scrollToLatest:chatInitialPositionPending||chatOwnSendPending});
+  chatInitialPositionPending=false;
+  chatOwnSendPending=false;
   reportRead();
   void pollChatStatus();
  }catch(err){
@@ -746,6 +813,7 @@ composer.addEventListener('submit',async e=>{
  try{
   await bridge().sendMessage(text);
   entry.value='';androidRedlineCaretGuard?.reset();msgError.textContent='';stopTyping();
+  chatOwnSendPending=true;
   await loadMessages();
  }catch(err){
   msgError.textContent='Message not sent: '+String(err?.message||'Please try again.').slice(0,200);
@@ -772,7 +840,7 @@ function switchTab(tab){
  if(tab==='upload'){void loadMessages();void pollSenderTimers(true);void pollChatStatus(true)}
  else{stopTyping();peerTyping=false;updateTypingIndicator()}
  if(tab==='viewing'){renderCurrentlyViewing(snapshot());void pollCurrentlyViewing(true)}
- home.scrollIntoView({behavior:'auto',block:'start'});
+ // Switching a REDLINE tab must not scroll the entire conversation page.
 }
 function syncOwnerChat(snap){
  const mount=receiverChatMount(),panel=receiverChatPanel();
@@ -791,6 +859,7 @@ function syncOwnerChat(snap){
  if(key!==lastOwnerSession){
   feed.dataset.redlineScrollReady='false';
   lastChatViewSignature='';
+  chatInitialPositionPending=true;
   lastOwnerSession=key;messages=[];lastSync=0;resetChatSignals();renderChat();void loadMessages();void pollSenderTimers(true);void pollChatStatus(true);
  }
  send.disabled=Boolean(!snap.roomActive||snap.archiveMode);
@@ -808,6 +877,7 @@ function sync(){
   if(sessionKey!==lastSessionKey){
    feed.dataset.redlineScrollReady='false';
    lastChatViewSignature='';
+   chatInitialPositionPending=true;
    lastSessionKey=sessionKey;messages=[];lastSync=0;resetChatSignals();
    viewingStatus=null;viewingRoomId=null;viewingError='';viewingLastPoll=0;
    timerRoomId=null;timerStatus=null;timerFingerprint='';timerLastPoll=0;timerLoadError='';
@@ -828,6 +898,7 @@ function sync(){
   if(snap.roomId!==lastRoom){
    feed.dataset.redlineScrollReady='false';
    lastChatViewSignature='';
+   chatInitialPositionPending=true;
    lastRoom=snap.roomId;messages=[];lastSync=0;resetChatSignals();
    renderChat();
   }
@@ -885,6 +956,7 @@ window.addEventListener('blackcell:redline:bridge',sync);
 window.addEventListener('blackcell:redline:state',sync);
 window.addEventListener('blackcell:redline:session-mode',sync);
 window.addEventListener('blackcell:redline:reset',()=>{
+ chatInitialPositionPending=true;lastChatViewSignature='';
  lastSessionKey=null;messages=[];lastSync=0;resetChatSignals();
  viewingStatus=null;viewingRoomId=null;viewingError='';viewingLastPoll=0;sync();
 });

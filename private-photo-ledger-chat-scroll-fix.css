@@ -1,0 +1,27 @@
+/* BLACKCELL REDLINE — stable conversation and no surprise auto scroll.
+   The verified room keeps the user's scroll position during live polling. */
+html:has(body.bc-redline-receiver),
+html:has(body.redline-sender-simple){
+ scroll-behavior:auto!important;
+}
+body.bc-redline-receiver .redline-message-feed,
+body.redline-sender-simple .redline-message-feed{
+ scroll-behavior:auto!important;
+ overflow-anchor:none!important;
+ overscroll-behavior:contain!important;
+}
+body.bc-redline-receiver .redline-message-feed>*,
+body.redline-sender-simple .redline-message-feed>*{
+ flex-shrink:0;
+}
+/* Rating thumbnails have fixed dimensions before image data arrives. */
+body.bc-redline-receiver .redline-chat-rated-photo .redline-rated-photo-image,
+body.redline-sender-simple .redline-chat-rated-photo .redline-rated-photo-image{
+ aspect-ratio:1 / 1!important;
+ object-fit:contain!important;
+}
+/* The composer is never part of the independently scrolling history. */
+body.bc-redline-receiver .redline-message-card,
+body.redline-sender-simple .redline-message-card{
+ overflow-anchor:none!important;
+}
