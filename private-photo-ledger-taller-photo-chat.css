@@ -6,8 +6,10 @@
  body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
  #redlineReceiverLiveWorkspace:not([hidden]){
   box-sizing:border-box!important;
-  height:max(860px,calc(100dvh - 130px))!important;
-  min-height:860px!important;
+  /* Fit from the actual viewport position to the bottom of the screen.
+     Previous 860px minimum forced the composer beneath short desktop screens. */
+  height:var(--redline-viewport-fit-height,calc(100dvh - 92px))!important;
+  min-height:0!important;
   max-height:none!important;
   grid-template-rows:minmax(0,1fr)!important;
   align-items:stretch!important;
@@ -50,7 +52,8 @@
   flex-direction:column!important;
   flex:1 1 0!important;
   height:auto!important;
-  min-height:360px!important;
+  /* Preserve a readable chat without forcing its Send bar below viewport. */
+  min-height:220px!important;
   max-height:none!important;
   overflow:hidden!important;
  }
