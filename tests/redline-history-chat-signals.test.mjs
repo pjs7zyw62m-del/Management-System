@@ -39,17 +39,19 @@ function sampleHistory(){
   cents:value=>BigInt(value??0),ratedPhotoData});
  return {fn,state};
 }
-test('Sender history includes all photos, but resale requires 5 stars AND >=1 cent',()=>{
+test('Sender history permits any approved original but blocks pending, rejected, archived or copied photos',()=>{
  const {fn,state}=sampleHistory();
  const photos=fn();
  const byId=Object.fromEntries(photos.map(p=>[p.id,p]));
  assert.equal(photos.length,10);
- assert.equal(byId.a.resubmissionAllowed,true);
- for(const id of ['b','c','d','e','f','g','copy_f','copy_g','h']){
+ for(const id of ['a','b','c']){
+  assert.equal(byId[id].resubmissionAllowed,true,id);
+ }
+ for(const id of ['d','e','f','g','copy_f','copy_g','h']){
   assert.equal(byId[id].resubmissionAllowed,false,id);
  }
- assert.equal(byId.b.resubmissionStatus,'below-minimum');
- assert.equal(byId.c.resubmissionStatus,'not-five-star');
+ assert.equal(byId.b.resubmissionStatus,'ready');
+ assert.equal(byId.c.resubmissionStatus,'ready');
  assert.equal(byId.f.resubmissionStatus,'pending');
  assert.equal(byId.g.resubmissionStatus,'rejected');
  assert.equal(byId.not_member,undefined);
@@ -58,12 +60,17 @@ test('Sender history includes all photos, but resale requires 5 stars AND >=1 ce
  state.room.photo_sending_paused=false;state.showArchive=true;
  assert.equal(fn().find(p=>p.id==='a').resubmissionAllowed,false);
 });
-test('Private database trigger enforces both 5 stars and positive approved bid',()=>{
- assert.match(sql,/coalesce\(v_source.amount_cents,0\)<1/);
- assert.match(sql,/v_rating IS DISTINCT FROM 5/);
+test('Live database trigger permits approved originals while preserving room, pending and rejection checks',()=>{
+ const current=readFileSync('supabase/migrations/20261123153000_redline_approved_original_photo_reuse.sql','utf8');
+ assert.match(current,/v_source.decision_status IS DISTINCT FROM 'accepted'/);
+ assert.doesNotMatch(current,/v_rating IS DISTINCT FROM 5/);
+ assert.doesNotMatch(current,/coalesce\(v_source.amount_cents,0\)<1/);
+ assert.match(current,/pg_advisory_xact_lock/);
+ assert.match(current,/prior.decision_status IN \('pending','rejected'\)/);
+ assert.match(current,/v_source.resubmission_origin_id IS NOT NULL/);
+ assert.match(current,/member_id=\(SELECT auth.uid\(\)\)/);
+ assert.match(current,/current_session_started_at/);
  assert.match(sql,/photo_ledger_verified\(\)/);
- assert.match(sql,/pg_advisory_xact_lock/);
- assert.match(sql,/prior.decision_status IN \('pending','rejected'\)/);
  assert.match(sql,/enable row level security/);
  assert.match(sql,/revoke all on corp_private.redline_chat_signals/);
  assert.match(sql,/revoke all on function public.corp_redline_chat_signal/);
@@ -73,14 +80,14 @@ test('Private database trigger enforces both 5 stars and positive approved bid',
 test('Sender UI and owner read-only preview expose Photo History next to Earnings',()=>{
  assert.match(sender,/\['earnings','Earnings'\],\['history','Photo History'\]/);
  assert.match(sender,/function renderPhotoHistory\(snap\)/);
- assert.match(sender,/bridge\(\)\?\.resubmitFiveStarPhoto\?\.\(p.id\)/);
+ assert.match(sender,/BLACKCELL_REDLINE_REUSE_UI\?\.open\(p.id,button\)/);
  assert.match(sender,/historyVisible\+=40/);
  assert.match(preview,/\['history','(?:Photo History|History)',historyPanel\]/);
  assert.match(preview,/renderPreviewPhotoHistory\(\)/);
  assert.match(preview,/btn.disabled=true/);
  assert.match(css,/repeat\(4,minmax\(0,1fr\)\)!important/);
  assert.match(html,/private-photo-ledger-owner-preview\.js\?v=20261121-current-viewing1/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261122-android-keyboard-return1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261123-sender-reuse-popup1/);
 });
 test('Read receipts and typing presence only use authenticated current room',()=>{
  assert.match(core,/async chatSignal\(roomId,action,messageId=null\)/);
