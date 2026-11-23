@@ -713,15 +713,24 @@
    showPane();applyWidth(mediaRatio);applyHeight(heightRatio);
    // The same live chat and room counters are displayed in the right column.
    // Keep the authentic photo/price nodes in the center column.
-   document.body.classList.add('bc-redline-apple-mode');
-   if(appleSidebar.parentNode!==workspace)workspace.prepend(appleSidebar);
-   if(photos.parentNode!==workspace)workspace.append(photos);
-   if(divider.parentNode!==workspace)workspace.append(divider);
-   if(appleRight.parentNode!==workspace)workspace.append(appleRight);
-   if(nav.parentNode!==appleSidebar)appleSidebar.append(nav);
-   if(stats.parentNode!==appleFinance)appleFinance.append(stats);
-   if(chatPanel.parentNode!==appleRight)appleRight.append(chatPanel);
-   if(appleTimer.parentNode!==appleRight)appleRight.prepend(appleTimer);
+   const appleMode=window.innerWidth>=720&&!document.body.classList.contains('bc-ledger-mobile');
+   document.body.classList.toggle('bc-redline-apple-mode',appleMode);
+   if(appleMode){
+    if(appleSidebar.parentNode!==workspace)workspace.prepend(appleSidebar);
+    if(photos.parentNode!==workspace)workspace.append(photos);
+    if(divider.parentNode!==workspace)workspace.append(divider);
+    if(appleRight.parentNode!==workspace)workspace.append(appleRight);
+    if(nav.parentNode!==appleSidebar)appleSidebar.append(nav);
+    if(stats.parentNode!==appleFinance)appleFinance.append(stats);
+    if(chatPanel.parentNode!==appleRight)appleRight.append(chatPanel);
+    if(appleTimer.parentNode!==appleRight)appleRight.prepend(appleTimer);
+   }else{
+    // Narrow OS windows keep the prior iMessage sliding photo/chat workspace.
+    if(nav.parentNode!==dashboard)dashboard.append(nav);
+    if(stats.parentNode!==dashboard)dashboard.insertBefore(stats,nav);
+    if(chatPanel.parentNode!==workspace)workspace.insertBefore(chatPanel,divider);
+    appleSidebar.remove();appleRight.remove();
+   }
   }else{
    document.body.classList.remove('bc-redline-apple-mode');
    if(dragPointer!==null)endDrag();
