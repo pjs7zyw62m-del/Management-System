@@ -94,6 +94,40 @@
   const old=host.querySelector(':scope > .bc-photo-zoom-controls');
   if(old)old.remove();
   makeControls(s);apply(s);
+  if(kind==='inline'){
+   // The original image itself still opens the signed full-size photo. Add
+   // a visible button, rather than requiring the receiver to guess.
+   host.querySelector(':scope > .bc-photo-open-large')?.remove();
+   const open=document.createElement('button');open.type='button';
+   open.className='bc-photo-open-large';open.textContent='⤢ VIEW LARGE';
+   open.setAttribute('aria-label','Open the complete photograph in the enlarged zoomable viewer');
+   open.addEventListener('click',event=>{
+    event.preventDefault();event.stopPropagation();
+    const photoButton=img.closest('.photo-image-btn');
+    if(photoButton){photoButton.click();return}
+    const fullButton=host.querySelector('.rr-timer-full');
+    if(fullButton)fullButton.click();
+    else{
+     const matched=[...document.querySelectorAll('#redlineReceiverPricedStage .photo-entry .photo-image-btn')]
+      .find(el=>el.querySelector('img')?.src===img.src);
+     matched?.click();
+    }
+   });
+   host.append(open);
+  }
+  img.addEventListener('load',()=>{
+   host.classList.remove('bc-photo-load-failed');
+   host.querySelector(':scope > .bc-photo-load-message')?.remove();
+  });
+  img.addEventListener('error',()=>{
+   if(!img.src||!img.isConnected)return;
+   host.classList.add('bc-photo-load-failed');
+   if(host.querySelector(':scope > .bc-photo-load-message'))return;
+   const message=document.createElement('span');
+   message.className='bc-photo-load-message';
+   message.textContent='Photo could not load · refresh REDLINE to retry';
+   message.setAttribute('role','status');host.append(message);
+  });
   if(kind==='full')full=s;
   return s;
  }
