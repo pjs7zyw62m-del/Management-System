@@ -36,10 +36,10 @@ test('Verified Trigger Word fee is a separate chat event like photo uploads and 
  assert.doesNotMatch(sender,/bubble\.append\(fee\)/);
  assert.doesNotMatch(css,/\.redline-chat-bubble \.redline-chat-trigger-fee/);
  assert.match(css,/\.redline-message-feed \.redline-chat-trigger-event/);
- assert.match(html,/private-photo-ledger\.js\?v=20261123-trigger-separate-event1/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261123-trigger-separate-event1/);
- assert.match(html,/private-photo-ledger-simple-sender\.css\?v=20261123-trigger-separate-event1/);
- assert.match(os,/redlineRelease=20261123-trigger-separate-event1/);
+ assert.match(html,/private-photo-ledger\.js\?v=20261123-photo-credit-counter-inline1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261123-photo-credit-counter-inline1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.css\?v=20261123-photo-credit-counter-inline1/);
+ assert.match(os,/redlineRelease=20261123-photo-credit-counter-inline1/);
 });
 test('Each server-recorded hit generates only one separate event after its original message',()=>{
  const begin=sender.indexOf('...messages.flatMap(m=>{');
