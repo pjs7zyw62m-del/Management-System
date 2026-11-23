@@ -30,7 +30,33 @@ const confetti=make('div','redline-trigger-earned-confetti');confetti.setAttribu
 card.append(close,eyebrow,symbol,headline,amount,word,summary,details,dismiss);
 veil.append(confetti,card);document.body.append(veil);
 let roomId=null,lastPoll=0,busy=false,ready=false,closing=null;
-let seen=new Set(),queue=[],shownKey=null,hasTriggerSetup=false;
+let seen=new Set(),queue=[],shownKey=null;
+let activationNotified=new Set();
+const activationKey=room=>'blackcell:redline:trigger-activation-seen-v1:'+room;
+function getActivationSeen(room){
+ if(activationNotified.has(room))return true;
+ try{return window.sessionStorage?.getItem(activationKey(room))==='yes'}catch{return false}
+}
+function markActivationSeen(room){
+ activationNotified.add(room);
+ try{window.sessionStorage?.setItem(activationKey(room),'yes')}catch{}
+}
+function clearActivationSeen(room){
+ activationNotified.delete(room);
+ try{window.sessionStorage?.removeItem(activationKey(room))}catch{}
+}
+function maybeExplainActivation(response,room){
+ if(response?.enabled!==true){clearActivationSeen(room);return}
+ if(!Array.isArray(response.words)||!response.words.length||getActivationSeen(room))return;
+ // Avoid stealing the keyboard while a sender is writing a message.
+ const focused=document.activeElement;
+ if(focused?.matches?.('input,textarea,[contenteditable="true"]'))return;
+ if(document.querySelector('.redline-trigger-dialog')?.open){
+  markActivationSeen(room);return;
+ }
+ markActivationSeen(room);
+ window.dispatchEvent(new Event('blackcell:redline:open-trigger-words'));
+}
 function active(){
  const s=snapshot();
  return s?.roomId&&!s.isOwner&&s.roomActive&&!s.archiveMode&&
@@ -81,6 +107,9 @@ async function poll(force=false){
   const latest=active();
   if(latest?.roomId!==target||response?.ok!==true)return;
   const hits=Array.isArray(response.recent)?response.recent:[];
+  // Receiver enablement gets one sender explanation popup per browser session.
+  // This is not an earnings event: never infer or create a credit here.
+  maybeExplainActivation(response,target);
   if(!ready){
    // Initial sync establishes the current ledger baseline. Old credits do
    // not replay on page reload, room changes, or an Android tab returning.
