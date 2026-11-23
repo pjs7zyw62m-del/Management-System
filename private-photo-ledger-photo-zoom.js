@@ -248,8 +248,11 @@
  const reviewObserver=new MutationObserver(scheduleEnsure);
  if(queue)reviewObserver.observe(queue,{childList:true,subtree:true,attributes:true,attributeFilter:['src']});
  if(stage&&stage!==queue)reviewObserver.observe(stage,{childList:true,subtree:true,attributes:true,attributeFilter:['src','hidden']});
- window.addEventListener('blackcell:redline:state',scheduleEnsure);
- window.addEventListener('blackcell:redline:review-photo',scheduleEnsure);
- window.addEventListener('blackcell:redline:photo-selected',scheduleEnsure);
+ // The authenticated room may replace the next-photo element and dispatch a
+ // state event in the same task. Attach immediately, not after a paint frame,
+ // so zoom/large controls are ready on the very next photo without refresh.
+ window.addEventListener('blackcell:redline:state',ensure);
+ window.addEventListener('blackcell:redline:review-photo',ensure);
+ window.addEventListener('blackcell:redline:photo-selected',ensure);
  ensure();
 })();
