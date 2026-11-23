@@ -29,11 +29,13 @@ try{
   proc.stdout.on('data',d=>out+=d.toString());proc.stderr.on('data',d=>err+=d.toString());
   const code=await new Promise(done=>{
    const timeout=setTimeout(()=>{proc.kill('SIGKILL');done(124)},30000);
-   proc.once('exit',c=>{clearTimeout(timeout);done(c??1)});
+   // `close` waits for stdout to drain; `exit` can truncate large
+   // production HTML before the data-zoom test markers are received.
+   proc.once('close',c=>{clearTimeout(timeout);done(c??1)});
    proc.once('error',()=>{clearTimeout(timeout);done(1)});
   });
   assert.equal(code,0,'Chrome failed '+err.slice(-900));
-  console.log('ZOOM_DIAGNOSTIC',width,'error',out.match(/data-photo-zoom-error="[^"]*"/)?.[0]||'none', 'script',out.includes('check();'),'tail',out.slice(-1650));
+
   for(const key of [
    'inlineControls','inlineWheel','inlineReset','inlinePlus','fullOpens',
    'fullControls','fullClickMagnifies','fullWheel','fullPinch','closeVisible',
