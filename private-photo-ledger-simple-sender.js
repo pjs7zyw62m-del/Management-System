@@ -708,7 +708,7 @@ function chatItemKey(e){
 // The verified owner writes these messages through the private photo RPC.
 function historyPhotoSignal(e,snap){
  if(e?.kind!=='chat'||!snap||typeof e.body!=='string')return null;
- const match=/^REDLINE_PHOTO_SIGNAL:v1:(looking|like):([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.exec(e.body);
+ const match=/^REDLINE_PHOTO_SIGNAL:v1:(looking|like):([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.exec(e.body);
  if(!match)return null;
  const fromOwner=snap.isOwner?e.sender===snap.userId:e.sender!==snap.userId;
  if(!fromOwner)return null;
