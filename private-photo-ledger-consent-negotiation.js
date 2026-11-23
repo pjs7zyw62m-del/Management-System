@@ -431,6 +431,13 @@ function tick(){
 }
 // Sender-only negotiated-price data and actions for the inline controls.
 window.BLACKCELL_REDLINE_NEGOTIATION_INLINE=Object.freeze({
+ status(photoId){
+  const curr=snap();
+  if(!roomActive()||curr?.isOwner||!negotiationEnabled||
+   negotiatingRoom!==curr.roomId)return null;
+  const n=negotiations.find(o=>o.photo_id===photoId);
+  return n?{...n}:null;
+ },
  offer(photoId){
   const curr=snap();
   if(!roomActive()||curr?.isOwner||!negotiationEnabled||
