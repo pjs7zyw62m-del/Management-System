@@ -669,22 +669,50 @@ body.redline-sender-simple .redline-simple-tab{
 }
 
 
-/* Verified Trigger Word charge/earning receipt sits inside the existing
-   triggering message. No extra chat item, no scroll-position changes. */
-.redline-chat-bubble .redline-chat-trigger-fee{
- display:flex!important;align-items:center!important;justify-content:space-between!important;
- gap:9px!important;flex-wrap:wrap!important;
- margin-top:9px!important;padding-top:8px!important;
- border-top:1px solid #ffffff55!important;
- font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
- line-height:1.35!important;
+/* Independent Trigger Word ledger event in the private conversation.
+   Matches photo action/price event positioning: centered, compact, black/red.
+   No scrolling, timer layout, or message bubble styles are changed. */
+.redline-message-feed .redline-chat-trigger-event{
+ align-self:center!important;
+ display:flex!important;
+ flex-direction:column!important;
+ gap:4px!important;
+ width:fit-content!important;
+ max-width:min(95%,440px)!important;
+ min-width:0!important;
+ box-sizing:border-box!important;
+ padding:11px 15px!important;
+ background:#1c0912!important;
+ border:1px solid #b53659!important;
+ border-radius:12px!important;
+ box-shadow:none!important;
+ text-align:center!important;
 }
-.redline-chat-trigger-fee-word{
- font-size:11px!important;font-weight:800!important;letter-spacing:.01em!important;
- color:#ffdded!important;overflow-wrap:anywhere!important;
+.redline-chat-trigger-event-line{
+ display:flex!important;
+ align-items:center!important;
+ justify-content:center!important;
+ flex-wrap:wrap!important;
+ gap:6px 12px!important;
+ line-height:1.4!important;
 }
-.redline-chat-trigger-fee-label{
- font-size:12px!important;font-weight:950!important;
- color:#fff!important;white-space:nowrap!important;font-variant-numeric:tabular-nums!important;
+.redline-chat-trigger-event-word{
+ font-size:12px!important;
+ color:#ffd2e1!important;
+ font-weight:850!important;
+ overflow-wrap:anywhere!important;
 }
-.redline-chat-bubble.is-theirs .redline-chat-trigger-fee-label{color:#ffa9c4!important}
+.redline-chat-trigger-event-amount{
+ display:inline!important;
+ font-size:12px!important;
+ color:#fff!important;
+ font-weight:950!important;
+ white-space:nowrap!important;
+ font-variant-numeric:tabular-nums!important;
+}
+.redline-chat-trigger-event small{
+ display:block!important;
+ color:#b69ca8!important;
+ font-size:9px!important;
+ margin-top:4px!important;
+}
