@@ -146,8 +146,14 @@ jobs:
             setTimeout(()=>{
               const deck=document.getElementById('redlineReceiverCommand');
               document.body.dataset.receiverVisible=String(Boolean(deck&&!deck.hidden));
-              document.body.dataset.receiverCards=String(deck?.querySelectorAll('.rr-stat').length===4);
+              document.body.dataset.receiverCards=String(document.querySelectorAll('#redlineReceiverCommand .rr-stat,#redlineReceiverLiveWorkspace .rr-stat').length===4);
               document.body.dataset.receiverOwner=String(document.body.classList.contains('bc-redline-receiver'));
+              document.body.dataset.receiverAppleLayout=String(window.innerWidth>=720
+                ?document.body.classList.contains('bc-redline-apple-mode')
+                 &&Boolean(document.querySelector('#rrAppleRight>.rr-chat-panel'))
+                 &&Boolean(document.querySelector('#rrAppleFinance>.rr-stats'))
+                 &&Boolean(document.querySelector('#rrAppleSidebar>.rr-nav'))
+                :!document.body.classList.contains('bc-redline-apple-mode'));
               document.body.dataset.receiverArchiveControl=String(Boolean(document.getElementById('redlineMasterReset')&&document.getElementById('redlineArchiveToggle')));
               document.body.dataset.receiverBrand=String(Boolean(document.querySelector('.bc-ledger-edition')?.textContent==='PRIVATE EXCHANGE'));
             },350);
@@ -171,7 +177,7 @@ jobs:
               --virtual-time-budget=7000 --window-size="$w,$h" --dump-dom \
               "http://127.0.0.1:8876/private-photo-ledger-receiver-probe.html" \
               >"/tmp/redline-$device.html" 2>"/tmp/redline-$device-errors.log"
-            for check in receiver-visible receiver-cards receiver-owner receiver-archive-control receiver-brand; do
+            for check in receiver-visible receiver-cards receiver-owner receiver-archive-control receiver-brand receiver-apple-layout; do
               grep -q "data-$check=\"true\"" "/tmp/redline-$device.html" || {
                 echo "$device missing $check"
                 grep -o 'data-receiver-[a-z-]*="[^"]*"' "/tmp/redline-$device.html" | head -n 15 || true
