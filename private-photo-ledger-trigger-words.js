@@ -36,7 +36,7 @@
   ['1','Choose a word','Add one word, 2–24 letters or digits, and set $0.10–$0.25. Up to 10 words.'],
   ['2','Receiver must enable it','Your words do nothing until the receiver reviews the prices and enables Trigger Words in REDLINE Settings.'],
   ['3','Only new receiver messages count','If the receiver SENDS a message containing your whole word, one matching word can add a credit. Your own messages cannot.'],
-  ['4','Charges are capped','At most $0.25 per message, a 60-second cooldown per word and $5/day per private room. Editing words turns the switch OFF until reapproved.']
+  ['4','Charges are capped','At most $0.25 per message and $5/day per private room. There is NO cooldown: the same word can earn again in the very next receiver message. Editing words turns the switch OFF until reapproved.']
  ];
  for(const [number,step,desc] of steps){
   const row=node('div','redline-trigger-step');
