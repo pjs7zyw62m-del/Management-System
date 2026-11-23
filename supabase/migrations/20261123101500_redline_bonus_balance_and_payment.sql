@@ -57,7 +57,7 @@ BEGIN
   (NOT p_archive AND (v_room.current_session_started_at IS NULL
                       OR b.earned_at>=v_room.current_session_started_at))
   OR (p_archive AND v_room.current_session_started_at IS NOT NULL
-      AND b.earned_at<v_room.current_session_started_at))
+      AND b.earned_at<v_room.current_session_started_at)
  );
  v_bonus_unpaid:=v_bonus_all-v_bonus_paid;
 
