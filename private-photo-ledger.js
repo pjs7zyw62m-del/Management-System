@@ -1036,7 +1036,7 @@ function preparePhotoReviewLightbox(entry){
  const liveTimer=$('redlinePhotoTimerPanel');
  if(liveTimer?.parentNode===panel)liveTimer.remove();
  panel.replaceChildren();
- const restoreTimer=()=>{if(liveTimer&&state.isOwner)panel.append(liveTimer)};
+ const restoreTimer=()=>{if(liveTimer&&state.isOwner&&!document.body.classList.contains('bc-redline-apple-mode'))panel.append(liveTimer)};
  const review=state.isOwner&&entry?.decision_status==='pending'&&!state.showArchive;
  // The sidebar is visible to the verified receiver for both pending and
  // accepted photographs. Only pending images can receive a final price.
@@ -1086,7 +1086,7 @@ function preparePhotoReviewLightbox(entry){
  input.setAttribute('aria-label','Acceptance amount in US dollars');
  label.append(input);panel.append(label);
  const controls=node('div','redline-review-actions');
- const accept=button('✓ ACCEPT FOR AMOUNT',()=>void decision('accept'),'button-main');
+ const accept=button('➤ SUBMIT PRICE & NEXT PHOTO',()=>void decision('accept'),'button-main');
  const zero=button('✓ ACCEPT $0.00',()=>void decision('zero'),'button-outline');
  const reject=button('✕ REJECT PHOTO',()=>void decision('reject'),'button-outline reject-photo');
  controls.append(accept,zero,reject);
