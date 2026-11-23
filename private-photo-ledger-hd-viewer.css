@@ -1,0 +1,129 @@
+/* BLACKCELL REDLINE private original-quality viewer.
+   Desktop, tablet and Android use the exact authenticated Bunny original
+   object URL. UI never stretches the image or covers the chat workspace. */
+#photoLightbox[hidden] .redline-hd-toolbar,
+#photoLightbox .redline-hd-toolbar[hidden]{display:none!important}
+#photoLightbox .redline-hd-toolbar{
+ position:fixed!important;
+ top:max(12px,env(safe-area-inset-top))!important;
+ left:max(10px,env(safe-area-inset-left))!important;
+ z-index:10008!important;
+ max-width:calc(100vw - 145px)!important;
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ gap:5px!important;
+ box-sizing:border-box!important;
+ padding:4px 6px!important;
+ border:1px solid #8b3852!important;border-radius:11px!important;
+ background:#100c13ed!important;color:#fff!important;
+ box-shadow:0 4px 20px #000a!important;
+ backdrop-filter:blur(8px);
+}
+#photoLightbox .redline-hd-toolbar button{
+ appearance:none!important;display:inline-flex!important;align-items:center!important;
+ justify-content:center!important;min-height:34px!important;
+ min-width:32px!important;width:32px!important;
+ padding:0!important;margin:0!important;
+ border:1px solid #713246!important;border-radius:8px!important;
+ background:#2a1220!important;color:#fff!important;
+ font-size:23px!important;font-weight:750!important;line-height:1!important;
+ cursor:pointer!important;touch-action:manipulation!important;
+}
+#photoLightbox .redline-hd-toolbar button:disabled{
+ opacity:.3!important;cursor:default!important;
+}
+#photoLightbox .redline-hd-toolbar button[hidden]{display:none!important}
+#photoLightbox .redline-hd-toolbar button:focus-visible,
+.redline-hd-open:focus-visible{outline:2px solid #ff6689!important;outline-offset:2px!important}
+#photoLightbox .redline-hd-resolution{
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+ font-size:10px!important;letter-spacing:.035em!important;font-weight:850!important;
+ line-height:1.2!important;color:#ffe5ed!important;
+ max-width:170px!important;min-width:0!important;
+ text-align:center!important;white-space:nowrap!important;
+ overflow:hidden!important;text-overflow:ellipsis!important;
+ font-variant-numeric:tabular-nums!important;
+}
+/* The full screen is the photo-only overlay. Never distort an original. */
+#photoLightbox:not([hidden]) #lightboxImage{
+ object-fit:contain!important;object-position:center!important;
+ max-width:100%!important;max-height:100%!important;
+ image-rendering:auto!important;
+}
+.redline-hd-open{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ gap:6px!important;box-sizing:border-box!important;
+ min-height:35px!important;padding:7px 11px!important;
+ border:1px solid #a43959!important;border-radius:9px!important;
+ background:#380e20!important;color:#fff!important;
+ font-weight:850!important;font-size:11px!important;
+ cursor:pointer!important;touch-action:manipulation!important;
+}
+.redline-hd-open:disabled{opacity:.5!important;cursor:wait!important}
+.redline-current-viewing-photo .redline-hd-open{
+ width:100%;max-width:340px;margin:9px auto 0!important;
+}
+/* Sender also gets full-screen zoom, click, pinch, and pan from the shared
+   existing photo-zoom module, not only the receiver-specific zoom styling. */
+body.redline-sender-simple #photoLightbox:not([hidden]){
+ position:fixed!important;inset:0!important;
+ display:flex!important;align-items:stretch!important;justify-content:center!important;
+ width:100vw!important;height:100dvh!important;max-width:none!important;
+ max-height:100dvh!important;margin:0!important;padding:0!important;
+ z-index:10000!important;overflow:hidden!important;background:#000!important;
+}
+body.redline-sender-simple #photoLightbox .redline-review-lightbox-layout{
+ display:flex!important;align-items:stretch!important;justify-content:center!important;
+ flex:1 1 0!important;width:100%!important;height:100%!important;
+ max-width:100%!important;max-height:100%!important;min-height:0!important;
+ padding:0!important;margin:0!important;overflow:hidden!important;
+}
+body.redline-sender-simple #photoLightbox .redline-review-large-image{
+ position:relative!important;flex:1 1 0!important;display:flex!important;
+ align-items:center!important;justify-content:center!important;isolation:isolate!important;
+ width:100%!important;height:100%!important;min-height:0!important;
+ margin:0!important;padding:0!important;overflow:hidden!important;
+}
+body.redline-sender-simple #photoLightbox #lightboxImage{
+ display:block!important;width:100%!important;height:100%!important;
+ min-height:0!important;max-height:100%!important;
+ object-fit:contain!important;cursor:zoom-in!important;
+ transform-origin:center!important;touch-action:none!important;
+}
+body.redline-sender-simple #photoLightbox .bc-photo-zoom-host.bc-photo-zoomed #lightboxImage{
+ cursor:grab!important;
+}
+body.redline-sender-simple #photoLightbox .bc-photo-zoom-controls{
+ position:absolute!important;left:50%!important;
+ bottom:max(20px,env(safe-area-inset-bottom))!important;
+ transform:translateX(-50%)!important;
+ display:flex!important;align-items:center!important;gap:4px!important;
+ z-index:10004!important;padding:4px!important;
+ border:1px solid #8b3852!important;border-radius:11px!important;
+ background:#100c13ed!important;
+}
+body.redline-sender-simple #photoLightbox .bc-photo-zoom-button{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ min-width:35px!important;min-height:34px!important;
+ border:0!important;border-radius:8px!important;
+ padding:3px 8px!important;background:#281722!important;color:#fff!important;
+ font-size:18px!important;
+}
+body.redline-sender-simple #photoLightbox .bc-photo-zoom-button[data-zoom-label]{
+ font-size:11px!important;min-width:54px!important;
+}
+body.redline-sender-simple #photoLightbox #closeLightbox{
+ display:inline-flex!important;position:fixed!important;
+ top:max(12px,env(safe-area-inset-top))!important;
+ right:max(10px,env(safe-area-inset-right))!important;
+ z-index:10009!important;min-height:42px!important;
+ padding:9px 13px!important;border:1px solid #d03459!important;
+ border-radius:10px!important;background:#310e1df2!important;color:#fff!important;
+}
+@media(max-width:600px){
+ #photoLightbox .redline-hd-toolbar{max-width:calc(100vw - 122px)!important}
+ #photoLightbox .redline-hd-resolution{max-width:120px!important;font-size:9px!important}
+ #photoLightbox .redline-hd-toolbar button{min-width:28px!important;width:28px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ #photoLightbox .redline-hd-toolbar *{transition:none!important;animation:none!important}
+}
