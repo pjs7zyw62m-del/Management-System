@@ -8,6 +8,7 @@ test('REDLINE receiver sidebar is collapsible and Settings is not duplicated the
  assert.match(js,/rr-sidebar-hidden/);
  assert.match(js,/sidebarStorageKey/);
  assert.doesNotMatch(js,/appleLink\('⚙  Settings'/);
+ assert.doesNotMatch(js,/redlineReceiverMenuSettings/);
 });
 test('REDLINE chat polling preserves the reader position and avoids page scroll',()=>{
  const js=read('private-photo-ledger-simple-sender.js');

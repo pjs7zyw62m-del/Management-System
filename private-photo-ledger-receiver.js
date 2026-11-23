@@ -57,10 +57,6 @@
   goTo('#redlineReceiverChat');
   $('#redlineReceiverChat .redline-message-entry')?.focus({preventScroll:true});
  },'rr-nav-button');
- const settingsMenu=button('⚙ REDLINE SETTINGS',()=>{
-  window.dispatchEvent(new Event('blackcell:redline:open-settings'));
- },'rr-nav-button rr-settings-menu');
- settingsMenu.id='redlineReceiverMenuSettings';
  const manage=button('Rooms & Access',()=>goTo('#ownerSetup'),'rr-nav-button');
  const tools=button('Room Tools',()=>{
   const expanded=!document.body.classList.contains('rr-room-tools-open');
@@ -83,8 +79,8 @@
   menuItems.hidden=!open;
   menuToggle.setAttribute('aria-expanded',String(open));
  };
- menuItems.append(review,history,message,settingsMenu,manage,tools);
- for(const option of [review,history,message,settingsMenu,manage,tools]){
+ menuItems.append(review,history,message,manage,tools);
+ for(const option of [review,history,message,manage,tools]){
   option.addEventListener('click',()=>setMenuOpen(false));
  }
  menuShell.append(menuToggle,menuItems);
