@@ -43,6 +43,7 @@ on:
       - 'private-photo-ledger-approved-deck.css'
       - 'private-photo-ledger-merged-photo-panel.css'
       - 'private-photo-ledger-owner-hub.css'
+      - 'tests/redline-owner-hub-browser-smoke.mjs'
       - '.github/workflows/blackcell-redline-receiver-rebuild.yml'
   push:
     branches: [main]
@@ -66,6 +67,7 @@ on:
       - 'private-photo-ledger-approved-deck.css'
       - 'private-photo-ledger-merged-photo-panel.css'
       - 'private-photo-ledger-owner-hub.css'
+      - 'tests/redline-owner-hub-browser-smoke.mjs'
       - 'tests/private-photo-ledger-sender.test.mjs'
       - 'tests/private-photo-ledger-simple-sender.test.mjs'
       - 'tests/redline-timer-chat-browser-smoke.mjs'
@@ -231,6 +233,13 @@ jobs:
           command -v google-chrome >/dev/null 2>&1 && CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && CHROME=chromium || CHROME=; }
           [ -n "$CHROME" ] || { echo "Chromium unavailable"; exit 1; }
           CHROME="$CHROME" node tests/redline-header-browser-smoke.mjs
+      - name: Browser-check compact REDLINE owner control cards
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v google-chrome >/dev/null 2>&1 && CHROME=google-chrome || { command -v chromium >/dev/null 2>&1 && CHROME=chromium || CHROME=; }
+          [ -n "$CHROME" ] || { echo "Chromium unavailable"; exit 1; }
+          CHROME="$CHROME" node tests/redline-owner-hub-browser-smoke.mjs
       - name: Sender iMessage-style live session, earnings and uploads
         shell: bash
         run: |
