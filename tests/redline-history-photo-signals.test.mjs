@@ -18,7 +18,7 @@ test('receiver controls are opt-in actions on historical photo cards, not automa
  assert.match(core,/blackcell:redline:messages-changed/);
  assert.match(css,/\.redline-history-photo-signals\{display:none\}/);
  assert.match(css,/#photoEntries \.redline-history-photo-signals/);
- assert.match(css,/#redlineReceiverPricedStage/);
+ assert.match(css,/body\.bc-redline-receiver #photoEntries/);
  assert.match(html,/private-photo-ledger-history-signals\.css/);
 });
 
