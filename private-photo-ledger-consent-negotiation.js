@@ -72,6 +72,7 @@ let timerLatest=null,serverOffset=0,lastTimerDialogId=null,lastTimerStage=0;
 const dispatched=new Set();
 let negotiatingRoom=null,lastNegotiationCheck=0,negotiationBusy=false;
 let negotiations=[],negotiatingShownKey=null,negotiationActionBusy=false,negotiationRefreshQueued=false;
+let negotiationEnabled=false,negotiationFingerprint='';
 
 function roomActive(){
  const s=snap();
@@ -380,12 +381,25 @@ async function pollNegotiations(force=false){
   const data=await api().priceNegotiationStatus(id);
   if(snap()?.roomId!==id)return;
   negotiatingRoom=id;negotiations=Array.isArray(data.offers)?data.offers:[];
+  negotiationEnabled=data.enabled===true;
+  const signature=JSON.stringify([id,negotiationEnabled,
+   negotiations.map(n=>[n.photo_id,n.status,n.offer_cents,n.owner_offer_cents,n.offer_count,n.updated_at])]);
+  if(negotiationFingerprint!==signature){
+   negotiationFingerprint=signature;
+   window.dispatchEvent(new CustomEvent('blackcell:redline:negotiations-updated',
+    {detail:{roomId:id}}));
+  }
   const pending=s.isOwner
    ?negotiations.find(n=>n.status==='awaiting_owner')
    :(negotiations.find(n=>n.status==='awaiting_sender_owner')||
      negotiations.find(n=>n.status==='awaiting_sender'));
-  if(data.enabled&&pending&&!timerDlg.open&&!settingsDlg.open)renderNegotiation(pending);
-  else if(!pending&&negotiateDlg.open){negotiateDlg.close();negotiatingShownKey=null}
+  // Sender uses an inline Counteroffer beside the approved price.
+  // Only the receiver retains the response dialog.
+  if(s.isOwner&&data.enabled&&pending&&!timerDlg.open&&!settingsDlg.open)
+   renderNegotiation(pending);
+  else if((!s.isOwner||!pending)&&negotiateDlg.open){
+   negotiateDlg.close();negotiatingShownKey=null;
+  }
  }catch(e){
   const el=$('.redline-negotiation-feedback',negotiateDlg);
   if(el)el.textContent=safeError(e);
@@ -399,6 +413,7 @@ function resetIfRoomChanged(){
  const id=roomActive()?snap()?.roomId:null;
  if(id===timerRoom&&id===negotiatingRoom&&id===featureRoom)return;
  timerLatest=null;timerRoom=id;negotiations=[];negotiatingRoom=id;
+ negotiationEnabled=false;negotiationFingerprint='';
  features=null;featureRoom=id;lastFeatureCheck=0;
  lastTimerCheck=0;lastNegotiationCheck=0;lastTimerDialogId=null;
  negotiatingShownKey=null;lastTimerStage=0;dispatched.clear();
@@ -414,6 +429,31 @@ function tick(){
  if(!active)return;
  void pollFeatures();void pollNegotiations();
 }
+// Sender-only negotiated-price data and actions for the inline controls.
+window.BLACKCELL_REDLINE_NEGOTIATION_INLINE=Object.freeze({
+ offer(photoId){
+  const curr=snap();
+  if(!roomActive()||curr?.isOwner||!negotiationEnabled||
+   negotiatingRoom!==curr.roomId)return null;
+  const n=negotiations.find(o=>o.photo_id===photoId);
+  if(!n||!['awaiting_sender','awaiting_sender_owner'].includes(n.status))return null;
+  return {...n};
+ },
+ async respond(photoId,action,cents=null){
+  const curr=snap();
+  if(!roomActive()||curr?.isOwner||!negotiationEnabled||
+   negotiatingRoom!==curr.roomId||
+   !['counter','accept_original','accept_owner_offer','reject_owner_offer'].includes(action)||
+   !negotiations.some(n=>n.photo_id===photoId&&
+    ['awaiting_sender','awaiting_sender_owner'].includes(n.status)))
+   throw Error('This approved price is no longer open to counteroffers.');
+  const response=await api().priceNegotiationAction(photoId,action,cents);
+  await pollNegotiations(true);
+  window.dispatchEvent(new Event('blackcell:redline:state'));
+  return response;
+ },
+ refresh(){return pollNegotiations(true)}
+});
 window.addEventListener('blackcell:redline:open-settings',()=>{
  if(roomActive()&&snap()?.isOwner===true)void openSettings();
 });
