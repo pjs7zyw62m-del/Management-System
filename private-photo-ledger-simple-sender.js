@@ -302,7 +302,7 @@ function createEvents(entries){
   const id=String(e.id||'').slice(0,8).toUpperCase();
   if(e.created_at)all.push({kind:'event',at:e.created_at,
    text:e.resubmission_origin_id
-    ?'TOP-PICK PHOTO RESUBMITTED · '+id+' · Waiting for receiver review'
+    ?'PHOTO REUSED · '+id+' · Waiting for receiver review'
     :'Photo '+id+' submitted',
    status:'sent'});
   if(e.decision_status==='rejected'&&e.decided_at)all.push({kind:'event',at:e.decided_at,text:'Photo '+id+' rejected',status:'rejected'});
