@@ -19,14 +19,14 @@ test('Receiver header and menu expose Trigger Words without relying on hidden Se
  assert.match(html,/private-photo-ledger-trigger-owner\.js\?v=20261123-trigger-visible-controls1/);
  assert.match(html,/private-photo-ledger-trigger-owner\.css\?v=20261123-trigger-visible-controls1/);
  assert.match(html,/private-photo-ledger-receiver\.js\?v=20261123-trigger-visible-controls1/);
- assert.match(os,/redlineRelease=20261123-trigger-cost-no-popup2/);
+ assert.match(os,/redlineRelease=20261123-photo-credit-counter-inline1/);
 });
 
 test('Sender can open Trigger Words directly from Photos & Chat',()=>{
  assert.match(sender,/redline-sender-trigger-shortcut/);
  assert.match(sender,/blackcell:redline:open-trigger-words/);
  assert.match(senderWords,/window\.addEventListener\('blackcell:redline:open-trigger-words'/);
- assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261123-trigger-visible-controls1/);
+ assert.match(html,/private-photo-ledger-simple-sender\.js\?v=20261123-photo-credit-counter-inline1/);
  assert.match(html,/private-photo-ledger-trigger-words\.js\?v=20261123-trigger-visible-controls1/);
 });
 
