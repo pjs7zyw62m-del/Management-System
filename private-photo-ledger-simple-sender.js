@@ -359,6 +359,10 @@ function starsText(count){
  const n=Number.isInteger(count)?Math.max(0,Math.min(5,count)):0;
  return '★'.repeat(n)+'☆'.repeat(5-n);
 }
+function approvedPriceControl(photo,snap){
+ return window.BLACKCELL_REDLINE_COUNTEROFFER_INLINE?.control?.(photo,snap)
+  ||make('small','redline-current-viewing-price','APPROVED PRICE '+money(photo.amount_cents));
+}
 function renderCurrentlyViewing(snap){
  viewingPreview.replaceChildren();
  const id=viewingRoomId===snap?.roomId&&viewingStatus?.active?viewingStatus.photoId:null;
@@ -382,7 +386,7 @@ function renderCurrentlyViewing(snap){
   'The receiver selected this photograph. Loading its private preview…'));
  if(photo?.caption)viewingPreview.append(make('p','redline-current-viewing-caption',photo.caption));
  if(photo?.decision_status==='accepted')
-  viewingPreview.append(make('small','redline-current-viewing-price','Approved price '+money(photo.amount_cents)));
+  viewingPreview.append(approvedPriceControl(photo,snap));
  else if(photo?.decision_status==='pending')
   viewingPreview.append(make('small','redline-current-viewing-price','AWAITING RECEIVER REVIEW'));
  if(photo?.image_url&&!photo.removal_status){
@@ -445,8 +449,9 @@ function renderTopPicks(snap){
   details.append(
    make('strong','',((p.stars===5)?'TOP PICK · ':'')+'#'+(index+1)+' · PHOTO '+String(p.id||'').slice(0,8).toUpperCase()),
    make('span','redline-top-pick-stars',starsText(p.stars)+' · '+p.stars+'/5'),
-   make('small','',p.amount_cents===null?'Awaiting photo bid':'Approved bid '+money(p.amount_cents))
+   make('small','',p.amount_cents===null?'Awaiting photo bid':'APPROVED')
   );
+  if(p.amount_cents!==null)details.append(approvedPriceControl(p,snap));
   card.append(details);topPicksList.append(card);
  }
 }
@@ -495,11 +500,12 @@ function renderPhotoHistory(snap){
   const card=make('article','redline-photo-history-row');
   appendRatingImage(card,p.image_url,p.caption);
   const info=make('div','redline-photo-history-details');
-  const decision=p.decision_status==='accepted'?'APPROVED · '+money(p.amount_cents):
+  const decision=p.decision_status==='accepted'?'APPROVED':
    p.decision_status==='rejected'?'REJECTED':'AWAITING REVIEW';
   info.append(make('strong','redline-history-title','PHOTO '+String(p.id||'').slice(0,8).toUpperCase()),
    make('span','redline-photo-history-stars',p.stars?starsText(p.stars)+' · '+p.stars+'/5':'NOT YET RATED'),
    make('small','redline-history-review',decision+' · '+dateText(p.created_at)));
+  if(p.decision_status==='accepted')info.append(approvedPriceControl(p,snap));
   if(p.caption)info.append(make('p','redline-history-caption',p.caption));
   if(p.resubmissionCount)info.append(make('small','',p.resubmissionCount+' previous resend(s)'));
   const button=make('button','redline-photo-history-resend',historyResendLabel(p,snap));
@@ -1142,6 +1148,13 @@ async function pollSenderTimers(force=false){
 }
 window.addEventListener('blackcell:redline:timer-status',event=>{
  if(event.detail)receiveTimerStatus(event.detail.roomId,event.detail.status);
+});
+window.addEventListener('blackcell:redline:negotiations-updated',event=>{
+ const current=snapshot();
+ if(!isSender()||!current||event.detail?.roomId!==current.roomId)return;
+ if(currentTab==='viewing')renderCurrentlyViewing(current);
+ if(currentTab==='history')renderPhotoHistory(current);
+ if(currentTab==='earnings')renderTopPicks(current);
 });
 window.addEventListener('blackcell:redline:messages-changed',()=>{if((isSender()&&currentTab==='upload')||ownerDialog.open||(receiverChatPanel()&&!receiverChatPanel().hidden))void loadMessages()});
 window.addEventListener('blackcell:redline:receiver-ready',sync);
