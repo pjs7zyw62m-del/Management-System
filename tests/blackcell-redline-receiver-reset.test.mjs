@@ -759,7 +759,8 @@ test('Apple REDLINE keeps full-height incoming photo while verified timer and re
  assert.match(timer,/appleTimer\.prepend\(ownerPanel\)/);
  assert.match(skin,/#rrAppleTimerMount > #redlineLightboxReview:not\(\[hidden\]\)/);
  assert.match(skin,/#redlineReceiverReviewStage #ownerReviewQueue:not\(\[hidden\]\)/);
- assert.match(skin,/grid-template-rows:45px minmax\(0,1fr\) 0px 0px/);
+ assert.match(skin,/grid-template-rows:0px minmax\(0,1fr\) 0px 0px/);
+ assert.match(skin,/position:absolute!important;z-index:6!important/);
  assert.match(html,/private-photo-ledger-unified-review\.css/);
  assert.match(ledger,/function appendPhotoRatingControl\(panel,entry\)/);
  assert.match(ledger,/async function decision\(kind\)/);
