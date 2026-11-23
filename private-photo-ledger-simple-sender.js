@@ -846,10 +846,8 @@ function syncOwnerChat(snap){
  const mount=receiverChatMount(),panel=receiverChatPanel();
  const ready=Boolean(snap?.isOwner&&!app.hidden&&!room.hidden&&mount&&panel&&!panel.hidden);
  if(!ready){
-  lastOwnerSession=null;
-  if(!ownerDialog.open&&messageCard.parentNode!==uploadPane){
-   uploadPane.append(messageCard);photoAction.hidden=false;
-  }
+  // A room refresh may temporarily hide the owner panel. Never detach the
+  // authenticated chat or clear its room key on a transient hidden state.
   return;
  }
  if(ownerDialog.open)return;
@@ -872,6 +870,10 @@ function sync(){
  home.hidden=!sender;
  document.body.classList.toggle('redline-sender-simple',sender);
  if(sender){
+  // Reparent only for an actual verified sender role transition.
+  if(messageCard.parentNode!==uploadPane){
+   uploadPane.append(messageCard);photoAction.hidden=false;
+  }
   if(upload.parentNode!==uploadMount)uploadMount.append(upload);
   const sessionKey=snap.roomId+'|'+(snap.resetAt||'')+'|'+String(snap.archiveMode);
   if(sessionKey!==lastSessionKey){

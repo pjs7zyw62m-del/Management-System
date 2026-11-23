@@ -34,8 +34,9 @@ const messages=[
  {id:'00000000-0000-4000-8000-000000000012',sender_id:ownerId,body:'I saw it.',created_at:replyAt}
 ];
 let actions=[],currentReadAt=replyAt,savedAnchor=null,savedScrollTop=0;
+let temporarySnapshotUnavailable=false;
 window.BLACKCELL_REDLINE_API={
- snapshot:()=>({roomId,userId:owner?ownerId:senderId,isOwner:owner,roomActive:true,
+ snapshot:()=>temporarySnapshotUnavailable?null:({roomId,userId:owner?ownerId:senderId,isOwner:owner,roomActive:true,
   peerName:owner?'Sender':'Receiver',archiveMode:false,resetAt:null,
   pending:0,owed:'$0.00',paid:'$0.00',assigned:'$0.00',
   entries:[],ratingEvents:[],topPicks:[],fiveStarPhotos:[],photoHistory:[]}),
@@ -85,6 +86,17 @@ document.addEventListener('DOMContentLoaded',()=>{
   savedScrollTop=feed.scrollTop;
   savedAnchor=feed.querySelector('[data-redline-item-key="message:historic-10#0"]');
   currentReadAt=new Date(first+1000).toISOString();
+  // Simulate the owner chat temporarily losing its verified room snapshot.
+  if(owner){
+   temporarySnapshotUnavailable=true;
+   document.getElementById('redlineReceiverChat').hidden=true;
+   window.dispatchEvent(new Event('blackcell:redline:state'));
+   setTimeout(()=>{
+    temporarySnapshotUnavailable=false;
+    document.getElementById('redlineReceiverChat').hidden=false;
+    window.dispatchEvent(new Event('blackcell:redline:state'));
+   },150);
+  }
   messages.push({id:'follow-up-'+(owner?'sender':'owner'),
    sender_id:owner?senderId:ownerId,
    body:'Newest private message arrived while reading history',
@@ -99,6 +111,8 @@ document.addEventListener('DOMContentLoaded',()=>{
    feed.contains(savedAnchor)));
   document.body.dataset.chatNewMessage=String(Boolean(feed?.textContent?.includes(
    'Newest private message arrived while reading history')));
+  document.body.dataset.chatStableMount=String(Boolean(!owner||
+   document.getElementById('redlineReceiverChatMount')?.contains(feed)));
  },5600);
 });
 </script>
@@ -132,7 +146,7 @@ try{
   assert.equal(exit,0,role+' browser failed: '+stderr.slice(-1000));
   for(const flag of ['chat-read-receipt','chat-typing-indicator','chat-correct-mount',
    'chat-typing-sent','chat-read-sent','chat-typing-stopped',
-   'chat-long-thread','chat-scroll-stable','chat-dom-stable','chat-new-message']){
+   'chat-long-thread','chat-scroll-stable','chat-dom-stable','chat-new-message','chat-stable-mount']){
    assert.match(stdout,new RegExp('data-'+flag+'="true"'),role+' '+flag+' missing');
   }
   assert.doesNotMatch(stdout,/data-chat-js-error="[^"]+"/,role+' uncaught error');

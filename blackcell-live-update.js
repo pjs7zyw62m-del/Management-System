@@ -10,6 +10,9 @@ if(!location.pathname.endsWith('/login.html')){
 }
 const testMode=document.currentScript?.dataset.test==='true'&&/\/site-update-test(?:-v2)?\.html$/.test(location.pathname), KEY='bc.live-update.v1';
 const osMode=/\/blackcell-os(?:\.html)?\/?$/.test(location.pathname)||Boolean(document.getElementById('desktop')?.classList.contains('shell'));
+// Private REDLINE conversations must not be reloaded due to a site release.
+// Manual page refresh/revisit still loads the newest version.
+const redlineLiveThread=/\/private-photo-ledger\.html\/?$/.test(location.pathname);
 const OS_APPLIED='bc.os.applied-release.v1', OS_TARGET='bc.os.update-target.v1', OS_EXPECTED_BUILD='bc.os.expected-build.v1', OS_AUTO='bc.os.auto-updates.v1';
 function autoEnabled(){try{return localStorage.getItem(OS_AUTO)!=='off'}catch(_){return true}}
 function setAutoEnabled(on){
@@ -101,6 +104,7 @@ function blockingReason(){
 function safe(explicit=false){return !blockingReason()&&(explicit||Date.now()-last>=12000)}
 function maybeRefresh(){
  if(!pending||refreshing)return;
+ if(redlineLiveThread)return;
  if(osMode){
   if(autoEnabled()){
    if(osNotice)osNotice.hidden=true;
@@ -162,6 +166,7 @@ function restore(){let r;try{r=JSON.parse(sessionStorage.getItem(KEY)||'null');s
 interrupted=false;overlay('Restoring your corporate workspace…');const move=()=>{if(interrupted||location.pathname!==r.path)return;scrollTo(r.x||0,r.y||0);for(const item of r.scroll||[]){const el=$(item.id);if(el){el.scrollTop=item.top;el.scrollLeft=item.left}}};
 move();setTimeout(move,300);setTimeout(move,1100);setTimeout(()=>{screen?.remove();screen=null;move()},400);setTimeout(move,2600)}
 async function refresh(){
+ if(redlineLiveThread)return;
  if(refreshing||!pending||(testing?busy():!safe(osMode&&osRequested&&!autoEnabled())))return;
  refreshing=true;if(osNotice)osNotice.hidden=true;
  overlay(osMode?'Saving your BLACKCELL workspace and installing the update…':'Applying the latest corporate system update…');

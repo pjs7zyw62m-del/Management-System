@@ -64,3 +64,17 @@ test('REDLINE no-bounce policy forbids automatic jumps on receipt and timer poll
  assert.match(css,/overflow-anchor:none!important/);
  assert.match(html,/private-photo-ledger-chat-scroll-fix\.css/);
 });
+
+
+test('REDLINE transient owner refresh cannot discard the mounted chat or auto-reload page',()=>{
+ const js=read('private-photo-ledger-simple-sender.js');
+ const live=read('blackcell-live-update.js');
+ const html=read('private-photo-ledger.html');
+ const owner=js.slice(js.indexOf('function syncOwnerChat(snap){'),js.indexOf('function sync(){',js.indexOf('function syncOwnerChat(snap){')));
+ assert.doesNotMatch(owner,/if\(!ready\)\{\s*lastOwnerSession=null/);
+ assert.match(owner,/if\(!ready\)\{[\s\S]*?return;/);
+ assert.match(js,/if\(messageCard\.parentNode!==uploadPane\)/);
+ assert.match(live,/const redlineLiveThread=/);
+ assert.match(live,/if\(redlineLiveThread\)return/);
+ assert.match(html,/site-presence2-redline-continuity/);
+});
