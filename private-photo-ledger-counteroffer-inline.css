@@ -1,0 +1,69 @@
+/* REDLINE sender: optional counteroffer next to approved photo price.
+   Android-safe: inline form, 16px inputs, no popup and no chat reflow. */
+.redline-inline-price-control{
+ display:flex!important;flex-direction:column!important;gap:8px!important;
+ min-width:0!important;max-width:100%!important;margin:8px 0!important;
+ padding:10px 11px!important;background:#140c12!important;
+ border:1px solid #623244!important;border-radius:11px!important;
+ box-sizing:border-box!important;
+}
+.redline-inline-price-row{
+ display:flex!important;flex-wrap:wrap!important;align-items:center!important;
+ justify-content:space-between!important;gap:8px!important;min-width:0!important;
+}
+.redline-inline-price-heading{
+ color:#fff!important;font-size:12px!important;font-weight:850!important;
+ font-variant-numeric:tabular-nums!important;letter-spacing:.02em!important;
+}
+.redline-inline-counteroffer-button,.redline-inline-counteroffer-choice,
+.redline-inline-counteroffer-send,.redline-inline-counteroffer-cancel{
+ appearance:none!important;display:inline-flex!important;
+ justify-content:center!important;align-items:center!important;
+ min-height:40px!important;box-sizing:border-box!important;
+ border-radius:9px!important;padding:9px 12px!important;
+ font:850 11px/1.25 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+ cursor:pointer!important;touch-action:manipulation!important;
+}
+.redline-inline-counteroffer-button{
+ background:#9d173c!important;color:#fff!important;
+ border:1px solid #ed527f!important;
+}
+.redline-inline-counteroffer-button:disabled{
+ background:#281821!important;border-color:#61404d!important;
+ color:#bd93a5!important;cursor:not-allowed!important;
+}
+.redline-inline-counteroffer-editor[hidden]{display:none!important}
+.redline-inline-counteroffer-editor{
+ display:flex!important;align-items:center!important;
+ flex-wrap:wrap!important;gap:7px!important;margin:0!important;
+}
+.redline-inline-counteroffer-input{
+ flex:1 1 135px!important;min-width:0!important;min-height:43px!important;
+ padding:9px 12px!important;font-size:16px!important;
+ background:#080608!important;border:1px solid #c14b70!important;
+ border-radius:9px!important;color:#fff!important;outline-offset:2px!important;
+}
+.redline-inline-counteroffer-send{
+ background:#a71943!important;border:1px solid #fc668f!important;color:#fff!important;
+}
+.redline-inline-counteroffer-cancel,.redline-inline-counteroffer-choice{
+ background:#281722!important;border:1px solid #77465b!important;color:#ffe4ed!important;
+}
+.redline-inline-counteroffer-actions{
+ display:flex!important;align-items:center!important;flex-wrap:wrap!important;gap:7px!important;
+}
+.redline-inline-receiver-offer{
+ display:block!important;width:100%!important;color:#ffbad0!important;
+ font-size:11px!important;font-weight:850!important;
+}
+.redline-inline-counteroffer-feedback{
+ color:#ffbdd0!important;font-size:11px!important;line-height:1.45!important;
+ overflow-wrap:anywhere!important;
+}
+.redline-inline-counteroffer-feedback:empty{display:none!important}
+@media(max-width:500px){
+ .redline-inline-price-control{padding:9px!important}
+ .redline-inline-counteroffer-editor{align-items:stretch!important}
+ .redline-inline-counteroffer-input{flex:1 1 100%!important}
+ .redline-inline-counteroffer-send,.redline-inline-counteroffer-cancel{flex:1 1 auto!important}
+}
