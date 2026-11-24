@@ -101,7 +101,12 @@
  const triggerMenu=button('⚡ Trigger Words',()=>{
   window.dispatchEvent(new Event('blackcell:redline:open-trigger-owner'));
  },'rr-nav-button rr-trigger-menu');
+ const refreshMenu=button('↻ Refresh',()=>{
+  setMenuOpen(false);
+  const refresh=$('#refreshLedger');if(refresh&&!refresh.disabled)refresh.click();
+ },'rr-nav-button rr-menu-refresh');
  menuItems.append(review,history,message,triggerMenu,manage,tools);
+ menuItems.prepend(refreshMenu);
  for(const option of [review,history,message,triggerMenu,manage,tools]){
   option.addEventListener('click',()=>setMenuOpen(false));
  }
@@ -115,7 +120,9 @@
  partialPay.title='Record a smaller external payment; no actual money is transferred.';
  const payFeedback=make('span','rr-pay-feedback','');
  payFeedback.setAttribute('role','status');payFeedback.hidden=true;
- payColumn.append(payFull,partialPay,payFeedback);
+ const payChoice=button('PAY',()=>void openPaymentChoice(),'rr-nav-button rr-pay-full rr-pay-choice');
+ payChoice.setAttribute('aria-label','Choose full or partial payment');
+ payColumn.append(payChoice,payFull,partialPay,payFeedback);
  headerMenuGroup.prepend(menuShell);
  nav.append(payColumn);
  let payBusy=false;
@@ -127,6 +134,51 @@
   return '$'+(amount/100n).toLocaleString('en-US')+'.'+(amount%100n).toString().padStart(2,'0');
  };
 
+ // Mobile payment chooser: fetch the current verified balance, then use
+ // the original full or partial confirmation and recording paths.
+ const choiceDialog=make('dialog','rr-partial-payment-dialog rr-payment-choice-dialog');
+ choiceDialog.id='redlinePaymentChoiceDialog';
+ choiceDialog.setAttribute('aria-labelledby','redlinePaymentChoiceTitle');
+ const choiceBody=make('div','rr-partial-payment-form');
+ const choiceHeader=make('header','rr-partial-payment-heading');
+ const choiceTitle=make('h3','','Payment');choiceTitle.id='redlinePaymentChoiceTitle';
+ choiceHeader.append(choiceTitle,button('✕ CLOSE',()=>choiceDialog.close(),'rr-partial-close'));
+ const choiceBalance=make('div','rr-partial-balance');
+ const choiceLine=make('div','rr-partial-balance-line'),choiceAmount=make('strong','','—');
+ choiceLine.append(make('span','','TOTAL OUTSTANDING'),choiceAmount);choiceBalance.append(choiceLine);
+ const choiceFeedback=make('p','rr-partial-feedback','');choiceFeedback.setAttribute('role','status');
+ let choiceRoom=null,choiceSequence=0;
+ function choosePayment(full){
+  const current=window.BLACKCELL_REDLINE_API?.snapshot?.();
+  if(!choiceDialog.open||!current?.isOwner||!current.roomActive||current.archiveMode||current.roomId!==choiceRoom||payBusy)return;
+  choiceDialog.close();
+  if(full)void recordPaidInFull();else void openPartialPayment();
+ }
+ const chooseFull=button('PAY IN FULL',()=>choosePayment(true),'rr-partial-confirm');
+ const choosePartial=button('PARTIAL PAYMENT',()=>choosePayment(false),'rr-partial-cancel');
+ const choiceActions=make('div','rr-partial-actions rr-payment-choice-actions');
+ choiceActions.append(chooseFull,choosePartial);
+ choiceBody.append(choiceHeader,choiceBalance,choiceActions,choiceFeedback,
+  make('p','rr-partial-intro','Record an external payment already made. No money is transferred by REDLINE.'));
+ choiceDialog.append(choiceBody);document.body.append(choiceDialog);
+ choiceDialog.addEventListener('close',()=>{choiceSequence++;choiceRoom=null});
+ async function openPaymentChoice(){
+  const api=window.BLACKCELL_REDLINE_API,current=api?.snapshot?.();
+  if(payBusy||choiceDialog.open||!current?.isOwner||!current.roomId||!current.roomActive||current.archiveMode)return;
+  const seq=++choiceSequence;choiceRoom=current.roomId;
+  chooseFull.disabled=choosePartial.disabled=true;
+  choiceAmount.textContent='—';chooseFull.textContent='PAY IN FULL';
+  choiceFeedback.textContent='Loading verified room balance…';choiceDialog.showModal();
+  try{
+   const financial=await api.roomPaymentStatus(current.roomId,false);
+   if(seq!==choiceSequence||!choiceDialog.open)return;
+   if(api.snapshot()?.roomId!==current.roomId)throw Error('Room changed. Reopen Payments.');
+   const due=BigInt(String(financial.remaining_cents??0));
+   choiceAmount.textContent=moneyCents(due);chooseFull.textContent='PAY IN FULL · '+moneyCents(due);
+   chooseFull.disabled=choosePartial.disabled=due<=0n;
+   choiceFeedback.textContent=due>0n?'':'Nothing is outstanding in this room.';
+  }catch(e){if(seq===choiceSequence&&choiceDialog.open)choiceFeedback.textContent='Cannot load payment balance: '+String(e?.message||e)}
+ }
  // A receiver-only payment tab. The authenticated backend owns all balances.
  // This dialog only records verified external payments; never moves funds.
  const partialDialog=make('dialog','rr-partial-payment-dialog');
@@ -397,6 +449,19 @@
  // desktop header. They are never copied or disabled.
  function placeHeaderActions(){
   if(!workspaceActions||!pageHeading)return;
+  const mobile=document.body.classList.contains('bc-ledger-mobile');
+  if(mobile){
+   if(workspaceActions.parentNode!==pageHeading)pageHeading.append(workspaceActions);
+   const refresh=$('#refreshLedger');
+   if(headerMenuGroup.parentNode!==workspaceActions){
+    setMenuOpen(false);
+    if(refresh?.parentNode===workspaceActions)refresh.before(headerMenuGroup);
+    else workspaceActions.prepend(headerMenuGroup);
+   }
+  }else{
+   if(headerMenuGroup.parentNode!==header){setMenuOpen(false);header.insertBefore(headerMenuGroup,endSession)}
+  }
+  if(mobile)return;
   if(window.matchMedia('(min-width:960px)').matches){
    if(workspaceActions.parentNode!==header)header.append(workspaceActions);
   }else if(workspaceActions.parentNode!==pageHeading){
@@ -806,6 +871,7 @@
   document.body.classList.toggle('bc-redline-receiver',visible);
   if(!visible){
    document.body.classList.remove('rr-room-tools-open');
+   if(headerMenuGroup.parentNode!==header){setMenuOpen(false);header.insertBefore(headerMenuGroup,endSession)}
    if(workspaceActions&&pageHeading&&workspaceActions.parentNode!==pageHeading)pageHeading.append(workspaceActions);
    return;
   }
@@ -839,7 +905,8 @@
   review.disabled=history.disabled=message.disabled=!hasRoom;
   const mode=document.body.classList.contains('bc-redline-archive-view');
   dashboard.classList.toggle('rr-is-archive',mode);
-  payFull.disabled=partialPay.disabled=!hasRoom||mode||payBusy;
+  payFull.disabled=partialPay.disabled=payChoice.disabled=!hasRoom||mode||payBusy||session?.roomActive!==true;
+  if(choiceDialog.open&&(!session?.isOwner||session.roomId!==choiceRoom||!session.roomActive||session.archiveMode))choiceDialog.close();
   const count=$('#reviewQueueCount')?.textContent||'';
   review.title=count?'Review queue: '+count:'Open review queue';
   historyToggle.hidden=!hasRoom||!mediaOpen;

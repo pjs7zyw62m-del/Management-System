@@ -36,6 +36,7 @@
  if($('employeeUpload'))$('employeeUpload').hidden=owner;
  const set=(id,text)=>{if($(id)&&$(id).textContent!==String(text))$(id).textContent=String(text)};
  set('activeRoomTitle','Developer Test Room');set('roomPeople','Test Sender / Test Receiver');set('ledgerLiveStatus','LOCAL TEST SESSION');
+ $('refreshLedger')?.addEventListener('click',()=>{render();parent.postMessage({type:'rd-dev-action',token:cfg.token,action:'ready'},cfg.origin)});
  $('closeRoomBtn')?.addEventListener('click',()=>{if(confirm('End only the test session?'))void action('close')});
  $('closeLightbox')?.addEventListener('click',()=>{$('photoLightbox').hidden=true;document.body.style.overflow=''});
  window.addEventListener('blackcell:redline:open-trigger-owner',()=>alert('Trigger-word rules are not connected in this local preview.'));
