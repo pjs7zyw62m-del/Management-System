@@ -85,14 +85,18 @@ function sync(){
  current=next;
  const visible=Boolean(opened&&next&&summary);
  // Mount the new presentation only. The original chat and controls stay put.
- if(mobile&&chat.parentNode===dashboard){
-  if(popup.parentNode!==dashboard)dashboard.insertBefore(popup,chat);
-  if(resume.parentNode!==dashboard)dashboard.insertBefore(resume,popup);
+ const conversation=q('.redline-message-card',chat),feed=conversation?.querySelector('.redline-message-feed');
+ if(mobile&&conversation&&feed?.parentNode===conversation){
+  // The finance header, PAY control and pinned timer precede the feed.
+  // Insert only our two new nodes, directly before the conversation feed.
+  if(popup.parentNode!==conversation||popup.nextElementSibling!==feed)conversation.insertBefore(popup,feed);
+  if(resume.parentNode!==conversation||resume.nextElementSibling!==popup)conversation.insertBefore(resume,popup);
  }else{
   if(popup.parentNode!==document.body)document.body.append(popup);
   if(resume.parentNode!==document.body)document.body.append(resume);
  }
- popup.hidden=!visible;resume.hidden=!next||visible||!summary;
+ const mobileReady=!mobile||Boolean(conversation&&feed?.parentNode===conversation);
+ popup.hidden=!visible||!mobileReady;resume.hidden=!next||visible||!summary||!mobileReady;
  resume.textContent=pending.length+' photo'+(pending.length===1?'':'s')+' waiting · Review';
  if(!next)return;
  count.textContent='1 of '+pending.length+' awaiting review';

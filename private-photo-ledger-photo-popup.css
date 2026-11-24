@@ -23,8 +23,23 @@
 #rdIndependentReview .rd-ir-timer{display:flex!important;flex-wrap:wrap!important;gap:6px!important;align-items:center!important}#rdIndependentReview .rd-ir-timer input{width:72px!important;background:#151515!important;padding:6px!important}#rdIndependentReview .rd-ir-timer button{min-height:35px!important;padding:6px 10px!important;background:#222!important;border-radius:6px!important}
 .rd-ir-resume{position:fixed!important;bottom:18px!important;right:18px!important;z-index:930!important;width:auto!important;padding:8px 12px!important;background:#171717!important;color:#fff!important;border:1px solid #b91430!important;border-radius:10px!important;font:600 12px system-ui!important}
 #rdIndependentReview .rd-ir-grip{display:none!important}
-body.bc-ledger-mobile #redlineReceiverCommand>#rdIndependentReview:not([hidden]){position:relative!important;inset:auto!important;transform:none!important;width:100%!important;height:var(--rd-ir-share,52%)!important;max-height:68%!important;flex:0 0 var(--rd-ir-share,52%)!important;border-radius:0!important;box-shadow:none!important;z-index:2!important}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-card>#rdIndependentReview:not([hidden]){position:relative!important;inset:auto!important;transform:none!important;width:100%!important;height:var(--rd-ir-share,52%)!important;max-height:68%!important;flex:0 0 var(--rd-ir-share,52%)!important;border-radius:0!important;box-shadow:none!important;z-index:2!important}
 body.bc-ledger-mobile #rdIndependentReview .rd-ir-image{height:clamp(108px,26dvh,230px)!important}
 body.bc-ledger-mobile #rdIndependentReview .rd-ir-grip{display:flex!important;flex:none!important;align-items:center!important;justify-content:center!important;height:15px!important;touch-action:none!important;background:#111!important}
 body.bc-ledger-mobile #rdIndependentReview .rd-ir-grip::after{content:'';width:35px;height:4px;background:#777;border-radius:4px}
-body.bc-ledger-mobile #redlineReceiverCommand>.rd-ir-resume{position:static!important;flex:none!important;margin:3px 6px!important;min-height:32px!important}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-card>.rd-ir-resume{position:static!important;flex:none!important;margin:3px 6px!important;min-height:32px!important}
+
+/* Keep all existing financial controls and composer above/below the review. */
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-card:has(>#rdIndependentReview:not([hidden])),
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-card:has(>.rd-ir-resume:not([hidden])){
+ display:flex!important;flex-direction:column!important;min-height:0!important;overflow:hidden!important;
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-card>#rdIndependentReview:not([hidden]){
+ flex:0 1 var(--rd-ir-share,52%)!important;min-height:0!important;max-height:min(60%,calc(100% - 155px))!important;
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-card:has(>#rdIndependentReview:not([hidden]))>.redline-message-feed{
+ flex:1 1 0!important;min-height:32px!important;height:auto!important;overflow-y:auto!important;
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-card:has(>#rdIndependentReview:not([hidden]))>.redline-message-composer{
+ flex:0 0 auto!important;
+}
