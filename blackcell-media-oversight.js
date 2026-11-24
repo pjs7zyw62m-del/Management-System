@@ -9,7 +9,7 @@ const readable=x=>new Date(x).toLocaleString();
 const bytes=n=>Number(n)>=1048576?(Number(n)/1048576).toFixed(1)+' MB':
  (Number(n)/1024).toFixed(0)+' KB';
 let client=null,owner=null,files=[],members=[],page=0,selectedUser=null;
-let selectedFile=null,pendingDelete=null,loading=false,busy=false,sequence=0,viewerUrl=null;
+let selectedFile=null,pendingDelete=null,loading=false,busy=false,sequence=0,viewerUrl=null,transferBusy=false;
 const thumbnails=new Map();
 const notice=(msg)=>{$('notice').textContent=msg};
 const revoke=()=>{
@@ -132,6 +132,8 @@ async function openFile(file){
   ' · '+file.mime+' · Updated '+readable(file.updated_at);
  $('viewer').replaceChildren(make('p','muted','Loading encrypted media for Level 7 review…'));
  $('removeFromViewer').disabled=true;
+ $('transferPhoto').hidden=!file.mime.startsWith('image/')||selectedUser===owner;
+ $('transferPhoto').disabled=true;$('copyShareLink').hidden=true;$('transferStatus').textContent='';
  $('viewDialog').showModal();
  try{
   const pieces=new Array(Math.ceil(Number(file.size_bytes)/4194304));
@@ -153,9 +155,37 @@ async function openFile(file){
   media.alt='Media under administrative review';
   $('viewer').replaceChildren(media);
   $('removeFromViewer').disabled=false;
+  $('transferPhoto').disabled=false;
  }catch(e){$('viewer').replaceChildren(make('p','muted','Unable to retrieve media: '+displayError(e)))}
  finally{busy=false}
 }
+async function transferSelected(){
+ const file=selectedFile,target=selectedUser;
+ if(transferBusy||!file?.mime.startsWith('image/')||target===owner||!$('viewDialog').open)return;
+ const current=()=>selectedFile?.id===file.id&&selectedUser===target&&$('viewDialog').open;
+ transferBusy=true;$('transferPhoto').disabled=true;$('copyShareLink').hidden=true;
+ $('transferStatus').textContent='Saving authorized reference…';
+ try{
+  const result=await invoke('transfer',{user_id:target,id:file.id});
+  if(current()){
+   $('transferStatus').textContent=result.permission_required?'The member must authorize this photograph once. Send them the permission link.':result.already?'Already in My Photos.':'Transferred to My Photos.';
+   $('copyShareLink').hidden=!result.permission_required;
+  }
+  if(!result.permission_required){
+   try{const channel=new BroadcastChannel('bc-private-photos-transfer');channel.postMessage({type:'photos-changed',uid:owner});channel.close()}catch(_){}
+   void loadAudit();
+  }
+ }catch(e){if(current())$('transferStatus').textContent=displayError(e)}
+ finally{transferBusy=false;if(current())$('transferPhoto').disabled=false}
+}
+$('transferPhoto').addEventListener('click',()=>void transferSelected());
+$('copyShareLink').addEventListener('click',async()=>{
+ if(!selectedFile||!owner||!selectedUser||!$('viewDialog').open)return;
+ const url=new URL('blackcell-photo-permission.html',location.href);
+ url.searchParams.set('id',selectedFile.id);url.searchParams.set('recipient',owner);
+ try{await navigator.clipboard.writeText(url.href);$('transferStatus').textContent='Permission link copied. Send it to the photograph’s owner.'}
+ catch(_){$('transferStatus').textContent='Share this permission link: '+url.href}
+});
 function closeView(){
  if($('viewDialog').open)$('viewDialog').close();
  $('viewer').replaceChildren();clearViewer();

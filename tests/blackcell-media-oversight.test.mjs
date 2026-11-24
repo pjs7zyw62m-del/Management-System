@@ -90,3 +90,17 @@ test('Native BLACKCELL Administration sidebar exposes owner Media Oversight, not
  const osHost=read('blackcell-os.html');
  assert.match(osHost,/adminMediaOversight=20261122-native-nav1/);
 });
+
+test('photo transfer requires source-owner permission and creates a reference, not another upload',()=>{assert.match(edge,/p_action:"transfer"/);assert.match(ui,/invoke\('transfer'/);assert.match(html,/id="transferPhoto"/);assert.match(ui,/blackcell-photo-permission.html/);});
+
+test('authorized reference shares bytes but deleting a reference never deletes the Bunny original',()=>{
+ const migration=read('supabase/migrations/20261124114514_blackcell_media_oversight_photo_permission.sql');
+ const drive=read('supabase/functions/blackcell-os-private-drive/index.ts');
+ assert.match(migration,/granted_by=p_target/);
+ assert.match(migration,/source_object_id=src.id,state='ready'/);
+ assert.match(migration,/ON DELETE CASCADE/);
+ assert.match(migration,/REVOKE ALL ON FUNCTION public.bc_os_photo_permission/);
+ assert.match(drive,/mediaId=source.id;mediaKey=source.key_hex/);
+ assert.match(drive,/bunny\("GET",mediaId,i\)/);
+ assert.match(drive,/if\(row.source_object_id\)\{\s*if\(action==="delete"\)/);
+});

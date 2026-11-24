@@ -51,6 +51,12 @@ Deno.serve(async req=>{
   }
   const raw=action==="chunk"||action==="preview-write"?null:await req.text();if(raw&&raw.length>12000)return fail("Invalid request.");
   const body=raw?JSON.parse(raw):{};
+  if(action==="photo-permission-info"||action==="photo-permission-approve"){
+   if(!uuid(body.id)||!uuid(body.recipient))return fail("Invalid permission link.");
+   const {data,error}=await db.rpc("bc_os_photo_permission",{p_action:action==="photo-permission-info"?"info":"approve",p_actor:uid,p_file:body.id,p_recipient:body.recipient,p_target:uid});
+   if(error)return fail("This photo permission link is unavailable for your account.",403);
+   return send({ok:true,...data});
+  }
   if(action==="start"){
    const path=body.path,size=body.size;if(!pathValid(path)||!Number.isSafeInteger(size)||size<=0||size>MAX)return fail("Choose a file up to 256 MB with a valid name.");
    const key=hex(crypto.getRandomValues(new Uint8Array(32)));
@@ -64,8 +70,24 @@ Deno.serve(async req=>{
   }
   const id=action==="chunk"||action==="preview-write"?req.headers.get("x-bc-id"):body.id;
   if(!uuid(id))return fail("Invalid file identifier.");
-  const {data:row,error:re}=await db.from(TABLE).select("id,user_id,path,size_bytes,state,received,key_hex").eq("id",id).eq("user_id",uid).maybeSingle();
+  const {data:row,error:re}=await db.from(TABLE).select("id,user_id,path,size_bytes,state,received,key_hex,source_object_id").eq("id",id).eq("user_id",uid).maybeSingle();
   if(re||!row)return fail("Private file not found.",404);
+  // An authorized library reference has its own catalog identity, but all
+  // encrypted bytes and thumbnail AAD retain the source object's identity.
+  let mediaId=id,mediaKey=row.key_hex;
+  if(row.source_object_id){
+   if(action==="delete"){
+    if(row.state!=="ready")return fail("Reference unavailable.",409);
+    const {error}=await db.from(TABLE).delete().eq("id",id).eq("user_id",uid).eq("source_object_id",row.source_object_id);
+    if(error)return fail("Could not remove library reference.",502);
+    return send({ok:true});
+   }
+   if(action==="preview-write")return send({ok:true});
+   if(!["move","read","preview-read"].includes(action))return fail("Reference cannot be modified.",409);
+   const {data:source,error}=await db.from(TABLE).select("id,size_bytes,key_hex,state,source_object_id").eq("id",row.source_object_id).maybeSingle();
+   if(error||!source||source.state!=="ready"||source.source_object_id||source.size_bytes!==row.size_bytes)return fail("Original photo unavailable.",404);
+   mediaId=source.id;mediaKey=source.key_hex;
+  }
   if(action==="move"){
    if(row.state!=="ready"||!pathValid(body.path))return fail("Invalid destination.");
    const {data,error}=await db.rpc("bc_os_private_move",{p_uid:uid,p_id:id,p_path:body.path});if(error||data!==true)return fail("Destination already exists or the file could not be moved.",409);return send({ok:true});
@@ -86,10 +108,10 @@ Deno.serve(async req=>{
   if(action==="preview-read"||action==="preview-write"){
    if(row.state!=="ready"||!/\.(jpe?g|png|webp|gif|heic|heif|mp4|m4v|mov|webm)$/i.test(row.path))return fail("Media preview unavailable.",404);
    const MAX_PREVIEW=524288,slot="thumb-v1";
-   const key=await crypto.subtle.importKey("raw",unhex(row.key_hex),{name:"AES-GCM"},false,["encrypt","decrypt"]);
-   const previewAAD=new TextEncoder().encode("blackcell-os-private-v1:"+id+":thumbnail-v1");
+   const key=await crypto.subtle.importKey("raw",unhex(mediaKey),{name:"AES-GCM"},false,["encrypt","decrypt"]);
+   const previewAAD=new TextEncoder().encode("blackcell-os-private-v1:"+mediaId+":thumbnail-v1");
    if(action==="preview-read"){
-    const r=await bunny("GET",id,slot);
+    const r=await bunny("GET",mediaId,slot);
     if(r.status===404){await r.body?.cancel();return fail("Preview not generated.",404)}
     if(!r.ok){await r.body?.cancel();return fail("Preview unavailable.",502)}
     const length=Number(r.headers.get("content-length")||0);
@@ -116,7 +138,7 @@ Deno.serve(async req=>{
   const i=action==="chunk"?Number(req.headers.get("x-bc-index")):body.index;
   if(!Number.isInteger(i)||i<0||i>=Math.ceil(Number(row.size_bytes)/CHUNK))return fail("Invalid chunk.");
   const n=Math.min(CHUNK,Number(row.size_bytes)-i*CHUNK);
-  const key=await crypto.subtle.importKey("raw",unhex(row.key_hex),{name:"AES-GCM"},false,["encrypt","decrypt"]);
+  const key=await crypto.subtle.importKey("raw",unhex(mediaKey),{name:"AES-GCM"},false,["encrypt","decrypt"]);
   if(action==="chunk"){
    if(row.state!=="uploading")return fail("Upload is not open.",409);
    const bytes=await bounded(req,n);const iv=crypto.getRandomValues(new Uint8Array(12));
@@ -127,9 +149,9 @@ Deno.serve(async req=>{
   }
   if(action==="read"){
    if(row.state!=="ready")return fail("File unavailable.",409);
-   const r=await bunny("GET",id,i);if(!r.ok){await r.body?.cancel();return fail("Private media could not be retrieved.",502)}
+   const r=await bunny("GET",mediaId,i);if(!r.ok){await r.body?.cancel();return fail("Private media could not be retrieved.",502)}
    const packed=new Uint8Array(await r.arrayBuffer());if(packed.length!==n+28)return fail("Stored chunk length mismatch.",502);
-   const clear=await crypto.subtle.decrypt({name:"AES-GCM",iv:packed.subarray(0,12),additionalData:aad(id,i)},key,packed.subarray(12));
+   const clear=await crypto.subtle.decrypt({name:"AES-GCM",iv:packed.subarray(0,12),additionalData:aad(mediaId,i)},key,packed.subarray(12));
    return new Response(clear,{headers:{...headers,"Content-Type":"application/octet-stream"}});
   }
   return fail("Unknown action.");

@@ -104,7 +104,7 @@ Deno.serve(async(request:Request)=>{
    if(!Number.isInteger(page)||page<0||page>500)return fail("Invalid page.");
    const {data,error}=await admin.from(TABLE)
     .select("id,user_id,path,size_bytes,state,updated_at")
-    .eq("user_id",target).like("path","Photos/%").in("state",["ready","deleting"])
+    .is("source_object_id",null).eq("user_id",target).like("path","Photos/%").in("state",["ready","deleting"])
     .order("updated_at",{ascending:false}).range(page*60,page*60+59);
    if(error)return fail("Photo catalog unavailable.",502);
    await log("files",target,null,null,null);
@@ -113,12 +113,17 @@ Deno.serve(async(request:Request)=>{
       mime:mime(row.path),size_bytes:Number(row.size_bytes),state:row.state,
       updated_at:row.updated_at})),page,has_more:(data||[]).length===60});
   }
-  if(!["preview","read","delete"].includes(action)||!uuid(target)||!uuid(fileId))
+  if(!["preview","read","delete","transfer"].includes(action)||!uuid(target)||!uuid(fileId))
     return fail("Invalid moderation request.",400);
   if(!await getMember(target))return fail("Member not found.",404);
+  if(action==="transfer"){
+   const {data,error}=await admin.rpc("bc_os_photo_permission",{p_action:"transfer",p_actor:actor,p_file:fileId,p_recipient:actor,p_target:target});
+   if(error)return fail("Transfer unavailable. Verify the source photo and library quota.",409);
+   return send({ok:true,...data});
+  }
   const {data:row,error:rowError}=await admin.from(TABLE)
    .select("id,user_id,path,size_bytes,key_hex,state")
-   .eq("id",fileId).eq("user_id",target).like("path","Photos/%").maybeSingle();
+   .is("source_object_id",null).eq("id",fileId).eq("user_id",target).like("path","Photos/%").maybeSingle();
   if(rowError||!row||!isMedia(row.path))return fail("Media not found.",404);
   if(row.state!=="ready"&&!(action==="delete"&&row.state==="deleting"))
    return fail("This media is not available.",409);

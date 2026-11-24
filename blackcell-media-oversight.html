@@ -4,7 +4,7 @@
 <meta name="theme-color" content="#030303"><meta name="robots" content="noindex,nofollow,noarchive">
 <title>BLACKCELL | Media Oversight · Level 7</title>
 <script src="corp-config.js" defer></script>
-<script type="module" src="blackcell-media-oversight.js?v=20261122-level7-oversight1"></script>
+<script type="module" src="blackcell-media-oversight.js?v=20261124-photo-transfer1"></script>
 <style>
 :root{color-scheme:dark;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#030303;color:#f5f3f4}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;max-width:100%;overflow-x:hidden;scrollbar-width:none}
@@ -89,7 +89,7 @@ dialog::backdrop{background:#000e}
  <div class="dialoghead"><div><div class="kicker">PRIVATE PHOTO REVIEW</div><h2 id="viewTitle">Photograph</h2></div><button class="button secondary" id="closeView" type="button">Close</button></div>
  <div class="viewer" id="viewer"><p class="muted">Preparing verified media…</p></div>
  <p class="muted" id="viewInfo"></p>
- <div class="controls"><button class="button danger" id="removeFromViewer" type="button">Remove prohibited content</button></div>
+ <div class="controls"><button class="button primary" id="transferPhoto" type="button" disabled>Transfer to My Photos</button><button class="button secondary" id="copyShareLink" type="button" hidden>Copy permission link</button><button class="button danger" id="removeFromViewer" type="button">Remove prohibited content</button></div><p class="muted" id="transferStatus" role="status"></p>
 </dialog>
 <dialog id="deleteDialog" aria-label="Confirm permanent content removal">
  <div class="dialoghead"><div><div class="kicker">LEVEL 7 / DESTRUCTIVE ACTION</div><h2>PERMANENT CONTENT REMOVAL</h2></div><button class="button secondary" id="closeDelete" type="button">Cancel</button></div>
