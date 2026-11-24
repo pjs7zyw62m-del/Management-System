@@ -266,3 +266,15 @@ body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-le
 /* Icon-only mobile sender send action; keep original form submit button. */
 body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-message-composer .redline-chat-send{flex:0 0 32px!important;width:32px!important;min-width:32px!important;max-width:32px!important;padding:0!important;border-radius:50%!important;font-size:0!important;gap:0!important}
 body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-message-composer .redline-chat-send::after{content:"";display:block;width:16px;height:16px;flex:0 0 16px;background:currentColor;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m22%202-7%2020-4-9-9-4%2020-7Z%22%2F%3E%3Cpath%20d%3D%22M22%202%2011%2013%22%2F%3E%3C%2Fsvg%3E") center/contain no-repeat;-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m22%202-7%2020-4-9-9-4%2020-7Z%22%2F%3E%3Cpath%20d%3D%22M22%202%2011%2013%22%2F%3E%3C%2Fsvg%3E") center/contain no-repeat}
+
+/* Keep the visible focus ring inside the compact composer controls.
+   An external outline + offset was clipped by the full-bleed chat frame. */
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-message-composer .redline-message-entry:focus,
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-message-composer .redline-message-entry:focus-visible{
+ outline:0!important;outline-offset:0!important;border-color:#e64b70!important;
+ box-shadow:inset 0 0 0 1px #e64b70!important
+}
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-message-composer .redline-chat-photo:focus-visible,
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-message-composer .redline-chat-send:focus-visible{
+ outline:2px solid #ff92ac!important;outline-offset:-3px!important
+}
