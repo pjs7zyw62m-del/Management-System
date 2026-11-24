@@ -234,3 +234,31 @@ body.redline-sender-messenger.bc-ledger-mobile.rs-mobile-menu-active .rs-brand-s
 body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-message-card>.redline-message-header{
  display:none!important
 }
+
+/* Sender mobile: slim, single-line Apple-style composer. Keep native text
+   input, original upload/send handlers and keyboard-safe bottom inset. */
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-message-composer{
+ min-height:0!important;max-height:none!important;gap:5px!important;
+ padding:3px 6px max(3px,env(safe-area-inset-bottom))!important;
+ align-items:center!important;border-top:1px solid #31171f!important;background:#080808!important
+}
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-message-composer .redline-chat-photo{
+ box-sizing:border-box!important;flex:0 0 32px!important;width:32px!important;min-width:32px!important;max-width:32px!important;
+ height:32px!important;min-height:32px!important;padding:0!important;margin:0!important;
+ font-size:20px!important;line-height:1!important;border-radius:50%!important;
+ background:#19090e!important;border:1px solid #702438!important
+}
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-message-composer .redline-message-entry{
+ box-sizing:border-box!important;flex:1 1 0!important;min-width:0!important;
+ min-height:32px!important;height:32px!important;max-height:72px!important;
+ padding:5px 9px!important;margin:0!important;
+ font-size:16px!important;line-height:20px!important;border-radius:16px!important;
+ border:1px solid #3f3b40!important;background:#101012!important;resize:none!important;
+ overflow-y:auto!important
+}
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-message-composer .redline-chat-send{
+ box-sizing:border-box!important;flex:0 0 auto!important;width:auto!important;min-width:42px!important;
+ height:32px!important;min-height:32px!important;padding:0 8px!important;margin:0!important;
+ border-radius:16px!important;font-size:10px!important;line-height:1!important;
+ display:flex!important;align-items:center!important;justify-content:center!important
+}
