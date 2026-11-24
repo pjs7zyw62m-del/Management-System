@@ -298,3 +298,20 @@ body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redli
  font-size:12px!important;line-height:1.1!important;letter-spacing:0!important;font-weight:800!important;
  font-variant-numeric:tabular-nums!important;white-space:nowrap!important
 }
+
+/* Mobile receiver: the conversation fills the existing outer chat frame.
+   Preserve its existing height and width, remove only the inner inset and
+   duplicate outline. The outer radius clips the full-bleed chat safely. */
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat:not([hidden]){
+ padding:0!important;gap:0!important;box-sizing:border-box!important;overflow:hidden!important
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat>.rr-chat-mount{
+ display:flex!important;flex:1 1 0!important;flex-direction:column!important;align-self:stretch!important;
+ box-sizing:border-box!important;width:100%!important;min-width:0!important;min-height:0!important;
+ margin:0!important;padding:0!important;border:0!important;overflow:hidden!important
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat>.rr-chat-mount>.redline-message-card{
+ box-sizing:border-box!important;flex:1 1 0!important;width:100%!important;height:100%!important;
+ min-height:0!important;min-width:0!important;max-width:none!important;max-height:none!important;
+ padding:0!important;margin:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;overflow:hidden!important
+}
