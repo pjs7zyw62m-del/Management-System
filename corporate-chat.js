@@ -186,9 +186,12 @@ mediaToggle.addEventListener('click',event=>{
  sharedMedia.toggleMediaTray();
 });
 window.addEventListener('blackcell-chat-media-capability-change',()=>sharedMedia.closeMediaTray());
+$('whatsappWebLink')?.addEventListener('click',event=>{if(!ready||!self||sessionEnded||popout||mediaPanelMode)event.preventDefault()});
 const inboxEdit=$('inboxEdit'),inboxCompose=$('inboxCompose'),inboxMenu=$('inboxFilterMenu'),inboxFilterButton=$('inboxFilter'),inboxMarkRead=$('inboxMarkRead');
 function closeInboxFilter(){inboxMenu.hidden=true;inboxFilterButton.setAttribute('aria-expanded','false')}
 function syncInboxControls(){
+ const whatsapp=$('whatsappWebLink');
+ if(whatsapp)whatsapp.hidden=!ready||!self||sessionEnded||popout||!!mediaPanelMode||inboxComposing||inboxEditing;
  inboxEdit.textContent=inboxComposing?'Cancel':inboxEditing?'Done':'Edit';
  inboxEdit.setAttribute('aria-pressed',String(inboxEditing));
  inboxEdit.disabled=!ready||inboxMarking;
