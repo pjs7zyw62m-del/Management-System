@@ -189,6 +189,10 @@ window.addEventListener('blackcell-chat-media-capability-change',()=>sharedMedia
 const inboxEdit=$('inboxEdit'),inboxCompose=$('inboxCompose'),inboxMenu=$('inboxFilterMenu'),inboxFilterButton=$('inboxFilter'),inboxMarkRead=$('inboxMarkRead');
 function closeInboxFilter(){inboxMenu.hidden=true;inboxFilterButton.setAttribute('aria-expanded','false')}
 function syncInboxControls(){
+ const quickDisabled=!ready||inboxEditing||inboxComposing;
+ for(const b of document.querySelectorAll('[data-quick-filter]')){b.disabled=quickDisabled;b.setAttribute('aria-pressed',String(b.dataset.quickFilter===inboxFilter));}
+ const unreadCount=$('bcUnreadCount');if(unreadCount){unreadCount.hidden=!ready||!inboxUnreadAvailable||!inboxUnread.size;unreadCount.textContent=String(inboxUnread.size);}
+ for(const b of inboxMenu.querySelectorAll('[data-inbox-filter]'))b.setAttribute('aria-pressed',String(b.dataset.inboxFilter===inboxFilter));
  inboxEdit.textContent=inboxComposing?'Cancel':inboxEditing?'Done':'Edit';
  inboxEdit.setAttribute('aria-pressed',String(inboxEditing));
  inboxEdit.disabled=!ready||inboxMarking;
@@ -197,11 +201,16 @@ function syncInboxControls(){
  inboxMarkRead.hidden=!inboxEditing;
  inboxMarkRead.disabled=!ready||!inboxSelection.size||inboxMarking;
  inboxFilterButton.disabled=inboxEditing||inboxComposing;
- $('inboxHeading').textContent=inboxComposing?'New Message':inboxFilter==='all'?'iMessage':inboxFilter==='unread'?'Unread Messages':inboxFilter==='known'?'Known Senders':'Unknown Senders';
+ $('inboxHeading').textContent=inboxComposing?'New Message':inboxFilter==='all'?'iMessage':inboxFilter==='unread'?'Unread Messages':inboxFilter==='known'?'Known Senders':inboxFilter==='pinned'?'Pinned Conversations':'Unknown Senders';
 }
 function exitInboxMode(){inboxEditing=false;inboxComposing=false;inboxSelection.clear();syncInboxControls()}
 inboxFilterButton.addEventListener('click',()=>{if(!inboxMenu.hidden){closeInboxFilter();return}inboxMenu.hidden=false;inboxFilterButton.setAttribute('aria-expanded','true');inboxMenu.querySelector('[aria-pressed=true]')?.focus()});
-inboxMenu.addEventListener('click',e=>{const b=e.target.closest('[data-inbox-filter]');if(!b)return;inboxFilter=b.dataset.inboxFilter;for(const item of inboxMenu.querySelectorAll('button'))item.setAttribute('aria-pressed',String(item===b));closeInboxFilter();inboxFilterButton.focus();renderPeers();if(inboxFilter==='unread')void refreshInboxSummaries()});
+function selectInboxFilter(value){
+ if(!ready||inboxEditing||inboxComposing||!['all','unread','pinned','known','unknown'].includes(value))return;
+ inboxFilter=value;closeInboxFilter();closePinMenu();renderPeers();if(value==='unread')void refreshInboxSummaries();
+}
+inboxMenu.addEventListener('click',e=>{const b=e.target.closest('[data-inbox-filter]');if(!b)return;selectInboxFilter(b.dataset.inboxFilter);inboxFilterButton.focus()});
+for(const b of document.querySelectorAll('[data-quick-filter]'))b.addEventListener('click',()=>selectInboxFilter(b.dataset.quickFilter));
 document.addEventListener('pointerdown',e=>{if(!inboxMenu.hidden&&!e.target.closest('.apple-filter-anchor'))closeInboxFilter()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!inboxMenu.hidden){closeInboxFilter();inboxFilterButton.focus()}});
 inboxEdit.addEventListener('click',()=>{closeInboxFilter();if(inboxComposing||inboxEditing){exitInboxMode();$('peerSearch').value=''}else{inboxEditing=true;inboxSelection.clear()}renderPeers()});
@@ -599,12 +608,12 @@ function renderPeers(){
  const query=$('peerSearch').value.trim().toLowerCase();
  // Every contact is a server-authorized known sender. Unknown external senders are not admitted.
  const visible=contacts.filter(c=>(String(c.display_name||'')+' '+String(c.role||'')).toLowerCase().includes(query))
-  .filter(c=>inboxComposing||inboxFilter==='all'||inboxFilter==='known'||(inboxFilter==='unread'&&inboxUnread.has(c.user_id)))
+  .filter(c=>inboxComposing||inboxFilter==='all'||inboxFilter==='known'||(inboxFilter==='unread'&&inboxUnread.has(c.user_id))||(inboxFilter==='pinned'&&inboxPins.includes(c.user_id)))
   .sort((a,b)=>new Date(inboxSummaries.get(b.user_id)?.when||0)-new Date(inboxSummaries.get(a.user_id)?.when||0)||String(a.display_name||'').localeCompare(String(b.display_name||'')));
  const unpinned=pinsVisible?visible.filter(c=>!inboxPins.includes(c.user_id)):visible;
  $('contactCount').textContent=String(visible.length);
  if(!unpinned.length&&pinsVisible)return;
- if(!visible.length){box.append(text('p','empty',!ready?'Checking contacts…':query?'No matching contacts.':inboxFilter==='unknown'?'Only authorized BLACKCELL contacts can send messages.':inboxFilter==='unread'?(inboxUnreadAvailable?'No unread messages.':'Unread status unavailable. Retrying…'):'No authorized contacts.'));return}
+ if(!visible.length){box.append(text('p','empty',!ready?'Checking contacts…':query?'No matching contacts.':inboxFilter==='unknown'?'Only authorized BLACKCELL contacts can send messages.':inboxFilter==='unread'?(inboxUnreadAvailable?'No unread messages.':'Unread status unavailable. Retrying…'):inboxFilter==='pinned'?'No pinned conversations. Right-click a conversation to pin it.':'No authorized contacts.'));return}
  for(const c of unpinned){
    const button=document.createElement('button');button.type='button';const unread=inboxUnread.has(c.user_id);
    button.className='peer'+(peer?.user_id===c.user_id?' active':'')+(unread?' is-unread':'');
@@ -617,7 +626,7 @@ function renderPeers(){
    button.append(wrap);
    const trailing=document.createElement('span');trailing.className='apple-peer-trailing';
    if(summary?.when){const time=document.createElement('time');time.className='peer-meta';time.dateTime=summary.when;time.textContent=inboxTime(summary.when);trailing.append(time)}
-   if(!inboxEditing)trailing.append(text('span','apple-chevron','›'));
+   if(!inboxEditing){if(unread)trailing.append(text('span','bc-inbox-unread-mark','New'));trailing.append(text('span','apple-chevron','›'));}
    button.append(trailing);
    if(unread)button.setAttribute('aria-label',(c.display_name||'Employee')+', unread messages');
    button.onclick=()=>{if(inboxEditing){if(inboxSelection.has(c.user_id))inboxSelection.delete(c.user_id);else inboxSelection.add(c.user_id);renderPeers();return}if(inboxComposing){exitInboxMode();$('peerSearch').value=''}choose(c.user_id)};
