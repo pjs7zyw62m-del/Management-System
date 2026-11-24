@@ -104,6 +104,13 @@
   let sending=false;
   // Generate harmless, distinct landscape fixtures locally with canvas.
   const palettes=[['#183553','#ecb87f','#27465a'],['#805173','#ffd9aa','#5a3d5f'],['#153a35','#e7cc8d','#41674d'],['#303756','#9faed4','#141f3d'],['#9a4c3b','#ffdd9d','#65342c'],['#305a71','#d7ecf5','#245059']];
+  function addLibraryTile(image,n,imported=false){
+   samples.push(image);
+   const tile=button('',()=>{if(sending)return;if(selected.has(n))selected.delete(n);else selected.add(n);updateSelection()},'rd-dev-sample-tile');
+   tile.setAttribute('aria-label',(imported?'Previous REDLINE photo ':'Sample photo ')+(n+1));tile.setAttribute('aria-pressed','false');
+   const img=make('img');img.src=image;img.alt=(imported?'Previously shared photo ':'Sample landscape ')+(n+1);
+   tile.append(img,make('span','rd-dev-sample-check','✓'));tiles.push(tile);grid.append(tile);
+  }
   for(let n=0;n<palettes.length;n++){
    const [sky,sun,land]=palettes[n],canvas=document.createElement('canvas');canvas.width=480;canvas.height=n%2?640:360;
    const ctx=canvas.getContext('2d'),w=canvas.width,hh=canvas.height;
@@ -112,12 +119,17 @@
    ctx.fillStyle=land;ctx.beginPath();ctx.moveTo(0,hh*.72);ctx.lineTo(w*.25,hh*(.36+n*.025));ctx.lineTo(w*.52,hh*.69);ctx.lineTo(w*.76,hh*.42);ctx.lineTo(w,hh*.67);ctx.lineTo(w,hh);ctx.lineTo(0,hh);ctx.closePath();ctx.fill();
    ctx.fillStyle='rgba(0,0,0,.24)';ctx.fillRect(0,hh*.84,w,hh*.16);
    ctx.fillStyle='#fff';ctx.font='600 20px system-ui';ctx.fillText('SAMPLE '+(n+1),18,hh-18);
-   const image=canvas.toDataURL('image/jpeg',.82);samples.push(image);
-   const tile=button('',()=>{if(sending)return;if(selected.has(n))selected.delete(n);else selected.add(n);updateSelection()},'rd-dev-sample-tile');
-   tile.setAttribute('aria-label','Sample photo '+(n+1));tile.setAttribute('aria-pressed','false');
-   const img=make('img');img.src=image;img.alt='Sample landscape '+(n+1);
-   tile.append(img,make('span','rd-dev-sample-check','✓'));tiles.push(tile);grid.append(tile);
+   addLibraryTile(canvas.toDataURL('image/jpeg',.82),n);
   }
+  window.addEventListener('message',e=>{
+   if(e.source!==parent||e.origin!==cfg.origin||e.data?.token!==cfg.token||e.data?.type!=='rd-dev-library'||!Array.isArray(e.data.images))return;
+   const images=e.data.images.slice(0,24).filter(x=>typeof x==='string'&&x.length<=2000000&&/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(x));
+   if(!images.length)return;
+   selected.clear();samples.length=0;tiles.length=0;grid.replaceChildren();
+   images.forEach((img,n)=>addLibraryTile(img,n,true));
+   pickerTitle.querySelector('p').textContent='Previous REDLINE photos · Temporary test copies';
+   updateSelection();
+  });
   function updateSelection(){tiles.forEach((tile,n)=>tile.setAttribute('aria-pressed',String(selected.has(n))));status.textContent=selected.size+' selected';send.disabled=sending||!selected.size||!model.active}
   function openLibrary(){if(!model.active)return;selected.clear();picker.hidden=false;picker.style.removeProperty('display');updateSelection()}
   function sendSelected(){

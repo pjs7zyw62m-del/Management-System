@@ -1803,6 +1803,36 @@ function wireEvents(){
  */
 const REDLINE_MESSAGES='corp_private_photo_messages';
 window.BLACKCELL_REDLINE_API=Object.freeze({
+ // Read-only test fixtures from the selected, verified receiver's own
+ // REDLINE exchange. Never inspect the sender's unrelated private library.
+ async previousPreviewPhotos(){
+  if(!state.isOwner||state.closed||!state.user||!state.room||$('ledgerApp').hidden)throw Error('Verified receiver room required.');
+  const room=state.room,uid=state.user.id;
+  const stillAuthorized=()=>!state.closed&&state.isOwner&&state.user?.id===uid&&state.room?.id===room.id&&!$('ledgerApp').hidden;
+  await verify();
+  if(!stillAuthorized())throw Error('Selected room changed.');
+  let query=db.from(ENTRIES).select('id,room_id,uploaded_by,image_path,created_at').eq('room_id',room.id).eq('uploaded_by',room.member_id);
+  if(room.current_session_started_at)query=query.lt('created_at',room.current_session_started_at);
+  const result=await query.order('created_at',{ascending:false}).limit(48);
+  if(result.error)throw result.error;
+  const removal=await db.rpc('corp_redline_photo_removal_status',{p_room_id:room.id});
+  if(removal.error||removal.data?.ok!==true)throw Error('Unable to verify removed photos.');
+  const removed=new Set((removal.data.photos||[]).map(x=>x.photo_id));
+  const rows=(result.data||[]).filter(e=>!removed.has(e.id));
+  const blobs=[];
+  for(const e of rows){
+   if(!stillAuthorized())throw Error('Selected room changed.');
+   if(blobs.length>=24)break;
+   try{
+    let blob;
+    if(isBunnyPath(e.image_path))blob=await readBunnyPhoto(db,room.id,e.id);
+    else{const read=await db.storage.from(BUCKET).download(e.image_path);if(read.error)throw read.error;blob=read.data}
+    if(blob instanceof Blob&&blob.size>0&&blob.size<=12*1024*1024)blobs.push(blob);
+   }catch(_){}
+  }
+  if(!stillAuthorized())throw Error('Selected room changed.');
+  return {roomId:room.id,blobs};
+ },
  async ownerAccessMembers(){
   if(!state.isOwner||state.closed||!state.user||$('ledgerApp').hidden)throw Error('Verified owner access required.');
   await verify();

@@ -1,4 +1,4 @@
-/* Owner-only REDLINE developer workspace. No live room data enters the sandbox. */
+/* Owner-only preview. Explicitly imported, resized photo copies only; no live credentials or transaction records in the sandbox. */
 (()=>{
  'use strict';
  const $=s=>document.querySelector(s),app=$('#ledgerApp'),setup=$('#ownerSetup');
@@ -11,7 +11,7 @@
  name.append(make('strong','','REDLINE · DEVELOPER PREVIEW'),make('small','','LOCAL TEST SESSION · NO LIVE RECORDS OR PAYMENTS'));
  const toolbar=make('div','rd-dev-toolbar'),stage=make('div','rd-dev-stage'),notice=make('p','rd-dev-notice','Test chat, Camera Roll or sample BLACKCELL Photos, ratings and pricing. No live data or payments.');
  const frameWraps={},frames={},modeButtons={},deviceButtons={};
- let model=null,token='',generation=0,mode='dual',device='desktop',loadedBuild='',reports={},preset='';
+ let model=null,token='',generation=0,mode='dual',device='desktop',loadedBuild='',reports={},preset='',testLibrary=[],libraryRoom=null,libraryRevision=0;
  function chooseMode(next){if(next!=='sender'&&preset){preset='';stage.dataset.preset='';phonePreset.setAttribute('aria-pressed','false')}mode=next;stage.dataset.mode=next;for(const [k,b] of Object.entries(modeButtons))b.setAttribute('aria-pressed',String(k===next));for(const role of ['receiver','sender'])frameWraps[role].hidden=next!=='dual'&&role!==next}
  function chooseDevice(next,phone=false){preset=phone?'neon-smarta-2':'';stage.dataset.preset=preset;phonePreset.setAttribute('aria-pressed',String(phone));device=next;stage.dataset.device=next;reports={};for(const [k,b] of Object.entries(deviceButtons))b.setAttribute('aria-pressed',String(k===next&&!phone));for(const f of Object.values(frames))f.contentWindow?.postMessage({type:'rd-dev-device',token,device,preset},'*');reportStatus()}
  for(const [key,label] of [['receiver','Receiver'],['sender','Sender'],['dual','Dual view']]){modeButtons[key]=btn(label,()=>chooseMode(key));toolbar.append(modeButtons[key])}
@@ -21,11 +21,47 @@
  const phonePreset=btn('Sender’s phone · Neon Smarta 2',()=>{chooseMode('sender');chooseDevice('mobile',true)});
  phonePreset.id='rdDevSenderPhone';phonePreset.title='Estimated Android 11 Chrome viewport: 320 × 480 CSS pixels; actual browser size may differ.';
  toolbar.append(phonePreset);
+ const importPhotos=btn('Use previous REDLINE photos',()=>void importPreviousPhotos());toolbar.append(importPhotos);
+ const libraryStatus=make('p','rd-dev-notice','');libraryStatus.setAttribute('role','status');
  top.append(name,btn('Close',()=>dialog.close()));
  for(const role of ['receiver','sender']){const wrap=make('section','rd-dev-pane');wrap.append(make('h3','',role.toUpperCase()+' · TEST'));frameWraps[role]=wrap;stage.append(wrap)}
- dialog.append(top,toolbar,notice,stage);document.body.append(dialog);
+ dialog.append(top,toolbar,notice,libraryStatus,stage);document.body.append(dialog);
  chooseMode(mode);chooseDevice(device);
  function fresh(){return {photos:[],messages:[],active:true,viewing:null,session:crypto.randomUUID()}}
+ function sendLibrary(){
+  if(!dialog.open||!authorized()||!frames.sender||window.BLACKCELL_REDLINE_API.snapshot()?.roomId!==libraryRoom)return;
+  frames.sender.contentWindow?.postMessage({type:'rd-dev-library',token,images:testLibrary},'*');
+ }
+ async function importPreviousPhotos(){
+  if(!dialog.open||!authorized()||importPhotos.disabled)return;
+  if(!confirm('Copy up to 24 previously shared photos from the selected REDLINE room into this temporary test library? No live records will change.'))return;
+  const rev=++libraryRevision,roomId=window.BLACKCELL_REDLINE_API.snapshot()?.roomId;
+  importPhotos.disabled=true;libraryStatus.textContent='Reading authorized REDLINE photo history…';
+  const current=()=>rev===libraryRevision&&dialog.open&&authorized()&&window.BLACKCELL_REDLINE_API.snapshot()?.roomId===roomId;
+  try{
+   const api=window.BLACKCELL_REDLINE_API;
+   if(typeof api.previousPreviewPhotos!=='function')throw Error('Reload BLACKCELL OS to load the new archive reader.');
+   const result=await api.previousPreviewPhotos();
+   if(!current()||result.roomId!==roomId)return;
+   const images=[];
+   for(const blob of result.blobs){
+    if(!current())return;
+    const url=URL.createObjectURL(blob);
+    try{
+     const img=new Image();img.src=url;await img.decode();
+     const scale=Math.min(1,960/Math.max(img.naturalWidth,img.naturalHeight));
+     const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+     canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+     const data=canvas.toDataURL('image/jpeg',.78);
+     if(data.length<=2000000&&data.startsWith('data:image/jpeg;base64,'))images.push(data);
+    }catch(_){}finally{URL.revokeObjectURL(url)}
+   }
+   if(!current())return;
+   if(!images.length){libraryStatus.textContent='No readable previous-session photos found. Sample library remains available.';return}
+   testLibrary=images;libraryRoom=roomId;sendLibrary();libraryStatus.textContent=images.length+' previously shared photos copied into the temporary test library.';
+  }catch(e){if(current())libraryStatus.textContent='Photo import unavailable: '+String(e.message||e)}
+  finally{if(rev===libraryRevision)importPhotos.disabled=false}
+ }
  function reportStatus(){
   if(!dialog.open||!loadedBuild)return;
   const r=reports.receiver,s=reports.sender;
@@ -39,7 +75,7 @@
   const role=Object.keys(frames).find(k=>event.source===frames[k].contentWindow);
   const m=event.data;if(!role||event.origin!=='null'||m?.type!=='rd-dev-action'||m.token!==token)return;
   const a=m.action,p=m.payload||{};let ok=true;
-  if(a==='ready'){event.source.postMessage({type:'rd-dev-device',token,device,preset},'*');broadcast();return}
+  if(a==='ready'){event.source.postMessage({type:'rd-dev-device',token,device,preset},'*');broadcast();if(role==='sender')sendLibrary();return}
   if(a==='layout'&&['mobile','tablet','os'].includes(p.mode)){
    reports[role]={mode:p.mode,width:Number(p.width)||0,height:Number(p.height)||0,menu:p.menu===true,pay:p.pay===true};reportStatus();return;
   }
@@ -128,10 +164,10 @@
   model=fresh();token=crypto.randomUUID();reload.disabled=false;loadedBuild='';reports={};
   dialog.showModal();if(preset){chooseMode('sender');chooseDevice('mobile',true)}await reloadPreview();
  }
- dialog.addEventListener('close',()=>{generation++;for(const [role,f] of Object.entries(frames)){f.remove();delete frames[role]}model=null;token=''});
+ dialog.addEventListener('close',()=>{generation++;for(const [role,f] of Object.entries(frames)){f.remove();delete frames[role]}model=null;token='';libraryRevision++;testLibrary=[];libraryRoom=null;libraryStatus.textContent='';importPhotos.disabled=false});
  const launch=btn('DEVELOPER PREVIEW',()=>void open());launch.id='redlineDeveloperPreviewLaunch';launch.hidden=true;
  function sync(){
-  launch.hidden=!authorized();if(!authorized()&&dialog.open)dialog.close();
+  launch.hidden=!authorized();if(dialog.open&&(!authorized()||(libraryRoom&&window.BLACKCELL_REDLINE_API.snapshot()?.roomId!==libraryRoom)))dialog.close();
   const header=$('#redlineReceiverCommand .rr-command-header');
   const group=$('#redlineReceiverCommand .rr-header-menu-group');
   if(header&&launch.parentNode!==header){if(group?.parentNode===header)group.after(launch);else header.append(launch)}
