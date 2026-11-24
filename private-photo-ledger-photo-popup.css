@@ -43,3 +43,40 @@ body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redli
 body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-card:has(>#rdIndependentReview:not([hidden]))>.redline-message-composer{
  flex:0 0 auto!important;
 }
+
+/* Option 2: one image stage, compact fixed review controls. The image
+   expands into the remaining space instead of pushing actions off-screen. */
+#rdIndependentReview{width:min(420px,92vw)!important;height:min(680px,90dvh)!important;max-height:90dvh!important;background:#000!important;border-radius:16px!important}
+#rdIndependentReview .rd-ir-head{padding:10px 12px!important;background:#080808!important}
+#rdIndependentReview .rd-ir-title strong{font:650 15px/1.2 system-ui!important}
+#rdIndependentReview .rd-ir-scroll{flex:1 1 0!important;min-height:0!important;padding:6px 10px!important;overflow:hidden!important;display:flex!important;gap:0!important}
+#rdIndependentReview .rd-ir-scroll>.rd-ir-image{position:relative!important;flex:1 1 0!important;width:100%!important;height:100%!important;min-height:0!important;max-height:none!important;margin:0!important;background:#080808!important;border-radius:8px!important}
+#rdIndependentReview .rd-ir-image img{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:contain!important}
+#rdIndependentReview .rd-ir-image>.rd-ir-zoom{position:absolute!important;bottom:7px!important;right:7px!important;display:grid!important;place-items:center!important;width:28px!important;height:28px!important;min-height:0!important;padding:0!important;border-radius:7px!important;background:#000b!important;color:#fff!important;font:600 19px/1 system-ui!important;pointer-events:none!important}
+#rdIndependentReview .rd-ir-controls{flex:0 0 auto!important;display:flex!important;flex-direction:column!important;gap:6px!important;padding:2px 12px 9px!important;min-height:0!important;max-height:70%!important;overflow:auto!important;scrollbar-width:none!important;background:#000!important}
+#rdIndependentReview .rd-ir-stars{border:0!important;padding:0!important;gap:9px!important}
+#rdIndependentReview button.rd-ir-star{flex:0 0 34px!important;width:34px!important;min-width:34px!important;max-width:34px!important;height:34px!important;min-height:34px!important;padding:0!important;font:400 26px/1 system-ui!important;color:#9a9a9a!important;background:transparent!important;border:0!important}
+#rdIndependentReview button.rd-ir-star.is-filled{color:#efb94d!important}
+#rdIndependentReview .rd-ir-price-row{gap:7px!important}
+#rdIndependentReview .rd-ir-price{display:flex!important;align-items:center!important;gap:8px!important;font:11px/1.2 system-ui!important;padding:5px 8px!important}
+#rdIndependentReview .rd-ir-price input{flex:1 1 0!important;width:0!important;min-width:40px!important;text-align:right!important;font:650 17px/1.2 system-ui!important}
+#rdIndependentReview .rd-ir-timer-toggle{min-height:38px!important;min-width:75px!important;font:600 12px/1 system-ui!important}
+#rdIndependentReview .rd-ir-actions{display:flex!important;align-items:center!important;gap:7px!important}
+#rdIndependentReview .rd-ir-actions>.rd-ir-submit{flex:1 1 0!important;width:auto!important;min-width:0!important;min-height:40px!important;padding:6px 12px!important;border-radius:9px!important;background:#bd1230!important;font:650 13px/1 system-ui!important}
+#rdIndependentReview .rd-ir-actions>.rd-ir-reject{flex:0 0 auto!important;width:auto!important;font:500 11px/1 system-ui!important;min-height:40px!important;padding:6px 8px!important}
+#rdIndependentReview .rd-ir-feedback:empty{display:none!important}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-card>#rdIndependentReview:not([hidden]){
+ flex:0 1 auto!important;height:min(var(--rd-ir-share,76%),var(--rd-ir-available,calc(100% - 155px)))!important;
+ max-height:var(--rd-ir-available,calc(100% - 155px))!important;width:calc(100% - 12px)!important;
+ align-self:center!important;margin:3px 6px!important;border:1px solid #303030!important;border-radius:12px!important;min-height:0!important;
+}
+body.bc-ledger-mobile #rdIndependentReview .rd-ir-head{padding:5px 9px!important}
+body.bc-ledger-mobile #rdIndependentReview .rd-ir-title strong{font-size:13px!important}
+body.bc-ledger-mobile #rdIndependentReview .rd-ir-head button{width:28px!important;min-width:28px!important;height:28px!important;min-height:28px!important;flex:0 0 28px!important}
+body.bc-ledger-mobile #rdIndependentReview .rd-ir-controls{padding:0 8px 5px!important;gap:4px!important;max-height:75%!important}
+body.bc-ledger-mobile #rdIndependentReview .rd-ir-scroll{padding:3px 6px!important}
+body.bc-ledger-mobile #rdIndependentReview button.rd-ir-star{height:28px!important;min-height:28px!important;font-size:23px!important}
+body.bc-ledger-mobile #rdIndependentReview .rd-ir-price-row{min-height:34px!important}
+body.bc-ledger-mobile #rdIndependentReview .rd-ir-timer-toggle{min-height:34px!important;padding:4px 9px!important}
+body.bc-ledger-mobile #rdIndependentReview .rd-ir-actions>.rd-ir-submit,body.bc-ledger-mobile #rdIndependentReview .rd-ir-actions>.rd-ir-reject{min-height:34px!important}
+body.bc-ledger-mobile #rdIndependentReview .rd-ir-grip{height:12px!important}
