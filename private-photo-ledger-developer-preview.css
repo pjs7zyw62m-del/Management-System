@@ -22,3 +22,5 @@
 .rd-dev-stage[data-preset=neon-smarta-2]{align-items:flex-start;justify-content:center}
 .rd-dev-stage[data-preset=neon-smarta-2] .rd-dev-pane{box-sizing:content-box;flex:0 0 320px!important;width:320px!important;min-width:320px!important;height:auto!important;align-self:flex-start;margin:0!important}
 .rd-dev-stage[data-preset=neon-smarta-2] .rd-dev-frame{flex:0 0 480px!important;width:320px!important;height:480px!important;min-height:480px!important;max-height:480px!important}
+
+body.bc-dev-preview-app{margin:0;background:#000;color:#fff;font-family:system-ui;min-height:100dvh}body.bc-dev-preview-app .rd-dev-dialog{width:100vw;height:100dvh;border:0;border-radius:0;margin:0;padding:10px}#developerPreviewRoom{min-height:32px;max-width:220px;background:#171316;color:#fff;border:1px solid #59434a;border-radius:8px;padding:5px;font:600 11px system-ui}#developerPreviewApp[hidden],#developerPreviewSetup[hidden]{display:none!important}#developerPreviewApp{padding:24px}#developerPreviewStatus{padding:18px;color:#bbb;font-size:13px}

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const parent=readFileSync(new URL('../private-photo-ledger-developer-preview.js',import.meta.url),'utf8');
 const frame=readFileSync(new URL('../private-photo-ledger-developer-frame.js',import.meta.url),'utf8');
-const html=readFileSync(new URL('../private-photo-ledger.html',import.meta.url),'utf8');
+const html=readFileSync(new URL('../blackcell-developer-preview.html',import.meta.url),'utf8');
 test('preview picker requests authorized room history directly',()=>{
  assert.match(frame,/action:'open-library'/);
  assert.match(parent,/a==='open-library'&&role==='sender'/);
@@ -15,7 +15,7 @@ test('preview picker requests authorized room history directly',()=>{
 test('reset clears temporary library and pending imports',()=>{
  assert.match(parent,/clearLibrary\(\);model=fresh\(\);broadcast\(\)/);
  assert.match(parent,/libraryRevision\+\+;testLibrary=\[\]/);
- assert.match(html,/developer-preview\.js\?v=20261124-preview-archive2/);
+ assert.match(html,/developer-preview\.js\?v=20261124-desktop1/);
 });
 
 test('archive picker progressively renders batches without clearing existing selections',()=>{
@@ -26,3 +26,5 @@ test('archive picker progressively renders batches without clearing existing sel
  assert.match(core,/Promise.all\(rows.slice/);
  assert.match(core,/await onBatch\(valid\)/);
 });
+
+test('owner-only desktop preview is separate from live ledger and loads a read-only archive bridge',()=>{const os=readFileSync(new URL('../blackcell-os.js',import.meta.url),'utf8'),ledger=readFileSync(new URL('../private-photo-ledger.html',import.meta.url),'utf8'),bridge=readFileSync(new URL('../blackcell-developer-preview-access.js',import.meta.url),'utf8');assert.match(os,/id==='developerpreview'\)return !preview&&active&&owner&&storeAdmin/);assert.doesNotMatch(ledger,/src="private-photo-ledger-developer-preview.js/);assert.match(bridge,/corp_code_status/);assert.match(bridge,/\.eq\('owner_id',uid\)/);assert.doesNotMatch(bridge,/\.insert\(|\.update\(|\.delete\(/);});

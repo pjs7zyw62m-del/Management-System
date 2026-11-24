@@ -1,7 +1,7 @@
 /* Owner-only preview. Explicitly imported, resized photo copies only; no live credentials or transaction records in the sandbox. */
 (()=>{
  'use strict';
- const $=s=>document.querySelector(s),app=$('#ledgerApp'),setup=$('#ownerSetup');
+ const $=s=>document.querySelector(s),app=$('#developerPreviewApp'),setup=$('#developerPreviewSetup');
  if(!app||!setup)return;
  const authorized=()=>!app.hidden&&!setup.hidden&&window.BLACKCELL_REDLINE_API?.snapshot?.()?.isOwner===true;
  const make=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e};
@@ -21,9 +21,10 @@
  const phonePreset=btn('Sender’s phone · Neon Smarta 2',()=>{chooseMode('sender');chooseDevice('mobile',true)});
  phonePreset.id='rdDevSenderPhone';phonePreset.title='Estimated Android 11 Chrome viewport: 320 × 480 CSS pixels; actual browser size may differ.';
  toolbar.append(phonePreset);
+ const roomPicker=$('#developerPreviewRoom');if(roomPicker)toolbar.append(roomPicker);
  const importPhotos=btn('Use previous REDLINE photos',()=>void importPreviousPhotos());toolbar.append(importPhotos);
  const libraryStatus=make('p','rd-dev-notice','');libraryStatus.setAttribute('role','status');
- top.append(name,btn('Close',()=>dialog.close()));
+ top.append(name,btn('Close test',()=>dialog.close()));
  for(const role of ['receiver','sender']){const wrap=make('section','rd-dev-pane');wrap.append(make('h3','',role.toUpperCase()+' · TEST'));frameWraps[role]=wrap;stage.append(wrap)}
  dialog.append(top,toolbar,notice,libraryStatus,stage);document.body.append(dialog);
  chooseMode(mode);chooseDevice(device);
@@ -42,7 +43,7 @@
  async function importPreviousPhotos(){
   if(!dialog.open||!authorized()||importPhotos.disabled)return;
   const roomId=window.BLACKCELL_REDLINE_API.snapshot()?.roomId;
-  if(!roomId){libraryStatus.textContent='Select the sender’s REDLINE room first.';return}
+  if(!roomId){libraryStatus.textContent='Select a REDLINE room in the toolbar first.';return}
   const rev=++libraryRevision;
   libraryRoom=roomId;testLibrary=[];importPhotos.disabled=true;
   setLibraryStatus('loading','Loading previously shared REDLINE photos…');
@@ -189,14 +190,13 @@
   dialog.showModal();if(preset){chooseMode('sender');chooseDevice('mobile',true)}await reloadPreview();
  }
  dialog.addEventListener('close',()=>{generation++;for(const [role,f] of Object.entries(frames)){f.remove();delete frames[role]}model=null;token='';libraryRevision++;testLibrary=[];libraryRoom=null;libraryState='idle';libraryMessage='';libraryStatus.textContent='';importPhotos.disabled=false});
- const launch=btn('DEVELOPER PREVIEW',()=>void open());launch.id='redlineDeveloperPreviewLaunch';launch.hidden=true;
+ const launch=btn('Open Developer Preview',()=>void open());launch.id='redlineDeveloperPreviewLaunch';launch.hidden=true;
  function sync(){
-  launch.hidden=!authorized();if(dialog.open&&(!authorized()||(libraryRoom&&window.BLACKCELL_REDLINE_API.snapshot()?.roomId!==libraryRoom)))dialog.close();
-  const header=$('#redlineReceiverCommand .rr-command-header');
-  const group=$('#redlineReceiverCommand .rr-header-menu-group');
-  if(header&&launch.parentNode!==header){if(group?.parentNode===header)group.after(launch);else header.append(launch)}
-  else if(!header&&launch.parentNode!==setup)setup.append(launch);
+  launch.hidden=!authorized();if(dialog.open&&!authorized())dialog.close();
+  else if(dialog.open&&libraryRoom&&window.BLACKCELL_REDLINE_API.snapshot()?.roomId!==libraryRoom){clearLibrary();model=fresh();broadcast()}
+  if(authorized()&&!autoOpened){autoOpened=true;void open()}
  }
+ let autoOpened=false;
  setup.append(launch);window.addEventListener('blackcell:redline:state',sync);window.addEventListener('blackcell:redline:bridge',sync);
  const observer=new MutationObserver(sync);observer.observe(app,{attributes:true,attributeFilter:['hidden']});observer.observe(setup,{attributes:true,attributeFilter:['hidden']});sync();
 })();

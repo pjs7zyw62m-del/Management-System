@@ -200,6 +200,7 @@ const releasedApps={
  presentations:{"title":"Presentations","sub":"Slides & themes · Beta","url":"blackcell-os-app-suite.html?app=presentations","desc":"Optional beta: Slide editor, themes, preview, JSON export. Still pending: Account storage, import, PPTX export. Export before restarting or uninstalling; no automatic cloud saving.","path":"M3 3h18v15H3z M7 22l5-4 5 4 M7 8h10 M7 12h6"},
  calculator:{title:'Calculator',sub:'Standard & scientific · Beta',url:'blackcell-os-utilities.html?app=calculator',desc:'Optional beta: keyboard and touch arithmetic, scientific functions, degrees and radians. No personal data or cloud service required.',path:'M5 2h14v20H5z M8 5h8v4H8z M8 13h1 M15 13h1 M8 17h1 M15 17h1'},
  worldclock:{title:'World Clock',sub:'Time zones & foreground alarms · Beta',url:'blackcell-os-utilities.html?app=worldclock',desc:'Optional beta: live time zones, add or remove cities and set one-time local alarms while this app is running. Preferences are session-only; background alarms are not supported.',path:'M12 2a10 10 0 1 0 0 20a10 10 0 1 0 0-20 M2 12h20 M12 2c-6 5-6 15 0 20 M12 2c6 5 6 15 0 20'},
+ developerpreview:{title:'Developer Preview',sub:'REDLINE · Owner-only test lab',url:'blackcell-developer-preview.html?v=20261124-desktop1',desc:'Isolated REDLINE receiver and sender testing with desktop, tablet and mobile modes. No live chat, pricing or payment writes.',path:'M3 4h18v13H3z M8 21h8 M12 17v4 M9 8l-3 3 3 3 M15 8l3 3-3 3'},
  photoledger:{title:'BLACKCELL REDLINE',sub:'Private photo accounts',url:'private-photo-ledger.html?osApp=photoledger&redlineBuild=receiver-photo-history-visible1-20261121&senderPreview=imessage-payday-v2&redlineRelease=20261123-photo-credit-counter-inline1&redlineGallery=20261124-fullscreen7&receiverRestore=20261124-v1&independentReview=20261124-v6',desc:'Open existing private photo rooms, submissions, balances and settlement records. Existing room permissions apply.',path:'M3 3h18v18H3z M8 3v18 M12 8h5 M12 12h5 M12 16h3'},
  photobattle:{title:'Photo Battle',sub:'Head-to-head photo arena',url:'blackcell-os.html',desc:'Compare eligible library photographs and build your personal rankings.',path:'M2 4h8v15H2z M14 4h8v15h-8z M4 15l2-3 2 3 M16 15l2-3 2 3 M11 11h2 M12 8v6'}
 };
@@ -208,9 +209,9 @@ function ensureReleaseTiles(){
  const grid=document.querySelector('.apps'),dock=document.querySelector('.dock');
  for(const [id,app] of Object.entries(releasedApps)){
   // A catalog registration is not an authorization grant; the server controls both listing and installation.
-  if(!storeRules.has(id))continue;
+  if(id==='developerpreview'?!authorizedApp(id):!storeRules.has(id))continue;
   if(grid&&!grid.querySelector('[data-app="'+id+'"]')){
-   const tile=document.createElement('button');tile.type='button';tile.className='app';tile.hidden=true;Object.assign(tile.dataset,{app:id,title:app.title,sub:app.sub,url:app.url,desc:app.desc,optional:'true'});
+   const tile=document.createElement('button');tile.type='button';tile.className='app';tile.hidden=true;Object.assign(tile.dataset,{app:id,title:app.title,sub:app.sub,url:app.url,desc:app.desc,optional:id==='developerpreview'?'false':'true'});
    for(const [cls,label] of [['app-icon',null],['app-name',app.title],['app-sub',app.sub]]){const n=document.createElement('span');n.className=cls;if(label===null)n.append(releaseIcon(app));else n.textContent=label;tile.append(n)}
    tile.addEventListener('click',()=>showApp(id));bindAppContext(tile);grid.append(tile);
   }
@@ -314,8 +315,8 @@ function saveWorldInstalls(next){
  if(!storeProfile||preview||!active||leaving)return false;
  try{const serialized=JSON.stringify([...next].filter(id=>worldAppIds.has(id)));cloudDesktopCache.set(worldInstallKey(),serialized);try{localStorage.setItem(worldInstallKey(),serialized)}catch(_){}worldInstalled=new Set(JSON.parse(serialized));return true}catch(_){return false}
 }
-function authorizedApp(id){return id==='store'||(worldAppIds.has(id)?!!storeRules.get('forces')?.allowed:!!storeRules.get(id)?.allowed)}
-function installedApp(id){return id==='store'||authorizedApp(id)&&(worldAppIds.has(id)?worldInstalled.has(id):storeInstalled.has(id))}
+function authorizedApp(id){if(id==='developerpreview')return !preview&&active&&owner&&storeAdmin&&Number(storeLevel)===7;return id==='store'||(worldAppIds.has(id)?!!storeRules.get('forces')?.allowed:!!storeRules.get(id)?.allowed)}
+function installedApp(id){if(id==='developerpreview')return authorizedApp(id);return id==='store'||authorizedApp(id)&&(worldAppIds.has(id)?worldInstalled.has(id):storeInstalled.has(id))}
 function worldStatus(){return Object.fromEntries(Object.entries(worldApps).map(([category,id])=>[category,installedApp(id)]))}
 function worldGatewayFrame(record){
  if(!record?.frame||!(record.id==='forces'||worldAppIds.has(record.id))||!installedApp(record.id))return false;
@@ -424,7 +425,7 @@ async function timedAppOperation(label,install,operation){
  finally{clearInterval(timer);overlay.remove();release?.();appOperation=false}
 }
 
-async function installApp(id,install){if(worldAppIds.has(id))return installWorldApp(id,install);if(!active||preview||id==='store'||!authorizedApp(id))return {ok:false,error:id==='store'?'The App Store must remain installed.':'Your access level does not permit this application.'};if(!install&&appBusy(windows.get(id)))return {ok:false,error:'Finish the active operation before uninstalling.'};const title=document.querySelector('.app[data-app="'+id+'"]')?.dataset.title||'Application';return timedAppOperation(title,install,async()=>{if(!authorizedApp(id))return {ok:false,error:'Your access level no longer permits this application.'};if(!install){const result=await closeForUninstall(id);if(!result.ok)return result}return storeRequest(install?'install':'remove',id)})}
+async function installApp(id,install){if(worldAppIds.has(id))return installWorldApp(id,install);if(!active||preview||id==='store'||id==='developerpreview'||!authorizedApp(id))return {ok:false,error:id==='store'?'The App Store must remain installed.':'Your access level does not permit this application.'};if(!install&&appBusy(windows.get(id)))return {ok:false,error:'Finish the active operation before uninstalling.'};const title=document.querySelector('.app[data-app="'+id+'"]')?.dataset.title||'Application';return timedAppOperation(title,install,async()=>{if(!authorizedApp(id))return {ok:false,error:'Your access level no longer permits this application.'};if(!install){const result=await closeForUninstall(id);if(!result.ok)return result}return storeRequest(install?'install':'remove',id)})}
 async function removeAllApps(){
  if(!active||preview)return {ok:false,error:'Corporate access required.'};
  const ids=[...storeInstalled].filter(id=>id!=='store'&&authorizedApp(id));
@@ -1124,7 +1125,7 @@ function showApp(id,initialState=null,passwordVerified=null){
  if(windows.has(id)){const existing=windows.get(id);restoreWorldInstance(existing);raise(existing);if(id==='files'&&initialState?.path){if(existing.openFolder)existing.openFolder(initialState.path);else{existing.fileState={path:[...initialState.path],layout:initialState.layout||'grid'};saveWorkspace()}}if(id==='settings'&&initialState?.section)existing.selectSettings?.(initialState.section);if(id==='store'){if(initialState?.category)existing.selectCategory?.(initialState.category);if(!preview&&!storeMutating)void storeRequest('catalog').then(()=>existing.refreshStore?.())}return}
  const url=new URL(worldLaunchPages[id]||tile.dataset.url,location.href);if(worldLaunchPages[id]||id==='forces')url.searchParams.set('v','20261115-world-theater');if(url.origin!==location.origin)return;
  const networkWindow=url.pathname.endsWith('/corporate-network.html');
- if(networkWindow||id==='administration'||id==='photoledger')url.searchParams.set('_bc_release',String(Date.now()));
+ if(networkWindow||id==='administration'||id==='photoledger'||id==='developerpreview')url.searchParams.set('_bc_release',String(Date.now()));
  const windowTitle=chatPopout?String(initialState.name||'Conversation').slice(0,70):tile.dataset.title;
  if(chatPopout){url.searchParams.set('popout','1');url.searchParams.set('peer',initialState.peerId);url.searchParams.set('osApp','chat');url.searchParams.set('embed','1')}
  const w=document.createElement('section');w.className='os-window'+(chatPopout?' os-chat-popout':'');w.dataset.osApp=id;w.setAttribute('aria-label',windowTitle+' window');
@@ -1225,7 +1226,7 @@ function closeAppContext(restore=false){if(appContext){appContext.remove();appCo
 function openAppContext(tile,x,y,trigger=tile){
  if(appRearranging||!contextAllowed()||!tile||tile.hidden||tile.disabled||(tile!==recycleButton&&!installedApp(tile.dataset.app)))return false;
  closeMenu();closeAppContext();
- const isBin=tile===recycleButton,id=tile.dataset.app,removable=!isBin&&id!=='store'&&installedApp(id),pinned=!isBin&&dockPinned(id),title=isBin?'Recycle Bin':tile.dataset.title;
+ const isBin=tile===recycleButton,id=tile.dataset.app,removable=!isBin&&id!=='store'&&id!=='developerpreview'&&installedApp(id),pinned=!isBin&&dockPinned(id),title=isBin?'Recycle Bin':tile.dataset.title;
  const panel=document.createElement('div');panel.className='os-app-context';panel.setAttribute('role','group');panel.setAttribute('aria-label',title+' options');contextTrigger=trigger;
  const name=document.createElement('strong');name.textContent=title;panel.append(name);
  const item=(label,fn,cls='')=>{const btn=document.createElement('button');btn.type='button';btn.className=cls;btn.textContent=label;btn.onclick=()=>{closeAppContext();if(contextAllowed())fn()};panel.append(btn);return btn};
@@ -1237,7 +1238,7 @@ function openAppContext(tile,x,y,trigger=tile){
  if(recycledApps.has(id))item('Restore Desktop Shortcut',()=>restoreRecycled(id));
  else{item('Rearrange Apps',()=>startAppRearrange(tile));item('Move to Recycle Bin',()=>recycleApp(tile));}
  if(removable)item('Uninstall',()=>{if(confirm('Uninstall '+tile.dataset.title+'? Your app data will be kept.'))void uninstallFromDesktop(id,tile.dataset.title)},'danger');
- else{const note=document.createElement('small');note.textContent='App Store cannot be uninstalled';panel.append(note)}
+ else{const note=document.createElement('small');note.textContent=id==='developerpreview'?'Owner system tool cannot be uninstalled':'App Store cannot be uninstalled';panel.append(note)}
  }
  $('desktop').append(panel);appContext=panel;
  const rect=panel.getBoundingClientRect(),top=$('desktop').querySelector('.topbar').getBoundingClientRect().bottom,limit=window.visualViewport?.height||innerHeight;
