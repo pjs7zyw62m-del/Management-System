@@ -98,25 +98,40 @@ body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand .rr
 body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand .rr-nav{display:block!important}
 body.bc-redline-receiver.bc-ledger-mobile #ledgerApp>.page-heading #refreshLedger{display:none!important}
 body.bc-redline-receiver.bc-ledger-mobile #ledgerApp>.page-heading .workspace-actions{position:relative!important;overflow:visible!important;align-items:center!important;gap:6px!important}
-body.bc-redline-receiver.bc-ledger-mobile #ledgerApp>.page-heading:has(.rr-menu-toggle[aria-expanded="true"]){position:relative!important;z-index:1010!important;overflow:visible!important}
-body.bc-redline-receiver.bc-ledger-mobile #ledgerApp>.page-heading .rr-header-menu-group{position:relative!important;display:block!important;flex:0 0 44px!important;width:44px!important;min-width:44px!important;overflow:visible!important}
-body.bc-redline-receiver.bc-ledger-mobile #ledgerApp>.page-heading #redlineReceiverTriggerQuick{display:none!important}
-body.bc-redline-receiver.bc-ledger-mobile #ledgerApp>.page-heading .rr-nav-dropdown{position:relative!important;display:block!important;min-width:0!important;max-width:none!important;width:44px!important}
-body.bc-redline-receiver.bc-ledger-mobile #ledgerApp>.page-heading .rr-menu-toggle{
+body.bc-redline-receiver.bc-ledger-mobile .topbar:has(.rr-menu-toggle[aria-expanded="true"]){position:relative!important;z-index:1010!important;overflow:visible!important}
+body.bc-redline-receiver.bc-ledger-mobile .topbar>.rr-header-menu-group{position:relative!important;display:block!important;flex:0 0 44px!important;width:44px!important;min-width:44px!important;overflow:visible!important}
+body.bc-redline-receiver.bc-ledger-mobile .topbar #redlineReceiverTriggerQuick{display:none!important}
+body.bc-redline-receiver.bc-ledger-mobile .topbar .rr-nav-dropdown{position:relative!important;display:block!important;min-width:0!important;max-width:none!important;width:44px!important}
+body.bc-redline-receiver.bc-ledger-mobile .topbar .rr-menu-toggle{
  display:flex!important;align-items:center!important;justify-content:center!important;box-sizing:border-box!important;
  width:44px!important;min-width:44px!important;max-width:44px!important;height:40px!important;min-height:40px!important;
  padding:0!important;margin:0!important;gap:0!important;font-size:0!important;border-radius:8px!important
 }
-body.bc-redline-receiver.bc-ledger-mobile #ledgerApp>.page-heading .rr-menu-toggle::after{
+body.bc-redline-receiver.bc-ledger-mobile .topbar .rr-menu-toggle::after{
  content:""!important;display:block!important;width:18px;height:2px;border-radius:2px;background:currentColor;
  box-shadow:0 -6px 0 currentColor,0 6px 0 currentColor;color:#fff!important;flex:none
 }
-body.bc-redline-receiver.bc-ledger-mobile #ledgerApp>.page-heading .rr-nav-menu-items{
+body.bc-redline-receiver.bc-ledger-mobile .topbar .rr-nav-menu-items{
  position:absolute!important;top:calc(100% + 5px)!important;left:0!important;right:auto!important;
  width:min(260px,calc(100vw - 42px))!important;max-height:55dvh!important;z-index:1001!important;box-sizing:border-box!important
 }
-body.bc-redline-receiver.bc-ledger-mobile #ledgerApp>.page-heading .rr-nav-menu-items:not([hidden]) .rr-menu-refresh{display:flex!important}
+body.bc-redline-receiver.bc-ledger-mobile .topbar .rr-nav-menu-items:not([hidden]) .rr-menu-refresh{display:flex!important}
 body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand>.rr-command-header{grid-template-columns:minmax(0,1fr)!important}
 body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand #redlineReceiverEndSession{grid-column:1!important}
 .rr-payment-choice-actions{display:flex!important;flex-direction:column!important;gap:8px!important}
 .rr-payment-choice-actions>button{width:100%!important;min-height:44px!important}
+
+/* Mobile receiver: anchor the single existing hamburger at the far right
+   of the BLACKCELL brand bar, not in the lower workspace heading. */
+body.bc-redline-receiver.bc-ledger-mobile .topbar{
+ display:flex!important;align-items:center!important;flex-wrap:nowrap!important;overflow:visible!important;box-sizing:border-box!important
+}
+body.bc-redline-receiver.bc-ledger-mobile .topbar>.rr-header-menu-group{
+ margin-left:auto!important;align-self:center!important;flex-shrink:0!important
+}
+body.bc-redline-receiver.bc-ledger-mobile .topbar:has(>.rr-header-menu-group)>.brand{
+ max-width:calc(100% - 52px)!important;min-width:0!important
+}
+body.bc-redline-receiver.bc-ledger-mobile .topbar>.rr-header-menu-group .rr-nav-menu-items{
+ left:auto!important;right:0!important
+}

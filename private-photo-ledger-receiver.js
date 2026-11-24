@@ -452,11 +452,10 @@
   const mobile=document.body.classList.contains('bc-ledger-mobile');
   if(mobile){
    if(workspaceActions.parentNode!==pageHeading)pageHeading.append(workspaceActions);
-   const refresh=$('#refreshLedger');
-   if(headerMenuGroup.parentNode!==workspaceActions){
+   const topbar=$('.topbar'),menuHost=topbar||workspaceActions;
+   if(headerMenuGroup.parentNode!==menuHost){
     setMenuOpen(false);
-    if(refresh?.parentNode===workspaceActions)refresh.before(headerMenuGroup);
-    else workspaceActions.prepend(headerMenuGroup);
+    menuHost.append(headerMenuGroup);
    }
   }else{
    if(headerMenuGroup.parentNode!==header){setMenuOpen(false);header.insertBefore(headerMenuGroup,endSession)}
