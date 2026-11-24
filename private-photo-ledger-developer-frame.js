@@ -75,8 +75,8 @@
   file.accept='image/jpeg,image/png,image/webp';file.multiple=true;
   file.addEventListener('change',()=>{const files=[...file.files];file.value='';enqueueTest(files.map(file=>({file})))});
  }
- // Test-only source chooser: mirrors the live menu, with a self-contained
- // sample library. Never query or import any authenticated user's library.
+ // Test-only source chooser: the verified parent supplies previously shared
+ // REDLINE photo copies, never the sender's unrelated private library.
  if(!owner){
   const source=make('div','redline-photo-source-overlay');source.id='redlinePhotoSourceOverlay';source.hidden=true;
   const panel=make('section','redline-photo-source-dialog');panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-label','Add test photos to REDLINE');
@@ -88,13 +88,13 @@
   camera.id='redlineSourceDevice';
   const libraryBtn=button('▣  BLACKCELL Photos',()=>{closeSource();openLibrary()},'redline-source-library');libraryBtn.id='redlineSourceLibrary';
   options.append(camera,libraryBtn);
-  panel.append(sourceHead,make('p','redline-source-intro','Choose photos from your device or the sample BLACKCELL photo library.'),options,make('small','redline-source-footnote','DEVELOPER PREVIEW · Test photos only. No real uploads or library access.'));
+  panel.append(sourceHead,make('p','redline-source-intro','Choose photos from your device or previously shared REDLINE photos.'),options,make('small','redline-source-footnote','DEVELOPER PREVIEW · Temporary copies only. No live uploads.'));
   source.append(panel);document.body.append(source);
   source.addEventListener('click',e=>{if(e.target===source)closeSource()});
   const picker=make('div','bc-pm-picker');picker.id='rdDevSampleLibrary';picker.hidden=true;picker.style.setProperty('display','none','important');
-  const pickerPanel=make('section','bc-pm-picker-panel');pickerPanel.setAttribute('role','dialog');pickerPanel.setAttribute('aria-modal','true');pickerPanel.setAttribute('aria-label','Sample BLACKCELL Photos library');
+  const pickerPanel=make('section','bc-pm-picker-panel');pickerPanel.setAttribute('role','dialog');pickerPanel.setAttribute('aria-modal','true');pickerPanel.setAttribute('aria-label','BLACKCELL Photos test library');
   const pickerHead=make('div','bc-pm-header');
-  const pickerTitle=make('div');pickerTitle.append(make('h2','','BLACKCELL Photos'),make('p','','Sample library · Select multiple photos'));
+  const pickerTitle=make('div');pickerTitle.append(make('h2','','BLACKCELL Photos'),make('p','','Previous REDLINE session · Select multiple photos'));
   const closeLibrary=()=>{if(sending)return;picker.hidden=true;picker.style.setProperty('display','none','important');selected.clear();updateSelection()};
   pickerHead.append(pickerTitle,button('✕',closeLibrary));
   const grid=make('div','rd-dev-sample-grid');
@@ -102,36 +102,25 @@
   const send=button('SEND SELECTED PHOTOS',()=>void sendSelected());
   const selected=new Set(),samples=[],tiles=[];
   let sending=false;
-  // Generate harmless, distinct landscape fixtures locally with canvas.
-  const palettes=[['#183553','#ecb87f','#27465a'],['#805173','#ffd9aa','#5a3d5f'],['#153a35','#e7cc8d','#41674d'],['#303756','#9faed4','#141f3d'],['#9a4c3b','#ffdd9d','#65342c'],['#305a71','#d7ecf5','#245059']];
-  function addLibraryTile(image,n,imported=false){
+  let libraryState='idle',libraryMessage='';
+  function addLibraryTile(image,n){
    samples.push(image);
    const tile=button('',()=>{if(sending)return;if(selected.has(n))selected.delete(n);else selected.add(n);updateSelection()},'rd-dev-sample-tile');
-   tile.setAttribute('aria-label',(imported?'Previous REDLINE photo ':'Sample photo ')+(n+1));tile.setAttribute('aria-pressed','false');
-   const img=make('img');img.src=image;img.alt=(imported?'Previously shared photo ':'Sample landscape ')+(n+1);
+   tile.setAttribute('aria-label','Previous REDLINE photo '+(n+1));tile.setAttribute('aria-pressed','false');
+   const img=make('img');img.src=image;img.alt='Previously shared photo '+(n+1);
    tile.append(img,make('span','rd-dev-sample-check','✓'));tiles.push(tile);grid.append(tile);
-  }
-  for(let n=0;n<palettes.length;n++){
-   const [sky,sun,land]=palettes[n],canvas=document.createElement('canvas');canvas.width=480;canvas.height=n%2?640:360;
-   const ctx=canvas.getContext('2d'),w=canvas.width,hh=canvas.height;
-   const gradient=ctx.createLinearGradient(0,0,0,hh);gradient.addColorStop(0,sky);gradient.addColorStop(1,sun);
-   ctx.fillStyle=gradient;ctx.fillRect(0,0,w,hh);ctx.fillStyle=sun;ctx.beginPath();ctx.arc(w*(.24+n*.085),hh*.27,hh*.09,0,Math.PI*2);ctx.fill();
-   ctx.fillStyle=land;ctx.beginPath();ctx.moveTo(0,hh*.72);ctx.lineTo(w*.25,hh*(.36+n*.025));ctx.lineTo(w*.52,hh*.69);ctx.lineTo(w*.76,hh*.42);ctx.lineTo(w,hh*.67);ctx.lineTo(w,hh);ctx.lineTo(0,hh);ctx.closePath();ctx.fill();
-   ctx.fillStyle='rgba(0,0,0,.24)';ctx.fillRect(0,hh*.84,w,hh*.16);
-   ctx.fillStyle='#fff';ctx.font='600 20px system-ui';ctx.fillText('SAMPLE '+(n+1),18,hh-18);
-   addLibraryTile(canvas.toDataURL('image/jpeg',.82),n);
   }
   window.addEventListener('message',e=>{
    if(e.source!==parent||e.origin!==cfg.origin||e.data?.token!==cfg.token||e.data?.type!=='rd-dev-library'||!Array.isArray(e.data.images))return;
    const images=e.data.images.slice(0,24).filter(x=>typeof x==='string'&&x.length<=2000000&&/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(x));
-   if(!images.length)return;
+   if(!['idle','loading','ready','empty','error'].includes(e.data.status))return;
+   libraryState=e.data.status;libraryMessage=String(e.data.message||'');
    selected.clear();samples.length=0;tiles.length=0;grid.replaceChildren();
-   images.forEach((img,n)=>addLibraryTile(img,n,true));
-   pickerTitle.querySelector('p').textContent='Previous REDLINE photos · Temporary test copies';
+   if(libraryState==='ready')images.forEach((img,n)=>addLibraryTile(img,n));
    updateSelection();
   });
-  function updateSelection(){tiles.forEach((tile,n)=>tile.setAttribute('aria-pressed',String(selected.has(n))));status.textContent=selected.size+' selected';send.disabled=sending||!selected.size||!model.active}
-  function openLibrary(){if(!model.active)return;selected.clear();picker.hidden=false;picker.style.removeProperty('display');updateSelection()}
+  function updateSelection(){tiles.forEach((tile,n)=>tile.setAttribute('aria-pressed',String(selected.has(n))));status.textContent=libraryState==='ready'?selected.size+' selected':libraryMessage||'Open the library to load previous REDLINE photos.';send.disabled=sending||libraryState!=='ready'||!selected.size||!model.active}
+  function openLibrary(){if(!model.active)return;selected.clear();picker.hidden=false;picker.style.removeProperty('display');if(libraryState!=='ready'){libraryState='loading';libraryMessage='Loading previously shared REDLINE photos…'}updateSelection();parent.postMessage({type:'rd-dev-action',token:cfg.token,action:'open-library'},cfg.origin)}
   function sendSelected(){
    if(!model.active||!selected.size)return;
    const batch=[...selected].map(n=>({image:samples[n]}));
