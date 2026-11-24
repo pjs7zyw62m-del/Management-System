@@ -5,7 +5,7 @@
 (()=>{
  'use strict';
  const preview=location.href==='about:srcdoc'&&window.REDLINE_DEV_CONFIG?.role==='sender';
- if(!/Android/i.test(navigator.userAgent||'')&&!preview)return;
+ // All mobile senders use the same measured full-height chat; desktop remains unchanged.
  const app=document.getElementById('ledgerApp');
  const home=document.getElementById('redlineSimpleSender');
  const pane=home?.querySelector('[data-redline-pane="upload"]');
@@ -14,7 +14,7 @@
  const root=document.documentElement;
  const visual=window.visualViewport;
  let frame=0,last='';
- const enabled=()=> (!preview||window.REDLINE_DEV_CONFIG?.device==='mobile')&&document.body.classList.contains('redline-chat-immersive')&&
+ const enabled=()=> document.body.classList.contains('bc-ledger-mobile')&&document.body.classList.contains('redline-chat-immersive')&&
   document.body.classList.contains('redline-sender-messenger')&&
   !app.hidden&&!home.hidden&&!pane.hidden;
  function measure(){
@@ -30,7 +30,7 @@
    Number(visual.offsetTop||0)+Number(visual.height||0):
    Number(window.innerHeight||0);
   if(!Number.isFinite(bottom)||!Number.isFinite(rect.top)||bottom<=0)return;
-  const visible=Math.max(210,Math.floor(bottom-rect.top-5));
+  const visible=Math.max(0,Math.floor(bottom-rect.top));
   const next=visible+'px';
   if(next!==last){root.style.setProperty(KEY,next);last=next}
  }
