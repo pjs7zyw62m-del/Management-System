@@ -221,7 +221,7 @@ body .bc-pm-picker .bc-pm-redline-empty{grid-column:1/-1}
  body .bc-pm-picker .bc-pm-picker-panel{gap:6px!important}
 }
 
-/* Gallery V5 — isolate from the REDLINE messenger's generic button styling. */
+/* Gallery V6 — isolate from the REDLINE messenger's generic button styling. */
 body .bc-pm-picker > .bc-pm-picker-panel{
  gap:6px!important;padding:0!important;
 }
@@ -280,10 +280,10 @@ body .bc-pm-picker .bc-pm-picker-panel > .bc-pm-pick-status,
 body #rdDevSampleLibrary .rd-dev-sample-status{padding:3px 12px!important;margin:0!important;color:#b8b8b8!important;font:500 12px/1.4 system-ui!important;flex:none!important}
 body .bc-pm-picker .bc-pm-picker-panel > .bc-pm-button,
 body #rdDevSampleLibrary .bc-pm-picker-panel > button.rd-dev-gallery-send{
- flex:none!important;width:calc(100% - 24px)!important;margin:0 12px max(10px,env(safe-area-inset-bottom))!important;
- height:44px!important;min-height:44px!important;max-height:44px!important;padding:0 12px!important;
- border:0!important;border-radius:11px!important;background:#c71132!important;color:white!important;
- font:650 14px/1 system-ui!important;box-shadow:none!important;
+ flex:none!important;align-self:center!important;width:max-content!important;min-width:128px!important;max-width:calc(100% - 24px)!important;margin:0 auto max(8px,env(safe-area-inset-bottom))!important;
+ height:44px!important;min-height:44px!important;max-height:44px!important;padding:0 16px!important;
+ border:0!important;border-radius:10px!important;background:#c71132!important;color:white!important;
+ font:650 12px/1.2 system-ui!important;box-shadow:none!important;white-space:normal!important;
 }
 body .bc-pm-picker .bc-pm-picker-panel > .bc-pm-button:disabled,
 body #rdDevSampleLibrary .bc-pm-picker-panel > button.rd-dev-gallery-send:disabled{opacity:1!important;background:#1b1b1d!important;color:#888!important}
