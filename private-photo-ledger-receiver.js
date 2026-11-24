@@ -43,7 +43,9 @@
  endSession.id='redlineReceiverEndSession';
  endSession.setAttribute('aria-label','End the current REDLINE session');
  endSession.style.cssText='box-sizing:border-box;min-height:40px;padding:9px 13px;border:1px solid #f34b4b;border-radius:10px;color:#fff;background:#761b1b;font:800 11px/1.3 -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;white-space:normal;cursor:pointer;max-width:100%;flex-shrink:0;';
- header.append(triggerQuick,endSession);
+ const headerMenuGroup=make('div','rr-header-menu-group');
+ headerMenuGroup.append(triggerQuick);
+ header.append(headerMenuGroup,endSession);
  const stats=make('div','rr-stats');
  const fields=[
   ['pending','AWAITING YOUR REVIEW','pendingCount','0'],
@@ -113,7 +115,8 @@
  const payFeedback=make('span','rr-pay-feedback','');
  payFeedback.setAttribute('role','status');payFeedback.hidden=true;
  payColumn.append(payFull,partialPay,payFeedback);
- nav.append(menuShell,payColumn);
+ headerMenuGroup.append(menuShell);
+ nav.append(payColumn);
  let payBusy=false;
  function setPayFeedback(message){
   payFeedback.textContent=message;payFeedback.hidden=!message;
@@ -294,7 +297,7 @@
  document.addEventListener('pointerdown',event=>{
   if(!menuItems.hidden&&!menuShell.contains(event.target))setMenuOpen(false);
  });
- nav.addEventListener('keydown',event=>{
+ menuShell.addEventListener('keydown',event=>{
   if(event.key==='Escape'&&!menuItems.hidden){
    setMenuOpen(false);menuToggle.focus();event.preventDefault();
   }

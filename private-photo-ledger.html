@@ -52,7 +52,7 @@
 <script src="private-photo-ledger-solid-red.js?v=20261120-solid-red1" defer></script>
 <script src="private-photo-ledger-counteroffer-inline.js?v=20261123-photo-credit-counter-inline1" defer></script>
 <script src="private-photo-ledger-simple-sender.js?v=20261123-photo-credit-counter-inline1&stableChat=20261123-v7-stable-room-key" defer></script>
-<script src="private-photo-ledger-receiver.js?v=20261123-end-session1&appleDark=20261122-live1&tabletPhoneBreakpoint=1&sidebarPricing=20261122-v2&fullPhoto=20261122-v1&noChatReparent=20261123-v1&photoZoom=20261123-v1" defer></script>
+<script src="private-photo-ledger-receiver.js?v=20261124-header-menu1&appleDark=20261122-live1&tabletPhoneBreakpoint=1&sidebarPricing=20261122-v2&fullPhoto=20261122-v1&noChatReparent=20261123-v1&photoZoom=20261123-v1" defer></script>
 <script src="private-photo-ledger-photo-zoom.js?v=20261123-photo-canvas-v2" defer></script>
 <script src="private-photo-ledger-hd-viewer.js?v=20261123-original-hd1" defer></script>
 <script src="private-photo-ledger-presence.js?v=20261121-room-presence1" defer></script>
@@ -69,7 +69,16 @@
 <script src="private-photo-ledger-bonus-celebration.js?v=20261123-closest-bonus-tracker1" defer></script>
 <script src="private-photo-ledger-viewport-fit.js?v=20261123-visible-composer1" defer></script>
 <script src="blackcell-live-update.js?v=20261122-site-presence2-redline-continuity" defer data-mode="auto"></script>
-</head>
+<style id="rr-header-menu-placement">
+body.bc-redline-receiver #redlineReceiverCommand .rr-header-menu-group{position:relative;display:inline-flex!important;align-items:center;gap:7px;flex:0 0 auto;max-width:100%;min-width:0;overflow:visible}
+body.bc-redline-receiver #redlineReceiverCommand .rr-header-menu-group>.rr-nav-dropdown{position:static!important;flex:0 0 auto!important;min-width:0!important;max-width:none!important;width:auto!important}
+body.bc-redline-receiver #redlineReceiverCommand .rr-header-menu-group .rr-menu-toggle{width:auto!important;min-width:74px!important;min-height:35px!important;gap:9px!important;padding:7px 11px!important;white-space:nowrap!important}
+body.bc-redline-receiver #redlineReceiverCommand .rr-header-menu-group>.rr-trigger-quick{flex:0 0 auto;white-space:nowrap}
+body.bc-redline-receiver #redlineReceiverCommand .rr-header-menu-group .rr-nav-menu-items{left:0!important;right:auto!important;top:calc(100% + 6px)!important;width:100%!important;min-width:0!important;box-sizing:border-box;z-index:1000!important}
+body.bc-redline-receiver #redlineReceiverCommand>.rr-command-header{overflow:visible!important}
+body.bc-redline-receiver #redlineReceiverCommand:has(.rr-menu-toggle[aria-expanded="true"]){position:relative;z-index:1001!important;overflow:visible!important}
+@media(max-width:1150px){body.bc-redline-receiver #ledgerApp #redlineReceiverCommand>.rr-command-header{flex-wrap:wrap!important}}
+</style></head>
 <body>
 <header class="topbar">
  <a class="brand" id="ledgerBrand" href="private-photo-ledger.html" aria-label="BLACKCELL REDLINE home">
