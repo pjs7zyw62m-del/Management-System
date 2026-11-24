@@ -246,7 +246,11 @@ test('REDLINE loads a correctly styled BLACKCELL Photos picker on Android rather
  assert.match(style,/position:fixed!important/);
  assert.match(style,/z-index:2147483070!important/);
  assert.match(style,/body \.bc-pm-picker \.bc-pm-picker-panel\{/);
- assert.match(style,/max-height:calc\(100dvh - 20px\)!important/);
+ assert.match(style,/height:100%!important/);
+ assert.match(style,/max-height:100%!important/);
+ assert.match(style,/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)!important/);
+ assert.match(style,/body #rdDevSampleLibrary \.rd-dev-sample-grid/);
+ assert.match(style,/body \.bc-pm-picker\[hidden\]/);
  assert.match(style,/body \.bc-pm-picker \.bc-pm-pick-list\{/);
  assert.match(style,/overflow:auto!important/);
  assert.match(style,/body \.bc-pm-picker .bc-pm-picker-panel>.bc-pm-button/);

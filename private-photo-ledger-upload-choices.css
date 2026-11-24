@@ -76,32 +76,34 @@ body .bc-pm-picker{
  inset:0!important;
  z-index:2147483070!important;
  box-sizing:border-box!important;
- display:grid!important;
- place-items:center!important;
+ display:flex!important;
+ align-items:stretch!important;
+ justify-content:stretch!important;
  min-width:0!important;
  min-height:0!important;
- padding:clamp(8px,2.5vw,18px)!important;
- background:rgba(0,0,0,.92)!important;
- overflow-y:auto!important;
+ padding:0!important;
+ background:#000!important;
+ overflow:hidden!important;
  overscroll-behavior:contain!important;
 }
 body .bc-pm-picker .bc-pm-picker-panel{
  box-sizing:border-box!important;
  display:flex!important;
  flex-direction:column!important;
- gap:11px!important;
- width:min(580px,100%)!important;
+ gap:8px!important;
+ flex:1 1 auto!important;
+ width:100%!important;
+ height:100%!important;
  min-width:0!important;
  min-height:0!important;
- max-height:calc(100dvh - 20px)!important;
- margin:auto!important;
- padding:clamp(13px,3vw,20px)!important;
+ max-height:100%!important;
+ margin:0!important;
+ padding:max(10px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))!important;
  overflow:hidden!important;
- background:#080708!important;
- border:1px solid #a52d4b!important;
- border-top:3px solid #ee3554!important;
- border-radius:14px!important;
- box-shadow:0 28px 80px #000d!important;
+ background:#000!important;
+ border:0!important;
+ border-radius:0!important;
+ box-shadow:none!important;
  color:#fff!important;
 }
 body .bc-pm-picker .bc-pm-header{
@@ -147,15 +149,16 @@ body .bc-pm-picker input[type="search"]{
  font-size:16px!important;
 }
 body .bc-pm-picker .bc-pm-pick-list{
- min-height:120px!important;
+ min-height:0!important;
  min-width:0!important;
- flex:1 1 auto!important;
+ flex:1 1 0!important;
+ max-height:none!important;
  overflow:auto!important;
  overscroll-behavior:contain!important;
- background:#0b090b!important;
- border:1px solid #4e2934!important;
- border-radius:9px!important;
- padding:8px!important;
+ background:#000!important;
+ border:0!important;
+ border-radius:0!important;
+ padding:0!important;
 }
 body .bc-pm-picker .bc-pm-picker-pager{
  flex:0 0 auto!important;
@@ -182,14 +185,38 @@ body .bc-pm-picker input:focus-visible{
  outline:2px solid #ff7c97!important;
  outline-offset:2px!important;
 }
+/* Full viewport gallery on the real REDLINE page and inside the phone preview. */
+body .bc-pm-picker[hidden]{display:none!important}
+body .bc-pm-picker .bc-pm-photo-picker-grid,
+body #rdDevSampleLibrary .rd-dev-sample-grid{
+ display:grid!important;
+ grid-template-columns:repeat(auto-fill,minmax(min(140px,100%),1fr))!important;
+ align-content:start!important;
+ gap:3px!important;
+ min-height:0!important;
+ max-height:none!important;
+ flex:1 1 0!important;
+ overflow:auto!important;
+ overscroll-behavior:contain!important;
+ padding:0!important;
+ scrollbar-width:none;
+}
+body .bc-pm-picker .bc-pm-photo-picker-grid::-webkit-scrollbar,
+body #rdDevSampleLibrary .rd-dev-sample-grid::-webkit-scrollbar{display:none}
+body .bc-pm-picker .bc-pm-picker-tile,
+body #rdDevSampleLibrary .rd-dev-sample-tile{
+ border-radius:3px!important;
+ min-width:0!important;
+}
+body .bc-pm-picker .bc-pm-header h2{font-size:18px!important}
+body .bc-pm-picker .bc-pm-header p{color:#999!important;font-size:11px!important}
+body .bc-pm-picker .bc-pm-picker-panel>.bc-pm-button,
+body #rdDevSampleLibrary .bc-pm-picker-panel>button{flex:0 0 auto!important;min-height:44px!important}
+body .bc-pm-picker .bc-pm-redline-empty{grid-column:1/-1}
 @media(max-width:520px){
- body .bc-pm-picker{padding:6px!important;align-items:center!important}
- body .bc-pm-picker .bc-pm-picker-panel{
-  width:100%!important;
-  max-height:calc(100dvh - 12px)!important;
-  gap:8px!important;
-  padding:12px!important;
-  border-radius:10px!important;
+ body .bc-pm-picker .bc-pm-photo-picker-grid,
+ body #rdDevSampleLibrary .rd-dev-sample-grid{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
  }
- body .bc-pm-picker .bc-pm-pick-list{min-height:90px!important;padding:5px!important}
+ body .bc-pm-picker .bc-pm-picker-panel{gap:6px!important}
 }
