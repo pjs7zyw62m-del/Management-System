@@ -102,12 +102,13 @@
  const triggerMenu=button('⚡ Trigger Words',()=>{
   window.dispatchEvent(new Event('blackcell:redline:open-trigger-owner'));
  },'rr-nav-button rr-trigger-menu');
- const refreshMenu=button('↻ Refresh',()=>{
+ const refreshMenu=button('Refresh',()=>{
   setMenuOpen(false);
   const refresh=$('#refreshLedger');if(refresh&&!refresh.disabled)refresh.click();
  },'rr-nav-button rr-menu-refresh');
  menuItems.append(review,history,message,triggerMenu,manage,tools);
  menuItems.prepend(refreshMenu);
+ for(const [control,icon] of [[refreshMenu,'refresh'],[review,'photos'],[history,'history'],[message,'chat'],[triggerMenu,'trigger'],[manage,'access'],[tools,'tools'],[endSession,'end']])control.dataset.rrMenuIcon=icon;
  endSession.addEventListener('click',()=>setMenuOpen(false));
  for(const option of [review,history,message,triggerMenu,manage,tools]){
   option.addEventListener('click',()=>setMenuOpen(false));
@@ -452,6 +453,8 @@
  function placeHeaderActions(){
   if(!workspaceActions||!pageHeading)return;
   const mobile=document.body.classList.contains('bc-ledger-mobile');
+  const triggerLabel=mobile?'Trigger Words':'⚡ Trigger Words';
+  if(triggerMenu.textContent!==triggerLabel)triggerMenu.textContent=triggerLabel;
   if(mobile){
    if(workspaceActions.parentNode!==pageHeading)pageHeading.append(workspaceActions);
    const topbar=$('.topbar'),menuHost=topbar||workspaceActions;
@@ -889,7 +892,8 @@
   tools.disabled=!hasRoom;
   const session=window.BLACKCELL_REDLINE_API?.snapshot?.();
   endSession.disabled=!hasRoom||session?.roomActive!==true||session?.archiveMode===true;
-  endSession.textContent=hasRoom&&session?.roomActive===false?'SESSION ENDED':'■ END SESSION';
+  const endLabel=hasRoom&&session?.roomActive===false?'SESSION ENDED':document.body.classList.contains('bc-ledger-mobile')?'END SESSION':'■ END SESSION';
+  if(endSession.textContent!==endLabel)endSession.textContent=endLabel;
   endSession.style.opacity=endSession.disabled?'.55':'1';
   if(!hasRoom){
    document.body.classList.remove('rr-room-tools-open');
