@@ -35,12 +35,45 @@
   photoHistory:photos,paymentHistory:[],ratingEvents:[],fiveStarPhotos:photos.filter(p=>p.stars===5),topPicks:photos.filter(p=>p.stars===5),paymentSummary:{remaining_cents:assigned,paid_cents:0}
  }}
  window.BLACKCELL_REDLINE_API={snapshot,loadMessages:async()=>model.messages.slice(),sendMessage:body=>action('chat',{body}),chatStatus:async()=>({peerTyping:false,peerReadAt:null}),chatSignal:async()=>true,ownerAccessMembers:async()=>[],currentlyViewingStatus:async()=>({active:!!model.viewing,photoId:model.viewing}),timerStatus:async()=>({ok:true,server_now:new Date().toISOString(),active:null,recent:[],assigned_cents:0,owed_cents:0,paid_cents:0}),roomPaymentStatus:async()=>({remaining_cents:sum(),paid_cents:0}),recordPaidInFull:async()=>{throw Error('Payments are not connected in developer preview')},recordPartialPayment:async()=>{throw Error('Payments are not connected in developer preview')}};
+ const testQueue=[];let testRunning=false,testProgress=null;
+ function emitProgress(){window.dispatchEvent(new Event('blackcell:redline:upload-progress'))}
+ function enqueueTest(items){
+  if(!model.active||!items.length)return;
+  if(!testRunning||testProgress?.roomId!==model.session){
+   testQueue.length=0;testProgress={roomId:model.session,active:true,total:0,done:0,failed:0,message:''};
+  }
+  for(const item of items)testQueue.push({...item,roomId:model.session});
+  testProgress.total+=items.length;testProgress.active=true;testProgress.message='Preparing test photos…';emitProgress();
+  if(!testRunning)void drainTest();
+ }
+ async function drainTest(){
+  if(testRunning)return;testRunning=true;
+  try{
+   while(testQueue.length){
+    const item=testQueue.shift(),p=testProgress;
+    if(!model.active||item.roomId!==model.session||p.roomId!==item.roomId)continue;
+    p.message='Uploading test photo '+(p.done+p.failed+1)+' of '+p.total;emitProgress();
+    try{
+     let image=item.image;
+     if(item.file){
+      const f=item.file;
+      if(!['image/jpeg','image/png','image/webp'].includes(f.type)||f.size>1400000)throw Error('Test image must be JPG, PNG or WebP under 1.4 MB.');
+      image=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(f)});
+     }
+     await new Promise(resolve=>setTimeout(resolve,450));
+     if(item.roomId!==model.session||!model.active)continue;
+     await action('upload',{image,session:item.roomId});p.done++;
+    }catch(e){p.failed++}
+    if(testProgress===p)emitProgress();
+   }
+  }finally{
+   testRunning=false;
+   if(testProgress){testProgress.active=false;testProgress.message='Test upload complete';emitProgress()}
+  }
+ }
  const file=$('uploadPhoto');if(file){
   file.accept='image/jpeg,image/png,image/webp';file.multiple=true;
-  file.addEventListener('change',async()=>{const files=[...file.files];file.value='';for(const f of files.slice(0,10)){
-   if(!['image/jpeg','image/png','image/webp'].includes(f.type)||f.size>1400000){alert('Test photo must be JPG, PNG or WebP, under 1.4 MB.');continue}
-   try{const image=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(f)});await action('upload',{image})}catch(e){alert(e.message||'Test photo not sent')}
-  }});
+  file.addEventListener('change',()=>{const files=[...file.files];file.value='';enqueueTest(files.map(file=>({file})))});
  }
  // Test-only source chooser: mirrors the live menu, with a self-contained
  // sample library. Never query or import any authenticated user's library.
@@ -87,19 +120,17 @@
   }
   function updateSelection(){tiles.forEach((tile,n)=>tile.setAttribute('aria-pressed',String(selected.has(n))));status.textContent=selected.size+' selected';send.disabled=sending||!selected.size||!model.active}
   function openLibrary(){if(!model.active)return;selected.clear();picker.hidden=false;picker.style.removeProperty('display');updateSelection()}
-  async function sendSelected(){
-   if(sending||!model.active||!selected.size)return;
-   sending=true;send.disabled=true;const batch=[...selected];let count=0;
-   try{for(const n of batch){status.textContent='Sending test photo '+(count+1)+' of '+batch.length;await action('upload',{image:samples[n]});selected.delete(n);count++}}
-   catch(e){alert('Test photo not sent: '+String(e.message||e))}
-   finally{sending=false;updateSelection();if(!selected.size)closeLibrary()}
+  function sendSelected(){
+   if(!model.active||!selected.size)return;
+   const batch=[...selected].map(n=>({image:samples[n]}));
+   closeLibrary();enqueueTest(batch);
   }
   pickerPanel.append(pickerHead,grid,status,send);picker.append(pickerPanel);document.body.append(picker);
   const style=make('style');style.textContent='.rd-dev-sample-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;overflow-y:auto;min-height:0;flex:1 1 auto}.rd-dev-sample-tile{position:relative;padding:0!important;min-height:0!important;aspect-ratio:1;border-radius:8px!important;overflow:hidden;background:#151015!important;border:2px solid transparent!important;cursor:pointer}.rd-dev-sample-tile img{width:100%;height:100%;object-fit:cover;display:block}.rd-dev-sample-check{position:absolute;right:4px;top:4px;display:none;background:#c6002b;color:#fff;border-radius:50%;width:20px;height:20px;line-height:20px;text-align:center}.rd-dev-sample-tile[aria-pressed=true]{border-color:#ff4569!important}.rd-dev-sample-tile[aria-pressed=true] .rd-dev-sample-check{display:block}.rd-dev-sample-status{color:#eebac8;margin:0;font-size:12px}#rdDevSampleLibrary .bc-pm-picker-panel>button{background:#a90027!important;border-color:#f34566!important;font-weight:800!important}#rdDevSampleLibrary button:disabled{opacity:.5}';
   document.head.append(style);
   picker.addEventListener('click',e=>{if(e.target===picker)closeLibrary()});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!picker.hidden)closeLibrary();else closeSource()}});
-  window.BLACKCELL_REDLINE_UPLOAD_UI={open:()=>{if(model.active){source.hidden=false;camera.focus({preventScroll:true})}}};
+  window.BLACKCELL_REDLINE_UPLOAD_UI={open:()=>{if(model.active){source.hidden=false;camera.focus({preventScroll:true})}},get progress(){return testProgress?.roomId===model.session?testProgress:null}};
  }
  document.addEventListener('submit',e=>{if(!e.target.matches('.redline-message-composer'))e.preventDefault()});
  const banner=make('div','rd-dev-local-banner','DEVELOPER PREVIEW · '+cfg.role.toUpperCase()+' · TEST DATA ONLY');

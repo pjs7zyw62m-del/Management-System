@@ -46,7 +46,7 @@
   if(!model.active&&a!=='view'){ok=false}
   else if(a==='chat'&&typeof p.body==='string'&&p.body.trim()&&p.body.length<=2000&&model.messages.length<300){
    model.messages.push({id:crypto.randomUUID(),sender_id:role==='receiver'?'00000000-0000-4000-8000-000000000004':'00000000-0000-4000-8000-000000000005',body:p.body.trim(),created_at:new Date().toISOString()});
-  }else if(a==='upload'&&role==='sender'&&model.photos.length<30&&typeof p.image==='string'&&p.image.length<=2000000&&/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(p.image)){
+  }else if(a==='upload'&&role==='sender'&&p.session===model.session&&typeof p.image==='string'&&p.image.length<=2000000&&/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(p.image)){
    model.photos.push({id:crypto.randomUUID(),image_url:p.image,caption:'Local test photograph',file_name:'Test photo',created_at:new Date().toISOString(),decision_status:'pending',amount_cents:0,stars:0});
   }else if(['rate','price','reject','view'].includes(a)&&role==='receiver'){
    const photo=model.photos.find(x=>x.id===p.id);

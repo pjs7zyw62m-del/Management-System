@@ -146,6 +146,27 @@ historyButton.addEventListener('click',()=>tabs.history?.click());
 quick.append(currentButton,historyButton);
 quick.hidden=true;
 chat.insertBefore(quick,composer);
+const uploadProgress=create('div','rs-upload-progress');
+uploadProgress.hidden=true;uploadProgress.setAttribute('role','status');uploadProgress.setAttribute('aria-live','polite');
+const uploadProgressLabel=create('span','rs-upload-progress-label');
+const uploadMeter=create('progress','rs-upload-progress-meter');uploadMeter.setAttribute('aria-label','Photo upload progress');
+const uploadDismiss=create('button','rs-upload-progress-dismiss','×');uploadDismiss.type='button';uploadDismiss.setAttribute('aria-label','Dismiss upload summary');
+let dismissedProgress=null;
+uploadDismiss.addEventListener('click',()=>{dismissedProgress=window.BLACKCELL_REDLINE_UPLOAD_UI?.progress;uploadProgress.hidden=true});
+uploadProgress.append(uploadProgressLabel,uploadMeter,uploadDismiss);
+chat.insertBefore(uploadProgress,composer);
+function syncUploadProgress(active){
+ const p=window.BLACKCELL_REDLINE_UPLOAD_UI?.progress;
+ const show=active&&p&&p.total>0&&p!==dismissedProgress;
+ uploadProgress.hidden=!show;
+ if(!show)return;
+ const done=Math.min(p.total,p.done+p.failed);
+ const label=p.active?'Uploading photos · '+done+'/'+p.total:'Uploaded '+p.done+' of '+p.total+(p.failed?' · '+p.failed+' failed':'')+(done<p.total?' · '+(p.total-done)+' not sent':'');
+ if(uploadProgressLabel.textContent!==label)uploadProgressLabel.textContent=label;
+ uploadMeter.max=p.total;uploadMeter.value=done;
+ uploadDismiss.hidden=p.active;
+ uploadProgress.classList.toggle('is-active',p.active);
+}
 const headerStrong=$('.redline-message-header strong',chat);
 const headerSmall=$('.redline-message-header small',chat);
 const senderDot=create('span','rs-brand-session-dot');
@@ -168,6 +189,7 @@ function update(){
  document.body.classList.toggle('redline-sender-messenger',active);
  syncMobileMenu(active);
  syncSenderDot(active,s);
+ syncUploadProgress(active);
  if(sendButton&&active&&document.body.classList.contains('bc-ledger-mobile')){
   sendButton.setAttribute('aria-label','Send message');sendButton.title='Send message';
  }
@@ -282,6 +304,7 @@ for(const node of [app,room,home,pane])observer.observe(node,{
 });
 for(const tab of Object.values(tabs))tab?.addEventListener('click',()=>requestAnimationFrame(update));
 window.addEventListener('pageshow',update);
+window.addEventListener('blackcell:redline:upload-progress',()=>syncUploadProgress(sender()));
 window.addEventListener('blackcell:redline:device-mode',update);
 window.addEventListener('visibilitychange',()=>{if(!document.hidden)update()});
 window.setInterval(()=>{if(!document.hidden&&sender())update()},1000);

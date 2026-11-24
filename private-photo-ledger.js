@@ -1338,6 +1338,7 @@ function imageType(file){
 const redlinePhotoQueue=[];
 let redlineQueueRunning=false,redlineStopAfterCurrent=false;
 let redlineBatchTotal=0,redlineBatchDone=0,redlineBatchFailed=0;
+let redlineUploadStatus=null,redlineBatchRoom=null;
 const redlinePhotoEligible=()=>!state.closed&&!state.isOwner&&!!state.user&&
  !!state.room?.active&&!state.room.photo_sending_paused&&!state.showArchive;
 function redlineBatchUI(){
@@ -1361,6 +1362,8 @@ function redlineBatchUI(){
  return panel;
 }
 function redlineQueueStatus(message,active=false){
+ redlineUploadStatus={roomId:redlineBatchRoom,active,total:redlineBatchTotal,done:redlineBatchDone,failed:redlineBatchFailed,message};
+ window.dispatchEvent(new Event('blackcell:redline:upload-progress'));
  const panel=redlineBatchUI();
  if(!panel)return;
  panel.hidden=false;
@@ -1378,9 +1381,10 @@ function enqueueRedlineFiles(items){
  // to EACH image, and selected images are sent one-by-one to reduce Android RAM.
  if(!redlineQueueRunning){
   redlineBatchDone=0;redlineBatchFailed=0;redlineBatchTotal=0;
-  redlineStopAfterCurrent=false;
+  redlineStopAfterCurrent=false;redlineBatchRoom=state.room.id;
  }
  const roomId=state.room.id;
+ if(redlineBatchRoom!==roomId)return false;
  for(const item of items)redlinePhotoQueue.push({...item,roomId});
  redlineBatchTotal+=items.length;
  redlineQueueStatus('Preparing '+redlineBatchTotal+' REDLINE photo'+(redlineBatchTotal===1?'':'s')+' for private upload…',true);
@@ -1486,7 +1490,7 @@ function openRedlinePhotoChooser(){
   dismiss.setAttribute('aria-label','Close photo choices');header.append(dismiss);
   panel.append(header,node('p','redline-source-intro',
    'Choose photos from your phone or BLACKCELL Photos. All selected photos upload automatically to this private room.'));
-  const device=button('＋  Upload from Phone',()=>{
+  const device=button('＋  Camera Roll',()=>{
    closeRedlinePhotoChooser();
    // Triggered directly within the Android user's tap (not after an await).
    openRedlinePhonePicker();
@@ -1529,7 +1533,7 @@ function openRedlinePhotoChooser(){
  redlineSourceOverlay.querySelector('#redlineSourceDevice')?.focus({preventScroll:true});
 }
 window.BLACKCELL_REDLINE_UPLOAD_UI={open:openRedlinePhotoChooser,
- enqueue:enqueueRedlineFiles,get pendingCount(){return redlinePhotoQueue.length}};
+ enqueue:enqueueRedlineFiles,get pendingCount(){return redlinePhotoQueue.length},get progress(){return redlineUploadStatus?.roomId===state.room?.id?redlineUploadStatus:null}};
 async function uploadPhoto(...args){
  let release;
  try{release=window.top.BLACKCELL_LIVE_UPDATE?.hold('uploadPhoto',window)}catch(_){}
