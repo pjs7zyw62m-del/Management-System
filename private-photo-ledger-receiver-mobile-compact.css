@@ -315,3 +315,26 @@ body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat>.rr-ch
  min-height:0!important;min-width:0!important;max-width:none!important;max-height:none!important;
  padding:0!important;margin:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;overflow:hidden!important
 }
+
+/* The outermost mobile frame is the receiver command dashboard, not
+   rr-chat-panel. Remove its inset too, retaining only the outer border.
+   Keep non-chat controls padded independently and preserve chat height. */
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand:has(>#redlineReceiverChat:not([hidden])){
+ padding:0!important;gap:8px!important
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand:has(>#redlineReceiverChat:not([hidden]))>.rr-nav,
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand:has(>#redlineReceiverChat:not([hidden]))>.rr-stats,
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand:has(>#redlineReceiverChat:not([hidden]))>.rr-command-header{
+ box-sizing:border-box!important;padding:8px 10px 0!important;width:100%!important;margin:0!important
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand>#redlineReceiverChat:not([hidden]){
+ align-self:stretch!important;width:100%!important;max-width:none!important;
+ min-width:0!important;margin:0!important;padding:0!important;
+ border:0!important;border-radius:0 0 11px 11px!important;
+ box-shadow:none!important;background:#050505!important;overflow:hidden!important
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand>#redlineReceiverChat>.rr-chat-mount,
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand>#redlineReceiverChat>.rr-chat-mount>.redline-message-card{
+ margin:0!important;padding:0!important;border:0!important;border-radius:0!important;
+ width:100%!important;max-width:none!important;box-shadow:none!important
+}
