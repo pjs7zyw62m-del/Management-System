@@ -41,19 +41,21 @@
   function workspace(target,label){
    if(!allowed.has(target))return;
    usersPane.hidden=true;body.hidden=true;pages.hidden=false;for(const item of frames.values())item.panel.hidden=true;
+   const workspaceUrl=target+'?adminPane=1&rev='+(target==='blackcell-media-oversight.html'?'20261124-photo-transfer2':'native-admin-20261114');
    let rec=frames.get(target);
    if(!rec){
     const panel=make('section','bc-admin-os-workspace'),head=make('header','bc-admin-os-workspace-head'),frame=make('iframe','bc-admin-os-workspace-frame');head.append(make('strong','',label),btn('‹ Executive Workspace',()=>select('overview')));frame.title=label;frame.dataset.bcAdminWorkspace=target;frame.id='bcAdminWorkspace-'+target.replace(/[^a-z]/g,'');frame.allow='fullscreen';panel.append(head,frame);rec={panel,frame};frames.set(target,rec);pages.append(panel);
     frame.addEventListener('load',()=>{try{
      const doc=frame.contentDocument,u=new URL(frame.contentWindow.location.href);if(!doc||u.origin!==location.origin)return;
      if(u.pathname.endsWith('/login.html')){if(embedded)parent.postMessage({type:'blackcell-admin-app-signed-out'},location.origin);else location.replace('login.html');return}
-     if(u.pathname.endsWith('/dashboard.html')||u.pathname.endsWith('/blackcell-administration-app.html')){select('overview');frame.contentWindow.location.replace(target+'?adminPane=1&rev=native-admin-20261114');return}
+     if(u.pathname.endsWith('/dashboard.html')||u.pathname.endsWith('/blackcell-administration-app.html')){select('overview');frame.contentWindow.location.replace(workspaceUrl);return}
      if(!allowed.has(u.pathname.split('/').at(-1)))return;
      doc.documentElement.classList.add('bc-admin-workspace-embedded');const sheet=doc.createElement('link');sheet.rel='stylesheet';sheet.href='blackcell-admin-workspace-embedded.css?v=2-native-admin';doc.head.append(sheet);
      for(const event of ['pointerdown','keydown','touchstart','wheel'])doc.addEventListener(event,activity,{passive:true});
      doc.addEventListener('click',e=>{const a=e.target.closest?.('a[href]');if(!a||e.defaultPrevented||e.button!==0||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;const href=new URL(a.href,location.href);if(href.origin!==location.origin)return;const file=href.pathname.split('/').at(-1);if(file==='dashboard.html'||file==='blackcell-administration-app.html'){e.preventDefault();select('overview');return}if(allowed.has(file)){e.preventDefault();openTarget(file,a.textContent.trim()||file);return}},true)
     }catch(_){}});
-    frame.src=target+'?adminPane=1&rev=native-admin-20261114';
+    if(target==='blackcell-media-oversight.html')head.append(btn('Reload Media Oversight',()=>{frame.src=workspaceUrl+'&refresh='+Date.now()}));
+    frame.src=workspaceUrl;
    }
    rec.panel.hidden=false
   }

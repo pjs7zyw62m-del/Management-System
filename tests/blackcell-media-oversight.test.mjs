@@ -104,3 +104,5 @@ test('authorized reference shares bytes but deleting a reference never deletes t
  assert.match(drive,/bunny\("GET",mediaId,i\)/);
  assert.match(drive,/if\(row.source_object_id\)\{\s*if\(action==="delete"\)/);
 });
+
+test('transfer action is visible on eligible photo cards and the Administration iframe can be reloaded',()=>{assert.match(ui,/const transfer=make\('button','button primary','Transfer to My Photos'\)/);assert.match(read('blackcell-administration-os.js'),/Reload Media Oversight/);assert.match(html,/PHOTO TRANSFER · V2/)});

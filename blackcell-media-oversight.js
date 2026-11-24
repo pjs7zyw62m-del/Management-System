@@ -119,7 +119,13 @@ function renderGallery(generation){
   open.type='button';open.addEventListener('click',()=>void openFile(file));
   const remove=make('button','button danger','Remove content');
   remove.type='button';remove.addEventListener('click',()=>confirmRemoval(file));
-  info.append(filename,meta,open,remove);
+  info.append(filename,meta,open);
+  if(file.mime.startsWith('image/')&&file.state==='ready'&&selectedUser!==owner){
+   const transfer=make('button','button primary','Transfer to My Photos');
+   transfer.type='button';transfer.addEventListener('click',async()=>{await openFile(file);if(selectedFile?.id===file.id&&$('viewDialog').open&&!$('transferPhoto').disabled)$('transferPhoto').focus()});
+   info.append(transfer);
+  }
+  info.append(remove);
   item.append(preview,info);root.append(item);
   if(file.state==='ready')thumbnail(file,preview,generation);
  }
