@@ -88,7 +88,7 @@
   camera.id='redlineSourceDevice';
   const libraryBtn=button('▣  BLACKCELL Photos',()=>{closeSource();openLibrary()},'redline-source-library');libraryBtn.id='redlineSourceLibrary';
   options.append(camera,libraryBtn);
-  panel.append(sourceHead,make('p','redline-source-intro','Choose photos from your device or previously shared REDLINE photos.'),options,make('small','redline-source-footnote','DEVELOPER PREVIEW · Temporary copies only. No live uploads.'));
+  panel.append(sourceHead,make('p','redline-source-intro','Select a photo source.'),options,make('small','redline-source-footnote','TEST MODE · No live uploads.'));
   source.append(panel);document.body.append(source);
   source.addEventListener('click',e=>{if(e.target===source)closeSource()});
   const picker=make('div','bc-pm-picker');picker.id='rdDevSampleLibrary';picker.hidden=true;picker.style.setProperty('display','none','important');

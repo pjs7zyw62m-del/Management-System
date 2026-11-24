@@ -8,43 +8,42 @@
  overflow:auto;overscroll-behavior:contain;
 }
 .redline-photo-source-overlay[hidden],.redline-upload-batch[hidden]{display:none!important}
-.redline-photo-source-dialog{
- box-sizing:border-box;width:min(460px,100%);max-height:min(95vh,95dvh);
- overflow:auto;padding:20px;
- background:linear-gradient(155deg,#1e1017 0%,#0e0b0f 72%);
- border:1px solid #82465b;border-top:3px solid #ee304f;
- border-radius:20px;color:#f8f0f4;
- box-shadow:0 24px 70px #000b,inset 0 1px #ffffff15;
+/* Compact obsidian chooser shared by the actual sender and Android preview. */
+body #redlinePhotoSourceOverlay .redline-photo-source-dialog{
+ box-sizing:border-box;width:min(290px,100%);max-height:min(95vh,95dvh);
+ overflow:auto;padding:12px;
+ background:#000;
+ border:1px solid #303030;border-top:1px solid #a91932;
+ border-radius:13px;color:#f5f5f5;
+ box-shadow:0 16px 48px #000c;
 }
-.redline-photo-source-head{display:flex;align-items:center;justify-content:space-between;gap:14px}
-.redline-photo-source-head strong{
- color:#fff;font:800 clamp(17px,4.4vw,21px)/1.25 system-ui;
- letter-spacing:-.03em;
+#redlinePhotoSourceOverlay .redline-photo-source-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#redlinePhotoSourceOverlay .redline-photo-source-head strong{
+ color:#fff;font:700 13px/1.25 system-ui;
+ letter-spacing:.015em;
 }
-.redline-photo-source-head .redline-source-close{
- flex:0 0 40px;width:40px;height:40px;min-height:40px;
- border:1px solid #6a4955;border-radius:11px;background:#31202a;color:#fff;
- font:750 17px system-ui;cursor:pointer;touch-action:manipulation;
+#redlinePhotoSourceOverlay .redline-photo-source-head .redline-source-close{
+ flex:0 0 32px;width:32px;height:32px;min-height:32px;
+ padding:0;margin:0;border:0;border-radius:50%;background:#161616;color:#d7d7d7;
+ font:500 16px/1 system-ui;cursor:pointer;touch-action:manipulation;
 }
-.redline-source-intro{font:13px/1.65 system-ui;color:#cbb9c3;margin:12px 0 19px}
-.redline-source-actions{display:grid;grid-template-columns:1fr;gap:11px}
-.redline-source-actions button{
- min-height:62px;display:flex;align-items:center;justify-content:center;gap:12px;
- padding:16px 14px;border-radius:13px;
- font:790 15px/1.35 system-ui;letter-spacing:.01em;
+#redlinePhotoSourceOverlay .redline-source-intro{font:11px/1.4 system-ui;color:#a0a0a0;margin:4px 0 10px}
+#redlinePhotoSourceOverlay .redline-source-actions{display:grid;grid-template-columns:1fr;gap:0;background:#101010;border:1px solid #252525;border-radius:9px;overflow:hidden}
+#redlinePhotoSourceOverlay .redline-source-actions button{
+ position:relative;width:100%;min-height:44px;display:flex;align-items:center;justify-content:flex-start;gap:8px;
+ padding:10px 29px 10px 12px;margin:0;border:0;border-radius:0;
+ background:#101010;color:#f1f1f1;box-shadow:none;text-align:left;
+ font:600 13px/1.3 system-ui;letter-spacing:0;
  cursor:pointer;touch-action:manipulation;
 }
-.redline-source-device{
- background:linear-gradient(132deg,#df284d,#9b1632);
- border:1px solid #ff6682;color:#fff;box-shadow:0 6px 23px #ec2b4039;
-}
-.redline-source-library{
- background:#261b22;border:1px solid #805266;color:#ffe7ed;
-}
+#redlinePhotoSourceOverlay .redline-source-actions button+button{border-top:1px solid #292929}
+#redlinePhotoSourceOverlay .redline-source-actions button::after{content:'›';position:absolute;right:12px;top:50%;transform:translateY(-50%);font:400 20px/1 system-ui;color:#e73a51}
+#redlinePhotoSourceOverlay .redline-source-actions button:hover,
+#redlinePhotoSourceOverlay .redline-source-actions button:active{background:#1c1214}
 .redline-source-actions button:focus-visible,.redline-photo-source-head button:focus-visible,
 .redline-upload-batch-stop:focus-visible{outline:2px solid #fff;outline-offset:3px}
-.redline-source-footnote{
- display:block;margin-top:17px;font:11px/1.65 system-ui;color:#b9a9b3;
+#redlinePhotoSourceOverlay .redline-source-footnote{
+ display:block;margin-top:9px;font:10px/1.4 system-ui;color:#777;
 }
 #employeeUpload .redline-upload-batch{
  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;
@@ -63,9 +62,7 @@
 body.redline-sender-simple #employeeUpload .file-drop,
 body.bc-ledger-sender #employeeUpload .file-drop{cursor:pointer;touch-action:manipulation}
 @media(max-width:520px){
- .redline-photo-source-overlay{padding:12px;align-items:center}
- .redline-photo-source-dialog{padding:17px;border-radius:18px}
- .redline-source-actions button{min-height:66px;font-size:15px}
+ .redline-photo-source-overlay{padding:10px;align-items:center}
  #employeeUpload .redline-upload-batch{grid-template-columns:1fr}
  #employeeUpload .redline-upload-batch-stop{width:100%}
 }
