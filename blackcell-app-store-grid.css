@@ -1,0 +1,56 @@
+/* BLACKCELL App Store: compact rectangular application tiles, no circular bubbles.
+   Presentation only. All catalog permissions and actions remain in mountStore. */
+#desktop .bc-store{container-type:inline-size;grid-template-columns:190px minmax(0,1fr);background:#08080b!important;color:#f5f2f4}
+#desktop .bc-store-rail{padding:20px 12px;background:radial-gradient(ellipse at -60% 82%,#5a0c1b80,transparent 57%),linear-gradient(155deg,#141217,#09090b 65%)!important;border-right:1px solid #e45b6229!important;gap:7px}
+#desktop .bc-store-brand{display:grid;justify-items:center;gap:3px;margin:6px 0 22px;text-align:center}
+#desktop .bc-store-brand-mark{font:400 48px/1 system-ui;color:#ff5366;text-shadow:0 0 24px #f32745}
+#desktop .bc-store-brand strong{font:750 15px system-ui;letter-spacing:.06em}
+#desktop .bc-store-brand small{font:400 12px system-ui;color:#a9a2ab}
+#desktop .bc-store-nav{font-size:13px;min-height:40px;padding:10px 13px;border:1px solid transparent;border-radius:9px}
+#desktop .bc-store-nav.selected{background:linear-gradient(135deg,#681323,#291016)!important;border-color:#c94258;color:white}
+#desktop .bc-store-body{padding:24px clamp(14px,2.6vw,38px) 30px;scrollbar-width:thin}
+#desktop .bc-store-header{gap:12px;margin-bottom:10px}
+#desktop .bc-store-header h1{font-size:clamp(24px,2.3vw,34px);letter-spacing:-.04em}
+#desktop .bc-store-release-controls{gap:8px}
+#desktop .bc-store-release-controls .bc-store-search{width:clamp(120px,19vw,300px);height:36px;background:#17161a;border:1px solid #51434b;border-radius:10px}
+#desktop .bc-store-release-controls .bc-store-get{height:36px;background:#23171b;border:1px solid #73323f;color:#fff;padding:7px 13px;font-size:11px}
+#desktop .bc-store-feedback:empty{display:none}
+#desktop .bc-store-feature{position:relative;isolation:isolate;min-height:190px;padding:25px 30px;border:1px solid #8c3a49!important;border-radius:20px!important;background:radial-gradient(ellipse at 82% 110%,#a51e30 0%,#2a0910 40%,transparent 68%),linear-gradient(110deg,#171016,#08070b)!important;overflow:hidden}
+#desktop .bc-store-feature::before{content:"";position:absolute;z-index:-1;pointer-events:none;width:78%;aspect-ratio:2/1;right:-14%;top:54%;border-radius:50%;background:radial-gradient(ellipse at 48% 0%,#49101a,#13090c 39%,#07070a 65%);border-top:2px solid #ff6477;box-shadow:0 -5px 28px #e62b47,0 -18px 75px #d0214355}
+#desktop .bc-store-feature-copy{position:relative;z-index:1;max-width:70%}
+#desktop .bc-store-feature h2{font-size:clamp(26px,3.8vw,48px);font-weight:780}
+#desktop .bc-store-feature h2 em{font-style:normal;color:#ff354e}
+#desktop .bc-store-feature p{max-width:460px;font-size:13px;line-height:1.5;color:#d4c8ce}
+#desktop .bc-store-feature-symbol{position:relative;color:#fff;font-size:clamp(44px,7vw,96px);text-shadow:0 0 26px #ff2749}
+#desktop .bc-store-kicker{font-weight:800;color:#ff697e;font-size:11px}
+#desktop .bc-store-group h2{font-size:20px;display:flex;align-items:center;gap:10px;margin:0 0 16px}
+#desktop .bc-store-group h2::before{content:"";width:4px;height:20px;transform:skew(-14deg);background:#e93650}
+#desktop .bc-store-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,148px),1fr));gap:13px}
+#desktop .bc-store-grid>.bc-store-app{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:9px;text-align:center;min-height:208px;min-width:0;padding:17px 9px 11px;border:1px solid #7a29394f!important;border-radius:17px;background:linear-gradient(155deg,#21161c,#0d0b0f 72%,#2d1019);box-shadow:inset 0 1px #ffffff10,0 4px 12px #0004;transition:border-color .18s,background .18s}
+#desktop .bc-store-grid>.bc-store-app:hover{border-color:#dc5267!important;background:linear-gradient(155deg,#30202a,#100e12 72%,#36131c)}
+#desktop .bc-store-grid .bc-store-icon{width:58px;height:58px;border-radius:15px;background:linear-gradient(145deg,#68505c,#242027);color:#fff;box-shadow:inset 0 1px #ffffff35}
+#desktop .bc-store-grid .bc-store-icon svg{width:33px;height:33px}
+#desktop .bc-store-icon[data-app-id="photoledger"]{background:linear-gradient(145deg,#e04457,#621123)}
+#desktop .bc-store-icon[data-app-id="chat"]{background:linear-gradient(145deg,#56df91,#126547)}
+#desktop .bc-store-icon:is([data-app-id="film"],[data-app-id="shorts"]){background:linear-gradient(145deg,#fa3e4e,#6d111c)}
+#desktop .bc-store-icon:is([data-app-id="photos"],[data-app-id="personalphotos"]){background:conic-gradient(from 20deg,#e8b344,#c96b4d,#b0458c,#644cbe,#288bc2,#359e75,#e8b344)}
+#desktop .bc-store-icon:is([data-app-id="forces"],[data-app-id="usa"]){background:linear-gradient(145deg,#6e8299,#20364d)}
+#desktop .bc-store-icon:is([data-app-id="photobattle"],[data-app-id="omega"]){background:linear-gradient(145deg,#9f65c6,#3a245f)}
+#desktop .bc-store-icon:is([data-app-id="care"],[data-app-id="innovations"],[data-app-id="awards"]){background:linear-gradient(145deg,#b99753,#52401e)}
+#desktop .bc-store-grid .bc-store-copy{display:flex;flex-direction:column;align-items:center;flex:1;width:100%;min-width:0}
+#desktop .bc-store-grid .bc-store-link{font-size:13px;line-height:1.3;font-weight:700;text-align:center;overflow-wrap:anywhere;min-height:34px;display:grid;place-items:center}
+#desktop .bc-store-grid .bc-store-copy p{font-size:11px;color:#b6aeb7;line-height:1.35;margin:3px 0 5px;overflow-wrap:anywhere}
+#desktop .bc-store-grid .bc-store-status{font-size:9px;letter-spacing:.045em;margin-top:auto;padding:3px 6px;border-radius:5px;background:transparent;border-color:#ffffff22;color:#c0b8c0}
+#desktop .bc-store-grid [data-app-state="installed"] .bc-store-status{color:#a0d5b6;border-color:#377b52}
+#desktop .bc-store-grid .bc-store-app-actions{width:100%;min-height:42px;align-content:start;justify-items:center;gap:3px}
+#desktop .bc-store-grid .bc-store-get{min-width:76px;max-width:100%;min-height:30px;padding:6px 11px;background:#29242a;color:#fff;border:1px solid #65565f;font-size:11px;border-radius:14px}
+#desktop .bc-store-grid [data-app-state="installed"] .bc-store-get{color:#9ef4b9;background:#112d1c;border-color:#358955}
+#desktop .bc-store-grid [data-app-state="available"] .bc-store-get{background:#681727;border-color:#cf4359}
+#desktop .bc-store-grid .bc-store-get:disabled{opacity:.58;cursor:not-allowed}
+#desktop .bc-store-grid .bc-store-card-uninstall{font-size:10px;color:#d5a0ab}
+#desktop .bc-store :is(button,input,select):focus-visible{outline:2px solid #f58191;outline-offset:2px}
+@container (max-width:850px){#desktop .bc-store-rail{padding:12px 7px}#desktop .bc-store-brand strong{font-size:11px}#desktop .bc-store-feature{min-height:155px;padding:18px}#desktop .bc-store-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,132px),1fr));gap:10px}}
+@container (max-width:620px){#desktop .bc-store-rail{flex-direction:row;overflow-x:auto;justify-content:flex-start;align-items:center}#desktop .bc-store-brand,#desktop .bc-store-railnote{display:none}#desktop .bc-store-nav{flex:none}#desktop .bc-store-body{padding:14px}#desktop .bc-store-feature-copy{max-width:82%}#desktop .bc-store-feature-symbol{font-size:38px}#desktop .bc-store-grid>.bc-store-app{min-height:200px}}
+/* Container queries cannot style their own container; viewport fallback handles phone shell. */
+@media(max-width:620px){#desktop .bc-store{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}#desktop .bc-store-release-controls .bc-store-search{width:100%}}
+@media(prefers-reduced-motion:reduce){#desktop .bc-store-grid>.bc-store-app{transition:none}}
