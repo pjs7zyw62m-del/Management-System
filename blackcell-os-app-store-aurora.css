@@ -1,0 +1,23 @@
+/* BLACKCELL App Store · Aurora colorway. Icon-only; no layout or behavior changes. */
+#desktop .workspace .apps>.app[data-app="store"] .app-icon,
+html:not(.bc-os-phone) #desktop.bc-macos-desktop .workspace .apps>.app[data-app="store"] .app-icon,
+#desktop .dock button[data-open="store"],
+#desktop .app[data-app="store"] .app-icon,
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-icon[data-id="store"] .bc-sb-app-art,
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-result[data-id="store"] .bc-sb-result-icon {
+  --app-top:#22d3ee;
+  --app-bottom:#7c3aed;
+  --app-glow:#8b5cf653;
+  background:radial-gradient(ellipse at 14% 4%,#52e8fc 0%,transparent 48%),
+             radial-gradient(ellipse at 96% 96%,#ff735f 0%,#ee4da5 25%,transparent 57%),
+             linear-gradient(145deg,#149bfa 12%,#4655ee 49%,#9628d6 83%) !important;
+  color:#fff !important;
+  border-color:#ffffff69 !important;
+}
+#desktop .app[data-app="store"] .app-icon svg,
+#desktop .dock button[data-open="store"] svg,
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-icon[data-id="store"] .bc-sb-app-art svg,
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-result[data-id="store"] .bc-sb-result-icon svg {
+  color:#fff !important;
+  filter:drop-shadow(0 1px 2px #21155d90);
+}
