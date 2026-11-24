@@ -34,7 +34,16 @@
  },'rr-trigger-quick');
  triggerQuick.id='redlineReceiverTriggerQuick';
  triggerQuick.setAttribute('aria-label','Open receiver Trigger Words approval and earnings');
- header.append(triggerQuick);
+ // Direct access to the existing verified room-close action; never resets records.
+ const endSession=button('■ END SESSION',()=>{
+  const s=window.BLACKCELL_REDLINE_API?.snapshot?.();
+  if(!s?.isOwner||!s.roomActive||s.archiveMode)return;
+  $('#closeRoomBtn')?.click();
+ },'rr-end-session');
+ endSession.id='redlineReceiverEndSession';
+ endSession.setAttribute('aria-label','End the current REDLINE session');
+ endSession.style.cssText='box-sizing:border-box;min-height:40px;padding:9px 13px;border:1px solid #f34b4b;border-radius:10px;color:#fff;background:#761b1b;font:800 11px/1.3 -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;white-space:normal;cursor:pointer;max-width:100%;flex-shrink:0;';
+ header.append(triggerQuick,endSession);
  const stats=make('div','rr-stats');
  const fields=[
   ['pending','AWAITING YOUR REVIEW','pendingCount','0'],
@@ -804,6 +813,10 @@
    :'No private room selected';
   roomSummary.title=roomSummary.textContent;
   tools.disabled=!hasRoom;
+  const session=window.BLACKCELL_REDLINE_API?.snapshot?.();
+  endSession.disabled=!hasRoom||session?.roomActive!==true||session?.archiveMode===true;
+  endSession.textContent=hasRoom&&session?.roomActive===false?'SESSION ENDED':'■ END SESSION';
+  endSession.style.opacity=endSession.disabled?'.55':'1';
   if(!hasRoom){
    document.body.classList.remove('rr-room-tools-open');
    tools.textContent='Room Tools';tools.setAttribute('aria-expanded','false');
