@@ -120,7 +120,7 @@
  window.addEventListener('message',receive);
  // Reuse current production markup and explicitly allowlisted UI scripts only.
  // No authentication, storage, live client, or live-update code is loaded.
- const allow=new Set(['private-photo-ledger-responsive.js','private-photo-ledger-solid-red.js','private-photo-ledger-simple-sender.js','private-photo-ledger-receiver.js','private-photo-ledger-photo-zoom.js','private-photo-ledger-sender-messenger.js','private-photo-ledger-sender-android-fit.js','private-photo-ledger-viewport-fit.js']);
+ const allow=new Set(['private-photo-ledger-responsive.js','private-photo-ledger-solid-red.js','private-photo-ledger-simple-sender.js','private-photo-ledger-receiver.js','private-photo-ledger-photo-zoom.js','private-photo-ledger-sender-messenger.js','private-photo-ledger-sender-android-fit.js','private-photo-ledger-viewport-fit.js','private-photo-ledger-photo-popup.js']);
  // No persistent asset cache: every open or explicit reload revalidates
  // the deployed HTML, scripts and styles using a unique request URL.
  const get=async(url,revision)=>{
@@ -154,7 +154,8 @@
   const gallery=styleNodes.find(e=>e.tagName==='LINK'&&e.getAttribute('href')?.includes('private-photo-ledger-upload-choices.css'));
   const galleryVersion=gallery?new URL(gallery.getAttribute('href'),location.href).searchParams.get('v'):'';
   if(!galleryVersion?.includes('fullscreen')||!styles.some(s=>s.includes('Gallery V6'))||!adapter.includes("action:'open-library'"))throw Error('Old photo gallery assets returned. Refresh the REDLINE app before testing.');
-  return {markup:body.innerHTML,styles,sources,adapter,build:'Gallery FULLSCREEN 7 · Receiver RESTORED · '+[receiver?.searchParams.get('v'),mobile?.searchParams.get('v')].filter(Boolean).join(' / ')};
+  if(!sources.some(s=>s.includes('rdIndependentReview'))||!styles.some(s=>s.includes('Independent receiver review')))throw Error('Updated receiver popup assets are unavailable. Refresh REDLINE.');
+  return {markup:body.innerHTML,styles,sources,adapter,build:'Gallery FULLSCREEN 7 · Receiver REVIEW 1 · '+[receiver?.searchParams.get('v'),mobile?.searchParams.get('v')].filter(Boolean).join(' / ')};
  }
  function frameDocument(a,role){
   const nonce=crypto.randomUUID(),escapeScript=s=>s.replace(/<\/script/gi,'<\\/script');
