@@ -74,7 +74,7 @@
  function reportStatus(){
   if(!dialog.open||!loadedBuild)return;
   const r=reports.receiver,s=reports.sender;
-  if(preset){notice.textContent='Safaricom Neon Smarta 2 · Android 11 / Chrome · estimated 320 × 480 CSS px'+(s?' · Actual preview '+s.width+' × '+s.height+' · Sender menu '+(s.menu?'OK':'not visible'):' · Checking sender layout…')+' · Local test only. No live payments or records.';return}
+  if(preset){notice.textContent='Safaricom Neon Smarta 2 · Android 11 / Chrome · estimated 320 × 480 CSS px'+(s?' · Actual preview '+s.width+' × '+s.height+' · Sender menu '+(s.menu?'OK':'not visible'):' · Checking sender layout…')+' · '+loadedBuild+' · Local test only. No live payments or records.';return}
   const layout=r?' · Receiver '+r.mode+' ('+r.width+'px)'+(r.mode==='mobile'?' · Header menu '+(r.menu?'OK':'not placed')+' · PAY '+(r.pay?'OK':'not visible'):''):' · Checking receiver layout…';
   notice.textContent='Current interface: '+loadedBuild+layout+' · Local test only. No live payments or records.';
  }
@@ -145,7 +145,10 @@
   const receiver=scripts.find(u=>u.pathname.endsWith('/private-photo-ledger-receiver.js'));
   const mobile=[...doc.head.querySelectorAll('link[rel=stylesheet]')].map(e=>new URL(e.getAttribute('href'),location.href)).find(u=>u.pathname.endsWith('/private-photo-ledger-receiver-mobile-compact.css'));
   if(!sources.some(s=>s.includes('blackcell:redline:device-mode')&&s.includes('redlineReceiverMenuItems'))||!styles.some(s=>s.includes('Approved compact Apple-style menu')))throw Error('Deployed REDLINE files are stale or incomplete. Reload BLACKCELL OS after deployment.');
-  return {markup:body.innerHTML,styles,sources,adapter,build:[receiver?.searchParams.get('v'),mobile?.searchParams.get('v')].filter(Boolean).join(' / ')};
+  const gallery=styleNodes.find(e=>e.tagName==='LINK'&&e.getAttribute('href')?.includes('private-photo-ledger-upload-choices.css'));
+  const galleryVersion=gallery?new URL(gallery.getAttribute('href'),location.href).searchParams.get('v'):'';
+  if(!galleryVersion?.includes('fullscreen')||!styles.some(s=>s.includes('Full viewport gallery on the real REDLINE page'))||!adapter.includes("action:'open-library'"))throw Error('Old photo gallery assets returned. Refresh the REDLINE app before testing.');
+  return {markup:body.innerHTML,styles,sources,adapter,build:'Gallery FULLSCREEN 4 · '+[receiver?.searchParams.get('v'),mobile?.searchParams.get('v')].filter(Boolean).join(' / ')};
  }
  function frameDocument(a,role){
   const nonce=crypto.randomUUID(),escapeScript=s=>s.replace(/<\/script/gi,'<\\/script');
