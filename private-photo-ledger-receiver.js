@@ -495,7 +495,8 @@
  incomingHeader.append(make('h3','','Incoming Photos'),
   make('small','','Price each incoming photo without leaving the conversation.'));
  photos.append(incomingHeader);
- workspace.append(chatPanel,photos);
+ // The chat stays in dashboard for the lifetime of the popup workspace.
+ workspace.append(photos);
  // Match BLACKCELL iMessage: chat is permanent, while the real photo-review
  // panel slides in from the right. Its left edge resizes by dragging.
  const photoClose=button('−',()=>closeMedia(),'rr-photo-close');
@@ -677,7 +678,7 @@
  function togglePhotoHistory(){setHistoryOpen(!historyOpen)}
  const waiting=button('Photos · 0 waiting',()=>mediaOpen?closeMedia():openMedia(),'rr-popup-resume');
  waiting.id='redlineReceiverResumeReview';waiting.setAttribute('aria-controls',photos.id);
- waiting.hidden=true;dashboard.insertBefore(waiting,chatPanel);
+ waiting.hidden=true;dashboard.append(waiting,chatPanel);
  const chatSplit=make('div','rr-popup-chat-divider');chatSplit.setAttribute('role','separator');chatSplit.setAttribute('aria-orientation','horizontal');chatSplit.setAttribute('aria-label','Resize photo review and chat');chatSplit.tabIndex=0;
  let splitRatio=.46,splitPointer=null;
  function resizeSplit(value){splitRatio=Math.max(.24,Math.min(.65,value));dashboard.style.setProperty('--rr-popup-share',(splitRatio*100).toFixed(1)+'%');chatSplit.setAttribute('aria-valuenow',String(Math.round(splitRatio*100)))}
@@ -687,7 +688,7 @@
  for(const event of ['pointerup','pointercancel','lostpointercapture'])chatSplit.addEventListener(event,()=>{splitPointer=null});
  chatSplit.addEventListener('keydown',e=>{if(!['ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();resizeSplit(splitRatio+(e.key==='ArrowDown'?.05:-.05))});
  chatSplit.addEventListener('dblclick',()=>resizeSplit(.46));
- dashboard.insertBefore(chatSplit,chatPanel);chatSplit.hidden=true;
+ dashboard.append(chatSplit,chatPanel);chatSplit.hidden=true;
  function showPane(){
   workspace.classList.toggle('rr-media-open',mediaOpen);
   workspace.classList.toggle('rr-media-closed',!mediaOpen);
