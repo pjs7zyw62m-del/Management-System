@@ -1,0 +1,18 @@
+/* Developer preview is intentionally separate from real room controls. */
+#redlineDeveloperPreviewLaunch{font:750 10px system-ui;white-space:nowrap;background:#211117;border:1px solid #80354a;color:#f5bac8;border-radius:9px;padding:9px;cursor:pointer;flex:none}
+.rd-dev-dialog{box-sizing:border-box;position:fixed;inset:0;margin:auto;width:min(98vw,1900px);height:96dvh;max-width:none;max-height:none;border:1px solid #a32f48;border-radius:15px;padding:12px;background:#08080a;color:#fff;overflow:hidden}
+.rd-dev-dialog[open]{display:flex;flex-direction:column;gap:8px}
+.rd-dev-dialog::backdrop{background:#000d}
+.rd-dev-top,.rd-dev-toolbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.rd-dev-top{justify-content:space-between}.rd-dev-name{display:flex;flex-direction:column;gap:3px}.rd-dev-name small,.rd-dev-notice{font-size:10px;color:#e5a6b4}
+.rd-dev-button{padding:8px 11px;min-height:32px;border:1px solid #59434a;background:#171316;color:#fff;font:700 11px system-ui;border-radius:8px;cursor:pointer}
+.rd-dev-button[aria-pressed=true]{background:#85273e;border-color:#f15b7c}
+.rd-dev-notice{margin:0}
+.rd-dev-stage{flex:1;min-height:0;display:flex;gap:9px;overflow:auto;align-items:stretch}
+.rd-dev-pane{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;border:1px solid #5b2b38;border-radius:10px;padding:5px;overflow:hidden}
+.rd-dev-pane[hidden]{display:none!important}.rd-dev-pane h3{font:800 10px system-ui;letter-spacing:.08em;margin:4px;color:#efaabb;text-align:center}
+.rd-dev-frame{border:0;display:block;flex:1;min-height:0;width:100%;background:#050505}
+.rd-dev-stage[data-device=mobile] .rd-dev-pane{flex:0 0 min(390px,95%);margin:auto 0;height:100%}
+.rd-dev-stage[data-device=tablet] .rd-dev-pane{flex:0 0 min(820px,96%);height:100%}
+.rd-dev-stage[data-mode=dual][data-device=desktop] .rd-dev-pane{min-width:420px}
+@media(max-width:600px){.rd-dev-dialog{width:100vw;height:100dvh;padding:7px;border-radius:0}.rd-dev-toolbar{gap:3px}.rd-dev-button{padding:6px}.rd-dev-stage[data-mode=dual] .rd-dev-pane{min-width:340px}}

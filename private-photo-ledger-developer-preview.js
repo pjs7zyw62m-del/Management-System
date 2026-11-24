@@ -1,0 +1,102 @@
+/* Owner-only REDLINE developer workspace. No live room data enters the sandbox. */
+(()=>{
+ 'use strict';
+ const $=s=>document.querySelector(s),app=$('#ledgerApp'),setup=$('#ownerSetup');
+ if(!app||!setup)return;
+ const authorized=()=>!app.hidden&&!setup.hidden&&window.BLACKCELL_REDLINE_API?.snapshot?.()?.isOwner===true;
+ const make=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e};
+ const btn=(text,fn)=>{const b=make('button','rd-dev-button',text);b.type='button';b.addEventListener('click',fn);return b};
+ const dialog=make('dialog','rd-dev-dialog');dialog.id='redlineDeveloperPreview';
+ const top=make('header','rd-dev-top'),name=make('div','rd-dev-name');
+ name.append(make('strong','','REDLINE · DEVELOPER PREVIEW'),make('small','','LOCAL TEST SESSION · NO LIVE RECORDS OR PAYMENTS'));
+ const toolbar=make('div','rd-dev-toolbar'),stage=make('div','rd-dev-stage'),notice=make('p','rd-dev-notice','Test chat, upload local photos, rate and price them. Other live-only actions are not connected.');
+ const frameWraps={},frames={},modeButtons={},deviceButtons={};
+ let model=null,token='',generation=0,mode='dual',device='desktop';
+ function chooseMode(next){mode=next;stage.dataset.mode=next;for(const [k,b] of Object.entries(modeButtons))b.setAttribute('aria-pressed',String(k===next));for(const role of ['receiver','sender'])frameWraps[role].hidden=next!=='dual'&&role!==next}
+ function chooseDevice(next){device=next;stage.dataset.device=next;for(const [k,b] of Object.entries(deviceButtons))b.setAttribute('aria-pressed',String(k===next))}
+ for(const [key,label] of [['receiver','Receiver'],['sender','Sender'],['dual','Dual view']]){modeButtons[key]=btn(label,()=>chooseMode(key));toolbar.append(modeButtons[key])}
+ for(const [key,label] of [['desktop','Desktop'],['tablet','Tablet'],['mobile','Mobile']]){deviceButtons[key]=btn(label,()=>chooseDevice(key));toolbar.append(deviceButtons[key])}
+ toolbar.append(btn('Reset test',()=>{if(authorized()&&confirm('Clear this temporary test session only?')){model=fresh();broadcast()}}));
+ top.append(name,btn('Close',()=>dialog.close()));
+ for(const role of ['receiver','sender']){const wrap=make('section','rd-dev-pane');wrap.append(make('h3','',role.toUpperCase()+' · TEST'));frameWraps[role]=wrap;stage.append(wrap)}
+ dialog.append(top,toolbar,notice,stage);document.body.append(dialog);
+ chooseMode(mode);chooseDevice(device);
+ function fresh(){return {photos:[],messages:[],active:true,viewing:null,session:crypto.randomUUID()}}
+ function broadcast(){if(!model||!dialog.open||!authorized())return;for(const f of Object.values(frames))f.contentWindow?.postMessage({type:'rd-dev-state',token,model},'*')}
+ function receive(event){
+  if(!dialog.open||!authorized()||!model)return;
+  const role=Object.keys(frames).find(k=>event.source===frames[k].contentWindow);
+  const m=event.data;if(!role||event.origin!=='null'||m?.type!=='rd-dev-action'||m.token!==token)return;
+  const a=m.action,p=m.payload||{};let ok=true;
+  if(a==='ready'){broadcast();return}
+  if(!model.active&&a!=='view'){ok=false}
+  else if(a==='chat'&&typeof p.body==='string'&&p.body.trim()&&p.body.length<=2000&&model.messages.length<300){
+   model.messages.push({id:crypto.randomUUID(),sender_id:role==='receiver'?'00000000-0000-4000-8000-000000000004':'00000000-0000-4000-8000-000000000005',body:p.body.trim(),created_at:new Date().toISOString()});
+  }else if(a==='upload'&&role==='sender'&&model.photos.length<30&&typeof p.image==='string'&&p.image.length<=2000000&&/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(p.image)){
+   model.photos.push({id:crypto.randomUUID(),image_url:p.image,caption:'Local test photograph',file_name:'Test photo',created_at:new Date().toISOString(),decision_status:'pending',amount_cents:0,stars:0});
+  }else if(['rate','price','reject','view'].includes(a)&&role==='receiver'){
+   const photo=model.photos.find(x=>x.id===p.id);
+   if(a==='view'){model.viewing=photo?.id||null}
+   else if(!photo)ok=false;
+   else if(a==='rate'&&Number.isInteger(p.stars)&&p.stars>=1&&p.stars<=5){photo.stars=p.stars;photo.rated_at=new Date().toISOString()}
+   else if(a==='price'&&photo.decision_status==='pending'&&Number.isInteger(p.cents)&&p.cents>=0&&p.cents<=10000000){photo.amount_cents=p.cents;photo.decision_status='accepted';photo.decided_at=photo.priced_at=new Date().toISOString();model.viewing=null}
+   else if(a==='reject'&&photo.decision_status==='pending'){photo.decision_status='rejected';photo.decided_at=new Date().toISOString();model.viewing=null}
+   else ok=false;
+  }else if(a==='close'&&role==='receiver'){model.active=false;model.viewing=null}
+  else ok=false;
+  if(ok)broadcast();
+  event.source.postMessage({type:'rd-dev-ack',token,id:m.id,ok},'*');
+ }
+ window.addEventListener('message',receive);
+ // Reuse current production markup and explicitly allowlisted UI scripts only.
+ // No authentication, storage, live client, or live-update code is loaded.
+ const allow=new Set(['private-photo-ledger-responsive.js','private-photo-ledger-solid-red.js','private-photo-ledger-simple-sender.js','private-photo-ledger-receiver.js','private-photo-ledger-photo-zoom.js','private-photo-ledger-sender-messenger.js','private-photo-ledger-sender-android-fit.js','private-photo-ledger-viewport-fit.js']);
+ const get=async url=>{const r=await fetch(url,{credentials:'omit',cache:'no-cache'});if(!r.ok)throw Error('Preview asset unavailable: '+r.status);return r.text()};
+ let assets;
+ async function loadAssets(){
+  if(assets)return assets;
+  const html=await get(new URL('private-photo-ledger.html',location.href));
+  const doc=new DOMParser().parseFromString(html,'text/html');
+  const scripts=[...doc.querySelectorAll('script[src]')].map(e=>new URL(e.getAttribute('src'),location.href)).filter(u=>u.origin===location.origin&&allow.has(u.pathname.split('/').pop()));
+  const css=[...doc.querySelectorAll('link[rel=stylesheet]')].map(e=>new URL(e.getAttribute('href'),location.href)).filter(u=>u.origin===location.origin&&/^private-photo-ledger[-\w]*\.css$/.test(u.pathname.split('/').pop()));
+  const body=doc.body;
+  body.querySelectorAll('script,iframe,object,embed,link,meta,base').forEach(e=>e.remove());
+  for(const e of body.querySelectorAll('*'))for(const a of [...e.attributes])if(/^on/i.test(a.name)||['src','srcset','href','action','formaction','ping'].includes(a.name.toLowerCase()))e.removeAttribute(a.name);
+  const sources=await Promise.all(scripts.map(get));
+  const adapter=await get(new URL('private-photo-ledger-developer-frame.js?v=1',location.href));
+  assets={markup:body.innerHTML,css,sources,adapter};return assets;
+ }
+ function frameDocument(a,role){
+  const nonce=crypto.randomUUID(),escapeScript=s=>s.replace(/<\/script/gi,'<\\/script');
+  const script=s=>'<script nonce="'+nonce+'">'+escapeScript(s)+'</script>';
+  const csp="default-src 'none'; script-src 'nonce-"+nonce+"'; style-src 'unsafe-inline' "+location.origin+"; img-src data: blob:; font-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'";
+  return '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="'+csp+'">'+a.css.map(u=>'<link rel="stylesheet" href="'+u.href.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'">').join('')+
+   '<style>body{background:#050505!important}#ownerSetup .setup-form,#ownerSetup .rr-access-control,#ownerSetup #ledgerScopeToggle,#ledgerSignOut,#backLink{display:none!important}.rd-dev-local-banner{padding:6px 10px;background:#501524;color:white;font:700 11px system-ui;position:relative;z-index:5}.rd-dev-local-control{width:100%;margin:5px 0;padding:9px;background:#30111a;color:#fff;border:1px solid #ad4059;border-radius:8px}.rd-dev-local-control:disabled{opacity:.5}</style></head><body>'+a.markup+
+   script('window.REDLINE_DEV_CONFIG='+JSON.stringify({role,token,origin:location.origin})+';')+script(a.adapter)+a.sources.map(script).join('')+'</body></html>';
+ }
+ async function open(){
+  if(!authorized()||dialog.open)return;
+  const seq=++generation;model=fresh();token=crypto.randomUUID();
+  notice.textContent='Loading current REDLINE interface into an isolated test session…';dialog.showModal();
+  try{
+   const a=await loadAssets();
+   if(seq!==generation||!dialog.open||!authorized())return;
+   for(const role of ['receiver','sender']){
+    const f=make('iframe','rd-dev-frame');f.title='REDLINE '+role+' test view';f.setAttribute('sandbox','allow-scripts allow-modals');f.referrerPolicy='no-referrer';
+    frames[role]=f;frameWraps[role].append(f);f.srcdoc=frameDocument(a,role);
+   }
+   notice.textContent='Isolated test: actual REDLINE layout and chat, local photo uploads, ratings and prices. Timers, trigger rules and real account actions are not connected yet.';
+  }catch(e){notice.textContent='Developer preview could not load: '+String(e.message||e)}
+ }
+ dialog.addEventListener('close',()=>{generation++;for(const [role,f] of Object.entries(frames)){f.remove();delete frames[role]}model=null;token=''});
+ const launch=btn('DEVELOPER PREVIEW',()=>void open());launch.id='redlineDeveloperPreviewLaunch';launch.hidden=true;
+ function sync(){
+  launch.hidden=!authorized();if(!authorized()&&dialog.open)dialog.close();
+  const header=$('#redlineReceiverCommand .rr-command-header');
+  const group=$('#redlineReceiverCommand .rr-header-menu-group');
+  if(header&&launch.parentNode!==header){if(group)group.after(launch);else header.append(launch)}
+  else if(!header&&launch.parentNode!==setup)setup.append(launch);
+ }
+ setup.append(launch);window.addEventListener('blackcell:redline:state',sync);window.addEventListener('blackcell:redline:bridge',sync);
+ const observer=new MutationObserver(sync);observer.observe(app,{attributes:true,attributeFilter:['hidden']});observer.observe(setup,{attributes:true,attributeFilter:['hidden']});sync();
+})();

@@ -1,0 +1,88 @@
+/* Runs ONLY inside an opaque-origin, script-only developer iframe. */
+(()=>{
+ 'use strict';
+ const cfg=window.REDLINE_DEV_CONFIG;if(!cfg||window.parent===window||location.href!=='about:srcdoc')return;
+ const owner=cfg.role==='receiver',$=id=>document.getElementById(id),make=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e};
+ const button=(text,fn,cls='rd-dev-local-control')=>{const b=make('button',cls,text);b.type='button';b.addEventListener('click',fn);return b};
+ const money=n=>'$'+(Number(n||0)/100).toFixed(2);
+ let model={photos:[],messages:[],active:true,viewing:null,session:'initial'},requests=new Map(),last='',lastRoom='';
+ function action(type,payload={}){
+  const id=String(++sequence);
+  return new Promise((resolve,reject)=>{const timer=setTimeout(()=>{requests.delete(id);reject(Error('Test workspace did not respond'))},5000);requests.set(id,{resolve,reject,timer});parent.postMessage({type:'rd-dev-action',token:cfg.token,id,action:type,payload},cfg.origin)});
+ }
+ let sequence=0;
+ function sum(){return model.photos.filter(p=>p.decision_status==='accepted').reduce((n,p)=>n+p.amount_cents,0)}
+ function snapshot(){const assigned=sum(),photos=model.photos.map(p=>({...p,resubmissionAllowed:false}));return {
+  roomId:model.session,userId:owner?'00000000-0000-4000-8000-000000000004':'00000000-0000-4000-8000-000000000005',
+  peerName:owner?'Test Sender':'Test Receiver',isOwner:owner,roomActive:model.active,archiveMode:false,photoSendingPaused:false,resetAt:null,
+  pending:photos.filter(p=>p.decision_status==='pending').length,owed:money(assigned),paid:'$0.00',assigned:money(assigned),entries:photos,
+  photoHistory:photos,paymentHistory:[],ratingEvents:[],fiveStarPhotos:photos.filter(p=>p.stars===5),topPicks:photos.filter(p=>p.stars===5),paymentSummary:{remaining_cents:assigned,paid_cents:0}
+ }}
+ window.BLACKCELL_REDLINE_API={snapshot,loadMessages:async()=>model.messages.slice(),sendMessage:body=>action('chat',{body}),chatStatus:async()=>({peerTyping:false,peerReadAt:null}),chatSignal:async()=>true,ownerAccessMembers:async()=>[],currentlyViewingStatus:async()=>({active:!!model.viewing,photoId:model.viewing}),timerStatus:async()=>({ok:true,server_now:new Date().toISOString(),active:null,recent:[],assigned_cents:0,owed_cents:0,paid_cents:0}),roomPaymentStatus:async()=>({remaining_cents:sum(),paid_cents:0}),recordPaidInFull:async()=>{throw Error('Payments are not connected in developer preview')},recordPartialPayment:async()=>{throw Error('Payments are not connected in developer preview')}};
+ const file=$('uploadPhoto');if(file){
+  file.accept='image/jpeg,image/png,image/webp';file.multiple=true;
+  file.addEventListener('change',async()=>{const files=[...file.files];file.value='';for(const f of files.slice(0,10)){
+   if(!['image/jpeg','image/png','image/webp'].includes(f.type)||f.size>1400000){alert('Test photo must be JPG, PNG or WebP, under 1.4 MB.');continue}
+   try{const image=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(f)});await action('upload',{image})}catch(e){alert(e.message||'Test photo not sent')}
+  }});
+ }
+ window.BLACKCELL_REDLINE_UPLOAD_UI={open:()=>file?.click()};
+ document.addEventListener('submit',e=>{if(!e.target.matches('.redline-message-composer'))e.preventDefault()});
+ const banner=make('div','rd-dev-local-banner','DEVELOPER PREVIEW · '+cfg.role.toUpperCase()+' · TEST DATA ONLY');
+ document.body.prepend(banner);
+ for(const id of ['accessGate'])if($(id))$(id).hidden=true;
+ for(const id of ['ledgerApp','activeRoom'])if($(id))$(id).hidden=false;
+ for(const id of ['ownerSetup','ownerUploadInfo','ownerReviewQueue'])if($(id))$(id).hidden=!owner;
+ if($('employeeUpload'))$('employeeUpload').hidden=owner;
+ const set=(id,text)=>{if($(id)&&$(id).textContent!==String(text))$(id).textContent=String(text)};
+ set('activeRoomTitle','Developer Test Room');set('roomPeople','Test Sender / Test Receiver');set('ledgerLiveStatus','LOCAL TEST SESSION');
+ $('closeRoomBtn')?.addEventListener('click',()=>{if(confirm('End only the test session?'))void action('close')});
+ $('closeLightbox')?.addEventListener('click',()=>{$('photoLightbox').hidden=true;document.body.style.overflow=''});
+ window.addEventListener('blackcell:redline:open-trigger-owner',()=>alert('Trigger-word rules are not connected in this local preview.'));
+ function photoCard(p,review){
+  const card=make('article','photo-entry');card.dataset.redlinePhotoId=p.id;
+  const b=button('',()=>{const img=$('lightboxImage');img.src=p.image_url;$('photoLightbox').hidden=false;void action('view',{id:p.id})},'photo-image-btn'+(review?' review-image-button':''));
+  const img=make('img');img.src=p.image_url;img.alt='Local test photograph';b.append(img);
+  if(review)b.append(make('span','review-photo-enlarge','⤢ VIEW FULL PHOTO'));
+  const body=make('div','photo-entry-content');body.append(make('span','entry-badge '+p.decision_status,p.decision_status.toUpperCase()),make('h3','','PHOTO '+p.id.slice(0,8).toUpperCase()));
+  if(p.stars)body.append(make('div','rr-photo-star-summary','★'.repeat(p.stars)+'☆'.repeat(5-p.stars)));
+  if(p.decision_status==='accepted')body.append(make('div','entry-amount',money(p.amount_cents)));
+  card.append(b,body);return card;
+ }
+ function render(){
+  const s=snapshot();set('pendingCount',s.pending);set('totalAssigned',s.assigned);set('totalOwed',s.owed);set('totalPaid',s.paid);set('reviewQueueCount',s.pending+' WAITING');set('roomStateLabel',model.active?'ACTIVE':'CLOSED');
+  const sig=JSON.stringify([model.session,model.active,model.photos.map(p=>[p.id,p.stars,p.decision_status,p.amount_cents])]);
+  if(owner&&sig!==last){
+   last=sig;const current=model.photos.find(p=>p.decision_status==='pending'),queue=$('reviewQueueCurrent'),panel=$('redlineLightboxReview'),history=$('photoEntries');
+   queue.replaceChildren();history.replaceChildren();panel.replaceChildren();panel.hidden=false;
+   if(!current){const empty=make('div','queue-empty');empty.append(make('strong','','WAITING FOR FIRST PHOTO'),make('p','','Incoming photos will appear here one at a time.'));queue.append(empty);panel.append(make('p','','Waiting for a test photo.'))}
+   else{
+    queue.append(make('div','queue-progress','NEXT PHOTO TO REVIEW'),photoCard(current,true));
+    panel.append(make('span','redline-review-kicker','TEST RECEIVER · PRIVATE REVIEW'));
+    const rating=make('section','rr-photo-rating-panel'),stars=make('div','rr-photo-rating-buttons');
+    rating.append(make('strong','rr-photo-rating-title','RATE THIS PHOTOGRAPH'));
+    for(let i=1;i<=5;i++){const b=button('★',()=>void action('rate',{id:current.id,stars:i}),'rr-photo-rating-star'+(i<=current.stars?' is-filled':''));b.disabled=!model.active;stars.append(b)}
+    rating.append(stars);panel.append(rating);
+    const label=make('label','redline-review-label','PHOTO PRICE · USD'),input=make('input','redline-review-amount');input.inputMode='decimal';input.placeholder='0.00';label.append(input);panel.append(label);
+    const controls=make('div','redline-review-actions');
+    const accept=button('SUBMIT PRICE & NEXT PHOTO',()=>{if(!/^\d{1,6}(?:\.\d{1,2})?$/.test(input.value.trim())){alert('Enter a test amount, such as 0.25');return}void action('price',{id:current.id,cents:Math.round(Number(input.value)*100)})},'button-main');
+    const zero=button('ACCEPT $0.00',()=>void action('price',{id:current.id,cents:0}),'button-outline');
+    const reject=button('REJECT PHOTO',()=>void action('reject',{id:current.id}),'button-outline reject-photo');
+    for(const b of [accept,zero,reject]){b.disabled=!model.active;controls.append(b)}panel.append(controls);
+    if(model.viewing!==current.id&&model.active)void action('view',{id:current.id});
+   }
+   for(const p of model.photos.filter(p=>p.decision_status!=='pending').slice().reverse())history.append(photoCard(p,false));
+  }
+  window.dispatchEvent(new Event('blackcell:redline:state'));
+ }
+ window.addEventListener('message',e=>{
+  if(e.source!==parent||e.origin!==cfg.origin||e.data?.token!==cfg.token)return;
+  if(e.data.type==='rd-dev-state'){
+   const next=e.data.model;if(!next||!Array.isArray(next.photos)||!Array.isArray(next.messages))return;
+   model=next;render();
+  }else if(e.data.type==='rd-dev-ack'){
+   const r=requests.get(e.data.id);if(!r)return;requests.delete(e.data.id);clearTimeout(r.timer);e.data.ok?r.resolve(true):r.reject(Error('Test action not available'));
+  }
+ });
+ window.addEventListener('DOMContentLoaded',()=>{window.dispatchEvent(new Event('blackcell:redline:bridge'));render();parent.postMessage({type:'rd-dev-action',token:cfg.token,action:'ready'},cfg.origin)});
+})();
