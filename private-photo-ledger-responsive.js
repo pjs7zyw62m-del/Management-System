@@ -34,6 +34,9 @@
     }catch(_){return false}
   }
   function deviceMode(){
+    const preview=location.href==='about:srcdoc'&&window.REDLINE_DEV_CONFIG?.device;
+    if(preview==='mobile'||preview==='tablet')return preview;
+    if(preview==='desktop')return'os';
     const agent=navigator.userAgent||'',touch=navigator.maxTouchPoints||0;
     const short=Math.min(screen.width||Infinity,screen.height||Infinity);
     const tablet=/iPad/i.test(agent)||(/Macintosh|MacIntel/i.test(agent)&&touch>1)||(/Android/i.test(agent)&&!/Mobile/i.test(agent));
@@ -117,7 +120,7 @@
     return false;
   }
   function reflect(){
-    const mode=deviceMode(),isMobile=mode==='mobile';
+    const mode=deviceMode(),isMobile=mode==='mobile',previous=document.body.dataset.ledgerDevice;
     document.body.classList.toggle('bc-ledger-mobile',isMobile);
     document.body.classList.toggle('bc-ledger-tablet',mode==='tablet');
     document.body.classList.toggle('bc-ledger-desktop',mode==='os');
@@ -142,6 +145,7 @@
     // The mobile tab bar is meaningful only after room access is verified.
     nav.hidden=!isShown(app)||!isShown(room)||!isMobile;
     nav.style.setProperty('--ledger-visible-tabs',String([...buttons.keys()].filter(isAvailable).length));
+    if(previous!==mode)window.dispatchEvent(new CustomEvent('blackcell:redline:device-mode',{detail:{mode}}));
   }
   function activate(key,{scroll=true}={}){
     if(!isAvailable(key))return;
@@ -199,5 +203,6 @@
   window.addEventListener('resize',()=>requestAnimationFrame(reflect),{passive:true});
   window.addEventListener('orientationchange',()=>requestAnimationFrame(reflect),{passive:true});
   window.addEventListener('pageshow',reflect);
+  if(location.href==='about:srcdoc'&&window.REDLINE_DEV_CONFIG)window.addEventListener('blackcell:redline:preview-device',reflect);
   reflect();
 })();

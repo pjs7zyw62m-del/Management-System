@@ -933,6 +933,7 @@
  window.addEventListener('blackcell:redline:state',sync);
  window.addEventListener('blackcell:redline:session-mode',sync);
  window.addEventListener('pageshow',sync);
+ window.addEventListener('blackcell:redline:device-mode',sync);
  window.addEventListener('resize',sync,{passive:true});
  sync();
 })();
