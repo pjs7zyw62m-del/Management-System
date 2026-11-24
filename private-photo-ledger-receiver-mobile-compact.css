@@ -30,3 +30,44 @@ body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand .rr
 body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand .rr-stat-value{
  font-size:17px!important;line-height:1.1!important;letter-spacing:-.025em!important;font-weight:800!important
 }
+
+/* Phone command bar: one coherent row, including in the sandbox which
+   loads external stylesheets rather than the live HTML's inline CSS. */
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand>.rr-command-header{
+ display:grid!important;grid-template-columns:minmax(0,2.15fr) minmax(0,1fr)!important;
+ align-items:center!important;justify-content:stretch!important;gap:5px!important;
+ width:100%!important;min-width:0!important;overflow:visible!important
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand>.rr-command-header>.rr-command-intro{
+ grid-column:1/-1!important;order:-3;min-width:0!important
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand>.rr-command-header>.rr-status{
+ grid-column:1/-1!important;order:-2;justify-self:start;max-width:100%;box-sizing:border-box
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand .rr-header-menu-group{
+ position:relative!important;display:grid!important;grid-template-columns:minmax(0,.72fr) minmax(0,1.28fr)!important;
+ grid-column:1!important;align-items:stretch!important;gap:5px!important;min-width:0!important;width:100%!important;overflow:visible!important
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand .rr-header-menu-group>.rr-nav-dropdown{
+ position:relative!important;display:block!important;width:100%!important;min-width:0!important;max-width:none!important
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand .rr-header-menu-group .rr-menu-toggle,
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand #redlineReceiverTriggerQuick,
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand #redlineReceiverEndSession{
+ box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:center!important;
+ width:100%!important;min-width:0!important;max-width:none!important;min-height:40px!important;height:100%!important;
+ padding:5px 4px!important;margin:0!important;gap:3px!important;border-radius:8px!important;
+ font-size:9px!important;line-height:1.15!important;letter-spacing:0!important;text-align:center!important;white-space:normal!important;overflow-wrap:normal!important
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand .rr-header-menu-group .rr-menu-toggle:after{font-size:12px!important}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand #redlineReceiverEndSession{grid-column:2!important}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand .rr-header-menu-group .rr-nav-menu-items{
+ position:absolute!important;top:calc(100% + 5px)!important;left:0!important;right:auto!important;
+ width:min(260px,calc(100vw - 42px))!important;max-height:55dvh!important;z-index:1000!important;box-sizing:border-box!important
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand:has(.rr-menu-toggle[aria-expanded="true"]){
+ position:relative!important;z-index:1001!important;overflow:visible!important
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand>.rr-command-header>#redlineDeveloperPreviewLaunch{
+ grid-column:1/-1!important;justify-self:start
+}
