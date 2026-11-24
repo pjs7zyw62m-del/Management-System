@@ -3,6 +3,8 @@ test('mobile review mounts before the message feed, not before financial counter
 
 test('Option 2 keeps the photo stage separate from the visible review controls',()=>{assert.match(js,/popup.append\(header,scroll,controls\)/);assert.match(js,/scroll.append\(imageWrap\)/);assert.match(js,/controls.append\(stars,priceRow,timerBox,actions,feedback\)/)});
 
-test('expanded option is restricted to the isolated developer receiver and restores counters on minimize',()=>{assert.match(js,/window.REDLINE_DEV_CONFIG\?\.role==='receiver'&&window.parent!==window&&location.href==='about:srcdoc'/);assert.match(js,/topPreview=Boolean\(previewReceiver&&mobile&&visible&&conversation/);assert.match(js,/popup.setAttribute\('data-preview-top',''\)/);assert.match(js,/function minimize\(\)\{opened=false;popup.hidden=true;setPreviewExpanded\(null\)/)});
+test('approved expanded option is restricted to authenticated active receiver mobile view and restores counters on minimize',()=>{assert.match(js,/s\?\.isOwner&&s.roomActive&&!s.archiveMode/);assert.match(js,/topPreview=Boolean\(valid&&mobile&&visible&&conversation/);assert.match(js,/popup.setAttribute\('data-preview-top',''\)/);assert.match(js,/function minimize\(\)\{opened=false;popup.hidden=true;setPreviewExpanded\(null\)/)});
 
 test('photo first preview overlays the top without moving the chat or counters',()=>{assert.match(js,/const available=Math.max\(0,bottom-top-48\)/);assert.match(js,/popup.style.setProperty\('--rd-ir-top-height'/);assert.match(js,/popup.removeAttribute\('data-preview-top'\)/)});
+
+test('production and developer mobile use the same photo-first layout, with no desktop or sender overlay',()=>{assert.doesNotMatch(js,/REDLINE_DEV_CONFIG/);assert.match(js,/const mobile=document.body.classList.contains\('bc-ledger-mobile'\)/);assert.match(js,/blackcell:redline:photo-decided/);assert.match(readFileSync('private-photo-ledger.html','utf8'),/private-photo-ledger-photo-popup\.js\?v=20261124-6/)});

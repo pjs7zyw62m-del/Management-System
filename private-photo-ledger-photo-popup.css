@@ -97,7 +97,7 @@ body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redli
 }
 body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-card.rd-ir-preview-expanded>.redline-message-composer{flex:0 0 auto!important}
 
-/* Photo-first top overlay, restricted by the isolated receiver preview flag.
+/* Approved photo-first mobile receiver overlay.
    Starts over the corporation header; chat and ledger are never reparented. */
 body.bc-ledger-mobile #rdIndependentReview[data-preview-top]:not([hidden]){
  position:fixed!important;inset:auto!important;top:var(--rd-ir-top,0px)!important;left:0!important;right:0!important;transform:none!important;

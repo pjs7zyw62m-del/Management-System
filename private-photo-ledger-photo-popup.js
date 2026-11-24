@@ -22,8 +22,7 @@ const controls=make('div','rd-ir-controls');const actions=make('div','rd-ir-acti
 const grip=make('div','rd-ir-grip');grip.setAttribute('role','separator');grip.setAttribute('aria-label','Resize photo review and chat');grip.setAttribute('aria-orientation','horizontal');grip.tabIndex=0;popup.append(grip);
 const resume=btn('Photo waiting · Review',()=>{opened=true;schedule()},'rd-ir-resume');resume.hidden=true;resume.setAttribute('aria-controls',popup.id);
 document.body.append(popup,resume);
-const previewReceiver=window.REDLINE_DEV_CONFIG?.role==='receiver'&&window.parent!==window&&location.href==='about:srcdoc';
-let scope='',known=new Set(),opened=false,current=null,queued=false,share=previewReceiver?.90:.76,pointer=null,expandedHost=null;
+let scope='',known=new Set(),opened=false,current=null,queued=false,share=.90,pointer=null,expandedHost=null;
 function setPreviewExpanded(host){if(expandedHost===host)return;expandedHost?.classList.remove('rd-ir-preview-expanded');expandedHost=host;expandedHost?.classList.add('rd-ir-preview-expanded')}
 function minimize(){opened=false;popup.hidden=true;setPreviewExpanded(null);popup.removeAttribute('data-preview-top');schedule()}
 function canonical(){
@@ -47,7 +46,7 @@ function decision(kind){
 function syncTimer(){
  const timer=q('#redlinePhotoTimerPanel'),c=canonical();
  timerToggle.disabled=false;
- if(!timer){timerStart.disabled=timerStop.disabled=true;timerStatus.textContent='Timer unavailable in this preview.';return}
+ if(!timer){timerStart.disabled=timerStop.disabled=true;timerStatus.textContent='Timer unavailable in this view.';return}
  const originalRate=q('.rr-timer-rate',timer),start=q('.rr-timer-start',timer),stop=q('.rr-timer-stop',timer);
  if(document.activeElement!==rate&&originalRate)rate.value=originalRate.value;
  timerStart.disabled=!c||!start||start.disabled;timerStop.disabled=!stop||stop.disabled;
@@ -88,7 +87,7 @@ function sync(){
  const visible=Boolean(opened&&next&&summary);
  // Mount the new presentation only. The original chat and controls stay put.
  const conversation=q('.redline-message-card',chat),feed=conversation?.querySelector('.redline-message-feed');
- const topPreview=Boolean(previewReceiver&&mobile&&visible&&conversation&&feed?.parentNode===conversation);
+ const topPreview=Boolean(valid&&mobile&&visible&&conversation&&feed?.parentNode===conversation);
  if(topPreview){
   // Fixed overlay starts at the phone viewport's top, including the branding.
   // Do not move or hide the original header, counters, or conversation.
@@ -107,8 +106,7 @@ function sync(){
   if(resume.parentNode!==document.body)document.body.append(resume);
  }
  const mobileReady=!mobile||Boolean(conversation&&feed?.parentNode===conversation);
- // Only the isolated developer receiver may reclaim the counter area. No live
- // financial header is hidden, moved, or modified by this preview experiment.
+ // Approved mobile receiver overlay: original financial header and chat stay mounted.
  setPreviewExpanded(null);
  if(topPreview){
   const viewport=window.visualViewport,top=viewport?.offsetTop||0,height=viewport?.height||innerHeight;
@@ -120,7 +118,7 @@ function sync(){
  }else if(mobileReady&&mobile&&visible){const composer=q('.redline-message-composer',conversation);const available=Math.max(0,conversation.clientHeight-[...conversation.children].filter(el=>el!==popup&&el!==resume&&el!==feed&&!el.hidden&&getComputedStyle(el).display!=='none').reduce((n,el)=>n+el.getBoundingClientRect().height,0)-(expandedHost?40:48));popup.style.setProperty('--rd-ir-available',available+'px');}else popup.style.removeProperty('--rd-ir-available');
  popup.hidden=!visible||!mobileReady;resume.hidden=!next||visible||!summary||!mobileReady;
  const resumeText=pending.length+' photo'+(pending.length===1?'':'s')+' waiting · Review';if(resume.textContent!==resumeText)resume.textContent=resumeText;
- if(!next)return;
+ if(!next){image.removeAttribute('src');image.hidden=true;placeholder.hidden=false;return;}
  const countText='1 of '+pending.length+' awaiting review';if(count.textContent!==countText)count.textContent=countText;
  const src=next.image_url;
  if(src&&/^(blob:|https:\/\/|data:image\/)/.test(src)){if(image.getAttribute('src')!==src)image.src=src;image.hidden=false;placeholder.hidden=true}
@@ -133,7 +131,7 @@ function sync(){
  syncTimer();
 }
 function schedule(){if(!queued){queued=true;requestAnimationFrame(sync)}}
-for(const event of ['blackcell:redline:state','blackcell:redline:receiver-ready','blackcell:redline:review-photo','blackcell:redline:review-empty','blackcell:redline:device-mode','blackcell:redline:session-mode','pageshow','resize'])window.addEventListener(event,schedule);
+for(const event of ['blackcell:redline:state','blackcell:redline:receiver-ready','blackcell:redline:review-photo','blackcell:redline:review-empty','blackcell:redline:photo-decided','blackcell:redline:device-mode','blackcell:redline:session-mode','pageshow','resize'])window.addEventListener(event,schedule);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!popup.hidden&&q('#photoLightbox')?.hidden&&!q('dialog[open]'))minimize()});
 new MutationObserver(schedule).observe(document.body,{attributes:true,attributeFilter:['class','data-ledger-view']});
 window.visualViewport?.addEventListener('resize',schedule,{passive:true});window.visualViewport?.addEventListener('scroll',schedule,{passive:true});
