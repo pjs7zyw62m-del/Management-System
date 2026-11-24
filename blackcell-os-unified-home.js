@@ -32,6 +32,7 @@
  function iconFor(id){
   const original=readApp(id)?.querySelector('.app-icon');
   const icon=create('span','bc-home-app-icon');
+  if(id==='photoledger')icon.dataset.appArt='photoledger';
   // Movable desktop shortcuts and gallery icons clone only the glyph, not
   // the source tile's background. Give the App Store its approved colorway.
   if(id==='store'){

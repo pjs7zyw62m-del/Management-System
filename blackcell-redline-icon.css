@@ -1,0 +1,21 @@
+/* Approved BLACKCELL REDLINE artwork. Shared by the original launcher,
+   movable desktop shortcuts, gallery, mobile SpringBoard, dock and App Store. */
+html #desktop .app[data-app="photoledger"] .app-icon,
+html #desktop .bc-concept-menu-tile[data-app="photoledger"] .app-icon,
+html #desktop .bc-home-app-icon[data-app-art="photoledger"],
+html #desktop .bc-home-desktop-app[data-id="photoledger"] .bc-home-app-icon,
+html #desktop .bc-sb-icon[data-id="photoledger"] .bc-sb-app-art,
+html #desktop .bc-sb-result[data-id="photoledger"] .bc-sb-result-icon,
+html #desktop .bc-store-icon[data-app-id="photoledger"],
+html #desktop .dock button[data-open="photoledger"]{
+ background:#09090b url("blackcell-redline-icon.webp?v=20261124-1") center/contain no-repeat!important;
+ border-color:#a52235!important;
+}
+html #desktop .app[data-app="photoledger"] .app-icon svg,
+html #desktop .bc-concept-menu-tile[data-app="photoledger"] .app-icon svg,
+html #desktop .bc-home-app-icon[data-app-art="photoledger"] svg,
+html #desktop .bc-home-desktop-app[data-id="photoledger"] .bc-home-app-icon svg,
+html #desktop .bc-sb-icon[data-id="photoledger"] .bc-sb-app-art svg,
+html #desktop .bc-sb-result[data-id="photoledger"] .bc-sb-result-icon svg,
+html #desktop .bc-store-icon[data-app-id="photoledger"] svg,
+html #desktop .dock button[data-open="photoledger"] svg{visibility:hidden!important}
