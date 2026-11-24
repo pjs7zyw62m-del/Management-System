@@ -16,6 +16,7 @@
  function chooseDevice(next){device=next;stage.dataset.device=next;for(const [k,b] of Object.entries(deviceButtons))b.setAttribute('aria-pressed',String(k===next))}
  for(const [key,label] of [['receiver','Receiver'],['sender','Sender'],['dual','Dual view']]){modeButtons[key]=btn(label,()=>chooseMode(key));toolbar.append(modeButtons[key])}
  for(const [key,label] of [['desktop','Desktop'],['tablet','Tablet'],['mobile','Mobile']]){deviceButtons[key]=btn(label,()=>chooseDevice(key));toolbar.append(deviceButtons[key])}
+ const reload=btn('Reload Preview',()=>void reloadPreview());toolbar.append(reload);
  toolbar.append(btn('Reset test',()=>{if(authorized()&&confirm('Clear this temporary test session only?')){model=fresh();broadcast()}}));
  top.append(name,btn('Close',()=>dialog.close()));
  for(const role of ['receiver','sender']){const wrap=make('section','rd-dev-pane');wrap.append(make('h3','',role.toUpperCase()+' · TEST'));frameWraps[role]=wrap;stage.append(wrap)}
@@ -51,42 +52,67 @@
  // Reuse current production markup and explicitly allowlisted UI scripts only.
  // No authentication, storage, live client, or live-update code is loaded.
  const allow=new Set(['private-photo-ledger-responsive.js','private-photo-ledger-solid-red.js','private-photo-ledger-simple-sender.js','private-photo-ledger-receiver.js','private-photo-ledger-photo-zoom.js','private-photo-ledger-sender-messenger.js','private-photo-ledger-sender-android-fit.js','private-photo-ledger-viewport-fit.js']);
- const get=async url=>{const r=await fetch(url,{credentials:'omit',cache:'no-cache'});if(!r.ok)throw Error('Preview asset unavailable: '+r.status);return r.text()};
- let assets;
+ // No persistent asset cache: every open or explicit reload revalidates
+ // the deployed HTML, scripts and styles using a unique request URL.
+ const get=async(url,revision)=>{
+  const fresh=new URL(url,location.href);fresh.searchParams.set('rdPreviewRefresh',revision);
+  const r=await fetch(fresh,{credentials:'omit',cache:'no-store'});
+  if(!r.ok)throw Error('Preview asset unavailable: '+r.status);
+  return r.text();
+ };
  async function loadAssets(){
-  if(assets)return assets;
-  const html=await get(new URL('private-photo-ledger.html',location.href));
+  const revision=crypto.randomUUID();
+  const html=await get(new URL('private-photo-ledger.html',location.href),revision);
   const doc=new DOMParser().parseFromString(html,'text/html');
   const scripts=[...doc.querySelectorAll('script[src]')].map(e=>new URL(e.getAttribute('src'),location.href)).filter(u=>u.origin===location.origin&&allow.has(u.pathname.split('/').pop()));
-  const css=[...doc.querySelectorAll('link[rel=stylesheet]')].map(e=>new URL(e.getAttribute('href'),location.href)).filter(u=>u.origin===location.origin&&/^private-photo-ledger[-\w]*\.css$/.test(u.pathname.split('/').pop()));
+  // Preserve production stylesheet ordering, including inline rules.
+  // Fetch CSS in the parent so the opaque-origin iframe cannot reuse old links.
+  const styleNodes=[...doc.head.querySelectorAll('link[rel=stylesheet],style')];
+  const styles=await Promise.all(styleNodes.map(e=>{
+   if(e.tagName==='STYLE')return e.textContent;
+   const u=new URL(e.getAttribute('href'),location.href);
+   if(u.origin!==location.origin||!/^private-photo-ledger[-\w]*\.css$/.test(u.pathname.split('/').pop()))return '';
+   return get(u,revision);
+  }));
   const body=doc.body;
   body.querySelectorAll('script,iframe,object,embed,link,meta,base').forEach(e=>e.remove());
   for(const e of body.querySelectorAll('*'))for(const a of [...e.attributes])if(/^on/i.test(a.name)||['src','srcset','href','action','formaction','ping'].includes(a.name.toLowerCase()))e.removeAttribute(a.name);
-  const sources=await Promise.all(scripts.map(get));
-  const adapter=await get(new URL('private-photo-ledger-developer-frame.js?v=1',location.href));
-  assets={markup:body.innerHTML,css,sources,adapter};return assets;
+  const sources=await Promise.all(scripts.map(u=>get(u,revision)));
+  const adapter=await get(new URL('private-photo-ledger-developer-frame.js',location.href),revision);
+  const receiver=scripts.find(u=>u.pathname.endsWith('/private-photo-ledger-receiver.js'));
+  const mobile=[...doc.head.querySelectorAll('link[rel=stylesheet]')].map(e=>new URL(e.getAttribute('href'),location.href)).find(u=>u.pathname.endsWith('/private-photo-ledger-receiver-mobile-compact.css'));
+  return {markup:body.innerHTML,styles,sources,adapter,build:[receiver?.searchParams.get('v'),mobile?.searchParams.get('v')].filter(Boolean).join(' / ')};
  }
  function frameDocument(a,role){
   const nonce=crypto.randomUUID(),escapeScript=s=>s.replace(/<\/script/gi,'<\\/script');
   const script=s=>'<script nonce="'+nonce+'">'+escapeScript(s)+'</script>';
   const csp="default-src 'none'; script-src 'nonce-"+nonce+"'; style-src 'unsafe-inline' "+location.origin+"; img-src data: blob:; font-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'";
-  return '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="'+csp+'">'+a.css.map(u=>'<link rel="stylesheet" href="'+u.href.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'">').join('')+
+  return '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="'+csp+'">'+a.styles.map(s=>'<style>'+s.replace(/<\/style/gi,'<\\/style')+'</style>').join('')+
    '<style>body{background:#050505!important}#ownerSetup .setup-form,#ownerSetup .rr-access-control,#ownerSetup #ledgerScopeToggle,#ledgerSignOut,#backLink{display:none!important}.rd-dev-local-banner{padding:6px 10px;background:#501524;color:white;font:700 11px system-ui;position:relative;z-index:5}.rd-dev-local-control{width:100%;margin:5px 0;padding:9px;background:#30111a;color:#fff;border:1px solid #ad4059;border-radius:8px}.rd-dev-local-control:disabled{opacity:.5}</style></head><body>'+a.markup+
    script('window.REDLINE_DEV_CONFIG='+JSON.stringify({role,token,origin:location.origin})+';')+script(a.adapter)+a.sources.map(script).join('')+'</body></html>';
  }
- async function open(){
-  if(!authorized()||dialog.open)return;
-  const seq=++generation;model=fresh();token=crypto.randomUUID();
-  notice.textContent='Loading current REDLINE interface into an isolated test session…';dialog.showModal();
+ async function reloadPreview(){
+  if(!authorized()||!dialog.open||reload.disabled)return;
+  const seq=++generation;
+  reload.disabled=true;
+  notice.textContent='Loading latest deployed REDLINE interface…';
   try{
    const a=await loadAssets();
    if(seq!==generation||!dialog.open||!authorized())return;
+   token=crypto.randomUUID();
    for(const role of ['receiver','sender']){
+    frames[role]?.remove();
     const f=make('iframe','rd-dev-frame');f.title='REDLINE '+role+' test view';f.setAttribute('sandbox','allow-scripts allow-modals');f.referrerPolicy='no-referrer';
     frames[role]=f;frameWraps[role].append(f);f.srcdoc=frameDocument(a,role);
    }
-   notice.textContent='Isolated test: actual REDLINE layout and chat, local photo uploads, ratings and prices. Timers, trigger rules and real account actions are not connected yet.';
-  }catch(e){notice.textContent='Developer preview could not load: '+String(e.message||e)}
+   notice.textContent='Current interface: '+(a.build||'latest deployed assets')+' · Local test only. Timers, trigger rules and real account actions are not connected yet.';
+  }catch(e){if(seq===generation&&dialog.open)notice.textContent='Developer preview could not load: '+String(e.message||e)}
+  finally{if(seq===generation)reload.disabled=false}
+ }
+ async function open(){
+  if(!authorized()||dialog.open)return;
+  model=fresh();token=crypto.randomUUID();reload.disabled=false;
+  dialog.showModal();await reloadPreview();
  }
  dialog.addEventListener('close',()=>{generation++;for(const [role,f] of Object.entries(frames)){f.remove();delete frames[role]}model=null;token=''});
  const launch=btn('DEVELOPER PREVIEW',()=>void open());launch.id='redlineDeveloperPreviewLaunch';launch.hidden=true;
@@ -94,7 +120,7 @@
   launch.hidden=!authorized();if(!authorized()&&dialog.open)dialog.close();
   const header=$('#redlineReceiverCommand .rr-command-header');
   const group=$('#redlineReceiverCommand .rr-header-menu-group');
-  if(header&&launch.parentNode!==header){if(group)group.after(launch);else header.append(launch)}
+  if(header&&launch.parentNode!==header){if(group?.parentNode===header)group.after(launch);else header.append(launch)}
   else if(!header&&launch.parentNode!==setup)setup.append(launch);
  }
  setup.append(launch);window.addEventListener('blackcell:redline:state',sync);window.addEventListener('blackcell:redline:bridge',sync);
