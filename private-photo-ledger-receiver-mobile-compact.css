@@ -401,3 +401,25 @@ body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redli
 }
 body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-composer .redline-chat-send::after{content:"";display:block;width:16px;height:16px;flex:0 0 16px;background:currentColor;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m22%202-7%2020-4-9-9-4%2020-7Z%22%2F%3E%3Cpath%20d%3D%22M22%202%2011%2013%22%2F%3E%3C%2Fsvg%3E") center/contain no-repeat;-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m22%202-7%2020-4-9-9-4%2020-7Z%22%2F%3E%3Cpath%20d%3D%22M22%202%2011%2013%22%2F%3E%3C%2Fsvg%3E") center/contain no-repeat}
 body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-composer .redline-chat-send:focus-visible{outline:2px solid #ff92ac!important;outline-offset:-3px!important}
+
+/* Mobile parity: keep the live-only actions inside the same compact menu
+   as the developer view; leave desktop/tablet and sender styles untouched. */
+body.bc-redline-receiver.bc-ledger-mobile #redlineDeveloperPreviewLaunch{display:none!important}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp>.page-heading{display:none!important}
+body.bc-redline-receiver.bc-ledger-mobile #redlineReceiverMenuItems:not([hidden])>#redlineConsentSettingsOpen:not([hidden]){
+ display:flex!important;align-items:center!important;justify-content:flex-start!important;
+ width:100%!important;min-height:40px!important;margin:0!important;padding:9px 11px!important;
+ border:0!important;border-radius:8px!important;background:transparent!important;
+ color:#eee!important;font:600 13px/1.25 system-ui!important;text-align:left!important
+}
+body.bc-redline-receiver.bc-ledger-mobile #redlineReceiverMenuItems>#redlineConsentSettingsOpen[hidden]{display:none!important}
+body.bc-redline-receiver.bc-ledger-mobile #redlineReceiverMenuItems>#redlineReceiverTriggerCost{
+ display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;
+ gap:2px 8px!important;padding:8px 11px!important;margin:2px 0!important;
+ border:1px solid #3b2831!important;border-radius:8px!important;background:#171116!important;cursor:pointer!important
+}
+body.bc-redline-receiver.bc-ledger-mobile #redlineReceiverMenuItems #redlineReceiverTriggerCost .redline-receiver-trigger-total{font-size:14px!important}
+body.bc-redline-receiver.bc-ledger-mobile #redlineReceiverMenuItems #redlineReceiverTriggerCost .redline-receiver-trigger-recent{grid-column:1/-1!important;font-size:10px!important}
+body.bc-redline-receiver.bc-ledger-mobile #redlineReceiverChat .redline-message-header:has(>.rr-stats)>:not(.rr-stats){display:none!important}
+body.bc-redline-receiver.bc-ledger-mobile #redlineReceiverChat #redlineRepeatBonusMobile{display:none!important}
+body.bc-redline-receiver.bc-ledger-mobile #redlineReceiverCommand>.rr-command-header:not(:has(>button:not([hidden]),>.workspace-actions:not([hidden]),>.rr-header-menu-group:not([hidden]))){display:none!important}

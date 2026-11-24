@@ -44,8 +44,9 @@
  }
  function putInHeader(){
   const header=document.querySelector('#redlineReceiverCommand .rr-command-header');
-  if(!header)return;
-  if(strip.parentNode!==header)header.append(strip);
+  const menu=document.body.classList.contains('bc-ledger-mobile')?document.querySelector('#redlineReceiverMenuItems'):null;
+  const host=menu||header;if(!host)return;
+  if(strip.parentNode!==host){const end=host.querySelector('#redlineReceiverEndSession');if(menu&&end?.parentNode===host)host.insertBefore(strip,end);else host.append(strip)}
  }
  function render(data){
   putInHeader();
@@ -95,6 +96,7 @@
  window.addEventListener('blackcell:redline:owner-chat-sent',()=>{void poll(true)});
  window.addEventListener('blackcell:redline:state',()=>{void poll()});
  window.addEventListener('blackcell:redline:bridge',()=>{void poll(true)});
+ window.addEventListener('blackcell:redline:device-mode',()=>{if(active())putInHeader()});
  window.addEventListener('blackcell:redline:reset',()=>clearRoom(null));
  window.addEventListener('pageshow',()=>{void poll(true)});
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)void poll(true)});

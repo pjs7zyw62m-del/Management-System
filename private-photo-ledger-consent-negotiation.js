@@ -48,10 +48,13 @@ const mountSettingsButton=()=>{
  // The receiver redesign hides .page-heading, so the old gear was invisible.
  // Keep one persistent owner button inside the VISIBLE receiver header.
  const receiverHeader=$('#redlineReceiverCommand .rr-command-header');
- const host=receiverHeader||heading;
- if(host&&settingsButton.parentNode!==host)host.append(settingsButton);
+ const menu=document.body.classList.contains('bc-ledger-mobile')?$('#redlineReceiverMenuItems'):null;
+ const host=menu||receiverHeader||heading;
+ if(host&&settingsButton.parentNode!==host){const end=host.querySelector('#redlineReceiverEndSession');if(menu&&end?.parentNode===host)host.insertBefore(settingsButton,end);else host.append(settingsButton)}
 };
 mountSettingsButton();
+window.addEventListener('blackcell:redline:device-mode',mountSettingsButton);
+window.addEventListener('blackcell:redline:receiver-ready',mountSettingsButton);
 settingsButton.hidden=true;
 const settingsDlg=modal('REDLINE feature settings');
 const settingsHead=make('div','redline-consent-heading');
