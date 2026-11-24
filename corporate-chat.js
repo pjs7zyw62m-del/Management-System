@@ -190,6 +190,9 @@ const inboxEdit=$('inboxEdit'),inboxCompose=$('inboxCompose'),inboxMenu=$('inbox
 function closeInboxFilter(){inboxMenu.hidden=true;inboxFilterButton.setAttribute('aria-expanded','false')}
 function syncInboxControls(){
  const quickDisabled=!ready||inboxEditing||inboxComposing;
+ for(const b of document.querySelectorAll('[data-rail-filter]')){b.disabled=quickDisabled;b.setAttribute('aria-pressed',String(b.dataset.railFilter===inboxFilter));}
+ const railCompose=$('bcRailCompose');if(railCompose)railCompose.disabled=quickDisabled;
+ const railMedia=$('bcRailMedia');if(railMedia)railMedia.disabled=!ready||!peer;
  for(const b of document.querySelectorAll('[data-quick-filter]')){b.disabled=quickDisabled;b.setAttribute('aria-pressed',String(b.dataset.quickFilter===inboxFilter));}
  const unreadCount=$('bcUnreadCount');if(unreadCount){unreadCount.hidden=!ready||!inboxUnreadAvailable||!inboxUnread.size;unreadCount.textContent=String(inboxUnread.size);}
  for(const b of inboxMenu.querySelectorAll('[data-inbox-filter]'))b.setAttribute('aria-pressed',String(b.dataset.inboxFilter===inboxFilter));
@@ -211,6 +214,9 @@ function selectInboxFilter(value){
 }
 inboxMenu.addEventListener('click',e=>{const b=e.target.closest('[data-inbox-filter]');if(!b)return;selectInboxFilter(b.dataset.inboxFilter);inboxFilterButton.focus()});
 for(const b of document.querySelectorAll('[data-quick-filter]'))b.addEventListener('click',()=>selectInboxFilter(b.dataset.quickFilter));
+for(const b of document.querySelectorAll('[data-rail-filter]'))b.addEventListener('click',()=>selectInboxFilter(b.dataset.railFilter));
+$('bcRailCompose')?.addEventListener('click',()=>{if(ready&&!inboxComposing&&!inboxEditing)inboxCompose.click()});
+$('bcRailMedia')?.addEventListener('click',()=>{if(ready&&peer)void sharedMedia.openLibrary()});
 document.addEventListener('pointerdown',e=>{if(!inboxMenu.hidden&&!e.target.closest('.apple-filter-anchor'))closeInboxFilter()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!inboxMenu.hidden){closeInboxFilter();inboxFilterButton.focus()}});
 inboxEdit.addEventListener('click',()=>{closeInboxFilter();if(inboxComposing||inboxEditing){exitInboxMode();$('peerSearch').value=''}else{inboxEditing=true;inboxSelection.clear()}renderPeers()});

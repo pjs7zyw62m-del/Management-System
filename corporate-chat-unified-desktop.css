@@ -42,3 +42,35 @@ html.bc-desktop-messages body.bc-chat .chat:not(.media-open) .composer-send:not(
 html.bc-desktop-messages body.bc-chat .chat.media-open #osChatSidebar .bc-inbox-quick-filters{flex-wrap:wrap}
 html.bc-desktop-messages body.bc-chat .chat.media-open #osChatSidebar .bc-inbox-quick-filters button{flex:1 0 28%}
 @media(max-width:760px){html.bc-desktop-messages body.bc-chat>.chat:not(.media-open):not(.os-sidebar-closed){grid-template-columns:clamp(185px,32%,235px) minmax(0,1fr)}html.bc-desktop-messages body.bc-chat .chat:not(.media-open) .imessage-secure-indicator{display:none}html.bc-desktop-messages body.bc-chat .chat:not(.media-open) .bc-chat-header-media{font-size:10px;padding:6px}html.bc-desktop-messages body.bc-chat .chat:not(.media-open) .imessage-title-actions{gap:4px}}
+
+/* Distinct, three-zone desktop workspace. No changes to mobile or the existing media viewer. */
+.bc-message-rail{display:none}
+@media(min-width:950px){
+html.bc-desktop-messages body.bc-chat>.chat:not(.media-open):not(.os-sidebar-closed){grid-template-columns:clamp(355px,34%,445px) minmax(0,1fr)!important}
+html.bc-desktop-messages body.bc-chat .chat:not(.media-open) #osChatSidebar.apple-inbox{display:grid!important;grid-template-columns:82px minmax(0,1fr);grid-template-rows:auto auto auto auto minmax(0,1fr);padding:10px 12px 10px 0!important;column-gap:12px;background:#111216!important}
+html.bc-desktop-messages body.bc-chat .chat:not(.media-open).os-sidebar-closed #osChatSidebar.apple-inbox{display:none!important}
+html.bc-desktop-messages body.bc-chat .chat:not(.media-open) #osChatSidebar.apple-inbox>.bc-message-rail{display:flex;grid-column:1;grid-row:1/-1;flex-direction:column;align-self:stretch;gap:7px;padding:8px 5px;border-right:1px solid #ffffff12;background:linear-gradient(180deg,#15141a,#09090c);min-height:0}
+html.bc-desktop-messages body.bc-chat .chat:not(.media-open) #osChatSidebar.apple-inbox>.apple-inbox-top,html.bc-desktop-messages body.bc-chat .chat:not(.media-open) #osChatSidebar.apple-inbox>.apple-inbox-title,html.bc-desktop-messages body.bc-chat .chat:not(.media-open) #osChatSidebar.apple-inbox>#inboxRecent,html.bc-desktop-messages body.bc-chat .chat:not(.media-open) #osChatSidebar.apple-inbox>#peers,html.bc-desktop-messages body.bc-chat .chat:not(.media-open) #osChatSidebar.apple-inbox .peer-search-wrap{grid-column:2}
+html.bc-desktop-messages body.bc-chat #osChatSidebar .bc-message-rail-brand{display:grid;justify-items:center;gap:4px;margin:4px 0 16px;color:#ff5368}
+html.bc-desktop-messages body.bc-chat #osChatSidebar .bc-message-rail-brand span{font:400 37px/1 system-ui;text-shadow:0 0 15px #ef244b88}
+html.bc-desktop-messages body.bc-chat #osChatSidebar .bc-message-rail-brand small{color:#bbb7c1;font:700 8px system-ui;letter-spacing:.035em}
+html.bc-desktop-messages body.bc-chat #osChatSidebar .bc-message-rail button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:9px 2px;border:1px solid transparent;border-radius:10px;background:transparent;color:#9e9eaa;font:600 10px/1.2 system-ui;min-height:57px}
+html.bc-desktop-messages body.bc-chat #osChatSidebar .bc-message-rail button[aria-pressed=true]{color:#ffbdc6;background:#3a1621;border-color:#833047}
+html.bc-desktop-messages body.bc-chat #osChatSidebar .bc-message-rail button:not(:disabled):hover{background:#28252e;color:white}
+html.bc-desktop-messages body.bc-chat #osChatSidebar .bc-message-rail button:disabled{opacity:.35}
+html.bc-desktop-messages body.bc-chat #osChatSidebar .bc-message-rail-divider{height:1px;margin:4px 10px;background:#ffffff15}
+html.bc-desktop-messages body.bc-chat #osChatSidebar .bc-message-rail-footer{margin-top:auto;text-align:center;color:#71717f;font:650 8px/1.5 system-ui;letter-spacing:.06em}
+}
+html.bc-desktop-messages body.bc-chat .chat:not(.media-open) #osChatSidebar .peer.active{background:linear-gradient(110deg,#49202e,#28151e)!important;box-shadow:inset 3px 0 #f04964!important}
+html.bc-desktop-messages body.bc-chat .chat:not(.media-open) #osChatSidebar .peer.active .peer-meta,html.bc-desktop-messages body.bc-chat .chat:not(.media-open) #osChatSidebar .peer.active .peer-preview{color:#e2c4ce}
+html.bc-desktop-messages body.bc-chat .chat:not(.media-open) #osChatSidebar .bc-inbox-quick-filters button[aria-pressed=true]{color:#ffc5cd;background:#481b2a;box-shadow:inset 0 0 0 1px #8a3548}
+html.bc-desktop-messages body.bc-chat .chat:not(.media-open)>.chat-main{background:radial-gradient(ellipse at 75% 5%,#35111f45,transparent 65%),#09090d!important}
+html.bc-desktop-messages body.bc-chat .chat:not(.media-open)>.chat-main>.chat-title{min-height:78px;background:linear-gradient(110deg,#221921,#151419)!important;border-bottom:1px solid #81324765;padding:12px 20px}
+html.bc-desktop-messages body.bc-chat .chat:not(.media-open) .imessage-names strong{font-size:18px}
+html.bc-desktop-messages body.bc-chat .chat:not(.media-open) .imessage-portrait{width:49px;height:49px}
+html.bc-desktop-messages body.bc-chat .chat:not(.media-open) .message.mine:not(.message-media)>.bubble:not(.bc-message-deleted):not(.bc-chat-tube-card):not(.bc-chat-pulse-card){background:linear-gradient(135deg,#a3243e,#74182d)!important;border-color:#c13d57!important}
+html.bc-desktop-messages body.bc-chat .chat:not(.media-open) .message.mine:not(.message-media)>.bubble:not(.bc-message-deleted):not(.bc-chat-tube-card):not(.bc-chat-pulse-card):after{background:#74182d!important}
+html.bc-desktop-messages body.bc-chat .chat:not(.media-open) .composer{padding:13px 18px!important;background:#151319!important;border-top:1px solid #ffffff17!important}
+html.bc-desktop-messages body.bc-chat .chat:not(.media-open) .composer-send:not(:disabled){background:#b82946!important;border-color:#ef5570!important}
+html.bc-desktop-messages body.bc-chat .chat:not(.media-open) .composer-send:not(:disabled):hover{background:#cf3554!important}
+@media(max-height:540px){html.bc-desktop-messages body.bc-chat #osChatSidebar .bc-message-rail{overflow:auto;scrollbar-width:none}html.bc-desktop-messages body.bc-chat #osChatSidebar .bc-message-rail button{min-height:43px;padding:5px 2px}html.bc-desktop-messages body.bc-chat #osChatSidebar .bc-message-rail-brand{margin-bottom:5px}}
