@@ -174,3 +174,47 @@ body.redline-sender-messenger .redline-message-feed>.redline-chat-event{flex-shr
   display:none!important;
  }
 }
+
+/* Mobile sender: matching receiver Apple Glass menu; retain existing section routing. */
+.rs-mobile-menu[hidden],.rs-mobile-menu-items[hidden]{display:none!important}
+body.redline-sender-simple.redline-sender-messenger.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-simple-tabs,
+body.redline-sender-simple.redline-sender-messenger.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-messenger-quick{display:none!important}
+body.redline-sender-messenger.bc-ledger-mobile.rs-mobile-menu-active .topbar{
+ display:flex!important;align-items:center!important;flex-wrap:nowrap!important;overflow:visible!important;box-sizing:border-box!important
+}
+body.redline-sender-messenger.bc-ledger-mobile.rs-mobile-menu-active .topbar:has(.rs-mobile-menu-toggle[aria-expanded="true"]){z-index:1010!important;overflow:visible!important}
+body.redline-sender-messenger.bc-ledger-mobile .topbar>.rs-mobile-menu:not([hidden]){
+ position:relative;display:flex;align-items:center;justify-content:center;margin-left:auto;flex:0 0 44px;width:44px;min-width:44px
+}
+body.redline-sender-messenger.bc-ledger-mobile .topbar .rs-mobile-menu-toggle{
+ box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:40px;height:40px;min-width:40px;min-height:40px;padding:0;
+ border:1px solid #46464b;border-radius:11px;background:linear-gradient(155deg,#202024,#141417);color:#fff;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.09),0 2px 8px rgba(0,0,0,.2);touch-action:manipulation;cursor:pointer
+}
+body.redline-sender-messenger.bc-ledger-mobile .topbar .rs-mobile-menu-toggle::after{
+ content:"";display:block;width:18px;height:2px;border-radius:2px;background:currentColor;box-shadow:0 -5px 0 currentColor,0 5px 0 currentColor
+}
+body.redline-sender-messenger.bc-ledger-mobile .topbar .rs-mobile-menu-toggle[aria-expanded="true"]{background:linear-gradient(155deg,#302026,#1c1519);border-color:#a6485a}
+body.redline-sender-messenger.bc-ledger-mobile .topbar .rs-mobile-menu-items:not([hidden]){
+ position:absolute;top:calc(100% + 9px);right:0;z-index:1001;box-sizing:border-box;display:flex;flex-direction:column;gap:1px;
+ width:min(260px,calc(100vw - 30px));max-height:min(64dvh,420px);overflow-y:auto;overscroll-behavior:contain;padding:6px;
+ border:1px solid #414145;border-radius:14px;background:linear-gradient(155deg,#151518,#09090b);
+ box-shadow:0 14px 36px rgba(0,0,0,.72),inset 0 1px 0 rgba(255,255,255,.05);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)
+}
+body.redline-sender-messenger.bc-ledger-mobile .topbar .rs-mobile-menu-item{
+ display:flex;align-items:center;justify-content:flex-start;gap:12px;width:100%;min-height:42px;padding:9px 11px;margin:0;box-sizing:border-box;
+ border:0;border-radius:8px;background:transparent;color:#f1f1f3;text-align:left;font-size:13px;line-height:1.25;font-weight:600;cursor:pointer
+}
+body.redline-sender-messenger.bc-ledger-mobile .topbar .rs-mobile-menu-item::before{
+ content:"";width:17px;height:17px;flex:0 0 17px;background:#b8b8bf;-webkit-mask:var(--rs-icon) center/contain no-repeat;mask:var(--rs-icon) center/contain no-repeat
+}
+body.redline-sender-messenger.bc-ledger-mobile .topbar .rs-mobile-menu-item.is-current{background:#30151d;color:#ffb7c6}
+body.redline-sender-messenger.bc-ledger-mobile .topbar .rs-mobile-menu-item.is-current::before{background:#ff8099}
+body.redline-sender-messenger.bc-ledger-mobile .topbar .rs-mobile-menu-item:disabled{opacity:.45;cursor:default}
+body.redline-sender-messenger.bc-ledger-mobile .topbar .rs-mobile-menu-toggle:focus-visible,
+body.redline-sender-messenger.bc-ledger-mobile .topbar .rs-mobile-menu-item:focus-visible{outline:2px solid #e69aa8;outline-offset:2px}
+body.redline-sender-messenger.bc-ledger-mobile .rs-mobile-menu-item[data-icon="chat"]{--rs-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M21%2011.5a8.5%208.5%200%200%201-8.5%208.5c-1.4%200-2.7-.3-3.9-.9L3%2021l1.9-5.6A8.5%208.5%200%201%201%2021%2011.5Z%22%2F%3E%3C%2Fsvg%3E")}
+body.redline-sender-messenger.bc-ledger-mobile .rs-mobile-menu-item[data-icon="view"]{--rs-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M2%2012s3.5-7%2010-7%2010%207%2010%207-3.5%207-10%207S2%2012%202%2012Z%22%2F%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%223%22%2F%3E%3C%2Fsvg%3E")}
+body.redline-sender-messenger.bc-ledger-mobile .rs-mobile-menu-item[data-icon="money"]{--rs-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%229%22%2F%3E%3Cpath%20d%3D%22M12%206v12m3-9.5h-4a2%202%200%200%200%200%204h2a2%202%200%200%201%200%204H9%22%2F%3E%3C%2Fsvg%3E")}
+body.redline-sender-messenger.bc-ledger-mobile .rs-mobile-menu-item[data-icon="history"]{--rs-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M3%2012a9%209%200%201%201%203%206.7M3%204v8h8M12%207v5l3%202%22%2F%3E%3C%2Fsvg%3E")}
+body.redline-sender-messenger.bc-ledger-mobile .rs-mobile-menu-item[data-icon="star"]{--rs-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m12%203%202.8%205.7%206.2.9-4.5%204.4%201.1%206.2-5.6-2.9-5.6%202.9%201.1-6.2L3%209.6l6.2-.9Z%22%2F%3E%3C%2Fsvg%3E")}

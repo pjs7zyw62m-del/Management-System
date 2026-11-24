@@ -43,6 +43,41 @@ for(const [key,label] of Object.entries({
  upload:'Messages',viewing:'Viewing',earnings:'Earnings',
  history:'History',stars:'5 Stars'
 })){if(tabs[key])tabs[key].textContent=label;}
+// Mobile sender menu delegates to the original section actions.
+const topbar=$('.topbar'),mobileMenu=create('div','rs-mobile-menu');
+mobileMenu.hidden=true;
+const menuToggle=create('button','rs-mobile-menu-toggle');
+menuToggle.type='button';menuToggle.setAttribute('aria-label','Open sender menu');
+menuToggle.setAttribute('aria-expanded','false');menuToggle.setAttribute('aria-controls','redlineSenderMobileMenuItems');
+const menuItems=create('nav','rs-mobile-menu-items');menuItems.id='redlineSenderMobileMenuItems';
+menuItems.setAttribute('aria-label','Sender sections');menuItems.hidden=true;
+function setMenuOpen(open){
+ menuItems.hidden=!open;menuToggle.setAttribute('aria-expanded',String(open));
+ menuToggle.setAttribute('aria-label',open?'Close sender menu':'Open sender menu');
+}
+const menuOptions=new Map();
+for(const [key,label,icon] of [['upload','Messages','chat'],['viewing','Viewing','view'],['earnings','Earnings','money'],['history','History','history'],['stars','5 Stars','star']]){
+ if(!tabs[key])continue;
+ const item=create('button','rs-mobile-menu-item',label);item.type='button';item.dataset.icon=icon;
+ item.addEventListener('click',()=>{setMenuOpen(false);if(sender())tabs[key].click()});
+ menuItems.append(item);menuOptions.set(key,item);
+}
+menuToggle.addEventListener('click',()=>{if(sender()&&!mobileMenu.hidden)setMenuOpen(menuItems.hidden)});
+mobileMenu.append(menuToggle,menuItems);topbar?.append(mobileMenu);
+document.addEventListener('pointerdown',e=>{if(!menuItems.hidden&&!mobileMenu.contains(e.target))setMenuOpen(false)});
+mobileMenu.addEventListener('keydown',e=>{if(e.key==='Escape'&&!menuItems.hidden){setMenuOpen(false);menuToggle.focus();e.preventDefault()}});
+function syncMobileMenu(active){
+ const show=active&&document.body.classList.contains('bc-ledger-mobile')&&Boolean(topbar);
+ if(mobileMenu.hidden===show)mobileMenu.hidden=!show;
+ if(!show&&!menuItems.hidden)setMenuOpen(false);
+ document.body.classList.toggle('rs-mobile-menu-active',show);
+ for(const [key,item] of menuOptions){
+  const selected=tabs[key].getAttribute('aria-selected')==='true';
+  item.classList.toggle('is-current',selected);
+  if(selected)item.setAttribute('aria-current','page');else item.removeAttribute('aria-current');
+  item.disabled=tabs[key].disabled;
+ }
+}
 // The actual authenticated composer becomes the primary sender screen.
 pane.insertBefore(chat,pane.firstElementChild);
 const uploadDrawer=create('details','redline-messenger-upload');
@@ -118,6 +153,7 @@ function update(){
  const active=sender();
  const onChat=active&&!pane.hidden;
  document.body.classList.toggle('redline-sender-messenger',active);
+ syncMobileMenu(active);
  liveStrip.hidden=!active;
  quick.hidden=!active;
  document.body.classList.toggle('redline-chat-immersive',onChat);
@@ -229,6 +265,7 @@ for(const node of [app,room,home,pane])observer.observe(node,{
 });
 for(const tab of Object.values(tabs))tab?.addEventListener('click',()=>requestAnimationFrame(update));
 window.addEventListener('pageshow',update);
+window.addEventListener('blackcell:redline:device-mode',update);
 window.addEventListener('visibilitychange',()=>{if(!document.hidden)update()});
 window.setInterval(()=>{if(!document.hidden&&sender())update()},1000);
 update();
