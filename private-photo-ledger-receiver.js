@@ -88,6 +88,7 @@
  // Keep navigation actions together while the payment action stays visible.
  const menuShell=make('div','rr-nav-dropdown');
  const menuToggle=button('MENU',()=>setMenuOpen(menuItems.hidden),'rr-nav-button rr-menu-toggle');
+ menuToggle.setAttribute('aria-label','Open receiver menu');
  menuToggle.setAttribute('aria-expanded','false');
  menuToggle.setAttribute('aria-controls','redlineReceiverMenuItems');
  menuToggle.setAttribute('aria-haspopup','true');

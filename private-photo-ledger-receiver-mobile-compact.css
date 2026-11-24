@@ -34,7 +34,7 @@ body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand .rr
 /* Phone command bar: one coherent row, including in the sandbox which
    loads external stylesheets rather than the live HTML's inline CSS. */
 body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand>.rr-command-header{
- display:grid!important;grid-template-columns:minmax(0,2.15fr) minmax(0,1fr)!important;
+ display:grid!important;grid-template-columns:44px minmax(0,1fr)!important;
  align-items:center!important;justify-content:stretch!important;gap:5px!important;
  width:100%!important;min-width:0!important;overflow:visible!important
 }
@@ -45,7 +45,7 @@ body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand>.rr
  grid-column:1/-1!important;order:-2;justify-self:start;max-width:100%;box-sizing:border-box
 }
 body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand .rr-header-menu-group{
- position:relative!important;display:grid!important;grid-template-columns:minmax(0,.72fr) minmax(0,1.28fr)!important;
+ position:relative!important;display:grid!important;grid-template-columns:minmax(0,1fr)!important;
  grid-column:1!important;align-items:stretch!important;gap:5px!important;min-width:0!important;width:100%!important;overflow:visible!important
 }
 body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand .rr-header-menu-group>.rr-nav-dropdown{
@@ -70,4 +70,21 @@ body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand:has
 }
 body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand>.rr-command-header>#redlineDeveloperPreviewLaunch{
  grid-column:1/-1!important;justify-self:start
+}
+
+/* Trigger Words stays in the original menu. Only the phone header hides
+   the redundant shortcut and presents an accessible three-line button. */
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand #redlineReceiverTriggerQuick{
+ display:none!important
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand .rr-header-menu-group .rr-menu-toggle{
+ font-size:0!important;width:44px!important;min-width:44px!important;height:40px!important;
+ justify-content:center!important;gap:0!important
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand .rr-header-menu-group .rr-menu-toggle::after{
+ content:""!important;display:block!important;width:18px;height:2px;border-radius:2px;background:currentColor;
+ box-shadow:0 -6px 0 currentColor,0 6px 0 currentColor;color:#fff!important;flex:none
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand #redlineReceiverEndSession{
+ width:auto!important;min-width:104px!important;justify-self:end;padding-inline:12px!important
 }
