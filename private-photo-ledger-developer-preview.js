@@ -9,7 +9,7 @@
  const dialog=make('dialog','rd-dev-dialog');dialog.id='redlineDeveloperPreview';
  const top=make('header','rd-dev-top'),name=make('div','rd-dev-name');
  name.append(make('strong','','REDLINE · DEVELOPER PREVIEW'),make('small','','LOCAL TEST SESSION · NO LIVE RECORDS OR PAYMENTS'));
- const toolbar=make('div','rd-dev-toolbar'),stage=make('div','rd-dev-stage'),notice=make('p','rd-dev-notice','Test chat, upload local photos, rate and price them. Other live-only actions are not connected.');
+ const toolbar=make('div','rd-dev-toolbar'),stage=make('div','rd-dev-stage'),notice=make('p','rd-dev-notice','Test chat, Camera Roll or sample BLACKCELL Photos, ratings and pricing. No live data or payments.');
  const frameWraps={},frames={},modeButtons={},deviceButtons={};
  let model=null,token='',generation=0,mode='dual',device='desktop',loadedBuild='',reports={},preset='';
  function chooseMode(next){if(next!=='sender'&&preset){preset='';stage.dataset.preset='';phonePreset.setAttribute('aria-pressed','false')}mode=next;stage.dataset.mode=next;for(const [k,b] of Object.entries(modeButtons))b.setAttribute('aria-pressed',String(k===next));for(const role of ['receiver','sender'])frameWraps[role].hidden=next!=='dual'&&role!==next}

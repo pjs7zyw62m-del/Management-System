@@ -42,7 +42,65 @@
    try{const image=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(f)});await action('upload',{image})}catch(e){alert(e.message||'Test photo not sent')}
   }});
  }
- window.BLACKCELL_REDLINE_UPLOAD_UI={open:()=>file?.click()};
+ // Test-only source chooser: mirrors the live menu, with a self-contained
+ // sample library. Never query or import any authenticated user's library.
+ if(!owner){
+  const source=make('div','redline-photo-source-overlay');source.id='redlinePhotoSourceOverlay';source.hidden=true;
+  const panel=make('section','redline-photo-source-dialog');panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-label','Add test photos to REDLINE');
+  const sourceHead=make('div','redline-photo-source-head');
+  const closeSource=()=>{source.hidden=true};
+  sourceHead.append(make('strong','','ADD PHOTOS TO REDLINE'),button('✕',closeSource,'redline-source-close'));
+  const options=make('div','redline-source-actions');
+  const camera=button('＋  Camera Roll',()=>{closeSource();if(model.active)file?.click()},'redline-source-device');
+  camera.id='redlineSourceDevice';
+  const libraryBtn=button('▣  BLACKCELL Photos',()=>{closeSource();openLibrary()},'redline-source-library');libraryBtn.id='redlineSourceLibrary';
+  options.append(camera,libraryBtn);
+  panel.append(sourceHead,make('p','redline-source-intro','Choose photos from your device or the sample BLACKCELL photo library.'),options,make('small','redline-source-footnote','DEVELOPER PREVIEW · Test photos only. No real uploads or library access.'));
+  source.append(panel);document.body.append(source);
+  source.addEventListener('click',e=>{if(e.target===source)closeSource()});
+  const picker=make('div','bc-pm-picker');picker.id='rdDevSampleLibrary';picker.hidden=true;picker.style.setProperty('display','none','important');
+  const pickerPanel=make('section','bc-pm-picker-panel');pickerPanel.setAttribute('role','dialog');pickerPanel.setAttribute('aria-modal','true');pickerPanel.setAttribute('aria-label','Sample BLACKCELL Photos library');
+  const pickerHead=make('div','bc-pm-header');
+  const pickerTitle=make('div');pickerTitle.append(make('h2','','BLACKCELL Photos'),make('p','','Sample library · Select multiple photos'));
+  const closeLibrary=()=>{if(sending)return;picker.hidden=true;picker.style.setProperty('display','none','important');selected.clear();updateSelection()};
+  pickerHead.append(pickerTitle,button('✕',closeLibrary));
+  const grid=make('div','rd-dev-sample-grid');
+  const status=make('p','rd-dev-sample-status','0 selected');status.setAttribute('role','status');
+  const send=button('SEND SELECTED PHOTOS',()=>void sendSelected());
+  const selected=new Set(),samples=[],tiles=[];
+  let sending=false;
+  // Generate harmless, distinct landscape fixtures locally with canvas.
+  const palettes=[['#183553','#ecb87f','#27465a'],['#805173','#ffd9aa','#5a3d5f'],['#153a35','#e7cc8d','#41674d'],['#303756','#9faed4','#141f3d'],['#9a4c3b','#ffdd9d','#65342c'],['#305a71','#d7ecf5','#245059']];
+  for(let n=0;n<palettes.length;n++){
+   const [sky,sun,land]=palettes[n],canvas=document.createElement('canvas');canvas.width=480;canvas.height=n%2?640:360;
+   const ctx=canvas.getContext('2d'),w=canvas.width,hh=canvas.height;
+   const gradient=ctx.createLinearGradient(0,0,0,hh);gradient.addColorStop(0,sky);gradient.addColorStop(1,sun);
+   ctx.fillStyle=gradient;ctx.fillRect(0,0,w,hh);ctx.fillStyle=sun;ctx.beginPath();ctx.arc(w*(.24+n*.085),hh*.27,hh*.09,0,Math.PI*2);ctx.fill();
+   ctx.fillStyle=land;ctx.beginPath();ctx.moveTo(0,hh*.72);ctx.lineTo(w*.25,hh*(.36+n*.025));ctx.lineTo(w*.52,hh*.69);ctx.lineTo(w*.76,hh*.42);ctx.lineTo(w,hh*.67);ctx.lineTo(w,hh);ctx.lineTo(0,hh);ctx.closePath();ctx.fill();
+   ctx.fillStyle='rgba(0,0,0,.24)';ctx.fillRect(0,hh*.84,w,hh*.16);
+   ctx.fillStyle='#fff';ctx.font='600 20px system-ui';ctx.fillText('SAMPLE '+(n+1),18,hh-18);
+   const image=canvas.toDataURL('image/jpeg',.82);samples.push(image);
+   const tile=button('',()=>{if(sending)return;if(selected.has(n))selected.delete(n);else selected.add(n);updateSelection()},'rd-dev-sample-tile');
+   tile.setAttribute('aria-label','Sample photo '+(n+1));tile.setAttribute('aria-pressed','false');
+   const img=make('img');img.src=image;img.alt='Sample landscape '+(n+1);
+   tile.append(img,make('span','rd-dev-sample-check','✓'));tiles.push(tile);grid.append(tile);
+  }
+  function updateSelection(){tiles.forEach((tile,n)=>tile.setAttribute('aria-pressed',String(selected.has(n))));status.textContent=selected.size+' selected';send.disabled=sending||!selected.size||!model.active}
+  function openLibrary(){if(!model.active)return;selected.clear();picker.hidden=false;picker.style.removeProperty('display');updateSelection()}
+  async function sendSelected(){
+   if(sending||!model.active||!selected.size)return;
+   sending=true;send.disabled=true;const batch=[...selected];let count=0;
+   try{for(const n of batch){status.textContent='Sending test photo '+(count+1)+' of '+batch.length;await action('upload',{image:samples[n]});selected.delete(n);count++}}
+   catch(e){alert('Test photo not sent: '+String(e.message||e))}
+   finally{sending=false;updateSelection();if(!selected.size)closeLibrary()}
+  }
+  pickerPanel.append(pickerHead,grid,status,send);picker.append(pickerPanel);document.body.append(picker);
+  const style=make('style');style.textContent='.rd-dev-sample-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;overflow-y:auto;min-height:0;flex:1 1 auto}.rd-dev-sample-tile{position:relative;padding:0!important;min-height:0!important;aspect-ratio:1;border-radius:8px!important;overflow:hidden;background:#151015!important;border:2px solid transparent!important;cursor:pointer}.rd-dev-sample-tile img{width:100%;height:100%;object-fit:cover;display:block}.rd-dev-sample-check{position:absolute;right:4px;top:4px;display:none;background:#c6002b;color:#fff;border-radius:50%;width:20px;height:20px;line-height:20px;text-align:center}.rd-dev-sample-tile[aria-pressed=true]{border-color:#ff4569!important}.rd-dev-sample-tile[aria-pressed=true] .rd-dev-sample-check{display:block}.rd-dev-sample-status{color:#eebac8;margin:0;font-size:12px}#rdDevSampleLibrary .bc-pm-picker-panel>button{background:#a90027!important;border-color:#f34566!important;font-weight:800!important}#rdDevSampleLibrary button:disabled{opacity:.5}';
+  document.head.append(style);
+  picker.addEventListener('click',e=>{if(e.target===picker)closeLibrary()});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!picker.hidden)closeLibrary();else closeSource()}});
+  window.BLACKCELL_REDLINE_UPLOAD_UI={open:()=>{if(model.active){source.hidden=false;camera.focus({preventScroll:true})}}};
+ }
  document.addEventListener('submit',e=>{if(!e.target.matches('.redline-message-composer'))e.preventDefault()});
  const banner=make('div','rd-dev-local-banner','DEVELOPER PREVIEW · '+cfg.role.toUpperCase()+' · TEST DATA ONLY');
  document.body.prepend(banner);
