@@ -220,3 +220,71 @@ body .bc-pm-picker .bc-pm-redline-empty{grid-column:1/-1}
  }
  body .bc-pm-picker .bc-pm-picker-panel{gap:6px!important}
 }
+
+/* Gallery V5 — isolate from the REDLINE messenger's generic button styling. */
+body .bc-pm-picker > .bc-pm-picker-panel{
+ gap:6px!important;padding:0!important;
+}
+body .bc-pm-picker .bc-pm-header{
+ display:flex!important;align-items:center!important;justify-content:space-between!important;
+ gap:8px!important;padding:12px 12px 10px!important;margin:0!important;
+ border-bottom:1px solid #202020!important;flex:none!important;
+}
+body .bc-pm-picker .bc-pm-header > div{flex:1 1 auto!important;min-width:0!important}
+body .bc-pm-picker .bc-pm-header h2{font:650 18px/1.25 system-ui!important;white-space:nowrap!important;letter-spacing:-.45px!important}
+body .bc-pm-picker .bc-pm-header p{font:11px/1.4 system-ui!important;margin:3px 0 0!important;color:#969696!important}
+body .bc-pm-picker .bc-pm-header > button{
+ flex:0 0 34px!important;width:34px!important;min-width:34px!important;max-width:34px!important;
+ height:34px!important;min-height:34px!important;max-height:34px!important;
+ padding:0!important;margin:0!important;display:grid!important;place-items:center!important;
+ border:0!important;border-radius:50%!important;background:#1c1c1e!important;color:#ddd!important;
+ font:500 17px/1 system-ui!important;box-shadow:none!important;
+}
+body .bc-pm-picker .bc-pm-photo-picker-grid,
+body #rdDevSampleLibrary .rd-dev-sample-grid{
+ grid-auto-rows:max-content!important;align-items:start!important;align-content:start!important;
+ gap:2px!important;margin:0!important;width:100%!important;
+}
+body .bc-pm-picker .bc-pm-photo-picker-grid > button.bc-pm-picker-tile,
+body #rdDevSampleLibrary .rd-dev-sample-grid > button.rd-dev-sample-tile{
+ display:block!important;position:relative!important;box-sizing:border-box!important;
+ width:100%!important;min-width:0!important;max-width:none!important;
+ height:auto!important;min-height:0!important;max-height:none!important;aspect-ratio:1 / 1!important;
+ align-self:start!important;justify-self:stretch!important;padding:0!important;margin:0!important;
+ border:0!important;border-radius:0!important;background:#131313!important;box-shadow:none!important;
+ overflow:hidden!important;isolation:isolate!important;
+}
+body .bc-pm-picker .bc-pm-photo-picker-grid > button.bc-pm-picker-tile > img,
+body #rdDevSampleLibrary .rd-dev-sample-grid > button.rd-dev-sample-tile > img{
+ position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;
+ max-width:none!important;max-height:none!important;object-fit:cover!important;object-position:center!important;
+ border:0!important;border-radius:0!important;margin:0!important;
+}
+body .bc-pm-picker .bc-pm-picker-tile .bc-pm-picker-check,
+body #rdDevSampleLibrary .rd-dev-sample-tile .rd-dev-sample-check{
+ position:absolute!important;display:grid!important;place-items:center!important;
+ top:7px!important;right:7px!important;bottom:auto!important;width:21px!important;height:21px!important;
+ border:1px solid #ffffffb0!important;border-radius:50%!important;background:#0006!important;
+ font:700 13px/1 system-ui!important;color:transparent!important;z-index:2!important;
+}
+body .bc-pm-picker button[aria-pressed=true].bc-pm-picker-tile,
+body #rdDevSampleLibrary button[aria-pressed=true].rd-dev-sample-tile{
+ outline:2px solid #ed2545!important;outline-offset:-2px!important;
+}
+body .bc-pm-picker button[aria-pressed=true] .bc-pm-picker-check,
+body #rdDevSampleLibrary button[aria-pressed=true] .rd-dev-sample-check{
+ background:#d71939!important;border-color:#d71939!important;color:#fff!important;
+}
+body .bc-pm-picker .bc-pm-picker-panel > input[type=search]{width:calc(100% - 24px)!important;margin:0 12px!important;background:#151515!important;border-color:#303030!important;min-height:38px!important}
+body .bc-pm-picker .bc-pm-picker-panel > .bc-pm-pick-status,
+body #rdDevSampleLibrary .rd-dev-sample-status{padding:3px 12px!important;margin:0!important;color:#b8b8b8!important;font:500 12px/1.4 system-ui!important;flex:none!important}
+body .bc-pm-picker .bc-pm-picker-panel > .bc-pm-button,
+body #rdDevSampleLibrary .bc-pm-picker-panel > button.rd-dev-gallery-send{
+ flex:none!important;width:calc(100% - 24px)!important;margin:0 12px max(10px,env(safe-area-inset-bottom))!important;
+ height:44px!important;min-height:44px!important;max-height:44px!important;padding:0 12px!important;
+ border:0!important;border-radius:11px!important;background:#c71132!important;color:white!important;
+ font:650 14px/1 system-ui!important;box-shadow:none!important;
+}
+body .bc-pm-picker .bc-pm-picker-panel > .bc-pm-button:disabled,
+body #rdDevSampleLibrary .bc-pm-picker-panel > button.rd-dev-gallery-send:disabled{opacity:1!important;background:#1b1b1d!important;color:#888!important}
+body .bc-pm-picker .bc-pm-picker-pager{padding:0 12px!important}

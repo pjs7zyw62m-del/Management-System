@@ -94,12 +94,12 @@
   const picker=make('div','bc-pm-picker');picker.id='rdDevSampleLibrary';picker.hidden=true;picker.style.setProperty('display','none','important');
   const pickerPanel=make('section','bc-pm-picker-panel');pickerPanel.setAttribute('role','dialog');pickerPanel.setAttribute('aria-modal','true');pickerPanel.setAttribute('aria-label','BLACKCELL Photos test library');
   const pickerHead=make('div','bc-pm-header');
-  const pickerTitle=make('div');pickerTitle.append(make('h2','','BLACKCELL Photos'),make('p','','Previous REDLINE session · Select multiple photos'));
+  const pickerTitle=make('div');pickerTitle.append(make('h2','','BLACKCELL Photos'),make('p','','Previous REDLINE session'));
   const closeLibrary=()=>{if(sending)return;picker.hidden=true;picker.style.setProperty('display','none','important');selected.clear();updateSelection()};
-  pickerHead.append(pickerTitle,button('✕',closeLibrary));
+  const closeGallery=button('✕',closeLibrary,'rd-dev-gallery-close');closeGallery.setAttribute('aria-label','Close photo gallery');pickerHead.append(pickerTitle,closeGallery);
   const grid=make('div','rd-dev-sample-grid');
   const status=make('p','rd-dev-sample-status','0 selected');status.setAttribute('role','status');
-  const send=button('SEND SELECTED PHOTOS',()=>void sendSelected());
+  const send=button('Select photos',()=>void sendSelected(),'rd-dev-gallery-send');
   const selected=new Set(),samples=[],tiles=[];
   let sending=false;
   let libraryState='idle',libraryMessage='';
@@ -119,7 +119,7 @@
    if(libraryState==='ready')images.forEach((img,n)=>addLibraryTile(img,n));
    updateSelection();
   });
-  function updateSelection(){tiles.forEach((tile,n)=>tile.setAttribute('aria-pressed',String(selected.has(n))));status.textContent=libraryState==='ready'?selected.size+' selected':libraryMessage||'Open the library to load previous REDLINE photos.';send.disabled=sending||libraryState!=='ready'||!selected.size||!model.active}
+  function updateSelection(){tiles.forEach((tile,n)=>tile.setAttribute('aria-pressed',String(selected.has(n))));status.textContent=libraryState==='ready'?selected.size+' selected':libraryMessage||'Open the library to load previous REDLINE photos.';send.textContent=selected.size?'Send '+selected.size+' photo'+(selected.size===1?'':'s'):'Select photos';send.disabled=sending||libraryState!=='ready'||!selected.size||!model.active}
   function openLibrary(){if(!model.active)return;selected.clear();picker.hidden=false;picker.style.removeProperty('display');if(libraryState!=='ready'){libraryState='loading';libraryMessage='Loading previously shared REDLINE photos…'}updateSelection();parent.postMessage({type:'rd-dev-action',token:cfg.token,action:'open-library'},cfg.origin)}
   function sendSelected(){
    if(!model.active||!selected.size)return;
@@ -127,8 +127,6 @@
    closeLibrary();enqueueTest(batch);
   }
   pickerPanel.append(pickerHead,grid,status,send);picker.append(pickerPanel);document.body.append(picker);
-  const style=make('style');style.textContent='.rd-dev-sample-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;overflow-y:auto;min-height:0;flex:1 1 auto}.rd-dev-sample-tile{position:relative;padding:0!important;min-height:0!important;aspect-ratio:1;border-radius:8px!important;overflow:hidden;background:#151015!important;border:2px solid transparent!important;cursor:pointer}.rd-dev-sample-tile img{width:100%;height:100%;object-fit:cover;display:block}.rd-dev-sample-check{position:absolute;right:4px;top:4px;display:none;background:#c6002b;color:#fff;border-radius:50%;width:20px;height:20px;line-height:20px;text-align:center}.rd-dev-sample-tile[aria-pressed=true]{border-color:#ff4569!important}.rd-dev-sample-tile[aria-pressed=true] .rd-dev-sample-check{display:block}.rd-dev-sample-status{color:#eebac8;margin:0;font-size:12px}#rdDevSampleLibrary .bc-pm-picker-panel>button{background:#a90027!important;border-color:#f34566!important;font-weight:800!important}#rdDevSampleLibrary button:disabled{opacity:.5}';
-  document.head.append(style);
   picker.addEventListener('click',e=>{if(e.target===picker)closeLibrary()});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!picker.hidden)closeLibrary();else closeSource()}});
   window.BLACKCELL_REDLINE_UPLOAD_UI={open:()=>{if(model.active){source.hidden=false;camera.focus({preventScroll:true})}},get progress(){return testProgress?.roomId===model.session?testProgress:null}};
