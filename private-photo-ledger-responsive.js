@@ -154,7 +154,7 @@
     // Sender first opens the authorized submission header on a phone.
     const senderHero=$('#redlineSenderHero');
     const destination=mobile?(
-      key==='summary'?($('.room-toolbar',room)||summaryAnchor):
+      key==='summary'?(document.body.classList.contains('bc-redline-receiver')?$('#redlineReceiverCommand'):($('.room-toolbar',room)||summaryAnchor)):
       key==='upload'&&senderHero&&!senderHero.hidden?senderHero:
       key==='room'?($('.room-toolbar',room)||$('.side-column',room)):
       key==='photos'?($('#photoEntries')||$('.timeline-toolbar',room)):targets[key]

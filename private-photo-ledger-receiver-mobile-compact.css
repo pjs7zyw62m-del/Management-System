@@ -363,3 +363,41 @@ body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand>.rr
 /* Keep PAY flush against the financial divider, without changing its size. */
 body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-card:has(>.rr-pay-column){row-gap:0!important}
 body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-header:has(>.rr-stats){margin-bottom:0!important}
+
+/* Receiver summary: one viewport-height chat, no duplicate room card/footer.
+   Other hamburger destinations retain their original controls and scrolling. */
+body.bc-redline-receiver.bc-ledger-mobile[data-ledger-view="summary"]:has(#activeRoom:not([hidden])):has(#redlineReceiverCommand>#redlineReceiverChat:not([hidden])){overflow:hidden!important}
+body.bc-redline-receiver.bc-ledger-mobile[data-ledger-view="summary"]:has(#activeRoom:not([hidden])):has(#redlineReceiverCommand>#redlineReceiverChat:not([hidden])) #ledgerApp.shell{box-sizing:border-box!important;padding:0!important;margin:0!important;width:100%!important;max-width:none!important;min-height:0!important}
+body.bc-redline-receiver.bc-ledger-mobile[data-ledger-view="summary"]:has(#activeRoom:not([hidden])):has(#redlineReceiverCommand>#redlineReceiverChat:not([hidden])) #ledgerApp>.page-heading,
+body.bc-redline-receiver.bc-ledger-mobile[data-ledger-view="summary"]:has(#activeRoom:not([hidden])):has(#redlineReceiverCommand>#redlineReceiverChat:not([hidden])) #activeRoom>.room-toolbar,
+body.bc-redline-receiver.bc-ledger-mobile[data-ledger-view="summary"]:has(#activeRoom:not([hidden])):has(#redlineReceiverCommand>#redlineReceiverChat:not([hidden])) >footer{display:none!important}
+body.bc-redline-receiver.bc-ledger-mobile[data-ledger-view="summary"]:has(#activeRoom:not([hidden])):has(#redlineReceiverCommand>#redlineReceiverChat:not([hidden])) #ledgerApp #redlineReceiverCommand{
+ display:flex!important;flex-direction:column!important;box-sizing:border-box!important;
+ height:var(--rr-mobile-chat-height,calc(100dvh - 65px))!important;
+ min-height:0!important;max-height:none!important;width:100%!important;
+ margin:0!important;padding:0!important;gap:0!important
+}
+body.bc-redline-receiver.bc-ledger-mobile[data-ledger-view="summary"]:has(#activeRoom:not([hidden])):has(#redlineReceiverCommand>#redlineReceiverChat:not([hidden])) #ledgerApp #redlineReceiverCommand>#redlineReceiverChat:not([hidden]){
+ flex:1 1 0!important;min-height:0!important;height:auto!important;max-height:none!important
+}
+body.bc-redline-receiver.bc-ledger-mobile[data-ledger-view="summary"]:has(#activeRoom:not([hidden])):has(#redlineReceiverCommand>#redlineReceiverChat:not([hidden])) #ledgerApp #redlineReceiverChat .redline-message-feed{
+ flex:1 1 0!important;min-height:0!important;overflow-y:auto!important;scrollbar-width:none!important
+}
+/* Compact receiver composer, same visual language as the sender. */
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-composer{display:flex!important;align-items:center!important;gap:5px!important;min-height:0!important;
+ padding:3px 6px max(3px,env(safe-area-inset-bottom))!important;margin:0!important;
+ box-sizing:border-box!important;background:#080808!important;border-top:1px solid #31171f!important}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-composer .redline-message-entry{
+ box-sizing:border-box!important;flex:1 1 0!important;min-width:0!important;
+ height:32px!important;min-height:32px!important;max-height:72px!important;
+ padding:5px 9px!important;margin:0!important;font-size:16px!important;line-height:20px!important;
+ border-radius:16px!important;border:1px solid #3f3b40!important;background:#101012!important;resize:none!important
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-composer .redline-message-entry:focus{outline:0!important;border-color:#e64b70!important;box-shadow:inset 0 0 0 1px #e64b70!important}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-composer .redline-chat-send{
+ box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:center!important;
+ flex:0 0 32px!important;width:32px!important;min-width:32px!important;max-width:32px!important;
+ height:32px!important;min-height:32px!important;padding:0!important;margin:0!important;border-radius:50%!important;font-size:0!important
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-composer .redline-chat-send::after{content:"";display:block;width:16px;height:16px;flex:0 0 16px;background:currentColor;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m22%202-7%2020-4-9-9-4%2020-7Z%22%2F%3E%3Cpath%20d%3D%22M22%202%2011%2013%22%2F%3E%3C%2Fsvg%3E") center/contain no-repeat;-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m22%202-7%2020-4-9-9-4%2020-7Z%22%2F%3E%3Cpath%20d%3D%22M22%202%2011%2013%22%2F%3E%3C%2Fsvg%3E") center/contain no-repeat}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-composer .redline-chat-send:focus-visible{outline:2px solid #ff92ac!important;outline-offset:-3px!important}

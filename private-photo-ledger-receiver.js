@@ -79,8 +79,9 @@
  const history=button('Photo History',()=>openMedia(true),'rr-nav-button');
  const message=button('Private Chat',()=>{
   closeMedia();
+  document.body.classList.remove('rr-room-tools-open');
+  tools.setAttribute('aria-expanded','false');tools.textContent='Room Tools';
   mobileSection('summary');
-  requestAnimationFrame(()=>goTo('#redlineReceiverChat'));
   $('#redlineReceiverChat .redline-message-entry')?.focus({preventScroll:true});
  },'rr-nav-button');
  const manage=button('Rooms & Access',()=>{mobileSection('room');requestAnimationFrame(()=>goTo('#ownerSetup'))},'rr-nav-button');
@@ -812,7 +813,7 @@
   // Keep the original telephone-sized REDLINE view stacked. A narrower
   // BLACKCELL OS window uses the sliding photo panel without losing chat.
   const handheld=/iPhone|iPod|Android.*Mobile|Windows Phone/i.test(navigator.userAgent||'');
-  const combined=window.innerWidth>=420&&(!handheld||window.innerWidth>=720)
+  const combined=!document.body.classList.contains('bc-ledger-mobile')&&window.innerWidth>=420&&(!handheld||window.innerWidth>=720)
    &&Boolean(hasRoom&&timeline&&roomBody);
   workspace.hidden=!combined;
   document.body.classList.toggle('rr-imessage-mode',combined);
@@ -957,6 +958,30 @@
    historyToggle.title=pricedStage.querySelectorAll('#photoEntries>.photo-entry').length+' photo records in this room';
   }
  }
+ // Fit the mobile chat to the visible viewport, not the previous 880px
+ // minimum. Only measure the existing panel; never remount the chat.
+ let fitFrame=0;
+ function fitMobileChat(){
+  fitFrame=0;
+  if(!document.body.classList.contains('bc-ledger-mobile')||document.body.dataset.ledgerView!=='summary'||dashboard.hidden||chatPanel.hidden||room.hidden){
+   dashboard.style.removeProperty('--rr-mobile-chat-height');return;
+  }
+  const top=dashboard.getBoundingClientRect().top;
+  const viewport=window.visualViewport;
+  const bottom=viewport?viewport.offsetTop+viewport.height:window.innerHeight;
+  const next=Math.max(0,Math.floor(bottom-top))+'px';
+  if(dashboard.style.getPropertyValue('--rr-mobile-chat-height')!==next)dashboard.style.setProperty('--rr-mobile-chat-height',next);
+ }
+ function scheduleMobileFit(){if(!fitFrame)fitFrame=requestAnimationFrame(fitMobileChat)}
+ const mobileFitObserver=new MutationObserver(scheduleMobileFit);
+ mobileFitObserver.observe(document.body,{attributes:true,attributeFilter:['class','data-ledger-view']});
+ for(const el of [dashboard,chatPanel,room])mobileFitObserver.observe(el,{attributes:true,attributeFilter:['hidden']});
+ if(window.ResizeObserver){const topbar=$('.topbar');if(topbar)new ResizeObserver(scheduleMobileFit).observe(topbar)}
+ window.addEventListener('resize',scheduleMobileFit,{passive:true});
+ window.visualViewport?.addEventListener('resize',scheduleMobileFit,{passive:true});
+ window.visualViewport?.addEventListener('scroll',scheduleMobileFit,{passive:true});
+ window.addEventListener('blackcell:redline:device-mode',scheduleMobileFit);
+ scheduleMobileFit();
  const observe=new MutationObserver(sync);
  for(const item of [app,owner,room]){
   observe.observe(item,{attributes:true,attributeFilter:['hidden']});
