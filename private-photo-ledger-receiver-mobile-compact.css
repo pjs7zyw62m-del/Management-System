@@ -259,3 +259,12 @@ body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #activeRoom>.bc-ledger-phon
 body.bc-redline-receiver.bc-ledger-mobile #ledgerApp.shell{
  padding-bottom:max(20px,calc(12px + env(safe-area-inset-bottom)))!important
 }
+
+/* Receiver phone: remove redundant conversation title, room badge and
+   Photos shortcut. The live chat mount and hamburger routes remain intact. */
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat>.rr-chat-heading{
+ display:none!important
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat{
+ gap:0!important
+}
