@@ -80,3 +80,19 @@ body.bc-ledger-mobile #rdIndependentReview .rd-ir-price-row{min-height:34px!impo
 body.bc-ledger-mobile #rdIndependentReview .rd-ir-timer-toggle{min-height:34px!important;padding:4px 9px!important}
 body.bc-ledger-mobile #rdIndependentReview .rd-ir-actions>.rd-ir-submit,body.bc-ledger-mobile #rdIndependentReview .rd-ir-actions>.rd-ir-reject{min-height:34px!important}
 body.bc-ledger-mobile #rdIndependentReview .rd-ir-grip{height:12px!important}
+
+/* Option 2 expanded experiment: isolated receiver Developer Preview only.
+   Reclaim the finance strip while the popup is open, keeping the original
+   controls mounted. Minimizing instantly restores the complete header. */
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-card.rd-ir-preview-expanded>.redline-message-header,
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-card.rd-ir-preview-expanded>.rr-pay-column{display:none!important}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-card.rd-ir-preview-expanded>#rdIndependentReview:not([hidden]){
+ flex:0 1 auto!important;height:min(var(--rd-ir-share,88%),var(--rd-ir-available,calc(100% - 76px)))!important;
+ max-height:var(--rd-ir-available,calc(100% - 76px))!important;
+ width:calc(100% - 10px)!important;margin:3px 5px!important;
+ border-radius:12px!important;border-color:#333!important;
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-card.rd-ir-preview-expanded>.redline-message-feed{
+ flex:1 1 0!important;min-height:36px!important;overflow-y:auto!important;
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-card.rd-ir-preview-expanded>.redline-message-composer{flex:0 0 auto!important}

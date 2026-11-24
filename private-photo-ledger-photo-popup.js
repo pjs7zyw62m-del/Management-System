@@ -22,8 +22,10 @@ const controls=make('div','rd-ir-controls');const actions=make('div','rd-ir-acti
 const grip=make('div','rd-ir-grip');grip.setAttribute('role','separator');grip.setAttribute('aria-label','Resize photo review and chat');grip.setAttribute('aria-orientation','horizontal');grip.tabIndex=0;popup.append(grip);
 const resume=btn('Photo waiting · Review',()=>{opened=true;schedule()},'rd-ir-resume');resume.hidden=true;resume.setAttribute('aria-controls',popup.id);
 document.body.append(popup,resume);
-let scope='',known=new Set(),opened=false,current=null,queued=false,share=.76,pointer=null;
-function minimize(){opened=false;popup.hidden=true;schedule()}
+const previewReceiver=window.REDLINE_DEV_CONFIG?.role==='receiver'&&window.parent!==window&&location.href==='about:srcdoc';
+let scope='',known=new Set(),opened=false,current=null,queued=false,share=previewReceiver?.88:.76,pointer=null,expandedHost=null;
+function setPreviewExpanded(host){if(expandedHost===host)return;expandedHost?.classList.remove('rd-ir-preview-expanded');expandedHost=host;expandedHost?.classList.add('rd-ir-preview-expanded')}
+function minimize(){opened=false;popup.hidden=true;setPreviewExpanded(null);schedule()}
 function canonical(){
  const s=snapshot(),card=q('#reviewQueueCurrent .photo-entry[data-redline-photo-id]'),panel=q('#redlineLightboxReview');
  if(!s?.isOwner||!s.roomActive||s.archiveMode||!current||card?.dataset.redlinePhotoId!==current.id||!panel||panel.hidden)return null;
@@ -70,7 +72,7 @@ function sync(){
  queued=false;
  const s=snapshot(),chat=q('#redlineReceiverChat'),dashboard=q('#redlineReceiverCommand');
  const valid=Boolean(s?.isOwner&&s.roomActive&&!s.archiveMode&&s.roomId&&chat&&!chat.hidden&&dashboard&&!dashboard.hidden&&!q('#ledgerApp')?.hidden);
- if(!valid){opened=false;scope='';known.clear();current=null;popup.hidden=resume.hidden=true;image.removeAttribute('src');return}
+ if(!valid){opened=false;scope='';known.clear();current=null;popup.hidden=resume.hidden=true;setPreviewExpanded(null);image.removeAttribute('src');return}
  const room=s.roomId+'|'+String(s.resetAt||'');
  if(room!==scope){scope=room;known.clear();opened=false;current=null;price.value='';timerBox.hidden=true}
  const pending=(s.photoHistory||[]).filter(p=>p.decision_status==='pending'&&!p.removal_status).sort((a,b)=>Date.parse(a.created_at)-Date.parse(b.created_at)||String(a.id).localeCompare(String(b.id)));
@@ -96,7 +98,10 @@ function sync(){
   if(resume.parentNode!==document.body)document.body.append(resume);
  }
  const mobileReady=!mobile||Boolean(conversation&&feed?.parentNode===conversation);
- if(mobileReady&&mobile&&visible){const composer=q('.redline-message-composer',conversation);const available=Math.max(0,conversation.clientHeight-[...conversation.children].filter(el=>el!==popup&&el!==resume&&el!==feed&&!el.hidden&&getComputedStyle(el).display!=='none').reduce((n,el)=>n+el.getBoundingClientRect().height,0)-48);popup.style.setProperty('--rd-ir-available',available+'px');}else popup.style.removeProperty('--rd-ir-available');
+ // Only the isolated developer receiver may reclaim the counter area. No live
+ // financial header is hidden, moved, or modified by this preview experiment.
+ setPreviewExpanded(previewReceiver&&mobile&&mobileReady&&visible?conversation:null);
+ if(mobileReady&&mobile&&visible){const composer=q('.redline-message-composer',conversation);const available=Math.max(0,conversation.clientHeight-[...conversation.children].filter(el=>el!==popup&&el!==resume&&el!==feed&&!el.hidden&&getComputedStyle(el).display!=='none').reduce((n,el)=>n+el.getBoundingClientRect().height,0)-(expandedHost?40:48));popup.style.setProperty('--rd-ir-available',available+'px');}else popup.style.removeProperty('--rd-ir-available');
  popup.hidden=!visible||!mobileReady;resume.hidden=!next||visible||!summary||!mobileReady;
  const resumeText=pending.length+' photo'+(pending.length===1?'':'s')+' waiting · Review';if(resume.textContent!==resumeText)resume.textContent=resumeText;
  if(!next)return;

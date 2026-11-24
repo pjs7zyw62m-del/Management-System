@@ -2,3 +2,5 @@ import test from 'node:test';import assert from 'node:assert/strict';import{read
 test('mobile review mounts before the message feed, not before financial counters',()=>{assert.match(js,/conversation.insertBefore\(resume,popup\)/);assert.doesNotMatch(js,/dashboard.insertBefore\(popup,chat\)/)});
 
 test('Option 2 keeps the photo stage separate from the visible review controls',()=>{assert.match(js,/popup.append\(header,scroll,controls\)/);assert.match(js,/scroll.append\(imageWrap\)/);assert.match(js,/controls.append\(stars,priceRow,timerBox,actions,feedback\)/)});
+
+test('expanded option is restricted to the isolated developer receiver and restores counters on minimize',()=>{assert.match(js,/window.REDLINE_DEV_CONFIG\?\.role==='receiver'&&window.parent!==window&&location.href==='about:srcdoc'/);assert.match(js,/setPreviewExpanded\(previewReceiver&&mobile&&mobileReady&&visible\?conversation:null\)/);assert.match(js,/function minimize\(\)\{opened=false;popup.hidden=true;setPreviewExpanded\(null\)/)});
