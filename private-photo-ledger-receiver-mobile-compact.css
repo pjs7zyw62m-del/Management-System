@@ -135,3 +135,13 @@ body.bc-redline-receiver.bc-ledger-mobile .topbar:has(>.rr-header-menu-group)>.b
 body.bc-redline-receiver.bc-ledger-mobile .topbar>.rr-header-menu-group .rr-nav-menu-items{
  left:auto!important;right:0!important
 }
+
+/* End Session is the last mobile menu action, not a separate header button. */
+body.bc-redline-receiver.bc-ledger-mobile .rr-nav-menu-items>#redlineReceiverEndSession{
+ display:flex!important;align-items:center!important;justify-content:flex-start!important;
+ box-sizing:border-box!important;width:100%!important;min-width:0!important;min-height:40px!important;
+ margin:5px 0 0!important;padding:9px 12px!important;border-radius:8px!important;
+ border:1px solid #b52b41!important;background:#390a12!important;color:#ffb8c6!important;
+ font-size:11px!important;font-weight:800!important;text-align:left!important
+}
+body.bc-redline-receiver.bc-ledger-mobile .rr-nav-menu-items[hidden]>#redlineReceiverEndSession{display:none!important}

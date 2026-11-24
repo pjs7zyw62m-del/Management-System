@@ -45,7 +45,8 @@
  endSession.style.cssText='box-sizing:border-box;min-height:40px;padding:9px 13px;border:1px solid #f34b4b;border-radius:10px;color:#fff;background:#761b1b;font:800 11px/1.3 -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;white-space:normal;cursor:pointer;max-width:100%;flex-shrink:0;';
  const headerMenuGroup=make('div','rr-header-menu-group');
  headerMenuGroup.append(triggerQuick);
- header.append(headerMenuGroup,endSession);
+ const endSessionAnchor=document.createComment('REDLINE end session position');
+ header.append(headerMenuGroup,endSession,endSessionAnchor);
  const stats=make('div','rr-stats');
  const fields=[
   ['pending','AWAITING YOUR REVIEW','pendingCount','0'],
@@ -107,6 +108,7 @@
  },'rr-nav-button rr-menu-refresh');
  menuItems.append(review,history,message,triggerMenu,manage,tools);
  menuItems.prepend(refreshMenu);
+ endSession.addEventListener('click',()=>setMenuOpen(false));
  for(const option of [review,history,message,triggerMenu,manage,tools]){
   option.addEventListener('click',()=>setMenuOpen(false));
  }
@@ -457,7 +459,9 @@
     setMenuOpen(false);
     menuHost.append(headerMenuGroup);
    }
+   if(endSession.parentNode!==menuItems)menuItems.append(endSession);
   }else{
+   if(endSession.parentNode!==header)header.insertBefore(endSession,endSessionAnchor);
    if(headerMenuGroup.parentNode!==header){setMenuOpen(false);header.insertBefore(headerMenuGroup,endSession)}
   }
   if(mobile)return;
@@ -870,6 +874,7 @@
   document.body.classList.toggle('bc-redline-receiver',visible);
   if(!visible){
    document.body.classList.remove('rr-room-tools-open');
+   if(endSession.parentNode!==header)header.insertBefore(endSession,endSessionAnchor);
    if(headerMenuGroup.parentNode!==header){setMenuOpen(false);header.insertBefore(headerMenuGroup,endSession)}
    if(workspaceActions&&pageHeading&&workspaceActions.parentNode!==pageHeading)pageHeading.append(workspaceActions);
    return;
