@@ -876,7 +876,15 @@
   dashboard.hidden=!visible;
   document.body.classList.toggle('bc-redline-receiver',visible);
   const verifiedDot=$('.rr-brand-verified-dot');
-  if(verifiedDot)verifiedDot.hidden=!(visible&&window.BLACKCELL_REDLINE_API?.snapshot?.()?.isOwner===true);
+  const session=window.BLACKCELL_REDLINE_API?.snapshot?.();
+  if(verifiedDot){
+   const verified=visible&&session?.isOwner===true;
+   verifiedDot.hidden=!verified;
+   const state=!verified||room.hidden||!session?.roomId?'idle':session.roomActive===true&&!session.archiveMode?'active':session.roomActive===false?'ended':'idle';
+   const description=state==='active'?'Verified · Active private room':state==='ended'?'Verified · Session ended':'Verified · No active room';
+   if(verifiedDot.dataset.state!==state)verifiedDot.dataset.state=state;
+   if(verifiedDot.getAttribute('aria-label')!==description){verifiedDot.setAttribute('aria-label',description);verifiedDot.title=description}
+  }
   if(!visible){
    document.body.classList.remove('rr-room-tools-open');
    if(endSession.parentNode!==header)header.insertBefore(endSession,endSessionAnchor);
@@ -892,7 +900,6 @@
    :'No private room selected';
   roomSummary.title=roomSummary.textContent;
   tools.disabled=!hasRoom;
-  const session=window.BLACKCELL_REDLINE_API?.snapshot?.();
   endSession.disabled=!hasRoom||session?.roomActive!==true||session?.archiveMode===true;
   const endLabel=hasRoom&&session?.roomActive===false?'SESSION ENDED':document.body.classList.contains('bc-ledger-mobile')?'END SESSION':'■ END SESSION';
   if(endSession.textContent!==endLabel)endSession.textContent=endLabel;

@@ -234,3 +234,19 @@ body.bc-redline-receiver.bc-ledger-mobile #ledgerApp>.page-heading .verified-mar
 body.bc-redline-receiver.bc-ledger-mobile:has(.rd-dev-local-banner) #ledgerApp>.page-heading{
  display:none!important
 }
+
+/* The brand dot reflects verified room state; do not duplicate room labels
+   on the mobile command strip. The room tools and existing actions remain. */
+body.bc-redline-receiver.bc-ledger-mobile .topbar .rr-brand-verified-dot[data-state="idle"]:not([hidden]){
+ background:#96969c;box-shadow:none
+}
+body.bc-redline-receiver.bc-ledger-mobile .topbar .rr-brand-verified-dot[data-state="ended"]:not([hidden]){
+ background:#ff5269;box-shadow:0 0 6px rgba(255,82,105,.35)
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand>.rr-command-header>.rr-command-intro,
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand>.rr-command-header>.rr-status{
+ display:none!important
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand>.rr-command-header:not(:has(>button:not([hidden]),>.workspace-actions:not([hidden]),>.rr-header-menu-group:not([hidden]))){
+ display:none!important
+}
