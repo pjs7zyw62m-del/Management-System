@@ -74,3 +74,28 @@ html.bc-desktop-messages body.bc-chat .chat:not(.media-open) .composer{padding:1
 html.bc-desktop-messages body.bc-chat .chat:not(.media-open) .composer-send:not(:disabled){background:#b82946!important;border-color:#ef5570!important}
 html.bc-desktop-messages body.bc-chat .chat:not(.media-open) .composer-send:not(:disabled):hover{background:#cf3554!important}
 @media(max-height:540px){html.bc-desktop-messages body.bc-chat #osChatSidebar .bc-message-rail{overflow:auto;scrollbar-width:none}html.bc-desktop-messages body.bc-chat #osChatSidebar .bc-message-rail button{min-height:43px;padding:5px 2px}html.bc-desktop-messages body.bc-chat #osChatSidebar .bc-message-rail-brand{margin-bottom:5px}}
+
+/* Actual messaging tools: native search and account-scoped, device-local stars. */
+.bc-feature-tool[hidden],.bc-message-finder [hidden]{display:none!important}
+.bc-feature-tool{flex:none;display:grid;place-items:center;width:32px;height:32px;border:1px solid #ffffff22;background:#23232a;color:#e7e7eb;border-radius:8px;padding:6px;cursor:pointer}
+.bc-feature-tool svg{width:18px;height:18px}
+.bc-feature-tool:hover:not(:disabled){background:#393941}
+.bc-message-star{border:0;background:transparent;color:#a7a7b1;min-width:26px;min-height:25px;cursor:pointer;font:18px/1 system-ui;padding:2px 4px;align-self:flex-start}
+.message.mine .bc-message-star{align-self:flex-end}
+.bc-message-star[aria-pressed=true]{color:#ffc558}
+.bc-message-star:hover,.bc-message-star:focus-visible{background:#ffffff12;border-radius:7px;color:#ffc558}
+@media(hover:hover) and (pointer:fine){.message .bc-message-star:not([aria-pressed=true]){opacity:.35}.message:hover .bc-message-star,.message .bc-message-star:focus-visible{opacity:1}}
+.bc-message-finder{box-sizing:border-box;width:min(620px,calc(100vw - 28px));max-height:80dvh;padding:18px;background:#17171d;color:#f5f5f7;border:1px solid #ffffff28;border-radius:18px;box-shadow:0 20px 70px #000b;overflow:auto;scrollbar-width:thin}
+.bc-message-finder::backdrop{background:#000a;backdrop-filter:blur(3px)}
+.bc-finder-head,.bc-finder-result-head{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.bc-finder-head h2{font:700 21px system-ui;margin:0}
+.bc-finder-head button,.bc-message-finder form button{background:#35353e;color:#fff;border:1px solid #ffffff21;border-radius:9px;padding:7px 12px;cursor:pointer}
+.bc-message-finder form{display:flex;gap:8px;margin:14px 0}
+.bc-message-finder input{flex:1;min-width:0;padding:10px;border:1px solid #ffffff25;background:#09090c;color:#fff;border-radius:9px;font:14px system-ui}
+#bcFinderStatus{font:12px/1.5 system-ui;color:#b7b7c0}
+.bc-finder-results{display:grid;gap:8px}
+.bc-finder-result{background:#24242a;border:1px solid #ffffff13;border-radius:10px;padding:10px 12px}
+.bc-finder-result-head strong{font:650 12px system-ui}
+.bc-finder-result-head time{font:10px system-ui;color:#a5a5ae;margin-left:auto}
+.bc-finder-result p{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.5 system-ui;margin:6px 0}
+@media(max-width:550px){.bc-feature-tool{width:26px;height:28px;padding:4px}.bc-feature-tool svg{width:16px;height:16px}}

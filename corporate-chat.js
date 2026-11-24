@@ -187,8 +187,63 @@ mediaToggle.addEventListener('click',event=>{
 });
 window.addEventListener('blackcell-chat-media-capability-change',()=>sharedMedia.closeMediaTray());
 const inboxEdit=$('inboxEdit'),inboxCompose=$('inboxCompose'),inboxMenu=$('inboxFilterMenu'),inboxFilterButton=$('inboxFilter'),inboxMarkRead=$('inboxMarkRead');
+/* Conversation-scoped message search and local starred-message IDs.
+   Never save message text, media URLs or credentials in browser storage. */
+const finder=$('bcMessageFinder'),finderResults=$('bcFinderResults'),finderStatus=$('bcFinderStatus');
+let finderMode='search',finderGeneration=0;
+const starsKey=()=>self&&peer?'bc.imessage.stars.v1:'+self+':'+peer.user_id:null;
+function readStars(){
+ const key=starsKey();if(!key)return [];
+ try{const data=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(data)?[...new Set(data.filter(v=>typeof v==='string'&&/^[0-9a-f-]{36}$/i.test(v)))].slice(0,500):[]}catch(_){return []}
+}
+function updateStarControl(b,id){const starred=readStars().includes(id);b.textContent=starred?'★':'☆';b.setAttribute('aria-pressed',String(starred));b.title=starred?'Remove star':'Star message';b.setAttribute('aria-label',b.title)}
+function toggleMessageStar(id,button){
+ if(!ready||!self||!peer||sessionEnded)return;
+ const key=starsKey();if(!key)return;
+ const ids=readStars(),next=ids.includes(id)?ids.filter(x=>x!==id):[id,...ids].slice(0,500);
+ try{localStorage.setItem(key,JSON.stringify(next));for(const b of document.querySelectorAll('[data-bc-star-id]'))updateStarControl(b,b.dataset.bcStarId);if(finder.open&&finderMode==='starred')void runFinder()}catch(_){status('Star could not be saved on this device.')}
+}
+function makeStarControl(id){
+ const b=text('button','bc-message-star','');b.type='button';b.dataset.bcStarId=id;updateStarControl(b,id);b.addEventListener('click',e=>{e.stopPropagation();toggleMessageStar(id,b)});return b;
+}
+function closeMessageFinder(){finderGeneration++;finderResults.replaceChildren();finderStatus.textContent='';$('bcFinderQuery').value='';if(finder.open)finder.close()}
+function syncMessageTools(){
+ const available=!!(ready&&self&&peer&&!sessionEnded&&!mediaPanelMode);
+ for(const id of ['bcFindMessages','bcStarredMessages']){const b=$(id);b.disabled=!available;b.hidden=!!mediaPanelMode;}
+ if(!available&&finder.open)closeMessageFinder();
+}
+function openFinder(mode){
+ if(!ready||!self||!peer||sessionEnded||mediaPanelMode)return;
+ finderMode=mode;finderGeneration++;finderResults.replaceChildren();$('bcFinderTitle').textContent=mode==='starred'?'Starred messages':'Search messages';$('bcFinderForm').hidden=mode==='starred';$('bcFinderQuery').value='';
+ finderStatus.textContent=mode==='starred'?'Stars are private to your account on this browser.':'Search the text history of this conversation.';
+ if(!finder.open)finder.showModal();
+ if(mode==='starred')void runFinder();else $('bcFinderQuery').focus();
+}
+async function runFinder(){
+ if(!ready||!self||!peer||sessionEnded||!finder.open)return;
+ const owner=self,pid=peer.user_id,g=++finderGeneration,mode=finderMode,query=$('bcFinderQuery').value.trim();
+ const current=()=>ready&&self===owner&&peer?.user_id===pid&&finder.open&&finderGeneration===g&&!sessionEnded;
+ finderResults.replaceChildren();
+ if(mode==='search'&&!query){finderStatus.textContent='Enter words to search.';return}
+ const ids=mode==='starred'?readStars():[];
+ if(mode==='starred'&&!ids.length){finderStatus.textContent='No starred messages. Select the star beside a text message.';return}
+ finderStatus.textContent='Searching…';
+ try{
+  const pair='and(sender_id.eq.'+owner+',recipient_id.eq.'+pid+'),and(sender_id.eq.'+pid+',recipient_id.eq.'+owner+')';
+  let request=client.from('corp_chat_messages').select('id,sender_id,body,created_at').or(pair).is('deleted_at',null).is('media_batch_id',null).order('created_at',{ascending:false}).limit(50);
+  if(mode==='starred')request=request.in('id',ids.slice(0,100));else request=request.ilike('body','%'+query.replace(/[\\%_*]/g,ch=>'\\'+ch)+'%');
+  const {data,error}=await request;if(!current())return;if(error)throw error;
+  const rows=data||[];finderStatus.textContent=rows.length?rows.length+' result'+(rows.length===1?'':'s')+(rows.length===50?' · showing up to 50':''):'No matching messages.';
+  for(const m of rows){const row=document.createElement('article');row.className='bc-finder-result';const top=document.createElement('div');top.className='bc-finder-result-head';top.append(text('strong','',m.sender_id===owner?'You':peer.display_name||'Contact'),text('time','',new Date(m.created_at).toLocaleString()),makeStarControl(m.id));row.append(top,text('p','',m.body||''));finderResults.append(row)}
+ }catch(_){if(current())finderStatus.textContent='Messages could not be loaded. Try again.'}
+}
+$('bcFindMessages').addEventListener('click',()=>openFinder('search'));$('bcStarredMessages').addEventListener('click',()=>openFinder('starred'));
+$('bcFinderClose').addEventListener('click',closeMessageFinder);
+$('bcFinderForm').addEventListener('submit',e=>{e.preventDefault();void runFinder()});
+finder.addEventListener('close',()=>{finderGeneration++;finderResults.replaceChildren();finderStatus.textContent='';$('bcFinderQuery').value=''});
 function closeInboxFilter(){inboxMenu.hidden=true;inboxFilterButton.setAttribute('aria-expanded','false')}
 function syncInboxControls(){
+ syncMessageTools();
  const quickDisabled=!ready||inboxEditing||inboxComposing;
  for(const b of document.querySelectorAll('[data-rail-filter]')){b.disabled=quickDisabled;b.setAttribute('aria-pressed',String(b.dataset.railFilter===inboxFilter));}
  const railCompose=$('bcRailCompose');if(railCompose)railCompose.disabled=quickDisabled;
@@ -344,6 +399,7 @@ const unblockButton=document.createElement('button');unblockButton.type='button'
 $('sendForm').before(blockNotice);
 function closeInfoMenu(){const menu=$('popoutInfoMenu'),info=$('popoutInfo');if(menu)menu.hidden=true;if(info)info.setAttribute('aria-expanded','false')}
 function syncBlockControls(){
+ syncMessageTools();
  const disabled=!ready||!peer||!blockKnown||chatBlocked||blockBusy;
  $('messageInput').disabled=disabled;$('sendButton').disabled=disabled||sendingMessage;
  blockNotice.hidden=!chatBlocked||!ready||!peer;unblockButton.disabled=blockBusy;
@@ -645,6 +701,7 @@ function renderPeers(){
 function choose(userId){
  const selected=contacts.find(x=>x.user_id===userId);if(!selected||!ready||(popout&&userId!==popoutId))return;
  const previousPeer=peer?.user_id;
+ if(previousPeer!==userId)closeMessageFinder();
  if(previousPeer!==userId){tubeCards.clear();pulseCards.clear()}
  live.onPeerChange(previousPeer,userId);
  peer=selected;blockGeneration++;blockKnown=false;chatBlocked=false;closeInfoMenu();sharedMedia.onPeerChange(userId);firstLoad=true;applySidebarPreference();
@@ -703,6 +760,7 @@ async function loadMessages(){
     bubble.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();reveal()}});
    }
    item.append(bubble);
+   if(!m.deleted_at&&!m.media_batch_id&&!tubeRef&&!pulseRef&&!mediaPanelMode)item.append(makeStarControl(m.id));
    if(m.edited_at&&!m.deleted_at){const edited=text('span','bc-message-edited','Edited');edited.title='Edited '+new Date(m.edited_at).toLocaleString();item.append(edited)}
    if(own&&!m.deleted_at&&!m.media_batch_id&&popoutActions){const action=text('button','bc-message-options','⋯');action.type='button';action.title='Edit or delete this message';action.setAttribute('aria-label','Edit or delete this message');action.addEventListener('click',e=>{e.stopPropagation();popoutActions.open(bubble,m,true)});item.append(action)}
    const t=document.createElement('time');
