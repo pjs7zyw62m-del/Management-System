@@ -218,3 +218,19 @@ body.bc-redline-receiver.bc-ledger-mobile .topbar>.rr-header-menu-group .rr-nav-
 body.bc-redline-receiver.bc-ledger-mobile .topbar>.rr-header-menu-group .rr-nav-menu-items:not([hidden])>button[data-rr-menu-icon]:not(:disabled):active{background:#25252a!important}
 @media(hover:hover){body.bc-redline-receiver.bc-ledger-mobile .topbar>.rr-header-menu-group .rr-nav-menu-items:not([hidden])>button[data-rr-menu-icon]:not(:disabled):hover{background:#25252a!important}}
 body.bc-redline-receiver.bc-ledger-mobile .topbar>.rr-header-menu-group .rr-nav-menu-items[hidden]{display:none!important}
+
+/* Mobile receiver: a single green authorization dot in the brand name.
+   Keep the real connection status available; remove the preview-only filler
+   from the simulated phone, not the outer Developer Preview test notice. */
+.rr-brand-verified-dot{display:none!important}
+body.bc-redline-receiver.bc-ledger-mobile .topbar .brand-label strong{
+ display:flex!important;align-items:center!important;gap:6px!important;white-space:nowrap!important
+}
+body.bc-redline-receiver.bc-ledger-mobile .topbar .rr-brand-verified-dot:not([hidden]){
+ display:inline-block!important;flex:0 0 6px;width:6px;height:6px;
+ border-radius:50%;background:#65d7a1;box-shadow:0 0 6px rgba(101,215,161,.35)
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp>.page-heading .verified-mark{display:none!important}
+body.bc-redline-receiver.bc-ledger-mobile:has(.rd-dev-local-banner) #ledgerApp>.page-heading{
+ display:none!important
+}

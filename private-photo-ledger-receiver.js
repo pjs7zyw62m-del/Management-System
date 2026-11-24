@@ -875,6 +875,8 @@
   const visible=!app.hidden&&!owner.hidden;
   dashboard.hidden=!visible;
   document.body.classList.toggle('bc-redline-receiver',visible);
+  const verifiedDot=$('.rr-brand-verified-dot');
+  if(verifiedDot)verifiedDot.hidden=!(visible&&window.BLACKCELL_REDLINE_API?.snapshot?.()?.isOwner===true);
   if(!visible){
    document.body.classList.remove('rr-room-tools-open');
    if(endSession.parentNode!==header)header.insertBefore(endSession,endSessionAnchor);
