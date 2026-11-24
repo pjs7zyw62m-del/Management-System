@@ -7,7 +7,7 @@ const html=readFileSync(new URL('../private-photo-ledger.html',import.meta.url),
 test('preview picker requests authorized room history directly',()=>{
  assert.match(frame,/action:'open-library'/);
  assert.match(parent,/a==='open-library'&&role==='sender'/);
- assert.match(parent,/await api.previousPreviewPhotos\(\)/);
+ assert.match(parent,/await api.previousPreviewPhotos\(\{onBatch:publishBatch,isCurrent:current\}\)/);
  assert.match(parent,/snapshot\(\)\?\.roomId!==libraryRoom/);
  assert.match(parent,/setLibraryStatus\('empty'/);
  assert.doesNotMatch(frame,/const palettes=/);
@@ -16,4 +16,13 @@ test('reset clears temporary library and pending imports',()=>{
  assert.match(parent,/clearLibrary\(\);model=fresh\(\);broadcast\(\)/);
  assert.match(parent,/libraryRevision\+\+;testLibrary=\[\]/);
  assert.match(html,/developer-preview\.js\?v=20261124-preview-archive2/);
+});
+
+test('archive picker progressively renders batches without clearing existing selections',()=>{
+ assert.match(frame,/samePrefix/);
+ assert.match(parent,/setLibraryStatus\('loading',images.length/);
+ const core=readFileSync(new URL('../private-photo-ledger.js',import.meta.url),'utf8');
+ assert.match(core,/fetch\(cached.url\)/);
+ assert.match(core,/Promise.all\(rows.slice/);
+ assert.match(core,/await onBatch\(valid\)/);
 });

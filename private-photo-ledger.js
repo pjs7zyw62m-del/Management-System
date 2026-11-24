@@ -1805,7 +1805,7 @@ const REDLINE_MESSAGES='corp_private_photo_messages';
 window.BLACKCELL_REDLINE_API=Object.freeze({
  // Read-only test fixtures from the selected, verified receiver's own
  // REDLINE exchange. Never inspect the sender's unrelated private library.
- async previousPreviewPhotos(){
+ async previousPreviewPhotos({onBatch=null,isCurrent=()=>true}={}){
   if(!state.isOwner||state.closed||!state.user||!state.room||$('ledgerApp').hidden)throw Error('Verified receiver room required.');
   const room=state.room,uid=state.user.id;
   const stillAuthorized=()=>!state.closed&&state.isOwner&&state.user?.id===uid&&state.room?.id===room.id&&!$('ledgerApp').hidden;
@@ -1820,17 +1820,35 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
   const removed=new Set((removal.data.photos||[]).map(x=>x.photo_id));
   const rows=(result.data||[]).filter(e=>!removed.has(e.id));
   const blobs=[];
-  for(const e of rows){
-   if(!stillAuthorized())throw Error('Selected room changed.');
-   if(blobs.length>=24)break;
-   try{
-    let blob;
-    if(isBunnyPath(e.image_path))blob=await readBunnyPhoto(db,room.id,e.id);
-    else{const read=await db.storage.from(BUCKET).download(e.image_path);if(read.error)throw read.error;blob=read.data}
-    if(blob instanceof Blob&&blob.size>0&&blob.size<=12*1024*1024)blobs.push(blob);
-   }catch(_){}
+  const allowed=()=>stillAuthorized()&&isCurrent();
+  // Reuse the already-authorized in-memory object URL, never a public URL.
+  // Uncached archive objects are read only once per loaded room and retained
+  // in the existing revocable REDLINE image cache, not persisted to disk.
+  for(let i=0;i<rows.length&&blobs.length<24;i+=3){
+   if(!allowed())throw Error('Selected room changed.');
+   const batch=await Promise.all(rows.slice(i,i+Math.min(3,24-blobs.length)).map(async e=>{
+    try{
+     if(!isBunnyPath(e.image_path))return null;
+     const cached=state.images.get(e.image_path);
+     if(cached?.object&&cached.url?.startsWith('blob:')&&cached.expires>Date.now()){
+      const blob=await fetch(cached.url).then(r=>r.blob());
+      if(blob.size&&blob.size<=12*1024*1024)return blob;
+     }
+     if(!allowed())return null;
+     const blob=await readBunnyPhoto(db,room.id,e.id);
+     if(!allowed()||!(blob instanceof Blob)||!blob.size||blob.size>12*1024*1024)return null;
+     // A revoked/deleted source must not be reintroduced into the preview.
+     if(state.entries.some(x=>x.id===e.id&&x.photo_removal_status))return null;
+     rememberImage(e.image_path,URL.createObjectURL(blob),Date.now()+20*60*1000,true);
+     return blob;
+    }catch(_){return null}
+   }));
+   if(!allowed())throw Error('Selected room changed.');
+   const valid=batch.filter(Boolean);
+   blobs.push(...valid);
+   if(valid.length&&typeof onBatch==='function')await onBatch(valid);
   }
-  if(!stillAuthorized())throw Error('Selected room changed.');
+  if(!allowed())throw Error('Selected room changed.');
   return {roomId:room.id,blobs};
  },
  async ownerAccessMembers(){

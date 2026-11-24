@@ -50,21 +50,27 @@
   try{
    const api=window.BLACKCELL_REDLINE_API;
    if(typeof api.previousPreviewPhotos!=='function')throw Error('Reload BLACKCELL OS to load the new archive reader.');
-   const result=await api.previousPreviewPhotos();
-   if(!current()||result.roomId!==roomId)return;
    const images=[];
-   for(const blob of result.blobs){
+   async function publishBatch(blobs){
+    for(const blob of blobs){
+     if(!current())return;
+     const url=URL.createObjectURL(blob);
+     try{
+      const img=new Image();img.src=url;await img.decode();
+      const scale=Math.min(1,960/Math.max(img.naturalWidth,img.naturalHeight));
+      const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+      canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+      const data=canvas.toDataURL('image/jpeg',.78);
+      if(data.length<=2000000&&data.startsWith('data:image/jpeg;base64,'))images.push(data);
+     }catch(_){}finally{URL.revokeObjectURL(url)}
+    }
     if(!current())return;
-    const url=URL.createObjectURL(blob);
-    try{
-     const img=new Image();img.src=url;await img.decode();
-     const scale=Math.min(1,960/Math.max(img.naturalWidth,img.naturalHeight));
-     const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
-     canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
-     const data=canvas.toDataURL('image/jpeg',.78);
-     if(data.length<=2000000&&data.startsWith('data:image/jpeg;base64,'))images.push(data);
-    }catch(_){}finally{URL.revokeObjectURL(url)}
+    testLibrary=images.slice();setLibraryStatus('loading',images.length+' photos ready · loading more…');
    }
+   const result=await api.previousPreviewPhotos({onBatch:publishBatch,isCurrent:current});
+   if(!current()||result.roomId!==roomId)return;
+   // Compatibility with a previously loaded parent bridge.
+   if(!images.length&&result.blobs?.length)await publishBatch(result.blobs);
    if(!current())return;
    if(!images.length){setLibraryStatus('empty','No readable photos found in the previous REDLINE session.');return}
    testLibrary=images;setLibraryStatus('ready',images.length+' previously shared photos available for this temporary test.');
@@ -148,7 +154,7 @@
   const gallery=styleNodes.find(e=>e.tagName==='LINK'&&e.getAttribute('href')?.includes('private-photo-ledger-upload-choices.css'));
   const galleryVersion=gallery?new URL(gallery.getAttribute('href'),location.href).searchParams.get('v'):'';
   if(!galleryVersion?.includes('fullscreen')||!styles.some(s=>s.includes('Gallery V6'))||!adapter.includes("action:'open-library'"))throw Error('Old photo gallery assets returned. Refresh the REDLINE app before testing.');
-  return {markup:body.innerHTML,styles,sources,adapter,build:'Gallery FULLSCREEN 6 · '+[receiver?.searchParams.get('v'),mobile?.searchParams.get('v')].filter(Boolean).join(' / ')};
+  return {markup:body.innerHTML,styles,sources,adapter,build:'Gallery FULLSCREEN 7 · Progressive · '+[receiver?.searchParams.get('v'),mobile?.searchParams.get('v')].filter(Boolean).join(' / ')};
  }
  function frameDocument(a,role){
   const nonce=crypto.randomUUID(),escapeScript=s=>s.replace(/<\/script/gi,'<\\/script');

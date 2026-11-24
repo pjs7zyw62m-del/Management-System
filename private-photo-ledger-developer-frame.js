@@ -115,11 +115,12 @@
    const images=e.data.images.slice(0,24).filter(x=>typeof x==='string'&&x.length<=2000000&&/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(x));
    if(!['idle','loading','ready','empty','error'].includes(e.data.status))return;
    libraryState=e.data.status;libraryMessage=String(e.data.message||'');
-   selected.clear();samples.length=0;tiles.length=0;grid.replaceChildren();
-   if(libraryState==='ready')images.forEach((img,n)=>addLibraryTile(img,n));
+   const samePrefix=samples.length<=images.length&&samples.every((img,n)=>img===images[n]);
+   if(!samePrefix||!['loading','ready'].includes(libraryState)){selected.clear();samples.length=0;tiles.length=0;grid.replaceChildren()}
+   if(['loading','ready'].includes(libraryState))for(let n=samples.length;n<images.length;n++)addLibraryTile(images[n],n);
    updateSelection();
   });
-  function updateSelection(){tiles.forEach((tile,n)=>tile.setAttribute('aria-pressed',String(selected.has(n))));status.textContent=libraryState==='ready'?selected.size+' selected':libraryMessage||'Open the library to load previous REDLINE photos.';send.textContent=selected.size?'Send '+selected.size+' photo'+(selected.size===1?'':'s'):'Select photos';send.disabled=sending||libraryState!=='ready'||!selected.size||!model.active}
+  function updateSelection(){tiles.forEach((tile,n)=>tile.setAttribute('aria-pressed',String(selected.has(n))));status.textContent=samples.length?selected.size+' selected'+(libraryState==='loading'?' · loading more…':''):libraryMessage||'Open the library to load previous REDLINE photos.';send.textContent=selected.size?'Send '+selected.size+' photo'+(selected.size===1?'':'s'):'Select photos';send.disabled=sending||!['loading','ready'].includes(libraryState)||!selected.size||!model.active}
   function openLibrary(){if(!model.active)return;selected.clear();picker.hidden=false;picker.style.removeProperty('display');if(libraryState!=='ready'){libraryState='loading';libraryMessage='Loading previously shared REDLINE photos…'}updateSelection();parent.postMessage({type:'rd-dev-action',token:cfg.token,action:'open-library'},cfg.origin)}
   function sendSelected(){
    if(!model.active||!selected.size)return;
