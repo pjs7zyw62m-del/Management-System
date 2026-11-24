@@ -687,24 +687,14 @@ function renderReviewQueue(){
  show('reviewQueueCount',pending.length+' WAITING');
  const parent=$('reviewQueueCurrent');parent.replaceChildren();
  if(!pending.length){
-  // A finished review queue is NOT an empty viewer. Keep the currently
-  // selected reviewed photograph in the same one-photo viewport and keep
-  // its authenticated controls to the right.
-  const selected=state.entries.find(e=>e.id===state.reviewSidebarPhotoId&&!e.photo_removal_status);
-  const reviewed=selected&&selected.decision_status!=='pending'?selected:
-   state.entries.find(e=>!e.photo_removal_status&&e.decision_status==='accepted')||
-   state.entries.find(e=>!e.photo_removal_status&&e.decision_status==='rejected');
-  if(reviewed){
-   parent.append(renderEntry(reviewed));
-  }else{
-   const empty=node('div','queue-empty');
-   empty.append(node('strong','','WAITING FOR FIRST PHOTO'));
-   empty.append(node('p','','Incoming photos will appear here one at a time.'));
-   parent.append(empty);
-  }
-  // Receiver's pause and timer controls remain available even when all
-  // received photos were already reviewed.
-  preparePhotoReviewLightbox(reviewed||null);
+  // Completed photos belong in Photo History, not the incoming queue.
+  if($('photoLightbox')?.hidden!==false)state.reviewSidebarPhotoId=null;
+  const empty=node('div','queue-empty');
+  empty.append(node('strong','','WAITING FOR FIRST PHOTO'));
+  empty.append(node('p','','Incoming photos will appear here one at a time.'));
+  parent.append(empty);
+  preparePhotoReviewLightbox(null);
+  window.dispatchEvent(new Event('blackcell:redline:review-empty'));
   void publishOwnerViewing(ownerVisiblePhotoId());
   return;
  }
@@ -1109,8 +1099,7 @@ function preparePhotoReviewLightbox(entry){
    ?cents(summary.additional_timed_cents):(timed>credited?timed-credited:0n);
   panel.append(node('span','redline-review-kicker','VERIFIED RECEIVER'));
   panel.append(node('h3','','PHOTO CONTROLS'));
-  // Keep the last reviewed photograph visible, but explain why there is no
-  // next photo. Archived photos must not cross the Start Fresh boundary.
+  // Explain the empty incoming queue; completed photos remain in history.
   const pendingInCurrent=state.entries.some(e=>e.decision_status==='pending');
   if(!pendingInCurrent){
    panel.append(node('p','rr-current-session-finished',

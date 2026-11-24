@@ -39,7 +39,7 @@ function harness({originalStatus='pending',autoSubmit=true,withNext=true,earned=
    const selected=state.entries.find(e=>e.id===state.reviewSidebarPhotoId);
    const timedSelection=selected?.decision_status==='accepted'&&Boolean(selected.auto_timer_session_id);
    visible=pending.length?(timedSelection?selected.id:pending[0].id)
-    :selected?.id||state.entries.find(e=>e.decision_status==='accepted')?.id||null;
+    :null;
    renderedBeforeRefresh=true;
   },
   renderEntries(){historyRenders++},
@@ -51,7 +51,7 @@ function harness({originalStatus='pending',autoSubmit=true,withNext=true,earned=
    assert.equal(force,true);
    assert.equal(renderedBeforeRefresh,true,
     'Next photo must render before any network refresh');
-   assert.equal(visible,withNext?(autoSubmit||originalStatus==='accepted'?'photo-b':'photo-a'):'photo-a');
+   assert.equal(visible,withNext?(autoSubmit||originalStatus==='accepted'?'photo-b':'photo-a'):(autoSubmit||originalStatus==='accepted'?null:'photo-a'));
    refreshes++;
    if(refreshFails)throw Error('simulated offline refresh');
   },
@@ -95,10 +95,10 @@ test('STOP under one cent leaves unpriced pending photograph in viewer, never si
  assert.equal(h.visible,'photo-a');
  assert.equal(h.second.decision_status,'pending');
 });
-test('STOP with no queued photos retains the completed photo as the only available image',async()=>{
+test('STOP with no queued photos returns to the waiting screen',async()=>{
  const h=harness({withNext:false});
  await h.stop('timer-session');
- assert.equal(h.visible,'photo-a');
+ assert.equal(h.visible,null);
  assert.equal(h.first.amount_cents,47);
 });
 test('Next-photo selection event fires AFTER DOM mount; never sees old timed image',()=>{
@@ -203,4 +203,25 @@ test('timeout status sync reconciles completed timer only when it matches active
  assert.match(timer,/await bridge\(\)\?\.refreshTimerPhoto\?\.\(completed,previousActive\.id\)/);
  assert.match(timer,/lastAdvancedTimerId!==previousActive\.id/);
  assert.match(timer,/lastAdvancedTimerId=id/);
+});
+
+test('actual review queue stays empty after review and advances when a new photo arrives',()=>{
+ const parent={children:[],replaceChildren(){this.children=[]},append(...xs){this.children.push(...xs)}};
+ const state={isOwner:true,room:{id:'room'},showArchive:false,reviewSidebarPhotoId:'old',entries:[
+  {id:'old',created_at:'2026-11-24T10:00:00Z',decision_status:'accepted'}],timedPhotoTotals:new Map()};
+ let sidebar,events=[];
+ const make=(tag,cls,value)=>({tag,cls,value,children:[],append(...xs){this.children.push(...xs)}});
+ const ctx={state,$:id=>id==='reviewQueueCurrent'?parent:id==='photoLightbox'?{hidden:true}:{},
+  document:{body:{classList:{remove(){}}},querySelectorAll:()=>[]},
+  entryState:e=>e.decision_status,show(){},node:make,renderEntry:e=>({photo:e.id}),
+  preparePhotoReviewLightbox:e=>{sidebar=e},ownerVisiblePhotoId:()=>null,publishOwnerViewing(){},
+  window:{dispatchEvent:e=>events.push(e.type)},Event:class{constructor(type){this.type=type}},
+  CustomEvent:class{constructor(type){this.type=type}}};
+ const render=runInNewContext(queue+';renderReviewQueue',ctx);
+ render();assert.equal(parent.children[0].children[0].value,'WAITING FOR FIRST PHOTO');assert.equal(sidebar,null);
+ assert.equal(state.reviewSidebarPhotoId,null);assert.ok(events.includes('blackcell:redline:review-empty'));
+ render();assert.equal(parent.children[0].children[1].value,'Incoming photos will appear here one at a time.');
+ state.entries.push({id:'new',created_at:'2026-11-24T10:01:00Z',decision_status:'pending'});
+ render();assert.equal(parent.children[1].photo,'new');assert.equal(sidebar.id,'new');
+ assert.equal(state.entries[0].decision_status,'accepted');
 });

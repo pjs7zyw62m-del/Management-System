@@ -209,6 +209,9 @@ window.addEventListener('blackcell:redline:review-photo',e=>{
  const id=e.detail?.photoId;
  if(uuid(id)&&!latest?.active?.running&&selectedId!==id)pickPhoto(id);
 });
+window.addEventListener('blackcell:redline:review-empty',()=>{
+ if(!latest?.active?.running&&selectedId){selectedId=null;render()}
+});
 window.addEventListener('blackcell:redline:photo-decided',e=>{
  if(latest?.active?.running&&latest.active.photo_id===e.detail?.photoId)void stopTimer(false);
  if(selectedId===e.detail?.photoId){selectedId=null;selectIncoming()}
@@ -500,7 +503,7 @@ async function refresh(force=false){
    }catch(_){senderCanStop=false}
   }else if(!latest.active?.running)senderCanStop=false;
   if(latest.active?.running&&s.isOwner)selectedId=latest.active.photo_id;
-  if(!selectedId)selectedId=currentPhoto()||s.entries?.find(e=>e.decision_status==='accepted')?.id||null;
+  if(!selectedId)selectedId=currentPhoto();
  }catch(e){err(e)}
  finally{
   fetching=false;render();
