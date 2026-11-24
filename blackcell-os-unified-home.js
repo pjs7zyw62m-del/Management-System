@@ -32,6 +32,13 @@
  function iconFor(id){
   const original=readApp(id)?.querySelector('.app-icon');
   const icon=create('span','bc-home-app-icon');
+  // Movable desktop shortcuts and gallery icons clone only the glyph, not
+  // the source tile's background. Give the App Store its approved colorway.
+  if(id==='store'){
+   icon.dataset.appArt='store';
+   icon.style.setProperty('background','radial-gradient(ellipse at 14% 4%,#52e8fc 0%,transparent 48%),radial-gradient(ellipse at 96% 96%,#ff735f 0%,#ee4da5 25%,transparent 57%),linear-gradient(145deg,#149bfa 12%,#4655ee 49%,#9628d6 83%)','important');
+   icon.style.setProperty('border-color','#ffffff69','important');
+  }
   if(original)for(const child of original.childNodes)icon.append(child.cloneNode(true));
   else icon.textContent='◈';
   return icon;
