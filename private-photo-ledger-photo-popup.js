@@ -23,9 +23,9 @@ const grip=make('div','rd-ir-grip');grip.setAttribute('role','separator');grip.s
 const resume=btn('Photo waiting · Review',()=>{opened=true;schedule()},'rd-ir-resume');resume.hidden=true;resume.setAttribute('aria-controls',popup.id);
 document.body.append(popup,resume);
 const previewReceiver=window.REDLINE_DEV_CONFIG?.role==='receiver'&&window.parent!==window&&location.href==='about:srcdoc';
-let scope='',known=new Set(),opened=false,current=null,queued=false,share=previewReceiver?.88:.76,pointer=null,expandedHost=null;
+let scope='',known=new Set(),opened=false,current=null,queued=false,share=previewReceiver?.90:.76,pointer=null,expandedHost=null;
 function setPreviewExpanded(host){if(expandedHost===host)return;expandedHost?.classList.remove('rd-ir-preview-expanded');expandedHost=host;expandedHost?.classList.add('rd-ir-preview-expanded')}
-function minimize(){opened=false;popup.hidden=true;setPreviewExpanded(null);schedule()}
+function minimize(){opened=false;popup.hidden=true;setPreviewExpanded(null);popup.removeAttribute('data-preview-top');schedule()}
 function canonical(){
  const s=snapshot(),card=q('#reviewQueueCurrent .photo-entry[data-redline-photo-id]'),panel=q('#redlineLightboxReview');
  if(!s?.isOwner||!s.roomActive||s.archiveMode||!current||card?.dataset.redlinePhotoId!==current.id||!panel||panel.hidden)return null;
@@ -62,17 +62,17 @@ function timerAction(starting){
  }
  const action=q(starting?'.rr-timer-start':'.rr-timer-stop',timer);if(action&&!action.disabled)action.click();
 }
-function resize(value){share=Math.max(.42,Math.min(.90,value));popup.style.setProperty('--rd-ir-share',(share*100).toFixed(1)+'%');grip.setAttribute('aria-valuenow',String(Math.round(share*100)))}
+function resize(value){share=Math.max(.42,Math.min(.90,value));popup.style.setProperty('--rd-ir-share',(share*100).toFixed(1)+'%');grip.setAttribute('aria-valuenow',String(Math.round(share*100)));if(popup.hasAttribute('data-preview-top'))schedule()}
 resize(share);
 grip.addEventListener('pointerdown',e=>{pointer=e.pointerId;grip.setPointerCapture(pointer);e.preventDefault()});
-grip.addEventListener('pointermove',e=>{if(pointer!==e.pointerId)return;const rect=popup.getBoundingClientRect();resize((e.clientY-rect.top)/Math.max(1,popup.parentElement.clientHeight))});
+grip.addEventListener('pointermove',e=>{if(pointer!==e.pointerId)return;const rect=popup.getBoundingClientRect();resize((e.clientY-rect.top)/Math.max(1,popup.hasAttribute('data-preview-top')?(window.visualViewport?.height||innerHeight):popup.parentElement.clientHeight))});
 for(const event of ['pointerup','pointercancel','lostpointercapture'])grip.addEventListener(event,()=>{pointer=null});
 grip.addEventListener('keydown',e=>{if(!['ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();resize(share+(e.key==='ArrowDown'?.05:-.05))});
 function sync(){
  queued=false;
  const s=snapshot(),chat=q('#redlineReceiverChat'),dashboard=q('#redlineReceiverCommand');
  const valid=Boolean(s?.isOwner&&s.roomActive&&!s.archiveMode&&s.roomId&&chat&&!chat.hidden&&dashboard&&!dashboard.hidden&&!q('#ledgerApp')?.hidden);
- if(!valid){opened=false;scope='';known.clear();current=null;popup.hidden=resume.hidden=true;setPreviewExpanded(null);image.removeAttribute('src');return}
+ if(!valid){opened=false;scope='';known.clear();current=null;popup.hidden=resume.hidden=true;setPreviewExpanded(null);popup.removeAttribute('data-preview-top');image.removeAttribute('src');return}
  const room=s.roomId+'|'+String(s.resetAt||'');
  if(room!==scope){scope=room;known.clear();opened=false;current=null;price.value='';timerBox.hidden=true}
  const pending=(s.photoHistory||[]).filter(p=>p.decision_status==='pending'&&!p.removal_status).sort((a,b)=>Date.parse(a.created_at)-Date.parse(b.created_at)||String(a.id).localeCompare(String(b.id)));
@@ -88,20 +88,36 @@ function sync(){
  const visible=Boolean(opened&&next&&summary);
  // Mount the new presentation only. The original chat and controls stay put.
  const conversation=q('.redline-message-card',chat),feed=conversation?.querySelector('.redline-message-feed');
- if(mobile&&conversation&&feed?.parentNode===conversation){
+ const topPreview=Boolean(previewReceiver&&mobile&&visible&&conversation&&feed?.parentNode===conversation);
+ if(topPreview){
+  // Fixed overlay starts at the phone viewport's top, including the branding.
+  // Do not move or hide the original header, counters, or conversation.
+  if(popup.parentNode!==document.body)document.body.append(popup);
+  if(resume.parentNode!==conversation)conversation.insertBefore(resume,feed);
+  popup.setAttribute('data-preview-top','');
+ }else if(mobile&&conversation&&feed?.parentNode===conversation){
+  popup.removeAttribute('data-preview-top');
   // The finance header, PAY control and pinned timer precede the feed.
   // Insert only our two new nodes, directly before the conversation feed.
   if(popup.parentNode!==conversation||popup.nextElementSibling!==feed)conversation.insertBefore(popup,feed);
   if(resume.parentNode!==conversation||resume.nextElementSibling!==popup)conversation.insertBefore(resume,popup);
  }else{
+  popup.removeAttribute('data-preview-top');
   if(popup.parentNode!==document.body)document.body.append(popup);
   if(resume.parentNode!==document.body)document.body.append(resume);
  }
  const mobileReady=!mobile||Boolean(conversation&&feed?.parentNode===conversation);
  // Only the isolated developer receiver may reclaim the counter area. No live
  // financial header is hidden, moved, or modified by this preview experiment.
- setPreviewExpanded(previewReceiver&&mobile&&mobileReady&&visible?conversation:null);
- if(mobileReady&&mobile&&visible){const composer=q('.redline-message-composer',conversation);const available=Math.max(0,conversation.clientHeight-[...conversation.children].filter(el=>el!==popup&&el!==resume&&el!==feed&&!el.hidden&&getComputedStyle(el).display!=='none').reduce((n,el)=>n+el.getBoundingClientRect().height,0)-(expandedHost?40:48));popup.style.setProperty('--rd-ir-available',available+'px');}else popup.style.removeProperty('--rd-ir-available');
+ setPreviewExpanded(null);
+ if(topPreview){
+  const viewport=window.visualViewport,top=viewport?.offsetTop||0,height=viewport?.height||innerHeight;
+  const composer=q('.redline-message-composer',conversation),composerTop=composer?.getBoundingClientRect().top;
+  const bottom=Number.isFinite(composerTop)&&composerTop>top?Math.min(top+height,composerTop):top+height-42;
+  const available=Math.max(0,bottom-top-48);
+  popup.style.setProperty('--rd-ir-top',top+'px');
+  popup.style.setProperty('--rd-ir-top-height',Math.min(available,height*share)+'px');
+ }else if(mobileReady&&mobile&&visible){const composer=q('.redline-message-composer',conversation);const available=Math.max(0,conversation.clientHeight-[...conversation.children].filter(el=>el!==popup&&el!==resume&&el!==feed&&!el.hidden&&getComputedStyle(el).display!=='none').reduce((n,el)=>n+el.getBoundingClientRect().height,0)-(expandedHost?40:48));popup.style.setProperty('--rd-ir-available',available+'px');}else popup.style.removeProperty('--rd-ir-available');
  popup.hidden=!visible||!mobileReady;resume.hidden=!next||visible||!summary||!mobileReady;
  const resumeText=pending.length+' photo'+(pending.length===1?'':'s')+' waiting · Review';if(resume.textContent!==resumeText)resume.textContent=resumeText;
  if(!next)return;
@@ -120,6 +136,7 @@ function schedule(){if(!queued){queued=true;requestAnimationFrame(sync)}}
 for(const event of ['blackcell:redline:state','blackcell:redline:receiver-ready','blackcell:redline:review-photo','blackcell:redline:review-empty','blackcell:redline:device-mode','blackcell:redline:session-mode','pageshow','resize'])window.addEventListener(event,schedule);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!popup.hidden&&q('#photoLightbox')?.hidden&&!q('dialog[open]'))minimize()});
 new MutationObserver(schedule).observe(document.body,{attributes:true,attributeFilter:['class','data-ledger-view']});
+window.visualViewport?.addEventListener('resize',schedule,{passive:true});window.visualViewport?.addEventListener('scroll',schedule,{passive:true});
 setInterval(()=>{if(!popup.hidden)syncTimer()},500);
 schedule();
 })();
