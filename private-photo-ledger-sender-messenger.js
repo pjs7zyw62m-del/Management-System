@@ -14,6 +14,7 @@ const pane=$('[data-redline-pane="upload"]',home);
 const chat=$('.redline-message-card',pane);
 const feed=$('.redline-message-feed',chat);
 const composer=$('#redlineMessageComposer',chat);
+const sendButton=$('.redline-chat-send',chat);
 const addPhoto=$('.redline-chat-photo',chat);
 const intro=$('.redline-upload-intro',pane);
 const mount=$('.redline-upload-mount',pane);
@@ -167,6 +168,9 @@ function update(){
  document.body.classList.toggle('redline-sender-messenger',active);
  syncMobileMenu(active);
  syncSenderDot(active,s);
+ if(sendButton&&active&&document.body.classList.contains('bc-ledger-mobile')){
+  sendButton.setAttribute('aria-label','Send message');sendButton.title='Send message';
+ }
  liveStrip.hidden=!active;
  quick.hidden=!active;
  document.body.classList.toggle('redline-chat-immersive',onChat);
