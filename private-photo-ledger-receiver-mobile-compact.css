@@ -268,3 +268,33 @@ body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat>.rr-ch
 body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat{
  gap:0!important
 }
+
+/* Fit all four live totals in the existing 64px chat header. No extra
+   card borders or increase to the chat container's outside dimensions. */
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-header:has(>.rr-stats){
+ box-sizing:border-box!important;display:flex!important;align-items:center!important;
+ height:64px!important;min-height:64px!important;max-height:64px!important;
+ flex:0 0 64px!important;padding:3px 9px!important;gap:0!important;overflow:hidden!important
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-header:has(>.rr-stats)>div:not(.rr-stats){
+ display:none!important
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-header>.rr-stats{
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ grid-template-rows:repeat(2,minmax(0,1fr))!important;width:100%!important;height:100%!important;
+ min-width:0!important;min-height:0!important;gap:1px 10px!important;padding:0!important;margin:0!important
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-header>.rr-stats>.rr-stat{
+ box-sizing:border-box!important;display:flex!important;flex-direction:column!important;
+ align-items:flex-start!important;justify-content:center!important;gap:1px!important;
+ min-height:0!important;height:auto!important;min-width:0!important;padding:1px 0!important;
+ border:0!important;background:transparent!important;border-radius:0!important;box-shadow:none!important;
+ overflow:hidden!important
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-header .rr-stat-name{
+ font-size:8px!important;line-height:1.15!important;letter-spacing:0!important;white-space:nowrap!important
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-header .rr-stat-value{
+ font-size:12px!important;line-height:1.1!important;letter-spacing:0!important;font-weight:800!important;
+ font-variant-numeric:tabular-nums!important;white-space:nowrap!important
+}

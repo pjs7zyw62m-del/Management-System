@@ -789,6 +789,19 @@
  if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{
   if(!workspace.hidden&&mediaOpen){applyWidth(mediaRatio);applyHeight(heightRatio)}
  }).observe(workspace);
+ // Move the original live metrics, never duplicate financial values.
+ function placeStats(defaultHost){
+  const phone=document.body.classList.contains('bc-ledger-mobile');
+  const chatHead=phone&&!room.hidden?chatMount.querySelector('.redline-message-header'):null;
+  const host=chatHead||defaultHost;
+  if(stats.parentNode===host)return;
+  if(host===dashboard&&nav.parentNode===dashboard)dashboard.insertBefore(stats,nav);
+  else host.append(stats);
+ }
+ const chatStatsObserver=new MutationObserver(()=>{
+  if(!app.hidden&&!owner.hidden&&document.body.classList.contains('bc-ledger-mobile'))placeStats(dashboard);
+ });
+ chatStatsObserver.observe(chatMount,{childList:true});
  function placeWorkspace(hasRoom){
   // Keep the original telephone-sized REDLINE view stacked. A narrower
   // BLACKCELL OS window uses the sliding photo panel without losing chat.
@@ -833,7 +846,7 @@
     if(divider.parentNode!==workspace)workspace.append(divider);
     if(appleRight.parentNode!==workspace)workspace.append(appleRight);
     if(nav.parentNode!==appleSidebar)appleSidebar.append(nav);
-    if(stats.parentNode!==appleFinance)appleFinance.append(stats);
+    placeStats(appleFinance);
     if(chatPanel.parentNode!==appleRight)appleRight.append(chatPanel);
     if(appleTimer.parentNode!==appleRight)appleRight.prepend(appleTimer);
     // Header-only Pause Sending, immediately next to REDLINE Settings.
@@ -851,7 +864,7 @@
     // Move the conversation ONLY when the responsive mode actually changes.
     if(chatPanel.parentNode!==workspace)workspace.insertBefore(chatPanel,divider);
     if(nav.parentNode!==dashboard)dashboard.append(nav);
-    if(stats.parentNode!==dashboard)dashboard.insertBefore(stats,nav);
+    placeStats(dashboard);
     if(chatPanel.parentNode!==workspace)workspace.insertBefore(chatPanel,divider);
     appleSidebar.remove();appleRight.remove();
    }
@@ -861,7 +874,7 @@
    if(heightPointer!==null)stopHeight();
    // Restore the original phone/handheld markup and event handlers.
    if(nav.parentNode!==dashboard)dashboard.append(nav);
-   if(stats.parentNode!==dashboard)dashboard.insertBefore(stats,nav);
+   placeStats(dashboard);
    if(chatPanel.parentNode!==dashboard)dashboard.append(chatPanel);
    for(const element of [originalReview,historyToolbar,photoEntries,entriesFeedback]){
     if(element&&element.parentNode!==timeline)timeline.append(element);
