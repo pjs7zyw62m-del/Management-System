@@ -1,0 +1,67 @@
+/* REDLINE receiver popup: the original review and chat nodes remain mounted. */
+body.rr-popup-review-mode #redlineReceiverResumeReview:not([hidden]){
+ display:block!important;flex:0 0 auto!important;align-self:stretch!important;width:auto!important;margin:5px 8px!important;padding:9px 12px!important;
+ background:#111!important;color:#eee!important;border:1px solid #363636!important;border-radius:9px!important;font:650 12px/1.2 system-ui!important;cursor:pointer;
+}
+body.rr-popup-review-mode #redlineReceiverLiveWorkspace.rr-popup-workspace{
+ box-sizing:border-box!important;display:flex!important;flex-direction:column!important;gap:0!important;min-width:0!important;min-height:0!important;
+ padding:0!important;margin:0!important;border:1px solid #383838!important;border-radius:14px!important;background:#000!important;overflow:hidden!important;
+}
+body.rr-popup-review-mode #redlineReceiverLiveWorkspace.rr-media-closed,
+body.rr-popup-review-mode #redlineReceiverLiveWorkspace[hidden]{display:none!important}
+body.rr-popup-review-mode:not(.bc-ledger-mobile) #redlineReceiverLiveWorkspace.rr-popup-workspace{
+ position:fixed!important;inset:auto!important;top:50%!important;left:50%!important;transform:translate(-50%,-50%)!important;
+ width:min(880px,92vw)!important;height:min(820px,90dvh)!important;max-height:90dvh!important;z-index:950!important;
+ box-shadow:0 24px 90px #000c!important;
+}
+body.rr-popup-review-mode #redlineReceiverLiveWorkspace>.rr-media-edge,
+body.rr-popup-review-mode #redlineReceiverLiveWorkspace>#rrAppleSidebarToggle,
+body.rr-popup-review-mode #redlineReceiverIncomingPhotos>.rr-media-height-edge,
+body.rr-popup-review-mode #redlineReceiverIncomingPhotos .rr-photo-expand{display:none!important}
+body.rr-popup-review-mode #redlineReceiverLiveWorkspace>#redlineReceiverIncomingPhotos{
+ display:flex!important;position:static!important;transform:none!important;flex:1 1 0!important;flex-direction:column!important;
+ width:100%!important;height:100%!important;max-width:none!important;min-width:0!important;min-height:0!important;max-height:none!important;
+ border:0!important;border-radius:0!important;margin:0!important;padding:0!important;background:#000!important;overflow:hidden!important;
+}
+body.rr-popup-review-mode #redlineReceiverIncomingPhotos>.rr-incoming-header{
+ display:flex!important;align-items:center!important;gap:6px!important;flex:0 0 auto!important;padding:8px 10px!important;border-bottom:1px solid #282828!important;
+}
+body.rr-popup-review-mode #redlineReceiverIncomingPhotos>.rr-incoming-header h3{font:650 14px/1.2 system-ui!important;margin:0 auto 0 0!important;white-space:nowrap}
+body.rr-popup-review-mode #redlineReceiverIncomingPhotos>.rr-incoming-header small{display:none!important}
+body.rr-popup-review-mode #redlineReceiverIncomingPhotos>.rr-incoming-header button{flex:0 0 auto!important;width:auto!important;min-width:30px!important;min-height:30px!important;padding:5px 8px!important;border:0!important;border-radius:7px!important;background:#1b1b1b!important;color:#ddd!important;font:650 11px/1.2 system-ui!important}
+body.rr-popup-review-mode #redlineReceiverIncomingPhotos>.rr-review-stage{
+ display:flex!important;flex-direction:column!important;flex:1 1 0!important;min-height:0!important;height:auto!important;max-height:none!important;overflow:auto!important;overscroll-behavior:contain!important;scrollbar-width:none;padding:8px!important;gap:8px!important;
+}
+body.rr-popup-review-mode #redlineReceiverIncomingPhotos #ownerReviewQueue:not([hidden]),
+body.rr-popup-review-mode #redlineReceiverIncomingPhotos #redlineLightboxReview:not([hidden]){
+ display:block!important;position:static!important;flex:0 0 auto!important;box-sizing:border-box!important;width:100%!important;max-width:none!important;min-height:0!important;height:auto!important;max-height:none!important;overflow:visible!important;margin:0!important;padding:5px!important;border:0!important;background:#000!important;
+}
+body.rr-popup-review-mode #redlineReceiverIncomingPhotos .owner-review-heading{display:none!important}
+body.rr-popup-review-mode #redlineReceiverIncomingPhotos #reviewQueueCurrent{display:block!important;min-height:0!important;height:auto!important;max-height:none!important;padding:0!important}
+body.rr-popup-review-mode #redlineReceiverIncomingPhotos #reviewQueueCurrent .photo-entry{
+ display:block!important;width:100%!important;height:auto!important;max-height:none!important;min-height:0!important;padding:0!important;margin:0!important;background:#000!important;border:0!important;
+}
+body.rr-popup-review-mode #redlineReceiverIncomingPhotos #reviewQueueCurrent .photo-image-btn{
+ display:block!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;padding:0!important;background:#000!important;
+}
+body.rr-popup-review-mode #redlineReceiverIncomingPhotos #reviewQueueCurrent .photo-image-btn img{
+ display:block!important;position:static!important;width:100%!important;height:auto!important;max-height:44dvh!important;min-height:0!important;object-fit:contain!important;
+}
+body.rr-popup-review-mode #redlineReceiverIncomingPhotos .rr-priced-stage{display:none!important}
+body.rr-popup-review-mode #redlineReceiverIncomingPhotos.rr-history-open .rr-priced-stage{display:block!important;flex:1 1 0!important;min-height:0!important;height:auto!important;max-height:none!important;overflow:auto!important}
+body.rr-popup-review-mode #redlineReceiverIncomingPhotos.rr-history-open .rr-review-stage{display:none!important}
+body.rr-popup-review-mode #redlineReceiverIncomingPhotos>.rr-history-toggle{flex:0 0 auto!important;min-height:30px!important;margin:4px 8px!important;padding:5px!important;background:#151515!important;border:1px solid #292929!important;color:#aaa!important;font:600 10px system-ui!important}
+body.rr-popup-review-mode #redlineReceiverCommand #redlineReceiverChat{min-height:0!important}
+body.rr-popup-review-mode .rr-popup-chat-divider[hidden]{display:none!important}
+body.rr-popup-review-mode.bc-ledger-mobile #redlineReceiverCommand #redlineReceiverLiveWorkspace.rr-popup-workspace{
+ position:relative!important;inset:auto!important;transform:none!important;width:100%!important;flex:0 0 var(--rr-popup-share,46%)!important;
+ height:var(--rr-popup-share,46%)!important;max-height:65%!important;border-radius:0!important;border-width:0 0 1px!important;
+}
+body.rr-popup-review-mode.bc-ledger-mobile #redlineReceiverIncomingPhotos #reviewQueueCurrent .photo-image-btn img{max-height:22dvh!important}
+body.rr-popup-review-mode.bc-ledger-mobile #redlineReceiverCommand .rr-popup-chat-divider:not([hidden]){
+ display:flex!important;flex:0 0 16px!important;align-items:center;justify-content:center;touch-action:none;cursor:ns-resize;background:#090909!important;
+}
+body.rr-popup-review-mode.bc-ledger-mobile #redlineReceiverCommand .rr-popup-chat-divider::after{content:'';width:38px;height:4px;border-radius:5px;background:#555}
+body.rr-popup-review-mode.bc-ledger-mobile #redlineReceiverCommand>#redlineReceiverChat:not([hidden]){flex:1 1 0!important;min-height:0!important;height:auto!important;overflow:hidden!important}
+body.rr-popup-review-mode.bc-ledger-mobile #redlineReceiverResumeReview:not([hidden]){margin:2px 6px!important;padding:6px 8px!important;font-size:11px!important}
+body.rr-popup-review-mode.bc-ledger-mobile:not([data-ledger-view=summary]) #redlineReceiverCommand .rr-popup-workspace{display:none!important}
