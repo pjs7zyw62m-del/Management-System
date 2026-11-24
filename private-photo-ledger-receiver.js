@@ -495,13 +495,12 @@
  incomingHeader.append(make('h3','','Incoming Photos'),
   make('small','','Price each incoming photo without leaving the conversation.'));
  photos.append(incomingHeader);
- // The chat stays in dashboard for the lifetime of the popup workspace.
- workspace.append(photos);
+ workspace.append(chatPanel,photos);
  // Match BLACKCELL iMessage: chat is permanent, while the real photo-review
  // panel slides in from the right. Its left edge resizes by dragging.
- const photoClose=button('−',()=>closeMedia(),'rr-photo-close');
+ const photoClose=button('✕',()=>closeMedia(),'rr-photo-close');
  photoClose.setAttribute('aria-label','Close photo review and return to full-width chat');
- photoClose.title='Minimize photo review';
+ photoClose.title='Close Photos';
  const expandPhoto=button('⤢ EXPAND PHOTO',()=>{
   const expanded=photos.classList.toggle('rr-photo-expanded');
   expandPhoto.textContent=expanded?'↙ SHOW PRICED LIST':'⤢ EXPAND PHOTO';
@@ -518,7 +517,7 @@
   if(target)target.click();
  },'rr-photo-fullscreen');
  fullPhoto.setAttribute('aria-label','View the entire original photograph without controls');
- const dismissPhoto=button('✕',()=>closeMedia(),'rr-photo-close rr-popup-dismiss');dismissPhoto.setAttribute('aria-label','Close photo review');incomingHeader.append(fullPhoto,expandPhoto,photoClose,dismissPhoto);
+ incomingHeader.append(fullPhoto,expandPhoto,photoClose);
  // BLACKCELL iMessage-style two-level media viewer: live submission above,
  // reviewed/priced library below. Reparent the SAME ledger elements.
  const reviewStage=make('div','rr-review-stage');reviewStage.id='redlineReceiverReviewStage';
@@ -639,7 +638,7 @@
  let mediaRatio=readWidth(),dragPointer=null;
  // On a narrow OS window, the photo pane behaves like iMessage's overlay;
  // on desktop/tablet it sits beside chat. No horizontal size slider.
- let mediaOpen=false,mediaInitialised=false,reviewScope='',seenPending=new Set();
+ let mediaOpen=true,mediaInitialised=false;
  const HEIGHT_KEY='blackcell:redline:receiver:photo-first-height-v2';
  const DEFAULT_HEIGHT=.80;
  const readHeight=()=>{try{const n=Number(window.localStorage.getItem(HEIGHT_KEY));return n>=.32&&n<=.90?n:DEFAULT_HEIGHT}catch{return DEFAULT_HEIGHT}};
@@ -667,7 +666,6 @@
  function setHistoryOpen(open){
   historyOpen=Boolean(open);
   photos.classList.toggle('rr-history-open',historyOpen);
-  workspace.classList.toggle('rr-popup-history',historyOpen);
   historyToggle.textContent=historyOpen?'✕ CLOSE HISTORY':'▤ PHOTO HISTORY';
   historyToggle.setAttribute('aria-expanded',String(historyOpen));
   historyToggle.setAttribute('aria-label',historyOpen?'Close REDLINE photo history':'Open the scrollable REDLINE photo history');
@@ -676,38 +674,30 @@
   historyToggle.title=historyOpen?'Close photo history':count+' photo records in this room';
  }
  function togglePhotoHistory(){setHistoryOpen(!historyOpen)}
- const waiting=button('Photos · 0 waiting',()=>mediaOpen?closeMedia():openMedia(),'rr-popup-resume');
- waiting.id='redlineReceiverResumeReview';waiting.setAttribute('aria-controls',photos.id);
- waiting.hidden=true;dashboard.append(waiting,chatPanel);
- const chatSplit=make('div','rr-popup-chat-divider');chatSplit.setAttribute('role','separator');chatSplit.setAttribute('aria-orientation','horizontal');chatSplit.setAttribute('aria-label','Resize photo review and chat');chatSplit.tabIndex=0;
- let splitRatio=.46,splitPointer=null;
- function resizeSplit(value){splitRatio=Math.max(.24,Math.min(.65,value));dashboard.style.setProperty('--rr-popup-share',(splitRatio*100).toFixed(1)+'%');chatSplit.setAttribute('aria-valuenow',String(Math.round(splitRatio*100)))}
- resizeSplit(splitRatio);
- chatSplit.addEventListener('pointerdown',e=>{if(!mediaOpen||e.button!==0)return;splitPointer=e.pointerId;chatSplit.setPointerCapture(e.pointerId);e.preventDefault()});
- chatSplit.addEventListener('pointermove',e=>{if(e.pointerId!==splitPointer)return;const box=dashboard.getBoundingClientRect(),top=workspace.getBoundingClientRect().top;resizeSplit((e.clientY-top)/Math.max(1,box.height))});
- for(const event of ['pointerup','pointercancel','lostpointercapture'])chatSplit.addEventListener(event,()=>{splitPointer=null});
- chatSplit.addEventListener('keydown',e=>{if(!['ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();resizeSplit(splitRatio+(e.key==='ArrowDown'?.05:-.05))});
- chatSplit.addEventListener('dblclick',()=>resizeSplit(.46));
- dashboard.append(chatSplit,chatPanel);chatSplit.hidden=true;
  function showPane(){
   workspace.classList.toggle('rr-media-open',mediaOpen);
   workspace.classList.toggle('rr-media-closed',!mediaOpen);
-  dashboard.classList.toggle('rr-popup-active',mediaOpen);
   showMedia.setAttribute('aria-expanded',String(mediaOpen));
-  waiting.setAttribute('aria-expanded',String(mediaOpen));
   review.setAttribute('aria-expanded',String(mediaOpen));
   historyToggle.hidden=!mediaOpen;
-  chatSplit.hidden=!mediaOpen||!document.body.classList.contains('bc-ledger-mobile');
  }
  function openMedia(history=false){
-  const s=window.BLACKCELL_REDLINE_API?.snapshot?.();
-  if(!s?.isOwner||!s.roomId||workspace.hidden)return;
-  if(document.body.classList.contains('bc-ledger-mobile'))mobileSection('summary');
-  mediaOpen=true;showPane();setHistoryOpen(history);window.dispatchEvent(new Event('blackcell:redline:review-visibility'));
-  if(history)pricedStage.scrollTop=0;
+  // Original small-phone navigation remains in charge of its own panels.
+  if(workspace.hidden){
+   const key=history?'photos':'review';
+   const tab=app.querySelector('.bc-ledger-phone-tab[data-ledger-navigate="'+key+'"]:not([hidden])');
+   if(tab)tab.click();
+   else goTo(history?'#photoEntries':'#ownerReviewQueue');
+   return;
+  }
+  mediaOpen=true;showPane();applyWidth(mediaRatio);applyHeight(heightRatio);
+  setHistoryOpen(history);
+  if(history){
+   const priced=pricedStage.querySelector('#photoEntries');
+   if(priced){priced.scrollTop=0;priced.focus?.({preventScroll:true})}
+  }
  }
- function closeMedia(){setHistoryOpen(false);mediaOpen=false;showPane();window.dispatchEvent(new Event('blackcell:redline:review-visibility'))}
- document.addEventListener('keydown',e=>{if(e.key==='Escape'&&mediaOpen&&$('#photoLightbox')?.hidden&& !document.querySelector('dialog[open]'))closeMedia()});
+ function closeMedia(){setHistoryOpen(false);mediaOpen=false;showPane()}
  // Resize the upper incoming-photo stage independently from the lower
  // priced-photo library, just like iMessage's media stage and filmstrip.
  function verticalBounds(){
@@ -820,47 +810,89 @@
  });
  chatStatsObserver.observe(chatMount,{childList:true});
  function placeWorkspace(hasRoom){
-  const s=window.BLACKCELL_REDLINE_API?.snapshot?.();
-  const allowed=Boolean(hasRoom&&s?.isOwner&&s.roomId&&timeline&&roomBody);
-  const mobile=document.body.classList.contains('bc-ledger-mobile');
-  document.body.classList.toggle('rr-popup-review-mode',allowed);
-  document.body.classList.remove('rr-imessage-mode','bc-redline-apple-mode','rr-split-active','rr-is-split-resizing');
-  workspace.hidden=!allowed;
-  if(nav.parentNode!==dashboard)dashboard.append(nav);
-  if(chatPanel.parentNode!==dashboard)dashboard.append(chatPanel);
-  placeStats(dashboard);
-  if(!allowed){
-   mediaOpen=false;reviewScope='';seenPending.clear();waiting.hidden=true;showPane();
-   if(timeline&&roomBody&&timeline.parentNode!==roomBody)roomBody.append(timeline);
-   for(const element of [originalReview,historyToolbar,photoEntries,entriesFeedback])if(element&&timeline&&element.parentNode!==timeline)timeline.append(element);
+  // Keep the original telephone-sized REDLINE view stacked. A narrower
+  // BLACKCELL OS window uses the sliding photo panel without losing chat.
+  const handheld=/iPhone|iPod|Android.*Mobile|Windows Phone/i.test(navigator.userAgent||'');
+  const combined=!document.body.classList.contains('bc-ledger-mobile')&&window.innerWidth>=420&&(!handheld||window.innerWidth>=720)
+   &&Boolean(hasRoom&&timeline&&roomBody);
+  workspace.hidden=!combined;
+  document.body.classList.toggle('rr-imessage-mode',combined);
+  document.body.classList.remove('rr-split-active','rr-is-split-resizing');
+  if(combined){
+   // The verified timer + rating + price share ONE upper-right control deck.
+   // Reparent the real actions instead of cloning any financial controls.
+   const appleMode=window.innerWidth>=720&&!document.body.classList.contains('bc-ledger-mobile');
+   // Important: DO NOT move chatPanel to workspace first on every live
+   // refresh. In Apple desktop mode its permanent parent is appleRight.
+   // The old two-step workspace -> appleRight reparenting detached the
+   // entire conversation every time room totals or live presence changed,
+   // repeatedly resetting scrollTop from history to newest messages.
+   if(originalReview&&originalReview.parentNode!==reviewStage)reviewStage.append(originalReview);
+   if(historyToggle.parentNode!==photos)photos.append(historyToggle);
+   const reviewControlsHost=appleMode?appleTimer:reviewStage;
+   if(bidTimerPanel&&bidTimerPanel.parentNode!==reviewControlsHost)
+    reviewControlsHost.append(bidTimerPanel);
+   for(const element of [historyToolbar,photoEntries,entriesFeedback]){
+    if(element&&element.parentNode!==pricedStage)pricedStage.append(element);
+   }
+   if(timeline.parentNode!==photos)photos.append(timeline);
+   timeline.classList.add('rr-source-timeline');
+   if(!mediaInitialised){
+    mediaInitialised=true;
+    // Like iMessage Shared Media: show side-by-side on wide screens.
+    // On smaller OS windows keep chat visible until Photos is opened.
+    mediaOpen=true;
+   }
+   showPane();applyWidth(mediaRatio);applyHeight(heightRatio);
+   // The same live chat and room counters are displayed in the right column.
+   // Keep the authentic photo/price nodes in the center column.
+   document.body.classList.toggle('bc-redline-apple-mode',appleMode);
+   if(appleMode){
+    if(appleSidebar.parentNode!==workspace)workspace.prepend(appleSidebar);
+    if(photos.parentNode!==workspace)workspace.append(photos);
+    if(divider.parentNode!==workspace)workspace.append(divider);
+    if(appleRight.parentNode!==workspace)workspace.append(appleRight);
+    if(nav.parentNode!==appleSidebar)appleSidebar.append(nav);
+    placeStats(appleFinance);
+    if(chatPanel.parentNode!==appleRight)appleRight.append(chatPanel);
+    if(appleTimer.parentNode!==appleRight)appleRight.prepend(appleTimer);
+    // Header-only Pause Sending, immediately next to REDLINE Settings.
+    // The button keeps its original authenticated handler and room state.
+    const pause=document.querySelector('#redlineReceiverSendingPause')?.closest('.rr-receiver-photo-pause');
+    if(pause){
+     pause.id='redlineReceiverPauseHeader';
+     const settings=document.getElementById('redlineConsentSettingsOpen');
+     if(settings?.parentNode===header){
+      if(pause.previousElementSibling!==settings)settings.after(pause);
+     }else if(pause.parentNode!==header)header.append(pause);
+    }
+   }else{
+    // Narrow OS windows keep the prior iMessage sliding photo/chat workspace.
+    // Move the conversation ONLY when the responsive mode actually changes.
+    if(chatPanel.parentNode!==workspace)workspace.insertBefore(chatPanel,divider);
+    if(nav.parentNode!==dashboard)dashboard.append(nav);
+    placeStats(dashboard);
+    if(chatPanel.parentNode!==workspace)workspace.insertBefore(chatPanel,divider);
+    appleSidebar.remove();appleRight.remove();
+   }
+  }else{
+   document.body.classList.remove('bc-redline-apple-mode');
+   if(dragPointer!==null)endDrag();
+   if(heightPointer!==null)stopHeight();
+   // Restore the original phone/handheld markup and event handlers.
+   if(nav.parentNode!==dashboard)dashboard.append(nav);
+   placeStats(dashboard);
+   if(chatPanel.parentNode!==dashboard)dashboard.append(chatPanel);
+   for(const element of [originalReview,historyToolbar,photoEntries,entriesFeedback]){
+    if(element&&element.parentNode!==timeline)timeline.append(element);
+   }
    if(bidTimerPanel&&originalReview&&bidTimerPanel.parentNode!==originalReview)originalReview.append(bidTimerPanel);
-   return;
+   appleSidebar.remove();appleRight.remove();
+   timeline?.classList.remove('rr-source-timeline');
+   if(timeline&&roomBody&&timeline.parentNode!==roomBody)roomBody.append(timeline);
+   mediaInitialised=false;
+   setHistoryOpen(false);
   }
-  workspace.classList.add('rr-popup-workspace');
-  if(mobile){
-   if(workspace.parentNode!==dashboard)dashboard.insertBefore(workspace,chatSplit);
-  }else if(workspace.parentNode!==document.body)document.body.append(workspace);
-  if(photos.parentNode!==workspace)workspace.append(photos);
-  if(originalReview&&originalReview.parentNode!==reviewStage)reviewStage.append(originalReview);
-  if(bidTimerPanel&&bidTimerPanel.parentNode!==reviewStage)reviewStage.append(bidTimerPanel);
-  for(const element of [historyToolbar,photoEntries,entriesFeedback])if(element&&element.parentNode!==pricedStage)pricedStage.append(element);
-  const scope=s.roomId+'|'+String(s.resetAt||'')+'|'+String(Boolean(s.archiveMode));
-  if(scope!==reviewScope){reviewScope=scope;seenPending.clear();mediaOpen=false;setHistoryOpen(false)}
-  const incoming=(s.entries||[]).filter(e=>e.decision_status==='pending'&&!e.removal_status);
-  const ids=new Set(incoming.map(e=>e.id));
-  const count=Number(s.pending)||0;
-  const arrived=incoming.some(e=>!seenPending.has(e.id));
-  seenPending=ids;
-  if(!s.archiveMode&&s.roomActive&&arrived){
-   // Do not steal the mobile keyboard or interrupt the user's history view.
-   // The persistent resume chip still shows the newly arrived count.
-   const composing=mobile&&document.activeElement?.matches('.redline-message-entry');
-   if(!composing&&!historyOpen&&(!mobile||document.body.dataset.ledgerView==='summary'))mediaOpen=true;
-  }
-  const label=count?count+' photo'+(count===1?'':'s')+' waiting · '+(mediaOpen?'Minimize':'Review'):'Photos · Open review';
-  if(waiting.textContent!==label)waiting.textContent=label;
-  waiting.hidden=false;
-  showPane();
  }
  // Security and room controls remain available beneath active conversations.
  access.append(line);
@@ -881,7 +913,6 @@
    if(verifiedDot.getAttribute('aria-label')!==description){verifiedDot.setAttribute('aria-label',description);verifiedDot.title=description}
   }
   if(!visible){
-   workspace.hidden=true;mediaOpen=false;waiting.hidden=true;chatSplit.hidden=true;reviewScope='';seenPending.clear();document.body.classList.remove('rr-popup-review-mode');
    document.body.classList.remove('rr-room-tools-open');
    if(endSession.parentNode!==header)header.insertBefore(endSession,endSessionAnchor);
    if(headerMenuGroup.parentNode!==header){setMenuOpen(false);header.insertBefore(headerMenuGroup,endSession)}

@@ -635,7 +635,6 @@ function entryState(e){
 let viewingLastRoom=null,viewingLastId=undefined,viewingLastAt=0;
 let viewingInFlight=false,viewingQueued=undefined;
 function ownerVisiblePhotoId(){
- if(document.body.classList.contains('rr-popup-review-mode')&&!document.getElementById('redlineReceiverLiveWorkspace')?.classList.contains('rr-media-open')&&$('photoLightbox')?.hidden)return null;
  if(!$('photoLightbox')?.hidden&&validId(state.reviewSidebarPhotoId))return state.reviewSidebarPhotoId;
  return document.querySelector('#reviewQueueCurrent .photo-entry[data-redline-photo-id]')?.dataset.redlinePhotoId||null;
 }
@@ -667,7 +666,6 @@ window.setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{
  if(!document.hidden&&state.isOwner)void publishOwnerViewing(ownerVisiblePhotoId());
 });
-window.addEventListener('blackcell:redline:review-visibility',()=>void publishOwnerViewing(ownerVisiblePhotoId()));
 function renderReviewQueue(){
  const queue=$('ownerReviewQueue');
  queue.hidden=!state.isOwner||!state.room||state.showArchive;
