@@ -115,7 +115,7 @@
  const payFeedback=make('span','rr-pay-feedback','');
  payFeedback.setAttribute('role','status');payFeedback.hidden=true;
  payColumn.append(payFull,partialPay,payFeedback);
- headerMenuGroup.append(menuShell);
+ headerMenuGroup.prepend(menuShell);
  nav.append(payColumn);
  let payBusy=false;
  function setPayFeedback(message){
