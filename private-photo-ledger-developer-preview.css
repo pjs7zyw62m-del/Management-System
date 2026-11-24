@@ -16,3 +16,9 @@
 .rd-dev-stage[data-device=tablet] .rd-dev-pane{flex:0 0 min(820px,96%);height:100%}
 .rd-dev-stage[data-mode=dual][data-device=desktop] .rd-dev-pane{min-width:420px}
 @media(max-width:600px){.rd-dev-dialog{width:100vw;height:100dvh;padding:7px;border-radius:0}.rd-dev-toolbar{gap:3px}.rd-dev-button{padding:6px}.rd-dev-stage[data-mode=dual] .rd-dev-pane{min-width:340px}}
+
+/* Estimated compact Android Chrome viewport. Preserve actual CSS pixel dimensions;
+   scroll the outer test workspace if the owner's screen is smaller. */
+.rd-dev-stage[data-preset=neon-smarta-2]{align-items:flex-start;justify-content:center}
+.rd-dev-stage[data-preset=neon-smarta-2] .rd-dev-pane{box-sizing:content-box;flex:0 0 320px!important;width:320px!important;min-width:320px!important;height:auto!important;align-self:flex-start;margin:0!important}
+.rd-dev-stage[data-preset=neon-smarta-2] .rd-dev-frame{flex:0 0 480px!important;width:320px!important;height:480px!important;min-height:480px!important;max-height:480px!important}

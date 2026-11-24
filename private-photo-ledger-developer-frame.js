@@ -11,14 +11,17 @@
   return new Promise((resolve,reject)=>{const timer=setTimeout(()=>{requests.delete(id);reject(Error('Test workspace did not respond'))},5000);requests.set(id,{resolve,reject,timer});parent.postMessage({type:'rd-dev-action',token:cfg.token,id,action:type,payload},cfg.origin)});
  }
  let sequence=0;
+ document.body.dataset.rdDevPreset=cfg.preset==='neon-smarta-2'?'neon-smarta-2':'';
  function reportLayout(){requestAnimationFrame(()=>requestAnimationFrame(()=>{
-  const menu=document.querySelector('.topbar .rr-menu-toggle'),pay=document.querySelector('.rr-pay-choice');
+  const menu=document.querySelector(owner?'.topbar .rr-menu-toggle':'.topbar .rs-mobile-menu-toggle'),pay=document.querySelector('.rr-pay-choice');
   const visible=e=>!!e&&getComputedStyle(e).display!=='none'&&e.getBoundingClientRect().width>0;
-  parent.postMessage({type:'rd-dev-action',token:cfg.token,action:'layout',payload:{mode:document.body.dataset.ledgerDevice,width:innerWidth,menu:visible(menu),pay:visible(pay)}},cfg.origin);
+  parent.postMessage({type:'rd-dev-action',token:cfg.token,action:'layout',payload:{mode:document.body.dataset.ledgerDevice,width:innerWidth,height:innerHeight,menu:visible(menu),pay:visible(pay)}},cfg.origin);
  }))}
  window.addEventListener('message',event=>{
   if(event.source!==parent||event.origin!==cfg.origin||event.data?.token!==cfg.token||event.data?.type!=='rd-dev-device'||!['desktop','tablet','mobile'].includes(event.data.device))return;
   cfg.device=event.data.device;
+  cfg.preset=event.data.preset==='neon-smarta-2'?'neon-smarta-2':'';
+  document.body.dataset.rdDevPreset=cfg.preset;
   window.dispatchEvent(new Event('blackcell:redline:preview-device'));
   reportLayout();
  });
