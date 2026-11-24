@@ -210,3 +210,27 @@ body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-le
  flex:0 0 auto!important;position:relative!important;inset:auto!important;
  box-sizing:border-box!important;margin:0!important
 }
+
+/* Mobile sender: show the authenticated session state beside CORPORATION
+   and remove the redundant peer-name / two-person chat title strip. */
+.rs-brand-session-dot{display:none!important}
+body.redline-sender-messenger.bc-ledger-mobile.rs-mobile-menu-active .topbar>.brand{
+ flex:1 1 auto!important;max-width:none!important;min-width:0!important
+}
+body.redline-sender-messenger.bc-ledger-mobile.rs-mobile-menu-active #ledgerBrand .brand-label strong{
+ display:flex!important;align-items:center!important;gap:5px!important;white-space:nowrap!important;
+ font-size:clamp(8px,2.65vw,11px)!important;letter-spacing:0!important
+}
+body.redline-sender-messenger.bc-ledger-mobile.rs-mobile-menu-active .rs-brand-session-dot:not([hidden]){
+ display:inline-block!important;flex:0 0 6px;width:6px;height:6px;border-radius:50%;
+ background:#65d7a1;box-shadow:0 0 6px rgba(101,215,161,.35)
+}
+body.redline-sender-messenger.bc-ledger-mobile.rs-mobile-menu-active .rs-brand-session-dot[data-state="idle"]:not([hidden]){
+ background:#96969c;box-shadow:none
+}
+body.redline-sender-messenger.bc-ledger-mobile.rs-mobile-menu-active .rs-brand-session-dot[data-state="ended"]:not([hidden]){
+ background:#ff5269;box-shadow:0 0 6px rgba(255,82,105,.35)
+}
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-message-card>.redline-message-header{
+ display:none!important
+}

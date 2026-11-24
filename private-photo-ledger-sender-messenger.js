@@ -147,6 +147,18 @@ quick.hidden=true;
 chat.insertBefore(quick,composer);
 const headerStrong=$('.redline-message-header strong',chat);
 const headerSmall=$('.redline-message-header small',chat);
+const senderDot=create('span','rs-brand-session-dot');
+senderDot.hidden=true;senderDot.setAttribute('role','img');
+const brandTitle=$('#ledgerBrand .brand-label strong');
+brandTitle?.append(senderDot);
+function syncSenderDot(active,s){
+ const show=active&&document.body.classList.contains('bc-ledger-mobile');
+ if(senderDot.hidden===show)senderDot.hidden=!show;
+ const state=!show||!s?.roomId||s.archiveMode?'idle':s.roomActive===true?'active':s.roomActive===false?'ended':'idle';
+ const description=state==='active'?'Verified · Active private room':state==='ended'?'Verified · Session ended':'Verified · No active room';
+ if(senderDot.dataset.state!==state)senderDot.dataset.state=state;
+ if(senderDot.getAttribute('aria-label')!==description){senderDot.setAttribute('aria-label',description);senderDot.title=description}
+}
 let lastRoomId=null;
 function update(){
  const s=snapshot();
@@ -154,6 +166,7 @@ function update(){
  const onChat=active&&!pane.hidden;
  document.body.classList.toggle('redline-sender-messenger',active);
  syncMobileMenu(active);
+ syncSenderDot(active,s);
  liveStrip.hidden=!active;
  quick.hidden=!active;
  document.body.classList.toggle('redline-chat-immersive',onChat);
