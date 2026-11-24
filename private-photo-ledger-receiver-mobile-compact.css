@@ -250,3 +250,12 @@ body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand>.rr
 body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand>.rr-command-header:not(:has(>button:not([hidden]),>.workspace-actions:not([hidden]),>.rr-header-menu-group:not([hidden]))){
  display:none!important
 }
+
+/* Receiver mobile: the hamburger is the navigation surface. Keep the
+   underlying section buttons available for programmatic routing only. */
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #activeRoom>.bc-ledger-phone-nav{
+ display:none!important
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp.shell{
+ padding-bottom:max(20px,calc(12px + env(safe-area-inset-bottom)))!important
+}

@@ -69,20 +69,27 @@
   target.scrollIntoView({behavior:'smooth',block:'start'});
   if(target.matches('section[tabindex]'))target.focus({preventScroll:true});
  };
+ // Keep the existing phone section routing even though the receiver's
+ // duplicate bottom bar is visually removed. Sender navigation is unchanged.
+ function mobileSection(key){
+  if(!document.body.classList.contains('bc-ledger-mobile'))return;
+  app.querySelector('.bc-ledger-phone-tab[data-ledger-navigate="'+key+'"]:not([hidden])')?.click();
+ }
  const review=button('Open Photos',()=>openMedia(),'rr-nav-button is-primary');
  const history=button('Photo History',()=>openMedia(true),'rr-nav-button');
  const message=button('Private Chat',()=>{
   closeMedia();
-  goTo('#redlineReceiverChat');
+  mobileSection('summary');
+  requestAnimationFrame(()=>goTo('#redlineReceiverChat'));
   $('#redlineReceiverChat .redline-message-entry')?.focus({preventScroll:true});
  },'rr-nav-button');
- const manage=button('Rooms & Access',()=>goTo('#ownerSetup'),'rr-nav-button');
+ const manage=button('Rooms & Access',()=>{mobileSection('room');requestAnimationFrame(()=>goTo('#ownerSetup'))},'rr-nav-button');
  const tools=button('Room Tools',()=>{
   const expanded=!document.body.classList.contains('rr-room-tools-open');
   document.body.classList.toggle('rr-room-tools-open',expanded);
   tools.setAttribute('aria-expanded',String(expanded));
   tools.textContent=expanded?'Hide Room Tools':'Room Tools';
-  if(expanded)goTo('#activeRoom .room-toolbar');
+  if(expanded){mobileSection('room');requestAnimationFrame(()=>goTo('#activeRoom .room-toolbar'))}
  },'rr-nav-button rr-nav-tools');
  tools.setAttribute('aria-expanded','false');
  tools.setAttribute('aria-controls','redlineSessionTools');
