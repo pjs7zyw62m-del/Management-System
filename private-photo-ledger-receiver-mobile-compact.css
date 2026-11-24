@@ -338,3 +338,22 @@ body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand>#re
  margin:0!important;padding:0!important;border:0!important;border-radius:0!important;
  width:100%!important;max-width:none!important;box-shadow:none!important
 }
+
+/* Mobile receiver: move PAY directly below the financial header divider.
+   The same payment chooser and status feedback stay with the moved control. */
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-card>.rr-pay-column{
+ display:flex!important;flex:0 0 auto!important;flex-direction:column!important;align-items:stretch!important;
+ width:100%!important;min-width:0!important;box-sizing:border-box!important;
+ padding:5px 9px!important;margin:0!important;gap:4px!important;background:#050505!important
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .rr-pay-column>.rr-pay-choice{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ width:100%!important;min-height:36px!important;margin:0!important
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .rr-pay-column>.rr-pay-full:not(.rr-pay-choice),
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .rr-pay-column>.rr-pay-partial{
+ display:none!important
+}
+body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverCommand>.rr-nav:not(:has(>.rr-pay-column)){
+ display:none!important;padding:0!important;margin:0!important
+}

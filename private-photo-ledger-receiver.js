@@ -794,9 +794,15 @@
   const phone=document.body.classList.contains('bc-ledger-mobile');
   const chatHead=phone&&!room.hidden?chatMount.querySelector('.redline-message-header'):null;
   const host=chatHead||defaultHost;
-  if(stats.parentNode===host)return;
-  if(host===dashboard&&nav.parentNode===dashboard)dashboard.insertBefore(stats,nav);
-  else host.append(stats);
+  if(stats.parentNode!==host){
+   if(host===dashboard&&nav.parentNode===dashboard)dashboard.insertBefore(stats,nav);
+   else host.append(stats);
+  }
+  // Reuse the original payment controls and feedback directly below the
+  // chat header's red divider; restore the original navigation on larger devices.
+  if(chatHead){
+   if(payColumn.parentNode!==chatHead.parentNode||payColumn.previousElementSibling!==chatHead)chatHead.after(payColumn);
+  }else if(payColumn.parentNode!==nav)nav.append(payColumn);
  }
  const chatStatsObserver=new MutationObserver(()=>{
   if(!app.hidden&&!owner.hidden&&document.body.classList.contains('bc-ledger-mobile'))placeStats(dashboard);
