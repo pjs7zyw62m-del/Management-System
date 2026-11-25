@@ -162,7 +162,7 @@
   }
   function activate(key,{scroll=true}={}){
     if(!isAvailable(key))return;
-    if(location.href!=='about:srcdoc'&&window.BLACKCELL_REDLINE_API?.snapshot?.()?.isOwner===true){
+    if((location.href!=='about:srcdoc'||window.REDLINE_DEV_CONFIG?.role==='receiver')&&window.BLACKCELL_REDLINE_API?.snapshot?.()?.isOwner===true){
       current='summary';reflect();
       if(key!=='summary')window.dispatchEvent(new CustomEvent('blackcell:redline:popup-section',{detail:{key}}));
       return;

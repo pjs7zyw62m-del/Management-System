@@ -13,9 +13,9 @@
  const frameWraps={},frames={},modeButtons={},deviceButtons={};
  let model=null,token='',generation=0,mode='dual',device='desktop',loadedBuild='',reports={},preset='',testLibrary=[],libraryRoom=null,libraryRevision=0,libraryState='idle',libraryMessage='';
  // Receiver desktop inherits the approved mobile presentation in a wide frame.
- // Only the isolated receiver's effective layout changes; sender and tablet
- // retain their own device modes and all test actions still use the same bridge.
- function layoutDevice(role,requested=device){return role==='receiver'&&requested==='desktop'?'mobile':requested}
+ // Match the live receiver's chat-first popup shell at all device sizes.
+ // The sender retains the requested desktop, tablet or phone layout.
+ function layoutDevice(role,requested=device){return role==='receiver'?'mobile':requested}
  function sendDevice(role,frame=frames[role]){frame?.contentWindow?.postMessage({type:'rd-dev-device',token,device:layoutDevice(role),preset:role==='sender'?preset:''},'*')}
  function chooseMode(next){if(next!=='sender'&&preset){preset='';stage.dataset.preset='';phonePreset.setAttribute('aria-pressed','false')}mode=next;stage.dataset.mode=next;for(const [k,b] of Object.entries(modeButtons))b.setAttribute('aria-pressed',String(k===next));for(const role of ['receiver','sender'])frameWraps[role].hidden=next!=='dual'&&role!==next}
  function chooseDevice(next,phone=false){preset=phone?'neon-smarta-2':'';stage.dataset.preset=preset;phonePreset.setAttribute('aria-pressed',String(phone));device=next;stage.dataset.device=next;reports={};for(const [k,b] of Object.entries(deviceButtons))b.setAttribute('aria-pressed',String(k===next&&!phone));for(const role of Object.keys(frames))sendDevice(role);reportStatus()}
@@ -161,7 +161,8 @@
   const galleryVersion=gallery?new URL(gallery.getAttribute('href'),location.href).searchParams.get('v'):'';
   if(!galleryVersion?.includes('fullscreen')||!styles.some(s=>s.includes('Gallery V6'))||!adapter.includes("action:'open-library'"))throw Error('Old photo gallery assets returned. Refresh the REDLINE app before testing.');
   if(!sources.some(s=>s.includes('rdIndependentReview'))||!styles.some(s=>s.includes('Independent receiver review')))throw Error('Updated receiver popup assets are unavailable. Refresh REDLINE.');
-  return {markup:body.innerHTML,styles,sources,adapter,build:'Receiver DESKTOP PARITY 2 · Gallery FULLSCREEN 7 · Receiver REVIEW 6 · Photo First · '+[receiver?.searchParams.get('v'),mobile?.searchParams.get('v')].filter(Boolean).join(' / ')};
+  if(!sources.some(s=>s.includes('rr-popup-menu-mode')&&s.includes('openReceiverPanel'))||!styles.some(s=>s.includes('#redlineReceiverMenuOverlay'))||!adapter.includes('localRoomDirectory'))throw Error('New REDLINE menu or room preview assets are unavailable. Reload after deployment.');
+  return {markup:body.innerHTML,styles,sources,adapter,build:'Receiver POPUP MENU · Sender and Receiver · Gallery FULLSCREEN 7 · '+[receiver?.searchParams.get('v'),mobile?.searchParams.get('v')].filter(Boolean).join(' / ')};
  }
  function frameDocument(a,role){
   const nonce=crypto.randomUUID(),escapeScript=s=>s.replace(/<\/script/gi,'<\\/script');

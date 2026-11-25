@@ -7,7 +7,7 @@
  // Receiver desktop parity is enforced here as well as in the host.
  // An older open Developer Preview reloads this adapter with cache:'no-store',
  // so it cannot switch the receiver back to the retired desktop deck.
- function effectiveDevice(requested){return owner&&requested==='desktop'?'mobile':requested}
+ function effectiveDevice(requested){return owner?'mobile':requested}
  function applyPreviewDevice(requested){cfg.device=effectiveDevice(requested)}
  applyPreviewDevice(cfg.device);
  const money=n=>'$'+(Number(n||0)/100).toFixed(2);
@@ -40,7 +40,7 @@
   pending:photos.filter(p=>p.decision_status==='pending').length,owed:money(assigned),paid:'$0.00',assigned:money(assigned),entries:photos,
   photoHistory:photos,paymentHistory:[],ratingEvents:[],fiveStarPhotos:photos.filter(p=>p.stars===5),topPicks:photos.filter(p=>p.stars===5),paymentSummary:{remaining_cents:assigned,paid_cents:0}
  }}
- window.BLACKCELL_REDLINE_API={snapshot,loadMessages:async()=>model.messages.slice(),sendMessage:body=>action('chat',{body}),chatStatus:async()=>({peerTyping:false,peerReadAt:null}),chatSignal:async()=>true,ownerAccessMembers:async()=>[],currentlyViewingStatus:async()=>({active:!!model.viewing,photoId:model.viewing}),timerStatus:async()=>({ok:true,server_now:new Date().toISOString(),active:null,recent:[],assigned_cents:0,owed_cents:0,paid_cents:0}),roomPaymentStatus:async()=>({remaining_cents:sum(),paid_cents:0}),recordPaidInFull:async()=>{throw Error('Payments are not connected in developer preview')},recordPartialPayment:async()=>{throw Error('Payments are not connected in developer preview')}};
+ window.BLACKCELL_REDLINE_API={snapshot,returnToRooms:()=>localRoomDirectory(true),loadMessages:async()=>model.messages.slice(),sendMessage:body=>action('chat',{body}),chatStatus:async()=>({peerTyping:false,peerReadAt:null}),chatSignal:async()=>true,ownerAccessMembers:async()=>[],currentlyViewingStatus:async()=>({active:!!model.viewing,photoId:model.viewing}),timerStatus:async()=>({ok:true,server_now:new Date().toISOString(),active:null,recent:[],assigned_cents:0,owed_cents:0,paid_cents:0}),roomPaymentStatus:async()=>({remaining_cents:sum(),paid_cents:0}),recordPaidInFull:async()=>{throw Error('Payments are not connected in developer preview')},recordPartialPayment:async()=>{throw Error('Payments are not connected in developer preview')}};
  const testQueue=[];let testRunning=false,testProgress=null;
  function emitProgress(){window.dispatchEvent(new Event('blackcell:redline:upload-progress'))}
  function enqueueTest(items){
@@ -147,6 +147,44 @@
  if($('employeeUpload'))$('employeeUpload').hidden=owner;
  const set=(id,text)=>{if($(id)&&$(id).textContent!==String(text))$(id).textContent=String(text)};
  set('activeRoomTitle','Developer Test Room');set('roomPeople','Test Sender / Test Receiver');set('ledgerLiveStatus','LOCAL TEST SESSION');
+ // Simulated directory navigation stays inside the sandbox and never
+ // changes a real room or reloads the authenticated production page.
+ const directory=$('redlineRoomDirectory');
+ let directoryOpen=false;
+ function localRoomDirectory(show){
+  if(!directory)return false;
+  directoryOpen=Boolean(show);
+  $('activeRoom').hidden=directoryOpen;directory.hidden=!directoryOpen;
+  if(directoryOpen){
+   document.body.dataset.redlineRoomHome='ready';
+   const list=$('redlineDirectoryList');list.replaceChildren();
+   const item=button('',()=>localRoomDirectory(false),'rd-room-card');
+   item.append(make('strong','rd-room-title','Developer Test Room'),make('span','rd-room-member',owner?'Test Sender':'Test Receiver'),make('span','rd-room-open',model.active?'Open test room →':'View test records →'));
+   list.append(item);
+   set('redlineDirectoryActive',model.active?'1':'0');set('redlineDirectoryClosed',model.active?'0':'1');
+   set('redlineDirectoryNote','Preview only · No real rooms or records are changed.');
+   const badge=directory.querySelector('.rd-directory-owner');if(badge)badge.textContent=owner?'OWNER TEST':'SENDER TEST';
+   const scope=directory.querySelector('.rd-directory-slash');if(scope)scope.textContent=owner?'/ OWNER WORKSPACE':'/ SENDER WORKSPACE';
+   if($('redlineDirectoryCreate'))$('redlineDirectoryCreate').hidden=true;
+  }else{delete document.body.dataset.redlineRoomHome}
+  window.dispatchEvent(new Event('blackcell:redline:state'));
+  return true;
+ }
+ $('redlineDirectoryRefresh')?.addEventListener('click',()=>localRoomDirectory(true));
+ $('redlineRoomBack')?.addEventListener('click',()=>localRoomDirectory(true));
+ $('ledgerBrand')?.addEventListener('click',e=>{e.preventDefault();localRoomDirectory(true)});
+ if($('redlineRoomBack'))$('redlineRoomBack').hidden=false;
+ if($('redlineSessionTools'))$('redlineSessionTools').hidden=!owner;
+ if($('closeRoomBtn'))$('closeRoomBtn').hidden=!owner;
+ // The preview never executes reset, payment, permission or share operations.
+ for(const id of ['redlineMasterReset','redlineStartFreshRoom','redlineArchiveToggle','ledgerScopeToggle','ownerUploadShare','copyRoomLink','uploadAccessAction']){
+  const el=$(id);if(el){el.disabled=true;el.title='Unavailable in this isolated test session';}
+ }
+ if($('redlineResetActions'))$('redlineResetActions').hidden=false;
+ if($('ownerLedgerScope'))$('ownerLedgerScope').hidden=!owner;
+ set('ledgerScopeStatus','PREVIEW ONLY');set('ledgerScopeDescription','Live permissions are not changed in Developer Preview.');
+ set('redlineSessionDescription','LOCAL TEST SESSION · Reset test from the Developer Preview toolbar.');
+
  $('refreshLedger')?.addEventListener('click',()=>{render();parent.postMessage({type:'rd-dev-action',token:cfg.token,action:'ready'},cfg.origin)});
  $('closeRoomBtn')?.addEventListener('click',()=>{if(confirm('End only the test session?'))void action('close')});
  $('closeLightbox')?.addEventListener('click',()=>{$('photoLightbox').hidden=true;document.body.style.overflow=''});
@@ -162,7 +200,7 @@
   card.append(b,body);return card;
  }
  function render(){
-  const s=snapshot();set('pendingCount',s.pending);set('totalAssigned',s.assigned);set('totalOwed',s.owed);set('totalPaid',s.paid);set('reviewQueueCount',s.pending+' WAITING');set('roomStateLabel',model.active?'ACTIVE':'CLOSED');
+  const s=snapshot();set('pendingCount',s.pending);set('totalAssigned',s.assigned);set('totalOwed',s.owed);set('totalPaid',s.paid);set('reviewQueueCount',s.pending+' WAITING');set('roomStateLabel',model.active?'ACTIVE':'CLOSED');if($('closeRoomBtn')){$('closeRoomBtn').disabled=!model.active;$('closeRoomBtn').textContent=model.active?'CLOSE TEST ROOM':'TEST ROOM CLOSED'}
   const sig=JSON.stringify([model.session,model.active,model.photos.map(p=>[p.id,p.stars,p.decision_status,p.amount_cents])]);
   if(owner&&sig!==last){
    last=sig;const current=model.photos.find(p=>p.decision_status==='pending'),queue=$('reviewQueueCurrent'),panel=$('redlineLightboxReview'),history=$('photoEntries');

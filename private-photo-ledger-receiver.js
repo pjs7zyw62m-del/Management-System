@@ -63,7 +63,7 @@
   outputs.set(source,value);stats.append(card);
  }
  const nav=make('nav','rr-nav');nav.setAttribute('aria-label','Receiver quick actions');
- const popupMode=location.href!=='about:srcdoc';
+ const popupMode=location.href!=='about:srcdoc'||window.REDLINE_DEV_CONFIG?.role==='receiver';
  const goTo=(selector)=>{
   if(popupMode){openReceiverPanel(selector.includes('photoEntries')?'history':selector.includes('ownerReviewQueue')?'review':selector.includes('ownerSetup')?'access':'tools');return}
   const target=$(selector);
