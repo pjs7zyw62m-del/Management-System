@@ -32,6 +32,7 @@ window.BLACKCELL_LOGIN_BOOTED=true;
 const LOGIN_DEADLINE_MS=35000;
 function navigateAuthorizedWorkspace(path){
   const url=new URL(path,location.href);
+  if(url.pathname.endsWith('/blackcell-os.html'))url.searchParams.set('bc_os_release','20261125-mobile-startup-refresh6');
   try{
     if(window.parent!==window&&window.parent===window.top&&window.parent.location.origin===location.origin&&window.parent.document.getElementById('bcGlassLoginFrame')===window.frameElement){
       window.top.location.replace(url.href);return;

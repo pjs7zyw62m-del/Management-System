@@ -218,6 +218,14 @@ async function check(){
   if(!baseline){
    baseline=v;
    if(osMode){
+    // A fresh session may still have an old cached HTML document. Compare
+    // the actual deployed OS build instead of assuming the first manifest matches.
+    const deployedBuild=await latestOSBuild();
+    const currentBuild=document.querySelector('meta[name="blackcell-os-client-build"]')?.content||'';
+    if(deployedBuild&&currentBuild&&deployedBuild!==currentBuild){
+     try{sessionStorage.setItem(OS_TARGET,v);sessionStorage.setItem(OS_EXPECTED_BUILD,deployedBuild)}catch(_){}
+     pending=v;
+    }
     try{const applied=localStorage.getItem(OS_APPLIED);if(!applied)localStorage.setItem(OS_APPLIED,v);else if(applied!==v)pending=v}catch(_){}
     if(sessionStorage.getItem(OS_TARGET)===v&&sessionStorage.getItem(OS_EXPECTED_BUILD)&&sessionStorage.getItem(OS_EXPECTED_BUILD)!==(document.querySelector('meta[name="blackcell-os-client-build"]')?.content||''))pending=v;
     if(pending)maybeRefresh();
