@@ -62,6 +62,6 @@ document.addEventListener('click',event=>{
  startWarning();
 });
 window.addEventListener('pagehide',cancel);
-window.bcLandingAudio={startEntrance,cancel};
+window.bcLandingAudio={startEntrance,cancel,playOsLaunch:()=>clip('blackcell-os-launch-david.mp3?v=20261125-os-launch1',8500)};
 update();if(!muted&&!heard)startWarning();
 })();

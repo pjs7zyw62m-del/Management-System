@@ -96,7 +96,7 @@ body.bc-glass-open header{opacity:1}
 <footer><div class="footer-inner"><div class="classification">CLASSIFICATION <strong>RESTRICTED</strong></div><p class="security-notice">Property of BLACKCELL Corporation. Unauthorized access, use or disclosure is prohibited.</p><div class="footer-id">CORPORATE SYSTEMS</div></div></footer>
 <div class="bc-glass-scan" aria-hidden="true"></div>
 <iframe id="bcGlassLoginFrame" class="bc-glass-login-frame" title="BLACKCELL corporate sign in" allow="autoplay" hidden></iframe>
-<script src="blackcell-landing-audio.js?v=20261125-glass-live3"></script>
+<script src="blackcell-landing-audio.js?v=20261125-mobile-audio-continuity4"></script>
 <script>
 (()=>{const launch=document.getElementById('launch'),frame=document.getElementById('bcGlassLoginFrame');let busy=false,ready=false,timer,playResult='pending';
 const main=document.querySelector('main'),footer=document.querySelector('footer'),header=document.querySelector('header'),sound=document.getElementById('bcLandingSound'),soundHome=sound.parentElement;
@@ -106,7 +106,7 @@ frame.addEventListener('load',()=>{if(!busy)return;try{const doc=frame.contentDo
 launch.addEventListener('click',()=>{if(busy)return;busy=true;ready=false;playResult='pending';launch.disabled=true;document.body.classList.add('bc-glass-leave');
  // Start playback synchronously with the trusted click. Never wait for it to finish.
  try{Promise.resolve(window.bcLandingAudio?.startEntrance()).then(value=>{playResult=value||'retry'}).catch(()=>{playResult='retry'})}catch{playResult='retry'}
- frame.hidden=false;frame.src='login.html?entrance=glass&welcome=done&embedded=glass3&bc_release=20261125-os-launch1';
+ frame.hidden=false;frame.src='login.html?entrance=glass&welcome=done&embedded=glass3&bc_release=20261125-mobile-audio-continuity4';
  // If embedding is unavailable, preserve direct sign-in; audio never gates navigation.
  timer=setTimeout(fallback,3500);
 });

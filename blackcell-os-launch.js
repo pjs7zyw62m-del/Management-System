@@ -2,6 +2,7 @@
 const KEY='bc.os.fresh-launch.v1',SRC='blackcell-os-launch-david.mp3?v=20261125-os-launch1',MARK=2.798095,DURATION=4.75425;
 const audio=new Audio(SRC);audio.preload='auto';audio.playbackRate=1;
 function consume(){try{const t=Number(sessionStorage.getItem(KEY));sessionStorage.removeItem(KEY);return t>0&&Date.now()-t>=0&&Date.now()-t<180000}catch{return false}}
+function consumePlayed(){try{const k='bc.os.launch-audio-played.v1',t=Number(sessionStorage.getItem(k));sessionStorage.removeItem(k);return t>0&&Date.now()-t>=0&&Date.now()-t<180000}catch{return false}}
 function muted(){try{return localStorage.getItem('bcLandingMuted')==='1'}catch{return false}}
 function isMobile(){return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.maxTouchPoints>0&&matchMedia('(pointer: coarse)').matches)}
 function canPlay(desktop){return !desktop.hidden&&!desktop.inert&&!muted()}
@@ -36,7 +37,8 @@ async function run({gate,desktop,ready,reveal,reduceMotion=false}){
   if(blocked&&!isMobile())retryButton(desktop,()=>canPlay(desktop),()=>{blocked=false;playing=true});
   resolveReveal(true);
  };
- if(!muted()){
+ const alreadyPlayed=consumePlayed();
+ if(!muted()&&!alreadyPlayed){
   try{audio.currentTime=0;audio.volume=1;playing=await Promise.race([Promise.resolve(audio.play()).then(()=>true).catch(()=>false),new Promise(r=>setTimeout(()=>r(false),1300))]);if(!playing){stop();blocked=true}}catch{stop();blocked=true}
  }
  if(!ready()){stop();return false}
