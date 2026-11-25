@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#09090a"><meta name="blackcell-landing-build" content="20261125-glass-live3"><title>BLACKCELL Corporation | Corporate Access</title><style>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#09090a"><meta name="blackcell-landing-build" content="20261125-glass-live4"><title>BLACKCELL Corporation | Corporate Access</title><style>
 :root{color-scheme:dark;--bg:#09090a;--fg:#eeeff1;--muted:#93949a;--line:#29292d;--red:#c52234}
 *{box-sizing:border-box}html{min-height:100%;scrollbar-width:none}body{margin:0;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:radial-gradient(ellipse at 50% 44%,#101012 0%,#09090a 65%);color:var(--fg);overflow-x:hidden}*::-webkit-scrollbar{display:none}button{font:inherit;cursor:pointer}button:focus-visible,a:focus-visible{outline:2px solid #ef8893;outline-offset:5px}a{color:inherit}
 header,footer{width:100%;padding-inline:clamp(20px,5vw,70px)}.header-inner,.footer-inner{max-width:1320px;margin-inline:auto}.header-inner{height:68px;display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line)}
@@ -99,10 +99,10 @@ body.bc-glass-open header{opacity:1}
 <script src="blackcell-landing-audio.js?v=20261125-glass-live3"></script>
 <script>
 (()=>{const launch=document.getElementById('launch'),frame=document.getElementById('bcGlassLoginFrame');let busy=false,ready=false,timer,playResult='pending';
-const main=document.querySelector('main'),footer=document.querySelector('footer');
+const main=document.querySelector('main'),footer=document.querySelector('footer'),header=document.querySelector('header'),sound=document.getElementById('bcLandingSound'),soundHome=sound.parentElement;
 function fallback(){if(!busy||ready)return;clearTimeout(timer);window.bcLandingAudio?.cancel();location.assign('login.html?entrance=glass&welcome='+(playResult==='played'||playResult==='muted'?'done':'retry'))}
-function reset(){clearTimeout(timer);busy=false;ready=false;launch.disabled=false;document.body.classList.remove('bc-glass-leave','bc-glass-open');main.inert=false;footer.inert=false;frame.hidden=true;frame.classList.remove('ready');frame.removeAttribute('src');window.bcLandingAudio?.cancel()}
-frame.addEventListener('load',()=>{if(!busy)return;try{const doc=frame.contentDocument;if(!doc||!doc.getElementById('loginCard'))return;clearTimeout(timer);ready=true;frame.classList.add('ready');document.body.classList.add('bc-glass-open');main.inert=true;footer.inert=true;frame.focus({preventScroll:true})}catch{fallback()}});
+function reset(){clearTimeout(timer);busy=false;ready=false;launch.disabled=false;document.body.classList.remove('bc-glass-leave','bc-glass-open');main.inert=false;footer.inert=false;header.inert=false;soundHome.appendChild(sound);frame.hidden=true;frame.classList.remove('ready');frame.removeAttribute('src');window.bcLandingAudio?.cancel()}
+frame.addEventListener('load',()=>{if(!busy)return;try{const doc=frame.contentDocument;if(!doc||!doc.getElementById('loginCard'))return;clearTimeout(timer);ready=true;frame.classList.add('ready');document.body.classList.add('bc-glass-open');main.inert=true;footer.inert=true;document.body.appendChild(sound);header.inert=true;frame.focus({preventScroll:true})}catch{fallback()}});
 launch.addEventListener('click',()=>{if(busy)return;busy=true;ready=false;playResult='pending';launch.disabled=true;document.body.classList.add('bc-glass-leave');
  // Start playback synchronously with the trusted click. Never wait for it to finish.
  try{Promise.resolve(window.bcLandingAudio?.startEntrance()).then(value=>{playResult=value||'retry'}).catch(()=>{playResult='retry'})}catch{playResult='retry'}
