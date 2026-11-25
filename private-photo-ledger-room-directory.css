@@ -1,0 +1,38 @@
+/* Owner room directory. No sender, preview or active-room geometry changes. */
+#redlineRoomDirectory[hidden],#redlineRoomBack[hidden],#redlineReceiverAllRooms[hidden]{display:none!important}
+body[data-redline-room-home] #ledgerApp:not([hidden]){display:flex!important;flex-direction:column!important;gap:16px!important;box-sizing:border-box!important;width:min(100%,1200px)!important;max-width:1200px!important;min-width:0!important;height:auto!important;min-height:0!important;margin:0 auto!important;padding:24px clamp(14px,3vw,32px)!important;overflow:visible!important}
+body[data-redline-room-home] #ledgerApp>.page-heading,body[data-redline-room-home] #ledgerApp>.bc-ledger-rail,body[data-redline-room-home] #redlineReceiverCommand,body[data-redline-room-home] #redlineReceiverLiveWorkspace,body[data-redline-room-home] #noRoom,body[data-redline-room-home] .rr-header-menu-group,body[data-redline-room-home] #ownerSetup,body[data-redline-room-home]>footer{display:none!important}
+body[data-redline-room-home] #redlineRoomDirectory:not([hidden]){display:block!important;width:100%;min-width:0;font:13px/1.5 system-ui;color:#eee}
+body[data-redline-room-home] #ownerSetup:not([hidden]){display:none!important}
+body[data-redline-room-home][data-redline-room-create=open] #ledgerApp>#ownerSetup:not([hidden]){display:block!important;margin:0!important;width:100%!important;max-width:none!important;border:1px solid #343438!important;border-radius:12px!important;background:#111113!important;padding:18px!important}
+body[data-redline-room-home] #ownerSetup>:not(.section-top):not(#createRoomForm):not(#setupFeedback):not(#redlineDirectoryCancel){display:none!important}
+body[data-redline-room-home][data-redline-room-create=open] #redlineDirectoryCancel{display:inline-flex!important}
+body[data-redline-room-home] #ownerSetup .section-top .eyebrow{display:none!important}
+body[data-redline-room-home] #ownerSetup .setup-form{display:flex!important;flex-wrap:wrap!important;align-items:end!important;gap:12px!important}
+body[data-redline-room-home] #ownerSetup .setup-form label{flex:1 1 200px!important;min-width:0!important}
+body[data-redline-room-home] #ownerSetup .setup-form input,body[data-redline-room-home] #ownerSetup .setup-form select{width:100%!important}
+.rd-directory-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:12px 0 22px;border-bottom:1px solid #2b2b30}
+.rd-directory-kicker{color:#b7b7bd;font-size:9px;letter-spacing:.15em;font-weight:700}
+.rd-directory-head h1{margin:6px 0;color:#f3f3f5;font-size:clamp(26px,4vw,36px);line-height:1.1;letter-spacing:-.04em}
+.rd-directory-head p{margin:6px 0 0;color:#a4a4aa;font-size:12px}
+.rd-directory-create{border:1px solid #d03550;background:#a5102a;color:white;border-radius:8px;padding:11px 16px;font:650 13px system-ui;cursor:pointer}
+.rd-directory-create:disabled{opacity:.45;cursor:default}
+.rd-directory-meta{display:flex;align-items:center;justify-content:space-between;padding:15px 0;color:#a6a6ad;font-size:11px}
+.rd-directory-meta button{border:1px solid #343439;border-radius:6px;background:#18181b;color:#ddd;padding:6px 10px;font:600 11px system-ui;cursor:pointer}
+.rd-directory-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}
+.rd-room-card{display:flex;flex-direction:column;align-items:flex-start;min-width:0;padding:15px;gap:7px;background:#111113;color:#eee;border:1px solid #333337;border-radius:12px;text-align:left;cursor:pointer;font:13px system-ui}
+.rd-room-card:hover,.rd-room-card:focus-visible{border-color:#b5384e;background:#1a1418;outline:none}
+.rd-room-card-top{display:flex;align-items:center;justify-content:space-between;width:100%;gap:6px;margin-bottom:6px}
+.rd-room-avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#29292e;color:#eee;font-weight:700}
+.rd-room-status{font-size:9px;letter-spacing:.06em;color:#9d9da3;display:flex;align-items:center;gap:5px}
+.rd-room-status:before{content:"";width:6px;height:6px;border-radius:50%;background:#888}
+.rd-room-status.is-active{color:#a4d9b8}.rd-room-status.is-active:before{background:#6bcd91}
+.rd-room-title{font-size:16px;line-height:1.35;overflow-wrap:anywhere}.rd-room-member{color:#a4a4ab;font-size:12px;overflow-wrap:anywhere}
+.rd-room-open{color:#ef8c9b;font-size:10px;letter-spacing:.05em;margin-top:10px}
+.rd-room-empty{border:1px dashed #343439;border-radius:12px;padding:26px;text-align:center;color:#ccc;grid-column:1/-1}
+.rd-room-empty p,.rd-directory-note{color:#a3a3a9;font-size:12px;margin:12px 0}
+html.bc-admin-workspace-embedded:has(body[data-redline-room-home]) body:has(#ledgerApp:not([hidden])){height:auto!important;min-height:100dvh!important;overflow:auto!important;background:#080809!important}
+html.bc-admin-workspace-embedded:has(body[data-redline-room-home]) body>header.topbar{display:flex!important}
+body[data-redline-room-home]{overflow:auto!important}
+body[data-redline-room-home] #ledgerApp[hidden]{display:none!important}
+body.bc-ledger-mobile #redlineRoomBack{display:none!important}
