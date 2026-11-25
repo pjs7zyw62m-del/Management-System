@@ -1080,6 +1080,7 @@
    make('p','rr-menu-panel-note','Identical repeat selections in a new sender upload batch are skipped after the first successful upload. Intentional resubmissions remain separate. Cross-batch reuse, visual-similarity matching and physical storage cleanup are not enabled.'));
   panelContent.append(section);
  }
+ const layoutMenu=button('Photo Layout',()=>{setMenuOpen(false);window.dispatchEvent(new Event('blackcell:redline:open-photo-layout'))},'rr-nav-button');layoutMenu.dataset.rrMenuIcon='photos';if(popupMode)menuItems.insertBefore(layoutMenu,tools);
  const duplicateMenu=button('Duplicate Protection',()=>openReceiverPanel('duplicates'),'rr-nav-button');
  duplicateMenu.dataset.rrMenuIcon='photos';
  if(popupMode)menuItems.insertBefore(duplicateMenu,tools);

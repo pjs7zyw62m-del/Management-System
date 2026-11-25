@@ -8,7 +8,7 @@ const btn=(label,action,cls='')=>{const el=make('button',cls,label);el.type='but
 const snapshot=()=>window.BLACKCELL_REDLINE_API?.snapshot?.();
 const popup=make('section','rd-ir-popup');popup.id='rdIndependentReview';popup.hidden=true;popup.setAttribute('role','region');popup.setAttribute('aria-label','Incoming photo review');
 const header=make('header','rd-ir-head'),heading=make('div','rd-ir-title'),count=make('small','','');heading.append(make('strong','','Incoming photograph'),count);
-const close=btn('×',()=>minimize(),'rd-ir-close'),minus=btn('−',()=>minimize(),'rd-ir-close');close.setAttribute('aria-label','Close photo review');minus.setAttribute('aria-label','Minimize photo review');header.append(heading,minus,close);
+const close=btn('×',()=>minimize(),'rd-ir-close'),minus=btn('−',()=>minimize(),'rd-ir-close');close.setAttribute('aria-label','Close photo review');minus.setAttribute('aria-label','Minimize photo review');const layoutButton=btn('▣',()=>openLayoutSettings(),'rd-ir-close');layoutButton.setAttribute('aria-label','Photo layout settings');layoutButton.title='Photo Layout';header.append(heading,layoutButton,minus,close);
 const scroll=make('div','rd-ir-scroll'),imageWrap=btn('',()=>original(),'rd-ir-image');imageWrap.setAttribute('aria-label','View full photo and zoom');const image=make('img');image.alt='Incoming private photograph';const placeholder=make('span','','Loading photo…');imageWrap.append(image,placeholder);
 const zoom=make('span','rd-ir-zoom','⤢');zoom.setAttribute('aria-hidden','true');imageWrap.append(zoom);
 const stars=make('div','rd-ir-stars');const starButtons=[];
@@ -23,6 +23,41 @@ const grip=make('div','rd-ir-grip');grip.setAttribute('role','separator');grip.s
 const resume=btn('Photo waiting · Review',()=>{opened=true;schedule()},'rd-ir-resume');resume.hidden=true;resume.setAttribute('aria-controls',popup.id);
 document.body.append(popup,resume);
 let scope='',known=new Set(),opened=false,current=null,queued=false,share=.90,pointer=null,expandedHost=null;
+// Presentation preferences are local to the verified owner and this device.
+const preview=location.href==='about:srcdoc';
+const defaults={mode:'top',auto:true,side:'right',width:44,height:82,anchor:'center'};
+let settings={...defaults},settingsOwner='',settingsDialog=null;
+function clean(v){return {mode:['top','floating','side','focus','custom'].includes(v?.mode)?v.mode:defaults.mode,auto:v?.auto!==false,side:v?.side==='left'?'left':'right',width:Math.max(28,Math.min(90,Number(v?.width)||44)),height:Math.max(40,Math.min(94,Number(v?.height)||82)),anchor:['center','left','right','top'].includes(v?.anchor)?v.anchor:'center'}}
+function loadSettings(s){
+ const uid=s?.isOwner?String(s.userId||''):'';
+ if(uid===settingsOwner)return;settingsOwner=uid;settings={...defaults};
+ if(uid&&!preview)try{settings=clean(JSON.parse(localStorage.getItem('bc-redline-photo-layout-v1:'+uid)||'null'))}catch(_){}
+}
+function applySettings(v){settings=clean(v);if(!preview&&settingsOwner)try{localStorage.setItem('bc-redline-photo-layout-v1:'+settingsOwner,JSON.stringify(settings))}catch(_){}schedule()}
+function openLayoutSettings(){
+ const s=snapshot();if(!s?.isOwner||!s.roomId)return;loadSettings(s);
+ if(settingsDialog?.open)return;
+ settingsDialog?.remove();const dialog=make('dialog','rd-layout-dialog');settingsDialog=dialog;
+ const title=make('header','rd-layout-header');title.append(make('h2','','Photo Layout'),btn('×',()=>dialog.close(),'rd-layout-close'));
+ const form=make('form','rd-layout-form');const description=make('p','','Choose how incoming photographs open. All ratings, prices and timer controls remain the same.');
+ let draft={...settings};
+ const options=make('div','rd-layout-options');
+ const choices=[['top','Photo above chat','Full-width panel above the conversation.'],['floating','Floating pop-up','Centered review window.'],['side','Slide-out panel','Review from the left or right edge.'],['focus','Focus view','Large photo review with controls below.'],['custom','Create your layout','Choose placement, width and height.']];
+ for(const [value,name,desc] of choices){const l=make('label','rd-layout-choice');const input=make('input');input.type='radio';input.name='layout';input.value=value;input.checked=draft.mode===value;const copy=make('span');copy.append(make('strong','',name),make('small','',desc));l.append(input,copy);options.append(l);input.addEventListener('change',()=>{draft.mode=value;reflect()})}
+ const autoLabel=make('label','rd-layout-auto');const auto=make('input');auto.type='checkbox';auto.checked=draft.auto;auto.addEventListener('change',()=>{draft.auto=auto.checked});autoLabel.append(auto,make('span','','Automatically open incoming photos'));
+ const custom=make('div','rd-layout-custom'),sideLabel=make('label','','Panel side'),side=make('select');for(const val of ['right','left']){const o=make('option','',val==='right'?'Right':'Left');o.value=val;side.append(o)}side.value=draft.side;side.addEventListener('change',()=>{draft.side=side.value;reflect()});sideLabel.append(side);
+ const anchorLabel=make('label','','Custom placement'),anchor=make('select');for(const val of ['center','left','right','top']){const o=make('option','',val.charAt(0).toUpperCase()+val.slice(1));o.value=val;anchor.append(o)}anchor.value=draft.anchor;anchor.addEventListener('change',()=>{draft.anchor=anchor.value;reflect()});anchorLabel.append(anchor);
+ function range(label,key,min,max){const l=make('label','rd-layout-range'),value=make('span','',draft[key]+'%'),line=make('div');line.append(make('span','',label),value);const input=make('input');input.type='range';input.min=min;input.max=max;input.step=1;input.value=draft[key];input.addEventListener('input',()=>{draft[key]=Number(input.value);value.textContent=draft[key]+'%';reflect()});l.append(line,input);return l}
+ const width=range('Width','width',28,90),height=range('Height','height',40,94);custom.append(sideLabel,anchorLabel,width,height);
+ const diagram=make('div','rd-layout-diagram');diagram.setAttribute('aria-label','Layout preview');const bubble=make('div','rd-layout-diagram-chat','CHAT'),photo=make('div','rd-layout-diagram-photo','PHOTO');diagram.append(bubble,photo);
+ const note=make('small','rd-layout-note','Side panels use the top layout on narrow phones. Preferences are saved on this device; Developer Preview is temporary.');
+ function reflect(){custom.hidden=!['side','custom'].includes(draft.mode);sideLabel.hidden=draft.mode!=='side';anchorLabel.hidden=width.hidden=height.hidden=draft.mode!=='custom';diagram.dataset.mode=draft.mode;diagram.dataset.anchor=draft.mode==='side'?draft.side:draft.anchor;diagram.style.setProperty('--layout-w',draft.width+'%');diagram.style.setProperty('--layout-h',draft.height+'%')}
+ const footer=make('div','rd-layout-footer');footer.append(btn('Restore default',()=>{applySettings(defaults);dialog.close()},'rd-layout-secondary'));const save=make('button','rd-layout-save','Save layout');save.type='submit';footer.append(save);
+ form.append(description,options,autoLabel,custom,diagram,note,footer);dialog.append(title,form);document.body.append(dialog);reflect();
+ form.addEventListener('submit',e=>{e.preventDefault();const now=snapshot();if(!now?.isOwner||now.userId!==s.userId||now.roomId!==s.roomId){dialog.close();return}applySettings(draft);dialog.close()});
+ dialog.addEventListener('close',()=>{dialog.remove();if(settingsDialog===dialog)settingsDialog=null});dialog.showModal();
+}
+window.addEventListener('blackcell:redline:open-photo-layout',openLayoutSettings);
 function setPreviewExpanded(host){if(expandedHost===host)return;expandedHost?.classList.remove('rd-ir-preview-expanded');expandedHost=host;expandedHost?.classList.add('rd-ir-preview-expanded')}
 function minimize(){opened=false;popup.hidden=true;setPreviewExpanded(null);popup.removeAttribute('data-preview-top');schedule()}
 function canonical(){
@@ -70,8 +105,9 @@ grip.addEventListener('keydown',e=>{if(!['ArrowUp','ArrowDown'].includes(e.key))
 function sync(){
  queued=false;
  const s=snapshot(),chat=q('#redlineReceiverChat'),dashboard=q('#redlineReceiverCommand');
+ loadSettings(s);
  const valid=Boolean(s?.isOwner&&s.roomActive&&!s.archiveMode&&s.roomId&&chat&&!chat.hidden&&dashboard&&!dashboard.hidden&&!q('#ledgerApp')?.hidden);
- if(!valid){opened=false;scope='';known.clear();current=null;popup.hidden=resume.hidden=true;setPreviewExpanded(null);popup.removeAttribute('data-preview-top');image.removeAttribute('src');return}
+ if(!valid){if(settingsDialog?.open)settingsDialog.close();opened=false;scope='';known.clear();current=null;popup.hidden=resume.hidden=true;setPreviewExpanded(null);popup.removeAttribute('data-preview-top');image.removeAttribute('src');return}
  const room=s.roomId+'|'+String(s.resetAt||'');
  if(room!==scope){scope=room;known.clear();opened=false;current=null;price.value='';timerBox.hidden=true}
  const pending=(s.photoHistory||[]).filter(p=>p.decision_status==='pending'&&!p.removal_status).sort((a,b)=>Date.parse(a.created_at)-Date.parse(b.created_at)||String(a.id).localeCompare(String(b.id)));
@@ -80,21 +116,25 @@ function sync(){
  const next=pending.find(p=>p.id===card?.dataset.redlinePhotoId)||pending[0]||null;
  const mobile=document.body.classList.contains('bc-ledger-mobile');
  const summary=!mobile||document.body.dataset.ledgerView==='summary';
- if(fresh&&summary&&!document.activeElement?.matches('.redline-message-entry'))opened=true;
+ if(fresh&&settings.auto&&summary&&!document.activeElement?.matches('.redline-message-entry'))opened=true;
  if(!next)opened=false;
  if(current?.id!==next?.id){price.value='';feedback.textContent='';scroll.scrollTop=0}
  current=next;
  const visible=Boolean(opened&&next&&summary);
  // Mount the new presentation only. The original chat and controls stay put.
  const conversation=q('.redline-message-card',chat),feed=conversation?.querySelector('.redline-message-feed');
- const topPreview=Boolean(valid&&mobile&&visible&&conversation&&feed?.parentNode===conversation);
+ const narrow=innerWidth<650;
+ const effective=(settings.mode==='side'&&narrow)||(settings.mode==='custom'&&narrow&&['left','right'].includes(settings.anchor))?'top':settings.mode;
+ popup.dataset.layout=effective;popup.dataset.anchor=effective==='side'?settings.side:settings.anchor;
+ popup.style.setProperty('--rd-layout-width',settings.width+'vw');popup.style.setProperty('--rd-layout-height',settings.height+'dvh');
+ const topPreview=Boolean(valid&&effective==='top'&&visible&&conversation&&feed?.parentNode===conversation);
  if(topPreview){
   // Fixed overlay starts at the phone viewport's top, including the branding.
   // Do not move or hide the original header, counters, or conversation.
   if(popup.parentNode!==document.body)document.body.append(popup);
   if(resume.parentNode!==conversation)conversation.insertBefore(resume,feed);
   popup.setAttribute('data-preview-top','');
- }else if(mobile&&conversation&&feed?.parentNode===conversation){
+ }else if(effective==='top'&&mobile&&conversation&&feed?.parentNode===conversation){
   popup.removeAttribute('data-preview-top');
   // The finance header, PAY control and pinned timer precede the feed.
   // Insert only our two new nodes, directly before the conversation feed.
@@ -105,7 +145,7 @@ function sync(){
   if(popup.parentNode!==document.body)document.body.append(popup);
   if(resume.parentNode!==document.body)document.body.append(resume);
  }
- const mobileReady=!mobile||Boolean(conversation&&feed?.parentNode===conversation);
+ const mobileReady=effective!=='top'||!mobile||Boolean(conversation&&feed?.parentNode===conversation);
  // Approved mobile receiver overlay: original financial header and chat stay mounted.
  setPreviewExpanded(null);
  if(topPreview){
