@@ -56,6 +56,8 @@ function setMenuOpen(open){
  menuItems.hidden=!open;menuToggle.setAttribute('aria-expanded',String(open));
  menuToggle.setAttribute('aria-label',open?'Close sender menu':'Open sender menu');
 }
+const roomsHome=create('button','rd-home-shortcut rd-sender-mobile-home','← Rooms');roomsHome.type='button';roomsHome.hidden=true;roomsHome.setAttribute('aria-label','Return to REDLINE main room directory');roomsHome.addEventListener('click',()=>{setMenuOpen(false);api()?.returnToRooms?.()});topbar?.append(roomsHome);
+const roomsMenu=create('button','rs-mobile-menu-item','← All Rooms');roomsMenu.type='button';roomsMenu.addEventListener('click',()=>{setMenuOpen(false);api()?.returnToRooms?.()});menuItems.append(roomsMenu);
 const menuOptions=new Map();
 for(const [key,label,icon] of [['upload','Messages','chat'],['viewing','Viewing','view'],['earnings','Earnings','money'],['history','History','history'],['stars','5 Stars','star']]){
  if(!tabs[key])continue;
@@ -69,6 +71,7 @@ document.addEventListener('pointerdown',e=>{if(!menuItems.hidden&&!mobileMenu.co
 mobileMenu.addEventListener('keydown',e=>{if(e.key==='Escape'&&!menuItems.hidden){setMenuOpen(false);menuToggle.focus();e.preventDefault()}});
 function syncMobileMenu(active){
  const show=active&&document.body.classList.contains('bc-ledger-mobile')&&Boolean(topbar);
+ if(roomsHome.hidden===show)roomsHome.hidden=!show;
  if(mobileMenu.hidden===show)mobileMenu.hidden=!show;
  if(!show&&!menuItems.hidden)setMenuOpen(false);
  document.body.classList.toggle('rs-mobile-menu-active',show);

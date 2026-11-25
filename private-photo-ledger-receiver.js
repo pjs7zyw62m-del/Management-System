@@ -118,6 +118,7 @@
  const allRooms=button('← All Rooms',()=>{setMenuOpen(false);window.BLACKCELL_REDLINE_API?.returnToRooms?.()},'rr-nav-button');
  allRooms.id='redlineReceiverAllRooms';allRooms.dataset.rrMenuIcon='access';allRooms.hidden=true;
  menuItems.prepend(allRooms,refreshMenu);
+ const roomsHome=button('← Rooms',()=>window.BLACKCELL_REDLINE_API?.returnToRooms?.(),'rd-home-shortcut');roomsHome.hidden=true;roomsHome.setAttribute('aria-label','Return to REDLINE main room directory');headerMenuGroup.prepend(roomsHome);
  for(const [control,icon] of [[refreshMenu,'refresh'],[review,'photos'],[history,'history'],[message,'chat'],[triggerMenu,'trigger'],[manage,'access'],[tools,'tools'],[endSession,'end']])control.dataset.rrMenuIcon=icon;
  endSession.addEventListener('click',()=>setMenuOpen(false));
  for(const option of [review,history,message,triggerMenu,manage,tools]){
@@ -906,7 +907,7 @@
   document.body.classList.toggle('bc-redline-receiver',visible);
   const verifiedDot=$('.rr-brand-verified-dot');
   const session=window.BLACKCELL_REDLINE_API?.snapshot?.();
-  allRooms.hidden=!(session?.isOwner&&session.roomId&&typeof window.BLACKCELL_REDLINE_API?.returnToRooms==='function');
+  allRooms.hidden=!(session?.isOwner&&session.roomId&&typeof window.BLACKCELL_REDLINE_API?.returnToRooms==='function');roomsHome.hidden=allRooms.hidden;
   if(verifiedDot){
    const verified=visible&&session?.isOwner===true;
    verifiedDot.hidden=!verified;

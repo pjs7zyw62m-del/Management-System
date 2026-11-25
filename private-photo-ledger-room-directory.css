@@ -94,3 +94,14 @@ body[data-redline-room-home] #redlineRoomDirectory{font:13px/1.45 system-ui,-app
 @media(max-width:1050px){.rd-room-card{grid-template-columns:minmax(185px,1fr) minmax(0,1.5fr) auto;gap:10px;padding:14px}.rd-room-stats{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:6px}.rd-room-metric{padding:4px 8px}.rd-directory-meta{gap:12px}}
 @media(max-width:680px){body[data-redline-room-home] #ledgerApp:not([hidden]){padding:14px!important}.rd-directory-wordmark,.rd-directory-slash{display:none}.rd-directory-hero{padding:0 2px 14px}.rd-directory-head{padding:20px 0 8px}.rd-directory-head>div:first-child{padding-left:12px}.rd-directory-owner{font-size:8px;padding:5px 7px}.rd-directory-brand{gap:6px;font-size:10px}.rd-directory-meta{gap:10px;padding:10px}.rd-directory-label{border:0;padding:0;font-size:13px}.rd-directory-actions{width:100%;margin:0;justify-content:flex-end}.rd-directory-counts{gap:10px}.rd-room-card{grid-template-columns:minmax(0,1fr) auto;gap:14px;padding:13px;min-height:0}.rd-room-stats{grid-column:1/-1;grid-row:2;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid #ffffff10;padding-top:10px}.rd-room-avatar{width:40px;height:40px;flex-basis:40px;font-size:17px}.rd-room-open{min-width:0;padding:9px;font-size:11px}.rd-room-card-top{gap:9px}}
 @media(prefers-reduced-motion:no-preference){.rd-room-card,.rd-directory-meta button{transition:border-color .15s,box-shadow .15s}}
+
+/* Shared, non-destructive room navigation. */
+.rd-home-shortcut[hidden],#redlineDirectoryCreate[hidden]{display:none!important}
+.rd-home-shortcut{display:inline-flex!important;align-items:center;justify-content:center;flex:0 0 auto;min-height:34px;padding:6px 10px;border:1px solid #49494f;border-radius:9px;background:#1b1b20;color:#f4f4f6;font:650 12px/1.2 system-ui;white-space:nowrap;cursor:pointer}
+.rd-home-shortcut:focus-visible{outline:2px solid #ee788d;outline-offset:2px}
+body[data-redline-room-home] #activeRoom{display:none!important}
+body[data-redline-room-home] .rd-home-shortcut{display:none!important}
+body[data-redline-room-home] #redlineRoomDirectory{position:relative;z-index:1}
+body[data-redline-room-home] #redlineDirectoryCreate[hidden]{display:none!important}
+body.bc-ledger-mobile .redline-simple-header .rd-home-shortcut{display:none!important}
+@media(max-width:680px){.rd-home-shortcut{padding:5px 8px;font-size:11px;min-height:32px}.rd-sender-mobile-home{order:1}.rs-mobile-menu{order:2}}
