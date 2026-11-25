@@ -30,6 +30,15 @@ const inlineAccessStep=document.getElementById('inlineAccessStep');
 const loginRoleDescription=document.getElementById('loginRoleDescription');
 window.BLACKCELL_LOGIN_BOOTED=true;
 const LOGIN_DEADLINE_MS=35000;
+function navigateAuthorizedWorkspace(path){
+  const url=new URL(path,location.href);
+  try{
+    if(window.parent!==window&&window.parent===window.top&&window.parent.location.origin===location.origin&&window.parent.document.getElementById('bcGlassLoginFrame')===window.frameElement){
+      window.top.location.replace(url.href);return;
+    }
+  }catch(_){}
+  location.replace(url.href);
+}
 let savedSessionEpoch=0;
 let loginInProgress=false;
 let approvalPending=false;
@@ -51,7 +60,7 @@ function handleAuthorizedRole(member){
     message(status,'Employee account recognized. Opening your secure workspace…');
     // The employee page enforces account activation and
     // activation checks; no access is granted by this redirect.
-    location.replace('employee.html');
+    navigateAuthorizedWorkspace('employee.html');
     return true;
   }
   if(member?.role==='owner'&&Number(member?.clearance_level)===7){
@@ -314,7 +323,7 @@ function displayLaunch(){
     percent.textContent=number+'%';
     note.textContent=p<.33?'VERIFYING CORPORATE SESSION':p<.77?'INITIALIZING BLACKCELL OS':'LAUNCHING WORKSPACE';
     if(p<1)requestAnimationFrame(frame);
-    else location.replace('blackcell-os.html');
+    else navigateAuthorizedWorkspace('blackcell-os.html');
   }
   requestAnimationFrame(frame);
 }
@@ -344,7 +353,7 @@ async function initialState(epoch){
     message(status,'Unable to verify the security session. Please try again.');
     return;
   }
-  if(data.verified===true){location.replace('blackcell-os.html');return;}
+  if(data.verified===true){navigateAuthorizedWorkspace('blackcell-os.html');return;}
   if(data.expired===true){
     await client.auth.signOut({scope:'local'});
     if(current())message(status,'Signed out after 60 minutes of inactivity. Please sign in again.');
@@ -392,7 +401,7 @@ form.addEventListener('submit',async event=>{
       message(status,'Unable to start code verification.');
       return;
     }
-    if(data.verified===true){location.replace('blackcell-os.html');return;}
+    if(data.verified===true){navigateAuthorizedWorkspace('blackcell-os.html');return;}
     showPass();
   }catch(error){
     message(status,explain(error,'Sign in could not be completed. Check your connection.'));

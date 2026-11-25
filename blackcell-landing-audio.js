@@ -11,7 +11,7 @@ let muted=get('localStorage','bcLandingMuted')==='1';
 let heard=get('sessionStorage','bcLandingWarningHeard')==='1';
 let blocked=false,active=null,warningTask=null,entrance=false,epoch=0;
 function update(){
- const label=muted?'Enable entrance audio':blocked?'Play security announcement':'Mute entrance audio';
+ const label=muted?'Enable entrance audio':blocked?(entrance?'Play welcome announcement':'Play security announcement'):'Mute entrance audio';
  button.setAttribute('aria-label',label);button.title=label;
  button.setAttribute('aria-pressed',String(muted));
  button.classList.toggle('sound-muted',muted||blocked);
@@ -53,7 +53,7 @@ function startEntrance(){
 }
 function cancel(){entrance=false;++epoch;stop()}
 button.addEventListener('click',()=>{
- if(muted||blocked){muted=false;blocked=false;set('localStorage','bcLandingMuted','0');update();if(!entrance&&!heard)startWarning();}
+ if(muted||blocked){muted=false;blocked=false;set('localStorage','bcLandingMuted','0');update();if(entrance)startEntrance();else if(!heard)startWarning();}
  else{muted=true;set('localStorage','bcLandingMuted','1');stop();update()}
 });
 document.addEventListener('click',event=>{
