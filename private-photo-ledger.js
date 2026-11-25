@@ -245,7 +245,44 @@ async function loadEmployees(){
  if(!state.employees.length)show('setupFeedback','No activated employees are available. Activate an employee in User Management first.');
 }
 // Owner room directory: explicit selection, never automatically open the first sender.
-let roomDirectorySignature='';
+let roomDirectorySignature='',directorySummaryGeneration=0;
+const directorySummaryFields=new Map();
+function directoryMetric(label,value,icon){
+ const metric=node('span','rd-room-metric'),symbol=node('span','rd-room-metric-icon',icon),copy=node('span','rd-room-metric-copy'),number=node('strong','rd-room-metric-value',value);
+ symbol.setAttribute('aria-hidden','true');copy.append(node('span','rd-room-metric-label',label),number);metric.append(symbol,copy);return {metric,number};
+}
+function directoryActivity(photo,message){
+ const dates=[photo,message].map(x=>Date.parse(x||'')).filter(Number.isFinite);
+ return dates.length?new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}).format(new Date(Math.max(...dates))):'No activity';
+}
+// Read-only, bounded parallel summaries. No image downloads or additional polling.
+async function loadDirectorySummaries(rooms){
+ const generation=++directorySummaryGeneration,uid=state.user?.id;
+ const current=()=>generation===directorySummaryGeneration&&state.isOwner&&!state.closed&&!state.room&&state.user?.id===uid&&!$('ledgerApp').hidden;
+ if(!current())return;
+ let index=0;
+ async function worker(){
+  while(current()&&index<rooms.length){
+   const r=rooms[index++],fields=directorySummaryFields.get(r.id);
+   if(!fields||r.owner_id!==uid||!validId(r.id))continue;
+   for(const el of [fields.activity,fields.payment,fields.photos]){el.textContent='Loading…';el.removeAttribute('data-tone')}
+   const result=await Promise.allSettled([
+    db.from(ENTRIES).select('created_at',{count:'exact'}).eq('room_id',r.id).order('created_at',{ascending:false}).limit(1),
+    db.from(REDLINE_MESSAGES).select('created_at').eq('room_id',r.id).order('created_at',{ascending:false}).limit(1),
+    db.rpc('corp_redline_room_payment_status',{p_room_id:r.id,p_archive:false})
+   ]);
+   if(!current()||directorySummaryFields.get(r.id)!==fields)continue;
+   const unpack=x=>x.status==='fulfilled'&&!x.value?.error?x.value:null;
+   const [p,m,b]=result.map(unpack);
+   fields.activity.textContent=p&&m?directoryActivity(p.data?.[0]?.created_at,m.data?.[0]?.created_at):'Unavailable';
+   fields.photos.textContent=Number.isInteger(p?.count)?String(p.count):'Unavailable';
+   const remaining=b?.data?.remaining_cents,valid=b?.data?.ok===true&&/^[0-9]+$/.test(String(remaining??''));
+   fields.payment.textContent=valid?dollars(remaining):'Unavailable';
+   if(valid)fields.payment.dataset.tone=BigInt(remaining)===0n?'clear':'outstanding';
+  }
+ }
+ await Promise.all(Array.from({length:Math.min(3,rooms.length)},()=>worker()));
+}
 function chooseAuthorizedRoom(rooms,requested,currentId,isOwner,uid){
  if(isOwner)return validId(requested)?rooms.find(r=>r.id===requested&&r.owner_id===uid)||null:null;
  return (validId(requested)?rooms.find(r=>r.id===requested):null)||rooms.find(r=>r.id===currentId)||rooms[0]||null;
@@ -258,32 +295,38 @@ function navigateRoomDirectory(roomId=null){
  if(draft&&!confirm('Leave this room with an unsent message? Your saved records are preserved.'))return false;
  const u=new URL(location.href);
  if(roomId)u.searchParams.set('room',roomId);else u.searchParams.delete('room');
- u.searchParams.set('rdRoomEntry','20261125-room-directory1');
+ u.searchParams.set('rdRoomEntry','20261125-room-directory-glass2');
  location.assign(u.href);return true;
 }
-function renderRoomDirectory(preferred){
+function renderRoomDirectory(preferred,refreshSummaries=false){
  const home=state.isOwner&&!preferred,section=$('redlineRoomDirectory');
  section.hidden=!home;
- if(!home){delete document.body.dataset.redlineRoomHome;delete document.body.dataset.redlineRoomCreate;return}
+ if(!home){directorySummaryGeneration++;delete document.body.dataset.redlineRoomHome;delete document.body.dataset.redlineRoomCreate;return}
  document.body.dataset.redlineRoomHome='ready';
  const own=state.rooms.filter(r=>r.owner_id===state.user.id);
  const active=own.filter(r=>r.active===true).length;
- show('redlineDirectoryCount',active+' active · '+(own.length-active)+' closed');
+ show('redlineDirectoryActive',String(active));show('redlineDirectoryClosed',String(own.length-active));
  const rows=own.slice().sort((a,b)=>Number(b.active===true)-Number(a.active===true)||String(a.title).localeCompare(String(b.title)));
  const sig=JSON.stringify(rows.map(r=>[r.id,r.title,r.active,r.photo_sending_paused,participantName(r.member_id)]));
  if(sig!==roomDirectorySignature){
   roomDirectorySignature=sig;
-  const list=$('redlineDirectoryList');list.replaceChildren();
+  const list=$('redlineDirectoryList');list.replaceChildren();directorySummaryFields.clear();
   if(!rows.length){const empty=node('div','rd-room-empty');empty.append(node('strong','','No private rooms yet'),node('p','','Create a room and assign an activated employee.'));list.append(empty)}
   for(const r of rows){
-   const card=button('',()=>navigateRoomDirectory(r.id),'rd-room-card');
-   const top=node('div','rd-room-card-top'),name=participantName(r.member_id);
+   const card=button('',()=>navigateRoomDirectory(r.id),'rd-room-card'+(r.active?' is-active':' is-closed'));
+   const top=node('span','rd-room-card-top'),name=participantName(r.member_id);
    const initials=name.trim().split(/\s+/).slice(0,2).map(s=>Array.from(s)[0]||'').join('').toUpperCase()||'BC';
    const avatar=node('span','rd-room-avatar',initials),status=node('span','rd-room-status'+(r.active?' is-active':''),r.active?(r.photo_sending_paused?'UPLOADS PAUSED':'ACTIVE'):'CLOSED');
-   top.append(avatar,status);card.append(top,node('strong','rd-room-title',r.title||'Private room'),node('span','rd-room-member',name),node('span','rd-room-open',r.active?'OPEN ROOM →':'VIEW RECORDS →'));
+   const identity=node('span','rd-room-identity');
+   identity.append(node('strong','rd-room-title',r.title||'Private room'),node('span','rd-room-member',name),status);top.append(avatar,identity);
+   const activity=directoryMetric('Last photo / chat','Loading…','◷'),payment=directoryMetric('Current balance','Loading…','▤'),photos=directoryMetric('Photo records','Loading…','▧'),session=directoryMetric('Session state',r.active?(r.photo_sending_paused?'Uploads paused':'Open'):'Closed','∿');
+   directorySummaryFields.set(r.id,{activity:activity.number,payment:payment.number,photos:photos.number});
+   const stats=node('span','rd-room-stats');stats.append(activity.metric,payment.metric,photos.metric,session.metric);
+   card.append(top,stats,node('span','rd-room-open',r.active?'Open Room →':'View Records →'));
    list.append(card);
   }
- }
+  void loadDirectorySummaries(rows);
+ }else if(refreshSummaries)void loadDirectorySummaries(rows);
  const assigned=new Set(own.map(r=>r.member_id));
  for(const option of $('employeeChoice').options)if(option.value)option.disabled=assigned.has(option.value);
  if(assigned.has($('employeeChoice').value))$('employeeChoice').value='';
@@ -314,7 +357,7 @@ async function refresh({initial=false,force=false}={}){
   if(state.liveStarted)subscribeEntries(preferred);
   $('noRoom').hidden=!!preferred||state.isOwner;
   $('activeRoom').hidden=!preferred;
-  renderRoomDirectory(preferred);
+  renderRoomDirectory(preferred,initial||force);
   if(!preferred){
    $('ownerReviewQueue').hidden=true;
    $('reviewQueueCurrent').replaceChildren();
@@ -1689,7 +1732,7 @@ async function createRoom(event){
   }).select('id').single();
   if(r.error)throw r.error;
   // Navigate to a clean room document after the verified insert succeeds.
-  const link=new URL(location.href);link.searchParams.set('room',r.data.id);link.searchParams.set('rdRoomEntry','20261125-room-directory1');
+  const link=new URL(location.href);link.searchParams.set('room',r.data.id);link.searchParams.set('rdRoomEntry','20261125-room-directory-glass2');
   show('setupFeedback','Private room created. Opening the assigned room…');
   location.assign(link.href);
  }catch(e){show('setupFeedback','Could not create room: '+fail(e))}

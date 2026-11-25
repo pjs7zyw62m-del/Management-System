@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#07090d">
 <meta name="robots" content="noindex,nofollow,noarchive">
 <title>BLACKCELL REDLINE | Private Exchange</title>
-<meta name="blackcell-redline-build" content="20261125-room-directory1">
+<meta name="blackcell-redline-build" content="20261125-room-directory-glass2">
 <link rel="stylesheet" href="private-photo-ledger.css?v=20261113-photoqueue7">
 <link rel="stylesheet" href="private-photo-ledger-responsive.css?v=20261120-mobile2">
 <link rel="stylesheet" href="private-photo-ledger-sender.css?v=20261120-sender-v3">
@@ -46,14 +46,14 @@
 <link rel="stylesheet" href="private-photo-ledger-trigger-alerts.css?v=20261123-sender-live-alert1">
 <link rel="stylesheet" href="private-photo-ledger-counteroffer-inline.css?v=20261123-photo-credit-counter-inline1">
 <script src="corp-config.js"></script>
-<script type="module" src="private-photo-ledger.js?v=20261125-room-directory1&appleDark=20261122-live1&pauseHeader=20261122-v1"></script>
+<script type="module" src="private-photo-ledger.js?v=20261125-room-directory-glass2&appleDark=20261122-live1&pauseHeader=20261122-v1"></script>
 <script src="private-photo-ledger-responsive.js?v=20261125-desktop-receiver-parity1" defer></script>
 <script src="private-photo-ledger-sender.js?v=20261122-redline-multi-chooser1" defer></script>
 <script src="private-photo-ledger-owner-preview.js?v=20261121-current-viewing1-os-preview2" defer></script>
 <script src="private-photo-ledger-solid-red.js?v=20261120-solid-red1" defer></script>
 <script src="private-photo-ledger-counteroffer-inline.js?v=20261123-photo-credit-counter-inline1" defer></script>
 <script src="private-photo-ledger-simple-sender.js?v=20261123-photo-credit-counter-inline1&stableChat=20261123-v7-stable-room-key" defer></script>
-<script src="private-photo-ledger-receiver.js?v=20261125-room-directory1&appleDark=20261122-live1&tabletPhoneBreakpoint=1&sidebarPricing=20261122-v2&fullPhoto=20261122-v1&noChatReparent=20261123-v1&photoZoom=20261123-v1&receiverRestore=20261124-v1" defer></script>
+<script src="private-photo-ledger-receiver.js?v=20261125-room-directory-glass2&appleDark=20261122-live1&tabletPhoneBreakpoint=1&sidebarPricing=20261122-v2&fullPhoto=20261122-v1&noChatReparent=20261123-v1&photoZoom=20261123-v1&receiverRestore=20261124-v1" defer></script>
 <script src="private-photo-ledger-photo-zoom.js?v=20261123-photo-canvas-v2" defer></script>
 <script src="private-photo-ledger-hd-viewer.js?v=20261123-original-hd1" defer></script>
 <script src="private-photo-ledger-presence.js?v=20261121-room-presence1" defer></script>
@@ -80,7 +80,7 @@ body.bc-redline-receiver #redlineReceiverCommand>.rr-command-header{overflow:vis
 body.bc-redline-receiver #redlineReceiverCommand:has(.rr-menu-toggle[aria-expanded="true"]){position:relative;z-index:1001!important;overflow:visible!important}
 @media(max-width:1150px){body.bc-redline-receiver #ledgerApp #redlineReceiverCommand>.rr-command-header{flex-wrap:wrap!important}}
 </style><link rel="stylesheet" href="private-photo-ledger-receiver-mobile-compact.css?v=20261124-parity7"><link rel="stylesheet" href="private-photo-ledger-photo-popup.css?v=20261124-6">
-<link rel="stylesheet" href="private-photo-ledger-room-directory.css?v=20261125-room-directory1"><script src="private-photo-ledger-photo-popup.js?v=20261124-6" defer></script></head>
+<link rel="stylesheet" href="private-photo-ledger-room-directory.css?v=20261125-room-directory-glass2"><script src="private-photo-ledger-photo-popup.js?v=20261124-6" defer></script></head>
 <body>
 <header class="topbar">
  <a class="brand" id="ledgerBrand" href="private-photo-ledger.html" aria-label="BLACKCELL REDLINE home">
@@ -112,8 +112,11 @@ body.bc-redline-receiver #redlineReceiverCommand:has(.rr-menu-toggle[aria-expand
   </div>
  </div>
  <section id="redlineRoomDirectory" class="rd-room-directory" aria-labelledby="redlineDirectoryHeading" hidden>
-  <div class="rd-directory-head"><div><div class="rd-directory-kicker">BLACKCELL REDLINE / OWNER WORKSPACE</div><h1 id="redlineDirectoryHeading">Private Rooms</h1><p>Select a room to open its private conversation and records.</p></div><button id="redlineDirectoryCreate" class="rd-directory-create" type="button">＋ Create Room</button></div>
-  <div class="rd-directory-meta"><span id="redlineDirectoryCount">Loading rooms…</span><button id="redlineDirectoryRefresh" type="button">↻ Refresh</button></div>
+  <div class="rd-directory-hero">
+   <div class="rd-directory-brand"><span class="rd-directory-emblem" aria-hidden="true">B</span><strong>BLACKCELL REDLINE</strong><span class="rd-directory-slash">/ OWNER WORKSPACE</span><span class="rd-directory-owner">♙ OWNER ACCESS</span></div>
+   <div class="rd-directory-head"><div><h1 id="redlineDirectoryHeading">Private Rooms</h1><p>Each room opens its private conversation and records.</p></div><div class="rd-directory-wordmark" aria-hidden="true">BLACKCELL<span>REDLINE</span></div></div>
+  </div>
+  <div class="rd-directory-meta"><strong class="rd-directory-label">▱ Room Directory</strong><div class="rd-directory-counts"><span class="rd-directory-active"><i></i><b id="redlineDirectoryActive">—</b> Active Rooms</span><span class="rd-directory-closed"><i></i><b id="redlineDirectoryClosed">—</b> Closed Rooms</span></div><div class="rd-directory-actions"><button id="redlineDirectoryRefresh" type="button">↻ Refresh</button><button id="redlineDirectoryCreate" class="rd-directory-create" type="button">＋ Create Room</button></div></div>
   <div id="redlineDirectoryList" class="rd-directory-list"></div>
   <p id="redlineDirectoryNote" class="rd-directory-note" role="status"></p>
  </section>
