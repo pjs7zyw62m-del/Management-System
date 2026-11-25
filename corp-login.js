@@ -230,102 +230,16 @@ function approvalAndLaunch(){
   accessPassTab.setAttribute('aria-selected','false');
   message(codeStatus,'✓ ACCESS PASS VERIFIED');
   executivePass.classList.add('pass-verified');
-  // Show both green states before running the existing cinematic authorization.
-  window.setTimeout(mergeVerifiedBubbles,1350);
-}
-
-function mergeVerifiedBubbles(){
-  const scene=document.getElementById('accessMergeScene');
-  const identity=document.getElementById('mergeIdentity');
-  const pass=document.getElementById('mergePass');
-  const passLevel=document.getElementById('mergePassLevel');
-  const leftBeam=document.getElementById('mergeBeamIdentity');
-  const rightBeam=document.getElementById('mergeBeamPass');
-  if(!scene||!identity||!pass||!leftBeam||!rightBeam){
-    // Do not strand an authorized user if an optional animation element
-    // fails to load. The protected dashboard still checks authorization.
-    displayLaunch();
-    return;
-  }
-  passLevel.textContent=clearanceLevel.textContent;
-  const w=window.innerWidth,h=window.innerHeight;
-  const compact=w<=950;
-  const midX=w/2,midY=h/2;
-  const makeRect=(left,top,width,height)=>({left,top,width,height,
-    cx:left+width/2,cy:top+height/2});
-  function fromElement(element){
-    const r=element.getBoundingClientRect();
-    return makeRect(r.left,r.top,r.width,r.height);
-  }
-  // The two verified sources are the actual green tabs on ONE login card,
-  // not a second standalone credential window.
-  let identityRect=fromElement(adminLoginTab);
-  let passRect=fromElement(accessPassTab);
-  if(compact){
-    // On small screens the verified identity is hidden behind the card;
-    // position both compact summaries visibly before they converge.
-    const pw=Math.min(175,Math.max(130,(w-42)/2));
-    const ph=154;
-    identityRect=makeRect(12,midY-ph/2,pw,ph);
-    passRect=makeRect(w-pw-12,midY-ph/2,pw,ph);
-  }
-  for(const [element,r] of [[identity,identityRect],[pass,passRect]]){
-    element.style.left=r.left+'px';
-    element.style.top=r.top+'px';
-    element.style.width=r.width+'px';
-    element.style.height=r.height+'px';
-    element.style.transform='translate(0,0) scale(1)';
-    element.classList.remove('merging');
-  }
-  // Luminous paths show the two verified credentials converging.
-  const trail=(r)=>'M '+r.cx+' '+r.cy+
-    ' C '+(r.cx+(midX-r.cx)*.46)+' '+(r.cy-40)+
-    ' '+(midX+(r.cx-midX)*.20)+' '+(midY-65)+
-    ' '+midX+' '+midY;
-  leftBeam.setAttribute('d',trail(identityRect));
-  rightBeam.setAttribute('d',trail(passRect));
-  scene.classList.remove('converging','approved');
-  scene.classList.add('active');
-  requestAnimationFrame(()=>{
-    // Replace the source surfaces only after the identical green bubbles
-    // are drawn over their original positions.
-    requestAnimationFrame(()=>{
-      loginCard.classList.add('merge-source');
-      executivePass.classList.add('merge-source');
-      scene.classList.add('converging');
-      for(const [element,r] of [[identity,identityRect],[pass,passRect]]){
-        element.style.transform=
-          'translate('+(midX-r.cx)+'px,'+(midY-r.cy)+'px) scale(.42)';
-        element.classList.add('merging');
-      }
-    });
-  });
-  window.setTimeout(()=>scene.classList.add('approved'),850);
-  window.setTimeout(displayLaunch,2420);
+  displayLaunch();
 }
 
 function displayLaunch(){
   access.value='';
   security.value='';
-  launch.classList.add('active');
-  launch.setAttribute('aria-hidden','false');
-  document.body.style.overflow='hidden';
-  const fill=document.getElementById('launchFill');
-  const percent=document.getElementById('launchPercent');
-  const note=document.getElementById('launchNote');
-  const start=performance.now();
-  const duration=3400;
-  function frame(now){
-    const p=Math.min(1,(now-start)/duration);
-    const smoothed=1-Math.pow(1-p,2.3);
-    const number=Math.round(smoothed*100);
-    fill.style.width=number+'%';
-    percent.textContent=number+'%';
-    note.textContent=p<.33?'VERIFYING CORPORATE SESSION':p<.77?'INITIALIZING BLACKCELL OS':'LAUNCHING WORKSPACE';
-    if(p<1)requestAnimationFrame(frame);
-    else navigateAuthorizedWorkspace('blackcell-os.html');
-  }
-  requestAnimationFrame(frame);
+  const navigate=()=>navigateAuthorizedWorkspace('blackcell-os.html');
+  if(window.bcAccessApproval?.run){
+    try{Promise.resolve(window.bcAccessApproval.run(navigate)).catch(navigate)}catch{navigate()}
+  }else navigate();
 }
 
 async function initialState(epoch){
@@ -401,7 +315,7 @@ form.addEventListener('submit',async event=>{
       message(status,'Unable to start code verification.');
       return;
     }
-    if(data.verified===true){navigateAuthorizedWorkspace('blackcell-os.html');return;}
+    if(data.verified===true){showPass();approvalAndLaunch();return;}
     showPass();
   }catch(error){
     message(status,explain(error,'Sign in could not be completed. Check your connection.'));

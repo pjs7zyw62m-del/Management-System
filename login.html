@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <script src="corp-device-layout.js?v=20261109-device1"></script>
 <meta name="theme-color" content="#000000">
-<meta name="blackcell-login-entry-build" content="20261125-glass-live3">
+<meta name="blackcell-login-entry-build" content="20261125-approved1">
 <script>(()=>{try{const u=new URL(location.href);if(u.searchParams.get('entrance')==='glass'){if(u.searchParams.get('embedded')==='glass3'){document.documentElement.classList.add('bc-glass-embedded');window.addEventListener('load',()=>requestAnimationFrame(()=>requestAnimationFrame(()=>document.documentElement.classList.add('bc-glass-arrival'))),{once:true})}else document.documentElement.classList.add('bc-glass-arrival');document.documentElement.dataset.bcWelcomePending=u.searchParams.get('welcome')==='done'?'0':'1';u.searchParams.delete('entrance');u.searchParams.delete('welcome');u.searchParams.delete('embedded');history.replaceState(history.state,'',u.href)}}catch{}})();</script>
 <title>BLACKCELL CORPORATION | Sign In</title>
 <style>
@@ -552,7 +552,7 @@ footer{height:36px;line-height:36px;padding:0;align-self:stretch;margin:0;white-
 </style>
 <link rel="stylesheet" href="corp-login-roles.css?v=20261109-roles1">
 <script src="corp-config.js" defer></script>
-<script type="module" src="corp-login.js?v=20261125-glass-live3"></script>
+<script type="module" src="corp-login.js?v=20261125-approved1"></script>
 <link rel="stylesheet" href="corp-adaptive-access.css?v=20261111-single-card2">
 <style>
 /* Neutral black surfaces; retain selected-tab and authorization state colors. */
@@ -602,6 +602,7 @@ html.bc-glass-arrival body:after{content:"";position:fixed;left:0;right:0;top:0;
 .bc-welcome-sound[hidden]{display:none!important}
 @media(prefers-reduced-motion:reduce){html.bc-glass-arrival #loginCard,html.bc-glass-arrival header,html.bc-glass-arrival footer,html.bc-glass-arrival body:before{animation:none!important}html.bc-glass-arrival body:after{display:none}}
 </style>
+<link rel="stylesheet" href="blackcell-approval-sequence.css?v=20261125-approved1">
 </head>
 <body>
 <header>
@@ -678,13 +679,16 @@ html.bc-glass-arrival body:after{content:"";position:fixed;left:0;right:0;top:0;
    <small>EXECUTIVE ACCESS AUTHORIZED</small>
  </div>
 </div>
-<section id="launchScreen" class="launch-screen" aria-hidden="true" role="status" aria-live="polite">
-<div class="launch-brand">B</div>
-<div class="launch-label">BLACKCELL CORPORATION</div>
-<h2>AUTHORIZATION GRANTED</h2>
-<div id="launchNote" class="launch-note">PREPARING EXECUTIVE SYSTEMS</div>
-<div class="track"><div id="launchFill" class="fill"></div></div>
-<div id="launchPercent" class="percent">0%</div>
+<section id="launchScreen" class="launch-screen bc-approval" aria-hidden="true" aria-label="Corporate authorization">
+<div class="bc-approval-scan" aria-hidden="true"></div>
+<div class="bc-approval-top"><span>BLACKCELL CORPORATION</span><span>EXECUTIVE SYSTEMS</span></div>
+<div class="bc-approval-center">
+<div class="bc-approval-emblem" aria-hidden="true">B</div>
+<div id="bcApprovalLabel" class="bc-approval-label">CORPORATE ACCESS GATEWAY</div>
+<div role="status" aria-live="polite" aria-atomic="true"><h2 id="bcApprovalTitle">IDENTITY VERIFIED</h2><p id="bcApprovalSub">Corporate identity authenticated</p></div>
+<div class="bc-approval-checks" aria-hidden="true"><div class="bc-approval-check"><b>○</b>IDENTITY</div><div class="bc-approval-check"><b>○</b>CLEARANCE</div><div class="bc-approval-check"><b>○</b>ACCESS</div></div>
+<div class="bc-approval-track" aria-hidden="true"><div id="bcApprovalFill"></div></div>
+</div><div class="bc-approval-foot"><span>PRIVATE CORPORATE NETWORK</span><span>AUTHORIZED ACCESS</span></div>
 </section>
 
 <script id="blackcell-viewport-fit">
@@ -741,4 +745,5 @@ window.addEventListener('pagehide',()=>{audio.pause();document.removeEventListen
 if(!muted)play();
 })();
 </script>
+<script src="blackcell-approval-sequence.js?v=20261125-approved1"></script>
 </body></html>
