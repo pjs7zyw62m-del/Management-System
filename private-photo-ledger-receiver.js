@@ -921,15 +921,54 @@
  panelHeader.append(panelHeading,panelClose);panelCard.append(panelHeader,panelContent);receiverPanel.append(panelCard);document.body.append(receiverPanel);
  const roomToolbar=room.querySelector('.room-toolbar'),sessionTools=$('#redlineSessionTools'),scopePanel=$('#ownerLedgerScope'),uploadInfo=$('#ownerUploadInfo'),uploadStatus=$('#uploadAccessStatus'),linkCard=room.querySelector('.link-card'),helpCard=room.querySelector('.info-card'),legacyMetrics=room.querySelector('.metrics');
  const moved=new Map();let panelKind='',panelRoomId=null,panelReturnFocus=null;
+ let senderGallery=null,gallerySignature='',galleryFilter='all';
  function moveIntoPanel(el){if(!el||moved.has(el)||!el.parentNode)return;const marker=document.createComment('REDLINE popup original position');el.before(marker);moved.set(el,marker);panelContent.append(el)}
  function restorePanelNodes(){for(const [el,marker] of moved){if(marker.parentNode)marker.replaceWith(el)}moved.clear()}
  function closeReceiverPanel(restoreFocus=true){
   if(receiverPanel.hidden)return;
   receiverPanel.hidden=true;restorePanelNodes();panelContent.replaceChildren();panelKind='';panelRoomId=null;
+  senderGallery=null;gallerySignature='';galleryFilter='all';
   document.body.classList.remove('rr-menu-overlay-open');delete receiverPanel.dataset.panel;delete receiverPanel.dataset.stars;
   tools.setAttribute('aria-expanded','false');
   if(restoreFocus){const target=panelReturnFocus?.isConnected&&!panelReturnFocus.closest('[hidden]')?panelReturnFocus:menuToggle;target?.focus({preventScroll:true})}
   panelReturnFocus=null;
+ }
+ function renderSenderGallery(s){
+  if(!senderGallery||panelKind!=='review'||!s?.isOwner||s.roomId!==panelRoomId)return;
+  const photos=(Array.isArray(s.photoHistory)?s.photoHistory:[]).filter(p=>p&&!p.removal_status&&!p.removed);
+  const pending=photos.filter(p=>p.decision_status==='pending');
+  const signature=JSON.stringify([s.roomId,s.peerName,s.archiveMode,galleryFilter,photos.map(p=>[p.id,p.image_url,p.stars,p.decision_status])]);
+  if(signature===gallerySignature)return;
+  gallerySignature=signature;
+  const head=make('div','rr-sender-gallery-head');
+  const names=make('div','rr-sender-gallery-names');
+  names.append(make('h3','','Photos from '+(s.peerName||'this sender')),make('p','',photos.length+' received · '+pending.length+' awaiting review'+(s.archiveMode?' · Archive':'')));
+  const filters=make('div','rr-sender-gallery-filters');filters.setAttribute('aria-label','Filter received photos');
+  for(const [value,label] of [['all','All photos'],['pending','Awaiting review'],['reviewed','Reviewed']]){
+   const b=button(label,()=>{galleryFilter=value;renderSenderGallery(window.BLACKCELL_REDLINE_API?.snapshot?.());senderGallery?.querySelector('[data-gallery-filter="'+value+'"]')?.focus({preventScroll:true})},'rr-history-star-button');b.dataset.galleryFilter=value;b.setAttribute('aria-pressed',String(galleryFilter===value));filters.append(b);
+  }
+  head.append(names,filters);
+  const grid=make('div','rr-sender-gallery-grid');
+  const shown=photos.filter(p=>galleryFilter==='all'||(galleryFilter==='pending'?p.decision_status==='pending':p.decision_status!=='pending'));
+  if(!shown.length)grid.append(make('p','rr-gallery-empty',photos.length?'No photos match this filter.':'No photos have been received in this room yet. If the sender just uploaded, use Refresh.'));
+  for(const p of shown){
+   const card=make('article','rr-sender-gallery-card');
+   const src=typeof p.image_url==='string'&&/^(https:\/\/|blob:|data:image\/)/i.test(p.image_url)?p.image_url:'';
+   const open=button('',()=>{
+    const existing=[...document.querySelectorAll('#photoEntries .photo-entry[data-redline-photo-id],#reviewQueueCurrent .photo-entry[data-redline-photo-id]')].find(el=>el.dataset.redlinePhotoId===p.id)?.querySelector('.photo-image-btn');
+    if(existing&&src){existing.click();return}
+    if(!src)return;
+    const lightbox=$('#photoLightbox'),image=$('#lightboxImage');if(!lightbox||!image)return;
+    image.src=src;image.alt='Private photograph';lightbox.hidden=false;
+   },'rr-gallery-image-button');
+   open.setAttribute('aria-label','Open received photograph');open.disabled=!src;
+   if(src){const img=make('img');img.src=src;img.alt='Received private photograph';img.loading='lazy';img.decoding='async';img.addEventListener('error',()=>{img.hidden=true;open.disabled=true;if(!open.querySelector('.rr-gallery-unavailable'))open.append(make('span','rr-gallery-unavailable','Preview unavailable · Refresh'))});open.append(img)}
+   else open.append(make('span','rr-gallery-unavailable','Preview unavailable · Refresh'));
+   const meta=make('div','rr-gallery-meta'),stars=Math.max(0,Math.min(5,Number(p.stars)||0));
+   meta.append(make('span','rr-gallery-rating','★'.repeat(stars)+'☆'.repeat(5-stars)),make('small','',p.decision_status==='pending'?'Awaiting review':p.decision_status==='rejected'?'Rejected':'Reviewed'));
+   card.append(open,meta);grid.append(card);
+  }
+  senderGallery.replaceChildren(head,grid);
  }
  function openReceiverPanel(kind){
   const s=window.BLACKCELL_REDLINE_API?.snapshot?.();
@@ -944,7 +983,7 @@
    // Reset the legacy financial filter on every menu entry. The star filter
    // is scoped only to this popup and never edits the photo rating.
    moveIntoPanel(timeline);
-   const targetFilter=kind==='review'?'pending':'all';
+   const targetFilter='all';
    timeline?.querySelector('[data-photo-filter="'+targetFilter+'"]')?.click();
    if(kind==='history'){
     const filter=make('div','rr-history-star-filter');filter.setAttribute('aria-label','Filter photo history by star rating');
@@ -958,8 +997,10 @@
     }
     receiverPanel.dataset.stars='all';panelContent.prepend(filter);
    }else{
-    const note=make('p','rr-menu-panel-note','Review the next submission above, or browse all photos waiting for review below. Only the selected sender’s photos are shown.');
-    panelContent.prepend(note);
+    senderGallery=make('section','rr-sender-gallery');senderGallery.setAttribute('aria-label','Photos received from the selected sender');
+    panelContent.prepend(senderGallery);renderSenderGallery(s);
+    const queueHeading=make('h3','rr-gallery-review-heading','Next photo awaiting review');
+    if(!s.archiveMode&&timeline)timeline.before(queueHeading);
    }
    if(kind==='review'&&s.archiveMode)panelContent.prepend(make('p','rr-menu-panel-note','Archived records are read-only. Return to the current session in Room Tools to review incoming photos.'));
    if(kind==='review'&&!timeline)panelContent.append(make('p','rr-menu-panel-note','Photo review is unavailable.'));
@@ -1026,6 +1067,7 @@
    tools.textContent='Room Tools';tools.setAttribute('aria-expanded','false');
   }
   placeWorkspace(hasRoom);
+  if(senderGallery&&panelKind==='review')renderSenderGallery(session);
   const wasChatHidden=chatPanel.hidden;
   chatPanel.hidden=!hasRoom;
   if(hasRoom&&wasChatHidden)window.dispatchEvent(new Event('blackcell:redline:receiver-ready'));
