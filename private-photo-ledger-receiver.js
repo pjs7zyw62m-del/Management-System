@@ -931,7 +931,7 @@
   senderGallery=null;gallerySignature='';galleryFilter='all';
   historyDesktop=null;historySignature='';historySelected='';historySort='newest';historyStatus='all';historyPage=0;historyScope='';
   for(const el of document.querySelectorAll('.rr-history-inspected'))el.classList.remove('rr-history-inspected');
-  document.body.classList.remove('rr-menu-overlay-open');delete receiverPanel.dataset.panel;delete receiverPanel.dataset.stars;delete receiverPanel.dataset.historySelection;delete receiverPanel.dataset.historyBonus;
+  document.body.classList.remove('rr-menu-overlay-open');delete receiverPanel.dataset.panel;delete receiverPanel.dataset.stars;delete receiverPanel.dataset.historySelection;delete receiverPanel.dataset.historyBonus;delete receiverPanel.dataset.pendingPhotos;
   tools.setAttribute('aria-expanded','false');
   if(restoreFocus){const target=panelReturnFocus?.isConnected&&!panelReturnFocus.closest('[hidden]')?panelReturnFocus:menuToggle;target?.focus({preventScroll:true})}
   panelReturnFocus=null;
@@ -939,21 +939,23 @@
  function renderSenderGallery(s){
   if(!senderGallery||panelKind!=='review'||!s?.isOwner||s.roomId!==panelRoomId)return;
   const photos=(Array.isArray(s.photoHistory)?s.photoHistory:[]).filter(p=>p&&!p.removal_status&&!p.removed);
-  const pending=photos.filter(p=>p.decision_status==='pending');
-  const signature=JSON.stringify([s.roomId,s.peerName,s.archiveMode,galleryFilter,photos.map(p=>[p.id,p.image_url,p.stars,p.decision_status])]);
+  const pending=s.archiveMode?[]:photos.filter(p=>p.decision_status==='pending').sort((a,b)=>Date.parse(a.created_at)-Date.parse(b.created_at));
+  receiverPanel.dataset.pendingPhotos=pending.length?'yes':'no';
+  const signature=JSON.stringify([s.roomId,s.peerName,s.archiveMode,pending.map(p=>[p.id,p.image_url,p.stars])]);
   if(signature===gallerySignature)return;
   gallerySignature=signature;
   const head=make('div','rr-sender-gallery-head');
   const names=make('div','rr-sender-gallery-names');
-  names.append(make('h3','','Photos from '+(s.peerName||'this sender')),make('p','',photos.length+' received · '+pending.length+' awaiting review'+(s.archiveMode?' · Archive':'')));
-  const filters=make('div','rr-sender-gallery-filters');filters.setAttribute('aria-label','Filter received photos');
-  for(const [value,label] of [['all','All photos'],['pending','Awaiting review'],['reviewed','Reviewed']]){
-   const b=button(label,()=>{galleryFilter=value;renderSenderGallery(window.BLACKCELL_REDLINE_API?.snapshot?.());senderGallery?.querySelector('[data-gallery-filter="'+value+'"]')?.focus({preventScroll:true})},'rr-history-star-button');b.dataset.galleryFilter=value;b.setAttribute('aria-pressed',String(galleryFilter===value));filters.append(b);
-  }
-  head.append(names,filters);
+  names.append(make('h3','','Incoming photos from '+(s.peerName||'this sender')),make('p','',pending.length+' awaiting review'));
+  const historyLink=button('Photo History →',()=>openReceiverPanel('history'),'rr-history-star-button');
+  head.append(names,historyLink);
   const grid=make('div','rr-sender-gallery-grid');
-  const shown=photos.filter(p=>galleryFilter==='all'||(galleryFilter==='pending'?p.decision_status==='pending':p.decision_status!=='pending'));
-  if(!shown.length)grid.append(make('p','rr-gallery-empty',photos.length?'No photos match this filter.':'No photos have been received in this room yet. If the sender just uploaded, use Refresh.'));
+  const shown=pending;
+  if(!shown.length){
+   const empty=make('div','rr-incoming-empty');
+   empty.append(make('strong','',s.archiveMode?'Archive is read-only':'You’re all caught up'),make('p','',s.archiveMode?'View reviewed records in Photo History.':'No new photos are awaiting review. Reviewed photographs are in Photo History.'));
+   grid.append(empty);
+  }
   for(const p of shown){
    const card=make('article','rr-sender-gallery-card');
    const src=typeof p.image_url==='string'&&/^(https:\/\/|blob:|data:image\/)/i.test(p.image_url)?p.image_url:'';
@@ -1054,7 +1056,7 @@
    // Reset the legacy financial filter on every menu entry. The star filter
    // is scoped only to this popup and never edits the photo rating.
    moveIntoPanel(timeline);
-   const targetFilter='all';
+   const targetFilter=kind==='review'?'pending':'all';
    timeline?.querySelector('[data-photo-filter="'+targetFilter+'"]')?.click();
    if(kind==='history'){
     const filter=make('div','rr-history-star-filter');filter.setAttribute('aria-label','Filter photo history by star rating');
@@ -1078,7 +1080,7 @@
     buildDesktopHistory(s);
    }else{
     senderGallery=make('section','rr-sender-gallery');senderGallery.setAttribute('aria-label','Photos received from the selected sender');
-    panelContent.prepend(senderGallery);renderSenderGallery(s);
+    panelContent.append(senderGallery);renderSenderGallery(s);
     const queueHeading=make('h3','rr-gallery-review-heading','Next photo awaiting review');
     if(!s.archiveMode&&timeline)timeline.before(queueHeading);
    }

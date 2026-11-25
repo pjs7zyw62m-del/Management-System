@@ -116,3 +116,9 @@ body.rr-menu-overlay-open #photoLightbox[hidden]{display:none!important}
 #redlineReceiverMenuOverlay[data-panel="history"] .rr-history-desktop-grid{flex:0 0 auto!important}
 #redlineReceiverMenuOverlay[data-panel="history"] .rr-history-pager{flex:0 0 auto!important}
 }
+
+/* Incoming review and completed history are separate workspaces. */
+#redlineReceiverMenuOverlay[data-panel="review"] #redlineReceiverBonusTracker{display:none!important}
+#redlineReceiverMenuOverlay[data-panel="review"][data-pending-photos="no"] .timeline-column,#redlineReceiverMenuOverlay[data-panel="review"][data-pending-photos="no"] .rr-gallery-review-heading{display:none!important}
+#redlineReceiverMenuOverlay[data-panel="review"] .rr-gallery-review-heading{border-top:0;padding:0;margin:0}
+.rr-incoming-empty{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:180px;padding:24px;text-align:center;border:1px dashed #53333f;border-radius:12px;background:#181319;color:#f5eef2}.rr-incoming-empty strong{font:700 20px system-ui}.rr-incoming-empty p{font:13px/1.5 system-ui;color:#bcaeb8;max-width:380px}
