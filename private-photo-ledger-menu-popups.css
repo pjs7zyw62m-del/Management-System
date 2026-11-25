@@ -32,3 +32,22 @@ body.rr-menu-overlay-open #photoLightbox:not([hidden]){z-index:1600!important}
 body.rr-menu-overlay-open #photoLightbox[hidden]{display:none!important}
 #redlineReceiverMenuOverlay button:focus-visible{outline:2px solid #ff7493;outline-offset:2px}
 @media(max-width:650px){#redlineReceiverMenuOverlay:not([hidden]){padding:8px}#redlineReceiverMenuOverlay .rr-menu-panel{max-height:calc(100dvh - 16px);border-radius:13px}#redlineReceiverMenuOverlay .rr-menu-panel-header{padding:10px 12px}#redlineReceiverMenuOverlay .rr-menu-panel-content{padding:10px}#redlineReceiverMenuOverlay .photo-entry{grid-template-columns:minmax(0,1fr)!important}}
+
+/* Incoming gallery and rating-filtered photo history; same canonical private entries. */
+#redlineReceiverMenuOverlay[data-panel="review"] #photoEntries{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px;overflow:visible!important;height:auto!important;max-height:none!important}
+#redlineReceiverMenuOverlay[data-panel="review"] #photoEntries .photo-entry{display:flex!important;flex-direction:column!important;min-width:0}
+#redlineReceiverMenuOverlay[data-panel="review"] #photoEntries .photo-entry:not([data-redline-decision="pending"]){display:none!important}
+#redlineReceiverMenuOverlay[data-panel="review"] #photoEntries .photo-image-btn img{max-height:260px!important;object-fit:contain!important}
+#redlineReceiverMenuOverlay[data-panel="history"] #photoEntries .photo-entry[data-redline-decision="pending"]{display:none!important}
+#redlineReceiverMenuOverlay[data-panel="history"] .timeline-toolbar .filter-buttons{display:none!important}
+.rr-history-star-filter{display:flex;flex-wrap:wrap;align-items:center;gap:7px;padding:10px 0;flex:0 0 auto}
+.rr-history-star-filter>span{font:700 11px system-ui;color:#b7a6b1;letter-spacing:.08em;margin-right:6px}
+.rr-history-star-button{border:1px solid #4e4048;border-radius:8px;background:#1c181d;color:#f3edf0;padding:8px 11px;cursor:pointer;font:650 12px system-ui}
+.rr-history-star-button[aria-pressed="true"]{border-color:#d62e51;background:#5c1026;color:#fff}
+#redlineReceiverMenuOverlay[data-panel="history"] .redline-history-like-btn{border-radius:10px!important;color:#ff6f8e!important;font-weight:700!important}
+#redlineReceiverMenuOverlay[data-panel="history"][data-stars="0"] #photoEntries .photo-entry:not([data-redline-stars="0"]){display:none!important}
+#redlineReceiverMenuOverlay[data-panel="history"][data-stars="1"] #photoEntries .photo-entry:not([data-redline-stars="1"]){display:none!important}
+#redlineReceiverMenuOverlay[data-panel="history"][data-stars="2"] #photoEntries .photo-entry:not([data-redline-stars="2"]){display:none!important}
+#redlineReceiverMenuOverlay[data-panel="history"][data-stars="3"] #photoEntries .photo-entry:not([data-redline-stars="3"]){display:none!important}
+#redlineReceiverMenuOverlay[data-panel="history"][data-stars="4"] #photoEntries .photo-entry:not([data-redline-stars="4"]){display:none!important}
+#redlineReceiverMenuOverlay[data-panel="history"][data-stars="5"] #photoEntries .photo-entry:not([data-redline-stars="5"]){display:none!important}

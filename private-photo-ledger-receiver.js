@@ -118,7 +118,7 @@
   setMenuOpen(false);
   const refresh=$('#refreshLedger');if(refresh&&!refresh.disabled)refresh.click();
  },'rr-nav-button rr-menu-refresh');
- menuItems.append(review,history,message,triggerMenu,manage,tools);
+ menuItems.append(review,history,triggerMenu,manage,tools);
  const allRooms=button('← All Rooms',()=>{setMenuOpen(false);window.BLACKCELL_REDLINE_API?.returnToRooms?.()},'rr-nav-button');
  allRooms.id='redlineReceiverAllRooms';allRooms.dataset.rrMenuIcon='access';allRooms.hidden=true;
  menuItems.prepend(allRooms,refreshMenu);
@@ -926,7 +926,7 @@
  function closeReceiverPanel(restoreFocus=true){
   if(receiverPanel.hidden)return;
   receiverPanel.hidden=true;restorePanelNodes();panelContent.replaceChildren();panelKind='';panelRoomId=null;
-  document.body.classList.remove('rr-menu-overlay-open');delete receiverPanel.dataset.panel;
+  document.body.classList.remove('rr-menu-overlay-open');delete receiverPanel.dataset.panel;delete receiverPanel.dataset.stars;
   tools.setAttribute('aria-expanded','false');
   if(restoreFocus){const target=panelReturnFocus?.isConnected&&!panelReturnFocus.closest('[hidden]')?panelReturnFocus:menuToggle;target?.focus({preventScroll:true})}
   panelReturnFocus=null;
@@ -941,7 +941,26 @@
   panelKind=kind;panelRoomId=s.roomId;receiverPanel.dataset.panel=kind;
   panelHeading.textContent={review:'Incoming Photos',history:'Photo History',access:'Rooms & Access',tools:'Room Tools',earnings:'Earnings & Records'}[kind];
   if(kind==='review'||kind==='history'){
+   // Reset the legacy financial filter on every menu entry. The star filter
+   // is scoped only to this popup and never edits the photo rating.
    moveIntoPanel(timeline);
+   const targetFilter=kind==='review'?'pending':'all';
+   timeline?.querySelector('[data-photo-filter="'+targetFilter+'"]')?.click();
+   if(kind==='history'){
+    const filter=make('div','rr-history-star-filter');filter.setAttribute('aria-label','Filter photo history by star rating');
+    filter.append(make('span','','RATING'));
+    for(const value of ['all','0','1','2','3','4','5']){
+     const b=button(value==='all'?'All':value==='0'?'0 ★ · Unrated':value+' ★',()=>{
+      receiverPanel.dataset.stars=value;
+      for(const option of filter.querySelectorAll('button'))option.setAttribute('aria-pressed',String(option===b));
+     },'rr-history-star-button');
+     b.setAttribute('aria-pressed',String(value==='all'));filter.append(b);
+    }
+    receiverPanel.dataset.stars='all';panelContent.prepend(filter);
+   }else{
+    const note=make('p','rr-menu-panel-note','Review the next submission above, or browse all photos waiting for review below. Only the selected sender’s photos are shown.');
+    panelContent.prepend(note);
+   }
    if(kind==='review'&&s.archiveMode)panelContent.prepend(make('p','rr-menu-panel-note','Archived records are read-only. Return to the current session in Room Tools to review incoming photos.'));
    if(kind==='review'&&!timeline)panelContent.append(make('p','rr-menu-panel-note','Photo review is unavailable.'));
   }else if(kind==='access'){

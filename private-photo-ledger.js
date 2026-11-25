@@ -716,7 +716,7 @@ async function signImages(items){
 }
 function setFilter(name){
  state.filter=name;
- const title=document.querySelector('#activeRoom .timeline-toolbar h2');
+ const title=document.querySelector('.timeline-column .timeline-toolbar h2');
  if(title)title.textContent=name==='priced'?'Priced Photos':'Photo History';
  document.querySelectorAll('[data-photo-filter]').forEach(b=>
   b.setAttribute('aria-pressed',String(b.dataset.photoFilter===name)));
@@ -891,6 +891,8 @@ function renderEntry(e){
  const combinedPrice=baseCents+extraTimedCents;
  const card=node('article','photo-entry');
  card.dataset.redlinePhotoId=e.id;
+ card.dataset.redlineStars=String(state.ratings.get(e.id)?.stars||0);
+ card.dataset.redlineDecision=String(e.decision_status||'pending');
  if(e.photo_removal_status){
   // Only a record marker survives. Never render the image, caption, filename
   // or an old saved object URL once the owner has begun deletion.
@@ -954,10 +956,11 @@ function renderEntry(e){
  body.append(meta,node('h3','','PHOTO '+e.id.slice(0,8).toUpperCase()));
  if(e.resubmission_origin_id)body.append(node('div','rr-photo-resubmission-tag',
   '↻ REUSED PHOTO · ORIGINAL '+e.resubmission_origin_id.slice(0,8).toUpperCase()));
- if(rating){
+ if(rating||state.isOwner){
+  const stars=rating?.stars||0;
   body.append(node('div','rr-photo-star-summary',
-   '★'.repeat(rating.stars)+'☆'.repeat(5-rating.stars)+
-   (rating.stars===5?' · TOP PICK':' · '+rating.stars+'/5 STARS')));
+   '★'.repeat(stars)+'☆'.repeat(5-stars)+
+   (stars===5?' · TOP PICK':stars?' · '+stars+'/5 STARS':' · 0/5 · NOT RATED')));
  }
  if(e.caption?.trim())body.append(node('p','caption',e.caption.trim()));
  const ctrl=node('div','entry-controls');
@@ -1025,7 +1028,7 @@ function renderEntry(e){
   feedback.setAttribute('aria-live','polite');
   const look=button('◉ LOOKING AT THIS',()=>void sendHistoryPhotoSignal(e,'looking',feedback,[look,like]),
    'redline-history-look-btn');
-  const like=button('♥ I LIKE THIS',()=>void sendHistoryPhotoSignal(e,'like',feedback,[look,like]),
+  const like=button('♡ Like photo',()=>void sendHistoryPhotoSignal(e,'like',feedback,[look,like]),
    'redline-history-like-btn');
   look.setAttribute('aria-label','Notify sender you are viewing this specific photograph');
   like.setAttribute('aria-label','Notify sender you like this specific photograph');

@@ -190,13 +190,14 @@
  $('closeLightbox')?.addEventListener('click',()=>{$('photoLightbox').hidden=true;document.body.style.overflow=''});
  window.addEventListener('blackcell:redline:open-trigger-owner',()=>alert('Trigger-word rules are not connected in this local preview.'));
  function photoCard(p,review){
-  const card=make('article','photo-entry');card.dataset.redlinePhotoId=p.id;
+  const card=make('article','photo-entry');card.dataset.redlinePhotoId=p.id;card.dataset.redlineStars=String(p.stars||0);card.dataset.redlineDecision=p.decision_status;
   const b=button('',()=>{const img=$('lightboxImage');img.src=p.image_url;$('photoLightbox').hidden=false;void action('view',{id:p.id})},'photo-image-btn'+(review?' review-image-button':''));
   const img=make('img');img.src=p.image_url;img.alt='Local test photograph';b.append(img);
   if(review)b.append(make('span','review-photo-enlarge','⤢ VIEW FULL PHOTO'));
   const body=make('div','photo-entry-content');body.append(make('span','entry-badge '+p.decision_status,p.decision_status.toUpperCase()),make('h3','','PHOTO '+p.id.slice(0,8).toUpperCase()));
-  if(p.stars)body.append(make('div','rr-photo-star-summary','★'.repeat(p.stars)+'☆'.repeat(5-p.stars)));
+  body.append(make('div','rr-photo-star-summary','★'.repeat(p.stars||0)+'☆'.repeat(5-(p.stars||0))+' · '+(p.stars||0)+'/5'));
   if(p.decision_status==='accepted')body.append(make('div','entry-amount',money(p.amount_cents)));
+  if(owner&&!review&&model.active&&p.decision_status!=='pending'){const feedback=make('small','redline-history-signal-feedback','');const like=button('♡ Like photo',async()=>{like.disabled=true;try{await action('like',{id:p.id});feedback.textContent='Like sent to test sender.'}catch(e){feedback.textContent=e.message}finally{like.disabled=false}},'redline-history-like-btn');body.append(like,feedback)}
   card.append(b,body);return card;
  }
  function render(){
@@ -221,7 +222,7 @@
     for(const b of [accept,zero,reject]){b.disabled=!model.active;controls.append(b)}panel.append(controls);
     if(model.viewing!==current.id&&model.active)void action('view',{id:current.id});
    }
-   for(const p of model.photos.filter(p=>p.decision_status!=='pending').slice().reverse())history.append(photoCard(p,false));
+   for(const p of model.photos.slice().reverse())history.append(photoCard(p,false));
   }
   window.dispatchEvent(new Event('blackcell:redline:state'));
  }

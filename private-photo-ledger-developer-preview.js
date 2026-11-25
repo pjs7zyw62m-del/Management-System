@@ -110,6 +110,8 @@
    model.messages.push({id:crypto.randomUUID(),sender_id:role==='receiver'?'00000000-0000-4000-8000-000000000004':'00000000-0000-4000-8000-000000000005',body:p.body.trim(),created_at:new Date().toISOString()});
   }else if(a==='upload'&&role==='sender'&&p.session===model.session&&typeof p.image==='string'&&p.image.length<=2000000&&/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(p.image)){
    model.photos.push({id:crypto.randomUUID(),image_url:p.image,caption:'Local test photograph',file_name:'Test photo',created_at:new Date().toISOString(),decision_status:'pending',amount_cents:0,stars:0});
+  }else if(a==='like'&&role==='receiver'&&model.photos.some(x=>x.id===p.id&&x.decision_status!=='pending')&&model.messages.length<300){
+   model.messages.push({id:crypto.randomUUID(),sender_id:'00000000-0000-4000-8000-000000000004',body:'REDLINE_PHOTO_SIGNAL:v1:like:'+p.id,created_at:new Date().toISOString()});
   }else if(['rate','price','reject','view'].includes(a)&&role==='receiver'){
    const photo=model.photos.find(x=>x.id===p.id);
    if(a==='view'){model.viewing=photo?.id||null}
