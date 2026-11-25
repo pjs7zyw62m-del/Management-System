@@ -4,6 +4,12 @@
  const cfg=window.REDLINE_DEV_CONFIG;if(!cfg||window.parent===window||location.href!=='about:srcdoc')return;
  const owner=cfg.role==='receiver',$=id=>document.getElementById(id),make=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e};
  const button=(text,fn,cls='rd-dev-local-control')=>{const b=make('button',cls,text);b.type='button';b.addEventListener('click',fn);return b};
+ // Receiver desktop parity is enforced here as well as in the host.
+ // An older open Developer Preview reloads this adapter with cache:'no-store',
+ // so it cannot switch the receiver back to the retired desktop deck.
+ function effectiveDevice(requested){return owner&&requested==='desktop'?'mobile':requested}
+ function applyPreviewDevice(requested){cfg.device=effectiveDevice(requested)}
+ applyPreviewDevice(cfg.device);
  const money=n=>'$'+(Number(n||0)/100).toFixed(2);
  let model={photos:[],messages:[],active:true,viewing:null,session:'initial'},requests=new Map(),last='',lastRoom='';
  function action(type,payload={}){
@@ -19,7 +25,7 @@
  }))}
  window.addEventListener('message',event=>{
   if(event.source!==parent||event.origin!==cfg.origin||event.data?.token!==cfg.token||event.data?.type!=='rd-dev-device'||!['desktop','tablet','mobile'].includes(event.data.device))return;
-  cfg.device=event.data.device;
+  applyPreviewDevice(event.data.device);
   cfg.preset=event.data.preset==='neon-smarta-2'?'neon-smarta-2':'';
   document.body.dataset.rdDevPreset=cfg.preset;
   window.dispatchEvent(new Event('blackcell:redline:preview-device'));
