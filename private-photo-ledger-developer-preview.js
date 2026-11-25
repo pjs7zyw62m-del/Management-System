@@ -12,8 +12,13 @@
  const toolbar=make('div','rd-dev-toolbar'),stage=make('div','rd-dev-stage'),notice=make('p','rd-dev-notice','Test chat, Camera Roll or previously shared REDLINE photos, ratings and pricing. No live records or payments.');
  const frameWraps={},frames={},modeButtons={},deviceButtons={};
  let model=null,token='',generation=0,mode='dual',device='desktop',loadedBuild='',reports={},preset='',testLibrary=[],libraryRoom=null,libraryRevision=0,libraryState='idle',libraryMessage='';
+ // Receiver desktop inherits the approved mobile presentation in a wide frame.
+ // Only the isolated receiver's effective layout changes; sender and tablet
+ // retain their own device modes and all test actions still use the same bridge.
+ function layoutDevice(role,requested=device){return role==='receiver'&&requested==='desktop'?'mobile':requested}
+ function sendDevice(role,frame=frames[role]){frame?.contentWindow?.postMessage({type:'rd-dev-device',token,device:layoutDevice(role),preset:role==='sender'?preset:''},'*')}
  function chooseMode(next){if(next!=='sender'&&preset){preset='';stage.dataset.preset='';phonePreset.setAttribute('aria-pressed','false')}mode=next;stage.dataset.mode=next;for(const [k,b] of Object.entries(modeButtons))b.setAttribute('aria-pressed',String(k===next));for(const role of ['receiver','sender'])frameWraps[role].hidden=next!=='dual'&&role!==next}
- function chooseDevice(next,phone=false){preset=phone?'neon-smarta-2':'';stage.dataset.preset=preset;phonePreset.setAttribute('aria-pressed',String(phone));device=next;stage.dataset.device=next;reports={};for(const [k,b] of Object.entries(deviceButtons))b.setAttribute('aria-pressed',String(k===next&&!phone));for(const f of Object.values(frames))f.contentWindow?.postMessage({type:'rd-dev-device',token,device,preset},'*');reportStatus()}
+ function chooseDevice(next,phone=false){preset=phone?'neon-smarta-2':'';stage.dataset.preset=preset;phonePreset.setAttribute('aria-pressed',String(phone));device=next;stage.dataset.device=next;reports={};for(const [k,b] of Object.entries(deviceButtons))b.setAttribute('aria-pressed',String(k===next&&!phone));for(const role of Object.keys(frames))sendDevice(role);reportStatus()}
  for(const [key,label] of [['receiver','Receiver'],['sender','Sender'],['dual','Dual view']]){modeButtons[key]=btn(label,()=>chooseMode(key));toolbar.append(modeButtons[key])}
  for(const [key,label] of [['desktop','Desktop'],['tablet','Tablet'],['mobile','Mobile']]){deviceButtons[key]=btn(label,()=>chooseDevice(key));toolbar.append(deviceButtons[key])}
  const reload=btn('Reload Preview',()=>void reloadPreview());toolbar.append(reload);
@@ -82,7 +87,7 @@
   if(!dialog.open||!loadedBuild)return;
   const r=reports.receiver,s=reports.sender;
   if(preset){notice.textContent='Safaricom Neon Smarta 2 · Android 11 / Chrome · estimated 320 × 480 CSS px'+(s?' · Actual preview '+s.width+' × '+s.height+' · Sender menu '+(s.menu?'OK':'not visible'):' · Checking sender layout…')+' · '+loadedBuild+' · Local test only. No live payments or records.';return}
-  const layout=r?' · Receiver '+r.mode+' ('+r.width+'px)'+(r.mode==='mobile'?' · Header menu '+(r.menu?'OK':'not placed')+' · PAY '+(r.pay?'OK':'not visible'):''):' · Checking receiver layout…';
+  const layout=r?' · Receiver '+(device==='desktop'&&r.mode==='mobile'?'Desktop / approved mobile layout':r.mode)+' ('+r.width+'px)'+(r.mode==='mobile'?' · Header menu '+(r.menu?'OK':'not placed')+' · PAY '+(r.pay?'OK':'not visible'):''):' · Checking receiver layout…';
   notice.textContent='Current interface: '+loadedBuild+layout+' · Local test only. No live payments or records.';
  }
  function broadcast(){if(!model||!dialog.open||!authorized())return;for(const f of Object.values(frames))f.contentWindow?.postMessage({type:'rd-dev-state',token,model},'*')}
@@ -91,7 +96,7 @@
   const role=Object.keys(frames).find(k=>event.source===frames[k].contentWindow);
   const m=event.data;if(!role||event.origin!=='null'||m?.type!=='rd-dev-action'||m.token!==token)return;
   const a=m.action,p=m.payload||{};let ok=true;
-  if(a==='ready'){event.source.postMessage({type:'rd-dev-device',token,device,preset},'*');broadcast();if(role==='sender')sendLibrary();return}
+  if(a==='ready'){sendDevice(role);broadcast();if(role==='sender')sendLibrary();return}
   if(a==='open-library'&&role==='sender'){
    if(!model.active)return;
    if(libraryRoom===window.BLACKCELL_REDLINE_API.snapshot()?.roomId&&['loading','ready'].includes(libraryState)){sendLibrary();return}
@@ -156,7 +161,7 @@
   const galleryVersion=gallery?new URL(gallery.getAttribute('href'),location.href).searchParams.get('v'):'';
   if(!galleryVersion?.includes('fullscreen')||!styles.some(s=>s.includes('Gallery V6'))||!adapter.includes("action:'open-library'"))throw Error('Old photo gallery assets returned. Refresh the REDLINE app before testing.');
   if(!sources.some(s=>s.includes('rdIndependentReview'))||!styles.some(s=>s.includes('Independent receiver review')))throw Error('Updated receiver popup assets are unavailable. Refresh REDLINE.');
-  return {markup:body.innerHTML,styles,sources,adapter,build:'Gallery FULLSCREEN 7 · Receiver REVIEW 6 · Photo First · '+[receiver?.searchParams.get('v'),mobile?.searchParams.get('v')].filter(Boolean).join(' / ')};
+  return {markup:body.innerHTML,styles,sources,adapter,build:'Receiver desktop mobile parity · Gallery FULLSCREEN 7 · Receiver REVIEW 6 · Photo First · '+[receiver?.searchParams.get('v'),mobile?.searchParams.get('v')].filter(Boolean).join(' / ')};
  }
  function frameDocument(a,role){
   const nonce=crypto.randomUUID(),escapeScript=s=>s.replace(/<\/script/gi,'<\\/script');
@@ -164,7 +169,7 @@
   const csp="default-src 'none'; script-src 'nonce-"+nonce+"'; style-src 'unsafe-inline' "+location.origin+"; img-src data: blob:; font-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'";
   return '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="'+csp+'">'+a.styles.map(s=>'<style>'+s.replace(/<\/style/gi,'<\\/style')+'</style>').join('')+
    '<style>body{background:#050505!important}#ownerSetup .setup-form,#ownerSetup .rr-access-control,#ownerSetup #ledgerScopeToggle,#ledgerSignOut,#backLink{display:none!important}.rd-dev-local-banner{padding:6px 10px;background:#501524;color:white;font:700 11px system-ui;position:relative;z-index:5}.rd-dev-local-control{width:100%;margin:5px 0;padding:9px;background:#30111a;color:#fff;border:1px solid #ad4059;border-radius:8px}.rd-dev-local-control:disabled{opacity:.5}body[data-rd-dev-preset=neon-smarta-2] .rd-dev-local-banner{display:none!important}</style></head><body>'+a.markup+
-   script('window.REDLINE_DEV_CONFIG='+JSON.stringify({role,token,device,preset,origin:location.origin})+';')+script(a.adapter)+a.sources.map(script).join('')+'</body></html>';
+   script('window.REDLINE_DEV_CONFIG='+JSON.stringify({role,token,device:layoutDevice(role),preset:role==='sender'?preset:'',origin:location.origin})+';')+script(a.adapter)+a.sources.map(script).join('')+'</body></html>';
  }
  async function reloadPreview(){
   if(!authorized()||!dialog.open||reload.disabled)return;
