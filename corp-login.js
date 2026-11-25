@@ -236,7 +236,11 @@ function approvalAndLaunch(){
 function displayLaunch(){
   access.value='';
   security.value='';
-  const navigate=()=>navigateAuthorizedWorkspace('blackcell-os.html');
+  const navigate=()=>{
+    // Presentation hint only; the OS independently verifies authorization.
+    try{sessionStorage.setItem('bc.os.fresh-launch.v1',String(Date.now()))}catch(_){}
+    navigateAuthorizedWorkspace('blackcell-os.html');
+  };
   if(window.bcAccessApproval?.run){
     try{Promise.resolve(window.bcAccessApproval.run(navigate)).catch(navigate)}catch{navigate()}
   }else navigate();

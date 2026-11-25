@@ -1,0 +1,22 @@
+/* Verified OS launch: presentation only, not authorization. */
+#gate.bc-os-cinematic[data-state=boot]{background:radial-gradient(ellipse at center,#131318 0%,#000 69%);overflow:hidden}
+#gate.bc-os-cinematic[data-state=boot]>div{gap:10px;animation:bcOSBrandIn .75s ease both}
+#gate.bc-os-cinematic .os-boot-mark{width:110px;height:110px;margin-bottom:4px}
+.bc-os-launch-b{display:block;position:relative;font-size:86px;line-height:1;font-weight:800;letter-spacing:-.08em;color:#f1f1f3;padding-right:.08em}
+.bc-os-launch-b:after{content:"";display:block;width:50px;height:5px;margin:3px auto 0;background:#bc2336}
+#gate.bc-os-cinematic h1{font-size:clamp(28px,5vw,38px);font-weight:650;letter-spacing:.14em;grid-row:2}
+#gate.bc-os-cinematic .overline{grid-row:3;font-size:10px;letter-spacing:.25em}
+#gate.bc-os-cinematic #gateMessage{font-size:10px;letter-spacing:.2em;color:#b1b1b9;grid-row:4}
+#gate.bc-os-cinematic .os-boot-track{grid-row:5;height:2px;max-width:180px;margin-top:8px}
+#gate.bc-os-cinematic #osBootProgress{background:#bfc2c7;transition:width .12s linear}
+#desktop.bc-os-launch-reveal{animation:bcOSDesktopIn .55s ease both}
+#desktop.bc-os-launch-reveal .app,#desktop.bc-os-launch-reveal .bc-sb-icon{animation:bcOSAppsIn .65s ease both}
+#desktop.bc-os-launch-reveal .dock{animation:bcOSDockIn .7s cubic-bezier(.2,.8,.2,1) both}
+#desktop.bc-os-launch-reveal .topbar{animation:bcOSDesktopIn .6s ease both}
+.bc-os-launch-sound{position:fixed;right:16px;bottom:85px;z-index:10000;border:1px solid #ffffff35;background:#141418;color:#ddd;border-radius:50%;width:36px;height:36px;cursor:pointer}
+@keyframes bcOSBrandIn{from{opacity:0;scale:.97}to{opacity:1;scale:1}}
+@keyframes bcOSDesktopIn{from{opacity:0}to{opacity:1}}
+@keyframes bcOSAppsIn{from{opacity:0;translate:0 12px}to{opacity:1;translate:0 0}}
+@keyframes bcOSDockIn{from{opacity:0;translate:0 70px}to{opacity:1;translate:0 0}}
+.bc-os-motion-reduced,.bc-os-motion-reduced *{animation:none!important;transition:none!important}
+@media(prefers-reduced-motion:reduce){#gate.bc-os-cinematic[data-state=boot]>div,#desktop.bc-os-launch-reveal,#desktop.bc-os-launch-reveal .app,#desktop.bc-os-launch-reveal .bc-sb-icon,#desktop.bc-os-launch-reveal .dock,#desktop.bc-os-launch-reveal .topbar{animation:none!important}}

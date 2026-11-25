@@ -142,6 +142,16 @@ function stopBootProgress(){if(bootTimer!==null){clearInterval(bootTimer);bootTi
 function drawBootProgress(){const gate=$('gate');if(!gate||gate.dataset.state!=='boot'||bootStarted===null){stopBootProgress();return}const elapsed=Math.max(0,performance.now()-bootStarted);const value=Math.min(bootTarget,100,elapsed/BOOT_MIN_MS*100);const progress=$('osBootProgress');if(progress)progress.style.width=value.toFixed(2)+'%';}
 function bootStage(value,message){const gate=$('gate');if(!gate)return;gate.dataset.state='boot';if(bootStarted===null){bootStarted=performance.now();bootTimer=setInterval(drawBootProgress,45)}bootTarget=Math.max(bootTarget,value);$('gateMessage').textContent=value===100?'Starting your desktop…':message;drawBootProgress();}
 async function finishBoot(){
+ // A fresh approval triggers the cinematic only after the real OS is ready.
+ if(!preview&&active&&!leaving&&!workspaceLock?.isLocked()&&$('gate').dataset.state==='boot'&&window.bcVerifiedOsLaunch){
+  let fresh=false;try{fresh=window.bcVerifiedOsLaunch.consume()}catch(_){}
+  if(fresh){
+   stopBootProgress();
+   const ready=()=>active&&!leaving&&!workspaceLock?.isLocked()&&$('gate').dataset.state==='boot';
+   const reveal=()=>{if(!ready())return false;bootComplete=true;$('gate').hidden=true;$('desktop').hidden=false;applyAppLayout();window.dispatchEvent(new Event('blackcell:desktop-ready'));return true};
+   try{return await window.bcVerifiedOsLaunch.run({gate:$('gate'),desktop:$('desktop'),ready,reveal,reduceMotion:desktopPrefs.reduceMotion})}catch(_){if(bootComplete)return true;if(!ready())return false;return reveal()}
+  }
+ }
  if(!preview&&recoveryAttempts===0&&!workspaceLock?.isLocked()&&!desktopPrefs.reduceMotion&&bootStarted!==null){
   const remaining=Math.max(0,BOOT_MIN_MS-(performance.now()-bootStarted));if(remaining>0)await new Promise(resolve=>setTimeout(resolve,remaining));
   if(!active||leaving||$('gate').dataset.state!=='boot'){stopBootProgress();return false}

@@ -106,7 +106,7 @@ frame.addEventListener('load',()=>{if(!busy)return;try{const doc=frame.contentDo
 launch.addEventListener('click',()=>{if(busy)return;busy=true;ready=false;playResult='pending';launch.disabled=true;document.body.classList.add('bc-glass-leave');
  // Start playback synchronously with the trusted click. Never wait for it to finish.
  try{Promise.resolve(window.bcLandingAudio?.startEntrance()).then(value=>{playResult=value||'retry'}).catch(()=>{playResult='retry'})}catch{playResult='retry'}
- frame.hidden=false;frame.src='login.html?entrance=glass&welcome=done&embedded=glass3&bc_release=20261125-approved-audio2';
+ frame.hidden=false;frame.src='login.html?entrance=glass&welcome=done&embedded=glass3&bc_release=20261125-os-launch1';
  // If embedding is unavailable, preserve direct sign-in; audio never gates navigation.
  timer=setTimeout(fallback,3500);
 });
