@@ -22,8 +22,11 @@ async function request(db,action,{roomId,photoId,blob=null,mime=null}){
   headers['Content-Type']=mime||blob.type||'application/octet-stream';
   headers['x-bc-room']=roomId;headers['x-bc-photo-id']=photoId;
  }else headers['Content-Type']='application/json';
+ const controller=action==='read'?new AbortController():null;
+ const timeout=controller?setTimeout(()=>controller.abort(),20000):null;
+ try{
  const response=await fetch(endpoint.href,{method:'POST',cache:'no-store',
-  credentials:'omit',referrerPolicy:'no-referrer',headers,
+  credentials:'omit',referrerPolicy:'no-referrer',headers,signal:controller?.signal,
   body:blob||JSON.stringify({room_id:roomId,photo_id:photoId})});
  if(!response.ok){
   let code;
@@ -38,6 +41,7 @@ async function request(db,action,{roomId,photoId,blob=null,mime=null}){
  const value=await response.json();
  if(value?.ok!==true)throw Error('Private Bunny '+action+' was not confirmed.');
  return value;
+ }finally{if(timeout!==null)clearTimeout(timeout)}
 }
 export async function uploadBunnyPhoto(db,roomId,userId,photoId,blob,mime){
  if(!extensions[mime]||!blob?.size||blob.size>MAX||!uuid.test(userId))

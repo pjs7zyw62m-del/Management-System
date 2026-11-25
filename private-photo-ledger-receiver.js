@@ -1141,7 +1141,7 @@
   status.classList.toggle('is-waiting',!hasRoom);
   for(const [source,output] of outputs){
    const value=document.getElementById(source);
-   if(value)output.textContent=value.textContent||'—';
+   if(value&&output.textContent!==(value.textContent||'—'))output.textContent=value.textContent||'—';
   }
   review.disabled=history.disabled=message.disabled=!hasRoom;
   const mode=document.body.classList.contains('bc-redline-archive-view');

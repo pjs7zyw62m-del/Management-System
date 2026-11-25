@@ -1,6 +1,6 @@
 import {mountGroupRooms} from './private-photo-ledger-groups.js?v=20261125-group-chat1';
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
-import {isBunnyPath,uploadBunnyPhoto,readBunnyPhoto,cleanupUnpostedBunny,deleteRedlinePhotoFile} from './private-photo-ledger-bunny.js?v=20261121-redline-bunny1';
+import {isBunnyPath,uploadBunnyPhoto,readBunnyPhoto,cleanupUnpostedBunny,deleteRedlinePhotoFile} from './private-photo-ledger-bunny.js?v=20261125-redline-live-sync2';
 
 const db=corporateClient();
 // Legacy archive photo paths use the old private bucket; new uploads never do.
@@ -55,7 +55,7 @@ function attachCurrencyLeadingZero(input){
  });
  return input;
 }
-function show(id,text){$(id).textContent=String(text||'')}
+function show(id,text){const el=$(id),value=String(text||'');if(el&&el.textContent!==value)el.textContent=value}
 function when(date){
  if(!date)return '—';
  const d=new Date(date);
@@ -451,7 +451,8 @@ function queueLiveRefresh(){
  if(state.liveTimer)clearTimeout(state.liveTimer);
  state.liveTimer=setTimeout(()=>{
   state.liveTimer=null;
-  if(state.busy||state.refreshing){state.liveQueued=true;return}
+  if(state.refreshing){state.liveQueued=true;return}
+  if(state.busy){state.liveTimer=setTimeout(queueLiveRefresh,1000);return}
   void refresh().catch(err=>{
    show('entriesFeedback','Live synchronization interrupted: '+fail(err));
    liveStatus('RECONNECTING · AUTOMATIC SYNC',false);
@@ -569,20 +570,26 @@ function authoritativePaymentStatus(){
  const p=state.paymentStatus;
  return p?.scope===roomPaymentScope()?p:null;
 }
+let paymentRefreshSequence=0,paymentAppliedSequence=0;
 async function loadRoomPayments(roomId,archive=state.showArchive){
  if(!validId(roomId))return null;
  const scope=roomId+'|'+String(archive)+'|'+String(state.room?.current_session_started_at||'');
+ const requestId=++paymentRefreshSequence;
  const response=await db.rpc('corp_redline_room_payment_status',{p_room_id:roomId,p_archive:archive});
  if(response.error||response.data?.ok!==true)throw Error(fail(response.error||response.data?.reason||'Payment balances unavailable.'));
- if(state.room?.id!==roomId||roomPaymentScope()!==scope)return null;
- state.paymentStatus={...response.data,scope};
- updateTotals();renderEntries();
+ if(state.closed||state.room?.id!==roomId||roomPaymentScope()!==scope||requestId<paymentAppliedSequence)return null;
+ paymentAppliedSequence=requestId;
+ const next={...response.data,scope},changed=JSON.stringify(state.paymentStatus)!==JSON.stringify(next);
+ state.paymentStatus=next;
+ updateTotals();if(changed)renderEntries();
  window.dispatchEvent(new Event('blackcell:redline:state'));
  return state.paymentStatus;
 }
 async function loadEntries({force=false}={}){
  const selectedRoom=state.room;
  if(!selectedRoom)return;
+ const loadScope=roomPaymentScope();
+ const stillCurrent=()=>!state.closed&&roomPaymentScope()===loadScope;
  const all=[];
  for(let from=0;from<5000;from+=250){
   let query=db.from(ENTRIES)
@@ -598,13 +605,13 @@ async function loadEntries({force=false}={}){
   all.push(...(result.data||[]));
   if((result.data||[]).length<250)break;
  }
- if(state.room?.id!==selectedRoom.id)return;
+ if(!stillCurrent())return;
  // A private server tombstone immediately blocks all future photo reads.
  // This is checked on both parties' views, including ongoing Bunny deletion.
  const removal=await db.rpc('corp_redline_photo_removal_status',{p_room_id:selectedRoom.id});
  if(removal.error||removal.data?.ok!==true)
   throw Error(fail(removal.error||removal.data?.reason||'Private photo removal status unavailable.'));
- if(state.room?.id!==selectedRoom.id)return;
+ if(!stillCurrent())return;
  const removals=new Map((removal.data.photos||[]).filter(x=>validId(x.photo_id))
   .map(x=>[x.photo_id,x.status]));
  for(const e of all){
@@ -617,7 +624,7 @@ async function loadEntries({force=false}={}){
   }
  }
  const ratings=await loadPhotoRatings(all,selectedRoom.id);
- if(!ratings||state.room?.id!==selectedRoom.id)return;
+ if(!ratings||!stillCurrent())return;
  state.ratings=ratings;
  const ratingsSig=JSON.stringify([...ratings.values()].map(r=>[r.photo_id,r.stars,r.rated_at]).sort((a,b)=>a[0].localeCompare(b[0])));
  const signature=ratingsSig+'|'+String(state.showArchive)+'|'+JSON.stringify(all.map(e=>[e.id,e.amount_cents,e.auto_timer_session_id,e.resubmission_origin_id,e.decision_status,e.decided_at,e.priced_at,e.settled_at,e.photo_removal_status,e.caption]));
@@ -625,18 +632,17 @@ async function loadEntries({force=false}={}){
  updateTotals();
  const needsSignedRefresh=all.some(e=>!e.photo_removal_status&&
   (!state.images.has(e.image_path)||state.images.get(e.image_path).expires<Date.now()));
- if(signature!==state.entryFingerprint||force||needsSignedRefresh){
+ if(signature!==state.entryFingerprint||force){
   state.entryFingerprint=signature;
-  await signImages(all);
-  renderEntries();
-  renderReviewQueue();
-  // Chat photo previews become available only after the signed URLs load.
+  renderEntries();renderReviewQueue();
   window.dispatchEvent(new Event('blackcell:redline:state'));
  }
+ // Metadata and balances must never wait for a room's media downloads.
+ if(needsSignedRefresh)queuePhotoPreviews(all,loadScope);
  if(all.length>=5000)show('entriesFeedback','Showing up to 5,000 latest submissions; ask administration to archive older records.');
  else show('entriesFeedback','');
- try{await loadRoomPayments(selectedRoom.id,state.showArchive)}
- catch(e){show('entriesFeedback','Photos loaded. Payment balance could not refresh: '+fail(e))}
+ try{await loadRoomPayments(selectedRoom.id,state.showArchive);if(stillCurrent())liveStatus(state.liveConnected?'● LIVE UPDATES CONNECTED':'● AUTOMATIC SYNC ACTIVE',state.liveConnected)}
+ catch(e){if(stillCurrent()){show('entriesFeedback','Photos loaded. Payment balance could not refresh: '+fail(e));liveStatus('BALANCE REFRESH FAILED · RETRYING',false)}}
 }
 function updateTotals(){
  let assigned=0n,paid=0n,owed=0n,pending=0;
@@ -684,34 +690,47 @@ function rememberImage(path,url,expires,object=false){
   try{URL.revokeObjectURL(old.url)}catch(_){}
  state.images.set(path,{url,expires,object});
 }
-async function signImages(items){
+let photoPreviewJob=null;
+function queuePhotoPreviews(items,scope){
+ if(photoPreviewJob?.scope===scope)return;
+ const job={scope};photoPreviewJob=job;
+ const valid=()=>!state.closed&&photoPreviewJob===job&&roomPaymentScope()===scope;
+ const notify=()=>{if(valid()){renderEntries();renderReviewQueue();window.dispatchEvent(new Event('blackcell:redline:state'))}};
+ void signImages(items,valid,notify).catch(e=>{if(valid())show('entriesFeedback','Some photo previews are unavailable: '+fail(e))}).finally(()=>{if(photoPreviewJob===job)photoPreviewJob=null});
+}
+async function signImages(items,valid=()=>true,notify=()=>{}){
  const now=Date.now();
  const needed=items.filter(e=>!e.photo_removal_status&&
   (!state.images.has(e.image_path)||state.images.get(e.image_path).expires<now));
  const bunny=needed.filter(e=>isBunnyPath(e.image_path));
  const legacy=needed.filter(e=>!isBunnyPath(e.image_path));
  for(let i=0;i<bunny.length;i+=5){
+  if(!valid())return;
   await Promise.all(bunny.slice(i,i+5).map(async e=>{
    try{
     const data=await readBunnyPhoto(db,e.room_id,e.id);
-    if(!state.entries.some(x=>x.id===e.id&&x.image_path===e.image_path))return;
+    if(!valid()||!state.entries.some(x=>x.id===e.id&&x.image_path===e.image_path&&!x.photo_removal_status))return;
     rememberImage(e.image_path,URL.createObjectURL(data),Date.now()+20*60*1000,true);
    }catch(error){
-    show('entriesFeedback','Some REDLINE photos could not load from private Bunny storage: '+fail(error));
+    if(valid())show('entriesFeedback','Some REDLINE photos could not load from private Bunny storage: '+fail(error));
    }
   }));
+  if(valid())notify();
  }
  // Old photo records remain readable if a historical Supabase original
  // is restored in the future. No new media is uploaded to this bucket.
  for(let i=0;i<legacy.length;i+=30){
+  if(!valid())return;
   const batch=legacy.slice(i,i+30);
   const result=await db.storage.from(BUCKET).createSignedUrls(batch.map(e=>e.image_path),600);
+  if(!valid())return;
   if(result.error)continue;
   for(let j=0;j<batch.length;j++){
    const url=result.data?.[j]?.signedUrl;
-   if(url&&typeof url==='string'&&url.startsWith('https://'))
+   if(url&&typeof url==='string'&&url.startsWith('https://')&&state.entries.some(x=>x.id===batch[j].id&&!x.photo_removal_status))
     rememberImage(batch[j].image_path,url,Date.now()+4*60*1000);
   }
+  if(valid())notify();
  }
 }
 function setFilter(name){
