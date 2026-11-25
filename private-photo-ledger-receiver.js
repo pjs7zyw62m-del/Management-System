@@ -118,7 +118,7 @@
  const allRooms=button('← All Rooms',()=>{setMenuOpen(false);window.BLACKCELL_REDLINE_API?.returnToRooms?.()},'rr-nav-button');
  allRooms.id='redlineReceiverAllRooms';allRooms.dataset.rrMenuIcon='access';allRooms.hidden=true;
  menuItems.prepend(allRooms,refreshMenu);
- const roomsHome=button('← Rooms',()=>window.BLACKCELL_REDLINE_API?.returnToRooms?.(),'rd-home-shortcut');roomsHome.hidden=true;roomsHome.setAttribute('aria-label','Return to REDLINE main room directory');headerMenuGroup.prepend(roomsHome);
+ const roomsHome=button('← All Rooms',()=>window.BLACKCELL_REDLINE_API?.returnToRooms?.(),'rd-home-shortcut');roomsHome.hidden=true;roomsHome.setAttribute('aria-label','Return to REDLINE main room directory');headerMenuGroup.prepend(roomsHome);
  for(const [control,icon] of [[refreshMenu,'refresh'],[review,'photos'],[history,'history'],[message,'chat'],[triggerMenu,'trigger'],[manage,'access'],[tools,'tools'],[endSession,'end']])control.dataset.rrMenuIcon=icon;
  endSession.addEventListener('click',()=>setMenuOpen(false));
  for(const option of [review,history,message,triggerMenu,manage,tools]){
@@ -136,7 +136,11 @@
  payFeedback.setAttribute('role','status');payFeedback.hidden=true;
  const payChoice=button('PAY',()=>void openPaymentChoice(),'rr-nav-button rr-pay-full rr-pay-choice');
  payChoice.setAttribute('aria-label','Choose full or partial payment');
- payColumn.append(payChoice,payFull,partialPay,payFeedback);
+ const desktopRoomHeading=make('div','rr-desktop-room-heading');
+ const desktopRoomName=make('span','rr-desktop-room-name','Private room');
+ const desktopRoomState=make('span','rr-desktop-room-state','');
+ desktopRoomHeading.append(make('strong','','REDLINE ROOM'),desktopRoomName,desktopRoomState);
+ payColumn.append(desktopRoomHeading,payChoice,payFull,partialPay,payFeedback);
  headerMenuGroup.prepend(menuShell);
  nav.append(payColumn);
  let payBusy=false;
@@ -944,6 +948,10 @@
   chatPanel.hidden=!hasRoom;
   if(hasRoom&&wasChatHidden)window.dispatchEvent(new Event('blackcell:redline:receiver-ready'));
   chatRoom.textContent=hasRoom?($('#activeRoomTitle')?.textContent?.trim()||'Current private room'):'Select a private room';
+  if(desktopRoomName.textContent!==chatRoom.textContent)desktopRoomName.textContent=chatRoom.textContent;
+  const roomState=session?.archiveMode?'ARCHIVE · READ ONLY':session?.roomActive===true?'ACTIVE':session?.roomActive===false?'CLOSED':'';
+  if(desktopRoomState.textContent!==roomState)desktopRoomState.textContent=roomState;
+  desktopRoomState.dataset.active=String(session?.roomActive===true&&!session?.archiveMode);
   status.textContent=hasRoom?'RECEIVER VERIFIED · PRIVATE ROOM':'RECEIVER VERIFIED · NO ROOM';
   status.classList.toggle('is-waiting',!hasRoom);
   for(const [source,output] of outputs){
