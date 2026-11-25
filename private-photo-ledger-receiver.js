@@ -931,7 +931,7 @@
   senderGallery=null;gallerySignature='';galleryFilter='all';
   historyDesktop=null;historySignature='';historySelected='';historySort='newest';historyStatus='all';historyPage=0;historyScope='';
   for(const el of document.querySelectorAll('.rr-history-inspected'))el.classList.remove('rr-history-inspected');
-  document.body.classList.remove('rr-menu-overlay-open');delete receiverPanel.dataset.panel;delete receiverPanel.dataset.stars;delete receiverPanel.dataset.historySelection;
+  document.body.classList.remove('rr-menu-overlay-open');delete receiverPanel.dataset.panel;delete receiverPanel.dataset.stars;delete receiverPanel.dataset.historySelection;delete receiverPanel.dataset.historyBonus;
   tools.setAttribute('aria-expanded','false');
   if(restoreFocus){const target=panelReturnFocus?.isConnected&&!panelReturnFocus.closest('[hidden]')?panelReturnFocus:menuToggle;target?.focus({preventScroll:true})}
   panelReturnFocus=null;
@@ -1019,7 +1019,7 @@
   const grid=make('div','rr-history-desktop-grid');
   for(const p of current){
    const selected=p.id===historySelected,removed=Boolean(p.removal_status||p.removed);
-   const tile=button('',()=>{historySelected=p.id;renderDesktopHistory(window.BLACKCELL_REDLINE_API?.snapshot?.())},'rr-history-tile');
+   const tile=button('',()=>{historySelected=p.id;receiverPanel.dataset.historyBonus='false';receiverPanel.querySelector('.rr-history-bonus-toggle')?.setAttribute('aria-pressed','false');renderDesktopHistory(window.BLACKCELL_REDLINE_API?.snapshot?.())},'rr-history-tile');
    tile.dataset.historyFocus='photo:'+p.id;tile.setAttribute('aria-pressed',String(selected));tile.setAttribute('aria-label','Inspect photo '+p.id.slice(0,8));
    const visual=make('div','rr-history-tile-image');
    const src=!removed&&typeof p.image_url==='string'&&/^(https:\/\/|blob:|data:image\/)/i.test(p.image_url)?p.image_url:'';
@@ -1068,6 +1068,13 @@
      b.setAttribute('aria-pressed',String(value==='all'));filter.append(b);
     }
     receiverPanel.dataset.stars='all';panelContent.prepend(filter);
+    const bonusButton=button('Bonus progress',()=>{
+     const open=receiverPanel.dataset.historyBonus!=='true';
+     receiverPanel.dataset.historyBonus=String(open);
+     bonusButton.setAttribute('aria-pressed',String(open));
+    },'rr-history-star-button rr-history-bonus-toggle');
+    bonusButton.setAttribute('aria-pressed','false');
+    receiverPanel.dataset.historyBonus='false';filter.append(bonusButton);
     buildDesktopHistory(s);
    }else{
     senderGallery=make('section','rr-sender-gallery');senderGallery.setAttribute('aria-label','Photos received from the selected sender');

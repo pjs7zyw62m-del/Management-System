@@ -98,3 +98,21 @@ body.rr-menu-overlay-open #photoLightbox[hidden]{display:none!important}
 #redlineReceiverMenuOverlay[data-panel="history"] .redline-history-photo-signals{display:flex!important;flex-wrap:wrap!important;gap:7px!important}#redlineReceiverMenuOverlay[data-panel="history"] .redline-history-signal-feedback{flex-basis:100%}
 #redlineReceiverMenuOverlay[data-panel="history"][data-history-selection="no"] .timeline-column::after{content:"Select a reviewed photograph to inspect its record.";color:#a99ba4;font:13px/1.5 system-ui;padding:18px 8px}
 }
+
+/* Explicit grid areas beat the legacy receiver's !important timeline grid coordinates. */
+.rr-history-bonus-toggle{display:none!important}
+@media(min-width:1050px){
+#redlineReceiverMenuOverlay[data-panel="history"] .rr-menu-panel-content{grid-template-columns:minmax(0,1fr) minmax(320px,35%)!important;grid-template-rows:max-content minmax(0,1fr)!important;grid-template-areas:"filters filters" "gallery inspector"!important;align-items:stretch!important;justify-items:stretch!important;min-height:0!important}
+#redlineReceiverMenuOverlay[data-panel="history"] .rr-menu-panel-content>.rr-history-star-filter{grid-area:filters!important;grid-column:1/-1!important;grid-row:1!important;position:static!important;min-height:0!important;z-index:auto!important;align-self:stretch!important;box-sizing:border-box!important}
+#redlineReceiverMenuOverlay[data-panel="history"] .rr-menu-panel-content>.rr-history-desktop{grid-area:gallery!important;grid-column:1!important;grid-row:2!important;position:static!important;align-self:stretch!important;height:auto!important;max-height:none!important;min-height:0!important;box-sizing:border-box!important}
+#redlineReceiverMenuOverlay[data-panel="history"] .rr-menu-panel-content>.timeline-column{grid-area:inspector!important;grid-column:2!important;grid-row:2!important;position:static!important;align-self:stretch!important;justify-self:stretch!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:auto!important;box-sizing:border-box!important}
+#redlineReceiverMenuOverlay[data-panel="history"] .rr-history-bonus-toggle{display:inline-flex!important;margin-left:auto!important;align-items:center!important}
+#redlineReceiverMenuOverlay[data-panel="history"] #redlineReceiverBonusTracker{display:none!important}
+#redlineReceiverMenuOverlay[data-panel="history"][data-history-bonus="true"] #redlineReceiverBonusTracker{display:flex!important;flex-direction:column!important;width:100%!important;min-width:0!important;max-height:none!important;overflow:visible!important}
+#redlineReceiverMenuOverlay[data-panel="history"][data-history-bonus="true"] #photoEntries{display:none!important}
+#redlineReceiverMenuOverlay[data-panel="history"][data-history-bonus="true"] .timeline-column::before{content:"BONUS PROGRESS"!important}
+#redlineReceiverMenuOverlay[data-panel="history"][data-history-bonus="true"] .timeline-column::after{content:none!important}
+#redlineReceiverMenuOverlay[data-panel="history"] .rr-history-desktop-head{position:static!important;flex:0 0 auto!important}
+#redlineReceiverMenuOverlay[data-panel="history"] .rr-history-desktop-grid{flex:0 0 auto!important}
+#redlineReceiverMenuOverlay[data-panel="history"] .rr-history-pager{flex:0 0 auto!important}
+}
