@@ -973,12 +973,12 @@
  function openReceiverPanel(kind){
   const s=window.BLACKCELL_REDLINE_API?.snapshot?.();
   if(!popupMode||app.hidden||room.hidden||!s?.isOwner||!s.roomId)return;
-  if(!['review','history','access','tools','earnings'].includes(kind))return;
+  if(!['review','history','access','tools','earnings','duplicates'].includes(kind))return;
   if(!receiverPanel.hidden&&panelKind===kind)return;
   const priorFocus=receiverPanel.hidden?document.activeElement:panelReturnFocus;
   closeReceiverPanel(false);panelReturnFocus=priorFocus;
   panelKind=kind;panelRoomId=s.roomId;receiverPanel.dataset.panel=kind;
-  panelHeading.textContent={review:'Incoming Photos',history:'Photo History',access:'Rooms & Access',tools:'Room Tools',earnings:'Earnings & Records'}[kind];
+  panelHeading.textContent={review:'Incoming Photos',history:'Photo History',access:'Rooms & Access',tools:'Room Tools',earnings:'Earnings & Records',duplicates:'Duplicate Protection'}[kind];
   if(kind==='review'||kind==='history'){
    // Reset the legacy financial filter on every menu entry. The star filter
    // is scoped only to this popup and never edits the photo rating.
@@ -1004,6 +1004,8 @@
    }
    if(kind==='review'&&s.archiveMode)panelContent.prepend(make('p','rr-menu-panel-note','Archived records are read-only. Return to the current session in Room Tools to review incoming photos.'));
    if(kind==='review'&&!timeline)panelContent.append(make('p','rr-menu-panel-note','Photo review is unavailable.'));
+  }else if(kind==='duplicates'){
+   buildDuplicatePanel(s);
   }else if(kind==='access'){
    for(const el of [access,scopePanel,uploadInfo,linkCard])moveIntoPanel(el);
    void loadAccess(true);
@@ -1023,6 +1025,64 @@
  // The canonical queue can request history without activating the old
  // below-chat navigation or changing the page scroll position.
  originalReview?.addEventListener('click',e=>{const b=e.target.closest?.('button');if(popupMode&&b?.textContent?.trim().toUpperCase().includes('VIEW REVIEWED PHOTOS')){e.preventDefault();e.stopImmediatePropagation();openReceiverPanel('history')}},true);
+ function buildDuplicatePanel(initial){
+  const section=make('section','rr-duplicate-tools');
+  const summary=make('p','rr-menu-panel-note','Scan the selected sender’s currently loaded photos for exact byte-for-byte duplicates. This does not download additional Bunny files, delete photos, change prices or alter payment history.');
+  const status=make('p','rr-duplicate-status','Ready to scan.');status.setAttribute('role','status');
+  const results=make('div','rr-duplicate-results');
+  const scope=make('label','rr-duplicate-scope','Show ');
+  const select=make('select','rr-duplicate-select');
+  for(const [value,label] of [['duplicates','Duplicate groups'],['all','All scanned groups']]){const option=make('option','',label);option.value=value;select.append(option)}
+  scope.append(select);
+  let groups=[],missing=0,scanned=0;
+  const bytes=n=>n>=1048576?(n/1048576).toFixed(2)+' MiB':(n/1024).toFixed(1)+' KiB';
+  const render=()=>{
+   results.replaceChildren();
+   const dup=groups.filter(g=>g.photos.length>1);
+   const savings=dup.reduce((n,g)=>n+g.bytes*(g.photos.length-1),0);
+   status.textContent=scanned+' scanned · '+dup.length+' duplicate groups · '+missing+' unavailable or not cached · '+bytes(savings)+' estimated redundant photo bytes (not verified storage savings).';
+   const visible=select.value==='all'?groups:dup;
+   if(!visible.length)results.append(make('p','rr-menu-panel-note','No matching groups in the scanned photos.'));
+   for(const g of visible){
+    const card=make('article','rr-duplicate-group');
+    card.append(make('strong','',g.photos.length+' matching submission'+(g.photos.length===1?'':'s')),make('small','',bytes(g.bytes)+' per image · '+bytes(g.bytes*(g.photos.length-1))+' possible duplicate bytes'));
+    const thumbs=make('div','rr-duplicate-thumbs');
+    for(const p of g.photos){const item=make('div','rr-duplicate-thumb');const img=make('img');img.src=p.image_url;img.alt='Matching private photo';img.loading='lazy';item.append(img,make('small','',p.id.slice(0,8).toUpperCase()+' · '+(p.stars||0)+'/5 ★ · '+p.decision_status));thumbs.append(item)}
+    card.append(thumbs);results.append(card);
+   }
+  };
+  const scan=button('Scan loaded photos',async()=>{
+   const s=window.BLACKCELL_REDLINE_API?.snapshot?.();
+   if(!s?.isOwner||s.roomId!==initial.roomId||s.archiveMode!==initial.archiveMode)return;
+   const current=()=>section.isConnected&&panelKind==='duplicates'&&window.BLACKCELL_REDLINE_API?.snapshot?.()?.roomId===s.roomId&&window.BLACKCELL_REDLINE_API?.snapshot?.()?.archiveMode===s.archiveMode;
+   if(!crypto.subtle){status.textContent='Secure fingerprinting is not supported in this browser.';return}
+   scan.disabled=true;results.replaceChildren();groups=[];missing=0;scanned=0;
+   const map=new Map(),photos=(s.photoHistory||[]).filter(p=>!p.removal_status&&!p.removed);
+   try{
+    for(let i=0;i<photos.length;i++){
+     if(!current())return;
+     const p=photos[i];status.textContent='Scanning '+(i+1)+' of '+photos.length+' loaded photos…';
+     if(typeof p.image_url!=='string'||!/^blob:|^data:image\\//.test(p.image_url)){missing++;continue}
+     try{
+      const response=await fetch(p.image_url);if(!response.ok)throw Error('Image unavailable');const blob=await response.blob();
+      if(!blob.size||blob.size>12*1024*1024)throw Error('Unsupported image size');
+      const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await blob.arrayBuffer())),n=>n.toString(16).padStart(2,'0')).join('');
+      if(!current())return;
+      const group=map.get(hash)||{bytes:blob.size,photos:[]};group.photos.push(p);map.set(hash,group);scanned++;
+     }catch(_){missing++}
+    }
+    if(!current())return;groups=Array.from(map.values()).sort((a,b)=>b.photos.length-a.photos.length);render();
+   }finally{scan.disabled=false}
+  },'rr-history-star-button');
+  select.addEventListener('change',()=>{if(scanned||missing)render()});
+  const actions=make('div','rr-duplicate-actions');actions.append(scan,scope);
+  section.append(make('h3','','Exact duplicate scan'),summary,actions,status,results,
+   make('p','rr-menu-panel-note','Identical repeat selections in a new sender upload batch are skipped after the first successful upload. Intentional resubmissions remain separate. Cross-batch reuse, visual-similarity matching and physical storage cleanup are not enabled.'));
+  panelContent.append(section);
+ }
+ const duplicateMenu=button('Duplicate Protection',()=>openReceiverPanel('duplicates'),'rr-nav-button');
+ duplicateMenu.dataset.rrMenuIcon='photos';
+ if(popupMode)menuItems.insertBefore(duplicateMenu,tools);
  const earningsMenu=button('Earnings & Records',()=>openReceiverPanel('earnings'),'rr-nav-button');earningsMenu.dataset.rrMenuIcon='money';
  if(popupMode)menuItems.insertBefore(earningsMenu,tools);
  function sync(){

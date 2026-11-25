@@ -1441,7 +1441,8 @@ function imageType(file){
 // through the REDLINE-only server-authorized Bunny pipeline and review queue.
 const redlinePhotoQueue=[];
 let redlineQueueRunning=false,redlineStopAfterCurrent=false;
-let redlineBatchTotal=0,redlineBatchDone=0,redlineBatchFailed=0;
+let redlineBatchTotal=0,redlineBatchDone=0,redlineBatchFailed=0,redlineBatchDuplicates=0;
+const redlineBatchHashes=new Set();
 let redlineUploadStatus=null,redlineBatchRoom=null;
 const redlinePhotoEligible=()=>!state.closed&&!state.isOwner&&!!state.user&&
  !!state.room?.active&&!state.room.photo_sending_paused&&!state.showArchive;
@@ -1484,7 +1485,7 @@ function enqueueRedlineFiles(items){
  // Do not impose an artificial selection count: the 12 MB Bunny limit applies
  // to EACH image, and selected images are sent one-by-one to reduce Android RAM.
  if(!redlineQueueRunning){
-  redlineBatchDone=0;redlineBatchFailed=0;redlineBatchTotal=0;
+  redlineBatchDone=0;redlineBatchFailed=0;redlineBatchTotal=0;redlineBatchDuplicates=0;redlineBatchHashes.clear();
   redlineStopAfterCurrent=false;redlineBatchRoom=state.room.id;
  }
  const roomId=state.room.id;
@@ -1513,7 +1514,7 @@ async function drainRedlinePhotoQueue(){
     await new Promise(resolve=>setTimeout(resolve,350));
     continue;
    }
-   const index=redlineBatchDone+redlineBatchFailed+1;
+   const index=redlineBatchDone+redlineBatchFailed+redlineBatchDuplicates+1;
    redlineQueueStatus('Uploading photo '+index+' of '+redlineBatchTotal+' · '+String(item.label||'Photo').slice(0,65),true);
    let file=item.file;
    try{
@@ -1521,22 +1522,31 @@ async function drainRedlinePhotoQueue(){
     if(!file)throw Error('Could not read the selected photo.');
     if(!file.size||file.size>MAX_IMAGE_BYTES)throw Error('Each REDLINE photo must be no larger than 12 MB.');
     imageType(file); // Per-photo validation also runs in uploadPhoto.
-    const success=await uploadPhoto({preventDefault(){},detail:{file}});
-    if(success===true)redlineBatchDone++;
-    else redlineBatchFailed++;
+    // Byte-identical repeat selections in this batch need no second upload.
+    // A successful send is required before a fingerprint is remembered.
+    let hash=null;
+    if(globalThis.crypto?.subtle)try{
+     hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await file.arrayBuffer())),n=>n.toString(16).padStart(2,'0')).join('');
+    }catch(_){}
+    if(hash&&redlineBatchHashes.has(hash)){redlineBatchDuplicates++}
+    else{
+     const success=await uploadPhoto({preventDefault(){},detail:{file}});
+     if(success===true){redlineBatchDone++;if(hash)redlineBatchHashes.add(hash)}
+     else redlineBatchFailed++;
+    }
    }catch(error){
     redlineBatchFailed++;
     show('uploadFeedback','Photo '+index+' not sent: '+fail(error));
    }finally{file=null}
    redlineQueueStatus('REDLINE photos: '+redlineBatchDone+' uploaded · '+redlineBatchFailed+
-    ' failed · '+redlinePhotoQueue.length+' remaining',redlinePhotoQueue.length>0);
+    ' failed · '+redlineBatchDuplicates+' duplicates skipped · '+redlinePhotoQueue.length+' remaining',redlinePhotoQueue.length>0);
   }
  }finally{
   redlineQueueRunning=false;
   const note='REDLINE upload finished: '+redlineBatchDone+' photo'+(redlineBatchDone===1?'':'s')+
-   ' sent privately'+(redlineBatchFailed?' · '+redlineBatchFailed+' not sent; select failed photos again':'')+'.';
+   ' sent privately'+(redlineBatchDuplicates?' · '+redlineBatchDuplicates+' identical batch duplicates skipped':'')+(redlineBatchFailed?' · '+redlineBatchFailed+' not sent; select failed photos again':'')+'.';
   redlineQueueStatus(redlineStopAfterCurrent?'Remaining photo uploads stopped. '+note:interruptedReason?interruptedReason+' '+note:note);
-  redlineStopAfterCurrent=false;redlinePhotoQueue.length=0;
+  redlineStopAfterCurrent=false;redlinePhotoQueue.length=0;redlineBatchHashes.clear();
   show('selectedPhotoName','Choose photos from your device or BLACKCELL Photos.');
  }
 }
