@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#09090a"><meta name="blackcell-landing-build" content="20261125-glass-rise1"><title>BLACKCELL Corporation | Corporate Access</title><style>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#09090a"><meta name="blackcell-landing-build" content="20261125-glass-audio2"><title>BLACKCELL Corporation | Corporate Access</title><style>
 :root{color-scheme:dark;--bg:#09090a;--fg:#eeeff1;--muted:#93949a;--line:#29292d;--red:#c52234}
 *{box-sizing:border-box}html{min-height:100%;scrollbar-width:none}body{margin:0;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:radial-gradient(ellipse at 50% 44%,#101012 0%,#09090a 65%);color:var(--fg);overflow-x:hidden}*::-webkit-scrollbar{display:none}button{font:inherit;cursor:pointer}button:focus-visible,a:focus-visible{outline:2px solid #ef8893;outline-offset:5px}a{color:inherit}
 header,footer{width:100%;padding-inline:clamp(20px,5vw,70px)}.header-inner,.footer-inner{max-width:1320px;margin-inline:auto}.header-inner{height:68px;display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line)}
@@ -81,6 +81,13 @@ body.bc-glass-leave .bc-glass-scan{visibility:visible;background:#0003}
 body.bc-glass-leave .bc-glass-scan:after{animation:bcGlassScanOut .26s ease-out both}
 @keyframes bcGlassScanOut{0%{transform:translateY(0);opacity:0}20%{opacity:.65}100%{transform:translateY(100vh);opacity:0}}
 @media(prefers-reduced-motion:reduce){body.bc-glass-leave main,body.bc-glass-leave header,body.bc-glass-leave footer{filter:none;transform:none;transition:none}body.bc-glass-leave .bc-glass-scan{display:none}}
+.bc-glass-progress{position:fixed;inset:0;z-index:50;display:grid;place-items:center;pointer-events:none;visibility:hidden;opacity:0;transition:opacity .24s}
+body.bc-glass-leave .bc-glass-progress{visibility:visible;opacity:1}
+.bc-glass-progress-inner{text-align:center;padding:20px;color:#d5d5da}
+.bc-glass-progress-title{font-size:11px;font-weight:650;letter-spacing:.17em;margin-bottom:18px}
+.bc-glass-continue{pointer-events:auto;border:1px solid #ffffff30;background:#161618;color:#bdbdc4;border-radius:6px;padding:9px 13px;font-size:10px;letter-spacing:.08em}
+.bc-glass-progress[hidden]{display:none!important}
+@media(prefers-reduced-motion:reduce){.bc-glass-progress{transition:none}}
 </style><link rel="prefetch" href="login.html"><script src="blackcell-live-update.js?v=20261114-auto3" defer data-mode="auto"></script></head>
 <body><div class="ambient" aria-hidden="true"><div class="sweep"></div></div><header><div class="header-inner"><div class="header-brand"><span class="header-mark" aria-hidden="true"><span>B</span></span><strong>BLACKCELL CORPORATION</strong><span class="private-label">PRIVATE CORPORATE NETWORK</span></div><div class="header-right"><span class="status-dot" aria-hidden="true"></span><span class="restricted">RESTRICTED ACCESS</span><button type="button" class="bc-landing-sound" id="bcLandingSound" aria-label="Mute entrance audio" aria-pressed="false" title="Mute entrance audio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9v6h4l5 4V5L7 9H3z"/><path class="sound-waves" d="M16 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/><path class="sound-slash" d="m16 9 6 6m0-6-6 6"/></svg></button></div></div></header>
 <main><div class="portal"><section class="hero" aria-label="BLACKCELL Corporation"><p class="eyebrow">EXECUTIVE SYSTEMS DIVISION</p><div class="brand-lockup"><div class="brand-symbol" aria-hidden="true"><svg viewBox="0 0 100 105" fill="none"><path fill="#f1f1f3" fill-rule="evenodd" d="M16 8h40c20 0 29 11 29 24 0 10-5 17-13 20 11 3 17 11 17 23 0 15-11 24-31 24H16V8zm18 17v20h21c8 0 12-4 12-10s-4-10-12-10H34zm0 36v21h23c9 0 14-4 14-11s-5-10-14-10H34z" transform="translate(4 0) scale(.91 .81)"/><path d="M16 92h70v9H16z" fill="#e21a2c"/></svg></div><div class="brand-divider"></div><div class="brand-text"><h1>BLACKCELL</h1><p>CORPORATION</p></div></div><div class="divisions"><span>ADMINISTRATION</span><i aria-hidden="true"></i><span>SECURITY</span><i aria-hidden="true"></i><span>TECHNOLOGY</span><i aria-hidden="true"></i><span>OPERATIONS</span></div></section>
@@ -88,12 +95,22 @@ body.bc-glass-leave .bc-glass-scan:after{animation:bcGlassScanOut .26s ease-out 
 <dl class="meta"><div><dt>NETWORK</dt><dd>PRIVATE CORPORATE</dd></div><div><dt>DIVISION</dt><dd>EXECUTIVE SYSTEMS</dd></div><div><dt>CLASSIFICATION</dt><dd>RESTRICTED</dd></div></dl></div></main>
 <footer><div class="footer-inner"><div class="classification">CLASSIFICATION <strong>RESTRICTED</strong></div><p class="security-notice">Property of BLACKCELL Corporation. Unauthorized access, use or disclosure is prohibited.</p><div class="footer-id">CORPORATE SYSTEMS</div></div></footer>
 <div class="bc-glass-scan" aria-hidden="true"></div>
-<script src="blackcell-landing-audio.js?v=20261124-audio1"></script>
+<div class="bc-glass-progress" id="bcGlassProgress" hidden><div class="bc-glass-progress-inner"><div class="bc-glass-progress-title" role="status">OPENING CORPORATE SIGN IN</div><button type="button" id="bcGlassContinue" class="bc-glass-continue">CONTINUE WITHOUT AUDIO ›</button></div></div>
+<script src="blackcell-landing-audio.js?v=20261125-david2"></script>
 <script>
-(()=>{const launch=document.getElementById('launch');let busy=false,timer;
-function reset(){clearTimeout(timer);busy=false;launch.disabled=false;document.body.classList.remove('bc-glass-leave')}
-launch.addEventListener('click',()=>{if(busy)return;busy=true;launch.disabled=true;window.bcLandingAudio?.cancel();document.body.classList.add('bc-glass-leave');timer=setTimeout(()=>location.assign('login.html?entrance=glass'),matchMedia('(prefers-reduced-motion: reduce)').matches?0:240)});
-window.addEventListener('pageshow',reset);
+(()=>{const launch=document.getElementById('launch'),progress=document.getElementById('bcGlassProgress'),skip=document.getElementById('bcGlassContinue');let busy=false,generation=0,timer;
+function reset(){clearTimeout(timer);++generation;busy=false;launch.disabled=false;progress.hidden=true;document.body.classList.remove('bc-glass-leave');window.bcLandingAudio?.cancel()}
+function navigate(result,token){if(!busy||token!==generation)return;clearTimeout(timer);++generation;window.bcLandingAudio?.cancel();location.assign('login.html?entrance=glass&welcome='+(result==='retry'?'retry':'done'))}
+launch.addEventListener('click',()=>{if(busy)return;busy=true;const token=++generation;
+ // Start audio before any asynchronous work, while the click authorizes playback.
+ let result;try{result=window.bcLandingAudio?.startEntrance()}catch{result='retry'}
+ launch.disabled=true;progress.hidden=false;document.body.classList.add('bc-glass-leave');skip.focus({preventScroll:true});
+ const minimum=new Promise(resolve=>setTimeout(resolve,matchMedia('(prefers-reduced-motion: reduce)').matches?0:240));
+ Promise.all([Promise.resolve(result||'retry'),minimum]).then(([out])=>navigate(out,token)).catch(()=>navigate('retry',token));
+ timer=setTimeout(()=>navigate('retry',token),13500);
+});
+skip.addEventListener('click',()=>navigate('skipped',generation));
+window.addEventListener('pageshow',event=>{if(event.persisted)reset()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&busy){reset();launch.focus()}});
 })();
 </script></body></html>

@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <script src="corp-device-layout.js?v=20261109-device1"></script>
 <meta name="theme-color" content="#000000">
-<meta name="blackcell-login-entry-build" content="20261125-glass-rise1">
-<script>(()=>{try{const u=new URL(location.href);if(u.searchParams.get('entrance')==='glass'){document.documentElement.classList.add('bc-glass-arrival');u.searchParams.delete('entrance');history.replaceState(history.state,'',u.href)}}catch{}})();</script>
+<meta name="blackcell-login-entry-build" content="20261125-glass-audio2">
+<script>(()=>{try{const u=new URL(location.href);if(u.searchParams.get('entrance')==='glass'){document.documentElement.classList.add('bc-glass-arrival');document.documentElement.dataset.bcWelcomePending=u.searchParams.get('welcome')==='done'?'0':'1';u.searchParams.delete('entrance');u.searchParams.delete('welcome');history.replaceState(history.state,'',u.href)}}catch{}})();</script>
 <title>BLACKCELL CORPORATION | Sign In</title>
 <style>
 :root{color-scheme:dark;--silver:#e5e0e7;--dim:#a7a2ad;--red:#a02e44}
@@ -726,15 +726,16 @@ html.bc-glass-arrival body:after{content:"";position:fixed;left:0;right:0;top:0;
 <dialog id="bcQrDialog" class="bc-qr-dialog" aria-labelledby="bcQrTitle"><div class="bc-qr-brand">BLACKCELL</div><div class="bc-qr-corp">CORPORATION</div><div class="bc-qr-rule"></div><h2 id="bcQrTitle" class="bc-qr-title">SIGN IN WITH QR CODE</h2><p id="bcQrStatus" class="bc-qr-copy" role="status" aria-live="polite">Preparing secure sign-in…</p><div id="bcQrImage" class="bc-qr-image"></div><div class="bc-qr-label">PHONE APPROVAL NUMBER</div><div id="bcQrNumber" class="bc-qr-number">—</div><div id="bcQrCountdown" class="bc-qr-count"></div><button type="button" class="bc-qr-action" id="bcQrRenew" hidden>GENERATE NEW CODE</button><button class="bc-qr-action bc-qr-secondary" id="bcQrCancel" type="button">CANCEL</button><p class="bc-qr-copy">SECURE CORPORATE AUTHENTICATION</p></dialog>
 <script>
 (()=>{if(!document.documentElement.classList.contains('bc-glass-arrival'))return;
+setTimeout(()=>document.documentElement.classList.remove('bc-glass-arrival'),950);
+if(document.documentElement.dataset.bcWelcomePending!=='1')return;
 const btn=document.getElementById('bcWelcomeSound');if(!btn)return;
 let muted=false;try{muted=localStorage.getItem('bcLandingMuted')==='1'}catch{}
-const audio=new Audio('blackcell-welcome.mp3');audio.preload='auto';audio.playbackRate=1;let started=false,attempting=false;
+const audio=new Audio('blackcell-welcome-david2.mp3');audio.preload='auto';audio.playbackRate=1;let started=false,attempting=false;
 function play(){if(started||attempting||muted)return;attempting=true;try{Promise.resolve(audio.play()).then(()=>{started=true;attempting=false;btn.hidden=true;document.removeEventListener('click',retry)}).catch(()=>{attempting=false;btn.hidden=false})}catch{attempting=false;btn.hidden=false}}
 function retry(e){if(e.isTrusted&&!e.target.closest('#bcWelcomeSound'))play()}
 btn.addEventListener('click',play);document.addEventListener('click',retry);
 window.addEventListener('pagehide',()=>{audio.pause();document.removeEventListener('click',retry)},{once:true});
 if(!muted)play();
-setTimeout(()=>document.documentElement.classList.remove('bc-glass-arrival'),950);
 })();
 </script>
 </body></html>

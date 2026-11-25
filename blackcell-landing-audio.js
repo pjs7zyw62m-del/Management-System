@@ -4,7 +4,7 @@ if(!button)return;
 const audio=new Audio();
 audio.preload='auto';
 const warning='blackcell-security-announcement.mp3';
-const welcome='blackcell-welcome.mp3';
+const welcome='blackcell-welcome-david2.mp3';
 const get=(storage,key)=>{try{return window[storage].getItem(key)}catch{return null}};
 const set=(storage,key,value)=>{try{window[storage].setItem(key,value)}catch{}};
 let muted=get('localStorage','bcLandingMuted')==='1';
@@ -45,10 +45,11 @@ function startWarning(){
  warningTask=task;return task;
 }
 function startEntrance(){
- entrance=true;const token=++epoch;
- if(muted)return Promise.resolve();
- if(heard)return clip(welcome,5000);
- return startWarning().then(()=>{if(entrance&&token===epoch&&!muted)return clip(welcome,5000)});
+ entrance=true;++epoch;
+ // Play directly within the trusted Authorized Access click, not after navigation.
+ stop();
+ if(muted)return Promise.resolve('muted');
+ return clip(welcome,10000).then(ok=>ok?'played':muted?'muted':'retry');
 }
 function cancel(){entrance=false;++epoch;stop()}
 button.addEventListener('click',()=>{
