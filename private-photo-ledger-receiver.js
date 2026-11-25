@@ -1062,7 +1062,7 @@
     for(let i=0;i<photos.length;i++){
      if(!current())return;
      const p=photos[i];status.textContent='Scanning '+(i+1)+' of '+photos.length+' loaded photos…';
-     if(typeof p.image_url!=='string'||!/^blob:|^data:image\\//.test(p.image_url)){missing++;continue}
+     if(typeof p.image_url!=='string'||!(p.image_url.startsWith('blob:')||p.image_url.startsWith('data:image/'))){missing++;continue}
      try{
       const response=await fetch(p.image_url);if(!response.ok)throw Error('Image unavailable');const blob=await response.blob();
       if(!blob.size||blob.size>12*1024*1024)throw Error('Unsupported image size');
