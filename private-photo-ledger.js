@@ -1,3 +1,4 @@
+import {mountGroupRooms} from './private-photo-ledger-groups.js?v=20261125-group-chat1';
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
 import {isBunnyPath,uploadBunnyPhoto,readBunnyPhoto,cleanupUnpostedBunny,deleteRedlinePhotoFile} from './private-photo-ledger-bunny.js?v=20261121-redline-bunny1';
 
@@ -303,6 +304,7 @@ function renderRoomDirectory(preferred,refreshSummaries=false){
  section.hidden=!home;
  if(!home){directorySummaryGeneration++;delete document.body.dataset.redlineRoomHome;delete document.body.dataset.redlineRoomCreate;return}
  document.body.dataset.redlineRoomHome='ready';
+ mountGroupRooms(db,{isOwner:state.isOwner,section});
  const own=state.rooms.filter(r=>state.isOwner?r.owner_id===state.user.id:r.member_id===state.user.id);
  section.querySelector('.rd-directory-slash').textContent=state.isOwner?'/ OWNER WORKSPACE':'/ SENDER WORKSPACE';
  section.querySelector('.rd-directory-owner').textContent=state.isOwner?'♙ OWNER ACCESS':'♙ SENDER ACCESS';
