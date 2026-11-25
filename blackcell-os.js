@@ -145,7 +145,7 @@ async function finishBoot(){
  // A fresh approval triggers the cinematic only after the real OS is ready.
  if(!preview&&active&&!leaving&&!workspaceLock?.isLocked()&&$('gate').dataset.state==='boot'&&window.bcVerifiedOsLaunch){
   let fresh=false;try{fresh=window.bcVerifiedOsLaunch.consume()}catch(_){}
-  if(fresh){
+  if(fresh||(!bootComplete&&recoveryAttempts===0&&window.bcVerifiedOsLaunch.isMobile())){
    stopBootProgress();
    const ready=()=>active&&!leaving&&!workspaceLock?.isLocked()&&$('gate').dataset.state==='boot';
    const reveal=()=>{if(!ready())return false;bootComplete=true;$('gate').hidden=true;$('desktop').hidden=false;applyAppLayout();window.dispatchEvent(new Event('blackcell:desktop-ready'));return true};
