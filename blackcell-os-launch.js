@@ -26,11 +26,10 @@ async function run({gate,desktop,ready,reveal,reduceMotion=false}){
  if(overline)overline.textContent='OPERATING SYSTEM';
  if(message)message.textContent='SYSTEM INITIALIZED';
  if(progress)progress.style.width='12%';
- let playing=false,blocked=false,raf=0,finished=false,resolveReveal,tapButton=null,choice=null,waiting=false;
- const clearChoice=()=>{choice?.remove();choice=null;waiting=false};
+ let playing=false,blocked=false,raf=0,finished=false,resolveReveal,tapButton=null;
  let started=performance.now();
  const done=new Promise(resolve=>{resolveReveal=resolve});
- const finish=()=>{if(finished)return;finished=true;cancelAnimationFrame(raf);tapButton?.remove();clearChoice();gate.classList.remove('bc-os-cinematic','bc-os-motion-reduced');if(!ready()){stop();resolveReveal(false);return}
+ const finish=()=>{if(finished)return;finished=true;cancelAnimationFrame(raf);tapButton?.remove();gate.classList.remove('bc-os-cinematic','bc-os-motion-reduced');if(!ready()){stop();resolveReveal(false);return}
   desktop.classList.add('bc-os-launch-reveal');if(reduceMotion)desktop.classList.add('bc-os-motion-reduced');const ok=reveal();
   if(!ok){stop();resolveReveal(false);return}
   setTimeout(()=>{desktop.classList.remove('bc-os-launch-reveal','bc-os-motion-reduced')},1200);
@@ -43,34 +42,13 @@ async function run({gate,desktop,ready,reveal,reduceMotion=false}){
  }
  if(!ready()){stop();return false}
  started=performance.now();
- if(blocked&&isMobile()){
-  waiting=true;
-  choice=document.createElement('div');choice.className='bc-os-audio-choice';
-  const explanation=document.createElement('p');explanation.textContent='Tap to play the startup announcement as BLACKCELL opens.';
-  const sound=document.createElement('button');sound.type='button';sound.textContent='Enter OS with sound';sound.className='bc-os-audio-enter';
-  const silent=document.createElement('button');silent.type='button';silent.textContent='Continue silently';silent.className='bc-os-audio-silent';
-  choice.append(explanation,sound,silent);gate.append(choice);
-  sound.addEventListener('click',()=>{
-   if(finished||!ready()){finish();return}
-   sound.disabled=true;audio.currentTime=0;
-   // Invoke playback directly in the trusted tap, before any async work.
-   let timer;
-   const fail=()=>{if(finished||!waiting)return;stop();sound.disabled=false;explanation.textContent='Audio could not play. Retry or continue silently.'};
-   try{const request=audio.play();timer=setTimeout(fail,8000);
-    Promise.resolve(request).then(()=>{
-     clearTimeout(timer);if(finished||!ready()||!waiting){stop();return}
-     playing=true;blocked=false;started=performance.now();clearChoice();raf=requestAnimationFrame(tick);
-    }).catch(()=>{clearTimeout(timer);fail()})
-   }catch{clearTimeout(timer);fail()}
-  });
-  silent.addEventListener('click',()=>{stop();blocked=false;finish()});
-  const guard=setInterval(()=>{if(finished||!waiting){clearInterval(guard);return}if(!ready()){clearInterval(guard);finish()}},250);
- }else if(blocked)tapButton=retryButton(gate,()=>!finished&&ready()&&!muted(),()=>{playing=true;blocked=false;started=performance.now()});
+ // Mobile playback is best effort only. Never gate a verified OS on sound.
+ if(blocked&&!isMobile())tapButton=retryButton(gate,()=>!finished&&ready()&&!muted(),()=>{playing=true;blocked=false;started=performance.now()});
  function tick(){if(finished)return;if(!ready()){finish();return}const wall=(performance.now()-started)/1000;const elapsed=playing?audio.currentTime:wall;if(progress)progress.style.width=Math.min(100,12+elapsed/2.27*88)+'%';
   if(elapsed>=MARK||wall>=MARK+2){finish();return}raf=requestAnimationFrame(tick)}
- if(!waiting)raf=requestAnimationFrame(tick);
+ raf=requestAnimationFrame(tick);
  const endGuard=setInterval(()=>{if(finished&&(!canPlay(desktop)||audio.ended||audio.paused)){stop();clearInterval(endGuard)}},200);
- const watchdog=setInterval(()=>{if(finished){clearInterval(watchdog);return}if(waiting)return;if(!ready()||performance.now()-started>(DURATION+5)*1000)finish()},250);
+ const watchdog=setInterval(()=>{if(finished){clearInterval(watchdog);return}if(!ready()||performance.now()-started>(DURATION+5)*1000)finish()},250);
  return done;
 }
 window.addEventListener('pagehide',stop);window.bcVerifiedOsLaunch={consume,run,isMobile};
