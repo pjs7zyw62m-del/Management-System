@@ -33,7 +33,7 @@
       return !phone&&!tablet&&host?.innerWidth>=1180&&window.innerWidth>=720;
     }catch(_){return false}
   }
-  function deviceMode(){
+  function nativeDeviceMode(){
     const preview=location.href==='about:srcdoc'&&window.REDLINE_DEV_CONFIG?.device;
     if(preview==='mobile'||preview==='tablet')return preview;
     if(preview==='desktop')return'os';
@@ -43,6 +43,19 @@
     const phone=/iPhone|iPod|Windows Phone|Android.*Mobile/i.test(agent)||(!tablet&&touch>0&&short<650);
     if(phone||innerWidth<=650)return'mobile';
     return tablet||innerWidth<1180?'tablet':'os';
+  }
+  // Desktop receiver parity is presentation-only. Use the existing verified
+  // role snapshot; never change account permissions or the sender layout.
+  // Preview keeps its own isolated device selection.
+  function receiverDesktopParity(native){
+    if(location.href==='about:srcdoc')return false;
+    if(native==='mobile')return false;
+    const receiver=window.BLACKCELL_REDLINE_API?.snapshot?.()?.isOwner===true;
+    return receiver&&(native==='os'||desktopOsFrame());
+  }
+  function deviceMode(){
+    const native=nativeDeviceMode();
+    return receiverDesktopParity(native)?'mobile':native;
   }
   const labels={os:'BLACKCELL REDLINE',tablet:'BLACKCELL REDLINE',mobile:'BLACKCELL REDLINE'};
   const captions={os:'PRIVATE EXCHANGE',tablet:'PRIVATE EXCHANGE',mobile:'PRIVATE EXCHANGE'};
@@ -124,7 +137,7 @@
     document.body.classList.toggle('bc-ledger-mobile',isMobile);
     document.body.classList.toggle('bc-ledger-tablet',mode==='tablet');
     document.body.classList.toggle('bc-ledger-desktop',mode==='os');
-    document.body.classList.toggle('bc-os-frame-redline',desktopOsFrame());
+    document.body.classList.toggle('bc-os-frame-redline',desktopOsFrame()&&!receiverDesktopParity(nativeDeviceMode()));
     document.body.dataset.ledgerDevice=mode;
     if(!isAvailable(current))current='summary';
     const edition=captions[mode];
@@ -203,6 +216,13 @@
   window.addEventListener('resize',()=>requestAnimationFrame(reflect),{passive:true});
   window.addEventListener('orientationchange',()=>requestAnimationFrame(reflect),{passive:true});
   window.addEventListener('pageshow',reflect);
+  // The authenticated role arrives asynchronously after the initial layout.
+  // Recompute only when its effective device mode changes, not on each chat update.
+  const refreshRoleLayout=()=>{
+    if(document.body.dataset.ledgerDevice!==deviceMode())requestAnimationFrame(reflect);
+  };
+  window.addEventListener('blackcell:redline:bridge',refreshRoleLayout);
+  window.addEventListener('blackcell:redline:state',refreshRoleLayout);
   if(location.href==='about:srcdoc'&&window.REDLINE_DEV_CONFIG)window.addEventListener('blackcell:redline:preview-device',reflect);
   reflect();
 })();
