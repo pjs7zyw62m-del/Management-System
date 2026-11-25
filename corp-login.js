@@ -271,7 +271,7 @@ async function initialState(epoch){
     message(status,'Unable to verify the security session. Please try again.');
     return;
   }
-  if(data.verified===true){navigateAuthorizedWorkspace('blackcell-os.html');return;}
+  if(data.verified===true){try{sessionStorage.setItem('bc.os.fresh-launch.v1',String(Date.now()))}catch(_){}navigateAuthorizedWorkspace('blackcell-os.html');return;}
   if(data.expired===true){
     await client.auth.signOut({scope:'local'});
     if(current())message(status,'Signed out after 60 minutes of inactivity. Please sign in again.');

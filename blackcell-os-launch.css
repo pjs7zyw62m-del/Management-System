@@ -20,3 +20,7 @@
 @keyframes bcOSDockIn{from{opacity:0;translate:0 70px}to{opacity:1;translate:0 0}}
 .bc-os-motion-reduced,.bc-os-motion-reduced *{animation:none!important;transition:none!important}
 @media(prefers-reduced-motion:reduce){#gate.bc-os-cinematic[data-state=boot]>div,#desktop.bc-os-launch-reveal,#desktop.bc-os-launch-reveal .app,#desktop.bc-os-launch-reveal .bc-sb-icon,#desktop.bc-os-launch-reveal .dock,#desktop.bc-os-launch-reveal .topbar{animation:none!important}}
+
+/* Keep the explicit mobile audio fallback accessible after autoplay is denied. */
+.bc-os-launch-sound{box-sizing:border-box!important;position:fixed!important;right:max(16px,env(safe-area-inset-right))!important;bottom:max(88px,calc(env(safe-area-inset-bottom) + 78px))!important;z-index:10000!important;width:auto!important;min-height:44px!important;height:auto!important;padding:10px 16px!important;border:1px solid #ac3447!important;border-radius:24px!important;background:#181217!important;color:#fff!important;font:600 13px system-ui!important;box-shadow:0 4px 20px #0007!important;touch-action:manipulation}
+#gate .bc-os-launch-sound{bottom:max(24px,env(safe-area-inset-bottom))!important;right:50%!important;transform:translateX(50%)!important;white-space:nowrap}
