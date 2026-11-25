@@ -922,13 +922,16 @@
  const roomToolbar=room.querySelector('.room-toolbar'),sessionTools=$('#redlineSessionTools'),scopePanel=$('#ownerLedgerScope'),uploadInfo=$('#ownerUploadInfo'),uploadStatus=$('#uploadAccessStatus'),linkCard=room.querySelector('.link-card'),helpCard=room.querySelector('.info-card'),legacyMetrics=room.querySelector('.metrics');
  const moved=new Map();let panelKind='',panelRoomId=null,panelReturnFocus=null;
  let senderGallery=null,gallerySignature='',galleryFilter='all';
+ let historyDesktop=null,historySignature='',historySelected='',historySort='newest',historyStatus='all',historyPage=0,historyScope='';
  function moveIntoPanel(el){if(!el||moved.has(el)||!el.parentNode)return;const marker=document.createComment('REDLINE popup original position');el.before(marker);moved.set(el,marker);panelContent.append(el)}
  function restorePanelNodes(){for(const [el,marker] of moved){if(marker.parentNode)marker.replaceWith(el)}moved.clear()}
  function closeReceiverPanel(restoreFocus=true){
   if(receiverPanel.hidden)return;
   receiverPanel.hidden=true;restorePanelNodes();panelContent.replaceChildren();panelKind='';panelRoomId=null;
   senderGallery=null;gallerySignature='';galleryFilter='all';
-  document.body.classList.remove('rr-menu-overlay-open');delete receiverPanel.dataset.panel;delete receiverPanel.dataset.stars;
+  historyDesktop=null;historySignature='';historySelected='';historySort='newest';historyStatus='all';historyPage=0;historyScope='';
+  for(const el of document.querySelectorAll('.rr-history-inspected'))el.classList.remove('rr-history-inspected');
+  document.body.classList.remove('rr-menu-overlay-open');delete receiverPanel.dataset.panel;delete receiverPanel.dataset.stars;delete receiverPanel.dataset.historySelection;
   tools.setAttribute('aria-expanded','false');
   if(restoreFocus){const target=panelReturnFocus?.isConnected&&!panelReturnFocus.closest('[hidden]')?panelReturnFocus:menuToggle;target?.focus({preventScroll:true})}
   panelReturnFocus=null;
@@ -970,6 +973,74 @@
   }
   senderGallery.replaceChildren(head,grid);
  }
+ function buildDesktopHistory(s){
+  historyDesktop=make('section','rr-history-desktop');
+  historyDesktop.setAttribute('aria-label','Desktop photo history gallery');
+  panelContent.insertBefore(historyDesktop,timeline);
+  renderDesktopHistory(s);
+ }
+ function renderDesktopHistory(s){
+  if(!historyDesktop||panelKind!=='history'||!s?.isOwner||s.roomId!==panelRoomId)return;
+  const scope=s.roomId+'|'+String(s.archiveMode)+'|'+String(s.resetAt||'');
+  if(historyScope!==scope){historyScope=scope;historySelected='';historyPage=0;historySignature=''}
+  const photos=(Array.isArray(s.photoHistory)?s.photoHistory:[]).filter(p=>p&&p.decision_status!=='pending');
+  const star=receiverPanel.dataset.stars||'all';
+  const filtered=photos.filter(p=>(star==='all'||String(p.stars||0)===star)&&
+   (historyStatus==='all'||(historyStatus==='removed'?Boolean(p.removal_status||p.removed):!p.removal_status&&!p.removed&&p.decision_status===historyStatus)));
+  const date=p=>Date.parse(p.created_at)||0;
+  filtered.sort((a,b)=>historySort==='rating'?(Number(b.stars||0)-Number(a.stars||0)||date(b)-date(a)):historySort==='oldest'?date(a)-date(b):date(b)-date(a));
+  const pageSize=48,pages=Math.max(1,Math.ceil(filtered.length/pageSize));
+  historyPage=Math.min(Math.max(0,historyPage),pages-1);
+  const current=filtered.slice(historyPage*pageSize,(historyPage+1)*pageSize);
+  if(!current.some(p=>p.id===historySelected))historySelected=current[0]?.id||'';
+  // The inspection pane always displays the original authenticated record.
+  // No duplicated payment, like, deletion or photo decision handlers.
+  for(const el of document.querySelectorAll('#photoEntries .photo-entry[data-redline-photo-id]'))
+   el.classList.toggle('rr-history-inspected',el.dataset.redlinePhotoId===historySelected);
+  receiverPanel.dataset.historySelection=historySelected?'yes':'no';
+  const sig=JSON.stringify([scope,s.peerName,star,historyStatus,historySort,historyPage,historySelected,filtered.length,photos.length,current.map(p=>[p.id,p.image_url,p.stars,p.decision_status,p.amount_cents,p.settled_at,p.removal_status])]);
+  if(sig===historySignature)return;
+  historySignature=sig;
+  const focusKey=document.activeElement?.dataset?.historyFocus;
+  const scrollTop=historyDesktop.scrollTop;
+  const top=make('div','rr-history-desktop-head');
+  const identity=make('div','rr-history-desktop-identity');
+  identity.append(make('h3','','Photos from '+(s.peerName||'this sender')),make('p','',filtered.length+' matching · '+photos.length+' reviewed'+(s.archiveMode?' · Archive':'')));
+  const settings=make('div','rr-history-desktop-controls');
+  function dropdown(label,key,items,value,onChange){
+   const l=make('label','rr-history-dropdown'),sel=make('select');sel.dataset.historyFocus=key;
+   l.append(make('span','',label));
+   for(const [v,name] of items){const opt=make('option','',name);opt.value=v;sel.append(opt)}
+   sel.value=value;sel.addEventListener('change',()=>{onChange(sel.value);historyPage=0;renderDesktopHistory(window.BLACKCELL_REDLINE_API?.snapshot?.())});l.append(sel);return l;
+  }
+  settings.append(dropdown('Status','status',[['all','All reviewed'],['accepted','Accepted'],['rejected','Rejected'],['removed','Removed records']],historyStatus,v=>historyStatus=v),
+   dropdown('Sort','sort',[['newest','Newest first'],['oldest','Oldest first'],['rating','Highest rated']],historySort,v=>historySort=v));
+  top.append(identity,settings);
+  const grid=make('div','rr-history-desktop-grid');
+  for(const p of current){
+   const selected=p.id===historySelected,removed=Boolean(p.removal_status||p.removed);
+   const tile=button('',()=>{historySelected=p.id;renderDesktopHistory(window.BLACKCELL_REDLINE_API?.snapshot?.())},'rr-history-tile');
+   tile.dataset.historyFocus='photo:'+p.id;tile.setAttribute('aria-pressed',String(selected));tile.setAttribute('aria-label','Inspect photo '+p.id.slice(0,8));
+   const visual=make('div','rr-history-tile-image');
+   const src=!removed&&typeof p.image_url==='string'&&/^(https:\/\/|blob:|data:image\/)/i.test(p.image_url)?p.image_url:'';
+   if(src){const img=make('img');img.src=src;img.alt='Reviewed private photo';img.loading='lazy';img.decoding='async';img.addEventListener('error',()=>{img.hidden=true;visual.append(make('span','','Preview unavailable'))},{once:true});visual.append(img)}
+   else visual.append(make('span','',removed?'Photo removed':'Preview loading'));
+   const info=make('div','rr-history-tile-info'),stars=Math.max(0,Math.min(5,Math.trunc(Number(p.stars)||0)));
+   const rating=make('span','rr-history-tile-stars','★'.repeat(stars)+'☆'.repeat(5-stars));
+   rating.setAttribute('aria-label',stars+' out of 5 stars');
+   const tag=make('small','rr-history-tile-state',removed?'Removed':p.decision_status==='rejected'?'Rejected':'Accepted');tag.dataset.state=removed?'removed':p.decision_status;
+   const dateText=make('small','rr-history-tile-date',date(p)?new Date(date(p)).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}):'');
+   info.append(rating,tag,dateText);tile.append(visual,info);grid.append(tile);
+  }
+  if(!current.length)grid.append(make('p','rr-gallery-empty','No reviewed photographs match these filters.'));
+  const pager=make('div','rr-history-pager');
+  const prev=button('← Previous',()=>{historyPage--;renderDesktopHistory(window.BLACKCELL_REDLINE_API?.snapshot?.())},'rr-history-star-button');prev.disabled=historyPage===0;prev.dataset.historyFocus='previous';
+  const next=button('Next →',()=>{historyPage++;renderDesktopHistory(window.BLACKCELL_REDLINE_API?.snapshot?.())},'rr-history-star-button');next.disabled=historyPage+1>=pages;next.dataset.historyFocus='next';
+  pager.append(prev,make('span','','Page '+(historyPage+1)+' of '+pages),next);
+  historyDesktop.replaceChildren(top,grid,pager);
+  historyDesktop.scrollTop=scrollTop;
+  if(focusKey){[...historyDesktop.querySelectorAll('[data-history-focus]')].find(el=>el.dataset.historyFocus===focusKey)?.focus({preventScroll:true})}
+ }
  function openReceiverPanel(kind){
   const s=window.BLACKCELL_REDLINE_API?.snapshot?.();
   if(!popupMode||app.hidden||room.hidden||!s?.isOwner||!s.roomId)return;
@@ -992,10 +1063,12 @@
      const b=button(value==='all'?'All':value==='0'?'0 ★ · Unrated':value+' ★',()=>{
       receiverPanel.dataset.stars=value;
       for(const option of filter.querySelectorAll('button'))option.setAttribute('aria-pressed',String(option===b));
+      historyPage=0;renderDesktopHistory(window.BLACKCELL_REDLINE_API?.snapshot?.());
      },'rr-history-star-button');
      b.setAttribute('aria-pressed',String(value==='all'));filter.append(b);
     }
     receiverPanel.dataset.stars='all';panelContent.prepend(filter);
+    buildDesktopHistory(s);
    }else{
     senderGallery=make('section','rr-sender-gallery');senderGallery.setAttribute('aria-label','Photos received from the selected sender');
     panelContent.prepend(senderGallery);renderSenderGallery(s);
@@ -1129,6 +1202,7 @@
   }
   placeWorkspace(hasRoom);
   if(senderGallery&&panelKind==='review')renderSenderGallery(session);
+  if(historyDesktop&&panelKind==='history')renderDesktopHistory(session);
   const wasChatHidden=chatPanel.hidden;
   chatPanel.hidden=!hasRoom;
   if(hasRoom&&wasChatHidden)window.dispatchEvent(new Event('blackcell:redline:receiver-ready'));
