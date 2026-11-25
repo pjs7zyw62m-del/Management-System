@@ -63,7 +63,9 @@
   outputs.set(source,value);stats.append(card);
  }
  const nav=make('nav','rr-nav');nav.setAttribute('aria-label','Receiver quick actions');
+ const popupMode=location.href!=='about:srcdoc';
  const goTo=(selector)=>{
+  if(popupMode){openReceiverPanel(selector.includes('photoEntries')?'history':selector.includes('ownerReviewQueue')?'review':selector.includes('ownerSetup')?'access':'tools');return}
   const target=$(selector);
   if(!target||target.hidden)return;
   target.scrollIntoView({behavior:'smooth',block:'start'});
@@ -78,14 +80,16 @@
  const review=button('Open Photos',()=>openMedia(),'rr-nav-button is-primary');
  const history=button('Photo History',()=>openMedia(true),'rr-nav-button');
  const message=button('Private Chat',()=>{
+  if(popupMode)closeReceiverPanel();
   closeMedia();
   document.body.classList.remove('rr-room-tools-open');
   tools.setAttribute('aria-expanded','false');tools.textContent='Room Tools';
-  mobileSection('summary');
+  if(!popupMode)mobileSection('summary');
   $('#redlineReceiverChat .redline-message-entry')?.focus({preventScroll:true});
  },'rr-nav-button');
- const manage=button('Rooms & Access',()=>{mobileSection('room');requestAnimationFrame(()=>goTo('#ownerSetup'))},'rr-nav-button');
+ const manage=button('Rooms & Access',()=>{if(popupMode){openReceiverPanel('access');return}mobileSection('room');requestAnimationFrame(()=>goTo('#ownerSetup'))},'rr-nav-button');
  const tools=button('Room Tools',()=>{
+  if(popupMode){openReceiverPanel('tools');return}
   const expanded=!document.body.classList.contains('rr-room-tools-open');
   document.body.classList.toggle('rr-room-tools-open',expanded);
   tools.setAttribute('aria-expanded',String(expanded));
@@ -689,6 +693,7 @@
   historyToggle.hidden=!mediaOpen;
  }
  function openMedia(history=false){
+  if(popupMode){openReceiverPanel(history?'history':'review');return}
   // Original small-phone navigation remains in charge of its own panels.
   if(workspace.hidden){
    const key=history?'photos':'review';
@@ -820,7 +825,7 @@
   // Keep the original telephone-sized REDLINE view stacked. A narrower
   // BLACKCELL OS window uses the sliding photo panel without losing chat.
   const handheld=/iPhone|iPod|Android.*Mobile|Windows Phone/i.test(navigator.userAgent||'');
-  const combined=!document.body.classList.contains('bc-ledger-mobile')&&window.innerWidth>=420&&(!handheld||window.innerWidth>=720)
+  const combined=!popupMode&&!document.body.classList.contains('bc-ledger-mobile')&&window.innerWidth>=420&&(!handheld||window.innerWidth>=720)
    &&Boolean(hasRoom&&timeline&&roomBody);
   workspace.hidden=!combined;
   document.body.classList.toggle('rr-imessage-mode',combined);
@@ -896,7 +901,7 @@
    if(bidTimerPanel&&originalReview&&bidTimerPanel.parentNode!==originalReview)originalReview.append(bidTimerPanel);
    appleSidebar.remove();appleRight.remove();
    timeline?.classList.remove('rr-source-timeline');
-   if(timeline&&roomBody&&timeline.parentNode!==roomBody)roomBody.append(timeline);
+   if(timeline&&roomBody&&timeline.parentNode!==roomBody&&!receiverPanel.contains(timeline))roomBody.append(timeline);
    mediaInitialised=false;
    setHistoryOpen(false);
   }
@@ -905,12 +910,70 @@
  access.append(line);
  owner.append(access);
  if(owner.parentNode===app)app.append(owner);
+ // Popup shell uses the original authenticated controls, never clones
+ // photos, room permissions, resets, or financial actions.
+ const receiverPanel=make('div','rr-menu-overlay');receiverPanel.id='redlineReceiverMenuOverlay';receiverPanel.hidden=true;
+ const panelCard=make('section','rr-menu-panel');panelCard.setAttribute('role','dialog');panelCard.setAttribute('aria-modal','true');panelCard.setAttribute('aria-labelledby','rrMenuPanelTitle');
+ const panelHeader=make('header','rr-menu-panel-header');
+ const panelHeading=make('h2','','Room tools');panelHeading.id='rrMenuPanelTitle';
+ const panelClose=button('×',()=>closeReceiverPanel(),'rr-menu-panel-close');panelClose.setAttribute('aria-label','Close pop-up and return to chat');
+ const panelContent=make('div','rr-menu-panel-content');panelContent.tabIndex=-1;
+ panelHeader.append(panelHeading,panelClose);panelCard.append(panelHeader,panelContent);receiverPanel.append(panelCard);document.body.append(receiverPanel);
+ const roomToolbar=room.querySelector('.room-toolbar'),sessionTools=$('#redlineSessionTools'),scopePanel=$('#ownerLedgerScope'),uploadInfo=$('#ownerUploadInfo'),uploadStatus=$('#uploadAccessStatus'),linkCard=room.querySelector('.link-card'),helpCard=room.querySelector('.info-card'),legacyMetrics=room.querySelector('.metrics');
+ const moved=new Map();let panelKind='',panelRoomId=null,panelReturnFocus=null;
+ function moveIntoPanel(el){if(!el||moved.has(el)||!el.parentNode)return;const marker=document.createComment('REDLINE popup original position');el.before(marker);moved.set(el,marker);panelContent.append(el)}
+ function restorePanelNodes(){for(const [el,marker] of moved){if(marker.parentNode)marker.replaceWith(el)}moved.clear()}
+ function closeReceiverPanel(restoreFocus=true){
+  if(receiverPanel.hidden)return;
+  receiverPanel.hidden=true;restorePanelNodes();panelContent.replaceChildren();panelKind='';panelRoomId=null;
+  document.body.classList.remove('rr-menu-overlay-open');delete receiverPanel.dataset.panel;
+  tools.setAttribute('aria-expanded','false');
+  if(restoreFocus){const target=panelReturnFocus?.isConnected&&!panelReturnFocus.closest('[hidden]')?panelReturnFocus:menuToggle;target?.focus({preventScroll:true})}
+  panelReturnFocus=null;
+ }
+ function openReceiverPanel(kind){
+  const s=window.BLACKCELL_REDLINE_API?.snapshot?.();
+  if(!popupMode||app.hidden||room.hidden||!s?.isOwner||!s.roomId)return;
+  if(!['review','history','access','tools','earnings'].includes(kind))return;
+  if(!receiverPanel.hidden&&panelKind===kind)return;
+  const priorFocus=receiverPanel.hidden?document.activeElement:panelReturnFocus;
+  closeReceiverPanel(false);panelReturnFocus=priorFocus;
+  panelKind=kind;panelRoomId=s.roomId;receiverPanel.dataset.panel=kind;
+  panelHeading.textContent={review:'Incoming Photos',history:'Photo History',access:'Rooms & Access',tools:'Room Tools',earnings:'Earnings & Records'}[kind];
+  if(kind==='review'||kind==='history'){
+   moveIntoPanel(timeline);
+   if(kind==='review'&&s.archiveMode)panelContent.prepend(make('p','rr-menu-panel-note','Archived records are read-only. Return to the current session in Room Tools to review incoming photos.'));
+   if(kind==='review'&&!timeline)panelContent.append(make('p','rr-menu-panel-note','Photo review is unavailable.'));
+  }else if(kind==='access'){
+   for(const el of [access,scopePanel,uploadInfo,linkCard])moveIntoPanel(el);
+   void loadAccess(true);
+  }else if(kind==='tools'){
+   for(const el of [roomToolbar,sessionTools,uploadStatus,helpCard])moveIntoPanel(el);
+   tools.setAttribute('aria-expanded','true');
+  }else moveIntoPanel(legacyMetrics);
+  setMenuOpen(false);receiverPanel.hidden=false;document.body.classList.add('rr-menu-overlay-open');panelContent.scrollTop=0;panelClose.focus({preventScroll:true});
+ }
+ receiverPanel.addEventListener('click',e=>{if(e.target===receiverPanel)closeReceiverPanel()});
+ document.addEventListener('keydown',e=>{
+  if(receiverPanel.hidden||document.querySelector('dialog[open]')||!$('#photoLightbox')?.hidden)return;
+  if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();closeReceiverPanel();return}
+  if(e.key==='Tab'){const items=[...panelCard.querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),a[href],[tabindex="0"]')].filter(el=>el.getClientRects().length&&!el.closest('[hidden]'));if(!items.length){e.preventDefault();panelClose.focus({preventScroll:true});return}const first=items[0],last=items[items.length-1];if(e.shiftKey&&(document.activeElement===first||!panelCard.contains(document.activeElement))){e.preventDefault();last.focus({preventScroll:true})}else if(!e.shiftKey&&(document.activeElement===last||!panelCard.contains(document.activeElement))){e.preventDefault();first.focus({preventScroll:true})}}
+ },true);
+ window.addEventListener('blackcell:redline:popup-section',e=>{if(popupMode){const key=e.detail?.key;openReceiverPanel(key==='review'?'review':key==='photos'?'history':'tools')}});
+ // The canonical queue can request history without activating the old
+ // below-chat navigation or changing the page scroll position.
+ originalReview?.addEventListener('click',e=>{const b=e.target.closest?.('button');if(popupMode&&b?.textContent?.trim().toUpperCase().includes('VIEW REVIEWED PHOTOS')){e.preventDefault();e.stopImmediatePropagation();openReceiverPanel('history')}},true);
+ const earningsMenu=button('Earnings & Records',()=>openReceiverPanel('earnings'),'rr-nav-button');earningsMenu.dataset.rrMenuIcon='money';
+ if(popupMode)menuItems.insertBefore(earningsMenu,tools);
  function sync(){
   const visible=!app.hidden&&!owner.hidden;
   dashboard.hidden=!visible;
   document.body.classList.toggle('bc-redline-receiver',visible);
   const verifiedDot=$('.rr-brand-verified-dot');
   const session=window.BLACKCELL_REDLINE_API?.snapshot?.();
+  const popupActive=popupMode&&visible&&!room.hidden&&session?.isOwner===true&&Boolean(session.roomId);
+  document.body.classList.toggle('rr-popup-menu-mode',popupActive);
+  if(!receiverPanel.hidden&&(!popupActive||panelRoomId!==session?.roomId))closeReceiverPanel(false);
   allRooms.hidden=!(session?.isOwner&&session.roomId&&typeof window.BLACKCELL_REDLINE_API?.returnToRooms==='function');roomsHome.hidden=allRooms.hidden;
   if(verifiedDot){
    const verified=visible&&session?.isOwner===true;

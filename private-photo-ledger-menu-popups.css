@@ -1,0 +1,34 @@
+/* Live receiver only: one conversation viewport; menu sections appear as overlays. */
+#redlineReceiverMenuOverlay[hidden]{display:none!important}
+body.rr-popup-menu-mode{overflow:hidden!important}
+body.rr-popup-menu-mode #ledgerApp.shell{overflow:visible!important;min-height:0!important;height:auto!important}
+body.rr-popup-menu-mode #ledgerApp>#activeRoom,
+body.rr-popup-menu-mode #ledgerApp>#ownerSetup,
+body.rr-popup-menu-mode #ledgerApp>.page-heading,
+body.rr-popup-menu-mode #ledgerApp>.bc-ledger-rail,
+body.rr-popup-menu-mode>footer{display:none!important}
+body.rr-popup-menu-mode #ledgerApp #redlineReceiverCommand:not([hidden]){margin-bottom:0!important}
+#redlineReceiverMenuOverlay:not([hidden]){position:fixed!important;inset:0!important;z-index:1100!important;display:flex!important;align-items:center;justify-content:center;box-sizing:border-box;padding:clamp(10px,3vw,32px);background:rgba(0,0,0,.78);backdrop-filter:blur(7px);overscroll-behavior:contain}
+#redlineReceiverMenuOverlay .rr-menu-panel{display:flex;flex-direction:column;box-sizing:border-box;width:min(100%,820px);max-height:calc(100dvh - 30px);min-height:0;overflow:hidden;border:1px solid #56333f;border-radius:17px;background:linear-gradient(145deg,#191217,#101013 38%);box-shadow:0 24px 80px #000b;color:#f6f3f5}
+#redlineReceiverMenuOverlay[data-panel="history"] .rr-menu-panel,#redlineReceiverMenuOverlay[data-panel="review"] .rr-menu-panel{width:min(100%,1120px)}
+#redlineReceiverMenuOverlay .rr-menu-panel-header{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 19px;border-bottom:1px solid #4b2936;background:#1c1319}
+#redlineReceiverMenuOverlay .rr-menu-panel-header h2{font:700 18px/1.2 system-ui;margin:0;color:#fff}
+#redlineReceiverMenuOverlay .rr-menu-panel-close{display:grid;place-items:center;flex:0 0 36px;width:36px;height:36px;border:1px solid #61404c;border-radius:10px;background:#2b1d25;color:#fff;font:24px/1 system-ui;cursor:pointer}
+#redlineReceiverMenuOverlay .rr-menu-panel-content{display:flex;flex-direction:column;gap:12px;min-height:0;min-width:0;overflow:auto;overscroll-behavior:contain;padding:16px;scrollbar-width:none}
+#redlineReceiverMenuOverlay .rr-menu-panel-content::-webkit-scrollbar{display:none}
+#redlineReceiverMenuOverlay .rr-menu-panel-content>*,#redlineReceiverMenuOverlay .timeline-column>*{box-sizing:border-box;min-width:0;max-width:100%;margin:0!important}
+#redlineReceiverMenuOverlay .rr-menu-panel-content>[hidden],#redlineReceiverMenuOverlay .timeline-column>[hidden]{display:none!important}
+#redlineReceiverMenuOverlay .rr-menu-panel-content>.panel:not([hidden]),#redlineReceiverMenuOverlay .rr-menu-panel-content>.timeline-column{display:flex!important;flex-direction:column!important;gap:12px!important;width:100%!important;max-width:none!important;position:static!important;height:auto!important;max-height:none!important;overflow:visible!important}
+#redlineReceiverMenuOverlay .rr-menu-panel-content>.room-toolbar:not([hidden]){display:flex!important;flex-wrap:wrap!important}
+#redlineReceiverMenuOverlay #redlineReceiverAccessPanel{display:flex!important;flex-direction:column;gap:10px}
+#redlineReceiverMenuOverlay .timeline-column .timeline-toolbar{position:static!important;top:auto!important}
+#redlineReceiverMenuOverlay[data-panel="review"] .timeline-toolbar,#redlineReceiverMenuOverlay[data-panel="review"] #photoEntries,#redlineReceiverMenuOverlay[data-panel="review"] #entriesFeedback,#redlineReceiverMenuOverlay[data-panel="history"] #ownerReviewQueue{display:none!important}
+#redlineReceiverMenuOverlay[data-panel="review"] #ownerReviewQueue:not([hidden]){display:block!important;width:100%!important;max-height:none!important;overflow:visible!important}
+#redlineReceiverMenuOverlay[data-panel="review"] #redlineLightboxReview:not([hidden]){display:flex!important;flex-direction:column!important;position:static!important;width:100%!important;max-width:none!important;height:auto!important;max-height:none!important;transform:none!important;overflow:visible!important}
+#redlineReceiverMenuOverlay[data-panel="history"] #photoEntries{display:grid!important;overflow:visible!important;max-height:none!important;height:auto!important}
+#redlineReceiverMenuOverlay .rr-menu-panel-note{color:#ccb9c2;font:14px/1.5 system-ui}
+body.rr-menu-overlay-open #rdIndependentReview,body.rr-menu-overlay-open .rd-ir-resume{visibility:hidden!important;pointer-events:none!important}
+body.rr-menu-overlay-open #photoLightbox:not([hidden]){z-index:1600!important}
+body.rr-menu-overlay-open #photoLightbox[hidden]{display:none!important}
+#redlineReceiverMenuOverlay button:focus-visible{outline:2px solid #ff7493;outline-offset:2px}
+@media(max-width:650px){#redlineReceiverMenuOverlay:not([hidden]){padding:8px}#redlineReceiverMenuOverlay .rr-menu-panel{max-height:calc(100dvh - 16px);border-radius:13px}#redlineReceiverMenuOverlay .rr-menu-panel-header{padding:10px 12px}#redlineReceiverMenuOverlay .rr-menu-panel-content{padding:10px}#redlineReceiverMenuOverlay .photo-entry{grid-template-columns:minmax(0,1fr)!important}}

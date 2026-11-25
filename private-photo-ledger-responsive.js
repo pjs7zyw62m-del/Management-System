@@ -51,7 +51,7 @@
     if(location.href==='about:srcdoc')return false;
     if(native==='mobile')return false;
     const receiver=window.BLACKCELL_REDLINE_API?.snapshot?.()?.isOwner===true;
-    return receiver&&(native==='os'||desktopOsFrame());
+    return receiver&&(native==='os'||native==='tablet'||desktopOsFrame());
   }
   function deviceMode(){
     const native=nativeDeviceMode();
@@ -162,6 +162,11 @@
   }
   function activate(key,{scroll=true}={}){
     if(!isAvailable(key))return;
+    if(location.href!=='about:srcdoc'&&window.BLACKCELL_REDLINE_API?.snapshot?.()?.isOwner===true){
+      current='summary';reflect();
+      if(key!=='summary')window.dispatchEvent(new CustomEvent('blackcell:redline:popup-section',{detail:{key}}));
+      return;
+    }
     current=key;reflect();
     const mobile=document.body.classList.contains('bc-ledger-mobile');
     // Sender first opens the authorized submission header on a phone.
