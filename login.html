@@ -552,7 +552,7 @@ footer{height:36px;line-height:36px;padding:0;align-self:stretch;margin:0;white-
 </style>
 <link rel="stylesheet" href="corp-login-roles.css?v=20261109-roles1">
 <script src="corp-config.js" defer></script>
-<script type="module" src="corp-login.js?v=20261125-mobile-startup-refresh6"></script>
+<script type="module" src="corp-login.js?v=20261126-login-portal1"></script>
 <link rel="stylesheet" href="corp-adaptive-access.css?v=20261111-single-card2">
 <style>
 /* Neutral black surfaces; retain selected-tab and authorization state colors. */
@@ -603,6 +603,14 @@ html.bc-glass-arrival body:after{content:"";position:fixed;left:0;right:0;top:0;
 @media(prefers-reduced-motion:reduce){html.bc-glass-arrival #loginCard,html.bc-glass-arrival header,html.bc-glass-arrival footer,html.bc-glass-arrival body:before{animation:none!important}html.bc-glass-arrival body:after{display:none}}
 </style>
 <link rel="stylesheet" href="blackcell-approval-sequence.css?v=20261125-approved1">
+<style id="bc-compact-login-portals">
+.stage-window:not(.show-pass) #loginRoleTabs{display:none!important}
+.login-card .links{align-items:center;gap:8px;flex-wrap:wrap}
+.portal-footer-nav{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.login-card .links #portalLoginToggle{font-size:11px;line-height:1.2;padding:5px 7px;border:1px solid #555;border-radius:5px;text-decoration:none;white-space:nowrap;background:#121212;color:#c6bfc7;min-height:26px}
+.login-card .links #portalLoginToggle[aria-pressed="true"]{color:#fff;border-color:#a52b2b;background:#310808}
+.login-card .links #portalLoginToggle:focus-visible{outline:2px solid #d87979;outline-offset:2px}
+</style>
 </head>
 <body>
 <header>
@@ -615,10 +623,10 @@ html.bc-glass-arrival body:after{content:"";position:fixed;left:0;right:0;top:0;
 <div class="login-card" id="loginCard">
 <div class="brand-crest">B</div>
 <div class="eyebrow">◈ CORPORATE ACCESS GATEWAY</div>
-<h1 id="loginHeading">SIGN IN</h1>
+<h1 id="loginHeading">USER NETWORK SIGN IN</h1>
 <div class="login-role-tabs" id="loginRoleTabs" role="tablist" aria-label="Choose your Blackcell access portal">
-  <button type="button" id="adminLoginTab" role="tab" aria-selected="true" aria-controls="login" tabindex="0"><span>ADMINISTRATION</span><small>NETWORK ACCESS</small></button>
-  <button type="button" id="employeeLoginTab" role="tab" aria-selected="false" aria-controls="login" tabindex="-1"><span>USER NETWORK</span><small>NETWORK ACCESS</small></button>
+  <button type="button" id="adminLoginTab" role="tab" aria-selected="false" aria-controls="login" tabindex="-1"><span>ADMINISTRATION</span><small>NETWORK ACCESS</small></button>
+  <button type="button" id="employeeLoginTab" role="tab" aria-selected="true" aria-controls="login" tabindex="0"><span>USER NETWORK</span><small>NETWORK ACCESS</small></button>
   <button type="button" id="accessPassTab" class="access-pass-tab" role="tab" aria-selected="false" aria-controls="inlineAccessStep" tabindex="-1" disabled hidden><span>ACCESS PASS</span><small>SECURITY VERIFICATION</small></button>
 </div>
 <p class="login-role-description" id="loginRoleDescription" aria-live="polite"></p>
@@ -647,7 +655,7 @@ html.bc-glass-arrival body:after{content:"";position:fixed;left:0;right:0;top:0;
 </section>
 
 <p id="status" class="message" hidden role="status" aria-live="polite"></p>
-<div class="links"><a href="index.html" target="_top">← Corporate Access</a><button id="reset" type="button">Forgot password?</button></div>
+<div class="links"><div class="portal-footer-nav"><a href="index.html" target="_top">← Corporate Access</a><button id="portalLoginToggle" type="button" aria-pressed="false" aria-controls="login">Administrator Login</button></div><button id="reset" type="button">Forgot password?</button></div>
 <button type="button" id="accountChange" hidden>Sign in with another account</button>
 </div>
 </section>
