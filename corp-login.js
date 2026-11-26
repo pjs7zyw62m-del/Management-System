@@ -43,7 +43,16 @@ function navigateAuthorizedWorkspace(path){
 let savedSessionEpoch=0;
 let loginInProgress=false;
 let approvalPending=false;
-let selectedPortal=new URLSearchParams(location.search).get('portal')==='employee'?'employee':'admin';
+let selectedPortal=new URLSearchParams(location.search).get('portal')==='admin'?'admin':'employee';
+const portalLoginToggle=document.getElementById('portalLoginToggle');
+function renderPortalChoice(){
+  const admin=selectedPortal==='admin';
+  if(portalLoginToggle){
+    portalLoginToggle.textContent=admin?'User Network Login':'Administrator Login';
+    portalLoginToggle.setAttribute('aria-pressed',String(admin));
+    loginHeading.textContent=admin?'Administrator Login':'User Network Sign In';
+  }
+}
 
 function choosePortal(portal,{quiet=false,force=false}={}){
   if((loginInProgress||approvalPending||stage.classList.contains('show-pass'))&&!force)return;
@@ -53,6 +62,7 @@ function choosePortal(portal,{quiet=false,force=false}={}){
   adminLoginTab.tabIndex=selectedPortal==='admin'?0:-1;
   employeeLoginTab.tabIndex=selectedPortal==='employee'?0:-1;
   loginRoleDescription.textContent='';
+  renderPortalChoice();
   loginButton.textContent='SIGN IN';
   if(!quiet)clearMessage(status);
 }
@@ -85,6 +95,7 @@ for(const [tab,portal] of [[adminLoginTab,'admin'],[employeeLoginTab,'employee']
     }
   });
 }
+portalLoginToggle?.addEventListener('click',()=>choosePortal(selectedPortal==='admin'?'employee':'admin'));
 choosePortal(selectedPortal,{quiet:true});
 
 function timed(promise, description, timeout=LOGIN_DEADLINE_MS){
@@ -194,6 +205,7 @@ function showLogin(){
   employeeLoginTab.tabIndex=selectedPortal==='employee'?0:-1;
   loginRoleDescription.textContent='';
   loginHeading.textContent='Sign In';
+  renderPortalChoice();
   executivePass.classList.remove('authorized','pass-verified','pass-condensed','merge-source');
   loginCard.classList.remove('merge-source');
   document.getElementById('accessMergeScene')?.classList.remove('active','converging','approved');
@@ -392,7 +404,7 @@ document.getElementById('reset').addEventListener('click',async()=>{
   if(!email){message(status,'Enter your email address first.');return;}
   try{
     await client?.auth.resetPasswordForEmail(email,{
-      redirectTo:new URL(selectedPortal==='employee'?'employee.html':'login.html',location.href).href
+      redirectTo:new URL(selectedPortal==='employee'?'employee.html':'login.html?portal=admin',location.href).href
     });
     message(status,'If this email has an account, password reset instructions were requested.');
   }catch(_){message(status,'Password reset is unavailable.');}
