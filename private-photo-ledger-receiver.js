@@ -1248,7 +1248,7 @@
   }
   const top=dashboard.getBoundingClientRect().top;
   const viewport=window.visualViewport;
-  const bottom=viewport?viewport.offsetTop+viewport.height:window.innerHeight;
+  const bottom=window.BLACKCELL_REDLINE_VISIBLE_VIEWPORT?.().bottom??(viewport?viewport.offsetTop+viewport.height:window.innerHeight);
   const next=Math.max(0,Math.floor(bottom-top))+'px';
   if(dashboard.style.getPropertyValue('--rr-mobile-chat-height')!==next)dashboard.style.setProperty('--rr-mobile-chat-height',next);
  }
@@ -1261,6 +1261,7 @@
  window.visualViewport?.addEventListener('resize',scheduleMobileFit,{passive:true});
  window.visualViewport?.addEventListener('scroll',scheduleMobileFit,{passive:true});
  window.addEventListener('blackcell:redline:device-mode',scheduleMobileFit);
+ window.addEventListener('blackcell:redline:keyboard-viewport',scheduleMobileFit);
  scheduleMobileFit();
  const observe=new MutationObserver(sync);
  for(const item of [app,owner,room]){

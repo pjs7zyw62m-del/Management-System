@@ -26,9 +26,9 @@
   const rect=app.getBoundingClientRect();
   // visualViewport.offsetTop accounts for Android Chrome's virtual keyboard
   // panning. The bottom is in layout-viewport CSS pixels.
-  const bottom=visual?
+  const bottom=window.BLACKCELL_REDLINE_VISIBLE_VIEWPORT?.().bottom??(visual?
    Number(visual.offsetTop||0)+Number(visual.height||0):
-   Number(window.innerHeight||0);
+   Number(window.innerHeight||0));
   if(!Number.isFinite(bottom)||!Number.isFinite(rect.top)||bottom<=0)return;
   const visible=Math.max(0,Math.floor(bottom-rect.top));
   const next=visible+'px';
@@ -41,6 +41,7 @@
  visual?.addEventListener('resize',schedule,{passive:true});
  visual?.addEventListener('scroll',schedule,{passive:true});
  window.addEventListener('resize',schedule,{passive:true});
+ window.addEventListener('blackcell:redline:keyboard-viewport',schedule);
  window.addEventListener('orientationchange',schedule);
  window.addEventListener('pageshow',schedule);
  window.addEventListener('focus',schedule);

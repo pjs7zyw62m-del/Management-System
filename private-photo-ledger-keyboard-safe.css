@@ -1,0 +1,37 @@
+/* Keyboard mode only; closed-keyboard and physical desktop layouts stay intact. */
+html.rd-keyboard-open body .redline-message-entry,
+html.rd-keyboard-open body #rdIndependentReview input{font-size:16px!important}
+html.rd-keyboard-open body #ledgerApp #redlineReceiverChat .redline-message-card,
+html.rd-keyboard-open body #redlineSimpleSender .redline-message-card{min-height:0!important;overflow:hidden!important}
+html.rd-keyboard-open body #ledgerApp #redlineReceiverChat .redline-message-card>.redline-message-feed,
+html.rd-keyboard-open body #redlineSimpleSender .redline-message-card>.redline-message-feed{flex:1 1 0!important;min-height:0!important;overflow-y:auto!important;overscroll-behavior:contain!important;scrollbar-width:none!important}
+html.rd-keyboard-open body #ledgerApp #redlineReceiverChat .redline-message-card>.redline-message-composer,
+html.rd-keyboard-open body #redlineSimpleSender .redline-message-card>.redline-message-composer{flex:0 0 auto!important;min-height:36px!important;max-height:none!important;padding-bottom:4px!important}
+html.rd-keyboard-open body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-card>.redline-message-header .rr-stats{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:3px!important}
+html.rd-keyboard-open body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-card>.redline-message-header .rr-stat{min-height:32px!important;padding:3px 4px!important;gap:2px!important}
+html.rd-keyboard-open body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .rr-stat-name{font-size:8px!important;white-space:normal!important}
+html.rd-keyboard-open body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .rr-stat-value{font-size:13px!important}
+html.rd-keyboard-open.rd-keyboard-chat body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-card>#rdIndependentReview:not([hidden]){
+ flex:0 1 min(43%,var(--rd-ir-share,52%))!important;height:auto!important;min-height:0!important;max-height:43%!important
+}
+html.rd-keyboard-open.rd-keyboard-price body.bc-redline-receiver.bc-ledger-mobile #ledgerApp #redlineReceiverChat .redline-message-card>#rdIndependentReview:not([hidden]){
+ flex:0 1 68%!important;height:auto!important;min-height:0!important;max-height:68%!important
+}
+html.rd-keyboard-open body #rdIndependentReview:not([hidden]) .rd-ir-scroll{min-height:0!important;overflow-y:auto!important;overscroll-behavior:contain!important}
+html.rd-keyboard-open body #rdIndependentReview:not([hidden]) .rd-ir-image{min-height:0!important;max-height:calc(var(--rd-keyboard-height,100dvh)*.27)!important}
+html.rd-keyboard-open body #rdIndependentReview:not([hidden]) .rd-ir-image img{object-fit:contain!important}
+html.rd-keyboard-open body #rdIndependentReview:not([hidden]) .rd-ir-controls{max-height:none!important;flex-shrink:0!important}
+html.rd-keyboard-open body #rdIndependentReview:not([hidden]):is([data-layout="floating"],[data-layout="side"],[data-layout="focus"],[data-layout="custom"],[data-preview-top]){
+ top:calc(var(--rd-keyboard-top,0px) + 4px)!important;bottom:auto!important;transform:translateX(-50%)!important;left:50%!important;right:auto!important;
+ height:min(680px,calc(var(--rd-keyboard-height,100dvh) - 8px))!important;max-height:calc(var(--rd-keyboard-height,100dvh) - 8px)!important;animation:none!important
+}
+html.rd-keyboard-open.rd-keyboard-chat body #rdIndependentReview:not([hidden]):is([data-layout="floating"],[data-layout="side"],[data-layout="focus"],[data-layout="custom"],[data-preview-top]){
+ height:min(260px,calc(var(--rd-keyboard-height,100dvh)*.44))!important;max-height:44vh!important
+}
+html.rd-keyboard-open body #ledgerApp #redlineSimpleSender .redline-message-card.rd-keyboard-tablet-card{
+ position:fixed!important;inset:auto!important;top:var(--rd-kb-card-top)!important;left:var(--rd-kb-card-left)!important;
+ width:var(--rd-kb-card-width)!important;height:var(--rd-kb-card-height)!important;max-height:var(--rd-kb-card-height)!important;max-width:none!important;
+ z-index:850!important;margin:0!important;display:flex!important;flex-direction:column!important;background:#080808!important
+}
+html.rd-keyboard-open body dialog[open]{max-height:calc(var(--rd-keyboard-height,100dvh) - 12px)!important;overflow-y:auto!important;overscroll-behavior:contain!important}
+html.rd-keyboard-open.rd-keyboard-short body #rdIndependentReview:not([hidden]) .rd-ir-controls{overflow-y:auto!important}

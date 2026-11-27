@@ -149,7 +149,7 @@ function sync(){
  // Approved mobile receiver overlay: original financial header and chat stay mounted.
  setPreviewExpanded(null);
  if(topPreview){
-  const viewport=window.visualViewport,top=viewport?.offsetTop||0,height=viewport?.height||innerHeight;
+  const viewport=window.visualViewport,visible=window.BLACKCELL_REDLINE_VISIBLE_VIEWPORT?.(),top=visible?.top??(viewport?.offsetTop||0),height=visible?.height??(viewport?.height||innerHeight);
   const composer=q('.redline-message-composer',conversation),composerTop=composer?.getBoundingClientRect().top;
   const bottom=Number.isFinite(composerTop)&&composerTop>top?Math.min(top+height,composerTop):top+height-42;
   const available=Math.max(0,bottom-top-48);
@@ -171,7 +171,7 @@ function sync(){
  syncTimer();
 }
 function schedule(){if(!queued){queued=true;requestAnimationFrame(sync)}}
-for(const event of ['blackcell:redline:state','blackcell:redline:receiver-ready','blackcell:redline:review-photo','blackcell:redline:review-empty','blackcell:redline:photo-decided','blackcell:redline:device-mode','blackcell:redline:session-mode','pageshow','resize'])window.addEventListener(event,schedule);
+for(const event of ['blackcell:redline:state','blackcell:redline:receiver-ready','blackcell:redline:review-photo','blackcell:redline:review-empty','blackcell:redline:photo-decided','blackcell:redline:device-mode','blackcell:redline:session-mode','blackcell:redline:keyboard-viewport','pageshow','resize'])window.addEventListener(event,schedule);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!popup.hidden&&q('#photoLightbox')?.hidden&&!q('dialog[open]'))minimize()});
 new MutationObserver(schedule).observe(document.body,{attributes:true,attributeFilter:['class','data-ledger-view']});
 window.visualViewport?.addEventListener('resize',schedule,{passive:true});window.visualViewport?.addEventListener('scroll',schedule,{passive:true});
