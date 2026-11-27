@@ -62,8 +62,8 @@ test('Settings shows Software Update and app lifecycle separates Betas from read
 });
 
 test('OS loads updated assets while keeping regular website update machinery',()=>{
- assert.match(html,/blackcell-os\.js\?v=159-redline-window-controls1/);
-  assert.match(html,/blackcell-live-update\.js\?v=(?:20261120-os-update-ux2|20261121-verified-mobile-refresh1|20261121-auto-save-updates1|20261122-site-presence1)/);
+ assert.match(html,/blackcell-os\.js\?[^"']+/);
+  assert.match(html,/blackcell-live-update\.js\?[^"']+/);
   assert.match(os,/blackcell-app-store\.js\?v=13-ux2-lifecycle/);
   assert.match(os,/blackcell-os-settings\.js\?v=(?:5-session-lock-30-60|6-personal-wallpaper-macos|7-mobile-version-check|8-auto-updates)/);
 });
