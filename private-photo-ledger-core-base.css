@@ -9164,3 +9164,1033 @@ body.bc-redline-receiver #redlineReceiverChat .redline-message-composer{flex:0 0
  }
 }
 
+
+/* Source: private-photo-ledger-bonus-tracker.css?v=20261123-closest-bonus-tracker1 */
+/* BLACKCELL REDLINE — bonus proximity, inside Photo History only.
+   Always reuses the private authenticated bonus progress and original photo
+   previews; never crowds or resizes the private chat/composer. */
+.redline-bonus-tracker[hidden]{display:none!important}
+.redline-bonus-tracker{
+ display:flex;flex-direction:column;gap:10px;min-width:0;
+ border:1px solid #84324d;border-radius:15px;
+ background:linear-gradient(155deg,#1d0b14,#0c090e 80%);
+ padding:13px;margin:9px 0 12px;
+ box-sizing:border-box;color:#fff;
+}
+.redline-bonus-tracker-head{
+ display:flex;justify-content:space-between;align-items:start;gap:10px;
+ min-width:0;flex-wrap:wrap;
+}
+.redline-bonus-tracker-head>div{min-width:0;flex:1 1 160px}
+.redline-bonus-tracker-kicker{
+ display:block;color:#f97699;font-size:9px;font-weight:900;
+ letter-spacing:.13em;margin-bottom:5px;
+}
+.redline-bonus-tracker-head h3{
+ color:#fff;font-size:clamp(14px,2vw,18px);
+ line-height:1.2;letter-spacing:-.02em;margin:0;
+}
+.redline-bonus-tracker-count{
+ font-size:10px;color:#f7c0d2;font-weight:850;
+ background:#351423;border:1px solid #7a314b;
+ border-radius:999px;padding:6px 9px;white-space:nowrap;
+}
+.redline-bonus-tracker-desc{
+ font-size:10px;color:#d8b1c1;line-height:1.45;margin:0;
+}
+.redline-bonus-tracker-tabs{display:flex;gap:5px;flex-wrap:wrap;min-width:0}
+.redline-bonus-tracker-tab{
+ appearance:none!important;display:inline-flex!important;
+ align-items:center!important;justify-content:center!important;
+ border:1px solid #743247!important;background:#140e14!important;color:#ebc9d4!important;
+ min-height:35px!important;padding:7px 10px!important;border-radius:9px!important;
+ cursor:pointer;font-size:10px!important;font-weight:800!important;
+}
+.redline-bonus-tracker-tab[aria-pressed="true"]{
+ border-color:#f35d83!important;background:#992342!important;color:#fff!important;
+}
+.redline-bonus-tracker-tab:focus-visible,
+.redline-bonus-tracker-photo-action:focus-visible{
+ outline:2px solid #ff94b1;outline-offset:2px;
+}
+.redline-bonus-tracker-list{
+ display:flex;flex-direction:column;gap:7px;
+ max-height:min(50dvh,460px);min-height:0;
+ overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
+ scrollbar-width:thin;scrollbar-color:#733349 transparent;
+ padding:1px 3px 1px 0;
+}
+.redline-bonus-tracker-row{
+ display:flex;align-items:center;gap:10px;min-width:0;
+ border:1px solid #573146;background:#0d0a0f;border-radius:12px;
+ padding:8px;box-sizing:border-box;
+}
+.redline-bonus-tracker-row .redline-repeat-bonus-photo{
+ flex:0 0 76px;width:76px;height:92px;border-radius:9px;
+}
+.redline-bonus-tracker-info{
+ display:flex;flex-direction:column;gap:5px;flex:1 1 0;min-width:0;
+}
+.redline-bonus-tracker-rowtop{
+ display:flex;align-items:start;justify-content:space-between;
+ gap:6px;flex-wrap:wrap;
+}
+.redline-bonus-tracker-name{
+ font-size:11px;color:#f9e5ed;font-weight:850;
+ line-height:1.2;overflow-wrap:anywhere;
+}
+.redline-bonus-tracker-distance{
+ font-size:9px;color:#ffadc6;font-weight:850;letter-spacing:.02em;
+ text-align:right;
+}
+.redline-bonus-tracker-near .redline-bonus-tracker-distance{
+ color:#ffd37d;
+}
+.redline-bonus-tracker-progress-label{
+ display:flex;align-items:center;justify-content:space-between;gap:6px;
+ color:#d9b7c3;font-size:10px;line-height:1.3;
+}
+.redline-bonus-tracker-progress-label strong{
+ color:#fff;font-size:10px;white-space:nowrap;font-variant-numeric:tabular-nums;
+}
+.redline-bonus-tracker-row .redline-repeat-bonus-meter{
+ height:5px;margin-top:0;
+}
+.redline-bonus-tracker-photo-action{
+ display:inline-flex;align-items:center;justify-content:center;
+ align-self:flex-start;min-height:30px;padding:5px 10px;
+ margin-top:3px;border:1px solid #bd4f72;
+ border-radius:8px;background:#3b1123;color:#fff;
+ font-size:9px;font-weight:850;cursor:pointer;
+}
+.redline-bonus-tracker-note,
+.redline-bonus-tracker-empty{
+ font-size:10px;color:#d2acb9;line-height:1.45;margin:0;
+}
+.redline-bonus-tracker-empty{
+ border:1px dashed #634051;border-radius:9px;
+ padding:14px;text-align:center;
+}
+@media(max-width:500px){
+ .redline-bonus-tracker{padding:10px;gap:9px}
+ .redline-bonus-tracker-row{gap:8px;padding:7px}
+ .redline-bonus-tracker-row .redline-repeat-bonus-photo{
+  flex-basis:62px;width:62px;height:78px;
+ }
+ .redline-bonus-tracker-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+ .redline-bonus-tracker-tab{min-width:0;padding:7px 4px!important;font-size:9px!important}
+ .redline-bonus-tracker-list{max-height:48dvh}
+}
+
+
+/* Source: private-photo-ledger-taller-photo-chat.css?v=20261123-viewport-fit2 */
+/* REDLINE desktop: a full-height paired photo + chat workspace.
+   Both columns share the same grid row and lower edge; independent scroll
+   belongs to the conversation feed, never its composer or the page.
+   This extends the desktop layout only; mobile and stacked tablets remain intact. */
+@media (min-width:1000px) {
+ body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #redlineReceiverLiveWorkspace:not([hidden]){
+  box-sizing:border-box!important;
+  /* Fit from the actual viewport position to the bottom of the screen.
+     Previous 860px minimum forced the composer beneath short desktop screens. */
+  height:var(--redline-viewport-fit-height,calc(100dvh - 92px))!important;
+  min-height:0!important;
+  max-height:none!important;
+  grid-template-rows:minmax(0,1fr)!important;
+  align-items:stretch!important;
+  overflow:hidden!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #redlineReceiverIncomingPhotos.rr-incoming-photos,
+ body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #rrAppleRight {
+  grid-row:1!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:100%!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #redlineReceiverReviewStage{
+  min-height:0!important;
+  overflow:hidden!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #rrAppleRight{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  gap:6px!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #rrAppleRight>#rrAppleTimerMount,
+ body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #rrAppleRight>#rrAppleFinance,
+ body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #rrAppleRight>.rr-apple-negotiation{
+  flex:0 0 auto!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #rrAppleRight>.rr-chat-panel:not([hidden]){
+  display:flex!important;
+  flex-direction:column!important;
+  flex:1 1 0!important;
+  height:auto!important;
+  /* Preserve a readable chat without forcing its Send bar below viewport. */
+  min-height:220px!important;
+  max-height:none!important;
+  overflow:hidden!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #rrAppleRight .rr-chat-mount,
+ body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #rrAppleRight .redline-message-card{
+  display:flex!important;
+  flex-direction:column!important;
+  flex:1 1 0!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:hidden!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #rrAppleRight .redline-message-feed{
+  flex:1 1 0!important;
+  min-height:0!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  overscroll-behavior:contain!important;
+  scroll-behavior:auto!important;
+  overflow-anchor:none!important;
+ }
+ body.bc-redline-receiver.rr-imessage-mode.bc-redline-apple-mode:not(.bc-ledger-mobile)
+ #rrAppleRight .redline-message-composer{
+  flex:0 0 auto!important;
+  position:relative!important;
+  bottom:auto!important;
+ }
+}
+/* Bonus history: replace opaque IDs with authenticated photograph previews.
+   Two compact progress entries fit side by side where width allows, preserving
+   the conversation's space inside the receiver's flex column. */
+.redline-repeat-bonus-tracks{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;
+ margin-top:9px;min-width:0;width:100%;
+}
+.redline-repeat-bonus-progress-card,
+.redline-repeat-bonus-award-card{
+ display:flex;align-items:center;gap:9px;min-width:0;
+ border:1px solid #633044;border-radius:10px;background:#130a10;
+ padding:6px!important;box-sizing:border-box;
+}
+.redline-repeat-bonus-photo{
+ display:flex;align-items:center;justify-content:center;flex:0 0 66px;
+ width:66px;height:64px;min-width:0;overflow:hidden;
+ border:1px solid #91415d;border-radius:8px;background:#08080a;
+}
+.redline-repeat-bonus-photo img{
+ display:block;width:100%;height:100%;object-fit:contain;object-position:center;
+}
+.redline-repeat-bonus-no-image{
+ display:flex;align-items:center;justify-content:center;
+ width:100%;height:100%;padding:5px;text-align:center;
+ color:#b9a4af;font-size:9px;font-weight:750;line-height:1.3;
+}
+.redline-repeat-bonus-card-body{
+ display:flex;flex-direction:column;justify-content:center;min-width:0;
+ flex:1 1 0;gap:5px;
+}
+.redline-repeat-bonus-card-body strong{
+ color:#f3d9e2;font-size:10px;font-weight:800;line-height:1.3;
+ overflow-wrap:anywhere;
+}
+.redline-repeat-bonus-card-body small{
+ color:#e1b9c6;font-size:10px;line-height:1.4;
+}
+.redline-repeat-bonus-meter{
+ height:5px;width:100%;background:#30212b;border:1px solid #674456;
+ border-radius:999px;overflow:hidden;
+}
+.redline-repeat-bonus-meter>span{
+ display:block;height:100%;width:var(--redline-bonus-progress,0%);
+ border-radius:999px;background:#ec4169;
+}
+.redline-repeat-bonus-award-card{margin-top:7px}
+.redline-repeat-bonus-award-card .redline-repeat-bonus-card-body strong{
+ color:#ff91af;font-variant-numeric:tabular-nums;
+}
+body.bc-redline-receiver #redlineRepeatBonusMobile.redline-repeat-bonus-ledger,
+body.redline-sender-simple .redline-repeat-bonus-ledger{
+ max-width:100%;box-sizing:border-box;
+}
+@media(max-width:700px){
+ .redline-repeat-bonus-tracks{grid-template-columns:minmax(0,1fr)}
+ .redline-repeat-bonus-photo{flex-basis:54px;width:54px;height:55px}
+}
+
+
+/* Source: private-photo-ledger-history-signals.css?v=20261123-history-photo-signals1 */
+/* BLACKCELL REDLINE / deliberate receiver signals from Photo History only.
+   Never enlarge the active timer or shrink the desktop chat composer. */
+.redline-history-photo-signals{display:none}
+body.bc-redline-receiver #photoEntries .redline-history-photo-signals{
+ display:flex;flex-wrap:wrap;align-items:center;gap:5px;
+ width:100%;min-width:0;margin:6px 0 0;padding:7px 0 0;
+ border-top:1px solid #3c2932;box-sizing:border-box;
+}
+body.bc-redline-receiver #photoEntries .redline-history-photo-signals button{
+ box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;
+ flex:1 1 120px;min-height:33px!important;max-width:none;
+ padding:7px 8px!important;border-radius:9px!important;
+ font-size:10px!important;font-weight:850!important;line-height:1.2;
+ letter-spacing:.01em;white-space:normal;text-align:center;
+ cursor:pointer;
+}
+body.bc-redline-receiver #photoEntries .redline-history-look-btn{
+ color:#f6e3e8!important;background:#1b1b20!important;
+ border:1px solid #684453!important;
+}
+body.bc-redline-receiver #photoEntries .redline-history-like-btn{
+ color:#fff!important;background:#9f1434!important;
+ border:1px solid #f04b71!important;
+}
+body.bc-redline-receiver #photoEntries .redline-history-photo-signals button:disabled{
+ opacity:.55!important;cursor:wait!important;
+}
+body.bc-redline-receiver #photoEntries .redline-history-signal-feedback{
+ flex:1 0 100%;margin:0;color:#e3a6b8;
+ font-size:10px!important;line-height:1.4;
+ overflow-wrap:anywhere;
+}
+body.bc-redline-receiver #photoEntries .redline-history-signal-feedback:empty{
+ display:none!important;
+}
+body.bc-redline-receiver #photoEntries .entry-controls>.redline-history-photo-signals{
+ margin-top:5px;
+}
+/* Verified sender/receiver chat notification, with the referenced photograph.
+   It is a scrollable conversation item, not a sticky banner or page overlay. */
+.redline-chat-photo-signal{
+ box-sizing:border-box;display:flex;align-items:center;gap:11px;
+ width:fit-content;max-width:min(95%,490px);min-width:0;
+ border-radius:14px;padding:9px;
+ color:#fff;background:#24121a;border:1px solid #a53a56;
+ box-shadow:inset 0 1px 0 #ffffff0b;
+}
+.redline-chat-photo-signal.is-mine{
+ align-self:flex-end;border-bottom-right-radius:4px;background:#381020;
+}
+.redline-chat-photo-signal.is-theirs{
+ align-self:flex-start;border-bottom-left-radius:4px;
+}
+.redline-chat-photo-signal-image{
+ flex:0 0 78px;width:78px;height:88px;min-width:0;
+ display:flex;align-items:center;justify-content:center;
+ border-radius:9px;border:1px solid #5c3949;background:#050507;
+ overflow:hidden;
+}
+.redline-chat-photo-signal-image img{
+ width:100%;height:100%;object-fit:contain;object-position:center;
+ display:block;
+}
+.redline-chat-photo-signal-image span{
+ color:#cbaab5;font-size:10px;line-height:1.4;text-align:center;padding:8px;
+}
+.redline-chat-photo-signal-content{
+ flex:1 1 0;min-width:0;
+ display:flex;flex-direction:column;gap:6px;
+}
+.redline-chat-photo-signal-content strong{
+ color:#ffb4ca;font-size:12px;line-height:1.3;font-weight:900;
+ overflow-wrap:anywhere;
+}
+.redline-chat-photo-signal-content small,
+.redline-chat-photo-signal-content time{
+ color:#d3abb9;font-size:10px;line-height:1.4;
+}
+.redline-chat-photo-signal-content p{
+ color:#f0d9e1;font-size:11px;line-height:1.4;margin:0;
+ overflow-wrap:anywhere;
+}
+.redline-chat-photo-signal-content time{color:#b99da7}
+@media(max-width:540px){
+ .redline-chat-photo-signal{max-width:100%;gap:8px}
+ .redline-chat-photo-signal-image{flex-basis:62px;width:62px;height:72px}
+}
+@media(prefers-reduced-motion:reduce){
+ body.bc-redline-receiver #photoEntries .redline-history-photo-signals button{transition:none!important}
+}
+
+
+/* Source: private-photo-ledger-sender-android-chat.css?v=20261124-sender-focus-ring1 */
+/* REDLINE / Android sender chat repair, 2026-11-23.
+   Native-looking compact conversation without duplicate navigation.
+   Narrow coarse-pointer sender in Messages only. Receiver, iPad and desktop
+   remain untouched. The original verified composer and chat DOM are retained. */
+@media (max-width:719px), (max-width:900px) and (pointer:coarse) {
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive{
+    width:100%!important;max-width:100%!important;
+    overflow:hidden!important;
+  }
+  /* The corporate footer is legal decoration, not chat content. The Android
+     private room already identifies its two-party restricted access above. */
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive > footer{
+    display:none!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive #ledgerApp.shell{
+    display:block!important;
+    box-sizing:border-box!important;
+    height:var(--redline-android-chat-app-height,calc(100dvh - 65px))!important;
+    min-height:0!important;
+    max-height:var(--redline-android-chat-app-height,calc(100dvh - 65px))!important;
+    padding:4px 8px 5px!important;
+    margin:0 auto!important;
+    overflow:hidden!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive #activeRoom{
+    display:block!important;height:100%!important;min-height:0!important;
+    max-height:100%!important;overflow:hidden!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive #redlineSimpleSender{
+    display:flex!important;flex-direction:column!important;
+    height:100%!important;max-height:100%!important;min-height:0!important;
+    min-width:0!important;gap:0!important;overflow:hidden!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-simple-tabs{
+    flex:0 0 auto!important;
+    display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    width:100%!important;min-height:0!important;
+    padding:3px!important;margin:0 0 5px!important;gap:3px!important;
+    border-radius:12px!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-simple-tab{
+    min-height:38px!important;padding:6px 2px!important;
+    font-size:11px!important;line-height:1.15!important;
+    white-space:nowrap!important;overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-simple-panes,
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-simple-pane[data-redline-pane="upload"]:not([hidden]){
+    display:flex!important;flex-direction:column!important;
+    flex:1 1 0!important;height:auto!important;min-height:0!important;
+    max-height:100%!important;min-width:0!important;overflow:hidden!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-message-card{
+    display:flex!important;flex-direction:column!important;
+    flex:1 1 0!important;height:auto!important;min-height:0!important;
+    max-height:100%!important;width:100%!important;min-width:0!important;
+    margin:0!important;overflow:hidden!important;
+    border-radius:14px!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-message-header{
+    display:flex!important;flex:0 0 auto!important;align-items:center!important;
+    min-height:43px!important;max-height:56px!important;
+    padding:5px 9px!important;margin:0!important;
+    overflow:hidden!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-message-header strong{
+    font-size:13px!important;line-height:1.2!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-message-header small{
+    font-size:9px!important;line-height:1.15!important;
+  }
+  /* Compact earnings line remains a separate flex item above the chat log.
+     Never float over or cover rating/photo messages. */
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-messenger-live-strip:not([hidden]){
+    display:block!important;position:relative!important;inset:auto!important;
+    flex:0 0 auto!important;max-height:none!important;
+    margin:0!important;overflow:visible!important;z-index:0!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-messenger-live-head{
+    display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    min-height:41px!important;
+    padding:5px 21px 5px 4px!important;gap:0!important;
+    align-items:center!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-messenger-live-field{
+    padding:0 5px!important;gap:2px!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-messenger-live-field small{
+    font-size:8px!important;line-height:1.1!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-messenger-live-field strong{
+    font-size:clamp(11px,3.5vw,16px)!important;line-height:1.1!important;
+  }
+  /* Viewing and History already have tabs in the top five-tab row. Remove
+     only their duplicate quick buttons, never the actual navigation tabs. */
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-messenger-quick{
+    display:none!important;height:0!important;min-height:0!important;
+    margin:0!important;padding:0!important;overflow:hidden!important;
+  }
+  /* A running timer is an optional compact status item, not a picture-sized
+     pinned overlay. The original photo remains in Currently Viewing. */
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive
+  .redline-message-card > .redline-chat-timer-slot:not([hidden]){
+    flex:0 0 auto!important;max-height:85px!important;
+    overflow-y:auto!important;position:relative!important;z-index:0!important;
+    padding:3px 6px!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive
+  .redline-chat-timer-slot .redline-chat-timer-photo{display:none!important}
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive
+  .redline-chat-timer-slot .redline-chat-timer-pinned{
+    position:relative!important;top:auto!important;max-height:75px!important;
+    padding:5px 7px!important;overflow:hidden!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-message-feed{
+    display:flex!important;flex:1 1 0!important;flex-direction:column!important;
+    min-height:0!important;max-height:none!important;height:auto!important;
+    position:relative!important;z-index:0!important;
+    overflow-y:auto!important;overflow-x:hidden!important;
+    overscroll-behavior:contain!important;overflow-anchor:none!important;
+    scroll-behavior:auto!important;-webkit-overflow-scrolling:touch;
+    padding:11px 9px 16px!important;
+    border-top:0!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-message-feed>*{
+    flex-shrink:0!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-chat-rated-photo,
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-chat-photo-signal{
+    max-width:96%!important;min-width:0!important;
+    padding:8px!important;gap:9px!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive
+  .redline-chat-rated-photo .redline-rated-photo-image{
+    flex:0 0 68px!important;width:68px!important;height:81px!important;
+    max-height:81px!important;object-fit:contain!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-peer-typing{
+    flex:0 0 auto!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-message-composer{
+    display:flex!important;align-items:center!important;
+    position:relative!important;inset:auto!important;
+    flex:0 0 auto!important;min-height:60px!important;
+    width:100%!important;min-width:0!important;max-width:100%!important;
+    margin:0!important;padding:6px 7px max(7px,env(safe-area-inset-bottom))!important;
+    background:#100b10!important;z-index:2!important;
+    box-sizing:border-box!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-message-entry{
+    flex:1 1 0!important;min-width:0!important;min-height:44px!important;
+    max-height:90px!important;font-size:16px!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-chat-photo,
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-chat-send{
+    flex:0 0 auto!important;min-height:44px!important;
+  }
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive .redline-message-error{
+    flex:0 0 auto!important;max-height:46px!important;overflow-y:auto!important;
+  }
+  /* Gboard: this state must be more specific than the regular sender
+     selectors above so tabs/earnings/timer do not push Send beneath the IME. */
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.redline-android-keyboard-open
+  .redline-simple-tabs{display:none!important}
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.redline-android-keyboard-open
+  .redline-messenger-live-strip:not([hidden]){display:none!important}
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.redline-android-keyboard-open
+  .redline-message-card > .redline-chat-timer-slot:not([hidden]){display:none!important}
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.redline-android-keyboard-open
+  .redline-message-header{min-height:34px!important}
+  body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.redline-android-keyboard-open
+  .redline-message-composer{min-height:54px!important}
+}
+/* Never override the original sender inputs on tablet/desktop. */
+
+/* Mobile sender chat fills the viewport immediately below the corporate
+   red divider. Only the message feed scrolls; the composer stays in view. */
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #ledgerApp.shell{
+ box-sizing:border-box!important;width:100%!important;max-width:none!important;
+ height:var(--redline-android-chat-app-height,calc(100dvh - 65px))!important;
+ min-height:0!important;max-height:var(--redline-android-chat-app-height,calc(100dvh - 65px))!important;
+ padding:0!important;margin:0!important;overflow:hidden!important
+}
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #activeRoom,
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender,
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-simple-panes,
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender [data-redline-pane="upload"]:not([hidden]){
+ display:flex!important;flex-direction:column!important;flex:1 1 0!important;
+ box-sizing:border-box!important;width:100%!important;max-width:none!important;
+ height:100%!important;min-height:0!important;max-height:100%!important;
+ margin:0!important;padding:0!important;gap:0!important;overflow:hidden!important;
+ border:0!important;border-radius:0!important;box-shadow:none!important
+}
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-message-card{
+ display:flex!important;flex:1 1 0!important;flex-direction:column!important;
+ box-sizing:border-box!important;height:100%!important;min-height:0!important;max-height:100%!important;
+ width:100%!important;max-width:none!important;margin:0!important;padding:0!important;
+ border:0!important;border-radius:0!important;box-shadow:none!important;overflow:hidden!important
+}
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-simple-tabs,
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-simple-header,
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-messenger-quick{
+ display:none!important
+}
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-message-feed{
+ flex:1 1 0!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;
+ scrollbar-width:none!important;overscroll-behavior:contain!important
+}
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-message-composer{
+ flex:0 0 auto!important;position:relative!important;inset:auto!important;
+ box-sizing:border-box!important;margin:0!important
+}
+
+/* Mobile sender: show the authenticated session state beside CORPORATION
+   and remove the redundant peer-name / two-person chat title strip. */
+.rs-brand-session-dot{display:none!important}
+body.redline-sender-messenger.bc-ledger-mobile.rs-mobile-menu-active .topbar>.brand{
+ flex:1 1 auto!important;max-width:none!important;min-width:0!important
+}
+body.redline-sender-messenger.bc-ledger-mobile.rs-mobile-menu-active #ledgerBrand .brand-label strong{
+ display:flex!important;align-items:center!important;gap:5px!important;white-space:nowrap!important;
+ font-size:clamp(8px,2.65vw,11px)!important;letter-spacing:0!important
+}
+body.redline-sender-messenger.bc-ledger-mobile.rs-mobile-menu-active .rs-brand-session-dot:not([hidden]){
+ display:inline-block!important;flex:0 0 6px;width:6px;height:6px;border-radius:50%;
+ background:#65d7a1;box-shadow:0 0 6px rgba(101,215,161,.35)
+}
+body.redline-sender-messenger.bc-ledger-mobile.rs-mobile-menu-active .rs-brand-session-dot[data-state="idle"]:not([hidden]){
+ background:#96969c;box-shadow:none
+}
+body.redline-sender-messenger.bc-ledger-mobile.rs-mobile-menu-active .rs-brand-session-dot[data-state="ended"]:not([hidden]){
+ background:#ff5269;box-shadow:0 0 6px rgba(255,82,105,.35)
+}
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-message-card>.redline-message-header{
+ display:none!important
+}
+
+/* Sender mobile: slim, single-line Apple-style composer. Keep native text
+   input, original upload/send handlers and keyboard-safe bottom inset. */
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-message-composer{
+ min-height:0!important;max-height:none!important;gap:5px!important;
+ padding:3px 6px max(3px,env(safe-area-inset-bottom))!important;
+ align-items:center!important;border-top:1px solid #31171f!important;background:#080808!important
+}
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-message-composer .redline-chat-photo{
+ box-sizing:border-box!important;flex:0 0 32px!important;width:32px!important;min-width:32px!important;max-width:32px!important;
+ height:32px!important;min-height:32px!important;padding:0!important;margin:0!important;
+ font-size:20px!important;line-height:1!important;border-radius:50%!important;
+ background:#19090e!important;border:1px solid #702438!important
+}
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-message-composer .redline-message-entry{
+ box-sizing:border-box!important;flex:1 1 0!important;min-width:0!important;
+ min-height:32px!important;height:32px!important;max-height:72px!important;
+ padding:5px 9px!important;margin:0!important;
+ font-size:16px!important;line-height:20px!important;border-radius:16px!important;
+ border:1px solid #3f3b40!important;background:#101012!important;resize:none!important;
+ overflow-y:auto!important
+}
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-message-composer .redline-chat-send{
+ box-sizing:border-box!important;flex:0 0 auto!important;width:auto!important;min-width:42px!important;
+ height:32px!important;min-height:32px!important;padding:0 8px!important;margin:0!important;
+ border-radius:16px!important;font-size:10px!important;line-height:1!important;
+ display:flex!important;align-items:center!important;justify-content:center!important
+}
+
+/* Icon-only mobile sender send action; keep original form submit button. */
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-message-composer .redline-chat-send{flex:0 0 32px!important;width:32px!important;min-width:32px!important;max-width:32px!important;padding:0!important;border-radius:50%!important;font-size:0!important;gap:0!important}
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-message-composer .redline-chat-send::after{content:"";display:block;width:16px;height:16px;flex:0 0 16px;background:currentColor;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m22%202-7%2020-4-9-9-4%2020-7Z%22%2F%3E%3Cpath%20d%3D%22M22%202%2011%2013%22%2F%3E%3C%2Fsvg%3E") center/contain no-repeat;-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m22%202-7%2020-4-9-9-4%2020-7Z%22%2F%3E%3Cpath%20d%3D%22M22%202%2011%2013%22%2F%3E%3C%2Fsvg%3E") center/contain no-repeat}
+
+/* Keep the visible focus ring inside the compact composer controls.
+   An external outline + offset was clipped by the full-bleed chat frame. */
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-message-composer .redline-message-entry:focus,
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-message-composer .redline-message-entry:focus-visible{
+ outline:0!important;outline-offset:0!important;border-color:#e64b70!important;
+ box-shadow:inset 0 0 0 1px #e64b70!important
+}
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-message-composer .redline-chat-photo:focus-visible,
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive.bc-ledger-mobile.rs-mobile-menu-active #redlineSimpleSender .redline-message-composer .redline-chat-send:focus-visible{
+ outline:2px solid #ff92ac!important;outline-offset:-3px!important
+}
+
+
+/* Source: private-photo-ledger-sender-reuse.css?v=20261123-reuse-popup1 */
+/* BLACKCELL REDLINE / sender-only reuse confirmation.
+   Modal is completely separate from photo chat and the receiver's workstation.
+   Reuse never submits until CONFIRM is explicitly pressed. */
+.redline-reuse-overlay[hidden]{display:none!important}
+.redline-reuse-overlay{
+ position:fixed;inset:0;z-index:12080;display:flex;
+ align-items:center;justify-content:center;box-sizing:border-box;
+ width:100%;height:100dvh;overflow-y:auto;overscroll-behavior:contain;
+ padding:max(14px,env(safe-area-inset-top)) 12px max(14px,env(safe-area-inset-bottom));
+ background:#000c;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+}
+.redline-reuse-dialog{
+ display:flex;flex-direction:column;align-items:stretch;gap:13px;
+ box-sizing:border-box;max-width:430px;width:100%;max-height:100%;
+ padding:22px;border-radius:20px;border:1px solid #ae3659;
+ overflow-y:auto;overscroll-behavior:contain;min-width:0;
+ background:linear-gradient(150deg,#230b16 0%,#0a070b 85%);
+ color:#fff;box-shadow:0 15px 65px #000d,inset 0 1px 0 #ffffff10;
+}
+.redline-reuse-kicker{
+ color:#ff81a2;letter-spacing:.13em;font-size:10px;font-weight:900;
+}
+.redline-reuse-title{
+ color:#fff;font-size:clamp(23px,5vw,29px);
+ letter-spacing:-.035em;font-weight:900;line-height:1.14;margin:0;
+}
+.redline-reuse-preview{
+ display:flex;align-items:center;justify-content:center;
+ box-sizing:border-box;max-height:200px;min-height:100px;
+ border:1px solid #563040;border-radius:12px;background:#000;
+ overflow:hidden;color:#e6b9ca;font-size:11px;
+}
+.redline-reuse-image{width:100%;max-height:200px;height:auto;object-fit:contain}
+.redline-reuse-description{
+ margin:0;font-size:13px;line-height:1.45;color:#fae2ea;
+}
+.redline-reuse-note{
+ margin:0;border-radius:10px;border:1px solid #5d273c;
+ padding:12px;background:#130b10;color:#d7b6c4;
+ font-size:11px;line-height:1.5;
+}
+.redline-reuse-feedback{
+ margin:0;min-height:0;color:#f8c7d5;font-size:11px;
+ line-height:1.45;overflow-wrap:anywhere;
+}
+.redline-reuse-feedback:empty{display:none}
+.redline-reuse-actions{display:grid;grid-template-columns:1fr;gap:8px}
+.redline-reuse-actions button,
+body.redline-sender-simple .redline-reuse-photo-button{
+ appearance:none;display:inline-flex;align-items:center;justify-content:center;
+ box-sizing:border-box;width:100%;min-height:45px;padding:10px;
+ border-radius:10px;color:#fff;font-size:12px;font-weight:850;line-height:1.3;
+ cursor:pointer;touch-action:manipulation;
+}
+.redline-reuse-confirm,body.redline-sender-simple .redline-reuse-photo-button{
+ background:#b10d36;border:1px solid #fc5f85;
+}
+.redline-reuse-cancel{background:#20151c;border:1px solid #653347}
+.redline-reuse-actions button:disabled{opacity:.5;cursor:wait}
+.redline-reuse-actions button:focus-visible,
+body.redline-sender-simple .redline-reuse-photo-button:focus-visible{
+ outline:2px solid #ff9bb7;outline-offset:2px;
+}
+body.redline-sender-simple .redline-reuse-photo-button{
+ max-width:340px;margin:8px auto 0;
+}
+body.redline-sender-simple .redline-photo-history-resend:not(:disabled),
+body.redline-sender-simple .redline-five-star-resubmit:not(:disabled){
+ border-color:#fa4d76;background:#ad1039;
+}
+@media(max-width:540px){
+ .redline-reuse-overlay{align-items:center;padding:12px 10px}
+ .redline-reuse-dialog{
+  padding:16px;gap:11px;max-height:calc(100dvh - 24px);
+  border-radius:16px;
+ }
+ .redline-reuse-preview{max-height:170px}
+ .redline-reuse-image{max-height:170px}
+}
+@media(prefers-reduced-motion:reduce){
+ .redline-reuse-overlay *{transition:none!important;animation:none!important}
+}
+
+
+/* Source: private-photo-ledger-trigger-words.css?v=20261123-trigger-visible-controls1 */
+/* BLACKCELL REDLINE · private trigger words walkthrough and sender controls.
+   Not inside the scroll-anchored chat. Red/black mobile, tablet, desktop. */
+.redline-trigger-open[hidden]{display:none!important}
+body.redline-sender-simple .redline-trigger-open{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ min-width:0;width:100%;min-height:43px!important;margin:0 0 11px!important;
+ padding:10px 12px!important;border:1px solid #f35e82!important;
+ border-radius:10px!important;background:#3a1021!important;color:#fff!important;
+ font-family:inherit!important;font-size:11px!important;font-weight:900!important;
+ letter-spacing:.025em;cursor:pointer;touch-action:manipulation;
+ box-sizing:border-box;
+}
+body.redline-sender-simple .redline-trigger-open[hidden]{display:none!important}
+.redline-trigger-dialog:not([open]){display:none!important}
+.redline-trigger-dialog{
+ box-sizing:border-box;position:fixed;inset:0;margin:auto;
+ width:min(94vw,560px)!important;max-width:min(94vw,560px)!important;
+ height:auto;max-height:min(92dvh,850px);padding:0!important;
+ border:1px solid #a8365c!important;border-radius:19px!important;
+ background:linear-gradient(155deg,#280c1a 0%,#0a090e 76%)!important;
+ color:#fff!important;box-shadow:0 25px 90px #000d;
+ overflow:auto!important;overscroll-behavior:contain;
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+.redline-trigger-dialog::backdrop{background:#000d;backdrop-filter:blur(11px)}
+.redline-trigger-dialog>*{box-sizing:border-box}
+.redline-trigger-head{
+ display:flex;justify-content:space-between;align-items:start;gap:8px;
+ padding:18px 18px 0;
+}
+.redline-trigger-kicker{
+ display:block;font-size:9px!important;letter-spacing:.13em;
+ font-weight:900;color:#f57da1;margin-bottom:6px;
+}
+.redline-trigger-head h2{
+ font-size:clamp(19px,4vw,26px)!important;color:#fff!important;
+ margin:0!important;line-height:1.15;font-weight:900;
+ letter-spacing:-.035em;
+}
+.redline-trigger-close{
+ appearance:none!important;background:#1b1119!important;color:#fff!important;
+ border:1px solid #8a3c54!important;border-radius:9px!important;
+ min-height:34px!important;width:38px!important;cursor:pointer;
+ flex:0 0 auto!important;
+}
+.redline-trigger-walkthrough{
+ display:flex;flex-direction:column;gap:8px;margin:14px 18px;
+ padding:13px;border:1px solid #743049;border-radius:13px;background:#110a12;
+}
+.redline-trigger-walkthrough>strong{
+ color:#ffb0c7;font-size:10px;letter-spacing:.1em;
+}
+.redline-trigger-step{
+ display:flex;gap:10px;align-items:start;
+}
+.redline-trigger-step-count{
+ display:flex;align-items:center;justify-content:center;
+ flex:0 0 24px;width:24px;height:24px;border-radius:50%;
+ background:#90203f;border:1px solid #ec6689;color:#fff;
+ font-size:11px;font-weight:900;
+}
+.redline-trigger-step>div{min-width:0;display:flex;flex-direction:column;gap:3px}
+.redline-trigger-step strong{font-size:11px;color:#fff;font-weight:800}
+.redline-trigger-step small{font-size:10px;line-height:1.4;color:#cfb7c1}
+.redline-trigger-enable-status{
+ margin:0 18px 12px!important;padding:9px 11px!important;
+ border:1px solid #85415a;border-radius:9px;background:#27111c;
+ color:#ffd5df!important;font-size:11px!important;font-weight:750;
+}
+.redline-trigger-enable-status.is-enabled{
+ color:#e6fcd9!important;border-color:#456f4c;background:#12221a;
+}
+.redline-trigger-form{
+ display:grid;grid-template-columns:minmax(0,1.6fr) minmax(110px,.8fr);
+ gap:10px;margin:0 18px 13px;align-items:end;
+}
+.redline-trigger-field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.redline-trigger-field>span{
+ font-size:10px!important;color:#f1b8c8;font-weight:850;letter-spacing:.045em;
+}
+.redline-trigger-dialog .redline-trigger-input{
+ width:100%!important;min-width:0!important;box-sizing:border-box!important;
+ height:41px!important;min-height:41px!important;padding:8px 10px!important;
+ background:#07070a!important;color:#fff!important;border:1px solid #90516a!important;
+ border-radius:9px!important;font-size:16px!important;line-height:1.2!important;
+}
+.redline-trigger-save{
+ grid-column:1/-1;appearance:none!important;min-height:42px!important;
+ background:#b7143d!important;color:#fff!important;border:1px solid #ff678e!important;
+ border-radius:10px!important;font-size:12px!important;font-weight:850!important;
+ cursor:pointer;
+}
+.redline-trigger-list-head{
+ display:flex;justify-content:space-between;align-items:center;gap:8px;
+ padding:6px 18px 8px;
+}
+.redline-trigger-list-head h3{margin:0;color:#fff;font-size:12px!important;letter-spacing:.04em}
+.redline-trigger-counter{
+ font-size:10px;color:#edb4c5;border:1px solid #70334b;
+ padding:4px 9px;border-radius:999px;
+}
+.redline-trigger-list{
+ display:flex;flex-direction:column;gap:6px;
+ max-height:175px;overflow-y:auto;
+ padding:0 18px 9px;
+}
+.redline-trigger-item{
+ display:flex;gap:8px;align-items:center;
+ border:1px solid #603144;border-radius:10px;padding:8px;
+ background:#110d12;min-width:0;
+}
+.redline-trigger-item strong{
+ flex:1;min-width:0;overflow-wrap:anywhere;color:#fff;font-size:12px;
+}
+.redline-trigger-price{
+ font-size:12px;font-weight:850;color:#ffc3d5;white-space:nowrap;
+}
+.redline-trigger-small{
+ background:#2b1420!important;border:1px solid #804059!important;
+ color:#fff!important;min-height:30px!important;
+ padding:5px 7px!important;border-radius:8px!important;
+ font-size:9px!important;font-weight:850!important;cursor:pointer;
+}
+.redline-trigger-small.is-remove{color:#ffadc5!important}
+.redline-trigger-empty{margin:0;font-size:11px;color:#d2b4c1;padding:12px 6px}
+.redline-trigger-totals{
+ display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;
+ margin:0 18px 12px;padding:10px;
+ background:#1a0d15;border:1px solid #593045;border-radius:9px;
+}
+.redline-trigger-totals strong{font-size:11px;color:#f9d6e1}
+.redline-trigger-totals small{font-size:10px;color:#bea3ae}
+.redline-trigger-hits{padding:0 18px;display:flex;flex-direction:column;gap:4px}
+.redline-trigger-hits>strong{font-size:10px;color:#ffb4c9;margin-bottom:4px}
+.redline-trigger-hit{
+ display:flex;justify-content:space-between;gap:8px;
+ border-bottom:1px solid #3a2230;padding:5px 0;
+ font-size:11px;color:#f9dfe8;
+}
+.redline-trigger-hit strong{color:#ffd1df;font-variant-numeric:tabular-nums}
+.redline-trigger-feedback{
+ margin:5px 18px 8px!important;color:#ffd1dd!important;
+ font-size:11px!important;line-height:1.45;overflow-wrap:anywhere;
+}
+.redline-trigger-feedback:empty{display:none!important}
+.redline-trigger-fineprint{
+ margin:8px 18px 18px!important;font-size:10px!important;
+ line-height:1.45;color:#bda9b1!important;
+}
+.redline-trigger-dialog button:focus-visible,
+body.redline-sender-simple .redline-trigger-open:focus-visible{
+ outline:2px solid #ff9dba!important;outline-offset:2px!important;
+}
+@media(max-width:540px){
+ .redline-trigger-dialog{
+  width:calc(100vw - 16px)!important;max-width:calc(100vw - 16px)!important;
+  max-height:calc(100dvh - 20px)!important;border-radius:13px!important;
+ }
+ .redline-trigger-head{padding:14px 13px 0}
+ .redline-trigger-walkthrough{margin:12px 13px;padding:10px}
+ .redline-trigger-enable-status{margin:0 13px 10px!important}
+ .redline-trigger-form{margin:0 13px 12px;gap:7px}
+ .redline-trigger-list-head{padding:6px 13px 8px}
+ .redline-trigger-list{padding:0 13px 8px}
+ .redline-trigger-totals{margin:0 13px 10px}
+ .redline-trigger-hits{padding:0 13px}
+ .redline-trigger-feedback{margin:5px 13px 8px!important}
+ .redline-trigger-fineprint{margin:8px 13px 14px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .redline-trigger-dialog *{animation:none!important;transition:none!important}
+}
+
+
+/* Visible directly in sender Photos & Chat, outside the chat scroll container. */
+body.redline-sender-simple .redline-sender-trigger-shortcut{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ box-sizing:border-box!important;width:100%!important;min-height:44px!important;
+ padding:11px 14px!important;margin:12px 0 6px!important;
+ background:#510d29!important;color:#fff!important;
+ border:1px solid #fc608c!important;border-radius:10px!important;
+ font-size:12px!important;font-weight:900!important;line-height:1.2!important;
+ letter-spacing:.03em!important;cursor:pointer!important;touch-action:manipulation;
+}
+body.redline-sender-simple .redline-sender-trigger-shortcut:focus-visible{
+ outline:2px solid #ffb1c9!important;outline-offset:2px!important;
+}
+
+
+/* Source: private-photo-ledger-trigger-owner.css?v=20261123-trigger-visible-controls1 */
+/* REDLINE receiver Trigger Words: always-visible header action + owner-only dialog.
+   Never modifies media/chat dimensions or message scroll anchors. */
+body.bc-redline-receiver #redlineReceiverTriggerQuick{
+ box-sizing:border-box!important;display:inline-flex!important;
+ align-items:center!important;justify-content:center!important;gap:5px;
+ min-height:40px!important;padding:9px 13px!important;
+ margin:0!important;max-width:100%!important;
+ border:1px solid #ef456f!important;border-radius:10px!important;
+ color:#fff!important;background:#46132b!important;
+ font:850 11px/1.3 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+ letter-spacing:.02em!important;white-space:normal!important;cursor:pointer;
+}
+body.bc-redline-receiver #redlineReceiverTriggerQuick:hover{background:#8b2248!important}
+body.bc-redline-receiver .rr-nav-menu-items .rr-trigger-menu{
+ background:#371123!important;border:1px solid #c84b70!important;color:#ffeaf0!important;
+}
+.redline-trigger-owner-dialog:not([open]){display:none!important}
+.redline-trigger-owner-dialog{
+ box-sizing:border-box!important;
+ width:min(calc(100vw - 20px),540px)!important;max-width:none!important;
+ max-height:calc(100dvh - 24px)!important;
+ padding:19px!important;margin:auto!important;
+ overflow-y:auto!important;overscroll-behavior:contain!important;
+ border:1px solid #df476f!important;border-radius:18px!important;
+ background:linear-gradient(155deg,#220b17,#08070a 73%)!important;
+ color:#fff!important;box-shadow:0 23px 90px #000f!important;
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+}
+.redline-trigger-owner-dialog::backdrop{background:#000d!important;backdrop-filter:blur(12px)}
+.redline-trigger-owner-dialog>*{box-sizing:border-box}
+.redline-trigger-owner-top{
+ display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px;
+}
+.redline-trigger-owner-kicker{display:block;color:#ff8ead;font-size:10px;font-weight:850;letter-spacing:.06em;margin-bottom:6px}
+.redline-trigger-owner-top h2{font-size:23px!important;letter-spacing:-.035em!important;color:#fff!important;margin:0!important;line-height:1.2!important}
+.redline-trigger-owner-close{
+ border:1px solid #8a3b54!important;border-radius:9px!important;
+ background:#2c1420!important;color:#fff!important;
+ min-height:40px!important;padding:9px!important;white-space:nowrap!important;
+ font-size:11px!important;font-weight:800!important;cursor:pointer;
+}
+.redline-trigger-owner-help,.redline-trigger-owner-note{
+ color:#d9bcc8!important;font-size:12px!important;line-height:1.55!important;
+ margin:0 0 12px!important;
+}
+.redline-trigger-owner-note{
+ background:#190c14!important;border:1px solid #52283a!important;border-radius:10px!important;
+ padding:10px!important;margin:10px 0!important;font-size:11px!important;
+}
+.redline-trigger-owner-status{
+ padding:13px!important;margin:0 0 14px!important;border:1px solid #9f3d5a!important;
+ border-radius:10px!important;color:#fbc1d2!important;font-size:12px!important;font-weight:900!important;
+ background:#2b1220!important;
+}
+.redline-trigger-owner-status.is-on{
+ border-color:#3f7e58!important;color:#b5f7c8!important;background:#14261b!important;
+}
+.redline-trigger-owner-row,.redline-trigger-owner-word{
+ display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.redline-trigger-owner-row{margin:0 0 8px!important;font-size:11px!important;font-weight:900}
+.redline-trigger-owner-count{color:#ff92b0!important;white-space:nowrap}
+.redline-trigger-owner-list{display:flex;flex-direction:column;gap:6px;max-height:200px;overflow:auto}
+.redline-trigger-owner-word{
+ padding:10px 12px!important;background:#180d14!important;border:1px solid #603247!important;
+ border-radius:9px!important;font-size:12px!important;color:#fff!important;
+ overflow-wrap:anywhere;
+}
+.redline-trigger-owner-word strong:last-child,.redline-trigger-owner-word span:last-child{
+ color:#ff9dbb!important;font-weight:900!important;white-space:nowrap;
+}
+.redline-trigger-owner-empty{
+ color:#d6b4c4!important;font-size:11px!important;line-height:1.5!important;
+ margin:4px 0 12px!important;
+}
+.redline-trigger-owner-total{
+ display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;
+ padding:12px!important;margin:14px 0!important;
+ background:#240e1b!important;border:1px solid #8a3955!important;border-radius:10px!important;
+}
+.redline-trigger-owner-total span{font-size:10px!important;color:#f5c2d1!important;font-weight:850!important}
+.redline-trigger-owner-total strong{
+ color:#ff8ead!important;font-size:23px!important;font-weight:950!important;
+ font-variant-numeric:tabular-nums!important;
+}
+.redline-trigger-owner-recent{margin:9px 0!important}
+.redline-trigger-owner-recent h3{margin:0 0 8px!important;font-size:11px!important;color:#ffc2d4!important}
+.redline-trigger-owner-recent .redline-trigger-owner-word{margin-bottom:6px}
+.redline-trigger-owner-action{
+ width:100%!important;display:block!important;
+ min-height:46px!important;padding:11px 13px!important;border-radius:10px!important;
+ border:1px solid #f7547f!important;background:#b61440!important;
+ color:#fff!important;font-size:12px!important;font-weight:900!important;
+ cursor:pointer;touch-action:manipulation;
+}
+.redline-trigger-owner-action.is-on{background:#2b1621!important}
+.redline-trigger-owner-action:disabled{opacity:.55;cursor:not-allowed}
+.redline-trigger-owner-feedback{
+ min-height:0!important;margin:10px 0 0!important;
+ color:#ffbdd1!important;font-size:11px!important;line-height:1.5!important;
+ overflow-wrap:anywhere;
+}
+.redline-trigger-owner-feedback:empty{display:none!important}
+.redline-trigger-owner-dialog button:focus-visible,
+body.bc-redline-receiver #redlineReceiverTriggerQuick:focus-visible{
+ outline:2px solid #ffb2c8!important;outline-offset:2px!important;
+}
+@media(max-width:540px){
+ .redline-trigger-owner-dialog{width:calc(100vw - 12px)!important;padding:14px!important;border-radius:13px!important}
+ body.bc-redline-receiver #redlineReceiverTriggerQuick{min-height:44px!important;font-size:10px!important}
+}
+
