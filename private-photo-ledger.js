@@ -357,8 +357,9 @@ async function refresh({initial=false,force=false}={}){
   }
   state.room=preferred;
   if(state.liveStarted)subscribeEntries(preferred);
-  $('noRoom').hidden=!!preferred||state.isOwner;
-  $('activeRoom').hidden=!preferred;
+  const noRoomHidden=!!preferred||state.isOwner;
+  if($('noRoom').hidden!==noRoomHidden)$('noRoom').hidden=noRoomHidden;
+  if($('activeRoom').hidden!==!preferred)$('activeRoom').hidden=!preferred;
   renderRoomDirectory(preferred,initial||force);
   if(!preferred){
    $('ownerReviewQueue').hidden=true;
@@ -386,7 +387,8 @@ async function refresh({initial=false,force=false}={}){
   $('closeRoomBtn').hidden=!state.isOwner;
   $('redlineRoomBack').hidden=false;
   $('closeRoomBtn').textContent=preferred.active?'CLOSE ROOM':'REOPEN ROOM';
-  $('employeeUpload').hidden=state.isOwner||!preferred.active;
+  const uploadHidden=state.isOwner||!preferred.active;
+  if($('employeeUpload').hidden!==uploadHidden)$('employeeUpload').hidden=uploadHidden;
   $('ownerLedgerScope').hidden=!state.isOwner;
   if(state.isOwner&&state.scopeMemberId!==preferred.member_id){
    state.scopeMemberId=preferred.member_id;
@@ -400,7 +402,7 @@ async function refresh({initial=false,force=false}={}){
   const idx=state.rooms.findIndex(x=>x.id===preferred.id);
   show('roomNumber',String(idx+1).padStart(2,'0'));
   const u=new URL(location.href);u.searchParams.set('room',preferred.id);
-  history.replaceState(null,'',u.pathname+u.search);
+  if(u.pathname+u.search!==location.pathname+location.search)history.replaceState(null,'',u.pathname+u.search+u.hash);
   updateRedlineResetControls();
   await loadEntries({force:force||initial||currentId!==preferred.id||
    previousPause!==(preferred.photo_sending_paused===true)});
@@ -486,14 +488,14 @@ function setupRealtime(){
  });
  subscribeEntries(state.room);
 }
+let roomPickerSignature='';
 function fillRoomPicker(){
- const sel=$('roomPicker');sel.replaceChildren();
- for(const r of state.rooms){
-  const n=state.isOwner?participantName(r.member_id):r.title;
-  sel.append(new Option(n+(r.active?'':' · CLOSED'),r.id));
- }
- sel.value=state.room.id;
- $('roomPickerWrap').hidden=state.rooms.length<=1;
+ const sel=$('roomPicker');
+ const rows=state.rooms.map(r=>[r.id,(state.isOwner?participantName(r.member_id):r.title)+(r.active?'':' · CLOSED')]);
+ const sig=JSON.stringify(rows);
+ if(sig!==roomPickerSignature){sel.replaceChildren(...rows.map(([id,label])=>new Option(label,id)));roomPickerSignature=sig}
+ if(sel.value!==state.room.id)sel.value=state.room.id;
+ const wrap=$('roomPickerWrap'),hidden=state.rooms.length<=1;if(wrap.hidden!==hidden)wrap.hidden=hidden;
 }
 async function loadPhotoRatings(items,roomId){
  const next=new Map();
@@ -551,8 +553,7 @@ function photoHistoryData(){
     !state.showArchive&&state.room.active===true&&state.room.photo_sending_paused!==true};
  }).sort((a,b)=>Date.parse(b.created_at||0)-Date.parse(a.created_at||0));
 }
-function fiveStarResubmissionData(){
- const history=photoHistoryData();
+function fiveStarResubmissionData(history=photoHistoryData()){
  const fiveStarRoots=new Set(history.filter(p=>!p.removal_status&&p.stars===5).map(p=>p.resubmission_origin_id||p.id));
  return history.filter(p=>!p.removal_status&&!p.resubmission_origin_id&&fiveStarRoots.has(p.id))
   .sort((a,b)=>Number(b.resubmissionAllowed)-Number(a.resubmissionAllowed)||
@@ -576,8 +577,8 @@ async function loadRoomPayments(roomId,archive=state.showArchive){
  paymentAppliedSequence=requestId;
  const next={...response.data,scope},changed=JSON.stringify(state.paymentStatus)!==JSON.stringify(next);
  state.paymentStatus=next;
- updateTotals();if(changed)renderEntries();
- window.dispatchEvent(new Event('blackcell:redline:state'));
+ updateTotals({notify:false});
+ if(changed){renderEntries();window.dispatchEvent(new Event('blackcell:redline:state'))}
  return state.paymentStatus;
 }
 async function loadEntries({force=false}={}){
@@ -622,9 +623,9 @@ async function loadEntries({force=false}={}){
  if(!ratings||!stillCurrent())return;
  state.ratings=ratings;
  const ratingsSig=JSON.stringify([...ratings.values()].map(r=>[r.photo_id,r.stars,r.rated_at]).sort((a,b)=>a[0].localeCompare(b[0])));
- const signature=ratingsSig+'|'+String(state.showArchive)+'|'+JSON.stringify(all.map(e=>[e.id,e.amount_cents,e.auto_timer_session_id,e.resubmission_origin_id,e.decision_status,e.decided_at,e.priced_at,e.settled_at,e.photo_removal_status,e.caption]));
+ const signature=ratingsSig+'|'+JSON.stringify([loadScope,selectedRoom.active,selectedRoom.photo_sending_paused,selectedRoom.title])+'|'+JSON.stringify(all.map(e=>[e.id,e.amount_cents,e.auto_timer_session_id,e.resubmission_origin_id,e.decision_status,e.decided_at,e.priced_at,e.settled_at,e.photo_removal_status,e.caption]));
  state.entries=all;
- updateTotals();
+ updateTotals({notify:false});
  const previewItems=state.isOwner?all:senderPreviewEntries(all);
  const needsSignedRefresh=previewItems.some(e=>!e.photo_removal_status&&
   (!state.images.has(e.image_path)||state.images.get(e.image_path).expires<Date.now()));
@@ -640,7 +641,7 @@ async function loadEntries({force=false}={}){
  try{await loadRoomPayments(selectedRoom.id,state.showArchive);if(stillCurrent())liveStatus(state.liveConnected?'● LIVE UPDATES CONNECTED':'● AUTOMATIC SYNC ACTIVE',state.liveConnected)}
  catch(e){if(stillCurrent()){show('entriesFeedback','Photos loaded. Payment balance could not refresh: '+fail(e));liveStatus('BALANCE REFRESH FAILED · RETRYING',false)}}
 }
-function updateTotals(){
+function updateTotals({notify=true}={}){
  let assigned=0n,paid=0n,owed=0n,pending=0;
  let rejected=0,complimentary=0;
  for(const e of state.entries){
@@ -673,7 +674,7 @@ function updateTotals(){
  show('pendingCount',String(pending));
  show('rejectedCount',String(rejected));
  show('freeCount',String(complimentary));
- window.dispatchEvent(new Event('blackcell:redline:state'));
+ if(notify)window.dispatchEvent(new Event('blackcell:redline:state'));
 }
 function clearImageCache(){
  for(const image of state.images.values())if(image?.object&&image.url?.startsWith('blob:'))
@@ -2399,9 +2400,10 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
   if(result.error||result.data?.ok!==true)throw Error(fail(result.error||result.data?.reason||'Presence status unavailable.'));
   return {online:result.data.online===true,lastActiveAt:result.data.last_active_at||null};
  },
- snapshot(){
+ snapshot(options={}){
   if(state.closed||!state.user||!state.room||$('ledgerApp').hidden)return null;
-  return {
+  // Hot-path room checks must not sort or allocate the entire photo history.
+  const base={
    roomId:state.room.id,
    userId:state.user.id,
    peerName:state.isOwner?participantName(state.room.member_id):participantName(state.room.owner_id),
@@ -2410,7 +2412,11 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
    photoSendingPaused:state.room.photo_sending_paused===true,
    roomTitle:state.room.title,
    archiveMode:state.showArchive,
-   resetAt:state.room.current_session_started_at||null,
+   resetAt:state.room.current_session_started_at||null
+  };
+  if(options?.light===true)return base;
+  const history=photoHistoryData();
+  return {...base,
    pending:state.entries.filter(e=>e.decision_status==='pending'&&!e.photo_removal_status).length,
    owed:$('totalOwed').textContent,
    assigned:$('totalAssigned').textContent,
@@ -2438,8 +2444,8 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
      Number(cents(a.amount_cents)<cents(b.amount_cents))-Number(cents(a.amount_cents)>cents(b.amount_cents))||
      Date.parse(state.ratings.get(b.id)?.rated_at||0)-Date.parse(state.ratings.get(a.id)?.rated_at||0))
     .slice(0,5).map(ratedPhotoData),
-   fiveStarPhotos:fiveStarResubmissionData(),
-   photoHistory:photoHistoryData()
+   fiveStarPhotos:fiveStarResubmissionData(history),
+   photoHistory:history
   };
  },
  async resubmitFiveStarPhoto(photoId){
