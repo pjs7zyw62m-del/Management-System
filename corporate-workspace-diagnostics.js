@@ -156,6 +156,33 @@ export function setup(client,u){
  siteControls[2].disabled=true;siteActionLeft.append(...siteControls);siteActions.append(siteActionLeft);
  site.append(siteActions,siteStatus,pageDetail,dbDetail,E('p','notice','Asset references are not proof of unused source code. Dynamic imports, worker scripts, provider quotas, external storage integrity and real-device behavior require separate checks. Database dead rows are estimates managed by PostgreSQL vacuum, not user content to delete.'));
  maintenance.prepend(site);
+ const release=E('section','panel');release.id='core-release-manager';
+ release.append(E('h2','','CORE · Release Manager'),E('p','','Compare this browser’s loaded assets with the live website. This check is available on any device and does not reload an active session.'));
+ const releaseGrid=E('div','metrics'),releaseValues={};
+ for(const [key,label,desc] of [['revision','PUBLISHED RELEASE','Live website manifest'],['current','THIS BROWSER','Loaded page build or asset references'],['published','DEPLOYED PAGE','Live page build or asset references'],['result','DELIVERY CHECK','Comparison of declared entry assets'],['policy','UPDATE POLICY','Safe refresh policy']]){
+  const card=E('div','metric'),value=E('strong','','—');add(card,E('small','',label),value,E('span','',desc));releaseGrid.append(card);releaseValues[key]=value;
+ }
+ release.append(releaseGrid);
+ const releaseStatus=E('p','notice','Not checked.');releaseStatus.setAttribute('role','status');
+ const releaseButton=button('VERIFY LIVE RELEASE',async()=>{
+  releaseButton.disabled=true;releaseStatus.textContent='Checking published website…';
+  try{
+   let updater=window.BLACKCELL_LIVE_UPDATE;
+   try{updater=window.top.BLACKCELL_LIVE_UPDATE||updater}catch(_){}
+   if(!updater?.inspectRelease)throw Error('This browser still has an older update engine. Reopen the website manually when your work is saved.');
+   const r=await updater.inspectRelease();
+   if(!r.ok)throw Error(r.error);
+   releaseValues.revision.textContent=r.revision.slice(0,16);
+   releaseValues.current.textContent=r.currentBuild||'Loaded references';
+   releaseValues.published.textContent=r.publishedBuild||'Published references';
+   releaseValues.result.textContent=r.mismatch?'UPDATE NEEDED':'MATCH';
+   releaseValues.policy.textContent=r.automatic?'SAFE AUTO':'MANUAL';
+   releaseStatus.textContent=(r.mismatch?'This browser is behind the deployed page. Close active operations before reopening.':'Declared entry references match the deployed page.')+' · '+(r.blockedBy||'No reported update blocker')+' · '+new Date(r.checkedAt).toLocaleString();
+  }catch(e){releaseValues.result.textContent='UNVERIFIED';releaseStatus.textContent=String(e?.message||'Verification unavailable.').slice(0,220)}
+  finally{releaseButton.disabled=false}
+ },'primary');
+ release.append(releaseButton,releaseStatus,E('p','notice','This is a browser-to-production comparison, not proof that every device has installed the same release. Repository-to-production checks run separately in GitHub Actions. No cache or user data is erased.'));
+ maintenance.prepend(release);
  root.append(maintenance);
  if(location.hash==='#core-maintenance')requestAnimationFrame(()=>maintenance.scrollIntoView({block:'start'}));
  const staticFile=async(path,signature)=>{
