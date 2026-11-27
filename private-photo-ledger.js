@@ -1577,6 +1577,9 @@ async function drainRedlinePhotoQueue(){
     ' failed · '+redlineBatchDuplicates+' duplicates skipped · '+redlinePhotoQueue.length+' remaining',redlinePhotoQueue.length>0);
   }
  }finally{
+  if(redlineBatchDone>0&&state.room?.id===redlineBatchRoom){
+   try{await loadEntries({force:true})}catch(_){/* Confirmed uploads remain saved. */}
+  }
   redlineQueueRunning=false;
   const note='REDLINE upload finished: '+redlineBatchDone+' photo'+(redlineBatchDone===1?'':'s')+
    ' sent privately'+(redlineBatchDuplicates?' · '+redlineBatchDuplicates+' identical batch duplicates skipped':'')+(redlineBatchFailed?' · '+redlineBatchFailed+' not sent; select failed photos again':'')+'.';
@@ -1750,8 +1753,12 @@ async function bcLiveOriginal_uploadPhoto(event){
    show('uploadFeedback','Photo saved privately. The owner can now assign an amount.');
   }
   state.entryFingerprint='';
-  try{await loadEntries({force:true})}
-  catch(refreshError){show('uploadFeedback','Photo saved privately, but the review list has not refreshed yet: '+fail(refreshError));}
+  // For a batch, refresh once after the last confirmed upload. Receiver
+  // subscriptions still receive each inserted photo immediately.
+  if(!redlineQueueRunning){
+   try{await loadEntries({force:true})}
+   catch(refreshError){show('uploadFeedback','Photo saved privately, but the review list has not refreshed yet: '+fail(refreshError));}
+  }
   return true;
  }catch(e){
   if(bunnyUploadAttempted&&!posted)
