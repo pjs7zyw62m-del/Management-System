@@ -14,6 +14,35 @@ const osMode=/\/blackcell-os(?:\.html)?\/?$/.test(location.pathname)||Boolean(do
 // Manual page refresh/revisit still loads the newest version.
 const redlineLiveThread=/\/private-photo-ledger\.html\/?$/.test(location.pathname);
 const OS_APPLIED='bc.os.applied-release.v1', OS_TARGET='bc.os.update-target.v1', OS_EXPECTED_BUILD='bc.os.expected-build.v1', OS_AUTO='bc.os.auto-updates.v1';
+const RELOAD_ATTEMPT='bc.live-update.reload-attempt.v2';
+const manualOnly=new URLSearchParams(location.search).get('bc_no_auto_update')==='1';
+function releaseToken(value){return String(value||'').replace(/[^a-z0-9_-]/gi,'').slice(0,48)}
+function reloadGuard(revision,attempt,loadedToken,now){
+ if(!revision)return 'No confirmed release.';
+ if(loadedToken===releaseToken(revision))return 'This release already attempted a reload. Reopen manually if an update is still needed.';
+ if(attempt?.revision===revision&&attempt?.path===location.pathname)return 'This release already attempted a reload.';
+ if(attempt?.path===location.pathname&&now-Number(attempt.at||0)<120000)return 'Another reload was attempted recently.';
+ return '';
+}
+function guardReason(revision){
+ if(testing)return '';
+ if(manualOnly)return 'Automatic reloads are disabled for this visit.';
+ try{return reloadGuard(revision,JSON.parse(sessionStorage.getItem(RELOAD_ATTEMPT)||'null'),new URLSearchParams(location.search).get('bc_os_release'),Date.now())}
+ catch(_){return 'Browser storage is unavailable. Reload manually instead.'}
+}
+function reserveReload(revision){
+ if(testing)return true;
+ if(guardReason(revision))return false;
+ try{sessionStorage.setItem(RELOAD_ATTEMPT,JSON.stringify({revision,path:location.pathname,at:Date.now()}));return true}catch(_){return false}
+}
+function activeRedline(){
+ for(const frame of document.querySelectorAll('iframe')){
+  try{const child=frame.contentWindow,doc=frame.contentDocument;
+   if(doc&&child.location.pathname.endsWith('/private-photo-ledger.html')&&doc.getElementById('ledgerApp')&&!doc.getElementById('ledgerApp').hidden)return true;
+  }catch(_){}
+ }
+ return false
+}
 function autoEnabled(){try{return localStorage.getItem(OS_AUTO)!=='off'}catch(_){return true}}
 function setAutoEnabled(on){
  try{localStorage.setItem(OS_AUTO,on?'on':'off')}catch(_){}
@@ -96,6 +125,8 @@ function openModal(){
 function blockingReason(){
  if(document.hidden)return 'Device is inactive.';
  if(!navigator.onLine)return 'Waiting for internet connection.';
+ if(pending&&guardReason(pending))return guardReason(pending);
+ if(osMode&&activeRedline())return 'REDLINE is open. Close it when convenient to apply updates.';
  if(busy())return 'An active upload, media session or operation is running.';
  if(modified())return 'An unsaved form or selected file still needs attention.';
  if(openModal())return 'A dialog is open.';
@@ -104,7 +135,7 @@ function blockingReason(){
 function safe(explicit=false){return !blockingReason()&&(explicit||Date.now()-last>=12000)}
 function maybeRefresh(){
  if(!pending||refreshing)return;
- if(redlineLiveThread)return;
+ if(redlineLiveThread||guardReason(pending))return;
  if(osMode){
   if(autoEnabled()){
    if(osNotice)osNotice.hidden=true;
@@ -166,7 +197,7 @@ function restore(){let r;try{r=JSON.parse(sessionStorage.getItem(KEY)||'null');s
 interrupted=false;overlay('Restoring your corporate workspace…');const move=()=>{if(interrupted||location.pathname!==r.path)return;scrollTo(r.x||0,r.y||0);for(const item of r.scroll||[]){const el=$(item.id);if(el){el.scrollTop=item.top;el.scrollLeft=item.left}}};
 move();setTimeout(move,300);setTimeout(move,1100);setTimeout(()=>{screen?.remove();screen=null;move()},400);setTimeout(move,2600)}
 async function refresh(){
- if(redlineLiveThread)return;
+ if(redlineLiveThread||guardReason(pending))return;
  if(refreshing||!pending||(testing?busy():!safe(osMode&&osRequested&&!autoEnabled())))return;
  refreshing=true;if(osNotice)osNotice.hidden=true;
  overlay(osMode?'Saving your BLACKCELL workspace and installing the update…':'Applying the latest corporate system update…');
@@ -185,6 +216,7 @@ async function refresh(){
    return;
   }
  }
+ if(!reserveReload(pending)){screen?.remove();screen=null;refreshing=false;return}
  save();
  if(testing){try{sessionStorage.setItem('bc.live-update.test-complete',location.pathname+location.search+location.hash)}catch(_){}}
  if(osMode){
@@ -193,7 +225,7 @@ async function refresh(){
    sessionStorage.setItem(OS_TARGET,pending);
    if(expectedBuild)sessionStorage.setItem(OS_EXPECTED_BUILD,expectedBuild);
   }catch(_){}
-  const url=new URL(location.href);url.searchParams.set('bc_os_release',pending.replace(/[^a-z0-9_-]/gi,'').slice(0,48));
+  const url=new URL(location.href);url.searchParams.set('bc_os_release',releaseToken(pending));
   location.replace(url.href);return;
  }
  location.reload();
@@ -222,6 +254,9 @@ async function check(){
     // the actual deployed OS build instead of assuming the first manifest matches.
     const deployedBuild=await latestOSBuild();
     const currentBuild=document.querySelector('meta[name="blackcell-os-client-build"]')?.content||'';
+    if(deployedBuild&&currentBuild&&deployedBuild===currentBuild&&new URLSearchParams(location.search).get('bc_os_release')===releaseToken(v)){
+     try{localStorage.setItem(OS_APPLIED,v);sessionStorage.removeItem(OS_TARGET);sessionStorage.removeItem(OS_EXPECTED_BUILD)}catch(_){}
+    }
     if(deployedBuild&&currentBuild&&deployedBuild!==currentBuild){
      try{sessionStorage.setItem(OS_TARGET,v);sessionStorage.setItem(OS_EXPECTED_BUILD,deployedBuild)}catch(_){}
      pending=v;
