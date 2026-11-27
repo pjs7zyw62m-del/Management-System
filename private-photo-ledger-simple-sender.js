@@ -123,7 +123,30 @@ fiveStarIntro.append(make('span','redline-kicker','RECEIVER-RATED PHOTOS'),
 const fiveStarStatus=make('p','redline-five-star-feedback');
 fiveStarStatus.setAttribute('role','status');
 const fiveStarList=make('div','redline-five-star-list');
-fiveStarPane.append(fiveStarIntro,fiveStarStatus,fiveStarList);
+const fiveStarArchive=make('button','redline-history-archive','VIEW PREVIOUS RECORDS');
+fiveStarArchive.type='button';fiveStarArchive.hidden=true;
+fiveStarArchive.addEventListener('click',async()=>{
+ fiveStarArchive.disabled=true;
+ try{await bridge()?.toggleArchive?.();renderFiveStarPhotos(snapshot())}
+ catch(e){fiveStarStatus.textContent=String(e?.message||e).slice(0,200)}
+ finally{fiveStarArchive.disabled=false}
+});
+fiveStarPane.append(fiveStarIntro,fiveStarArchive,fiveStarStatus,fiveStarList);
+const recordNav=make('nav','rd-sender-record-nav');recordNav.hidden=true;recordNav.setAttribute('aria-label','Sender records');
+for(const [key,label] of [['upload','‹ Messages'],['earnings','Earnings'],['history','History'],['five-star','★ 5-Star']]){
+ const b=make('button','',label);b.type='button';b.dataset.recordTab=key;b.addEventListener('click',()=>switchTab(key));recordNav.append(b);
+}
+const recordRefresh=make('button','rd-sender-record-refresh','↻ Refresh records');recordRefresh.type='button';recordRefresh.hidden=true;
+const recordFeedback=make('p','rd-sender-record-feedback');recordFeedback.setAttribute('role','status');recordFeedback.hidden=true;
+let recordsRefreshing=false;
+async function refreshRecords(){
+ if(recordsRefreshing||!isSender())return;
+ recordsRefreshing=true;recordRefresh.disabled=true;recordFeedback.textContent='Refreshing private records…';
+ try{if(bridge()?.refreshSenderRecords)await bridge().refreshSenderRecords();sync();recordFeedback.textContent='Records refreshed.'}
+ catch(e){recordFeedback.textContent='Could not refresh: '+String(e?.message||e).slice(0,180)}
+ finally{recordsRefreshing=false;recordRefresh.disabled=false}
+}
+recordRefresh.addEventListener('click',()=>void refreshRecords());
 const summary=make('section','redline-upload-summary');
 const summaryTitle=make('h3','','Your earnings');
 const summaryRows=make('div','redline-summary-stats');
@@ -176,7 +199,7 @@ const msgError=make('p','redline-message-error');msgError.setAttribute('role','s
 messageCard.append(msgHeader,timerSlot,feed,typingNotice,composer,msgError);
 uploadPane.append(messageCard);
 panes.append(uploadPane,viewingPane,earningsPane,historyPane,fiveStarPane);
-home.append(heading,tabs,panes);
+home.append(heading,tabs,recordNav,recordRefresh,recordFeedback,panes);
 room.insertBefore(home,$('.room-toolbar',room));
 const ownerDialog=make('dialog','redline-owner-chat-dialog');
 ownerDialog.id='redlineOwnerMessageDialog';
@@ -453,6 +476,14 @@ function renderTopPicks(snap){
    make('small','',p.amount_cents===null?'Awaiting photo bid':'APPROVED')
   );
   if(p.amount_cents!==null)details.append(approvedPriceControl(p,snap));
+  const history=snap.photoHistory||[],item=history.find(x=>x.id===p.id);
+  const original=history.find(x=>x.id===(item?.resubmission_origin_id||item?.id));
+  if(original){
+   const reuse=make('button','redline-five-star-resubmit',historyResendLabel(original,snap));reuse.type='button';
+   reuse.disabled=!original.resubmissionAllowed;
+   reuse.addEventListener('click',()=>window.BLACKCELL_REDLINE_REUSE_UI?.open(original.id,reuse));
+   details.append(reuse);
+  }
   card.append(details);topPicksList.append(card);
  }
 }
@@ -527,10 +558,12 @@ function renderPhotoHistory(snap){
 }
 let resubmittingId=null;
 function renderFiveStarPhotos(snap){
+ fiveStarArchive.hidden=!snap?.resetAt;
+ fiveStarArchive.textContent=snap?.archiveMode?'← RETURN TO CURRENT PHOTOS':'VIEW PREVIOUS RECORDS';
  fiveStarList.replaceChildren();
  if(!snap||!Array.isArray(snap.fiveStarPhotos)||!snap.fiveStarPhotos.length){
   fiveStarList.append(make('p','redline-five-star-empty',
-   'No approved five-star photographs in this session yet.'));
+   snap?.archiveMode?'No five-star photographs in previous records.':'No five-star photographs in this session yet. Check previous records if the session was reset.'));
   return;
  }
  for(const photo of snap.fiveStarPhotos){
@@ -543,12 +576,13 @@ function renderFiveStarPhotos(snap){
    make('small','',photo.resubmissionCount+
     (photo.resubmissionCount===1?' previous resend':' previous resends')));
   if(photo.caption)details.append(make('p','redline-five-star-caption',photo.caption));
-  let label='⟲ REUSE PHOTO';
+  let label=snap.archiveMode?'ARCHIVED · VIEW ONLY':'⟲ REUSE PHOTO';
   if(photo.resubmissionStatus==='pending')label='AWAITING RECEIVER REVIEW';
   if(photo.resubmissionStatus==='original-pending')label='AWAITING FIRST APPROVAL';
   if(photo.resubmissionStatus==='rejected')label='REJECTED · REUSE CLOSED';
   if(snap.photoSendingPaused&&photo.resubmissionStatus==='ready')label='SENDING PAUSED BY RECEIVER';
   if(!snap.roomActive&&photo.resubmissionStatus==='ready')label='ROOM CLOSED';
+  if(snap.archiveMode)label='ARCHIVED · VIEW ONLY';
   const action=make('button','redline-five-star-resubmit',label);
   action.type='button';
   action.disabled=Boolean(!photo.resubmissionAllowed||resubmittingId);
@@ -1012,8 +1046,15 @@ entry.addEventListener('keydown',e=>{
   e.preventDefault();composer.requestSubmit()
  }
 });
+function reflectRecordNavigation(){
+ const records=isSender()&&currentTab!=='upload';
+ document.body.classList.toggle('rd-sender-records-open',records);
+ recordNav.hidden=recordRefresh.hidden=recordFeedback.hidden=!records;
+ for(const b of recordNav.children)b.setAttribute('aria-current',b.dataset.recordTab===currentTab?'page':'false');
+ if(records)document.body.classList.remove('redline-chat-immersive');
+}
 function switchTab(tab){
- if(!isSender())return;
+ if(!isSender()||!Array.from(panes.children).some(p=>p.dataset.redlinePane===tab))return;
  currentTab=tab;
  for(const b of tabs.querySelectorAll('button')){
   const selected=b.dataset.simpleTab===tab;
@@ -1021,6 +1062,9 @@ function switchTab(tab){
   b.setAttribute('aria-selected',String(selected));
  }
  for(const pane of panes.children)pane.hidden=pane.dataset.redlinePane!==tab;
+ reflectRecordNavigation();
+ if(tab!=='upload'){const snap=snapshot();if(snap){renderEarnings(snap);renderFiveStarPhotos(snap);renderPhotoHistory(snap)}void refreshRecords()}
+ window.dispatchEvent(new Event('blackcell:redline:sender-tab'));
  if(tab==='upload'){void loadMessages();void pollSenderTimers(true);void pollChatStatus(true)}
  else{stopTyping();peerTyping=false;updateTypingIndicator()}
  if(tab==='viewing'){renderCurrentlyViewing(snapshot());void pollCurrentlyViewing(true)}
@@ -1105,6 +1149,7 @@ function sync(){
   if(!roomReady){roomReady=true;switchTab('upload')}
   if(currentTab==='upload'){renderChat();void pollSenderTimers();void pollChatStatus()}
  }else{roomReady=false;syncOwnerChat(snap)}
+ reflectRecordNavigation();
 }
 const observer=new MutationObserver(()=>requestAnimationFrame(sync));
 for(const el of [app,room,upload,ownerSetup])observer.observe(el,{attributes:true,attributeFilter:['hidden']});

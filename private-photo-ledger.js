@@ -559,10 +559,11 @@ function photoHistoryData(){
  }).sort((a,b)=>Date.parse(b.created_at||0)-Date.parse(a.created_at||0));
 }
 function fiveStarResubmissionData(){
- if(state.showArchive)return [];
- return photoHistoryData().filter(p=>!p.removal_status&&!p.resubmission_origin_id&&p.stars===5)
-  .sort((a,b)=>(b.resubmissionCount-a.resubmissionCount)||
-   (Number(b.amount_cents||0)-Number(a.amount_cents||0)));
+ const history=photoHistoryData();
+ const fiveStarRoots=new Set(history.filter(p=>!p.removal_status&&p.stars===5).map(p=>p.resubmission_origin_id||p.id));
+ return history.filter(p=>!p.removal_status&&!p.resubmission_origin_id&&fiveStarRoots.has(p.id))
+  .sort((a,b)=>Number(b.resubmissionAllowed)-Number(a.resubmissionAllowed)||
+   (b.resubmissionCount-a.resubmissionCount)||(Number(b.amount_cents||0)-Number(a.amount_cents||0)));
 }
 function roomPaymentScope(){
  return state.room?.id+'|'+String(state.showArchive)+'|'+String(state.room?.current_session_started_at||'');
@@ -2478,6 +2479,11 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
  // New sender UI calls reusePhoto. Keep the previous method for compatibility.
  async reusePhoto(photoId){
   return await window.BLACKCELL_REDLINE_API.resubmitFiveStarPhoto(photoId);
+ },
+ async refreshSenderRecords(){
+  if(state.closed||state.isOwner||!state.user||!state.room)throw Error('Open a verified sender room first.');
+  await loadEntries({force:true});
+  return true;
  },
  async toggleArchive(){
   await setRedlineArchiveView(!state.showArchive);

@@ -299,7 +299,7 @@ if(androidKeyboard&&textEntry){
 }
 for(const event of ['blackcell:redline:bridge','blackcell:redline:state',
  'blackcell:redline:reset','blackcell:redline:session-mode',
- 'blackcell:redline:timer-status','blackcell:redline:messages-changed'])
+ 'blackcell:redline:timer-status','blackcell:redline:messages-changed','blackcell:redline:sender-tab'])
  window.addEventListener(event,update);
 const observer=new MutationObserver(()=>requestAnimationFrame(update));
 for(const node of [app,room,home,pane])observer.observe(node,{

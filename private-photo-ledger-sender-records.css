@@ -1,0 +1,20 @@
+/* Records deliberately leave the immersive chat layout. Native scrolling,
+   explicit class for Android 11 (no :has dependency). */
+.rd-sender-record-nav[hidden],.rd-sender-record-refresh[hidden],.rd-sender-record-feedback[hidden]{display:none!important}
+.rd-sender-record-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;position:sticky;top:0;z-index:4;background:#080808;padding:5px 0}
+.rd-sender-record-nav button,.rd-sender-record-refresh{border:1px solid #543039;border-radius:8px;background:#191518;color:#fff;font:650 12px system-ui;min-height:38px;padding:5px}
+.rd-sender-record-nav button[aria-current=page]{background:#9d1027;border-color:#e6425a}
+.rd-sender-record-refresh{width:100%;margin:4px 0}
+.rd-sender-record-feedback{font:11px system-ui;color:#bdb5b8;margin:3px 0 10px}
+.rd-sender-record-feedback:empty{display:none}
+body.redline-sender-simple.rd-sender-records-open #redlineSimpleSender .redline-simple-pane[hidden]{display:none!important}
+body.redline-sender-simple.rd-sender-records-open #redlineSimpleSender .redline-simple-pane:not([hidden]){display:flex!important;flex-direction:column!important;gap:10px!important;min-height:0!important;max-height:none!important;height:auto!important;overflow:visible!important}
+body.redline-sender-simple.rd-sender-records-open #redlineSimpleSender .redline-photo-history-list{height:auto!important;max-height:none!important;overflow:visible!important}
+body.redline-sender-simple.rd-sender-records-open .redline-top-pick-details .redline-five-star-resubmit{margin-top:5px}
+body.redline-sender-simple.rd-sender-records-open #redlineSimpleSender .redline-history-archive{min-height:38px;color:#fff;border:1px solid #70404a;background:#201419;border-radius:8px;padding:6px}
+@media(max-width:900px), (pointer:coarse){
+ body.redline-sender-simple.rd-sender-records-open{height:auto!important;min-height:100%!important;max-height:none!important;overflow-y:auto!important}
+ body.redline-sender-simple.rd-sender-records-open #ledgerApp.shell{height:calc(100dvh - 60px)!important;height:calc(100vh - 60px)!important;height:calc(100dvh - 60px)!important;min-height:0!important;max-height:none!important;overflow-y:auto!important;overflow-x:hidden!important;padding:8px 10px max(18px,env(safe-area-inset-bottom))!important;box-sizing:border-box!important;scrollbar-width:none;overscroll-behavior:contain}
+ body.redline-sender-simple.rd-sender-records-open #activeRoom,body.redline-sender-simple.rd-sender-records-open #redlineSimpleSender,body.redline-sender-simple.rd-sender-records-open #redlineSimpleSender .redline-simple-panes{height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important}
+ body.redline-sender-simple.rd-sender-records-open #redlineSimpleSender .redline-simple-tabs{display:none!important}
+}
