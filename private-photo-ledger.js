@@ -138,6 +138,7 @@ async function initialize(){
   setFilter(state.filter);
   await refresh({initial:true});
   setupRealtime();
+  if(state.isOwner)void drainFinalizedSourceFiles();
   window.setInterval(async()=>{
    if(document.hidden||state.closed||state.busy)return;
    try {await refresh()}catch(e){show('entriesFeedback','Refresh unavailable: '+fail(e))}
@@ -386,7 +387,7 @@ async function refresh({initial=false,force=false}={}){
   show('roomStateLabel',preferred.active?'ACTIVE':'CLOSED');
   $('closeRoomBtn').hidden=!state.isOwner;
   $('redlineRoomBack').hidden=false;
-  $('closeRoomBtn').textContent=preferred.active?'CLOSE ROOM':'REOPEN ROOM';
+  $('closeRoomBtn').textContent=preferred.active?'END SESSION':'COMPLETE END SESSION';
   const uploadHidden=state.isOwner||!preferred.active;
   if($('employeeUpload').hidden!==uploadHidden)$('employeeUpload').hidden=uploadHidden;
   $('ownerLedgerScope').hidden=!state.isOwner;
@@ -1793,27 +1794,76 @@ async function createRoom(event){
  }catch(e){show('setupFeedback','Could not create room: '+fail(e))}
  finally{state.busy=false;$('createRoom').disabled=!state.employees.length}
 }
+let finalCleanupRunning=false;
+async function drainFinalizedSourceFiles(roomId=null){
+ if(!state.isOwner||state.closed||finalCleanupRunning)return;
+ finalCleanupRunning=true;
+ try{
+  for(let batch=0;batch<25&&!state.closed;batch++){
+   const r=await db.functions.invoke('blackcell-redline-session-export',{body:{action:'cleanup',room_id:roomId}});
+   if(r.error||r.data?.ok!==true||r.data.more!==true)break;
+  }
+ }catch(_){/* Retain queue; retry next verified owner entry. */}
+ finally{finalCleanupRunning=false}
+}
 async function toggleRoom(){
  if(!state.isOwner||!state.room||state.busy)return;
  const room=state.room;
- const next=!room.active;
- if(!window.confirm((next?'Reopen':'Close')+' this private room? Existing photos and amounts will remain visible.'))return;
+ if(!window.confirm('End this REDLINE session permanently? Authorized photos will be saved to participant libraries, then the room and session records will be deleted. If a transfer or settlement is incomplete, the closed room remains available for retry.'))return;
  state.busy=true;
+ const control=$('closeRoomBtn');if(control)control.disabled=true;
+ const status=$('redlineResetStatus');
+ const progress=message=>{if(status)status.textContent=message;show('entriesFeedback',message)};
  try{
   await verify();
-  const r=await db.from(ROOMS).update({active:next}).eq('id',room.id).select('id').single();
-  if(r.error)throw r.error;
+  if(room.active){
+   const closed=await db.from(ROOMS).update({active:false}).eq('id',room.id).select('id').single();
+   if(closed.error||closed.data?.id!==room.id)throw Error('Room closure not confirmed.');
+  }
+  progress('Checking settlement before exporting photos…');
+  for(const archive of [false,true]){
+   const payment=await db.rpc('corp_redline_room_payment_status',{p_room_id:room.id,p_archive:archive});
+   if(payment.error||payment.data?.ok!==true||payment.data.remaining_cents==null||Number(payment.data.remaining_cents)!==0)throw Error('Settle the remaining REDLINE balance before ending the session.');
+  }
+  const removed=await db.rpc('corp_redline_photo_removal_status',{p_room_id:room.id});
+  if(removed.error||removed.data?.ok!==true)throw Error('Photo removal status unavailable.');
+  const excluded=new Set((removed.data.photos||[]).map(x=>x.photo_id));
+  const photos=[];
+  for(let offset=0;;offset+=100){
+   const rows=await db.from(ENTRIES).select('id').eq('room_id',room.id).order('id').range(offset,offset+99);
+   if(rows.error)throw rows.error;
+   const page=rows.data||[];
+   photos.push(...page.filter(x=>!excluded.has(x.id)));
+   if(page.length<100)break;
+   if(offset>=10000)throw Error('Session too large for this transfer workflow.');
+  }
+  let completed=0;
+  for(const photo of photos){
+   if(state.closed)throw Error('Session verification expired. Sign in to retry.');
+   progress('Saving and verifying photos: '+completed+' / '+photos.length);
+   const transfer=await db.functions.invoke('blackcell-redline-session-export',{body:{room_id:room.id,photo_id:photo.id}});
+   if(transfer.error||transfer.data?.ok!==true||transfer.data?.photo_id!==photo.id)throw Error('A photo could not be verified in the library. No room data was deleted. Retry after resolving the missing file or storage limit.');
+   completed++;
+  }
+  progress('Removing verified completed session…');
+  const final=await db.rpc('corp_owner_redline_finalize_exported_room',{p_room_id:room.id,p_confirmation:'END SESSION'});
+  if(final.error||final.data?.ok!==true||final.data.deleted_room!==room.id)throw Error(final.data?.reason||final.error?.message||'Session deletion not confirmed.');
+  clearImageCache();state.room=null;state.entries=[];state.showArchive=false;state.entryFingerprint='';
+  const url=new URL(location.href);url.searchParams.delete('room');url.searchParams.set('rdHome','1');history.replaceState(history.state,'',url.href);
   await refresh({force:true});
- }catch(e){show('entriesFeedback','Could not change room access: '+fail(e))}
- finally{state.busy=false}
+  window.dispatchEvent(new Event('blackcell:redline:reset'));
+  void drainFinalizedSourceFiles(room.id);
+  window.dispatchEvent(new CustomEvent('bc-private-files-changed',{detail:{source:'redline'}}));
+ }catch(e){progress('Session not finalized: '+fail(e));await refresh({force:true})}
+ finally{state.busy=false;if(control)control.disabled=false}
 }
 function updateRedlineResetControls(){
  const room=state.room,hasArchive=!!room?.current_session_started_at;
  const tools=$('redlineSessionTools'),actions=$('redlineResetActions');
  if(tools)tools.hidden=!room;
- if(actions)actions.hidden=!state.isOwner||!room;
+ if(actions)actions.hidden=true; // Legacy archive/reset actions are retired from the production UI.
  const purge=$('redlineDeleteArchivedChat');
- if(purge){purge.hidden=!state.isOwner||!hasArchive;purge.disabled=!room||room.active||state.busy;purge.title=room?.active?'Close the room before deleting previous chat.':'Permanently delete archived chat except messages needed for fee records.'}
+ if(purge){purge.hidden=true;purge.disabled=!room||room.active||state.busy;purge.title=room?.active?'Close the room before deleting previous chat.':'Permanently delete archived chat except messages needed for fee records.'}
  const archive=$('redlineArchiveToggle');
  if(archive){
   archive.hidden=!hasArchive;

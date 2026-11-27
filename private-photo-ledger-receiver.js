@@ -1201,8 +1201,8 @@
    :'No private room selected';
   roomSummary.title=roomSummary.textContent;
   tools.disabled=!hasRoom;
-  endSession.disabled=!hasRoom||session?.roomActive!==true||session?.archiveMode===true;
-  const endLabel=hasRoom&&session?.roomActive===false?'SESSION ENDED':document.body.classList.contains('bc-ledger-mobile')?'END SESSION':'■ END SESSION';
+  endSession.disabled=!hasRoom||!session||session?.archiveMode===true;
+  const endLabel=hasRoom&&session?.roomActive===false?'COMPLETE END SESSION':document.body.classList.contains('bc-ledger-mobile')?'END SESSION':'■ END SESSION';
   if(endSession.textContent!==endLabel)endSession.textContent=endLabel;
   endSession.style.opacity=endSession.disabled?'.55':'1';
   if(!hasRoom){
