@@ -1247,15 +1247,36 @@ window.addEventListener('visibilitychange',()=>{if(!document.hidden){
  if((isSender()&&currentTab==='upload')||ownerDialog.open||(receiverChatPanel()&&!receiverChatPanel().hidden))void loadMessages();
  void pollSenderTimers(true);void pollChatStatus(true);
 }});
-window.setInterval(()=>{
- updateTimerCards();
- if(!document.hidden)void pollSenderTimers();
-},1000);
-window.setInterval(()=>{if(!document.hidden)void pollChatStatus()},1500);
-window.setInterval(()=>{if(!document.hidden)void pollCurrentlyViewing()},2600);
-window.setInterval(()=>{
- const active=(isSender()&&currentTab==='upload')||ownerDialog.open||(receiverChatPanel()&&!receiverChatPanel().hidden);
- if(!document.hidden&&active&&Date.now()-lastSync>3800)void loadMessages();
-},4000);
+// One visibility-aware scheduler replaces the four independent intervals.
+let senderTickHandle=0,nextChatStatus=0,nextViewing=0,nextMessages=0;
+function stopSenderTick(){clearTimeout(senderTickHandle);senderTickHandle=0}
+function senderTick(){
+ senderTickHandle=0;
+ if(document.hidden)return;
+ const snap=roomSnapshot(),now=Date.now();
+ if(snap?.roomId&&!app.hidden&&!room.hidden){
+  const visibleChat=chatVisible(snap);
+  if(visibleChat){
+   updateTimerCards();
+   void pollSenderTimers();
+   if(now>=nextChatStatus){nextChatStatus=now+1500;void pollChatStatus()}
+   if(now>=nextMessages){
+    nextMessages=now+4000;
+    if(now-lastSync>3800)void loadMessages();
+   }
+  }
+  if(currentTab==='viewing'&&isSender(snap)&&now>=nextViewing){
+   nextViewing=now+2600;void pollCurrentlyViewing();
+  }
+ }
+ senderTickHandle=window.setTimeout(senderTick,1000);
+}
+function startSenderTick(){
+ if(!document.hidden&&!senderTickHandle)senderTickHandle=window.setTimeout(senderTick,1000);
+}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stopSenderTick();else startSenderTick()});
+window.addEventListener('pagehide',stopSenderTick);
+window.addEventListener('pageshow',startSenderTick);
+startSenderTick();
 sync();
 })();
