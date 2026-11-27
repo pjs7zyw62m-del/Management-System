@@ -1493,8 +1493,8 @@ function redlineBatchUI(){
  }
  return panel;
 }
-function redlineQueueStatus(message,active=false){
- redlineUploadStatus={roomId:redlineBatchRoom,active,total:redlineBatchTotal,done:redlineBatchDone,failed:redlineBatchFailed,message};
+function redlineQueueStatus(message,active=false,phase=''){ 
+ redlineUploadStatus={roomId:redlineBatchRoom,active,phase,total:redlineBatchTotal,done:redlineBatchDone,failed:redlineBatchFailed,message};
  window.dispatchEvent(new Event('blackcell:redline:upload-progress'));
  const panel=redlineBatchUI();
  if(!panel)return;
@@ -1520,10 +1520,10 @@ async function enqueueRedlineFiles(items){
  if(!rows.length){redlineQueueStatus('No supported photos to save. Each image must be no larger than 12 MB.');return false}
  redlineSaving++;
  if(!redlineQueueRunning){redlineBatchRoom=roomId;redlineBatchTotal=rows.length;redlineBatchDone=redlineBatchFailed=redlineBatchDuplicates=0}
- redlineQueueStatus('Saving '+rows.length+' photos locally for upload recovery. Do not refresh until saved.',true);
+ redlineQueueStatus('Saving '+rows.length+' photos locally for upload recovery. Do not refresh until saved.',true,'saving');
  try{
   await outbox.saveBatch(rows);redlineStorageFailed=false;redlineRetryAt=0;
-  if(redlineScope()===scope){redlineQueueStatus('Saved '+rows.length+' photos · refresh-safe queue'+(invalid?' · '+invalid+' invalid skipped':''),true)}
+  if(redlineScope()===scope){redlineQueueStatus('Saved '+rows.length+' photos · refresh-safe queue'+(invalid?' · '+invalid+' invalid skipped':''),true,'saved')}
  }catch(e){redlineStorageFailed=true;redlineQueueStatus('Could not save photos on this device: '+fail(e)+'. Free browser storage and select them again. No new unsaved uploads started.');return false}
  finally{redlineSaving--}
  void recoverRedlineUploads();return true;
@@ -1546,7 +1546,7 @@ async function recoverRedlineUploads(){
    if(!rows.length)return false;
    redlinePhotoQueue.splice(0,redlinePhotoQueue.length,...rows);
    redlineBatchRoom=roomId;redlineBatchTotal=rows.length;redlineBatchDone=redlineBatchFailed=redlineBatchDuplicates=0;redlineBatchHashes.clear();redlineStopAfterCurrent=false;
-   redlineQueueStatus('Saved queue · '+rows.length+' photos remaining',true);
+   redlineQueueStatus('Recovering saved queue · '+rows.length+' photos remaining',true,'recovering');
    await drainRedlinePhotoQueue(scope,alive);return true;
   });
   if(!recovered&&!redlineQueueRunning&&redlinePhotoQueue.length)redlinePhotoQueue.length=0;
@@ -1584,7 +1584,7 @@ async function drainRedlinePhotoQueue(scope,alive){
  }finally{
   redlineQueueRunning=false;
   const pending=redlinePhotoQueue.length;
-  redlineQueueStatus(redlineStopAfterCurrent?'Remaining uploads stopped.':waiting||('Upload finished · '+redlineBatchDone+' sent'+(redlineBatchFailed?' · '+redlineBatchFailed+' invalid skipped':'')+(redlineBatchDuplicates?' · '+redlineBatchDuplicates+' duplicates skipped':'')),false);
+  redlineQueueStatus(redlineStopAfterCurrent?'Remaining uploads stopped.':waiting||('Upload finished · '+redlineBatchDone+' sent'+(redlineBatchFailed?' · '+redlineBatchFailed+' invalid skipped':'')+(redlineBatchDuplicates?' · '+redlineBatchDuplicates+' duplicates skipped':'')),false,waiting?'waiting':'');
   redlineStopAfterCurrent=false;redlinePhotoQueue.length=0;redlineBatchHashes.clear();
   if(!waiting&&pending===0)redlineRetryAt=0;
   show('selectedPhotoName','Choose photos from your device or BLACKCELL Photos.');

@@ -180,10 +180,11 @@ function syncUploadProgress(active){
  uploadProgress.hidden=!show;
  if(!show)return;
  const done=Math.min(p.total,p.done+p.failed);
- const label=p.active?'Uploading photos · '+done+'/'+p.total:'Uploaded '+p.done+' of '+p.total+(p.failed?' · '+p.failed+' failed':'')+(done<p.total?' · '+(p.total-done)+' not sent':'');
+ const label=p.phase==='saving'?'Saving queue · do not refresh':p.phase==='saved'?'Saved · refresh-safe':p.phase==='recovering'?'Resuming saved uploads · '+p.total+' remaining':p.phase==='waiting'?'Paused · saved queue will retry':p.active?'Uploading photos · '+done+'/'+p.total:'Uploaded '+p.done+' of '+p.total+(p.failed?' · '+p.failed+' failed':'')+(done<p.total?' · '+(p.total-done)+' not sent':'');
  if(uploadProgressLabel.textContent!==label)uploadProgressLabel.textContent=label;
+ uploadProgressLabel.title=p.message||label;
  uploadMeter.max=p.total;uploadMeter.value=done;
- uploadDismiss.hidden=p.active;
+ uploadDismiss.hidden=p.active||p.phase==='waiting';
  uploadProgress.classList.toggle('is-active',p.active);
 }
 const headerStrong=$('.redline-message-header strong',chat);
