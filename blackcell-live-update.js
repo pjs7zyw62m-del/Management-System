@@ -69,10 +69,42 @@ function defaultValue(t){if(t.type==='file')return 0;if(t.type==='checkbox'||t.t
 document.addEventListener('focusin',e=>{const t=e.target;if(editable(t)&&!dirty.has(t))original.set(t,value(t))},true);
 function track(e){const t=e.target;if(editable(t)){if(!dirty.has(t))dirty.set(t,original.has(t)?original.get(t):defaultValue(t));if(value(t)===dirty.get(t))dirty.delete(t)}}
 document.addEventListener('input',track,true);document.addEventListener('change',track,true);
+/* Read-only release diagnostics are available on any device/account.
+   Fetch the deployed document, not an unpublished commit. No page reload,
+   credentials, media bytes or additional background polling are involved. */
+let releaseInspection=null,releaseInspectionFlight=null;
+async function inspectRelease(){
+ if(releaseInspectionFlight)return releaseInspectionFlight;
+ const run=async()=>{
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
+  try{
+   const url=new URL(location.pathname,location.href);url.searchParams.set('_bc_release_check',String(Date.now()));
+   const [revision,response]=await Promise.all([version(),fetch(url,{cache:'no-store',credentials:'same-origin',signal:controller.signal})]);
+   if(!response.ok)throw Error('Website delivery HTTP '+response.status);
+   const template=document.createElement('template');template.innerHTML=await response.text();
+   const signature=(doc)=>[...doc.querySelectorAll('script[src],link[rel~="stylesheet"][href]')].map(el=>{
+    const ref=el.getAttribute(el.tagName==='SCRIPT'?'src':'href');
+    try{const u=new URL(ref,location.href);return u.origin===location.origin?u.pathname+u.search:null}catch(_){return null}
+   }).filter(Boolean).sort();
+   const loaded=signature(document),deployed=signature(template.content);
+   // Compare only declared entry-point assets; runtime-injected presence
+   // scripts and other lazy-loaded modules are not part of the HTML signature.
+   const assetChanged=deployed.some(x=>!loaded.includes(x));
+   const readBuild=doc=>doc.querySelector('meta[name="blackcell-os-client-build"]')?.content||doc.querySelector('meta[name="blackcell-page-build"]')?.content||'';
+   const currentBuild=readBuild(document),publishedBuild=readBuild(template.content);
+   const mismatch=assetChanged||Boolean(publishedBuild&&currentBuild!==publishedBuild);
+   releaseInspection={ok:true,revision,currentBuild,publishedBuild,mismatch,assets:deployed.length,checkedAt:new Date().toISOString(),automatic:mayReloadAutomatically(),blockedBy:manualPolicy()?'Protected session: manual navigation only.':blockingReason()};
+  }catch(_){releaseInspection={ok:false,error:'Could not verify deployed website. Current page was not changed.',checkedAt:new Date().toISOString()}}
+  finally{clearTimeout(timer)}
+  return releaseInspection;
+ };
+ releaseInspectionFlight=run();
+ try{return await releaseInspectionFlight}finally{releaseInspectionFlight=null}
+}
 window.BLACKCELL_LIVE_UPDATE=Object.freeze({
  hold(reason='operation',owner=window){const t=Symbol(reason);holds.set(t,owner);return()=>holds.delete(t)},
  clean(element){if(element&&typeof element.contains==='function')for(const t of dirty.keys())if(t===element||element.contains(t)){dirty.delete(t);original.set(t,value(t))}},
- check:()=>void check(),autoEnabled,setAutoEnabled,setVerifiedRole,
+ check:()=>void check(),inspectRelease,autoEnabled,setAutoEnabled,setVerifiedRole,
  status:()=>({available:!!pending,automatic:osMode&&autoEnabled(),blockedBy:pending?blockingReason():''}),
  show:async()=>{
   if(!policyAllowsReload())return {available:false,automatic:false};
@@ -242,7 +274,7 @@ async function refresh(){
  }
  location.reload();
 }
-async function version(){const url=new URL('blackcell-site-version.json',location.href);url.searchParams.set('_bc',String(Date.now()));const r=await fetch(url,{cache:'no-store',credentials:'same-origin'});if(!r.ok)throw Error('Version unavailable');const text=await r.text(),json=JSON.parse(text.slice(text.indexOf('{'),text.lastIndexOf('}')+1));const rev=String(json.revision||'');if(/^[a-f0-9]{7,64}$/i.test(rev))return rev;const build=String(json.built||'');if(/^\d{14}$/.test(build))return build;return String(json.fallback||'')}
+async function version(){const url=new URL('blackcell-site-version.json',location.href);url.searchParams.set('_bc',String(Date.now()));const r=await fetch(url,{cache:'no-store',credentials:'same-origin',signal:AbortSignal.timeout(12000)});if(!r.ok)throw Error('Version unavailable');const text=await r.text(),json=JSON.parse(text.slice(text.indexOf('{'),text.lastIndexOf('}')+1));const rev=String(json.revision||'');if(/^[a-f0-9]{7,64}$/i.test(rev))return rev;const build=String(json.built||'');if(/^\d{14}$/.test(build))return build;return String(json.fallback||'')}
 async function check(){
  if(!policyAllowsReload()||checking||refreshing||document.hidden||!navigator.onLine)return;
  checking=true;
