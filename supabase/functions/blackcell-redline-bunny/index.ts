@@ -34,7 +34,7 @@ function success(origin:string,data:Record<string,unknown>,status=200){
   status,headers:{...cors(origin),"Content-Type":"application/json;charset=utf-8"}
  });
 }
-async function limited(req:Request,max:number){
+async function limited(req:Pick<Request,'body'>,max:number){
  if(!req.body)throw Error("EMPTY_FILE");
  const reader=req.body.getReader(),parts:Uint8Array[]=[];let n=0;
  try{
@@ -97,12 +97,13 @@ Deno.serve(async req=>{
   const identity=await db.auth.getUser(jwt),uid=identity.data.user?.id;
   if(identity.error||!uid||!uuid.test(uid))return reply(origin,401,"SIGN_IN_REQUIRED");
   const action=new URL(req.url).searchParams.get("action")||"";
-  let roomId="",photoId="";
+  let roomId="",photoId="",libraryId="";
   if(action==="upload"){
    roomId=req.headers.get("x-bc-room")||"";
    photoId=req.headers.get("x-bc-photo-id")||"";
   }else{
    const body=await req.json();
+   libraryId=typeof body?.object_id==="string"?body.object_id:"";
    roomId=typeof body?.room_id==="string"?body.room_id:"";
    photoId=typeof body?.photo_id==="string"?body.photo_id:"";
   }
@@ -116,6 +117,55 @@ Deno.serve(async req=>{
   const verify=await db.rpc(room.owner_id===uid?"corp_code_status":"corp_employee_code_status");
   if(verify.error||verify.data?.ok!==true||verify.data?.verified!==true)
    return reply(origin,403,"REDLINE_SECURITY_VERIFICATION_REQUIRED");
+
+  if(action==="library-transfer"){
+   if(uid!==room.member_id||!room.active||room.photo_sending_paused)
+    return reply(origin,403,"PHOTO_SENDING_NOT_ALLOWED");
+   if(!uuid.test(libraryId))return reply(origin,400,"INVALID_LIBRARY_OBJECT");
+   const service=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
+   if(!service)return reply(origin,503,"LIBRARY_TRANSFER_NOT_CONFIGURED");
+   const admin=createClient(host,service,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+   // Preserve the private drive's access policy and require an owned library entry.
+   const member=await admin.from("corp_access_members").select("role,active,password_activated_at,access_scope").eq("user_id",uid).eq("active",true).maybeSingle();
+   if(member.error||member.data?.role!=="employee"||!member.data.password_activated_at||member.data.access_scope==="ledger_only")
+    return reply(origin,403,"PRIVATE_LIBRARY_ACCESS_DENIED");
+   const result=await admin.from("bc_os_private_objects").select("id,path,size_bytes,state,key_hex,source_object_id").eq("id",libraryId).eq("user_id",uid).eq("state","ready").maybeSingle();
+   if(result.error||!result.data)return reply(origin,404,"LIBRARY_PHOTO_UNAVAILABLE");
+   const row=result.data,size=Number(row.size_bytes);
+   const ext=String(row.path).split(".").pop()?.toLowerCase();
+   const mime=Object.entries(allowed).find(([,e])=>e===(ext==="jpeg"?"jpg":ext))?.[0];
+   if(!mime||!Number.isSafeInteger(size)||size<1||size>maxBytes)return reply(origin,415,"UNSUPPORTED_PHOTO_OR_SIZE");
+   let mediaId=row.id,keyHex=row.key_hex;
+   if(row.source_object_id){
+    // Existing authorized library references follow the private drive's read policy.
+    const source=await admin.from("bc_os_private_objects").select("id,size_bytes,state,key_hex,source_object_id").eq("id",row.source_object_id).eq("state","ready").maybeSingle();
+    if(source.error||!source.data||source.data.source_object_id||Number(source.data.size_bytes)!==size)return reply(origin,404,"LIBRARY_ORIGINAL_UNAVAILABLE");
+    mediaId=source.data.id;keyHex=source.data.key_hex;
+   }
+   if(!uuid.test(mediaId)||typeof keyHex!=="string"||!/^[0-9a-f]{64}$/i.test(keyHex))return reply(origin,502,"INVALID_LIBRARY_METADATA");
+   const existing=await db.from("corp_private_photo_entries").select("id").eq("id",photoId).maybeSingle();
+   if(existing.error||existing.data)return reply(origin,409,"PHOTO_ID_ALREADY_EXISTS");
+   const key=await crypto.subtle.importKey("raw",Uint8Array.from(keyHex.match(/.{2}/g)!.map((v:string)=>parseInt(v,16))),{name:"AES-GCM"},false,["decrypt"]);
+   const chunk=4194304,bytes=new Uint8Array(size);
+   for(let i=0;i<Math.ceil(size/chunk);i++){
+    const n=Math.min(chunk,size-i*chunk);
+    const response=await bunny("blackcell-os-private-v1/"+mediaId+"/"+i+".bin",accessKey,"GET");
+    if(!response.ok){await response.body?.cancel();return reply(origin,502,"LIBRARY_CHUNK_UNAVAILABLE")}
+    const packed=await limited(response,n+28);
+    if(packed.length!==n+28)return reply(origin,502,"LIBRARY_CHUNK_SIZE_MISMATCH");
+    const clear=await crypto.subtle.decrypt({name:"AES-GCM",iv:packed.subarray(0,12),additionalData:new TextEncoder().encode("blackcell-os-private-v1:"+mediaId+":"+i)},key,packed.subarray(12));
+    if(clear.byteLength!==n)return reply(origin,502,"LIBRARY_CHUNK_SIZE_MISMATCH");
+    bytes.set(new Uint8Array(clear),i*chunk);
+   }
+   if(!hasPhotoMagic(bytes,mime))return reply(origin,415,"PHOTO_SIGNATURE_MISMATCH");
+   const permission=await db.from("corp_private_photo_rooms").select("id,member_id,active,photo_sending_paused").eq("id",roomId).maybeSingle();
+   if(permission.error||permission.data?.member_id!==uid||!permission.data.active||permission.data.photo_sending_paused)return reply(origin,403,"PHOTO_SENDING_NOT_ALLOWED");
+   const path=pathFor(roomId,uid,photoId,mime);
+   const put=await bunny(path,accessKey,"PUT",bytes,mime);
+   if(put.status!==201){await put.body?.cancel();return reply(origin,502,"BUNNY_TRANSFER_FAILED")}
+   await put.body?.cancel();
+   return success(origin,{path,bytes:size,photo_id:photoId,provider:"bunny-redline-v1"});
+  }
 
   if(action==="upload"){
    if(uid!==room.member_id||!room.active||room.photo_sending_paused)
