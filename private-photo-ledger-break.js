@@ -1,0 +1,41 @@
+/* Private break requests, slideshow and favorite reminders; no billing writes. */
+(()=>{
+'use strict';
+const api=()=>window.BLACKCELL_REDLINE_API,snap=()=>api()?.snapshot?.();
+const make=(tag,cls,t)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(t!==undefined)e.textContent=t;return e};
+const btn=(t,fn,cls='')=>{const b=make('button',cls,t);b.type='button';b.addEventListener('click',fn);return b};
+const top=document.querySelector('.topbar');if(!top)return;
+const bar=make('div','rd-break-toolbar');bar.hidden=true;
+const main=btn('Smoke break',()=>void openMain()),fav=btn('♥ Favorites',()=>openFavorites()),status=make('small','rd-break-status');status.setAttribute('role','status');bar.append(main,fav,status);top.append(bar);
+const dlg=make('dialog','rd-break-dialog'),title=make('h2','','TAKE A SMOKE BREAK'),msg=make('p'),img=make('img','rd-break-photo'),count=make('small','rd-break-count'),actions=make('div','rd-break-actions'),note=make('p','rd-break-note');img.alt='Approved photograph';img.hidden=true;note.setAttribute('role','status');title.id='rdBreakTitle';dlg.setAttribute('aria-labelledby',title.id);dlg.append(title,msg,img,count,actions,note);document.body.append(dlg);
+let key='',rows=[],request=null,phase='',busy=false,polling=false,shown='',slides=[],index=0,play=null,mode='',favorites=new Set();
+const context=s=>s?.roomActive&&!s.archiveMode?s.roomId+'|'+String(s.resetAt||'')+'|'+s.userId:'';
+const url=v=>typeof v==='string'&&/^(https:\/\/|blob:)/.test(v);
+function roots(s){
+ const history=s?.photoHistory||[],groups=new Map();
+ for(const p of history){if(p.removal_status||p.decision_status!=='accepted')continue;const id=p.resubmission_origin_id||p.id,old=groups.get(id);if(!old||p.stars>old.stars)groups.set(id,p)}
+ return [...groups].map(([id,p])=>{const o=history.find(x=>x.id===id&&!x.removal_status&&x.decision_status==='accepted');return o?{...o,stars:Math.max(p.stars||0,o.stars||0),image_url:o.image_url||p.image_url}:null}).filter(Boolean);
+}
+function decorate(){if(snap()?.isOwner)return;document.querySelectorAll('[data-break-photo-id]').forEach(c=>c.toggleAttribute('data-break-favorite',favorites.has(c.dataset.breakPhotoId)))}
+function stop(){if(play){clearInterval(play);play=null}}
+function reset(){stop();if(dlg.open)dlg.close();rows=[];request=null;phase='';shown='';favorites.clear();slides=[];mode='';status.textContent=''}
+function reflect(s){bar.hidden=!context(s);if(bar.hidden)return;main.textContent=s.isOwner?(phase==='requested'?'Break request':phase==='ack'?'Resume slideshow':'Photo break'):(phase==='requested'?'Break requested':phase==='ack'?'Break acknowledged':'Smoke break');main.disabled=busy||(s.isOwner?!phase:!!phase);fav.hidden=!!s.isOwner;decorate()}
+function parse(s){const ended=new Set(rows.filter(x=>x.kind==='end').map(x=>x.request_id));request=rows.find(x=>x.kind==='request'&&!ended.has(x.id)&&Date.now()-Date.parse(x.created_at)<1800000)||null;phase=request?(rows.some(x=>x.kind==='ack'&&x.request_id===request.id)?'ack':'requested'):'';favorites=new Set(rows.filter(x=>x.kind==='favorite').map(x=>x.photo_id));status.textContent=!s.isOwner&&favorites.size?favorites.size+' receiver favorites':'';if(s.isOwner&&request&&phase==='requested'&&shown!==request.id&&!dlg.open){shown=request.id;openRequest()}if(s.isOwner&&mode==='slides'&&phase!=='ack'){stop();if(dlg.open)dlg.close()}reflect(s)}
+async function refresh(){const s=snap(),k=context(s);if(k!==key){reset();key=k}reflect(s);if(!k||polling||document.hidden||!api()?.breakEvents)return;polling=true;try{const r=await api().breakEvents();if(context(snap())!==k)return;rows=r;parse(snap())}catch(e){if(context(snap())===k)status.textContent='Break service unavailable'}finally{polling=false}}
+async function action(kind,photo=null){if(busy)return false;const k=key,id=request?.id;busy=true;note.textContent='';reflect(snap());try{await api().breakAction(kind,kind==='request'?null:id,photo);if(context(snap())!==k)return false;await refresh();return true}catch(e){note.textContent=String(e?.message||e);if(!dlg.open)status.textContent=note.textContent;return false}finally{busy=false;reflect(snap())}}
+function show(){if(!dlg.open)dlg.showModal()}
+async function openMain(){const s=snap();if(!context(s))return;if(!s.isOwner){await action('request');return}if(phase==='ack')openSlides();else if(phase==='requested')openRequest()}
+function openRequest(){stop();mode='request';title.textContent='TAKE A SMOKE BREAK';msg.textContent='Your sender requested a break. Acknowledge to review your top photos. No new paid timer starts.';img.hidden=true;img.removeAttribute('src');count.textContent='';note.textContent='';actions.replaceChildren(btn('Not now',()=>dlg.close()),btn('Acknowledge',async()=>{if(await action('ack'))openSlides()},'primary'));show()}
+function openSlides(){if(!snap()?.isOwner||!request)return;stop();mode='slides';slides=roots(snap()).filter(p=>p.stars>=4&&url(p.image_url)).sort((a,b)=>Number(favorites.has(b.id))-Number(favorites.has(a.id))||b.stars-a.stars||Number(b.amount_cents||0)-Number(a.amount_cents||0));index=0;renderSlide();show();if(slides.length>1)play=setInterval(()=>step(1),6000)}
+function step(n){if(!slides.length)return;index=(index+n+slides.length)%slides.length;mode==='slides'?renderSlide():renderFavorite()}
+function imageFor(p){img.hidden=!p||!url(p.image_url);if(img.hidden)img.removeAttribute('src');else if(img.getAttribute('src')!==p.image_url)img.src=p.image_url}
+function nav(){const prev=btn('‹ Previous',()=>{stop();step(-1)}),next=btn('Next ›',()=>{stop();step(1)});prev.disabled=next.disabled=slides.length<2;return [prev,next]}
+function renderSlide(){title.textContent='BREAK · TOP PHOTOS';msg.textContent='Mark favorites to tell your sender which originals to use again. Ratings and earnings stay unchanged.';const p=slides[index];imageFor(p);count.textContent=p?(index+1)+' / '+slides.length+' · '+'★'.repeat(p.stars):'No available approved 4- or 5-star photos.';const [prev,next]=nav();const mark=btn(p&&favorites.has(p.id)?'♥ Favorite sent':'♥ Mark favorite',async()=>{stop();if(p&&await action('favorite',p.id)){favorites.add(p.id);renderSlide();note.textContent='Favorite sent to your sender.'}},'primary');mark.disabled=!p||favorites.has(p.id);actions.replaceChildren(prev,mark,next,btn('End break',async()=>{if(await action('end')){stop();if(dlg.open)dlg.close()}}))}
+function openFavorites(){const s=snap();if(!context(s)||s.isOwner)return;stop();mode='favorites';title.textContent='RECEIVER FAVORITES';msg.textContent='Photos the receiver marked for future review.';slides=roots(s).filter(p=>favorites.has(p.id));index=0;renderFavorite();show()}
+function renderFavorite(){const p=slides[index];imageFor(p);count.textContent=p?(index+1)+' / '+slides.length+' · PHOTO '+p.id.slice(0,8).toUpperCase():'No favorite reminders yet.';note.textContent=p&&!p.resubmissionAllowed?'Resubmit unavailable: '+p.resubmissionStatus:'';const [prev,next]=nav();const send=btn('⟲ Resubmit photo',()=>{if(p?.resubmissionAllowed){dlg.close();window.BLACKCELL_REDLINE_REUSE_UI?.open(p.id,send)}},'primary');send.disabled=!p?.resubmissionAllowed;actions.replaceChildren(prev,send,next,btn('Close',()=>dlg.close()))}
+dlg.addEventListener('close',()=>{stop();img.removeAttribute('src');mode=''});
+for(const e of ['blackcell:redline:state','blackcell:redline:bridge','blackcell:redline:session-mode','blackcell:redline:reset','pageshow'])window.addEventListener(e,()=>{if(context(snap())!==key)void refresh();else reflect(snap())});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();else void refresh()});
+let paint=0;const home=document.querySelector('#redlineSimpleSender');if(home)new MutationObserver(()=>{if(!paint)paint=requestAnimationFrame(()=>{paint=0;decorate()})}).observe(home,{childList:true,subtree:true});
+setInterval(()=>void refresh(),5500);void refresh();
+})();

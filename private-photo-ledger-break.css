@@ -1,0 +1,11 @@
+.rd-break-toolbar[hidden],.rd-break-toolbar button[hidden],.rd-break-photo[hidden]{display:none!important}
+.rd-break-toolbar{display:flex!important;gap:4px;align-items:center;flex-wrap:wrap;flex:none;max-width:42%}
+.rd-break-toolbar button{min-height:30px!important;width:auto!important;background:#201018!important;color:#fff!important;border:1px solid #843146!important;border-radius:7px!important;font:650 11px system-ui!important;padding:4px 7px!important}
+.rd-break-toolbar button:disabled{opacity:.65!important}.rd-break-status{font:10px system-ui;color:#f5b6c3;max-width:150px}.rd-break-status:empty{display:none}
+dialog.rd-break-dialog{box-sizing:border-box;width:min(760px,96vw)!important;max-height:94dvh!important;overflow:auto!important;background:#08080a!important;color:#fff!important;border:1px solid #a72b43!important;border-radius:16px!important;padding:12px!important;text-align:center}
+.rd-break-dialog::backdrop{background:#000c}.rd-break-dialog h2{font:800 20px system-ui;color:#f64c63;margin:0 0 8px}.rd-break-dialog p{font:13px/1.4 system-ui;color:#d9d3d5;margin:7px 0}
+.rd-break-photo{display:block;width:100%;height:min(60dvh,620px);object-fit:contain;background:#000;border-radius:9px}.rd-break-count{display:block;color:#ffd363;font:700 13px system-ui;margin:7px}
+.rd-break-actions{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}.rd-break-actions button{background:#252126;color:#fff;border:1px solid #6e3e4b;border-radius:8px;min-height:40px;padding:8px;font:650 12px system-ui}.rd-break-actions .primary{background:#a7142c;border-color:#e5415a}.rd-break-actions button:disabled{opacity:.5}.rd-break-note:empty{display:none}
+[data-break-favorite]{outline:2px solid #e3475d!important;position:relative}[data-break-favorite]::before{content:'♥ RECEIVER FAVORITE';position:absolute;top:3px;left:4px;z-index:2;background:#7c1027;color:#fff;padding:3px 6px;border-radius:5px;font:700 9px system-ui}
+#redlineSimpleSender .redline-five-star-resubmit,#redlineSimpleSender .redline-photo-history-resend{display:block!important;min-height:42px!important;visibility:visible!important}.rd-reuse-reason{color:#d7a2af!important}
+@media(max-width:650px){.rd-break-toolbar{max-width:36%;gap:3px}.rd-break-toolbar button{font-size:10px!important;padding:4px!important}.rd-break-status{display:none}}

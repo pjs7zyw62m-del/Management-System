@@ -2480,6 +2480,28 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
  async reusePhoto(photoId){
   return await window.BLACKCELL_REDLINE_API.resubmitFiveStarPhoto(photoId);
  },
+ async breakEvents(){
+ const room=state.room,cutoff=room?.current_session_started_at;
+ if(state.closed||!state.user||!room?.active||state.showArchive)return [];
+ let q=db.from('corp_redline_break_events').select('id,kind,request_id,photo_id,created_at').eq('room_id',room.id);
+ if(cutoff)q=q.gte('created_at',cutoff);
+ const result=await q.order('created_at',{ascending:false}).limit(500);
+ if(result.error)throw Error(fail(result.error));
+ return state.room?.id===room.id&&!state.showArchive&&state.room?.current_session_started_at===cutoff?result.data||[]:[];
+ },
+ async breakAction(kind,requestId=null,photoId=null){
+ const room=state.room;
+ if(state.closed||!state.user||!room?.active||state.showArchive||!['request','ack','end','favorite'].includes(kind)||(state.isOwner===(kind==='request')))throw Error('Open an active verified private room.');
+ if(kind!=='request'&&!validId(requestId))throw Error('Invalid break request.');
+ if(kind==='favorite'&&(!validId(photoId)||!photoHistoryData().some(p=>p.id===photoId&&!p.removal_status&&p.decision_status==='accepted')))throw Error('Select an approved photograph.');
+ if(kind==='ack'){
+ const status=await window.BLACKCELL_REDLINE_API.timerStatus(room.id);
+ if(!status?.ok||status.active?.running)throw Error('Stop the paid timer before acknowledging this break.');
+ }
+ if(state.room?.id!==room.id||state.showArchive)throw Error('Private room changed.');
+ const result=await db.from('corp_redline_break_events').insert({room_id:room.id,kind,request_id:requestId,photo_id:photoId}).select('id').single();
+ if(result.error)throw Error(fail(result.error));return result.data;
+ },
  async refreshSenderRecords(){
   if(state.closed||state.isOwner||!state.user||!state.room)throw Error('Open a verified sender room first.');
   await loadEntries({force:true});

@@ -467,7 +467,7 @@ function renderTopPicks(snap){
   return;
  }
  for(const [index,p] of snap.topPicks.entries()){
-  const card=make('article','redline-top-pick-row');
+  const card=make('article','redline-top-pick-row');card.dataset.breakPhotoId=p.id;
   appendRatingImage(card,p.image_url,p.caption);
   const details=make('div','redline-top-pick-details');
   details.append(
@@ -479,7 +479,7 @@ function renderTopPicks(snap){
   const history=snap.photoHistory||[],item=history.find(x=>x.id===p.id);
   const original=history.find(x=>x.id===(item?.resubmission_origin_id||item?.id));
   if(original){
-   const reuse=make('button','redline-five-star-resubmit',historyResendLabel(original,snap));reuse.type='button';
+   const reuse=make('button','redline-five-star-resubmit','⟲ RESUBMIT PHOTO');reuse.type='button';reuse.title=historyResendLabel(original,snap);if(!original.resubmissionAllowed)details.append(make('small','rd-reuse-reason',reuse.title));
    reuse.disabled=!original.resubmissionAllowed;
    reuse.addEventListener('click',()=>window.BLACKCELL_REDLINE_REUSE_UI?.open(original.id,reuse));
    details.append(reuse);
@@ -499,7 +499,7 @@ historyArchive.addEventListener('click',async()=>{
  finally{historyArchive.disabled=false}
 });
 function historyResendLabel(p,snap){
- if(p.resubmissionAllowed)return '⟲ REUSE PHOTO';
+ if(p.resubmissionAllowed)return '⟲ RESUBMIT PHOTO';
  if(p.resubmission_origin_id)return 'REUSED COPY · SEE ORIGINAL';
  if(snap?.archiveMode)return 'ARCHIVED · REUSE UNAVAILABLE';
  if(!snap?.roomActive)return 'ROOM CLOSED';
@@ -529,7 +529,7 @@ function renderPhotoHistory(snap){
  if(!photos.length)historyList.append(make('p','redline-history-empty',
   historyFilter==='picks'?'No 5-star photos here.':'No photos sent in this '+(snap?.archiveMode?'archive.':'session yet.')));
  for(const p of photos.slice(0,historyVisible)){
-  const card=make('article','redline-photo-history-row');
+  const card=make('article','redline-photo-history-row');card.dataset.breakPhotoId=p.resubmission_origin_id||p.id;
   appendRatingImage(card,p.image_url,p.caption);
   const info=make('div','redline-photo-history-details');
   const decision=p.decision_status==='accepted'?'APPROVED':
@@ -540,10 +540,13 @@ function renderPhotoHistory(snap){
   if(p.decision_status==='accepted')info.append(approvedPriceControl(p,snap));
   if(p.caption)info.append(make('p','redline-history-caption',p.caption));
   if(p.resubmissionCount)info.append(make('small','',p.resubmissionCount+' previous resend(s)'));
-  const button=make('button','redline-photo-history-resend',historyResendLabel(p,snap));
-  button.type='button';button.disabled=!p.resubmissionAllowed||Boolean(resubmittingId);
+  const original=all.find(x=>x.id===(p.resubmission_origin_id||p.id))||p;
+  const button=make('button','redline-photo-history-resend','⟲ RESUBMIT PHOTO');
+  const reason=historyResendLabel(original,snap);button.title=reason;
+  if(!original.resubmissionAllowed)info.append(make('small','rd-reuse-reason',reason));
+  button.type='button';button.disabled=!original.resubmissionAllowed||Boolean(resubmittingId);
   const status=make('p','redline-five-star-row-status');status.setAttribute('role','status');
-  button.addEventListener('click',()=>void resendHistoryPhoto(p,button,status,snap.roomId));
+  button.addEventListener('click',()=>void resendHistoryPhoto(original,button,status,snap.roomId));
   if(p.image_url&&!p.removal_status){
    const view=make('button','redline-hd-open','⤢ VIEW ORIGINAL');
    view.type='button';view.setAttribute('aria-label','View this private original photograph full screen');
@@ -567,7 +570,7 @@ function renderFiveStarPhotos(snap){
   return;
  }
  for(const photo of snap.fiveStarPhotos){
-  const card=make('article','redline-five-star-photo');
+  const card=make('article','redline-five-star-photo');card.dataset.breakPhotoId=photo.id;
   appendRatingImage(card,photo.image_url,photo.caption);
   const details=make('div','redline-five-star-details');
   details.append(
@@ -583,7 +586,8 @@ function renderFiveStarPhotos(snap){
   if(snap.photoSendingPaused&&photo.resubmissionStatus==='ready')label='SENDING PAUSED BY RECEIVER';
   if(!snap.roomActive&&photo.resubmissionStatus==='ready')label='ROOM CLOSED';
   if(snap.archiveMode)label='ARCHIVED · VIEW ONLY';
-  const action=make('button','redline-five-star-resubmit',label);
+  const action=make('button','redline-five-star-resubmit','⟲ RESUBMIT PHOTO');
+  action.title=label;if(!photo.resubmissionAllowed)details.append(make('small','rd-reuse-reason',historyResendLabel(photo,snap)));
   action.type='button';
   action.disabled=Boolean(!photo.resubmissionAllowed||resubmittingId);
   action.dataset.photoId=photo.id;
