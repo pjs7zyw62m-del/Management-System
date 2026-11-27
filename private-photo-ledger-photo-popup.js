@@ -17,12 +17,26 @@ const priceRow=make('div','rd-ir-price-row'),label=make('label','rd-ir-price','P
 const timerToggle=btn('◷ Timer',()=>{timerBox.hidden=!timerBox.hidden;timerToggle.setAttribute('aria-expanded',String(!timerBox.hidden));syncTimer()},'rd-ir-timer-toggle');timerToggle.setAttribute('aria-expanded','false');priceRow.append(label,timerToggle);
 const timerBox=make('div','rd-ir-timer');timerBox.hidden=true;const rate=make('input');rate.type='text';rate.inputMode='decimal';rate.setAttribute('aria-label','Timer rate per minute');rate.placeholder='0.50';const timerStatus=make('small','');
 const timerStart=btn('Start',()=>timerAction(true)),timerStop=btn('Stop',()=>timerAction(false));timerBox.append(rate,timerStart,timerStop,timerStatus);
+const liveHud=make('div','rd-ir-live-hud');liveHud.hidden=true;liveHud.setAttribute('aria-label','Live timed photo');
+const liveTime=make('div','rd-ir-live-time'),liveClock=make('strong','','00:00');
+liveTime.append(liveClock,make('small','','LIVE TIMER'));
+const liveRate=make('strong','','—'),liveEarned=make('strong','','—');
+const rateTile=make('div','rd-ir-live-stat'),earnedTile=make('div','rd-ir-live-stat rd-ir-live-earned');
+rateTile.append(make('small','','RATE / MIN'),liveRate);earnedTile.append(make('small','','EARNINGS'),liveEarned);
+liveHud.append(liveTime,rateTile,earnedTile);
+const liveActions=make('div','rd-ir-live-actions'),liveStop=btn('■ Stop timer',()=>timerAction(false),'rd-ir-live-stop'),liveMin=btn('Chat / minimize',()=>minimize(),'rd-ir-live-min');
+const liveNote=make('small','rd-ir-live-note');liveActions.hidden=true;liveActions.append(liveStop,liveMin,liveNote);
 const accept=btn('Submit & Next',()=>decision('accept'),'rd-ir-submit'),reject=btn('Reject photo',()=>decision('reject'),'rd-ir-reject'),feedback=make('small','rd-ir-feedback');feedback.setAttribute('role','status');
-const controls=make('div','rd-ir-controls');const actions=make('div','rd-ir-actions');actions.append(accept,reject);controls.append(stars,priceRow,timerBox,actions,feedback);scroll.append(imageWrap);popup.append(header,scroll,controls);
+const controls=make('div','rd-ir-controls');const actions=make('div','rd-ir-actions');actions.append(accept,reject);controls.append(stars,priceRow,timerBox,actions,feedback);scroll.append(imageWrap);popup.append(header,scroll,liveHud,liveActions,controls);
 const grip=make('div','rd-ir-grip');grip.setAttribute('role','separator');grip.setAttribute('aria-label','Resize photo review and chat');grip.setAttribute('aria-orientation','horizontal');grip.tabIndex=0;popup.append(grip);
 const resume=btn('Photo waiting · Review',()=>{opened=true;schedule()},'rd-ir-resume');resume.hidden=true;resume.setAttribute('aria-controls',popup.id);
 document.body.append(popup,resume);
 let scope='',known=new Set(),opened=false,current=null,queued=false,share=.90,pointer=null,expandedHost=null;
+let timedStatus=null,seenTimer='',focusHost=null;
+function activeTimer(s){const a=timedStatus?.status?.active;return s?.isOwner&&s.roomActive&&!s.archiveMode&&timedStatus?.roomId===s.roomId&&a?.running===true?a:null}
+function selectPhoto(history,pending,canonicalId,active){return active?history.find(p=>p.id===active.photo_id&&!p.removal_status)||null:pending.find(p=>p.id===canonicalId)||pending[0]||null}
+function setFocusHost(host){if(focusHost===host)return;focusHost?.classList.remove('rd-ir-timer-focus');focusHost=host;focusHost?.classList.add('rd-ir-timer-focus')}
+window.addEventListener('blackcell:redline:timer-status',event=>{if(event.detail?.roomId===snapshot()?.roomId){timedStatus=event.detail;schedule()}});
 // Presentation preferences are local to the verified owner and this device.
 const preview=location.href==='about:srcdoc';
 const defaults={mode:'top',auto:true,side:'right',width:44,height:82,anchor:'center'};
@@ -59,7 +73,7 @@ function openLayoutSettings(){
 }
 window.addEventListener('blackcell:redline:open-photo-layout',openLayoutSettings);
 function setPreviewExpanded(host){if(expandedHost===host)return;expandedHost?.classList.remove('rd-ir-preview-expanded');expandedHost=host;expandedHost?.classList.add('rd-ir-preview-expanded')}
-function minimize(){opened=false;popup.hidden=true;setPreviewExpanded(null);popup.removeAttribute('data-preview-top');schedule()}
+function minimize(){opened=false;popup.hidden=true;setFocusHost(null);setPreviewExpanded(null);popup.removeAttribute('data-preview-top');schedule()}
 function canonical(){
  const s=snapshot(),card=q('#reviewQueueCurrent .photo-entry[data-redline-photo-id]'),panel=q('#redlineLightboxReview');
  if(!s?.isOwner||!s.roomActive||s.archiveMode||!current||card?.dataset.redlinePhotoId!==current.id||!panel||panel.hidden)return null;
@@ -68,6 +82,7 @@ function canonical(){
 }
 function original(){canonical()?.card.querySelector('.photo-image-btn')?.click()}
 function decision(kind){
+ if(activeTimer(snapshot())){feedback.textContent='Stop the active timer before reviewing another price.';return}
  const c=canonical();if(!c){feedback.textContent='Photo controls are still loading.';return}
  const action=c.panel.querySelector(kind==='reject'?'.redline-review-actions .reject-photo':'.redline-review-actions .button-main');
  if(!action||action.disabled){feedback.textContent='Wait for the current decision to finish.';return}
@@ -81,15 +96,23 @@ function decision(kind){
 rate.addEventListener('change',()=>{const originalRate=q('.rr-timer-rate',q('#redlinePhotoTimerPanel')||document);if(originalRate){originalRate.value=rate.value;originalRate.dispatchEvent(new Event('input',{bubbles:true}))}});
 function syncTimer(){
  const timer=q('#redlinePhotoTimerPanel'),c=canonical();
- timerToggle.disabled=false;
- if(!timer){timerStart.disabled=timerStop.disabled=true;timerStatus.textContent='Timer unavailable in this view.';return}
+ timerToggle.disabled=!!activeTimer(snapshot());
+ if(!timer){timerStart.disabled=timerStop.disabled=liveStop.disabled=true;timerStatus.textContent='Timer unavailable in this view.';return}
  const originalRate=q('.rr-timer-rate',timer),start=q('.rr-timer-start',timer),stop=q('.rr-timer-stop',timer);
  if(document.activeElement!==rate&&originalRate)rate.value=originalRate.value;
  timerStart.disabled=!c||!start||start.disabled;timerStop.disabled=!stop||stop.disabled;
- timerStatus.textContent=[q('.rr-timer-clock',timer)?.textContent,q('.rr-timer-money',timer)?.textContent].filter(Boolean).join(' · ');
+ const clock=q('.rr-timer-clock',timer)?.textContent||'00:00',earned=q('.rr-timer-money',timer)?.textContent||'—';
+ timerStatus.textContent=[clock,earned].join(' · ');
+ const a=activeTimer(snapshot());
+ if(a&&a.photo_id===current?.id){
+  liveClock.textContent=clock;liveEarned.textContent=earned;
+  liveRate.textContent='$'+(Number(a.rate_cents)/100).toFixed(2);
+  liveStop.disabled=!stop||stop.disabled;
+  liveNote.textContent=timedStatus?.status?.stop_prompt?.status==='pending'?(q('.rr-timer-note',timer)?.textContent||'Waiting for stop confirmation…'):'';
+ }
 }
 function timerAction(starting){
- const timer=q('#redlinePhotoTimerPanel');if(!timer||!canonical())return;
+ const timer=q('#redlinePhotoTimerPanel');if(!timer||(starting?!canonical():!activeTimer(snapshot())))return;
  if(starting){
   // Select exactly the canonical pending photograph before starting.
   const select=q('.rr-timer-select-incoming',timer);select?.click();
@@ -108,16 +131,22 @@ function sync(){
  const s=snapshot(),chat=q('#redlineReceiverChat'),dashboard=q('#redlineReceiverCommand');
  loadSettings(s);
  const valid=Boolean(s?.isOwner&&s.roomActive&&!s.archiveMode&&s.roomId&&chat&&!chat.hidden&&dashboard&&!dashboard.hidden&&!q('#ledgerApp')?.hidden);
- if(!valid){if(settingsDialog?.open)settingsDialog.close();opened=false;scope='';known.clear();current=null;popup.hidden=resume.hidden=true;setPreviewExpanded(null);popup.removeAttribute('data-preview-top');image.removeAttribute('src');return}
+ if(!valid){if(settingsDialog?.open)settingsDialog.close();opened=false;scope='';known.clear();current=null;popup.hidden=resume.hidden=true;setPreviewExpanded(null);setFocusHost(null);seenTimer='';timedStatus=null;popup.removeAttribute('data-preview-top');image.removeAttribute('src');return}
  const room=s.roomId+'|'+String(s.resetAt||'');
  if(room!==scope){scope=room;known.clear();opened=false;current=null;price.value='';timerBox.hidden=true}
  const pending=(s.photoHistory||[]).filter(p=>p.decision_status==='pending'&&!p.removal_status).sort((a,b)=>Date.parse(a.created_at)-Date.parse(b.created_at)||String(a.id).localeCompare(String(b.id)));
  const fresh=pending.some(p=>!known.has(p.id));known=new Set(pending.map(p=>p.id));
  const card=q('#reviewQueueCurrent .photo-entry[data-redline-photo-id]');
- const next=pending.find(p=>p.id===card?.dataset.redlinePhotoId)||pending[0]||null;
+ const active=activeTimer(s),next=selectPhoto(s.photoHistory||[],pending,card?.dataset.redlinePhotoId,active);
+ const timed=Boolean(active&&next?.id===active.photo_id);
+ if(active&&active.id!==seenTimer){seenTimer=active.id;opened=true;}
+ if(!active)seenTimer='';
+ popup.classList.toggle('rd-ir-timing',timed);
+ liveHud.hidden=liveActions.hidden=!timed;
+ if(timed){timerBox.hidden=true;timerToggle.setAttribute('aria-expanded','false')}
  const mobile=document.body.classList.contains('bc-ledger-mobile');
  const summary=!mobile||document.body.dataset.ledgerView==='summary';
- if(fresh&&settings.auto&&summary&&!document.activeElement?.matches('.redline-message-entry'))opened=true;
+ if(!active&&fresh&&settings.auto&&summary&&!document.activeElement?.matches('.redline-message-entry'))opened=true;
  if(!next)opened=false;
  if(current?.id!==next?.id){price.value='';feedback.textContent='';scroll.scrollTop=0}
  current=next;
@@ -126,17 +155,18 @@ function sync(){
  // Mount the new presentation only. The original chat and controls stay put.
  const conversation=q('.redline-message-card',chat),feed=conversation?.querySelector('.redline-message-feed');
  const narrow=innerWidth<650;
- const effective=(settings.mode==='side'&&narrow)||(settings.mode==='custom'&&narrow&&['left','right'].includes(settings.anchor))?'top':settings.mode;
+ const effective=timed?'top':(settings.mode==='side'&&narrow)||(settings.mode==='custom'&&narrow&&['left','right'].includes(settings.anchor))?'top':settings.mode;
  popup.dataset.layout=effective;popup.dataset.anchor=effective==='side'?settings.side:settings.anchor;
  popup.style.setProperty('--rd-layout-width',settings.width+'vw');popup.style.setProperty('--rd-layout-height',settings.height+'dvh');
- const topPreview=Boolean(valid&&effective==='top'&&visible&&conversation&&feed?.parentNode===conversation);
+ const inlineTimer=Boolean(timed&&conversation&&feed?.parentNode===conversation);
+ const topPreview=Boolean(!inlineTimer&&valid&&effective==='top'&&visible&&conversation&&feed?.parentNode===conversation);
  if(topPreview){
   // Fixed overlay starts at the phone viewport's top, including the branding.
   // Do not move or hide the original header, counters, or conversation.
   if(popup.parentNode!==document.body)document.body.append(popup);
   if(resume.parentNode!==conversation)conversation.insertBefore(resume,feed);
   popup.setAttribute('data-preview-top','');
- }else if(effective==='top'&&mobile&&conversation&&feed?.parentNode===conversation){
+ }else if(inlineTimer||(effective==='top'&&mobile&&conversation&&feed?.parentNode===conversation)){
   popup.removeAttribute('data-preview-top');
   // The finance header, PAY control and pinned timer precede the feed.
   // Insert only our two new nodes, directly before the conversation feed.
@@ -148,6 +178,7 @@ function sync(){
   if(resume.parentNode!==document.body)document.body.append(resume);
  }
  const mobileReady=effective!=='top'||!mobile||Boolean(conversation&&feed?.parentNode===conversation);
+ setFocusHost(inlineTimer&&visible?conversation:null);
  // Approved mobile receiver overlay: original financial header and chat stay mounted.
  setPreviewExpanded(null);
  if(topPreview){
@@ -159,16 +190,16 @@ function sync(){
   popup.style.setProperty('--rd-ir-top-height',Math.min(available,height*share)+'px');
  }else if(mobileReady&&mobile&&visible){const composer=q('.redline-message-composer',conversation);const available=Math.max(0,conversation.clientHeight-[...conversation.children].filter(el=>el!==popup&&el!==resume&&el!==feed&&!el.hidden&&getComputedStyle(el).display!=='none').reduce((n,el)=>n+el.getBoundingClientRect().height,0)-(expandedHost?40:48));popup.style.setProperty('--rd-ir-available',available+'px');}else popup.style.removeProperty('--rd-ir-available');
  popup.hidden=!visible||!mobileReady;resume.hidden=!next||visible||!summary||!mobileReady;
- const resumeText=pending.length+' photo'+(pending.length===1?'':'s')+' waiting · Review';if(resume.textContent!==resumeText)resume.textContent=resumeText;
+ const resumeText=timed?'◷ Timer running · Return to photo':pending.length+' photo'+(pending.length===1?'':'s')+' waiting · Review';if(resume.textContent!==resumeText)resume.textContent=resumeText;
  if(!next){image.removeAttribute('src');image.hidden=true;placeholder.hidden=false;return;}
- const countText='1 of '+pending.length+' awaiting review';if(count.textContent!==countText)count.textContent=countText;
+ const countText=timed?'Timed photograph · Live session':'1 of '+pending.length+' awaiting review';if(count.textContent!==countText)count.textContent=countText;
  const src=next.image_url;
  if(src&&/^(blob:|https:\/\/|data:image\/)/.test(src)){if(image.getAttribute('src')!==src)image.src=src;image.hidden=false;placeholder.hidden=true}
  else{image.removeAttribute('src');image.hidden=true;placeholder.hidden=false}
  const c=canonical(),rating=Number(next.stars)||0;
  starButtons.forEach((b,i)=>{b.classList.toggle('is-filled',i<rating);b.disabled=!c||!!c.panel.querySelectorAll('.rr-photo-rating-star')[i]?.disabled});
- accept.disabled=!c||!!c.panel.querySelector('.redline-review-actions .button-main')?.disabled;
- reject.disabled=!c||!!c.panel.querySelector('.redline-review-actions .reject-photo')?.disabled;
+ accept.disabled=timed||!c||!!c.panel.querySelector('.redline-review-actions .button-main')?.disabled;
+ reject.disabled=timed||!c||!!c.panel.querySelector('.redline-review-actions .reject-photo')?.disabled;
  const note=c?.panel.querySelector('.redline-review-status')?.textContent;if(note)feedback.textContent=note;
  syncTimer();
 }
