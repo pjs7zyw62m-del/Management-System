@@ -98,7 +98,7 @@ html.bc-os-phone #desktop .os-window-head .traffic button:nth-child(3){display:n
 #desktop .bc-store-feature{border-radius:24px!important}
 #desktop :is(.bc-store-search,.bc-settings-button,.bc-store-get,.bc-store-nav,.bc-settings-navbtn):focus-visible{outline:2px solid #e58397;outline-offset:2px}
 
-/* A native-feeling BLACKCELL phone home, not an Android-style dashboard. */
+/* Obsidian Touch: compact, high-contrast phone layout; no stacked live blur surfaces. */
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb{
  background:#010206!important;
 }
@@ -120,34 +120,34 @@ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb:after{
  linear-gradient(180deg,rgba(1,2,5,.04),rgba(1,2,5,.08) 45%,rgba(2,3,9,.25) 70%,#0102049e)!important;
 }
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-status{
- height:calc(51px + env(safe-area-inset-top));min-height:51px;
- padding:max(11px,env(safe-area-inset-top)) 19px 3px;
+ height:calc(48px + env(safe-area-inset-top));min-height:48px;
+ padding:max(5px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 3px max(16px,env(safe-area-inset-left));
 }
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-status-brand{
  color:#f4eef1!important;font-size:10px!important;letter-spacing:.11em!important;
  font-weight:730!important;opacity:.93;
 }
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-status-button{
- width:42px;height:42px;border-radius:17px;
- background:linear-gradient(155deg,#3233417a,#10121a76)!important;
+ width:44px;height:44px;border-radius:14px;
+ background:#15161bcc!important;
  border:1px solid #ffffff27!important;
  box-shadow:inset 0 1px #ffffff27,0 6px 14px #0005!important;
- backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px);
+ backdrop-filter:none;-webkit-backdrop-filter:none;
 }
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-home{
  padding:clamp(5px,.9vh,12px) clamp(15px,4.2vw,24px) max(6px,env(safe-area-inset-bottom))!important;
 }
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-identity{
- order:0;flex:none;justify-content:flex-start;gap:17px;opacity:1!important;
- min-height:clamp(85px,12vh,118px);
+ order:0;flex:none;justify-content:flex-start;gap:12px;opacity:1!important;
+ min-height:clamp(56px,8vh,78px);
  margin:clamp(1px,.6vh,8px) 1px clamp(7px,1.2vh,13px)!important;
  padding:0 3px;
 }
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-diamond{
- width:clamp(64px,16vw,84px)!important;height:clamp(64px,16vw,84px)!important;
+ width:clamp(43px,12vw,58px)!important;height:clamp(43px,12vw,58px)!important;
  transform:none!important;border:0!important;border-radius:0!important;
  background:transparent!important;box-shadow:none!important;
- filter:drop-shadow(0 6px 28px #bc183e85);
+ filter:drop-shadow(0 4px 12px #bc183e45);
  display:grid;place-items:center;
 }
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-diamond svg{width:100%;height:100%;overflow:visible}
@@ -158,7 +158,7 @@ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-identity-text{
 }
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-identity-headline{
  color:#fff;font-weight:760;letter-spacing:-.065em;
- font-size:clamp(27px,7vw,39px);line-height:1.06;text-shadow:0 5px 25px #000c;
+ font-size:clamp(26px,7vw,36px);line-height:1.06;text-shadow:0 5px 25px #000c;
 }
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-identity-subtitle{
  color:#edced6;font-size:9px;letter-spacing:.16em;font-weight:680;
@@ -166,15 +166,15 @@ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-identity-subtitle{
 }
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-widgets{
  order:1;flex:none;display:grid;grid-template-columns:1fr 1fr;
- gap:0;margin:0 0 clamp(13px,2.2vh,24px);
- border-radius:25px;overflow:hidden;min-height:clamp(74px,11vh,102px);
- background:linear-gradient(110deg,rgba(54,51,68,.53),rgba(9,10,19,.62))!important;
+ gap:8px;margin:0 0 clamp(10px,1.8vh,18px);
+ border-radius:20px;overflow:hidden;min-height:clamp(70px,10vh,92px);
+ background:linear-gradient(125deg,#1a1b21ed,#101116ed)!important;
  border:1px solid #ffffff31!important;
- box-shadow:inset 0 1px #ffffff35,0 12px 38px #0007!important;
- backdrop-filter:blur(35px) saturate(140%);-webkit-backdrop-filter:blur(35px) saturate(140%);
+ box-shadow:inset 0 1px #ffffff15,0 8px 20px #0005!important;
+ backdrop-filter:none;-webkit-backdrop-filter:none;
 }
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-widget{
- height:clamp(74px,11vh,102px)!important;min-height:0;padding:12px 17px!important;
+ height:clamp(70px,10vh,92px)!important;min-height:0;padding:12px 17px!important;
  border:0!important;border-radius:0!important;background:transparent!important;
  box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
 }
@@ -206,22 +206,22 @@ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-page{order:2}
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-grid{
  grid-template-columns:repeat(4,minmax(0,1fr))!important;
  grid-template-rows:repeat(3,minmax(0,1fr))!important;
- gap:clamp(8px,1.65vh,16px) clamp(8px,2.2vw,15px)!important;
+ gap:clamp(5px,1.2vh,12px) clamp(5px,2vw,13px)!important;
  justify-items:center;align-items:start!important;
 }
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-icon{
- width:100%;min-height:76px;max-width:92px;padding:3px 0;
+ width:100%;min-height:70px;max-width:94px;padding:2px 0;
  gap:7px;transition:transform .24s cubic-bezier(.2,.8,.2,1),filter .22s ease;
 }
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-icon:active{transform:scale(.93);filter:brightness(1.1)}
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-app-art{
  --app-top:#555464;--app-bottom:#10131e;--app-glow:#ed49671e;
  position:relative;isolation:isolate;
- width:clamp(58px,16.6vw,71px)!important;height:clamp(58px,16.6vw,71px)!important;
- border-radius:clamp(17px,4.5vw,21px)!important;
+ width:clamp(48px,14.6vw,62px)!important;height:clamp(48px,14.6vw,62px)!important;
+ border-radius:clamp(13px,3.8vw,17px)!important;
  background:linear-gradient(146deg,var(--app-top) 0%,var(--app-bottom) 76%)!important;
  border:1px solid #ffffff49!important;
- box-shadow:inset 0 1px #ffffff5b,inset 0 -2px #0007,0 8px 19px #000b,0 2px 25px var(--app-glow)!important;
+ box-shadow:inset 0 1px #ffffff35,inset 0 -1px #0005,0 5px 12px #0007!important;
 }
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-app-art:before{
  content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;
@@ -229,7 +229,7 @@ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-app-art:before{
  pointer-events:none;
 }
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-app-art svg{
- width:clamp(28px,8vw,36px)!important;height:clamp(28px,8vw,36px)!important;
+ width:clamp(25px,7.4vw,32px)!important;height:clamp(25px,7.4vw,32px)!important;
  stroke-linecap:round;stroke-linejoin:round;color:#f7f7fb;
  filter:drop-shadow(0 2px 5px rgba(0,0,0,.35));
 }
@@ -267,27 +267,27 @@ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-library-link{
  font-size:10px!important;gap:5px;color:#e6dfe4;
 }
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-search-pill{
- order:4;min-height:35px!important;border-radius:22px!important;
+ order:4;min-height:40px!important;border-radius:16px!important;
  padding:5px 25px!important;color:#f9f7fa!important;
- background:linear-gradient(145deg,#88849354,#2d2e3f76)!important;
+ background:#1d1e24e8!important;
  border:1px solid #ffffff35!important;
  font-size:12px!important;
  box-shadow:inset 0 1px #ffffff18,0 6px 19px #0006;
- backdrop-filter:blur(30px) saturate(150%);-webkit-backdrop-filter:blur(30px) saturate(150%);
+ backdrop-filter:none;-webkit-backdrop-filter:none;
 }
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-dock{
- order:5;width:100%;max-width:440px;padding:10px 11px!important;
- border-radius:31px!important;margin-top:clamp(10px,1.6vh,18px)!important;
- background:linear-gradient(145deg,rgba(112,108,127,.58),rgba(26,25,41,.71))!important;
+ order:5;width:100%;max-width:440px;padding:8px 11px!important;
+ border-radius:24px!important;margin-top:clamp(8px,1.3vh,14px)!important;
+ background:linear-gradient(155deg,#292a30e8,#101115f5)!important;
  border:1px solid #ffffff55!important;
- box-shadow:inset 0 1px #ffffff59,0 16px 42px #000a,0 0 20px #e4376020!important;
- backdrop-filter:blur(45px) saturate(180%)!important;
- -webkit-backdrop-filter:blur(45px) saturate(180%)!important;
+ box-shadow:inset 0 1px #ffffff24,0 10px 28px #0009!important;
+ backdrop-filter:none!important;
+ -webkit-backdrop-filter:none!important;
 }
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-dock-icons{gap:7px}
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-dock-icon{min-height:60px}
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-dock-icon .bc-sb-app-art{
- width:clamp(56px,15.3vw,65px)!important;height:clamp(56px,15.3vw,65px)!important;
+ width:clamp(48px,14.3vw,59px)!important;height:clamp(48px,14.3vw,59px)!important;
 }
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-home-indicator{order:6;opacity:.82}
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-edit-done{
@@ -295,9 +295,9 @@ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-edit-done{
  box-shadow:0 6px 20px #0008!important;
 }
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-overlay{
- background:rgba(7,8,17,.75)!important;
- backdrop-filter:blur(50px) saturate(140%)!important;
- -webkit-backdrop-filter:blur(50px) saturate(140%)!important;
+ background:rgba(8,9,12,.97)!important;
+ backdrop-filter:none!important;
+ -webkit-backdrop-filter:none!important;
 }
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-result{
  border-radius:20px!important;

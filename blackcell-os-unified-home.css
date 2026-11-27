@@ -133,17 +133,34 @@
  color:#fff;font-size:12px;font-weight:670;cursor:pointer;
 }
 #desktop .bc-home-gallery-hint{font-size:11px!important;color:#bdb6c2!important}
-@media(min-width:621px) and (max-width:920px){
- #desktop .bc-home-widget{width:195px;height:128px}
- #desktop .bc-home-widget[data-size="large"]{width:250px;height:183px}
- #desktop .bc-home-desktop-app{width:103px;min-height:122px;height:auto}
- #desktop .bc-home-app-icon{width:57px;height:57px}
+/* Obsidian Tablet — native touch workspace. Keep free placement and synced
+   app preferences, but use a quieter, smaller icon and widget system. */
+html.bc-os-tablet #desktop .bc-home-widget{
+ width:clamp(170px,24vw,230px);height:126px;min-width:145px;
+ border-radius:18px;background:linear-gradient(145deg,#22242bec,#101116f5);
+ border-color:#ffffff24;box-shadow:inset 0 1px #ffffff14,0 8px 24px #0007;
+ backdrop-filter:none;-webkit-backdrop-filter:none;
 }
+html.bc-os-tablet #desktop .bc-home-widget[data-size="small"]{width:154px;height:104px}
+html.bc-os-tablet #desktop .bc-home-widget[data-size="large"]{width:clamp(230px,35vw,310px);height:180px}
+html.bc-os-tablet #desktop .bc-home-desktop-app{width:91px;min-height:94px;height:auto;padding:5px 3px 7px;gap:6px}
+html.bc-os-tablet #desktop .bc-home-app-icon{
+ width:56px;height:56px;border-radius:16px;
+ background:linear-gradient(150deg,#383b45,#15161b);
+ border-color:#ffffff30;box-shadow:inset 0 1px #ffffff28,0 5px 12px #0008
+}
+html.bc-os-tablet #desktop .bc-home-app-icon svg{width:31px;height:31px}
+html.bc-os-tablet #desktop .bc-home-desktop-label{font-size:12px;font-weight:580;min-height:0}
+html.bc-os-tablet #desktop .bc-home-widget-actions button{min-width:36px;min-height:36px}
+html.bc-os-tablet #desktop .bc-home-widget-name{letter-spacing:.035em}
+html.bc-os-tablet #desktop .bc-home-widget-value{font-weight:600}
+html.bc-os-tablet #desktop .bc-home-empty-cta{background:#1a1c22ed;border-color:#ffffff25;backdrop-filter:none}
+
 /* iPhone presents the same synced selections in an iOS-style responsive
    two-across widget strip and paged home apps, avoiding clipped absolute items. */
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-widgets.bc-home-custom-phone-widgets{
- display:block!important;min-height:clamp(74px,11vh,102px)!important;
- height:clamp(74px,11vh,102px)!important;
+ display:block!important;min-height:clamp(70px,10vh,92px)!important;
+ height:clamp(70px,10vh,92px)!important;
  padding:0!important;position:relative;overflow:hidden!important;
 }
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-widgets.bc-home-custom-phone-widgets>.bc-sb-widget{display:none!important}
