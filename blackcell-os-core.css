@@ -2296,3 +2296,948 @@ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb.bc-sb-dock-auto-hide.bc-sb
  #desktop.os-dock-auto-hide>.dockwrap{transition:none!important}
 }
 
+
+/* Source: blackcell-os-macos-midnight.css?v=20261121-1 */
+/* BLACKCELL OS — Midnight / Mac Workspace
+   All desktop presentation is layered over the existing authenticated OS.
+   No user app or data deletion; classic desktop remains opt-in. */
+#desktop[data-bc-wallpaper="midnight"] .wallpaper{
+ background-image:linear-gradient(180deg,rgba(0,0,0,.10),rgba(0,0,0,.12)),
+ url('blackcell-os-wallpaper-midnight.svg')!important;
+ background-position:center,center!important;
+ background-size:cover,cover!important;background-repeat:no-repeat!important;
+ opacity:1!important;
+}
+html.bc-os-phone #desktop.bc-springboard-ready[data-bc-wallpaper="midnight"] .bc-sb:before{
+ background-image:linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.32)),
+ url('blackcell-os-wallpaper-midnight-mobile.svg')!important;
+ background-size:cover,cover!important;
+ background-position:center,center!important;opacity:1!important;
+}
+#desktop[data-bc-wallpaper="custom"] .wallpaper{
+ background-color:#020205!important;
+ background-image:linear-gradient(rgba(0,0,0,var(--bc-wallpaper-dim,.12)),rgba(0,0,0,var(--bc-wallpaper-dim,.12))),
+ var(--bc-user-wallpaper,none)!important;
+ background-size:cover,var(--bc-wallpaper-fit,cover)!important;
+ background-position:center,var(--bc-wallpaper-position,center center)!important;
+ background-repeat:no-repeat!important;
+ filter:blur(var(--bc-wallpaper-blur,0px))!important;
+ opacity:1!important;
+}
+html.bc-os-phone #desktop.bc-springboard-ready[data-bc-wallpaper="custom"] .bc-sb:before{
+ background-color:#020205!important;
+ background-image:linear-gradient(rgba(0,0,0,var(--bc-wallpaper-dim,.12)),rgba(0,0,0,var(--bc-wallpaper-dim,.12))),
+ var(--bc-user-wallpaper,none)!important;
+ background-size:cover,var(--bc-wallpaper-fit,cover)!important;
+ background-position:center,var(--bc-wallpaper-position,center center)!important;
+ background-repeat:no-repeat!important;
+ filter:blur(var(--bc-wallpaper-blur,0px))!important;
+ opacity:1!important;
+}
+html.bc-os-phone #desktop.bc-springboard-ready[data-bc-wallpaper="custom"] .bc-sb:after{
+ background:linear-gradient(180deg,#01020436,transparent 32%,transparent 65%,#01020499)!important;
+}
+#desktop[data-bc-wallpaper="midnight"] .wallpaper:before,
+#desktop[data-bc-wallpaper="midnight"] .wallpaper:after,
+#desktop[data-bc-wallpaper="custom"] .wallpaper:before,
+#desktop[data-bc-wallpaper="custom"] .wallpaper:after{opacity:.03!important}
+#desktop.bc-macos-desktop .topbar{
+ background:rgba(9,10,15,.64)!important;
+ border-bottom:1px solid rgba(255,255,255,.12)!important;
+ box-shadow:0 4px 18px rgba(0,0,0,.15)!important;
+ backdrop-filter:blur(40px) saturate(145%)!important;
+ -webkit-backdrop-filter:blur(40px) saturate(145%)!important;
+}
+#desktop.bc-macos-desktop .menubar{gap:clamp(6px,.55vw,14px)!important}
+#desktop.bc-macos-desktop .menubar button{
+ font-size:12px!important;font-weight:540!important;letter-spacing:-.01em;
+ color:#e7e5e8;
+}
+#desktop.bc-macos-desktop .menubar .bc-topbrand{
+ font-size:12px!important;font-weight:800!important;letter-spacing:.025em!important;
+ color:#fff!important;
+}
+#desktop.bc-macos-desktop .os-window{
+ background:rgba(11,12,19,.90)!important;
+ border:1px solid rgba(238,235,244,.20)!important;
+ box-shadow:0 32px 96px rgba(0,0,0,.68),inset 0 1px rgba(255,255,255,.11)!important;
+}
+#desktop.bc-macos-desktop .os-window-head{
+ background:linear-gradient(180deg,rgba(61,61,73,.70),rgba(18,18,25,.77))!important;
+ backdrop-filter:blur(38px) saturate(130%)!important;
+ -webkit-backdrop-filter:blur(38px) saturate(130%)!important;
+}
+#desktop.bc-macos-desktop .dock{
+ background:linear-gradient(150deg,rgba(97,97,110,.40),rgba(21,22,31,.64))!important;
+ border:1px solid rgba(255,255,255,.25)!important;
+ box-shadow:0 18px 46px #000a,inset 0 1px #ffffff40!important;
+ backdrop-filter:blur(44px) saturate(130%)!important;
+ -webkit-backdrop-filter:blur(44px) saturate(130%)!important;
+}
+/* Calm Mac-style desktop: user apps, documents and account data remain loaded,
+   but the original oversize dashboard is hidden until opened. */
+@media(min-width:621px){
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .workspace>.bc-exec-stage{
+  position:absolute!important;left:50%!important;right:auto!important;
+  top:clamp(27px,4.2vh,65px)!important;bottom:auto!important;
+  width:min(570px,calc(100% - 48px))!important;max-width:570px!important;
+  margin:0!important;padding:0!important;
+  min-height:0!important;height:auto!important;
+  transform:translateX(-50%)!important;
+  align-items:stretch!important;justify-content:flex-start!important;
+  flex-direction:column!important;gap:15px!important;
+  z-index:10!important;pointer-events:none;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-exec-stage::before,
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-exec-stage::after{
+  content:none!important;display:none!important;background:none!important;box-shadow:none!important;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-exec-stage .bc-exec-search{order:0!important}
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-exec-stage .bc-macos-actions{order:1!important}
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-exec-stage .bc-exec-brand,
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-exec-stage .bc-concept-quick{
+  display:none!important;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-exec-search{
+  width:min(510px,100%)!important;max-width:510px!important;
+  min-height:50px!important;margin:0 auto!important;
+  border:1px solid rgba(255,255,255,.21)!important;
+  border-radius:17px!important;
+  background:rgba(30,31,40,.56)!important;
+  box-shadow:0 12px 42px #0007,inset 0 1px #ffffff22!important;
+  backdrop-filter:blur(38px) saturate(125%)!important;
+  -webkit-backdrop-filter:blur(38px) saturate(125%)!important;
+  pointer-events:auto;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-exec-search input{
+  font-size:14px!important;height:50px!important;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-exec-search input::placeholder{
+  color:#c0c0ca!important;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .workspace>section:first-of-type,
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .workspace>.side.bc-system-panel{
+  opacity:0!important;visibility:hidden!important;pointer-events:none!important;
+  transition:opacity .23s ease,visibility 0s linear .23s!important;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop.bc-macos-apps-open .workspace>section:first-of-type,
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop.bc-macos-widgets-open .workspace>.side.bc-system-panel{
+  opacity:1!important;visibility:visible!important;pointer-events:auto!important;
+  transition-delay:0s!important;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .workspace .apps>.app{
+  background:transparent!important;border:0!important;box-shadow:none!important;
+  border-radius:17px!important;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .workspace .apps>.app:hover{
+  background:rgba(255,255,255,.065)!important;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .workspace .apps>.app .app-icon{
+  border-radius:18px!important;box-shadow:0 9px 22px #000a,inset 0 1px #ffffff45!important;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-macos-actions{
+  display:flex;justify-content:center;flex-wrap:wrap;gap:9px;
+  width:100%;pointer-events:auto;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-macos-actions[hidden]{display:none!important}
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-macos-action{
+  border:1px solid rgba(239,237,248,.21);border-radius:13px;
+  background:linear-gradient(156deg,rgba(62,63,75,.48),rgba(16,17,26,.58));
+  color:#f0eef2;min-height:42px;min-width:108px;padding:8px 17px;
+  font:600 12px -apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;
+  box-shadow:inset 0 1px #ffffff20,0 8px 18px #0004;
+  backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);
+  transition:transform .19s ease,background .2s ease,border-color .2s ease;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-macos-action:hover{
+  transform:translateY(-2px);border-color:#e4dce57c;background:rgba(73,75,90,.60);
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-macos-action[aria-pressed="true"]{
+  background:rgba(175,27,55,.33);border-color:rgba(244,123,149,.65);
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-macos-action:focus-visible{
+  outline:2px solid #f7e4ed;outline-offset:3px;
+ }
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-macos-actions{display:none!important}
+/* Wallpaper Studio is an actual upload interface with previews and clear choices. */
+#desktop .bc-wallpaper-gallery{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;
+ margin:10px 0 18px;
+}
+#desktop .bc-wallpaper-card{
+ position:relative;display:flex;min-width:0;min-height:143px;
+ flex-direction:column;justify-content:flex-end;align-items:flex-start;
+ padding:14px!important;text-align:left;color:#f5f4f8;
+ border-radius:17px!important;border:1px solid #ffffff34!important;
+ box-shadow:inset 0 1px #fff3,0 12px 28px #0006;
+ background:#030408;overflow:hidden;
+}
+#desktop .bc-wallpaper-card::before{
+ content:"";position:absolute;inset:0;
+ background:url('blackcell-os-wallpaper-midnight.svg') center/cover no-repeat;z-index:0;
+}
+#desktop .bc-wallpaper-card[data-wallpaper="obsidian"]::before{
+ background-image:url('blackcell-os-wallpaper-obsidian.svg')
+}
+#desktop .bc-wallpaper-card[data-wallpaper="skyline"]::before{
+ background-image:url('blackcell-os-cinematic-wallpaper.svg')
+}
+#desktop .bc-wallpaper-card::after{
+ content:"";position:absolute;inset:40% 0 0;
+ background:linear-gradient(180deg,transparent,rgba(0,0,0,.90));z-index:0;
+}
+#desktop .bc-wallpaper-card>*{position:relative;z-index:1}
+#desktop .bc-wallpaper-card strong{font:700 13px -apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;text-shadow:0 2px 7px #000}
+#desktop .bc-wallpaper-card small{color:#d4cfd6;font-size:10px;margin-top:4px}
+#desktop .bc-wallpaper-card[aria-pressed="true"]{
+ border-color:#e75f7e!important;box-shadow:0 0 0 2px #f05b7d66,0 8px 20px #0008!important;
+}
+#desktop .bc-wallpaper-upload{display:flex;flex-direction:column;gap:12px;margin:14px 0}
+#desktop .bc-wallpaper-pick{min-height:47px!important;background:#a51b35!important;color:#fff!important}
+#desktop .bc-wallpaper-upload-preview{
+ background:rgba(15,16,24,.8);border:1px solid #ffffff2b;border-radius:18px;
+ padding:15px;box-shadow:inset 0 1px #ffffff19;
+}
+#desktop .bc-wallpaper-upload-preview[hidden]{display:none!important}
+#desktop .bc-wallpaper-upload-preview img{
+ display:block;max-width:100%;max-height:300px;width:auto;height:auto;
+ margin:0 auto 13px;object-fit:contain;border-radius:10px;
+}
+#desktop .bc-wallpaper-preview-actions{display:flex;flex-wrap:wrap;gap:10px}
+#desktop .bc-wallpaper-preview-actions button{min-height:44px}
+#desktop .bc-wallpaper-slider-wrap{display:flex;align-items:center;gap:12px;min-width:160px}
+#desktop .bc-wallpaper-slider{min-width:90px;flex:1;accent-color:#ce3457}
+#desktop .bc-wallpaper-recents{display:flex;gap:9px;flex-wrap:wrap}
+#desktop .bc-wallpaper-recent{
+ max-width:210px;min-height:41px;padding:10px 12px;border:1px solid #ffffff31;
+ border-radius:12px;background:rgba(35,35,47,.74);color:#dddbe5;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+#desktop .bc-wallpaper-recent-title{margin:18px 0 10px;color:#eee;font-size:14px}
+#desktop .bc-wallpaper-feedback{min-height:28px;line-height:1.45}
+@media(max-width:700px){
+ #desktop .bc-wallpaper-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #desktop .bc-wallpaper-card{min-height:112px}
+ #desktop .bc-wallpaper-slider-wrap{min-width:110px}
+}
+@media(prefers-reduced-motion:reduce){
+ #desktop.bc-macos-desktop .workspace>section:first-of-type,
+ #desktop.bc-macos-desktop .workspace>.side.bc-system-panel,
+ #desktop .bc-macos-action{transition:none!important}
+}
+
+
+/* Source: blackcell-os-macos-workspaces.css?v=20261121-1 */
+/* Mac-like desktop keeps the wallpaper clean. Applications lives in the Dock,
+   Spotlight in the menu bar, and menus provide the remaining system actions. */
+@media(min-width:621px){
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .bc-exec-stage{
+  display:none!important;
+ }
+ html:not(.bc-os-phone) #desktop.bc-macos-desktop .workspace>.bc-exec-stage{
+  display:none!important;
+ }
+}
+#desktop .dock>.bc-mac-dock-launchpad{
+ color:#f5f3f6;display:grid;place-items:center;
+ font-size:27px;min-width:47px;min-height:47px;
+ border-radius:13px;border:1px solid #ffffff31;
+ background:linear-gradient(148deg,#444552,#131620);cursor:pointer;
+ box-shadow:inset 0 1px #ffffff3a,0 7px 18px #0008;
+}
+#desktop .dock>.bc-mac-dock-launchpad:hover{transform:translateY(-5px);border-color:#e15c79}
+html.bc-os-phone #desktop .dock>.bc-mac-dock-launchpad{display:none!important}
+/* BLACKCELL macOS workstation / Launchpad, Mission Control, Control Center, Spaces.
+   Original layout, auth policies and application windows are preserved. */
+#desktop .bc-mac-overlay{position:absolute;inset:0;z-index:2147481900;display:grid;place-items:center;isolation:isolate;color:#f6f5f8}
+#desktop .bc-mac-shade{position:absolute;inset:0;background:rgba(2,3,8,.64);border:0;cursor:default;backdrop-filter:blur(44px) saturate(108%);-webkit-backdrop-filter:blur(44px) saturate(108%)}
+#desktop .bc-mac-panel{position:relative;z-index:1;display:flex;flex-direction:column;gap:12px;width:min(1140px,calc(100vw - 44px));max-height:calc(100dvh - 46px);min-height:min(660px,calc(100dvh - 46px));padding:clamp(18px,2.4vw,36px);border:1px solid #ffffff32;border-radius:31px;box-sizing:border-box;background:linear-gradient(150deg,rgba(53,54,67,.38),rgba(7,8,16,.64) 76%);box-shadow:0 30px 110px #000a,inset 0 1px #ffffff35;backdrop-filter:blur(35px);-webkit-backdrop-filter:blur(35px)}
+#desktop .bc-mac-overlay-heading{display:grid;grid-template-columns:1fr auto;align-items:center;gap:3px 15px;text-align:center;position:relative}
+#desktop .bc-mac-overlay-heading h2{font-size:clamp(24px,3vw,36px);font-weight:660;letter-spacing:-.04em;margin:0;grid-column:1/3}
+#desktop .bc-mac-subtitle{font-size:12px;color:#d2cbd1;grid-column:1/3;margin:0 0 4px}
+#desktop .bc-mac-close{position:absolute;right:0;top:0;min-width:44px;min-height:44px;border:1px solid #ffffff30;border-radius:18px;color:#f5eaf1;background:#ffffff16;font-size:27px;cursor:pointer}
+#desktop .bc-mac-search{display:block;width:min(490px,90%);height:49px;flex-shrink:0;align-self:center;padding:11px 20px;border-radius:16px;border:1px solid #ffffff35;background:rgba(13,14,22,.72);color:#f6f4f7;font:500 15px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;outline:none}
+#desktop .bc-mac-search:focus{border-color:#e87b98;box-shadow:0 0 0 3px #e87b9833}
+#desktop .bc-mac-panel-body{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center}
+#desktop .bc-mac-launch-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:minmax(95px,auto);align-content:center;justify-items:center;gap:clamp(5px,1.8vh,17px) clamp(8px,1.6vw,22px);max-height:100%;overflow:hidden}
+#desktop .bc-mac-app{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:10px;min-width:0;width:100%;max-width:146px;padding:6px 3px;border:0;border-radius:19px;background:transparent;color:#f8f6fa;cursor:pointer;transition:transform .18s ease,background .18s ease}
+#desktop .bc-mac-app:hover,#desktop .bc-mac-app:focus-visible{background:#ffffff15;transform:translateY(-3px)}
+#desktop .bc-mac-app-art{display:grid;place-items:center;width:clamp(53px,6vw,80px);height:clamp(53px,6vw,80px);overflow:hidden;border:1px solid #ffffff30;border-radius:21px;background:linear-gradient(145deg,#333746,#11121c);box-shadow:inset 0 1px #ffffff45,0 10px 22px #0009}
+#desktop .bc-mac-app-art .app-icon{display:grid;place-items:center;width:100%!important;height:100%!important;max-width:100%;max-height:100%;margin:0!important;border:0!important;background:transparent!important;box-shadow:none!important;filter:none!important}
+#desktop .bc-mac-app-art svg{width:36px;height:36px;color:#f0eef4}
+#desktop .bc-mac-app-name{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.25;text-align:center;font-size:12px;font-weight:580;max-width:100%;text-shadow:0 2px 6px #000a}
+#desktop .bc-mac-paging{display:flex;gap:18px;justify-content:center;align-items:center;min-height:43px}
+#desktop .bc-mac-page-button{background:rgba(50,51,62,.63);border:1px solid #ffffff2b;color:#f0eff4;border-radius:12px;min-height:39px;min-width:95px;cursor:pointer}
+#desktop .bc-mac-page-button:disabled{opacity:.28;cursor:default}
+#desktop .bc-mac-page-status{font-size:12px;color:#cac5cc;min-width:80px;text-align:center}
+#desktop .bc-mac-mission-body{display:flex;flex-direction:column;gap:18px;min-height:0}
+#desktop .bc-mac-spaces{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:10px;padding-bottom:13px;border-bottom:1px solid #ffffff21}
+#desktop .bc-mac-spaces button{min-width:105px;min-height:56px;max-width:170px;padding:9px 14px;border:1px solid #ffffff35;border-radius:15px;color:#eae8ef;background:linear-gradient(155deg,#3a3b4baf,#0b0c15c7);font:620 12px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+#desktop .bc-mac-spaces button.active{border-color:#f17b96;background:linear-gradient(135deg,#612035,#1b0a15)}
+#desktop .bc-mac-window-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;align-content:start;overflow:auto;scrollbar-width:none;padding:4px}
+#desktop .bc-mac-window-grid::-webkit-scrollbar{display:none}
+#desktop .bc-mac-window{display:flex;flex-direction:column;gap:9px;min-width:0;min-height:184px;background:linear-gradient(145deg,#242632a8,#0a0c16d9);border:1px solid #ffffff25;border-radius:19px;padding:18px;box-shadow:0 11px 26px #0004}
+#desktop .bc-mac-window-icon{font-size:24px}
+#desktop .bc-mac-window strong{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#desktop .bc-mac-window small{font-size:11px;color:#c2bdc7}
+#desktop .bc-mac-window-open{min-height:38px;border-radius:10px;background:#a32140;color:#fff;border:1px solid #e46884}
+#desktop .bc-mac-window-move{min-height:34px;border-radius:9px;background:#1a1b25;color:#f5f2f7;border:1px solid #ffffff40;max-width:100%}
+#desktop .bc-mac-mission-footer{display:flex;gap:12px;align-items:center;justify-content:center}
+#desktop .bc-mac-mission-footer button{min-height:40px;border-radius:11px;border:1px solid #ffffff29;background:#21222b;color:#eee;padding:9px 16px}
+#desktop .bc-mac-mission-footer button:disabled{opacity:.4}
+#desktop .bc-mac-empty{text-align:center;color:#c9c3ce;font-size:14px;padding:25px;grid-column:1/-1}
+#desktop .clock[role="button"]{cursor:pointer;padding:6px 8px;border-radius:8px}
+#desktop .clock[role="button"]:hover,#desktop .clock[role="button"]:focus-visible{background:#ffffff20;outline:0}
+#desktop .bc-mac-notifications{
+ position:absolute;top:39px;right:10px;z-index:2147481870;
+ display:flex;flex-direction:column;gap:13px;
+ width:min(362px,calc(100vw - 20px));max-height:min(70vh,750px);
+ border:1px solid rgba(245,235,242,.30);border-radius:23px;
+ padding:18px;background:linear-gradient(150deg,rgba(58,59,72,.95),rgba(11,12,20,.98));
+ backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);
+ box-shadow:0 23px 65px #000c,inset 0 1px #ffffff28;color:#f3eef4;
+}
+#desktop .bc-mac-notifications-head{display:flex;align-items:center;justify-content:space-between;gap:9px}
+#desktop .bc-mac-notifications-head h3{margin:0;font-size:19px;font-weight:650}
+#desktop .bc-mac-notifications button{border:1px solid #ffffff2c;border-radius:10px;background:#ffffff16;color:#f3f1f5;padding:9px 12px}
+#desktop .bc-mac-notifications-list{display:flex;flex-direction:column;gap:9px;overflow:auto;scrollbar-width:none}
+#desktop .bc-mac-notification{border-radius:15px;border:1px solid #ffffff21;background:#ffffff12;padding:11px 14px}
+#desktop .bc-mac-notification p{font-size:12px;line-height:1.45;margin:0 0 5px;overflow-wrap:anywhere}
+#desktop .bc-mac-notification small{font-size:10px;color:#b8b4bd}
+#desktop .bc-mac-notifications-empty{font-size:13px;line-height:1.5;color:#c5c0c9}
+#desktop .bc-mac-control-button{display:grid;place-items:center;min-width:37px;min-height:35px;border:1px solid #ffffff25;border-radius:10px;background:#35354266;color:#eeedf4;font-size:20px;cursor:pointer}
+#desktop .bc-mac-control{position:absolute;z-index:2147481890;top:40px;right:12px;width:min(295px,calc(100vw - 24px));display:flex;flex-direction:column;gap:9px;padding:18px;border:1px solid #ffffff33;border-radius:22px;background:linear-gradient(145deg,rgba(53,54,67,.93),rgba(9,10,16,.97));box-shadow:0 24px 55px #000c;backdrop-filter:blur(33px)}
+#desktop .bc-mac-control h3{font-size:18px;margin:0}
+#desktop .bc-mac-control small{color:#bcb8bf}
+#desktop .bc-mac-switch,#desktop .bc-mac-control-link{min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 13px;border:1px solid #ffffff25;border-radius:13px;background:#ffffff0f;color:#f5f4f6;text-align:left}
+#desktop .bc-mac-switch:after{content:"Off";font-size:11px;color:#aaa;white-space:nowrap}
+#desktop .bc-mac-switch[aria-pressed=true]:after{content:"On";color:#7af0ad}
+#desktop .bc-mac-switch[aria-pressed=true]{background:#2c3840c2;border-color:#56967880}
+#desktop .bc-mac-overlay button:focus-visible,#desktop .bc-mac-control button:focus-visible{outline:2px solid #f7bbcb;outline-offset:2px}
+/* Dock placement on desktops and non-phone tablets. The same Dock preferences
+   remain browser-account scoped; touch phones retain their iOS-like bottom dock. */
+@media(min-width:621px){
+ #desktop[data-bc-dock-position="left"]>.dockwrap,
+ #desktop[data-bc-dock-position="right"]>.dockwrap{
+  position:absolute!important;z-index:850;top:50%!important;bottom:auto!important;
+  width:auto!important;max-height:80vh;padding:8px!important;display:flex!important;
+  transform:translate3d(0,-50%,0)!important;opacity:1;
+ }
+ #desktop[data-bc-dock-position="left"]>.dockwrap{left:7px!important;right:auto!important}
+ #desktop[data-bc-dock-position="right"]>.dockwrap{right:7px!important;left:auto!important}
+ #desktop[data-bc-dock-position="left"]>.dockwrap .dock,
+ #desktop[data-bc-dock-position="right"]>.dockwrap .dock{
+  display:flex;flex-direction:column!important;max-height:78vh;overflow:auto;scrollbar-width:none;padding:11px!important;
+ }
+ #desktop[data-bc-dock-position="left"]>.dockwrap .dock::-webkit-scrollbar,
+ #desktop[data-bc-dock-position="right"]>.dockwrap .dock::-webkit-scrollbar{display:none}
+ #desktop[data-bc-dock-position="left"].os-dock-auto-hide:not(.os-dock-revealed)>.dockwrap{
+  transform:translate3d(calc(-100% - 18px),-50%,0)!important;opacity:0!important;pointer-events:none!important
+ }
+ #desktop[data-bc-dock-position="right"].os-dock-auto-hide:not(.os-dock-revealed)>.dockwrap{
+  transform:translate3d(calc(100% + 18px),-50%,0)!important;opacity:0!important;pointer-events:none!important
+ }
+ #desktop[data-bc-dock-position="left"].os-dock-auto-hide.os-dock-revealed>.dockwrap,
+ #desktop[data-bc-dock-position="right"].os-dock-auto-hide.os-dock-revealed>.dockwrap{
+  transform:translate3d(0,-50%,0)!important;opacity:1!important;visibility:visible!important;pointer-events:auto!important
+ }
+ #desktop[data-bc-dock-position="left"].os-dock-auto-hide>.os-dock-edge,
+ #desktop[data-bc-dock-position="right"].os-dock-auto-hide>.os-dock-edge{
+  position:absolute!important;top:0!important;bottom:0!important;height:100%!important;width:10px!important;transform:none!important
+ }
+ #desktop[data-bc-dock-position="left"].os-dock-auto-hide>.os-dock-edge{left:0!important;right:auto!important}
+ #desktop[data-bc-dock-position="right"].os-dock-auto-hide>.os-dock-edge{right:0!important;left:auto!important}
+}
+#desktop.bc-os-fullscreen-active .topbar{transform:translateY(-110%)!important;opacity:0!important;pointer-events:none!important;transition:transform .22s ease,opacity .22s ease!important;position:absolute!important;z-index:2147481800;top:0;left:0;right:0}
+#desktop.bc-os-fullscreen-active.bc-os-menu-edge-open .topbar{transform:translateY(0)!important;opacity:1!important;pointer-events:auto!important}
+#desktop.bc-os-fullscreen-active>.dockwrap{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+#desktop.bc-os-fullscreen-active.bc-os-dock-edge-open>.dockwrap{
+ opacity:1!important;visibility:visible!important;pointer-events:auto!important;
+ z-index:2147481799!important;transform:translate3d(0,0,0)!important;
+}
+#desktop.bc-os-fullscreen-active.bc-os-dock-edge-open>.dockwrap .dock{pointer-events:auto!important}
+
+#desktop.bc-os-fullscreen-active>.os-dock-edge{display:none!important}
+#desktop .os-window.bc-os-fullscreen{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;border-radius:0!important;max-width:none!important;max-height:none!important;z-index:800!important}
+#desktop .os-window.bc-os-fullscreen .os-window-head{border-radius:0!important}
+/* Spotlight lives in a centered sheet; it does not permanently occupy the desktop. */
+#desktop .bc-mac-spotlight{
+ position:absolute;inset:0;z-index:2147482000;
+ display:flex;align-items:flex-start;justify-content:center;
+ padding:clamp(68px,14vh,165px) 15px 15px;box-sizing:border-box;
+ background:rgba(1,2,6,.38);backdrop-filter:blur(16px);
+ -webkit-backdrop-filter:blur(16px);
+}
+#desktop .bc-mac-spotlight-panel{
+ width:min(660px,100%);max-height:65vh;overflow:hidden;display:flex;flex-direction:column;
+ background:linear-gradient(145deg,rgba(54,55,65,.93),rgba(11,12,19,.97));
+ border:1px solid #ffffff44;border-radius:22px;
+ box-shadow:0 20px 80px #000b,inset 0 1px #ffffff25;
+}
+#desktop .bc-mac-spotlight-panel>input{
+ box-sizing:border-box;width:100%;height:70px;flex-shrink:0;outline:0;
+ padding:13px 25px;background:transparent;border:0;border-bottom:1px solid #ffffff22;
+ font:500 21px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:white;
+}
+#desktop .bc-mac-spotlight-results{display:flex;flex-direction:column;gap:3px;padding:10px;overflow:auto}
+#desktop .bc-mac-spotlight-result{
+ min-height:46px;width:100%;text-align:left;border:0;border-radius:12px;
+ padding:12px 16px;color:#f1eef3;background:#ffffff0d;font-size:14px;
+}
+#desktop .bc-mac-spotlight-result:hover,#desktop .bc-mac-spotlight-result:focus-visible{
+ background:#9d23416e;outline:0;
+}
+#desktop .bc-mac-spotlight-button{
+ min-width:34px;min-height:34px;display:grid;place-items:center;
+ border:1px solid #ffffff22;border-radius:9px;
+ background:#ffffff0e;color:#f5f3f7;font-size:24px;cursor:pointer;
+}
+/* The Desktop folder draws authenticated files directly on the desktop canvas.
+   The names are rendered as plain text; no unsafe file HTML is ever injected. */
+#desktop .bc-mac-desktop-canvas{
+ position:absolute;top:clamp(85px,11vh,140px);right:clamp(12px,1.8vw,35px);
+ width:min(280px,24vw);max-height:65vh;z-index:7;pointer-events:none;
+}
+#desktop .bc-mac-desktop-caption{
+ color:#e5e4e9;font-size:10px;font-weight:770;letter-spacing:.18em;
+ margin:0 0 13px 4px;text-shadow:0 2px 10px #000c;
+}
+#desktop .bc-mac-desktop-items{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:9px;align-content:start;max-height:57vh;overflow:hidden;pointer-events:auto;
+}
+#desktop .bc-mac-desktop-item{
+ border:1px solid transparent;border-radius:16px;background:transparent;
+ padding:9px 3px;min-height:93px;display:flex;flex-direction:column;
+ gap:7px;align-items:center;justify-content:center;color:#f0eef3;
+ font:570 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+ text-align:center;overflow:hidden;text-overflow:ellipsis;
+ text-shadow:0 2px 10px #000c;cursor:pointer;
+}
+#desktop .bc-mac-desktop-item:hover,#desktop .bc-mac-desktop-item:focus-visible{
+ background:rgba(82,85,102,.35);border-color:#ffffff35;outline:0;
+}
+#desktop .bc-mac-desktop-file-icon{
+ display:grid;place-items:center;width:55px;height:55px;font-size:31px;
+ border-radius:14px;border:1px solid #ffffff40;
+ background:linear-gradient(145deg,#555765ad,#0b1025d9);
+ box-shadow:0 8px 24px #000a,inset 0 1px #ffffff30;
+}
+#desktop .bc-mac-desktop-folder .bc-mac-desktop-file-icon{background:linear-gradient(145deg,#4d82a7e0,#10182fbf)}
+#desktop .bc-mac-desktop-stacks .bc-mac-desktop-item:not(.bc-mac-desktop-folder){
+ transform:scale(.92);box-shadow:-4px 4px 0 -1px #ffffff15;
+}
+/* Stage Manager keeps the active window usable while placing other windows
+   into the left rail, without suspending or destroying any iframe content. */
+#desktop.bc-stage-manager>.os-window.bc-stage-background:not([hidden]){
+ opacity:0!important;visibility:hidden!important;pointer-events:none!important;
+}
+#desktop .bc-mac-stage-rail{
+ position:absolute;z-index:900;left:9px;top:50%;
+ transform:translateY(-50%);width:112px;max-height:70vh;
+ display:flex;flex-direction:column;gap:11px;overflow:auto;
+ padding:6px;scrollbar-width:none;
+}
+#desktop .bc-mac-stage-thumb{
+ display:grid;place-items:center;min-height:89px;
+ padding:12px 8px;border:1px solid #ffffff33;border-radius:16px;
+ color:#f0eef5;font-size:11px;font-weight:650;
+ background:linear-gradient(145deg,#444454bb,#11111edc);
+ box-shadow:0 9px 22px #000a;overflow:hidden;
+}
+#desktop.bc-stage-manager>.os-window:not(.bc-stage-background):not([hidden]):not(.bc-os-fullscreen){
+ left:max(135px,calc(50% - 37vw))!important;
+}
+#desktop .side.bc-system-panel:has(.glass):not([hidden]){transition:filter .22s ease,opacity .22s ease}
+#desktop:has(>.os-window:not([hidden])) .side.bc-system-panel{
+ filter:grayscale(.92);opacity:.78;
+}
+#desktop:has(>.os-window:not([hidden])) .side.bc-system-panel:hover{filter:none;opacity:1}
+@media(max-width:1000px){
+ #desktop .bc-mac-launch-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+ #desktop .bc-mac-window-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:620px){
+ #desktop .bc-mac-launch-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+ #desktop .bc-mac-window-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #desktop .bc-mac-panel{min-height:auto;height:calc(100dvh - 26px);padding:16px}
+ #desktop .bc-mac-app-art{width:54px;height:54px}
+ #desktop .bc-mac-app-name{font-size:11px}
+ #desktop .bc-mac-control-button{display:none}
+}
+@media(max-height:750px){#desktop .bc-mac-app-art{width:clamp(48px,5.4vw,68px);height:clamp(48px,5.4vw,68px)}#desktop .bc-mac-launch-grid{gap:4px 9px}#desktop .bc-mac-app{gap:5px}}
+@media(prefers-reduced-motion:reduce){#desktop .bc-mac-app,#desktop .bc-mac-control,#desktop .bc-mac-overlay,#desktop .topbar{transition:none!important}}
+
+
+/* Source: blackcell-os-unified-home.css?v=20261121-2 */
+/* BLACKCELL Unified Home — shared desktop shortcuts + floating widgets.
+   Positions are normalized against the current screen: no off-screen shortcuts
+   on tablets or phones, no scrollbar-heavy widget drawers. */
+#desktop .bc-unified-home-layer{
+ position:absolute;inset:0;z-index:12;overflow:hidden;pointer-events:none;
+}
+#desktop .bc-unified-home-layer[hidden]{display:none!important}
+#desktop .bc-home-desktop-app{
+ position:absolute;display:flex;flex-direction:column;align-items:center;
+ justify-content:flex-start;gap:7px;width:110px;min-height:126px;height:auto;padding:7px 5px 10px;box-sizing:border-box;
+ color:#f9f7fb;font:580 12px/1.2 -apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;
+ background:transparent;border:1px solid transparent;border-radius:18px;
+ text-align:center;text-shadow:0 2px 8px #000a;
+ cursor:grab;pointer-events:auto;touch-action:none;user-select:none;
+}
+#desktop .bc-home-desktop-app:hover,#desktop .bc-home-desktop-app:focus-visible{
+ background:rgba(133,131,147,.26);border-color:rgba(245,240,248,.32);
+ outline:none;box-shadow:inset 0 1px #ffffff24;
+}
+#desktop .bc-home-app-icon{
+ position:relative;display:grid;place-items:center;flex:none;width:65px;height:65px;
+ border:1px solid rgba(247,240,249,.24);border-radius:18px;
+ background:linear-gradient(155deg,rgba(70,72,89,.94),rgba(15,17,29,.96));
+ box-shadow:0 9px 24px #0009,inset 0 1px #ffffff50;
+}
+#desktop .bc-home-app-icon svg{width:39px;height:39px;color:#f2eef4}
+#desktop .bc-home-desktop-label{
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;
+ overflow:hidden;max-width:100%;height:auto;min-height:28px;
+ font-size:11px;line-height:1.32;font-weight:650;
+ white-space:normal;overflow-wrap:break-word;word-break:normal;text-overflow:clip;
+}
+#desktop .bc-home-widget{
+ position:absolute;width:218px;height:138px;min-width:152px;
+ display:flex;flex-direction:column;justify-content:space-between;
+ padding:13px 15px;border:1px solid rgba(255,255,255,.30);border-radius:21px;
+ background:linear-gradient(153deg,rgba(82,83,95,.54),rgba(16,17,28,.65));
+ box-shadow:inset 0 1px #ffffff38,0 12px 39px #0008;
+ backdrop-filter:blur(37px) saturate(135%);
+ -webkit-backdrop-filter:blur(37px) saturate(135%);
+ color:#f7f5f9;pointer-events:auto;
+}
+#desktop .bc-home-widget[data-size="small"]{width:165px;height:104px}
+#desktop .bc-home-widget[data-size="large"]{width:292px;height:197px}
+#desktop .bc-home-widget-header{
+ display:flex;align-items:center;justify-content:space-between;gap:6px;
+ min-height:31px;cursor:grab;touch-action:none;
+}
+#desktop .bc-home-widget-name{font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:760;color:#d0cad5}
+#desktop .bc-home-widget-actions{display:flex;align-items:center;gap:4px}
+#desktop .bc-home-widget-actions button{
+ min-width:29px;min-height:29px;padding:2px;
+ display:grid;place-items:center;border-radius:9px;border:1px solid #ffffff20;
+ background:#0004;color:#e6e4ea;font-size:17px;cursor:pointer;
+}
+#desktop .bc-home-widget-value{font-size:25px;line-height:1.15;font-weight:630;letter-spacing:-.04em;overflow-wrap:anywhere}
+#desktop .bc-home-widget-clock .bc-home-widget-value{font-variant-numeric:tabular-nums;font-size:clamp(23px,2.8vw,35px)}
+#desktop .bc-home-widget[data-size="small"] .bc-home-widget-value{font-size:19px}
+#desktop .bc-home-widget[data-size="large"] .bc-home-widget-value{font-size:38px}
+#desktop .bc-home-dragging{opacity:.84;cursor:grabbing!important;z-index:25!important;border-color:#f39ab0!important;box-shadow:0 23px 50px #000b!important}
+#desktop .bc-home-empty-cta{
+ position:absolute;left:28px;top:40%;width:auto;min-height:48px;
+ padding:12px 18px;border:1px solid #ffffff45;border-radius:15px;
+ color:#f5eaf0;background:rgba(35,35,45,.68);pointer-events:auto;
+ backdrop-filter:blur(26px);font-size:13px;
+}
+#desktop .bc-home-context-menu{
+ position:fixed;z-index:2147482310;min-width:215px;padding:7px;
+ border:1px solid #ffffff32;border-radius:14px;
+ background:rgba(28,28,39,.96);box-shadow:0 18px 50px #000a;
+ backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px);
+}
+#desktop .bc-home-menu-choice{
+ display:block;min-height:38px;padding:8px 12px;width:100%;border:0;
+ border-radius:9px;background:transparent;text-align:left;
+ color:#f4f1f5;font-size:13px;
+}
+#desktop .bc-home-menu-choice:hover,#desktop .bc-home-menu-choice:focus-visible{
+ background:rgba(179,36,72,.44);outline:0;
+}
+#desktop .bc-home-layout-notice{
+ position:absolute;bottom:clamp(83px,13vh,125px);left:50%;transform:translateX(-50%);
+ z-index:2147482300;padding:12px 19px;border-radius:13px;
+ border:1px solid #ffffff36;color:#f7f5f8;
+ background:rgba(34,35,46,.92);box-shadow:0 12px 35px #0008;
+ font-size:12px;max-width:calc(100vw - 40px);text-align:center;
+ pointer-events:none;
+}
+#desktop .bc-home-layout-notice[hidden]{display:none}
+#desktop .bc-home-gallery-shell{
+ position:absolute;inset:0;z-index:2147482400;display:grid;place-items:center;
+}
+#desktop .bc-home-gallery-shade{
+ position:absolute;inset:0;border:0;background:rgba(0,0,0,.68);
+ backdrop-filter:blur(31px);-webkit-backdrop-filter:blur(31px);
+}
+#desktop .bc-home-gallery{
+ position:relative;z-index:1;box-sizing:border-box;
+ width:min(710px,calc(100vw - 35px));max-height:calc(100dvh - 54px);
+ display:flex;flex-direction:column;gap:13px;padding:clamp(18px,2.5vw,29px);
+ color:#f5f2f6;border:1px solid #ffffff3b;border-radius:25px;
+ background:linear-gradient(149deg,rgba(57,58,72,.96),rgba(10,11,18,.98));
+ box-shadow:0 28px 85px #000b,inset 0 1px #ffffff2c;
+}
+#desktop .bc-home-gallery-header{display:flex;align-items:center;justify-content:space-between;gap:18px}
+#desktop .bc-home-gallery h2{font-size:clamp(20px,3vw,27px);letter-spacing:-.035em;margin:0}
+#desktop .bc-home-gallery>p{font-size:13px;color:#c9c4cd;line-height:1.45;margin:0}
+#desktop .bc-home-gallery-close{
+ min-width:43px;min-height:43px;border:1px solid #ffffff31;border-radius:13px;
+ background:#ffffff17;color:white;font-size:22px;
+}
+#desktop .bc-home-gallery-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;
+ overflow:auto;padding:4px;scrollbar-width:thin;
+}
+#desktop .bc-home-gallery-option{
+ display:flex;align-items:center;gap:11px;min-height:69px;
+ padding:12px;border:1px solid #ffffff24;border-radius:15px;
+ background:#ffffff0f;min-width:0;
+}
+#desktop .bc-home-gallery-option .bc-home-app-icon{
+ width:43px;height:43px;border-radius:12px;
+}
+#desktop .bc-home-gallery-option .bc-home-app-icon svg{width:26px;height:26px}
+#desktop .bc-home-gallery-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:12px;font-weight:650}
+#desktop .bc-home-gallery-symbol{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:#272d3a;font-size:22px}
+#desktop .bc-home-gallery-info{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px}
+#desktop .bc-home-gallery-info strong{font-size:13px}
+#desktop .bc-home-gallery-info small{font-size:11px;color:#c5c0cb}
+#desktop .bc-home-gallery-toggle{
+ min-width:73px;min-height:41px;padding:9px 13px;
+ border-radius:12px;border:1px solid #f290a46b;background:#68213a;
+ color:#fff;font-size:12px;font-weight:670;cursor:pointer;
+}
+#desktop .bc-home-gallery-hint{font-size:11px!important;color:#bdb6c2!important}
+@media(min-width:621px) and (max-width:920px){
+ #desktop .bc-home-widget{width:195px;height:128px}
+ #desktop .bc-home-widget[data-size="large"]{width:250px;height:183px}
+ #desktop .bc-home-desktop-app{width:103px;min-height:122px;height:auto}
+ #desktop .bc-home-app-icon{width:57px;height:57px}
+}
+/* iPhone presents the same synced selections in an iOS-style responsive
+   two-across widget strip and paged home apps, avoiding clipped absolute items. */
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-widgets.bc-home-custom-phone-widgets{
+ display:block!important;min-height:clamp(74px,11vh,102px)!important;
+ height:clamp(74px,11vh,102px)!important;
+ padding:0!important;position:relative;overflow:hidden!important;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-widgets.bc-home-custom-phone-widgets>.bc-sb-widget{display:none!important}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-home-phone-widget-strip{
+ height:100%;display:flex;align-items:stretch;gap:0;
+ overflow-x:auto;overflow-y:hidden;scrollbar-width:none;
+ scroll-snap-type:x mandatory;overscroll-behavior-x:contain;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-home-phone-widget-strip::-webkit-scrollbar{display:none}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-home-phone-widget{
+ position:relative!important;left:auto!important;top:auto!important;
+ flex:0 0 50%;width:50%;max-width:none;height:100%!important;min-width:0!important;
+ border:0!important;border-right:1px solid #ffffff25!important;border-radius:0!important;
+ padding:10px 12px!important;box-sizing:border-box;scroll-snap-align:start;
+ background:transparent!important;box-shadow:none!important;backdrop-filter:none!important;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-home-phone-widget .bc-home-widget-header{min-height:24px}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-home-phone-widget .bc-home-widget-name{font-size:9px}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-home-phone-widget .bc-home-widget-value{font-size:clamp(13px,3.7vw,20px)}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-home-phone-widget .bc-home-widget-manage{
+ border:0;background:transparent;min-width:25px;min-height:25px;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-home-phone-widget-picker{
+ min-width:60px;min-height:33px;padding:4px 8px;display:grid;place-items:center;
+ border-radius:11px;border:1px solid #ffffff35;
+ background:#2526318c;color:#f4f4f7;font-size:10px;font-weight:700;letter-spacing:.01em;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-home-phone-app-picker{
+ position:absolute;left:0;top:0;min-height:24px;min-width:55px;
+ border:0;background:#ffffff11;border-radius:9px;
+ color:#f5eaf2;padding:3px 8px;font-size:10px;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-result-row{
+ display:flex;align-items:center;justify-content:space-between;gap:7px;width:100%;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-result-row .bc-sb-result{
+ flex:1;min-width:0;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-result-add{
+ display:inline-grid;place-items:center;min-height:35px;
+ padding:5px 9px;border:1px solid #ffffff35;border-radius:10px;
+ background:#631c35;color:#fff;font-size:11px;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-result-add:disabled{opacity:.55}
+@media(max-width:620px){
+ #desktop .bc-home-gallery-grid{grid-template-columns:1fr}
+ #desktop .bc-home-gallery{max-height:calc(100dvh - 25px);padding:17px}
+ #desktop .bc-home-gallery-option{min-height:60px}
+}
+@media(orientation:landscape) and (max-height:600px){
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-widgets.bc-home-custom-phone-widgets{
+  grid-column:1!important;grid-row:1!important;
+  display:block!important;min-height:55px!important;height:100%!important;overflow:hidden!important;
+ }
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-home-phone-widget{flex-basis:100%;width:100%;padding:5px 8px!important}
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-home-phone-widget .bc-home-widget-value{font-size:13px}
+}
+@media(prefers-reduced-motion:reduce){
+ #desktop .bc-home-widget,#desktop .bc-home-desktop-app,#desktop .bc-home-gallery{transition:none!important}
+}
+
+
+/* Launchpad remains a true application launcher, with a small independent
+   "add to desktop" control instead of requiring drag-out of a modal. */
+#desktop .bc-mac-launch-app-cell{
+ position:relative;display:flex;flex-direction:column;align-items:center;
+ width:100%;min-width:0;max-width:146px;
+}
+#desktop .bc-mac-launch-app-cell .bc-mac-app{width:100%}
+#desktop .bc-mac-launch-app-cell .bc-mac-pin-shortcut{
+ position:absolute;right:clamp(1px,1vw,14px);top:1px;
+ display:grid;place-items:center;z-index:1;
+ min-width:30px;min-height:30px;border-radius:50%;
+ border:1px solid #ffffff76;background:rgba(128,28,56,.94);
+ color:#fff;font-size:19px;font-weight:710;box-shadow:0 4px 15px #0008;
+ cursor:pointer;
+}
+#desktop .bc-mac-launch-app-cell .bc-mac-pin-shortcut:disabled{
+ background:rgba(32,69,51,.88);color:#baf5cd;opacity:.74;cursor:default;
+}
+
+
+/* Source: blackcell-os-window-controls.css?v=20261121-traffic-controls1&amp;chatBlue=20261122-traffic-dot-parity1&amp;redlinePhoneFill=20261123-v1 */
+/* BLACKCELL OS native titlebar controls.
+   Critical: authored .os-window { display:grid } overrides UA [hidden].
+   Without this, RED close/yellow minimize update state but stay on screen. */
+#desktop > .os-window[hidden]{
+ display:none!important;
+ visibility:hidden!important;
+ pointer-events:none!important;
+}
+#desktop > .os-window:not([hidden]) > .os-window-head{
+ position:relative;
+}
+#desktop > .os-window:not([hidden]) > .os-window-head > .traffic{
+ z-index:15!important;
+ pointer-events:auto!important;
+}
+#desktop > .os-window:not([hidden]) > .os-window-head > .traffic > button{
+ position:relative;
+ pointer-events:auto!important;
+ touch-action:manipulation!important;
+ user-select:none;
+ -webkit-user-select:none;
+ cursor:pointer!important;
+}
+#desktop > .os-window:not([hidden]) > .os-window-head > .traffic > button:focus-visible{
+ outline:3px solid #fff!important;
+ outline-offset:-3px!important;
+}
+/* Maximize/restore needs a distinct visual result on native touch displays,
+   which otherwise style every app as full-screen regardless of is-max. */
+html.bc-os-tablet #desktop > .os-window.bc-os-window-compact:not([hidden]){
+ left:7vw!important;
+ top:max(64px,8dvh)!important;
+ width:86vw!important;
+ height:min(78dvh,850px)!important;
+ min-width:0!important;
+ min-height:min(320px,68dvh)!important;
+ border-radius:19px!important;
+ resize:none!important;
+ box-shadow:0 35px 100px #000e!important;
+}
+@media(max-width:620px){
+ #desktop > .os-window.bc-os-window-compact:not([hidden]){
+  left:3vw!important;
+  top:max(51px,calc(env(safe-area-inset-top) + 45px))!important;
+  width:94vw!important;
+  height:min(75dvh,calc(100dvh - 137px))!important;
+  min-width:0!important;
+  min-height:min(260px,62dvh)!important;
+  border-radius:15px!important;
+  resize:none!important;
+  box-shadow:0 25px 75px #000e!important;
+ }
+}
+/* Phone users also get a working green restore button, not a hidden decoration. */
+html.bc-os-phone #desktop > .os-window:not([hidden]) > .os-window-head > .traffic > button.os-traffic-maximize{
+ display:grid!important;
+}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop > .os-window:not([hidden]) > .os-window-head > .traffic > button.os-traffic-control{
+ min-width:40px!important;
+ min-height:42px!important;
+}
+
+
+/* BLACKCELL iMessage fourth traffic light: blue Park button. The original
+   stylesheet only sizes the first three dots; blue was left at a tiny 13px.
+   Keep the same 42x44 hit area and 19px visible dot, without changing Park. */
+html #desktop > .os-window.os-chat-popout > .os-window-head > .traffic > button.os-chat-park-button{
+ position:relative!important;
+ display:grid!important;place-items:center!important;
+ flex:0 0 42px!important;
+ width:42px!important;min-width:42px!important;max-width:42px!important;
+ height:44px!important;min-height:44px!important;max-height:44px!important;
+ padding:0!important;margin:0!important;
+ border:0!important;border-radius:12px!important;
+ background:transparent!important;box-shadow:none!important;
+ color:transparent!important;font-size:0!important;line-height:0!important;
+ pointer-events:auto!important;touch-action:manipulation!important;
+ cursor:pointer!important;
+}
+html #desktop > .os-window.os-chat-popout > .os-window-head > .traffic > button.os-chat-park-button::before{
+ content:"";display:block;width:19px;height:19px;flex:none;border-radius:50%;
+ background:#0a84ff!important;
+ box-shadow:inset 0 1px 2px #ffffff75,0 0 0 1px #0b0b11b0,0 3px 8px #000a;
+ transition:transform .18s ease,filter .18s ease;
+}
+html #desktop > .os-window.os-chat-popout > .os-window-head > .traffic > button.os-chat-park-button:hover::before{
+ transform:scale(1.12);filter:brightness(1.08);
+}
+html #desktop > .os-window.os-chat-popout > .os-window-head > .traffic > button.os-chat-park-button:focus-visible{
+ outline:2px solid #f5c3cf!important;outline-offset:-3px!important;
+}
+
+/* 2026-11-23 · REDLINE Android fullscreen conversation repair.
+   An old mobile OS window rule starts maximized apps 37px below the OS
+   surface and compact apps 51px down, leaving an empty black strip under
+   Chrome. Fit only the REDLINE window to the phone viewport. Do not
+   alter iMessage, tablet or desktop geometry or the working traffic buttons. */
+@media(max-width:620px){
+ html.bc-os-phone #desktop > .os-window[data-os-app="photoledger"]:not([hidden]){
+  position:absolute!important;
+  left:0!important;top:0!important;right:0!important;bottom:0!important;
+  width:100%!important;height:100%!important;
+  min-width:0!important;min-height:0!important;
+  max-width:none!important;max-height:none!important;
+  border-radius:0!important;
+  resize:none!important;
+  z-index:100!important;
+ }
+ /* GREEN restores an inset, still usable on the phone rather than
+    forcing a 51px top gap and chopping away a quarter of the chat. */
+ html.bc-os-phone #desktop > .os-window[data-os-app="photoledger"].bc-os-window-compact:not([hidden]){
+  left:5px!important;top:5px!important;right:auto!important;bottom:auto!important;
+  width:calc(100% - 10px)!important;
+  height:calc(100% - 10px)!important;
+  min-width:0!important;min-height:0!important;
+  border-radius:13px!important;
+  box-shadow:0 12px 32px #000c!important;
+ }
+ html.bc-os-phone #desktop > .os-window[data-os-app="photoledger"]:not([hidden]) > .os-window-body{
+  min-height:0!important;overflow:hidden!important;
+ }
+ html.bc-os-phone #desktop > .os-window[data-os-app="photoledger"]:not([hidden]) > .os-window-body > iframe{
+  display:block!important;width:100%!important;height:100%!important;
+ }
+}
+
+
+/* Source: blackcell-os-app-store-aurora.css?v=20261124-1 */
+/* BLACKCELL App Store · Aurora colorway. Icon-only; no layout or behavior changes. */
+#desktop .workspace .apps>.app[data-app="store"] .app-icon,
+html:not(.bc-os-phone) #desktop.bc-macos-desktop .workspace .apps>.app[data-app="store"] .app-icon,
+#desktop .dock button[data-open="store"],
+#desktop .app[data-app="store"] .app-icon,
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-icon[data-id="store"] .bc-sb-app-art,
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-result[data-id="store"] .bc-sb-result-icon {
+  --app-top:#22d3ee;
+  --app-bottom:#7c3aed;
+  --app-glow:#8b5cf653;
+  background:radial-gradient(ellipse at 14% 4%,#52e8fc 0%,transparent 48%),
+             radial-gradient(ellipse at 96% 96%,#ff735f 0%,#ee4da5 25%,transparent 57%),
+             linear-gradient(145deg,#149bfa 12%,#4655ee 49%,#9628d6 83%) !important;
+  color:#fff !important;
+  border-color:#ffffff69 !important;
+}
+#desktop .app[data-app="store"] .app-icon svg,
+#desktop .dock button[data-open="store"] svg,
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-icon[data-id="store"] .bc-sb-app-art svg,
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-result[data-id="store"] .bc-sb-result-icon svg {
+  color:#fff !important;
+  filter:drop-shadow(0 1px 2px #21155d90);
+}
+
+
+/* Source: blackcell-app-store-grid.css?v=20261124-1 */
+/* BLACKCELL App Store: compact rectangular application tiles, no circular bubbles.
+   Presentation only. All catalog permissions and actions remain in mountStore. */
+#desktop .bc-store{container-type:inline-size;grid-template-columns:190px minmax(0,1fr);background:#08080b!important;color:#f5f2f4}
+#desktop .bc-store-rail{padding:20px 12px;background:radial-gradient(ellipse at -60% 82%,#5a0c1b80,transparent 57%),linear-gradient(155deg,#141217,#09090b 65%)!important;border-right:1px solid #e45b6229!important;gap:7px}
+#desktop .bc-store-brand{display:grid;justify-items:center;gap:3px;margin:6px 0 22px;text-align:center}
+#desktop .bc-store-brand-mark{font:400 48px/1 system-ui;color:#ff5366;text-shadow:0 0 24px #f32745}
+#desktop .bc-store-brand strong{font:750 15px system-ui;letter-spacing:.06em}
+#desktop .bc-store-brand small{font:400 12px system-ui;color:#a9a2ab}
+#desktop .bc-store-nav{font-size:13px;min-height:40px;padding:10px 13px;border:1px solid transparent;border-radius:9px}
+#desktop .bc-store-nav.selected{background:linear-gradient(135deg,#681323,#291016)!important;border-color:#c94258;color:white}
+#desktop .bc-store-body{padding:24px clamp(14px,2.6vw,38px) 30px;scrollbar-width:thin}
+#desktop .bc-store-header{gap:12px;margin-bottom:10px}
+#desktop .bc-store-header h1{font-size:clamp(24px,2.3vw,34px);letter-spacing:-.04em}
+#desktop .bc-store-release-controls{gap:8px}
+#desktop .bc-store-release-controls .bc-store-search{width:clamp(120px,19vw,300px);height:36px;background:#17161a;border:1px solid #51434b;border-radius:10px}
+#desktop .bc-store-release-controls .bc-store-get{height:36px;background:#23171b;border:1px solid #73323f;color:#fff;padding:7px 13px;font-size:11px}
+#desktop .bc-store-feedback:empty{display:none}
+#desktop .bc-store-feature{position:relative;isolation:isolate;min-height:190px;padding:25px 30px;border:1px solid #8c3a49!important;border-radius:20px!important;background:radial-gradient(ellipse at 82% 110%,#a51e30 0%,#2a0910 40%,transparent 68%),linear-gradient(110deg,#171016,#08070b)!important;overflow:hidden}
+#desktop .bc-store-feature::before{content:"";position:absolute;z-index:-1;pointer-events:none;width:78%;aspect-ratio:2/1;right:-14%;top:54%;border-radius:50%;background:radial-gradient(ellipse at 48% 0%,#49101a,#13090c 39%,#07070a 65%);border-top:2px solid #ff6477;box-shadow:0 -5px 28px #e62b47,0 -18px 75px #d0214355}
+#desktop .bc-store-feature-copy{position:relative;z-index:1;max-width:70%}
+#desktop .bc-store-feature h2{font-size:clamp(26px,3.8vw,48px);font-weight:780}
+#desktop .bc-store-feature h2 em{font-style:normal;color:#ff354e}
+#desktop .bc-store-feature p{max-width:460px;font-size:13px;line-height:1.5;color:#d4c8ce}
+#desktop .bc-store-feature-symbol{position:relative;color:#fff;font-size:clamp(44px,7vw,96px);text-shadow:0 0 26px #ff2749}
+#desktop .bc-store-kicker{font-weight:800;color:#ff697e;font-size:11px}
+#desktop .bc-store-group h2{font-size:20px;display:flex;align-items:center;gap:10px;margin:0 0 16px}
+#desktop .bc-store-group h2::before{content:"";width:4px;height:20px;transform:skew(-14deg);background:#e93650}
+#desktop .bc-store-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,148px),1fr));gap:13px}
+#desktop .bc-store-grid>.bc-store-app{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:9px;text-align:center;min-height:208px;min-width:0;padding:17px 9px 11px;border:1px solid #7a29394f!important;border-radius:17px;background:linear-gradient(155deg,#21161c,#0d0b0f 72%,#2d1019);box-shadow:inset 0 1px #ffffff10,0 4px 12px #0004;transition:border-color .18s,background .18s}
+#desktop .bc-store-grid>.bc-store-app:hover{border-color:#dc5267!important;background:linear-gradient(155deg,#30202a,#100e12 72%,#36131c)}
+#desktop .bc-store-grid .bc-store-icon{width:58px;height:58px;border-radius:15px;background:linear-gradient(145deg,#68505c,#242027);color:#fff;box-shadow:inset 0 1px #ffffff35}
+#desktop .bc-store-grid .bc-store-icon svg{width:33px;height:33px}
+#desktop .bc-store-icon[data-app-id="photoledger"]{background:linear-gradient(145deg,#e04457,#621123)}
+#desktop .bc-store-icon[data-app-id="chat"]{background:linear-gradient(145deg,#56df91,#126547)}
+#desktop .bc-store-icon:is([data-app-id="film"],[data-app-id="shorts"]){background:linear-gradient(145deg,#fa3e4e,#6d111c)}
+#desktop .bc-store-icon:is([data-app-id="photos"],[data-app-id="personalphotos"]){background:conic-gradient(from 20deg,#e8b344,#c96b4d,#b0458c,#644cbe,#288bc2,#359e75,#e8b344)}
+#desktop .bc-store-icon:is([data-app-id="forces"],[data-app-id="usa"]){background:linear-gradient(145deg,#6e8299,#20364d)}
+#desktop .bc-store-icon:is([data-app-id="photobattle"],[data-app-id="omega"]){background:linear-gradient(145deg,#9f65c6,#3a245f)}
+#desktop .bc-store-icon:is([data-app-id="care"],[data-app-id="innovations"],[data-app-id="awards"]){background:linear-gradient(145deg,#b99753,#52401e)}
+#desktop .bc-store-grid .bc-store-copy{display:flex;flex-direction:column;align-items:center;flex:1;width:100%;min-width:0}
+#desktop .bc-store-grid .bc-store-link{font-size:13px;line-height:1.3;font-weight:700;text-align:center;overflow-wrap:anywhere;min-height:34px;display:grid;place-items:center}
+#desktop .bc-store-grid .bc-store-copy p{font-size:11px;color:#b6aeb7;line-height:1.35;margin:3px 0 5px;overflow-wrap:anywhere}
+#desktop .bc-store-grid .bc-store-status{font-size:9px;letter-spacing:.045em;margin-top:auto;padding:3px 6px;border-radius:5px;background:transparent;border-color:#ffffff22;color:#c0b8c0}
+#desktop .bc-store-grid [data-app-state="installed"] .bc-store-status{color:#a0d5b6;border-color:#377b52}
+#desktop .bc-store-grid .bc-store-app-actions{width:100%;min-height:42px;align-content:start;justify-items:center;gap:3px}
+#desktop .bc-store-grid .bc-store-get{min-width:76px;max-width:100%;min-height:30px;padding:6px 11px;background:#29242a;color:#fff;border:1px solid #65565f;font-size:11px;border-radius:14px}
+#desktop .bc-store-grid [data-app-state="installed"] .bc-store-get{color:#9ef4b9;background:#112d1c;border-color:#358955}
+#desktop .bc-store-grid [data-app-state="available"] .bc-store-get{background:#681727;border-color:#cf4359}
+#desktop .bc-store-grid .bc-store-get:disabled{opacity:.58;cursor:not-allowed}
+#desktop .bc-store-grid .bc-store-card-uninstall{font-size:10px;color:#d5a0ab}
+#desktop .bc-store :is(button,input,select):focus-visible{outline:2px solid #f58191;outline-offset:2px}
+@container (max-width:850px){#desktop .bc-store-rail{padding:12px 7px}#desktop .bc-store-brand strong{font-size:11px}#desktop .bc-store-feature{min-height:155px;padding:18px}#desktop .bc-store-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,132px),1fr));gap:10px}}
+@container (max-width:620px){#desktop .bc-store-rail{flex-direction:row;overflow-x:auto;justify-content:flex-start;align-items:center}#desktop .bc-store-brand,#desktop .bc-store-railnote{display:none}#desktop .bc-store-nav{flex:none}#desktop .bc-store-body{padding:14px}#desktop .bc-store-feature-copy{max-width:82%}#desktop .bc-store-feature-symbol{font-size:38px}#desktop .bc-store-grid>.bc-store-app{min-height:200px}}
+/* Container queries cannot style their own container; viewport fallback handles phone shell. */
+@media(max-width:620px){#desktop .bc-store{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}#desktop .bc-store-release-controls .bc-store-search{width:100%}}
+@media(prefers-reduced-motion:reduce){#desktop .bc-store-grid>.bc-store-app{transition:none}}
+
+
+/* Source: blackcell-os-launch.css?v=20261125-mobile-startup-refresh6 */
+/* Verified OS launch: presentation only, not authorization. */
+#gate.bc-os-cinematic[data-state=boot]{background:radial-gradient(ellipse at center,#131318 0%,#000 69%);overflow:hidden}
+#gate.bc-os-cinematic[data-state=boot]>div{gap:10px;animation:bcOSBrandIn .75s ease both}
+#gate.bc-os-cinematic .os-boot-mark{width:110px;height:110px;margin-bottom:4px}
+.bc-os-launch-b{display:block;position:relative;font-size:86px;line-height:1;font-weight:800;letter-spacing:-.08em;color:#f1f1f3;padding-right:.08em}
+.bc-os-launch-b:after{content:"";display:block;width:50px;height:5px;margin:3px auto 0;background:#bc2336}
+#gate.bc-os-cinematic h1{font-size:clamp(28px,5vw,38px);font-weight:650;letter-spacing:.14em;grid-row:2}
+#gate.bc-os-cinematic .overline{grid-row:3;font-size:10px;letter-spacing:.25em}
+#gate.bc-os-cinematic #gateMessage{font-size:10px;letter-spacing:.2em;color:#b1b1b9;grid-row:4}
+#gate.bc-os-cinematic .os-boot-track{grid-row:5;height:2px;max-width:180px;margin-top:8px}
+#gate.bc-os-cinematic #osBootProgress{background:#bfc2c7;transition:width .12s linear}
+#desktop.bc-os-launch-reveal{animation:bcOSDesktopIn .55s ease both}
+#desktop.bc-os-launch-reveal .app,#desktop.bc-os-launch-reveal .bc-sb-icon{animation:bcOSAppsIn .65s ease both}
+#desktop.bc-os-launch-reveal .dock{animation:bcOSDockIn .7s cubic-bezier(.2,.8,.2,1) both}
+#desktop.bc-os-launch-reveal .topbar{animation:bcOSDesktopIn .6s ease both}
+.bc-os-launch-sound{position:fixed;right:16px;bottom:85px;z-index:10000;border:1px solid #ffffff35;background:#141418;color:#ddd;border-radius:50%;width:36px;height:36px;cursor:pointer}
+@keyframes bcOSBrandIn{from{opacity:0;scale:.97}to{opacity:1;scale:1}}
+@keyframes bcOSDesktopIn{from{opacity:0}to{opacity:1}}
+@keyframes bcOSAppsIn{from{opacity:0;translate:0 12px}to{opacity:1;translate:0 0}}
+@keyframes bcOSDockIn{from{opacity:0;translate:0 70px}to{opacity:1;translate:0 0}}
+.bc-os-motion-reduced,.bc-os-motion-reduced *{animation:none!important;transition:none!important}
+@media(prefers-reduced-motion:reduce){#gate.bc-os-cinematic[data-state=boot]>div,#desktop.bc-os-launch-reveal,#desktop.bc-os-launch-reveal .app,#desktop.bc-os-launch-reveal .bc-sb-icon,#desktop.bc-os-launch-reveal .dock,#desktop.bc-os-launch-reveal .topbar{animation:none!important}}
+
+/* Keep the explicit mobile audio fallback accessible after autoplay is denied. */
+.bc-os-launch-sound{box-sizing:border-box!important;position:fixed!important;right:max(16px,env(safe-area-inset-right))!important;bottom:max(88px,calc(env(safe-area-inset-bottom) + 78px))!important;z-index:10000!important;width:auto!important;min-height:44px!important;height:auto!important;padding:10px 16px!important;border:1px solid #ac3447!important;border-radius:24px!important;background:#181217!important;color:#fff!important;font:600 13px system-ui!important;box-shadow:0 4px 20px #0007!important;touch-action:manipulation}
+#gate .bc-os-launch-sound{bottom:max(24px,env(safe-area-inset-bottom))!important;right:50%!important;transform:translateX(50%)!important;white-space:nowrap}
+
+
