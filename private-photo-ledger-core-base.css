@@ -8122,3 +8122,1045 @@ body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-fram
    either price/decision action. Tablet and mobile are separately styled. */
 }
 
+
+/* Source: private-photo-ledger-header-refined.css?v=20261123-option2-slim1 */
+/* BLACKCELL REDLINE · approved Option 2
+   Remove the oversized title panel and present only real, authenticated
+   Settings, Pause Sending, Refresh and verified live-status controls.
+   Desktop REDLINE including the narrower BLACKCELL OS desktop iframe only.
+   Never change the sender, mobile or standalone tablet experience. */
+@media (min-width:720px) {
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+#ledgerApp #redlineReceiverCommand {
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  width:100%!important;
+  min-height:0!important;
+  padding:7px 11px!important;
+  margin:0 0 7px!important;
+  border:1px solid #44303a!important;
+  border-radius:12px!important;
+  background:linear-gradient(120deg,#0d0b0e,#100a0f 55%,#09090b)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.05)!important;
+  gap:0!important;
+  overflow:visible!important;
+  box-sizing:border-box!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+#ledgerApp #redlineReceiverCommand>.rr-command-header {
+  display:flex!important;
+  flex-direction:row!important;
+  flex-wrap:nowrap!important;
+  justify-content:flex-start!important;
+  align-items:center!important;
+  gap:8px!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  min-height:36px!important;
+  height:auto!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+/* The user selected NO REDLINE CONTROL title or second subtitle in this
+   header. Keep the original DOM so the remaining application code works. */
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+#ledgerApp #redlineReceiverCommand>.rr-command-header>.rr-command-intro,
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+#ledgerApp #redlineReceiverCommand>.rr-command-header>.rr-status {
+  display:none!important;
+}
+/* The existing Settings action remains on the left, next to Pause. */
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+#ledgerApp #redlineReceiverCommand .rr-command-header #redlineConsentSettingsOpen,
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+#ledgerApp #redlineReceiverCommand .rr-command-header #redlineReceiverSendingPause {
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  flex:0 0 auto!important;
+  box-sizing:border-box!important;
+  height:35px!important;
+  min-height:35px!important;
+  max-height:35px!important;
+  width:auto!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:6px 11px!important;
+  border-radius:9px!important;
+  font-size:10px!important;
+  line-height:1!important;
+  letter-spacing:0!important;
+  font-weight:750!important;
+  white-space:nowrap!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+#ledgerApp #redlineReceiverCommand .rr-command-header #redlineConsentSettingsOpen[hidden],
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+#ledgerApp #redlineReceiverCommand .rr-command-header #redlineReceiverPauseHeader[hidden],
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+#ledgerApp #redlineReceiverCommand .rr-command-header #redlineReceiverSendingPause[hidden] {
+  display:none!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+#ledgerApp #redlineReceiverCommand .rr-command-header #redlineReceiverPauseHeader {
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  flex:0 0 auto!important;
+  height:35px!important;
+  min-height:35px!important;
+  padding:0!important;
+  margin:0!important;
+  border:0!important;
+  background:transparent!important;
+}
+/* Refresh, room verification and live connection state remain grouped to
+   the right, using the original live-state elements and handlers. */
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+#ledgerApp #redlineReceiverCommand .rr-command-header .workspace-actions {
+  display:flex!important;
+  flex:0 1 auto!important;
+  flex-direction:row!important;
+  flex-wrap:nowrap!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  width:auto!important;
+  min-width:0!important;
+  max-width:none!important;
+  gap:7px!important;
+  margin:0 0 0 auto!important;
+  padding:0!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+#ledgerApp #redlineReceiverCommand .rr-command-header .workspace-actions>* {
+  display:inline-flex!important;
+  flex:0 0 auto!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-height:32px!important;
+  height:auto!important;
+  padding:5px 9px!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+  font-size:10px!important;
+  line-height:1.12!important;
+  font-weight:700!important;
+  letter-spacing:0!important;
+  white-space:nowrap!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+#ledgerApp #redlineReceiverCommand .rr-command-header #ledgerLiveStatus {
+  max-width:198px!important;
+  min-height:31px!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  border:1px solid #4b3b44!important;
+  border-radius:9px!important;
+  padding:6px 9px!important;
+  background:#131216!important;
+  color:#d0dcd3!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+#ledgerApp #redlineReceiverCommand .rr-command-header .verified-mark {
+  color:#b9d8c5!important;
+  font-size:10px!important;
+}
+/* A narrower OS window can put connection indicators on the next compact
+   line instead of clipping an action or stretching the entire header. */
+@media (max-width:900px) {
+  body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+  #ledgerApp #redlineReceiverCommand>.rr-command-header {
+    flex-wrap:wrap!important;
+    justify-content:flex-start!important;
+    row-gap:6px!important;
+  }
+  body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+  #ledgerApp #redlineReceiverCommand .rr-command-header .workspace-actions {
+    flex:1 1 100%!important;
+    margin-left:0!important;
+    justify-content:flex-start!important;
+  }
+}
+}
+
+
+/* Source: private-photo-ledger-merged-photo-panel.css?v=20261123-merged-photo-webos3 */
+/* BLACKCELL REDLINE: approved unified timer + photo review.
+   One Apple-glass surface using the existing authenticated live elements.
+   Desktop Web OS and desktop iframe only. Tablets/phones/sender unchanged. */
+@media(min-width:720px){
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount{
+ display:flex!important;flex:0 0 auto!important;flex-direction:column!important;
+ box-sizing:border-box!important;gap:0!important;width:100%!important;
+ min-width:0!important;min-height:0!important;margin:0!important;
+ padding:10px 13px!important;overflow:visible!important;
+ border:1px solid #bc2c50!important;border-radius:15px!important;
+ background:linear-gradient(115deg,#270a15 0%,#150a11 50%,#0c090d 100%)!important;
+ box-shadow:inset 0 1px 0 #ffffff14,0 4px 16px #0009!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount>.rr-timer-panel{
+ display:flex!important;flex-direction:column!important;
+ box-sizing:border-box!important;flex:0 0 auto!important;
+ width:100%!important;max-width:100%!important;min-width:0!important;
+ min-height:0!important;height:auto!important;
+ margin:0!important;padding:0!important;gap:7px!important;
+ border:0!important;border-radius:0!important;background:transparent!important;
+ box-shadow:none!important;overflow:visible!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount .rr-timer-heading{
+ margin:0!important;padding:0!important;min-height:40px!important;
+ width:100%!important;gap:3px 9px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount .rr-timer-controls{
+ display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ grid-template-rows:28px 35px!important;gap:5px!important;
+ align-items:stretch!important;min-width:0!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount .rr-timer-selected{
+ grid-column:1!important;grid-row:1!important;align-self:center!important;
+ max-width:100%!important;min-width:0!important;
+ white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount .rr-timer-rate-label{
+ grid-column:2/4!important;grid-row:1!important;
+ display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:8px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount .rr-timer-rate{
+ height:27px!important;min-height:27px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount :is(.rr-timer-start,.rr-timer-stop,.rr-timer-select-incoming){
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ box-sizing:border-box!important;width:100%!important;min-width:0!important;
+ height:35px!important;min-height:35px!important;padding:6px!important;
+ border-radius:10px!important;font-size:10px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount>#redlineLightboxReview:not([hidden]){
+ box-sizing:border-box!important;flex:0 0 auto!important;
+ width:100%!important;min-width:0!important;min-height:0!important;
+ height:auto!important;max-height:none!important;overflow:visible!important;
+ margin:9px 0 0!important;padding:9px 0 0!important;gap:5px 10px!important;
+ border:0!important;border-top:1px solid #854054!important;
+ border-radius:0!important;background:transparent!important;box-shadow:none!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount>#redlineLightboxReview:not([data-redline-decision="pending"]):not([hidden]){
+ display:grid!important;
+ grid-template-columns:minmax(0,1.4fr) minmax(60px,.3fr) minmax(118px,.7fr)!important;
+ grid-template-rows:minmax(33px,auto)!important;align-items:center!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount #redlineLightboxReview>.rr-photo-rating-panel{
+ display:grid!important;
+ grid-template-columns:max-content minmax(0,1fr)!important;
+ grid-template-rows:auto auto!important;
+ align-items:center!important;justify-content:start!important;
+ min-width:0!important;column-gap:7px!important;row-gap:2px!important;
+ margin:0!important;padding:0!important;
+ border:0!important;background:transparent!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount #redlineLightboxReview .rr-photo-rating-title{
+ color:#ffe5ed!important;white-space:nowrap!important;font-size:10px!important;
+ font-weight:850!important;letter-spacing:0!important;line-height:1.2!important;
+ grid-column:1!important;grid-row:1!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount #redlineLightboxReview .rr-photo-rating-buttons{
+ display:flex!important;flex-wrap:nowrap!important;align-items:center!important;
+ gap:2px!important;padding:0!important;margin:0!important;
+ grid-column:2!important;grid-row:1!important;justify-self:start!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount #redlineLightboxReview .rr-photo-rating-star{
+ width:23px!important;min-width:23px!important;height:29px!important;
+ min-height:29px!important;padding:0!important;margin:0!important;
+ font-size:23px!important;line-height:1!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount #redlineLightboxReview .rr-photo-rating-feedback{
+ grid-column:1/-1!important;grid-row:2!important;margin:0!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile)
+#rrAppleRight #rrAppleTimerMount #redlineLightboxReview .rr-photo-rating-feedback:empty{display:none!important}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount #redlineLightboxReview:not([data-redline-decision="pending"])>.rr-photo-price-amount{
+ grid-column:2!important;grid-row:1!important;align-self:center!important;justify-self:center!important;
+ margin:0!important;font-size:20px!important;font-weight:900!important;
+ white-space:nowrap!important;color:#fff!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount #redlineLightboxReview:not([data-redline-decision="pending"])>.rr-permanent-delete-button{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ grid-column:3!important;grid-row:1!important;align-self:center!important;justify-self:stretch!important;
+ box-sizing:border-box!important;width:100%!important;max-width:none!important;
+ min-height:35px!important;margin:0!important;padding:5px 8px!important;
+ border:1px solid #e52b5e!important;border-radius:9px!important;
+ background:linear-gradient(115deg,#330d1b,#210b15)!important;
+ color:#f4cad6!important;font-size:9px!important;line-height:1.15!important;font-weight:850!important;
+ text-align:center!important;white-space:normal!important;
+}
+/* Pending photo: real bid field and all accept/reject actions remain usable
+   beneath the star row INSIDE the same single card. */
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount>#redlineLightboxReview[data-redline-decision="pending"]:not([hidden]){
+ display:grid!important;grid-template-columns:minmax(0,1.3fr) minmax(112px,.7fr)!important;
+ grid-template-rows:auto auto auto!important;align-items:center!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount #redlineLightboxReview[data-redline-decision="pending"]>.rr-photo-rating-panel{
+ grid-column:1!important;grid-row:1!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount #redlineLightboxReview[data-redline-decision="pending"]>.redline-review-label{
+ grid-column:2!important;grid-row:1!important;margin:0!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount #redlineLightboxReview[data-redline-decision="pending"]>.redline-review-actions{
+ grid-column:1/-1!important;grid-row:2!important;
+ display:grid!important;grid-template-columns:minmax(0,1.3fr) repeat(2,minmax(0,.8fr))!important;
+ gap:5px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount #redlineLightboxReview[data-redline-decision="pending"]>.rr-permanent-delete-button{
+ grid-column:1/-1!important;grid-row:3!important;justify-self:end!important;
+ width:auto!important;min-height:29px!important;font-size:9px!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight #rrAppleTimerMount #redlineLightboxReview .redline-review-hint{
+ display:none!important;
+}
+body.bc-redline-receiver.bc-redline-apple-mode:is(.bc-ledger-desktop,.bc-os-frame-redline):not(.bc-ledger-mobile) #rrAppleRight>.rr-chat-panel:not([hidden]){
+ flex:1 1 0!important;min-height:0!important;
+}
+}
+
+
+/* Source: private-photo-ledger-owner-hub.css?v=20261123-owner-hub1 */
+/* BLACKCELL REDLINE | Refined Owner Operations
+   Smaller Apple-dark cards instead of three oversized blocks.
+   Actual authenticated room, upload-link, permission, preview and chat
+   elements stay in the DOM with their original handlers and scopes.
+   Applies to receiver web/tablet. Mobile/sender remain unchanged. */
+@media(min-width:720px){
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ledgerApp{
+ --ro-border:#342d34;--ro-muted:#aca5ad;--ro-red:#ec3157;--ro-panel:#0f0e11;
+}
+/* Room setup: concise heading, one compact assignment line, no empty acreage. */
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ledgerApp #ownerSetup:not([hidden]){
+ box-sizing:border-box!important;width:100%!important;
+ margin:12px 0 13px!important;padding:15px 18px!important;
+ border:1px solid #4e343e!important;border-left:2px solid #e32750!important;
+ border-radius:14px!important;background:linear-gradient(110deg,#130d12,#0a0a0d)!important;
+ box-shadow:none!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerSetup .section-top{
+ display:flex!important;align-items:center!important;justify-content:space-between!important;
+ gap:12px!important;flex-wrap:nowrap!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerSetup .section-top>div{
+ display:flex!important;align-items:center!important;flex-wrap:wrap!important;gap:4px 13px!important;
+ min-width:0!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerSetup .section-top .eyebrow{
+ flex-basis:100%!important;
+ margin:0!important;font-size:9px!important;letter-spacing:.11em!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerSetup h2{
+ font-size:18px!important;line-height:1.2!important;letter-spacing:-.035em!important;
+ margin:0!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerSetup .section-top p{
+ margin:0!important;font-size:10px!important;line-height:1.4!important;
+ color:#afa6ae!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerSetup .mini-tag{
+ align-self:center!important;padding:6px 9px!important;border-radius:7px!important;
+ font-size:9px!important;white-space:nowrap!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerSetup .setup-form{
+ display:grid!important;grid-template-columns:minmax(180px,1fr) minmax(180px,1.1fr) auto!important;
+ align-items:end!important;gap:10px!important;
+ margin:11px 0 0!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerSetup .setup-form>label{
+ display:flex!important;flex-direction:column!important;gap:5px!important;
+ min-width:0!important;font-size:9px!important;letter-spacing:.09em!important;
+ font-weight:800!important;color:#c1b7bd!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerSetup :is(#employeeChoice,#roomLabel){
+ box-sizing:border-box!important;width:100%!important;height:39px!important;
+ min-height:39px!important;border-radius:9px!important;
+ padding:7px 11px!important;font-size:12px!important;
+ background:#111115!important;border:1px solid #4b3d45!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerSetup #createRoom{
+ box-sizing:border-box!important;min-height:39px!important;height:39px!important;
+ padding:7px 13px!important;margin:0!important;border-radius:9px!important;
+ font-size:10px!important;white-space:nowrap!important;font-weight:800!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerSetup #setupFeedback:empty{
+ display:none!important;
+}
+/* One sender preview for an active room; setup preview is retained
+   when no sender/upload-info panel is available. */
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ledgerApp:has(#ownerUploadInfo:not([hidden])) #redlineSetupPreviewButton{
+ display:none!important;
+}
+/* The owner-only side cards wrap by their ACTUAL available width rather
+   than stretching into two half-empty panels across an ultrawide monitor. */
+body.bc-redline-receiver:not(.bc-ledger-mobile) #activeRoom .room-body .side-column:has(#ownerUploadInfo:not([hidden])){
+ display:grid!important;
+ grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr))!important;
+ align-items:stretch!important;align-content:start!important;
+ gap:11px!important;width:100%!important;min-width:0!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #activeRoom .side-column .panel{
+ box-sizing:border-box!important;
+ padding:15px 17px!important;
+ border:1px solid var(--ro-border)!important;border-radius:13px!important;
+ background:linear-gradient(135deg,#101014,#0b0b0e)!important;
+ box-shadow:none!important;min-width:0!important;margin:0!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #activeRoom .side-column .card-title{
+ display:flex!important;align-items:center!important;gap:10px!important;
+ margin:0!important;padding:0!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #activeRoom .side-column .card-icon{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ flex:0 0 32px!important;width:32px!important;height:32px!important;
+ border-radius:9px!important;font-size:16px!important;
+ background:#230c16!important;border:1px solid #633045!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #activeRoom .side-column .eyebrow{
+ font-size:9px!important;letter-spacing:.085em!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #activeRoom .side-column h3{
+ font-size:16px!important;line-height:1.2!important;letter-spacing:-.025em!important;
+ margin:4px 0 0!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #activeRoom .side-column :is(.owner-upload-info,.ledger-scope-card)>p{
+ font-size:11px!important;line-height:1.48!important;color:var(--ro-muted)!important;
+ margin:9px 0 0!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #activeRoom .side-column :is(.owner-upload-info,.ledger-scope-card) .form-note:empty{
+ display:none!important;
+}
+/* Employee Upload: three genuine actions share one compact action row.
+   No duplicate preview and no second 'full-width button wall'. */
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerUploadInfo:not([hidden]){
+ display:grid!important;
+ grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ grid-auto-rows:min-content!important;align-items:start!important;
+ gap:8px!important;align-content:start!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerUploadInfo>.card-title,
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerUploadInfo>#ownerUploadDescription{
+ grid-column:1/-1!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerUploadInfo>.privacy-note{
+ display:none!important;/* same read-only fact is already in description */
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerUploadInfo>#ownerUploadShare{
+ grid-column:1!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerUploadInfo>#redlineOwnerPreviewButton{
+ grid-column:2!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerUploadInfo>.redline-owner-open-messages{
+ grid-column:3!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerUploadInfo :is(#ownerUploadShare,#redlineOwnerPreviewButton,.redline-owner-open-messages){
+ box-sizing:border-box!important;display:flex!important;
+ align-items:center!important;justify-content:center!important;
+ width:100%!important;min-width:0!important;max-width:none!important;
+ min-height:37px!important;height:auto!important;
+ margin:0!important;padding:8px 7px!important;
+ border-radius:9px!important;font-size:9px!important;
+ font-weight:800!important;line-height:1.22!important;
+ letter-spacing:0!important;text-align:center!important;white-space:normal!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerUploadInfo #ownerUploadShare{
+ background:#17151a!important;border:1px solid #57404b!important;color:#f2e8ef!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerUploadInfo #redlineOwnerPreviewButton{
+ background:#321523!important;border:1px solid #934359!important;color:#ffe2eb!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerUploadInfo .redline-owner-open-messages{
+ background:#b70b30!important;border:1px solid #e63156!important;color:#fff!important;
+}
+/* Permissions: current state clearly separated from the single real change
+   button. Unrestricted/restricted values remain live and legible. */
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerLedgerScope:not([hidden]){
+ display:flex!important;flex-direction:column!important;align-items:stretch!important;
+ gap:8px!important;border-color:#673544!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerLedgerScope .ledger-scope-state{
+ display:flex!important;align-items:center!important;justify-content:space-between!important;
+ flex-wrap:wrap!important;gap:7px!important;
+ width:100%!important;min-height:37px!important;box-sizing:border-box!important;
+ margin:2px 0 0!important;padding:8px 10px!important;
+ border:1px solid #51434d!important;border-radius:9px!important;
+ background:#1b171e!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerLedgerScope #ledgerScopeStatus{
+ font-size:11px!important;letter-spacing:0!important;line-height:1.2!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerLedgerScope #ledgerScopeIndicator{
+ font-size:9px!important;white-space:nowrap!important;color:#8fe8b1!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerLedgerScope #ledgerScopeDescription{
+ margin:0!important;flex:1 1 auto!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerLedgerScope #ledgerScopeToggle{
+ align-self:flex-start!important;width:auto!important;max-width:100%!important;
+ min-height:37px!important;padding:8px 15px!important;
+ margin:3px 0 0!important;border-radius:9px!important;
+ border:1px solid #a14b62!important;background:#230d17!important;
+ font-size:10px!important;font-weight:800!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerLedgerScope #ledgerScopeToggle.scope-restricted{
+ background:#161b18!important;border-color:#3f885b!important;
+}
+/* The private link becomes a slim, full-width strip, never half a huge card. */
+body.bc-redline-receiver:not(.bc-ledger-mobile) #activeRoom .side-column>.link-card{
+ display:grid!important;
+ grid-column:1/-1!important;
+ grid-template-columns:minmax(0,1fr) max-content!important;
+ grid-template-rows:auto auto auto!important;align-items:center!important;
+ gap:3px 13px!important;padding:13px 17px!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #activeRoom .side-column>.link-card .eyebrow{
+ grid-column:1!important;grid-row:1!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #activeRoom .side-column>.link-card h3{
+ grid-column:1!important;grid-row:2!important;
+ margin:0!important;font-size:14px!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #activeRoom .side-column>.link-card>p:not(.form-note){
+ grid-column:1!important;grid-row:3!important;
+ margin:0!important;font-size:10px!important;line-height:1.4!important;
+ color:var(--ro-muted)!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #activeRoom .side-column>.link-card #copyRoomLink{
+ grid-column:2!important;grid-row:1/4!important;
+ width:auto!important;min-width:180px!important;max-width:250px!important;
+ height:36px!important;min-height:36px!important;
+ padding:7px 12px!important;border-radius:9px!important;
+ font-size:10px!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #activeRoom .side-column>.link-card #linkFeedback:not(:empty){
+ grid-column:1/-1!important;grid-row:4!important;
+ margin:5px 0 0!important;font-size:10px!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #activeRoom .side-column>.link-card #linkFeedback:empty{
+ display:none!important;
+}
+/* Additional owner security control remains functional without the giant
+   nested panel that was visible beneath the invitation area. */
+body.bc-redline-receiver:not(.bc-ledger-mobile) #redlineReceiverAccessPanel{
+ padding:14px 17px!important;margin:10px 0!important;
+ border:1px solid #673344!important;border-left:2px solid #e13156!important;
+ border-radius:12px!important;background:#100c11!important;
+ box-shadow:none!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #redlineReceiverAccessPanel h3{
+ font-size:16px!important;margin:3px 0!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #redlineReceiverAccessPanel .rr-access-row{
+ margin:9px 0 4px!important;gap:8px!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #redlineReceiverAccessPanel :is(.rr-access-select,.rr-access-action){
+ box-sizing:border-box!important;min-height:37px!important;height:37px!important;
+ padding:6px 11px!important;border-radius:9px!important;font-size:11px!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #redlineReceiverAccessPanel>p{
+ font-size:11px!important;line-height:1.4!important;
+}
+}
+/* Narrow tablet/embedded OS windows stack action buttons instead of clipping. */
+@media(min-width:720px) and (max-width:1140px){
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerUploadInfo:not([hidden]){
+ grid-template-columns:repeat(2,minmax(0,1fr))!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerUploadInfo>#ownerUploadShare{grid-column:1!important}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerUploadInfo>#redlineOwnerPreviewButton{grid-column:2!important}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerUploadInfo>.redline-owner-open-messages{grid-column:1/-1!important}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerSetup .setup-form{
+ grid-template-columns:repeat(2,minmax(0,1fr))!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerSetup #createRoom{grid-column:1/-1!important;justify-self:start!important}
+}
+@media(min-width:720px) and (max-width:850px){
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerSetup .section-top>div{
+ display:block!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #ownerSetup .section-top p{
+ margin-top:4px!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #activeRoom .side-column>.link-card{
+ grid-template-columns:minmax(0,1fr)!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #activeRoom .side-column>.link-card #copyRoomLink{
+ grid-column:1!important;grid-row:4!important;justify-self:stretch!important;max-width:none!important;
+}
+body.bc-redline-receiver:not(.bc-ledger-mobile) #activeRoom .side-column>.link-card #linkFeedback:not(:empty){
+ grid-column:1!important;grid-row:5!important;
+}
+}
+
+
+/* Source: private-photo-ledger-photo-zoom.css?v=20261123-photo-canvas-v2 */
+/* BLACKCELL REDLINE — real photo zoom in reviewer and enlarged original.
+   Controls overlay the photo; no new scrolling region or changed chat height. */
+body.bc-redline-receiver .bc-photo-zoom-host {
+ position:relative!important;isolation:isolate;
+}
+body.bc-redline-receiver .bc-photo-zoom-host .bc-photo-zoom-image {
+ transform-origin:50% 50%!important;transition:none!important;
+ will-change:transform;touch-action:none!important;
+ user-select:none!important;-webkit-user-drag:none!important;
+}
+body.bc-redline-receiver .bc-photo-zoom-host.bc-photo-zoomed .bc-photo-zoom-image {
+ cursor:grab!important;
+}
+body.bc-redline-receiver .bc-photo-zoom-host.bc-photo-zoomed .bc-photo-zoom-image:active {
+ cursor:grabbing!important;
+}
+body.bc-redline-receiver #redlineReceiverReviewStage .bc-photo-zoom-viewport{
+ overflow:hidden!important;
+}
+body.bc-redline-receiver #redlineReceiverReviewStage .rr-timer-selected-preview.bc-photo-zoom-host{
+ overflow:hidden!important;
+}
+body.bc-redline-receiver .bc-photo-zoom-controls{
+ position:absolute!important;bottom:12px!important;right:12px!important;
+ z-index:40!important;display:flex!important;align-items:center!important;
+ width:auto!important;height:auto!important;min-height:0!important;
+ padding:4px!important;gap:3px!important;margin:0!important;
+ background:#08090dec!important;border:1px solid #a33b57!important;
+ border-radius:12px!important;box-shadow:0 5px 18px #000c!important;
+ pointer-events:auto!important;
+}
+body.bc-redline-receiver .bc-photo-zoom-controls .bc-photo-zoom-button{
+ appearance:none!important;display:inline-flex!important;
+ align-items:center!important;justify-content:center!important;
+ flex:0 0 auto!important;box-sizing:border-box!important;
+ min-width:34px!important;width:auto!important;
+ height:31px!important;min-height:31px!important;
+ padding:3px 8px!important;margin:0!important;
+ border:0!important;border-radius:8px!important;
+ background:#18141b!important;color:#fff!important;
+ font-size:17px!important;line-height:1!important;font-weight:800!important;
+ cursor:pointer!important;touch-action:manipulation!important;
+}
+body.bc-redline-receiver .bc-photo-zoom-controls .bc-photo-zoom-button[data-zoom-label]{
+ min-width:53px!important;color:#ffd7e3!important;font-size:11px!important;
+ font-variant-numeric:tabular-nums;
+}
+body.bc-redline-receiver .bc-photo-zoom-controls .bc-photo-zoom-button:hover:not(:disabled){
+ background:#a8143e!important;
+}
+body.bc-redline-receiver .bc-photo-zoom-controls .bc-photo-zoom-button:focus-visible{
+ outline:2px solid #ff7194!important;outline-offset:1px!important;
+}
+body.bc-redline-receiver .bc-photo-zoom-controls .bc-photo-zoom-button:disabled{
+ opacity:.38!important;cursor:default!important;
+}
+body.bc-redline-receiver #photoLightbox .redline-review-large-image{
+ position:relative!important;overflow:hidden!important;
+}
+body.bc-redline-receiver #photoLightbox .bc-photo-zoom-image{
+ cursor:zoom-in!important;
+}
+body.bc-redline-receiver #photoLightbox .bc-photo-zoomed .bc-photo-zoom-image{
+ cursor:grab!important;
+}
+body.bc-redline-receiver #photoLightbox .bc-photo-zoom-controls{
+ position:absolute!important;bottom:max(18px,env(safe-area-inset-bottom))!important;
+ right:auto!important;left:50%!important;
+ transform:translateX(-50%)!important;z-index:10004!important;
+}
+body.bc-redline-receiver #photoLightbox #closeLightbox{
+ display:inline-flex!important;position:fixed!important;z-index:10005!important;
+ top:max(12px,env(safe-area-inset-top))!important;
+ right:max(12px,env(safe-area-inset-right))!important;
+ align-items:center!important;justify-content:center!important;
+ width:auto!important;min-height:39px!important;
+ padding:8px 15px!important;border-radius:10px!important;
+ border:1px solid #d03a5a!important;
+ background:#190c14f2!important;color:#fff!important;
+ opacity:1!important;visibility:visible!important;
+ pointer-events:auto!important;cursor:pointer!important;
+}
+@media(max-width:600px){
+ body.bc-redline-receiver .bc-photo-zoom-controls{right:7px!important;bottom:7px!important}
+ body.bc-redline-receiver .bc-photo-zoom-controls .bc-photo-zoom-button{
+  min-width:30px!important;height:30px!important;min-height:30px!important;
+ }
+}
+
+
+/* Desktop Web OS: maximize the actual photo, not an empty 62px header row.
+   All bid/rating/timer widgets remain on the right, with chat untouched. */
+@media(min-width:720px){
+ body.bc-redline-receiver.bc-redline-apple-mode.rr-imessage-mode:not(.bc-ledger-mobile)
+ #redlineReceiverLiveWorkspace #redlineReceiverIncomingPhotos.rr-incoming-photos{
+  display:flex!important;flex-direction:column!important;
+  width:100%!important;height:100%!important;min-height:0!important;
+  padding:0!important;gap:0!important;margin:0!important;
+  overflow:hidden!important;background:#000!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode.rr-imessage-mode:not(.bc-ledger-mobile)
+ #redlineReceiverLiveWorkspace #redlineReceiverIncomingPhotos>.rr-incoming-header{
+  display:none!important;min-height:0!important;height:0!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode.rr-imessage-mode:not(.bc-ledger-mobile)
+ #redlineReceiverLiveWorkspace #redlineReceiverReviewStage{
+  display:flex!important;flex:1 1 0!important;
+  flex-direction:column!important;width:100%!important;
+  height:100%!important;min-height:0!important;max-height:none!important;
+  margin:0!important;padding:0!important;gap:0!important;
+  border:0!important;background:#000!important;overflow:hidden!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode.rr-imessage-mode:not(.bc-ledger-mobile)
+ #redlineReceiverReviewStage #ownerReviewQueue:not([hidden]),
+ body.bc-redline-receiver.bc-redline-apple-mode.rr-imessage-mode:not(.bc-ledger-mobile)
+ #redlineReceiverReviewStage #reviewQueueCurrent,
+ body.bc-redline-receiver.bc-redline-apple-mode.rr-imessage-mode:not(.bc-ledger-mobile)
+ #redlineReceiverReviewStage #reviewQueueCurrent>.photo-entry{
+  flex:1 1 0!important;min-height:0!important;
+  height:100%!important;max-height:none!important;
+  margin:0!important;padding:0!important;
+  border:0!important;border-radius:0!important;
+  background:#000!important;overflow:hidden!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode.rr-imessage-mode:not(.bc-ledger-mobile)
+ #redlineReceiverReviewStage #reviewQueueCurrent>.photo-entry>.photo-image-btn{
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  flex:1 1 0!important;width:100%!important;height:100%!important;
+  min-height:0!important;max-height:none!important;
+  border:0!important;border-radius:0!important;
+  padding:0!important;margin:0!important;background:#000!important;
+ }
+ body.bc-redline-receiver.bc-redline-apple-mode.rr-imessage-mode:not(.bc-ledger-mobile)
+ #redlineReceiverReviewStage #reviewQueueCurrent>.photo-entry>.photo-image-btn>img{
+  display:block!important;width:100%!important;height:100%!important;
+  min-width:0!important;min-height:0!important;max-width:100%!important;
+  max-height:100%!important;
+  object-fit:contain!important;object-position:center!important;
+ }
+}
+/* Overlay actions are deliberately small and sit at the edges so
+   the subject remains visible. */
+body.bc-redline-receiver #redlineReceiverReviewStage .bc-photo-open-large{
+ position:absolute!important;top:12px!important;left:12px!important;
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ z-index:41!important;width:auto!important;height:36px!important;min-height:36px!important;
+ padding:7px 13px!important;margin:0!important;
+ border:1px solid #b3415e!important;border-radius:9px!important;
+ background:#150b12e8!important;color:#f6e4eb!important;
+ font-size:10px!important;font-weight:850!important;line-height:1!important;
+ letter-spacing:.02em!important;cursor:pointer!important;
+}
+body.bc-redline-receiver #redlineReceiverReviewStage .bc-photo-open-large:hover{
+ background:#a5163d!important;color:#fff!important;
+}
+body.bc-redline-receiver #redlineReceiverReviewStage .bc-photo-load-message{
+ position:absolute!important;inset:auto 8% 43% 8%!important;z-index:35!important;
+ padding:14px!important;border:1px solid #b93a54!important;
+ border-radius:10px!important;background:#260d1bcf!important;
+ color:#fff!important;text-align:center!important;
+ font-size:13px!important;line-height:1.4!important;pointer-events:none!important;
+}
+
+
+/* Source: private-photo-ledger-hd-viewer.css?v=20261123-original-hd1 */
+/* BLACKCELL REDLINE private original-quality viewer.
+   Desktop, tablet and Android use the exact authenticated Bunny original
+   object URL. UI never stretches the image or covers the chat workspace. */
+#photoLightbox[hidden] .redline-hd-toolbar,
+#photoLightbox .redline-hd-toolbar[hidden]{display:none!important}
+#photoLightbox .redline-hd-toolbar{
+ position:fixed!important;
+ top:max(12px,env(safe-area-inset-top))!important;
+ left:max(10px,env(safe-area-inset-left))!important;
+ z-index:10008!important;
+ max-width:calc(100vw - 145px)!important;
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ gap:5px!important;
+ box-sizing:border-box!important;
+ padding:4px 6px!important;
+ border:1px solid #8b3852!important;border-radius:11px!important;
+ background:#100c13ed!important;color:#fff!important;
+ box-shadow:0 4px 20px #000a!important;
+ backdrop-filter:blur(8px);
+}
+#photoLightbox .redline-hd-toolbar button{
+ appearance:none!important;display:inline-flex!important;align-items:center!important;
+ justify-content:center!important;min-height:34px!important;
+ min-width:32px!important;width:32px!important;
+ padding:0!important;margin:0!important;
+ border:1px solid #713246!important;border-radius:8px!important;
+ background:#2a1220!important;color:#fff!important;
+ font-size:23px!important;font-weight:750!important;line-height:1!important;
+ cursor:pointer!important;touch-action:manipulation!important;
+}
+#photoLightbox .redline-hd-toolbar button:disabled{
+ opacity:.3!important;cursor:default!important;
+}
+#photoLightbox .redline-hd-toolbar button[hidden]{display:none!important}
+#photoLightbox .redline-hd-toolbar button:focus-visible,
+.redline-hd-open:focus-visible{outline:2px solid #ff6689!important;outline-offset:2px!important}
+#photoLightbox .redline-hd-resolution{
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+ font-size:10px!important;letter-spacing:.035em!important;font-weight:850!important;
+ line-height:1.2!important;color:#ffe5ed!important;
+ max-width:170px!important;min-width:0!important;
+ text-align:center!important;white-space:nowrap!important;
+ overflow:hidden!important;text-overflow:ellipsis!important;
+ font-variant-numeric:tabular-nums!important;
+}
+/* The full screen is the photo-only overlay. Never distort an original. */
+#photoLightbox:not([hidden]) #lightboxImage{
+ object-fit:contain!important;object-position:center!important;
+ max-width:100%!important;max-height:100%!important;
+ image-rendering:auto!important;
+}
+.redline-hd-open{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ gap:6px!important;box-sizing:border-box!important;
+ min-height:35px!important;padding:7px 11px!important;
+ border:1px solid #a43959!important;border-radius:9px!important;
+ background:#380e20!important;color:#fff!important;
+ font-weight:850!important;font-size:11px!important;
+ cursor:pointer!important;touch-action:manipulation!important;
+}
+.redline-hd-open:disabled{opacity:.5!important;cursor:wait!important}
+.redline-current-viewing-photo .redline-hd-open{
+ width:100%;max-width:340px;margin:9px auto 0!important;
+}
+/* Sender also gets full-screen zoom, click, pinch, and pan from the shared
+   existing photo-zoom module, not only the receiver-specific zoom styling. */
+body.redline-sender-simple #photoLightbox:not([hidden]){
+ position:fixed!important;inset:0!important;
+ display:flex!important;align-items:stretch!important;justify-content:center!important;
+ width:100vw!important;height:100dvh!important;max-width:none!important;
+ max-height:100dvh!important;margin:0!important;padding:0!important;
+ z-index:10000!important;overflow:hidden!important;background:#000!important;
+}
+body.redline-sender-simple #photoLightbox .redline-review-lightbox-layout{
+ display:flex!important;align-items:stretch!important;justify-content:center!important;
+ flex:1 1 0!important;width:100%!important;height:100%!important;
+ max-width:100%!important;max-height:100%!important;min-height:0!important;
+ padding:0!important;margin:0!important;overflow:hidden!important;
+}
+body.redline-sender-simple #photoLightbox .redline-review-large-image{
+ position:relative!important;flex:1 1 0!important;display:flex!important;
+ align-items:center!important;justify-content:center!important;isolation:isolate!important;
+ width:100%!important;height:100%!important;min-height:0!important;
+ margin:0!important;padding:0!important;overflow:hidden!important;
+}
+body.redline-sender-simple #photoLightbox #lightboxImage{
+ display:block!important;width:100%!important;height:100%!important;
+ min-height:0!important;max-height:100%!important;
+ object-fit:contain!important;cursor:zoom-in!important;
+ transform-origin:center!important;touch-action:none!important;
+}
+body.redline-sender-simple #photoLightbox .bc-photo-zoom-host.bc-photo-zoomed #lightboxImage{
+ cursor:grab!important;
+}
+body.redline-sender-simple #photoLightbox .bc-photo-zoom-controls{
+ position:absolute!important;left:50%!important;
+ bottom:max(20px,env(safe-area-inset-bottom))!important;
+ transform:translateX(-50%)!important;
+ display:flex!important;align-items:center!important;gap:4px!important;
+ z-index:10004!important;padding:4px!important;
+ border:1px solid #8b3852!important;border-radius:11px!important;
+ background:#100c13ed!important;
+}
+body.redline-sender-simple #photoLightbox .bc-photo-zoom-button{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ min-width:35px!important;min-height:34px!important;
+ border:0!important;border-radius:8px!important;
+ padding:3px 8px!important;background:#281722!important;color:#fff!important;
+ font-size:18px!important;
+}
+body.redline-sender-simple #photoLightbox .bc-photo-zoom-button[data-zoom-label]{
+ font-size:11px!important;min-width:54px!important;
+}
+body.redline-sender-simple #photoLightbox #closeLightbox{
+ display:inline-flex!important;position:fixed!important;
+ top:max(12px,env(safe-area-inset-top))!important;
+ right:max(10px,env(safe-area-inset-right))!important;
+ z-index:10009!important;min-height:42px!important;
+ padding:9px 13px!important;border:1px solid #d03459!important;
+ border-radius:10px!important;background:#310e1df2!important;color:#fff!important;
+}
+@media(max-width:600px){
+ #photoLightbox .redline-hd-toolbar{max-width:calc(100vw - 122px)!important}
+ #photoLightbox .redline-hd-resolution{max-width:120px!important;font-size:9px!important}
+ #photoLightbox .redline-hd-toolbar button{min-width:28px!important;width:28px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ #photoLightbox .redline-hd-toolbar *{transition:none!important;animation:none!important}
+}
+
+
+/* Source: private-photo-ledger-timer-chat-compact.css?v=20261123-receiver-timer-strip1 */
+/* Receiver's live timer is a status strip, never a second photo viewer.
+   Keep the independent conversation scroller and composer visible while running. */
+body.bc-redline-receiver #redlineReceiverChat .redline-message-card{min-height:0!important;overflow:hidden!important}
+body.bc-redline-receiver #redlineReceiverChat .redline-chat-timer-slot:not([hidden]){
+ display:block!important;flex:0 0 auto!important;min-height:0!important;height:auto!important;
+ max-height:82px!important;width:100%!important;overflow:hidden!important;
+ padding:5px 8px!important;box-sizing:border-box!important;
+ background:#110a0e!important;border-bottom:1px solid #572332!important}
+body.bc-redline-receiver #redlineReceiverChat .redline-chat-timer-slot .redline-chat-timer-pinned{
+ display:grid!important;grid-template-columns:minmax(0,1fr) max-content!important;
+ grid-template-rows:auto auto!important;align-items:center!important;gap:2px 12px!important;
+ min-height:0!important;max-height:70px!important;width:100%!important;
+ padding:7px 10px!important;margin:0!important;border-radius:9px!important;
+ overflow:hidden!important;box-sizing:border-box!important}
+body.bc-redline-receiver #redlineReceiverChat .redline-chat-timer-slot .redline-chat-timer-title{
+ grid-column:1!important;grid-row:1!important;min-width:0!important;font-size:11px!important;
+ line-height:1.3!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+body.bc-redline-receiver #redlineReceiverChat .redline-chat-timer-slot .redline-chat-timer-rate{
+ grid-column:1!important;grid-row:2!important;min-width:0!important;font-size:10px!important;
+ line-height:1.25!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+body.bc-redline-receiver #redlineReceiverChat .redline-chat-timer-slot .redline-chat-timer-values{
+ grid-column:2!important;grid-row:1 / span 2!important;display:flex!important;
+ flex-direction:column!important;justify-content:center!important;align-items:flex-end!important;
+ flex-wrap:nowrap!important;gap:3px!important;min-width:0!important;line-height:1.15!important}
+body.bc-redline-receiver #redlineReceiverChat .redline-chat-timer-slot .redline-chat-timer-clock{
+ white-space:nowrap!important;font-size:10px!important}
+body.bc-redline-receiver #redlineReceiverChat .redline-chat-timer-slot .redline-chat-timer-amount{
+ white-space:nowrap!important;font-size:14px!important;font-variant-numeric:tabular-nums!important}
+body.bc-redline-receiver #redlineReceiverChat .redline-chat-timer-slot .redline-chat-timer-photo,
+body.bc-redline-receiver #redlineReceiverChat .redline-chat-timer-slot .redline-chat-timer-pinned>small{
+ display:none!important}
+body.bc-redline-receiver #redlineReceiverChat .redline-message-feed{
+ flex:1 1 0!important;min-height:0!important;overflow-y:auto!important;
+ overflow-x:hidden!important;overscroll-behavior:contain!important}
+body.bc-redline-receiver #redlineReceiverChat .redline-message-composer{flex:0 0 auto!important}
+@media(max-width:540px){
+ body.bc-redline-receiver #redlineReceiverChat .redline-chat-timer-slot .redline-chat-timer-pinned{
+  gap:2px 6px!important;padding:7px 8px!important}
+ body.bc-redline-receiver #redlineReceiverChat .redline-chat-timer-slot .redline-chat-timer-amount{
+  font-size:12px!important}
+}
+
+
+/* Source: private-photo-ledger-bonus-celebration.css?v=20261123-bonus-celebration1 */
+/* BLACKCELL REDLINE · one-time paid-photo bonus celebration.
+   An independently dismissed, short-lived modal, not a permanently pinned chat panel. */
+#redlineBonusCelebration[hidden],#redlineBonusConfetti[hidden]{display:none!important}
+#redlineBonusCelebration{
+ position:fixed!important;inset:0!important;z-index:2147483000!important;
+ display:grid!important;place-items:center!important;
+ padding:18px!important;box-sizing:border-box!important;
+ background:rgba(0,0,0,.60)!important;backdrop-filter:blur(7px);
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+ color:#fff!important;
+}
+.redline-bonus-celebration-card{
+ position:relative;isolation:isolate;display:flex;flex-direction:column;
+ align-items:center;text-align:center;gap:9px;
+ width:min(420px,calc(100vw - 26px));max-height:min(92dvh,730px);
+ overflow-y:auto;overscroll-behavior:contain;
+ padding:23px 21px 20px;box-sizing:border-box;
+ border:1px solid #f24663;border-radius:24px;
+ background:linear-gradient(150deg,#2b0b14 0%,#12080e 57%,#050507 100%);
+ box-shadow:0 18px 80px #000d,0 0 0 4px #ad18331c;
+ animation:redline-bonus-in .43s cubic-bezier(.18,.86,.22,1) both;
+}
+.redline-bonus-celebration-kicker{
+ color:#ff6d87;font-size:11px;letter-spacing:.2em;font-weight:900;
+}
+.redline-bonus-celebration-heading{
+ color:#fff;font-size:clamp(19px,5vw,26px);line-height:1.15;
+ letter-spacing:-.05em;font-weight:880;
+}
+.redline-bonus-celebration-subtitle{
+ color:#d8b3bd;font-size:12px;line-height:1.45;max-width:310px;
+}
+.redline-bonus-celebration-image-wrap{
+ width:min(100%,250px);height:clamp(110px,23dvh,214px);
+ display:flex;justify-content:center;align-items:center;
+ border-radius:15px;border:1px solid #86344a;
+ background:#030303;overflow:hidden;
+}
+.redline-bonus-celebration-image{
+ max-height:100%;max-width:100%;width:100%;height:100%;
+ object-fit:contain;object-position:center;
+}
+.redline-bonus-celebration-no-image{
+ color:#e7b9c7;font-size:11px;max-width:230px;padding:20px;
+}
+.redline-bonus-celebration-money{
+ font-size:clamp(35px,10vw,54px);font-weight:950;letter-spacing:-.06em;
+ color:#ff6486;line-height:1.04;font-variant-numeric:tabular-nums;
+ text-shadow:0 0 25px #d6315850;
+}
+.redline-bonus-celebration-to{
+ display:inline-flex;align-items:center;gap:7px;font-size:10px;
+ letter-spacing:.12em;font-weight:850;color:#ffd7e0;
+ border:1px solid #9e3952;border-radius:999px;padding:7px 12px;background:#430e20;
+}
+.redline-bonus-celebration-math{
+ color:#c8afb8;font-size:10px;line-height:1.5;
+}
+.redline-bonus-celebration-close{
+ position:absolute;right:12px;top:10px;
+ border:1px solid #844456!important;border-radius:999px!important;
+ background:#2d1520!important;color:#fff!important;
+ width:31px;height:31px;min-width:31px;min-height:31px;cursor:pointer;
+ font-size:17px;font-weight:700;
+}
+.redline-bonus-celebration-dismiss{
+ border:1px solid #fa5d7b!important;border-radius:12px!important;
+ background:#c51842!important;color:#fff!important;
+ font-weight:850;font-size:12px!important;
+ padding:11px 22px!important;min-height:41px!important;
+ cursor:pointer;
+}
+#redlineBonusConfetti{
+ position:fixed;inset:0;z-index:2147483001;pointer-events:none;
+ overflow:hidden;
+}
+.redline-bonus-confetti-piece{
+ position:absolute;top:-12px;left:var(--x);
+ width:var(--w);height:var(--h);
+ border-radius:2px;background:var(--c);opacity:.93;
+ animation:redline-bonus-fall var(--d) linear var(--delay) 1 both;
+ transform:rotate(var(--r));
+}
+@keyframes redline-bonus-fall{
+ from{transform:translate3d(0,-5vh,0) rotate(0deg);opacity:1}
+ to{transform:translate3d(var(--wind),110vh,0) rotate(900deg);opacity:0}
+}
+@keyframes redline-bonus-in{
+ from{opacity:0;transform:translateY(18px) scale(.94)}
+ to{opacity:1;transform:translateY(0) scale(1)}
+}
+.redline-repeat-bonus-ledger{
+ margin-top:12px;padding:11px 12px;border:1px solid #84304b;
+ border-radius:12px;background:#150a11;min-width:0;
+}
+.redline-repeat-bonus-ledger[hidden]{display:none!important}
+.redline-repeat-bonus-heading{
+ display:flex;align-items:center;justify-content:space-between;gap:12px;
+ color:#ffb3c5;font-size:11px;font-weight:850;letter-spacing:.045em;
+}
+.redline-repeat-bonus-total{
+ color:#fff;font-variant-numeric:tabular-nums;font-size:16px;white-space:nowrap;
+}
+.redline-repeat-bonus-note{
+ margin:6px 0 0;font-size:10px;line-height:1.4;color:#c7aab6;
+}
+.redline-repeat-bonus-line{
+ display:flex;align-items:center;justify-content:space-between;
+ padding:7px 0;border-top:1px solid #3d222f;margin-top:6px;gap:9px;
+ font-size:10px;color:#f5d4dc;
+}
+.redline-repeat-bonus-line strong{
+ color:#ff8fac;font-size:12px;font-variant-numeric:tabular-nums;
+}
+.redline-repeat-bonus-progress{
+ font-size:10px;color:#bc9da9;margin-top:7px;
+}
+@media(prefers-reduced-motion:reduce){
+ .redline-bonus-celebration-card,.redline-bonus-confetti-piece{
+  animation:none!important;transition:none!important;
+ }
+}
+
