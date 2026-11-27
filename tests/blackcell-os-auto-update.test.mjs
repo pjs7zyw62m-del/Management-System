@@ -46,11 +46,12 @@ test('Background and hidden UI are not false-positive auto-update blockers',()=>
 
 test('Automatic OS updates are enabled by default but can be disabled per device',()=>{
  const body=extract('function autoEnabled(){','let osDeferred');
- const autoEnabled=new Function('localStorage','OS_AUTO',body+';return autoEnabled;');
+ const autoEnabled=new Function('localStorage','OS_AUTO','mayReloadAutomatically',body+';return autoEnabled;');
  const key='bc.os.auto-updates.v1';
- assert.equal(autoEnabled({getItem:()=>null},key)(),true);
+ assert.equal(autoEnabled({getItem:()=>null},key,()=>true)(),true);
  assert.equal(autoEnabled({getItem:()=> 'on'},key)(),true);
- assert.equal(autoEnabled({getItem:()=> 'off'},key)(),false);
+ assert.equal(autoEnabled({getItem:()=> 'off'},key,()=>true)(),false);
+ assert.equal(autoEnabled({getItem:()=>null},key,()=>false)(),false);
  assert.match(settings,/row\(p,'Automatic updates',auto/);
  assert.match(settings,/auto\.onchange=/);
 });
@@ -59,8 +60,8 @@ test('An idle OS updates without a repeated Update Now prompt',()=>{
  const body=extract('function maybeRefresh(){','function setOSNoticeStatus');
  const evaluate=({auto=true,idle=true,osMode=true}={})=>{
   let refreshes=0,prompts=0;
-  const create=new Function('pending','refreshing','osMode','redlineLiveThread','autoEnabled','safe','refresh','osNotice','osRequested','showOSNotice','blockingReason','setOSNoticeStatus',body+';return maybeRefresh;');
-  const maybe=create('new-release',false,osMode,false,()=>auto,()=>idle,()=>{refreshes++},null,false,()=>{prompts++},()=>'none',()=>{});
+  const create=new Function('pending','refreshing','osMode','redlineLiveThread','autoEnabled','safe','refresh','osNotice','osRequested','showOSNotice','blockingReason','setOSNoticeStatus','policyAllowsReload','guardReason',body+';return maybeRefresh;');
+  const maybe=create('new-release',false,osMode,false,()=>auto,()=>idle,()=>{refreshes++},null,false,()=>{prompts++},()=>'none',()=>{},()=>true,()=> '');
   maybe();return {refreshes,prompts};
  };
  assert.deepEqual(evaluate(),{refreshes:1,prompts:0});
@@ -82,8 +83,21 @@ test('Workspace is saved before updating and sensitive arbitrary drafts are not 
 });
 
 test('New verified build and update release assets are consistent',()=>{
- assert.match(html,/blackcell-os-client-build" content="20261122-redline-photos-library-bunny1"/);
- assert.match(html,/blackcell-live-update\.js\?v=20261122-site-presence1/);
- assert.match(html,/blackcell-os\.js\?v=159-redline-window-controls1/);
- assert.match(readFileSync('blackcell-site-version.json','utf8'),/redline-photos-library-bunny1/);
+ const build=html.match(/name="blackcell-os-client-build" content="([a-zA-Z0-9._-]+)"/)?.[1];
+ assert.ok(build);
+ const manifest=readFileSync('blackcell-site-version.json','utf8');
+ const fallback=manifest.match(/"fallback":"([^"]+)"/)?.[1];
+ assert.equal(build,fallback);
+ assert.match(html,/blackcell-live-update\.js\?[^"]+/);
+ assert.match(html,/blackcell-os\.js\?[^"]+/);
+});
+test('Manual release inspection does not override active-session protections',()=>{
+ assert.match(updater,/inspectRelease,autoEnabled/);
+ const policy=extract('function manualPolicy(){','function releaseToken(');
+ const allowed=new Function('testMode','manualOnly','redlineLiveThread','employeeEntry','osMode','verifiedOwner','testing',policy+';return policyAllowsReload();');
+ assert.equal(allowed(false,false,false,false,true,true,false),true);
+ assert.equal(allowed(false,false,true,false,true,true,false),false);
+ assert.equal(allowed(false,false,false,false,true,false,false),false);
+ assert.equal(allowed(false,true,false,false,true,true,false),false);
+ assert.equal(allowed(false,false,false,true,false,false,false),false);
 });
