@@ -339,7 +339,7 @@ function createEvents(entries){
   if(e.decision_status==='rejected'&&e.decided_at)all.push({kind:'event',at:e.decided_at,text:'Photo '+id+' rejected',status:'rejected'});
   if(e.decision_status==='accepted'&&e.decided_at){
    const amount=money(e.amount_cents);
-   all.push({kind:'event',at:e.decided_at,text:'Photo '+id+' approved — '+amount,status:'approved'});
+   all.push({kind:'event',at:e.decided_at,text:'Photo '+id+' approved — '+amount,status:'approved',photo:e});
   }
   if(e.settled_at&&e.decision_status==='accepted')all.push({kind:'event',at:e.settled_at,text:'Payment recorded — '+money(e.amount_cents),status:'paid'});
  }
@@ -818,6 +818,12 @@ function makeHistoryPhotoSignalCard(e,snap){
  card.append(photoBox,content);
  return card;
 }
+function approvalNegotiationFingerprint(e,snap){
+ if(e.status!=='approved'||!e.photo||snap?.isOwner)return null;
+ const p=e.photo,svc=window.BLACKCELL_REDLINE_NEGOTIATION_INLINE;
+ const status=svc?.status?.(p.id);
+ return [p.id,p.amount_cents,p.settled_at,p.removal_status,p.auto_timer_session_id,snap?.roomActive,snap?.archiveMode,snap?.paymentHistory?.length,svc?.enabled?.(),status?.status,status?.offer_count,status?.owner_offer_cents,status?.offer_cents];
+}
 function renderChat({scrollToLatest=false}={}){
  const snap=snapshot();
  const events=createEvents(snap?.entries).slice(0,80);
@@ -825,7 +831,7 @@ function renderChat({scrollToLatest=false}={}){
  const pinned=timerRoomId===snap?.roomId&&!snap?.archiveMode&&timerStatus?.active?.started_at
   ?{kind:'timer',phase:'active',at:timerStatus.active.started_at,timer:timerStatus.active}:null;
  const combined=[
-  ...events.map(e=>({kind:'event',at:e.at,body:e.text,status:e.status})),
+  ...events.map(e=>({kind:'event',at:e.at,body:e.text,status:e.status,photo:e.photo})),
   ...paymentHistoryEvents(snap).map(e=>({kind:'event',at:e.at,body:e.text,status:e.status})),
   ...timedEvents(snap),
   ...photoRatingEvents(snap),
@@ -856,7 +862,7 @@ function renderChat({scrollToLatest=false}={}){
      ?[e.kind,e.at,e.id,e.body,e.sender,Boolean(historyPhotoSignal(e,snap)?.photo?.image_url)]
      :e.kind==='trigger'
       ?[e.kind,e.at,e.id,e.word,e.priceCents,snap?.isOwner]
-      :[e.kind,e.at,e.id,e.body,e.sender,e.status])
+      :[e.kind,e.at,e.id,e.body,e.sender,e.status,approvalNegotiationFingerprint(e,snap)])
  ]);
  // Only a true first opening or the user's own Send may follow the bottom.
  // A background live update must NEVER override a human's reading anchor.
@@ -930,11 +936,15 @@ function renderChat({scrollToLatest=false}={}){
     ?[e.photo?.stars,e.photo?.caption,Boolean(e.photo?.image_url)]
     :e.kind==='timer'
      ?[e.phase,e.at,e.timer?.id,e.timer?.rate_cents,e.timer?.stopped_at,e.timer?.earned_cents]
-     :[e.at,e.body,e.status]);
+     :[e.at,e.body,e.status,approvalNegotiationFingerprint(e,snap)]);
   addItem(key,fingerprint,()=>{
    if(e.kind==='event'){
     const card=make('div','redline-chat-event');
-    card.append(make('strong','',e.body),make('small','',dateText(e.at)));
+    if(e.status==='approved'&&e.photo&&!snap?.isOwner&&window.BLACKCELL_REDLINE_COUNTEROFFER_INLINE?.control){
+     card.classList.add('redline-chat-approval-negotiation');
+     card.append(window.BLACKCELL_REDLINE_COUNTEROFFER_INLINE.control(e.photo,snap,{chat:true,heading:e.body}));
+    }else card.append(make('strong','',e.body));
+    card.append(make('small','',dateText(e.at)));
     return card;
    }
    if(e.kind==='trigger'){
@@ -1202,6 +1212,7 @@ window.addEventListener('blackcell:redline:timer-status',event=>{
 window.addEventListener('blackcell:redline:negotiations-updated',event=>{
  const current=snapshot();
  if(!isSender()||!current||event.detail?.roomId!==current.roomId)return;
+ if(currentTab==='upload')renderChat();
  if(currentTab==='viewing')renderCurrentlyViewing(current);
  if(currentTab==='history')renderPhotoHistory(current);
  if(currentTab==='earnings')renderTopPicks(current);

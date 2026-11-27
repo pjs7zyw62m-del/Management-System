@@ -14,16 +14,18 @@
   const n=Number(cents);
   return '$'+(Number.isFinite(n)?(n/100).toFixed(2):'0.00');
  };
- function control(photo,snap){
+ function control(photo,snap,options={}){
   const wrapper=make('section','redline-inline-price-control');
   wrapper.dataset.photoId=String(photo?.id||'');
+  if(options.chat)wrapper.classList.add('redline-inline-price-chat');
   const row=make('div','redline-inline-price-row');
   row.append(make('strong','redline-inline-price-heading',
-   'APPROVED PRICE '+money(photo?.amount_cents)));
+   options.heading||'APPROVED PRICE '+money(photo?.amount_cents)));
   const service=window.BLACKCELL_REDLINE_NEGOTIATION_INLINE;
   const offer=service?.offer?.(photo?.id);
   const knownStatus=service?.status?.(photo?.id);
-  const sender=Boolean(snap&&!snap.isOwner&&snap.roomActive&&!snap.archiveMode
+  const enabled=service?.enabled?.();
+  const sender=Boolean(snap&&!snap.isOwner&&snap.roomActive&&!snap.archiveMode&&enabled!==false
    &&!photo?.removal_status&&!photo?.settled_at&&
    !photo?.auto_timer_session_id);
   const canRespond=Boolean(sender&&offer&&
@@ -33,15 +35,16 @@
   const canOpen=Boolean(sender&&!knownStatus&&!offer&&
    Array.isArray(snap.paymentHistory)&&snap.paymentHistory.length===0);
   const canCounter=Boolean((canRespond&&Number(offer.offer_count)<3)||canOpen);
-  const counter=make('button','redline-inline-counteroffer-button','↗ COUNTEROFFER');
+  const counter=make('button','redline-inline-counteroffer-button','Negotiate Price');
   counter.type='button';
   counter.disabled=!canCounter;
   counter.title=canCounter
    ?'Enter your price here. The receiver can accept or reject it.'
-   :'This price is final or counteroffers are unavailable.';
+   :knownStatus?.status==='awaiting_owner'?'Waiting for the receiver to respond.':enabled===false?'Price negotiations are disabled or loading.':'This price is final or counteroffers are unavailable.';
+  if(!canCounter)counter.setAttribute('aria-label','Negotiate Price — '+counter.title);
   row.append(counter);
   wrapper.append(row);
-  if(!canRespond&&!canOpen)return wrapper;
+  if(!canRespond&&!canOpen){if(options.chat){const note=knownStatus?.status==='awaiting_owner'?'Awaiting receiver response':photo?.settled_at?'Payment recorded':enabled===false?'Negotiation unavailable':knownStatus?'Price finalized':'Negotiation unavailable for this photo';wrapper.append(make('small','redline-inline-price-status',note));}return wrapper;}
 
   const feedback=make('small','redline-inline-counteroffer-feedback');
   feedback.setAttribute('role','status');feedback.setAttribute('aria-live','polite');

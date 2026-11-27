@@ -67,3 +67,13 @@
  .redline-inline-counteroffer-input{flex:1 1 100%!important}
  .redline-inline-counteroffer-send,.redline-inline-counteroffer-cancel{flex:1 1 auto!important}
 }
+
+/* Compact approval action in chat. */
+.redline-chat-approval-negotiation{width:min(100%,340px)!important;max-width:100%!important;box-sizing:border-box!important;padding:5px!important}
+.redline-chat-approval-negotiation .redline-inline-price-chat{margin:0!important;padding:5px 6px!important;gap:5px!important;background:transparent!important;border:0!important;box-shadow:none!important;text-align:left!important}
+.redline-inline-price-chat .redline-inline-price-row{gap:5px!important}
+.redline-inline-price-chat .redline-inline-price-heading{flex:1 1 120px!important;min-width:0!important;font-size:11px!important;overflow-wrap:anywhere!important}
+.redline-inline-price-chat .redline-inline-counteroffer-button{flex:0 0 auto!important;min-height:34px!important;padding:6px 8px!important;font:700 11px/1.2 system-ui!important;text-transform:none!important;letter-spacing:0!important;white-space:nowrap!important}
+.redline-inline-price-status{font:10px/1.3 system-ui!important;color:#b6a5ad!important;text-align:left!important}
+.redline-inline-price-chat .redline-inline-counteroffer-editor{width:100%!important}
+.redline-inline-price-chat .redline-inline-counteroffer-input{max-width:100%!important;box-sizing:border-box!important}

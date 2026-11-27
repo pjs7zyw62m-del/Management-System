@@ -2401,6 +2401,7 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
    entries:state.entries.slice(0,200).map(e=>({
     id:e.id,created_at:e.created_at,decided_at:e.decided_at,
     settled_at:e.settled_at,decision_status:e.decision_status,
+    auto_timer_session_id:e.auto_timer_session_id||null,
     amount_cents:e.amount_cents,
     resubmission_origin_id:e.resubmission_origin_id||null,
     removal_status:e.photo_removal_status||null,
