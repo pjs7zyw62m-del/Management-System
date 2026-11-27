@@ -8,7 +8,8 @@ const btn=(label,action,cls='')=>{const el=make('button',cls,label);el.type='but
 const snapshot=()=>window.BLACKCELL_REDLINE_API?.snapshot?.();
 const popup=make('section','rd-ir-popup');popup.id='rdIndependentReview';popup.hidden=true;popup.setAttribute('role','region');popup.setAttribute('aria-label','Incoming photo review');
 const header=make('header','rd-ir-head'),heading=make('div','rd-ir-title'),count=make('small','','');heading.append(make('strong','','Incoming photograph'),count);
-const close=btn('×',()=>minimize(),'rd-ir-close'),minus=btn('−',()=>minimize(),'rd-ir-close');close.setAttribute('aria-label','Close photo review');minus.setAttribute('aria-label','Minimize photo review');const layoutButton=btn('▣',()=>openLayoutSettings(),'rd-ir-close');layoutButton.setAttribute('aria-label','Photo layout settings');layoutButton.title='Photo Layout';header.append(heading,layoutButton,minus,close);
+const close=btn('×',()=>minimize(),'rd-ir-close'),minus=btn('−',()=>minimize(),'rd-ir-close');close.setAttribute('aria-label','Close photo review');minus.setAttribute('aria-label','Minimize photo review');const layoutButton=btn('▣',()=>openLayoutSettings(),'rd-ir-close');layoutButton.setAttribute('aria-label','Photo layout settings');layoutButton.title='Photo Layout';const fitButton=btn('Fit photo',()=>{fillPhoto=!fillPhoto;reflectFocusControls()},'rd-ir-fit-toggle');fitButton.hidden=true;fitButton.setAttribute('aria-label','Show the complete photograph without cropping');
+header.append(heading,fitButton,layoutButton,minus,close);
 const scroll=make('div','rd-ir-scroll'),imageWrap=btn('',()=>original(),'rd-ir-image');imageWrap.setAttribute('aria-label','View full photo and zoom');const image=make('img');image.alt='Incoming private photograph';const placeholder=make('span','','Loading photo…');imageWrap.append(image,placeholder);
 const zoom=make('span','rd-ir-zoom','⤢');zoom.setAttribute('aria-hidden','true');imageWrap.append(zoom);
 const stars=make('div','rd-ir-stars');const starButtons=[];
@@ -24,7 +25,7 @@ const liveRate=make('strong','','—'),liveEarned=make('strong','','—');
 const rateTile=make('div','rd-ir-live-stat'),earnedTile=make('div','rd-ir-live-stat rd-ir-live-earned');
 rateTile.append(make('small','','RATE / MIN'),liveRate);earnedTile.append(make('small','','EARNINGS'),liveEarned);
 liveHud.append(liveTime,rateTile,earnedTile);
-const liveActions=make('div','rd-ir-live-actions'),liveStop=btn('■ Stop timer',()=>timerAction(false),'rd-ir-live-stop'),liveMin=btn('Chat / minimize',()=>minimize(),'rd-ir-live-min');
+const liveActions=make('div','rd-ir-live-actions'),liveStop=btn('■ Stop timer',()=>timerAction(false),'rd-ir-live-stop'),liveMin=btn('Exit focus',()=>minimize(),'rd-ir-live-min');
 const liveNote=make('small','rd-ir-live-note');liveActions.hidden=true;liveActions.append(liveStop,liveMin,liveNote);
 const accept=btn('Submit & Next',()=>decision('accept'),'rd-ir-submit'),reject=btn('Reject photo',()=>decision('reject'),'rd-ir-reject'),feedback=make('small','rd-ir-feedback');feedback.setAttribute('role','status');
 const controls=make('div','rd-ir-controls');const actions=make('div','rd-ir-actions');actions.append(accept,reject);controls.append(stars,priceRow,timerBox,actions,feedback);scroll.append(imageWrap);popup.append(header,scroll,liveHud,liveActions,controls);
@@ -32,10 +33,62 @@ const grip=make('div','rd-ir-grip');grip.setAttribute('role','separator');grip.s
 const resume=btn('Photo waiting · Review',()=>{opened=true;schedule()},'rd-ir-resume');resume.hidden=true;resume.setAttribute('aria-controls',popup.id);
 document.body.append(popup,resume);
 let scope='',known=new Set(),opened=false,current=null,queued=false,share=.90,pointer=null,expandedHost=null;
-let timedStatus=null,seenTimer='',focusHost=null;
+let timedStatus=null,seenTimer='',focusHost=null,fillPhoto=true,chatMode='mini';
 function activeTimer(s){const a=timedStatus?.status?.active;return s?.isOwner&&s.roomActive&&!s.archiveMode&&timedStatus?.roomId===s.roomId&&a?.running===true?a:null}
 function selectPhoto(history,pending,canonicalId,active){return active?history.find(p=>p.id===active.photo_id&&!p.removal_status)||null:pending.find(p=>p.id===canonicalId)||pending[0]||null}
-function setFocusHost(host){if(focusHost===host)return;focusHost?.classList.remove('rd-ir-timer-focus');focusHost=host;focusHost?.classList.add('rd-ir-timer-focus')}
+// Only presentation nodes are inserted. Keep the authenticated message feed,
+ // composer, typing indicator and send handler in their existing parent.
+const miniHead=make('div','rd-ir-mini-chat-head');miniHead.hidden=true;
+const miniTitle=make('strong','','Private chat');
+const expandChat=btn('⤢',()=>{chatMode=chatMode==='expanded'?'mini':'expanded';reflectFocusControls()},'rd-ir-chat-expand');
+const toggleChat=btn('−',()=>{chatMode=chatMode==='collapsed'?'mini':'collapsed';reflectFocusControls()},'rd-ir-chat-toggle');
+expandChat.setAttribute('aria-label','Expand chat');
+toggleChat.setAttribute('aria-label','Minimize chat');
+miniHead.append(miniTitle,expandChat,toggleChat);
+function reflectFocusControls(){
+ const active=!!focusHost;
+ popup.classList.toggle('rd-ir-fill-photo',active&&fillPhoto);
+ fitButton.hidden=!active;
+ fitButton.textContent=fillPhoto?'Fit photo':'Fill screen';
+ fitButton.setAttribute('aria-label',fillPhoto?'Show complete photograph without cropping':'Fill the screen with the photograph');
+ if(!active)return;
+ focusHost.classList.toggle('rd-ir-chat-collapsed',chatMode==='collapsed');
+ focusHost.classList.toggle('rd-ir-chat-expanded',chatMode==='expanded');
+ expandChat.hidden=chatMode==='collapsed';
+ expandChat.textContent=chatMode==='expanded'?'↙':'⤢';
+ expandChat.setAttribute('aria-label',chatMode==='expanded'?'Restore mini chat':'Expand chat');
+ toggleChat.textContent=chatMode==='collapsed'?'Open':'−';
+ toggleChat.setAttribute('aria-expanded',String(chatMode!=='collapsed'));
+ toggleChat.setAttribute('aria-label',chatMode==='collapsed'?'Open chat':'Minimize chat');
+}
+function focusBounds(viewport,barBottom){
+ const top=Math.max(viewport.top,Math.min(viewport.bottom,barBottom));
+ return {top:Math.round(top),height:Math.max(0,Math.floor(viewport.bottom-top))};
+}
+function fitFocus(){
+ if(!focusHost)return;
+ const v=window.BLACKCELL_REDLINE_VISIBLE_VIEWPORT?.()||{top:window.visualViewport?.offsetTop||0,bottom:(window.visualViewport?.offsetTop||0)+(window.visualViewport?.height||innerHeight)};
+ const topbar=q('.topbar'),bottom=topbar?.getBoundingClientRect().bottom;
+ const b=focusBounds(v,Number.isFinite(bottom)?bottom:v.top);
+ focusHost.style.setProperty('--rd-full-top',b.top+'px');
+ focusHost.style.setProperty('--rd-full-height',b.height+'px');
+}
+function setFocusHost(host){
+ if(focusHost!==host){
+  if(focusHost){
+   focusHost.classList.remove('rd-ir-timer-focus','rd-ir-chat-collapsed','rd-ir-chat-expanded');
+   focusHost.style.removeProperty('--rd-full-top');focusHost.style.removeProperty('--rd-full-height');
+  }
+  focusHost=host;
+  miniHead.hidden=!host;
+  document.body.classList.toggle('rd-ir-fullscreen',!!host);
+  if(host){
+   host.classList.add('rd-ir-timer-focus');
+   if(miniHead.parentNode!==host)host.append(miniHead);
+  }
+ }
+ reflectFocusControls();fitFocus();
+}
 window.addEventListener('blackcell:redline:timer-status',event=>{if(event.detail?.roomId===snapshot()?.roomId){timedStatus=event.detail;schedule()}});
 // Presentation preferences are local to the verified owner and this device.
 const preview=location.href==='about:srcdoc';
@@ -139,7 +192,7 @@ function sync(){
  const card=q('#reviewQueueCurrent .photo-entry[data-redline-photo-id]');
  const active=activeTimer(s),next=selectPhoto(s.photoHistory||[],pending,card?.dataset.redlinePhotoId,active);
  const timed=Boolean(active&&next?.id===active.photo_id);
- if(active&&active.id!==seenTimer){seenTimer=active.id;opened=true;}
+ if(active&&active.id!==seenTimer){seenTimer=active.id;opened=true;fillPhoto=true;chatMode=innerWidth<650?'collapsed':'mini';}
  if(!active)seenTimer='';
  popup.classList.toggle('rd-ir-timing',timed);
  liveHud.hidden=liveActions.hidden=!timed;
@@ -208,6 +261,8 @@ for(const event of ['blackcell:redline:state','blackcell:redline:receiver-ready'
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!popup.hidden&&q('#photoLightbox')?.hidden&&!q('dialog[open]'))minimize()});
 new MutationObserver(schedule).observe(document.body,{attributes:true,attributeFilter:['class','data-ledger-view']});
 window.visualViewport?.addEventListener('resize',schedule,{passive:true});window.visualViewport?.addEventListener('scroll',schedule,{passive:true});
+window.addEventListener('scroll',fitFocus,{passive:true});
+if(window.ResizeObserver){const bar=q('.topbar');if(bar)new ResizeObserver(fitFocus).observe(bar)}
 setInterval(()=>{if(!popup.hidden)syncTimer()},500);
 schedule();
 })();

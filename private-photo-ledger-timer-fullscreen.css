@@ -1,0 +1,108 @@
+/* Full-bleed receiver Live Timer. Keep the real message card mounted.
+   Its photo fills the app below the brand bar; the chat is a floating
+   grid of the original feed, composer, typing and error elements. */
+body.bc-redline-receiver.rd-ir-fullscreen{overflow:hidden!important}
+body.bc-redline-receiver.rd-ir-fullscreen .topbar{z-index:1010!important}
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus{
+ position:fixed!important;inset:auto!important;top:var(--rd-full-top,60px)!important;left:0!important;right:0!important;bottom:auto!important;
+ width:100%!important;max-width:none!important;height:var(--rd-full-height,calc(100vh - 60px))!important;max-height:var(--rd-full-height,calc(100vh - 60px))!important;min-height:0!important;
+ box-sizing:border-box!important;display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,min(340px,37%))!important;
+ grid-template-rows:auto minmax(0,min(250px,38%)) auto auto auto minmax(0,1fr)!important;
+ align-content:start!important;align-items:stretch!important;gap:0!important;
+ padding:54px 12px 90px!important;margin:0!important;overflow:hidden!important;
+ background:#000!important;border:0!important;border-radius:0!important;box-shadow:none!important;z-index:920!important;isolation:isolate;
+}
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus.rd-ir-chat-expanded{
+ grid-template-columns:minmax(0,1fr) minmax(0,min(560px,55%))!important;grid-template-rows:auto minmax(0,1fr) auto auto auto 0!important
+}
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus.rd-ir-chat-collapsed{
+ grid-template-columns:minmax(0,1fr) auto!important;grid-template-rows:auto 0 0 0 0 minmax(0,1fr)!important
+}
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus>#rdIndependentReview.rd-ir-timing:not([hidden]){
+ position:absolute!important;inset:0!important;top:0!important;left:0!important;right:0!important;bottom:0!important;transform:none!important;
+ width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;min-height:0!important;
+ margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:#000!important;box-shadow:none!important;z-index:1!important;overflow:hidden!important
+}
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus>.redline-message-header,
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus>.rr-pay-column,
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus>.redline-chat-timer-slot,
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus>.rd-ir-resume{display:none!important}
+#rdIndependentReview.rd-ir-timing .rd-ir-fit-toggle[hidden],.rd-ir-mini-chat-head[hidden],.rd-ir-mini-chat-head button[hidden]{display:none!important}
+body.rd-ir-fullscreen #rdIndependentReview.rd-ir-timing>.rd-ir-scroll{
+ position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;min-height:0!important;max-height:none!important;
+ padding:0!important;margin:0!important;overflow:hidden!important
+}
+body.rd-ir-fullscreen #rdIndependentReview.rd-ir-timing .rd-ir-scroll>.rd-ir-image{
+ position:absolute!important;inset:0!important;width:100%!important;height:100%!important;min-height:0!important;max-height:none!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;background:#000!important
+}
+body.rd-ir-fullscreen #rdIndependentReview.rd-ir-timing .rd-ir-image img{
+ position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain!important;object-position:center!important
+}
+body.rd-ir-fullscreen #rdIndependentReview.rd-ir-timing.rd-ir-fill-photo .rd-ir-image img{object-fit:cover!important;object-position:center!important}
+body.rd-ir-fullscreen #rdIndependentReview.rd-ir-timing .rd-ir-image>.rd-ir-zoom{top:10px!important;bottom:auto!important;right:12px!important}
+body.rd-ir-fullscreen #rdIndependentReview.rd-ir-timing>.rd-ir-head{
+ position:absolute!important;top:8px!important;left:10px!important;right:auto!important;z-index:2!important;max-width:calc(100% - 55px)!important;
+ border:1px solid #63313a!important;border-radius:11px!important;background:#09090cdb!important;backdrop-filter:blur(14px);padding:4px 7px!important;gap:5px!important
+}
+body.rd-ir-fullscreen #rdIndependentReview.rd-ir-timing .rd-ir-title{display:none!important}
+body.rd-ir-fullscreen #rdIndependentReview.rd-ir-timing .rd-ir-head .rd-ir-close{width:29px!important;height:29px!important;min-height:29px!important;flex:none!important}
+body.rd-ir-fullscreen #rdIndependentReview.rd-ir-timing .rd-ir-fit-toggle{width:auto!important;min-height:29px!important;padding:0 10px!important;border-radius:8px!important;background:#272327!important;white-space:nowrap!important}
+body.rd-ir-fullscreen #rdIndependentReview.rd-ir-timing>.rd-ir-grip{display:none!important}
+body.rd-ir-fullscreen #rdIndependentReview.rd-ir-timing>.rd-ir-live-hud:not([hidden]){
+ position:absolute!important;z-index:2!important;left:10px!important;bottom:10px!important;width:calc(59% - 14px)!important;height:70px!important;
+ box-sizing:border-box!important;margin:0!important;padding:4px 8px!important;border:1px solid #a7283b!important;border-radius:13px!important;
+ background:linear-gradient(110deg,#220a12e8,#08080be8 75%)!important;backdrop-filter:blur(16px);grid-template-columns:1.1fr 1fr 1fr!important
+}
+body.rd-ir-fullscreen #rdIndependentReview.rd-ir-timing .rd-ir-live-time{grid-column:1!important;grid-row:1!important;border:2px solid #d02e45!important;border-radius:50%!important;width:62px!important;height:62px!important;justify-self:center!important}
+body.rd-ir-fullscreen #rdIndependentReview.rd-ir-timing .rd-ir-live-time strong{font-size:19px!important}
+body.rd-ir-fullscreen #rdIndependentReview.rd-ir-timing .rd-ir-live-hud>.rd-ir-live-stat:nth-child(2){grid-column:2!important;grid-row:1!important}
+body.rd-ir-fullscreen #rdIndependentReview.rd-ir-timing .rd-ir-live-hud>.rd-ir-live-earned{grid-column:3!important;grid-row:1!important}
+body.rd-ir-fullscreen #rdIndependentReview.rd-ir-timing>.rd-ir-live-actions:not([hidden]){
+ position:absolute!important;z-index:2!important;right:10px!important;bottom:10px!important;width:calc(41% - 14px)!important;min-height:70px!important;
+ box-sizing:border-box!important;margin:0!important;padding:7px!important;border:1px solid #63313a!important;border-radius:13px!important;
+ background:#09090de8!important;backdrop-filter:blur(16px);align-content:center!important
+}
+body.rd-ir-fullscreen #rdIndependentReview.rd-ir-timing .rd-ir-live-actions button{min-height:42px!important}
+body.rd-ir-fullscreen #rdIndependentReview.rd-ir-timing .rd-ir-live-actions button:disabled{opacity:.5!important}
+body.rd-ir-fullscreen #rdIndependentReview.rd-ir-timing .rd-ir-live-note{font:10px/1.2 system-ui!important}
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus>.rd-ir-mini-chat-head{
+ grid-column:2!important;grid-row:1!important;position:relative!important;z-index:3!important;display:flex!important;align-items:center!important;gap:6px!important;
+ min-width:0!important;padding:7px 9px!important;margin:0!important;background:#100a0ef5!important;color:#fff!important;border:1px solid #bd2e45!important;border-bottom:0!important;border-radius:13px 13px 0 0!important
+}
+.rd-ir-mini-chat-head strong{flex:1;white-space:nowrap;font:700 12px system-ui}
+.rd-ir-mini-chat-head button{width:auto!important;min-width:28px!important;min-height:28px!important;margin:0!important;padding:3px 7px!important;background:#232126!important;color:#fff!important;border:1px solid #555!important;border-radius:7px!important;font:650 13px system-ui!important}
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus>.redline-message-feed{
+ grid-column:2!important;grid-row:2!important;position:relative!important;z-index:3!important;box-sizing:border-box!important;min-height:0!important;height:100%!important;max-height:none!important;min-width:0!important;width:100%!important;
+ margin:0!important;padding:7px!important;overflow:auto!important;overscroll-behavior:contain!important;scrollbar-width:none!important;border:1px solid #7c2938!important;border-block:0!important;background:#09090ded!important
+}
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus>.redline-peer-typing:not([hidden]){
+ grid-column:2!important;grid-row:3!important;z-index:3!important;background:#09090ded!important;margin:0!important;padding:3px 8px!important
+}
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus>.redline-message-composer{
+ grid-column:2!important;grid-row:4!important;position:relative!important;inset:auto!important;z-index:3!important;display:flex!important;align-items:center!important;
+ height:auto!important;min-height:38px!important;max-height:none!important;width:100%!important;margin:0!important;padding:5px!important;
+ background:#09090df5!important;border:1px solid #bd2e45!important;border-top:1px solid #39232c!important;border-radius:0 0 13px 13px!important;box-sizing:border-box!important
+}
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus>.redline-message-composer .redline-message-entry{font-size:16px!important;min-width:0!important;flex:1 1 0!important}
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus>.redline-message-error:not(:empty){
+ grid-column:2!important;grid-row:5!important;z-index:3!important;margin:0!important;background:#21080f!important;padding:5px!important
+}
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus>.redline-message-error:empty{display:none!important}
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus.rd-ir-chat-collapsed>.redline-message-feed,
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus.rd-ir-chat-collapsed>.redline-peer-typing,
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus.rd-ir-chat-collapsed>.redline-message-composer,
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus.rd-ir-chat-collapsed>.redline-message-error{display:none!important}
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus.rd-ir-chat-collapsed>.rd-ir-mini-chat-head{border:1px solid #bd2e45!important;border-radius:10px!important}
+@media(max-width:650px){
+ body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus:not(.rd-ir-chat-collapsed){grid-template-columns:minmax(0,1fr) minmax(0,min(330px,92%))!important;padding:54px 8px 113px!important}
+ body.rd-ir-fullscreen #rdIndependentReview.rd-ir-timing>.rd-ir-live-hud:not([hidden]){left:6px!important;right:6px!important;bottom:55px!important;width:auto!important;height:54px!important}
+ body.rd-ir-fullscreen #rdIndependentReview.rd-ir-timing .rd-ir-live-time{width:auto!important;height:auto!important;border:0!important}
+ body.rd-ir-fullscreen #rdIndependentReview.rd-ir-timing>.rd-ir-live-actions:not([hidden]){left:6px!important;right:6px!important;bottom:6px!important;width:auto!important;min-height:42px!important;padding:3px!important}
+ body.rd-ir-fullscreen #rdIndependentReview.rd-ir-timing .rd-ir-live-actions button{min-height:34px!important}
+}
+html.rd-keyboard-open.rd-keyboard-chat body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus:not(.rd-ir-chat-collapsed){
+ grid-template-rows:auto minmax(0,1fr) auto auto auto 0!important;padding-top:4px!important;padding-bottom:82px!important
+}
+html.rd-keyboard-open.rd-keyboard-chat body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus>#rdIndependentReview.rd-ir-timing:not([hidden]){height:100%!important;max-height:none!important}
+html.rd-keyboard-open.rd-keyboard-chat body.rd-ir-fullscreen #rdIndependentReview.rd-ir-timing>.rd-ir-head{display:none!important}
+@media(max-width:650px){html.rd-keyboard-open.rd-keyboard-chat body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus:not(.rd-ir-chat-collapsed){padding-bottom:113px!important}}
