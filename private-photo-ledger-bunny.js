@@ -6,7 +6,7 @@ const extensions={'image/jpeg':'jpg','image/png':'png','image/webp':'webp',
  'image/heic':'heic','image/heif':'heif'};
 const MAX=12*1024*1024;
 export const isBunnyPath=path=>typeof path==='string'&&path.startsWith(BUNNY_PREFIX);
-async function request(db,action,{roomId,photoId,blob=null,mime=null}){
+async function request(db,action,{roomId,photoId,blob=null,mime=null,objectId=null}){
  if(!uuid.test(roomId)||!uuid.test(photoId))throw Error('Invalid private room or photo.');
  const {data:{session},error}=await db.auth.getSession();
  if(error||!session?.access_token)throw Error('Sign in to BLACKCELL again.');
@@ -27,7 +27,7 @@ async function request(db,action,{roomId,photoId,blob=null,mime=null}){
  try{
  const response=await fetch(endpoint.href,{method:'POST',cache:'no-store',
   credentials:'omit',referrerPolicy:'no-referrer',headers,signal:controller?.signal,
-  body:blob||JSON.stringify({room_id:roomId,photo_id:photoId})});
+  body:blob||JSON.stringify({room_id:roomId,photo_id:photoId,...(objectId?{object_id:objectId}:{})})});
  if(!response.ok){
   let code;
   try{code=(await response.json()).code}catch(_){}
@@ -50,6 +50,15 @@ export async function uploadBunnyPhoto(db,roomId,userId,photoId,blob,mime){
  const expected=BUNNY_PREFIX+roomId+'/'+userId+'/'+photoId+'.'+extensions[mime];
  if(result.path!==expected||result.photo_id!==photoId||result.bytes!==blob.size)
   throw Error('Bunny did not confirm the correct private photo.');
+ return result.path;
+}
+export async function transferBunnyLibraryPhoto(db,roomId,userId,photoId,objectId,mime,size){
+ if(!uuid.test(objectId)||!uuid.test(userId)||!extensions[mime]||!Number.isSafeInteger(size)||size<1||size>MAX)
+  throw Error('Unsupported library photo or file too large for REDLINE.');
+ const result=await request(db,'library-transfer',{roomId,photoId,objectId});
+ const expected=BUNNY_PREFIX+roomId+'/'+userId+'/'+photoId+'.'+extensions[mime];
+ if(result.path!==expected||result.photo_id!==photoId||result.bytes!==size)
+  throw Error('Bunny did not confirm the correct private library photo.');
  return result.path;
 }
 export async function readBunnyPhoto(db,roomId,photoId){

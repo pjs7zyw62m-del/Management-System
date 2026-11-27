@@ -1,6 +1,6 @@
 import {mountGroupRooms} from './private-photo-ledger-groups.js?v=20261125-group-chat1';
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
-import {isBunnyPath,uploadBunnyPhoto,readBunnyPhoto,cleanupUnpostedBunny,deleteRedlinePhotoFile} from './private-photo-ledger-bunny.js?v=20261125-redline-live-sync2';
+import {isBunnyPath,uploadBunnyPhoto,transferBunnyLibraryPhoto,readBunnyPhoto,cleanupUnpostedBunny,deleteRedlinePhotoFile} from './private-photo-ledger-bunny.js?v=20261127-server-transfer1';
 
 const db=corporateClient();
 // Legacy archive photo paths use the old private bucket; new uploads never do.
@@ -1552,7 +1552,18 @@ async function drainRedlinePhotoQueue(){
    const index=redlineBatchDone+redlineBatchFailed+redlineBatchDuplicates+1;
    redlineQueueStatus('Uploading photo '+index+' of '+redlineBatchTotal+' · '+String(item.label||'Photo').slice(0,65),true);
    let file=item.file;
+   const library=item.library||null;
    try{
+    if(library){
+     if(!library.size||library.size>MAX_IMAGE_BYTES)throw Error('Each REDLINE photo must be no larger than 12 MB.');
+     imageType(library);
+     const selectionKey='library:'+library.objectId;
+     if(redlineBatchHashes.has(selectionKey))redlineBatchDuplicates++;
+     else{
+      const success=await uploadPhoto({preventDefault(){},detail:{library}});
+      if(success===true){redlineBatchDone++;redlineBatchHashes.add(selectionKey)}else redlineBatchFailed++;
+     }
+    }else{
     if(!file&&typeof item.readFile==='function')file=await item.readFile();
     if(!file)throw Error('Could not read the selected photo.');
     if(!file.size||file.size>MAX_IMAGE_BYTES)throw Error('Each REDLINE photo must be no larger than 12 MB.');
@@ -1569,6 +1580,7 @@ async function drainRedlinePhotoQueue(){
      if(success===true){redlineBatchDone++;if(hash)redlineBatchHashes.add(hash)}
      else redlineBatchFailed++;
     }
+    }
    }catch(error){
     redlineBatchFailed++;
     show('uploadFeedback','Photo '+index+' not sent: '+fail(error));
@@ -1577,12 +1589,14 @@ async function drainRedlinePhotoQueue(){
     ' failed · '+redlineBatchDuplicates+' duplicates skipped · '+redlinePhotoQueue.length+' remaining',redlinePhotoQueue.length>0);
   }
  }finally{
+  const refreshAfterBatch=redlineBatchDone>0&&state.room?.id===redlineBatchRoom;
   redlineQueueRunning=false;
   const note='REDLINE upload finished: '+redlineBatchDone+' photo'+(redlineBatchDone===1?'':'s')+
    ' sent privately'+(redlineBatchDuplicates?' · '+redlineBatchDuplicates+' identical batch duplicates skipped':'')+(redlineBatchFailed?' · '+redlineBatchFailed+' not sent; select failed photos again':'')+'.';
   redlineQueueStatus(redlineStopAfterCurrent?'Remaining photo uploads stopped. '+note:interruptedReason?interruptedReason+' '+note:note);
   redlineStopAfterCurrent=false;redlinePhotoQueue.length=0;redlineBatchHashes.clear();
   show('selectedPhotoName','Choose photos from your device or BLACKCELL Photos.');
+  if(refreshAfterBatch)void loadEntries({force:true}).catch(()=>{});
  }
 }
 function redlineDevicePicker(){
@@ -1657,7 +1671,7 @@ function openRedlinePhotoChooser(){
       actionLabel:'SEND SELECTED PHOTOS TO REDLINE',
       onSelectRows:async(rows,readFile)=>{
        if(!redlinePhotoEligible()||state.room?.id!==roomId)return;
-       enqueueRedlineFiles(rows.map(row=>({label:row.name,readFile:()=>readFile(row)})));
+       enqueueRedlineFiles(rows.map(row=>row.provider==='bunny'&&row.objectId&&Number(row.size)>0?{label:row.name,library:{objectId:row.objectId,name:row.name,type:row.type,size:Number(row.size)}}:{label:row.name,readFile:()=>readFile(row)}));
       },
       onDeviceUpload:()=>{
        if(!redlinePhotoEligible()||state.room?.id!==roomId)return;
@@ -1697,7 +1711,8 @@ async function bcLiveOriginal_uploadPhoto(event){
   return;
  }
  if(state.showArchive){show('uploadFeedback','Return to the current REDLINE session before uploading new photos.');return}
- const file=event?.detail?.file||$('uploadPhoto').files?.[0];
+ const library=event?.detail?.library||null;
+ const file=library||event?.detail?.file||$('uploadPhoto').files?.[0];
  if(!file){show('uploadFeedback','Choose a photo first.');return}
  if(file.size>MAX_IMAGE_BYTES||file.size===0){$('uploadPhoto').value='';show('uploadFeedback','Choose a non-empty image no larger than 12 MB. Select a different photo to try again.');return}
  let info;
@@ -1727,7 +1742,7 @@ async function bcLiveOriginal_uploadPhoto(event){
   // No photo bytes go to Supabase Storage. Verified Bunny write MUST finish
   // before the corresponding REDLINE metadata record is created.
   bunnyUploadAttempted=true;
-  path=await uploadBunnyPhoto(db,room.id,state.user.id,id,file,info.mime);
+  path=library?await transferBunnyLibraryPhoto(db,room.id,state.user.id,id,library.objectId,info.mime,file.size):await uploadBunnyPhoto(db,room.id,state.user.id,id,file,info.mime);
   const r=await db.from(ENTRIES).insert({
     id,room_id:room.id,uploaded_by:state.user.id,image_path:path,decision_status:'pending',
     file_name:file.name.slice(0,180),caption:''
@@ -1750,8 +1765,12 @@ async function bcLiveOriginal_uploadPhoto(event){
    show('uploadFeedback','Photo saved privately. The owner can now assign an amount.');
   }
   state.entryFingerprint='';
-  try{await loadEntries({force:true})}
-  catch(refreshError){show('uploadFeedback','Photo saved privately, but the review list has not refreshed yet: '+fail(refreshError));}
+  // For a batch, refresh once after the last confirmed upload. Receiver
+  // subscriptions still receive each inserted photo immediately.
+  if(!redlineQueueRunning){
+   try{await loadEntries({force:true})}
+   catch(refreshError){show('uploadFeedback','Photo saved privately, but the review list has not refreshed yet: '+fail(refreshError));}
+  }
   return true;
  }catch(e){
   if(bunnyUploadAttempted&&!posted)
