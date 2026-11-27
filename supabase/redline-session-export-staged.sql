@@ -10,7 +10,7 @@ create table corp_private.redline_session_photo_exports(
 alter table corp_private.redline_session_photo_exports enable row level security;
 revoke all on corp_private.redline_session_photo_exports from public,anon,authenticated;
 create or replace function public.corp_redline_reserve_session_photo_export(p_room uuid,p_photo uuid,p_recipient uuid,p_size bigint,p_key text)
-returns uuid language plpgsql security invoker set search_path='' as $$
+returns uuid language plpgsql security definer set search_path='' as $$
 declare v_room public.corp_private_photo_rooms%rowtype; v_photo public.corp_private_photo_entries%rowtype; v_existing uuid; v_id uuid; v_path text;
 begin
  select * into v_room from public.corp_private_photo_rooms where id=p_room for update;
@@ -34,4 +34,5 @@ end;
 $$;
 revoke all on function public.corp_redline_reserve_session_photo_export(uuid,uuid,uuid,bigint,text) from public,anon,authenticated;
 grant execute on function public.corp_redline_reserve_session_photo_export(uuid,uuid,uuid,bigint,text) to service_role;
-grant select,insert on corp_private.redline_session_photo_exports to service_role;
+-- The service-only RPC is the only required entry point; no private schema grants.
+
