@@ -78,6 +78,7 @@ function decision(kind){
  }
  feedback.textContent='';action.click();schedule();
 }
+rate.addEventListener('change',()=>{const originalRate=q('.rr-timer-rate',q('#redlinePhotoTimerPanel')||document);if(originalRate){originalRate.value=rate.value;originalRate.dispatchEvent(new Event('input',{bubbles:true}))}});
 function syncTimer(){
  const timer=q('#redlinePhotoTimerPanel'),c=canonical();
  timerToggle.disabled=false;
@@ -120,6 +121,7 @@ function sync(){
  if(!next)opened=false;
  if(current?.id!==next?.id){price.value='';feedback.textContent='';scroll.scrollTop=0}
  current=next;
+ popup.dataset.keypadPhoto=next?.id||'';
  const visible=Boolean(opened&&next&&summary);
  // Mount the new presentation only. The original chat and controls stay put.
  const conversation=q('.redline-message-card',chat),feed=conversation?.querySelector('.redline-message-feed');
