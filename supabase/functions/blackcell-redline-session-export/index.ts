@@ -16,7 +16,7 @@ async function bounded(response:Response,max:number){
 }
 Deno.serve(async req=>{
  const origin=req.headers.get("origin")||"";
- const headers={"Access-Control-Allow-Origin":origins.has(origin)?origin:"https://blackcellcorp.com","Access-Control-Allow-Methods":"POST,OPTIONS","Access-Control-Allow-Headers":"authorization,apikey,content-type","Cache-Control":"private,no-store","Content-Type":"application/json","Vary":"Origin"};
+ const headers={"Access-Control-Allow-Origin":origins.has(origin)?origin:"https://blackcellcorp.com","Access-Control-Allow-Methods":"POST,OPTIONS","Access-Control-Allow-Headers":"authorization,apikey,content-type,x-client-info","Cache-Control":"private,no-store","Content-Type":"application/json","Vary":"Origin"};
  const send=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers});
  const fail=(code:string,status=400)=>send({ok:false,code},status);
  if(req.method==="OPTIONS")return new Response(null,{status:204,headers});
@@ -33,6 +33,24 @@ Deno.serve(async req=>{
   const verified=await member.rpc("corp_owner_validated");
   if(verified.error||verified.data!==true)return fail("OWNER_VERIFICATION_REQUIRED",403);
   const body=await req.json();
+  if(body?.action==="cleanup"){
+   const room=body.room_id??null;
+   if(room!==null&&!uuid(room))return fail("INVALID_ROOM");
+   const batch=await admin.rpc("corp_redline_source_cleanup_batch",{p_owner:uid,p_room:room});
+   if(batch.error||!Array.isArray(batch.data))return fail("CLEANUP_QUEUE_UNAVAILABLE",502);
+   let removed=0;
+   for(const item of batch.data){
+    if(!uuid(item.room_id)||typeof item.source_path!=="string"||
+      !new RegExp("^redline/v1/"+item.room_id+"/[0-9a-f-]{36}/[0-9a-f-]{36}[.](jpg|png|webp|heic|heif)$").test(item.source_path))return fail("UNSAFE_SOURCE_PATH",409);
+    const result=await fetch(ROOT+item.source_path,{method:"DELETE",headers:{AccessKey:secret},redirect:"error",signal:AbortSignal.timeout(10000)});
+    await result.body?.cancel();
+    if(!result.ok&&result.status!==404)return fail("SOURCE_CLEANUP_RETRY",502);
+    const ack=await admin.rpc("corp_redline_source_cleanup_finish",{p_owner:uid,p_room:item.room_id,p_path:item.source_path});
+    if(ack.error)return fail("SOURCE_CLEANUP_ACK_RETRY",502);
+    removed++;
+   }
+   return send({ok:true,removed,more:batch.data.length===20});
+  }
   if(!uuid(body?.room_id)||!uuid(body?.photo_id))return fail("INVALID_ROOM_OR_PHOTO");
   const roomId=body.room_id,photoId=body.photo_id;
   const room=await member.from("corp_private_photo_rooms").select("id,owner_id,member_id,active").eq("id",roomId).maybeSingle();
