@@ -27,29 +27,32 @@ rateTile.append(make('small','','RATE / MIN'),liveRate);earnedTile.append(make('
 liveHud.append(liveTime,rateTile,earnedTile);
 const liveActions=make('div','rd-ir-live-actions'),liveStop=btn('■ Stop timer',()=>timerAction(false),'rd-ir-live-stop'),liveMin=btn('Exit focus',()=>minimize(),'rd-ir-live-min');
 const liveNote=make('small','rd-ir-live-note');liveActions.hidden=true;liveActions.append(liveStop,liveMin,liveNote);
+const liveDock=make('div','rd-ir-live-dock');liveDock.hidden=true;liveDock.append(liveHud,liveActions);
 const accept=btn('Submit & Next',()=>decision('accept'),'rd-ir-submit'),reject=btn('Reject photo',()=>decision('reject'),'rd-ir-reject'),feedback=make('small','rd-ir-feedback');feedback.setAttribute('role','status');
-const controls=make('div','rd-ir-controls');const actions=make('div','rd-ir-actions');actions.append(accept,reject);controls.append(stars,priceRow,timerBox,actions,feedback);scroll.append(imageWrap);popup.append(header,scroll,liveHud,liveActions,controls);
+const controls=make('div','rd-ir-controls');const actions=make('div','rd-ir-actions');actions.append(accept,reject);controls.append(stars,priceRow,timerBox,actions,feedback);scroll.append(imageWrap);popup.append(header,scroll,liveDock,controls);
 const grip=make('div','rd-ir-grip');grip.setAttribute('role','separator');grip.setAttribute('aria-label','Resize photo review and chat');grip.setAttribute('aria-orientation','horizontal');grip.tabIndex=0;popup.append(grip);
 const resume=btn('Photo waiting · Review',()=>{opened=true;schedule()},'rd-ir-resume');resume.hidden=true;resume.setAttribute('aria-controls',popup.id);
 document.body.append(popup,resume);
 let scope='',known=new Set(),opened=false,current=null,queued=false,share=.90,pointer=null,expandedHost=null;
-let timedStatus=null,seenTimer='',focusHost=null,fillPhoto=true,chatMode='mini';
+let timedStatus=null,seenTimer='',focusHost=null,fillPhoto=false,chatMode='mini';
 function activeTimer(s){const a=timedStatus?.status?.active;return s?.isOwner&&s.roomActive&&!s.archiveMode&&timedStatus?.roomId===s.roomId&&a?.running===true?a:null}
 function selectPhoto(history,pending,canonicalId,active){return active?history.find(p=>p.id===active.photo_id&&!p.removal_status)||null:pending.find(p=>p.id===canonicalId)||pending[0]||null}
 // Only presentation nodes are inserted. Keep the authenticated message feed,
  // composer, typing indicator and send handler in their existing parent.
 const miniHead=make('div','rd-ir-mini-chat-head');miniHead.hidden=true;
 const miniTitle=make('strong','','Private chat');
+ const miniLabel=make('span','rd-ir-chat-label','LIVE CHAT');miniLabel.setAttribute('aria-hidden','true');
 const expandChat=btn('⤢',()=>{chatMode=chatMode==='expanded'?'mini':'expanded';reflectFocusControls()},'rd-ir-chat-expand');
 const toggleChat=btn('−',()=>{chatMode=chatMode==='collapsed'?'mini':'collapsed';reflectFocusControls()},'rd-ir-chat-toggle');
 expandChat.setAttribute('aria-label','Expand chat');
 toggleChat.setAttribute('aria-label','Minimize chat');
-miniHead.append(miniTitle,expandChat,toggleChat);
+miniHead.append(miniTitle,miniLabel,expandChat,toggleChat);
 function reflectFocusControls(){
  const active=!!focusHost;
  popup.classList.toggle('rd-ir-fill-photo',active&&fillPhoto);
  fitButton.hidden=!active;
- fitButton.textContent=fillPhoto?'Fit photo':'Fill screen';
+ fitButton.textContent=fillPhoto?'Show full photo':'Fill screen';
+ fitButton.setAttribute('aria-pressed',String(fillPhoto));
  fitButton.setAttribute('aria-label',fillPhoto?'Show complete photograph without cropping':'Fill the screen with the photograph');
  if(!active)return;
  focusHost.classList.toggle('rd-ir-chat-collapsed',chatMode==='collapsed');
@@ -57,6 +60,7 @@ function reflectFocusControls(){
  expandChat.hidden=chatMode==='collapsed';
  expandChat.textContent=chatMode==='expanded'?'↙':'⤢';
  expandChat.setAttribute('aria-label',chatMode==='expanded'?'Restore mini chat':'Expand chat');
+ miniLabel.hidden=chatMode==='collapsed';
  toggleChat.textContent=chatMode==='collapsed'?'Open':'−';
  toggleChat.setAttribute('aria-expanded',String(chatMode!=='collapsed'));
  toggleChat.setAttribute('aria-label',chatMode==='collapsed'?'Open chat':'Minimize chat');
@@ -192,10 +196,10 @@ function sync(){
  const card=q('#reviewQueueCurrent .photo-entry[data-redline-photo-id]');
  const active=activeTimer(s),next=selectPhoto(s.photoHistory||[],pending,card?.dataset.redlinePhotoId,active);
  const timed=Boolean(active&&next?.id===active.photo_id);
- if(active&&active.id!==seenTimer){seenTimer=active.id;opened=true;fillPhoto=true;chatMode=innerWidth<650?'collapsed':'mini';}
+ if(active&&active.id!==seenTimer){seenTimer=active.id;opened=true;fillPhoto=false;chatMode=innerWidth<650?'collapsed':'mini';}
  if(!active)seenTimer='';
  popup.classList.toggle('rd-ir-timing',timed);
- liveHud.hidden=liveActions.hidden=!timed;
+ liveDock.hidden=liveHud.hidden=liveActions.hidden=!timed;
  if(timed){timerBox.hidden=true;timerToggle.setAttribute('aria-expanded','false')}
  const mobile=document.body.classList.contains('bc-ledger-mobile');
  const summary=!mobile||document.body.dataset.ledgerView==='summary';
