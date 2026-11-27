@@ -49,7 +49,7 @@ test('Automatic OS updates are enabled by default but can be disabled per device
  const autoEnabled=new Function('localStorage','OS_AUTO','mayReloadAutomatically',body+';return autoEnabled;');
  const key='bc.os.auto-updates.v1';
  assert.equal(autoEnabled({getItem:()=>null},key,()=>true)(),true);
- assert.equal(autoEnabled({getItem:()=> 'on'},key)(),true);
+ assert.equal(autoEnabled({getItem:()=> 'on'},key,()=>true)(),true);
  assert.equal(autoEnabled({getItem:()=> 'off'},key,()=>true)(),false);
  assert.equal(autoEnabled({getItem:()=>null},key,()=>false)(),false);
  assert.match(settings,/row\(p,'Automatic updates',auto/);
