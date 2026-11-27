@@ -8,6 +8,7 @@ if(!location.pathname.endsWith('/login.html')){
  presenceScript.src='blackcell-site-presence.js?v=20261122-visit-return2';
  presenceScript.async=true;document.head.appendChild(presenceScript);
 }
+const releaseBase=new URL('.',document.currentScript?.src||location.href);
 const testMode=document.currentScript?.dataset.test==='true'&&/\/site-update-test(?:-v2)?\.html$/.test(location.pathname), KEY='bc.live-update.v1';
 const osMode=/\/blackcell-os(?:\.html)?\/?$/.test(location.pathname)||Boolean(document.getElementById('desktop')?.classList.contains('shell'));
 // Private REDLINE conversations must not be reloaded due to a site release.
@@ -69,10 +70,42 @@ function defaultValue(t){if(t.type==='file')return 0;if(t.type==='checkbox'||t.t
 document.addEventListener('focusin',e=>{const t=e.target;if(editable(t)&&!dirty.has(t))original.set(t,value(t))},true);
 function track(e){const t=e.target;if(editable(t)){if(!dirty.has(t))dirty.set(t,original.has(t)?original.get(t):defaultValue(t));if(value(t)===dirty.get(t))dirty.delete(t)}}
 document.addEventListener('input',track,true);document.addEventListener('change',track,true);
+/* Read-only release diagnostics are available on any device/account.
+   Fetch the deployed document, not an unpublished commit. No page reload,
+   credentials, media bytes or additional background polling are involved. */
+let releaseInspection=null,releaseInspectionFlight=null;
+async function inspectRelease(){
+ if(releaseInspectionFlight)return releaseInspectionFlight;
+ const run=async()=>{
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
+  try{
+   const url=new URL(location.pathname,location.href);url.searchParams.set('_bc_release_check',String(Date.now()));
+   const [revision,response]=await Promise.all([version(),fetch(url,{cache:'no-store',credentials:'same-origin',signal:controller.signal})]);
+   if(!response.ok)throw Error('Website delivery HTTP '+response.status);
+   const template=document.createElement('template');template.innerHTML=await response.text();
+   const signature=(doc)=>[...doc.querySelectorAll('script[src],link[rel~="stylesheet"][href]')].map(el=>{
+    const ref=el.getAttribute(el.tagName==='SCRIPT'?'src':'href');
+    try{const u=new URL(ref,location.href);return u.origin===location.origin?u.pathname+u.search:null}catch(_){return null}
+   }).filter(Boolean).sort();
+   const loaded=signature(document),deployed=signature(template.content);
+   // Compare only declared entry-point assets; runtime-injected presence
+   // scripts and other lazy-loaded modules are not part of the HTML signature.
+   const assetChanged=deployed.some(x=>!loaded.includes(x));
+   const readBuild=doc=>doc.querySelector('meta[name="blackcell-os-client-build"]')?.content||doc.querySelector('meta[name="blackcell-page-build"]')?.content||'';
+   const currentBuild=readBuild(document),publishedBuild=readBuild(template.content);
+   const mismatch=assetChanged||Boolean(publishedBuild&&currentBuild!==publishedBuild);
+   releaseInspection={ok:true,revision,currentBuild,publishedBuild,mismatch,assets:deployed.length,checkedAt:new Date().toISOString(),automatic:autoEnabled(),blockedBy:manualPolicy()?'Protected session: manual navigation only.':blockingReason()};
+  }catch(_){releaseInspection={ok:false,error:'Could not verify deployed website. Current page was not changed.',checkedAt:new Date().toISOString()}}
+  finally{clearTimeout(timer)}
+  return releaseInspection;
+ };
+ releaseInspectionFlight=run();
+ try{return await releaseInspectionFlight}finally{releaseInspectionFlight=null}
+}
 window.BLACKCELL_LIVE_UPDATE=Object.freeze({
  hold(reason='operation',owner=window){const t=Symbol(reason);holds.set(t,owner);return()=>holds.delete(t)},
  clean(element){if(element&&typeof element.contains==='function')for(const t of dirty.keys())if(t===element||element.contains(t)){dirty.delete(t);original.set(t,value(t))}},
- check:()=>void check(),autoEnabled,setAutoEnabled,setVerifiedRole,
+ check:()=>void check(),inspectRelease,autoEnabled,setAutoEnabled,setVerifiedRole,
  status:()=>({available:!!pending,automatic:osMode&&autoEnabled(),blockedBy:pending?blockingReason():''}),
  show:async()=>{
   if(!policyAllowsReload())return {available:false,automatic:false};
@@ -242,7 +275,17 @@ async function refresh(){
  }
  location.reload();
 }
-async function version(){const url=new URL('blackcell-site-version.json',location.href);url.searchParams.set('_bc',String(Date.now()));const r=await fetch(url,{cache:'no-store',credentials:'same-origin'});if(!r.ok)throw Error('Version unavailable');const text=await r.text(),json=JSON.parse(text.slice(text.indexOf('{'),text.lastIndexOf('}')+1));const rev=String(json.revision||'');if(/^[a-f0-9]{7,64}$/i.test(rev))return rev;const build=String(json.built||'');if(/^\d{14}$/.test(build))return build;return String(json.fallback||'')}
+async function version(){
+ const url=new URL('blackcell-site-version.json',releaseBase);url.searchParams.set('_bc',String(Date.now()));
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
+ try{
+  const r=await fetch(url,{cache:'no-store',credentials:'same-origin',signal:controller.signal});if(!r.ok)throw Error('Version unavailable');
+  const text=await r.text(),json=JSON.parse(text.slice(text.indexOf('{'),text.lastIndexOf('}')+1));const rev=String(json.revision||'');
+  if(/^[a-f0-9]{7,64}$/i.test(rev))return rev;
+  const build=String(json.built||'');if(/^\d{14}$/.test(build))return build;
+  return String(json.fallback||'');
+ }finally{clearTimeout(timer)}
+}
 async function check(){
  if(!policyAllowsReload()||checking||refreshing||document.hidden||!navigator.onLine)return;
  checking=true;
@@ -306,4 +349,41 @@ if(testMode){
  }}catch(_){}
 }
 if(!testMode&&osMode&&!manualOnly){setInterval(()=>{if(policyAllowsReload())void check()},30000);setInterval(()=>{if(policyAllowsReload())maybeRefresh()},2000);document.addEventListener('visibilitychange',()=>{if(!document.hidden&&policyAllowsReload())void check()});addEventListener('online',()=>{if(policyAllowsReload())void check()});}
+
+// For manually protected devices, only check on entry or return to the tab.
+// Never poll a conversation or force a reload. No additional recurring timers.
+let lastPassiveInspection=0,manualReleaseNotice=null;
+async function inspectOnReturn(){
+ if(testMode||manualOnly||redlineLiveThread||employeeEntry||document.hidden||!navigator.onLine||policyAllowsReload()||Date.now()-lastPassiveInspection<300000)return;
+ if(osMode&&document.getElementById('desktop')?.hidden)return;
+ if(blockingReason())return;
+ lastPassiveInspection=Date.now();
+ const r=await inspectRelease();
+ if(!r.ok||!r.mismatch||document.hidden||blockingReason())return;
+ if(manualReleaseNotice?.isConnected)return;
+ const panel=document.createElement('section');panel.id='bc-os-update-notice';panel.setAttribute('role','region');panel.setAttribute('aria-label','BLACKCELL release available');
+ const label=document.createElement('small');label.textContent='BLACKCELL / RELEASE UPDATE';
+ const title=document.createElement('h2');title.textContent='New version available';
+ const detail=document.createElement('p');detail.textContent='Reopen when you have finished your current work. Your account and files will not be erased.';
+ const actions=document.createElement('div');actions.className='bc-os-update-actions';
+ const now=document.createElement('button');now.type='button';now.className='bc-os-update-now';now.textContent='Reopen';
+ const later=document.createElement('button');later.type='button';later.className='bc-os-update-later';later.textContent='Later';
+ now.onclick=async()=>{
+  const blocked=blockingReason();
+  if(blocked){detail.textContent=blocked;return}
+  if(guardReason(r.revision)){detail.textContent='This release has already attempted to reload. Reopen the website manually.';return}
+  if(osMode&&typeof window.BLACKCELL_OS_AUTOSAVE_WORKSPACE==='function'){
+   now.disabled=true;let saved=false;try{saved=(await window.BLACKCELL_OS_AUTOSAVE_WORKSPACE())===true}catch(_){}finally{now.disabled=false}
+   if(!saved||blockingReason()){detail.textContent='Workspace could not be saved safely. Finish your work and reopen manually.';return}
+  }
+  if(!reserveReload(r.revision)){detail.textContent='Could not safely reserve the update. Reopen manually.';return}
+  const url=new URL(location.href);url.searchParams.set('bc_os_release',releaseToken(r.revision));location.replace(url.href);
+ };
+ later.onclick=()=>{panel.remove();manualReleaseNotice=null};
+ actions.append(now,later);panel.append(label,title,detail,actions);document.body.append(panel);manualReleaseNotice=panel;
+}
+if(!testMode&&!manualOnly&&!redlineLiveThread&&!employeeEntry){
+ addEventListener('pageshow',()=>void inspectOnReturn());
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)void inspectOnReturn()});
+}
 })();
