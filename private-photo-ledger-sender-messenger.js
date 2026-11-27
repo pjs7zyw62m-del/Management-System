@@ -47,37 +47,49 @@ for(const [key,label] of Object.entries({
 // Mobile sender menu delegates to the original section actions.
 const topbar=$('.topbar'),mobileMenu=create('div','rs-mobile-menu');
 mobileMenu.hidden=true;
-const menuToggle=create('button','rs-mobile-menu-toggle');
+const menuToggle=create('button','rs-mobile-menu-toggle','☰ Menu');
 menuToggle.type='button';menuToggle.setAttribute('aria-label','Open sender menu');
 menuToggle.setAttribute('aria-expanded','false');menuToggle.setAttribute('aria-controls','redlineSenderMobileMenuItems');
 const menuItems=create('nav','rs-mobile-menu-items');menuItems.id='redlineSenderMobileMenuItems';
 menuItems.setAttribute('aria-label','Sender sections');menuItems.hidden=true;
 function setMenuOpen(open){
- menuItems.hidden=!open;menuToggle.setAttribute('aria-expanded',String(open));
+ menuItems.hidden=!open;
+ document.body.classList.toggle('rs-sender-menu-open',open);
+ if(open){const r=menuToggle.getBoundingClientRect(),v=window.BLACKCELL_REDLINE_VISIBLE_VIEWPORT?.();const bottom=v?.bottom??(window.visualViewport?.height||innerHeight);menuItems.style.setProperty('--rs-menu-top',Math.max(4,Math.min(r.bottom+5,bottom-80))+'px');menuItems.style.setProperty('--rs-menu-height',Math.max(65,bottom-Math.min(r.bottom+5,bottom-80)-8)+'px');}
+menuToggle.setAttribute('aria-expanded',String(open));
  menuToggle.setAttribute('aria-label',open?'Close sender menu':'Open sender menu');
 }
 const roomsHome=create('button','rd-home-shortcut rd-sender-mobile-home','← Rooms');roomsHome.type='button';roomsHome.hidden=true;roomsHome.setAttribute('aria-label','Return to REDLINE main room directory');roomsHome.addEventListener('click',()=>{setMenuOpen(false);api()?.returnToRooms?.()});topbar?.append(roomsHome);
 const roomsMenu=create('button','rs-mobile-menu-item','← All Rooms');roomsMenu.type='button';roomsMenu.addEventListener('click',()=>{setMenuOpen(false);api()?.returnToRooms?.()});menuItems.append(roomsMenu);
 const menuOptions=new Map();
+const archiveMenu=create('button','rs-mobile-menu-item','View Previous Records');archiveMenu.type='button';archiveMenu.dataset.icon='history';
+archiveMenu.addEventListener('click',async()=>{if(!sender()||archiveMenu.disabled)return;const s=snapshot();if(!s?.resetAt&&!s?.archiveMode)return;setMenuOpen(false);archiveMenu.disabled=true;try{await api().toggleArchive();if(sender()&&snapshot()?.roomId===s.roomId)tabs[s.archiveMode?'upload':'history']?.click()}catch(e){window.alert('Session records unavailable: '+String(e?.message||e))}finally{archiveMenu.disabled=false;update()}});
 for(const [label,event] of [['Smoke Break','blackcell:redline:break-menu'],['♥ Favorites','blackcell:redline:favorites-menu']]){
- const item=create('button','rs-mobile-menu-item',label);item.type='button';item.addEventListener('click',()=>{setMenuOpen(false);if(sender())window.dispatchEvent(new Event(event))});menuItems.append(item);
+ const item=create('button','rs-mobile-menu-item',label);item.type='button';item.dataset.breakMenu=event;item.addEventListener('click',()=>{setMenuOpen(false);if(sender())window.dispatchEvent(new Event(event))});menuItems.append(item);
 }
-for(const [key,label,icon] of [['upload','Messages','chat'],['viewing','Viewing','view'],['earnings','Earnings','money'],['history','History','history'],['stars','5 Stars','star']]){
+for(const [key,label,icon] of [['upload','Messages','chat'],['viewing','Currently Viewing','view'],['earnings','Earnings','money'],['history','Photo History','history'],['stars','5-Star Photos','star']]){
  if(!tabs[key])continue;
  const item=create('button','rs-mobile-menu-item',label);item.type='button';item.dataset.icon=icon;
  item.addEventListener('click',()=>{setMenuOpen(false);if(sender())tabs[key].click()});
  menuItems.append(item);menuOptions.set(key,item);
 }
+menuItems.append(archiveMenu);
 menuToggle.addEventListener('click',()=>{if(sender()&&!mobileMenu.hidden)setMenuOpen(menuItems.hidden)});
-mobileMenu.append(menuToggle,menuItems);topbar?.append(mobileMenu);
-document.addEventListener('pointerdown',e=>{if(!menuItems.hidden&&!mobileMenu.contains(e.target))setMenuOpen(false)});
-mobileMenu.addEventListener('keydown',e=>{if(e.key==='Escape'&&!menuItems.hidden){setMenuOpen(false);menuToggle.focus();e.preventDefault()}});
+mobileMenu.append(menuToggle);document.body.append(menuItems);
+document.addEventListener('pointerdown',e=>{if(!menuItems.hidden&&!mobileMenu.contains(e.target)&&!menuItems.contains(e.target))setMenuOpen(false)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!menuItems.hidden){setMenuOpen(false);menuToggle.focus();e.preventDefault()}});
 function syncMobileMenu(active){
- const show=active&&document.body.classList.contains('bc-ledger-mobile')&&Boolean(topbar);
- if(roomsHome.hidden===show)roomsHome.hidden=!show;
+ const show=active;
+ roomsHome.hidden=true;
  if(mobileMenu.hidden===show)mobileMenu.hidden=!show;
  if(!show&&!menuItems.hidden)setMenuOpen(false);
- document.body.classList.toggle('rs-mobile-menu-active',show);
+ document.body.classList.toggle('rs-mobile-menu-active',show&&document.body.classList.contains('bc-ledger-mobile'));
+ document.body.classList.toggle('rs-sender-menu-mounted',show);
+ if(show){const host=!pane.hidden?senderHeader:recordMenuRow;if(mobileMenu.parentNode!==host){host.append(mobileMenu);setMenuOpen(false)}}
+ recordMenuRow.hidden=!show||!pane.hidden;
+ const s=snapshot();archiveMenu.textContent=s?.archiveMode?'Return to Current Session':'View Previous Records';archiveMenu.disabled=!s?.resetAt&&!s?.archiveMode;
+ const breakState=document.querySelector('[data-break-action="request"]'),breakItem=menuItems.querySelector('[data-break-menu="blackcell:redline:break-menu"]');if(breakItem&&breakState){breakItem.textContent=breakState.textContent;breakItem.disabled=breakState.disabled||!!s?.archiveMode;}
+ const favoriteItem=menuItems.querySelector('[data-break-menu="blackcell:redline:favorites-menu"]');if(favoriteItem)favoriteItem.disabled=!!s?.archiveMode;
  for(const [key,item] of menuOptions){
   const selected=tabs[key].getAttribute('aria-selected')==='true';
   item.classList.toggle('is-current',selected);
@@ -140,7 +152,8 @@ const rate=create('span','','Timer not running');
 details.append(owed,paid,pending,rate);
 liveStrip.append(stripHead,details);
 liveStrip.hidden=true;
-chat.insertBefore(liveStrip,$('.redline-chat-timer-slot',chat));
+const senderHeader=create('div','rs-sender-menu-header');senderHeader.append(liveStrip,mobileMenu);chat.insertBefore(senderHeader,$('.redline-chat-timer-slot',chat));
+const recordMenuRow=create('div','rs-sender-menu-record-row');recordMenuRow.hidden=true;home.insertBefore(recordMenuRow,home.querySelector('.redline-simple-panes'));
 // Currently Viewing is a quick route to the existing signed-image preview;
 // we do not disclose another private image or duplicate server requests.
 const quick=create('div','redline-messenger-quick');
@@ -302,7 +315,7 @@ if(androidKeyboard&&textEntry){
 }
 for(const event of ['blackcell:redline:bridge','blackcell:redline:state',
  'blackcell:redline:reset','blackcell:redline:session-mode',
- 'blackcell:redline:timer-status','blackcell:redline:messages-changed','blackcell:redline:sender-tab'])
+ 'blackcell:redline:timer-status','blackcell:redline:messages-changed','blackcell:redline:sender-tab','blackcell:redline:break-state'])
  window.addEventListener(event,update);
 const observer=new MutationObserver(()=>requestAnimationFrame(update));
 for(const node of [app,room,home,pane])observer.observe(node,{

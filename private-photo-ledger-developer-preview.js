@@ -8,7 +8,7 @@
  const btn=(text,fn)=>{const b=make('button','rd-dev-button',text);b.type='button';b.addEventListener('click',fn);return b};
  const dialog=make('dialog','rd-dev-dialog');dialog.id='redlineDeveloperPreview';
  const top=make('header','rd-dev-top'),name=make('div','rd-dev-name');
- name.append(make('strong','','REDLINE · DEVELOPER PREVIEW'),make('small','','BUILD 20261126-SENDER-3 · LOCAL TEST ONLY'));
+ name.append(make('strong','','REDLINE · DEVELOPER PREVIEW'),make('small','','BUILD 20261127-SENDER-MENU-4 · LOCAL TEST ONLY'));
  const toolbar=make('div','rd-dev-toolbar'),stage=make('div','rd-dev-stage'),notice=make('p','rd-dev-notice','Test chat, Camera Roll or previously shared REDLINE photos, ratings and pricing. No live records or payments.');
  const frameWraps={},frames={},modeButtons={},deviceButtons={};
  let model=null,token='',generation=0,mode='dual',device='desktop',loadedBuild='',reports={},preset='',testLibrary=[],libraryRoom=null,libraryRevision=0,libraryState='idle',libraryMessage='';
@@ -22,7 +22,7 @@
  for(const [key,label] of [['receiver','Receiver'],['sender','Sender'],['dual','Dual view']]){modeButtons[key]=btn(label,()=>chooseMode(key));toolbar.append(modeButtons[key])}
  for(const [key,label] of [['desktop','Desktop'],['tablet','Tablet'],['mobile','Mobile']]){deviceButtons[key]=btn(label,()=>chooseDevice(key));toolbar.append(deviceButtons[key])}
  const reload=btn('Reload Preview',()=>void reloadPreview());toolbar.append(reload);
- toolbar.append(btn('Refresh entire Preview app',()=>{const u=new URL(location.href);u.searchParams.set('v','20261126-sender-preview3');u.searchParams.set('_bc_release',String(Date.now()));location.replace(u.href)}));
+ toolbar.append(btn('Refresh entire Preview app',()=>{const u=new URL(location.href);u.searchParams.set('v','20261127-sender-menu4');u.searchParams.set('_bc_release',String(Date.now()));location.replace(u.href)}));
  toolbar.append(btn('Reset test',()=>{if(authorized()&&confirm('Clear this temporary test session only?')){clearLibrary();model=fresh();broadcast()}}));
  const phonePreset=btn('Sender’s phone · Neon Smarta 2',()=>{chooseMode('sender');chooseDevice('mobile',true)});
  phonePreset.id='rdDevSenderPhone';phonePreset.title='Estimated Android 11 Chrome viewport: 320 × 480 CSS pixels; actual browser size may differ.';
@@ -101,7 +101,7 @@
  function reportStatus(){
   if(!dialog.open||!loadedBuild)return;
   const r=reports.receiver,s=reports.sender;
-  if(preset){notice.textContent='Safaricom Neon Smarta 2 · Android 11 / Chrome · estimated 320 × 480 CSS px'+(s?' · Actual preview '+s.width+' × '+s.height+' · Sender menu '+(s.menu?'OK':'not visible')+' · Smoke Break '+(s.smoke?'VISIBLE':'not visible')+' · Favorites '+(s.favorites?'VISIBLE':'not visible')+' · Resubmit '+(s.resubmit?'VISIBLE':'open 5-Star Photos'):' · Checking sender layout…')+' · '+loadedBuild+' · Local test only. No live payments or records.';return}
+  if(preset){notice.textContent='Safaricom Neon Smarta 2 · Android 11 / Chrome · estimated 320 × 480 CSS px'+(s?' · Actual preview '+s.width+' × '+s.height+' · Sender menu '+(s.menu?'OK':'not visible')+' · Smoke Break '+(s.smoke?'IN MENU':'missing')+' · Favorites '+(s.favorites?'IN MENU':'missing')+' · Resubmit '+(s.resubmit?'VISIBLE':'open 5-Star Photos'):' · Checking sender layout…')+' · '+loadedBuild+' · Local test only. No live payments or records.';return}
   const layout=r?' · Receiver '+(device==='desktop'&&r.mode==='mobile'?'Desktop / approved mobile layout':r.mode)+' ('+r.width+'px)'+(r.mode==='mobile'?' · Header menu '+(r.menu?'OK':'not placed')+' · PAY '+(r.pay?'OK':'not visible'):''):' · Checking receiver layout…';
   notice.textContent='Current interface: '+loadedBuild+layout+' · Local test only. No live payments or records.';
  }
@@ -192,7 +192,7 @@
   if(!sources.some(s=>s.includes('rdIndependentReview'))||!styles.some(s=>s.includes('Independent receiver review')))throw Error('Updated receiver popup assets are unavailable. Refresh REDLINE.');
   if(!sources.some(s=>s.includes('rr-popup-menu-mode')&&s.includes('openReceiverPanel'))||!styles.some(s=>s.includes('#redlineReceiverMenuOverlay'))||!adapter.includes('localRoomDirectory'))throw Error('New REDLINE menu or room preview assets are unavailable. Reload after deployment.');
   if(!sources.some(s=>s.includes('rd-break-toolbar'))||!sources.some(s=>s.includes('BLACKCELL_REDLINE_REUSE_UI=Object.freeze'))||!adapter.includes('breakEvents:async'))throw Error('Smoke break and resubmit preview assets are incomplete. Reload after deployment.');
-  return {markup:body.innerHTML,styles,sources,adapter,build:'Smoke Break / Favorites / Resubmit · Sender mobile parity · Gallery FULLSCREEN 7 · '+[receiver?.searchParams.get('v'),mobile?.searchParams.get('v')].filter(Boolean).join(' / ')};
+  return {markup:body.innerHTML,styles,sources,adapter,build:'Sender menu 4 / Session Records moved / Smoke Break / Favorites / Resubmit · Gallery FULLSCREEN 7 · '+[receiver?.searchParams.get('v'),mobile?.searchParams.get('v')].filter(Boolean).join(' / ')};
  }
  function frameDocument(a,role){
   const nonce=crypto.randomUUID(),escapeScript=s=>s.replace(/<\/script/gi,'<\\/script');

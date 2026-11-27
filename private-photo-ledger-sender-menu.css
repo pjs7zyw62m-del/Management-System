@@ -1,0 +1,20 @@
+/* Sender navigation is inside the visible chat, never the OS-hidden topbar.
+   Only presentation changes. Archive and uploads retain their original APIs. */
+body.redline-sender-simple #redlineSessionTools,
+body.redline-sender-simple #redlineSimpleSender .redline-messenger-records{display:none!important}
+body.rs-sender-menu-mounted #redlineSimpleSender .rd-break-toolbar{display:none!important}
+.rs-sender-menu-header{display:flex;flex:0 0 auto;align-items:stretch;gap:0;width:100%;min-width:0;background:#0b080a;box-sizing:border-box}
+.rs-sender-menu-header>.redline-messenger-live-strip{flex:1 1 0!important;min-width:0!important;width:auto!important;margin:0!important}
+.rs-sender-menu-header>.rs-mobile-menu,.rs-sender-menu-record-row>.rs-mobile-menu{display:flex!important;flex:0 0 auto!important;align-items:center;justify-content:center;padding:3px 4px!important;margin:0!important;box-sizing:border-box}
+.rs-sender-menu-header>.rs-mobile-menu[hidden],.rs-sender-menu-record-row[hidden],.rs-sender-menu-record-row>.rs-mobile-menu[hidden]{display:none!important}
+#redlineSimpleSender .rs-mobile-menu-toggle{display:flex!important;align-items:center;justify-content:center;min-width:58px!important;width:auto!important;min-height:38px!important;padding:4px 6px!important;border:1px solid #a33d50!important;border-radius:8px!important;background:#211016!important;color:#fff!important;font:700 12px/1 system-ui!important;white-space:nowrap!important;visibility:visible!important;opacity:1!important}
+#redlineSimpleSender .rs-mobile-menu-toggle::after{content:none!important}
+.rs-sender-menu-record-row{display:flex;justify-content:flex-end;flex:none;padding:2px 0}
+body.rs-sender-menu-mounted #redlineSenderMobileMenuItems:not([hidden]){position:fixed!important;top:var(--rs-menu-top,45px)!important;right:6px!important;left:auto!important;bottom:auto!important;z-index:3000!important;display:flex!important;flex-direction:column!important;width:min(270px,calc(100vw - 12px))!important;max-height:var(--rs-menu-height,75vh)!important;overflow-y:auto!important;overscroll-behavior:contain!important;padding:6px!important;box-sizing:border-box!important;background:#131116!important;color:white!important;border:1px solid #934052!important;border-radius:12px!important;box-shadow:0 14px 42px #000c!important}
+#redlineSenderMobileMenuItems[hidden]{display:none!important}
+#redlineSenderMobileMenuItems>.rs-mobile-menu-item{display:flex!important;align-items:center!important;text-align:left!important;flex:0 0 auto!important;min-height:40px!important;width:100%!important;padding:8px 11px!important;margin:1px 0!important;border:0!important;border-radius:7px!important;background:#1c181e!important;color:#f4eff2!important;font:600 14px/1.2 system-ui!important;white-space:normal!important}
+#redlineSenderMobileMenuItems>.rs-mobile-menu-item.is-current{background:#671326!important;color:white!important}
+#redlineSenderMobileMenuItems>.rs-mobile-menu-item:disabled{opacity:.45!important}
+body.rs-sender-menu-mounted #redlineSimpleSender .redline-messenger-live-head{min-width:0!important}
+body.rs-sender-menu-mounted #redlineSimpleSender .redline-messenger-live-field{min-width:0!important}
+@media(max-width:370px){#redlineSimpleSender .rs-mobile-menu-toggle{min-width:52px!important;font-size:11px!important;padding:4px!important}.rs-sender-menu-header>.rs-mobile-menu{padding:2px!important}body.rs-sender-menu-mounted #redlineSimpleSender .redline-messenger-live-field{padding-left:3px!important;padding-right:3px!important}}
