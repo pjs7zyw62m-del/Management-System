@@ -1811,6 +1811,8 @@ function updateRedlineResetControls(){
  const tools=$('redlineSessionTools'),actions=$('redlineResetActions');
  if(tools)tools.hidden=!room;
  if(actions)actions.hidden=!state.isOwner||!room;
+ const purge=$('redlineDeleteArchivedChat');
+ if(purge){purge.hidden=!state.isOwner||!hasArchive;purge.disabled=!room||room.active||state.busy;purge.title=room?.active?'Close the room before deleting previous chat.':'Permanently delete archived chat except messages needed for fee records.'}
  const archive=$('redlineArchiveToggle');
  if(archive){
   archive.hidden=!hasArchive;
@@ -1866,6 +1868,24 @@ async function startRedlineFresh(all=false){
   state.busy=false;
   $('redlineStartFreshRoom').disabled=$('redlineMasterReset').disabled=false;
  }
+}
+async function deleteRedlineArchivedChat(){
+ const room=state.room,control=$('redlineDeleteArchivedChat'),status=$('redlineResetStatus');
+ if(!state.isOwner||!room||room.active||!room.current_session_started_at||state.busy||!control)return;
+ const phrase='DELETE ARCHIVED CHAT';
+ const typed=window.prompt('Permanently delete all previous-session chat messages in THIS closed room, for both participants? Messages tied to financial fees, photographs and payment records are preserved. This cannot be undone.\n\nType '+phrase+' to confirm:','');
+ if(typed!==phrase)return;
+ state.busy=true;control.disabled=true;
+ if(status)status.textContent='Deleting archived chat securely…';
+ try{
+  await verify();
+  if(state.closed||state.room?.id!==room.id||state.room?.active)throw Error('Room changed. Reopen its session tools.');
+  const {data,error}=await db.rpc('corp_owner_redline_delete_archived_chat',{p_room_id:room.id,p_cutoff:room.current_session_started_at,p_confirmation:phrase});
+  if(error||data?.ok!==true)throw Error(data?.reason||error?.message||'Deletion not confirmed.');
+  window.dispatchEvent(new Event('blackcell:redline:messages-changed'));
+  if(status)status.textContent=String(data.messages_deleted)+' archived chat messages permanently deleted. '+String(data.fee_messages_retained)+' fee-linked messages retained. Photos and financial records are unchanged.';
+ }catch(e){if(status)status.textContent='Unable to delete archived chat: '+fail(e)}
+ finally{state.busy=false;updateRedlineResetControls()}
 }
 async function copyLink(){
  if(!state.room)return;
@@ -1930,6 +1950,7 @@ function wireEvents(){
  $('closeRoomBtn').addEventListener('click',()=>void toggleRoom());
  $('redlineArchiveToggle').addEventListener('click',()=>void setRedlineArchiveView(!state.showArchive));
  $('redlineStartFreshRoom').addEventListener('click',()=>void startRedlineFresh(false));
+ $('redlineDeleteArchivedChat')?.addEventListener('click',()=>void deleteRedlineArchivedChat());
  $('redlineMasterReset').addEventListener('click',()=>void startRedlineFresh(true));
  $('copyRoomLink').addEventListener('click',()=>void copyLink());
  $('ledgerScopeToggle').addEventListener('click',()=>void toggleLedgerScope());
