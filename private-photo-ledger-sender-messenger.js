@@ -87,8 +87,8 @@ function syncMobileMenu(active){
  document.body.classList.toggle('rs-sender-menu-mounted',show);
  if(show){const host=!pane.hidden?senderHeader:recordMenuRow;if(mobileMenu.parentNode!==host){host.append(mobileMenu);setMenuOpen(false)}}
  recordMenuRow.hidden=!show||!pane.hidden;
- const s=snapshot();archiveMenu.textContent=s?.archiveMode?'Return to Current Session':'View Previous Records';archiveMenu.disabled=!s?.resetAt&&!s?.archiveMode;
- const breakState=document.querySelector('[data-break-action="request"]'),breakItem=menuItems.querySelector('[data-break-menu="blackcell:redline:break-menu"]');if(breakItem&&breakState){breakItem.textContent=breakState.textContent;breakItem.disabled=breakState.disabled||!!s?.archiveMode;}
+ const s=snapshot();setText(archiveMenu,s?.archiveMode?'Return to Current Session':'View Previous Records');archiveMenu.disabled=!s?.resetAt&&!s?.archiveMode;
+ const breakState=document.querySelector('[data-break-action="request"]'),breakItem=menuItems.querySelector('[data-break-menu="blackcell:redline:break-menu"]');if(breakItem&&breakState){setText(breakItem,breakState.textContent);breakItem.disabled=breakState.disabled||!!s?.archiveMode;}
  const favoriteItem=menuItems.querySelector('[data-break-menu="blackcell:redline:favorites-menu"]');if(favoriteItem)favoriteItem.disabled=!!s?.archiveMode;
  for(const [key,item] of menuOptions){
   const selected=tabs[key].getAttribute('aria-selected')==='true';
@@ -201,6 +201,7 @@ function syncSenderDot(active,s){
  if(senderDot.getAttribute('aria-label')!==description){senderDot.setAttribute('aria-label',description);senderDot.title=description}
 }
 let lastRoomId=null;
+function setText(el,value){if(el&&el.textContent!==String(value))el.textContent=String(value)}
 function update(){
  const s=snapshot();
  const active=sender();
@@ -224,13 +225,12 @@ function update(){
   lastRoomId=s.roomId;
   uploadDrawer.open=false;recordDrawer.open=false;liveStrip.open=false;
  }
- if(headerStrong)headerStrong.textContent=s.peerName||'REDLINE · PRIVATE CHAT';
- if(headerSmall)headerSmall.textContent=s.archiveMode?'PREVIOUS SESSION · READ ONLY':
-  s.roomActive?'● LIVE PRIVATE SESSION · TWO PEOPLE':'PRIVATE ROOM CLOSED';
- approved.number.textContent=s.assigned||'$0.00';
- owed.textContent='Outstanding '+(s.owed||'$0.00');
- paid.textContent='Recorded paid '+(s.paid||'$0.00');
- pending.textContent=String(s.pending||0)+' awaiting review';
+ setText(headerStrong,s.peerName||'REDLINE · PRIVATE CHAT');
+ setText(headerSmall,s.archiveMode?'PREVIOUS SESSION · READ ONLY':s.roomActive?'● LIVE PRIVATE SESSION · TWO PEOPLE':'PRIVATE ROOM CLOSED');
+ setText(approved.number,s.assigned||'$0.00');
+ setText(owed,'Outstanding '+(s.owed||'$0.00'));
+ setText(paid,'Recorded paid '+(s.paid||'$0.00'));
+ setText(pending,String(s.pending||0)+' awaiting review');
  const pinned=$('.redline-chat-timer-slot .redline-chat-timer[data-timer-phase="active"]',chat);
  const amount=$('.redline-chat-timer-amount',pinned)?.textContent||'';
  const clock=$('.redline-chat-timer-clock',pinned)?.textContent||'';
@@ -326,6 +326,6 @@ window.addEventListener('pageshow',update);
 window.addEventListener('blackcell:redline:upload-progress',()=>syncUploadProgress(sender()));
 window.addEventListener('blackcell:redline:device-mode',update);
 window.addEventListener('visibilitychange',()=>{if(!document.hidden)update()});
-window.setInterval(()=>{if(!document.hidden&&sender())update()},1000);
+window.setInterval(()=>{if(!document.hidden&&sender()&&$('.redline-chat-timer[data-timer-phase="active"]',chat))update()},1000);
 update();
 })();

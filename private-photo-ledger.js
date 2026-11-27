@@ -635,7 +635,8 @@ async function loadEntries({force=false}={}){
  const signature=ratingsSig+'|'+String(state.showArchive)+'|'+JSON.stringify(all.map(e=>[e.id,e.amount_cents,e.auto_timer_session_id,e.resubmission_origin_id,e.decision_status,e.decided_at,e.priced_at,e.settled_at,e.photo_removal_status,e.caption]));
  state.entries=all;
  updateTotals();
- const needsSignedRefresh=all.some(e=>!e.photo_removal_status&&
+ const previewItems=state.isOwner?all:senderPreviewEntries(all);
+ const needsSignedRefresh=previewItems.some(e=>!e.photo_removal_status&&
   (!state.images.has(e.image_path)||state.images.get(e.image_path).expires<Date.now()));
  if(signature!==state.entryFingerprint||force){
   state.entryFingerprint=signature;
@@ -643,7 +644,7 @@ async function loadEntries({force=false}={}){
   window.dispatchEvent(new Event('blackcell:redline:state'));
  }
  // Metadata and balances must never wait for a room's media downloads.
- if(needsSignedRefresh)queuePhotoPreviews(all,loadScope);
+ if(needsSignedRefresh&&(!state.isOwner?(!redlineQueueRunning&&!state.busy):true))queuePhotoPreviews(previewItems,loadScope);
  if(all.length>=5000)show('entriesFeedback','Showing up to 5,000 latest submissions; ask administration to archive older records.');
  else show('entriesFeedback','');
  try{await loadRoomPayments(selectedRoom.id,state.showArchive);if(stillCurrent())liveStatus(state.liveConnected?'● LIVE UPDATES CONNECTED':'● AUTOMATIC SYNC ACTIVE',state.liveConnected)}
@@ -695,12 +696,24 @@ function rememberImage(path,url,expires,object=false){
   try{URL.revokeObjectURL(old.url)}catch(_){}
  state.images.set(path,{url,expires,object});
 }
-let photoPreviewJob=null;
+let photoPreviewJob=null,senderPreviewScope='',senderPreviewWanted=new Set(),senderPreviewTimer=null;
+function senderPreviewEntries(items){
+ const scope=roomPaymentScope();if(senderPreviewScope!==scope){senderPreviewScope=scope;senderPreviewWanted.clear()}
+ return items.filter(e=>senderPreviewWanted.has(e.id)&&!e.photo_removal_status);
+}
+function requestSenderPreviews(ids){
+ if(state.isOwner||state.closed||!state.room||!Array.isArray(ids))return;
+ senderPreviewEntries(state.entries);
+ for(const id of ids){if(validId(id))senderPreviewWanted.add(id)}
+ if(senderPreviewTimer!==null)return;
+ senderPreviewTimer=setTimeout(()=>{senderPreviewTimer=null;if(state.closed||state.isOwner||state.busy||redlineQueueRunning||document.hidden)return;queuePhotoPreviews(senderPreviewEntries(state.entries),roomPaymentScope())},250);
+}
 function queuePhotoPreviews(items,scope){
- if(photoPreviewJob?.scope===scope)return;
+ if(!items.length||photoPreviewJob?.scope===scope)return;
+ if(!items.some(e=>!e.photo_removal_status&&(!state.images.has(e.image_path)||state.images.get(e.image_path).expires<Date.now())))return;
  const job={scope};photoPreviewJob=job;
- const valid=()=>!state.closed&&photoPreviewJob===job&&roomPaymentScope()===scope;
- const notify=()=>{if(valid()){renderEntries();renderReviewQueue();window.dispatchEvent(new Event('blackcell:redline:state'))}};
+ const valid=()=>!state.closed&&photoPreviewJob===job&&roomPaymentScope()===scope&&(state.isOwner||(!state.busy&&!redlineQueueRunning&&!document.hidden));
+ const notify=()=>{if(valid()){if(state.isOwner){renderEntries();renderReviewQueue()}window.dispatchEvent(new Event('blackcell:redline:state'))}};
  void signImages(items,valid,notify).catch(e=>{if(valid())show('entriesFeedback','Some photo previews are unavailable: '+fail(e))}).finally(()=>{if(photoPreviewJob===job)photoPreviewJob=null});
 }
 async function signImages(items,valid=()=>true,notify=()=>{}){
@@ -709,9 +722,10 @@ async function signImages(items,valid=()=>true,notify=()=>{}){
   (!state.images.has(e.image_path)||state.images.get(e.image_path).expires<now));
  const bunny=needed.filter(e=>isBunnyPath(e.image_path));
  const legacy=needed.filter(e=>!isBunnyPath(e.image_path));
- for(let i=0;i<bunny.length;i+=5){
+ const concurrency=state.isOwner?5:1;
+ for(let i=0;i<bunny.length;i+=concurrency){
   if(!valid())return;
-  await Promise.all(bunny.slice(i,i+5).map(async e=>{
+  await Promise.all(bunny.slice(i,i+concurrency).map(async e=>{
    try{
     const data=await readBunnyPhoto(db,e.room_id,e.id);
     if(!valid()||!state.entries.some(x=>x.id===e.id&&x.image_path===e.image_path&&!x.photo_removal_status))return;
@@ -720,7 +734,8 @@ async function signImages(items,valid=()=>true,notify=()=>{}){
     if(valid())show('entriesFeedback','Some REDLINE photos could not load from private Bunny storage: '+fail(error));
    }
   }));
-  if(valid())notify();
+  if(valid()&&(state.isOwner||i%4===3||i+concurrency>=bunny.length))notify();
+  if(!state.isOwner)await new Promise(resolve=>setTimeout(resolve,100));
  }
  // Old photo records remain readable if a historical Supabase original
  // is restored in the future. No new media is uploaded to this bucket.
@@ -844,7 +859,9 @@ function renderReviewQueue(){
  void publishOwnerViewing(ownerVisiblePhotoId());
 }
 function renderEntries(){
- const parent=$('photoEntries');parent.replaceChildren();
+ const parent=$('photoEntries');
+ if(!state.isOwner&&document.body.classList.contains('redline-sender-simple')){if(parent.childElementCount)parent.replaceChildren();return}
+ parent.replaceChildren();
  if(!state.room)return;
  const list=state.entries.filter(e=>
   state.filter==='all'
@@ -1955,6 +1972,7 @@ function wireEvents(){
 const REDLINE_MESSAGES='corp_private_photo_messages';
 window.BLACKCELL_REDLINE_API=Object.freeze({
  returnToRooms:()=>navigateRoomDirectory(),
+ requestSenderPreviews:ids=>requestSenderPreviews(ids),
  // Read-only test fixtures from the selected, verified receiver's own
  // REDLINE exchange. Never inspect the sender's unrelated private library.
  async previousPreviewPhotos({onBatch=null,isCurrent=()=>true}={}){
