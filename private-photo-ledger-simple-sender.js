@@ -246,7 +246,7 @@ let chatInitialPositionPending=true,chatOwnSendPending=false;
 // from that zero is the source of the repeated top/bottom conversation jumps.
 let readerAnchor=null,readerGestureUntil=0,readerRestoring=false;
 function readerRoomKey(){
- const s=snapshot();
+ const s=roomSnapshot();
  return s?.roomId?s.roomId+'|'+String(Boolean(s.archiveMode)):null;
 }
 function saveReaderAnchor(){
@@ -314,8 +314,8 @@ let viewingStatus=null,viewingRoomId=null,viewingInFlight=false,viewingLastPoll=
 let typingRoom=null,lastTypingAt=0,chatStatusInFlight=false,lastChatStatusAt=0;
 function bridge(){return window.BLACKCELL_REDLINE_API}
 const snapshot=()=>bridge()?.snapshot?.()||null;
-function isSender(){
- const snap=snapshot();
+const roomSnapshot=()=>bridge()?.snapshot?.({light:true})||null;
+function isSender(snap=roomSnapshot()){
  return Boolean(snap&&!snap.isOwner&&!app.hidden&&!room.hidden);
 }
 function money(value){const n=BigInt(value||0);return '$'+(n/100n).toLocaleString('en-US')+'.'+(n%100n).toString().padStart(2,'0')}
@@ -434,7 +434,7 @@ function renderCurrentlyViewing(snap){
  }
 }
 async function pollCurrentlyViewing(force=false){
- const snap=snapshot();
+ const snap=roomSnapshot();
  if(!isSender()||currentTab!=='viewing'||!snap?.roomId||snap.archiveMode||document.hidden||
     !bridge()?.currentlyViewingStatus)return;
  if(viewingInFlight||(!force&&Date.now()-viewingLastPoll<2600))return;
@@ -442,12 +442,12 @@ async function pollCurrentlyViewing(force=false){
  const roomId=snap.roomId;
  try{
   const result=await bridge().currentlyViewingStatus(roomId);
-  if(snapshot()?.roomId!==roomId)return;
+  if(roomSnapshot()?.roomId!==roomId)return;
   const changed=viewingStatus?.photoId!==result.photoId||viewingStatus?.active!==result.active;
   viewingStatus=result;viewingRoomId=roomId;viewingError='';
   if(currentTab==='viewing'&&changed)renderCurrentlyViewing(snapshot());
  }catch(e){
-  if(snapshot()?.roomId===roomId){
+  if(roomSnapshot()?.roomId===roomId){
    viewingStatus=null;viewingRoomId=roomId;
    viewingError=String(e?.message||'Please try again.').slice(0,140);
    if(currentTab==='viewing')renderCurrentlyViewing(snapshot());
@@ -680,7 +680,7 @@ function timerNumbers(row,active){
  return {seconds,cents,display};
 }
 function updateTimerCards(){
- if(!timerStatus||!snapshot()||app.hidden||room.hidden)return;
+ if(document.hidden||!timerStatus||!roomSnapshot()||app.hidden||room.hidden)return;
  const running=timerStatus.active;
  for(const card of timerSlot.querySelectorAll('.redline-chat-timer[data-timer-phase="active"]')){
   if(card.dataset.timerId!==running?.id)continue;
@@ -722,25 +722,25 @@ function makeTimerCard(e){
  }
  return card;
 }
-function chatVisible(snap=snapshot()){
+function chatVisible(snap=roomSnapshot()){
  if(!snap||snap.archiveMode||app.hidden||room.hidden||document.hidden)return false;
  return snap.isOwner
   ?Boolean(ownerDialog.open||(receiverChatPanel()&&!receiverChatPanel().hidden))
   :currentTab==='upload'&&!home.hidden;
 }
 function updateTypingIndicator(){
- const snap=snapshot();
+ const snap=roomSnapshot();
  typingNotice.hidden=!peerTyping||!chatVisible(snap);
  typingNotice.textContent=typingNotice.hidden?'':(snap?.peerName||'Other participant')+' is typing…';
 }
 async function pollChatStatus(force=false){
- const snap=snapshot();
+ const snap=roomSnapshot();
  if(!chatVisible(snap)||!bridge()?.chatStatus){peerTyping=false;updateTypingIndicator();return}
  if(chatStatusInFlight||(!force&&Date.now()-lastChatStatusAt<(snap?.isOwner?2500:3500)))return;
  const roomId=snap.roomId;chatStatusInFlight=true;lastChatStatusAt=Date.now();
  try{
   const status=await bridge().chatStatus(roomId);
-  if(snapshot()?.roomId!==roomId||!chatVisible(snapshot()))return;
+  const current=roomSnapshot();if(!chatVisible(current)||current?.roomId!==roomId)return;
   const readChanged=peerReadAt!==status.peerReadAt;
   peerReadAt=status.peerReadAt;peerTyping=status.peerTyping===true;
   updateTypingIndicator();
@@ -749,7 +749,7 @@ async function pollChatStatus(force=false){
  finally{chatStatusInFlight=false}
 }
 function reportRead(){
- const snap=snapshot();
+ const snap=roomSnapshot();
  if(!chatVisible(snap)||!bridge()?.chatSignal)return;
  const latest=[...messages].reverse().find(m=>m.sender_id!==snap.userId);
  if(!latest||markedReadId===latest.id)return;
@@ -768,7 +768,7 @@ function resetChatSignals(){
  updateTypingIndicator();
 }
 entry.addEventListener('input',()=>{
- const snap=snapshot();
+ const snap=roomSnapshot();
  if(!entry.value.trim()){stopTyping();return}
  if(!chatVisible(snap)||!snap.roomActive||!bridge()?.chatSignal)return;
  if(typingRoom===snap.roomId&&Date.now()-lastTypingAt<2500)return;
@@ -1020,13 +1020,13 @@ function renderChat({scrollToLatest=false}={}){
  if(retained)requestAnimationFrame(restoreReaderAnchor);
 }
 async function loadMessages(){
- const snap=snapshot();
+ const snap=roomSnapshot();
  if(!snap||loading)return;
  loading=true;
  try{
   const current=snap.roomId;
   const items=await bridge().loadMessages();
-  if(snapshot()?.roomId!==current)return;
+  if(roomSnapshot()?.roomId!==current)return;
   messages=items;lastSync=Date.now();
   msgError.textContent='';
   renderChat({scrollToLatest:chatInitialPositionPending||chatOwnSendPending});
@@ -1041,7 +1041,7 @@ async function loadMessages(){
 composer.addEventListener('submit',async e=>{
  e.preventDefault();
  if(posting)return;
- const text=entry.value.trim(),snap=snapshot();
+ const text=entry.value.trim(),snap=roomSnapshot();
  if(snap?.archiveMode){msgError.textContent='Return to the current session before sending a message.';return}
  if(!snap?.roomActive){msgError.textContent='This private room is closed.';return}
  if(!text||text.length>2000){msgError.textContent='Write a message up to 2,000 characters.';return}
@@ -1138,8 +1138,8 @@ function renderVisibleSenderRecords(snap,force=false){
  else if(currentTab==='viewing')renderCurrentlyViewing(snap);
 }
 function sync(){
- const snap=snapshot(),sender=isSender();
- home.hidden=!sender;
+ const snap=currentTab==='upload'?roomSnapshot():snapshot(),sender=isSender(snap);
+ if(home.hidden!==!sender)home.hidden=!sender;
  document.body.classList.toggle('redline-sender-simple',sender);
  if(sender){
   // Reparent only for an actual verified sender role transition.
@@ -1186,7 +1186,7 @@ for(const el of [app,room,upload,ownerSetup])observer.observe(el,{attributes:tru
 // Each participant reads authenticated timer status from the room ledger.
 // The receiver also gets immediate in-page status events after START/STOP.
 function receiveTimerStatus(roomId,next){
- const snap=snapshot();
+ const snap=roomSnapshot();
  if(!snap||snap.roomId!==roomId||snap.archiveMode||app.hidden||room.hidden||!next?.ok)return;
  const fingerprint=JSON.stringify([next.active?.id||null,next.active?.running||null,
   ...(Array.isArray(next.recent)?next.recent.map(x=>[x.id,x.stopped_at]):[])]);
@@ -1201,7 +1201,7 @@ function receiveTimerStatus(roomId,next){
  }else updateTimerCards();
 }
 async function pollSenderTimers(force=false){
- const snap=snapshot();
+ const snap=roomSnapshot();
  if(!snap||snap.archiveMode||app.hidden||room.hidden||!bridge()?.timerStatus)return;
  const chatVisible=snap.isOwner
   ?Boolean(ownerDialog.open||(receiverChatPanel()&&!receiverChatPanel().hidden))
@@ -1214,7 +1214,7 @@ async function pollSenderTimers(force=false){
   const status=await bridge().timerStatus(id);
   receiveTimerStatus(id,status);
  }catch(error){
-  if(snapshot()?.roomId!==id)return;
+  if(roomSnapshot()?.roomId!==id)return;
   const message=String(error?.message||'Could not contact the timed-photo ledger').slice(0,160);
   if(timerLoadError!==message){
    timerLoadError=message;
@@ -1247,15 +1247,36 @@ window.addEventListener('visibilitychange',()=>{if(!document.hidden){
  if((isSender()&&currentTab==='upload')||ownerDialog.open||(receiverChatPanel()&&!receiverChatPanel().hidden))void loadMessages();
  void pollSenderTimers(true);void pollChatStatus(true);
 }});
-window.setInterval(()=>{
- updateTimerCards();
- if(!document.hidden)void pollSenderTimers();
-},1000);
-window.setInterval(()=>{if(!document.hidden)void pollChatStatus()},1500);
-window.setInterval(()=>{if(!document.hidden)void pollCurrentlyViewing()},2600);
-window.setInterval(()=>{
- const active=(isSender()&&currentTab==='upload')||ownerDialog.open||(receiverChatPanel()&&!receiverChatPanel().hidden);
- if(!document.hidden&&active&&Date.now()-lastSync>3800)void loadMessages();
-},4000);
+// One visibility-aware scheduler replaces the four independent intervals.
+let senderTickHandle=0,nextChatStatus=0,nextViewing=0,nextMessages=0;
+function stopSenderTick(){clearTimeout(senderTickHandle);senderTickHandle=0}
+function senderTick(){
+ senderTickHandle=0;
+ if(document.hidden)return;
+ const snap=roomSnapshot(),now=Date.now();
+ if(snap?.roomId&&!app.hidden&&!room.hidden){
+  const visibleChat=chatVisible(snap);
+  if(visibleChat){
+   updateTimerCards();
+   void pollSenderTimers();
+   if(now>=nextChatStatus){nextChatStatus=now+1500;void pollChatStatus()}
+   if(now>=nextMessages){
+    nextMessages=now+4000;
+    if(now-lastSync>3800)void loadMessages();
+   }
+  }
+  if(currentTab==='viewing'&&isSender(snap)&&now>=nextViewing){
+   nextViewing=now+2600;void pollCurrentlyViewing();
+  }
+ }
+ senderTickHandle=window.setTimeout(senderTick,1000);
+}
+function startSenderTick(){
+ if(!document.hidden&&!senderTickHandle)senderTickHandle=window.setTimeout(senderTick,1000);
+}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stopSenderTick();else startSenderTick()});
+window.addEventListener('pagehide',stopSenderTick);
+window.addEventListener('pageshow',startSenderTick);
+startSenderTick();
 sync();
 })();

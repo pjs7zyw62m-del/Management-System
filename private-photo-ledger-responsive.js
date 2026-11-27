@@ -33,6 +33,16 @@
       return !phone&&!tablet&&host?.innerWidth>=1180&&window.innerWidth>=720;
     }catch(_){return false}
   }
+  // Platform comes from the current browser, never the account's usual device.
+  function nativePlatform(){
+    const ua=navigator.userAgent||'',touch=navigator.maxTouchPoints||0;
+    const preview=location.href==='about:srcdoc'&&window.REDLINE_DEV_CONFIG;
+    if(preview?.preset==='neon-smarta-2')return 'android';
+    if(/iPhone|iPod|iPad/i.test(ua)||(/Macintosh|MacIntel/i.test(ua)&&touch>1))return 'apple';
+    if(/Android/i.test(ua)||navigator.userAgentData?.platform==='Android')return 'android';
+    if(/Macintosh|Mac OS X/i.test(ua))return 'apple';
+    return 'standard';
+  }
   function nativeDeviceMode(){
     const preview=location.href==='about:srcdoc'&&window.REDLINE_DEV_CONFIG?.device;
     if(preview==='mobile'||preview==='tablet')return preview;
@@ -50,7 +60,7 @@
   function receiverDesktopParity(native){
     if(location.href==='about:srcdoc')return false;
     if(native==='mobile')return false;
-    const receiver=window.BLACKCELL_REDLINE_API?.snapshot?.()?.isOwner===true;
+    const receiver=window.BLACKCELL_REDLINE_API?.snapshot?.({light:true})?.isOwner===true;
     return receiver&&(native==='os'||native==='tablet'||desktopOsFrame());
   }
   function deviceMode(){
@@ -139,6 +149,8 @@
     document.body.classList.toggle('bc-ledger-desktop',mode==='os');
     document.body.classList.toggle('bc-os-frame-redline',desktopOsFrame()&&!receiverDesktopParity(nativeDeviceMode()));
     document.body.dataset.ledgerDevice=mode;
+    const platform=nativePlatform();
+    if(document.body.dataset.ledgerPlatform!==platform)document.body.dataset.ledgerPlatform=platform;
     if(!isAvailable(current))current='summary';
     const edition=captions[mode];
     sectionHeading.textContent=sectionNames[current]||'Overview';
@@ -162,7 +174,7 @@
   }
   function activate(key,{scroll=true}={}){
     if(!isAvailable(key))return;
-    if((location.href!=='about:srcdoc'||window.REDLINE_DEV_CONFIG?.role==='receiver')&&window.BLACKCELL_REDLINE_API?.snapshot?.()?.isOwner===true){
+    if((location.href!=='about:srcdoc'||window.REDLINE_DEV_CONFIG?.role==='receiver')&&window.BLACKCELL_REDLINE_API?.snapshot?.({light:true})?.isOwner===true){
       current='summary';reflect();
       if(key!=='summary')window.dispatchEvent(new CustomEvent('blackcell:redline:popup-section',{detail:{key}}));
       return;

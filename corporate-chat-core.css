@@ -1,0 +1,2254 @@
+/* Source: corporate-chat-media.css?v=20261109-media1 */
+
+/* BLACKCELL CORPORATION / Secure Shared Media — dark Apple Glass */
+.chat{position:relative;transition:grid-template-columns .48s cubic-bezier(.2,.85,.2,1);overflow:hidden}
+.chat-main{min-width:0;transition:transform .45s cubic-bezier(.2,.85,.2,1)}
+.chat.media-open{grid-template-columns:200px minmax(300px,.8fr) minmax(320px,1.05fr)}
+.media-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:9px 15px;border-top:1px solid #ffffff15;background:#0a090d}
+.media-actions button,.media-tool,.media-dialog button,.media-viewer button{font:inherit;cursor:pointer}
+.media-actions button{background:#18151c;border:1px solid #544351;color:#e2d9e3;border-radius:8px;padding:9px 11px;font-size:10px;font-weight:750;letter-spacing:.1em;white-space:nowrap}
+.media-actions button:hover{background:#30232c;border-color:#a26074}
+.media-actions button:last-child{margin-left:auto}
+.media-progress-wrap{padding:12px 15px;display:none;background:#141018;border-top:1px solid #493645}
+.media-progress-wrap.active{display:block}
+.media-progress-head{display:flex;justify-content:space-between;color:#e8dbe5;font-size:10px;letter-spacing:.1em;font-weight:750;margin-bottom:9px}
+.media-progress-track{height:5px;background:#3e3440;border-radius:9px;overflow:hidden}
+.media-progress-fill{height:100%;width:0;background:linear-gradient(90deg,#78334a,#d17e9a);transition:width .15s ease}
+.message-media .bubble{padding:14px 17px;min-width:180px;max-width:300px;border:1px solid #695462;background:#18151c!important;color:#f0e6ed;cursor:pointer;white-space:normal;border-radius:17px!important}
+.message-media .bubble strong{font-size:10px;letter-spacing:.12em;color:#dfb5c1;display:block;margin-bottom:7px}
+.message-media .bubble span{font-size:12px;line-height:1.5}
+.message-media .bubble:hover{border-color:#ae7183}
+.media-viewer{min-width:0;width:0;opacity:0;visibility:hidden;pointer-events:none;transform:translateX(100%);background:linear-gradient(135deg,#141017,#08080b);border-left:1px solid #51434d;display:flex;flex-direction:column;overflow:hidden;border-radius:16px 0 0 16px;transition:transform .48s cubic-bezier(.2,.85,.2,1),opacity .35s ease}
+.chat.media-open .media-viewer{width:auto;opacity:1;visibility:visible;pointer-events:auto;transform:translateX(0)}
+.media-viewer-head{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap;padding:14px;border-bottom:1px solid #ffffff20}
+.media-viewer-brand strong{font-size:11px;letter-spacing:.13em;color:#efe8f1}
+.media-viewer-brand small{display:block;margin-top:5px;font-size:9px;color:#a69ca7;letter-spacing:.08em}
+.media-viewer-actions{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.media-viewer button{background:#201b23;color:#ece5ed;border:1px solid #554351;border-radius:8px;padding:8px;font-size:10px}
+.media-viewer button:hover{border-color:#b16c83}
+.media-viewer button.active{background:#5d3041;border-color:#b16c83}
+.media-viewer-status{color:#bda1b0;font-size:10px;min-height:19px;padding:6px 15px}
+.media-viewer-tools{padding:9px 13px;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid #ffffff15;align-items:center}
+.media-viewer-tools input,.media-viewer-tools select{background:#131117;border:1px solid #594755;border-radius:8px;color:#ece5ed;padding:9px;font-size:11px;min-width:0}
+.media-viewer-tools input{flex:1 1 125px}
+.media-kind-filters{display:flex;gap:4px}
+.media-autoplay-label{display:flex;align-items:center;gap:5px;color:#cbbecb;font-size:10px;white-space:nowrap}
+.media-autoplay-label input{accent-color:#a55168}
+.media-viewer-stage{position:relative;background:#020204;min-height:160px;flex:1 1 48%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.media-viewer-stage .media-stage-inner{width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.media-viewer-stage img,.media-viewer-stage video{display:block;width:100%;height:100%;object-fit:contain;max-width:100%;max-height:100%;background:#000}
+.media-viewer-stage button.media-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;background:#181219cc;border:1px solid #584450;border-radius:10px;font-size:24px;line-height:1;padding:13px 10px}
+.media-viewer-stage button.media-nav.prev{left:7px}
+.media-viewer-stage button.media-nav.next{right:7px}
+.media-viewer-stage .media-stage-empty{padding:28px;color:#9f96a1;font-size:12px;text-align:center}
+.media-viewer-meta{display:flex;align-items:center;justify-content:space-between;gap:7px;padding:9px 13px;min-height:48px}
+.media-viewer-meta .media-current-name{font-size:10px;color:#c2b6c1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.media-viewer-meta .media-current-index{font-size:10px;color:#a88997}
+.media-library{border-top:1px solid #423843;display:flex;flex-direction:column;min-height:120px;max-height:38%;overflow:hidden}
+.media-library-head{display:flex;justify-content:space-between;gap:8px;padding:10px 14px;font-size:10px;color:#e6dfe6;letter-spacing:.13em}
+.media-history{width:100%;min-width:0;background:#161219;border:1px solid #4c404a;color:#d7cbd7;border-radius:7px;padding:8px;font-size:10px}
+.media-library-list{overflow:auto;flex:1;padding:11px;display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:9px;align-content:start}
+.media-library-item{position:relative;min-width:0;height:96px;display:flex;flex-direction:column;background:#18151a;border:1px solid #544752;border-radius:10px;overflow:hidden;padding:0!important;cursor:pointer}
+.media-library-item.selected{border-color:#d493a7;box-shadow:0 0 0 1px #b44e6c}
+.media-library-item img{width:100%;height:76px;object-fit:cover;background:#070708}
+.media-library-item .media-video-thumb{height:76px;display:grid;place-items:center;background:linear-gradient(140deg,#261d25,#08080a);font-size:27px;color:#dcb0bf}
+.media-library-item small{font-size:9px;color:#c7b7c2;padding:4px 5px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.media-full-link{color:#e9d9e2;text-decoration:none;background:#38212c;border:1px solid #8f5263;border-radius:8px;padding:9px;font-size:10px;letter-spacing:.05em;white-space:nowrap}
+.media-custom-range{display:flex;align-items:center;gap:7px;color:#c3b8c3;padding:7px 12px;font-size:10px}
+.media-custom-range input{flex:1;accent-color:#a55168}
+.media-viewer-stage.standard{flex-basis:42%}
+.media-viewer-stage.expanded{flex-basis:72%}
+.media-viewer-stage.custom{flex-basis:var(--media-custom-height,55%)}
+.media-dialog-backdrop{position:fixed;inset:0;background:#000d;backdrop-filter:blur(12px);z-index:12000;display:flex;align-items:center;justify-content:center;padding:17px}
+.media-dialog-backdrop[hidden]{display:none}
+.media-dialog{background:linear-gradient(145deg,#231d25,#0b0a0e);border:1px solid #66525f;border-radius:19px;width:min(660px,100%);max-height:92dvh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 18px 70px #000b}
+.media-dialog-head{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:20px;border-bottom:1px solid #ffffff20}
+.media-dialog-head strong{font-size:13px;color:#f5edf3;letter-spacing:.12em}
+.media-dialog-head small{display:block;font-size:10px;color:#bdafbc;margin-top:6px}
+.media-dialog-body{overflow:auto;padding:14px 20px;flex:1}
+.media-dialog-selection{min-height:110px;display:grid;place-items:center;text-align:center;color:#b7a9b5;border:1px dashed #7d5867;border-radius:12px;margin-bottom:14px;padding:15px}
+.media-selected-items{display:flex;flex-direction:column;gap:7px}
+.media-selected-row{border:1px solid #4b3e49;border-radius:9px;padding:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;color:#e5dbe3}
+.media-selected-row small{color:#aa9da9;font-size:10px}
+.media-dialog-footer{display:flex;align-items:center;gap:9px;padding:16px 20px;border-top:1px solid #ffffff20}
+.media-dialog button{background:#201821;color:#f2e9f0;border:1px solid #695060;border-radius:9px;padding:11px 14px;font-size:11px;font-weight:bold}
+.media-dialog button.media-primary{background:#8d314a;border-color:#c67489;flex:1}
+.media-dialog button:disabled{opacity:.45}
+@media(max-width:1000px){.chat.media-open{grid-template-columns:170px minmax(0,.7fr) minmax(300px,1fr)}.media-viewer-head{padding:10px}.media-viewer-actions{gap:3px}.media-viewer-actions button{padding:7px}}
+@media(max-width:760px){.chat{position:relative}.chat.media-open{grid-template-columns:105px minmax(0,1fr)}.chat.media-open .chat-main{transform:translateX(-45%)}.media-viewer{position:absolute;right:0;top:0;bottom:0;width:min(100%,540px);z-index:60;border-radius:16px 0 0 16px;box-shadow:-22px 0 55px #000b;transform:translateX(105%)}.chat.media-open .media-viewer{width:min(100%,540px)}.media-viewer-stage.standard{flex-basis:40%}.media-library{max-height:42%}.media-actions{gap:4px;padding:7px}.media-actions button{padding:8px;font-size:9px}.media-dialog-head,.media-dialog-body,.media-dialog-footer{padding:14px}}
+
+
+/* Source: corporate-chat-imessage.css?v=20261109-imessage1 */
+/* BLACKCELL CORPORATION / iMessage-style private chat
+   Preserves the user-approved black outgoing, navy incoming, smoked Apple Glass,
+   right-side Shared Media slide transition and original-resolution photo controls. */
+:root{--im-bg:#06070a;--im-line:#303039;--im-silver:#e6e8ed;--im-navy:#14314a;--im-crimson:#a85470}
+html,body{background:var(--im-bg)}
+.chat-header{height:69px;background:linear-gradient(135deg,#151419f5,#090a0df5);border-color:#3d323d;backdrop-filter:blur(18px)}
+.chat-header strong{font-size:12px;letter-spacing:.15em}
+.chat-header small{font-size:9px;color:#aaa4b0}
+.chat-header a{border:1px solid #594753;background:#1d1720;border-radius:9px;padding:9px 11px;white-space:nowrap;text-decoration:none;font-size:10px}
+.chat-header a:hover{background:#35202e;border-color:#a76d85;color:#fff}
+.chat{background:#06070a}
+.sidebar{background:linear-gradient(155deg,#14141a,#09090d);border-right-color:#38343d}
+.sidebar .label{color:#bb879a}
+.peer{border-radius:13px;background:#15161c;border-color:#39333e;transition:background .2s,border-color .2s}
+.peer:hover{background:#242129;border-color:#7e5264}
+.peer.active{background:#30202b;border-color:#985d78;box-shadow:0 0 0 1px #985d7833}
+.peer .avatar{height:42px;width:42px;border-radius:50%;background:linear-gradient(140deg,#403241,#17171c);border-color:#7e6274;color:#efe6ef}
+.peer.active .avatar{border-color:#bf869b}
+.chat-main{background:radial-gradient(ellipse at 55% 30%,#22232d14,transparent 70%),#07080a}
+.chat-title{min-height:67px;padding:12px 20px;background:#111116;border-bottom:1px solid #303039;gap:12px}
+.imessage-identity{display:flex;align-items:center;gap:11px;min-width:0;flex:1}
+.imessage-portrait{width:39px;height:39px;border:1px solid #554250;border-radius:50%;display:grid;place-items:center;background:linear-gradient(130deg,#302532,#101015);font-size:19px;font-weight:750;color:#f2e9ee;flex:none}
+.imessage-names{min-width:0}
+.imessage-names strong{font-size:12px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.imessage-names small{display:block;margin-top:4px;letter-spacing:.05em}
+.imessage-title-actions{display:flex;align-items:center;gap:8px}
+.imessage-title-actions a{font-size:10px;text-decoration:none;color:#d6b6c7;border:1px solid #634354;background:#211722;padding:8px 10px;border-radius:8px;white-space:nowrap}
+.imessage-title-actions a:hover{border-color:#b97892;color:#fff}
+.conversation{padding:23px 26px;gap:13px;background:transparent}
+.message{max-width:min(80%,510px)}
+.bubble{border-radius:19px 19px 19px 6px;background:#14314a!important;border:1px solid #285371!important;color:#f3f7fb;padding:12px 16px;font-size:13px;line-height:1.6;box-shadow:0 4px 14px #0004;white-space:pre-wrap}
+.message.mine .bubble{background:#050608!important;border:1px solid #3b4149!important;color:#f5f7fa!important;border-radius:19px 19px 6px 19px;box-shadow:0 6px 20px #0007}
+.message time{font-size:9px;color:#878d95;margin-top:5px;letter-spacing:.025em}
+.message.mine time{padding-right:4px}
+.message-media .bubble,.message.mine.message-media .bubble{background:#0c0e13!important;border:1px solid #43434d!important;border-radius:16px!important;box-shadow:0 8px 24px #0008}
+.message-media .bubble strong{font-size:10px;letter-spacing:.12em;color:#d8b3c2}
+.message-media .bubble span{color:#e5e5e9}
+.composer{gap:11px;padding:12px 18px;background:#101116;border-top:1px solid #37343c}
+.composer input{border-radius:22px;background:#19191f;border:1px solid #4a444e;color:#faf8fb;font-size:13px;padding:13px 18px;min-height:44px}
+.composer input:focus{outline:none;border-color:#977287;box-shadow:0 0 0 2px #97728722}
+.composer button{min-width:44px;min-height:44px;padding:7px 12px;background:linear-gradient(135deg,#713048,#a54964);border:1px solid #b77992;border-radius:50%;font-size:19px;font-weight:750;letter-spacing:0;line-height:1}
+.media-actions{background:#111217;border-color:#302e38;padding:10px 17px;gap:7px}
+.media-actions button{border-color:#4b3d48;background:#1b1a20;color:#d8cbd7;border-radius:10px;padding:10px 11px;letter-spacing:.055em;font-size:10px}
+.media-actions button:hover{border-color:#ad6980;background:#342631}
+.media-actions button:last-child{margin-left:auto}
+.media-progress-wrap{background:#14161c;border-color:#514350}
+.media-progress-label{color:#e2ccd8}
+.media-viewer{background:linear-gradient(145deg,#1a1a20,#08090d);border-left:1px solid #5b4452;box-shadow:-10px 0 40px #0008}
+.chat.media-open .chat-main{transition:transform .45s ease}
+.media-viewer-head{background:#141319;border-bottom-color:#4c414d}
+.media-viewer-brand strong{letter-spacing:.09em}
+.media-viewer-stage{background:#000}
+.media-viewer-stage img,.media-viewer-stage video{object-fit:contain}
+.media-library{background:#101115}
+.media-library-list{background:#0e1014}
+.media-dialog{background:linear-gradient(145deg,#202129,#09090d);border-color:#775164}
+.media-dialog-head{background:#14141a}
+.media-dialog .media-primary{background:#8a304b}
+@media(max-width:760px){
+ .chat-header{padding:10px 13px;min-height:60px;height:auto}
+ .chat-header strong{font-size:10px}
+ .chat-header a{padding:8px;font-size:9px}
+ .sidebar{padding:9px}
+ .chat-title{padding:10px 12px}
+ .imessage-portrait{height:33px;width:33px;font-size:16px}
+ .imessage-title-actions a{font-size:9px;padding:7px}
+ .conversation{padding:13px}
+ .message{max-width:92%}
+ .bubble{padding:11px 13px}
+ .media-actions{padding:8px;gap:4px}
+ .media-actions button{padding:8px 9px;font-size:9px}
+ .composer{padding:8px;gap:7px}
+ .composer input{padding:11px;min-height:42px}
+ .composer button{min-width:42px;min-height:42px}
+}
+@media(max-width:520px){
+ .chat-header a{font-size:8px}
+ .imessage-title-actions a{max-width:94px;overflow:hidden;text-overflow:ellipsis}
+ .chat{grid-template-columns:103px minmax(0,1fr)}
+ .message{max-width:96%}
+ .peer .avatar{height:36px;width:36px}
+}
+
+
+/* Source: corporate-chat-bubbles.css?v=20261109-bubbles1 */
+/* BLACKCELL / iMESSAGE 2.0 — Bubble-first Apple Glass
+   Scoped to the live chat UI; does not change security, messages, or media storage. */
+:root{--bubble-ink:#f2f2f7;--bubble-navy:#1b3047;--bubble-navy-border:#3a5469;--bubble-black:#1e1a20;--bubble-black-border:#514652;--bubble-rose:#b57590}
+.chat{background:#060609}
+.chat-main{background:
+ radial-gradient(circle at 49% 4%,rgba(99,43,72,.10),transparent 38%),
+ linear-gradient(180deg,#09090d 0%,#07070a 52%,#07070a 100%)}
+.chat-header{background:linear-gradient(110deg,#141216fa,#09090bfa);border-bottom-color:#413741}
+.chat-title{background:linear-gradient(110deg,#17131adf,#0c0b11e8);border-bottom:1px solid #ffffff1d;backdrop-filter:blur(14px);box-shadow:0 6px 20px #0002}
+.imessage-portrait{border-radius:50%;border:1px solid #80596e;box-shadow:inset 0 1px 0 #ffffff28,0 0 0 4px #49273940;background:radial-gradient(circle at 33% 22%,#54344c,#201922 72%);font-weight:750}
+.imessage-secure-indicator{display:flex;align-items:center;gap:7px;color:#b7afba;font-size:9px;font-weight:750;letter-spacing:.11em;white-space:nowrap}
+.imessage-secure-indicator:before{content:"";width:6px;height:6px;border-radius:50%;background:#78bf92;box-shadow:0 0 0 3px #78bf9218}
+.sidebar{background:linear-gradient(145deg,#171319,#0b0b0f 66%);border-right:1px solid #ffffff17;padding:17px 11px}
+.label-with-count{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:5px 9px 13px;font-size:10px;color:#c1a8b9;letter-spacing:.12em}
+.label-with-count span:last-child{color:#cbbdcb;border:1px solid #5d4452;border-radius:50px;padding:3px 8px;background:#322532;font-size:9px}
+.peer-search-wrap{display:flex;align-items:center;gap:7px;margin:0 2px 15px;padding:0 10px;border:1px solid #524451;border-radius:11px;background:#111016;transition:border .2s}
+.peer-search-wrap:focus-within{border-color:#b4708b}
+.peer-search-wrap span{font-size:20px;color:#ae91a2;line-height:1}
+.peer-search-wrap input{height:39px;width:100%;min-width:0;background:none;border:0;outline:0;color:#ece7ed;font-size:11px}
+.peer-search-wrap input::placeholder{color:#817787}
+.peer{border-radius:14px;padding:11px 10px;background:linear-gradient(145deg,#1b1820,#101016);border:1px solid #443b45;gap:10px;box-shadow:0 2px 12px #0002;transition:background .2s ease,transform .2s ease,border .2s ease}
+.peer:hover{background:#27212b;transform:translateX(2px);border-color:#79586d}
+.peer.active{background:linear-gradient(130deg,#422638,#291c2b);border-color:#a16a83;box-shadow:inset 0 0 0 1px #aa799329,0 8px 20px #0004}
+.peer .avatar{height:40px;width:40px;flex:none;display:grid;place-items:center;border-radius:50%;border:1px solid #7e6574;background:linear-gradient(135deg,#4a3446,#17141c);font-size:14px;font-weight:750;color:#f6e8f0}
+.peer small{font-size:9px;letter-spacing:.025em}
+.conversation{gap:9px;padding:28px clamp(15px,3.5vw,44px) 21px;scroll-behavior:smooth;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#403744 transparent}
+.chat-day-separator{align-self:center;max-width:100%;display:flex;gap:10px;align-items:center;justify-content:center;text-align:center;color:#898b97;font-size:9px;font-weight:780;letter-spacing:.16em;margin:14px auto 18px;padding:7px 14px;border:1px solid #ffffff12;border-radius:30px;background:linear-gradient(130deg,#1d1b23dd,#121117c9);box-shadow:0 5px 20px #0003}
+.message{position:relative;max-width:min(80%,560px);gap:2px;transition:transform .12s ease}
+.message.group-start{margin-top:11px}
+.message.group-middle,.message.group-end{margin-top:-6px}
+.message .bubble{position:relative;display:block;min-width:45px;padding:11px 16px;border-radius:20px;line-height:1.58;font-size:13px;font-weight:420;letter-spacing:.004em;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--bubble-ink)!important;background:linear-gradient(146deg,#20364e,#172738)!important;border:1px solid var(--bubble-navy-border)!important;box-shadow:0 6px 20px #0005,inset 0 1px 0 #ffffff11;isolation:isolate;outline-offset:3px}
+.message .bubble:focus-visible{outline:2px solid #cb8dab}
+.message.mine .bubble{background:linear-gradient(146deg,#272128,#161319)!important;border-color:var(--bubble-black-border)!important;color:#f6f0f6!important;box-shadow:0 6px 20px #0006,inset 0 1px 0 #ffffff10}
+.message.group-start:not(.mine) .bubble,.message.group-middle:not(.mine) .bubble{border-bottom-left-radius:8px}
+.message.group-middle:not(.mine) .bubble,.message.group-end:not(.mine) .bubble{border-top-left-radius:8px}
+.message.mine.group-start .bubble,.message.mine.group-middle .bubble{border-bottom-right-radius:8px}
+.message.mine.group-middle .bubble,.message.mine.group-end .bubble{border-top-right-radius:8px}
+.message.group-end:not(.message-media) .bubble:after,.message.group-single:not(.message-media) .bubble:after{content:"";position:absolute;left:-6px;bottom:-1px;width:13px;height:17px;background:#172738;clip-path:polygon(100% 0,100% 100%,0 100%);filter:drop-shadow(-1px 0 0 #36516a);pointer-events:none}
+.message.mine.group-end:not(.message-media) .bubble:after,.message.mine.group-single:not(.message-media) .bubble:after{left:auto;right:-6px;transform:scaleX(-1);background:#171319;filter:drop-shadow(-1px 0 0 #514652)}
+.message time{color:#7f818e;font-size:9px;letter-spacing:.04em;line-height:1.4;padding:5px 7px 0;opacity:1;max-height:22px;transition:opacity .16s,max-height .16s,padding .16s}
+.message .group-time{opacity:0;max-height:0;padding-top:0;overflow:hidden}
+.message.show-time .group-time{opacity:1;max-height:22px;padding-top:5px}
+.message.mine time{color:#a09aa7}
+.message-fresh{animation:imBubbleIn .32s cubic-bezier(.22,.9,.33,1.12) both;transform-origin:90% 100%}
+.message-fresh:not(.mine){transform-origin:10% 100%}
+@keyframes imBubbleIn{0%{transform:translateY(10px) scale(.94);opacity:0;filter:blur(2px)}100%{transform:translateY(0) scale(1);opacity:1;filter:none}}
+.message-media .bubble,.message.mine.message-media .bubble{border-radius:18px!important;padding:13px 15px;background:linear-gradient(150deg,#1c1b25,#0f1017)!important;border:1px solid #605266!important;box-shadow:0 8px 24px #0006!important}
+.message-media .bubble:after{display:none}
+.message-media .bubble strong{color:#e5b9cb;letter-spacing:.12em}
+.message-media .bubble span{color:#f0eaf1;font-size:12px}
+.message-media .bubble:hover{border-color:#aa7b91!important;background:linear-gradient(150deg,#282332,#17151e)!important}
+.composer{display:flex;gap:10px;align-items:flex-end;background:linear-gradient(145deg,#16131b,#0c0b10);border-top:1px solid #59455466;padding:11px clamp(12px,2vw,22px) 13px}
+.composer .composer-add{flex:none;display:grid;place-items:center;width:42px;height:42px;min-width:42px;min-height:42px;padding:0;background:#221c26;border:1px solid #6e5668;border-radius:50%;font-size:23px;line-height:1;color:#d1c1d0;letter-spacing:0;transition:background .2s,transform .2s}
+.composer .composer-add.open{background:#3d2536;border-color:#97637d;color:#f6e1ec;transform:rotate(0)}
+.composer .composer-add:hover{border-color:#d391a9}
+.composer-input-wrap{min-width:0;flex:1;min-height:43px;display:flex;align-items:center;background:#17151d;border:1px solid #655365;border-radius:23px;padding:0 8px 0 6px;box-shadow:inset 0 2px 6px #0003;transition:border .2s}
+.composer-input-wrap:focus-within{border-color:#bb829a;box-shadow:0 0 0 2px #8d586c24}
+.composer .composer-input-wrap textarea{resize:none;width:100%;max-height:112px;min-height:40px;height:40px;border:none!important;outline:none!important;background:transparent!important;box-shadow:none!important;overflow-y:auto;line-height:1.45;padding:11px 13px;font-size:13px;color:#f2ecf2;field-sizing:normal}
+.composer .composer-input-wrap textarea::placeholder{color:#8c8490}
+.composer .composer-send{flex:none;width:43px;min-width:43px;height:43px;min-height:43px;padding:0;background:linear-gradient(135deg,#81364f,#b95b79);border:1px solid #d68fa6;border-radius:50%;display:grid;place-items:center;box-shadow:0 5px 18px #5a182d6b,inset 0 1px 0 #ffffff40;transition:transform .18s,box-shadow .18s;color:white;font-size:24px;line-height:1}
+.composer .composer-send:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 7px 22px #8b375a91}
+.composer .composer-send:disabled{background:#302631;border-color:#534452;box-shadow:none;color:#9e8997;opacity:.8}
+.media-actions{display:flex;align-items:center;justify-content:flex-start;gap:8px;flex-wrap:wrap;padding:11px clamp(12px,2vw,22px);border-top:1px solid #ffffff13;background:#100e14;transition:opacity .18s,transform .18s}
+.media-actions.is-collapsed{display:none}
+.media-actions button{border:1px solid #6b4f61;background:linear-gradient(140deg,#2a1e2b,#1b1721);border-radius:17px;color:#ead7e4;letter-spacing:.07em;padding:9px 13px;font-size:10px;box-shadow:inset 0 1px 0 #ffffff12}
+.media-actions button:last-child{margin-left:0}
+.media-actions button:hover{background:#3e2838;border-color:#ac758c}
+.media-progress-wrap{background:#1d1420;border-color:#725168}
+.media-viewer{border-radius:21px 0 0 21px;box-shadow:-16px 0 55px #0009}
+.bc-embedded .chat{grid-template-columns:110px minmax(0,1fr)}
+.bc-embedded .sidebar{padding:8px 6px}
+.bc-embedded .label-with-count{font-size:8px;letter-spacing:.055em;margin:5px 3px 8px}
+.bc-embedded .peer-search-wrap{padding:0 5px;gap:4px;margin-bottom:9px}
+.bc-embedded .peer-search-wrap input{font-size:9px;height:33px}
+.bc-embedded .peer{display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 4px}
+.bc-embedded .peer .avatar{width:33px;height:33px;font-size:12px}
+.bc-embedded .peer strong{font-size:10px;line-height:1.2;max-width:100px;display:block;overflow:hidden;text-overflow:ellipsis}
+.bc-embedded .peer small{display:none}
+.bc-embedded .conversation{padding:16px 11px;gap:8px}
+.bc-embedded .message{max-width:97%}
+.bc-embedded .bubble{font-size:12px;padding:9px 12px}
+.bc-embedded .chat-day-separator{font-size:8px;margin:7px auto 13px}
+.bc-embedded .chat-title{padding:8px 10px;gap:4px}
+.bc-embedded .imessage-secure-indicator{display:none}
+.bc-embedded .imessage-title-actions a{max-width:80px;font-size:8px;white-space:normal}
+.bc-embedded .media-actions{padding:7px 8px;gap:5px}
+.bc-embedded .media-actions button{font-size:9px;padding:8px}
+.bc-embedded .composer{gap:5px;padding:8px}
+.bc-embedded .composer .composer-add,.bc-embedded .composer .composer-send{width:35px;min-width:35px;height:35px;min-height:35px;font-size:21px}
+.bc-embedded .composer-input-wrap{min-height:38px}
+.bc-embedded .composer .composer-input-wrap textarea{min-height:34px;height:34px;padding:8px}
+@media(max-width:760px){
+ .chat{grid-template-columns:112px minmax(0,1fr)}
+ .sidebar{padding:9px 6px}
+ .peer{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;padding:9px 5px}
+ .peer .avatar{margin:0;width:35px;height:35px}
+ .peer small{display:none}
+ .peer strong{font-size:10px;overflow-wrap:anywhere}
+ .label-with-count{font-size:8px;letter-spacing:.04em;margin:5px 0 9px}
+ .peer-search-wrap{margin:0 0 9px;padding:0 6px}
+ .peer-search-wrap input{font-size:9px}
+ .imessage-secure-indicator{display:none}
+ .chat-title{min-height:60px}
+ .conversation{padding:14px 11px 12px;gap:9px}
+ .message{max-width:96%}
+ .message .bubble{font-size:12px;padding:10px 13px}
+ .composer{gap:6px;padding:8px 10px}
+ .composer .composer-add{width:37px;height:37px;min-width:37px;min-height:37px}
+ .composer .composer-send{width:39px;height:39px;min-width:39px;min-height:39px}
+ .composer .composer-input-wrap textarea{font-size:12px}
+ .media-actions{gap:5px;padding:8px 10px}
+ .media-actions button{font-size:9px;padding:8px 9px}
+}
+@media(max-width:460px){
+ .chat{grid-template-columns:96px minmax(0,1fr)}
+ .peer-search-wrap{display:none}
+ .sidebar{padding:7px 4px}
+ .label-with-count span:last-child{padding:2px 5px}
+ .message .bubble{font-size:11.8px}
+ .conversation{padding:12px 9px 9px}
+ .media-actions button{font-size:8px}
+}
+@media(prefers-reduced-motion:reduce){
+ .message-fresh{animation:none}
+ .conversation{scroll-behavior:auto}
+ .composer .composer-send,.peer{transition:none}
+}
+
+/* Source: corporate-chat-compact.css?v=20261109-compact1 */
+/* BLACKCELL / MESSAGES — full-width floating iMessage conversation experience
+   This layout is only for the authorized embedded messenger, not media panels. */
+html.bc-compact-chat,html.bc-compact-chat body{height:100%;overflow:hidden;background:#09090c}
+html.bc-compact-chat .chat-header{display:none!important}
+html.bc-compact-chat .chat{display:block!important;height:100%!important;position:relative;min-height:0;width:100%;background:#09090c}
+html.bc-compact-chat .sidebar{
+ width:100%;height:100%;padding:19px 17px 18px;display:flex;flex-direction:column;min-height:0;
+ background:radial-gradient(ellipse at 50% -5%,#4a2d4022,transparent 65%),linear-gradient(160deg,#141117,#09090c);
+ border:0;overflow:hidden
+}
+html.bc-compact-chat .chat-main{display:none}
+html.bc-compact-chat .chat.bc-thread-active .sidebar{display:none!important}
+html.bc-compact-chat .chat.bc-thread-active .chat-main{display:flex!important;height:100%;width:100%;min-height:0}
+html.bc-compact-chat .inbox-intro{display:flex!important;align-items:center;gap:13px;margin:0 0 18px}
+.inbox-intro{display:none}
+.inbox-intro-icon{
+ width:45px;height:45px;display:grid;place-items:center;border-radius:17px;border:1px solid #735a6b;
+ background:linear-gradient(140deg,#3b2c3b,#151019);box-shadow:inset 0 1px 0 #ffffff1b;
+ color:#ebd9e6;font-size:24px;flex:none
+}
+.inbox-intro-label{min-width:0;flex:1}
+.inbox-intro-label strong{font-size:21px;line-height:1.1;font-weight:700;letter-spacing:-.045em;display:block;color:#f1ebf1}
+.inbox-intro-label small{display:block;margin-top:6px;font-size:9px;letter-spacing:.15em;color:#a99baa}
+.inbox-intro-status{width:8px;height:8px;border-radius:100%;background:#73ba8f;box-shadow:0 0 0 4px #73ba8f22;flex:none}
+html.bc-compact-chat .label-with-count{margin:0 1px 10px;padding:0 3px;color:#b9a4b3;font-size:9px;letter-spacing:.15em}
+html.bc-compact-chat .label-with-count span:last-child{background:#241b26;border-color:#614857;color:#c4afc0}
+html.bc-compact-chat .peer-search-wrap{margin:0 0 18px;border:1px solid #50434e;border-radius:13px;background:#1c1921;padding:0 14px;display:flex}
+html.bc-compact-chat .peer-search-wrap input{height:43px;font-size:12px;color:#f1e8f0}
+html.bc-compact-chat .peer-search-wrap span{font-size:22px;color:#b19aab}
+html.bc-compact-chat #peers{min-height:0;overflow-y:auto;flex:1;padding-right:2px;scrollbar-width:thin;scrollbar-color:#4d3d4a transparent}
+html.bc-compact-chat .peer{
+ position:relative;margin:0 0 9px;width:100%;display:flex!important;flex-direction:row!important;
+ align-items:center!important;text-align:left!important;gap:13px!important;
+ min-height:81px;padding:12px 13px!important;border-radius:17px;
+ background:linear-gradient(135deg,#211d26,#131118);border:1px solid #4b3e4b;
+ box-shadow:inset 0 1px 0 #ffffff0a,0 4px 15px #0003;
+ transition:border-color .2s,transform .2s,background .2s
+}
+html.bc-compact-chat .peer:hover,html.bc-compact-chat .peer:focus-visible{
+ transform:translateY(-2px)!important;background:linear-gradient(135deg,#302433,#19141d);
+ border-color:#92647a;outline:none
+}
+html.bc-compact-chat .peer .avatar{
+ width:47px!important;height:47px!important;margin:0!important;
+ border-radius:50%;font-size:16px!important;flex:none;background:linear-gradient(145deg,#594158,#29202e);
+ border:1px solid #a27b93;box-shadow:0 0 0 3px #784d6430
+}
+html.bc-compact-chat .peer>span:nth-child(2){flex:1;min-width:0}
+html.bc-compact-chat .peer strong{font-size:12px!important;color:#f2edf1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+html.bc-compact-chat .peer small{display:block!important;font-size:9px;letter-spacing:.05em;color:#b695a7;margin-top:5px}
+html.bc-compact-chat .peer-preview{
+ color:#9c929f;font-size:10px;line-height:1.4;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;
+ margin-top:6px;max-width:100%
+}
+html.bc-compact-chat .peer-meta{display:block;flex:none;align-self:start;font-size:9px;color:#a38e9d;padding-top:3px}
+.bc-inbox-back{display:none}
+html.bc-compact-chat .chat-title{
+ min-height:73px;padding:11px 13px 11px 12px;flex:none;
+ background:linear-gradient(135deg,#1b1720,#111017);
+ border-bottom:1px solid #5a455633
+}
+html.bc-compact-chat .imessage-identity{gap:10px}
+html.bc-compact-chat .imessage-portrait{
+ width:40px;height:40px;font-size:16px;border:1px solid #a17892;
+ background:linear-gradient(145deg,#5d3d55,#211823)
+}
+html.bc-compact-chat .imessage-names strong{font-size:13px;letter-spacing:.01em}
+html.bc-compact-chat .imessage-names small{font-size:9px;color:#aaa1ae;margin-top:5px}
+html.bc-compact-chat .bc-inbox-back{
+ width:33px;height:33px;min-width:33px;border:1px solid #5d4a5b;border-radius:11px;
+ background:#28202b;color:#eadde8;display:grid;place-items:center;font-size:24px;
+ font-weight:450;line-height:1;margin-right:2px;padding:0;
+ cursor:pointer;transition:background .2s
+}
+html.bc-compact-chat .bc-inbox-back:hover{background:#473044;border-color:#af7f99}
+html.bc-compact-chat .imessage-title-actions{gap:4px}
+html.bc-compact-chat .imessage-title-actions a{
+ max-width:72px;padding:7px 8px;font-size:8px;letter-spacing:.05em;
+ text-align:center;border-radius:9px;white-space:normal
+}
+html.bc-compact-chat .imessage-secure-indicator{display:none}
+html.bc-compact-chat .conversation{
+ flex:1;min-height:0;padding:22px 16px 16px;gap:9px;scrollbar-width:thin;
+ background:radial-gradient(ellipse at 65% 20%,#46304b0a,transparent 55%),#0a0a0d
+}
+html.bc-compact-chat .message{max-width:86%}
+html.bc-compact-chat .message .bubble{font-size:12.4px;line-height:1.6;padding:10px 14px;border-radius:19px}
+html.bc-compact-chat .message.mine .bubble{background:linear-gradient(145deg,#322632,#19141d)!important}
+html.bc-compact-chat .chat-day-separator{font-size:8px;margin:9px auto 12px}
+html.bc-compact-chat .message time{font-size:9px;color:#99919d}
+html.bc-compact-chat .composer{
+ padding:13px 12px 15px;gap:9px;background:linear-gradient(140deg,#17131b,#100e14);
+ border-top:1px solid #514150;flex:none;align-items:flex-end
+}
+html.bc-compact-chat .composer .composer-add{width:39px;height:39px;min-width:39px;min-height:39px}
+html.bc-compact-chat .composer .composer-send{width:41px;height:41px;min-width:41px;min-height:41px}
+html.bc-compact-chat .composer-input-wrap{
+ border-radius:23px;background:#221d27;border:1px solid #695667;min-height:41px
+}
+html.bc-compact-chat .composer .composer-input-wrap textarea{
+ min-height:39px;height:39px;padding:10px 12px;font-size:12px
+}
+html.bc-compact-chat .media-actions{
+ padding:11px 14px;background:#16121a;border-top:1px solid #493849;
+ display:flex;gap:7px;align-items:center;flex-wrap:wrap
+}
+html.bc-compact-chat .media-actions.is-collapsed{display:none!important}
+html.bc-compact-chat .media-actions button{
+ font-size:9px;border-radius:11px;padding:9px 11px;
+ letter-spacing:.07em;background:#28202d;border-color:#745769
+}
+html.bc-compact-chat .media-actions button:hover{background:#443044}
+html.bc-compact-chat #messages .empty{
+ max-width:285px;align-self:center;margin:auto;text-align:center;font-size:12px;
+ color:#9f96a6;line-height:1.8;padding:25px
+}
+html.bc-compact-chat .chat .chat-main{overflow:hidden}
+html.bc-compact-chat .chat .conversation{overscroll-behavior:contain}
+@media(max-width:520px){
+ html.bc-compact-chat .sidebar{padding:13px 10px}
+ html.bc-compact-chat .inbox-intro{margin-bottom:13px}
+ html.bc-compact-chat .peer{min-height:67px;padding:10px!important;border-radius:14px}
+ html.bc-compact-chat .peer .avatar{width:39px!important;height:39px!important;font-size:13px!important}
+ html.bc-compact-chat .peer strong{font-size:11px!important}
+ html.bc-compact-chat .peer-preview{font-size:9px}
+ html.bc-compact-chat .chat-title{min-height:63px;padding:8px}
+ html.bc-compact-chat .imessage-portrait{width:36px;height:36px}
+ html.bc-compact-chat .imessage-title-actions a{font-size:7px;max-width:61px}
+ html.bc-compact-chat .conversation{padding:14px 11px 12px}
+ html.bc-compact-chat .message{max-width:93%}
+ html.bc-compact-chat .message .bubble{font-size:11.7px}
+ html.bc-compact-chat .composer{padding:9px 8px 11px;gap:6px}
+}
+
+
+/* Source: corporate-chat-live.css?v=20261109-live1 */
+/* BLACKCELL / Secure iMessage read receipts + live typing bubble */
+.typing-indicator{
+ display:flex;align-items:center;gap:9px;flex:none;
+ padding:8px 20px 7px;
+ background:linear-gradient(105deg,#16131c,#0d0d12);
+ border-top:1px solid #ffffff12;
+ color:#bdb0bf;font-size:10px;letter-spacing:.01em;
+ min-height:37px;line-height:1.3;
+}
+.typing-indicator[hidden]{display:none!important}
+.typing-dots{
+ display:flex;align-items:center;justify-content:center;gap:4px;
+ width:42px;min-width:42px;height:22px;
+ border:1px solid #66505e;
+ background:linear-gradient(135deg,#33303c,#1e1a24);
+ border-radius:14px 14px 14px 5px;
+}
+.typing-dots span{
+ display:block;width:5px;height:5px;border-radius:50%;
+ background:#dcbdcf;
+ animation:bcTypingPulse 1.25s ease-in-out infinite;
+}
+.typing-dots span:nth-child(2){animation-delay:.18s}
+.typing-dots span:nth-child(3){animation-delay:.36s}
+@keyframes bcTypingPulse{
+ 0%,65%,100%{transform:translateY(0);opacity:.48}
+ 30%{transform:translateY(-3px);opacity:1}
+}
+.message .message-receipt{
+ display:flex;align-items:center;justify-content:flex-end;gap:5px;
+ color:#9894a1;font-size:9px;letter-spacing:.015em;
+ line-height:1.4;min-height:14px;padding:0 5px;
+ margin-top:1px;font-weight:600;
+}
+.message.mine .message-receipt.read{color:#d39db2}
+.message .message-receipt .receipt-ticks{
+ font-size:11px;line-height:1;color:#b7adb9;
+ font-weight:800;letter-spacing:-2px;margin-right:3px;
+}
+.message .message-receipt.read .receipt-ticks{color:#d99db5}
+.message.mine .message-receipt time{
+ margin:0;padding:0;max-height:none;opacity:1;overflow:visible;
+ color:inherit;font-size:9px;
+}
+.bc-embedded .typing-indicator{padding:5px 12px;font-size:9px;min-height:30px}
+.bc-embedded .typing-dots{width:36px;min-width:36px;height:19px}
+.bc-embedded .typing-dots span{width:4px;height:4px}
+.bc-embedded .message .message-receipt{font-size:8px}
+@media(max-width:650px){
+ .typing-indicator{padding:6px 12px;font-size:9px;min-height:30px}
+ .message .message-receipt{font-size:8px}
+}
+@media(prefers-reduced-motion:reduce){
+ .typing-dots span{animation:none;opacity:.75}
+}
+
+/* Source: corporate-chat-media-bubble-host.css?v=20261109-independent-media1 */
+/* BLACKCELL / two independently floating Apple Glass media bubbles.
+   The messenger stays in its own pane; media controls render in sibling frames. */
+.bc-media-bubble-host{
+ position:fixed;z-index:200003;top:92px;bottom:85px;
+ right:calc(475px + 33px);width:min(860px,calc(100vw - 528px));
+ display:grid;grid-template-columns:repeat(var(--bc-media-panels,1),minmax(0,1fr));
+ gap:12px;min-height:0;pointer-events:none;align-items:stretch;
+}
+.bc-media-bubble-host[hidden]{display:none!important}
+.bc-media-bubble-card{
+ position:relative;display:flex;flex-direction:column;min-width:0;min-height:0;
+ overflow:hidden;pointer-events:auto;
+ border:1px solid #855e75;border-radius:23px;
+ background:linear-gradient(145deg,#211824e8,#0d0c13ee);
+ box-shadow:0 23px 85px #000c,0 0 0 1px #ffffff0a,inset 0 1px 0 #ffffff24;
+ backdrop-filter:blur(25px);
+ animation:bcBubbleArrive .38s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes bcBubbleArrive{from{opacity:0;transform:translateX(20px) scale(.978)}to{opacity:1;transform:translateX(0) scale(1)}}
+.bc-media-bubble-highlight{animation:bcBubbleFocus .32s ease}
+@keyframes bcBubbleFocus{0%{border-color:#dc9db6;box-shadow:0 0 0 6px #ca688b22}100%{border-color:#855e75;box-shadow:0 23px 85px #000c}}
+.bc-media-bubble-heading{
+ flex:0 0 auto;min-height:67px;display:flex;align-items:center;
+ justify-content:space-between;gap:10px;padding:10px 13px;
+ background:linear-gradient(110deg,#332333,#16121d);border-bottom:1px solid #765269;
+}
+.bc-media-bubble-name{display:flex;gap:11px;align-items:center;min-width:0}
+.bc-media-bubble-icon{flex:none;display:grid;place-items:center;width:39px;height:39px;
+ background:linear-gradient(145deg,#523348,#241825);border:1px solid #9e6b84;
+ border-radius:15px;color:#f5dee9;font-size:23px;
+ box-shadow:inset 0 1px 0 #ffffff24}
+.bc-media-bubble-name>span:last-child{display:block;min-width:0}
+.bc-media-bubble-name strong{font-size:10px;letter-spacing:.14em;font-weight:760;color:#eee3ee;display:block;white-space:nowrap}
+.bc-media-bubble-name small{display:block;font-size:8px;letter-spacing:.09em;color:#b8a5b4;margin-top:6px;white-space:nowrap}
+.bc-media-bubble-heading-actions button{width:32px;height:32px;display:grid;place-items:center;
+ border:1px solid #76536b;border-radius:50%;background:#301b2b;color:#efacc2;
+ font-size:13px;cursor:pointer}
+.bc-media-bubble-heading-actions button:hover{background:#66354e;color:#fff;border-color:#d88bac}
+.bc-media-bubble-iframe{border:0;width:100%;flex:1;min-height:0;background:#0b0b10;display:block}
+.bc-bubble-host-standalone{right:16px;top:82px;bottom:16px;width:min(49vw,840px)}
+body.bc-has-media-bubbles:has(.bc-bubble-host-standalone)>.chat{
+ margin-right:min(49vw,840px);transition:margin-right .4s ease;
+}
+@media(max-width:1250px) and (min-width:901px){
+ .bc-media-bubble-host[data-count="2"]{grid-template-columns:1fr;grid-template-rows:repeat(2,minmax(0,1fr))}
+ .bc-media-bubble-card .bc-media-bubble-heading{min-height:53px;padding:7px 11px}
+ .bc-media-bubble-card .bc-media-bubble-icon{height:31px;width:31px;font-size:18px;border-radius:11px}
+ .bc-media-bubble-card .bc-media-bubble-name small{font-size:7px;margin-top:3px}
+}
+@media(max-width:900px) and (min-width:661px){
+ .bc-media-bubble-host{right:calc(475px + 24px);width:calc(100vw - 506px);top:74px;bottom:75px}
+ .bc-media-bubble-host[data-count="2"]{grid-template-columns:1fr;grid-template-rows:repeat(2,minmax(0,1fr))}
+ .bc-media-bubble-heading{min-height:56px;padding:9px}
+ .bc-media-bubble-name{gap:6px}
+ .bc-media-bubble-icon{width:32px;height:32px;font-size:18px;border-radius:11px}
+ .bc-media-bubble-name strong{font-size:9px}
+ .bc-media-bubble-name small{font-size:7px}
+ .bc-bubble-host-standalone{right:10px;top:74px;bottom:10px;width:50vw}
+ body.bc-has-media-bubbles:has(.bc-bubble-host-standalone)>.chat{margin-right:50vw}
+}
+@media(max-width:660px){
+ .bc-media-bubble-host,.bc-bubble-host-standalone{
+  top:6px;bottom:calc(46dvh + 10px);left:6px;right:6px;width:auto;max-width:none;
+  grid-template-columns:repeat(var(--bc-media-panels,1),minmax(0,1fr));gap:5px;
+ }
+ .bc-media-bubble-host[data-count="2"]{grid-template-columns:1fr;grid-template-rows:repeat(2,minmax(0,1fr))}
+ .bc-media-bubble-card{border-radius:14px}
+ .bc-media-bubble-heading{min-height:41px;padding:5px 8px}
+ .bc-media-bubble-icon{width:28px;height:28px;border-radius:10px;font-size:18px}
+ .bc-media-bubble-name{gap:7px}
+ .bc-media-bubble-name strong{font-size:9px}
+ .bc-media-bubble-name small{display:none}
+ .bc-media-bubble-heading-actions button{width:29px;height:29px}
+ body.bc-has-media-bubbles .bc-chat-pane.bc-chat-split{
+  position:fixed!important;top:auto!important;bottom:62px!important;
+  left:6px!important;right:6px!important;
+  width:calc(100vw - 12px)!important;height:calc(46dvh - 62px)!important;
+  min-height:120px!important;
+ }
+ body.bc-has-media-bubbles:has(.bc-bubble-host-standalone){
+  overflow:hidden;
+ }
+ body.bc-has-media-bubbles:has(.bc-bubble-host-standalone)>.chat{
+  margin:0!important;position:fixed!important;left:6px;right:6px;bottom:6px;
+  top:calc(54dvh + 4px);height:auto!important;width:auto!important;
+  flex:0 0 auto;border:1px solid #5d495a;border-radius:13px;overflow:hidden;
+ }
+ body.bc-has-media-bubbles:has(.bc-bubble-host-standalone)>.chat-header{display:none}
+}
+/* Media-only iframe: render a full-sized upload bubble OR gallery bubble.
+   No messenger content is obscured because it lives in the sibling frame. */
+html.bc-media-panel,html.bc-media-panel body{height:100%;min-height:0;overflow:hidden;background:#08090e}
+.bc-media-panel .chat-header,.bc-media-panel #systemStatus,.bc-media-panel .sidebar,
+.bc-media-panel .chat-main{display:none!important}
+.bc-media-panel .chat{position:fixed;inset:0;min-height:0;height:100%;display:block!important;margin:0!important;overflow:hidden}
+.bc-media-panel .media-viewer{position:absolute!important;inset:0!important;
+ display:flex!important;width:100%!important;height:100%!important;max-width:none!important;
+ transform:none!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;
+ border:0!important;border-radius:0!important;box-shadow:none!important;
+ background:linear-gradient(150deg,#1b1620,#08090e)!important;
+}
+.bc-media-panel .media-viewer-head{padding:10px 12px}
+.bc-media-panel .media-viewer-brand strong{font-size:10px}
+.bc-media-panel .media-dialog-backdrop{position:fixed;inset:0;z-index:20;
+ background:transparent;backdrop-filter:none;padding:0;border-radius:0;overflow:hidden}
+.bc-media-panel .media-dialog{width:100%;height:100%;max-height:100%;max-width:none;
+ border:0;border-radius:0;background:linear-gradient(150deg,#1c1721,#0b0b10);
+ box-shadow:none}
+.bc-media-panel .media-dialog-head{padding:12px 14px}
+.bc-media-panel .media-dialog-head strong{font-size:10px}
+.bc-media-panel .media-dialog-head small{font-size:9px}
+.bc-media-panel .media-dialog-body{padding:11px}
+.bc-media-panel .media-dialog-footer{padding:11px;flex-wrap:wrap}
+.bc-media-panel .media-dialog-footer button{flex:1 1 115px;font-size:10px;white-space:normal;padding:11px 8px}
+.bc-media-panel.bc-media-share .media-viewer{display:none!important}
+.bc-media-panel.bc-media-library .media-dialog-backdrop{display:none!important}
+.bc-media-panel .media-viewer-stage{min-height:70px}
+.bc-media-panel .media-library{min-height:85px}
+.bc-media-panel .media-viewer-actions button{font-size:9px}
+@media(max-width:660px){
+ .bc-media-panel .media-viewer-head{padding:8px}
+ .bc-media-panel .media-viewer-brand small{display:none}
+ .bc-media-panel .media-viewer-actions{gap:3px}
+ .bc-media-panel .media-viewer-actions button{font-size:8px;padding:6px}
+ .bc-media-panel .media-viewer-tools{padding:5px;gap:4px}
+ .bc-media-panel .media-viewer-status{font-size:9px;padding:3px 7px}
+ .bc-media-panel .media-dialog-head{padding:8px}
+ .bc-media-panel .media-dialog-body{padding:7px}
+ .bc-media-panel .media-dialog-selection{min-height:40px;padding:8px;margin-bottom:6px;font-size:10px}
+ .bc-media-panel .media-dialog-footer{padding:7px}
+}
+@media(prefers-reduced-motion:reduce){
+ .bc-media-bubble-card,.bc-media-bubble-highlight{animation:none}
+}
+
+
+/* Source: corporate-chat-media-responsive.css?v=20261109-sidebyside2 */
+/* BLACKCELL / Media beside anchored Messages — responsive v1
+   Load LAST in the parent page and the isolated media iframes.
+   WIDE: chat anchored LEFT, 16:9 media bubbles RIGHT.
+   PHONE PORTRAIT: chat pinned TOP and media collection BELOW (both visible).
+   SMALL LANDSCAPE: side-by-side, with independently scrollable contents. */
+:root{
+ --bc-layout-gap:12px;
+ --bc-layout-inset:12px;
+ --bc-anchored-chat-width:clamp(308px,34vw,470px);
+ --bc-panel-height:min(755px,calc(100dvh - 24px));
+}
+body.bc-has-media-bubbles .bc-chat-pane.bc-chat-split{
+ position:fixed!important;
+ top:auto!important;left:var(--bc-layout-inset)!important;
+ right:auto!important;bottom:var(--bc-layout-inset)!important;
+ width:var(--bc-anchored-chat-width)!important;
+ height:var(--bc-panel-height)!important;
+ max-height:calc(100dvh - 24px)!important;
+ min-height:0!important;min-width:0!important;
+ resize:none!important;
+ transform:none!important;
+ z-index:200004!important;
+}
+body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock{
+ position:fixed!important;z-index:200003!important;
+ left:calc(var(--bc-layout-inset) + var(--bc-anchored-chat-width) + var(--bc-layout-gap))!important;
+ right:var(--bc-layout-inset)!important;
+ top:auto!important;bottom:var(--bc-layout-inset)!important;
+ width:auto!important;
+ height:var(--bc-panel-height)!important;
+ max-width:none!important;min-height:0!important;
+ display:grid!important;gap:var(--bc-layout-gap)!important;
+ grid-template-columns:repeat(var(--bc-media-panels,1),minmax(0,1fr))!important;
+ grid-template-rows:minmax(0,1fr)!important;
+ overflow:hidden!important;
+ pointer-events:none;
+}
+body.bc-has-media-bubbles .bc-media-bubble-card{
+ min-height:0!important;min-width:0!important;height:100%!important;
+ border-radius:20px;
+ overflow:hidden!important;
+ box-shadow:0 24px 80px #000c;
+}
+body.bc-has-media-bubbles .bc-media-bubble-iframe{
+ display:block!important;flex:1 1 0!important;
+ min-height:0!important;min-width:0!important;overflow:hidden;
+}
+body.bc-has-media-bubbles .bc-media-bubble-heading{
+ min-height:55px!important;
+ padding:8px 12px!important;
+}
+body.bc-has-media-bubbles .bc-media-bubble-name strong{font-size:10px}
+body.bc-has-media-bubbles .bc-media-bubble-name small{font-size:8px}
+body.bc-has-media-bubbles .bc-media-bubble-icon{
+ height:33px;width:33px;font-size:19px;border-radius:12px;
+}
+/* On medium-width screens, each of the two media bubbles is independently
+   scrollable above/below the other within the RIGHT column. */
+@media (min-width:700px) and (max-width:1300px){
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock[data-count="2"]{
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:repeat(2,minmax(0,1fr))!important;
+ }
+}
+@media (min-width:700px) and (max-width:1000px){
+ :root{--bc-layout-gap:8px;--bc-layout-inset:8px;--bc-anchored-chat-width:clamp(280px,42vw,390px)}
+ body.bc-has-media-bubbles .bc-media-bubble-name small{display:none}
+}
+@media (min-width:700px) and (max-height:540px){
+ :root{--bc-anchored-chat-width:clamp(268px,40vw,350px)}
+}
+/* iPhone / small tablet portrait: it is not physically possible to put two
+   usable panes side-by-side in ~390px. Keep chat anchored and visible ABOVE
+   the 16:9 media viewer, not hidden behind it as the old screenshot showed. */
+@media (max-width:699px) and (orientation:portrait){
+ :root{--bc-layout-inset:6px;--bc-layout-gap:6px}
+ body.bc-has-media-bubbles .bc-chat-pane.bc-chat-split{
+  left:6px!important;right:6px!important;
+  top:6px!important;bottom:auto!important;
+  width:calc(100vw - 12px)!important;
+  height:39dvh!important;max-height:39dvh!important;
+  min-height:0!important;border-radius:16px!important;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock{
+  left:6px!important;right:6px!important;
+  top:calc(39dvh + 12px)!important;bottom:6px!important;
+  width:calc(100vw - 12px)!important;
+  height:auto!important;max-height:none!important;
+  display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;
+  overflow-x:auto!important;overflow-y:hidden!important;
+  scroll-snap-type:x mandatory;overscroll-behavior-inline:contain;
+  scrollbar-width:none;scroll-padding-inline:0;
+  padding:0!important;gap:7px!important;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock::-webkit-scrollbar{display:none}
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock .bc-media-bubble-card{
+  flex:0 0 100%!important;width:100%!important;height:100%!important;
+  scroll-snap-align:start;scroll-snap-stop:always;
+  border-radius:15px!important;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock[data-count="2"]{
+  /* Each of the two independent bubbles is reached with its own tab. */
+  padding-top:32px!important;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock[data-count="2"] .bc-media-bubble-card{
+  height:100%!important;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock .bc-media-bubble-heading{
+  min-height:43px!important;padding:5px 9px!important;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock .bc-media-bubble-name small{display:none}
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock .bc-media-bubble-icon{
+  width:28px;height:28px;font-size:17px;
+ }
+}
+/* Phones rotated to landscape: use the same LEFT chat + RIGHT media layout
+   as desktops, with controls and gallery scrolling inside each bubble. */
+@media (max-width:699px) and (orientation:landscape){
+ :root{--bc-layout-inset:5px;--bc-layout-gap:6px;--bc-anchored-chat-width:43vw;
+  --bc-panel-height:calc(100dvh - 10px)}
+ body.bc-has-media-bubbles .bc-chat-pane.bc-chat-split{
+  left:5px!important;right:auto!important;top:5px!important;bottom:5px!important;
+  width:43vw!important;height:calc(100dvh - 10px)!important;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock{
+  left:calc(43vw + 11px)!important;right:5px!important;
+  top:5px!important;bottom:5px!important;
+  height:calc(100dvh - 10px)!important;
+  grid-template-columns:minmax(0,1fr)!important;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock[data-count="2"]{
+  grid-template-rows:repeat(2,minmax(0,1fr))!important;
+ }
+}
+/* Full-page chat (not the floating dock): independent media to the RIGHT
+   while the conversation remains available on the LEFT. */
+@media (min-width:700px){
+ body.bc-has-media-bubbles:has(.bc-bubble-host-standalone)>.chat{
+  margin-right:0!important;
+  position:fixed!important;top:72px!important;bottom:8px!important;
+  left:8px!important;right:auto!important;
+  height:auto!important;width:clamp(315px,42vw,520px)!important;
+  min-height:0!important;overflow:hidden;
+  border:1px solid #534457;border-radius:18px;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-standalone{
+  position:fixed!important;
+  left:calc(clamp(315px,42vw,520px) + 17px)!important;
+  right:8px!important;top:72px!important;bottom:8px!important;
+  width:auto!important;height:auto!important;
+  grid-template-columns:repeat(var(--bc-media-panels,1),minmax(0,1fr))!important;
+  grid-template-rows:minmax(0,1fr)!important;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-standalone[data-count="2"]{
+  grid-template-columns:1fr!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;
+ }
+ body.bc-has-media-bubbles:has(.bc-bubble-host-standalone)>.chat .sidebar{width:107px;padding:8px}
+ body.bc-has-media-bubbles:has(.bc-bubble-host-standalone)>.chat .chat-main{min-width:0;transform:none!important}
+ body.bc-has-media-bubbles:has(.bc-bubble-host-standalone)>.chat{grid-template-columns:107px minmax(0,1fr)!important}
+}
+@media (max-width:699px) and (orientation:portrait){
+ body.bc-has-media-bubbles:has(.bc-bubble-host-standalone)>.chat{
+  position:fixed!important;top:66px!important;bottom:auto!important;
+  left:6px!important;right:6px!important;height:35dvh!important;
+  width:calc(100vw - 12px)!important;margin:0!important;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-standalone{
+  position:fixed!important;
+  top:calc(66px + 35dvh + 7px)!important;bottom:6px!important;
+  left:6px!important;right:6px!important;
+  width:calc(100vw - 12px)!important;height:auto!important;
+  display:flex!important;flex-direction:row!important;overflow-x:auto!important;
+  scroll-snap-type:x mandatory;gap:6px!important;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-standalone .bc-media-bubble-card{
+  flex:0 0 100%!important;scroll-snap-align:start;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-standalone[data-count="2"]{padding-top:32px!important}
+}
+/* The media iframe itself: true 16:9 IMAGE/VIDEO STAGE, always containing
+   the entire original photo/video. History and thumbnails scroll BELOW it. */
+html.bc-media-panel,html.bc-media-panel body{height:100%!important;min-height:0!important;overflow:hidden!important}
+.bc-media-panel .media-viewer{
+ display:flex!important;flex-direction:column!important;
+ width:100%!important;height:100%!important;min-height:0!important;
+ overflow:hidden!important;
+}
+.bc-media-panel .media-viewer-head{
+ flex:0 0 auto!important;padding:8px 10px!important;
+ flex-wrap:wrap;gap:6px!important;
+}
+.bc-media-panel .media-viewer-actions{gap:4px!important}
+.bc-media-panel .media-viewer-actions button{
+ padding:6px 8px!important;border-radius:8px!important;font-size:9px!important;
+}
+/* Standard/Expanded/Custom previously distorted the media viewport.
+   The media stage is now consistently responsive 16:9. */
+.bc-media-panel .media-viewer-actions button:nth-child(-n+3),
+.bc-media-panel .media-custom-range{display:none!important}
+.bc-media-panel .media-viewer-tools{
+ flex:0 0 auto!important;display:flex;flex-wrap:wrap;
+ gap:5px!important;padding:7px 9px!important;
+}
+.bc-media-panel .media-viewer-tools input[type="search"]{
+ flex:1 1 115px!important;min-width:80px!important;padding:8px!important;
+}
+.bc-media-panel .media-kind-filters{gap:3px!important}
+.bc-media-panel .media-kind-filters button{font-size:9px!important;padding:7px 8px!important}
+.bc-media-panel .media-viewer-tools select{font-size:9px!important;padding:8px 6px!important}
+.bc-media-panel .media-autoplay-label{font-size:9px!important}
+.bc-media-panel .media-viewer-status{
+ flex:0 0 auto!important;min-height:0!important;padding:5px 9px!important;
+ font-size:9px;line-height:1.35;overflow:hidden;text-overflow:ellipsis;
+}
+.bc-media-panel .media-viewer-stage,
+.bc-media-panel .media-viewer-stage.standard,
+.bc-media-panel .media-viewer-stage.expanded,
+.bc-media-panel .media-viewer-stage.custom{
+ position:relative!important;
+ flex:0 0 auto!important;
+ width:min(100%,85dvh)!important;
+ aspect-ratio:16 / 9!important;
+ height:auto!important;
+ max-height:none!important;
+ min-height:0!important;
+ margin:0 auto!important;
+ background:#000!important;
+ overflow:hidden!important;
+}
+.bc-media-panel .media-viewer-stage .media-stage-inner{
+ position:absolute!important;inset:0!important;
+ width:100%!important;height:100%!important;
+ display:grid!important;place-items:center;
+ overflow:hidden!important;
+}
+.bc-media-panel .media-viewer-stage img,
+.bc-media-panel .media-viewer-stage video{
+ display:block!important;
+ width:100%!important;height:100%!important;
+ max-width:100%!important;max-height:100%!important;
+ object-fit:contain!important;object-position:center!important;
+ background:#000!important;
+}
+.bc-media-panel .media-viewer-stage .media-nav{
+ top:50%!important;z-index:3;
+ border-radius:50%!important;
+ padding:9px 7px!important;font-size:19px!important;
+}
+.bc-media-panel .media-viewer-meta{
+ flex:0 0 auto!important;
+ display:flex!important;min-height:36px!important;
+ padding:5px 9px!important;gap:6px!important;
+}
+.bc-media-panel .media-full-link{padding:7px 8px!important;font-size:9px!important}
+.bc-media-panel .media-library{
+ display:flex!important;flex-direction:column!important;
+ flex:1 1 0!important;
+ min-height:0!important;max-height:none!important;
+ overflow:hidden!important;
+}
+.bc-media-panel .media-library-head{flex:0 0 auto!important;padding:6px 9px!important}
+.bc-media-panel .media-history{flex:0 0 auto!important;padding:6px!important;font-size:10px}
+.bc-media-panel .media-library-list{
+ flex:1 1 0!important;min-height:0!important;
+ overflow-y:auto!important;overscroll-behavior:contain;
+ padding:7px!important;gap:7px!important;
+ grid-template-columns:repeat(auto-fill,minmax(78px,1fr))!important;
+}
+.bc-media-panel .media-library-item{height:86px!important}
+.bc-media-panel .media-library-item img,.bc-media-panel .media-video-thumb{height:67px!important}
+/* Media Share uploads keep their own scroll area and pinned action buttons. */
+.bc-media-panel.bc-media-share .media-dialog{
+ height:100%!important;min-height:0!important;max-height:100%!important;
+ display:flex!important;flex-direction:column!important;
+}
+.bc-media-panel.bc-media-share .media-dialog-body{flex:1 1 0!important;min-height:0!important;overflow-y:auto!important}
+.bc-media-panel.bc-media-share .media-dialog-footer{flex:0 0 auto!important;padding:10px!important}
+.bc-media-panel.bc-media-share .media-dialog-head{flex:0 0 auto!important;padding:10px!important}
+/* Mobile portrait's gallery should still offer thumbnails after the 16:9 stage. */
+@media (max-width:699px) and (orientation:portrait){
+ .bc-media-panel .media-viewer-head{padding:6px!important}
+ .bc-media-panel .media-viewer-tools{padding:5px!important;gap:4px!important}
+ .bc-media-panel .media-viewer-status{padding:3px 7px!important}
+ .bc-media-panel .media-viewer-stage{width:min(100%,75dvh)!important}
+ .bc-media-panel .media-viewer-meta{min-height:30px!important;padding:3px 6px!important}
+ .bc-media-panel .media-library-head{padding:4px 7px!important}
+ .bc-media-panel .media-history{padding:4px!important}
+ .bc-media-panel .media-library-list{grid-template-columns:repeat(auto-fill,minmax(76px,1fr))!important}
+}
+@media (max-height:540px) and (orientation:landscape){
+ .bc-media-panel .media-viewer-head{padding:4px 7px!important}
+ .bc-media-panel .media-viewer-tools{padding:4px!important}
+ .bc-media-panel .media-viewer-stage{width:min(100%,58dvh)!important}
+ .bc-media-panel .media-viewer-meta{min-height:25px!important;padding:3px!important}
+ .bc-media-panel .media-viewer-status{display:none!important}
+ .bc-media-panel .media-library-head{padding:3px 7px!important}
+}
+
+/* The media host keeps two independent cards but places them in a scrollable
+   track on narrow phones. Tabs remain pinned and never slide off screen. */
+.bc-media-bubble-track{display:contents}
+.bc-media-bubble-tabs{display:none}
+.bc-media-bubble-tabs[hidden]{display:none!important}
+@media (max-width:699px) and (orientation:portrait){
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock,
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-standalone{
+  display:flex!important;flex-direction:column!important;
+  padding:0!important;overflow:hidden!important;
+  scroll-snap-type:none!important;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-tabs:not([hidden]){
+  position:relative;flex:0 0 32px;min-height:32px;
+  display:flex!important;align-items:stretch;gap:5px;
+  z-index:3;overflow:hidden;
+  background:linear-gradient(120deg,#211822,#141018);
+  padding:3px 5px;
+ }
+ .bc-media-bubble-tabs button{
+  flex:1;min-width:0;border:1px solid #6b4c60;border-radius:8px;
+  background:#241b28;color:#b6a7b6;
+  font:700 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+ }
+ .bc-media-bubble-tabs button.selected{
+  color:#f5e9f1;background:#563045;border-color:#b47c96;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-track{
+  position:relative!important;
+  display:flex!important;flex:1 1 0!important;min-height:0!important;
+  width:100%!important;
+  flex-direction:row!important;flex-wrap:nowrap!important;
+  gap:7px!important;
+  overflow-x:auto!important;overflow-y:hidden!important;
+  scroll-snap-type:x mandatory;scroll-padding-inline:0;
+  overscroll-behavior-inline:contain;
+  scrollbar-width:none;
+ }
+ .bc-media-bubble-track::-webkit-scrollbar{display:none}
+ body.bc-has-media-bubbles .bc-media-bubble-track .bc-media-bubble-card{
+  flex:0 0 100%!important;
+  height:100%!important;
+  min-width:0!important;
+  scroll-snap-align:start;
+ }
+}
+
+
+/* Source: corporate-chat-media-flip-focus.css?v=20261109-flip-focus1 */
+/* BLACKCELL / Media card flip + immersive focus viewer v1
+   Loaded AFTER responsive media styles on every authorized Chat host page. */
+.bc-media-bubble-host,.bc-media-bubble-track{perspective:1250px}
+.bc-media-bubble-card{transform-style:preserve-3d;backface-visibility:hidden}
+.bc-media-bubble-card.bc-media-card-turn-out{
+ animation:bcTurnCardOut .21s cubic-bezier(.45,.03,.79,.45) both!important;
+ pointer-events:none!important;
+}
+.bc-media-bubble-card.bc-media-card-turn-in{
+ animation:bcTurnCardIn .33s cubic-bezier(.12,.75,.18,1) both!important;
+}
+@keyframes bcTurnCardOut{
+ from{transform:perspective(1100px) rotateY(0deg) scale(1);opacity:1}
+ to{transform:perspective(1100px) rotateY(87deg) scale(.985);opacity:.15}
+}
+@keyframes bcTurnCardIn{
+ from{transform:perspective(1100px) rotateY(-88deg) scale(.985);opacity:.2}
+ to{transform:perspective(1100px) rotateY(0deg) scale(1);opacity:1}
+}
+.bc-media-bubble-heading-actions{display:flex;align-items:center;gap:6px}
+.bc-media-bubble-heading-actions .bc-media-bubble-flip{
+ display:grid;place-items:center;flex:none;
+ width:32px;height:32px;padding:0;
+ border-radius:50%;border:1px solid #8b6179;
+ background:linear-gradient(145deg,#533349,#281d2a);
+ color:#f1d1e0;font-size:21px;line-height:1;cursor:pointer;
+ transition:background .18s,border-color .18s,transform .2s;
+}
+.bc-media-bubble-heading-actions .bc-media-bubble-flip:hover{
+ transform:rotate(45deg);border-color:#dd9ab7;background:#754563;
+}
+.bc-media-bubble-heading-actions .bc-media-bubble-flip:disabled{
+ opacity:.4;cursor:not-allowed;transform:none;
+}
+.bc-media-panel .bc-media-share-head-actions{display:flex;align-items:center;gap:7px}
+.bc-media-panel .bc-media-flip-button{
+ color:#e8c0d4;background:#422539;border:1px solid #996d82;
+ border-radius:10px;padding:9px 11px;font-size:10px;letter-spacing:.06em;
+ cursor:pointer;white-space:nowrap;
+}
+.bc-media-panel .bc-media-flip-button:hover{background:#674059;border-color:#d397b4}
+.bc-media-panel .bc-media-flip-button:disabled{opacity:.35}
+.bc-media-panel .media-viewer-actions .media-focus-toggle{
+ display:inline-flex!important;align-items:center;justify-content:center;
+ background:linear-gradient(140deg,#543249,#301f32)!important;
+ border:1px solid #9d6a86!important;color:#f7deea!important;
+ font-size:9px!important;letter-spacing:.045em;white-space:nowrap;
+ border-radius:10px!important;
+}
+.bc-media-panel .media-viewer-actions .media-focus-toggle:hover{
+ background:#714562!important;border-color:#d299b6!important;
+}
+.bc-media-panel.bc-media-focus .media-viewer{
+ display:flex!important;flex-direction:column!important;
+ overflow:hidden!important;
+}
+.bc-media-panel.bc-media-focus .media-viewer-tools,
+.bc-media-panel.bc-media-focus .media-viewer-status,
+.bc-media-panel.bc-media-focus .media-library,
+.bc-media-panel.bc-media-focus .media-custom-range{display:none!important}
+.bc-media-panel.bc-media-focus .media-viewer-stage,
+.bc-media-panel.bc-media-focus .media-viewer-stage.standard,
+.bc-media-panel.bc-media-focus .media-viewer-stage.expanded,
+.bc-media-panel.bc-media-focus .media-viewer-stage.custom{
+ display:flex!important;align-items:center;justify-content:center;
+ flex:1 1 0!important;min-height:0!important;max-height:none!important;
+ width:100%!important;height:100%!important;
+ aspect-ratio:auto!important;
+ background:#000!important;
+ margin:0!important;padding:0!important;
+ border:0!important;overflow:hidden!important;
+}
+.bc-media-panel.bc-media-focus .media-viewer-stage .media-stage-inner{
+ position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+ display:flex!important;align-items:center;justify-content:center;overflow:hidden;
+}
+.bc-media-panel.bc-media-focus .media-viewer-stage img,
+.bc-media-panel.bc-media-focus .media-viewer-stage video{
+ display:block!important;width:100%!important;height:100%!important;
+ max-width:100%!important;max-height:100%!important;
+ object-fit:contain!important;object-position:center!important;background:#000;
+}
+.bc-media-panel.bc-media-focus .media-viewer-meta{
+ flex:0 0 auto!important;border-top:1px solid #ffffff16;padding:7px 11px!important;
+}
+.bc-media-panel.bc-media-focus .media-viewer-head{flex:0 0 auto!important}
+.bc-media-panel.bc-media-focus .media-viewer-stage .media-nav{z-index:3}
+.bc-media-panel .media-viewer-actions{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+/* A physical portrait phone must not receive the side-by-side desktop split
+   even when Safari chooses a wide layout viewport (Request Desktop Website). */
+body.bc-handset-portrait.bc-has-media-bubbles{
+ --bc-chat-pinned-height:39dvh;
+ --bc-handset-gap:6px;
+}
+body.bc-handset-portrait.bc-has-media-bubbles.bc-media-spotlight{
+ --bc-chat-pinned-height:25dvh;
+}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-chat-pane.bc-chat-split{
+ position:fixed!important;top:6px!important;bottom:auto!important;
+ left:6px!important;right:6px!important;
+ width:calc(100vw - 12px)!important;
+ height:var(--bc-chat-pinned-height)!important;
+ max-height:var(--bc-chat-pinned-height)!important;
+ min-width:0!important;min-height:0!important;
+ border-radius:17px!important;resize:none!important;
+ transform:none!important;z-index:200004!important;
+}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock{
+ position:fixed!important;
+ left:6px!important;right:6px!important;
+ top:calc(var(--bc-chat-pinned-height) + 12px)!important;bottom:6px!important;
+ width:calc(100vw - 12px)!important;height:auto!important;
+ min-width:0!important;min-height:0!important;max-height:none!important;
+ display:flex!important;flex-direction:column!important;gap:0!important;
+ padding:0!important;overflow:hidden!important;
+ scroll-snap-type:none!important;z-index:200003!important;
+}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock .bc-media-bubble-tabs:not([hidden]){
+ display:flex!important;position:relative!important;flex:0 0 35px!important;
+ min-height:35px!important;width:100%!important;gap:5px!important;
+ background:#17111a!important;padding:4px 5px!important;
+}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock .bc-media-bubble-track{
+ position:relative!important;
+ display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;
+ flex:1 1 0!important;min-height:0!important;min-width:0!important;
+ width:100%!important;
+ overflow-x:auto!important;overflow-y:hidden!important;
+ gap:7px!important;padding:0!important;
+ scroll-snap-type:x mandatory!important;
+ scroll-padding-inline:0!important;overscroll-behavior-inline:contain;
+ scrollbar-width:none;
+}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock .bc-media-bubble-card{
+ display:flex!important;flex:0 0 100%!important;width:100%!important;
+ height:100%!important;min-width:0!important;min-height:0!important;
+ border-radius:15px!important;scroll-snap-align:start!important;
+}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock .bc-media-bubble-heading{
+ min-height:43px!important;height:auto!important;padding:5px 9px!important;
+}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-icon{
+ width:28px!important;height:28px!important;font-size:17px!important;
+}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-name small{display:none!important}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-heading-actions button{
+ width:29px!important;height:29px!important;font-size:16px!important;
+}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-tabs button{
+ flex:1;background:#291c2a;border:1px solid #755268;color:#cbb6c4;
+ border-radius:8px;font:700 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-tabs button.selected{
+ background:#58324a;border-color:#c28ca5;color:#fff;
+}
+/* Same fallback on the standalone Chat route without its floating dock. */
+body.bc-handset-portrait.bc-has-media-bubbles:has(.bc-bubble-host-standalone)>.chat{
+ position:fixed!important;
+ top:58px!important;bottom:auto!important;
+ left:6px!important;right:6px!important;
+ width:calc(100vw - 12px)!important;height:34dvh!important;
+ margin:0!important;min-height:0!important;
+ border:1px solid #765c70;border-radius:15px;overflow:hidden!important;
+}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-standalone{
+ position:fixed!important;
+ top:calc(58px + 34dvh + 6px)!important;bottom:6px!important;
+ left:6px!important;right:6px!important;
+ width:calc(100vw - 12px)!important;height:auto!important;
+ display:flex!important;flex-direction:column!important;
+ overflow:hidden!important;
+}
+body.bc-handset-portrait.bc-has-media-bubbles.bc-media-spotlight:has(.bc-bubble-host-standalone)>.chat{
+ height:24dvh!important;
+}
+body.bc-handset-portrait.bc-has-media-bubbles.bc-media-spotlight .bc-media-bubble-host.bc-bubble-host-standalone{
+ top:calc(58px + 24dvh + 6px)!important;
+}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-standalone .bc-media-bubble-track{
+ display:flex!important;flex:1 1 0!important;min-height:0!important;
+ overflow-x:auto!important;overflow-y:hidden!important;
+ scroll-snap-type:x mandatory!important;gap:7px!important;
+}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-standalone .bc-media-bubble-card{
+ display:flex!important;flex:0 0 100%!important;width:100%!important;min-height:0!important;
+}
+/* Small iPhone: keep viewer controls reachable while maximizing 16:9 content. */
+@media(max-width:700px){
+ .bc-media-panel .media-viewer-actions .media-focus-toggle{font-size:9px!important;padding:7px 9px!important}
+ .bc-media-panel.bc-media-focus .media-viewer-meta{min-height:30px!important}
+ .bc-media-panel .bc-media-flip-button{font-size:9px;padding:7px}
+}
+@media(prefers-reduced-motion:reduce){
+ .bc-media-bubble-card.bc-media-card-turn-out,
+ .bc-media-bubble-card.bc-media-card-turn-in{animation:none!important}
+}
+
+
+/* Source: corp-adaptive-chat.css?v=20261109-device2 */
+/* BLACKCELL / Responsive Messages & Media
+   Loaded after existing floating chat and media styles. No data-layer changes. */
+html.bc-compact-chat,html.bc-compact-chat body{width:100%;height:100%;min-width:0}
+.bc-chat-pane,.bc-media-bubble-card,.bc-media-bubble-iframe{box-sizing:border-box}
+.bc-chat-pane iframe{border:0;display:block;min-width:0}
+.bc-chat-pane button,.bc-media-bubble-heading button{touch-action:manipulation}
+
+/* Desktop: a comfortable messaging app, with independent media on the right. */
+@media(min-width:1181px){
+ .bc-chat-pane:not(.bc-chat-split){width:min(540px,calc(100vw - 40px));height:min(790px,calc(100dvh - 36px))}
+ .bc-chat-pane:not(.bc-chat-split) .bc-chat-pane-header{min-height:72px}
+ .bc-chat-orb{right:max(18px,env(safe-area-inset-right,0px))}
+ html:not(.bc-compact-chat):not(.bc-media-panel) .chat{grid-template-columns:minmax(205px,255px) minmax(0,1fr)}
+}
+
+/* iPad: allow a full touch-friendly chat without hiding the main website. */
+@media(min-width:768px) and (max-width:1180px){
+ .bc-chat-pane:not(.bc-chat-split){width:min(500px,calc(100vw - 32px));height:min(760px,calc(100dvh - 30px))}
+ .bc-chat-pane .bc-chat-pane-header{touch-action:pan-y}
+ .bc-chat-pane .bc-chat-pane-controls button{min-width:34px;min-height:34px}
+ .bc-media-bubble-host .bc-media-bubble-heading-actions button{min-width:35px;min-height:35px}
+ .bc-media-panel .media-viewer-stage :is(img,video){object-fit:contain!important}
+ html:not(.bc-compact-chat):not(.bc-media-panel) .chat{grid-template-columns:minmax(175px,220px) minmax(0,1fr)}
+}
+@media(min-width:768px) and (max-width:920px) and (orientation:portrait){
+ .bc-chat-pane:not(.bc-chat-split){width:min(520px,calc(100vw - 30px));height:min(760px,calc(100dvh - 30px))}
+}
+
+/* iPhone / small phone: messaging is the active screen, not a tiny popup. */
+@media(max-width:767px){
+ .bc-chat-orb{
+  right:calc(13px + env(safe-area-inset-right,0px))!important;
+  bottom:calc(12px + env(safe-area-inset-bottom,0px))!important;
+  width:60px;height:60px;
+ }
+ .bc-chat-pane:not(.bc-chat-split){
+  position:fixed!important;
+  inset:calc(5px + env(safe-area-inset-top,0px))
+        calc(5px + env(safe-area-inset-right,0px))
+        calc(5px + env(safe-area-inset-bottom,0px))
+        calc(5px + env(safe-area-inset-left,0px))!important;
+  width:auto!important;height:auto!important;min-width:0!important;min-height:0!important;
+  max-width:none!important;max-height:none!important;resize:none!important;
+  border-radius:18px;
+ }
+ .bc-chat-pane .bc-chat-pane-header{height:59px;min-height:59px;flex-basis:59px;padding:9px 11px;touch-action:pan-y}
+ .bc-chat-pane .bc-chat-pane-label strong{font-size:11px}
+ .bc-chat-pane .bc-chat-pane-label small{font-size:8px;max-width:160px}
+ .bc-chat-pane .bc-chat-pane-controls button{width:34px;height:34px;min-width:34px;min-height:34px}
+ .bc-chat-pane .bc-chat-pane-footer{min-height:24px}
+ html.bc-compact-chat .inbox-intro{margin-bottom:15px}
+ html.bc-compact-chat .peer{min-height:70px}
+ html.bc-compact-chat .chat-title{min-height:62px}
+ html.bc-compact-chat .conversation{min-height:0;overscroll-behavior:contain}
+ html.bc-compact-chat .composer .composer-input-wrap textarea{font-size:16px!important}
+ html.bc-compact-chat .peer-search-wrap input{font-size:16px!important}
+ /* Keep the 16:9 photo stage inside the media card; focus mode may
+    expand it, but it never crops a photo or video. */
+ .bc-media-panel .media-viewer-stage{max-width:100%!important}
+ .bc-media-panel .media-viewer-stage :is(img,video){object-fit:contain!important;object-position:center!important}
+ .bc-media-panel .media-viewer-actions{max-width:100%;overflow-x:auto}
+ .bc-media-panel .media-viewer-actions button{min-height:34px}
+ .bc-media-panel .media-library-list{-webkit-overflow-scrolling:touch}
+}
+
+/* iPhone portrait with both panels: anchored chat above independent media.
+   Apply even if Safari selects a desktop webpage viewport. */
+@media(max-width:767px) and (orientation:portrait){
+ body.bc-has-media-bubbles .bc-chat-pane.bc-chat-split{
+  left:6px!important;right:6px!important;top:calc(5px + env(safe-area-inset-top,0px))!important;
+  bottom:auto!important;
+  width:calc(100vw - 12px)!important;
+  height:clamp(190px,38dvh,380px)!important;
+  max-height:45dvh!important;min-width:0!important;min-height:0!important;
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock{
+  left:6px!important;right:6px!important;bottom:calc(5px + env(safe-area-inset-bottom,0px))!important;
+  top:calc(clamp(190px,38dvh,380px) + 12px + env(safe-area-inset-top,0px))!important;
+  height:auto!important;width:auto!important;min-height:0!important;
+ }
+ body.bc-has-media-bubbles.bc-media-spotlight .bc-chat-pane.bc-chat-split{
+  height:clamp(150px,25dvh,245px)!important
+ }
+ body.bc-has-media-bubbles.bc-media-spotlight .bc-media-bubble-host.bc-bubble-host-dock{
+  top:calc(clamp(150px,25dvh,245px) + 12px + env(safe-area-inset-top,0px))!important
+ }
+ /* The physical iPhone fallback in media-flip-focus.css remains authoritative
+    when Safari reports an unusually wide CSS viewport. */
+}
+
+/* iPhone landscape: two usable columns rather than overlapping windows. */
+@media(max-width:767px) and (orientation:landscape){
+ body.bc-has-media-bubbles .bc-chat-pane.bc-chat-split{
+  left:5px!important;top:5px!important;right:auto!important;bottom:5px!important;
+  width:43vw!important;height:calc(100dvh - 10px)!important;min-height:0!important
+ }
+ body.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock{
+  top:5px!important;bottom:5px!important;left:calc(43vw + 11px)!important;right:5px!important;
+  width:auto!important;height:calc(100dvh - 10px)!important
+ }
+}
+
+/* Accessibility and low-power mode */
+@media(prefers-reduced-motion:reduce){
+ .bc-chat-pane,.bc-chat-orb,.bc-media-bubble-card{animation:none!important}
+}
+
+
+/* Same physical device fallback for floating chat when Safari requests a
+   desktop site, independent of the CSS viewport width. */
+html.bc-device-phone .bc-chat-pane:not(.bc-chat-split){
+ position:fixed!important;
+ top:calc(6px + env(safe-area-inset-top,0px))!important;
+ bottom:calc(6px + env(safe-area-inset-bottom,0px))!important;
+ left:6px!important;right:6px!important;
+ width:calc(100% - 12px)!important;height:auto!important;
+ max-width:none!important;max-height:none!important;
+ min-width:0!important;min-height:0!important;resize:none!important;
+}
+html.bc-device-phone .bc-chat-orb{
+ right:calc(13px + env(safe-area-inset-right,0px))!important;
+ bottom:calc(14px + env(safe-area-inset-bottom,0px))!important;
+}
+html.bc-device-phone .bc-chat-pane .bc-chat-pane-controls button{min-height:32px;min-width:32px}
+html.bc-device-phone .bc-compact-chat .composer-input-wrap textarea{font-size:16px!important}
+
+
+/* Source: corporate-chat-compact-media.css?v=20261122-android-attachment-visibility1 */
+/* BLACKCELL Messages — native one-button mobile photo & video sharing.
+   iPhone and small iPad: native picker -> inline upload bubble -> photos/videos
+   displayed in the thread. Never open the desktop Media Share screen.
+   12.9-inch+ iPads and computers continue using the full companion panels. */
+html.bc-chat-lite .bc-media-bubble-host,
+html.bc-chat-lite .media-actions,
+html.bc-chat-lite .media-dialog-backdrop,
+html.bc-chat-lite .media-progress-wrap{
+ display:none!important;
+}
+html.bc-chat-lite .chat-main{min-width:0;position:relative}
+html.bc-chat-lite .composer{
+ display:flex!important;gap:8px!important;align-items:flex-end!important;
+ padding:9px 10px max(10px,env(safe-area-inset-bottom,0px))!important;
+}
+html.bc-chat-lite #mediaToggleButton,
+html.bc-chat-lite .composer .composer-add{
+ display:grid!important;place-items:center!important;
+ flex:none!important;
+ width:42px!important;height:42px!important;
+ min-width:42px!important;min-height:42px!important;
+ border-radius:50%!important;font-size:25px!important;
+}
+html.bc-chat-lite .composer-input-wrap{flex:1;min-width:0}
+html.bc-chat-lite .composer-input-wrap textarea{font-size:16px!important}
+
+/* Upload percentage appears inside an outgoing iMessage bubble.
+   The conversation and recipient remain visible during the transfer. */
+html.bc-chat-lite .bc-inline-upload{
+ align-self:flex-end;max-width:min(87%,370px);width:min(87%,370px);
+ margin-top:9px;
+}
+html.bc-chat-lite .bc-inline-upload-bubble{
+ background:linear-gradient(145deg,#332535,#1c1721)!important;
+ border:1px solid #895a78!important;
+ padding:13px 14px!important;border-radius:18px!important;
+ box-shadow:0 7px 18px #0006!important;
+}
+html.bc-chat-lite .bc-inline-upload-title{
+ color:#f0e1ed;font-size:10px;font-weight:750;
+ line-height:1.5;letter-spacing:.045em;overflow-wrap:anywhere
+}
+html.bc-chat-lite .bc-inline-upload-track{
+ height:5px;background:#4b384e;border-radius:99px;
+ overflow:hidden;margin-top:11px
+}
+html.bc-chat-lite .bc-inline-upload-fill{
+ height:100%;width:0;border-radius:inherit;
+ background:linear-gradient(90deg,#ae6689,#f1bad4);
+ transition:width .14s ease
+}
+html.bc-chat-lite .bc-inline-upload-percent{
+ display:block;margin-top:7px;color:#d6bed0;
+ font-size:10px;font-weight:770;text-align:right
+}
+html.bc-chat-lite .bc-inline-upload-actions{
+ display:flex;gap:7px;margin-top:10px
+}
+html.bc-chat-lite .bc-inline-upload-actions[hidden]{display:none!important}
+html.bc-chat-lite .bc-inline-upload-actions button{
+ flex:1;min-height:37px;border-radius:10px;
+ background:#342438;border:1px solid #865b73;
+ color:#f3dce8;font-size:10px;font-weight:750
+}
+
+/* Photos and videos now actually live inside each message bubble. */
+html.bc-chat-lite .message-media{
+ max-width:min(94%,420px)!important;
+ min-width:0!important;
+}
+html.bc-chat-lite .message-media .bubble{
+ min-width:0!important;
+ max-width:100%!important;
+ padding:9px!important;border-radius:18px!important;
+ background:linear-gradient(145deg,#1a1820,#0d0c12)!important;
+ border:1px solid #6c546a!important;
+ cursor:pointer!important;white-space:normal!important;
+}
+html.bc-chat-lite .message-media.mine .bubble{
+ background:linear-gradient(145deg,#29202c,#17121b)!important;
+}
+html.bc-chat-lite .message-media .bubble>strong{
+ display:block;font-size:9px!important;
+ color:#d7aabe!important;
+ letter-spacing:.085em;margin:2px 5px 7px!important
+}
+html.bc-chat-lite .message-media .bubble>span{
+ display:block;padding:7px 5px 3px;
+ color:#b7a9ba!important;font-size:10px!important;line-height:1.45
+}
+html.bc-chat-lite .bc-chat-inline-media-grid{
+ width:100%;min-width:0;
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:4px;overflow:hidden;border-radius:12px
+}
+html.bc-chat-lite .bc-chat-inline-media-grid.single{
+ grid-template-columns:minmax(0,1fr)
+}
+html.bc-chat-lite .bc-chat-inline-media-tile{
+ min-width:0;position:relative;
+ display:flex;align-items:center;justify-content:center;
+ background:#050508;border-radius:8px;overflow:hidden
+}
+html.bc-chat-lite .bc-chat-inline-media-grid:not(.single) .bc-chat-inline-media-tile{
+ aspect-ratio:1/1
+}
+html.bc-chat-lite .bc-chat-inline-media-grid.single .bc-chat-inline-media-tile{
+ max-height:300px
+}
+html.bc-chat-lite .bc-chat-inline-media-tile img,
+html.bc-chat-lite .bc-chat-inline-media-tile video{
+ display:block;width:100%;height:100%;
+ max-width:100%;max-height:300px;
+ object-fit:contain!important;object-position:center;
+ background:#000;border-radius:8px
+}
+html.bc-chat-lite .bc-chat-inline-media-grid.single img{
+ height:auto;max-height:300px
+}
+html.bc-chat-lite .bc-chat-inline-media-tile video{
+ min-height:110px;max-height:280px;
+}
+html.bc-chat-lite .bc-chat-inline-loading{
+ display:block;padding:20px 9px!important;
+ font-size:10px!important;color:#c4adbd!important;
+ text-align:center
+}
+html.bc-chat-lite .message-media .message-receipt{
+ margin-top:3px
+}
+
+/* Tapping a media bubble opens a temporary, dismissible viewer INSIDE the
+   conversation window. It is not the giant side-by-side Media Share panel. */
+html.bc-chat-lite .chat.media-open{
+ grid-template-columns:minmax(0,1fr)!important
+}
+html.bc-chat-lite .chat.media-open .sidebar{display:none!important}
+html.bc-chat-lite .chat.media-open .chat-main{transform:none!important}
+html.bc-chat-lite .media-viewer{
+ display:none!important;visibility:hidden!important;
+ opacity:0!important;pointer-events:none!important
+}
+html.bc-chat-lite .chat.media-open .media-viewer{
+ position:absolute!important;inset:0!important;
+ z-index:90!important;display:flex!important;flex-direction:column!important;
+ width:100%!important;height:100%!important;max-width:none!important;
+ border:0!important;border-radius:0!important;
+ visibility:visible!important;opacity:1!important;pointer-events:auto!important;
+ transform:none!important;overflow:hidden!important;
+ background:linear-gradient(160deg,#1d1720,#08080c)!important
+}
+html.bc-chat-lite .media-viewer-head{
+ flex:0 0 auto!important;padding:10px!important;
+ gap:6px!important;flex-wrap:wrap!important
+}
+html.bc-chat-lite .media-viewer-brand strong{font-size:10px!important}
+html.bc-chat-lite .media-viewer-brand small{display:none!important}
+html.bc-chat-lite .media-viewer-actions button:not(:last-child){display:none!important}
+html.bc-chat-lite .media-viewer-actions button:last-child{
+ min-height:36px!important;padding:9px 12px!important;
+ font-size:10px!important;border-radius:11px!important
+}
+html.bc-chat-lite .media-custom-range,
+html.bc-chat-lite .media-viewer-tools,
+html.bc-chat-lite .media-viewer-status,
+html.bc-chat-lite .media-library-head,
+html.bc-chat-lite .media-history{display:none!important}
+html.bc-chat-lite .media-viewer-stage{
+ position:relative!important;
+ flex:0 0 auto!important;min-height:0!important;
+ width:100%!important;height:auto!important;
+ aspect-ratio:16/9!important;max-height:42dvh!important;
+ background:#000!important;overflow:hidden!important
+}
+html.bc-chat-lite .media-viewer-stage .media-stage-inner{
+ position:absolute!important;inset:0!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ width:100%!important;height:100%!important
+}
+html.bc-chat-lite .media-viewer-stage :is(img,video){
+ width:100%!important;height:100%!important;max-height:100%!important;
+ object-fit:contain!important;background:#000!important
+}
+html.bc-chat-lite .media-viewer-meta{
+ flex:0 0 auto!important;min-height:35px!important;padding:7px 10px!important
+}
+html.bc-chat-lite .media-library{
+ display:flex!important;flex-direction:column!important;
+ flex:1 1 0!important;min-height:0!important;
+ max-height:none!important;overflow:hidden!important
+}
+html.bc-chat-lite .media-library-list{
+ flex:1 1 0!important;min-height:0!important;
+ overflow-y:auto!important;-webkit-overflow-scrolling:touch;
+ padding:7px!important;
+ grid-template-columns:repeat(auto-fill,minmax(79px,1fr))!important
+}
+html.bc-chat-lite .media-library-item{height:88px!important}
+html.bc-chat-lite .media-library-item img{height:68px!important;object-fit:contain!important}
+html.bc-chat-lite .bc-media-load-more{
+ flex:0 0 auto!important;margin:7px 9px!important;
+ min-height:42px!important;border-radius:10px!important;
+ font-size:10px!important
+}
+html.bc-chat-lite .bc-media-load-more[hidden]{display:none!important}
+@media(max-height:600px){
+ html.bc-chat-lite .media-viewer-stage{max-height:33dvh!important}
+ html.bc-chat-lite .message-media .bubble>span{font-size:9px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ html.bc-chat-lite .bc-inline-upload-fill{transition:none!important}
+}
+
+/* Compact viewer replaces the former multi-panel Media Player for mobile.
+   Tap a photo -> image fits the screen; arrows, swipe, and X only. */
+html.bc-chat-lite .bc-mobile-lightbox[hidden]{display:none!important}
+html.bc-chat-lite .bc-mobile-lightbox{
+ position:fixed;inset:0;z-index:25000;display:flex;flex-direction:column;
+ padding-top:env(safe-area-inset-top,0px);
+ padding-bottom:env(safe-area-inset-bottom,0px);
+ background:#030305;color:#f5eef4;
+ overflow:hidden;overscroll-behavior:contain
+}
+html.bc-chat-lite .bc-mobile-lightbox-bar{
+ flex:0 0 auto;min-height:56px;padding:8px 12px;
+ display:flex;gap:12px;align-items:center;
+ border-bottom:1px solid #ffffff20;background:#0b0a0e
+}
+html.bc-chat-lite .bc-mobile-lightbox-bar strong{
+ flex:1;min-width:0;font-size:10px;letter-spacing:.13em
+}
+html.bc-chat-lite .bc-mobile-lightbox-count{
+ font-size:11px;color:#d1c4d0;white-space:nowrap;
+ font-variant-numeric:tabular-nums
+}
+html.bc-chat-lite .bc-mobile-lightbox-close{
+ display:grid;place-items:center;flex:none;width:42px;height:42px;
+ border-radius:50%;border:1px solid #8b697e;
+ background:#27202a;color:#fff;font-size:18px;padding:0
+}
+html.bc-chat-lite .bc-mobile-lightbox-stage{
+ position:relative;display:flex;align-items:center;justify-content:center;
+ flex:1;min-height:0;width:100%;background:#000;overflow:hidden
+}
+html.bc-chat-lite .bc-mobile-lightbox-canvas{
+ width:100%;height:100%;min-width:0;min-height:0;
+ display:flex;align-items:center;justify-content:center;
+ overflow:hidden;padding:8px 44px
+}
+html.bc-chat-lite .bc-mobile-lightbox-canvas img,
+html.bc-chat-lite .bc-mobile-lightbox-canvas video{
+ display:block;width:auto;height:auto;
+ max-width:100%;max-height:100%;
+ object-fit:contain!important;object-position:center;
+ background:#000
+}
+html.bc-chat-lite .bc-mobile-lightbox-prev,
+html.bc-chat-lite .bc-mobile-lightbox-next{
+ position:absolute;z-index:2;top:50%;transform:translateY(-50%);
+ display:grid;place-items:center;width:40px;height:55px;
+ padding:0;border:1px solid #ffffff55;border-radius:12px;
+ background:#16121abf;color:#fff;
+ font-size:34px;line-height:1;touch-action:manipulation
+}
+html.bc-chat-lite .bc-mobile-lightbox-prev{left:2px}
+html.bc-chat-lite .bc-mobile-lightbox-next{right:2px}
+html.bc-chat-lite .bc-mobile-lightbox-prev:disabled,
+html.bc-chat-lite .bc-mobile-lightbox-next:disabled{opacity:.22}
+html.bc-chat-lite .bc-mobile-lightbox-caption{
+ flex:0 0 auto;min-height:42px;max-height:65px;
+ padding:11px 12px;text-align:center;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+ font-size:11px;color:#bcb1bf;
+ background:#0b0a0e;border-top:1px solid #ffffff20
+}
+html.bc-chat-lite .bc-mobile-lightbox-loading{
+ padding:24px;text-align:center;
+ color:#bdb1bf;font-size:12px
+}
+/* Video thumbnail is now a tap-to-open preview, never an inline mini-player. */
+html.bc-chat-lite .bc-chat-inline-media-tile{cursor:zoom-in}
+html.bc-chat-lite .bc-chat-inline-media-tile video{pointer-events:none!important}
+html.bc-chat-lite .bc-chat-inline-play{
+ position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+ display:grid;place-items:center;width:38px;height:38px;
+ color:#fff;background:#000c;border:1px solid #fffa;
+ border-radius:50%;font-size:18px;pointer-events:none
+}
+
+
+/* BLACKCELL iMessage Android: the + must always remain visible/tappable.
+   The attachment menu stays in-page. Extra header shortcut is shown only
+   for Android mobile so the user has access above the soft keyboard. */
+.bc-attachment-menu .bc-attachment-mobile-action{display:none!important}
+html.bc-chat-lite .bc-attachment-menu .bc-attachment-mobile-action{display:flex!important}
+.bc-android-attachment-shortcut{display:none!important}
+html.bc-chat-android.bc-compact-chat .bc-android-attachment-shortcut{
+ display:grid!important;place-items:center!important;
+ flex:0 0 34px!important;
+ width:34px!important;height:34px!important;min-width:34px!important;
+ border:1px solid #ffffff3a!important;border-radius:50%!important;
+ background:#303037!important;color:#fafafa!important;
+ padding:0!important;margin:0 4px 0 0!important;
+ font:700 26px/1 system-ui!important;
+ cursor:pointer!important;touch-action:manipulation;
+}
+html.bc-chat-android.bc-compact-chat .bc-android-attachment-shortcut.open{background:#693347!important}
+html.bc-chat-android.bc-compact-chat .composer #mediaToggleButton{
+ display:grid!important;place-items:center!important;
+ flex:0 0 42px!important;
+ width:42px!important;min-width:42px!important;max-width:42px!important;
+ height:42px!important;min-height:42px!important;max-height:42px!important;
+ padding:0!important;margin:0!important;visibility:visible!important;
+ opacity:1!important;color:#f5f5f7!important;
+ font-size:24px!important;line-height:1!important;
+ pointer-events:auto!important;touch-action:manipulation;
+}
+html.bc-chat-android.bc-compact-chat .composer #mediaToggleButton .composer-symbol{
+ display:block!important;visibility:visible!important;
+ font:700 26px/1 system-ui!important;pointer-events:none!important;
+}
+html.bc-chat-android.bc-compact-chat .composer .composer-input-wrap{min-width:0!important;flex:1 1 0%!important}
+html.bc-chat-android.bc-compact-chat .composer{min-width:0!important;gap:6px!important;padding-inline:8px!important}
+html.bc-chat-android.bc-compact-chat .chat-title .imessage-title-actions{min-width:0}
+html.bc-chat-android .bc-attachment-menu{z-index:16000!important;visibility:visible!important}
+
+
+/* Source: corporate-chat-obsidian.css?v=20261122-android-ime-ltr2 */
+/* Blackcell Obsidian — private chat and media color adjustments; behavior unchanged. */
+
+/* corporate-chat-media.css */
+.media-actions button{background:#15191e;border:1px solid #262c33}
+.media-actions button:hover{background:#1b2026;border-color:#a12c3e}
+.media-progress-wrap{background:#0c0f13;border-top:1px solid #262c33}
+.media-progress-track{background:#262c33}
+.media-progress-fill{background:linear-gradient(90deg,#912237,#c72f43)}
+.message-media .bubble{border:1px solid #49515a;background:#15191e!important}
+.message-media .bubble strong{color:#e0e4eb}
+.message-media .bubble:hover{border-color:#a12c3e}
+.media-viewer{background:linear-gradient(135deg,#0c0f13,#08080b);border-left:1px solid #262c33}
+.media-viewer button{background:#15191e;border:1px solid #49515a}
+.media-viewer button:hover{border-color:#a12c3e}
+.media-viewer button.active{background:#67323d;border-color:#a12c3e}
+.media-viewer-status{color:#aeb7c3}
+.media-viewer-tools input,.media-viewer-tools select{border:1px solid #49515a}
+.media-autoplay-label input{accent-color:#a12c3e}
+.media-viewer-stage button.media-nav{background:#0c0f13cc;border:1px solid #49515a}
+.media-viewer-meta .media-current-index{color:#aeb7c3}
+.media-library{border-top:1px solid #262c33}
+.media-history{background:#0c0f13;border:1px solid #262c33}
+.media-library-item{background:#0c0f13;border:1px solid #262c33}
+.media-library-item.selected{border-color:#69737f;box-shadow:0 0 0 1px #bd293f}
+.media-library-item .media-video-thumb{background:linear-gradient(140deg,#15191e,#08080a);color:#e0e4eb}
+.media-full-link{background:#1b2026;border:1px solid #67323d}
+.media-custom-range input{accent-color:#a12c3e}
+.media-dialog{background:linear-gradient(145deg,#15191e,#0b0a0e);border:1px solid #49515a}
+.media-dialog-selection{border:1px dashed #49515a}
+.media-selected-row{border:1px solid #262c33}
+.media-dialog button{background:#15191e;border:1px solid #49515a}
+.media-dialog button.media-primary{background:#912237;border-color:#a12c3e}
+
+/* corporate-chat-imessage.css */
+:root{--im-crimson:#a12c3e}
+.chat-header{border-color:#1b2026}
+.chat-header a{border:1px solid #49515a;background:#15191e}
+.chat-header a:hover{background:#1b2026;border-color:#515b66}
+.sidebar .label{color:#aeb7c3}
+.peer{border-color:#1b2026}
+.peer:hover{background:#15191e;border-color:#49515a}
+.peer.active{background:#1b2026;border-color:#a12c3e;box-shadow:0 0 0 1px #a12c3e33}
+.peer .avatar{background:linear-gradient(140deg,#262c33,#17171c);border-color:#49515a}
+.peer.active .avatar{border-color:#515b66}
+.imessage-portrait{border:1px solid #49515a;background:linear-gradient(130deg,#1b2026,#101015)}
+.imessage-title-actions a{color:#e0e4eb;border:1px solid #49515a;background:#15191e}
+.imessage-title-actions a:hover{border-color:#a12c3e}
+.message-media .bubble strong{color:#e0e4eb}
+.composer input:focus{border-color:#515b66;box-shadow:0 0 0 2px #aeb7c322}
+.composer button{background:linear-gradient(135deg,#912237,#bd293f);border:1px solid #515b66}
+.media-actions button{border-color:#262c33}
+.media-actions button:hover{border-color:#a12c3e;background:#1b2026}
+.media-progress-wrap{border-color:#262c33}
+.media-progress-label{color:#e0e4eb}
+.media-viewer{border-left:1px solid #49515a}
+.media-viewer-head{border-bottom-color:#262c33}
+.media-dialog{border-color:#49515a}
+.media-dialog .media-primary{background:#912237}
+
+/* corporate-chat-bubbles.css */
+:root{--bubble-black:#15191e;--bubble-black-border:#262c33;--bubble-rose:#a12c3e}
+.chat-main{background:radial-gradient(circle at 49% 4%,rgba(107,30,45,.10),transparent 38%),
+ linear-gradient(180deg,#09090d 0%,#07070a 52%,#07070a 100%)}
+.chat-header{background:linear-gradient(110deg,#0c0f13fa,#09090bfa);border-bottom-color:#262c33}
+.chat-title{background:linear-gradient(110deg,#0c0f13df,#0c0b11e8)}
+.imessage-portrait{border:1px solid #49515a;box-shadow:inset 0 1px 0 #ffffff28,0 0 0 4px #262c3340;background:radial-gradient(circle at 33% 22%,#262c33,#15191e 72%)}
+.sidebar{background:linear-gradient(145deg,#0c0f13,#0b0b0f 66%)}
+.label-with-count{color:#aeb7c3}
+.label-with-count span:last-child{border:1px solid #49515a;background:#1b2026}
+.peer-search-wrap{border:1px solid #262c33}
+.peer-search-wrap:focus-within{border-color:#a12c3e}
+.peer-search-wrap span{color:#aeb7c3}
+.peer{background:linear-gradient(145deg,#15191e,#101016);border:1px solid #262c33}
+.peer:hover{background:#1b2026;border-color:#49515a}
+.peer.active{background:linear-gradient(130deg,#262c33,#1b2026);border-color:#515b66;box-shadow:inset 0 0 0 1px #aeb7c329,0 8px 20px #0004}
+.peer .avatar{border:1px solid #49515a;background:linear-gradient(135deg,#262c33,#15191e)}
+.conversation{scrollbar-color:#262c33 transparent}
+.message .bubble:focus-visible{outline:2px solid #aeb7c3}
+.message.mine .bubble{background:linear-gradient(146deg,#15191e,#0c0f13)!important}
+.message.mine.group-end:not(.message-media) .bubble:after,.message.mine.group-single:not(.message-media) .bubble:after{background:#0c0f13;filter:drop-shadow(-1px 0 0 #262c33)}
+.message-media .bubble,.message.mine.message-media .bubble{border:1px solid #49515a!important}
+.message-media .bubble strong{color:#e0e4eb}
+.message-media .bubble:hover{border-color:#515b66!important}
+.composer{border-top:1px solid #49515a66}
+.composer .composer-add{background:#15191e;border:1px solid #49515a}
+.composer .composer-add.open{background:#1b2026;border-color:#515b66}
+.composer .composer-add:hover{border-color:#69737f}
+.composer-input-wrap{border:1px solid #49515a}
+.composer-input-wrap:focus-within{border-color:#515b66;box-shadow:0 0 0 2px #67323d24}
+.composer .composer-send{background:linear-gradient(135deg,#912237,#a12c3e);border:1px solid #69737f;box-shadow:0 5px 18px #6b1e2d6b,inset 0 1px 0 #ffffff40}
+.composer .composer-send:not(:disabled):hover{box-shadow:0 7px 22px #91223791}
+.composer .composer-send:disabled{background:#1b2026;border-color:#262c33;color:#aeb7c3}
+.media-actions button{border:1px solid #49515a;background:linear-gradient(140deg,#1b2026,#1b1721)}
+.media-actions button:hover{background:#1b2026;border-color:#515b66}
+.media-progress-wrap{background:#15191e;border-color:#49515a}
+
+/* corporate-chat-compact.css */
+html.bc-compact-chat .sidebar{background:radial-gradient(ellipse at 50% -5%,#262c3322,transparent 65%),linear-gradient(160deg,#0c0f13,#09090c)}
+.inbox-intro-icon{border:1px solid #49515a;background:linear-gradient(140deg,#1b2026,#0c0f13)}
+html.bc-compact-chat .label-with-count{color:#aeb7c3}
+html.bc-compact-chat .label-with-count span:last-child{background:#15191e;border-color:#49515a;color:#aeb7c3}
+html.bc-compact-chat .peer-search-wrap{border:1px solid #262c33;background:#15191e}
+html.bc-compact-chat .peer-search-wrap span{color:#aeb7c3}
+html.bc-compact-chat #peers{scrollbar-color:#262c33 transparent}
+html.bc-compact-chat .peer{background:linear-gradient(135deg,#15191e,#131118);border:1px solid #262c33}
+html.bc-compact-chat .peer:hover,html.bc-compact-chat .peer:focus-visible{background:linear-gradient(135deg,#1b2026,#15191e);border-color:#49515a}
+html.bc-compact-chat .peer .avatar{background:linear-gradient(145deg,#49515a,#1b2026);border:1px solid #515b66;box-shadow:0 0 0 3px #67323d30}
+html.bc-compact-chat .peer small{color:#aeb7c3}
+html.bc-compact-chat .peer-meta{color:#aeb7c3}
+html.bc-compact-chat .chat-title{background:linear-gradient(135deg,#15191e,#111017);border-bottom:1px solid #49515a33}
+html.bc-compact-chat .imessage-portrait{border:1px solid #515b66;background:linear-gradient(145deg,#49515a,#15191e)}
+html.bc-compact-chat .bc-inbox-back{border:1px solid #49515a;background:#1b2026}
+html.bc-compact-chat .bc-inbox-back:hover{background:#262c33;border-color:#515b66}
+html.bc-compact-chat .conversation{background:radial-gradient(ellipse at 65% 20%,#262c330a,transparent 55%),#0a0a0d}
+html.bc-compact-chat .message.mine .bubble{background:linear-gradient(145deg,#1b2026,#15191e)!important}
+html.bc-compact-chat .composer{background:linear-gradient(140deg,#15191e,#100e14);border-top:1px solid #262c33}
+html.bc-compact-chat .composer-input-wrap{background:#15191e;border:1px solid #49515a}
+html.bc-compact-chat .media-actions{background:#0c0f13;border-top:1px solid #262c33}
+html.bc-compact-chat .media-actions button{background:#1b2026;border-color:#49515a}
+html.bc-compact-chat .media-actions button:hover{background:#262c33}
+
+/* corporate-chat-live.css */
+.typing-dots{border:1px solid #49515a;background:linear-gradient(135deg,#1b2026,#15191e)}
+.typing-dots span{background:#e0e4eb}
+.message.mine .message-receipt.read{color:#e0e4eb}
+.message .message-receipt.read .receipt-ticks{color:#e0e4eb}
+
+/* corporate-chat-media-bubble-host.css */
+.bc-media-bubble-card{border:1px solid #49515a;background:linear-gradient(145deg,#15191ee8,#0d0c13ee)}
+.bc-media-bubble-heading{background:linear-gradient(110deg,#1b2026,#16121d);border-bottom:1px solid #49515a}
+.bc-media-bubble-icon{background:linear-gradient(145deg,#262c33,#15191e);border:1px solid #515b66}
+.bc-media-bubble-name small{color:#aeb7c3}
+.bc-media-bubble-heading-actions button{border:1px solid #49515a;background:#1b2026;color:#e0e4eb}
+.bc-media-bubble-heading-actions button:hover{background:#67323d;border-color:#c72f43}
+@media(max-width:660px){body.bc-has-media-bubbles:has(.bc-bubble-host-standalone)>.chat{border:1px solid #49515a}
+}
+.bc-media-panel .media-viewer{background:linear-gradient(150deg,#15191e,#08090e)!important}
+.bc-media-panel .media-dialog{background:linear-gradient(150deg,#15191e,#0b0b10)}
+
+/* corporate-chat-media-responsive.css */
+@media (min-width:700px){body.bc-has-media-bubbles:has(.bc-bubble-host-standalone)>.chat{border:1px solid #49515a}
+}
+@media (max-width:699px) and (orientation:portrait){body.bc-has-media-bubbles .bc-media-bubble-tabs:not([hidden]){background:linear-gradient(120deg,#15191e,#0c0f13)}
+.bc-media-bubble-tabs button{border:1px solid #49515a;background:#15191e}
+.bc-media-bubble-tabs button.selected{background:#67323d;border-color:#515b66}
+}
+
+/* corporate-chat-media-flip-focus.css */
+.bc-media-bubble-heading-actions .bc-media-bubble-flip{border:1px solid #49515a;background:linear-gradient(145deg,#262c33,#15191e);color:#e0e4eb}
+.bc-media-bubble-heading-actions .bc-media-bubble-flip:hover{border-color:#69737f;background:#67323d}
+.bc-media-panel .bc-media-flip-button{color:#e0e4eb;background:#262c33;border:1px solid #515b66}
+.bc-media-panel .bc-media-flip-button:hover{background:#67323d;border-color:#69737f}
+.bc-media-panel .media-viewer-actions .media-focus-toggle{background:linear-gradient(140deg,#262c33,#1b2026)!important;border:1px solid #515b66!important;color:#e0e4eb!important}
+.bc-media-panel .media-viewer-actions .media-focus-toggle:hover{background:#67323d!important;border-color:#69737f!important}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-host.bc-bubble-host-dock .bc-media-bubble-tabs:not([hidden]){background:#0c0f13!important}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-tabs button{background:#15191e;border:1px solid #49515a;color:#aeb7c3}
+body.bc-handset-portrait.bc-has-media-bubbles .bc-media-bubble-tabs button.selected{background:#67323d;border-color:#515b66}
+body.bc-handset-portrait.bc-has-media-bubbles:has(.bc-bubble-host-standalone)>.chat{border:1px solid #49515a}
+
+/* corp-adaptive-chat.css */
+
+/* corporate-chat-compact-media.css */
+html.bc-chat-lite .bc-inline-upload-bubble{background:linear-gradient(145deg,#1b2026,#15191e)!important;border:1px solid #49515a!important}
+html.bc-chat-lite .bc-inline-upload-track{background:#262c33}
+html.bc-chat-lite .bc-inline-upload-fill{background:linear-gradient(90deg,#a12c3e,#e0e4eb)}
+html.bc-chat-lite .bc-inline-upload-percent{color:#e0e4eb}
+html.bc-chat-lite .bc-inline-upload-actions button{background:#1b2026;border:1px solid #49515a}
+html.bc-chat-lite .message-media .bubble{border:1px solid #49515a!important}
+html.bc-chat-lite .message-media.mine .bubble{background:linear-gradient(145deg,#1b2026,#15191e)!important}
+html.bc-chat-lite .message-media .bubble>strong{color:#e0e4eb!important}
+html.bc-chat-lite .bc-chat-inline-loading{color:#aeb7c3!important}
+html.bc-chat-lite .chat.media-open .media-viewer{background:linear-gradient(160deg,#15191e,#08080c)!important}
+html.bc-chat-lite .bc-mobile-lightbox-close{border:1px solid #49515a;background:#15191e}
+html.bc-chat-lite .bc-mobile-lightbox-prev,
+html.bc-chat-lite .bc-mobile-lightbox-next{background:#0c0f13bf}
+
+/* Dark glass for private conversations; do not alter photo/video elements. */
+html:has(body.bc-chat),body.bc-chat{background:#030507!important}
+body.bc-chat{color:#e8ebf0!important}
+body.bc-chat input,body.bc-chat textarea,body.bc-chat select{color:#f1f3f6;background-color:#0b0e12;border-color:#343c46}
+body.bc-chat .chat-shell,body.bc-chat .chat-panel,body.bc-chat .panel,body.bc-chat .dialog,
+body.bc-chat .sidebar,body.bc-chat .conversation-list{border-color:#303841!important}
+body.bc-chat button:focus-visible,body.bc-chat a:focus-visible{outline-color:#d04455!important}
+
+
+/* Keep the attachment plus and send arrow optically centered inside their buttons.
+   Only the glyph moves; existing circular buttons, touch targets and actions remain intact. */
+.composer #mediaToggleButton,
+.composer #sendButton{
+  display:grid;
+  place-items:center;
+  padding:0;
+  text-align:center;
+  line-height:1;
+}
+.composer #mediaToggleButton .composer-symbol,
+.composer #sendButton .composer-symbol{
+  display:block;
+  width:max-content;
+  height:auto;
+  margin:0;
+  padding:0;
+  line-height:1;
+  font-weight:inherit;
+  letter-spacing:0;
+  pointer-events:none;
+  transform:translateY(-1px);
+}
+
+/* BLACKCELL OS / native Messages workspace. Scoped to OS, never the independent media app. */
+html.bc-os-chat body.bc-chat{background:#18181c!important}
+html.bc-os-chat .chat-header{display:none!important}
+html.bc-os-chat .chat{flex:1;min-height:0;height:auto;background:#131316}
+html.bc-os-chat:not(.bc-compact-chat) .chat:not(.media-open){grid-template-columns:clamp(184px,30%,258px) minmax(0,1fr)}
+html.bc-os-chat .sidebar{display:flex;flex-direction:column;min-width:0;min-height:0;padding:13px 10px;background:#222226;border-color:#ffffff16!important;overflow:hidden}
+html.bc-os-chat .inbox-intro{display:flex;align-items:center;gap:10px;margin:2px 4px 18px}
+html.bc-os-chat .inbox-intro-icon{width:32px;height:32px;border-radius:10px;font-size:17px;background:linear-gradient(145deg,#45454d,#25252b);border:1px solid #ffffff24;box-shadow:none}
+html.bc-os-chat .inbox-intro-label strong{display:block;font-size:17px;letter-spacing:-.04em;color:#f5f5f7}
+html.bc-os-chat .inbox-intro-label small{display:block;margin-top:3px;font-size:8px;letter-spacing:.09em;color:#a3a3ad;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.bc-os-chat .inbox-intro-status{width:6px;height:6px;box-shadow:none;background:#75c79c}
+html.bc-os-chat .label-with-count{margin:0 4px 8px;font-size:9px;color:#b3b3bd;letter-spacing:.065em;gap:3px}
+html.bc-os-chat .label-with-count span:last-child{background:#313138;border:0;padding:3px 7px;color:#e6e6eb}
+html.bc-os-chat .peer-search-wrap{background:#18181d;border:1px solid #ffffff13;border-radius:8px;margin:0 0 12px;padding:0 9px;gap:6px}
+html.bc-os-chat .peer-search-wrap input{height:33px;background:transparent;font-size:12px;color:#efeff2}
+html.bc-os-chat .peer-search-wrap span{font-size:17px;color:#9999a4}
+html.bc-os-chat #peers{min-height:0;flex:1;overflow:auto;scrollbar-width:none;padding:0}
+html.bc-os-chat #peers::-webkit-scrollbar,html.bc-os-chat .conversation::-webkit-scrollbar{display:none}
+html.bc-os-chat .peer,html.bc-os-chat.bc-compact-chat .peer{position:relative;display:flex!important;align-items:center!important;gap:9px!important;flex-direction:row!important;text-align:left!important;min-height:66px;width:100%;margin:0 0 4px;padding:9px 8px!important;border-radius:9px;background:transparent;border:1px solid transparent;box-shadow:none;transform:none!important}
+html.bc-os-chat .peer:hover,html.bc-os-chat.bc-compact-chat .peer:hover{background:#ffffff08;transform:none!important;border-color:#ffffff08}
+html.bc-os-chat .peer.active,html.bc-os-chat.bc-compact-chat .peer.active{background:#38383f;border-color:#ffffff13;box-shadow:inset 3px 0 #ad4053}
+html.bc-os-chat .peer .avatar,html.bc-os-chat.bc-compact-chat .peer .avatar{width:34px!important;height:34px!important;margin:0!important;border-radius:50%;flex:none;font-size:13px!important;background:linear-gradient(145deg,#54545d,#2e2e35);border:1px solid #ffffff22;box-shadow:none}
+html.bc-os-chat .peer-copy{display:block;min-width:0;flex:1}
+html.bc-os-chat .peer-copy strong{display:block;font-size:12px!important;font-weight:650;color:#f5f5f7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+html.bc-os-chat .peer-copy small{display:block!important;color:#a2a2af;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:3px 0 0;letter-spacing:0}
+html.bc-os-chat .peer-preview{display:block;color:#b7b7c3;font-size:11px;line-height:1.35;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+html.bc-os-chat .peer-meta{position:absolute;right:9px;bottom:6px;color:#9696a1;font-size:9px;line-height:1.2;padding:0}
+html.bc-os-chat .peer:has(.peer-meta) .peer-preview{padding-right:47px}
+html.bc-os-chat .chat-main{min-width:0;background:radial-gradient(ellipse at 50% 0%,#28282e33,transparent 45%),#151518}
+html.bc-os-chat .chat-title{min-height:62px;flex:none;padding:10px 15px;background:#202024;border-bottom:1px solid #ffffff12;gap:9px;box-shadow:none}
+html.bc-os-chat .imessage-identity{gap:10px}
+html.bc-os-chat .imessage-portrait{width:35px;height:35px;font-size:14px;box-shadow:none;background:linear-gradient(145deg,#51515a,#292930);border-color:#ffffff22}
+html.bc-os-chat .imessage-names strong{font-size:13px;font-weight:650;color:#f5f5f7;letter-spacing:0}
+html.bc-os-chat .imessage-names small{font-size:10px;margin-top:3px;color:#a3a3af;letter-spacing:0}
+html.bc-os-chat .imessage-title-actions{gap:8px;flex:none}
+html.bc-os-chat .imessage-title-actions a{background:#313137;border:1px solid #ffffff18;border-radius:7px;padding:7px 9px;font-size:9px;color:#e7e7ee}
+html.bc-os-chat .conversation{padding:16px 20px;min-width:0;min-height:0;scrollbar-width:none;overscroll-behavior:contain}
+html.bc-os-chat .os-chat-empty{margin:auto;max-width:310px;text-align:center;padding:20px 8px;color:#b0b0bc}
+html.bc-os-chat .os-chat-empty-icon{display:block;position:relative;width:50px;height:40px;margin:0 auto 20px;border:2px solid #71717c;border-radius:14px;background:linear-gradient(145deg,#34343b,#25252a)}
+html.bc-os-chat .os-chat-empty-icon:after{content:"";position:absolute;left:9px;bottom:-6px;width:11px;height:11px;background:#29292f;border-left:2px solid #71717c;border-bottom:2px solid #71717c;transform:skewY(-35deg)}
+html.bc-os-chat .os-chat-empty h2{font-size:17px;font-weight:650;letter-spacing:-.035em;color:#e7e7ed;margin:0 0 7px}
+html.bc-os-chat .os-chat-empty p{font-size:12px;line-height:1.5;margin:0}
+html.bc-os-chat .media-actions{background:#1c1c20;border-color:#ffffff0d;gap:5px;padding:7px 11px}
+html.bc-os-chat .media-actions button{color:#d6d6de;background:#2a2a30;border:1px solid #ffffff16;border-radius:7px;font-size:9px;letter-spacing:0;padding:7px 9px}
+html.bc-os-chat .media-actions button:last-child{margin-left:auto}
+html.bc-os-chat .composer{background:#202024;border-top:1px solid #ffffff10;padding:9px 11px 11px;gap:8px}
+html.bc-os-chat .composer-input-wrap{min-height:36px;background:#17171b;border:1px solid #ffffff24;border-radius:20px}
+html.bc-os-chat .composer .composer-add,html.bc-os-chat .composer .composer-send{width:36px;height:36px;min-width:36px;min-height:36px;box-shadow:none;flex:none}
+html.bc-os-chat .composer .composer-add{background:#303037;border:1px solid #ffffff22;color:#d9d9e0}
+html.bc-os-chat .composer .composer-send{background:linear-gradient(145deg,#b84459,#8d273d);border:1px solid #ffffff1c;box-shadow:0 0 12px #a12c3e33}
+html.bc-os-chat .composer .composer-send:disabled{background:#33333a;color:#9696a1;box-shadow:none}
+html.bc-os-chat .composer .composer-input-wrap textarea{font-size:13px}
+html.bc-os-chat.bc-compact-chat .sidebar{padding:17px 13px}
+html.bc-os-chat.bc-compact-chat .inbox-intro{margin:4px 5px 18px}
+html.bc-os-chat.bc-compact-chat .peer{min-height:68px}
+html.bc-os-chat.bc-compact-chat .bc-inbox-back{height:32px;width:32px;min-width:32px;background:#303037;border-color:#ffffff18}
+@media(max-width:820px){html.bc-os-chat .imessage-secure-indicator{display:none}html.bc-os-chat .media-actions button:last-child{margin-left:0}}
+@media(max-width:550px){html.bc-os-chat .chat-title{padding:9px 11px;min-height:58px}html.bc-os-chat .conversation{padding:12px 14px}html.bc-os-chat .imessage-title-actions a{padding:7px;font-size:9px}html.bc-os-chat .message{max-width:91%}}
+
+/* Collapse the ENTIRE conversation rail inside OS. Compact mobile navigation is separate. */
+.os-chat-sidebar-toggle{display:none}
+html.bc-os-chat:not(.bc-compact-chat) .os-chat-sidebar-toggle:not([hidden]){display:grid;place-items:center;width:32px;height:32px;flex:0 0 32px;padding:0;border:1px solid #ffffff18;border-radius:7px;background:#303037;color:#d7d7de;cursor:pointer}
+html.bc-os-chat .os-chat-sidebar-toggle:hover{background:#414148;color:#fff}
+html.bc-os-chat .os-chat-sidebar-toggle:disabled{opacity:.4;cursor:default}
+html.bc-os-chat .os-chat-sidebar-toggle svg{width:17px;height:17px;display:block}
+html.bc-os-chat .os-chat-sidebar-toggle[aria-expanded=false] .os-sidebar-chevron{transform:rotate(180deg);transform-origin:14px 12px}
+html.bc-os-chat:not(.bc-compact-chat) .chat.os-sidebar-closed:not(.media-open){grid-template-columns:0 minmax(0,1fr)}
+html.bc-os-chat:not(.bc-compact-chat) .chat.os-sidebar-closed>.sidebar{width:0;min-width:0;max-width:0;padding:0;border:0;visibility:hidden;overflow:hidden;pointer-events:none}
+html.bc-os-chat:not(.bc-compact-chat) .chat.os-sidebar-closed.media-open{grid-template-columns:0 minmax(0,.85fr) minmax(320px,1fr)}
+@media(max-width:760px){html.bc-os-chat:not(.bc-compact-chat) .chat.os-sidebar-closed.media-open{grid-template-columns:0 minmax(0,1fr)}}
+@media(prefers-reduced-motion:reduce){html.bc-os-chat .chat{transition:none}}
+
+/* Native OS: an inactive media viewer must never create a second grid row.
+   Keep the visible conversation and composer in the one full-height track. */
+html.bc-os-chat body.bc-chat{height:100%;height:100dvh;min-height:0;overflow:hidden}
+html.bc-os-chat body.bc-chat>.chat{flex:1 1 0%;width:100%;min-width:0;min-height:0;overflow:hidden}
+html.bc-os-chat:not(.bc-compact-chat) body.bc-chat>.chat{display:grid;grid-template-rows:minmax(0,1fr);align-items:stretch}
+html.bc-os-chat:not(.bc-compact-chat) .chat>.sidebar{grid-column:1;grid-row:1;align-self:stretch}
+html.bc-os-chat:not(.bc-compact-chat) .chat>.chat-main{grid-column:2;grid-row:1;align-self:stretch}
+html.bc-os-chat .chat:not(.media-open)>.media-viewer{display:none!important}
+html.bc-os-chat .chat>.chat-main{height:100%;min-width:0;min-height:0;max-height:100%;overflow:hidden}
+html.bc-os-chat .chat-main>.chat-title,html.bc-os-chat .chat-main>.media-actions,html.bc-os-chat .chat-main>.composer{flex:0 0 auto}
+html.bc-os-chat .chat-main>.conversation{flex:1 1 0%;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
+html.bc-os-chat .conversation:has(>.message)::before{content:"";flex:1 0 0px}
+html.bc-os-chat .conversation>.message{flex-shrink:0}
+html.bc-os-chat .composer .composer-input-wrap{min-width:0;align-items:center;overflow:hidden}
+html.bc-os-chat .composer .composer-input-wrap textarea{display:block;box-sizing:border-box;min-height:38px;height:38px;max-height:112px;padding:9px 13px;line-height:20px;font-family:inherit;resize:none;overflow-y:auto;scrollbar-width:none}
+html.bc-os-chat .composer .composer-input-wrap textarea::-webkit-scrollbar{display:none}
+@media(min-width:761px){
+ html.bc-os-chat:not(.bc-compact-chat) .chat.media-open:not(.os-sidebar-closed){grid-template-columns:clamp(165px,22%,220px) minmax(0,.85fr) minmax(280px,1fr)}
+ html.bc-os-chat:not(.bc-compact-chat) .chat.media-open>.media-viewer{grid-column:3;grid-row:1;min-height:0}
+}
+@media(max-width:760px){
+ html.bc-os-chat:not(.bc-compact-chat) .chat.media-open:not(.os-sidebar-closed){grid-template-columns:clamp(160px,30%,220px) minmax(0,1fr)}
+ html.bc-os-chat .chat.media-open>.media-viewer{position:absolute;top:0;bottom:0;right:0;height:100%;max-height:100%}
+}
+
+
+/* BLACKCELL iMessage · Android keyboard parity with REDLINE.
+   Keep the editable composer in stable LTR mode for English, with a normal
+   Unicode bidi algorithm. Do not let device locale, inherited text direction
+   or plaintext paragraph reordering move the insertion point to the right. */
+body.bc-chat .composer .composer-input-wrap #messageInput{
+ direction:ltr!important;
+ unicode-bidi:normal!important;
+ text-align:left!important;
+ writing-mode:horizontal-tb!important;
+ transform:none!important;
+}
+body.bc-chat .composer .composer-input-wrap #messageInput::placeholder{
+ direction:ltr!important;
+ text-align:left!important;
+}
+
+
+/* Source: corporate-chat-media-workspace.css?v=20261115-photos-uploader1 */
+/* BLACKCELL iMessage — unified, in-window media workspace */
+html:not(.bc-media-panel) .media-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;background:#1b1b1f;border-top:1px solid #ffffff12;padding:9px 13px}
+html:not(.bc-media-panel) .media-actions[hidden],html:not(.bc-media-panel) .media-actions.is-collapsed{display:none!important}
+html:not(.bc-media-panel) .media-actions button{font-size:11px;letter-spacing:0;font-weight:650;text-transform:none;padding:8px 12px;color:#e8e8ec;background:#29292f;border:1px solid #ffffff13;border-radius:9px;min-height:33px}
+html:not(.bc-media-panel) .media-actions .bc-media-share-primary{background:linear-gradient(135deg,#6f2636,#a12a40);border-color:#be4a5d55;color:white}
+html:not(.bc-media-panel) .media-actions .bc-media-library-trigger{margin-left:auto;background:#2c2c33}
+html:not(.bc-media-panel) .media-actions .bc-media-library-trigger[aria-expanded=true]{border-color:#ad495a;background:#522a35}
+.bc-chat-header-media{display:none;background:#29292f;color:#eee;border:1px solid #ffffff16;border-radius:8px;padding:7px 10px;font-size:11px;font-weight:600;white-space:nowrap}
+html.bc-chat-lite .bc-chat-header-media,html.bc-compact-chat .bc-chat-header-media{display:block}
+html:not(.bc-media-panel) .chat:not(.media-open)>.media-viewer{display:none!important}
+html:not(.bc-media-panel) .chat.media-open>.media-viewer{display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;min-height:0;min-width:0;transform:none!important;grid-area:1/3;border-radius:0;box-shadow:none;background:#131316}
+html:not(.bc-media-panel) .chat.media-open>.chat-main{transform:none!important;min-width:0}
+@media(min-width:850px){
+ html:not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open{grid-template-columns:clamp(155px,20%,220px) minmax(0,1fr) clamp(300px,var(--bc-shared-width,42%),calc(100% - clamp(155px,20%,220px) - 260px))!important;grid-template-rows:minmax(0,1fr)}
+ html:not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open.os-sidebar-closed{grid-template-columns:0 minmax(0,1fr) clamp(300px,var(--bc-shared-width,42%),calc(100% - 260px))!important}
+ html:not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open>.media-viewer{position:relative!important;inset:auto!important;width:auto!important;height:100%;max-height:100%;animation:bcMediaSlide .25s ease-out}
+}
+@media(max-width:849px){
+ /* Small desktop windows and pop-outs: overlay the current conversation, not a
+    third grid column that lies beyond the two-column chat viewport. */
+ html:not(.bc-media-panel) .chat.media-open{position:relative!important;isolation:isolate;min-width:0;overflow:hidden}
+ html:not(.bc-media-panel) .chat.media-open>.media-viewer{
+  position:absolute!important;grid-area:auto!important;inset:0!important;
+  width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;
+  min-width:0!important;min-height:0!important;z-index:70;box-shadow:none;
+  animation:bcMediaSlide .25s ease-out
+ }
+ html:not(.bc-media-panel) .chat.media-open>.media-viewer .bc-media-focus-body{min-width:0;min-height:0}
+}
+@keyframes bcMediaSlide{from{transform:translateX(25px);opacity:.4}to{transform:translateX(0);opacity:1}}
+html:not(.bc-media-panel) .media-viewer-head{padding:12px;background:#202024}
+html:not(.bc-media-panel) .media-viewer-brand strong{font-size:15px;letter-spacing:-.02em}
+html:not(.bc-media-panel) .media-viewer-brand small{font-size:9px;letter-spacing:.04em}
+html:not(.bc-media-panel) .media-viewer-actions button{font-size:10px;min-height:30px;padding:6px 8px;border:1px solid #ffffff18;background:#2b2b31}
+html:not(.bc-media-panel) .media-viewer-tools{padding:9px;gap:7px}
+html:not(.bc-media-panel) .media-viewer-tools input[type=search]{min-width:90px}
+html:not(.bc-media-panel) .media-viewer-stage{min-height:80px;flex:1 1 0;overflow:hidden}
+html:not(.bc-media-panel) .media-viewer-stage img,html:not(.bc-media-panel) .media-viewer-stage video{object-fit:contain}
+html:not(.bc-media-panel) .media-library{flex:0 0 32%;max-height:38%;min-height:94px}
+html:not(.bc-media-panel) .media-viewer.media-focused .media-library,html:not(.bc-media-panel) .media-viewer.media-focused .media-viewer-tools{display:none}
+html:not(.bc-media-panel) .media-library-list{grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:6px;padding:8px}
+html:not(.bc-media-panel) .media-library-item{height:80px;border-radius:6px}
+html:not(.bc-media-panel) .media-library-item img,html:not(.bc-media-panel) .media-library-item .media-video-thumb{height:60px}
+html:not(.bc-media-panel) .media-dialog{background:#1b1b20;border:1px solid #ffffff24;border-radius:18px;max-height:90dvh;width:min(610px,96%);box-shadow:0 24px 90px #000a}
+html:not(.bc-media-panel) .media-dialog-head{background:#212126;padding:18px}
+html:not(.bc-media-panel) .media-dialog-head strong{font-size:20px;letter-spacing:-.03em;text-transform:none}
+html:not(.bc-media-panel) .media-dialog-selection{min-height:85px;border-color:#ffffff24;background:#17171b}
+html:not(.bc-media-panel) .media-dialog-footer{flex-wrap:wrap;gap:8px;padding:13px}
+html:not(.bc-media-panel) .media-dialog-footer button{min-height:38px;background:#303038;color:white;border-color:#ffffff20;letter-spacing:0}
+html:not(.bc-media-panel) .media-dialog-footer .media-primary{background:#a22d43;border-color:#be4a5e;color:white}
+.bc-media-selection-icon{width:35px;height:35px;display:grid;place-items:center;flex:none;border-radius:8px;background:#33333c;color:#e3a5b1;font-size:17px}
+.bc-media-selection-detail{flex:1;min-width:0;overflow-wrap:anywhere}.bc-media-selection-detail small{display:block}
+.bc-pm-picker{position:fixed;inset:0;z-index:13000;display:grid;place-items:center;background:#000b;backdrop-filter:blur(10px);padding:12px}
+.bc-pm-picker-panel{width:min(580px,100%);max-height:90dvh;display:flex;flex-direction:column;gap:12px;min-height:0;background:#1d1d22;border:1px solid #ffffff25;border-radius:16px;padding:18px}
+.bc-pm-picker-panel .bc-pm-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.bc-pm-picker-panel h2{margin:0;font-size:18px}.bc-pm-picker-panel p{margin:5px 0;color:#b8b8c2;font-size:12px}
+.bc-pm-picker-panel button,.bc-pm-picker-panel input{font:inherit;color:#eee;border:1px solid #ffffff24;background:#303038;border-radius:8px;padding:9px}
+.bc-pm-picker-panel input[type=search]{width:100%;background:#141416}
+.bc-pm-pick-list{overflow:auto;min-height:80px;flex:1}
+.bc-pm-pick-row{display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid #ffffff12;font-size:12px;overflow-wrap:anywhere}
+.bc-pm-pick-row input{accent-color:#b43b50}.bc-pm-picker-panel>button{background:#a22d43}
+@media(max-width:520px){.bc-chat-header-media{font-size:10px;padding:7px 8px}.imessage-title-actions{gap:5px}.imessage-title-actions .imessage-secure-indicator{display:none}}
+@media(prefers-reduced-motion:reduce){html:not(.bc-media-panel) .chat.media-open>.media-viewer{animation:none!important}}
+
+/* Approved interactive preview: source cards, selection thumbnails and Photos action. */
+.bc-media-quick{display:inline-flex;align-items:center;gap:6px}
+.bc-media-quick svg{width:15px;height:15px;flex:none}
+.bc-media-source-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:15px}
+.media-dialog .bc-media-source{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:7px;min-height:94px;text-align:center;background:#25252b;border-color:#ffffff18;letter-spacing:0;font-size:13px;font-weight:650;padding:11px}
+.media-dialog .bc-media-source:hover{background:#333039;border-color:#b74c61}
+.bc-media-source svg{width:24px;height:24px;color:#d899a7}
+.bc-media-source small{font-size:10px;color:#a9a9b4;font-weight:400}
+.bc-media-selected-thumb{width:42px;height:42px;object-fit:cover;flex:none;border-radius:7px}
+.media-dialog-footer .media-primary{flex:1}
+.bc-chat-transfer{background:#8b2c40!important;border:1px solid #ba4b60!important;color:#fff!important;white-space:nowrap;font-size:10px!important;min-height:32px;padding:7px 8px!important;border-radius:8px}
+.bc-chat-transfer[hidden]{display:none!important}
+.media-viewer-meta{flex-wrap:wrap}
+.bc-mobile-lightbox-bar .bc-chat-transfer{font-size:9px!important;min-height:32px;letter-spacing:0}
+@media(max-width:420px){.bc-media-source-cards{gap:8px}.media-dialog .bc-media-source{font-size:12px;padding:8px}.bc-mobile-lightbox-bar .bc-chat-transfer{white-space:normal;max-width:110px}}
+
+/* Directly adjustable Shared Media split. No percentage slider or size menu. */
+.bc-media-resize{position:relative;flex:none;touch-action:none;user-select:none;outline:none;z-index:10;background:transparent}
+.bc-media-resize[hidden]{display:none!important}
+.bc-media-resize-width{display:none;position:absolute;top:0;bottom:0;left:0;width:11px;cursor:col-resize;z-index:15}
+.bc-media-resize-width::after{content:"";position:absolute;top:0;bottom:0;left:0;width:2px;background:#ffffff17;transition:background .15s}
+.bc-media-resize-width::before{content:"";position:absolute;left:3px;top:calc(50% - 20px);width:4px;height:40px;border-radius:6px;background:#ffffff35}
+.bc-media-resize-height{height:10px;min-height:10px;cursor:row-resize;background:#17171b;border-top:1px solid #ffffff16;border-bottom:1px solid #ffffff12}
+.bc-media-resize-height::after{content:"";position:absolute;top:3px;left:calc(50% - 20px);height:3px;width:40px;border-radius:4px;background:#ffffff45}
+.bc-media-resize:hover,.bc-media-resize:focus-visible{background:#ab3b4b38}
+.bc-media-resize-width:hover::after,.bc-media-resize-width:focus-visible::after,.bc-media-resize-height:hover::after,.bc-media-resize-height:focus-visible::after{background:#e16d80}
+html.bc-media-resizing{user-select:none!important}
+html.bc-media-resizing .chat,html.bc-media-resizing .chat-main,html.bc-media-resizing .media-viewer,html.bc-media-resizing .media-library,html.bc-media-resizing .media-viewer-stage{transition:none!important;animation:none!important}
+html:not(.bc-media-panel) .chat.media-open{transition:none!important}
+html:not(.bc-media-panel) .media-viewer-stage,html:not(.bc-media-panel) .media-library-list{contain:layout paint}
+html.bc-media-resizing .media-library-item,html.bc-media-resizing .media-viewer-stage img,html.bc-media-resizing .media-viewer-stage video{transition:none!important}
+html:not(.bc-media-panel) .media-viewer .media-library{flex:0 1 var(--bc-library-share,32%);max-height:none;min-height:94px}
+html:not(.bc-media-panel) .media-viewer .media-viewer-stage{flex:1 1 0;min-height:100px}
+html:not(.bc-media-panel) .media-viewer :is(.media-viewer-head,.media-viewer-tools,.media-viewer-status,.media-viewer-meta){flex:none}
+html:not(.bc-media-panel) .media-viewer.media-focused .bc-media-resize-height{display:none!important}
+html.bc-media-panel .bc-media-resize{display:none!important}
+@media(min-width:850px){
+ html:not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open .bc-media-resize-width{display:block}
+ html:not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open>.media-viewer{padding-left:8px;border-left:0}
+}
+@media(max-height:430px){html:not(.bc-media-panel) .media-viewer .media-viewer-stage{min-height:56px}html:not(.bc-media-panel) .media-viewer .media-library{min-height:64px}}
+
+/* High-performance resizing: only this layer moves until pointer release. */
+.bc-media-drag-guide{position:fixed;z-index:2147483000;pointer-events:none;background:#e35b73;border-radius:2px;will-change:transform;contain:strict;transition:none!important;animation:none!important}
+.bc-media-drag-guide[hidden]{display:none!important}
+.bc-media-drag-guide.is-width{box-shadow:0 0 7px #e35b7355}
+.bc-media-drag-guide.is-height{box-shadow:0 0 7px #e35b7355}
+html.bc-media-resizing .bc-media-resize::after{transition:none!important}
+
+/* Focus View is fast because the thumbnail subtree is not painted. Give
+   normal library mode the same drag performance, without changing the
+   saved dimensions, selected photograph, scroll position or filters. */
+html:not(.bc-media-panel) .media-viewer .media-library{position:relative;contain:layout paint;isolation:isolate;min-width:0}
+html:not(.bc-media-panel) .media-viewer .media-library-list{flex:1 1 0;min-height:0;min-width:0;grid-template-columns:repeat(auto-fill,78px);justify-content:start;grid-auto-rows:80px;contain:layout paint;overscroll-behavior:contain}
+html:not(.bc-media-panel) .media-library-item{width:78px;height:80px;contain:strict;content-visibility:auto;contain-intrinsic-size:78px 80px}
+html:not(.bc-media-panel) .media-library-item img{width:100%;height:60px;object-fit:cover;display:block}
+html:not(.bc-media-panel) .media-library-item.selected{box-shadow:none;border-color:#c64b61}
+html.bc-media-resizing:not(.bc-media-panel) .media-viewer:not(.media-focused) .media-library-list{content-visibility:hidden;visibility:hidden;pointer-events:none}
+html.bc-media-resizing:not(.bc-media-panel) .media-viewer:not(.media-focused) .media-library::after{content:"Resizing…";position:absolute;bottom:10px;left:12px;color:#888891;font-size:10px;pointer-events:none}
+
+/* Permanent focus view: only media, navigation, transfer and close. */
+.media-viewer.bc-focus-only .media-viewer-head{flex:0 0 auto;min-height:49px;padding:10px 13px}
+.media-viewer.bc-focus-only .media-viewer-status:empty{display:none!important}
+.media-viewer.bc-focus-only .media-viewer-status:not(:empty){display:block!important;flex:none;overflow-wrap:anywhere}
+.media-viewer.bc-focus-only .media-viewer-stage{flex:1 1 0!important;min-height:0!important;max-height:none!important;aspect-ratio:auto!important}
+.media-viewer.bc-focus-only .media-stage-inner{width:100%;height:100%;min-height:0}
+.media-viewer.bc-focus-only .media-stage-inner img,.media-viewer.bc-focus-only .media-stage-inner video{width:100%;height:100%;object-fit:contain}
+.media-viewer.bc-focus-only .media-viewer-meta{flex:0 0 auto;min-height:42px;padding:8px 12px}
+.media-viewer.bc-focus-only .media-viewer-actions button[hidden],.media-viewer.bc-focus-only .media-full-link[hidden]{display:none!important}
+
+/* Slim vertical media filmstrip: fixed geometry, independent scroll, no full gallery. */
+.media-viewer.bc-focus-only .bc-media-focus-body{flex:1 1 0!important;min-height:0;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) 76px;overflow:hidden;background:#060607}
+.media-viewer.bc-focus-only .bc-media-focus-body>.media-viewer-stage{height:100%;width:100%;min-width:0;margin:0!important}
+.bc-chat-filmstrip{min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden;background:#19191d;border-left:1px solid #ffffff15;contain:layout paint;isolation:isolate}
+.bc-filmstrip-scroll{flex:1 1 0;min-height:0;min-width:0;overflow:auto;overflow-x:hidden;scrollbar-width:none;overscroll-behavior:contain;outline:none}
+.bc-filmstrip-scroll::-webkit-scrollbar{display:none}
+.bc-filmstrip-track{position:relative;width:100%;min-height:0}
+.media-viewer .bc-filmstrip-tile{position:absolute;left:7px;width:62px;height:64px;padding:0!important;display:grid;place-items:center;overflow:hidden;border-radius:6px;background:#242428;border:1px solid #ffffff15;font-size:18px;color:#a6a6af;contain:strict;transition:none!important;box-shadow:none}
+.media-viewer .bc-filmstrip-tile img{display:block;width:100%;height:100%;object-fit:contain;background:#17171b;pointer-events:none}
+.media-viewer .bc-filmstrip-tile.selected{border:2px solid #e36379;color:#eee;background:#372129}
+.media-viewer .bc-filmstrip-tile:focus-visible{outline:2px solid #f2a2af;outline-offset:-3px}
+.media-viewer .bc-filmstrip-more{font-size:11px;min-height:0}
+html.bc-media-resizing .bc-chat-filmstrip .bc-filmstrip-track{content-visibility:hidden;visibility:hidden;pointer-events:none}
+@media(max-width:550px){.media-viewer.bc-focus-only .bc-media-focus-body{grid-template-columns:minmax(0,1fr) 70px}.media-viewer .bc-filmstrip-tile{left:4px}}
+
+/* A popped-out desktop conversation stays visible when its library opens.
+   The OS expands the host window when possible; a tight viewport stacks the panes. */
+html.bc-chat-popout.bc-compact-chat:not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open{
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr)!important;
+ grid-template-rows:minmax(0,1fr) minmax(0,1fr)!important;
+ gap:0;overflow:hidden!important;position:relative!important;
+}
+html.bc-chat-popout.bc-compact-chat:not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open>.sidebar{display:none!important}
+html.bc-chat-popout.bc-compact-chat:not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open>.chat-main{
+ grid-area:1/1!important;position:relative!important;height:100%;width:100%;min-height:0;min-width:0;
+ overflow:hidden;transform:none!important
+}
+html.bc-chat-popout.bc-compact-chat:not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open>.media-viewer{
+ grid-area:2/1!important;position:relative!important;inset:auto!important;display:flex!important;
+ width:100%!important;height:100%!important;max-width:100%;max-height:100%;min-height:0;min-width:0;
+ padding:0!important;border-left:0;border-top:1px solid #ffffff24;box-shadow:none!important;animation:none!important;
+}
+html.bc-chat-popout.bc-compact-chat:not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open .bc-media-resize-width{display:none!important}
+@media(min-width:640px){
+ html.bc-chat-popout.bc-compact-chat:not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open{
+  grid-template-columns:minmax(285px,42%) minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr)!important
+ }
+ html.bc-chat-popout.bc-compact-chat:not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open>.media-viewer{
+  grid-area:1/2!important;border-top:0;border-left:1px solid #ffffff24
+ }
+}
+
+/* Shared Media: enlarge the original photograph in the current window. */
+.media-stage-inner img.bc-chat-enlargeable{cursor:zoom-in}
+.media-stage-inner img.bc-chat-enlargeable:focus-visible{outline:2px solid #e4657c;outline-offset:-3px}
+dialog.bc-chat-photo-enlarge{box-sizing:border-box;position:fixed;inset:0;margin:0;width:100%;height:100%;max-width:none;max-height:none;padding:0;border:0;background:#050506;color:#f1f1f3;overflow:hidden}
+dialog.bc-chat-photo-enlarge:not([open]){display:none}
+dialog.bc-chat-photo-enlarge[open]{display:grid;grid-template-rows:auto minmax(0,1fr)}
+dialog.bc-chat-photo-enlarge::backdrop{background:#050506}
+.bc-chat-photo-enlarge-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;background:#202024;border-bottom:1px solid #ffffff16}
+.bc-chat-photo-enlarge-head strong{font-size:13px;font-weight:600}
+.bc-chat-photo-enlarge-close{font:inherit;font-size:12px;color:#e9e9ed;background:#303036;border:1px solid #ffffff20;border-radius:7px;padding:8px 12px;cursor:pointer}
+.bc-chat-photo-enlarge-close:hover{background:#45454b}
+.bc-chat-photo-enlarge-stage{display:grid;place-items:center;min-height:0;min-width:0;overflow:hidden}
+.bc-chat-photo-enlarge-stage img{display:block;width:100%;height:100%;min-width:0;min-height:0;object-fit:contain}
+
+/* A clean focus viewer: only the transfer action in the bottom bar. */
+.media-viewer.bc-focus-only .media-viewer-meta{
+ display:flex!important;align-items:center;justify-content:center!important;
+}
+.media-viewer.bc-focus-only .media-viewer-meta>.bc-chat-transfer{margin:0!important}
+.media-viewer.bc-focus-only .media-viewer-head .bc-media-header-count{
+ color:#a9abb4;font-size:11px;font-variant-numeric:tabular-nums;white-space:nowrap;
+ padding:0 4px;
+}
+.media-viewer.bc-focus-only .bc-media-header-count:empty{display:none}
+
+/* Main iMessage: use the same in-window split at narrow sizes, without
+   putting the absolutely positioned viewer into an implicit third grid column.
+   The conversation list is temporarily hidden, not removed or reconfigured. */
+@media(max-width:1000px){
+ html.bc-os-chat:not(.bc-chat-popout):not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open{
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:minmax(0,1fr) minmax(0,1fr)!important;
+  position:relative!important;overflow:hidden!important;gap:0;min-width:0;min-height:0;
+ }
+ html.bc-os-chat:not(.bc-chat-popout):not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open>.sidebar{display:none!important}
+ html.bc-os-chat:not(.bc-chat-popout):not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open>.chat-main{
+  display:flex!important;grid-area:1/1!important;position:relative!important;inset:auto!important;
+  height:100%;width:100%;min-width:0;min-height:0;overflow:hidden;transform:none!important
+ }
+ html.bc-os-chat:not(.bc-chat-popout):not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open>.media-viewer{
+  display:flex!important;grid-area:2/1!important;position:relative!important;inset:auto!important;
+  width:100%!important;height:100%!important;max-width:100%;max-height:100%;
+  min-width:0;min-height:0;padding:0!important;border-left:0;border-top:1px solid #ffffff24;
+  visibility:visible!important;opacity:1!important;box-shadow:none!important;animation:none!important
+ }
+ html.bc-os-chat:not(.bc-chat-popout):not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open .bc-media-resize-width{display:none!important}
+}
+@media(min-width:640px) and (max-width:1000px){
+ html.bc-os-chat:not(.bc-chat-popout):not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open{
+  grid-template-columns:minmax(285px,42%) minmax(0,1fr)!important;
+  grid-template-rows:minmax(0,1fr)!important
+ }
+ html.bc-os-chat:not(.bc-chat-popout):not(.bc-media-panel):not(.bc-chat-lite) .chat.media-open>.media-viewer{
+  grid-area:1/2!important;border-top:0;border-left:1px solid #ffffff24
+ }
+}
+
+/* Click the enlarged photo again to return to the existing conversation. */
+.bc-chat-photo-enlarge-stage img{cursor:zoom-out}
+.bc-chat-photo-enlarge-stage img:focus-visible{outline:2px solid #e4657c;outline-offset:-3px}
+
+/* Apple-style private chat attachment menu; anchored above the composer +. */
+.bc-attachment-menu{position:fixed;z-index:16000;display:flex;flex-direction:column;gap:2px;box-sizing:border-box;padding:7px;background:#26262bea;border:1px solid #ffffff26;border-radius:16px;box-shadow:0 18px 48px #0009,0 2px 8px #0005;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%);overflow:auto;scrollbar-width:none;animation:bc-attachment-appear .16s ease-out;transform-origin:bottom left}
+.bc-attachment-menu[hidden]{display:none!important}
+.bc-attachment-menu .bc-attachment-item{display:flex;align-items:center;gap:12px;flex:none;width:100%;min-height:43px;padding:9px 11px;text-align:left;border:none;border-radius:9px;background:transparent;color:#f3f3f5;font:500 14px/1.3 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;cursor:pointer}
+.bc-attachment-menu .bc-attachment-item svg{width:21px;height:21px;flex:0 0 21px;color:#d5d5db}
+.bc-attachment-menu .bc-attachment-item:hover,.bc-attachment-menu .bc-attachment-item:focus-visible{background:#ffffff13;outline:none}
+.bc-attachment-menu .bc-attachment-item:disabled{opacity:.35;cursor:default}
+.bc-attachment-divider{height:1px;margin:3px 7px;background:#ffffff16;flex:none}
+@keyframes bc-attachment-appear{from{opacity:0;transform:translateY(5px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.bc-attachment-menu{animation:none}}
+
+/* Compact Apple-inspired liquid-glass attachment menu — BLACKCELL dark appearance. */
+.bc-attachment-menu{
+ padding:5px;gap:1px;border-radius:15px;
+ background:linear-gradient(145deg,#39393dc9,#1a1a20b8);
+ border:1px solid #ffffff36;box-shadow:inset 0 1px 1px #ffffff18,0 24px 60px #0007,0 5px 14px #0004;
+ backdrop-filter:blur(28px) saturate(175%);-webkit-backdrop-filter:blur(28px) saturate(175%);
+}
+.bc-attachment-menu .bc-attachment-item{
+ min-height:36px;gap:9px;padding:4px 8px;border-radius:8px;
+ font:500 13px/1.2 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-.025em;
+}
+.bc-attachment-menu .bc-attachment-app-icon{
+ display:grid;place-items:center;width:26px;height:26px;flex:0 0 26px;border-radius:50%;
+ box-shadow:inset 0 1px 2px #ffffff35,0 2px 5px #0003;
+}
+.bc-attachment-menu .bc-attachment-app-icon svg{width:15px;height:15px;color:#fff}
+.bc-attachment-menu .bc-attachment-app-photos{background:linear-gradient(145deg,#fff,#e6e6e8)}
+.bc-attachment-menu .bc-attachment-app-photos svg{width:21px;height:21px}
+.bc-attachment-menu .bc-attachment-app-videos{background:linear-gradient(145deg,#9b9ba6,#42424b)}
+.bc-attachment-menu .bc-attachment-app-blackcell{background:linear-gradient(145deg,#d35368,#791b32)}
+.bc-attachment-menu .bc-attachment-app-share{background:linear-gradient(145deg,#5cc0ff,#2566d9)}
+.bc-attachment-menu .bc-attachment-app-library{background:linear-gradient(145deg,#ab92f1,#7953bc)}
+.bc-attachment-menu .bc-attachment-divider{display:none}
+@media(pointer:coarse){.bc-attachment-menu{padding:6px;border-radius:18px}.bc-attachment-menu .bc-attachment-item{font-size:14px;min-height:44px;gap:10px;padding:5px 9px}.bc-attachment-menu .bc-attachment-app-icon{width:30px;height:30px;flex-basis:30px}}
+@media(prefers-reduced-transparency:reduce){.bc-attachment-menu{background:#27272d}}
+
+/* Unified Photos uploader — preserve the existing Shared Media viewer. */
+html.bc-chat-lite .bc-photo-upload-overlay:not([hidden]){display:flex!important}
+.bc-photo-upload-overlay:not([hidden]){padding:12px}
+.bc-photo-upload-overlay .bc-photo-upload-dialog{width:min(440px,100%);max-height:min(92dvh,640px);background:linear-gradient(155deg,#25252b,#131317);border:1px solid #ffffff2b;border-radius:19px}
+.bc-photo-upload-dialog .media-dialog-head{padding:13px 15px;gap:6px}
+.bc-photo-upload-dialog .media-dialog-head strong{font-size:19px;letter-spacing:-.025em}
+.bc-photo-upload-dialog .media-dialog-head small{font-size:11px;line-height:1.35;letter-spacing:0}
+.bc-photo-upload-dialog .media-dialog-body{padding:12px 14px;overflow:auto;min-height:0;scrollbar-width:none}
+.bc-photo-upload-sources{display:flex;flex-direction:column;gap:8px;margin:0 0 11px}
+.bc-photo-drop-zone{min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:12px;border:1px dashed #777780;border-radius:13px;background:#ffffff05;text-align:center}
+.bc-photo-drop-zone.is-dragover{border-color:#64acff;background:#1768c82c}
+.bc-photo-drop-zone strong{font-size:13px;color:#f3f3f6}
+.bc-photo-drop-zone small{font-size:11px;color:#a3a3ae}
+.bc-photo-upload-dialog button.bc-photo-device-button{display:flex;align-items:center;gap:6px;padding:7px 11px;background:#33333c;border:1px solid #ffffff21;border-radius:9px;color:#fff;font-size:12px}
+.bc-photo-upload-dialog .bc-photo-device-button svg,.bc-photo-upload-dialog .bc-photo-library-button svg{width:18px;height:18px;flex:none}
+.bc-photo-upload-dialog button.bc-photo-library-button{display:grid;grid-template-columns:22px minmax(0,1fr);text-align:left;align-items:center;gap:3px 9px;background:#29292f;border:1px solid #ffffff20;border-radius:11px;padding:10px 12px;color:#f6f6f7;font-size:13px}
+.bc-photo-library-button svg{grid-row:span 2;color:#d59da8}
+.bc-photo-library-button small{grid-column:2;color:#a8a8b2;font-size:10px;font-weight:400}
+.bc-photo-upload-dialog .media-dialog-selection{min-height:0!important;border:0!important;background:transparent!important;justify-content:start;text-align:left;margin:5px 0 8px;padding:4px 0;font-size:12px;color:#b8b8c0}
+.bc-photo-upload-notice{font-size:12px;line-height:1.4;color:#ffb5bd;margin:4px 0 8px}
+.bc-photo-upload-notice[hidden],.bc-photo-upload-dialog [hidden]{display:none!important}
+.bc-photo-upload-dialog .media-dialog-footer{padding:10px 13px;gap:7px}
+@media(pointer:coarse){.bc-photo-drop-zone strong{display:none}.bc-photo-drop-zone small{font-size:12px}.bc-photo-upload-dialog button.bc-photo-device-button,.bc-photo-upload-dialog button.bc-photo-library-button{min-height:44px}}
+@media(max-height:400px){.bc-photo-drop-zone{min-height:0;padding:8px;gap:3px}}
+
