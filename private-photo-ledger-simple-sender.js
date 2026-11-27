@@ -453,7 +453,7 @@ async function pollCurrentlyViewing(force=false){
  }finally{viewingInFlight=false}
 }
 function appendRatingImage(parent,url,caption){
- if(typeof url!=='string'||!(url.startsWith('https://')||url.startsWith('blob:')))return;
+ if(typeof url!=='string'||!(url.startsWith('https://')||url.startsWith('blob:')||(location.href==='about:srcdoc'&&/^data:image\/(png|jpeg|webp);base64,/.test(url))))return;
  const img=make('img','redline-rated-photo-image');
  img.src=url;img.alt=caption||'Receiver-rated private photo';
  img.loading='lazy';img.decoding='async';

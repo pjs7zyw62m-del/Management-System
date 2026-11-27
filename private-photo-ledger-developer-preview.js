@@ -26,6 +26,19 @@
  const phonePreset=btn('Sender’s phone · Neon Smarta 2',()=>{chooseMode('sender');chooseDevice('mobile',true)});
  phonePreset.id='rdDevSenderPhone';phonePreset.title='Estimated Android 11 Chrome viewport: 320 × 480 CSS pixels; actual browser size may differ.';
  toolbar.append(phonePreset);
+ toolbar.append(btn('Load 5-star test photos',()=>{
+  if(!authorized()||!model?.active)return;
+  for(let i=0;i<3;i++){
+   const canvas=document.createElement('canvas');canvas.width=480;canvas.height=640;
+   const c=canvas.getContext('2d');if(!c)continue;
+   c.fillStyle=['#28252e','#17252d','#34212a'][i];c.fillRect(0,0,480,640);
+   c.fillStyle='#9b1831';c.fillRect(0,0,480,14);
+   c.fillStyle='#fff';c.font='bold 32px system-ui';c.textAlign='center';c.fillText('LOCAL TEST PHOTO',240,290);
+   c.font='24px system-ui';c.fillText('★★★★★  ·  '+(i+1),240,338);
+   model.photos.push({id:crypto.randomUUID(),image_url:canvas.toDataURL('image/png'),caption:'Synthetic test card (not a live photo)',created_at:new Date().toISOString(),decision_status:'accepted',amount_cents:25+i*25,stars:5});
+  }
+  broadcast();
+ }));
  const roomPicker=$('#developerPreviewRoom');if(roomPicker)toolbar.append(roomPicker);
  const importPhotos=btn('Use previous REDLINE photos',()=>void importPreviousPhotos());toolbar.append(importPhotos);
  const libraryStatus=make('p','rd-dev-notice','');libraryStatus.setAttribute('role','status');
@@ -33,7 +46,7 @@
  for(const role of ['receiver','sender']){const wrap=make('section','rd-dev-pane');wrap.append(make('h3','',role.toUpperCase()+' · TEST'));frameWraps[role]=wrap;stage.append(wrap)}
  dialog.append(top,toolbar,notice,libraryStatus,stage);document.body.append(dialog);
  chooseMode(mode);chooseDevice(device);
- function fresh(){return {photos:[],messages:[],active:true,viewing:null,session:crypto.randomUUID()}}
+ function fresh(){return {photos:[],messages:[],breakEvents:[],active:true,viewing:null,session:crypto.randomUUID()}}
  function sendLibrary(){
   if(!dialog.open||!authorized()||!frames.sender||!libraryRoom||window.BLACKCELL_REDLINE_API.snapshot()?.roomId!==libraryRoom)return;
   frames.sender.contentWindow?.postMessage({type:'rd-dev-library',token,images:testLibrary,status:libraryState,message:libraryMessage},'*');
@@ -110,6 +123,18 @@
    model.messages.push({id:crypto.randomUUID(),sender_id:role==='receiver'?'00000000-0000-4000-8000-000000000004':'00000000-0000-4000-8000-000000000005',body:p.body.trim(),created_at:new Date().toISOString()});
   }else if(a==='upload'&&role==='sender'&&p.session===model.session&&typeof p.image==='string'&&p.image.length<=2000000&&/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(p.image)){
    model.photos.push({id:crypto.randomUUID(),image_url:p.image,caption:'Local test photograph',file_name:'Test photo',created_at:new Date().toISOString(),decision_status:'pending',amount_cents:0,stars:0});
+  }else if(a==='resubmit'&&role==='sender'){
+   const original=model.photos.find(x=>x.id===p.id&&!x.resubmission_origin_id&&x.decision_status==='accepted');
+   const blocked=model.photos.some(x=>x.resubmission_origin_id===p.id&&['pending','rejected'].includes(x.decision_status));
+   if(!original||blocked||model.photos.length>=300)ok=false;
+   else model.photos.push({...original,id:crypto.randomUUID(),resubmission_origin_id:original.id,created_at:new Date().toISOString(),decision_status:'pending',amount_cents:0,stars:0,rated_at:null,priced_at:null,decided_at:null});
+  }else if(a==='break'){
+   const rows=model.breakEvents,req=rows.find(x=>x.id===p.requestId&&x.kind==='request'),ended=rows.some(x=>x.request_id===p.requestId&&x.kind==='end'),acked=rows.some(x=>x.request_id===p.requestId&&x.kind==='ack');
+   const open=rows.some(x=>x.kind==='request'&&!rows.some(y=>y.kind==='end'&&y.request_id===x.id)&&Date.now()-Date.parse(x.created_at)<1800000);
+   const validPhoto=model.photos.some(x=>x.id===p.photoId&&x.decision_status==='accepted');
+   if(p.kind==='request')ok=role==='sender'&&!open;
+   else ok=role==='receiver'&&!!req&&!ended&&Date.now()-Date.parse(req.created_at)<1800000&&(p.kind==='ack'&&!acked||p.kind==='end'&&acked||p.kind==='favorite'&&acked&&validPhoto&&!rows.some(x=>x.kind==='favorite'&&x.request_id===p.requestId&&x.photo_id===p.photoId));
+   if(ok)rows.unshift({id:crypto.randomUUID(),kind:p.kind,request_id:p.requestId||null,photo_id:p.photoId||null,created_at:new Date().toISOString()});
   }else if(a==='like'&&role==='receiver'&&model.photos.some(x=>x.id===p.id&&x.decision_status!=='pending')&&model.messages.length<300){
    model.messages.push({id:crypto.randomUUID(),sender_id:'00000000-0000-4000-8000-000000000004',body:'REDLINE_PHOTO_SIGNAL:v1:like:'+p.id,created_at:new Date().toISOString()});
   }else if(['rate','price','reject','view'].includes(a)&&role==='receiver'){
@@ -128,7 +153,7 @@
  window.addEventListener('message',receive);
  // Reuse current production markup and explicitly allowlisted UI scripts only.
  // No authentication, storage, live client, or live-update code is loaded.
- const allow=new Set(['private-photo-ledger-responsive.js','private-photo-ledger-solid-red.js','private-photo-ledger-simple-sender.js','private-photo-ledger-receiver.js','private-photo-ledger-photo-zoom.js','private-photo-ledger-sender-messenger.js','private-photo-ledger-sender-android-fit.js','private-photo-ledger-viewport-fit.js','private-photo-ledger-photo-popup.js']);
+ const allow=new Set(['private-photo-ledger-responsive.js','private-photo-ledger-solid-red.js','private-photo-ledger-simple-sender.js','private-photo-ledger-receiver.js','private-photo-ledger-photo-zoom.js','private-photo-ledger-sender-messenger.js','private-photo-ledger-sender-android-fit.js','private-photo-ledger-viewport-fit.js','private-photo-ledger-photo-popup.js','private-photo-ledger-break.js','private-photo-ledger-sender-reuse.js','private-photo-ledger-money-keypad.js','private-photo-ledger-keyboard-safe.js']);
  // No persistent asset cache: every open or explicit reload revalidates
  // the deployed HTML, scripts and styles using a unique request URL.
  const get=async(url,revision)=>{
@@ -164,7 +189,8 @@
   if(!galleryVersion?.includes('fullscreen')||!styles.some(s=>s.includes('Gallery V6'))||!adapter.includes("action:'open-library'"))throw Error('Old photo gallery assets returned. Refresh the REDLINE app before testing.');
   if(!sources.some(s=>s.includes('rdIndependentReview'))||!styles.some(s=>s.includes('Independent receiver review')))throw Error('Updated receiver popup assets are unavailable. Refresh REDLINE.');
   if(!sources.some(s=>s.includes('rr-popup-menu-mode')&&s.includes('openReceiverPanel'))||!styles.some(s=>s.includes('#redlineReceiverMenuOverlay'))||!adapter.includes('localRoomDirectory'))throw Error('New REDLINE menu or room preview assets are unavailable. Reload after deployment.');
-  return {markup:body.innerHTML,styles,sources,adapter,build:'Receiver POPUP MENU · Sender and Receiver · Gallery FULLSCREEN 7 · '+[receiver?.searchParams.get('v'),mobile?.searchParams.get('v')].filter(Boolean).join(' / ')};
+  if(!sources.some(s=>s.includes('rd-break-toolbar'))||!sources.some(s=>s.includes('BLACKCELL_REDLINE_REUSE_UI=Object.freeze'))||!adapter.includes('breakEvents:async'))throw Error('Smoke break and resubmit preview assets are incomplete. Reload after deployment.');
+  return {markup:body.innerHTML,styles,sources,adapter,build:'Smoke Break / Favorites / Resubmit · Sender mobile parity · Gallery FULLSCREEN 7 · '+[receiver?.searchParams.get('v'),mobile?.searchParams.get('v')].filter(Boolean).join(' / ')};
  }
  function frameDocument(a,role){
   const nonce=crypto.randomUUID(),escapeScript=s=>s.replace(/<\/script/gi,'<\\/script');

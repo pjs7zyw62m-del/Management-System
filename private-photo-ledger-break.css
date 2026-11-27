@@ -9,3 +9,10 @@ dialog.rd-break-dialog{box-sizing:border-box;width:min(760px,96vw)!important;max
 [data-break-favorite]{outline:2px solid #e3475d!important;position:relative}[data-break-favorite]::before{content:'♥ RECEIVER FAVORITE';position:absolute;top:3px;left:4px;z-index:2;background:#7c1027;color:#fff;padding:3px 6px;border-radius:5px;font:700 9px system-ui}
 #redlineSimpleSender .redline-five-star-resubmit,#redlineSimpleSender .redline-photo-history-resend{display:block!important;min-height:42px!important;visibility:visible!important}.rd-reuse-reason{color:#d7a2af!important}
 @media(max-width:650px){.rd-break-toolbar{max-width:36%;gap:3px}.rd-break-toolbar button{font-size:10px!important;padding:4px!important}.rd-break-status{display:none}}
+
+/* Sender actions occupy their own compact row, never the crowded topbar. */
+body.redline-sender-simple #redlineSimpleSender .rd-break-toolbar:not([hidden]){
+ display:flex!important;flex:0 0 auto!important;max-width:none!important;width:100%!important;box-sizing:border-box!important;min-height:36px!important;padding:4px 7px!important;gap:5px!important;align-items:center!important;justify-content:center!important;background:#0b080a!important;border-bottom:1px solid #54202c!important;position:relative!important;z-index:3!important
+}
+body.redline-sender-simple #redlineSimpleSender .rd-break-toolbar button:not([hidden]){display:block!important;flex:1 1 0!important;max-width:none!important;min-height:32px!important;font-size:11px!important;white-space:nowrap!important}
+body.redline-sender-simple #redlineSimpleSender .rd-break-toolbar button:first-child{background:#9c1327!important}

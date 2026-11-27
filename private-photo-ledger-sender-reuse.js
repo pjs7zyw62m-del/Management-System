@@ -39,7 +39,7 @@
  document.body.append(overlay);
  let selection=null,focusBefore=null,busy=false,done=false;
  const validSrc=src=>typeof src==='string'&&
-  (src.startsWith('https://')||src.startsWith('blob:'));
+  (src.startsWith('https://')||src.startsWith('blob:')||(location.href==='about:srcdoc'&&/^data:image\/(png|jpeg|webp);base64,/.test(src)));
  function close(){
   if(busy)return;
   overlay.hidden=true;selection=null;done=false;

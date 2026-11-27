@@ -34,13 +34,16 @@
  window.addEventListener('blackcell:redline:device-mode',reportLayout);
  window.addEventListener('resize',reportLayout,{passive:true});
  function sum(){return model.photos.filter(p=>p.decision_status==='accepted').reduce((n,p)=>n+p.amount_cents,0)}
- function snapshot(){const assigned=sum(),photos=model.photos.map(p=>({...p,resubmissionAllowed:false}));return {
+ function snapshot(){const assigned=sum(),photos=model.photos.map(p=>{
+  const copies=model.photos.filter(x=>x.resubmission_origin_id===p.id),rejected=p.decision_status==='rejected'||copies.some(x=>x.decision_status==='rejected'),pending=copies.some(x=>x.decision_status==='pending');
+  return {...p,resubmissionCount:copies.length,resubmissionAllowed:!!model.active&&!p.resubmission_origin_id&&p.decision_status==='accepted'&&!rejected&&!pending,resubmissionStatus:p.resubmission_origin_id?'reused-copy':rejected?'rejected':pending?'pending':p.decision_status==='accepted'?'ready':'original-pending'};
+ });return {
   roomId:model.session,userId:owner?'00000000-0000-4000-8000-000000000004':'00000000-0000-4000-8000-000000000005',
   peerName:owner?'Test Sender':'Test Receiver',isOwner:owner,roomActive:model.active,archiveMode:false,photoSendingPaused:false,resetAt:null,
   pending:photos.filter(p=>p.decision_status==='pending').length,owed:money(assigned),paid:'$0.00',assigned:money(assigned),entries:photos,
-  photoHistory:photos,paymentHistory:[],ratingEvents:[],fiveStarPhotos:photos.filter(p=>p.stars===5),topPicks:photos.filter(p=>p.stars===5),paymentSummary:{remaining_cents:assigned,paid_cents:0}
+  photoHistory:photos,paymentHistory:[],ratingEvents:[],fiveStarPhotos:photos.filter(p=>!p.resubmission_origin_id&&(p.stars===5||photos.some(x=>x.resubmission_origin_id===p.id&&x.stars===5))),topPicks:photos.filter(p=>p.stars>=4),paymentSummary:{remaining_cents:assigned,paid_cents:0}
  }}
- window.BLACKCELL_REDLINE_API={snapshot,returnToRooms:()=>localRoomDirectory(true),loadMessages:async()=>model.messages.slice(),sendMessage:body=>action('chat',{body}),chatStatus:async()=>({peerTyping:false,peerReadAt:null}),chatSignal:async()=>true,ownerAccessMembers:async()=>[],currentlyViewingStatus:async()=>({active:!!model.viewing,photoId:model.viewing}),timerStatus:async()=>({ok:true,server_now:new Date().toISOString(),active:null,recent:[],assigned_cents:0,owed_cents:0,paid_cents:0}),roomPaymentStatus:async()=>({remaining_cents:sum(),paid_cents:0}),recordPaidInFull:async()=>{throw Error('Payments are not connected in developer preview')},recordPartialPayment:async()=>{throw Error('Payments are not connected in developer preview')}};
+ window.BLACKCELL_REDLINE_API={snapshot,breakEvents:async()=>model.breakEvents||[],breakAction:(kind,requestId,photoId)=>action('break',{kind,requestId,photoId}),reusePhoto:async id=>{await action('resubmit',{id});return {ok:true}},refreshSenderRecords:async()=>true,returnToRooms:()=>localRoomDirectory(true),loadMessages:async()=>model.messages.slice(),sendMessage:body=>action('chat',{body}),chatStatus:async()=>({peerTyping:false,peerReadAt:null}),chatSignal:async()=>true,ownerAccessMembers:async()=>[],currentlyViewingStatus:async()=>({active:!!model.viewing,photoId:model.viewing}),timerStatus:async()=>({ok:true,server_now:new Date().toISOString(),active:null,recent:[],assigned_cents:0,owed_cents:0,paid_cents:0}),roomPaymentStatus:async()=>({remaining_cents:sum(),paid_cents:0}),recordPaidInFull:async()=>{throw Error('Payments are not connected in developer preview')},recordPartialPayment:async()=>{throw Error('Payments are not connected in developer preview')}};
  const testQueue=[];let testRunning=false,testProgress=null;
  function emitProgress(){window.dispatchEvent(new Event('blackcell:redline:upload-progress'))}
  function enqueueTest(items){
@@ -230,7 +233,7 @@
   if(e.source!==parent||e.origin!==cfg.origin||e.data?.token!==cfg.token)return;
   if(e.data.type==='rd-dev-state'){
    const next=e.data.model;if(!next||!Array.isArray(next.photos)||!Array.isArray(next.messages))return;
-   model=next;render();
+   model=next;render();window.dispatchEvent(new Event('blackcell:redline:preview-break-state'));
   }else if(e.data.type==='rd-dev-ack'){
    const r=requests.get(e.data.id);if(!r)return;requests.delete(e.data.id);clearTimeout(r.timer);e.data.ok?r.resolve(true):r.reject(Error('Test action not available'));
   }
