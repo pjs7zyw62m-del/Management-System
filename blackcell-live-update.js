@@ -12,7 +12,7 @@ const testMode=document.currentScript?.dataset.test==='true'&&/\/site-update-tes
 const osMode=/\/blackcell-os(?:\.html)?\/?$/.test(location.pathname)||Boolean(document.getElementById('desktop')?.classList.contains('shell'));
 // Private REDLINE conversations must not be reloaded due to a site release.
 // Manual page refresh/revisit still loads the newest version.
-const redlineLiveThread=/\/private-photo-ledger\.html\/?$/.test(location.pathname);
+const redlineLiveThread=/\/private-photo-ledger(?:\.html)?\/?$/i.test(location.pathname);
 const OS_APPLIED='bc.os.applied-release.v1', OS_TARGET='bc.os.update-target.v1', OS_EXPECTED_BUILD='bc.os.expected-build.v1', OS_AUTO='bc.os.auto-updates.v1';
 const RELOAD_ATTEMPT='bc.live-update.reload-attempt.v2';
 const manualOnly=new URLSearchParams(location.search).get('bc_no_auto_update')==='1';
@@ -21,10 +21,10 @@ const manualOnly=new URLSearchParams(location.search).get('bc_no_auto_update')==
 // The public login/employee entry pages are also manual-refresh only.
 const employeeEntry=/\/(employee|login)(?:\.html)?\/?$/.test(location.pathname);
 let verifiedOwner=false;
-function manualPolicy(){return !testMode&&(manualOnly||redlineLiveThread||employeeEntry||(osMode&&!verifiedOwner))}
+function manualPolicy(){return !testMode&&(manualOnly||redlineLiveThread||employeeEntry||!osMode||!verifiedOwner)}
 function mayReloadAutomatically(){return !manualPolicy()}
-function setVerifiedRole(role){verifiedOwner=osMode&&role==='owner';if(!verifiedOwner&&!osRequested&&osNotice)osNotice.hidden=true;return verifiedOwner}
-function policyAllowsReload(){return testing||(!redlineLiveThread&&!manualOnly&&!employeeEntry&&(!osMode||verifiedOwner||osRequested))}
+function setVerifiedRole(role){const was=verifiedOwner;verifiedOwner=osMode&&role==='owner';if(!verifiedOwner){osRequested=false;pending='';if(osNotice)osNotice.hidden=true;if(screen){screen.remove();screen=null}}else if(!was&&!manualOnly){restore();void check()}return verifiedOwner}
+function policyAllowsReload(){return testing||(!manualOnly&&!redlineLiveThread&&!employeeEntry&&osMode&&verifiedOwner)}
 function releaseToken(value){return String(value||'').replace(/[^a-z0-9_-]/gi,'').slice(0,48)}
 function reloadGuard(revision,attempt,loadedToken,now){
  if(!revision)return 'No confirmed release.';
@@ -75,6 +75,7 @@ window.BLACKCELL_LIVE_UPDATE=Object.freeze({
  check:()=>void check(),autoEnabled,setAutoEnabled,setVerifiedRole,
  status:()=>({available:!!pending,automatic:osMode&&autoEnabled(),blockedBy:pending?blockingReason():''}),
  show:async()=>{
+  if(!policyAllowsReload())return {available:false,automatic:false};
   await check();
   if(!osMode)return {available:false};
   if(pending){
@@ -203,7 +204,7 @@ async function latestOSBuild(){
  }catch(_){return ''}
 }
 function save(){try{const scroll=Array.from(document.querySelectorAll('[id]')).filter(t=>t.clientHeight>0&&t.scrollHeight>t.clientHeight+4&&t.scrollTop>0).slice(0,30).map(t=>({id:t.id,top:t.scrollTop,left:t.scrollLeft}));sessionStorage.setItem(KEY,JSON.stringify({path:location.pathname,at:Date.now(),x:scrollX,y:scrollY,scroll}))}catch(_){}}
-function restore(){let r;try{r=JSON.parse(sessionStorage.getItem(KEY)||'null');sessionStorage.removeItem(KEY)}catch(_){return}if(!r||r.path!==location.pathname||Date.now()-r.at>60000||performance.getEntriesByType('navigation')[0]?.type!=='reload')return;
+function restore(){if(!policyAllowsReload())return;let r;try{r=JSON.parse(sessionStorage.getItem(KEY)||'null');sessionStorage.removeItem(KEY)}catch(_){return}if(!r||r.path!==location.pathname||Date.now()-r.at>60000||performance.getEntriesByType('navigation')[0]?.type!=='reload')return;
 interrupted=false;overlay('Restoring your corporate workspace…');const move=()=>{if(interrupted||location.pathname!==r.path)return;scrollTo(r.x||0,r.y||0);for(const item of r.scroll||[]){const el=$(item.id);if(el){el.scrollTop=item.top;el.scrollLeft=item.left}}};
 move();setTimeout(move,300);setTimeout(move,1100);setTimeout(()=>{screen?.remove();screen=null;move()},400);setTimeout(move,2600)}
 async function refresh(){
@@ -231,6 +232,7 @@ async function refresh(){
  if(testing){try{sessionStorage.setItem('bc.live-update.test-complete',location.pathname+location.search+location.hash)}catch(_){}}
  if(osMode){
   const expectedBuild=await latestOSBuild();
+  if(!policyAllowsReload()||!safe(osRequested&&!autoEnabled())){screen?.remove();screen=null;refreshing=false;return}
   try{
    sessionStorage.setItem(OS_TARGET,pending);
    if(expectedBuild)sessionStorage.setItem(OS_EXPECTED_BUILD,expectedBuild);
@@ -242,10 +244,10 @@ async function refresh(){
 }
 async function version(){const url=new URL('blackcell-site-version.json',location.href);url.searchParams.set('_bc',String(Date.now()));const r=await fetch(url,{cache:'no-store',credentials:'same-origin'});if(!r.ok)throw Error('Version unavailable');const text=await r.text(),json=JSON.parse(text.slice(text.indexOf('{'),text.lastIndexOf('}')+1));const rev=String(json.revision||'');if(/^[a-f0-9]{7,64}$/i.test(rev))return rev;const build=String(json.built||'');if(/^\d{14}$/.test(build))return build;return String(json.fallback||'')}
 async function check(){
- if(checking||refreshing||document.hidden||!navigator.onLine)return;
+ if(!policyAllowsReload()||checking||refreshing||document.hidden||!navigator.onLine)return;
  checking=true;
  try{
-  const v=await version();if(!v)return;
+  const v=await version();if(!v||!policyAllowsReload())return;
   if(osMode){
    try{
     const target=sessionStorage.getItem(OS_TARGET);
@@ -303,5 +305,5 @@ if(testMode){
   $('bcTestResult').textContent='TEST COMPLETE — returned to the same page after refresh.';
  }}catch(_){}
 }
-restore();if(!testMode){void check();setInterval(()=>void check(),30000);setInterval(maybeRefresh,2000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)void check()});addEventListener('online',()=>void check());}
+if(!testMode&&osMode&&!manualOnly){setInterval(()=>{if(policyAllowsReload())void check()},30000);setInterval(()=>{if(policyAllowsReload())maybeRefresh()},2000);document.addEventListener('visibilitychange',()=>{if(!document.hidden&&policyAllowsReload())void check()});addEventListener('online',()=>{if(policyAllowsReload())void check()});}
 })();

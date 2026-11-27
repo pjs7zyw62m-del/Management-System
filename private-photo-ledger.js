@@ -85,21 +85,11 @@ function recordRestrictedRedlineEntry(){
  try{sessionStorage.setItem(redlineScopeRestoreKey(),String(Date.now()))}catch(_){}
 }
 function returnRestoredAndroidToOS(){
- if(state.isOwner||state.member?.access_scope!=='full'||!/Android/i.test(navigator.userAgent||''))return false;
- // Only redirect after a verified Level 0 -> full-scope transition. An OS
- // iframe or an intentional direct REDLINE link must not be redirected.
- if(window.top!==window)return false;
- // Explicit room links and recovery visits remain in the verified REDLINE app.
- const params=new URLSearchParams(location.search);if(params.get('bc_no_auto_update')==='1'||params.has('room'))return false;
- let marker=0;
- try{marker=Number(sessionStorage.getItem(redlineScopeRestoreKey())||0)}catch(_){}
- if(!marker||Date.now()-marker>REDLINE_SCOPE_RESTORE_WINDOW_MS){
-  if(marker)try{sessionStorage.removeItem(redlineScopeRestoreKey())}catch(_){}
-  return false;
- }
- try{sessionStorage.removeItem(redlineScopeRestoreKey());if(sessionStorage.getItem(redlineScopeRestoreKey()))return false}catch(_){return false}
- location.replace('blackcell-os.html');
- return true;
+ if(state.isOwner||state.member?.access_scope!=='full')return false;
+ try{sessionStorage.removeItem(redlineScopeRestoreKey())}catch(_){}
+ // Stay in REDLINE even when full workspace permissions return.
+ // Navigation to BLACKCELL OS is now explicitly user initiated.
+ return false;
 }
 function gate(message){
  state.closed=true;
