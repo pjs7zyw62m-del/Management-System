@@ -28,6 +28,26 @@ liveHud.append(liveTime,rateTile,earnedTile);
 const liveActions=make('div','rd-ir-live-actions'),liveStop=btn('■ Stop timer',()=>timerAction(false),'rd-ir-live-stop'),liveMin=btn('Exit focus',()=>minimize(),'rd-ir-live-min');
 const liveNote=make('small','rd-ir-live-note');liveActions.hidden=true;liveActions.append(liveStop,liveMin,liveNote);
 const liveDock=make('div','rd-ir-live-dock');liveDock.hidden=true;liveDock.append(liveHud,liveActions);
+const focusRating=make('section','rd-ir-focus-rating'),focusRatingTitle=make('strong','','RATE THIS PHOTO'),focusRatingStars=make('div','rd-ir-focus-rating-stars'),focusRatingNote=make('small','rd-ir-focus-rating-note');
+focusRatingStars.setAttribute('role','group');focusRatingStars.setAttribute('aria-label','Rate the active timed photograph');focusRatingNote.setAttribute('role','status');
+let focusRatingBusy=false,focusRatingPhoto='',focusRatingValue=0;
+const focusStarButtons=[];
+for(let i=1;i<=5;i++){const b=btn('☆',()=>void rateTimedPhoto(i),'rd-ir-focus-star');b.setAttribute('aria-label','Rate timed photograph '+i+' of 5 stars');b.setAttribute('aria-pressed','false');focusStarButtons.push(b);focusRatingStars.append(b)}
+focusRating.append(focusRatingTitle,focusRatingStars,focusRatingNote);liveDock.append(focusRating);
+function paintFocusRating(value,disabled){
+ focusStarButtons.forEach((b,i)=>{b.textContent=i<value?'★':'☆';b.classList.toggle('is-filled',i<value);b.setAttribute('aria-pressed',String(i+1===value));b.disabled=disabled});
+}
+async function rateTimedPhoto(value){
+ const s=snapshot(),a=activeTimer(s),id=current?.id,api=window.BLACKCELL_REDLINE_API;
+ if(focusRatingBusy||!a||a.photo_id!==id||!api?.rateTimedPhoto)return;
+ focusRatingBusy=true;paintFocusRating(focusRatingValue,true);focusRatingNote.textContent='Saving rating…';
+ try{
+  const result=await api.rateTimedPhoto(id,value);
+  if(current?.id!==id||focusRatingPhoto!==id)return;
+  focusRatingValue=Number(result?.stars)||value;focusRatingNote.textContent=value===5?'Saved · 5 STARS · TOP PICK':'Saved · '+value+' of 5 stars';
+ }catch(e){if(focusRatingPhoto===id)focusRatingNote.textContent='Rating not saved: '+String(e?.message||e).slice(0,100)}
+ finally{focusRatingBusy=false;if(focusRatingPhoto===id)paintFocusRating(focusRatingValue,!activeTimer(snapshot())||activeTimer(snapshot())?.photo_id!==id);schedule()}
+}
 const accept=btn('Submit & Next',()=>decision('accept'),'rd-ir-submit'),reject=btn('Reject photo',()=>decision('reject'),'rd-ir-reject'),feedback=make('small','rd-ir-feedback');feedback.setAttribute('role','status');
 const controls=make('div','rd-ir-controls');const actions=make('div','rd-ir-actions');actions.append(accept,reject);controls.append(stars,priceRow,timerBox,actions,feedback);scroll.append(imageWrap);popup.append(header,scroll,liveDock,controls);
 const grip=make('div','rd-ir-grip');grip.setAttribute('role','separator');grip.setAttribute('aria-label','Resize photo review and chat');grip.setAttribute('aria-orientation','horizontal');grip.tabIndex=0;popup.append(grip);
@@ -55,6 +75,9 @@ function reflectFocusControls(){
  fitButton.setAttribute('aria-pressed',String(fillPhoto));
  fitButton.setAttribute('aria-label',fillPhoto?'Show complete photograph without cropping':'Fill the screen with the photograph');
  if(!active)return;
+ const side=innerWidth>=650;
+ focusHost.classList.toggle('rd-ir-stationary-focus',side);
+ if(side){if(liveDock.parentNode!==focusHost)focusHost.append(liveDock)}else if(liveDock.parentNode!==popup)popup.insertBefore(liveDock,controls);
  focusHost.classList.toggle('rd-ir-chat-collapsed',chatMode==='collapsed');
  focusHost.classList.toggle('rd-ir-chat-expanded',chatMode==='expanded');
  expandChat.hidden=chatMode==='collapsed';
@@ -80,7 +103,8 @@ function fitFocus(){
 function setFocusHost(host){
  if(focusHost!==host){
   if(focusHost){
-   focusHost.classList.remove('rd-ir-timer-focus','rd-ir-chat-collapsed','rd-ir-chat-expanded');
+   focusHost.classList.remove('rd-ir-timer-focus','rd-ir-chat-collapsed','rd-ir-chat-expanded','rd-ir-stationary-focus');
+   if(liveDock.parentNode!==popup)popup.insertBefore(liveDock,controls);
    focusHost.style.removeProperty('--rd-full-top');focusHost.style.removeProperty('--rd-full-height');
   }
   focusHost=host;
@@ -137,7 +161,7 @@ function canonical(){
  if(panel.dataset.redlinePhotoId&&panel.dataset.redlinePhotoId!==current.id)return null;
  return {card,panel};
 }
-function original(){canonical()?.card.querySelector('.photo-image-btn')?.click()}
+function original(){const a=activeTimer(snapshot());if(a&&a.photo_id===current?.id){const match=[...document.querySelectorAll('.photo-entry[data-redline-photo-id]')].find(el=>el.dataset.redlinePhotoId===current.id&&el.querySelector('.photo-image-btn'));if(match){match.querySelector('.photo-image-btn').click();return}}canonical()?.card.querySelector('.photo-image-btn')?.click()}
 function decision(kind){
  if(activeTimer(snapshot())){feedback.textContent='Stop the active timer before reviewing another price.';return}
  const c=canonical();if(!c){feedback.textContent='Photo controls are still loading.';return}
@@ -254,6 +278,9 @@ function sync(){
  if(src&&/^(blob:|https:\/\/|data:image\/)/.test(src)){if(image.getAttribute('src')!==src)image.src=src;image.hidden=false;placeholder.hidden=true}
  else{image.removeAttribute('src');image.hidden=true;placeholder.hidden=false}
  const c=canonical(),rating=Number(next.stars)||0;
+ if(focusRatingPhoto!==next.id){focusRatingPhoto=next.id;focusRatingNote.textContent='';focusRatingValue=rating;}
+ if(!focusRatingBusy)focusRatingValue=rating;
+ paintFocusRating(focusRatingValue,focusRatingBusy||!timed||!window.BLACKCELL_REDLINE_API?.rateTimedPhoto);
  starButtons.forEach((b,i)=>{b.classList.toggle('is-filled',i<rating);b.disabled=!c||!!c.panel.querySelectorAll('.rr-photo-rating-star')[i]?.disabled});
  accept.disabled=timed||!c||!!c.panel.querySelector('.redline-review-actions .button-main')?.disabled;
  reject.disabled=timed||!c||!!c.panel.querySelector('.redline-review-actions .reject-photo')?.disabled;

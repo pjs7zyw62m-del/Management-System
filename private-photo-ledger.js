@@ -2111,6 +2111,20 @@ window.BLACKCELL_REDLINE_API=Object.freeze({
   if(r.error||r.data?.ok!==true)throw Error(fail(r.error||r.data?.reason||'Timer response failed.'));
   return r.data;
  },
+ async rateTimedPhoto(photoId,stars){
+  if(state.closed||!state.isOwner||!state.user||!state.room?.active||state.showArchive||!validId(photoId)||!Number.isInteger(stars)||stars<1||stars>5)throw Error('Verified active receiver and valid rating required.');
+  const room=state.room,uid=state.user.id,cutoff=room.current_session_started_at||null;
+  const eligible=()=>!state.closed&&state.isOwner&&state.user?.id===uid&&state.room?.id===room.id&&state.room?.active&&!state.showArchive&&(state.room.current_session_started_at||null)===cutoff&&state.entries.some(e=>e.id===photoId&&e.room_id===room.id&&e.uploaded_by===room.member_id&&!e.photo_removal_status&&e.decision_status!=='rejected');
+  if(!eligible())throw Error('This photograph is no longer available.');
+  await verify();
+  if(!eligible())throw Error('Private session changed.');
+  const timer=await db.rpc('corp_redline_photo_timer_status',{p_room_id:room.id});
+  if(timer.error||timer.data?.ok!==true||timer.data?.active?.running!==true||timer.data.active.photo_id!==photoId||!eligible())throw Error('The selected photograph is no longer the active timer.');
+  const result=await db.from(RATINGS).upsert({photo_id:photoId,stars},{onConflict:'photo_id'}).select('photo_id,stars,rated_at').single();
+  if(result.error||!result.data)throw Error(fail(result.error||'Rating not saved'));
+  if(eligible()){state.ratings.set(photoId,result.data);state.entryFingerprint='';renderEntries();window.dispatchEvent(new Event('blackcell:redline:state'))}
+  return result.data;
+ },
  async priceNegotiationOpen(photoId){
   if(state.closed||state.isOwner||!state.user||!state.room?.active||
    state.showArchive||!validId(photoId))

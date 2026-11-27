@@ -199,3 +199,107 @@ html.rd-keyboard-open.rd-keyboard-chat body.bc-redline-receiver.rd-ir-fullscreen
 html.rd-keyboard-open.rd-keyboard-short body.rd-ir-fullscreen #rdIndependentReview.rd-ir-timing>.rd-ir-live-dock:not([hidden]){min-height:0!important;padding:4px!important;bottom:4px!important}
 html.rd-keyboard-open.rd-keyboard-short body.rd-ir-fullscreen #rdIndependentReview.rd-ir-timing .rd-ir-live-dock .rd-ir-live-time{width:auto!important;height:auto!important;border:0!important;box-shadow:none!important}
 html.rd-keyboard-open.rd-keyboard-short body.rd-ir-fullscreen #rdIndependentReview.rd-ir-timing .rd-ir-live-dock .rd-ir-live-actions button{min-height:32px!important}
+
+/* Stationary timed-photo workstation. On tablet/desktop the photo is a
+   separate grid cell, never behind timer, rating, or chat controls. */
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus.rd-ir-stationary-focus{
+ --rd-side-width:clamp(270px,30%,430px);
+ grid-template-columns:minmax(0,1fr) minmax(0,var(--rd-side-width))!important;
+ grid-template-rows:auto auto minmax(0,1fr) auto auto auto!important;
+ align-content:stretch!important;align-items:stretch!important;gap:0 12px!important;
+ padding:12px!important;box-sizing:border-box!important;background:#050505!important
+}
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus.rd-ir-stationary-focus.rd-ir-chat-expanded{--rd-side-width:clamp(300px,42%,560px)}
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus.rd-ir-stationary-focus.rd-ir-chat-collapsed{
+ grid-template-rows:auto auto minmax(0,1fr) 0 0 0!important
+}
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus.rd-ir-stationary-focus>#rdIndependentReview.rd-ir-timing:not([hidden]){
+ position:relative!important;grid-column:1!important;grid-row:1/-1!important;
+ inset:auto!important;transform:none!important;width:100%!important;height:100%!important;min-height:0!important;max-height:none!important;max-width:none!important;
+ border:1px solid #58323c!important;border-radius:16px!important;background:#000!important;overflow:hidden!important;box-sizing:border-box!important
+}
+body.rd-ir-fullscreen .rd-ir-stationary-focus>#rdIndependentReview.rd-ir-timing>.rd-ir-scroll{
+ inset:0!important;width:100%!important;height:100%!important;max-height:none!important
+}
+body.rd-ir-fullscreen .rd-ir-stationary-focus>#rdIndependentReview.rd-ir-timing:not(.rd-ir-fill-photo) .rd-ir-scroll>.rd-ir-image>img{
+ object-fit:contain!important;object-position:center!important
+}
+body.rd-ir-fullscreen .rd-ir-stationary-focus>#rdIndependentReview.rd-ir-timing.rd-ir-fill-photo .rd-ir-scroll>.rd-ir-image>img{object-fit:cover!important}
+body.rd-ir-fullscreen .rd-ir-stationary-focus>#rdIndependentReview.rd-ir-timing>.rd-ir-head{left:10px!important;top:10px!important}
+body.rd-ir-fullscreen .rd-ir-stationary-focus>#rdIndependentReview.rd-ir-timing .rd-ir-image>.rd-ir-zoom{right:10px!important;top:10px!important}
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus.rd-ir-stationary-focus>.rd-ir-live-dock:not([hidden]){
+ position:relative!important;inset:auto!important;transform:none!important;grid-column:2!important;grid-row:1!important;
+ display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:10px!important;
+ min-width:0!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;
+ padding:12px!important;margin:0 0 10px!important;box-sizing:border-box!important;overflow:hidden!important;
+ border:1px solid #8c293b!important;border-radius:16px!important;
+ background:radial-gradient(ellipse at 50% 0%,#4b101d 0%,#130b10 42%,#09090d 78%)!important;box-shadow:none!important;z-index:3!important
+}
+body.rd-ir-fullscreen .rd-ir-stationary-focus>.rd-ir-live-dock>.rd-ir-live-hud:not([hidden]){
+ display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;grid-template-rows:auto auto!important;
+ align-items:stretch!important;gap:10px!important;min-width:0!important;height:auto!important;margin:0!important;padding:0!important;
+ background:transparent!important;border:0!important;color:white!important
+}
+body.rd-ir-fullscreen .rd-ir-stationary-focus .rd-ir-live-time{
+ grid-column:1/-1!important;grid-row:1!important;justify-self:center!important;display:flex!important;flex-direction:column!important;
+ justify-content:center!important;align-items:center!important;gap:5px!important;
+ width:clamp(95px,16dvh,170px)!important;height:clamp(95px,16dvh,170px)!important;box-sizing:border-box!important;
+ border:2px solid #ed3049!important;border-top-color:#ff9aa5!important;border-radius:50%!important;
+ box-shadow:0 0 26px #dd183e55,inset 0 0 18px #ac193a22!important;background:#14090f!important
+}
+body.rd-ir-fullscreen .rd-ir-stationary-focus .rd-ir-live-time strong{color:#fff!important;font:800 clamp(28px,5dvh,52px)/1 system-ui!important;font-variant-numeric:tabular-nums!important}
+body.rd-ir-fullscreen .rd-ir-stationary-focus .rd-ir-live-time small{color:#ffc0ca!important;font:650 11px/1.2 system-ui!important}
+body.rd-ir-fullscreen .rd-ir-stationary-focus .rd-ir-live-hud>.rd-ir-live-stat:nth-child(2){grid-column:1!important;grid-row:2!important}
+body.rd-ir-fullscreen .rd-ir-stationary-focus .rd-ir-live-hud>.rd-ir-live-earned{grid-column:2!important;grid-row:2!important}
+body.rd-ir-fullscreen .rd-ir-stationary-focus .rd-ir-live-stat{
+ display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;gap:5px!important;
+ min-width:0!important;padding:10px 4px!important;border:1px solid #462832!important;border-radius:11px!important;background:#150e12!important
+}
+body.rd-ir-fullscreen .rd-ir-stationary-focus .rd-ir-live-stat small{color:#bdb2b8!important;font:650 10px/1.2 system-ui!important}
+body.rd-ir-fullscreen .rd-ir-stationary-focus .rd-ir-live-stat strong{color:white!important;font:750 clamp(17px,2.2vw,25px)/1.2 system-ui!important;font-variant-numeric:tabular-nums!important}
+body.rd-ir-fullscreen .rd-ir-stationary-focus .rd-ir-live-earned strong{color:#55e794!important}
+body.rd-ir-fullscreen .rd-ir-stationary-focus>.rd-ir-live-dock>.rd-ir-live-actions:not([hidden]){
+ display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:8px!important;margin:0!important;padding:0!important
+}
+body.rd-ir-fullscreen .rd-ir-stationary-focus .rd-ir-live-actions button{min-height:44px!important;border:1px solid #65343e!important;border-radius:10px!important;color:#fff!important;font:700 13px/1.15 system-ui!important;white-space:normal!important;background:#1a1318!important}
+body.rd-ir-fullscreen .rd-ir-stationary-focus .rd-ir-live-actions .rd-ir-live-stop{background:#ab122b!important;border-color:#e3344e!important}
+body.rd-ir-fullscreen .rd-ir-stationary-focus .rd-ir-live-note{grid-column:1/-1!important;font:11px/1.25 system-ui!important;color:#ffc1cb!important}
+body.rd-ir-fullscreen .rd-ir-stationary-focus .rd-ir-live-note:empty{display:none!important}
+.rd-ir-focus-rating{display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 4px;border:1px solid #49313a;border-radius:11px;background:#140e12;min-width:0;box-sizing:border-box}
+.rd-ir-focus-rating>strong{font:650 10px/1.2 system-ui;color:#d8c9cf;letter-spacing:.08em}
+.rd-ir-focus-rating-stars{display:flex;justify-content:space-evenly;gap:2px;width:100%;min-width:0}
+.rd-ir-focus-rating-stars>button.rd-ir-focus-star{display:grid!important;place-items:center!important;flex:1 1 0!important;width:auto!important;min-width:0!important;max-width:48px!important;height:38px!important;min-height:38px!important;padding:0!important;border:0!important;border-radius:6px!important;background:transparent!important;color:#ffc875!important;font:400 31px/1 system-ui!important}
+.rd-ir-focus-rating-stars>button.rd-ir-focus-star.is-filled{color:#ffc247!important;text-shadow:0 0 9px #ffab3966!important}
+.rd-ir-focus-rating-stars>button:disabled{opacity:.45!important}
+.rd-ir-focus-rating-note{font:10px/1.3 system-ui;color:#e9c197;text-align:center;overflow-wrap:anywhere}
+.rd-ir-focus-rating-note:empty{display:none!important}
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus.rd-ir-stationary-focus>.rd-ir-mini-chat-head{grid-column:2!important;grid-row:2!important;min-height:36px!important;padding:5px 8px!important}
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus.rd-ir-stationary-focus>.redline-message-feed{grid-column:2!important;grid-row:3!important;height:100%!important;min-height:0!important;max-height:none!important}
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus.rd-ir-stationary-focus>.redline-peer-typing:not([hidden]){grid-column:2!important;grid-row:4!important}
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus.rd-ir-stationary-focus>.redline-message-composer{grid-column:2!important;grid-row:5!important;min-height:44px!important}
+body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus.rd-ir-stationary-focus>.redline-message-error:not(:empty){grid-column:2!important;grid-row:6!important}
+@media(min-width:650px) and (max-height:620px){
+ body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus.rd-ir-stationary-focus>.rd-ir-live-dock:not([hidden]){gap:5px!important;padding:7px!important;margin-bottom:5px!important}
+ body.rd-ir-fullscreen .rd-ir-stationary-focus>.rd-ir-live-dock>.rd-ir-live-hud:not([hidden]){gap:5px!important}
+ body.rd-ir-fullscreen .rd-ir-stationary-focus .rd-ir-live-time{width:76px!important;height:76px!important}
+ body.rd-ir-fullscreen .rd-ir-stationary-focus .rd-ir-live-time strong{font-size:25px!important}
+ body.rd-ir-fullscreen .rd-ir-stationary-focus .rd-ir-live-stat{padding:5px!important}
+ body.rd-ir-fullscreen .rd-ir-stationary-focus .rd-ir-live-actions button{min-height:34px!important}
+ .rd-ir-focus-rating{padding:4px!important;gap:2px!important}
+ .rd-ir-focus-rating-stars>button.rd-ir-focus-star{height:30px!important;min-height:30px!important;font-size:25px!important}
+}
+html.rd-keyboard-open.rd-keyboard-chat body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus.rd-ir-stationary-focus{grid-template-rows:auto auto minmax(0,1fr) auto auto auto!important;padding:4px!important}
+html.rd-keyboard-open.rd-keyboard-chat body.rd-ir-fullscreen .rd-ir-stationary-focus>.rd-ir-live-dock>.rd-ir-live-hud:not([hidden]){grid-template-columns:1fr 1fr 1fr!important;grid-template-rows:auto!important}
+html.rd-keyboard-open.rd-keyboard-chat body.rd-ir-fullscreen .rd-ir-stationary-focus .rd-ir-live-time{grid-column:1!important;grid-row:1!important;width:auto!important;height:auto!important;border:0!important;box-shadow:none!important}
+html.rd-keyboard-open.rd-keyboard-chat body.rd-ir-fullscreen .rd-ir-stationary-focus .rd-ir-live-hud>.rd-ir-live-stat:nth-child(2){grid-column:2!important;grid-row:1!important}
+html.rd-keyboard-open.rd-keyboard-chat body.rd-ir-fullscreen .rd-ir-stationary-focus .rd-ir-live-hud>.rd-ir-live-earned{grid-column:3!important;grid-row:1!important}
+html.rd-keyboard-open.rd-keyboard-chat body.rd-ir-fullscreen .rd-ir-stationary-focus .rd-ir-live-time strong{font-size:20px!important}
+html.rd-keyboard-open.rd-keyboard-chat body.rd-ir-fullscreen .rd-ir-stationary-focus .rd-ir-focus-rating{display:none!important}
+/* Narrow phones retain the compact timer dock, with a rating row. */
+@media(max-width:649px){
+ #rdIndependentReview .rd-ir-focus-rating{padding:3px!important;gap:1px!important}
+ #rdIndependentReview .rd-ir-focus-rating-stars>button.rd-ir-focus-star{height:28px!important;min-height:28px!important;font-size:24px!important}
+ body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus:not(.rd-ir-stationary-focus){padding-bottom:165px!important}
+ html.rd-keyboard-open.rd-keyboard-chat #rdIndependentReview .rd-ir-focus-rating{display:none!important}
+ html.rd-keyboard-open.rd-keyboard-chat body.bc-redline-receiver.rd-ir-fullscreen #ledgerApp #redlineReceiverChat #redlineReceiverChatMount>.redline-message-card.rd-ir-timer-focus:not(.rd-ir-stationary-focus){padding-bottom:120px!important}
+}
