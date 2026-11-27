@@ -76,7 +76,7 @@ export async function initWorkspace(client){
  };
  const path=map[document.body.dataset.workspace];
  if(!path){root.append(panel('Unavailable workspace','Return to Administration.'));return}
- const page=await import('./'+path+(document.body.dataset.workspace==='security'?'?v=20261117-os-perf1':document.body.dataset.workspace==='systems'?'?v=20261114-systems-panel':'?v=20261113-costs1'));
+ const page=await import('./'+path+(document.body.dataset.workspace==='diagnostics'?'?v=20261127-core-maintenance1':document.body.dataset.workspace==='security'?'?v=20261117-os-perf1':document.body.dataset.workspace==='systems'?'?v=20261114-systems-panel':'?v=20261113-costs1'));
  if(typeof page.setup!=='function')throw new Error('Workspace module is invalid.');
  await page.setup(client,ui);
 }
