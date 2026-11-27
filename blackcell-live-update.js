@@ -275,7 +275,17 @@ async function refresh(){
  }
  location.reload();
 }
-async function version(){const url=new URL('blackcell-site-version.json',releaseBase);url.searchParams.set('_bc',String(Date.now()));const r=await fetch(url,{cache:'no-store',credentials:'same-origin',signal:AbortSignal.timeout(12000)});if(!r.ok)throw Error('Version unavailable');const text=await r.text(),json=JSON.parse(text.slice(text.indexOf('{'),text.lastIndexOf('}')+1));const rev=String(json.revision||'');if(/^[a-f0-9]{7,64}$/i.test(rev))return rev;const build=String(json.built||'');if(/^\d{14}$/.test(build))return build;return String(json.fallback||'')}
+async function version(){
+ const url=new URL('blackcell-site-version.json',releaseBase);url.searchParams.set('_bc',String(Date.now()));
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
+ try{
+  const r=await fetch(url,{cache:'no-store',credentials:'same-origin',signal:controller.signal});if(!r.ok)throw Error('Version unavailable');
+  const text=await r.text(),json=JSON.parse(text.slice(text.indexOf('{'),text.lastIndexOf('}')+1));const rev=String(json.revision||'');
+  if(/^[a-f0-9]{7,64}$/i.test(rev))return rev;
+  const build=String(json.built||'');if(/^\d{14}$/.test(build))return build;
+  return String(json.fallback||'');
+ }finally{clearTimeout(timer)}
+}
 async function check(){
  if(!policyAllowsReload()||checking||refreshing||document.hidden||!navigator.onLine)return;
  checking=true;
@@ -345,6 +355,7 @@ if(!testMode&&osMode&&!manualOnly){setInterval(()=>{if(policyAllowsReload())void
 let lastPassiveInspection=0,manualReleaseNotice=null;
 async function inspectOnReturn(){
  if(testMode||manualOnly||redlineLiveThread||employeeEntry||document.hidden||!navigator.onLine||policyAllowsReload()||Date.now()-lastPassiveInspection<300000)return;
+ if(osMode&&document.getElementById('desktop')?.hidden)return;
  if(blockingReason())return;
  lastPassiveInspection=Date.now();
  const r=await inspectRelease();
@@ -357,10 +368,14 @@ async function inspectOnReturn(){
  const actions=document.createElement('div');actions.className='bc-os-update-actions';
  const now=document.createElement('button');now.type='button';now.className='bc-os-update-now';now.textContent='Reopen';
  const later=document.createElement('button');later.type='button';later.className='bc-os-update-later';later.textContent='Later';
- now.onclick=()=>{
+ now.onclick=async()=>{
   const blocked=blockingReason();
   if(blocked){detail.textContent=blocked;return}
   if(guardReason(r.revision)){detail.textContent='This release has already attempted to reload. Reopen the website manually.';return}
+  if(osMode&&typeof window.BLACKCELL_OS_AUTOSAVE_WORKSPACE==='function'){
+   now.disabled=true;let saved=false;try{saved=(await window.BLACKCELL_OS_AUTOSAVE_WORKSPACE())===true}catch(_){}finally{now.disabled=false}
+   if(!saved||blockingReason()){detail.textContent='Workspace could not be saved safely. Finish your work and reopen manually.';return}
+  }
   if(!reserveReload(r.revision)){detail.textContent='Could not safely reserve the update. Reopen manually.';return}
   const url=new URL(location.href);url.searchParams.set('bc_os_release',releaseToken(r.revision));location.replace(url.href);
  };
