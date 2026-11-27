@@ -32,9 +32,9 @@ const cents=value=>{
  try {return BigInt(String(value===null?0:value))}catch(_){return 0n}
 };
 function dollars(value){
- const amount=cents(value);
+ const signed=cents(value),amount=signed<0n?-signed:signed;
  const whole=(amount/100n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,',');
- return '$'+whole+'.'+(amount%100n).toString().padStart(2,'0');
+ return (signed<0n?'-':'')+'$'+whole+'.'+(amount%100n).toString().padStart(2,'0');
 }
 function parseDollars(value){
  const str=String(value||'').trim().replace(/[$,]/g,'');
@@ -278,8 +278,9 @@ async function loadDirectorySummaries(rooms){
    fields.activity.textContent=p&&m?directoryActivity(p.data?.[0]?.created_at,m.data?.[0]?.created_at):'Unavailable';
    fields.photos.textContent=Number.isInteger(p?.count)?String(p.count):'Unavailable';
    const remaining=b?.data?.remaining_cents,valid=b?.data?.ok===true&&/^[0-9]+$/.test(String(remaining??''));
-   fields.payment.textContent=valid?dollars(remaining):'Unavailable';
-   if(valid)fields.payment.dataset.tone=BigInt(remaining)===0n?'clear':'outstanding';
+   const net=valid?cents(remaining)-cents(b.data.photo_action_bill_credit_carry_cents):0n;
+   fields.payment.textContent=valid?dollars(net):'Unavailable';
+   if(valid)fields.payment.dataset.tone=net>0n?'outstanding':'clear';
   }
  }
  await Promise.all(Array.from({length:Math.min(3,rooms.length)},()=>worker()));
@@ -669,7 +670,7 @@ function updateTotals(){
    if(applied>0n){state.paymentAllocations.set(e.id,applied);available-=applied}
    if(available<=0n)break;
   }
-  assigned=cents(summary.assigned_cents);paid=cents(summary.paid_cents);owed=cents(summary.remaining_cents);
+  assigned=cents(summary.assigned_cents);paid=cents(summary.paid_cents);owed=cents(summary.remaining_cents)-cents(summary.photo_action_bill_credit_carry_cents);
  }
  show('totalAssigned',dollars(assigned));
  show('totalPaid',dollars(paid));
@@ -1350,6 +1351,8 @@ async function rejectPhoto(entry,trigger){
   renderEntries();
   updateTotals();
   show('reviewQueueFeedback','PHOTO REJECTED · $0.35 BILL CREDIT · Showing next photo.');
+  // Refresh verified bill credits before metadata and preview work.
+  try{await loadRoomPayments(state.room.id,state.showArchive)}catch(_){/* loadEntries retries below. */}
   state.entryFingerprint='';
   try{await loadEntries({force:true})}
   catch(refreshError){show('entriesFeedback',

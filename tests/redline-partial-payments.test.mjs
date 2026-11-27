@@ -59,6 +59,11 @@ test('real balance rendering applies $0.60 credit to oldest $0.75 photo and neve
  assert.equal(output.get('totalAssigned'),'$1.50');
  assert.equal(output.get('totalPaid'),'$0.60');
  assert.equal(output.get('totalOwed'),'$0.90');
+ const original=state.paymentStatus;
+ state.paymentStatus={...original,remaining_cents:0,photo_action_bill_credit_carry_cents:175};
+ update();
+ assert.equal(output.get('totalOwed'),'$-1.75');
+ state.paymentStatus=original;update();
  assert.equal(state.paymentAllocations.get('a'),60n);
  assert.equal(state.paymentAllocations.get('b'),undefined);
  const entrySrc=core.slice(core.indexOf('function entryState(e){'),core.indexOf('// Owner-selected photo presence'));
