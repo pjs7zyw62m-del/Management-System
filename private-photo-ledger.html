@@ -46,14 +46,14 @@
 <link rel="stylesheet" href="private-photo-ledger-trigger-alerts.css?v=20261123-sender-live-alert1">
 <link rel="stylesheet" href="private-photo-ledger-counteroffer-inline.css?v=20261127-chat-negotiate1">
 <script src="corp-config.js"></script>
-<script type="module" src="private-photo-ledger.js?coreRuntime=20261127-3&deleteArchivedChat=20261127-1&sessionLock=20261127-manual-session-lock2&stability=20261127-sender-stability1&focus=20261127-receiver-stationary-focus1&negotiate=20261127-chat-negotiate1&uploadMode=20261127-volatile-upload-rollback1&refreshGuard=20261127-refresh-loop-guard1&break=20261126-sender-preview3&records=20261126-sender-records1&v=20261125-redline-review-separation1&balanceFix=20261126-signed-credit1&appleDark=20261122-live1&pauseHeader=20261122-v1"></script>
+<script type="module" src="private-photo-ledger.js?endSession=20261127-1&coreRuntime=20261127-3&deleteArchivedChat=20261127-1&sessionLock=20261127-manual-session-lock2&stability=20261127-sender-stability1&focus=20261127-receiver-stationary-focus1&negotiate=20261127-chat-negotiate1&uploadMode=20261127-volatile-upload-rollback1&refreshGuard=20261127-refresh-loop-guard1&break=20261126-sender-preview3&records=20261126-sender-records1&v=20261125-redline-review-separation1&balanceFix=20261126-signed-credit1&appleDark=20261122-live1&pauseHeader=20261122-v1"></script>
 <script src="private-photo-ledger-responsive.js?coreRuntime=20261127-3&v=20261125-redline-review-separation1" defer></script>
 <script src="private-photo-ledger-sender.js?v=20261122-redline-multi-chooser1" defer></script>
 <script src="private-photo-ledger-owner-preview.js?v=20261121-current-viewing1-os-preview2" defer></script>
 <script src="private-photo-ledger-solid-red.js?v=20261120-solid-red1" defer></script>
 <script src="private-photo-ledger-counteroffer-inline.js?v=20261127-chat-negotiate1" defer></script>
 <script src="private-photo-ledger-simple-sender.js?coreRuntime=20261127-3&stability=20261127-sender-stability1&negotiate=20261127-chat-negotiate1&break=20261126-break1&records=20261126-sender-records1&v=20261125-redline-review-separation1&stableChat=20261123-v7-stable-room-key" defer></script>
-<script src="private-photo-ledger-receiver.js?keyboard=20261126-keyboard1&v=20261125-redline-review-separation1&appleDark=20261122-live1&tabletPhoneBreakpoint=1&sidebarPricing=20261122-v2&fullPhoto=20261122-v1&noChatReparent=20261123-v1&photoZoom=20261123-v1&receiverRestore=20261124-v1" defer></script>
+<script src="private-photo-ledger-receiver.js?endSession=20261127-1&keyboard=20261126-keyboard1&v=20261125-redline-review-separation1&appleDark=20261122-live1&tabletPhoneBreakpoint=1&sidebarPricing=20261122-v2&fullPhoto=20261122-v1&noChatReparent=20261123-v1&photoZoom=20261123-v1&receiverRestore=20261124-v1" defer></script>
 <script src="private-photo-ledger-photo-zoom.js?v=20261123-photo-canvas-v2" defer></script>
 <script src="private-photo-ledger-hd-viewer.js?v=20261123-original-hd1" defer></script>
 <script src="private-photo-ledger-presence.js?v=20261121-room-presence1" defer></script>
@@ -151,7 +151,7 @@ body.bc-redline-receiver #redlineReceiverCommand:has(.rr-menu-toggle[aria-expand
      <select id="roomPicker"></select>
     </label>
     <span class="room-state"><span class="status-dot"></span><span id="roomStateLabel">ACTIVE</span></span>
-    <button id="closeRoomBtn" type="button" class="button-outline" hidden>CLOSE ROOM</button><button id="redlineRoomBack" type="button" class="button-outline" hidden>← ALL ROOMS</button>
+    <button id="closeRoomBtn" type="button" class="button-outline" hidden>END SESSION</button><button id="redlineRoomBack" type="button" class="button-outline" hidden>← ALL ROOMS</button>
    </div>
   </div>
   <div id="uploadAccessStatus" class="upload-access-status" role="status" aria-live="polite">
