@@ -16,6 +16,15 @@ const redlineLiveThread=/\/private-photo-ledger\.html\/?$/.test(location.pathnam
 const OS_APPLIED='bc.os.applied-release.v1', OS_TARGET='bc.os.update-target.v1', OS_EXPECTED_BUILD='bc.os.expected-build.v1', OS_AUTO='bc.os.auto-updates.v1';
 const RELOAD_ATTEMPT='bc.live-update.reload-attempt.v2';
 const manualOnly=new URLSearchParams(location.search).get('bc_no_auto_update')==='1';
+// Fail closed during OS startup. Employees never receive automatic update
+// overlays or reloads. Only a verified owner may enable automatic updates.
+// The public login/employee entry pages are also manual-refresh only.
+const employeeEntry=/\/(employee|login)(?:\.html)?\/?$/.test(location.pathname);
+let verifiedOwner=false;
+function manualPolicy(){return !testMode&&(manualOnly||redlineLiveThread||employeeEntry||(osMode&&!verifiedOwner))}
+function mayReloadAutomatically(){return !manualPolicy()}
+function setVerifiedRole(role){verifiedOwner=osMode&&role==='owner';if(!verifiedOwner&&!osRequested&&osNotice)osNotice.hidden=true;return verifiedOwner}
+function policyAllowsReload(){return testing||(!redlineLiveThread&&!manualOnly&&!employeeEntry&&(!osMode||verifiedOwner||osRequested))}
 function releaseToken(value){return String(value||'').replace(/[^a-z0-9_-]/gi,'').slice(0,48)}
 function reloadGuard(revision,attempt,loadedToken,now){
  if(!revision)return 'No confirmed release.';
@@ -38,13 +47,14 @@ function reserveReload(revision){
 function activeRedline(){
  for(const frame of document.querySelectorAll('iframe')){
   try{const child=frame.contentWindow,doc=frame.contentDocument;
-   if(doc&&child.location.pathname.endsWith('/private-photo-ledger.html')&&doc.getElementById('ledgerApp')&&!doc.getElementById('ledgerApp').hidden)return true;
+   if(frame.id==='bcOsPhotoLedgerFrame'||/private-photo-ledger\.html(?:[?#]|$)/.test(frame.getAttribute('src')||'')||child.location.pathname.endsWith('/private-photo-ledger.html'))return true;
   }catch(_){}
  }
  return false
 }
-function autoEnabled(){try{return localStorage.getItem(OS_AUTO)!=='off'}catch(_){return true}}
+function autoEnabled(){if(!mayReloadAutomatically())return false;try{return localStorage.getItem(OS_AUTO)!=='off'}catch(_){return false}}
 function setAutoEnabled(on){
+ if(osMode&&!verifiedOwner)return false;
  try{localStorage.setItem(OS_AUTO,on?'on':'off')}catch(_){}
  if(on&&pending)maybeRefresh();
  return autoEnabled();
@@ -62,7 +72,7 @@ document.addEventListener('input',track,true);document.addEventListener('change'
 window.BLACKCELL_LIVE_UPDATE=Object.freeze({
  hold(reason='operation',owner=window){const t=Symbol(reason);holds.set(t,owner);return()=>holds.delete(t)},
  clean(element){if(element&&typeof element.contains==='function')for(const t of dirty.keys())if(t===element||element.contains(t)){dirty.delete(t);original.set(t,value(t))}},
- check:()=>void check(),autoEnabled,setAutoEnabled,
+ check:()=>void check(),autoEnabled,setAutoEnabled,setVerifiedRole,
  status:()=>({available:!!pending,automatic:osMode&&autoEnabled(),blockedBy:pending?blockingReason():''}),
  show:async()=>{
   await check();
@@ -135,7 +145,7 @@ function blockingReason(){
 function safe(explicit=false){return !blockingReason()&&(explicit||Date.now()-last>=12000)}
 function maybeRefresh(){
  if(!pending||refreshing)return;
- if(redlineLiveThread||guardReason(pending))return;
+ if(!policyAllowsReload()||guardReason(pending))return;
  if(osMode){
   if(autoEnabled()){
    if(osNotice)osNotice.hidden=true;
@@ -197,14 +207,14 @@ function restore(){let r;try{r=JSON.parse(sessionStorage.getItem(KEY)||'null');s
 interrupted=false;overlay('Restoring your corporate workspace…');const move=()=>{if(interrupted||location.pathname!==r.path)return;scrollTo(r.x||0,r.y||0);for(const item of r.scroll||[]){const el=$(item.id);if(el){el.scrollTop=item.top;el.scrollLeft=item.left}}};
 move();setTimeout(move,300);setTimeout(move,1100);setTimeout(()=>{screen?.remove();screen=null;move()},400);setTimeout(move,2600)}
 async function refresh(){
- if(redlineLiveThread||guardReason(pending))return;
+ if(!policyAllowsReload()||guardReason(pending))return;
  if(refreshing||!pending||(testing?busy():!safe(osMode&&osRequested&&!autoEnabled())))return;
  refreshing=true;if(osNotice)osNotice.hidden=true;
  overlay(osMode?'Saving your BLACKCELL workspace and installing the update…':'Applying the latest corporate system update…');
  await new Promise(r=>setTimeout(r,850));
- if(testing?busy():!safe(osMode&&osRequested&&!autoEnabled())){
+ if(!policyAllowsReload()||(testing?busy():!safe(osMode&&osRequested&&!autoEnabled()))){
   screen?.remove();screen=null;refreshing=false;
-  if(osMode&&!autoEnabled())showOSNotice();
+  if(osMode&&!autoEnabled()&&(verifiedOwner||osRequested))showOSNotice();
   return;
  }
  if(osMode&&typeof window.BLACKCELL_OS_AUTOSAVE_WORKSPACE==='function'){
@@ -212,11 +222,11 @@ async function refresh(){
   try{preserved=(await window.BLACKCELL_OS_AUTOSAVE_WORKSPACE())===true}catch(_){}
   if(!preserved){
    screen?.remove();screen=null;refreshing=false;
-   if(osMode&&!autoEnabled())showOSNotice();
+   if(osMode&&!autoEnabled()&&(verifiedOwner||osRequested))showOSNotice();
    return;
   }
  }
- if(!reserveReload(pending)){screen?.remove();screen=null;refreshing=false;return}
+ if(!policyAllowsReload()||!reserveReload(pending)){screen?.remove();screen=null;refreshing=false;return}
  save();
  if(testing){try{sessionStorage.setItem('bc.live-update.test-complete',location.pathname+location.search+location.hash)}catch(_){}}
  if(osMode){
