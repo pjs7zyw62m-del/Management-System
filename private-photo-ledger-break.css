@@ -16,3 +16,8 @@ body.redline-sender-simple #redlineSimpleSender .rd-break-toolbar:not([hidden]){
 }
 body.redline-sender-simple #redlineSimpleSender .rd-break-toolbar button:not([hidden]){display:block!important;flex:1 1 0!important;max-width:none!important;min-height:32px!important;font-size:11px!important;white-space:nowrap!important}
 body.redline-sender-simple #redlineSimpleSender .rd-break-toolbar button:first-child{background:#9c1327!important}
+
+/* Android sender: reserve an actual flex row below the conversation heading. */
+body.redline-sender-simple.redline-sender-messenger.redline-chat-immersive #redlineSimpleSender .redline-message-card>.rd-break-toolbar:not([hidden]){display:flex!important;flex:0 0 42px!important;min-height:42px!important;height:42px!important;max-height:42px!important;overflow:visible!important;visibility:visible!important;opacity:1!important;margin:0!important;padding:3px 6px!important;box-sizing:border-box!important}
+body.redline-sender-simple #redlineSimpleSender .rd-break-toolbar button{visibility:visible!important;opacity:1!important}
+body.redline-sender-simple #redlineSimpleSender .rd-break-toolbar button:disabled{opacity:.65!important}

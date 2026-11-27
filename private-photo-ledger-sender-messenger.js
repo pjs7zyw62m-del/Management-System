@@ -59,6 +59,9 @@ function setMenuOpen(open){
 const roomsHome=create('button','rd-home-shortcut rd-sender-mobile-home','← Rooms');roomsHome.type='button';roomsHome.hidden=true;roomsHome.setAttribute('aria-label','Return to REDLINE main room directory');roomsHome.addEventListener('click',()=>{setMenuOpen(false);api()?.returnToRooms?.()});topbar?.append(roomsHome);
 const roomsMenu=create('button','rs-mobile-menu-item','← All Rooms');roomsMenu.type='button';roomsMenu.addEventListener('click',()=>{setMenuOpen(false);api()?.returnToRooms?.()});menuItems.append(roomsMenu);
 const menuOptions=new Map();
+for(const [label,event] of [['Smoke Break','blackcell:redline:break-menu'],['♥ Favorites','blackcell:redline:favorites-menu']]){
+ const item=create('button','rs-mobile-menu-item',label);item.type='button';item.addEventListener('click',()=>{setMenuOpen(false);if(sender())window.dispatchEvent(new Event(event))});menuItems.append(item);
+}
 for(const [key,label,icon] of [['upload','Messages','chat'],['viewing','Viewing','view'],['earnings','Earnings','money'],['history','History','history'],['stars','5 Stars','star']]){
  if(!tabs[key])continue;
  const item=create('button','rs-mobile-menu-item',label);item.type='button';item.dataset.icon=icon;

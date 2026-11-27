@@ -8,7 +8,7 @@
  const btn=(text,fn)=>{const b=make('button','rd-dev-button',text);b.type='button';b.addEventListener('click',fn);return b};
  const dialog=make('dialog','rd-dev-dialog');dialog.id='redlineDeveloperPreview';
  const top=make('header','rd-dev-top'),name=make('div','rd-dev-name');
- name.append(make('strong','','REDLINE · DEVELOPER PREVIEW'),make('small','','LOCAL TEST SESSION · NO LIVE RECORDS OR PAYMENTS'));
+ name.append(make('strong','','REDLINE · DEVELOPER PREVIEW'),make('small','','BUILD 20261126-SENDER-3 · LOCAL TEST ONLY'));
  const toolbar=make('div','rd-dev-toolbar'),stage=make('div','rd-dev-stage'),notice=make('p','rd-dev-notice','Test chat, Camera Roll or previously shared REDLINE photos, ratings and pricing. No live records or payments.');
  const frameWraps={},frames={},modeButtons={},deviceButtons={};
  let model=null,token='',generation=0,mode='dual',device='desktop',loadedBuild='',reports={},preset='',testLibrary=[],libraryRoom=null,libraryRevision=0,libraryState='idle',libraryMessage='';
@@ -22,6 +22,7 @@
  for(const [key,label] of [['receiver','Receiver'],['sender','Sender'],['dual','Dual view']]){modeButtons[key]=btn(label,()=>chooseMode(key));toolbar.append(modeButtons[key])}
  for(const [key,label] of [['desktop','Desktop'],['tablet','Tablet'],['mobile','Mobile']]){deviceButtons[key]=btn(label,()=>chooseDevice(key));toolbar.append(deviceButtons[key])}
  const reload=btn('Reload Preview',()=>void reloadPreview());toolbar.append(reload);
+ toolbar.append(btn('Refresh entire Preview app',()=>{const u=new URL(location.href);u.searchParams.set('v','20261126-sender-preview3');u.searchParams.set('_bc_release',String(Date.now()));location.replace(u.href)}));
  toolbar.append(btn('Reset test',()=>{if(authorized()&&confirm('Clear this temporary test session only?')){clearLibrary();model=fresh();broadcast()}}));
  const phonePreset=btn('Sender’s phone · Neon Smarta 2',()=>{chooseMode('sender');chooseDevice('mobile',true)});
  phonePreset.id='rdDevSenderPhone';phonePreset.title='Estimated Android 11 Chrome viewport: 320 × 480 CSS pixels; actual browser size may differ.';
@@ -38,6 +39,7 @@
    model.photos.push({id:crypto.randomUUID(),image_url:canvas.toDataURL('image/png'),caption:'Synthetic test card (not a live photo)',created_at:new Date().toISOString(),decision_status:'accepted',amount_cents:25+i*25,stars:5});
   }
   broadcast();
+  frames.sender?.contentWindow?.postMessage({type:'rd-dev-open-picks',token},'*');
  }));
  const roomPicker=$('#developerPreviewRoom');if(roomPicker)toolbar.append(roomPicker);
  const importPhotos=btn('Use previous REDLINE photos',()=>void importPreviousPhotos());toolbar.append(importPhotos);
@@ -99,7 +101,7 @@
  function reportStatus(){
   if(!dialog.open||!loadedBuild)return;
   const r=reports.receiver,s=reports.sender;
-  if(preset){notice.textContent='Safaricom Neon Smarta 2 · Android 11 / Chrome · estimated 320 × 480 CSS px'+(s?' · Actual preview '+s.width+' × '+s.height+' · Sender menu '+(s.menu?'OK':'not visible'):' · Checking sender layout…')+' · '+loadedBuild+' · Local test only. No live payments or records.';return}
+  if(preset){notice.textContent='Safaricom Neon Smarta 2 · Android 11 / Chrome · estimated 320 × 480 CSS px'+(s?' · Actual preview '+s.width+' × '+s.height+' · Sender menu '+(s.menu?'OK':'not visible')+' · Smoke Break '+(s.smoke?'VISIBLE':'not visible')+' · Favorites '+(s.favorites?'VISIBLE':'not visible')+' · Resubmit '+(s.resubmit?'VISIBLE':'open 5-Star Photos'):' · Checking sender layout…')+' · '+loadedBuild+' · Local test only. No live payments or records.';return}
   const layout=r?' · Receiver '+(device==='desktop'&&r.mode==='mobile'?'Desktop / approved mobile layout':r.mode)+' ('+r.width+'px)'+(r.mode==='mobile'?' · Header menu '+(r.menu?'OK':'not placed')+' · PAY '+(r.pay?'OK':'not visible'):''):' · Checking receiver layout…';
   notice.textContent='Current interface: '+loadedBuild+layout+' · Local test only. No live payments or records.';
  }
@@ -116,7 +118,7 @@
    void importPreviousPhotos();return;
   }
   if(a==='layout'&&['mobile','tablet','os'].includes(p.mode)){
-   reports[role]={mode:p.mode,width:Number(p.width)||0,height:Number(p.height)||0,menu:p.menu===true,pay:p.pay===true};reportStatus();return;
+   reports[role]={mode:p.mode,width:Number(p.width)||0,height:Number(p.height)||0,menu:p.menu===true,pay:p.pay===true,smoke:p.smoke===true,favorites:p.favorites===true,resubmit:p.resubmit===true};reportStatus();return;
   }
   if(!model.active&&a!=='view'){ok=false}
   else if(a==='chat'&&typeof p.body==='string'&&p.body.trim()&&p.body.length<=2000&&model.messages.length<300){

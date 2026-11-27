@@ -20,8 +20,8 @@
  document.body.dataset.rdDevPreset=cfg.preset==='neon-smarta-2'?'neon-smarta-2':'';
  function reportLayout(){requestAnimationFrame(()=>requestAnimationFrame(()=>{
   const menu=document.querySelector(owner?'.topbar .rr-menu-toggle':'.topbar .rs-mobile-menu-toggle'),pay=document.querySelector('.rr-pay-choice');
-  const visible=e=>!!e&&getComputedStyle(e).display!=='none'&&e.getBoundingClientRect().width>0;
-  parent.postMessage({type:'rd-dev-action',token:cfg.token,action:'layout',payload:{mode:document.body.dataset.ledgerDevice,width:innerWidth,height:innerHeight,menu:visible(menu),pay:visible(pay)}},cfg.origin);
+  const visible=e=>{if(!e||e.hidden||!e.getClientRects().length)return false;const r=e.getBoundingClientRect();return r.width>0&&r.height>0&&r.right>0&&r.left<innerWidth&&r.bottom>0&&r.top<innerHeight&&getComputedStyle(e).visibility!=='hidden'};
+  parent.postMessage({type:'rd-dev-action',token:cfg.token,action:'layout',payload:{mode:document.body.dataset.ledgerDevice,width:innerWidth,height:innerHeight,menu:visible(menu),pay:visible(pay),smoke:visible(document.querySelector('[data-break-action="request"]')),favorites:visible(document.querySelector('[data-break-action="favorites"]')),resubmit:[...document.querySelectorAll('.redline-five-star-resubmit')].some(visible)}},cfg.origin);
  }))}
  window.addEventListener('message',event=>{
   if(event.source!==parent||event.origin!==cfg.origin||event.data?.token!==cfg.token||event.data?.type!=='rd-dev-device'||!['desktop','tablet','mobile'].includes(event.data.device))return;
@@ -233,7 +233,9 @@
   if(e.source!==parent||e.origin!==cfg.origin||e.data?.token!==cfg.token)return;
   if(e.data.type==='rd-dev-state'){
    const next=e.data.model;if(!next||!Array.isArray(next.photos)||!Array.isArray(next.messages))return;
-   model=next;render();window.dispatchEvent(new Event('blackcell:redline:preview-break-state'));
+   model=next;render();window.dispatchEvent(new Event('blackcell:redline:preview-break-state'));reportLayout();
+  }else if(e.data.type==='rd-dev-open-picks'&&!owner){
+   document.querySelector('[data-simple-tab="five-star"]')?.click();reportLayout();
   }else if(e.data.type==='rd-dev-ack'){
    const r=requests.get(e.data.id);if(!r)return;requests.delete(e.data.id);clearTimeout(r.timer);e.data.ok?r.resolve(true):r.reject(Error('Test action not available'));
   }
