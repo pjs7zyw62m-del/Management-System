@@ -4,7 +4,7 @@ export function mountSettings(host,api){
  const el=(tag,cls,t)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(t!==undefined)n.textContent=t;return n};
  const btn=(t,fn,cls='bc-settings-button')=>{const n=el('button',cls,t);n.type='button';n.onclick=fn;return n};
  host.classList.add('bc-settings');const navigation=el('nav','bc-settings-nav'),body=el('main','bc-settings-content');navigation.setAttribute('aria-label','Settings sections');host.append(navigation,body);
- const groups=[['general','General','⚙'],['account','Account','◉'],['storage','Storage','▱'],['apps','Applications','▦'],['appearance','Appearance','◐'],['security','Privacy & Security','◇'],['updates','Software Update','↻'],['about','About','ⓘ']];
+ const groups=[['general','General','⚙'],['account','Account','◉'],['storage','Storage','▱'],['apps','Applications','▦'],['appearance','Appearance','◐'],['sound','Sound','♪'],['security','Privacy & Security','◇'],['updates','Software Update','↻'],['about','About','ⓘ']];
  let section=groups.some(x=>x[0]===api.initialSection)?api.initialSection:'general',closed=false,generation=0,storageData=null,breakdown=null,storageError='',loading=false,buttons=new Map();
  navigation.append(el('div','bc-settings-brand','SYSTEM SETTINGS'));
  for(const [id,label,icon] of groups){const b=btn('','', 'bc-settings-navbtn');b.append(el('span','bc-settings-glyph',icon),el('span','',label));b.onclick=()=>select(id);navigation.append(b);buttons.set(id,b)}
@@ -21,7 +21,7 @@ export function mountSettings(host,api){
   const title=groups.find(g=>g[0]===section)[1],head=el('header','bc-settings-header');head.append(el('div','bc-settings-kicker','BLACKCELL OS / SYSTEM SETTINGS'),el('h1','',title));body.append(head);
   const account=api.account(),prefs=api.preferences();
   if(section==='general'){
-   const p=panel('Your BLACKCELL OS','Manage your personal workspace.');row(p,'Storage',btn('Manage ›',()=>select('storage')));row(p,'Applications',btn('Manage ›',()=>select('apps')));row(p,'Appearance',btn('Customize ›',()=>select('appearance')));row(p,'Corporate account',btn('View ›',()=>select('account')));row(p,'Privacy & security',btn('View ›',()=>select('security')));row(p,'Software Update',btn('Check ›',()=>select('updates')),'Check for published BLACKCELL OS releases.');
+   const p=panel('Your BLACKCELL OS','Manage your personal workspace.');row(p,'Storage',btn('Manage ›',()=>select('storage')));row(p,'Applications',btn('Manage ›',()=>select('apps')));row(p,'Appearance',btn('Customize ›',()=>select('appearance')));row(p,'Sound',btn('Adjust ›',()=>select('sound')));row(p,'Corporate account',btn('View ›',()=>select('account')));row(p,'Privacy & security',btn('View ›',()=>select('security')));row(p,'Software Update',btn('Check ›',()=>select('updates')),'Check for published BLACKCELL OS releases.');
   }else if(section==='account'){
    const p=panel('Corporate identity','Your verified identity and access level.');row(p,'Display name',account.name);row(p,'Account',account.username);row(p,'Access',account.access);row(p,'Clearance',account.clearance);
    const q=panel('Profile');row(q,'Personal profile',btn('Open profile ›',()=>api.openOrStore('person')),'Manage your profile using the existing profile app.');
@@ -56,6 +56,22 @@ export function mountSettings(host,api){
    p.append(savedStatus);
    const wallpapers=panel('Wallpaper Studio','Choose a BLACKCELL wallpaper or use your own photograph. Pictures remain private to your account.');
    mountWallpaperControls(wallpapers,{api,prefs,el,btn,row});
+   }else if(section==='sound'){
+   const system=window.BLACKCELL_SYSTEM_SOUNDS;
+   const p=panel('System sounds','Original BLACKCELL tones inspired by the restraint of a desktop operating system. These preferences apply to this browser and do not change media playback volume.');
+   const current=system?.preferences?.()||{enabled:false,volume:.35,available:false};
+   const toggle=el('input','bc-settings-toggle');toggle.type='checkbox';toggle.checked=current.enabled;toggle.disabled=!current.available;toggle.setAttribute('aria-label','Enable system sounds');
+   const volume=el('input','bc-settings-button');volume.type='range';volume.min='0';volume.max='100';volume.step='5';volume.value=String(Math.round(current.volume*100));volume.setAttribute('aria-label','System sound volume');volume.disabled=!current.available;
+   const notice=el('p','bc-settings-muted','');notice.setAttribute('role','status');
+   const sample=btn('Play sample',()=>{});sample.disabled=!current.available||!current.enabled;
+   sample.onclick=async event=>{const played=await system?.preview?.(event);notice.textContent=played?'Sample played.':'Sound is muted, another announcement is playing, or your browser has blocked audio.'};
+   toggle.onchange=()=>{const prefs=system.setPreference({enabled:toggle.checked});sample.disabled=!prefs.enabled;notice.textContent=prefs.enabled?'System sounds enabled.':'System sounds muted.'};
+   volume.oninput=()=>{system.setPreference({volume:Number(volume.value)/100});notice.textContent='System sound volume: '+volume.value+'%'};
+   row(p,'System sounds',toggle,'Startup, opening apps, window controls, security lock and system notices.');
+   row(p,'Volume',volume,'Independent of video, music and the existing spoken startup announcement.');
+   row(p,'Preview sound',sample,'A real tap may be required before audio is allowed, especially on mobile browsers.');
+   if(!current.available)notice.textContent='This browser does not expose Web Audio.';
+   p.append(notice);
    }else if(section==='security'){
    const p=panel('Session & screen lock','Choose your preferred BLACKCELL OS idle-lock interval. Your account setting synchronizes across devices where cloud preferences are available.');row(p,'Status',api.preview?'Preview':'Verified');row(p,'Corporate session inactivity limit','60 minutes','The corporate session signs out after 60 minutes of inactivity. This is separate from the adjustable screen lock.');const auto=el('select','bc-settings-button');auto.setAttribute('aria-label','Automatically lock workspace');for(const minutes of [1,5,10,15,30,60,0]){const o=el('option','',minutes===0?'Never':minutes+' minute'+(minutes===1?'':'s'));o.value=String(minutes);auto.append(o)}auto.value=String(prefs.autoLockMinutes??5);const saved=el('p','bc-settings-muted');saved.setAttribute('role','status');auto.onchange=()=>{const result=api.setPreference('autoLockMinutes',Number(auto.value));auto.value=String(api.preferences().autoLockMinutes);saved.textContent=result?.message||'Updated.'};row(p,'Lock workspace after',auto,'Choose 30 or 60 minutes, or another interval. Never disables the workspace lock only; corporate sign-out at 60 minutes still applies.');row(p,'Lock Screen',btn('Lock',api.lock),'Require your account password to resume the desktop.');row(p,'Log Off',btn('Log Off',api.logOff),'Return to OS login while keeping the corporate session and open apps.');row(p,'Restart',btn('Restart',api.restart),'Reload the desktop and restore saved window layout.');p.append(saved);row(p,'Private storage','Encrypted');row(p,'Sign out',btn('Sign out',api.signOut,'bc-settings-button danger'),'End the current corporate session.');if(api.preview){const buttons=p.querySelectorAll('button');if(buttons.length)buttons[buttons.length-1].disabled=true;}
   }else if(section==='updates'){
