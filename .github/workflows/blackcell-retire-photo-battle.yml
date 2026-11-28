@@ -1,0 +1,20 @@
+name: BLACKCELL Photo Battle Retirement
+on:
+  pull_request:
+    paths:
+      - 'blackcell-os.*'
+      - 'blackcell-app-store.js'
+      - 'blackcell-photo-battle.js'
+      - 'tests/blackcell-retire-photo-battle.test.mjs'
+      - '.github/workflows/blackcell-retire-photo-battle.yml'
+permissions:
+  contents: read
+jobs:
+  retire:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --check blackcell-os.js && node --check blackcell-app-store.js && node --check blackcell-os-springboard.js && node --test tests/blackcell-retire-photo-battle.test.mjs tests/blackcell-mail-discover.test.mjs
