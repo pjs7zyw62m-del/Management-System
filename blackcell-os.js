@@ -161,7 +161,7 @@ async function finishBoot(){
  if(!preview&&(!active||leaving||$('gate').dataset.state!=='boot'))return false;
  bootComplete=true;$('gate').hidden=true;if(!workspaceLock?.isLocked())$('desktop').hidden=false;applyAppLayout();window.dispatchEvent(new Event('blackcell:desktop-ready'));return true;
 }
-function setupWorkspaceLock(){if(workspaceLock)return;workspaceLock=createWorkspaceLock({host:$('desktop'),preview,account:()=>({id:storeProfile,name:$('memberName').textContent,initials:$('initials').textContent}),usable:()=>!leaving&&(active||preview),verify:async secret=>{const verified=await verifyWorkspacePassword(client,storeProfile,secret);if(!verified.ok)return verified;const result=await corporateAuthorize(client,{allowLedgerOnly:true});if(!result.ok||result.user.id!==storeProfile||!memberAllowed(result.member)||(!owner&&result.member.access_scope==='ledger_only'))return {ok:false,message:'Corporate session has expired. Sign Out and authenticate again.'};const {data,error}=await client.rpc(owner?'corp_code_status':'corp_employee_code_status');if(error||data?.ok!==true||data?.verified!==true)return {ok:false,message:'Corporate security verification expired. Sign Out and authenticate again.'};return {ok:true}},onLock:()=>{if(!preview)window.BLACKCELL_SYSTEM_SOUNDS?.play('lock');closeAppPasswordPrompt();hideProtectedWindows();const parked=$('osParkedChatRail');if(parked){parked.hidden=true;parked.replaceChildren();}securityNotifications?.pause();closeRecycleBin();finishAppRearrange();cancelAppHold();closeAppContext();closeMenu();dockReveal(false);saveWorkspace();for(const r of windows.values()){if(r.frame)pauseFrameMedia(r.frame);for(const media of r.el.querySelectorAll('video,audio'))try{media.pause()}catch(_){}}},onUnlock:()=>{if(!preview)window.BLACKCELL_SYSTEM_SOUNDS?.play('unlock');syncParkedChatBubbles();last=Date.now();if(bootComplete)$('desktop').hidden=false;applyAppLayout();void activity();void recheck();void securityNotifications?.refresh()},onSignOut:()=>void signOut()});}
+function setupWorkspaceLock(){if(workspaceLock)return;workspaceLock=createWorkspaceLock({host:$('desktop'),preview,account:()=>({id:storeProfile,name:$('memberName').textContent,initials:$('initials').textContent}),usable:()=>!leaving&&(active||preview),verify:async secret=>{const verified=await verifyWorkspacePassword(client,storeProfile,secret);if(!verified.ok)return verified;const result=await corporateAuthorize(client,{allowLedgerOnly:true});if(!result.ok||result.user.id!==storeProfile||!memberAllowed(result.member)||(!owner&&result.member.access_scope==='ledger_only'))return {ok:false,message:'Corporate session has expired. Sign Out and authenticate again.'};const {data,error}=await client.rpc(owner?'corp_code_status':'corp_employee_code_status');if(error||data?.ok!==true||data?.verified!==true)return {ok:false,message:'Corporate security verification expired. Sign Out and authenticate again.'};return {ok:true}},onLock:()=>{clearTabletSplit();if(!preview)window.BLACKCELL_SYSTEM_SOUNDS?.play('lock');closeAppPasswordPrompt();hideProtectedWindows();const parked=$('osParkedChatRail');if(parked){parked.hidden=true;parked.replaceChildren();}securityNotifications?.pause();closeRecycleBin();finishAppRearrange();cancelAppHold();closeAppContext();closeMenu();dockReveal(false);saveWorkspace();for(const r of windows.values()){if(r.frame)pauseFrameMedia(r.frame);for(const media of r.el.querySelectorAll('video,audio'))try{media.pause()}catch(_){}}},onUnlock:()=>{if(!preview)window.BLACKCELL_SYSTEM_SOUNDS?.play('unlock');syncParkedChatBubbles();last=Date.now();if(bootComplete)$('desktop').hidden=false;applyAppLayout();void activity();void recheck();void securityNotifications?.refresh()},onSignOut:()=>void signOut()});}
 function lockWorkspace(mode='lock'){if(!workspaceLock||workspaceLock.isLocked())return;workspaceLock.lock(mode);}
 
 function restartWorkspace(){
@@ -482,6 +482,7 @@ function spaceLoad(){
  spaceNotify();
 }
 function spaceVisibility(){
+ clearTabletSplit();
  for(const r of windows.values())if(!r.chatPopout){
   r.el.hidden=r.spaceId!==bcSpace||r.spaceShown===false||!!r.suspended||!!r.chatParked;
  }
@@ -513,7 +514,23 @@ function spaceMove(id,dest){
  if(!r||r.chatPopout||!spaceValid(dest))return false;
  r.spaceId=dest;r.spaceShown=true;spaceVisibility();saveWorkspace();return true;
 }
-function syncFullscreenShell(){const activeFull=[...windows.values()].some(r=>r.el.classList.contains('bc-os-fullscreen')&&!r.el.hidden&&!r.suspended);$('desktop').classList.toggle('bc-os-fullscreen-active',activeFull);if(!activeFull)$('desktop').classList.remove('bc-os-menu-edge-open','bc-os-dock-edge-open')}
+let tabletPair=null;
+function clearTabletSplit(){if(!tabletPair)return;for(const r of windows.values())r.el.removeAttribute('data-bc-split');$('desktop').classList.remove('bc-tablet-split');tabletPair=null;}
+function tabletSplitOptions(){
+ if(!document.documentElement.classList.contains('bc-os-tablet')||innerWidth<760||workspaceLock?.isLocked()||(!active&&!preview)||leaving)return [];
+ // Only already open, authorized, unprotected native windows are eligible.
+ const safe=new Set(['settings','files','personalphotos','store','chat','browser','network','tube','utilities']);
+ return [...windows.values()].filter(r=>safe.has(r.id)&&!r.el.hidden&&!r.suspended&&!r.closing&&!r.chatPopout&&!appProtected(r.id)&&!appBusy(r)&&r.spaceId===bcSpace).map(r=>({id:r.id,title:r.title}));
+}
+function tabletSplit(left,right){
+ const available=tabletSplitOptions();if(left===right||!available.some(r=>r.id===left)||!available.some(r=>r.id===right))return false;
+ clearTabletSplit();const a=windows.get(left),b=windows.get(right);tabletPair=[left,right];
+ for(const r of [a,b])r.el.classList.remove('bc-os-fullscreen');
+ a.el.dataset.bcSplit='left';b.el.dataset.bcSplit='right';$('desktop').classList.add('bc-tablet-split');
+ syncFullscreenShell();return true;
+}
+function syncFullscreenShell(){
+ if(tabletPair&&(!document.documentElement.classList.contains('bc-os-tablet')||innerWidth<760||tabletPair.some(id=>{const r=windows.get(id);return !r||r.el.hidden||r.suspended||r.el.classList.contains('bc-os-fullscreen')})||(selectedWindow&&!tabletPair.includes(selectedWindow.id))))clearTabletSplit();const activeFull=[...windows.values()].some(r=>r.el.classList.contains('bc-os-fullscreen')&&!r.el.hidden&&!r.suspended);$('desktop').classList.toggle('bc-os-fullscreen-active',activeFull);if(!activeFull)$('desktop').classList.remove('bc-os-menu-edge-open','bc-os-dock-edge-open')}
 function fullscreenWindow(id){
  const r=windows.get(id);if(!r||touchOS())return false;
  const expand=!r.el.classList.contains('bc-os-fullscreen');
@@ -533,7 +550,9 @@ window.BLACKCELL_MAC_BRIDGE=Object.freeze({
  setPreference:setDesktopPref,
  openSettings:section=>openAppOrStore('settings',section),
  lock:()=>lockWorkspace(),notifications:()=>osNoticeHistory.map(x=>({...x})),clearNotifications:()=>{osNoticeHistory=[];window.dispatchEvent(new Event('blackcell:notification'))},
- toggleWidgets:()=>$('bcWidgetsToggle')?.click(),isPhone:touchOS,
+ toggleWidgets:()=>$('bcWidgetsToggle')?.click(),isPhone:()=>document.documentElement.classList.contains('bc-os-phone'),
+ isTablet:()=>document.documentElement.classList.contains('bc-os-tablet'),
+ splitOptions:tabletSplitOptions,split:tabletSplit,clearSplit:clearTabletSplit,splitActive:()=>!!tabletPair,
  listDesktopFiles:async()=>{
   if(!storeProfile||preview)return [];
   if(!window.BLACKCELL_MAC_BRIDGE.ready()||!installedApp('files')||!client?.storage)return [];
@@ -789,6 +808,7 @@ function restoreOptionalWorkspace(){
  try{for(const item of records)if(installedApp(item.id))restoreRecord(item)}
  finally{workspaceRestoring=false;saveWorkspace()}
 }
+window.addEventListener('resize',()=>{if(tabletPair&&(!document.documentElement.classList.contains('bc-os-tablet')||innerWidth<760))clearTabletSplit()},{passive:true});
 window.addEventListener('pagehide',saveWorkspace);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)saveWorkspace()});
 
@@ -1109,6 +1129,7 @@ function warmAppComponents(){
 // REDLINE opens maximized. Touch devices need a visibly compact restore mode.
 function toggleOSWindowSize(r){
  if(!r||windows.get(r.id)!==r||r.el.hidden)return false;
+ clearTabletSplit();
  const w=r.el;
  if(touchOS()||innerWidth<=620){
   const compact=!w.classList.contains('bc-os-window-compact');
@@ -1144,7 +1165,9 @@ function showApp(id,initialState=null,passwordVerified=null){
  if(chatPopout&&!touchOS()&&innerWidth>620){const n=[...windows.values()].filter(r=>r.chatPopout).length,height=Math.min(760,innerHeight-100),width=Math.min(390,innerWidth-24,Math.max(320,Math.round(height*.54)));w.style.width=width+'px';w.style.height=height+'px';w.style.left=Math.max(12,innerWidth-width-28-(n%4)*30)+'px';w.style.top=Math.max(40,Math.min(70+(n%4)*28,innerHeight-height-50))+'px';}
  const bar=document.createElement('div');bar.className='os-window-head';const controls=document.createElement('div');controls.className='traffic';
  const title=document.createElement('span');title.textContent=windowTitle;
- const external=document.createElement('a');external.href=url.href;external.target='_blank';external.rel='noopener';external.textContent='Open full page ↗';bar.append(controls,title);if(!chatPopout)bar.append(external);
+ const touchActions=document.createElement('div');touchActions.className='bc-native-window-actions';
+ for(const [label,caption,fn] of [['Home','⌂',()=>showDesktop()],['Open apps','▣',()=>window.dispatchEvent(new Event('blackcell:mission-open'))]]){const button=document.createElement('button');button.type='button';button.textContent=caption;button.title=label;button.setAttribute('aria-label',label);button.addEventListener('click',fn);touchActions.append(button);}
+ const external=document.createElement('a');external.href=url.href;external.target='_blank';external.rel='noopener';external.textContent='Open full page ↗';bar.append(controls,title);if(!chatPopout)bar.append(external);bar.append(touchActions);
  if((networkWindow||id==='administration'||id==='photoledger')&&!chatPopout){const refresh=document.createElement('button');refresh.type='button';refresh.className='os-network-refresh';refresh.textContent='↻ Refresh app';refresh.title='Load the current deployed application release';refresh.style.cssText='background:transparent;border:0;color:inherit;font:inherit;font-size:11px;cursor:pointer;padding:4px 8px';refresh.addEventListener('click',()=>{
   const record=windows.get(id);if(!record?.frame)return;
   if(appBusy(record)){osNotice('Finish the current operation before refreshing.');return}
