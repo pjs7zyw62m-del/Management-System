@@ -20,3 +20,5 @@ test('Device layout, free webcam, and host visibility are integrated',()=>{
  assert.match(js,/FREE · No webcam charges/);assert.match(js,/blackcell-redline-visibility/);assert.match(os,/baseId==='chat'\|\|id==='photoledger'/);assert.match(os,/blackcell-redline-visibility/);
  assert.match(css,/@media\(max-width:1050px\)/);assert.match(css,/@media\(max-width:700px\)/);
 });
+
+test('Owner-only confirmed deletion does not modify individual photo ledgers',()=>{const sql=read('database/redline-group-delete.sql'),js=read('private-photo-ledger-groups.js');assert.match(sql,/r.owner_id=u/);assert.match(sql,/auth.sessions/);assert.match(sql,/Stop all group webcams/);assert.match(sql,/delete from redline_group_private.rooms/);assert.doesNotMatch(sql,/delete from public\./);assert.match(js,/if\(isOwner\)\{const del=button\('Delete group'/);assert.match(js,/confirm\('Permanently delete/);assert.match(js,/corp_redline_group_delete/)});
