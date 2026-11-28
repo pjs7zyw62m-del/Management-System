@@ -1,4 +1,4 @@
-import {mountBlackcellConnect} from './blackcell-connect.js?v=1';
+import {mountBlackcellConnect} from './blackcell-connect.js?v=2';
 import {createChatUnreadMonitor} from './blackcell-chat-unread.js?v=1';
 import {mountPhoneNavigation} from './blackcell-os-phone-navigation.js?v=1';
 import {mountWorldMonitor} from './blackcell-os-world-monitor.js?v=1';
@@ -1045,7 +1045,7 @@ function paintChatUnread(){
   if(n)node.dataset.bcUnread=n>99?'99+':String(n);else delete node.dataset.bcUnread;
  }
 }
-function ensureConnect(){if(preview||connectController)return;connectController=mountBlackcellConnect({client:()=>client,account:()=>storeProfile,allowed:()=>contextAllowed()&&installedApp('chat'),host:$('desktop'),notify:message=>osNotice(message,message.startsWith('Incoming ')?null:'notice'),ring:()=>window.BLACKCELL_SYSTEM_SOUNDS?.play('callring')});void connectController.poll()}
+function ensureConnect(){if(preview||connectController)return;connectController=mountBlackcellConnect({client:()=>client,account:()=>storeProfile,allowed:()=>contextAllowed()&&installedApp('chat'),host:$('desktop'),notify:message=>osNotice(message,message.startsWith('Incoming ')?null:'notice'),ring:()=>window.BLACKCELL_SYSTEM_SOUNDS?.play('callring'),ringback:()=>window.BLACKCELL_SYSTEM_SOUNDS?.play('ringback')});void connectController.poll()}
 function ensureChatUnreadMonitor(){
  if(preview||chatUnreadMonitor)return;
  chatUnreadMonitor=createChatUnreadMonitor({client:()=>client,account:()=>storeProfile,allowed:()=>contextAllowed()&&installedApp('chat'),onChange:snapshot=>{chatUnreadSnapshot=snapshot;paintChatUnread()},onNew:(count,initial)=>{
