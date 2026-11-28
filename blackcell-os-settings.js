@@ -70,22 +70,35 @@ export function mountSettings(host,api){
    const toggle=el('input','bc-settings-toggle');toggle.type='checkbox';toggle.checked=current.enabled;toggle.disabled=!current.available;toggle.setAttribute('aria-label','Enable system sounds');
    const volume=el('input','bc-settings-button');volume.type='range';volume.min='0';volume.max='100';volume.step='5';volume.value=String(Math.round(current.volume*100));volume.setAttribute('aria-label','System sound volume');volume.disabled=!current.available;
    const notice=el('p','bc-settings-muted','');notice.setAttribute('role','status');
-   const sample=btn('Play sample',()=>{});sample.disabled=!current.available||!current.enabled;
-   sample.onclick=async event=>{
-    sample.disabled=true;notice.textContent='Playing test sound…';
-    try{
-     const result=await system?.preview?.(event);
-     notice.textContent=result?.ok?'Playback completed. If you heard nothing, check the device media volume, silent mode and Bluetooth/audio output.':({muted:'Enable system sounds and raise the volume above zero.',announcement:'The startup announcement is still playing. Try again when it finishes.',blocked:'The browser denied audio playback. Tap Play sample again.',timeout:'Audio playback did not finish. Try again.',busy:'Another system sound is playing. Try again.',gesture:'Tap Play sample directly.'}[result?.reason]||'The audio player could not play this sample.');
-    }catch(_){notice.textContent='Audio playback failed. Try again.'}
-    finally{sample.disabled=!system?.preferences?.().enabled}
-   };
-   toggle.onchange=()=>{const prefs=system.setPreference({enabled:toggle.checked});sample.disabled=!prefs.enabled;notice.textContent=prefs.enabled?'System sounds enabled.':'System sounds muted.'};
+   const playbackButtons=[];let playbackSerial=0;
+   const stop=btn('Stop playback',()=>{++playbackSerial;system?.stop?.();notice.textContent='Playback stopped.';for(const b of playbackButtons)b.disabled=!system?.preferences?.().enabled;stop.disabled=true});
+   stop.disabled=true;
+   function previewButton(id,label){
+    const button=btn('Play',()=>{});button.setAttribute('aria-label','Play '+label);button.disabled=!current.available||!current.enabled;
+    playbackButtons.push(button);
+    button.onclick=async event=>{
+     const serial=++playbackSerial;stop.disabled=false;notice.textContent='Playing '+label+'…';
+     try{
+      const result=await system?.preview?.(event,id);
+      if(serial!==playbackSerial)return;
+      notice.textContent=result?.ok?'Playback completed: '+label+'.':({muted:'Enable system sounds and raise volume above zero.',announcement:'Startup announcement is still playing. Try again when it finishes.',blocked:'Browser denied audio playback. Tap Play again.',timeout:'Playback did not finish. Try again.',busy:'Another sound is playing.',gesture:'Tap Play directly.',stopped:'Playback stopped.'}[result?.reason]||'The audio player could not play this sample.');
+     }catch(_){if(serial===playbackSerial)notice.textContent='Audio playback failed. Try again.'}
+     finally{if(serial===playbackSerial)stop.disabled=true}
+    };return button;
+   }
+   toggle.onchange=()=>{const prefs=system.setPreference({enabled:toggle.checked});for(const b of playbackButtons)b.disabled=!prefs.enabled;if(!prefs.enabled){++playbackSerial;stop.disabled=true}notice.textContent=prefs.enabled?'System sounds enabled.':'System sounds muted.'};
    volume.oninput=()=>{system.setPreference({volume:Number(volume.value)/100});notice.textContent='System sound volume: '+volume.value+'%'};
    row(p,'System sounds',toggle,'Startup, opening apps, window controls, security lock and system notices.');
-   row(p,'Volume',volume,'Independent of video, music and the existing spoken startup announcement.');
-   row(p,'Preview sound',sample,'A real tap may be required before audio is allowed, especially on mobile browsers.');
-   if(!current.available)notice.textContent='This browser does not expose Web Audio.';
+   row(p,'Volume',volume,'Controls system sound previews, not music or video playback.');
+   row(p,'Playback',stop,'Choose any sound below to hear it. Only one preview plays at a time.');
+   if(!current.available)notice.textContent='Audio playback is not available in this browser.';
    p.append(notice);
+   const library=system?.library?.()||[{id:'test',label:'Classic sample',group:'System'}];
+   for(const group of ['System','New tones','Voice recordings']){
+    const entries=library.filter(x=>x.group===group);if(!entries.length)continue;
+    const collection=panel(group,group==='Voice recordings'?'Original BLACKCELL sign-in and startup audio files. Previewing them does not initiate authentication.':group==='New tones'?'Original BLACKCELL sound designs for auditioning.':'Sounds used by BLACKCELL OS.');
+    for(const item of entries)row(collection,item.label,previewButton(item.id,item.label));
+   }
    }else if(section==='security'){
    const p=panel('Session & screen lock','Choose your preferred BLACKCELL OS idle-lock interval. Your account setting synchronizes across devices where cloud preferences are available.');row(p,'Status',api.preview?'Preview':'Verified');row(p,'Corporate session inactivity limit','60 minutes','The corporate session signs out after 60 minutes of inactivity. This is separate from the adjustable screen lock.');const auto=el('select','bc-settings-button');auto.setAttribute('aria-label','Automatically lock workspace');for(const minutes of [1,5,10,15,30,60,0]){const o=el('option','',minutes===0?'Never':minutes+' minute'+(minutes===1?'':'s'));o.value=String(minutes);auto.append(o)}auto.value=String(prefs.autoLockMinutes??5);const saved=el('p','bc-settings-muted');saved.setAttribute('role','status');auto.onchange=()=>{const result=api.setPreference('autoLockMinutes',Number(auto.value));auto.value=String(api.preferences().autoLockMinutes);saved.textContent=result?.message||'Updated.'};row(p,'Lock workspace after',auto,'Choose 30 or 60 minutes, or another interval. Never disables the workspace lock only; corporate sign-out at 60 minutes still applies.');row(p,'Lock Screen',btn('Lock',api.lock),'Require your account password to resume the desktop.');row(p,'Log Off',btn('Log Off',api.logOff),'Return to OS login while keeping the corporate session and open apps.');row(p,'Restart',btn('Restart',api.restart),'Reload the desktop and restore saved window layout.');p.append(saved);row(p,'Private storage','Encrypted');row(p,'Sign out',btn('Sign out',api.signOut,'bc-settings-button danger'),'End the current corporate session.');if(api.preview){const buttons=p.querySelectorAll('button');if(buttons.length)buttons[buttons.length-1].disabled=true;}
   }else if(section==='updates'){
