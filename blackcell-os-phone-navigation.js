@@ -33,7 +33,7 @@ export function mountPhoneNavigation({host,allowed,apps,home,open,close,activeId
    remove.onclick=()=>void finish();
    launch.addEventListener('pointerdown',e=>{if(e.button!==0)return;p={id:e.pointerId,x:e.clientX,y:e.clientY};try{launch.setPointerCapture(e.pointerId)}catch(_){p=null}});
    launch.addEventListener('pointermove',e=>{if(p?.id!==e.pointerId)return;const dy=e.clientY-p.y;if(dy<0)card.style.transform='translateY('+Math.max(-90,dy*.6)+'px)'});
-   launch.addEventListener('pointerup',e=>{if(p?.id!==e.pointerId)return;const dy=e.clientY-p.y,dx=e.clientX-p.x;p=null;card.style.transform='';if(dy<-55&&Math.abs(dy)>Math.abs(dx)*1.25){e.preventDefault();closing=true;launch.onclick=null;closing=false;void finish()}});
+   launch.addEventListener('pointerup',e=>{if(p?.id!==e.pointerId)return;const dy=e.clientY-p.y,dx=e.clientX-p.x;p=null;card.style.transform='';if(dy<-55&&Math.abs(dy)>Math.abs(dx)*1.25){e.preventDefault();launch.onclick=null;void finish()}});
    for(const type of ['pointercancel','lostpointercapture'])launch.addEventListener(type,()=>{p=null;card.style.transform=''});
    card.append(launch,remove);cards.append(card);
   }
@@ -45,7 +45,7 @@ export function mountPhoneNavigation({host,allowed,apps,home,open,close,activeId
   const i=list.findIndex(a=>a.id===activeId());if(i<0){open(list[0].id);return}
   if(list.length<2)return;open(list[(i+(direction==='next'?1:list.length-1))%list.length].id);
  }
- done.onclick=()=>dismiss();recent.onclick=()=>showSwitcher();dialog.addEventListener('close',()=>{cards.replaceChildren()});
+ done.onclick=()=>dismiss();recent.onclick=()=>showSwitcher();dialog.addEventListener('close',()=>{if(!dialog.open)cards.replaceChildren()});
  indicator.addEventListener('pointerdown',e=>{
   if(!allowed()||e.button!==0)return;cancel();skipClick=false;drag={id:e.pointerId,x:e.clientX,y:e.clientY,held:false};
   try{indicator.setPointerCapture(e.pointerId)}catch(_){cancel()}
