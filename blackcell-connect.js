@@ -4,16 +4,43 @@ export function waitForIce(pc,timeout=8000){
  if(pc.iceGatheringState==='complete')return Promise.resolve();
  return new Promise(resolve=>{let timer;const done=()=>{clearTimeout(timer);pc.removeEventListener('icegatheringstatechange',change);resolve()};const change=()=>{if(pc.iceGatheringState==='complete')done()};pc.addEventListener('icegatheringstatechange',change);timer=setTimeout(done,timeout);change()});
 }
+/* A separate media player for call tones: never use the microphone or interrupt
+   startup speech. Browser autoplay restrictions and user sound preferences apply. */
+export function createConnectTonePlayer({AudioClass=window.Audio,urls=window.URL,preferences=()=>({enabled:true,volume:.35})}={}){
+ let player=null,url=null,epoch=0;
+ function stop(){epoch++;try{player?.pause()}catch(_){}if(url){try{urls.revokeObjectURL(url)}catch(_){}url=null}}
+ async function play(kind){
+  stop();const ticket=epoch,p=preferences();
+  if(!p.enabled||!(p.volume>0))return {ok:false,reason:'muted'};
+  if(!AudioClass||!urls?.createObjectURL)return {ok:false,reason:'unsupported'};
+  try{
+   const notes=kind==='ringback'?[[440,0,.95,.5],[480,0,.95,.5]]:[[440,0,.32,.65],[659.25,.10,.32,.4],[440,.53,.32,.65],[659.25,.63,.32,.4]];
+   const rate=22050,frames=Math.ceil((Math.max(...notes.map(n=>n[1]+n[2]))+.03)*rate);
+   const buffer=new ArrayBuffer(44+frames*2),v=new DataView(buffer);
+   const tag=(offset,value)=>{for(let i=0;i<value.length;i++)v.setUint8(offset+i,value.charCodeAt(i))};
+   tag(0,'RIFF');v.setUint32(4,36+frames*2,true);tag(8,'WAVE');tag(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,rate,true);v.setUint32(28,rate*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);tag(36,'data');v.setUint32(40,frames*2,true);
+   for(let i=0;i<frames;i++){const t=i/rate;let sum=0;for(const [freq,delay,duration,level] of notes){const x=t-delay;if(x<0||x>=duration)continue;const env=Math.min(1,x/.012,(duration-x)/.035);sum+=Math.sin(2*Math.PI*freq*x)*level*env}v.setInt16(44+i*2,Math.round(Math.max(-1,Math.min(1,sum))*Math.min(1,p.volume)*32767),true)}
+   url=urls.createObjectURL(new Blob([buffer],{type:'audio/wav'}));player ||= new AudioClass();player.src=url;player.muted=false;player.volume=1;player.loop=false;player.playsInline=true;
+   await player.play();return ticket===epoch?{ok:true}:{ok:false,reason:'cancelled'};
+  }catch(e){return {ok:false,reason:ticket!==epoch?'cancelled':e?.name==='NotAllowedError'?'blocked':'media-error'}}
+ }
+ return {play,stop};
+}
+function callSoundPreferences(){
+ try{const p=window.BLACKCELL_SYSTEM_SOUNDS?.preferences();if(p)return p;const saved=JSON.parse(localStorage.getItem('bc.os.system-sounds.v1')||'null');return {enabled:typeof saved?.enabled==='boolean'?saved.enabled:localStorage.getItem('bcLandingMuted')!=='1',volume:Number.isFinite(saved?.volume)?Math.max(0,Math.min(1,saved.volume)):.35}}catch(_){return {enabled:true,volume:.35}}
+}
 const el=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e};
 const btn=(text,fn,cls='')=>{const e=el('button',cls,text);e.type='button';e.onclick=fn;return e};
 export function mountBlackcellConnect({client,account,allowed,host=document.body,notify=()=>{},ring=()=>{},ringback=()=>{}}){
  const device=crypto.randomUUID();
  let current=null,pc=null,local=null,remote=null,serial=0,working=false,polling=false,disposed=false,connectedAt=0,ringAt=0,failedAt=0,lastGood=0,lastPoll=0,facing='user',release=null,requested=null,collapsed=false,desktopAlert=null,alertedCall=null;
+ const tonePlayer=createConnectTonePlayer({preferences:callSoundPreferences});let toneEpoch=0;
  const panel=el('section','bc-connect-panel');panel.hidden=true;panel.setAttribute('aria-label','BLACKCELL Connect');
  const header=el('header','bc-connect-header'),brand=el('strong','','BLACKCELL Connect'),minimize=btn('Minimize',()=>{collapsed=!collapsed;panel.classList.toggle('is-collapsed',collapsed);minimize.textContent=collapsed?'Expand':'Minimize'});
  header.append(brand,minimize);
  const name=el('h2','',''),state=el('p','bc-connect-state',''),duration=el('span','bc-connect-duration','');
  state.setAttribute('role','status');
+ const soundStatus=el('p','bc-connect-state',''),privacy=el('p','bc-connect-state','');soundStatus.setAttribute('role','status');privacy.hidden=true;soundStatus.hidden=true;
  const stage=el('div','bc-connect-stage'),remoteVideo=el('video','bc-connect-remote'),localVideo=el('video','bc-connect-local');
  for(const v of [remoteVideo,localVideo]){v.autoplay=true;v.playsInline=true;v.setAttribute('playsinline','')}
  localVideo.muted=true;stage.append(remoteVideo,localVideo);
@@ -23,7 +50,8 @@ export function mountBlackcellConnect({client,account,allowed,host=document.body
  const camera=btn('Camera off',()=>{const tracks=local?.getVideoTracks()||[];const enabled=tracks.some(t=>t.enabled);tracks.forEach(t=>t.enabled=!enabled);camera.textContent=enabled?'Camera on':'Camera off'});
  const flip=btn('Switch camera',()=>void switchCamera()),resume=btn('Enable call audio',()=>{void remoteVideo.play().catch(()=>{})});
  const enableAlerts=btn('Enable desktop call alerts',()=>{try{void window.Notification.requestPermission().then(()=>{paint();alertIncoming()}).catch(()=>{})}catch(_){}});
- controls.append(start,accept,decline,mute,camera,flip,resume,enableAlerts,end);panel.append(header,name,state,duration,stage,controls);host.append(panel);
+ const testSound=btn('Test call sound',()=>{const kind=current?.direction==='outgoing'?'ringback':'callring';void playCallTone(kind,true)});
+ controls.append(start,accept,decline,mute,camera,flip,resume,testSound,enableAlerts,end);panel.append(header,name,state,soundStatus,privacy,duration,stage,controls);host.append(panel);
  const permitted=()=>!disposed&&!!account()&&allowed();
  const supported=()=>!!window.RTCPeerConnection&&!!navigator.mediaDevices?.getUserMedia;
  async function rpc(action,args={}){
@@ -43,6 +71,7 @@ export function mountBlackcellConnect({client,account,allowed,host=document.body
   mute.hidden=!local;camera.hidden=!local?.getVideoTracks().length;flip.hidden=camera.hidden;
   resume.hidden=!remote||!remoteVideo.paused;duration.hidden=!connectedAt;
   enableAlerts.hidden=window.Notification?.permission!=='default'||(!incoming&&!requested);
+  testSound.hidden=working||!!current&&current.state!=='ringing';privacy.hidden=!local;privacy.textContent=mode==='video'?'Camera and microphone access active for this live call. No call recording.':'Microphone access active for this live call. No call recording.';
   if(connectedAt){const seconds=Math.floor((Date.now()-connectedAt)/1000);duration.textContent=Math.floor(seconds/60)+':'+String(seconds%60).padStart(2,'0')}
   if(incoming&&!working)state.textContent='Incoming '+mode+' call';
   else if(requested&&!working)state.textContent='Start a private '+mode+' call? Direct connection pilot; some networks may not connect.';
@@ -52,11 +81,19 @@ export function mountBlackcellConnect({client,account,allowed,host=document.body
   if(!permitted()||!document.hidden||current?.direction!=='incoming'||current.state!=='ringing'||working||alertedCall===current.id||window.Notification?.permission!=='granted')return;
   try{desktopAlert=new window.Notification('BLACKCELL Connect',{body:'Incoming private call. Open BLACKCELL to answer.',tag:'blackcell-connect-'+current.id});alertedCall=current.id;desktopAlert.onclick=()=>{window.focus();closeAlert()}}catch(_){}
  }
+ function stopCallTone(){toneEpoch++;tonePlayer.stop();soundStatus.hidden=true;soundStatus.textContent=''}
+ async function playCallTone(kind,manual=false){
+  const ticket=++toneEpoch;const result=await tonePlayer.play(kind);if(ticket!==toneEpoch||!permitted())return;
+  if(result.ok){soundStatus.hidden=!manual;soundStatus.textContent=manual?'Call sound played. Check your device volume if you did not hear it.':'';return}
+  if(result.reason==='muted'){soundStatus.hidden=false;soundStatus.textContent='Call sounds are muted in BLACKCELL Settings.';return}
+  let fallback=false;try{fallback=(kind==='ringback'?ringback():ring())===true}catch(_){}
+  soundStatus.hidden=fallback&&!manual;soundStatus.textContent=fallback?'Call sound requested. Check your device volume.':'Call sound could not play. Tap Test call sound to enable audio in your browser.';
+ }
  function ringPending(){
   if(!permitted()||working||current?.state!=='ringing')return;
   alertIncoming();
   if(Date.now()-ringAt<5000)return;
-  ringAt=Date.now();try{if(current.direction==='incoming')ring();else if(current.direction==='outgoing')ringback()}catch(_){}
+  ringAt=Date.now();if(current.direction==='incoming')void playCallTone('callring');else if(current.direction==='outgoing')void playCallTone('ringback');
  }
  function deviceError(e,mode){
   if(e?.name==='NotFoundError'||e?.name==='DevicesNotFoundError')return 'No '+(mode==='video'?'microphone or camera':'microphone')+' was detected. Connect or enable the required device and try again.';
@@ -64,7 +101,7 @@ export function mountBlackcellConnect({client,account,allowed,host=document.body
   return e?.message||'Calling is unavailable.';
  }
  function cleanup(){
-  closeAlert();alertedCall=null;
+  closeAlert();stopCallTone();alertedCall=null;
   serial++;working=false;requested=null;current=null;connectedAt=0;ringAt=0;failedAt=0;lastGood=0;collapsed=false;panel.classList.remove('is-collapsed');minimize.textContent='Minimize';
   if(pc){pc.ontrack=null;pc.onconnectionstatechange=null;try{pc.close()}catch(_){}pc=null}
   for(const t of local?.getTracks()||[])t.stop();for(const t of remote?.getTracks()||[])t.stop();local=null;remote=null;
@@ -93,7 +130,7 @@ export function mountBlackcellConnect({client,account,allowed,host=document.body
  }
  async function startCall(){
   if(!requested||working||!permitted())return;
-  const request=requested,token=++serial;working=true;hold();state.textContent='Requesting microphone'+(request.mode==='video'?' and camera':'')+'…';paint();
+  const request=requested,token=++serial;working=true;stopCallTone();hold();state.textContent='Requesting microphone'+(request.mode==='video'?' and camera':'')+'…';paint();
   try{
    const conn=await setup(request.mode,token);
    await conn.setLocalDescription(await conn.createOffer());await waitForIce(conn);
@@ -106,7 +143,7 @@ export function mountBlackcellConnect({client,account,allowed,host=document.body
  }
  async function answer(){
   if(!current||current.direction!=='incoming'||current.state!=='ringing'||working||!permitted())return;
-  const offer=current,token=++serial;working=true;closeAlert();hold();state.textContent='Requesting microphone'+(offer.mode==='video'?' and camera':'')+'…';paint();
+  const offer=current,token=++serial;working=true;closeAlert();stopCallTone();hold();state.textContent='Requesting microphone'+(offer.mode==='video'?' and camera':'')+'…';paint();
   try{
    const conn=await setup(offer.mode,token);
    await conn.setRemoteDescription({type:'offer',sdp:offer.offer});
@@ -145,7 +182,7 @@ export function mountBlackcellConnect({client,account,allowed,host=document.body
     current=row;
     if(row.state==='accepted'&&row.direction==='outgoing'&&pc&&!pc.remoteDescription&&row.answer){await pc.setRemoteDescription({type:'answer',sdp:row.answer});if(token!==serial)return;if(!connectedAt){failedAt=Date.now();state.textContent='Connecting…'}}
    }
-   if(current?.state==='ringing')ringPending();else closeAlert();
+   if(current?.state==='ringing')ringPending();else{closeAlert();stopCallTone()}
    if(failedAt&&Date.now()-failedAt>30000&&pc?.connectionState!=='connected'){void finish('end','Direct call could not connect. A TURN relay may be required.');return}
    paint();
   }catch(e){if(token===serial&&current&&(!lastGood||Date.now()-lastGood>20000))void finish('end','Call authorization or connection lost.')}
