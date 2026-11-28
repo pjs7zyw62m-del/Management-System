@@ -16,3 +16,26 @@ html body.bc-chat .chat #messages .bc-glass-message>.message-receipt{display:inl
 html body.bc-chat .chat #messages .bc-glass-message>.message-receipt.read{border-color:#2697f747;background:linear-gradient(110deg,#10253b,#11161e)}
 html body.bc-chat .chat #messages .bc-glass-message>.message-receipt.read .receipt-ticks{color:#54baff!important;font-weight:750}
 @media(pointer:coarse){html body.bc-chat .chat #messages .bc-glass-message-actions>button{min-width:38px;min-height:36px}}
+
+/* Clean conversation: actions are disclosed on selection, not repeated in the timeline. */
+html body.bc-chat .chat #messages .message.bc-glass-message{gap:2px;position:relative}
+html body.bc-chat .chat #messages .message.bc-glass-message.group-middle,
+html body.bc-chat .chat #messages .message.bc-glass-message.group-end{margin-top:-3px}
+html body.bc-chat .chat #messages .message.bc-glass-message>.bubble{cursor:pointer}
+html body.bc-chat .chat #messages .message.bc-glass-message>.bubble:focus-visible{outline:2px solid #82caff;outline-offset:3px}
+html body.bc-chat .chat #messages .message.bc-glass-message:not(.show-time)>.bc-glass-message-actions{display:none}
+html body.bc-chat .chat #messages .message.bc-glass-message.show-time>.bc-glass-message-actions{display:inline-flex;margin:4px 0 2px}
+html body.bc-chat .chat #messages .message.bc-glass-message.mine.group-start>.bubble,
+html body.bc-chat .chat #messages .message.bc-glass-message.mine.group-middle>.bubble{border-radius:18px 18px 6px 18px}
+html body.bc-chat .chat #messages .message.bc-glass-message.mine.group-end>.bubble{border-radius:18px 6px 6px 18px}
+html body.bc-chat .chat #messages .bc-glass-message-meta{display:flex;align-items:center;flex-wrap:wrap;justify-content:flex-start;gap:5px;max-width:100%;align-self:flex-start;color:#9ca3af;font-size:10px;line-height:1.35}
+html body.bc-chat .chat #messages .mine>.bc-glass-message-meta{align-self:flex-end;justify-content:flex-end}
+html body.bc-chat .chat #messages .bc-glass-message-meta:empty{display:none}
+html body.bc-chat .chat #messages .bc-glass-message-meta>time{padding:0;margin:0;color:#9ca3af!important;font-size:10px!important;letter-spacing:0}
+html body.bc-chat .chat #messages .bc-glass-message:not(.show-time)>.bc-glass-message-meta>time.group-time{display:none}
+html body.bc-chat .chat #messages .bc-glass-message:not(.show-time).group-start>.bc-glass-message-meta,
+html body.bc-chat .chat #messages .bc-glass-message:not(.show-time).group-middle>.bc-glass-message-meta{display:none}
+html body.bc-chat .chat #messages .bc-glass-message.show-time>.bc-glass-message-meta>time{display:inline;opacity:1;max-height:none}
+html body.bc-chat .chat #messages .bc-glass-message-meta>.message-receipt{display:inline-flex;align-items:center;gap:4px;margin:0;padding:0;border:0;background:none;box-shadow:none;color:#aeb7c5!important;font-size:10px!important}
+html body.bc-chat .chat #messages .bc-glass-message-meta>.message-receipt:before{content:'·';color:#687281;margin-right:1px}
+html body.bc-chat .chat #messages .bc-glass-message-meta>.message-receipt.read .receipt-ticks{color:#54baff!important}

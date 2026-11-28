@@ -775,7 +775,13 @@ async function loadMessages(){
     popoutActions?.attach(bubble,m,own);
     bubble.tabIndex=0;
     bubble.title='Sent '+when.toLocaleString()+' · Tap to show the time';
-    const reveal=()=>item.classList.toggle('show-time');
+    const reveal=()=>{
+     const opening=!item.classList.contains('show-time');
+     // Only one message may expose its toolbar; ordinary chat remains compact.
+     for(const other of box.querySelectorAll('.bc-glass-message.show-time'))if(other!==item){other.classList.remove('show-time');other.querySelector('.bubble')?.setAttribute('aria-expanded','false')}
+     item.classList.toggle('show-time',opening);
+     if(item.classList.contains('bc-glass-message'))bubble.setAttribute('aria-expanded',String(opening));
+    };
     bubble.addEventListener('click',reveal);
     bubble.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();reveal()}});
    }
@@ -783,6 +789,8 @@ async function loadMessages(){
    const plainText=!m.deleted_at&&!m.media_batch_id&&!tubeRef&&!pulseRef&&!mediaPanelMode;
    if(plainText){
     item.classList.add('bc-glass-message');
+    bubble.setAttribute('aria-expanded','false');
+    bubble.title='Sent '+when.toLocaleString()+' · Select for message actions';
     const controls=document.createElement('div');controls.className='bc-glass-message-actions';controls.setAttribute('role','group');controls.setAttribute('aria-label','Message actions');
     if(popoutActions){
      const react=text('button','bc-message-react','♡');react.type='button';react.title='Choose a reaction';react.setAttribute('aria-label',react.title);
@@ -802,7 +810,8 @@ async function loadMessages(){
    t.dateTime=m.created_at;t.textContent=when.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
    t.title=when.toLocaleString();
    if(pairedAfter&&!m.media_batch_id)t.classList.add('group-time');
-   item.append(t);
+   const meta=plainText?text('div','bc-glass-message-meta',''):item;
+   meta.append(t);
    if(own&&!pairedAfter&&!m.deleted_at){
     const receipt=text('span','message-receipt'+(m.read_at?' read':''),'');
     const tick=text('span','receipt-ticks',m.read_at?(plainText?'✓':'✓✓'):'✓');
@@ -812,8 +821,9 @@ async function loadMessages(){
       :'Sent');
     receipt.setAttribute('aria-label',m.read_at?'Read by recipient':'Message sent');
     receipt.append(tick,label);
-    item.append(receipt);
+    meta.append(receipt);
    }
+   if(plainText)item.append(meta);
    box.append(item);
   }
   if(!ordered.length){if(osChat){const empty=document.createElement('div');empty.className='os-chat-empty';const symbol=text('span','os-chat-empty-icon','');symbol.setAttribute('aria-hidden','true');empty.append(symbol,text('h2','', 'Start a conversation'),text('p','','Send your first iMessage to '+(peer.display_name||'this contact')+'.'));box.append(empty)}else box.append(text('p','empty','Private conversation started. Send the first message.'));}
