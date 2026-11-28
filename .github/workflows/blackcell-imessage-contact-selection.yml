@@ -8,6 +8,9 @@ on:
       - 'tests/blackcell-imessage-contact-selection.test.mjs'
       - 'blackcell-chat-scroll.js'
       - 'tests/blackcell-chat-scroll.test.mjs'
+      - 'corporate-chat-live.js'
+      - 'corporate-chat-live.css'
+      - 'tests/blackcell-chat-live.test.mjs'
       - '.github/workflows/blackcell-imessage-contact-selection.yml'
   push:
     branches: [main]
@@ -17,6 +20,9 @@ on:
       - 'tests/blackcell-imessage-contact-selection.test.mjs'
       - 'blackcell-chat-scroll.js'
       - 'tests/blackcell-chat-scroll.test.mjs'
+      - 'corporate-chat-live.js'
+      - 'corporate-chat-live.css'
+      - 'tests/blackcell-chat-live.test.mjs'
 permissions:
   contents: read
 jobs:
@@ -30,4 +36,4 @@ jobs:
       - run: |
           node --check corporate-chat.js
           node --check blackcell-os.js
-          node --test tests/blackcell-imessage-contact-selection.test.mjs tests/blackcell-chat-scroll.test.mjs
+          node --test tests/blackcell-imessage-contact-selection.test.mjs tests/blackcell-chat-scroll.test.mjs tests/blackcell-chat-live.test.mjs
