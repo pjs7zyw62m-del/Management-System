@@ -739,3 +739,21 @@ html .bc-apple-photos .ap-justified-grid .bc-pm-thumb img{width:100%;height:100%
   .bc-store-app{flex-wrap:wrap}
   .bc-store-app-actions{margin-left:auto}
 }
+
+/* Shared native application surfaces, with device-specific controls. */
+#desktop .bc-settings-panel{border-radius:16px;background:#181a20;border-color:#ffffff19}
+#desktop .bc-settings-header h1{font-size:30px;letter-spacing:-.045em}
+#desktop .bc-settings-copy strong{font-size:13px}
+#desktop .bc-settings-copy small{font-size:11px}
+#desktop .bc-settings-button{border-radius:9px;background:#292c34}
+#desktop .bc-settings-navbtn.selected{background:#33353e}
+#desktop .bc-apple-photos .ap-side{background:#14161b}
+#desktop .bc-apple-photos .ap-main{background:#08090c}
+#desktop .bc-apple-photos .ap-toolbar{background:#17191f;border-color:#ffffff14}
+#desktop .bc-apple-photos .ap-heading{letter-spacing:-.025em}
+html.bc-os-tablet #desktop .bc-settings-content{padding:24px}
+html.bc-os-tablet #desktop .bc-settings-row{min-height:49px}
+html.bc-os-phone #desktop .bc-apple-photos .ap-toolbar{padding:9px 10px}
+html.bc-os-phone #desktop .bc-apple-photos .ap-search{min-height:42px;border-radius:11px}
+html.bc-os-phone #desktop .bc-apple-photos .ap-grid{gap:12px;padding:4px 8px 18px}
+html.bc-os-tablet #desktop .bc-apple-photos .ap-grid{gap:18px;padding:6px 16px 20px}
