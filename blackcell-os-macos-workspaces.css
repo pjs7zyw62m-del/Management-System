@@ -215,8 +215,27 @@ html.bc-os-phone #desktop .dock>.bc-mac-dock-launchpad{display:none!important}
  background:linear-gradient(145deg,#444454bb,#11111edc);
  box-shadow:0 9px 22px #000a;overflow:hidden;
 }
-#desktop.bc-stage-manager>.os-window:not(.bc-stage-background):not([hidden]):not(.bc-os-fullscreen){
+/* Desktop Stage Manager is a switcher, not a mandatory window position.
+   Preserve the existing tablet geometry, but never override desktop drag coordinates. */
+html:is(.bc-os-phone,.bc-os-tablet) #desktop.bc-stage-manager>.os-window:not(.bc-stage-background):not([hidden]):not(.bc-os-fullscreen){
  left:max(135px,calc(50% - 37vw))!important;
+}
+html:not(.bc-os-phone):not(.bc-os-tablet) #desktop>.bc-mac-stage-rail{
+ z-index:15;pointer-events:none;
+}
+html:not(.bc-os-phone):not(.bc-os-tablet) #desktop>.bc-mac-stage-rail>.bc-mac-stage-thumb{
+ pointer-events:auto;
+}
+html:not(.bc-os-phone):not(.bc-os-tablet) #desktop:has(>.os-window.bc-window-dragging)>.bc-mac-stage-rail,
+html:not(.bc-os-phone):not(.bc-os-tablet) #desktop:has(>.os-window.bc-window-dragging)>.bc-mac-stage-rail *,
+html:not(.bc-os-phone):not(.bc-os-tablet) #desktop:has(>.os-window.bc-window-dragging)>.dockwrap,
+html:not(.bc-os-phone):not(.bc-os-tablet) #desktop:has(>.os-window.bc-window-dragging)>.dockwrap *,
+html:not(.bc-os-phone):not(.bc-os-tablet) #desktop:has(>.os-window.bc-window-dragging)>.os-dock-edge,
+html:not(.bc-os-phone):not(.bc-os-tablet) #desktop:has(>.os-window.bc-window-dragging)>.os-window iframe{
+ pointer-events:none!important;
+}
+html:not(.bc-os-phone):not(.bc-os-tablet) #desktop>.os-window.bc-window-dragging>.os-window-head{
+ cursor:grabbing!important;user-select:none;
 }
 #desktop .side.bc-system-panel:has(.glass):not([hidden]){transition:filter .22s ease,opacity .22s ease}
 #desktop:has(>.os-window:not([hidden])) .side.bc-system-panel{
