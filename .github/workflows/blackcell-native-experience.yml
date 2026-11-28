@@ -1,0 +1,28 @@
+name: BLACKCELL Native Experience
+on:
+  pull_request:
+    paths:
+      - 'blackcell-os*'
+      - 'blackcell-app-store-grid.css'
+      - 'tests/blackcell-native-experience.test.mjs'
+      - '.github/workflows/blackcell-native-experience.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'blackcell-os*'
+      - 'blackcell-app-store-grid.css'
+      - 'tests/blackcell-native-experience.test.mjs'
+      - '.github/workflows/blackcell-native-experience.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-experience:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --check blackcell-os.js && node --check blackcell-os-springboard.js && node --check blackcell-os-macos-workspaces.js
+      - run: node --test tests/blackcell-native-experience.test.mjs tests/blackcell-os-system-sounds.test.mjs

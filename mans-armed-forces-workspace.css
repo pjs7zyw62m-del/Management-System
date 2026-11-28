@@ -342,3 +342,16 @@ body.mf-body::before{display:none}
 .mf-uniform-home-actions{justify-content:center;padding:0 0 26px;margin-top:16px}
 @media(max-width:560px){#discover.mf-cinematic-landing .mf-uniform-entrance{padding:0 14px}#discover .mf-uniform-world-strip{padding:10px 12px;margin-bottom:16px}#discover .mf-uniform-world-strip strong{font-size:17px}#discover .mf-uniform-world-actions{gap:7px}#discover .mf-uniform-enter{font-size:12px}.mf-uniform-home-art img{height:auto}.mf-uniform-home-actions{gap:8px}.mf-uniform-home-intro h1{font-size:clamp(40px,11vw,66px)}}
 @media(prefers-reduced-motion:reduce){#discover .mf-uniform-hero-link{transition:none}}
+
+/* World browsing: an immersive media-first experience at touch widths. */
+@media(max-width:1024px){
+ #uMain .mf-header{background:#101116}
+ #uMain .mf-primary,#uMain .mf-secondary,.mf-workspace-nav button{min-height:44px}
+ #uMain .mf-branch-card,#uMain .mf-style-card{border-radius:18px!important}
+}
+@media(max-width:620px){
+ .mf-content>[data-mf-panel]{padding:14px}
+ .mf-discover-heading h1,.mf-section-heading h2{font-size:clamp(25px,7vw,36px)}
+ .mf-discover-links{grid-template-columns:1fr;gap:8px}
+ .mf-discover-links button{min-height:64px;background:#16171d}
+}

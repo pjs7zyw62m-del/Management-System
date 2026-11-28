@@ -18,3 +18,13 @@ body.rs-sender-menu-mounted #redlineSenderMobileMenuItems:not([hidden]){position
 body.rs-sender-menu-mounted #redlineSimpleSender .redline-messenger-live-head{min-width:0!important}
 body.rs-sender-menu-mounted #redlineSimpleSender .redline-messenger-live-field{min-width:0!important}
 @media(max-width:370px){#redlineSimpleSender .rs-mobile-menu-toggle{min-width:52px!important;font-size:11px!important;padding:4px!important}.rs-sender-menu-header>.rs-mobile-menu{padding:2px!important}body.rs-sender-menu-mounted #redlineSimpleSender .redline-messenger-live-field{padding-left:3px!important;padding-right:3px!important}}
+
+/* Native touch presentation; never change timer, chat or upload geometry. */
+@media(max-width:1024px){
+ body.rs-sender-menu-mounted #redlineSenderMobileMenuItems:not([hidden]){background:#15161b!important;border-radius:18px!important;border-color:#ffffff29!important}
+ #redlineSenderMobileMenuItems>.rs-mobile-menu-item{min-height:44px!important;border-radius:9px!important;background:#202128!important}
+ #redlineSenderMobileMenuItems>.rs-mobile-menu-item.is-current{background:#671326!important}
+ #redlineSimpleSender .rs-mobile-menu-toggle{border-radius:11px!important;background:#202128!important}
+ body.bc-redline-receiver #ledgerApp #redlineReceiverCommand .rr-stat{background:#17191f!important;border-color:#ffffff1d!important}
+ body.bc-redline-receiver #ledgerApp #redlineReceiverCommand .rr-stat-name{color:#b8b9c2!important}
+}

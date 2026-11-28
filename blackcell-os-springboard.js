@@ -42,7 +42,7 @@ function start(){
  const jewel=E('span','bc-sb-diamond');
  jewel.innerHTML='<svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M32 3 61 32 32 61 3 32Z" fill="#350915" stroke="#F47A90" stroke-width="1.6"/><path d="M23 16h13c7.8 0 12 3.5 12 9 0 3.5-2.1 6-4.8 7.2 4.2 1.4 6.1 4.5 6.1 8.5 0 6.7-5.6 10.3-13.7 10.3H23V16Zm8 6v8h5c2.8 0 4.4-1.5 4.4-4s-1.6-4-4.4-4h-5Zm0 13.7v9h5.9c3 0 4.7-1.7 4.7-4.5s-1.7-4.5-4.7-4.5H31Z" fill="#F9F6F7"/></svg>';
  const name=E('span','bc-sb-identity-text','BLACKCELL');
- const headline=E('strong','bc-sb-identity-headline','Mobile');
+ const headline=E('strong','bc-sb-identity-headline','Mobile OS');
  const subtitle=E('span','bc-sb-identity-subtitle','SECURE WORKSPACE');
  const identityCopy=E('div','bc-sb-identity-copy');
  identityCopy.append(name,headline,subtitle);
@@ -65,7 +65,7 @@ function start(){
  dock.id='bcSpringboardDock';
  const editButton=E('button','bc-sb-edit-done','Done');editButton.type='button';editButton.hidden=true;
  const indicator=E('div','bc-sb-home-indicator');indicator.setAttribute('aria-hidden','true');
- const heading=E('div','bc-sb-apps-heading');heading.append(E('strong','','Applications'),E('small','bc-sb-touch-edition','OBSIDIAN TOUCH'));page.append(heading,grid);home.append(identity,widgets,page,pageControls,searchPill,dock,dockHandle,indicator);
+ const heading=E('div','bc-sb-apps-heading');heading.append(E('strong','','Home'),E('small','bc-sb-touch-edition','MOBILE / NATIVE'));page.append(heading,grid);home.append(identity,widgets,page,pageControls,searchPill,dock,dockHandle,indicator);
  const modal=E('div','bc-sb-overlay');modal.hidden=true;
  const sheet=E('section','bc-sb-sheet');sheet.setAttribute('role','dialog');sheet.setAttribute('aria-modal','true');sheet.setAttribute('aria-label','BLACKCELL App Library');
  const modalBar=E('div','bc-sb-modal-head');
@@ -319,14 +319,19 @@ function start(){
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)clock()});
  window.addEventListener('focus',clock);
  window.addEventListener('resize',()=>{if(document.documentElement.classList.contains('bc-os-phone'))render()},{passive:true});
- window.addEventListener('blackcell:desktop-layout-updated',()=>{if(!shell.hidden)requestAnimationFrame(render)});
-   const obs=new MutationObserver(()=>{if(!shell.hidden)requestAnimationFrame(render)});
+ window.addEventListener('blackcell:desktop-layout-updated',()=>scheduleHome());
+ let homeRenderFrame=0;
+ function scheduleHome(){
+  if(shell.hidden||document.hidden||!document.documentElement.classList.contains('bc-os-phone')||homeRenderFrame)return;
+  homeRenderFrame=requestAnimationFrame(()=>{homeRenderFrame=0;render()});
+ }
+ const obs=new MutationObserver(scheduleHome);
  obs.observe(src,{childList:true,attributes:true,subtree:true,attributeFilter:['hidden','disabled','class']});
  obs.observe(shell,{attributes:true,attributeFilter:['hidden','class']});
  const member=$('#memberName',shell);if(member)obs.observe(member,{childList:true,characterData:true,subtree:true});
  clock();render();
  window.dispatchEvent(new Event('blackcell:springboard-ready'));
- const timer=setInterval(()=>{if(!shell.hidden)clock()},30000);
+ const timer=setInterval(()=>{if(!shell.hidden&&!document.hidden&&document.documentElement.classList.contains('bc-os-phone'))clock()},30000);
  window.addEventListener('pagehide',()=>clearInterval(timer),{once:true});
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
