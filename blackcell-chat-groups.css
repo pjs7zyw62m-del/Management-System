@@ -17,3 +17,5 @@
 #bcGroupInput{flex:1;min-width:0;resize:none;min-height:40px;max-height:100px;background:#1f1f24;border:1px solid #ffffff24;border-radius:20px;padding:10px 13px;color:#fff;font:16px system-ui;direction:ltr;text-align:left}
 #bcGroupSendButton{width:36px;height:36px;border:0;border-radius:50%;color:#fff;background:#087df4;font:700 22px system-ui;flex:none}#bcGroupSendButton:disabled{opacity:.5}
 @media(max-width:560px){#bcGroupBody{padding:10px}.bc-group-header{padding:10px}.bc-group-message{max-width:85%}}
+
+#bcGroupRows{max-height:min(32dvh,260px);overflow:auto;scrollbar-width:none}#bcGroupRows::-webkit-scrollbar{display:none}#bcGroupInbox{flex:none}
