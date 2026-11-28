@@ -136,7 +136,7 @@ html:is(.bc-os-phone,.bc-os-tablet) #desktop > .os-window:not([hidden]) > .os-wi
  min-height:0!important;
 }
 html:is(.bc-os-phone,.bc-os-tablet) #desktop > .os-window:not([hidden]) > .os-window-head > .traffic > button:nth-child(-n+3)::before{
- width:15px;height:15px;box-shadow:inset 0 1px #ffffff45;
+ width:19px;height:19px;box-shadow:inset 0 1px #ffffff45;
 }
 html.bc-os-tablet #desktop > .os-window.bc-os-window-compact:not([hidden]){
  border-radius:22px!important;box-shadow:0 24px 65px #000b!important;
@@ -203,7 +203,11 @@ html:is(.bc-os-phone,.bc-os-tablet) #desktop .bc-native-window-actions{
  touch-action:manipulation;cursor:pointer;
 }
 #desktop .bc-native-window-actions button:active{background:#ffffff22}
-html:is(.bc-os-phone,.bc-os-tablet) #desktop .os-window-head>a{display:none}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .os-window-head>a:not([hidden]){
+ position:static;flex:none;width:30px;min-height:40px;display:grid;place-items:center;font-size:0;
+}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .os-window-head>a:not([hidden])::after{content:"↗";font-size:17px}
+
 html:is(.bc-os-phone,.bc-os-tablet) #desktop .os-window-head>span{
  display:block;max-width:100%;min-width:0;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;
 }
@@ -215,9 +219,11 @@ html.bc-os-phone #desktop > .os-window:not([hidden]):not(.bc-os-window-compact){
  grid-template-rows:46px minmax(0,1fr);
 }
 html.bc-os-phone #desktop .os-window-head .traffic{gap:0;left:2px}
-html.bc-os-phone #desktop .os-window-head .traffic button.os-traffic-control{
+html.bc-os-phone #desktop>.os-window:not(.os-chat-popout) .os-window-head .traffic button.os-traffic-control{
  width:36px!important;min-width:36px!important;flex-basis:36px!important;
 }
+html:is(.bc-os-phone,.bc-os-tablet) #desktop>.os-window.os-chat-popout .os-window-head .traffic button.os-traffic-control{width:42px!important;min-width:42px!important;height:44px!important;min-height:44px!important;flex-basis:42px!important}
+html.bc-os-phone #desktop>.os-window.os-chat-popout:not([hidden])>.os-window-head{padding-inline:172px 88px}
 html.bc-os-phone #desktop > .os-window:not([hidden]) > .os-window-head{padding-inline:110px 88px}
 html.bc-os-tablet #desktop.bc-tablet-split > .os-window[data-bc-split]:not([hidden]){
  position:absolute!important;top:calc(var(--bc-touch-top,42px) + 10px)!important;bottom:auto!important;
