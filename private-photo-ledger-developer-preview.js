@@ -27,6 +27,21 @@
  const phonePreset=btn('Sender’s phone · Neon Smarta 2',()=>{chooseMode('sender');chooseDevice('mobile',true)});
  phonePreset.id='rdDevSenderPhone';phonePreset.title='Estimated Android 11 Chrome viewport: 320 × 480 CSS pixels; actual browser size may differ.';
  toolbar.append(phonePreset);
+ // Isolated design prototype: no room credentials, imported photos or production RPCs.
+ const livePreview=make('dialog','rd-dev-dialog');livePreview.id='rdLiveDesignPreview';
+ const liveTop=make('header','rd-dev-top'),liveTitle=make('div','rd-dev-name');
+ liveTitle.append(make('strong','','REDLINE LIVE · RESPONSIVE DESIGN'),make('small','','SIMULATED CAMERAS · LOCAL PHOTO AND CHAT TESTS'));
+ let liveFrame=null;
+ const liveStage=make('div','rd-live-preview-stage'),liveDevices=make('div','rd-dev-toolbar');
+ const liveWidths={desktop:'100%',landscape:'1024px',portrait:'768px',mobile:'390px'};
+ for(const [key,label] of [['desktop','Desktop'],['landscape','Tablet landscape'],['portrait','Tablet portrait'],['mobile','Mobile']]){
+  const b=btn(label,()=>{liveStage.dataset.device=key;for(const child of liveDevices.children)child.setAttribute('aria-pressed',String(child===b));if(liveFrame)liveFrame.style.width=liveWidths[key]});b.setAttribute('aria-pressed',String(key==='desktop'));liveDevices.append(b)
+ }
+ liveTop.append(liveTitle,btn('Close LIVE preview',()=>livePreview.close()));livePreview.append(liveTop,liveDevices,liveStage);document.body.append(livePreview);
+ livePreview.addEventListener('close',()=>{liveFrame?.remove();liveFrame=null});
+ dialog.addEventListener('close',()=>{if(livePreview.open)livePreview.close()});
+ toolbar.append(btn('REDLINE LIVE · Design preview',()=>{if(!authorized()||!dialog.open)return;liveFrame=make('iframe','rd-dev-frame');liveFrame.title='REDLINE LIVE design simulation';liveFrame.setAttribute('sandbox','allow-scripts');liveFrame.setAttribute('referrerpolicy','no-referrer');liveFrame.setAttribute('allow',"camera 'none'; microphone 'none'");liveFrame.src='blackcell-redline-live-preview.html?v=20261128-live1';liveFrame.style.width='100%';liveStage.dataset.device='desktop';for(const [i,b] of Array.from(liveDevices.children).entries())b.setAttribute('aria-pressed',String(i===0));liveStage.replaceChildren(liveFrame);livePreview.showModal()}));
+
  toolbar.append(btn('Load 5-star test photos',()=>{
   if(!authorized()||!model?.active)return;
   for(let i=0;i<3;i++){
