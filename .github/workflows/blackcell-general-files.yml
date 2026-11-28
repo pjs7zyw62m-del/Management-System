@@ -1,0 +1,20 @@
+name: BLACKCELL General Files
+on:
+  pull_request:
+    paths:
+      - 'blackcell-files.js'
+      - 'blackcell-private-drive.js'
+      - 'blackcell-private-media.js'
+      - 'tests/blackcell-general-files.test.mjs'
+      - '.github/workflows/blackcell-general-files.yml'
+permissions:
+  contents: read
+jobs:
+  files:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --check blackcell-files.js && node --check blackcell-private-drive.js && node --check blackcell-private-media.js && node --test tests/blackcell-general-files.test.mjs
