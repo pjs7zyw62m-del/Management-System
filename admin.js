@@ -590,7 +590,7 @@ function renderPersonnelPresence(){
  let members=[],events=[],busy=false,interval;
  const api=window.BLACKCELL_CORPORATE_ADMIN_API?.client;
  const labels={online:'Online',left:'Left website',offline:'Offline / no record'};
- const stillOpen=()=>root.isConnected&&activeModal==='users'&&activeTab==='presence'&&!modal.hidden;
+ const stillOpen=()=>root.isConnected&&activeModal==='users'&&activeTab==='presence'&&!modal.hidden&&document.documentElement.classList.contains('corp-ok');
  function paint(){
   if(!stillOpen())return;
   for(const k of Object.keys(values))values[k].textContent=String(members.filter(m=>personnelState(m)===k).length);
