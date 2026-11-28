@@ -1,4 +1,4 @@
-import {mountPopoutActions} from './corporate-chat-popout-actions.js?v=20261128-attached-reactions1';
+import {mountPopoutActions} from './corporate-chat-popout-actions.js?v=20261128-attached-reactions2';
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
 import {setupCorporateMedia} from './corporate-chat-media.js?v=20261122-contact-bootstrap2';
 import {setupCorporateChatLive} from './corporate-chat-live.js?v=20261113-no-typing1';
@@ -796,7 +796,7 @@ async function loadMessages(){
      if(item.classList.contains('bc-glass-message'))bubble.setAttribute('aria-expanded',String(opening));
     };
     bubble.addEventListener('click',reveal);
-    bubble.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();reveal()}});
+    bubble.addEventListener('keydown',e=>{if(e.target===bubble&&(e.key==='Enter'||e.key===' ')){e.preventDefault();reveal()}});
    }
    item.append(bubble);
    const plainText=!m.deleted_at&&!m.media_batch_id&&!tubeRef&&!pulseRef&&!mediaPanelMode;
@@ -811,7 +811,10 @@ async function loadMessages(){
       badge.addEventListener('click',e=>{e.stopPropagation();popoutActions?.open(bubble,m,own)});
       badges.append(badge);
      }
-     item.classList.add('bc-has-attached-reactions');item.append(badges);
+     item.classList.add('bc-has-attached-reactions');
+     if(!bubble.querySelector('.bc-pop-original')){const body=text('span','bc-message-body',bubble.textContent);bubble.replaceChildren(body)}
+     bubble.dataset.reactionCount=String(reactions.length);
+     bubble.append(badges);
     }
     bubble.setAttribute('aria-expanded','false');
     bubble.title='Sent '+when.toLocaleString()+' · Select for message actions';
