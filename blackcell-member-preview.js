@@ -24,7 +24,9 @@ async function readAssets(){
  const response=await fetch('blackcell-os.html',{cache:'no-store'});if(!response.ok)throw Error('OS metadata unavailable.');
  const doc=new DOMParser().parseFromString(await response.text(),'text/html');
  metadata=Array.from(doc.querySelectorAll('button.app[data-app]')).map(t=>({id:t.dataset.app,title:t.dataset.title,sub:t.dataset.sub,desc:t.dataset.desc,optional:t.dataset.optional==='true',svg:t.querySelector('svg')?.outerHTML||''})).filter(a=>/^[a-z]{1,40}$/.test(a.id));
- const files=['blackcell-os.css','blackcell-os-app-store-aurora.css','blackcell-app-store-grid.css','blackcell-app-store-desktop.css','blackcell-redline-icon.css'];
+ const artwork=await fetch('blackcell-mail-icon.svg?v=20261128-1',{cache:'no-store'});
+ if(artwork.ok){const markup=await artwork.text();const data=markup.match(/data:image\/webp;base64,[A-Za-z0-9+/=]+/)?.[0];if(data){metadata.push({id:'mail',title:'BLACKCELL Mail',sub:'Private corporate email',desc:'Internal mail for authorized members.',optional:true,svg:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="bc-mail-approved-art"><image href="'+data+'" width="24" height="24"/></svg>'})}}
+ const files=['blackcell-os.css','blackcell-os-app-store-aurora.css','blackcell-app-store-grid.css','blackcell-app-store-desktop.css','blackcell-redline-icon.css','blackcell-mail-icon.css'];
  const sheets=await Promise.all(files.map(async name=>{const r=await fetch(name,{cache:'no-store'});if(!r.ok)throw Error('Store stylesheet unavailable: '+name);return r.text()}));
  styles=sheets.join('\n');
 }
