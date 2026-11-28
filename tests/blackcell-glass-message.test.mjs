@@ -18,7 +18,7 @@ test('read receipt still reflects actual server timestamp and own final message'
  assert.match(js,/m.read_at\?\(plainText\?'✓':'✓✓'\):'✓'/);
 });
 test('new assets load after existing chat styling and support touch',()=>{
- assert.match(html,/corporate-chat.js\?v=20261127-choose-contact1&glassMessage=20261128-2/);
+ assert.match(html,/corporate-chat.js\?v=20261127-choose-contact1&glassMessage=20261128-3/);
  assert.ok(html.indexOf('corporate-chat-glass-message.css')>html.indexOf('corporate-chat-unified-desktop.css'));
  assert.match(css,/@media\(pointer:coarse\)/);
 });
@@ -34,4 +34,23 @@ test('timestamps and receipts share compact metadata and remain based on real da
  assert.match(js,/meta.append\(receipt\)/);
  assert.match(css,/\.bc-glass-message-meta\{display:flex;align-items:center;flex-wrap:wrap/);
  assert.match(css,/\.bc-glass-message:not\(\.show-time\)>\.bc-glass-message-meta>time.group-time\{display:none\}/);
+});
+
+test('reactions are persisted by original message ID, not inserted as text messages',()=>{
+ const actions=readFileSync('corporate-chat-popout-actions.js','utf8');
+ assert.match(actions,/await sendReaction\(entry.message,glyph\)/);
+ assert.doesNotMatch(actions,/reacted to/);
+ assert.match(js,/upsert\(\{message_id:message.id,reactor_id:uid,reaction:glyph\}/);
+ assert.match(js,/existing\?\.reaction===glyph/);
+ assert.match(js,/corp_chat_reactions\(reactor_id,reaction\)/);
+ assert.match(js,/JSON.stringify\(\(m.corp_chat_reactions/);
+});
+test('reaction badge follows the original bubble, and permissions remain participant scoped',()=>{
+ const sql=readFileSync('database/blackcell-chat-attached-reactions.sql','utf8');
+ assert.match(sql,/enable row level security/);
+ assert.match(sql,/primary key\(message_id,reactor_id\)/);
+ assert.match(sql,/reactor_id=\(select auth.uid\(\)\)/);
+ assert.match(sql,/corp_private.chat_pair_unblocked/);
+ assert.match(js,/item.append\(badges\)/);
+ assert.match(css,/\.mine>\.bc-attached-reactions\{right:auto;left:-5px\}/);
 });

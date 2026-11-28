@@ -1,4 +1,4 @@
-import {mountPopoutActions} from './corporate-chat-popout-actions.js?v=20261116-edit-unsend1';
+import {mountPopoutActions} from './corporate-chat-popout-actions.js?v=20261128-attached-reactions1';
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
 import {setupCorporateMedia} from './corporate-chat-media.js?v=20261122-contact-bootstrap2';
 import {setupCorporateChatLive} from './corporate-chat-live.js?v=20261113-no-typing1';
@@ -362,13 +362,26 @@ async function deleteSentMessage(m){
  await mutateSentMessage(m,{remove:true});
 }
 
+ const reactionPending=new Set();
  const popoutActions=!mediaPanelMode?mountPopoutActions({
   canAct:()=>ready&&!!self&&!!peer,
   composer:composerText,resizeComposer,status,editMessage:editSentMessage,deleteMessage:deleteSentMessage,
-  sendReaction:async body=>{
-   if(!ready||!self||!peer||chatBlocked||!blockKnown||blockBusy){status('Unblock this conversation before sending.');return;}
-   const target=peer.user_id;try{const {error}=await client.from('corp_chat_messages').insert({sender_id:self,recipient_id:target,body});if(error)throw error;await loadMessages()}
-   catch(_){status('Reaction message could not be sent. Try again.')}
+  sendReaction:async (message,glyph)=>{
+   if(!ready||!self||!peer||chatBlocked||!blockKnown||blockBusy){status('Unblock this conversation before reacting.');return;}
+   const target=peer.user_id,uid=self;
+   if(message.deleted_at||message.media_batch_id||!((message.sender_id===uid&&message.recipient_id===target)||(message.recipient_id===uid&&message.sender_id===target)))return;
+   if(!['❤️','👍','👎','😂','‼️','❓'].includes(glyph)||reactionPending.has(message.id))return;
+   reactionPending.add(message.id);
+   try{
+    const existing=(message.corp_chat_reactions||[]).find(r=>r.reactor_id===uid);
+    const result=existing?.reaction===glyph
+     ?await client.from('corp_chat_reactions').delete().eq('message_id',message.id).eq('reactor_id',uid)
+     :await client.from('corp_chat_reactions').upsert({message_id:message.id,reactor_id:uid,reaction:glyph},{onConflict:'message_id,reactor_id'});
+    if(result.error)throw result.error;
+    if(self===uid&&peer?.user_id===target){await loadMessages();status('')}
+   }catch(_){status('Reaction could not be saved. Try again.')}
+   finally{reactionPending.delete(message.id)}
+
   }
  }):null;
  if(popout&&popoutActions){
@@ -741,14 +754,14 @@ async function loadMessages(){
  try{
   const pid=peer.user_id;
   const filter='and(sender_id.eq.'+self+',recipient_id.eq.'+pid+'),and(sender_id.eq.'+pid+',recipient_id.eq.'+self+')';
-  const {data,error}=await client.from('corp_chat_messages').select('id,sender_id,recipient_id,body,created_at,media_batch_id,read_at,edited_at,deleted_at').or(filter).order('created_at',{ascending:false}).limit(100);
+  const {data,error}=await client.from('corp_chat_messages').select('id,sender_id,recipient_id,body,created_at,media_batch_id,read_at,edited_at,deleted_at,corp_chat_reactions(reactor_id,reaction)').or(filter).order('created_at',{ascending:false}).limit(100);
   if(error){status('Messages could not be loaded.');return}
   // Ignore an old request when the user has switched conversations.
   if(peer?.user_id!==pid)return;
   const box=$('messages'),atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<80;
   const ordered=(data||[]).slice().reverse();
   const newest=ordered.at(-1)?.id||'empty',oldNewest=box.dataset.newest;
-  const signature=ordered.map(m=>m.id+':'+(m.read_at||'')+':'+(m.edited_at||'')+':'+(m.deleted_at||'')).join('|');
+  const signature=ordered.map(m=>m.id+':'+(m.read_at||'')+':'+(m.edited_at||'')+':'+(m.deleted_at||'')+':'+JSON.stringify((m.corp_chat_reactions||[]).map(r=>[r.reactor_id,r.reaction]).sort())).join('|');
   if(box.dataset.readSignature===signature&&!firstLoad){
    void live.markRead(ordered);
    return;
@@ -789,6 +802,17 @@ async function loadMessages(){
    const plainText=!m.deleted_at&&!m.media_batch_id&&!tubeRef&&!pulseRef&&!mediaPanelMode;
    if(plainText){
     item.classList.add('bc-glass-message');
+    const reactions=(m.corp_chat_reactions||[]).filter(r=>['❤️','👍','👎','😂','‼️','❓'].includes(r.reaction));
+    if(reactions.length){
+     const badges=text('div','bc-attached-reactions','');badges.setAttribute('role','group');badges.setAttribute('aria-label','Message reactions');
+     for(const r of reactions.sort((a,b)=>Number(b.reactor_id===self)-Number(a.reactor_id===self))){
+      const badge=text('button','bc-attached-reaction',r.reaction);badge.type='button';
+      badge.setAttribute('aria-label',(r.reactor_id===self?'Your':'Contact')+' reaction '+r.reaction+' · Open message actions');
+      badge.addEventListener('click',e=>{e.stopPropagation();popoutActions?.open(bubble,m,own)});
+      badges.append(badge);
+     }
+     item.classList.add('bc-has-attached-reactions');item.append(badges);
+    }
     bubble.setAttribute('aria-expanded','false');
     bubble.title='Sent '+when.toLocaleString()+' · Select for message actions';
     const controls=document.createElement('div');controls.className='bc-glass-message-actions';controls.setAttribute('role','group');controls.setAttribute('aria-label','Message actions');
