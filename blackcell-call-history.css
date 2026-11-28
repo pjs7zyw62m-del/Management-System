@@ -1,5 +1,12 @@
 #bcCallsOpen[hidden],#bcCallsPanel[hidden],#bcCallsBadge[hidden]{display:none!important}
-#bcCallsOpen{margin:4px 8px 0;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;border:1px solid #ffffff17;border-radius:10px;background:#19191e;color:#60acff;font:600 13px system-ui;cursor:pointer;flex:none}
+#bcCallsOpen{position:relative;flex:none}
+#bcCallsOpen #bcCallsBadge{position:absolute;top:3px;right:3px;padding:2px 5px}
+#bcCallsCompact[hidden],#bcCallsCompactBadge[hidden]{display:none!important}
+#bcCallsCompact{font-size:11px;white-space:nowrap;flex:none}
+#bcCallsCompactBadge{background:#e33d4c;color:#fff;border-radius:99px;padding:2px 5px;font-size:9px}
+html.bc-desktop-messages body.bc-chat .chat:not(.media-open) #bcCallsCompact{display:none!important}
+html.bc-desktop-messages body.bc-chat #osChatSidebar .bc-message-rail{overflow:auto;scrollbar-width:none}
+
 #bcCallsBadge{border-radius:99px;background:#e33d4c;color:#fff;padding:2px 7px;font-size:11px}
 #bcCallsPanel{position:fixed;inset:0;z-index:9001;display:flex;flex-direction:column;min-height:0;background:#08080a;color:#eee;font:14px system-ui;overflow:hidden}
 .bc-calls-header{display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:8px;padding:12px;background:#17171b;border-bottom:1px solid #29292d}.bc-calls-header strong{text-align:center;font-size:16px}.bc-calls-header button:last-child{justify-self:end}
