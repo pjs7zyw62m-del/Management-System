@@ -24,12 +24,12 @@ export function mountChatGroups({client,context,onOpen=()=>{},onClose=()=>{}}){
   $('bcGroupCreate').hidden=c.filter==='unread'||!!search;
  }
  async function refreshList(force=false){
-  drawList();if(!active()||listBusy||(!force&&Date.now()-lastList<15000))return;
+  if(!active()||listBusy||(!force&&Date.now()-lastList<15000))return;
   listBusy=true;lastList=Date.now();const uid=context().self;
-  try{const d=await rpc('list');if(!available()||context().self!==uid)return;groups=Array.isArray(d.groups)?d.groups:[];drawList()}catch(_){/* direct inbox remains independent */}finally{listBusy=false}
+  try{const d=await rpc('list');if(!available()||context().self!==uid)return;const next=Array.isArray(d.groups)?d.groups:[];if(JSON.stringify(next)!==JSON.stringify(groups)){groups=next;drawList()}}catch(_){/* direct inbox remains independent */}finally{listBusy=false}
  }
  function stopTyping(){clearTimeout(typingTimer);typingTimer=null;lastTyping=0;if(room&&available())void rpc('stop_typing',{p_room:room}).catch(()=>{})}
- function resetPanel(next){version++;stopTyping();room=null;mode=next;receiptIds.clear();signature='';pendingSend=null;sending=false;input.value='';send.disabled=false;form.hidden=true;body.replaceChildren();status('');$('bcGroupTyping').textContent='';$('bcGroupInfo').hidden=true}
+ function resetPanel(next){version++;stopTyping();threadData=null;room=null;mode=next;receiptIds.clear();signature='';pendingSend=null;sending=false;input.value='';send.disabled=false;form.hidden=true;body.replaceChildren();status('');$('bcGroupTyping').textContent='';$('bcGroupInfo').hidden=true}
  function close(){resetPanel('closed');panel.hidden=true;onClose();void refreshList(true)}
  function start(next){resetPanel(next);panel.hidden=false;onOpen();$('bcGroupClose').focus()}
  function showCreate(){
@@ -61,7 +61,7 @@ export function mountChatGroups({client,context,onOpen=()=>{},onClose=()=>{}}){
  let threadData=null;
  async function refreshThread(){
   if(!active()||mode!=='thread'||!room||loading||form.hidden)return;loading=true;lastThread=Date.now();const v=version,g=room;
-  try{const d=await rpc('thread',{p_room:g});if(v!==version||!active())return;threadData=d;paintThread(d);status('')}catch(e){if(v===version){status(e.message);if(e.message===errors.group_unavailable||e.message===errors.verification_required){body.replaceChildren();form.hidden=true;$('bcGroupTyping').textContent='';$('bcGroupInfo').hidden=true;body.append(btn('Leave Group',()=>void leave(),'bc-group-danger'));threadData=null}}}finally{loading=false}
+  try{const d=await rpc('thread',{p_room:g});if(v!==version||!active()||mode!=='thread')return;threadData=d;paintThread(d);status('')}catch(e){if(v===version){status(e.message);if(e.message===errors.group_unavailable||e.message===errors.verification_required){body.replaceChildren();form.hidden=true;$('bcGroupTyping').textContent='';$('bcGroupInfo').hidden=true;body.append(btn('Leave Group',()=>void leave(),'bc-group-danger'));threadData=null}}}finally{loading=false}
  }
  function info(){
   if(!active()||!room||!threadData)return;stopTyping();mode='info';form.hidden=true;$('bcGroupTyping').textContent='';$('bcGroupInfo').hidden=true;body.replaceChildren();const d=threadData,v=version,g=room;
