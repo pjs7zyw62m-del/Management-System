@@ -1,4 +1,4 @@
-import {mountGroupRooms} from './private-photo-ledger-groups.js?v=20261125-group-chat1';
+import {mountGroupRooms} from './private-photo-ledger-groups.js?v=20261128-live-group1';
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
 import {isBunnyPath,uploadBunnyPhoto,transferBunnyLibraryPhoto,readBunnyPhoto,cleanupUnpostedBunny,deleteRedlinePhotoFile} from './private-photo-ledger-bunny.js?v=20261127-server-transfer1';
 
@@ -2051,6 +2051,18 @@ function wireEvents(){
  * verifies both sides independently; this interface does not alter identity.
  */
 const REDLINE_MESSAGES='corp_private_photo_messages';
+ // A group photo frame must not be replaced while uploads, drafts or paid timers are active.
+ if(new URLSearchParams(location.search).get('rdGroupEmbed')==='1'){
+  window.BLACKCELL_REDLINE_GROUP_SAFE_CLOSE=async()=>{
+   if(state.closed||$('ledgerApp').hidden)return {ok:true};
+   if(!state.room)return {ok:false,reason:'Wait for the private room to finish loading.'};
+   if(state.busy||state.deletingPhotoId||state.resubmittingPhotoId||redlineQueueRunning||redlinePhotoQueue.length||document.querySelector('[aria-busy=true],.is-uploading,[data-busy=true],dialog[open]'))return {ok:false,reason:'Finish the current photo operation before switching.'};
+   if(Array.from(document.querySelectorAll('.redline-message-entry')).some(e=>e.value?.trim()))return {ok:false,reason:'Send or clear the private chat draft before switching.'};
+   if(state.room.active){try{const result=await window.BLACKCELL_REDLINE_API.timerStatus(state.room.id);if(result.active?.running)return {ok:false,reason:'Stop the paid photo timer before switching.'}}catch(_){return {ok:false,reason:'Could not verify the photo timer. Try again.'}}}
+   return {ok:true};
+  };
+ }
+
 window.BLACKCELL_REDLINE_API=Object.freeze({
  returnToRooms:()=>navigateRoomDirectory(),
  requestSenderPreviews:ids=>requestSenderPreviews(ids),
