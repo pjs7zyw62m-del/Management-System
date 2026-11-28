@@ -1,0 +1,35 @@
+name: BLACKCELL System Sounds
+on:
+  pull_request:
+    paths:
+      - 'blackcell-os-launch.js'
+      - 'blackcell-os-settings.js'
+      - 'blackcell-os.js'
+      - 'blackcell-os.html'
+      - 'blackcell-site-version.json'
+      - 'tests/blackcell-os-system-sounds.test.mjs'
+      - '.github/workflows/blackcell-system-sounds.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'blackcell-os-launch.js'
+      - 'blackcell-os-settings.js'
+      - 'blackcell-os.js'
+      - 'blackcell-os.html'
+      - 'blackcell-site-version.json'
+      - 'tests/blackcell-os-system-sounds.test.mjs'
+      - '.github/workflows/blackcell-system-sounds.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  system-sounds:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --check blackcell-os-launch.js
+      - run: node --test tests/blackcell-os-system-sounds.test.mjs
