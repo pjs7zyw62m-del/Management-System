@@ -136,7 +136,7 @@ try {
       // A new version query forces browsers/CDNs to fetch the repaired file.
       window.BLACKCELL_ADMIN_READY=false;
       const script=document.createElement('script');
-      script.src='admin.js?v=20261121-level-zero-clearance2';
+      script.src='admin.js?v=20261128-personnel1';
       script.defer=true;
       const showAdminLoadError=()=>{
         if(document.getElementById('adminControlsReload'))return;
