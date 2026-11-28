@@ -129,4 +129,4 @@ new ResizeObserver(resize).observe($('deviceStage'));
 async function recheck(){if(!verified||checking)return;checking=true;try{await verify()}catch(e){deny(e)}finally{checking=false}}
 db.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT')deny('Signed out. Return to Administration.')});
 window.addEventListener('focus',()=>void recheck());setInterval(()=>void recheck(),60000);
-try{await verify();await Promise.all([readCatalog(),readAssets()]);verified=true;$('workspace').hidden=false;notice('Verified owner · current application rules · isolated simulation');startFrame();change()}catch(e){deny(e)}
+try{await verify();await Promise.all([readCatalog(),readAssets()]);const params=new URLSearchParams(location.search);if(params.get('personnel')==='1'){const level=params.get('level');if(level!==null&&/^[0-6]$/.test(level)){$('level').value=level;$('chat').checked=level!=='0'&&params.get('chat')==='1'}}verified=true;$('workspace').hidden=false;notice('Verified owner · current application rules · isolated simulation');startFrame();change()}catch(e){deny(e)}
