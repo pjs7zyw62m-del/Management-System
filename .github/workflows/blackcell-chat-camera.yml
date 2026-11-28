@@ -1,0 +1,20 @@
+name: BLACKCELL iMessage Camera
+on:
+  pull_request:
+    paths:
+      - 'blackcell-chat-camera.*'
+      - 'corporate-chat-media.js'
+      - 'blackcell-os.js'
+      - 'tests/blackcell-chat-camera.test.mjs'
+      - '.github/workflows/blackcell-chat-camera.yml'
+permissions:
+  contents: read
+jobs:
+  camera:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --check blackcell-chat-camera.js && node --check corporate-chat-media.js && node --check corporate-chat.js && node --check blackcell-os.js && node --test tests/blackcell-chat-camera.test.mjs

@@ -1,7 +1,7 @@
 import {mountChatVoice,VOICE_BODY} from './blackcell-chat-voice.js?v=1';
 import {mountPopoutActions} from './corporate-chat-popout-actions.js?v=20261128-attached-reactions2';
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
-import {setupCorporateMedia} from './corporate-chat-media.js?v=20261128-voice1';
+import {setupCorporateMedia} from './corporate-chat-media.js?v=20261128-camera1';
 import {setupCorporateChatLive} from './corporate-chat-live.js?v=20261128-unread1';
 import {installAndroidChatCaretGuard} from './corporate-chat-android-caret.js?v=20261122-return-keyboard10';
 import {createChatTubeCards,parseTubeReference} from './blackcell-chat-tube-cards.js?v=1';
@@ -923,7 +923,7 @@ setInterval(()=>{if(chatVerificationPaused&&!document.hidden)void reverifyChatOn
 window.addEventListener('message',event=>{
  if(event.origin!==location.origin||event.source!==window.parent)return;
  if(event.data?.type==='blackcell-chat-visibility'){
-  live.setVisible(event.data.visible===true);if(event.data.visible!==true){voice?.pause();tubeCards.stopActive();pulseCards.stopActive()}
+  live.setVisible(event.data.visible===true);if(event.data.visible!==true){sharedMedia.pause();voice?.pause();tubeCards.stopActive();pulseCards.stopActive()}
   if(event.data.visible===true&&ready&&peer)void loadMessages();
  }else if(event.data?.type==='blackcell-chat-shared-activity'&&employeeSession&&!sessionEnded){
   lastActivity=Date.now();
