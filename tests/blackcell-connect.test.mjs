@@ -43,3 +43,12 @@ test('OS routes verified chat calls and signaling is private, expires, and check
  assert.match(sql,/enable row level security/);assert.match(sql,/revoke all on bc_connect_private.calls from public,anon,authenticated/);assert.match(sql,/corp_private.chat_pair_unblocked/);assert.match(sql,/auth.sessions/);assert.match(sql,/callee_device=p_device/);assert.match(expiry,/offer=null,answer=null/);
  assert.doesNotMatch(code,/MediaRecorder|\.upload\(/);
 });
+
+test('Call controls allow retrying unknown block status without bypassing verification',()=>{
+ const chat=readFileSync('corporate-chat.js','utf8'),os=readFileSync('blackcell-os.js','utf8');
+ assert.match(chat,/b\.disabled=!ready\|\|!self\|\|!peer\|\|sessionEnded\|\|chatBlocked\|\|blockBusy/);
+ assert.match(chat,/await refreshCurrentBlock\(\)/);
+ assert.match(chat,/if\(!blockKnown\|\|chatBlocked\|\|blockBusy\)/);
+ assert.match(os,/selectedWindow===source\|\|document\.activeElement===source\.frame/);
+ assert.match(os,/blackcell-connect-unavailable/);
+});
