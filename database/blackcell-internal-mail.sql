@@ -57,7 +57,7 @@ begin
   return jsonb_build_object('ok',true,'items',result,'counts',counts);
  elsif p_action='draft' and p_id is null then
   if char_length(coalesce(p_subject,''))>200 or char_length(coalesce(p_body,''))>20000 then return jsonb_build_object('ok',false,'error','Message too long.'); end if;
-  if p_recipient is not null then select * into other from public.corp_access_members where user_id=p_recipient and active; if not found then return jsonb_build_object('ok',false,'error','Recipient unavailable.');end if;end if;
+  if p_recipient is not null then select m.* into other from public.corp_access_members m join bc_store_private.app_rules r on r.app_id='mail' and r.enabled where m.user_id=p_recipient and m.user_id<>uid and m.active and m.clearance_level between 1 and 7 and m.access_scope is distinct from 'ledger_only' and ((m.role='owner' and m.clearance_level=7) or (m.role='employee' and m.password_activated_at is not null and r.min_level<7 and m.clearance_level>=r.min_level)) and corp_private.chat_pair_unblocked(m.user_id); if not found then return jsonb_build_object('ok',false,'error','Recipient unavailable.');end if;end if;
   insert into bc_mail_private.mailbox(owner_id,sender_id,recipient_id,sender_name,recipient_name,subject,body,folder,origin)
    values(uid,uid,p_recipient,coalesce(me.display_name,'Member'),coalesce(other.display_name,''),coalesce(p_subject,''),coalesce(p_body,''),'drafts','drafts') returning id into mid;
   return jsonb_build_object('ok',true,'id',mid);
@@ -69,7 +69,7 @@ begin
   entry.unread:=false;return jsonb_build_object('ok',true,'item',to_jsonb(entry)-'owner_id');
  elsif p_action='draft' and entry.folder='drafts' then
   if char_length(coalesce(p_subject,''))>200 or char_length(coalesce(p_body,''))>20000 then return jsonb_build_object('ok',false,'error','Message too long.'); end if;
-  if p_recipient is not null then select * into other from public.corp_access_members where user_id=p_recipient and active; if not found then return jsonb_build_object('ok',false,'error','Recipient unavailable.');end if;end if;
+  if p_recipient is not null then select m.* into other from public.corp_access_members m join bc_store_private.app_rules r on r.app_id='mail' and r.enabled where m.user_id=p_recipient and m.user_id<>uid and m.active and m.clearance_level between 1 and 7 and m.access_scope is distinct from 'ledger_only' and ((m.role='owner' and m.clearance_level=7) or (m.role='employee' and m.password_activated_at is not null and r.min_level<7 and m.clearance_level>=r.min_level)) and corp_private.chat_pair_unblocked(m.user_id); if not found then return jsonb_build_object('ok',false,'error','Recipient unavailable.');end if;end if;
   update bc_mail_private.mailbox set recipient_id=p_recipient,recipient_name=coalesce(other.display_name,''),subject=coalesce(p_subject,''),body=coalesce(p_body,''),updated_at=now() where owner_id=uid and id=p_id;
  elsif p_action='send' then
   if entry.origin='sent' then return jsonb_build_object('ok',true,'id',p_id); end if;
