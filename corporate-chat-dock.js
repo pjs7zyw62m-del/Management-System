@@ -90,7 +90,7 @@
   toast.setAttribute('aria-label','New private iMessage notification');
   document.body.append(dock,orb,pane,toast);
   const mediaBubbles=window.BlackcellMediaBubbleHost?.({mode:'dock',mainFrame:frame,mainPane:pane});
-  let state='minimized',unread=0,peerWanted=null,currentUserId=null,contactsLoaded=false;
+  let state='minimized',unread=0,peerWanted=null,currentUserId=null,contactsLoaded=false,chatSuspended=false,unreadMonitor=null;
   const storageKey=id=>'blackcell-messages-ui-v3:'+id;
   function saveWindowState(){
    if(!currentUserId)return;
@@ -141,7 +141,7 @@
     bootFrame();
     notifyFrameVisibility(!document.hidden);
     if(peerId)selectInFrame(peerId);
-    setUnread(0);saveWindowState();
+    void unreadMonitor?.refresh();saveWindowState();
   }
   function minimize(){
     state='minimized';pane.hidden=true;orb.hidden=false;
@@ -160,12 +160,12 @@
     saveWindowState();
   }
   function suspendChat(){
-    closeChat();
+    chatSuspended=true;unreadMonitor?.reset();toastQueue=[];if(toastOpen)closeToast();closeChat();
     orb.hidden=true;
     dock.hidden=true;
   }
   function resumeChat(){
-    if(state!=='open')orb.hidden=false;
+    chatSuspended=false;if(state!=='open')orb.hidden=false;void unreadMonitor?.refresh();
   }
   document.addEventListener('visibilitychange',()=>{
     notifyFrameVisibility(state==='open'&&!document.hidden);
@@ -179,6 +179,7 @@
   window.addEventListener('message',event=>{
    if(event.origin!==location.origin||event.source!==frame.contentWindow)return;
    const detail=event.data||{};
+   if(detail.type==='blackcell-chat-read'){void unreadMonitor?.refresh();return}
    if(detail.type==='blackcell-chat-conversation'){
     if(typeof detail.peerId==='string'&&peers.has(detail.peerId)){
      peerWanted=detail.peerId;
@@ -260,14 +261,15 @@
     const self=data?.user?.id;
     if(!self)return;
     currentUserId=self;restoreWindowState();
-    client.channel('blackcell-admin-imessage-'+self)
-      .on('postgres_changes',{event:'INSERT',schema:'public',table:'corp_chat_messages'},payload=>{
-        const item=payload.new||{};
-        if(item.recipient_id!==self||item.sender_id===self)return;
-        if(state!=='open'||document.hidden)setUnread(unread+1);
-        toastMessage('New message from '+(peers.get(item.sender_id)||'an employee'),'',item.sender_id);
-      }).subscribe();
+    void import('./blackcell-chat-unread.js?v=1').then(({createChatUnreadMonitor})=>{
+      unreadMonitor=createChatUnreadMonitor({client:()=>client,account:()=>currentUserId,allowed:()=>!!currentUserId&&!chatSuspended,onChange:result=>setUnread(result.total),onNew:(count,initial)=>{
+        if(!chatSuspended)toastMessage(count+(initial?' unread':' new')+' iMessage'+(count===1?'':'s'),'Open your private inbox',null);
+      }});
+      void unreadMonitor.refresh();
+    }).catch(()=>{});
   }).catch(()=>{});
+  client.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT'){currentUserId=null;suspendChat();}});
+  window.addEventListener('pagehide',()=>unreadMonitor?.dispose(),{once:true});
   // Initially minimized. The owner can work in Administration and open the
   // same authenticated live messaging UI in a floating or separate window.
   minimize();
