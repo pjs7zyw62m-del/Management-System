@@ -704,7 +704,7 @@ function renderPeers(){
 // active send/edit/upload would be interrupted. A dedicated pop-out never resets.
 function returnToDesktopInbox(){
  if(!ready||popout||mediaPanelMode||physicallySmallPhone||!peer)return false;
- if(sendingMessage||messageMutationBusy||blockBusy||composerCompositionActive||$('messageInput').value.trim()||document.querySelector('[aria-busy=true],.is-uploading,[data-busy=true],dialog[open]'))return false;
+ if(sendingMessage||messageMutationBusy||blockBusy||composerCompositionActive||$('messageInput').value.trim()||document.querySelector('[aria-busy=true],.is-uploading,[data-busy=true],dialog[open],.chat.media-open')||Array.from(document.querySelectorAll('input[type=file]')).some(input=>input.files?.length))return false;
  const previous=peer.user_id;
  live.setThreadOpen(false);live.onPeerChange(previous,null);
  peer=null;blockGeneration++;blockKnown=false;chatBlocked=false;
