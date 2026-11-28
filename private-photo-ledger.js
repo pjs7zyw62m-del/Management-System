@@ -1,4 +1,4 @@
-import {mountGroupRooms} from './private-photo-ledger-groups.js?v=20261128-live-group3-test-tips';
+import {mountGroupRooms} from './private-photo-ledger-groups.js?v=20261128-live-group4-tips';
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
 import {isBunnyPath,uploadBunnyPhoto,transferBunnyLibraryPhoto,readBunnyPhoto,cleanupUnpostedBunny,deleteRedlinePhotoFile} from './private-photo-ledger-bunny.js?v=20261127-server-transfer1';
 
