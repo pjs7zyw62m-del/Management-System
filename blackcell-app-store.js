@@ -90,7 +90,7 @@ export function mountStore(host,api){
   ['unavailable','Unavailable','M5 5l14 14 M19 5L5 19']
  ];
  const desktopTags={
-  creative:['personalphotos','photos','film','shorts','music','cinema','creativestudio','photobattle','voicememos'],
+  creative:['personalphotos','photos','film','shorts','music','cinema','creativestudio','voicememos'],
   productivity:['files','notes','calendar','reminders','mail','contacts','documents','spreadsheets','presentations','journal','wallet'],
   security:['photoledger','administration','vault','settings'],
   utilities:['browser','settings','calculator','worldclock','network','files'],
@@ -145,7 +145,7 @@ export function mountStore(host,api){
  function group(title,apps){if(!apps.length)return;const section=make('section','bc-store-group');section.append(make('h2','',title));const grid=make('div','bc-store-grid');for(const app of apps)grid.append(card(app));section.append(grid);results.append(section)}
  function desktopEditorial(apps){
   const eligible=apps.filter(a=>a.allowed&&a.enabled!==false&&!a.planned&&!a.catalogUnavailable&&!isBeta(a)&&a.id!=='store');
-  const preferred=['photoledger','mail','personalphotos','files','chat','browser','film','network','photobattle'];
+  const preferred=['photoledger','mail','personalphotos','files','chat','browser','film','network'];
   const ranked=[...eligible].sort((a,b)=>(preferred.includes(a.id)?preferred.indexOf(a.id):100)-(preferred.includes(b.id)?preferred.indexOf(b.id):100));
   if(!ranked.length)return;
   const feed=make('section','bc-store-desktop-editorial');feed.setAttribute('aria-label','Desktop featured applications');
@@ -171,7 +171,7 @@ export function mountStore(host,api){
  }
  function editorial(apps){
   const eligible=apps.filter(a=>a.allowed&&a.enabled!==false&&!a.planned&&!a.catalogUnavailable&&!isBeta(a)&&a.id!=='store');
-  const preferred=['photoledger','mail','personalphotos','chat','film','files','network','photobattle'];
+  const preferred=['photoledger','mail','personalphotos','chat','film','files','network'];
   const sorted=[...eligible].sort((a,b)=>(preferred.includes(a.id)?preferred.indexOf(a.id):100)-(preferred.includes(b.id)?preferred.indexOf(b.id):100));
   const featured=sorted.slice(0,2);if(!featured.length)return;
   const feed=make('section','bc-store-editorial');feed.setAttribute('aria-label','Featured BLACKCELL applications');
@@ -203,7 +203,7 @@ export function mountStore(host,api){
   if(desktopMode()&&!q&&desktopFilter){if(desktopFilter==='updates'){const panel=make('section','bc-store-desktop-update');panel.append(make('h2','','Software updates'),make('p','','Check the current BLACKCELL OS release and refresh the authorized application catalog.'),button('Check OS update','bc-store-get',()=>release.click()),button('Refresh catalog','bc-store-get',()=>refresh.click()));results.append(panel);restoreScroll(before,info);return}if(desktopFilter==='categories'){for(const [id,name] of desktopSections.filter(([id])=>desktopTags[id]))group(name,all.filter(a=>(info.owner||a.enabled!==false)&&desktopTags[id].includes(a.id)));restoreScroll(before,info);return}filtered=all.filter(a=>(info.owner||a.enabled!==false)&&desktopTags[desktopFilter]?.includes(a.id));group(desktopSections.find(c=>c[0]===desktopFilter)[1],filtered);if(!filtered.length)results.append(make('p','bc-store-empty','No applications in this category.'));restoreScroll(before,info);return}
   if(!q&&category==='discover'&&!searchMode){editorial(filtered);if(desktopMode())desktopEditorial(filtered);const hero=make('div','bc-store-feature'),copy=make('div','bc-store-feature-copy');const heroTitle=make('h2','','Ready for ');heroTitle.append(make('em','','work.'));copy.append(make('div','bc-store-kicker','BLACKCELL OS  /  DISCOVER'),heroTitle,make('p','','Discover operational BLACKCELL apps. Unfinished previews are in Beta Lab. Removing shortcuts does not erase account data.'));const symbol=make('div','bc-store-feature-symbol','✧');hero.append(copy,symbol);results.append(hero)}
   if(!filtered.length){results.append(make('p','bc-store-empty','No approved applications match your selection.'));restoreScroll(before,info);return}
-  if(category==='discover'&&!q&&!searchMode){const released=filtered.filter(a=>['photoledger','mail','photobattle'].includes(a.id));group(desktopMode()?'Essential BLACKCELL Apps':'Discover applications',[...released.sort((a,b)=>['photoledger','mail','photobattle'].indexOf(a.id)-['photoledger','mail','photobattle'].indexOf(b.id)),...filtered.filter(a=>a.optional&&!released.includes(a)),...filtered.filter(a=>!a.optional&&!released.includes(a))])}else group(q||searchMode?'Search results':category==='installed'?'Your applications':category==='beta'?'Beta applications':category==='unavailable'?'Disabled applications':category==='upcoming'?'In development':'Applications',filtered);restoreScroll(before,info);
+  if(category==='discover'&&!q&&!searchMode){const released=filtered.filter(a=>['photoledger','mail'].includes(a.id));group(desktopMode()?'Essential BLACKCELL Apps':'Discover applications',[...released.sort((a,b)=>['photoledger','mail'].indexOf(a.id)-['photoledger','mail'].indexOf(b.id)),...filtered.filter(a=>a.optional&&!released.includes(a)),...filtered.filter(a=>!a.optional&&!released.includes(a))])}else group(q||searchMode?'Search results':category==='installed'?'Your applications':category==='beta'?'Beta applications':category==='unavailable'?'Disabled applications':category==='upcoming'?'In development':'Applications',filtered);restoreScroll(before,info);
  }
  function restoreScroll(top,info){if(restoring&&info.error)return;restoring=false;body.scrollTop=top;persist()}
  search.addEventListener('input',()=>navigate(()=>{detail=null}));body.addEventListener('scroll',()=>{clearTimeout(scrollTimer);scrollTimer=setTimeout(persist,100)},{passive:true});render();return {render,selectCategory(next){if(!busy&&['discover','installed','beta','optional','unavailable','upcoming'].includes(next)){searchMode=false;toolsOpen=false;navigate(()=>{desktopFilter='';category=next;detail=null;search.value=''})}},dispose(){disposed=true;clearTimeout(scrollTimer)}};

@@ -129,7 +129,7 @@ function start(){
   dockSwipeStart=null;
  },{passive:true});
  window.addEventListener('pagehide',stopDockIdle,{once:true});
- const priority=['network','forces','photos','film','shorts','person','omega','settings','store','photoledger','photobattle','usa','awards','care','innovations'];
+ const priority=['network','forces','photos','film','shorts','person','omega','settings','store','photoledger','usa','awards','care','innovations'];
  const account=()=>{try{return window.BLACKCELL_OS_WIDGET_LAYOUT?.account?.()||null}catch(_){return null}};
   const unified=()=>window.BLACKCELL_OS_UNIFIED_LAYOUT;
   const pins=()=>unified()?.read?.().pins||[];

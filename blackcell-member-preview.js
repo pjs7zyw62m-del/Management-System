@@ -1,5 +1,5 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261114-transport-classification';
-import {mountStore} from './blackcell-app-store.js?v=20261127-editorial-store1-desktop1-maildiscover1';
+import {mountStore} from './blackcell-app-store.js?v=20261128-retire-battle1';
 const $=id=>document.getElementById(id),db=corporateClient(),frame=$('preview');
 let owner=null,verified=false,checking=false,rules=[],metadata=[],styles='',channel='',frameReady=false;
 const notice=s=>$('notice').textContent=s;
