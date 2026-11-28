@@ -68,7 +68,7 @@
     b.addEventListener('click',fn);return b;
   }
   const pop=button('Open chat in a separate window','↗','',()=>{
-    const link=new URL('corporate-chat.html?v=20261128-camera1',location.href).href;
+    const link=new URL('corporate-chat.html?v=20261128-connect5',location.href).href;
     const win=window.open(link,'blackcell-private-imessage','width=490,height=750,resizable=yes,scrollbars=no');
     if(win){win.focus();minimize();}else{
       toastMessage('Pop-out blocked','Allow pop-ups, or use the floating chat window.',null);
@@ -90,7 +90,7 @@
   toast.setAttribute('aria-label','New private iMessage notification');
   document.body.append(dock,orb,pane,toast);
   const mediaBubbles=window.BlackcellMediaBubbleHost?.({mode:'dock',mainFrame:frame,mainPane:pane});
-  let state='minimized',unread=0,peerWanted=null,currentUserId=null,contactsLoaded=false,chatSuspended=false,unreadMonitor=null,messageSound=null;
+  let state='minimized',unread=0,peerWanted=null,currentUserId=null,contactsLoaded=false,chatSuspended=false,unreadMonitor=null,messageSound=null,connectController=null;
   const storageKey=id=>'blackcell-messages-ui-v3:'+id;
   function saveWindowState(){
    if(!currentUserId)return;
@@ -118,7 +118,7 @@
     if(frameLoaded)return;
     const url=new URL('corporate-chat.html',location.href);
     url.searchParams.set('embed','1');
-    url.searchParams.set('chatUI','camera-20261128-v1');
+    url.searchParams.set('chatUI','connect-20261128-v5');
     if(peerWanted)url.searchParams.set('peer',peerWanted);
     frame.src=url.href;
     frameLoaded=true;
@@ -160,12 +160,12 @@
     saveWindowState();
   }
   function suspendChat(){
-    chatSuspended=true;unreadMonitor?.reset();toastQueue=[];if(toastOpen)closeToast();closeChat();
+    chatSuspended=true;connectController?.stop();unreadMonitor?.reset();toastQueue=[];if(toastOpen)closeToast();closeChat();
     orb.hidden=true;
     dock.hidden=true;
   }
   function resumeChat(){
-    chatSuspended=false;if(state!=='open')orb.hidden=false;void unreadMonitor?.refresh();
+    chatSuspended=false;void connectController?.poll();if(state!=='open')orb.hidden=false;void unreadMonitor?.refresh();
   }
   document.addEventListener('visibilitychange',()=>{
     notifyFrameVisibility(state==='open'&&!document.hidden);
@@ -179,6 +179,7 @@
   window.addEventListener('message',event=>{
    if(event.origin!==location.origin||event.source!==frame.contentWindow)return;
    const detail=event.data||{};
+   if(detail.type==='blackcell-connect-request'){if(!chatSuspended&&state==='open'&&connectController&&typeof detail.peerId==='string'&&peers.has(detail.peerId)){connectController.request(detail.peerId,detail.mode,peers.get(detail.peerId));}else frame.contentWindow?.postMessage({type:'blackcell-connect-unavailable'},location.origin);return}
    if(detail.type==='blackcell-chat-read'){void unreadMonitor?.refresh();return}
    if(detail.type==='blackcell-chat-conversation'){
     if(typeof detail.peerId==='string'&&peers.has(detail.peerId)){
@@ -268,9 +269,10 @@
       }});
       void unreadMonitor.refresh();
     }).catch(()=>{});
+    void import('./blackcell-connect.js?v=4').then(({mountBlackcellConnect})=>{if(!currentUserId||connectController)return;const css=make('link','');css.rel='stylesheet';css.href='blackcell-connect.css?v=3';document.head.append(css);connectController=mountBlackcellConnect({client:()=>client,account:()=>currentUserId,allowed:()=>!!currentUserId&&!chatSuspended,host:document.body,notify:message=>toastMessage(message,'BLACKCELL Connect',null),ring:()=>messageSound?.play('callring'),ringback:()=>messageSound?.play('ringback')});void connectController.poll()}).catch(()=>{});
   }).catch(()=>{});
   client.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT'){currentUserId=null;suspendChat();}});
-  window.addEventListener('pagehide',()=>{unreadMonitor?.dispose();messageSound?.dispose()},{once:true});
+  window.addEventListener('pagehide',()=>{connectController?.dispose();unreadMonitor?.dispose();messageSound?.dispose()},{once:true});
   // Initially minimized. The owner can work in Administration and open the
   // same authenticated live messaging UI in a floating or separate window.
   minimize();

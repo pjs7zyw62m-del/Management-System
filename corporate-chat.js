@@ -1,4 +1,4 @@
-import {mountBlackcellConnect} from './blackcell-connect.js?v=3';
+import {mountBlackcellConnect} from './blackcell-connect.js?v=4';
 import {createFloatingMessageSound} from './blackcell-floating-message-sound.js?v=2';
 import {mountChatVoice,VOICE_BODY} from './blackcell-chat-voice.js?v=1';
 import {mountPopoutActions} from './corporate-chat-popout-actions.js?v=20261128-attached-reactions2';
@@ -188,11 +188,11 @@ let callCheckBusy=false;
   if(!ready||sessionEnded||peer?.user_id!==id||generation!==blockGeneration)return;
   if(!blockKnown||chatBlocked||blockBusy){status(chatBlocked?'Unblock this conversation before calling.':'Calling permissions could not be verified. Tap Call or Video to retry.');return}
   status('');
-  if(osChat&&window.parent!==window){window.parent.postMessage({type:'blackcell-connect-request',peerId:id,mode,name},location.origin)}else if(standaloneConnect)standaloneConnect.request(id,mode,name);else status('Open iMessage in BLACKCELL OS to place calls.');
+  if((osChat||embedParams.get('embed')==='1')&&window.parent!==window){window.parent.postMessage({type:'blackcell-connect-request',peerId:id,mode,name},location.origin)}else if(standaloneConnect)standaloneConnect.request(id,mode,name);else status('Open iMessage in BLACKCELL OS to place calls.');
  }
  window.addEventListener('message',event=>{if(event.origin===location.origin&&event.source===window.parent&&event.data?.type==='blackcell-connect-unavailable')status('Calling is unavailable in this window. Open the active iMessage conversation and try again.');});
 function connectButton(mode){const b=document.createElement('button');b.type='button';b.className='bc-connect-button';b.textContent=mode==='voice'?'Call':'Video';b.title=mode==='voice'?'BLACKCELL Connect voice call':'BLACKCELL Connect video call';b.setAttribute('aria-label',b.title);b.disabled=true;b.onclick=()=>requestConnect(mode);return b}
-if(!mediaPanelMode&&!popout&&(osChat||standaloneConnect)){const actions=document.createElement('span');actions.className='bc-connect-chat-actions';actions.append(connectButton('voice'),connectButton('video'));$('bcMobileChatTools').before(actions)}
+if(!mediaPanelMode&&!popout&&(osChat||standaloneConnect||embedParams.get('embed')==='1')){const actions=document.createElement('span');actions.className='bc-connect-chat-actions';actions.append(connectButton('voice'),connectButton('video'));$('bcMobileChatTools').before(actions)}
 const live=setupCorporateChatLive({
  client,context:()=>({self,peer,ready}),
  typingLabel:$('typingIndicator'),typingName:$('typingName')

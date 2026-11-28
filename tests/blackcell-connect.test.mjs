@@ -26,7 +26,7 @@ test('Incoming ring never opens microphone until explicit accept; end stops all 
  const client={rpc:async(name,args)=>{assert.equal(name,'corp_connect');actions.push(args.p_action);return {data:{ok:true,call:args.p_action==='poll'?pending:args.p_action==='start'?(pending=outgoing):args.p_action==='answer'?(pending={...incoming,state:'accepted'}): (pending=null)}}}};
  const ctl=mountBlackcellConnect({client:()=>client,account:()=> 'me',allowed:()=>true,host,ring:()=>ringed++,ringback:()=>dialed++,notify:message=>notices.push(message)});
  try{
-  await ctl.poll();assert.equal(acquired,0);assert.equal(ringed,1);assert.equal(alerts,1);await ctl.poll();assert.equal(alerts,1);assert.equal(ringed,1);document.hidden=false;
+  ctl.request('12345678-1234-1234-1234-123456789abc','voice','Other');await ctl.poll();assert.equal(host.children[0].hidden,false);assert.equal(acquired,0);assert.equal(ringed,1);assert.equal(alerts,1);await ctl.poll();assert.equal(alerts,1);assert.equal(ringed,1);document.hidden=false;
   const buttons=host.children[0].children.find(x=>x.className==='bc-connect-controls').children;
   buttons.find(x=>x.textContent==='Accept').onclick();await new Promise(r=>setImmediate(r));
   assert.equal(acquired,1);assert.ok(actions.includes('answer'));assert.equal(closed,1);
@@ -35,6 +35,7 @@ test('Incoming ring never opens microphone until explicit accept; end stops all 
   ctl.request(peer,'voice','Other');buttons.find(x=>x.textContent==='Start call').onclick();await new Promise(r=>setImmediate(r));assert.equal(dialed,1);assert.ok(actions.includes('start'));await ctl.poll();assert.equal(dialed,1);
   buttons.find(x=>x.textContent==='End call').onclick();await new Promise(r=>setImmediate(r));assert.equal(stopped,2);
   failDevice=true;const starts=actions.filter(x=>x==='start').length;ctl.request(peer,'voice','Other');buttons.find(x=>x.textContent==='Start call').onclick();await new Promise(r=>setImmediate(r));assert.equal(actions.filter(x=>x==='start').length,starts);assert.equal(dialed,1);assert.match(notices.at(-1),/No microphone was detected.*Call was not sent/);
+  pending=incoming;await ctl.poll();const ends=actions.filter(x=>x==='end').length;ctl.stop();assert.equal(actions.filter(x=>x==='end').length,ends);assert.equal(host.children[0].hidden,true);
  }finally{ctl.dispose();for(const [k,v] of Object.entries(old)){if(v===undefined)delete globalThis[k];else globalThis[k]=v}if(nav)Object.defineProperty(globalThis,'navigator',nav);else delete globalThis.navigator}
 });
 test('OS routes verified chat calls and signaling is private, expires, and checks current permissions',()=>{
@@ -60,3 +61,5 @@ test('Dedicated ringtone uses non-silent WAV, honors mute, and stops on cleanup'
  assert.deepEqual(await player.play('ringback'),{ok:true});const bytes=new Uint8Array(await wave.arrayBuffer());assert.equal(Buffer.from(bytes.slice(0,4)).toString(),'RIFF');assert.ok(bytes.slice(44).some(n=>n!==0));
  player.stop();assert.ok(paused>0);assert.equal(revoked,1);enabled=false;assert.deepEqual(await player.play('callring'),{ok:false,reason:'muted'});assert.equal(played,1);enabled=true;deny=true;assert.deepEqual(await player.play('callring'),{ok:false,reason:'blocked'});player.stop();assert.equal(revoked,2);
 });
+
+test('Incoming call panel is hosted outside OS window stacking and supported in floating chat',()=>{const os=readFileSync('blackcell-os.js','utf8'),dock=readFileSync('corporate-chat-dock.js','utf8'),css=readFileSync('blackcell-connect.css','utf8');assert.match(os,/host:document.body,notify:message=>osNotice/);assert.match(dock,/mountBlackcellConnect/);assert.match(dock,/blackcell-connect-request/);assert.match(css,/\.bc-connect-panel\.is-incoming/);});
