@@ -88,7 +88,7 @@ export function mountSettings(host,api){
    }
    toggle.onchange=()=>{const prefs=system.setPreference({enabled:toggle.checked});for(const b of playbackButtons)b.disabled=!prefs.enabled;if(!prefs.enabled){++playbackSerial;stop.disabled=true}notice.textContent=prefs.enabled?'System sounds enabled.':'System sounds muted.'};
    volume.oninput=()=>{system.setPreference({volume:Number(volume.value)/100});notice.textContent='System sound volume: '+volume.value+'%'};
-   row(p,'System sounds',toggle,'Startup, opening apps, window controls, security lock and system notices.');
+   row(p,'System sounds',toggle,'Startup, opening apps, window controls, security lock, incoming iMessage and system notices.');
    row(p,'Volume',volume,'Controls system sound previews, not music or video playback.');
    row(p,'Playback',stop,'Choose any sound below to hear it. Only one preview plays at a time.');
    if(!current.available)notice.textContent='Audio playback is not available in this browser.';
