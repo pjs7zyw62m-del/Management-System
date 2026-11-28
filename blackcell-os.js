@@ -715,14 +715,15 @@ window.BLACKCELL_OS_AUTOSAVE_WORKSPACE=async()=>{
  return true;
 };
 function clearWorkspace(){pendingRestore=[];deferredParkedChats.clear();workspaceReady=false;try{sessionStorage.removeItem(workspaceKey());if(embeddedAdmin)sessionStorage.removeItem('bc.os.host.v1')}catch(_){}}
-function safePixels(value){return typeof value==='string'&&/^\d{1,5}(?:\.\d+)?px$/.test(value)?Number.parseFloat(value):null}
+function safePixels(value,signed=false){return typeof value==='string'&&(signed?/^-?\d{1,5}(?:\.\d+)?px$/:/^\d{1,5}(?:\.\d+)?px$/).test(value)?Number.parseFloat(value):null}
+function desktopWindowLeft(left,width,available){const grip=Math.min(width,Math.max(160,Math.min(260,width*.65)));return Math.max(grip-width,Math.min(Math.max(grip-width,available-grip),left))}
 function captureParkedGeometry(r){
  const w=r.el,maximized=w.classList.contains('is-max');
  const useActual=!w.hidden&&!maximized&&innerWidth>620&&!touchOS();
  const geometry={maximized,viewportWidth:innerWidth,viewportHeight:innerHeight};
  for(const [key,metric] of [['left','offsetLeft'],['top','offsetTop'],['width','offsetWidth'],['height','offsetHeight']]){
   const actual=w[metric];
-  geometry[key]=useActual&&Number.isFinite(actual)&&(key==='left'||key==='top'||actual>0)?Math.max(0,actual)+'px':w.style[key];
+  geometry[key]=useActual&&Number.isFinite(actual)&&(key==='left'||key==='top'||actual>0)?(key==='left'?actual:Math.max(0,actual))+'px':w.style[key];
  }
  return geometry;
 }
@@ -731,10 +732,10 @@ function applyParkedGeometry(r,saved){
  const w=r.el;
  if(innerWidth>620&&!touchOS()){
   const sameViewport=saved.viewportWidth===innerWidth&&saved.viewportHeight===innerHeight;
-  const width=safePixels(saved.width),height=safePixels(saved.height),left=safePixels(saved.left),top=safePixels(saved.top);
+  const width=safePixels(saved.width),height=safePixels(saved.height),left=safePixels(saved.left,true),top=safePixels(saved.top);
   if(width!==null)w.style.width=(sameViewport?width:Math.min(Math.max(300,width),Math.max(300,innerWidth-12)))+'px';
   if(height!==null)w.style.height=(sameViewport?height:Math.min(Math.max(260,height),Math.max(260,innerHeight-100)))+'px';
-  if(left!==null)w.style.left=(sameViewport?left:Math.max(0,Math.min(left,innerWidth-(safePixels(w.style.width)||300))))+'px';
+  if(left!==null)w.style.left=(sameViewport?left:desktopWindowLeft(left,safePixels(w.style.width)||300,$('desktop').clientWidth||innerWidth))+'px';
   if(top!==null)w.style.top=(sameViewport?top:Math.max(34,Math.min(top,innerHeight-100)))+'px';
  }
  w.classList.toggle('is-max',saved.maximized===true);
@@ -760,11 +761,11 @@ function restoreRecord(saved,parked=false){
  if(!parked){r.spaceId=spaceValid(saved.spaceId)?String(saved.spaceId):'1';r.spaceShown=saved.minimized!==true}
  if(parked){applyParkedGeometry(r,saved);r.chatKeepOnTop=saved.keepOnTop===true;}
  else if(innerWidth>620&&!touchOS()){
-  const width=safePixels(saved.width),height=safePixels(saved.height),left=safePixels(saved.left),top=safePixels(saved.top);
+  const width=safePixels(saved.width),height=safePixels(saved.height),left=safePixels(saved.left,true),top=safePixels(saved.top);
   if(width!==null)r.el.style.width=Math.min(Math.max(280,width),Math.max(280,innerWidth-12))+'px';
   if(height!==null)r.el.style.height=Math.min(Math.max(220,height),Math.max(220,innerHeight-100))+'px';
-  if(left!==null)r.el.style.left=Math.max(0,Math.min(left,innerWidth-r.el.offsetWidth))+'px';
-  if(top!==null)r.el.style.top=Math.max(34,Math.min(top,innerHeight-110))+'px';
+  if(left!==null)r.el.style.left=desktopWindowLeft(left,r.el.offsetWidth,$('desktop').clientWidth||innerWidth)+'px';
+  if(top!==null)r.el.style.top=Math.max(34,Math.min(top,($('desktop').clientHeight||innerHeight)-44))+'px';
  }
  r.el.classList.toggle('is-max',saved.maximized===true);
  if(parked){parkChat(r);if(previous&&!previous.el.hidden&&windows.get(previous.id)===previous)selectedWindow=previous;syncChatVisibility()}
@@ -1219,31 +1220,36 @@ function showApp(id,initialState=null,passwordVerified=null){
  function moveDesktopWindow(x,y){
   const rect=shell.getBoundingClientRect(),width=w.offsetWidth,height=w.offsetHeight;
   const menu=shell.querySelector('.topbar'),menuHeight=menu?.getBoundingClientRect().height||34;
-  const grip=Math.min(width,Math.max(160,Math.min(260,width*.65)));
   const top=Math.max(0,Math.min(menuHeight,rect.height-44));
-  w.style.left=bounded(x-rect.left-drag.x,grip-width,rect.width-grip)+'px';
+  w.style.left=desktopWindowLeft(x-rect.left-drag.x,width,rect.width)+'px';
   w.style.top=bounded(y-rect.top-drag.y,top,Math.max(top,rect.height-44))+'px';
  }
  bar.addEventListener('pointerdown',e=>{
   if(e.button!==0||e.target.closest('button,a,input,select,textarea')||touchOS()||innerWidth<=620||w.hidden||workspaceLock?.isLocked())return;
-  const current=w.getBoundingClientRect(),bounds=shell.getBoundingClientRect();
-  let offsetX=e.clientX-current.left,offsetY=e.clientY-current.top;
-  if(w.classList.contains('is-max')||w.classList.contains('bc-os-fullscreen')){
-   const fraction=bounded(offsetX/Math.max(current.width,1),.06,.94);
-   w.classList.remove('is-max','bc-os-fullscreen','bc-os-window-compact');
-   const width=Math.min(bounds.width,Math.max(300,Math.min(1040,Math.round(current.width*.8))));
-   const height=Math.min(bounds.height,Math.max(260,Math.min(740,Math.round(current.height*.82))));
-   w.style.width=width+'px';w.style.height=height+'px';
-   offsetX=Math.round(width*fraction);offsetY=bounded(offsetY,8,40);
-   syncFullscreenShell();
-  }
-  drag={id:e.pointerId,x:offsetX,y:offsetY};
-  w.classList.add('bc-window-dragging');dockReveal(false);
+  const current=w.getBoundingClientRect();
+  drag={id:e.pointerId,x:e.clientX-current.left,y:e.clientY-current.top,startX:e.clientX,startY:e.clientY,started:false};
   try{bar.setPointerCapture(e.pointerId)}catch(_){/* global listeners also cover capture failure */}
-  moveDesktopWindow(e.clientX,e.clientY);
   e.preventDefault();
  });
- const moveDrag=e=>{if(!drag||e.pointerId!==drag.id)return;if(w.hidden||!w.isConnected||touchOS()||workspaceLock?.isLocked()||e.buttons===0){finishDrag();return}moveDesktopWindow(e.clientX,e.clientY)};
+ const moveDrag=e=>{
+  if(!drag||e.pointerId!==drag.id)return;
+  if(w.hidden||!w.isConnected||touchOS()||workspaceLock?.isLocked()||e.buttons===0){finishDrag();return}
+  if(!drag.started){
+   if(Math.hypot(e.clientX-drag.startX,e.clientY-drag.startY)<5)return;
+   const current=w.getBoundingClientRect(),bounds=shell.getBoundingClientRect();
+   if(w.classList.contains('is-max')||w.classList.contains('bc-os-fullscreen')){
+    const fraction=bounded(drag.x/Math.max(current.width,1),.06,.94);
+    w.classList.remove('is-max','bc-os-fullscreen','bc-os-window-compact');
+    const width=Math.min(bounds.width,Math.max(300,Math.min(1040,Math.round(current.width*.8))));
+    const height=Math.min(bounds.height,Math.max(260,Math.min(740,Math.round(current.height*.82))));
+    w.style.width=width+'px';w.style.height=height+'px';
+    drag.x=Math.round(width*fraction);drag.y=bounded(drag.y,8,40);
+    syncFullscreenShell();
+   }
+   drag.started=true;w.classList.add('bc-window-dragging');dockReveal(false);
+  }
+  moveDesktopWindow(e.clientX,e.clientY);
+ };
  function finishDrag(e){
   if(!drag||(e?.pointerId!==undefined&&e.pointerId!==drag.id))return;
   const id=drag.id;drag=null;w.classList.remove('bc-window-dragging');
