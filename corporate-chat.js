@@ -306,7 +306,7 @@ smallWindow.addEventListener('change',()=>{
  syncChatLayout();
  document.querySelector('.chat').classList.toggle('bc-thread-active',compactChat&&!!peer);
  live.setThreadOpen(!!peer&&!mediaPanelMode);
- if(!compactChat&&ready&&!peer&&contacts.length)choose(contacts[0].user_id);
+ // Resizing the window must never select a contact or mark a thread read.
  applySidebarPreference();renderPeers();
 });
 const composerText=$('messageInput');
@@ -568,8 +568,10 @@ async function boot(){
   }
   if(contacts.length){
    const requested=embedParams.get('peer');
-   if(!compactChat||(requested&&contacts.some(x=>x.user_id===requested)))
-    choose(contacts.some(x=>x.user_id===requested)?requested:contacts[0].user_id);
+   // A normal launch always opens the inbox with no selected recipient.
+   // Only explicit, authorized conversation links may open a thread.
+   if(requested&&contacts.some(x=>x.user_id===requested))choose(requested);
+   else if(mediaPanelMode&&!requested)choose(contacts[0].user_id);
    if(mediaPanelMode==='share'&&canShowFullMedia())sharedMedia.openShare();
    else if(mediaPanelMode==='library'&&canShowFullMedia()){
     const batch=embedParams.get('batch');
@@ -697,6 +699,24 @@ function renderPeers(){
    if(!inboxEditing&&!inboxComposing){row.append(pinButton(c));button.addEventListener('contextmenu',event=>openPinMenu(event,c.user_id,button))}
    box.append(row);
  }
+}
+// Opening a normal desktop inbox again is safe only if no draft or
+// active send/edit/upload would be interrupted. A dedicated pop-out never resets.
+function returnToDesktopInbox(){
+ if(!ready||popout||mediaPanelMode||physicallySmallPhone||!peer)return false;
+ if(sendingMessage||messageMutationBusy||blockBusy||composerCompositionActive||$('messageInput').value.trim()||document.querySelector('[aria-busy=true],.is-uploading,[data-busy=true],dialog[open]'))return false;
+ const previous=peer.user_id;
+ live.setThreadOpen(false);live.onPeerChange(previous,null);
+ peer=null;blockGeneration++;blockKnown=false;chatBlocked=false;
+ closeMessageFinder();closeInfoMenu();popoutActions?.close();tubeCards.clear();pulseCards.clear();sharedMedia.onPeerChange(null);
+ document.querySelector('.chat').classList.remove('bc-thread-active');
+ $('peerName').textContent='Select a contact';$('peerDetail').textContent='Secure employee communication';
+ $('imessagePortrait').textContent='B';$('peerProfileLink').hidden=true;
+ popButton.hidden=true;popButton.disabled=true;
+ const box=$('messages');delete box.dataset.newest;delete box.dataset.readSignature;box.replaceChildren(text('p','empty','Select an authorized person to begin messaging.'));
+ firstLoad=true;applySidebarPreference();syncBlockControls();renderPeers();void refreshInboxSummaries();
+ if(window.parent!==window)window.parent.postMessage({type:'blackcell-chat-inbox-open'},location.origin);
+ return true;
 }
 function choose(userId){
  const selected=contacts.find(x=>x.user_id===userId);if(!selected||!ready||(popout&&userId!==popoutId))return;
@@ -832,6 +852,7 @@ window.addEventListener('message',event=>{
   if(event.data.visible===true&&ready&&peer)void loadMessages();
  }else if(event.data?.type==='blackcell-chat-shared-activity'&&employeeSession&&!sessionEnded){
   lastActivity=Date.now();
+ }else if(event.data?.type==='blackcell-chat-open-inbox'){returnToDesktopInbox();
  }else if(event.data?.type==='blackcell-select-peer'&&ready&&!popout){
   const id=event.data.peerId;
   if(typeof id==='string'&&contacts.some(x=>x.user_id===id))choose(id);
