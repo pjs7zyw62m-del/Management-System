@@ -1,5 +1,17 @@
 /* BLACKCELL Connect: direct WebRTC pilot. No media recording or media upload. */
 export const CONNECT_ICE=Object.freeze([{urls:'stun:stun.cloudflare.com:3478'}]);
+// Short-lived, pair-authorized TURN credentials only. Never cache or log them.
+export async function loadConnectIce(client,peer,timeout=10000){
+ if(!client?.functions?.invoke)return {iceServers:CONNECT_ICE,relay:false};
+ let timer;
+ try{
+  const result=await Promise.race([client.functions.invoke('blackcell-connect-turn',{body:{peer}}),new Promise(resolve=>{timer=setTimeout(()=>resolve(null),timeout)})]);
+  if(result?.error||result?.data?.ok!==true||!Array.isArray(result.data.iceServers))return {iceServers:CONNECT_ICE,relay:false};
+  const servers=result.data.iceServers.filter(s=>Array.isArray(s?.urls)&&s.urls.length&&s.urls.every(u=>typeof u==='string'&&/^(?:stun:stun\.cloudflare\.com:3478|turns?:turn\.cloudflare\.com:(?:3478|443|80|5349)\?transport=(?:udp|tcp))$/.test(u))).filter(s=>!s.urls.some(u=>u.startsWith('turn'))||(typeof s.username==='string'&&!!s.username&&typeof s.credential==='string'&&!!s.credential)).map(s=>({urls:s.urls,...(s.urls.some(u=>u.startsWith('turn'))?{username:s.username,credential:s.credential}:{})}));
+  if(!servers.some(s=>s.urls.some(u=>u.startsWith('turn'))))return {iceServers:CONNECT_ICE,relay:false};
+  return {iceServers:[...CONNECT_ICE,...servers.filter(s=>s.urls.some(u=>u.startsWith('turn')))],relay:true};
+ }catch(_){return {iceServers:CONNECT_ICE,relay:false}}finally{clearTimeout(timer)}
+}
 export function waitForIce(pc,timeout=8000){
  if(pc.iceGatheringState==='complete')return Promise.resolve();
  return new Promise(resolve=>{let timer;const done=()=>{clearTimeout(timer);pc.removeEventListener('icegatheringstatechange',change);resolve()};const change=()=>{if(pc.iceGatheringState==='complete')done()};pc.addEventListener('icegatheringstatechange',change);timer=setTimeout(done,timeout);change()});
@@ -34,12 +46,13 @@ const btn=(text,fn,cls='')=>{const e=el('button',cls,text);e.type='button';e.onc
 export function mountBlackcellConnect({client,account,allowed,host=document.body,notify=()=>{},ring=()=>{},ringback=()=>{}}){
  const device=crypto.randomUUID();
  let current=null,pc=null,local=null,remote=null,serial=0,working=false,polling=false,disposed=false,connectedAt=0,ringAt=0,failedAt=0,lastGood=0,lastPoll=0,facing='user',release=null,requested=null,collapsed=false,desktopAlert=null,alertedCall=null;
- const tonePlayer=createConnectTonePlayer({preferences:callSoundPreferences});let toneEpoch=0;
+ const tonePlayer=createConnectTonePlayer({preferences:callSoundPreferences});let toneEpoch=0,relayReady=false;
  const panel=el('section','bc-connect-panel');panel.hidden=true;panel.setAttribute('aria-label','BLACKCELL Connect');
  const header=el('header','bc-connect-header'),brand=el('strong','','BLACKCELL Connect'),minimize=btn('Minimize',()=>{collapsed=!collapsed;panel.classList.toggle('is-collapsed',collapsed);minimize.textContent=collapsed?'Expand':'Minimize'});
  header.append(brand,minimize);
  const name=el('h2','',''),state=el('p','bc-connect-state',''),duration=el('span','bc-connect-duration','');
  state.setAttribute('role','status');
+ const networkStatus=el('p','bc-connect-state','');networkStatus.hidden=true;
  const soundStatus=el('p','bc-connect-state',''),privacy=el('p','bc-connect-state','');soundStatus.setAttribute('role','status');privacy.hidden=true;soundStatus.hidden=true;
  const stage=el('div','bc-connect-stage'),remoteVideo=el('video','bc-connect-remote'),localVideo=el('video','bc-connect-local');
  for(const v of [remoteVideo,localVideo]){v.autoplay=true;v.playsInline=true;v.setAttribute('playsinline','')}
@@ -51,7 +64,7 @@ export function mountBlackcellConnect({client,account,allowed,host=document.body
  const flip=btn('Switch camera',()=>void switchCamera()),resume=btn('Enable call audio',()=>{void remoteVideo.play().catch(()=>{})});
  const enableAlerts=btn('Enable desktop call alerts',()=>{try{void window.Notification.requestPermission().then(()=>{paint();alertIncoming()}).catch(()=>{})}catch(_){}});
  const testSound=btn('Test call sound',()=>{const kind=current?.direction==='outgoing'?'ringback':'callring';void playCallTone(kind,true)});
- controls.append(start,accept,decline,mute,camera,flip,resume,testSound,enableAlerts,end);panel.append(header,name,state,soundStatus,privacy,duration,stage,controls);host.append(panel);
+ controls.append(start,accept,decline,mute,camera,flip,resume,testSound,enableAlerts,end);panel.append(header,name,state,soundStatus,networkStatus,privacy,duration,stage,controls);host.append(panel);
  const permitted=()=>!disposed&&!!account()&&allowed();
  const supported=()=>!!window.RTCPeerConnection&&!!navigator.mediaDevices?.getUserMedia;
  async function rpc(action,args={}){
@@ -101,7 +114,7 @@ export function mountBlackcellConnect({client,account,allowed,host=document.body
   return e?.message||'Calling is unavailable.';
  }
  function cleanup(){
-  closeAlert();stopCallTone();alertedCall=null;
+  closeAlert();stopCallTone();alertedCall=null;relayReady=false;networkStatus.hidden=true;networkStatus.textContent='';
   serial++;working=false;requested=null;current=null;connectedAt=0;ringAt=0;failedAt=0;lastGood=0;collapsed=false;panel.classList.remove('is-collapsed');minimize.textContent='Minimize';
   if(pc){pc.ontrack=null;pc.onconnectionstatechange=null;try{pc.close()}catch(_){}pc=null}
   for(const t of local?.getTracks()||[])t.stop();for(const t of remote?.getTracks()||[])t.stop();local=null;remote=null;
@@ -112,17 +125,21 @@ export function mountBlackcellConnect({client,account,allowed,host=document.body
   const id=current?.id;cleanup();if(id)try{await rpc(action,{p_call:id})}catch(_){}if(message)notify(message);
  }
  function hold(){if(!release)try{release=window.top.BLACKCELL_LIVE_UPDATE?.hold('BLACKCELL Connect call',window)}catch(_){}}
- async function setup(mode,token){
+ async function setup(mode,token,peer){
   if(!supported())throw Error('Calling is not supported in this browser.');
   const stream=await navigator.mediaDevices.getUserMedia({audio:true,video:mode==='video'?{facingMode:{ideal:facing},width:{ideal:1280},height:{ideal:720}}:false});
   if(token!==serial||!permitted()){stream.getTracks().forEach(t=>t.stop());throw Error('Call cancelled.')}
   local=stream;localVideo.srcObject=stream;remote=new MediaStream();remoteVideo.srcObject=remote;
-  const conn=new RTCPeerConnection({iceServers:CONNECT_ICE});pc=conn;
+  state.textContent='Preparing secure call connection…';
+  const config=await loadConnectIce(client(),peer);
+  if(token!==serial||!permitted())throw Error('Call cancelled.');
+  relayReady=config.relay;networkStatus.hidden=false;networkStatus.textContent=relayReady?'Network: direct connection or secure relay available':'Network: direct connection only · relay unavailable';
+  const conn=new RTCPeerConnection({iceServers:config.iceServers});pc=conn;
   conn.ontrack=e=>{if(conn!==pc)return;for(const t of e.streams[0]?.getTracks()||[e.track])if(!remote.getTracks().some(x=>x.id===t.id))remote.addTrack(t);void remoteVideo.play().catch(()=>{}).finally(paint)};
   conn.onconnectionstatechange=()=>{
    if(conn!==pc)return;
    if(conn.connectionState==='connected'){connectedAt ||= Date.now();failedAt=0;state.textContent='Connected';paint()}
-   if(['failed','closed'].includes(conn.connectionState))void finish('end','Call connection failed. This network may require a TURN relay.');
+   if(['failed','closed'].includes(conn.connectionState))void finish('end',relayReady?'Call connection failed even with relay available. Try Wi-Fi or another network.':'Call connection failed. The relay service is unavailable.');
    else if(conn.connectionState==='disconnected'){failedAt ||= Date.now();state.textContent='Reconnecting…'}
   };
   for(const t of stream.getTracks())conn.addTrack(t,stream);
@@ -132,8 +149,8 @@ export function mountBlackcellConnect({client,account,allowed,host=document.body
   if(!requested||working||!permitted())return;
   const request=requested,token=++serial;working=true;stopCallTone();hold();state.textContent='Requesting microphone'+(request.mode==='video'?' and camera':'')+'…';paint();
   try{
-   const conn=await setup(request.mode,token);
-   await conn.setLocalDescription(await conn.createOffer());await waitForIce(conn);
+   const conn=await setup(request.mode,token,request.peer);
+   await conn.setLocalDescription(await conn.createOffer());await waitForIce(conn,relayReady?12000:8000);
    if(token!==serial||!permitted()){if(token===serial)cleanup();return}
    const row=await rpc('start',{p_peer:request.peer,p_mode:request.mode,p_sdp:conn.localDescription.sdp});
    if(token!==serial||!permitted()){if(row?.id)void rpc('end',{p_call:row.id}).catch(()=>{});return}
@@ -145,9 +162,9 @@ export function mountBlackcellConnect({client,account,allowed,host=document.body
   if(!current||current.direction!=='incoming'||current.state!=='ringing'||working||!permitted())return;
   const offer=current,token=++serial;working=true;closeAlert();stopCallTone();hold();state.textContent='Requesting microphone'+(offer.mode==='video'?' and camera':'')+'…';paint();
   try{
-   const conn=await setup(offer.mode,token);
+   const conn=await setup(offer.mode,token,offer.peer);
    await conn.setRemoteDescription({type:'offer',sdp:offer.offer});
-   await conn.setLocalDescription(await conn.createAnswer());await waitForIce(conn);
+   await conn.setLocalDescription(await conn.createAnswer());await waitForIce(conn,relayReady?12000:8000);
    if(token!==serial||!permitted()){if(token===serial)cleanup();return}
    const row=await rpc('answer',{p_call:offer.id,p_sdp:conn.localDescription.sdp});
    if(token!==serial||!permitted()){if(row?.id)void rpc('end',{p_call:row.id}).catch(()=>{});return}
@@ -183,7 +200,7 @@ export function mountBlackcellConnect({client,account,allowed,host=document.body
     if(row.state==='accepted'&&row.direction==='outgoing'&&pc&&!pc.remoteDescription&&row.answer){await pc.setRemoteDescription({type:'answer',sdp:row.answer});if(token!==serial)return;if(!connectedAt){failedAt=Date.now();state.textContent='Connecting…'}}
    }
    if(current?.state==='ringing')ringPending();else{closeAlert();stopCallTone()}
-   if(failedAt&&Date.now()-failedAt>30000&&pc?.connectionState!=='connected'){void finish('end','Direct call could not connect. A TURN relay may be required.');return}
+   if(failedAt&&Date.now()-failedAt>30000&&pc?.connectionState!=='connected'){void finish('end',relayReady?'Call timed out even with relay available. Try another network.':'Direct call timed out. The relay service is unavailable.');return}
    paint();
   }catch(e){if(token===serial&&current&&(!lastGood||Date.now()-lastGood>20000))void finish('end','Call authorization or connection lost.')}
   finally{polling=false}
