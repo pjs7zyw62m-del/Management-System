@@ -12,6 +12,7 @@ Deno.serve(async(req:Request)=>{
  const key=Deno.env.get("BLACKCELL_TURN_KEY_ID")?.trim(),token=Deno.env.get("BLACKCELL_TURN_API_TOKEN")?.trim();
  if(!key||!token)return send(503,{ok:false,code:"RELAY_NOT_CONFIGURED"});
  try{
+  if(Number(req.headers.get('content-length')||0)>512)return send(400,{ok:false,code:'INVALID_REQUEST'});
   const body=await req.text();if(body.length>512)return send(400,{ok:false,code:"INVALID_REQUEST"});
   const peer=JSON.parse(body)?.peer;if(typeof peer!=="string"||!uuid.test(peer))return send(400,{ok:false,code:"INVALID_PEER"});
   const jwt=auth.replace(/^Bearer\s+/i,""),db=createClient(Deno.env.get("SUPABASE_URL")!,Deno.env.get("SUPABASE_ANON_KEY")!,{global:{headers:{Authorization:"Bearer "+jwt}},auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
