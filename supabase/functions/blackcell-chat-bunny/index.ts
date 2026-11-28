@@ -7,7 +7,7 @@ const zone="https://la.storage.bunnycdn.com/blackcell-private-chat/";
 const prefix="blackcell-private-chat/v1/";
 const max=50*1024*1024;
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const types:Record<string,string>={"image/jpeg":"jpg","image/png":"png","image/webp":"webp","image/gif":"gif","image/heic":"heic","image/heif":"heif","image/heic-sequence":"heics","image/heif-sequence":"heifs","image/avif":"avif","video/mp4":"mp4","video/webm":"webm","video/quicktime":"mov","video/x-m4v":"m4v"};
+const types:Record<string,string>={"image/jpeg":"jpg","image/png":"png","image/webp":"webp","image/gif":"gif","image/heic":"heic","image/heif":"heif","image/heic-sequence":"heics","image/heif-sequence":"heifs","image/avif":"avif","video/mp4":"mp4","video/webm":"webm","video/quicktime":"mov","video/x-m4v":"m4v","audio/webm":"webm","audio/mp4":"m4a","audio/ogg":"ogg"};
 const allowed=new Set(["https://blackcellcorp.com","https://www.blackcellcorp.com","https://pjs7zyw62m-del.github.io"]);
 const enc=new TextEncoder();
 const hex=(a:ArrayBuffer)=>Array.from(new Uint8Array(a),x=>x.toString(16).padStart(2,"0")).join("");
@@ -74,12 +74,12 @@ Deno.serve(async(req:Request)=>{
   if(!uuid.test(batchId)||!Object.hasOwn(types,mime)||!filename||!Number.isInteger(order)||order<0||order>1000000)return send(400,{ok:false,code:"INVALID_MEDIA"});
   const {data:batch,error:be}=await db.from("corp_chat_media_batches").select("id,sender_id,recipient_id").eq("id",batchId).maybeSingle();
   if(be||!batch||batch.sender_id!==uid||uid===batch.recipient_id)return send(403,{ok:false,code:"BATCH_DENIED"});
-  let bytes;try{bytes=await bounded(req,max)}catch{return send(413,{ok:false,code:"INVALID_FILE_SIZE"})}
+  let bytes;try{bytes=await bounded(req,mime.startsWith("audio/")?10*1024*1024:max)}catch{return send(413,{ok:false,code:"INVALID_FILE_SIZE"})}
   const id=crypto.randomUUID(),path=keyFor(uid,batch.recipient_id,batch.id,id,mime),checksum=await hash(bytes);
   const put=await fetch(zone+path,{method:"PUT",headers:{AccessKey:storageKey,"Content-Type":mime,Checksum:checksum.toUpperCase()},body:bytes,redirect:"error",signal:AbortSignal.timeout(90000)});
   if(put.status!==201)return send(502,{ok:false,code:"BUNNY_UPLOAD_FAILED"});
   // Storage API checksum verification on PUT; never store the file bytes in Supabase Storage.
-  const record={id,batch_id:batch.id,sender_id:uid,recipient_id:batch.recipient_id,kind:mime.startsWith("image/")?"photo":"video",filename,mime_type:mime,bytes:bytes.byteLength,storage_path:path,item_order:order};
+  const record={id,batch_id:batch.id,sender_id:uid,recipient_id:batch.recipient_id,kind:mime.startsWith("image/")?"photo":mime.startsWith("audio/")?"audio":"video",filename,mime_type:mime,bytes:bytes.byteLength,storage_path:path,item_order:order};
   const indexed=await db.from("corp_chat_media_items").insert(record);
   if(indexed.error){
    // Never delete after an ambiguous database error (the insert may have committed).

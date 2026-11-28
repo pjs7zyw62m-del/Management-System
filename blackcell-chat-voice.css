@@ -1,0 +1,13 @@
+/* Voice recording and dictation: compact, touch-friendly controls. */
+body.bc-chat .composer .bc-voice-button{flex:0 0 32px;width:32px;height:32px;min-width:0;min-height:32px;display:grid;place-items:center;padding:0!important;border:1px solid #ffffff1f;border-radius:50%;background:#28282e;color:#64aaff;font:600 15px/1 system-ui;letter-spacing:0}
+body.bc-chat .composer .bc-voice-button:disabled{opacity:.38}
+.bc-voice-controls[hidden],.bc-voice-preview[hidden],.bc-voice-bubble button[hidden]{display:none!important}
+.bc-voice-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;background:#19191e;border-top:1px solid #ffffff19;color:#f4f4f6}
+.bc-voice-note{flex:1 1 100%;margin:0;font:600 12px/1.4 system-ui;color:#c5c5cf}
+.bc-voice-controls .bc-voice-button,.bc-voice-bubble .bc-voice-button{border:1px solid #ffffff20;border-radius:12px;padding:8px 12px;background:#292930;color:#fff;font:600 12px system-ui;cursor:pointer}
+.bc-voice-controls .bc-voice-button:last-child{background:#0a84ff;border-color:transparent}
+.bc-voice-controls button:disabled{opacity:.4}
+.bc-voice-preview,.bc-voice-playback{width:100%;max-width:280px;height:40px;color-scheme:dark}
+.bc-voice-bubble{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:min(175px,100%);max-width:100%}
+.bc-voice-bubble strong{font-size:12px}
+@media(max-width:420px){body.bc-chat .composer{gap:5px!important}body.bc-chat .composer .bc-voice-button{width:30px;height:30px;flex-basis:30px}}
