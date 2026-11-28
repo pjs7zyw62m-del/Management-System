@@ -1,0 +1,21 @@
+/* BLACKCELL iMessage groups: responsive in-app conversation workspace. */
+#bcGroupInbox[hidden],#bcGroupPanel[hidden],#bcGroupPanel [hidden]{display:none!important}
+#bcGroupInbox{margin:5px 8px 8px;min-width:0}
+.bc-group-new,.bc-group-inbox-row{width:100%;border:0;color:#f5f5f7;background:transparent;border-radius:10px;text-align:left;padding:10px 9px;font:500 13px system-ui;cursor:pointer}
+.bc-group-new{color:#55a8ff;border:1px solid #ffffff15;background:#1b1b20;margin-bottom:4px}
+.bc-group-inbox-row{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:2px 8px}
+.bc-group-inbox-row:hover{background:#ffffff0b}.bc-group-avatar{grid-row:span 2;display:grid;place-items:center;border-radius:50%;width:34px;height:34px;background:#54303e;color:#fff}.bc-group-inbox-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:650}.bc-group-inbox-row small{grid-column:2;color:#aaa;font-size:10px}.bc-group-count{grid-column:3;grid-row:1/3;background:#087df4;color:#fff;border-radius:99px;padding:3px 7px;font-size:11px}
+#bcGroupPanel{position:fixed;inset:0;z-index:9000;background:#08080a;color:#f4f4f7;display:flex;flex-direction:column;min-height:0;overflow:hidden;font:14px system-ui;overscroll-behavior:contain}
+.bc-group-header{flex:none;display:grid;grid-template-columns:minmax(75px,1fr) minmax(0,2fr) minmax(55px,1fr);align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid #29292e;background:#17171b}.bc-group-header strong{text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bc-group-header button:last-child{justify-self:end}
+.bc-group-button,.bc-group-primary,.bc-group-danger{border:1px solid #ffffff1a;border-radius:9px;background:#242429;color:#65b1ff;font:600 12px system-ui;padding:9px 12px;cursor:pointer}.bc-group-primary{background:#087df4;color:white;min-height:42px}.bc-group-danger{color:#ff636e}.bc-group-button:disabled,.bc-group-primary:disabled{opacity:.45}
+#bcGroupStatus{font-size:12px;color:#e2a6a9;padding:0 15px;flex:none}#bcGroupStatus:not(:empty){padding-block:8px}
+#bcGroupBody{flex:1;min-height:0;overflow:auto;overflow-x:hidden;scrollbar-width:none;overscroll-behavior:contain;padding:16px;display:flex;flex-direction:column;gap:10px;align-items:stretch}#bcGroupBody::-webkit-scrollbar{display:none}
+.bc-group-help{color:#a6a6ae;font-size:12px;line-height:1.5;margin:6px 0}.bc-group-field{width:100%;min-width:0;padding:12px;color:#fff;background:#1c1c22;border:1px solid #ffffff24;border-radius:10px;font:16px system-ui}.bc-group-contact{display:flex;align-items:center;gap:10px;min-height:44px;padding:9px 2px;border-bottom:1px solid #ffffff10}.bc-group-contact span{flex:1;min-width:0;overflow-wrap:anywhere}.bc-group-contact small{font-size:10px;color:#aaa}.bc-group-contact input{accent-color:#087df4;width:18px;height:18px}
+.bc-group-message{max-width:min(78%,680px);align-self:flex-start;display:flex;flex-direction:column;gap:3px;flex:none;min-width:0}.bc-group-message.mine{align-self:flex-end;align-items:flex-end}.bc-group-sender,.bc-group-time{font-size:10px;color:#a2a2ae;overflow-wrap:anywhere;max-width:100%}.bc-group-bubble{background:#28282e;border-radius:17px 17px 17px 5px;padding:10px 13px;white-space:pre-wrap;overflow-wrap:anywhere;max-width:100%;line-height:1.4}.mine .bc-group-bubble{background:#087df4;border-radius:17px 17px 5px 17px}.bc-group-time{padding:0 4px}
+#bcGroupTyping{flex:none;color:#a8a8b0;font-size:11px;padding:0 16px}#bcGroupTyping:not(:empty){padding-block:6px}
+#bcGroupSend{display:flex;align-items:center;gap:8px;padding:9px 12px max(9px,env(safe-area-inset-bottom));background:#111115;border-top:1px solid #29292e;flex:none}
+#bcGroupInput{flex:1;min-width:0;resize:none;min-height:40px;max-height:100px;background:#1f1f24;border:1px solid #ffffff24;border-radius:20px;padding:10px 13px;color:#fff;font:16px system-ui;direction:ltr;text-align:left}
+#bcGroupSendButton{width:36px;height:36px;border:0;border-radius:50%;color:#fff;background:#087df4;font:700 22px system-ui;flex:none}#bcGroupSendButton:disabled{opacity:.5}
+@media(max-width:560px){#bcGroupBody{padding:10px}.bc-group-header{padding:10px}.bc-group-message{max-width:85%}}
+
+#bcGroupRows{max-height:min(32dvh,260px);overflow:auto;scrollbar-width:none}#bcGroupRows::-webkit-scrollbar{display:none}#bcGroupInbox{flex:none}

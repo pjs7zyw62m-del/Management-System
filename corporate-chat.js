@@ -1,3 +1,4 @@
+import {mountChatGroups} from './blackcell-chat-groups.js?v=1';
 import {createChatScroll} from './blackcell-chat-scroll.js?v=1';
 import {mountBlackcellConnect} from './blackcell-connect.js?v=turn1';
 import {createFloatingMessageSound} from './blackcell-floating-message-sound.js?v=2';
@@ -47,7 +48,7 @@ function openChatPopout(){
  const url=new URL(location.pathname,location.origin);url.searchParams.set('popout','1');url.searchParams.set('peer',peer.user_id);url.searchParams.set('v','20261115-contact-axis1');window.open(url.href,'_blank','noopener,noreferrer,width=440,height=720');
 }
 popButton?.addEventListener('click',openChatPopout);
-window.BLACKCELL_OS_BEFORE_CLOSE=()=>({ok:true,retain:!!voice?.busy()||!!$('messageInput').value.trim()||!!document.querySelector('[aria-busy=true],.is-uploading,[data-busy=true]')});
+window.BLACKCELL_OS_BEFORE_CLOSE=()=>({ok:true,retain:!!groups?.busy()||!!voice?.busy()||!!$('messageInput').value.trim()||!!document.querySelector('[aria-busy=true],.is-uploading,[data-busy=true]')});
 let inboxSummaries=new Map(),inboxUnread=new Set(),inboxUnreadCounts=new Map(),inboxFilter='all',inboxEditing=false,inboxComposing=false,inboxRefreshing=false,inboxSelection=new Set(),inboxMarking=false,inboxUnreadAvailable=false;
 let sidebarClosed=false,inboxPins=[],pinMenuId=null;
 const inboxPinKey=()=>self?'bc.imessage.pins.v1:'+self:null;
@@ -121,7 +122,7 @@ let chatVerificationPaused=false,chatVerificationChecking=false;
 const IDLE_LIMIT_MS=60*60*1000;
 async function endChatAccess(reason){
  if(sessionEnded)return;
- sessionEnded=true;ready=false;standaloneConnect?.stop();voice?.pause();tubeCards.clear();pulseCards.clear();employeeSession=false;inboxPins=[];closePinMenu();syncInboxControls();$('inboxRecent').hidden=true;
+ sessionEnded=true;ready=false;groups?.dispose();standaloneConnect?.stop();voice?.pause();tubeCards.clear();pulseCards.clear();employeeSession=false;inboxPins=[];closePinMenu();syncInboxControls();$('inboxRecent').hidden=true;
  $('messageInput').disabled=true;$('sendButton').disabled=true;
  status(reason);
  live.dispose();
@@ -199,6 +200,7 @@ const live=setupCorporateChatLive({
  client,context:()=>({self,peer,ready}),
  typingLabel:$('typingIndicator'),typingName:$('typingName')
 });
+const groups=(!popout&&!mediaPanelMode)?mountChatGroups({client,context:()=>({ready,self,search:$('peerSearch').value,filter:inboxComposing?'all':inboxFilter,editing:inboxEditing}),onOpen:()=>{live.setThreadOpen(false);voice?.pause();sharedMedia.closeMediaTray()},onClose:()=>{live.setThreadOpen(!!peer&&!mediaPanelMode&&(!compactChat||document.querySelector('.chat').classList.contains('bc-thread-active')));if(peer)void loadMessages()}}):null;
 const mediaToggle=$('mediaToggleButton');
 const canShowFullMedia=()=>window.BlackcellChatMedia?.enabled()===true;
 mediaToggle.hidden=false;mediaToggle.title='Attachments';
@@ -349,7 +351,7 @@ smallWindow.addEventListener('change',()=>{
  const next=isCompact();if(next===compactChat)return;compactChat=next;
  syncChatLayout();
  document.querySelector('.chat').classList.toggle('bc-thread-active',compactChat&&!!peer);
- live.setThreadOpen(!!peer&&!mediaPanelMode);
+ live.setThreadOpen(!!peer&&!mediaPanelMode&&!groups?.isOpen());
  // Resizing the window must never select a contact or mark a thread read.
  applySidebarPreference();renderPeers();
 });
@@ -587,7 +589,7 @@ async function boot(){
   if(data?.ok!==true||!Array.isArray(data.peers)){
    showInboxStartupProblem('The secure contact service did not authorize this session. Return to BLACKCELL Access to verify it.',{link:m.role==='owner'?'dashboard.html':'employee.html'});return;
   }
-  contacts=data.peers;ready=true;inboxPins=readInboxPins();
+  contacts=data.peers;ready=true;inboxPins=readInboxPins();void groups?.refresh();
   clearTimeout(bootRetryTimer);bootRetryTimer=null;
   $('chatStartupRecovery').hidden=true;
   status('');
@@ -726,7 +728,7 @@ function renderPinnedConversations(){
  return true;
 }
 function renderPeers(){
- const box=$('peers');box.replaceChildren();syncInboxControls();const pinsVisible=renderPinnedConversations();
+ const box=$('peers');box.replaceChildren();syncInboxControls();groups?.render();const pinsVisible=renderPinnedConversations();
  const query=$('peerSearch').value.trim().toLowerCase();
  // Every contact is a server-authorized known sender. Unknown external senders are not admitted.
  const visible=contacts.filter(c=>(String(c.display_name||'')+' '+String(c.role||'')).toLowerCase().includes(query))
@@ -761,7 +763,7 @@ function renderPeers(){
 // Opening a normal desktop inbox again is safe only if no draft or
 // active send/edit/upload would be interrupted. A dedicated pop-out never resets.
 function returnToDesktopInbox(){
- if(!ready||popout||mediaPanelMode||physicallySmallPhone||!peer)return false;
+ if(!ready||popout||mediaPanelMode||physicallySmallPhone||!peer||groups?.isOpen())return false;
  if(sendingMessage||messageMutationBusy||blockBusy||composerCompositionActive||$('messageInput').value.trim()||document.querySelector('[aria-busy=true],.is-uploading,[data-busy=true],dialog[open],.chat.media-open')||Array.from(document.querySelectorAll('input[type=file]')).some(input=>input.files?.length))return false;
  const previous=peer.user_id;
  live.setThreadOpen(false);live.onPeerChange(previous,null);
@@ -947,7 +949,7 @@ setInterval(()=>{if(chatVerificationPaused&&!document.hidden)void reverifyChatOn
 window.addEventListener('message',event=>{
  if(event.origin!==location.origin||event.source!==window.parent)return;
  if(event.data?.type==='blackcell-chat-visibility'){
-  live.setVisible(event.data.visible===true);if(event.data.visible!==true){sharedMedia.pause();voice?.pause();tubeCards.stopActive();pulseCards.stopActive()}
+  groups?.setVisible(event.data.visible===true);live.setVisible(event.data.visible===true);if(event.data.visible!==true){sharedMedia.pause();voice?.pause();tubeCards.stopActive();pulseCards.stopActive()}
   if(event.data.visible===true&&ready&&peer){chatScroll.schedule();void loadMessages();}
  }else if(event.data?.type==='blackcell-chat-shared-activity'&&employeeSession&&!sessionEnded){
   lastActivity=Date.now();
