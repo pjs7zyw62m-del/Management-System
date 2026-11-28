@@ -1,6 +1,6 @@
 import {mountBlackcellConnect} from './blackcell-connect.js?v=3';
 import {createFloatingMessageSound} from './blackcell-floating-message-sound.js?v=2';
-import {mountChatVoice,VOICE_BODY} from './blackcell-chat-voice.js?v=1';
+import {mountChatVoice,VOICE_BODY} from './blackcell-chat-voice.js?v=2';
 import {mountPopoutActions} from './corporate-chat-popout-actions.js?v=20261128-attached-reactions2';
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
 import {setupCorporateMedia} from './corporate-chat-media.js?v=20261128-camera1';
