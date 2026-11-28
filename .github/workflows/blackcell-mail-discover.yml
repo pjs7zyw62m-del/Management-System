@@ -1,0 +1,19 @@
+name: BLACKCELL Mail Discover
+on:
+  pull_request:
+    paths:
+      - 'blackcell-app-store.js'
+      - 'blackcell-os.js'
+      - 'tests/blackcell-mail-discover.test.mjs'
+      - '.github/workflows/blackcell-mail-discover.yml'
+permissions:
+  contents: read
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --check blackcell-app-store.js && node --test tests/blackcell-mail-discover.test.mjs
