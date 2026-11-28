@@ -70,11 +70,34 @@ const TONES=Object.freeze({
  lock:[[392,0,.11,.45],[261.63,.07,.16,.65]],
  unlock:[[329.63,0,.12,.44],[523.25,.065,.17,.55]],
  notice:[[659.25,0,.12,.42],[880,.085,.17,.35]],
- test:[[523.25,0,.12,.52],[659.25,.075,.17,.48]]
+ test:[[523.25,0,.12,.52],[659.25,.075,.17,.48]],
+ crystal:[[1046.5,0,.18,.45],[1318.51,.06,.20,.38],[1567.98,.12,.24,.25]],
+ pulse:[[220,0,.14,.70],[330,.15,.16,.58],[440,.31,.24,.44]],
+ relay:[[440,0,.065,.55],[880,.085,.12,.4],[660,.18,.18,.45]],
+ signal:[[622.25,0,.10,.55],[466.16,.12,.22,.48]],
+ eclipse:[[130.81,0,.65,.55],[196,.07,.62,.5],[261.63,.16,.5,.35],[523.25,.26,.4,.22]],
+ success:[[392,0,.09,.45],[523.25,.075,.13,.5],[783.99,.16,.24,.42]],
+ warning:[[349.23,0,.17,.5],[311.13,.21,.24,.48]],
+ message:[[784,0,.085,.42],[587.33,.08,.16,.55]]
 });
 // Independent HTML media output: generated PCM WAV, no network download.
+const VOICE_CLIPS=Object.freeze({
+ security:'blackcell-security-announcement.mp3',
+ welcome:'blackcell-welcome-david2.mp3',
+ access:'blackcell-access-granted-david.mp3?v=20261125-approved-audio2',
+ initialize:'blackcell-os-launch-david.mp3?v=20261125-os-launch1'
+});
+const SOUND_LIBRARY=Object.freeze([
+ ['startup','Signature startup','System'],['open','Open application','System'],['close','Close application','System'],
+ ['minimize','Minimize window','System'],['expand','Maximize window','System'],['lock','Lock screen','System'],
+ ['unlock','Unlock workspace','System'],['notice','System notification','System'],['test','Classic sample','System'],
+ ['crystal','Crystal','New tones'],['pulse','Pulse','New tones'],['relay','Relay','New tones'],['signal','Signal','New tones'],
+ ['eclipse','Eclipse','New tones'],['success','Operation complete','New tones'],['warning','Attention','New tones'],['message','Message arrival','New tones'],
+ ['security','Restricted website announcement','Voice recordings'],['welcome','Welcome to BLACKCELL','Voice recordings'],
+ ['access','Identity verified / access granted','Voice recordings'],['initialize','BLACKCELL OS initialized','Voice recordings']
+].map(([id,label,group])=>Object.freeze({id,label,group})));
 const waveCache=new Map();
-let sampleAudio=null,sampleFlight=null,mediaOutput=false;
+let sampleAudio=null,sampleFlight=null,sampleFinish=null,mediaOutput=false;
 function waveURL(name){
  const key=name+':'+soundPref.volume;
  if(waveCache.has(key))return waveCache.get(key);
@@ -96,35 +119,37 @@ function waveURL(name){
 }
 function clearWaves(){for(const url of waveCache.values())URL.revokeObjectURL(url);waveCache.clear()}
 function mediaTone(name){
- if(!audible()||!TONES[name])return Promise.resolve({ok:false,reason:'muted'});
+ if(!audible()||(!Object.hasOwn(TONES,name)&&!Object.hasOwn(VOICE_CLIPS,name)))return Promise.resolve({ok:false,reason:'muted'});
  if(sampleFlight)return Promise.resolve({ok:false,reason:'busy'});
  try{
   sampleAudio ||= new Audio();
   const player=sampleAudio;
-  player.pause();player.src=waveURL(name);player.muted=false;player.volume=1;
+  const voice=Object.hasOwn(VOICE_CLIPS,name);
+  player.pause();player.src=voice?VOICE_CLIPS[name]:waveURL(name);player.muted=false;player.volume=voice?soundPref.volume:1;
   let finish;
   const result=new Promise(resolve=>{
    let done=false,timer;
    const ended=()=>finish({ok:true,output:'media'});
    const error=()=>finish({ok:false,reason:'media-error'});
-   finish=value=>{if(done)return;done=true;clearTimeout(timer);player.removeEventListener('ended',ended);player.removeEventListener('error',error);sampleFlight=null;resolve(value)};
+   finish=value=>{if(done)return;done=true;clearTimeout(timer);player.removeEventListener('ended',ended);player.removeEventListener('error',error);sampleFlight=null;sampleFinish=null;resolve(value)};
    player.addEventListener('ended',ended);player.addEventListener('error',error);
-   timer=setTimeout(()=>{player.pause();finish({ok:false,reason:'timeout'})},3500);
+   timer=setTimeout(()=>{player.pause();finish({ok:false,reason:'timeout'})},voice?30000:3500);
   });
-  sampleFlight=result;
+  sampleFlight=result;sampleFinish=finish;
   // Invoke play directly in the trusted click, before any await.
   try{Promise.resolve(player.play()).catch(e=>finish({ok:false,reason:e?.name==='NotAllowedError'?'blocked':'media-error'}))}
   catch(_){finish({ok:false,reason:'media-error'})}
   return result;
  }catch(_){return Promise.resolve({ok:false,reason:'media-error'})}
 }
+function stopSample(){sampleAudio?.pause();sampleFinish?.({ok:false,reason:'stopped'})}
 const available=()=>Boolean(window.AudioContext||window.webkitAudioContext||typeof Audio==='function');
 function voicePlaying(){
  return !audio.paused&&!audio.ended;
 }
 function audible(){return !disposed&&!document.hidden&&soundPref.enabled&&soundPref.volume>0}
 function renderTone(name){
- if(!audible()||!TONES[name]||soundContext?.state!=='running'||voicePlaying())return false;
+ if(!audible()||!TONES[name]||soundContext?.state!=='running'||voicePlaying()||sampleFlight)return false;
  const now=soundContext.currentTime;
  if(now-lastSound<.13)return false;
  lastSound=now;
@@ -167,7 +192,7 @@ window.addEventListener('blackcell:desktop-ready',()=>{
 });
 audio.addEventListener('ended',flushStartup);
 function playSystemSound(name){
- if(!audible()||!TONES[name]||voicePlaying())return false;
+ if(!audible()||!TONES[name]||voicePlaying()||sampleFlight)return false;
  if(mediaOutput){void mediaTone(name);return true}
  if(startupPending){flushStartup();if(!startupPending)return false}
  return renderTone(name);
@@ -175,7 +200,7 @@ function playSystemSound(name){
 function setSoundPreference(next){
  if(typeof next?.enabled==='boolean')soundPref.enabled=next.enabled;
  if(Number.isFinite(next?.volume)&&soundPref.volume!==Math.max(0,Math.min(1,next.volume))){soundPref.volume=Math.max(0,Math.min(1,next.volume));clearWaves()}
- if(!soundPref.enabled||soundPref.volume===0)sampleAudio?.pause();
+ if(!soundPref.enabled||soundPref.volume===0)stopSample();
  if(!soundPref.enabled)startupPending=false;
  try{localStorage.setItem(SOUND_PREF,JSON.stringify(soundPref))}catch(_){}
  return {...soundPref};
@@ -184,17 +209,20 @@ window.BLACKCELL_SYSTEM_SOUNDS=Object.freeze({
  preferences:()=>({...soundPref,available:available()}),
  setPreference:setSoundPreference,
  play:playSystemSound,
- preview:event=>{
+ library:()=>SOUND_LIBRARY.map(x=>({...x})),
+ stop:stopSample,
+ preview:(event,name='test')=>{
   if(!event?.isTrusted)return Promise.resolve({ok:false,reason:'gesture'});
   if(!audible())return Promise.resolve({ok:false,reason:'muted'});
   if(voicePlaying())return Promise.resolve({ok:false,reason:'announcement'});
-  startupPending=false;
-  return mediaTone('test').then(result=>{if(result.ok)mediaOutput=true;return result});
+  if(!SOUND_LIBRARY.some(x=>x.id===name))return Promise.resolve({ok:false,reason:'unknown'});
+  startupPending=false;stopSample();
+  return mediaTone(name).then(result=>{if(result.ok)mediaOutput=true;return result});
  }
 });
 window.addEventListener('pagehide',event=>{
  if(event.persisted)return;
- disposed=true;startupPending=false;sampleAudio?.pause();clearWaves();
+ disposed=true;startupPending=false;stopSample();clearWaves();
  try{void soundContext?.close().catch(()=>{})}catch(_){}
 });
 window.addEventListener('pagehide',stop);window.bcVerifiedOsLaunch={consume,run,isMobile};
