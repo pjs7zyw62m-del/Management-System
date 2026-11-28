@@ -637,7 +637,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
  let focusRequest=0,focusTotal=null;
  function focusQuery(c,batch){
   const p=c.peer.user_id,pair='and(sender_id.eq.'+c.self+',recipient_id.eq.'+p+'),and(sender_id.eq.'+p+',recipient_id.eq.'+c.self+')';
-  let q=client.from('corp_chat_media_items').select('id,batch_id,sender_id,recipient_id,kind,filename,mime_type,bytes,storage_path,item_order,created_at',{count:'exact'}).or(pair);
+  let q=client.from('corp_chat_media_items').select('id,batch_id,sender_id,recipient_id,kind,filename,mime_type,bytes,storage_path,item_order,created_at',{count:'exact'}).or(pair).neq('kind','audio');
   if(batch)q=q.eq('batch_id',batch).order('item_order',{ascending:true});else q=q.order('created_at',{ascending:false}).order('item_order',{ascending:true});
   return q.order('id',{ascending:true});
  }
@@ -748,7 +748,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   try{
    const c=context();if(!c?.ready||!c.self||!mobilePeer)return;
    const pair='and(sender_id.eq.'+c.self+',recipient_id.eq.'+mobilePeer+'),and(sender_id.eq.'+mobilePeer+',recipient_id.eq.'+c.self+')';
-   let q=client.from('corp_chat_media_items').select('id,kind,filename,storage_path,item_order',{count:'exact'}).or(pair);
+   let q=client.from('corp_chat_media_items').select('id,kind,filename,storage_path,item_order',{count:'exact'}).or(pair).neq('kind','audio');
    if(mobileBatch)q=q.eq('batch_id',mobileBatch).order('item_order',{ascending:true});else q=q.order('created_at',{ascending:false}).order('id',{ascending:false});
    const {data,error,count}=await q.range(mobileOffset,mobileOffset+99);
    if(error)throw error;
