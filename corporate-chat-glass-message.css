@@ -40,12 +40,12 @@ html body.bc-chat .chat #messages .bc-glass-message-meta>.message-receipt{displa
 html body.bc-chat .chat #messages .bc-glass-message-meta>.message-receipt:before{content:'·';color:#687281;margin-right:1px}
 html body.bc-chat .chat #messages .bc-glass-message-meta>.message-receipt.read .receipt-ticks{color:#54baff!important}
 
-/* Reactions sit inside the actual bubble, not the wider message row.
-   Reserve space for up to two participant badges so text never sits beneath them. */
-html body.bc-chat .chat #messages .message.bc-glass-message.bc-has-attached-reactions>.bubble{position:relative;--bc-reaction-inset:35px;padding-right:var(--bc-reaction-inset)!important;min-height:36px}
-html body.bc-chat .chat #messages .message.bc-glass-message.bc-has-attached-reactions>.bubble[data-reaction-count="2"]{--bc-reaction-inset:61px}
-html body.bc-chat .chat #messages .message.bc-glass-message.mine.bc-has-attached-reactions>.bubble{padding-left:var(--bc-reaction-inset)!important;padding-right:14px!important}
-html body.bc-chat .chat #messages .bubble>.bc-attached-reactions{position:absolute;top:3px;right:4px;z-index:1;display:flex;gap:2px;align-items:center;white-space:nowrap}
-html body.bc-chat .chat #messages .mine .bubble>.bc-attached-reactions{right:auto;left:4px}
-html body.bc-chat .chat #messages .bc-attached-reaction{display:grid;place-items:center;box-sizing:border-box;border:1px solid #ffffff35;border-radius:999px;background:#101b2e8c;color:#fff;font:14px/1 system-ui;width:24px;height:24px;padding:0;cursor:pointer;box-shadow:inset 0 1px 0 #ffffff15}
+/* Tapbacks overlap the top edge of the original bubble. Reserve a little
+   vertical space rather than widening every reacted-to message. */
+html body.bc-chat .chat #messages .message.bc-glass-message.bc-has-attached-reactions{padding-top:12px}
+html body.bc-chat .chat #messages .message.bc-glass-message.bc-has-attached-reactions>.bubble{position:relative;overflow:visible;min-width:45px;padding-top:16px!important}
+html body.bc-chat .chat #messages .message.bc-glass-message.bc-has-attached-reactions>.bubble[data-reaction-count="2"]{min-width:64px}
+html body.bc-chat .chat #messages .bubble>.bc-attached-reactions{position:absolute;top:-12px;right:5px;z-index:2;display:flex;gap:2px;align-items:center;white-space:nowrap}
+html body.bc-chat .chat #messages .mine .bubble>.bc-attached-reactions{right:auto;left:5px}
+html body.bc-chat .chat #messages .bc-attached-reaction{display:grid;place-items:center;box-sizing:border-box;border:1px solid #ffffff35;border-radius:999px;background:#202633;color:#fff;font:14px/1 system-ui;width:24px;height:24px;padding:0;cursor:pointer;box-shadow:0 2px 5px #0006,inset 0 1px 0 #ffffff15}
 html body.bc-chat .chat #messages .bc-attached-reaction:focus-visible{outline:2px solid #82caff;outline-offset:2px}
