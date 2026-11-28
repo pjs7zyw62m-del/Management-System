@@ -780,9 +780,24 @@ async function loadMessages(){
     bubble.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();reveal()}});
    }
    item.append(bubble);
-   if(!m.deleted_at&&!m.media_batch_id&&!tubeRef&&!pulseRef&&!mediaPanelMode)item.append(makeStarControl(m.id));
+   const plainText=!m.deleted_at&&!m.media_batch_id&&!tubeRef&&!pulseRef&&!mediaPanelMode;
+   if(plainText){
+    item.classList.add('bc-glass-message');
+    const controls=document.createElement('div');controls.className='bc-glass-message-actions';controls.setAttribute('role','group');controls.setAttribute('aria-label','Message actions');
+    if(popoutActions){
+     const react=text('button','bc-message-react','♡');react.type='button';react.title='Choose a reaction';react.setAttribute('aria-label',react.title);
+     react.addEventListener('click',e=>{e.stopPropagation();popoutActions.open(bubble,m,own)});controls.append(react);
+    }
+    controls.append(makeStarControl(m.id));
+    if(popoutActions){
+     const action=text('button','bc-message-options','⋯');action.type='button';action.title='More message actions';action.setAttribute('aria-label',action.title);
+     action.addEventListener('click',e=>{e.stopPropagation();popoutActions.open(bubble,m,own)});controls.append(action);
+    }
+    item.append(controls);
+   }else if(own&&!m.deleted_at&&!m.media_batch_id&&popoutActions){
+    const action=text('button','bc-message-options','⋯');action.type='button';action.title='Edit or delete this message';action.setAttribute('aria-label','Edit or delete this message');action.addEventListener('click',e=>{e.stopPropagation();popoutActions.open(bubble,m,true)});item.append(action);
+   }
    if(m.edited_at&&!m.deleted_at){const edited=text('span','bc-message-edited','Edited');edited.title='Edited '+new Date(m.edited_at).toLocaleString();item.append(edited)}
-   if(own&&!m.deleted_at&&!m.media_batch_id&&popoutActions){const action=text('button','bc-message-options','⋯');action.type='button';action.title='Edit or delete this message';action.setAttribute('aria-label','Edit or delete this message');action.addEventListener('click',e=>{e.stopPropagation();popoutActions.open(bubble,m,true)});item.append(action)}
    const t=document.createElement('time');
    t.dateTime=m.created_at;t.textContent=when.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
    t.title=when.toLocaleString();
@@ -790,7 +805,7 @@ async function loadMessages(){
    item.append(t);
    if(own&&!pairedAfter&&!m.deleted_at){
     const receipt=text('span','message-receipt'+(m.read_at?' read':''),'');
-    const tick=text('span','receipt-ticks',m.read_at?'✓✓':'✓');
+    const tick=text('span','receipt-ticks',m.read_at?(plainText?'✓':'✓✓'):'✓');
     tick.setAttribute('aria-hidden','true');
     const label=text('span','',m.read_at
       ?'Read '+new Date(m.read_at).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})
