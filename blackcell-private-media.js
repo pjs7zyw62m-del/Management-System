@@ -1,6 +1,6 @@
 /* Personal media only. Never writes to public/social storage. */
 export const PRIVATE_BUCKET='blackcell-os-files';
-import {createPrivateDrive,PRIVATE_FILE_LIMIT} from './blackcell-private-drive.js?v=20261122-missing-legacy-bucket1';
+import {createPrivateDrive,PRIVATE_FILE_LIMIT} from './blackcell-private-drive.js?v=20261128-folder-storage1';
 export {PRIVATE_FILE_LIMIT};
 export function privateUploadError(error){
  const raw=String(error?.message||error||'Upload failed.');
@@ -26,7 +26,7 @@ const make=(tag,cls,txt)=>{const n=document.createElement(tag);if(cls)n.classNam
 const button=(label,fn)=>{const n=make('button','bc-pm-button',label);n.type='button';n.onclick=fn;return n};
 function checked(r){if(r.error)throw Error(r.error.message);return r.data}
 export async function privateFiles(storage,uid,alive=()=>true){
- const queue=[uid],rows=[];let scanned=0,limited=false;
+ const queue=[uid+'/Photos'],rows=[];let scanned=0,limited=false;
  while(queue.length&&alive()){
   if(scanned++>=150||rows.length>=1000){limited=true;break}
   const prefix=queue.shift();
@@ -45,7 +45,7 @@ export function createPrivateViewer(host,storage,alive=()=>true,onDelete=null){
  function close(){generation++;if(overlay){for(const v of overlay.querySelectorAll('video')){v.pause();v.removeAttribute('src');v.load()}overlay.remove();overlay=null}if(url){URL.revokeObjectURL(url);url=null}}
  async function open(row){
   close();const seq=generation;overlay=make('div','bc-pm-viewer');const head=make('header','bc-pm-view-head'),label=make('strong','',row.name),body=make('div','bc-pm-view-body','Loading private media…');const actions=make('div','bc-pm-view-actions');if(onDelete){const remove=button('Delete',()=>{if(alive())onDelete(row)});remove.classList.add('bc-pm-danger');actions.append(remove)}actions.append(button('Close ×',close));head.append(label,actions);overlay.append(head,body);host.append(overlay);
-  try{const file=await getPrivateMedia(storage,row);if(seq!==generation||!alive())return;url=URL.createObjectURL(file);const video=file.type.startsWith('video/');const media=make(video?'video':'img');media.src=url;if(video){media.controls=true;media.playsInline=true;media.preload='metadata'}else media.alt=row.name;media.onerror=()=>{if(seq===generation)body.replaceChildren(make('p','','Preview unavailable for this format on your device. For photographs use BLACKCELL Photos; other files can be downloaded in Files.'))};body.replaceChildren(media)}
+  try{const file=await getPrivateMedia(storage,row);if(seq!==generation||!alive())return;url=URL.createObjectURL(file);const video=file.type.startsWith('video/');const media=make(video?'video':'img');media.src=url;if(video){media.controls=true;media.playsInline=true;media.preload='metadata'}else media.alt=row.name;media.onerror=()=>{if(seq===generation)body.replaceChildren(make('p','','Preview unavailable for this format on your device. Download the original from Files to open it in a compatible application.'))};body.replaceChildren(media)}
   catch(e){if(seq===generation&&alive())body.textContent='Unable to preview this file.'}
  }
  return {open,close};
