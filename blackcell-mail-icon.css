@@ -1,0 +1,10 @@
+/* Approved Mail artwork fills the icon tile, rather than appearing as a tiny glyph. */
+.app[data-app="mail"] .app-icon,
+.dock [data-open="mail"],
+.bc-home-app-icon:has(>.bc-mail-approved-art),
+.bc-sb-app-art:has(>.bc-mail-approved-art),
+.bc-store-icon:has(>.bc-mail-approved-art),
+.sim-art:has(>.bc-mail-approved-art){
+ background:#070709!important;border-color:transparent!important;box-shadow:none!important;overflow:hidden;padding:0!important;
+}
+svg.bc-mail-approved-art{display:block;max-width:none!important;max-height:none!important;width:100%!important;height:100%!important;filter:none!important;flex:none;overflow:hidden;border-radius:inherit}
