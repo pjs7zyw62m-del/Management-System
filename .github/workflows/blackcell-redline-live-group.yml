@@ -1,0 +1,32 @@
+name: BLACKCELL REDLINE LIVE Group Workspace
+on:
+  pull_request:
+    paths:
+      - 'private-photo-ledger-group*'
+      - 'private-photo-ledger.js'
+      - 'database/redline-live-group*'
+      - 'tests/blackcell-redline-live-group.test.mjs'
+      - '.github/workflows/blackcell-redline-live-group.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'private-photo-ledger-group*'
+      - 'private-photo-ledger.js'
+      - 'database/redline-live-group*'
+      - 'tests/blackcell-redline-live-group.test.mjs'
+permissions:
+  contents: read
+jobs:
+  group:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: |
+          node --check private-photo-ledger-group-live.js
+          node --check private-photo-ledger-groups.js
+          node --check private-photo-ledger.js
+          node --check blackcell-os.js
+          node --test tests/blackcell-redline-live-group.test.mjs
