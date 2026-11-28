@@ -1,3 +1,4 @@
+import {mountChatCamera} from './blackcell-chat-camera.js?v=1';
 import {mountChatFilmstrip,makeChatThumbnail} from './corporate-chat-filmstrip.js?v=1';
 import {attachPhotoTransfer} from './blackcell-photo-transfer.js?v=3-bunny';
 /* BLACKCELL CORPORATION / Secure private chat photo + video sharing */
@@ -82,7 +83,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   if(!controls.hidden){closeMediaTray(true);return}
   if(!requirePeer())return;
   activeAttachmentAnchor=anchor?.getBoundingClientRect?anchor:attachmentToggle;
-  for(const button of [choosePhotos,chooseBlackcellPhotos,uploadDevice])button.disabled=busy||context()?.blocked===true;
+  for(const button of [choosePhotos,chooseBlackcellPhotos,uploadDevice,cameraOption])button.disabled=busy||context()?.blocked===true;
   controls.hidden=false;
   activeAttachmentAnchor?.classList.add('open');
   activeAttachmentAnchor?.setAttribute('aria-expanded','true');
@@ -158,6 +159,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   openShare();
  },'bc-attachment-item bc-attachment-mobile-action');
  uploadDevice.title='Upload from this device';
+ const cameraOption=button('Camera',()=>{closeMediaTray();camera.open()},'bc-attachment-item');cameraOption.title='Take a photo or record a video';decorateButton(cameraOption,'photo');
  const mediaLibrary=button('Shared Media',()=>void openLibrary(),'bc-attachment-item');mediaLibrary.setAttribute('aria-expanded','false');
  decorateButton(choosePhotos,'photo');decorateButton(chooseBlackcellPhotos,'library');decorateButton(uploadDevice,'upload');decorateButton(mediaLibrary,'library');
  for(const [item,kind] of [[choosePhotos,'photos'],[chooseBlackcellPhotos,'blackcell'],[uploadDevice,'share'],[mediaLibrary,'library']]){
@@ -175,7 +177,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   photosBadge.replaceChildren(flower);
  }
 
- controls.append(choosePhotos,chooseBlackcellPhotos,uploadDevice,mediaLibrary);
+ controls.append(choosePhotos,chooseBlackcellPhotos,uploadDevice,cameraOption,mediaLibrary);
  document.body.append(controls);
  controls.addEventListener('click',e=>{if(e.target.closest('button:not(:disabled)'))closeMediaTray()},true);
  document.addEventListener('pointerdown',e=>{if(!controls.hidden&&!controls.contains(e.target)&&!attachmentToggle?.contains(e.target)&&!document.getElementById('bcAndroidAttachmentShortcut')?.contains(e.target))closeMediaTray()},true);
@@ -926,7 +928,7 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   return cell;
  }
  function onPeerChange(newPeerId){
-  closeMediaTray();closePhotoFocus();cancelActiveResize();focusRequest++;
+  camera.close();closeMediaTray();closePhotoFocus();cancelActiveResize();focusRequest++;
   libraryGeneration++;mediaLibrary.setAttribute('aria-expanded','false');pickPeer=null;uploadPanelGeneration++;dropZone.classList.remove('is-dragover');
   if(!standalonePanel&&peerId&&peerId!==newPeerId){
    if(window.parent!==window)
@@ -948,5 +950,6 @@ export function setupCorporateMedia({client,context,reloadMessages,status}){
   overlay.hidden=true;
   if(!busy){selection=[];selectionPeer=null;renderSelection();hideInlineUpload()}
  }
- return {renderMediaBubble,onPeerChange,openShare,openLibrary,openBatch,closeWing,pickMobileFiles,toggleMediaTray,closeMediaTray,syncInlineUpload,pause:()=>{closeMediaTray();closePhotoFocus();cancelActiveResize();stageInner.querySelector('video')?.pause();mobileCanvas.querySelector('video')?.pause()}};
+ const camera=mountChatCamera({context,status,addFiles:files=>{if(busy||context()?.blocked)return;openShare();if(!overlay.hidden)selectFiles(files)}});
+ return {renderMediaBubble,onPeerChange,openShare,openLibrary,openBatch,closeWing,pickMobileFiles,toggleMediaTray,closeMediaTray,syncInlineUpload,pause:()=>{camera.close();closeMediaTray();closePhotoFocus();cancelActiveResize();stageInner.querySelector('video')?.pause();mobileCanvas.querySelector('video')?.pause()}};
 }
