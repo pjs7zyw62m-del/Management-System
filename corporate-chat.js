@@ -5,7 +5,7 @@ import {mountChatVoice,VOICE_BODY} from './blackcell-chat-voice.js?v=1';
 import {mountPopoutActions} from './corporate-chat-popout-actions.js?v=20261128-attached-reactions2';
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
 import {setupCorporateMedia} from './corporate-chat-media.js?v=20261128-camera1';
-import {setupCorporateChatLive} from './corporate-chat-live.js?v=20261128-unread1';
+import {setupCorporateChatLive} from './corporate-chat-live.js?v=20261128-typing2';
 import {installAndroidChatCaretGuard} from './corporate-chat-android-caret.js?v=20261122-return-keyboard10';
 import {createChatTubeCards,parseTubeReference} from './blackcell-chat-tube-cards.js?v=1';
 import {createChatPulseCards,parsePulseShare} from './blackcell-chat-pulse-cards.js?v=1';
@@ -35,6 +35,7 @@ if(mediaPanelMode)document.documentElement.classList.add('bc-media-panel','bc-me
 if(!mediaPanelMode&&window.parent===window&&window.BlackcellMediaBubbleHost)
  window.BlackcellMediaBubbleHostController=window.BlackcellMediaBubbleHost({mode:'standalone'});
 let self=null,peer=null,contacts=[],isLoading=false,firstLoad=true,ready=false;
+let refreshAfterLoad=false,realtimeReady=false,lastFallback=0;
 const chatScroll=createChatScroll($('messages'));
 const tubeCards=createChatTubeCards(client,()=>ready&&!!self&&!!peer),pulseCards=createChatPulseCards(client,()=>ready&&!!self&&!!peer);client.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'){tubeCards.clear();pulseCards.clear()}});
 let chatBlocked=false,blockKnown=false,blockBusy=false,blockGeneration=0,blockReadSerial=0,sendingMessage=false;
@@ -597,25 +598,25 @@ async function boot(){
   renderPeers();
   void refreshInboxSummaries();
   try{
-   client.channel('blackcell-chat-'+self)
+   client.channel('blackcell-chat-'+self+'-'+Math.random().toString(36).slice(2))
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'corp_chat_messages'},payload=>{
      const m=payload.new;
      if(m&&(m.sender_id===self||m.recipient_id===self)){
-      void loadMessages();
+      if(peer&&(m.sender_id===peer.user_id||m.recipient_id===peer.user_id))void loadMessages(true);
       if(!popout&&!mediaPanelMode)void refreshInboxSummaries();
      }
     })
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'corp_chat_messages'},payload=>{
      const m=payload.new;
      if(m&&(m.sender_id===self||m.recipient_id===self)){
-      void loadMessages();
+      if(peer&&(m.sender_id===peer.user_id||m.recipient_id===peer.user_id))void loadMessages(true);
       if(!popout&&!mediaPanelMode)void refreshInboxSummaries();
      }
     })
     .on('postgres_changes',{event:'*',schema:'public',table:'corp_chat_typing'},payload=>{
      live.onTypingChange(payload);
     })
-    .subscribe();
+     .subscribe(state=>{realtimeReady=state==='SUBSCRIBED';if(realtimeReady&&live.visible())void loadMessages(true)});
   }catch(_){
    // Realtime is optional for initial contact and history retrieval.
    status('Contacts loaded. Live updates are temporarily unavailable; conversations remain accessible.');
@@ -791,10 +792,11 @@ function choose(userId){
  $('peerProfileLink').hidden=false;
  if(popout&&popoutActions){const profile=$('popoutProfile');profile.href=$('peerProfileLink').href;$('popoutInfo').hidden=false;$('popoutCamera').hidden=false;}
  if(popButton){popButton.hidden=popout||!!mediaPanelMode;popButton.disabled=false;}
- syncBlockControls();renderPeers();void refreshCurrentBlock();void loadMessages();
+ syncBlockControls();renderPeers();void refreshCurrentBlock();void loadMessages(true);
 }
-async function loadMessages(){
- if(!ready||!peer||isLoading||document.hidden)return;
+async function loadMessages(urgent=false){
+ if(!ready||!peer||document.hidden)return;
+ if(isLoading){if(urgent===true)refreshAfterLoad=true;return}
  isLoading=true;
  try{
   const pid=peer.user_id;
@@ -906,7 +908,7 @@ async function loadMessages(){
   firstLoad=false;status('');
   void live.markRead(ordered);
  }catch(_){status('Chat connection interrupted. Retrying…')}
- finally{isLoading=false}
+ finally{isLoading=false;if(refreshAfterLoad){refreshAfterLoad=false;void loadMessages()}}
 }
 $('sendForm').addEventListener('submit',async e=>{
  e.preventDefault();const body=$('messageInput').value.trim();if(!ready||!peer||!body||chatBlocked||!blockKnown||blockBusy||sendingMessage)return;
@@ -918,7 +920,7 @@ $('sendForm').addEventListener('submit',async e=>{
   if(!ready||peer?.user_id!==target)return;
   const {error}=await client.from('corp_chat_messages').insert({sender_id:self,recipient_id:target,body});
   if(error){status('Message not sent. The contact may be blocked or unavailable.');void refreshCurrentBlock();return}
-  $('messageInput').value='';androidChatCaretGuard.reset();resizeComposer();chatScroll.open();await loadMessages();
+  $('messageInput').value='';androidChatCaretGuard.reset();resizeComposer();chatScroll.open();await loadMessages(true);
  }catch(_){status('Message not sent. Check your connection.')}
  finally{sendingMessage=false;syncBlockControls();if(!$('messageInput').disabled)$('messageInput').focus()}
 });
@@ -926,7 +928,7 @@ $('sendForm').addEventListener('submit',async e=>{
 for(const evt of ['pointerdown','keydown','wheel','touchstart']){
  document.addEventListener(evt,chatActivity,{passive:true});
 }
-setInterval(()=>{if(ready&&live.visible())void loadMessages()},5000);
+setInterval(()=>{if(ready&&live.visible()&&Date.now()-lastFallback>=(realtimeReady?5000:2500)){lastFallback=Date.now();void loadMessages()}},500);
 setInterval(()=>{if(ready&&!mediaPanelMode&&!popout&&!document.hidden&&(inboxFilter==='unread'||!compactChat||!document.querySelector('.chat').classList.contains('bc-thread-active')))void refreshInboxSummaries()},8000);
 setInterval(()=>{
  if(employeeSession&&!sessionEnded&&Date.now()-lastActivity>=IDLE_LIMIT_MS)

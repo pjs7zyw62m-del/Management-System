@@ -53,3 +53,8 @@
 @media(prefers-reduced-motion:reduce){
  .typing-dots span{animation:none;opacity:.75}
 }
+/* Compact native-style indicator in every device layout. */
+body.bc-chat .chat-main>.typing-indicator{background:#09090b;border:0;padding:4px 14px;min-height:25px;color:#96969e;flex-shrink:0}
+body.bc-chat .typing-dots{background:#25252a;border:0;width:40px;min-width:40px;height:22px}
+body.bc-chat .typing-dots span{background:#a9a9b0}
+html.bc-media-panel #typingIndicator{display:none!important}
