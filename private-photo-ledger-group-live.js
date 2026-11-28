@@ -26,6 +26,7 @@ export function mountRedlineGroupLive({db,roomId,isOwner,container,visible,notic
    else{c.video.srcObject=local;c.video.hidden=!local;c.caption.textContent=local?(sendPeer?.connectionState==='connected'?'● Broadcasting to owner':'Camera ready · waiting for owner'):'Camera off'}
   }
   start.disabled=publishing||!!local;startAudio.disabled=publishing||!!local;stop.disabled=!local&&!publishing;
+  root.dataset.busy=String(!!local||publishing||viewers.size>0);
   const oldest=slots.reduce((n,s)=>Math.min(n,Date.parse(s.started_at)||n),Date.now());const seconds=Math.max(0,Math.floor((Date.now()-oldest)/1000));duration.textContent=slots.length?'Live duration '+Math.floor(seconds/60)+':'+String(seconds%60).padStart(2,'0')+' · Free · '+slots.length+' camera'+(slots.length===1?'':'s'):'Free webcam session · no active camera';
  }
  async function startCamera(audio){if(isOwner||!alive()||publishing||local)return;publishing=true;paint();let stream=null;try{if(!navigator.mediaDevices?.getUserMedia||!window.RTCPeerConnection)throw Error('Camera permission or WebRTC is unavailable in this browser.');stream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:960},height:{ideal:540},facingMode:'user'},audio});if(!alive()||!publishing){stream.getTracks().forEach(t=>t.stop());return}local=stream;for(const t of local.getTracks())t.addEventListener('ended',()=>void stopCamera(),{once:true});await getIce();if(!alive()||!publishing||local!==stream)return;const data=await rpc('start');if(!alive()||!publishing||local!==stream){void rpc('stop').catch(()=>{});return}slots=data.streams||[];info.textContent='Camera enabled. Only the room owner can watch. Stop broadcasting at any time.'}catch(e){if(stream)stream.getTracks().forEach(t=>t.stop());stopTracks();closeSend();fail(e.message);void rpc('stop').catch(()=>{})}finally{publishing=false;if(alive())paint()}}
@@ -46,8 +47,10 @@ export function mountRedlineGroupLive({db,roomId,isOwner,container,visible,notic
   else if(local&&!publishing){const s=slots.find(x=>x.owned);if(!s){await stopCamera();fail('Camera session expired. Start again to broadcast.')}else if(!s.watch){closeSend()}else if(s.offer&&sendWatch!==s.watch)void answer(s)}
   paint()
  }catch(e){fail(e.message);if(Date.now()-lastOK>10000||/denied|unavailable|verified|access/i.test(String(e.message))){stopTracks();closeSend();for(const id of [...viewers.keys()])unwatch(id,true);slots=[];paint()}}finally{busy=false}}
- const hidden=()=>{if(document.hidden&&!isOwner&&local)void stopCamera()};document.addEventListener('visibilitychange',hidden);const pagehide=()=>dispose();window.addEventListener('pagehide',pagehide);
+ function pause(){if(!isOwner&&(local||publishing))void stopCamera();for(const id of [...viewers.keys()])unwatch(id,true)}
+ const hidden=()=>{if(document.hidden)pause()};document.addEventListener('visibilitychange',hidden);
+ const hostVisibility=e=>{if(e.origin===location.origin&&e.source===window.parent&&e.data?.type==='blackcell-redline-visibility'&&e.data.visible===false)pause()};window.addEventListener('message',hostVisibility);const pagehide=()=>dispose();window.addEventListener('pagehide',pagehide);
  const timer=setInterval(()=>{if(!alive()){dispose();return}void poll()},2500);
- function dispose(){if(closed)return;closed=true;clearInterval(timer);document.removeEventListener('visibilitychange',hidden);window.removeEventListener('pagehide',pagehide);stopTracks();closeSend();if(!isOwner)void rpc('stop').catch(()=>{});for(const id of [...viewers.keys()])unwatch(id,true);cards.clear()}
- return {refreshRoster,poll,dispose,invite:async ids=>{await rpc('invite',{p_members:ids});return refreshRoster()},isBroadcasting:()=>!!local||viewers.size>0};
+ function dispose(){if(closed)return;closed=true;clearInterval(timer);document.removeEventListener('visibilitychange',hidden);window.removeEventListener('pagehide',pagehide);window.removeEventListener('message',hostVisibility);stopTracks();closeSend();if(!isOwner)void rpc('stop').catch(()=>{});for(const id of [...viewers.keys()])unwatch(id,true);cards.clear()}
+ return {refreshRoster,poll,dispose,pause,invite:async ids=>{await rpc('invite',{p_members:ids});return refreshRoster()},isBroadcasting:()=>!!local||viewers.size>0};
 }
