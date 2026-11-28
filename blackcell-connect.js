@@ -123,7 +123,7 @@ export function mountBlackcellConnect({client,account,allowed,host=document.body
     current=row;ringAt=0;hold();state.textContent='Incoming '+row.mode+' call';notify('Incoming '+row.mode+' call from '+row.name);
    }else{
     current=row;
-    if(row.state==='accepted'&&row.direction==='outgoing'&&pc&&!pc.remoteDescription&&row.answer){await pc.setRemoteDescription({type:'answer',sdp:row.answer});failedAt=Date.now();state.textContent='Connecting…'}
+    if(row.state==='accepted'&&row.direction==='outgoing'&&pc&&!pc.remoteDescription&&row.answer){await pc.setRemoteDescription({type:'answer',sdp:row.answer});if(token!==serial)return;if(!connectedAt){failedAt=Date.now();state.textContent='Connecting…'}}
    }
    if(current?.state==='ringing'&&current.direction==='incoming'&&!document.hidden&&Date.now()-ringAt>5000){ringAt=Date.now();ring()}
    if(failedAt&&Date.now()-failedAt>30000&&pc?.connectionState!=='connected'){void finish('end','Direct call could not connect. A TURN relay may be required.');return}
@@ -138,6 +138,6 @@ export function mountBlackcellConnect({client,account,allowed,host=document.body
   if(!permitted()||!supported()){notify('Calling requires verified access, a supported browser and microphone permission.');return}
   if(current||requested||working){notify('A call is already open.');return}
   if(!['voice','video'].includes(mode)||typeof peer!=='string'||!/^[0-9a-f-]{36}$/i.test(peer)||peer===account())return;
-  requested={peer,mode,name:String(displayName||'BLACKCELL Member').slice(0,100)};paint();
+  serial++;requested={peer,mode,name:String(displayName||'BLACKCELL Member').slice(0,100)};paint();
  },poll,stop:leave,dispose(){disposed=true;clearInterval(timer);window.removeEventListener('focus',wake);document.removeEventListener('visibilitychange',wake);window.removeEventListener('pagehide',leave);leave();panel.remove()}};
 }
