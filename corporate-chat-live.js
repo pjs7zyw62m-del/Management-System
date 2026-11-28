@@ -129,6 +129,7 @@ export function setupCorporateChatLive({client,context,typingLabel,typingName}){
     .update({read_at:new Date().toISOString()})
     .in('id',unread).eq('sender_id',pid).eq('recipient_id',userId).is('read_at',null);
    if(error)throw error;
+   if(window.parent!==window)window.parent.postMessage({type:'blackcell-chat-read'},location.origin);
   }catch(error){
    console.warn('Blackcell receipt update unavailable:',error?.message||error);
   }finally{
