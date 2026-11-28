@@ -10,7 +10,7 @@ test('owner verification and sandbox isolation',()=>{
  assert.match(html,/sandbox="allow-scripts"/);assert.doesNotMatch(html,/allow-same-origin/);
  assert.match(js,/connect-src 'none'/);assert.match(js,/p_action:'catalog'/);
  assert.doesNotMatch(js,/p_action:'(?:install|remove|set_rule)'/);
- assert.match(readFileSync('blackcell-administration-os.js','utf8'),/id:'memberpreview'/);
+ assert.match(readFileSync('blackcell-administration-os.js','utf8'),/label:'Personnel Command'/);
 });
 test('Chromium exercises real storefront, device switch, reset and restricted level',async()=>{
  const runtime=js.slice(js.indexOf('function sandboxRuntime(config)'),js.indexOf('const shellCss='));
