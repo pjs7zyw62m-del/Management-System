@@ -48,7 +48,7 @@ test('Mobile editorial store uses actual module, authorized featured cards and r
 });
 test('Store assets and OS build version are current',()=>{
  assert.match(html,/blackcell-app-store-grid\.css\?[^"]*editorialStore=20261127-1/);
- assert.match(html,/content="20261127-editorial-store1-gesture1-desktop1-windowdrag1"/);
+ assert.match(html,/content="20261127-editorial-store1-gesture1-desktop1-windowdrag1-inbox1"/);
  assert.match(readFileSync('blackcell-os.js','utf8'),/blackcell-app-store\.js\?v=20261127-editorial-store1/);
- assert.match(readFileSync('blackcell-site-version.json','utf8'),/"fallback":"20261127-editorial-store1-gesture1-desktop1-windowdrag1"/);
+ assert.match(readFileSync('blackcell-site-version.json','utf8'),/"fallback":"20261127-editorial-store1-gesture1-desktop1-windowdrag1-inbox1"/);
 });
