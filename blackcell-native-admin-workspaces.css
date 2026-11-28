@@ -77,3 +77,9 @@ html.bc-admin-workspace-embedded body[data-workspace] #opApp>.shell>aside{displa
  body[data-workspace] .bc-native-scroll{padding:12px}
  body[data-workspace] #opContent .metric{min-height:80px}
 }
+
+@media(max-width:1024px){
+ body[data-workspace] .side-nav a{min-height:44px}
+ body[data-workspace] .bc-native-heading{background:#14161b}
+ body[data-workspace] #opContent .metric,body[data-workspace] #opContent .panel{background:#181a20!important;border-radius:15px!important}
+}
