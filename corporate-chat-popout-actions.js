@@ -3,7 +3,7 @@
 export function mountPopoutActions({canAct,composer,resizeComposer,sendReaction,status,editMessage,deleteMessage}){
  const make=(tag,cls='',value='')=>{const n=document.createElement(tag);n.className=cls;if(value)n.textContent=value;return n};
  const surface=make('div','bc-pop-action-surface');surface.hidden=true;
- const toolbar=make('div','bc-pop-reactions');toolbar.setAttribute('aria-label','Send a reaction message');
+ const toolbar=make('div','bc-pop-reactions');toolbar.setAttribute('aria-label','React to this message');
  const menu=make('div','bc-pop-actions');menu.setAttribute('aria-label','Message actions');
  const shade=make('div','bc-pop-action-shade');shade.hidden=true;
  const translated=new Map();let current=null,pressTimer=null,suppressUntil=0,previousFocus=null,translationBusy=false;
@@ -24,8 +24,8 @@ export function mountPopoutActions({canAct,composer,resizeComposer,sendReaction,
  const valid=entry=>!!entry&&canAct()&&entry.bubble.isConnected;
  const short=value=>String(value||'').replace(/\s+/g,' ').trim().slice(0,140);
  for(const [glyph,name] of [['❤️','Love'],['👍','Like'],['👎','Dislike'],['😂','Laugh'],['‼️','Emphasize'],['❓','Question']]){
-  const b=btn(glyph,async()=>{const entry=current;if(!valid(entry))return;close(true);await sendReaction(glyph+' reacted to “'+short(entry.message.body)+'”');},'bc-pop-reaction');
-  b.setAttribute('aria-label','Send '+name+' reaction as a message');b.title='Send '+name+' reaction';toolbar.append(b);
+  const b=btn(glyph,async()=>{const entry=current;if(!valid(entry))return;close(true);await sendReaction(entry.message,glyph);},'bc-pop-reaction');
+  b.setAttribute('aria-label','Toggle '+name+' reaction');b.title='Toggle '+name+' reaction';toolbar.append(b);
  }
  const add=(icon,label,action)=>{const b=btn('',async()=>{const entry=current;if(!valid(entry))return;close();await action(entry)});
   const symbol=make('span','bc-pop-action-icon',icon);symbol.setAttribute('aria-hidden','true');b.append(symbol,make('span','',label));menu.append(b);return b};
