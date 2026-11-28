@@ -25,7 +25,7 @@ export function mountGroupRooms(db,{isOwner,section}){
    const rows=await call('list');if(!visible())return;
    list.replaceChildren();status.textContent='';create.disabled=false;
    if(!rows.length)list.append(make('p','rg-empty','No private group rooms yet.'));
-   for(const r of rows){const card=button('',()=>void openRoom(r.id));card.className='rg-card';card.append(make('strong','',r.title),make('span','',r.participant_count+' participants · Open group →'));list.append(card)}
+   for(const r of rows){const wrap=make('div','rg-card-wrap'),card=button('',()=>void openRoom(r.id));card.className='rg-card';card.append(make('strong','',r.title),make('span','',r.participant_count+' participants · Open group →'));wrap.append(card);if(isOwner){const del=button('Delete group',async()=>{if(!visible()||loading||dialog.open)return;if(!confirm('Permanently delete "'+r.title+'"? Its group messages and memberships will be removed. Individual photo rooms, photos and balances will not be deleted.'))return;del.disabled=true;try{const result=await db.rpc('corp_redline_group_delete',{p_room:r.id});if(result.error||result.data?.ok!==true)throw Error(result.error?.message||'Group deletion failed');await load()}catch(e){status.textContent=errorText(e);del.disabled=false}});del.classList.add('rg-delete');wrap.append(del)}list.append(wrap)}
   }catch(e){list.replaceChildren();create.disabled=true;status.textContent='Group rooms are unavailable: '+errorText(e)}
   finally{loading=false}
  }
