@@ -15,7 +15,7 @@ export function mountStore(host,api){
  // The phone storefront is an alternate presentation of the same authorized
  // catalog. No independent install, open or distribution implementation.
  const mobileTitle=make('h1','bc-store-mobile-title','Today');
- const account=button('B','bc-store-mobile-account',()=>{toolsOpen=!toolsOpen;syncMobileNav()});
+ const account=button('B','bc-store-mobile-account',()=>{if(busy||disposed)return;toolsOpen=!toolsOpen;syncMobileNav()});
  account.setAttribute('aria-label','Store account and catalog tools');account.setAttribute('aria-expanded','false');
  header.prepend(mobileTitle,account);
  const mobileNav=make('nav','bc-store-mobile-nav');mobileNav.setAttribute('aria-label','Mobile App Store sections');
@@ -24,7 +24,7 @@ export function mountStore(host,api){
  let toolsOpen=false,searchMode=false;
  const initial=api.initialState||{};let category=['discover','installed','beta','optional','unavailable','upcoming'].includes(initial.category)?initial.category:'discover',detail=typeof initial.detail==='string'&&/^[a-z]{1,40}$/.test(initial.detail)?initial.detail:null,scrollTarget=Number.isFinite(initial.scroll)?Math.max(0,Math.min(100000,initial.scroll)):0,restoring=true,busy=false,disposed=false,scrollTimer=0,draft=null;search.value=typeof initial.search==='string'?initial.search.slice(0,160):'';
  function persist(){if(!disposed)api.onState?.({category,detail,search:search.value.slice(0,160),scroll:restoring?scrollTarget:body.scrollTop})}
- function navigate(fn){draft=null;bulkConfirm=false;restoring=false;fn();body.scrollTop=0;render();persist()}
+ function navigate(fn){if(busy||disposed)return;draft=null;bulkConfirm=false;restoring=false;fn();body.scrollTop=0;render();persist()}
  async function perform(fn,success){if(busy||disposed)return;busy=true;api.onBusy?.(true);host.setAttribute('aria-busy','true');try{const result=await fn();if(!disposed){banner.textContent=result.ok?success:result.error||'Operation failed.';if(result.ok)draft=null}}catch(_){if(!disposed)banner.textContent='Operation failed. Try again.'}finally{busy=false;host.removeAttribute('aria-busy');if(!disposed){render();api.onBusy?.(false)}}}
  /* Check availability of currently installed same-origin app launch pages.
   * A successful probe does not verify application features or cloud access.
@@ -68,18 +68,25 @@ export function mountStore(host,api){
  const categories=[['discover','Discover','✦'],['installed','Installed','▦'],['beta','Beta Lab','⚗'],['optional','All add-ons','⊕'],['unavailable','Unavailable','×'],['upcoming','Coming Soon','◷']];
  const navButtons=categories.map(([id,name,icon])=>{const b=button(icon+'  '+name,'bc-store-nav',()=>{searchMode=false;toolsOpen=false;navigate(()=>{category=id;detail=null;search.value=''})});rail.append(b);return [id,b]});
  rail.append(make('p','bc-store-railnote','BLACKCELL CORPORATION\nRestricted distribution'));
- const mobileItems=[['discover','Today','▤'],['optional','Apps','▦'],['installed','Installed','↓'],['beta','Beta','✧'],['search','Search','⌕']];
+ const mobileItems=[['discover','Today','M5 3h14v18H5z M8 7h8 M8 11h8 M8 15h5'],['optional','Apps','M12 3 3 8l9 5 9-5-9-5z M3 12l9 5 9-5 M3 16l9 5 9-5'],['installed','Installed','M12 3v12 M7 10l5 5 5-5 M4 16v5h16v-5'],['beta','Beta','M9 3h6 M10 3v6L4 19a1 1 0 0 0 1 2h14a1 1 0 0 0 1-2L14 9V3 M7 15h10'],['search','Search','M21 21l-5-5 M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0']];
+ function tabIcon(path){
+  const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg'),shape=document.createElementNS(ns,'path');
+  svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');svg.setAttribute('class','bc-store-tab-icon');
+  shape.setAttribute('d',path);shape.setAttribute('fill','none');shape.setAttribute('stroke','currentColor');shape.setAttribute('stroke-width','1.9');shape.setAttribute('stroke-linecap','round');shape.setAttribute('stroke-linejoin','round');
+  svg.append(shape);return svg;
+ }
  const mobileButtons=mobileItems.map(([id,label,glyph])=>{
   const b=button('','bc-store-mobile-tab',()=>{
+   if(busy||disposed)return;
    toolsOpen=false;searchMode=id==='search';
    navigate(()=>{category=searchMode?'discover':id;detail=null;search.value=''});
    if(searchMode)search.focus();
   });
-  const icon=make('span','bc-store-tab-icon',glyph);icon.setAttribute('aria-hidden','true');
+  const icon=tabIcon(glyph);
   b.append(icon,make('span','',label));mobileNav.append(b);return [id,b];
  });
  const extraButtons=['upcoming','unavailable'].map(id=>{
-  const b=button(categories.find(c=>c[0]===id)[1],'bc-store-mobile-tool',()=>{toolsOpen=false;searchMode=false;navigate(()=>{category=id;detail=null;search.value=''})});
+  const b=button(categories.find(c=>c[0]===id)[1],'bc-store-mobile-tool',()=>{if(busy||disposed)return;toolsOpen=false;searchMode=false;navigate(()=>{category=id;detail=null;search.value=''})});
   mobileTools.append(b);return [id,b];
  });
  function syncMobileNav(){
