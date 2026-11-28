@@ -79,7 +79,8 @@ const TONES=Object.freeze({
  success:[[392,0,.09,.45],[523.25,.075,.13,.5],[783.99,.16,.24,.42]],
  warning:[[349.23,0,.17,.5],[311.13,.21,.24,.48]],
  message:[[880,0,.15,.85],[1174.66,.105,.24,.70]],
- callring:[[440,0,.28,.65],[659.25,.12,.28,.4],[440,.48,.28,.65],[659.25,.60,.28,.4]]
+ callring:[[440,0,.28,.65],[659.25,.12,.28,.4],[440,.48,.28,.65],[659.25,.60,.28,.4]],
+ ringback:[[440,0,.65,.40],[480,0,.65,.40]]
 });
 // Independent HTML media output: generated PCM WAV, no network download.
 const VOICE_CLIPS=Object.freeze({
@@ -120,7 +121,7 @@ function waveURL(name){
 }
 function clearWaves(){for(const url of waveCache.values())URL.revokeObjectURL(url);waveCache.clear()}
 function mediaTone(name){
- if(!audible()||(!Object.hasOwn(TONES,name)&&!Object.hasOwn(VOICE_CLIPS,name)))return Promise.resolve({ok:false,reason:'muted'});
+ if(!audible(name)||(!Object.hasOwn(TONES,name)&&!Object.hasOwn(VOICE_CLIPS,name)))return Promise.resolve({ok:false,reason:'muted'});
  if(sampleFlight)return Promise.resolve({ok:false,reason:'busy'});
  try{
   sampleAudio ||= new Audio();
@@ -148,9 +149,9 @@ const available=()=>Boolean(window.AudioContext||window.webkitAudioContext||type
 function voicePlaying(){
  return !audio.paused&&!audio.ended;
 }
-function audible(){return !disposed&&!document.hidden&&soundPref.enabled&&soundPref.volume>0}
+function audible(name){return !disposed&&(!document.hidden||name==='callring'||name==='ringback')&&soundPref.enabled&&soundPref.volume>0}
 function renderTone(name){
- if(!audible()||!TONES[name]||soundContext?.state!=='running'||voicePlaying()||sampleFlight)return false;
+ if(!audible(name)||!TONES[name]||soundContext?.state!=='running'||voicePlaying()||sampleFlight)return false;
  const now=soundContext.currentTime;
  if(now-lastSound<.13)return false;
  lastSound=now;
@@ -198,7 +199,7 @@ function playSystemSound(name){
  if(startupPending&&name!=='message'){flushStartup();if(!startupPending)return false}
  if(renderTone(name))return true;
  // Browser media playback is a best-effort fallback for message alerts only.
- if(name==='message'&&typeof Audio==='function'){void mediaTone(name);return true}
+ if(['message','callring','ringback'].includes(name)&&typeof Audio==='function'){void mediaTone(name);return true}
  return false;
 }
 function setSoundPreference(next){
