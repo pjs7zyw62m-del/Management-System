@@ -63,7 +63,7 @@ export function mountPopoutActions({canAct,composer,resizeComposer,sendReaction,
   }catch(e){status('Translation unavailable: '+String(e?.message||'This language may not be supported.').slice(0,140))}
   finally{translationBusy=false;detector?.destroy?.();translator?.destroy?.()}
  });
- add('▱','Select',entry=>{const sel=window.getSelection();if(!sel)return;const range=document.createRange();range.selectNodeContents(entry.bubble.querySelector('.bc-pop-original')||entry.bubble);sel.removeAllRanges();sel.addRange(range)});
+ add('▱','Select',entry=>{const sel=window.getSelection();if(!sel)return;const range=document.createRange();range.selectNodeContents(entry.bubble.querySelector('.bc-pop-original,.bc-message-body')||entry.bubble);sel.removeAllRanges();sel.addRange(range)});
  add('◖','Speak',entry=>{
   if(!window.speechSynthesis||!window.SpeechSynthesisUtterance){status('Speech is unavailable in this browser.');return}
   const voice=window.speechSynthesis.getVoices().find(v=>v.localService&&v.lang.startsWith((navigator.language||'en').split('-')[0]));
@@ -76,7 +76,8 @@ export function mountPopoutActions({canAct,composer,resizeComposer,sendReaction,
   const original=make('span','bc-pop-original',String(message.body||''));
   const resultText=make('span','bc-pop-translation',result.output);
   const label=make('span','bc-pop-translated-label','Translated from '+result.language);
-  bubble.replaceChildren(original,resultText,label);bubble.classList.add('bc-pop-is-translated');
+  const badges=bubble.querySelector('.bc-attached-reactions');
+  bubble.replaceChildren(original,resultText,label);if(badges)bubble.append(badges);bubble.classList.add('bc-pop-is-translated');
  }
  function attach(bubble,message,own){
   bubble.classList.add('bc-pop-text-bubble');bubble.dataset.messageId=String(message.id);
