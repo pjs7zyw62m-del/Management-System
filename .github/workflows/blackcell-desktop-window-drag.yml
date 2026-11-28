@@ -1,0 +1,28 @@
+name: BLACKCELL Desktop Window Drag
+on:
+  pull_request:
+    paths:
+      - 'blackcell-os.js'
+      - 'blackcell-os-macos-workspaces.css'
+      - 'tests/blackcell-desktop-window-drag.test.mjs'
+      - '.github/workflows/blackcell-desktop-window-drag.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'blackcell-os.js'
+      - 'blackcell-os-macos-workspaces.css'
+      - 'tests/blackcell-desktop-window-drag.test.mjs'
+permissions:
+  contents: read
+jobs:
+  desktop-window-drag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: |
+          command -v google-chrome >/dev/null 2>&1 && export CHROME=google-chrome || export CHROME=chromium
+          node --check blackcell-os.js
+          node --test tests/blackcell-desktop-window-drag.test.mjs
