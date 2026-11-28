@@ -13,6 +13,7 @@ export function callHistoryLabel(c){
 export function mountCallHistory({client,context,callback,onOpen=()=>{},onClose=()=>{}}){
  const $=id=>document.getElementById(id),panel=$('bcCallsPanel'),entry=$('bcCallsOpen'),badge=$('bcCallsBadge'),list=$('bcCallsList'),notice=$('bcCallsStatus');
  if(!panel||!entry)return null;
+ const compact=$('bcCallsCompact'),compactBadge=$('bcCallsCompactBadge');
  const make=(tag,cls,t)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(t!==undefined)n.textContent=t;return n};
  const button=(label,fn,cls='bc-calls-action')=>{const n=make('button',cls,label);n.type='button';n.onclick=fn;return n};
  let rows=[],filter='all',busy=false,visible=true,epoch=0,disposed=false,missed=0;
@@ -20,7 +21,7 @@ export function mountCallHistory({client,context,callback,onOpen=()=>{},onClose=
  const active=()=>allowed()&&visible&&!document.hidden;
  const opened=()=>!panel.hidden;
  async function rpc(p_action,params={}){const {data,error}=await client.rpc('corp_connect_history',{p_action,...params});if(error||data?.ok!==true)throw Error('Call history is unavailable. Verify your access or try again.');return data}
- function sync(){entry.hidden=!allowed();badge.hidden=!allowed()||missed<1;badge.textContent=String(Math.min(missed,999));entry.setAttribute('aria-label','Calls'+(missed?' · '+missed+' unread missed calls':''))}
+ function sync(){entry.hidden=!allowed();badge.hidden=!allowed()||missed<1;badge.textContent=String(Math.min(missed,999));entry.setAttribute('aria-label','Calls'+(missed?' · '+missed+' unread missed calls':''));if(compact){compact.hidden=!allowed();compact.setAttribute('aria-label',entry.getAttribute('aria-label'));compactBadge.hidden=badge.hidden;compactBadge.textContent=badge.textContent}}
  function paint(){
   list.replaceChildren();$('bcCallsAll').setAttribute('aria-pressed',String(filter==='all'));$('bcCallsMissed').setAttribute('aria-pressed',String(filter==='missed'));
   const filtered=rows.filter(c=>filter==='all'||c.outcome==='missed');
@@ -43,9 +44,9 @@ export function mountCallHistory({client,context,callback,onOpen=()=>{},onClose=
    }
   }catch(e){if(token===epoch&&opened())notice.textContent=e.message}finally{busy=false;if(token!==epoch&&active())void refresh()}
  }
- function close(){epoch++;panel.hidden=true;rows=[];list.replaceChildren();onClose();entry.focus();void refresh()}
+ function close(){epoch++;panel.hidden=true;rows=[];list.replaceChildren();onClose();(entry.getClientRects().length?entry:compact)?.focus();void refresh()}
  function open(){if(!active())return;epoch++;filter='all';panel.hidden=false;onOpen();notice.textContent='Loading recent calls…';paint();$('bcCallsClose').focus();void refresh()}
- entry.onclick=open;$('bcCallsClose').onclick=close;$('bcCallsAll').onclick=()=>{filter='all';paint()};$('bcCallsMissed').onclick=()=>{filter='missed';paint()};$('bcCallsRefresh').onclick=()=>void refresh();
+ entry.onclick=open;if(compact)compact.onclick=open;$('bcCallsClose').onclick=close;$('bcCallsAll').onclick=()=>{filter='all';paint()};$('bcCallsMissed').onclick=()=>{filter='missed';paint()};$('bcCallsRefresh').onclick=()=>void refresh();
  panel.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();close()}});
  const timer=setInterval(()=>{if(!allowed()){if(opened())close();missed=0;sync();return}if(active())void refresh()},20000);
  return {sync,refresh,close,isOpen:opened,setVisible(v){visible=!!v;if(visible)void refresh()},dispose(){disposed=true;clearInterval(timer);epoch++;panel.hidden=true;rows=[];list.replaceChildren();missed=0;sync()}};
