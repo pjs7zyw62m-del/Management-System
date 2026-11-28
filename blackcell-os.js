@@ -1,4 +1,4 @@
-import {mountBlackcellConnect} from './blackcell-connect.js?v=turn1';
+import {mountBlackcellConnect} from './blackcell-connect.js?v=turn1-history1';
 import {createChatUnreadMonitor} from './blackcell-chat-unread.js?v=1';
 import {mountPhoneNavigation} from './blackcell-os-phone-navigation.js?v=1';
 import {mountWorldMonitor} from './blackcell-os-world-monitor.js?v=1';

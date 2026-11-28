@@ -46,7 +46,9 @@ const btn=(text,fn,cls='')=>{const e=el('button',cls,text);e.type='button';e.onc
 export function mountBlackcellConnect({client,account,allowed,host=document.body,notify=()=>{},ring=()=>{},ringback=()=>{}}){
  const device=crypto.randomUUID();
  let current=null,pc=null,local=null,remote=null,serial=0,working=false,polling=false,disposed=false,connectedAt=0,ringAt=0,failedAt=0,lastGood=0,lastPoll=0,facing='user',release=null,requested=null,collapsed=false,desktopAlert=null,alertedCall=null;
- const tonePlayer=createConnectTonePlayer({preferences:callSoundPreferences});let toneEpoch=0,relayReady=false;
+ const tonePlayer=createConnectTonePlayer({preferences:callSoundPreferences});let toneEpoch=0,relayReady=false,reportedCall=null,reportingCall=null,lastReport=0;
+ async function reportConnection(){const id=current?.id;if(!id||current.state!=='accepted'||pc?.connectionState!=='connected'||reportedCall===id||reportingCall===id||Date.now()-lastReport<2000||!permitted())return;reportingCall=id;lastReport=Date.now();try{const {data,error}=await client().rpc('corp_connect_history',{p_action:'connected',p_call:id,p_device:device});if(!error&&data?.ok===true&&current?.id===id)reportedCall=id}catch(_){}finally{if(reportingCall===id)reportingCall=null}}
+
  const panel=el('section','bc-connect-panel');panel.hidden=true;panel.setAttribute('aria-label','BLACKCELL Connect');
  const header=el('header','bc-connect-header'),brand=el('strong','','BLACKCELL Connect'),minimize=btn('Minimize',()=>{collapsed=!collapsed;panel.classList.toggle('is-collapsed',collapsed);minimize.textContent=collapsed?'Expand':'Minimize'});
  header.append(brand,minimize);
@@ -115,7 +117,7 @@ export function mountBlackcellConnect({client,account,allowed,host=document.body
  }
  function cleanup(){
   closeAlert();stopCallTone();alertedCall=null;relayReady=false;networkStatus.hidden=true;networkStatus.textContent='';
-  serial++;working=false;requested=null;current=null;connectedAt=0;ringAt=0;failedAt=0;lastGood=0;collapsed=false;panel.classList.remove('is-collapsed');minimize.textContent='Minimize';
+  serial++;working=false;requested=null;current=null;reportedCall=null;reportingCall=null;lastReport=0;connectedAt=0;ringAt=0;failedAt=0;lastGood=0;collapsed=false;panel.classList.remove('is-collapsed');minimize.textContent='Minimize';
   if(pc){pc.ontrack=null;pc.onconnectionstatechange=null;try{pc.close()}catch(_){}pc=null}
   for(const t of local?.getTracks()||[])t.stop();for(const t of remote?.getTracks()||[])t.stop();local=null;remote=null;
   for(const v of [remoteVideo,localVideo]){v.pause();v.srcObject=null}
@@ -138,7 +140,7 @@ export function mountBlackcellConnect({client,account,allowed,host=document.body
   conn.ontrack=e=>{if(conn!==pc)return;for(const t of e.streams[0]?.getTracks()||[e.track])if(!remote.getTracks().some(x=>x.id===t.id))remote.addTrack(t);void remoteVideo.play().catch(()=>{}).finally(paint)};
   conn.onconnectionstatechange=()=>{
    if(conn!==pc)return;
-   if(conn.connectionState==='connected'){connectedAt ||= Date.now();failedAt=0;state.textContent='Connected';paint()}
+   if(conn.connectionState==='connected'){connectedAt ||= Date.now();failedAt=0;state.textContent='Connected';paint();void reportConnection()}
    if(['failed','closed'].includes(conn.connectionState))void finish('end',relayReady?'Call connection failed even with relay available. Try Wi-Fi or another network.':'Call connection failed. The relay service is unavailable.');
    else if(conn.connectionState==='disconnected'){failedAt ||= Date.now();state.textContent='Reconnecting…'}
   };
@@ -205,7 +207,7 @@ export function mountBlackcellConnect({client,account,allowed,host=document.body
   }catch(e){if(token===serial&&current&&(!lastGood||Date.now()-lastGood>20000))void finish('end','Call authorization or connection lost.')}
   finally{polling=false}
  }
- const timer=setInterval(()=>{if(current||requested||working||!permitted())void poll();else if(Date.now()-lastPoll>(document.hidden?10000:6500))void poll();if(connectedAt)paint()},2500);
+ const timer=setInterval(()=>{if(current||requested||working||!permitted())void poll();else if(Date.now()-lastPoll>(document.hidden?10000:6500))void poll();if(connectedAt){paint();void reportConnection()}},2500);
  const wake=()=>{if(!document.hidden)closeAlert();else alertIncoming();void poll()};window.addEventListener('focus',wake);document.addEventListener('visibilitychange',wake);
  const leave=()=>{void finish('end','')};window.addEventListener('pagehide',leave);
  return {request(peer,mode,displayName){
