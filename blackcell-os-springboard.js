@@ -219,13 +219,13 @@ function start(){
   return b;
  }
  // A pinned App Store belongs on the actual home screen, never only in the Dock.
- function phoneHomePlacement(all,savedPins){
+ function phoneHomePlacement(all,savedPins,customized){
   const preferred=['chat','browser','personalphotos','files'];
-  const storeOnHome=savedPins.includes('store')||(all.length===1&&all[0].id==='store');
+  const storeOnHome=savedPins.includes('store');
   const dockAll=preferred.map(id=>all.find(x=>x.id===id)).filter(Boolean);
   for(const x of all){if(dockAll.length>=4)break;if(storeOnHome&&x.id==='store')continue;if(!dockAll.some(y=>y.id===x.id))dockAll.push(x)}
   const exclude=new Set(dockAll.map(x=>x.id));
-  const allowedHomes=savedPins.length?new Set(savedPins):null;
+  const allowedHomes=savedPins.length&&customized?new Set(savedPins):null;
   const homes=all.filter(x=>!exclude.has(x.id)&&(!allowedHomes||allowedHomes.has(x.id)));
   return {dockAll,homes};
  }
@@ -235,7 +235,7 @@ function start(){
   const all=ordered(), ids=all.map(x=>x.id);
   renderedIds=ids;
   sysCount.textContent=all.length+' available app'+(all.length===1?'':'s');
-  const {dockAll,homes}=phoneHomePlacement(all,homePinned().map(x=>x.id));
+  const {dockAll,homes}=phoneHomePlacement(all,homePinned().map(x=>x.id),unified()?.read?.().changedAt>0);
   dockItems.replaceChildren(...dockAll.map(x=>iconFor(x,'dock')));
   const size=pageSize();
   const pages=Math.max(1,Math.ceil(homes.length/size));pageIndex=Math.min(pageIndex,pages-1);
@@ -251,7 +251,7 @@ function start(){
   if(modalOpen)drawResults();
  }
  function setPage(next){
-  const {homes}=phoneHomePlacement(ordered(),homePinned().map(x=>x.id));
+  const {homes}=phoneHomePlacement(ordered(),homePinned().map(x=>x.id),unified()?.read?.().changedAt>0);
   const pages=Math.max(1,Math.ceil(homes.length/pageSize()));
   if(next>=pages){openModal('library');return}
   if(next<0)return;pageIndex=next;render();
