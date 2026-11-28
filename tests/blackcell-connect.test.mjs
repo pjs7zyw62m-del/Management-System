@@ -13,22 +13,28 @@ test('Incoming ring never opens microphone until explicit accept; end stops all 
   constructor(tag){this.tag=tag;this.children=[];this.hidden=false;this.paused=true;this.classList={toggle(){},remove(){}}}
   append(...e){this.children.push(...e)}setAttribute(){}pause(){this.paused=true}play(){this.paused=false;return Promise.resolve()}remove(){}
  }
- let acquired=0,stopped=0,ringed=0;const actions=[];const host=new E('body');
+ let acquired=0,stopped=0,ringed=0,dialed=0,alerts=0,closed=0,failDevice=false;const actions=[];const host=new E('body');
  class Stream{constructor(tracks=[]){this.tracks=tracks}getTracks(){return this.tracks}getAudioTracks(){return this.tracks}getVideoTracks(){return []}addTrack(t){this.tracks.push(t)}}
- class PC{constructor(){this.iceGatheringState='complete';this.connectionState='new'}addTrack(){}close(){}async setRemoteDescription(d){this.remoteDescription=d}async createAnswer(){return {type:'answer',sdp:'v=0 test answer'}}async setLocalDescription(d){this.localDescription=d}}
- globalThis.document={createElement:t=>new E(t),body:host,hidden:false,addEventListener(){},removeEventListener(){}};
- globalThis.window={RTCPeerConnection:PC,addEventListener(){},removeEventListener(){}};
+ class PC{constructor(){this.iceGatheringState='complete';this.connectionState='new'}addTrack(){}close(){}async setRemoteDescription(d){this.remoteDescription=d}async createOffer(){return {type:'offer',sdp:'v=0 test offer'}}async createAnswer(){return {type:'answer',sdp:'v=0 test answer'}}async setLocalDescription(d){this.localDescription=d}}
+ globalThis.document={createElement:t=>new E(t),body:host,hidden:true,addEventListener(){},removeEventListener(){}};
+ class DesktopAlert{static permission='granted';constructor(title,options){alerts++;assert.equal(title,'BLACKCELL Connect');assert.equal(options.body,'Incoming private call. Open BLACKCELL to answer.')}close(){closed++}}
+ globalThis.window={RTCPeerConnection:PC,Notification:DesktopAlert,addEventListener(){},removeEventListener(){}};
  globalThis.MediaStream=Stream;globalThis.RTCPeerConnection=PC;
- Object.defineProperty(globalThis,'navigator',{configurable:true,value:{mediaDevices:{getUserMedia:async opts=>{acquired++;assert.equal(opts.audio,true);assert.equal(opts.video,false);return new Stream([{id:'t',enabled:true,stop(){stopped++}}])}}}});
+ Object.defineProperty(globalThis,'navigator',{configurable:true,value:{mediaDevices:{getUserMedia:async opts=>{acquired++;if(failDevice)throw Object.assign(new Error('Requested device not found'),{name:'NotFoundError'});assert.equal(opts.audio,true);assert.equal(opts.video,false);return new Stream([{id:'t',enabled:true,stop(){stopped++}}])}}}});
  const incoming={id:'call',peer:'other',name:'Other',mode:'voice',direction:'incoming',state:'ringing',offer:'v=0 test offer'};
- const client={rpc:async(name,args)=>{assert.equal(name,'corp_connect');actions.push(args.p_action);return {data:{ok:true,call:args.p_action==='poll'?incoming:args.p_action==='answer'?{...incoming,state:'accepted'}:null}}}};
- const ctl=mountBlackcellConnect({client:()=>client,account:()=> 'me',allowed:()=>true,host,ring:()=>ringed++});
+ const outgoing={...incoming,id:'outgoing',direction:'outgoing'};let pending=incoming;const notices=[];
+ const client={rpc:async(name,args)=>{assert.equal(name,'corp_connect');actions.push(args.p_action);return {data:{ok:true,call:args.p_action==='poll'?pending:args.p_action==='start'?(pending=outgoing):args.p_action==='answer'?(pending={...incoming,state:'accepted'}): (pending=null)}}}};
+ const ctl=mountBlackcellConnect({client:()=>client,account:()=> 'me',allowed:()=>true,host,ring:()=>ringed++,ringback:()=>dialed++,notify:message=>notices.push(message)});
  try{
-  await ctl.poll();assert.equal(acquired,0);assert.equal(ringed,1);
+  await ctl.poll();assert.equal(acquired,0);assert.equal(ringed,1);assert.equal(alerts,1);await ctl.poll();assert.equal(alerts,1);assert.equal(ringed,1);document.hidden=false;
   const buttons=host.children[0].children.find(x=>x.className==='bc-connect-controls').children;
   buttons.find(x=>x.textContent==='Accept').onclick();await new Promise(r=>setImmediate(r));
-  assert.equal(acquired,1);assert.ok(actions.includes('answer'));
+  assert.equal(acquired,1);assert.ok(actions.includes('answer'));assert.equal(closed,1);
   buttons.find(x=>x.textContent==='End call').onclick();await new Promise(r=>setImmediate(r));assert.equal(stopped,1);assert.ok(actions.includes('end'));
+  const peer='12345678-1234-1234-1234-123456789abc';
+  ctl.request(peer,'voice','Other');buttons.find(x=>x.textContent==='Start call').onclick();await new Promise(r=>setImmediate(r));assert.equal(dialed,1);assert.ok(actions.includes('start'));await ctl.poll();assert.equal(dialed,1);
+  buttons.find(x=>x.textContent==='End call').onclick();await new Promise(r=>setImmediate(r));assert.equal(stopped,2);
+  failDevice=true;const starts=actions.filter(x=>x==='start').length;ctl.request(peer,'voice','Other');buttons.find(x=>x.textContent==='Start call').onclick();await new Promise(r=>setImmediate(r));assert.equal(actions.filter(x=>x==='start').length,starts);assert.equal(dialed,1);assert.match(notices.at(-1),/No microphone was detected.*Call was not sent/);
  }finally{ctl.dispose();for(const [k,v] of Object.entries(old)){if(v===undefined)delete globalThis[k];else globalThis[k]=v}if(nav)Object.defineProperty(globalThis,'navigator',nav);else delete globalThis.navigator}
 });
 test('OS routes verified chat calls and signaling is private, expires, and checks current permissions',()=>{
