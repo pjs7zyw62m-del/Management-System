@@ -18,7 +18,7 @@ test('read receipt still reflects actual server timestamp and own final message'
  assert.match(js,/m.read_at\?\(plainText\?'✓':'✓✓'\):'✓'/);
 });
 test('new assets load after existing chat styling and support touch',()=>{
- assert.match(html,/corporate-chat.js\?v=20261127-choose-contact1&glassMessage=20261128-4/);
+ assert.match(html,/corporate-chat.js\?v=20261127-choose-contact1&glassMessage=20261128-5/);
  assert.ok(html.indexOf('corporate-chat-glass-message.css')>html.indexOf('corporate-chat-unified-desktop.css'));
  assert.match(css,/@media\(pointer:coarse\)/);
 });
@@ -52,8 +52,10 @@ test('reaction badge follows the original bubble, and permissions remain partici
  assert.match(sql,/reactor_id=\(select auth.uid\(\)\)/);
  assert.match(sql,/corp_private.chat_pair_unblocked/);
  assert.match(js,/bubble.append\(badges\)/);
- assert.match(css,/\.mine \.bubble>\.bc-attached-reactions\{right:auto;left:4px\}/);
- assert.match(css,/padding-left:var\(--bc-reaction-inset\)!important/);
+ assert.match(css,/\.mine \.bubble>\.bc-attached-reactions\{right:auto;left:5px\}/);
+ assert.match(css,/padding-top:16px!important/);
+ assert.match(css,/position:absolute;top:-12px;right:5px/);
+ assert.match(css,/bc-has-attached-reactions\{padding-top:12px\}/);
  assert.match(css,/data-reaction-count="2"/);
  const actions=readFileSync('corporate-chat-popout-actions.js','utf8');
  assert.match(actions,/if\(badges\)bubble.append\(badges\)/);
