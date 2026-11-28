@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {mountBlackcellConnect,waitForIce} from '../blackcell-connect.js';
+import {mountBlackcellConnect,waitForIce,createConnectTonePlayer} from '../blackcell-connect.js';
 test('ICE gathering finishes or times out without hanging',async()=>{
  const p=new EventTarget();p.iceGatheringState='gathering';
  const pending=waitForIce(p,1000);p.iceGatheringState='complete';p.dispatchEvent(new Event('icegatheringstatechange'));await pending;
@@ -51,4 +51,12 @@ test('Call controls allow retrying unknown block status without bypassing verifi
  assert.match(chat,/if\(!blockKnown\|\|chatBlocked\|\|blockBusy\)/);
  assert.match(os,/selectedWindow===source\|\|document\.activeElement===source\.frame/);
  assert.match(os,/blackcell-connect-unavailable/);
+});
+
+test('Dedicated ringtone uses non-silent WAV, honors mute, and stops on cleanup',async()=>{
+ let played=0,paused=0,wave,revoked=0,enabled=true,deny=false;
+ class AudioMock{pause(){paused++}play(){played++;return deny?Promise.reject(Object.assign(new Error('blocked'),{name:'NotAllowedError'})):Promise.resolve()}}
+ const player=createConnectTonePlayer({AudioClass:AudioMock,urls:{createObjectURL:b=>{wave=b;return 'blob:call'},revokeObjectURL(){revoked++}},preferences:()=>({enabled,volume:.6})});
+ assert.deepEqual(await player.play('ringback'),{ok:true});const bytes=new Uint8Array(await wave.arrayBuffer());assert.equal(Buffer.from(bytes.slice(0,4)).toString(),'RIFF');assert.ok(bytes.slice(44).some(n=>n!==0));
+ player.stop();assert.ok(paused>0);assert.equal(revoked,1);enabled=false;assert.deepEqual(await player.play('callring'),{ok:false,reason:'muted'});assert.equal(played,1);enabled=true;deny=true;assert.deepEqual(await player.play('callring'),{ok:false,reason:'blocked'});player.stop();assert.equal(revoked,2);
 });
