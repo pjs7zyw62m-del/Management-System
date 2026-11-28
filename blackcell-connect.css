@@ -17,3 +17,6 @@
 .bc-connect-chat-actions{display:flex;align-items:center;gap:6px;margin:0 4px;flex:none}
 .bc-connect-chat-actions .bc-connect-button{padding:6px 8px;background:#202129;color:#5faeff;font-size:12px;min-width:0}
 @media(max-width:500px){.bc-connect-panel{right:8px;bottom:max(8px,env(safe-area-inset-bottom));width:calc(100vw - 16px)}.bc-connect-chat-actions{gap:3px;margin:0}.bc-connect-chat-actions .bc-connect-button{font-size:11px;padding:5px 6px}}
+
+/* Keep voice and video targets independently tappable in narrow employee layouts. */
+@media(max-width:600px){.bc-connect-chat-actions{position:relative;z-index:1;flex-shrink:0}.bc-connect-chat-actions .bc-connect-button{min-height:38px;min-width:42px;touch-action:manipulation}}
