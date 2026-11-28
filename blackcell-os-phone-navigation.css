@@ -1,0 +1,62 @@
+/* Phone shell only. Tablet and desktop keep their existing window chrome. */
+.bc-phone-gesture-rail,.bc-phone-switcher:not([open]){display:none}
+html.bc-os-phone #desktop{
+ --bc-phone-app-top:max(env(safe-area-inset-top,0px),var(--bc-phone-native-inset,0px));
+ --bc-phone-app-bottom:calc(max(4px,env(safe-area-inset-bottom,0px)) + 32px);
+}
+@supports(-webkit-touch-callout:none){
+ @media(orientation:portrait){
+  html.bc-os-installed.bc-os-phone #desktop{--bc-phone-app-top:max(44px,env(safe-area-inset-top,0px),var(--bc-phone-native-inset,0px))}
+ }
+}
+html.bc-os-phone #desktop:has(>.os-window:not([hidden]))>.bc-installed-top-edge,
+html.bc-os-phone #desktop:has(>.os-window:not([hidden]))>.topbar,
+html.bc-os-phone #desktop:has(>.os-window:not([hidden]))>.dockwrap,
+html.bc-os-phone #desktop>.os-dock-edge{display:none!important}
+html.bc-os-phone #desktop>.os-window[data-os-app]:not([hidden]){
+ position:absolute!important;top:var(--bc-phone-app-top)!important;bottom:var(--bc-phone-app-bottom)!important;
+ left:env(safe-area-inset-left,0px)!important;right:env(safe-area-inset-right,0px)!important;
+ width:auto!important;height:auto!important;min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;
+ grid-template-rows:44px minmax(0,1fr)!important;padding-bottom:0!important;box-sizing:border-box!important;
+ border:0!important;border-radius:0!important;resize:none!important;z-index:var(--bc-phone-window-layer,25)!important;
+}
+html.bc-os-phone #desktop>.os-window[data-os-app]:not([hidden])>.os-window-head{
+ height:44px!important;box-sizing:border-box!important;background:#000!important;cursor:default!important;
+}
+html.bc-os-phone #desktop>.os-window[data-os-app]:not([hidden])>.os-window-head>.traffic{display:none!important}
+html.bc-os-phone #desktop>.os-window.os-chat-popout:not([hidden])>.os-window-head>.traffic:has(.os-chat-park-button){display:flex!important}
+html.bc-os-phone #desktop>.os-window.os-chat-popout:not([hidden])>.os-window-head>.traffic>.os-traffic-control{display:none!important}
+html.bc-os-phone #desktop>.bc-phone-gesture-rail{
+ display:flex;align-items:center;justify-content:center;position:absolute;z-index:10000;
+ bottom:max(4px,env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);height:32px;gap:8px;
+}
+html.bc-os-phone #desktop .bc-phone-home-indicator{
+ display:grid;place-items:center;width:150px;height:32px;padding:0;border:0;border-radius:16px;background:transparent;
+ color:white;touch-action:none;cursor:pointer;user-select:none;-webkit-user-select:none;
+}
+html.bc-os-phone #desktop .bc-phone-home-indicator::after{content:"";display:block;width:116px;height:5px;background:#f4f4f5;border-radius:5px}
+html.bc-os-phone #desktop .bc-phone-recent-button{position:absolute;left:100%;border:0;background:transparent;color:#b8b8bd;width:36px;height:32px;font:20px system-ui;cursor:pointer;touch-action:manipulation}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-home{padding-bottom:var(--bc-phone-app-bottom)!important}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-home-indicator{display:none!important}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-dock-handle{bottom:calc(var(--bc-phone-app-bottom) + 5px)!important}
+html.bc-os-phone.bc-os-keyboard #desktop>.bc-phone-gesture-rail{display:none!important}
+html.bc-os-phone.bc-os-keyboard #desktop>.os-window[data-os-app]:not([hidden]){bottom:0!important}
+html.bc-os-phone #desktop>.bc-phone-switcher[open]{
+ position:fixed;inset:var(--bc-phone-app-top) env(safe-area-inset-right,0px) var(--bc-phone-app-bottom) env(safe-area-inset-left,0px);
+ width:auto;height:auto;max-width:none;max-height:none;margin:0;padding:16px;box-sizing:border-box;border:0;
+ display:flex;flex-direction:column;gap:12px;background:#0b0b0f;color:#f5f5f7;border-radius:18px;font:14px system-ui;overflow:hidden;
+}
+.bc-phone-switcher::backdrop{background:#000c;backdrop-filter:blur(12px)}
+.bc-phone-switcher-header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.bc-phone-switcher-header h2{margin:0;font:700 23px system-ui}
+.bc-phone-switcher-done,.bc-phone-recent-close{border:0;border-radius:18px;background:#303035;color:#8acbff;min-height:36px;padding:8px 15px;font:650 13px system-ui;cursor:pointer}
+.bc-phone-switcher-cards{display:flex;align-items:center;gap:12px;flex:1;min-height:0;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;scrollbar-width:none;padding:6px 0}
+.bc-phone-switcher-cards::-webkit-scrollbar{display:none}
+.bc-phone-recent-card{display:flex;flex-direction:column;gap:10px;flex:0 0 min(68vw,270px);height:min(100%,350px);min-height:0;padding:12px;box-sizing:border-box;border:1px solid #ffffff24;border-radius:22px;background:#1b1b21;scroll-snap-align:center}
+.bc-phone-recent-launch{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;flex:1;min-height:0;padding:8px;border:0;border-radius:16px;background:linear-gradient(160deg,#34343e,#101014);color:#fff;touch-action:pan-x;cursor:pointer;text-align:center}
+.bc-phone-recent-symbol{font:42px system-ui;color:#b3b3bf}
+.bc-phone-recent-launch strong{font:650 16px system-ui;overflow-wrap:anywhere}
+.bc-phone-recent-launch small,.bc-phone-switcher-hint,.bc-phone-switcher-empty{color:#b1b1ba;font:12px system-ui}
+.bc-phone-switcher-hint{margin:0;text-align:center}
+@media(orientation:landscape){.bc-phone-recent-card{flex-basis:min(37vw,230px)}}
+@media(prefers-reduced-motion:no-preference){.bc-phone-recent-card{transition:transform .1s linear}}

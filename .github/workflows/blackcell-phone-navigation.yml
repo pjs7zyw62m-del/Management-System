@@ -1,0 +1,33 @@
+name: BLACKCELL Phone Navigation
+on:
+  pull_request:
+    paths:
+      - 'blackcell-os-phone-navigation.*'
+      - 'blackcell-os.js'
+      - 'blackcell-os.html'
+      - 'tests/blackcell-phone-navigation.test.mjs'
+      - '.github/workflows/blackcell-phone-navigation.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'blackcell-os-phone-navigation.*'
+      - 'blackcell-os.js'
+      - 'blackcell-os.html'
+      - 'tests/blackcell-phone-navigation.test.mjs'
+      - '.github/workflows/blackcell-phone-navigation.yml'
+permissions:
+  contents: read
+jobs:
+  phone-navigation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: |
+          command -v google-chrome >/dev/null 2>&1 && export CHROME=google-chrome || export CHROME=chromium
+          node --check blackcell-os.js
+          node --check blackcell-os-phone-navigation.js
+          node --test tests/blackcell-phone-navigation.test.mjs
