@@ -241,3 +241,13 @@ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-result-add:disabled{opacit
 #desktop .bc-mac-launch-app-cell .bc-mac-pin-shortcut:disabled{
  background:rgba(32,69,51,.88);color:#baf5cd;opacity:.74;cursor:default;
 }
+
+/* Tablet home retains the account-synced free-position canvas, with
+   a tactile icon family and a distinct larger-screen widget treatment. */
+html.bc-os-tablet #desktop .bc-home-widget{border-radius:22px;background:linear-gradient(145deg,#23262f,#11131a);padding:15px 17px}
+html.bc-os-tablet #desktop .bc-home-desktop-app{border-radius:16px}
+html.bc-os-tablet #desktop .bc-home-app-icon{width:60px;height:60px;border-radius:17px}
+html.bc-os-tablet #desktop .bc-home-widget-header{min-height:36px}
+html.bc-os-tablet #desktop .bc-home-widget-actions button{min-width:40px;min-height:40px}
+html:not(.bc-os-tablet):not(.bc-os-phone) #desktop .bc-home-app-icon{width:56px;height:56px;border-radius:12px}
+html:not(.bc-os-tablet):not(.bc-os-phone) #desktop .bc-home-desktop-app{width:100px;min-height:98px}
