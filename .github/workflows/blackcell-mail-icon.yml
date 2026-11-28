@@ -1,0 +1,19 @@
+name: BLACKCELL Mail Approved Icon
+on:
+  pull_request:
+    paths:
+      - 'blackcell-mail-icon.*'
+      - 'blackcell-os.js'
+      - 'tests/blackcell-mail-icon.test.mjs'
+      - '.github/workflows/blackcell-mail-icon.yml'
+permissions:
+  contents: read
+jobs:
+  icon:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --check blackcell-os.js && node --check blackcell-member-preview.js && node --test tests/blackcell-mail-icon.test.mjs
