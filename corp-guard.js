@@ -158,7 +158,7 @@ try {
       });
       document.body.append(script);
       const dockScript=document.createElement('script');
-      dockScript.src='corporate-chat-dock.js?v=20261113-imessage6';
+      dockScript.src='corporate-chat-dock.js?v=20261128-unread1';
       dockScript.addEventListener('error',()=>{
         // Keep all ordinary Administration controls working even if chat fails.
       });
