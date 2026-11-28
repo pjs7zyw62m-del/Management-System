@@ -1,4 +1,4 @@
-import {mountRedlineGroupLive} from './private-photo-ledger-group-live.js?v=2';
+import {mountRedlineGroupLive} from './private-photo-ledger-group-live.js?v=3-test-tips';
 // Separate group chat; no access to individual photo ledgers or balances.
 export function mountGroupRooms(db,{isOwner,section}){
  if(section.querySelector('#redlineGroupRooms'))return;
