@@ -32,9 +32,9 @@ function callSoundPreferences(){
 const el=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e};
 const btn=(text,fn,cls='')=>{const e=el('button',cls,text);e.type='button';e.onclick=fn;return e};
 export function mountBlackcellConnect({client,account,allowed,host=document.body,notify=()=>{},ring=()=>{},ringback=()=>{}}){
- const device=crypto.randomUUID();
+ const device=typeof crypto.randomUUID==='function'?crypto.randomUUID():Array.from(crypto.getRandomValues(new Uint8Array(16)),(v,i)=>((i===6?(v&15)|64:i===8?(v&63)|128:v).toString(16).padStart(2,'0'))).join('').replace(/^(.{8})(.{4})(.{4})(.{4})(.{12})$/,'$1-$2-$3-$4-$5');
  let current=null,pc=null,local=null,remote=null,serial=0,working=false,polling=false,disposed=false,connectedAt=0,ringAt=0,failedAt=0,lastGood=0,lastPoll=0,facing='user',release=null,requested=null,collapsed=false,desktopAlert=null,alertedCall=null;
- const tonePlayer=createConnectTonePlayer({preferences:callSoundPreferences});let toneEpoch=0;
+ const tonePlayer=createConnectTonePlayer({preferences:callSoundPreferences});let toneEpoch=0,pollErrorShown=false;
  const panel=el('section','bc-connect-panel');panel.hidden=true;panel.setAttribute('aria-label','BLACKCELL Connect');
  const header=el('header','bc-connect-header'),brand=el('strong','','BLACKCELL Connect'),minimize=btn('Minimize',()=>{collapsed=!collapsed;panel.classList.toggle('is-collapsed',collapsed);minimize.textContent=collapsed?'Expand':'Minimize'});
  header.append(brand,minimize);
@@ -61,8 +61,8 @@ export function mountBlackcellConnect({client,account,allowed,host=document.body
   return data.call||null;
  }
  function paint(){
-  const visible=!!(current||requested||working);panel.hidden=!visible;if(!visible)return;
-  const incoming=current?.direction==='incoming'&&current.state==='ringing';
+  const visible=!!(current||requested||working);panel.hidden=!visible;if(!visible){panel.classList.remove('is-incoming');return;}
+  const incoming=current?.direction==='incoming'&&current.state==='ringing';panel.classList.toggle('is-incoming',incoming);
   name.textContent=current?.name||requested?.name||'BLACKCELL Member';
   const mode=current?.mode||requested?.mode||'voice';
   start.hidden=!requested||working||!!current;accept.hidden=!incoming||working;decline.hidden=!incoming;
@@ -167,17 +167,17 @@ export function mountBlackcellConnect({client,account,allowed,host=document.body
  }
  async function poll(){
   if(disposed)return;
-  if(!permitted()){if(current||requested||local)void finish('end','');return}
-  if(polling||working||requested)return;
+  if(!permitted()){if(current||requested||local)leave();return}
+  if(polling||working)return;
   polling=true;lastPoll=Date.now();const token=serial;
   try{
    const row=await rpc('poll',current?{p_call:current.id}:{});
    if(token!==serial||!permitted()){if(token===serial)cleanup();return}
-   lastGood=Date.now();
+   lastGood=Date.now();pollErrorShown=false;
    if(!row){if(current){cleanup();notify('Call ended or was not answered.')}return}
    if(!current){
     if(row.direction!=='incoming'||row.state!=='ringing')return;
-    current=row;ringAt=0;hold();state.textContent='Incoming '+row.mode+' call';notify('Incoming '+row.mode+' call from '+row.name);
+    requested=null;current=row;ringAt=0;hold();state.textContent='Incoming '+row.mode+' call';paint();notify('Incoming '+row.mode+' call from '+row.name);
    }else{
     current=row;
     if(row.state==='accepted'&&row.direction==='outgoing'&&pc&&!pc.remoteDescription&&row.answer){await pc.setRemoteDescription({type:'answer',sdp:row.answer});if(token!==serial)return;if(!connectedAt){failedAt=Date.now();state.textContent='Connecting…'}}
@@ -185,12 +185,12 @@ export function mountBlackcellConnect({client,account,allowed,host=document.body
    if(current?.state==='ringing')ringPending();else{closeAlert();stopCallTone()}
    if(failedAt&&Date.now()-failedAt>30000&&pc?.connectionState!=='connected'){void finish('end','Direct call could not connect. A TURN relay may be required.');return}
    paint();
-  }catch(e){if(token===serial&&current&&(!lastGood||Date.now()-lastGood>20000))void finish('end','Call authorization or connection lost.')}
+  }catch(e){if(token===serial&&current&&(!lastGood||Date.now()-lastGood>20000))leave();else if(token===serial&&!current&&!pollErrorShown){pollErrorShown=true;notify('Incoming call check failed. Verify BLACKCELL access or reconnect.')}}
   finally{polling=false}
  }
  const timer=setInterval(()=>{if(current||requested||working||!permitted())void poll();else if(Date.now()-lastPoll>(document.hidden?10000:6500))void poll();if(connectedAt)paint()},2500);
  const wake=()=>{if(!document.hidden)closeAlert();else alertIncoming();void poll()};window.addEventListener('focus',wake);document.addEventListener('visibilitychange',wake);
- const leave=()=>{void finish('end','')};window.addEventListener('pagehide',leave);
+ const leave=()=>{if(current?.direction==='incoming'&&current.state==='ringing'){cleanup();return}void finish('end','')};window.addEventListener('pagehide',leave);
  return {request(peer,mode,displayName){
   if(!permitted()||!supported()){notify('Calling requires verified access, a supported browser and microphone permission.');return}
   if(current||requested||working){notify('A call is already open.');return}
