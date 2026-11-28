@@ -419,3 +419,32 @@ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb.bc-sb-dock-auto-hide.bc-sb
  html.bc-os-phone #desktop.bc-springboard-ready .bc-sb.bc-sb-dock-auto-hide .bc-sb-dock,
  #desktop.os-dock-auto-hide>.dockwrap{transition:none!important}
 }
+
+/* Phone: edge-to-edge, quiet home and a bottom-sheet library. */
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-status{
+ border-bottom:1px solid #ffffff0c;background:#08090b;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-identity{
+ min-height:clamp(50px,8vh,76px);margin-bottom:10px!important;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-identity-headline{
+ font-size:clamp(28px,8vw,41px);font-weight:620;letter-spacing:-.065em;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-widgets:not(.bc-home-custom-phone-widgets) .bc-sb-widget{
+ border-radius:20px!important;background:linear-gradient(145deg,#22242a,#111217)!important;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-grid{grid-auto-rows:minmax(70px,auto)!important}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-app-label{font-size:11px!important;line-height:1.2}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-dock{
+ border-radius:26px!important;background:linear-gradient(155deg,#25272eea,#121318f5)!important;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-sheet{
+ border-radius:25px 25px 0 0;background:#14151a!important;
+ backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-result{min-height:54px}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-search-pill{min-height:44px!important}
+@media(max-height:600px) and (orientation:landscape){
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-identity{min-height:35px;margin-bottom:3px!important}
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-identity-headline{font-size:24px}
+}
