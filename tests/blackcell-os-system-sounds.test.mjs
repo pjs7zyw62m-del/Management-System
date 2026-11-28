@@ -56,3 +56,37 @@ test('HTML, startup engine and settings share the release references',()=>{
  assert.match(os,/blackcell-os-settings\.js\?[^"']+/);
  assert.match(os,/BLACKCELL_SYSTEM_SOUNDS\?\.play/);
 });
+
+test('Settings section buttons keep working when workspace persistence throws',()=>{
+ const source=readFileSync('blackcell-os-settings.js','utf8').replace(/^import .*;\r?$/gm,'').replace(/^export /gm,'');
+ class Element {
+  constructor(tag){this.tagName=tag.toUpperCase();this.children=[];this.style={};this.classList={add(){},toggle(){}};this.textContent='';this.scrollTop=0;}
+  append(...items){this.children.push(...items)}
+  replaceChildren(...items){this.children=items}
+  setAttribute(){}
+ }
+ const document={createElement:tag=>new Element(tag),querySelector:()=>({content:'test-build'})};
+ const window={addEventListener(){},removeEventListener(){},BLACKCELL_SYSTEM_SOUNDS:{preferences:()=>({enabled:true,available:true,volume:.35})}};
+ const mount=new Function('document','window','Node','mountWallpaperControls',source+';return mountSettings;')(document,window,Element,()=>{});
+ const host=new Element('div');
+ const app=mount(host,{alive:()=>true,account:()=>({name:'Demo',username:'demo',access:'Owner',clearance:'7'}),preferences:()=>({}),onSection:()=>{throw Error('Simulated persistence failure')},openOrStore(){},openStore(){}});
+ const [nav,body]=host.children;
+ const click=label=>{const button=nav.children.find(x=>x.children[1]?.textContent===label);assert.ok(button,label);button.onclick({preventDefault(){}});assert.equal(body.children[0].children[1].textContent,label)};
+ for(const label of ['Account','Sound','About','General'])click(label);
+ app.dispose();
+});
+test('Active window taps do not trigger repeated workspace raises',()=>{
+ const source=readFileSync('blackcell-os.js','utf8');
+ const start=source.indexOf("w.addEventListener('pointerdown',event=>{");
+ const end=source.indexOf('},true);',start);
+ assert.ok(start>=0&&end>start);
+ const handler=source.slice(start,end+8);
+ let calls=0,listener;
+ const r={suspended:false,el:{hidden:false}},w={addEventListener:(_,fn)=>listener=fn};
+ const run=new Function('w','r','selectedWindow','raise',handler);
+ run(w,r,r,()=>calls++);
+ listener({target:{closest:()=>null}});assert.equal(calls,0);
+ run(w,r,null,()=>calls++);
+ listener({target:{closest:()=>null}});assert.equal(calls,1);
+ listener({target:{closest:()=>true}});assert.equal(calls,1);
+});
