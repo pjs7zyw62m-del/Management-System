@@ -20,3 +20,8 @@
 
 /* Keep voice and video targets independently tappable in narrow employee layouts. */
 @media(max-width:600px){.bc-connect-chat-actions{position:relative;z-index:1;flex-shrink:0}.bc-connect-chat-actions .bc-connect-button{min-height:38px;min-width:42px;touch-action:manipulation}}
+
+/* Incoming invitations stay above app windows and in the visible viewport. */
+.bc-connect-panel.is-incoming{z-index:2147483647;top:max(16px,env(safe-area-inset-top));bottom:auto;right:16px;transform:none;outline:1px solid #ffffff24}
+.bc-connect-panel.is-incoming .bc-connect-controls>button:not([hidden]){min-height:44px}
+@media(max-width:600px){.bc-connect-panel.is-incoming{top:max(12px,env(safe-area-inset-top));left:8px;right:8px;width:auto;max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px)}}
