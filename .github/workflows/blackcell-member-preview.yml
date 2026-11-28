@@ -1,0 +1,27 @@
+name: BLACKCELL Member Experience Preview
+on:
+  pull_request:
+    paths:
+      - 'blackcell-member-preview.*'
+      - 'blackcell-administration-os.js'
+      - 'tests/blackcell-member-preview.test.mjs'
+      - '.github/workflows/blackcell-member-preview.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'blackcell-member-preview.*'
+      - 'tests/blackcell-member-preview.test.mjs'
+permissions:
+  contents: read
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: |
+          command -v google-chrome >/dev/null 2>&1 && export CHROME=google-chrome || export CHROME=chromium
+          node --check blackcell-member-preview.js
+          node --test tests/blackcell-member-preview.test.mjs
