@@ -1,0 +1,37 @@
+name: BLACKCELL Network Application Control
+on:
+  pull_request:
+    paths:
+      - 'blackcell-network-app-control.*'
+      - 'blackcell-administration-os.js'
+      - 'blackcell-os.js'
+      - 'blackcell-app-store.js'
+      - 'database/blackcell-network-app-control.sql'
+      - 'tests/blackcell-network-app-control.test.mjs'
+      - '.github/workflows/blackcell-network-app-control.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'blackcell-network-app-control.*'
+      - 'blackcell-administration-os.js'
+      - 'blackcell-os.js'
+      - 'blackcell-app-store.js'
+      - 'database/blackcell-network-app-control.sql'
+      - 'tests/blackcell-network-app-control.test.mjs'
+      - '.github/workflows/blackcell-network-app-control.yml'
+permissions:
+  contents: read
+jobs:
+  network-control:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: |
+          node --check blackcell-network-app-control.js
+          node --check blackcell-os.js
+          node --check blackcell-app-store.js
+          node --check blackcell-administration-os.js
+          node --test tests/blackcell-network-app-control.test.mjs
