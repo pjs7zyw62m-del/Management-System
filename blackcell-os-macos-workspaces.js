@@ -72,7 +72,7 @@
   }
  }
  function begin(type){
-  if(!allowed()||bridge()?.isPhone())return;
+  if(!allowed()||(bridge()?.isPhone()&&type!=='mission'))return;
   if(overlay&&kind===type){dismiss();return}
   dismiss();kind=type;page=0;query='';lastFocus=document.activeElement;
   overlay=el('section','bc-mac-overlay bc-mac-'+type);
@@ -82,8 +82,8 @@
   shade.addEventListener('click',dismiss);
   const panel=el('div','bc-mac-panel'),heading=el('header','bc-mac-overlay-heading');
   const close=action('×',dismiss,'bc-mac-close');close.setAttribute('aria-label','Close '+type);
-  head=el('h2','',type==='launchpad'?'Applications':'Mission Control');
-  subtitle=el('p','bc-mac-subtitle',type==='launchpad'?'Your BLACKCELL applications':'Your open windows, organized');
+  head=el('h2','',type==='launchpad'?'Applications':bridge()?.isPhone()?'Open Apps':bridge()?.isTablet()?'Tablet Workspace':'Mission Control');
+  subtitle=el('p','bc-mac-subtitle',type==='launchpad'?'Your BLACKCELL applications':bridge()?.isPhone()?'Resume an open application':bridge()?.isTablet()?'Switch apps or arrange two open windows':'Your open windows, organized');
   heading.append(head,subtitle,close);panel.append(heading);
   const body=el('div','bc-mac-panel-body');
   if(type==='launchpad'){
@@ -133,6 +133,7 @@
   if(!overlay||kind!=='mission')return;
   const controller=bridge();if(!controller)return;
   const state=controller.spaces(),all=controller.windows();
+  const phone=controller.isPhone(),tablet=controller.isTablet?.();
   grid.replaceChildren();
   const toolbar=el('div','bc-mac-spaces');
   for(const sp of state.items){
@@ -143,7 +144,19 @@
   }
   const create=action('+ Desktop',()=>{const id=controller.addSpace();if(id){controller.switchSpace(id);renderMission()}},'bc-mac-newspace');
   create.disabled=state.items.length>=6;toolbar.append(create);
-  grid.append(toolbar);
+  if(!phone)grid.append(toolbar);
+  if(tablet){
+   const tools=el('div','bc-tablet-multitask');
+   tools.append(el('strong','','Split View'),el('small','','Open two compatible apps first, then select them here.'));
+   const options=controller.splitOptions?.()||[];
+   const pick=label=>{const select=el('select','bc-tablet-split-select');select.setAttribute('aria-label',label);for(const item of options){const option=el('option','',item.title);option.value=item.id;select.append(option)}return select};
+   const left=pick('Left app'),right=pick('Right app');if(options.length>1)right.selectedIndex=1;
+   const start=action('Arrange',()=>{if(controller.split?.(left.value,right.value))dismiss();else hint.textContent='Select two different available apps.'},'bc-tablet-split-button');
+   const hint=el('small','',options.length<2?'Two compatible open apps are required.':'');
+   start.disabled=options.length<2;
+   tools.append(left,right,start,action('Exit split',()=>{controller.clearSplit?.();dismiss()},'bc-tablet-split-button'),hint);
+   grid.append(tools);
+  }
   const group=el('div','bc-mac-window-grid');
   for(const w of all){
    const card=el('article','bc-mac-window');
@@ -155,7 +168,7 @@
    for(const sp of state.items){const option=el('option','',sp.name);option.value=sp.id;move.append(option)}
    move.value=w.spaceId;
    move.addEventListener('change',()=>{controller.moveWindow(w.id,move.value);renderMission()});
-   card.append(icon,title,info,focus,move);group.append(card);
+   card.append(icon,title,info,focus);if(!phone)card.append(move);group.append(card);
   }
   if(!all.length)group.append(el('p','bc-mac-empty','No open windows. Open an application from Launchpad or the Dock.'));
   grid.append(group);
@@ -171,7 +184,7 @@
    if(confirm('Remove this desktop? Its windows will move to Desktop 1.')){controller.removeSpace(current);renderMission()}
   }));
   footer.lastElementChild.disabled=state.active==='1';
-  grid.append(footer);
+  if(!phone)grid.append(footer);
  }
  function closeControl(){control?.remove();control=null;controlButton?.setAttribute('aria-expanded','false')}
  function showControl(){
@@ -403,7 +416,7 @@
  window.addEventListener('blackcell:desktop-files-refresh',renderDesktopCanvas);
  window.addEventListener('bc-private-files-changed',renderDesktopCanvas);
  window.addEventListener('blackcell:spaces-updated',stageSync);
- window.addEventListener('blackcell:windows-updated',()=>{stageSync();if(kind==='mission')renderMission()});
+ window.addEventListener('blackcell:windows-updated',()=>{stageSync();if(!allowed()){dismiss();closeControl();closeNotifications();closeSpotlight();return}if(kind==='mission')renderMission()});
  window.addEventListener('blackcell:mac-shell-ready',renderDesktopCanvas);
  const stageObserver=new MutationObserver(stageSync);
  stageObserver.observe(shell,{childList:true,subtree:false});
