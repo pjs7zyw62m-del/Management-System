@@ -149,7 +149,7 @@ function voicePlaying(){
 }
 function audible(){return !disposed&&!document.hidden&&soundPref.enabled&&soundPref.volume>0}
 function renderTone(name){
- if(!audible()||!TONES[name]||soundContext?.state!=='running'||voicePlaying())return false;
+ if(!audible()||!TONES[name]||soundContext?.state!=='running'||voicePlaying()||sampleFlight)return false;
  const now=soundContext.currentTime;
  if(now-lastSound<.13)return false;
  lastSound=now;
@@ -192,7 +192,7 @@ window.addEventListener('blackcell:desktop-ready',()=>{
 });
 audio.addEventListener('ended',flushStartup);
 function playSystemSound(name){
- if(!audible()||!TONES[name]||voicePlaying())return false;
+ if(!audible()||!TONES[name]||voicePlaying()||sampleFlight)return false;
  if(mediaOutput){void mediaTone(name);return true}
  if(startupPending){flushStartup();if(!startupPending)return false}
  return renderTone(name);
