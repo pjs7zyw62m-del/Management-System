@@ -5,12 +5,18 @@ on:
       - 'blackcell-member-preview.*'
       - 'blackcell-administration-os.js'
       - 'tests/blackcell-member-preview.test.mjs'
+      - 'tests/blackcell-personnel-command.test.mjs'
+      - 'admin.js'
+      - 'blackcell-personnel-command.css'
       - '.github/workflows/blackcell-member-preview.yml'
   push:
     branches: [main]
     paths:
       - 'blackcell-member-preview.*'
       - 'tests/blackcell-member-preview.test.mjs'
+      - 'tests/blackcell-personnel-command.test.mjs'
+      - 'admin.js'
+      - 'blackcell-personnel-command.css'
 permissions:
   contents: read
 jobs:
@@ -24,4 +30,6 @@ jobs:
       - run: |
           command -v google-chrome >/dev/null 2>&1 && export CHROME=google-chrome || export CHROME=chromium
           node --check blackcell-member-preview.js
-          node --test tests/blackcell-member-preview.test.mjs
+          node --check admin.js
+          node --check blackcell-administration-os.js
+          node --test tests/blackcell-member-preview.test.mjs tests/blackcell-personnel-command.test.mjs
