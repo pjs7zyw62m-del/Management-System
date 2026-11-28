@@ -68,7 +68,7 @@
     b.addEventListener('click',fn);return b;
   }
   const pop=button('Open chat in a separate window','↗','',()=>{
-    const link=new URL('corporate-chat.html?v=20261128-voice1',location.href).href;
+    const link=new URL('corporate-chat.html?v=20261128-camera1',location.href).href;
     const win=window.open(link,'blackcell-private-imessage','width=490,height=750,resizable=yes,scrollbars=no');
     if(win){win.focus();minimize();}else{
       toastMessage('Pop-out blocked','Allow pop-ups, or use the floating chat window.',null);
@@ -81,7 +81,7 @@
   header.append(label,controls);
   const frame=make('iframe','bc-chat-pane-iframe');
   frame.title='Blackcell private messages, photos, videos, and shared media';
-  frame.setAttribute('allow','clipboard-read; clipboard-write; microphone');
+  frame.setAttribute('allow','clipboard-read; clipboard-write; microphone; camera');
   const footer=make('div','bc-chat-pane-footer');
   footer.append(make('span','','BLACKCELL CORPORATION'),make('span','','VERIFIED NETWORK ACCESS'));
   pane.append(header,frame,footer);
@@ -118,7 +118,7 @@
     if(frameLoaded)return;
     const url=new URL('corporate-chat.html',location.href);
     url.searchParams.set('embed','1');
-    url.searchParams.set('chatUI','voice-20261128-v1');
+    url.searchParams.set('chatUI','camera-20261128-v1');
     if(peerWanted)url.searchParams.set('peer',peerWanted);
     frame.src=url.href;
     frameLoaded=true;
