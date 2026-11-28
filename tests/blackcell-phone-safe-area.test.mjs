@@ -45,7 +45,7 @@ test('Critical inline style uses safe area fallback and is versioned',()=>{
  assert.match(critical,/bc-installed-top-edge\{display:none!important\}/);
  assert.match(critical,/padding-top:var\(--bc-phone-header-clearance\)!important/);
  assert.match(critical,/content:" · R3"/);
- assert.match(readFileSync('blackcell-os.html','utf8'),/content="20261127-phone-safe-area3"/);
+ assert.equal(readFileSync('blackcell-os.html','utf8').match(/name="blackcell-os-client-build" content="([^"]+)"/)?.[1],readFileSync('blackcell-site-version.json','utf8').match(/"fallback":"([^"]+)"/)?.[1]);
 });
 
 test('Compact header does not reuse window-only edge or oversized portrait floor',()=>{
