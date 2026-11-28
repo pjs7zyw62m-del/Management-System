@@ -43,3 +43,14 @@ test('Calls belongs above Messages and compose options contain both creation act
  assert.match(js,/toggleNewChatMenu\(e.currentTarget\)/);assert.match(js,/addEventListener\('click',startDirectChat\)/);
  assert.match(html,/id="bcCallsCompact"/);assert.match(css,/#osChatSidebar>#bcGroupInbox\{grid-column:2;grid-row:5/);
 });
+
+test('iMessage launchers request the fresh release and allow safe manual refresh',()=>{
+ const os=read('blackcell-os.js'),html=read('blackcell-os.html'),dock=read('corporate-chat-dock.js');
+ assert.match(html,/corporate-chat\.html\?v=[^"]+navmenu2"/);
+ assert.match(html,/chatRefresh=20261128-2/);
+ assert.match(os,/id==='developerpreview'\|\|baseId==='chat'\)url\.searchParams\.set\('_bc_release'/);
+ assert.match(os,/id==='photoledger'\|\|id==='chat'\)\&\&!chatPopout/);
+ assert.match(os,/End the active call before refreshing iMessage/);
+ assert.match(os,/child\.BLACKCELL_OS_BEFORE_CLOSE\?\.\(\)\?\.retain/);
+ assert.match(dock,/navmenu-20261128-v2/);assert.match(dock,/url\.searchParams\.set\('_bc_release'/);
+});
