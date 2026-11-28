@@ -27,7 +27,7 @@ test('Mobile editorial store uses actual module, authorized featured cards and r
    'cards[0].querySelector(".bc-store-get").click();await new Promise(r=>setTimeout(r,30));mark("install",installs===1&&catalog[0].installed);host.querySelector(".bc-store-story .bc-store-get").click();mark("open",opened==="photoledger");'+
    'const tab=label=>[...nav.querySelectorAll("button")].find(b=>b.textContent===label);tab("Search").click();const input=host.querySelector(".bc-store-search");input.value="Photos";input.dispatchEvent(new Event("input"));mark("search",host.querySelector(".bc-store-mobile-title").textContent==="Search"&&host.querySelectorAll(".bc-store-grid .bc-store-app").length===1);'+
    'tab("Today").click();host.querySelector(".bc-store-mobile-account").click();mark("tools",host.classList.contains("bc-store-tools-open")&&[...host.querySelectorAll(".bc-store-mobile-tool")].find(b=>b.textContent==="Unavailable").hidden);'+
-   '}else{mark("desktop",getComputedStyle(nav).display==="none"&&getComputedStyle(feed).display==="none"&&getComputedStyle(host.querySelector(".bc-store-feature")).display!=="none")}'+
+   '}else{mark("desktop",getComputedStyle(nav).display==="none"&&getComputedStyle(feed).display==="none"&&getComputedStyle(host.querySelector(".bc-store-desktop-editorial")).display!=="none"&&getComputedStyle(host.querySelector(".bc-store-desktop-rail")).display!=="none");const desktopTab=label=>[...host.querySelectorAll(".bc-store-desktop-nav")].find(b=>b.textContent===label);desktopTab("Creative").click();mark("category",host.querySelectorAll(".bc-store-grid .bc-store-app").length>0&&!!host.querySelector(".bc-store-grid [data-app-id=personalphotos]")&&!host.querySelector(".bc-store-grid [data-app-id=photoledger]"));const ds=host.querySelector(".bc-store-desktop-search");ds.value="Photos";ds.dispatchEvent(new Event("input"));mark("desktopsearch",host.querySelectorAll(".bc-store-grid .bc-store-app").length===1);desktopTab("Updates").click();mark("updates",!!host.querySelector(".bc-store-desktop-update"));}'+
    '</script></body></html>';
    res.writeHead(200,{'content-type':'text/html'});res.end(body);return;
   }
@@ -42,13 +42,13 @@ test('Mobile editorial store uses actual module, authorized featured cards and r
    const child=spawn(process.env.CHROME||'google-chrome',['--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage','--window-size=1280,900','--virtual-time-budget=1500','--dump-dom',url]);
    let out='',err='';child.stdout.on('data',d=>out+=d);child.stderr.on('data',d=>err+=d);
    const exit=await new Promise(ok=>{const t=setTimeout(()=>{child.kill('SIGKILL');ok(124)},25000);child.once('exit',c=>{clearTimeout(t);ok(c??1)});child.once('error',()=>{clearTimeout(t);ok(1)})});
-   assert.equal(exit,0,err.slice(-500));for(const key of phone?['features','layout','nav','install','open','search','tools']:['features','desktop'])assert.match(out,new RegExp('data-'+key+'="true"'),w+'x'+h+' '+key+' '+out.slice(-700));
+   assert.equal(exit,0,err.slice(-500));for(const key of phone?['features','layout','nav','install','open','search','tools']:['features','desktop','category','desktopsearch','updates'])assert.match(out,new RegExp('data-'+key+'="true"'),w+'x'+h+' '+key+' '+out.slice(-700));
   }
  }finally{await new Promise(ok=>server.close(ok))}
 });
 test('Store assets and OS build version are current',()=>{
  assert.match(html,/blackcell-app-store-grid\.css\?[^"]*editorialStore=20261127-1/);
- assert.match(html,/content="20261127-editorial-store1-gesture1"/);
+ assert.match(html,/content="20261127-editorial-store1-gesture1-desktop1"/);
  assert.match(readFileSync('blackcell-os.js','utf8'),/blackcell-app-store\.js\?v=20261127-editorial-store1/);
- assert.match(readFileSync('blackcell-site-version.json','utf8'),/"fallback":"20261127-editorial-store1-gesture1"/);
+ assert.match(readFileSync('blackcell-site-version.json','utf8'),/"fallback":"20261127-editorial-store1-gesture1-desktop1"/);
 });
