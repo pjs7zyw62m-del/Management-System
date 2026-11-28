@@ -524,7 +524,7 @@ function tabletSplitOptions(){
 }
 function tabletSplit(left,right){
  const available=tabletSplitOptions();if(left===right||!available.some(r=>r.id===left)||!available.some(r=>r.id===right))return false;
- clearTabletSplit();const a=windows.get(left),b=windows.get(right);tabletPair=[left,right];
+ clearTabletSplit();const a=windows.get(left),b=windows.get(right);raise(a);tabletPair=[left,right];
  for(const r of [a,b])r.el.classList.remove('bc-os-fullscreen');
  a.el.dataset.bcSplit='left';b.el.dataset.bcSplit='right';$('desktop').classList.add('bc-tablet-split');
  syncFullscreenShell();return true;
