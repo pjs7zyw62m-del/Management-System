@@ -162,6 +162,7 @@ export function mountStore(host,api){
    art.append(svg);const emblem=make('div','bc-store-icon bc-store-desktop-emblem');emblem.dataset.appId=app.id;drawIcon(emblem,app);art.append(emblem);
    const copy=make('div','bc-store-desktop-promo-copy');copy.append(make('span','bc-store-desktop-kicker',primary?'FEATURED APPLICATION':'EXPLORE BLACKCELL'),make(primary?'h2':'h3','',app.title),make('p','',app.sub||'BLACKCELL application'));
    const more=button(primary?'View application':'Learn more','bc-store-desktop-more',()=>navigate(()=>{detail=app.id}));copy.append(more);
+   if(primary){const action=card(app).querySelector('.bc-store-get');action.classList.add('bc-store-desktop-hero-action');copy.append(action)}
    item.append(art,copy);return item;
   }
   feed.append(promo(ranked[0],true));
