@@ -1,3 +1,5 @@
+import {mountBlackcellConnect} from './blackcell-connect.js?v=1';
+import {createFloatingMessageSound} from './blackcell-floating-message-sound.js?v=1';
 import {mountChatVoice,VOICE_BODY} from './blackcell-chat-voice.js?v=1';
 import {mountPopoutActions} from './corporate-chat-popout-actions.js?v=20261128-attached-reactions2';
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
@@ -117,7 +119,7 @@ let chatVerificationPaused=false,chatVerificationChecking=false;
 const IDLE_LIMIT_MS=60*60*1000;
 async function endChatAccess(reason){
  if(sessionEnded)return;
- sessionEnded=true;ready=false;voice?.pause();tubeCards.clear();pulseCards.clear();employeeSession=false;inboxPins=[];closePinMenu();syncInboxControls();$('inboxRecent').hidden=true;
+ sessionEnded=true;ready=false;standaloneConnect?.stop();voice?.pause();tubeCards.clear();pulseCards.clear();employeeSession=false;inboxPins=[];closePinMenu();syncInboxControls();$('inboxRecent').hidden=true;
  $('messageInput').disabled=true;$('sendButton').disabled=true;
  status(reason);
  live.dispose();
@@ -174,6 +176,11 @@ function status(text){$('systemStatus').textContent=text;$('systemStatus').hidde
 const sharedMedia=setupCorporateMedia({client,context:()=>({self,peer,ready,blocked:chatBlocked||!blockKnown||blockBusy}),reloadMessages:loadMessages,status});
 const voice=mediaPanelMode?null:mountChatVoice({client,context:()=>({self,peer,ready,blocked:chatBlocked||!blockKnown||blockBusy}),composer:$('sendForm'),input:$('messageInput'),status,reload:loadMessages});
 window.BLACKCELL_OS_PAUSE_MEDIA=()=>{sharedMedia.pause();voice?.pause()};
+const standaloneConnect=!mediaPanelMode&&window.parent===window?mountBlackcellConnect({client:()=>client,account:()=>self,allowed:()=>ready,notify:status,ring:()=>floatingRing?.play()}):null;
+const floatingRing=standaloneConnect?createFloatingMessageSound():null;
+function requestConnect(mode){if(!ready||!peer||chatBlocked||!blockKnown||blockBusy)return;const id=peer.user_id,name=peer.display_name||'BLACKCELL Member';if(osChat&&window.parent!==window){window.parent.postMessage({type:'blackcell-connect-request',peerId:id,mode,name},location.origin)}else if(standaloneConnect)standaloneConnect.request(id,mode,name);else status('Open iMessage in BLACKCELL OS to place calls.');}
+function connectButton(mode){const b=document.createElement('button');b.type='button';b.className='bc-connect-button';b.textContent=mode==='voice'?'Call':'Video';b.title=mode==='voice'?'BLACKCELL Connect voice call':'BLACKCELL Connect video call';b.setAttribute('aria-label',b.title);b.disabled=true;b.onclick=()=>requestConnect(mode);return b}
+if(!mediaPanelMode&&!popout&&(osChat||standaloneConnect)){const actions=document.createElement('span');actions.className='bc-connect-chat-actions';actions.append(connectButton('voice'),connectButton('video'));$('bcMobileChatTools').before(actions)}
 const live=setupCorporateChatLive({
  client,context:()=>({self,peer,ready}),
  typingLabel:$('typingIndicator'),typingName:$('typingName')
@@ -416,7 +423,7 @@ async function deleteSentMessage(m){
    window.close();
    if(!window.closed)location.assign('corporate-chat.html?v=20261115-contact-axis1');
   });
-  const camera=document.createElement('button');camera.type='button';camera.id='popoutCamera';camera.className='bc-pop-nav bc-pop-camera';camera.hidden=true;camera.title='Video calling — not connected yet';camera.setAttribute('aria-label','Video calling, not available yet');camera.innerHTML='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="6.5" width="12" height="11" rx="2.8" stroke="currentColor" stroke-width="1.7"/><path d="m15 10 4.6-2.8a.9.9 0 0 1 1.4.8v8a.9.9 0 0 1-1.4.8L15 14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';camera.addEventListener('click',()=>{closeInfoMenu();status('Video calling is not available yet.');});
+  const camera=document.createElement('button');camera.type='button';camera.id='popoutCamera';camera.className='bc-pop-nav bc-pop-camera';camera.hidden=true;camera.title='BLACKCELL Connect video call';camera.setAttribute('aria-label','BLACKCELL Connect video call');camera.innerHTML='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="6.5" width="12" height="11" rx="2.8" stroke="currentColor" stroke-width="1.7"/><path d="m15 10 4.6-2.8a.9.9 0 0 1 1.4.8v8a.9.9 0 0 1-1.4.8L15 14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';camera.addEventListener('click',()=>{closeInfoMenu();requestConnect('video');});
   const info=document.createElement('button');info.type='button';info.id='popoutInfo';info.className='bc-pop-nav bc-pop-profile';info.innerHTML='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="6" r="1.5" fill="currentColor"/><path d="M12 10v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';info.hidden=true;info.setAttribute('aria-label','Contact options');info.setAttribute('aria-expanded','false');info.setAttribute('aria-controls','popoutInfoMenu');
   const menu=document.createElement('div');menu.id='popoutInfoMenu';menu.className='bc-pop-info-menu';menu.hidden=true;
   const profile=document.createElement('a');profile.id='popoutProfile';profile.href='corporate-network.html';profile.target='_blank';profile.rel='noopener';profile.textContent='View Profile';
@@ -427,7 +434,7 @@ async function deleteSentMessage(m){
   info.addEventListener('click',()=>{if(!ready||!peer)return;const open=menu.hidden;menu.hidden=!open;info.setAttribute('aria-expanded',String(open));if(open){syncBlockControls();void refreshCurrentBlock();}});
   document.addEventListener('pointerdown',e=>{if(!menu.hidden&&!menu.contains(e.target)&&!info.contains(e.target))closeInfoMenu()});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!menu.hidden){closeInfoMenu();info.focus()}});
-  header.append(back,camera,info,menu);
+  header.append(back,connectButton('voice'),camera,info,menu);
  }
 const blockNotice=document.createElement('div');blockNotice.className='bc-chat-block-notice';blockNotice.hidden=true;blockNotice.setAttribute('role','status');
 const blockNoticeText=document.createElement('span');blockNoticeText.textContent='You blocked this contact. New messages and attachments are disabled.';
@@ -437,6 +444,7 @@ function closeInfoMenu(){const menu=$('popoutInfoMenu'),info=$('popoutInfo');if(
 function syncBlockControls(){
  voice?.sync();syncMessageTools();
  const disabled=!ready||!peer||!blockKnown||chatBlocked||blockBusy;
+ for(const b of document.querySelectorAll('.bc-connect-button,#popoutCamera'))b.disabled=disabled;
  $('messageInput').disabled=disabled;$('sendButton').disabled=disabled||sendingMessage;
  blockNotice.hidden=!chatBlocked||!ready||!peer;unblockButton.disabled=blockBusy;
  const action=$('popoutBlock');if(action){action.textContent=chatBlocked?'Unblock':'Block';action.classList.toggle('bc-pop-block-action',!chatBlocked);action.disabled=!blockKnown||blockBusy||!ready}

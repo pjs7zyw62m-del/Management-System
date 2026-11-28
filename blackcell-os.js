@@ -1,3 +1,4 @@
+import {mountBlackcellConnect} from './blackcell-connect.js?v=1';
 import {createChatUnreadMonitor} from './blackcell-chat-unread.js?v=1';
 import {mountPhoneNavigation} from './blackcell-os-phone-navigation.js?v=1';
 import {mountWorldMonitor} from './blackcell-os-world-monitor.js?v=1';
@@ -163,7 +164,7 @@ async function finishBoot(){
  if(!preview&&(!active||leaving||$('gate').dataset.state!=='boot'))return false;
  bootComplete=true;$('gate').hidden=true;if(!workspaceLock?.isLocked())$('desktop').hidden=false;applyAppLayout();window.dispatchEvent(new Event('blackcell:desktop-ready'));return true;
 }
-function setupWorkspaceLock(){if(workspaceLock)return;workspaceLock=createWorkspaceLock({host:$('desktop'),preview,account:()=>({id:storeProfile,name:$('memberName').textContent,initials:$('initials').textContent}),usable:()=>!leaving&&(active||preview),verify:async secret=>{const verified=await verifyWorkspacePassword(client,storeProfile,secret);if(!verified.ok)return verified;const result=await corporateAuthorize(client,{allowLedgerOnly:true});if(!result.ok||result.user.id!==storeProfile||!memberAllowed(result.member)||(!owner&&result.member.access_scope==='ledger_only'))return {ok:false,message:'Corporate session has expired. Sign Out and authenticate again.'};const {data,error}=await client.rpc(owner?'corp_code_status':'corp_employee_code_status');if(error||data?.ok!==true||data?.verified!==true)return {ok:false,message:'Corporate security verification expired. Sign Out and authenticate again.'};return {ok:true}},onLock:()=>{phoneNavigation.dismiss();if(!preview)window.BLACKCELL_SYSTEM_SOUNDS?.play('lock');closeAppPasswordPrompt();hideProtectedWindows();const parked=$('osParkedChatRail');if(parked){parked.hidden=true;parked.replaceChildren();}securityNotifications?.pause();chatUnreadMonitor?.reset();closeRecycleBin();finishAppRearrange();cancelAppHold();closeAppContext();closeMenu();dockReveal(false);saveWorkspace();for(const r of windows.values()){if(r.frame)pauseFrameMedia(r.frame);for(const media of r.el.querySelectorAll('video,audio'))try{media.pause()}catch(_){}}},onUnlock:()=>{if(!preview)window.BLACKCELL_SYSTEM_SOUNDS?.play('unlock');syncParkedChatBubbles();last=Date.now();if(bootComplete)$('desktop').hidden=false;applyAppLayout();void activity();void recheck();void securityNotifications?.refresh();void chatUnreadMonitor?.refresh()},onSignOut:()=>void signOut()});}
+function setupWorkspaceLock(){if(workspaceLock)return;workspaceLock=createWorkspaceLock({host:$('desktop'),preview,account:()=>({id:storeProfile,name:$('memberName').textContent,initials:$('initials').textContent}),usable:()=>!leaving&&(active||preview),verify:async secret=>{const verified=await verifyWorkspacePassword(client,storeProfile,secret);if(!verified.ok)return verified;const result=await corporateAuthorize(client,{allowLedgerOnly:true});if(!result.ok||result.user.id!==storeProfile||!memberAllowed(result.member)||(!owner&&result.member.access_scope==='ledger_only'))return {ok:false,message:'Corporate session has expired. Sign Out and authenticate again.'};const {data,error}=await client.rpc(owner?'corp_code_status':'corp_employee_code_status');if(error||data?.ok!==true||data?.verified!==true)return {ok:false,message:'Corporate security verification expired. Sign Out and authenticate again.'};return {ok:true}},onLock:()=>{phoneNavigation.dismiss();if(!preview)window.BLACKCELL_SYSTEM_SOUNDS?.play('lock');closeAppPasswordPrompt();hideProtectedWindows();const parked=$('osParkedChatRail');if(parked){parked.hidden=true;parked.replaceChildren();}securityNotifications?.pause();chatUnreadMonitor?.reset();connectController?.stop();closeRecycleBin();finishAppRearrange();cancelAppHold();closeAppContext();closeMenu();dockReveal(false);saveWorkspace();for(const r of windows.values()){if(r.frame)pauseFrameMedia(r.frame);for(const media of r.el.querySelectorAll('video,audio'))try{media.pause()}catch(_){}}},onUnlock:()=>{if(!preview)window.BLACKCELL_SYSTEM_SOUNDS?.play('unlock');syncParkedChatBubbles();last=Date.now();if(bootComplete)$('desktop').hidden=false;applyAppLayout();void activity();void recheck();void securityNotifications?.refresh();void chatUnreadMonitor?.refresh()},onSignOut:()=>void signOut()});}
 function lockWorkspace(mode='lock'){if(!workspaceLock||workspaceLock.isLocked())return;workspaceLock.lock(mode);}
 
 function restartWorkspace(){
@@ -392,10 +393,10 @@ function setDockPin(id,pinned){
  let saved=false;const record=JSON.stringify(Object.fromEntries(dockOverrides));void cloudWorkspaceSave('dock',record);for(const {name,store} of preferenceStores()){try{store.setItem(dockPreferenceKey(),record);if(name==='localStorage'&&store.getItem(dockPreferenceKey())===record)saved=true}catch(_){}}
  syncDockTile(tile);osNotice((tile.dataset.title||'App')+(pinned?' added to Dock.':' removed from Dock.')+(saved?'':' Preference could not be saved permanently on this device.'));if(pinned&&desktopPrefs.dockAutoHide)dockReveal(true)
 }
-function initStore(uid){chatUnreadMonitor?.reset();wallpaperManager?.dispose();osNoticeHistory=[];storeProfile=uid;spaceLoad();readWorldInstalls();readAppLocks();readDockPreferences();readAppLayout();clearStore('Checking app permissions…');window.dispatchEvent(new Event('blackcell:widget-sync'))}
+function initStore(uid){chatUnreadMonitor?.reset();connectController?.stop();wallpaperManager?.dispose();osNoticeHistory=[];storeProfile=uid;spaceLoad();readWorldInstalls();readAppLocks();readDockPreferences();readAppLayout();clearStore('Checking app permissions…');window.dispatchEvent(new Event('blackcell:widget-sync'))}
 function syncStore(){
  if(preview)return;
- void chatUnreadMonitor?.refresh();
+ void chatUnreadMonitor?.refresh();if(!installedApp('chat'))connectController?.stop();
  for(const tile of document.querySelectorAll('.app[data-app]')){
   const id=tile.dataset.app;tile.hidden=!installedApp(id);
   syncDockTile(tile);
@@ -451,7 +452,7 @@ async function setStoreRule(id,level,enabled){if(!storeAdmin||preview)return {ok
 function hostMessage(type){if(embeddedAdmin)window.parent.postMessage({type},location.origin)}
 function returnAdmin(){if(owner||preview)showApp('administration')}
 function clock(){ $('clock').textContent=new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}); }clock();setInterval(clock,15000);
-function blocked(message){closeAppPasswordPrompt();stopRecovery();recoveryAttempts=0;recoveryAccount=null;recoveryLast=null;$('gateRetry').hidden=true;closeRecycleBin();finishAppRearrange();cancelAppHold();closeAppContext();stopBootProgress();workspaceLock?.dismiss();$('gate').dataset.state='blocked';stopStorageWidget();securityNotifications?.dispose();securityNotifications=null;chatUnreadMonitor?.reset();clearWorkspace();active=false;closeAll(true);$('desktop').hidden=true;$('gate').hidden=false;$('gateMessage').textContent=message;$('gateLink').hidden=false;hostMessage('blackcell-os-blocked');}
+function blocked(message){closeAppPasswordPrompt();stopRecovery();recoveryAttempts=0;recoveryAccount=null;recoveryLast=null;$('gateRetry').hidden=true;closeRecycleBin();finishAppRearrange();cancelAppHold();closeAppContext();stopBootProgress();workspaceLock?.dismiss();$('gate').dataset.state='blocked';stopStorageWidget();securityNotifications?.dispose();securityNotifications=null;chatUnreadMonitor?.reset();connectController?.stop();clearWorkspace();active=false;closeAll(true);$('desktop').hidden=true;$('gate').hidden=false;$('gateMessage').textContent=message;$('gateLink').hidden=false;hostMessage('blackcell-os-blocked');}
 /* Fail closed on uncertain connectivity without revoking credentials or
    deleting the saved workspace. Explicit expiry still uses blocked/signOut. */
 function pauseVerification(message){
@@ -459,7 +460,7 @@ function pauseVerification(message){
  if($('gate').dataset.state==='paused'){if(recoveryTimer===null)scheduleRecovery(recoveryDelay(recoveryAttempts));return}
  if(active&&storeProfile){recoveryAccount=storeProfile;recoveryLast=last;saveWorkspace()}
  closeAppPasswordPrompt();active=false;bootComplete=false;workspaceReady=false;stopBootProgress();closeRecycleBin();finishAppRearrange();cancelAppHold();closeAppContext();closeMenu();dockReveal(false);workspaceLock?.dismiss();
- stopStorageWidget();securityNotifications?.dispose();securityNotifications=null;chatUnreadMonitor?.reset();closeAll(true);
+ stopStorageWidget();securityNotifications?.dispose();securityNotifications=null;chatUnreadMonitor?.reset();connectController?.stop();closeAll(true);
  const delay=recoveryDelay(++recoveryAttempts);
  $('desktop').hidden=true;$('gate').dataset.state='paused';$('gate').hidden=false;$('gateMessage').textContent=message+' Reconnecting automatically. Your sign-in has not been ended.';$('gateRetry').hidden=false;$('gateRetry').disabled=false;$('gateRetry').textContent='RETRY NOW';$('gateLink').hidden=true;
  scheduleRecovery(delay);
@@ -964,7 +965,7 @@ function resizeChatForMedia(r,open){
  w.style.left=Math.max(12,Math.min(rect.right-target,innerWidth-target-12))+'px';
 }
 function syncChatVisibility(){for(const r of windows.values())if(r.id==='chat'||r.chatPopout)chatFrameMessage(r,'blackcell-chat-visibility',{visible:active&&!workspaceLock?.isLocked()&&!r.el.hidden&&selectedWindow===r})}
-window.addEventListener('message',event=>{if(event.origin!==location.origin||!active||leaving||workspaceLock?.isLocked())return;const data=event.data;if(!data||typeof data!=='object')return;const source=[...windows.values()].find(r=>(r.id==='chat'||r.chatPopout)&&r.frame?.contentWindow===event.source);if(!source)return;if(data.type==='blackcell-chat-read'){void chatUnreadMonitor?.refresh();return}if(data.type==='blackcell-chat-popout-close'&&source.chatPopout){void requestClose(source);return}if(data.type==='blackcell-chat-popout'&&source.id==='chat'&&installedApp('chat')&&typeof data.peerId==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.peerId)){showApp('chatpop-'+data.peerId,{peerId:data.peerId,name:typeof data.name==='string'?data.name:'Conversation'});return}if(data.type==='blackcell-chat-popout-media'&&typeof data.open==='boolean'){resizeChatForMedia(source,data.open);return}if(data.type==='blackcell-chat-activity'&&!source.el.hidden){for(const r of windows.values())if(r!==source&&(r.id==='chat'||r.chatPopout))chatFrameMessage(r,'blackcell-chat-shared-activity');void activity()}});
+window.addEventListener('message',event=>{if(event.origin!==location.origin||!active||leaving||workspaceLock?.isLocked())return;const data=event.data;if(!data||typeof data!=='object')return;const source=[...windows.values()].find(r=>(r.id==='chat'||r.chatPopout)&&r.frame?.contentWindow===event.source);if(!source)return;if(data.type==='blackcell-connect-request'){if(contextAllowed()&&installedApp('chat')&&!source.el.hidden&&selectedWindow===source&&(!source.chatPopout||source.id==='chatpop-'+data.peerId)){ensureConnect();connectController?.request(data.peerId,data.mode,data.name)}return}if(data.type==='blackcell-chat-read'){void chatUnreadMonitor?.refresh();return}if(data.type==='blackcell-chat-popout-close'&&source.chatPopout){void requestClose(source);return}if(data.type==='blackcell-chat-popout'&&source.id==='chat'&&installedApp('chat')&&typeof data.peerId==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.peerId)){showApp('chatpop-'+data.peerId,{peerId:data.peerId,name:typeof data.name==='string'?data.name:'Conversation'});return}if(data.type==='blackcell-chat-popout-media'&&typeof data.open==='boolean'){resizeChatForMedia(source,data.open);return}if(data.type==='blackcell-chat-activity'&&!source.el.hidden){for(const r of windows.values())if(r!==source&&(r.id==='chat'||r.chatPopout))chatFrameMessage(r,'blackcell-chat-shared-activity');void activity()}});
 function syncStoreUpdateHold(){const r=windows.get('store');if(!r)return;const needed=!r.el.hidden||r.storeBusy;if(needed&&!r.updateHold&&!preview){try{r.updateHold=window.top.BLACKCELL_LIVE_UPDATE?.hold('App Store workspace',window)}catch(_){}}else if(!needed&&r.updateHold){r.updateHold();r.updateHold=null}}
 /* Parked bubbles sit at desktop level unless explicitly kept above windows. */
 function bubbleKeepsOnTop(id){return windows.get(id)?.chatKeepOnTop===true||deferredParkedChats.get(id)?.keepOnTop===true}
@@ -1035,6 +1036,7 @@ function raise(r){if(!r.chatPopout&&r.spaceId&&r.spaceId!==bcSpace)spaceSwitch(r
 function showDesktop(){closeRecycleBin();for(const r of windows.values()){if(r.spaceId===bcSpace)r.spaceShown=false;r.el.hidden=true}selectedWindow=null;updateActiveAppMenu();syncFullscreenShell();syncStoreUpdateHold();syncChatVisibility();saveWorkspace()}
 function dispose(r,force=false){if(r?.el?.classList?.contains('bc-os-fullscreen'))$('desktop').classList.remove('bc-os-fullscreen-active','bc-os-menu-edge-open');if(!force){void requestClose(r);return;}r.updateHold?.();r.updateHold=null;r.cleanup?.();r.frame?.remove();r.el.remove();r.release?.();windows.delete(r.id);syncParkedChatBubbles();markDock(r.id,false);if(selectedWindow===r)selectedWindow=null;updateActiveAppMenu();syncFullscreenShell();syncChatVisibility();saveWorkspace()}
 // Server unread counts are independent of open, minimized, or parked chat windows.
+let connectController=null;
 let chatUnreadMonitor=null,chatUnreadSnapshot={total:0,byPeer:new Map()};
 function paintChatUnread(){
  const total=contextAllowed()&&installedApp('chat')?chatUnreadSnapshot.total:0;
@@ -1043,6 +1045,7 @@ function paintChatUnread(){
   if(n)node.dataset.bcUnread=n>99?'99+':String(n);else delete node.dataset.bcUnread;
  }
 }
+function ensureConnect(){if(preview||connectController)return;connectController=mountBlackcellConnect({client:()=>client,account:()=>storeProfile,allowed:()=>contextAllowed()&&installedApp('chat'),host:$('desktop'),notify:message=>osNotice(message,message.startsWith('Incoming ')?null:'notice'),ring:()=>window.BLACKCELL_SYSTEM_SOUNDS?.play('callring')});void connectController.poll()}
 function ensureChatUnreadMonitor(){
  if(preview||chatUnreadMonitor)return;
  chatUnreadMonitor=createChatUnreadMonitor({client:()=>client,account:()=>storeProfile,allowed:()=>contextAllowed()&&installedApp('chat'),onChange:snapshot=>{chatUnreadSnapshot=snapshot;paintChatUnread()},onNew:(count,initial)=>{
@@ -1051,7 +1054,7 @@ function ensureChatUnreadMonitor(){
  const observer=new MutationObserver(paintChatUnread);observer.observe($('desktop'),{childList:true,subtree:true});
  window.addEventListener('pagehide',()=>{observer.disconnect();chatUnreadMonitor?.dispose();chatUnreadMonitor=null},{once:true});
 }
-window.addEventListener('blackcell:desktop-ready',()=>{ensureChatUnreadMonitor();void chatUnreadMonitor?.refresh()});
+window.addEventListener('blackcell:desktop-ready',()=>{ensureChatUnreadMonitor();ensureConnect();void chatUnreadMonitor?.refresh()});
 function osNotice(message,sound='notice'){
  if(!preview&&!workspaceRestoring&&!workspaceLock?.isLocked())window.BLACKCELL_SYSTEM_SOUNDS?.play(sound);
  osNoticeHistory=[{message:String(message||'').slice(0,250),at:Date.now()},...osNoticeHistory].slice(0,35);

@@ -1,0 +1,21 @@
+name: BLACKCELL Connect Pilot
+on:
+  pull_request:
+    paths:
+      - 'blackcell-connect.*'
+      - 'blackcell-os.js'
+      - 'corporate-chat.js'
+      - 'database/blackcell-connect*.sql'
+      - 'tests/blackcell-connect.test.mjs'
+      - '.github/workflows/blackcell-connect.yml'
+permissions:
+  contents: read
+jobs:
+  connect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --check blackcell-connect.js && node --check blackcell-os.js && node --check corporate-chat.js && node --test tests/blackcell-connect.test.mjs
