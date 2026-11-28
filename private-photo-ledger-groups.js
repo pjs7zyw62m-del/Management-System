@@ -58,7 +58,7 @@ export function mountGroupRooms(db,{isOwner,section}){
   const validId=value=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
   const stillOpen=()=>token===epoch&&dialog.open&&visible();
   live=mountRedlineGroupLive({db,roomId:id,isOwner,container:webcams,visible:stillOpen,notice:t=>{feedback.textContent=t}});
-  let selectedRoom=null,roster=[],rosterSignature='',rosterRefresh=0,photoBusy=false;
+  let selectedRoom=null,roster=[],rosterSignature='',rosterRefresh=0,balanceAt=0,photoBusy=false;
   async function safePhotoClose(){
    if(!photoFrame)return true;
    try{const check=photoFrame.contentWindow.BLACKCELL_REDLINE_GROUP_SAFE_CLOSE;if(typeof check==='function'){const r=await check();if(r?.ok===true)return true;photoNotice.textContent=r?.reason||'Finish the current photo operation before switching rooms.';return false}
@@ -100,10 +100,10 @@ export function mountGroupRooms(db,{isOwner,section}){
   }
   if(isOwner)photoHead.append(button('＋ Add participant',()=>void invite()));
   async function loadRoster(){
-   if(!stillOpen()||!live)return;try{const rows=await live.refreshRoster();if(!stillOpen())return;roster=rows;const sig=JSON.stringify(rows);if(sig===rosterSignature&&Date.now()-rosterRefresh<1000)return;rosterSignature=sig;
-    rosterBox.replaceChildren();for(const m of rows){const row=make('div','rg-photo-person');const copy=make('div','rg-person-copy');copy.append(make('strong','',m.name+(m.mine?' · You':'')),make('small','',''+(m.room_id?(m.room_active?String(m.pending??0)+' awaiting review':'Photo records available'):'No linked photo room')));row.append(copy);
+   if(!stillOpen()||!live)return;try{const rows=await live.refreshRoster();if(!stillOpen())return;roster=rows;const sig=JSON.stringify(rows);if(sig===rosterSignature&&Date.now()-balanceAt<60000)return;rosterSignature=sig;balanceAt=Date.now();
+    rosterBox.replaceChildren();for(const [index,m] of rows.entries()){const row=make('div','rg-photo-person');const copy=make('div','rg-person-copy');copy.append(make('strong','',m.name+(m.mine?' · You':'')),make('small','',''+(m.room_id?(m.room_active?String(m.pending??0)+' awaiting review':'Photo records available'):'No linked photo room')));row.append(copy);
      if(validId(m.room_id)&&(isOwner||m.mine))row.append(button(isOwner?'Review photos':'Send photos',()=>void openPhoto(m)));else if(isOwner)row.append(button('Create photo room',()=>void createPhoto(m)));rosterBox.append(row);
-     if(validId(m.room_id)&&(isOwner||m.mine)){const balance=make('small','','Checking balance…');copy.append(balance);void db.rpc('corp_redline_room_payment_status',{p_room_id:m.room_id,p_archive:false}).then(({data,error})=>{if(!stillOpen()||!balance.isConnected)return;const amount=Number(data?.remaining_cents);balance.textContent=!error&&data?.ok===true&&Number.isSafeInteger(amount)?'Outstanding '+(amount/100).toLocaleString('en-US',{style:'currency',currency:'USD'}):'Balance unavailable'}).catch(()=>{if(stillOpen())balance.textContent='Balance unavailable'})}
+     if(validId(m.room_id)&&(isOwner||m.mine)&&(!isOwner||index<4)){const balance=make('small','','Checking balance…');copy.append(balance);void db.rpc('corp_redline_room_payment_status',{p_room_id:m.room_id,p_archive:false}).then(({data,error})=>{if(!stillOpen()||!balance.isConnected)return;const amount=Number(data?.remaining_cents);balance.textContent=!error&&data?.ok===true&&Number.isSafeInteger(amount)?'Outstanding '+(amount/100).toLocaleString('en-US',{style:'currency',currency:'USD'}):'Balance unavailable'}).catch(()=>{if(stillOpen())balance.textContent='Balance unavailable'})}
     }if(!rows.length)rosterBox.append(make('p','rg-status','No active invited streamers.'));photoNotice.textContent=selectedRoom?photoNotice.textContent:rows.length+' invited streamer'+(rows.length===1?'':'s')+' · Owner watches free.';
    }catch(e){if(stillOpen())photoNotice.textContent='Participant list unavailable: '+errorText(e)}
   }
