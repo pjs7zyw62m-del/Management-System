@@ -402,6 +402,7 @@ function syncStore(){
  }
  if(appDrag&&(appDrag.tile.hidden||appDrag.target?.hidden))cancelAppDrag();
  applyAppLayout();
+ window.dispatchEvent(new Event('blackcell:desktop-layout-updated'));
  if(recyclePanel)renderRecycleBin();
  $('adminReturn').hidden=!installedApp('administration');
  renderFolderPins();refreshAppLockBadges();windows.get('settings')?.refreshSettings?.();broadcastWorldStatus();
@@ -1417,13 +1418,18 @@ function saveAppLayout(){
  if(!saved)osNotice('Layout changed for this session. Persistent device storage is unavailable.');window.dispatchEvent(new Event('blackcell:desktop-layout-updated'));return saved;
 }
 
+// Default shortcut only: never overwrite a saved layout or grant app access.
+function defaultMemberHomePins(home,{eligible}){
+ if(eligible&&home.changedAt===0&&home.pins.length===0)return [{id:'store',x:.72,y:.08}];
+ return home.pins;
+}
 window.BLACKCELL_OS_UNIFIED_LAYOUT=Object.freeze({
  account:()=>storeProfile,
  ready:()=>((preview&&!$('desktop').hidden)||contextAllowed())&&!!storeProfile,
  available:()=>[...document.querySelectorAll('#desktop .workspace .apps .app[data-app]')]
   .filter(t=>!t.hidden&&!t.disabled&&installedApp(t.dataset.app)&&!recycledApps.has(t.dataset.app))
   .map(t=>({id:t.dataset.app,title:t.dataset.title||t.dataset.app})),
- read:()=>({version:1,pins:unifiedHome.pins.map(p=>({...p})),widgets:unifiedHome.widgets.map(w=>({...w})),changedAt:unifiedHome.changedAt}),
+ read:()=>({version:1,pins:defaultMemberHomePins(unifiedHome,{eligible:active&&!preview&&!owner&&storeLevel!==null&&Number(storeLevel)>0&&!storeError&&installedApp('store')&&!recycledApps.has('store')}).map(p=>({...p})),widgets:unifiedHome.widgets.map(w=>({...w})),changedAt:unifiedHome.changedAt}),
  save:value=>{
   if((!preview&&!contextAllowed())||!storeProfile)return {ok:false,message:'Sign in and unlock your workspace to edit the desktop.'};
   const next=normalizeUnifiedHome(value);
