@@ -153,3 +153,14 @@ test('Sound library exposes 21 distinct entries and original voice clips with si
  assert.deepEqual(await second,{ok:false,reason:'stopped'});
  assert.deepEqual(await api.preview({isTrusted:true},'invalid'),{ok:false,reason:'unknown'});
 });
+
+test('Dedicated iMessage arrival tone is audible after activation and respects mute',async()=>{
+ const h=harness();await h.gesture();
+ assert.equal(h.api.library().find(x=>x.id==='message').label,'iMessage arrival');
+ assert.equal(h.api.play('message'),true);assert.equal(h.count(),2);
+ h.advance();h.api.setPreference({enabled:false});assert.equal(h.api.play('message'),false);assert.equal(h.count(),2);
+ const os=readFileSync('blackcell-os.js','utf8'),dock=readFileSync('corporate-chat-dock.js','utf8');
+ assert.ok(os.includes("osNotice('iMessage · '+count+(initial?' unread':' new')+' message'+(count===1?'':'s'),'message')"));
+ assert.match(os,/function osNotice\(message,sound='notice'\)/);
+ assert.match(dock,/messageSound\?\.play\(\)/);
+});
