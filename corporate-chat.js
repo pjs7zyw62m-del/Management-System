@@ -1,4 +1,4 @@
-import {mountBlackcellConnect} from './blackcell-connect.js?v=3';
+import {mountBlackcellConnect} from './blackcell-connect.js?v=turn1';
 import {createFloatingMessageSound} from './blackcell-floating-message-sound.js?v=2';
 import {mountChatVoice,VOICE_BODY} from './blackcell-chat-voice.js?v=1';
 import {mountPopoutActions} from './corporate-chat-popout-actions.js?v=20261128-attached-reactions2';
