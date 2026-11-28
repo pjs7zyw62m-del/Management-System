@@ -8,7 +8,7 @@ const el=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className
 const btn=(text,fn,cls='')=>{const e=el('button',cls,text);e.type='button';e.onclick=fn;return e};
 export function mountBlackcellConnect({client,account,allowed,host=document.body,notify=()=>{},ring=()=>{}}){
  const device=crypto.randomUUID();
- let current=null,pc=null,local=null,remote=null,serial=0,working=false,polling=false,disposed=false,connectedAt=0,ringAt=0,failedAt=0,lastGood=0,facing='user',release=null,requested=null,collapsed=false;
+ let current=null,pc=null,local=null,remote=null,serial=0,working=false,polling=false,disposed=false,connectedAt=0,ringAt=0,failedAt=0,lastGood=0,lastPoll=0,facing='user',release=null,requested=null,collapsed=false;
  const panel=el('section','bc-connect-panel');panel.hidden=true;panel.setAttribute('aria-label','BLACKCELL Connect');
  const header=el('header','bc-connect-header'),brand=el('strong','','BLACKCELL Connect'),minimize=btn('Minimize',()=>{collapsed=!collapsed;panel.classList.toggle('is-collapsed',collapsed);minimize.textContent=collapsed?'Expand':'Minimize'});
  header.append(brand,minimize);
@@ -38,7 +38,7 @@ export function mountBlackcellConnect({client,account,allowed,host=document.body
   const mode=current?.mode||requested?.mode||'voice';
   start.hidden=!requested||working||!!current;accept.hidden=!incoming||working;decline.hidden=!incoming;
   end.hidden=incoming&&!working;minimize.hidden=!current||incoming;
-  stage.hidden=mode!=='video'||!local;remoteVideo.hidden=mode!=='video';localVideo.hidden=mode!=='video';
+  stage.hidden=!local;stage.classList.toggle('is-voice',mode==='voice');localVideo.hidden=mode!=='video';
   mute.hidden=!local;camera.hidden=!local?.getVideoTracks().length;flip.hidden=camera.hidden;
   resume.hidden=!remote||!remoteVideo.paused;duration.hidden=!connectedAt;
   if(connectedAt){const seconds=Math.floor((Date.now()-connectedAt)/1000);duration.textContent=Math.floor(seconds/60)+':'+String(seconds%60).padStart(2,'0')}
@@ -78,7 +78,7 @@ export function mountBlackcellConnect({client,account,allowed,host=document.body
   try{
    const conn=await setup(request.mode,token);
    await conn.setLocalDescription(await conn.createOffer());await waitForIce(conn);
-   if(token!==serial||!permitted())return;
+   if(token!==serial||!permitted()){if(token===serial)cleanup();return}
    const row=await rpc('start',{p_peer:request.peer,p_mode:request.mode,p_sdp:conn.localDescription.sdp});
    if(token!==serial||!permitted()){if(row?.id)void rpc('end',{p_call:row.id}).catch(()=>{});return}
    current=row;requested=null;lastGood=Date.now();state.textContent='Calling…';working=false;paint();
@@ -91,11 +91,11 @@ export function mountBlackcellConnect({client,account,allowed,host=document.body
    const conn=await setup(offer.mode,token);
    await conn.setRemoteDescription({type:'offer',sdp:offer.offer});
    await conn.setLocalDescription(await conn.createAnswer());await waitForIce(conn);
-   if(token!==serial||!permitted())return;
+   if(token!==serial||!permitted()){if(token===serial)cleanup();return}
    const row=await rpc('answer',{p_call:offer.id,p_sdp:conn.localDescription.sdp});
    if(token!==serial||!permitted()){if(row?.id)void rpc('end',{p_call:row.id}).catch(()=>{});return}
    if(!row||row.state!=='accepted')throw Error('Call is no longer available.');
-   current=row;working=false;lastGood=Date.now();failedAt=Date.now();state.textContent='Connecting…';paint();
+   current=row;working=false;lastGood=Date.now();if(!connectedAt){failedAt=Date.now();state.textContent='Connecting…'}paint();
   }catch(e){if(token===serial)void finish('decline',e.message||'Unable to accept call.')}
  }
  async function switchCamera(){
@@ -112,10 +112,10 @@ export function mountBlackcellConnect({client,account,allowed,host=document.body
   if(disposed)return;
   if(!permitted()){if(current||requested||local)void finish('end','');return}
   if(polling||working||requested||(!current&&document.hidden))return;
-  polling=true;const token=serial;
+  polling=true;lastPoll=Date.now();const token=serial;
   try{
    const row=await rpc('poll',current?{p_call:current.id}:{});
-   if(token!==serial||!permitted())return;
+   if(token!==serial||!permitted()){if(token===serial)cleanup();return}
    lastGood=Date.now();
    if(!row){if(current){cleanup();notify('Call ended or was not answered.')}return}
    if(!current){
@@ -131,7 +131,7 @@ export function mountBlackcellConnect({client,account,allowed,host=document.body
   }catch(e){if(token===serial&&current&&(!lastGood||Date.now()-lastGood>20000))void finish('end','Call authorization or connection lost.')}
   finally{polling=false}
  }
- const timer=setInterval(()=>{if(current||requested||working||!permitted())void poll();else if(Date.now()-lastGood>6500)void poll();if(connectedAt)paint()},2500);
+ const timer=setInterval(()=>{if(current||requested||working||!permitted())void poll();else if(Date.now()-lastPoll>6500)void poll();if(connectedAt)paint()},2500);
  const wake=()=>void poll();window.addEventListener('focus',wake);document.addEventListener('visibilitychange',wake);
  const leave=()=>{void finish('end','')};window.addEventListener('pagehide',leave);
  return {request(peer,mode,displayName){
