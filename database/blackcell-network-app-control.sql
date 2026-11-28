@@ -87,5 +87,5 @@ begin
  select coalesce(jsonb_agg(jsonb_build_object('id',x.app_id,'minLevel',case when x.app_id='administration' then 7 else 1 end,'enabled',coalesce(n.mode,'active')='active','allowed',coalesce(n.mode,'active')='active','installed',not exists(select 1 from bc_store_private.core_removed d where d.user_id=uid and d.app_id=x.app_id),'core',true) order by x.app_id),'[]'::jsonb) into core_catalog
  from unnest(array['administration','personalphotos','files','browser','network','chat','forces','photos','film','shorts','person','card','settings']::text[]) as x(app_id) left join bc_store_private.network_app_state n on n.app_id=x.app_id
  where (own or coalesce(n.mode,'active')='active') and (x.app_id <> 'administration' or own) and (x.app_id <> 'card' or not own) and (x.app_id <> 'chat' or own or coalesce(m.can_chat,false));
- return jsonb_build_object('ok',true,'owner',own,'level',m.clearance_level,'apps',catalog||core_catalog);
+ return jsonb_build_object('ok',true,'owner',own,'level',m.clearance_level,'apps',catalog||core_catalog,'networkBlocked',coalesce((select jsonb_agg(app_id order by app_id) from bc_store_private.network_app_state where mode<>'active'),'[]'::jsonb));
 end $function$
