@@ -1,0 +1,32 @@
+/* Mobile chat: one identity row, one overflow control, no crowded tool strip.
+   Width-based rules work for phone browser, OS iframe, and small desktop windows. */
+#bcMobileChatTools{display:none}
+@media(max-width:600px){
+html:not(.bc-chat-popout):not(.bc-media-panel).bc-compact-chat body.bc-chat .chat-main>.chat-title{position:relative;z-index:8;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:58px;padding:8px 12px!important;background:#15171d!important;border-bottom:1px solid #ffffff12;overflow:visible;box-shadow:none}
+html:not(.bc-chat-popout):not(.bc-media-panel).bc-compact-chat .chat-title .imessage-identity{flex:1 1 0%;min-width:0;display:flex;align-items:center;gap:9px;overflow:visible}
+html:not(.bc-chat-popout):not(.bc-media-panel).bc-compact-chat .chat-title .imessage-portrait{flex:0 0 34px;width:34px;height:34px;margin:0;box-shadow:none}
+html:not(.bc-chat-popout):not(.bc-media-panel).bc-compact-chat .chat-title .imessage-names{flex:1;min-width:0;display:block;text-align:left}
+html:not(.bc-chat-popout):not(.bc-media-panel).bc-compact-chat .chat-title .imessage-names strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px!important;line-height:1.25;letter-spacing:0}
+html:not(.bc-chat-popout):not(.bc-media-panel).bc-compact-chat .chat-title .imessage-names small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px!important;line-height:1.25;letter-spacing:0;margin-top:3px}
+html:not(.bc-chat-popout):not(.bc-media-panel).bc-compact-chat #backToInbox:not([hidden]),html:not(.bc-chat-popout):not(.bc-media-panel).bc-compact-chat #bcMobileChatTools{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;min-width:38px;min-height:38px;padding:0;color:#82c5ff;border:1px solid #ffffff19;border-radius:12px;background:#ffffff08;font:700 24px/1 system-ui;cursor:pointer}
+html:not(.bc-chat-popout):not(.bc-media-panel).bc-compact-chat #bcMobileChatTools:disabled{opacity:.4}
+html:not(.bc-chat-popout):not(.bc-media-panel).bc-compact-chat #bcChatHeaderActions{position:absolute;top:calc(100% + 5px);right:10px;width:min(230px,calc(100% - 20px));max-height:min(48vh,320px);overflow:auto;z-index:20;display:none!important;flex-direction:column;align-items:stretch;gap:2px;padding:7px;background:#181b23;border:1px solid #ffffff25;border-radius:15px;box-shadow:0 12px 35px #0009}
+html:not(.bc-chat-popout):not(.bc-media-panel).bc-compact-chat #bcChatHeaderActions.bc-mobile-tools-open{display:flex!important}
+html:not(.bc-chat-popout):not(.bc-media-panel).bc-compact-chat #bcChatHeaderActions .imessage-secure-indicator{display:none!important}
+html:not(.bc-chat-popout):not(.bc-media-panel).bc-compact-chat #bcChatHeaderActions>:is(button,a):not([hidden]){display:flex;align-items:center;justify-content:flex-start;gap:10px;width:100%;min-height:40px;height:auto;max-width:none;padding:8px 11px!important;text-align:left;color:#edf0f5!important;background:transparent!important;border:0;border-radius:8px;font:500 13px/1.35 system-ui;letter-spacing:0;text-decoration:none}
+html:not(.bc-chat-popout):not(.bc-media-panel).bc-compact-chat #bcChatHeaderActions>:is(button,a)[hidden]{display:none!important}
+html:not(.bc-chat-popout):not(.bc-media-panel).bc-compact-chat #bcChatHeaderActions>:is(button,a):focus-visible{outline:2px solid #82c5ff;outline-offset:-2px}
+html:not(.bc-chat-popout):not(.bc-media-panel).bc-compact-chat #bcChatHeaderActions>:is(button,a):disabled{opacity:.45}
+html:not(.bc-chat-popout):not(.bc-media-panel).bc-compact-chat #bcChatHeaderActions svg{width:19px;height:19px;flex:none}
+html:not(.bc-chat-popout):not(.bc-media-panel).bc-compact-chat #bcFindMessages:after{content:'Search messages'}
+html:not(.bc-chat-popout):not(.bc-media-panel).bc-compact-chat #bcStarredMessages:after{content:'Starred messages'}
+html:not(.bc-chat-popout):not(.bc-media-panel).bc-compact-chat #popoutChat:after{content:'Open conversation window'}
+html:not(.bc-chat-popout):not(.bc-media-panel).bc-compact-chat #bcAndroidAttachmentShortcut:after{content:'Add photos or videos'}
+html:not(.bc-media-panel).bc-compact-chat body.bc-chat .chat-main>.conversation{padding:12px 14px!important;gap:8px;min-height:0;min-width:0;overflow-x:hidden}
+html:not(.bc-media-panel).bc-compact-chat body.bc-chat .chat #messages .message.bc-glass-message{max-width:min(86%,440px);flex-shrink:0}
+html:not(.bc-media-panel).bc-compact-chat body.bc-chat .chat #messages .message.bc-glass-message>.bubble{font-size:14px;line-height:1.4}
+html:not(.bc-media-panel).bc-compact-chat body.bc-chat .chat-main>.composer{gap:8px;padding:8px 10px!important;background:#15171d!important;border-top:1px solid #ffffff12}
+html:not(.bc-media-panel).bc-compact-chat body.bc-chat .composer .composer-input-wrap{min-width:0;background:#0c0e13;border-color:#ffffff20}
+html:not(.bc-media-panel).bc-compact-chat body.bc-chat .composer .composer-input-wrap textarea{font-size:16px!important;line-height:21px;direction:ltr;text-align:left}
+html:not(.bc-media-panel).bc-compact-chat body.bc-chat .composer .composer-send:not(:disabled){background:#087bea!important;border-color:#54afff65;box-shadow:none}
+}

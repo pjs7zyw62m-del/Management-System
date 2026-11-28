@@ -18,7 +18,7 @@ test('read receipt still reflects actual server timestamp and own final message'
  assert.match(js,/m.read_at\?\(plainText\?'✓':'✓✓'\):'✓'/);
 });
 test('new assets load after existing chat styling and support touch',()=>{
- assert.match(html,/corporate-chat.js\?v=20261127-choose-contact1&glassMessage=20261128-5/);
+ assert.match(html,/corporate-chat.js\?v=20261127-choose-contact1&glassMessage=20261128-6/);
  assert.ok(html.indexOf('corporate-chat-glass-message.css')>html.indexOf('corporate-chat-unified-desktop.css'));
  assert.match(css,/@media\(pointer:coarse\)/);
 });
@@ -59,4 +59,15 @@ test('reaction badge follows the original bubble, and permissions remain partici
  assert.match(css,/data-reaction-count="2"/);
  const actions=readFileSync('corporate-chat-popout-actions.js','utf8');
  assert.match(actions,/if\(badges\)bubble.append\(badges\)/);
+});
+
+test('compact mobile header keeps identity and moves existing tools into an accessible menu',()=>{
+ const mobile=readFileSync('corporate-chat-mobile-clean.css','utf8');
+ assert.match(html,/id="bcMobileChatTools"[^>]*aria-expanded="false"[^>]*aria-controls="bcChatHeaderActions"/);
+ assert.match(js,/headerActions.classList.toggle\('bc-mobile-tools-open',open\)/);
+ assert.match(js,/mobileTools.disabled=!available/);
+ assert.match(mobile,/@media\(max-width:600px\)/);
+ assert.match(mobile,/#bcChatHeaderActions.bc-mobile-tools-open\{display:flex!important\}/);
+ assert.match(mobile,/\.imessage-names strong\{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap/);
+ assert.match(readFileSync('blackcell-os.html','utf8'),/corporate-chat.html\?v=20261128-mobile-clean1/);
 });

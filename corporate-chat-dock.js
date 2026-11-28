@@ -68,7 +68,7 @@
     b.addEventListener('click',fn);return b;
   }
   const pop=button('Open chat in a separate window','↗','',()=>{
-    const link=new URL('corporate-chat.html',location.href).href;
+    const link=new URL('corporate-chat.html?v=20261128-mobile-clean1',location.href).href;
     const win=window.open(link,'blackcell-private-imessage','width=490,height=750,resizable=yes,scrollbars=no');
     if(win){win.focus();minimize();}else{
       toastMessage('Pop-out blocked','Allow pop-ups, or use the floating chat window.',null);
@@ -118,7 +118,7 @@
     if(frameLoaded)return;
     const url=new URL('corporate-chat.html',location.href);
     url.searchParams.set('embed','1');
-    url.searchParams.set('chatUI','mobile-gallery-arrows-20261109-v4');
+    url.searchParams.set('chatUI','mobile-clean-20261128-v1');
     if(peerWanted)url.searchParams.set('peer',peerWanted);
     frame.src=url.href;
     frameLoaded=true;
