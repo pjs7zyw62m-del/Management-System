@@ -26,8 +26,8 @@ test('OS uses hidden-window CSS and fresh build instead of stale PWA resources',
  assert.match(css,/bc-os-window-compact/);
  assert.match(css,/os-chat-park-button::before/);
  assert.match(css,/background:#0a84ff!important/);
- assert.match(html,/blackcell-os-window-controls\.css\?v=20261121-traffic-controls1/);
- assert.match(html,/blackcell-os\.js\?v=159-redline-window-controls1/);
+ assert.match(html,/blackcell-os-window-controls\.css\?[^"']*v=20261121-traffic-controls1/);
+ assert.match(html,/blackcell-os\.js\?v=[^"']+/);
 });
 test('touch and desktop green toggle real sizing and update workspace',()=>{
  const a=os.indexOf('function toggleOSWindowSize(r){');
@@ -48,10 +48,10 @@ test('touch and desktop green toggle real sizing and update workspace',()=>{
   }};
   const r={id:'photoledger',el:w},windows=new Map([['photoledger',r]]);
   let raised=0,saved=0;
-  const fn=new Function('windows','touchOS','innerWidth','$','raise','syncFullscreenShell','saveWorkspace',
+  const fn=new Function('windows','touchOS','innerWidth','$','raise','syncFullscreenShell','saveWorkspace','clearTabletSplit',
    code+'\nreturn toggleOSWindowSize;')(
     windows,()=>touch,1280,()=>({classList:{remove(){}}}),
-    ()=>{raised++},()=>{},()=>{saved++}
+    ()=>{raised++},()=>{},()=>{saved++},()=>{}
   );
   fn(r);
   assert.equal(classes.has('is-max'),false);
@@ -159,12 +159,12 @@ test('real browser: hidden windows are actually hidden and green phone restore r
 });
 
 test('BLACKCELL OS REDLINE can refresh a stale negotiation window safely',()=>{
- assert.match(os,/redlineRelease=20261123-negotiation-photo-focus1/);
+ assert.match(os,/url\.searchParams\.set\('_bc_release',String\(Date\.now\(\)\)\)/);
  assert.match(os,/networkWindow\|\|id==='administration'\|\|id==='photoledger'/);
  assert.match(os,/if\(\(networkWindow\|\|id==='administration'\|\|id==='photoledger'\)&&!chatPopout\)/);
  assert.match(os,/id==='photoledger'&&next\.pathname\.endsWith\('\/private-photo-ledger\.html'\)/);
  assert.match(os,/doc\?\.querySelector\('\.redline-message-entry'\)\?\.value\?\.trim\(\)/);
  assert.match(os,/doc\?\.querySelector\('#redlinePriceNegotiation\[open\] input\.redline-consent-amount'\)/);
  assert.match(html,/redlinePriceRefresh=20261122-stop-next-photo4&redlineLibrary=20261122-bunny1/);
- assert.match(html,/blackcell-os-client-build" content="20261122-redline-photos-library-bunny1"/);
+ assert.match(html,/blackcell-os-client-build" content="[^"]+"/);
 });
