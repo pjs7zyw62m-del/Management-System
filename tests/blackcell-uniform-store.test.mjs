@@ -4,9 +4,9 @@ import {readFileSync} from 'node:fs';
 import {createServer} from 'node:http';
 import {spawn} from 'node:child_process';
 const store=readFileSync('blackcell-app-store.js','utf8');
-const ids=['usa','care','innovations','awards','omega','uploadqueue','photos'];
+const ids=['usa','care','innovations','awards','omega','uploadqueue','photos','shorts'];
 test('Uniform & Military uses existing catalog permissions and separates discovery',()=>{
- assert.match(store,/const uniformIds=\['usa','care','innovations','awards','omega','uploadqueue','photos'\]/);
+ assert.match(store,/const uniformIds=\['usa','care','innovations','awards','omega','uploadqueue','photos','shorts'\]/);
  assert.match(store,/if\(category==='uniform'\)filtered=filtered.filter\(a=>isUniform\(a\)&&a.enabled!==false&&a.allowed&&!a.planned\)/);
  assert.match(store,/category==='discover'\)filtered=filtered.filter\(a=>!a.planned&&!isBeta\(a\)&&a.enabled!==false&&!isUniform\(a\)\)/);
  assert.match(store,/uniformEntry\(live\)/);
@@ -25,9 +25,9 @@ test('Uniform collection works in desktop, tablet and phone Store views',async()
    'const cards=()=>[...host.querySelectorAll(".bc-store-grid .bc-store-app")].map(x=>x.dataset.appId);'+
    'const mark=(key,v)=>document.body.dataset[key]=String(v);mark("discover",!cards().some(id=>ids.includes(id)));'+
    'const mode='+JSON.stringify(mode)+';if(mode==="desktop"){[...host.querySelectorAll(".bc-store-desktop-nav")].find(b=>b.textContent==="Uniform & Military").click()}else{host.querySelector(".bc-store-uniform-entry").click()}'+
-   'mark("collection",cards().length===6&&cards().every(id=>ids.includes(id)&&id!=="omega"));mark("noinstall",installs===0);'+
+   'mark("collection",cards().includes("shorts")&&cards().length===7&&cards().every(id=>ids.includes(id)&&id!=="omega"));mark("noinstall",installs===0);'+
    'app.selectCategory("optional");mark("addons",!cards().some(id=>ids.includes(id))&&!!host.querySelector(".bc-store-uniform-entry"));'+
-   'app.selectCategory("uniform");mark("restore",cards().length===6);'+
+   'app.selectCategory("uniform");mark("restore",cards().length===7);'+
    '</script></body></html>');
  });
  await new Promise(ok=>server.listen(0,'127.0.0.1',ok));
