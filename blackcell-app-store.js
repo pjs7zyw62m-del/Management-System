@@ -12,9 +12,19 @@ export function mountStore(host,api){
  const body=make('div','bc-store-body'),header=make('header','bc-store-header'),headline=make('h1','','Discover'),search=make('input','bc-store-search');
  search.type='search';search.placeholder='Search apps';search.setAttribute('aria-label','Search apps');search.autocomplete='off';
  const results=make('div','bc-store-results'),banner=make('div','bc-store-feedback');banner.setAttribute('role','status');const controls=make('div','bc-store-release-controls');const refresh=button('Refresh catalog','bc-store-get',async()=>{if(busy||disposed)return;refresh.disabled=true;try{const r=await api.refreshCatalog?.();banner.textContent=r?.ok?'Catalog refreshed.':r?.error||'Catalog refresh unavailable.';render()}catch(_){banner.textContent='Unable to refresh catalog.'}finally{refresh.disabled=false}});const release=button('Check OS update','bc-store-get',()=>{if(!busy)api.checkRelease?.()});const audit=button('Audit installed apps','bc-store-get',()=>{if(!busy)void auditInstalled()});const auditReport=make('section','bc-store-audit');auditReport.hidden=true;auditReport.setAttribute('aria-live','polite');controls.append(search,refresh,audit,release);header.append(headline,controls);body.append(header,banner,auditReport,results);host.append(rail,body);
+ // The phone storefront is an alternate presentation of the same authorized
+ // catalog. No independent install, open or distribution implementation.
+ const mobileTitle=make('h1','bc-store-mobile-title','Today');
+ const account=button('B','bc-store-mobile-account',()=>{if(busy||disposed)return;toolsOpen=!toolsOpen;syncMobileNav()});
+ account.setAttribute('aria-label','Store account and catalog tools');account.setAttribute('aria-expanded','false');
+ header.prepend(mobileTitle,account);
+ const mobileNav=make('nav','bc-store-mobile-nav');mobileNav.setAttribute('aria-label','Mobile App Store sections');
+ const mobileTools=make('div','bc-store-mobile-tools');mobileTools.hidden=true;
+ header.append(mobileTools);host.append(mobileNav);
+ let toolsOpen=false,searchMode=false;
  const initial=api.initialState||{};let category=['discover','installed','beta','optional','unavailable','upcoming'].includes(initial.category)?initial.category:'discover',detail=typeof initial.detail==='string'&&/^[a-z]{1,40}$/.test(initial.detail)?initial.detail:null,scrollTarget=Number.isFinite(initial.scroll)?Math.max(0,Math.min(100000,initial.scroll)):0,restoring=true,busy=false,disposed=false,scrollTimer=0,draft=null;search.value=typeof initial.search==='string'?initial.search.slice(0,160):'';
  function persist(){if(!disposed)api.onState?.({category,detail,search:search.value.slice(0,160),scroll:restoring?scrollTarget:body.scrollTop})}
- function navigate(fn){draft=null;bulkConfirm=false;restoring=false;fn();body.scrollTop=0;render();persist()}
+ function navigate(fn){if(busy||disposed)return;draft=null;bulkConfirm=false;restoring=false;fn();body.scrollTop=0;render();persist()}
  async function perform(fn,success){if(busy||disposed)return;busy=true;api.onBusy?.(true);host.setAttribute('aria-busy','true');try{const result=await fn();if(!disposed){banner.textContent=result.ok?success:result.error||'Operation failed.';if(result.ok)draft=null}}catch(_){if(!disposed)banner.textContent='Operation failed. Try again.'}finally{busy=false;host.removeAttribute('aria-busy');if(!disposed){render();api.onBusy?.(false)}}}
  /* Check availability of currently installed same-origin app launch pages.
   * A successful probe does not verify application features or cloud access.
@@ -56,17 +66,67 @@ export function mountStore(host,api){
   }finally{audit.disabled=false}
  }
  const categories=[['discover','Discover','✦'],['installed','Installed','▦'],['beta','Beta Lab','⚗'],['optional','All add-ons','⊕'],['unavailable','Unavailable','×'],['upcoming','Coming Soon','◷']];
- const navButtons=categories.map(([id,name,icon])=>{const b=button(icon+'  '+name,'bc-store-nav',()=>navigate(()=>{category=id;detail=null;search.value=''}));rail.append(b);return [id,b]});
+ const navButtons=categories.map(([id,name,icon])=>{const b=button(icon+'  '+name,'bc-store-nav',()=>{searchMode=false;toolsOpen=false;navigate(()=>{category=id;detail=null;search.value=''})});rail.append(b);return [id,b]});
  rail.append(make('p','bc-store-railnote','BLACKCELL CORPORATION\nRestricted distribution'));
+ const mobileItems=[['discover','Today','M5 3h14v18H5z M8 7h8 M8 11h8 M8 15h5'],['optional','Apps','M12 3 3 8l9 5 9-5-9-5z M3 12l9 5 9-5 M3 16l9 5 9-5'],['installed','Installed','M12 3v12 M7 10l5 5 5-5 M4 16v5h16v-5'],['beta','Beta','M9 3h6 M10 3v6L4 19a1 1 0 0 0 1 2h14a1 1 0 0 0 1-2L14 9V3 M7 15h10'],['search','Search','M21 21l-5-5 M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0']];
+ function tabIcon(path){
+  const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg'),shape=document.createElementNS(ns,'path');
+  svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');svg.setAttribute('class','bc-store-tab-icon');
+  shape.setAttribute('d',path);shape.setAttribute('fill','none');shape.setAttribute('stroke','currentColor');shape.setAttribute('stroke-width','1.9');shape.setAttribute('stroke-linecap','round');shape.setAttribute('stroke-linejoin','round');
+  svg.append(shape);return svg;
+ }
+ const mobileButtons=mobileItems.map(([id,label,glyph])=>{
+  const b=button('','bc-store-mobile-tab',()=>{
+   if(busy||disposed)return;
+   toolsOpen=false;searchMode=id==='search';
+   navigate(()=>{category=searchMode?'discover':id;detail=null;search.value=''});
+   if(searchMode)search.focus();
+  });
+  const icon=tabIcon(glyph);
+  b.append(icon,make('span','',label));mobileNav.append(b);return [id,b];
+ });
+ const extraButtons=['upcoming','unavailable'].map(id=>{
+  const b=button(categories.find(c=>c[0]===id)[1],'bc-store-mobile-tool',()=>{if(busy||disposed)return;toolsOpen=false;searchMode=false;navigate(()=>{category=id;detail=null;search.value=''})});
+  mobileTools.append(b);return [id,b];
+ });
+ function syncMobileNav(){
+  const info=api.info(),searching=searchMode||!!search.value.trim();
+  const selected=searching?'search':category;
+  mobileTitle.textContent=detail?'App Details':searching?'Search':({discover:'Today',optional:'Apps',installed:'Installed',beta:'Beta Lab',upcoming:'Coming Soon',unavailable:'Unavailable'}[category]||'Today');
+  host.classList.toggle('bc-store-searching',searching&&!detail);
+  host.classList.toggle('bc-store-tools-open',toolsOpen);
+  account.setAttribute('aria-expanded',String(toolsOpen));mobileTools.hidden=!toolsOpen;
+  for(const [id,b] of mobileButtons){b.classList.toggle('selected',selected===id);if(selected===id)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')}
+  for(const [id,b] of extraButtons)b.hidden=id==='unavailable'&&!info.owner;
+ }
  function drawIcon(icon,app){if(app.id==='photoledger'){icon.dataset.appId=app.id;return}if(app.icon){icon.append(app.icon.cloneNode(true));return}icon.style.background='linear-gradient(145deg,'+app.color+',#17171d)';const g=make('span','bc-store-planned-glyph',app.glyph);g.style.fontSize=icon.classList.contains('large')?'38px':'25px';g.style.fontWeight='650';g.setAttribute('aria-hidden','true');icon.append(g)}
  function card(app){const c=make('article','bc-store-app'),icon=make('div','bc-store-icon');drawIcon(icon,app);c.dataset.appId=app.id;c.dataset.appState=app.catalogUnavailable?'verify':app.planned?'planned':!app.allowed?'locked':app.installed?'installed':'available';icon.dataset.appId=app.id;const copy=make('div','bc-store-copy'),name=button(app.title,'bc-store-link',()=>navigate(()=>{detail=app.id}));copy.append(name,make('p','',app.sub),make('span','bc-store-status',statusOf(app)));
  const action=button(app.catalogUnavailable?'RETRY':app.planned?'COMING SOON':!app.allowed?'LOCKED':app.installed?'OPEN':'GET','bc-store-get',async()=>{if(app.catalogUnavailable){await refresh.onclick();return}if(app.installed){api.open(app.id);return}action.disabled=true;await perform(()=>api.install(app.id,true),'Added '+app.title+' to your desktop.')});action.disabled=!app.catalogUnavailable&&(app.planned||!app.allowed);
  const actions=make('div','bc-store-app-actions');actions.append(action);if(app.removable&&app.installed){const uninstall=button('Uninstall','bc-store-card-uninstall',async()=>{uninstall.disabled=true;await perform(()=>api.install(app.id,false),app.title+' uninstalled. Your app data is unchanged.')});actions.append(uninstall)}c.append(icon,copy,actions);return c}
  function group(title,apps){if(!apps.length)return;const section=make('section','bc-store-group');section.append(make('h2','',title));const grid=make('div','bc-store-grid');for(const app of apps)grid.append(card(app));section.append(grid);results.append(section)}
+ function editorial(apps){
+  const eligible=apps.filter(a=>a.allowed&&a.enabled!==false&&!a.planned&&!a.catalogUnavailable&&!isBeta(a)&&a.id!=='store');
+  const preferred=['photoledger','personalphotos','chat','film','files','network','photobattle'];
+  const sorted=[...eligible].sort((a,b)=>(preferred.includes(a.id)?preferred.indexOf(a.id):100)-(preferred.includes(b.id)?preferred.indexOf(b.id):100));
+  const featured=sorted.slice(0,2);if(!featured.length)return;
+  const feed=make('section','bc-store-editorial');feed.setAttribute('aria-label','Featured BLACKCELL applications');
+  for(const app of featured){
+   const story=make('article','bc-store-story');story.dataset.appId=app.id;
+   const art=button('','bc-store-story-art',()=>navigate(()=>{detail=app.id}));art.setAttribute('aria-label','View '+app.title);
+   const badge=make('span','bc-store-story-kicker',app.installed?'EXPLORE YOUR WORKSPACE':'AVAILABLE TO INSTALL');
+   const icon=make('div','bc-store-icon bc-store-story-icon');icon.dataset.appId=app.id;drawIcon(icon,app);
+   const copy=make('div','bc-store-story-copy');copy.append(make('h2','',app.title),make('p','',app.sub||'BLACKCELL application'));
+   art.append(badge,icon,copy);
+   // Reuse the original catalog card with its original guarded action and
+   // uninstall controls, rather than creating a second install path.
+   story.append(art,card(app));feed.append(story);
+  }
+  results.append(feed);
+ }
  let bulkConfirm=false;
  function render(){
   if(disposed||busy)return;const before=restoring?scrollTarget:body.scrollTop;const live=api.catalog(),info=api.info();const missing=info.missingLedger&&!live.some(a=>a.id==='photoledger')?[{id:'photoledger',title:'BLACKCELL REDLINE',sub:'Awaiting authorized catalog',desc:'The app is registered. Refresh the authorized catalog or verify your corporate session before installation.',color:'#656772',glyph:'▣',catalogUnavailable:true,optional:true,installed:false,allowed:false,removable:false}]:[];const all=[...live,...missing,...plannedApps.filter(a=>!live.some(b=>b.id===a.id))];for(const [id,b] of navButtons){b.hidden=id==='unavailable'&&!info.owner;b.classList.toggle('selected',category===id)}if(category==='unavailable'&&!info.owner)category='discover';
-  headline.textContent=detail?'App Details':categories.find(c=>c[0]===category)[1];results.replaceChildren();if(info.error)results.append(make('p','bc-store-empty',info.error));if(info.release){const report=make('p','bc-store-muted','OS '+info.release+' · '+info.registered+' registered apps · REDLINE: '+info.ledger);report.style.cssText='font-size:11px;color:#a9a9b5;margin:0 0 12px';results.append(report)}if(info.missingLedger)results.append(make('p','bc-store-empty','The server has not returned BLACKCELL REDLINE for this session. Refresh the catalog. If verification has expired, sign in again.'));if(info.sessionRequired)results.append(button('Verify corporate access ↗','bc-store-get',()=>api.reauthorize?.()));
+  headline.textContent=detail?'App Details':categories.find(c=>c[0]===category)[1];syncMobileNav();results.replaceChildren();if(info.error)results.append(make('p','bc-store-empty',info.error));if(info.release){const report=make('p','bc-store-muted','OS '+info.release+' · '+info.registered+' registered apps · REDLINE: '+info.ledger);report.style.cssText='font-size:11px;color:#a9a9b5;margin:0 0 12px';results.append(report)}if(info.missingLedger)results.append(make('p','bc-store-empty','The server has not returned BLACKCELL REDLINE for this session. Refresh the catalog. If verification has expired, sign in again.'));if(info.sessionRequired)results.append(button('Verify corporate access ↗','bc-store-get',()=>api.reauthorize?.()));
   if(detail){const a=all.find(x=>x.id===detail);if(!a){if(info.error){results.append(make('p','bc-store-empty','Waiting for the authorized catalog…'));return}detail=null;draft=null;render();return}results.append(button('‹ Back','bc-store-back',()=>navigate(()=>{detail=null})));const hero=make('article','bc-store-detail'),ico=make('div','bc-store-icon large');drawIcon(ico,a);const copy=make('div');copy.append(make('h2','',a.title),make('span','bc-store-status',statusOf(a)),make('p','',a.desc),make('p','bc-store-muted',a.catalogUnavailable?'Registered · Authorization not yet confirmed':a.planned?'In development · Not yet installable':a.optional?'Free · BLACKCELL desktop shortcut':'BLACKCELL system application · Reinstall anytime'));const action=button(a.catalogUnavailable?'RETRY':a.planned?'COMING SOON':!a.allowed?'LOCKED':a.installed?'OPEN':'GET','bc-store-get',async()=>{if(a.catalogUnavailable){await refresh.onclick();return}if(a.installed){api.open(a.id);return}action.disabled=true;await perform(()=>api.install(a.id,true),'Added '+a.title+' to your desktop.')});action.disabled=!a.catalogUnavailable&&(a.planned||!a.allowed);copy.append(action);if(a.optional&&!a.planned&&!a.catalogUnavailable)copy.append(make('p','bc-store-muted','Distribution: '+(a.minLevel===7?'Level 7 administrator only':'Level '+a.minLevel+' and above')));
    if(a.removable&&a.installed)copy.append(button('Uninstall app','bc-store-remove',async()=>{await perform(()=>api.install(a.id,false),'App uninstalled. Your saved data is unchanged.')}));if(info.owner&&a.optional&&!a.planned&&!a.catalogUnavailable){const settings=make('div','bc-store-rule');settings.append(make('h3','','Distribution controls'));const level=make('select','bc-store-level');level.setAttribute('aria-label','Minimum clearance');for(let n=1;n<=7;n++){const opt=make('option','',n===7?'Level 7 · Administrator only':'Level '+n+' and above');opt.value=String(n);level.append(opt)}level.value=String(draft?.id===a.id?draft.level:a.minLevel);const enabled=make('input');enabled.type='checkbox';enabled.checked=draft?.id===a.id?draft.enabled:a.enabled;const remember=()=>{draft={id:a.id,level:Number(level.value),enabled:enabled.checked}};level.onchange=remember;enabled.onchange=remember;const check=make('label','bc-store-enabled',' Available for distribution');check.prepend(enabled);const caution=make('p','bc-store-muted','Disabling distribution hides the app after catalog refresh. Saved files and account data are not removed.');
     const save=button('SAVE DISTRIBUTION','bc-store-get',async()=>{
@@ -74,11 +134,11 @@ export function mountStore(host,api){
       save.disabled=true;await perform(()=>api.setRule(a.id,Number(level.value),enabled.checked),'Distribution policy saved.');
     });settings.append(level,check,caution,save);copy.append(settings)}hero.append(ico,copy);results.append(hero);restoreScroll(before,info);return}
   if(category==='installed'&&all.some(a=>a.installed&&a.removable)){const strip=make('div','bc-store-bulk');if(!bulkConfirm){strip.append(make('p','','Customize your desktop. Your files and account data stay intact.'),button('Remove all apps','bc-store-remove',()=>{bulkConfirm=true;render()}))}else{strip.append(make('p','','Remove every installed app except the App Store? You can reinstall approved apps anytime.'),button('Cancel','bc-store-back',()=>{bulkConfirm=false;render()}),button('Remove all','bc-store-remove',async()=>{bulkConfirm=false;await perform(()=>api.removeAll(),'All apps removed except the App Store. Your data is unchanged.')}))}results.append(strip)}
-  const q=search.value.trim().toLowerCase();let filtered=all.filter(a=>(info.owner||a.enabled!==false)&&(!q||q.split(/\s+/).every(word=>[a.title,a.sub,a.desc,a.id].join(' ').toLowerCase().includes(word))));if(!q){if(category==='installed')filtered=filtered.filter(a=>a.installed);if(category==='optional')filtered=filtered.filter(a=>a.optional&&!a.planned&&!isBeta(a)&&a.enabled!==false);if(category==='beta')filtered=filtered.filter(a=>isBeta(a)&&a.enabled!==false);if(category==='unavailable')filtered=filtered.filter(a=>info.owner&&!a.planned&&a.enabled===false);if(category==='discover')filtered=filtered.filter(a=>!a.planned&&!isBeta(a)&&a.enabled!==false);if(category==='upcoming')filtered=filtered.filter(a=>a.planned)}
-  if(!q&&category==='discover'){const hero=make('div','bc-store-feature'),copy=make('div','bc-store-feature-copy');const heroTitle=make('h2','','Ready for ');heroTitle.append(make('em','','work.'));copy.append(make('div','bc-store-kicker','BLACKCELL OS  /  DISCOVER'),heroTitle,make('p','','Discover operational BLACKCELL apps. Unfinished previews are in Beta Lab. Removing shortcuts does not erase account data.'));const symbol=make('div','bc-store-feature-symbol','✧');hero.append(copy,symbol);results.append(hero)}
+  const q=search.value.trim().toLowerCase();let filtered=all.filter(a=>(info.owner||a.enabled!==false)&&(!q||q.split(/\s+/).every(word=>[a.title,a.sub,a.desc,a.id].join(' ').toLowerCase().includes(word))));if(!q&&!searchMode){if(category==='installed')filtered=filtered.filter(a=>a.installed);if(category==='optional')filtered=filtered.filter(a=>a.optional&&!a.planned&&!isBeta(a)&&a.enabled!==false);if(category==='beta')filtered=filtered.filter(a=>isBeta(a)&&a.enabled!==false);if(category==='unavailable')filtered=filtered.filter(a=>info.owner&&!a.planned&&a.enabled===false);if(category==='discover')filtered=filtered.filter(a=>!a.planned&&!isBeta(a)&&a.enabled!==false);if(category==='upcoming')filtered=filtered.filter(a=>a.planned)}
+  if(!q&&category==='discover'&&!searchMode){editorial(filtered);const hero=make('div','bc-store-feature'),copy=make('div','bc-store-feature-copy');const heroTitle=make('h2','','Ready for ');heroTitle.append(make('em','','work.'));copy.append(make('div','bc-store-kicker','BLACKCELL OS  /  DISCOVER'),heroTitle,make('p','','Discover operational BLACKCELL apps. Unfinished previews are in Beta Lab. Removing shortcuts does not erase account data.'));const symbol=make('div','bc-store-feature-symbol','✧');hero.append(copy,symbol);results.append(hero)}
   if(!filtered.length){results.append(make('p','bc-store-empty','No approved applications match your selection.'));restoreScroll(before,info);return}
-  if(category==='discover'&&!q){const released=filtered.filter(a=>['photoledger','photobattle'].includes(a.id));group('Discover applications',[...released.sort((a,b)=>a.id==='photoledger'?-1:b.id==='photoledger'?1:0),...filtered.filter(a=>a.optional&&!released.includes(a)),...filtered.filter(a=>!a.optional&&!released.includes(a))])}else group(q?'Search results':category==='installed'?'Your applications':category==='beta'?'Beta applications':category==='unavailable'?'Disabled applications':category==='upcoming'?'In development':'Applications',filtered);restoreScroll(before,info);
+  if(category==='discover'&&!q&&!searchMode){const released=filtered.filter(a=>['photoledger','photobattle'].includes(a.id));group('Discover applications',[...released.sort((a,b)=>a.id==='photoledger'?-1:b.id==='photoledger'?1:0),...filtered.filter(a=>a.optional&&!released.includes(a)),...filtered.filter(a=>!a.optional&&!released.includes(a))])}else group(q||searchMode?'Search results':category==='installed'?'Your applications':category==='beta'?'Beta applications':category==='unavailable'?'Disabled applications':category==='upcoming'?'In development':'Applications',filtered);restoreScroll(before,info);
  }
  function restoreScroll(top,info){if(restoring&&info.error)return;restoring=false;body.scrollTop=top;persist()}
- search.addEventListener('input',()=>navigate(()=>{detail=null}));body.addEventListener('scroll',()=>{clearTimeout(scrollTimer);scrollTimer=setTimeout(persist,100)},{passive:true});render();return {render,selectCategory(next){if(!busy&&['discover','installed','beta','optional','unavailable','upcoming'].includes(next))navigate(()=>{category=next;detail=null;search.value=''})},dispose(){disposed=true;clearTimeout(scrollTimer)}};
+ search.addEventListener('input',()=>navigate(()=>{detail=null}));body.addEventListener('scroll',()=>{clearTimeout(scrollTimer);scrollTimer=setTimeout(persist,100)},{passive:true});render();return {render,selectCategory(next){if(!busy&&['discover','installed','beta','optional','unavailable','upcoming'].includes(next)){searchMode=false;toolsOpen=false;navigate(()=>{category=next;detail=null;search.value=''})}},dispose(){disposed=true;clearTimeout(scrollTimer)}};
 }
