@@ -78,7 +78,7 @@ const TONES=Object.freeze({
  eclipse:[[130.81,0,.65,.55],[196,.07,.62,.5],[261.63,.16,.5,.35],[523.25,.26,.4,.22]],
  success:[[392,0,.09,.45],[523.25,.075,.13,.5],[783.99,.16,.24,.42]],
  warning:[[349.23,0,.17,.5],[311.13,.21,.24,.48]],
- message:[[784,0,.085,.42],[587.33,.08,.16,.55]]
+ message:[[880,0,.15,.85],[1174.66,.105,.24,.70]]
 });
 // Independent HTML media output: generated PCM WAV, no network download.
 const VOICE_CLIPS=Object.freeze({
@@ -92,7 +92,7 @@ const SOUND_LIBRARY=Object.freeze([
  ['minimize','Minimize window','System'],['expand','Maximize window','System'],['lock','Lock screen','System'],
  ['unlock','Unlock workspace','System'],['notice','System notification','System'],['test','Classic sample','System'],
  ['crystal','Crystal','New tones'],['pulse','Pulse','New tones'],['relay','Relay','New tones'],['signal','Signal','New tones'],
- ['eclipse','Eclipse','New tones'],['success','Operation complete','New tones'],['warning','Attention','New tones'],['message','Message arrival','New tones'],
+ ['eclipse','Eclipse','New tones'],['success','Operation complete','New tones'],['warning','Attention','New tones'],['message','iMessage arrival','System'],
  ['security','Restricted website announcement','Voice recordings'],['welcome','Welcome to BLACKCELL','Voice recordings'],
  ['access','Identity verified / access granted','Voice recordings'],['initialize','BLACKCELL OS initialized','Voice recordings']
 ].map(([id,label,group])=>Object.freeze({id,label,group})));
@@ -194,8 +194,11 @@ audio.addEventListener('ended',flushStartup);
 function playSystemSound(name){
  if(!audible()||!TONES[name]||voicePlaying()||sampleFlight)return false;
  if(mediaOutput){void mediaTone(name);return true}
- if(startupPending){flushStartup();if(!startupPending)return false}
- return renderTone(name);
+ if(startupPending&&name!=='message'){flushStartup();if(!startupPending)return false}
+ if(renderTone(name))return true;
+ // Browser media playback is a best-effort fallback for message alerts only.
+ if(name==='message'&&typeof Audio==='function'){void mediaTone(name);return true}
+ return false;
 }
 function setSoundPreference(next){
  if(typeof next?.enabled==='boolean')soundPref.enabled=next.enabled;

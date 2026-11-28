@@ -90,7 +90,7 @@
   toast.setAttribute('aria-label','New private iMessage notification');
   document.body.append(dock,orb,pane,toast);
   const mediaBubbles=window.BlackcellMediaBubbleHost?.({mode:'dock',mainFrame:frame,mainPane:pane});
-  let state='minimized',unread=0,peerWanted=null,currentUserId=null,contactsLoaded=false,chatSuspended=false,unreadMonitor=null;
+  let state='minimized',unread=0,peerWanted=null,currentUserId=null,contactsLoaded=false,chatSuspended=false,unreadMonitor=null,messageSound=null;
   const storageKey=id=>'blackcell-messages-ui-v3:'+id;
   function saveWindowState(){
    if(!currentUserId)return;
@@ -261,15 +261,16 @@
     const self=data?.user?.id;
     if(!self)return;
     currentUserId=self;restoreWindowState();
-    void import('./blackcell-chat-unread.js?v=1').then(({createChatUnreadMonitor})=>{
+    void Promise.all([import('./blackcell-chat-unread.js?v=1'),import('./blackcell-floating-message-sound.js?v=1')]).then(([{createChatUnreadMonitor},{createFloatingMessageSound}])=>{
+      messageSound=createFloatingMessageSound();
       unreadMonitor=createChatUnreadMonitor({client:()=>client,account:()=>currentUserId,allowed:()=>!!currentUserId&&!chatSuspended,onChange:result=>setUnread(result.total),onNew:(count,initial)=>{
-        if(!chatSuspended)toastMessage(count+(initial?' unread':' new')+' iMessage'+(count===1?'':'s'),'Open your private inbox',null);
+        if(!chatSuspended){messageSound?.play();toastMessage(count+(initial?' unread':' new')+' iMessage'+(count===1?'':'s'),'Open your private inbox',null);}
       }});
       void unreadMonitor.refresh();
     }).catch(()=>{});
   }).catch(()=>{});
   client.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT'){currentUserId=null;suspendChat();}});
-  window.addEventListener('pagehide',()=>unreadMonitor?.dispose(),{once:true});
+  window.addEventListener('pagehide',()=>{unreadMonitor?.dispose();messageSound?.dispose()},{once:true});
   // Initially minimized. The owner can work in Administration and open the
   // same authenticated live messaging UI in a floating or separate window.
   minimize();
