@@ -1,0 +1,28 @@
+name: BLACKCELL REDLINE LIVE Design Preview
+on:
+  pull_request:
+    paths:
+      - 'blackcell-redline-live-preview.*'
+      - 'private-photo-ledger-developer-preview.js'
+      - 'tests/blackcell-redline-live-preview.test.mjs'
+      - '.github/workflows/blackcell-redline-live-preview.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'blackcell-redline-live-preview.*'
+      - 'private-photo-ledger-developer-preview.js'
+      - 'tests/blackcell-redline-live-preview.test.mjs'
+permissions:
+  contents: read
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: |
+          node --check blackcell-redline-live-preview.js
+          node --check private-photo-ledger-developer-preview.js
+          node --test tests/blackcell-redline-live-preview.test.mjs
