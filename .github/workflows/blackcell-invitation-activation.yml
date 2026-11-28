@@ -1,0 +1,23 @@
+name: BLACKCELL Direct Invitation Activation
+on:
+  pull_request:
+    paths:
+      - 'blackcell-invitation-activate.*'
+      - 'tests/blackcell-invitation-activation.test.mjs'
+      - 'docs/blackcell-invitation-activation.md'
+      - '.github/workflows/blackcell-invitation-activation.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'blackcell-invitation-activate.*'
+permissions:
+  contents: read
+jobs:
+  invitation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --test tests/blackcell-invitation-activation.test.mjs
