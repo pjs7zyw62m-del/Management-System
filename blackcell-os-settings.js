@@ -71,7 +71,14 @@ export function mountSettings(host,api){
    const volume=el('input','bc-settings-button');volume.type='range';volume.min='0';volume.max='100';volume.step='5';volume.value=String(Math.round(current.volume*100));volume.setAttribute('aria-label','System sound volume');volume.disabled=!current.available;
    const notice=el('p','bc-settings-muted','');notice.setAttribute('role','status');
    const sample=btn('Play sample',()=>{});sample.disabled=!current.available||!current.enabled;
-   sample.onclick=async event=>{const played=await system?.preview?.(event);notice.textContent=played?'Sample played.':'Sound is muted, another announcement is playing, or your browser has blocked audio.'};
+   sample.onclick=async event=>{
+    sample.disabled=true;notice.textContent='Playing test sound…';
+    try{
+     const result=await system?.preview?.(event);
+     notice.textContent=result?.ok?'Playback completed. If you heard nothing, check the device media volume, silent mode and Bluetooth/audio output.':({muted:'Enable system sounds and raise the volume above zero.',announcement:'The startup announcement is still playing. Try again when it finishes.',blocked:'The browser denied audio playback. Tap Play sample again.',timeout:'Audio playback did not finish. Try again.',busy:'Another system sound is playing. Try again.',gesture:'Tap Play sample directly.'}[result?.reason]||'The audio player could not play this sample.');
+    }catch(_){notice.textContent='Audio playback failed. Try again.'}
+    finally{sample.disabled=!system?.preferences?.().enabled}
+   };
    toggle.onchange=()=>{const prefs=system.setPreference({enabled:toggle.checked});sample.disabled=!prefs.enabled;notice.textContent=prefs.enabled?'System sounds enabled.':'System sounds muted.'};
    volume.oninput=()=>{system.setPreference({volume:Number(volume.value)/100});notice.textContent='System sound volume: '+volume.value+'%'};
    row(p,'System sounds',toggle,'Startup, opening apps, window controls, security lock and system notices.');
