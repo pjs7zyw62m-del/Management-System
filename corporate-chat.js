@@ -1,7 +1,7 @@
 import {mountPopoutActions} from './corporate-chat-popout-actions.js?v=20261128-attached-reactions2';
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
 import {setupCorporateMedia} from './corporate-chat-media.js?v=20261122-contact-bootstrap2';
-import {setupCorporateChatLive} from './corporate-chat-live.js?v=20261113-no-typing1';
+import {setupCorporateChatLive} from './corporate-chat-live.js?v=20261128-unread1';
 import {installAndroidChatCaretGuard} from './corporate-chat-android-caret.js?v=20261122-return-keyboard10';
 import {createChatTubeCards,parseTubeReference} from './blackcell-chat-tube-cards.js?v=1';
 import {createChatPulseCards,parsePulseShare} from './blackcell-chat-pulse-cards.js?v=1';
@@ -43,7 +43,7 @@ function openChatPopout(){
 }
 popButton?.addEventListener('click',openChatPopout);
 window.BLACKCELL_OS_BEFORE_CLOSE=()=>({ok:true,retain:!!$('messageInput').value.trim()||!!document.querySelector('[aria-busy=true],.is-uploading,[data-busy=true]')});
-let inboxSummaries=new Map(),inboxUnread=new Set(),inboxFilter='all',inboxEditing=false,inboxComposing=false,inboxRefreshing=false,inboxSelection=new Set(),inboxMarking=false,inboxUnreadAvailable=false;
+let inboxSummaries=new Map(),inboxUnread=new Set(),inboxUnreadCounts=new Map(),inboxFilter='all',inboxEditing=false,inboxComposing=false,inboxRefreshing=false,inboxSelection=new Set(),inboxMarking=false,inboxUnreadAvailable=false;
 let sidebarClosed=false,inboxPins=[],pinMenuId=null;
 const inboxPinKey=()=>self?'bc.imessage.pins.v1:'+self:null;
 const normalizePins=value=>Array.isArray(value)?[...new Set(value.filter(id=>typeof id==='string'&&contacts.some(c=>c.user_id===id)))]:[];
@@ -270,7 +270,7 @@ function syncInboxControls(){
  const railCompose=$('bcRailCompose');if(railCompose)railCompose.disabled=quickDisabled;
  const railMedia=$('bcRailMedia');if(railMedia)railMedia.disabled=!ready||!peer;
  for(const b of document.querySelectorAll('[data-quick-filter]')){b.disabled=quickDisabled;b.setAttribute('aria-pressed',String(b.dataset.quickFilter===inboxFilter));}
- const unreadCount=$('bcUnreadCount');if(unreadCount){unreadCount.hidden=!ready||!inboxUnreadAvailable||!inboxUnread.size;unreadCount.textContent=String(inboxUnread.size);}
+ const unreadCount=$('bcUnreadCount');if(unreadCount){unreadCount.hidden=!ready||!inboxUnreadAvailable||!inboxUnread.size;unreadCount.textContent=String([...inboxUnreadCounts.values()].reduce((a,b)=>a+b,0));}
  for(const b of inboxMenu.querySelectorAll('[data-inbox-filter]'))b.setAttribute('aria-pressed',String(b.dataset.inboxFilter===inboxFilter));
  inboxEdit.textContent=inboxComposing?'Cancel':inboxEditing?'Done':'Edit';
  inboxEdit.setAttribute('aria-pressed',String(inboxEditing));
@@ -666,15 +666,15 @@ async function refreshInboxSummaries(){
    inboxSummaries=summaries;
   }
   // Unread is independently queried, not inferred from the truncated preview history.
-  const unread=new Set();let offset=0;
+  const unread=new Set(),counts=new Map();let offset=0;
   while(ready){
-   const result=await client.from('corp_chat_messages').select('id,sender_id').eq('recipient_id',self).is('read_at',null).order('id',{ascending:true}).range(offset,offset+499);
+   const result=await client.from('corp_chat_messages').select('id,sender_id') .eq('recipient_id',self).is('read_at',null).is('deleted_at',null).order('id',{ascending:true}).range(offset,offset+499);
    if(result.error)throw result.error;
-   for(const row of result.data||[])unread.add(row.sender_id);
+   for(const row of result.data||[]){unread.add(row.sender_id);counts.set(row.sender_id,(counts.get(row.sender_id)||0)+1)}
    if((result.data||[]).length<500)break;
    offset+=500;
   }
-  if(ready){inboxUnread=unread;inboxUnreadAvailable=true;renderPeers()}
+  if(ready){inboxUnread=unread;inboxUnreadCounts=counts;inboxUnreadAvailable=true;renderPeers()}
  }catch(_){renderPeers()}finally{inboxRefreshing=false}
 }
 function inboxTime(value){
@@ -724,7 +724,7 @@ function renderPeers(){
    button.append(wrap);
    const trailing=document.createElement('span');trailing.className='apple-peer-trailing';
    if(summary?.when){const time=document.createElement('time');time.className='peer-meta';time.dateTime=summary.when;time.textContent=inboxTime(summary.when);trailing.append(time)}
-   if(!inboxEditing){if(unread)trailing.append(text('span','bc-inbox-unread-mark','New'));trailing.append(text('span','apple-chevron','›'));}
+   if(!inboxEditing){if(unread)trailing.append(text('span','bc-inbox-unread-mark',String(inboxUnreadCounts.get(c.user_id)||1)));trailing.append(text('span','apple-chevron','›'));}
    button.append(trailing);
    if(unread)button.setAttribute('aria-label',(c.display_name||'Employee')+', unread messages');
    button.onclick=()=>{if(inboxEditing){if(inboxSelection.has(c.user_id))inboxSelection.delete(c.user_id);else inboxSelection.add(c.user_id);renderPeers();return}if(inboxComposing){exitInboxMode();$('peerSearch').value=''}choose(c.user_id)};
@@ -901,7 +901,7 @@ for(const evt of ['pointerdown','keydown','wheel','touchstart']){
  document.addEventListener(evt,chatActivity,{passive:true});
 }
 setInterval(()=>{if(ready&&live.visible())void loadMessages()},5000);
-setInterval(()=>{if(ready&&!mediaPanelMode&&!popout&&!document.hidden&&(inboxFilter==='unread'||!compactChat||!document.querySelector('.chat').classList.contains('bc-thread-active')))void refreshInboxSummaries()},13000);
+setInterval(()=>{if(ready&&!mediaPanelMode&&!popout&&!document.hidden&&(inboxFilter==='unread'||!compactChat||!document.querySelector('.chat').classList.contains('bc-thread-active')))void refreshInboxSummaries()},8000);
 setInterval(()=>{
  if(employeeSession&&!sessionEnded&&Date.now()-lastActivity>=IDLE_LIMIT_MS)
   void endChatAccess('Chat locked after 60 minutes of inactivity. Return to BLACKCELL OS to verify access.');
