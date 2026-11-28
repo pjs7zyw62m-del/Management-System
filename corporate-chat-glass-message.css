@@ -39,3 +39,10 @@ html body.bc-chat .chat #messages .bc-glass-message.show-time>.bc-glass-message-
 html body.bc-chat .chat #messages .bc-glass-message-meta>.message-receipt{display:inline-flex;align-items:center;gap:4px;margin:0;padding:0;border:0;background:none;box-shadow:none;color:#aeb7c5!important;font-size:10px!important}
 html body.bc-chat .chat #messages .bc-glass-message-meta>.message-receipt:before{content:'·';color:#687281;margin-right:1px}
 html body.bc-chat .chat #messages .bc-glass-message-meta>.message-receipt.read .receipt-ticks{color:#54baff!important}
+
+/* Reactions remain anchored to the original message, never an extra chat row. */
+html body.bc-chat .chat #messages .bc-glass-message.bc-has-attached-reactions{padding-top:10px}
+html body.bc-chat .chat #messages .bc-attached-reactions{position:absolute;top:0;right:-4px;z-index:1;display:flex;gap:2px;align-items:center;max-width:100%}
+html body.bc-chat .chat #messages .mine>.bc-attached-reactions{right:auto;left:-5px}
+html body.bc-chat .chat #messages .bc-attached-reaction{display:grid;place-items:center;box-sizing:border-box;border:1px solid #414653;border-radius:999px;background:#20242d;color:#fff;font:15px/1 system-ui;width:29px;height:26px;padding:0;cursor:pointer;box-shadow:0 2px 5px #0008}
+html body.bc-chat .chat #messages .bc-attached-reaction:focus-visible{outline:2px solid #82caff;outline-offset:2px}
