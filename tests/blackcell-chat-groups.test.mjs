@@ -31,3 +31,15 @@ test('group picker and send panel work with a mocked authorized RPC',async()=>{
  const flush=()=>new Promise(r=>setImmediate(r));
  try{ctl=mountChatGroups({client,context:ctx});ctl.render();assert.equal(ids.bcGroupInbox.hidden,true);ids.bcGroupCreate.onclick();await flush();const children=ids.bcGroupBody.children;const name=children[0],contacts=children[2],create=children[4];name.value='Group';name.oninput();for(const label of contacts.children){label.children[0].checked=true;label.children[0].onchange()}assert.equal(create.disabled,false);await create.onclick();await flush();assert.ok(actions.includes('create'));assert.ok(actions.includes('thread'));assert.equal(ids.bcGroupSend.hidden,false);ids.bcGroupInput.value='Hello';await ids.bcGroupSend.onsubmit({preventDefault(){}});assert.ok(actions.includes('send'));ctl.close();assert.equal(ids.bcGroupPanel.hidden,true)}finally{ctl?.dispose();for(const [k,v] of Object.entries(prev))if(v===undefined)delete globalThis[k];else globalThis[k]=v}
 });
+
+test('Calls belongs above Messages and compose options contain both creation actions',()=>{
+ const html=read('corporate-chat.html'),js=read('corporate-chat.js'),css=read('blackcell-chat-groups.css');
+ const rail=html.slice(html.indexOf('<nav class="bc-message-rail"'),html.indexOf('<div class="apple-inbox-top"'));
+ assert.ok(rail.indexOf('id="bcCallsOpen"')>=0&&rail.indexOf('id="bcCallsOpen"')<rail.indexOf('data-rail-filter="all"'));
+ const groupInbox=html.slice(html.indexOf('id="bcGroupInbox"'),html.indexOf('id="peers"'));
+ assert.doesNotMatch(groupInbox,/bcGroupCreate/);
+ const menu=html.slice(html.indexOf('id="bcNewChatMenu"'));
+ assert.match(menu,/id="bcDirectCreate"/);assert.match(menu,/id="bcGroupCreate"/);
+ assert.match(js,/toggleNewChatMenu\(e.currentTarget\)/);assert.match(js,/addEventListener\('click',startDirectChat\)/);
+ assert.match(html,/id="bcCallsCompact"/);assert.match(css,/#osChatSidebar>#bcGroupInbox\{grid-column:2;grid-row:5/);
+});
