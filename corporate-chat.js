@@ -1,5 +1,5 @@
-import {mountCallHistory} from './blackcell-call-history.js?v=1';
-import {mountChatGroups} from './blackcell-chat-groups.js?v=1';
+import {mountCallHistory} from './blackcell-call-history.js?v=2';
+import {mountChatGroups} from './blackcell-chat-groups.js?v=2';
 import {createChatScroll} from './blackcell-chat-scroll.js?v=1';
 import {mountBlackcellConnect} from './blackcell-connect.js?v=turn1-history1';
 import {createFloatingMessageSound} from './blackcell-floating-message-sound.js?v=2';
@@ -213,6 +213,7 @@ mediaToggle.addEventListener('click',event=>{
  sharedMedia.toggleMediaTray();
 });
 window.addEventListener('blackcell-chat-media-capability-change',()=>sharedMedia.closeMediaTray());
+const newChatMenu=$('bcNewChatMenu');let newChatAnchor=null;
 const inboxEdit=$('inboxEdit'),inboxCompose=$('inboxCompose'),inboxMenu=$('inboxFilterMenu'),inboxFilterButton=$('inboxFilter'),inboxMarkRead=$('inboxMarkRead');
 /* Conversation-scoped message search and local starred-message IDs.
    Never save message text, media URLs or credentials in browser storage. */
@@ -293,6 +294,7 @@ function closeInboxFilter(){inboxMenu.hidden=true;inboxFilterButton.setAttribute
 function syncInboxControls(){
  syncMessageTools();
  const quickDisabled=!ready||inboxEditing||inboxComposing;
+ if(quickDisabled)closeNewChatMenu();
  for(const b of document.querySelectorAll('[data-rail-filter]')){b.disabled=quickDisabled;b.setAttribute('aria-pressed',String(b.dataset.railFilter===inboxFilter));}
  const railCompose=$('bcRailCompose');if(railCompose)railCompose.disabled=quickDisabled;
  const railMedia=$('bcRailMedia');if(railMedia)railMedia.disabled=!ready||!peer;
@@ -318,12 +320,29 @@ function selectInboxFilter(value){
 inboxMenu.addEventListener('click',e=>{const b=e.target.closest('[data-inbox-filter]');if(!b)return;selectInboxFilter(b.dataset.inboxFilter);inboxFilterButton.focus()});
 for(const b of document.querySelectorAll('[data-quick-filter]'))b.addEventListener('click',()=>selectInboxFilter(b.dataset.quickFilter));
 for(const b of document.querySelectorAll('[data-rail-filter]'))b.addEventListener('click',()=>selectInboxFilter(b.dataset.railFilter));
-$('bcRailCompose')?.addEventListener('click',()=>{if(ready&&!inboxComposing&&!inboxEditing)inboxCompose.click()});
+$('bcRailCompose')?.addEventListener('click',e=>toggleNewChatMenu(e.currentTarget));
 $('bcRailMedia')?.addEventListener('click',()=>{if(ready&&peer)void sharedMedia.openLibrary()});
 document.addEventListener('pointerdown',e=>{if(!inboxMenu.hidden&&!e.target.closest('.apple-filter-anchor'))closeInboxFilter()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!inboxMenu.hidden){closeInboxFilter();inboxFilterButton.focus()}});
 inboxEdit.addEventListener('click',()=>{closeInboxFilter();if(inboxComposing||inboxEditing){exitInboxMode();$('peerSearch').value=''}else{inboxEditing=true;inboxSelection.clear()}renderPeers()});
-inboxCompose.addEventListener('click',()=>{closeInboxFilter();inboxComposing=true;inboxEditing=false;inboxSelection.clear();$('peerSearch').value='';renderPeers();$('peerSearch').focus()});
+function closeNewChatMenu(restore=false){if(!newChatMenu)return;newChatMenu.hidden=true;newChatAnchor?.setAttribute('aria-expanded','false');if(restore)newChatAnchor?.focus();newChatAnchor=null}
+function toggleNewChatMenu(anchor){
+ if(!ready||inboxEditing||inboxComposing||!newChatMenu)return;
+ if(!newChatMenu.hidden&&newChatAnchor===anchor){closeNewChatMenu(true);return}
+ closeNewChatMenu();closeInboxFilter();closePinMenu();newChatAnchor=anchor;anchor.setAttribute('aria-expanded','true');
+ $('bcGroupCreate').disabled=!groups;newChatMenu.hidden=false;
+ const r=anchor.getBoundingClientRect(),w=newChatMenu.offsetWidth,h=newChatMenu.offsetHeight;
+ newChatMenu.style.left=Math.max(8,Math.min(innerWidth-w-8,r.left))+'px';
+ newChatMenu.style.top=Math.max(8,Math.min(innerHeight-h-8,r.bottom+7))+'px';
+ $('bcDirectCreate').focus();
+}
+function startDirectChat(){if(!ready||inboxEditing||inboxComposing)return;closeNewChatMenu();closeInboxFilter();inboxComposing=true;inboxEditing=false;inboxSelection.clear();$('peerSearch').value='';renderPeers();$('peerSearch').focus()}
+inboxCompose.addEventListener('click',e=>toggleNewChatMenu(e.currentTarget));
+$('bcDirectCreate').addEventListener('click',startDirectChat);
+$('bcGroupCreate').addEventListener('click',()=>closeNewChatMenu());
+document.addEventListener('pointerdown',e=>{if(!newChatMenu.hidden&&!newChatMenu.contains(e.target)&&!newChatAnchor?.contains(e.target))closeNewChatMenu()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!newChatMenu.hidden){e.preventDefault();closeNewChatMenu(true)}});
+window.addEventListener('resize',()=>closeNewChatMenu());
 inboxMarkRead.addEventListener('click',async()=>{
  if(!ready||!self||inboxMarking||!inboxSelection.size)return;
  inboxMarking=true;syncInboxControls();
