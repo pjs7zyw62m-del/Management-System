@@ -1,3 +1,4 @@
+import {mountPhoneNavigation} from './blackcell-os-phone-navigation.js?v=1';
 import {mountWorldMonitor} from './blackcell-os-world-monitor.js?v=1';
 import {createWorkspaceLock,verifyWorkspacePassword} from './blackcell-os-session.js?v=1';
 import {mountStorageWidget} from './blackcell-os-storage-widget.js?v=1';
@@ -161,7 +162,7 @@ async function finishBoot(){
  if(!preview&&(!active||leaving||$('gate').dataset.state!=='boot'))return false;
  bootComplete=true;$('gate').hidden=true;if(!workspaceLock?.isLocked())$('desktop').hidden=false;applyAppLayout();window.dispatchEvent(new Event('blackcell:desktop-ready'));return true;
 }
-function setupWorkspaceLock(){if(workspaceLock)return;workspaceLock=createWorkspaceLock({host:$('desktop'),preview,account:()=>({id:storeProfile,name:$('memberName').textContent,initials:$('initials').textContent}),usable:()=>!leaving&&(active||preview),verify:async secret=>{const verified=await verifyWorkspacePassword(client,storeProfile,secret);if(!verified.ok)return verified;const result=await corporateAuthorize(client,{allowLedgerOnly:true});if(!result.ok||result.user.id!==storeProfile||!memberAllowed(result.member)||(!owner&&result.member.access_scope==='ledger_only'))return {ok:false,message:'Corporate session has expired. Sign Out and authenticate again.'};const {data,error}=await client.rpc(owner?'corp_code_status':'corp_employee_code_status');if(error||data?.ok!==true||data?.verified!==true)return {ok:false,message:'Corporate security verification expired. Sign Out and authenticate again.'};return {ok:true}},onLock:()=>{if(!preview)window.BLACKCELL_SYSTEM_SOUNDS?.play('lock');closeAppPasswordPrompt();hideProtectedWindows();const parked=$('osParkedChatRail');if(parked){parked.hidden=true;parked.replaceChildren();}securityNotifications?.pause();closeRecycleBin();finishAppRearrange();cancelAppHold();closeAppContext();closeMenu();dockReveal(false);saveWorkspace();for(const r of windows.values()){if(r.frame)pauseFrameMedia(r.frame);for(const media of r.el.querySelectorAll('video,audio'))try{media.pause()}catch(_){}}},onUnlock:()=>{if(!preview)window.BLACKCELL_SYSTEM_SOUNDS?.play('unlock');syncParkedChatBubbles();last=Date.now();if(bootComplete)$('desktop').hidden=false;applyAppLayout();void activity();void recheck();void securityNotifications?.refresh()},onSignOut:()=>void signOut()});}
+function setupWorkspaceLock(){if(workspaceLock)return;workspaceLock=createWorkspaceLock({host:$('desktop'),preview,account:()=>({id:storeProfile,name:$('memberName').textContent,initials:$('initials').textContent}),usable:()=>!leaving&&(active||preview),verify:async secret=>{const verified=await verifyWorkspacePassword(client,storeProfile,secret);if(!verified.ok)return verified;const result=await corporateAuthorize(client,{allowLedgerOnly:true});if(!result.ok||result.user.id!==storeProfile||!memberAllowed(result.member)||(!owner&&result.member.access_scope==='ledger_only'))return {ok:false,message:'Corporate session has expired. Sign Out and authenticate again.'};const {data,error}=await client.rpc(owner?'corp_code_status':'corp_employee_code_status');if(error||data?.ok!==true||data?.verified!==true)return {ok:false,message:'Corporate security verification expired. Sign Out and authenticate again.'};return {ok:true}},onLock:()=>{phoneNavigation.dismiss();if(!preview)window.BLACKCELL_SYSTEM_SOUNDS?.play('lock');closeAppPasswordPrompt();hideProtectedWindows();const parked=$('osParkedChatRail');if(parked){parked.hidden=true;parked.replaceChildren();}securityNotifications?.pause();closeRecycleBin();finishAppRearrange();cancelAppHold();closeAppContext();closeMenu();dockReveal(false);saveWorkspace();for(const r of windows.values()){if(r.frame)pauseFrameMedia(r.frame);for(const media of r.el.querySelectorAll('video,audio'))try{media.pause()}catch(_){}}},onUnlock:()=>{if(!preview)window.BLACKCELL_SYSTEM_SOUNDS?.play('unlock');syncParkedChatBubbles();last=Date.now();if(bootComplete)$('desktop').hidden=false;applyAppLayout();void activity();void recheck();void securityNotifications?.refresh()},onSignOut:()=>void signOut()});}
 function lockWorkspace(mode='lock'){if(!workspaceLock||workspaceLock.isLocked())return;workspaceLock.lock(mode);}
 
 function restartWorkspace(){
@@ -1027,7 +1028,7 @@ function parkChat(r){
  r.chatParked=true;r.el.hidden=true;if(selectedWindow===r)selectedWindow=null;
  pauseFrameMedia(r.frame);syncParkedChatBubbles();syncChatVisibility();saveWorkspace();
 }
-function raise(r){if(!r.chatPopout&&r.spaceId&&r.spaceId!==bcSpace)spaceSwitch(r.spaceId);r.spaceShown=true;if(r.chatParked){applyParkedGeometry(r,r.parkedGeometry);r.parkedGeometry=null;}r.chatParked=false;syncParkedChatBubbles();if(r.closing)r.reopened=true;r.suspended=false;r.el.hidden=false;r.el.style.zIndex=String(++layer);selectedWindow=r;markDock(r.id,true);updateActiveAppMenu();syncFullscreenShell();syncStoreUpdateHold();syncChatVisibility();saveWorkspace()}
+function raise(r){if(!r.chatPopout&&r.spaceId&&r.spaceId!==bcSpace)spaceSwitch(r.spaceId);r.spaceShown=true;if(r.chatParked){applyParkedGeometry(r,r.parkedGeometry);r.parkedGeometry=null;}r.chatParked=false;syncParkedChatBubbles();if(r.closing)r.reopened=true;r.suspended=false;r.el.hidden=false;r.el.style.zIndex=String(++layer);r.el.style.setProperty('--bc-phone-window-layer',r.el.style.zIndex);selectedWindow=r;markDock(r.id,true);updateActiveAppMenu();syncFullscreenShell();syncStoreUpdateHold();syncChatVisibility();saveWorkspace()}
 function showDesktop(){closeRecycleBin();for(const r of windows.values()){if(r.spaceId===bcSpace)r.spaceShown=false;r.el.hidden=true}selectedWindow=null;updateActiveAppMenu();syncFullscreenShell();syncStoreUpdateHold();syncChatVisibility();saveWorkspace()}
 function dispose(r,force=false){if(r?.el?.classList?.contains('bc-os-fullscreen'))$('desktop').classList.remove('bc-os-fullscreen-active','bc-os-menu-edge-open');if(!force){void requestClose(r);return;}r.updateHold?.();r.updateHold=null;r.cleanup?.();r.frame?.remove();r.el.remove();r.release?.();windows.delete(r.id);syncParkedChatBubbles();markDock(r.id,false);if(selectedWindow===r)selectedWindow=null;updateActiveAppMenu();syncFullscreenShell();syncChatVisibility();saveWorkspace()}
 function osNotice(message){
@@ -1062,7 +1063,16 @@ async function requestClose(r){
  finally{r.closing=false;r.reopened=false}
 }
 
-function closeAll(force){for(const r of [...windows.values()])dispose(r,force)}
+const phoneNavigation=mountPhoneNavigation({
+ host:$('desktop'),
+ allowed:()=>document.documentElement.classList.contains('bc-os-phone')&&(active||preview)&&!leaving&&!$('desktop').hidden&&!workspaceLock?.isLocked(),
+ apps:()=>[...windows.values()].sort((a,b)=>(Number(b.el.style.zIndex)||0)-(Number(a.el.style.zIndex)||0)).map(r=>({id:r.id,title:appProtected(r.id)?'Protected application':r.title,retained:!!r.suspended})),
+ activeId:()=>currentMenuWindow()?.id,
+ home:()=>{closeMenu();showDesktop()},
+ open:id=>showApp(id),
+ close:id=>requestClose(windows.get(id))
+});
+function closeAll(force){if(force)phoneNavigation.dismiss();for(const r of [...windows.values()])dispose(r,force)}
 /* Desktop folder aliases — never move the underlying private files. */
 let folderPins=[],folderDrag=null,pinDrop=null;
 const pinKey=()=> 'bc.os.folder-pins.v1:'+String(storeProfile||'preview');
@@ -1197,7 +1207,7 @@ function showApp(id,initialState=null,passwordVerified=null){
   // Focus another window once, then leave its controls and gesture intact.
   if(selectedWindow!==r||r.suspended||r.el.hidden)raise(r);
  },true);bar.addEventListener('dblclick',e=>{
-  if(!e.target.closest('button,a'))toggleOSWindowSize(r);
+  if(!document.documentElement.classList.contains('bc-os-phone')&&!e.target.closest('button,a'))toggleOSWindowSize(r);
  });
  // A titlebar drag restores and moves even windows opened maximized by
  // default (REDLINE, Administration and Photo Battle). Phone/tablet windows
