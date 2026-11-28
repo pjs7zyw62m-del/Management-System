@@ -15,8 +15,8 @@ export function setupCorporateChatLive({client,context,typingLabel,typingName}){
  let readPending=new Set();
  let reading=false;
  let writingCount=0;
- let polling=false;
- const duration=4100;
+ let polling=false,refreshAgain=false;
+ const duration=4500;
  const self=()=>context()?.self;
  const peer=()=>context()?.peer?.user_id;
  const hasThread=()=>Boolean(!disposed&&context()?.ready&&self()&&peer()&&threadOpen&&paneVisible&&!document.hidden);
@@ -24,7 +24,7 @@ export function setupCorporateChatLive({client,context,typingLabel,typingName}){
 
  function showRemote(value){
   remoteTyping=!!value&&hasThread();
-  // The three-dot typing UI has been removed; read receipts remain active.
+  // Only the current visible, authorized conversation can show the typing indicator.
   if(typingLabel)typingLabel.hidden=!remoteTyping;
   if(typingName)typingName.textContent=name()+' is typing';
  }
@@ -69,7 +69,7 @@ export function setupCorporateChatLive({client,context,typingLabel,typingName}){
  async function refreshRemote(){
   if(!hasThread()){showRemote(false);return}
   const currentPeer=peer(),myUser=self();
-  if(polling)return;
+  if(polling){refreshAgain=true;return;}
   polling=true;
   try{
    const {data,error}=await client.from('corp_chat_typing')
@@ -82,12 +82,12 @@ export function setupCorporateChatLive({client,context,typingLabel,typingName}){
    showRemote(Boolean(fresh));
   }catch(_){
    if(peer()===currentPeer)showRemote(false);
-  }finally{polling=false}
+  }finally{polling=false;if(refreshAgain){refreshAgain=false;if(hasThread())void refreshRemote()}}
  }
  function onTypingChange(payload){
-  const row=payload.new||payload.old||{};
+  const row=payload.new?.user_id?payload.new:payload.old||{};
   if(row.user_id!==peer()||row.peer_id!==self())return;
-  // Always refetch to reject stale change events, and to handle deletes.
+  // Fetch current server state even when a previous poll is in flight.
   void refreshRemote();
  }
  function setVisible(value){
@@ -149,7 +149,7 @@ export function setupCorporateChatLive({client,context,typingLabel,typingName}){
  const poller=setInterval(()=>{
   if(disposed){clearInterval(poller);return}
   if(hasThread())void refreshRemote();
- },2700);
+ },1800);
  return {onInput,stopTyping,onTypingChange,onPeerChange,setVisible,setThreadOpen,
    markRead,refreshRemote,dispose,visible:()=>hasThread()};
 }
