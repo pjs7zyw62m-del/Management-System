@@ -54,3 +54,10 @@
 /* Container queries cannot style their own container; viewport fallback handles phone shell. */
 @media(max-width:620px){#desktop .bc-store{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}#desktop .bc-store-release-controls .bc-store-search{width:100%}}
 @media(prefers-reduced-motion:reduce){#desktop .bc-store-grid>.bc-store-app{transition:none}}
+
+/* Native storefront: keep catalog operations intact, use comfortable touch targets. */
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .bc-store-grid .bc-store-get{min-height:44px;min-width:80px}
+html.bc-os-phone #desktop .bc-store-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+html.bc-os-phone #desktop .bc-store-grid>.bc-store-app{min-height:180px;padding:12px 8px;border-radius:14px}
+html.bc-os-phone #desktop .bc-store-rail .bc-store-nav{min-height:44px}
+html.bc-os-tablet #desktop .bc-store-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,145px),1fr))}
