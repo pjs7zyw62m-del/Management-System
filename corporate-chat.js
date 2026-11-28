@@ -1,3 +1,4 @@
+import {createChatScroll} from './blackcell-chat-scroll.js?v=1';
 import {mountBlackcellConnect} from './blackcell-connect.js?v=turn1';
 import {createFloatingMessageSound} from './blackcell-floating-message-sound.js?v=2';
 import {mountChatVoice,VOICE_BODY} from './blackcell-chat-voice.js?v=1';
@@ -34,6 +35,7 @@ if(mediaPanelMode)document.documentElement.classList.add('bc-media-panel','bc-me
 if(!mediaPanelMode&&window.parent===window&&window.BlackcellMediaBubbleHost)
  window.BlackcellMediaBubbleHostController=window.BlackcellMediaBubbleHost({mode:'standalone'});
 let self=null,peer=null,contacts=[],isLoading=false,firstLoad=true,ready=false;
+const chatScroll=createChatScroll($('messages'));
 const tubeCards=createChatTubeCards(client,()=>ready&&!!self&&!!peer),pulseCards=createChatPulseCards(client,()=>ready&&!!self&&!!peer);client.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'){tubeCards.clear();pulseCards.clear()}});
 let chatBlocked=false,blockKnown=false,blockBusy=false,blockGeneration=0,blockReadSerial=0,sendingMessage=false;
 const popButton=$('popoutChat');
@@ -801,7 +803,7 @@ async function loadMessages(){
   if(error){status('Messages could not be loaded.');return}
   // Ignore an old request when the user has switched conversations.
   if(peer?.user_id!==pid)return;
-  const box=$('messages'),atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<80;
+  const box=$('messages');
   const ordered=(data||[]).slice().reverse();
   const newest=ordered.at(-1)?.id||'empty',oldNewest=box.dataset.newest;
   const signature=ordered.map(m=>m.id+':'+(m.read_at||'')+':'+(m.edited_at||'')+':'+(m.deleted_at||'')+':'+JSON.stringify((m.corp_chat_reactions||[]).map(r=>[r.reactor_id,r.reaction]).sort())).join('|');
@@ -809,6 +811,7 @@ async function loadMessages(){
    void live.markRead(ordered);
    return;
   }
+  const savedScroll=chatScroll.beforeRender(firstLoad);
   box.dataset.newest=newest;box.dataset.readSignature=signature;popoutActions?.close();tubeCards.clear();pulseCards.clear();box.replaceChildren();
   let currentDay='';
   for(let i=0;i<ordered.length;i++){
@@ -823,6 +826,7 @@ async function loadMessages(){
    const pairedBefore=isBubbleNeighbor(previous,m),pairedAfter=isBubbleNeighbor(m,next);
    const group=pairedBefore?(pairedAfter?'group-middle':'group-end'):(pairedAfter?'group-start':'group-single');
    const item=document.createElement('div');
+   item.dataset.messageId=m.id;
    item.className='message '+group+(own?' mine':'')+(m.media_batch_id?' message-media':'');
    if(!firstLoad&&oldNewest!==newest&&m.id===newest)item.classList.add('message-fresh');
    const tubeRef=!m.deleted_at&&!m.media_batch_id&&parseTubeReference(m.body),pulseRef=!m.deleted_at&&!m.media_batch_id&&!tubeRef&&parsePulseShare(m.body);
@@ -898,7 +902,7 @@ async function loadMessages(){
   }
   if(!ordered.length){if(osChat){const empty=document.createElement('div');empty.className='os-chat-empty';const symbol=text('span','os-chat-empty-icon','');symbol.setAttribute('aria-hidden','true');empty.append(symbol,text('h2','', 'Start a conversation'),text('p','','Send your first iMessage to '+(peer.display_name||'this contact')+'.'));box.append(empty)}else box.append(text('p','empty','Private conversation started. Send the first message.'));}
   sharedMedia.syncInlineUpload();
-  if(atBottom||firstLoad)box.scrollTop=box.scrollHeight;
+  chatScroll.afterRender(savedScroll);
   firstLoad=false;status('');
   void live.markRead(ordered);
  }catch(_){status('Chat connection interrupted. Retrying…')}
@@ -914,7 +918,7 @@ $('sendForm').addEventListener('submit',async e=>{
   if(!ready||peer?.user_id!==target)return;
   const {error}=await client.from('corp_chat_messages').insert({sender_id:self,recipient_id:target,body});
   if(error){status('Message not sent. The contact may be blocked or unavailable.');void refreshCurrentBlock();return}
-  $('messageInput').value='';androidChatCaretGuard.reset();resizeComposer();await loadMessages();
+  $('messageInput').value='';androidChatCaretGuard.reset();resizeComposer();chatScroll.open();await loadMessages();
  }catch(_){status('Message not sent. Check your connection.')}
  finally{sendingMessage=false;syncBlockControls();if(!$('messageInput').disabled)$('messageInput').focus()}
 });
@@ -944,7 +948,7 @@ window.addEventListener('message',event=>{
  if(event.origin!==location.origin||event.source!==window.parent)return;
  if(event.data?.type==='blackcell-chat-visibility'){
   live.setVisible(event.data.visible===true);if(event.data.visible!==true){sharedMedia.pause();voice?.pause();tubeCards.stopActive();pulseCards.stopActive()}
-  if(event.data.visible===true&&ready&&peer)void loadMessages();
+  if(event.data.visible===true&&ready&&peer){chatScroll.schedule();void loadMessages();}
  }else if(event.data?.type==='blackcell-chat-shared-activity'&&employeeSession&&!sessionEnded){
   lastActivity=Date.now();
  }else if(event.data?.type==='blackcell-chat-open-inbox'){returnToDesktopInbox();
