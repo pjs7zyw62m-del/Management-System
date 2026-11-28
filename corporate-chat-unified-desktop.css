@@ -99,3 +99,15 @@ html.bc-desktop-messages body.bc-chat .chat:not(.media-open) .composer-send:not(
 .bc-finder-result-head time{font:10px system-ui;color:#a5a5ae;margin-left:auto}
 .bc-finder-result p{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.5 system-ui;margin:6px 0}
 @media(max-width:550px){.bc-feature-tool{width:26px;height:28px;padding:4px}.bc-feature-tool svg{width:16px;height:16px}}
+
+/* Compact conversation surfaces without touching IME direction or media layouts. */
+@media(max-width:1024px){
+ html.bc-os-chat:not(.bc-media-panel) body.bc-chat .chat-main>.chat-title{background:#14161b!important;box-shadow:none}
+ html.bc-os-chat:not(.bc-media-panel) body.bc-chat .composer{background:#111217!important}
+ html.bc-os-chat:not(.bc-media-panel) body.bc-chat .composer-input-wrap{background:#1b1d23!important;border-color:#ffffff25}
+ html.bc-os-chat:not(.bc-media-panel) body.bc-chat .peer-search-wrap{border-radius:12px}
+}
+@media(max-width:620px){
+ html.bc-os-chat:not(.bc-media-panel) body.bc-chat .composer textarea{font-size:16px!important}
+ html.bc-os-chat:not(.bc-media-panel) body.bc-chat .peer{min-height:60px}
+}
