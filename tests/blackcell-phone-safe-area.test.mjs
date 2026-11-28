@@ -11,7 +11,8 @@ test('Installed phone home controls clear opaque top edge and remain hit-testabl
   const url=new URL(req.url,'http://localhost');
   if(url.pathname==='/test'){
    const edge=Number(url.searchParams.get('edge'))||0;
-   const content='<!doctype html><html class="bc-os-phone'+(edge?' bc-os-installed':'')+'" style="--bc-installed-edge:'+edge+'px"><head><meta name="viewport" content="width=device-width,initial-scale=1">'+assets.map(p=>'<link rel="stylesheet" href="/'+p+'">').join('')+'<style>body{margin:0}#desktop{position:relative;width:100vw;height:100dvh}.bc-installed-top-edge{display:block!important;position:absolute!important;top:0;left:0;right:0;height:'+edge+'px;background:black;z-index:61;pointer-events:none}</style>'+critical+'</head><body><div id="desktop" class="bc-springboard-ready"><div class="bc-installed-top-edge"></div><section class="bc-sb"><header class="bc-sb-status"><time class="bc-sb-time">8:16 PM</time><span class="bc-sb-status-brand">BLACKCELL OS MOBILE</span><div class="bc-sb-status-actions"><button class="bc-home-phone-widget-picker">Widgets</button><button class="bc-sb-status-button">⌕</button><button class="bc-sb-status-button">▣</button></div></header><main class="bc-sb-home"></main></section></div><script>window.addEventListener("load",()=>{const edge='+edge+';const items=[...document.querySelectorAll(".bc-sb-time,.bc-sb-status-brand,.bc-sb-status-actions button")];document.body.dataset.maskRemoved=String(getComputedStyle(document.querySelector(".bc-installed-top-edge")).display==="none");document.body.dataset.visible=String(items.every(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.height>0&&r.top>=edge&&r.left>=0&&r.right<=innerWidth+.5}));document.body.dataset.clickable=String(items.slice(2).every(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2))}));});</script></body></html>';
+   const inset=Math.max(0,edge-28);
+   const content='<!doctype html><html class="bc-os-phone'+(edge?' bc-os-installed':'')+'" style="--bc-installed-edge:'+edge+'px;--bc-phone-native-inset:'+inset+'px"><head><meta name="viewport" content="width=device-width,initial-scale=1">'+assets.map(p=>'<link rel="stylesheet" href="/'+p+'">').join('')+'<style>body{margin:0}#desktop{position:relative;width:100vw;height:100dvh}.bc-installed-top-edge{display:block!important;position:absolute!important;top:0;left:0;right:0;height:'+edge+'px;background:black;z-index:61;pointer-events:none}</style>'+critical+'</head><body><div id="desktop" class="bc-springboard-ready"><div class="bc-installed-top-edge"></div><section class="bc-sb"><header class="bc-sb-status"><time class="bc-sb-time">8:16 PM</time><span class="bc-sb-status-brand">BLACKCELL OS MOBILE</span><div class="bc-sb-status-actions"><button class="bc-home-phone-widget-picker">Widgets</button><button class="bc-sb-status-button">⌕</button><button class="bc-sb-status-button">▣</button></div></header><main class="bc-sb-home"></main></section></div><script>window.addEventListener("load",()=>{const edge='+inset+';const items=[...document.querySelectorAll(".bc-sb-time,.bc-sb-status-brand,.bc-sb-status-actions button")];document.body.dataset.maskRemoved=String(getComputedStyle(document.querySelector(".bc-installed-top-edge")).display==="none");document.body.dataset.visible=String(items.every(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.height>0&&r.top>=edge&&r.left>=0&&r.right<=innerWidth+.5}));document.body.dataset.compact=String(items[2].getBoundingClientRect().top<=Math.max(edge,32)+12);document.body.dataset.clickable=String(items.slice(2).every(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2))}));});</script></body></html>';
    res.writeHead(200,{'content-type':'text/html'});res.end(content);return;
   }
   const p=url.pathname.slice(1);
@@ -28,6 +29,7 @@ test('Installed phone home controls clear opaque top edge and remain hit-testabl
    assert.equal(exit,0,err.slice(-400));
    assert.match(out,/data-mask-removed="true"/,'mask removed '+width+'x'+height);
    assert.match(out,/data-visible="true"/,'visible '+width+'x'+height+' edge '+edge);
+   assert.match(out,/data-compact="true"/,'compact '+width+'x'+height);
    assert.match(out,/data-clickable="true"/,'clickable '+width+'x'+height+' edge '+edge);
   }
  }finally{await new Promise(ok=>server.close(ok))}
@@ -42,6 +44,12 @@ test('Phone header reserves clearance in its layout, removes overlapping mask an
 test('Critical inline style uses safe area fallback and is versioned',()=>{
  assert.match(critical,/bc-installed-top-edge\{display:none!important\}/);
  assert.match(critical,/padding-top:var\(--bc-phone-header-clearance\)!important/);
- assert.match(critical,/content:" · R2"/);
- assert.match(readFileSync('blackcell-os.html','utf8'),/content="20261127-phone-safe-area2"/);
+ assert.match(critical,/content:" · R3"/);
+ assert.match(readFileSync('blackcell-os.html','utf8'),/content="20261127-phone-safe-area3"/);
+});
+
+test('Compact header does not reuse window-only edge or oversized portrait floor',()=>{
+ assert.match(critical,/--bc-phone-header-clearance:var\(--bc-phone-native-inset,env\(safe-area-inset-top,0px\)\)/);
+ assert.match(critical,/--bc-phone-header-clearance:max\(32px,/);
+ assert.doesNotMatch(critical,/--bc-phone-header-clearance:(?:max\(84px|var\(--bc-installed-edge)/);
 });
