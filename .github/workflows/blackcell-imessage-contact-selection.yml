@@ -1,0 +1,29 @@
+name: BLACKCELL iMessage Contact Selection
+on:
+  pull_request:
+    paths:
+      - 'corporate-chat.js'
+      - 'corporate-chat.html'
+      - 'blackcell-os.js'
+      - 'tests/blackcell-imessage-contact-selection.test.mjs'
+      - '.github/workflows/blackcell-imessage-contact-selection.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'corporate-chat.js'
+      - 'blackcell-os.js'
+      - 'tests/blackcell-imessage-contact-selection.test.mjs'
+permissions:
+  contents: read
+jobs:
+  inbox:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: |
+          node --check corporate-chat.js
+          node --check blackcell-os.js
+          node --test tests/blackcell-imessage-contact-selection.test.mjs
