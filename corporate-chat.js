@@ -1,6 +1,7 @@
+import {mountChatVoice,VOICE_BODY} from './blackcell-chat-voice.js?v=1';
 import {mountPopoutActions} from './corporate-chat-popout-actions.js?v=20261128-attached-reactions2';
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
-import {setupCorporateMedia} from './corporate-chat-media.js?v=20261122-contact-bootstrap2';
+import {setupCorporateMedia} from './corporate-chat-media.js?v=20261128-voice1';
 import {setupCorporateChatLive} from './corporate-chat-live.js?v=20261128-unread1';
 import {installAndroidChatCaretGuard} from './corporate-chat-android-caret.js?v=20261122-return-keyboard10';
 import {createChatTubeCards,parseTubeReference} from './blackcell-chat-tube-cards.js?v=1';
@@ -42,7 +43,7 @@ function openChatPopout(){
  const url=new URL(location.pathname,location.origin);url.searchParams.set('popout','1');url.searchParams.set('peer',peer.user_id);url.searchParams.set('v','20261115-contact-axis1');window.open(url.href,'_blank','noopener,noreferrer,width=440,height=720');
 }
 popButton?.addEventListener('click',openChatPopout);
-window.BLACKCELL_OS_BEFORE_CLOSE=()=>({ok:true,retain:!!$('messageInput').value.trim()||!!document.querySelector('[aria-busy=true],.is-uploading,[data-busy=true]')});
+window.BLACKCELL_OS_BEFORE_CLOSE=()=>({ok:true,retain:!!voice?.busy()||!!$('messageInput').value.trim()||!!document.querySelector('[aria-busy=true],.is-uploading,[data-busy=true]')});
 let inboxSummaries=new Map(),inboxUnread=new Set(),inboxUnreadCounts=new Map(),inboxFilter='all',inboxEditing=false,inboxComposing=false,inboxRefreshing=false,inboxSelection=new Set(),inboxMarking=false,inboxUnreadAvailable=false;
 let sidebarClosed=false,inboxPins=[],pinMenuId=null;
 const inboxPinKey=()=>self?'bc.imessage.pins.v1:'+self:null;
@@ -116,7 +117,7 @@ let chatVerificationPaused=false,chatVerificationChecking=false;
 const IDLE_LIMIT_MS=60*60*1000;
 async function endChatAccess(reason){
  if(sessionEnded)return;
- sessionEnded=true;ready=false;tubeCards.clear();pulseCards.clear();employeeSession=false;inboxPins=[];closePinMenu();syncInboxControls();$('inboxRecent').hidden=true;
+ sessionEnded=true;ready=false;voice?.pause();tubeCards.clear();pulseCards.clear();employeeSession=false;inboxPins=[];closePinMenu();syncInboxControls();$('inboxRecent').hidden=true;
  $('messageInput').disabled=true;$('sendButton').disabled=true;
  status(reason);
  live.dispose();
@@ -171,7 +172,8 @@ function chatActivity(){
 
 function status(text){$('systemStatus').textContent=text;$('systemStatus').hidden=!text}
 const sharedMedia=setupCorporateMedia({client,context:()=>({self,peer,ready,blocked:chatBlocked||!blockKnown||blockBusy}),reloadMessages:loadMessages,status});
-window.BLACKCELL_OS_PAUSE_MEDIA=()=>sharedMedia.pause();
+const voice=mediaPanelMode?null:mountChatVoice({client,context:()=>({self,peer,ready,blocked:chatBlocked||!blockKnown||blockBusy}),composer:$('sendForm'),input:$('messageInput'),status,reload:loadMessages});
+window.BLACKCELL_OS_PAUSE_MEDIA=()=>{sharedMedia.pause();voice?.pause()};
 const live=setupCorporateChatLive({
  client,context:()=>({self,peer,ready}),
  typingLabel:$('typingIndicator'),typingName:$('typingName')
@@ -316,7 +318,7 @@ $('peerSearch').addEventListener('input',()=>{closePinMenu();renderPeers()});
 syncInboxControls();
 $('backToInbox').addEventListener('click',()=>{
  if(!compactChat||popout)return;
- live.setThreadOpen(false);
+ voice?.pause();live.setThreadOpen(false);
  document.querySelector('.chat').classList.remove('bc-thread-active');
  sharedMedia.closeMediaTray();
  if(window.parent!==window)window.parent.postMessage({type:'blackcell-chat-inbox-open'},location.origin);
@@ -433,7 +435,7 @@ const unblockButton=document.createElement('button');unblockButton.type='button'
 $('sendForm').before(blockNotice);
 function closeInfoMenu(){const menu=$('popoutInfoMenu'),info=$('popoutInfo');if(menu)menu.hidden=true;if(info)info.setAttribute('aria-expanded','false')}
 function syncBlockControls(){
- syncMessageTools();
+ voice?.sync();syncMessageTools();
  const disabled=!ready||!peer||!blockKnown||chatBlocked||blockBusy;
  $('messageInput').disabled=disabled;$('sendButton').disabled=disabled||sendingMessage;
  blockNotice.hidden=!chatBlocked||!ready||!peer;unblockButton.disabled=blockBusy;
@@ -661,7 +663,7 @@ async function refreshInboxSummaries(){
    for(const message of data||[]){
     const other=message.sender_id===self?message.recipient_id:message.sender_id;
     if(other===self||summaries.has(other))continue;
-    summaries.set(other,{preview:message.media_batch_id?'Photo or video attachment':String(message.body||'').slice(0,120),when:message.created_at});
+    summaries.set(other,{preview:message.media_batch_id?(message.body===VOICE_BODY?'Voice message':'Photo or video attachment'):String(message.body||'').slice(0,120),when:message.created_at});
    }
    inboxSummaries=summaries;
   }
@@ -755,7 +757,7 @@ function returnToDesktopInbox(){
 function choose(userId){
  const selected=contacts.find(x=>x.user_id===userId);if(!selected||!ready||(popout&&userId!==popoutId))return;
  const previousPeer=peer?.user_id;
- if(previousPeer!==userId)closeMessageFinder();
+ if(previousPeer!==userId){voice?.pause();closeMessageFinder()}
  if(previousPeer!==userId){tubeCards.clear();pulseCards.clear()}
  live.onPeerChange(previousPeer,userId);
  closeMobileTools();peer=selected;blockGeneration++;blockKnown=false;chatBlocked=false;closeInfoMenu();sharedMedia.onPeerChange(userId);firstLoad=true;applySidebarPreference();
@@ -804,7 +806,7 @@ async function loadMessages(){
    item.className='message '+group+(own?' mine':'')+(m.media_batch_id?' message-media':'');
    if(!firstLoad&&oldNewest!==newest&&m.id===newest)item.classList.add('message-fresh');
    const tubeRef=!m.deleted_at&&!m.media_batch_id&&parseTubeReference(m.body),pulseRef=!m.deleted_at&&!m.media_batch_id&&!tubeRef&&parsePulseShare(m.body);
-   const bubble=m.deleted_at?text('div','bubble bc-message-deleted',own?'You deleted a message':'Message deleted'):m.media_batch_id?sharedMedia.renderMediaBubble(m,own):tubeRef?tubeCards.render(tubeRef):pulseRef?pulseCards.render(pulseRef):text('div','bubble',m.body);
+   const bubble=m.deleted_at?text('div','bubble bc-message-deleted',own?'You deleted a message':'Message deleted'):m.media_batch_id?(m.body===VOICE_BODY&&voice?voice.render(m):sharedMedia.renderMediaBubble(m,own)):tubeRef?tubeCards.render(tubeRef):pulseRef?pulseCards.render(pulseRef):text('div','bubble',m.body);
    if(!m.deleted_at&&!m.media_batch_id&&!tubeRef&&!pulseRef){
     popoutActions?.attach(bubble,m,own);
     bubble.tabIndex=0;
@@ -921,7 +923,7 @@ setInterval(()=>{if(chatVerificationPaused&&!document.hidden)void reverifyChatOn
 window.addEventListener('message',event=>{
  if(event.origin!==location.origin||event.source!==window.parent)return;
  if(event.data?.type==='blackcell-chat-visibility'){
-  live.setVisible(event.data.visible===true);if(event.data.visible!==true){tubeCards.stopActive();pulseCards.stopActive()}
+  live.setVisible(event.data.visible===true);if(event.data.visible!==true){voice?.pause();tubeCards.stopActive();pulseCards.stopActive()}
   if(event.data.visible===true&&ready&&peer)void loadMessages();
  }else if(event.data?.type==='blackcell-chat-shared-activity'&&employeeSession&&!sessionEnded){
   lastActivity=Date.now();
