@@ -119,9 +119,31 @@ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb:after{
  background:radial-gradient(ellipse 80% 48% at 77% 45%,rgba(161,15,49,.08),transparent 76%),
  linear-gradient(180deg,rgba(1,2,5,.04),rgba(1,2,5,.08) 45%,rgba(2,3,9,.25) 70%,#0102049e)!important;
 }
+/* Share the installed iOS opaque edge clearance with the SpringBoard.
+   The opaque edge is above this shell (z-index 61 vs 40); all controls
+   must start below it, not merely below the reported notch inset. */
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-status{
- height:calc(48px + env(safe-area-inset-top));min-height:48px;
- padding:max(5px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 3px max(16px,env(safe-area-inset-left));
+ --bc-sb-safe-top:var(--bc-installed-edge,env(safe-area-inset-top,0px));
+ box-sizing:border-box;flex:0 0 auto;
+ height:auto;min-height:calc(var(--bc-sb-safe-top) + 54px);
+ padding:calc(var(--bc-sb-safe-top) + 5px) max(10px,env(safe-area-inset-right,0px)) 5px max(10px,env(safe-area-inset-left,0px));
+ gap:5px;align-items:center;justify-content:space-between;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-status .bc-sb-time{white-space:nowrap}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-status .bc-sb-status-brand{
+ flex:1 1 auto;min-width:0;white-space:normal;text-align:center;line-height:1.2;
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-status-actions{flex:0 0 auto;gap:4px}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-status-actions>button{
+ flex:none;box-sizing:border-box;min-height:44px;touch-action:manipulation;
+}
+@media(max-width:360px){
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-status .bc-sb-time{font-size:12px}
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-status .bc-sb-status-brand{font-size:9px!important;letter-spacing:.04em!important}
+ html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-status .bc-home-phone-widget-picker{padding-inline:5px;font-size:10px}
+}
+html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-edit-done{
+ top:calc(var(--bc-installed-edge,env(safe-area-inset-top,0px)) + 54px);
 }
 html.bc-os-phone #desktop.bc-springboard-ready .bc-sb-status-brand{
  color:#f4eef1!important;font-size:10px!important;letter-spacing:.11em!important;
