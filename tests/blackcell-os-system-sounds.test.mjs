@@ -25,7 +25,7 @@ test('System tones require browser activation and suppress repeat actions',async
  assert.equal(h.api.preferences().enabled,true);
  assert.equal(h.api.play('open'),false);
  assert.equal(h.context(),null);
- assert.equal(await h.api.preview({isTrusted:false}),false);
+ assert.deepEqual(await h.api.preview({isTrusted:false}),{ok:false,reason:'gesture'});
  await h.gesture();
  assert.equal(h.context().state,'running');
  assert.equal(h.api.play('open'),true);
@@ -89,4 +89,34 @@ test('Active window taps do not trigger repeated workspace raises',()=>{
  run(w,r,null,()=>calls++);
  listener({target:{closest:()=>null}});assert.equal(calls,1);
  listener({target:{closest:()=>true}});assert.equal(calls,1);
+});
+
+test('Explicit sample uses trusted native media playback and reports actual completion',async()=>{
+ let player,called=false,wave;
+ class Audio{
+  constructor(){player=this;this.listeners=new Map();this.paused=true}
+  pause(){this.paused=true}
+  addEventListener(name,fn){this.listeners.set(name,fn)}
+  removeEventListener(name){this.listeners.delete(name)}
+  play(){called=true;this.paused=false;return Promise.resolve()}
+ }
+ const win={addEventListener(){}},doc={hidden:false,addEventListener(){}};
+ const storage={getItem:()=>null,setItem(){}};
+ const url={createObjectURL:b=>{wave=b;return 'blob:test'},revokeObjectURL(){}};
+ new Function('window','document','localStorage','location','audio','muted','Audio','URL',source)(win,doc,storage,{search:''},{paused:true,ended:false,addEventListener(){}},()=>false,Audio,url);
+ const api=win.BLACKCELL_SYSTEM_SOUNDS;
+ assert.equal(api.preferences().available,true);
+ const result=api.preview({isTrusted:true});
+ assert.equal(called,true,'play is called synchronously in click handler');
+ assert.equal(player.muted,false);
+ assert.equal(wave.type,'audio/wav');
+ const bytes=new Uint8Array(await wave.arrayBuffer());
+ assert.equal(Buffer.from(bytes.slice(0,4)).toString(),'RIFF');
+ assert.ok(bytes.slice(44).some(n=>n!==0),'generated PCM is not silent');
+ player.listeners.get('ended')();
+ assert.deepEqual(await result,{ok:true,output:'media'});
+ player.play=()=>Promise.reject(Object.assign(new Error('denied'),{name:'NotAllowedError'}));
+ assert.deepEqual(await api.preview({isTrusted:true}),{ok:false,reason:'blocked'});
+ api.setPreference({enabled:false});
+ assert.deepEqual(await api.preview({isTrusted:true}),{ok:false,reason:'muted'});
 });
