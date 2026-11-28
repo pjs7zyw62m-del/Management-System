@@ -1,0 +1,32 @@
+name: BLACKCELL Phone Safe Area
+on:
+  pull_request:
+    paths:
+      - 'blackcell-os-obsidian-v2.css'
+      - 'blackcell-os-springboard.css'
+      - 'blackcell-os.html'
+      - 'tests/blackcell-phone-safe-area.test.mjs'
+      - '.github/workflows/blackcell-phone-safe-area.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'blackcell-os-obsidian-v2.css'
+      - 'blackcell-os-springboard.css'
+      - 'blackcell-os.html'
+      - 'tests/blackcell-phone-safe-area.test.mjs'
+      - '.github/workflows/blackcell-phone-safe-area.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  phone-safe-area:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: |
+          command -v google-chrome >/dev/null 2>&1 && export CHROME=google-chrome || export CHROME=chromium
+          node --test tests/blackcell-phone-safe-area.test.mjs
