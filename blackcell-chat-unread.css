@@ -1,0 +1,4 @@
+/* Persistent unread count badges, independent of message window visibility. */
+#desktop :is(.app[data-app="chat"],.dock [data-open="chat"],.bc-home-desktop-app[data-id="chat"],.bc-sb-icon[data-id="chat"],.os-parked-chat-bubble)[data-bc-unread]{position:relative;overflow:visible}
+#desktop :is(.app[data-app="chat"],.dock [data-open="chat"],.bc-home-desktop-app[data-id="chat"],.bc-sb-icon[data-id="chat"],.os-parked-chat-bubble)[data-bc-unread]::after{content:attr(data-bc-unread);position:absolute;top:-5px;right:-5px;z-index:8;min-width:19px;height:19px;padding:0 5px;display:grid;place-items:center;box-sizing:border-box;border-radius:999px;background:#ff3b30;color:#fff;border:1px solid #ffffff60;box-shadow:0 2px 7px #0009;font:700 11px/1 system-ui;pointer-events:none}
+#desktop .bc-home-desktop-app[data-id="chat"][data-bc-unread]{position:absolute}
