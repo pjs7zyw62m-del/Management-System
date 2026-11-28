@@ -1,5 +1,5 @@
-import {mountBlackcellConnect} from './blackcell-connect.js?v=1';
-import {createFloatingMessageSound} from './blackcell-floating-message-sound.js?v=1';
+import {mountBlackcellConnect} from './blackcell-connect.js?v=2';
+import {createFloatingMessageSound} from './blackcell-floating-message-sound.js?v=2';
 import {mountChatVoice,VOICE_BODY} from './blackcell-chat-voice.js?v=1';
 import {mountPopoutActions} from './corporate-chat-popout-actions.js?v=20261128-attached-reactions2';
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261112-access2';
@@ -176,7 +176,7 @@ function status(text){$('systemStatus').textContent=text;$('systemStatus').hidde
 const sharedMedia=setupCorporateMedia({client,context:()=>({self,peer,ready,blocked:chatBlocked||!blockKnown||blockBusy}),reloadMessages:loadMessages,status});
 const voice=mediaPanelMode?null:mountChatVoice({client,context:()=>({self,peer,ready,blocked:chatBlocked||!blockKnown||blockBusy}),composer:$('sendForm'),input:$('messageInput'),status,reload:loadMessages});
 window.BLACKCELL_OS_PAUSE_MEDIA=()=>{sharedMedia.pause();voice?.pause()};
-const standaloneConnect=!mediaPanelMode&&window.parent===window?mountBlackcellConnect({client:()=>client,account:()=>self,allowed:()=>ready,notify:status,ring:()=>floatingRing?.play()}):null;
+const standaloneConnect=!mediaPanelMode&&window.parent===window?mountBlackcellConnect({client:()=>client,account:()=>self,allowed:()=>ready,notify:status,ring:()=>floatingRing?.play('callring'),ringback:()=>floatingRing?.play('ringback')}):null;
 const floatingRing=standaloneConnect?createFloatingMessageSound():null;
 function requestConnect(mode){if(!ready||!peer||chatBlocked||!blockKnown||blockBusy)return;const id=peer.user_id,name=peer.display_name||'BLACKCELL Member';if(osChat&&window.parent!==window){window.parent.postMessage({type:'blackcell-connect-request',peerId:id,mode,name},location.origin)}else if(standaloneConnect)standaloneConnect.request(id,mode,name);else status('Open iMessage in BLACKCELL OS to place calls.');}
 function connectButton(mode){const b=document.createElement('button');b.type='button';b.className='bc-connect-button';b.textContent=mode==='voice'?'Call':'Video';b.title=mode==='voice'?'BLACKCELL Connect voice call':'BLACKCELL Connect video call';b.setAttribute('aria-label',b.title);b.disabled=true;b.onclick=()=>requestConnect(mode);return b}
