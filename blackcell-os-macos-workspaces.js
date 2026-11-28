@@ -151,7 +151,7 @@
    const options=controller.splitOptions?.()||[];
    const pick=label=>{const select=el('select','bc-tablet-split-select');select.setAttribute('aria-label',label);for(const item of options){const option=el('option','',item.title);option.value=item.id;select.append(option)}return select};
    const left=pick('Left app'),right=pick('Right app');if(options.length>1)right.selectedIndex=1;
-   const start=action('Arrange',()=>{if(controller.split?.(left.value,right.value))dismiss();else hint.textContent='Select two different available apps.'},'bc-tablet-split-button');
+   const start=action('Arrange',()=>{if(controller.split?.(left.value,right.value)){if(stageEnabled){stageEnabled=false;stageSync()}dismiss();}else hint.textContent='Select two different available apps.'},'bc-tablet-split-button');
    const hint=el('small','',options.length<2?'Two compatible open apps are required.':'');
    start.disabled=options.length<2;
    tools.append(left,right,start,action('Exit split',()=>{controller.clearSplit?.();dismiss()},'bc-tablet-split-button'),hint);
