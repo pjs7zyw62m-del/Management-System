@@ -186,3 +186,52 @@ html.bc-os-phone #desktop .bc-settings-row{min-height:48px;gap:10px}
 html.bc-os-phone #desktop .bc-settings-copy strong{font-size:13px}
 html.bc-os-phone #desktop .bc-settings-copy small{font-size:11px}
 html.bc-os-phone #desktop .bc-settings-button{font-size:12px;max-width:48%}
+
+/* NATIVE EXPERIENCE — independent touch window chrome and tablet workspace.
+   Existing authenticated window lifecycle remains authoritative. */
+#desktop .bc-native-window-actions{display:none}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop > .os-window:not([hidden]) > .os-window-head{
+ padding-inline:124px 92px;min-width:0;isolation:isolate;
+}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .bc-native-window-actions{
+ position:absolute;right:4px;top:50%;transform:translateY(-50%);
+ display:flex;gap:2px;z-index:16;
+}
+#desktop .bc-native-window-actions button{
+ width:42px;height:42px;min-width:42px;display:grid;place-items:center;
+ border:0;border-radius:10px;background:#ffffff08;color:#e7e7eb;font:22px system-ui;
+ touch-action:manipulation;cursor:pointer;
+}
+#desktop .bc-native-window-actions button:active{background:#ffffff22}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .os-window-head>a{display:none}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .os-window-head>span{
+ display:block;max-width:100%;min-width:0;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;
+}
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .os-window-head .os-network-refresh,
+html:is(.bc-os-phone,.bc-os-tablet) #desktop .os-window-head .os-admin-home{
+ max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+html.bc-os-phone #desktop > .os-window:not([hidden]):not(.bc-os-window-compact){
+ grid-template-rows:46px minmax(0,1fr);
+}
+html.bc-os-phone #desktop .os-window-head .traffic{gap:0;left:2px}
+html.bc-os-phone #desktop .os-window-head .traffic button.os-traffic-control{
+ width:36px!important;min-width:36px!important;flex-basis:36px!important;
+}
+html.bc-os-phone #desktop > .os-window:not([hidden]) > .os-window-head{padding-inline:110px 88px}
+html.bc-os-tablet #desktop.bc-tablet-split > .os-window[data-bc-split]:not([hidden]){
+ position:absolute!important;top:calc(var(--bc-touch-top,42px) + 10px)!important;bottom:auto!important;
+ width:calc(50% - 15px)!important;height:calc(100% - var(--bc-touch-top,42px) - var(--bc-touch-dock,80px) - 20px)!important;
+ min-width:0!important;max-width:none!important;min-height:0!important;max-height:none!important;
+ right:auto!important;border-radius:18px!important;resize:none!important;
+ z-index:800!important;opacity:1!important;visibility:visible!important;
+}
+html.bc-os-tablet #desktop.bc-tablet-split > .os-window[data-bc-split=left]:not([hidden]){left:10px!important}
+html.bc-os-tablet #desktop.bc-tablet-split > .os-window[data-bc-split=right]:not([hidden]){left:calc(50% + 5px)!important}
+html:not(.bc-os-phone):not(.bc-os-tablet) #desktop>.os-window:not([hidden]):not(.is-max):not(.bc-os-fullscreen):not(.os-chat-popout){
+ border-radius:13px!important;box-shadow:0 22px 65px #000a,0 0 0 1px #ffffff0c!important;
+}
+@media(prefers-reduced-motion:no-preference){
+ html:is(.bc-os-phone,.bc-os-tablet) #desktop>.os-window:not([hidden]){animation:bcNativeAppEnter .16s cubic-bezier(.2,.7,.3,1) both}
+ @keyframes bcNativeAppEnter{from{opacity:.82}to{opacity:1}}
+}
