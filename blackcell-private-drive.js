@@ -1,7 +1,7 @@
 /* Private OS drive adapter: encrypted Bunny files and read/write access to legacy Supabase files.
    Browser receives no storage-zone credentials or encryption keys. */
 export const PRIVATE_FILE_LIMIT=256*1024*1024;
-const BUCKET='blackcell-os-files',MARK='.blackcell-folder',CHUNK=4*1024*1024;
+const BUCKET='blackcell-os-files',MARK='.blackcell-folder',CLOUD_MARK='.__blackcell_files_folder__',CHUNK=4*1024*1024;
 const ok=data=>({data,error:null}),err=e=>({data:null,error:{message:String(e?.message||e||'Private drive error').slice(0,220)}});
 export function createPrivateDrive(client,uid){
  const legacy=client?.storage.from(BUCKET);
@@ -38,7 +38,7 @@ export function createPrivateDrive(client,uid){
  }
  function localRows(rows,prefix){
   const start=prefix?prefix+'/':'',map=new Map();
-  for(const r of rows){if(!r.path.startsWith(start))continue;const rest=r.path.slice(start.length);if(!rest)continue;const slash=rest.indexOf('/'),name=slash<0?rest:rest.slice(0,slash);if(slash>=0){if(!map.has(name))map.set(name,{name,id:null,metadata:null});continue}
+  for(const r of rows){if(!r.path.startsWith(start))continue;const rest=r.path.slice(start.length);if(!rest)continue;const slash=rest.indexOf('/'),name=slash<0?(rest===CLOUD_MARK?MARK:rest):rest.slice(0,slash);if(slash>=0){if(!map.has(name))map.set(name,{name,id:null,metadata:null});continue}
    map.set(name,{name,id:r.id,metadata:{size:Number(r.size_bytes)},updated_at:r.updated_at,created_at:r.updated_at,provider:'bunny',state:r.state});
   }return map
  }
@@ -61,8 +61,8 @@ export function createPrivateDrive(client,uid){
  async function upload(full,file,opts={}){
   let id=null;
   try{
-   const path=relative(full);
-   if(path.endsWith('/'+MARK)){const existing=await list(full.slice(0,-(MARK.length+1)),{limit:2});if(existing.error)throw existing.error;if(existing.data.some(r=>r.name!==MARK))throw Error('A folder already exists here.');return await legacy.upload(full,file,{...opts,upsert:false})}
+   let path=relative(full);
+   if(path.endsWith('/'+MARK)){const existing=await list(full.slice(0,-(MARK.length+1)),{limit:2});if(existing.error)throw existing.error;if(existing.data.some(r=>r.name!==MARK))throw Error('A folder already exists here.');if(existing.data.some(r=>r.name===MARK))throw Error('A folder already exists here.');path=path.slice(0,-MARK.length)+CLOUD_MARK}
    if(!file.size||file.size>PRIVATE_FILE_LIMIT)throw Error('Select a file from 1 byte through 256 MB.');
    const r=await request('start',{path,size:file.size});id=r.id;const chunkSize=r.chunkBytes;if(chunkSize!==CHUNK)throw Error('Unsupported upload chunk size.');
    for(let index=0,offset=0;offset<file.size;index++,offset+=CHUNK){const part=file.slice(offset,Math.min(file.size,offset+CHUNK));let problem;
@@ -104,7 +104,7 @@ export function createPrivateDrive(client,uid){
   }catch(e){return err(e)}
  }
  async function remove(fulls){
-  try{for(const full of fulls){const path=relative(full);if(path.endsWith('/'+MARK)){const parent=full.slice(0,-(MARK.length+1)),rows=await list(parent,{limit:2});if(rows.error)throw rows.error;if(rows.data.some(r=>r.name!==MARK))throw Error('Only an empty folder can be removed.');const r=await legacy.remove([full]);if(r.error)throw r.error;continue}
+  try{for(const full of fulls){const path=relative(full);if(path.endsWith('/'+MARK)){const parent=full.slice(0,-(MARK.length+1)),rows=await list(parent,{limit:2});if(rows.error)throw rows.error;if(rows.data.some(r=>r.name!==MARK))throw Error('Only an empty folder can be removed.');const marker=await lookup(parent+'/'+CLOUD_MARK);if(marker){await request('delete',{id:marker.id})}else if(!legacyBucketMissing){const r=await legacy.remove([full]);if(r.error)throw r.error}continue}
    const row=await lookup(full);if(row)await request('delete',{id:row.id});else{const r=await legacy.remove([full]);if(r.error)throw r.error}
   }invalid();return ok([])}catch(e){invalid();return err(e)}
  }
