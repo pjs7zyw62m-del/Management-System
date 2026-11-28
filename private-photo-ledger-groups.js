@@ -1,4 +1,4 @@
-import {mountRedlineGroupLive} from './private-photo-ledger-group-live.js?v=1';
+import {mountRedlineGroupLive} from './private-photo-ledger-group-live.js?v=2';
 // Separate group chat; no access to individual photo ledgers or balances.
 export function mountGroupRooms(db,{isOwner,section}){
  if(section.querySelector('#redlineGroupRooms'))return;
@@ -12,8 +12,10 @@ export function mountGroupRooms(db,{isOwner,section}){
  const refresh=button('Refresh groups',()=>void load());bar.append(title,create,refresh);root.append(bar,list,status);section.append(root);
  const dialog=make('dialog','rg-dialog');document.body.append(dialog);
  let current=null,loading=false,posting=false,poll=null,epoch=0,live=null,photoFrame=null,closeGuard=null;
+ const previousPause=window.BLACKCELL_OS_PAUSE_MEDIA;window.BLACKCELL_OS_PAUSE_MEDIA=()=>{previousPause?.();live?.pause()};
  const stop=()=>{live?.dispose();live=null;photoFrame=null;closeGuard=null;current=null;epoch++;clearInterval(poll);poll=null;dialog.classList.remove('rg-live-room');dialog.replaceChildren()};
  dialog.addEventListener('close',stop);
+ window.addEventListener('pagehide',()=>live?.dispose());
  const visible=()=>!section.hidden&&!document.getElementById('ledgerApp')?.hidden;
  new MutationObserver(()=>{if(!visible()&&dialog.open)dialog.close()}).observe(document.getElementById('ledgerApp'),{attributes:true,attributeFilter:['hidden']});
  const errorText=e=>String(e?.message||e);
