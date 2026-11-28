@@ -1,0 +1,19 @@
+name: BLACKCELL Uniform Store Category
+on:
+  pull_request:
+    paths:
+      - 'blackcell-app-store.js'
+      - 'blackcell-app-store-grid.css'
+      - 'tests/blackcell-uniform-store.test.mjs'
+      - '.github/workflows/blackcell-uniform-store.yml'
+permissions:
+  contents: read
+jobs:
+  category:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --check blackcell-app-store.js && node --test tests/blackcell-uniform-store.test.mjs tests/blackcell-mail-discover.test.mjs

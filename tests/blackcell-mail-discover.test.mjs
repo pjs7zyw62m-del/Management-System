@@ -11,5 +11,5 @@ test('Mail is not a fake planned entry and existing authorized catalog actions r
  assert.doesNotMatch(store,/\["mail","Mail","Connected email"/);
  assert.match(store,/a.allowed&&a.enabled!==false&&!a.planned&&!a.catalogUnavailable&&!isBeta\(a\)/);
  assert.match(store,/await perform\(\(\)=>api.install\(app.id,true\)/);
- assert.match(os,/blackcell-app-store.js\?v=20261128-retire-battle1/);
+ assert.match(os,/blackcell-app-store.js\?v=20261128-uniform-category1/);
 });

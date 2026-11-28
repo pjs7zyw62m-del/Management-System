@@ -158,3 +158,9 @@ html.bc-os-phone #desktop .bc-store-mobile-tab.selected{background:#18181c;color
  html.bc-os-phone #desktop .bc-store-mobile-title{font-size:34px}
 }
 @media(prefers-reduced-motion:reduce){html.bc-os-phone #desktop .bc-store *{scroll-behavior:auto}}
+
+/* Dedicated uniform collection entry, shared across device layouts. */
+#desktop .bc-store-uniform-entry{width:100%;display:flex;align-items:center;gap:14px;text-align:left;padding:16px;border:1px solid #898b7852;border-radius:16px;background:linear-gradient(135deg,#35392f,#1c201c 75%);color:#f5f6ef;min-height:72px;cursor:pointer}
+#desktop .bc-store-uniform-mark{width:46px;height:46px;flex:none;display:grid;place-items:center;border-radius:12px;background:#737e4b;color:white;font-size:27px}
+#desktop .bc-store-uniform-copy{flex:1;min-width:0;display:grid;gap:5px;overflow-wrap:anywhere}
+#desktop .bc-store-uniform-copy strong{font-size:16px}#desktop .bc-store-uniform-copy small{font-size:12px;line-height:1.4;color:#bec5b5}#desktop .bc-store-uniform-chevron{font-size:26px;color:#b5bea3}
