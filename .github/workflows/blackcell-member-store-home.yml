@@ -1,0 +1,25 @@
+name: BLACKCELL Member App Store Home
+on:
+  pull_request:
+    paths:
+      - 'blackcell-os.js'
+      - 'blackcell-os-springboard.js'
+      - 'blackcell-os.html'
+      - 'tests/blackcell-member-store-home.test.mjs'
+      - '.github/workflows/blackcell-member-store-home.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'blackcell-os.js'
+      - 'blackcell-os-springboard.js'
+permissions:
+  contents: read
+jobs:
+  member-home:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --check blackcell-os.js && node --check blackcell-os-springboard.js && node --test tests/blackcell-member-store-home.test.mjs
