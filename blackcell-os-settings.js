@@ -7,12 +7,19 @@ export function mountSettings(host,api){
  const groups=[['general','General','⚙'],['account','Account','◉'],['storage','Storage','▱'],['apps','Applications','▦'],['appearance','Appearance','◐'],['sound','Sound','♪'],['security','Privacy & Security','◇'],['updates','Software Update','↻'],['about','About','ⓘ']];
  let section=groups.some(x=>x[0]===api.initialSection)?api.initialSection:'general',closed=false,generation=0,storageData=null,breakdown=null,storageError='',loading=false,buttons=new Map();
  navigation.append(el('div','bc-settings-brand','SYSTEM SETTINGS'));
- for(const [id,label,icon] of groups){const b=btn('','', 'bc-settings-navbtn');b.append(el('span','bc-settings-glyph',icon),el('span','',label));b.onclick=()=>select(id);navigation.append(b);buttons.set(id,b)}
+ for(const [id,label,icon] of groups){const b=btn('','', 'bc-settings-navbtn');b.append(el('span','bc-settings-glyph',icon),el('span','',label));b.onclick=event=>{event.preventDefault();select(id)};navigation.append(b);buttons.set(id,b)}
  function panel(title,subtitle){const p=el('section','bc-settings-panel');if(title)p.append(el('h2','',title));if(subtitle)p.append(el('p','bc-settings-muted',subtitle));body.append(p);return p}
  function row(p,label,value,detail){const r=el('div','bc-settings-row'),copy=el('div','bc-settings-copy');copy.append(el('strong','',label));if(detail)copy.append(el('small','',detail));r.append(copy);if(value instanceof Node)r.append(value);else r.append(el('span','bc-settings-value',String(value??'—')));p.append(r);return r}
  const n=x=>Math.max(0,Number(x)||0);
  function bytes(x){const a=n(x);return a>=1073741824?(a/1073741824).toFixed(2).replace(/\.?0+$/,'')+' GB':a>=1048576?(a/1048576).toFixed(1).replace(/\.0$/,'')+' MB':a>=1024?(a/1024).toFixed(1).replace(/\.0$/,'')+' KB':a+' B'}
- function select(id){if(!groups.some(g=>g[0]===id))return;section=id;api.onSection?.(id);body.scrollTop=0;render();if(id==='storage')void loadStorage()}
+ function select(id){
+  if(closed||!api.alive()||!groups.some(g=>g[0]===id))return;
+  section=id;body.scrollTop=0;
+  // Render the requested section before saving its location. A failed
+  // workspace persistence operation must never swallow navigation.
+  render();try{api.onSection?.(id)}catch(_){}
+  if(id==='storage')void loadStorage()
+ }
  function refresh(){if(closed)return;render();if(section==='storage')void loadStorage()}
  async function rpc(action){const cfg=window.BLACKCELL_CORP_CONFIG;const {data,error}=await api.client.auth.getSession();if(error||!data?.session?.access_token||!cfg?.url||!cfg?.publishableKey)throw Error('Session unavailable');const r=await fetch(cfg.url+'/functions/v1/blackcell-os-private-drive?action='+action,{method:'POST',headers:{Authorization:'Bearer '+data.session.access_token,apikey:cfg.publishableKey,'Content-Type':'application/json'},body:'{}',cache:'no-store',signal:AbortSignal.timeout(35000)});const out=await r.json();if(!r.ok||!out.ok)throw Error(out.error||'Storage unavailable');return out}
  async function loadStorage(){if(closed||loading||!api.alive())return;loading=true;storageError='';if(section==='storage')render();const seq=++generation;try{if(api.preview){storageData={usedBytes:0,quotaBytes:2147483648,maxBytes:268435456,fileCount:0,reservedBytes:0,legacyBytes:0};breakdown={photos:0,videos:0,documents:0,other:0}}else{const [usage,list]=await Promise.all([rpc('usage'),rpc('list')]);if(closed||seq!==generation||!api.alive())return;storageData=usage;breakdown={photos:0,videos:0,documents:0,other:0};for(const file of list.rows||[]){if(file.state!=='ready')continue;const ext=String(file.path).split('.').at(-1).toLowerCase();const type=/^(jpe?g|png|gif|webp|heic|heif|avif|tiff?|bmp)$/.test(ext)?'photos':/^(mp4|mov|m4v|webm|avi|mkv|3gp)$/.test(ext)?'videos':/^(pdf|txt|docx?|xlsx?|pptx?|csv|rtf|pages|numbers|key|md|json)$/.test(ext)?'documents':'other';breakdown[type]+=n(file.size_bytes)}}}catch(e){if(!closed&&seq===generation){storageData=null;breakdown=null;storageError='Storage usage is unavailable. Refresh to retry.'}}finally{loading=false;if(!closed&&seq===generation&&section==='storage'&&api.alive())render()}}
@@ -100,9 +107,9 @@ export function mountSettings(host,api){
     row(p,'Installed interface build',build,'This is the exact interface code loaded on this device. If it differs from your computer, the device may still be showing an older cached version.');
     row(p,'Published release',check,'Check for a new version.');
     p.append(notice);
-   }else{const p=panel('BLACKCELL OS','Obsidian Edition');row(p,'Platform','Cloud workspace');row(p,'Version','Obsidian');row(p,'Storage','BLACKCELL Storage');p.append(el('p','bc-settings-motto','CONTROL IS EVERYTHING.'))}
+   }else{const p=panel('BLACKCELL OS','Obsidian Edition');row(p,'Platform','Cloud workspace');row(p,'Version',document.querySelector('meta[name="blackcell-os-client-build"]')?.content||'Obsidian');row(p,'Storage','BLACKCELL Storage');p.append(el('p','bc-settings-motto','CONTROL IS EVERYTHING.'))}
   body.scrollTop=previous;
  }
- const change=()=>{if(section==='storage')void loadStorage()};window.addEventListener('bc-private-files-changed',change);api.onSection?.(section);render();if(section==='storage')void loadStorage();
+ const change=()=>{if(section==='storage')void loadStorage()};window.addEventListener('bc-private-files-changed',change);try{api.onSection?.(section)}catch(_){}render();if(section==='storage')void loadStorage();
  return {select,refresh:()=>{if(!closed&&section==='apps')render()},dispose(){closed=true;generation++;window.removeEventListener('bc-private-files-changed',change)}};
 }
