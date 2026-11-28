@@ -4,8 +4,8 @@ const $=id=>document.getElementById(id), modal=$('modalBackdrop'), content=$('mo
 let lastTrigger=null,activeModal='',activeTab='',searchTerm='',period='all',selectedEvent=null,selectedSystem=null;
 let pendingReinvite=null;
 const systems=[{id:'nexus',name:'NEXUS Management',kind:'Corporate application',provider:'GitHub Pages · Supabase',desc:'Inmate profiles, financial management, records, communications and analysis.',href:'https://www.blackcellcorp.com',icon:'▦'},{id:'maf',name:"Man's Armed Forces",kind:'Media collection',provider:'GitHub Pages · Browser storage',desc:'Uniforms photo library, albums, folders, ratings and collections.',href:'https://blackcellcorp.com/mans-armed-forces.html',icon:'◇'},{id:'gunner',name:'Gunner Thompson AI',kind:'AI application',provider:'AI inference services',desc:'Character AI service; account-level connectivity not monitored.',href:null,icon:'✳'},{id:'corporate',name:'Blackcell Corporate Portal',kind:'Administrative interface',provider:'GitHub Pages',desc:'Corporate dashboard and administration preview.',href:null,icon:'▤'}];
-const names={nexus:'NEXUS Management',mans:"Man's Armed Forces",users:'User Management',chat:'Employee Chat',security:'Security Center',settings:'System Settings',logs:'Activity Logs',backups:'Backup & Recovery',systems:'Corporate Systems',account:'My Account',notifications:'Corporate Notifications',signout:'Corporate Session Sign Out',restricted:'Restricted Infrastructure'};
-const tabs={users:[['profiles','Directory'],['accounts','Invitations'],['roles','Clearance'],['access','Permissions']],security:[['overview','Overview'],['sessions','Sessions'],['settings','Settings']],settings:[['general','General'],['appearance','Appearance'],['divisions','Divisions'],['preferences','Preferences']],logs:[['all','All'],['admin','Admin'],['security','Security'],['access','Access']],backups:[['overview','Overview'],['history','History'],['settings','Settings']],systems:[['systems','Systems'],['infrastructure','Infrastructure'],['monitoring','Monitoring']]};
+const names={nexus:'NEXUS Management',mans:"Man's Armed Forces",users:'Personnel Command',chat:'Employee Chat',security:'Security Center',settings:'System Settings',logs:'Activity Logs',backups:'Backup & Recovery',systems:'Corporate Systems',account:'My Account',notifications:'Corporate Notifications',signout:'Corporate Session Sign Out',restricted:'Restricted Infrastructure'};
+const tabs={users:[['profiles','Directory'],['presence','Live Presence'],['preview','Experience Preview'],['accounts','Invitations'],['roles','Clearance'],['access','Permissions']],security:[['overview','Overview'],['sessions','Sessions'],['settings','Settings']],settings:[['general','General'],['appearance','Appearance'],['divisions','Divisions'],['preferences','Preferences']],logs:[['all','All'],['admin','Admin'],['security','Security'],['access','Access']],backups:[['overview','Overview'],['history','History'],['settings','Settings']],systems:[['systems','Systems'],['infrastructure','Infrastructure'],['monitoring','Monitoring']]};
 const el=(tag,cls='',txt)=>{let n=document.createElement(tag);if(cls)n.className=cls;if(txt!==undefined)n.textContent=txt;return n};
 const add=(parent,...children)=>{children.forEach(c=>parent.append(c));return parent};
 const p=(s)=>el('p','muted',s);
@@ -27,8 +27,8 @@ function renderUserManagementHeader(){
  const wrap=el('section','um2-header');
  const lead=el('div','um2-lead');
  lead.append(el('span','um2-eyebrow','BLACKCELL CORPORATION  /  PERSONNEL COMMAND'),
-   el('h3','','Personnel directory'),
-   el('p','','Manage corporate identities, invitations and access.'));
+   el('h3','','Personnel Command'),
+   el('p','','Identity, live connections, access control and member experience.'));
  const actions=el('div','um2-shortcuts');
  actions.append(action('＋ Invite employee',()=>{activeTab='accounts';render();},false,true));
  const upper=el('div','um2-upper'); upper.append(lead,actions);wrap.append(upper);
@@ -229,6 +229,7 @@ function showEmployeeProfile(member,sample=false){
   const heading=el('div','um3-profile-title'),avatar=el('span','um3-avatar',String(member.display_name||'BC').trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()),copy=el('div');
   copy.append(el('h3','',member.display_name||'Corporate member'),el('p','muted',member.role==='owner'?'Corporate Owner':'Employee · '+(member.email||'No email')));heading.append(avatar,copy);
   content.append(back,heading);
+  if(!sample&&member.role!=='owner'){const controls=el('div','bc-personnel-actions');controls.append(action('Live presence',()=>{personnelSelection=member.user_id;activeTab='presence';render()}),action('Preview clearance',()=>{personnelPreviewLevel={level:member.clearance_level,chat:member.can_chat===true};activeTab='preview';render()}));content.append(controls)}
   const cardPanel=block('Digital access pass');cardPanel.classList.add('um3-profile-panel');cardPanel.append(employeeCardView(member,sample));content.append(cardPanel);
   if(!sample&&member.role==='employee'){
    const panel=block('Account permissions');panel.classList.add('um3-profile-panel');
@@ -569,7 +570,67 @@ function showSecurityCodeCardPreview(inputs,showPreview,closePreview){
   showPreview(panel);
 }
 
+
+// Personnel Command reuses the existing owner-verified RPC; no new tracking or permission grants.
+let personnelSelection=null,personnelPreviewLevel=null;
+function personnelState(member){
+ const sessions=Array.isArray(member?.sessions)?member.sessions:[];
+ return sessions.some(s=>s.status==='online')?'online':sessions.some(s=>s.status==='left')?'left':'offline';
+}
+function personnelDate(value){const d=new Date(value);return value&&Number.isFinite(d.getTime())?d.toLocaleString():'Not recorded'}
+function renderPersonnelPresence(){
+ const root=el('section','bc-personnel-presence'),head=el('div','bc-personnel-head'),notice=el('p','bc-personnel-note','Loading verified presence…');
+ notice.setAttribute('role','status');head.append(el('h3','','Live connections'),action('Refresh',()=>void refresh()));root.append(head,notice);
+ const metrics=el('div','bc-personnel-metrics'),values={};
+ for(const [id,label] of [['online','Online now'],['left','Left website'],['offline','Offline / no record']]){const cell=el('div','bc-personnel-metric'),v=el('strong','','—');values[id]=v;cell.append(el('small','',label),v);metrics.append(cell)}root.append(metrics);
+ const layout=el('div','bc-personnel-grid'),directory=el('section','bc-personnel-list'),detail=el('section','bc-personnel-detail'),search=el('input','bc-personnel-search'),filter=el('select','bc-personnel-filter'),list=el('div','bc-personnel-rows');
+ search.type='search';search.placeholder='Search personnel';search.setAttribute('aria-label','Search live personnel');
+ filter.setAttribute('aria-label','Filter presence');for(const [v,l] of [['all','All statuses'],['online','Online'],['left','Left website'],['offline','Offline']])filter.add(new Option(l,v));
+ directory.append(search,filter,list);layout.append(directory,detail);root.append(layout,el('p','bc-personnel-note','Presence is based on browser visibility and heartbeats. Network loss or suspension may take about 105 seconds to appear offline. Only active accounts appear here; the Directory includes disabled and invited accounts.'));content.append(root);
+ let members=[],events=[],busy=false,interval;
+ const api=window.BLACKCELL_CORPORATE_ADMIN_API?.client;
+ const labels={online:'Online',left:'Left website',offline:'Offline / no record'};
+ const stillOpen=()=>root.isConnected&&activeModal==='users'&&activeTab==='presence'&&!modal.hidden;
+ function paint(){
+  if(!stillOpen())return;
+  for(const k of Object.keys(values))values[k].textContent=String(members.filter(m=>personnelState(m)===k).length);
+  const filtered=members.filter(m=>(filter.value==='all'||personnelState(m)===filter.value)&&String(m.name||'').toLowerCase().includes(search.value.trim().toLowerCase())).sort((a,b)=>Number(personnelState(b)==='online')-Number(personnelState(a)==='online')||String(a.name).localeCompare(String(b.name)));
+  if(!filtered.some(m=>m.user_id===personnelSelection))personnelSelection=filtered[0]?.user_id||null;
+  list.replaceChildren();
+  for(const m of filtered){const b=el('button','bc-personnel-row');b.type='button';b.setAttribute('aria-pressed',String(m.user_id===personnelSelection));b.append(el('span','bc-personnel-dot '+personnelState(m)),el('strong','',m.name||'Member'),el('small','',labels[personnelState(m)]));b.onclick=()=>{personnelSelection=m.user_id;paint()};list.append(b)}
+  if(!filtered.length)list.append(p('No members match the filter.'));
+  detail.replaceChildren();const m=filtered.find(x=>x.user_id===personnelSelection);
+  if(!m){detail.append(p('Select a member to review their recorded connections.'));return}
+  const title=el('div','bc-personnel-head');title.append(el('h3','',m.name||'Member'),el('span','bc-personnel-status '+personnelState(m),labels[personnelState(m)]));detail.append(title);
+  const actions=el('div','bc-personnel-actions');
+  async function lookup(preview){const selected=m.user_id;try{const {data,error}=await api.rpc('corp_admin_members');if(!stillOpen()||personnelSelection!==selected)return;const member=data?.members?.find(x=>x.user_id===selected);if(error||data?.ok!==true||!member)throw Error();if(preview){if(member.role==='owner'){notice.textContent='Owner privileges are not simulated. Select a standard member.';return}personnelPreviewLevel={level:member.clearance_level,chat:member.can_chat===true};activeTab='preview';render()}else showEmployeeProfile(member)}catch(_){if(stillOpen())notice.textContent='Unable to verify this profile. Refresh your owner session.'}}
+  actions.append(action('Manage profile',()=>void lookup(false)),action('Preview clearance',()=>void lookup(true)));detail.append(actions);
+  detail.append(el('h4','','Recorded device sessions'));
+  const sessions=Array.isArray(m.sessions)?m.sessions:[];
+  for(const session of sessions){detail.append(row(session.device||'Device',personnelDate(session.last_seen),labels[session.status]||'Unknown'))}
+  if(!sessions.length)detail.append(p('No visits recorded since tracking was enabled.'));
+  detail.append(el('h4','','Recent arrival, departure and return'));
+  const history=events.filter(e=>e.user_id===m.user_id);
+  for(const e of history){const title={arrived:'Entered BLACKCELL',left:'Left BLACKCELL',returned:'Returned to BLACKCELL'}[e.event]||'Site activity';detail.append(row(title,(e.device||'Device')+(e.estimated?' · Estimated timeout':''),personnelDate(e.at)))}
+  if(!history.length)detail.append(p('No recent events in the returned history.'));
+ }
+ async function refresh(){if(!stillOpen()||busy||document.hidden||root.getClientRects().length===0)return;busy=true;try{if(!api)throw Error();const {data,error}=await api.rpc('corp_site_presence_overview');if(!stillOpen())return;if(error||data?.ok!==true)throw Error();members=Array.isArray(data.members)?data.members:[];events=Array.isArray(data.events)?data.events:[];paint();notice.textContent='Last checked '+new Date().toLocaleTimeString()+' · Refreshes every 15 seconds while visible.'}catch(_){if(stillOpen()){members=[];events=[];list.replaceChildren();detail.replaceChildren();for(const v of Object.values(values))v.textContent='—';notice.textContent='Presence unavailable. Verify your Level 7 session and refresh.'}}finally{busy=false}}
+ search.addEventListener('input',paint);filter.addEventListener('change',paint);
+ interval=setInterval(()=>{if(!stillOpen()){clearInterval(interval);return}void refresh()},15000);void refresh();
+}
+function renderPersonnelPreview(){
+ const root=el('section','bc-personnel-preview');root.append(el('h3','','Member experience simulation'),p('Preview a fresh account using its clearance and iMessage setting. This is not a live member session and never exposes private data or changes an account.'));
+ const frame=el('iframe','bc-personnel-preview-frame');frame.title='Isolated member experience preview';frame.referrerPolicy='no-referrer';
+ const url=new URL('blackcell-member-preview.html',location.href);url.searchParams.set('personnel','1');
+ if(personnelPreviewLevel){const level=Number(personnelPreviewLevel.level);if(Number.isInteger(level)&&level>=0&&level<=6){url.searchParams.set('level',String(level));url.searchParams.set('chat',personnelPreviewLevel.chat?'1':'0')}personnelPreviewLevel=null}
+ frame.addEventListener('load',()=>{try{if(frame.contentWindow.location.origin!==location.origin||!frame.contentWindow.location.pathname.endsWith('/blackcell-member-preview.html'))return;for(const evt of ['pointerdown','keydown','touchstart','wheel'])frame.contentDocument.addEventListener(evt,()=>{if(window.parent!==window&&location.pathname.endsWith('/blackcell-administration-app.html'))window.parent.postMessage({type:'blackcell-admin-app-activity'},location.origin)},{passive:true})}catch(_){}});
+ frame.src=url.href;root.append(frame);content.append(root);
+}
+window.addEventListener('blackcell-personnel-tab',event=>{const tab=event.detail;if(activeModal==='users'&&!modal.hidden&&['profiles','presence','preview','accounts','roles','access'].includes(tab)){activeTab=tab;render()}});
+
 function users(){
+  if(activeTab==='presence'){renderPersonnelPresence();return}
+  if(activeTab==='preview'){renderPersonnelPreview();return}
   if(activeTab==='accounts'){
     ensureInvitationCardPreviewStyle();
     const section=block('Register New Employee');
