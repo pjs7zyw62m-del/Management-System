@@ -120,3 +120,36 @@ test('Explicit sample uses trusted native media playback and reports actual comp
  api.setPreference({enabled:false});
  assert.deepEqual(await api.preview({isTrusted:true}),{ok:false,reason:'muted'});
 });
+
+test('Sound library exposes 21 distinct entries and original voice clips with single-player interruption',async()=>{
+ let player,wave;
+ class Audio{
+  constructor(){player=this;this.listeners=new Map()}
+  pause(){}
+  addEventListener(n,f){this.listeners.set(n,f)}
+  removeEventListener(n){this.listeners.delete(n)}
+  play(){return Promise.resolve()}
+ }
+ const win={addEventListener(){}},doc={hidden:false,addEventListener(){}};
+ const url={createObjectURL:b=>{wave=b;return 'blob:library'},revokeObjectURL(){}};
+ new Function('window','document','localStorage','location','audio','muted','Audio','URL',source)(win,doc,{getItem:()=>null,setItem(){}},{search:''},{paused:true,ended:false,addEventListener(){}},()=>false,Audio,url);
+ const api=win.BLACKCELL_SYSTEM_SOUNDS;
+ const library=api.library();
+ assert.equal(library.length,21);
+ assert.equal(new Set(library.map(x=>x.id)).size,21);
+ const files={security:'blackcell-security-announcement.mp3',welcome:'blackcell-welcome-david2.mp3',access:'blackcell-access-granted-david.mp3',initialize:'blackcell-os-launch-david.mp3'};
+ for(const [id,file] of Object.entries(files)){
+  assert.ok(readFileSync(file).length>0);
+  const result=api.preview({isTrusted:true},id);
+  assert.ok(player.src.startsWith(file));
+  player.listeners.get('ended')();
+  assert.equal((await result).ok,true);
+ }
+ const first=api.preview({isTrusted:true},'crystal');
+ const second=api.preview({isTrusted:true},'pulse');
+ assert.deepEqual(await first,{ok:false,reason:'stopped'});
+ assert.ok(new Uint8Array(await wave.arrayBuffer()).slice(44).some(n=>n!==0));
+ api.stop();
+ assert.deepEqual(await second,{ok:false,reason:'stopped'});
+ assert.deepEqual(await api.preview({isTrusted:true},'invalid'),{ok:false,reason:'unknown'});
+});
