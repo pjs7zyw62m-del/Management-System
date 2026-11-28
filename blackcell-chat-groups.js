@@ -13,15 +13,15 @@ export function mountChatGroups({client,context,onOpen=()=>{},onClose=()=>{}}){
  async function rpc(p_action,params={}){const {data,error}=await client.rpc('corp_chat_group',{p_action,...params});if(error||data?.ok!==true)throw Error(errors[data?.reason]||'Group service unavailable. Try again.');return data}
  function drawList(){
   const c=context(),search=String(c.search||'').trim().toLowerCase();
-  root.hidden=!available()||c.editing||!['all','unread','known'].includes(c.filter);
+  const matching=groups.filter(g=>String(g.name).toLowerCase().includes(search)&&(c.filter!=='unread'||g.unread>0));
+  root.hidden=!available()||c.editing||!['all','unread','known'].includes(c.filter)||!matching.length;
   if(root.hidden)return;
   const list=$('bcGroupRows');list.replaceChildren();
-  for(const g of groups.filter(g=>String(g.name).toLowerCase().includes(search)&&(c.filter!=='unread'||g.unread>0))){
+  for(const g of matching){
    const b=btn('',()=>open(g),'bc-group-inbox-row');
    b.append(make('span','bc-group-avatar','♟'),make('span','bc-group-inbox-name',g.name),make('small','',g.available===false?'Unavailable':g.count+' members'));
    if(g.unread)b.append(make('span','bc-group-count',String(g.unread)));list.append(b)
   }
-  $('bcGroupCreate').hidden=c.filter==='unread'||!!search;
  }
  async function refreshList(force=false){
   if(!active()||listBusy||(!force&&Date.now()-lastList<15000))return;
