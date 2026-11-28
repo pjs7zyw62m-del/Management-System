@@ -1,5 +1,5 @@
 import {corporateClient,corporateAuthorize} from './corp-auth.js?v=20261114-transport-classification';
-import {mountStore} from './blackcell-app-store.js?v=20261127-editorial-store1-desktop1';
+import {mountStore} from './blackcell-app-store.js?v=20261127-editorial-store1-desktop1-maildiscover1';
 const $=id=>document.getElementById(id),db=corporateClient(),frame=$('preview');
 let owner=null,verified=false,checking=false,rules=[],metadata=[],styles='',channel='',frameReady=false;
 const notice=s=>$('notice').textContent=s;
@@ -11,7 +11,7 @@ async function verify(){
  owner=a.user.id;
 }
 function deny(e){verified=false;owner=null;frameReady=false;frame.removeAttribute('srcdoc');$('workspace').hidden=true;notice(e?.message||String(e));}
-const labels={omega:'OMEGA',uploadqueue:'Uniform Intelligence',community:'Community',notes:'Notes',calendar:'Calendar',reminders:'Reminders',contacts:'Contacts',mail:'Mail',gunner:'Gunner AI',music:'Music',cinema:'Cinema',wallet:'Wallet',journal:'Journal',vault:'Vault',terminal:'Terminal',voicememos:'Voice Memos',documents:'Documents',spreadsheets:'Spreadsheets',creativestudio:'Creative Studio',worldclock:'World Clock',presentations:'Presentations',calculator:'Calculator'};
+const labels={omega:'OMEGA',uploadqueue:'Uniform Intelligence',community:'Community',notes:'Notes',calendar:'Calendar',reminders:'Reminders',contacts:'Contacts',mail:'BLACKCELL Mail',gunner:'Gunner AI',music:'Music',cinema:'Cinema',wallet:'Wallet',journal:'Journal',vault:'Vault',terminal:'Terminal',voicememos:'Voice Memos',documents:'Documents',spreadsheets:'Spreadsheets',creativestudio:'Creative Studio',worldclock:'World Clock',presentations:'Presentations',calculator:'Calculator'};
 async function readCatalog(){
  const result=await db.rpc('corp_app_store',{p_action:'catalog',p_app:null,p_level:null,p_enabled:null});
  if(result.error||!result.data?.ok||result.data.owner!==true||!Array.isArray(result.data.apps))throw Error('Authorized application catalog unavailable.');
