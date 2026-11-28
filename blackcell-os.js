@@ -1210,41 +1210,49 @@ function showApp(id,initialState=null,passwordVerified=null){
  },true);bar.addEventListener('dblclick',e=>{
   if(!document.documentElement.classList.contains('bc-os-phone')&&!e.target.closest('button,a'))toggleOSWindowSize(r);
  });
- // A titlebar drag restores and moves even windows opened maximized by
- // default (REDLINE, Administration and Photo Battle). Phone/tablet windows
- // retain their dedicated responsive full-screen presentation.
+ // Desktop titlebar drag: shell-local geometry, no reserved side column.
+ // Preserve a reachable titlebar even when most of the window is offscreen.
  let drag=null;
  bar.title='Drag to move · Double-click to maximize or restore';
  const bounded=(value,min,max)=>Math.max(min,Math.min(Math.max(min,max),value));
+ const shell=$('desktop');
+ function moveDesktopWindow(x,y){
+  const rect=shell.getBoundingClientRect(),width=w.offsetWidth,height=w.offsetHeight;
+  const menu=shell.querySelector('.topbar'),menuHeight=menu?.getBoundingClientRect().height||34;
+  const grip=Math.min(width,Math.max(160,Math.min(260,width*.65)));
+  const top=Math.max(0,Math.min(menuHeight,rect.height-44));
+  w.style.left=bounded(x-rect.left-drag.x,grip-width,rect.width-grip)+'px';
+  w.style.top=bounded(y-rect.top-drag.y,top,Math.max(top,rect.height-44))+'px';
+ }
  bar.addEventListener('pointerdown',e=>{
-  if(e.button!==0||e.target.closest('button,a')||touchOS()||innerWidth<=620||w.hidden)return;
-  const current=w.getBoundingClientRect();
+  if(e.button!==0||e.target.closest('button,a,input,select,textarea')||touchOS()||innerWidth<=620||w.hidden||workspaceLock?.isLocked())return;
+  const current=w.getBoundingClientRect(),bounds=shell.getBoundingClientRect();
   let offsetX=e.clientX-current.left,offsetY=e.clientY-current.top;
   if(w.classList.contains('is-max')||w.classList.contains('bc-os-fullscreen')){
    const fraction=bounded(offsetX/Math.max(current.width,1),.06,.94);
-   w.classList.remove('is-max','bc-os-fullscreen');
-   const width=Math.max(300,Math.min(innerWidth-24,Math.min(1040,Math.round(current.width*.8))));
-   const height=Math.max(260,Math.min(innerHeight-72,Math.min(740,Math.round(current.height*.82))));
+   w.classList.remove('is-max','bc-os-fullscreen','bc-os-window-compact');
+   const width=Math.min(bounds.width,Math.max(300,Math.min(1040,Math.round(current.width*.8))));
+   const height=Math.min(bounds.height,Math.max(260,Math.min(740,Math.round(current.height*.82))));
    w.style.width=width+'px';w.style.height=height+'px';
-   offsetX=Math.round(width*fraction);
-   offsetY=bounded(offsetY,12,48);
-   w.style.left=bounded(e.clientX-offsetX,0,innerWidth-width)+'px';
-   w.style.top=bounded(e.clientY-offsetY,34,innerHeight-height-12)+'px';
+   offsetX=Math.round(width*fraction);offsetY=bounded(offsetY,8,40);
    syncFullscreenShell();
   }
   drag={id:e.pointerId,x:offsetX,y:offsetY};
-  try{bar.setPointerCapture(e.pointerId)}catch(_){drag=null;return}
+  w.classList.add('bc-window-dragging');dockReveal(false);
+  try{bar.setPointerCapture(e.pointerId)}catch(_){/* global listeners also cover capture failure */}
+  moveDesktopWindow(e.clientX,e.clientY);
   e.preventDefault();
  });
- bar.addEventListener('pointermove',e=>{
-  if(!drag||e.pointerId!==drag.id)return;
-  w.style.left=bounded(e.clientX-drag.x,0,Math.max(0,innerWidth-w.offsetWidth))+'px';
-  w.style.top=bounded(e.clientY-drag.y,34,Math.max(34,innerHeight-w.offsetHeight-12))+'px';
- });
- for(const event of ['pointerup','pointercancel','lostpointercapture'])bar.addEventListener(event,e=>{
-  if(!drag||(e.pointerId!==undefined&&e.pointerId!==drag.id))return;
-  drag=null;saveWorkspace();
- });
+ const moveDrag=e=>{if(!drag||e.pointerId!==drag.id)return;if(w.hidden||!w.isConnected||touchOS()||workspaceLock?.isLocked()||e.buttons===0){finishDrag();return}moveDesktopWindow(e.clientX,e.clientY)};
+ function finishDrag(e){
+  if(!drag||(e?.pointerId!==undefined&&e.pointerId!==drag.id))return;
+  const id=drag.id;drag=null;w.classList.remove('bc-window-dragging');
+  window.removeEventListener('pointermove',moveDrag,true);window.removeEventListener('pointerup',finishDrag,true);window.removeEventListener('pointercancel',finishDrag,true);window.removeEventListener('blur',finishDrag);
+  try{if(bar.hasPointerCapture(id))bar.releasePointerCapture(id)}catch(_){}
+  if(w.isConnected)saveWorkspace();
+ }
+ bar.addEventListener('pointerdown',()=>{if(!drag)return;window.addEventListener('pointermove',moveDrag,true);window.addEventListener('pointerup',finishDrag,true);window.addEventListener('pointercancel',finishDrag,true);window.addEventListener('blur',finishDrag)});
+ bar.addEventListener('lostpointercapture',finishDrag);
 }
 let appContext=null,contextTrigger=null,appHold=null,suppressedAppClick=null;
 function contextAllowed(){return active&&!preview&&!leaving&&!workspaceLock?.isLocked()&&!$('desktop').hidden}
