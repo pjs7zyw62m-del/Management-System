@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {mountBlackcellConnect,waitForIce,createConnectTonePlayer} from '../blackcell-connect.js';
+import {mountBlackcellConnect,waitForIce,createConnectTonePlayer,loadConnectIce} from '../blackcell-connect.js';
 test('ICE gathering finishes or times out without hanging',async()=>{
  const p=new EventTarget();p.iceGatheringState='gathering';
  const pending=waitForIce(p,1000);p.iceGatheringState='complete';p.dispatchEvent(new Event('icegatheringstatechange'));await pending;
@@ -59,4 +59,12 @@ test('Dedicated ringtone uses non-silent WAV, honors mute, and stops on cleanup'
  const player=createConnectTonePlayer({AudioClass:AudioMock,urls:{createObjectURL:b=>{wave=b;return 'blob:call'},revokeObjectURL(){revoked++}},preferences:()=>({enabled,volume:.6})});
  assert.deepEqual(await player.play('ringback'),{ok:true});const bytes=new Uint8Array(await wave.arrayBuffer());assert.equal(Buffer.from(bytes.slice(0,4)).toString(),'RIFF');assert.ok(bytes.slice(44).some(n=>n!==0));
  player.stop();assert.ok(paused>0);assert.equal(revoked,1);enabled=false;assert.deepEqual(await player.play('callring'),{ok:false,reason:'muted'});assert.equal(played,1);enabled=true;deny=true;assert.deepEqual(await player.play('callring'),{ok:false,reason:'blocked'});player.stop();assert.equal(revoked,2);
+});
+
+test('TURN is pair scoped and only approved temporary relay servers reach WebRTC',async()=>{
+ const peer='12345678-1234-1234-1234-123456789abc';const turn={urls:['turns:turn.cloudflare.com:443?transport=tcp'],username:'temp-user',credential:'temp-key'};
+ const client={functions:{invoke:async(name,args)=>{assert.equal(name,'blackcell-connect-turn');assert.deepEqual(args.body,{peer});return {data:{ok:true,iceServers:[turn,{urls:['turn:untrusted.example:3478'],username:'x',credential:'y'}]}}}}};
+ const config=await loadConnectIce(client,peer);assert.equal(config.relay,true);assert.deepEqual(config.iceServers[1],turn);assert.equal(config.iceServers.length,2);
+ assert.equal((await loadConnectIce({},peer)).relay,false);assert.equal((await loadConnectIce({functions:{invoke:async()=>({error:true})}},peer)).relay,false);assert.equal((await loadConnectIce({functions:{invoke:()=>new Promise(()=>{})}},peer,5)).relay,false);
+ const sql=readFileSync('database/blackcell-connect-turn.sql','utf8'),edge=readFileSync('supabase/functions/blackcell-connect-turn/index.ts','utf8');assert.match(sql,/auth.sessions/);assert.match(sql,/chat_pair_unblocked/);assert.match(sql,/t.issued<8/);assert.match(edge,/BLACKCELL_TURN_API_TOKEN/);assert.match(edge,/corp_connect_turn_authorize/);
 });
