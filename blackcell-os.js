@@ -1045,7 +1045,7 @@ function paintChatUnread(){
   if(n)node.dataset.bcUnread=n>99?'99+':String(n);else delete node.dataset.bcUnread;
  }
 }
-function ensureConnect(){if(preview||connectController)return;connectController=mountBlackcellConnect({client:()=>client,account:()=>storeProfile,allowed:()=>contextAllowed()&&installedApp('chat'),host:$('desktop'),notify:message=>osNotice(message,'notice'),ring:()=>window.BLACKCELL_SYSTEM_SOUNDS?.play('callring')});void connectController.poll()}
+function ensureConnect(){if(preview||connectController)return;connectController=mountBlackcellConnect({client:()=>client,account:()=>storeProfile,allowed:()=>contextAllowed()&&installedApp('chat'),host:$('desktop'),notify:message=>osNotice(message,message.startsWith('Incoming ')?null:'notice'),ring:()=>window.BLACKCELL_SYSTEM_SOUNDS?.play('callring')});void connectController.poll()}
 function ensureChatUnreadMonitor(){
  if(preview||chatUnreadMonitor)return;
  chatUnreadMonitor=createChatUnreadMonitor({client:()=>client,account:()=>storeProfile,allowed:()=>contextAllowed()&&installedApp('chat'),onChange:snapshot=>{chatUnreadSnapshot=snapshot;paintChatUnread()},onNew:(count,initial)=>{
