@@ -8,6 +8,10 @@ on:
       - 'tests/blackcell-imessage-contact-selection.test.mjs'
       - 'blackcell-chat-scroll.js'
       - 'blackcell-chat-groups.js'
+      - 'blackcell-call-history.js'
+      - 'blackcell-call-history.css'
+      - 'database/blackcell-connect-history.sql'
+      - 'tests/blackcell-call-history.test.mjs'
       - 'blackcell-chat-groups.css'
       - 'database/blackcell-imessage-groups.sql'
       - 'tests/blackcell-chat-groups.test.mjs'
@@ -21,6 +25,10 @@ on:
       - 'tests/blackcell-imessage-contact-selection.test.mjs'
       - 'blackcell-chat-scroll.js'
       - 'blackcell-chat-groups.js'
+      - 'blackcell-call-history.js'
+      - 'blackcell-call-history.css'
+      - 'database/blackcell-connect-history.sql'
+      - 'tests/blackcell-call-history.test.mjs'
       - 'blackcell-chat-groups.css'
       - 'database/blackcell-imessage-groups.sql'
       - 'tests/blackcell-chat-groups.test.mjs'
@@ -38,5 +46,7 @@ jobs:
       - run: |
           node --check corporate-chat.js
           node --check blackcell-chat-groups.js
+          node --check blackcell-call-history.js
+          node --check blackcell-connect.js
           node --check blackcell-os.js
-          node --test tests/blackcell-imessage-contact-selection.test.mjs tests/blackcell-chat-scroll.test.mjs tests/blackcell-chat-groups.test.mjs
+          node --test tests/blackcell-imessage-contact-selection.test.mjs tests/blackcell-chat-scroll.test.mjs tests/blackcell-chat-groups.test.mjs tests/blackcell-call-history.test.mjs
