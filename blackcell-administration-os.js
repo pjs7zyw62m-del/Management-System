@@ -86,6 +86,7 @@
     const card=make('article','bc-executive-metric'),value=make('strong','','—'),note=make('small','','Checking…');card.append(make('span','',title),value,note);summary.append(card);cells.set(key,{card,value,note})
    }
    body.append(summary);
+   const quick=make('section','bc-personnel-overview');const copy=make('div');copy.append(make('strong','','Personnel Command'),make('p','','Directory, verified access, live presence and member experience in one workspace.'));const actions=make('div','bc-personnel-actions');actions.append(btn('Directory',()=>select('users','profiles')),btn('Live Presence',()=>select('users','presence')),btn('Experience Preview',()=>select('users','preview')),btn('iMessage',()=>window.dispatchEvent(new Event('blackcell-open-imessage'))));quick.append(copy,actions);body.append(quick);
    const bar=make('div','bc-executive-status'),stamp=make('span','','Waiting for data…'),refresh=btn('↻ Refresh',()=>void load());bar.append(stamp,refresh);body.append(bar);
    const events=make('section','bc-admin-os-panel bc-executive-activity');events.append(make('h2','','Recent corporate activity'));const list=make('div','bc-executive-events','Loading recorded events…');events.append(list);body.append(events);
    const note=make('p','bc-admin-os-muted','Live readings use verified corporate records. Session totals are verification grants, not online-presence counts. Provider billing, full storage totals and continuous uptime are not connected.');body.append(note);
