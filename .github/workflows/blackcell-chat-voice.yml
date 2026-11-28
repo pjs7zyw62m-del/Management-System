@@ -1,0 +1,22 @@
+name: BLACKCELL iMessage Voice
+on:
+  pull_request:
+    paths:
+      - 'blackcell-chat-voice.*'
+      - 'corporate-chat*.js'
+      - 'blackcell-os.js'
+      - 'database/blackcell-chat-voice.sql'
+      - 'supabase/functions/blackcell-chat-bunny/index.ts'
+      - 'tests/blackcell-chat-voice.test.mjs'
+      - '.github/workflows/blackcell-chat-voice.yml'
+permissions:
+  contents: read
+jobs:
+  voice:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --check blackcell-chat-voice.js && node --check corporate-chat.js && node --check corporate-chat-media.js && node --check blackcell-os.js && node --test tests/blackcell-chat-voice.test.mjs
