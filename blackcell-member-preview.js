@@ -17,6 +17,8 @@ async function readCatalog(){
  if(result.error||!result.data?.ok||result.data.owner!==true||!Array.isArray(result.data.apps))throw Error('Authorized application catalog unavailable.');
  // Only application metadata and distribution rules are passed into the sandbox.
  rules=result.data.apps.map(a=>({id:String(a.id),allowed:a.allowed===true,enabled:a.enabled!==false,minLevel:Number(a.minLevel),core:a.core===true})).filter(a=>/^[a-z]{1,40}$/.test(a.id));
+ // Employee Card is intentionally omitted from the owner's catalog; add the member-only core rule unless network-disabled.
+ if(!rules.some(a=>a.id==='card')){const blocked=Array.isArray(result.data.networkBlocked)&&result.data.networkBlocked.includes('card');rules.push({id:'card',allowed:!blocked,enabled:!blocked,minLevel:1,core:true})}
 }
 async function readAssets(){
  const response=await fetch('blackcell-os.html',{cache:'no-store'});if(!response.ok)throw Error('OS metadata unavailable.');
