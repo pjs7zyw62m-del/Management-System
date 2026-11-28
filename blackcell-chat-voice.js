@@ -7,13 +7,13 @@ const el=(tag,cls,txt)=>{const n=document.createElement(tag);if(cls)n.className=
 const button=(label,fn)=>{const b=el('button','bc-voice-button',label);b.type='button';b.onclick=fn;return b};
 export function mountChatVoice({client,context,composer,input,status,reload}){
  const transport=createChatBunnyTransport(client);
- let stream=null,recorder=null,chunks=[],clip=null,previewUrl=null,recognizer=null,gen=0,target=null,sending=false,starting=false,timer=null,started=0,elapsed=0,dictationConsent=false,dictating=false;
+ let stream=null,recorder=null,chunks=[],clip=null,previewUrl=null,recognizer=null,gen=0,target=null,sending=false,starting=false,timer=null,started=0,dictationConsent=false,dictating=false;
  const usable=()=>{const c=context();return c?.ready&&!c.blocked&&!!c.self&&!!c.peer?.user_id};
  const same=()=>usable()&&target===context().peer.user_id;
  const controls=el('div','bc-voice-controls');controls.hidden=true;
  const note=el('p','bc-voice-note',''),player=el('audio','bc-voice-preview');player.controls=true;player.hidden=true;
- const record=button('●',()=>void begin());record.title='Record voice note';record.setAttribute('aria-label','Record voice note');
- const dictate=button('🎙',()=>dictation());dictate.title='Voice to text';dictate.setAttribute('aria-label','Voice to text');
+ const record=button('◉',()=>void begin());record.title='Record voice note';record.classList.add('bc-voice-record');record.setAttribute('aria-label','Record voice note');
+ const dictate=button('🎙',()=>dictation());dictate.title='Voice to text';dictate.classList.add('bc-voice-dictate');dictate.setAttribute('aria-label','Voice to text');
  const stop=button('Stop',()=>finishRecording()),pause=button('Pause',()=>{if(recorder?.state==='recording'){recorder.pause();pause.textContent='Resume'}else if(recorder?.state==='paused'){recorder.resume();pause.textContent='Pause'}});
  const cancel=button('Cancel',()=>reset()),send=button('Send voice note',()=>void sendClip());
  controls.append(note,player,pause,stop,cancel,send);composer.before(controls);composer.insertBefore(record,composer.lastElementChild);composer.insertBefore(dictate,composer.lastElementChild);
